@@ -4,15 +4,16 @@
 # calorimeter hits stored in it, use them
 # no event display
 #------------------------------------------------------------------------------
-# $Id: calPatRec_01.fcl,v 1.5 2014/04/03 23:18:48 murat Exp $
-# $Author: murat $
-# $Date: 2014/04/03 23:18:48 $
+# $Id: calPatRec_01.fcl,v 1.6 2014/04/14 15:09:04 gianipez Exp $
+# $Author: gianipez $
+# $Date: 2014/04/14 15:09:04 $
 #
 # Original author Rob Kutschke
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
+#include "HitMakers/test/producers.fcl"
 #include "TrackCaloMatching/test/producers.fcl"
 #include "CalPatRec/test/producers.fcl"
 

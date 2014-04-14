@@ -1,11 +1,12 @@
 # -*- mode: tcl -*-
-# $Id: mergePatRec_display.fcl,v 1.2 2014/04/08 21:56:33 murat Exp $
+# $Id: mergePatRec_display.fcl,v 1.3 2014/04/14 15:09:03 gianipez Exp $
 #------------------------------------------------------------------------------
 #  mergePatRec02: read input data, remake all hits, do not regenereate events
 #------------------------------------------------------------------------------
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
+#include "HitMakers/test/producers.fcl"
 #include "TrackCaloMatching/test/producers.fcl"
 #include "CalPatRec/test/producers.fcl"
 #include "ParticleID/test/producers.fcl"
