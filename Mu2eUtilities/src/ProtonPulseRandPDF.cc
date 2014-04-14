@@ -1,22 +1,17 @@
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.17 2014/04/14 18:12:55 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.cc,v 1.18 2014/04/14 19:08:46 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/04/14 18:12:55 $
+// $Date: 2014/04/14 19:08:46 $
 //
 // Original author: Kyle Knoepfel
 
 // Mu2e includes
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
 
 // cetlib includes
 #include "cetlib/exception.h"
-
-// C++ includes
-#include <iostream>
-#include <cmath>
 
 // The following defines the proton pulse shape parameters (pdf width,
 // pdf step and differential distribution).  Please note that it is
@@ -24,27 +19,15 @@
 // pulse during framework jobs, and then to convolute the obtained
 // timing distributions with the desired shape after the fact.
 //
-// Previous read-in tables (as of Jan. 27, 2014) are deprecated, as
-// the pdf width and stepsize needed to be explicitly stated because
-// the tables were only one column wide.  
+// Previous read-in tables (as of Jan. 27, 2014) are deprecated.  
 //
-// The POT pulse contains three components:
+// The POT pulse contains two components:
 //
 //   (1) The central POT pulse, which is not weighted by any effects
 //       from the AC dipole
-//   (2) The AC dipole transmission function which cuts off the POT
-//       pulse outside of +/- 130 ns
-//   (3) The out-of-time distribution of protons that are not removed
-//       by the AC dipole.  These contributions are normalized to a given
-//       extinction factor.  The current default for the factor is 1e-10,
-//       which is explicitly hard-coded into the intialization list below.
+//   (2) The AC dipole transmission function which serves to cut off
+//       any out-of-time POTs.
 //
-// Various constants are currently included in the anonymous namespace
-// directly below.  Eventually, these need to be included in the
-// conditions database.  Note that the out-of-time table is currently
-// specified relative to the time the proton reaches the AC dipole.
-// The distance between the dipole and the tungsten target corresponds
-// to a timing offset of roughly 500 ns.
 
 namespace mu2e{
   
@@ -177,7 +160,7 @@ namespace mu2e{
     auto const& begin = rawShape.begin();
     auto end = rawShape.end(); --end;
 
-    // Interpolate to fill out shape
+    // Linearly interpolate to fill out shape
     std::map<double,double> shape;
 
     for ( const auto& t : times_ ) {
@@ -187,8 +170,7 @@ namespace mu2e{
         auto const& it1 = rawShape.lower_bound( t );
         auto it0 = it1; --it0;
         
-        const double intSpectrum = it0->second + (it1->second - it0->second)/(it1->first - it0->first)*(t-it0->first);
-        shape[t] = intSpectrum;
+        shape[t] = it0->second + (it1->second - it0->second)/(it1->first - it0->first)*(t-it0->first);
       }
     }
 
