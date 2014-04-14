@@ -4,9 +4,9 @@
 //  
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.hh,v 1.9 2014/04/01 15:03:16 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.hh,v 1.10 2014/04/14 18:12:55 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/04/01 15:03:16 $
+// $Date: 2014/04/14 18:12:55 $
 //
 // Original author: Gianni Onorato
 //                  Kyle Knoepfel (significant updates)
@@ -25,6 +25,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // C++ includes
+#include <map>
 #include <vector>
 
 namespace mu2e {
@@ -35,7 +36,7 @@ namespace mu2e {
 
     class PotSpectrumType {
     public:
-      enum enum_type { unknown, DEFAULT, TOTAL, OOT, OOTFLAT, ALLFLAT };
+      enum enum_type { unknown, DEFAULT, TOTAL, OOT, ALLFLAT };
       static std::string const& typeName() {
         static std::string type("PotSpectrumType"); return type;
       }
@@ -47,7 +48,6 @@ namespace mu2e {
           nam[DEFAULT] = "default";
           nam[TOTAL]   = "total";
           nam[OOT]     = "oot";
-          nam[OOTFLAT] = "ootflat";
           nam[ALLFLAT] = "allflat";
         }
 
@@ -55,7 +55,7 @@ namespace mu2e {
       }
     };
 
-    typedef EnumToStringSparse<PotSpectrumType> PotSpectrum;
+    typedef EnumToStringSparse<PotSpectrumType> PotSpectrumEnum;
     
     ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
                        const std::string pulseString = "default" );
@@ -63,17 +63,14 @@ namespace mu2e {
 
     double fire();
     const std::vector<double>& getSpectrum() const { return spectrum_; }
-    const std::vector<double>& getTimes()    const { return times_; }
+    const std::vector<double>& getTimes()    const { return times_   ; }
 
   private:
 
     const AcceleratorParams* accPar_;
 
-    std::vector<double> potSpectrum_;
-    std::vector<double> dipoleSpectrum_;
-    std::vector<double> ootSpectrum_;
-
-    std::vector<double> times_;
+    std::map<double,double> potSpectrum_;
+    std::map<double,double> dipoleSpectrum_;
 
     double timeMin_;
     double timeMax_;
@@ -81,24 +78,28 @@ namespace mu2e {
 
     const Table<2> pulseShape_;
     const Table<2> acdipole_;
-    const Table<2> ootPulse_;
-
-    const PotSpectrum pulseEnum_;
-    const std::size_t nPoints_;
-
+    
     const double extFactor_;
-
+    
+    const PotSpectrumEnum pulseEnum_;
+    
+    std::vector<double> times_;
     std::vector<double> spectrum_;
 
     CLHEP::RandGeneral randSpectrum_;
 
-    std::size_t calculateNpoints();
+    std::vector<double> setTimes();
 
     //PDF description
     std::vector<double> setSpectrum() const;
-    
-    std::vector<double> getShape( const Table<2>& table, const double timeOffset = 0. ) const;
-    void renormalizeShape( std::vector<double>& shape, const double norm ) const;
+
+    std::vector<double> preparePotSpectrum() const;
+
+    std::map<double,double> getShape   ( const Table<2>& table, const double timeOffset = 0. ) const;
+
+    static void   renormalizeShape     ( std::map<double,double>& shape      , const double norm );
+    static double determineIntrinsicExt( const std::map<double,double>& shape, const double hw   );
+    static void   replaceOotShape      ( std::map<double,double>& shape      , const double hw, const double norm );
 
   };
 

@@ -1,9 +1,9 @@
 //
 // Some parameters of the accelerator complex.
 //
-// $Id: AcceleratorParams.cc,v 1.5 2014/04/01 15:03:16 knoepfel Exp $
+// $Id: AcceleratorParams.cc,v 1.6 2014/04/14 18:12:55 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/04/01 15:03:16 $
+// $Date: 2014/04/14 18:12:55 $
 //
 
 // Mu2e include files
@@ -23,7 +23,6 @@ namespace mu2e {
 
     potPulse  = config.getString("acceleratorParams.potPulse" );  
     acDipole  = config.getString("acceleratorParams.acDipole" );
-    outOfTime = config.getString("acceleratorParams.outOfTime");
 
   }
 

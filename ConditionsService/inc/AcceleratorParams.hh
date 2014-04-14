@@ -3,9 +3,9 @@
 //
 // Some parameters of the accelerator complex.
 //
-// $Id: AcceleratorParams.hh,v 1.7 2014/04/01 15:03:16 knoepfel Exp $
+// $Id: AcceleratorParams.hh,v 1.8 2014/04/14 18:12:55 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/04/01 15:03:16 $
+// $Date: 2014/04/14 18:12:55 $
 //
 // Original author Rob Kutschke
 //
@@ -29,7 +29,6 @@ namespace mu2e
 
     std::string potPulse;
     std::string acDipole;
-    std::string outOfTime;
 
     AcceleratorParams ( SimpleConfig const& config );
 
