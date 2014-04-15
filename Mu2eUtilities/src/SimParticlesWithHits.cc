@@ -9,9 +9,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.cc,v 1.8 2012/01/28 07:19:53 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/01/28 07:19:53 $
+// $Id: SimParticlesWithHits.cc,v 1.9 2014/04/15 14:41:02 murat Exp $
+// $Author: murat $
+// $Date: 2014/04/15 14:41:02 $
 //
 // Original author Rob Kutschke.
 //
@@ -47,6 +47,13 @@ namespace mu2e{
 
     art::Handle<StrawHitMCTruthCollection> truthHandle;
     evt.getByLabel(_hitMakerModuleLabel,truthHandle);
+
+    if (!truthHandle.isValid()) {
+      printf(" ERROR in SimParticlesWithHits::SimParticlesWithHits: StrawHitMCTruthCollection by %s not found\n",
+	     _hitMakerModuleLabel.data());
+      return;
+    }
+
     StrawHitMCTruthCollection const& hits_truth = *truthHandle;
 
     art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
