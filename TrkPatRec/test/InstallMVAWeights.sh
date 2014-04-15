@@ -12,8 +12,8 @@ while getopts "o:" opt ; do
   esac
 done
 echo "Copying files from directory $baseDir"
-cp $baseDir/TrainStereoHitsMVA/TMVAClassification_MLP.weights.xml TrkPatRec/test/StereoHits.weights.xml
-cp $baseDir/TrainNonStereoHitsMVA/TMVAClassification_MLP.weights.xml TrkPatRec/test/NonStereoHits.weights.xml
-cp $baseDir/TrainStereoClusterMVA/TMVAClassification_MLP.weights.xml TrkPatRec/test/StereoCluster.weights.xml
-cp $baseDir/TrainNonStereoClusterMVA/TMVAClassification_MLP.weights.xml TrkPatRec/test/NonStereoCluster.weights.xml
+cp $baseDir/TrainStereoHits/TMVAClassification_MLP.weights.xml TrkPatRec/test/StereoHits.weights.xml
+cp $baseDir/TrainNonStereoHits/TMVAClassification_MLP.weights.xml TrkPatRec/test/NonStereoHits.weights.xml
+cp $baseDir/TrainStereoCluster/TMVAClassification_MLP.weights.xml TrkPatRec/test/StereoCluster.weights.xml
+cp $baseDir/TrainNonStereoCluster/TMVAClassification_MLP.weights.xml TrkPatRec/test/NonStereoCluster.weights.xml
 

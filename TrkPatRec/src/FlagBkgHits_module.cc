@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.24 2014/04/07 22:50:31 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.25 2014/04/15 21:16:02 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/04/07 22:50:31 $
+// $Date: 2014/04/15 21:16:02 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -212,8 +212,8 @@ namespace mu2e
   {
     // location-independent files
     ConfigFileLookupPolicy configFile;
-    std::string stereohitweights = pset.get<std::string>("StereoHitTMVAWeights","TrkPatRec/test/StereoHits.weights.xml");
-    std::string nonstereohitweights = pset.get<std::string>("NonStereoHitTMVAWeights","TrkPatRec/test/NonStereoHits.weights.xml");
+    std::string stereohitweights = pset.get<std::string>("StereoHitsTMVAWeights","TrkPatRec/test/StereoHits.weights.xml");
+    std::string nonstereohitweights = pset.get<std::string>("NonStereoHitsTMVAWeights","TrkPatRec/test/NonStereoHits.weights.xml");
     std::string stereoclusterweights = pset.get<std::string>("StereoClusterTMVAWeights","TrkPatRec/test/StereoCluster.weights.xml");
     std::string nonstereoclusterweights = pset.get<std::string>("NonStereoClusterTMVAWeights","TrkPatRec/test/NonStereoCluster.weights.xml");
     _stereohitweights = configFile(stereohitweights);
