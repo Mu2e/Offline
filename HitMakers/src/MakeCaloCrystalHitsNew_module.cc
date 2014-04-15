@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHitsNew_module.cc,v 1.5 2014/04/15 15:57:33 murat Exp $
+// $Id: MakeCaloCrystalHitsNew_module.cc,v 1.6 2014/04/15 22:42:44 murat Exp $
 // $Author: murat $
-// $Date: 2014/04/15 15:57:33 $
+// $Date: 2014/04/15 22:42:44 $
 //
 // Original author KLG
 // for realistic modeling: reduce timeGap from 30ns to 1 ns in Mu2eG4/test/calorimeter.txt
@@ -224,7 +224,15 @@ namespace mu2e {
      
     sort ( caloHitsSorted.begin(), caloHitsSorted.end(), lessByCIdAndTimeByPointer<CaloHit>(&cal) );
      
-    // generate the CaloCrystalHits. First,
+     if ( _diagLevel > 2 ) {
+      cout << __func__ << ": Total number of hit RO = " << caloHitsSorted.size() << endl;
+      for( size_t i=0; i<caloHitsSorted.size(); ++i ) 
+	cout << __func__ << ": " << caloHitsSorted[i]
+	     << " Ro ID: " << caloHitsSorted[i]->id() 
+	     << " CrystalId: " << cal.crystalByRO(caloHitsSorted[i]->id()) << endl;
+    }
+
+   // generate the CaloCrystalHits. First,
     // add all RO hits of the same crystal / time together (must clearly improve to deal with pileup)
     // if energy between energy_min and energy_max (i.e. adding signal from APDs)
     // energyDepTotal will include all the energy
@@ -449,25 +457,35 @@ namespace mu2e {
   
   void MakeCaloCrystalHitsNew::fixEnergy(CaloCrystalHit& caloCrystalHit, int tnro, double electronEdep) {
 
-      int nridu = caloCrystalHit.numberOfROIdsUsed();
+    int nridu = caloCrystalHit.numberOfROIdsUsed();
 
-      if ( _diagLevel > 0 ) 
-	cout << __func__ << ": fixing energy: " << caloCrystalHit.energyDep()
-             << ", used roids: " << nridu << ", energyDepT: " << caloCrystalHit.energyDepTotal() << endl;
+    if ( _diagLevel > 0 ) {
+      cout << __func__ << ": fixing energy: " << caloCrystalHit.energyDep()
+	   << ", used roids: " << nridu << ", energyDepT: " << caloCrystalHit.energyDepTotal() 
+	   << endl;
+    }
+//-----------------------------------------------------------------------------
+// this was plain wrong - if N hits are merged into one, still need to divide by 
+// the number of photosensors...
+//-----------------------------------------------------------------------------
+//      caloCrystalHit.setEnergyDep(caloCrystalHit.energyDep()/double(nridu));
+//      caloCrystalHit.setEnergyDepTotal(caloCrystalHit.energyDepTotal()-float(nridu-1)*caloCrystalHit.energyDep());
 
-      caloCrystalHit.setEnergyDep(caloCrystalHit.energyDep()/double(nridu));
-      caloCrystalHit.setEnergyDepTotal(caloCrystalHit.energyDepTotal()-float(nridu-1)*caloCrystalHit.energyDep());
+    caloCrystalHit.setEnergyDep(caloCrystalHit.energyDep()/2.);
+    caloCrystalHit.setEnergyDepTotal(caloCrystalHit.energyDepTotal()/2.);
 
-      // fix only if all ro are saturated
-      if (nridu == 0 && caloCrystalHit.energyDepTotal()/tnro >= electronEdep) caloCrystalHit.setEnergyDep(caloCrystalHit.energyDepTotal());
+    // fix only if all ro are saturated
+    if (nridu == 0 && caloCrystalHit.energyDepTotal()/tnro >= electronEdep) {
+      caloCrystalHit.setEnergyDep(caloCrystalHit.energyDepTotal());
+    }
       
-      if ( _diagLevel > 0 ) 
+    if ( _diagLevel > 0 ) {
       cout << __func__ << ": fixed energy: " <<  caloCrystalHit.energyDep()
-	   << ", used roids: " << nridu << ", energyDepT: " << caloCrystalHit.energyDepTotal() << endl;
-      
+	   << ", used roids: " << nridu << ", energyDepT: " << caloCrystalHit.energyDepTotal() 
+	   << endl;
+    }
 
-      return;
-
+    return;
   }
 
 
