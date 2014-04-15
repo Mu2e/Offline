@@ -1,9 +1,9 @@
 //
 // CaloCrystalHit to be created based on CaloHit's
 //
-// $Id: CaloCrystalHit.cc,v 1.3 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: CaloCrystalHit.cc,v 1.4 2014/04/15 22:41:08 murat Exp $
+// $Author: murat $
+// $Date: 2014/04/15 22:41:08 $
 //
 
 // C++ includes
@@ -32,8 +32,13 @@ namespace mu2e {
   // operator += CaloHit
   CaloCrystalHit& CaloCrystalHit::add(CaloHit const & hit, CaloHitPtr const& chPtr ) {
     _readouts.push_back(chPtr);
-    _energyDep += hit.energyDep();
-    _energyDepTotal += hit.energyDep();
+
+    double he = hit.energyDep();
+    double ht = hit.time();
+
+    _time            = (_time*_energyDep+ht*he)/(_energyDep+he);
+    _energyDep      += he;
+    _energyDepTotal += he;
     ++_numberOfROIdsUsed;
     return *this;
   }
