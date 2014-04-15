@@ -15,7 +15,7 @@ MakeCaloClusterHack        : {
     deltaTimePlus          : 5.0 # ns
     deltaTimeMinus         : 5.0 # ns
     nCryPerCrystal         : 1
-    EnoiseCut              : 0.00 # MeV
+    EnoiseCut              : 0.10 # MeV
     EclusterCut            : 5.00 # MeV  
 }
 #------------------------------------------------------------------------------

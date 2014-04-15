@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec_display.fcl,v 1.5 2014/04/14 15:09:04 gianipez Exp $
+# $Id: calPatRec_display.fcl,v 1.6 2014/04/15 15:41:50 murat Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits
@@ -7,6 +7,7 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
+#include "CaloCluster/test/producers.fcl"
 #include "HitMakers/test/producers.fcl"
 #include "TrackCaloMatching/test/producers.fcl"
 #include "CalPatRec/test/producers.fcl"
@@ -77,7 +78,8 @@ physics : {
 #------------------------------------------------------------------------------
 # CalPatRec and modules it brings in
 #------------------------------------------------------------------------------
-	MakeCaloCluster      : @local::MakeCaloClusterHack
+#	MakeCaloCluster      : @local::MakeCaloClusterHack
+	MakeCaloCluster      : @local::MakeCaloCluster
 
 	MakeStrawHitPositions: @local::MakeStrawHitPositions
 	FlagStrawHits        : @local::FlagStrawHits
@@ -147,6 +149,9 @@ services.user.SeedService.maxUniqueEngines :  20
 # physics.producers.generate.inputfile               : "Mu2eG4/test/genconfig_DownstreameMinus.txt"
 physics.producers.makeSD.TimeOffsets               :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 physics.producers.CaloReadoutHitsMaker.TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+
+# physics.producers.CaloReadoutHitsMaker.blindTime   : 0
+#physics.producers.CaloReadoutHitsMaker.timeGap     : 10
 #------------------------------------------------------------------------------
 # event reconstruction
 #------------------------------------------------------------------------------
