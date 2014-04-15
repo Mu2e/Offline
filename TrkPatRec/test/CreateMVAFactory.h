@@ -1,4 +1,4 @@
-// @(#)root/tmva $Id: TrainStereoHitsMVA.C,v 1.1 2014/04/07 22:50:31 brownd Exp $
+// @(#)root/tmva $Id: CreateMVAFactory.h,v 1.1 2014/04/15 21:12:20 brownd Exp $
 /**********************************************************************************
  * Project   : TMVA - a ROOT-integrated toolkit for multivariate data analysis    *
  * Package   : TMVA                                                               *
@@ -31,8 +31,8 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <vector>
 
-#include "TChain.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
@@ -49,7 +49,13 @@
 #include "TMVA/Tools.h"
 #endif
 
-void TrainStereoHitsMVA(TChain* inputChain=NULL)
+
+TMVA::Factory*
+CreateMVAFactory(TTree* inputTree,
+  std::vector<std::string> const&  varnames,
+  std::vector<std::string> const&  vardescrip,
+  TCut const& signalCut, TCut const& backgrCut,
+  TFile* outputFile, TString const& weightexp)
 {
   // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
   // if you use your private .rootrc, or run from a different directory, please copy the
@@ -131,8 +137,6 @@ void TrainStereoHitsMVA(TChain* inputChain=NULL)
   Use["RuleFit"]         = 0;
   // ---------------------------------------------------------------
 
-  std::cout << std::endl;
-  std::cout << "==> Start TMVAClassification" << std::endl;
 
   // Select methods (don't look at this code - not of interest)
 //  if (myMethodList != "") {
@@ -157,10 +161,6 @@ void TrainStereoHitsMVA(TChain* inputChain=NULL)
   // --- Here the preparation phase begins
 
   // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-  //TString outfileName( "/data/HD2/dding/newGeometry2.18.14/gDist/test/StereoNoRmed.root");
-  TString outfileName("tmva/TrainStereoHitsMVA.root");
-  TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
-
   // Create the factory object. Later you can choose the methods
   // whose performance you'd like to investigate. The factory is 
   // the only TMVA object you have to interact with
@@ -179,17 +179,14 @@ void TrainStereoHitsMVA(TChain* inputChain=NULL)
   //    (TMVA::gConfig().GetVariablePlotting()).fTimesRMS = 8.0;
   //    (TMVA::gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory";
 
-  (TMVA::gConfig().GetIONames()).fWeightFileDir = "tmva/TrainStereoHitsMVA";
-
   // Define the input variables that shall be used for the MVA training
   // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
   // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
-
-  factory->AddVariable("_dphi","Azimuthal Angular Distance",'F'); 
-  factory->AddVariable("_drho", "Radial Distance", 'F');
-  factory->AddVariable("_dt", "Temporal Distance",'F');
-  //factory->AddVariable("_stereo", "Stereo Boolean",'F');
-  //factory->AddVariable("rmed", "Transverse Radius of Peak",'F');
+  for(unsigned ivar=0;ivar<varnames.size();++ivar){
+    std::cout << "Adding variable " << varnames[ivar]
+    << " description: " << vardescrip[ivar] << std::endl;
+    factory->AddVariable(varnames[ivar],vardescrip[ivar],'F');
+  }
 
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
@@ -221,14 +218,12 @@ void TrainStereoHitsMVA(TChain* inputChain=NULL)
   return;
   }
   */
-  cout << "Checkpoint 1" << endl; 
 
   Double_t signalWeight     = 1.0;
-
   Double_t backgroundWeight = 1.0;
 
-  factory->AddSignalTree    ( inputChain, signalWeight);
-  factory->AddBackgroundTree( inputChain, backgroundWeight );
+  factory->AddSignalTree    ( inputTree, signalWeight);
+  factory->AddBackgroundTree( inputTree, backgroundWeight );
 
   // global event weights per tree (see below for setting event-wise weights)
 
@@ -280,8 +275,6 @@ void TrainStereoHitsMVA(TChain* inputChain=NULL)
 
 
   // Apply additional cuts on the signal and background samples (can be different)
-  TCut signalCut = "pproc<20 && nchits>4 && nprimary/nchits>0.8 && _stereo && _relation>=0 ";
-  TCut backgrCut = "pproc<20 && nchits>4 && nprimary/nchits>0.8 && _stereo && _relation<0";
 
 
   // Tell the factory how to use the training and testing events
@@ -292,6 +285,12 @@ void TrainStereoHitsMVA(TChain* inputChain=NULL)
   // To also specify the number of testing events, use:
   //    factory->PrepareTrainingAndTestTree( mycut,
   //                                         "NSigTrain=3000:NBkgTrain=3000:NSigTest=3000:NBkgTest=3000:SplitMode=Random:!V" );
+
+  if(weightexp!=""){
+    std::cout << "Event weight expression = " << weightexp << std::endl;
+    factory->SetSignalWeightExpression    (weightexp);
+    factory->SetBackgroundWeightExpression(weightexp);
+  }
 
   factory->PrepareTrainingAndTestTree(signalCut, backgrCut,"SplitMode=Random:!V:SplitSeed=100:nTrain_Signal=200000:nTest_Signal=200000" ); 
 
@@ -485,26 +484,5 @@ void TrainStereoHitsMVA(TChain* inputChain=NULL)
   // --------------------------------------------------------------------------------------------------
 
   // ---- Now you can tell the factory to train, test, and evaluate the MVAs
-
-  // Train MVAs using the set of training events
-  factory->TrainAllMethods();
-
-  // ---- Evaluate all MVAs using the set of test events
-  factory->TestAllMethods();
-
-  // ----- Evaluate and compare performance of all configured MVAs
-  factory->EvaluateAllMethods();
-
-  // --------------------------------------------------------------
-
-  // Save the output
-  outputFile->Close();
-
-  std::cout << "==> Wrote root file: " << outputFile->GetName() << std::endl;
-  std::cout << "==> TMVAClassification is done!" << std::endl;
-
-  delete factory;
-
-  // Launch the GUI for the root macros
-//  if (!gROOT->IsBatch()) TMVAGui( outfileName );
+  return factory;
 }
