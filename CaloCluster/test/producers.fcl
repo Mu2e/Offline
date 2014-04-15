@@ -13,7 +13,7 @@ MakeCaloCluster: {
     #caloClusterSeeding     : time
     deltaTimePlus           : 5.0  # ns
     deltaTimeMinus          : 5.0  # ns
-    nCryPerCrystal          : 1
+    nCryPerCrystal          : 1    # currently unused
     EclusterCut             : 5.0  # MeV  
     EnoiseCut               : 0.1  # MeV
     EminSplitSeed           : 2.0  # MeV
