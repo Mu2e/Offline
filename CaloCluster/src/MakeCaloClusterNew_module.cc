@@ -89,9 +89,20 @@ using namespace std;
 namespace mu2e {
 
 
-bool caloCrystalHitEnergyPredicate( CaloCrystalHit const* lhs, CaloCrystalHit const* rhs) {return lhs->energyDep() > rhs->energyDep();}
-bool caloCrystalHitTimePredicate( CaloCrystalHit const* lhs, CaloCrystalHit const* rhs) {return lhs->time() < rhs->time();}
+bool caloCrystalHitEnergyPredicate( CaloCrystalHit const* lhs, CaloCrystalHit const* rhs) {
+  return lhs->energyDep() > rhs->energyDep();
+}
 
+bool caloCrystalHitTimePredicate( CaloCrystalHit const* lhs, CaloCrystalHit const* rhs) {
+  return lhs->time() < rhs->time();
+}
+
+//-----------------------------------------------------------------------------
+// need to order clusters in the descending energy order, thus reverse 'less'
+//-----------------------------------------------------------------------------
+bool caloClusterEnergyPredicate(CaloCluster lhs, CaloCluster rhs) {
+  return lhs.energyDep() > rhs.energyDep();
+}
 
 class MakeCaloClusterNew : public art::EDProducer {
 
@@ -108,13 +119,14 @@ class MakeCaloClusterNew : public art::EDProducer {
            // Parameters
            _diagLevel(pset.get<int>("diagLevel",0)),
            _maxFullPrint(pset.get<int>("maxFullPrint",5)),
-           _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)),
-           _deltaTimePlus(pset.get<double>("deltaTimePlus", 10.)),// ns
-           _deltaTimeMinus(pset.get<double>("deltaTimeMinus", 10.)),// ns
+	   //           _minimumEnergy(pset.get<double>("minimumEnergy",0.0001)),
+           _deltaTimePlus (pset.get<double>("deltaTimePlus" ,  5.)),// ns
+           _deltaTimeMinus(pset.get<double>("deltaTimeMinus",  5.)),// ns
            _nCryPerCluster(pset.get<int>("nCryPerCrystal", 0)),
            _EnoiseCut(pset.get<double>("EnoiseCut", 0.090)),//MeV 3 sigma noise
            _ExpandCut(pset.get<double>("ExpandCut", 0.090)),//MeV
-           _EminCluster(pset.get<double>("EminCluster", 10)),//MeV
+           _EminCluster  (pset.get<double>("EminCluster"  , 5.)),//MeV
+           _EminSplitSeed(pset.get<double>("EminSplitSeed", 2.)),//MeV
            _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
            _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
            _caloClusterAlgorithm(pset.get<std::string>("caloClusterAlgorithm", "closest")),
@@ -147,13 +159,14 @@ class MakeCaloClusterNew : public art::EDProducer {
            std::string _caloStepPoints;
 
            // Parameters
-           double _minimumEnergy;  // minimum energy deposition of G4 step
+  //           double _minimumEnergy;  // minimum energy deposition of G4 step
            double _deltaTimePlus;
            double _deltaTimeMinus;
            double _nCryPerCluster;
            double _EnoiseCut;
            double _ExpandCut;
            double _EminCluster;
+           double _EminSplitSeed;
            string _g4ModuleLabel;  // Name of the module that made these hits.
            string _caloReadoutModuleLabel;
            string _caloCrystalModuleLabel;
@@ -212,6 +225,14 @@ class MakeCaloClusterNew : public art::EDProducer {
       //Create a new CaloCluster collection and fill it
        unique_ptr<CaloClusterCollection> caloClusters(new CaloClusterCollection);
        makeCaloClusters(*caloClusters,caloCrystalHitsHandle);
+
+//-----------------------------------------------------------------------------
+// 2014-04-15 P.Murat: make sure clusters are sorted in energy
+//-----------------------------------------------------------------------------
+       int ncl = caloClusters->size();
+       if (ncl > 0) {
+	 std::sort(caloClusters->begin(),caloClusters->end(),mu2e::caloClusterEnergyPredicate);
+       }
 
        event.put(std::move(caloClusters), _producerName);
 
@@ -273,6 +294,7 @@ class MakeCaloClusterNew : public art::EDProducer {
 	  while( ! caloCrystalHitsWork.empty() ){       
 	    
 	      CaloCrystalList_iter crystalSeed = caloCrystalHitsWork.begin();
+	      if ( (*crystalSeed)->energyDep() < _EminSplitSeed ) break;
 	      double crystalTime = (*crystalSeed)->time();
 
 	      // find cluster if the crystal timing is compatible with the list of energetic clusters
@@ -357,8 +379,11 @@ class MakeCaloClusterNew : public art::EDProducer {
 	      averageTime /= float(thisList.size());
               
 	      int mainIndex = findMainCluster((*thisList.begin())->time(), protoClusterTimingList);
-              double minDist = closestDistance(thisList, protoClusterList[mainIndex],cal);
-   	      
+
+	      double minDist;
+	      if (mainIndex >= 0) minDist = closestDistance(thisList, protoClusterList[mainIndex],cal);
+	      else                minDist = 1.e6;
+
 	      CLHEP::Hep3Vector cog = calculateCog(thisList,cal,1);
 
 	      CaloCluster caloCluster(isection,averageTime,totalEnergy,caloCrystalHitPtrVector);	      
