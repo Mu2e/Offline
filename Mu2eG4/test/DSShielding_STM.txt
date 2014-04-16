@@ -1,0 +1,58 @@
+// VPSP and IFB shielding, downstream of the DS
+// Taking numbers from G4beamline
+//
+// Original author: Kyle Knoepfel
+
+// z-positions indicate centers of tubes wrt z-max of DS cryostat
+
+bool dsShielding.visible = true;
+bool dsShielding.solid   = false;
+
+string vpsp.material            = "G4_Fe"; 
+
+double vpsp.cryoseal.z          = 20.;
+double vpsp.cryoseal.rIn        = 970.;
+double vpsp.cryoseal.rOut       = 1100.;
+double vpsp.cryoseal.halfLength = 20.;
+
+double vpsp.main.z          = 1231.;
+// double vpsp.main.rIn        = 950.;
+// double vpsp.main.rOut       = 970.;
+double vpsp.main.halfLength = 1231.;
+
+double vpsp.endseal.z          = 2442.;
+double vpsp.endseal.rIn        = 970.;
+double vpsp.endseal.rOut       = 1250.;
+double vpsp.endseal.halfLength = 20.;
+
+double vpsp.endflange.z          = 2482.;
+double vpsp.endflange.rIn        = 1100.;
+double vpsp.endflange.rOut       = 1250.;
+double vpsp.endflange.halfLength = 20.;
+
+string ifb.material   = "G4_Galactic"; 
+
+double ifb.main.z          = 2822.;
+double ifb.main.rIn        = 1080.;
+double ifb.main.rOut       = 1100.;
+double ifb.main.halfLength = 360.;
+
+double ifb.endseal.z          = 3127.;
+double ifb.endseal.rIn        = 500.;
+double ifb.endseal.rOut       = 1080.;
+double ifb.endseal.halfLength = 55.;
+
+double ifb.endplug.z          = 3232.;
+double ifb.endplug.rIn        = 50.;
+double ifb.endplug.rOut       = 550.;
+double ifb.endplug.halfLength = 50.;
+
+double ifb.endwindow.z          = 3182.;
+double ifb.endwindow.rIn        = 0.;
+double ifb.endwindow.rOut       = 50.;
+double ifb.endwindow.halfLength = 0.55;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
