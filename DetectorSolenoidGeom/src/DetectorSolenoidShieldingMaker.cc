@@ -97,7 +97,7 @@ namespace mu2e {
 
     dss->_dssTubes.push_back( dss->getIFBendPlug() );
 
-    dss->_ifbEndWindow.reset( new Tube( c.getString("ifb.material"), 
+    dss->_ifbEndWindow.reset( new Tube( c.getString("ifb.endwindow.material", c.getString("ifb.material") ), 
                                         CLHEP::Hep3Vector( dsPos.x(), 
                                                            dsPos.y(),
                                                            ds.cryoZMax()+c.getDouble("ifb.endwindow.z") ),                   
