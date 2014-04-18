@@ -2,6 +2,52 @@
 
            Release notes for Mu2e Offline software, v4_1_8
 
+2) April 18, 2014 kutschke
+
+   Changes needed to support accessing tracks via art::Ptr<KalRep>.
+   See Mu2e-doc-4074 for the high level details.  Note that there is
+   a breaking change to OwningPointerCollection.hh
+
+   New files:
+     KalmanTests/inc/KalRepPtrCollection.hh
+        - the new data product
+     KalmanTests/src/PtrTest_module.cc
+        - Given a KalRepCollection create the matching KalRepPtrCollection
+     KalmanTests/src/ReadPtr_module.cc
+        - Read a KalRepPtrCollection
+
+   Modified files:
+
+     GeneralUtilities/inc/OwningPointerCollection.hh
+     KalmanTests/src/classes.h
+     KalmanTests/src/classes_def.xml
+
+     TrkPatRec/src/TrkPatRec_module.cc
+     CalPatRec/src/CalPatRec_module.cc
+        - These were modified to create a KalRepPtrCollection
+
+    Other files that were modified to deal with the breaking change to
+    OwningPointerCollection:
+      Analyses/src/CosmicFilter_module.cc
+      Analyses/src/HitDisplay_module.cc
+      Analyses/src/ReadTrkExt_module.cc
+      CalPatRec/src/MergePatRec_module.cc
+      EventDisplay/src/DataInterface.cc
+      EventDisplay/src/EventDisplay_module.cc
+      Filters/src/TrkPatRecFilter_module.cc
+      KalmanTests/src/CompareFits_module.cc
+      KalmanTests/src/ReadKalFits_module.cc
+      KalmanTests/src/Reflect_module.cc
+      ParticleID/src/ParticleID_module.cc
+      Sandbox/src/ReadTracerProductCollection_module.cc
+      TrackCaloMatching/src/CaloMatching_module.cc
+      TrackCaloMatching/src/ReadExtrapol_module.cc
+      TrackCaloMatching/src/TrkExtrapol_module.cc
+      TrkExt/src/TrkExt_module.cc
+
+   One other change: remove unnecessary includs related to KalReps:
+      Filters/src/InflightPionsHits_module.cc
+
 1) April 14, 2014 --- knoepfel
 
    a) Improvements to ProtonPulseRandPDF class.  Explicit out-of-time
