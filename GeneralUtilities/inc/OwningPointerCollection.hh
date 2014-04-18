@@ -10,9 +10,9 @@
 //
 // The original use is for BaBar tracks.
 //
-// $Id: OwningPointerCollection.hh,v 1.8 2013/03/26 23:29:52 kutschke Exp $
+// $Id: OwningPointerCollection.hh,v 1.9 2014/04/18 16:39:30 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/03/26 23:29:52 $
+// $Date: 2014/04/18 16:39:30 $
 //
 // Original author Rob Kutschke
 //
@@ -25,7 +25,9 @@
 //
 
 #include <vector>
-#include <stdexcept>
+#include <memory>
+
+#include "art/Persistency/Common/detail/maybeCastObj.h"
 
 namespace mu2e {
 
@@ -45,13 +47,13 @@ namespace mu2e {
     }
 
     // Caller transfers ownership of the pointees to us.
-    explicit OwningPointerCollection( std::vector<T const*>& v ):
+    explicit OwningPointerCollection( std::vector<value_type>& v ):
       v_(v){
     }
 
     // We own the pointees so delete them when our destructor is called.
     ~OwningPointerCollection(){
-      for( typename std::vector<T const *>::iterator i=v_.begin();
+      for( typename std::vector<value_type>::iterator i=v_.begin();
            i!=v_.end(); ++i ){
         delete *i;
       }
@@ -79,15 +81,15 @@ namespace mu2e {
       v_.push_back(t);
     }
 
-    void push_back( T const* t){
+    void push_back( value_type t){
       v_.push_back(t);
     }
 
-    typename std::vector<const T*>::const_iterator begin() const{
+    typename std::vector<value_type>::const_iterator begin() const{
       return v_.begin();
     }
 
-    typename std::vector<const T*>::const_iterator end() const{
+    typename std::vector<value_type>::const_iterator end() const{
       return v_.end();
     }
 
@@ -105,13 +107,14 @@ namespace mu2e {
     }
 
     // Accessors: this container retains ownership of the pointees.
-    size_t   size()                    const { return  v_.size(); }
-    T const* operator[](std::size_t i) const { return  v_.at(i);  }
-    T const* at        (std::size_t i) const { return  v_.at(i);  }
-    T const* get       (std::size_t i) const { return  v_.at(i);  }
+    size_t     size()                    const { return   v_.size(); }
+    T const&   operator[](std::size_t i) const { return  *v_.at(i);  }
+    T const&   at        (std::size_t i) const { return  *v_.at(i);  }
+    value_type get       (std::size_t i) const { return   v_.at(i);  }
+    value_type operator()(std::size_t i) const { return   v_.at(i); }
 
     // const access to the underlying container.
-    std::vector<T const *> const& getAll(){ return v_; }
+    std::vector<value_type> const& getAll(){ return v_; }
 
   private:
 
@@ -121,10 +124,106 @@ namespace mu2e {
     OwningPointerCollection& operator=( OwningPointerCollection const& );
 
     // Owning pointers to the objects.
-    std::vector<const T*> v_;
+    std::vector<value_type> v_;
 
   };
 
 } // namespace mu2e
+
+
+
+// Various template specializations needed to make an art::Ptr<T> into an OwningPointerCollection<T>
+// work.
+//
+// ItemGetter          - return a bare pointer to an requested by giving its index.
+// has_setPtr          - do specializations exists for setPtr and getElementAddresses
+// setPtr              - return a bare pointer to an requested by giving its index.
+// getElementAddresses - return a vector of bare pointers to a vector of elements requested by index.
+//
+#ifndef __GCCXML__
+
+#include "art/Persistency/Common/Ptr.h"
+
+namespace art {
+  namespace detail {
+    template <typename T>
+    class ItemGetter<T, mu2e::OwningPointerCollection<T> >;
+  }
+  template <class T>
+  struct has_setPtr<mu2e::OwningPointerCollection<T> >;
+}
+
+namespace mu2e {
+  template <class T>
+  void
+  setPtr(OwningPointerCollection<T> const & coll,
+         const std::type_info & iToType,
+         unsigned long iIndex,
+         void const *& oPtr);
+
+  template <typename T>
+  void
+  getElementAddresses(OwningPointerCollection<T> const & obj,
+                      const std::type_info & iToType,
+                      const std::vector<unsigned long>& iIndices,
+                      std::vector<void const *>& oPtr);
+
+}
+
+template <typename T>
+class art::detail::ItemGetter<T, mu2e::OwningPointerCollection<T> > {
+public:
+  T const * operator()(mu2e::OwningPointerCollection<T> const * product,
+                       typename art::Ptr<T>::key_type iKey) const;
+};
+
+template <typename T>
+inline
+T const *
+art::detail::ItemGetter<T, mu2e::OwningPointerCollection<T> >::
+operator()(mu2e::OwningPointerCollection<T> const * product,
+           typename art::Ptr<T>::key_type iKey) const
+{
+  assert(product != 0);
+  std::size_t i(iKey);
+  return product->get(i);
+}
+
+namespace art {
+  template <class T>
+    struct has_setPtr<mu2e::OwningPointerCollection<T> >
+  {
+    static bool const value = true;
+  };
+}
+
+namespace mu2e {
+  template <class T>
+  void
+  setPtr(OwningPointerCollection<T> const & coll,
+         const std::type_info & iToType,
+         unsigned long iIndex,
+         void const *& oPtr)
+  {
+    oPtr = art::detail::maybeCastObj(coll.get(iIndex),iToType);
+  }
+
+  template <typename T>
+  void
+  getElementAddresses(OwningPointerCollection<T> const & obj,
+                      const std::type_info & iToType,
+                      const std::vector<unsigned long>& iIndices,
+                      std::vector<void const *>& oPtr)
+  {
+    oPtr.reserve(iIndices.size());
+    for ( auto i : iIndices ){
+      oPtr.push_back(art::detail::maybeCastObj(obj.get(i),iToType));
+    }
+
+  }
+
+}
+
+#endif // __GCCXML__
 
 #endif /* GeneralUtilities_OwningPointerCollection_hh */
