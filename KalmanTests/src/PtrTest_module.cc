@@ -2,9 +2,9 @@
 // Example of how to read a KalRepCollection and create a matching KalRepPtrCollection.
 // This can be used as a model for writing a module that merges two KalRepCollections.
 //
-// $Id: PtrTest_module.cc,v 1.1 2014/04/18 16:55:36 kutschke Exp $
+// $Id: PtrTest_module.cc,v 1.2 2014/04/18 20:17:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2014/04/18 16:55:36 $
+// $Date: 2014/04/18 20:17:03 $
 //
 // Original author Rob Kutschke
 //
@@ -60,10 +60,10 @@ namespace mu2e {
 }  // end namespace mu2e
 
 mu2e::PtrTest::PtrTest(fhicl::ParameterSet const& pset):
-  _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
-  _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
+  _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
+  _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
   _instanceName( _fdir.name() + _tpart.name()),
-  _inputTag( pset.get<string>("fitterModuleLabel"), _instanceName)
+  _inputTag( pset.get<string>("inputModuleLabel"), _instanceName)
 {
   produces<KalRepPtrCollection>(_instanceName);
 }

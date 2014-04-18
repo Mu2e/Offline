@@ -1,9 +1,9 @@
 //
 // Example of accessing fitted tracks via a KalRepPtrCollection.
 //
-// $Id: ReadPtr_module.cc,v 1.1 2014/04/18 16:55:36 kutschke Exp $
+// $Id: ReadPtr_module.cc,v 1.2 2014/04/18 20:17:03 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2014/04/18 16:55:36 $
+// $Date: 2014/04/18 20:17:03 $
 //
 // Original author Rob Kutschke
 //
@@ -68,10 +68,10 @@ namespace mu2e {
 
 mu2e::ReadPtr::ReadPtr(fhicl::ParameterSet const& pset):
   EDAnalyzer(pset),
-  _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
-  _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
+  _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
+  _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
   _instanceName( _fdir.name() + _tpart.name()),
-  _inputTag( pset.get<string>("fitterModuleLabel"), _instanceName)
+  _inputTag( pset.get<string>("inputModuleLabel"), _instanceName)
 {}
 
 void mu2e::ReadPtr::beginJob(){
