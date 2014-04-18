@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.71 2014/03/02 21:30:56 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/03/02 21:30:56 $
+// $Id: DataInterface.cc,v 1.72 2014/04/18 16:46:08 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/04/18 16:46:08 $
 //
 
 #include "DataInterface.h"
@@ -1180,7 +1180,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
     for(unsigned int i=0; i<kalRepHits->size(); i++)
     {
-      const KalRep &particle = *kalRepHits->at(i);
+      const KalRep &particle = kalRepHits->at(i);
       const TrkHotList* hots = particle.hotList();
       if(hots!=nullptr)
       {
@@ -1458,7 +1458,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     const mu2e::KalRepCollection *kalReps=kalRepCollectionVector[i];
     for(unsigned int j=0; j<kalReps->size(); j++)
     {
-      KalRep const* kalrep = kalReps->at(j);
+      KalRep const* kalrep = kalReps->get(j);
       double t0=kalrep->t0().t0();
       {
         int trackclass=trackInfos[i].classID;

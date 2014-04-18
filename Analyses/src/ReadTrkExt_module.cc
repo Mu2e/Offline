@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadTrkExt_module.cc,v 1.8 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
+// $Id: ReadTrkExt_module.cc,v 1.9 2014/04/18 16:43:44 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/04/18 16:43:44 $
 //
 // Original author MyeongJae Lee
 //
@@ -188,7 +188,7 @@ namespace mu2e {
       for ( size_t i=0; i< trks.size(); ++i ){
         _trkid = i;
         if (_recordKalFit) {
-          KalRep const* krep = trks[i];
+          KalRep const* krep = trks.get(i);
           if ( !krep ) {
             throw cet::exception("DATA")
               <<"ReadTrkExt Error : krep object not exist" << endl;

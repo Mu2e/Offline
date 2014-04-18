@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: MergePatRec_module.cc,v 1.4 2014/04/03 23:18:49 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/04/03 23:18:49 $
+// $Id: MergePatRec_module.cc,v 1.5 2014/04/18 16:45:53 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2014/04/18 16:45:53 $
 // takes inputs from two track finding algorithms, produces one track collection 
 // on output to be used for analysis
 ///////////////////////////////////////////////////////////////////////////////
@@ -114,12 +114,12 @@ namespace mu2e {
     AlgorithmID   alg_id;
 
     for (int i1=0; i1<ntpr; i1++) {
-      tpr     = (KalRep*) list_of_kreps_tpr->at(i1);
+      tpr     = (KalRep*) list_of_kreps_tpr->get(i1);
       tpr_mom = tpr->momentum();
       mask    = 1 << AlgorithmID::TrkPatRecBit;
 
       for (int i2=0; i2<ncpr; i2++) {
-	cpr = (KalRep*) list_of_kreps_cpr->at(i2);
+	cpr = (KalRep*) list_of_kreps_cpr->get(i2);
 	cpr_mom = cpr->momentum();
 //-----------------------------------------------------------------------------
 // primitive check if this is the same track - require delta(p) less than 5 MeV/c
@@ -160,7 +160,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     for (int i=0; i<ncpr; i++) {
       if (cpr_flag[i] == 1) {
-	cpr = (KalRep*) list_of_kreps_cpr->at(i);
+	cpr = (KalRep*) list_of_kreps_cpr->get(i);
 	new_trk = cpr->clone();
 	tracks->push_back(new_trk);
 

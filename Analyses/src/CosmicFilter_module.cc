@@ -106,7 +106,7 @@ namespace mu2e {
 
     n_good_tracks = 0;
     for (int i=0; i<fNTracks; i++) {
-      trk = (*kreps)[i];
+      trk = kreps->get(i);
 
       d0 = trk->helix(0).d0();
       z0 = trk->helix(0).z0();

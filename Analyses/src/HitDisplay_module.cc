@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // A half-interactive 2D event display. 
 //
-// $Id: HitDisplay_module.cc,v 1.22 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
+// $Id: HitDisplay_module.cc,v 1.23 2014/04/18 16:43:44 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/04/18 16:43:44 $
 //
 // Contact person:  Pavel Murat, Gianantonio Pezzulo
 //
@@ -704,7 +704,7 @@ namespace mu2e {
     if (fNTracks[0] > 0) {
       printKalRep(0,"banner");
       for (int i=0; i<fNTracks[0]; i++ ) {
-	trk = (*fDem)[i];
+	trk = fDem->get(i);
 	printf(" %2i dem ",i);
 	printKalRep(trk,opt);
       }

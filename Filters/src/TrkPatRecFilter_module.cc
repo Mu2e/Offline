@@ -52,7 +52,7 @@ namespace mu2e
       {
         for(unsigned int j=0; j<kalReps->size(); j++)
         {
-          KalRep const* kalrep = kalReps->at(j);
+          KalRep const* kalrep = kalReps->get(j);
           if(kalrep!=NULL)
           {
             double fltLMin=kalrep->startValidRange();
