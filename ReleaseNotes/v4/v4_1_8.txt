@@ -8,6 +8,9 @@
    See Mu2e-doc-4074 for the high level details.  Note that there is
    a breaking change to OwningPointerCollection.hh
 
+   There are end-user instructions below; this includes a section on
+   how to fix your code to deal with the breaking change.
+
    New files:
      KalmanTests/inc/KalRepPtrCollection.hh
         - the new data product
@@ -48,23 +51,50 @@
    One other change: remove unnecessary includs related to KalReps:
       Filters/src/InflightPionsHits_module.cc
 
-   Some example fcl fragments:
+   End user instructions.
 
-    # To run a producer module that reads a KalRepCollection and makes a KalRepPtrCollection
-     physics.producers.ptrTest : {
-       module_type       : PtrTest
-       fitterModuleLabel : TPRDownstreameMinus
-       fitparticle       : 11
-       FitDirection      :  0
-     }
+   1) Both TrkPatRec and CalPatRec now produce both a KalRepCollection
+      and a KalRepPtr collection.  There is an example of how to read
+      a KalRepPtr collection; the module source is:
 
-    # To read KalReps via a KalRepPtrCollection
-    physics.analyzers.readPtr : {
-      module_type       : ReadPtr
-      fitterModuleLabel : ptrTest
-      fitparticle       : 11
-      FitDirection      :  0
-    }
+         KalmanTests/src/ReadPtr_module.cc
+
+       Example fcl to configure it:
+
+       physics.analyzers.readKalUsingPtr : {
+          module_type      : ReadPtr
+          inputModuleLabel : TPRDownstreameMinus
+          fitparticle      : 11                   // e_minus
+          fitdirection     :  0                   // downstream
+       }
+
+       where moduleLabel is the label of the module that created the KalRepPtrCollection
+
+   2) There is also an example of how to read a KalRepCollection and make a
+      KalRepPtrCollection..   This should serve as a model of how to save the
+      results from a merge module.  The module source is at:
+
+         KalmanTests/src/PtrTest_module.cc
+
+      Example fcl to configure it:
+
+        physics.producers.ptrTest : {
+          module_type      : PtrTest
+          inputModuleLabel : TPRDownstreameMinus
+          fitparticle      : 11                   // e_minus
+          fitdirection     :  0                   // downstream
+        }
+
+    3) If you have private code that uses KalRepCollection, you may need to
+       make a few changes.  There are three accessor member functions:
+
+       T const& operator[](size_t) const;
+       T const& at(size_t) const;
+       T cosnt* get(size_t) const;
+
+      The first two now have a different return type than before: previously
+      they returned a pointer but now they return a reference.  The last member 
+      function is unchanged.
 
 1) April 14, 2014 --- knoepfel
 
