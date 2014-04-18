@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.7 2014/04/08 21:56:33 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/04/08 21:56:33 $
+// $Id: CalPatRec_module.cc,v 1.8 2014/04/18 16:41:56 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2014/04/18 16:41:56 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -43,6 +43,7 @@
 #include "TrkBase/TrkPoca.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "CalPatRec/inc/HelixFitHack.hh"
@@ -276,6 +277,7 @@ namespace mu2e {
 					// and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();
     produces<KalRepCollection>      (_iname);
+    produces<KalRepPtrCollection>   (_iname);
     produces<StrawHitFlagCollection>(_iname);
     produces<CalTimePeakCollection> (_iname);
 
@@ -392,11 +394,14 @@ namespace mu2e {
     _cutflow->Fill(0.0);
 					// create output
     _tpeaks = new CalTimePeakCollection;
-    unique_ptr<KalRepCollection>       tracks(new KalRepCollection     );
+    unique_ptr<KalRepCollection>       tracks(new KalRepCollection      );
+    unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection);
     unique_ptr<CalTimePeakCollection>  tpeaks(_tpeaks);
     
     _flags = new StrawHitFlagCollection();
     unique_ptr<StrawHitFlagCollection> flags (_flags);
+
+    art::ProductID kalRepsID(getProductID<KalRepCollection>(event,_iname));
 
 					// find the data
     if (!findData(event)) {
@@ -561,6 +566,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	krep = kalfit.stealTrack();
 	tracks->push_back(krep);
+        int index = tracks->size()-1;
+        trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	tp->SetCprIndex(tracks->size());
       } 
       else {
@@ -587,9 +594,10 @@ namespace mu2e {
   END:;
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     _payloadSaver.put(*tracks, tracksID, event);
-    event.put(std::move(tracks),_iname);
-    event.put(std::move(flags ),_iname);
-    event.put(std::move(tpeaks),_iname);
+    event.put(std::move(tracks),   _iname);
+    event.put(std::move(trackPtrs),_iname);
+    event.put(std::move(flags ),   _iname);
+    event.put(std::move(tpeaks),   _iname);
   }
 
 //-----------------------------------------------------------------------------

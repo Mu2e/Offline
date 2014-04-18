@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.71 2014/04/08 04:25:10 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/04/08 04:25:10 $
+// $Id: TrkPatRec_module.cc,v 1.72 2014/04/18 16:41:56 kutschke Exp $
+// $Author: kutschke $ 
+// $Date: 2014/04/18 16:41:56 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -34,6 +34,7 @@
 #include "KalmanTests/inc/KalFit.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "TrkPatRec/inc/HelixFit.hh"
@@ -231,6 +232,7 @@ namespace mu2e
     // tag the data product instance by the direction and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();
     produces<KalRepCollection>(_iname);
+    produces<KalRepPtrCollection>(_iname);
     produces<KalRepPayloadCollection>();
     produces<StrawHitFlagCollection>(_iname);
     // set # bins for time spectrum plot
@@ -255,7 +257,9 @@ namespace mu2e
     _eventid = event.event();
     _cutflow->Fill(0.0);
     // create output
-    unique_ptr<KalRepCollection> tracks(new KalRepCollection );
+    unique_ptr<KalRepCollection>    tracks(new KalRepCollection );
+    unique_ptr<KalRepPtrCollection> trackPtrs(new KalRepPtrCollection );
+    art::ProductID kalRepsID(getProductID<KalRepCollection>(event,_iname));
     // event printout
     _iev=event.id().event();
     if((_iev%_printfreq)==0)cout<<"TrkPatRec: event="<<_iev<<endl;
@@ -363,6 +367,8 @@ namespace mu2e
 	}
 	// save successful kalman fits in the event
 	tracks->push_back( kalfit.stealTrack() );
+        int index = tracks->size()-1;
+        trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
       } else
 	kalfit.deleteTrack();
       // cleanup the seed fit
@@ -378,6 +384,7 @@ namespace mu2e
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     _payloadSaver.put(*tracks, tracksID, event);
     event.put(move(tracks),_iname);
+    event.put(move(trackPtrs),_iname);
     event.put(move(flags),_iname);
   }
 
