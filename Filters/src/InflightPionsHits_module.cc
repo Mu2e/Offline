@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: InflightPionsHits_module.cc,v 1.1 2014/02/27 23:18:22 ejbarnes Exp $
-// $Author: ejbarnes $
-// $Date: 2014/02/27 23:18:22 $
+// $Id: InflightPionsHits_module.cc,v 1.2 2014/04/18 16:47:54 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/04/18 16:47:54 $
 //
 // Contact person Rob Kutschke.
 //
@@ -31,7 +31,6 @@
 
 // BaBar includes
 #include "BaBar/BaBar.hh"
-#include "KalmanTrack/KalRep.hh"
 #include "TrkBase/TrkParticle.hh"
 
 // mu2e tracking
@@ -43,9 +42,6 @@
 // C++ includes
 #include <iostream>
 
-// This is fragile and needs to be last until CLHEP is
-// properly qualified and included in the BaBar classes.
-#include "KalmanTests/inc/KalRepCollection.hh"
 using namespace std;
 
 namespace mu2e {
