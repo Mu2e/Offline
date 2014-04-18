@@ -48,6 +48,24 @@
    One other change: remove unnecessary includs related to KalReps:
       Filters/src/InflightPionsHits_module.cc
 
+   Some example fcl fragments:
+
+    # To run a producer module that reads a KalRepCollection and makes a KalRepPtrCollection
+     physics.producers.ptrTest : {
+       module_type       : PtrTest
+       fitterModuleLabel : TPRDownstreameMinus
+       fitparticle       : 11
+       FitDirection      :  0
+     }
+
+    # To read KalReps via a KalRepPtrCollection
+    physics.analyzers.readPtr : {
+      module_type       : ReadPtr
+      fitterModuleLabel : ptrTest
+      fitparticle       : 11
+      FitDirection      :  0
+    }
+
 1) April 14, 2014 --- knoepfel
 
    a) Improvements to ProtonPulseRandPDF class.  Explicit out-of-time
