@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.9 2013/10/21 21:01:23 kutschke Exp $
+// $Id: Reflect_module.cc,v 1.10 2014/04/18 16:54:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/10/21 21:01:23 $
+// $Date: 2014/04/18 16:54:59 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -201,12 +201,12 @@ namespace mu2e {
       }
 // loop over pairs, and see if any match.
       for ( size_t iue=0; iue < utrks.size(); ++iue ){
-	KalRep const* ukrep = utrks[iue];
+	KalRep const* ukrep = utrks.get(iue);
 	if ( ukrep != 0 && ukrep->fitCurrent() ){
 	  FitInfo uinfo;
 	  fillFitInfo(ukrep,uinfo);
 	  for ( size_t ide=0; ide < dtrks.size(); ++ide ){
-	    KalRep const* dkrep = dtrks[ide];
+	    KalRep const* dkrep = dtrks.get(ide);
 	    if ( dkrep != 0 && dkrep->fitCurrent() ){
 	      FitInfo dinfo;
 	      fillFitInfo(dkrep,dinfo);

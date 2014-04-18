@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.14 2014/03/04 14:36:18 murat Exp $
-// $Author: murat $
-// $Date: 2014/03/04 14:36:18 $
+// $Id: ReadExtrapol_module.cc,v 1.15 2014/04/18 16:54:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/04/18 16:54:59 $
 //
 // Original author G. Pezzullo
 //
@@ -1220,7 +1220,7 @@ namespace mu2e {
 
     for ( size_t i=0; i< trks.size(); ++i ){
 
-      KalRep const* trep = trks[i];
+      KalRep const* trep = trks.get(i);
       if ( !trep ) continue;
 
       if(!findKalRep(trjExtrapols, trep)){

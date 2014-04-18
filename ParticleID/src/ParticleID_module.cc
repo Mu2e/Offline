@@ -297,7 +297,7 @@ int findlowhist(float d){
 
 
      _trkid = i;
-     KalRep const& krep   = *(trks.at(i));
+     KalRep const& krep   = trks.at(i);
 
      double firsthitfltlen = krep.firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
      double lasthitfltlen = krep.lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;

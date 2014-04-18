@@ -1,8 +1,8 @@
 //_p// compare 2 particle fits of the same track
 //
-// $Id: CompareFits_module.cc,v 1.3 2013/10/21 21:01:23 kutschke Exp $
+// $Id: CompareFits_module.cc,v 1.4 2014/04/18 16:54:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/10/21 21:01:23 $
+// $Date: 2014/04/18 16:54:59 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -168,12 +168,12 @@ namespace mu2e {
     KalRepCollection const& strks = *strksHandle;
 // loop over pairs, and see if any match.
     for ( size_t ip=0; ip < ptrks.size(); ++ip ){
-      KalRep const* pkrep = ptrks[ip];
+      KalRep const* pkrep = ptrks.get(ip);
       if ( pkrep != 0 && pkrep->fitCurrent() ){
 	FitInfo pinfo;
 	fillFitInfo(pkrep,pinfo);
 	for ( size_t id=0; id < strks.size(); ++id ){
-	  KalRep const* skrep = strks[id];
+	  KalRep const* skrep = strks.get(id);
 	  if ( skrep != 0 && skrep->fitCurrent() ){
 	    FitInfo sinfo;
 	    fillFitInfo(skrep,sinfo);

@@ -1,9 +1,9 @@
 //
 // Plugin to readback the TracerProductCollection
 //
-// $Id: ReadTracerProductCollection_module.cc,v 1.5 2013/10/21 21:01:23 kutschke Exp $
+// $Id: ReadTracerProductCollection_module.cc,v 1.6 2014/04/18 16:54:59 kutschke Exp $
 // $Author: kutschke $
-// $Date: 2013/10/21 21:01:23 $
+// $Date: 2014/04/18 16:54:59 $
 //
 // Original author Rob Kutschke.
 //
@@ -52,7 +52,7 @@ namespace mu2e {
     TracerProductCollection const& prod = *tpHandle;
 
     for ( size_t i=0; i<prod.size(); ++i){
-      TracerProduct const& p = *(prod.at(i));
+      TracerProduct const& p = prod.at(i);
       mf::LogVerbatim("Tracing") << "      ReadVectorTracerProduct00:analyze: " << p << endl;
     }
 

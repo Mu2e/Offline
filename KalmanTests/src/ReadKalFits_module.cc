@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.24 2014/02/13 18:52:15 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/02/13 18:52:15 $
+// $Id: ReadKalFits_module.cc,v 1.25 2014/04/18 16:54:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/04/18 16:54:59 $
 //
 // Original author Rob Kutschke
 //
@@ -169,7 +169,7 @@ namespace mu2e {
 
     for ( size_t i=0; i< trks.size(); ++i ){
       _trkid = i;
-      KalRep const* krep = trks[i];
+      KalRep const* krep = trks.get(i);
       if ( !krep ) continue;
 
       _kfitmc.kalDiag(krep,false);

@@ -5,9 +5,9 @@
 //  G4 uses G4World coordinate
 //  See the note at TrkExtTraj.hh for the meaning of point information, especially when volume changing. 
 //
-//  $Id: TrkExt_module.cc,v 1.9 2013/04/02 01:36:11 mjlee Exp $
-//  $Author: mjlee $
-//  $Date: 2013/04/02 01:36:11 $
+//  $Id: TrkExt_module.cc,v 1.10 2014/04/18 16:54:59 kutschke Exp $
+//  $Author: kutschke $
+//  $Date: 2014/04/18 16:54:59 $
 //
 //  Original author MyeongJae Lee
 //
@@ -412,7 +412,7 @@ namespace mu2e {
       for ( size_t i=0; i< trks.size(); ++i ){
         _trkPatRecInstanceName.addTrack(instanceIter);
         _trkid = i;
-        KalRep const& trk   = *(trks.at(i));
+        KalRep const& trk   = trks.at(i);
         Hep3Vector xstart, pstart, xstop, pstop;
         HepMatrix covstart(6,6,0);
         HepMatrix covstop(6,6,0);

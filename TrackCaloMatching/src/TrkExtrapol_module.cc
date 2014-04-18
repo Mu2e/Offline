@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.16 2014/03/04 01:21:43 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2014/03/04 01:21:43 $
+// $Id: TrkExtrapol_module.cc,v 1.17 2014/04/18 16:54:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/04/18 16:54:59 $
 //
 // Original author G. Pezzullo
 //
@@ -310,7 +310,7 @@ namespace mu2e {
 
     for ( size_t itrk=0; itrk< trks.size(); ++itrk ){
 
-      KalRep const* trep = trks[itrk];
+      KalRep const* trep = trks.get(itrk);
       if ( !trep ) continue;
       TrkDifTraj const& traj = trep->traj();
       double pos = 0.0;

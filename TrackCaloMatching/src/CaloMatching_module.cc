@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.21 2014/03/04 01:21:43 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2014/03/04 01:21:43 $
+// $Id: CaloMatching_module.cc,v 1.22 2014/04/18 16:54:59 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/04/18 16:54:59 $
 //
 // Original author G. Pezzullo
 //
@@ -525,7 +525,7 @@ namespace mu2e {
 // 'krep0' is the base address used to calculate index of a track based on its pointer
 //-----------------------------------------------------------------------------
     if (ntracks == 0)                                         goto END;
-    krep0   = trks.at(0);
+    krep0   = trks.get(0);
 
     double chi2_best[100][4];
     int    iex_best [100][4];
