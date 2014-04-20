@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.27 2013/08/27 17:10:28 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.28 2014/04/20 10:57:09 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2013/08/27 17:10:28 $
+// $Date: 2014/04/20 10:57:09 $
 //
 // Original author Ralf Ehrlich
 //
@@ -130,7 +130,7 @@ namespace mu2e_eventdisplay
     TText               *_legendText[30], *_legendParticleGroup[30], *_legendParticleText[30];
     TBox                *_legendBox[30];
     TPolyLine           *_legendParticleLine[30];
-    std::string         _g4ModuleLabel;
+    std::string         _g4ModuleLabel, _physicalVolumesMultiLabel;
 
     ClassDef(EventDisplayFrame,0);
   };

@@ -45,7 +45,8 @@ namespace mu2e_eventdisplay
 
 EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) : 
   TGMainFrame(p, w, h),
-  _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run"))
+  _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
+  _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV"))
 {
   SetCleanup(kDeepCleanup);
   Move(20,20);
@@ -115,7 +116,8 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(trackLabel, lh1);
   _subFrame->AddFrame(trackBox, lh1);
 
-  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, trackBox, _g4ModuleLabel));
+  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, trackBox, 
+                                                                          _g4ModuleLabel, _physicalVolumesMultiLabel));
 
   _supportStructuresButton = new TGCheckButton(_subFrame,"Show Tracker Supports, Calo Disks, Target",32);
   _supportStructuresButton->SetState(kButtonDown);

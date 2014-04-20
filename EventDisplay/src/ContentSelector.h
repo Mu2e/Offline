@@ -1,9 +1,9 @@
 //
 // Class which manages the combo boxes and list box in the event display frame. It is able to returns the data objects associated with the selected box entries.
 //
-// $Id: ContentSelector.h,v 1.17 2014/03/02 21:30:56 ehrlich Exp $
+// $Id: ContentSelector.h,v 1.18 2014/04/20 10:57:09 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2014/03/02 21:30:56 $
+// $Date: 2014/04/20 10:57:09 $
 //
 // Original author Ralf Ehrlich
 //
@@ -14,6 +14,7 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -61,12 +62,14 @@ class ContentSelector
   std::vector<art::Handle<mu2e::TrkExtTrajCollection> > _trkExtTrajVector;
 #endif
   art::Handle<mu2e::PhysicalVolumeInfoCollection> _physicalVolumes;
-  bool _hasPhysicalVolumes;
+  art::Handle<mu2e::PhysicalVolumeInfoMultiCollection> _physicalVolumesMulti;
+  bool _hasPhysicalVolumes, _hasPhysicalVolumesMulti;
 
   TGComboBox  *_hitBox;
   TGComboBox  *_caloHitBox;
   TGListBox   *_trackBox;
   std::string _g4ModuleLabel;
+  std::string _physicalVolumesMultiLabel;
 
   public:
   struct trackInfoStruct
@@ -97,7 +100,8 @@ class ContentSelector
                                                        std::vector<entryStruct> &newEntries, int classID);
 
   public:
-  ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel);
+  ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, 
+                  std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel);
   void firstLoop();
   void setAvailableCollections(const art::Event& event);
 
@@ -110,6 +114,7 @@ class ContentSelector
   template<typename CollectionType> const CollectionType* getSelectedCaloHitCollection() const;
   template<typename CollectionType> std::vector<const CollectionType*> getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const;
   const mu2e::PhysicalVolumeInfoCollection *getPhysicalVolumeInfoCollection() const;
+  const mu2e::PhysicalVolumeInfoMultiCollection *getPhysicalVolumeInfoMultiCollection() const;
   const mu2e::MCTrajectoryCollection *getMCTrajectoryCollection(const trackInfoStruct &t) const;
   const mu2e::PointTrajectoryCollection *getPointTrajectoryCollection(const trackInfoStruct &t) const;
 

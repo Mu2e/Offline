@@ -1,15 +1,17 @@
 #include "EventDisplay/src/ContentSelector.h"
+#include "art/Framework/Principal/SubRun.h"
 
 namespace mu2e_eventdisplay
 {
 
-ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel)
+ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel)
   :
   _hasPhysicalVolumes(false),
   _hitBox(hitBox),
   _caloHitBox(caloHitBox),
   _trackBox(trackBox),
-  _g4ModuleLabel(g4ModuleLabel)
+  _g4ModuleLabel(g4ModuleLabel),
+  _physicalVolumesMultiLabel(physicalVolumesMultiLabel)
   {}
 
 void ContentSelector::firstLoop()  //This is useful for now, but may be changed later
@@ -161,6 +163,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
 
 //Other
   _hasPhysicalVolumes=event.getRun().getByLabel(_g4ModuleLabel, _physicalVolumes);
+  _hasPhysicalVolumesMulti=event.getSubRun().getByLabel(_physicalVolumesMultiLabel, _physicalVolumesMulti);
 }
 
 bool ContentSelector::getSelectedHitsName(std::string &className,
@@ -351,6 +354,12 @@ template std::vector<const mu2e::TrkExtTrajCollection*> ContentSelector::getSele
 const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfoCollection() const
 {
   if(_hasPhysicalVolumes) return(_physicalVolumes.product());
+  else return(nullptr);
+}
+
+const mu2e::PhysicalVolumeInfoMultiCollection* ContentSelector::getPhysicalVolumeInfoMultiCollection() const
+{
+  if(_hasPhysicalVolumesMulti) return(_physicalVolumesMulti.product());
   else return(nullptr);
 }
 

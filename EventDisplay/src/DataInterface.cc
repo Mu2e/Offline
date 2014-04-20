@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.72 2014/04/18 16:46:08 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:46:08 $
+// $Id: DataInterface.cc,v 1.73 2014/04/20 10:57:09 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2014/04/20 10:57:09 $
 //
 
 #include "DataInterface.h"
@@ -29,10 +29,12 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "HepPID/ParticleName.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -1376,6 +1378,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
   unsigned int physicalVolumeEntries=0;
   const mu2e::PhysicalVolumeInfoCollection *physicalVolumes=contentSelector->getPhysicalVolumeInfoCollection();
+  const mu2e::PhysicalVolumeInfoMultiCollection *physicalVolumesMulti=contentSelector->getPhysicalVolumeInfoMultiCollection();
   if(physicalVolumes!=nullptr)
   {
     physicalVolumeEntries=physicalVolumes->size();
@@ -1398,13 +1401,21 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       int trackclassindex=trackInfos[i].index;
       std::string particlecollection=trackInfos[i].entryText;
       std::string particlename=HepPID::particleName(particle.pdgId());
-      unsigned int startVolume=particle.startVolumeIndex();
-      unsigned int endVolume  =particle.endVolumeIndex();
       std::string startVolumeName="unknown volume";
       std::string endVolumeName="unknown volume";
-      if(startVolume<physicalVolumeEntries && startVolume>=0) startVolumeName=physicalVolumes->at(startVolume).name();
-      if(endVolume<physicalVolumeEntries && endVolume>=0) endVolumeName=physicalVolumes->at(endVolume).name();
-
+      if(physicalVolumes!=nullptr)
+      {
+        unsigned int startVolume=particle.startVolumeIndex();
+        unsigned int endVolume  =particle.endVolumeIndex();
+        if(startVolume<physicalVolumeEntries && startVolume>=0) startVolumeName=physicalVolumes->at(startVolume).name();
+        if(endVolume<physicalVolumeEntries && endVolume>=0) endVolumeName=physicalVolumes->at(endVolume).name();
+      }
+      else if(physicalVolumesMulti!=nullptr)
+      {
+        mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(*physicalVolumesMulti);
+        startVolumeName=volumeMultiHelper.startVolume(particle).name();
+        endVolumeName=volumeMultiHelper.endVolume(particle).name();
+      }
       double x1=particle.startPosition().x() - _detSysOrigin.x();
       double y1=particle.startPosition().y() - _detSysOrigin.y();
       double z1=particle.startPosition().z() - _detSysOrigin.z();
