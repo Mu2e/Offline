@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.hh,v 1.6 2014/04/08 04:25:46 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/04/08 04:25:46 $
+// $Id: HelixFitHack.hh,v 1.7 2014/04/24 18:30:30 gianipez Exp $
+// $Author: gianipez $ 
+// $Date: 2014/04/24 18:30:30 $
 //
 #ifndef HelixFitHack_HH
 #define HelixFitHack_HH
@@ -172,7 +172,7 @@ namespace mu2e {
 
 					//2014-03-10 Gianipez and P. Murat introduced the following paramter to limit 
 					// the dfdz value in the pattern-recognition stage
-    double   _maxDfDz;
+    double   _maxDfDz, _minDfDz;
 
     //201-03-31 Gianipez added th following parameter for changing the value of the 
     // squared distance requed bewtween the strawhits and the theretical position
@@ -199,7 +199,11 @@ namespace mu2e {
 // cached value of radius and pitch sign: these depend on the particle type
 // and direction
 //-----------------------------------------------------------------------------
-    double _rmin, _rmax, _smin, _smax, _dfdzsign;
+    double    _rmin, _rmax, _smin, _smax, _dfdzsign;
+    TH1F*     _hDist;
+    double    _chi2nFindZ;
+    double    _eventToLook;
+
   public:
 					// parameter set should be passed in on construction
 
@@ -216,10 +220,6 @@ namespace mu2e {
     void helixParams (HelixFitHackResult const& helix, 
 		      CLHEP::HepVector&         pvec , 
 		      CLHEP::HepVector&         perr ) const;
-
-    TH1F*     _hDist;
-    double    _chi2nFindZ;
-    double    _eventToLook;
 
   protected:
 //-----------------------------------------------------------------------------

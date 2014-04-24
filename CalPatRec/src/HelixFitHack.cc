@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.cc,v 1.10 2014/04/08 04:25:46 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/04/08 04:25:46 $
+// $Id: HelixFitHack.cc,v 1.11 2014/04/24 18:30:30 gianipez Exp $
+// $Author: gianipez $ 
+// $Date: 2014/04/24 18:30:30 $
 //
 //
 // the following has to come before other BaBar includes
@@ -196,6 +196,7 @@ namespace mu2e
     _maxdz(pset.get<double>("maxdz",35.0)),
     _maxdot(pset.get<double>("maxdot",0.9)),
     _maxDfDz(pset.get<double>("maxDfDz",0.01)),
+    _minDfDz(pset.get<double>("minDfDz",5e-04)),
     _distPatRec(pset.get<double>("distPatRec",1600.0)),
     _rbias(pset.get<double>("radialBias",0.0)),
     _efac(pset.get<double>("ErrorFactor",1.0)),
@@ -1377,7 +1378,9 @@ namespace mu2e
     //2014-03-10 gianipez changed the values of the following tollerance
     // for X and Y distance to avoid delta electron for corrupting the pattern-reco
     //    double tollXmin(50.), tollYmin(50.);
-    double tollXmin(100.), tollYmin(100.);
+    //double tollXmin(100.), tollYmin(100.);
+    double tollXYdist(100.);//require a dist in the transverse plane > 10 cm
+    
 
     int goodPoint(-999);
     //2014-01-29 gianipez added the followign line
@@ -1386,6 +1389,7 @@ namespace mu2e
 
     double weight(0.0);
     double deltaZ(0.), deltaX(0.), deltaY(0.);
+    double distXY(0.0);
     bool removeTarget(true);
     bool isStored(false);
 
@@ -1444,6 +1448,7 @@ namespace mu2e
       //2014-03-10 Gianipez and Pasha set a limit on th dfdz value
       // still need to be optimized
       if(std::fabs(dfdz*double(j)) > _maxDfDz) break; //0.01) break;
+      if(std::fabs(dfdz*double(j)) < _minDfDz) break; //0.01) break;
       //now set the mode of dfdz to study
       dfdz = dfdz*double(j);
 
@@ -1476,10 +1481,13 @@ namespace mu2e
 	  if(!isStored){
 	    deltaY = std::fabs(p2.y() - xyzp[i]._pos.y());
 	    deltaX = std::fabs(p2.x() - xyzp[i]._pos.x());
+	    distXY = std::sqrt(deltaY*deltaY + deltaX*deltaX);
 	    if( ( deltaZ > tollMin ) &&
 		( deltaZ < tollMax ) &&
-		( deltaX > tollXmin) &&
-		( deltaY > tollYmin) ){
+		//		( deltaX > tollXmin) &&
+		//		( deltaY > tollYmin) ){
+		(distXY > tollXYdist)){
+
 	      goodPoint = i;
 	    }
 	  }
@@ -1488,12 +1496,17 @@ namespace mu2e
 	if(dist < distGoodPoint){
 	  chi2 += weight*(dist);
 	}
-      
-	if (countGoodPoints == 2 &&
+	// 2014-04-23     gianipez fixed a bug
+	if (countGoodPoints >= 2 &&
 	    removeTarget &&
 	    (goodPoint >=0) &&
 	    //	   (goodPoint != hack->fData[3]) ){
 	    (goodPoint != fLastIndex) ) {
+// 	if (countGoodPoints == 2 &&
+// 	    removeTarget &&
+// 	    (goodPoint >=0) &&
+// 	    //	   (goodPoint != hack->fData[3]) ){
+// 	    (goodPoint != fLastIndex) ) {
 
 	  removeTarget = false;
 	  countGoodPoints = 0;
@@ -1540,7 +1553,9 @@ namespace mu2e
  	    dfdz = (tanLambda/radius)*double(j);
  	    removeTarget = true;
  	    countGoodPoints = 0;
- 	  }
+ 	  }else{
+	    fLastIndex = goodPoint;
+	  }
 	  //------------------------------------------------------------//
 	}
       NEXT_POINT:;
@@ -1562,9 +1577,9 @@ namespace mu2e
 
 	  countGoodPoints_end = countGoodPoints;
 
-					//2014-01-29 gianipez added the following line
-
-	  if (goodPoint>=0) goodPoint_end = goodPoint;
+					//2014-04-23 gianipez added the following line
+	  if(fLastIndex>=0) goodPoint_end = fLastIndex;
+  //	  if (goodPoint>=0) goodPoint_end = goodPoint;
 
 	  chi2min    = chi2;
 	  x0_end     = p0.x();
@@ -1575,7 +1590,7 @@ namespace mu2e
 
 	  if (_debug > 0) {
 	    printf("[HelixFitHack:setGoodPoint] chi2min = %5.3f hackpoint = %d dfdz = %5.5f\n",   chi2,
-		   goodPoint,
+		   goodPoint_end,
 		   dfdz_end );
 	  }
 	}

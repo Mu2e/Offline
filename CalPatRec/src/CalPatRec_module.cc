@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.8 2014/04/18 16:41:56 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2014/04/18 16:41:56 $
+// $Id: CalPatRec_module.cc,v 1.9 2014/04/24 18:30:30 gianipez Exp $
+// $Author: gianipez $ 
+// $Date: 2014/04/24 18:30:30 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -277,7 +277,7 @@ namespace mu2e {
 					// and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();
     produces<KalRepCollection>      (_iname);
-    produces<KalRepPtrCollection>   (_iname);
+    //    produces<KalRepPtrCollection>   (_iname);
     produces<StrawHitFlagCollection>(_iname);
     produces<CalTimePeakCollection> (_iname);
 
@@ -595,7 +595,7 @@ namespace mu2e {
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     _payloadSaver.put(*tracks, tracksID, event);
     event.put(std::move(tracks),   _iname);
-    event.put(std::move(trackPtrs),_iname);
+    //    event.put(std::move(trackPtrs),_iname);
     event.put(std::move(flags ),   _iname);
     event.put(std::move(tpeaks),   _iname);
   }

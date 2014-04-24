@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec_display.fcl,v 1.6 2014/04/15 15:41:50 murat Exp $
+# $Id: calPatRec_display.fcl,v 1.7 2014/04/24 18:30:30 gianipez Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits
@@ -168,9 +168,9 @@ physics.producers.MakeCaloCluster.EclusterCut                    : 1.0  # MeV
 
 # physics.producers.CalPatRec.StrawHitCollectionLabel             : makeSH
 # physics.producers.CalPatRec.StrawHitPositionCollectionLabel     : MakeStrawHitPositions
-# physics.producers.CalPatRec.debugLevel                          : 1
-# physics.producers.CalPatRec.SeedFit.debugLevel                  : 1
-# physics.producers.CalPatRec.HelixFit.debugLevel                 : 1
+#physics.producers.CalPatRec.debugLevel                          : 1
+#physics.producers.CalPatRec.SeedFit.debugLevel                  : 1
+#physics.producers.CalPatRec.HelixFit.debugLevel                 : 1
 #------------------------------------------------------------------------------
 # analysis and event display
 #------------------------------------------------------------------------------
@@ -179,5 +179,8 @@ physics.producers.CaloMatching.fitterModuleLabel                : CalPatRec
 physics.producers.ParticleID.fitterModuleLabel                  : CalPatRec
 
 # physics.filters.MuHitDisplay.strawHitMakerModuleLabel           : makeSH
+# physics.filters.MuHitDisplay.generatorModuleLabel               : ""
+# hysics.filters.MuHitDisplay.g4ModuleLabel                      : ""
 physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel        : MakeStrawHitPositions
 physics.filters.MuHitDisplay.trkPatRecModuleLabel               : CalPatRec
+physics.filters.MuHitDisplay.useStereoHits                      : false

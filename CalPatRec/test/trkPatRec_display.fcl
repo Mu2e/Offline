@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: trkPatRec_display.fcl,v 1.1 2014/03/31 23:20:51 murat Exp $
+# $Id: trkPatRec_display.fcl,v 1.2 2014/04/24 18:30:30 gianipez Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits
@@ -14,7 +14,7 @@
 #include "murat/test/producers.fcl"
 
 #                             Give this process a name
-process_name : calPatRec
+process_name : trkPPatRec
 #------------------------------------------------------------------------------
 # Read events from a file (made by example 3)
 #------------------------------------------------------------------------------
