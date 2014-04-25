@@ -13,8 +13,6 @@
 
    Modified files:
      EventGenerator/src/FoilParticleGenerator.cc
-     EventGenerator/src/StoppedParticleIntConvGun_module.cc
-     EventGenerator/src/StoppedParticleRPCGun_module.cc
      HitMakers/src/GenerateProtonTimes_module.cc
      Mu2eUtilities/inc/BinnedSpectrum.hh
      Mu2eUtilities/inc/ProtonPulseRandPDF.hh
