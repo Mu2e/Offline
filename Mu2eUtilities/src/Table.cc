@@ -3,9 +3,9 @@
 // keys that are already given as a std::vector<double> object, or can
 // be created based on a given key range and resolution.
 //
-// $Id: Table.cc,v 1.1 2014/04/25 17:26:42 knoepfel Exp $
+// $Id: Table.cc,v 1.2 2014/04/25 17:44:13 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/04/25 17:26:42 $
+// $Date: 2014/04/25 17:44:13 $
 //
 // Original author: Kyle Knoepfel
 
@@ -26,7 +26,6 @@ namespace mu2e {
     // key ranges and values.
 
     Value<1> val{{ 0. }};
-    std::string suffix ("");
     if      ( key == rawTable_.begin()->first ) val.at(0) = rawTable_.begin()->second.at(0);
     else if ( key >  rawTable_.begin()->first && key <= std::prev( rawTable_.end() )->first ) {
       auto const& it1 = this->getLowerBoundRow( key );
@@ -41,10 +40,8 @@ namespace mu2e {
   template<> void Table<2>::interpolateShape( const std::vector<double>& keys, const double binCorr ) {
 
     TableVec<2> shape;
-    for ( const auto& k : keys ) {
-      std::cout << " Key: " << k << "   " << getValueAtKey( k, binCorr ).at(0) << std::endl;
+    for ( const auto& k : keys )
       shape.emplace_back( k, getValueAtKey( k, binCorr ) );
-    }
 
     this->replaceShape( shape );
 
