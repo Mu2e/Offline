@@ -5,9 +5,9 @@
 // Base class to allow generic access to all the classes that define
 // a momentum spectrum.
 //
-// $Id: BinnedSpectrum.hh,v 1.3 2013/09/22 22:28:58 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/09/22 22:28:58 $
+// $Id: BinnedSpectrum.hh,v 1.4 2014/04/25 17:26:42 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/04/25 17:26:42 $
 //
 // Original author Kyle Knoepfel 
 //                 
@@ -74,8 +74,8 @@ namespace mu2e {
       _spectrum.second.reserve(_nBins);
 
       for(const auto& row : inputs.rawTable()) {
-        _spectrum.first.emplace_back(row[0]);
-        _spectrum.second.emplace_back(row[1]);
+        _spectrum.first.emplace_back(row.first);
+        _spectrum.second.emplace_back(row.second.at(0));
       }
 
       assert(_nBins > 1);

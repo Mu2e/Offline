@@ -39,7 +39,7 @@ namespace mu2e {
 
   private:
     art::RandomNumberGenerator::base_engine_t& engine_;
-    std::string pulseType_;
+    fhicl::ParameterSet protonPset_;
     int  verbosityLevel_;
 
     typedef std::set<GenId::enum_type> GenIdSet;
@@ -48,55 +48,54 @@ namespace mu2e {
 
     std::unique_ptr<ProtonPulseRandPDF>  protonPulse_;
 
+    std::string listStream( const GenIdSet& vsList );
+
   };
 
   //================================================================
   GenerateProtonTimes::GenerateProtonTimes(fhicl::ParameterSet const& pset)
     : engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
-    , pulseType_(pset.get<std::string>("pulseType","default") )
+    , protonPset_( pset.get<fhicl::ParameterSet>("randPDFparameters", fhicl::ParameterSet() ) )
     , verbosityLevel_(pset.get<int>("verbosityLevel", 1)) 
   {
     produces<SimParticleTimeMap>();
 
     typedef std::vector<std::string> VS;
 
-    std::ostringstream osIgnored;
-
     const auto ig(pset.get<VS>("ignoredGenIds", VS{"cosmicToy", "cosmicDYB", "cosmic"}));
     for(const auto i: ig) {
       ignoredGenIds_.insert(GenId::findByName(i).id());
-      osIgnored<<i<<", ";
     }
 
-    std::ostringstream osApplied;
     const auto ia(pset.get<VS>("applyToGenIds", VS()));
     for(const auto i: ia) {
       applyToGenIds_.insert(GenId::findByName(i).id());
-      osApplied<<i<<", ";
     }
 
     if(!applyToGenIds_.empty() && !ignoredGenIds_.empty()) {
       throw cet::exception("BADCONFIG")
         <<"If applyToGenIds is set, ignoredGenIds should be empty.  Got: applyToGenIds = [ "
-        <<osApplied.str()<<" ], ignoredGenIds = [ "<<osIgnored.str()<<"]\n";
+        <<listStream( applyToGenIds_ )<<" ], ignoredGenIds = [ "<<listStream( ignoredGenIds_ )<<"]\n";
     }
 
-    if(verbosityLevel_ > 0) {
-      if(applyToGenIds_.empty()) {
-        mf::LogInfo("Info")<<"pulseType = "<<pulseType_<<", ignoring genIds [ "<<osIgnored.str()<<" ]\n";
-      }
-      else {
-        mf::LogInfo("Info")<<"pulseType = "<<pulseType_<<", applying to genIds [ "<<osApplied.str()<<" ]\n";
-      }
-    }
   }
 
   //================================================================
   void GenerateProtonTimes::beginRun(art::Run& run) {
-    protonPulse_.reset( new ProtonPulseRandPDF( engine_, pulseType_ ) );
+    protonPulse_.reset( new ProtonPulseRandPDF( engine_, protonPset_ ) );
+
+    if(verbosityLevel_ > 0) {
+      if(applyToGenIds_.empty()) {
+        mf::LogInfo("Info")<<"pulseType = "<<protonPulse_->pulseType() <<", ignoring genIds [ "<< listStream( ignoredGenIds_ ) <<" ]\n";
+      }                                                  
+      else {                                             
+        mf::LogInfo("Info")<<"pulseType = "<<protonPulse_->pulseType() <<", applying to genIds [ "<< listStream( applyToGenIds_ ) <<" ]\n";
+      }
+    }
 
     if ( verbosityLevel_ > 10 ) {
       std::ostringstream timeSpectrum;
+      std::cout << " Size of proton pulse: " << protonPulse_->getTimes().size() << std::endl;
       for ( std::size_t i(0) ; i < protonPulse_->getTimes().size(); i++ ) {
         timeSpectrum << "   POT time: " 
                      << protonPulse_->getTimes().at(i) 
@@ -143,7 +142,16 @@ namespace mu2e {
 
     event.put(std::move(res));
   } // end GenerateProtonTimes::produce.
-
+  
+  //================================================================
+  std::string GenerateProtonTimes::listStream( const GenIdSet& vsList ) {
+    std::ostringstream osList;
+    for(const auto i: vsList ) {
+      osList<<i<<", ";
+    }
+    return osList.str();
+  } 
+  
   //================================================================
 } // end namespace mu2e
 

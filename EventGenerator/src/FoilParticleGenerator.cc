@@ -35,6 +35,7 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 
 // Other external includes.
+#include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "cetlib/trim.h"
 
@@ -93,7 +94,7 @@ namespace mu2e {
     _randFoils ( engine, &(binnedFoilsVolume()[0]), _nfoils ),
     _randExpoFoils ( engine, &(weightedBinnedFoilsVolume()[0]), _nfoils ),
     _delayTime( engine, &(timePathDelay()[0]), nBinsForTimeDelayPDF ),
-    _pulseTime( engine ),
+    _pulseTime( engine, fhicl::ParameterSet() ),
     _PTtoSTdelay ( PTtoSTdelay ),
     _pPulseDelay ( pPulseDelay ),
     _pPulseShift ( pPulseShift ),

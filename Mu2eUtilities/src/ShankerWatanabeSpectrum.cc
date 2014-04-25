@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWatanabeSpectrum.cc,v 1.4 2013/08/01 12:42:46 knoepfel Exp $
+// $Id: ShankerWatanabeSpectrum.cc,v 1.5 2014/04/25 17:26:42 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/08/01 12:42:46 $
+// $Date: 2014/04/25 17:26:42 $
 //
 
 // Mu2e includes
@@ -31,7 +31,7 @@ using namespace std;
 namespace mu2e {
 
   ShankerWatanabeSpectrum::ShankerWatanabeSpectrum() :
-    _table ( loadTable<2>("ConditionsService/data/watanabe.tbl" ) )
+    _table ( loadTable<2,false>("ConditionsService/data/watanabe.tbl" ) )
   {
     _wanaEndPoint    = _table(0,0); 
     _wanaEndPointVal = _table(0,1);
@@ -94,12 +94,12 @@ namespace mu2e {
 
     double weight (0.);
 
-    const unsigned iRow = _table.findLowerBoundRow( E );
-    if ( iRow == _table.getNrows() ) return weight;
+    const unsigned iRow = _table.getLowerBoundRowIndex( E );
+    if ( iRow == 0 || iRow == _table.getNrows() ) return weight;
 
-    auto const & row        = _table.row( iRow   );
-    auto const & row_before = _table.row( iRow-1 );
-    auto const & row_after  = _table.row( iRow+1 );
+    auto const & row        = _table.getRow( iRow   );
+    auto const & row_before = _table.getRow( iRow-1 );
+    auto const & row_after  = _table.getRow( iRow+1 );
 
     return interpolate(E, row_before, row, row_after );
 
@@ -111,9 +111,9 @@ namespace mu2e {
                                               const TableRow<2>& row,
                                               const TableRow<2>& row_before ) const {
     
-    const double e1(  row_after[0] );  const double p1(  row_after[1] );
-    const double e2(        row[0] );  const double p2(        row[1] );
-    const double e3( row_before[0] );  const double p3( row_before[1] );
+    const double e1(  row_after.first );  const double p1(  row_after.second.at(0) );
+    const double e2(        row.first );  const double p2(        row.second.at(0) );
+    const double e3( row_before.first );  const double p3( row_before.second.at(0) );
     
     const double discr = e1*e1*e2 + e1*e3*e3 + e2*e2*e3 - e3*e3*e2 - e1*e1*e3 - e1*e2*e2;
     

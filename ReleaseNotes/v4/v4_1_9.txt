@@ -2,6 +2,27 @@
 
            Release notes for Mu2e Offline software, v4_1_9
 
+2) April 25, 2014, knoepfel
+
+   Significantly modified ProtonPulseRandPDF and Table classes to
+   allow for passing new FHiCL parameters "tmin", "tmax", and "tres"
+   in HitMakers/src/GenerateProtonTimes_module.cc
+
+   New files:
+     Mu2eUtilities/src/Table.cc
+
+   Modified files:
+     EventGenerator/src/FoilParticleGenerator.cc
+     EventGenerator/src/StoppedParticleIntConvGun_module.cc
+     EventGenerator/src/StoppedParticleRPCGun_module.cc
+     HitMakers/src/GenerateProtonTimes_module.cc
+     Mu2eUtilities/inc/BinnedSpectrum.hh
+     Mu2eUtilities/inc/ProtonPulseRandPDF.hh
+     Mu2eUtilities/inc/Table.hh
+     Mu2eUtilities/src/CzarneckiSpectrum.cc
+     Mu2eUtilities/src/ProtonPulseRandPDF.cc
+     Mu2eUtilities/src/ShankerWatanabeSpectrum.cc
+
 1) April 20, 2014, ehrlich
    enabled PhysicalVolumeInfoMultiCollection in EventDisplay
    modified file:

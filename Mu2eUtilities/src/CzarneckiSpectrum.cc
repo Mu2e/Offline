@@ -4,9 +4,9 @@
 // in the endpoint region taken from Czarnecki spectrum
 // Czarneckki et al 10.1103/PhysRevD.84.013006
 //
-// $Id: CzarneckiSpectrum.cc,v 1.12 2013/09/30 21:01:29 knoepfel Exp $
+// $Id: CzarneckiSpectrum.cc,v 1.13 2014/04/25 17:26:42 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/09/30 21:01:29 $
+// $Date: 2014/04/25 17:26:42 $
 //
 
 // Mu2e includes
@@ -32,13 +32,14 @@ namespace mu2e {
 
   double CzarneckiSpectrum::getWeight(double E) const {
 
-    const unsigned iRow = _table.findLowerBoundRow( E );
+    const unsigned iRow = _table.getLowerBoundRowIndex( E );
+
     double weight       = _table( iRow ) ;
     if ( iRow == _table.getNrows()-1 || iRow == 0 ) return weight;
 
-    auto const & row        = _table.row( iRow   );
-    auto const & row_before = _table.row( iRow-1 );
-    auto const & row_after  = _table.row( iRow+1 );
+    auto const & row        = _table.getRow( iRow   );
+    auto const & row_before = _table.getRow( iRow-1 );
+    auto const & row_after  = _table.getRow( iRow+1 );
 
     weight = interpolate( E, row_after, row, row_before );
     if ( weight < 0 ) weight = interpolateE5 ( E, row );
@@ -52,9 +53,9 @@ namespace mu2e {
                                          const TableRow<2>& row,
                                          const TableRow<2>& row_before ) const {
 
-    const double e1(  row_after[0] );  const double p1(  row_after[1] );
-    const double e2(        row[0] );  const double p2(        row[1] );
-    const double e3( row_before[0] );  const double p3( row_before[1] );
+    const double e1(  row_after.first );  const double p1(  row_after.second.at(0) );
+    const double e2(        row.first );  const double p2(        row.second.at(0) );
+    const double e3( row_before.first );  const double p3( row_before.second.at(0) );
     
     const double discr = e1*e1*e2 + e1*e3*e3 + e2*e2*e3 - e3*e3*e2 - e1*e1*e3 - e1*e2*e2;
     
@@ -73,8 +74,8 @@ namespace mu2e {
     
     GlobalConstantsHandle<PhysicsParams> phy;
 
-    const double energy = val.at(0);
-    const double weight = val.at(1);
+    const double energy = val.first;
+    const double weight = val.second.at(0);
 
     const double b = weight/cet::pow<5>( phy->getMuonEnergy()-energy-cet::square(energy)/(2*phy->getAtomicMass()));
 
