@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec.fcl,v 1.5 2014/04/03 23:18:48 murat Exp $
+# $Id: calPatRec.fcl,v 1.6 2014/04/27 15:48:52 murat Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits
@@ -7,6 +7,8 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
+#
+#include "CaloCluster/test/producers.fcl"
 #include "TrackCaloMatching/test/producers.fcl"
 #include "CalPatRec/test/producers.fcl"
 #include "ParticleID/test/producers.fcl"
@@ -52,23 +54,22 @@ physics : {
 	generate      : @local::generate
 	g4run         : @local::g4run
 #------------------------------------------------------------------------------
-# digitization
+# hist times, digitization
 #------------------------------------------------------------------------------
 	protonTimeMap        : { module_type : GenerateProtonTimes }
 	muonTimeMap          : { module_type : GenerateMuonLife    }
 	makeSD               : @local::makeSD
 	makeSH               : @local::makeSHfromSD
+	FlagStrawHits        : @local::FlagStrawHits
+	FlagBkgHits          : @local::FlagBkgHits
 	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
 	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 #------------------------------------------------------------------------------
 # CalPatRec and modules it brings in
 #------------------------------------------------------------------------------
-	MakeCaloCluster      : @local::MakeCaloClusterHack
-	MakeSHNew            : @local::MakeStrawHitsNew
+	MakeCaloCluster      : @local::MakeCaloCluster
 
 	MakeStrawHitPositions: @local::MakeStrawHitPositions
-	FlagStrawHits2       : @local::FlagStrawHits
-	FlagBkgHits2         : @local::FlagBkgHits
 	CalPatRec            : @local::CalPatRec
     }
 
@@ -78,12 +79,11 @@ physics : {
 #------------------------------------------------------------------------------
     p1 : [
 	  # generate, g4run,
-	  # protonTimeMap, muonTimeMap, 
-	  # makeSD, makeSH,
-	  # CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+	  protonTimeMap, muonTimeMap, 
+	  makeSD, makeSH, MakeStrawHitPositions, 
+	  FlagStrawHits, FlagBkgHits, 
+	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
 	  MakeCaloCluster, 
-	  MakeSHNew,
-	  MakeStrawHitPositions, FlagStrawHits, FlagBkgHits, 
 	  CalPatRec
 	 ]
 
@@ -121,13 +121,8 @@ services.user.SeedService.baseSeed         :  1
 services.user.SeedService.maxUniqueEngines :  20
 
 # physics.producers.generate.inputfile               : "Mu2eG4/test/genconfig_DownstreameMinus.txt"
-# physics.producers.makeSD.TimeOffsets               :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-# physics.producers.CaloReadoutHitsMaker.TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+physics.producers.makeSD.TimeOffsets               :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+physics.producers.CaloReadoutHitsMaker.TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 
-physics.producers.MakeStrawHitPositions.StrawHitCollectionLabel : MakeSHNew
-
-physics.producers.FlagStrawHits.StrawHitCollectionLabel         : MakeSHNew
-
-physics.producers.FlagBkgHits.StrawHitCollectionLabel           : MakeSHNew
-
-physics.producers.calPatRec.StrawHitCollectionLabel             : MakeSHNew
+physics.producers.FlagStrawHits.StrawHitPositionCollectionLabel : MakeStrawHitPositions
+physics.producers.FlagBkgHits.StrawHitPositionCollectionLabel   : MakeStrawHitPositions
