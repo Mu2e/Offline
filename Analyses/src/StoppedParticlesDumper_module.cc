@@ -18,6 +18,7 @@
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"
@@ -74,13 +75,8 @@ namespace mu2e {
 
     std::vector<int> decayOffCodes_;
 
-    GlobalConstantsHandle<PhysicsParams> gc_;
-
     TTree *nt_;
     StopInfo data_;
-
-    float getTau(const art::Ptr<SimParticle>& p, const VspMC& hitColls);
-    bool decayTurnedOff(PDGCode::type pdgId);
   };
 
   //================================================================
@@ -93,7 +89,7 @@ namespace mu2e {
   {
     if(writeProperTime_) {
       decayOffCodes_ = pset.get<std::vector<int> >("decayOffPDGCodes");
-      // must sort to use binary_search
+      // must sort to use binary_search in SimParticleGetTau
       std::sort(decayOffCodes_.begin(), decayOffCodes_.end());
     }
   }
@@ -121,68 +117,11 @@ namespace mu2e {
 
     auto ih = event.getValidHandle<SimParticlePtrCollection>(input_);
     for(const auto& p : *ih) {
-      const float tau = writeProperTime_ ? getTau(p,spMCColls) : -1;
+      const float tau = writeProperTime_ ? SimParticleGetTau::calculate(p,spMCColls,decayOffCodes_) : -1;
       data_ = StopInfo( p, spMCColls, tau);
       nt_->Fill();
     }
 
-  }
-
-  //================================================================
-  float StoppedParticlesDumper::getTau( const art::Ptr<SimParticle>& p,
-                                        const VspMC& hitColls ){
-
-    double tau = p->endProperTime() / gc_->getParticleLifetime(p->pdgId());;
-
-    // The mu2ePrimary code means that G4 track was created by our PrimaryGeneratorAction.
-    // If the particle is "mu2ePrimary" but still has a parent, it is a continuation
-    // of a particle from the previous simulation stage, and their proper times should
-    // be combined.
-
-    art::Ptr<SimParticle> part (p);
-    while(part->parent().isNonnull()) {
-
-      if((part->creationCode() == ProcessCode::mu2ePrimary)) {
-
-        // The current particle is a continuation from the previous stage,
-        // not a physically different particle.  We need to find its record
-        // in the StepPointMC collections to get the correct proper time.
-        part = part->parent();
-
-        // Find matches in hit collections
-        unsigned counter (0);
-        const StepPointMC* spMC(nullptr);
-        for ( const auto& hitColl : hitColls ) {
-          std::for_each( hitColl.begin(), hitColl.end(),
-                         [&](const StepPointMC& sp){
-                           if ( sp.simParticle().key() == part.key() ) {
-                             spMC = &sp;
-                             counter++;
-                           }
-                         } );
-
-        }
-
-        if      ( counter == 0 ) throw cet::exception("StepPointMC") << " Non-existent StepPointMC-SimParticle assignment! " ;
-        else if ( counter  > 1 ) throw cet::exception("StepPointMC") << " Ambiguous StepPointMC-SimParticle assignment! " ;
-        else  tau += spMC->properTime() / gc_->getParticleLifetime(part->pdgId());;
-      }
-      else {
-        // The current particle was produced by a G4 physics process.
-        // See if proper time of its ancestor should be included.
-        part = part->parent();
-        if(decayTurnedOff(part->pdgId())) {
-          tau += part->endProperTime() / gc_->getParticleLifetime(part->pdgId());
-        }
-      }
-    } // loop up to the primary
-
-    return tau;
-  }
-
-  //================================================================
-  bool StoppedParticlesDumper::decayTurnedOff(PDGCode::type pdgId) {
-    return std::binary_search(decayOffCodes_.begin(), decayOffCodes_.end(), int(pdgId));
   }
 
   //================================================================
