@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.25 2014/04/15 21:16:02 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.26 2014/04/28 13:54:36 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/04/15 21:16:02 $
+// $Date: 2014/04/28 13:54:36 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -150,7 +150,7 @@ namespace mu2e
       void fillDeltaInfo(std::list<StrawHitCluster> const& clusters,std::vector<DeltaInfo>& dinfo);
       void fillDeltaSummary(DeltaInfo& delta);
       void fillDeltaDiag(std::vector<DeltaInfo> const& deltas);
-      void findPrimary(DeltaInfo const& delta,art::Ptr<SimParticle>& pptr) const;
+      void findPrimary(DeltaInfo const& delta,art::Ptr<SimParticle>& pptr,double& pmom) const;
 // correct the time for propagation through the tracker, given the Z component of beta
       double deltaPhi(double phi1,double phi2) const;
       void initializeReaders();
@@ -201,12 +201,12 @@ namespace mu2e
     _dclustertype(pset.get<std::string>("DeltaClusterTMVAType","MLP method")),
     _gdstereo(pset.get<double>("StereoHitMVACut",0.4)),
     _gdnonstereo(pset.get<double>("NonStereoHitMVACut",0.4)),
-    _flagall(pset.get<bool>("FlagAllHits",true)), // flag all hits in the cluster, regardless of MVA value
+    _flagall(pset.get<bool>("FlagAllHits",false)), // flag all hits in the cluster, regardless of MVA value
     _mindh(pset.get<unsigned>("MinDeltaHits",5)),
     _minns(pset.get<unsigned>("MinNStations",2)),
     _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.8)),
-    _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.95)),
-    _nonstereoclustermvacut(pset.get<double>("NonStereoClusterMVACut",0.9)),
+    _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
+    _nonstereoclustermvacut(pset.get<double>("NonStereoClusterMVACut",0.8)),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
     _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet()))
   {
@@ -466,9 +466,9 @@ namespace mu2e
   void FlagBkgHits::createDiagnostics() {
     art::ServiceHandle<art::TFileService> tfs;
     _nhits=tfs->make<TH1F>("nhits","N hits used in Clustering",100,0,5000);
-    _niter=tfs->make<TH1F>("niter","N Cluster Iterations",20,-0.5,19.5);
+    _niter=tfs->make<TH1F>("niter","N Cluster Iterations",50,-0.5,49.5);
     _nchanged=tfs->make<TH1F>("nchanged","N Hits changed in last iteration",100,-0.5,99.5);
-    _nclusters=tfs->make<TH1F>("nclusters","N Clusters",100,0,200);
+    _nclusters=tfs->make<TH1F>("nclusters","N Clusters",200,0,1000);
     if(_diag > 0){
       // detailed delta diagnostics
       _ddiag=tfs->make<TTree>("ddiag","delta diagnostics");
@@ -638,7 +638,9 @@ namespace mu2e
       _pmvaout = delta._pmvaout;
       // find MC truth information for this delta
       art::Ptr<SimParticle> pptr;
-      findPrimary(delta,pptr);
+      _dmcmom =-1.0;
+      double pmom(0.0);
+      findPrimary(delta,pptr,pmom);
       if(pptr.isNonnull()){
 	_pid = pptr->id().asInt();
 	_ppdgid = pptr->pdgId();
@@ -647,6 +649,7 @@ namespace mu2e
 	  _pgen = pptr->genParticle()->generatorId().id();
 	else
 	  _pgen = -1;
+	_dmcmom = pmom;
       } else {
 	_pid =-1;
 	_ppdgid = -1;
@@ -697,18 +700,16 @@ namespace mu2e
       }
       if(_nconv >= 1){
 	_dmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
-	_dmcmom = _kfitmc.MCMom(KalFitMC::trackerMid);
 	_dmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
       } else {
 	_dmct0 = -1;
-	_dmcmom = 0.0;
 	_dmctd = -100.0;
       }
       _ddiag->Fill();
     }
   }
 
-  void FlagBkgHits::findPrimary(DeltaInfo const& delta,art::Ptr<SimParticle>& pptr) const { 
+  void FlagBkgHits::findPrimary(DeltaInfo const& delta,art::Ptr<SimParticle>& pptr,double& pmom) const { 
     // find the unique simparticles which produced these hits
     std::set<art::Ptr<SimParticle> > pp;
     for(size_t ih=0;ih< delta._dhinfo.size(); ++ih){
@@ -716,15 +717,7 @@ namespace mu2e
       const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
       art::Ptr<SimParticle> spp = mcsum[0]._spp;
       if(spp.isNonnull()){
-	// if the particle is a conversion and the momentum is really low, don't count it as part
-	// of the parentage
-	if(spp->genParticle().isNonnull() &&
-	    spp->genParticle()->generatorId()== GenId::conversionGun){
-	  if(spp->genParticle()->momentum().vect().mag()-mcsum[0]._mom.mag() < 25.0){
-	    pp.insert(spp);
-	  }
-	} else 
-	  pp.insert(spp);
+	pp.insert(spp);
       }
     }
     // map these particles back to each other, to compress out particles generated inside the cluster 
@@ -803,6 +796,15 @@ namespace mu2e
     for(std::map<art::Ptr<SimParticle>,art::Ptr<SimParticle> >::iterator im = spmap.begin();im!=spmap.end();++im){
       if(im->first->id().asInt() == pid){
 	pptr = im->first;
+	break;
+      }
+    }
+    // find the momentum for the first step point from the primary particle in this delta
+    for(size_t ih=0;ih< delta._dhinfo.size(); ++ih){
+      size_t ish = delta._dhinfo[ih]._hindex;
+      const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
+      if(mcsum[0]._spp == pptr){
+	pmom = mcsum[0]._mom.mag();
 	break;
       }
     }
