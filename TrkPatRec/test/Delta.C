@@ -7,9 +7,9 @@
 #include "TH2F.h"
 void Delta(TTree* ddiag, const char* page="rho",bool train=false) {
   TString spage(page);
-  TCut cluster("nchits>4");
+  TCut cluster("nchits>4&&ns>1");
   if(train)cluster += TCut("nprimary/nchits>0.8");
-  TCut con("pgen==2");
+  TCut con("pgen==2&&mcmom>100");
   TCut bkg("pproc<20");
   TCut primary("_relation>=0");
   TCut norel("_relation<0");
@@ -292,8 +292,8 @@ void Delta(TTree* ddiag, const char* page="rho",bool train=false) {
   } else if(spage=="hitmva") {
     TH1F* sthtmvap = new TH1F("sthtmvap","Stereo Hit MVA output",200,-0.2,1.2);
     TH1F* sthtmvau = new TH1F("sthtmvau","Stereo Hit MVA output",200,-0.2,1.2);
-    sthtmvap->SetLineColor(kRed);
-    sthtmvau->SetLineColor(kBlue);
+    sthtmvau->SetLineColor(kRed);
+    sthtmvap->SetLineColor(kBlue);
     TH1F* nsthtmvap = new TH1F("nsthtmvap","Non-Stereo Hit MVA output",200,-0.2,1.2);
     TH1F* nsthtmvau = new TH1F("nsthtmvau","Non-Stereo Hit MVA output",200,-0.2,1.2);
     nsthtmvap->SetLineColor(kBlue);
@@ -305,21 +305,22 @@ void Delta(TTree* ddiag, const char* page="rho",bool train=false) {
     ddiag->Project("nsthtmvau","_hgd",bkg+cluster+nstht+norel);
 
     TLegend* mhleg = new TLegend(0.2,0.7,0.6,0.9);
-    mhleg->AddEntry(sthtmvau,"#delta primary hits","L");
-    mhleg->AddEntry(sthtmvap,"#delta unrelated","L");
+    mhleg->AddEntry(sthtmvap,"#delta primary hits","L");
+    mhleg->AddEntry(sthtmvau,"#delta unrelated (X10)","L");
 
-    Double_t factor(20.0);
-    sthtmvap->Scale(factor);
-    nsthtmvap->Scale(factor);
+    Double_t factor(10.0);
+    sthtmvau->Scale(factor);
+    nsthtmvau->Scale(factor);
 
     TCanvas* can = new TCanvas("hmvacan","Hit MVA output",800,400);
     can->Divide(2,1);
     can->cd(1);
-    sthtmvau->Draw();
-    sthtmvap->Draw("same");
+    sthtmvap->Draw();
+    sthtmvau->Draw("same");
     can->cd(2);
-    nsthtmvau->Draw();
-    nsthtmvap->Draw("same");
+    nsthtmvap->Draw();
+    nsthtmvau->Draw("same");
+    mhleg->Draw();
   }  else if(spage=="hits") {
 //    TH1F* drhoconp = new TH1F("drhoconp","CE Hit #rho difference;#Delta #rho (mm)",100,0,150.0);
 //    TH1F* dphiconp = new TH1F("dphiconp","CE Hit #phi difference;#Delta #phi",100,0,0.3);
@@ -328,42 +329,65 @@ void Delta(TTree* ddiag, const char* page="rho",bool train=false) {
 //    TH1F* dphiconn = new TH1F("dphiconn","CE Hit #phi difference;#Delta #phi",100,0,0.3);
 //    TH1F* dtconn = new TH1F("dtconn","CE Hit time difference;#Delta t (nsec)",100,0,50);
 
-    TH1F* drhobkgp = new TH1F("drhobkgp","Bkg Hit #rho difference;#Delta #rho (mm)",100,0,150.0);
-    TH1F* dphibkgp = new TH1F("dphibkgp","Bkg Hit #phi difference;#Delta #phi",100,0,0.3);
+    TH1F* drhobkgps = new TH1F("drhobkgps","Bkg Hit #rho difference;#Delta #rho (mm)",100,0,80.0);
+    TH1F* dphibkgps = new TH1F("dphibkgps","Bkg Hit #phi difference;#Delta #phi",100,0,80.0);
+    TH1F* drhobkgpn = new TH1F("drhobkgpn","Bkg Hit #rho difference;#Delta #rho (mm)",100,0,80.0);
+    TH1F* dphibkgpn = new TH1F("dphibkgpn","Bkg Hit #phi difference;#Delta #phi",100,0,80.0);
+    TH1F* cdbkgps = new TH1F("cdbkgps","Bkg Hit cluster distance;distance",100,0,8.0);
+    TH1F* cdbkgpn = new TH1F("cdbkgpn","Bkg Hit cluster distance;distance",100,0,8.0);
     TH1F* dtbkgp = new TH1F("dtbkgp","Bkg Hit time difference;#Delta t (nsec)",100,0,50);
-    TH1F* drhobkgn = new TH1F("drhobkgn","Bkg Hit #rho difference;#Delta #rho (mm)",100,0,150.0);
-    TH1F* dphibkgn = new TH1F("dphibkgn","Bkg Hit #phi difference;#Delta #phi",100,0,0.3);
-    TH1F* dtbkgn = new TH1F("dtbkgn","Bkg Hit time difference;#Delta t (nsec)",100,0,50);
-    drhobkgp->SetLineColor(kBlue);
-    dphibkgp->SetLineColor(kBlue);
+    TH1F* drhobkgn = new TH1F("drhobkgn","Unrelated Hit #rho difference;#Delta #rho (mm)",100,0,80.0);
+    TH1F* dphibkgn = new TH1F("dphibkgn","Unrelated Hit #phi difference;#Delta #phi",100,0,80.0);
+    TH1F* dtbkgn = new TH1F("dtbkgn","Unrelated Hit time difference;#Delta t (nsec)",100,0,50);
+    TH1F* cdbkgn = new TH1F("cdbkgn","Unrelated Hit cluster distance;distance)",100,0,8.0);
+    drhobkgps->SetLineColor(kBlue);
+    dphibkgps->SetLineColor(kBlue);
+    drhobkgpn->SetLineColor(kGreen);
+    dphibkgpn->SetLineColor(kGreen);
+    cdbkgps->SetLineColor(kBlue);
+    cdbkgpn->SetLineColor(kGreen);
     dtbkgp->SetLineColor(kBlue);
     drhobkgn->SetLineColor(kRed);
     dphibkgn->SetLineColor(kRed);
     dtbkgn->SetLineColor(kRed);
+    cdbkgn->SetLineColor(kRed);
 
-    ddiag->Project("drhobkgp","_drho",bkg+cluster+primary);
-    ddiag->Project("dphibkgp","_dphi",bkg+cluster+primary);
+    ddiag->Project("drhobkgps","_drho",bkg+cluster+primary+stht);
+    ddiag->Project("dphibkgps","_dphi*rmean",bkg+cluster+primary+stht);
+    ddiag->Project("cdbkgps","_cdist",bkg+cluster+primary+stht);
+    ddiag->Project("drhobkgpn","_drho",bkg+cluster+primary+nstht);
+    ddiag->Project("dphibkgpn","_dphi*rmean",bkg+cluster+primary+nstht);
+    ddiag->Project("cdbkgpn","_cdist",bkg+cluster+primary+nstht);
     ddiag->Project("dtbkgp","_dt",bkg+cluster+primary);
     ddiag->Project("drhobkgn","_drho",bkg+cluster+norel);
-    ddiag->Project("dphibkgn","_dphi",bkg+cluster+norel);
+    ddiag->Project("dphibkgn","_dphi*rmean",bkg+cluster+norel);
     ddiag->Project("dtbkgn","_dt",bkg+cluster+norel);
+    ddiag->Project("cdbkgn","_cdist",bkg+cluster+norel);
+
     TCanvas* dhcan = new TCanvas("dhcan","Delta hits",1200,800);
     dhcan->Divide(2,2);
     dhcan->cd(1);
-    drhobkgp->Draw();
+    drhobkgps->Draw();
+    drhobkgpn->Draw("same");
     drhobkgn->Draw("same");
 
 
     TLegend* hleg = new TLegend(0.2,0.7,0.6,0.9);
-    hleg->AddEntry(drhobkgp,"#delta Primary hit","L");
+    hleg->AddEntry(drhobkgps,"#delta Primary stereo hit","L");
+    hleg->AddEntry(drhobkgpn,"#delta Primary non-stereo hit","L");
     hleg->AddEntry(drhobkgn,"#delta unrelated hit","L");
+    hleg->Draw();
 
     dhcan->cd(2);
-    dphibkgp->Draw();
+    dphibkgps->Draw();
+    dphibkgpn->Draw("same");
     dphibkgn->Draw("same");
     dhcan->cd(3);
     dtbkgp->Draw();
     dtbkgn->Draw("same");
-    
-  }
+    dhcan->cd(4);
+    cdbkgps->Draw();
+    cdbkgpn->Draw("same");
+    cdbkgn->Draw("same");
+  }    
 }

@@ -21,7 +21,7 @@
 void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring="") {
   TString spage(page);
   TCut stereohit("stereo!=0");
-  TCut convhit("mcgen==2&&pmom>100.0");
+  TCut convhit("mcgen==2&&pmom>100.0&&tsel");
   TCut dhit("mcproc<20");
   TCut addcut(cutstring);
   TCut evenstation("(device/2)%2==0");
@@ -498,11 +498,11 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
     TCut isolated("isolated>0");
     TCut delta("delta>0");
 
-    shdiag->Project("sdce","stereo:delta",convhit+esel+rsel+(!isolated));
-    shdiag->Project("sdde","stereo:delta",dhit+esel+rsel+(!isolated));
+    shdiag->Project("sdce","stereo:delta",convhit+esel+rsel+tsel+(!isolated));
+    shdiag->Project("sdde","stereo:delta",dhit+esel+rsel+tsel+(!isolated));
 
-    shdiag->Project("sce","stereo:!(esel&&rsel&&(!isolated)&&(!delta))",convhit);
-    shdiag->Project("sbk","stereo:!(esel&&rsel&&(!isolated)&&(!delta))",!convhit);
+    shdiag->Project("sce","stereo:!(esel&&rsel&&tsel&&(!isolated)&&(!delta))",convhit);
+    shdiag->Project("sbk","stereo:!(esel&&rsel&&tsel&&(!isolated)&&(!delta))",!convhit);
 
     TCanvas* dcan = new TCanvas("dcan","dcan",800,600);
     dcan->Divide(2,2);
