@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: ClusterStrawHits.cc,v 1.7 2014/04/04 22:58:00 brownd Exp $
+// $Id: ClusterStrawHits.cc,v 1.8 2014/04/28 13:51:26 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/04/04 22:58:00 $
+// $Date: 2014/04/28 13:51:26 $
 //
 //
 #include "TrkPatRec/inc/ClusterStrawHits.hh"
@@ -121,18 +121,19 @@ namespace mu2e
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _bkgmask(pset.get<vector<string> >("BackgroundMask",vector<string>{})),
-    _sigmask(pset.get<vector<string> >("SignalMask",vector<string>{"EnergySelection","RadiusSelection"})),
+    _sigmask(pset.get<vector<string> >("SignalMask",vector<string>{"EnergySelection","RadiusSelection","TimeSelection"})),
     _dseed(pset.get<double>("SeedDistance",10.0)), // # of sigma to define a new cluster
-    _dhit(pset.get<unsigned>("HitDistance",6.0)), // # of sigma to add hits
-    _dmerge(pset.get<double>("MergeDistance",6.0)), // # of sigma to merge clusters
+    _dhit(pset.get<unsigned>("HitDistance",5.0)), // # of sigma to add hits
+    _dmerge(pset.get<double>("MergeDistance",3.0)), // # of sigma to merge clusters
     _dlarge(pset.get<double>("LargestDistance",10000.0)),
-    _dd(pset.get<double>("ClusterDiameter",10.0)), // mm: the natural cluster size
-    _dt(pset.get<double>("TimeDifference",40.0)), // nsec: the natural time spread
+    _dd(pset.get<double>("ClusterDiameter",5.0)), // mm: the natural cluster size
+    _dt(pset.get<double>("TimeDifference",10.0)), // nsec: the natural time spread
+    _maxdt(pset.get<double>("MaxTimeDifference",40.0)), // Maximum time difference
     _trms(pset.get<double>("TimeRMS",5.0)), //nsec: individual hit time resolution
-    _srms(pset.get<double>("StereoRMS",5.0)), //mm: individual hit resolution
-    _nsrms(pset.get<double>("NonStereoRMS",25.)), // mmm: twice the individual hit resolution
-    _maxniter(pset.get<unsigned>("MaxNIterations",10)),
-    _maxnchanged(pset.get<unsigned>("MaxNChanged",3)),
+    _srms(pset.get<double>("StereoRMS",7.0)), //mm: individual stereo hit resolution
+    _nsrms(pset.get<double>("NonStereoRMS",30.)), // mmm: individual non-stereo hit resolution
+    _maxniter(pset.get<unsigned>("MaxNIterations",50)),
+    _maxnchanged(pset.get<unsigned>("MaxNChanged",10)),
     _mode(static_cast<cmode>(pset.get<int>("ClusterMode",hitcluster))),
     _updatefirst(pset.get<bool>("UpdateFirstIteration",false))
   {
@@ -149,7 +150,7 @@ namespace mu2e
     static StrawHitFlag stflag(StrawHitFlag::stereo);
     double retval = _dlarge;
     double dt = fabs(hit._time-cluster.time());
-    if( dt < 2*_dt){
+    if( dt < _maxdt){
       bool stereo = hit._flag.hasAllProperties(stflag);
       double psig2 = stereo ? _srms2 : _nsrms2;
       if(_mode == hitcluster){
@@ -171,7 +172,7 @@ namespace mu2e
   double ClusterStrawHits::distance(StrawHitCluster const& c1, StrawHitCluster const& c2) const {
     double retval = _dlarge;
     double dt = fabs(c1.time()-c2.time());
-    if( dt < 2*_dt){
+    if( dt < _maxdt){
       if(_mode == hitcluster) {
 	double dperp = (c1.pos()-c2.pos()).perp();
 	retval = sqrt(pow(fmax(0.0,dperp-_dd),2)/_srms2 + pow(fmax(0.0,dt-_dt),2)/_trms2);

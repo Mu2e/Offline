@@ -1,9 +1,9 @@
 //
 // Object to cluster straw hits, used in background removal and track fitting
 //
-// $Id: ClusterStrawHits.hh,v 1.5 2013/03/20 00:05:56 brownd Exp $
+// $Id: ClusterStrawHits.hh,v 1.6 2014/04/28 13:51:26 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/03/20 00:05:56 $
+// $Date: 2014/04/28 13:51:26 $
 //
 #ifndef ClusterStrawHits_HH
 #define ClusterStrawHits_HH
@@ -133,6 +133,7 @@ namespace mu2e
     double _dlarge; // largest distance
     double _dd; // cluster diameter
     double _dt; // natural time spread
+    double _maxdt; // maximum time difference
     double _trms; // time RMS
     double _srms,_nsrms; // Spatial RMS for stereo, non-stereo hits
     double _trms2, _srms2, _nsrms2; // squares of rms
