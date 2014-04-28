@@ -1,9 +1,9 @@
 //
 // A module to create strawhitpositions out of the strawhits
 //
-// $Id: MakeStrawHitPositions_module.cc,v 1.2 2014/03/07 03:16:46 murat Exp $
-// $Author: murat $
-// $Date: 2014/03/07 03:16:46 $
+// $Id: MakeStrawHitPositions_module.cc,v 1.3 2014/04/28 13:34:43 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/04/28 13:34:43 $
 // 
 //  Original Author: David Brown, LBNL
 //  changes from G. Pezzullo, P. Murat
@@ -68,7 +68,6 @@ namespace mu2e {
     void beginJob();
     void beginRun(art::Run& Run);
     void printHits(const StrawHit& Hit, StrawHitPosition& Pos, int &banner);
-    
   private:
 
     // Diagnostics level.
@@ -87,6 +86,7 @@ namespace mu2e {
     std::vector<TH2F*> _stations;
 
     const Tracker* _tracker;
+    void drawStations(); 
   };
 
   MakeStrawHitPositions::MakeStrawHitPositions(fhicl::ParameterSet const& pset) :
@@ -154,48 +154,12 @@ namespace mu2e {
 
     if ( _diagLevel > 0 ) cout << "MakeStrawHitPositions: produce() begin; event " << event.id().event() << endl;
 
-       // Get a reference to one of the L or T trackers.
-       // Throw exception if not successful.
 
     static bool first(true);
     if(_diagLevel >1 && first){
       first = false;
-      const TTracker& tt = dynamic_cast<const TTracker&>(*_tracker);
-      art::ServiceHandle<art::TFileService> tfs;
-      int nsta = tt.nDevices()/2;
-      for(int ista=0;ista<nsta;++ista){
-	char name[100];
-	snprintf(name,100,"station%i",ista);
-	_stations.push_back( tfs->make<TH2F>(name,name,100,-700,700,100,-700,700));
-	_stations[ista]->SetStats(false);
-	TList* flist = _stations[ista]->GetListOfFunctions();
-	TLegend* sleg = new TLegend(0.1,0.6,0.3,0.9);
-	flist->Add(sleg);
-	for(int idev=0;idev<2;++idev){
-	  const Device& dev = tt.getDevice(2*ista+idev);
-	  const std::vector<Sector>& sectors = dev.getSectors();
-	  for(size_t isec=0;isec<sectors.size();++isec){
-	    int iface = isec%2;
-	    const Sector& sec = sectors[isec];
-	    CLHEP::Hep3Vector spos = sec.straw0MidPoint();
-	    CLHEP::Hep3Vector sdir = sec.straw0Direction();
-	    CLHEP::Hep3Vector end0 = spos - 100.0*sdir;
-	    CLHEP::Hep3Vector end1 = spos + 100.0*sdir;
-	    TLine* sline = new TLine(end0.x(),end0.y(),end1.x(),end1.y());
-	    sline->SetLineColor(isec+1);
-	    sline->SetLineStyle(2*idev+iface+1);
-	    flist->Add(sline);
-	    TMarker* smark = new TMarker(end0.x(),end0.y(),8);
-	    smark->SetMarkerColor(isec+1);
-	    smark->SetMarkerSize(2);
-	    flist->Add(smark);
-	    char label[80];
-	    snprintf(label,80,"dev %i sec %i",idev,(int)isec);
-	    sleg->AddEntry(sline,label,"l");
-	  }
-	}
-      }
-    }
+      drawStations();
+   }
 
    // Handle to the conditions service
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -237,6 +201,45 @@ namespace mu2e {
     event.put(std::move(shpos));
   } // end MakeStrawHitPositions::produce.
 
+  void MakeStrawHitPositions::drawStations() {
+    // Get a reference to one of the L or T trackers.
+    // Throw exception if not successful.
+    const TTracker& tt = dynamic_cast<const TTracker&>(*_tracker);
+    art::ServiceHandle<art::TFileService> tfs;
+    int nsta = tt.nDevices()/2;
+    for(int ista=0;ista<nsta;++ista){
+      char name[100];
+      snprintf(name,100,"station%i",ista);
+      _stations.push_back( tfs->make<TH2F>(name,name,100,-700,700,100,-700,700));
+      _stations[ista]->SetStats(false);
+      TList* flist = _stations[ista]->GetListOfFunctions();
+      TLegend* sleg = new TLegend(0.1,0.6,0.3,0.9);
+      flist->Add(sleg);
+      for(int idev=0;idev<2;++idev){
+	const Device& dev = tt.getDevice(2*ista+idev);
+	const std::vector<Sector>& sectors = dev.getSectors();
+	for(size_t isec=0;isec<sectors.size();++isec){
+	  int iface = isec%2;
+	  const Sector& sec = sectors[isec];
+	  CLHEP::Hep3Vector spos = sec.straw0MidPoint();
+	  CLHEP::Hep3Vector sdir = sec.straw0Direction();
+	  CLHEP::Hep3Vector end0 = spos - 100.0*sdir;
+	  CLHEP::Hep3Vector end1 = spos + 100.0*sdir;
+	  TLine* sline = new TLine(end0.x(),end0.y(),end1.x(),end1.y());
+	  sline->SetLineColor(isec+1);
+	  sline->SetLineStyle(2*idev+iface+1);
+	  flist->Add(sline);
+	  TMarker* smark = new TMarker(end0.x(),end0.y(),8);
+	  smark->SetMarkerColor(isec+1);
+	  smark->SetMarkerSize(2);
+	  flist->Add(smark);
+	  char label[80];
+	  snprintf(label,80,"dev %i sec %i",idev,(int)isec);
+	  sleg->AddEntry(sline,label,"l");
+	}
+      }
+    }
+  }
 } // end namespace mu2e
 
 using mu2e::MakeStrawHitPositions;
