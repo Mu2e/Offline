@@ -2,9 +2,9 @@
 // A module to flag StrawHits for track reconstruction and delta ray 
 // identification
 //
-// $Id: FlagStrawHits_module.cc,v 1.10 2014/04/04 22:58:00 brownd Exp $
+// $Id: FlagStrawHits_module.cc,v 1.11 2014/04/28 13:35:52 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/04/04 22:58:00 $
+// $Date: 2014/04/28 13:35:52 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -65,7 +65,7 @@ namespace mu2e {
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _minE(pset.get<double>("minimumEnergy",0.0)),
     _maxE(pset.get<double>("maximumEnergy",0.003)),
-    _minT(pset.get<double>("minimumTime",0)),
+    _minT(pset.get<double>("minimumTime",500)),
     _maxT(pset.get<double>("maximumTime",2000)),
     _minR(pset.get<double>("minimumRadius",395.0)),
     _maxR(pset.get<vector<double> >("maximumRadius",vector<double>{650,650}))
