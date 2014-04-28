@@ -38,9 +38,9 @@ void TrainMVA(const char* files="deltafiles.txt",training itrain=stereohit,const
     fs.getline(file,100);
   }
 //selection cuts
-  TCut goodclu("nprimary/nchits > 0.8 && nchits>4");
+  TCut goodclu("tmean>700 && nprimary/nchits > 0.8 && nchits>4 && ns>1");
   TCut signalclu("pproc<20");
-  TCut bkgclu("pgen==2");
+  TCut bkgclu("pgen==2&&mcmom>100");
   TCut stclu("ngdstereo/ngdhits>0.8");
   TCut nonstclu("ngdstereo/ngdhits <=0.8");
   TCut goodhit("pproc<20"); // only consider clusters from deltas for hit training
