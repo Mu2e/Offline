@@ -31,7 +31,6 @@ namespace mu2e {
 
     static double calculate( const art::Ptr<SimParticle>& p, 
                              const VspMC& hitColls, 
-                             SimParticle& startMom,
                              const std::vector<int>& decayOffCodes = std::vector<int>(),
                              const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>());
   };
