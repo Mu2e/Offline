@@ -26,11 +26,12 @@ namespace mu2e {
   class SimParticle;
 
   class SimParticleGetTau {
-    typedef std::vector<StepPointMCCollection> VspMC;
-    
   public:
+    typedef std::vector<StepPointMCCollection> VspMC;
+
     static double calculate( const art::Ptr<SimParticle>& p, 
                              const VspMC& hitColls, 
+                             SimParticle& startMom,
                              const std::vector<int>& decayOffCodes = std::vector<int>(),
                              const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>());
   };
