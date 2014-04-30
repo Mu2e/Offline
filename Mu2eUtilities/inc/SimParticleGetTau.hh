@@ -33,6 +33,16 @@ namespace mu2e {
                              const VspMC& hitColls, 
                              const std::vector<int>& decayOffCodes = std::vector<int>(),
                              const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>());
+
+    static double calculate( const StepPointMC& sp,
+                             const VspMC& hitColls,
+                             const std::vector<int>& decayOffCodes = std::vector<int>(),
+                             const PhysicsParams& gc = *GlobalConstantsHandle<PhysicsParams>());
+  private:
+    static double getMultiStageTau( const art::Ptr<SimParticle>& sp,                                            
+                                    const VspMC& hitColls,                                            
+                                    const std::vector<int>& decayOffCodes,
+                                    const PhysicsParams& gc );
   };
 }
 
