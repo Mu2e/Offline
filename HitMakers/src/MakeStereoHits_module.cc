@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.16 2014/04/11 09:02:35 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.17 2014/04/30 16:11:47 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/04/11 09:02:35 $
+// $Date: 2014/04/30 16:11:47 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -79,7 +79,8 @@ namespace mu2e {
   // Parameters
     double _maxDt; // maximum time separation between hits
     double _maxDE; // maximum deposited energy deference: this excludes inconsistent hits
-    double _maxDZ; // maximum transverse separation
+    double _maxDZ; // maximum longitudinal separation
+    double _maxDPerp; // maximum transverse separation
     double _minDdot; // minimum dot product of straw directions
     double _minDL; // minimum distance from end of active straw;
     double _maxChi; // maximum # of TimeDivision sigmas past the active edge of a wire to allow making stereo hits
@@ -96,7 +97,7 @@ namespace mu2e {
     TH1F* _deltaE;
     TH1F* _deltaz;
     TH1F* _fsep;
-    TH1F* _dTD;
+    TH1F* _dL;
     TH1F* _mva;
     vector<TH2F*> _stations;
     const StrawDigiMCCollection *_mcdigis;
@@ -104,9 +105,9 @@ namespace mu2e {
     Float_t _shphi, _stphi, _mcshphi;
     Float_t _shrho, _strho, _mcshrho;
     Float_t _de, _dt, _dist, _dperp, _dz, _rho, _dl1, _dl2, _dc1, _dc2, _chi2, _mvaout, _ddot;
-    Float_t _schi2, _smvaout, _pdist;
+    Float_t _schi2, _smvaout, _sddot, _sdist, _sdz;
     Float_t _mcdist;
-    Int_t _stereo, _fs, _mcr, _mcrel, _mcpdg, _mcgen, _mcproc;
+    Int_t _stereo, _fs, _sfs, _mcr, _mcrel, _mcpdg, _mcgen, _mcproc;
  };
 
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
@@ -116,14 +117,15 @@ namespace mu2e {
     _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
     _maxDt(pset.get<double>("maxDt",40.0)), // nsec
     _maxDE(pset.get<double>("maxDE",0.99)), // dimensionless, from 0 to 1
-    _maxDZ(pset.get<double>("maxDZ",40.)), // mm, maximum perpendicular distance between time-division points
-    _minDdot(pset.get<double>("minDdot",-0.01)),
-    _minDL(pset.get<double>("minDL",-5.0)),
-    _maxChisq(pset.get<double>("maxChisquared",100.0)),
-    _minMVA(pset.get<double>("minMVA",0.7)),
+    _maxDZ(pset.get<double>("maxDZ",40.)), // mm, maximum longitudinal distance between straws
+    _maxDPerp(pset.get<double>("maxDPerp",500.)), // mm, maximum perpendicular distance between time-division points
+    _minDdot(pset.get<double>("minDdot",0.6)), // minimum angle between straws
+    _minDL(pset.get<double>("minDL",-20.0)), // extent along straw
+    _maxChisq(pset.get<double>("maxChisquared",80.0)), // position matching
+    _minMVA(pset.get<double>("minMVA",0.7)), // MVA cut
     _writepairs(pset.get<bool>("WriteStereoPairs",false)),
     _MVAType(pset.get<std::string>("MVAType","MLP method")),
-    _nhits(0),_deltat(0),_deltaE(0),_deltaz(0),_fsep(0),_dTD(0),_mva(0),
+    _nhits(0),_deltat(0),_deltaE(0),_deltaz(0),_fsep(0),_dL(0),_mva(0),
     _mcdigis(0),_sdiag(0)
   {
     _maxChi = sqrt(_maxChisq);
@@ -152,11 +154,11 @@ namespace mu2e {
       _deltaE = tfs->make<TH1F>("deltaE","#Delta E/#Sigma E;Ratio",100,-1.0,1.0);
       _deltaz = tfs->make<TH1F>("deltaz","#Delta d;mm",120,0.0,120.0);
       _fsep = tfs->make<TH1F>("sep","Face separation",6,-0.5,5.5);
-      _dTD = tfs->make<TH1F>("dTD","#Delta Time Difference;mm",100,-100.0,100.0);
+      _dL = tfs->make<TH1F>("dL","Length Difference;mm",100,-200.0,100.0);
       _mva = tfs->make<TH1F>("mva","MVA output",100,-0.05,1.05);
       if( _diagLevel > 1){
 	// detailed diagnostics
-	_spdiag=tfs->make<TTree>("spdiag","stereo diagnostics");
+	_spdiag=tfs->make<TTree>("spdiag","stereo position diagnostics");
 	_spdiag->Branch("shphi",&_shphi,"shphi/F");
 	_spdiag->Branch("shrho",&_shrho,"shrho/F");
 	_spdiag->Branch("stphi",&_stphi,"stphi/F");
@@ -164,15 +166,18 @@ namespace mu2e {
 	_spdiag->Branch("stereo",&_stereo,"stereo/I");
 	_spdiag->Branch("chisq",&_schi2,"chisq/F");
 	_spdiag->Branch("mvaout",&_smvaout,"mvaout/F");
-	_spdiag->Branch("dist",&_pdist,"dist/F");
+	_spdiag->Branch("dist",&_sdist,"dist/F");
+	_spdiag->Branch("dz",&_sdz,"dz/F");
+	_spdiag->Branch("ddot",&_sddot,"ddot/F");
 	_spdiag->Branch("mcrel",&_mcr,"mcr/I");
 	_spdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
 	_spdiag->Branch("mcgen",&_mcgen,"mcgen/I");
 	_spdiag->Branch("mcproc",&_mcproc,"mcproc/I");
 	_spdiag->Branch("mcshphi",&_mcshphi,"mcshphi/F");
 	_spdiag->Branch("mcshrho",&_mcshrho,"mcshrho/F");
+	_spdiag->Branch("fs",&_sfs,"fs/I");
 	if(_diagLevel > 2){
-	  _sdiag=tfs->make<TTree>("sdiag","stereo position diagnostics");
+	  _sdiag=tfs->make<TTree>("sdiag","stereo diagnostics");
 	  _sdiag->Branch("fs",&_fs,"fs/I");
 	  _sdiag->Branch("de",&_de,"de/F");
 	  _sdiag->Branch("dt",&_dt,"dt/F");
@@ -298,14 +303,15 @@ namespace mu2e {
 	    && ddot > _minDdot // negative crosings are in opposite quadrants
 	    && dt < _maxDt // hits are close in time
 	    && de < _maxDE   // deposited energy is roughly consistent (should compare dE/dx but have no path yet!)
-	    && dz < _maxDZ) { // transverse separation isn't too big
+	    && dz < _maxDZ // longitudinal separation isn't too big
+	    && dperp < _maxDPerp) { // transverse separation isn't too big
 	  // tentative stereo hit: this solves for the POCA
 	  StereoHit sth(*strawhits,tracker,ish,jsh);
 	  double dl1 = straw1.getDetail().activeHalfLength()-fabs(sth.wdist1());
 	  double dl2 = straw2.getDetail().activeHalfLength()-fabs(sth.wdist2());
 	  if(_diagLevel > 1 ) {
-	    _dTD->Fill(dl1);
-	    _dTD->Fill(dl2);
+	    _dL->Fill(dl1);
+	    _dL->Fill(dl2);
 	  }
 	  if( dl1 > _minDL && dl2 > _minDL) {
 	    // stereo point is inside the active length
@@ -321,7 +327,7 @@ namespace mu2e {
 // compute MVA
 		_smva._de = de;
 		_smva._dt = dt;
-		_smva._chi2 = chi2;
+		_smva._chi2 = chisq;
 		_smva._rho = sth.pos().perp();
 		double mvaout = _stereoMVA->EvaluateMVA(_MVAType);
 		if(mvaout > _minMVA){
@@ -395,14 +401,27 @@ namespace mu2e {
 	_stphi = shpos->at(ish).pos().phi();
 	_strho = shpos->at(ish).pos().perp();
 	_stereo = stereo;
-	_mcr = -1;
-	_schi2 = _pdist = -1.0;
+	_mcr = _sfs = -1;
+	_schi2 = _sdist = _sdz = _sddot = -1.0;
 	if(stereo){
-	  _schi2 = stereohits.at(ibest[ish]).chisq();
+	  StereoHit const& sh = stereohits.at(ibest[ish]);
+	  _schi2 = sh.chisq();
 	  _smvaout = maxMVA[ish];
-	  _pdist = stereohits.at(ibest[ish]).dist();
-	  StrawDigiMC const& mcd1 = _mcdigis->at(stereohits.at(ibest[ish]).hitIndex1());
-	  StrawDigiMC const& mcd2 = _mcdigis->at(stereohits.at(ibest[ish]).hitIndex2());
+	  _sfs = sh.sectorSeparation();
+	  StrawHit const h1 = strawhits->at(sh.hitIndex1());
+	  StrawHit const h2 = strawhits->at(sh.hitIndex2());
+	  Straw const& straw1 = tracker.getStraw(h1.strawIndex());
+	  Straw const& straw2 = tracker.getStraw(h2.strawIndex());
+	  SHInfo shi1, shi2;
+	  tcal->StrawHitInfo(straw1,h1,shi1);
+	  tcal->StrawHitInfo(straw2,h2,shi2);
+	  StrawHitPosition shp1(h1,straw1,shi1);
+	  StrawHitPosition shp2(h1,straw1,shi2);
+	  _sdist = (shp1.pos()-shp2.pos()).mag();
+	  _sddot = straw1.direction().dot(straw2.direction());
+	  _sdz = fabs(straw1.getMidPoint().z()-straw2.getMidPoint().z());
+	  StrawDigiMC const& mcd1 = _mcdigis->at(sh.hitIndex1());
+	  StrawDigiMC const& mcd2 = _mcdigis->at(sh.hitIndex2());
 	  _mcr = KalFitMC::relationship(mcd1,mcd2);
 	}
 	StrawDigiMC const& mcd = _mcdigis->at(ish);
