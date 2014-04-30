@@ -21,11 +21,11 @@
 
 void StereoPositionTest(TTree* spdiag) {
   gStyle->SetOptStat(0);
-  TCut stereo("stereo");
+  TCut stereo("stereo&&mvaout>0.7");
   TCut de("mcproc<20");
   TCut ce("mcgen==2");
-  TCut ldist("dist<40");
-  TCut gdist("dist>40");
+  TCut ldist("dz<40");
+  TCut gdist("dz>40");
   TH1F* drstcel = new TH1F("drstcel","Reco - True transverse radius, #Delta z< 40 mm, CE;#Delta #rho (mm)",100,-100,100);
   TH1F* drstdel = new TH1F("drstdel","Reco - True transverse radius, #Delta z< 40 mm, #delta e^{-};#Delta #rho (mm)",100,-100,100);
   TH1F* drshcel = new TH1F("drshcel","Reco - True transverse radius, #Delta z< 40 mm, CE;#Delta #rho (mm)",100,-100,100);
@@ -71,4 +71,50 @@ void StereoPositionTest(TTree* spdiag) {
   drcan->cd(4);
   drstdeg->Draw();
   drshdeg->Draw("same");
+
+  TH1F* dpstcel = new TH1F("dpstcel","Reco - True azimuth, #Delta z< 40 mm, CE;#Delta #phi (mm)",100,-0.5,0.5);
+  TH1F* dpstdel = new TH1F("dpstdel","Reco - True azimuth, #Delta z< 40 mm, #delta e^{-};#Delta #phi (mm)",100,-0.5,0.5);
+  TH1F* dpshcel = new TH1F("dpshcel","Reco - True azimuth, #Delta z< 40 mm, CE;#Delta #phi (mm)",100,-0.5,0.5);
+  TH1F* dpshdel = new TH1F("dpshdel","Reco - True azimuth, #Delta z< 40 mm, #delta e^{-};#Delta #phi (mm)",100,-0.5,0.5);
+  TH1F* dpstceg = new TH1F("dpstceg","Reco - True azimuth, #Delta z> 40 mm, CE;#Delta #phi (mm)",100,-0.5,0.5);
+  TH1F* dpstdeg = new TH1F("dpstdeg","Reco - True azimuth, #Delta z> 40 mm, #delta e^{-};#Delta #phi (mm)",100,-0.5,0.5);
+  TH1F* dpshceg = new TH1F("dpshceg","Reco - True azimuth, #Delta z> 40 mm, CE;#Delta #phi (mm)",100,-0.5,0.5);
+  TH1F* dpshdeg = new TH1F("dpshdeg","Reco - True azimuth, #Delta z> 40 mm, #delta e^{-};#Delta #phi (mm)",100,-0.5,0.5);
+  dpstcel->SetLineColor(kBlue);
+  dpshcel->SetLineColor(kRed);
+  dpstdel->SetLineColor(kBlue);
+  dpshdel->SetLineColor(kRed);
+  dpstceg->SetLineColor(kBlue);
+  dpshceg->SetLineColor(kRed);
+  dpstdeg->SetLineColor(kBlue);
+  dpshdeg->SetLineColor(kRed);
+
+  spdiag->Project("dpstcel","stphi-mcshphi",stereo+ce+ldist);
+  spdiag->Project("dpstceg","stphi-mcshphi",stereo+ce+gdist);
+  spdiag->Project("dpstdel","stphi-mcshphi",stereo+de+ldist);
+  spdiag->Project("dpstdeg","stphi-mcshphi",stereo+de+gdist);
+  spdiag->Project("dpshcel","shphi-mcshphi",stereo+ce+ldist);
+  spdiag->Project("dpshceg","shphi-mcshphi",stereo+ce+gdist);
+  spdiag->Project("dpshdel","shphi-mcshphi",stereo+de+ldist);
+  spdiag->Project("dpshdeg","shphi-mcshphi",stereo+de+gdist);
+
+  TLegend* dpleg = new TLegend(0.1,0.7,0.5,0.9);
+  dpleg->AddEntry(dpstcel,"StereoHit Position","L");
+  dpleg->AddEntry(dpshcel,"StrawHit Position","L");
+
+  TCanvas* dpcan = new TCanvas("dpcan", "Delta phi can",900,900);
+  dpcan->Divide(2,2);
+  dpcan->cd(1);
+  dpstcel->Draw();
+  dpshcel->Draw("same");
+  dpleg->Draw();
+  dpcan->cd(2);
+  dpstdel->Draw();
+  dpshdel->Draw("same");
+  dpcan->cd(3);
+  dpstceg->Draw();
+  dpshceg->Draw("same");
+  dpcan->cd(4);
+  dpstdeg->Draw();
+  dpshdeg->Draw("same");
 }

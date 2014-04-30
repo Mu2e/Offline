@@ -1,4 +1,4 @@
-// @(#)root/tmva $Id: TrainStereoMVA.C,v 1.2 2014/04/02 06:28:24 brownd Exp $
+// @(#)root/tmva $Id: TrainStereoMVA.C,v 1.3 2014/04/30 16:12:56 brownd Exp $
 /**********************************************************************************
  * Project   : TMVA - a ROOT-integrated toolkit for multivariate data analysis    *
  * Package   : TMVA                                                               *
@@ -49,8 +49,11 @@
 #include "TMVA/Tools.h"
 #endif
 
-void TrainStereoMVA( TString myMethodList = "", TTree* inputTree=NULL)
+void TrainStereoMVA(const char* filename)
 {
+  TChain* mytree = new TChain("MakeStereoHits/sdiag");
+  mytree->Add(filename);
+
   // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
   // if you use your private .rootrc, or run from a different directory, please copy the
   // corresponding lines from .rootrc
@@ -134,24 +137,6 @@ void TrainStereoMVA( TString myMethodList = "", TTree* inputTree=NULL)
   std::cout << std::endl;
   std::cout << "==> Start TMVAClassification" << std::endl;
 
-  // Select methods (don't look at this code - not of interest)
-  if (myMethodList != "") {
-    for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) it->second = 0;
-
-    std::vector<TString> mlist = TMVA::gTools().SplitString( myMethodList, ',' );
-    for (UInt_t i=0; i<mlist.size(); i++) {
-      std::string regMethod(mlist[i]);
-
-      if (Use.find(regMethod) == Use.end()) {
-	std::cout << "Method \"" << regMethod << "\" not known in TMVA under this name. Choose among the following:" << std::endl;
-	for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) std::cout << it->first << " ";
-	std::cout << std::endl;
-	return;
-      }
-      Use[regMethod] = 1;
-    }
-  }
-
   // --------------------------------------------------------------------------------------------------
 
   // --- Here the preparation phase begins
@@ -228,8 +213,8 @@ void TrainStereoMVA( TString myMethodList = "", TTree* inputTree=NULL)
 
   Double_t backgroundWeight = 1.0;
 
-  factory->AddSignalTree    ( inputTree, signalWeight);
-  factory->AddBackgroundTree( inputTree, backgroundWeight );
+  factory->AddSignalTree    ( mytree, signalWeight);
+  factory->AddBackgroundTree( mytree, backgroundWeight );
 
   // global event weights per tree (see below for setting event-wise weights)
 
