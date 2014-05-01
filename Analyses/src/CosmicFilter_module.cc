@@ -48,23 +48,22 @@ namespace mu2e {
       TH1F*  fTrackD0;
       TH1F*  fTrackZ0[2];
     } fHist;
-
-    int    fNTracks;
-    int    fDiagLevel;
-
-    double fMaxD0;
-    double fMaxZ0;
+					// module parameters
+    std::string  fTrkPatRecModuleLabel;
+    int          fDiagLevel;
+    double       fMaxD0;
+    double       fMaxZ0;
+					// otehr variables
+    int          fNTracks;
 					// Pointers to histograms & ntuples
 
   public:
 
     explicit CosmicFilter(fhicl::ParameterSet const& pset):
-      fDiagLevel(pset.get<int>   ("diagLevel",   0 )),
-      fMaxD0    (pset.get<double>("maxD0"    , 200.)), // in mm
-      fMaxZ0    (pset.get<double>("maxZ0"    ,1000.))  // in mm
-//       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
-//       _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
-//       _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
+      fTrkPatRecModuleLabel(pset.get<std::string>   ("trkPatRecModuleLabel","TrkPatRec")),
+      fDiagLevel           (pset.get<int>           ("diagLevel",   0 )),
+      fMaxD0               (pset.get<double>        ("maxD0"    , 200.)), // in mm
+      fMaxZ0               (pset.get<double>        ("maxZ0"    ,1000.))  // in mm
     {
     }
 
@@ -99,8 +98,8 @@ namespace mu2e {
     bool rc = false;
 
     art::Handle<KalRepCollection> krepsHandle;
-    anEvent.getByLabel("trkPatRec","DownstreameMinus", krepsHandle);
-    const KalRepCollection*  kreps = &(*krepsHandle);
+    anEvent.getByLabel(fTrkPatRecModuleLabel,"DownstreameMinus", krepsHandle);
+    const KalRepCollection*  kreps = krepsHandle.product();
 
     fNTracks = kreps->size();
 
@@ -127,7 +126,6 @@ namespace mu2e {
 
     return rc;
   }
-
 }
 
 using mu2e::CosmicFilter;
