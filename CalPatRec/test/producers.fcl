@@ -19,18 +19,6 @@ MakeCaloClusterHack        : {
     EclusterCut            : 5.00 # MeV  
 }
 #------------------------------------------------------------------------------
-# straw hit coll maker seeded by the calorimeter
-#------------------------------------------------------------------------------	
-MakeStrawHitsNew: {
-    module_type             : MakeStrawHitsNew
-    diagLevel               : 1
-    StrawHitCollectionLabel : makeSH
-    caloClusterModuleLabel  : "MakeCaloCluster"
-    maxEemc                 :  60.0     # MeV
-    t1                      : -70.0     # ns
-    t2                      :  40.0     # ns
-}
-#------------------------------------------------------------------------------
 # this is a modified version which uses T0 defined by the calorimeter cluster
 #------------------------------------------------------------------------------
 CalPatRec            : {
