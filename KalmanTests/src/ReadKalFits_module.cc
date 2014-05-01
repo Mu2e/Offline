@@ -1,15 +1,14 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.25 2014/04/18 16:54:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:54:59 $
+// $Id: ReadKalFits_module.cc,v 1.26 2014/05/01 14:27:55 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/05/01 14:27:55 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e includes
-#include "GeneralUtilities/inc/artHelper.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 
@@ -103,7 +102,7 @@ namespace mu2e {
     art::EDAnalyzer(pset),
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
-    _evtWtModules( artInputTagVector( pset.get<VS>("eventWeightModules",VS() )) ),
+    _evtWtModules( pset.get<std::vector<art::InputTag>>("eventWeightModules",std::vector<art::InputTag>() ) ),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
