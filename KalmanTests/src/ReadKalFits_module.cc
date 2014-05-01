@@ -1,14 +1,15 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.26 2014/05/01 14:27:55 knoepfel Exp $
+// $Id: ReadKalFits_module.cc,v 1.27 2014/05/01 18:20:04 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/05/01 14:27:55 $
+// $Date: 2014/05/01 18:20:04 $
 //
 // Original author Rob Kutschke
 //
 
 // Mu2e includes
+#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 
