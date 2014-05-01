@@ -1,13 +1,14 @@
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
-// $Id: ProtonPulseRandPDF.cc,v 1.19 2014/04/25 17:26:42 knoepfel Exp $
+// $Id: ProtonPulseRandPDF.cc,v 1.20 2014/05/01 18:12:26 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/04/25 17:26:42 $
+// $Date: 2014/05/01 18:12:26 $
 //
 // Original author: Kyle Knoepfel
 
 // Mu2e includes
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
 
 // C++ includes
@@ -63,9 +64,9 @@ namespace mu2e{
     , tmax_        ( pset.get<double>("tmax", setTmax() ) )
     , tres_        ( pset.get<double>("tres", 1. ) )
     , times_       ( setTimes() )
-    , extFactor_   ( determineIntrinsicExt( accPar_->potPulse ) )
-    , pulseShape_  ( setPotPulseShape( accPar_->potPulse ) )
-    , acdipole_    ( loadTable<2>( accPar_->acDipole ) )
+    , extFactor_   ( determineIntrinsicExt( ConfigFileLookupPolicy()( accPar_->potPulse ) ) )
+    , pulseShape_  ( setPotPulseShape(      ConfigFileLookupPolicy()( accPar_->potPulse ) ) )
+    , acdipole_    ( loadTable<2>(          ConfigFileLookupPolicy()( accPar_->acDipole ) ) )
     , spectrum_    ( setSpectrum() )
     , randSpectrum_( engine, &spectrum_.front(), times_.size() )
   {}  

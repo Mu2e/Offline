@@ -3,9 +3,9 @@
 // merge the spectrum with the corrected Shanker analytic expression
 // after the data endpoint.
 //
-// $Id: ShankerWatanabeSpectrum.cc,v 1.5 2014/04/25 17:26:42 knoepfel Exp $
+// $Id: ShankerWatanabeSpectrum.cc,v 1.6 2014/05/01 18:12:26 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/04/25 17:26:42 $
+// $Date: 2014/05/01 18:12:26 $
 //
 
 // Mu2e includes
@@ -31,7 +31,7 @@ using namespace std;
 namespace mu2e {
 
   ShankerWatanabeSpectrum::ShankerWatanabeSpectrum() :
-    _table ( loadTable<2,false>("ConditionsService/data/watanabe.tbl" ) )
+    _table ( loadTable<2,false>( ConfigFileLookupPolicy()("ConditionsService/data/watanabe.tbl" ) ) )
   {
     _wanaEndPoint    = _table(0,0); 
     _wanaEndPointVal = _table(0,1);
