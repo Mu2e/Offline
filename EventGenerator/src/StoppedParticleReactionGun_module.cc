@@ -21,6 +21,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -155,7 +156,7 @@ namespace mu2e {
       res.initialize<EjectedProtonSpectrum>(*elow, *ehi, spectrumRes);
     }
     else if (spectrumShape == "tabulated") {
-      res.initialize(loadTable<2>(psphys.get<std::string>("spectrumFileName")));
+      res.initialize(loadTable<2>( ConfigFileLookupPolicy()( psphys.get<std::string>("spectrumFileName"))) );
       *elow = res.getAbscissa(0);
       *ehi = res.getAbscissa(res.getNbins()-1);
     }
