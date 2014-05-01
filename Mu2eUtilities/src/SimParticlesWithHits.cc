@@ -9,9 +9,9 @@
 //
 // This class is not designed to be peristable.
 //
-// $Id: SimParticlesWithHits.cc,v 1.9 2014/04/15 14:41:02 murat Exp $
+// $Id: SimParticlesWithHits.cc,v 1.10 2014/05/01 00:33:33 murat Exp $
 // $Author: murat $
-// $Date: 2014/04/15 14:41:02 $
+// $Date: 2014/05/01 00:33:33 $
 //
 // Original author Rob Kutschke.
 //
@@ -62,6 +62,11 @@ namespace mu2e{
 
     art::Handle<SimParticleCollection> simsHandle;
     evt.getByLabel(_g4ModuleLabel,simsHandle);
+    if (!simsHandle.isValid()) {
+      printf(" ERROR in SimParticlesWithHits::SimParticlesWithHits: SimParticleCollection by %s not found\n",
+	     _g4ModuleLabel.data());
+      return;
+    }
     SimParticleCollection const& sims = *simsHandle;
 
     // Loop over all straw hits.
