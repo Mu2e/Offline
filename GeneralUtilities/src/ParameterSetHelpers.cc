@@ -2,6 +2,7 @@
 
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 
@@ -10,6 +11,47 @@
 
 #include "GeneralUtilities/inc/Binning.hh"
 
+#include "art/Utilities/InputTag.h"
+
+//-----------------------------------------------------------------
+// std::vector<std::string> ====> std::vector<art::InputTag>
+//-----------------------------------------------------------------
+template<>
+std::vector<art::InputTag> fhicl::ParameterSet::get<std::vector<art::InputTag>>( std::string const & key ) const {
+
+  std::vector<std::string> stringset;
+  const bool present = get_if_present<std::vector<std::string>>( key, stringset );
+ 
+  if ( !present ) throw fhicl::exception(cant_find, key);
+
+  std::vector<art::InputTag> value;
+  value.reserve( stringset.size() );
+
+  for ( const auto& is : stringset ) value.push_back( is ); // implicit conversion to art::InputTag
+  return value;
+}
+
+//-----------------------------------------------------------------
+// std::vector<std::string> ====> std::vector<art::InputTag>
+//-----------------------------------------------------------------
+template<>
+std::vector<art::InputTag> fhicl::ParameterSet::get<std::vector<art::InputTag>>( std::string const & key, std::vector<art::InputTag> const & default_value ) const {
+
+  std::vector<std::string> stringset;
+  const bool present = get_if_present<std::vector<std::string>>( key, stringset );
+  
+  if ( !present) return default_value;
+
+  std::vector<art::InputTag> value;
+  value.reserve( stringset.size() );
+
+  for ( const auto& is : stringset ) value.push_back( is ); // implicit conversion to art::InputTag
+  return value;
+}
+
+//-----------------------------------------------------------------
+// std::vector<double> ====> CLHEP::Hep3Vector
+//-----------------------------------------------------------------
 template<>
 bool fhicl::ParameterSet::get_if_present<CLHEP::Hep3Vector>(std::string const & key, CLHEP::Hep3Vector& value) const {
   std::vector<double> val;

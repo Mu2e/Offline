@@ -14,14 +14,24 @@
 #define GeneralUtilities_inc_ParameterSetHelpers_hh
 
 #include <string>
+#include <vector>
 #include "fhiclcpp/ParameterSet.h"
 
+namespace art { class InputTag; }
 namespace CLHEP { class Hep3Vector; }
 
 class Binning;
 
 namespace fhicl {
 
+  // Converting list of strings into vector of art::InputTag's
+  template<> std::vector<art::InputTag> 
+  ParameterSet::get<std::vector<art::InputTag>>(std::string const & key ) const;
+
+  template<> std::vector<art::InputTag> 
+  ParameterSet::get<std::vector<art::InputTag>>(std::string const & key, std::vector<art::InputTag> const& default_value ) const;
+
+  // Converting list of doubles to CLHEP::Hep3Vector
   template<> bool ParameterSet::get_if_present<CLHEP::Hep3Vector>(std::string const & key, CLHEP::Hep3Vector& value) const;
 
   // Read a binning for a histogram, represented by:
