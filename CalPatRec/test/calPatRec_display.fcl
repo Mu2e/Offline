@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec_display.fcl,v 1.8 2014/05/01 17:25:17 murat Exp $
+# $Id: calPatRec_display.fcl,v 1.9 2014/05/01 19:31:09 murat Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits
@@ -177,7 +177,8 @@ physics.producers.ParticleID.fitterModuleLabel                  : CalPatRec
 
 # physics.filters.MuHitDisplay.strawHitMakerModuleLabel           : makeSH
 # physics.filters.MuHitDisplay.generatorModuleLabel               : ""
-# hysics.filters.MuHitDisplay.g4ModuleLabel                      : ""
+# physics.filters.MuHitDisplay.g4ModuleLabel                      : "g4run"
+physics.filters.MuHitDisplay.g4ModuleLabel                      : "g4filter"  # for Ralf's new cosmic dataset
 physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel        : MakeStrawHitPositions
 physics.filters.MuHitDisplay.trkPatRecModuleLabel               : CalPatRec
 physics.filters.MuHitDisplay.useStereoHits                      : false

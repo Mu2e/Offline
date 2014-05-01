@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: MergePatRec_module.cc,v 1.5 2014/04/18 16:45:53 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2014/04/18 16:45:53 $
+// $Id: MergePatRec_module.cc,v 1.6 2014/05/01 19:31:09 murat Exp $
+// $Author: murat $ 
+// $Date: 2014/05/01 19:31:09 $
 // takes inputs from two track finding algorithms, produces one track collection 
 // on output to be used for analysis
 ///////////////////////////////////////////////////////////////////////////////
@@ -20,6 +20,8 @@
 #include "TFolder.h"
 
 #include "KalmanTests/inc/KalRepCollection.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -52,23 +54,29 @@ namespace mu2e {
     virtual void produce(art::Event& event ); 
     void endJob();
   private:
-    unsigned _iev;
+    unsigned         _iev;
 					// configuration parameters
-    int _diag,_debug;
-    int _printfreq;
-    bool _addhits; 
+    int              _diag, _debug;
+    int              _printfreq;
+    bool             _addhits; 
+    TrkParticle      _tpart;	        // particle type being searched for
+    TrkFitDirection  _fdir;		// fit direction in search
 					// event object labels
-    std::string _trkPatRecLabel;
-    std::string _calPatRecLabel;
+    std::string      _trkPatRecLabel;
+    std::string      _calPatRecLabel;
+    std::string      _iname;	// data instance name
   };
   
   MergePatRec::MergePatRec(fhicl::ParameterSet const& pset) :
-    _diag(pset.get<int>("diagLevel",0)),
-    _debug(pset.get<int>("debugLevel",0)),
+    _diag          (pset.get<int>("diagLevel",0)),
+    _debug         (pset.get<int>("debugLevel",0)),
+    _tpart         ((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
+    _fdir          ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _trkPatRecLabel(pset.get<std::string>("trkPatReclabel","TrkPatRec")),
     _calPatRecLabel(pset.get<std::string>("calPatReclabel","CalPatRec"))
   {
     // tag the data product instance by the direction and particle type found by this module
+    _iname = _fdir.name() + _tpart.name();
     produces<AlgorithmIDCollection>("DownstreameMinus");
     produces<KalRepCollection>     ("DownstreameMinus");
   }
@@ -87,8 +95,9 @@ namespace mu2e {
     art::Handle<mu2e::KalRepCollection> tpr_h, cpr_h;
     mu2e::KalRepCollection  *list_of_kreps_tpr(0), *list_of_kreps_cpr(0);
 
-    unique_ptr<KalRepCollection>      tracks(new KalRepCollection );
-    unique_ptr<AlgorithmIDCollection> algs  (new AlgorithmIDCollection );
+    unique_ptr<KalRepCollection>      tracks   (new KalRepCollection     );
+    unique_ptr<AlgorithmIDCollection> algs     (new AlgorithmIDCollection);
+    unique_ptr<KalRepPtrCollection>   trackPtrs(new KalRepPtrCollection  );
 
     AnEvent.getByLabel(_trkPatRecLabel,"DownstreameMinus",tpr_h);
     AnEvent.getByLabel(_calPatRecLabel,"DownstreameMinus",cpr_h);
@@ -96,6 +105,9 @@ namespace mu2e {
     list_of_kreps_tpr = (mu2e::KalRepCollection*) &(*tpr_h);
     list_of_kreps_cpr = (mu2e::KalRepCollection*) &(*cpr_h);
     
+//     art::ProductID tpr_id(getProductID<KalRepCollection>(AnEvent,_trkPatRecLabel,_iname));
+//     art::ProductID cpr_id(getProductID<KalRepCollection>(AnEvent,_calPatRecLabel,_iname));
+
     // assume less 10 tracks
 
     int   tpr_flag[10], cpr_flag[10], ntpr, ncpr;
@@ -173,8 +185,8 @@ namespace mu2e {
     }
 
 
-    AnEvent.put(std::move(tracks),"DownstreameMinus");
-    AnEvent.put(std::move(algs  ),"DownstreameMinus");
+    AnEvent.put(std::move(tracks),_iname);
+    AnEvent.put(std::move(algs  ),_iname);
   }
 
   void MergePatRec::endJob() {

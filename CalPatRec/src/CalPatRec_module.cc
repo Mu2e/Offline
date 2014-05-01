@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.9 2014/04/24 18:30:30 gianipez Exp $
-// $Author: gianipez $ 
-// $Date: 2014/04/24 18:30:30 $
+// $Id: CalPatRec_module.cc,v 1.10 2014/05/01 19:31:09 murat Exp $
+// $Author: murat $ 
+// $Date: 2014/05/01 19:31:09 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -125,7 +125,7 @@ namespace mu2e {
     double           _maxdtmiss;
     double           _fbf;
 					// time spectrum parameters
-    bool             _findtpeak;
+    //    bool             _findtpeak;
     unsigned         _maxnpeak;
     unsigned         _minnhits;
     double           _tmin;
@@ -251,7 +251,7 @@ namespace mu2e {
     _maxdt       (pset.get<double>("DtMax", 20.0)),
     _maxdtmiss   (pset.get<double>("DtMaxMiss",55.0)),
     _fbf         (pset.get<double>("PhiEdgeBuffer",1.1)),
-    _findtpeak   (pset.get<bool>("FindTimePeaks",true)),
+    //    _findtpeak   (pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak    (pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits    (pset.get<unsigned>("MinNHits" ,20)),
     _tmin            (pset.get<double>("tmin"             ,0.0)),
@@ -277,7 +277,7 @@ namespace mu2e {
 					// and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();
     produces<KalRepCollection>      (_iname);
-    //    produces<KalRepPtrCollection>   (_iname);
+    produces<KalRepPtrCollection>   (_iname);
     produces<StrawHitFlagCollection>(_iname);
     produces<CalTimePeakCollection> (_iname);
 
@@ -429,13 +429,8 @@ namespace mu2e {
     }
 //-----------------------------------------------------------------------------
 // find the time peaks in the time spectrum of selected hits.  
-// Otherwise, take all selected hits as a peak
 //-----------------------------------------------------------------------------
-    if(_findtpeak) {
-      findTimePeaks(_tpeaks);
-    } else {
-      createTimePeak(_tpeaks);
-    }
+    findTimePeaks(_tpeaks);
 //-----------------------------------------------------------------------------
 // diagnostics, MC truth
 //-----------------------------------------------------------------------------
@@ -595,7 +590,7 @@ namespace mu2e {
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     _payloadSaver.put(*tracks, tracksID, event);
     event.put(std::move(tracks),   _iname);
-    //    event.put(std::move(trackPtrs),_iname);
+    event.put(std::move(trackPtrs),_iname);
     event.put(std::move(flags ),   _iname);
     event.put(std::move(tpeaks),   _iname);
   }
