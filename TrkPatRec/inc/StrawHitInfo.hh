@@ -1,7 +1,7 @@
 //
-// $Id: StrawHitInfo.hh,v 1.7 2013/08/09 22:10:53 brownd Exp $
+// $Id: StrawHitInfo.hh,v 1.8 2014/05/05 22:25:56 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2013/08/09 22:10:53 $
+// $Date: 2014/05/05 22:25:56 $
 //
 // struct for hit diagnostics
 #ifndef StrawHitInfo_hh
@@ -25,8 +25,6 @@ namespace mu2e {
     Int_t _hflag;
     Float_t _hgd, _cdist; // MVA output of generalized distance
     Float_t _dphi, _drho, _dt; // MVA inputs
-// root
-    ClassDef(StrawHitInfo,1)
   };
 }
 #endif

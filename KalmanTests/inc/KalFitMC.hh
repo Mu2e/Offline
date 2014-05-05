@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.36 2014/04/02 14:18:00 brownd Exp $
+// $Id: KalFitMC.hh,v 1.37 2014/05/05 22:25:56 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/04/02 14:18:00 $
+// $Date: 2014/05/05 22:25:56 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -90,8 +90,6 @@ namespace mu2e
     Float_t _mcedep;
     Int_t _mcambig;
     Bool_t _xtalk;
-// root 
-    ClassDef(TrkStrawHitInfo,1)
   };
 
   struct MCTrkInfo {
@@ -118,26 +116,6 @@ namespace mu2e
     const SimParticleCollection *_simparts;
   };
  
- // struct to describe an arc within a vector of TrkStrawHits
-  struct TrkArc {
-    size_t _begin;
-    size_t _end;
-    size_t _beginactive;
-    size_t _endactive;
-    unsigned _ntsh;
-    unsigned _nactive;
-// initialize to 0
-    TrkArc(size_t begin=0) : _begin(begin),_end(begin),_beginactive(begin),_endactive(begin),_ntsh(0),_nactive(0){}
-  };
-
-
-  struct TrkArcInfo {
-    Int_t _narctsh, _narcactive;
-    Float_t _arctshlen, _arcactivelen;
-// root 
-    ClassDef(TrkArcInfo,1)
-  };
-
   typedef StepPointMCCollection::const_iterator MCStepItr;
 //  struct test : public binary_function<double,double,bool> {
 //    bool operator()(double x, double y) { return x < y;}
@@ -202,8 +180,6 @@ namespace mu2e
     static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
     void fillMCHitSummary();
     void fillHitsVector(const KalRep* krep,std::vector<const TrkStrawHit*>& hits);
-    void findArcs(std::vector<const TrkStrawHit*> const& straws, std::vector<TrkArc>&  arcs) const;
-    static int findArc(size_t itsh,std::vector<TrkArc>& arcs );
 // config parameters
     double _mintrkmom; // minimum true momentum at z=0 to create a track from
     double _mct0err;
@@ -256,7 +232,6 @@ namespace mu2e
     Float_t _bremsz;
  
     std::vector<TrkStrawHitInfo> _tshinfo;
-    std::vector<TrkArcInfo> _tainfo;
 
 // hit tuple variables
     TTree *_hitdiag;

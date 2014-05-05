@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.57 2014/04/06 13:11:40 brownd Exp $
+// $Id: KalFitMC.cc,v 1.58 2014/05/05 22:25:56 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/04/06 13:11:40 $
+// $Date: 2014/05/05 22:25:56 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -381,8 +381,6 @@ namespace mu2e
 	std::vector<const TrkStrawHit*> hits;
 	fillHitsVector(krep,hits);	
 	hitsDiag(hits);
-	if(_diag > 2)
-	  arcsDiag(hits);
       }
       if(krep->fitCurrent()){
 	_t0 = krep->t0().t0();
@@ -487,24 +485,6 @@ namespace mu2e
     }
   }
   
-  void KalFitMC::arcsDiag(std::vector<const TrkStrawHit*> const& hits) {
-    _tainfo.clear();
-    // find the arcs
-    std::vector<TrkArc> arcs;
-    findArcs(hits,arcs);
-    _narcs = arcs.size();
-    // loop over arcs
-    for(size_t iarc=0;iarc < arcs.size(); ++iarc){
-      TrkArcInfo tainfo;
-      TrkArc const& arc = arcs[iarc];
-      tainfo._narctsh = arc._ntsh;
-      tainfo._narcactive = arc._nactive;
-      tainfo._arctshlen = hits[arc._end]->fltLen() - hits[arc._begin]->fltLen();
-      tainfo._arcactivelen = hits[arc._endactive]->fltLen() - hits[arc._beginactive]->fltLen();
-      _tainfo.push_back(tainfo);
-    }
-  }
-
   void KalFitMC::hitsDiag(std::vector<const TrkStrawHit*> const& hits) {
     _tshinfo.clear();
     _ncactive = 0;
@@ -746,8 +726,6 @@ namespace mu2e
 // track hit and arc info    
     if(_diag > 1)
       _trkdiag->Branch("tshinfo",&_tshinfo);
-    if(_diag > 2)
-      _trkdiag->Branch("tainfo",&_tainfo);
     return _trkdiag;
   }
 
@@ -873,47 +851,6 @@ namespace mu2e
       case trackerExit:
 	return _mcxitinfo._hpar;
     }
-  }
-
-  void
-  KalFitMC::findArcs(std::vector<const TrkStrawHit*> const& straws, std::vector<TrkArc>& arcs) const {
-    arcs.clear();
-// define an initial arc
-    size_t istraw(0);
-    while(istraw < straws.size()){
-      int igap(0);
-      TrkArc arc(istraw);
-      bool firstactive(false);
-      do {
-	arc._end = istraw;
-	++arc._ntsh;
-	if(straws[istraw]->isActive()){
-	  arc._endactive = istraw;
-	  ++arc._nactive;
-	  if(!firstactive){
-	    arc._beginactive = istraw;
-	    firstactive = true;
-	  }
-	}
-// advance to the next straw and compute the gap
-	++istraw;
-      	if(istraw< straws.size())igap = straws[istraw]->straw().id().getDevice()-straws[arc._end]->straw().id().getDevice();
-// loop while the gap is small
-      } while(istraw < straws.size() && igap <= _maxarcgap);
-// end of an arc: record it
-      arcs.push_back(arc);
-// update the arc to start with this new straw
-      arc = TrkArc(istraw);
-    }
-  }
-
-  int
-  KalFitMC::findArc(size_t itsh,std::vector<TrkArc>& arcs ) {
-    for(size_t iarc=0;iarc<arcs.size();++iarc){
-      if(itsh >= arcs[iarc]._begin && itsh <= arcs[iarc]._end)
-	return iarc;
-    }
-    return -1;
   }
 
   void
