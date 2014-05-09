@@ -62,6 +62,32 @@ double pbarwedge.dz0 = 0.001;// G4 does not like 0
 double pbarwedge.dz1 = 1.1;  // This makes total thickness changing
                              // from 0.12 mm to 1.0 mm over the 
                              // height of window
+
+bool   pbar.coll1In.build = false;      // pbar absorber at TS1 entrance
+double pbar.coll1In.halfLength = 0.175;
+double pbar.coll1In.offset = 1.0;       // distance to the TS1 entrance on +z
+
+bool   pbar.coll1Out.build = false;     // pbar absorber inside TS1 collimator near end
+string pbar.coll1Out.material1Name = "G4_C";
+double pbar.coll1Out.halfLength = 100.0;
+double pbar.coll1Out.rIn = 120.0;
+double pbar.coll1Out.z = -3154.0;
+double pbar.coll1Out.phiBegin = 200.0;
+double pbar.coll1Out.phiDelta = 140.0;
+
+bool   pbar.TS2.build = false;          // pbar absorber in TS2
+vector<double> pbar.TS2.origin = {975.0, 0.0, 2929.0};
+double pbar.TS2.theta = 85.0; // deg, w.r.t z axis
+double pbar.TS2.halfLength = 0.5; // pbar absorber half length at TS2
+double pbar.TS2.rIn  = 100.0;
+double pbar.TS2.rOut = 240.0;
+double pbar.TS2.phiBegin = 210.0;
+double pbar.TS2.phiDelta = 120.0;
+
+bool   pbar.coll31In.build = false;     // pbar absorber at TS3 coll31 entrance
+double pbar.coll31In.halfLength = 0.001;
+double pbar.coll31In.offset = 1.0;      // distance to the TS3 coll31 entrance plane
+
 // Collimators
 bool   ts.coll.visible        = true;
 bool   ts.coll.solid          = false;

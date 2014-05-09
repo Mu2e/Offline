@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.30 2014/02/25 23:26:26 youzy Exp $
+// $Id: constructTS.cc,v 1.31 2014/05/09 18:47:09 youzy Exp $
 // $Author: youzy $
-// $Date: 2014/02/25 23:26:26 $
+// $Date: 2014/05/09 18:47:09 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -954,7 +954,7 @@ namespace mu2e {
 
     PbarWindow const & pbarWindow = bl.getTS().getPbarWindow();
     G4Material* pbarMaterial  = findMaterialOrThrow( pbarWindow.material() );
-
+    if (verbosityLevel > 0) std::cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << std::endl; 
         
     if ( pbarWindow.shape() == "wedge" ||
          pbarWindow.shape() == "disk" ) {
@@ -1062,6 +1062,154 @@ namespace mu2e {
         throw cet::exception("GEOM")<<
           " Incorrect pbar window geometry requested! \n " ;
       }
+
+    // add a pbar window at the TS entrance
+    TransportSolenoid const& ts = bl.getTS();
+    GeomHandle<VirtualDetector> vdg;
+    double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
+    G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+
+    bool is_pbarTS1In  = config.getBool("pbar.coll1In.build", true);
+    bool is_pbarTS1Out = config.getBool("pbar.coll1Out.build", true);
+    bool is_pbarTS2    = config.getBool("pbar.TS2.build", true);
+    bool is_pbarTS31   = config.getBool("pbar.coll31In.build", false);
+
+    if (is_pbarTS1In) {
+      CollimatorTS1 const& coll1  = ts.getColl1() ;
+
+      double pbarTS1InHalfLength = config.getDouble("pbar.coll1In.halfLength", 0.05);
+      double pbarTS1InParams[5]  = { 0.0, coll1.rIn1(), pbarTS1InHalfLength, 0.0, CLHEP::twopi };
+      double pbarTS1InOffset = config.getDouble("pbar.coll1In.offset", 1.0);
+      std::cout << "Pbar absorber at TS1 coll1 entrance halfLength : " << pbarTS1InHalfLength << std::endl;
+
+      CLHEP::Hep3Vector pbarTS1InPos = coll1.getLocal();
+      pbarTS1InPos.setZ( pbarTS1InPos.z() - coll1.halfLength() + 2.*vdHalfLength + pbarTS1InHalfLength + pbarTS1InOffset);
+
+      nestTubs( "PbarAbsTS1In",
+                pbarTS1InParams,
+                pbarMaterial,
+                0,
+                pbarTS1InPos,
+                _helper->locateVolInfo("TS1Vacuum"),
+                0,
+                visible,
+                G4Color::Yellow(),
+                solid,
+                forceAuxEdgeVisible,
+                placePV,
+                doSurfaceCheck
+              );
+    }
+
+    if (is_pbarTS1Out) {
+      CollimatorTS1 const& coll1  = ts.getColl1() ;
+
+      string pbarTS1OutMaterial   = config.getString("pbar.coll1Out.material1Name");
+      double pbarTS1OutHalfLength = config.getDouble("pbar.coll1Out.halfLength", 0.05);
+      double pbarTS1OutrIn        = config.getDouble("pbar.coll1Out.rIn",        120.0);
+      double pbarTS1OutphiBegin   = config.getDouble("pbar.coll1Out.phiBegin",   210.0);
+      double pbarTS1OutphiDelta   = config.getDouble("pbar.coll1Out.phiDelta",   120.0);
+      double pbarTS1OutParams[5]  = { pbarTS1OutrIn, coll1.rIn1(), pbarTS1OutHalfLength,
+                                      pbarTS1OutphiBegin*CLHEP::degree, pbarTS1OutphiDelta*CLHEP::degree };
+      double pbarTS1OutPosz       = config.getDouble("pbar.coll1Out.z", -3144.0);
+      std::cout << "Pbar absorber at TS1 coll1 near exit halfLength : " << pbarTS1OutHalfLength << " rIn " << pbarTS1OutrIn 
+          << " pbarTS1OutPosz " << pbarTS1OutPosz << " phiBegin " << pbarTS1OutphiBegin << " dPhi " << pbarTS1OutphiDelta << std::endl;
+
+      CLHEP::Hep3Vector pbarTS1OutPos = coll1.getLocal();
+//      CLHEP::Hep3Vector TS1VacuumPos = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT)->getGlobal()-_hallOriginInMu2e;
+//      pbarTS1OutPos.setZ( pbarTS1Outz - TS1VacuumPos.z() );
+      pbarTS1OutPos.setZ( pbarTS1OutPos.z() + (pbarTS1OutPosz-(-4044)) - coll1.halfLength() );
+
+      nestTubs( "PbarAbsTS1Out",
+                pbarTS1OutParams,
+                findMaterialOrThrow(pbarTS1OutMaterial),
+                0,
+                pbarTS1OutPos,
+                _helper->locateVolInfo("TS1Vacuum"),
+                0,
+                visible,
+                G4Color::Yellow(),
+                solid,
+                forceAuxEdgeVisible,
+                placePV,
+                doSurfaceCheck
+              );
+    }
+
+    if (is_pbarTS2) {
+      double rTorus = config.getDouble("ts.rTorus", 2929.0);
+
+      vector<double> pbarTS2Origin;
+      config.getVectorDouble("pbar.TS2.origin", pbarTS2Origin, vector<double>() );
+      CLHEP::Hep3Vector originTS2(pbarTS2Origin[0], pbarTS2Origin[1], pbarTS2Origin[2]); 
+
+      double theta = config.getDouble("pbar.TS2.theta", 85.0);   
+      CLHEP::Hep3Vector pbarTS2Pos(sin(theta*CLHEP::degree), -cos(theta*CLHEP::degree), 0.0);
+      pbarTS2Pos *= rTorus;
+      //cout << "pbarTS2 pos " << pbarTS2Pos << endl;
+
+      double pbarTS2HalfLength = config.getDouble("pbar.TS2.halfLength", 0.5);
+      double pbarTS2rIn        = config.getDouble("pbar.TS2.rIn",        100.0);
+      double pbarTS2rOut       = config.getDouble("pbar.TS2.rOut",       240.0);
+      double pbarTS2phiBegin   = config.getDouble("pbar.TS2.phiBegin",   210.0);
+      double pbarTS2phiDelta   = config.getDouble("pbar.TS2.phiDelta",   120.0);
+      double pbarTS2Params[5]  = { pbarTS2rIn, pbarTS2rOut, pbarTS2HalfLength,
+                                   pbarTS2phiBegin*CLHEP::degree, pbarTS2phiDelta*CLHEP::degree };
+
+      std::cout << "pbarTS2 params: halfLength " << pbarTS2HalfLength << " rIn " << pbarTS2rIn << " rOut " << pbarTS2rOut
+           << " phiBegin " << pbarTS2phiBegin << " dPhi " << pbarTS2phiDelta << std::endl;
+    
+      AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+      G4RotationMatrix* pbarTS2Rot = reg.add(G4RotationMatrix());
+      pbarTS2Rot->rotateX( -90.0*CLHEP::degree );
+      pbarTS2Rot->rotateY( (90.0-theta)*CLHEP::degree );
+
+      nestTubs( "PbarAbsTS2",
+                pbarTS2Params,
+                pbarMaterial,
+                pbarTS2Rot,
+                pbarTS2Pos,
+                _helper->locateVolInfo("TS2Vacuum"),
+                0,
+                visible,
+                G4Color::Yellow(),
+                solid,
+                forceAuxEdgeVisible,
+                placePV,
+                doSurfaceCheck
+              );
+    }
+
+    if (is_pbarTS31) {
+      CollimatorTS3 const& coll31 = ts.getColl31();
+
+      double pbarTS31HalfLength = config.getDouble("pbar.coll31In.halfLength", 0.05);
+      double pbarTS31Params[5]  = { 0.0, ts.innerRadius(), pbarTS31HalfLength, 0.0, CLHEP::twopi };
+      double pbarTS31Offset = config.getDouble("pbar.coll31In.offset", 1.0);
+
+      CLHEP::Hep3Vector pbarTS31Pos = coll31.getLocal();
+      pbarTS31Pos.setZ( pbarTS31Pos.z() - coll31.halfLength() - pbarTS31HalfLength - pbarTS31Offset);
+
+      AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+
+      G4RotationMatrix* coll31Rot = reg.add(G4RotationMatrix());
+      coll31Rot->rotateZ(coll31.rotationAngle()*CLHEP::degree);
+
+      nestTubs( "PbarAbsTS31",
+                pbarTS31Params,
+                pbarMaterial,
+                coll31Rot,
+                pbarTS31Pos,
+                _helper->locateVolInfo("TS3Vacuum"),
+                0,
+                visible,
+                G4Color::Yellow(),
+                solid,
+                forceAuxEdgeVisible,
+                placePV,
+                doSurfaceCheck
+              );
+    }
 
   } // end Mu2eWorld::constructPbarWindow()
 

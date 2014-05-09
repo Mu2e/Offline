@@ -2,6 +2,15 @@
 
            Release notes for Mu2e Offline software, v4_1_9
 
+4) May 9, 2014, youzy
+   Add configuration for new pbar absorber added in front of TS1 entrance,
+   "arc" shape in TS1 collimator near exit, and option to add additional 
+   absorber in TS2, TS31
+
+   Modified files:
+     Mu2eG4/src/constructTS.cc
+     Mu2eG4/test/TransportSolenoid_v01.txt
+
 3) April 30, 2014, brownd
     Fix bug in stereo hit MVA variable filling noticed by Mike Wang.
     Retrain (new weights) and tweak cuts appropriately.  Also improved
