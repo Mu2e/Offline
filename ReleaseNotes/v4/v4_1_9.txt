@@ -2,6 +2,12 @@
 
            Release notes for Mu2e Offline software, v4_1_9
 
+5) May 12, 2014, kutschke
+   Bug fix in TrackingAction::swapTrajectory.
+   If the SimParticle does not exist, issue a warning message; do not
+   store the trajectory and otherwise continue normally. Previously
+   this condition threw an exception.
+
 4) May 9, 2014, youzy
    Add configuration for new pbar absorber added in front of TS1 entrance,
    "arc" shape in TS1 collimator near exit, and option to add additional 
