@@ -3,9 +3,9 @@
 //
 // Free function for loading table two-column table
 //
-// $Id: Table.hh,v 1.4 2014/04/25 17:26:42 knoepfel Exp $
+// $Id: Table.hh,v 1.5 2014/05/12 13:55:55 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/04/25 17:26:42 $
+// $Date: 2014/05/12 13:55:55 $
 //
 // Original author: Kyle Knoepfel
 
@@ -59,7 +59,7 @@ namespace mu2e {
     void renormalizeShape( const double norm           );
     void interpolateShape( const double key1, const double key2, const double res, const double binCorr = 1. );
     void interpolateShape( const std::vector<double>& keys, const double binCorr = 1. );
-    void replaceShape    ( const TableVec<N>& newtable = TableVec<2>(), const bool sortA = true );
+    void replaceShape    ( const TableVec<N>& newtable = TableVec<N>(), const bool sortA = true );
 
     // Operators and ordering functions
     double operator()(unsigned i, unsigned j=1)  const { 
