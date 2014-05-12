@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.43 2014/03/24 21:39:01 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/03/24 21:39:01 $
+// $Id: TrackingAction.cc,v 1.44 2014/05/12 15:23:29 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2014/05/12 15:23:29 $
 //
 // Original author Rob Kutschke
 //
@@ -47,6 +47,7 @@
 
 // G4 includes
 #include "globals.hh"
+#include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4EventManager.hh"
 
@@ -369,10 +370,14 @@ namespace mu2e {
     // Find the particle in the map.
     map_type::iterator i(_transientMap.find(kid));
     if ( i == _transientMap.end() ){
-      throw cet::exception("RANGE")
-        << "Could not find existing SimParticle in TrackingAction::addTrajectory  id: "
-        << kid
-        << "\n";
+      G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
+
+      mf::LogWarning("G4") << "TrackingAction::swapTrajectory: "
+                           << "SimParticle is not found.\nprobably the SimParticleCollection exceeds its maximum allowed size."
+                           << "Will not store MCTrajectory for: event "
+                           << event->GetEventID()
+                           << " Track: " << trk->GetTrackID() << "\n";
+      return;
     }
 
     CLHEP::HepLorentzVector const& p0 = i->second.startMomentum();
