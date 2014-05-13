@@ -7,6 +7,8 @@
 #include "TCanvas.h"
 #include "TH2F.h"
 #include "TStyle.h"
+#include "TLine.h"
+#include "TArrow.h"
 #include "TCut.h"
 #include "TMath.h"
 #include "TProfile.h"
@@ -348,9 +350,9 @@ void KalFitTrk (TTree* trks ) {
   tdpull->Fit("gaus");
 
   TCanvas* fcan = new TCanvas("fitcan","fitcan",1200,800);
-//  TH2F* mom = new TH2F("mom","momentum at first hit;true mom (MeV);reco mom (MeV)",
+//  TH2F* mom = new TH2F("mom","momentum at first hit;true mom (MeV/c);reco mom (MeV/c)",
 //    100,80,110,100,80,110);
-  TH1F* mres = new TH1F("mres","momentum resolution at first hit;MeV",100,-2,2);
+  TH1F* mres = new TH1F("mres","momentum resolution at first hit;MeV/c",100,-2,2);
   TH1F* mpull = new TH1F("mpull","momentum pull at first hit",100,-10,10);
   TH1F* chisq = new TH1F("chisq","Chisq/NDof",100,0,10);
   trks->Project("mres","fitmom-mcmom","fitstatus>0");
@@ -372,10 +374,10 @@ void KalFitAccPlots(TTree* trks) {
   if(!donecuts)KalCuts();
 
   TH1F* nmc = new TH1F("nmc","N Straw Hits from CE;N straws",81,-0.5,80.5);
-  TH1F* mcmom = new TH1F("mcmom","CE true momentum at tracker;CE momentum (MeV)",57,49,106);
+  TH1F* mcmom = new TH1F("mcmom","CE true momentum at tracker;CE momentum (MeV/c)",57,49,106);
   
   TH1F* fitcon = new TH1F("fitcon","log_{10} fit consistency",101,-8,0);
-  TH1F* momerr = new TH1F("momerr","Fit momentum error;momentum error (MeV)",100,0,0.5);
+  TH1F* momerr = new TH1F("momerr","Fit momentum error;momentum error (MeV/c)",100,0,0.5);
   TH1F* t0err = new TH1F("t0err","Fit t_{0} error; t_{0} error (ns)",100,0,2.0);
   TH1F* na = new TH1F("na","Fit N active hits;N hits",71,-0.5,70.5);
 
@@ -384,7 +386,7 @@ void KalFitAccPlots(TTree* trks) {
   TH1F* d0 = new TH1F("d0","Track fit d_{0};d_{0} (mm)",100,-150,150);
   TH1F* rmax = new TH1F("rmax","Track fit rmax;d_{0}+2/#omega (mm)",100,300,900);
 
-  TH1F* fitmom = new TH1F("fitmom","Track fit momentum;fit momentum (MeV)",100,98,107);
+  TH1F* fitmom = new TH1F("fitmom","Track fit momentum;fit momentum (MeV/c)",100,98,107);
 
   trks->Project("nmc","ncgood");
   trks->Project("mcmom","mcentmom",nmch);
@@ -648,7 +650,7 @@ void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
     char fitname[50];
     snprintf(mname,50,"momres%i",ires);
     snprintf(fitname,50,"fitmomres%i",ires);
-    momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",251,-4,4);
+    momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV/c",251,-4,4);
 //  momres[ires]->SetStats(0);
     TCut quality = ncuts[ires]+t0cuts[ires]+momcuts[ires]+fitcuts[ires];
     TCut final = reco+quality+rpitch+cosmic+livegate+rmomloose;
@@ -696,8 +698,8 @@ void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
     rtext->AddText(line);
     sprintf(line,"%s",rmomloose.GetTitle());
     rtext->AddText(line);
-    sprintf(line,"Eff=%4.4f",keff);
-    rtext->AddText(line);
+//    sprintf(line,"Eff=%4.4f",keff);
+//    rtext->AddText(line);
     rtext->Draw();
  
   }
@@ -1072,8 +1074,8 @@ void KalFitError(TTree* t){
 
 //    TCut quality = ncuts[ires] && fitcuts[ires];
     TCut final = (reco+mcsel);
-    TH1F* momres1 = new TH1F("momres1","momentum resolution at start of tracker;MeV",151,-2.5,2.5);
-    TH1F* momres2 = new TH1F("momres2","momentum resolution at start of tracker;MeV",151,-2.5,2.5);
+    TH1F* momres1 = new TH1F("momres1","momentum resolution at start of tracker;MeV/c",151,-2.5,2.5);
+    TH1F* momres2 = new TH1F("momres2","momentum resolution at start of tracker;MeV/c",151,-2.5,2.5);
    
     t->Project("momres1","fitmom-mcentmom",final+"fitmomerr<0.15");
     t->Project("momres2","fitmom-mcentmom",final+"fitmomerr>0.2");
@@ -1201,5 +1203,62 @@ void KalFitNactive(TTree* t) {
   mleg->AddEntry(momres2,title,"p");
   mleg->Draw();
 
+}
 
+void KalFitMom(TTree* t) {
+  if(!donecuts)KalCuts();
+  TH1F* cemomtp = new TH1F("cemomtp","Conversion Electron Momentum;p (MeV/c)",200,97,107);
+  TH1F* cemomte = new TH1F("cemomte","Conversion Electron Momentum;p (MeV/c)",200,97,107);
+  TH1F* cemomr = new TH1F("cemomr","Conversion Electron Momentum;p (MeV/c)",200,97,107);
+  cemomtp->SetStats(0);
+  cemomtp->SetLineColor(kGreen);
+  cemomtp->SetFillColor(kGreen);
+  cemomte->SetStats(0);
+  cemomte->SetLineColor(kBlack);
+  cemomte->SetFillColor(kBlue);
+  cemomr->SetStats(0);
+  cemomr->SetLineColor(kRed);
+  t->Project("cemomtp","mcmom",goodfit);
+  t->Project("cemomte","mcentmom",goodfit);
+  t->Project("cemomr","fitmom",goodfit);
+  TCanvas* cemcan = new TCanvas("cemcan","Conversion Momentum",800,600);
+  cemcan->Divide(1,1);
+  cemcan->cd(1);
+  cemomte->Draw();
+//  cemomtp->Draw("same");
+//  cemomr->Draw("same");
+
+  
+  double thalfmax = cemomte->GetMaximum()/2.0;
+  int bin1 = cemomte->FindFirstBinAbove(thalfmax);
+  int bin2 = cemomte->FindLastBinAbove(thalfmax);
+  double tfwhm = cemomte->GetBinCenter(bin2) - cemomte->GetBinCenter(bin1);
+  TArrow* tfwhma = new TArrow(cemomte->GetBinCenter(bin1),thalfmax,
+  cemomte->GetBinCenter(bin2),thalfmax,0.02,"<|>");
+  tfwhma->SetLineWidth(2);
+  tfwhma->SetLineColor(kBlack);
+  tfwhma->SetFillColor(kBlack);
+  cemomte->Fit("gaus","","same",cemomte->GetBinCenter(bin1),cemomte->GetBinCenter(bin2));
+  tfwhma->Draw();
+
+  double rhalfmax = cemomr->GetMaximum()/2.0;
+  bin1 = cemomr->FindFirstBinAbove(rhalfmax);
+  bin2 = cemomr->FindLastBinAbove(rhalfmax);
+  double rfwhm = cemomr->GetBinCenter(bin2) - cemomr->GetBinCenter(bin1);
+  TArrow* rfwhma = new TArrow(cemomr->GetBinCenter(bin1),rhalfmax,
+  cemomr->GetBinCenter(bin2),rhalfmax,0.02,"<|>");
+  rfwhma->SetLineWidth(2);
+  rfwhma->SetLineColor(kRed);
+  rfwhma->SetFillColor(kRed);
+  cemomr->Fit("gaus","","same",cemomr->GetBinCenter(bin1),cemomr->GetBinCenter(bin2));
+  rfwhma->Draw();
+
+  TLegend* cemleg = new TLegend(0.1,0.6,0.6,0.9);
+  cemleg->AddEntry(cemomtp,"MC at Production","F");
+  char line[50];
+  snprintf(line,50,"MC at Tracker, FWHM = %3.1f KeV/c",1000.0*tfwhm);
+  cemleg->AddEntry(cemomte,line,"FL");
+  snprintf(line,50,"Reconstructed, FWHM = %3.1f KeV/c",1000.0*rfwhm);
+  cemleg->AddEntry(cemomr,line,"L");
+  cemleg->Draw();
 }

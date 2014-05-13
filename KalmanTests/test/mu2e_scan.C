@@ -14,7 +14,7 @@
 #include "KalmanTests/test/DIOCZ.h"
 using namespace std;
 
-void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,bool weightdio=true,const char* suffix=".png") {
+void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,double momlow, bool weightdio=true,const char* suffix=".png") {
   // diogenrange is the momentum range over which the DIO events were generated
   double nstopped(5.76e17);
   double capfrac(0.609); 
@@ -23,10 +23,10 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   double ncap = nstopped*capfrac;
   double conprob(1e-16);
   double trueconvmom(104.973);
-  double momlow(103.5);
+//  double momlow(103.5);
   double momhigh(105);
 
-  unsigned nbins(251);
+  unsigned nbins(201);
   double mmin(100);
   double mmax(106);
 
@@ -210,23 +210,27 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   conscan->SetLineColor(kRed);
   dioscan->SetMarkerColor(kBlue);
   conscan->SetMarkerColor(kRed);
-  conscan->SetMaximum(0.5);
-  conscan->SetMinimum(-0.5);
+  double smax(0.75);
+  double smin(-0.75);
+  conscan->SetMaximum(smax);
+  conscan->SetMinimum(smin);
   dioscan->SetTitle("Rate Sensitivity to lower Momentum Cut;#Delta P (KeV/c);Integral Change");
   conscan->SetTitle("Rate Sensitivity to lower Momentum Cut;#Delta P (KeV/c);Integral Change");
   TCanvas* scancan = new TCanvas("scan","Scan of lower threshold",800,800);
   scancan->Divide(1,1);
   scancan->cd(1);
   conscan->Draw("ALP");
+  conscan->Fit("pol2");
   dioscan->Draw("same");
+  dioscan->Fit("pol2");
   info->Draw();
   leg->Draw();
 
   int ilow = nscan-4;
   int ihi = nscan+4;
 
-  TLine* dlow = new TLine(diox[ilow],-0.5,diox[ilow],dioy[ilow]);
-  TLine* dhi = new TLine(diox[ihi],-0.5,diox[ihi],dioy[ihi]);
+  TLine* dlow = new TLine(diox[ilow],smin,diox[ilow],dioy[ilow]);
+  TLine* dhi = new TLine(diox[ihi],smax,diox[ihi],dioy[ihi]);
   TLine* dlowx = new TLine(diox[0],dioy[ilow],diox[ilow],dioy[ilow]);
   TLine* dhix = new TLine(diox[0],dioy[ihi],diox[ihi],dioy[ihi]);
   dlow->SetLineStyle(2);

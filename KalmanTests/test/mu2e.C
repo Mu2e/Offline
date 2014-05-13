@@ -344,18 +344,18 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     inttext->Draw();
 
     TPaveText* cuttext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
-    char line[40];
+    char line[80];
     snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
     cuttext->AddText(line);
     snprintf(line,80,"t0>%5.1f nsec",t0min);
     cuttext->AddText(line);
-    sprintf(line,"%s",ncuts[icut].GetTitle());
+    snprintf(line,80,"%s",ncuts[icut].GetTitle());
     cuttext->AddText(line);
-    sprintf(line,"%s",t0cuts[icut].GetTitle());
+    snprintf(line,80,"%s",t0cuts[icut].GetTitle());
     cuttext->AddText(line);
-    sprintf(line,"%s",momcuts[icut].GetTitle());
+    snprintf(line,80,"%s",momcuts[icut].GetTitle());
     cuttext->AddText(line);
-    sprintf(line,"%s",fitcuts[icut].GetTitle());
+    snprintf(line,80,"%s",fitcuts[icut].GetTitle());
     cuttext->AddText(line);
 //    cuttext->Draw();
 
@@ -375,9 +375,14 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     sigline->SetLineWidth(2);
     sigline->Draw();
 
-    TText* sigwin = new TText(0.5*(momlow+momhigh),0.9*conmax,"Signal Window");
+    TText* sigwin = new TText(0.5*(momlow+momhigh),0.90*conmax,"Signal Window");
     sigwin->SetTextAlign(21);
     sigwin->Draw();
+    snprintf(line,80,"%4.2f < p < %4.2f MeV/c",momlow,momhigh); 
+    TText* sigwin2 = new TText(0.5*(momlow+momhigh),0.84*conmax,line);
+    sigwin2->SetTextAlign(21);
+    sigwin2->SetTextSize(0.025);
+    sigwin2->Draw();
   }
   allcan->cd(0);
   std::string ssuf(suffix);
