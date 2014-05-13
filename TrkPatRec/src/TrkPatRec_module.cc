@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.72 2014/04/18 16:41:56 kutschke Exp $
-// $Author: kutschke $ 
-// $Date: 2014/04/18 16:41:56 $
+// $Id: TrkPatRec_module.cc,v 1.73 2014/05/13 18:26:07 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2014/05/13 18:26:07 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -159,8 +159,10 @@ namespace mu2e
       Int_t _nmcsteps;
       Int_t _mcnunique,_mcnmax;
       Int_t _mcpdg,_mcgen,_mcproc;
-      Int_t _mcppdg,_mcpgen,_mcpproc;
-      threevec _mcshp, _mcop, _mcpop;
+      Int_t _mcppdg,_mcpproc;
+      Int_t _mcgid, _mcgpdg;
+      Float_t _mcge, _mcgt;
+      threevec _mcshp, _mcop, _mcpop, _mcgpos;
       Float_t _mcoe, _mcpoe, _mcom, _mcpom;
       Float_t _mcshlen,_mcshd;
       Float_t _mcedep,_mcemax;
@@ -594,9 +596,13 @@ namespace mu2e
     _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
     _shdiag->Branch("mctime",&_mctime,"mctime/F");
     _shdiag->Branch("mcppdg",&_mcppdg,"mcpdg/I");
-    _shdiag->Branch("mcpgen",&_mcpgen,"mcgen/I");
-    _shdiag->Branch("mcpproc",&_mcpproc,"mcproc/I");
-    _shdiag->Branch("mcptime",&_mcptime,"mctime/F");
+    _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
+    _shdiag->Branch("mcptime",&_mcptime,"mcptime/F");
+    _shdiag->Branch("mcgid",&_mcgid,"mcgid/I");
+    _shdiag->Branch("mcgpdg",&_mcgpdg,"mcgpdg/I");
+    _shdiag->Branch("mcge",&_mcge,"mcge/F");
+    _shdiag->Branch("mcgt",&_mcgt,"mcgt/F");
+    _shdiag->Branch("mcgpos",&_mcgpos,"x/F:y/F:z/F");
     _shdiag->Branch("esel",&_esel,"esel/I");
     _shdiag->Branch("rsel",&_rsel,"rsel/I");
     _shdiag->Branch("tsel",&_timesel,"tsel/I");
@@ -698,7 +704,35 @@ namespace mu2e
 	_pperp /= esum;
 	_pmom /= esum;
       }
-      // summarize the MC truth for this strawhit
+      // summarize the MC truth for this strawhit.  Preset the values in case MC is missing/incomplete
+      _mcgid = -1;
+      _mcgpdg = -1;
+      _mcge = -1.0;
+      _mcgt = -1.0;
+      _mcgpos = threevec();
+      _mcppdg=0;
+      _mcpproc=-1;
+      _mcptime=0.0;
+      _mcpop = threevec();
+      _mcpoe = _mcpom = -1.0;
+      _mcemax = -1;
+      _mcnmax = -1;
+      _mcpdg = -1;
+      _mcgen = -1;
+      _mcproc = -1;
+      _mctime = -1;
+      _mcshp = threevec();
+      _mcop = threevec();
+      _mcoe = -1;
+      _mcom = -1;
+      _mcshlen = -1;
+      _mcshd = -1;
+      _mcppdg=0;
+      _mcpproc=-1;
+      _mcptime=0.0;
+      _mcpop = threevec(); 
+      _mcpoe = _mcpom = -1.0;
+      _xtalk = false;
       if(_kfitmc.mcData()._mcsteps != 0){
 	const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
 	_mcnunique = mcsum.size();
@@ -724,31 +758,32 @@ namespace mu2e
 	if(conversion){
 	  ++_nchit;
 	}
-  // parent information
+  // immediate parent information
 	art::Ptr<SimParticle> sp = mcptr[0]->simParticle();
 	if(sp.isNonnull() && sp->parent().isNonnull()){
 	  const art::Ptr<SimParticle>& psp = sp->parent();
 	  _mcppdg = psp->pdgId();
-	  if( psp->genParticle().isNonnull())
-	    _mcpgen = psp->genParticle()->generatorId().id();
-	  else
-	    _mcpgen = 0;
 	  _mcpproc = psp->creationCode();
 	  _mcptime = psp->startGlobalTime();
 	  _mcpop = det->toDetector(psp->startPosition());
 	  _mcpoe = psp->startMomentum().e();
 	  _mcpom = psp->startMomentum().vect().mag();
-	} else {
-	  _mcppdg=0;
-	  _mcpgen=-1;
-	  _mcpproc=-1;
-	  _mcptime=0.0;
-	  _mcpop = Hep3Vector(0.0,0.0,0.0);
-	  _mcpoe = _mcpom = -1.0;
+	}
+// generator information
+	if(sp.isNonnull()){
+	// find the first parent which comes from a generator
+	  while(sp->genParticle().isNull() && sp->parent().isNonnull()){
+	    sp = sp->parent();
+	  }
+	  if(sp->genParticle().isNonnull()){
+	    _mcgid = sp->genParticle()->generatorId().id();
+	    _mcgpdg = sp->genParticle()->pdgId();
+	    _mcge = sp->genParticle()->momentum().e();
+	    _mcgt = sp->genParticle()->time();
+	    _mcgpos = det->toDetector(sp->genParticle()->position());
+	  }
 	}
 	_xtalk = mcsum[0]._sid != sh.strawIndex();
-      } else {
-	_xtalk = false;
       }
       _esel = _flags->at(istr).hasAllProperties(StrawHitFlag::energysel);
       _rsel = _flags->at(istr).hasAllProperties(StrawHitFlag::radsel);
