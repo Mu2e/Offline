@@ -1,9 +1,9 @@
 //
 // CaloCrystalHit to be created based on CaloHit's
 //
-// $Id: CaloCrystalHit.cc,v 1.4 2014/04/15 22:41:08 murat Exp $
+// $Id: CaloCrystalHit.cc,v 1.5 2014/05/14 18:14:21 murat Exp $
 // $Author: murat $
-// $Date: 2014/04/15 22:41:08 $
+// $Date: 2014/05/14 18:14:21 $
 //
 
 // C++ includes
@@ -41,6 +41,25 @@ namespace mu2e {
     _energyDepTotal += he;
     ++_numberOfROIdsUsed;
     return *this;
+  }
+
+//-----------------------------------------------------------------------------
+// hit merging: merge 'Hit' with 'this'
+//-----------------------------------------------------------------------------
+  void CaloCrystalHit::add(CaloCrystalHit* Hit) {
+
+    double he = Hit->energyDep();
+    double ht = Hit->time();
+
+    _time            = (_time*_energyDep+ht*he)/(_energyDep+he);
+    _energyDep      += he;
+    _energyDepTotal += he;
+
+    for (std::vector<art::Ptr<mu2e::CaloHit>>::const_iterator k = Hit->readouts().begin(); 
+	 k != Hit->readouts().end(); k++) {
+	_readouts.push_back(*k);
+	++_numberOfROIdsUsed;
+    }
   }
 
   CaloCrystalHit& CaloCrystalHit::addEnergyToTot( CaloHit const & hit) {

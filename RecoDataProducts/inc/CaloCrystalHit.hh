@@ -1,9 +1,9 @@
 #ifndef RecoDataProducts_CaloCrystalHit_hh
 #define RecoDataProducts_CaloCrystalHit_hh
 
-// $Id: CaloCrystalHit.hh,v 1.4 2012/11/17 00:06:25 echenard Exp $
-// $Author: echenard $
-// $Date: 2012/11/17 00:06:25 $
+// $Id: CaloCrystalHit.hh,v 1.5 2014/05/14 18:14:21 murat Exp $
+// $Author: murat $
+// $Date: 2014/05/14 18:14:21 $
 //
 // Original author KLG
 
@@ -50,6 +50,8 @@ namespace mu2e {
 
     // almost operator += CaloHit
     CaloCrystalHit& add( CaloHit const & hit, CaloHitPtr const& chPtr );
+
+    void add(CaloCrystalHit* const hit);
 
     CaloCrystalHit& addEnergyToTot( CaloHit const & hit);
 
