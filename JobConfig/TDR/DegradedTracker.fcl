@@ -1,5 +1,5 @@
 physics.producers.makeSD.deadStrawList  : {
-verbosity   : 1
+verbosity   : 0
   deadSectors : [ "26_0", "26_1",  "26_2",  "26_3",  "26_4",  "26_5" ]
   deadStraws :  [
 "34_4_1_37",
