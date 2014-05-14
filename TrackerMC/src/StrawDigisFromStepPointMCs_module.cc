@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.33 2014/04/11 09:05:23 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.34 2014/05/14 17:15:29 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/04/11 09:05:23 $
+// $Date: 2014/05/14 17:15:29 $
 //
 // Original author David Brown, LBNL
 //
@@ -214,6 +214,7 @@ namespace mu2e {
 
     // Control some information messages.
     _firstEvent(true),
+    _deadStraws(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet())),
     _strawStatus(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet()))
     {
 // Tell the framework what we make.
