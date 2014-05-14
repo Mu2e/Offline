@@ -2,6 +2,10 @@
 
            Release notes for Mu2e Offline software, v4_1_9
 
+6) May 14, 2014 murat
+   Bug fix in hit merging algorithm in HitMakers/src/MakeCaloCrystalHitsNew_module.cc
+   Add CaloCrystalHit::add(CaloCrystalHit* const Hit) method
+
 5) May 12, 2014, kutschke
    Bug fix in TrackingAction::swapTrajectory.
    If the SimParticle does not exist, issue a warning message; do not

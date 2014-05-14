@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHitsNew_module.cc,v 1.6 2014/04/15 22:42:44 murat Exp $
+// $Id: MakeCaloCrystalHitsNew_module.cc,v 1.7 2014/05/14 18:17:16 murat Exp $
 // $Author: murat $
-// $Date: 2014/04/15 22:42:44 $
+// $Date: 2014/05/14 18:17:16 $
 //
 // Original author KLG
 // for realistic modeling: reduce timeGap from 30ns to 1 ns in Mu2eG4/test/calorimeter.txt
@@ -410,11 +410,8 @@ namespace mu2e {
 	  }
 	  
 	  // add all the hits of the second signal to the first one (merging)
-	  for (std::vector<art::Ptr<mu2e::CaloHit>>::const_iterator k = secondSignal->readouts().begin(); 
-	       k != secondSignal->readouts().end(); k++) {
-	    if (secondSignal->readouts().size()!=0)
-	      firstSignal->add(**k, *k);	
-	  }
+
+	  firstSignal->add(secondSignal);
 	}
 	
 	if (j!=signals.end()) {
