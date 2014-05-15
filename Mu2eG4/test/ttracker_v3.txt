@@ -3,9 +3,9 @@
 //   All lengths are given in mm.
 //   All angles are given in degrees.
 //
-// $Id: ttracker_v3.txt,v 1.5 2014/04/11 04:42:50 genser Exp $
-// $Author: genser $
-// $Date: 2014/04/11 04:42:50 $
+// $Id: ttracker_v3.txt,v 1.6 2014/05/15 05:07:23 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/05/15 05:07:23 $
 //
 // Most paramaters are from Mu2e-doc-888-v5
 // Parameters not found in that document are:
@@ -129,6 +129,9 @@ double ttracker.straw.wirePlate.thickness       = 0.00025;
 string ttracker.straw.wirePlate.material        = "G4_Au";
 
 bool   ttracker.ActiveWr_Wl_SD    = false;   //Active the Sensitive Detector for the wires and straw wall.
+
+// Turn off 2 stations for TDR
+vector<int> ttracker.nonExistingDevices = { 14,15,28,29 };
 
 //
 // This tells emacs to view this file in c++ mode.
