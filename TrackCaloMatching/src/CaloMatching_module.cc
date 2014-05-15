@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.22 2014/04/18 16:54:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:54:59 $
+// $Id: CaloMatching_module.cc,v 1.23 2014/05/15 05:05:37 murat Exp $
+// $Author: murat $
+// $Date: 2014/05/15 05:05:37 $
 //
 // Original author G. Pezzullo
 //
@@ -808,13 +808,15 @@ namespace mu2e {
 
 	tmpCOGvErr = 15.35 / 2.35;
 	tmpCOGwErr = 15.0 / 2.35;
-	//-----------------------------------------------------------------------------
-	// 2013-03-13 P.Murat: use 20 MeV as the mathching resolution
-	//-----------------------------------------------------------------------------
-	sigmaE2 = 20.; // cet::sum_of_squares(tmpEnergyErr, tmpCluEnergyErr);
-	sigmaV2 = cet::sum_of_squares(tmpPvErr, tmpCOGvErr);
-	sigmaW2 = cet::sum_of_squares(tmpPwErr, tmpCOGwErr);
-	sigmaT2 = cet::sum_of_squares(tmpPtimeErr, tmpCluTimeErr);
+//-----------------------------------------------------------------------------
+// 2014-05-14 P.Murat: use 10 MeV as the matching resolution, 
+//            for a 10 MeV cluster the energy term in the chi2 would be (90/10)^2
+//            also set coordinate resolution to 5cm , need to try using dv only
+//-----------------------------------------------------------------------------
+	sigmaE2 = 100.;   // cet::sum_of_squares(tmpEnergyErr, tmpCluEnergyErr);
+	sigmaV2 = 50*50.; // cet::sum_of_squares(tmpPvErr, tmpCOGvErr);
+	sigmaW2 = 50*50.; // cet::sum_of_squares(tmpPwErr, tmpCOGwErr);
+	sigmaT2 = 0.5*0.5; // cet::sum_of_squares(tmpPtimeErr, tmpCluTimeErr);
 
 	if(_diagLevel > 2){
 	  cout<<"after doing many corrections..."<<endl;
