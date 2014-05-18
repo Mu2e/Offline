@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.hh,v 1.7 2014/04/24 18:30:30 gianipez Exp $
-// $Author: gianipez $ 
-// $Date: 2014/04/24 18:30:30 $
+// $Id: HelixFitHack.hh,v 1.8 2014/05/18 13:56:50 murat Exp $
+// $Author: murat $ 
+// $Date: 2014/05/18 13:56:50 $
 //
 #ifndef HelixFitHack_HH
 #define HelixFitHack_HH
@@ -89,7 +89,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // utility struct
 //-----------------------------------------------------------------------------
-  struct XYZP {
+  struct XYZPHack {
     size_t            _ind;		// straw hit index
     CLHEP::Hep3Vector _pos;		// position
     double            _phi;	        // ambiguity-resolved phi angle
@@ -98,31 +98,26 @@ namespace mu2e {
     CLHEP::Hep3Vector _sdir;            // straw radial direction, perp to Z and wire direction
 					// errors are asymmetric; along the wire is given by time division, 
 					// perp to the wire by the straw size/sqrt(12)
-    double _perr,_rerr;
+    double            _perr;
+    double            _rerr;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
 					// initialize some variables on construction
-    XYZP():_phi(0.0) {
+    XYZPHack():_phi(0.0) {
     }
 
-    XYZP(size_t index, StrawHit const& sh, StrawHitPosition const& shp, Straw const& straw);
+    XYZPHack(size_t ind, StrawHit const& sh, StrawHitPosition const& shp, Straw const& straw, StrawHitFlag const& flag);
 
-    XYZP(size_t ind, CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr) :
-      _ind(ind),
-      _pos(pos),
-      _phi(_pos.phi()),
-      _wdir(wdir),
-      _sdir(wdir.y(),-wdir.x(),0.0),
-      _perr(_efac*werr),
-      _rerr(_efac*serr) {}
+    XYZPHack(size_t ind, CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr);
  
 // radial position information
     virtual void rinfo     (CLHEP::Hep3Vector const& center, VALERR& rad) const;
     virtual void finfo     (CLHEP::Hep3Vector const& center, VALERR& phi) const;
     bool         use       () const;
     bool         stereo    () const;
-    bool         isOutlier ();
+    bool         isOutlier () const;
+    bool         isCalosel () const;
     void         setOutlier();
     void         setUse    (bool use);
 
@@ -130,7 +125,7 @@ namespace mu2e {
     static StrawHitFlag _useflag;	// flag bits to define use
   };
 
-  typedef std::vector<XYZP> XYZPVector;
+  typedef std::vector<XYZPHack> XYZPHackVector;
 
 //-----------------------------------------------------------------------------
 // struct to hold AGE sums, contains weighted (s)ums of (c)osine and (s)in for 
@@ -227,17 +222,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 					// allow passing in the struct by hand
 
-    bool findHelix     (XYZPVector& xyzp, HelixFitHackResult& myfit);
-    bool findXY        (XYZPVector& xyzp, HelixFitHackResult& myhel);
-    bool findXY_new    (XYZPVector& xyzp, HelixFitHackResult& myhel);
-    bool findZ         (XYZPVector& xyzp, HelixFitHackResult& myhel);
+    bool findHelix     (XYZPHackVector& xyzp, HelixFitHackResult& myfit);
+    bool findXY        (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
+    bool findXY_new    (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
+    bool findZ         (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
 
-    bool initCircle    (XYZPVector const& xyzp,HelixFitHackResult& myhel);
-    bool initCircle_new(XYZPVector const& xyzp,HelixFitHackResult& myhel);
+    bool initCircle    (XYZPHackVector const& xyzp,HelixFitHackResult& myhel);
+    bool initCircle_new(XYZPHackVector const& xyzp,HelixFitHackResult& myhel);
 
   private:
 
-    void fillXYZP(HelixDefHack const& mytrk, XYZPVector& xyzp);
+    void fillXYZP(HelixDefHack const& mytrk, XYZPHackVector& xyzp);
 
 // cached bfield accessor
 
@@ -249,26 +244,26 @@ namespace mu2e {
 
 // diagnostics
 
-    void plotXY(HelixDefHack const& mytrk, XYZPVector const& xyzp, HelixFitHackResult const& myhel) const;
+    void plotXY(HelixDefHack const& mytrk, XYZPHackVector const& xyzp, HelixFitHackResult const& myhel) const;
 
-    void plotZ (HelixDefHack const& mytrk, XYZPVector const& xyzp, HelixFitHackResult const& myhel) const;
+    void plotZ (HelixDefHack const& mytrk, XYZPHackVector const& xyzp, HelixFitHackResult const& myhel) const;
 
 // find the Absolute Geometric Error.  Returns the median radius as well.
 
-    bool findCenterAGE(XYZPVector const& xyzp, Hep3Vector& center , double& rmed, double& age, bool useweights=false);
+    bool findCenterAGE(XYZPHackVector const& xyzp, Hep3Vector& center , double& rmed, double& age, bool useweights=false);
 
-    void findAGE (XYZPVector const& xyzp, Hep3Vector const& center, double& rmed, double& age, bool useweights=false);
+    void findAGE (XYZPHackVector const& xyzp, Hep3Vector const& center, double& rmed, double& age, bool useweights=false);
 
-    void fillSums(XYZPVector const& xyzp, Hep3Vector const& center, double rmed, SUMS&   sums, bool useweights=false);
+    void fillSums(XYZPHackVector const& xyzp, Hep3Vector const& center, double rmed, SUMS&   sums, bool useweights=false);
 
-    void filterXY(XYZPVector& xyzp      , Hep3Vector const& center, double rmed, bool& changed);
+    void filterXY(XYZPHackVector& xyzp      , Hep3Vector const& center, double rmed, bool& changed);
 
-    void filterDist(XYZPVector& xyzp);
+    void filterDist(XYZPHackVector& xyzp);
 					// 12-10-2013 Gianipez: new pattern recognition functions
     
-    void doPatternRecognition(XYZPVector& xyzp, HelixFitHackResult& mytrk);
+    void doPatternRecognition(XYZPHackVector& xyzp, HelixFitHackResult& mytrk);
 
-    void findTrack(XYZPVector&          xyzp, 
+    void findTrack(XYZPHackVector&      xyzp, 
 		   int                  seedIndex,
 		   double&              chi2,
 		   int&                 countGoodPoint,

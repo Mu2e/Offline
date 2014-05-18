@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: mergePatRec_display.fcl,v 1.5 2014/05/01 19:31:09 murat Exp $
+# $Id: mergePatRec_display.fcl,v 1.6 2014/05/18 13:56:50 murat Exp $
 #------------------------------------------------------------------------------
 #  mergePatRec02: read input data, remake all hits, do not regenereate events
 #------------------------------------------------------------------------------
@@ -165,8 +165,8 @@ physics.producers.ParticleID.fitterModuleLabel                   : MergePatRec
 
 physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel         : MakeStrawHitPositions
 physics.filters.MuHitDisplay.trkPatRecModuleLabel                : MergePatRec
-# physics.filters.MuHitDisplay.g4ModuleLabel                       : g4run
-physics.filters.MuHitDisplay.g4ModuleLabel                       : g4filter
+physics.filters.MuHitDisplay.g4ModuleLabel                       : g4run
+# physics.filters.MuHitDisplay.g4ModuleLabel                       : g4filter
 #------------------------------------------------------------------------------
 # the end
 #------------------------------------------------------------------------------

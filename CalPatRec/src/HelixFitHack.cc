@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.cc,v 1.11 2014/04/24 18:30:30 gianipez Exp $
-// $Author: gianipez $ 
-// $Date: 2014/04/24 18:30:30 $
+// $Id: HelixFitHack.cc,v 1.12 2014/05/18 13:56:50 murat Exp $
+// $Author: murat $ 
+// $Date: 2014/05/18 13:56:50 $
 //
 //
 // the following has to come before other BaBar includes
@@ -50,28 +50,53 @@
 namespace mu2e 
 {
   // statics
-  double XYZP::_efac(1.0);
-  StrawHitFlag XYZP::_useflag;
+  double       XYZPHack::_efac(1.0);
+  StrawHitFlag XYZPHack::_useflag;
+
   // comparison functor for ordering points
   struct radcomp : public std::binary_function<VALERR, VALERR, bool> {
     bool operator()(VALERR const& r1, VALERR const& r2) { return r1._val < r2._val; }
   };
 
   // comparison functor for sorting by z
-  struct zcomp : public std::binary_function<XYZP,XYZP,bool> {
-    bool operator()(XYZP const& p1, XYZP const& p2) { return p1._pos.z() < p2._pos.z(); }
+  struct zcomp : public std::binary_function<XYZPHack,XYZPHack,bool> {
+    bool operator()(XYZPHack const& p1, XYZPHack const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
-  XYZP::XYZP(size_t index,StrawHit const& sh, StrawHitPosition const& shp,Straw const& straw) :
-    _ind(index), _pos(shp.pos()), _phi(shp.pos().phi()), _flag(shp.flag()), _wdir(straw.getDirection()),
-    _perr(_efac*shp.posRes(StrawHitPosition::phi)),_rerr(_efac*shp.posRes(StrawHitPosition::rho))
+  XYZPHack::XYZPHack(size_t index, 
+		     StrawHit const& sh, 
+		     StrawHitPosition const& shp, 
+		     Straw const& straw,
+		     StrawHitFlag const& flag) :
+    _ind (index), 
+    _pos (shp.pos()), 
+    _phi (shp.pos().phi()), 
+    _flag(flag),
+    _wdir(straw.getDirection()),
+    _perr(_efac*shp.posRes(StrawHitPosition::phi)),
+    _rerr(_efac*shp.posRes(StrawHitPosition::rho))
   {
     static const CLHEP::Hep3Vector _zdir(0.0,0.0,1.0);
-     _sdir = _zdir.cross(_wdir);
+    _sdir = _zdir.cross(_wdir);
   }
 
-  void
-  XYZP::rinfo(CLHEP::Hep3Vector const& center,VALERR& rad) const {
+  XYZPHack::XYZPHack(size_t ind, 
+		     CLHEP::Hep3Vector const& pos, 
+		     CLHEP::Hep3Vector const& wdir, 
+		     double werr, 
+		     double serr) :
+    _ind(ind),
+    _pos(pos),
+    _phi(_pos.phi()),
+    _flag(),
+    _wdir(wdir),
+    _sdir(wdir.y(),-wdir.x(),0.0),
+    _perr(_efac*werr),
+    _rerr(_efac*serr)
+  {
+  }
+  
+  void XYZPHack::rinfo(CLHEP::Hep3Vector const& center, VALERR& rad) const {
     //    static const double onethird(1.0/3.0);
     //    static const double invsqrt12(1./sqrt(12.0));
     // average the 1-sigma radii to account for non-linear errors
@@ -82,8 +107,7 @@ namespace mu2e
     
   }
 
-  void
-  XYZP::finfo(CLHEP::Hep3Vector const& center,VALERR& phi) const {
+  void XYZPHack::finfo(CLHEP::Hep3Vector const& center,VALERR& phi) const {
     //    static const double onethird(1.0/3.0);
     //    static const double invsqrt12(1./sqrt(12.0));
     // average the 1-sigma radii to account for non-linear errors
@@ -93,16 +117,16 @@ namespace mu2e
     phi._err = _perr; 
   }
 
-  bool XYZP::use() const { 
+  bool XYZPHack::use() const { 
     return !_flag.hasAnyProperty(_useflag);
   }
 
-  bool XYZP::stereo() const {
+  bool XYZPHack::stereo() const {
     static StrawHitFlag stereo(StrawHitFlag::stereo);
     return _flag.hasAllProperties(stereo);
   }
 
-  void XYZP::setUse(bool use) {
+  void XYZPHack::setUse(bool use) {
     static StrawHitFlag other(StrawHitFlag::other);
     if(!use)
       _flag.merge(other);
@@ -110,14 +134,19 @@ namespace mu2e
       _flag.clear(other);
   }
 
-  void XYZP::setOutlier(){
+  void XYZPHack::setOutlier(){
     static StrawHitFlag outlier(StrawHitFlag::outlier);
     _flag.merge(outlier);
   }
 
-  bool XYZP::isOutlier(){
+  bool XYZPHack::isOutlier() const {
     static StrawHitFlag outlier(StrawHitFlag::outlier);
     return _flag.hasAllProperties(outlier);
+  }
+
+  bool XYZPHack::isCalosel() const {
+    static StrawHitFlag calosel(StrawHitFlag::calosel);
+    return _flag.hasAllProperties(calosel);
   }
 
   //-----------------------------------------------------------------------------
@@ -218,11 +247,11 @@ namespace mu2e
     _usetarget(pset.get<bool>("usetarget",true)),
     _bz(0.0)
   {
-    XYZP::_efac = _efac;
+    XYZPHack::_efac = _efac;
     std::vector<std::string> bitnames;
     bitnames.push_back("Outlier");
     bitnames.push_back("OtherBackground");
-    XYZP::_useflag = StrawHitFlag(bitnames);
+    XYZPHack::_useflag = StrawHitFlag(bitnames);
 
     _hDist         = NULL;
     _chi2nFindZ    = 0.0,
@@ -281,12 +310,12 @@ namespace mu2e
       _smin = -1.0/(_rmin*_tdmin);
     }
 					// loop over hits, and store the points
-    XYZPVector  xyzp;
+    XYZPHackVector  xyzp;
     fillXYZP(mytrk,xyzp);
 					// 2013-10-18 P.Murat: print 
     int n = xyzp.size();
 
-    XYZP* pt;
+    XYZPHack* pt;
     if (_debug > 0) {
       printf("[HelixFitHack::findHelix] x0 = %12.5f y0 = %12.5f r = %12.5f chi2 = %12.5g\n",
 	     0.,0.,0.,-1.);
@@ -317,7 +346,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // called internally
 //-----------------------------------------------------------------------------
-  bool HelixFitHack::findHelix(XYZPVector& xyzp, HelixFitHackResult& myhel) {
+  bool HelixFitHack::findHelix(XYZPHackVector& xyzp, HelixFitHackResult& myhel) {
     bool retval(false);
 
     if (_filter) filterDist(xyzp);
@@ -362,7 +391,7 @@ namespace mu2e
   }
  
 //-----------------------------------------------------------------------------
-  bool HelixFitHack::findXY(XYZPVector& xyzp, HelixFitHackResult& myhel) {
+  bool HelixFitHack::findXY(XYZPHackVector& xyzp, HelixFitHackResult& myhel) {
     double rmed, age;
     Hep3Vector center = myhel._center;
     //    findCenterAGE(xyzp,center,rmed,age,false);
@@ -385,7 +414,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // this routine does the initial cleanup
 //-----------------------------------------------------------------------------
-  bool  HelixFitHack::findXY_new(XYZPVector& xyzp, HelixFitHackResult& Hel) {
+  bool  HelixFitHack::findXY_new(XYZPHackVector& xyzp, HelixFitHackResult& Hel) {
     double chi2_min, chi2, x, y;
     int    iworst, np;
     bool   success(0);
@@ -490,7 +519,7 @@ namespace mu2e
 // plot functions
 //-----------------------------------------------------------------------------
   void HelixFitHack::plotXY(HelixDefHack const&       mytrk, 
-			    XYZPVector const&         xyzp,
+			    XYZPHackVector const&         xyzp,
 			    HelixFitHackResult const& myhel) const 
   {
     unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
@@ -552,7 +581,7 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-  bool HelixFitHack::findCenterAGE(XYZPVector const& xyzp,
+  bool HelixFitHack::findCenterAGE(XYZPHackVector const& xyzp,
 				   Hep3Vector&       center, 
 				   double&           rmed, 
 				   double&           age,
@@ -625,7 +654,7 @@ namespace mu2e
   }
   
 //-----------------------------------------------------------------------------
-  bool HelixFitHack::findZ(XYZPVector& xyzp, HelixFitHackResult& myhel) {
+  bool HelixFitHack::findZ(XYZPHackVector& xyzp, HelixFitHackResult& myhel) {
     // sort points by z
     std::sort(xyzp.begin(),xyzp.end(),zcomp());
 
@@ -841,7 +870,7 @@ namespace mu2e
 
 //-----------------------------------------------------------------------------
   void  HelixFitHack::plotZ(HelixDefHack       const&  mytrk, 
-			    XYZPVector         const&  xyzp , 
+			    XYZPHackVector     const&  xyzp , 
 			    HelixFitHackResult const&  myhel) const 
 {
     unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
@@ -892,7 +921,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  bool HelixFitHack::initCircle(XYZPVector const& xyzp, HelixFitHackResult& myhel) {
+  bool HelixFitHack::initCircle(XYZPHackVector const& xyzp, HelixFitHackResult& myhel) {
     bool retval(false);
     static const double mind2 = _mindist*_mindist;
     using namespace boost::accumulators;
@@ -970,11 +999,11 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // substitute for initCircle - know that there is a cluster
 //-----------------------------------------------------------------------------
-  bool HelixFitHack::initCircle_new(XYZPVector const& xyzp, HelixFitHackResult& Hel) {
+  bool HelixFitHack::initCircle_new(XYZPHackVector const& xyzp, HelixFitHackResult& Hel) {
     bool   retval(false);
 					//    static const double mind2 = _mindist*_mindist;
     double   x, y, x_0, y_0, r;
-    XYZP*    p;
+    XYZPHack*    p;
 					// first point - center, with low weight
 					//    Hel._sxy.addPoint(0.,0.,0.5);
     Hel._sxy.addPoint(0.,0.,0.05);
@@ -998,7 +1027,7 @@ namespace mu2e
 
 					// don't use the outliers
     for (int i=0; i<n; i++) {
-      p = (XYZP*) &xyzp[i];
+      p = (XYZPHack*) &xyzp[i];
       if (! p->isOutlier()) {
 	x      = p->_pos.x();
 	y      = p->_pos.y();
@@ -1017,7 +1046,7 @@ namespace mu2e
 	     x_0,y_0,r,Hel._sxy.chi2DofCircle());
 
       for (int i=0; i<n; i++) {
-	p = (XYZP*) &xyzp[i];
+	p = (XYZPHack*) &xyzp[i];
 	printf("[HelixFitHack::initCircle_new] %08x %2i %12.5f %12.5f %12.5f \n",
 	       *((int*) &p->_flag), p->use(), p->_pos.x(), p->_pos.y(), p->_pos.z()
 	       );
@@ -1031,12 +1060,11 @@ namespace mu2e
     if (_debug > 0) printf("[HelixFitHack::initCircle_new] retval = %d\n",retval ? 1:0);
     return retval;
   }
-
 //-----------------------------------------------------------------------------
 // 12-09-2013 gianipez modified this procedure to avoid the doubling of the 
 // same stereohitposition 
 //-------------------------------------------------------------------------
-  void HelixFitHack::fillXYZP(HelixDefHack const& mytrk, XYZPVector& xyzp) {
+  void HelixFitHack::fillXYZP(HelixDefHack const& mytrk, XYZPHackVector& xyzp) {
 
     const Tracker& tracker = getTrackerOrThrow();
 
@@ -1044,68 +1072,77 @@ namespace mu2e
 
     int size = shIndices.size();
     int stIndeces[10000];
-    //initialize the vector
+					// initialize the vector
     for(int i=0; i<size;++i){
       stIndeces[i] = -9999;
     }
 
     //--------------------------------------------------------------------------------
-    
     if (mytrk.strawHitPositionCollection() != 0) {
+      int loc;
+      StrawHitFlag flag;
       for (int i=0; i<size; ++i){
-	StrawHit const& sh = mytrk.strawHitCollection()->at(shIndices[i]._index);
-	Straw const& straw= tracker.getStraw(sh.strawIndex());
-	StrawHitPosition const& shp = mytrk.strawHitPositionCollection()->at(shIndices[i]._index);
+	loc                = shIndices[i]._index;
+	flag               = mytrk.strawHitFlagCollection()->at(loc);
+	StrawHit const& sh = mytrk.strawHitCollection()->at(loc);
+	Straw const& straw = tracker.getStraw(sh.strawIndex());
+	StrawHitPosition const& shp = mytrk.strawHitPositionCollection()->at(loc);
 	
-	XYZP pos(shIndices[i]._index,sh,shp,straw);
+	XYZPHack pos(loc,sh,shp,straw,flag);
 	if (_debug > 0) {
 	  if(i == 0){
 	    printf("----->HelixFitHack::fillXYXP\n");
 	    printf("|   strawIndex    |  stereo index   |          pos          |\n");
 	  }					
 	  printf("| %10.3d    | %10.3d    | %5.3f, %.3f, %5.3f |\n", 
-		 (int) shIndices[i]._index,
-		 shp.stereoHitIndex(),
+		 (int) loc, shp.stereoHitIndex(),
 		 shp.pos().x(), shp.pos().y(), shp.pos().z());
 	}
 
 	//if the stereo index is <0, it means that no stereo hit was created
-	if(shp.stereoHitIndex() < 0 ){
+	if (shp.stereoHitIndex() < 0 ){
 	  xyzp.push_back(pos);
-	}else {
-	  bool found(false);
-	  int k=0, t=0;
-	  //printf("search if the stereo index ia lerady present...\n");
-	  while(!found && k< size){
+	} else {
+	  bool  found(false);
+	  int   k=0, t=0;
+	  while (!found && k< size) {
 	    //  printf("stIndeces[%d] = %5.3d ? %u\n",k,stIndeces[k], shp.stereoHitIndex());
 	    
-	    if( stIndeces[k] == shp.stereoHitIndex()) found = true;
-	    if(stIndeces[k]>0) ++t;
+	    if ( stIndeces[k] == shp.stereoHitIndex()) found = true;
+	    if (stIndeces[k]>0) ++t;
 	    ++k;
 	  }
 	  // printf("indexes: k = %d, t = %d\n", k, t);
-	  if(!found) {
+	  if (!found) {
 	    xyzp.push_back(pos);
 	    stIndeces[t] = shp.stereoHitIndex();
 	  }
 	  
 	}
-      }//end loop onm the strawindexes
+      }	// end loop over the strawindexes
     } else {
+//-----------------------------------------------------------------------------
+// get here if StrawHitPositionCollection does not exist
+// didn't figure out the use case though
+//-----------------------------------------------------------------------------
       static const double twoinvsqrt12(2.0/sqrt(12.0));
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
       for(int j=0; j<size; ++j){
 	StrawHit const& sh = mytrk.strawHitCollection()->at(shIndices[j]._index);
-	Straw const& straw= tracker.getStraw(sh.strawIndex());
+	Straw const& straw = tracker.getStraw(sh.strawIndex());
 	SHInfo shinfo;
 	tcal->StrawHitInfo(straw,sh,shinfo);
-	xyzp.push_back(XYZP(shIndices[j]._index,shinfo._pos,straw.getDirection(),shinfo._tdres,twoinvsqrt12*straw.getRadius()));
+	xyzp.push_back(XYZPHack(shIndices[j]._index,
+				shinfo._pos,
+				straw.getDirection(),
+				shinfo._tdres,
+				twoinvsqrt12*straw.getRadius()));
       }
     }
   }
 
 //-----------------------------------------------------------------------------
-  void HelixFitHack::findAGE(XYZPVector const& xyzp, 
+  void HelixFitHack::findAGE(XYZPHackVector const& xyzp, 
 			     Hep3Vector const& center,
 			     double& rmed, 
 			     double& age,
@@ -1149,11 +1186,11 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-  void HelixFitHack::fillSums(XYZPVector const& xyzp, 
-			      Hep3Vector const& center,
-			      double            rmed, 
-			      SUMS&             sums,
-			      bool              useweights) 
+  void HelixFitHack::fillSums(XYZPHackVector const& xyzp, 
+			      Hep3Vector const&     center,
+			      double                rmed, 
+			      SUMS&                 sums,
+			      bool                  useweights) 
   {
 					// initialize sums
     sums.clear();
@@ -1198,7 +1235,7 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-  void HelixFitHack::filterDist(XYZPVector& xyzp) {
+  void HelixFitHack::filterDist(XYZPHackVector& xyzp) {
     using namespace boost::accumulators;
     static const double pi(M_PI);
     static const double twopi(2*pi);
@@ -1249,7 +1286,7 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-  void HelixFitHack::filterXY(XYZPVector& xyzp, Hep3Vector const& center,double rmed,bool& changed) {
+  void HelixFitHack::filterXY(XYZPHackVector& xyzp, Hep3Vector const& center,double rmed,bool& changed) {
     static StrawHitFlag other(StrawHitFlag::other);
     changed = false;
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
@@ -1276,7 +1313,7 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-  void HelixFitHack::doPatternRecognition(XYZPVector& xyzp, HelixFitHackResult& mytrk ){
+  void HelixFitHack::doPatternRecognition(XYZPHackVector& xyzp, HelixFitHackResult& mytrk ){
     int np = xyzp.size();
     int seedIndex(-1);//, targetIndex(-1);
     double chi2, chi2_min;
@@ -1287,6 +1324,7 @@ namespace mu2e
     // for(int j=0; j<nTargets; ++j){
     for (int i=0; i<np; i++) {
       if (xyzp[i].isOutlier()) goto NEXT_POINT;
+      if (xyzp[i].isCalosel()) goto NEXT_POINT;
       findTrack(xyzp, i, chi2, countGoodPoints, mytrk);
       if(chi2 < 1e10) {
 	if (_debug > 0) {
@@ -1330,7 +1368,7 @@ namespace mu2e
   }
 
   
-  void HelixFitHack::findTrack(XYZPVector&         xyzp               , 
+  void HelixFitHack::findTrack(XYZPHackVector&     xyzp               , 
 			       int                 seedIndex          , 
 			       double&             chi2               , 
 			       int&                countGoodPoints_end,

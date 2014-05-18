@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec_display.fcl,v 1.10 2014/05/18 13:56:50 murat Exp $
+# $Id: calPatRec_display_read.fcl,v 1.1 2014/05/18 13:56:50 murat Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits
@@ -25,12 +25,12 @@ source : {
     maxEvents   : 100
 
     inputCommands : ['keep *_*_*_*'
-		     , 'drop *_muonTimeMap_*_*'
-		     , 'drop *_protonTimeMap_*_*'
-		     , 'drop mu2eStrawDigis_*_*_*'
-		     , 'drop mu2eStrawHits_*_*_*'
-		     , 'drop *_CaloReadoutHitsMaker_*_*'
-		     , 'drop *_CaloCrystalHitsMaker_*_*'
+#		     , 'drop *_muonTimeMap_*_*'
+#		     , 'drop *_protonTimeMap_*_*'
+#		     , 'drop mu2eStrawDigis_*_*_*'
+##		     , 'drop mu2eStrawHits_*_*_*'
+#		     , 'drop *_CaloReadoutHitsMaker_*_*'
+#		     , 'drop *_CaloCrystalHitsMaker_*_*'
 # # Uncomment the above line to reduce file size.
  		     ]  
 }
@@ -101,10 +101,11 @@ physics : {
 #------------------------------------------------------------------------------
     p1 : [
 	  # generate, g4run,
- 	  protonTimeMap, muonTimeMap, 
- 	  makeSD, makeSH,
- 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
-	  MakeCaloCluster, 
+# 	  protonTimeMap, muonTimeMap, 
+# 	  makeSD, makeSH,
+# 	  CaloReadoutHitsMaker, 
+          CaloCrystalHitsMaker,
+#	  MakeCaloCluster, 
 	  MakeStrawHitPositions, FlagStrawHits, FlagBkgHits, 
 	  CalPatRec,
 	  TrkExtrapol, CaloMatching,
@@ -165,9 +166,10 @@ physics.producers.MakeCaloCluster.EclusterCut                    : 1.0  # MeV
 
 # physics.producers.CalPatRec.StrawHitCollectionLabel             : makeSH
 # physics.producers.CalPatRec.StrawHitPositionCollectionLabel     : MakeStrawHitPositions
-#physics.producers.CalPatRec.debugLevel                          : 1
-#physics.producers.CalPatRec.SeedFit.debugLevel                  : 1
-#physics.producers.CalPatRec.HelixFit.debugLevel                 : 1
+# physics.producers.CalPatRec.debugLevel                          : 1
+# physics.producers.CalPatRec.SeedFit.debugLevel                  : 1
+# physics.producers.CalPatRec.HelixFit.debugLevel                 : 1
+# physics.producers.CalPatRec.BackgroundSelectionBits               : ["DeltaRay"]
 #------------------------------------------------------------------------------
 # analysis and event display
 #------------------------------------------------------------------------------
@@ -177,7 +179,8 @@ physics.producers.ParticleID.fitterModuleLabel                  : CalPatRec
 
 # physics.filters.MuHitDisplay.strawHitMakerModuleLabel           : makeSH
 # physics.filters.MuHitDisplay.generatorModuleLabel               : ""
-physics.filters.MuHitDisplay.g4ModuleLabel                      : "g4run"
+physics.filters.MuHitDisplay.g4ModuleLabel                      : "detectorFilter"
+# physics.filters.MuHitDisplay.g4ModuleLabel                      : "g4run"     # 
 # physics.filters.MuHitDisplay.g4ModuleLabel                      : "g4filter"  # for Ralf's new cosmic dataset
 physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel        : MakeStrawHitPositions
 physics.filters.MuHitDisplay.trkPatRecModuleLabel               : CalPatRec

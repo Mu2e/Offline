@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.10 2014/05/01 19:31:09 murat Exp $
+// $Id: CalPatRec_module.cc,v 1.11 2014/05/18 13:56:50 murat Exp $
 // $Author: murat $ 
-// $Date: 2014/05/01 19:31:09 $
+// $Date: 2014/05/18 13:56:50 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -409,14 +409,15 @@ namespace mu2e {
                                                             goto END;
     }
 //-----------------------------------------------------------------------------
-// all needed pieces of data have been found, tighten the energy cut and 
-// copy flags
+// all needed pieces of data have been found, 
+// tighten the energy cut and copy flags, clear 
 //-----------------------------------------------------------------------------
     nhits = _shcol->size();
     for (int i=0; i<nhits; i++) {
       flag = _shfcol->at(i);
-      if (_shcol->at(i).energyDep() > _maxedep && flag.hasAllProperties(esel))
+      if (_shcol->at(i).energyDep() > _maxedep && flag.hasAllProperties(esel)) {
 	flag.clear(esel);
+      }
       _flags->push_back(flag);
     }
 //-----------------------------------------------------------------------------
@@ -465,7 +466,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // create track definitions for the helix fit from this initial information 
 //-----------------------------------------------------------------------------
-      HelixDefHack helixdef(_shcol,_shpcol,tp->_trkptrs,_tpart,_fdir);
+      HelixDefHack helixdef(_shcol,_shpcol,_flags,tp->_trkptrs,_tpart,_fdir);
 
 					// set some identifiers
       helixdef.setEventId(_eventid);
@@ -550,10 +551,16 @@ namespace mu2e {
       if (kalfit._fit.success()) {
 					// flag hits used in this track.  
 					// This should use the track id, FIXME!!! (in the BaBar code)
+//-----------------------------------------------------------------------------
+// also mark track hits as used
+//-----------------------------------------------------------------------------
 	if (ipeak<16) {
 	  for (size_t ihit=0; ihit<kalfit._hits.size(); ++ihit){
 	    const TrkStrawHit* tsh = kalfit._hits[ihit];
-	    if(tsh->isActive())_flags->at(tsh->index()).merge(StrawHitFlag::trackBit(ipeak));
+	    if (tsh->isActive()) {
+	      _flags->at(tsh->index()).merge(StrawHitFlag::trackBit(ipeak));
+	      _flags->at(tsh->index()).merge(StrawHitFlag::calosel);
+	    }
 	  }
 	}
 //-----------------------------------------------------------------------------
