@@ -11,7 +11,7 @@
 #include <iostream>
 using namespace std;
 
-void StrawHitTest (TTree* hits, char* page="bcan" ) {
+void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 
   TString spage(page);
   gStyle->SetOptStat(0);
@@ -120,7 +120,6 @@ void StrawHitTest (TTree* hits, char* page="bcan" ) {
     etimes->SetFillColor(kBlue);
     otimes->SetFillColor(kGreen);
 
-    double nevents(1000);
     double scale = 0.1/nevents;
     hits->Project("otime","time",opart);
     otime->Scale(scale);
