@@ -14,7 +14,7 @@
 #include "KalmanTests/test/DIOCZ.h"
 using namespace std;
 
-void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,double momlow, bool weightdio=true,const char* suffix=".png") {
+void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double ncon,double momlow,double momhigh, double cnom=0.0, bool weightdio=true,const char* suffix=".png") {
   // diogenrange is the momentum range over which the DIO events were generated
   double nstopped(5.76e17);
   double capfrac(0.609); 
@@ -24,7 +24,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   double conprob(1e-16);
   double trueconvmom(104.973);
 //  double momlow(103.5);
-  double momhigh(105);
+//  double momhigh(105);
 
   unsigned nbins(201);
   double mmin(100);
@@ -108,10 +108,10 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
 
 
   TLegend* leg = new TLegend(0.6,0.7,0.9,0.9);
-  leg->AddEntry(diospec[icut],"DIO","L");
-  leg->AddEntry(conspec[icut],"Conversion","L");
+  leg->AddEntry(diospec[icut],"DIO","LP");
+  leg->AddEntry(conspec[icut],"Conversion","LP");
 
-  TPaveText* info = new TPaveText(0.3,0.7,0.6,0.9,"NDC");
+  TPaveText* info = new TPaveText(0.3,0.75,0.6,0.9,"NDC");
   char text[80];
   snprintf(text,80,"%g#times10^{17} stopped muons",nstopped*1e-17);
   TString snstop(text);
@@ -119,6 +119,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   snprintf(text,80,"R_{#mue}=%g#times10^{-16}",conprob*1e16);
   TString sconprob(text);
   info->AddText(sconprob);
+
   info->SetBorderSize(0);
 
   double mevperbin = (mmax-mmin)/nbins;
@@ -208,6 +209,8 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   TGraphErrors* conscan = new TGraphErrors(conx.size(),&conx[0],&cony[0],&conxerr[0],&conyerr[0]);
   dioscan->SetLineColor(kBlue);
   conscan->SetLineColor(kRed);
+  dioscan->SetMarkerStyle(20);
+  conscan->SetMarkerStyle(21);
   dioscan->SetMarkerColor(kBlue);
   conscan->SetMarkerColor(kRed);
   double smax(0.75);
@@ -220,19 +223,33 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   scancan->Divide(1,1);
   scancan->cd(1);
   conscan->Draw("ALP");
-  conscan->Fit("pol2");
-  dioscan->Draw("same");
-  dioscan->Fit("pol2");
+  TF1* cefun = new TF1("cefun","[0]+[1]*(x-[3])+[2]*(x-[3])^2",-500,500);
+  cefun->SetLineColor(kRed);
+  cefun->SetParameters(0.0,-1e-3,-1e-6,0.0);
+  TF1* diofun = new TF1("diofun","[0]+[1]*(x-[4])+[2]*(x-[4])^2+[3]*(x-[4])^3",-500,500);
+  diofun->SetLineColor(kBlue);
+  diofun->SetParameters(0.0,-1e-3,2e-6,0.0,50.0);
+  conscan->Fit("cefun","N");
+  cefun->Draw("same");
+  dioscan->Draw("LP");
+  dioscan->Fit("diofun","N");
+  diofun->Draw("same");
   info->Draw();
   leg->Draw();
 
-  int ilow = nscan-4;
-  int ihi = nscan+4;
+  double dioerrreq(0.05);
+  double lslope = (diofun->Eval(cnom+100)-diofun->Eval(cnom))/100.0;
+  double hslope = (diofun->Eval(cnom-100)-diofun->Eval(cnom))/100.0;
 
-  TLine* dlow = new TLine(diox[ilow],smin,diox[ilow],dioy[ilow]);
-  TLine* dhi = new TLine(diox[ihi],smax,diox[ihi],dioy[ihi]);
-  TLine* dlowx = new TLine(diox[0],dioy[ilow],diox[ilow],dioy[ilow]);
-  TLine* dhix = new TLine(diox[0],dioy[ihi],diox[ihi],dioy[ihi]);
+  double rlow = cnom -dioerrreq/lslope;
+  double rhigh = cnom -dioerrreq/hslope;
+  double diolow = diofun->Eval(rlow); 
+  double diohigh = diofun->Eval(rhigh); 
+
+  TLine* dlow = new TLine(rlow,smin,rlow,diolow);
+  TLine* dhi = new TLine(rhigh,smin,rhigh,diohigh);
+  TLine* dlowx = new TLine(diox[0],diolow,rlow,diolow);
+  TLine* dhix = new TLine(diox[0],diohigh,rhigh,diohigh);
   dlow->SetLineStyle(2);
   dhi->SetLineStyle(2);
   dlowx->SetLineStyle(2);
@@ -245,10 +262,20 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   dhi->Draw("same");
   dlowx->Draw("same");
   dhix->Draw("same");
-  scancan->SaveAs((string("mu2e_scan")+ssuf).c_str());
 
+  double cenom = cefun->Eval(cnom);
+  TLine* ce = new TLine(cnom,smin,cnom,cenom);
+  TLine* cex = new TLine(diox[0],cenom,cnom,cenom);
+  ce->SetLineStyle(3);
+  cex->SetLineStyle(3);
+  ce->SetLineColor(kRed);
+  cex->SetLineColor(kRed);
+  ce->Draw("same");
+  cex->Draw("same");
 
-
+  scancan->SaveAs((string("mu2e_scan_")+ssuf).c_str());
+  cout << "CE change at nominal = " << cenom << endl;
+  return;
 
 // some numerical values
   vector<double> dioshift,conshift,dioshift_err,conshift_err,shift,shift_err;
