@@ -2,9 +2,9 @@
 // A module to flag StrawHits for track reconstruction and delta ray 
 // identification
 //
-// $Id: FlagStrawHits_module.cc,v 1.11 2014/04/28 13:35:52 brownd Exp $
+// $Id: FlagStrawHits_module.cc,v 1.12 2014/05/24 01:02:35 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/04/28 13:35:52 $
+// $Date: 2014/05/24 01:02:35 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -82,31 +82,40 @@ namespace mu2e {
     art::Handle<mu2e::StrawHitCollection> shcolH;
     if(event.getByLabel(_shLabel,shcolH));
     const StrawHitCollection* shcol = shcolH.product();
-    art::Handle<mu2e::StrawHitPositionCollection> shpcolH;
-    if(event.getByLabel(_shpLabel,shpcolH));
-    const StrawHitPositionCollection* shpcol = shpcolH.product();
-    if(shcol == 0 || shpcol == 0){
-      if(_diag > 0) cout << "No StrawHitPosition collection found for label " <<  _shpLabel << endl;
+    if(shcol == 0){
+      if(_diag > 0) cout << "No StrawHit collection found for label " <<  _shLabel << endl;
       return;
     }
- 
-    size_t nsh = shpcol->size();
+    const StrawHitPositionCollection* shpcol(0);
+    if(_shpLabel.length() >0){
+      art::Handle<mu2e::StrawHitPositionCollection> shpcolH;
+      if(event.getByLabel(_shpLabel,shpcolH));
+      shpcol = shpcolH.product();
+      if(shpcol == 0){
+	if(_diag > 0) cout << "No StrawHitPosition collection found for label " <<  _shpLabel << endl;
+	return;
+      }
+    }
+  
+    size_t nsh = shcol->size();
     // create the output collection
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection);
     shfcol->reserve(nsh);
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& sh = shcol->at(ish);
-      StrawHitPosition const& shp = shpcol->at(ish);
-      unsigned istereo = shp.flag().hasAllProperties(StrawHitFlag::stereo) ? 0 : 1;
       StrawHitFlag flag;
       if(sh.energyDep() > _minE && sh.energyDep() < _maxE)
 	flag.merge(StrawHitFlag::energysel);
       if(sh.time() > _minT && sh.time() < _maxT)
 	flag.merge(StrawHitFlag::timesel);
-      double rad = shp.pos().perp();
-      if(rad > _minR && rad < _maxR[istereo])
-	flag.merge(StrawHitFlag::radsel);
-       shfcol->push_back(flag);
+      if(shpcol != 0){
+	StrawHitPosition const& shp = shpcol->at(ish);
+	unsigned istereo = shp.flag().hasAllProperties(StrawHitFlag::stereo) ? 0 : 1;
+	double rad = shp.pos().perp();
+	if(rad > _minR && rad < _maxR[istereo])
+	  flag.merge(StrawHitFlag::radsel);
+      }
+      shfcol->push_back(flag);
     }
     event.put(move(shfcol));
 
