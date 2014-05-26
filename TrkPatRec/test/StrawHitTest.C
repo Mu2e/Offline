@@ -474,5 +474,73 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     cout << "selection efficiency = " << nscon/ncon << endl;
     cout << "selection purity = " << nscon/nsel << endl;
     cout << "bkg fraction deltas = " << nsdelta/nsel << " dio " << nsdio/nsel << " proton " << nsprot/nsel << endl;
-  }
+  } else if(spage=="origin"){
+
+    TCut timecut("time>700");
+    TCut dio("mcgpdg==11&&mcgid==28");
+    TCut ootmuon("mcgpdg==13");
+    TCut neutron("mcgpdg==2112");
+    TCut photon("mcgpdg==22");
+    TCut stpproton("mcgpdg==2212&&mcgid==28");
+    TCut pproton("mcgpdg==2212&&mcgid==16");
+
+    THStack* sorigin = new THStack("sorigin","Reco Hit Time by Generator Particle;Hit Time (ns);Hits/event/ns");
+    TH1F* dtime = new TH1F("dtime","DIO Reco Hit Time",150,250,1750);
+    TH1F* gtime = new TH1F("gtime","Photon Reco Hit Time",150,250,1750);
+    TH1F* pptime = new TH1F("pptime","Primary Proton Reco Hit Time",150,250,1750);
+    TH1F* stptime = new TH1F("stptime","Stopping Target Proton Reco Hit Time",150,250,1750);
+    TH1F* ntime = new TH1F("ntime","Neutron Reco Hit Time",150,250,1750);
+    TH1F* mtime = new TH1F("mtime","OOT Muon Reco Hit Time",150,250,1750);
+    dtime->SetFillColor(kRed);
+    gtime->SetFillColor(kBlack);
+    pptime->SetFillColor(kBlue);
+    stptime->SetFillColor(kGreen);
+    ntime->SetFillColor(kCyan);
+    mtime->SetFillColor(kYellow);
+
+    double scale = 0.1/nevents;
+    hits->Project("dtime","time",dio+timecut);
+    dtime->Scale(scale);
+    sorigin->Add(dtime);
+    hits->Project("mtime","time",ootmuon+timecut);
+    mtime->Scale(scale);
+    sorigin->Add(mtime);
+    hits->Project("ntime","time",neutron+timecut);
+    ntime->Scale(scale);
+    sorigin->Add(ntime);
+    hits->Project("gtime","time",photon+timecut);
+    gtime->Scale(scale);
+    sorigin->Add(gtime);
+    hits->Project("stptime","time",stpproton+timecut);
+    stptime->Scale(scale);
+    sorigin->Add(stptime);
+    hits->Project("pptime","time",pproton+timecut);
+    pptime->Scale(scale);
+    sorigin->Add(pptime);
+
+    cout << "DIO integral = " << dtime->Integral()
+      << " Primary Proton inegral = " << pptime->Integral()
+      << " ST Proton inegral = " << stptime->Integral()
+      << " Photon inegral = " << gtime->Integral()
+      << " Neutron inegral = " << ntime->Integral()
+      << " OOT muon inegral = " << mtime->Integral() << endl;
+
+    TCanvas* ocan = new TCanvas("ocan","origin",800,800);
+    sorigin->Draw();
+    TLegend* tleg = new TLegend(.6,.7,.9,.9);
+    char title[50];
+    snprintf(title,50,"Primary Proton, #int=%4.0f",pptime->Integral()*10.0);
+    tleg->AddEntry(pptime,title,"F");
+    snprintf(title,50,"Stopping Target Proton, #int=%4.0f",stptime->Integral()*10.0);
+    tleg->AddEntry(stptime,title,"F");
+    snprintf(title,50,"Photon, #int=%4.0f",gtime->Integral()*10.0);
+    tleg->AddEntry(gtime,title,"F");
+    snprintf(title,50,"neutron, #int=%4.0f",ntime->Integral()*10.0);
+    tleg->AddEntry(ntime,title,"F");
+    snprintf(title,50,"OOT Muon, #int=%4.0f",mtime->Integral()*10.0);
+    tleg->AddEntry(mtime,title,"F");
+    snprintf(title,50,"DIO, #int=%4.0f",dtime->Integral()*10.0);
+    tleg->AddEntry(dtime,title,"F");
+    tleg->Draw();
+   }
 }

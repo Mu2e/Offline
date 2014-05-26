@@ -19,8 +19,8 @@ void PlotHelices(TDirectory* tdir,unsigned nmax=20, int nps=3,const char* name=0
   char bsfzname[100];
   TCanvas* cans[100];
   for(size_t ievt=0;ievt<10000;++ievt){
-    for(size_t itrk=0;itrk<10;++itrk){
-      int jplot = 10*ievt + itrk;
+    for(size_t itrk=0;itrk<100;++itrk){
+      int jplot = 100*ievt + itrk;
       snprintf(gxyname,100,"gshxy%i",jplot);
       snprintf(bxyname,100,"bshxy%i",jplot);
       snprintf(sxyname,100,"sshxy%i",jplot);
