@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.27 2013/12/07 19:50:42 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/12/07 19:50:42 $
+// $Id: classes.h,v 1.28 2014/05/27 20:09:18 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/05/27 20:09:18 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,7 @@
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
+#include "RecoDataProducts/inc/TrackSummary.hh"
 
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
@@ -132,5 +133,8 @@ template class art::Wrapper<mu2e::ExtMonFNALTrkFitCollection>;
 template class art::Ptr<mu2e::StrawDigi>;
 template class std::vector<art::Ptr<mu2e::StrawDigi> >;
 template class art::Wrapper<mu2e::StrawDigiCollection>;
+
+template class std::vector<mu2e::TrackSummary>;
+template class art::Wrapper<std::vector<mu2e::TrackSummary> >;
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS
