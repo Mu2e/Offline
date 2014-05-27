@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.28 2014/05/27 20:09:18 gandr Exp $
+// $Id: classes.h,v 1.29 2014/05/27 20:09:35 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/05/27 20:09:18 $
+// $Date: 2014/05/27 20:09:35 $
 //
 // Original author Rob Kutschke
 //
@@ -136,5 +136,6 @@ template class art::Wrapper<mu2e::StrawDigiCollection>;
 
 template class std::vector<mu2e::TrackSummary>;
 template class art::Wrapper<std::vector<mu2e::TrackSummary> >;
+template class art::Ptr<mu2e::TrackSummary>;
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS
