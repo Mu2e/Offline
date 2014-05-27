@@ -14,6 +14,7 @@ BaBar/difAlgebra/
 .sconsign.dblite
 lib
 tmp
+*.o
 *.so
 *.os
 *.root
