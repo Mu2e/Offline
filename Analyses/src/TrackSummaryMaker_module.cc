@@ -24,8 +24,9 @@
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 
-#include "RecoDataProducts/inc/TrackSummary.hh"
 #include "Mu2eUtilities/inc/toHepPoint.hh"
+#include "RecoDataProducts/inc/TrackSummary.hh"
+#include "KalmanTests/inc/TrackSummaryRecoMap.hh"
 
 namespace mu2e {
 
@@ -42,6 +43,7 @@ namespace mu2e {
     : trackInput_(pset.get<std::string>("trackInput"))
   {
     produces<TrackSummaryCollection>();
+    produces<TrackSummaryRecoMap>();
   }
 
   //================================================================
@@ -50,9 +52,14 @@ namespace mu2e {
     GeomHandle<VirtualDetector> vdg;
 
     std::unique_ptr<TrackSummaryCollection> output(new TrackSummaryCollection());
+    std::unique_ptr<TrackSummaryRecoMap> recomap(new TrackSummaryRecoMap());
+
+    const art::ProductID trackSummaryPID = getProductID<TrackSummaryCollection>(event);
+    const art::EDProductGetter *trackSummaryGetter = event.productGetter(trackSummaryPID);
 
     auto ih = event.getValidHandle<KalRepPtrCollection>(trackInput_);
-    for(const auto& krep : *ih) {
+    for(unsigned itrack=0; itrack<ih->size(); ++itrack) {
+      const auto& krep = (*ih)[itrack];
       if(krep->fitCurrent()){
         TrackSummary sum(krep->fitStatus().success(),
                          krep->charge(), krep->nActive(),
@@ -81,6 +88,10 @@ namespace mu2e {
                                            );
 
         sum.addState(st);
+
+        recomap->addSingle(art::Ptr<KalRepPtr>(ih, itrack),
+                           art::Ptr<TrackSummary>(trackSummaryPID, output->size(), trackSummaryGetter));
+
         output->emplace_back(sum);
       }
       else {
@@ -89,6 +100,7 @@ namespace mu2e {
     }
 
     event.put(std::move(output));
+    event.put(std::move(recomap));
   }
 
   //================================================================
