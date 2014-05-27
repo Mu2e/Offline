@@ -1,4 +1,0 @@
-<lcgdict>
- <class name="mu2e::ProtonBeamDump"/>
- <class name="art::Wrapper<mu2e::ProtonBeamDump>"/> 
-</lcgdict>

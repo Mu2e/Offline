@@ -1,6 +1,0 @@
-<lcgdict>
- <class name="mu2e::ExtNeutShieldUpstream1a"/>
- <class name="art::Wrapper<mu2e::ExtNeutShieldUpstream1a>"/> 
- <class name="mu2e::ExtNeutShieldUpstream1b"/>
- <class name="art::Wrapper<mu2e::ExtNeutShieldUpstream1b>"/> 
-</lcgdict>
