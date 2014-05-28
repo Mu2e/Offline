@@ -2,9 +2,9 @@
 # Mixing example for the mix-in files created in Sept 2013.
 # Designed for running on the grid.
 #
-# $Id: mixGrid01.fcl,v 1.3 2013/10/06 16:21:24 brownd Exp $
-# $Author: brownd $
-# $Date: 2013/10/06 16:21:24 $
+# $Id: mixGrid01.fcl,v 1.4 2014/05/28 21:02:13 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2014/05/28 21:02:13 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -39,6 +39,7 @@ physics : {
     generate       : @local::generate
     g4run          : @local::g4run
     makeSH         : @local::makeSH
+    FSHPreStereo   : @local::FSHPreStereo
     MakeStereoHits : @local::MakeStereoHits
     FlagStrawHits  : @local::FlagStrawHits
     FlagBkgHits    : @local::FlagBkgHits
@@ -63,7 +64,8 @@ physics : {
 
   }
 
-  p1 : [generate, g4run, dioMixer, protonMixer, neutronMixer, photonMixer, makeSH, MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDownstreameMinus ]
+  p1 : [generate, g4run, dioMixer, protonMixer, neutronMixer, photonMixer, makeSH, FSHPreStereo,
+        MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDownstreameMinus ]
   e1 : [RKFDownstreameMinus]
 
   trigger_paths  : [p1]
