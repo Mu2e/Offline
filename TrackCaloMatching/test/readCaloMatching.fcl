@@ -1,7 +1,7 @@
 #
-# $Id: readCaloMatching.fcl,v 1.2 2013/05/21 15:38:29 gianipez Exp $
-# $Author: gianipez $
-# $Date: 2013/05/21 15:38:29 $
+# $Id: readCaloMatching.fcl,v 1.3 2014/05/28 20:58:59 brownd Exp $
+# $Author: brownd $
+# $Date: 2014/05/28 20:58:59 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -56,6 +56,8 @@ physics :
     # Form StrawHits (SH).
     makeSH : @local::makeSH
     
+    FSHPreStereo: @local::FSHPreStereo
+ 
     MakeStereoHits : @local::MakeStereoHits
     FlagStrawHits  : @local::FlagStrawHits
     FlagBkgHits    : @local::FlagBkgHits
@@ -184,7 +186,8 @@ physics :
        # , extractElData
        # , skipBadEvents
         ]
-  p2 : [MakeStereoHits
+  p2 : [ FSHPreStereo
+	, MakeStereoHits
 	, FlagStrawHits
 	, FlagBkgHits
 	, TrkPatRec
