@@ -2,9 +2,9 @@
 // A module to flag StrawHits for track reconstruction and delta ray 
 // identification
 //
-// $Id: FlagStrawHits_module.cc,v 1.12 2014/05/24 01:02:35 brownd Exp $
+// $Id: FlagStrawHits_module.cc,v 1.13 2014/05/28 20:29:28 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/05/24 01:02:35 $
+// $Date: 2014/05/28 20:29:28 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -49,6 +49,7 @@ namespace mu2e {
 
     // Diagnostics level.
     int _diag;
+    int _debug;
     // input collection labels
     string _shLabel;
     string _shpLabel; 
@@ -61,6 +62,7 @@ namespace mu2e {
 
   FlagStrawHits::FlagStrawHits(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
+    _debug(pset.get<int>("debugLevel",0)),
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _minE(pset.get<double>("minimumEnergy",0.0)),
@@ -77,13 +79,13 @@ namespace mu2e {
   void
   FlagStrawHits::produce(art::Event& event) {
 
-    if ( _diag > 1 ) cout << "FlagStrawHits: produce() begin; event " << event.id().event() << endl;
+    if ( _debug > 1 ) cout << "FlagStrawHits: produce() begin; event " << event.id().event() << endl;
 
     art::Handle<mu2e::StrawHitCollection> shcolH;
     if(event.getByLabel(_shLabel,shcolH));
     const StrawHitCollection* shcol = shcolH.product();
     if(shcol == 0){
-      if(_diag > 0) cout << "No StrawHit collection found for label " <<  _shLabel << endl;
+      if(_debug > 0) cout << "No StrawHit collection found for label " <<  _shLabel << endl;
       return;
     }
     const StrawHitPositionCollection* shpcol(0);
@@ -92,7 +94,7 @@ namespace mu2e {
       if(event.getByLabel(_shpLabel,shpcolH));
       shpcol = shpcolH.product();
       if(shpcol == 0){
-	if(_diag > 0) cout << "No StrawHitPosition collection found for label " <<  _shpLabel << endl;
+	if(_debug > 0) cout << "No StrawHitPosition collection found for label " <<  _shpLabel << endl;
 	return;
       }
     }
