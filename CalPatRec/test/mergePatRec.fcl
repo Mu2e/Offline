@@ -1,7 +1,7 @@
 # -*- mode: tcl -*-
-# $Id: mergePatRec.fcl,v 1.2 2014/03/10 21:24:58 gianipez Exp $
-# $Author: gianipez $
-# $Date: 2014/03/10 21:24:58 $
+# $Id: mergePatRec.fcl,v 1.3 2014/05/28 20:54:43 brownd Exp $
+# $Author: brownd $
+# $Date: 2014/05/28 20:54:43 $
 #
 # Original author Rob Kutschke
 
@@ -73,6 +73,7 @@ physics : {
 	    t2                      : 40.0
 	}
 
+	FSHPreStereo: @local::FSHPreStereo
 	MakeStereoHits: {
 	    module_type             :  MakeStrawHitPositions
 	}
@@ -180,7 +181,7 @@ physics : {
     #------------------------------------------------------------------------------
     # paths
     #------------------------------------------------------------------------------
-    p1 : [generate, g4run, makeSD, makeSH,
+    p1 : [generate, g4run, makeSD, makeSH, FSHPreStereo,
 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
 	  makeCaloCluster, 
 	  makeSHnew,

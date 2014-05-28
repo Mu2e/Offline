@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: mergePatRec_02.fcl,v 1.5 2014/04/03 23:18:48 murat Exp $
+# $Id: mergePatRec_02.fcl,v 1.6 2014/05/28 20:54:43 brownd Exp $
 #------------------------------------------------------------------------------
 #  mergePatRec02: read input data, remake all hits, do not regenereate events
 #------------------------------------------------------------------------------
@@ -71,6 +71,7 @@ physics : {
 #------------------------------------------------------------------------------
 # TrkPatRec modules
 #------------------------------------------------------------------------------
+	FSHPreStereo: @local::FSHPreStereo
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
@@ -138,7 +139,7 @@ physics : {
     p1 : [
 #	  generate, g4run, 
           protonTimeMap, muonTimeMap, 
-          makeSD, MakeSH,
+          makeSD, MakeSH, FSHPreStereo,
 	  MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, 
 #
 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,

@@ -2,9 +2,9 @@
 #------------------------------------------------------------------------------
 # remake all hits starting from StepPointMCs
 #------------------------------------------------------------------------------
-# $Id: trkPatRec_02.fcl,v 1.1 2014/03/30 01:51:50 murat Exp $
-# $Author: murat $
-# $Date: 2014/03/30 01:51:50 $
+# $Id: trkPatRec_02.fcl,v 1.2 2014/05/28 20:54:43 brownd Exp $
+# $Author: brownd $
+# $Date: 2014/05/28 20:54:43 $
 #
 # Original author Rob Kutschke
 
@@ -83,6 +83,7 @@ physics : {
 	    t2                      : 40.0
 	}
 
+	FSHPreStereo: @local::FSHPreStereo
 	MakeStereoHits: {
 	    module_type             :  MakeStrawHitPositions
 	}
@@ -218,7 +219,7 @@ physics : {
     p1 : [#generate, 
 	  g4run,
 	  protonTimeMap, muonTimeMap, 
-	  makeSD, makeSH,
+	  makeSD, makeSH, FSHPreStereo,
 	  MakeStereoHits, FlagStrawHits, FlagBkgHits, 
 	  trkPatRec,
 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,

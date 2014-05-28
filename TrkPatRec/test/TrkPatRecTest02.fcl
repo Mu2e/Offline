@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkPatRecTest02.fcl,v 1.8 2013/04/03 22:26:37 tassiell Exp $
-# $Author: tassiell $
-# $Date: 2013/04/03 22:26:37 $
+# $Id: TrkPatRecTest02.fcl,v 1.9 2014/05/28 20:54:43 brownd Exp $
+# $Author: brownd $
+# $Date: 2014/05/28 20:54:43 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -51,6 +51,7 @@ physics :
 
     # Form StrawHits (SH).
     makeSH : @local::makeSH
+    physics.producers.FSHPreStereo: @local::FSHPreStereo
     MakeStereoHits : @local::MakeStereoHits
     FlagStrawHits : @local::FlagStrawHits
     FlagBkgHits : @local::FlagBkgHits
@@ -64,7 +65,7 @@ physics :
   }
 
 
-  p1 : [generate , g4run, makeSH, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec ] #tprDem
+  p1 : [generate , g4run, makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec ] #tprDem
   e1 : []
 
   trigger_paths  : [p1]
