@@ -3,9 +3,9 @@
 # this .FCL file assumes that the input data file has the digitized 
 # straw tracker and calorimeter hits stored in it
 #------------------------------------------------------------------------------
-# $Id: trkPatRec_01.fcl,v 1.1 2014/03/11 15:19:55 murat Exp $
-# $Author: murat $
-# $Date: 2014/03/11 15:19:55 $
+# $Id: trkPatRec_01.fcl,v 1.2 2014/05/28 21:31:34 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2014/05/28 21:31:34 $
 #
 # Original author Rob Kutschke
 
@@ -84,6 +84,8 @@ physics : {
 	    t2                      : 40.0
 	}
 
+
+	FSHPreStereo: @local::FSHPreStereo
 	MakeStereoHits: {
 	    module_type             :  MakeStrawHitPositions
 	}
@@ -221,6 +223,7 @@ physics : {
 	 # CaloReadoutHitsMaker, CaloCrystalHitsMaker,
 	  makeCaloCluster, 
 	 # makeSHnew,
+          FSHPreStereo,
 	  MakeStereoHits, FlagStrawHits, FlagBkgHits, 
 	  trkPatRec,
 	  trkExtrapol, caloMatching,
