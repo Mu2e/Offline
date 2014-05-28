@@ -27,6 +27,7 @@ services : {
 physics : {
     producers: {
                   makeSH               : @local::makeSH
+                  FSHPreStereo         : @local::FSHPreStereo
                   MakeStereoHits       : @local::MakeStereoHits
                   FlagStrawHits        : @local::FlagStrawHits
                   FlagBkgHits          : @local::FlagBkgHits
@@ -55,7 +56,7 @@ physics : {
         }
     }
 
-    trigFilter : [makeSH, MakeStereoHits, FlagStrawHits, FlagBkgHits, CaloReadoutHitsMaker, CaloCrystalHitsMaker, TrkPatRec1, TrkPatRec2, TrkPatRec3, TrkPatRec4, TrkPatRecFilter]
+    trigFilter : [makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, CaloReadoutHitsMaker, CaloCrystalHitsMaker, TrkPatRec1, TrkPatRec2, TrkPatRec3, TrkPatRec4, TrkPatRecFilter]
     trigger_paths  : [trigFilter]
 
     an: [genCountLogger]

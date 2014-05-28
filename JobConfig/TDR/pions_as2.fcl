@@ -1,9 +1,9 @@
 # Configuration file for pion analysis-stage 2 
 #  - Note that this .fcl file should not/cannot be used for event mixing
 
-# $Id: pions_as2.fcl,v 1.1 2014/03/25 13:58:06 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2014/03/25 13:58:06 $
+# $Id: pions_as2.fcl,v 1.2 2014/05/28 21:16:30 gandr Exp $
+# $Author: gandr $
+# $Date: 2014/05/28 21:16:30 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -40,6 +40,7 @@ physics : {
     muonTimeMap    : { module_type : GenerateMuonLife    verbosityLevel : 0 }
     makeSD         : @local::makeSD
     makeSH         : @local::makeSHfromSD
+    FSHPreStereo   : @local::FSHPreStereo
     MakeStereoHits       : @local::MakeStereoHits
     FlagStrawHits        : @local::FlagStrawHits
     FlagBkgHits          : @local::FlagBkgHits
@@ -63,7 +64,7 @@ physics : {
 
   }
 
-  p1 : [protonTimeMap, muonTimeMap, makeSD, makeSH, MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDeM ]
+  p1 : [protonTimeMap, muonTimeMap, makeSD, makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDeM ]
   e1 : [RKFDownstreameMinus, GenEventReader ]
 
   trigger_paths  : [p1]

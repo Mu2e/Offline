@@ -79,6 +79,7 @@ physics: {
         muonTimeMap: { module_type : GenerateMuonLife }
         makeSD: @local::makeSD
         makeSH: @local::makeSHfromSD
+        FSHPreStereo: @local::FSHPreStereo
         MakeStereoHits: @local::MakeStereoHits
         FlagStrawHits: @local::FlagStrawHits
         FlagBkgHits: @local::FlagBkgHits
@@ -95,7 +96,7 @@ physics: {
 
     p1: [
          dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer,
-	 protonTimeMap, muonTimeMap, makeSD, makeSH,
+	 protonTimeMap, muonTimeMap, makeSD, makeSH, FSHPreStereo,
          MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDownstreameMinus
     ]
 

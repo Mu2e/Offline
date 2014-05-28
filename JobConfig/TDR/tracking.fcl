@@ -20,6 +20,7 @@ services : {
 physics : {
 
   producers:{
+    FSHPreStereo   : @local::FSHPreStereo
     MakeStereoHits : @local::MakeStereoHits
     FlagStrawHits  : @local::FlagStrawHits
     FlagBkgHits    : @local::FlagBkgHits
@@ -34,7 +35,7 @@ physics : {
     }
   }
 
-  p1 : [MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDownstreameMinus ]
+  p1 : [FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDownstreameMinus ]
   trigger_paths  : [p1]
 
   e1 : [genCountLogger, RKFDownstreameMinus]

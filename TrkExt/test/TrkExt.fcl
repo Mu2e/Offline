@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec01
 #
-# $Id: TrkExt.fcl,v 1.8 2013/04/02 01:45:17 mjlee Exp $
-# $Author: mjlee $
-# $Date: 2013/04/02 01:45:17 $
+# $Id: TrkExt.fcl,v 1.9 2014/05/28 21:16:30 gandr Exp $
+# $Author: gandr $
+# $Date: 2014/05/28 21:16:30 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -51,6 +51,7 @@ physics :
 
     # Form StrawHits (SH).
     makeSH : @local::makeSH
+    FSHPreStereo   : @local::FSHPreStereo
     MakeStereoHits : @local::MakeStereoHits 
     FlagStrawHits :@local::FlagStrawHits 
     FlagBkgHits : @local::FlagBkgHits
@@ -132,7 +133,7 @@ physics :
   }
 
 
-  p1 : [generate, g4run, makeSH, MakeStereoHits, FlagStrawHits, FlagBkgHits, tprUem, tprUep, tprDem, tprDep, trkext]
+  p1 : [generate, g4run, makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, tprUem, tprUep, tprDem, tprDep, trkext]
   e1 : [extRec]
   e2 : [extRec, readTprDem, eventdisplay, outfile]
 
