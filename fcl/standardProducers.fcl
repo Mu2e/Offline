@@ -267,6 +267,10 @@ MakeStrawHitPositions : {
 MakeStereoHits : {
   module_type : MakeStereoHits
 }
+FSHPreStereo  : {
+  module_type : FlagStrawHits
+  StrawHitPositionCollectionLabel : ""
+}
 FlagStrawHits  : {
   module_type : FlagStrawHits
 }
