@@ -1,4 +1,33 @@
- Still under construction
 
            Release notes for Mu2e Offline software, v4_2_3
+
+2) May 28, 2014 brownd, kutschke, gandr
+
+   Modified all .fcl files that contain the track reco chain to
+   add a new module label FSHPreStereo, which is an instance of
+   FlagStrawHits.  Those who have their own .fcl files are responsible
+   for updating their own files:
+
+   There are two steps: define the parameter set for the new module and add it to the path:
+
+   physics.producers.FSHPreStereo: { module_type: FlagStrawHits
+                                     StrawHitPositionCollectionLabel : ""
+                                   }
+
+   physics.p2: [ generate, g4run, genCounter,
+                 dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer,
+                 protonTimeMap, muonTimeMap, makeSD, makeSH,
+                 FSHPreStereo,
+                 MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDownstreameMinus ]
+
+
+1) May 28, 2014 brownd
+
+   Updates to
+      TrkPatRec/src/FlagStrawHits_module.cc
+      HitMakers/src/MakeStereoHits_module.cc
+
+   so that we can remove hits with large pulse height before forming
+   stereo hits.  Needed to clean up the purity of stereo hits in a
+   high occupancy environment.
 
