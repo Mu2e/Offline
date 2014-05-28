@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.17 2014/04/30 16:11:47 brownd Exp $
+// $Id: MakeStereoHits_module.cc,v 1.18 2014/05/28 20:30:11 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/04/30 16:11:47 $
+// $Date: 2014/05/28 20:30:11 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -16,6 +16,7 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -74,9 +75,10 @@ namespace mu2e {
     // Diagnostics level.
     int _diagLevel;
     // Name of the StrawHit collection
-    string _shLabel;
+    string _shLabel, _shfLabel;
     string _mcdigislabel;
   // Parameters
+    StrawHitFlag _shsel; // flag selection
     double _maxDt; // maximum time separation between hits
     double _maxDE; // maximum deposited energy deference: this excludes inconsistent hits
     double _maxDZ; // maximum longitudinal separation
@@ -87,6 +89,7 @@ namespace mu2e {
     double _maxChisq; // maximum # of TimeDivision consistency chisquared to allow making stereo hits
     double _minMVA; // minimum MVA output
     bool _writepairs; // write out the stereo pairs
+    StrawHitFlag _stmask; // selection 
     TMVA::Reader *_stereoMVA; // MVA for stereo selection
     std::string _MVAType; // type of MVA
     std::string _MVAWeights; // file of MVA weights
@@ -114,7 +117,9 @@ namespace mu2e {
     // Parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
+    _shfLabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FSHPreStereo")),
     _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
+    _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
     _maxDt(pset.get<double>("maxDt",40.0)), // nsec
     _maxDE(pset.get<double>("maxDE",0.99)), // dimensionless, from 0 to 1
     _maxDZ(pset.get<double>("maxDZ",40.)), // mm, maximum longitudinal distance between straws
@@ -253,6 +258,17 @@ namespace mu2e {
     if(strawhits == 0){
       throw cet::exception("RECO")<<"mu2e::MakeStereoHits: No StrawHit collection found for label " <<  _shLabel << endl;
     }
+    const StrawHitFlagCollection* shfcol(0);
+    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
+    if(event.getByLabel(_shfLabel,shflagH))
+      shfcol = shflagH.product();
+    if(shfcol == 0){
+      throw cet::exception("RECO")<<"mu2e::MakeStereoHits: No StrawHitFlag collection found for label " <<  _shfLabel << endl;
+    }
+    if(shfcol->size() != strawhits->size()){
+      throw cet::exception("RECO")<<"mu2e::MakeStereoHits: StrawHitFlag collection size " <<  shfcol->size() <<
+       " doesn't match StrawHit collection size " << strawhits->size() << endl;
+    }
     // create a collection of StrawHitPosition, and intialize them using the time division
     size_t nsh = strawhits->size();
     if(_diagLevel > 0)_nhits->Fill(nsh);
@@ -278,99 +294,103 @@ namespace mu2e {
     vector<size_t> ibest(nsh);
     // double loop over selected straw hits
     for(size_t ish=0;ish<nsh;++ish){
-      StrawHit const& sh1 = strawhits->at(ish);
-      Straw const& straw1 = tracker.getStraw(sh1.strawIndex());
-      StrawHitPosition const& shp1 = (*shpos)[ish];
-      for(size_t jsh=ish+1;jsh<nsh;++jsh){
-	StrawHit const& sh2 = strawhits->at(jsh);
-	Straw const& straw2 = tracker.getStraw(sh2.strawIndex());
-	StrawHitPosition const& shp2 = (*shpos)[jsh];
-	double ddot = straw1.direction().dot(straw2.direction());
-	SectorId::isep sep = straw1.id().getSectorId().separation(straw2.id().getSectorId());
-	double de = min((float)1.0,fabs((sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep())));
-	CLHEP::Hep3Vector dp = shp1.pos()-shp2.pos();
-	double dist = dp.mag();
-	double dperp = dp.perp();
-	double dz = fabs(dp.z());
-	double dt = fabs(sh1.time()-sh2.time()); 
-	if(_diagLevel > 1 &&  sep != SectorId::same && sep < SectorId::apart) {
-	  _deltat->Fill(dt);
-	  _deltaE->Fill(de);
-	  _deltaz->Fill(dz);
-	}
-	if( sep != SectorId::same && sep < SectorId::apart // hits are in the same station but not the same sector
-	    && (sep <= minsep[ish] || sep <= minsep[jsh]) // this separation is at least as good as the current best for one of the hits
-	    && ddot > _minDdot // negative crosings are in opposite quadrants
-	    && dt < _maxDt // hits are close in time
-	    && de < _maxDE   // deposited energy is roughly consistent (should compare dE/dx but have no path yet!)
-	    && dz < _maxDZ // longitudinal separation isn't too big
-	    && dperp < _maxDPerp) { // transverse separation isn't too big
-	  // tentative stereo hit: this solves for the POCA
-	  StereoHit sth(*strawhits,tracker,ish,jsh);
-	  double dl1 = straw1.getDetail().activeHalfLength()-fabs(sth.wdist1());
-	  double dl2 = straw2.getDetail().activeHalfLength()-fabs(sth.wdist2());
-	  if(_diagLevel > 1 ) {
-	    _dL->Fill(dl1);
-	    _dL->Fill(dl2);
-	  }
-	  if( dl1 > _minDL && dl2 > _minDL) {
-	    // stereo point is inside the active length
-	    // compute difference between stereo points and TD prediction
-	    double chi1 = (shp1.wireDist()-sth.wdist1())/shp1.posRes(StrawHitPosition::phi);	      
-	    double chi2 = (shp2.wireDist()-sth.wdist2())/shp2.posRes(StrawHitPosition::phi);
-	    if(fabs(chi1) <_maxChi && fabs(chi2) < _maxChi)
-	    {
-	      // compute chisquared
-	      double chisq = chi1*chi1+chi2*chi2; 
-	      if(chisq < _maxChisq){
-		sth.setChisquared(chisq);
-// compute MVA
-		_smva._de = de;
-		_smva._dt = dt;
-		_smva._chi2 = chisq;
-		_smva._rho = sth.pos().perp();
-		double mvaout = _stereoMVA->EvaluateMVA(_MVAType);
-		if(mvaout > _minMVA){
-		  stereohits.push_back(sth);
-		  // choose the best pair as:
-		  // 1) take the pair with the minimum plane separation
-		  // 2) otherwise, take the pair with the maximum MVA output
-		  if(sep < minsep[ish] || (sep == minsep[ish] && mvaout > maxMVA[ish])){
-		    minsep[ish] = sep;
-		    maxMVA[ish] = mvaout;
-		    ibest[ish] = stereohits.size()-1;
-		  }
-		  if(sep < minsep[jsh] || (sep == minsep[jsh] && mvaout > maxMVA[jsh])){
-		    minsep[jsh] = sep;
-		    maxMVA[jsh] = mvaout;
-		    ibest[jsh] = stereohits.size()-1;
-		  }
-		  if(_diagLevel > 2){
-		    _fs = sep;
-		    _de = de;
-		    _dt = dt;
-		    _dz = dz;
-		    _rho = sth.pos().perp();
-		    _dist = dist;
-		    _dperp = dperp;
-		    _dl1 = dl1;
-		    _dl2 = dl2;
-		    _dc1 = chi1;
-		    _dc2 = chi2;
-		    _chi2 = chisq;
-		    _mvaout = mvaout;
-		    _ddot = ddot;
-		    _mcdist = -1.0;
-		    if(_mcdigis != 0){
-		      StrawDigiMC const& mcd1 = _mcdigis->at(ish);
-		      StrawDigiMC const& mcd2 = _mcdigis->at(jsh);
-		      _mcrel = KalFitMC::relationship(mcd1,mcd2);
-		      if(mcd1.stepPointMC(StrawDigi::zero).isNonnull() &&
-			  mcd2.stepPointMC(StrawDigi::zero).isNonnull() )
-			_mcdist = (mcd1.stepPointMC(StrawDigi::zero)->position() -
-			    mcd2.stepPointMC(StrawDigi::zero)->position()).mag();
+      if(shfcol->at(ish).hasAllProperties(_shsel)){
+	StrawHit const& sh1 = strawhits->at(ish);
+	Straw const& straw1 = tracker.getStraw(sh1.strawIndex());
+	StrawHitPosition const& shp1 = (*shpos)[ish];
+	for(size_t jsh=ish+1;jsh<nsh;++jsh){
+	  if(shfcol->at(jsh).hasAllProperties(_shsel)){
+	    StrawHit const& sh2 = strawhits->at(jsh);
+	    Straw const& straw2 = tracker.getStraw(sh2.strawIndex());
+	    StrawHitPosition const& shp2 = (*shpos)[jsh];
+	    double ddot = straw1.direction().dot(straw2.direction());
+	    SectorId::isep sep = straw1.id().getSectorId().separation(straw2.id().getSectorId());
+	    double de = min((float)1.0,fabs((sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep())));
+	    CLHEP::Hep3Vector dp = shp1.pos()-shp2.pos();
+	    double dist = dp.mag();
+	    double dperp = dp.perp();
+	    double dz = fabs(dp.z());
+	    double dt = fabs(sh1.time()-sh2.time()); 
+	    if(_diagLevel > 1 &&  sep != SectorId::same && sep < SectorId::apart) {
+	      _deltat->Fill(dt);
+	      _deltaE->Fill(de);
+	      _deltaz->Fill(dz);
+	    }
+	    if( sep != SectorId::same && sep < SectorId::apart // hits are in the same station but not the same sector
+		&& (sep <= minsep[ish] || sep <= minsep[jsh]) // this separation is at least as good as the current best for one of the hits
+		&& ddot > _minDdot // negative crosings are in opposite quadrants
+		&& dt < _maxDt // hits are close in time
+		&& de < _maxDE   // deposited energy is roughly consistent (should compare dE/dx but have no path yet!)
+		&& dz < _maxDZ // longitudinal separation isn't too big
+		&& dperp < _maxDPerp) { // transverse separation isn't too big
+	      // tentative stereo hit: this solves for the POCA
+	      StereoHit sth(*strawhits,tracker,ish,jsh);
+	      double dl1 = straw1.getDetail().activeHalfLength()-fabs(sth.wdist1());
+	      double dl2 = straw2.getDetail().activeHalfLength()-fabs(sth.wdist2());
+	      if(_diagLevel > 1 ) {
+		_dL->Fill(dl1);
+		_dL->Fill(dl2);
+	      }
+	      if( dl1 > _minDL && dl2 > _minDL) {
+		// stereo point is inside the active length
+		// compute difference between stereo points and TD prediction
+		double chi1 = (shp1.wireDist()-sth.wdist1())/shp1.posRes(StrawHitPosition::phi);	      
+		double chi2 = (shp2.wireDist()-sth.wdist2())/shp2.posRes(StrawHitPosition::phi);
+		if(fabs(chi1) <_maxChi && fabs(chi2) < _maxChi)
+		{
+		  // compute chisquared
+		  double chisq = chi1*chi1+chi2*chi2; 
+		  if(chisq < _maxChisq){
+		    sth.setChisquared(chisq);
+		    // compute MVA
+		    _smva._de = de;
+		    _smva._dt = dt;
+		    _smva._chi2 = chisq;
+		    _smva._rho = sth.pos().perp();
+		    double mvaout = _stereoMVA->EvaluateMVA(_MVAType);
+		    if(mvaout > _minMVA){
+		      stereohits.push_back(sth);
+		      // choose the best pair as:
+		      // 1) take the pair with the minimum plane separation
+		      // 2) otherwise, take the pair with the maximum MVA output
+		      if(sep < minsep[ish] || (sep == minsep[ish] && mvaout > maxMVA[ish])){
+			minsep[ish] = sep;
+			maxMVA[ish] = mvaout;
+			ibest[ish] = stereohits.size()-1;
+		      }
+		      if(sep < minsep[jsh] || (sep == minsep[jsh] && mvaout > maxMVA[jsh])){
+			minsep[jsh] = sep;
+			maxMVA[jsh] = mvaout;
+			ibest[jsh] = stereohits.size()-1;
+		      }
+		      if(_diagLevel > 2){
+			_fs = sep;
+			_de = de;
+			_dt = dt;
+			_dz = dz;
+			_rho = sth.pos().perp();
+			_dist = dist;
+			_dperp = dperp;
+			_dl1 = dl1;
+			_dl2 = dl2;
+			_dc1 = chi1;
+			_dc2 = chi2;
+			_chi2 = chisq;
+			_mvaout = mvaout;
+			_ddot = ddot;
+			_mcdist = -1.0;
+			if(_mcdigis != 0){
+			  StrawDigiMC const& mcd1 = _mcdigis->at(ish);
+			  StrawDigiMC const& mcd2 = _mcdigis->at(jsh);
+			  _mcrel = KalFitMC::relationship(mcd1,mcd2);
+			  if(mcd1.stepPointMC(StrawDigi::zero).isNonnull() &&
+			      mcd2.stepPointMC(StrawDigi::zero).isNonnull() )
+			    _mcdist = (mcd1.stepPointMC(StrawDigi::zero)->position() -
+				mcd2.stepPointMC(StrawDigi::zero)->position()).mag();
+			}
+			_sdiag->Fill();
+		      }
 		    }
-		    _sdiag->Fill();
 		  }
 		}
 	      }
