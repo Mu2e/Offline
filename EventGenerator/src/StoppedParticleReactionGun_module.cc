@@ -112,6 +112,16 @@ namespace mu2e {
                <<pdgId_
                <<", mass = "<<mass_
                <<std::endl;
+
+      std::cout <<"StoppedParticleReactionGun: spectrum shape = "
+	  << psphys_.get<std::string>("spectrumShape")
+	  << " Spectrum file = "
+	  << psphys_.get<std::string>("spectrumFileName")
+	  << std::endl;
+    }
+    if(verbosityLevel_ > 1){
+      std::cout <<"StoppedParticleReactionGun: spectrum: " << std::endl;
+      spectrum_.print();
     }
   }
 
