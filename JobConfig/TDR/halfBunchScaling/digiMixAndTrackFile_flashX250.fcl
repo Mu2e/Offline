@@ -1,0 +1,10 @@
+// 250% beam flash
+//
+#include "JobConfig/TDR/digiMixAndTrackFile.fcl"
+physics.filters.flashMixer.detail.mean   : -5
+physics.filters.ootMixer.detail.mean     : -2
+physics.filters.dioMixer.detail.mean     : -2
+physics.filters.neutronMixer.detail.mean : -2
+physics.filters.photonMixer.detail.mean  : -2
+physics.filters.protonMixer.detail.mean  : -2
+

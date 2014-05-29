@@ -1,0 +1,10 @@
+// 150% out of target stops
+//
+#include "JobConfig/TDR/digiMixAndTrackFile.fcl"
+physics.filters.flashMixer.detail.mean   : -2
+physics.filters.ootMixer.detail.mean     : -3
+physics.filters.dioMixer.detail.mean     : -2
+physics.filters.neutronMixer.detail.mean : -2
+physics.filters.photonMixer.detail.mean  : -2
+physics.filters.protonMixer.detail.mean  : -2
+

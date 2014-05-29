@@ -1,0 +1,3 @@
+Job configurations in the halfBunchScaling directory are meant to be
+used with the special "50% intensity" mixed dataset (e.g. mixp3-x050),
+not with the regular mixed files.
