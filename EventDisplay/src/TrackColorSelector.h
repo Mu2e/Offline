@@ -1,9 +1,9 @@
 //
 // Class assigns colors to tracks, depending on the number of track groups selected.
 //
-// $Id: TrackColorSelector.h,v 1.2 2012/09/14 17:17:34 ehrlich Exp $
+// $Id: TrackColorSelector.h,v 1.3 2014/05/29 19:55:37 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2012/09/14 17:17:34 $
+// $Date: 2014/05/29 19:55:37 $
 //
 // Original author Ralf Ehrlich
 //
@@ -29,13 +29,14 @@ class TrackColorSelector
   TText **_legendParticleGroup;
   TText **_legendParticleText;
   TPolyLine **_legendParticleLine;
+  bool _whiteBackground;
 
   void setupTrackLegend();
   void drawGroupName(int i, const std::string &name);
   void drawLineAndText(int i, int color, const std::string &name);
 
   public:
-  TrackColorSelector(std::vector<ContentSelector::trackInfoStruct> const *trackInfos) : _trackInfos(trackInfos) {}
+  TrackColorSelector(std::vector<ContentSelector::trackInfoStruct> const *trackInfos, bool whiteBackground) : _trackInfos(trackInfos), _whiteBackground(whiteBackground) {}
   void drawTrackLegend(TText **legendParticleGroup, TText **legendParticleText, TPolyLine **legendParticleLine);
   int  getColor(boost::shared_ptr<Track> track);
 };

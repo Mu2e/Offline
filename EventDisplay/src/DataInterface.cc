@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.73 2014/04/20 10:57:09 ehrlich Exp $
+// $Id: DataInterface.cc,v 1.74 2014/05/29 19:55:37 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2014/04/20 10:57:09 $
+// $Date: 2014/05/29 19:55:37 $
 //
 
 #include "DataInterface.h"
@@ -1007,7 +1007,7 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
 void DataInterface::useTrackColors(boost::shared_ptr<ContentSelector> const &contentSelector, bool trackcolors, bool whitebackground)
 {
   std::vector<ContentSelector::trackInfoStruct> selectedTracks=contentSelector->getSelectedTrackNames();
-  TrackColorSelector colorSelector(&selectedTracks);
+  TrackColorSelector colorSelector(&selectedTracks, whitebackground);
   std::vector<boost::shared_ptr<Track> >::const_iterator track;
   for(track=_tracks.begin(); track!=_tracks.end(); track++)
   {
@@ -1016,7 +1016,7 @@ void DataInterface::useTrackColors(boost::shared_ptr<ContentSelector> const &con
       int color=colorSelector.getColor(*track);
       (*track)->setColor(color);
     }
-    else (*track)->setColor(whitebackground?1:0);
+    else (*track)->setColor(whitebackground?kBlack:kWhite);
   }
 }
 
@@ -1337,16 +1337,26 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
   const mu2e::CaloHitCollection *calohits=contentSelector->getSelectedCaloHitCollection<mu2e::CaloHitCollection>();
   art::ServiceHandle<mu2e::GeometryService> geoservice;
-  if(calohits!=nullptr && geoservice->hasElement<mu2e::VaneCalorimeter>())
+  if(calohits!=nullptr &&
+     (geoservice->hasElement<mu2e::VaneCalorimeter>() || geoservice->hasElement<mu2e::DiskCalorimeter>()))
   {
-    mu2e::GeomHandle<mu2e::VaneCalorimeter> calo;
     _numberCrystalHits=calohits->size();  //this is not accurate since the return value gives the RO hits
     std::vector<mu2e::CaloHit>::const_iterator iter;
     for(iter=calohits->begin(); iter!=calohits->end(); iter++)
     {
       const mu2e::CaloHit& calohit = *iter;
       int roid = calohit.id();
-      int crystalid=calo->crystalByRO(roid);
+      int crystalid=0;
+      if(geoservice->hasElement<mu2e::VaneCalorimeter>())
+      {
+        mu2e::GeomHandle<mu2e::VaneCalorimeter> vaneCalo;
+        crystalid=vaneCalo->crystalByRO(roid);
+      }
+      if(geoservice->hasElement<mu2e::DiskCalorimeter>())
+      {
+        mu2e::GeomHandle<mu2e::DiskCalorimeter> diskCalo;
+        crystalid=diskCalo->crystalByRO(roid);
+      }
       double time = calohit.time();
       double energy = calohit.energyDep();
       std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);

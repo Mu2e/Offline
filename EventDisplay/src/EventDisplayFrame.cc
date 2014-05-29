@@ -480,6 +480,8 @@ void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, boo
     else _mainPad->SetFillColor(1);
     _dataInterface->useHitColors(useHitColors, whiteBackground);
     _dataInterface->useTrackColors(_contentSelector, useTrackColors, whiteBackground);
+    updateHitLegend(useHitColors);
+    updateTrackLegend(useTrackColors);
   }
 
   if(_useHitColors!=useHitColors)
@@ -690,7 +692,7 @@ void EventDisplayFrame::updateHitLegend(bool draw)
         char s[50];
         sprintf(s,"%+.3e ns",t);
         _legendText[i]=new TText(0.72,0.54+i*0.02,s);
-        _legendText[i]->SetTextColor(kGray);
+        _legendText[i]->SetTextColor(_whiteBackground?kBlack:kWhite);
         _legendText[i]->SetTextSize(0.025);
         _legendText[i]->Draw();
       }
@@ -713,7 +715,7 @@ void EventDisplayFrame::updateTrackLegend(bool draw)
   if(draw)
   {
     std::vector<ContentSelector::trackInfoStruct> selectedTracks=_contentSelector->getSelectedTrackNames();
-    TrackColorSelector colorSelector(&selectedTracks);
+    TrackColorSelector colorSelector(&selectedTracks, _whiteBackground);
     colorSelector.drawTrackLegend(_legendParticleGroup, _legendParticleText, _legendParticleLine);
   }
 }
