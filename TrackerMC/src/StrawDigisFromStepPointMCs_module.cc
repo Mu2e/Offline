@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.34 2014/05/14 17:15:29 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.35 2014/05/30 19:15:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/05/14 17:15:29 $
+// $Date: 2014/05/30 19:15:32 $
 //
 // Original author David Brown, LBNL
 //
@@ -36,7 +36,7 @@
 // utiliities
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "HitMakers/inc/DeadStrawList.hh"
+#include "TrackerConditions/inc/DeadStrawList.hh"
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"

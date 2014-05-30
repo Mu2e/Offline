@@ -1,9 +1,9 @@
 //
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: DeadStrawList.cc,v 1.1 2012/10/03 06:40:26 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/10/03 06:40:26 $
+// $Id: DeadStrawList.cc,v 1.1 2014/05/30 19:15:32 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/05/30 19:15:32 $
 //
 // Original author Rob Kutschke
 //
@@ -12,7 +12,7 @@
 #include <iostream>
 
 // Mu2e includes
-#include "HitMakers/inc/DeadStrawList.hh"
+#include "TrackerConditions/inc/DeadStrawList.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "Mu2eUtilities/inc/splitLine.hh"

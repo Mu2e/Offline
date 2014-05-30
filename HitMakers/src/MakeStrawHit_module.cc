@@ -2,9 +2,9 @@
 // An EDProducer Module that reads StepPointMC objects and turns them into
 // StrawHit objects.
 //
-// $Id: MakeStrawHit_module.cc,v 1.23 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: MakeStrawHit_module.cc,v 1.24 2014/05/30 19:15:32 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/05/30 19:15:32 $
 //
 // Original author Rob Kutschke. Updated by Ivan Logashenko.
 //                               Updated by Hans Wenzel to include sigma in deltat
@@ -29,7 +29,7 @@
 
 #include "MCDataProducts/inc/StepPointMCStrawHit.hh"
 #include "HitMakers/inc/formStepPointMCStrawHit.hh"
-#include "HitMakers/inc/DeadStrawList.hh"
+#include "TrackerConditions/inc/DeadStrawList.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 // art includes.

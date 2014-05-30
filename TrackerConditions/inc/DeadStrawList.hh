@@ -3,9 +3,9 @@
 //
 // Maintain a list of dead straws.  This should be moved to the conditions system.
 //
-// $Id: DeadStrawList.hh,v 1.1 2012/10/03 06:40:26 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/10/03 06:40:26 $
+// $Id: DeadStrawList.hh,v 1.1 2014/05/30 19:15:32 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/05/30 19:15:32 $
 //
 // Original author Rob Kutschke
 //
