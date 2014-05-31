@@ -1,4 +1,4 @@
-// @(#)root/tmva $Id: TrainStereoMVA.C,v 1.3 2014/04/30 16:12:56 brownd Exp $
+// @(#)root/tmva $Id: TrainStereoMVA.C,v 1.4 2014/05/31 14:27:49 brownd Exp $
 /**********************************************************************************
  * Project   : TMVA - a ROOT-integrated toolkit for multivariate data analysis    *
  * Package   : TMVA                                                               *
@@ -279,7 +279,7 @@ void TrainStereoMVA(const char* filename)
   //    factory->PrepareTrainingAndTestTree( mycut,
   //                                         "NSigTrain=3000:NBkgTrain=3000:NSigTest=3000:NBkgTest=3000:SplitMode=Random:!V" );
 
-  factory->PrepareTrainingAndTestTree(signalCut, backgrCut,"SplitMode=Random:!V:SplitSeed=100:nTrain_Signal=200000:nTest_Signal=200000" ); 
+  factory->PrepareTrainingAndTestTree(signalCut, backgrCut,"SplitMode=Random:!V:SplitSeed=100" ); 
 
   // ---- Book MVA methods
   //
@@ -412,7 +412,7 @@ void TrainStereoMVA(const char* filename)
 
   // TMVA ANN: MLP (recommended ANN) -- all ANNs in TMVA are Multilayer Perceptrons
   if (Use["MLP"])
-    factory->BookMethod( TMVA::Types::kMLP, "MLP", "H:!V:VarTransform=N" );
+    factory->BookMethod( TMVA::Types::kMLP, "MLP", "!H:!V:VarTransform=N" );
 
   if (Use["MLPBFGS"])
     factory->BookMethod( TMVA::Types::kMLP, "MLPBFGS", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:!UseRegulator" );
