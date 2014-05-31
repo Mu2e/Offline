@@ -1,4 +1,4 @@
-// @(#)root/tmva $Id: CreateMVAFactory.h,v 1.2 2014/05/31 14:28:10 brownd Exp $
+// @(#)root/tmva $Id: TrainTimePeakMVA.C,v 1.1 2014/05/31 14:28:10 brownd Exp $
 /**********************************************************************************
  * Project   : TMVA - a ROOT-integrated toolkit for multivariate data analysis    *
  * Package   : TMVA                                                               *
@@ -31,8 +31,8 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <vector>
 
+#include "TChain.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
@@ -40,7 +40,7 @@
 #include "TSystem.h"
 #include "TROOT.h"
 
-//#include "$ROOTSYS/tmva/test/TMVAGui.C"
+//#include "TMVAGui.C"
 #include "TMVA/Config.h"
 
 #if not defined(__CINT__) || defined(__MAKECINT__)
@@ -49,14 +49,11 @@
 #include "TMVA/Tools.h"
 #endif
 
-
-TMVA::Factory*
-CreateMVAFactory(TTree* inputTree,
-  std::vector<std::string> const&  varnames,
-  std::vector<std::string> const&  vardescrip,
-  TCut const& signalCut, TCut const& backgrCut,
-  TFile* outputFile, TString const& weightexp)
+void TrainTimePeakMVA(const char* filename)
 {
+  TChain* mytree = new TChain("TPRDownstreameMinus/tpdiag");
+  mytree->Add(filename);
+
   // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
   // if you use your private .rootrc, or run from a different directory, please copy the
   // corresponding lines from .rootrc
@@ -137,30 +134,18 @@ CreateMVAFactory(TTree* inputTree,
   Use["RuleFit"]         = 0;
   // ---------------------------------------------------------------
 
-
-  // Select methods (don't look at this code - not of interest)
-//  if (myMethodList != "") {
-//    for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) it->second = 0;
-//
-//    std::vector<TString> mlist = TMVA::gTools().SplitString( myMethodList, ',' );
-//    for (UInt_t i=0; i<mlist.size(); i++) {
-//      std::string regMethod(mlist[i]);
-//
-//      if (Use.find(regMethod) == Use.end()) {
-//	std::cout << "Method \"" << regMethod << "\" not known in TMVA under this name. Choose among the following:" << std::endl;
-//	for (std::map<std::string,int>::iterator it = Use.begin(); it != Use.end(); it++) std::cout << it->first << " ";
-//	std::cout << std::endl;
-//	return;
-//      }
-//      Use[regMethod] = 1;
-//    }
-//  }
+  std::cout << std::endl;
+  std::cout << "==> Start TMVAClassification" << std::endl;
 
   // --------------------------------------------------------------------------------------------------
 
   // --- Here the preparation phase begins
 
   // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
+  //TString outfileName( "/data/HD2/dding/newGeometry2.18.14/gDist/test/StereoNoRmed.root");
+  TString outfileName("TrainTimePeak.root");
+  TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
+
   // Create the factory object. Later you can choose the methods
   // whose performance you'd like to investigate. The factory is 
   // the only TMVA object you have to interact with
@@ -179,15 +164,16 @@ CreateMVAFactory(TTree* inputTree,
   //    (TMVA::gConfig().GetVariablePlotting()).fTimesRMS = 8.0;
   //    (TMVA::gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory";
 
+  //(TMVA::gConfig().GetIONames()).fWeightFileDir = "/data/HD2/dding/newGeometry2.18.14/gDist/test/";
+  (TMVA::gConfig().GetIONames()).fWeightFileDir = "TimePeakWeights";
+
   // Define the input variables that shall be used for the MVA training
   // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
   // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
-  for(unsigned ivar=0;ivar<varnames.size();++ivar){
-    std::cout << "Adding variable " << varnames[ivar]
-    << " description: " << vardescrip[ivar] << std::endl;
-    factory->AddVariable(varnames[ivar],vardescrip[ivar],'F');
-  }
 
+  factory->AddVariable("_dt","Time Difference",'F'); 
+  factory->AddVariable("_dphi","Azimuth Difference", 'F');
+  factory->AddVariable("_rho", "Transverse Radius",'F');
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
   // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
@@ -220,10 +206,11 @@ CreateMVAFactory(TTree* inputTree,
   */
 
   Double_t signalWeight     = 1.0;
+
   Double_t backgroundWeight = 1.0;
 
-  factory->AddSignalTree    ( inputTree, signalWeight);
-  factory->AddBackgroundTree( inputTree, backgroundWeight );
+  factory->AddSignalTree    ( mytree, signalWeight);
+  factory->AddBackgroundTree( mytree, backgroundWeight );
 
   // global event weights per tree (see below for setting event-wise weights)
 
@@ -275,6 +262,8 @@ CreateMVAFactory(TTree* inputTree,
 
 
   // Apply additional cuts on the signal and background samples (can be different)
+  TCut signalCut = "ncphits>9&&_mcgen==2";
+  TCut backgrCut = "ncphits>9&&_mcgen!=2";
 
 
   // Tell the factory how to use the training and testing events
@@ -286,13 +275,7 @@ CreateMVAFactory(TTree* inputTree,
   //    factory->PrepareTrainingAndTestTree( mycut,
   //                                         "NSigTrain=3000:NBkgTrain=3000:NSigTest=3000:NBkgTest=3000:SplitMode=Random:!V" );
 
-  if(weightexp!=""){
-    std::cout << "Event weight expression = " << weightexp << std::endl;
-    factory->SetSignalWeightExpression    (weightexp);
-    factory->SetBackgroundWeightExpression(weightexp);
-  }
-
-  factory->PrepareTrainingAndTestTree(signalCut, backgrCut,"SplitMode=Random:!V:SplitSeed=100" ); 
+  factory->PrepareTrainingAndTestTree(signalCut, backgrCut,"SplitMode=Random:!V:SplitSeed=1381" ); 
 
   // ---- Book MVA methods
   //
@@ -425,7 +408,7 @@ CreateMVAFactory(TTree* inputTree,
 
   // TMVA ANN: MLP (recommended ANN) -- all ANNs in TMVA are Multilayer Perceptrons
   if (Use["MLP"])
-    factory->BookMethod( TMVA::Types::kMLP, "MLP", "H:!V:VarTransform=N" );
+    factory->BookMethod( TMVA::Types::kMLP, "MLP", "!H:!V:VarTransform=N" );
 
   if (Use["MLPBFGS"])
     factory->BookMethod( TMVA::Types::kMLP, "MLPBFGS", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:!UseRegulator" );
@@ -484,5 +467,30 @@ CreateMVAFactory(TTree* inputTree,
   // --------------------------------------------------------------------------------------------------
 
   // ---- Now you can tell the factory to train, test, and evaluate the MVAs
-  return factory;
+
+//  factory->PrintHelpMessage();
+//  factory->EvaluateAllVariables();
+   factory->SetVerbose();
+ 
+  // Train MVAs using the set of training events
+  factory->TrainAllMethods();
+
+  // ---- Evaluate all MVAs using the set of test events
+  factory->TestAllMethods();
+
+  // ----- Evaluate and compare performance of all configured MVAs
+  factory->EvaluateAllMethods();
+
+  // --------------------------------------------------------------
+
+  // Save the output
+  outputFile->Close();
+
+  std::cout << "==> Wrote root file: " << outputFile->GetName() << std::endl;
+  std::cout << "==> TMVAClassification is done!" << std::endl;
+
+  delete factory;
+
+  // Launch the GUI for the root macros
+//  if (!gROOT->IsBatch()) TMVAGui( outfileName );
 }

@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.cc,v 1.8 2014/01/14 22:49:39 brownd Exp $
+// $Id: HelixFit.cc,v 1.9 2014/05/31 14:28:10 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/01/14 22:49:39 $
+// $Date: 2014/05/31 14:28:10 $
 //
 //
 // the following has to come before other BaBar includes
@@ -47,6 +47,7 @@ namespace mu2e
 // statics
   double XYZP::_efac(1.0);
   StrawHitFlag XYZP::_useflag;
+  StrawHitFlag XYZP::_dontuseflag;
 // comparison functor for ordering points
   struct radcomp : public std::binary_function<VALERR, VALERR, bool> {
     bool operator()(VALERR const& r1, VALERR const& r2) { return r1._val < r2._val; }
@@ -65,7 +66,18 @@ namespace mu2e
     _sdir = _zdir.cross(_wdir);
   }
 
-  void
+  XYZP::XYZP(CLHEP::Hep3Vector const& pos, double size) :  _ind(-1),_pos(pos),
+  _phi(0.0),
+  _flag(StrawHitFlag::stereo),
+  _wdir(CLHEP::Hep3Vector(1,0,0)),_sdir(CLHEP::Hep3Vector(0,1,0)),
+  _perr(size),_rerr(size) {}
+
+  XYZP::XYZP(size_t ind,CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir,
+      double werr, double serr) :
+    _ind(ind),_pos(pos),_phi(_pos.phi()),_wdir(wdir),_sdir(wdir.y(),-wdir.x(),0.0),
+    _perr(_efac*werr),_rerr(_efac*serr) {}
+
+ void
   XYZP::rinfo(CLHEP::Hep3Vector const& center,VALERR& rad) const {
 //    static const double onethird(1.0/3.0);
 //    static const double invsqrt12(1./sqrt(12.0));
@@ -89,8 +101,9 @@ namespace mu2e
   }
 
   bool 
-  XYZP::use() const { 
-    return !_flag.hasAnyProperty(_useflag);
+  XYZP::use() const {
+    return (!_flag.hasAnyProperty(_dontuseflag))
+      && (_flag.hasAllProperties(_useflag) || _useflag.empty());
   }
 
   bool 
@@ -174,12 +187,9 @@ namespace mu2e
     _lstep(pset.get<double>("lstep",0.2)),
     _minlambda(pset.get<double>("minlambda",0.01)),
     _maxniter(pset.get<unsigned>("maxniter",50)),
-    _nsigma(pset.get<double>("nsigma",15.0)),
-    _nssigma(pset.get<double>("nssigma",3.0)),
+    _nsigma(pset.get<double>("nsigma",20.0)),
     _minzsep(pset.get<double>("minzsep",50.0)),
     _maxzsep(pset.get<double>("maxzsep",500.0)),
-    _maxdz(pset.get<double>("maxdz",35.0)),
-    _maxdot(pset.get<double>("maxdot",0.9)),
     _rbias(pset.get<double>("radialBias",0.0)),
     _efac(pset.get<double>("ErrorFactor",1.0)),
     _mindist(pset.get<double>("mindist",50.0)),
@@ -194,15 +204,19 @@ namespace mu2e
     _xyweights(pset.get<bool>("xyWeights",false)),
     _zweights(pset.get<bool>("zWeights",false)),
     _filter(pset.get<bool>("filter",true)),
+    _stereoinit(pset.get<bool>("stereoinit",false)),
+    _stereofit(pset.get<bool>("stereofit",false)),
     _plotall(pset.get<bool>("plotall",false)),
     _usetarget(pset.get<bool>("usetarget",true)),
+    _targetinit(pset.get<bool>("targetinit",false)),
     _bz(0.0)
   {
     XYZP::_efac = _efac;
     std::vector<std::string> bitnames;
     bitnames.push_back("Outlier");
     bitnames.push_back("OtherBackground");
-    XYZP::_useflag = StrawHitFlag(bitnames);
+    XYZP::_dontuseflag = StrawHitFlag(bitnames);
+    if(_stereofit)XYZP::_useflag = StrawHitFlag(StrawHitFlag::stereo);
   }
 
   HelixFit::~HelixFit()
@@ -303,7 +317,7 @@ namespace mu2e
   void
   HelixFit::plotXY(HelixDef const& mytrk, XYZPVector const& xyzp,
     HelixFitResult const& myhel) const {
-    unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
+    unsigned igraph = 100*mytrk.eventId()+mytrk.trackId();
     art::ServiceHandle<art::TFileService> tfs;
     char gname[100];
     snprintf(gname,100,"gshxy%i",igraph);
@@ -438,7 +452,7 @@ namespace mu2e
     std::vector<FZ> finfo;
     finfo.reserve(xyzp.size());
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-      if(xyzp[ixyzp].use()){
+      if(xyzp[ixyzp].use() && (xyzp[ixyzp].stereo() || (!_stereoinit)) ){
 	FZ fz;
 	xyzp[ixyzp].finfo(myhel._center,fz._phi);
 	fz._z = xyzp[ixyzp]._pos.z();
@@ -474,18 +488,18 @@ namespace mu2e
       else
 	if(dfdz > _smax || dfdz < _smin) return false;
 //      double dfdztest = extract_result<tag::weighted_median>(acctest);
-// find phi at z intercept.  Bootstrap using the mode, since phi looping
+// find phi at z intercept.  Use a histogram technique since phi looping
 // hasn't been resolved yet
       TH1F hphi("hphi","phi value",50,-1.1*pi,1.1*pi);
       for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
       	double phiex = finfo[iphi]._z*dfdz;
 	double dphi = deltaPhi(phiex,finfo[iphi]._phi._val);
 	hphi.Fill(dphi);
-	if((pi-dphi)/pi<0.1)hphi.Fill(dphi-twopi);
-	if((pi+dphi)/pi<0.1)hphi.Fill(dphi+twopi);
+	hphi.Fill(dphi-twopi);
+	hphi.Fill(dphi+twopi);
       }
       double fz0 = hphi.GetBinCenter(hphi.GetMaximumBin());
-// refine this using the median
+// refine this using the median.  Not sure this helps, needs to be tested
 //      accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > acci;
 //      for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
 //	double wt = _zweight ? 1.0/finfo[iphi]._phi._err : 1.0;
@@ -496,6 +510,18 @@ namespace mu2e
 //      fz0 += extract_result<tag::weighted_median>(acci);
       if(fz0>pi)fz0 -= twopi;
       if(fz0<-pi)fz0 += twopi;
+// reset for full search
+      if(_stereoinit){
+	finfo.clear();
+	for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
+	  if(xyzp[ixyzp].use()){
+	    FZ fz;
+	    xyzp[ixyzp].finfo(myhel._center,fz._phi);
+	    fz._z = xyzp[ixyzp]._pos.z();
+	    finfo.push_back(fz);
+	  }
+	}
+      }
   // iterate over slope and ambiguity resolution
       bool changed(true);
       unsigned niter(0);
@@ -564,7 +590,7 @@ namespace mu2e
 
   void
   HelixFit::plotZ(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const {
-    unsigned igraph = 10*mytrk.eventId()+mytrk.trackId();
+    unsigned igraph = 100*mytrk.eventId()+mytrk.trackId();
     art::ServiceHandle<art::TFileService> tfs;
     char gname[100];
     snprintf(gname,100,"gshphiz%i",igraph);
@@ -621,15 +647,15 @@ namespace mu2e
     std::vector<CLHEP::Hep3Vector> pos;
     pos.reserve(xyzp.size());
     for(size_t ixyzp=0; ixyzp < nxyzp; ++ixyzp){
-      if(xyzp[ixyzp].use()){
+      if(xyzp[ixyzp].use() && (xyzp[ixyzp].stereo() || (!_stereoinit)) ){
 	pos.push_back(xyzp[ixyzp]._pos);
       }
     }
-    // I should randomly pick entries if there are too many, FIXME
-    // add the target (if requested)
-    static const CLHEP::Hep3Vector tpos(0.0,0.0,0.0);
-    if(_usetarget)
+    // add the target position if requested
+    if(_usetarget){
+      static const CLHEP::Hep3Vector tpos(0.0,0.0,0.0);
       pos.push_back(tpos);
+    }
 
     size_t np = pos.size();
     for(size_t ip=0;ip<np;++ip){
@@ -638,7 +664,10 @@ namespace mu2e
       for(size_t jp=ip+1;jp<np; ++jp){
 	if(pos[ip].perpPart().diff2(pos[jp].perpPart()) > mind2){
 	  double rj2 = pow(pos[jp].x(),2) + pow(pos[jp].y(),2);
-	  for(size_t kp=jp+1;kp<np; ++kp){
+	  size_t mink = jp+1;
+  // we can force the initialization to use the target position in every triple
+	  if(_usetarget && _targetinit) mink = np-1;
+	  for(size_t kp=mink;kp<np; ++kp){
 	    if(pos[ip].perpPart().diff2(pos[kp].perpPart()) > mind2 &&
 		pos[jp].perpPart().diff2(pos[kp].perpPart()) > mind2){
 	      // this effectively measures the slope difference

@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.74 2014/05/24 00:46:34 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.75 2014/05/31 14:28:10 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/05/24 00:46:34 $
+// $Date: 2014/05/31 14:28:10 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -111,6 +111,9 @@ namespace mu2e
       unsigned _maxnpeak;
       unsigned _minnhits;
       bool _cleanpeaks;
+      double _minpeakmva;
+      std::string _PMVAType; // type of MVA
+      std::string _PMVAWeights; // file of MVA weights
       double _maxphirange;
       double _tmin;
       double _tmax;
@@ -151,8 +154,11 @@ namespace mu2e
       void fillFitDiag(int ipeak, HelixFitResult const& helixfit,
 	  KalFitResult const& seedfit,KalFitResult const& kalfit);
       void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
-
       void initializeReaders();
+
+      TMVA::Reader *_peakMVA; // MVA for peak cleaning
+      TimePeakMVA _pmva; // input variables to TMVA for peak cleaning
+
       // MC tools
       KalFitMC _kfitmc;
       // strawhit tuple variables
@@ -183,6 +189,7 @@ namespace mu2e
       Int_t _tpeventid, _peakid, _pmax, _nphits, _ncphits, _nchits;
       Float_t _ptime, _pdtimemax, _ctime, _cdtimemax;;
       Float_t _pphi, _cphi, _cphirange, _pdphimax, _cdphimax;
+      vector<TimePeakHitInfo> _tphinfo;
 
       // fit tuple variables
       Int_t _nadd,_ipeak;
@@ -218,13 +225,14 @@ namespace mu2e
     _tbkg(pset.get<vector<string> >("TimeBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _hbkg(pset.get<vector<string> >("HelixFitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _addbkg(pset.get<vector<string> >("AddHitBackgroundBits",vector<string>{})),
-    _maxdt(pset.get<double>("DtMax",25.0)),
+    _maxdt(pset.get<double>("DtMax",30.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",40.0)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",20)),
-    _cleanpeaks(pset.get<bool>("CleanTimePeaks",false)),
-    _maxphirange(pset.get<double>("MaxPhiRange",M_PI)),
+    _cleanpeaks(pset.get<bool>("CleanTimePeaks",true)),
+    _minpeakmva(pset.get<double>("MinTimePeakMVA",0.4)),
+    _PMVAType(pset.get<std::string>("TimePeakMVAType","MLP method")),
     _tmin(pset.get<double>("tmin",0.0)),
     _tmax(pset.get<double>("tmax",1700.0)),
     _tbin(pset.get<double>("tbin",20.0)),
@@ -251,11 +259,15 @@ namespace mu2e
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     // location-independent files
+    ConfigFileLookupPolicy configFile;
+    std::string weights = pset.get<std::string>("PeakMVAWeights","TrkPatRec/test/TimePeak.weights.xml");
+    _PMVAWeights = configFile(weights);
   }
 
   TrkPatRec::~TrkPatRec(){}
 
   void TrkPatRec::beginJob(){
+    initializeReaders();
     // create diagnostics if requested
     if(_diag > 0)createDiagnostics();
     // create a histogram of throughput: this is a basic diagnostic that should ALWAYS be on
@@ -656,6 +668,7 @@ namespace mu2e
     _tpdiag->Branch("cphirange",&_cphirange,"cphirange/F");
     _tpdiag->Branch("pdphimax",&_pdphimax,"pdphimax/F");
     _tpdiag->Branch("cdphimax",&_cdphimax,"cdphimax/F");
+    _tpdiag->Branch("tphinfo",&_tphinfo);
  
     // extend the KalFitMC track diagnostic tuple
     TTree* trkdiag = _kfitmc.createTrkDiag();
@@ -1074,18 +1087,20 @@ namespace mu2e
     _peakid = ip;
     _pmax = tp._peakmax;
     _nphits = tp._trkptrs.size();
-    _ptime = tp._tpeak;
     _ncphits = 0;
     _pdtimemax = 0.0;
     _pdphimax = 0.0;
     _cdtimemax = 0.0;
     _cdphimax = 0.0;
+    _tphinfo.clear();
     accumulator_set<double, stats<tag::mean > > facc;
+    accumulator_set<double, stats<tag::mean > > tacc;
     for(size_t iph=0;iph<tp._trkptrs.size();++iph){
       unsigned ish = tp._trkptrs[iph]._index;
       StrawHit const& sh = _shcol->at(ish);
       StrawHitPosition const& shp = _shpcol->at(ish);
       double time = sh.time();
+      tacc(time);
       CLHEP::Hep3Vector const& pos = shp.pos();
       double phi = pos.phi();
       if(extract_result<tag::count>(facc) > 0){
@@ -1097,45 +1112,65 @@ namespace mu2e
 	}
       }
       facc(phi);
-      double dt = fabs(tp._tpeak-time);
-      if(dt > _pdtimemax)_pdtimemax=dt;
-      const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
-      if(mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>20.0){
-	_ncphits++;
-	if(dt > _cdtimemax)_cdtimemax = dt;
-      }
     }
     _pphi =extract_result<tag::mean>(facc);
+    _ptime =extract_result<tag::mean>(tacc);
     for(size_t iph=0;iph<tp._trkptrs.size();++iph){
       unsigned ish = tp._trkptrs[iph]._index;
       StrawHitPosition const& shp = _shpcol->at(ish);
       CLHEP::Hep3Vector const& pos = shp.pos();
       double phi = pos.phi();
-      if(extract_result<tag::count>(facc) > 0){
-	double dphi = fabs(phi - _pphi);
-	if(dphi > M_PI)
-	  dphi -= 2*M_PI;
-	if(dphi > _pdphimax)_pdphimax = dphi;
-	const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
-	if(mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>20.0 && dphi > _cdphimax)_cdphimax = dphi;
+      double dphi = phi - _pphi;
+      if(dphi > M_PI)
+	dphi -= 2*M_PI;
+      else if(dphi < -M_PI)
+	dphi += 2*M_PI;
+      if(fabs(dphi) > _pdphimax)_pdphimax = fabs(dphi);
+
+      double dt = _shcol->at(ish).time() - _ptime;
+      if(fabs(dt) > _pdtimemax)_pdtimemax=fabs(dt);
+
+
+      const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
+      if(mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>20.0){
+	_ncphits++;
+	if(fabs(dt) > _cdtimemax)_cdtimemax = fabs(dt);
       }
+      if(mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>20.0 && dphi > _cdphimax)_cdphimax = dphi;
+
+      _pmva._dt = dt;
+      _pmva._dphi = dphi;
+      _pmva._rho = pos.perp();
+      double mvaout = _peakMVA->EvaluateMVA(_PMVAType);
+
+      TimePeakHitInfo tph;
+      tph._dt = dt;
+      tph._dphi = dphi;
+      tph._rho = pos.perp();
+      tph._mva = mvaout;
+      tph._mcpdg = mcsum[0]._pdgid;
+      tph._mcpdg = mcsum[0]._pdgid;
+      tph._mcpdg = mcsum[0]._pdgid;
+      tph._mcgen = mcsum[0]._gid;
+      tph._mcproc = mcsum[0]._pid;
+      _tphinfo.push_back(tph);
     }
     _tpdiag->Fill();
   }
 
 
   void TrkPatRec::cleanTimePeak(TrkTimePeak& tpeak) {
-    // record hits in time with each peak, and accept them if they have a minimum # of hits
-    double fmin,fmax,phirange;
     static const double twopi(2*M_PI);
-    // iteratively filter outliers; first, find the one furthest from the mean
+    // iteratively filter outliers
+    double worstmva(100.0);
     do{
-      accumulator_set<double, stats<tag::mean > > facc;
-      fmin = twopi;
-      fmax = -twopi;
   // first, compute the average phi and range.  Take care for wrapping
+      accumulator_set<double, stats<tag::mean > > facc;
+      accumulator_set<double, stats<tag::mean > > tacc;
       for(size_t ips=0;ips<tpeak._trkptrs.size();++ips){
 	unsigned ish = tpeak._trkptrs[ips]._index;
+	double time = _shcol->at(ish).time();
+	tacc(time);
 	double phi = _shpcol->at(ish).pos().phi();
 	if(extract_result<tag::count>(facc) > 0){
 	  double dphi = phi - extract_result<tag::mean>(facc);
@@ -1146,36 +1181,48 @@ namespace mu2e
 	  }
 	}
 	facc(phi);
-	if(phi>fmax)fmax=phi;
-	if(phi<fmin)fmin=phi;
       }
-      phirange = fmax - fmin;
-      if(phirange > _maxphirange){
-	double pphi = extract_result<tag::mean>(facc);
-	// find the furthest hit
-	double dfmax = -twopi;
-	size_t iworst =0;
-	for(size_t ips=0;ips<tpeak._trkptrs.size();++ips){
-	  unsigned ish = tpeak._trkptrs[ips]._index;
-	  double phi = _shpcol->at(ish).pos().phi();
-	  double dphi = phi - pphi;
-	  if(dphi > M_PI){
-	    dphi -= twopi;
-	  } else if(dphi < -M_PI){
-	    dphi += twopi;
-	  }
-	  if(fabs(dphi)>dfmax){
-	    dfmax = fabs(dphi);
-	    iworst = ips;
-	  }
+      double pphi = extract_result<tag::mean>(facc);
+      double ptime = extract_result<tag::mean>(tacc);
+// find the least signal-like hit
+      size_t iworst =0;
+      worstmva = 100.0;
+      for(size_t ips=0;ips<tpeak._trkptrs.size();++ips){
+	unsigned ish = tpeak._trkptrs[ips]._index;
+	double dt = _shcol->at(ish).time() - ptime;
+	double rho = _shpcol->at(ish).pos().perp();
+	double phi = _shpcol->at(ish).pos().phi();
+	double dphi = phi - pphi;
+	if(dphi > M_PI){
+	  dphi -= twopi;
+	} else if(dphi < -M_PI){
+	  dphi += twopi;
 	}
-	// remove the worst hit
+	// compute MVA
+	_pmva._dt = dt;
+	_pmva._dphi = dphi;
+	_pmva._rho = rho; 
+	double mvaout = _peakMVA->EvaluateMVA(_PMVAType);
+	if(mvaout < worstmva){
+	  worstmva = mvaout;
+	  iworst = ips;
+	}
+      }
+      // remove the worst hit
+      if(worstmva < _minpeakmva){
 	std::swap(tpeak._trkptrs[iworst],tpeak._trkptrs.back());
 	tpeak._trkptrs.pop_back();
       }
-    } while(tpeak._trkptrs.size() >= _minnhits && phirange > _maxphirange);
+    } while(tpeak._trkptrs.size() >= _minnhits && worstmva < _minpeakmva);
   }
 
+  void TrkPatRec::initializeReaders() {
+    _peakMVA = new TMVA::Reader();
+    _peakMVA->AddVariable("_dt",&_pmva._dt);
+    _peakMVA->AddVariable("_dphi",&_pmva._dphi);
+    _peakMVA->AddVariable("_rho",&_pmva._rho);
+    _peakMVA->BookMVA(_PMVAType,_PMVAWeights);
+  }
 }
 using mu2e::TrkPatRec;
 DEFINE_ART_MODULE(TrkPatRec);

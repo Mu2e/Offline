@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.hh,v 1.5 2014/01/14 22:49:39 brownd Exp $
+// $Id: HelixFit.hh,v 1.6 2014/05/31 14:28:10 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/01/14 22:49:39 $
+// $Date: 2014/05/31 14:28:10 $
 //
 #ifndef HelixFit_HH
 #define HelixFit_HH
@@ -70,7 +70,7 @@ namespace mu2e
 // utility struct
   struct XYZP {
 // straw hit index
-    size_t _ind;
+    int _ind;
 // position
     CLHEP::Hep3Vector _pos;
 // ambiguity-resolved phi angle
@@ -84,11 +84,10 @@ namespace mu2e
 // errors are asymmetric; along the wire is given by time division, perp to the wire by the straw size/sqrt(12)
     double _perr,_rerr;
 // initialize some variables on construction
-    XYZP():_phi(0.0){}
+    XYZP():_ind(-1),_phi(0.0),_perr(1000.0),_rerr(1000.0){}
     XYZP(size_t index,StrawHit const& sh, StrawHitPosition const& shp,Straw const& straw);
-    XYZP(size_t ind,CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr) :
-      _ind(ind),_pos(pos),_phi(_pos.phi()),_wdir(wdir),_sdir(wdir.y(),-wdir.x(),0.0),_perr(_efac*werr),_rerr(_efac*serr) {}
- 
+    XYZP(size_t ind,CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr);
+     XYZP(CLHEP::Hep3Vector const& pos, double size);
 // radial position information
     virtual void rinfo(CLHEP::Hep3Vector const& center, VALERR& rad) const;
     virtual void finfo(CLHEP::Hep3Vector const& center, VALERR& phi) const;
@@ -98,7 +97,7 @@ namespace mu2e
     void setUse(bool use);
     static double _efac;
 // flag bits to define use
-    static StrawHitFlag _useflag;
+    static StrawHitFlag _useflag, _dontuseflag;
   };
 
   typedef std::vector<XYZP> XYZPVector;
@@ -152,9 +151,7 @@ namespace mu2e
     double _lambda0,_lstep,_minlambda; // parameters for AGE center determination
     unsigned _maxniter; // maxium # of iterations to global minimum
     double _nsigma; // # of sigma for filtering outlyers
-    double _nssigma; // # of sigma for filtering stereo time division
     double _minzsep, _maxzsep; // Z separation of points for pitch estimate
-    double _maxdz, _maxdot; // stereo selection parameters
     double _rbias;  // robust fit parameter bias
     double _efac; // error factor
     double _mindist; // minimum distance between points used in circle initialization
@@ -166,9 +163,11 @@ namespace mu2e
     bool _forcep; // force the p/pt to be in range (true), or exclude fits outside that range (false)
     bool _xyweights,_zweights; // weight points by estimated errors 
     bool _filter; // filter hits
+    bool _stereoinit; // require stereo hits to initialize
+    bool _stereofit; // require stereo hits 
     bool _plotall; // plot also failed fits
-    bool _usetarget; // constrain to target when initializing
-    bool _allstereo; // Use all stereo combinations (true) or only use each hit once
+    bool _usetarget; // use target as a point for circle init
+    bool _targetinit; // constrain to target when initializing circle
     mutable double _bz; // cached value of Field Z component at the tracker origin
 // cached value of radius and pitch sign: these depend on the particle type
 // and direction
