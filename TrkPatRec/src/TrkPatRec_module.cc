@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.77 2014/06/02 13:36:12 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.78 2014/06/02 23:45:52 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/06/02 13:36:12 $
+// $Date: 2014/06/02 23:45:52 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -55,9 +55,6 @@
 #include "TApplication.h"
 #include "TGMsgBox.h"
 #include "TTree.h"
-#include "TSpectrum.h"
-#include "TSpectrum2.h"
-#include "TSpectrum3.h"
 #include "TMVA/Reader.h"
 #include "TMarker.h"
 // boost
@@ -102,7 +99,6 @@ namespace mu2e
       string _shpLabel;
       string _stLabel;
       string _shfLabel;
-      string _dtspecpar;
       StrawHitFlag _tsel, _hsel, _addsel;
       StrawHitFlag _tbkg, _hbkg, _addbkg;
       double _maxdt, _maxdtmiss;
@@ -120,7 +116,7 @@ namespace mu2e
       double _tbin;
       unsigned _nbins;
       double _ymin;
-      double _1dthresh;
+      double _1dthresh,_tssigma;
       // outlier cuts
       double _maxseeddoca,_maxhelixdoca,_maxadddoca, _maxaddchi;
       TrkParticle _tpart; // particle type being searched for
@@ -143,6 +139,7 @@ namespace mu2e
       // helper functions
       bool findData(const art::Event& e);
       void findTimePeaks();
+      void findTimePeaks(TH1F const& tspect,std::vector<Float_t>& xpeak,std::vector<Float_t>& ypeak);
       void createTimePeak();
       void cleanTimePeak(TrkTimePeak& tp);
       void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,vector<TrkHitFilter>& thfvec);
@@ -206,7 +203,8 @@ namespace mu2e
       // hit filtering tuple variables
       vector<TrkHitFilter> _sfilt, _hfilt;
       // flow diagnostic
-      TH1F* _cutflow;
+      TH1F* _cutflow, *_ccutflow;
+      int _icepeak;
   };
 
   TrkPatRec::TrkPatRec(fhicl::ParameterSet const& pset) :
@@ -218,7 +216,6 @@ namespace mu2e
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _stLabel(pset.get<string>("StereoHitCollectionLabel","MakeStereoHits")),
     _shfLabel(pset.get<string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
-    _dtspecpar(pset.get<string>("DeltaTSpectrumParams","nobackgroundnomarkovgoff")),
     _tsel(pset.get<vector<string> >("TimeSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"} )),
     _hsel(pset.get<vector<string> >("HelixFitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"} )),
     _addsel(pset.get<vector<string> >("AddHitSelectionBits",vector<string>{} )),
@@ -229,17 +226,17 @@ namespace mu2e
     _maxdtmiss(pset.get<double>("DtMaxMiss",40.0)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
-    _minnhits(pset.get<unsigned>("MinNHits",20)),
+    _minnhits(pset.get<unsigned>("MinNHits",15)),
     _cleanpeaks(pset.get<bool>("CleanTimePeaks",true)),
     _minpeakmva(pset.get<double>("MinTimePeakMVA",0.5)),
     _maxpeakdt(pset.get<double>("MaxTimePeakDeltat",25.0)),
     _maxpeakdphi(pset.get<double>("MaxTimePeakDeltaPhi",1.0)),
     _PMVAType(pset.get<std::string>("TimePeakMVAType","MLP method")),
-    _tmin(pset.get<double>("tmin",0.0)),
+    _tmin(pset.get<double>("tmin",500.0)),
     _tmax(pset.get<double>("tmax",1700.0)),
     _tbin(pset.get<double>("tbin",20.0)),
     _ymin(pset.get<double>("ymin",10.0)),
-    _1dthresh(pset.get<double>("OneDPeakThreshold",10.0)),
+    _1dthresh(pset.get<double>("OneDPeakThreshold",8.0)),
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
     _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
     _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
@@ -275,6 +272,25 @@ namespace mu2e
     // create a histogram of throughput: this is a basic diagnostic that should ALWAYS be on
     art::ServiceHandle<art::TFileService> tfs;
     _cutflow=tfs->make<TH1F>("cutflow","Cutflow",10,-0.5,9.5);
+    _cutflow->GetXaxis()->SetBinLabel(1,"All Events");
+    _cutflow->GetXaxis()->SetBinLabel(2,"Time Peak");
+    _cutflow->GetXaxis()->SetBinLabel(3,"Helix Fit");
+    _cutflow->GetXaxis()->SetBinLabel(4,"Seed Fit");
+    _cutflow->GetXaxis()->SetBinLabel(5,"Kalman Fit");
+
+    if(_diag>1){
+      _ccutflow=tfs->make<TH1F>("ccutflow","CE Cutflow",10,-0.5,9.5);
+      _ccutflow->GetXaxis()->SetBinLabel(1,"All Events");
+      _ccutflow->GetXaxis()->SetBinLabel(2,"CE hits tracker");
+      _ccutflow->GetXaxis()->SetBinLabel(3,"CE hits in time window");
+      _ccutflow->GetXaxis()->SetBinLabel(4,"CE time peak");
+      _ccutflow->GetXaxis()->SetBinLabel(5,"CE Helix NHits");
+      _ccutflow->GetXaxis()->SetBinLabel(6,"CE Helix Init");
+      _ccutflow->GetXaxis()->SetBinLabel(7,"CE Helix XY Fit");
+      _ccutflow->GetXaxis()->SetBinLabel(8,"CE Helix #phiZ Fit");
+      _ccutflow->GetXaxis()->SetBinLabel(9,"CE Seed Fit");
+      _ccutflow->GetXaxis()->SetBinLabel(10,"CE Kalman Fit");
+    }
     _eventid = 0;
   }
 
@@ -283,6 +299,7 @@ namespace mu2e
   void TrkPatRec::produce(art::Event& event ) {
     _eventid = event.event();
     _cutflow->Fill(0.0);
+    if(_diag>1)_ccutflow->Fill(0.0);
     // create output
     unique_ptr<KalRepCollection>    tracks(new KalRepCollection );
     unique_ptr<KalRepPtrCollection> trackPtrs(new KalRepPtrCollection );
@@ -305,10 +322,16 @@ namespace mu2e
 	//	return;
       }
     }
-    if(_diag > 1)fillStrawDiag();
+    if(_diag > 1){
+      fillStrawDiag();
+      if(_nchit>14)_ccutflow->Fill(1.0);
+      if(_nchit>14&&_ctime>_tmin)_ccutflow->Fill(2.0);
+    }
+
     // find the time peaks in the time spectrum of selected hits.  Otherwise, take all
     // selected hits as a peak
     _tpeaks.clear();
+    _icepeak = -1;
     if(_findtpeak){
       findTimePeaks();
     } else {
@@ -327,6 +350,7 @@ namespace mu2e
     static KalFitResult dummykfit(dummydef);
     // loop over the accepted time peaks
     if(_tpeaks.size()>0)_cutflow->Fill(1.0);
+    if(_diag>1 && _icepeak >=0)_ccutflow->Fill(3.0);
     bool findhelix(false), findseed(false), findkal(false);
     for(unsigned ipeak=0;ipeak<_tpeaks.size();++ipeak){
       // create track definitions for the helix fit from this initial information 
@@ -384,6 +408,20 @@ namespace mu2e
       // fill fit diagnostics if requested
       if(_diag > 0)
 	fillFitDiag(ipeak,helixfit,seedfit,kalfit);
+      if(_diag > 1 && (int)ipeak == _icepeak){
+	if(helixfit._fit.success()){
+	  _ccutflow->Fill(4.0);
+	  _ccutflow->Fill(5.0);
+	  _ccutflow->Fill(6.0);
+	  _ccutflow->Fill(7.0);
+	} else {
+	  if(helixfit._fit.failure()>1)_ccutflow->Fill(4.0);
+	  if(helixfit._fit.failure()>2)_ccutflow->Fill(5.0);
+	  if(helixfit._fit.failure()>3)_ccutflow->Fill(6.0);
+	}
+	if(seedfit._fit.success())_ccutflow->Fill(8.0);
+	if(kalfit._fit.success())_ccutflow->Fill(9.0);
+      }
       if(kalfit._fit.success()){
 	// flag the hits used in this track.  This should use the track id, FIXME!!! (in the BaBar code)
 	if(ipeak<16){
@@ -443,7 +481,6 @@ namespace mu2e
   }
 
   void TrkPatRec::findTimePeaks() {
-    TSpectrum tspec(_maxnpeak);
     TH1F timespec("timespec","time spectrum",_nbins,_tmin,_tmax);
     // loop over straws hits and fill time spectrum plot for tight hits
     unsigned nstrs = _shcol->size();
@@ -453,12 +490,9 @@ namespace mu2e
 	timespec.Fill(time);
       }
     }
-    Double_t mb = timespec.GetMaximum();
-    double thresh(0.99);
-    if(mb > _1dthresh) thresh = _1dthresh/mb;
-    unsigned np = tspec.Search(&timespec,1,_dtspecpar.c_str(),thresh);
-    Float_t *xpeaks = tspec.GetPositionX();
-    Float_t *ypeaks = tspec.GetPositionY();
+    std::vector<Float_t> xpeaks,ypeaks;
+    findTimePeaks(timespec,xpeaks,ypeaks);
+    unsigned np = xpeaks.size();
     // Loop over peaks, looking only at those with a minimum peak value
     for (unsigned ip=0; ip<np; ++ip) {
       Float_t xp = xpeaks[ip];
@@ -809,7 +843,7 @@ namespace mu2e
 	_mcom = mcsum[0]._spp->startMomentum().vect().mag();
 	_mcshlen = (mcsum[0]._pos-straw.getMidPoint()).dot(straw.getDirection());
 	_mcshd = (mcsum[0]._pos-straw.getMidPoint()).dot(straw.getDirection().cross(mcsum[0]._mom).unit());
-	bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>20.0);
+	bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>90.0);
 	if(conversion){
 	  ++_nchit;
   // compute the average time and average phi of conversion hits
@@ -922,7 +956,7 @@ namespace mu2e
       // summarize the MC truth for this strawhit
       if(_kfitmc.mcData()._mcsteps != 0) {
 	const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
-	conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>20.0);
+	conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>90.0);
 	proton = mcsum[0]._pdgid==2212;
       }
       // fill plots
@@ -935,11 +969,12 @@ namespace mu2e
       }
       if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
 	ltsp->Fill(time);
-	if(conversion)
-	  ctsp->Fill(time);
 	if(proton)
 	  ptsp->Fill(time);
       }
+      if(conversion)
+	ctsp->Fill(time);
+
     }
     // plot time peaks
     TList* flist = tdtsp->GetListOfFunctions();
@@ -970,7 +1005,7 @@ namespace mu2e
 	// summarize the MC truth for this strawhit
 	if(_kfitmc.mcData()._mcsteps != 0) {
 	  const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr->_index); 
-	  if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>20.0)
+	  if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>90.0)
 	    ++_nmc;
 	}
       } 
@@ -1134,11 +1169,11 @@ namespace mu2e
 
 
       const vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
-      if(mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>20.0){
+      if(mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>90.0){
 	_ncphits++;
 	if(fabs(dt) > _cdtimemax)_cdtimemax = fabs(dt);
       }
-      if(mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>20.0 && dphi > _cdphimax)_cdphimax = dphi;
+      if(mcsum[0]._gid == 2 && mcsum[0]._mom.mag()>90.0 && dphi > _cdphimax)_cdphimax = dphi;
 
       _pmva._dt = dt;
       _pmva._dphi = dphi;
@@ -1158,6 +1193,7 @@ namespace mu2e
       _tphinfo.push_back(tph);
     }
     _tpdiag->Fill();
+    if(_ncphits > 0.5*_nchits)_icepeak = ip;
   }
 
 
@@ -1260,6 +1296,41 @@ namespace mu2e
     _peakMVA->AddVariable("_dphi",&_pmva._dphi);
     _peakMVA->AddVariable("_rho",&_pmva._rho);
     _peakMVA->BookMVA(_PMVAType,_PMVAWeights);
+  }
+
+  void TrkPatRec::findTimePeaks( TH1F const& tspect,std::vector<Float_t>& xpeak,std::vector<Float_t>& ypeak) { 
+    int ibin(1); // root starts bin numbers at 1
+    int nbins = tspect.GetNbinsX();
+    while(ibin < nbins+1){
+      double y = tspect.GetBinContent(ibin);
+      if(y >= _1dthresh){
+	double xmax = tspect.GetBinCenter(ibin);
+	double ymax = y;
+	double yprev = y;
+	// find contiguous bins above threshold
+	int jbin = ibin+1;
+	bool descending(false);
+	while(jbin < nbins+1 && tspect.GetBinContent(jbin) >= _1dthresh){
+	  y =tspect.GetBinContent(jbin);
+	  descending |= yprev-y > sqrt(yprev);
+	  // don't follow next maximum
+	  if(descending && y-yprev > sqrt(y)){
+	    break;
+	  } else {
+	    if(y > ymax){
+	      ymax = y;
+	      xmax = tspect.GetBinCenter(jbin);
+	    }
+	    yprev = y;
+	    ibin = jbin;
+	    ++jbin;
+	  }
+	}
+	xpeak.push_back(xmax);
+	ypeak.push_back(ymax);
+      }
+      ++ibin;
+    }
   }
 }
 using mu2e::TrkPatRec;

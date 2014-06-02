@@ -20,28 +20,28 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
     char canname[100];
     char rname[100];
     char tname[100];
-//    char lname[100];
+    char lname[100];
     char cname[100];
     char pname[100];
     snprintf(rname,100,"rawtspectrum%lu",ievt);
     snprintf(tname,100,"tightnodeltatspectrum%lu",ievt);
-  //  snprintf(lname,100,"loosetspectrum%lu",ievt);
+    snprintf(lname,100,"loosetspectrum%lu",ievt);
     snprintf(cname,100,"convtspectrum%lu",ievt);
     snprintf(pname,100,"protontspectrum%i",ievt);
     TH1F* rh = (TH1F*)tdir->Get(rname);
     TH1F* th = (TH1F*)tdir->Get(tname);
-//    TH1F* lh = (TH1F*)tdir->Get(lname);
+    TH1F* lh = (TH1F*)tdir->Get(lname);
     TH1F* ch = (TH1F*)tdir->Get(cname);
     TH1F* ph = (TH1F*)tdir->Get(pname);
-    if(rh != 0 && th != 0 && ch != 0 && ph != 0){
+    if(rh != 0 && th != 0 &&lh != 0 && ch != 0 && ph != 0){
       div_t divide = div(iplot,nps*nps);
       //      std::cout << "divide " << iplot << " by " << nps << " gives  quot " << divide.quot << " rem " << divide.rem << std::endl;
       if(divide.rem == 0){
 	++ican;
 	snprintf(canname,20,"can_%i",ican);
-	cans[ican] = new TCanvas(canname,canname,800,600);
+	cans[ican] = new TCanvas(canname,canname,1200,1000);
 	cans[ican]->Clear();
-	cans[ican]->Divide(nps,2);
+	cans[ican]->Divide(nps,nps);
       }
       unsigned ipave = divide.rem+1;
       cans[ican]->cd(ipave);
@@ -53,15 +53,15 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
 //
       char title[100];
       snprintf(title,100,"Time Spectrum event %lu",ievt);
-      rh->SetTitle(title);
-      rh->GetXaxis()->SetTitle("nsec");
-      rh->GetYaxis()->SetTitle("# hits");
-      rh->Draw();
+      th->SetTitle(title);
+      th->GetXaxis()->SetTitle("nsec");
+      th->GetYaxis()->SetTitle("# hits");
+      th->SetFillColor(kGreen);
+      th->Draw();
       //        th->SetLineWidth(2);
 //      lh->SetFillColor(kYellow);
 //      lh->Draw("same");
-      th->SetFillColor(kGreen);
-      th->Draw("same");
+      rh->Draw("same");
       ch->SetLineStyle(1);
       ch->SetLineWidth(2);
       ch->Draw("same");
