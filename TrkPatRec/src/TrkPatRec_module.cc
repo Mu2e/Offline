@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.75 2014/05/31 14:28:10 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.76 2014/06/02 04:16:21 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/05/31 14:28:10 $
+// $Date: 2014/06/02 04:16:21 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -111,7 +111,7 @@ namespace mu2e
       unsigned _maxnpeak;
       unsigned _minnhits;
       bool _cleanpeaks;
-      double _minpeakmva;
+      double _minpeakmva, _maxpeakdt, _maxpeakdphi;
       std::string _PMVAType; // type of MVA
       std::string _PMVAWeights; // file of MVA weights
       double _maxphirange;
@@ -225,13 +225,15 @@ namespace mu2e
     _tbkg(pset.get<vector<string> >("TimeBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _hbkg(pset.get<vector<string> >("HelixFitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _addbkg(pset.get<vector<string> >("AddHitBackgroundBits",vector<string>{})),
-    _maxdt(pset.get<double>("DtMax",30.0)),
+    _maxdt(pset.get<double>("DtMax",35.0)),
     _maxdtmiss(pset.get<double>("DtMaxMiss",40.0)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits(pset.get<unsigned>("MinNHits",20)),
     _cleanpeaks(pset.get<bool>("CleanTimePeaks",true)),
-    _minpeakmva(pset.get<double>("MinTimePeakMVA",0.4)),
+    _minpeakmva(pset.get<double>("MinTimePeakMVA",0.5)),
+    _maxpeakdt(pset.get<double>("MaxTimePeakDeltat",25.0)),
+    _maxpeakdphi(pset.get<double>("MaxTimePeakDeltaPhi",1.0)),
     _PMVAType(pset.get<std::string>("TimePeakMVAType","MLP method")),
     _tmin(pset.get<double>("tmin",0.0)),
     _tmax(pset.get<double>("tmax",1700.0)),
@@ -1163,6 +1165,8 @@ namespace mu2e
     static const double twopi(2*M_PI);
     // iteratively filter outliers
     double worstmva(100.0);
+    double pphi(1000.0);
+    double ptime(-1000.0);
     do{
   // first, compute the average phi and range.  Take care for wrapping
       accumulator_set<double, stats<tag::mean > > facc;
@@ -1182,8 +1186,8 @@ namespace mu2e
 	}
 	facc(phi);
       }
-      double pphi = extract_result<tag::mean>(facc);
-      double ptime = extract_result<tag::mean>(tacc);
+      pphi = extract_result<tag::mean>(facc);
+      ptime = extract_result<tag::mean>(tacc);
 // find the least signal-like hit
       size_t iworst =0;
       worstmva = 100.0;
@@ -1214,6 +1218,40 @@ namespace mu2e
 	tpeak._trkptrs.pop_back();
       }
     } while(tpeak._trkptrs.size() >= _minnhits && worstmva < _minpeakmva);
+// final pass: hard cut on dt and dphi
+    vector<size_t> toremove;
+    accumulator_set<double, stats<tag::mean > > facc;
+    accumulator_set<double, stats<tag::mean > > tacc;
+    for(size_t ips=0;ips<tpeak._trkptrs.size();++ips){
+      unsigned ish = tpeak._trkptrs[ips]._index;
+      double dt = _shcol->at(ish).time() - ptime;
+      double phi = _shpcol->at(ish).pos().phi();
+      double dphi = phi - pphi;
+      if(dphi > M_PI){
+	dphi -= twopi;
+	phi -= twopi;
+      } else if(dphi < -M_PI){
+	dphi += twopi;
+	phi += twopi;
+      }
+      if(fabs(dt) < _maxpeakdt && fabs(dphi) < _maxpeakdphi){
+	tacc(_shcol->at(ish).time());
+	facc(phi);
+      } else {
+	toremove.push_back(ips);
+      }
+    }
+    // actually remove the hits; must start from the back
+    std::sort(toremove.begin(),toremove.end(),std::greater<size_t>());
+    for(auto irm=toremove.begin();irm!=toremove.end();++irm){
+      std::swap(tpeak._trkptrs[*irm],tpeak._trkptrs.back());
+      tpeak._trkptrs.pop_back();
+    }
+    // update peak properties
+    pphi = extract_result<tag::mean>(facc);
+    ptime = extract_result<tag::mean>(tacc);
+    tpeak._tpeak = ptime;
+    tpeak._phi = pphi;
   }
 
   void TrkPatRec::initializeReaders() {
