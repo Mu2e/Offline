@@ -1,27 +1,34 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.3 2012/07/23 17:52:27 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Id: classes.h,v 1.4 2014/06/02 22:26:15 murat Exp $
+// $Author: murat $
+// $Date: 2014/06/02 22:26:15 $
 //
 // Original author G. Pezzullo
 //
 
 #include <vector>
 
+#include "art/Persistency/Common/Ptr.h"
 #include "art/Persistency/Common/Wrapper.h"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapol.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 #include "TrackCaloMatching/inc/TrackClusterLink.hh"
+#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
+
+/* template class art::Ptr<mu2e::CaloCluster>; */
 
 template class art::Ptr<const KalRep * const >;
 
+template class std::vector <mu2e::TrackClusterMatch>;
+template class art::Wrapper<mu2e::TrackClusterMatchCollection>;
+
 template class art::Ptr<mu2e::TrkToCaloExtrapol>;
 template class std::vector<art::Ptr<mu2e::TrkToCaloExtrapol> >;
-
 template class art::Wrapper<mu2e::TrkToCaloExtrapolCollection>;
 
 namespace {

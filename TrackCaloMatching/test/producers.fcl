@@ -22,4 +22,15 @@ CaloMatching : {
     caloClusterSeeding           : energy
 }
 
+TrackCaloMatching : {
+    module_type                  : TrackCaloMatching
+    diagLevel                    : 0
+    fitterModuleLabel            : TrkPatRec
+    trkToCaloExtrapolModuleLabel : TrkExtrapol
+    caloClusterModuleLabel       : MakeCaloCluster
+    outPutNtup                   : 0
+    caloClusterAlgorithm         : closest
+    caloClusterSeeding           : energy
+}
+
 END_PROLOG
