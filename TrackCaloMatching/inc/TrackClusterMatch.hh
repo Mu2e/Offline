@@ -1,5 +1,5 @@
-#ifndef TrackCaloMatching_TrackClusterLink_hh
-#define TrackCaloMatching_TrackClusterLink_hh
+#ifndef TrackCaloMatching_TrackClusterMatch_hh
+#define TrackCaloMatching_TrackClusterMatch_hh
 
 // Original author Gianantonio Pezzullo
 #include <ostream>
@@ -36,6 +36,6 @@ namespace mu2e {
 }
 
 
-#endif/*TrackCaloMatching_TrackClusterLink_hh*/
+#endif/*TrackCaloMatching_TrackClusterMatch_hh*/
 
 
