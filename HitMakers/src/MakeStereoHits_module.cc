@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.19 2014/05/31 03:23:52 mwang Exp $
+// $Id: MakeStereoHits_module.cc,v 1.20 2014/06/02 16:33:10 mwang Exp $
 // $Author: mwang $
-// $Date: 2014/05/31 03:23:52 $
+// $Date: 2014/06/02 16:33:10 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -23,7 +23,7 @@
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "HitMakers/inc/MVATools.hh"
+#include "Mu2eUtilities/inc/MVATools.hh"
 
 // art includes.
 #include "art/Persistency/Common/Ptr.h"

@@ -1,6 +1,6 @@
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "HitMakers/inc/MVATools.hh"
+#include "Mu2eUtilities/inc/MVATools.hh"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"

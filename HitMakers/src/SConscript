@@ -15,8 +15,6 @@ Import('mu2e_helper')
 
 helper=mu2e_helper();
 
-XERCESC_LIBS = [ 'xerces-c' ]
-
 mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'art_Framework_Modules_RandomNumberSaver_module',
                                   'art_Framework_Services_Optional_TFileService_service',
@@ -28,7 +26,6 @@ mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'mu2e_RecoDataProducts',
                                   'mu2e_GeneralUtilities',
                                   'CLHEP',
-                                  XERCESC_LIBS,
                                   'Minuit',  # Fixme - pretty sure we do not want this.
                                 ] )
 
@@ -43,8 +40,8 @@ helper.make_plugins( [ mainlib,
                        'mu2e_MCDataProducts',
                        'mu2e_RecoDataProducts',
                        'mu2e_GeneralUtilities',
+                       'mu2e_Mu2eUtilities',
                        'CLHEP',
-                       XERCESC_LIBS,
                        'Minuit'  # Fixme - pretty sure we do not want this.
                      ] )
 
