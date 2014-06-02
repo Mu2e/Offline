@@ -1,0 +1,10 @@
+// 150% DIO
+//
+#include "JobConfig/TDR/digiMixAndTrackFile.fcl"
+physics.filters.flashMixer.detail.mean   : -1
+physics.filters.ootMixer.detail.mean     : -1
+physics.filters.dioMixer.detail.mean     : -1
+physics.filters.neutronMixer.detail.mean : -1
+physics.filters.photonMixer.detail.mean  : -1
+physics.filters.protonMixer.detail.mean  : -1
+
