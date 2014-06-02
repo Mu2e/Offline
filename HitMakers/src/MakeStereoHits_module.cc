@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.20 2014/06/02 16:33:10 mwang Exp $
+// $Id: MakeStereoHits_module.cc,v 1.21 2014/06/02 19:19:29 mwang Exp $
 // $Author: mwang $
-// $Date: 2014/06/02 16:33:10 $
+// $Date: 2014/06/02 19:19:29 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -105,7 +105,6 @@ namespace mu2e {
     vector <vector<int> >_imap;             // remap sector indices to new scheme
     vector <vector<int> >_dosec;            // list of overlapping sectors in "road" to search in
     void genMap(const Tracker& tracker);    // function to generate imap from tracker geometry
-    double deltaPhi(double phi1,double phi2) const;
     // diagnostics
     TH1F* _nhits;
     TH1F* _deltat;
@@ -617,16 +616,6 @@ namespace mu2e {
       const string morestars(32+label.size(),'*');
       cout << morestars << endl;
     }
-  }
-
-  double MakeStereoHits::deltaPhi(double phi1,double phi2) const {
-    double dphi = phi2-phi1;
-    if(dphi > M_PI){
-      dphi -= 2*M_PI;
-    } else if(dphi < -M_PI){
-      dphi += 2*M_PI;
-    }
-    return dphi;
   }
 
 } // end namespace mu2e
