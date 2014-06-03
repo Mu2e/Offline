@@ -1,7 +1,7 @@
 //
-// $Id: TrkToCaloExtrapol.cc,v 1.8 2013/05/18 00:23:25 murat Exp $
+// $Id: TrkToCaloExtrapol.cc,v 1.9 2014/06/03 22:22:26 murat Exp $
 // $Author: murat $
-// $Date: 2013/05/18 00:23:25 $
+// $Date: 2014/06/03 22:22:26 $
 //
 // Original author G. Pezzullo
 //
@@ -56,17 +56,11 @@ namespace mu2e {
 
   double TrkToCaloExtrapol::t0() const{
 
-    const KalRep* kalrepc = dynamic_cast<const KalRep*>( ((*_trk.get()) ));//->getRep(PdtPid::electron)) );
-    //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
+    const KalRep* const kalrepc = *(_trk.get());
 
-    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( kalrepc->firstHit()->kalHit()->hitOnTrack() );
-    double fltlen = firsthit->fltLen();
-  
-    //        return ((*_trk.get())->getRep(PdtPid::electron))->arrivalTime(fltlen);
-    return (*_trk.get())->arrivalTime(fltlen);
-    //return ((*_trk.get())->getRep(PdtPid::electron))->trackT0();
-  
-    //return (*_trk.get())->t0().t0();
+    double _t0 = kalrepc->t0().t0();
+
+    return _t0;
   }
 
   double TrkToCaloExtrapol::pathLenghtEntranceErr() const{
@@ -86,13 +80,14 @@ namespace mu2e {
     double TanDip = (*_trk.get())->helix(_pathLengthEntrance).tanDip();
     HelixTraj trkHel((*_trk.get())->helix(_pathLengthEntrance).params(),
 		     (*_trk.get())->helix(_pathLengthEntrance).covariance());
-    double z0 = trkHel.z0()
-      , z = _pathLengthEntrance*trkHel.sinDip() + z0;
+
+    //    double z0 = trkHel.z0();
+    //      , z = _pathLengthEntrance*trkHel.sinDip() + z0;
     // std::cout<<"z0 = "<< z0<<
     //                ", z_pathLenght = "<< z<<std::endl;
+
     Hep3Vector Waxes(0.0, 0.0, 1.0);
 
-        
     Hep3Vector momentumRotUnit = TrkToCaloExtrapol::momentum().unit();
     if( geom->hasElement<VaneCalorimeter>()){
       GeomHandle<VaneCalorimeter> cg;

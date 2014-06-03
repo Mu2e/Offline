@@ -1,9 +1,9 @@
 //
 // container for the info of the extrapolated trajectory on the calorimeter
 //
-// $Id: TrkToCaloExtrapol.hh,v 1.6 2014/03/04 01:21:43 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2014/03/04 01:21:43 $
+// $Id: TrkToCaloExtrapol.hh,v 1.7 2014/06/03 22:22:26 murat Exp $
+// $Author: murat $
+// $Date: 2014/06/03 22:22:26 $
 //
 // Original author G. Pezzullo
 //
@@ -90,7 +90,6 @@ namespace mu2e {
     Hep3Vector                                    momentum() const;
     BbrVectorErr                               momentumErr() const;
     KalRepPtr const&                               trk() const{ return _trk; }
-
 
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
