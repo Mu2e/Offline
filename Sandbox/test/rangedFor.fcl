@@ -1,0 +1,27 @@
+#
+# Use the TracerProduct to study ranged for loops.
+#
+# $Id: rangedFor.fcl,v 1.1 2014/06/03 01:08:08 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2014/06/03 01:08:08 $
+#
+# Leave message service unconfigured so that messages to
+# log verbatim are not limited.
+#
+
+process_name : rangedFor
+
+source : {
+  module_type : EmptyEvent
+  maxEvents : 1
+}
+
+physics : {
+  analyzers: {
+   rangedFor :{ module_type : RangedFor }
+  }
+
+  e1        : [ rangedFor ]
+  end_paths : [ e1 ]
+
+}
