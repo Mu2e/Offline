@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.78 2014/06/02 23:45:52 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.79 2014/06/03 23:43:00 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/06/02 23:45:52 $
+// $Date: 2014/06/03 23:43:00 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -226,7 +226,7 @@ namespace mu2e
     _maxdtmiss(pset.get<double>("DtMaxMiss",40.0)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
-    _minnhits(pset.get<unsigned>("MinNHits",15)),
+    _minnhits(pset.get<unsigned>("MinNHits",10)),
     _cleanpeaks(pset.get<bool>("CleanTimePeaks",true)),
     _minpeakmva(pset.get<double>("MinTimePeakMVA",0.5)),
     _maxpeakdt(pset.get<double>("MaxTimePeakDeltat",25.0)),
@@ -235,8 +235,8 @@ namespace mu2e
     _tmin(pset.get<double>("tmin",500.0)),
     _tmax(pset.get<double>("tmax",1700.0)),
     _tbin(pset.get<double>("tbin",20.0)),
-    _ymin(pset.get<double>("ymin",10.0)),
-    _1dthresh(pset.get<double>("OneDPeakThreshold",8.0)),
+    _ymin(pset.get<double>("ymin",8.0)),
+    _1dthresh(pset.get<double>("OneDPeakThreshold",5.0)),
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
     _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
     _maxadddoca(pset.get<double>("MaxAddDoca",2.75)),
