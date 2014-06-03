@@ -1,4 +1,4 @@
-// 150% DIO
+// 50% of all backgrounds
 //
 #include "JobConfig/TDR/digiMixAndTrackFile.fcl"
 physics.filters.flashMixer.detail.mean   : -1
