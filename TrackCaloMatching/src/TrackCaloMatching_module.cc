@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.2 2014/06/03 22:22:26 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.3 2014/06/04 16:46:27 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/03 22:22:26 $
+// $Date: 2014/06/04 16:46:27 $
 //
 // Original author G. Pezzullo
 //
@@ -282,6 +282,12 @@ namespace mu2e {
       s1      = extrk->pathLengthEntrance();
       s2      = extrk->pathLengthExit    ();
       smean   = (s1+s2)/2;
+					// 
+
+      mom     = krep->momentum(smean);
+
+      smean   = smean-60.*mom.mag()/mom.z();
+      //      smean   = s1; // checking...
 
       point   = krep->position(smean);
       mom     = krep->momentum(smean);
@@ -336,18 +342,26 @@ namespace mu2e {
 // V and W - coordinates in the disk system
 // rotate them in the direction perpendicular to the track
 //-----------------------------------------------------------------------------
-	dv  = cl_v-trk_v;
-	dw  = cl_w-trk_w;
+	dv  = trk_v-cl_v;
+	dw  = trk_w-cl_w;
 
 	dvv = dv*nx+dw*ny;
 	dww = dv*ny-dw*nx;
+//-----------------------------------------------------------------------------
+// ad-hoc corrections 
+// at this point do not understand their origin
+// the numbers, obviously, come from analysis distributions and correspond 
+// to the BaF2 crystal length of 21cm
+//-----------------------------------------------------------------------------
+// 	dvv -= 70;
+// 	dww += 18;
 //-----------------------------------------------------------------------------
 // 2014-05-14 P.Murat: use 10 MeV as the matching resolution, 
 //            for a 10 MeV cluster the energy term in the chi2 would be (90/10)^2
 //            also set coordinate resolution to 5cm , need to try using dv only
 //-----------------------------------------------------------------------------
 	sigmaE = 10.;			// sigma(E) = 10 MeV
-	sigmaV = 50.;			// 50 mm
+	sigmaV = 40.;			// 40 mm
 	sigmaW = 10.; 			// 10 mm
 	sigmaT = 0.5; 			// 0.5 ns
 	  
