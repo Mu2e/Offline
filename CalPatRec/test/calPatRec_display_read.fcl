@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: calPatRec_display_read.fcl,v 1.1 2014/05/18 13:56:50 murat Exp $
+# $Id: calPatRec_display_read.fcl,v 1.2 2014/06/04 03:06:29 murat Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits
@@ -83,7 +83,7 @@ physics : {
 	FlagBkgHits          : @local::FlagBkgHits
 	CalPatRec            : @local::CalPatRec
 
-	CaloMatching         : @local::CaloMatching
+	CaloMatching         : @local::TrackCaloMatching
 	TrkExtrapol          : @local::TrkExtrapol
 
 	ParticleID           : @local::ParticleID     # needed by the event display

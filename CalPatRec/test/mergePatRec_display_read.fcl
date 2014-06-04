@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: mergePatRec_display.fcl,v 1.8 2014/06/04 03:06:29 murat Exp $
+# $Id: mergePatRec_display_read.fcl,v 1.1 2014/06/04 03:06:29 murat Exp $
 #------------------------------------------------------------------------------
 #  mergePatRec02: read input data, remake all hits, do not regenereate events
 #------------------------------------------------------------------------------
@@ -25,13 +25,12 @@ source : {
     maxEvents   : 100
 
     inputCommands : ['keep *_*_*_*'
-		     , 'drop *_muonTimeMap_*_*'
-		     , 'drop *_protonTimeMap_*_*'
-		     , 'drop mu2eStrawDigis_*_*_*'
-		     , 'drop mu2eStrawHits_*_*_*'
-		     , 'drop *_CaloReadoutHitsMaker_*_*'
-		     , 'drop *_CaloCrystalHitsMaker_*_*'
-# Uncomment the above line to reduce file size.
+#		     , 'drop *_muonTimeMap_*_*'
+#		     , 'drop *_protonTimeMap_*_*'
+#		     , 'drop mu2eStrawDigis_*_*_*'
+#		     , 'drop mu2eStrawHits_*_*_*'
+#		     , 'drop *_CaloReadoutHitsMaker_*_*'
+#		     , 'drop *_CaloCrystalHitsMaker_*_*'
 		     ]  
 }
 #------------------------------------------------------------------------------
@@ -79,7 +78,6 @@ physics : {
 #------------------------------------------------------------------------------
 # TrkPatRec modules
 #------------------------------------------------------------------------------
-	FSHPreStereo: @local::FSHPreStereo
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
@@ -112,13 +110,13 @@ physics : {
 #------------------------------------------------------------------------------
     p1 : [
 #	  generate, g4run, 
-          protonTimeMap, muonTimeMap, 
-          makeSD, makeSH, FSHPreStereo,
-	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+#          protonTimeMap, muonTimeMap, 
+#          makeSD, makeSH,
+#	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
 #
 	  MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, 
 #
-	  MakeCaloCluster, 
+#	  MakeCaloCluster, 
           MakeStrawHitPositions, 
           CalPatRec, 
 	  MergePatRec,
