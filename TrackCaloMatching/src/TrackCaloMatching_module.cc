@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.4 2014/06/04 22:13:40 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.5 2014/06/04 23:45:00 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/04 22:13:40 $
+// $Date: 2014/06/04 23:45:00 $
 //
 // Original author G. Pezzullo
 //
@@ -181,7 +181,7 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  void TrackCaloMatching::doMatching(art::Event & evt, bool skip){
+  void TrackCaloMatching::doMatching(art::Event & evt, bool skip) {
     const char* oname = "TrackCaloMatching::doMatching";
 
     int        nclusters, ntracks, nex, nmatches, vane_id;
@@ -189,25 +189,21 @@ namespace mu2e {
     double     cl_v, cl_w, cl_time, cl_energy;
     double     trk_v, trk_w, trk_mom, trk_time;
     double     sigmaV, sigmaW, sigmaT, sigmaE, chiQ;
-    double     s1, s2, smean;
+    double     s1, s2, smean, ds;
     double     nx, ny, dv, dw, dvv, dww, xv, xw, xt, xe;
 
-    double                   chi2_max(1.e12);
+    double                     chi2_max(1.e12);
 
-    int                      iex, icl, ltrk;
-//     double                   chi2_best[100][4];
-//     int                      iex_best [100][4];
-//     int                      icl_best [100][4];
-
+    int                        iex, icl, ltrk;
     TrackClusterMatch::Data_t  tcm_data[100][4];
 
-    const TrkToCaloExtrapol  *extrk;
-    const KalRep             *krep;
-    const CaloCluster        *cl;
+    const TrkToCaloExtrapol    *extrk;
+    const KalRep               *krep;
+    const CaloCluster          *cl;
 
-    CLHEP::Hep3Vector        tmpV, cogVaneFrame, tmpPosVaneFrame;
-    CLHEP::Hep3Vector        mom, pos; 
-    HepPoint                 point;
+    CLHEP::Hep3Vector           tmpV, cogVaneFrame, tmpPosVaneFrame;
+    CLHEP::Hep3Vector           mom, pos; 
+    HepPoint                    point;
 //-----------------------------------------------------------------------------
 // Get handle to calorimeter
 //-----------------------------------------------------------------------------
@@ -289,6 +285,7 @@ namespace mu2e {
       mom     = krep->momentum(smean);
 
       smean   = smean-60.*mom.mag()/mom.z();
+      ds      = s2-s1;
       //      smean   = s1; // checking...
 
       point   = krep->position(smean);
@@ -348,6 +345,9 @@ namespace mu2e {
 	dw  = trk_w-cl_w;
 
 	dvv = dv*nx+dw*ny;
+					// 2014-06-03 P.Murat: ad-hoc correction
+	dvv = dvv+100-ds*0.2833;
+
 	dww = dv*ny-dw*nx;
 //-----------------------------------------------------------------------------
 // ad-hoc corrections 
@@ -363,8 +363,8 @@ namespace mu2e {
 //            also set coordinate resolution to 5cm , need to try using dv only
 //-----------------------------------------------------------------------------
 	sigmaE = 10.;			// sigma(E) = 10 MeV
-	sigmaV = 40.;			// 40 mm
-	sigmaW = 10.; 			// 10 mm
+	sigmaV = 15.;			// 15 mm
+	sigmaW = 8. ; 			//  8 mm
 	sigmaT = 0.5; 			// 0.5 ns
 	  
 	if (_diagLevel > 2){
