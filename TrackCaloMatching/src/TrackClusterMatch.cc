@@ -1,7 +1,7 @@
 //
-// $Id: TrackClusterMatch.cc,v 1.1 2014/06/02 22:26:15 murat Exp $
+// $Id: TrackClusterMatch.cc,v 1.2 2014/06/04 22:13:40 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/02 22:26:15 $
+// $Date: 2014/06/04 22:13:40 $
 //
 // Original author Ivan Logashenko
 //
@@ -22,13 +22,20 @@ namespace mu2e {
   TrackClusterMatch::TrackClusterMatch() {
   }
 
-  TrackClusterMatch::TrackClusterMatch(TrkToCaloExtrapolPtr& Tex, CaloClusterPtr& Cluster, double Chi2) 
+  TrackClusterMatch::TrackClusterMatch(TrkToCaloExtrapolPtr& Tex, CaloClusterPtr& Cluster, Data_t* Data) 
 //     _textrapol(Tex),
 //     _cluster  (Cluster)
   {
     _textrapol = Tex;
     _cluster   = Cluster;
-    _chi2      = Chi2;
+    _dx        = Data->dx;
+    _dy        = Data->dy;
+    _dz        = Data->dz;
+    _du        = Data->du;
+    _dv        = Data->dv;
+    _dt        = Data->dt;
+    _ep        = Data->ep;
+    _chi2      = Data->chi2;
   }
 
   TrackClusterMatch::~TrackClusterMatch() {

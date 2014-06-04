@@ -14,18 +14,47 @@ namespace mu2e {
   typedef art::Ptr<CaloCluster      > CaloClusterPtr ;
 
   class TrackClusterMatch {
+  public:
+
+    struct Data_t {
+      int      icl;			// cluster index
+      int      iex;			// extrapolated track index
+      double   dx;
+      double   dy;
+      double   dz;
+      double   du;
+      double   dv;
+      double   dt;
+      double   ep;
+      double   chi2;
+    };
+
   protected:
     TrkToCaloExtrapolPtr  _textrapol; 
     CaloClusterPtr        _cluster; 
+    double                _dx;
+    double                _dy;
+    double                _dz;
+    double                _du;
+    double                _dv;
+    double                _dt;
+    double                _ep;
     double                _chi2;
 
   public:
     TrackClusterMatch();
-    TrackClusterMatch(TrkToCaloExtrapolPtr& Textrapol, CaloClusterPtr & Cluster, double Chi2);
+    TrackClusterMatch(TrkToCaloExtrapolPtr& Textrapol, CaloClusterPtr & Cluster, Data_t* Data);
     ~TrackClusterMatch();
 
     const TrkToCaloExtrapol*  textrapol  () const { return _textrapol.get(); }
     const CaloCluster*        caloCluster() const { return _cluster.get(); }
+    double                    dx         () const { return _dx; }
+    double                    dy         () const { return _dy; }
+    double                    dz         () const { return _dz; }
+    double                    dt         () const { return _dt; }
+    double                    du         () const { return _du; }
+    double                    dv         () const { return _dv; }
+    double                    ep         () const { return _ep; }
     double                    chi2       () const { return _chi2; }
 
     void print(const char* Option) const ;

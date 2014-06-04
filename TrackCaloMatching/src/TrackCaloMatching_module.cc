@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.3 2014/06/04 16:46:27 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.4 2014/06/04 22:13:40 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/04 16:46:27 $
+// $Date: 2014/06/04 22:13:40 $
 //
 // Original author G. Pezzullo
 //
@@ -104,11 +104,11 @@ namespace mu2e {
     double          _timeChiSquare, _energyChiSquare, _posVChiSquare, _posWChiSquare;
 
 					// no offset in Y ?
-    double   _solenoidOffSetX;
-    double   _solenoidOffSetZ;
+    double          _solenoidOffSetX;
+    double          _solenoidOffSetZ;
 
-    bool     _skipEvent;
-    bool     _firstEvent;
+    bool            _skipEvent;
+    bool            _firstEvent;
 
   public:
 
@@ -195,9 +195,11 @@ namespace mu2e {
     double                   chi2_max(1.e12);
 
     int                      iex, icl, ltrk;
-    double                   chi2_best[100][4];
-    int                      iex_best [100][4];
-    int                      icl_best [100][4];
+//     double                   chi2_best[100][4];
+//     int                      iex_best [100][4];
+//     int                      icl_best [100][4];
+
+    TrackClusterMatch::Data_t  tcm_data[100][4];
 
     const TrkToCaloExtrapol  *extrk;
     const KalRep             *krep;
@@ -239,9 +241,9 @@ namespace mu2e {
 
     for (int it=0; it<ntracks; it++) {
       for (int iv=0; iv<4; iv++) {
-	chi2_best[it][iv] = chi2_max+1;
-	iex_best [it][iv] = -1;
-	icl_best [it][iv] = -1;
+	tcm_data[it][iv].chi2 = chi2_max+1;
+	tcm_data[it][iv].iex  = -1;
+	tcm_data[it][iv].icl  = -1;
       }
     }
 //-----------------------------------------------------------------------------
@@ -393,13 +395,20 @@ namespace mu2e {
 	  chiQ += _energyChiSquare;
 	}
     
-	if (chiQ < chi2_best[ltrk][vane_id]) {
+	if (chiQ < tcm_data[ltrk][vane_id].chi2) {
 //-----------------------------------------------------------------------------
 // new best match
 //-----------------------------------------------------------------------------
-	  chi2_best[ltrk][vane_id] = chiQ;
-	  icl_best [ltrk][vane_id] = icl;
-	  iex_best [ltrk][vane_id] = jex;
+	  tcm_data[ltrk][vane_id].chi2 = chiQ;
+	  tcm_data[ltrk][vane_id].icl  = icl;
+	  tcm_data[ltrk][vane_id].iex  = jex;
+	  tcm_data[ltrk][vane_id].dx   = dv;
+	  tcm_data[ltrk][vane_id].dy   = dw;
+	  tcm_data[ltrk][vane_id].dz   = -1e6;
+	  tcm_data[ltrk][vane_id].du   = dvv;
+	  tcm_data[ltrk][vane_id].dv   = dww;
+	  tcm_data[ltrk][vane_id].dt   = trk_time-cl_time;
+	  tcm_data[ltrk][vane_id].ep   = cl_energy/trk_mom;
 	}
       NEXT_CLUSTER:;
       }
@@ -414,13 +423,13 @@ namespace mu2e {
 
     for (int it=0; it<ntracks; it++) {
       for (int iv=0; iv<4; iv++) {
-	if (chi2_best[it][iv] < chi2_max) {
-	  iex = iex_best [it][iv];
-	  icl = icl_best [it][iv];
+	if (tcm_data[it][iv].chi2 < chi2_max) {
+	  iex = tcm_data[it][iv].iex;
+	  icl = tcm_data[it][iv].icl;
 
 	  art::Ptr<TrkToCaloExtrapol> artPtrTex    (trjExtrapols,iex);
 	  art::Ptr<CaloCluster>       artPtrCluster(caloClusters,icl);
-	  TrackClusterMatch           tcm(artPtrTex,artPtrCluster,chi2_best[it][iv]);
+	  TrackClusterMatch           tcm(artPtrTex,artPtrCluster,&tcm_data[it][iv]);
 	  tcmcoll->push_back(tcm);
 	  nmatches += 1;
 	}
