@@ -4,9 +4,21 @@
 
 6) June 05, 2014 genser
 
-   Added first implementation of Muon Stopping Target Monitor (MSTM)
+   Added first implementation of Muon Stopping Target Monitor (MSTM);
    Reimplemented windows in constructExternalNeutronShielding using
-   G4SubtractionSolid to avoid overlaps with MSTM
+   G4SubtractionSolid to avoid overlaps with MSTM; 
+   Added MSTMCrystal detector
+
+     MCDataProducts/inc/StepInstanceName.hh
+     Mu2eG4/inc/SensitiveDetectorName.hh
+     Mu2eG4/inc/constructMSTM.hh
+     Mu2eG4/src/Mu2eWorld.cc
+     Mu2eG4/src/constructExternalNeutronShielding.cc
+     Mu2eG4/src/constructMSTM.cc
+     Mu2eG4/test/MSTM_v01.txt
+     Mu2eG4/test/geom_01.txt
+     Mu2eG4/test/transportOnlyGeom.txt
+     Mu2eG4/test/visqtGUI.mac
 
 5) June 4, 2014 brownd
   Added MVA hit cleaning to time peak selection.  Tweaked Helix fit
