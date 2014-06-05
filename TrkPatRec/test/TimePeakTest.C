@@ -18,6 +18,7 @@ void TimePeakTest (TTree* tp, char* page="hits" ) {
   TCut convpeak("ncphits/nchits>0.5");
   TCut convhit("_mcgen==2");
   TCut nonconvhit("_mcgen!=2");
+  TCut hittime("abs(_dt)<30.0");
   
   if(spage == "hits") {
     gStyle->SetOptStat(0);
@@ -38,14 +39,14 @@ void TimePeakTest (TTree* tp, char* page="hits" ) {
     mvac->SetLineColor(kRed);
     mvanc->SetLineColor(kBlue);
 
-    tp->Project("dtc","_dt",convevent+convpeak+convhit);
-    tp->Project("dtnc","_dt",convevent+convpeak+nonconvhit);
-    tp->Project("dfc","_dphi",convevent+convpeak+convhit);
-    tp->Project("dfnc","_dphi",convevent+convpeak+nonconvhit);
-    tp->Project("rhoc","_rho",convevent+convpeak+convhit);
-    tp->Project("rhonc","_rho",convevent+convpeak+nonconvhit);
-    tp->Project("mvac","_mva",convevent+convpeak+convhit);
-    tp->Project("mvanc","_mva",convevent+convpeak+nonconvhit);
+    tp->Project("dtc","_dt",convevent+convpeak+convhit+hittime);
+    tp->Project("dtnc","_dt",convevent+convpeak+nonconvhit+hittime);
+    tp->Project("dfc","_dphi",convevent+convpeak+convhit+hittime);
+    tp->Project("dfnc","_dphi",convevent+convpeak+nonconvhit+hittime);
+    tp->Project("rhoc","_rho",convevent+convpeak+convhit+hittime);
+    tp->Project("rhonc","_rho",convevent+convpeak+nonconvhit+hittime);
+    tp->Project("mvac","_mva",convevent+convpeak+convhit+hittime);
+    tp->Project("mvanc","_mva",convevent+convpeak+nonconvhit+hittime);
 
     TCanvas* ccan = new TCanvas("ccan","Peak Hits",800,800);
     ccan->Divide(2,2);

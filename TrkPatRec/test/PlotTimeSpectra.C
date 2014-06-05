@@ -64,6 +64,8 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
       rh->Draw("same");
       ch->SetLineStyle(1);
       ch->SetLineWidth(2);
+      ch->SetFillColor(0);
+      ch->SetLineColor(kRed);
       ch->Draw("same");
       ph->Draw("same");
       TLegend* leg(0);

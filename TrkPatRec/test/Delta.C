@@ -5,6 +5,8 @@
 #include "TLegend.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TBox.h"
+
 void Delta(TTree* ddiag, const char* page="rho",bool train=false) {
   TString spage(page);
   TCut cluster("nchits>4&&ns>1");
@@ -258,24 +260,21 @@ void Delta(TTree* ddiag, const char* page="rho",bool train=false) {
     scan->cd(2);
     tsize->Draw();
   } else if (spage=="clustermva") {
-    TH1F* stclmvacon = new TH1F("stclmvacon","Stereo Cluster MVA output",200,-0.2,1.2);
-    TH1F* stclmvabkg = new TH1F("stclmvabkg","Stereo Cluster MVA output",200,-0.2,1.2);
+    TH1F* stclmvacon = new TH1F("stclmvacon","Stereo Cluster MVA output;MVA Output",200,-0.2,1.2);
+    TH1F* stclmvabkg = new TH1F("stclmvabkg","Stereo Cluster MVA output;MVA Output",200,-0.2,1.2);
     stclmvacon->SetLineColor(kRed);
     stclmvabkg->SetLineColor(kBlue);
-    TH1F* nstclmvacon = new TH1F("nstclmvacon","Non-Stereo Cluster MVA output",200,-0.2,1.2);
-    TH1F* nstclmvabkg = new TH1F("nstclmvabkg","Non-Stereo Cluster MVA output",200,-0.2,1.2);
+    TH1F* nstclmvacon = new TH1F("nstclmvacon","Non-Stereo Cluster MVA output;MVA Output",200,-0.2,1.2);
+    TH1F* nstclmvabkg = new TH1F("nstclmvabkg","Non-Stereo Cluster MVA output;MVA Output",200,-0.2,1.2);
     nstclmvacon->SetLineColor(kRed);
     nstclmvabkg->SetLineColor(kBlue);
     TCut stcl("ngdstereo/ngdhits>0.5");
     TCut nstcl("ngdstereo/ngdhits<0.5");
-    ddiag->Project("stclmvacon","pmvaout",con+cluster+stcl);
-    ddiag->Project("stclmvabkg","pmvaout",bkg+cluster+stcl);
-    ddiag->Project("nstclmvacon","pmvaout",con+cluster+nstcl);
-    ddiag->Project("nstclmvabkg","pmvaout",bkg+cluster+nstcl);
-    TLegend* mcleg = new TLegend(0.2,0.7,0.6,0.9);
-    mcleg->AddEntry(stclmvabkg,"#delta Background","L");
-    mcleg->AddEntry(stclmvacon,"Conversion (X10)","L");
-    Double_t factor(20.0);
+    ddiag->Project("stclmvacon","pmvaout",(con+cluster+stcl)*"nchits");
+    ddiag->Project("stclmvabkg","pmvaout",(bkg+cluster+stcl)*"nchits");
+    ddiag->Project("nstclmvacon","pmvaout",(con+cluster+nstcl)*"nchits");
+    ddiag->Project("nstclmvabkg","pmvaout",(bkg+cluster+nstcl)*"nchits");
+    Double_t factor(50.0);
     stclmvacon->Scale(factor);
     nstclmvacon->Scale(factor);
     TCanvas* can = new TCanvas("cmvacan","Cluster MVA output",800,400);
@@ -283,10 +282,23 @@ void Delta(TTree* ddiag, const char* page="rho",bool train=false) {
     can->cd(1);
     stclmvabkg->Draw();
     stclmvacon->Draw("same");
+    TBox* ssel = new TBox(0.8,stclmvabkg->GetMinimum(),1.2,stclmvabkg->GetMaximum());
+    ssel->SetFillColor(kYellow);
+    ssel->SetFillStyle(3004);
+    ssel->Draw();
+    TLegend* mcleg = new TLegend(0.2,0.7,0.8,0.9);
+    mcleg->AddEntry(stclmvabkg,"Background electron","L");
+    mcleg->AddEntry(stclmvacon,"Conversion electron (X50)","L");
+    mcleg->AddEntry(ssel,"Rejected","F");
     mcleg->Draw();
+ 
     can->cd(2);
     nstclmvabkg->Draw();
     nstclmvacon->Draw("same");
+    TBox* nssel = new TBox(0.8,nstclmvabkg->GetMinimum(),1.2,nstclmvabkg->GetMaximum());
+    nssel->SetFillColor(kYellow);
+    nssel->SetFillStyle(3004);
+    nssel->Draw();
 
 
   } else if(spage=="hitmva") {
