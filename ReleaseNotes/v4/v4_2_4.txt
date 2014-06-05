@@ -2,6 +2,15 @@
 
            Release notes for Mu2e Offline software, v4_2_4
 
+4) Jun 04, 2014 youzy
+   Update TS pbar window in default geometry:
+   a) Add a pbar window at TS1 collimator entrance;
+   b) Add a pbar absorber with arc shape in TS1 collimator near exit;
+   c) Change thickness of the old pbar window (disk) at TS3 center from
+      120 microns to 200 microsn.
+   Modified Files:
+     Mu2eG4/test/TransportSolenoid_v01.txt
+
 3) Jun 02, 2014 kutschke
    Added code in the Sandbox to illustrate that ranged for loops
    indeed make a copy unless we explicity request a reference:
