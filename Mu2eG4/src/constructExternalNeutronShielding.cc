@@ -1,4 +1,10 @@
+// $Id: constructExternalNeutronShielding.cc,v 1.4 2014/06/05 21:08:24 genser Exp $
+// $Author: genser $
+// $Date: 2014/06/05 21:08:24 $
 // David Norvil Brown, August 2013
+//
+//
+// Modified by K.L.Genser to make the windows using G4SubtractionSolid
 
 #include "Mu2eG4/inc/constructExternalNeutronShielding.hh"
 
@@ -22,6 +28,7 @@
 #include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
 // etc...
 #include "GeometryService/inc/GeomHandle.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
@@ -43,6 +50,9 @@
 #include "G4TwoVector.hh"
 #include "CLHEP/Vector/Rotation.h"
 #include "G4NistManager.hh"
+
+#include "G4SubtractionSolid.hh"
+#include "G4LogicalVolume.hh"
 
 #include <vector>
 #include <sstream>
@@ -572,47 +582,65 @@ namespace mu2e {
 
 	if ( enscendb->hasHole(i) ) {
 
-	  // This box has a window.  Build specially
-	  // Build a VolumeInfo for the box, to get started
-
-	  const VolumeInfo awindBox = nestBox( name.str(), 
-					       lwhs, 
-					       findMaterialOrThrow(mates[i]),
-					       0, 
-					       sitees[i]-parent.centerInMu2e(),
-					       parent.logical,
-					       0,
-					       config.getBool("ExtNeutShieldCendBoxes.visible"),
-					       G4Colour::Magenta(),
-					       config.getBool("ExtNeutShieldCendBoxes.solid"),
-					       forceAuxEdgeVisible,
-					       placePV,
-					       doSurfaceCheck);
-
- 	  // Find the index of this hole, for accessing info lists...
- 	  int hID = enscendb->holeIndex(i);
+	  // This box has a window.  implemented as a
+          // G4SubtractionSolid to alow for another volume placement
+          // through it
 
  	  // Now make the window (AKA "Hole")
  	  name << "window";
+
+          std::cout << " making " << name.str() << std::endl;
+
+          std::ostringstream name1;
+          name1 << "ExtNeutShieldCendBox_sub_" << i+1;
+
+          G4Box* awindBox1 = new G4Box(name1.str(),lwhs[0],lwhs[1],lwhs[2]);
+
+ 	  // Find the index of this hole, for accessing info lists...
+ 	  int hID = enscendb->holeIndex(i);
 
  	  const TubsParams windparams(0.0,  //inner radius
  				      enscendb->holeRadius(hID), // outer
  				      enscendb->holeHalfLength(hID)  //obvious?
  				      );
 
- 	  nestTubs ( name.str(), windparams,
- 		     findMaterialOrThrow("DSVacuum"),
- 		     0,
- 		     enscendb->holeLocation(i)-sitees[i],
- 		     awindBox,
- 		     0,
- 		     config.getBool("ExtNeutShieldCendBoxes.holeVisible"),
- 		     G4Colour::Black(),
- 		     config.getBool("ExtNeutShieldCendBoxes.holeSolid"),
- 		     forceAuxEdgeVisible,
- 		     placePV,
- 		     doSurfaceCheck);
+          std::ostringstream name2;
+          name2 << "ExtNeutShieldCendBox_sub_" << i+1 << "window";
 
+          G4Tubs* awindTub = new G4Tubs( name2.str(), 
+                                         windparams.data()[0], 
+                                         windparams.data()[1], 
+                                         windparams.data()[2]+2.,// to satisfy a G4SubtractionSolid feature
+                                         windparams.data()[3], 
+                                         windparams.data()[4]);
+
+	  VolumeInfo awindBox;
+          awindBox.name = name.str();
+          
+          // we need to put the window on the DS axis
+
+          // fixme, this is specific to the Box #4 (but windows in any
+          // other boxes will probably never be needed anyway)
+
+          GeomHandle<DetectorSolenoid> ds;
+          G4ThreeVector const & dsP ( ds->position() );
+
+          G4ThreeVector offsetWRTDS(sitees[i].x()-dsP.x(), sitees[i].y()-dsP.y(), 0.0);
+
+          awindBox.solid = new G4SubtractionSolid(awindBox.name,awindBox1,awindTub,0,-offsetWRTDS);
+
+          finishNesting(awindBox,
+                        findMaterialOrThrow(mates[i]),
+                        0,
+                        sitees[i]-parent.centerInMu2e(),
+                        parent.logical,
+                        0,
+                        config.getBool("ExtNeutShieldCendBoxes.visible"),
+                        G4Colour::Magenta(),
+                        config.getBool("ExtNeutShieldCendBoxes.solid"),
+                        forceAuxEdgeVisible,
+                        placePV,
+                        doSurfaceCheck);
 
 	} else {
 
