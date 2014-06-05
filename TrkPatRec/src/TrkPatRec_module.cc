@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.79 2014/06/03 23:43:00 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.80 2014/06/05 15:05:44 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/06/03 23:43:00 $
+// $Date: 2014/06/05 15:05:44 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -342,7 +342,7 @@ namespace mu2e
       _kfitmc.mcTrkInfo(_kfitmc.mcData()._simparts->begin()->second);
     }
     // fill diagnostics if requested
-    if(_diag > 2)fillTimeDiag();
+    if(_diag > 2 && _nchit>0 && _ctime > _tmin)fillTimeDiag();
     // dummy objects
     static TrkDef dummydef;
     static HelixDef dummyhdef;
@@ -369,7 +369,7 @@ namespace mu2e
       _hfilt.clear();
       _sfilt.clear();
       // robust helix fit
-      if(_hfit.findHelix(helixfit)){
+      if(_hfit.findHelix(helixfit,_icepeak==(int)ipeak)){
 	findhelix = true;
 	// convert the result to standard helix parameters, and initialize the seed definition helix
 	HepVector hpar;
