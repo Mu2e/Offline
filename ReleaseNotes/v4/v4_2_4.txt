@@ -2,6 +2,12 @@
 
            Release notes for Mu2e Offline software, v4_2_4
 
+6) June 05, 2014 genser
+
+   Added first implementation of Muon Stopping Target Monitor (MSTM)
+   Reimplemented windows in constructExternalNeutronShielding using
+   G4SubtractionSolid to avoid overlaps with MSTM
+
 5) June 4, 2014 brownd
   Added MVA hit cleaning to time peak selection.  Tweaked Helix fit
   parameters.  Affects TrkPatRec
