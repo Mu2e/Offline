@@ -2,9 +2,9 @@
 // Free function to create MSTM.
 // Muon Stopping Target Monitor
 //
-// $Id: constructMSTM.cc,v 1.1 2014/06/05 21:05:32 genser Exp $
+// $Id: constructMSTM.cc,v 1.2 2014/06/05 21:20:02 genser Exp $
 // $Author: genser $
-// $Date: 2014/06/05 21:05:32 $
+// $Date: 2014/06/05 21:20:02 $
 //
 // Original author K.L.Genser 
 //
@@ -52,8 +52,7 @@ namespace mu2e {
     MaterialFinder materialFinder(_config);
 
     bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    // bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
-    bool doSurfaceCheck      = true;
+    bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
     // Fetch parent (hall) position
