@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.169 2013/12/20 20:08:21 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/12/20 20:08:21 $
+// $Id: Mu2eWorld.cc,v 1.170 2014/06/05 21:19:34 genser Exp $
+// $Author: genser $
+// $Date: 2014/06/05 21:19:34 $
 //
 // Original author Rob Kutschke
 //
@@ -49,6 +49,7 @@
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
 #include "Mu2eG4/inc/constructVisualizationRegions.hh"
 #include "Mu2eG4/inc/constructDS.hh"
+#include "Mu2eG4/inc/constructMSTM.hh"
 #include "Mu2eG4/inc/constructTS.hh"
 #include "Mu2eG4/inc/constructPS.hh"
 #include "Mu2eG4/inc/constructPSEnclosure.hh"
@@ -216,6 +217,10 @@ namespace mu2e {
 
     if ( _config.getBool("hasMBS",false) ) {
       constructMBS(_config);
+    }
+
+    if ( _config.getBool("mstm.build", false) ) {
+      constructMSTM(hallInfo, _config);
     }
 
     if ( _config.getBool("hasExtMonUCI",false) ) {
@@ -678,6 +683,12 @@ namespace mu2e {
       Mu2eSensitiveDetector* psVacuumSD =
         new Mu2eSensitiveDetector(    SensitiveDetectorName::PSVacuum(),  _config);
       SDman->AddNewDetector(psVacuumSD);
+    }
+
+    if(sdHelper_->enabled(StepInstanceName::MSTMCrystal)) {
+      Mu2eSensitiveDetector* MSTMCrystalSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::MSTMCrystal(),  _config);
+      SDman->AddNewDetector(MSTMCrystalSD);
     }
 
   } // instantiateSensitiveDetectors
