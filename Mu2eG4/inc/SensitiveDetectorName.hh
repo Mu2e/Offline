@@ -3,9 +3,9 @@
 // Define names of Sensitive Detectors; revised to forward the names of the
 // StepInstanceName names.
 //
-// $Id: SensitiveDetectorName.hh,v 1.16 2013/04/03 22:23:31 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/04/03 22:23:31 $
+// $Id: SensitiveDetectorName.hh,v 1.17 2014/06/05 21:06:34 genser Exp $
+// $Author: genser $
+// $Date: 2014/06/05 21:06:34 $
 //
 // Original author KLG
 
@@ -72,6 +72,10 @@ namespace mu2e {
 
     static char const * TrackerWalls(){
       return StepInstanceName::name(StepInstanceName::trackerWalls).c_str();
+    }
+
+    static char const * MSTMCrystal() {
+      return StepInstanceName::name(StepInstanceName::MSTMCrystal).c_str();
     }
 
   };
