@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.hh,v 1.6 2014/05/31 14:28:10 brownd Exp $
+// $Id: HelixFit.hh,v 1.7 2014/06/05 15:06:13 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/05/31 14:28:10 $
+// $Date: 2014/06/05 15:06:13 $
 //
 #ifndef HelixFit_HH
 #define HelixFit_HH
@@ -118,7 +118,7 @@ namespace mu2e
     explicit HelixFit(fhicl::ParameterSet const&);
     virtual ~HelixFit();
 // main function: given a track definition, find the helix parameters
-    bool findHelix(HelixFitResult& myfit);
+    bool findHelix(HelixFitResult& myfit,bool plothelix=false);
 // allow passing in the struct by hand
     bool findHelix(XYZPVector& xyzp, HelixFitResult& myfit);
 // convert to BaBar helix parameters.  Also return an error estimate
@@ -165,7 +165,6 @@ namespace mu2e
     bool _filter; // filter hits
     bool _stereoinit; // require stereo hits to initialize
     bool _stereofit; // require stereo hits 
-    bool _plotall; // plot also failed fits
     bool _usetarget; // use target as a point for circle init
     bool _targetinit; // constrain to target when initializing circle
     mutable double _bz; // cached value of Field Z component at the tracker origin

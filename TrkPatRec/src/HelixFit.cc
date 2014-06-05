@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.cc,v 1.9 2014/05/31 14:28:10 brownd Exp $
+// $Id: HelixFit.cc,v 1.10 2014/06/05 15:06:13 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/05/31 14:28:10 $
+// $Date: 2014/06/05 15:06:13 $
 //
 //
 // the following has to come before other BaBar includes
@@ -206,7 +206,6 @@ namespace mu2e
     _filter(pset.get<bool>("filter",true)),
     _stereoinit(pset.get<bool>("stereoinit",false)),
     _stereofit(pset.get<bool>("stereofit",false)),
-    _plotall(pset.get<bool>("plotall",false)),
     _usetarget(pset.get<bool>("usetarget",true)),
     _targetinit(pset.get<bool>("targetinit",false)),
     _bz(0.0)
@@ -238,7 +237,7 @@ namespace mu2e
   }
 
   bool
-  HelixFit::findHelix(HelixFitResult& myhel) {
+  HelixFit::findHelix(HelixFitResult& myhel,bool plothelix) {
     HelixDef const& mytrk = myhel._hdef;
 //  compute the allowed range in radius for this fit
     double pb = fabs((CLHEP::c_light*1e-3)/(bz()*mytrk.particle().charge()));
@@ -258,7 +257,7 @@ namespace mu2e
     fillXYZP(mytrk,xyzp);
 // call down
     bool retval = findHelix(xyzp,myhel);
-    if((retval || _plotall) && _diag>1){
+    if(_diag>1 && plothelix){
       // fill graphs for display if requested
       plotXY(mytrk,xyzp,myhel);
       plotZ(mytrk,xyzp,myhel);
@@ -463,22 +462,23 @@ namespace mu2e
     if(finfo.size() > _minnhit){
       // make initial estimate of dfdz using 'nearby' pairs
       accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accf;
-//      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acctest;
+//      accumulator_set<double, stats<tag::mean > > acctest;
       for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
 	for(unsigned jphi=iphi+1; jphi < finfo.size(); ++jphi){
 	  double dz = finfo[jphi]._z - finfo[iphi]._z;
 	  if(dz > _minzsep && dz < _maxzsep){
 	    double dphi = deltaPhi(finfo[iphi]._phi._val,finfo[jphi]._phi._val);
 	    double slope = dphi/dz;
-//	    if(slope > _smin && slope < _smax){ 
+	    if(slope > _smin && slope < _smax){ 
 	      double wt = _zweights ? dz/(finfo[iphi]._phi._err+finfo[jphi]._phi._err) : 1.0;
 	      accf(slope,weight=wt);
 //	      acctest(slope);
-//	    }
+	    }
 	  }
 	}
       }
-      double dfdz = extract_result<tag::weighted_median>(accf);
+      double  dfdz = extract_result<tag::weighted_median>(accf);
+//      double dfdztest = extract_result<tag::mean>(acctest);
       // if the sign of dfdz disagrees, abort
       if( dfdz * _dfdzsign < 0.0)
 	return false;
@@ -487,7 +487,6 @@ namespace mu2e
 	dfdz = std::max(std::min(dfdz,_smax),_smin);
       else
 	if(dfdz > _smax || dfdz < _smin) return false;
-//      double dfdztest = extract_result<tag::weighted_median>(acctest);
 // find phi at z intercept.  Use a histogram technique since phi looping
 // hasn't been resolved yet
       TH1F hphi("hphi","phi value",50,-1.1*pi,1.1*pi);
@@ -537,7 +536,7 @@ namespace mu2e
 	}
 	// make a long-range estimate of slope
 	accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > accf2;
-//	accumulator_set<double, stats<tag::median(with_p_square_quantile) > > acctest2;
+//	accumulator_set<double, stats<tag::mean > > acctest2;
 	for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
 	  for(unsigned jphi=iphi+1; jphi < finfo.size(); ++jphi){
 	    double dz = finfo[jphi]._z -finfo[iphi]._z;
@@ -547,27 +546,30 @@ namespace mu2e
 	      double ferr = finfo[iphi]._phi._err+finfo[jphi]._phi._err;
 	      if(!_filter || fabs(dphi-dphiex) < _nsigma*ferr){
 		double slope = dphi/dz;
-//		if(slope > _smin && slope < _smax){ 
+		if(slope > _smin && slope < _smax){ 
 // limit the weight so as not to count more than 1 loop
 		  double wt = _zweights ? std::min(dz,_maxzsep)/ferr : 1.0;
 		  accf2(slope,weight=wt);
 //		  acctest2(slope);
-//		}
+		}
 	      }
 	    }
 	  }
 	}
 	dfdz = extract_result<tag::weighted_median>(accf2);
-//	dfdztest = extract_result<tag::weighted_median>(acctest2);
+//	dfdztest = extract_result<tag::mean>(acctest2);
 	// find phi at z intercept
 	accumulator_set<double, stats<tag::weighted_median(with_p_square_quantile) >, double > acci2;
+//	accumulator_set<double, stats<tag::mean>> acci2test;
 	for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
 	  double phiex = fz0+finfo[iphi]._z*dfdz;
 	  if(!_filter || fabs(finfo[iphi]._phi._val-phiex) < _nsigma*finfo[iphi]._phi._err){
 	    double wt = _zweights ? 1.0/finfo[iphi]._phi._err : 1.0;
 	    acci2(finfo[iphi]._phi._val - finfo[iphi]._z*dfdz, weight=wt);
+//	    acci2test(finfo[iphi]._phi._val - finfo[iphi]._z*dfdz);
 	  }
 	}
+//	double fz0test = fmod(extract_result<tag::mean>(acci2test),twopi);
 	fz0 = fmod(extract_result<tag::weighted_median>(acci2),twopi);
 	if(fz0>pi)fz0 -= twopi;
 	if(fz0<-pi)fz0 += twopi;
