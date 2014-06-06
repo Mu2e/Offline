@@ -114,8 +114,9 @@ namespace mu2e {
                <<std::endl;
 
       std::cout <<"StoppedParticleReactionGun: spectrum shape = "
-	  << psphys_.get<std::string>("spectrumShape")
-	  << " Spectrum file = "
+	  <<psphys_.get<std::string>("spectrumShape") << std::endl;
+      if (psphys_.get<std::string>("spectrumShape")  == "tabulated")
+	  std::cout << " Spectrum file = "
 	  << psphys_.get<std::string>("spectrumFileName")
 	  << std::endl;
     }
