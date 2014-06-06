@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFitHack.cc,v 1.12 2014/05/18 13:56:50 murat Exp $
+// $Id: HelixFitHack.cc,v 1.13 2014/06/06 21:35:08 murat Exp $
 // $Author: murat $ 
-// $Date: 2014/05/18 13:56:50 $
+// $Date: 2014/06/06 21:35:08 $
 //
 //
 // the following has to come before other BaBar includes
@@ -1239,22 +1239,9 @@ namespace mu2e
     using namespace boost::accumulators;
     static const double pi(M_PI);
     static const double twopi(2*pi);
-    // first, resolve phi.   Use the average X and Y to define the initial
-    // phi value, to avoid looping issues
-    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accx;
-    accumulator_set<double, stats<tag::median(with_p_square_quantile) > > accy;
-    for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
-      if(xyzp[ixyzp].use()){
-	accx(xyzp[ixyzp]._pos.x());
-	accy(xyzp[ixyzp]._pos.y());
-      }
-    }
-    double mx = extract_result<tag::median>(accx);
-    double my = extract_result<tag::median>(accy);
-    double mphi = atan2(my,mx);
 
     // 2013-10-17 G.Pezzullo, P.Murat : try to change the cleanup logic
-
+    double mphi;
     if (fTimePeak->ClusterT0() > 0.) {
       mphi = atan2(fTimePeak->ClusterY(),fTimePeak->ClusterX());
     }

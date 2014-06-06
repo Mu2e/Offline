@@ -20,6 +20,8 @@ namespace mu2e {
     _y        = 0.;
     _z        = 0.;
     _tpeak    = 0.;
+    _shcol    = NULL;
+    _shfcol   = NULL;
   }
 
   CalTimePeak::CalTimePeak(const CaloCluster* Cl, double X, double Y, double Z) {
@@ -29,6 +31,8 @@ namespace mu2e {
     _z        = Z;
     _cprIndex = -1;
     _tpeak    = 0;
+    _shcol    = NULL;
+    _shfcol   = NULL;
   }
 
   CalTimePeak::~CalTimePeak() {
@@ -41,6 +45,8 @@ namespace mu2e {
     _y        = 0.;
     _z        = 0;
     _tpeak    = 0;
+    _shcol    = NULL;
+    _shfcol   = NULL;
     _trkptrs.clear();
   }
 

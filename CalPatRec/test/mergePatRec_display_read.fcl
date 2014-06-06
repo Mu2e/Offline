@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: mergePatRec_display_read.fcl,v 1.1 2014/06/04 03:06:29 murat Exp $
+# $Id: mergePatRec_display_read.fcl,v 1.2 2014/06/06 21:35:08 murat Exp $
 #------------------------------------------------------------------------------
 #  mergePatRec02: read input data, remake all hits, do not regenereate events
 #------------------------------------------------------------------------------
@@ -164,6 +164,11 @@ physics.producers.ParticleID.fitterModuleLabel                   : MergePatRec
 
 physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel         : MakeStrawHitPositions
 physics.filters.MuHitDisplay.trkPatRecModuleLabel                : MergePatRec
+#------------------------------------------------------------------------------
+# single particle gun, CE : g4run
+# Andrei's  MC            : detectorFilter
+# Ralf's cosmics          : g4filter
+#------------------------------------------------------------------------------
 # physics.filters.MuHitDisplay.g4ModuleLabel                       : g4run
 # physics.filters.MuHitDisplay.g4ModuleLabel                       : g4filter
 physics.filters.MuHitDisplay.g4ModuleLabel                       : detectorFilter

@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.11 2014/05/18 13:56:50 murat Exp $
+// $Id: CalPatRec_module.cc,v 1.12 2014/06/06 21:35:08 murat Exp $
 // $Author: murat $ 
-// $Date: 2014/05/18 13:56:50 $
+// $Date: 2014/06/06 21:35:08 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -646,8 +646,10 @@ namespace mu2e {
 
 	dz_cl   = zcl-tracker->z0();
 	CalTimePeak tpeak(cl,xcl,ycl,dz_cl);
-	tpeak._tmin = cl_time+_mindt;
-	tpeak._tmax = cl_time+_maxdt;
+	tpeak._shcol  = _shcol;
+	tpeak._shfcol = _shfcol;
+	tpeak._tmin   = cl_time+_mindt;
+	tpeak._tmax   = cl_time+_maxdt;
 //-----------------------------------------------------------------------------
 // record hits in time with each peak, and accept them if they have a minimum # of hits
 //-----------------------------------------------------------------------------

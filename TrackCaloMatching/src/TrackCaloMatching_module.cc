@@ -1,11 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.5 2014/06/04 23:45:00 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.6 2014/06/06 21:34:50 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/04 23:45:00 $
+// $Date: 2014/06/06 21:34:50 $
 //
 // Original author G. Pezzullo
 //
-// 2014-06-03 P.Murat: will not work with the vanes-based geometry
+// 2014-06-03 P.Murat: will no longer work with the vanes-based geometry
 ///////////////////////////////////////////////////////////////////////////////
 
 // Framework includes.
@@ -35,7 +35,6 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
-#include "CaloCluster/inc/CaloClusterTools.hh"
 #include "CaloCluster/inc/CaloClusterUtilities.hh"
 
 // Other includes.
@@ -84,14 +83,14 @@ namespace mu2e {
     std::string     _iname;
 					// Diagnostic level
     int             _diagLevel;
-    int             _addEnergyToChiSquare;
 
     double          _emcEnergyThreshold = 10.0;
 
 					// this is a threshold on the time difference between impact time 
 					// of the reco-trk and the EMC.This might help the case of mismatching
 					// caused by cosmics
-    double          _deltaTimeTollerance;
+    double          _deltaTimeTolerance;
+    double          _dsCorr;
 					// Label of the calo clusters  maker
     string          _caloClusterModuleLabel;
     string          _caloClusterAlgorithm;
@@ -117,12 +116,12 @@ namespace mu2e {
       _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
       _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
       _diagLevel(pset.get<int>("diagLevel",0)),
-      _addEnergyToChiSquare(pset.get<int>("addEnergyToChiSquare",1)),
-      _deltaTimeTollerance(pset.get<double>("deltaTimeTollerance", 50.0)),
+      _deltaTimeTolerance(pset.get<double>("deltaTimeTolerance", 50.)),  // ns
+      _dsCorr            (pset.get<double>("dsCorr"            , 70.)),  // mm
       _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
-      _caloClusterAlgorithm(pset.get<std::string>("caloClusterAlgorithm", "closest")),
-      _caloClusterSeeding(pset.get<std::string>("caloClusterSeeding", "energy")),
-      _caloClusterCollName("Algo"+mu2e::TOUpper(_caloClusterAlgorithm)+"SeededBy"+mu2e::TOUpper(_caloClusterSeeding)),
+      _caloClusterAlgorithm  (pset.get<std::string>("caloClusterAlgorithm"  , "closest")),
+      _caloClusterSeeding    (pset.get<std::string>("caloClusterSeeding"    , "energy")),
+      _caloClusterCollName   ("Algo"+mu2e::TOUpper(_caloClusterAlgorithm)+"SeededBy"+mu2e::TOUpper(_caloClusterSeeding)),
       _trkToCaloExtrapolModuleLabel(pset.get<std::string>("trkToCaloExtrapolModuleLabel", "TrkExtrapol")),
       _firstEvent(true)
     {
@@ -148,9 +147,7 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  void TrackCaloMatching::fromTrkToMu2eFrame(HepPoint&   vec, 
-					     CLHEP::Hep3Vector& res) 
-  {
+  void TrackCaloMatching::fromTrkToMu2eFrame(HepPoint& vec, Hep3Vector& res) {
     res.setX(vec.x() - _solenoidOffSetX);
     res.setZ(vec.z() - _solenoidOffSetZ);
     res.setY(vec.y());
@@ -159,8 +156,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void TrackCaloMatching::beginJob() {
   }
-
-
 
 //-----------------------------------------------------------------------------
   void TrackCaloMatching::beginRun(art::Run& aRun) {
@@ -172,13 +167,10 @@ namespace mu2e {
     _solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");
   }
 
-
-
 //-----------------------------------------------------------------------------
   void TrackCaloMatching::produce(art::Event & evt) {
     doMatching(evt, _skipEvent);
   }
-
 
 //-----------------------------------------------------------------------------
   void TrackCaloMatching::doMatching(art::Event & evt, bool skip) {
@@ -190,7 +182,7 @@ namespace mu2e {
     double     trk_v, trk_w, trk_mom, trk_time;
     double     sigmaV, sigmaW, sigmaT, sigmaE, chiQ;
     double     s1, s2, smean, ds;
-    double     nx, ny, dv, dw, dvv, dww, xv, xw, xt, xe;
+    double     nx, ny, dv, dw, dvv, dww, dt, xv, xw, xt, xe;
 
     double                     chi2_max(1.e12);
 
@@ -272,25 +264,22 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // apparently, ntupling stuff was mixed in, almost removed
 //-----------------------------------------------------------------------------
-      vane_id    = extrk->vaneId();
-
-      trk_time   = extrk->time();
+      vane_id  = extrk->vaneId();
 					// assume Z(middle of the disk)
 
-      s1      = extrk->pathLengthEntrance();
-      s2      = extrk->pathLengthExit    ();
-      smean   = (s1+s2)/2;
+      s1       = extrk->pathLengthEntrance();
+      s2       = extrk->pathLengthExit    ();
+      smean    = (s1+s2)/2;
 					// 
+      mom      = krep->momentum(smean);
 
-      mom     = krep->momentum(smean);
+      smean    = smean-70.*mom.mag()/mom.z();
+      ds       = s2-s1;
+      trk_time = krep->arrivalTime(smean);
 
-      smean   = smean-60.*mom.mag()/mom.z();
-      ds      = s2-s1;
-      //      smean   = s1; // checking...
-
-      point   = krep->position(smean);
-      mom     = krep->momentum(smean);
-      trk_mom = mom.mag();
+      point    = krep->position(smean);
+      mom      = krep->momentum(smean);
+      trk_mom  = mom.mag();
 
       if(_diagLevel > 2){
 	cout<<"vane_id = "<<vane_id<<endl;
@@ -319,12 +308,13 @@ namespace mu2e {
 // loop over clusters
 //-----------------------------------------------------------------------------
       for (int icl=0; icl<nclusters; icl++) {
-	cl  = &(*caloClusters).at(icl);
-	CaloClusterTools cluTool(*cl);
+	cl      = &(*caloClusters).at(icl);
+	cl_time = cl->time();
+	dt      = trk_time-cl_time;
 
-	if (cl->vaneId()    != vane_id           )                                    goto NEXT_CLUSTER;
-	if (cl->energyDep() < _emcEnergyThreshold)                                    goto NEXT_CLUSTER;
-	if (std::fabs(cluTool.timeFasterCrystal() - trk_time) > _deltaTimeTollerance) goto NEXT_CLUSTER;
+	if (cl->vaneId()    != vane_id           )          goto NEXT_CLUSTER;
+	if (cl->energyDep() < _emcEnergyThreshold)          goto NEXT_CLUSTER;
+	if (std::fabs(dt)   > _deltaTimeTolerance)          goto NEXT_CLUSTER;
 //-----------------------------------------------------------------------------
 // 2013-03-24 P.Murat: cluster center of gravity is determined in the GLOBAL 
 //                     coordinate system, 
@@ -333,7 +323,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	cogVaneFrame = cg->toSectionFrame(vane_id, cl->cog3Vector());
       
-	cl_time      = cl->time();
 	cl_v         = cogVaneFrame.x();
 	cl_w         = cogVaneFrame.y();
 	cl_energy    = cl->energyDep();
@@ -346,7 +335,7 @@ namespace mu2e {
 
 	dvv = dv*nx+dw*ny;
 					// 2014-06-03 P.Murat: ad-hoc correction
-	dvv = dvv+100-ds*0.2833;
+	dvv = dvv-0.38*(ds-335.);
 
 	dww = dv*ny-dw*nx;
 //-----------------------------------------------------------------------------
@@ -381,7 +370,7 @@ namespace mu2e {
 					// need to handle energy part properly, later! 
 	xv = dvv/sigmaV;
 	xw = dww/sigmaW;
-	xt = (trk_time-cl_time)/sigmaT;
+	xt = dt /sigmaT;
 	xe = (trk_mom-cl_energy)/sigmaE;
 
 	_posVChiSquare   = xv*xv;
@@ -390,10 +379,6 @@ namespace mu2e {
 	_energyChiSquare = xe*xe;
 
 	chiQ = _posVChiSquare + _posWChiSquare + _timeChiSquare;
-    
-	if (_addEnergyToChiSquare == 1) {
-	  chiQ += _energyChiSquare;
-	}
     
 	if (chiQ < tcm_data[ltrk][vane_id].chi2) {
 //-----------------------------------------------------------------------------
@@ -407,7 +392,7 @@ namespace mu2e {
 	  tcm_data[ltrk][vane_id].dz   = -1e6;
 	  tcm_data[ltrk][vane_id].du   = dvv;
 	  tcm_data[ltrk][vane_id].dv   = dww;
-	  tcm_data[ltrk][vane_id].dt   = trk_time-cl_time;
+	  tcm_data[ltrk][vane_id].dt   = dt;
 	  tcm_data[ltrk][vane_id].ep   = cl_energy/trk_mom;
 	}
       NEXT_CLUSTER:;

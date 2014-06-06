@@ -2,14 +2,18 @@
 // utilities for the Module to perform BaBar Kalman fit
 // 2014-04-04 P.Murat: cloned from TrkPatRec/inc/TrkPatRec.hh
 //
-// $Id: CalTimePeak.hh,v 1.2 2014/04/08 04:25:46 murat Exp $
+// $Id: CalTimePeak.hh,v 1.3 2014/06/06 21:35:08 murat Exp $
 // $Author: murat $
-// $Date: 2014/04/08 04:25:46 $
+// $Date: 2014/06/06 21:35:08 $
 ///////////////////////////////////////////////////////////////////////////////
 #ifndef __CalPatRec_CalTimePeak_hh__
 #define __CalPatRec_CalTimePeak_hh__
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTrack/KalRep.hh"
 // C++
@@ -34,6 +38,10 @@ namespace mu2e {
     hitIndexCollection    _trkptrs;
     double                _tmin;
     double                _tmax;
+
+    const StrawHitCollection*      _shcol;
+    const StrawHitFlagCollection*  _shfcol;
+    
 
     CalTimePeak();
     CalTimePeak(const CaloCluster* Cl, double X, double Y, double Z);
