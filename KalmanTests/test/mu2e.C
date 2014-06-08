@@ -1,6 +1,5 @@
 #include "TTree.h"
 #include "TStyle.h"
-#include "TMath.h"
 #include "TFile.h"
 #include "TH1F.h"
 #include "TH2F.h"
@@ -13,10 +12,10 @@
 #include "TLine.h"
 #include "TArrow.h"
 #include "TRandom3.h"
+#include "TMath.h"
 #include <iostream>
 #include <math.h>
 #include <vector>
-#include "TMath.h"
 
 using namespace std;
 
@@ -244,6 +243,9 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
     _conspec[icut]->SetLineColor(kRed);
     _conspec[icut]->Sumw2();
 
+    // kludge: compute the DIO weight by hand
+
+//    dio->Project(dioname,"fitmom","evtwt"*final[icut]);
     dio->Project(dioname,"fitmom","evtwt"*final[icut]);
     _diospec[icut]->Scale(dioscale);
     _diospec[icut]->SetMinimum(0.08*_diocz_f->Eval(trueconvmom-0.1)*ndecay*mevperbin);
@@ -289,6 +291,14 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     allcan->Divide(2,1);
   else
     allcan->Divide(1,1);
+// setup a function to fit the DIO spectrum
+  TF1* diofit = new TF1("diofit",DIOCZ_R,_mmin,_mmax,4);
+  double rawscale_f = (_mmax-_mmin)*ndecay/_nbins;
+  diofit->SetParameter(0,rawscale_f);
+  diofit->SetParameter(1,0.0);
+  diofit->SetParameter(2,0.12);
+  diofit->SetParameter(3,0.0);
+  diofit->SetLineColor(kBlue);
 
   for(unsigned icut=ilow;icut<ihi+1;icut++){
     double conmax = 1.5*_conspec[icut]->GetBinContent(_conspec[icut]->GetMaximumBin());
@@ -299,7 +309,13 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
       _diospec[icut]->SetMinimum(-0.01);
       _diospec[icut]->SetMaximum(conmax);
     }
+    _diospec[icut]->Fit("diofit","0");
+    _diospec[icut]->Fit("diofit","M0");
+    _diospec[icut]->Fit("diofit","M0");
+    TF1* diof = (TF1*)_diospec[icut]->FindObject("diofit");
     _diospec[icut]->Draw();
+    if(diof !=0)diof->Draw("same");
+
     _conspec[icut]->Draw("same");
 //    _flat_f[icut]->Draw("same");
     
@@ -312,7 +328,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     double cint = _conspec[icut]->IntegralAndError(istart,istop,cint_err);
 //    double fint = _flat_f[icut]->Integral(momlow,momhigh)/mevperbin;
 
-    TPaveText* inttext = new TPaveText(0.1,0.5,0.35,0.9,"NDC");
+    TPaveText* inttext = new TPaveText(0.15,0.4,0.4,0.9,"NDC");
     char itext[50];
   
     snprintf(itext,50,"%5.2e stopped #mu^{-}",nstopped);
@@ -334,13 +350,19 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     l = inttext->AddText(itext);
     l->SetTextColor(kRed);
 
-
-
     snprintf(itext,50,"#int DIO = %3.2f #pm %2.2f",dint,dint_err);
     l = inttext->AddText(itext);
 //    l->SetTextColor(kBlue);
 //    snprintf(itext,50,"#int RPC+AP+Cosmic = %2.2f",fint);
 //    l = inttext->AddText(itext);
+    l->SetTextColor(kBlue);
+    inttext->Draw();
+
+    double intfactor = _nbins/(_mmax-_mmin);
+    double diofitint = diof->Integral(momlow,momhigh)*intfactor;
+    double diofitint_err = diof->IntegralError(momlow,momhigh)*intfactor;
+    snprintf(itext,50,"#int DIO fit = %3.2f #pm %2.2f",diofitint,diofitint_err);
+    l = inttext->AddText(itext);
     l->SetTextColor(kBlue);
     inttext->Draw();
 
@@ -379,7 +401,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     TText* sigwin = new TText(0.5*(momlow+momhigh),0.90*conmax,"Signal Window");
     sigwin->SetTextAlign(21);
     sigwin->Draw();
-    snprintf(line,80,"%4.2f < p < %4.2f MeV/c",momlow,momhigh); 
+    snprintf(line,80,"%4.1f < p < %4.1f MeV/c",momlow,momhigh); 
     TText* sigwin2 = new TText(0.5*(momlow+momhigh),0.84*conmax,line);
     sigwin2->SetTextAlign(21);
     sigwin2->SetTextSize(0.025);
@@ -415,16 +437,16 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   TH1F* diogenwin[4] = {0,0,0,0};
   TH1F* diodiffwin[4] = {0,0,0,0};
   const char* dopt[4] = {"","same","same","same"};
-  const char* cutset[4] = {"Cutset A","Cutset B","Cutset C","Cutset D"};
-  TLegend* dgenwinleg = new TLegend(.5,.6,.7,.9);
+  const char* cutset[4] = {"All Reconstructed Tracks","Loose Track Selection","Default Track Selection","Tight Track Selection"};
+  TLegend* dgenwinleg = new TLegend(.15,.6,.45,.9);
   for(unsigned icut=0;icut<4;icut++){
     char diogenname[50], diodiffname[50];
     snprintf(diogenname,50,"diogenwin%i",icut);
-    diogenwin[icut] = new TH1F(diogenname,"True momentum of DIO in signal box;MeV",100,dmlow,dmhi);
+    diogenwin[icut] = new TH1F(diogenname,"Generated Momentum of DIO in Signal Box;Generated DIO Momentum (MeV/c)",100,dmlow,dmhi);
     diogenwin[icut]->SetStats(0);
 
     snprintf(diodiffname,50,"diodiffwin%i",icut);
-    diodiffwin[icut] = new TH1F(diodiffname,"Reco - true momentum of DIO in signal box;MeV",100,-1,2);
+    diodiffwin[icut] = new TH1F(diodiffname,"Reco - True Momentum of DIO in Signal Box;#Delta Momentum (MeV/c)",100,-1,2);
     diodiffwin[icut]->SetStats(0);
 
     dio->Project(diogenname,"mcentmom","evtwt"*(final[icut]+momwin));
@@ -487,7 +509,7 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   TCanvas* diores = new TCanvas("diores","DIO result",800,600);
   gPad->SetLogy();
   diodiffwin[mu2ecut]->Draw();
-  double split = 0.35;
+  double split = 0.4; // define tail as 400 KeV/c above nominal
   TLine* td = new TLine(split,0.0,split,diodiffwin[mu2ecut]->GetMaximum());
   td->SetLineColor(kBlack);
   td->SetLineStyle(2);
@@ -505,8 +527,8 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   cout <<"core = " << core << " tail = " << tail << endl;
   diores->SaveAs("diores.png");
   char ccore[30], ctail[30];
-  snprintf(ccore,30,"%4.1f%%",core);
-  snprintf(ctail,30,"%4.1f%%",tail);
+  snprintf(ccore,30,"Core =%3.1f%%",core);
+  snprintf(ctail,30,"Tail =%3.1f%%",tail);
   TText* tcore = new TText(0.2,0.4,ccore);
   TText* ttail = new TText(0.6,0.4,ctail);
   tcore->SetNDC();
