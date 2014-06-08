@@ -53,21 +53,26 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
 //
       char title[100];
       snprintf(title,100,"Time Spectrum event %lu",ievt);
+      rh->SetTitle(title);
+      rh->GetXaxis()->SetTitle("nsec");
+      rh->GetYaxis()->SetTitle("# hits");
+ //     rh->SetFillColor(kGreen);
+      rh->Draw();
       th->SetTitle(title);
       th->GetXaxis()->SetTitle("nsec");
       th->GetYaxis()->SetTitle("# hits");
       th->SetFillColor(kGreen);
-      th->Draw();
+      th->Draw("same");
       //        th->SetLineWidth(2);
 //      lh->SetFillColor(kYellow);
 //      lh->Draw("same");
-      rh->Draw("same");
+//      rh->Draw("same");
       ch->SetLineStyle(1);
       ch->SetLineWidth(2);
       ch->SetFillColor(0);
       ch->SetLineColor(kRed);
       ch->Draw("same");
-      ph->Draw("same");
+//      ph->Draw("same");
       TLegend* leg(0);
       if(ipave==1){
 	leg = new TLegend(0.1,0.7,0.5,0.9);
@@ -75,7 +80,7 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
 	leg->AddEntry(th,"Selected hits","F");
 //	leg->AddEntry(lh,"Loose Selected hits","F");
 	leg->AddEntry(ch,"Conversion hits","LF");
-	leg->AddEntry(ph,"Proton hits","LF");
+//	leg->AddEntry(ph,"Proton hits","LF");
 	leg->AddEntry(dummy,"Reconstructed Time Peak","P");
 	leg->Draw();
       }
