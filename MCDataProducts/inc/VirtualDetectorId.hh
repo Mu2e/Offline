@@ -3,9 +3,9 @@
 //
 // An enum-matched-to-names class for virtual detector Id's.
 //
-// $Id: VirtualDetectorId.hh,v 1.20 2014/03/26 15:14:23 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2014/03/26 15:14:23 $
+// $Id: VirtualDetectorId.hh,v 1.21 2014/06/09 23:14:33 genser Exp $
+// $Author: genser $
+// $Date: 2014/06/09 23:14:33 $
 //
 // Original author Rob Kutschke
 //
@@ -78,6 +78,7 @@ namespace mu2e {
       DSNeutronShieldExit, // 81
       PSTargetSurf, // 82
       PT_Front, PT_Back, STMUpstream,                         // 83, 84:  Forward and backward side of the production targets
+      MSTM_DUpstream,                                         // 85:  Upstream of MSTS detector crystal
       lastEnum
     };
 
@@ -117,7 +118,8 @@ namespace mu2e {
       "EMC_Disk_0_EdgeIn", "EMC_Disk_0_EdgeOut","EMC_Disk_1_EdgeIn", "EMC_Disk_1_EdgeOut", \
       "DSNeutronShieldExit", \
       "PSTargetSurf", \
-      "PT_Front", "PT_Back","STMUpstream"
+      "PT_Front", "PT_Back","STMUpstream", \
+      "MSTM_DUpstream"
 
   public:
 
