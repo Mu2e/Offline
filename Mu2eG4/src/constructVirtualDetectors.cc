@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.68 2014/03/26 15:13:47 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2014/03/26 15:13:47 $
+// $Id: constructVirtualDetectors.cc,v 1.69 2014/06/09 23:15:14 genser Exp $
+// $Author: genser $
+// $Date: 2014/06/09 23:15:14 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 
@@ -63,10 +63,10 @@ namespace mu2e {
 
     int static const verbosityLevel = _config.getInt("vd.verbosityLevel",0);
 
-    bool vdIsVisible         = _config.getBool("vd.visible",true);
-    bool vdIsSolid           = _config.getBool("vd.solid",true);
-    bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
+    bool const vdIsVisible         = _config.getBool("vd.visible",true);
+    bool const vdIsSolid           = _config.getBool("vd.solid",true);
+    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
     bool const placePV       = true;
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
@@ -1712,5 +1712,36 @@ namespace mu2e {
       }// end loop on disks
     }//hasDiskCalorimeter
 
+    // placing virtual detector in the MSTM can (hall air actually)
+    // fixme get it from GeometryService once in there
+    vdId = VirtualDetectorId::MSTM_DUpstream;
+    if ( vdg->exist(vdId) ) {
+
+      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+
+      const double mstmCrystalRIn  = _config.getDouble("mstm.crystal.rIn");
+      const double mstmCrystalROut = _config.getDouble("mstm.crystal.rOut");
+
+      const TubsParams vdParams(mstmCrystalRIn, mstmCrystalROut, vdg->getHalfLength());
+
+      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   vdParams,
+                                   vacuumMaterial,
+                                   0,
+                                   vdg->getLocal(vdId),
+                                   parent,
+                                   vdId,
+                                   vdIsVisible,
+                                   G4Color::Red(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                   );
+
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
   } // constructVirtualDetectors()
 }

@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.31 2014/03/26 15:14:49 rhbob Exp $
-// $Author: rhbob $
+// $Id: VirtualDetectorMaker.cc,v 1.32 2014/06/09 23:14:58 genser Exp $
+// $Author: genser $
 //
 
 #include <iostream>
@@ -18,6 +18,7 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/Mu2eEnvelope.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
@@ -26,7 +27,7 @@
 #include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
@@ -580,6 +581,73 @@ namespace mu2e {
 	}
 	    
       }
+
+      if ( c.getBool("mstm.build", false) ) {
+        // VirtualDetector in front of the MSTM detector crystal
+        // temporary arrangements till MSTM is in GeometryService
+        
+        const double mstmPipe0HalfLength     = c.getDouble("mstm.pipe0.halfLength");
+        const double mstmPipe1HalfLength     = c.getDouble("mstm.pipe1.halfLength");
+        const double mstmAbsorber1HalfLength = c.getDouble("mstm.absorber1.halfLength");
+        const double mstmPipe2HalfLength     = c.getDouble("mstm.pipe2.halfLength");
+        const double mstmPipe3HalfLength     = c.getDouble("mstm.pipe3.halfLength");
+        const double mstmPipe4HalfLength     = c.getDouble("mstm.pipe4.halfLength");
+        const double mstmAbsorber2HalfLength = c.getDouble("mstm.absorber2.halfLength");
+        const double mstmPipe5HalfLength     = c.getDouble("mstm.pipe5.halfLength");
+        const double mstmCanHalfLength       = c.getDouble("mstm.can.halfLength");
+        const double mstmCrystalHalfLength   = c.getDouble("mstm.crystal.halfLength");
+
+        GeomHandle<DetectorSolenoid> ds;
+        CLHEP::Hep3Vector const & dsP ( ds->position() );
+        GeomHandle<DetectorSolenoidShielding> dss;
+
+        CLHEP::Hep3Vector mstmPipe0PositionInMu2e(dsP.x(), dsP.y(),
+                                                  dss->getIFBendPlug()->zEnd() + mstmPipe0HalfLength);
+
+        double vdZshift = 
+          mstmPipe0HalfLength     +
+          2.0*mstmPipe1HalfLength     +
+          2.0*mstmAbsorber1HalfLength +
+          2.0*mstmPipe2HalfLength     +
+          2.0*mstmPipe3HalfLength     +
+          2.0*mstmPipe4HalfLength     +
+          2.0*mstmAbsorber2HalfLength +
+          2.0*mstmPipe5HalfLength     +
+          mstmCanHalfLength       -
+          mstmCrystalHalfLength   -
+          vd->_halfLength;
+
+        CLHEP::Hep3Vector vdPositionInMu2e = mstmPipe0PositionInMu2e + 
+          CLHEP::Hep3Vector(0.0,0.0,vdZshift);
+
+        GeomHandle<Mu2eEnvelope> env;
+        const CLHEP::Hep3Vector hallFormalCenterInMu2e(
+                                                       (env->xmax() + env->xmin())/2.,
+                                                       (env->ymax() + env->ymin())/2.,
+                                                       (env->zmax() + env->zmin())/2.
+                                                       );
+
+        vd->addVirtualDetector(VirtualDetectorId::MSTM_DUpstream,
+                               hallFormalCenterInMu2e,
+                               0x0,
+                               vdPositionInMu2e - hallFormalCenterInMu2e);
+
+
+        // int static const verbosityLevel = 1;
+        // if ( verbosityLevel > -1) {
+        //   cout << __func__ << " constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_DUpstream) 
+        //        << endl;
+        //   std::cout << __func__ << " mstmPipe0PositionInMu2e " << 
+        //     mstmPipe0PositionInMu2e <<  std::endl;
+        //   std::cout << __func__ << " mstmPipe0PositionInHall " << 
+        //     mstmPipe0PositionInMu2e - hallFormalCenterInMu2e <<  std::endl;
+        //   cout << __func__ << " vdPositionInMu2e " << vdPositionInMu2e << endl;
+        //   cout << __func__ << " hallFormalCenterInMu2e " << hallFormalCenterInMu2e << endl;
+        //   cout << __func__ << " vdPositionIn Hall " << vdPositionInMu2e - hallFormalCenterInMu2e << endl;
+        // }
+
+      }
+
     } // if(hasVirtualDetector)
 
     return vd;
