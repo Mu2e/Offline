@@ -1,6 +1,6 @@
-// $Id: constructExternalNeutronShielding.cc,v 1.4 2014/06/05 21:08:24 genser Exp $
+// $Id: constructExternalNeutronShielding.cc,v 1.5 2014/06/09 23:16:27 genser Exp $
 // $Author: genser $
-// $Date: 2014/06/05 21:08:24 $
+// $Date: 2014/06/09 23:16:27 $
 // David Norvil Brown, August 2013
 //
 //
@@ -589,7 +589,7 @@ namespace mu2e {
  	  // Now make the window (AKA "Hole")
  	  name << "window";
 
-          std::cout << " making " << name.str() << std::endl;
+          // std::cout << __func__ " making " << name.str() << std::endl;
 
           std::ostringstream name1;
           name1 << "ExtNeutShieldCendBox_sub_" << i+1;
