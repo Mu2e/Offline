@@ -2,6 +2,23 @@
 
            Release notes for Mu2e Offline software, v4_2_4
 
+8) June 09, 2014 genser
+
+   Added more elements of Muon Stopping Target Monitor (MSTM) plus
+   minor code mods;
+   Added MSTM_DUpstream virtual detector upstream of MSTM crystal
+   detector;
+   Moved creation of Mu2eEnvelope ahead of making of virtual
+   detectors in GeometryService;
+
+     GeometryService/src/GeometryService_service.cc
+     GeometryService/src/VirtualDetectorMaker.cc
+     MCDataProducts/inc/VirtualDetectorId.hh
+     Mu2eG4/src/constructExternalNeutronShielding.cc
+     Mu2eG4/src/constructMSTM.cc
+     Mu2eG4/src/constructVirtualDetectors.cc
+     Mu2eG4/test/MSTM_v01.txt
+
 7) June 06, 2014 gandr
 
    Add photon spectrum from muminus capture on aluminum.
