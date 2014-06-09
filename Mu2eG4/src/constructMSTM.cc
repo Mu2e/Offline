@@ -2,9 +2,9 @@
 // Free function to create MSTM.
 // Muon Stopping Target Monitor
 //
-// $Id: constructMSTM.cc,v 1.2 2014/06/05 21:20:02 genser Exp $
+// $Id: constructMSTM.cc,v 1.3 2014/06/09 23:17:29 genser Exp $
 // $Author: genser $
-// $Date: 2014/06/05 21:20:02 $
+// $Date: 2014/06/09 23:17:29 $
 //
 // Original author K.L.Genser 
 //
@@ -69,9 +69,149 @@ namespace mu2e {
     const bool mstmVisible = _config.getBool("mstm.visible", true );
     const bool mstmSolid   = _config.getBool("mstm.solid",   false);
 
+    // pipe0
+
+    const double mstmPipe0RIn        = _config.getDouble("mstm.pipe0.rIn");     
+    const double mstmPipe0ROut       = _config.getDouble("mstm.pipe0.rOut");      
+    const double mstmPipe0HalfLength = _config.getDouble("mstm.pipe0.halfLength");
+
+    G4Material* mstmPipe0Material  = materialFinder.get("mstm.pipe0.material");
+    G4Material* mstmPipe0Gas       = materialFinder.get("mstm.pipe0.gas");
+
+    const TubsParams mstmPipe0Params(0., mstmPipe0ROut, mstmPipe0HalfLength);
+    const TubsParams mstmPipe0GasParams(0.,  mstmPipe0RIn, mstmPipe0HalfLength);
+      
+    GeomHandle<DetectorSolenoidShielding> dss;
+
+    G4ThreeVector mstmPipe0PositionInMu2e(dsP.x(), dsP.y(),
+                                          dss->getIFBendPlug()->zEnd() + mstmPipe0HalfLength);
+
+    VolumeInfo mstmPipe0Info = nestTubs( "mstmPipe0",
+                                         mstmPipe0Params,
+                                         mstmPipe0Material,
+                                         0x0,
+                                         mstmPipe0PositionInMu2e - _hallOriginInMu2e,
+                                         parent,
+                                         0,
+                                         mstmVisible,
+                                         G4Color::Red(),
+                                         mstmSolid,
+                                         forceAuxEdgeVisible,
+                                         placePV,
+                                         doSurfaceCheck
+                                         );
+
+    VolumeInfo mstmPipe0GasInfo = nestTubs( "mstmPipe0Gas",
+                                            mstmPipe0GasParams,
+                                            mstmPipe0Gas,
+                                            0x0,
+                                            zeroVector,
+                                            mstmPipe0Info,
+                                            0,
+                                            mstmVisible,
+                                            G4Color::Yellow(),
+                                            mstmSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
+
+
+    // pipe1
+
+    const double mstmPipe1RIn        = _config.getDouble("mstm.pipe1.rIn");     
+    const double mstmPipe1ROut       = _config.getDouble("mstm.pipe1.rOut");      
+    const double mstmPipe1HalfLength = _config.getDouble("mstm.pipe1.halfLength");
+
+    G4Material* mstmPipe1Material  = materialFinder.get("mstm.pipe1.material");
+    G4Material* mstmPipe1Gas       = materialFinder.get("mstm.pipe1.gas");
+
+    const TubsParams mstmPipe1Params(0., mstmPipe1ROut, mstmPipe1HalfLength);
+    const TubsParams mstmPipe1GasParams(0.,  mstmPipe1RIn, mstmPipe1HalfLength);
+
+    G4ThreeVector mstmPipe1PositionInMu2e =  mstmPipe0PositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmPipe0HalfLength + mstmPipe1HalfLength);
+
+    VolumeInfo mstmPipe1Info = nestTubs( "mstmPipe1",
+                                         mstmPipe1Params,
+                                         mstmPipe1Material,
+                                         0x0,
+                                         mstmPipe1PositionInMu2e - _hallOriginInMu2e,
+                                         parent,
+                                         0,
+                                         mstmVisible,
+                                         G4Color::Magenta(),
+                                         mstmSolid,
+                                         forceAuxEdgeVisible,
+                                         placePV,
+                                         doSurfaceCheck
+                                         );
+
+    VolumeInfo mstmPipe1GasInfo = nestTubs( "mstmPipe1Gas",
+                                            mstmPipe1GasParams,
+                                            mstmPipe1Gas,
+                                            0x0,
+                                            zeroVector,
+                                            mstmPipe1Info,
+                                            0,
+                                            mstmVisible,
+                                            G4Color::Yellow(),
+                                            mstmSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
+
+
+    // creating magnetic field for the mstmPipe1 hierarchy
+    // note the local values for the stepper etc...
+    // Geant4 should take ownership of the objects created here
+
+    const double mstmPipe1MagField = _config.getDouble("mstm.pipe1.magfield");
+
+    G4MagneticField *localPipe1MagField = 
+      new G4UniformMagField(G4ThreeVector(mstmPipe1MagField*CLHEP::tesla,0.0,0.0));
+    G4Mag_EqRhs *Pipe1RHS  = new G4Mag_UsualEqRhs(localPipe1MagField);
+    G4MagIntegratorStepper *localPipe1Stepper = new G4ExactHelixStepper(Pipe1RHS); // we use a specialized stepper
+    G4ChordFinder *localPipe1ChordFinder = new G4ChordFinder(localPipe1MagField,1.0e-2*CLHEP::mm,localPipe1Stepper);
+    G4FieldManager *localPipe1FieldManager    
+      = new G4FieldManager(localPipe1MagField,localPipe1ChordFinder,false);// pure magnetic filed does not change energy
+
+    mstmPipe1Info.logical->SetFieldManager(localPipe1FieldManager, true); // propagate it down the hierarchy
+
+    // absorber1
+
+    G4Material* mstmAbsorber1Material = materialFinder.get("mstm.absorber1.material");
+
+    const double mstmAbsorber1HalfHeight    = _config.getDouble("mstm.absorber1.halfHeight");
+    const double mstmAbsorber1HalfLength    = _config.getDouble("mstm.absorber1.halfLength");
+
+    const double mstmAbsorber1HalfLengths[3] = {mstmAbsorber1HalfHeight,
+                                                mstmAbsorber1HalfHeight, 
+                                                mstmAbsorber1HalfLength};
+
+    G4ThreeVector mstmAbsorber1PositionInMu2e = mstmPipe1PositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmPipe1HalfLength + mstmAbsorber1HalfLength);
+
+    VolumeInfo mstmAbsorber1Info = nestBox("mstmAbsorber1",
+                                           mstmAbsorber1HalfLengths,
+                                           mstmAbsorber1Material,
+                                           0x0,
+                                           mstmAbsorber1PositionInMu2e - _hallOriginInMu2e,
+                                           parent,
+                                           0,
+                                           mstmVisible,
+                                           G4Color::Gray(),
+                                           mstmSolid,
+                                           forceAuxEdgeVisible,
+                                           placePV,
+                                           doSurfaceCheck
+                                           );
+
+
+
     // pipe2
 
-    //      double mstmPipe2Z          = _config.getDouble("mstm.pipe2.z");
     const double mstmPipe2RIn        = _config.getDouble("mstm.pipe2.rIn");     
     const double mstmPipe2ROut       = _config.getDouble("mstm.pipe2.rOut");      
     const double mstmPipe2HalfLength = _config.getDouble("mstm.pipe2.halfLength");
@@ -79,13 +219,11 @@ namespace mu2e {
     G4Material* mstmPipe2Material  = materialFinder.get("mstm.pipe2.material");
     G4Material* mstmPipe2Gas       = materialFinder.get("mstm.pipe2.gas");
 
-    const double mstmPipe2Params[5]     = {0., mstmPipe2ROut, mstmPipe2HalfLength, 0.0, CLHEP::twopi};
-    const double mstmPipe2GasParams[5]  = {0.,  mstmPipe2RIn, mstmPipe2HalfLength, 0.0, CLHEP::twopi};
+    const TubsParams mstmPipe2Params(0., mstmPipe2ROut, mstmPipe2HalfLength);
+    const TubsParams mstmPipe2GasParams(0.,  mstmPipe2RIn, mstmPipe2HalfLength);
       
-    GeomHandle<DetectorSolenoidShielding> dss;
-
-    G4ThreeVector mstmPipe2PositionInMu2e(dsP.x(), dsP.y(),
-                                          dss->getIFBendPlug()->zEnd() + mstmPipe2HalfLength);
+    G4ThreeVector mstmPipe2PositionInMu2e =  mstmAbsorber1PositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmAbsorber1HalfLength + mstmPipe2HalfLength);
 
     VolumeInfo mstmPipe2Info = nestTubs( "mstmPipe2",
                                          mstmPipe2Params,
@@ -118,46 +256,16 @@ namespace mu2e {
                                             );
 
 
-    if ( verbosityLevel > 0) {
-      std::cout << " mstm position:"
-                << " dss->getIFBendPlug()->zEnd(): " 
-                << dss->getIFBendPlug()->zEnd()
-                << " z position: " 
-                << dss->getIFBendPlug()->zEnd() + mstmPipe2HalfLength
-                << "\n dss->getIFBendPlug()->originInMu2e() " 
-                << dss->getIFBendPlug()->originInMu2e()
-                << "\n dss->getIFBendPlug() position in hall " 
-                << dss->getIFBendPlug()->originInMu2e() - _hallOriginInMu2e
-                << "\n dsp position in Mu2e " << dsP 
-                << " _hallOriginInMu2e " <<  _hallOriginInMu2e
-                << "\n dsp position in hall " << dsP - _hallOriginInMu2e
-        //                  << " ds3positionInMu2e " << ds3positionInMu2e 
-                << " mstmPipe2PositionInMu2e " << mstmPipe2PositionInMu2e
-                << " mstmPipe2PositionInHall " << mstmPipe2PositionInMu2e - _hallOriginInMu2e
-                <<  std::endl;
-    }
-
-    // boxes for pipe3
+    // boxes for pipe3 (they have the length of pipe3 as they are all placed one in the other)
+    // and pipe3
 
     G4Material* mstmPipe3BoxInMaterial  = materialFinder.get("mstm.boxIn.material");
 
     const double mstmPipe3BoxInHalfHeight     = _config.getDouble("mstm.boxIn.halfHeight");
-    const double mstmPipe3BoxInHalfLength     = _config.getDouble("mstm.boxIn.halfLength");
 
     G4Material* mstmPipe3BoxOutMaterial = materialFinder.get("mstm.boxOut.material");
 
     const double mstmPipe3BoxOutHalfHeight    = _config.getDouble("mstm.boxOut.halfHeight");
-    const double mstmPipe3BoxOutHalfLength    = _config.getDouble("mstm.boxOut.halfLength");
-
-    const double mstmPipe3BoxOutHalfLengths[3] = {mstmPipe3BoxOutHalfHeight, 
-                                            mstmPipe3BoxOutHalfHeight, 
-                                            mstmPipe3BoxOutHalfLength};
-
-    const double mstmPipe3BoxInHalfLengths[3] = {mstmPipe3BoxInHalfHeight, 
-                                           mstmPipe3BoxInHalfHeight, 
-                                           mstmPipe3BoxInHalfLength};
-
-    // pipe3
 
     const double mstmPipe3RIn        = _config.getDouble("mstm.pipe3.rIn");     
     const double mstmPipe3ROut       = _config.getDouble("mstm.pipe3.rOut");      
@@ -166,8 +274,18 @@ namespace mu2e {
     G4Material* mstmPipe3Material  = materialFinder.get("mstm.pipe3.material");
     G4Material* mstmPipe3Gas       = materialFinder.get("mstm.pipe3.gas");
 
-    const double mstmPipe3Params[5]     = {0., mstmPipe3ROut, mstmPipe3HalfLength, 0.0, CLHEP::twopi};
-    const double mstmPipe3GasParams[5]  = {0., mstmPipe3RIn,  mstmPipe3HalfLength, 0.0, CLHEP::twopi};
+    // constructing boxes
+
+    const double mstmPipe3BoxOutHalfLengths[3] = {mstmPipe3BoxOutHalfHeight, 
+                                                  mstmPipe3BoxOutHalfHeight, 
+                                                  mstmPipe3HalfLength};
+
+    const double mstmPipe3BoxInHalfLengths[3] = {mstmPipe3BoxInHalfHeight, 
+                                                 mstmPipe3BoxInHalfHeight, 
+                                                 mstmPipe3HalfLength};
+
+    const TubsParams mstmPipe3Params(0., mstmPipe3ROut, mstmPipe3HalfLength);
+    const TubsParams mstmPipe3GasParams(0., mstmPipe3RIn,  mstmPipe3HalfLength);
 
     G4ThreeVector mstmPipe3PositionInMu2e = mstmPipe2PositionInMu2e + 
       G4ThreeVector(0.0, 0.0, mstmPipe2HalfLength + mstmPipe3HalfLength);
@@ -202,6 +320,8 @@ namespace mu2e {
                                             doSurfaceCheck
                                             );
 
+    // constructing pipe3
+
     VolumeInfo mstmPipe3Info = nestTubs( "mstmPipe3",
                                          mstmPipe3Params,
                                          mstmPipe3Material,
@@ -210,7 +330,7 @@ namespace mu2e {
                                          mstmPipe3BoxInInfo,
                                          0,
                                          mstmVisible,
-                                         G4Color::Red(),
+                                         G4Color::Magenta(),
                                          mstmSolid,
                                          forceAuxEdgeVisible,
                                          placePV,
@@ -223,15 +343,15 @@ namespace mu2e {
 
     const double mstmPipe3MagField = _config.getDouble("mstm.pipe3.magfield");
 
-    G4MagneticField *localMagField = 
+    G4MagneticField *localPipe3MagField = 
       new G4UniformMagField(G4ThreeVector(mstmPipe3MagField*CLHEP::tesla,0.0,0.0));
-    G4Mag_EqRhs *rhs  = new G4Mag_UsualEqRhs(localMagField);
-    G4MagIntegratorStepper *stepper = new G4ExactHelixStepper(rhs); // we use a specialized stepper
-    G4ChordFinder *chordFinder      = new G4ChordFinder(localMagField,1.0e-2*CLHEP::mm,stepper);
-    G4FieldManager *localFieldManager    
-      = new G4FieldManager(localMagField,chordFinder,false);// pure magnetic filed does not change energy
+    G4Mag_EqRhs *Pipe3RHS  = new G4Mag_UsualEqRhs(localPipe3MagField);
+    G4MagIntegratorStepper *localPipe3Stepper = new G4ExactHelixStepper(Pipe3RHS); // we use a specialized stepper
+    G4ChordFinder *localPipe3ChordFinder = new G4ChordFinder(localPipe3MagField,1.0e-2*CLHEP::mm,localPipe3Stepper);
+    G4FieldManager *localPipe3FieldManager    
+      = new G4FieldManager(localPipe3MagField,localPipe3ChordFinder,false);// pure magnetic filed does not change energy
 
-    mstmPipe3Info.logical->SetFieldManager(localFieldManager, true); // propagate it down the hierarchy
+    mstmPipe3Info.logical->SetFieldManager(localPipe3FieldManager, true); // propagate it down the hierarchy
 
     VolumeInfo mstmPipe3GasInfo = nestTubs("mstmPipe3Gas",
                                            mstmPipe3GasParams,
@@ -247,25 +367,56 @@ namespace mu2e {
                                            placePV,
                                            doSurfaceCheck
                                            );
-    // window
+    
+    // window, placed inside the pipe; we need to place it inside the
+    // gas at the end of it to avoid volume overlaps
 
-    const double mstmOutWindowRIn           = _config.getDouble("mstm.outWindow.rIn");
-    const double mstmOutWindowROut          = _config.getDouble("mstm.outWindow.rOut");
-    const double mstmOutWindowHalfLength    = _config.getDouble("mstm.outWindow.halfLength");
+    const double mstmOutWindowRIn        = _config.getDouble("mstm.outWindow.rIn");
+    const double mstmOutWindowROut       = _config.getDouble("mstm.outWindow.rOut");
+    const double mstmOutWindowHalfLength = _config.getDouble("mstm.outWindow.halfLength");
 
     G4Material* mstmOutWindowMaterial = materialFinder.get("mstm.outWindow.material");
 
-    const double mstmOutWindowParams[5]  = {mstmOutWindowRIn, mstmOutWindowROut, mstmOutWindowHalfLength,
-                                      0.0, CLHEP::twopi};
-
+    const TubsParams mstmOutWindowParams(mstmOutWindowRIn, mstmOutWindowROut, mstmOutWindowHalfLength);
     G4ThreeVector mstmOutWindowPositionInMu2e = mstmPipe3PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe3HalfLength + mstmOutWindowHalfLength);
+      G4ThreeVector(0.0, 0.0, mstmPipe3HalfLength - mstmOutWindowHalfLength);
 
-    VolumeInfo mstmOutWindow = nestTubs( "mstmOutWindow",
-                                         mstmOutWindowParams,
-                                         mstmOutWindowMaterial,
+    VolumeInfo mstmOutWindow = nestTubs("mstmOutWindow",
+                                        mstmOutWindowParams,
+                                        mstmOutWindowMaterial,
+                                        0x0,
+                                        mstmOutWindowPositionInMu2e - mstmPipe3PositionInMu2e,
+                                        mstmPipe3GasInfo,
+                                        0,
+                                        mstmVisible,
+                                        G4Color::Red(),
+                                        mstmSolid,
+                                        forceAuxEdgeVisible,
+                                        placePV,
+                                        doSurfaceCheck
+                                        );
+
+    // pipe4
+
+    const double mstmPipe4RIn        = _config.getDouble("mstm.pipe4.rIn");     
+    const double mstmPipe4ROut       = _config.getDouble("mstm.pipe4.rOut");      
+    const double mstmPipe4HalfLength = _config.getDouble("mstm.pipe4.halfLength");
+
+    G4Material* mstmPipe4Material    = materialFinder.get("mstm.pipe4.material");
+    G4Material* mstmPipe4Gas         = materialFinder.get("mstm.pipe4.gas");
+
+    const TubsParams mstmPipe4Params(0., mstmPipe4ROut, mstmPipe4HalfLength);
+    const TubsParams mstmPipe4GasParams(0.,  mstmPipe4RIn, mstmPipe4HalfLength);
+
+    G4ThreeVector mstmPipe4PositionInMu2e = mstmPipe3PositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmPipe3HalfLength + mstmPipe4HalfLength);
+
+
+    VolumeInfo mstmPipe4Info = nestTubs( "mstmPipe4",
+                                         mstmPipe4Params,
+                                         mstmPipe4Material,
                                          0x0,
-                                         mstmOutWindowPositionInMu2e - _hallOriginInMu2e,
+                                         mstmPipe4PositionInMu2e - _hallOriginInMu2e,
                                          parent,
                                          0,
                                          mstmVisible,
@@ -276,34 +427,99 @@ namespace mu2e {
                                          doSurfaceCheck
                                          );
 
-    // absorber
+    VolumeInfo mstmPipe4GasInfo = nestTubs( "mstmPipe4Gas",
+                                            mstmPipe4GasParams,
+                                            mstmPipe4Gas,
+                                            0x0,
+                                            zeroVector,
+                                            mstmPipe4Info,
+                                            0,
+                                            mstmVisible,
+                                            G4Color::Yellow(),
+                                            mstmSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
 
-    G4Material* mstmAbsorberMaterial = materialFinder.get("mstm.absorber.material");
 
-    const double mstmAbsorberHalfHeight    = _config.getDouble("mstm.absorber.halfHeight");
-    const double mstmAbsorberHalfLength    = _config.getDouble("mstm.absorber.halfLength");
+    // absorber2
 
-    const double mstmAbsorberHalfLengths[3] = {mstmAbsorberHalfHeight, 
-                                         mstmAbsorberHalfHeight, 
-                                         mstmAbsorberHalfLength};
+    G4Material* mstmAbsorber2Material = materialFinder.get("mstm.absorber2.material");
 
-    G4ThreeVector mstmAbsorberPositionInMu2e = mstmOutWindowPositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmOutWindowHalfLength + mstmAbsorberHalfLength);
+    const double mstmAbsorber2HalfHeight    = _config.getDouble("mstm.absorber2.halfHeight");
+    const double mstmAbsorber2HalfLength    = _config.getDouble("mstm.absorber2.halfLength");
 
-    VolumeInfo mstmAbsorberInfo = nestBox("mstmAbsorber",
-                                          mstmAbsorberHalfLengths,
-                                          mstmAbsorberMaterial,
-                                          0x0,
-                                          mstmAbsorberPositionInMu2e - _hallOriginInMu2e,
-                                          parent,
-                                          0,
-                                          mstmVisible,
-                                          G4Color::Gray(),
-                                          mstmSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          doSurfaceCheck
-                                          );
+    const double mstmAbsorber2HalfLengths[3] = {mstmAbsorber2HalfHeight, 
+                                                mstmAbsorber2HalfHeight, 
+                                                mstmAbsorber2HalfLength};
+
+    G4ThreeVector mstmAbsorber2PositionInMu2e = mstmPipe4PositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmPipe4HalfLength + mstmAbsorber2HalfLength);
+
+    VolumeInfo mstmAbsorber2Info = nestBox("mstmAbsorber2",
+                                           mstmAbsorber2HalfLengths,
+                                           mstmAbsorber2Material,
+                                           0x0,
+                                           mstmAbsorber2PositionInMu2e - _hallOriginInMu2e,
+                                           parent,
+                                           0,
+                                           mstmVisible,
+                                           G4Color::Gray(),
+                                           mstmSolid,
+                                           forceAuxEdgeVisible,
+                                           placePV,
+                                           doSurfaceCheck
+                                           );
+
+    // pipe5
+
+    const double mstmPipe5RIn        = _config.getDouble("mstm.pipe5.rIn");     
+    const double mstmPipe5ROut       = _config.getDouble("mstm.pipe5.rOut");      
+    const double mstmPipe5HalfLength = _config.getDouble("mstm.pipe5.halfLength");
+
+    G4Material* mstmPipe5Material    = materialFinder.get("mstm.pipe5.material");
+    G4Material* mstmPipe5Gas         = materialFinder.get("mstm.pipe5.gas");
+
+    const TubsParams mstmPipe5Params(0., mstmPipe5ROut, mstmPipe5HalfLength);
+    const TubsParams mstmPipe5GasParams(0.,  mstmPipe5RIn, mstmPipe5HalfLength);
+
+    G4ThreeVector mstmPipe5PositionInMu2e = mstmAbsorber2PositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmAbsorber2HalfLength + mstmPipe5HalfLength);
+
+
+    VolumeInfo mstmPipe5Info = nestTubs( "mstmPipe5",
+                                         mstmPipe5Params,
+                                         mstmPipe5Material,
+                                         0x0,
+                                         mstmPipe5PositionInMu2e - _hallOriginInMu2e,
+                                         parent,
+                                         0,
+                                         mstmVisible,
+                                         G4Color::Red(),
+                                         mstmSolid,
+                                         forceAuxEdgeVisible,
+                                         placePV,
+                                         doSurfaceCheck
+                                         );
+
+    VolumeInfo mstmPipe5GasInfo = nestTubs( "mstmPipe5Gas",
+                                            mstmPipe5GasParams,
+                                            mstmPipe5Gas,
+                                            0x0,
+                                            zeroVector,
+                                            mstmPipe5Info,
+                                            0,
+                                            mstmVisible,
+                                            G4Color::Yellow(),
+                                            mstmSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
+
+
+
 
     // can
     // (it has it's plugs "inside" the main part)
@@ -324,11 +540,10 @@ namespace mu2e {
 
     // the can upstream part
  
-    const double mstmCanUpSParams[5] =  {mstmCanUpSRIn, mstmCanUpSROut, mstmCanUpSHalfLength,
-                                   0.0, CLHEP::twopi};
+    const TubsParams mstmCanUpSParams(mstmCanUpSRIn, mstmCanUpSROut, mstmCanUpSHalfLength);
 
-    G4ThreeVector mstmCanUpSPositionInMu2e = mstmAbsorberPositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmAbsorberHalfLength + mstmCanUpSHalfLength);
+    G4ThreeVector mstmCanUpSPositionInMu2e = mstmPipe5PositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmPipe5HalfLength + mstmCanUpSHalfLength);
 
     VolumeInfo mstmCanUpS = nestTubs("mstmCanUpS",
                                      mstmCanUpSParams,
@@ -347,11 +562,10 @@ namespace mu2e {
 
     // the main can
 
-    const double mstmCanParams[5] = {mstmCanRIn, mstmCanROut, mstmCanHalfLength,
-                               0.0, CLHEP::twopi};
+    const TubsParams mstmCanParams(mstmCanRIn, mstmCanROut, mstmCanHalfLength);
 
-    G4ThreeVector mstmCanPositionInMu2e = mstmAbsorberPositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmAbsorberHalfLength + mstmCanHalfLength);
+    G4ThreeVector mstmCanPositionInMu2e = mstmPipe5PositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmPipe5HalfLength + mstmCanHalfLength);
 
     VolumeInfo mstmCan = nestTubs("mstmCan",
                                   mstmCanParams,
@@ -370,11 +584,10 @@ namespace mu2e {
 
     // the can downstream part
  
-    const double mstmCanDownSParams[5] = {mstmCanDownSRIn, mstmCanDownSROut, mstmCanDownSHalfLength,
-                                    0.0, CLHEP::twopi};
+    const TubsParams mstmCanDownSParams(mstmCanDownSRIn, mstmCanDownSROut, mstmCanDownSHalfLength);
 
-    G4ThreeVector mstmCanDownSPositionInMu2e = mstmAbsorberPositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmAbsorberHalfLength + 2.0*mstmCanHalfLength - mstmCanDownSHalfLength);
+    G4ThreeVector mstmCanDownSPositionInMu2e = mstmPipe5PositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmPipe5HalfLength + 2.0*mstmCanHalfLength - mstmCanDownSHalfLength);
 
     VolumeInfo mstmCanDownS = nestTubs("mstmCanDownS",
                                        mstmCanDownSParams,
@@ -399,8 +612,7 @@ namespace mu2e {
     const double mstmCrystalROut          = _config.getDouble("mstm.crystal.rOut");
     const double mstmCrystalHalfLength    = _config.getDouble("mstm.crystal.halfLength");
 
-    const double mstmCrystalParams[5] = {mstmCrystalRIn, mstmCrystalROut, mstmCrystalHalfLength,
-                                   0.0, CLHEP::twopi};
+    const TubsParams mstmCrystalParams(mstmCrystalRIn, mstmCrystalROut, mstmCrystalHalfLength);
 
     G4ThreeVector mstmCrystalPositionInMu2e = mstmCanPositionInMu2e;
 
@@ -424,6 +636,36 @@ namespace mu2e {
     G4VSensitiveDetector *sd = 
       G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::MSTMCrystal());
     if(sd) mstmCrystal.logical->SetSensitiveDetector(sd);
+
+    if ( verbosityLevel > 0) {
+      std::cout << __func__ << " mstm position:"
+                << " dss->getIFBendPlug()->zEnd(): " 
+                << dss->getIFBendPlug()->zEnd()
+                << " z position: " 
+                << dss->getIFBendPlug()->zEnd() + mstmPipe2HalfLength <<  std::endl;
+      std::cout << __func__ << " dss->getIFBendPlug()->originInMu2e() " 
+                << dss->getIFBendPlug()->originInMu2e() <<  std::endl;
+      std::cout << __func__ << " dss->getIFBendPlug() position in hall " 
+                << dss->getIFBendPlug()->originInMu2e() - _hallOriginInMu2e <<  std::endl;
+      std::cout << __func__ << " dsp position in Mu2e " << dsP 
+                << " _hallOriginInMu2e " <<  _hallOriginInMu2e <<  std::endl;
+      std::cout << __func__ << " dsp position in hall " << dsP - _hallOriginInMu2e <<  std::endl;
+
+      std::cout << __func__ << " mstmPipe0PositionInMu2e " << 
+        mstmPipe0PositionInMu2e <<  std::endl;
+      std::cout << __func__ << " mstmPipe0PositionInHall " << 
+        mstmPipe0PositionInMu2e - _hallOriginInMu2e <<  std::endl;
+
+      std::cout << __func__ << " mstmPipe2PositionInMu2e " << 
+        mstmPipe2PositionInMu2e <<  std::endl;
+      std::cout << __func__ << " mstmPipe2PositionInHall " << 
+        mstmPipe2PositionInMu2e - _hallOriginInMu2e <<  std::endl;
+
+      std::cout << __func__ << " mstmCanPositionInMu2e " << 
+        mstmCanPositionInMu2e <<  std::endl;
+      std::cout << __func__ << " mstmCanPositionInHall " << 
+        mstmCanPositionInMu2e - _hallOriginInMu2e <<  std::endl;
+    }
 
   }
 

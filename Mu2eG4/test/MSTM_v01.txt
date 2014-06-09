@@ -1,8 +1,8 @@
 // Muon Stoping Target Monitor 
 //
-// $Id: MSTM_v01.txt,v 1.1 2014/06/05 21:05:47 genser Exp $
+// $Id: MSTM_v01.txt,v 1.2 2014/06/09 23:17:04 genser Exp $
 // $Author: genser $
-// $Date: 2014/06/05 21:05:47 $
+// $Date: 2014/06/09 23:17:04 $
 //
 // Original author: K. L. Genser
 // inspired by DSShielding and DS_PNNL_Shield
@@ -15,14 +15,41 @@ bool mstm.solid   = false;
 // mstm pipe, magnet absorber, detector
 
 bool   mstm.build  = true;
-int    mstm.verbosityLevel = 0;
+int    mstm.verbosityLevel = 1;
+
+string mstm.pipe0.material   = "StainlessSteel";
+string mstm.pipe0.gas        = "G4_He"; 
+
+double mstm.pipe0.rIn        = 49.;
+double mstm.pipe0.rOut       = 50.;
+double mstm.pipe0.halfLength = 850.;
+
+string mstm.pipe1.material   = "StainlessSteel";
+string mstm.pipe1.gas        = "G4_He"; 
+
+double mstm.pipe1.rIn        = 49.;
+double mstm.pipe1.rOut       = 50.;
+double mstm.pipe1.halfLength = 150.;
+double mstm.pipe1.magfield   = 0.05;
+
+string mstm.absorber1.material   = "G4_Pb";
+
+double mstm.absorber1.halfHeight  = 100.;
+double mstm.absorber1.halfLength  = 100.;
 
 string mstm.pipe2.material   = "StainlessSteel";
 string mstm.pipe2.gas        = "G4_He"; 
 
 double mstm.pipe2.rIn        = 49.;
 double mstm.pipe2.rOut       = 50.;
-double mstm.pipe2.halfLength = 1000.;
+double mstm.pipe2.halfLength = 150.;
+
+string mstm.pipe2.material   = "StainlessSteel";
+string mstm.pipe2.gas        = "G4_He"; 
+
+double mstm.pipe2.rIn        = 49.;
+double mstm.pipe2.rOut       = 50.;
+double mstm.pipe2.halfLength = 150.;
 
 string mstm.pipe3.material   = "StainlessSteel";
 string mstm.pipe3.gas        = "G4_He"; 
@@ -35,23 +62,37 @@ double mstm.pipe3.magfield   = 0.05;
 string mstm.boxIn.material   = "Polyethylene096";
 
 double mstm.boxIn.halfHeight =  800.;
-double mstm.boxIn.halfLength = 1000.;
+//double mstm.boxIn.halfLength = 1000.;
 
 string mstm.boxOut.material   = "G4_CONCRETE";
 
 double mstm.boxOut.halfHeight = 1000.;
-double mstm.boxOut.halfLength = 1000.;
+//double mstm.boxOut.halfLength = 1000.;
 
 string mstm.outWindow.material   = "StainlessSteel";
 
 double mstm.outWindow.rIn         = 0.;
-double mstm.outWindow.rOut        = 50.;
+double mstm.outWindow.rOut        = 49.;
 double mstm.outWindow.halfLength  = 0.5;
 
-string mstm.absorber.material   = "G4_Pb";
+string mstm.pipe4.material   = "StainlessSteel";
+string mstm.pipe4.gas        = "G4_He"; 
 
-double mstm.absorber.halfHeight  = 100.;
-double mstm.absorber.halfLength  = 100.;
+double mstm.pipe4.rIn        = 49.;
+double mstm.pipe4.rOut       = 50.;
+double mstm.pipe4.halfLength = 100.;
+
+string mstm.absorber2.material   = "G4_Pb";
+
+double mstm.absorber2.halfHeight  = 100.;
+double mstm.absorber2.halfLength  = 100.;
+
+string mstm.pipe5.material   = "StainlessSteel";
+string mstm.pipe5.gas        = "G4_He"; 
+
+double mstm.pipe5.rIn        = 49.;
+double mstm.pipe5.rOut       = 50.;
+double mstm.pipe5.halfLength = 100.;
 
 double mstm.can.material          = "StainlessSteel";
 
