@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.62 2013/12/24 17:05:38 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2013/12/24 17:05:38 $
+// $Id: GeometryService_service.cc,v 1.63 2014/06/09 23:14:17 genser Exp $
+// $Author: genser $
+// $Date: 2014/06/09 23:14:17 $
 //
 // Original author Rob Kutschke
 //
@@ -330,6 +330,8 @@ if(_config->getBool("hasHybridCalorimeter",false)){
       addDetector( extmon.getDetectorPtr() );
     }
 
+    addDetector(std::unique_ptr<Mu2eEnvelope>(new Mu2eEnvelope(building, dump, emfb)));
+
     if(_config->getBool("hasVirtualDetector",false)){
       addDetector(VirtualDetectorMaker::make(*_config));
     }
@@ -345,8 +347,6 @@ if(_config->getBool("hasHybridCalorimeter",false)){
       MECOStyleProtonAbsorberMaker mecopam( *_config, ds, target);
       addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
     }
-
-    addDetector(std::unique_ptr<Mu2eEnvelope>(new Mu2eEnvelope(building, dump, emfb)));
 
   } // preBeginRun()
 
