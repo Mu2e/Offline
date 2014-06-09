@@ -26,6 +26,7 @@ CalPatRec            : {
     caloClusterModuleLabel                      : "MakeCaloCluster"
     StrawHitCollectionLabel                     : "makeSH"
     StrawHitPositionCollectionLabel             : "MakeStrawHitPositions"
+    StrawHitFlagCollectionLabel                 : "FlagBkgHits"
     includeCaloInfo				: 0
     minClusterEnergy                            : 60. # MeV
     # Kalman fit configuration for the helix seed fit
