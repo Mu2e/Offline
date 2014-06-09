@@ -24,6 +24,7 @@ MakeCaloClusterHack        : {
 CalPatRec            : {
     module_type                                 : CalPatRec
     caloClusterModuleLabel                      : "MakeCaloCluster"
+    StrawHitCollectionLabel                     : "makeSH"
     StrawHitPositionCollectionLabel             : "MakeStrawHitPositions"
     includeCaloInfo				: 0
     minClusterEnergy                            : 60. # MeV
