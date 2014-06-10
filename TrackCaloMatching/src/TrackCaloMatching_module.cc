@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.6 2014/06/06 21:34:50 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.7 2014/06/10 00:16:15 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/06 21:34:50 $
+// $Date: 2014/06/10 00:16:15 $
 //
 // Original author G. Pezzullo
 //
@@ -270,12 +270,13 @@ namespace mu2e {
       s1       = extrk->pathLengthEntrance();
       s2       = extrk->pathLengthExit    ();
       smean    = (s1+s2)/2;
-					// 
+					// shower starts developing when the particle 
+					// reaches the disk
+      trk_time = krep->arrivalTime(s1);
       mom      = krep->momentum(smean);
 
-      smean    = smean-70.*mom.mag()/mom.z();
+      smean    = smean-60.*mom.mag()/mom.z();
       ds       = s2-s1;
-      trk_time = krep->arrivalTime(smean);
 
       point    = krep->position(smean);
       mom      = krep->momentum(smean);
@@ -334,8 +335,8 @@ namespace mu2e {
 	dw  = trk_w-cl_w;
 
 	dvv = dv*nx+dw*ny;
-					// 2014-06-03 P.Murat: ad-hoc correction
-	dvv = dvv-0.38*(ds-335.);
+					// 2014-06-06 P.Murat: ad-hoc correction
+	dvv = dvv-0.28*(ds-350.);
 
 	dww = dv*ny-dw*nx;
 //-----------------------------------------------------------------------------
