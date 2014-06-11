@@ -25,8 +25,10 @@ CaloMatching : {
 TrackCaloMatching : {
     module_type                  : TrackCaloMatching
     diagLevel                    : 0
-    deltaTimeTolerance           : 50.             # ns
+    minClusterEnergy             : 10.             # MeV
+    maxDeltaT                    : 20.             # ns
     dsCorr                       : 70.             # mm
+    dtOffset                     : 1.0             # ns
     fitterModuleLabel            : TrkPatRec
     trkToCaloExtrapolModuleLabel : TrkExtrapol
     caloClusterModuleLabel       : MakeCaloCluster

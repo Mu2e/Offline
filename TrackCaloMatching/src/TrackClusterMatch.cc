@@ -1,7 +1,7 @@
 //
-// $Id: TrackClusterMatch.cc,v 1.2 2014/06/04 22:13:40 murat Exp $
+// $Id: TrackClusterMatch.cc,v 1.3 2014/06/11 16:21:03 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/04 22:13:40 $
+// $Date: 2014/06/11 16:21:03 $
 //
 // Original author Ivan Logashenko
 //
@@ -36,6 +36,7 @@ namespace mu2e {
     _dt        = Data->dt;
     _ep        = Data->ep;
     _chi2      = Data->chi2;
+    _chi2_time = Data->chi2_time;
   }
 
   TrackClusterMatch::~TrackClusterMatch() {

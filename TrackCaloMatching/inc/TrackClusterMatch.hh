@@ -27,6 +27,7 @@ namespace mu2e {
       double   dt;
       double   ep;
       double   chi2;
+      double   chi2_time;
     };
 
   protected:
@@ -40,6 +41,7 @@ namespace mu2e {
     double                _dt;
     double                _ep;
     double                _chi2;
+    double                _chi2_time;
 
   public:
     TrackClusterMatch();
@@ -56,6 +58,7 @@ namespace mu2e {
     double                    dv         () const { return _dv; }
     double                    ep         () const { return _ep; }
     double                    chi2       () const { return _chi2; }
+    double                    chi2_time  () const { return _chi2_time; }
 
     void print(const char* Option) const ;
   };

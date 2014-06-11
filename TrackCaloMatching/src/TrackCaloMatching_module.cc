@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.7 2014/06/10 00:16:15 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.8 2014/06/11 16:21:03 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/10 00:16:15 $
+// $Date: 2014/06/11 16:21:03 $
 //
 // Original author G. Pezzullo
 //
@@ -84,13 +84,11 @@ namespace mu2e {
 					// Diagnostic level
     int             _diagLevel;
 
-    double          _emcEnergyThreshold = 10.0;
+    double          _minClusterEnergy;  //
+    double          _maxDeltaT;		// time preselection for track-cluster matching 
+    double          _dsCorr;		// path length correction - need to be updated
+    double          _dtOffset;		// shift of the Delta(T) distribution
 
-					// this is a threshold on the time difference between impact time 
-					// of the reco-trk and the EMC.This might help the case of mismatching
-					// caused by cosmics
-    double          _deltaTimeTolerance;
-    double          _dsCorr;
 					// Label of the calo clusters  maker
     string          _caloClusterModuleLabel;
     string          _caloClusterAlgorithm;
@@ -115,9 +113,11 @@ namespace mu2e {
       _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
       _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
       _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-      _diagLevel(pset.get<int>("diagLevel",0)),
-      _deltaTimeTolerance(pset.get<double>("deltaTimeTolerance", 50.)),  // ns
-      _dsCorr            (pset.get<double>("dsCorr"            , 70.)),  // mm
+      _diagLevel             (pset.get<int>   ("diagLevel"     ,0)),
+      _minClusterEnergy      (pset.get<double>("minClusterEnergy")),  // 10 MeV
+      _maxDeltaT             (pset.get<double>("maxDeltaT"       )),  // 50 ns
+      _dsCorr                (pset.get<double>("dsCorr"          )),  // 70 mm
+      _dtOffset              (pset.get<double>("dtOffset"        )),  // 1. ns
       _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
       _caloClusterAlgorithm  (pset.get<std::string>("caloClusterAlgorithm"  , "closest")),
       _caloClusterSeeding    (pset.get<std::string>("caloClusterSeeding"    , "energy")),
@@ -155,6 +155,12 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void TrackCaloMatching::beginJob() {
+
+    printf("---- TrackCalomatching::beginJob constants used: \n");
+    printf("  minClusterEnergy: %10.3f\n",_minClusterEnergy);
+    printf("  maxDeltaT       : %10.3f\n",_maxDeltaT       );
+    printf("  dsCorr          : %10.3f\n",_dsCorr          );
+    printf("  dtOffset        : %10.3f\n",_dtOffset        );
   }
 
 //-----------------------------------------------------------------------------
@@ -311,11 +317,12 @@ namespace mu2e {
       for (int icl=0; icl<nclusters; icl++) {
 	cl      = &(*caloClusters).at(icl);
 	cl_time = cl->time();
-	dt      = trk_time-cl_time;
+					// move peak to zero
+	dt      = trk_time-cl_time-_dtOffset;
 
-	if (cl->vaneId()    != vane_id           )          goto NEXT_CLUSTER;
-	if (cl->energyDep() < _emcEnergyThreshold)          goto NEXT_CLUSTER;
-	if (std::fabs(dt)   > _deltaTimeTolerance)          goto NEXT_CLUSTER;
+	if (cl->vaneId()    != vane_id         )            goto NEXT_CLUSTER;
+	if (cl->energyDep() < _minClusterEnergy)            goto NEXT_CLUSTER;
+	if (std::fabs(dt)   > _maxDeltaT       )            goto NEXT_CLUSTER;
 //-----------------------------------------------------------------------------
 // 2013-03-24 P.Murat: cluster center of gravity is determined in the GLOBAL 
 //                     coordinate system, 
