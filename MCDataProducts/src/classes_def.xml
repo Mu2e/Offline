@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.32 2014/03/25 22:13:20 brownd Exp $     -->
-<!--  $Author: brownd $ -->
-<!--  $Date: 2014/03/25 22:13:20 $   -->
+<!--  $Id: classes_def.xml,v 1.33 2014/06/11 00:20:27 gandr Exp $     -->
+<!--  $Author: gandr $ -->
+<!--  $Date: 2014/06/11 00:20:27 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.32 $$Date: 2014/03/25 22:13:20 $"; -->
+<!--  rev="$Revision: 1.33 $$Date: 2014/06/11 00:20:27 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -166,5 +166,16 @@
 
  <class name="mu2e::EventWeight"/>
  <class name="art::Wrapper<mu2e::EventWeight>"/>
+
+ <class name="mu2e::TrackSummaryMatchInfo" />
+ <class name="std::vector<mu2e::TrackSummaryMatchInfo>" />
+ <class name="std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::TrackSummary> >" />
+ <class name="std::pair<art::Ptr<mu2e::TrackSummary>,art::Ptr<mu2e::SimParticle> >" />
+ <class name="art::Assns<mu2e::SimParticle,mu2e::TrackSummary,void>" />
+ <class name="art::Assns<mu2e::TrackSummary,mu2e::SimParticle,void>" />
+ <class name="art::Assns<mu2e::SimParticle,mu2e::TrackSummary,mu2e::TrackSummaryMatchInfo>" />
+ <class name="art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo>" />
+ <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::TrackSummary,mu2e::TrackSummaryMatchInfo> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo> >" />
 
 </lcgdict>

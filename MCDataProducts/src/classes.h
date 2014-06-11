@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.32 2014/03/25 22:13:20 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/03/25 22:13:20 $
+// $Id: classes.h,v 1.33 2014/06/11 00:20:27 gandr Exp $
+// $Author: gandr $
+// $Date: 2014/06/11 00:20:27 $
 //
 // Original author Rob Kutschke
 //
@@ -64,6 +64,8 @@
 #include "MCDataProducts/inc/StepFilterMode.hh"
 #include "MCDataProducts/inc/GenEventCount.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
+
+#include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 
 // For cet::map_vector<T> instantiate the component pair<> and vector<pair<>> templates.
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
@@ -159,3 +161,13 @@ template class art::Wrapper<std::vector<art::Ptr<mu2e::SimParticle> > >;
 
 template class art::Wrapper<mu2e::GenEventCount>;
 template class art::Wrapper<mu2e::EventWeight>;
+
+template class std::vector<mu2e::TrackSummaryMatchInfo>;
+template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::TrackSummary> >;
+template class std::pair<art::Ptr<mu2e::TrackSummary>,art::Ptr<mu2e::SimParticle> >;
+template class art::Assns<mu2e::SimParticle,mu2e::TrackSummary,void>;
+template class art::Assns<mu2e::TrackSummary,mu2e::SimParticle,void>;
+template class art::Assns<mu2e::SimParticle,mu2e::TrackSummary,mu2e::TrackSummaryMatchInfo>;
+template class art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo>;
+template class art::Wrapper<art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo> >;
+template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::TrackSummary,mu2e::TrackSummaryMatchInfo> >;
