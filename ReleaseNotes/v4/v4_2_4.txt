@@ -2,6 +2,22 @@
 
            Release notes for Mu2e Offline software, v4_2_4
 
+10) June 10, 2014 gandr
+   Persistent data products, makers, and supporting code for TrackSummary
+   and track-truth matching.
+
+9) June 10, 2014 gandr
+
+   Extended FilterG4Out functionality:
+
+   - produce a "remapping" transient product that can be used to
+     update Ptr<SimParticle> elsewhere.
+
+   - option to compress GenParticles
+
+   - option to specify instance names of output SimParticle collections
+
+
 8) June 09, 2014 genser
 
    Added more elements of Muon Stopping Target Monitor (MSTM) plus
