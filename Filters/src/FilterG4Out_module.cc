@@ -21,9 +21,9 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.11 2014/06/11 00:24:26 gandr Exp $
+// $Id: FilterG4Out_module.cc,v 1.12 2014/06/11 00:24:46 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/06/11 00:24:26 $
+// $Date: 2014/06/11 00:24:46 $
 //
 // Andrei Gaponenko, 2013
 
@@ -109,6 +109,14 @@ namespace mu2e {
       }
     }
 
+    //----------------------------------------------------------------
+    // input product => output instance name
+    struct ProductMapEntry : public std::pair<art::InputTag, std::string> {
+      ProductMapEntry(const fhicl::ParameterSet& pset)
+        : std::pair<art::InputTag,std::string>(pset.get<std::string>("in"), pset.get<std::string>("out"))
+      {}
+    };
+
   } // anonymous namespace
 
   //================================================================
@@ -131,6 +139,9 @@ namespace mu2e {
     typedef std::set<std::string> OutputNames;
     OutputNames mainOutputNames_;
     OutputNames extraOutputNames_;
+
+    typedef std::vector<ProductMapEntry> VPM;
+    VPM simParticleIOVec_;
     OutputNames simPartOutNames;
 
     // statistics counters
@@ -208,13 +219,30 @@ namespace mu2e {
 
     // We can't merge different SimParticle collections (unlike the hits)
     // Need to have a separate output collection for every input one.
-    // How many SimParticleCollection-s do we produce?
-    const unsigned numSimPartOuts(pset.get<unsigned>("numSimParticleCollections"));
-    for(unsigned i = 0; i < numSimPartOuts; ++i) {
-      std::ostringstream os;
-      os<<"s"<<i;
-      simPartOutNames.insert(os.str());
-      produces<SimParticleCollection>(os.str());
+    typedef std::vector<fhicl::ParameterSet> SPIOPS;
+    SPIOPS simParticleIOPS(pset.get<SPIOPS>("simParticleIOMap", SPIOPS()));
+    for(const auto& i: simParticleIOPS) {
+      simParticleIOVec_.emplace_back(i);
+    }
+
+    if(!simParticleIOVec_.empty()) {
+      // The validity and uniquiness of the input half will is checked
+      // inside the event loop, where ProductID-s can be resolved.
+      for(const auto & i : simParticleIOVec_) {
+        simPartOutNames.insert(i.second);
+        produces<SimParticleCollection>(i.second);
+      }
+    }
+    else {
+      // Assign arbitrary unique instance names to the output collections.
+      // We need to know how many outputs will be needed.
+      const unsigned numSimPartOuts(pset.get<unsigned>("numSimParticleCollections"));
+      for(unsigned i = 0; i < numSimPartOuts; ++i) {
+        std::ostringstream os;
+        os<<"s"<<i;
+        simPartOutNames.insert(os.str());
+        produces<SimParticleCollection>(os.str());
+      }
     }
 
     produces<SimParticleRemapping>();
@@ -293,27 +321,50 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Prepare output SimParticle collections
 
+    // input PID => output instance
+    typedef std::map<art::ProductID, std::string> SimParticleInstanceMap;
+    SimParticleInstanceMap spim;
+
+    if(!simParticleIOVec_.empty()) {
+      for(const auto& i : simParticleIOVec_) {
+        auto ih = event.getValidHandle<SimParticleCollection>(i.first);
+        if(!spim.insert(std::make_pair(ih.id(), i.second)).second) {
+          throw cet::exception("BADCONFIG")
+            <<"FilterG4Out: Different entries of simParticleIOMap resolved to the same product!\n"
+            <<"The current one: { in : "<<i.first<<" out: "<<i.second<<" }\n";
+        }
+      }
+    }
+    else { // abritrary assignment out output instance names
+      if(toBeKept.size() > simPartOutNames.size()) {
+        throw cet::exception("BADCONFIG")
+          <<"FilterG4Out: configured numSimParticleCollections = "<<simPartOutNames.size()
+          <<" but used "<<toBeKept.size()<<" collections in the event\n";
+      }
+      auto instance = simPartOutNames.begin();
+      for(const auto& i : toBeKept) {
+        spim.insert(std::make_pair(i.first, *instance++));
+      }
+
+      // We always output the specified number of collections
+      // event if they are empty.
+      while(instance != simPartOutNames.end()) {
+        std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
+        event.put(std::move(outparts), *instance++);
+      }
+    }
+
     // old => new collection
     typedef std::map<art::ProductID, art::ProductID> PIDMap;
     PIDMap partCollMap;
-
-    if(toBeKept.size() > simPartOutNames.size()) {
-      throw cet::exception("BADCONFIG")
-        <<"FilterG4Out: configured numSimParticleCollections = "<<simPartOutNames.size()
-        <<" but used "<<toBeKept.size()<<" collections in the event\n";
-    }
 
     std::unique_ptr<GenParticleCollection> genParts(new GenParticleCollection());
     art::ProductID newGenPID(compressGenParticles_ ? getProductID<GenParticleCollection>(event) : art::ProductID());
     const art::EDProductGetter *newGenGetter(compressGenParticles_ ? event.productGetter(newGenPID) : nullptr);
 
-    // We map input to output collections "randomly".
-    // is there a reason to worry about the output names?
-    // We always output the specified number of collections
-    // event if they are empty.
-
-    SPSuperSet::const_iterator iss = toBeKept.begin();
-    for(const auto& outInstance : simPartOutNames) {
+    for(const auto& iopair : spim) {
+      SPSuperSet::const_iterator iss = toBeKept.find(iopair.first);
+      const auto& outInstance = iopair.second;
 
       std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
       art::ProductID newParticlesPID(getProductID<SimParticleCollection>(event, outInstance));
@@ -349,8 +400,6 @@ namespace mu2e {
 
         numInputParticles_ += inputParticles->size();
         numPassedParticles_ += outparts->size();
-
-        ++iss;
       }
 
       passed = passed || !outparts->empty();
