@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.58 2014/05/05 22:25:56 brownd Exp $
+// $Id: KalFitMC.cc,v 1.59 2014/06/11 00:20:14 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/05/05 22:25:56 $
+// $Date: 2014/06/11 00:20:14 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -87,7 +87,7 @@ namespace mu2e
 
   MCHitSum::MCHitSum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp) :
     _esum(mchit.eDep()),_count(1),
-  _spp(spp),_pdgid(0),_gid(-1),_pid(-1),_sid(mchit.strawIndex()),
+  _spp(spp),_pdgid(0),_gid(-1),_pid(-1),_sid(mchit.strawIndex()),_mcsid(mchit.strawIndex()),
   _t0(mchit.time()),_time(mchit.time()),
   _pos(mchit.position()),
   _mom(mchit.momentum()){
@@ -100,11 +100,12 @@ namespace mu2e
   }
   MCHitSum::MCHitSum(StrawDigiMC const& mcdigi) : _esum(mcdigi.energySum()),
   _count(mcdigi.stepPointMCs().size()),
-  _pdgid(0),_gid(-1),_pid(-1),_sid(mcdigi.strawIndex()),_time(-1000.0)
+  _pdgid(0),_gid(-1),_pid(-1),_sid(mcdigi.strawIndex()),_mcsid(0),_time(-1000.0)
   {
   // primary end is end '0'
     StrawDigi::TDCChannel itdc = StrawDigi::zero;
     if(mcdigi.hasTDC(itdc)){
+      _mcsid = mcdigi.stepPointMCs()[itdc]->strawIndex();
       _pos = mcdigi.stepPointMC(itdc)->position();
       _mom = mcdigi.stepPointMC(itdc)->momentum();
       _t0 = mcdigi.clusterPosition(itdc).t();

@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.37 2014/05/05 22:25:56 brownd Exp $
+// $Id: KalFitMC.hh,v 1.38 2014/06/11 00:20:14 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/05/05 22:25:56 $
+// $Date: 2014/06/11 00:20:14 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -44,11 +44,11 @@ namespace mu2e
     art::Ptr<SimParticle> _spp;
     int _pdgid;
     int _gid,_pid;
-    StrawIndex _sid;
+    StrawIndex _sid, _mcsid;
     double _t0, _time;
     CLHEP::Hep3Vector _pos;
     CLHEP::Hep3Vector _mom;
-    MCHitSum() : _esum(0.0),_count(0),_pdgid(0),_gid(0), _sid(0), _time(0.0) {}
+    MCHitSum() : _esum(0.0),_count(0),_pdgid(0),_gid(0), _sid(0), _mcsid(0), _time(0.0) {}
     MCHitSum(StepPointMC const& mchit,art::Ptr<SimParticle>& spp);
     MCHitSum(StrawDigiMC const& mcdigi);
     bool operator == (const MCHitSum& other) { return _spp == other._spp; }
