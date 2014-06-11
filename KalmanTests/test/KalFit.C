@@ -521,8 +521,8 @@ void KalFitAcc(TTree* trks) {
   if(!donecuts)KalCuts();
   unsigned nbins(10);
   double bmax = nbins-0.5;
-  TH1F* acc = new TH1F("acc","CE Acceptance;;cummulative acceptance",nbins,-0.5,bmax);
-  TH1F* racc = new TH1F("racc","CE Acceptance;;relative acceptance",nbins,-0.5,bmax);
+  TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
+  TH1F* racc = new TH1F("racc","CE Acceptance #times Efficiency;;Relative a#times#epsilon",nbins,-0.5,bmax);
 //  acc->Sumw2();
 //  racc->Sumw2();
   unsigned ibin(1);

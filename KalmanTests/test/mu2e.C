@@ -43,22 +43,23 @@ Double_t DIOCZ(Double_t *x, Double_t *par) {
 Double_t DIOCZ_R(Double_t *x, Double_t *par) {
   double norm = par[0];
   double eloss = par[1];
-  double accmid = par[2];
-  double accslope = par[3];
+  double acc0 = par[2];
+  double acc1 = par[3];
+  double acc2 = par[4];
   static const double mal(25133);
   //    double mmu(105.654);
   static const double emu(105.194);
 //  static const double emue(104.973);
   //    double me(0.511);
+  static const double a4(1e-17);
   static const double a5(8.6434e-17);
   static const double a6(1.16874e-17);
   static const double a7(-1.87828e-19);
   static const double a8(9.16327e-20);
-  static const double midmom(100.0);
-  double ee = x[0]-eloss;
-  double delta = emu - ee - ee*ee/(2*mal);
+  double ee = x[0];
+  double delta = emu + eloss - ee - ee*ee/(2*mal);
   if(delta>0.0)
-    return (accmid + (x[0]-midmom)*accslope)*norm*(a5*pow(delta,5) + a6*pow(delta,6) + a7*pow(delta,7) + a8*pow(delta,8));
+    return norm*(acc0+acc1*(ee-100.0) + a4*acc2*pow(delta,3))*(a5*pow(delta,5) + a6*pow(delta,6) + a7*pow(delta,7) + a8*pow(delta,8));
   else
     return 0.0;
 }
@@ -292,12 +293,15 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
   else
     allcan->Divide(1,1);
 // setup a function to fit the DIO spectrum
-  TF1* diofit = new TF1("diofit",DIOCZ_R,_mmin,_mmax,4);
+  TF1* diofit = new TF1("diofit",DIOCZ_R,_mmin,_mmax,5);
+  diofit->SetNumberFitPoints(1000);
   double rawscale_f = (_mmax-_mmin)*ndecay/_nbins;
-  diofit->SetParameter(0,rawscale_f);
-  diofit->SetParameter(1,0.0);
+  diofit->FixParameter(0,rawscale_f);
+  diofit->SetParameter(1,-1.0);
   diofit->SetParameter(2,0.12);
   diofit->SetParameter(3,0.0);
+  diofit->SetParameter(4,0.0);
+  diofit->SetRange(102,105.5);
   diofit->SetLineColor(kBlue);
 
   for(unsigned icut=ilow;icut<ihi+1;icut++){
@@ -309,9 +313,8 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
       _diospec[icut]->SetMinimum(-0.01);
       _diospec[icut]->SetMaximum(conmax);
     }
-    _diospec[icut]->Fit("diofit","0");
-    _diospec[icut]->Fit("diofit","M0");
-    _diospec[icut]->Fit("diofit","M0");
+    _diospec[icut]->Fit("diofit","R0");
+    _diospec[icut]->Fit("diofit","RM0");
     TF1* diof = (TF1*)_diospec[icut]->FindObject("diofit");
     _diospec[icut]->Draw();
     if(diof !=0)diof->Draw("same");
@@ -666,18 +669,20 @@ void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
   _recodio->Fit("_reco_f","MN");
   _recodio->Fit("_reco_f","M");
 
-  TF1* dspeca_f = new TF1("dspeca_f",DIOCZ_R,_mmin,_mmax,4);
-  dspeca_f->SetParameter(0,rawscale_f);
-  dspeca_f->SetParameter(1,0.0);
+  TF1* dspeca_f = new TF1("dspeca_f",DIOCZ_R,_mmin,_mmax,6);
+  dspeca_f->FixParameter(0,rawscale_f);
+  dspeca_f->SetParameter(1,-1.0);
   dspeca_f->SetParameter(2,_racc->GetParameter(0));
   dspeca_f->SetParameter(3,_racc->GetParameter(1));
+  dspeca_f->SetParameter(4,0.0);
   dspeca_f->SetLineColor(kBlue);
 
-  TF1* dspece_f = new TF1("dspece_f",DIOCZ_R,_mmin,_mmax,4);
-  dspece_f->SetParameter(0,rawscale_f);
+  TF1* dspece_f = new TF1("dspece_f",DIOCZ_R,_mmin,_mmax,6);
+  dspece_f->FixParameter(0,rawscale_f);
   dspece_f->SetParameter(1,_cball->GetParameter(1)); // parameter 1 is the offset of the mean in the resolution function = average energy loss
   dspece_f->SetParameter(2,_racc->GetParameter(0));
   dspece_f->SetParameter(3,_racc->GetParameter(1));
+  dspece_f->SetParameter(4,0.0);
   dspece_f->SetLineColor(kBlue);
 
   char ttitle[100];
