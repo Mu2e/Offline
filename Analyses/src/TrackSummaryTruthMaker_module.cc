@@ -20,18 +20,10 @@
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 
+#include "Mu2eUtilities/inc/particleEnteringG4Volume.hh"
+
 namespace mu2e {
 
-  art::Ptr<mu2e::SimParticle> particleEnteringTheVolume(const StepPointMC& step) {
-    art::Ptr<SimParticle> p = step.simParticle();
-    // parents must be available
-    while(p.isNonnull() && (step.volumeId() == p->startVolumeIndex())) {
-      p = p->parent();
-    }
-    return p;
-  }
-
-  //===============================================================
   class TrackSummaryTruthMaker : public art::EDProducer {
   public:
     explicit TrackSummaryTruthMaker(fhicl::ParameterSet const& pset);
@@ -84,11 +76,11 @@ namespace mu2e {
         }
 
         if(hit->isActive()) {
-          ++nPrincipal[particleEnteringTheVolume(*dmc.stepPointMC(strawChannel))];
+          ++nPrincipal[particleEnteringG4Volume(*dmc.stepPointMC(strawChannel))];
           // Aggregate all the steps, so that each particle is counted no more than once per hit
           std::set<art::Ptr<SimParticle> > parts;
           for(const auto& pstep: dmc.stepPointMCs()) {
-            parts.insert(particleEnteringTheVolume(*pstep));
+            parts.insert(particleEnteringG4Volume(*pstep));
           }
           for(const auto& p: parts) {
             ++nAll[p];
