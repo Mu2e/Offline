@@ -199,19 +199,19 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 //    TH1F* ephot = new TH1F("ephot","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
     TH1F* edelta = new TH1F("edelta","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
     TH1F* ep = new TH1F("ep","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
-//    TH1F* ex = new TH1F("ex","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
+    TH1F* ex = new TH1F("ex","Straw Hit Energy;Deposited Energy (KeV)",200,-1.0,16.0);
     econv->SetLineColor(kRed);
 //    edio->SetLineColor(kGreen);
     edelta->SetLineColor(kCyan);
     ep->SetLineColor(kBlue);
-//    ex->SetLineColor(kMagenta);
+    ex->SetLineColor(kMagenta);
 //    eneut->SetLineColor(kYellow);
 //    ephot->SetLineColor(kMagenta);
     econv->SetStats(0);
 //    edio->SetStats(0);
     edelta->SetStats(0);
     ep->SetStats(0);
-//    ex->SetStats(0);
+    ex->SetStats(0);
 
     TH1F* rconv = new TH1F("rconv","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
 //    TH1F* rdio = new TH1F("rdio","Straw Hit Radius;Transverse Radius (mm)",100,360,720);
@@ -253,7 +253,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 //    hits->Project("ephot","edep*1000.0",photon+goodevt);
     hits->Project("edelta","edep*1000.0",bkge+direct+goodevt);
     hits->Project("ep","edep*1000.0",proton+direct+goodevt);
-//    hits->Project("ex","edep*1000.0",xtalk+goodevt);
+    hits->Project("ex","edep*1000.0",xtalk+goodevt);
 
     hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)",conv+direct+goodevt);
 //    hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)",dio+direct+goodevt);
@@ -289,13 +289,13 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     edelta->SetMinimum(1);
     double maxv = edelta->GetMaximum();
     maxv = max(maxv, ep->GetMaximum());
-//    maxv = max(maxv, ex->GetMaximum());
+    maxv = max(maxv, ex->GetMaximum());
     edelta->SetMaximum(2*maxv);
     edelta->Draw();
     ep->Draw("same");
     econv->Draw("same");
 //    edio->Draw("same");
-//    ex->Draw("same");
+    ex->Draw("same");
 //    eneut->Draw("same");
 //    ephot->Draw("same");
 
@@ -323,22 +323,22 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 //    leg2->AddEntry(rneut,"Neutrons","l");
 //    leg2->AddEntry(rphot,"Photons","l");
     leg2->AddEntry(rp,"Proton Induced","l");
-//    leg2->AddEntry(rx,"X-talk","l");
+    leg2->AddEntry(ex,"X-talk","l");
     leg2->AddEntry(eselbox,"Track Reconstruction Selection","F");
 //    leg3->AddEntry(ecut_l,"Loose cut","l");
     leg2->Draw();
 
     int istart = econv->FindFixBin(0.0);
     int istop = econv->FindFixBin(0.003);
-//    double xtint = ex->Integral(istart,istop);
+    double xtint = ex->Integral(istart,istop);
     double ceint = econv->Integral(istart,istop);
     double pint = ep->Integral();
     double dint1 = edelta->Integral(istart,istop);
     double dint2 = edelta->Integral(istop,edelta->GetNbinsX());
-//    std::cout << "cross-talk integral = " << xtint
-//    << " conversion integral = " << ceint 
-//    << " proton integral = " << pint
-//    << " delta integral = " << dint1 << " " << dint2 << std::endl;
+    std::cout << "cross-talk integral = " << xtint
+    << " conversion integral = " << ceint 
+    << " proton integral = " << pint
+  << " delta integral = " << dint1 << " " << dint2 << std::endl;
 
     bcan->cd(2);
     gPad->SetLogy();
