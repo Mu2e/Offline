@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.80 2014/06/05 15:05:44 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.81 2014/06/11 00:20:54 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/06/05 15:05:44 $
+// $Date: 2014/06/11 00:20:54 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -886,7 +886,7 @@ namespace mu2e
 	    _mcgpos = det->toDetector(sp->genParticle()->position());
 	  }
 	}
-	_xtalk = mcsum[0]._sid != sh.strawIndex();
+	_xtalk = mcsum[0]._mcsid != sh.strawIndex();
       }
       _esel = _flags->at(istr).hasAllProperties(StrawHitFlag::energysel);
       _rsel = _flags->at(istr).hasAllProperties(StrawHitFlag::radsel);
