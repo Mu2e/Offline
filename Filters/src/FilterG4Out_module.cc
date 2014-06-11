@@ -21,9 +21,9 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.10 2014/06/11 00:23:41 gandr Exp $
+// $Id: FilterG4Out_module.cc,v 1.11 2014/06/11 00:24:26 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/06/11 00:23:41 $
+// $Date: 2014/06/11 00:24:26 $
 //
 // Andrei Gaponenko, 2013
 
@@ -50,6 +50,8 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
+#include "MCDataProducts/inc/GenParticle.hh"
+#include "MCDataProducts/inc/GenParticleCollection.hh"
 
 namespace mu2e {
 
@@ -123,6 +125,8 @@ namespace mu2e {
     InputTags vetoDaughtersInputs_;
     InputTags vetoParticlesInputs_;
 
+    bool compressGenParticles_;
+
     // Output instance names.
     typedef std::set<std::string> OutputNames;
     OutputNames mainOutputNames_;
@@ -151,7 +155,8 @@ namespace mu2e {
 
   //================================================================
   FilterG4Out::FilterG4Out(const fhicl::ParameterSet& pset)
-    : numInputEvents_(), numPassedEvents_()
+    : compressGenParticles_(pset.get<bool>("compressGenParticles", false))
+    , numInputEvents_(), numPassedEvents_()
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()
     , numVetoedParticles_(), numVetoedHits_()
@@ -213,6 +218,10 @@ namespace mu2e {
     }
 
     produces<SimParticleRemapping>();
+
+    if(compressGenParticles_) {
+      produces<mu2e::GenParticleCollection>();
+    }
   }
 
   //================================================================
@@ -294,6 +303,10 @@ namespace mu2e {
         <<" but used "<<toBeKept.size()<<" collections in the event\n";
     }
 
+    std::unique_ptr<GenParticleCollection> genParts(new GenParticleCollection());
+    art::ProductID newGenPID(compressGenParticles_ ? getProductID<GenParticleCollection>(event) : art::ProductID());
+    const art::EDProductGetter *newGenGetter(compressGenParticles_ ? event.productGetter(newGenPID) : nullptr);
+
     // We map input to output collections "randomly".
     // is there a reason to worry about the output names?
     // We always output the specified number of collections
@@ -322,6 +335,18 @@ namespace mu2e {
                                       psel,
                                       *outparts);
 
+
+        if(compressGenParticles_) {
+          for(auto& i : *outparts) {
+            mu2e::SimParticle& newsim = i.second;
+            if(!newsim.genParticle().isNull()) { // will crash if not resolvable
+              // Copy GenParticle to the new collection
+              genParts->emplace_back(*newsim.genParticle());
+              newsim.genParticle() = art::Ptr<GenParticle>(newGenPID, genParts->size()-1, newGenGetter);
+            }
+          }
+        }
+
         numInputParticles_ += inputParticles->size();
         numPassedParticles_ += outparts->size();
 
@@ -330,6 +355,10 @@ namespace mu2e {
 
       passed = passed || !outparts->empty();
       event.put(std::move(outparts), outInstance);
+    }
+
+    if(compressGenParticles_) {
+      event.put(std::move(genParts));
     }
 
     //----------------------------------------------------------------
