@@ -19,6 +19,7 @@
 #include "KalmanTests/inc/TrackSummaryRecoMap.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
+#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 
 #include "Mu2eUtilities/inc/particleEnteringG4Volume.hh"
 
@@ -45,10 +46,12 @@ namespace mu2e {
     , minAllHits_(pset.get<unsigned>("minAllHits"))
   {
     produces<TrackSummaryTruthAssns>();
+    produces<SimParticlePtrCollection>(); // list of particles of interest for filtering
   }
 
   //================================================================
   void TrackSummaryTruthMaker::produce(art::Event& event) {
+    std::unique_ptr<SimParticlePtrCollection> spptrs(new SimParticlePtrCollection());
     std::unique_ptr<TrackSummaryTruthAssns> output(new TrackSummaryTruthAssns());
     auto ireco = event.getValidHandle<TrackSummaryRecoMap>(recoMapInput_);
     auto imc = event.getValidHandle<StrawDigiMCCollection>(strawHitDigiMCInput_);
@@ -94,11 +97,13 @@ namespace mu2e {
         TrackSummaryMatchInfo mi(nPrincipal[p.first], p.second);
         if((mi.nPrincipal() >= minPrincipalHits_) || (mi.nAll() >= minAllHits_)) {
           output->addSingle(p.first, recoMapEntry.second, mi);
+          spptrs->emplace_back(p.first);
         }
       }
     }
 
     event.put(std::move(output));
+    event.put(std::move(spptrs));
   }
 
 } // namespace mu2e
