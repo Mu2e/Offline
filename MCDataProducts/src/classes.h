@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.34 2014/06/11 00:23:11 gandr Exp $
+// $Id: classes.h,v 1.35 2014/06/11 00:23:28 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/06/11 00:23:11 $
+// $Date: 2014/06/11 00:23:28 $
 //
 // Original author Rob Kutschke
 //
@@ -60,6 +60,7 @@
 #include "MCDataProducts/inc/GenParticleMARSAssns.hh"
 #include "MCDataProducts/inc/SimParticleMARSAssns.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
+#include "MCDataProducts/inc/SimParticleRemapping.hh"
 
 #include "MCDataProducts/inc/StepFilterMode.hh"
 #include "MCDataProducts/inc/GenEventCount.hh"
@@ -160,6 +161,9 @@ template class art::Wrapper<art::Assns<mu2e::ExtMonFNALTrkFit,mu2e::SimParticle,
 
 template class std::vector<art::Ptr<mu2e::SimParticle> >;
 template class art::Wrapper<std::vector<art::Ptr<mu2e::SimParticle> > >;
+
+template class std::map<art::Ptr<mu2e::SimParticle>, art::Ptr<mu2e::SimParticle> >;
+template class art::Wrapper<mu2e::SimParticleRemapping>;
 
 template class art::Wrapper<mu2e::GenEventCount>;
 template class art::Wrapper<mu2e::EventWeight>;
