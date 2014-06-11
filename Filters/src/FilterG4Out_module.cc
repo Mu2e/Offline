@@ -21,9 +21,9 @@
 // The other use mode is to specify a SimParticlePtrCollection of stuff to keep.
 // Intended to write out framework files of stopped muons.
 //
-// $Id: FilterG4Out_module.cc,v 1.9 2014/03/13 15:02:42 gandr Exp $
+// $Id: FilterG4Out_module.cc,v 1.10 2014/06/11 00:23:41 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/03/13 15:02:42 $
+// $Date: 2014/06/11 00:23:41 $
 //
 // Andrei Gaponenko, 2013
 
@@ -49,6 +49,7 @@
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
+#include "MCDataProducts/inc/SimParticleRemapping.hh"
 
 namespace mu2e {
 
@@ -210,6 +211,8 @@ namespace mu2e {
       simPartOutNames.insert(os.str());
       produces<SimParticleCollection>(os.str());
     }
+
+    produces<SimParticleRemapping>();
   }
 
   //================================================================
@@ -430,6 +433,19 @@ namespace mu2e {
 
       event.put(std::move(outTrajectory));
     }
+
+    //----------------------------------------------------------------
+    std::unique_ptr<SimParticleRemapping> remap(new SimParticleRemapping());
+
+    for(const auto& x : toBeKept) {
+      for(const auto& oldPtr : x.second) {
+        art::ProductID newParticlesPID = partCollMap[oldPtr.id()];
+        const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
+        (*remap)[oldPtr] = art::Ptr<SimParticle>(newParticlesPID, oldPtr->id().asUint(), newParticlesGetter);
+      }
+    }
+
+    event.put(std::move(remap));
 
     //----------------------------------------------------------------
     ++numInputEvents_;
