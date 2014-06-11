@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.33 2014/06/11 00:20:27 gandr Exp $
+// $Id: classes.h,v 1.34 2014/06/11 00:23:11 gandr Exp $
 // $Author: gandr $
-// $Date: 2014/06/11 00:20:27 $
+// $Date: 2014/06/11 00:23:11 $
 //
 // Original author Rob Kutschke
 //
@@ -66,6 +66,8 @@
 #include "MCDataProducts/inc/EventWeight.hh"
 
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
+#include "MCDataProducts/inc/SimParticleTrackerHitSummaryCollection.hh"
+#include "MCDataProducts/inc/SimParticleTrackerHitSummaryAssns.hh"
 
 // For cet::map_vector<T> instantiate the component pair<> and vector<pair<>> templates.
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
@@ -171,3 +173,11 @@ template class art::Assns<mu2e::SimParticle,mu2e::TrackSummary,mu2e::TrackSummar
 template class art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo>;
 template class art::Wrapper<art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo> >;
 template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::TrackSummary,mu2e::TrackSummaryMatchInfo> >;
+
+template class std::vector<mu2e::SimParticleTrackerHitSummary>;
+template class std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::SimParticleTrackerHitSummary> >;
+template class std::pair<art::Ptr<mu2e::SimParticleTrackerHitSummary>,art::Ptr<mu2e::SimParticle> >;
+template class art::Assns<mu2e::SimParticle,mu2e::SimParticleTrackerHitSummary,void>;
+template class art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void>;
+template class art::Wrapper<art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void> >;
+template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::SimParticleTrackerHitSummary,void> >;
