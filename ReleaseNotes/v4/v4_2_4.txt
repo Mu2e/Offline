@@ -2,9 +2,14 @@
 
            Release notes for Mu2e Offline software, v4_2_4
 
+11) June 12, 2014 gandr
+
+    TDR job configs to produce high statistic samples for muon decay in flight studies. 
+
 10) June 10, 2014 gandr
-   Persistent data products, makers, and supporting code for TrackSummary
-   and track-truth matching.
+
+    Persistent data products, makers, and supporting code for TrackSummary
+    and track-truth matching.
 
 9) June 10, 2014 gandr
 
