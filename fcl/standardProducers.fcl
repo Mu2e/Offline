@@ -435,5 +435,26 @@ muonStops : {
     verbosityLevel : 1
 }
 
+//================================================================
+// analysis cuts
+
+cutSetC : {
+   nactive: 25
+   fitcon: 2.e-3
+   momerr: 0.25
+   t0err:  0.9
+   d0min: -80.
+   d0max: 105.
+   doutmin: 450.
+   doutmax: 680.
+   t0min: 700.
+   t0max: 1695.
+   tandipmin: 0.57735
+   tandipmax: 1.
+   mommin: 103.5
+   mommax: 105.
+}
+
+//================================================================
 
 END_PROLOG
