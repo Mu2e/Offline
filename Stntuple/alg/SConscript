@@ -1,0 +1,124 @@
+#!/usr/bin/env python
+#
+#
+# $Id: SConscript,v 1.1 2014/06/13 06:13:05 murat Exp $
+# $Author: murat $
+# $Date: 2014/06/13 06:13:05 $
+#
+# Original author Rob Kutschke.
+#
+import os, re, string
+Import('env')
+#------------------------------------------------------------------------------
+# last two components of the path. Ex: /not/this/but/THIS/AND_THIS
+#                                      "AND_THIS" is usually "src"
+#------------------------------------------------------------------------------
+dd      = re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+dirname = os.path.dirname(dd);   # THIS
+subdir  = os.path.basename(dd);
+libname = dirname+'_'+subdir
+d1      = libname+'-shared';
+tmpdir  = 'tmp/src/'+d1
+
+# print " >>>>>>>>> ENTERING "+dd
+# print "dd = "+dd, "dirname = "+dirname, "subdir = "+subdir, "libname = "+libname
+#------------------------------------------------------------------------------
+env['CXXFLAGS'].append('-I'+os.environ['MU2E_BASE_RELEASE']+'/include');
+#------------------------------------------------------------------------------
+# Step 1: describe new builder to generate dictionaries
+# do not assume the source and target lists to have the same lengths
+# target : $*_dict.cxx file (rootcint also generates a $*_dict.h  file
+#------------------------------------------------------------------------------
+def gen_rootcint(source, target, env, for_signature):
+#    print "\n>>> gen_rootcint called:"
+#    print ">>> source = ",len(source),str(source[0]), str(source[1])
+#    print ">>> target = ",len(target),str(target[0])+'\n'
+
+    class_include = str(source[1]);
+    linkdef       = str(source[0]);
+
+#    print "[gen_rootcint] class_include = %s"%class_include
+#    print "[gen_rootcint] linkdef       = %s"%linkdef
+    
+    cmd = 'if [ ! -d '+tmpdir+' ] ; then mkdir -p '+tmpdir+'; fi ;';
+    cmd = cmd+"rootcint -f "+str(target[0])+" -c -DMU2E -Iinclude $CINT_INCLUDE_DIRS "+class_include+" "+linkdef+"; ";
+
+#    print ">>> cmd = %s"%cmd
+    return cmd
+
+my_rootcint = Builder(generator     = gen_rootcint,
+                      single_source = 0,
+                      suffix        = '.o',
+                      src_suffix    = '.h')
+
+env.Append(BUILDERS = {'RootCint' : my_rootcint})
+#------------------------------------------------------------------------------
+# Step 2: generate dictionaries
+#------------------------------------------------------------------------------
+list_of_linkdef_files = Glob(subdir+'/dict/*_linkdef.h', strings=True)
+list_of_dict_files    = []
+
+for f in list_of_linkdef_files:
+    linkdef       = string.split(str(f),'/');
+    clname        = string.replace(linkdef[len(linkdef)-1],"_linkdef.h","");
+    include       = subdir+'/'+clname+'.hh';
+    
+    dict          = '#/tmp/src/'+d1+'/'+clname+'_dict.cxx';
+    list_of_dict_files.append(dict);
+
+#    print "linkdef = ",linkdef
+#    print "include = ",include
+
+    env.RootCint(dict,[f,include]) 
+#------------------------------------------------------------------------------
+# Step3 : compile local .cc files
+#------------------------------------------------------------------------------
+list_of_skip_files = ['xx']
+list_of_cc_files   = [];
+list_of_obj_files  = [];
+
+for f in Glob('*.cc', strings=True):
+    if (not f in list_of_skip_files):
+        list_of_cc_files.append(f)
+
+for cc_file in list_of_cc_files:
+#    print ".cc file: "+cc_file
+    o_file = '#/tmp/src/'+d1+'/'+string.split(cc_file,'.')[0]+'.o'
+    list_of_obj_files.append(o_file);
+    env.SharedObject(o_file,cc_file)
+#------------------------------------------------------------------------------
+# handle dictionaries
+#------------------------------------------------------------------------------
+list_of_o_cxx_files   = [];
+
+for dict in list_of_dict_files:
+    o_cxx_file = string.replace(dict,".cxx",".o");
+    list_of_o_cxx_files.append(o_cxx_file);
+    list_of_obj_files.append(o_cxx_file);
+
+# print " >>>> [Stntuple/obj] list_of_dict_files: ",list_of_dict_files
+#------------------------------------------------------------------------------
+# compile dictionaries
+# dictionary files are located under $WORK_DIR/tmp
+#------------------------------------------------------------------------------
+for dict in list_of_dict_files:
+#    print ">>> cxx_file: "+dict
+    obj_file = string.replace(dict,".cxx",".o");
+    include  = string.replace(dict,".cxx",".h");
+    env.SharedObject(obj_file,dict)
+#------------------------------------------------------------------------------
+# done, build shared libs
+#------------------------------------------------------------------------------
+rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
+
+libs     = [ ]
+#------------------------------------------------------------------------------
+# build the shared library with non-module code
+#------------------------------------------------------------------------------
+lib_name=os.environ['MU2E_BASE_RELEASE']+'/lib/'+libname+'.so';
+
+# print "Stntuple/obj list_of_obj_files:",list_of_obj_files
+
+env.SharedLibrary(lib_name,list_of_obj_files,LIBS = [libs, rootlibs])
+# print ">>>>> EXIT Stntuple/obj"

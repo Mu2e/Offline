@@ -1,0 +1,16 @@
+# -*- mode: tcl -*-
+// Andrei Gaponenko, 2014
+#------------------------------------------------------------------------------
+# quick comments: reads signal MC and also background MC inputs with steppoints
+# so need to define input and 
+#------------------------------------------------------------------------------
+#include "Stntuple/test/digiMixAndTrackFile_mergePatRec_stnmaker_template.fcl"
+
+physics.filters.flashMixer.detail.mean   : -4
+physics.filters.ootMixer.detail.mean     : -4
+physics.filters.dioMixer.detail.mean     : -4
+physics.filters.neutronMixer.detail.mean : -4
+physics.filters.photonMixer.detail.mean  : -4
+physics.filters.protonMixer.detail.mean  : -4
+
+physics.filters.InitStntuple.histFileName                        : {OUTPUT_STNTUPLE}

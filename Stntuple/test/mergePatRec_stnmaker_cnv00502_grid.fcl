@@ -1,0 +1,174 @@
+# -*- mode: tcl -*-
+// Andrei Gaponenko, 2014
+#------------------------------------------------------------------------------
+# quick comments: reads signal MC and also background MC inputs with steppoints
+# so need to define input
+#
+# mu2eart --setup=setup.sh  \
+#         --inputs=filelist.txt --fcl=this.fcl --njobs=1
+#------------------------------------------------------------------------------
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+#include "CaloCluster/test/producers.fcl"
+#include "TrackCaloMatching/test/producers.fcl"
+#include "CalPatRec/test/producers.fcl"
+#include "ParticleID/test/producers.fcl"
+#include "Stntuple/test/producers.fcl"
+
+process_name : MergePatRecStnmaker
+
+source : { 
+    module_type : RootInput
+#    fileNames   : [ {INPUT_DATA_FILE} ]
+#    fileNames : ["/mu2e/data/tdr/beam/g4s4p5/tdr.beam.g4s4.conversion.1504a.15729672/good/00000/dsStopsToHitsConversion.root"]
+#    maxEvents   : 100
+
+    inputCommands : ['keep *_*_*_*'
+		     , 'drop *_muonTimeMap_*_*'
+		     , 'drop *_protonTimeMap_*_*'
+		     , 'drop mu2eStrawDigis_*_*_*'
+		     , 'drop mu2eStrawHits_*_*_*'
+		     , 'drop *_CaloReadoutHitsMaker_*_*'
+		     , 'drop *_CaloCrystalHitsMaker_*_*'
+# Uncomment the above lines to reduce file size.
+		     ]  
+}
+
+services : {
+
+    message               : @local::default_message
+#    TFileService          : { fileName : {ART_HIST_FILE} }
+    TFileService: { fileName : "digiMixAndTrackFile.hist" }
+    RandomNumberGenerator : { }
+
+    user : {
+        GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
+        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+        G4Helper               : { }
+        SeedService            : @local::automaticSeeds
+    }
+}
+
+physics : {
+
+    filters: {
+#------------------------------------------------------------------------------
+# Stntuple maker sequence
+#------------------------------------------------------------------------------
+	InitStntuple         : @local::InitStntuple
+	StntupleMaker        : @local::StntupleMaker
+	FillStntuple         : @local::FillStntuple
+    }
+
+    producers: {
+        protonTimeMap        : { module_type : GenerateProtonTimes }
+        muonTimeMap          : { module_type : GenerateMuonLife }
+        makeSD               : @local::makeSD
+        makeSH               : @local::makeSHfromSD
+	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+#------------------------------------------------------------------------------
+#  default tracking
+#------------------------------------------------------------------------------
+	MakeStereoHits       : @local::MakeStereoHits
+	FlagStrawHits        : @local::FlagStrawHits
+	FlagBkgHits          : @local::FlagBkgHits
+	TrkPatRec            : @local::TrkPatRecDownstreameMinus
+#------------------------------------------------------------------------------
+# CalPatRec modules
+#------------------------------------------------------------------------------
+	MakeCaloCluster      : @local::MakeCaloCluster
+	MakeStrawHitPositions: @local::MakeStrawHitPositions
+	CalPatRec            : @local::CalPatRec
+	MergePatRec          : @local::MergePatRec
+#------------------------------------------------------------------------------
+# needed for analysis
+#------------------------------------------------------------------------------
+	CaloMatching         : @local::CaloMatching
+	TrkExtrapol          : @local::TrkExtrapol
+	ParticleID           : @local::ParticleID
+    }
+
+    analyzers: {
+	genCountLogger: {
+	    module_type: GenEventCountReader
+	}
+    }
+#------------------------------------------------------------------------------
+# paths
+# write out ntuple only, so don't need compression modules...
+#------------------------------------------------------------------------------
+    p1 : [
+	  protonTimeMap, muonTimeMap, 
+	  makeSD, makeSH, 
+	  CaloReadoutHitsMaker, CaloCrystalHitsMaker, 
+	  MakeCaloCluster, 
+# 
+	  MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, 
+#
+	  MakeStrawHitPositions, 
+	  CalPatRec, 
+	  MergePatRec,
+#	  
+	  TrkExtrapol, CaloMatching, ParticleID, 
+#
+	  InitStntuple, StntupleMaker, FillStntuple
+	 ]
+
+    trigger_paths  : [p1]
+    
+#    out : [detectorOutput]
+    out : []
+    an  : [genCountLogger]
+    end_paths      : [out]
+}
+
+outputs: {
+    detectorOutput : {
+        module_type : RootOutput
+        SelectEvents: { SelectEvents: [p1] }
+        outputCommands:   [ "keep *_*_*_*",
+                            "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
+                          ]
+        fileName    : "dataDigiMixAndTrackConversion.root"
+    }
+}
+#------------------------------------------------------------------------------
+# redefinitions
+#------------------------------------------------------------------------------
+# 1. only for interactive submission
+#------------------------------------------------------------------------------
+services.user.SeedService.baseSeed             :  0
+services.user.SeedService.maxUniqueEngines     :  20
+
+# print per event timing for ::event entry points
+# services.Timing: { }
+# print 
+services.scheduler.wantSummary: true
+
+# Apply the time offsets in tracker digitization
+physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+#
+physics.producers.MakeStrawHitPositions.StrawHitCollectionLabel  : makeSH
+#
+physics.producers.MakeStrawHitPositions.StrawHitCollectionLabel  : makeSH
+
+physics.producers.MakeCaloCluster.EnoiseCut                      : 0.10 # MeV
+physics.producers.MakeCaloCluster.EclusterCut                    : 2.0  # MeV
+
+physics.producers.CalPatRec.StrawHitCollectionLabel              : makeSH
+physics.producers.CalPatRec.StrawHitPositionCollectionLabel      : MakeStrawHitPositions
+physics.producers.CalPatRec.StrawHitFlagCollectionLabel          : FlagBkgHits
+
+physics.producers.TrkExtrapol.fitterModuleLabel                  : MergePatRec
+physics.producers.CaloMatching.fitterModuleLabel                 : MergePatRec
+physics.producers.ParticleID.fitterModuleLabel                   : MergePatRec
+
+physics.filters.InitStntuple.histFileName                        : {OUTPUT_STNTUPLE}
+physics.filters.StntupleMaker.trkPatRecDem                       : MergePatRec
+physics.filters.StntupleMaker.makeStrawData                      : 1
+physics.filters.StntupleMaker.g4ModuleLabel                      : detectorFilter
