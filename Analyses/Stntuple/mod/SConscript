@@ -1,0 +1,166 @@
+#!/usr/bin/env python
+#
+#
+# $Id: SConscript,v 1.1 2014/06/13 05:30:43 murat Exp $
+# $Author: murat $
+# $Date: 2014/06/13 05:30:43 $
+#
+# Original author Rob Kutschke.
+#
+import os, re, string, subprocess
+Import('env')
+#------------------------------------------------------------------------------
+# last two components of the path. Ex: /not/this/but/THIS/AND_THIS
+#                                      "AND_THIS" is usually "src"
+#------------------------------------------------------------------------------
+dd      = re.search('[^/]*/[^/]*$',env.Dir('.').abspath).group(0)
+dirname = os.path.dirname(dd);   # THIS
+subdir  = os.path.basename(dd);
+libname = dirname+'_'+subdir
+d1      = libname+'-shared';
+
+# print " >>>>>>>>> ENTERING "+dd
+# print "dd = "+dd, "dirname = "+dirname, "subdir = "+subdir, "libname = "+libname
+#------------------------------------------------------------------------------
+# update environment
+#------------------------------------------------------------------------------
+env['CXXFLAGS'].append('-I'+os.environ['MU2E_BASE_RELEASE']+'/include');
+#------------------------------------------------------------------------------
+# Step 1: describe new builder to generate dictionaries
+# do not assume the source and target lists to have the same lengths
+# target : $*_dict.cxx file (rootcint also generates a $*_dict.h  file
+#------------------------------------------------------------------------------
+def gen_rootcint(source, target, env, for_signature):
+#    print "\n>>> gen_rootcint called:"
+#    print ">>> source = ",len(source),str(source[0]), str(source[1])
+#    print ">>> target = ",len(target),str(target[0])+'\n'
+
+    class_include = str(source[1]);
+    linkdef       = str(source[0]);
+    tmpdir        = os.path.dirname(str(target[0]));
+#    print "[gen_rootcint] tmpdir = %s"%tmpdir
+#    print "[gen_rootcint] class_include = %s"%class_include
+#    print "[gen_rootcint] linkdef       = %s"%linkdef
+    
+    cmd = 'if [ ! -d '+tmpdir+' ] ; then mkdir -p '+tmpdir+'; fi ;';
+    cmd = cmd+"rootcint -f "+str(target[0])+" -c -DMU2E -Iinclude $CINT_INCLUDE_DIRS "+class_include+" "+linkdef+"; ";
+
+#    print ">>> cmd = %s"%cmd
+    return cmd
+
+my_rootcint = Builder(generator     = gen_rootcint,
+                      single_source = 0,
+                      suffix        = '.o',
+                      src_suffix    = '.h')
+
+env.Append(BUILDERS = {'RootCint' : my_rootcint})
+#-----------------------------------------------------------------------------
+#
+#------------------------------------------------------------------------------
+def mod_codegen(source, target, env, for_signature):
+#    print "\n>>> mod_codegen called: pwd = "+os.environ['PWD'];
+#    print ">>> source = ",len(source),str(source[0])
+#    print ">>> target = ",len(target),str(target[0])+'\n'
+
+    tmpdir        = os.path.dirname(str(target[0]));
+#    print "[mod_codegen] tmpdir = %s"%tmpdir
+#    print "[gen_rootcint] class_include = %s"%class_include
+#    print "[gen_rootcint] linkdef       = %s"%linkdef
+    
+    cmd = 'if [ ! -d '+tmpdir+' ] ; then mkdir -p '+tmpdir+'; fi ; ';
+
+    cmd = cmd+'source '+os.environ['MU2E_BASE_RELEASE']+'/Stntuple/scripts/create_print_header_routine.sh '+str(target[0]);
+
+#    print ">>> cmd = %s"%cmd
+    return cmd
+
+my_mod_codegen = Builder(generator     = mod_codegen,
+                         single_source = 0,
+                         suffix        = '.cc',
+                         src_suffix    = '.sh')
+
+env.Append(BUILDERS = {'MyModCodeGen' : my_mod_codegen})
+#------------------------------------------------------------------------------
+# define libraries
+#------------------------------------------------------------------------------
+rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+             'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
+
+libs     = [ 'Stntuple_val',
+             'Stntuple_alg',
+#             'Stntuple_gui',
+             'Stntuple_obj',
+             'Stntuple_base',
+             'art_Framework_Core',
+             'art_Framework_Services_Optional_TFileService_service',
+             'mu2e_GeometryService',
+             'mu2e_ConditionsService',
+             'mu2e_Mu2eUtilities',
+             'mu2e_GeneralUtilities',
+             'mu2e_CaloCluster',
+             'mu2e_MCDataProducts',
+             'mu2e_CalPatRec',
+             'mu2e_RecoDataProducts',
+             'CLHEP'
+           ];
+#------------------------------------------------------------------------------
+# dictionary files are located under $WORK_DIR/tmp
+# build several shared libraries: one for all source files,
+# and then a library per module
+#------------------------------------------------------------------------------
+list_of_skip_files = ['TEmuLogLH.cc']
+list_of_cc_files   = [];
+list_of_obj_files  = [];
+#------------------------------------------------------------------------------
+# 1. build modules
+#------------------------------------------------------------------------------
+# print ">>> murat/mod: building modules!"
+for module in Glob('*_module.cc', strings=True):
+#    print "module: "+module
+    obj = '#/tmp/src/'+d1+'/'+string.split(module,'.')[0]+'.o'
+    env.SharedObject(obj,module)
+    mname = string.split(os.path.basename(module),'.')[0];
+    lib   = '#/lib/libmu2e_'+dirname+'_'+mname+'.so';
+#    print "obj: "+obj, "lib:"+lib
+    env.SharedLibrary(lib,obj,LIBS = ['libStntuple_mod.so',libs, rootlibs]);
+#------------------------------------------------------------------------------
+# compile local non-module .cc files 
+#------------------------------------------------------------------------------
+for cc in Glob('*.cc', strings=True):
+    if (not cc in list_of_skip_files) and (not cc in Glob('*_module.cc', strings=True)):
+        obj = '#/tmp/src/'+d1+'/'+string.split(cc,'.')[0]+'.o'
+        list_of_cc_files.append(cc)
+        list_of_obj_files.append(obj);
+        env.SharedObject(obj,cc)
+#------------------------------------------------------------------------------
+# build and compile dictionaries
+#------------------------------------------------------------------------------
+for linkdef in Glob(subdir+'/dict/*_linkdef.h', strings=True):
+    clname        = string.replace(os.path.basename(linkdef),'_linkdef.h','');
+    include       = subdir+'/'+clname+'.hh';
+    dict          = '#/tmp/src/'+d1+'/'+clname+'_dict.cxx';
+    env.RootCint(dict,[linkdef,include])
+
+    obj           = string.replace(dict,".cxx",".o");
+    env.SharedObject(obj,dict)
+    list_of_obj_files.append(obj);
+#------------------------------------------------------------------------------
+# compile stntuple_print_header routine (so far, generated manually)
+#------------------------------------------------------------------------------
+for cc in ['#/tmp/src/'+d1+'/'+'stntuple_print_header.cc']:
+#    print " >>> cc = "+cc
+    script = os.environ['MU2E_BASE_RELEASE']+'/Stntuple/scripts/create_print_header_routine.sh';
+#    print 'before calling CodeGen script = '+script
+    env.MyModCodeGen(cc,script);
+    obj = string.replace(cc,".cc",".o");
+    env.SharedObject(obj,cc)
+    list_of_obj_files.append(obj);
+#------------------------------------------------------------------------------
+# build the shared library with non-module code
+#------------------------------------------------------------------------------
+lib_name=os.environ['MU2E_BASE_RELEASE']+'/lib/'+libname+'.so';
+# print "[murat/Stntuple/mod]: list_of_obj_files:",list_of_obj_files
+
+env.SharedLibrary(lib_name,list_of_obj_files,LIBS = [libs, rootlibs])
+#------------------------------------------------------------------------------
+

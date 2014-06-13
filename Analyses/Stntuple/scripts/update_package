@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+#
+# assume we are in the topmost dir of the test release
+
+
+source ~cdfsoft/cdf2.shrc
+version=`cat .base_release`
+setup cdfsoft2 $version
+
+export PACKAGE=$1
+           tag=$2
+
+repository=`cat $CDFSOFT2_DIR/../development/$PACKAGE/CVS/Root`
+
+if [ -d $PACKAGE ] ; then 
+  if [ ".$tag" == "." ] ; then
+#-----------------------------------------------------------------------
+# tag is not defined, figure out the default for this release
+#-----------------------------------------------------------------------
+    tag=`cat $CDFSOFT2_DIR/Release/Releases/${version}.newrel | \
+         awk '{if ($1 == ENVIRON["PACKAGE"]) print $2}'`
+  fi
+  echo tag=.$tag.
+  echo cvs -d $repository co -r $tag $PACKAGE
+       cvs -d $repository co -r $tag $PACKAGE
+else
+  echo addpkg $PACKAGE $tag
+       addpkg $PACKAGE $tag
+fi
+
+unset PACKAGE

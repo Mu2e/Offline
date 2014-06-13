@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#
+# assume we are in /data12/murat/tgeant on murat01
+
+dir=/data12/murat/tgeant/Stntuple/doc
+
+remote_dir=ncdf41.fnal.gov:/usr/people/murat/www/Stntuple/.
+
+if [ .$1 == ."html" ] ; then
+  scp $HOME/html/Stntuple/Stntuple.html $remote_dir
+else
+  for f in $dir/Stntuple.pdf $dir/Stntuple.ps.gz $dir/Stntuple.2page.ps.gz ; do
+    scp $f $remote_dir
+  done
+fi
