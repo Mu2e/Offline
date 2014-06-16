@@ -60,8 +60,10 @@ int TDiskCalorimeter::Init(GeomData_t* Geom) {
   }
 
   fNDisks = Geom->fNDisks;
+  
+  printf(">>> TDiskCalorimeter::Init Warning: fix dead_space at 0.065mm\n");
 
-  double dead_space = Geom->fWrapperThickness+Geom->fShellThickness;
+  double dead_space = 0.065; // Geom->fWrapperThickness+Geom->fShellThickness;
 
   for (int i=0; i<fNDisks; i++) {
     fDisk[i] = new TDisk(i,
