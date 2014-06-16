@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.8 2014/06/11 16:21:03 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.9 2014/06/16 21:26:31 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/11 16:21:03 $
+// $Date: 2014/06/16 21:26:31 $
 //
 // Original author G. Pezzullo
 //
@@ -86,7 +86,7 @@ namespace mu2e {
 
     double          _minClusterEnergy;  //
     double          _maxDeltaT;		// time preselection for track-cluster matching 
-    double          _dsCorr;		// path length correction - need to be updated
+    double          _meanInteractionDepth;	// path length correction
     double          _dtOffset;		// shift of the Delta(T) distribution
 
 					// Label of the calo clusters  maker
@@ -116,7 +116,7 @@ namespace mu2e {
       _diagLevel             (pset.get<int>   ("diagLevel"     ,0)),
       _minClusterEnergy      (pset.get<double>("minClusterEnergy")),  // 10 MeV
       _maxDeltaT             (pset.get<double>("maxDeltaT"       )),  // 50 ns
-      _dsCorr                (pset.get<double>("dsCorr"          )),  // 70 mm
+      _meanInteractionDepth  (pset.get<double>("meanInteractionDepth")),  // 50 mm
       _dtOffset              (pset.get<double>("dtOffset"        )),  // 1. ns
       _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
       _caloClusterAlgorithm  (pset.get<std::string>("caloClusterAlgorithm"  , "closest")),
@@ -156,11 +156,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void TrackCaloMatching::beginJob() {
 
-    printf("---- TrackCalomatching::beginJob constants used: \n");
-    printf("  minClusterEnergy: %10.3f\n",_minClusterEnergy);
-    printf("  maxDeltaT       : %10.3f\n",_maxDeltaT       );
-    printf("  dsCorr          : %10.3f\n",_dsCorr          );
-    printf("  dtOffset        : %10.3f\n",_dtOffset        );
+    printf("---- TrackCalomatching::beginJob constants used: \n"    );
+    printf("  minClusterEnergy     : %10.3f\n",_minClusterEnergy    );
+    printf("  maxDeltaT            : %10.3f\n",_maxDeltaT           );
+    printf("  meanInteractionDepth : %10.3f\n",_meanInteractionDepth);
+    printf("  dtOffset             : %10.3f\n",_dtOffset            );
   }
 
 //-----------------------------------------------------------------------------
@@ -275,13 +275,12 @@ namespace mu2e {
 
       s1       = extrk->pathLengthEntrance();
       s2       = extrk->pathLengthExit    ();
-      smean    = (s1+s2)/2;
+      smean    = s1+_meanInteractionDepth;
 					// shower starts developing when the particle 
 					// reaches the disk
-      trk_time = krep->arrivalTime(s1);
+      trk_time = krep->arrivalTime(smean);
       mom      = krep->momentum(smean);
 
-      smean    = smean-60.*mom.mag()/mom.z();
       ds       = s2-s1;
 
       point    = krep->position(smean);
