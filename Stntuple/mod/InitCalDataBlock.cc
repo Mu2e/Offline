@@ -99,7 +99,10 @@ Int_t StntupleInitMu2eCalDataBlock(TStnDataBlock* Block, AbsEvent* AnEvent, int 
   data->fCrystalSize = cal->crystalHalfTrans();
 
 				        // also a dummy line
-  data->fMinFraction = 1.0;
+  data->fMinFraction      = 1.0;
+  data->fWrapperThickness = cal->wrapperThickness();
+  data->fShellThickness   = cal->shellThickness  ();
+
 					// on return set event and run numbers
 					// to mark block as initialized
   data->f_RunNumber   = rn_number;
