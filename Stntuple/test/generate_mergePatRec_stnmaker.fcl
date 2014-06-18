@@ -17,24 +17,6 @@
 #include "ParticleID/test/producers.fcl"
 #include "Stntuple/test/producers.fcl"
 
-BEGIN_PROLOG
-mixerTemplate: {
-    module_type         : MixMCEvents
-    fileNames           : @local::bgHitFiles
-    readMode            : randomReplace
-    wrapFiles           : true
-    coverageFraction    : 1000000.
-    detail : {
-        mean                : -1
-        genModuleLabel      : @nil
-        g4ModuleLabel       : @nil
-        g4StatusTag         : ""
-        stepInstanceNames   : @local::stepInstanceNames
-        doPointTrajectories : false
-    }
-}
-END_PROLOG
-
 # process_name : DigiMixMergePatRecStnmaker
 
 source : { 
@@ -75,15 +57,6 @@ physics : {
 
     filters: {
 #------------------------------------------------------------------------------
-# event mixing filters - are they needed ? 
-#------------------------------------------------------------------------------
-        flashMixer           : @local::mixerTemplate
-	ootMixer             : @local::mixerTemplate
-	dioMixer             : @local::mixerTemplate
-	neutronMixer         : @local::mixerTemplate
-	photonMixer          : @local::mixerTemplate
-	protonMixer          : @local::mixerTemplate
-#------------------------------------------------------------------------------
 # Stntuple maker sequence
 #------------------------------------------------------------------------------
 	InitStntuple         : @local::InitStntuple
@@ -107,7 +80,7 @@ physics : {
 		czmin            : -0.6
 		czmax            :  0.8
 	    }
-	    muonStops        : {
+	    muonStops            : {
 #------------------------------------------------------------------------------
 # use --fclinput=@muStops:datasets/mustops for grid submission 
 # [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ] 
@@ -161,7 +134,7 @@ physics : {
 # write out ntuple only, so don't need compression modules...
 #------------------------------------------------------------------------------
     p1 : [generate, g4run, 
-	  dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer,
+#	  dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer,
 	  protonTimeMap, muonTimeMap, 
 	  makeSD, makeSH, 
 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker, 
@@ -212,28 +185,14 @@ services.scheduler.wantSummary: true
 # Apply the time offsets in tracker digitization
 physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-#
-physics.filters.flashMixer.detail.genModuleLabel   :  flashMixer 
-physics.filters.ootMixer.detail.genModuleLabel     :  ootMixer
-physics.filters.dioMixer.detail.genModuleLabel     :  dioMixer
-physics.filters.neutronMixer.detail.genModuleLabel :  neutronMixer
-physics.filters.photonMixer.detail.genModuleLabel  :  photonMixer
-physics.filters.protonMixer.detail.genModuleLabel  :  protonMixer
-#
-physics.filters.flashMixer.detail.g4ModuleLabel    :  flashMixer 
-physics.filters.ootMixer.detail.g4ModuleLabel      :  ootMixer
-physics.filters.dioMixer.detail.g4ModuleLabel      :  dioMixer
-physics.filters.neutronMixer.detail.g4ModuleLabel  :  neutronMixer
-physics.filters.photonMixer.detail.g4ModuleLabel   :  photonMixer
-physics.filters.protonMixer.detail.g4ModuleLabel   :  protonMixer
 
-physics.producers.MakeCaloCluster.EnoiseCut                      : 0.10 # MeV
-physics.producers.MakeCaloCluster.EclusterCut                    : 2.0  # MeV
+physics.producers.MakeCaloCluster.EnoiseCut        : 0.10 # MeV
+physics.producers.MakeCaloCluster.EclusterCut      : 2.0  # MeV
 
-physics.producers.TrkExtrapol.fitterModuleLabel                  : MergePatRec
-physics.producers.CaloMatching.fitterModuleLabel                 : MergePatRec
-physics.producers.ParticleID.fitterModuleLabel                   : MergePatRec
+physics.producers.TrkExtrapol.fitterModuleLabel    : MergePatRec
+physics.producers.CaloMatching.fitterModuleLabel   : MergePatRec
+physics.producers.ParticleID.fitterModuleLabel     : MergePatRec
 
-physics.filters.StntupleMaker.trkPatRecDem                       : MergePatRec
-physics.filters.StntupleMaker.makeStrawData                      : 1
-physics.filters.StntupleMaker.g4ModuleLabel                      : "g4run"     # 
+physics.filters.StntupleMaker.trkPatRecDem         : MergePatRec
+physics.filters.StntupleMaker.makeStrawData        : 1
+physics.filters.StntupleMaker.g4ModuleLabel        : "g4run"     # 
