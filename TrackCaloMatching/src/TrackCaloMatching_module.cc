@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.9 2014/06/16 21:26:31 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.10 2014/06/20 13:29:18 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/16 21:26:31 $
+// $Date: 2014/06/20 13:29:18 $
 //
 // Original author G. Pezzullo
 //
@@ -188,7 +188,7 @@ namespace mu2e {
     double     trk_v, trk_w, trk_mom, trk_time;
     double     sigmaV, sigmaW, sigmaT, sigmaE, chiQ;
     double     s1, s2, smean, ds;
-    double     nx, ny, dv, dw, dvv, dww, dt, xv, xw, xt, xe;
+    double     nx, ny, dv, dw, dvv, dww, dvv_corr, dt, xv, xw, xt, xe;
 
     double                     chi2_max(1.e12);
 
@@ -341,9 +341,6 @@ namespace mu2e {
 	dw  = trk_w-cl_w;
 
 	dvv = dv*nx+dw*ny;
-					// 2014-06-06 P.Murat: ad-hoc correction
-	dvv = dvv-0.28*(ds-350.);
-
 	dww = dv*ny-dw*nx;
 //-----------------------------------------------------------------------------
 // ad-hoc corrections 
@@ -375,10 +372,12 @@ namespace mu2e {
 	       << endl;
 	}
 					// need to handle energy part properly, later! 
-	xv = dvv/sigmaV;
-	xw = dww/sigmaW;
-	xt = dt /sigmaT;
-	xe = (trk_mom-cl_energy)/sigmaE;
+					// 2014-06-06 P.Murat: ad-hoc correction
+	dvv_corr = dvv-0.28*(ds-350.);
+	xv       = dvv_corr/sigmaV;
+	xw       = dww/sigmaW;
+	xt       = dt /sigmaT;
+	xe       = (trk_mom-cl_energy)/sigmaE;
 
 	_posVChiSquare   = xv*xv;
 	_posWChiSquare   = xw*xw;
