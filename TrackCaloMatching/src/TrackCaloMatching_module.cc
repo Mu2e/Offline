@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.10 2014/06/20 13:29:18 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.11 2014/06/23 14:27:08 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/20 13:29:18 $
+// $Date: 2014/06/23 14:27:08 $
 //
 // Original author G. Pezzullo
 //
@@ -291,6 +291,7 @@ namespace mu2e {
 	cout<<"vane_id = "<<vane_id<<endl;
 	cout<<"trk_mom = "<<trk_mom<<" [MeV]" << endl;
       }
+					// direction cosines in XY plane
 
       nx      = mom.x()/sqrt(mom.x()*mom.x()+mom.y()*mom.y());
       ny      = mom.y()/sqrt(mom.x()*mom.x()+mom.y()*mom.y());
@@ -298,18 +299,27 @@ namespace mu2e {
 					// transform position to Mu2e detector frame
 
       fromTrkToMu2eFrame(point, tmpPosVaneFrame);
-	  
+
       if (_diagLevel > 2){
 	cout<<"Mu2e general frame: tmpPosVaneFrame = "<< tmpPosVaneFrame <<  " [mm]" << endl;
       }
-    
+
       tmpV    = cg->toSectionFrame(vane_id,tmpPosVaneFrame);
       trk_v   = tmpV.x();
       trk_w   = tmpV.y();
-	  
+
       if(_diagLevel > 2){
 	cout << "tmpPosVaneFrame = "<< tmpV << " [mm]" << endl;
       }
+//-----------------------------------------------------------------------------
+// save track-only information
+//-----------------------------------------------------------------------------
+      tcm_data[ltrk][vane_id].xtrk = tmpV.x();
+      tcm_data[ltrk][vane_id].ytrk = tmpV.y();
+      tcm_data[ltrk][vane_id].ztrk = tmpV.z();
+      tcm_data[ltrk][vane_id].nx   = mom.x()/trk_mom;
+      tcm_data[ltrk][vane_id].ny   = mom.y()/trk_mom;
+      tcm_data[ltrk][vane_id].nx   = mom.z()/trk_mom;
 //-----------------------------------------------------------------------------
 // loop over clusters
 //-----------------------------------------------------------------------------
@@ -400,6 +410,8 @@ namespace mu2e {
 	  tcm_data[ltrk][vane_id].dv   = dww;
 	  tcm_data[ltrk][vane_id].dt   = dt;
 	  tcm_data[ltrk][vane_id].ep   = cl_energy/trk_mom;
+	  tcm_data[ltrk][vane_id].int_depth = _meanInteractionDepth;
+	  tcm_data[ltrk][vane_id].chi2_time = _timeChiSquare;
 	}
       NEXT_CLUSTER:;
       }

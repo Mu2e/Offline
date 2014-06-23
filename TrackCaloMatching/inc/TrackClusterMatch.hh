@@ -19,6 +19,12 @@ namespace mu2e {
     struct Data_t {
       int      icl;			// cluster index
       int      iex;			// extrapolated track index
+      double   xtrk;			// track coordinates
+      double   ytrk;
+      double   ztrk;
+      double   nx;			// track direction in the "interaction point"
+      double   ny;
+      double   nz;
       double   dx;
       double   dy;
       double   dz;
@@ -27,12 +33,19 @@ namespace mu2e {
       double   dt;
       double   ep;
       double   chi2;
+      double   int_depth;
       double   chi2_time;
     };
 
   protected:
     TrkToCaloExtrapolPtr  _textrapol; 
     CaloClusterPtr        _cluster; 
+    double                _xtrk;	// track coordinates
+    double                _ytrk;
+    double                _ztrk;
+    double                _nx;		// track direction
+    double                _ny;
+    double                _nz;
     double                _dx;
     double                _dy;
     double                _dz;
@@ -42,6 +55,7 @@ namespace mu2e {
     double                _ep;
     double                _chi2;
     double                _chi2_time;
+    double                _int_depth;
 
   public:
     TrackClusterMatch();
@@ -50,6 +64,12 @@ namespace mu2e {
 
     const TrkToCaloExtrapol*  textrapol  () const { return _textrapol.get(); }
     const CaloCluster*        caloCluster() const { return _cluster.get(); }
+    double                    xtrk       () const { return _xtrk; }
+    double                    ytrk       () const { return _ytrk; }
+    double                    ztrk       () const { return _ztrk; }
+    double                    nx         () const { return _nx; }
+    double                    ny         () const { return _ny; }
+    double                    nz         () const { return _nz; }
     double                    dx         () const { return _dx; }
     double                    dy         () const { return _dy; }
     double                    dz         () const { return _dz; }
@@ -58,6 +78,7 @@ namespace mu2e {
     double                    dv         () const { return _dv; }
     double                    ep         () const { return _ep; }
     double                    chi2       () const { return _chi2; }
+    double                    int_depth  () const { return _int_depth; }
     double                    chi2_time  () const { return _chi2_time; }
 
     void print(const char* Option) const ;
