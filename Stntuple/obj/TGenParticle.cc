@@ -103,14 +103,14 @@ void TGenParticle::Print(Option_t* Opt) const {
     printf("%5i",GetMother(1));
     printf("%5i",GetDaughter(0));
     printf("%5i",GetDaughter(1));
-    printf("%9.3f",Px());
-    printf("%9.3f",Py());
-    printf("%9.3f",Pz());
-    printf("%9.3f",Energy());
-    printf("%9.3f",Vx());
-    printf("%9.3f",Vy());
-    printf("%9.3f",Vz());
-    printf("%9.3f",T ());
+    printf("%11.3f",Px());
+    printf("%11.3f",Py());
+    printf("%11.3f",Pz());
+    printf("%11.3f",Energy());
+    printf("%11.3f",Vx());
+    printf("%11.3f",Vy());
+    printf("%11.3f",Vz());
+    printf("%11.3f",T ());
     printf("\n");
   }
 }

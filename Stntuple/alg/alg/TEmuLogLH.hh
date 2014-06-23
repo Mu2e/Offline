@@ -46,6 +46,14 @@ public:
 
   ~TEmuLogLH();
 //-----------------------------------------------------------------------------
+// initialization
+//-----------------------------------------------------------------------------
+  void InitEleDtHist(TH1*& Hist);
+  void InitMuoDtHist(TH1*& Hist);
+  void InitEleEpHist(TH1*& Hist);
+  void InitMuoEpHist(TH1*& Hist);
+  int  Init();
+//-----------------------------------------------------------------------------
 // log(LH) of a given hypothesis is normally negative. 
 // If the calculated likelihood is zero, the returned value of Log(LH) 
 // is set to 999.

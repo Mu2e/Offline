@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 //  Dec 26 2000 P.Murat: initialization of the STNTUPLE track block
-//
+//  2014-06-23: remove vane support
 //-----------------------------------------------------------------------------
 #include <cstdio>
 #include "TROOT.h"
@@ -701,57 +701,6 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 	    vint->fID        = iv;
 	    vint->fExtrk     = extrk;
 	    vint->fChi2Match = 1.e6;
-
-	    double s1, s2, smean, nx, ny, nz, d;
-
-	    s1          = extrk->pathLengthEntrance();
-	    s2          = extrk->pathLengthExit    ();
-	    smean       = (s1+s2)/2;
-					// correcting, ad-hoc
-
-	    vint->fTime = krep->arrivalTime(s1);
-	    extr_mom    = krep->momentum(smean);
-	    smean       = smean - 60.*extr_mom.mag()/extr_mom.z();
-
-	    extr_point  = krep->position(smean);
-	    extr_mom    = krep->momentum(smean);
-
-					// so far - transform to global RF 'manually'
-	    x1.set(extr_point.x()-3904.,
-		   extr_point.y(),
-		   extr_point.z()+10200.);
-	    
-	    Hep3Vector p1       = bc->toSectionFrame(iv,x1);
-
-	    nx = extr_mom.x();
-	    ny = extr_mom.y();
-	    nz = extr_mom.z();
-	    d  = sqrt(nx*nx+ny*ny+nz*nz);
-
-	    if (cal_type == 1) {
-//-----------------------------------------------------------------------------
-// vanes: Xloc is orthogonal to the vane plane, fYTrk = y_loc; fZTrk = z_loc
-//-----------------------------------------------------------------------------
-	      vint->fXTrk = p1.x();
-	      vint->fYTrk = p1.y();
-	      vint->fZTrk = p1.z();
-
-	      vint->fNxTrk = nx/d;
-	      vint->fNyTrk = ny/d;
-	      vint->fNzTrk = nz/d;
-	    }
-	    else if (cal_type == 2) {
-//-----------------------------------------------------------------------------
-// disks: Zloc is orthogonal to the vane plane, fXTrk = x_loc; fYTrk = y_loc
-//-----------------------------------------------------------------------------
-	      vint->fXTrk = p1.x();
-	      vint->fYTrk = p1.y();
-	      vint->fZTrk = p1.z();
-
-	      vint->fNxTrk = nx/d;
-	      vint->fNyTrk = ny/d;
-	      vint->fNzTrk = nz/d;
-	    }
 	  }
 	  else {
 	    printf("%s : ADDITIONAL EXTR POINT for track %i on vane = %i\n", oname,itrk,iv);
@@ -759,14 +708,15 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 	}
       }
     }
-
+//-----------------------------------------------------------------------------
+// now loop over track-cluster matches and find the right ones to associate with 
+// the track
+//-----------------------------------------------------------------------------
     unsigned int nm (0);
-
-    //    const mu2e::TrackClusterLink* xxx = trk_cal_map.product();
 
     const mu2e::TrackClusterMatchCollection* tcmcoll = tcmH.product();
     
-    if (tcmcoll != NULL) nm = tcmcoll->size() ; // (*trk_cal_map).size();
+    if (tcmcoll != NULL) nm = tcmcoll->size();
 
     const mu2e::TrackClusterMatch* tcm;
 
@@ -775,15 +725,11 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     for (size_t im=0; im<nm; im++) {
       tcm   = &tcmcoll->at(im);
       extrk = tcm->textrapol();
-      //	mu2e::KalRepPtr const& trkPtr = extrk->trk();
-      krep = *extrk->trk(); // (const KalRep*) *trkPtr;
+      krep  = *extrk->trk();
       if (krep == track->fKalRep[0]) {
 	const mu2e::CaloCluster* cl = tcm->caloCluster();
 	iv   = cl->vaneId();
 	vint = &track->fVane[iv];
-//-----------------------------------------------------------------------------
-// so far debugged only for the vane-based geometry
-//-----------------------------------------------------------------------------
 	if (bc == 0) {
 	  printf(">>> ERROR: %s VANE calorimeter is not defined \n",oname);
 	  continue;
@@ -791,8 +737,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 
 	x1   = bc->toSectionFrame(iv,cl->cog3Vector());
 
-	if ((track->fClosestCluster == NULL) || 
-	    (tcm->chi2() < best_chi2_match )    ) {
+	if ((track->fClosestCluster == NULL) || (tcm->chi2() < best_chi2_match )) {
 //-----------------------------------------------------------------------------
 // if closest cluster has not been defined or the energy of the new one is higher
 // depending on the calorimeter geometry choice either DX or DZ is meaningful
@@ -802,17 +747,25 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 	  best_chi2_match        = tcm->chi2();
 	}
 
+	vint->fXTrk = tcm->xtrk();
+	vint->fYTrk = tcm->ytrk();
+	vint->fZTrk = tcm->ztrk();
+	
+	vint->fNxTrk = tcm->nx();
+	vint->fNyTrk = tcm->ny();
+	vint->fNzTrk = tcm->nz();
+
 	if (vint->fCluster == 0) {
 	  vint->fCluster   = cl;
 	  vint->fEnergy    = cl->energyDep();
 	  vint->fXCl       = x1.x();
 	  vint->fYCl       = x1.y();
 	  vint->fZCl       = x1.z();
-	  vint->fDt        = extrk->time()-cl->time();
-	  vint->fDx        = vint->fXTrk-vint->fXCl;
-	  vint->fDy        = vint->fYTrk-vint->fYCl;
-	  vint->fDz        = vint->fZTrk-vint->fZCl;
-	  vint->fChi2Match = tcm->chi2();
+	  vint->fDt        = tcm->dt();
+	  vint->fDx        = tcm->du();
+	  vint->fDy        = tcm->dv();
+	  vint->fDz        = tcm->dz();
+	  vint->fChi2Match = tcm->chi2()-tcm->chi2_time();
 	  vint->fPath      = extrk->pathLengthExit()-extrk->pathLengthEntrance();
 	}
 	else {
