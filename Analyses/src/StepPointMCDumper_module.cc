@@ -29,6 +29,7 @@
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 namespace mu2e {
 
@@ -127,12 +128,20 @@ namespace mu2e {
 
   //================================================================
   class StepPointMCDumper : public art::EDAnalyzer {
+    typedef std::vector<std::string> VS;
+    typedef std::vector<StepPointMCCollection> VspMC;
+
     art::InputTag hitsInputTag_;
     SimParticleTimeOffset toff_;
+
+    bool writeProperTime_;
+    VS tauHitCollections_;
+    std::vector<int> decayOffCodes_;
 
     // Members needed to write the ntuple
     TTree *nt_;
     VDHit hit_;
+    float tau_;
 
   public:
     explicit StepPointMCDumper(const fhicl::ParameterSet& pset);
@@ -145,8 +154,17 @@ namespace mu2e {
     : art::EDAnalyzer(pset)
     , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
     , toff_(pset.get<fhicl::ParameterSet>("TimeOffsets"))
+    , writeProperTime_(pset.get<bool>("writeProperTime", false))
+    , tauHitCollections_( writeProperTime_ ? pset.get<VS>("tauHitCollections") : VS() )
     , nt_(0)
-  {}
+    , tau_()
+  {
+    if(writeProperTime_) {
+      decayOffCodes_ = pset.get<std::vector<int> >("decayOffPDGCodes");
+      // must sort to use binary_search in SimParticleGetTau
+      std::sort(decayOffCodes_.begin(), decayOffCodes_.end());
+    }
+  }
 
   //================================================================
   void StepPointMCDumper::beginJob() {
@@ -154,14 +172,30 @@ namespace mu2e {
     static const char branchDesc[] = "x/F:y/F:z/F:time/F:px/F:py/F:pz/F:pmag/F:ek/F:charge/F:pdgId/I:particleId/i:volumeCopy/i";
     nt_ = tfs->make<TTree>( "nt", "StepPointMCDumper ntuple");
     nt_->Branch("hits", &hit_, branchDesc);
+    if(writeProperTime_) {
+      nt_->Branch("tau", &tau_, "tauNormalized/F");
+    }
   }
 
   //================================================================
   void StepPointMCDumper::analyze(const art::Event& event) {
     toff_.updateMap(event);
+
+    VspMC spMCColls;
+    for ( const auto& iColl : tauHitCollections_ ){
+      auto spColl = event.getValidHandle<StepPointMCCollection>(iColl);
+      spMCColls.push_back( *spColl );
+    }
+
     const auto& ih = event.getValidHandle<StepPointMCCollection>(hitsInputTag_);
     for(const auto& i : *ih) {
+
       hit_ = VDHit(toff_, i);
+
+      if(writeProperTime_) {
+        tau_ = SimParticleGetTau::calculate(i, spMCColls, decayOffCodes_);
+      }
+
       nt_->Fill();
     }
 
