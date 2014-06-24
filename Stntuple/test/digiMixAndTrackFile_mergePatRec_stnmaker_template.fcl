@@ -17,12 +17,6 @@
 #include "ParticleID/test/producers.fcl"
 #include "Stntuple/test/producers.fcl"
 
-//test: // This must be commented out for production.
-BEGIN_PROLOG
-#  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
-  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00000/data_mixBG.root"]
-END_PROLOG
-
 BEGIN_PROLOG
 mixerTemplate: {
     module_type         : MixMCEvents
