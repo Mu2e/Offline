@@ -105,7 +105,9 @@ physics : {
 	  makeSD, makeSH, 
 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker, 
 	  MakeCaloCluster, 
-# 
+#------------------------------------------------------------------------------
+# search for downstream electrons  - TrkPatRec and CalPatRec
+#------------------------------------------------------------------------------
 	  MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, 
 #
 	  MakeStrawHitPositions, 
@@ -113,6 +115,10 @@ physics : {
 	  MergePatRec,
 #	  
 	  TrkExtrapol, CaloMatching, ParticleID, 
+#------------------------------------------------------------------------------
+# additional tracking for other particle hypotheses
+#------------------------------------------------------------------------------
+	  TrkPatRecDmm, TrkPatRecUem, TrkPatRecUmp,
 #
 	  InitStntuple, StntupleMaker, FillStntuple
 	 ]

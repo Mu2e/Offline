@@ -22,6 +22,7 @@ namespace mu2e {
       double   xtrk;			// track coordinates
       double   ytrk;
       double   ztrk;
+      double   ttrk;			// track time
       double   nx;			// track direction in the "interaction point"
       double   ny;
       double   nz;
@@ -33,16 +34,20 @@ namespace mu2e {
       double   dt;
       double   ep;
       double   chi2;
-      double   int_depth;
       double   chi2_time;
+      double   int_depth;
+      double   ds;			// path length inside the disk
     };
 
   protected:
+    int                   _icl;		// cluster index
+    int                   _iex;		// extrapolated track index
     TrkToCaloExtrapolPtr  _textrapol; 
     CaloClusterPtr        _cluster; 
     double                _xtrk;	// track coordinates
     double                _ytrk;
     double                _ztrk;
+    double                _ttrk;
     double                _nx;		// track direction
     double                _ny;
     double                _nz;
@@ -56,17 +61,21 @@ namespace mu2e {
     double                _chi2;
     double                _chi2_time;
     double                _int_depth;
+    double                _ds;
 
   public:
     TrackClusterMatch();
     TrackClusterMatch(TrkToCaloExtrapolPtr& Textrapol, CaloClusterPtr & Cluster, Data_t* Data);
     ~TrackClusterMatch();
 
+    int                       icl        () const { return _icl; }
+    int                       iex        () const { return _iex; }
     const TrkToCaloExtrapol*  textrapol  () const { return _textrapol.get(); }
     const CaloCluster*        caloCluster() const { return _cluster.get(); }
     double                    xtrk       () const { return _xtrk; }
     double                    ytrk       () const { return _ytrk; }
     double                    ztrk       () const { return _ztrk; }
+    double                    ttrk       () const { return _ttrk; }
     double                    nx         () const { return _nx; }
     double                    ny         () const { return _ny; }
     double                    nz         () const { return _nz; }
@@ -78,8 +87,9 @@ namespace mu2e {
     double                    dv         () const { return _dv; }
     double                    ep         () const { return _ep; }
     double                    chi2       () const { return _chi2; }
-    double                    int_depth  () const { return _int_depth; }
     double                    chi2_time  () const { return _chi2_time; }
+    double                    int_depth  () const { return _int_depth; }
+    double                    ds         () const { return _ds; }
 
     void print(const char* Option) const ;
   };

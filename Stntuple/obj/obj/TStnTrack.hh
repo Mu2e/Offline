@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by the track finding and fitting code.
 //
-// $Id: TStnTrack.hh,v 1.1 2014/06/13 06:14:48 murat Exp $
+// $Id: TStnTrack.hh,v 1.2 2014/06/24 19:08:19 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/13 06:14:48 $
+// $Date: 2014/06/24 19:08:19 $
 //
 // Contact person Pavel Murat
 //
@@ -42,9 +42,11 @@
 #include "TFile.h"
 #include "TLorentzVector.h"
 #include "Stntuple/base/TBitset.hh"
+// #include "TStnCluster.hh"
 
 					// 'KalRep' is a BaBar class
 class KalRep ;
+class TStnCluster;
 
 namespace mu2e {
   class CaloCluster;
@@ -65,6 +67,12 @@ class TStnTrack : public TObject {
     kNFreeIntsV3   =  9,
     kNFreeFloatsV3 =  6,
 
+    kNFreeIntsV4   =  7,		// hopefully, correct
+    kNFreeFloatsV4 =  6,		// hopefully, correct
+
+    kNFreeIntsV5   =  7,
+    kNFreeFloatsV5 =  6,
+
     kNFreeInts     =  7,
     kNFreeFloats   =  6
   };
@@ -73,33 +81,41 @@ class TStnTrack : public TObject {
 
 					// added 3 chi*2's
 public:
-  enum { kNVanes = 4 };
+  enum { kNVanesV4 = 4,
+	 kNVanesV5 = 4,
+	 kNDisks   = 2			// there are only two disks, no vane support
+  };
 
   struct InterData_t {
     int          fID;			// = -1 if no intersection
-    float        fTime;			// track time
+    int          fClusterIndex;         // cluster index in the list of clusters
+    float        fTime;			// extrapolated track time, not corrected by _dtOffset
     float        fEnergy;		// closest cluster energy
     float        fXTrk;
     float        fYTrk;
     float        fZTrk;
-    float        fXCl;
+    float        fNxTrk;		// track direction cosines in the intersection point
+    float        fNyTrk;
+    float        fNzTrk;
+    float        fXCl;			// cluster coordinates
     float        fYCl;
     float        fZCl;
     float        fDx;			// TRK-CL
     float        fDy;			// TRK-CL
     float        fDz;
-    float        fDt;			// TRK-CL
-    float        fNxTrk;		// track direction cosines in the intersection point
-    float        fNyTrk;
-    float        fNzTrk;
-    float        fChi2Match;		// track-cluster match chi&^2 
-    float        fPath;
+    float        fDt;			// TRK-CL , _corrected_ by _dTOffset (!)
+    float        fDu;			// added in V6
+    float        fDv;			// added in V6
+    float        fChi2Match;		// track-cluster match chi&^2 (coord)
+    float        fChi2Time;		// track-cluster match chi&^2 (time)
+    float        fPath;			// track path in the disk
+    float        fIntDepth;             // assumed interaction depth, adedd in V6;
     const mu2e::CaloCluster*       fCluster;
     const mu2e::TrkToCaloExtrapol* fExtrk;
   };
     
   TLorentzVector            fMomentum;         // this assumes DELE fit hypothesis
-
+  
   TBitset                   fHitMask;	       // bit #i: 1 if there is a hit 
   TBitset                   fExpectedHitMask;   // bit #i: 1 if expect to have a hit at this Z
 
@@ -158,20 +174,21 @@ public:
   float                     fP2;            // momentum defined at Z0
   float                     fFloat[kNFreeFloats]; // provision for future I/O expansion
 
-  InterData_t               fVane[kNVanes];  // intersection data are saved 
+  InterData_t               fDisk[kNDisks];  // track intersections with disks
 //-----------------------------------------------------------------------------
 //  transient data members, all the persistent ones should go above
 //-----------------------------------------------------------------------------
-  const mu2e::TrkToCaloExtrapol* fExtrk;          //! 
-  const mu2e::CaloCluster*       fClosestCluster; //!
+  const mu2e::TrkToCaloExtrapol* fExtrk;              //! 
+  const mu2e::CaloCluster*       fClosestCaloCluster; //!
 
-  InterData_t*                   fVMinS;	  //! intersection with min S
-  InterData_t*                   fVMaxEp;	  //! intersection with max E/P
-  KalRep*                        fKalRep[4];      //! different fits, sequence: e-, e+, mu-, mu+
+  InterData_t*                   fVMinS;	      //! intersection with min S
+  InterData_t*                   fVMaxEp;	      //! intersection with max E/P
+  KalRep*                        fKalRep[4];          //! different fits, sequence: e-, e+, mu-, mu+
 
-  int                            fITmp[ 5];          //!
-  Float_t                        fTmp [10];          //! for temporary analysis needs
-  int                            fNHPerStation[50];  //! currently - 44 x 3
+  int                            fITmp[ 5];           //!
+  Float_t                        fTmp [10];           //! for temporary analysis needs
+  int                            fNHPerStation[50];   //! currently - 44 x 3
+  TStnCluster*                   fCluster;            //! 
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
@@ -222,6 +239,8 @@ public:
 
   float  LogLHRTrk   () { return LogLHRXs()+LogLHRDeDx(); }
 
+  TStnCluster*   Cluster() { return fCluster; }
+
   float  P () { return fP; }
   float  Pt() { return fPt; }
   Int_t  GetMomentum  (TLorentzVector* Momentum);
@@ -240,12 +259,10 @@ public:
 //-----------------------------------------------------------------------------
 // schema evolution
 //-----------------------------------------------------------------------------
-  void ReadV1(TBuffer& R__b);
-  void ReadV2(TBuffer& R__b);
-  void ReadV3(TBuffer& R__b);
   void ReadV4(TBuffer& R__b);
+  void ReadV5(TBuffer& R__b);
 
-  ClassDef(TStnTrack,5)
+  ClassDef(TStnTrack,6)
 
 };
 

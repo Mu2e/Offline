@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.11 2014/06/23 14:27:08 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.12 2014/06/24 19:08:39 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/23 14:27:08 $
+// $Date: 2014/06/24 19:08:39 $
 //
 // Original author G. Pezzullo
 //
@@ -187,7 +187,7 @@ namespace mu2e {
     double     cl_v, cl_w, cl_time, cl_energy;
     double     trk_v, trk_w, trk_mom, trk_time;
     double     sigmaV, sigmaW, sigmaT, sigmaE, chiQ;
-    double     s1, s2, smean, ds;
+    double     s1, s2, sint, ds;
     double     nx, ny, dv, dw, dvv, dww, dvv_corr, dt, xv, xw, xt, xe;
 
     double                     chi2_max(1.e12);
@@ -275,16 +275,17 @@ namespace mu2e {
 
       s1       = extrk->pathLengthEntrance();
       s2       = extrk->pathLengthExit    ();
-      smean    = s1+_meanInteractionDepth;
+					// 'sint' - extrapolation length to the interaction point
+      sint     = s1+_meanInteractionDepth;
 					// shower starts developing when the particle 
 					// reaches the disk
-      trk_time = krep->arrivalTime(smean);
-      mom      = krep->momentum(smean);
+      trk_time = krep->arrivalTime(sint);
+      mom      = krep->momentum(sint);
 
       ds       = s2-s1;
 
-      point    = krep->position(smean);
-      mom      = krep->momentum(smean);
+      point    = krep->position(sint);
+      mom      = krep->momentum(sint);
       trk_mom  = mom.mag();
 
       if(_diagLevel > 2){
@@ -314,19 +315,22 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // save track-only information
 //-----------------------------------------------------------------------------
-      tcm_data[ltrk][vane_id].xtrk = tmpV.x();
-      tcm_data[ltrk][vane_id].ytrk = tmpV.y();
-      tcm_data[ltrk][vane_id].ztrk = tmpV.z();
-      tcm_data[ltrk][vane_id].nx   = mom.x()/trk_mom;
-      tcm_data[ltrk][vane_id].ny   = mom.y()/trk_mom;
-      tcm_data[ltrk][vane_id].nx   = mom.z()/trk_mom;
+      tcm_data[ltrk][vane_id].xtrk      = tmpV.x();
+      tcm_data[ltrk][vane_id].ytrk      = tmpV.y();
+      tcm_data[ltrk][vane_id].ztrk      = tmpV.z();
+      tcm_data[ltrk][vane_id].ttrk      = trk_time;
+      tcm_data[ltrk][vane_id].nx        = mom.x()/trk_mom;
+      tcm_data[ltrk][vane_id].ny        = mom.y()/trk_mom;
+      tcm_data[ltrk][vane_id].nx        = mom.z()/trk_mom;
+      tcm_data[ltrk][vane_id].int_depth = _meanInteractionDepth;
+      tcm_data[ltrk][vane_id].ds        = ds;
 //-----------------------------------------------------------------------------
 // loop over clusters
 //-----------------------------------------------------------------------------
       for (int icl=0; icl<nclusters; icl++) {
 	cl      = &(*caloClusters).at(icl);
 	cl_time = cl->time();
-					// move peak to zero
+					            // move peak to zero
 	dt      = trk_time-cl_time-_dtOffset;
 
 	if (cl->vaneId()    != vane_id         )            goto NEXT_CLUSTER;
@@ -394,23 +398,22 @@ namespace mu2e {
 	_timeChiSquare   = xt*xt;
 	_energyChiSquare = xe*xe;
 
-	chiQ = _posVChiSquare + _posWChiSquare + _timeChiSquare;
+	chiQ = _posVChiSquare + _posWChiSquare;
     
 	if (chiQ < tcm_data[ltrk][vane_id].chi2) {
 //-----------------------------------------------------------------------------
 // new best match
 //-----------------------------------------------------------------------------
-	  tcm_data[ltrk][vane_id].chi2 = chiQ;
-	  tcm_data[ltrk][vane_id].icl  = icl;
-	  tcm_data[ltrk][vane_id].iex  = jex;
-	  tcm_data[ltrk][vane_id].dx   = dv;
-	  tcm_data[ltrk][vane_id].dy   = dw;
-	  tcm_data[ltrk][vane_id].dz   = -1e6;
-	  tcm_data[ltrk][vane_id].du   = dvv;
-	  tcm_data[ltrk][vane_id].dv   = dww;
-	  tcm_data[ltrk][vane_id].dt   = dt;
-	  tcm_data[ltrk][vane_id].ep   = cl_energy/trk_mom;
-	  tcm_data[ltrk][vane_id].int_depth = _meanInteractionDepth;
+	  tcm_data[ltrk][vane_id].icl       = icl;
+	  tcm_data[ltrk][vane_id].iex       = jex;
+	  tcm_data[ltrk][vane_id].dx        = dv;
+	  tcm_data[ltrk][vane_id].dy        = dw;
+	  tcm_data[ltrk][vane_id].dz        = -1e6;
+	  tcm_data[ltrk][vane_id].du        = dvv;
+	  tcm_data[ltrk][vane_id].dv        = dww;
+	  tcm_data[ltrk][vane_id].dt        = dt;
+	  tcm_data[ltrk][vane_id].ep        = cl_energy/trk_mom;
+	  tcm_data[ltrk][vane_id].chi2      = chiQ;
 	  tcm_data[ltrk][vane_id].chi2_time = _timeChiSquare;
 	}
       NEXT_CLUSTER:;

@@ -72,7 +72,6 @@ StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet):
   , fTrkCalMatch        (PSet.get<std::string> ("trkCalMatch"        , "trackCaloMatching"))
   , fPidDem             (PSet.get<std::string> ("pidDem"             , "undefined"    ))
 
-  , fStrawHitMaker2      (PSet.get<std::string> ("strawHitMaker2"      , "makeSHHack"       ))
   , fTrkPatRecDem2       (PSet.get<std::string> ("trkPatRecDem2"       , "trkPatRecDemHack" ))
   , fTrkPatRecUem2       (PSet.get<std::string> ("trkPatRecUem2"       , "trkPatRecUemHack" ))
   , fCaloCrystalHitMaker2(PSet.get<std::string> ("caloCrystalHitMaker2", "CaloCrystalHitsMakerHack"))
@@ -249,8 +248,8 @@ void StntupleMaker::beginJob() {
       track_data2->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker2.data(),"AlgoCLOSESTSeededByENERGY");
       track_data2->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol2.data()     ,"");
       track_data2->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch2.data()     ,"");
-      track_data2->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker2.data()   ,"");
-      track_data2->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker2.data()   ,"StrawHitMCPtr");
+      track_data2->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
+      track_data2->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
       track_data2->AddCollName("mu2e::PIDProductCollection"          ,fPidDem2.data()          ,"");
       track_data2->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
     }

@@ -695,7 +695,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 // store coordinates of the best intersection in a plane
 //-----------------------------------------------------------------------------
 	  iv   = extrk->vaneId();
-	  vint = &(track->fVane[iv]);
+	  vint = &(track->fDisk[iv]);
 
 	  if (vint->fID == -1) {
 	    vint->fID        = iv;
@@ -729,7 +729,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
       if (krep == track->fKalRep[0]) {
 	const mu2e::CaloCluster* cl = tcm->caloCluster();
 	iv   = cl->vaneId();
-	vint = &track->fVane[iv];
+	vint = &track->fDisk[iv];
 	if (bc == 0) {
 	  printf(">>> ERROR: %s VANE calorimeter is not defined \n",oname);
 	  continue;
@@ -737,36 +737,42 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 
 	x1   = bc->toSectionFrame(iv,cl->cog3Vector());
 
-	if ((track->fClosestCluster == NULL) || (tcm->chi2() < best_chi2_match )) {
+	if ((track->fClosestCaloCluster == NULL) || (tcm->chi2() < best_chi2_match )) {
 //-----------------------------------------------------------------------------
 // if closest cluster has not been defined or the energy of the new one is higher
 // depending on the calorimeter geometry choice either DX or DZ is meaningful
 //-----------------------------------------------------------------------------
-	  track->fClosestCluster = cl;
-	  track->fExtrk          = extrk;
-	  best_chi2_match        = tcm->chi2();
+	  track->fClosestCaloCluster = cl;
+	  track->fExtrk              = extrk;
+	  best_chi2_match            = tcm->chi2();
 	}
 
-	vint->fXTrk = tcm->xtrk();
-	vint->fYTrk = tcm->ytrk();
-	vint->fZTrk = tcm->ztrk();
+	vint->fXTrk  = tcm->xtrk();
+	vint->fYTrk  = tcm->ytrk();
+	vint->fZTrk  = tcm->ztrk();
+	vint->fTime  = tcm->ttrk();
 	
 	vint->fNxTrk = tcm->nx();
 	vint->fNyTrk = tcm->ny();
 	vint->fNzTrk = tcm->nz();
 
 	if (vint->fCluster == 0) {
-	  vint->fCluster   = cl;
-	  vint->fEnergy    = cl->energyDep();
-	  vint->fXCl       = x1.x();
-	  vint->fYCl       = x1.y();
-	  vint->fZCl       = x1.z();
-	  vint->fDt        = tcm->dt();
-	  vint->fDx        = tcm->du();
-	  vint->fDy        = tcm->dv();
-	  vint->fDz        = tcm->dz();
-	  vint->fChi2Match = tcm->chi2()-tcm->chi2_time();
-	  vint->fPath      = extrk->pathLengthExit()-extrk->pathLengthEntrance();
+	  vint->fCluster      = cl;
+	  vint->fClusterIndex = tcm->icl();
+	  vint->fEnergy       = cl->energyDep();
+	  vint->fXCl          = x1.x();
+	  vint->fYCl          = x1.y();
+	  vint->fZCl          = x1.z();
+	  vint->fDt           = tcm->dt();
+	  vint->fDx           = tcm->dx();
+	  vint->fDy           = tcm->dy();
+	  vint->fDz           = tcm->dz();
+	  vint->fDu           = tcm->du();
+	  vint->fDv           = tcm->dv();
+	  vint->fChi2Match    = tcm->chi2();
+	  vint->fChi2Time     = tcm->chi2_time();
+	  vint->fIntDepth     = tcm->int_depth();
+	  vint->fPath         = tcm->ds();
 	}
 	else {
 	  printf("%s : ADDITIONAL MATCH for track %i on vane = %i\n", oname,itrk,iv);
@@ -784,7 +790,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     track->fVMaxEp = 0;
 
     for (int iv=0; iv<4; iv++) {
-      v = &track->fVane[iv];
+      v = &track->fDisk[iv];
       if (v->fID >= 0) {
 	if (v->fCluster) {
 	  if (v->fChi2Match < min_chi2_match) {
