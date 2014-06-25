@@ -28,6 +28,9 @@ protected:
   int           fMakeClusters;
   int           fMakeStrawData;
   int           fMakeTracks;
+  int           fMakeTracksUem;
+  int           fMakeTracksDmm;
+  int           fMakeTracksUmm;
   int           fMakeTracks2;
   int           fMakeTrigger;
   int           fMakeGenp;
@@ -39,6 +42,8 @@ protected:
   std::string   fStrawHitMaker;
   std::string   fTrkPatRecDem;
   std::string   fTrkPatRecUem;
+  std::string   fTrkPatRecDmm;
+  std::string   fTrkPatRecUmm;
   std::string   fCaloCrystalHitMaker;
   std::string   fCaloClusterMaker;
   std::string   fTrkExtrapol;

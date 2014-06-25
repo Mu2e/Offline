@@ -57,7 +57,9 @@ StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet):
   , fMakeClusters       (PSet.get<int>         ("makeClusters"   ,        1       ))
   , fMakeStrawData      (PSet.get<int>         ("makeStrawData"  ,        0       ))
   , fMakeTracks         (PSet.get<int>         ("makeTracks"     ,        1       ))
-  , fMakeTracks2        (PSet.get<int>         ("makeTracks2"    ,        0       ))
+  , fMakeTracksUem      (PSet.get<int>         ("makeTracksUem"  ,        0       ))
+  , fMakeTracksDmm      (PSet.get<int>         ("makeTracksDmm"  ,        0       ))
+  , fMakeTracksUmm      (PSet.get<int>         ("makeTracksUmm"  ,        0       ))
   , fMakeTrigger        (PSet.get<int>         ("makeTrigger"    ,        0       ))
   , fMakeGenp           (PSet.get<int>         ("makeGenp"       ,        1       ))
   , fMakeSimp           (PSet.get<int>         ("makeSimp"       ,        1       ))
@@ -66,6 +68,8 @@ StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet):
   , fStrawHitMaker      (PSet.get<std::string> ("strawHitMaker"      , "makeSH"       ))
   , fTrkPatRecDem       (PSet.get<std::string> ("trkPatRecDem"       , "trkPatRecDem" ))
   , fTrkPatRecUem       (PSet.get<std::string> ("trkPatRecUem"       , "trkPatRecUem" ))
+  , fTrkPatRecDmm       (PSet.get<std::string> ("trkPatRecDmm"       , "trkPatRecDmm" ))
+  , fTrkPatRecUmm       (PSet.get<std::string> ("trkPatRecUmm"       , "trkPatRecUmm" ))
   , fCaloCrystalHitMaker(PSet.get<std::string> ("caloCrystalHitMaker", "CaloCrystalHitsMaker"))
   , fCaloClusterMaker   (PSet.get<std::string> ("caloClusterMaker"   , "makeCaloCluster"))
   , fTrkExtrapol        (PSet.get<std::string> ("trkExtrapol"        , "trkExtrapol"  ))
@@ -229,61 +233,93 @@ void StntupleMaker::beginJob() {
     }
   }
 
-  if (fMakeTracks2) {
-    TStnDataBlock* track_data2;
-					// always store defTracks for the 
-					// default process in the "TrackBlock"
+//-----------------------------------------------------------------------------
+// UEM: Upstream Electron Minus
+//-----------------------------------------------------------------------------
+  if (fMakeTracksUem) {
+    TStnDataBlock* track_data_uem;
 
-    track_data2 = AddDataBlock("TrackBlock2",
-			       "TStnTrackBlock",
-			       StntupleInitMu2eTrackBlock,
-			       buffer_size,
-			       split_mode,
-			       compression_level);
+    track_data_uem = AddDataBlock("TrackBlockUem",
+				  "TStnTrackBlock",
+				  StntupleInitMu2eTrackBlock,
+				  buffer_size,
+				  split_mode,
+				  compression_level);
 
-    SetResolveLinksMethod("TrackBlock2",StntupleInitMu2eTrackBlockLinks);
+    SetResolveLinksMethod("TrackBlockUem",StntupleInitMu2eTrackBlockLinks);
 
-    if (track_data2) {
-      track_data2->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecDem2.data()    ,"DownstreameMinus");
-      track_data2->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker2.data(),"AlgoCLOSESTSeededByENERGY");
-      track_data2->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol2.data()     ,"");
-      track_data2->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch2.data()     ,"");
-      track_data2->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
-      track_data2->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
-      track_data2->AddCollName("mu2e::PIDProductCollection"          ,fPidDem2.data()          ,"");
-      track_data2->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
+    if (track_data_uem) {
+      track_data_uem->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
+      track_data_uem->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecUem.data()    ,"UpstreameMinus");
+      track_data_uem->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
+      track_data_uem->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
+      track_data_uem->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"AlgoCLOSESTSeededByENERGY");
+//-----------------------------------------------------------------------------
+// for the moment, don't run extrapolation and PID for these
+//-----------------------------------------------------------------------------
+//       track_data_uem->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol2.data()    ,"");
+//       track_data_uem->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch2.data()    ,"");
+//       track_data_uem->AddCollName("mu2e::PIDProductCollection"          ,fPidDem2.data()         ,"");
     }
   }
+//-----------------------------------------------------------------------------
+// DMM: Downstream Muon Minus
+//-----------------------------------------------------------------------------
+  if (fMakeTracksDmm) {
+    TStnDataBlock* track_data_dmm;
 
-    // 					// process additional collections
+    track_data_dmm = AddDataBlock("TrackBlockDmm",
+				  "TStnTrackBlock",
+				  StntupleInitMu2eTrackBlock,
+				  buffer_size,
+				  split_mode,
+				  compression_level);
 
-    // for (AbsParmList<string>::ConstIterator name = fTrackCollName.begin();
-    //      name != fTrackCollName.end(); ++name) {
+    SetResolveLinksMethod("TrackBlockDmm",StntupleInitMu2eTrackBlockLinks);
 
-    // 					// parse collection name
+    if (track_data_dmm) {
+      track_data_dmm->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecDmm.data()    ,"DownstreammuMinus");
+      track_data_dmm->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
+      track_data_dmm->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
+      track_data_dmm->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
+      track_data_dmm->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"AlgoCLOSESTSeededByENERGY");
+//-----------------------------------------------------------------------------
+// for the moment, don't run extrapolation and PID for these
+//-----------------------------------------------------------------------------
+//       track_data_uem->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol2.data()    ,"");
+//       track_data_uem->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch2.data()    ,"");
+//       track_data_uem->AddCollName("mu2e::PIDProductCollection"          ,fPidDem2.data()         ,"");
+    }
+  }
+//-----------------------------------------------------------------------------
+// UMM: Upstream Muon Minus
+//-----------------------------------------------------------------------------
+  if (fMakeTracksUmm) {
+    TStnDataBlock* track_data_umm;
 
-    //   StntupleGetProcessName(name->data(),proc,desc);
-    //   if (proc[0] == 0) {
-    // 					// set default process name
+    track_data_umm = AddDataBlock("TrackBlockUmm",
+				  "TStnTrackBlock",
+				  StntupleInitMu2eTrackBlock,
+				  buffer_size,
+				  split_mode,
+				  compression_level);
 
-    // 	strcpy(proc,fProcessName.value().data());
-    //   }
-    // 					// figure the block name - the default
-    // 					// collection goes to "TrackBlock", 
-    // 					// the rest - to the block coll_name
+    SetResolveLinksMethod("TrackBlockUmm",StntupleInitMu2eTrackBlockLinks);
 
-    //   track_data = AddDataBlock(Form("%s@%s",proc,desc),
-    // 				"TStnTrackBlock",
-    // 				StntupleInitTrackBlock,
-    // 				buffer_size.value(),
-    // 				fSplitMode.value(),
-    // 				compression_level.value());
-    //   if (track_data) {
-    // 	track_data->SetCollName(proc,desc);
-    // 	track_data->SetResolveLinksMethod(StntupleTrackBlockLinks);
-    //   }
-
-    // }
+    if (track_data_umm) {
+      track_data_umm->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecUmm.data()    ,"UpstreammuMinus");
+      track_data_umm->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
+      track_data_umm->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
+      track_data_umm->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
+      track_data_umm->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"AlgoCLOSESTSeededByENERGY");
+//-----------------------------------------------------------------------------
+// for the moment, don't run extrapolation and PID for these
+//-----------------------------------------------------------------------------
+//       track_data_uem->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol2.data()    ,"");
+//       track_data_uem->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch2.data()    ,"");
+//       track_data_uem->AddCollName("mu2e::PIDProductCollection"          ,fPidDem2.data()         ,"");
+    }
+  }
 //-----------------------------------------------------------------------------
 // clusters 
 //-----------------------------------------------------------------------------

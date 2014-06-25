@@ -134,13 +134,13 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   const mu2e::TTracker*     tracker;
 
 
-  mu2e::AlgorithmIDCollection*           list_of_algs(0);
-  mu2e::KalRepCollection*                list_of_kreps(0);
-  mu2e::PtrStepPointMCVectorCollection*  list_of_mc_straw_hits(0);
+  mu2e::AlgorithmIDCollection*           list_of_algs               (0);
+  mu2e::KalRepCollection*                list_of_kreps              (0);
+  mu2e::PtrStepPointMCVectorCollection*  list_of_mc_straw_hits      (0);
   //  mu2e::CaloClusterCollection*           list_of_clusters(0);
-  mu2e::StrawHitCollection*              list_of_straw_hits(0);
+  mu2e::StrawHitCollection*              list_of_straw_hits         (0);
   mu2e::TrkToCaloExtrapolCollection*     list_of_extrapolated_tracks(0);
-  const mu2e::PIDProductCollection*      list_of_pidp(0);
+  const mu2e::PIDProductCollection*      list_of_pidp               (0);
 
   static char   algs_module_label[100], algs_description[100];
   static char   krep_module_label[100], krep_description[100];
@@ -259,21 +259,14 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 
   art::ServiceHandle<mu2e::GeometryService> geom;
 
-  int                       cal_type(-1);   // 1:vane, 2:disk
   const mu2e::AlgorithmID*  alg_id;
   int                       mask;
 
   const mu2e::BaseCalorimeter* bc(NULL);
   
-  if (geom->hasElement<mu2e::VaneCalorimeter>() ) {
-    mu2e::GeomHandle<mu2e::VaneCalorimeter> h;
-    bc = (const mu2e::BaseCalorimeter*) h.get();
-    cal_type = 1;
-  }
-  else if (geom->hasElement<mu2e::DiskCalorimeter>() ) {
+  if (geom->hasElement<mu2e::DiskCalorimeter>() ) {
     mu2e::GeomHandle<mu2e::DiskCalorimeter> h;
     bc = (const mu2e::BaseCalorimeter*) h.get();
-    cal_type = 2;
   }
 
   ntrk = list_of_kreps->size();
@@ -392,7 +385,6 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     const mu2e::StrawHit      *s_hit; 
     const mu2e::SimParticle   *sim; 
 
-
     n_straw_hits = list_of_straw_hits->size();
 
     if (n_straw_hits <= 0) {
@@ -400,7 +392,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 	     n_straw_hits);
     }
     else {
-
+      
       s_hit0 = &list_of_straw_hits->at(0);
 
       for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
@@ -414,9 +406,10 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 	  if (list_of_mc_straw_hits) {
 	    mu2e::PtrStepPointMCVector  const& mcptr(list_of_mc_straw_hits->at(loc));
 	    int nj = mcptr.size();
-					// 2013-06-16 P.Murat: this is a borrowed piece of code.
-					// a loop below doesn't seem to be necessary
-					// as everything is defined by the first hit...
+//-----------------------------------------------------------------------------
+// 2013-06-16 P.Murat: this is a borrowed piece of code.
+// a loop below doesn't seem to be necessary as everything is defined by the first hit...
+//-----------------------------------------------------------------------------
 	    for (int j=0; j<nj; j++) {
 	      step     = &(*mcptr.at(j));
 	      sim      = &(*step->simParticle());
@@ -789,7 +782,9 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     track->fVMinS  = 0;
     track->fVMaxEp = 0;
 
-    for (int iv=0; iv<4; iv++) {
+    int ndisks = bc->nSection();
+
+    for (int iv=0; iv<ndisks; iv++) {
       v = &track->fDisk[iv];
       if (v->fID >= 0) {
 	if (v->fCluster) {
