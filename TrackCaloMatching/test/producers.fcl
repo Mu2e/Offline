@@ -27,7 +27,10 @@ TrackCaloMatching : {
     diagLevel                    : 0
     minClusterEnergy             : 10.             # MeV
     maxDeltaT                    : 20.             # ns
-    meanInteractionDepth         : 50.             # mm
+#------------------------------------------------------------------------------
+# not a guess any more, but the number by Alex
+#------------------------------------------------------------------------------
+    meanInteractionDepth         : 59.             # mm
     dtOffset                     : 1.0             # ns
     fitterModuleLabel            : TrkPatRec
     trkToCaloExtrapolModuleLabel : TrkExtrapol
