@@ -7,9 +7,9 @@ double g4.mcTrajectoryMomentumCut = 80.;
 
 // Do not write out all the points-some are only a few mm apart
 double g4.mcTrajectoryDefaultMinPointDistance = 500.; // mm
-vector<string> g4.mcTrajectoryVolumes = { "PSVacuum", "TS1Vacuum", "TS2Vacuum", "TS3Vacuum", "TS4Vacuum", "TS5Vacuum", "DS1Vacuum", "DS2Vacuum", "DS3Vacuum"};
+vector<string> g4.mcTrajectoryVolumes = { "PSVacuum", "TS1Vacuum", "TS2Vacuum", "TS3Vacuum", "TS4Vacuum", "TS5Vacuum", "DS1Vacuum", "DS2Vacuum", "DS3Vacuum", "TrackerMother", "CalorimeterMother", "StoppingTargetMother"};
 // Step limiter is set to 20mm, preserve every point in B field
-vector<double> g4.mcTrajectoryVolumePtDistances = { 15., 15., 15., 15., 15., 15., 15., 15., 15. };
+vector<double> g4.mcTrajectoryVolumePtDistances = { 15., 15., 15., 15., 15., 15., 15., 15., 15., 15., 15., 15. };
 
 int g4.steppingActionMaxSteps = 50000;
 
