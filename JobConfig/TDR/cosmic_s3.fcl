@@ -26,25 +26,23 @@ services : {
 
 physics : {
     producers: {
-                  makeSH               : @local::makeSH
+                  makeSD               : @local::makeSD
+                  makeSH               : @local::makeSHfromSD
                   FSHPreStereo         : @local::FSHPreStereo
                   MakeStereoHits       : @local::MakeStereoHits
                   FlagStrawHits        : @local::FlagStrawHits
                   FlagBkgHits          : @local::FlagBkgHits
                   CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
                   CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
-                  TrkPatRec1           : @local::TrkPatRecDownstreameMinus
-                  TrkPatRec2           : @local::TrkPatRecDownstreamePlus
-                  TrkPatRec3           : @local::TrkPatRecUpstreameMinus
-                  TrkPatRec4           : @local::TrkPatRecUpstreamePlus
+                  TrkPatRec            : @local::TrkPatRecDownstreameMinus
     }
 
     filters: {
                   TrkPatRecFilter : 
                   {
                      module_type : TrkPatRecFilter
-                     fitterModuleLabels : [ "TrkPatRec1", "TrkPatRec2", "TrkPatRec3", "TrkPatRec4" ]
-                     trkPatRecInstances : [ "DownstreameMinus", "DownstreamePlus", "UpstreameMinus", "UpstreamePlus" ]
+                     fitterModuleLabels : [ "TrkPatRec" ]
+                     trkPatRecInstances : [ "DownstreameMinus" ]
                      minMomentum :  50.0
                      maxMomentum : 200.0
                   }
@@ -56,7 +54,7 @@ physics : {
         }
     }
 
-    trigFilter : [makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, CaloReadoutHitsMaker, CaloCrystalHitsMaker, TrkPatRec1, TrkPatRec2, TrkPatRec3, TrkPatRec4, TrkPatRecFilter]
+    trigFilter : [makeSD, makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, CaloReadoutHitsMaker, CaloCrystalHitsMaker, TrkPatRec, TrkPatRecFilter]
     trigger_paths  : [trigFilter]
 
     an: [genCountLogger]
