@@ -1,9 +1,9 @@
 //
 // Write the event ids of all events.
 //
-// $Id: EventLister_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
+// $Id: EventLister_module.cc,v 1.3 2014/06/26 03:40:05 murat Exp $
+// $Author: murat $
+// $Date: 2014/06/26 03:40:05 $
 //
 // Original author Rob Kutschke
 //
@@ -31,15 +31,20 @@ namespace mu2e {
     virtual void analyze ( const art::Event& event);
 
   private:
-
+    int _ievent;
   };
 
   EventLister::EventLister(fhicl::ParameterSet const& pset):
         art::EDAnalyzer(pset)
-  {}
+  {
+    _ievent = 0;
+  }
 
   void EventLister::analyze(const art::Event& event) {
-    cout << "Event: " << event.id() << endl;
+    _ievent++;
+    printf("Event: %8i run: %10i subRun: %5i event: %10i\n",
+	   _ievent,event.run(),event.subRun(),event.event());
+    //    cout << "Event: " << event.id() << endl;
   }
 
 }  // end namespace mu2e
