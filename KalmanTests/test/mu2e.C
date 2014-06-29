@@ -121,9 +121,9 @@ Double_t crystalball (Double_t *x, Double_t *par) {
 
 class mu2e {
   public:
-    mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true,double ns=5.76e17) : dio(d), con(c),diogenrange(dgenrange),
-    ndio(nd),ncon(nc),weightdio(weightd),nstopped(ns),capfrac(0.609),rmue(1e-16),trueconvmom(104.973),
-    tdlow(0.57735027),tdhigh(1.0),t0min(710),rpc(0.025), ap(0.083333),cmu(0.041666),mu2ecut(2),
+    mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true,double np=3.6e20,double mustopfrac=1.87e-3) : dio(d), con(c),diogenrange(dgenrange),
+    ndio(nd),ncon(nc),weightdio(weightd),nproton(np),nstopped(np*mustopfrac),capfrac(0.609),rmue(1e-16),trueconvmom(104.973),
+    tdlow(0.57735027),tdhigh(1.0),t0min(700),t0max(1695),rpc(0.025), ap(0.083333),cmu(0.041666),mu2ecut(2),
     reco("fitstatus>0")
   {
   }
@@ -141,14 +141,15 @@ class mu2e {
     bool weightdio;
     unsigned _nbins;
     double _mmin, _mmax;
-    double nstopped,capfrac,rmue;
+    double nproton,nstopped,capfrac,rmue;
     double decayfrac,ndecay,ncap,mevperbin,conscale;
-    double trueconvmom,tdlow,tdhigh,t0min;
+    double trueconvmom,tdlow,tdhigh,t0min,t0max;
     double rpc, ap, cmu,flat; // rates per MeV
     double dioint,dioscale;
     unsigned mu2ecut;
     TCut reco, pitch, livegate, cosmic;
     TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4], quality[4], final[4];
+    TCut mcdio, mccon;
     TF1* _diocz_f;
     TF1* _cball;
     TF1* _racc;
@@ -189,10 +190,12 @@ void mu2e::init(){
   char ctext[80];
   snprintf(ctext,80,"td>%f&&td<%f",tdlow,tdhigh);
   pitch = TCut(ctext);
-  snprintf(ctext,80,"t0>%f",t0min);
+  snprintf(ctext,80,"t0>%f&&t0<%f",t0min,t0max);
   livegate = TCut(ctext);
   cosmic = TCut("d0<105&&d0>-80 && d0+2/om>450 && d0+2/om<680");
-
+  // insure this is the primary generated DIO particle, not something from the background frame
+  mcdio = TCut("mcgenid==28");
+  mccon = TCut("mcgenid==2");
   // cuts for different tightness of selection
   ncuts[0] = "nactive>=20";
   ncuts[1] = "nactive>=22";
@@ -214,7 +217,7 @@ void mu2e::init(){
   for(unsigned icut=0;icut<4;icut++){
     quality[icut] = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
     final[icut] = (reco+pitch+livegate+quality[icut]+cosmic);
-  } 
+  }
   _init = true;
 }
 
@@ -246,12 +249,13 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
 
     // kludge: compute the DIO weight by hand
 
-//    dio->Project(dioname,"fitmom","evtwt"*final[icut]);
     dio->Project(dioname,"fitmom","evtwt"*final[icut]);
+//    dio->Project(dioname,"fitmom","evtwt"*(final[icut]+mcdio));
     _diospec[icut]->Scale(dioscale);
     _diospec[icut]->SetMinimum(0.08*_diocz_f->Eval(trueconvmom-0.1)*ndecay*mevperbin);
     _diospec[icut]->SetMaximum(0.08*_diocz_f->Eval(_mmin)*ndecay*mevperbin);
 
+//    con->Project(conname,"fitmom",final[icut]&&mccon);
     con->Project(conname,"fitmom",final[icut]);
     _conspec[icut]->Scale(conscale);
     
@@ -301,7 +305,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
   diofit->SetParameter(2,0.12);
   diofit->SetParameter(3,0.0);
   diofit->SetParameter(4,0.0);
-  diofit->SetRange(102,105.5);
+  diofit->SetRange(102.5,105.5);
   diofit->SetLineColor(kBlue);
 
   for(unsigned icut=ilow;icut<ihi+1;icut++){
@@ -334,8 +338,10 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     TPaveText* inttext = new TPaveText(0.15,0.4,0.4,0.9,"NDC");
     char itext[50];
   
-    snprintf(itext,50,"%5.2e stopped #mu^{-}",nstopped);
+    snprintf(itext,50,"%3.1e Protons On Target",nproton);
     TText* l = inttext->AddText(itext);
+    snprintf(itext,50,"%3.1e Stopped #mu^{-}",nstopped);
+    l = inttext->AddText(itext);
 
     snprintf(itext,50,"R_{#mue} = %2.2g",rmue);
     l = inttext->AddText(itext);
@@ -349,11 +355,11 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
 
     double ses = rmue/cint;
     double ses_err = rmue*cint_err/cint;
-    snprintf(itext,50,"CE SES= %4.2e #pm %2.0e",ses,ses_err);
+    snprintf(itext,50,"CE SES= %3.2e #pm %2.2e",ses,ses_err);
     l = inttext->AddText(itext);
     l->SetTextColor(kRed);
 
-    snprintf(itext,50,"#int DIO = %3.2f #pm %2.2f",dint,dint_err);
+    snprintf(itext,50,"#int DIO = %3.3f #pm %2.3f",dint,dint_err);
     l = inttext->AddText(itext);
 //    l->SetTextColor(kBlue);
 //    snprintf(itext,50,"#int RPC+AP+Cosmic = %2.2f",fint);
@@ -373,7 +379,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     char line[80];
     snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
     cuttext->AddText(line);
-    snprintf(line,80,"t0>%5.1f nsec",t0min);
+    snprintf(line,80,"%5.1f < t_{0} < %5.1f nsec",t0min,t0max);
     cuttext->AddText(line);
     snprintf(line,80,"%s",ncuts[icut].GetTitle());
     cuttext->AddText(line);
@@ -383,7 +389,8 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     cuttext->AddText(line);
     snprintf(line,80,"%s",fitcuts[icut].GetTitle());
     cuttext->AddText(line);
-//    cuttext->Draw();
+    cuttext->Draw();
+    cout <<  final[icut].GetTitle() << endl;
 
     TLine* momlowl = new TLine(momlow,0.0,momlow,0.8*conmax);
     momlowl->SetLineColor(kBlack);
@@ -404,7 +411,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     TText* sigwin = new TText(0.5*(momlow+momhigh),0.90*conmax,"Signal Window");
     sigwin->SetTextAlign(21);
     sigwin->Draw();
-    snprintf(line,80,"%4.1f < p < %4.1f MeV/c",momlow,momhigh); 
+    snprintf(line,80,"%4.2f < p < %4.2f MeV/c",momlow,momhigh); 
     TText* sigwin2 = new TText(0.5*(momlow+momhigh),0.84*conmax,line);
     sigwin2->SetTextAlign(21);
     sigwin2->SetTextSize(0.025);
@@ -427,8 +434,8 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV",_nbins,dmlow,dmhi);
   TH1F* evtwt = new TH1F("evtwt","True DIO momentum;MeV",_nbins,dmlow,dmhi);
   //  evtwt->Sumw2();
-  dio->Project("diogen","mcmom");
-  dio->Project("evtwt","mcmom","evtwt");
+  dio->Project("diogen","mcmom"&&mcdio);
+  dio->Project("evtwt","mcmom","evtwt"&&mcdio);
   evtwt->Scale(dioscale);
   evtwt->SetLineColor(kBlue);
   diogen->SetLineColor(kRed);
@@ -449,12 +456,12 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
     diogenwin[icut]->SetStats(0);
 
     snprintf(diodiffname,50,"diodiffwin%i",icut);
-    diodiffwin[icut] = new TH1F(diodiffname,"Reco - True Momentum of DIO in Signal Box;#Delta Momentum (MeV/c)",100,-1,2);
+    diodiffwin[icut] = new TH1F(diodiffname,"Reco - True Momentum of DIO in Signal Box;#Delta Momentum (MeV/c)",100,-1,2.5);
     diodiffwin[icut]->SetStats(0);
 
-    dio->Project(diogenname,"mcentmom","evtwt"*(final[icut]+momwin));
+    dio->Project(diogenname,"mcentmom","evtwt"*(final[icut]+momwin+mcdio));
     diogenwin[icut]->SetFillColor(colors[icut]);
-    dio->Project(diodiffname,"fitmom-mcentmom","evtwt"*(final[icut]+momwin));
+    dio->Project(diodiffname,"fitmom-mcentmom","evtwt"*(final[icut]+momwin+mcdio));
     diodiffwin[icut]->SetFillColor(colors[icut]);
     dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
   }
@@ -512,7 +519,7 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   TCanvas* diores = new TCanvas("diores","DIO result",800,600);
   gPad->SetLogy();
   diodiffwin[mu2ecut]->Draw();
-  double split = 0.4; // define tail as 400 KeV/c above nominal
+  double split = 0.5; // define tail as 500 KeV/c above nominal
   TLine* td = new TLine(split,0.0,split,diodiffwin[mu2ecut]->GetMaximum());
   td->SetLineColor(kBlack);
   td->SetLineStyle(2);
@@ -528,7 +535,6 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   core *= 100;
   tail *= 100;
   cout <<"core = " << core << " tail = " << tail << endl;
-  diores->SaveAs("diores.png");
   char ccore[30], ctail[30];
   snprintf(ccore,30,"Core =%3.1f%%",core);
   snprintf(ctail,30,"Tail =%3.1f%%",tail);
@@ -538,6 +544,7 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   ttail->SetNDC();
   tcore->Draw();
   ttail->Draw();
+  diores->SaveAs("diores.png");
 }
 
 void mu2e::fitReco(unsigned icut) {
@@ -550,8 +557,8 @@ void mu2e::fitReco(unsigned icut) {
   amomd->Sumw2();
 //  char fmomcut[80];
 //  snprintf(fmomcut,80,"fitmom>%5.3f",mcmom);
-  dio->Project("amom","mcmom",final[icut]+TCut("fitmom>mcmom-4.0"));
-  dio->Project("amomd","mcmom");
+  dio->Project("amom","mcmom",final[icut]+TCut("fitmom>mcmom-4.0")+mcdio);
+  dio->Project("amomd","mcmom"+mcdio);
   amom->Divide(amomd);
   amom->SetMinimum(0.08);
   amom->SetMaximum(0.18);
@@ -570,7 +577,7 @@ void mu2e::fitReco(unsigned icut) {
 // set parameters according to cutset 'C'
   _momres = new TH1F("momres","Reco Momentum Resolution;P_{RECO}-P_{Conversion} (MeV/c)",_nbins,-5,1.0);
 //  _momres->Sumw2();
-  con->Project("momres","fitmom-mcmom",final[icut]);
+  con->Project("momres","fitmom-mcmom",final[icut]+mccon);
 //  _momres->Scale(conscale);
   TCanvas* fcan = new TCanvas("fcan","Fits",1000,800);
   fcan->Clear();
@@ -831,21 +838,30 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
   TH1F* diofscale = new TH1F("diofscale","DIO Fit Scale;Scale (dimensionles);N Toys",100,0.85,1.15);
   TH1F* diofshift = new TH1F("diofshift","DIO Fit Shift;#Delta P (MeV/c);N Toys",100,-0.15,0.15);
   TH2F* diofparams = new TH2F("diofparams","DIO Fit Parameters;Scale (dimensionless);Shift (MeV/c)",100,0.85,1.15,100,-0.15,0.15);
-  TH1F* diofint = new TH1F("diofint","DIO Fit Signal Window Integral;N Events;N Toys",100,0,0.4);
-  TH1F* diofint_err = new TH1F("diofint_err","DIO Fit Signal Window Integral Error;N Events;N Toys",100,0,0.05);
+  TH1F* diofint = new TH1F("diofint","DIO Fit Signal Window Integral;N Events;N Toys",100,0,0.6);
+  TH1F* diofint_err = new TH1F("diofint_err","DIO Fit Signal Window Integral Error;N Events;N Toys",100,0,0.2);
 
 
   char etitle[100];
   snprintf(etitle,100,"Toy Mu2e Experiment;Momentum (MeV/c);Events/%3.3f MeV/c",mevperbin);
   int npass(0);
+  TArrow* sigline = new TArrow(momlow,4.0,momhigh,4.0,0.01,"<>");
+  sigline->SetLineWidth(2);
+  TText* sigwin = new TText(0.5*(momlow+momhigh),10.0,"Signal Window");
+  sigwin->SetTextAlign(21);
+  char line[80];
+  snprintf(line,80,"%4.1f < p < %4.1f MeV/c",momlow,momhigh); 
+  TText* sigwin2 = new TText(0.5*(momlow+momhigh),6.0,line);
+  sigwin2->SetTextAlign(21);
+  sigwin2->SetTextSize(0.025);
   for(unsigned iexp=0;iexp<nexp;++iexp){
     snprintf(conname,50,"conexp%i",iexp);
     TH1F* conexp_h = new TH1F(conname,etitle,_nbins,_mmin,_mmax);
     conexp_h->SetStats(0);
     conexp_h->SetLineColor(kRed);
     conexp_h->SetFillColor(kRed);
-    conexp_h->SetMarkerStyle(2);
-    conexp_h->SetMarkerColor(kRed);
+//    conexp_h->SetMarkerStyle(2);
+//    conexp_h->SetMarkerColor(kRed);
     
     snprintf(dioname,50,"dioexp%i",iexp);
     TH1F* dioexp_h = new TH1F(dioname,etitle,_nbins,_mmin,_mmax);
@@ -891,7 +907,7 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
       dioexp_h->Draw("H");
       ff->Draw("same");
 //      flatexp_h->Draw("sameP");
-      conexp_h->Draw("sameP");
+      conexp_h->Draw("same");
       momlowl->Draw();
       momhighl->Draw();
     } 
@@ -921,7 +937,7 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
 
       cout << "DIO fit shift = " << shift << " scale = " << scale << " inetgral " << dfint << " +- " << dfint_err << endl;
 
-      TPaveText* inttext = new TPaveText(0.6,0.5,0.9,0.9,"NDC");
+      TPaveText* inttext = new TPaveText(0.6,0.7,0.9,0.9,"NDC");
       char text[80];
       snprintf(text,80,"%5.2e stopped muons",nstopped);
       TString snstop(text);
@@ -946,14 +962,17 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
 //      snprintf(itext,50,"DIO Fit Integral = %3.3f #pm %3.3f",dfint,dfint_err);
 //      inttext->AddText(itext);
       inttext->Draw();
-
       if(leg==0){
-	leg = new TLegend(0.15,0.7,0.6,0.9);
+	leg = new TLegend(0.15,0.8,0.4,0.9);
 	leg->AddEntry(dioexp_h,"DIO","L");
-	leg->AddEntry(conexp_h,"Conversions","P");
+	leg->AddEntry(conexp_h,"Conversions","F");
 //	leg->AddEntry(flatexp_h,"RPC+AP+Cosmics","P");
       }
       leg->Draw();
+      sigline->Draw();
+      sigwin->Draw();
+      sigwin2->Draw();
+
       ipave++;
       if(ipave>npave*npave){
 	char cfile[50];
@@ -969,25 +988,29 @@ void mu2e::doExperiments(double momlow, double momhigh,double cprob,unsigned isp
   }
   TCanvas* expcan1 = new TCanvas("expcan1","Toy Experiments",800,800);
   expcan1->Clear();
-  expcan1->Divide(2,2);
-  expcan1->cd(1);
-  nobk_h->Draw();
-  ncon_h->Draw("same");
-  ndio_h->Draw("same");
+  expcan1->Divide(1,2);
+//  expcan1->cd(1);
+//  nobk_h->Draw();
+//  ncon_h->Draw("same");
+//  ndio_h->Draw("same");
 
-  TLegend* nleg = new TLegend(0.2,0.6,0.9,0.9);
-  char title[80];
-  snprintf(title,80,"Conversions, <N>=%3.3f",ncon_h->GetMean());
-  nleg->AddEntry(ncon_h,title,"L");
-  snprintf(title,80,"DIO, <N>=%3.3f",ndio_h->GetMean());
-  nleg->AddEntry(ndio_h,title,"L");
-  snprintf(title,80,"RPC+AP+Cosmics, <N>=%3.3f",nobk_h->GetMean());
-  nleg->AddEntry(nobk_h,title,"L");
-  nleg->Draw();
+//  TLegend* nleg = new TLegend(0.2,0.6,0.9,0.9);
+//  char title[80];
+//  snprintf(title,80,"Conversions, <N>=%3.3f",ncon_h->GetMean());
+//  nleg->AddEntry(ncon_h,title,"L");
+//  snprintf(title,80,"DIO, <N>=%3.3f",ndio_h->GetMean());
+//  nleg->AddEntry(ndio_h,title,"L");
+//  snprintf(title,80,"RPC+AP+Cosmics, <N>=%3.3f",nobk_h->GetMean());
+//  nleg->AddEntry(nobk_h,title,"L");
+//  nleg->Draw();
+  expcan1->cd(1);
+  diofint->SetStats(1);
+  diofint->Draw();
+//  diofint->Fit("gaus");
   expcan1->cd(2);
-  diofint->Fit("gaus");
-  expcan1->cd(3);
-  diofint_err->Fit("gaus");
+  diofint_err->SetStats(1);
+  diofint_err->Draw();
+//  diofint_err->Fit("gaus");
 
   TCanvas* expcan2 = new TCanvas("expcan2","Toy Experiments",800,800);
   expcan2->Clear();
