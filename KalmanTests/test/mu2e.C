@@ -247,15 +247,12 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
     _conspec[icut]->SetLineColor(kRed);
     _conspec[icut]->Sumw2();
 
-    // kludge: compute the DIO weight by hand
-
-    dio->Project(dioname,"fitmom","evtwt"*final[icut]);
-//    dio->Project(dioname,"fitmom","evtwt"*(final[icut]+mcdio));
-    _diospec[icut]->Scale(dioscale);
-    _diospec[icut]->SetMinimum(0.08*_diocz_f->Eval(trueconvmom-0.1)*ndecay*mevperbin);
-    _diospec[icut]->SetMaximum(0.08*_diocz_f->Eval(_mmin)*ndecay*mevperbin);
-
-//    con->Project(conname,"fitmom",final[icut]&&mccon);
+    if(dio){
+      dio->Project(dioname,"fitmom","evtwt"*final[icut]);
+      _diospec[icut]->Scale(dioscale);
+      _diospec[icut]->SetMinimum(0.08*_diocz_f->Eval(trueconvmom-0.1)*ndecay*mevperbin);
+      _diospec[icut]->SetMaximum(0.08*_diocz_f->Eval(_mmin)*ndecay*mevperbin);
+    }
     con->Project(conname,"fitmom",final[icut]);
     _conspec[icut]->Scale(conscale);
     
@@ -309,25 +306,26 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
   diofit->SetLineColor(kBlue);
 
   for(unsigned icut=ilow;icut<ihi+1;icut++){
-    double conmax = 1.5*_conspec[icut]->GetBinContent(_conspec[icut]->GetMaximumBin());
+    double conmax = 1.50*_conspec[icut]->GetBinContent(_conspec[icut]->GetMaximumBin());
     allcan->cd(icut+1);
     if(logy){
       gPad->SetLogy();
     } else {
-      _diospec[icut]->SetMinimum(-0.01);
-      _diospec[icut]->SetMaximum(conmax);
+      _conspec[icut]->SetMinimum(-0.01);
+      _conspec[icut]->SetMaximum(conmax);
     }
-    _diospec[icut]->Fit("diofit","R0");
-    _diospec[icut]->Fit("diofit","RM0");
-    TF1* diof = (TF1*)_diospec[icut]->FindObject("diofit");
-    _diospec[icut]->Draw();
-    if(diof !=0)diof->Draw("same");
-
-    _conspec[icut]->Draw("same");
-//    _flat_f[icut]->Draw("same");
+    _conspec[icut]->Draw();
+    TF1* diof = diofit;
+    if(dio){
+      _diospec[icut]->Fit("diofit","R0");
+      _diospec[icut]->Fit("diofit","RM0");
+      diof = (TF1*)_diospec[icut]->FindObject("diofit");
+      _diospec[icut]->Draw("same");
+      if(diof !=0)diof->Draw("same");
+    }
     
-    int istart = _diospec[icut]->FindFixBin(momlow+0.5*mevperbin);
-    int istop = _diospec[icut]->FindFixBin(momhigh-0.5*mevperbin);
+    int istart = _conspec[icut]->FindFixBin(momlow+0.5*mevperbin);
+    int istop = _conspec[icut]->FindFixBin(momhigh-0.5*mevperbin);
     //    cout << "Integration low edge " << _diospec[icut]->GetBinLowEdge(istart) << " for cut at " << momlow << endl;
     //    cout << "Integration high edge " << _diospec[icut]->GetBinLowEdge(istop)+mevperbin << " for cut at " << momhigh << endl;
     double dint_err, cint_err;
@@ -369,17 +367,18 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
 
     double intfactor = _nbins/(_mmax-_mmin);
     double diofitint = diof->Integral(momlow,momhigh)*intfactor;
-    double diofitint_err = diof->IntegralError(momlow,momhigh)*intfactor;
+    double diofitint_err(0.0);
+    if(dio)diofitint_err = diof->IntegralError(momlow,momhigh)*intfactor;
     snprintf(itext,50,"#int DIO fit = %3.2f #pm %2.2f",diofitint,diofitint_err);
     l = inttext->AddText(itext);
     l->SetTextColor(kBlue);
     inttext->Draw();
 
-    TPaveText* cuttext = new TPaveText(0.1,0.5,0.4,0.8,"NDC");  
+    TPaveText* cuttext = new TPaveText(0.1,0.2,0.4,0.4,"NDC");  
     char line[80];
-    snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
+    snprintf(line,80,"%s",pitch.GetTitle());
     cuttext->AddText(line);
-    snprintf(line,80,"%5.1f < t_{0} < %5.1f nsec",t0min,t0max);
+    snprintf(line,80,"%s",livegate.GetTitle());
     cuttext->AddText(line);
     snprintf(line,80,"%s",ncuts[icut].GetTitle());
     cuttext->AddText(line);
@@ -388,6 +387,8 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     snprintf(line,80,"%s",momcuts[icut].GetTitle());
     cuttext->AddText(line);
     snprintf(line,80,"%s",fitcuts[icut].GetTitle());
+    cuttext->AddText(line);
+    snprintf(line,80,"%s",cosmic.GetTitle());
     cuttext->AddText(line);
     cuttext->Draw();
     cout <<  final[icut].GetTitle() << endl;
@@ -434,8 +435,8 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV",_nbins,dmlow,dmhi);
   TH1F* evtwt = new TH1F("evtwt","True DIO momentum;MeV",_nbins,dmlow,dmhi);
   //  evtwt->Sumw2();
-  dio->Project("diogen","mcmom"&&mcdio);
-  dio->Project("evtwt","mcmom","evtwt"&&mcdio);
+  if(dio)dio->Project("diogen","mcmom");
+  if(dio)dio->Project("evtwt","mcmom","evtwt");
   evtwt->Scale(dioscale);
   evtwt->SetLineColor(kBlue);
   diogen->SetLineColor(kRed);
@@ -459,9 +460,9 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
     diodiffwin[icut] = new TH1F(diodiffname,"Reco - True Momentum of DIO in Signal Box;#Delta Momentum (MeV/c)",100,-1,2.5);
     diodiffwin[icut]->SetStats(0);
 
-    dio->Project(diogenname,"mcentmom","evtwt"*(final[icut]+momwin+mcdio));
+    if(dio)dio->Project(diogenname,"mcentmom","evtwt"*(final[icut]+momwin));
     diogenwin[icut]->SetFillColor(colors[icut]);
-    dio->Project(diodiffname,"fitmom-mcentmom","evtwt"*(final[icut]+momwin+mcdio));
+    if(dio)dio->Project(diodiffname,"fitmom-mcentmom","evtwt"*(final[icut]+momwin));
     diodiffwin[icut]->SetFillColor(colors[icut]);
     dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
   }
@@ -557,8 +558,8 @@ void mu2e::fitReco(unsigned icut) {
   amomd->Sumw2();
 //  char fmomcut[80];
 //  snprintf(fmomcut,80,"fitmom>%5.3f",mcmom);
-  dio->Project("amom","mcmom",final[icut]+TCut("fitmom>mcmom-4.0")+mcdio);
-  dio->Project("amomd","mcmom"+mcdio);
+  if(dio)dio->Project("amom","mcmom",final[icut]+TCut("fitmom>mcmom-4.0"));
+  if(dio)dio->Project("amomd","mcmom");
   amom->Divide(amomd);
   amom->SetMinimum(0.08);
   amom->SetMaximum(0.18);
@@ -577,7 +578,7 @@ void mu2e::fitReco(unsigned icut) {
 // set parameters according to cutset 'C'
   _momres = new TH1F("momres","Reco Momentum Resolution;P_{RECO}-P_{Conversion} (MeV/c)",_nbins,-5,1.0);
 //  _momres->Sumw2();
-  con->Project("momres","fitmom-mcmom",final[icut]+mccon);
+  con->Project("momres","fitmom-mcmom",final[icut]);
 //  _momres->Scale(conscale);
   TCanvas* fcan = new TCanvas("fcan","Fits",1000,800);
   fcan->Clear();
