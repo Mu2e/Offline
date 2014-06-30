@@ -177,6 +177,7 @@ void TStnTrack::ReadV4(TBuffer &R__b) {
     if (i < kNDisks) { 
 					 // there are only 2 disks anyway...for a long time
       fDisk[i].fID       = vane.fID    ; // = -1 if no intersection
+      fDisk[i].fClusterIndex = -1.;
       fDisk[i].fTime     = vane.fTime  ; // track time
       fDisk[i].fEnergy   = vane.fEnergy; // closest cluster energy
       fDisk[i].fXTrk     = vane.fXTrk  ;
@@ -385,6 +386,7 @@ void TStnTrack::ReadV5(TBuffer &R__b) {
 					 // for a long time there are only 2 disks...
     if (i < kNDisks) { 
       fDisk[i].fID       = vane.fID    ; // = -1 if no intersection
+      fDisk[i].fClusterIndex = -1.;
       fDisk[i].fTime     = vane.fTime  ; // track time
       fDisk[i].fEnergy   = vane.fEnergy; // closest cluster energy
       fDisk[i].fXTrk     = vane.fXTrk  ;
@@ -452,6 +454,7 @@ void TStnTrack::Streamer(TBuffer& R__b) {
 
       for (int i=0; i<kNDisks; i++) {
 	R__b >> fDisk[i].fID;
+	R__b >> fDisk[i].fClusterIndex;
 	R__b.ReadFastArray(&fDisk[i].fTime,nwf_vint);
       }
     
@@ -485,6 +488,7 @@ void TStnTrack::Streamer(TBuffer& R__b) {
     
     for (int i=0; i<kNDisks; i++) {
       R__b << fDisk[i].fID;
+      R__b << fDisk[i].fClusterIndex;
       R__b.WriteFastArray(&fDisk[i].fTime,nwf_vint);
     }
   }
@@ -541,33 +545,34 @@ void TStnTrack::Clear(Option_t* Opt) {
   fBestHyp[1]     = -1;
 
   for (int i=0; i<kNDisks; i++) {
-    fDisk[i].fID        = -1;
-    fDisk[i].fEnergy    = -1.;
+    fDisk[i].fID           = -1;
+    fDisk[i].fClusterIndex = -1;
+    fDisk[i].fEnergy       = -1.;
 
-    fDisk[i].fXTrk      = -1.e6;
-    fDisk[i].fYTrk      = -1.e6;
-    fDisk[i].fZTrk      = -1.e6;
-    fDisk[i].fTime      = -1.e6;
-    fDisk[i].fNxTrk     = -1.e6;
-    fDisk[i].fNyTrk     = -1.e6;
-    fDisk[i].fNzTrk     = -1.e6;
-
-    fDisk[i].fXCl       = -1.e6;
-    fDisk[i].fYCl       = -1.e6;
-    fDisk[i].fZCl       = -1.e6;
-
-    fDisk[i].fDx        = -1.e6;
-    fDisk[i].fDy        = -1.e6;
-    fDisk[i].fDz        = -1.e6;
-    fDisk[i].fDt        = -1.e6;
-
-    fDisk[i].fDu        = -1.e6;
-    fDisk[i].fDv        = -1.e6;
-
-    fDisk[i].fChi2Match = 1.e6;
-    fDisk[i].fChi2Time  = 1.e6;
-    fDisk[i].fCluster   = NULL;
-    fDisk[i].fExtrk     = NULL;
+    fDisk[i].fXTrk         = -1.e6;
+    fDisk[i].fYTrk         = -1.e6;
+    fDisk[i].fZTrk         = -1.e6;
+    fDisk[i].fTime         = -1.e6;
+    fDisk[i].fNxTrk        = -1.e6;
+    fDisk[i].fNyTrk        = -1.e6;
+    fDisk[i].fNzTrk        = -1.e6;
+			   
+    fDisk[i].fXCl          = -1.e6;
+    fDisk[i].fYCl          = -1.e6;
+    fDisk[i].fZCl          = -1.e6;
+			   
+    fDisk[i].fDx           = -1.e6;
+    fDisk[i].fDy           = -1.e6;
+    fDisk[i].fDz           = -1.e6;
+    fDisk[i].fDt           = -1.e6;
+			   
+    fDisk[i].fDu           = -1.e6;
+    fDisk[i].fDv           = -1.e6;
+			   
+    fDisk[i].fChi2Match    = 1.e6;
+    fDisk[i].fChi2Time     = 1.e6;
+    fDisk[i].fCluster      = NULL;
+    fDisk[i].fExtrk        = NULL;
   }
   
   fVMinS        = NULL;

@@ -6,7 +6,13 @@
 #include "Stntuple/obj/TStrawDataBlock.hh"
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-//_____________________________________________________________________________
+
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+
+//-----------------------------------------------------------------------------
 Int_t StntupleInitMu2eStrawDataBlock(TStnDataBlock* Block, AbsEvent* AnEvent, int Mode) 
 {
   // initialize COT data block with the `event' data
@@ -32,10 +38,17 @@ Int_t StntupleInitMu2eStrawDataBlock(TStnDataBlock* Block, AbsEvent* AnEvent, in
   art::Handle<mu2e::StrawHitCollection> strh_handle;
   const mu2e::StrawHitCollection*             list_of_hits(0);
 
+  art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptr_handle;
+  const mu2e::PtrStepPointMCVectorCollection* list_of_steps(0);
+
   if (strh_module_label[0] != 0) {
     if (strh_description[0] == 0) AnEvent->getByLabel(strh_module_label,strh_handle);
     else                          AnEvent->getByLabel(strh_module_label,strh_description,strh_handle);
-    list_of_hits = /*(mu2e::StrawHitCollection*) */ strh_handle.product();
+
+    if (strh_handle.isValid()) list_of_hits = strh_handle.product();
+
+    AnEvent->getByLabel(strh_module_label,"StrawHitMCPtr",mcptr_handle);
+    if (mcptr_handle.isValid()) list_of_steps = mcptr_handle.product();
   }
 
   if (list_of_hits == NULL) {
@@ -47,16 +60,53 @@ Int_t StntupleInitMu2eStrawDataBlock(TStnDataBlock* Block, AbsEvent* AnEvent, in
 //-----------------------------------------------------------------------------
   nhits = list_of_hits->size();
 
-  const mu2e::StrawHit* sh; 
-  TStrawHitData*        hit; 
+  const mu2e::StrawHit*    sh; 
+  const mu2e::StepPointMC* step;
+  const mu2e::SimParticle* sim;
+
+  TStrawHitData*           hit; 
+
+  int   pdg_id, mother_pdg_id, sim_id, gen_index;
+  float mc_mom;
 
   for (int i=0; i<nhits; i++) {
     sh  = &list_of_hits->at(i);
+    mu2e::PtrStepPointMCVector const& mcptr (list_of_steps->at(i));
+    step = mcptr[0].operator ->();
+
     hit = data->NewHit();
-    hit->Set(sh->strawIndex().asInt(),sh->time(),sh->dt(),sh->energyDep());
+
+    if (step) {
+      art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle(); 
+      art::Ptr<mu2e::SimParticle> mother = simptr;
+
+      while(mother->hasParent()) mother = mother->parent();
+
+      sim = mother.operator ->();
+
+      pdg_id        = simptr->pdgId();
+      mother_pdg_id = sim->pdgId();
+
+      if (simptr->fromGenerator()) gen_index = simptr->genParticle()->generatorId().id();
+      else                         gen_index = -1;
+      
+      sim_id        = simptr->id().asInt();
+      mc_mom        = step->momentum().mag();
+    }
+    else {
+      pdg_id        = -1;
+      mother_pdg_id = -1;
+      gen_index     = -1;
+      sim_id        = -1;
+      mc_mom        = -1.;
+    }
+
+    hit->Set(sh->strawIndex().asInt(), sh->time(), sh->dt(), sh->energyDep(),
+	     pdg_id, mother_pdg_id, gen_index, sim_id, mc_mom);
+    
   }
 
-  data->f_RunNumber = rn_number;
+  data->f_RunNumber   = rn_number;
   data->f_EventNumber = ev_number;
   
   return 0;

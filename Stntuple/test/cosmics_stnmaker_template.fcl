@@ -18,7 +18,6 @@
 source : { 
 #    module_type : EmptyEvent
     module_type : RootInput
-#    fileNames : [ {INPUT_DATA_FILE} ]
 #    fileNames : ["/mu2e/data/tdr/beam/g4s4p5/tdr.beam.g4s4.conversion.1504a.15729672/good/00000/dsStopsToHitsConversion.root"]
 #    maxEvents   : 100
 
@@ -114,6 +113,9 @@ physics : {
 # write out ntuple only, so don't need compression modules...
 #------------------------------------------------------------------------------
     p1 : [
+#------------------------------------------------------------------------------
+# remake straw hits and clusters
+#------------------------------------------------------------------------------
 	  makeSD, makeSH, 
 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker, 
 	  MakeCaloCluster, 
