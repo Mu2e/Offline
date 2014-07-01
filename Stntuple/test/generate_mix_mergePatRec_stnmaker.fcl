@@ -229,9 +229,6 @@ physics.filters.neutronMixer.detail.g4ModuleLabel  :  neutronMixer
 physics.filters.photonMixer.detail.g4ModuleLabel   :  photonMixer
 physics.filters.protonMixer.detail.g4ModuleLabel   :  protonMixer
 
-physics.producers.MakeCaloCluster.EnoiseCut                      : 0.10 # MeV
-physics.producers.MakeCaloCluster.EclusterCut                    : 2.0  # MeV
-
 physics.producers.TrkExtrapol.fitterModuleLabel                  : MergePatRec
 physics.producers.CaloMatching.fitterModuleLabel                 : MergePatRec
 physics.producers.ParticleID.fitterModuleLabel                   : MergePatRec
