@@ -195,9 +195,6 @@ services.scheduler.wantSummary: true
 physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 #
-physics.producers.MakeCaloCluster.EnoiseCut                      : 0.10 # MeV
-physics.producers.MakeCaloCluster.EclusterCut                    : 2.0  # MeV
-
 physics.producers.CalPatRec.StrawHitPositionCollectionLabel      : MakeStrawHitPositions
 
 physics.producers.TrkExtrapol.fitterModuleLabel                  : MergePatRec

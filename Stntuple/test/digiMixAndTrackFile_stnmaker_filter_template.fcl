@@ -202,9 +202,6 @@ physics.filters.protonMixer.detail.g4ModuleLabel   :  protonMixer
 #
 physics.producers.MakeStrawHitPositions.StrawHitCollectionLabel  : makeSH
 
-physics.producers.MakeCaloCluster.EnoiseCut                      : 0.10 # MeV
-physics.producers.MakeCaloCluster.EclusterCut                    : 2.0  # MeV
-
 physics.producers.CalPatRec.StrawHitCollectionLabel              : makeSH
 physics.producers.CalPatRec.StrawHitPositionCollectionLabel      : MakeStrawHitPositions
 physics.producers.CalPatRec.StrawHitFlagCollectionLabel          : FlagBkgHits

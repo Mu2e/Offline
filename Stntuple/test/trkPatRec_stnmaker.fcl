@@ -213,9 +213,6 @@ physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap
 # physics.producers.FlagBkgHits2.StrawHitPositionCollectionLabel   : MakeStrawHitPositions
 # physics.producers.FlagBkgHits2.StrawHitFlagCollectionLabel       : FlagStrawHits2
 
-physics.producers.MakeCaloCluster.EnoiseCut                      : 0.10 # MeV
-physics.producers.MakeCaloCluster.EclusterCut                    : 2.0  # MeV
-
 # physics.producers.CalPatRec.StrawHitCollectionLabel              : MakeSHNew
 # physics.producers.CalPatRec.StrawHitPositionCollectionLabel      : MakeStrawHitPositions
 # physics.producers.CalPatRec.StrawHitFlagCollectionLabel          : FlagBkgHits2
