@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.35 2014/05/30 19:15:32 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.36 2014/07/02 17:20:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/05/30 19:15:32 $
+// $Date: 2014/07/02 17:20:32 $
 //
 // Original author David Brown, LBNL
 //
@@ -390,6 +390,9 @@ namespace mu2e {
 	art::Provenance const& prov(*(i->provenance()));
 	log  << "   " << prov.branchName() << "\n";
       }
+    }
+    if(stepsHandles.empty()){
+      throw cet::exception("SIM")<<"mu2e::StrawDigisFromStepPointMCs: No StepPointMC collections found for tracker" << endl;
     }
     // Loop over StepPointMC collections
     for ( HandleVector::const_iterator ispmcc=stepsHandles.begin(), espmcc=stepsHandles.end();ispmcc != espmcc; ++ispmcc ){
