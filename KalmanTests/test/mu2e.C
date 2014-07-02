@@ -192,7 +192,7 @@ void mu2e::init(){
   pitch = TCut(ctext);
   snprintf(ctext,80,"t0>%f&&t0<%f",t0min,t0max);
   livegate = TCut(ctext);
-  cosmic = TCut("d0<105&&d0>-80 && d0+2/om>450 && d0+2/om<680");
+  cosmic = TCut("d0<105&&d0>-80 && (d0+2/om)>450 && (d0+2/om)<680");
   // insure this is the primary generated DIO particle, not something from the background frame
   mcdio = TCut("mcgenid==28");
   mccon = TCut("mcgenid==2");

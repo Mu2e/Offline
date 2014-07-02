@@ -16,26 +16,69 @@
 #include "Math/Math.h"
 
 // basic parameters
+class KalFit {  
+  public:
+  double tdlow;
+  double tdhigh;
+  double t0min,t0max;
+  double momlow;
+  double momhigh;
+  int minnhits;
+  size_t icut;
+  unsigned minnactive[4];
+  double maxt0err[4];
+  double maxmomerr[4];
+  double minfitcon[4];
+  TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4], goodfit[4], final[4];
+  TCut reco,quality,cosmic,rmom,rpitch,livegate;
+  TCut tpitch, tt0,tmom,nmch,mcsel;
+  TCut rmomloose;
+  bool donecuts;
 
-double tdlow(0.57735027);
-double tdhigh(1.0);
-double t0min(700);
-double momlow(103.35);
-double momhigh(104.75);
-int minnhits(0);
-size_t icut=2;
-unsigned minnactive[4] = {20,22,25,30};
-double maxt0err[4] = {1.5,0.95,0.9,0.8};
-double maxmomerr[4] = {0.3,0.28,0.25,0.22};
-double minfitcon[4] = {1e-6,1e-3,2e-3,1e-2};
+  KalFit();
+  void KalCuts();
+  void KalFitHit (TTree* hits );
+  void KalFitT2d(TTree* trks);
+  void KalFitTrk (TTree* trks );
+  void KalFitAccPlots(TTree* trks);
+  void KalFitAcc(TTree* trks,double norm=-1);
+  void KalFitRes(TTree* trks,int mincut=0,int maxcut=3);
+  void KalFitRes2(TTree* trks,int ires);
+  void KalFitAmbig(TTree* t, int acut=0);
+  void KalFitResid(TTree* t);
+  void KalFitCon(TTree* t);
+  void KalFitError(TTree* t);
+  void KalFitDrift(TTree* t);
+  void KalFitNHits(TTree* t);
+  void KalFitNactive(TTree* t);
+  void KalFitMom(TTree* t);
+};
 
-TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4];
-TCut reco,goodfit,cosmic,rmom,rpitch,livegate;
-TCut tpitch, tt0,tmom,nmch,mcsel;
-TCut rmomloose("fitmom>100.0");
+KalFit::KalFit() : tdlow(0.57735027),
+  tdhigh(1.0),
+  t0min(700),t0max(1695),
+  momlow(103.75),
+  momhigh(105.0),
+  minnhits(0),
+  icut(2),
+  rmomloose("fitmom>100.0"),
+  donecuts(false)
+{
+  double t_minnactive[] = {20,22,25,30};
+  double t_maxt0err[] = {1.5,0.95,0.9,0.8};
+  double t_maxmomerr[]   = {0.3,0.28,0.25,0.22};
+  double t_minfitcon[]  = {1e-6,1e-3,2e-3,1e-2};
+  for(size_t icut=0;icut<4;++icut){
+    minnactive[icut] = t_minnactive[icut];
+    maxt0err[icut] = t_maxt0err[icut];
+    maxmomerr[icut] = t_maxmomerr[icut];
+    minfitcon[icut] = t_minfitcon[icut];
 
-bool donecuts(false);
-void KalCuts() {
+  }
+}
+
+
+void KalFit::KalCuts() {
   for(size_t ic=0;ic<4;++ic){
     char cutstring[100];
     snprintf(cutstring,100,"nactive>=%i",minnactive[ic]);
@@ -48,9 +91,9 @@ void KalCuts() {
     fitcuts[ic] = TCut(cutstring);
   }
   char ctext[80];
-  snprintf(ctext,80,"td>%4.3f&&td<%4.3f",tdlow,tdhigh);
+  snprintf(ctext,80,"td>%5.5f&&td<%5.5f",tdlow,tdhigh);
   rpitch = TCut(ctext);
-  snprintf(ctext,80,"t0>%f",t0min);
+  snprintf(ctext,80,"t0>%f&&t0<%f",t0min,t0max);
   livegate = TCut(ctext);
   snprintf(ctext,80,"mcenttd>%4.3f&&mcenttd<%4.3f",tdlow-0.02,tdhigh+0.02);
 //  tpitch = TCut(ctext);
@@ -64,8 +107,10 @@ void KalCuts() {
 //  mcsel = nmch+tmom;
 
   reco = TCut("fitstatus>0");
-  cosmic = TCut("abs(d0)<105 && d0+2/om>450 && d0+2/om<680");
-  goodfit = reco+cosmic+ncuts[icut]+t0cuts[icut]+momcuts[icut]+fitcuts[icut];
+  cosmic = TCut("d0<105 && d0>-80 && (d0+2/om)>450 && (d0+2/om)<680");
+  for(size_t icut=0;icut<4;++icut)
+    goodfit[icut] = ncuts[icut]+momcuts[icut]+fitcuts[icut]+t0cuts[icut];
+  quality = goodfit[icut];
   snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
   rmom = TCut(ctext);
   donecuts = true;
@@ -131,7 +176,7 @@ Double_t crystalball (Double_t *x, Double_t *par) {
   }
 }
 
-void KalFitHit (TTree* hits ) {
+void KalFit::KalFitHit (TTree* hits ) {
   if(!donecuts)KalCuts();
   TCut goodhit = reco+ncuts[icut]+momcuts[icut]+"_active";
 
@@ -260,7 +305,7 @@ void KalFitHit (TTree* hits ) {
 
 }
 
-void KalFitT2d(TTree* trks){
+void KalFit::KalFitT2d(TTree* trks){
   TH2F* rt2d = new TH2F("rt2d","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,100,-0.05,2.55);
   TH2F* tt2d = new TH2F("tt2d","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",25,0,50.0,50,-0.05,2.55);
   TProfile* rt2dp = new TProfile("rt2dp","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,-0.05,2.55);
@@ -303,7 +348,7 @@ void KalFitT2d(TTree* trks){
  
 }
 
-void KalFitTrk (TTree* trks ) {
+void KalFit::KalFitTrk (TTree* trks ) {
   if(!donecuts)KalCuts();
   TCanvas* tcan = new TCanvas("tt0can","trk_t0can",1200,800);
   TH1F* t00res = new TH1F("t00res","Initial t0 resolution;nsec",100,-20,20);
@@ -371,7 +416,7 @@ void KalFitTrk (TTree* trks ) {
   chisq->Draw();
 }
 
-void KalFitAccPlots(TTree* trks) {
+void KalFit::KalFitAccPlots(TTree* trks) {
   if(!donecuts)KalCuts();
 
   TH1F* nmc = new TH1F("nmc","N Straw Hits from CE;N straws",81,-0.5,80.5);
@@ -397,13 +442,13 @@ void KalFitAccPlots(TTree* trks) {
   trks->Project("t0err","t0err",reco+nmch+tmom);
   trks->Project("na","nactive",reco+nmch+tmom);
 
-  trks->Project("t0","t0",reco+nmch+tmom+goodfit);
-  trks->Project("td","td",reco+nmch+tmom+goodfit+livegate);
+  trks->Project("t0","t0",reco+nmch+tmom+quality);
+  trks->Project("td","td",reco+nmch+tmom+quality+livegate);
 
-  trks->Project("d0","d0",reco+nmch+tmom+goodfit+livegate);
-  trks->Project("rmax","d0+2.0/om",reco+nmch+tmom+goodfit+livegate);
+  trks->Project("d0","d0",reco+nmch+tmom+quality+livegate);
+  trks->Project("rmax","d0+2.0/om",reco+nmch+tmom+quality+livegate);
 
-  trks->Project("fitmom","fitmom",reco+nmch+tmom+goodfit+livegate+cosmic);
+  trks->Project("fitmom","fitmom",reco+nmch+tmom+quality+livegate+cosmic);
 
   TCanvas* pcan = new TCanvas("pcan","Pre-acceptance",1200,800);
   pcan->Clear();
@@ -518,7 +563,7 @@ void KalFitAccPlots(TTree* trks) {
 
 } 
 
-void KalFitAcc(TTree* trks) {
+void KalFit::KalFitAcc(TTree* trks,double norm) {
   if(!donecuts)KalCuts();
   unsigned nbins(10);
   double bmax = nbins-0.5;
@@ -558,13 +603,14 @@ void KalFitAcc(TTree* trks) {
   trks->Project("+acc",binnames[ibin++],nmch+tmom);
   trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch);
   trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+goodfit);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+goodfit+livegate);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+goodfit+livegate+rpitch);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+goodfit);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+goodfit+rmom);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+quality);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+quality+livegate);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+quality+livegate+rpitch);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+quality);
+  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+quality+rmom);
 
   double all = acc->GetBinContent(1);
+  if(norm < 0)norm=all;
   double prev = all;
   for(ibin=1;ibin<=nbins;ibin++){
     racc->SetBinContent(ibin,acc->GetBinContent(ibin)/prev);
@@ -572,8 +618,8 @@ void KalFitAcc(TTree* trks) {
   }
   cout << "Found " << all << "Entries." << endl;
   racc->SetMaximum(1.1);
-  acc->Scale(1.0/all);
-  acc->SetMaximum(1.1);
+  acc->Scale(1.0/norm);
+  acc->SetMaximum(1.1*all/norm);
   acc->SetStats(0);
   racc->SetStats(0);
   acc->GetXaxis()->SetLabelSize(0.06);
@@ -597,7 +643,7 @@ void KalFitAcc(TTree* trks) {
   racc->Draw("histtext0");
 }
 
-void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
+void KalFit::KalFitRes(TTree* trks,int mincut,int maxcut) {
   if(!donecuts)KalCuts();
 //  TF1* sgau = new TF1("sgau",splitgaus,-1.5,1.5,7);
 //  sgau->SetParName(0,"Norm");
@@ -653,7 +699,6 @@ void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
     snprintf(fitname,50,"fitmomres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV/c",251,-4,4);
 //  momres[ires]->SetStats(0);
-    TCut quality = ncuts[ires]+t0cuts[ires]+momcuts[ires]+fitcuts[ires];
     TCut final = reco+quality+rpitch+cosmic+livegate+rmomloose;
     trks->Project(mname,"fitmom-mcentmom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
@@ -707,7 +752,7 @@ void KalFitRes(TTree* trks,int mincut=0,int maxcut=3) {
   rcan->cd(0);
 }
 
-void KalFitRes2(TTree* trks,int ires) {
+void KalFit::KalFitRes2(TTree* trks,int ires) {
   if(!donecuts)KalCuts();
   TF1* cball2 = new TF1("cball2",crystalball,-5.0,2.0,7);
   cball2->SetParName(0,"Norm");
@@ -720,7 +765,6 @@ void KalFitRes2(TTree* trks,int ires) {
 
   unsigned nbins(250);
   TH1F* momres = new TH1F("momres","Tracker Momentum Resolution;P_{RECO}-P_{TRUE} (MeV/c);Arbitrary Units",nbins,-4.0,2.0);
-  TCut quality = ncuts[ires] && t0cuts[ires] && momcuts[ires] && fitcuts[ires];
   TCut final = reco+quality+mcsel;
   trks->Project("momres","fitmom-mcentmom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1);
@@ -767,7 +811,7 @@ void KalFitRes2(TTree* trks,int ires) {
   rtext2->Draw();
 }
 
-void KalFitAmbig(TTree* t, int acut=0) {
+void KalFit::KalFitAmbig(TTree* t, int acut) {
   if(!donecuts)KalCuts();
   gStyle->SetOptStat(1111);
 
@@ -776,9 +820,6 @@ void KalFitAmbig(TTree* t, int acut=0) {
   TCut nambig("_ambig==0");
   TCut active("_active>0");
 // apply requested cuts
-  TCut quality;
-  if(acut>=0)
-    quality = ncuts[acut] && t0cuts[acut] && momcuts[acut] && fitcuts[acut];
 
   TCut goodtrk = (reco+quality+mcsel);
 
@@ -960,7 +1001,7 @@ void KalFitAmbig(TTree* t, int acut=0) {
 
 }
 
-void KalFitResid(TTree* t) {
+void KalFit::KalFitResid(TTree* t) {
   if(!donecuts)KalCuts();
 
 
@@ -1027,7 +1068,7 @@ void KalFitResid(TTree* t) {
 
 }
 
-void KalFitCon(TTree* t) {
+void KalFit::KalFitCon(TTree* t) {
   if(!donecuts)KalCuts();
   TH1F* con1 = new TH1F("con1","#chi^{2} fit consistency",500,0.0,1.0);
   TH1F* con2 = new TH1F("con2","#chi^{2} fit consistency",500,0.0,1.0);
@@ -1062,7 +1103,7 @@ void KalFitCon(TTree* t) {
 
 }
 
-void KalFitError(TTree* t){
+void KalFit::KalFitError(TTree* t){
   if(!donecuts)KalCuts();
     TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
     sgau->SetParName(0,"Norm");
@@ -1073,7 +1114,6 @@ void KalFitError(TTree* t){
     sgau->SetParName(5,"TSigH");
     sgau->SetParName(6,"TSigL");
 
-//    TCut quality = ncuts[ires] && fitcuts[ires];
     TCut final = (reco+mcsel);
     TH1F* momres1 = new TH1F("momres1","momentum resolution at start of tracker;MeV/c",151,-2.5,2.5);
     TH1F* momres2 = new TH1F("momres2","momentum resolution at start of tracker;MeV/c",151,-2.5,2.5);
@@ -1104,7 +1144,7 @@ void KalFitError(TTree* t){
 
 }
 
-void KalFitDrift(TTree* t){
+void KalFit::KalFitDrift(TTree* t){
   if(!donecuts)KalCuts();
 
   TH1F* rdg = new TH1F("rdg","Reco Hit Drift Radius;radius (mm);N hits",100,-0.05,2.55);
@@ -1124,7 +1164,7 @@ void KalFitDrift(TTree* t){
 
 }
 
-void KalFitNHits(TTree* t){
+void KalFit::KalFitNHits(TTree* t){
   if(!donecuts)KalCuts();
   TH1F* nch = new TH1F("nch","Number of Conversion Electron Tracker Hits;N hits;N Conversion Tracks",100,-0.5,99.5);
   TH1F* ncha = new TH1F("ncha","Number of Conversion Electron Tracker Hits;N hits;N Conversion Tracks",100,-0.5,99.5);
@@ -1145,7 +1185,7 @@ void KalFitNHits(TTree* t){
   leg->Draw();
 }
 
-void KalFitNactive(TTree* t) {
+void KalFit::KalFitNactive(TTree* t) {
   if(!donecuts)KalCuts();
   gStyle->SetOptStat(111111);
   TCut pure("nactive-ncactive==0");
@@ -1206,7 +1246,7 @@ void KalFitNactive(TTree* t) {
 
 }
 
-void KalFitMom(TTree* t) {
+void KalFit::KalFitMom(TTree* t) {
   if(!donecuts)KalCuts();
   TH1F* cemomtp = new TH1F("cemomtp","Conversion Electron Momentum;p (MeV/c)",200,97,107);
   TH1F* cemomte = new TH1F("cemomte","Conversion Electron Momentum;p (MeV/c)",200,97,107);
@@ -1219,9 +1259,9 @@ void KalFitMom(TTree* t) {
   cemomte->SetFillColor(kBlue);
   cemomr->SetStats(0);
   cemomr->SetLineColor(kRed);
-  t->Project("cemomtp","mcmom",goodfit);
-  t->Project("cemomte","mcentmom",goodfit);
-  t->Project("cemomr","fitmom",goodfit);
+  t->Project("cemomtp","mcmom",quality);
+  t->Project("cemomte","mcentmom",quality);
+  t->Project("cemomr","fitmom",quality);
   TCanvas* cemcan = new TCanvas("cemcan","Conversion Momentum",800,600);
   cemcan->Divide(1,1);
   cemcan->cd(1);
