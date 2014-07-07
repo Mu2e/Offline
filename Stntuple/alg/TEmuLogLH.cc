@@ -9,15 +9,29 @@ ClassImp(TEmuLogLH)
 // default constructor
 //-----------------------------------------------------------------------------
 TEmuLogLH::TEmuLogLH() {
+  int const nsl = 7;
+  float path[nsl+1] = { 0., 50., 100., 150., 200., 250., 300., 1.e12};
+
+  fEleEpVsPath = NULL;
+  fMuoEpVsPath = NULL;
+
   fEleDtHist = NULL;
-  fEleEpHist = NULL;
   fEleXsHist = NULL;
   fEleDeHist = NULL;
 
   fMuoDtHist = NULL;
-  fMuoEpHist = NULL;
   fMuoXsHist = NULL;
   fMuoDeHist = NULL;
+
+  fNEpSlices = nsl;
+  for (int i=0; i<nsl+1; i++) {
+    fPath[i] = path[i];
+  }
+
+  for (int i=0; i<nsl; i++) {
+    fEleEpHist[i] = NULL;
+    fMuoEpHist[i] = NULL;
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -64,36 +78,23 @@ TEmuLogLH::TEmuLogLH(const char* FnEle,  const char* FnMuo) {
 //-----------------------------------------------------------------------------
 TEmuLogLH::~TEmuLogLH() {
   if (fEleDtHist) delete fEleDtHist;
-  if (fEleEpHist) delete fEleEpHist;
   if (fEleXsHist) delete fEleXsHist;
   if (fEleDeHist) delete fEleDeHist;
 
   if (fMuoDtHist) delete fMuoDtHist;
-  if (fMuoEpHist) delete fMuoEpHist;
   if (fMuoXsHist) delete fMuoXsHist;
   if (fMuoDeHist) delete fMuoDeHist;
-}
 
-//-----------------------------------------------------------------------------
-// for the time being, assume that there is no under/overflows
-//-----------------------------------------------------------------------------
-void  TEmuLogLH::SetEleDtHist(TH1* Hist) { 	
-  if (fEleDtHist) delete fEleDtHist;
-  fEleDtHist         = (TH1*) Hist->Clone(Form("%s_ele_dt_hist_clone",Hist->GetName())); 
-  fEleDtHist->Scale(1./Hist->Integral());
-}
-
-//-----------------------------------------------------------------------------
-void  TEmuLogLH::SetEleEpHist(TH1* Hist) { 
-  if (fEleEpHist) delete fEleEpHist;
-  fEleEpHist         = (TH1*) Hist->Clone(Form("%s_EleEpHist_clone",Hist->GetName())); 
-  fEleEpHist->Scale(1./Hist->Integral());
+  for (int i=0; i<fNEpSlices; i++) {
+    if (fEleEpHist[i]) delete fEleEpHist[i];
+    if (fMuoEpHist[i]) delete fMuoEpHist[i];
+  }
 }
 
 //-----------------------------------------------------------------------------
 void  TEmuLogLH::SetEleXsHist(TH1* Hist) { 
   if (fEleXsHist) delete fEleXsHist;
-  fEleXsHist         = (TH1*) Hist->Clone(Form("%s_EleXsHist_clone",Hist->GetName())); 
+  fEleXsHist         = (TH1F*) Hist->Clone(Form("%s_EleXsHist_clone",Hist->GetName())); 
   fEleXsHist->Scale(1./Hist->Integral());
 }
 
@@ -105,23 +106,9 @@ void  TEmuLogLH::SetEleXsHist(TH1* Hist) {
 // }
 
 //-----------------------------------------------------------------------------
-void  TEmuLogLH::SetMuoDtHist(TH1* Hist) { 
-  if (fMuoDtHist) delete fMuoDtHist;
-  fMuoDtHist         = (TH1*) Hist->Clone(Form("%s_MuoDtHist_clone",Hist->GetName())); 
-  fMuoDtHist->Scale(1./Hist->Integral());
-}
-
-//-----------------------------------------------------------------------------
-void  TEmuLogLH::SetMuoEpHist(TH1* Hist) { 
-  if (fMuoEpHist) delete fMuoEpHist;
-  fMuoEpHist         = (TH1*) Hist->Clone(Form("%s_MuoEpHist_clone",Hist->GetName())); 
-  fMuoEpHist->Scale(1./Hist->Integral());
-}
-
-//-----------------------------------------------------------------------------
 void  TEmuLogLH::SetMuoXsHist(TH1* Hist) { 
   if (fMuoXsHist) delete fMuoXsHist;
-  fMuoXsHist         = (TH1*) Hist->Clone(Form("%s_MuoXsHist_clone",Hist->GetName())); 
+  fMuoXsHist         = (TH1F*) Hist->Clone(Form("%s_MuoXsHist_clone",Hist->GetName())); 
   fMuoXsHist->Scale(1./Hist->Integral());
 }
 
@@ -135,27 +122,21 @@ void  TEmuLogLH::SetMuoXsHist(TH1* Hist) {
 
 
 //-----------------------------------------------------------------------------
-double TEmuLogLH::LogLHDt(double Dt, int PdgCode) {
+double TEmuLogLH::LogLHDt(PidData_t* Data, int PdgCode) {
 
-  double log_lh, p1;
+  double log_lh, p1, dt;
   int    i1;
 
   TH1    *h1(0);   
 
-  if      (abs(PdgCode) == 11) {
 //-----------------------------------------------------------------------------
-// electron branch , assume constant bin
+// assume constant bin
 //-----------------------------------------------------------------------------
-    h1 = fEleDtHist;
-  }
-  else if (abs(PdgCode) == 13) {
-//-----------------------------------------------------------------------------
-// muon branch 
-//-----------------------------------------------------------------------------
-    h1 = fMuoDtHist;
-  }
+  if      (abs(PdgCode) == 11) h1 = fEleDtHist;
+  else if (abs(PdgCode) == 13) h1 = fMuoDtHist;
 
-  i1 = (Dt-h1->GetXaxis()->GetXmin())/h1->GetBinWidth(1)+1;
+  dt   = Data->fDt;
+  i1 = (dt-h1->GetXaxis()->GetXmin())/h1->GetBinWidth(1)+1;
   p1 = h1->GetBinContent(i1);
   if (p1 < 1.e-15) p1 = 1.e-15;
 
@@ -166,27 +147,31 @@ double TEmuLogLH::LogLHDt(double Dt, int PdgCode) {
 
 
 //-----------------------------------------------------------------------------
-double TEmuLogLH::LogLHEp(double Ep, int PdgCode) {
+double TEmuLogLH::LogLHEp(PidData_t* Data, int PdgCode) {
 
-  double log_lh, ep, p1;
-  int    i1;
+  double log_lh, ep, path, p1;
+  int    isl, i1;
 
   TH1    *h1(0);   
+//-----------------------------------------------------------------------------
+// first, figure out the EP slice number
+//-----------------------------------------------------------------------------
+  path = Data->fPath;
+  ep   = Data->fEp;
 
-  if      (abs(PdgCode) == 11) {
-//-----------------------------------------------------------------------------
-// electron branch , assume constant bin
-//-----------------------------------------------------------------------------
-    h1 = fEleEpHist;
+  for (int i=0; i<fNEpSlices; i++) {
+    if (path < fPath[i+1]) {
+      isl = i;
+      break;
+    }
   }
-  else if (abs(PdgCode) == 13) {
 //-----------------------------------------------------------------------------
-// muon branch 
+// choose the histogram
 //-----------------------------------------------------------------------------
-    h1 = fMuoEpHist;
-  }
+  if      (abs(PdgCode) == 11) h1 = fEleEpHist[isl];
+  else if (abs(PdgCode) == 13) h1 = fMuoEpHist[isl];
 
-  i1 = (Ep-h1->GetXaxis()->GetXmin())/h1->GetBinWidth(1)+1;
+  i1 = (ep-h1->GetXaxis()->GetXmin())/h1->GetBinWidth(1)+1;
   p1 = h1->GetBinContent(i1);
   if (p1 < 1.e-15) p1 = 1.e-15;
 
@@ -204,18 +189,8 @@ double TEmuLogLH::LogLHXs(double Xs, int PdgCode) {
 
   TH1    *h1(0);   
 
-  if      (abs(PdgCode) == 11) {
-//-----------------------------------------------------------------------------
-// electron branch , assume constant bin
-//-----------------------------------------------------------------------------
-    h1 = fEleXsHist;
-  }
-  else if (abs(PdgCode) == 13) {
-//-----------------------------------------------------------------------------
-// muon branch 
-//-----------------------------------------------------------------------------
-    h1 = fMuoXsHist;
-  }
+  if      (abs(PdgCode) == 11) h1 = fEleXsHist;
+  else if (abs(PdgCode) == 13) h1 = fMuoXsHist;
 
   i1 = (Xs-h1->GetXaxis()->GetXmin())/h1->GetBinWidth(1)+1;
   p1 = h1->GetBinContent(i1);
@@ -227,49 +202,11 @@ double TEmuLogLH::LogLHXs(double Xs, int PdgCode) {
 }
 
 
-// //-----------------------------------------------------------------------------
-// double TEmuLogLH::LogLHDe(double De, int PdgCode) {
-
-//   double llh, ep, p1;
-//   int    i1;
-
-//   TH1    *h1(0);   
-
-//   if      (abs(PdgCode) == 11) {
-// //-----------------------------------------------------------------------------
-// // electron branch , assume constant bin
-// //-----------------------------------------------------------------------------
-//     h1 = fEleDeHist;
-//   }
-//   else if (abs(PdgCode) == 13) {
-// //-----------------------------------------------------------------------------
-// // muon branch 
-// //-----------------------------------------------------------------------------
-//     h1 = fMuoDeHist;
-//   }
-
-//   i1 = (De-h1->GetXaxis()->GetXmin())/h1->GetBinWidth(1)+1;
-//   p1 = h1->GetBinContent(i1);
-//   if (p1 < 1.e-15) p1 = 1.e-15;
-
-//   llh = TMath::Log(p1);
-  
-//   return llh;
-// }
-
-
 //-----------------------------------------------------------------------------
-double TEmuLogLH::LogLHCal(CalData_t* Data, int PdgCode) {
+double TEmuLogLH::LogLHCal(PidData_t* Data, int PdgCode) {
 
-  double llh, dt, ep;
-  //  int    i1, i2;
-
-  //  TH1    *h1(0), *h2(0);   
-
-  dt = Data->fDt;
-  ep = Data->fEp;
-
-  llh = LogLHDt(dt,PdgCode)+LogLHEp(ep,PdgCode);
+  double llh;
+  llh = LogLHDt(Data,PdgCode)+LogLHEp(Data,PdgCode);
 
   return llh;
 }
@@ -293,16 +230,16 @@ double TEmuLogLH::LogLHCal(CalData_t* Data, int PdgCode) {
 //-----------------------------------------------------------------------------
 // 11 and 13 - electron and muon PDG codes
 //-----------------------------------------------------------------------------
-double TEmuLogLH::LogLHRDt(double Dt) {
+double TEmuLogLH::LogLHRDt(PidData_t* Data) {
   double llhr;
-  llhr = LogLHDt(Dt,11)-LogLHDt(Dt,13);
+  llhr = LogLHDt(Data,11)-LogLHDt(Data,13);
   return llhr;
 }
 
 //-----------------------------------------------------------------------------
-double TEmuLogLH::LogLHREp(double Ep) {
+double TEmuLogLH::LogLHREp(PidData_t* Data) {
   double llhr;
-  llhr = LogLHEp(Ep,11)-LogLHEp(Ep,13);
+  llhr = LogLHEp(Data,11)-LogLHEp(Data,13);
   return llhr;
 }
 
@@ -324,8 +261,8 @@ double TEmuLogLH::LogLHRXs(double Xs) {
 //-----------------------------------------------------------------------------
 // 11 and 13 - electron and muon PDG codes
 //-----------------------------------------------------------------------------
-double TEmuLogLH::LogLHRCal(CalData_t* Data) {
-  double llhr = LogLHRDt(Data->fDt)+LogLHREp(Data->fEp);
+double TEmuLogLH::LogLHRCal(PidData_t* Data) {
+  double llhr = LogLHRDt(Data)+LogLHREp(Data);
   return llhr;
 }
 
@@ -335,97 +272,250 @@ double TEmuLogLH::LogLHRCal(CalData_t* Data) {
 // }
 
 
-
-
-
 //-----------------------------------------------------------------------------
-void TEmuLogLH::InitEleDtHist(TH1*& Hist) {
-  printf(" >>> ERROR: TEmuLogLH::InitEleDtHist not implemented yet! \n");
+// so far it is trivial
+//-----------------------------------------------------------------------------
+void TEmuLogLH::InitEleDtHist(const char* Fn) {
+  double hint;
+  ReadHistogram1D(Fn,&fEleDtHist);
+
+  hint = fEleDtHist->Integral();
+  fEleDtHist->Scale(1./hint);
 }
 
 //-----------------------------------------------------------------------------
-void TEmuLogLH::InitMuoDtHist(TH1*& Hist) {
-  printf(" >>> ERROR: TEmuLogLH::InitMuoDtHist not implemented yet! \n");
+void TEmuLogLH::InitMuoDtHist(const char* Fn) {
+  double hint;
+  ReadHistogram1D(Fn,&fMuoDtHist);
+
+  hint = fMuoDtHist->Integral();
+  fMuoDtHist->Scale(1./hint);
 }
 
 //-----------------------------------------------------------------------------
-void TEmuLogLH::InitEleEpHist(TH1*& Hist) {
-  printf(" >>> ERROR: TEmuLogLH::InitEleEpHist not implemented yet! \n");
+void TEmuLogLH::InitEleXsHist(const char* Fn) {
+  double hint;
+  ReadHistogram1D(Fn,&fEleXsHist);
+
+  hint = fEleXsHist->Integral();
+  fEleXsHist->Scale(1./hint);
 }
 
 //-----------------------------------------------------------------------------
-void TEmuLogLH::InitMuoEpHist(TH1*& Hist) {
-  const char  name[]  = {"trk_13/ep"} ;
-  const char  title[]  = {"hist/m00s1412.track_ana.hist/TrackAna/trk_13/ep"} ;
-  int     nb   =        300;
-  double  xmin =     0.0000;
-  double  xmax =     1.5000;
-  double data[] = {
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      4.0000,
-      10.0000,     14.0000,      9.0000,      7.0000,      3.0000,      2.0000,      9.0000,      7.0000,      4.0000,      6.0000,
-       6.0000,      3.0000,      7.0000,      9.0000,      9.0000,      3.0000,      3.0000,      4.0000,      3.0000,      5.0000,
-       6.0000,      3.0000,      8.0000,      3.0000,      8.0000,      5.0000,      2.0000,      6.0000,      4.0000,      3.0000,
-       2.0000,      6.0000,      5.0000,      3.0000,      4.0000,      7.0000,      2.0000,      2.0000,      5.0000,      5.0000,
-       7.0000,      7.0000,     10.0000,      1.0000,      6.0000,      5.0000,      9.0000,      5.0000,      6.0000,     11.0000,
-      11.0000,     15.0000,     25.0000,     47.0000,     61.0000,    117.0000,    186.0000,    374.0000,    774.0000,   1296.0000,
-    1155.0000,    721.0000,    595.0000,    589.0000,    436.0000,    352.0000,    468.0000,    570.0000,    608.0000,    719.0000,
-     674.0000,    578.0000,    195.0000,     41.0000,     37.0000,     38.0000,     23.0000,     24.0000,     22.0000,     16.0000,
-      22.0000,     22.0000,     11.0000,      8.0000,     11.0000,      5.0000,      7.0000,      8.0000,      5.0000,      4.0000,
-       5.0000,      3.0000,      4.0000,      1.0000,      3.0000,      1.0000,      1.0000,      1.0000,      2.0000,      3.0000,
-       1.0000,      3.0000,      2.0000,      5.0000,      3.0000,      1.0000,      1.0000,      0.0000,      0.0000,      0.0000,
-       0.0000,      0.0000,      1.0000,      1.0000,      0.0000,      2.0000,      2.0000,      1.0000,      0.0000,      2.0000,
-       2.0000,      1.0000,      0.0000,      3.0000,      1.0000,      1.0000,      0.0000,      0.0000,      0.0000,      0.0000,
-       1.0000,      3.0000,      2.0000,      3.0000,      0.0000,      0.0000,      0.0000,      0.0000,      1.0000,      2.0000,
-       1.0000,      1.0000,      0.0000,      1.0000,      0.0000,      1.0000,      1.0000,      0.0000,      0.0000,      1.0000,
-       0.0000,      0.0000,      0.0000,      1.0000,      1.0000,      2.0000,      1.0000,      1.0000,      0.0000,      0.0000,
-       0.0000,      2.0000,      1.0000,      1.0000,      2.0000,      0.0000,      0.0000,      2.0000,      0.0000,      3.0000,
-       1.0000,      0.0000,      3.0000,      1.0000,      0.0000,      1.0000,      1.0000,      0.0000,      0.0000,      2.0000,
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,
-       1.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      1.0000,      0.0000,      0.0000,      0.0000,
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,
-       0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000,      0.0000
-    };
+void TEmuLogLH::InitMuoXsHist(const char* Fn) {
+  double hint;
+  ReadHistogram1D(Fn,&fMuoXsHist);
 
-  if (Hist) delete Hist;
-
-  Hist = new TH1F(name,title,nb,xmin,xmax);
-
-  for (int i=0; i<nb; i++) {
-    Hist->SetBinContent(i+1,data[i]);
-  };
-
-  //  Hist->Draw();
+  hint = fMuoXsHist->Integral();
+  fMuoXsHist->Scale(1./hint);
 }
 
 
+//-----------------------------------------------------------------------------
+int TEmuLogLH::ReadHistogram1D(const char* Fn, TH1F** Hist) {
+  FILE  *f;
+  int    done = 0, nbx, loc(0), ix, line(0);
+  char   c[1000], title[200], name[200];
+  float  val, xmin, xmax;
+
+  f = fopen(Fn,"r");
+  if (f == 0) {
+    Error("TEmuLogLH::ReadHistogram",Form("missing file %s\n",Fn));
+    return -2;
+  }
+
+  if ((*Hist) != NULL) delete (*Hist);
+
+  while ( ((c[0]=getc(f)) != EOF) && !done) {
+
+					// check if it is a comment line
+    if (c[0] != '#') {
+      ungetc(c[0],f);
+
+      if (line == 0) {
+	fscanf(f,"title: %s" ,title);
+	line++;
+      }
+      else if (line == 1) {
+	fscanf(f,"name: %s"  ,name);
+	line++;
+      }
+      else if (line ==2) {
+	fscanf(f,"nbx,xmin,xmax: %i %f %f"  ,&nbx,&xmin,&xmax);
+	*Hist = new TH1F(name,title,nbx,xmin,xmax);
+	line++;
+      }
+      else {
+	for (int i=0; i<10; i++) {
+	  fscanf(f,"%f" ,&val);
+	  ix = loc + 1;
+	  (*Hist)->SetBinContent(ix,val);
+	  loc++;
+	}
+	line++;
+      }
+    }
+					// skip the rest of the line
+    fgets(c,100,f);
+    
+  }
+
+  fclose(f);
+  return 0;
+}
+
+//-----------------------------------------------------------------------------
+int TEmuLogLH::ReadHistogram2D(const char* Fn, TH2F** Hist) {
+  FILE  *f;
+  int    done = 0, nbx, nby, loc(0), ix, iy, line(0);
+  char   c[1000], title[200], name[200];
+  float  val, xmin, xmax, ymin, ymax;
+
+  f = fopen(Fn,"r");
+  if (f == 0) {
+    Error("TEmuLogLH::ReadHistogram",Form("missing file %s\n",Fn));
+    return -2;
+  }
+
+  if ((*Hist) != NULL) delete (*Hist);
+
+  while ( ((c[0]=getc(f)) != EOF) && !done) {
+
+					// check if it is a comment line
+    if (c[0] != '#') {
+      ungetc(c[0],f);
+      if (line == 0) {
+	fscanf(f,"title: %s" ,title);
+	line++;
+      }
+      else if (line == 1) {
+	fscanf(f,"name: %s"  ,name);
+	line++;
+      }
+      else if (line ==2) {
+	fscanf(f,"nbx,xmin,xmax,nby,ymin,ymax: %i %f %f %i %f %f"  ,&nbx,&xmin,&xmax,&nby,&ymin,&ymax);
+	*Hist = new TH2F(name,title,nbx,xmin,xmax,nby,ymin,ymax);
+	line++;
+      }
+      else {
+					// read channel number
+	for (int i=0; i<10; i++) {
+	  fscanf(f,"%f" ,&val);
+	  iy = loc / nbx + 1;
+	  ix = loc % nbx + 1;
+	  (*Hist)->SetBinContent(ix,iy,val);
+	  loc++;
+	}
+	line++;
+      }
+    }
+					// skip the rest of the line
+    fgets(c,100,f);
+  }
+
+  fclose(f);
+  return 0;
+}
+
+//-----------------------------------------------------------------------------
+// assume path is from 0 to 50..
+// slices step by 5 cm
+//-----------------------------------------------------------------------------
+void TEmuLogLH::InitEleEpHist(const char* Fn) {
+  int        imin[10], imax[10], nx;
+  double     hint, x1;
+
+  ReadHistogram2D(Fn,&fEleEpVsPath);
+
+  fEleEpVsPath->Draw();
+  nx                 = fEleEpVsPath->GetNbinsX();
+
+  imin[0]            = 1;		// first bin
+  imax[fNEpSlices-1] = nx;
+
+  int isl=0;
+  for (int ix=1; ix<=nx; ix++) {
+    x1 = fEleEpVsPath->GetBinLowEdge(ix);
+    if (x1 >= fPath[isl+1]) {
+      imax[isl  ] = ix-1;
+      imin[isl+1] = ix;
+      isl++;
+    }
+  }
+					// create slices
+  for (int i=0; i<fNEpSlices; i++) {
+    if (fEleEpHist[i] != NULL) delete fEleEpHist[i];
+    fEleEpHist[i] = (TH1F*) fEleEpVsPath->ProjectionY(Form("EleEpHist_slice_%02i",i),
+						      imin[i],imax[i]); 
+    hint = fEleEpHist[i]->Integral();
+    fEleEpHist[i]->Scale(1./hint);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void TEmuLogLH::InitMuoEpHist(const char* Fn) {
+
+  ReadHistogram2D(Fn,&fMuoEpVsPath);
+
+  int        imin[10], imax[10], nx;
+  double     hint, x1;
+
+  nx                 = fEleEpVsPath->GetNbinsX();
+  imin[0]            = 1;		// first bin
+  imax[fNEpSlices-1] = nx;
+
+  int isl=0;
+  for (int ix=1; ix<=nx; ix++) {
+    x1 = fMuoEpVsPath->GetBinLowEdge(ix);
+    if (x1 >= fPath[isl+1]) {
+      imax[isl  ] = ix-1;
+      imin[isl+1] = ix;
+      isl++;
+    }
+  }
+					// create slices
+  for (int i=0; i<fNEpSlices; i++) {
+    if (fMuoEpHist[i]) delete fMuoEpHist[i];
+    fMuoEpHist[i] = (TH1F*) fMuoEpVsPath->ProjectionY(Form("MuoEpHist_slice_%02i",i),
+						      imin[i],imax[i]); 
+    hint = fMuoEpHist[i]->Integral();
+    fMuoEpHist[i]->Scale(1./hint);
+  }
+}
 
 //-----------------------------------------------------------------------------
 // default initialization: use electron and muon templates from e00s1412 and m00s1412
 // TrackAna trk_13
 //-----------------------------------------------------------------------------
-int TEmuLogLH::Init() {
+int TEmuLogLH::Init_v4_2_4() {
 
-  TH1  *hm_ep(0), *hm_dt(0), *he_ep(0), *he_dt(0);
+  InitEleEpHist("ConditionsService/data/pid_ele_ep_vs_path_v4_2_4.tab");
+  InitEleDtHist("ConditionsService/data/pid_ele_dt_v4_2_4.tab");
 
-  InitEleEpHist(he_ep);
-  SetEleDtHist(he_ep);
+  InitMuoEpHist("ConditionsService/data/pid_muo_ep_vs_path_v4_2_4.tab");
+  InitMuoDtHist("ConditionsService/data/pid_muo_dt_v4_2_4.tab");
 
-  InitEleDtHist(he_dt);
-  SetEleDtHist(he_dt);
+  InitEleXsHist("ConditionsService/data/pid_ele_xs_v4_2_4.tab");
+  InitMuoXsHist("ConditionsService/data/pid_muo_xs_v4_2_4.tab");
 
-  InitMuoEpHist(hm_ep);
-  SetMuoEpHist(hm_ep);
+  return 0;
+}
 
-  InitMuoDtHist(hm_dt);
-  SetMuoDtHist(hm_ep);
-
-  printf(" ERROR TEmuLogLH::Init : not everything implemented; Don't use\n");
-  return -1;
+//-----------------------------------------------------------------------------
+// default initialization: use electron and muon templates from e00s1412 and m00s1412
+// TrackAna trk_13
+//-----------------------------------------------------------------------------
+int TEmuLogLH::Init(const char* Version) {
+  
+  TString ver;
+  
+  ver = Version;
+  ver.ToLower();
+  
+  if (ver == "v4_2_4") Init_v4_2_4();
+  else {
+    printf(" >>> ERROR in TEmuLogLH::Init: unknown version : %s, BAILING OUT\n",Version); 
+  }
+  
+  return 0;
 }

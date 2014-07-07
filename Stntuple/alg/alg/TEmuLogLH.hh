@@ -9,29 +9,34 @@
 
 #include "TObject.h"
 #include "TH1.h"
+#include "TH2.h"
 
 class TEmuLogLH: public TObject {
 public:
 
-  struct CalData_t {
+  struct PidData_t {
+    double fPath;			// trajectory length inside the disk
     double fDt;				// delta(T) = T(cluster)-T(track)
     double fEp;				// E(cluster)/P(track)
-  };
-					// electron histograms
-  struct TrkData_t {
+    double fFrE2;			// cluster (e1+e2)/etot
     double fXs;				// slope/sig(slope)
     double fDe;				// DeDx probability
   };
+
+  int            fNEpSlices;		// assume < 10, currently - 7
+  float          fPath[10];
 					// electron histograms
-  TH1*          fEleDtHist;
-  TH1*          fEleEpHist;
-  TH1*          fEleXsHist;
-  TH1*          fEleDeHist;		// DeDx probability
+  TH2F*          fEleEpVsPath;
+  TH1F*          fEleEpHist[10];
+  TH1F*          fEleDtHist;
+  TH1F*          fEleXsHist;
+  TH1F*          fEleDeHist;		// DeDx probability
 					// muon histograms
-  TH1*          fMuoDtHist;
-  TH1*          fMuoEpHist;
-  TH1*          fMuoXsHist;
-  TH1*          fMuoDeHist;		// DeDx probability
+  TH2F*          fMuoEpVsPath;
+  TH1F*          fMuoEpHist[10];
+  TH1F*          fMuoDtHist;
+  TH1F*          fMuoXsHist;
+  TH1F*          fMuoDeHist;		// DeDx probability
 					// this part may not be needed
   // smooth_new*   fEleDtFunc;
   // smooth_new*   fEleEpFunc;
@@ -48,42 +53,46 @@ public:
 //-----------------------------------------------------------------------------
 // initialization
 //-----------------------------------------------------------------------------
-  void InitEleDtHist(TH1*& Hist);
-  void InitMuoDtHist(TH1*& Hist);
-  void InitEleEpHist(TH1*& Hist);
-  void InitMuoEpHist(TH1*& Hist);
-  int  Init();
+  void InitEleDtHist(const char* Fn);
+  void InitMuoDtHist(const char* Fn);
+
+  void InitEleEpHist(const char* Fn);
+  void InitMuoEpHist(const char* Fn);
+
+  void InitEleXsHist(const char* Fn);
+  void InitMuoXsHist(const char* Fn);
+					// versions: "v4_2_4"
+  int  Init(const char* Version);
+
+  int  Init_v4_2_4();
 //-----------------------------------------------------------------------------
 // log(LH) of a given hypothesis is normally negative. 
 // If the calculated likelihood is zero, the returned value of Log(LH) 
 // is set to 999.
 //-----------------------------------------------------------------------------
 					// assume that there is no under/overflows
-  void   SetEleDtHist(TH1* Hist);
-  void   SetEleEpHist(TH1* Hist);
   void   SetEleXsHist(TH1* Hist);
-  //  void   SetEleDeHist(TH1* Hist);
 
-  void   SetMuoDtHist(TH1* Hist);
-  void   SetMuoEpHist(TH1* Hist);
   void   SetMuoXsHist(TH1* Hist);
-  //  void   SetMuoDeHist(TH1* Hist);
 
-  double LogLHCal(CalData_t* Data, int PdgCode);
+  double LogLHCal(PidData_t* Data, int PdgCode);
+
   //  double LogLHTrk(TrkData_t* Data, int PdgCode);
 
-  double LogLHDt  (double Ep, int PdgCode);
-  double LogLHEp  (double Ep, int PdgCode);
-  double LogLHXs  (double Ep, int PdgCode);
-  //  double LogLHDe  (double Ep, int PdgCode);
+  double LogLHDt  (PidData_t* Data, int PdgCode);
+  double LogLHEp  (PidData_t* Data, int PdgCode);
 
-  double LogLHREp (double Ep);
-  double LogLHRDt (double Dt);
+  double LogLHXs  (double Xs, int PdgCode);
+
+  double LogLHREp (PidData_t* Data);
+  double LogLHRDt (PidData_t* Data);
   double LogLHRXs (double Xs);
-  //  double LogLHRDe (double De);
 					// log_lhr = log_lh(ele)-log_lh(muo)
-  double LogLHRCal(CalData_t* Data);
+  double LogLHRCal(PidData_t* Data);
   //  double LogLHRTrk(TrkData_t* Data);
+
+  int ReadHistogram1D(const char* Fn, TH1F** Hist);
+  int ReadHistogram2D(const char* Fn, TH2F** Hist);
 
   ClassDef (TEmuLogLH,0)
 };

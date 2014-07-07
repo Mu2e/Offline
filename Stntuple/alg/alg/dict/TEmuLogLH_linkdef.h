@@ -7,6 +7,5 @@
 #pragma link C++  nestedtypedefs;
 #
 #pragma link C++  class  TEmuLogLH;
-#pragma link C++  class  TEmuLogLH::CalData_t;
-#pragma link C++  class  TEmuLogLH::TrkData_t;
+#pragma link C++  class  TEmuLogLH::PidData_t;
 #endif
