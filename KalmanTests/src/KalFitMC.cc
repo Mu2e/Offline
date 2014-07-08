@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.59 2014/06/11 00:20:14 brownd Exp $
+// $Id: KalFitMC.cc,v 1.60 2014/07/08 16:42:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/06/11 00:20:14 $
+// $Date: 2014/07/08 16:42:32 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -135,6 +135,7 @@ namespace mu2e
     _mcptrlabel(pset.get<std::string>("MCPtrLabel","makeSH")),
     _mcstepslabel(pset.get<std::string>("MCStepsLabel","g4run")),
     _simpartslabel(pset.get<std::string>("SimParticleLabel","g4run")),
+    _simpartsinstance(pset.get<std::string>("SimParticleInstance","")),
     _mcdigislabel(pset.get<std::string>("StrawHitMCLabel","makeSH")),
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
     _mintrkmom(pset.get<double>("minTrkMom",60.0)),
@@ -779,7 +780,7 @@ namespace mu2e
     if(evt.getByLabel(_mcstepslabel,"virtualdetector",mcVDstepsHandle))
       _mcdata._mcvdsteps = mcVDstepsHandle.product();
     art::Handle<SimParticleCollection> simParticlesHandle;
-    if(evt.getByLabel(_simpartslabel,simParticlesHandle))
+    if(evt.getByLabel(_simpartslabel,_simpartsinstance,simParticlesHandle))
       _mcdata._simparts = simParticlesHandle.product();
     art::Handle<StrawDigiMCCollection> mcdigisHandle;
     if(evt.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle))

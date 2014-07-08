@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.39 2014/07/08 14:59:56 brownd Exp $
+// $Id: KalFitMC.hh,v 1.40 2014/07/08 16:42:32 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/07/08 14:59:56 $
+// $Date: 2014/07/08 16:42:32 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -173,7 +173,7 @@ namespace mu2e
     std::string _mcstrawhitslabel;
     std::string _mcptrlabel;
     std::string _mcstepslabel;
-    std::string _simpartslabel;
+    std::string _simpartslabel, _simpartsinstance;
     std::string _mcdigislabel;
     std::string _strawhitslabel;
 // helper functions
