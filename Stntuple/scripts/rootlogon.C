@@ -22,31 +22,15 @@
 
   gInterpreter->AddIncludePath(Form("%s/tex/cdfnotes",
 				    gSystem->Getenv("HOME")));
-  gSystem->SetMakeSharedLib("cd $BuildDir ; g++ -c -g $Opt -pipe -m32 -Wall -W -Woverloaded-virtual -fPIC -pthread $IncludePath $SourceFiles ;  g++ -g $ObjectFiles -shared -Wl,-soname,$LibName.so -m32 $LinkedLibs -o $SharedLib");
-                                // load in ROOT physics vectors and event
-                                // generator libraries
-
-   gSystem->Load("$ROOTSYS/lib/libPhysics.so");
-   gSystem->Load("$ROOTSYS/lib/libEG.so");
+//   gSystem->SetMakeSharedLib("cd $BuildDir ; g++ -c -g $Opt -pipe -m32 -Wall -W -Woverloaded-virtual -fPIC -pthread $IncludePath $SourceFiles ;  g++ -g $ObjectFiles -shared -Wl,-soname,$LibName.so -m32 $LinkedLibs -o $SharedLib");
+//-----------------------------------------------------------------------------
+// load in ROOT physics vectors and event generator libraries
+//-----------------------------------------------------------------------------
+  gSystem->Load("$ROOTSYS/lib/libPhysics.so");
+  gSystem->Load("$ROOTSYS/lib/libEG.so");
   gSystem->Load("$ROOTSYS/lib/libMinuit.so");
   gSystem->Load("$ROOTSYS/lib/libFumili.so");
-//   gSystem->Load("$ROOTSYS/lib/libNet.so");
   gSystem->Load("$ROOTSYS/lib/libTree.so");
-  //  gSystem->Load("$ROOTSYS/lib/libRuby.so");
-
-  //  gSystem->Load("$ORACLE_HOME/lib/libclntsh.so");
-  //  gSystem->Load("$ROOTSYS/lib/libSQL.so");
-  //  gSystem->Load("$ROOTSYS/lib/libOracle.so");
-  //  gSystem->Load("$ROOTSYS/lib/libDCache.so");
-
-				// load a script with the macros
-  char command[200];
-
-//   sprintf(command,"%s/Stntuple/scripts/global_init.C",
-// 	  gSystem->Getenv("WORK_DIR"));
-
-//  gInterpreter->LoadMacro(command);
-
 //-----------------------------------------------------------------------------
 //  check batch mode
 //-----------------------------------------------------------------------------
@@ -76,12 +60,12 @@
 //-----------------------------------------------------------------------------
     if (batch_mode == 1) gSystem->Load("$ROOTSYS/lib/libGui.so");
 
-    gSystem->Load("$WORK_DIR/lib/libStntuple_base.so");
-    gSystem->Load("$WORK_DIR/lib/libStntuple_obj.so");
-    gSystem->Load("$WORK_DIR/lib/libStntuple_loop.so");
-    gSystem->Load("$WORK_DIR/lib/libStntuple_alg.so");
-    gSystem->Load("$WORK_DIR/lib/libStntuple_val.so");
-    gSystem->Load("$WORK_DIR/lib/libStntuple_ana.so");
+    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_base.so");
+    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_obj.so");
+    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_loop.so");
+    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_alg.so");
+    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_val.so");
+    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_ana.so");
   }
                                 // print overflows/underflows in the stat box
   gStyle->SetOptStat(11111111);
@@ -91,15 +75,14 @@
 //  databases
 //-----------------------------------------------------------------------------
 //   gSystem->Load("libStntuple_oracle.so");
-
 //-----------------------------------------------------------------------------
 //  stnana, if exists and if executable is not mu2e
 //-----------------------------------------------------------------------------
-  if (strstr(exec_name,"mu2e.exe") == 0) {
-    if (gSystem->Exec("ls murat/Stntuple/scripts/stnana.C > /dev/null ") == 0) {
-      gInterpreter->LoadMacro("murat/Stntuple/scripts/stnana.C");
-    }
-  }
+//   if (strstr(exec_name,"mu2e.exe") == 0) {
+//     if (gSystem->Exec("ls Stntuple/scripts/stnana.C > /dev/null ") == 0) {
+//       gInterpreter->LoadMacro("Stntuple/scripts/stnana.C");
+//     }
+//   }
 //-----------------------------------------------------------------------------
 // this line reports the process ID which simplifies debugging
 //-----------------------------------------------------------------------------

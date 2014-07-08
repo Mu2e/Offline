@@ -31,7 +31,7 @@ void stnana (TString     Book   ,
 //-----------------------------------------------------------------------------
   char        macro[200], load_script[200], line[200];
   const char* pkg;
-  const char* work_dir = gSystem->Getenv("WORK_DIR");
+  const char* test_release_dir = gSystem->Getenv("MU2E_TEST_RELEASE");
 
   const char* script[] = { 
     "init_geometry.C",
@@ -43,7 +43,7 @@ void stnana (TString     Book   ,
   TInterpreter* cint = gROOT->GetInterpreter();
   
   for (int i=0; script[i] != 0; i++) {
-    sprintf(macro,"%s/Stntuple/scripts/%s",work_dir,script[i]);
+    sprintf(macro,"%s/Stntuple/scripts/%s",test_release_dir,script[i]);
     if (! cint->IsLoaded(macro)) {
       cint->LoadMacro(macro);
     }
@@ -60,7 +60,7 @@ void stnana (TString     Book   ,
   for (int i=0; i<list_of_packages->GetEntries(); i++) {
     pkg = ((TObjString*) list_of_packages->At(i))->String().Data();
 
-    sprintf(macro,"%s/%s/ana/scripts/load_stnana_scripts_%s.C",work_dir,pkg,pkg);
+    sprintf(macro,"%s/%s/ana/scripts/load_stnana_scripts_%s.C",test_release_dir,pkg,pkg);
 
     printf("[stnana.C] loading: %s\n",macro);
 

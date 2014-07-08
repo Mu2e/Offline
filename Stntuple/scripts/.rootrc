@@ -1,4 +1,4 @@
-Unix.*.Root.MacroPath:.:$(WORK_DIR)/murat/ana/scripts:~/root_macros:$(PWD)/Stntuple/ana:$(PWD)/Stntuple/scripts:$(ROOTSYS)/tutorials:$(HOME)/tex/cdfnotes
+Unix.*.Root.MacroPath:.:$(MU2E_TEST_RELEASE)/murat/ana/scripts:~/root_macros:$(PWD)/Stntuple/ana:$(PWD)/Stntuple/scripts:$(ROOTSYS)/tutorials:$(HOME)/tex/cdfnotes
 
 Unix*.Root.DynamicPath:.:~/rootlibs:$(LD_LIBRARY_PATH)
 Root.Html.OutputDir:.
@@ -7,15 +7,15 @@ Root.Html.SourceDir:.:$(ROOTSYS)/src
 #  next line tells ROOT to use rootlogon.C macro from the 
 #  current directory and not any of the default ones
 #
-Rint.Logon:          $(PWD)/rootlogon.C
+Rint.Logon:          $(MU2E_TEST_RELEASE)/rootlogon.C
 Rint.Logoff:
 
 # Root.MemStat:  1
 Root.ObjectStat:  1
 #
-Gui.IconPath:  $(PWD)/Stntuple/icons
+Gui.IconPath:   $(MU2E_TEST_RELEASE)/Stntuple/icons
 # Record session commands, set to "-" to turn off command recording
-Rint.History:            $(PWD)/.root_hist
+Rint.History:   $(MU2E_TEST_RELEASE)/.root_hist
 #------------------------------------------------------------------------------
 # plugin handlers
 #------------------------------------------------------------------------------
@@ -23,9 +23,9 @@ Rint.History:            $(PWD)/.root_hist
 +Plugin.TFile: ^dcap:   TDCacheFile DCache  "TDCacheFile(const char*,Option_t*,const char*,Int_t)"
 #------------------------------------------------------------------------------
 # STNTUPLE good run list (TStnRunSummaries extracted from DB, all the runs)
-# good run lists are no used at Mu2e so far
+# good run lists are not used at Mu2e so far
 #------------------------------------------------------------------------------
-Stntuple.RunSummary:  root://fcdfdata122.fnal.gov//export/data2/ewk/run_summary/rs-138425-186598.2005-04-27.root
+# Stntuple.RunSummary:  root://fcdfdata122.fnal.gov//export/data2/ewk/run_summary/rs-138425-186598.2005-04-27.root
 # Stntuple.RunSummary   /home/murat/run_summary/rs-138425-186598.2005-04-27.root
 #------------------------------------------------------------------------------
 # STNTUPLE catalog servers 
@@ -45,7 +45,7 @@ Stntuple.Catalog   http://home.fnal.gov/~murat/cafdfc
 #------------------------------------------------------------------------------
 # Calibration DB for TGeant: not used at Mu2e
 #------------------------------------------------------------------------------
-# TGeant.Database         $(WORK_DIR)/Stntuple/db
+# TGeant.Database         $(MU2E_TEST_RELEASE)/Stntuple/db
 #------------------------------------------------------------------------------
 # stnana packages, add your own packages as needed
 #------------------------------------------------------------------------------
