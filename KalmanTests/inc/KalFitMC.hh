@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.38 2014/06/11 00:20:14 brownd Exp $
+// $Id: KalFitMC.hh,v 1.39 2014/07/08 14:59:56 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/06/11 00:20:14 $
+// $Date: 2014/07/08 14:59:56 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -109,7 +109,7 @@ namespace mu2e
       _mcsteps(mcsteps),_mcvdsteps(mcvdsteps){}
     void clear() { _mchitptr = 0; _mcsteps = 0; _mcvdsteps = 0; _simparts = 0; _mcdigis = 0; }
     MCEvtData() {clear();}
-    bool good() { return _mchitptr != 0 && _mcsteps != 0 && _mcvdsteps != 0; }
+    bool good() { return _mchitptr != 0 && _mcsteps != 0 && _mcvdsteps != 0 && _simparts !=0 && _mcdigis !=0; }
     const PtrStepPointMCVectorCollection* _mchitptr;
     const StepPointMCCollection *_mcsteps, *_mcvdsteps;
     const StrawDigiMCCollection *_mcdigis;
