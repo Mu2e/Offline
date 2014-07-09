@@ -13,11 +13,52 @@
 #include <iostream>
 using namespace std;
 
+// compactify codes
+Int_t myorigin(Int_t part, Int_t gen) {
+  enum mp{ beamproton=0, proton=1, photon=2, neutron=3, electron=4, ootmuon=5, other=6};
+  if(part==2212&&gen==16)return beamproton;
+  if(part==2212&&gen==28)return proton;
+  if(part==22) return photon;
+  if(part==11)return electron;
+  if(part==2112)return neutron;
+  if(part==13)return ootmuon;
+  return other;
+}
+
+
+Int_t mypart(Int_t part) {
+  enum mp{ proton=0, electron=1, photon=2, neutron=3, positron=4, muon=5, other=6};
+  if(part==2212)return proton;
+  if(part==11)return electron;
+  if(part==22) return photon;
+  if(part==-11)return positron;
+  if(part==2112)return neutron;
+  if(part==13 || part==-13)return muon;
+  return other;
+}
+
+Int_t myppart(Int_t ppart, Int_t part){
+  if(ppart==0)return mypart(part);
+  return mypart(ppart);
+}
+
+Int_t myproc(Int_t proc,Bool_t xtalk) {
+  enum mp{ primary=0, compt=1, delta=2, gamconv=3, photo=4, had=5, xt=6, other=7};
+  if(xtalk)return xt;
+  if(proc==56)return primary;
+  if(proc==12)return compt;
+  if(proc==17 || proc==21) return delta;
+  if(proc==13)return gamconv;
+  if(proc==40)return photo;
+  if(proc==58)return had;
+  return other;
+}
+
 void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 
   TString spage(page);
   gStyle->SetOptStat(0);
-  TCut conv("mcpdg==11&&mcgen==2");
+  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
   TCut oele("abs(mcpdg)==11&&mcgen!=2");
   TCut dio("mcpdg==11&&mcgen==6");
   TCut delta("mcpdg==11&&mcgen<0&&mcproc==17");
@@ -31,6 +72,20 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
   TCut xtalk("xtalk");
   TCut direct("!xtalk");
   TCut opart=!(conv||oele||proton);
+
+  TCut pproton("mcppdg==2212");
+  TCut pneuton("mcppdg==2112");
+  TCut pele("mcppdg==11");
+  TCut ppos("mcppdg===11");
+  TCut pgam("mcppdg==22");
+  TCut nopar("mcppdg==0");
+
+  TCut dioorigin("mcgpdg==11&&mcgid==28");
+  TCut ootmuonorigin("mcgpdg==13");
+  TCut norigin("mcgpdg==2112");
+  TCut porigin("mcgpdg==22");
+  TCut stpprotonorigin("mcgpdg==2212&&mcgid==28");
+  TCut pprotonorigin("mcgpdg==2212&&mcgid==16");
 
   TCut hitsel("esel&&rsel&&tsel&&(!delta)&&(!isolated)");
 
@@ -101,8 +156,81 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     scan->cd(4);
     hits->Draw("edep:mcedep>>eve","","",10000);
 
+  } else if(spage=="particle"){
+
+    double pscale(1.0/nevents);
+    TH1F* part = new TH1F("part","Particle Producing Hits;Particle;Hits/event",7,-0.5,6.5);
+    hits->Project("part","mypart(mcpdg)");
+    part->Scale(pscale);
+
+    TH1F* ppart = new TH1F("ppart","Immediate Parent Particle Producing Hits;Parent Particle;Hits/event",7,-0.5,6.5);
+    hits->Project("ppart","myppart(mcppdg,mcpdg)");
+    ppart->Scale(pscale);
+
+    TH1F* upart = new TH1F("upart","Ultimate Parent Particle Producing Hits;Ultimate Parent;Hits/event",7,-0.5,6.5);
+    hits->Project("upart","myorigin(mcgpdg,mcgid)");
+    upart->Scale(pscale);
+ 
+    TH1F* proc = new TH1F("proc","Production Process of Particle Producing Hits;Production Process;Hits/event",8,-0.5,7.5);
+    hits->Project("proc","myproc(mcproc,xtalk)");
+    proc->Scale(pscale);
+    
+    TAxis* xax(0);
+    int ibin(1);
+
+    xax = part->GetXaxis();
+    xax->SetBinLabel(ibin++,"Proton");
+    xax->SetBinLabel(ibin++,"Electron");
+    xax->SetBinLabel(ibin++,"Photon");
+    xax->SetBinLabel(ibin++,"Neutron");
+    xax->SetBinLabel(ibin++,"Positron");
+    xax->SetBinLabel(ibin++,"Muon");
+    xax->SetBinLabel(ibin++,"Other");
+
+    ibin=1;
+    xax = ppart->GetXaxis();
+    xax->SetBinLabel(ibin++,"Proton");
+    xax->SetBinLabel(ibin++,"Electron");
+    xax->SetBinLabel(ibin++,"Photon");
+    xax->SetBinLabel(ibin++,"Neutron");
+    xax->SetBinLabel(ibin++,"Positron");
+    xax->SetBinLabel(ibin++,"Muon");
+    xax->SetBinLabel(ibin++,"Other");
+
+    ibin=1;
+    xax = upart->GetXaxis();
+    xax->SetBinLabel(ibin++,"Beam Proton");
+    xax->SetBinLabel(ibin++,"Target Proton");
+    xax->SetBinLabel(ibin++,"Target Photon");
+    xax->SetBinLabel(ibin++,"Target Neutron");
+    xax->SetBinLabel(ibin++,"Target Electron");
+    xax->SetBinLabel(ibin++,"Out-Of-Target");
+    xax->SetBinLabel(ibin++,"Other");
+
+    ibin=1;
+    xax = proc->GetXaxis();
+    xax->SetBinLabel(ibin++,"Primary");
+    xax->SetBinLabel(ibin++,"Compton");
+    xax->SetBinLabel(ibin++,"Delta-Ray");
+    xax->SetBinLabel(ibin++,"#gamma Conversion");
+    xax->SetBinLabel(ibin++,"Photoelectric");
+    xax->SetBinLabel(ibin++,"Hadronic");
+    xax->SetBinLabel(ibin++,"Cross-Talk");
+    xax->SetBinLabel(ibin++,"Other");
+
+    TCanvas* pcan = new TCanvas("pcan","pcan",1200,800);
+    pcan->Divide(2,2);
+    pcan->cd(1);
+    part->Draw();
+    pcan->cd(2);
+    ppart->Draw();
+    pcan->cd(3);
+    upart->Draw();
+    pcan->cd(4);
+    proc->Draw();
+
   } else if(spage =="tcan"){
-    THStack* tstack = new THStack("tc","All reco Hit Time by source;Hit Time (ns);Hits/event/ns");
+    THStack* tstack = new THStack("tc","Reco Hit Time by Particle;Hit Time (ns);Hits/event/ns");
     TH1F* ctime = new TH1F("ctime","Conversion Reco Hit Time",150,250,1750);
     TH1F* ptime = new TH1F("ptime","Proton Reco Hit Time",150,250,1750);
     TH1F* etime = new TH1F("etime","Electron Reco Hit Time",150,250,1750);
@@ -111,17 +239,6 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     ptime->SetFillColor(kBlack);
     etime->SetFillColor(kBlue);
     otime->SetFillColor(kGreen);
-
-
-    THStack* tstacks = new THStack("tcs","Selected reco Hit Time by source;Hit Time (ns);Hits/event/ns");
-    TH1F* ctimes = new TH1F("ctimes","Conversion Reco Hit Time",150,250,1750);
-    TH1F* ptimes = new TH1F("ptimes","Proton Reco Hit Time",150,250,1750);
-    TH1F* etimes = new TH1F("etimes","Electron Reco Hit Time",150,250,1750);
-    TH1F* otimes = new TH1F("otimes","Other Reco Hit Time",150,250,1750);
-    ctimes->SetFillColor(kRed);
-    ptimes->SetFillColor(kBlack);
-    etimes->SetFillColor(kBlue);
-    otimes->SetFillColor(kGreen);
 
     double scale = 0.1/nevents;
     hits->Project("otime","time",opart);
@@ -137,7 +254,44 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     etime->Scale(scale);
     tstack->Add(etime);
 
+    double total = otime->Integral() + ctime->Integral() + ptime->Integral() + etime->Integral();
+ 
+    cout << "All other integral = " << otime->Integral() 
+    << "CE inegral = " << ctime->Integral()
+    << "P inegral = " << ptime->Integral()
+    << "e inegral = " << etime->Integral() << " total = " << total << endl;
 
+    TLegend* tleg = new TLegend(.6,.7,.9,.9);
+    char title[50];
+    snprintf(title,50,"CE, #int=%4.0f",ctime->Integral()*10.0);
+    tleg->AddEntry(ctime,title,"F");
+    snprintf(title,50,"Proton, #int=%4.0f",ptime->Integral()*10.0);
+    tleg->AddEntry(ptime,title,"F");
+    snprintf(title,50,"Other e^{-}, #int=%4.0f",etime->Integral()*10.0);
+    tleg->AddEntry(etime,title,"F");
+    snprintf(title,50,"Other Particles, #int=%4.0f",otime->Integral()*10.0);
+    tleg->AddEntry(otime,title,"F");
+    snprintf(title,50,"Total #int=%4.0f",total*10.0);
+    tleg->AddEntry((TObject*)0,title,"");
+
+
+    TCanvas* tcan = new TCanvas("tcan","tcan",800,600);
+    tstack->Draw();
+    tleg->Draw();
+
+  } else if(spage="selcan"){
+
+    THStack* tstacks = new THStack("tcs","Selected Reco Hit Time by Particle;Hit Time (ns);Hits/event/ns");
+    TH1F* ctimes = new TH1F("ctimes","Conversion Reco Hit Time",150,250,1750);
+    TH1F* ptimes = new TH1F("ptimes","Proton Reco Hit Time",150,250,1750);
+    TH1F* etimes = new TH1F("etimes","Electron Reco Hit Time",150,250,1750);
+    TH1F* otimes = new TH1F("otimes","Other Reco Hit Time",150,250,1750);
+    ctimes->SetFillColor(kRed);
+    ptimes->SetFillColor(kBlack);
+    etimes->SetFillColor(kBlue);
+    otimes->SetFillColor(kGreen);
+
+    double scale = 0.1/nevents;
     hits->Project("otimes","time",hitsel+opart);
     otimes->Scale(scale);
     tstacks->Add(otimes);
@@ -151,43 +305,25 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     etimes->Scale(scale);
     tstacks->Add(etimes);
     
-    cout << "All other integral = " << otime->Integral() 
-    << "CE inegral = " << ctime->Integral()
-    << "P inegral = " << ptime->Integral()
-    << "e inegral = " << etime->Integral() << endl;
-
     cout << "Selected other integral = " << otimes->Integral() 
     << "CE inegral = " << ctimes->Integral()
     << "P inegral = " << ptimes->Integral()
     << "e inegral = " << etimes->Integral() << endl;
 
-    TLegend* tleg = new TLegend(.6,.7,.9,.9);
-    char title[50];
-    snprintf(title,50,"CE, #int=%4.0f",ctime->Integral()*10.0);
-    tleg->AddEntry(ctime,title,"F");
-    snprintf(title,50,"Proton, #int=%4.0f",ptime->Integral()*10.0);
-    tleg->AddEntry(ptime,title,"F");
-    snprintf(title,50,"Other e^{-}, #int=%4.0f",etime->Integral()*10.0);
-    tleg->AddEntry(etime,title,"F");
-    snprintf(title,50,"Other Particles, #int=%4.0f",otime->Integral()*10.0);
-    tleg->AddEntry(otime,title,"F");
-
     TLegend* tlegs = new TLegend(.6,.7,.9,.9);
+    char title[50];
     snprintf(title,50,"CE, #int=%4.0f",ctimes->Integral()*10.0);
-    tlegs->AddEntry(ctime,title,"F");
+    tlegs->AddEntry(ctimes,title,"F");
     snprintf(title,50,"Proton, #int=%4.0f",ptimes->Integral()*10.0);
-    tlegs->AddEntry(ptime,title,"F");
+    tlegs->AddEntry(ptimes,title,"F");
     snprintf(title,50,"Other e^{-}, #int=%4.0f",etimes->Integral()*10.0);
-    tlegs->AddEntry(etime,title,"F");
+    tlegs->AddEntry(etimes,title,"F");
     snprintf(title,50,"Other Particles, #int=%4.0f",otimes->Integral()*10.0);
-    tlegs->AddEntry(otime,title,"F");
+    tlegs->AddEntry(otimes,title,"F");
 
-    TCanvas* tcan = new TCanvas("tcan","tcan",800,600);
-    tcan->Divide(2,1);
-    tcan->cd(1);
-    tstack->Draw();
-    tleg->Draw();
-    tcan->cd(2);
+    TCanvas* tscan = new TCanvas("tscan","tscan",800,600);
+    tscan->Divide(2,1);
+    tscan->cd(1);
     tstacks->Draw();
     tlegs->Draw();
 
@@ -484,12 +620,6 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
   } else if(spage=="origin"){
 
     TCut timecut("time>0");
-    TCut dioorigin("mcgpdg==11&&mcgid==28");
-    TCut ootmuon("mcgpdg==13");
-    TCut norigin("mcgpdg==2112");
-    TCut porigin("mcgpdg==22");
-    TCut stpproton("mcgpdg==2212&&mcgid==28");
-    TCut pproton("mcgpdg==2212&&mcgid==16");
 
     THStack* origin = new THStack("origin","Reco Hit Time by Generator Particle;Hit Time (ns);Hits/event/ns");
     TH1F* dtime = new TH1F("dtime","DIO Reco Hit Time",150,250,1750);
@@ -498,7 +628,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     TH1F* stptime = new TH1F("stptime","Stopping Target Proton Reco Hit Time",150,250,1750);
     TH1F* ntime = new TH1F("ntime","Neutron Reco Hit Time",150,250,1750);
     TH1F* mtime = new TH1F("mtime","OOT Muon Reco Hit Time",150,250,1750);
-    dtime->SetFillColor(kRed);
+    dtime->SetFillColor(kOrange);
     gtime->SetFillColor(kBlack);
     pptime->SetFillColor(kBlue);
     stptime->SetFillColor(kGreen);
@@ -509,7 +639,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     hits->Project("dtime","time",dioorigin+timecut);
     dtime->Scale(scale);
     origin->Add(dtime);
-    hits->Project("mtime","time",ootmuon+timecut);
+    hits->Project("mtime","time",ootmuonorigin+timecut);
     mtime->Scale(scale);
     origin->Add(mtime);
     hits->Project("ntime","time",norigin+timecut);
@@ -518,10 +648,10 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     hits->Project("gtime","time",porigin+timecut);
     gtime->Scale(scale);
     origin->Add(gtime);
-    hits->Project("stptime","time",stpproton+timecut);
+    hits->Project("stptime","time",stpprotonorigin+timecut);
     stptime->Scale(scale);
     origin->Add(stptime);
-    hits->Project("pptime","time",pproton+timecut);
+    hits->Project("pptime","time",pprotonorigin+timecut);
     pptime->Scale(scale);
     origin->Add(pptime);
 
@@ -556,13 +686,6 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     tleg->Draw();
   } else if(spage=="sorigin"){
 
-    TCut dioorigin("mcgpdg==11&&mcgid==28");
-    TCut ootmuon("mcgpdg==13");
-    TCut norigin("mcgpdg==2112");
-    TCut porigin("mcgpdg==22");
-    TCut stpproton("mcgpdg==2212&&mcgid==28");
-    TCut pproton("mcgpdg==2212&&mcgid==16");
-
     THStack* sorigin = new THStack("origin","Reco Hit Time by Generator Particle;Hit Time (ns);Hits/event/ns");
     TH1F* dtime = new TH1F("dtime","DIO Reco Hit Time",150,250,1750);
     TH1F* gtime = new TH1F("gtime","Photon Reco Hit Time",150,250,1750);
@@ -581,7 +704,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     hits->Project("dtime","time",dioorigin+hitsel);
     dtime->Scale(scale);
     sorigin->Add(dtime);
-    hits->Project("mtime","time",ootmuon+hitsel);
+    hits->Project("mtime","time",ootmuonorigin+hitsel);
     mtime->Scale(scale);
     sorigin->Add(mtime);
     hits->Project("ntime","time",norigin+hitsel);
@@ -590,10 +713,10 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     hits->Project("gtime","time",porigin+hitsel);
     gtime->Scale(scale);
     sorigin->Add(gtime);
-    hits->Project("stptime","time",stpproton+hitsel);
+    hits->Project("stptime","time",stpprotonorigin+hitsel);
     stptime->Scale(scale);
     sorigin->Add(stptime);
-    hits->Project("pptime","time",pproton+hitsel);
+    hits->Project("pptime","time",pprotonorigin+hitsel);
     pptime->Scale(scale);
     sorigin->Add(pptime);
 

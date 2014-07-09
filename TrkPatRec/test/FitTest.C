@@ -29,6 +29,10 @@ Double_t splitgaus(Double_t *x, Double_t *par) {
   return retval;
 }
 
+TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nmc>=20");
+TCut helix("helixfail==0");
+TCut seed("seedfail==0");
+
 void KalTest (TTree* trk) {
   TCanvas* kcan = new TCanvas("kcan","Kalman Fit",1200,800);
   gStyle->SetOptStat(111111);
@@ -111,19 +115,18 @@ void KalTest (TTree* trk) {
   cx->SetStats(0);
   cy->SetStats(0);
   cr->SetStats(0);
-  TCut helix("nmc>=15&&helixfail==0");
 
-  trk->Project("cxr","hcx-mccx",helix);
-  trk->Project("cyr","hcy-mccy",helix);
-  trk->Project("crr","hr-mcr",helix);
+  trk->Project("cxr","hcx-mccx",helix+mcsel);
+  trk->Project("cyr","hcy-mccy",helix+mcsel);
+  trk->Project("crr","hr-mcr",helix+mcsel);
   ccanxy->Clear();
   ccanxy->Divide(3,2);
   ccanxy->cd(1);
-  trk->Draw("hcx:mccx>>cx",helix);
+  trk->Draw("hcx:mccx>>cx",helix+mcsel);
   ccanxy->cd(2);
-  trk->Draw("hcy:mccy>>cy",helix);
+  trk->Draw("hcy:mccy>>cy",helix+mcsel);
   ccanxy->cd(3);
-  trk->Draw("hr:mcr>>cr",helix);
+  trk->Draw("hr:mcr>>cr",helix+mcsel);
   ccanxy->cd(4);
   cxr->Fit("gaus");
   ccanxy->cd(5);
@@ -137,17 +140,17 @@ void KalTest (TTree* trk) {
   TH2F* fz0 = new TH2F("fz0","Heliz #phi intercept;MC true (radians); helix fit (radians)",100,-3.5,3.5,100,-3.5,3.5);
   TH1F* dfdzr = new TH1F("dfdzr","d#phi/dZ resolution;radians/mm",100,-0.0005,0.0005);
   TH1F* fz0r = new TH1F("fz0r","#phi intercept resolution;radians",100,-0.4,0.4);
-  trk->Project("dfdzr","hdfdz-mcdfdz",helix);
-  trk->Project("fz0r","hfz0-mcfz0",helix);
+  trk->Project("dfdzr","hdfdz-mcdfdz",helix+mcsel);
+  trk->Project("fz0r","hfz0-mcfz0",helix+mcsel);
   dfdz->SetStats(0);
   fz0->SetStats(0);
   
   ccanrz->Clear();
   ccanrz->Divide(2,2);
   ccanrz->cd(1);
-  trk->Draw("hdfdz:mcdfdz>>dfdz",helix);
+  trk->Draw("hdfdz:mcdfdz>>dfdz",helix+mcsel);
   ccanrz->cd(2);
-  trk->Draw("hfz0:mcfz0>>fz0",helix);
+  trk->Draw("hfz0:mcfz0>>fz0",helix+mcsel);
   ccanrz->cd(3);
   dfdzr->Fit("gaus");
   ccanrz->cd(4);
@@ -170,22 +173,21 @@ void KalTest (TTree* trk) {
   om->SetStats(0);
   z0->SetStats(0);
   td->SetStats(0);
-  TCut helix("nmc>=15&&helixfail==0");
 
 
   
   hpcan->Clear();
   hpcan->Divide(3,2);
   hpcan->cd(1);
-  trk->Draw("hd0:mcmidd0>>d0",helix);
+  trk->Draw("hd0:mcmidd0>>d0",helix+mcsel);
   hpcan->cd(2);
-  trk->Draw("hp0:mcmidp0>>phi0",helix);
+  trk->Draw("hp0:mcmidp0>>phi0",helix+mcsel);
   hpcan->cd(3);
-  trk->Draw("hom:mcmidom>>om",helix);
+  trk->Draw("hom:mcmidom>>om",helix+mcsel);
   hpcan->cd(4);
-  trk->Draw("hz0:mcmidz0>>z0",helix);
+  trk->Draw("hz0:mcmidz0>>z0",helix+mcsel);
   hpcan->cd(5);
-  trk->Draw("htd:mcmidtd>>td",helix);
+  trk->Draw("htd:mcmidtd>>td",helix+mcsel);
 
   
   TCanvas* hprcan = new TCanvas("hprcan","Helix parameter Resolution",1200,800);
@@ -196,11 +198,11 @@ void KalTest (TTree* trk) {
   TH1F* z0r = new TH1F("z0r","seed z0 resolution;mm",100,-150,150);
   TH1F* tdr = new TH1F("tdr","seed tan(#lambda) resolution",100,-0.3,0.3);
 
-  trk->Project("d0r","hd0-mcmidd0",helix);
-  trk->Project("phi0r","hp0-mcmidp0",helix);
-  trk->Project("omr","hom-mcmidom",helix);
-  trk->Project("z0r","hz0-mcmidz0",helix);
-  trk->Project("tdr","htd-mcmidtd",helix);
+  trk->Project("d0r","hd0-mcmidd0",helix+mcsel);
+  trk->Project("phi0r","hp0-mcmidp0",helix+mcsel);
+  trk->Project("omr","hom-mcmidom",helix+mcsel);
+  trk->Project("z0r","hz0-mcmidz0",helix+mcsel);
+  trk->Project("tdr","htd-mcmidtd",helix+mcsel);
   
   hprcan->Clear();
   hprcan->Divide(3,2);
@@ -222,10 +224,7 @@ void AntiMomRes(TTree* trk) {
   TCanvas* amcan = new TCanvas("amcan","Momentum",1200,800);
   gStyle->SetOptStat(111111);
   gStyle->SetOptFit(111111);
-// should have pitch angle and generated hit cuts here, FIXME!!!
-//  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nmc>=15");
-  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&abs(tpeak-mcmidt0-28)<30");
-  TCut tsel = mcsel +TCut("kalfail==0");
+    TCut tsel = mcsel +TCut("kalfail==0");
 // selection cuts
 
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
@@ -304,8 +303,6 @@ void MomRes(TTree* trk) {
   gStyle->SetOptStat(111111);
   gStyle->SetOptFit(111111);
 // should have pitch angle and generated hit cuts here, FIXME!!!
-//  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nmc>=15");
-  TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&abs(tpeak-mcmidt0-28)<30");
   TCut tsel = mcsel +TCut("kalfail==0");
 // selection cuts
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
@@ -383,14 +380,13 @@ void SeedTest (TTree* trk) {
   TH1F* oms = new TH1F("oms","seed #omega resolution;1/mm",100,-0.0005,0.0005);
   TH1F* z0s = new TH1F("z0s","seed z0 resolution;mm",100,-30,30);
   TH1F* tds = new TH1F("tds","seed tan(#lambda) resolution",100,-0.07,0.07);
-  TCut seed("nmc>=15&&seedfail==0");
 
 
-  trk->Project("d0s","sd0-mcmidd0",seed);
-  trk->Project("phi0s","sp0-mcmidp0",seed);
-  trk->Project("oms","som-mcmidom",seed);
-  trk->Project("z0s","sz0-mcmidz0",seed);
-  trk->Project("tds","std-mcmidtd",seed);
+  trk->Project("d0s","sd0-mcmidd0",seed+mcsel);
+  trk->Project("phi0s","sp0-mcmidp0",seed+mcsel);
+  trk->Project("oms","som-mcmidom",seed+mcsel);
+  trk->Project("z0s","sz0-mcmidz0",seed+mcsel);
+  trk->Project("tds","std-mcmidtd",seed+mcsel);
   
   scan->Clear();
   scan->Divide(3,2);
