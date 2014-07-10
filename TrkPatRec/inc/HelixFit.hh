@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.hh,v 1.7 2014/06/05 15:06:13 brownd Exp $
+// $Id: HelixFit.hh,v 1.8 2014/07/10 14:47:26 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/06/05 15:06:13 $
+// $Date: 2014/07/10 14:47:26 $
 //
 #ifndef HelixFit_HH
 #define HelixFit_HH
@@ -165,8 +165,10 @@ namespace mu2e
     bool _filter; // filter hits
     bool _stereoinit; // require stereo hits to initialize
     bool _stereofit; // require stereo hits 
-    bool _usetarget; // use target as a point for circle init
-    bool _targetinit; // constrain to target when initializing circle
+    bool _targetpoint; // use target as a point in the circle fit
+    bool _targetinit; // require consistency with target when initializing circle
+    double _targetsize; // target size to use in constraint or init
+    double _trackerradius; // tracker radius to use in init
     mutable double _bz; // cached value of Field Z component at the tracker origin
 // cached value of radius and pitch sign: these depend on the particle type
 // and direction

@@ -1,9 +1,9 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: HelixFit.cc,v 1.11 2014/06/05 20:53:52 brownd Exp $
+// $Id: HelixFit.cc,v 1.12 2014/07/10 14:47:26 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/06/05 20:53:52 $
+// $Date: 2014/07/10 14:47:26 $
 //
 //
 // the following has to come before other BaBar includes
@@ -206,8 +206,9 @@ namespace mu2e
     _filter(pset.get<bool>("filter",true)),
     _stereoinit(pset.get<bool>("stereoinit",false)),
     _stereofit(pset.get<bool>("stereofit",false)),
-    _usetarget(pset.get<bool>("usetarget",true)),
-    _targetinit(pset.get<bool>("targetinit",false)),
+    _targetinit(pset.get<bool>("targetinit",true)),
+    _targetsize(pset.get<double>("targetsize",100.0)),
+    _trackerradius(pset.get<double>("trackerradius",700.0)),
     _bz(0.0)
   {
     XYZP::_efac = _efac;
@@ -653,12 +654,6 @@ namespace mu2e
 	pos.push_back(xyzp[ixyzp]._pos);
       }
     }
-    // add the target position if requested
-    if(_usetarget){
-      static const CLHEP::Hep3Vector tpos(0.0,0.0,0.0);
-      pos.push_back(tpos);
-    }
-
     size_t np = pos.size();
     for(size_t ip=0;ip<np;++ip){
       // pre-compute some values
@@ -668,7 +663,6 @@ namespace mu2e
 	  double rj2 = pow(pos[jp].x(),2) + pow(pos[jp].y(),2);
 	  size_t mink = jp+1;
   // we can force the initialization to use the target position in every triple
-	  if(_usetarget && _targetinit) mink = np-1;
 	  for(size_t kp=mink;kp<np; ++kp){
 	    if(pos[ip].perpPart().diff2(pos[kp].perpPart()) > mind2 &&
 		pos[jp].perpPart().diff2(pos[kp].perpPart()) > mind2){
@@ -687,7 +681,13 @@ namespace mu2e
 		    (pos[ip].x() - pos[kp].x())*rj2 + 
 		    (pos[jp].x() - pos[ip].x())*rk2 ) / delta;
 		double rho = sqrt(pow(pos[ip].x()-cx,2)+pow(pos[ip].y()-cy,2));
-		if(rho > _rcmin && rho<_rcmax){
+		double rc = sqrt(cx*cx + cy*cy);
+		double rmin = fabs(rc-rho);
+		double rmax = rc+rho;
+		// test circle parameters for this triple: should be inside the tracker,
+		// optionally consistent with the target
+		if(rho > _rcmin && rho<_rcmax && rmax < _trackerradius
+		  && ( (!_targetinit) || rmin < _targetsize) ) {
 		  // accumulate 
 		  ++ntriple;
 		  accx(cx);
