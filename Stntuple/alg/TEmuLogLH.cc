@@ -427,7 +427,6 @@ void TEmuLogLH::InitEleEpHist(const char* Fn) {
 
   ReadHistogram2D(Fn,&fEleEpVsPath);
 
-  fEleEpVsPath->Draw();
   nx                 = fEleEpVsPath->GetNbinsX();
 
   imin[0]            = 1;		// first bin
