@@ -49,6 +49,8 @@ namespace mu2e {
     std::vector<art::Ptr<StepPointMC> > const& stepPointMCs() const { return _stepMCs; }
 
     double energySum() const;// sum of all MC true energy deposited
+    // energy sum of particle that triggered the discriminator
+    double triggerEnergySum(StrawDigi::TDCChannel itdc=StrawDigi::zero) const;
     // check if this digi was created by cross-talk
     bool isCrossTalk(StrawDigi::TDCChannel itdc) const;
     // Print contents of the object.

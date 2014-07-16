@@ -75,6 +75,17 @@ namespace mu2e {
     return esum;
   }
 
+
+  double StrawDigiMC::triggerEnergySum(StrawDigi::TDCChannel itdc) const {
+    double esum(0.0);
+    for(auto imcs = _stepMCs.begin(); imcs!= _stepMCs.end(); ++ imcs){
+    // if the simParticle for this step is the same as the one which fired the discrim, add the energy
+      if( (*imcs)->simParticle() == _stepMC[(size_t)itdc]->simParticle())
+	esum += (*imcs)->eDep();
+    }
+    return esum;
+  }
+
   // Print the information found in this hit.
   void StrawDigiMC::print( ostream& ost, bool doEndl ) const {
 
