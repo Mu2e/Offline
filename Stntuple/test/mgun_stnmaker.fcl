@@ -1,0 +1,35 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# generate 105 MeV/c electrons
+# make STNTUPLE in one go, without creating an intermediate file
+#------------------------------------------------------------------------------
+# $Id: mgun_stnmaker.fcl,v 1.1 2014/07/16 03:14:30 murat Exp $
+# $Author: murat $
+# $Date: 2014/07/16 03:14:30 $
+
+//test: // This must be commented out for grid production.
+BEGIN_PROLOG
+#  muStops    : [ "/mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+#  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
+#  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00000/data_mixBG.root"]
+END_PROLOG
+
+#include "Stntuple/test/generate_mergePatRec_stnmaker.fcl"
+
+process_name : MgunMergePatRecStnmaker
+
+# for 105 MeV/c electron : E = 105.00124           MeV
+# for 105 MeV/c muon     : E = 148.9584269653785   MeV
+
+physics.producers.generate.physics.pdgId  : 13
+physics.producers.generate.physics.elow   : 148.953
+physics.producers.generate.physics.ehi    : 148.963
+
+services.TFileService.fileName            : "mgun_stnmaker.hist"
+physics.filters.InitStntuple.histFileName : "mgun_stnmaker.stn" 
+
+# physics.out                               : [ detectorOutput ]
+# outputs.detectorOutput.fileName           : "mgun_stnmaker.root"
+#------------------------------------------------------------------------------
+# everything below is appended by murat/scripts/submit_mu2e_job
+#------------------------------------------------------------------------------
