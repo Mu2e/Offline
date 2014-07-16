@@ -2,9 +2,9 @@
 // This module transforms StepPointMC objects into StrawDigi objects
 // It also builds the truth match map
 //
-// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.36 2014/07/02 17:20:32 brownd Exp $
+// $Id: StrawDigisFromStepPointMCs_module.cc,v 1.37 2014/07/16 19:16:13 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/07/02 17:20:32 $
+// $Date: 2014/07/16 19:16:13 $
 //
 // Original author David Brown, LBNL
 //
@@ -152,7 +152,7 @@ namespace mu2e {
     Int_t _sddevice, _sdsector, _sdlayer, _sdstraw;
     Int_t _nend, _nstep;
     Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1, _vstart0, _vstart1, _vcross0, _vcross1;
-    Float_t _mctime, _mcenergy, _mcdca;
+    Float_t _mctime, _mcenergy, _mctrigenergy, _mcdca;
     Int_t _dmcpdg, _dmcproc;
     Bool_t _xtalk;
     vector<unsigned> _adc;
@@ -277,6 +277,7 @@ namespace mu2e {
 	_sddiag->Branch("adc",&_adc);
 	_sddiag->Branch("mctime",&_mctime,"mctime/F");
 	_sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
+	_sddiag->Branch("mctrigenergy",&_mctrigenergy,"mctrigenergy/F");
 	_sddiag->Branch("mcdca",&_mcdca,"mcdca/F");
 	_sddiag->Branch("mcpdg",&_dmcpdg,"mcpdg/I");
 	_sddiag->Branch("mcproc",&_dmcproc,"mcproc/I");
@@ -836,7 +837,7 @@ namespace mu2e {
     }
     // mc truth information
     _dmcpdg = _dmcproc = 0;
-    _mctime = _mcenergy = _mcdca = -1000.0;
+    _mctime = _mcenergy = _mctrigenergy = _mcdca = -1000.0;
     art::Ptr<StepPointMC> const& spmc = xpair[0]->_ihitlet->stepPointMC();
     if(!spmc.isNull()){
       _mctime = _toff.timeWithOffsetsApplied(*spmc);
@@ -850,6 +851,7 @@ namespace mu2e {
       }
     }
     _mcenergy = mcdigi.energySum();
+    _mctrigenergy = mcdigi.triggerEnergySum();
     // check for x-talk
     _xtalk = digi.strawIndex() != spmc->strawIndex();
     // fill the tree entry
