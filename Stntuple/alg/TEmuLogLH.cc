@@ -150,7 +150,7 @@ double TEmuLogLH::LogLHDt(PidData_t* Data, int PdgCode) {
 double TEmuLogLH::LogLHEp(PidData_t* Data, int PdgCode) {
 
   double log_lh, ep, path, p1;
-  int    isl, i1;
+  int    isl(-1), i1;
 
   TH1    *h1(0);   
 //-----------------------------------------------------------------------------
