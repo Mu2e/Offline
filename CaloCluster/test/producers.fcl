@@ -15,7 +15,8 @@ MakeCaloCluster: {
     deltaTimeMinus          : 5.0  # ns
     nCryPerCrystal          : 1    # currently unused
     EclusterCut             : 5.0  # MeV  
-    EnoiseCut               : 0.1  # MeV
+    EnoiseCut               : 1.0  # MeV assume readout threshold of 1 MeV
+    ExpandCut               : 1.0  # MeV
     EminSplitSeed           : 2.0  # MeV
     maxFullPrint            : 201
 }
