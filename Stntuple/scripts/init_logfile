@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+if [ -f $LOGFILE ] ; then rm $LOGFILE ; fi
+echo "**********************************************************"   >  $LOGFILE
+echo "* running on    :" `hostname`                                >>  $LOGFILE
+echo "* command       :" $0 $*                                     >>  $LOGFILE
+echo "* CDF_USER_NAME : $CDF_USER_NAME"                            >>  $LOGFILE
+echo "* MC_JOB        : $MC_JOB"                                   >>  $LOGFILE
+echo "* JOB_NAME      : $JOB_NAME"                                 >>  $LOGFILE
+echo "* EXEFILE       : $EXEFILE"                                  >>  $LOGFILE
+echo "* EXE           : $EXE"                                      >>  $LOGFILE
+echo "* BFARCH        : $BFARCH"                                   >>  $LOGFILE
+echo "* BUILD_BFARCH  : $BUILD_BFARCH"                             >>  $LOGFILE
+echo "* TCLFILE       : $TCLFILE"                                  >>  $LOGFILE
+echo "* LOGFILE       : $LOGFILE"                                  >>  $LOGFILE
+echo "* BOOK          : $BOOK"                                     >>  $LOGFILE
+echo "* DATASET       : $DATASET"                                  >>  $LOGFILE
+echo "* FILESET       : $FILESET"                                  >>  $LOGFILE
+echo "* INPUT_FILE    : $INPUT_FILE"                               >>  $LOGFILE
+echo "* INPUT_TCL_FILE: $INPUT_TCL_FILE"                           >>  $LOGFILE
+echo "* LAST_EVENT    : $LAST_EVENT"                               >>  $LOGFILE
+echo "* KEEP_L3       : $KEEP_L3"                                  >>  $LOGFILE
+echo "* KEEP_COT_HITS : $KEEP_COT_HITS"                            >>  $LOGFILE
+echo "* RUN_NUMBER    : $RUN_NUMBER"                               >>  $LOGFILE
+echo "* WORK_DIR      : $WORK_DIR"                                 >>  $LOGFILE
+echo "* NEVENTS       : $NEVENTS"                                  >>  $LOGFILE
+echo "* JOB_NUMBER    : $JOB_NUMBER"                               >>  $LOGFILE
+echo "* JOB_OUTPUT_DIR: $JOB_OUTPUT_DIR"                           >>  $LOGFILE
+echo "* OUTPUT_NAME   : $OUTPUT_NAME"                              >>  $LOGFILE
+echo "* OUTPUT_FILE   : $OUTPUT_FILE"                              >>  $LOGFILE
+echo "* VALGRIND_VER  : $VALGRIND_VER"                             >>  $LOGFILE
+echo "* RHOST         : $RHOST"                                    >>  $LOGFILE
+echo "* RUSER         : $RUSER"                                    >>  $LOGFILE
+echo "* RDIR          : $RDIR"                                     >>  $LOGFILE
+echo "**********************************************************"  >>  $LOGFILE
+echo '*   redefined environment variables                       '  >>  $LOGFILE
+echo "**********************************************************"  >>  $LOGFILE
+if [ ."$REDEFINED_ENV_VARS" != "." ] ; then
+  for var in $REDEFINED_ENV_VARS ; do
+    x=`echo $var  | awk -F = '{print $1}'`
+    v=`echo $var  | awk -F = '{print $2}'`
+    printf "%-20s : %-s\n" $x $v                                   >>  $LOGFILE
+  done
+fi
+echo "**********************************************************"  >>  $LOGFILE
+klist                                                              >>  $LOGFILE
+if [ -f $TCLFILE ] ; then
+  cat  < $TCLFILE                                                  >>  $LOGFILE
+fi
+
+if [ .$INPUT_TCL_FILE != "." ] ; then
+echo "***********************************************************" >>  $LOGFILE
+echo "*     input TCL file                                       " >>  $LOGFILE
+echo "***********************************************************" >>  $LOGFILE
+  cat < $INPUT_TCL_FILE                                            >>  $LOGFILE
+echo "***********************************************************" >>  $LOGFILE
+fi
+

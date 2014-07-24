@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+#------------------------------------------------------------------------------
+# *** assume that this script is ALWAYS SOURCED
+#------------------------------------------------------------------------------
+# echo ....
+# echo "((( init_parameters entered ))) ALREADY_CALLED_ONCE=$ALREADY_CALLED_ONCE"
+if [ .$ALREADY_CALLED_ONCE != ."yes" ] ; then
+#-----------------------------------------------------------------------------
+# on first call set defaults
+#------------------------------------------------------------------------------
+  export               APROJECT=""
+  export                   BOOK=FILECATALOG
+  export                    CAF="local"
+  export          CDF_USER_NAME=murat
+  export         CDFSIM_TCL_DIR=${WORK_DIR}/jobs/tcl/cdfSim
+  export      COMMAND_LINE_OPTS="-b"
+  export COMMAND_LINE_ARGUMENTS="undefined"
+  export           DCACHE_DEBUG=1
+  export                DATASET="ZZZZZZ"
+  export               DEBUGGER=
+  export           DEBUG_SCRIPT=0
+  export                EXEFILE=""
+  export                    EXE=
+  export                FILESET=
+  export          FULL_JOB_NAME="undefined"
+  export             INPUT_FILE=
+  export         INPUT_TCL_FILE=
+  export               JOB_NAME=
+  export             JOB_NUMBER=1
+  export                JOB_TCL=
+  export               JOB_TYPE=ac++
+  export            JOB_TCL_DIR=cdfopr/tcl
+  export         JOB_OUTPUT_DIR=
+  export                KEEP_L3=
+  export          KEEP_COT_HITS=
+  export             LAST_EVENT=
+  export        L3_TRIGGER_PATH=
+  export     LOAD_EXISTING_DATA=YES
+  export             LOCAL_HOST=`hostname -f`
+  export                 MC_JOB=0
+  export                NEVENTS=0
+  export                   NICE=
+  export            OUTPUT_FILE=
+  export               PASSWORD=
+  export             PARAMETERS=
+  export                  QUEUE=test
+  export             RAW_STREAM=
+  export                   RDIR=
+  export     REDEFINED_ENV_VARS=
+  export            RETURN_CODE=0
+  export            ROOT_SCRIPT="undefined()"
+  export                  RHOST=
+  export             RUN_NUMBER=-1
+  export            RUN_TRIGSIM=no
+  export                 SCRIPT=
+  export                 SERVER=
+  export              SOURCE_ME=0
+  export                TCLFILE=""
+  export           VALGRIND_VER=v1_9_6
+  export               WORK_DIR=$PWD
+
+  export    ALREADY_CALLED_ONCE="yes"
+fi

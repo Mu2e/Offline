@@ -1,0 +1,318 @@
+#!/usr/bin/env bash
+#------------------------------------------------------------------------------
+# parse parameters,  assume that this script is always sourced 
+#------------------------------------------------------------------------------
+. Stntuple/scripts/init_parameters
+
+parse_parameters() {
+export OPTIND=1	
+while getopts :b:c:Q:d:D:e:E:f:F:i:I:j:J:k:l:L:m:n:o:O:r:p:P:r:R:s:t:T:vV:w:x: OPT; do
+    case $OPT in
+        b)                                          # book
+            export BOOK=$OPTARG ; 
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: BOOK=$OPTARG #  >> $LOGFILE
+            fi
+	    ;;
+        c)                                          # command line options
+            export COMMAND_LINE_OPTS=$OPTARG ; 
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: COMMAND_LINE_OPTS=$OPTARG #  >> $LOGFILE
+            fi
+	    ;;
+        Q)                                          # command line options
+            export COMMAND_LINE_ARGUMENTS="-q $OPTARG" ; 
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: COMMAND_LINE_ARGUMENTS=-q $OPTARG # >> $LOGFILE
+            fi
+	    ;;
+        d)                                          # input dataset name
+	    export  DATASET=${OPTARG}
+
+            if [ .$SCRIPT == "." ] ; then
+              x=`echo $OPTARG | sed 's/:/ /g' | awk '{print $2}'`
+              if [ .$x == ".mc" ] ; then
+                export  MC_JOB=mc
+                export DATASET=`echo $OPTARG | sed 's/:/ /g' | awk '{print $1}'`
+              fi
+              if [ $DEBUG_SCRIPT != 0 ] ; then 
+                 echo [parse_parameters]: DATASET=$DATASET #  >> $LOGFILE
+                 echo [parse_parameters]: MC_JOB=$MC_JOB   #  >> $LOGFILE
+              fi
+            fi
+            ;;
+        D)                                          # input dataset name
+                                                    # simultaneously defines 
+                                                    # default input
+	    export  DATASET=${OPTARG}
+
+            if [ .$SCRIPT == "." ] ; then
+              x=`echo $OPTARG | sed 's/:/ /g' | awk '{print $2}'`
+              if [ .$x == ".mc" ] ; then
+                export  MC_JOB=mc
+                export DATASET=`echo $OPTARG | sed 's/:/ /g' | awk '{print $1}'`
+              fi
+
+              if [ $DEBUG_SCRIPT != 0 ] ; then 
+                 echo [parse_parameters]: DATASET=$DATASET #   >> $LOGFILE
+                 echo [parse_parameters]: MC_JOB=$MC_JOB   #   >> $LOGFILE
+              fi
+            fi
+            ;;
+        e)                                          # executable
+
+            if [ `echo $OPTARG | awk '{print substr($0,1,1)}'` == "/" ] ; then
+              export EXEFILE=$OPTARG
+            else
+	      export EXEFILE=${WORK_DIR}/${OPTARG}
+            fi
+	    export EXE=`echo $OPTARG | awk -F / '{print $NF}'`
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+                echo [parse_parameters]: EXEFILE=$EXEFILE #  >> $LOGFILE 
+		echo [parse_parameters]:     EXE=$EXE     #  >> $LOGFILE
+	    fi
+            ;;
+        f)                                          # input fileset
+            export FILESET=$OPTARG 
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: FILESET=$FILESET  #  >> $LOGFILE
+            fi
+	    ;;
+        F)                                          # input file
+            export INPUT_FILE=$OPTARG
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: INPUT_FILE=$INPUT_FILE #  >> $LOGFILE
+            fi
+	    ;;
+        i)                                          # input TCL file
+
+               host=`echo $OPTARG | awk -F : '{print $1}'`
+            fulltcl=`echo $OPTARG | awk -F : '{print $2}'`
+                tcl=`echo $OPTARG | awk -F / '{print $NF}'`
+
+            if [ .$fulltcl != "." ] ; then
+
+              if   [ .$USE_WWW != "." ] ; then mode="www" ; 
+              elif [ .$USE_SCP != "." ] ; then mode="scp" ;
+              else                             mode="rcp"
+              fi
+
+              . cdfopr/scripts/get_file $mode $WORK_DIR $BOOK $DATASET $OPTARG ${WORK_DIR}/$tcl
+              export INPUT_TCL_FILE=${WORK_DIR}/$tcl
+            else
+#------------------------------------------------------------------------------
+#  local TCL file
+#------------------------------------------------------------------------------
+              if [ `echo $OPTARG | awk '{print substr($0,1,1)}'` == "/" ] ; then
+                export INPUT_TCL_FILE=$OPTARG
+              else 
+                export INPUT_TCL_FILE=${WORK_DIR}/${OPTARG}
+              fi
+            fi
+
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: INPUT_TCL_FILE=$INPUT_TCL_FILE  #  >> $LOGFILE
+            fi
+            ;;
+#-----------------------------------------------------------------------
+# job TCL file
+#-----------------------------------------------------------------------
+        I)                                          # job TCL file
+
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: -I OPTARG=$OPTARG   # >> $LOGFILE
+            fi
+               host=`echo $OPTARG | awk -F : '{print $1}'`
+            fulltcl=`echo $OPTARG | awk -F : '{print $2}'`
+                tcl=`echo $OPTARG | awk -F / '{print $NF}'`
+
+            if [ .$fulltcl != "." ] ; then
+#-----------------------------------------------------------------------
+# remote host is defined, copy TCL file, use kerberized rcp explicitly
+#-----------------------------------------------------------------------
+              if [ $host != $LOCAL_HOST ] ; then
+                cmd="/usr/krb5/bin/rcp -N cdfopr@$OPTARG $WORK_DIR/."
+              else
+                cmd="cp  $fulltcl $WORK_DIR/."
+              fi
+
+              if [ $DEBUG_SCRIPT != 0 ] ; then 
+                echo [parse_parameters]: execute: $cmd   # >> $LOGFILE
+              fi
+              $cmd
+
+              export TCLFILE=${WORK_DIR}/$tcl
+            else
+              if [ `echo $OPTARG | awk '{print substr($0,1,1)}'` == "/" ] ; then
+                export TCLFILE=$OPTARG
+              else
+                export TCLFILE=${WORK_DIR}/${OPTARG}
+              fi
+            fi
+
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: TCLFILE=$TCLFILE
+            fi
+            ;;
+        j)                                          # job name
+#-----------------------------------------------------------------------
+# job name can have form job_name[.tcl_name][:job_type]
+# special job types: "mc", "tau_ana"
+#-----------------------------------------------------------------------
+	    export JOB_NAME=${OPTARG}
+
+            export x=`echo $OPTARG | sed 's/:/ /g' | awk '{print $2}'`
+            if [ .$x != "." ] ; then 
+              export JOB_NAME=`echo $OPTARG | sed 's/:/ /g' | awk '{print $1}'`
+              export JOB_TYPE=$x
+              if [ $JOB_TYPE == "mc" ] ; then
+                export MC_JOB=mc
+              fi
+            fi
+
+	    x=`echo $OPTARG | sed 's/:/ /g' | awk '{print $1}'`
+            export FULL_JOB_NAME=$x ;
+
+            if [ .$EXE    == "."   ] ; then export EXE=$x      ; fi
+
+	    export JOB_TCL=
+	    x=`echo $JOB_NAME | sed 's/\./ /g' | awk '{print $2}'`
+	    if [ .$x != "." ] ; then
+              y=`echo $JOB_NAME | sed 's/\./ /g' | awk '{print $1}'`
+              export TCL_SUBDIR=$y
+              export JOB_NAME=$x
+	      export  JOB_TCL=$y-$x
+	    fi
+
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: JOB_NAME=${OPTARG} .......... initially #  >> $LOGFILE
+              echo [parse_parameters]: JOB_NAME=$JOB_NAME .......... redefined  # >> $LOGFILE
+              echo [parse_parameters]: JOB_TCL=$JOB_TCL #    >> $LOGFILE
+              echo [parse_parameters]: JOB_OUTPUT_DIR=$JOB_OUTPUT_DIR  #  >> $LOGFILE
+              echo [parse_parameters]: MC_JOB=$MC_JOB   # >> $LOGFILE
+	    fi
+            ;;
+        J)                                          # job number
+            export JOB_NUMBER=${OPTARG}
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: JOB_NUMBER=$JOB_NUMBER #   >> $LOGFILE
+            fi
+            ;;
+        k)                                          # keep various objects
+            case $OPTARG in
+              "l3") 
+                    export KEEP_L3=yes
+                    if [ $DEBUG_SCRIPT != 0 ] ; then 
+                      echo [parse_parameters]: KEEP_L3=$KEEP_L3  #  >> $LOGFILE
+                    fi
+                    ;;
+        "cot_hits") 
+                    export KEEP_COT_HITS=yes
+                    if [ $DEBUG_SCRIPT != 0 ] ; then 
+                      echo [parse_parameters]: KEEP_COT_HITS=$KEEP_COT_HITS #  >> $LOGFILE
+                    fi
+                    ;;
+            esac
+            ;;
+        l)                                          # last processed run:event
+
+            export RUN_NUMBER=`echo $OPTARG | sed 's/:/ /g' | awk '{print $1}'`
+            export LAST_EVENT=`echo $OPTARG | sed 's/:/ /g' | awk '{print $2}'`
+            ;;
+        L)                                          # load raw data (embedding)
+            export LOAD_EXISTING_DATA=${OPTARG}
+            ;;
+        m)                                          # email address
+            export email=${OPTARG}
+            if [ .$DEBUG_SCRIPT != "." ] ; then 
+              echo   email=$email
+            fi
+            ;;
+        n)                                          # number of events
+            export NEVENTS=$OPTARG
+	    if [ .$OPTARG != "." ] ; then
+              export  NEVENTS=`echo $OPTARG | sed 's/:/ /' | awk '{print $1}'`
+              export DEBUGGER=`echo $OPTARG | sed 's/:/ /' | awk '{print $2}'`
+            fi
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo  [parse_parameters]: NEVENTS=$NEVENTS     # >> $LOGFILE
+              echo  [parse_parameters]: DEBUGGER=$DEBUGGER   # >> $LOGFILE
+            fi
+            ;;
+        o)                                          # output directory,
+                                                    # may be remote
+
+            . cdfopr/scripts/parse_output_dir $OPTARG  $DEBUG_SCRIPT
+            export RUSER=$OP1
+            export RHOST=$OP2
+            export  RDIR=$OP3
+	    ;;
+        O)                                          # output file
+	    export OUTPUT_FILE=${OPTARG}
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: OUTPUT_FILE=${OPTARG}  # >> $LOGFILE
+            fi
+            ;;
+        p)                                          # remote_server:password
+
+	    export   SERVER=`echo $OPTARG | sed 's/:/ /g' | awk '{print $1}'`
+	    export PASSWORD=`echo $OPTARG | sed 's/:/ /g' | awk '{print $2}'`
+	    ;;
+        P)                                          # parameters
+            export PARAMETERS=$OPTARG
+            if [ $DEBUG_SCRIPT != 0 ] ; then echo PARAMETERS=$OPTARG ; fi
+            ;;
+        r)                                          # run number
+	    export RUN_NUMBER=`echo $OPTARG | sed 's/:/ /g' | awk '{print $1}'`
+	    export RAW_STREAM=`echo $OPTARG | sed 's/:/ /g' | awk '{print $2}'`
+	    ;;
+        R)                                          # run number
+	    export ROOT_SCRIPT=$OPTARG
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: ROOT_SCRIPT=$OPTARG   # >> $LOGFILE
+            fi
+	    ;;
+        s)                                          # script
+            if [ `echo $OPTARG | awk '{print substr($0,1,1)}'` == "/" ] ; then
+              export SCRIPT=$OPTARG
+            else
+	      export SCRIPT=${WORK_DIR}/${OPTARG}
+            fi
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [parse_parameters]: SCRIPT=$OPTARG  # >> $LOGFILE
+            fi
+	    ;;
+        t)                                          # trigger path
+	    export     L3_TRIGGER_PATH=$OPTARG
+	    ;;
+        v)                                          # debug script, 
+                                                    # should go first
+	    export  DEBUG_SCRIPT=1
+            echo [parse_parameters]: -------------------------------  # >> $LOGFILE
+            echo [parse_parameters]: command line: $0 $*  # >> $LOGFILE
+            echo [parse_parameters]: -------------------------------  # >> $LOGFILE
+	    ;;
+        V)                                          # debug script, 
+	    export  DEBUG_SCRIPT=$OPTARG
+            echo [parse_parameters]: ---------------------------------- # >> $LOGFILE
+            echo [parse_parameters]: command line: $0 $*   # >> $LOGFILE
+            echo [parse_parameters]: ---------------------------------- # >> $LOGFILE
+	    ;;
+        w)                                          # work directory
+            export       WORK_DIR=$OPTARG
+	    echo [parse_parameters]: WORK_DIR=$WORK_DIR  # >> $LOGFILE
+	    ;;
+        x)                                          # export
+            export       $OPTARG
+            echo  [parse_parameters]: export $OPTARG #  >> $LOGFILE
+            REDEFINED_ENV_VARS=${REDEFINED_ENV_VARS}" "$OPTARG
+	    ;;
+        *)
+           echo [parse_parameters]: OTHER: $OPT $OPTARG  # >> $LOGFILE
+           usage
+           ;;
+     esac
+done
+}
+
+parse_parameters $*

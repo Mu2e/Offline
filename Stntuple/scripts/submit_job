@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+#-----------------------------------------------------------------------
+# submit script or executable in different modes, variables used:
+#
+# SCRIPT:
+# NEVENTS
+# RUN_NUMBER
+# REDEFINED_ENV_VARS
+# DATASET
+# BOOK
+# PARAMETERS
+# JOB_OUTPUT_DIR
+# DEBUGGER
+# VALGRIND_DIR , VALGRIND_VER
+#-----------------------------------------------------------------------
+if [ $DEBUG_SCRIPT != 0 ] ; then 
+  echo [submit_job:$LINENO]: start >> $LOGFILE 
+fi
+
+if [ ."$SCRIPT" != "." ] ; then
+#-----------------------------------------------------------------------
+#  script: it is supposed to take certain parameters
+#-----------------------------------------------------------------------
+  nev=$NEVENTS; if [ .$DEBUGGER != "." ] ; then nev=$nev:$DEBUGGER ; fi
+
+  parameters="-V $DEBUG_SCRIPT -J $JOB_NUMBER  -w $WORK_DIR -l $LOGFILE"
+
+  if [ $RUN_NUMBER != -1       ] ; then parameters=$parameters" -r $RUN_NUMBER"; fi
+  if [ .$nev       != "."      ] ; then parameters=$parameters" -n $nev"       ; fi
+  if [ $DATASET    != "ZZZZZZ" ] ; then parameters=$parameters" -d $DATASET"   ; fi
+  if [ .$BOOK      != "."      ] ; then parameters=$parameters" -b $BOOK"      ; fi
+
+  if [ $DEBUG_SCRIPT != 0 ] ; then 
+    echo [submit_job:$LINENO]: REDEFINED_ENV_VARS=$REDEFINED_ENV_VARS
+  fi
+
+  line=""
+  for x in $REDEFINED_ENV_VARS ; do
+     line=$line" -x $x"
+  done
+
+  if [ ".$PARAMETERS" != "." ] ; then cmd="$SCRIPT $PARAMETERS $line"
+  else                                cmd="$SCRIPT $parameters -o $JOB_OUTPUT_DIR $line"
+  fi
+ 
+  if [ $DEBUG_SCRIPT != 0            ] ; then echo [submit_job]: $cmd ; fi
+  if [ $DEBUG_SCRIPT != "debug_only" ] ; then $cmd                    ; fi
+else
+#------------------------------------------------------------------------------
+#  executable - change directory to $JOB_OUTPUT_DIR, script may do it ifself
+#------------------------------------------------------------------------------
+  PREFIX=""
+  if [ .$DEBUGGER == ".t" ] ; then
+    setup totalview
+    PREFIX='totalview'
+    cmd="totalview $EXEFILE -a $TCLFILE"
+  elif [ .$DEBUGGER == ".t5" ] ; then
+    setup totalview v5_0
+    PREFIX='totalview'
+    cmd="totalview $EXEFILE -a $TCLFILE"
+  elif [ .$DEBUGGER == ".d" ] ; then
+    if [ .`echo $BFARCH | grep KCC_4_0` != "." ] ; then
+      setup gdb v5_0b_external
+    else
+      setup gdb v6_0_sss
+    fi
+    PREFIX='gdb'
+    cmd="emacs -bg lightskyblue -geometry 80x50 -fn fixed"
+  elif [ .`echo $DEBUGGER | grep v=` != "." ] ; then
+#-----------------------------------------------------------------------
+# valgrind, use system one
+#-----------------------------------------------------------------------
+#    ver=`echo $DEBUGGER | awk -F = '{print $2}'`
+#    export PRODUCTS=/usr/local/products/upsdb:$PRODUCTS
+    echo [submit_job:$LINENO]: $PRODUCTS
+
+                                        # by default VALGRIND_VER is v1_9_6 
+                                        # [defined in init_parameters]
+                                        # to attach GDB: --gdb-attach=yes
+
+#    if [ .$ver == "." ] ; then setup valgrind $VALGRIND_VER ; 
+#    else                       setup valgrind $ver 
+#    fi
+
+    PREFIX='valgrind'
+    echo [submit_job:$LINENO]: `which valgrind`                      >>  $LOGFILE  
+    if [ $VALGRIND_VER == v1_9_6 ] ; then
+      if [ $DEBUG_SCRIPT != 0 ] ; then
+        echo [submit_job:$LINENO]: \
+        valgrind --verbose --leak-check=yes --num-callers=18 \
+                 --error-limit=no --show-reachable=yes $EXEFILE $TCLFILE 
+      fi
+
+      if  [ .`echo $DEBUGGER | grep d` != "." ] ; then
+
+                                        # interactive mode, gdb if needed
+
+        valgrind --verbose --gdb-attach=yes --leak-check=yes --num-callers=18 \
+                 --error-limit=no --show-reachable=yes  $EXEFILE $TCLFILE 
+      else
+                                        # batch mode
+
+        valgrind --verbose --leak-check=yes --num-callers=18  \
+                 --error-limit=no --show-reachable=yes  $EXEFILE $TCLFILE   \
+                                                      1>>$LOGFILE  2>>$LOGFILE
+      fi
+    else
+      valgrind --tool=memcheck --verbose --leak-check=yes --num-callers=18 \
+               --error-limit=no --show-reachable=yes       \
+                                  $EXEFILE $TCLFILE 1>>$LOGFILE  2>>$LOGFILE
+    fi
+  elif [ .$DEBUGGER == ".p" ] ; then
+    setup purify
+    PREFIX='purify'
+    cmd="$EXEFILE $TCLFILE"
+  fi
+#-----------------------------------------------------------------------
+#  really submit the job
+#-----------------------------------------------------------------------
+  echo [submit_job:$LINENO]: COMMAND_LINE_OPTS=$COMMAND_LINE_OPTS JOB_TYPE=$JOB_TYPE
+  opts="-b"; if [ $COMMAND_LINE_OPTS == "nob" ] ; then opts="" ; fi
+
+  if [ .$NICE != "." ] ; then cmd="nice -$NICE $cmd" ; fi
+
+  if [ $JOB_TYPE == "stnana" ] ; then
+
+    if [ .$FILESET != "." ] ; then
+      if [ $JOB_NUMBER != 0 ] ; then
+        fs_base=`echo $FILESET | awk -F : '{print $1}'`;
+	     np=`echo $FILESET | awk -F : '{print $2}'`;
+	if [ .$fs_base != "." ] ; then
+          FILESET=$fs_base.`printf "%0${np}i" $JOB_NUMBER`
+	else
+          FILESET=`printf "%0${np}i" $JOB_NUMBER`
+        fi
+      else
+        FILESET=""
+      fi
+    fi
+
+    pid=`echo $$`
+    cat <<EOF  > input.C.$pid
+//
+{
+//  printf("- --- start\n");
+  gInterpreter->LoadMacro("$WORK_DIR/Stntuple/scripts/stnana.C");
+//  printf("- --- macros loaded \n");
+  stnana("$BOOK","$DATASET","$FILESET","$INPUT_FILE","$ROOT_SCRIPT",$NEVENTS);
+//  printf("- --- finish\n");
+}
+EOF
+    echo [submit_job:$LINENO] ----------------- input.C.$pid :        >> $LOGFILE
+    cat input.C.$pid                             >> $LOGFILE
+    echo [submit_job:$LINENO] -----------------                       >> $LOGFILE
+
+    cp -f $WORK_DIR/.rootrc .
+    cp -f $WORK_DIR/rootlogon.C .
+    export TCLFILE=" -b -q input.C.$pid"
+    export COMMAND_LINE_ARGUMENTS="$TCLFILE"
+  else
+#-----------------------------------------------------------------------
+# so far only 2 types of jobs: stnana and the rest (ac++)
+#-----------------------------------------------------------------------
+    if [ $COMMAND_LINE_ARGUMENTS == "undefined" ] ; then
+      export COMMAND_LINE_ARGUMENTS="$TCLFILE $opts"
+    fi
+  fi
+#------------------------------------------------------------------------------
+# comand line formed, execute
+#------------------------------------------------------------------------------
+  if [ .$PREFIX == '.' ] ; then
+    cmd="$EXEFILE"
+  fi
+
+  if [ "$COMMAND_LINE_ARGUMENTS" != "undefined" ] ; then
+    cmd="$cmd $COMMAND_LINE_ARGUMENTS"
+  fi
+
+  if [ $DEBUG_SCRIPT != 0            ] ; then 
+    echo [submit_job:$LINENO]: JOB_TYPE=$JOB_TYPE  >> $LOGFILE 
+    echo [submit_job:$LINENO]: TCLFILE=$TCLFILE    >> $LOGFILE 
+    echo [submit_job:$LINENO]: EXEFILE=$EXEFILE    >> $LOGFILE 
+    echo [submit_job:$LINENO]: COMMAND_LINE_ARGUMENTS=$COMMAND_LINE_ARGUMENTS >> $LOGFILE 
+    echo [submit_job:$LINENO]: pwd=`pwd`           >> $LOGFILE 
+    echo [submit_job:$LINENO]: cmd=$cmd            >> $LOGFILE
+    echo [submit_job:$LINENO]: printenv            >> $LOGFILE
+                               printenv            >> $LOGFILE
+    echo [submit_job:$LINENO]: ldd $EXEFILE        >> $LOGFILE
+                               ldd $EXEFILE        >> $LOGFILE
+  fi
+  if [ $DEBUG_SCRIPT != "debug_submit_job" ] ; then 
+    $cmd                            1>>$LOGFILE  2>>$LOGFILE
+  fi
+fi
+
+export RETURN_CODE=`echo $?`
+echo [submit_job]: RETURN_CODE = $RETURN_CODE           >>  $LOGFILE
+if [ $DEBUG_SCRIPT != 0 ] ; then echo [submit_job]: _end_  >> $LOGFILE; fi
+#-----------------------------------------------------------------------
+

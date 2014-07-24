@@ -1,0 +1,265 @@
+#!/usr/bin/env bash
+#-----------------------------------------------------------------------
+# example:
+#
+#    submit_concatenator -j stntuple -b cdfpewk -d tewk0e -J 1:29  \
+#    -o ewk@fcdfdata030:/cdf/scratch/ewk/datasets/cdfpewk/tmet0d          \
+#    -r /cdf/opr2/cdfopr/mcProduction/tewk0e -f caf
+#
+# cdfopr/scripts/submit_concatenator [-v level] -j [stntuple/prod]   \
+#                                    -J 1:52 [-b book] [-d dataset]  \
+#                -t /cdf/opr/cdfopr/tarballs/root_5.3.3_physics.tgz  \
+#                -f caf
+#
+#  use FCP to transfer the files - SCP / RCP from time to time fail to 
+#  authenticate
+#
+#  defaults: 
+#  --------
+# -b [ book ]       : cdfpewk
+# -f [ farm ]       : caf [local]
+# -j [job_type]     : prod [stntuple]
+# -o [ output_dir ] : fcdfsgi2:/cdf/data36/ewk/datasets/cdfpewk/$DATASET )
+# -r (remote_tcl_dir: fcdflnx3:/cdf/opr2/cdfopr/datasets/cdfpewk/$DATASET
+# -v                : 1 or "debug_only"
+#------------------------------------------------------------------------------
+               BOOK=cdfpewk
+            DATASET=0
+     input_tcl_file=undefined
+       job_sections=1
+                job=dst
+               farm=caf
+     remote_tcl_dir=""
+        tarball_dir=
+         output_dir=
+            nevents=0
+            tarball=undefined
+#            release=`cat .base_release`
+              queue=short
+     export VERBOSE=0
+     export DEBUG_SCRIPT=0
+     export SUBMIT_CONCATENATOR_REDEFINED=""
+#----------------------------------------------------------------------- 
+usage () {
+  echo submit_concatenator  [-v level] -j [stntuple/dst]  \
+                           -J sec1:sec2 -b [cdfpewk] -d dataset  \
+                           -t [stnmaker_${release}.tgz]  \
+                           -j stntuple -f caf
+}
+
+echo [submit_concatenator]: $* $0
+export OPTIND=1	
+while getopts :b:d:f:h:i:j:J:n:o:r:t:v:V:w:x: OPT; do
+    echo [submit_concatenator]: parameter: $OPT $OPTARG
+    case $OPT in
+        b)                                          # input dataset name
+	    export  BOOK=$OPTARG
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [submit_concatenator]: BOOK=$OPTARG
+            fi
+	    ;;
+        d)                                          # input dataset name
+	    export  DATASET=$OPTARG
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [submit_concatenator]: DATASET=$OPTARG ; 
+            fi
+	    ;;
+        h)                                          # help
+            usage
+            exit
+            ;;
+        i)                                          # input tcl file
+            input_tcl_file=$OPTARG
+            ;;
+        j)                                          # job: dst/stntuple
+	    export  job=$OPTARG
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [submit_concatenator]: job=$OPTARG ; 
+            fi
+	    ;;
+        J)                                          # sections
+	    job_sections=$OPTARG
+	    ;;
+        f)                                          # farm: caf/not caf
+            farm=$OPTARG
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [submit_concatenator]: farm=$OPTARG ; 
+            fi
+            ;;
+        n)                                          # mode: caf/not caf
+            nevents=$OPTARG
+            if [ $DEBUG_SCRIPT != 0 ] ; then 
+              echo [submit_concatenator]: nevents=$nevents ; 
+            fi
+            ;;
+        o)                                          # output dir
+            output_dir=$OPTARG
+            ;;
+        r)                                          # remote tcl dir
+            remote_tcl_dir=$OPTARG
+            ;;
+        t)                                          # non-default tarball
+	    tarball=$OPTARG
+	    ;;
+        v)                                          # debug
+	    export DEBUG_SCRIPT=$OPTARG
+	    export VERBOSE=$OPTARG
+            echo [submit_concatenator]:  VERBOSE=$OPTARG
+	    ;;
+        V)                                          # debug
+	    export DEBUG_SCRIPT=$OPTARG
+	    export VERBOSE=$OPTARG
+            echo [submit_concatenator]:  VERBOSE=$OPTARG
+	    ;;
+        x)                                          # export
+            export       $OPTARG
+            echo [submit_concatenator]:  export $OPTARG
+            SUBMIT_CONCATENATOR_REDEFINED=${SUBMIT_CONCATENATOR_REDEFINED}"-x "$OPTARG
+	    ;;
+        *)
+           echo [submit_concatenator]: OTHER: $OPT $OPTARG
+           usage
+           ;;
+    esac
+done
+
+if [ $DEBUG_SCRIPT != 0 ] ; then echo [submit_concatenator]: _start_ ; fi
+
+. Stntuple/scripts/parse_job_sections $job_sections
+export SEC1=$OP1
+export SEC2=$OP2
+#-----------------------------------------------------------------------
+#  input tcl files - on FCDFLNX3
+#  concat file pattern: tcl file name = $concat_file_pattern.001 etc
+#  remote tcl dir so far assumed to be on FCDFLNX3
+#-----------------------------------------------------------------------
+# if [ $farm == "cafcondor" ] ; then queue=short ; else queue=cdfopr ; fi
+
+if [ .$remote_tcl_dir == "." ] ; then
+  remote_tcl_dir=fcdflnx4.fnal.gov:/cdf/opr2/cdfopr/datasets/$BOOK/$DATASET
+fi
+
+if [ $job == "dst" ] ; then
+#-----------------------------------------------------------------------
+# concatenate output of production
+#-----------------------------------------------------------------------
+  if [ .$output_dir == "." ] ; then 
+     ruser=ewk
+     rhost=fcdfdata030.fnal.gov
+     rdir=/cdf/scratch/ewk/datasets/$BOOK/$DATASET
+  else
+    . Stntuple/scripts/parse_output_dir $output_dir
+    export ruser=$OP1
+    export rhost=$OP2
+    export  rdir=$OP3
+  fi
+
+  output_node=${ruser}@${rhost}
+   output_dir=$rdir
+      exefile=bin/$BFARCH/stnmaker.exe
+
+  if [ $tarball == "undefined" ] ; then 
+    x=`cat .rootrc | grep Stnmaker.Tarball | awk '{print $2}'`
+    if [ ."$x" != "." ] ; then
+      tarball=$x;
+    else
+      if [ .$tarball_dir == "." ] ; then
+        if   [ `hostname -f` == "fcdflnx3.fnal.gov" ] ; then
+          tarball_dir=/cdf/opr/cdfopr/tarballs
+        fi
+      fi
+      tarball=$tarball_dir/stnmaker_${release}.tgz ; 
+    fi
+  fi
+
+  parameters="-e $exefile -j stnmaker.concat"
+#-----------------------------------------------------------------------
+# concatenate stntuples
+#-----------------------------------------------------------------------
+elif [ $job == "stntuple" ] ; then
+  script=Stntuple/scripts/process_concatenation_request
+
+  x=`cat .rootrc | grep Stnfit.Tarball | awk '{print $2}'`
+  if [ ."$x" != "." ] ; then
+    tarball=$x;
+  else
+    if [ .$tarball_dir == "." ] ; then
+      if   [ `hostname -f` == "fcdflnx3.fnal.gov" ] ; then
+        tarball_dir=/cdf/opr/cdfopr/tarballs
+      fi
+    fi
+    tarball=$tarball_dir/stnfit_${release}.tgz ; 
+  fi
+ 
+  if [ $input_tcl_file == "undefined" ] ; then
+    input_tcl_file=${DATASET}_concat.C
+  fi
+
+  parameters="-s $script -j stntuple.concat"
+
+				# finally - output directory
+
+  rcp $remote_tcl_dir/$input_tcl_file .
+  x=`cat $input_tcl_file | awk '{if ($2 == "OUTPUT_DIR") print $3}' | awk -F // '{print $2}'`
+  output_node=`echo $x | awk -F / '{print $1}'`
+   output_dir=`echo $x | awk -F / '{for (i=2; i<=NF;i++) {printf "/%s", $i} ; printf "\n";}'`
+fi
+
+parameters=${parameters}" -b $BOOK -d $DATASET -x CAF=$farm $SUBMIT_CONCATENATOR_REDEFINED"
+if [ .$USE_TIKI == "." ] ; then
+  parameters=${parameters}" -i $remote_tcl_dir/$input_tcl_file"
+fi
+
+if [ $nevents != 0 ] ; then parameters=${parameters}" -n $nevents" ; fi
+
+echo [submit_concatenator]:       farm=$farm
+echo [submit_concatenator]: parameters=$parameters
+#-----------------------------------------------------------------------
+# finally submit the job
+#-----------------------------------------------------------------------
+if [ $DEBUG_SCRIPT != 0 ] ; then echo [submit_concatenator]: submitting the job  ; fi
+
+if [ $farm == "local" ] ; then
+  cmd="./Stntuple/scripts/run.sh -V $DEBUG_SCRIPT -J $SEC1 $parameters -x USE_SCP=1 &"
+else 
+#  source ~cdfsoft/cdf2.shrc
+#  setup cdfsoft2 development
+  parameters="-V $DEBUG_SCRIPT -J $ "${parameters}
+  if [ .$USE_TIKI == "." ] ; then
+    output_location=${output_node}:$output_dir
+    parameters=${parameters}" -o $output_location"
+  else 
+#------------------------------------------------------------------------------
+#  getting things from tiki - get definitions of the datasets from wiki pages
+#------------------------------------------------------------------------------
+    tiki_host=$USE_TIKI
+    delimitor=${job}.concat.parameters
+    parameter_file=$dataset.$delimitor
+
+    echo . cdfopr/scripts/tiki_get_data $tiki_host wiki_page . $BOOK.$DATASET $delimitor
+         . cdfopr/scripts/tiki_get_data $tiki_host wiki_page . $BOOK.$DATASET $delimitor > $parameter_file
+    cat $parameter_file
+
+     output_dir=`cdfopr/scripts/tiki_get_parameter $parameter_file output_dir  $SEC1`
+    output_node=`cdfopr/scripts/tiki_get_parameter $parameter_file output_node $SEC1`
+
+    echo [submit_concatenator]: output_dir=$output_dir
+    output_location=${output_node}:$output_dir
+  fi
+
+  cmd="CafSubmit --tarFile=$tarball             \
+           --outLocation=$output_location/$DATASET.$.tgz  \
+                      --dhaccess=None                               \
+                      --dataset=$DATASET                            \
+                      --procType=$queue                             \
+                      --email=murat@fnal.gov                        \
+                      --farm=$farm                                  \
+                      --start=$SEC1 --end=$SEC2                     \
+                cdfopr/scripts/run.sh $parameters"
+fi
+
+echo $cmd ; 
+if [ $DEBUG_SCRIPT != "debug_submit_concatenator" ] ; then $cmd ; fi
+#---------------------------------------------------------------------------------
+# this is it
+#---------------------------------------------------------------------------------

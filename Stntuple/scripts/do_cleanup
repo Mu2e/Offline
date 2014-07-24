@@ -1,0 +1,156 @@
+#!/usr/bin/env bash
+#-----------------------------------------------------------------------
+#  to be sourced! 
+#
+#  calls "running_on_caf" which id defined in 'common_procedures"
+#  final cleanup actions, determine which copy routine to use
+#-----------------------------------------------------------------------
+if [ .`hostname -f` != .$RHOST ] ; then
+  RCOPY="fcp -c /usr/krb5/bin/rcp -N -r "
+    RSH="/usr/krb5/bin/rsh -l $RUSER -n -N $RHOST"
+  if [ $CAF == "local" ] ; then 
+    RCOPY=scp
+      RSH=""
+  fi
+else
+  RCOPY=rcp
+    RSH=""
+fi
+
+if [ $DEBUG_SCRIPT != 0 ] ; then  echo [do_cleanup]: _start_    >> $LOGFILE; fi
+
+if [ .$RHOST != "." ] ; then
+#------------------------------------------------------------------------------
+#  output is requested to be copied to remote node. "-r" causes rcp to create 
+#  directory if necessary
+#------------------------------------------------------------------------------
+  x=`$RSH ls -a $RDIR`
+  if [ ".$x" == "." ] ; then $RSH mkdir -p $RDIR ; fi
+
+  if [ $DEBUG_SCRIPT != 0 ] ; then 
+    echo [do_cleanup]: catalog of $JOB_OUTPUT_DIR:                  >> $LOGFILE
+    ls $JOB_OUTPUT_DIR | grep $nm                                   >> $LOGFILE
+  fi
+
+  echo CAFOUT_NODE:RHOST:RDIR: ${CAFOUT_NODE}:${RHOST}:${RDIR} >>  $LOGFILE
+  echo INPUT_TCL_FILE $INPUT_TCL_FILE                          >>  $LOGFILE
+
+  echo "listing of current directory `pwd` follows"        >> $LOGFILE
+  ls -lrt                                                  >> $LOGFILE
+#-----------------------------------------------------------------------
+#  do not copy back rootlogon.C
+#-----------------------------------------------------------------------
+  echo [do_cleanup]: list:   `ls $JOB_OUTPUT_DIR | grep -v rootlogon.C | \
+                              grep -v temp | \
+                              grep -v logIOfile.log`    >> $LOGFILE
+
+  for file in `ls $JOB_OUTPUT_DIR | grep -v rootlogon.C | \
+               grep -v temp | grep -v logIOfile.log` ; do
+
+    full_name=${JOB_OUTPUT_DIR}/$file
+#                                          *** debug *** skip symbolic links
+    if [ ! -h $full_name ] ; then
+      echo $RCOPY $full_name ${RUSER}@${RHOST}:${RDIR}/.     >> $LOGFILE
+      $RCOPY $full_name ${RUSER}@${RHOST}:${RDIR}/.
+      rc=$?
+      echo rc=$rc       >> $LOGFILE
+
+      if [ $full_name != $LOGFILE ] ; then
+        if [ $rc == "0" ] ; then rm $full_name ; fi
+      else
+#-----------------------------------------------------------------------
+#  source job_XX.err and job_xx.out into the logfile
+#-----------------------------------------------------------------------
+        if [ -f $WORK_DIR/job_$JOB_NUMBER.out ] ; then
+          echo [do_cleanup]: --- $WORK_DIR/job_$JOB_NUMBER.out  >> $LOGFILE
+          cat $WORK_DIR/job_$JOB_NUMBER.err                     >> $LOGFILE
+        fi
+
+        if [ -f $WORK_DIR/job_$JOB_NUMBER.err ] ; then
+          echo [do_cleanup]: --- $WORK_DIR/job_$JOB_NUMBER.out  >> $LOGFILE 2>>$LOGFILE
+          cat $WORK_DIR/job_$JOB_NUMBER.err                     >> $LOGFILE 2>>$LOGFILE
+        fi
+
+        if [ .$RHOST == .$CAFOUT_NODE ] ; then
+#------------------------------------------------------------------------------
+#  CAF: just move logfile to the top to get it bask in the tarball
+#------------------------------------------------------------------------------
+          mv $LOGFILE $WORK_DIR
+        fi
+      fi
+    fi
+  done
+
+  here=$PWD
+  cd $WORK_DIR
+  echo "CAF_JID = ${CAF_JID}" >> $LOGFILE 2>>$LOGFILE
+  tcsh $WORK_DIR/cdfopr/scripts/check_concat_log_DCAF.tcsh \
+                  root://${RHOST}/${RDIR} $LOGFILE >> $LOGFILE 2>>$LOGFILE
+  rc=$?
+  echo check_concat_log_DCAF.tcsh rc $rc >> $LOGFILE 2>>$LOGFILE
+  if [ $rc == "0" ] ; then 
+      # Handle multiple output files RMS20050302
+      output_file=( `grep Edm_EventLister $LOGFILE | awk -F/ '{print $NF}' | cut -d" " -f1` )
+      echo output_file ${output_file[@]} >> $LOGFILE 2>>$LOGFILE
+      
+      for file in ${output_file[@]} ; do
+	  touch $file.ok
+	  echo $RCOPY ${file}.ok ${RUSER}@${RHOST}:${RDIR}/.     >> $LOGFILE 2>>$LOGFILE
+	  $RCOPY ${file}.ok ${RUSER}@${RHOST}:${RDIR}/.
+	  rc=$?
+	  echo rc=$rc       >> $LOGFILE 2>>$LOGFILE
+      done
+  else
+      tail -2 $LOGFILE > mail.txt
+      mail -s "$DATASET $CAF_JID section $CAF_SECTION concat $JOB_NUMBER rc $rc" $email < mail.txt
+  fi
+  cd $here
+
+  echo [do_cleanup]: CAFOUT_NODE:RHOST:RDIR: ${CAFOUT_NODE}:${RHOST}:${RDIR} >>  $LOGFILE
+
+fi
+#-----------------------------------------------------------------------
+#  determine whether the job is running on CAF - rely on CAF_JID variable 
+#  which is supposed to be set only in that case
+#-----------------------------------------------------------------------
+echo [do_cleanup]: CAF=$CAF, running_on_caf = `running_on_caf`       >> $LOGFILE
+
+if [ `running_on_caf` == "yes" ] ; then
+#------------------------------------------------------------------------------
+#  CAF: remove the files we don't want to have copied back in the tarfile
+#  list of files to be deleted is specified in the file caf_remove.lst 
+#  created by cdfopr/scripts/make_tarball
+#------------------------------------------------------------------------------
+  tsecho do_cleanup:$LINENO "proceed with the cleanup"                >> $LOGFILE
+  ls -al $WORK_DIR/*                                                  >> $LOGFILE 2>&1
+
+  cd $WORK_DIR
+
+  if [ -f caf_remove.lst ] ; then 
+      for f in `cat caf_remove.lst` ; do
+        tsecho do_cleanup:$LINENO "rm -rf $WORK_DIR/$f"               >> $LOGFILE
+        rm -rf $WORK_DIR/$f
+      done
+  fi
+
+  for file in AC++Dump source_me strip_event.csh input.C.* random_seed* \
+             gen.*.root *.tmp ProductionExe.* TrigSimError.log etdata  ; do
+    if [ ".`ls $WORK_DIR | grep $file`" != "." ] ; then
+       ls $WORK_DIR | grep $file | xargs rm
+    fi
+  done
+
+  for dir in tcl bin jobs doc include lib shlib hist Stntuple man         \
+             output tmp ups cint Production rcpdb dbt mcProduction   \
+             farmsonly etc XFTSim SimulationMods TriggerMods cesData \
+             CalTrigger TclUtils XTRPSim dab svtsim murat            \
+             RootObjs CLHEP DBManager DBUtils RCP cdfopr Electroweak ; do
+
+    if [ -d $WORK_DIR/$dir ] ; then rm -rf $WORK_DIR/$dir ; fi
+  done
+
+  if [ .$DEBUG_SCRIPT == "." ] ; then 
+     if [ -d $WORK_DIR/results ] ; then rm -rf $WORK_DIR/results ; fi
+  fi
+
+fi

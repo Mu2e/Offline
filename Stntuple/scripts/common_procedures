@@ -1,0 +1,507 @@
+#!/usr/bin/env bash
+#-----------------------------------------------------------------------
+# check if we're running on CAF, returns "yes" or "no"
+#-----------------------------------------------------------------------
+running_on_caf() {
+  x="no" ; if  [ .$CAF_JID != "." ] ; then x="yes" ; fi ; echo $x ;
+}
+
+#-----------------------------------------------------------------------
+#  # used to print with timestamp, call: tsecho my_script message
+#-----------------------------------------------------------------------
+tsecho() {
+  echo `date "+%Y/%m/%d %H:%M:%S"`" [ $1 ] " $2
+}
+
+#-----------------------------------------------------------------------
+#  call: set_lock dir name [wait]
+#-----------------------------------------------------------------------
+set_lock() {
+
+	 dir=$1
+	name=$2
+    lockfile=$1/$2.lock
+        wait=1 ; if [ .$3 != "." ] ; then wait=$3 ; fi
+
+    lock=`ls $dir | grep lock`
+    
+  export RETURN_CODE=0
+
+  while [ ."$lock" != "." ] ; do
+    if [ $wait == 0 ] ; then 
+      echo `date` : $name detected $lock , bailing out
+      export RETURN_CODE=1
+      lock=""
+    else
+      echo `date` : $name detected $lock , wait for 30 sec
+      sleep 30
+      lock=`ls $dir | grep lock`; 
+    fi
+  done
+
+  if [ $RETURN_CODE == 0 ] ; then touch $lockfile ; fi
+}
+
+#-----------------------------------------------------------------------
+#  call: release_lock dir name
+#-----------------------------------------------------------------------
+release_lock() {
+    lockfile=$1/$2.lock
+    rm $lockfile
+}
+#------------------------------------------------------------------------------
+# build_dir=$WORK_DIR/build is deleted when the build succeeds
+# 
+# given a list of executables generate list of shared libs they need
+# and copy them into a $WORK_DIR/build/shlib/$BFARCH/ subdirectory
+#
+# call : get_shared_libs list
+#------------------------------------------------------------------------------
+get_shared_libs() {
+  exe_list=$*
+  echo [get_shared_libs] exe_list=$exe_list
+  libs=""
+  wdir=$PWD
+
+  all_done=0
+  while [ $all_done == 0 ] ; do
+    all_done=1
+    new_exe_list=""
+    for exe in $exe_list ; do
+#      echo [get_shared_libs] --- new exe: $exe
+# linux-gate and linux-vdso are resolved by the kernel, not a file
+      for lib in `ldd $exe | grep -v linux-gate | grep -v linux-vdso | awk '{ print $3}'` ; do
+        if [ ".`echo $libs | grep $lib`" == "." ] ; then
+          libs=$libs" "$lib
+          all_done=0
+#           echo [get_shared_libs] new library: $lib
+          new_exe_list=$new_exe_list" "$lib
+        fi
+      done
+    done
+    exe_list=$new_exe_list
+#    echo [get_shared_libs] new_exe_list=$new_exe_list
+  done
+
+#  echo $libs
+  cd $BUILD_DIR/shlib/$BFARCH
+  for lib in $libs ; do
+#     echo [get_shared_libs] cp $lib $BUILD_DIR/shlib/$BFARCH/.
+    ln -sf $lib 
+  done
+#-----------------------------------------------------------------------
+#  remove unwanted libraries - what to do with libtcl8.3.so ?
+#-----------------------------------------------------------------------
+  libs="ld-linux libdl libhistory libncurses libc libm   \
+        libreadline libcrypt libnsl libpthread \
+        libXt libXi libXp libXext libX11 libXpm libICE \
+        libcrypto libssl libresolv libdb \
+        libSM libcom_err libz \
+        libgssapi_krb5 libk5crypto libkrb5 \
+        libclntsh"
+
+  for lib in $libs; do
+      rm -f $BUILD_DIR/shlib/$BFARCH/$lib.*
+  done
+
+  cd $wdir
+}
+#-----------------------------------------------------------------------
+# call: get_mysql build_dir
+#
+# tar up MySQL part, 
+# use $build_dir/bin/$BFARCH and $build_dir/shlib/$BFARCH
+#-----------------------------------------------------------------------
+get_mysql() {
+
+  echo tarring up mysql
+  echo "---------------"
+
+# mysql=`which mysql 2>/dev/null`
+# if [ ".$mysql" == "." ] ; then 
+    last_ver=`ups list -a mysql | grep v5_ | sort | tail -1`
+    ver=`echo $last_ver | awk '{print $2}' | awk -F = '{print $2}'`
+    flavour=`echo $last_ver | awk '{print $3}' | awk -F = '{print $2}'`
+    setup mysql $ver  -f $flavour -q client 2>/dev/null
+    echo setup mysql $ver  -f $flavour
+    mysql=`which mysql`
+    tsecho get_mysql:$LINENO "mysql: $mysql"
+# fi
+
+# if [ ".$mysql" != "." ] ; then
+    dir=$PWD ;
+    ln -s $mysql $BUILD_DIR/bin/$BFARCH/mysql
+    mysql_client_lib=`ldd $mysql | grep mysqlclient | awk '{print $3}'`
+    cd $BUILD_DIR/shlib/$BFARCH
+    ln -s $mysql_client_lib 
+    cd $dir
+# fi
+}
+#-----------------------------------------------------------------------
+#  Oracle-related part
+#-----------------------------------------------------------------------
+get_oracle() {
+
+  oracle_version=`echo $SETUP_ORACLE_CLIENT | awk '{ print $2 }' | cut -d "_" -f1 `
+  oracle_iversion=`echo $SETUP_ORACLE_INSTANT_CLIENT | awk '{ print $2 }' | cut -d "_" -f1 `
+
+  build_dir=$BUILD_DIR
+
+  if [ "$oracle_iversion" != "" ] ; then
+      echo tarring up Oracle instant client from $ORACLE_INSTANT_CLIENT_DIR, version $oracle_iversion
+      echo ---------------------------------------------------------------------------------
+      mkdir -p $build_dir/oracle
+      cp -r $ORACLE_INSTANT_CLIENT_DIR/* $build_dir/oracle
+#      rm -f $build_dir/oracle/ups/..tar
+  elif [ "$oracle_version" != "" ] ; then
+      echo tarring up Oracle libraries from $ORACLE_HOME/lib, oracle version $oracle_version
+      echo ---------------------------------------------------------------------------------
+      mkdir -p $build_dir/oracle/lib
+      mkdir -p $build_dir/oracle/ocommon/nls/admin/data
+      mkdir -p $build_dir/oracle/sqlplus/mesg
+      mkdir -p $build_dir/oracle/oracore/zoneinfo
+      mkdir -p $build_dir/oracle/rdbms/mesg
+      mkdir -p $build_dir/oracle/sqlplus/admin
+      
+      cp $ORACLE_HOME/bin/sqlplus                    $build_dir/bin/$BFARCH/
+
+      cp $ORACLE_HOME/lib/libclntsh.so.9.0         $build_dir/oracle/lib/.
+      cp $ORACLE_HOME/lib/libwtc9.so               $build_dir/oracle/lib/.
+      cp -r $ORACLE_HOME/ocommon/nls/admin/data/*  $build_dir/oracle/ocommon/nls/admin/data/.
+      cp -r $ORACLE_HOME/sqlplus/mesg/*            $build_dir/oracle/sqlplus/mesg/.
+      cp -r $ORACLE_HOME/oracore/zoneinfo/*        $build_dir/oracle/oracore/zoneinfo/.
+      cp -r $ORACLE_HOME/rdbms/mesg/*              $build_dir/oracle/rdbms/mesg/.
+      cp -r $ORACLE_HOME/sqlplus/admin/*           $build_dir/oracle/sqlplus/admin/.
+  else
+      echo "\nERROR could not find any oracle\n"
+  fi
+
+
+}
+#------------------------------------------------------------------------------
+get_oracle_client() {
+
+  oracle_version=`echo $SETUP_ORACLE_CLIENT | awk '{ print $2 }' | cut -d "_" -f1 `
+
+  build_dir=$BUILD_DIR
+
+  if [ "$oracle_version" != "" ] ; then
+      echo tarring up Oracle libraries from $ORACLE_HOME/lib, oracle version $oracle_version
+      echo ---------------------------------------------------------------------------------
+      mkdir -p $build_dir/oracle/lib
+      mkdir -p $build_dir/oracle/ocommon/nls/admin/data
+      mkdir -p $build_dir/oracle/sqlplus/mesg
+      mkdir -p $build_dir/oracle/oracore/zoneinfo
+      mkdir -p $build_dir/oracle/rdbms/mesg
+      mkdir -p $build_dir/oracle/sqlplus/admin
+      
+      cp    $ORACLE_HOME/bin/sqlplus               $build_dir/bin/$BFARCH/
+
+      cp    $ORACLE_HOME/lib/libclntsh.so.9.0      $build_dir/oracle/lib/.
+      cp    $ORACLE_HOME/lib/libwtc9.so            $build_dir/oracle/lib/.
+      cp -r $ORACLE_HOME/ocommon/nls/admin/data/*  $build_dir/oracle/ocommon/nls/admin/data/.
+      cp -r $ORACLE_HOME/sqlplus/mesg/*            $build_dir/oracle/sqlplus/mesg/.
+      cp -r $ORACLE_HOME/oracore/zoneinfo/*        $build_dir/oracle/oracore/zoneinfo/.
+      cp -r $ORACLE_HOME/rdbms/mesg/*              $build_dir/oracle/rdbms/mesg/.
+      cp -r $ORACLE_HOME/sqlplus/admin/*           $build_dir/oracle/sqlplus/admin/.
+  else
+      echo "\nERROR could not find any oracle\n"
+  fi
+
+
+}
+
+#------------------------------------------------------------------------------
+# 2012-03-08 P.Murat: I think this is the right way to tar up the Oracle instant 
+#                     client, but do not want to interfere with the rest
+#                     so create a new function
+#------------------------------------------------------------------------------
+get_oracle_client_stnfit() {
+
+  oracle_version=`echo $SETUP_ORACLE_INSTANT_CLIENT | awk '{ print $2 }' | cut -d "_" -f1 `
+
+  build_dir=$BUILD_DIR
+
+  if [ "$oracle_version" != "" ] ; then
+      echo tarring up Oracle libraries from $ORACLE_INSTANT_CLIENT_DIR, oracle version $oracle_version
+      echo ---------------------------------------------------------------------------------
+      mkdir -p $build_dir/oracle
+      
+      cp -rfd   $ORACLE_INSTANT_CLIENT_DIR/*                     $build_dir/oracle/.
+
+#      cp    $ORACLE_INSTANT_CLIENT_DIR/libclntsh.so.*            $build_dir/oracle/.
+#      cp    $ORACLE_INSTANT_CLIENT_DIR/libnnz10.so               $build_dir/oracle/.
+#      cp    $ORACLE_INSTANT_CLIENT_DIR/libsqlplus.so             $build_dir/oracle/.
+   else
+      echo "\nERROR could not find any oracle\n"
+  fi
+}
+
+#-----------------------------------------------------------------------
+# some binding to the specific version of perl... but ...
+#-----------------------------------------------------------------------
+get_perl() {
+  setup perl_dbd_oracle
+  echo [common_procedures::get_perl] tarring up perl, \$SETUP_PERL = $SETUP_PERL
+  echo --------------------------------------------------------------------------------
+  mkdir $BUILD_DIR/perl
+  cp -r $PERL_DIR/* $BUILD_DIR/perl/.
+
+  echo [common_procedures::get_perl] tarring up perl_dbd_oracle, \
+                        \$SETUP_PERL_DBD_ORACLE = $SETUP_PERL_DBD_ORACLE
+  echo --------------------------------------------------------------------------------
+  mkdir $BUILD_DIR/perl_dbd_oracle
+  cp -r $PERL_DBD_ORACLE_DIR/* $BUILD_DIR/perl_dbd_oracle/.
+}
+#-----------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------
+get_ruby() {
+#  setup ruby v1_8_4
+  echo [common_procedures::get_ruby] tarring up ruby, $SETUP_RUBY = $SETUP_RUBY
+  echo --------------------------------------------------------------------------------
+  ln -s `which ruby` $BUILD_DIR/bin/$BFARCH
+}
+#-----------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------
+get_python() {
+  setup python
+  echo [common_procedures::get_python] tarring up python, $SETUP_PYTHON = $SETUP_PYTHON
+  echo --------------------------------------------------------------------------------
+  mkdir $BUILD_DIR/python
+  cp -r $PYTHON_DIR/* $BUILD_DIR/python  
+}
+#-----------------------------------------------------------------------
+#  get_sam [version]
+#-----------------------------------------------------------------------
+get_sam() {
+  echo [common_procedures::get_sam] tarring up SAM
+  echo -------------------------------------------
+  ver="$*"
+  if [ ."$ver" == "." ] ; then 
+    ver=`echo $SETUP_SAM | awk '{print $2}'`
+  fi
+
+  echo - NB!  setup sam $ver is here! -
+  echo tarring up SAM, \$SETUP_SAM=\'$SETUP_SAM\'
+  setup sam $ver
+
+  if [ ."`echo $ver | grep v6_`" != "." ] ; then
+# SAM V6
+    mkdir $BUILD_DIR/sam_mis_pyapi
+    mkdir $BUILD_DIR/sam_admin_pyapi
+    mkdir $BUILD_DIR/sam_user_pyapi
+    mkdir $BUILD_DIR/sam_common_pylib
+    mkdir $BUILD_DIR/sam_idl_pylib
+    mkdir $BUILD_DIR/omniORB
+
+    cp -r $SAM_MIS_PYAPI_DIR/*     $BUILD_DIR/sam_mis_pyapi
+    cp -r $SAM_ADMIN_PYAPI_DIR/*   $BUILD_DIR/sam_admin_pyapi
+    cp -r $SAM_USER_PYAPI_DIR/*    $BUILD_DIR/sam_user_pyapi
+    cp -r $SAM_COMMON_PYLIB_DIR/*  $BUILD_DIR/sam_common_pylib
+    cp -r $SAM_IDL_PYLIB_DIR/*     $BUILD_DIR/sam_idl_pylib
+    cp -r $OMNIORB_DIR/*           $BUILD_DIR/omniORB
+  else
+# works for v7 or v8
+
+    mkdir $BUILD_DIR/sam
+    mkdir $BUILD_DIR/sam_config
+#    mkdir $BUILD_DIR/sam_config_cfg
+    mkdir $BUILD_DIR/sam_cpp_api
+#    mkdir $BUILD_DIR/omniORB
+
+    cp -r $SAM_DIR/*               $BUILD_DIR/sam/.
+    cp -r $SAM_CONFIG_DIR/*        $BUILD_DIR/sam_config/.
+#    cp -r $SAM_CONFIG_CFG_DIR/*    $BUILD_DIR/sam_config_cdf/.
+    cp -r $SAM_CPP_API_DIR/*       $BUILD_DIR/sam_cpp_api/.
+    cp -r $SAM_CPP_API_LIBDIR/*    $BUILD_DIR/sam_cpp_api/lib/.
+  fi
+}
+#-----------------------------------------------------------------------
+#  copy FCP and FCSLIB ino $BUILD_DIR
+#-----------------------------------------------------------------------
+get_fcp() {
+
+  setup fcp
+  echo tarring up fcp, \$SETUP_FCP=$SETUP_FCP
+
+  mkdir $BUILD_DIR/fcp
+  cp -r $FCP_DIR/*  $BUILD_DIR/fcp
+}
+#-----------------------------------------------------------------------
+#  get DISKCACHE_I and DCAP shared libraries
+#-----------------------------------------------------------------------
+get_diskcache_and_dcap_libs() {
+  wdir=$PWD
+
+  if [ ."`env | grep DISKCACHE_I_DIR`" != "." ] ; then
+    cd $BUILD_DIR/shlib/$BFARCH
+    for lib in `ls $DISKCACHE_I_DIR/lib/*.so` ; do 
+      if [ ! -e `basename $lib` ] ; then ln -s $lib ; fi
+    done
+    cd $BUILD_DIR
+    mkdir -p diskcache_i/scripts
+    mkdir -p diskcache_i/bin
+    ln -s $DISKCACHE_I_DIR/scripts/copy_file.sh diskcache_i/scripts/copy_file.sh
+    ln -s $DISKCACHE_I_DIR/bin/check_file diskcache_i/bin/check_file
+    cd $wdir
+  else
+    echo ERROR: DISKCACHE_I_DIR is not defined! 
+    exit -1;
+  fi
+
+  if [ ."`env | grep DCAP_DIR`" != "." ] ; then
+    cd $BUILD_DIR/shlib/$BFARCH
+    for lib in `ls $DCAP_DIR/lib/*.so` ; do 
+      if [ ! -e `basename $lib` ] ; then ln -s $lib ; fi
+    done
+    cd $wdir
+  else
+    echo ERROR: DCAP_DIR is not defined! 
+    exit -1;
+  fi
+}
+#-----------------------------------------------------------------------
+#  get CafSubmit and .cafrc
+#-----------------------------------------------------------------------
+get_CafSubmit() {
+  echo tarring up CafSubmit from cafclient product
+  echo ---------------------------------------------
+
+  setup cafclient
+
+  if [ -z "$CAFCLIENT_DIR" ]; then
+    echo [get_CafSubmit] ERROR: could not setup cafclient, exiting!
+    exit -1;
+  fi
+
+  cp $CAFCLIENT_DIR/bin/CafSubmit  \
+             $BUILD_DIR/bin/$BFARCH/CafSubmit
+
+#-----------------------------------------------------------------------
+#  copy .cafrc 
+#-----------------------------------------------------------------------
+  if [ -e $WORK_DIR/.cafrc ] ; then
+    echo tarring up $WORK_DIR/.cafrc  ; cp $WORK_DIR/.cafrc  $BUILD_DIR/.
+  elif [ -e $HOME/.cafrc ] ; then
+    echo tarring up $HOME/.cafrc ; cp $HOME/.cafrc $BUILD_DIR/.
+  elif [ -e  $CAFCLIENT_DIR/etc/.cafrc ] ; then
+    echo tarring up $CAFCLIENT_DIR/etc/.cafrc 
+    cp $CAFCLIENT_DIR/etc/.cafrc $BUILD_DIR/.
+  else
+    echo [get_CafSubmit] ERROR: .cafrc not found, exiting!
+    exit -1;
+  fi
+}
+#-----------------------------------------------------------------------
+# 
+#-----------------------------------------------------------------------
+get_root_include_files() {
+
+    echo tarring up ROOT include files from $ROOTSYS
+    echo "--------------------------------------------"
+
+    mkdir -p $BUILD_DIR/cint/include
+    mkdir -p $BUILD_DIR/cint/stl
+    mkdir -p $BUILD_DIR/include
+    mkdir -p $BUILD_DIR/etc
+    mkdir -p $BUILD_DIR/etc/plugins
+    mkdir -p $BUILD_DIR/etc/plugins/TVirtualStreamerInfo
+    mkdir -p $BUILD_DIR/macros
+
+  list_of_files="include/RQ_OBJECT.h include/RtypesCint.h \
+                 include/TInterpreter.h \
+                 include/TNamed.h \
+                 include/TObject.h \
+                 macros/Dialogs.C \
+                 macros/fileopen.C \
+                 macros/html.C \
+                 cint/MAKEINFO \
+                 cint/include/iostream   \
+                 cint/include/iostream.h \
+                 cint/include/iosenum.h  \
+                 cint/include/_iostream  \
+                 cint/include/bool.h     \
+                 cint/stl/_string        \
+                 etc/plugins/TVirtualStreamerInfo/P010_TStreamerInfo.C \
+                 etc/root.mimes          \
+                 etc/system.rootmap      \
+                 etc/system.rootrc"
+                 
+
+  for file in $list_of_files ; do
+    if [ -f $ROOTSYS/$file ] ; then cp $ROOTSYS/$file $BUILD_DIR/$file ; fi
+  done
+  
+}
+#-----------------------------------------------------------------------
+# assume $BUILD_DIR is defined
+# call get_rcpdb [0/1] depending on whether level3 is required
+# (1: level3 included)
+#-----------------------------------------------------------------------
+get_rcpdb() {
+
+  include_l3=$1
+
+  files="dbnames.txt official rcpdb scripts ups";
+
+  if [ $include_l3 == "1" ] ; then 
+    files=$files" level3"
+    echo " adding rcp datatabase"
+  else
+    echo " adding rcp datatabase, no level3"
+  fi
+  echo " --------------------------------"
+
+  mkdir -p $BUILD_DIR/rcpdb
+  for f in $files ; do ln -s $BFDIST/rcpdb/$f $BUILD_DIR/rcpdb/$f ; done
+}
+#-----------------------------------------------------------------------
+# call: create_tarball $build_dir $tarball  $zip
+#
+# assume $BUILD_DIR is defined
+# env var DOT_FILES determines ".file" files to be packed
+#-----------------------------------------------------------------------
+create_tarball() {
+
+  build_dir=$1
+    tarball=$2
+        zip=$3
+
+  echo " build $tarball using contents of $build_dir"
+  echo " -------------------------------------------"
+
+  cd $build_dir ;
+#------------------------------------------------------------------------
+# tar up all .* files (.base_release, .cafrc)
+# NOTE: for python only (FNAL packaging !!!) do not include the symlinks
+#------------------------------------------------------------------------
+  list_of_files=`ls -al | awk '{if (($9 != ".") && ($9 != "..") && ($9 != "")) print $9}'`
+
+  echo $list_of_files    > caf_remove.lst
+  echo "caf_remove.lst" >> caf_remove.lst
+
+  ls -al 
+
+  for f in $list_of_files caf_remove.lst ; do
+    if [ -e ${TAR_EXCLUDE_FILE} ] ; then
+	touch ./tar_exclude.txt
+	export TAR_EXCLUDE_FILE=./tar_exclude.txt
+    fi
+    if [ $f == "python" ] ; then
+      tar -rf $tarball.tmp  $f --exclude-from=${TAR_EXCLUDE_FILE}
+    else
+      tar -rhf $tarball.tmp $f  --exclude-from=${TAR_EXCLUDE_FILE}
+    fi
+  done
+
+  if [[ .$zip != "." && .$zip != ".no" ]] ; then
+    echo " gzip $tarball "
+    echo " --------------- "
+    gzip $tarball.tmp
+    mv $tarball.tmp.gz $tarball.tmp
+  fi
+
+  mv $tarball.tmp $tarball
+}

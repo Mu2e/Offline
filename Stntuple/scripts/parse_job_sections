@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+#-----------------------------------------------------------------------
+# OPTARG: job1:job2
+#
+# to be sourced, returns OP1 and OP2
+#-----------------------------------------------------------------------
+P1=$1
+
+debug_script=$2
+
+	    OP1=`echo $P1 | awk -F : '{print $1}'`
+	    OP2=`echo $P1 | awk -F : '{print $2}'`
+
+            if [ .$OP2 == "." ] ; then
+              OP2=$OP1
+            fi
+
+            if [ .$debug_script != "." ] ; then 
+              echo   job1:job2=${OP1}:${OP2}
+            fi
