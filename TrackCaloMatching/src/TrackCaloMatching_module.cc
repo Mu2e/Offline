@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.12 2014/06/24 19:08:39 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.13 2014/07/26 12:19:24 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/24 19:08:39 $
+// $Date: 2014/07/26 12:19:24 $
 //
 // Original author G. Pezzullo
 //
@@ -275,14 +275,16 @@ namespace mu2e {
 
       s1       = extrk->pathLengthEntrance();
       s2       = extrk->pathLengthExit    ();
+      ds       = s2-s1;
 					// 'sint' - extrapolation length to the interaction point
-      sint     = s1+_meanInteractionDepth;
+
+      if (ds > _meanInteractionDepth) sint = s1+_meanInteractionDepth;
+      else                            sint = s2;
+
 					// shower starts developing when the particle 
 					// reaches the disk
       trk_time = krep->arrivalTime(sint);
       mom      = krep->momentum(sint);
-
-      ds       = s2-s1;
 
       point    = krep->position(sint);
       mom      = krep->momentum(sint);
