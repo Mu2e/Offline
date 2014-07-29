@@ -2,9 +2,9 @@
 // Override the G4RunManager class so that the Mu2e framework can drive
 // the event loop.
 //
-// $Id: Mu2eG4RunManager.cc,v 1.8 2012/04/19 16:17:20 genser Exp $
+// $Id: Mu2eG4RunManager.cc,v 1.9 2014/07/29 21:39:21 genser Exp $
 // $Author: genser $
-// $Date: 2012/04/19 16:17:20 $
+// $Date: 2014/07/29 21:39:21 $
 //
 // Original author Rob Kutschke
 //
@@ -108,7 +108,7 @@ namespace mu2e {
     _userElapsed   += timer->GetUserElapsed();
 
 
-    if(verboseLevel>0){
+    if(verboseLevel>1){
 
       G4int oldPrecision = G4cout.precision(3);
       std::ios::fmtflags oldFlags = G4cout.flags();
@@ -141,7 +141,7 @@ namespace mu2e {
   void Mu2eG4RunManager::BeamOnEndRun(){
 
     // From G4RunManager::DoEventLoop
-    if(verboseLevel>0){
+    if(verboseLevel>1){
 
       G4cout << "G4Run terminated." << G4endl;
       G4cout << "G4Run Summary" << G4endl;
