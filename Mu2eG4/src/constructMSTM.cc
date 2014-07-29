@@ -2,9 +2,9 @@
 // Free function to create MSTM.
 // Muon Stopping Target Monitor
 //
-// $Id: constructMSTM.cc,v 1.3 2014/06/09 23:17:29 genser Exp $
+// $Id: constructMSTM.cc,v 1.4 2014/07/29 16:23:24 genser Exp $
 // $Author: genser $
-// $Date: 2014/06/09 23:17:29 $
+// $Date: 2014/07/29 16:23:24 $
 //
 // Original author K.L.Genser 
 //
@@ -12,6 +12,7 @@
 // Mu2e includes.
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -23,6 +24,7 @@
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
@@ -41,6 +43,8 @@
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
+
+#include <vector>
 
 using namespace std;
 
@@ -83,8 +87,31 @@ namespace mu2e {
       
     GeomHandle<DetectorSolenoidShielding> dss;
 
+    // place the MSTM wrt to ENS; account for the vd half lenght
+    GeomHandle<ExtNeutShieldCendBoxes> enscendb;
+
+    const std::vector<CLHEP::Hep3Vector>& ENSCBcentersOfBoxes = enscendb->centersOfBoxes();
+
+    size_t nBox = ENSCBcentersOfBoxes.size();
+    size_t ib;
+    for(ib = 0; ib < nBox; ++ib) {
+      if ( enscendb->hasHole(ib) ) break;
+    }
+    int hID = enscendb->holeIndex(ib);
+    if ( verbosityLevel > 0 ) {
+      std::cout << __func__ << " ib: " << ib << std::endl;
+    }
+
+    GeomHandle<VirtualDetector> vd;
+
+    // locations are wrt HallAir
+    // for some reason the location has to be taken from the box not the hole tbd
+    //        CLHEP::Hep3Vector holeLocation = enscendb->holeLocation(hID);
+    CLHEP::Hep3Vector holeLocation = ENSCBcentersOfBoxes[ib];
+
     G4ThreeVector mstmPipe0PositionInMu2e(dsP.x(), dsP.y(),
-                                          dss->getIFBendPlug()->zEnd() + mstmPipe0HalfLength);
+                                          holeLocation.z() + enscendb->holeHalfLength(hID) +
+                                          2.*vd->getHalfLength() + mstmPipe0HalfLength);
 
     VolumeInfo mstmPipe0Info = nestTubs( "mstmPipe0",
                                          mstmPipe0Params,
@@ -641,8 +668,14 @@ namespace mu2e {
       std::cout << __func__ << " mstm position:"
                 << " dss->getIFBendPlug()->zEnd(): " 
                 << dss->getIFBendPlug()->zEnd()
-                << " z position: " 
-                << dss->getIFBendPlug()->zEnd() + mstmPipe2HalfLength <<  std::endl;
+                << " z position: "
+                << dss->getIFBendPlug()->zEnd() + mstmPipe0HalfLength <<  std::endl;
+      std::cout << __func__ << " ens hole end " 
+                << " holeLocation.z() + enscendb->holeHalfLength(hID): " 
+                << holeLocation.z() + enscendb->holeHalfLength(hID) 
+                << " z position: "
+                << holeLocation.z() + enscendb->holeHalfLength(hID) + mstmPipe0HalfLength << std::endl;
+
       std::cout << __func__ << " dss->getIFBendPlug()->originInMu2e() " 
                 << dss->getIFBendPlug()->originInMu2e() <<  std::endl;
       std::cout << __func__ << " dss->getIFBendPlug() position in hall " 
