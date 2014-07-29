@@ -9,10 +9,11 @@
 
 #include <string>
 
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+
 #include "Mu2eUtilities/inc/HistTrackSum.hh"
 
 namespace fhicl { class ParameterSet; }
-namespace art { class TFileDirectory; }
 class TH1;
 
 namespace mu2e {
@@ -40,6 +41,11 @@ namespace mu2e {
     double cuttandipmax_;
     double cutmommin_;
     double cutmommax_;
+
+    // A kludge to make sure our ROOT directory is created before
+    // the nested directories for the HistTrackSum objects
+    static art::TFileDirectory makeMyTopDir(art::TFileDirectory& parent, const std::string& subdir);
+    art::TFileDirectory mytopdir_;
 
     HistTrackSum hall_;
     HistTrackSum hfinal_;

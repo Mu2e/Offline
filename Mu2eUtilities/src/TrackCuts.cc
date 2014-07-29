@@ -2,13 +2,15 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-
 #include "TH1.h"
 
 #include "RecoDataProducts/inc/TrackSummary.hh"
 
 namespace mu2e {
+
+  art::TFileDirectory TrackCuts::makeMyTopDir(art::TFileDirectory& parent, const std::string& subdir) {
+    return subdir.empty() ? parent : parent.mkdir(subdir.c_str());
+  }
 
   TrackCuts::TrackCuts(const fhicl::ParameterSet& pset,
                        art::TFileDirectory& topdir,
@@ -27,10 +29,12 @@ namespace mu2e {
     , cuttandipmax_(pset.get<double>("tandipmax"))
     , cutmommin_(pset.get<double>("mommin"))
     , cutmommax_(pset.get<double>("mommax"))
-    , hall_(topdir, "all")
-    , hfinal_(topdir, "final")
+
+    , mytopdir_(makeMyTopDir(topdir,subdir))
+    , hall_(mytopdir_, "all")
+    , hfinal_(mytopdir_, "final")
   {
-    art::TFileDirectory dir = topdir.mkdir("nm1", "Distributions after N-1 cut");
+    art::TFileDirectory dir = mytopdir_.mkdir("nm1", "Distributions after N-1 cut");
     TH1::SetDefaultSumw2();
     nactive_ = dir.make<TH1D>("nactive", "nactive", 150, -0.5, 149.5);
     fitcon_ = dir.make<TH1D>("fitcon", "fitcon", 1000, 0., 1.);
