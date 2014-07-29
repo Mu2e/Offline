@@ -1,9 +1,9 @@
 //
 // Free function to create the virtual detectors
 //
-// $Id: constructVirtualDetectors.cc,v 1.69 2014/06/09 23:15:14 genser Exp $
+// $Id: constructVirtualDetectors.cc,v 1.70 2014/07/29 16:24:44 genser Exp $
 // $Author: genser $
-// $Date: 2014/06/09 23:15:14 $
+// $Date: 2014/07/29 16:24:44 $
 //
 // Original author KLG based on Mu2eWorld constructVirtualDetectors
 
@@ -66,7 +66,8 @@ namespace mu2e {
     bool const vdIsVisible         = _config.getBool("vd.visible",true);
     bool const vdIsSolid           = _config.getBool("vd.solid",true);
     bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
+    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) ||
+      _config.getBool("vd.doSurfaceCheck",false);
     bool const placePV       = true;
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
@@ -1405,24 +1406,26 @@ namespace mu2e {
       }
 
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
 
       GeomHandle<ExtNeutShieldCendBoxes> enscendb;
 
-      // Get box with hole
-      size_t iHoleBox (0);
-      for ( ; iHoleBox < enscendb->materialNames().size() ; iHoleBox++ )
-        {
-          if ( enscendb->hasHole(iHoleBox) ) break;
-        }
+      const std::vector<std::string>& ENSCBMaterialNames = enscendb->materialNames();
 
-      CLHEP::Hep3Vector location = enscendb->holeLocation(iHoleBox);
-      location.setZ( location.z() + enscendb->holeHalfLength(0) + vdg->getHalfLength() );
+      size_t nBox = ENSCBMaterialNames.size();
+      size_t ib;
+      for(ib = 0; ib < nBox; ++ib) {
+        if ( enscendb->hasHole(ib) ) break;
+      }
+ 
+      int hID = enscendb->holeIndex(ib);
+      const TubsParams vdParams(0, enscendb->holeRadius(hID), vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                   TubsParams(0., enscendb->holeRadius(0), vdg->getHalfLength()),
+                                   vdParams,
                                    vacuumMaterial,
                                    0,
-                                   location-parent.centerInMu2e(),
+                                   vdg->getGlobal(vdId) - parentInMu2e,
                                    parent,
                                    vdId,
                                    vdIsVisible,
@@ -1713,11 +1716,12 @@ namespace mu2e {
     }//hasDiskCalorimeter
 
     // placing virtual detector in the MSTM can (hall air actually)
-    // fixme get it from GeometryService once in there
+    // fixme get MSTM from GeometryService once in there
     vdId = VirtualDetectorId::MSTM_DUpstream;
     if ( vdg->exist(vdId) ) {
 
       const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
 
       const double mstmCrystalRIn  = _config.getDouble("mstm.crystal.rIn");
       const double mstmCrystalROut = _config.getDouble("mstm.crystal.rOut");
@@ -1728,7 +1732,7 @@ namespace mu2e {
                                    vdParams,
                                    vacuumMaterial,
                                    0,
-                                   vdg->getLocal(vdId),
+                                   vdg->getGlobal(vdId) - parentInMu2e,
                                    parent,
                                    vdId,
                                    vdIsVisible,
