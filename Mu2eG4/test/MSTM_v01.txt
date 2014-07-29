@@ -1,8 +1,8 @@
 // Muon Stoping Target Monitor 
 //
-// $Id: MSTM_v01.txt,v 1.3 2014/07/03 14:12:27 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2014/07/03 14:12:27 $
+// $Id: MSTM_v01.txt,v 1.4 2014/07/29 16:25:37 genser Exp $
+// $Author: genser $
+// $Date: 2014/07/29 16:25:37 $
 //
 // Original author: K. L. Genser
 // inspired by DSShielding and DS_PNNL_Shield
@@ -20,14 +20,14 @@ bool mstm.solid   = false;
 // mstm pipe, magnet absorber, detector
 
 bool   mstm.build  = true;
-int    mstm.verbosityLevel = 1;
+int    mstm.verbosityLevel = 0;
 
 string mstm.pipe0.material   = "StainlessSteel";
 string mstm.pipe0.gas        = "G4_He"; 
 
 double mstm.pipe0.rIn        = 49.;
 double mstm.pipe0.rOut       = 50.;
-double mstm.pipe0.halfLength = 850.;
+double mstm.pipe0.halfLength = 328.;//850
 
 string mstm.pipe1.material   = "StainlessSteel";
 string mstm.pipe1.gas        = "G4_He"; 
