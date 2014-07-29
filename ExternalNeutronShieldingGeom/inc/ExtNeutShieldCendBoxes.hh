@@ -31,7 +31,7 @@ namespace mu2e {
     // Use a vector of Hep2Vectors for the corners of the shape to be extruded
     const std::vector<std::vector<double>>& getDimensions() const { return _dimensions; }
     const std::vector<std::string>& materialNames() const { return _materialNames; }
-    const std::vector<CLHEP::Hep3Vector> centersOfBoxes() const { return _centerPositions; }
+    const std::vector<CLHEP::Hep3Vector>& centersOfBoxes() const { return _centerPositions; }
     const bool hasHole( int i ) const { return _hasHole[i]; }
     const int holeIndex( int i ) const { return _holeIndexes[i]; }
     const double holeRadius( int i ) const { return _holeRadius[i]; }
