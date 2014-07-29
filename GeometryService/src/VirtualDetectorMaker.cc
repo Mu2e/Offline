@@ -1,7 +1,7 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.32 2014/06/09 23:14:58 genser Exp $
+// $Id: VirtualDetectorMaker.cc,v 1.33 2014/07/29 16:23:01 genser Exp $
 // $Author: genser $
 //
 
@@ -34,6 +34,8 @@
 
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+
+#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
 
 using namespace std;
 using namespace CLHEP;
@@ -427,8 +429,39 @@ namespace mu2e {
       // VD DSNeutronShieldExit is at the downstream part of the
       // aperture in the neutron shielding outside of the IFB/VPSP
       if ( c.getBool("vd.DSNeutronShieldExit.build", false ) ) {
+        GeomHandle<ExtNeutShieldCendBoxes> enscendb;
+
+        const std::vector<CLHEP::Hep3Vector>& ENSCBcentersOfBoxes = enscendb->centersOfBoxes();
+
+        size_t nBox = ENSCBcentersOfBoxes.size();
+        size_t ib;
+        for(ib = 0; ib < nBox; ++ib) {
+          if ( enscendb->hasHole(ib) ) break;
+        }
+        int hID = enscendb->holeIndex(ib);
+        // locations are wrt HallAir
+        // for some reason the location has to be taken from the box and not the hole tbd
+        //        CLHEP::Hep3Vector holeLocation = enscendb->holeLocation(hID);
+        CLHEP::Hep3Vector holeLocation = ENSCBcentersOfBoxes[ib];
+
+        GeomHandle<DetectorSolenoid> ds;
+        CLHEP::Hep3Vector const & dsP ( ds->position() );
+        CLHEP::Hep3Vector vdPositionInMu2e(dsP.x(), dsP.y(),
+                                           holeLocation.z() + enscendb->holeHalfLength(hID) +
+                                           vd->getHalfLength());
+
+        GeomHandle<Mu2eEnvelope> env;
+        const CLHEP::Hep3Vector hallFormalCenterInMu2e(
+                                                       (env->xmax() + env->xmin())/2.,
+                                                       (env->ymax() + env->ymin())/2.,
+                                                       (env->zmax() + env->zmin())/2.
+                                                       );
+
         vd->addVirtualDetector( VirtualDetectorId::DSNeutronShieldExit, 
-                                CLHEP::Hep3Vector(), 0, CLHEP::Hep3Vector() );
+                                hallFormalCenterInMu2e,
+                                0x0,
+                                vdPositionInMu2e - hallFormalCenterInMu2e);
+
       }
                               
 
@@ -597,12 +630,27 @@ namespace mu2e {
         const double mstmCanHalfLength       = c.getDouble("mstm.can.halfLength");
         const double mstmCrystalHalfLength   = c.getDouble("mstm.crystal.halfLength");
 
+        GeomHandle<ExtNeutShieldCendBoxes> enscendb;
+
+        const std::vector<CLHEP::Hep3Vector>& ENSCBcentersOfBoxes = enscendb->centersOfBoxes();
+
+        size_t nBox = ENSCBcentersOfBoxes.size();
+        size_t ib;
+        for(ib = 0; ib < nBox; ++ib) {
+          // cout << __func__ << " " << ib << " ENSCBcentersOfBoxes: " << ENSCBcentersOfBoxes[ib] << endl;
+          if ( enscendb->hasHole(ib) ) break;
+        }
+        int hID = enscendb->holeIndex(ib);
+        // locations are wrt HallAir
+        // for some reason the location has to be taken from the box and not the hole tbd
+        //        CLHEP::Hep3Vector holeLocation = enscendb->holeLocation(hID);
+        CLHEP::Hep3Vector holeLocation = ENSCBcentersOfBoxes[ib];
+
         GeomHandle<DetectorSolenoid> ds;
         CLHEP::Hep3Vector const & dsP ( ds->position() );
-        GeomHandle<DetectorSolenoidShielding> dss;
-
         CLHEP::Hep3Vector mstmPipe0PositionInMu2e(dsP.x(), dsP.y(),
-                                                  dss->getIFBendPlug()->zEnd() + mstmPipe0HalfLength);
+                                                  holeLocation.z() + enscendb->holeHalfLength(hID) +
+                                                  2.*vd->getHalfLength() + mstmPipe0HalfLength);
 
         double vdZshift = 
           mstmPipe0HalfLength     +
@@ -644,6 +692,11 @@ namespace mu2e {
         //   cout << __func__ << " vdPositionInMu2e " << vdPositionInMu2e << endl;
         //   cout << __func__ << " hallFormalCenterInMu2e " << hallFormalCenterInMu2e << endl;
         //   cout << __func__ << " vdPositionIn Hall " << vdPositionInMu2e - hallFormalCenterInMu2e << endl;
+
+        //   cout << __func__ << " ib, hID: " << ib << ", " << hID << endl;
+        //   cout << __func__ << " holeLocation.z() " <<  holeLocation.z() << endl;
+        //   cout << __func__ << " enscendb->holeHalfLength(hID) " <<  enscendb->holeHalfLength(hID) << endl;
+
         // }
 
       }
