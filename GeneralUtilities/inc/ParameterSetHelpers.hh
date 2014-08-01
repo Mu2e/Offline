@@ -13,6 +13,7 @@
 #ifndef GeneralUtilities_inc_ParameterSetHelpers_hh
 #define GeneralUtilities_inc_ParameterSetHelpers_hh
 
+#include <set>
 #include <string>
 #include <vector>
 #include "fhiclcpp/ParameterSet.h"
@@ -30,6 +31,13 @@ namespace fhicl {
 
   template<> std::vector<art::InputTag> 
   ParameterSet::get<std::vector<art::InputTag>>(std::string const & key, std::vector<art::InputTag> const& default_value ) const;
+
+  // Converting list of ints into set of ints
+  template<> std::set<int>
+  ParameterSet::get<std::set<int>>(std::string const & key ) const;
+
+  template<> std::set<int>
+  ParameterSet::get<std::set<int>>(std::string const & key, std::set<int> const& default_value ) const;
 
   // Converting list of doubles to CLHEP::Hep3Vector
   template<> bool ParameterSet::get_if_present<CLHEP::Hep3Vector>(std::string const & key, CLHEP::Hep3Vector& value) const;

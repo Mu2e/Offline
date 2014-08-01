@@ -50,6 +50,50 @@ std::vector<art::InputTag> fhicl::ParameterSet::get<std::vector<art::InputTag>>(
 }
 
 //-----------------------------------------------------------------
+// std::vector<std::string> ====> std::set<int>
+//-----------------------------------------------------------------
+template<>
+std::set<int> fhicl::ParameterSet::get<std::set<int>>( std::string const & key ) const {
+
+  std::vector<int> intset;
+  const bool present = get_if_present<std::vector<int>>( key, intset );
+ 
+  if ( !present ) throw fhicl::exception(cant_find, key);
+
+  std::set<int> value;
+  for ( const auto& is : intset ) {
+    if ( !value.insert( is ).second ) { 
+      std::ostringstream os;
+      os << "Value << " << is << " >> is duplicated in input list for FHiCL parameter: << " << key << " >> !\n";
+      throw std::runtime_error(os.str());
+    }
+  }
+  return value;
+}
+
+//-----------------------------------------------------------------
+// std::vector<std::string> ====> std::set<int>
+//-----------------------------------------------------------------
+template<>
+std::set<int> fhicl::ParameterSet::get<std::set<int>>( std::string const & key, std::set<int> const & default_value ) const {
+
+  std::vector<int> intset;
+  const bool present = get_if_present<std::vector<int>>( key, intset );
+  
+  if ( !present) return default_value;
+
+  std::set<int> value;
+  for ( const auto& is : intset ) {
+    if ( !value.insert( is ).second ) { 
+      std::ostringstream os;
+      os << "Value << " << is << " >> is duplicated in input list for FHiCL parameter: << " << key << " >> !\n";
+      throw std::runtime_error(os.str());
+    }
+  }
+  return value;
+}
+
+//-----------------------------------------------------------------
 // std::vector<double> ====> CLHEP::Hep3Vector
 //-----------------------------------------------------------------
 template<>
