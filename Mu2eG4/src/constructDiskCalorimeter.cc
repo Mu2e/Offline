@@ -378,7 +378,7 @@ namespace mu2e {
 
               //position of shell in the disk
 	      //contrary to rectangles, z position of hexagon is their base, not their center in Geant 4!!	      
-              CLHEP::Hep3Vector crystalPosition = cal.disk(idisk).crystal(ic).position();
+              CLHEP::Hep3Vector crystalPosition = cal.disk(idisk).crystal(ic).localPosition();
               double x = crystalPosition.x();
               double y = crystalPosition.y();
               double z = -shellDepth/2.0; 	      

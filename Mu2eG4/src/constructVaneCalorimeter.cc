@@ -1,9 +1,9 @@
 //
 // Free function to create the Vane calorimeter.
 //
-// $Id: constructVaneCalorimeter.cc,v 1.13 2014/08/01 20:57:45 echenard Exp $
+// $Id: constructVaneCalorimeter.cc,v 1.14 2014/08/01 23:14:36 echenard Exp $
 // $Author: echenard $
-// $Date: 2014/08/01 20:57:45 $
+// $Date: 2014/08/01 23:14:36 $
 //
 // Original author Ivan Logashenko
 // Modified by Bertrand Echenard
@@ -335,7 +335,7 @@ namespace mu2e {
 
 	// Position - first run along Z, then along Y, both times in positive direction
 	//this is the position of the wrapper, so the x must be zero, not crystalPosition.x()
-	CLHEP::Hep3Vector crystalPosition = cal.vane(iv).crystal(ic).position();
+	CLHEP::Hep3Vector crystalPosition = cal.vane(iv).crystal(ic).localPosition();
 	double x = 0;
 	double y = crystalPosition.y();
 	double z = crystalPosition.z();
