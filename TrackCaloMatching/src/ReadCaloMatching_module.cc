@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.15 2013/10/21 21:01:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/10/21 21:01:23 $
+// $Id: ReadCaloMatching_module.cc,v 1.16 2014/08/01 20:57:45 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/08/01 20:57:45 $
 //
 // Original author G. Pezzullo
 //
@@ -883,7 +883,7 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 //-----------------------------------------------------------------------------
 // 2013-05-17 P.Murat: commented the -r 1.10 line , uncomment it in the near future
 //-----------------------------------------------------------------------------
-	double tollCaloHits = cg->crystalHalfTrans()*15.0;
+	double tollCaloHits = cg->caloGeomInfo().crystalHalfTrans()*15.0;
 	//	double tollCaloHits = cg->crystalHalfSize()*15.0;
 
         for(size_t i =0; i<trjCaloMatchings->size(); ++i){

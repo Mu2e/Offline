@@ -6,9 +6,9 @@
 // then must redo everything to include splitting
 // and finally get a beer for all these trouble
 //
-// $Id: MakeCaloCluster_module.cc,v 1.9 2013/03/15 15:52:03 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:03 $
+// $Id: MakeCaloCluster_module.cc,v 1.10 2014/08/01 20:57:44 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/08/01 20:57:44 $
 //
 
 /*
@@ -313,7 +313,7 @@ class MakeCaloCluster : public art::EDProducer {
 
        while (!crystalToVisit.empty()) {
 
-	    std::vector<int> neighbors = cal.neighbors(crystalToVisit.front()->id());
+	    std::vector<int> neighbors = cal.neighborsByLevel(crystalToVisit.front()->id(),1);
 	    crystalToVisit.pop();
 
 	    for (unsigned int iv=0;iv<neighbors.size();++iv)

@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_BaseCalorimeter_hh
 #define CalorimeterGeom_BaseCalorimeter_hh
 //
-// $Id: BaseCalorimeter.hh,v 1.7 2014/02/25 01:09:42 echenard Exp $
+// $Id: BaseCalorimeter.hh,v 1.8 2014/08/01 20:57:44 echenard Exp $
 // $Author: echenard $
-// $Date: 2014/02/25 01:09:42 $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Base class of a cloarimeter. Hold informations about the sections composing 
 // the calorimeterand generic algorithms to navigate between the coordinate systems
@@ -16,11 +16,14 @@
 
 //C++ includes
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
+//#include <boost/shared_ptr.hpp>
 
 // Mu2e includes
 #include "Calorimeter.hh"
+#include "BaseCalorimeterData.hh"
 #include "CaloSection.hh"
+#include "Crystal.hh"
 
 //CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -32,113 +35,61 @@ namespace mu2e {
 
     class BaseCalorimeter: public Calorimeter{
 
-       friend class VaneCalorimeterMaker;
-       friend class DiskCalorimeterMaker;
-       friend class HybridCalorimeterMaker;
-      
-       public:
-
-           BaseCalorimeter()  {}
-           virtual ~BaseCalorimeter() {}
-
-
-	   virtual unsigned int             nSection()        const  {return _nSections;}
-	           CaloSection       const& section(size_t i) const  {return *_sections.at(i);}
-	   virtual CLHEP::Hep3Vector const& origin()          const  {return _origin;}
-	   virtual CLHEP::Hep3Vector const& crystalShift()    const  {return _crystalShift;}
-
-
-           virtual unsigned int nRO()                         const;
-           virtual unsigned int nCrystal()                    const;
-           virtual unsigned int nROPerCrystal()               const  {return _nROPerCrystal;}
-
-	   virtual int crystalByRO(int roid)                  const  {return (roid/_nROPerCrystal);}
-	   virtual int ROBaseByCrystal(int crystalId)         const  {return (crystalId*_nROPerCrystal);}
-	           int caloSectionId(int crystalId)           const;
-                   int localCrystalId(int crystalId)          const;
-
-	   virtual CLHEP::Hep3Vector crystalOrigin(int crystalId) const;
-	   virtual CLHEP::Hep3Vector localCrystalOrigin(int crystalId) const;
-           virtual CLHEP::Hep3Vector crystalAxis(int crystalId) const ;
-	   virtual CLHEP::Hep3Vector toCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos) const ;
-	   virtual CLHEP::Hep3Vector toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const ;
-	   virtual CLHEP::Hep3Vector fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const ;
-
-	   //a few accessors for convenience
-           virtual double wrapperThickness()   const  {return _wrapperThickness;}
-           virtual double shellThickness()     const  {return _shellThickness;}
-           virtual double caseThickness()      const  {return _caseThickness;}
-           virtual double roHalfSize()         const  {return _roHalfTrans;}
-           virtual double roHalfThickness()    const  {return _roHalfThickness;}
-           virtual double enveloppeInRadius()  const  {return _enveloppeInRadius;}
-           virtual double enveloppeOutRadius() const  {return _enveloppeOutRadius;}
-           virtual double enveloppeZ0()        const  {return _enveloppeZ0;}
-           virtual double enveloppeZ1()        const  {return _enveloppeZ1;}
- 
-           virtual int    nPipes()             const  {return _nPipes;}
-           virtual double pipeRadius()         const  {return _pipeRadius;}
-           virtual double pipeThickness()      const  {return _pipeThickness;}
-           virtual std::vector<double> const& pipeTorRadius() const  {return _pipeTorRadius;}
-
-
-	   //keep for backward compatibility, they will go away in the future,
-	   virtual double getNonuniformity()  const  {return _nonUniformity; }
-	   virtual double getTimeGap()        const  {return _timeGap; }
-	   virtual double getElectronEdep()   const  {return _electronEdep; }
-	   virtual double getElectronEmin()   const  {return _electronEmin; }
-	   virtual double apdMeanNoise()      const  {return _apdMeanNoise;}
-	   virtual double apdSigmaNoise()     const  {return _apdSigmaNoise;}
-	   virtual double lysoLightYield()    const  {return _lysoLightYield;}
-	   virtual double apdQuantumEff()     const  {return _apdQuantumEff;}
-	   virtual double apdCollectEff()     const  {return _lightCollectEffAPD;}
+	friend class VaneCalorimeterMaker;
+	friend class DiskCalorimeterMaker;
 
 
 
+	public:
+
+            BaseCalorimeter() : _sections(),_caloGeomInfo(),_fullCrystalList(),_crystalSectionId()  {}
+            virtual ~BaseCalorimeter() {}
 
 
-       protected:
+	    virtual BaseCalorimeterData const& caloGeomInfo()                const  {return _caloGeomInfo;}
+	            CaloSection         const& section(int i)                const  {return *_sections.at(i);}
+		    Crystal             const& crystal(int i)                const  {return *_fullCrystalList.at(i);}
+	            
+ 	    virtual unsigned int nSection()                                  const  {return _nSections;}
+            virtual unsigned int nCrystal()                                  const  {return _fullCrystalList.size();}
+            virtual unsigned int nRO()                                       const  {return _fullCrystalList.size()*_caloGeomInfo.nROPerCrystal();}
 
-	   typedef boost::shared_ptr<CaloSection> CaloSectionPtr;
-
-	   unsigned int                 _nSections;
-	   std::vector<CaloSectionPtr > _sections;
-	   CLHEP::Hep3Vector            _origin;
- 	   CLHEP::Hep3Vector            _crystalShift;
-	   unsigned int                 _nCrystalTot;
-
-	   unsigned int                 _nROPerCrystal;
-           double                       _wrapperThickness;
-           double                       _roHalfTrans;
-           double                       _roHalfThickness;
-           double                       _shellThickness;
-           double                       _caseThickness;
-
-           double                       _enveloppeInRadius;
-           double                       _enveloppeOutRadius;
-           double                       _enveloppeZ0;
-           double                       _enveloppeZ1;
-	   
-	   unsigned int                 _nPipes;
-	   double                       _pipeRadius;
-	   double                       _pipeThickness;
-	   std::vector<double>          _pipeTorRadius;
+	    virtual          int crystalByRO(int roid)                       const  {return (roid/_caloGeomInfo.nROPerCrystal());}
+	    virtual          int ROBaseByCrystal(int crystalId)              const  {return (crystalId*_caloGeomInfo.nROPerCrystal());}
+            virtual          int caloSectionId(int i)                        const  {return _crystalSectionId.at(i);}
 
 
+            virtual std::vector<int> const& neighbors(int crystalId)         const  {return _fullCrystalList.at(crystalId)->neighborsLevel1();}	  
+            virtual std::vector<int> const& nextNeighbors(int crystalId)     const  {return _fullCrystalList.at(crystalId)->neighborsLevel2();}	  
+            virtual std::vector<int> const& nextNextNeighbors(int crystalId) const  {return _fullCrystalList.at(crystalId)->neighborsLevel3();}	  
 
-       private:
 
-          //all these will go away in the future        
-          double _nonUniformity;
-          double _timeGap;
-          double _electronEdep; // energy deposition of charged particle crossing APD
-          double _electronEmin; // minimum energy deposition of charged particle crossing APD
+	    //geometry and transformations to/from the calorimeter coordinates	   
+	    virtual CLHEP::Hep3Vector const& origin() const  {return _origin;}
+	    virtual CLHEP::Hep3Vector toCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos) const ;
+	    virtual CLHEP::Hep3Vector fromCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos) const ;
+	    virtual CLHEP::Hep3Vector toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const ;
+	    virtual CLHEP::Hep3Vector fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const ;
+            virtual CLHEP::Hep3Vector crystalAxis(int crystalId) const ;
+	    virtual CLHEP::Hep3Vector crystalOrigin(int crystalId) const;
+	    virtual CLHEP::Hep3Vector crystalOriginInSection(int crystalId) const;
 
-          double _apdMeanNoise; //MeV
-          double _apdSigmaNoise;//MeV
 
-          double _lysoLightYield;
-          double _apdQuantumEff;//quantum efficiency for Hamamatsu S8664-1010 for a radiation wavelenght of 402nm (typical of lyso)
-          double _lightCollectEffAPD;//light collection efficiency for 30 × 30 mm2 area of the crystal efficiency for Hamamatsu S8664-1010
+	protected:
+
+	    typedef std::shared_ptr<CaloSection> CaloSectionPtr;
+	    unsigned int                 _nSections;
+	    std::vector<CaloSectionPtr > _sections;
+	    CLHEP::Hep3Vector            _origin;
+
+	    BaseCalorimeterData          _caloGeomInfo;
+
+	    std::vector<Crystal const*>  _fullCrystalList;
+	    std::vector<int>             _crystalSectionId;
+	    
+
+
+
      };
 
 }    

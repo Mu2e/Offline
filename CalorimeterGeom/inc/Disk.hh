@@ -1,8 +1,8 @@
 #ifndef CalorimeterGeom_Disk_hh
 #define CalorimeterGeom_Disk_hh
-// $Id: Disk.hh,v 1.6 2013/07/25 23:56:46 echenard Exp $
+// $Id: Disk.hh,v 1.7 2014/08/01 20:57:44 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/07/25 23:56:46 $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Hold information about a disk in the calorimter.
 //
@@ -28,28 +28,25 @@ namespace mu2e {
 
     class Disk : public CaloSection {
 
-
        public:
 
 	   Disk(int id, double rin, double rout, double cellSize, CLHEP::Hep3Vector crystalOffset); 
 
-           std::vector<int> neighbors(int crystalId, int level=1) const; 
-           int              idxFromPosition(double x, double y) const;
-           double           estimateEmptySpace() const;
-
-           double innerRadius() const   {return _radiusIn;}
-           double outerRadius() const   {return _radiusOut;}
+	   DiskCrystalPosUtil const&  positionUtil()                               const {return _posUtil;}            
+	   double                     innerRadius()                                const {return _radiusIn;}
+           double                     outerRadius()                                const {return _radiusOut;}
+           
+	   std::vector<int>           findLocalNeighbors(int crystalId, int level) const;            
+	   double                     estimateEmptySpace()                         const;
+	   int                        idxFromPosition(double x, double y)          const;           
 	   
-	   DiskCrystalPosUtil const& positionUtil() const {return _posUtil;}
 
 
        private:
 
-           void             fillCrystals();
-           bool             isInsideDisk(double x, double y) const;
-	   double           calcDistToSide(CLHEP::Hep2Vector& a, CLHEP::Hep2Vector& b) const;
-           std::vector<int> findNeighbors(int crystalId, int level=1) const; 
-
+           void               fillCrystals();
+           bool               isInsideDisk(double x, double y) const;
+	   double             calcDistToSide(CLHEP::Hep2Vector& a, CLHEP::Hep2Vector& b) const;
 
 	   double             _radiusIn;
 	   double             _radiusOut;

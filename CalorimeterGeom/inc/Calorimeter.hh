@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.25 2013/05/28 22:11:24 echenard Exp $
+// $Id: Calorimeter.hh,v 1.26 2014/08/01 20:57:44 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/28 22:11:24 $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -18,6 +18,7 @@
 
 // Mu2e includes
 #include "Mu2eInterfaces/inc/Detector.hh"
+#include "BaseCalorimeterData.hh"
 
 //CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -33,57 +34,36 @@ namespace mu2e {
 	  virtual ~Calorimeter(){}
 
 
-	  // coordinate position and transformation
-	  virtual CLHEP::Hep3Vector const& origin() const = 0; 	  
-	  virtual CLHEP::Hep3Vector        toCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos) const = 0;
-	  virtual CLHEP::Hep3Vector        toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const = 0;
-	  virtual CLHEP::Hep3Vector        fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const = 0;
-          virtual CLHEP::Hep3Vector        crystalOrigin(int crystalId) const =0;
-	  virtual CLHEP::Hep3Vector        localCrystalOrigin(int crystalId) const = 0;
-	  virtual bool                     isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const =0  ;
-	  virtual double                   crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const = 0;
-	  
+	  //accessor to geometry data
+	  virtual BaseCalorimeterData const& caloGeomInfo() const = 0;
 
-          // crystal neighbours, indexing 
-          virtual std::vector<int>  neighbors(int crystalId, int level=1) const = 0;	  
-	  virtual int  crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const =0;
+	  // coordinate position and transformation - origin refers to the Mu2e frame
+	  virtual CLHEP::Hep3Vector const& origin()                                                      const = 0; 	  
+	  virtual CLHEP::Hep3Vector        toCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos)   const = 0;
+	  virtual CLHEP::Hep3Vector        toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos)   const = 0;
+	  virtual CLHEP::Hep3Vector        fromCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos) const = 0;
+	  virtual CLHEP::Hep3Vector        fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const = 0;
+          virtual CLHEP::Hep3Vector        crystalOrigin(int crystalId)                                  const = 0;
+	  virtual CLHEP::Hep3Vector        crystalOriginInSection(int crystalId)                         const = 0;
+	  virtual bool                     isInsideCalorimeter(CLHEP::Hep3Vector const& pos)             const = 0  ;
+	  virtual double                   crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos)   const = 0;
+	  
+          
+	  // crystal neighbors, indexing 
+          virtual std::vector<int>  const& neighbors(int crystalId)            const = 0;	  
+          virtual std::vector<int>  const& nextNeighbors(int crystalId)        const = 0;	  
+          virtual std::vector<int>  const& nextNextNeighbors(int crystalId)    const = 0;	  
+          virtual std::vector<int>  neighborsByLevel(int crystalId, int level) const = 0;	  
 
 
 	  // crystal / readout section
-	  virtual unsigned int nROPerCrystal() const = 0;
-	  virtual unsigned int nCrystal() const  = 0;
-	  virtual unsigned int nRO() const  = 0;
+	  virtual unsigned int nCrystal()                   const = 0;
+	  virtual unsigned int nRO()                        const = 0;
+	  virtual          int crystalByRO(int roid)        const = 0;
+	  virtual          int ROBaseByCrystal(int id)      const = 0;
+ 	  virtual          int caloSectionId(int crystalId) const = 0;
 
 
-	  // crystal - readout id
-	  virtual int caloSectionId(int crystalId) const = 0;
-	  virtual int crystalByRO(int roid) const = 0;
-	  virtual int ROBaseByCrystal(int id) const = 0;
-
-	  // crystal characteristics      
-	  virtual double crystalVolume() const = 0;
-
-
-
-
-          //a few accessors we keep for convenience
-	  virtual double crystalHalfTrans() const = 0;
-          virtual double crystalHalfLength() const = 0;
-	  virtual double roHalfSize() const = 0;
-	  virtual double roHalfThickness()   const = 0;
-	  virtual double wrapperThickness() const = 0;
-	  virtual double caseThickness() const = 0;
-
-	  //bunch of accessors that will go away in later, keep them now to compile the code
-	  virtual double getNonuniformity() const = 0;
-	  virtual double getTimeGap() const = 0;
-	  virtual double getElectronEdep() const = 0;
-	  virtual double getElectronEmin() const = 0;
-          virtual double apdMeanNoise()   const = 0;
-	  virtual double apdSigmaNoise()  const = 0;
-	  virtual double lysoLightYield() const = 0;
-	  virtual double apdQuantumEff()  const = 0;
-	  virtual double apdCollectEff()  const = 0;
 
 
     };

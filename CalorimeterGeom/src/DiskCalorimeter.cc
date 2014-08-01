@@ -26,14 +26,15 @@ namespace mu2e {
 	
 	CLHEP::Hep3Vector posInSection = toSectionFrame(idisk, pos);
         
-        double zlim    = _crystalHalfLength + _wrapperThickness + _caseThickness + _roHalfThickness + 0.5;         
-	double rinlim  = _diskInnerRadius[idisk] - _caseThickness - 0.5;
-	double routlim = _diskOuterRadius[idisk]+0.5 + _caseThickness;
+        double zlim    = _caloGeomInfo.crystalHalfLength() + _caloGeomInfo.wrapperThickness() + _caloGeomInfo.caseThickness() + _caloGeomInfo.roHalfThickness() + 0.5;         
+	double rinlim  = _diskInnerRadius[idisk] - _caloGeomInfo.caseThickness() - 0.5;
+	double routlim = _diskOuterRadius[idisk] + 0.5 + _caloGeomInfo.caseThickness();
 	
 	if (posInSection.z()< -zlim || posInSection.z() > zlim ) return false;
 	if (posInSection.perp() <  rinlim || posInSection.perp()  > routlim ) return false;
 	return true;
     }
+
 
     bool DiskCalorimeter::isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const 
     {   
@@ -42,9 +43,30 @@ namespace mu2e {
     }
  
 
- 
+    double DiskCalorimeter::crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const
+    {   
+	CLHEP::Hep3Vector posInSection = toCrystalFrame(crystalId, pos);
+	return posInSection.z();
+    }
 
 
+    std::vector<int> DiskCalorimeter::neighborsByLevel(int crystalId, int level)  const
+    {
+
+	int iv = caloSectionId(crystalId);
+
+	int offset(0);
+	for (int i=0;i<iv;++i) offset += disk(i).nCrystals();
+
+	std::vector<int> list = disk(iv).findLocalNeighbors( _fullCrystalList.at(crystalId)->localId() ,level);
+	transform(list.begin(), list.end(), list.begin(),bind2nd(std::plus<int>(), offset));  
+
+	return list;
+    }
+    
+    
+    
+    
     int DiskCalorimeter::crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const 
     {   
 	int offset(0);
@@ -57,31 +79,7 @@ namespace mu2e {
 	}       	  
 	return -1;
     }
-
-    std::vector<int> DiskCalorimeter::neighbors(int crystalId, int level)  const
-    {
-
-	int iv = caloSectionId(crystalId);
-	int ic = localCrystalId(crystalId);
-
-	int offset(0);
-	for (int i=0;i<iv;++i) offset += disk(i).nCrystals();
-
-	std::vector<int> list = disk(iv).neighbors(ic,level);
-	transform(list.begin(), list.end(), list.begin(),bind2nd(std::plus<int>(), offset));  
-
-	return list;
-    }
-
-
-
-   double DiskCalorimeter::crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const
-   {   
-	CLHEP::Hep3Vector posInSection = toCrystalFrame(crystalId, pos);
-	return posInSection.z();
-   }
-
-
+    
 
 
 

@@ -1,9 +1,9 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.hh,v 1.9 2013/05/09 23:14:14 echenard Exp $
+// $Id: CaloClusterUtilities.hh,v 1.10 2014/08/01 20:57:44 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
@@ -849,14 +849,14 @@ struct ClusterMap{
                 GeomHandle<VaneCalorimeter> cg;
                 _cluCOG.setY(newV);
                 int tmpRow=0;
-                tmpRow = (int)(newV/cg->crystalHalfTrans());
+                tmpRow = (int)(newV/cg->caloGeomInfo().crystalHalfTrans());
                 _cluCogRow = tmpRow;
         }
         void   setWcog(double newW){
                 GeomHandle<VaneCalorimeter> cg;
                 _cluCOG.setZ(newW);
                 int tmpColumn=0;
-                tmpColumn = (int)(newW/cg->crystalHalfTrans());
+                tmpColumn = (int)(newW/cg->caloGeomInfo().crystalHalfTrans());
                 _cluCogColumn = tmpColumn;
         }
 

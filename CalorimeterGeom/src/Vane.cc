@@ -1,7 +1,7 @@
 //
-// $Id: Vane.cc,v 1.3 2013/03/08 01:22:31 echenard Exp $
+// $Id: Vane.cc,v 1.4 2014/08/01 20:57:45 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/03/08 01:22:31 $
+// $Date: 2014/08/01 20:57:45 $
 //
 // Hold information about position of a hexagonal cell
 //
@@ -39,8 +39,8 @@ namespace mu2e {
       {         
 
           int nCrystals = _nCrystalZ*_nCrystalR;	  
-          for (int i=0; i< nCrystals; ++i){
-              
+          for (int i=0; i< nCrystals; ++i)
+	  {              
               double y = (2*(i/_nCrystalZ) - _nCrystalR+1)*_cellSize;
               double z = (2*(i%_nCrystalZ) - _nCrystalZ+1)*_cellSize;
               CLHEP::Hep3Vector pos(0,y,z);
@@ -48,19 +48,7 @@ namespace mu2e {
               _crystalList.push_back( Crystal(i,pos) );
           }
 
-          // now precalculate nearest neighbours list for each crystal
-          for (int i=0;i<nCrystals;++i){
-              _crystalList[i].setNearestNeighbours(findNeighbors(i,1));
-          }
-
       }
-
-      std::vector<int> Vane::neighbors(int crystalId, int level) const
-      {
-          if (level==1) return _crystalList.at(crystalId).nearestNeighbours();
-          return findNeighbors(crystalId,level);
-      }
-
 
       int Vane::idxFromPosition(double y, double z) const 
       {        
@@ -68,8 +56,8 @@ namespace mu2e {
       }
 
 
-
-      std::vector<int> Vane::findNeighbors(int crystalId, int level) const
+      //find the local index of the neighbors for a given level (level = number of "layers" away)
+      std::vector<int> Vane::findLocalNeighbors(int crystalId, int level) const
       {
           int Z0 = crystalId % _nCrystalZ;
           int R0 = crystalId / _nCrystalZ;
@@ -104,8 +92,7 @@ namespace mu2e {
              list.push_back(R*_nCrystalZ + Z); 
            }
            
-	   return list;
-	   
+	   return list;	   
       }
 
 

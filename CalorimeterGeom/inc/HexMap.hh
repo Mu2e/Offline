@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_HexMapTest_hh
 #define CalorimeterGeom_HexMapTest_hh
 //
-// $Id: HexMap.hh,v 1.6 2013/10/21 20:53:36 murat Exp $
-// $Author: murat $
-// $Date: 2013/10/21 20:53:36 $
+// $Id: HexMap.hh,v 1.7 2014/08/01 20:57:44 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/08/01 20:57:44 $
 //
 
 //C++ includes
@@ -36,18 +36,18 @@ namespace mu2e {
 
 	    HexMap();
 
-	    CLHEP::Hep2Vector xyPosition(int thisIndex) const;
-            int               indexFromXY(double x, double y) const;
+	    CLHEP::Hep2Vector xyFromIndex(int thisIndex)          const;
+            int               indexFromXY(double x, double y)     const;
+	    std::vector<int>  neighbors(int thisIndex, int level) const;
 
 	    int               index(int l, int k) {HexLK lk(l,k); return index(lk);}
 	    int               l(int index)        {return lk(index)._l;}
 	    int               k(int index)        {return lk(index)._k;}
 
-	    std::vector<int>  neighbors(int thisIndex, int level=1) const;
-
 	    HexLK lk(int index)    const;
 	    int   index(HexLK& lk) const;
 	    int   ring(HexLK& lk)  const;
+
 
 	private:
 

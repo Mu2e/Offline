@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHits_module.cc,v 1.16 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: MakeCaloCrystalHits_module.cc,v 1.17 2014/08/01 20:57:45 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/08/01 20:57:45 $
 //
 // Original author KLG
 //
@@ -171,8 +171,8 @@ namespace mu2e {
     
      
      Calorimeter const & cal = *(GeomHandle<Calorimeter>());
-     int nro                 = cal.nROPerCrystal();
-     double electronEdep     = cal.getElectronEdep();
+     int nro                 = cal.caloGeomInfo().nROPerCrystal();
+     double electronEdep     = cal.caloGeomInfo().electronEdep();
 
 
      if ( _diagLevel > 2 ) {

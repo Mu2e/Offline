@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.13 2013/09/05 16:42:03 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2013/09/05 16:42:03 $
+// $Id: Calorimeter4VanesGeom.cc,v 1.14 2014/08/01 20:57:45 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/08/01 20:57:45 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -26,14 +26,14 @@ namespace mu2e {
     _norm.setY(1.0);
     _norm.setZ(0.0);
 
-    _dU = (cg->crystalHalfLength() + cg->wrapperThickness() ) ;
-    _dAPD = cg->roHalfThickness();
+    _dU = (cg->caloGeomInfo().crystalHalfLength() + cg->caloGeomInfo().wrapperThickness() ) ;
+    _dAPD = cg->caloGeomInfo().roHalfThickness();
     _vaneHalfThickness = _dU + _dAPD;
     
     if(geom->hasElement<VaneCalorimeter>()){
       GeomHandle<VaneCalorimeter> cgVanes;
-      _dR = (cgVanes->crystalHalfTrans()+cgVanes->wrapperThickness() + cgVanes->shellThickness() ) * cgVanes->nCrystalR();//*0.5;
-      _dZ = (cgVanes->crystalHalfTrans()+cgVanes->wrapperThickness() + cgVanes->shellThickness() ) * cgVanes->nCrystalZ();//*0.5;
+      _dR = (cgVanes->caloGeomInfo().crystalHalfTrans()+cgVanes->caloGeomInfo().wrapperThickness() + cgVanes->caloGeomInfo().shellThickness() ) * cgVanes->nCrystalR();//*0.5;
+      _dZ = (cgVanes->caloGeomInfo().crystalHalfTrans()+cgVanes->caloGeomInfo().wrapperThickness() + cgVanes->caloGeomInfo().shellThickness() ) * cgVanes->nCrystalZ();//*0.5;
     }else if(geom->hasElement<DiskCalorimeter>()){
       _dR = 0.0;
       _dZ = 0.0;
@@ -51,7 +51,7 @@ namespace mu2e {
 //       _ZfrontFaceCalo -= _vaneHalfThickness*2.0 + cgDisks->diskSeparation(1);
 //       _ZbackFaceCalo += cgDisks->diskSeparation(1) + _vaneHalfThickness*2.0 + 10.0;
       _ZfrontFaceCalo += cgDisks->diskSeparation(0) - 10.;
-      _ZbackFaceCalo  += cgDisks->diskSeparation(1) + 2*cg->crystalHalfLength() + 10.0;
+      _ZbackFaceCalo  += cgDisks->diskSeparation(1) + 2*cg->caloGeomInfo().crystalHalfLength() + 10.0;
     }
     
     if(geom->hasElement<VaneCalorimeter>()){ 
@@ -64,11 +64,6 @@ namespace mu2e {
       _innerRadius = cg->disk(0).innerRadius();
       _outherRadius = cg->disk(0).outerRadius();
       _nVanes = cg->nDisk();
-    }else if(geom->hasElement<HybridCalorimeter>()){
-      GeomHandle<HybridCalorimeter> cg;
-      _innerRadius = cg->disk().innerRadius();
-      _outherRadius = cg->disk().outerRadius();
-      _nVanes = cg->nSections();
     }
   }
 
@@ -481,71 +476,9 @@ namespace mu2e {
 	  tmpRange -= pathStepSize;
 	}
       }
-    } else if(geom->hasElement<HybridCalorimeter>()){
-
-      GeomHandle<HybridCalorimeter> cg;
-      for(int iStep = 0; iStep< nAngleSteps; ++iStep){
-	for(int jVane=0; jVane<nVanes; ++jVane){
-	  trjPoint = traj.position(tmpRange);
-	  if(diagLevel>4){
-	    cout<<" tmpRange = "<< tmpRange<<
-	      ", trj.position(tmpRange) = "<<trjPoint<<endl;
-	  }
-	  
-	  trjVec.setX(trjPoint.x());
-	  trjVec.setY(trjPoint.y());
-	  trjVec.setZ(trjPoint.z());
-
-	  trjVec = fromTrkToMu2eFrame(trjVec);
-
-	  if( cg->isInsideSection(jVane,trjVec ) ){
-	    if(!isInside[jVane]){
-	      if(diagLevel>4){
-		cout<<"Event Number : "<< evtNumber<< endl;
-		cout<<" vane "<<jVane<<
-		  "isInside : true"<<
-		  "pathLength entrance = "<<tmpRange<<endl;
-	      }
-	      isInside[jVane] = true;
-	      if(fdir.dzdt() == 1.0){
-		entr[jVane] = tmpRange - pathStepSize;
-	      }else if(fdir.dzdt() == -1.0){
-		entr[jVane] = tmpRange + pathStepSize;
-	      }
-	    }
-	  }else if(isInside[jVane]){
-	    ex[jVane] = tmpRange + pathStepSize;
-	    if(diagLevel>4){
-	      cout<<"Event Number : "<< evtNumber<< endl;
-	      cout<<" vane "<<jVane<<
-		"isInside : true"<<
-		"hasExit : true"<<
-		"pathLength entrance = "<<entr[jVane]<<
-		"pathLength exit = "<<tmpRange<<endl;
-	    }
-	    isInside[jVane] = false;
-
-	    if (NIntersections < 100) {
-	      Intersection[NIntersections].fVane  = jVane;
-	      Intersection[NIntersections].fRC    = 0;
-	      Intersection[NIntersections].fSEntr = entr[jVane];
-	      Intersection[NIntersections].fSExit = ex  [jVane];
-	      NIntersections++;
-	    }
-	    else {
-	      printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
-	    }
-	  }
-	} 
-	if(fdir.dzdt() == 1.0){
-	  tmpRange += pathStepSize;
-	}else if(fdir.dzdt() == -1.0){
-	  tmpRange -= pathStepSize;
-	}
-      }
     }
-
-
+    
+    
     if (diagLevel>2) {
       cout<<"end search behindVane(), position is : "<<traj.position(tmpRange)<<endl;
     }

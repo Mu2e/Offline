@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_DiskCrystalPosUtil_hh
 #define CalorimeterGeom_DiskCrystalPosUtil_hh
 //
-// $Id: DiskCrystalPosUtil.hh,v 1.1 2013/07/25 23:56:46 echenard Exp $
+// $Id: DiskCrystalPosUtil.hh,v 1.2 2014/08/01 20:57:44 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/07/25 23:56:46 $
+// $Date: 2014/08/01 20:57:44 $
 //
 
 //C++ includes
@@ -24,11 +24,11 @@ namespace mu2e {
 	    void Fill(int iCrystal); 
 	    void Fill(int iCrystal, int iMap, int l, int k); 
 	    
-	    int mapToCrystal(int iMap) const;    
+	    int mapToCrystal(int iMap)     const;    
 	    int crystalToMap(int iCrystal) const;
-	    int crystalToL(int iCrystal) const; 
-	    int crystalToK(int iCrystal) const; 
-	    int LKToCrystal(int l, int k) const;
+	    int crystalToL(int iCrystal)   const; 
+	    int crystalToK(int iCrystal)   const; 
+	    int LKToCrystal(int l, int k)  const;
 	                                  
 
 	private:

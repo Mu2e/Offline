@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: VaneCalorimeter.hh,v 1.7 2013/05/28 22:11:24 echenard Exp $
+// $Id: VaneCalorimeter.hh,v 1.8 2014/08/01 20:57:44 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/28 22:11:24 $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -44,39 +44,32 @@ class VaneCalorimeter: public BaseCalorimeter{
           ~VaneCalorimeter(){}
 
 
-          int nVane()                           const  {return _nSections; }
-	  Vane const&  vane(int i)              const  {return static_cast<Vane const&>(section(i));}
+          int nVane()               const  {return _nSections; }
+	  Vane const&  vane(int i)  const  {return static_cast<Vane const&>(section(i));}
 
-                  int    nCrystalR()            const  {return _nCrystalR; }
-                  int    nCrystalZ()            const  {return _nCrystalZ; }
-          virtual double crystalHalfTrans()     const  {return _crystalHW; }
-          virtual double crystalHalfLength()    const  {return _crystalHL; }
-          virtual double crystalVolume()        const  {return 8*_crystalHW*_crystalHW*_crystalHL;}
+          int    nCrystalR()        const  {return _nCrystalR; }
+          int    nCrystalZ()        const  {return _nCrystalZ; }
+          double innerRadius ()     const  {return _rMin;}
+          double outherRadius()     const  {return _rMax;}
+                  
+		  
+	  virtual int               crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)        const;
+          virtual double            crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const; 
+          virtual bool              isInsideCalorimeter(CLHEP::Hep3Vector const& pos)           const;        
+          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)                  const; 
 
-                  bool             isInsideVane(int ivane, CLHEP::Hep3Vector const& pos) const ;
-          virtual bool             isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const ;        
-	  virtual int              crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const ;
-          virtual std::vector<int> neighbors(int crystalId, int level=1) const;
-          virtual double           crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const; 
-
-          double innerRadius ()                 const  {return _rMin;}
-          double outherRadius()                 const  {return _rMax;}
-
+          bool                      isInsideVane(int ivane, CLHEP::Hep3Vector const& pos)       const ;
 
         
 
 
 //keep only for backward compatibility, will disappear in the future.
 
-int crystalByRO(int roid) const              {return (roid/_nROPerCrystal); }
-int ROBaseByCrystal(int crystalId) const     {return (crystalId*_nROPerCrystal);}
-
-int crystalVaneByRO(int roid) const { return (roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR);}
-int crystalRByRO(int roid) const {return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))/_nCrystalZ;}
-int crystalZByRO(int roid) const {return ((roid/_nROPerCrystal)%(_nCrystalZ*_nCrystalR))%_nCrystalZ;}
+int crystalRByRO(int roid) const {return ((roid/_caloGeomInfo.nROPerCrystal())%(_nCrystalZ*_nCrystalR))/_nCrystalZ;}
+int crystalZByRO(int roid) const {return ((roid/_caloGeomInfo.nROPerCrystal())%(_nCrystalZ*_nCrystalR))%_nCrystalZ;}
 
 CLHEP::Hep3Vector crystalOriginByRO(int roid) const { return crystalOrigin(crystalByRO(roid));  }
-int vaneByRO(int roid) const {return roid/(_nCrystalZ*_nCrystalR*_nROPerCrystal);}
+int vaneByRO(int roid) const {return roid/(_nCrystalZ*_nCrystalR*_caloGeomInfo.nROPerCrystal());}
 CLHEP::Hep3Vector crystalAxisByRO(int roid) const { return crystalAxis(crystalByRO(roid));  }
 
 CLHEP::Hep3Vector toVaneFrame(int vaneId, CLHEP::Hep3Vector const& pos) const   {return toSectionFrame(vaneId,pos);}
@@ -91,8 +84,6 @@ CLHEP::Hep3Vector fromVaneFrame(int vaneId, CLHEP::Hep3Vector const& pos) const 
           int    _nCrystalR;
           double _rMin;
           double _rMax;
-          double _crystalHL;
-          double _crystalHW;        
           double _shieldHalfThickness;
           double _absorberHalfThickness;
 

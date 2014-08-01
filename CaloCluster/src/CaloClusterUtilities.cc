@@ -1,9 +1,9 @@
 //
 // General utilities for the calorimeter's studies
 //
-// $Id: CaloClusterUtilities.cc,v 1.9 2013/05/09 23:14:14 echenard Exp $
+// $Id: CaloClusterUtilities.cc,v 1.10 2014/08/01 20:57:44 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/09 23:14:14 $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Original author G. Pezzullo & G. Tassielli & G. Onorato
 //
@@ -37,9 +37,9 @@ void MCCaloUtilities::printOutCaloInfo() {
         art::ServiceHandle<GeometryService> geom;
         GeomHandle<VaneCalorimeter> cg;
 
-        double Hsize = cg->crystalHalfTrans();
-        double Hleng = cg->crystalHalfLength();
-        double ROsize = cg->roHalfSize();
+        double Hsize = cg->caloGeomInfo().crystalHalfTrans();
+        double Hleng = cg->caloGeomInfo().crystalHalfLength();
+        double ROsize = cg->caloGeomInfo().roHalfTrans();
 
         cout << "Crystal HSize " << Hsize
                         << "\nCrystal HLeng " << Hleng
@@ -175,7 +175,7 @@ std::string & TOUpper(std::string &in) {
 
 double cry(double val){
         GeomHandle<VaneCalorimeter> cg;
-        double size = 2.0*cg->crystalHalfTrans();//[mm]
+        double size = 2.0*cg->caloGeomInfo().crystalHalfTrans();//[mm]
         int index = (int) (val / size);
         double result =  val - index*size;
 
@@ -183,14 +183,14 @@ double cry(double val){
 }
 double indexToCoor(double ind){
         GeomHandle<VaneCalorimeter> cg;
-        double res = ind*2.0*cg->crystalHalfTrans();
-        res += cg->crystalHalfTrans();
+        double res = ind*2.0*cg->caloGeomInfo().crystalHalfTrans();
+        res += cg->caloGeomInfo().crystalHalfTrans();
         return res;
 }
 double indexToCoor(int ind){
         GeomHandle<VaneCalorimeter> cg;
-        double res = (double)(ind*2.0*cg->crystalHalfTrans());
-        res += cg->crystalHalfTrans();
+        double res = (double)(ind*2.0*cg->caloGeomInfo().crystalHalfTrans());
+        res += cg->caloGeomInfo().crystalHalfTrans();
         return res;
 }
 
@@ -199,7 +199,7 @@ double indexToCoor(int ind){
 void w_correction_0(double& clCOGw,double& clCOGwErr, int& clCryEnergyMaxColumn){
         GeomHandle<VaneCalorimeter> cg;
         double x = clCOGw - indexToCoor(clCryEnergyMaxColumn), xErr = clCOGwErr;
-        xErr -= (cg->crystalHalfTrans()/sqrt(12.0));
+        xErr -= (cg->caloGeomInfo().crystalHalfTrans()/sqrt(12.0));
 
         double val = 0.0, valErr = 0.0;
 
@@ -215,7 +215,7 @@ void w_correction_0(double& clCOGw,double& clCOGwErr, int& clCryEnergyMaxColumn)
                 exp = k-1;
                 valErr += k*p[k]*pow(xErr,exp);
         }
-        valErr +=(cg->crystalHalfTrans()/sqrt(12.0));
+        valErr +=(cg->caloGeomInfo().crystalHalfTrans()/sqrt(12.0));
         clCOGwErr = valErr;
 
         clCOGw = val + indexToCoor(clCryEnergyMaxColumn);
@@ -240,7 +240,7 @@ void v_correction_0( float& extrapolThetaV,  double& clCOGv,  double& clCOGvErr)
         for(int j=1; j<d; ++j){
                 valErr += j*p[j]*pow(clCOGvErr, j-1);
         }
-        valErr += (cg->crystalHalfTrans()/sqrt(12.0));
+        valErr += (cg->caloGeomInfo().crystalHalfTrans()/sqrt(12.0));
         val += clCOGv;
         clCOGv = val;
         clCOGvErr = valErr;
@@ -269,7 +269,7 @@ void v_correction_0( double& extrapolThetaV,  double& clCOGv,  double& clCOGvErr
                 valErr += pe[j]*pow(x, j);
         }
 
-        //valErr += (cg->crystalHalfTrans()/sqrt(12.0));
+        //valErr += (cg->caloGeomInfo().crystalHalfTrans()/sqrt(12.0));
         valErr *= valErr;
         valErr += clCOGvErr*clCOGvErr;
         valErr = std::sqrt(valErr);
@@ -294,7 +294,7 @@ void w_correction_1(double& clCOGw,double& clCOGwErr, int& wSize){
         }
         clCOGw -= spo;//the minus is not an error!
 
-        double xErr = (cg->crystalHalfTrans()/sqrt(12.0))/wSize;
+        double xErr = (cg->caloGeomInfo().crystalHalfTrans()/sqrt(12.0))/wSize;
 
         double  valErr = 0.0;
 
@@ -325,7 +325,7 @@ void v_correction_1(int& clCryEnergyMaxRow,  double& clCOGv,  double& clCOGvErr)
         for(int j=1; j<4; ++j){
                 valErr += j*p[j]*pow(clCOGvErr, j-1);
         }
-        valErr += (cg->crystalHalfTrans()/sqrt(12.0));
+        valErr += (cg->caloGeomInfo().crystalHalfTrans()/sqrt(12.0));
         val += indexToCoor(clCryEnergyMaxRow);
         clCOGv = val;
         clCOGvErr = valErr;
@@ -343,7 +343,7 @@ void cog_correction_0(CaloCluster &cluster){
         CLHEP::Hep3Vector  resError(1e-1, 1e-1, 1e-1);
 
         //get crystal's geometric information
-        double cryHalfSize      =      cg->crystalHalfTrans();
+        double cryHalfSize      =      cg->caloGeomInfo().crystalHalfTrans();
         double  tmpEq    = 0.;
 
         float R =0.;
@@ -396,7 +396,7 @@ void cog(CaloCluster &cluster){
         CLHEP::Hep3Vector  resError(1e-1, 1e-1, 1e-1);
 
         //get crystal's geometrical information
-        double cryHalfSize      =      cg->crystalHalfTrans();
+        double cryHalfSize      =      cg->caloGeomInfo().crystalHalfTrans();
 
         double  tmpEq    = 0.;
         double  showerDepth = 0.0;
@@ -465,7 +465,7 @@ void cog_depth(CaloCluster &cluster, double depth, ClusterMap &clusterMap){
         CLHEP::Hep3Vector  resError(1e-1, 1e-1, 1e-1);
 
         //get crystal's geometrical information
-        double cryHalfSize      =      cg->crystalHalfTrans();
+        double cryHalfSize      =      cg->caloGeomInfo().crystalHalfTrans();
 
         double  tmpEq    = 0.;
         double  showerDepth = depth;
@@ -561,7 +561,7 @@ void LOGcogMap(CaloCluster &cluster, double w, double depth, ClusterMap &cluster
         CLHEP::Hep3Vector res, resError;
 
         //get crystal's geometric information
-        double cryHalfSize      =      cg->crystalHalfTrans();
+        double cryHalfSize      =      cg->caloGeomInfo().crystalHalfTrans();
 
         double  tmpEq    = 0.;
         double  sumEi    = 0.;
@@ -646,7 +646,7 @@ CLHEP::Hep3Vector LOGcog(CaloCluster &cluster, double w, double depth){
         CLHEP::Hep3Vector res, resError;
 
         //get crystal's geometrical information
-        double cryHalfSize      =      cg->crystalHalfTrans();
+        double cryHalfSize      =      cg->caloGeomInfo().crystalHalfTrans();
 
         double  tmpEq    = 0.;
         double  sumEi    = 0.;

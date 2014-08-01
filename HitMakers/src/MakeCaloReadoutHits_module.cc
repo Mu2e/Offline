@@ -331,9 +331,9 @@ namespace mu2e {
     ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
     
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
-    double timeGap    = cal.getTimeGap();
-    double addEdep    = cal.getElectronEdep();
-    double cryhalflength = cal.crystalHalfLength();
+    double timeGap    = cal.caloGeomInfo().timeGap();
+    double addEdep    = cal.caloGeomInfo().electronEdep();
+    double cryhalflength = cal.caloGeomInfo().crystalHalfLength();
     
     
     
@@ -401,7 +401,7 @@ namespace mu2e {
 // for each readout, assign hits in the crystal + hits in the readout
 //-----------------------------------------------------------------------------
       int ROidBase = cal.ROBaseByCrystal(crid);
-      int ROidEnd  = ROidBase+cal.nROPerCrystal();
+      int ROidEnd  = ROidBase+cal.caloGeomInfo().nROPerCrystal();
 	
       for (int roid=ROidBase;roid<ROidEnd;++roid) {
 	if (cr_hits.size() == 0) continue;

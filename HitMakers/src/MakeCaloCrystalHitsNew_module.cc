@@ -2,9 +2,9 @@
 // An EDProducer Module that reads CaloHit objects and turns them into
 // CaloCrystalHit objects, collection
 //
-// $Id: MakeCaloCrystalHitsNew_module.cc,v 1.7 2014/05/14 18:17:16 murat Exp $
-// $Author: murat $
-// $Date: 2014/05/14 18:17:16 $
+// $Id: MakeCaloCrystalHitsNew_module.cc,v 1.8 2014/08/01 20:57:45 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/08/01 20:57:45 $
 //
 // Original author KLG
 // for realistic modeling: reduce timeGap from 30ns to 1 ns in Mu2eG4/test/calorimeter.txt
@@ -201,8 +201,8 @@ namespace mu2e {
     
      
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
-    int nro                 = cal.nROPerCrystal();
-    double electronEdep     = cal.getElectronEdep();
+    int nro                 = cal.caloGeomInfo().nROPerCrystal();
+    double electronEdep     = cal.caloGeomInfo().electronEdep();
 
 
     if ( _diagLevel > 2 ) {

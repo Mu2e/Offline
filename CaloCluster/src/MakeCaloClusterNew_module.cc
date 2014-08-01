@@ -242,7 +242,7 @@ namespace mu2e {
        //Get a working copy of the CaloCrystalHits 
      CaloCrystalList caloCrystalHitsWork;
      for ( CaloCrystalHitCollection::const_iterator i=caloCrystalHits.begin(); i!=caloCrystalHits.end(); ++i )
-       caloCrystalHitsWork.push_back( &(*i));
+       if ((*i).energyDep() > _EnoiseCut) caloCrystalHitsWork.push_back( &(*i));
 
      // Sort crystals by energy/time -> seed of new cluster is always the first of the current list
      if (_caloClusterSeeding.compare("TIME") == 0)  caloCrystalHitsWork.sort(mu2e::caloCrystalHitTimePredicate);
@@ -390,7 +390,7 @@ namespace mu2e {
 
     while (!crystalToVisit.empty()) {
 	    
-      std::vector<int> neighborsId = _cal->neighbors(crystalToVisit.front()->id());
+      std::vector<int> neighborsId = _cal->neighborsByLevel(crystalToVisit.front()->id(),1);
       crystalToVisit.pop();
 
       //check if there are crystals in the hit list corresponding to the neighbours with consistent time

@@ -2,9 +2,9 @@
 // Geometry and identifier info about the VaneCalorimeter.
 //
 //
-// $Id: VaneCalorimeter.cc,v 1.6 2013/05/28 22:11:24 echenard Exp $
+// $Id: VaneCalorimeter.cc,v 1.7 2014/08/01 20:57:45 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/28 22:11:24 $
+// $Date: 2014/08/01 20:57:45 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -26,9 +26,9 @@ namespace mu2e {
     {   
 	CLHEP::Hep3Vector posInSection = toSectionFrame(ivane, pos);
 
-	double xlim = _crystalHL + _wrapperThickness + _roHalfThickness + 0.5;
-	double ylim = _nCrystalR*(_crystalHW+_wrapperThickness+_shellThickness) + 0.5;   
-	double zlim = _nCrystalZ*(_crystalHW+_wrapperThickness+_shellThickness) + 0.5;   
+	double xlim = _caloGeomInfo.crystalHalfLength() + _caloGeomInfo.wrapperThickness() + _caloGeomInfo.roHalfThickness()  + 0.5;
+	double ylim = _nCrystalR*(_caloGeomInfo.crystalHalfTrans() +_caloGeomInfo.wrapperThickness()+_caloGeomInfo.shellThickness()) + 0.5;   
+	double zlim = _nCrystalZ*(_caloGeomInfo.crystalHalfTrans() +_caloGeomInfo.wrapperThickness()+_caloGeomInfo.shellThickness()) + 0.5;   
 
 	if (posInSection.x() < -xlim || posInSection.x() > xlim ) return false;      
 	if (posInSection.y() < -ylim || posInSection.y() > ylim ) return false;      
@@ -57,18 +57,19 @@ namespace mu2e {
         return -1;
     }
 
-    std::vector<int> VaneCalorimeter::neighbors(int CrystalId, int level) const 
+    std::vector<int> VaneCalorimeter::neighborsByLevel(int crystalId, int level) const 
     {
 
-	int iv = caloSectionId(CrystalId);
-	int ic = localCrystalId(CrystalId);
+	int iv = caloSectionId(crystalId);
 
-        int offset(0);
-        for (int i=0;i<iv;++i) offset += vane(i).nCrystals();
+	int offset(0);
+	for (int i=0;i<iv;++i) offset += vane(i).nCrystals();
 
-	std::vector<int> list = vane(iv).neighbors(ic,level);
+	std::vector<int> list = vane(iv).findLocalNeighbors( _fullCrystalList.at(crystalId)->localId() ,level);
 	transform(list.begin(), list.end(), list.begin(),bind2nd(std::plus<int>(), offset));  
+
 	return list;
+
     }
 
 

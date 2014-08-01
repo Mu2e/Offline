@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // A half-interactive 2D event display. 
 //
-// $Id: HitDisplay_module.cc,v 1.23 2014/04/18 16:43:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:43:44 $
+// $Id: HitDisplay_module.cc,v 1.24 2014/08/01 20:57:44 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Contact person:  Pavel Murat, Gianantonio Pezzulo
 //
@@ -369,7 +369,7 @@ namespace mu2e {
 	const CaloCrystalHit* hit = &(*caloClusterHits.at(i));
 	int id = hit->id();
 
-	pos = cg->localCrystalOrigin(id);
+	pos = cg->crystalOriginInSection(id);
 
 	if(geom->hasElement<mu2e::VaneCalorimeter>() ){
 	  GeomHandle<VaneCalorimeter> cgvane;

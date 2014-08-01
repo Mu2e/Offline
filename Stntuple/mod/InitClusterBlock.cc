@@ -149,7 +149,7 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
       hit = &(*list_of_crystals.at(ih));
       e   = hit->energyDep();
       id  = hit->id();
-      pos = cal->localCrystalOrigin(id);
+      pos = cal->crystalOriginInSection(id);
       
       if (e > kMinECrystal) {
 	qn    += 1.;

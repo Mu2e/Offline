@@ -440,8 +440,8 @@ void TAnaDump::printDiskCalorimeter() {
 
   int nd = cal->nDisk();
   printf(" ndisks = %i\n", nd);
-  printf(" crystal size  : %10.3f\n", 2*cal->crystalHalfTrans());
-  printf(" crystal length: %10.3f\n", 2*cal->crystalHalfLength());
+  printf(" crystal size  : %10.3f\n", 2*cal->caloGeomInfo().crystalHalfTrans());
+  printf(" crystal length: %10.3f\n", 2*cal->caloGeomInfo().crystalHalfLength());
 
   for (int i=0; i<nd; i++) {
     disk = &cal->disk(i);
@@ -686,7 +686,7 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
       const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
       int id = hit->id();
       
-      pos = cg->localCrystalOrigin(id);
+      pos = cg->crystalOriginInSection(id);
 
       if(geom->hasElement<mu2e::VaneCalorimeter>() ){
 	mu2e::GeomHandle<mu2e::VaneCalorimeter> cgvane;

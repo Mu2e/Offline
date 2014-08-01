@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.74 2014/05/29 19:55:37 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/05/29 19:55:37 $
+// $Id: DataInterface.cc,v 1.75 2014/08/01 20:57:45 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/08/01 20:57:45 $
 //
 
 #include "DataInterface.h"
@@ -542,8 +542,8 @@ void DataInterface::fillGeometry()
   if(geom->hasElement<mu2e::DiskCalorimeter>())
   {
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
-    double rmax = calo->crystalHalfTrans();
-    double crystalHalflength = calo->crystalHalfLength();
+    double rmax = calo->caloGeomInfo().crystalHalfTrans();
+    double crystalHalflength = calo->caloGeomInfo().crystalHalfLength();
 
 
     int crystalIdOffset=0;
@@ -636,7 +636,7 @@ void DataInterface::fillGeometry()
       _supportstructures.push_back(shape);
     }
 
-    unsigned int roPerCrystal=calo->nROPerCrystal();
+    unsigned int roPerCrystal=calo->caloGeomInfo().nROPerCrystal();
     unsigned int nro=calo->nRO();
     for(unsigned int i=0; i<nro; i+=roPerCrystal)
     {
@@ -644,7 +644,7 @@ void DataInterface::fillGeometry()
       int crystalid=calo->crystalByRO(i);
       int rPos=calo->crystalRByRO(i);
       int zPos=calo->crystalZByRO(i);
-      double crystalHalfTrans=calo->crystalHalfTrans();
+      double crystalHalfTrans=calo->caloGeomInfo().crystalHalfTrans();
 
       const mu2e::Vane &v=calo->vane(vaneid);
       double x=v.origin().x() - _detSysOrigin.x();

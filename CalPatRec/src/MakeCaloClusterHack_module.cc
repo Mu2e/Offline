@@ -443,7 +443,7 @@ class MakeCaloClusterHack : public art::EDProducer {
 
        while (!crystalToVisit.empty()) {
 	    
-	    std::vector<int> neighborsId = cal.neighbors(crystalToVisit.front()->id());
+	    std::vector<int> neighborsId = cal.neighborsByLevel(crystalToVisit.front()->id(),1);
 	    crystalToVisit.pop();
 
 	    //check if there are crystals in the hit list corresponding to the neighbours with consistent time

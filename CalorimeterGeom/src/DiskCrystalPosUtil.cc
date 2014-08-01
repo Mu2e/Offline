@@ -1,6 +1,6 @@
-// $Id: DiskCrystalPosUtil.cc,v 1.1 2013/07/25 23:56:46 echenard Exp $
+// $Id: DiskCrystalPosUtil.cc,v 1.2 2014/08/01 20:57:44 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/07/25 23:56:46 $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Utility to related the crystal indices in the disk to that of the Hexagonal map 
 // it is needed because there is a hole in the disk, creating a mismatch between the numbering
@@ -30,10 +30,11 @@ namespace mu2e {
 	  _LKToCrystal.insert( std::pair<int,int>(10000*l+k,iMap) );
       }
 
-      int DiskCrystalPosUtil::mapToCrystal(int iMap)     const {return _mapToCrystal.at(iMap);}
+      int DiskCrystalPosUtil::mapToCrystal(int iMap)     const {return _mapToCrystal.at(iMap);}      
       int DiskCrystalPosUtil::crystalToMap(int iCrystal) const {return _crystalToMap.at(iCrystal);}
+
       int DiskCrystalPosUtil::crystalToL(int iCrystal)   const {return _crystalToL.at(iCrystal);}
-      int DiskCrystalPosUtil::crystalToK(int iCrystal)   const {return _crystalToK.at(iCrystal);}
+      int DiskCrystalPosUtil::crystalToK(int iCrystal)   const {return _crystalToK.at(iCrystal);}      
       int DiskCrystalPosUtil::LKToCrystal(int l, int k)  const 
       { 
          std::map<int,int>::const_iterator ifind = _LKToCrystal.find(10000*l+k); 

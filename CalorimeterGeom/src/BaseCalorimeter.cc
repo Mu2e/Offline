@@ -21,66 +21,14 @@
 namespace mu2e {
 
 
-    int BaseCalorimeter::caloSectionId(int crystalId) const
-    {          
-        if ( crystalId >= _nCrystalTot) throw cet::exception("Calorimeter") << "Tried to access crystal Id "<<crystalId<<" but maximum is "<<_nCrystalTot-1<<"! \n";      
-
-        for (unsigned int i=0;i<_nSections;++i) 
-        {
-           if (crystalId < section(i).nCrystals()) return i;
-           crystalId -= section(i).nCrystals();
-        }
-        return _nSections;
-    }
-
-    int BaseCalorimeter::localCrystalId(int crystalId) const
-    {     
-        if ( crystalId >= _nCrystalTot) throw cet::exception("Calorimeter") << "Tried to access crystal Id "<<crystalId<<" but maximum is "<<_nCrystalTot-1<<"! \n";      
-        
-	for (unsigned int i=0;i<_nSections;++i) 
-        {
-          if (crystalId < section(i).nCrystals()) return crystalId;
-          crystalId -= section(i).nCrystals();
-        }
-        return crystalId;
-    }
-
-
-
-
-
-    unsigned int BaseCalorimeter::nRO(void) const 
-    {
-        unsigned total(0);
-        for (unsigned int i=0;i<_nSections;++i) total += section(i).nCrystals();
-        return total*_nROPerCrystal;
-    }
-
-    unsigned int BaseCalorimeter::nCrystal(void) const 
-    {
-        unsigned total(0);
-        for (unsigned int i=0;i<_nSections;++i) total += section(i).nCrystals();
-        return total;
-    }
-
-
-
-
-
-
 
     CLHEP::Hep3Vector BaseCalorimeter::toCrystalFrame(int CrystalId, CLHEP::Hep3Vector const& pos) const 
     {   
-
        const CaloSection& thisSection = section( caloSectionId(CrystalId) );
-       int ic                         = localCrystalId(CrystalId);
-       
-       CLHEP::Hep3Vector crysLocalPos = thisSection.crystal(ic).position();
-       crysLocalPos += _crystalShift;
+       CLHEP::Hep3Vector crysLocalPos = _fullCrystalList.at(CrystalId)->localPosition()+ thisSection.crystalShift();
 
-       return (thisSection.rotation())*(pos-thisSection.origin())-crysLocalPos;  
+       return thisSection.rotation()*(pos-thisSection.origin())-crysLocalPos;  
     }
-
 
     CLHEP::Hep3Vector BaseCalorimeter::toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const 
     {   
@@ -88,6 +36,14 @@ namespace mu2e {
        return (thisSection.rotation())*(pos-thisSection.origin());
     }
 
+
+    CLHEP::Hep3Vector BaseCalorimeter::fromCrystalFrame(int CrystalId, CLHEP::Hep3Vector const& pos) const 
+    {   
+       const CaloSection& thisSection = section( caloSectionId(CrystalId) );
+       CLHEP::Hep3Vector crysLocalPos = _fullCrystalList.at(CrystalId)->localPosition()+ thisSection.crystalShift();
+
+       return thisSection.inverseRotation()*(pos+crysLocalPos) + thisSection.origin();  
+    }
 
     CLHEP::Hep3Vector BaseCalorimeter::fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos) const 
     {   
@@ -98,27 +54,23 @@ namespace mu2e {
 
     CLHEP::Hep3Vector BaseCalorimeter::crystalOrigin(int CrystalId) const 
     {          
-       const CaloSection& thisSection = section( caloSectionId(CrystalId) );
-       int ic                         = localCrystalId(CrystalId);
+       // -- this is the original code. For efficiency purpose, I precalculate the position in the mu2e frame 
+       // -- and return it instead of recalculating it all the time
+       //const CaloSection& thisSection = section( caloSectionId(CrystalId) );
+       //CLHEP::Hep3Vector crysLocalPos = _fullCrystalList.at(CrystalId)->localPosition() + thisSection.crystalShift();
+       //return thisSection.origin() + thisSection.inverseRotation()*crysLocalPos; 
        
-       CLHEP::Hep3Vector crysLocalPos = thisSection.crystal(ic).position();
-       crysLocalPos += _crystalShift;
-
-       return thisSection.origin() + thisSection.inverseRotation()*crysLocalPos; 
+       return _fullCrystalList.at(CrystalId)->position();    
     }
 
 
-    CLHEP::Hep3Vector BaseCalorimeter::localCrystalOrigin(int CrystalId) const 
+    CLHEP::Hep3Vector BaseCalorimeter::crystalOriginInSection(int CrystalId) const 
     {          
        const CaloSection& thisSection = section( caloSectionId(CrystalId) );
-       int ic                         = localCrystalId(CrystalId);
-       
-       CLHEP::Hep3Vector crysLocalPos = thisSection.crystal(ic).position();
-       crysLocalPos += _crystalShift;
+       CLHEP::Hep3Vector crysLocalPos = _fullCrystalList.at(CrystalId)->localPosition()+ thisSection.crystalShift();
                    
        return crysLocalPos; 
     }
-
 
     CLHEP::Hep3Vector BaseCalorimeter::crystalAxis(int CrystalId) const 
     {
@@ -132,3 +84,5 @@ namespace mu2e {
 
 
 }
+
+

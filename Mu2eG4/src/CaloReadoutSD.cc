@@ -1,9 +1,9 @@
 //
 // Define a sensitive detector for calorimetric readout
 //
-// $Id: CaloReadoutSD.cc,v 1.21 2013/08/28 05:58:17 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/28 05:58:17 $
+// $Id: CaloReadoutSD.cc,v 1.22 2014/08/01 20:57:45 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/08/01 20:57:45 $
 //
 // Original author Ivan Logashenko
 //
@@ -39,8 +39,8 @@ namespace mu2e {
   {
 
     GeomHandle<Calorimeter> cg;
-    _nro  = cg->nROPerCrystal();
-    _minE = cg->getElectronEmin();
+    _nro  = cg->caloGeomInfo().nROPerCrystal();
+    _minE = cg->caloGeomInfo().electronEmin();
 
   }
 

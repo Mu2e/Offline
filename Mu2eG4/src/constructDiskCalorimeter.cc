@@ -99,24 +99,24 @@ namespace mu2e {
     DiskCalorimeter const & cal    = *(GeomHandle<DiskCalorimeter>());
 
     //calorimeter mother enveloppe
-    G4double mother_inRadius       = cal.enveloppeInRadius();
-    G4double mother_outRadius      = cal.enveloppeOutRadius();
-    G4double mother_z0             = cal.enveloppeZ0();
-    G4double mother_z1             = cal.enveloppeZ1();
+    G4double mother_inRadius       = cal.caloGeomInfo().enveloppeInRadius();
+    G4double mother_outRadius      = cal.caloGeomInfo().enveloppeOutRadius();
+    G4double mother_z0             = cal.caloGeomInfo().enveloppeZ0();
+    G4double mother_z1             = cal.caloGeomInfo().enveloppeZ1();
     
     //crystal properties
-    G4int    nRO                   = cal.nROPerCrystal();
-    G4double ROHalfThickness       = cal.roHalfThickness();
-    G4double ROHalfTrans           = cal.roHalfSize();
+    G4int    nRO                   = cal.caloGeomInfo().nROPerCrystal();
+    G4double ROHalfThickness       = cal.caloGeomInfo().roHalfThickness();
+    G4double ROHalfTrans           = cal.caloGeomInfo().roHalfTrans();
 
-    G4double crystalHexsize        = cal.crystalHalfTrans();
-    G4double crystalDepth          = 2.0*cal.crystalHalfLength();
+    G4double crystalHexsize        = cal.caloGeomInfo().crystalHalfTrans();
+    G4double crystalDepth          = 2.0*cal.caloGeomInfo().crystalHalfLength();
 
-    G4double wrapThickness         = cal.wrapperThickness();
+    G4double wrapThickness         = cal.caloGeomInfo().wrapperThickness();
     G4double wrapHexsize           = crystalHexsize + wrapThickness;
     G4double wrapDepth             = crystalDepth + 2.0*ROHalfThickness + 2.0*wrapThickness; 
     
-    G4double shellThickness        = cal.shellThickness();
+    G4double shellThickness        = cal.caloGeomInfo().shellThickness();
     G4double shellHexsize          = wrapHexsize + shellThickness;
     G4double shellDepth            = wrapDepth; //+ 2.0*shellThickness; for a crystal shell surrounding the z faces
 
@@ -128,10 +128,10 @@ namespace mu2e {
 
 
     //calorimeter calibration system
-    G4int nPipes                      = cal.nPipes();      
-    G4double pipeRadius               = cal.pipeRadius();
-    G4double pipeThickness            = cal.pipeThickness();
-    std::vector<double> pipeTorRadius = cal.pipeTorRadius();
+    G4int nPipes                      = cal.caloGeomInfo().nPipes();      
+    G4double pipeRadius               = cal.caloGeomInfo().pipeRadius();
+    G4double pipeThickness            = cal.caloGeomInfo().pipeThickness();
+    std::vector<double> pipeTorRadius = cal.caloGeomInfo().pipeTorRadius();
 
 
     //-- Definition for hexagon dimensions for shell/wrap/crystals   - zplanes, rinner and router define hexagon
@@ -267,11 +267,11 @@ namespace mu2e {
 
 	double radiusIn   = cal.disk(idisk).innerRadius();
 	double radiusOut  = cal.disk(idisk).outerRadius();
-	double caseDepth  = shellDepth + 2.0*cal.caseThickness();
+	double caseDepth  = shellDepth + 2.0*cal.caloGeomInfo().caseThickness();
 	double diskDepth  = caseDepth  + 2.0*pipeRadius;
 
-	double diskpar0[5] = {radiusIn-cal.caseThickness(),radiusOut+cal.caseThickness(), diskDepth/2.0, 0., CLHEP::twopi};
-	double diskpar1[5] = {radiusIn-cal.caseThickness(),radiusOut+cal.caseThickness(), caseDepth/2.0, 0., CLHEP::twopi};
+	double diskpar0[5] = {radiusIn-cal.caloGeomInfo().caseThickness(),radiusOut+cal.caloGeomInfo().caseThickness(), diskDepth/2.0, 0., CLHEP::twopi};
+	double diskpar1[5] = {radiusIn-cal.caloGeomInfo().caseThickness(),radiusOut+cal.caloGeomInfo().caseThickness(), caseDepth/2.0, 0., CLHEP::twopi};
 	double diskpar2[5] = {radiusIn                    ,radiusOut                    ,shellDepth/2.0, 0., CLHEP::twopi};
 
 	diskBoxInfo[idisk] =  nestTubs(discname0.str(),

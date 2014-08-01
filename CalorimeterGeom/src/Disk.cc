@@ -49,7 +49,7 @@ namespace mu2e {
             int nCrystal(0);
  	    for (int i=0;i<nHexagons;++i)
 	    {
-                CLHEP::Hep2Vector xy = _hexMap.xyPosition(i);
+                CLHEP::Hep2Vector xy = _hexMap.xyFromIndex(i);
 
  	        if ( !isInsideDisk(_cellSize*xy.x(),_cellSize*xy.y()) ) {_posUtil.Fill(-1); continue;}
 
@@ -61,14 +61,7 @@ namespace mu2e {
 		
                 ++nCrystal;
 	    }
-
-
-	    // precalculate nearest neighbours list for each crystal
-	    for (unsigned int i=0;i<_crystalList.size();++i) _crystalList[i].setNearestNeighbours(findNeighbors(i,1));
-
       }
-
-
 
 
       bool Disk::isInsideDisk(double x, double y) const
@@ -98,6 +91,9 @@ namespace mu2e {
           return (a+t*(b-a)).mag();
       }
 
+
+
+
       int Disk::idxFromPosition(double x, double y) const 
       {
         int mapIdx = _hexMap.indexFromXY(x/_cellSize,y/_cellSize);
@@ -107,27 +103,20 @@ namespace mu2e {
 
 
 
-      std::vector<int> Disk::neighbors(int crystalId, int level) const
-      {
-	   if (level==1) return std::move(_crystalList.at(crystalId).nearestNeighbours());
-	   return findNeighbors(crystalId,level);
-      }
-      
-      std::vector<int> Disk::findNeighbors(int crystalId, int level) const
-      {
 
+      //find the local index of the neighbors for a given level (level = number of rings away)
+      std::vector<int> Disk::findLocalNeighbors(int crystalId, int level) const
+      {
 	   std::vector<int> list; 
-	   list.reserve(20);
+	   std::vector<int> temp(_hexMap.neighbors(_posUtil.crystalToMap(crystalId),level));
 
-	   std::vector<int> temp( _hexMap.neighbors(_posUtil.crystalToMap(crystalId),level) );
-	   for (unsigned int i=0;i<temp.size();++i) {
+	   for (unsigned int i=0;i<temp.size();++i)
 	     if (_posUtil.mapToCrystal(temp[i])>-1) list.push_back(_posUtil.mapToCrystal(temp[i]));
-	   }
-
+	   
 	   return list;
       }
 
-
+      
       
       //Slightly inefficient but robust integration. Divide the area between the disk and 
       //the first few crystals into tiny squares, and sum squares outside the crystals

@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.40 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
+// $Id: BkgRates_module.cc,v 1.41 2014/08/01 20:57:44 echenard Exp $
+// $Author: echenard $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Original author Gianni Onorato
 //
@@ -743,7 +743,7 @@ namespace mu2e {
     if( ! geom->hasElement<Calorimeter>() ) return;
 
     GeomHandle<Calorimeter> cg;
-    double CrMass  = CrDensity*cg->crystalVolume();
+    double CrMass  = CrDensity*cg->caloGeomInfo().crystalVolume();
 
 
     // Get handles to calorimeter collections

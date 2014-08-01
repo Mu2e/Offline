@@ -1,9 +1,9 @@
  //
 // An EDAnalyzer module that reads back the hits created by the calorimeter and produces an ntuple
 //
-// $Id: CaloExample_module.cc,v 1.3 2014/04/05 02:35:26 echenard Exp $
+// $Id: CaloExample_module.cc,v 1.4 2014/08/01 20:57:44 echenard Exp $
 // $Author: echenard $
-// $Date: 2014/04/05 02:35:26 $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Original author Bertrand Echenard
 //
@@ -366,7 +366,7 @@ namespace mu2e {
 
 
       const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
-      const double CrMass    = CrDensity*cal.crystalVolume();
+      const double CrMass    = CrDensity*cal.caloGeomInfo().crystalVolume();
 	   
 
 

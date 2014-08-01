@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_DiskCalorimeter_hh
 #define CalorimeterGeom_DiskCalorimeter_hh
 //
-// $Id: DiskCalorimeter.hh,v 1.6 2013/05/28 22:11:24 echenard Exp $
+// $Id: DiskCalorimeter.hh,v 1.7 2014/08/01 20:57:44 echenard Exp $
 // $Author: echenard $
-// $Date: 2013/05/28 22:11:24 $
+// $Date: 2014/08/01 20:57:44 $
 //
 // Hold all geometry and identifier information about
 // a Disk Calorimeter. In order to insulate this class from
@@ -50,17 +50,12 @@ namespace mu2e {
 	  Disk const&  disk(int i)            const  {return static_cast<Disk const&>(section(i));}
 	  double       diskSeparation(int i)  const  {return _diskSeparation.at(i);}
 
-	  virtual double crystalHalfTrans()   const  {return _crystalHalfTrans;}
-	  virtual double crystalHalfLength()  const  {return _crystalHalfLength;}
-          virtual double crystalVolume()      const  {return 3.4641016*_crystalHalfTrans*_crystalHalfTrans*2.0*_crystalHalfLength;}
-
-
-  	          bool             isInsideDisk(int idisk, CLHEP::Hep3Vector const& pos) const ;       	 
-	  virtual bool             isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const ;       	 	 
-	  virtual int              crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const ;
-          virtual std::vector<int> neighbors(int crystalId, int level=1) const; 
+	  virtual bool             isInsideCalorimeter(CLHEP::Hep3Vector const& pos)           const ;       	 	 
+	  virtual int              crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)        const ;
           virtual double           crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const; 
+          virtual std::vector<int> neighborsByLevel(int crystalId, int level)                  const; 
 
+  	  bool                     isInsideDisk(int idisk, CLHEP::Hep3Vector const& pos) const ;       	 
 
 
         private:
@@ -69,9 +64,6 @@ namespace mu2e {
 	   std::vector<double> _diskOuterRadius;
 	   std::vector<double> _diskSeparation;
 	   std::vector<double> _diskRotAngle;  
-
-	   double _crystalHalfTrans;
-	   double _crystalHalfLength;
 
     };
 
