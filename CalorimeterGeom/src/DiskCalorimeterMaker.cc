@@ -1,9 +1,9 @@
 //
 // Make a Calorimeter.
 //
-// $Id: DiskCalorimeterMaker.cc,v 1.12 2014/08/01 20:57:44 echenard Exp $
+// $Id: DiskCalorimeterMaker.cc,v 1.13 2014/08/01 21:54:46 echenard Exp $
 // $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
+// $Date: 2014/08/01 21:54:46 $
 
 // original authors Julie Managan and Robert Bernstein
 // quite a few changes by Bertrand Echenarrd
@@ -28,7 +28,6 @@
 // Mu2e includes
 #include "cetlib/exception.h"
 #include "CalorimeterGeom/inc/DiskCalorimeterMaker.hh"
-#include "CalorimeterGeom/inc/BaseCalorimeterData.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"

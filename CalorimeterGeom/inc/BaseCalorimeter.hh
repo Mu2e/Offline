@@ -1,9 +1,9 @@
 #ifndef CalorimeterGeom_BaseCalorimeter_hh
 #define CalorimeterGeom_BaseCalorimeter_hh
 //
-// $Id: BaseCalorimeter.hh,v 1.8 2014/08/01 20:57:44 echenard Exp $
+// $Id: BaseCalorimeter.hh,v 1.9 2014/08/01 21:54:46 echenard Exp $
 // $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
+// $Date: 2014/08/01 21:54:46 $
 //
 // Base class of a cloarimeter. Hold informations about the sections composing 
 // the calorimeterand generic algorithms to navigate between the coordinate systems
@@ -21,7 +21,7 @@
 
 // Mu2e includes
 #include "Calorimeter.hh"
-#include "BaseCalorimeterData.hh"
+#include "BaseCalorimeterInfoGeom.hh"
 #include "CaloSection.hh"
 #include "Crystal.hh"
 
@@ -46,9 +46,9 @@ namespace mu2e {
             virtual ~BaseCalorimeter() {}
 
 
-	    virtual BaseCalorimeterData const& caloGeomInfo()                const  {return _caloGeomInfo;}
-	            CaloSection         const& section(int i)                const  {return *_sections.at(i);}
-		    Crystal             const& crystal(int i)                const  {return *_fullCrystalList.at(i);}
+	    virtual BaseCalorimeterInfoGeom const& caloGeomInfo()                const  {return _caloGeomInfo;}
+	            CaloSection             const& section(int i)                const  {return *_sections.at(i);}
+		    Crystal                 const& crystal(int i)                const  {return *_fullCrystalList.at(i);}
 	            
  	    virtual unsigned int nSection()                                  const  {return _nSections;}
             virtual unsigned int nCrystal()                                  const  {return _fullCrystalList.size();}
@@ -82,7 +82,7 @@ namespace mu2e {
 	    std::vector<CaloSectionPtr > _sections;
 	    CLHEP::Hep3Vector            _origin;
 
-	    BaseCalorimeterData          _caloGeomInfo;
+	    BaseCalorimeterInfoGeom      _caloGeomInfo;
 
 	    std::vector<Crystal const*>  _fullCrystalList;
 	    std::vector<int>             _crystalSectionId;
