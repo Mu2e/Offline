@@ -1,14 +1,16 @@
 //
 // base class to resolve hit ambiguities 
 //
-// $Id: AmbigResolver.hh,v 1.3 2012/08/31 22:38:59 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/08/31 22:38:59 $
+// $Id: AmbigResolver.hh,v 1.4 2014/08/01 18:56:10 gandr Exp $
+// $Author: gandr $ 
+// $Date: 2014/08/01 18:56:10 $
 //
 #ifndef AmbigResolver_HH
 #define AmbigResolver_HH
 #include "BaBar/BaBar.hh"
+#ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
+#endif/*__GCCXML__*/
 
 class KalRep;
 class TrkSimpTraj;
@@ -19,7 +21,9 @@ namespace mu2e {
   class AmbigResolver {
     public:
 // construct from parameter set
+#ifndef __GCCXML__
       explicit AmbigResolver(fhicl::ParameterSet const&);
+#endif/*__GCCXML__*/
       virtual ~AmbigResolver() = 0;
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value.

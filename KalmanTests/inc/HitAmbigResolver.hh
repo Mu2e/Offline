@@ -2,15 +2,17 @@
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
-// $Id: HitAmbigResolver.hh,v 1.3 2012/08/31 22:38:59 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/08/31 22:38:59 $
+// $Id: HitAmbigResolver.hh,v 1.4 2014/08/01 18:56:10 gandr Exp $
+// $Author: gandr $ 
+// $Date: 2014/08/01 18:56:10 $
 //
 #ifndef HitAmbigResolver_HH
 #define HitAmbigResolver_HH
 #include "BaBar/BaBar.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
+#ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
+#endif/*__GCCXML__*/
 #include <cstddef>
 #include <vector>
 
@@ -23,7 +25,9 @@ namespace mu2e {
     public:
       enum trajtype {reftraj=0};
 // construct from parameter set
+#ifndef __GCCXML__
       explicit HitAmbigResolver(fhicl::ParameterSet const&);
+#endif/*__GCCXML__*/
       virtual ~HitAmbigResolver();
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value.

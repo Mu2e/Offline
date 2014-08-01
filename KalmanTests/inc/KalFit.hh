@@ -1,15 +1,19 @@
 //
 // Object to perform BaBar Kalman fit
 //
-// $Id: KalFit.hh,v 1.28 2013/04/03 22:08:21 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2013/04/03 22:08:21 $
+// $Id: KalFit.hh,v 1.29 2014/08/01 18:56:10 gandr Exp $
+// $Author: gandr $ 
+// $Date: 2014/08/01 18:56:10 $
 //
 #ifndef KalFit_HH
 #define KalFit_HH
 
 // framework
+
+#ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
+#endif/*__GCCXML__*/
+
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 // tracker
@@ -39,7 +43,10 @@ namespace mu2e
 // define different ambiguity resolution strategies
     enum ambigStrategy {fixedambig=0,pocaambig,hitambig,panelambig};
 // parameter set should be passed in on construction
+#ifndef __GCCXML__
     explicit KalFit(fhicl::ParameterSet const&);
+#endif/*__GCCXML__*/
+
     virtual ~KalFit();
 // main function: given a track definition, create a fit object from it
     virtual void makeTrack(KalFitResult& kres);

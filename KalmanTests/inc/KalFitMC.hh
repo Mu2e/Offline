@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.40 2014/07/08 16:42:32 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/07/08 16:42:32 $
+// $Id: KalFitMC.hh,v 1.41 2014/08/01 18:56:10 gandr Exp $
+// $Author: gandr $ 
+// $Date: 2014/08/01 18:56:10 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -127,7 +127,9 @@ namespace mu2e
   public:
     enum TRACKERPOS {trackerEnt=0,trackerMid, trackerExit};
     enum relation {none=-1,same,daughter,mother,sibling,udaughter,umother,usibling};
+#ifndef __GCCXML__
     explicit KalFitMC(fhicl::ParameterSet const&);
+#endif/*__GCCXML__*/
     virtual ~KalFitMC();
 // find MC data in the event.  This must be called each event, before the other functions
     bool findMCData(const art::Event& evt);

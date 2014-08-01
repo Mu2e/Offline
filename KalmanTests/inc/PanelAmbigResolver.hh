@@ -2,9 +2,9 @@
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
-// $Id: PanelAmbigResolver.hh,v 1.4 2012/08/31 22:39:00 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2012/08/31 22:39:00 $
+// $Id: PanelAmbigResolver.hh,v 1.5 2014/08/01 18:56:10 gandr Exp $
+// $Author: gandr $ 
+// $Date: 2014/08/01 18:56:10 $
 //
 #ifndef PanelAmbigResolver_HH
 #define PanelAmbigResolver_HH
@@ -15,7 +15,9 @@
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Vector/ThreeVector.h"
+#ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
+#endif/*__GCCXML__*/
 #include <cstddef>
 #include <vector>
 
@@ -59,7 +61,9 @@ namespace mu2e {
   class PanelAmbigResolver : public AmbigResolver {
     public:
 // construct from parameter set
+#ifndef __GCCXML__
       explicit PanelAmbigResolver(fhicl::ParameterSet const&);
+#endif/*__GCCXML__*/
       virtual ~PanelAmbigResolver();
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value.
