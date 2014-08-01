@@ -6,9 +6,9 @@
 // knowledge of databases etc, this class must not know
 // how to make itself.
 //
-// $Id: Calorimeter.hh,v 1.26 2014/08/01 20:57:44 echenard Exp $
+// $Id: Calorimeter.hh,v 1.27 2014/08/01 21:49:38 echenard Exp $
 // $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
+// $Date: 2014/08/01 21:49:38 $
 //
 // Original author R. Bernstein and Rob Kutschke
 //
@@ -18,7 +18,7 @@
 
 // Mu2e includes
 #include "Mu2eInterfaces/inc/Detector.hh"
-#include "BaseCalorimeterData.hh"
+#include "BaseCalorimeterInfoGeom.hh"
 
 //CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -35,7 +35,7 @@ namespace mu2e {
 
 
 	  //accessor to geometry data
-	  virtual BaseCalorimeterData const& caloGeomInfo() const = 0;
+	  virtual BaseCalorimeterInfoGeom const& caloGeomInfo() const = 0;
 
 	  // coordinate position and transformation - origin refers to the Mu2e frame
 	  virtual CLHEP::Hep3Vector const& origin()                                                      const = 0; 	  
