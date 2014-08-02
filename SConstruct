@@ -2,9 +2,9 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.53 2014/03/08 00:10:30 genser Exp $
-# $Author: genser $
-# $Date: 2014/03/08 00:10:30 $
+# $Id: SConstruct,v 1.54 2014/08/02 05:23:26 gandr Exp $
+# $Author: gandr $
+# $Date: 2014/08/02 05:23:26 $
 #
 # Original author Rob Kutschke.
 #
@@ -47,8 +47,6 @@ cppunit_dir   = os.environ['CPPUNIT_DIR']
 gccxml_dir    = os.environ['GCCXML_DIR']
 heppdt_lib    = os.environ['HEPPDT_LIB']
 heppdt_inc    = os.environ['HEPPDT_INC']
-libsigcpp_inc = os.environ['LIBSIGCPP_INC']
-libsigcpp_lib = os.environ['LIBSIGCPP_LIB']
 root_inc      = os.environ['ROOT_INC']
 root_sys      = os.environ['ROOTSYS']
 fhicl_inc     = os.environ['FHICLCPP_INC']
@@ -97,8 +95,6 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              clhep_inc,
                              cppunit_dir+'/include',
                              heppdt_inc,
-                             libsigcpp_inc+'/sigc++-2.0',
-                             libsigcpp_lib+'/sigc++-2.0/include',
                              root_inc,
                              xercesc_inc,
                            ],
@@ -113,7 +109,6 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              clhep_lib,
                              cppunit_dir+'/lib',
                              heppdt_lib,
-                             libsigcpp_lib,
                              root_sys+'/lib',
                              '/lib', '/usr/X11R6/lib',
                              xercesc_root+'/lib',

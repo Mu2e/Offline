@@ -10,7 +10,7 @@
 
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/Core/InputSourceMacros.h"
-#include "art/Framework/Core/PrincipalMaker.h"
+#include "art/Framework/IO/Sources/SourceHelper.h"
 #include "art/Persistency/Provenance/Timestamp.h"
 #include "art/Persistency/Provenance/RunID.h"
 #include "art/Persistency/Provenance/SubRunID.h"
@@ -169,7 +169,7 @@ namespace mu2e {
   //================================================================
   class ExtMonFNALMARSDetail : private boost::noncopyable {
     std::string myModuleLabel_;
-    art::PrincipalMaker pm_;
+    art::SourceHelper pm_;
     unsigned runNumber_; // from ParSet
     art::SubRunID currentSubRunID_;
     std::set<art::SubRunID> seenSRIDs_;
@@ -209,7 +209,7 @@ namespace mu2e {
 
     ExtMonFNALMARSDetail(const fhicl::ParameterSet&,
                          art::ProductRegistryHelper&,
-                         const art::PrincipalMaker&);
+                         const art::SourceHelper&);
 
     void readFile(std::string const& filename, art::FileBlock*& fb);
 
@@ -225,7 +225,7 @@ namespace mu2e {
   //----------------------------------------------------------------
   ExtMonFNALMARSDetail::ExtMonFNALMARSDetail(const fhicl::ParameterSet& pset,
                                              art::ProductRegistryHelper& rh,
-                                             const art::PrincipalMaker& pm)
+                                             const art::SourceHelper& pm)
     : myModuleLabel_("ExtMonFNALMARS")
     , pm_(pm)
     , runNumber_(pset.get<unsigned>("runNumber"))

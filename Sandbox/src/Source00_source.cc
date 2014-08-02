@@ -10,7 +10,7 @@
 
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/Core/InputSourceMacros.h"
-#include "art/Framework/Core/PrincipalMaker.h"
+#include "art/Framework/IO/Sources/SourceHelper.h"
 #include "art/Persistency/Provenance/Timestamp.h"
 #include "art/Persistency/Provenance/RunID.h"
 #include "art/Persistency/Provenance/SubRunID.h"
@@ -30,7 +30,7 @@ namespace mu2e {
     // are prescribed by the art::Source class template.
     Source00Detail(const fhicl::ParameterSet&,
                          art::ProductRegistryHelper&,
-                   const art::PrincipalMaker&);
+                   const art::SourceHelper&);
 
     void readFile(std::string const& filename,
                   art::FileBlock*& fb);
@@ -52,7 +52,7 @@ namespace mu2e {
     std::string myModuleLabel_;
 
     // Helper object needed by the member function managePrincipals.
-    art::PrincipalMaker pm_;
+    art::SourceHelper pm_;
 
     // Used to identify boundaries between runs and subruns.
     art::SubRunID lastSubRunID_;
@@ -74,7 +74,7 @@ namespace mu2e {
 
   Source00Detail::Source00Detail(const fhicl::ParameterSet&        pset,
                                        art::ProductRegistryHelper& rh,
-                                 const art::PrincipalMaker&        pm)
+                                 const art::SourceHelper&        pm)
     : verbosity_( pset.get<int>("detail.verbosity",0))
     , myModuleLabel_("Source00")
     , pm_(pm)
