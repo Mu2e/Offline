@@ -1,17 +1,23 @@
 #ifndef Mu2eUtilities_CoordinateString_hh
 #define Mu2eUtilities_CoordinateString_hh
 //
-// $Id: CoordinateString.hh,v 1.1 2014/08/04 16:59:08 knoepfel Exp $
+// $Id: CoordinateString.hh,v 1.2 2014/08/04 17:15:22 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/08/04 16:59:08 $
+// $Date: 2014/08/04 17:15:22 $
 //
 // Original author: Kyle Knoepfel
 
 //
 // Class for converting an (x,y) pair from standard units (formatted
-// as a string), to metric units (mm).  Acceptable inputs include:
+// as a string), to metric units (mm).  The construction of the object looks like:
 //
-//     CoordinateString("-4:3,5:6") // parsed as x = -4' 3" | y =  5'  4"
+//     CoordinateString("xft:xin,yft:yin"), 
+//
+// where xft, yft are integers expressed within the string, and xin,
+// yin are doubles expressed within the string.  Acceptable examples
+// include:
+//
+//     CoordinateString("-4:3,5:6") // parsed as x = -4' 3" | y =  5'  6"
 //     CoordinateString(":3,4")     // parsed as x =  0' 3" | y =  4'  0"
 //
 // Note the following example:
@@ -20,7 +26,7 @@
 //
 // you probably don't want this, instead you'll have to do something like:
 //
-//     CoordinateString("2",:-5")   // parsed as x =  2' 0" | y =  0' -5"
+//     CoordinateString("2:,:-5")   // parsed as x =  2' 0" | y =  0' -5"
 //
 // Also note that the number preceding the : is converted to an
 // integer, whereas the number afterward is cast into a double so that
