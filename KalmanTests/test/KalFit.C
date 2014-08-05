@@ -14,6 +14,7 @@
 #include "TProfile.h"
 #include "TDirectory.h"
 #include "Math/Math.h"
+#include "THStack.h"
 
 // basic parameters
 class KalFit {  
@@ -178,24 +179,61 @@ Double_t crystalball (Double_t *x, Double_t *par) {
 
 void KalFit::KalFitHit (TTree* hits ) {
   if(!donecuts)KalCuts();
-  TCut goodhit = reco+ncuts[icut]+momcuts[icut]+"_active";
+  TCut goodhit = reco+ncuts[icut]+momcuts[icut];
+  TCut active = "_active";
 
   TCanvas* dcan = new TCanvas("driftcan","driftcan",1200,800);
   TH1F* dres = new TH1F("dres","Drift radius resolution;mm",100,-1,1);
   TH1F* dpull = new TH1F("dpull","Drift radius pull",100,-10,10);
-   TH1F* rpull = new TH1F("rpull","residual pull",100,-10,10);
-  hits->Project("dres","_rdrift-_mcdist",goodhit);
-  hits->Project("dpull","(_rdrift-_mcdist)/_rdrifterr",goodhit);
-  hits->Project("rpull","_resid/_residerr",goodhit);
+
+
+  TCanvas* rcan = new TCanvas("residcan","residcan",1200,800);
+  TH1F* aresid = new TH1F("aresid","Residual;mm",100,-1.5,1.5);
+  TH1F* iresid = new TH1F("iresid","Residual;mm",100,-1.5,1.5);
+  TH1F* arpull = new TH1F("arpull","residual pull",100,-10,10);
+  TH1F* irpull = new TH1F("irpull","residual pull",100,-10,10);
+
+  
+//  THStack* resid = new THStack("resid","TrkStrawHit Residual;mm");
+  aresid->SetFillColor(kRed);
+  aresid->SetStats(1);
+  iresid->SetFillColor(kBlue);
+  iresid->SetStats(0);
+
+//  THStack* rpull = new THStack("rpull","TrkStrawHit Pull");
+  arpull->SetFillColor(kRed);
+  arpull->SetStats(1);
+  irpull->SetFillColor(kBlue);
+  irpull->SetStats(0);
+
+  hits->Project("dres","_rdrift-_mcdist",goodhit+active);
+  hits->Project("dpull","(_rdrift-_mcdist)/_rdrifterr",goodhit+active);
+
+  hits->Project("iresid","_resid",goodhit+!active);
+  hits->Project("aresid","_resid",goodhit+active);
+
+  hits->Project("irpull","_resid/_residerr",goodhit+!active);
+  hits->Project("arpull","_resid/_residerr",goodhit+active);
+  
   dcan->Clear();
-  dcan->Divide(2,2);
+  dcan->Divide(2,1);
   dcan->cd(1);
   dres->Fit("gaus");
   dcan->cd(2);
   dpull->Fit("gaus");
-  dcan->cd(3);
-  rpull->Fit("gaus");
+  
 
+  TLegend* rleg = new TLegend(0.1,0.8,0.4,0.9);
+  rleg->AddEntry(aresid,"Active Hits","f");
+  rleg->AddEntry(iresid,"Inactive Hits","f");
+  rcan->Divide(2,1);
+  rcan->cd(1);
+  aresid->Fit("gaus");
+  iresid->Draw("same");
+  rleg->Draw();
+  rcan->cd(2);
+  arpull->Fit("gaus");
+  irpull->Draw("same");
 
   TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
   TH2F* drad = new TH2F("drad","Drift radius;true drift radius (mm);reco drift radius (mm)",
@@ -204,11 +242,11 @@ void KalFit::KalFitHit (TTree* hits ) {
   TProfile* pdresidt = new TProfile("pdresidt","Drift Residual vs true drift radius;MC true drift radius (mm);reco - true radius (mm)",25,0.0,2.5,0.,2.5,"s");
   TH2F* dresid = new TH2F("dresid","Drift Residual vs drift radius;reco drift radius (mm);reco - true radius (mm)",25,0.0,2.5,25,-0.5,0.8);
   TH2F* dresidt = new TH2F("dresidt","Drift Residual vs true drift radius;MC true drift radius (mm);reco - true radius (mm)",25,0.0,2.5,25,-0.5,0.8);
-  hits->Project("drad","_rdrift:_mcdist",goodhit);
-  hits->Project("pdresid","_rdrift-_mcdist:_rdrift",goodhit);
-  hits->Project("pdresidt","_rdrift-_mcdist:_mcdist",goodhit);
-  hits->Project("dresid","_rdrift-_mcdist:_rdrift",goodhit);
-  hits->Project("dresidt","_rdrift-_mcdist:_mcdist",goodhit);
+  hits->Project("drad","_rdrift:_mcdist",goodhit+active);
+  hits->Project("pdresid","_rdrift-_mcdist:_rdrift",goodhit+active);
+  hits->Project("pdresidt","_rdrift-_mcdist:_mcdist",goodhit+active);
+  hits->Project("dresid","_rdrift-_mcdist:_rdrift",goodhit+active);
+  hits->Project("dresidt","_rdrift-_mcdist:_mcdist",goodhit+active);
   TH1F* pdresid_1 = new TH1F("pdresid_1","Mean drift residual vs drift radius;reco drift radius (mm); mean reco - true radius (mm)",25,0.0,2.5);
   TH1F* pdresid_2 = new TH1F("pdresid_2","Drift residual RMS vs drift radius;reco drift radius (mm); RMS reco - true radius (mm)",25,0.0,2.5);
   TH1F* pdresidt_1 = new TH1F("pdresidt_1","Mean drift residual vs true radius;true radius (mm); mean reco - true radius (mm)",25,0.0,2.5);
