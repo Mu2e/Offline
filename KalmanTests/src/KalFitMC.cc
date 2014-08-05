@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.60 2014/07/08 16:42:32 brownd Exp $
+// $Id: KalFitMC.cc,v 1.61 2014/08/05 23:10:49 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/07/08 16:42:32 $
+// $Date: 2014/08/05 23:10:49 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -147,6 +147,7 @@ namespace mu2e
     _maxnhits(pset.get<unsigned>("maxNHits",120)),
     _maxarcgap(pset.get<int>("MaxArcGap",2)),
     _purehits(pset.get<bool>("pureHits",false)),
+    _uresid(pset.get<bool>("UnbiasedResiduals",true)),
     _trkdiag(0),_hitdiag(0)
   {
 // define the ids of the virtual detectors
@@ -280,7 +281,7 @@ namespace mu2e
     _dmiderr = strawhit->timeDiffDistErr();
 // residual info
     double resid,residerr;
-    if(strawhit->resid(resid,residerr,true)){
+    if(strawhit->resid(resid,residerr,_uresid)){
       _resid = resid;
       _residerr = residerr;
     } else {
@@ -508,7 +509,7 @@ namespace mu2e
 	tshinfo._phi = hpos.phi();
 	tshinfo._rho = hpos.perp();
 	double resid,residerr;
-	if(tsh->resid(resid,residerr,true)){
+	if(tsh->resid(resid,residerr,_uresid)){
 	  tshinfo._resid = resid;
 	  tshinfo._residerr = residerr;
 	} else {

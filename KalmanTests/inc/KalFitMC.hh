@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.41 2014/08/01 18:56:10 gandr Exp $
-// $Author: gandr $ 
-// $Date: 2014/08/01 18:56:10 $
+// $Id: KalFitMC.hh,v 1.42 2014/08/05 23:10:49 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2014/08/05 23:10:49 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -190,6 +190,7 @@ namespace mu2e
     unsigned _minnhits,_maxnhits;
     int _maxarcgap;
     bool _purehits;
+    bool _uresid;
 // vector of detector Ids corresponding to entrance and midplane
     std::vector<int> _midvids;
     std::vector<int> _entvids;
