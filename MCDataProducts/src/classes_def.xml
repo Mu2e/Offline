@@ -1,14 +1,14 @@
 <!--  -->
-<!--  $Id: classes_def.xml,v 1.35 2014/06/11 00:23:28 gandr Exp $     -->
-<!--  $Author: gandr $ -->
-<!--  $Date: 2014/06/11 00:23:28 $   -->
+<!--  $Id: classes_def.xml,v 1.36 2014/08/07 01:33:41 ehrlich Exp $     -->
+<!--  $Author: ehrlich $ -->
+<!--  $Date: 2014/08/07 01:33:41 $   -->
 <!--  -->
 <!--  This file (class_def.xml) was created by Ron Rechenmacher <ron@fnal.gov> on -->
 <!--  Feb  4, 2009. "TERMS AND CONDITIONS" governing this file are in the README -->
 <!--  or COPYING file. If you do not have such a file, one can be obtained by -->
 <!--  contacting Ron or Fermi Lab in Batavia IL, 60510, phone: 630-840-3000. -->
 <!--  $RCSfile: classes_def.xml,v $ -->
-<!--  rev="$Revision: 1.35 $$Date: 2014/06/11 00:23:28 $"; -->
+<!--  rev="$Revision: 1.36 $$Date: 2014/08/07 01:33:41 $"; -->
 
 <!--  Only include art::Wrapper lines for objects that we would like to put into the event -->
 <!--  Include the non-wrapper lines for all objects on the art::Wrapper lines and     -->
@@ -189,5 +189,13 @@
  <class name="art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void>" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::SimParticleTrackerHitSummary,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void> >" />
+
+ <class name="mu2e::CRVHit" />
+ <class name="mu2e::CRSScintillatorBarIndex" />
+ <class name="std::set<mu2e::CRVHit>" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,std::set<mu2e::CRVHit> >" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,std::set<mu2e::CRVHit> >" />
+ <class name="mu2e::CRVHitCollection" />
+ <class name="art::Wrapper<mu2e::CRVHitCollection>" />
 
 </lcgdict>

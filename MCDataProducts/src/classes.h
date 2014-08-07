@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.35 2014/06/11 00:23:28 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/06/11 00:23:28 $
+// $Id: classes.h,v 1.36 2014/08/07 01:33:41 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2014/08/07 01:33:41 $
 //
 // Original author Rob Kutschke
 //
@@ -30,6 +30,7 @@
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
+#include "MCDataProducts/inc/CRVHitCollection.hh"
 #include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
@@ -70,6 +71,8 @@
 #include "MCDataProducts/inc/SimParticleTrackerHitSummaryCollection.hh"
 #include "MCDataProducts/inc/SimParticleTrackerHitSummaryAssns.hh"
 
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+
 // For cet::map_vector<T> instantiate the component pair<> and vector<pair<>> templates.
 template class std::pair<cet::map_vector_key,mu2e::SimParticle>;
 template class std::pair<cet::map_vector_key,mu2e::PointTrajectory>;
@@ -85,6 +88,9 @@ template class std::vector<std::vector<art::Ptr<mu2e::StepPointMC> > >;
 template class std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>;
 template class std::map<art::Ptr<mu2e::SimParticle>::key_type,mu2e::GenElHitData>;// GenElHitDataCollection;
 template class std::vector<mu2e::ExtMonFNALSimHit>;
+template class std::set<mu2e::CRVHit>;
+template class std::pair<mu2e::CRSScintillatorBarIndex,std::set<mu2e::CRVHit> >;
+template class std::map<mu2e::CRSScintillatorBarIndex,std::set<mu2e::CRVHit> >;
 
 template class art::Wrapper<mu2e::GenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
@@ -106,6 +112,7 @@ template class art::Wrapper<mu2e::PtrStepPointMCVectorCollection>;
 template class art::Wrapper<mu2e::MixingSummary>;
 template class art::Wrapper<std::vector<art::RNGsnapshot> >;
 template class art::Wrapper<mu2e::ExtMonFNALSimHitCollection>;
+template class art::Wrapper<mu2e::CRVHitCollection>;
 
 template class art::Wrapper<mu2e::GenElHitData>;
 template class art::Wrapper<mu2e::VisibleGenElTrackCollection>;

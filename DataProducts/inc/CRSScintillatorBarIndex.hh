@@ -7,9 +7,9 @@
 // of CRSScintillatorBars in the system.
 
 //
-// $Id: CRSScintillatorBarIndex.hh,v 1.1 2012/03/29 22:59:13 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/29 22:59:13 $
+// $Id: CRSScintillatorBarIndex.hh,v 1.2 2014/08/07 01:33:41 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2014/08/07 01:33:41 $
 //
 // Original author KLG; based on Rob Kutschke StrawIndex
 //
@@ -23,7 +23,10 @@ namespace mu2e {
 
   public:
 
-    // No default c'tor by design.
+    // Default c'tor.
+    explicit CRSScintillatorBarIndex():
+      _idx(-1){
+    }
 
     // No automatic conversion of int to CRSScintillatorBarIndex.
     explicit CRSScintillatorBarIndex(int idx):

@@ -1,13 +1,14 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.20 2013/08/12 16:20:51 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/08/12 16:20:51 $
+// $Id: classes.h,v 1.21 2014/08/07 01:33:41 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2014/08/07 01:33:41 $
 //
 // Original author Rob Kutschke
 //
 
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "DataProducts/inc/StrawIndex.hh"
 #include "DataProducts/inc/FilterEfficiency.hh"
 #include "DataProducts/inc/ExtMonFNALModuleId.hh"
@@ -36,5 +37,6 @@
 template class std::vector<CLHEP::Hep2Vector>;
 template class std::vector<cet::map_vector_key>;
 template class art::Wrapper<mu2e::FilterEfficiency>;
+template class art::Wrapper<mu2e::CRSScintillatorBarIndex>;
 
 template class boost::array<double,5>; // used in TubsParams
