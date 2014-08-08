@@ -35,6 +35,7 @@ protected:
   int           fMakeTrigger;
   int           fMakeGenp;
   int           fMakeSimp;
+  int           fMakeVirtualHits;
 //-----------------------------------------------------------------------------
 // module parameters
 //-----------------------------------------------------------------------------

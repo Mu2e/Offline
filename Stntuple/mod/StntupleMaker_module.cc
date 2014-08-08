@@ -34,12 +34,14 @@
 
 //  #include "Stntuple/obj/TStnTriggerBlock.hh"
 
+#include "Stntuple/mod/StntupleGlobals.hh"
 #include "Stntuple/mod/StntupleMaker_module.hh"
 
 #include "Stntuple/mod/InitStntupleDataBlocks.hh"
 #include "Stntuple/mod/StntupleUtilities.hh"
 
 #include "Stntuple/alg/TStntuple.hh"
+#include "Stntuple/mod/StntupleGlobals.hh"
 
 // ClassImp(StntupleMaker)
 
@@ -63,6 +65,7 @@ StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet):
   , fMakeTrigger        (PSet.get<int>         ("makeTrigger"    ,        0       ))
   , fMakeGenp           (PSet.get<int>         ("makeGenp"       ,        1       ))
   , fMakeSimp           (PSet.get<int>         ("makeSimp"       ,        1       ))
+  , fMakeVirtualHits    (PSet.get<int>         ("makeVirtualHits",        0       ))
 
   , fG4ModuleLabel      (PSet.get<std::string> ("g4ModuleLabel"      , "g4run"        ))
   , fStrawHitMaker      (PSet.get<std::string> ("strawHitMaker"      , "makeSH"       ))
@@ -84,7 +87,6 @@ StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet):
   , fTrkCalMatch2        (PSet.get<std::string> ("trkCalMatch2"        , "caloMatchingHack"   ))
   , fPidDem2             (PSet.get<std::string> ("pidDem2"             , "undefined"          ))
 
-
   , fMinTActive         (PSet.get<double>      ("minTActive"     ,   710.         ))
   , fMinECrystal        (PSet.get<double>      ("minECrystal"    ,    0.1         ))
 {
@@ -94,11 +96,15 @@ StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet):
 
   fVersion      = new TNamed(ver,text);
   TModule::fFolder->Add(fVersion);
+
+  fgTimeOffsets = new SimParticleTimeOffset(PSet.get<fhicl::ParameterSet>("TimeOffsets"));
+
 }
 
 
 //------------------------------------------------------------------------------
 StntupleMaker::~StntupleMaker() {
+  delete fgTimeOffsets;
   delete fVersion;
 }
 
@@ -225,7 +231,8 @@ void StntupleMaker::beginJob() {
       track_data->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecDem.data()    ,"DownstreameMinus");
       track_data->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"AlgoCLOSESTSeededByENERGY");
       track_data->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol.data()     ,"");
-      track_data->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()     ,"");
+      //      track_data->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()     ,"");
+      track_data->AddCollName("mu2e::TrackClusterMatchCollection"   ,fTrkCalMatch.data()     ,"");
       track_data->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
       track_data->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
       track_data->AddCollName("mu2e::PIDProductCollection"          ,fPidDem.data()          ,"");
@@ -379,6 +386,24 @@ void StntupleMaker::beginJob() {
       simp_data->AddCollName("mu2e::StepPointMCCollection",fG4ModuleLabel.data(),"");
     }
   }
+//-----------------------------------------------------------------------------
+// virtual detectior hits
+//-----------------------------------------------------------------------------
+  if (fMakeVirtualHits) {
+    TStnDataBlock* virtual_data;
+
+    virtual_data = AddDataBlock("VirtualBlock",
+				"TVdetDataBlock",
+				StntupleInitMu2eVirtualDataBlock,
+				buffer_size,
+				split_mode,
+				compression_level);
+
+    if (virtual_data) {
+      virtual_data->AddCollName("mu2e::StepPointMCCollection", fG4ModuleLabel.data(),"virtualdetector");
+    }
+  }  
+
 
   THistModule::afterEndJob();
 }

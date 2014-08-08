@@ -7,14 +7,14 @@
 
 class TStnDataBlock;
 
-Int_t StntupleInitMu2eStrawDataBlock(TStnDataBlock* blk, AbsEvent* evt, int mode);
-Int_t StntupleInitMu2eCalDataBlock  (TStnDataBlock* blk, AbsEvent* evt, int mode);
-Int_t StntupleInitMu2eClusterBlock  (TStnDataBlock* blk, AbsEvent* evt, int mode);
-Int_t StntupleInitMu2eHeaderBlock   (TStnDataBlock* blk, AbsEvent* evt, int mode);
-Int_t StntupleInitMu2eTrackBlock    (TStnDataBlock* blk, AbsEvent* evt, int mode);
-Int_t StntupleInitMu2eGenpBlock     (TStnDataBlock* blk, AbsEvent* evt, int mode);
-Int_t StntupleInitMu2eSimpBlock     (TStnDataBlock* blk, AbsEvent* evt, int mode);
-
+Int_t StntupleInitMu2eStrawDataBlock  (TStnDataBlock* blk, AbsEvent* evt, int mode);
+Int_t StntupleInitMu2eCalDataBlock    (TStnDataBlock* blk, AbsEvent* evt, int mode);
+Int_t StntupleInitMu2eClusterBlock    (TStnDataBlock* blk, AbsEvent* evt, int mode);
+Int_t StntupleInitMu2eHeaderBlock     (TStnDataBlock* blk, AbsEvent* evt, int mode);
+Int_t StntupleInitMu2eTrackBlock      (TStnDataBlock* blk, AbsEvent* evt, int mode);
+Int_t StntupleInitMu2eGenpBlock       (TStnDataBlock* blk, AbsEvent* evt, int mode);
+Int_t StntupleInitMu2eSimpBlock       (TStnDataBlock* blk, AbsEvent* evt, int mode);
+Int_t StntupleInitMu2eVirtualDataBlock(TStnDataBlock* blk, AbsEvent* evt, int mode);
 					// block-to-block link resolution
 
 Int_t StntupleInitMu2eHeaderBlockLinks (TStnDataBlock* Block, AbsEvent* AnEvent, int Mode);
