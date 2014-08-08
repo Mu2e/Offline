@@ -21,6 +21,7 @@ class TTrackAnaModule;
 class TTrigAnaModule;
 class TWenuMonModule;
 class TJpsiMonModule;
+class TValidationModule;
 
 namespace stntuple {
   TClcAnaModule*           m_clc   = NULL;
@@ -45,6 +46,9 @@ namespace stntuple {
   
   TWenuMonModule*          m_wen   = NULL;
   TJpsiMonModule*          m_jps   = NULL;
+
 };
 
+
+TValidationModule*       m_val   = NULL;
 #endif

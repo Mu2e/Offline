@@ -8,6 +8,7 @@ def_name validation_001("validation");
 def_name validation_002("wenu_filter");
 def_name validation_003("ces_only");
 def_name validation_003("debug_ntrk");
+def_name val_stn("val_stn");
 //-----------------------------------------------------------------------------
 // standard validation studies
 //-----------------------------------------------------------------------------
@@ -41,6 +42,10 @@ void validation() {
   stntuple::m_jps->AddL3TriggerName("JPSI_CMUCMU1.5");
   stntuple::m_jps->AddL3TriggerName("JPSI_CMUP4_CMX2");
   stntuple::m_jps->AddL3TriggerName("JPSI_CMU1.5_CMX2");
+//---------------------------------------------------------------------------
+// ValidatioModule: produce a set of histograms for doing the validation 
+//---------------------------------------------------------------------------
+  stntuple::m_val = (TValidationModule*) g.x->AddModule("TValidationModule",0);
 }
 //-----------------------------------------------------------------------------
 // Wenu module only
@@ -76,4 +81,13 @@ void debug_ntrk(int Set, int NMin, int NMax) {
   stntuple::m_trk->SetSet_101(Set);
   stntuple::m_trk->SetMinNTracks_101(NMin);
   stntuple::m_trk->SetMaxNTracks_101(NMax);
+}
+
+void val_stn(int PdgCode = 11, int GeneratorCode = 2) {
+//-----------------------------------------------------------------------------
+// configure validation module
+//-----------------------------------------------------------------------------
+  m_val = (TValidationModule*) g.x->AddModule("TValidationModule",0);  
+  m_val->SetPdgCode      (PdgCode);
+  m_val->SetGeneratorCode(GeneratorCode);
 }

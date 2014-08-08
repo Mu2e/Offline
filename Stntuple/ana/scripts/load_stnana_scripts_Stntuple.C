@@ -18,7 +18,7 @@ int load_stnana_scripts_Stntuple() {
     0 
   };
 
-  const char* work_dir = gSystem->Getenv("MU2E_TEST_RELEASE");
+  const char* work_dir = gSystem->Getenv("MU2E_BASE_RELEASE");
 
   TInterpreter* cint = gROOT->GetInterpreter();
   
