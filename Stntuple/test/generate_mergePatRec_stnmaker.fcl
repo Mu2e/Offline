@@ -60,8 +60,11 @@ physics : {
 #------------------------------------------------------------------------------
 # for 105 MeV/c electron : E = 105.00130           MeV
 # for muon: sqrt(105.*105+105.658*105.658) = 148.9584269653785
+# by default, StoppedParticleReactionGun has 'mean' set to +1, 
+# which means the Poisson mean of 1 !!! 
 #------------------------------------------------------------------------------
 	    module_type      : StoppedParticleReactionGun
+	    mean             : -1
 	    physics          : {
 		pdgId            : 13
 		spectrumVariable : "totalEnergy"

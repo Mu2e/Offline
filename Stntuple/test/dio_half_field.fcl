@@ -1,0 +1,46 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# generate 20 DIO electrons per microbunch, full spectru
+# make STNTUPLE in one go, without creating an intermediate file
+#------------------------------------------------------------------------------
+# $Id: dio_half_field.fcl,v 1.1 2014/08/08 20:39:01 murat Exp $
+# $Author: murat $
+# $Date: 2014/08/08 20:39:01 $
+
+//test: // This must be commented out for grid production.
+BEGIN_PROLOG
+#  muStops    : [ "/mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+#  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
+#  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00000/data_mixBG.root"]
+END_PROLOG
+
+#include "Stntuple/test/generate_mergePatRec_stnmaker.fcl"
+
+process_name : DioHalfField
+
+# for 105 MeV/c electron : E = 105.00124           MeV
+# for 105 MeV/c muon     : E = 148.9584269653785   MeV
+
+physics.producers.generate.mean                       : 20
+physics.producers.generate.physics.spectrumShape      : "Czarnecki"
+physics.producers.generate.physics.spectrumResolution : 0.1
+physics.producers.generate.physics.pdgId              : 11
+physics.producers.generate.physics.elow               : 0.511
+physics.producers.generate.physics.ehi                : 105.0015
+# physics.producers.generate.physics.elow               : 50.
+# physics.producers.generate.physics.ehi                : 50.1
+physics.producers.generate.diagLevel                  : 1      # fill histograms
+
+producers.TrkPatRec.KalFit.fieldCorrection : false
+producers.CalPatRec.KalFit.fieldCorrection : false
+
+services.TFileService.fileName            : "dio_half_field_stnmaker.hist"
+services.user.GeometryService.inputFile   : "murat/test/geom_tdr_half_field.txt"
+
+physics.filters.InitStntuple.histFileName : "dio_half_field_stnmaker.stn" 
+
+outputs.detectorOutput.fileName                  : "dio_half_field_stnmaker.root"
+outputs.detectorOutput.SelectEvents.SelectEvents : []
+#------------------------------------------------------------------------------
+# everything below is appended by murat/scripts/submit_mu2e_job
+#------------------------------------------------------------------------------
