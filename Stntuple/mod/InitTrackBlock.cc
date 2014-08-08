@@ -178,8 +178,10 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   data->GetModuleLabel("mu2e::TrkToCaloExtrapolCollection",trex_module_label);
   data->GetDescription("mu2e::TrkToCaloExtrapolCollection",trex_description );
 
-  data->GetModuleLabel("mu2e::TrackClusterLink",trcl_module_label);
-  data->GetDescription("mu2e::TrackClusterLink",trcl_description );
+  data->GetModuleLabel("mu2e::TrackClusterMatchCollection",trcl_module_label);
+  data->GetDescription("mu2e::TrackClusterMatchCollection",trcl_description );
+  // data->GetModuleLabel("mu2e::TrackClusterLink",trcl_module_label);
+//   data->GetDescription("mu2e::TrackClusterLink",trcl_description );
 
   data->GetModuleLabel("mu2e::StrawHitCollection",strh_module_label);
   data->GetDescription("mu2e::StrawHitCollection",strh_description );
