@@ -1,4 +1,0 @@
-<lcgdict>
- <class name="mu2e::ProductionTarget"/>
- <class name="art::Wrapper<mu2e::ProductionTarget>"/> 
-</lcgdict>
