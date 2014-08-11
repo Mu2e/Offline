@@ -424,17 +424,20 @@ int TEmuLogLH::ReadHistogram2D(const char* Fn, TH2F** Hist) {
 void TEmuLogLH::InitEleEpHist(const char* Fn) {
   int        imin[10], imax[10], nx;
   double     hint, x1;
+  TH1D       *hpx;
 
   ReadHistogram2D(Fn,&fEleEpVsPath);
 
-  nx                 = fEleEpVsPath->GetNbinsX();
+  hpx = fEleEpVsPath->ProjectionX("hpx_EleEpVsPath");
+
+  nx                 = hpx->GetNbinsX();
 
   imin[0]            = 1;		// first bin
   imax[fNEpSlices-1] = nx;
 
   int isl=0;
   for (int ix=1; ix<=nx; ix++) {
-    x1 = fEleEpVsPath->GetBinLowEdge(ix);
+    x1 = hpx->GetBinLowEdge(ix);
     if (x1 >= fPath[isl+1]) {
       imax[isl  ] = ix-1;
       imin[isl+1] = ix;
@@ -449,6 +452,8 @@ void TEmuLogLH::InitEleEpHist(const char* Fn) {
     hint = fEleEpHist[i]->Integral();
     fEleEpHist[i]->Scale(1./hint);
   }
+
+  delete hpx;
 }
 
 //-----------------------------------------------------------------------------
@@ -458,14 +463,16 @@ void TEmuLogLH::InitMuoEpHist(const char* Fn) {
 
   int        imin[10], imax[10], nx;
   double     hint, x1;
+  TH1D       *hpx;
 
-  nx                 = fEleEpVsPath->GetNbinsX();
+  hpx                = fMuoEpVsPath->ProjectionX("hpx_MuoEpVsPath");
+  nx                 = hpx->GetNbinsX();
   imin[0]            = 1;		// first bin
   imax[fNEpSlices-1] = nx;
 
   int isl=0;
   for (int ix=1; ix<=nx; ix++) {
-    x1 = fMuoEpVsPath->GetBinLowEdge(ix);
+    x1 = hpx->GetBinLowEdge(ix);
     if (x1 >= fPath[isl+1]) {
       imax[isl  ] = ix-1;
       imin[isl+1] = ix;
@@ -480,6 +487,8 @@ void TEmuLogLH::InitMuoEpHist(const char* Fn) {
     hint = fMuoEpHist[i]->Integral();
     fMuoEpHist[i]->Scale(1./hint);
   }
+
+  delete hpx;
 }
 
 //-----------------------------------------------------------------------------
