@@ -284,9 +284,33 @@ void TEmuLogLH::InitEleDtHist(const char* Fn) {
 }
 
 //-----------------------------------------------------------------------------
+void TEmuLogLH::InitEleDtHist(const TH1F* Hist) {
+  double hint;
+
+  if (fEleDtHist) delete fEleDtHist;
+
+  fEleDtHist = (TH1F*) Hist->Clone();
+
+  hint = fEleDtHist->Integral();
+  fEleDtHist->Scale(1./hint);
+}
+
+//-----------------------------------------------------------------------------
 void TEmuLogLH::InitMuoDtHist(const char* Fn) {
   double hint;
   ReadHistogram1D(Fn,&fMuoDtHist);
+
+  hint = fMuoDtHist->Integral();
+  fMuoDtHist->Scale(1./hint);
+}
+
+//-----------------------------------------------------------------------------
+void TEmuLogLH::InitMuoDtHist(const TH1F* Hist) {
+  double hint;
+
+  if (fMuoDtHist) delete fMuoDtHist;
+
+  fMuoDtHist = (TH1F*) Hist->Clone();
 
   hint = fMuoDtHist->Integral();
   fMuoDtHist->Scale(1./hint);
@@ -457,6 +481,41 @@ void TEmuLogLH::InitEleEpHist(const char* Fn) {
 }
 
 //-----------------------------------------------------------------------------
+// assume path is from 0 to 50..
+// slices step by 5 cm
+//-----------------------------------------------------------------------------
+void TEmuLogLH::InitEleEpHist(const TH2F* Hist) {
+  int        imin[10], imax[10], nx;
+  double     hint, x1;
+
+  if (fEleEpVsPath) delete fEleEpVsPath;
+  fEleEpVsPath = (TH2F*) Hist->Clone();
+
+  nx                 = fEleEpVsPath->GetNbinsX();
+
+  imin[0]            = 1;		// first bin
+  imax[fNEpSlices-1] = nx;
+
+  int isl=0;
+  for (int ix=1; ix<=nx; ix++) {
+    x1 = fEleEpVsPath->GetBinLowEdge(ix);
+    if (x1 >= fPath[isl+1]) {
+      imax[isl  ] = ix-1;
+      imin[isl+1] = ix;
+      isl++;
+    }
+  }
+					// create slices
+  for (int i=0; i<fNEpSlices; i++) {
+    if (fEleEpHist[i] != NULL) delete fEleEpHist[i];
+    fEleEpHist[i] = (TH1F*) fEleEpVsPath->ProjectionY(Form("EleEpHist_slice_%02i",i),
+						      imin[i],imax[i]); 
+    hint = fEleEpHist[i]->Integral();
+    fEleEpHist[i]->Scale(1./hint);
+  }
+}
+
+//-----------------------------------------------------------------------------
 void TEmuLogLH::InitMuoEpHist(const char* Fn) {
 
   ReadHistogram2D(Fn,&fMuoEpVsPath);
@@ -467,6 +526,43 @@ void TEmuLogLH::InitMuoEpHist(const char* Fn) {
 
   hpx                = fMuoEpVsPath->ProjectionX("hpx_MuoEpVsPath");
   nx                 = hpx->GetNbinsX();
+  imin[0]            = 1;		// first bin
+  imax[fNEpSlices-1] = nx;
+
+  int isl=0;
+  for (int ix=1; ix<=nx; ix++) {
+    x1 = hpx->GetBinLowEdge(ix);
+    if (x1 >= fPath[isl+1]) {
+      imax[isl  ] = ix-1;
+      imin[isl+1] = ix;
+      isl++;
+    }
+  }
+					// create slices
+  for (int i=0; i<fNEpSlices; i++) {
+    if (fMuoEpHist[i]) delete fMuoEpHist[i];
+    fMuoEpHist[i] = (TH1F*) fMuoEpVsPath->ProjectionY(Form("MuoEpHist_slice_%02i",i),
+						      imin[i],imax[i]); 
+    hint = fMuoEpHist[i]->Integral();
+    fMuoEpHist[i]->Scale(1./hint);
+  }
+
+  delete hpx;
+}
+
+//-----------------------------------------------------------------------------
+void TEmuLogLH::InitMuoEpHist(const TH2F* Hist) {
+
+  int        imin[10], imax[10], nx;
+  double     hint, x1;
+  TH1D       *hpx;
+
+  if (fMuoEpVsPath) delete fMuoEpVsPath;
+  fMuoEpVsPath = (TH2F*) Hist->Clone();
+
+  hpx                = fMuoEpVsPath->ProjectionX("hpx_MuoEpVsPath");
+  nx                 = hpx->GetNbinsX();
+
   imin[0]            = 1;		// first bin
   imax[fNEpSlices-1] = nx;
 

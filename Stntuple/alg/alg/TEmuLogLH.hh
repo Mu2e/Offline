@@ -59,6 +59,12 @@ public:
   void InitEleEpHist(const char* Fn);
   void InitMuoEpHist(const char* Fn);
 
+  void InitEleDtHist(const TH1F* Hist);
+  void InitMuoDtHist(const TH1F* Hist);
+
+  void InitEleEpHist(const TH2F* Hist);
+  void InitMuoEpHist(const TH2F* Hist);
+
   void InitEleXsHist(const char* Fn);
   void InitMuoXsHist(const char* Fn);
 					// versions: "v4_2_4"
