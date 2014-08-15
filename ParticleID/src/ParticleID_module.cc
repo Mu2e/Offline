@@ -35,7 +35,7 @@
 #include "TStyle.h"
 
 
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "TrkBase/TrkHotList.hh"
 #include "TrkBase/TrkHitOnTrk.hh"
 #include "TrkBase/TrkParticle.hh"
@@ -279,32 +279,32 @@ int findlowhist(float d){
     unique_ptr<PIDProductCollection> pids(new PIDProductCollection );
 
 
-   art::Handle<KalRepCollection> trksHandle;
+   art::Handle<KalRepPtrCollection> trksHandle;
    event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
-   KalRepCollection const& trks = *trksHandle;
+   const KalRepPtrCollection* const trks = trksHandle.product();
 
    
    if (!trksHandle.isValid()) {
      if (_verbosity>=1) cout << "ParticleID : " << "no" << " obj for " << _fitterModuleLabel.c_str() << " of event " << _evtid << endl;
    }
 
-   if (trks.size() >0) {
-     if (_verbosity>=1) cout << "ParticleID : " << trks.size() << " obj for " << _fitterModuleLabel.c_str() << " of event " << _evtid << endl;
+   if (trks->size() >0) {
+     if (_verbosity>=1) cout << "ParticleID : " << trks->size() << " obj for " << _fitterModuleLabel.c_str() << " of event " << _evtid << endl;
    }
   
 
-   for ( size_t i=0; i< trks.size(); ++i ){
+   for ( size_t i=0; i< trks->size(); ++i ){
 
 
      _trkid = i;
-     KalRep const& krep   = trks.at(i);
+     const KalRep* krep = trks->at(i).get();
 
-     double firsthitfltlen = krep.firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-     double lasthitfltlen = krep.lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+     double firsthitfltlen = krep->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+     double lasthitfltlen = krep->lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
      double entlen = std::min(firsthitfltlen,lasthitfltlen);
-     _trkmom = krep.momentum(entlen).mag();
+     _trkmom = krep->momentum(entlen).mag();
 
-     std::vector<KalSite*> kalsites= krep.siteList();
+     std::vector<KalSite*> kalsites= krep->siteList();
      
      std::vector<double> vresd;
      std::vector<double> vflt;
@@ -329,7 +329,7 @@ int findlowhist(float d){
 	 bool activehit = hit->isActive();
 	 if (activehit){
 	   double aresd = (hit->poca()->doca()>0?resid:-resid);
-	   double normflt = hit->fltLen() -  krep.flt0();
+	   double normflt = hit->fltLen() -  krep->flt0();
 	   double normresd = aresd/residerr;
 
 	   vresd.push_back(normresd);
