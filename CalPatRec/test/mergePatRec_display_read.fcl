@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: mergePatRec_display_read.fcl,v 1.2 2014/06/06 21:35:08 murat Exp $
+# $Id: mergePatRec_display_read.fcl,v 1.3 2014/08/15 14:37:10 murat Exp $
 #------------------------------------------------------------------------------
 #  mergePatRec02: read input data, remake all hits, do not regenereate events
 #------------------------------------------------------------------------------
@@ -78,6 +78,7 @@ physics : {
 #------------------------------------------------------------------------------
 # TrkPatRec modules
 #------------------------------------------------------------------------------
+	FSHPreStereo         : @local::FSHPreStereo
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
@@ -114,7 +115,7 @@ physics : {
 #          makeSD, makeSH,
 #	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
 #
-	  MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, 
+	  FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, 
 #
 #	  MakeCaloCluster, 
           MakeStrawHitPositions, 
@@ -170,8 +171,8 @@ physics.filters.MuHitDisplay.trkPatRecModuleLabel                : MergePatRec
 # Ralf's cosmics          : g4filter
 #------------------------------------------------------------------------------
 # physics.filters.MuHitDisplay.g4ModuleLabel                       : g4run
-# physics.filters.MuHitDisplay.g4ModuleLabel                       : g4filter
 physics.filters.MuHitDisplay.g4ModuleLabel                       : detectorFilter
+# physics.filters.MuHitDisplay.g4ModuleLabel                       : g4filter
 #------------------------------------------------------------------------------
 # the end
 #------------------------------------------------------------------------------

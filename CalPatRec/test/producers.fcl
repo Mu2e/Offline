@@ -1,24 +1,6 @@
 # -*- mode: tcl -*-
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
-# module, supplying T0 of the most energetic cluster to tracking
-#------------------------------------------------------------------------------
-MakeCaloClusterHack        : {
-    module_type            : MakeCaloClusterHack
-    diagLevel              : 0
-    maxFullPrint           : 201
-    generatorModuleLabel   : generate
-    caloCrystalModuleLabel : CaloCrystalHitsMaker
-    g4ModuleLabel          : g4run
-    caloClusterAlgorithm   : closest
-    caloClusterSeeding     : energy
-    deltaTimePlus          : 5.0 # ns
-    deltaTimeMinus         : 5.0 # ns
-    nCryPerCrystal         : 1
-    EnoiseCut              : 0.10 # MeV
-    EclusterCut            : 5.00 # MeV  
-}
-#------------------------------------------------------------------------------
 # this is a modified version which uses T0 defined by the calorimeter cluster
 #------------------------------------------------------------------------------
 CalPatRec            : {
