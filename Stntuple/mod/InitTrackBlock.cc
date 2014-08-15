@@ -23,7 +23,9 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "KalmanTests/inc/TrkStrawHit.hh"
+
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 #include "TrackCaloMatching/inc/TrackClusterLink.hh"
 
@@ -38,8 +40,6 @@
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 
 // Mu2e includes.
-#include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -123,7 +123,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   static int initialized(0);
   
   int                       ntrk, ev_number, rn_number;
-  KalRep                    *krep;  
+  const KalRep              *krep;  
   double                    h1_fltlen, hn_fltlen, entlen, fitmom_err;
   TStnTrack*                track;
   TStnTrackBlock            *data;   
@@ -135,7 +135,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 
 
   mu2e::AlgorithmIDCollection*           list_of_algs               (0);
-  mu2e::KalRepCollection*                list_of_kreps              (0);
+  mu2e::KalRepPtrCollection*             list_of_kreps              (0);
   mu2e::PtrStepPointMCVectorCollection*  list_of_mc_straw_hits      (0);
   //  mu2e::CaloClusterCollection*           list_of_clusters(0);
   mu2e::StrawHitCollection*              list_of_straw_hits         (0);
@@ -207,11 +207,11 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     if (algsHandle.isValid()) list_of_algs = (mu2e::AlgorithmIDCollection*) algsHandle.product();
   }
 
-  art::Handle<mu2e::KalRepCollection> krepsHandle;
+  art::Handle<mu2e::KalRepPtrCollection> krepsHandle;
   if (krep_module_label[0] != 0) {
     if (krep_description[0] == 0) AnEvent->getByLabel(krep_module_label,krepsHandle);
     else                          AnEvent->getByLabel(krep_module_label,krep_description, krepsHandle);
-    list_of_kreps = (mu2e::KalRepCollection*) krepsHandle.product();
+    list_of_kreps = (mu2e::KalRepPtrCollection*) krepsHandle.product();
   }
 
   art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
@@ -275,7 +275,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 
   for (int itrk=0; itrk<ntrk; itrk++) {
     track          = data->NewTrack();
-    krep           = (KalRep*) &(*list_of_kreps)[itrk];
+    krep           = list_of_kreps->at(itrk).get();
 //-----------------------------------------------------------------------------
 // track-only-based particle ID, initialization ahs already happened in the constructor
 //-----------------------------------------------------------------------------
@@ -287,7 +287,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
       track->fRSlopeErr    = pidp->GetResidualsSlopeError();
     }
 
-    track->fKalRep[0] = krep;
+    track->fKalRep[0] = (KalRep*) krep;
     mask = (0x0001 << 16) | 0x0000;
 
     if (list_of_algs) {
@@ -680,7 +680,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   
     for (int iext=0; iext<next; iext++) {
       extrk = &list_of_extrapolated_tracks->at(iext);
-      krep  = *extrk->trk();
+      krep  = extrk->trk().get();
       if (krep == track->fKalRep[0]) {
 	if (track->fExtrk == 0) {
 	  track->fExtrk = extrk;
@@ -720,7 +720,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     for (size_t im=0; im<nm; im++) {
       tcm   = &tcmcoll->at(im);
       extrk = tcm->textrapol();
-      krep  = *extrk->trk();
+      krep  = extrk->trk().get();
       if (krep == track->fKalRep[0]) {
 	const mu2e::CaloCluster* cl = tcm->caloCluster();
 	iv   = cl->vaneId();

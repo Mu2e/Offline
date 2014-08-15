@@ -20,8 +20,9 @@ InitStntuple : {
 StntupleMaker : { 
     module_type         : StntupleMaker
     module_name         : StntupleMaker
-    
     processName         : undefined
+    
+    TimeOffsets         : { inputs : [ "protonTimeMap", "muonTimeMap" ] }    
 	    
     strawHitMaker       : makeSH
     caloCrystalHitMaker : CaloCrystalHitsMaker

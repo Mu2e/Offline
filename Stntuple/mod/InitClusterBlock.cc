@@ -22,7 +22,8 @@
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "KalmanTests/inc/TrkStrawHit.hh"
 
 // #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 // #include "TrackCaloMatching/inc/TrackClusterLink.hh"
@@ -33,10 +34,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-
-// Mu2e includes.
-#include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"

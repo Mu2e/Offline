@@ -37,7 +37,7 @@
 
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 #include "TrackCaloMatching/inc/TrackClusterLink.hh"
@@ -297,7 +297,7 @@ void TAnaDump::printKalRepCollection(const char* ModuleLabel,
 				     const char* ProcessName,
 				     int hitOpt) {
 
-  art::Handle<mu2e::KalRepCollection> krepsHandle;
+  art::Handle<mu2e::KalRepPtrCollection> krepsHandle;
 
   if (ProductName[0] != 0) {
     art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
@@ -314,19 +314,18 @@ void TAnaDump::printKalRepCollection(const char* ModuleLabel,
 // make sure collection exists
 //-----------------------------------------------------------------------------
   if (! krepsHandle.isValid()) {
-    printf("TAnaDump::printKalRepCollection: no KalRepCollection for module %s, BAIL OUT\n",
+    printf("TAnaDump::printKalRepCollection: no KalRepPtrCollection for module %s, BAIL OUT\n",
 	   ModuleLabel);
     return;
   }
-  mu2e::KalRepCollection* list_of_tracks = (mu2e::KalRepCollection*) &(*krepsHandle);
 
-  int ntrk = list_of_tracks->size();
+  int ntrk = krepsHandle->size();
 
   const KalRep *trk;
 
   int banner_printed = 0;
   for (int i=0; i<ntrk; i++) {
-    trk = /*(KalRep*)*/ &list_of_tracks->at(i);
+    trk = /*(KalRep*)*/ krepsHandle->at(i).get();
     if (banner_printed == 0) {
       printKalRep(trk,"banner");
       banner_printed = 1;
@@ -538,7 +537,6 @@ void TAnaDump::printTrackClusterLink(const char* ModuleLabel,
 
   for (int i=0; i<nhits; i++) {
     clu = &(*(trkCluLink->at(i).second.get()) );
-    //trk = const_cast<const KalRep *>(*(trkCluLink->at(i).first->trk().get()) ); 
     extrk = &(*(trkCluLink->at(i).first));
     if (banner_printed == 0) {
       printCaloCluster(clu, "banner");
@@ -640,8 +638,7 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
   TString opt = Opt;
 
   art::ServiceHandle<mu2e::GeometryService> geom;
-    //if(! geom->hasElement<VaneCalorimeter>() ) return;
-  mu2e::GeomHandle<mu2e::Calorimeter> cg;
+  mu2e::GeomHandle  <mu2e::Calorimeter>     cg;
 
   if ((opt == "") || (opt == "banner")) {
     printf("-----------------------------------------------------------------------------------------------------\n");
