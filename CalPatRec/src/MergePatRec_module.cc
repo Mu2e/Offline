@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: MergePatRec_module.cc,v 1.6 2014/05/01 19:31:09 murat Exp $
+// $Id: MergePatRec_module.cc,v 1.7 2014/08/15 14:59:18 murat Exp $
 // $Author: murat $ 
-// $Date: 2014/05/01 19:31:09 $
+// $Date: 2014/08/15 14:59:18 $
 // takes inputs from two track finding algorithms, produces one track collection 
 // on output to be used for analysis
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ namespace mu2e {
     // tag the data product instance by the direction and particle type found by this module
     _iname = _fdir.name() + _tpart.name();
     produces<AlgorithmIDCollection>("DownstreameMinus");
-    produces<KalRepCollection>     ("DownstreameMinus");
+    produces<KalRepPtrCollection>  ("DownstreameMinus");
   }
 
   MergePatRec::~MergePatRec(){
@@ -92,46 +92,45 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void MergePatRec::produce(art::Event& AnEvent) {
     
-    art::Handle<mu2e::KalRepCollection> tpr_h, cpr_h;
-    mu2e::KalRepCollection  *list_of_kreps_tpr(0), *list_of_kreps_cpr(0);
+    art::Handle<mu2e::KalRepPtrCollection> tpr_h, cpr_h;
 
-    unique_ptr<KalRepCollection>      tracks   (new KalRepCollection     );
+    mu2e::KalRepPtrCollection  *list_of_kreps_tpr(0), *list_of_kreps_cpr(0);
+
     unique_ptr<AlgorithmIDCollection> algs     (new AlgorithmIDCollection);
     unique_ptr<KalRepPtrCollection>   trackPtrs(new KalRepPtrCollection  );
 
     AnEvent.getByLabel(_trkPatRecLabel,"DownstreameMinus",tpr_h);
     AnEvent.getByLabel(_calPatRecLabel,"DownstreameMinus",cpr_h);
 
-    list_of_kreps_tpr = (mu2e::KalRepCollection*) &(*tpr_h);
-    list_of_kreps_cpr = (mu2e::KalRepCollection*) &(*cpr_h);
+    list_of_kreps_tpr = (mu2e::KalRepPtrCollection*) &(*tpr_h);
+    list_of_kreps_cpr = (mu2e::KalRepPtrCollection*) &(*cpr_h);
     
-//     art::ProductID tpr_id(getProductID<KalRepCollection>(AnEvent,_trkPatRecLabel,_iname));
-//     art::ProductID cpr_id(getProductID<KalRepCollection>(AnEvent,_calPatRecLabel,_iname));
+    // assume less than 100 tracks
 
-    // assume less 10 tracks
-
-    int   tpr_flag[10], cpr_flag[10], ntpr, ncpr;
+    int const max_ntrk(100);
+    int   tpr_flag[max_ntrk], cpr_flag[max_ntrk], ntpr, ncpr;
 
     ntpr = list_of_kreps_tpr->size();
     ncpr = list_of_kreps_cpr->size();
 
-    for (int i=0; i<10; i++) {
+    for (int i=0; i<max_ntrk; i++) {
       tpr_flag[i] = 1;
       cpr_flag[i] = 1;
     }
 
-    KalRep        *tpr, *cpr, *new_trk;
-    Hep3Vector    cpr_mom, tpr_mom;
-    short          best, mask;
-    AlgorithmID   alg_id;
+    art::Ptr<KalRep>  tpr, cpr;
+    Hep3Vector        cpr_mom, tpr_mom;
+    short             best, mask;
+    AlgorithmID       alg_id;
 
     for (int i1=0; i1<ntpr; i1++) {
-      tpr     = (KalRep*) list_of_kreps_tpr->get(i1);
+      //      tpr     = (KalRep*) list_of_kreps_tpr->get(i1);
+      tpr     = list_of_kreps_tpr->at(i1);
       tpr_mom = tpr->momentum();
       mask    = 1 << AlgorithmID::TrkPatRecBit;
 
       for (int i2=0; i2<ncpr; i2++) {
-	cpr = (KalRep*) list_of_kreps_cpr->get(i2);
+	cpr = list_of_kreps_cpr->at(i2);
 	cpr_mom = cpr->momentum();
 //-----------------------------------------------------------------------------
 // primitive check if this is the same track - require delta(p) less than 5 MeV/c
@@ -142,15 +141,13 @@ namespace mu2e {
 	  mask = mask | (1 << AlgorithmID::CalPatRecBit);
 
 	  if (tpr->nDof() >= cpr->nDof()) {
-	    new_trk = tpr->clone();
+	    trackPtrs->push_back(tpr);
 	    best    = AlgorithmID::TrkPatRecBit;
 	  }
 	  else {	
-	    new_trk = cpr->clone();
+	    trackPtrs->push_back(cpr);
 	    best    = AlgorithmID::CalPatRecBit;
 	  }
-
-	  tracks->push_back(new_trk);
 
 	  tpr_flag[i1] = 0;
 	  cpr_flag[i2] = 0;
@@ -159,8 +156,7 @@ namespace mu2e {
       }
 
       if (tpr_flag[i1] == 1) {
-	new_trk = tpr->clone();
-	tracks->push_back(new_trk);
+	trackPtrs->push_back(tpr);
 	best = AlgorithmID::TrkPatRecBit;
       }
 
@@ -172,9 +168,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     for (int i=0; i<ncpr; i++) {
       if (cpr_flag[i] == 1) {
-	cpr = (KalRep*) list_of_kreps_cpr->get(i);
-	new_trk = cpr->clone();
-	tracks->push_back(new_trk);
+	cpr = list_of_kreps_cpr->at(i);
+	trackPtrs->push_back(cpr);
 
 	best = AlgorithmID::CalPatRecBit;
 	mask = 1 << AlgorithmID::CalPatRecBit;
@@ -184,9 +179,8 @@ namespace mu2e {
       }
     }
 
-
-    AnEvent.put(std::move(tracks),_iname);
-    AnEvent.put(std::move(algs  ),_iname);
+    AnEvent.put(std::move(trackPtrs),_iname);
+    AnEvent.put(std::move(algs     ),_iname);
   }
 
   void MergePatRec::endJob() {
