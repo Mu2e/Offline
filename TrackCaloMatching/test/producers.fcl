@@ -29,9 +29,10 @@ TrackCaloMatching : {
     maxDeltaT                    : 20.             # ns
 #------------------------------------------------------------------------------
 # not a guess any more, but the number by Alex
+# 2014-08-08: set dtOffset to 1.4 to avoid DT corrections in other places
 #------------------------------------------------------------------------------
     meanInteractionDepth         : 59.             # mm
-    dtOffset                     : 1.0             # ns
+    dtOffset                     : 1.4             # ns
     fitterModuleLabel            : TrkPatRec
     trkToCaloExtrapolModuleLabel : TrkExtrapol
     caloClusterModuleLabel       : MakeCaloCluster

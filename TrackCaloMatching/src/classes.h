@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.4 2014/06/02 22:26:15 murat Exp $
+// $Id: classes.h,v 1.5 2014/08/15 15:01:55 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/02 22:26:15 $
+// $Date: 2014/08/15 15:01:55 $
 //
 // Original author G. Pezzullo
 //
@@ -14,7 +14,7 @@
 #include "art/Persistency/Common/Wrapper.h"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapol.hh"
-#include "KalmanTrack/KalRep.hh"
+// #include "KalmanTrack/KalRep.hh"
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 #include "TrackCaloMatching/inc/TrackClusterLink.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
@@ -22,7 +22,7 @@
 
 /* template class art::Ptr<mu2e::CaloCluster>; */
 
-template class art::Ptr<const KalRep * const >;
+/* template class art::Ptr<KalRep>; */
 
 template class std::vector <mu2e::TrackClusterMatch>;
 template class art::Wrapper<mu2e::TrackClusterMatchCollection>;

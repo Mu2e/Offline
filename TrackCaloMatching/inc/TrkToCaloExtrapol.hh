@@ -1,9 +1,9 @@
 //
 // container for the info of the extrapolated trajectory on the calorimeter
 //
-// $Id: TrkToCaloExtrapol.hh,v 1.7 2014/06/03 22:22:26 murat Exp $
+// $Id: TrkToCaloExtrapol.hh,v 1.8 2014/08/15 15:01:55 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/03 22:22:26 $
+// $Date: 2014/08/15 15:01:55 $
 //
 // Original author G. Pezzullo
 //
@@ -38,15 +38,16 @@
 
 namespace mu2e {
 
-  typedef  art::Ptr< const KalRep * const  >            KalRepPtr;
+  //  typedef  art::Ptr<const KalRep * const>  EKalRepPtr;
+  typedef  art::Ptr<KalRep>  EKalRepPtr;
 
   struct TrkToCaloExtrapol{
 
   private:
-    int                                            _vaneId;    //vane index, runs from 0 to nVanes
-    int                                       _trackNumber; //track numeber
-    KalRepPtr                                     _trk;
-    double                             _pathLengthEntrance;
+    int                                    _vaneId;            // vane index, runs from 0 to nVanes
+    int                                    _trackNumber;       // track numeber
+    EKalRepPtr                              _trk;
+    double                                 _pathLengthEntrance;
     double                                 _pathLengthExit;
 
 
@@ -59,7 +60,7 @@ namespace mu2e {
 
 
 
-    TrkToCaloExtrapol(int& vane, int trkNumber, KalRepPtr& trk, double& entrance, double& exit):
+    TrkToCaloExtrapol(int& vane, int trkNumber, EKalRepPtr& trk, double& entrance, double& exit):
       _vaneId(vane),
       _trackNumber(trkNumber),
       _trk(trk),
@@ -79,8 +80,8 @@ namespace mu2e {
     double                                  fitConsistency() const;
     double                                              t0() const;
     double                                           t0Err() const;
-    double                                              tOrigin() const;
-    double                                           tOriginErr() const;
+    double                                         tOrigin() const;
+    double                                      tOriginErr() const;
     Hep3Vector                                  t0Momentum() const;
     BbrVectorErr                             t0MomentumErr() const;
     HepPoint                              entrancePosition() const;
@@ -89,7 +90,7 @@ namespace mu2e {
     BbrPointErr                            exitPositionErr() const;
     Hep3Vector                                    momentum() const;
     BbrVectorErr                               momentumErr() const;
-    KalRepPtr const&                               trk() const{ return _trk; }
+    EKalRepPtr const&                                  trk() const{ return _trk; }
 
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 

@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.17 2014/04/18 16:54:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:54:59 $
+// $Id: TrkExtrapol_module.cc,v 1.18 2014/08/15 15:01:55 murat Exp $
+// $Author: murat $
+// $Date: 2014/08/15 15:01:55 $
 //
 // Original author G. Pezzullo
 //
@@ -27,7 +27,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
@@ -285,8 +285,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
     const char* oname = "TrkExtrapol::doExtrapolation";
-    double lowrange, highrange, zmin, zmax;
-    HepPoint point;
+    double      lowrange, highrange, zmin, zmax;
+    HepPoint    point;
+    int         ntrk, res0;
 
     //create output
     unique_ptr<TrkToCaloExtrapolCollection> extrapolatedTracks(new TrkToCaloExtrapolCollection );
@@ -295,26 +296,27 @@ namespace mu2e {
     //Get handle to calorimeter
     art::ServiceHandle<GeometryService> geom;
 
-    art::Handle<KalRepCollection> trksHandle;
+    art::Handle<KalRepPtrCollection> trksHandle;
     evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
-    KalRepCollection const& trks = *trksHandle;
+    const KalRepPtrCollection* trks = trksHandle.product();
   
+    ntrk = trks->size();
+
     if(_diagLevel>2){
       cout<<endl<<"Event Number : "<< evt.event()<< endl;
       cout<<"\n start TrkExtrapol..."<<endl;
-      cout<<"trks.size() = "<< trks.size() <<endl;
+      cout<<"ntrk = "<< ntrk <<endl;
     }
 
     double circleRadius = 0.0, centerCircleX=0.0, centerCircleY = 0.0, angle = 0.0;
-    int res0 = -1;
+    
+    for (int itrk=0; itrk< ntrk; ++itrk ){
+      res0 = -1;
 
-    for ( size_t itrk=0; itrk< trks.size(); ++itrk ){
-
-      KalRep const* trep = trks.get(itrk);
+      KalRep const* trep = trks->at(itrk).get();
       if ( !trep ) continue;
       TrkDifTraj const& traj = trep->traj();
       double pos = 0.0;
-      res0 = -1;
     
       double endTrk = trep->endFoundRange();
       // starting from the end of the tracker!!!FIXME
@@ -389,7 +391,8 @@ namespace mu2e {
       }
     
       for (int i=0; i<nint; i++) {
-	KalRepPtr tmpRecTrk(trksHandle,itrk);
+	//	EKalRepPtr tmpRecTrk(trksHandle,itrk);
+	EKalRepPtr tmpRecTrk = trksHandle->at(itrk);
 	tmpExtrapolatedTracks.push_back(
 					TrkToCaloExtrapol(intersection[i].fVane,
 							  itrk,
@@ -401,7 +404,7 @@ namespace mu2e {
 
       // P.Murat: why would one need to sort at this point?
 
-      std::sort(tmpExtrapolatedTracks.begin(), tmpExtrapolatedTracks.end());
+      //      std::sort(tmpExtrapolatedTracks.begin(), tmpExtrapolatedTracks.end());
       for(TrkToCaloExtrapolCollection::iterator it = tmpExtrapolatedTracks.begin(); it != tmpExtrapolatedTracks.end(); ++it){
 	extrapolatedTracks->push_back(*it);
       }

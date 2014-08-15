@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadCaloMatching_module.cc,v 1.16 2014/08/01 20:57:45 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:45 $
+// $Id: ReadCaloMatching_module.cc,v 1.17 2014/08/15 15:01:55 murat Exp $
+// $Author: murat $
+// $Date: 2014/08/15 15:01:55 $
 //
 // Original author G. Pezzullo
 //
@@ -454,8 +454,9 @@ bool findKalRep(art::Handle<TrkToCaloExtrapolCollection> &trkToCaloCollection, K
         if(trkToCaloCollection->size() == 0) return res;
         size_t i=0;
         while(!res && i<trkToCaloCollection->size()){
-                KalRepPtr const& trkPtr = trkToCaloCollection->at(i).trk();
-                const KalRep*  const &tmpTrk = *trkPtr;
+                EKalRepPtr const& trkPtr = trkToCaloCollection->at(i).trk();
+		//                const KalRep*  const &tmpTrk = *trkPtr;
+                const KalRep* tmpTrk = trkPtr.get();
 
                 const TrkId &trkId1 = trk->id();
                 const TrkId &trkId2 = tmpTrk->id();
@@ -777,11 +778,11 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 
         for(size_t i =0; i<trjCaloMatchings->size(); ++i){
                 elecData tmpElec;
-                KalRepPtr const& trkPtr = trjCaloMatchings->at(i).first->trk();
-                const KalRep *  const &trk = *trkPtr;
+                EKalRepPtr const& trkPtr = trjCaloMatchings->at(i).first->trk();
+                const KalRep*  trk = trkPtr.get();
                 if(i>0){
-                        KalRepPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
-                        const KalRep *  const &tmpTrk = *tmpTrkPtr;
+                        EKalRepPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
+                        const KalRep* tmpTrk = tmpTrkPtr.get();
                         if(trk == tmpTrk){
                                 ++count;
                         }else{
@@ -1276,13 +1277,13 @@ void ReadCaloMatching::doExtrapolation(art::Event const& evt, bool skip){
 
 
 
-                KalRepPtr const& trkPtr = trkToCaloExtrapol.trk();
-                const KalRep *  const &trk = *trkPtr;
+                EKalRepPtr const& trkPtr = trkToCaloExtrapol.trk();
+                const KalRep* trk = trkPtr.get();
                 if(i>0){
                         TrkToCaloExtrapol const& TMPtrkToCaloExtrapol = *( (*trjCaloMatchings).at(i-1).first.get() );
 
-                        KalRepPtr const& tmpTrkPtr = TMPtrkToCaloExtrapol.trk();
-                        const KalRep *  const &tmpTrk = *tmpTrkPtr;
+                        EKalRepPtr const& tmpTrkPtr = TMPtrkToCaloExtrapol.trk();
+                        const KalRep*  tmpTrk = tmpTrkPtr.get();
                         if(trk == tmpTrk){
                                 ++count;
                         }else{

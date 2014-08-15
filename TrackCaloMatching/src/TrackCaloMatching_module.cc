@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: TrackCaloMatching_module.cc,v 1.13 2014/07/26 12:19:24 murat Exp $
+// $Id: TrackCaloMatching_module.cc,v 1.14 2014/08/15 15:01:55 murat Exp $
 // $Author: murat $
-// $Date: 2014/07/26 12:19:24 $
+// $Date: 2014/08/15 15:01:55 $
 //
 // Original author G. Pezzullo
 //
@@ -23,7 +23,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
@@ -208,10 +208,10 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
     GeomHandle<Calorimeter> cg;
   
-    art::Handle<KalRepCollection> trksHandle;
+    art::Handle<KalRepPtrCollection> trksHandle;
     evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
-    KalRepCollection const& trks = *trksHandle;
-    ntracks = trks.size();
+    const KalRepPtrCollection* trks = trksHandle.product();
+    ntracks = trks->size();
   
     art::Handle<CaloClusterCollection> caloClusters;
     evt.getByLabel(_caloClusterModuleLabel,_caloClusterCollName, caloClusters );
@@ -252,7 +252,7 @@ namespace mu2e {
       }
     
       extrk = &trjExtrapols->at(jex);
-      krep  = *extrk->trk();
+      krep  = extrk->trk().get();
 //-----------------------------------------------------------------------------
 // track index, important: store one, the best, intersection per track per vane
 //-----------------------------------------------------------------------------

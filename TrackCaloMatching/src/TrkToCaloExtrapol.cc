@@ -1,7 +1,7 @@
 //
-// $Id: TrkToCaloExtrapol.cc,v 1.9 2014/06/03 22:22:26 murat Exp $
+// $Id: TrkToCaloExtrapol.cc,v 1.10 2014/08/15 15:01:55 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/03 22:22:26 $
+// $Date: 2014/08/15 15:01:55 $
 //
 // Original author G. Pezzullo
 //
@@ -43,11 +43,12 @@ namespace mu2e {
   }
 
   double TrkToCaloExtrapol::time() const{
-    return (*_trk.get())->arrivalTime(_pathLengthEntrance);
+    //    return (*_trk.get())->arrivalTime(_pathLengthEntrance);
+    return _trk->arrivalTime(_pathLengthEntrance);
   }
 
   double   TrkToCaloExtrapol::timeErr() const{//FIXME
-    return (*_trk.get())->t0().t0Err();
+    return _trk->t0().t0Err();
   }
 
   double TrkToCaloExtrapol::pathLengthEntrance() const{
@@ -56,9 +57,9 @@ namespace mu2e {
 
   double TrkToCaloExtrapol::t0() const{
 
-    const KalRep* const kalrepc = *(_trk.get());
+    //    const KalRep* const kalrepc = *(_trk.get());
 
-    double _t0 = kalrepc->t0().t0();
+    double _t0 = _trk->t0().t0();
 
     return _t0;
   }
@@ -76,10 +77,10 @@ namespace mu2e {
 
     art::ServiceHandle<GeometryService> geom;
 
-    double errTanDip2 = ( (*_trk.get())->helix(_pathLengthEntrance).covariance() )(5, 5);
-    double TanDip = (*_trk.get())->helix(_pathLengthEntrance).tanDip();
-    HelixTraj trkHel((*_trk.get())->helix(_pathLengthEntrance).params(),
-		     (*_trk.get())->helix(_pathLengthEntrance).covariance());
+    double errTanDip2 = _trk->helix(_pathLengthEntrance).covariance()(5,5);
+    double TanDip     = _trk->helix(_pathLengthEntrance).tanDip();
+    HelixTraj trkHel(_trk->helix(_pathLengthEntrance).params    (),
+		     _trk->helix(_pathLengthEntrance).covariance());
 
     //    double z0 = trkHel.z0();
     //      , z = _pathLengthEntrance*trkHel.sinDip() + z0;
@@ -132,43 +133,40 @@ namespace mu2e {
   }
 
   double    TrkToCaloExtrapol::t0Err() const{
-    return (*_trk.get())->t0().t0Err();
+    return _trk->t0().t0Err();
   }
 
   double TrkToCaloExtrapol::tOrigin() const{
-    return (*_trk.get())->arrivalTime(0.0);
+    return _trk->arrivalTime(0.0);
   }
 
   double   TrkToCaloExtrapol::tOriginErr() const{//FIXME
-    return (*_trk.get())->t0().t0Err();
+    return _trk->t0().t0Err();
   }
 
 
   Hep3Vector TrkToCaloExtrapol::t0Momentum() const{
 
-    const KalRep* kalrepc = dynamic_cast<const KalRep*>( ((*_trk.get()) ));//->getRep(PdtPid::electron)) );
     //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
 
-    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( kalrepc->firstHit()->kalHit()->hitOnTrack() );
+    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hitOnTrack() );
     double fltlen = firsthit->fltLen();
     //std::cout<<" TrkToCaloExtrapol-> fltlen = "<<fltlen<<std::endl;
 
-    return (*_trk.get())->momentum(fltlen);
+    return _trk->momentum(fltlen);
     //return (*_trk.get())->momentum(0.0);
   }
 
   BbrVectorErr TrkToCaloExtrapol::t0MomentumErr() const{
 
-    const KalRep* kalrepc = dynamic_cast<const KalRep*>( ((*_trk.get()) ));//->getRep(PdtPid::electron)) );
+    //   const KalRep* kalrepc = dynamic_cast<const KalRep*>( ((*_trk.get()) ));//->getRep(PdtPid::electron)) );
     //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
 
-    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( kalrepc->firstHit()->kalHit()->hitOnTrack() );
+    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hitOnTrack() );
 
     double fltlen = firsthit->fltLen();
 
-    return (*_trk.get())->momentumErr(fltlen);
-
-    //return (*_trk.get())->momentumErr(0.0);
+    return _trk->momentumErr(fltlen);
   }
 
   double TrkToCaloExtrapol::pathLengthExit() const{
@@ -176,31 +174,31 @@ namespace mu2e {
   }
 
   double TrkToCaloExtrapol::fitConsistency() const{
-    return (*_trk.get())->chisqConsistency().consistency();
+    return _trk->chisqConsistency().consistency();
   }
 
   HepPoint TrkToCaloExtrapol::entrancePosition() const{
-    return (*_trk.get())->position(_pathLengthEntrance);
+    return _trk->position(_pathLengthEntrance);
   }
 
   BbrPointErr TrkToCaloExtrapol::entrancePositionErr() const{
-    return (*_trk.get())->positionErr(_pathLengthEntrance);
+    return _trk->positionErr(_pathLengthEntrance);
   }
 
   HepPoint TrkToCaloExtrapol::exitPosition() const{
-    return (*_trk.get())->position(_pathLengthExit);
+    return _trk->position(_pathLengthExit);
   }
 
   BbrPointErr TrkToCaloExtrapol::exitPositionErr() const{
-    return (*_trk.get())->positionErr(_pathLengthExit);
+    return _trk->positionErr(_pathLengthExit);
   }
 
   Hep3Vector TrkToCaloExtrapol::momentum() const{
-    return (*_trk.get())->momentum(_pathLengthEntrance);
+    return _trk->momentum(_pathLengthEntrance);
   }
 
   BbrVectorErr TrkToCaloExtrapol::momentumErr() const{
-    return (*_trk.get())->momentumErr(_pathLengthEntrance);
+    return _trk->momentumErr(_pathLengthEntrance);
   }
 
 

@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: CaloMatching_module.cc,v 1.23 2014/05/15 05:05:37 murat Exp $
+// $Id: CaloMatching_module.cc,v 1.24 2014/08/15 15:01:55 murat Exp $
 // $Author: murat $
-// $Date: 2014/05/15 05:05:37 $
+// $Date: 2014/08/15 15:01:55 $
 //
 // Original author G. Pezzullo
 //
@@ -23,7 +23,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
@@ -430,15 +430,15 @@ namespace mu2e {
     //if(! geom->hasElement<VaneCalorimeter>() ) return;
     GeomHandle<Calorimeter> cg;
   
-    art::Handle<KalRepCollection> trksHandle;
+    art::Handle<KalRepPtrCollection> trksHandle;
     evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
-    KalRepCollection const& trks = *trksHandle;
-    ntracks = trks.size();
+    const KalRepPtrCollection* trks = trksHandle.product();
+    ntracks = trks->size();
   
     if(_diagLevel>2){
       cout<<endl<<"Event Number : "<< evt.event()<< endl;
       cout<<"\n start CaloMatching..."<<endl;
-      cout<<"trks.size() = "<< trks.size() <<endl;
+      cout<<"trks.size() = "<< trks->size() <<endl;
     }
 
     art::Handle<CaloClusterCollection> caloClusters;
@@ -481,7 +481,7 @@ namespace mu2e {
     double thV = 0.0, thW = 0.0;
 
     double tmpCOGv(0.), tmpCOGw(0.), tmpCOGvErr(0.), tmpCOGwErr(0.), tmpCluTime(0.), tmpCluTimeErr(0.), tmpCluEnergy(0.);
-    double tmpPv  (0.), tmpPw  (0.), tmpPvErr  (0.), tmpPwErr  (0.), tmpPtime  (0.), tmpPtimeErr  (0.);
+    double tmpPv  (0.), tmpPw  (0.), tmpPtime  (0.), tmpPtimeErr  (0.);
     CLHEP::Hep3Vector cogVaneFrame, tmpPosVaneFrame;
     CLHEP::Hep3Vector cogVaneFrameErr, tmpPosVaneFrameErr;
     double sigmaV2 = 0.0, sigmaW2 = 0.0, sigmaT2 = 0.0, sigmaE2 = 0.0;
@@ -510,7 +510,7 @@ namespace mu2e {
 
   
     const TrkToCaloExtrapol  *extrk;
-    const KalRep             *krep, *krep0, *tmpTrk;
+    const KalRep             *krep, *tmpTrk;
     const CaloCluster        *cl;
     double                   chi2_max(1.e12);
     int                      iex, icl, ltrk;
@@ -525,7 +525,6 @@ namespace mu2e {
 // 'krep0' is the base address used to calculate index of a track based on its pointer
 //-----------------------------------------------------------------------------
     if (ntracks == 0)                                         goto END;
-    krep0   = trks.get(0);
 
     double chi2_best[100][4];
     int    iex_best [100][4];
@@ -547,7 +546,7 @@ namespace mu2e {
     
     for (int jex=0; jex<nex; jex++) {
       extrk = &trjExtrapols->at(jex);
-      krep  = *extrk->trk();
+      krep  = &(*extrk->trk().get());
 //-----------------------------------------------------------------------------
 // track index, important: store one, the best, intersection per track per vane
 //-----------------------------------------------------------------------------
@@ -574,7 +573,7 @@ namespace mu2e {
       if (jex > 0){
 //       KalRepPtr const& tmpTrkPtr = trjExtrapols->at(jex-1).trk();
 //       const KalRep *  const &tmpTrk = *tmpTrkPtr;
-	tmpTrk = *trjExtrapols->at(jex-1).trk();
+	tmpTrk = &(*trjExtrapols->at(jex-1).trk().get());
 	if(krep == tmpTrk){
 	  ++count;
 	} else {
@@ -701,10 +700,10 @@ namespace mu2e {
 	  
       tmpPv           = tmpV.y();
       _recoPv         = tmpPv;
-      tmpPvErr        = _recoPvErr;
+      //      tmpPvErr        = _recoPvErr;
       tmpPw           = tmpV.z();
       _recoPw         = tmpPw;
-      tmpPwErr        = _recoPwErr;
+      //      tmpPwErr        = _recoPwErr;
 	  
       if(_diagLevel > 2){
 	cout<<"tmpPosVaneFrame = "<<tmpV<<" [mm]"<<

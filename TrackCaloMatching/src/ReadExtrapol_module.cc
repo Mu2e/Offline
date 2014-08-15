@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.16 2014/08/01 20:57:45 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:45 $
+// $Id: ReadExtrapol_module.cc,v 1.17 2014/08/15 15:01:55 murat Exp $
+// $Author: murat $
+// $Date: 2014/08/15 15:01:55 $
 //
 // Original author G. Pezzullo
 //
@@ -386,8 +386,8 @@ namespace mu2e {
     if(trkToCaloCollection->size() == 0) return res;
     size_t i=0;
     while(!res && i<trkToCaloCollection->size()){
-      KalRepPtr const& trkPtr = trkToCaloCollection->at(i).trk();
-      const KalRep*  const &tmpTrk = *trkPtr;
+      EKalRepPtr const& trkPtr = trkToCaloCollection->at(i).trk();
+      const KalRep* tmpTrk = trkPtr.get();
 
       const TrkId &trkId1 = trk->id();
       const TrkId &trkId2 = tmpTrk->id();
@@ -615,11 +615,11 @@ namespace mu2e {
 
     for(size_t i=0; i<trjExtrapols->size(); ++i){
       elecData tmpElec;
-      KalRepPtr const& trkPtr = trjExtrapols->at(i).trk();
-      const KalRep *  const &trk = *trkPtr;
+      EKalRepPtr const& trkPtr = trjExtrapols->at(i).trk();
+      const KalRep* trk = trkPtr.get();
       if(i>0){
-	KalRepPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
-	const KalRep *  const &tmpTrk = *tmpTrkPtr;
+	EKalRepPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
+	const KalRep* tmpTrk = tmpTrkPtr.get();
 	if(trk == tmpTrk){
 	  ++count;
 	}else{
@@ -1229,7 +1229,7 @@ namespace mu2e {
 
 	double lowrange = trkHel.zFlight(1740), highrange = trkHel.zFlight(3500);
 
-	KalRepPtr tmpRecTrk(trksHandle, i);
+	EKalRepPtr tmpRecTrk(trksHandle, i);
 	missExtrapolatedTracks.push_back(
 					 TrkToCaloExtrapol( tmpVane,i,tmpRecTrk,lowrange, highrange) );
 
@@ -1243,8 +1243,8 @@ namespace mu2e {
 
     for(size_t i=0; i<missExtrapolatedTracks.size(); ++i){
       elecData tmpElec;
-      KalRepPtr const& trkPtr = missExtrapolatedTracks.at(i).trk();
-      const KalRep *  const &trk = *trkPtr;
+      EKalRepPtr const& trkPtr = missExtrapolatedTracks.at(i).trk();
+      const KalRep* trk = trkPtr.get();
       TrkHotList const* hots = /*const_cast<TrkHotList*>*/( trk->hotList() );
 
       //Map of track id as key, and number of occurrences as value
