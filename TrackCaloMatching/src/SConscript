@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #
 #
-# $Id: SConscript,v 1.8 2013/05/30 18:40:36 gandr Exp $
-# $Author: gandr $
-# $Date: 2013/05/30 18:40:36 $
+# $Id: SConscript,v 1.9 2014/08/20 14:22:39 murat Exp $
+# $Author: murat $
+# $Date: 2014/08/20 14:22:39 $
 #
 # Original author Rob Kutschke.
 #
@@ -19,9 +19,8 @@ rootlibs = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
-    'art_Framework_Core',
-    'art_Framework_Services_Optional_TFileService_service',
-    babarlibs,
+    'mu2e_KalmanTests',
+    'mu2e_CaloCluster',
     'mu2e_GeometryService',
     'mu2e_ConditionsService',
     'mu2e_SeedService_SeedService_service',
@@ -29,7 +28,9 @@ mainlib = helper.make_mainlib ( [
     'mu2e_GeneralUtilities',
     'mu2e_MCDataProducts',
     'mu2e_RecoDataProducts',
-    'mu2e_CaloCluster',
+    babarlibs,
+    'art_Framework_Core',
+    'art_Framework_Services_Optional_TFileService_service',
     'CLHEP',
     'cetlib',
     rootlibs
@@ -37,10 +38,8 @@ mainlib = helper.make_mainlib ( [
 
 helper.make_plugins( [
     mainlib,
-    'art_Framework_Core',
-    'art_Framework_Services_Optional_TFileService_service',
-    babarlibs,
     'mu2e_TrackCaloMatching',
+    'mu2e_CaloCluster',
     'mu2e_GeometryService',
     'mu2e_ConditionsService',
     'mu2e_SeedService_SeedService_service',
@@ -48,7 +47,9 @@ helper.make_plugins( [
     'mu2e_GeneralUtilities',
     'mu2e_MCDataProducts',
     'mu2e_RecoDataProducts',
-    'mu2e_CaloCluster',
+    babarlibs,
+    'art_Framework_Core',
+    'art_Framework_Services_Optional_TFileService_service',
     'CLHEP',
     'cetlib',
     rootlibs
