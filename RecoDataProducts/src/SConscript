@@ -2,9 +2,9 @@
 #
 # Script to build the files found in this directory.
 #
-# $Id: SConscript,v 1.5 2013/03/18 18:49:07 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/03/18 18:49:07 $
+# $Id: SConscript,v 1.6 2014/08/20 14:48:09 murat Exp $
+# $Author: murat $
+# $Date: 2014/08/20 14:48:09 $
 #
 # Original author Rob Kutschke.
 #
@@ -16,6 +16,7 @@ Import('mu2e_helper')
 helper=mu2e_helper();
 
 mainlib = helper.make_mainlib ( [ 'mu2e_DataProducts',
+                                  'mu2e_BaBar_ProbTools',
                                   'art_Framework_Core',
                                   'art_Utilities',
                                   'art_Framework_Services_Registry',
