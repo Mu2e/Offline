@@ -1,9 +1,9 @@
 //
 // container for the info of the extrapolated trajectory on the calorimeter
 //
-// $Id: TrkToCaloExtrapol.hh,v 1.8 2014/08/15 15:01:55 murat Exp $
+// $Id: TrkToCaloExtrapol.hh,v 1.9 2014/08/20 14:23:09 murat Exp $
 // $Author: murat $
-// $Date: 2014/08/15 15:01:55 $
+// $Date: 2014/08/20 14:23:09 $
 //
 // Original author G. Pezzullo
 //
@@ -32,6 +32,7 @@
 #include "TrkBase/HelixParams.hh"
 #include "TrkBase/HelixTraj.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
+#include "KalmanTests/inc/KalRepPtrCollection.hh"
 
 // C++ includes
 #include <vector>
@@ -39,14 +40,14 @@
 namespace mu2e {
 
   //  typedef  art::Ptr<const KalRep * const>  EKalRepPtr;
-  typedef  art::Ptr<KalRep>  EKalRepPtr;
+  //  typedef  art::Ptr<KalRep>  EKalRepPtr;
 
   struct TrkToCaloExtrapol{
 
   private:
     int                                    _vaneId;            // vane index, runs from 0 to nVanes
     int                                    _trackNumber;       // track numeber
-    EKalRepPtr                              _trk;
+    KalRepPtr                              _trk;
     double                                 _pathLengthEntrance;
     double                                 _pathLengthExit;
 
@@ -60,7 +61,7 @@ namespace mu2e {
 
 
 
-    TrkToCaloExtrapol(int& vane, int trkNumber, EKalRepPtr& trk, double& entrance, double& exit):
+    TrkToCaloExtrapol(int& vane, int trkNumber, KalRepPtr& trk, double& entrance, double& exit):
       _vaneId(vane),
       _trackNumber(trkNumber),
       _trk(trk),
@@ -90,7 +91,7 @@ namespace mu2e {
     BbrPointErr                            exitPositionErr() const;
     Hep3Vector                                    momentum() const;
     BbrVectorErr                               momentumErr() const;
-    EKalRepPtr const&                                  trk() const{ return _trk; }
+    KalRepPtr const&                                   trk() const{ return _trk; }
 
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 

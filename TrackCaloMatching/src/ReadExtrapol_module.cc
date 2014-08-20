@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.17 2014/08/15 15:01:55 murat Exp $
+// $Id: ReadExtrapol_module.cc,v 1.18 2014/08/20 14:23:09 murat Exp $
 // $Author: murat $
-// $Date: 2014/08/15 15:01:55 $
+// $Date: 2014/08/20 14:23:09 $
 //
 // Original author G. Pezzullo
 //
@@ -386,7 +386,7 @@ namespace mu2e {
     if(trkToCaloCollection->size() == 0) return res;
     size_t i=0;
     while(!res && i<trkToCaloCollection->size()){
-      EKalRepPtr const& trkPtr = trkToCaloCollection->at(i).trk();
+      KalRepPtr const& trkPtr = trkToCaloCollection->at(i).trk();
       const KalRep* tmpTrk = trkPtr.get();
 
       const TrkId &trkId1 = trk->id();
@@ -615,10 +615,10 @@ namespace mu2e {
 
     for(size_t i=0; i<trjExtrapols->size(); ++i){
       elecData tmpElec;
-      EKalRepPtr const& trkPtr = trjExtrapols->at(i).trk();
+      KalRepPtr const& trkPtr = trjExtrapols->at(i).trk();
       const KalRep* trk = trkPtr.get();
       if(i>0){
-	EKalRepPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
+	KalRepPtr const& tmpTrkPtr = trjExtrapols->at(i-1).trk();
 	const KalRep* tmpTrk = tmpTrkPtr.get();
 	if(trk == tmpTrk){
 	  ++count;
@@ -1229,7 +1229,7 @@ namespace mu2e {
 
 	double lowrange = trkHel.zFlight(1740), highrange = trkHel.zFlight(3500);
 
-	EKalRepPtr tmpRecTrk(trksHandle, i);
+	KalRepPtr tmpRecTrk(trksHandle, i);
 	missExtrapolatedTracks.push_back(
 					 TrkToCaloExtrapol( tmpVane,i,tmpRecTrk,lowrange, highrange) );
 
@@ -1243,7 +1243,7 @@ namespace mu2e {
 
     for(size_t i=0; i<missExtrapolatedTracks.size(); ++i){
       elecData tmpElec;
-      EKalRepPtr const& trkPtr = missExtrapolatedTracks.at(i).trk();
+      KalRepPtr const& trkPtr = missExtrapolatedTracks.at(i).trk();
       const KalRep* trk = trkPtr.get();
       TrkHotList const* hots = /*const_cast<TrkHotList*>*/( trk->hotList() );
 
