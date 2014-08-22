@@ -162,6 +162,7 @@ physics: {
       RKFDownstreameMinus: {
          module_type: ReadKalFits
          fitterModuleLabel: TPRDownstreameMinus
+	 KalDiag : { TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] } }
       }
    }
 
