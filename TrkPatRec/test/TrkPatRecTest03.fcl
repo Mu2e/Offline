@@ -1,8 +1,8 @@
 # Configuration file for TrkPatRec03
 #
-# $Id: TrkPatRecTest03.fcl,v 1.1 2014/08/22 16:10:41 tassiell Exp $
+# $Id: TrkPatRecTest03.fcl,v 1.2 2014/08/22 16:32:30 tassiell Exp $
 # $Author: tassiell $
-# $Date: 2014/08/22 16:10:41 $
+# $Date: 2014/08/22 16:32:30 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -94,20 +94,16 @@ outputs: {
 
 }
 
-#physics.producers.TrkPatRec2.module_type : TrkPatRec2
-#physics.producers.TrkPatRec2.debugLevel : 1
-#physics.producers.TrkPatRec2.diagLevel : 2
-
 physics.producers.RobustHelixFinder.module_type : RobustHelixFinder
 #physics.producers.RobustHelixFinder.printFrequency : 1
-physics.producers.RobustHelixFinder.debugLevel : 1
+#physics.producers.RobustHelixFinder.debugLevel : 1
 
 physics.producers.TrkRecFit.module_type : TrkRecFit
 physics.producers.TrkRecFit.StrawHitFlagCollectionLabel : TimePeakFinder
-physics.producers.TrkRecFit.printFrequency : 1
-physics.producers.TrkRecFit.debugLevel : 1
-physics.producers.TrkRecFit.SeedFit.debugLevel : 1
-physics.producers.TrkRecFit.KalFit.debugLevel : 1
+#physics.producers.TrkRecFit.printFrequency : 1
+#physics.producers.TrkRecFit.debugLevel : 1
+#physics.producers.TrkRecFit.SeedFit.debugLevel : 1
+#physics.producers.TrkRecFit.KalFit.debugLevel : 1
 
 #physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_01.txt"
 #physics.producers.makeSH.diagLevel    : 0
