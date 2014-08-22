@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.24 2013/04/03 22:01:38 tassiell Exp $
+// $Id: TrkStrawHit.cc,v 1.25 2014/08/22 16:10:41 tassiell Exp $
 // $Author: tassiell $ 
-// $Date: 2013/04/03 22:01:38 $
+// $Date: 2014/08/22 16:10:41 $
 //
 // Original author David Brown, LBNL
 //
@@ -265,6 +265,20 @@ namespace mu2e
       gaspath = 2*radius;
     }
     return gaspath;
+  }
+
+  void TrkStrawHit::print(std::ostream& o) const {
+    o<<"------------------- TrkStrawHit -------------------"<<std::endl;
+    o<<"istraw "<<_istraw<<std::endl;
+    o<<"is active "<<isActive()<<" is usable "<<isUsable()<<std::endl;
+    o<<"hitRms "<<hitRms()<<" weight "<<weight()<<" fltLen "<<fltLen()<<" hitLen "<<hitLen()<<std::endl;
+    _strawhit.print(o,true);
+    o<<"driftRadius "<<driftRadius()<<" driftRadiusErr "<<driftRadiusErr();
+    o<<" hitT0 "<<_hitt0.t0()<<" hitT0err "<<_hitt0.t0Err()<<" t0err "<<t0Err()<<std::endl;
+    o<<"ambig "<<_iamb<<" ambig upd "<<_ambigupdate<<std::endl;
+    CLHEP::Hep3Vector hpos; hitPosition(hpos);
+    o<<"hitPosition "<<hpos<<std::endl;
+    o<<"---------------------------------------------------"<<std::endl;
   }
 
 } 

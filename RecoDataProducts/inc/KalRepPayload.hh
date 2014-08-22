@@ -3,9 +3,9 @@
 //
 // The persistent information from a KalRep
 //
-// $Id: KalRepPayload.hh,v 1.2 2012/07/23 17:52:27 brownd Exp $
-// $Author: brownd $
-// $Date: 2012/07/23 17:52:27 $
+// $Id: KalRepPayload.hh,v 1.3 2014/08/22 16:10:41 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2014/08/22 16:10:41 $
 //
 // Contact person Rob Kutschke
 //
@@ -32,9 +32,9 @@
 
 #include "art/Persistency/Common/Ptr.h"
 
-namespace mu2e {
-
   class KalRep;
+
+namespace mu2e {
 
   class KalRepPayload{
   public:

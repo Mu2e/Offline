@@ -3,9 +3,9 @@
 //
 // out data of the time peak algorithm for pattern recognition
 //
-// $Id: TrackerHitTimeCluster.hh,v 1.2 2013/04/03 22:08:21 tassiell Exp $
+// $Id: TrackerHitTimeCluster.hh,v 1.3 2014/08/22 16:10:41 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2013/04/03 22:08:21 $
+// $Date: 2014/08/22 16:10:41 $
 //
 // Original author G. Tassielli
 //
@@ -26,6 +26,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
 
     std::vector<StrawHitPtr> _selectedTrackerHits;
     double _meanTime;
+    double _peakmax;
     double _minHitTime;
     double _maxHitTime;
     double _sigma;
@@ -35,6 +36,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
 
     TrackerHitTimeCluster():
      _meanTime(0.0),
+     _peakmax(0.0),
      _minHitTime(0.0),
      _maxHitTime(0.0),
      _sigma(0.0),
@@ -53,7 +55,7 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
   inline std::ostream& operator<<( std::ostream& ost,
                                    TrackerHitTimeCluster const& hit){
     ost<<"Selected Tracker Hits coherent in time in the ragne: "<<hit._minHitTime<<" - "<<hit._maxHitTime<<" ns"<<std::endl;
-    ost<<"mean time: "<<hit._meanTime<<std::endl;
+    ost<<"mean time: "<<hit._meanTime<<" sigma time: "<<hit._sigma<<" peak max "<<hit._peakmax<<std::endl;
     ost<<"number of tracke hits selected: "<<hit._selectedTrackerHits.size();
     return ost;
   }

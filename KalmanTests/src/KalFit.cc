@@ -1,9 +1,9 @@
 //
 // Class to perform BaBar Kalman fit
 //
-// $Id: KalFit.cc,v 1.42 2013/10/08 22:44:58 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2013/10/08 22:44:58 $
+// $Id: KalFit.cc,v 1.43 2014/08/22 16:10:41 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2014/08/22 16:10:41 $
 //
 
 // the following has to come before other BaBar includes
@@ -174,6 +174,7 @@ namespace mu2e
       for(std::vector<TrkStrawHit*>::iterator ihit=kres._hits.begin();ihit!=kres._hits.end();ihit++){
         TrkStrawHit* trkhit = *ihit;
 	hotlist->append(trkhit);
+	if (_debug>0) { trkhit->print(std::cout); }
       }
 // Find the wall and gas material description objects for these hits
       if(_matcorr)makeMaterials(kres);

@@ -1,0 +1,119 @@
+# Configuration file for TrkPatRec03
+#
+# $Id: TrkPatRecTest03.fcl,v 1.1 2014/08/22 16:10:41 tassiell Exp $
+# $Author: tassiell $
+# $Date: 2014/08/22 16:10:41 $
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+# Give this job a name.
+process_name : TrkPatRec03
+
+source :
+{
+  module_type : RootInput
+          fileNames   : [ "/mu2e/data/outstage/kutschke/65162/65162_0000/TTrackerBg_01_0000_data.root"]
+  maxEvents : -1
+}
+
+services :
+{
+  message : @local::default_message
+
+  TFileService : { fileName : "TrkPatRecTest03.root" }
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService : { inputFile : "Mu2eG4/test/geom_01.txt" }
+
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+
+    G4Helper : { }
+
+    SeedService       : @local::automaticSeeds
+  }
+
+}
+
+physics :
+{
+  producers :
+  {
+
+TimePeakFinder :
+{
+        module_type                             : TimePeakFinder
+        debugLevel                              : 0
+        TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+        HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
+        #KalmanFitSelectionBits : []
+        TimeBackgroundBits : ["DeltaRay","Isolated"]
+} # end TimePeakFinder
+
+    #TrkPatRec2 : @local::TrkPatRec
+    RobustHelixFinder : @local::TrkPatRec
+    TrkRecFit : @local::TrkPatRec
+
+
+   }
+ 
+    # test module for Kalman fit: the 
+  analyzers : 
+  {
+     ReadKalFits :
+    {
+      module_type    : ReadKalFits
+      fitterModuleLabel : TrkRecFit
+# MC truth finder, analyzer configuration
+                        KalFitMC : 
+                        {
+                        }
+    }
+  }
+
+
+  p1 : [ TimePeakFinder, RobustHelixFinder, TrkRecFit ] #, TrkPatRec2 #tprDem
+  e1 : [ outfile, ReadKalFits ]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs: {
+
+  outfile : {
+    module_type : RootOutput
+    fileName    : "data_TPK.root"
+  }
+
+}
+
+#physics.producers.TrkPatRec2.module_type : TrkPatRec2
+#physics.producers.TrkPatRec2.debugLevel : 1
+#physics.producers.TrkPatRec2.diagLevel : 2
+
+physics.producers.RobustHelixFinder.module_type : RobustHelixFinder
+#physics.producers.RobustHelixFinder.printFrequency : 1
+physics.producers.RobustHelixFinder.debugLevel : 1
+
+physics.producers.TrkRecFit.module_type : TrkRecFit
+physics.producers.TrkRecFit.StrawHitFlagCollectionLabel : TimePeakFinder
+physics.producers.TrkRecFit.printFrequency : 1
+physics.producers.TrkRecFit.debugLevel : 1
+physics.producers.TrkRecFit.SeedFit.debugLevel : 1
+physics.producers.TrkRecFit.KalFit.debugLevel : 1
+
+#physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_01.txt"
+#physics.producers.makeSH.diagLevel    : 0
+#physics.producers.TimePeakFinder.diagLevel    : 0
+#physics.producers.TimePeakFinder.CleanTimePeaks : false
+#physics.producers.makeSH.maxFullPrint : 0
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
+

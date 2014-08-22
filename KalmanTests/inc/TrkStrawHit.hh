@@ -1,9 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.20 2012/12/04 00:51:26 tassiell Exp $
+// $Id: TrkStrawHit.hh,v 1.21 2014/08/22 16:10:41 tassiell Exp $
 // $Author: tassiell $ 
-// $Date: 2012/12/04 00:51:26 $
+// $Date: 2014/08/22 16:10:41 $
 //
 // Original author David Brown, LBNL
 //
@@ -96,6 +96,7 @@ namespace mu2e
 // logical operators to allow searching for StrawHits
     bool operator == (StrawHit const& sh) const { return _strawhit == sh; }
     bool operator != (StrawHit const& sh) const { return !operator==(sh); }
+    void print(std::ostream& ) const;
   protected:
     TrkStrawHit(const TrkStrawHit& other, TrkRep* rep);
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);

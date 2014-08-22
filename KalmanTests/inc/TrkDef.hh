@@ -1,9 +1,9 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.16 2013/03/08 04:34:04 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2013/03/08 04:34:04 $
+// $Id: TrkDef.hh,v 1.17 2014/08/22 16:10:41 tassiell Exp $
+// $Author: tassiell $ 
+// $Date: 2014/08/22 16:10:41 $
 //
 // Original author David Brown, LBNL
 //
@@ -56,6 +56,7 @@ namespace mu2e
     const StrawHitCollection* strawHitCollection() const { return _straws; }
     const std::vector<hitIndex>& strawHitIndices() const { return _indices;}
     const HelixTraj& helix() const { return _h0; }
+    const HepSymMatrix &convMatr() const { return _dcov; }
     TrkParticle const& particle() const { return _tpart; }
     TrkFitDirection const& fitdir() const { return _fdir; }
     void setHelix(HelixTraj const& helix) { _h0 = helix; }
