@@ -1,9 +1,9 @@
 //
 // Build a dictionary.
 //
-// $Id: classes.h,v 1.9 2014/08/22 19:55:50 brownd Exp $
+// $Id: classes.h,v 1.10 2014/08/22 20:51:05 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/08/22 19:55:50 $
+// $Date: 2014/08/22 20:51:05 $
 //
 // Original author Rob Kutschke
 //
@@ -17,9 +17,8 @@ using namespace CLHEP;
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
-#include "KalmanTests/inc/KalDiag.hh"
 #include "KalmanTests/inc/TrackSummaryRecoMap.hh"
+#include "KalmanTests/inc/TrkStrawHitInfo.hh"
 
 template class art::Ptr<KalRep>;
 template class art::Wrapper<mu2e::KalRepCollection>;

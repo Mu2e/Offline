@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.43 2014/08/22 19:55:50 brownd Exp $
+// $Id: KalFitMC.hh,v 1.44 2014/08/22 20:51:05 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/08/22 19:55:50 $
+// $Date: 2014/08/22 20:51:05 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
@@ -28,6 +28,7 @@
 #include "BaBar/BaBar.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
+#include "KalmanTests/inc/TrkStrawHitInfo.hh"
 #include "KalmanTests/inc/KalFit.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -64,23 +65,6 @@ namespace mu2e
     };
   };
   typedef std::vector<MCHitSum> MCHitSumVec;
- // simple structs
-  struct TrkStrawHitInfo_old{
-    Int_t _active, _usable, _device, _sector, _layer, _straw;
-    Float_t _z, _phi, _rho;
-    Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
-    Float_t _doca, _exerr, _penerr, _t0, _t0err;
-    Float_t _ht, _tddist, _tdderr, _hlen;
-    Float_t _edep, _dx;
-    Int_t _ambig;
-    Int_t _mcn, _mcnunique, _mcppdg, _mcpgen, _mcpproc;
-    Int_t _mcpdg, _mcgen, _mcproc;
-    Float_t _mct0, _mcht, _mcdist, _mclen;
-    Float_t _mcedep;
-    Int_t _mcambig;
-    Bool_t _xtalk;
-  };
-
 
   typedef StepPointMCCollection::const_iterator MCStepItr;
 //  Simple helper class to find MC information within collections
