@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.27 2014/05/01 04:52:16 brownd Exp $
+// $Id: FlagBkgHits_module.cc,v 1.28 2014/08/22 21:09:04 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/05/01 04:52:16 $
+// $Date: 2014/08/22 21:09:04 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -24,7 +24,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 // Mu2e
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "KalmanTests/inc/KalDiag.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "TrkPatRec/inc/ClusterStrawHits.hh"
 //CLHEP
@@ -158,7 +158,7 @@ namespace mu2e
       void createDiagnostics();
       void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
       // MC tools
-      KalFitMC _kfitmc;
+      KalDiag _kdiag;
       // clusterer
       ClusterStrawHits _clusterer;
       // delta removal diagnostics
@@ -177,7 +177,7 @@ namespace mu2e
       Int_t _nconv, _ndelta, _ncompt, _ngconv, _nebkg, _nprot, _nprimary;
       Int_t _ppdgid,_pgen, _pproc;
       std::vector<StrawHitInfo> _phits;
-      Float_t _dmct0, _dmcmom, _dmctd;
+      Float_t _dmcmom;
       Float_t _tmed, _pmed, _rmed;
       Float_t _tmean, _pmean, _rmean;
       Float_t _stime, _sphi, _srho;
@@ -207,7 +207,7 @@ namespace mu2e
     _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.8)),
     _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
     _nonstereoclustermvacut(pset.get<double>("NonStereoClusterMVACut",0.8)),
-    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
+    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
     _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet()))
   {
     // location-independent files
@@ -249,7 +249,7 @@ namespace mu2e
     }
     // find mc truth if we're making diagnostics
     if(_diag > 0){
-      if(!_kfitmc.findMCData(event)){
+      if(!_kdiag.findMCData(event)){
 	cout<<"MC information missing "<< endl;
 	//	return;
       }
@@ -511,9 +511,7 @@ namespace mu2e
       _ddiag->Branch("sphi",&_sphi,"sphi/F");
       _ddiag->Branch("srho",&_srho,"srho/F");
       _ddiag->Branch("phits",&_phits);
-      _ddiag->Branch("mct0",&_dmct0,"mct0/F");
       _ddiag->Branch("mcmom",&_dmcmom,"mcmom/F");
-      _ddiag->Branch("mctd",&_dmctd,"mctd/F");
       _ddiag->Branch("pmvaout",&_pmvaout,"pmvaout/F");
     }
   }
@@ -548,17 +546,25 @@ namespace mu2e
     shinfo._delta = shflag.hasAllProperties(StrawHitFlag::delta);
     shinfo._stereo = shflag.hasAllProperties(StrawHitFlag::stereo);
 
-    if(_kfitmc.mcData()._mcsteps != 0) {
-      const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
-      shinfo._mcpdg = mcsum[0]._pdgid;
-      shinfo._mcgen = mcsum[0]._gid;
-      shinfo._mcproc = mcsum[0]._pid;
-      shinfo._mcpos = mcsum[0]._pos;
-      shinfo._mctime = mcsum[0]._time;
-      shinfo._mcedep = mcsum[0]._esum;
-      shinfo._mct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
-      shinfo._mcmom = mcsum[0]._mom.mag();
-      shinfo._mctd = mcsum[0]._mom.cosTheta();
+    if(_kdiag.mcData()._mcdigis != 0) {
+      StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(ish);
+      // use TDC channel 0 to define the MC match
+      StrawDigi::TDCChannel itdc = StrawDigi::zero;
+      if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+      shinfo._mcpdg = spp->pdgId();
+      shinfo._mcproc = spp->creationCode();
+      shinfo._mcedep = mcdigi.energySum();
+      shinfo._mcgen = -1;
+      if(spp->genParticle().isNonnull())
+	shinfo._mcgen = spp->genParticle()->generatorId().id();
+      shinfo._mcpos = spmcp->position();
+      shinfo._mctime = mcdigi.wireEndTime(itdc);
+      shinfo._mcedep = mcdigi.energySum();
+      shinfo._mct0 = spmcp->time();
+      shinfo._mcmom = spmcp->momentum().mag();
+      shinfo._mctd = spmcp->momentum().cosTheta();
     }
   }
 
@@ -671,11 +677,15 @@ namespace mu2e
 	size_t ish = dhinfo._hindex;
 	StrawHitInfo shinfo;
 	fillStrawHitInfo(ish,shinfo);
-	const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
-	art::Ptr<SimParticle> spp = mcsum[0]._spp;
-	shinfo._relation=KalFitMC::none;
+	StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(ish);
+      // use TDC channel 0 to define the MC match
+	StrawDigi::TDCChannel itdc = StrawDigi::zero;
+	if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+	art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+	shinfo._relation=KalDiag::none;
 	if(spp.isNonnull()){
-	  shinfo._relation = KalFitMC::relationship(spp,pptr);
+	  shinfo._relation = KalDiag::relationship(spp,pptr);
 	}
 	shinfo._hflag = dhinfo._hflag;
 	shinfo._hgd = dhinfo._hgd;
@@ -698,13 +708,7 @@ namespace mu2e
 	if(shinfo._mcpdg == 2212)++_nprot;
 	_phits.push_back(shinfo);
       }
-      if(_nconv >= 1){
-	_dmct0 = _kfitmc.MCT0(KalFitMC::trackerMid);
-	_dmctd = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
-      } else {
-	_dmct0 = -1;
-	_dmctd = -100.0;
-      }
+      
       _ddiag->Fill();
     }
   }
@@ -714,8 +718,12 @@ namespace mu2e
     std::set<art::Ptr<SimParticle> > pp;
     for(size_t ih=0;ih< delta._dhinfo.size(); ++ih){
       size_t ish = delta._dhinfo[ih]._hindex;
-      const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
-      art::Ptr<SimParticle> spp = mcsum[0]._spp;
+      StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(ish);
+      // use TDC channel 0 to define the MC match
+      StrawDigi::TDCChannel itdc = StrawDigi::zero;
+      if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       if(spp.isNonnull()){
 	pp.insert(spp);
       }
@@ -737,13 +745,13 @@ namespace mu2e
 	  art::Ptr<SimParticle> sppj = *jpp;
 	  if(sppj->genParticle().isNull()){
 	    // call the particles 'the same' if they are related and were produced near each other
-	    KalFitMC::relation rel = KalFitMC::relationship(sppi,sppj);
-	    if(rel==KalFitMC::daughter || rel == KalFitMC::udaughter){
+	    KalDiag::relation rel = KalDiag::relationship(sppi,sppj);
+	    if(rel==KalDiag::daughter || rel == KalDiag::udaughter){
 	      spmap[sppi] = sppj;
 	      break;
-	    } else if(rel == KalFitMC::mother || rel == KalFitMC::umother){
+	    } else if(rel == KalDiag::mother || rel == KalDiag::umother){
 	      spmap[sppj] = sppi;
-	    } else if(rel == KalFitMC::sibling || rel == KalFitMC::usibling){
+	    } else if(rel == KalDiag::sibling || rel == KalDiag::usibling){
 	      double dist = (sppj->startPosition() - sppi->startPosition()).mag();
 	      if(dist < 10.0){
 		if(sppi->id().asInt() > sppj->id().asInt())
@@ -802,9 +810,15 @@ namespace mu2e
     // find the momentum for the first step point from the primary particle in this delta
     for(size_t ih=0;ih< delta._dhinfo.size(); ++ih){
       size_t ish = delta._dhinfo[ih]._hindex;
-      const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
-      if(mcsum[0]._spp == pptr){
-	pmom = mcsum[0]._mom.mag();
+      StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(ish);
+      // use TDC channel 0 to define the MC match
+      StrawDigi::TDCChannel itdc = StrawDigi::zero;
+      if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+ 
+      if(spp == pptr){
+	pmom = spmcp->momentum().mag();
 	break;
       }
     }

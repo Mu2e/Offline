@@ -1,9 +1,9 @@
 //
 // TTracker time peak finder
 //
-// $Id: TimePeakFinder_module.cc,v 1.1 2014/08/22 16:10:41 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2014/08/22 16:10:41 $
+// $Id: TimePeakFinder_module.cc,v 1.2 2014/08/22 21:09:04 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/08/22 21:09:04 $
 //
 // Original author D. Brown and G. Tassielli
 //
@@ -195,11 +195,12 @@ namespace mu2e {
                   thcc->back()._minHitTime = thcc->back()._maxHitTime = _shcol->at( itp->_trkptrs.begin()->_index ).time();
                   double sumOfSqr(0.0), sum(0.0);
                   for (std::vector<hitIndex>::iterator hittpit=itp->_trkptrs.begin(); hittpit!=itp->_trkptrs.end(); ++hittpit) {
-                          sum+=_shcol->at(hittpit->_index).time();
-                          sumOfSqr+=_shcol->at(hittpit->_index).time()*_shcol->at(hittpit->_index).time();
+			  double htime = htime;
+			  sum+=htime;
+                          sumOfSqr+=htime*htime;
                           thcc->back()._selectedTrackerHits.push_back( art::Ptr<StrawHit> ( _strawhitsH, hittpit->_index ) );
-                          if ( _shcol->at(hittpit->_index).time() < thcc->back()._minHitTime ) { thcc->back()._minHitTime=_shcol->at(hittpit->_index).time(); }
-                          if ( _shcol->at(hittpit->_index).time() > thcc->back()._maxHitTime ) { thcc->back()._maxHitTime=_shcol->at(hittpit->_index).time(); }
+                          if ( htime < thcc->back()._minHitTime ) { thcc->back()._minHitTime=htime; }
+                          if ( htime > thcc->back()._maxHitTime ) { thcc->back()._maxHitTime=htime; }
                           flags->at(hittpit->_index).merge(StrawHitFlag::timesel);
                   }
 

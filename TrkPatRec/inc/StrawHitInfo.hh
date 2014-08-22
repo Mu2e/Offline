@@ -1,7 +1,7 @@
 //
-// $Id: StrawHitInfo.hh,v 1.8 2014/05/05 22:25:56 brownd Exp $
+// $Id: StrawHitInfo.hh,v 1.9 2014/08/22 21:09:04 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/05/05 22:25:56 $
+// $Date: 2014/08/22 21:09:04 $
 //
 // struct for hit diagnostics
 #ifndef StrawHitInfo_hh
@@ -21,7 +21,7 @@ namespace mu2e {
     Bool_t _primary;
     CLHEP::Hep3Vector _mcpos;
     Int_t _mcpdg, _mcgen, _mcproc, _mcid;
-    Float_t _mcedep, _mctime, _mct0, _mcmom, _mctd;
+    Float_t _mcedep, _mctime, _mct0, _mcht, _mcmom, _mctd;
     Int_t _hflag;
     Float_t _hgd, _cdist; // MVA output of generalized distance
     Float_t _dphi, _drho, _dt; // MVA inputs
