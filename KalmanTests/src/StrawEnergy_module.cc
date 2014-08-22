@@ -1,9 +1,9 @@
 //
 //  Study energy desposited in straws 
 //
-// $Id: StrawEnergy_module.cc,v 1.5 2013/10/21 21:01:23 kutschke Exp $
+// $Id: StrawEnergy_module.cc,v 1.6 2014/08/22 19:55:50 brownd Exp $
 // $Author: 
-// $Date: 2013/10/21 21:01:23 $
+// $Date: 2014/08/22 19:55:50 $
 //
 // Original author David Brown
 //
@@ -14,8 +14,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -24,7 +23,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TrackerGeom/inc/Straw.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "KalmanTests/inc/KalDiag.hh"
 #include "TTree.h"
 #include "TBranch.h"
 #include <cmath>
@@ -50,7 +49,7 @@ namespace mu2e {
 
   private:
     int _diagLevel;
-    std::string _makerModuleLabel;
+    std::string _makerModuleLabel,_mcdigislabel;
     TTree* _estraw;
 // branch variables
     Int_t _device, _sector, _layer, _straw;
@@ -62,7 +61,6 @@ namespace mu2e {
     Float_t _hittime;
     Float_t _strawx, _strawrho, _strawz;
   // helper functions
-    art::Ptr<SimParticle> findPrimary(PtrStepPointMCVector const& mcptr) const;
     art::Ptr<SimParticle> findPrimary(StepPointMC const& mcstep) const;
 };
 
@@ -71,7 +69,8 @@ namespace mu2e {
     art::EDAnalyzer(pset),
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
-    _makerModuleLabel(pset.get<string>("makerModuleLabel","makeSH"))
+    _makerModuleLabel(pset.get<string>("makerModuleLabel","makeSH")),
+    _mcdigislabel(pset.get<std::string>("StrawHitMCLabel","makeSH"))
   {
 
   }
@@ -111,9 +110,10 @@ namespace mu2e {
     event.getByLabel(_makerModuleLabel,pdataHandle);
     StrawHitCollection const* hits = pdataHandle.product();
 
-    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
-    event.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
-    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
+    art::Handle<StrawDigiMCCollection> mcdigisHandle;
+    event.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle);
+    StrawDigiMCCollection const* mcdigis = mcdigisHandle.product();
+
     // Loop over all hits
     for ( size_t ihit=0; ihit<hits->size(); ++ihit ){
 
@@ -122,17 +122,21 @@ namespace mu2e {
       _hittime = hit.time();
       // Get the hit poosition information.  This requires MC truth
       CLHEP::Hep3Vector mcpos;
-// there can be more than 1 StepPointMC for each straw hit
-      PtrStepPointMCVector const& mcptr(hits_mcptr->at(ihit));
-// summarize direct MC truth information
-      std::vector<MCHitSum> mcsum;
-      KalFitMC::fillMCHitSum(mcptr,mcsum);
-      _mcpdg = mcsum[0]._pdgid;
-      _mcgen = mcsum[0]._gid;
-      _mcproc = mcsum[0]._pid;
-      _mce = mcsum[0]._esum;
+// find MC truth information
+      StrawDigiMC const& mcdigi = mcdigis->at(ihit);
+      // use TDC channel 0 to define the MC match
+      StrawDigi::TDCChannel itdc = StrawDigi::zero;
+      if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+      _mcpdg = spp->pdgId();
+      _mcgen = -1;
+      if(spp->genParticle().isNonnull())
+	_mcgen = spp->genParticle()->generatorId().id();
+      _mcproc = spp->creationCode();
+      _mce = mcdigi.energySum();
 // follow this StepPointMC SimParticle back to the 'primary', and record it's info
-      art::Ptr<SimParticle> primary = findPrimary(mcptr);
+      art::Ptr<SimParticle> primary = findPrimary(*spmcp);
      if(primary.isNonnull()){
 	_mcppdg = primary->pdgId();
 	_mcpsmom = primary->startMomentum();
@@ -165,40 +169,7 @@ namespace mu2e {
       _estraw->Fill();
     }
   }
-// find primary particle from a set of StepPointMCs
-  art::Ptr<SimParticle>
-  StrawEnergy::findPrimary(PtrStepPointMCVector const& mcptr) const {
-    Hep3Vector pos;
-    double energy(0.0);
-    std::map< art::Ptr<SimParticle>, double> spmap;
-    for (size_t imc = 0; imc < mcptr.size(); ++imc) {
-      StepPointMC const& mchit = *mcptr[imc];
-      pos += mchit.position()*mchit.eDep();
-      energy += mchit.eDep();
-      art::Ptr<SimParticle> const& primary = findPrimary(mchit);
-      if(primary.isNonnull()){
-	std::map< art::Ptr<SimParticle>, double>::iterator ifnd = spmap.find(primary);
-	if(ifnd != spmap.end()){
-	  // already found this primary: add this energy
-	  ifnd->second += mchit.eDep();
-	} else {
-	  // new primary: initialize with this energy
-	  spmap[primary] = mchit.eDep();
-	}
-      }
-    }
-    if(energy >0.0)pos *= 1.0/energy;
-    // primary particle information
-    std::map< art::Ptr<SimParticle>, double>::iterator ibest = spmap.begin();
-    for(std::map< art::Ptr<SimParticle>, double>::iterator isp = spmap.begin()++; isp != spmap.end(); ++isp){
-      if(isp->second > ibest->second)ibest = isp;
-    }
-    if(ibest != spmap.end())
-      return ibest->first;
-    else
-      return art::Ptr<SimParticle>();
-  }
- 
+
 // find the virtual detector hits and SimParticles for this event
   art::Ptr<SimParticle>
   StrawEnergy::findPrimary(StepPointMC const& mcstep) const {

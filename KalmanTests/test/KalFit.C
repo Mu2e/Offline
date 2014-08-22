@@ -102,7 +102,7 @@ void KalFit::KalCuts() {
   snprintf(ctext,80,"mct0>%f",t0min);
   tt0 = TCut(ctext);
   tmom = TCut("mcentmom>-1");
-  snprintf(ctext,80,"ncgood>=%i",minnhits);
+  snprintf(ctext,80,"nmcgood>=%i",minnhits);
   nmch = TCut(ctext);
   mcsel = nmch+tmom+tpitch;
 //  mcsel = nmch+tmom;
@@ -472,7 +472,7 @@ void KalFit::KalFitAccPlots(TTree* trks) {
 
   TH1F* fitmom = new TH1F("fitmom","Track fit momentum;fit momentum (MeV/c)",100,98,107);
 
-  trks->Project("nmc","ncgood");
+  trks->Project("nmc","nmcgood");
   trks->Project("mcmom","mcentmom",nmch);
   
   trks->Project("fitcon","log10(fitcon)",reco+nmch+tmom);
@@ -1208,8 +1208,8 @@ void KalFit::KalFitNHits(TTree* t){
   TH1F* ncha = new TH1F("ncha","Number of Conversion Electron Tracker Hits;N hits;N Conversion Tracks",100,-0.5,99.5);
   nch->SetStats(0);
   nch->SetStats(0);
-  t->Project("nch","ncgood",tmom+tpitch);
-  t->Project("ncha","ncgood",tmom+tpitch+"fitstatus>0");
+  t->Project("nch","nmcgood",tmom+tpitch);
+  t->Project("ncha","nmcgood",tmom+tpitch+"fitstatus>0");
   nch->SetLineColor(kRed);
   ncha->SetLineColor(kBlue);
   TLegend* leg = new TLegend(0.6,0.7,0.9,0.9);
@@ -1226,11 +1226,11 @@ void KalFit::KalFitNHits(TTree* t){
 void KalFit::KalFitNactive(TTree* t) {
   if(!donecuts)KalCuts();
   gStyle->SetOptStat(111111);
-  TCut pure("nactive-ncactive==0");
+  TCut pure("nactive-nmcactive==0");
   TCut goodtrk =mcsel+reco+rpitch;
 
   TH1F* dna = new TH1F("dna","N non-conversion hits active in fit;N_{active}-N_{active,conversion}",10,-0.5,9.5);
-  t->Project("dna","nactive-ncactive",goodtrk);
+  t->Project("dna","nactive-nmcactive",goodtrk);
 
   TH1F* momres0 = new TH1F("momres0","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
   TH1F* momres1 = new TH1F("momres1","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);

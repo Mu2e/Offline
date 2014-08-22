@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.10 2014/04/18 16:54:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:54:59 $
+// $Id: Reflect_module.cc,v 1.11 2014/08/22 19:55:50 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/08/22 19:55:50 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -38,7 +38,7 @@ using namespace CLHEP;
 #include "TrkBase/TrkHelixUtils.hh"
 // mu2e tracking
 #include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "KalmanTests/inc/KalDiag.hh"
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -88,7 +88,7 @@ namespace mu2e {
     unsigned _eventid;
     bool _extrapolate;
     // diagnostic of Kalman fit
-    KalFitMC _kfitmc;
+    KalDiag _kdiag;
     // TTree for studying reflecting fits
     TTree* _reflect;
     // TTree branches
@@ -133,7 +133,7 @@ namespace mu2e {
     _mindt0(pset.get<double>("MinDeltaT0",-50)),
     _maxdt0(pset.get<double>("MaxDeltaT0",-110)),
     _extrapolate(pset.get<bool>("Extrapolate",true)),
-    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
+    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
     _reflect(0)
   {
 // construct the data product instance names for particles 
@@ -172,7 +172,7 @@ namespace mu2e {
     if(_eventid==0)getEntranceZ();
     _eventid++;
 // get MC info
-    bool hasmc = _kfitmc.findMCData(event);
+    bool hasmc = _kdiag.findMCData(event);
 // loop over particle type
     for(size_t ie=0;ie<_udname.size();++ie){
       TrkExtTrajCollection const* uext(0);
@@ -217,17 +217,17 @@ namespace mu2e {
 // get MC info for the upstream and downstream tracks
 		if(hasmc){
 		  art::Ptr<SimParticle> umcinfo, dmcinfo;
-		  _kfitmc.findMCTrk(ukrep,umcinfo);
-		  _kfitmc.findMCTrk(dkrep,dmcinfo);
+		  _kdiag.findMCTrk(ukrep,umcinfo);
+		  _kdiag.findMCTrk(dkrep,dmcinfo);
 // use these to find the points where the true particle enters the tracker
 		  if(umcinfo.isNonnull() && dmcinfo.isNonnull() && 
 		    umcinfo == dmcinfo){
 		    std::vector<MCStepItr> steps;
-		    _kfitmc.findMCSteps(_kfitmc.mcData()._mcvdsteps,umcinfo->id(),_kfitmc.VDids(KalFitMC::trackerEnt),steps);
+		    _kdiag.findMCSteps(_kdiag.mcData()._mcvdsteps,umcinfo->id(),_kdiag.VDids(KalDiag::trackerEnt),steps);
 		    if(steps.size() == 2){
 // These are sorted by time: first should be upstream, second down
-		      _kfitmc.fillMCTrkInfo(steps[0],_umcinfo);
-		      _kfitmc.fillMCTrkInfo(steps[1],_dmcinfo);
+		      _kdiag.fillMCTrkInfo(steps[0],_umcinfo);
+		      _kdiag.fillMCTrkInfo(steps[1],_dmcinfo);
 		      if(_extrapolate && uext != 0 && dext != 0){
 		        TrkExtTraj const& utrkext = (*uext)[iue];
 		        TrkExtTraj const& dtrkext = (*dext)[ide];

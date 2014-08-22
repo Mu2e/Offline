@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.21 2013/03/15 19:03:19 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 19:03:19 $
+// $Id: KalFitTest_module.cc,v 1.22 2014/08/22 19:55:50 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/08/22 19:55:50 $
 //
 
 // framework
@@ -26,7 +26,7 @@
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/KalFit.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "KalmanTests/inc/KalDiag.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -72,8 +72,8 @@ namespace mu2e
     KalFit _kfit;
     // helper functions
     bool findData(art::Event& e);
-    // MC tools
-    KalFitMC _kfitmc;
+    // Diagnostics
+    KalDiag _kdiag;
     // product name
     std::string _iname;
 //
@@ -85,7 +85,7 @@ namespace mu2e
     _printfreq(pset.get<int>("printFrequency",10)),
     _strawhitslabel(pset.get<std::string>("strawHitsLabel","makeSH")),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit")),
-    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC"))
+    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag"))
   {
     TrkFitDirection fdir(TrkFitDirection::downstream);
     TrkParticle tpart(TrkParticle::e_minus);
@@ -98,7 +98,7 @@ namespace mu2e
 
   void KalFitTest::beginJob(){
     if(_diag > 0){
-       _kfitmc.createTrkDiag();
+       _kdiag.createTrkDiag();
     }
   }
 
@@ -117,7 +117,7 @@ namespace mu2e
       return;
     }
 // find mc truth
-    if(!_kfitmc.findMCData(event)){
+    if(!(_kdiag.findMCData(event))){  
       cout<<"MC information missing "<< endl;
       return;
     }
@@ -125,19 +125,13 @@ namespace mu2e
     // must initialize t0, momentum, initial trajectory.  These should come from patrec
     // that doesn't yet exist. For now, take from the MC truth.  There must be a better way to define the primary particle, FIXME!!!!!!
     cet::map_vector_key trkid(1);
-    if(_kfitmc.trkFromMC(trkid,tdef)){
+    if(_kdiag.trkFromMC(trkid,tdef)){
       // use this to create a track
       KalFitResult kdef(tdef);
       _kfit.makeTrack(kdef);
       //  diagnostics
       if(_diag > 0){
-	_kfitmc.kalDiag(kdef._krep);
-	if(_diag > 1){
-	  for(std::vector<TrkStrawHit*>::iterator ihit=kdef._hits.begin();ihit!=kdef._hits.end();ihit++){
-	    TrkStrawHit* trkhit = *ihit;
-	    _kfitmc.hitDiag(trkhit);
-	  }
-	}
+	_kdiag.kalDiag(kdef._krep);
       }
       // If fit is successful, pass ownership of the track to the event.
       if(kdef._krep != 0)tracks->push_back( kdef.stealTrack() );

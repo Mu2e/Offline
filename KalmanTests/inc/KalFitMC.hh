@@ -1,12 +1,16 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.hh,v 1.42 2014/08/05 23:10:49 brownd Exp $
+// $Id: KalFitMC.hh,v 1.43 2014/08/22 19:55:50 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/08/05 23:10:49 $
+// $Date: 2014/08/22 19:55:50 $
 //
 #ifndef KalFitMC_HH
 #define KalFitMC_HH
-
+// structs
+#include "KalmanTests/inc/MCEvtData.hh"
+#include "KalmanTests/inc/threevec.hh"
+#include "KalmanTests/inc/helixpar.hh"
+#include "KalmanTests/inc/MCTrkInfo.hh"
 // data
 #include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -61,22 +65,7 @@ namespace mu2e
   };
   typedef std::vector<MCHitSum> MCHitSumVec;
  // simple structs
-  struct threevec {
-    Float_t _x,_y,_z;
-    threevec(): _x(0.0),_y(0.0),_z(0.0) {}
-    threevec(const CLHEP::Hep3Vector& vec) : _x(vec.x()),_y(vec.y()),_z(vec.z()) {}
-    threevec& operator = (const CLHEP::Hep3Vector& vec){ _x =vec.x(); _y =vec.y(); _z= vec.z(); return *this; }
-  };
-
-  struct helixpar {
-    Float_t _d0, _p0, _om, _z0, _td;
-    helixpar() : _d0(0.0),_p0(0.0),_om(0.0),_z0(0.0),_td(0.0) {}
-    helixpar(const HepVector& pvec) : _d0(pvec[0]),_p0(pvec[1]),_om(pvec[2]),_z0(pvec[3]),_td(pvec[4]) {}
-    helixpar(const HepSymMatrix& pcov) : _d0(sqrt(pcov.fast(1,1))),_p0(sqrt(pcov.fast(2,2))),_om(sqrt(pcov.fast(3,3))),
-      _z0(sqrt(pcov.fast(4,4))),_td(sqrt(pcov.fast(5,5))) {}
-  };
-
-  struct TrkStrawHitInfo {
+  struct TrkStrawHitInfo_old{
     Int_t _active, _usable, _device, _sector, _layer, _straw;
     Float_t _z, _phi, _rho;
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
@@ -92,35 +81,8 @@ namespace mu2e
     Bool_t _xtalk;
   };
 
-  struct MCTrkInfo {
-    Int_t _pdgid;
-    Float_t _time;
-    Float_t _mom;
-    threevec _pos;
-    helixpar _hpar;
-    MCTrkInfo() : _pdgid(0), _time(0.0),_mom(0.0) {}
-  };
 
-  struct MCEvtData {
-    MCEvtData(
-      const PtrStepPointMCVectorCollection* mchitptr,
-      const StepPointMCCollection *mcsteps,
-      const StepPointMCCollection *mcvdsteps) : _mchitptr(mchitptr),
-      _mcsteps(mcsteps),_mcvdsteps(mcvdsteps){}
-    void clear() { _mchitptr = 0; _mcsteps = 0; _mcvdsteps = 0; _simparts = 0; _mcdigis = 0; }
-    MCEvtData() {clear();}
-    bool good() { return _mchitptr != 0 && _mcsteps != 0 && _mcvdsteps != 0 && _simparts !=0 && _mcdigis !=0; }
-    const PtrStepPointMCVectorCollection* _mchitptr;
-    const StepPointMCCollection *_mcsteps, *_mcvdsteps;
-    const StrawDigiMCCollection *_mcdigis;
-    const SimParticleCollection *_simparts;
-  };
- 
   typedef StepPointMCCollection::const_iterator MCStepItr;
-//  struct test : public binary_function<double,double,bool> {
-//    bool operator()(double x, double y) { return x < y;}
-//  };
-
 //  Simple helper class to find MC information within collections
   
   class KalFitMC {
@@ -234,7 +196,7 @@ namespace mu2e
     Float_t _bremsemax;
     Float_t _bremsz;
  
-    std::vector<TrkStrawHitInfo> _tshinfo;
+    std::vector<TrkStrawHitInfo_old> _tshinfo;
 
 // hit tuple variables
     TTree *_hitdiag;

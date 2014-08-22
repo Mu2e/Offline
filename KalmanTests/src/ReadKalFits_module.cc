@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.27 2014/05/01 18:20:04 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/05/01 18:20:04 $
+// $Id: ReadKalFits_module.cc,v 1.28 2014/08/22 19:55:50 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/08/22 19:55:50 $
 //
 // Original author Rob Kutschke
 //
@@ -32,7 +32,7 @@ using namespace CLHEP;
 #include "TrkBase/TrkParticle.hh"
 // mu2e tracking
 #include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "KalmanTests/inc/KalDiag.hh"
 
 // C++ includes.
 #include <iostream>
@@ -74,7 +74,7 @@ namespace mu2e {
 
     bool haveG4BL;// = g4beamlineData.isValid();
     // diagnostic of Kalman fit
-    KalFitMC _kfitmc;
+    KalDiag _kdiag;
 
     // Control level of printout.
     int _verbosity;
@@ -106,7 +106,7 @@ namespace mu2e {
     _evtWtModules( pset.get<std::vector<art::InputTag>>("eventWeightModules",std::vector<art::InputTag>() ) ),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
+    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
     _verbosity(pset.get<int>("verbosity",0)),
     _maxPrint(pset.get<int>("maxPrint",0)),
     _processEmpty(pset.get<bool>("processEmpty",true)),
@@ -129,7 +129,7 @@ namespace mu2e {
     _hmomentum0 = tfs->make<TH1F>( "hmomentum", "Reco Momentum at front face",        100,    70.,  110. );
     _hdp        = tfs->make<TH1F>( "hdp",       "Momentum Change across Tracker",     100,   -10.,    0. );
     _hz0        = tfs->make<TH1F>( "hz0",       "z of start valid region (cm)",       100, -1500., -800. );
-    _trkdiag    = _kfitmc.createTrkDiag();
+    _trkdiag    = _kdiag.createTrkDiag();
     // add local branches
     _trkdiag->Branch("eventid",&_eventid,"eventid/I");
     _trkdiag->Branch("trkid",&_trkid,"trkid/I");
@@ -143,7 +143,7 @@ namespace mu2e {
     //    cout << "Enter ReadKalFits:: analyze: " << _verbosity << endl;
 
     _eventid++;
-    _kfitmc.findMCData(event);
+    _kdiag.findMCData(event);
     // Get handle to calorimeter hit collection.
     art::Handle<KalRepCollection> trksHandle;
     event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
@@ -172,8 +172,8 @@ namespace mu2e {
       KalRep const* krep = trks.get(i);
       if ( !krep ) continue;
 
-      _kfitmc.kalDiag(krep,false);
-      _kfitmc._trkdiag->Fill();
+      _kdiag.kalDiag(krep,false);
+      _kdiag._trkdiag->Fill();
 
       // For some quantities you require the concrete representation, not
       // just the base class.
@@ -225,8 +225,8 @@ namespace mu2e {
     }
     // if there are no tracks, enter dummies
     if(trks.size() == 0 && _processEmpty){
-      _kfitmc.kalDiag(0,false);
-      _kfitmc._trkdiag->Fill();
+      _kdiag.kalDiag(0,false);
+      _kdiag._trkdiag->Fill();
     }
   }
 

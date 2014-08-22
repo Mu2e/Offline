@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalFitMC.cc,v 1.61 2014/08/05 23:10:49 brownd Exp $
+// $Id: KalFitMC.cc,v 1.62 2014/08/22 19:55:50 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/08/05 23:10:49 $
+// $Date: 2014/08/22 19:55:50 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -495,7 +495,7 @@ namespace mu2e
     for(size_t itsh=0;itsh<hits.size();++itsh){
       const TrkStrawHit* tsh = hits[itsh];
       if(tsh != 0){
-        TrkStrawHitInfo tshinfo;
+        TrkStrawHitInfo_old tshinfo;
         tshinfo._active = tsh->isActive();
         tshinfo._usable = tsh->usability();
 	tshinfo._device = tsh->straw().id().getDevice();
@@ -862,7 +862,6 @@ namespace mu2e
     GeomHandle<DetectorSystem> det;
 
     einfo._time = imcs->time();
-    einfo._pdgid = imcs->simParticle()->pdgId(); 
     double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
     CLHEP::Hep3Vector mom = imcs->momentum();
     einfo._mom = mom.mag();
@@ -885,7 +884,6 @@ namespace mu2e
     GlobalConstantsHandle<ParticleDataTable> pdt;
     GeomHandle<DetectorSystem> det;
     einfo._time = sp.startGlobalTime();
-    einfo._pdgid = sp.pdgId();
     double charge = pdt->particle(sp.pdgId()).ref().charge();
     CLHEP::Hep3Vector mom = sp.startMomentum();
     einfo._mom = mom.mag();

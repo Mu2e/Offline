@@ -1,8 +1,8 @@
 //_p// compare 2 particle fits of the same track
 //
-// $Id: CompareFits_module.cc,v 1.4 2014/04/18 16:54:59 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:54:59 $
+// $Id: CompareFits_module.cc,v 1.5 2014/08/22 19:55:50 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/08/22 19:55:50 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -35,7 +35,7 @@ using namespace CLHEP;
 #include "TrkBase/TrkHelixUtils.hh"
 // mu2e tracking
 #include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "KalmanTests/inc/KalDiag.hh"
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -86,7 +86,7 @@ namespace mu2e {
     unsigned _eventid;
     bool _extrapolate;
     // diagnostic of Kalman fit
-    KalFitMC _kfitmc;
+    KalDiag _kdiag;
     // TTree for studying  fits
     TTree* _fitcomp;
     // TTree branches
@@ -122,7 +122,7 @@ namespace mu2e {
     _maxdtd(pset.get<double>("MaxDeltaTanDip",0.1)),
     _maxdp0(pset.get<double>("MaxDeltaPhi0",0.1)),
     _maxdt0(pset.get<double>("MaxDeltaT0",5)),
-    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
+    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
     _fitcomp(0)
   {
 // construct the data product instance names for particles 
@@ -155,7 +155,7 @@ namespace mu2e {
     if(_eventid==0)getEntranceZ();
     _eventid++;
 // get MC info
-    bool hasmc = _kfitmc.findMCData(event);
+    bool hasmc = _kdiag.findMCData(event);
  
     art::Handle<KalRepCollection> ptrksHandle;
     event.getByLabel(_pmname,_pdname,ptrksHandle);
@@ -184,17 +184,17 @@ namespace mu2e {
 	      // get MC info for the upstream and downstream tracks
 	      if(hasmc){
 		art::Ptr<SimParticle> pmcinfo, smcinfo;
-		_kfitmc.findMCTrk(pkrep,pmcinfo);
-		_kfitmc.findMCTrk(skrep,smcinfo);
+		_kdiag.findMCTrk(pkrep,pmcinfo);
+		_kdiag.findMCTrk(skrep,smcinfo);
 		// use these to find the points where the true particle enters the tracker
 		if(pmcinfo.isNonnull() && smcinfo.isNonnull() && 
 		    pmcinfo == smcinfo){
 		  std::vector<MCStepItr> steps;
-		  _kfitmc.findMCSteps(_kfitmc.mcData()._mcvdsteps,pmcinfo->id(),_kfitmc.VDids(KalFitMC::trackerEnt),steps);
+		  _kdiag.findMCSteps(_kdiag.mcData()._mcvdsteps,pmcinfo->id(),_kdiag.VDids(KalDiag::trackerEnt),steps);
 		  if(steps.size() == 2){
 		    // These are sorted by time: first should be upstream, second down
-		    _kfitmc.fillMCTrkInfo(steps[0],_pmcinfo);
-		    _kfitmc.fillMCTrkInfo(steps[1],_smcinfo);
+		    _kdiag.fillMCTrkInfo(steps[0],_pmcinfo);
+		    _kdiag.fillMCTrkInfo(steps[1],_smcinfo);
 		  } else
 		    std::cout << "Didn't find 2 steps" << std::endl;
 		} else
