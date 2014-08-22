@@ -311,6 +311,12 @@ TrkPatRec :
 		fieldCorrection				: true
                 maxhitchi                               : 3.5
 	}
+# MC Time offsets for diagnostics configuration can be done generically
+	KalDiag : 
+	{
+	    TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	}
+
 } # end TrkPatRec
 # variants of TrkPatRec for specific particle species and directions. These constitute the 'standard' fits
 # in future we need names instead of values for the particle type
