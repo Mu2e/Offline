@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: StudyTrackingAction.cc,v 1.7 2014/01/21 06:19:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/21 06:19:49 $
+// $Id: StudyTrackingAction.cc,v 1.8 2014/08/25 20:01:30 genser Exp $
+// $Author: genser $
+// $Date: 2014/08/25 20:01:30 $
 //
 // Original author Rob Kutschke
 //
@@ -61,7 +61,9 @@ namespace mu2e {
     _overflowSimParticles(false),
     _saveTrajectoryMomentumCut(config.getDouble("g4.saveTrajectoryMomentumCut", 0.)),
     _steppingAction(steppingAction),
-    _processInfo(0){
+    _processInfo(0),
+    _printTrackTiming(config.getBool("g4.printTrackTiming",true))
+  {
 
     string name("g4.trackingActionEventList");
     if ( config.hasName(name) ){
@@ -69,7 +71,6 @@ namespace mu2e {
       config.getVectorInt(name,list);
       _debugList.add(list);
     }
-
 
   }
 
@@ -114,12 +115,14 @@ namespace mu2e {
     // saveSimParticle must be called before controlTrajectorySaving.
     // but after attaching the  user track information
     saveSimParticleStart(trk);
-    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, _saveTrajectoryMomentumCut);
+    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, 
+                                               _saveTrajectoryMomentumCut);
 
     _steppingAction->BeginOfTrack();
 
     if ( !_debugList.inList() ) return;
-    Mu2eG4UserHelpers::printTrackInfo( trk, "Start new Track: ", _transientMap, _timer, _mu2eOrigin);
+    Mu2eG4UserHelpers::printTrackInfo( trk, "Start new Track: ",  _transientMap,
+                                       _timer, _mu2eOrigin);
 
     _timer.reset();
     _timer.start();
@@ -135,7 +138,8 @@ namespace mu2e {
     _steppingAction->EndOfTrack();
 
     if ( !_debugList.inList() ) return;
-    Mu2eG4UserHelpers::printTrackInfo( trk, "End Track:       ",  _transientMap, _timer, _mu2eOrigin, true);
+    Mu2eG4UserHelpers::printTrackInfo( trk, "End Track:       ", _transientMap,
+                                       _timer, _mu2eOrigin, true, _printTrackTiming);
 
   }
 

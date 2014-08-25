@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.44 2014/05/12 15:23:29 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/05/12 15:23:29 $
+// $Id: TrackingAction.cc,v 1.45 2014/08/25 20:01:30 genser Exp $
+// $Author: genser $
+// $Date: 2014/08/25 20:01:30 $
 //
 // Original author Rob Kutschke
 //
@@ -69,7 +69,8 @@ namespace mu2e {
     _mcTrajectoryMinSteps(config.getInt("g4.mcTrajectoryMinSteps", 5)),
     _steppingAction(steppingAction),
     _processInfo(0),
-    _spHelper(),
+    _printTrackTiming(config.getBool("g4.printTrackTiming",true)),
+     _spHelper(),
     _primaryHelper()
   {
 
@@ -125,12 +126,14 @@ namespace mu2e {
     // saveSimParticle must be called before controlTrajectorySaving.
     // but after attaching the  user track information
     saveSimParticleStart(trk);
-    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, _saveTrajectoryMomentumCut);
+    Mu2eG4UserHelpers::controlTrajectorySaving(trk, _sizeLimit, _currentSize, 
+                                               _saveTrajectoryMomentumCut);
 
     _steppingAction->BeginOfTrack();
 
     if ( !_debugList.inList() ) return;
-    Mu2eG4UserHelpers::printTrackInfo( trk, "Start new Track: ", _transientMap, _timer, _mu2eOrigin);
+    Mu2eG4UserHelpers::printTrackInfo( trk, "Start new Track: ", _transientMap, 
+                                       _timer, _mu2eOrigin);
 
     _timer.reset();
     _timer.start();
@@ -145,14 +148,17 @@ namespace mu2e {
     // Finalize the SimParticle
     saveSimParticleEnd(trk);
 
-    // If this particle passes the cuts, add the trajectory information to the data product.
+    // If this particle passes the cuts, add the trajectory
+    // information to the data product.
+
     swapTrajectory(trk);
 
     // Any other clean up.
     _steppingAction->EndOfTrack();
 
     if ( !_debugList.inList() ) return;
-    Mu2eG4UserHelpers::printTrackInfo( trk, "End Track:       ",  _transientMap, _timer, _mu2eOrigin, true);
+    Mu2eG4UserHelpers::printTrackInfo( trk, "End Track:       ", _transientMap,
+                                       _timer, _mu2eOrigin, true, _printTrackTiming);
 
   }
 

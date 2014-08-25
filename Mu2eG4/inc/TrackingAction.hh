@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.hh,v 1.29 2014/03/24 21:39:01 gandr Exp $
-// $Author: gandr $
-// $Date: 2014/03/24 21:39:01 $
+// $Id: TrackingAction.hh,v 1.30 2014/08/25 20:01:30 genser Exp $
+// $Author: genser $
+// $Date: 2014/08/25 20:01:30 $
 //
 // Original author Rob Kutschke
 //
@@ -121,6 +121,7 @@ namespace mu2e {
     // Non-owning pointer to the information about physical processes;
     // lifetime of pointee is one run.
     PhysicsProcessInfo *  _processInfo;
+    bool _printTrackTiming;
 
     // Helper to obtain SimParticle Ptr (non-owning)
     const SimParticleHelper *_spHelper;

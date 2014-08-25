@@ -5,9 +5,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: StudyTrackingAction.hh,v 1.4 2014/01/21 06:19:49 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/21 06:19:49 $
+// $Id: StudyTrackingAction.hh,v 1.5 2014/08/25 20:01:30 genser Exp $
+// $Author: genser $
+// $Date: 2014/08/25 20:01:30 $
 //
 // Original author Rob Kutschke
 //
@@ -108,6 +108,7 @@ namespace mu2e {
     // Non-owning pointer to the information about physical processes;
     // lifetime of pointee is one run.
     PhysicsProcessInfo *  _processInfo;
+    bool _printTrackTiming;
 
     // Handle to the GenParticle collection; needed to make Ptrs into that collection.
     art::Handle<GenParticleCollection> const * _gensHandle;

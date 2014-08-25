@@ -2,9 +2,9 @@
 // A collection of Geant4 user helper functions
 // initially extracted from the TrackingAction
 //
-// $Id: Mu2eG4UserHelpers.cc,v 1.6 2013/02/20 21:57:56 genser Exp $
+// $Id: Mu2eG4UserHelpers.cc,v 1.7 2014/08/25 20:01:30 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/20 21:57:56 $
+// $Date: 2014/08/25 20:01:30 $
 //
 // Original author K. L. Genser based on Rob's TrackingAction
 //
@@ -214,7 +214,7 @@ namespace mu2e {
                         map_type const& transientMap,
                         art::CPUTimer const& timer,
                         CLHEP::Hep3Vector const& mu2eOrigin,
-                        bool isEnd) {
+                        bool isEnd, bool printTimers) {
 
       const G4Event* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
@@ -250,10 +250,13 @@ namespace mu2e {
           cout << -1. <<  " ";
         }
 
-        cout << trk->GetGlobalTime() << " | ";
-        cout << timer.cpuTime() << " "
-             << timer.realTime()
-             << endl;
+        cout << trk->GetGlobalTime();
+        if (printTimers) {
+          cout  << " | "
+                << timer.cpuTime() << " "
+                << timer.realTime();
+        }
+        cout << endl;
       }
 
       cout << endl;

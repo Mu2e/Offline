@@ -3,9 +3,9 @@
 //
 // A collection of Geant4 user helper functions
 // initially extracted from the TrackingAction
-// $Id: Mu2eG4UserHelpers.hh,v 1.5 2013/02/07 17:54:03 genser Exp $
+// $Id: Mu2eG4UserHelpers.hh,v 1.6 2014/08/25 20:01:30 genser Exp $
 // $Author: genser $
-// $Date: 2013/02/07 17:54:03 $
+// $Date: 2014/08/25 20:01:30 $
 //
 // Original author KLG based on Rob's TrackingAction
 //
@@ -47,7 +47,7 @@ namespace mu2e {
                         map_type const& transientMap,
                         art::CPUTimer const& timer,
                         CLHEP::Hep3Vector const& mu2eOrigin,
-                        bool isEnd=false);
+                        bool isEnd=false, bool printTimers=true);
 
     G4String findStepStoppingProcessName(G4Step const* const aStep);
     G4String findTrackStoppingProcessName(G4Track const* const trk);
