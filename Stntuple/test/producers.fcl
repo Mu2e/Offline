@@ -57,4 +57,41 @@ FillStntuple : {
 	# bit51:1
     }
 }
+
+#------------------------------------------------------------------------------
+# 
+#------------------------------------------------------------------------------
+MuHitDisplay: {
+    module_type                  : MuHitDisplay # the class name
+    debugBits                    : { }          # need for TAnaModule
+    interactiveMode              : 1
+	
+    generatorModuleLabel         : generate
+    g4ModuleLabel                : g4run
+    strawHitMakerModuleLabel     : makeSH
+    strawHitPosMakerModuleLabel  : MakeStereoHits
+    strawHitFlagMakerModuleLabel : FlagStrawHits
+    caloClusterModuleLabel       : MakeCaloCluster
+    trkExtrapol                  : TrkExtrapol
+    trkCalMatch                  : CaloMatching
+    trkPatRecModuleLabel         : TrkPatRec
+    pidModuleLabel               : ParticleID
+	
+    # if set to true, all hits will be displayed unconditionally
+    # otherwise, display only hits with right flags
+    displayBackgroundHits        : true
+    useStereoHits                : false
+
+    #      goodHitMask                 : ["EnergySelection","RadiusSelection","TimeSelection"]
+    goodHitMask                  : ["EnergySelection", "RadiusSelection"]
+    badHitMask                   : ["DeltaRay", "Isolated"]
+	
+    trackerStepPoints            : tracker
+    minHits                      : 5
+    clickToAdvance               : true
+    printHits                    : false
+    timeWindow                   : 100000.
+    #      timeWindow           : 50.
+}
+
 END_PROLOG

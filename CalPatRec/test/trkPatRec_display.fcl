@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: trkPatRec_display.fcl,v 1.4 2014/06/04 03:06:29 murat Exp $
+# $Id: trkPatRec_display.fcl,v 1.5 2014/08/25 18:56:09 murat Exp $
 #------------------------------------------------------------------------------
 # read data from the input file,
 # assume the file contains the digitized hits
@@ -11,7 +11,7 @@
 #include "TrackCaloMatching/test/producers.fcl"
 #include "CalPatRec/test/producers.fcl"
 #include "ParticleID/test/producers.fcl"
-#include "murat/test/producers.fcl"
+#include "Stntuple/test/producers.fcl"
 
 #                             Give this process a name
 process_name : trkPPatRec
