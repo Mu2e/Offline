@@ -138,9 +138,9 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   mu2e::KalRepPtrCollection*             list_of_kreps              (0);
   mu2e::PtrStepPointMCVectorCollection*  list_of_mc_straw_hits      (0);
   //  mu2e::CaloClusterCollection*           list_of_clusters(0);
-  mu2e::StrawHitCollection*              list_of_straw_hits         (0);
-  mu2e::TrkToCaloExtrapolCollection*     list_of_extrapolated_tracks(0);
-  const mu2e::PIDProductCollection*      list_of_pidp               (0);
+  const mu2e::StrawHitCollection*              list_of_straw_hits         (0);
+  const mu2e::TrkToCaloExtrapolCollection*     list_of_extrapolated_tracks(0);
+  const mu2e::PIDProductCollection*            list_of_pidp               (0);
 
   static char   algs_module_label[100], algs_description[100];
   static char   krep_module_label[100], krep_description[100];
@@ -234,14 +234,13 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   if (strh_module_label[0] != 0) {
     if (strh_description[0] == 0) AnEvent->getByLabel(strh_module_label,shHandle);
     else                          AnEvent->getByLabel(strh_module_label,strh_description,shHandle);
-    list_of_straw_hits = (mu2e::StrawHitCollection*) &(*shHandle);
-    //    int n_straw_hits      = list_of_straw_hits->size();
+    if (shHandle.isValid()) list_of_straw_hits = shHandle.product();
   }
 
   art::Handle<mu2e::TrkToCaloExtrapolCollection>  texHandle;
   if (trex_module_label[0] != 0) {
     AnEvent->getByLabel(trex_module_label,trex_description,texHandle);
-    list_of_extrapolated_tracks = (mu2e::TrkToCaloExtrapolCollection*) &(*texHandle);
+    if (texHandle.isValid()) list_of_extrapolated_tracks = texHandle.product();
   }
 
   //  art::Handle<mu2e::TrackClusterLink>  trk_cal_map;
@@ -383,7 +382,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     int     loc, ipart, nhits, n_straw_hits, found; // , pdg_code;
     int     id,  npart(0), part_pdg_code[100], part_nh[100], part_id[100];
 
-    mu2e::StrawHit            *s_hit0;
+    const mu2e::StrawHit      *s_hit0;
     const mu2e::StrawHit      *s_hit; 
     const mu2e::SimParticle   *sim; 
 
@@ -709,9 +708,12 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 //-----------------------------------------------------------------------------
     unsigned int nm (0);
 
-    const mu2e::TrackClusterMatchCollection* tcmcoll = tcmH.product();
-    
-    if (tcmcoll != NULL) nm = tcmcoll->size();
+    const mu2e::TrackClusterMatchCollection* tcmcoll;
+
+    if (tcmH.isValid()) {
+      tcmcoll = tcmH.product();
+      nm      = tcmcoll->size();
+    }
 
     const mu2e::TrackClusterMatch* tcm;
 
