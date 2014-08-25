@@ -2,9 +2,9 @@
 // config file to perform Geant4 studies using the Mu2e framework infrastructure
 //
 
-// $Id: g4studyGeom.txt,v 1.11 2013/04/09 23:33:53 genser Exp $
+// $Id: g4studyGeom.txt,v 1.12 2014/08/25 21:24:59 genser Exp $
 // $Author: genser $
-// $Date: 2013/04/09 23:33:53 $
+// $Date: 2014/08/25 21:24:59 $
 //
 // Original author K. Genser
 //
@@ -24,13 +24,15 @@ bool           mu2e.standardDetector = false;
 // version of the target geometry configuration
 
 int            mu2e.studyEnvVersion      = 1;
+// 1 tube; 2 box
 
 vector<string> mu2e.materials = {"WAGVacuum"};
 
 bool           mu2e.printParticleDataTable = false;
 
 // Use a decent physics list
-string g4.physicsListName      = "QGSP_BERT";
+string g4.physicsListName      = "Shielding";
+int g4.physicsListVerbosity = 1;
 
 // Use a specific range cut
 double g4.minRangeCut = 0.01; // mm
@@ -81,12 +83,13 @@ vector<int>    g4.killLowEKinePDG = {};
 vector<double> g4.eKineMinPDG     = {};
 
 // event track debug list
-vector<int> g4.trackingActionEventList = {};
+// vector<int> g4.trackingActionEventList = {};
+bool g4.printTrackTiming = false;
 
 // event track step debug list
-vector<int> g4.steppingActionEventList = {1,2,3,4,5};
+// vector<int> g4.steppingActionEventList = {1,2,3,4,5};
 // empty track list means all if the event list is not empty
-vector<int> g4.steppingActionTrackList = {};
+// vector<int> g4.steppingActionTrackList = {};
 
 // the "World Box"
 
