@@ -73,6 +73,18 @@ namespace mu2e {
 	> 1.0e-4) {
       cout << "Warning! th1dmorph: This is an extrapolation!! Weights are "
 	   << wt1 << " and " << wt2 << " (sum=" << wt1+wt2 << ")" << endl;
+      //2014 - 08 - 18 Gianipez and P. Murat introduced the following changes for fixing an error 
+      // returned during the grid processing
+      printf("parinterp = %5.5e par1 = %5.5e par2 = %5.5e \n", parinterp, par1, par2);
+      if( wt1 <= 0.) {
+	wt1 = 0.;
+	wt2 = 1.;
+      }else if(wt2 <= 0.) {
+	wt2 = 0.;
+	wt1 = 1.;
+      }
+      printf("Set weights to wt1 = %.5f wt2 = %.5f\n", wt1, wt2);
+      //------------------------------------------------------------//
     }
     if (idebug >= 1) cout << "th1dmorph - Weights: " << wt1 << " " << wt2 << endl;
 
