@@ -14,14 +14,14 @@
                                 // the line below tells CINT where to look for 
 				// the include files
 
-  gInterpreter->AddIncludePath(Form("%s/include",
-				    gSystem->Getenv("SRT_LOCAL")));
+//   gInterpreter->AddIncludePath(Form("%s/include",
+// 				    gSystem->Getenv("SRT_LOCAL")));
 
-  gInterpreter->AddIncludePath(Form("%s/include",
-				    gSystem->Getenv("CDFSOFT2_DIR")));
+//   gInterpreter->AddIncludePath(Form("%s/include",
+// 				    gSystem->Getenv("CDFSOFT2_DIR")));
 
-  gInterpreter->AddIncludePath(Form("%s/tex/cdfnotes",
-				    gSystem->Getenv("HOME")));
+//   gInterpreter->AddIncludePath(Form("%s/tex/cdfnotes",
+// 				    gSystem->Getenv("HOME")));
 //   gSystem->SetMakeSharedLib("cd $BuildDir ; g++ -c -g $Opt -pipe -m32 -Wall -W -Woverloaded-virtual -fPIC -pthread $IncludePath $SourceFiles ;  g++ -g $ObjectFiles -shared -Wl,-soname,$LibName.so -m32 $LinkedLibs -o $SharedLib");
 //-----------------------------------------------------------------------------
 // load in ROOT physics vectors and event generator libraries
@@ -60,12 +60,12 @@
 //-----------------------------------------------------------------------------
     if (batch_mode == 1) gSystem->Load("$ROOTSYS/lib/libGui.so");
 
-    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_base.so");
-    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_obj.so");
-    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_loop.so");
-    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_alg.so");
-    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_val.so");
-    gSystem->Load("$MU2E_TEST_RELEASE/lib/libStntuple_ana.so");
+    gSystem->Load("$MU2E_BASE_RELEASE/lib/libStntuple_base.so");
+    gSystem->Load("$MU2E_BASE_RELEASE/lib/libStntuple_obj.so");
+    gSystem->Load("$MU2E_BASE_RELEASE/lib/libStntuple_loop.so");
+    gSystem->Load("$MU2E_BASE_RELEASE/lib/libStntuple_alg.so");
+    gSystem->Load("$MU2E_BASE_RELEASE/lib/libStntuple_val.so");
+    gSystem->Load("$MU2E_BASE_RELEASE/lib/libStntuple_ana.so");
   }
                                 // print overflows/underflows in the stat box
   gStyle->SetOptStat(11111111);

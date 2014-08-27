@@ -1,4 +1,4 @@
-Unix.*.Root.MacroPath:.:$(MU2E_TEST_RELEASE)/murat/ana/scripts:~/root_macros:$(PWD)/Stntuple/ana:$(PWD)/Stntuple/scripts:$(ROOTSYS)/tutorials:$(HOME)/tex/cdfnotes
+Unix.*.Root.MacroPath:.:$(MU2E_BASE_RELEASE)/murat/ana/scripts:~/root_macros:$(PWD)/Stntuple/ana:$(PWD)/Stntuple/scripts:$(ROOTSYS)/tutorials:$(HOME)/tex/cdfnotes
 
 Unix*.Root.DynamicPath:.:~/rootlibs:$(LD_LIBRARY_PATH)
 Root.Html.OutputDir:.
@@ -7,15 +7,15 @@ Root.Html.SourceDir:.:$(ROOTSYS)/src
 #  next line tells ROOT to use rootlogon.C macro from the 
 #  current directory and not any of the default ones
 #
-Rint.Logon:          $(MU2E_TEST_RELEASE)/rootlogon.C
+Rint.Logon:          $(MU2E_BASE_RELEASE)/rootlogon.C
 Rint.Logoff:
 
 # Root.MemStat:  1
 Root.ObjectStat:  1
 #
-Gui.IconPath:   $(MU2E_TEST_RELEASE)/Stntuple/icons
+Gui.IconPath:   $(MU2E_BASE_RELEASE)/Stntuple/icons
 # Record session commands, set to "-" to turn off command recording
-Rint.History:   $(MU2E_TEST_RELEASE)/.root_hist
+Rint.History:   $(MU2E_BASE_RELEASE)/.root_hist
 #------------------------------------------------------------------------------
 # plugin handlers
 #------------------------------------------------------------------------------
@@ -45,7 +45,7 @@ Stntuple.Catalog   http://home.fnal.gov/~murat/cafdfc
 #------------------------------------------------------------------------------
 # Calibration DB for TGeant: not used at Mu2e
 #------------------------------------------------------------------------------
-# TGeant.Database         $(MU2E_TEST_RELEASE)/Stntuple/db
+# TGeant.Database         $(MU2E_BASE_RELEASE)/Stntuple/db
 #------------------------------------------------------------------------------
 # stnana packages, add your own packages as needed
 #------------------------------------------------------------------------------
