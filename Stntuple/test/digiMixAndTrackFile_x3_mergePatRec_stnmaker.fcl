@@ -20,13 +20,13 @@ END_PROLOG
 #------------------------------------------------------------------------------
 #include "Stntuple/test/digiMixAndTrackFile_mergePatRec_stnmaker_template.fcl"
 
-# using x050 events: <2 events> = -4
-physics.filters.flashMixer.detail.mean   : -4
-physics.filters.ootMixer.detail.mean     : -4
-physics.filters.dioMixer.detail.mean     : -4
-physics.filters.neutronMixer.detail.mean : -4
-physics.filters.photonMixer.detail.mean  : -4
-physics.filters.protonMixer.detail.mean  : -4
+# using x050 events: <3 events> = -6
+physics.filters.flashMixer.detail.mean   : -6
+physics.filters.ootMixer.detail.mean     : -6
+physics.filters.dioMixer.detail.mean     : -6
+physics.filters.neutronMixer.detail.mean : -6
+physics.filters.photonMixer.detail.mean  : -6
+physics.filters.protonMixer.detail.mean  : -6
 
 physics.filters.InitStntuple.histFileName                        : {OUTPUT_STNTUPLE}
 

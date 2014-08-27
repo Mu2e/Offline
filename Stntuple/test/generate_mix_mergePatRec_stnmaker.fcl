@@ -164,7 +164,8 @@ physics : {
 # paths
 # write out ntuple only, so don't need compression modules...
 #------------------------------------------------------------------------------
-    p1 : [generate, g4run, FilterStepPointMomentum
+    p1 : [generate, g4run
+  #	  , FilterStepPointMomentum
 	  , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
 	  , protonTimeMap, muonTimeMap
 	  , makeSD, makeSH
@@ -183,8 +184,8 @@ physics : {
 
     trigger_paths  : [p1]
     
-    out : [detectorOutput]
-#    out  : []
+#    out : [detectorOutput]
+    out  : []
     end_paths      : [out]
 }
 

@@ -3,9 +3,9 @@
 # generate 105 MeV/c electrons
 # make STNTUPLE in one go, without creating an intermediate file
 #------------------------------------------------------------------------------
-# $Id: egun_stnmaker.fcl,v 1.1 2014/07/16 03:14:30 murat Exp $
+# $Id: egun_stnmaker.fcl,v 1.2 2014/08/27 19:59:09 murat Exp $
 # $Author: murat $
-# $Date: 2014/07/16 03:14:30 $
+# $Date: 2014/08/27 19:59:09 $
 
 //test: // This must be commented out for grid production.
 BEGIN_PROLOG
@@ -28,8 +28,9 @@ physics.producers.generate.physics.ehi    : 105.0015
 services.TFileService.fileName            : "egun_stnmaker.hist"
 physics.filters.InitStntuple.histFileName : "egun_stnmaker.stn" 
 
-# physics.out                               : [ detectorOutput ]
-# outputs.detectorOutput.fileName           : "egun_stnmaker.root"
+# uncomment the next 2 lines if you want the DST file to be written out
+physics.out                               : [ detectorOutput ]
+outputs.detectorOutput.fileName           : "egun_stnmaker.root"
 #------------------------------------------------------------------------------
 # everything below is appended by murat/scripts/submit_mu2e_job
 #------------------------------------------------------------------------------

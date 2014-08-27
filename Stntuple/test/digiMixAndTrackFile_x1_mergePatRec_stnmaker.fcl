@@ -3,10 +3,16 @@
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # note: MixP3 files are about 9.3 GBytes large
+# mixp3-x050 files are ~ 2.3 GBytes (250 events per file)
+# for grid jobs       : --fclInput=1:@bgHitFiles:datasets/mixp3-x050-dcache
+# for local debug jobs: --fclInput=1:@bgHitFiles:datasets/mixp3-x050-local
 #------------------------------------------------------------------------------
+# bgHitFiles : [ "/pnfs/mu2e/scratch/tdr/beam/mixp3-x050/tdr.beam.mix.bgx050.1716a.16417890/good/00000/data_mixBG.root"]
+# bgHitFiles : [ "/mu2e/users/murat/datasets/mixp3-x050/tdr.beam.mix.bgx050.1716a.16417890/good/00000/data_mixBG.root"]
+#
 # bgHitFiles : [ "/pnfs/mu2e/scratch/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
-bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
-#  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00000/data_mixBG.root"]
+# bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
+# bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00000/data_mixBG.root"]
 END_PROLOG
 #------------------------------------------------------------------------------
 # quick comments: reads signal MC and also background MC inputs with steppoints
@@ -14,14 +20,15 @@ END_PROLOG
 #------------------------------------------------------------------------------
 #include "Stntuple/test/digiMixAndTrackFile_mergePatRec_stnmaker_template.fcl"
 
-physics.filters.flashMixer.detail.mean   : -1
-physics.filters.ootMixer.detail.mean     : -1
-physics.filters.dioMixer.detail.mean     : -1
-physics.filters.neutronMixer.detail.mean : -1
-physics.filters.photonMixer.detail.mean  : -1
-physics.filters.protonMixer.detail.mean  : -1
+# using x050 events: <1 event> = -2
+physics.filters.flashMixer.detail.mean   : -2
+physics.filters.ootMixer.detail.mean     : -2
+physics.filters.dioMixer.detail.mean     : -2
+physics.filters.neutronMixer.detail.mean : -2
+physics.filters.photonMixer.detail.mean  : -2
+physics.filters.protonMixer.detail.mean  : -2
 
 physics.filters.InitStntuple.histFileName                        : {OUTPUT_STNTUPLE}
 
-# writing output file
-physics.out : [detectorOutput]
+# writing output DST file
+# physics.out : [detectorOutput]

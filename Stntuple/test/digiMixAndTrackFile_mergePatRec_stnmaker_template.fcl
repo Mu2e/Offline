@@ -100,6 +100,7 @@ physics : {
 #------------------------------------------------------------------------------
 #  default tracking
 #------------------------------------------------------------------------------
+	FSHPreStereo         : @local::FSHPreStereo
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
@@ -135,7 +136,7 @@ physics : {
 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker, 
 	  MakeCaloCluster, 
 # 
-	  MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, 
+	  FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, 
 #
 	  MakeStrawHitPositions, 
 	  CalPatRec, 
