@@ -697,7 +697,8 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 	    vint->fChi2Match = 1.e6;
 	  }
 	  else {
-	    printf("%s : ADDITIONAL EXTR POINT for track %i on vane = %i\n", oname,itrk,iv);
+	    printf("Run:Event: %i:%i %s : ADDITIONAL EXTR POINT for track %i on vane = %i\n", 
+		   rn_number,ev_number,oname,itrk,iv);
 	  }
 	}
       }
