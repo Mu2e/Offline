@@ -1,9 +1,9 @@
 //
 // TTracker Kalman Fit launcher
 //
-// $Id: TrkRecFit_module.cc,v 1.2 2014/08/25 12:08:29 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2014/08/25 12:08:29 $
+// $Id: TrkRecFit_module.cc,v 1.3 2014/08/27 18:32:28 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/08/27 18:32:28 $
 //
 //
 // Original author D. Brown and G. Tassielli
@@ -411,10 +411,29 @@ namespace mu2e
         }*/
       }
 
-      HelixTraj recoseed(TrkParams(HelixTraj::NHLXPRM));
-      HelixVal2HelixTraj(iTrkSeed._fullTrkSeed,recoseed);
+      // this function doesn't seem to be working, FIXME!!!
+      // HelixTraj recoseed(TrkParams(HelixTraj::NHLXPRM));
+      //HelixVal2HelixTraj(iTrkSeed._fullTrkSeed,recoseed);
 
+// transfer the seed parameters
+      CLHEP::HepVector pvec(5,0);
+      pvec[HelixTraj::d0Index] = iTrkSeed._fullTrkSeed._d0;
+      pvec[HelixTraj::phi0Index] = iTrkSeed._fullTrkSeed._phi0;
+      pvec[HelixTraj::omegaIndex] = iTrkSeed._fullTrkSeed._omega;
+      pvec[HelixTraj::tanDipIndex] = iTrkSeed._fullTrkSeed._z0;
+      pvec[HelixTraj::z0Index] = iTrkSeed._fullTrkSeed._tanDip;
+// estimated covariance based on average performance.  These should be parameters, FIXME!!!
+      CLHEP::HepVector perr(5,0);
+      perr[HelixTraj::d0Index] = 34.0;
+      perr[HelixTraj::phi0Index] = 0.02;
+      perr[HelixTraj::omegaIndex]  = 0.0002;
+      perr[HelixTraj::tanDipIndex] = 0.05;
+      perr[HelixTraj::z0Index] = 15.0;
 
+      if(_debug>0)
+	cout << "helix params " << pvec << "and errors " << perr << endl;
+      HepSymMatrix pcov = vT_times_v(perr);
+      HelixTraj recoseed(pvec,pcov);
       TrkDef seeddef(_shcol,goodhits,recoseed,_tpart,_fdir);
 
 //      TrkDef seeddef(_shcol,_tpart,_fdir);
@@ -442,6 +461,11 @@ namespace mu2e
       // initialize filters.  These are used only for diagnostics
       _hfilt.clear();
       _sfilt.clear();
+
+
+// this needs to be fixed, FIXME!!
+//      filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca,_hfilt);
+
       // now, fit the seed helix from the filtered hits
       //seedfit._tdef.helix().printAll(std::cout);
       _seedfit.makeTrack(seedfit);
