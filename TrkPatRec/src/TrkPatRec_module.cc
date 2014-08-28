@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.84 2014/08/22 21:09:04 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.85 2014/08/28 19:26:04 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/08/22 21:09:04 $
+// $Date: 2014/08/28 19:26:04 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -316,7 +316,7 @@ namespace mu2e
     unique_ptr<StrawHitFlagCollection> flags(_flags );
     // find mc truth if we're making diagnostics
     if(_diag > 0 && !_kdiag.findMCData(event)){
-      throw cet::exception("RECO")<<"mu2e::TrkPatRec: MC information missing "<< endl;
+      throw cet::exception("RECO")<<"mu2e::TrkPatRec: MC data missing or incomplete"<< endl;
     }
     if(_diag > 1){
       fillStrawDiag();

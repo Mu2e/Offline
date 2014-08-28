@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadKalFits_module.cc,v 1.28 2014/08/22 19:55:50 brownd Exp $
+// $Id: ReadKalFits_module.cc,v 1.29 2014/08/28 19:26:04 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/08/22 19:55:50 $
+// $Date: 2014/08/28 19:26:04 $
 //
 // Original author Rob Kutschke
 //
@@ -143,7 +143,9 @@ namespace mu2e {
     //    cout << "Enter ReadKalFits:: analyze: " << _verbosity << endl;
 
     _eventid++;
-    _kdiag.findMCData(event);
+    if(!_kdiag.findMCData(event)){
+      throw cet::exception("RECO")<<"mu2e::KalDiag: MC data missing or incoplete" << std::endl;
+    }
     // Get handle to calorimeter hit collection.
     art::Handle<KalRepCollection> trksHandle;
     event.getByLabel(_fitterModuleLabel,_iname,trksHandle);

@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalDiag.cc,v 1.1 2014/08/22 20:13:59 brownd Exp $
+// $Id: KalDiag.cc,v 1.2 2014/08/28 19:26:04 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/08/22 20:13:59 $
+// $Date: 2014/08/28 19:26:04 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -455,29 +455,28 @@ namespace mu2e
   bool
   KalDiag::findMCData(const art::Event& evt) {
     _mcdata.clear();
-  // Get the persistent data about pointers to StepPointMCs
-    art::Handle<PtrStepPointMCVectorCollection> mchitptrHandle;
-    if(evt.getByLabel(_mcptrlabel,"StrawHitMCPtr",mchitptrHandle))
-      _mcdata._mchitptr = mchitptrHandle.product();
-  // Get the persistent data about the StepPointMCs, from the tracker and the virtual detectors
-    art::Handle<StepPointMCCollection> mctrackerstepsHandle;
-    if(evt.getByLabel(_mcstepslabel,"tracker",mctrackerstepsHandle))
-      _mcdata._mcsteps = mctrackerstepsHandle.product();
-    art::Handle<StepPointMCCollection> mcVDstepsHandle;
-    if(evt.getByLabel(_mcstepslabel,"virtualdetector",mcVDstepsHandle))
-      _mcdata._mcvdsteps = mcVDstepsHandle.product();
-    if(evt.getByLabel(_simpartslabel,_simpartsinstance,_mcdata._simparthandle))
-      _mcdata._simparts = _mcdata._simparthandle.product();
-    art::Handle<StrawDigiMCCollection> mcdigisHandle;
-    if(evt.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle))
-      _mcdata._mcdigis = mcdigisHandle.product();
-// fill hit summary
-    if( _mcdata.good()) {
-// update time offsets
+    if(_fillmc){
+      // Get the persistent data about pointers to StepPointMCs
+      art::Handle<PtrStepPointMCVectorCollection> mchitptrHandle;
+      if(evt.getByLabel(_mcptrlabel,"StrawHitMCPtr",mchitptrHandle))
+	_mcdata._mchitptr = mchitptrHandle.product();
+      // Get the persistent data about the StepPointMCs, from the tracker and the virtual detectors
+      art::Handle<StepPointMCCollection> mctrackerstepsHandle;
+      if(evt.getByLabel(_mcstepslabel,"tracker",mctrackerstepsHandle))
+	_mcdata._mcsteps = mctrackerstepsHandle.product();
+      art::Handle<StepPointMCCollection> mcVDstepsHandle;
+      if(evt.getByLabel(_mcstepslabel,"virtualdetector",mcVDstepsHandle))
+	_mcdata._mcvdsteps = mcVDstepsHandle.product();
+      if(evt.getByLabel(_simpartslabel,_simpartsinstance,_mcdata._simparthandle))
+	_mcdata._simparts = _mcdata._simparthandle.product();
+      art::Handle<StrawDigiMCCollection> mcdigisHandle;
+      if(evt.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle))
+	_mcdata._mcdigis = mcdigisHandle.product();
+      // update time offsets
       _toff.updateMap(evt);
-      return true;
+      return _mcdata.good();
     }
-    return false;
+    return true;
   }
 
   vector<int>const& KalDiag::VDids(TRACKERPOS tpos) const {
