@@ -31,6 +31,15 @@ namespace mu2e {
 
   double SimParticleTimeOffset::totalTimeOffset(art::Ptr<SimParticle> p) const {
 
+    if(offsets_.size() != inputs_.size()) {
+      throw cet::exception("INVOCATION_ERROR")
+        <<"SimParticleTimeOffset::totalTimeOffset():"
+        <<" the number of loaded time maps "<<offsets_.size()
+        <<" does not match the number of requested maps "<<inputs_.size()
+        <<". Did you forget to call SimParticleTimeOffset::updateMap()?\n"
+        ;
+    }
+
     double dt = 0;
 
     // Look up the particle in all the maps, and add up the offsets
