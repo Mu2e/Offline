@@ -1,0 +1,63 @@
+// Proton beam dump parameters.
+// See mu2e docdb #948 and #1944
+//
+// Andrei Gaponenko, 2011
+
+
+//----------------------------------------------------------------
+// 2013-12-13 Update angle and center position per the e-mail:
+// 
+// Date: Fri, 13 Dec 2013 14:01:12
+// From: Peter H Kasper <kasper@fnal.gov>
+// To: Andrei Gaponenko <gandr@fnal.gov>
+// Subject: FW: Local dump coordinates
+// Parts/Attachments:
+//   1 Shown    ~50 lines  Text (charset: Windows-1252)
+//   2          235 KB     Application, "dump-location.xlsx"
+//
+// From: Rick Coleman
+// Sent: Friday, December 13, 2013 10:16 AM
+// To: Carol J Johnstone; Horst W Friedsam; Andy Stefanik; Larry M. Bartoszek; Vitaly Pronskikh
+// Cc: Peter H Kasper; Rick Coleman
+// Subject: Local dump coordinates
+
+vector<double> protonBeamDump.coreCenterInMu2e = {661.90,  527.40, -19428.2};
+double         protonBeamDump.coreRotY = 13.72; // degrees
+
+// Sizes below are given in mm in this order:
+//  {horizontal transverse to beam, vertical, horizontal along beam}
+vector<double> protonBeamDump.coreHalfSize  = { 750., 750., 1000.};
+// Beam entrance.
+vector<double> protonBeamDump.mouthHalfSize = {750., 750., 500.};
+// Neutron cave
+vector<double> protonBeamDump.neutronCaveHalfSize = {1250., 1250., 500.};
+
+// shielding around the core, minimal req.
+double         protonBeamDump.minCoreShieldingThickness = 1000.;
+
+// This is the shielding containing ExtMonFNAL collimator1
+double         protonBeamDump.frontShieldingThickness = 4000.;
+
+//----------------------------------------------------------------
+string protonBeamDump.material.core  = "G4_Al";
+string protonBeamDump.material.shielding = "ShieldingConcrete";
+string protonBeamDump.material.air = "G4_AIR";
+
+bool   protonBeamDump.dirtVisible = true;
+bool   protonBeamDump.dirtSolid   = false;
+
+bool   protonBeamDump.coreVisible = true;
+bool   protonBeamDump.coreSolid   = true;
+bool   protonBeamDump.shieldingVisible = true;
+bool   protonBeamDump.shieldingSolid   = false;
+bool   protonBeamDump.mouthVisible = true;
+bool   protonBeamDump.mouthSolid   = false;
+bool   protonBeamDump.neutronCaveVisible = true;
+bool   protonBeamDump.neutronCaveSolid   = false;
+
+int protonBeamDump.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

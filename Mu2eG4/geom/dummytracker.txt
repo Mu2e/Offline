@@ -1,0 +1,23 @@
+//
+// Geometry description of a dummy tracker; it is just a tubs to hold the 
+// place of a real tracker.
+//
+// $Id: dummytracker.txt,v 1.1 2014/08/29 16:37:08 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/08/29 16:37:08 $
+//
+// Original author Rob Kutschke
+//
+// Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+
+double dummytracker.rIn        =     0.;
+double dummytracker.rOut       =   800.;
+double dummytracker.halfLength =  1300.;
+double dummytracker.z0         = 10200.;
+string dummytracker.material   = "WAGVacuum";
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

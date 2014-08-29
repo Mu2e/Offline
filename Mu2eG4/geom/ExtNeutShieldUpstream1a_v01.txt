@@ -1,0 +1,47 @@
+// Original author David Norvil Brown
+// These numbers based on G4Bl geometry 13 as of 24 August 2013
+
+
+double ExtNeutShieldUpstream1a.length = 4436.26; // mm
+
+string ExtNeutShieldUpstream1a.materialName  = "BARITE";
+
+//vertices, in mm, in mu2e frame
+double ExtNeutShieldUpstream1a.X1 = -3358;   
+double ExtNeutShieldUpstream1a.Y1 = 6569; 
+double ExtNeutShieldUpstream1a.X2 = -3358; 
+double ExtNeutShieldUpstream1a.Y2 = 4861; 
+double ExtNeutShieldUpstream1a.X3 = -5391; 
+double ExtNeutShieldUpstream1a.Y3 = 4861; 
+double ExtNeutShieldUpstream1a.X4 = -5391; 
+double ExtNeutShieldUpstream1a.Y4 = 4363; 
+double ExtNeutShieldUpstream1a.X5 = -2940; 
+double ExtNeutShieldUpstream1a.Y5 = 4363; 
+double ExtNeutShieldUpstream1a.X6 = -2940; 
+double ExtNeutShieldUpstream1a.Y6 = 4000; 
+double ExtNeutShieldUpstream1a.X7 = -2341; 
+double ExtNeutShieldUpstream1a.Y7 = 4000; 
+double ExtNeutShieldUpstream1a.X8 = -2341; 
+double ExtNeutShieldUpstream1a.Y8 = 4800; 
+double ExtNeutShieldUpstream1a.X9 = -1150; 
+double ExtNeutShieldUpstream1a.Y9 = 4800; 
+double ExtNeutShieldUpstream1a.X10 = -2341; 
+double ExtNeutShieldUpstream1a.Y10 = 6569; 
+
+// The center of the detector in Mu2e coordinates
+
+double ExtNeutShieldUpstream1a.centerX = 3904;
+double ExtNeutShieldUpstream1a.centerY = -93.87;
+double ExtNeutShieldUpstream1a.centerZ = -7929;
+
+double ExtNeutShieldUpstream1a.rotateX = -90;
+
+bool  ExtNeutShieldUpstream1a.visible = true;
+bool  ExtNeutShieldUpstream1a.solid   = false;
+
+int   ExtNeutShieldUpstream1a.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

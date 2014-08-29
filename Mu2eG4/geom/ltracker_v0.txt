@@ -1,0 +1,55 @@
+//
+// Geometry description of the LTracker.
+//
+// $Id: ltracker_v0.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/08/29 16:37:09 $
+//
+// Original author Rob Kutschke
+//
+// Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+
+bool hasLTracker      = true;
+
+int    ltracker.verbosityLevel   =    0;
+
+int    ltracker.nSides           =     8;
+double ltracker.r0               =   388.55;      // Lengths in mm
+double ltracker.z0               = 10200.;        // In Mu2e coordinate system.
+double ltracker.zHalfLength      =  1310.0;       // Includes a little extra space.
+double ltracker.rOut             =   880.0;
+double ltracker.strawHalfLength  =  1300.0;
+double ltracker.rStrawOut        =     2.5;
+double ltracker.phi0             =     0.0;       // radians
+double ltracker.tiltY            =     0.015;     // radians
+double ltracker.tiltX            =     0.0138563; // radians
+double ltracker.strawThickness   =     0.025;     // mm
+double ltracker.rWire            =     0.010;     // mm
+double ltracker.carbonThick      =     1.e-4;     // mm =100 nm
+
+vector<int> ltracker.nStrawsSide   = { 63, 64, 65 };
+vector<int> ltracker.nStrawsVane   = { 51, 50, 51 };
+vector<double> ltracker.vaneOffset = { 572., 10., 0.};  // mm
+
+// Materials in the two types of straws; the same for now.
+string         ltracker.fillMaterial    = "WAGVacuum";
+vector<string> ltracker.strawMaterials0 = { "Kapton", "StrawGas", "G4_W" };
+vector<string> ltracker.strawMaterials1 = { "Kapton", "StrawGas", "G4_W" };
+
+
+// Tubs parameters of assembly volume for the full LTracker.
+//    ( z halfLength, r Inner, r Outer )
+// I should really compute this from the above info.
+vector<double> ltracker.tubs     = { 1400., 380., 750. };
+
+bool   ltracker.visible      =  true;
+bool   ltracker.solid        =  true;
+
+bool   ltracker.strawVisible =  false;
+bool   ltracker.strawSolid   =  true;
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

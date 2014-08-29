@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.237 2014/08/25 20:01:30 genser Exp $
-// $Author: genser $
-// $Date: 2014/08/25 20:01:30 $
+// $Id: geom_01.txt,v 1.238 2014/08/29 16:37:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/08/29 16:37:09 $
 //
 // Original author Rob Kutschke
 //
@@ -32,11 +32,11 @@ bool   writeGDML        = false;
 string GDMLFileName     = "mu2e.gdml";
 
 // Uncomment exactly one tracker.
-#include "Mu2eG4/test/ttracker_v3.txt"
-//#include "Mu2eG4/test/ttracker_meco.txt"
-//#include "Mu2eG4/test/ltracker_v0.txt"
-//#include "Mu2eG4/test/itracker_v42.txt"
-//#include "Mu2eG4/test/dummytracker.txt"
+#include "Mu2eG4/geom/ttracker_v3.txt"
+//#include "Mu2eG4/geom/ttracker_meco.txt"
+//#include "Mu2eG4/geom/ltracker_v0.txt"
+//#include "Mu2eG4/geom/itracker_v42.txt"
+//#include "Mu2eG4/geom/dummytracker.txt"
 
 // Uncomment to enable debug printout on a per event or per track basis.
 //vector<int> g4.steppingActionEventList = { 0, 1 };
@@ -241,16 +241,16 @@ double mu2e.solenoidOffset   =  3904.;   // mm
 double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
 // Solenoids
-#include "Mu2eG4/test/DetectorSolenoid_v02.txt"
-#include "Mu2eG4/test/DSShielding_v01.txt"
-#include "Mu2eG4/test/ProductionSolenoid_v01.txt"
-#include "Mu2eG4/test/psEnclosure_v01.txt"
-#include "Mu2eG4/test/PSShield_v05.txt"
-#include "Mu2eG4/test/PSExternalShielding_v01.txt"
-#include "Mu2eG4/test/TransportSolenoid_v01.txt"
+#include "Mu2eG4/geom/DetectorSolenoid_v02.txt"
+#include "Mu2eG4/geom/DSShielding_v01.txt"
+#include "Mu2eG4/geom/ProductionSolenoid_v01.txt"
+#include "Mu2eG4/geom/psEnclosure_v01.txt"
+#include "Mu2eG4/geom/PSShield_v05.txt"
+#include "Mu2eG4/geom/PSExternalShielding_v01.txt"
+#include "Mu2eG4/geom/TransportSolenoid_v01.txt"
 
 // Muon Stopping Target Monitor
-#include "Mu2eG4/test/MSTM_v01.txt"
+#include "Mu2eG4/geom/MSTM_v01.txt"
 
 // Pion degrader 
 bool   piondegrader.build = false;
@@ -265,21 +265,21 @@ bool   piondeg.solid = true;
 
 
 // Neutron shielding - TS region
-#include "Mu2eG4/test/ExtNeutShieldUpstream1a_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldUpstream1b_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldUpstream2_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldUpstreamTop_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldUpstreamBottom_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldCavexRight_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldCavexRightb_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldCavexLeft_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldCavexRoof_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldLAbove_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldLCeiling_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldUpstream1a_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldUpstream1b_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldUpstream2_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldUpstreamTop_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldUpstreamBottom_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldCavexRight_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldCavexRightb_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldCavexLeft_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldCavexRoof_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldLAbove_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldLCeiling_v01.txt"
 
 // Neuton shielding - DS region
-#include "Mu2eG4/test/ExtNeutShieldCryoBoxes_v01.txt"
-#include "Mu2eG4/test/ExtNeutShieldCendBoxes_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldCryoBoxes_v01.txt"
+#include "Mu2eG4/geom/ExtNeutShieldCendBoxes_v01.txt"
 
 // Virtual detectors
 double vd.halfLength     = 0.01; //mm
@@ -290,11 +290,11 @@ bool   vd.solid          = false;
 // // VD right in front of a hall wall
 // double vd.ExtMonCommonPlane.z = -11999.99;
 
-#include "Mu2eG4/test/ProductionTargetInPS.txt"
+#include "Mu2eG4/geom/ProductionTargetInPS.txt"
 
-#include "Mu2eG4/test/protonBeamDump_v02.txt"
+#include "Mu2eG4/geom/protonBeamDump_v02.txt"
 
-#include "Mu2eG4/test/extmon_fnal_v02.txt"
+#include "Mu2eG4/geom/extmon_fnal_v02.txt"
 
 // Describe dummy stopping target that is just one big G4TUBS.
 double dummyStoppingTarget.rIn        =     0.;
@@ -369,11 +369,11 @@ string stoppingTarget.foilTarget_supportStructure_fillMaterial = "G4_W";
 
 
 // Crystal calorimeter
-//#include "Mu2eG4/test/calorimeter_LYSO.txt"
-#include "Mu2eG4/test/calorimeter_BaF2.txt"
+//#include "Mu2eG4/geom/calorimeter_LYSO.txt"
+#include "Mu2eG4/geom/calorimeter_BaF2.txt"
 
 //CRV counters
-#include "Mu2eG4/test/crv_counters.txt"
+#include "Mu2eG4/geom/crv_counters.txt"
 
 // Magnetic field
 // default is now Mau9 everywhere, including the DS
@@ -424,11 +424,11 @@ vector<string> bfield.outerMaps = {
 double bfield.scaleFactor = 1.0;
 
 // Proton Absorber
-#include "Mu2eG4/test/protonAbsorber_conical_v2.txt"
+#include "Mu2eG4/geom/protonAbsorber_conical_v2.txt"
 // use following line instead of above line to go back to MECO-style PA design
-//#include "Mu2eG4/test/protonAbsorber_conical.txt"
+//#include "Mu2eG4/geom/protonAbsorber_conical.txt"
 // use following line to use helical PA instead of above line
-//#include "Mu2eG4/test/protonAbsorber_helical.txt"
+//#include "Mu2eG4/geom/protonAbsorber_helical.txt"
 
 // Neutron Absorber (document draft dated 2010-07-16)
 

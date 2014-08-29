@@ -1,0 +1,125 @@
+// Muon Stoping Target Monitor 
+//
+// $Id: MSTM_v01.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/08/29 16:37:09 $
+//
+// Original author: K. L. Genser
+// inspired by DSShielding and DS_PNNL_Shield
+
+
+// build VD inside DS Neutron Shielding
+
+bool vd.DSNeutronShieldExit.build = true;
+
+// z-positions are skipped and taken from the dss in the code
+
+bool mstm.visible = true;
+bool mstm.solid   = false;
+
+// mstm pipe, magnet absorber, detector
+
+bool   mstm.build  = true;
+int    mstm.verbosityLevel = 0;
+
+string mstm.pipe0.material   = "StainlessSteel";
+string mstm.pipe0.gas        = "G4_He"; 
+
+double mstm.pipe0.rIn        = 49.;
+double mstm.pipe0.rOut       = 50.;
+double mstm.pipe0.halfLength = 328.;//850
+
+string mstm.pipe1.material   = "StainlessSteel";
+string mstm.pipe1.gas        = "G4_He"; 
+
+double mstm.pipe1.rIn        = 49.;
+double mstm.pipe1.rOut       = 50.;
+double mstm.pipe1.halfLength = 150.;
+double mstm.pipe1.magfield   = 0.05;
+
+string mstm.absorber1.material   = "G4_Pb";
+
+double mstm.absorber1.halfHeight  = 100.;
+double mstm.absorber1.halfLength  = 100.;
+
+string mstm.pipe2.material   = "StainlessSteel";
+string mstm.pipe2.gas        = "G4_He"; 
+
+double mstm.pipe2.rIn        = 49.;
+double mstm.pipe2.rOut       = 50.;
+double mstm.pipe2.halfLength = 150.;
+
+string mstm.pipe2.material   = "StainlessSteel";
+string mstm.pipe2.gas        = "G4_He"; 
+
+double mstm.pipe2.rIn        = 49.;
+double mstm.pipe2.rOut       = 50.;
+double mstm.pipe2.halfLength = 150.;
+
+string mstm.pipe3.material   = "StainlessSteel";
+string mstm.pipe3.gas        = "G4_He"; 
+
+double mstm.pipe3.rIn        = 49.;
+double mstm.pipe3.rOut       = 50.;
+double mstm.pipe3.halfLength = 1000.;
+double mstm.pipe3.magfield   = 0.05;
+
+string mstm.boxIn.material   = "Polyethylene096";
+
+double mstm.boxIn.halfHeight =  800.;
+//double mstm.boxIn.halfLength = 1000.;
+
+string mstm.boxOut.material   = "G4_CONCRETE";
+
+double mstm.boxOut.halfHeight = 1000.;
+//double mstm.boxOut.halfLength = 1000.;
+
+string mstm.outWindow.material   = "StainlessSteel";
+
+double mstm.outWindow.rIn         = 0.;
+double mstm.outWindow.rOut        = 49.;
+double mstm.outWindow.halfLength  = 0.5;
+
+string mstm.pipe4.material   = "StainlessSteel";
+string mstm.pipe4.gas        = "G4_He"; 
+
+double mstm.pipe4.rIn        = 49.;
+double mstm.pipe4.rOut       = 50.;
+double mstm.pipe4.halfLength = 100.;
+
+string mstm.absorber2.material   = "G4_Pb";
+
+double mstm.absorber2.halfHeight  = 100.;
+double mstm.absorber2.halfLength  = 100.;
+
+string mstm.pipe5.material   = "StainlessSteel";
+string mstm.pipe5.gas        = "G4_He"; 
+
+double mstm.pipe5.rIn        = 49.;
+double mstm.pipe5.rOut       = 50.;
+double mstm.pipe5.halfLength = 100.;
+
+double mstm.can.material          = "StainlessSteel";
+
+double mstm.can.rIn         = 55.;
+double mstm.can.rOut        = 56.;
+double mstm.can.halfLength  = 36.;
+
+double mstm.canUpS.rIn          = 0.;
+double mstm.canUpS.rOut         = 55.;
+double mstm.canUpS.halfLength   = 0.5.;
+
+double mstm.canDownS.rIn        = 0.;
+double mstm.canDownS.rOut       = 55.;
+double mstm.canDownS.halfLength = 0.5.;
+
+double mstm.crystal.material    = "G4_Ge";
+
+double mstm.crystal.rIn        = 0.;
+double mstm.crystal.rOut       = 45.;
+double mstm.crystal.halfLength = 25.;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

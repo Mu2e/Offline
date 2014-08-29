@@ -1,0 +1,289 @@
+// Extinction monitor parameters
+//
+// Andrei Gaponenko, 2013
+
+bool           hasExtMonFNAL = true;
+
+//----------------------------------------------------------------
+// ExtMonFNAL detector and magnet room inside outline.  The shielding
+// between the two rooms (collimator2.shielding) is defined separately.
+// The magnet room is adjacent to beam dump "front" shielding, there
+// is no extra wall on that side.  If we look at the plan view
+// oriented so that the dump X axis points to the left and dump Z
+// axis points up, the points are defined in the clockwise order
+// starting from the top (touching the dump shielding) right corner.
+// One coordinate is dump X, the other is dump Z shifted by
+// the dump Z of the shielding surface we touch.
+
+// This version follows the civil drawings for the outline and some sizes,
+// but assumes L(magnet room)=4200, coll2 shielding = 2000, L(extmon room)=3000
+// to position the stair hall and ventilation shaft
+//
+// The length of the stair hall is 1612 + 1219 + 1613 = 4444 mm
+// Position it symmetrically about the center of coll2 shieling at Zdump=-5200:  -7422 and -2978
+
+
+// // From the drawing:
+// vector<double> extMonFNAL.roomInsideX = { -1750, -1750, -3731, -3731, -1750, -1750, +2822, +2822, +3584, +3584, +2822, +2822 };
+// vector<double> extMonFNAL.roomInsideZ = {     0, -2928, -2928, -7422, -7422, -9200, -9200, -4200, -4200,  -796,  -796,     0};
+//
+// The above conflicts with ExtMonUCI location.  The easiest solution is to adjust the corner near the shaft
+// to avoid the overlap.
+vector<double> extMonFNAL.roomInsideX = { -1750, -1750, -3731, -3731, -1750, -1750, +2822, +2822, +3584, +3584, +1780, +1780 };
+vector<double> extMonFNAL.roomInsideZ = {     0, -2928, -2928, -7422, -7422, -9200, -9200, -4200, -4200, -1700, -1700,     0 };
+
+// The top of the room floor is assumed to be at the same level as the
+// top of ProtonBeamDump "back" shielding,
+// i.e. minCoreShieldingThickness above the top surface dump core.
+double extMonFNAL.room.insideFullHeight = 2743;
+
+double extMonFNAL.room.wall.thickness = 300;
+double extMonFNAL.room.floor.thickness = 300;
+double extMonFNAL.room.ceiling.thickness = 300;
+
+// Amount of dirt above ExtMonFNAL room.  From drawing S-9:  6'-0'' minus ceiling thickness
+double extMonFNAL.dirtOverhead.thickness = 1530;
+
+// Guaranteed horizontal extension along x and z of the dirt shielding
+// beyond the extMonFNAL ceiling outline.
+double extMonFNAL.dirtOverhead.horizontalMargin = 2000;
+
+//----------------------------------------------------------------
+// The extinction monitor filter channel
+
+// The first collimator is embedded in frontShielding of ProtonBeamDump
+// and this determines its length.
+//
+
+// Channel aperture (vector since upstream and downstream halves
+// may be different):  {upstream size, downstream size}
+vector<double> extMonFNAL.collimator1.channelDiameter  = {50., 50.};
+vector<double> extMonFNAL.collimator1.alignmentPlugDiameter = { 219.1, 355.6 };
+vector<double> extMonFNAL.collimator1.alignmentHoleDiameter = { 247.7, 381.0 };
+// Transition between the two radii of the plug and hole happens over dz.
+double extMonFNAL.collimator1.radiusTransitiondZ = 0;
+
+// The entrance point on the face of the beam dump enclosure,
+// transverse to the beam coordinates (horiz, vertical).  The offsets
+// are w.r.t to the core center position (== the nominal beam entrance
+// point).
+double         extMonFNAL.entranceOffsetX = 315;
+double         extMonFNAL.entranceOffsetY = 1250;
+
+// Filter channel orientation: angles in horizontal and vertical
+// planes w.r.t dump core. Note that angleH is the same for all filter
+// elements, while angleV is different.  We specify angleV at the
+// filter entrance.
+double         extMonFNAL.angleH = 0.0303; //radians
+double         extMonFNAL.entranceAngleV = 0.1653; //radians
+
+bool extMonFNAL.collimator1.alignmentHole.visible = true;
+bool extMonFNAL.collimator1.alignmentHole.solid = false;
+bool extMonFNAL.collimator1.alignmentPlug.visible = true;
+bool extMonFNAL.collimator1.alignmentPlug.solid = false;
+bool extMonFNAL.collimator1.channel.visible = true;
+bool extMonFNAL.collimator1.channel.solid = false;
+
+//----------------------------------------------------------------
+// The filter magnet room.  "Length" is along beam dump Z.
+//
+double extMonFNAL.magnetRoomLength = 4200.;
+
+// The magnet
+vector<double> extMonFNAL.filter.magnet.outerHalfSize = { 120.65, 147.85, 1841.5 }; // mm
+double extMonFNAL.filter.magnet.apertureWidth  = 51.6; // mm
+double extMonFNAL.filter.magnet.apertureHeight = 99.9; // mm
+string extMonFNAL.filter.magnet.material  = "G4_Fe";
+double extMonFNAL.filter.magnet.magneticLength = 3556.0; //mm
+double extMonFNAL.filter.magnet.BdL = 822.; // T*mm
+
+bool extMonFNAL.filter.magnet.iron.visible = true;
+bool extMonFNAL.filter.magnet.iron.solid = false;
+bool extMonFNAL.filter.magnet.aperture.visible = true;
+bool extMonFNAL.filter.magnet.aperture.solid = false;
+
+// Distance from the point where the reference trajectory
+// crosses the (physical) magnet face to the upstream wall.
+double extMonFNAL.filter.magnet.distanceToUpstreamWall = 342.9; // mm
+
+// The magnet is placed in such a way that a positive particle with
+// the nominal momentum given below, travelling along the axis of
+// collimator1 will enter the magnet aperture at the above distance
+// from the upstream shielding, and will exit the magnet at a
+// mirror-symmetric point on the back end.
+double extMonFNAL.filter.nominalMomentum = 4200.; // MeV/c
+
+// double extMonFNAL.maxG4StepLength = 10.; // mm
+
+//----------------------------------------------------------------
+// The second collimator
+
+// The thickness of the shielding between magnet and detector rooms.
+double         extMonFNAL.collimator2.shielding.thickness = 2000.;
+double         extMonFNAL.collimator2.shielding.dumpXmin  = -2050.; // to outside the wall
+double         extMonFNAL.collimator2.shielding.dumpXmax  = +2822.; // touch the wall
+
+// Channel aperture (vector since upstream and downstream halves
+// may be different):  {upstream size, downstream size}
+vector<double> extMonFNAL.collimator2.channelDiameter  = {50., 75.};
+vector<double> extMonFNAL.collimator2.alignmentPlugDiameter = { 219.1, 355.6 };
+vector<double> extMonFNAL.collimator2.alignmentHoleDiameter = { 247.7, 381.0 };
+double extMonFNAL.collimator2.radiusTransitiondZ = 0;
+
+bool extMonFNAL.collimator2.alignmentHole.visible = true;
+bool extMonFNAL.collimator2.alignmentHole.solid = false;
+bool extMonFNAL.collimator2.alignmentPlug.visible = true;
+bool extMonFNAL.collimator2.alignmentPlug.solid = false;
+bool extMonFNAL.collimator2.channel.visible = true;
+bool extMonFNAL.collimator2.channel.solid = false;
+
+//----------------------------------------------------------------
+// The spectrometer magnet.
+
+vector<double> extMonFNAL.spectrometer.magnet.outerHalfSize = {73.25, 146.05, 266.70 }; // mm
+double extMonFNAL.spectrometer.magnet.apertureWidth  =  52.; // mm
+double extMonFNAL.spectrometer.magnet.apertureHeight = 228.6; // mm
+string extMonFNAL.spectrometer.magnet.material  = "G4_Fe";
+double extMonFNAL.spectrometer.magnet.magneticLength = 508.0; //mm
+double extMonFNAL.spectrometer.magnet.BdL = 140.; // T*mm
+
+bool extMonFNAL.spectrometer.magnet.iron.visible = true;
+bool extMonFNAL.spectrometer.magnet.iron.solid = false;
+bool extMonFNAL.spectrometer.magnet.aperture.visible = true;
+bool extMonFNAL.spectrometer.magnet.aperture.solid = false;
+
+// The spectrometer is tuned to the filter momentum + the adjustment.
+// Put a negative value here to account for momentum loss between
+// filter and spectometer magnets.
+double extMonFNAL.spectrometer.nominalMomentumAdjustment = 0; // MeV/c
+
+// Distance from the upstream ExtMonFNAL detector room wall
+// and the point where the reference trajectory enters the magnet
+double extMonFNAL.spectrometer.magnet.distanceToUpstreamWall = 639.1; // mm
+
+//================================================================
+// Silicon sensor parameters
+
+vector<double> extMonFNAL.chipHalfSize = { 10.135, 9.6, 0.075 };
+vector<double> extMonFNAL.sensorHalfSize = { 20.66, 9.295, 0.10 };
+
+vector<double> extMonFNAL.planeHalfSize  = { 60.,   60.,   0.80 };
+string         extMonFNAL.planeMaterial = "G4_C";
+
+bool extMonFNAL.stackMotherVisible = true;
+bool extMonFNAL.stackMotherSolid = true;
+
+//================================================================
+// The upstream stack of the sensors.
+//
+// Location in room: the center is on the continuation of
+// collimator2 center line, the axis is parallel to the line.
+// A common reference point for the upstream stack, downstream
+// stack, and the spectrometer magnet is the magnet bend point.
+// (the "reference point" of the detectors in the code).
+
+// Details of the detector.  All of these vectors should be
+// of the same size: one entry per detector plane.
+// The coordinates are relative to the detector box volume.
+vector<double> extMonFNAL.up.motherTransverseHalfSize = { 70, 70 }; // x, y
+double extMonFNAL.up.motherStartZ = 295.;
+double extMonFNAL.up.motherEndZ = 605.;
+
+vector<double> extMonFNAL.up.plane_zoffset = { +300., +400., +500., +600.};
+vector<double> extMonFNAL.up.plane_xoffset = { 0.,    0.,    0.,    0. };
+vector<double> extMonFNAL.up.plane_yoffset = { 0.,    0.,    0.,    0. };
+
+// Assumes all planes in the stack have same module layout (these offsets are used to mount modules on all planes)
+vector<double> extMonFNAL.up.module_xoffset = { 0., 0. };
+vector<double> extMonFNAL.up.module_yoffset = { 9.2, -9.2. };
+vector<double> extMonFNAL.up.module_zoffset = { 1., -1. }; // just determines which side of the plane; all math is handed in constructExMonFNAL
+vector<double> extMonFNAL.up.module_rotation = { 0., 0. };
+
+//================================================================
+// The downstream stack of the sensors.
+//
+// Location in room: the reference point of the stack is the same as
+// for the magnet and the upstream stack.  The angle between the up
+// and down stack axes corresponds to the bend angle in the magnet of
+// a q=+1 particle with the spectrometer nominal momentum.
+//
+// Details of the detector.  All of these vectors should be
+// of the same size: one entry per detector plane.
+// The coordinates are relative to the detector box volume.
+
+vector<double> extMonFNAL.dn.motherTransverseHalfSize = { 70, 70 }; // x, y
+double extMonFNAL.dn.motherStartZ = -605.;
+double extMonFNAL.dn.motherEndZ = -295.;
+
+vector<double> extMonFNAL.dn.plane_zoffset = {-600., -500.,  -400., -300.};
+vector<double> extMonFNAL.dn.plane_xoffset = { 0., 0., 0., 0. };
+vector<double> extMonFNAL.dn.plane_yoffset = { 0., 0., 0., 0. };
+
+// Assumes all planes in the stack have same module layout (these offsets are used to mount modules on all planes)
+vector<double> extMonFNAL.dn.module_xoffset = { 0., 0., 0. };
+vector<double> extMonFNAL.dn.module_yoffset = { 18.4., 0., -18.4. };
+vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determines which side of the plane; all math is handed in constructExMonFNAL
+vector<double> extMonFNAL.dn.module_rotation = { 0., 0., 180. };
+
+
+//----------------------------------------------------------------
+// These are detector VDs (not filter ones)
+//
+// Notes:
+//
+//    - We want to be able to look at hits in an area larger than the
+//      exact sensor size, so VD transverse dimensions are additional
+//      parameters.
+//
+//    - Because GeometryService objects are supposed to contain only
+//      "physical" parameters and VDs are virtual G4-only objects,
+//      these sizes are not a part of the ExtMonFNAL object.
+//
+bool   extMonFNAL.filter.vd.enabled = true;
+bool   extMonFNAL.detector.vd.enabled = true;
+double extMonFNAL.detector.vd.halfdx = 100; // transverse size
+double extMonFNAL.detector.vd.halfdy = 100; // transverse size
+
+// A set of 6 planar VDs that enclose ExtMonFNAL.
+// The "box" is rotated to be parallel to the ExtMon system axes.
+// The size needs to be large enough to avoid volume overlaps with
+// the spectrometer magnet and sensor planes.
+bool   extMonFNAL.box.vd.enabled = false;
+vector<double> extMonFNAL.box.vd.halfSize = {100, 200, 650.};
+
+//----------------------------------------------------------------
+string         extMonFNAL.room.materialName  = "G4_AIR";
+string         extMonFNAL.room.wall.materialName  = "ShieldingConcrete";
+
+bool           extMonFNAL.room.visible   = false;
+bool           extMonFNAL.room.solid     = false;
+
+bool           extMonFNAL.room.wall.visible   = true;
+bool           extMonFNAL.room.wall.solid     = false;
+
+bool           extMonFNAL.room.ceiling.visible   = true;
+bool           extMonFNAL.room.ceiling.solid     = false;
+
+bool           extMonFNAL.room.floor.visible   = true;
+bool           extMonFNAL.room.floor.solid     = true;
+
+bool extMonFNAL.collimator2.shielding.visible = true;
+bool extMonFNAL.collimator2.shielding.solid = false;
+
+bool           extMonFNAL.sensorPlaneVisible   = true;
+bool           extMonFNAL.sensorPlaneSolid     = true;
+
+bool           extMonFNAL.moduleVisible        = true;
+bool           extMonFNAL.moduleSolid          = true;
+
+// no longer needed with addition of plane and module classes
+// bool           extMonFNAL.readoutPlaneVisible   = true;
+// bool           extMonFNAL.readoutPlaneSolid     = true;
+
+int            extMonFNAL.verbosityLevel = 0;
+int            extMonFNAL.sd.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

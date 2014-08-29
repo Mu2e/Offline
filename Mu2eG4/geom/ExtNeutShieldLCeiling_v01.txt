@@ -1,0 +1,35 @@
+// Original author David Norvil Brown
+// These numbers based on G4Bl geometry 13 as of 24 August 2013
+
+
+double ExtNeutShieldLCeiling.length = 743; // mm
+
+string ExtNeutShieldLCeiling.materialName  = "CONCRETE_MARS";
+
+//vertices, in mm, in mu2e frame
+double ExtNeutShieldLCeiling.X1 = -2650;   
+double ExtNeutShieldLCeiling.Y1 = 10708; 
+double ExtNeutShieldLCeiling.X2 = -2650; 
+double ExtNeutShieldLCeiling.Y2 = 4361.25; 
+double ExtNeutShieldLCeiling.X3 = -2446; 
+double ExtNeutShieldLCeiling.Y3 = 4361.25; 
+double ExtNeutShieldLCeiling.X4 = -2446; 
+double ExtNeutShieldLCeiling.Y4 = 10708; 
+
+// The center of the detector in Mu2e coordinates
+
+double ExtNeutShieldLCeiling.centerX = 3904;
+double ExtNeutShieldLCeiling.centerY = 2497.5;
+double ExtNeutShieldLCeiling.centerZ = -7929;
+
+double ExtNeutShieldLCeiling.rotateX = -90;
+
+bool  ExtNeutShieldLCeiling.visible = true;
+bool  ExtNeutShieldLCeiling.solid   = false;
+
+int   ExtNeutShieldLCeiling.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,45 @@
+// Original author David Norvil Brown
+// These numbers based on G4Bl geometry 13 as of 24 August 2013
+
+int ExtNeutShieldCryoBoxes.numberOfBoxes = 3;
+// 
+string ExtNeutShieldCryoBoxes.b1materialName  = "CONCRETE_MARS";
+string ExtNeutShieldCryoBoxes.b2materialName  = "CONCRETE_MARS";
+string ExtNeutShieldCryoBoxes.b3materialName  = "CONCRETE_MARS";
+
+//box lengths, widths, and heights, in mm, in mu2e frame
+double ExtNeutShieldCryoBoxes.b1length = 12874;   
+double ExtNeutShieldCryoBoxes.b1width = 4892; 
+double ExtNeutShieldCryoBoxes.b1height = 916; 
+
+double ExtNeutShieldCryoBoxes.b2length = 12874;   
+double ExtNeutShieldCryoBoxes.b2width = 916; 
+double ExtNeutShieldCryoBoxes.b2height = 3922; 
+
+double ExtNeutShieldCryoBoxes.b3length = 12874;   
+double ExtNeutShieldCryoBoxes.b3width = 916; 
+double ExtNeutShieldCryoBoxes.b3height = 3922; 
+
+// The center of the detector in Mu2e coordinates
+// For x:  add 3904 to G4bl, for z:  subtract 7929 from G4bl
+double ExtNeutShieldCryoBoxes.b1centerX = -3904;
+double ExtNeutShieldCryoBoxes.b1centerY = 2068;
+double ExtNeutShieldCryoBoxes.b1centerZ = 9312;
+
+double ExtNeutShieldCryoBoxes.b2centerX = -5892;
+double ExtNeutShieldCryoBoxes.b2centerY = -351;
+double ExtNeutShieldCryoBoxes.b2centerZ = 9312;
+
+double ExtNeutShieldCryoBoxes.b3centerX = -1916;
+double ExtNeutShieldCryoBoxes.b3centerY = -351;
+double ExtNeutShieldCryoBoxes.b3centerZ = 9312;
+
+bool  ExtNeutShieldCryoBoxes.visible = true;
+bool  ExtNeutShieldCryoBoxes.solid   = false;
+
+int   ExtNeutShieldCryoBoxes.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

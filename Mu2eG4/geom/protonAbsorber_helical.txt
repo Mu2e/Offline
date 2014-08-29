@@ -1,0 +1,56 @@
+//
+// helical proton absorber geometry file.
+//
+// $Id: protonAbsorber_helical.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/08/29 16:37:09 $
+//
+// Original author G. Tassielli
+//
+// Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+
+bool   protonabsorber.isHelical     = true;
+string protonabsorber.materialName  = "Polyethylene092";
+//double protonabsorber.InnerRadius   =   90.6114;
+//double protonabsorber.OuterRadius   =  723.917;
+//double protonabsorber.NumOfTurns    =    2.0;
+int    protonabsorber.NumOfVanes    =    2;
+double protonabsorber.halfLength    =  730.0;
+double protonabsorber.thickness     =    4.08;
+bool   protonabsorber.saveStepPnts  = false;
+
+//r_i is the inner radius
+double protonabsorber.InnerRadius_0 =   90.6114;
+double protonabsorber.InnerRadius_1 =    0.0;
+double protonabsorber.InnerRadius_2 =    0.0;
+
+//r_o is the outer radius
+double protonabsorber.OuterRadius_0 =  723.917;
+double protonabsorber.OuterRadius_1 =    0.0;
+double protonabsorber.OuterRadius_2 =    0.0;
+
+// specifying the phi angle of the inner
+double protonabsorber.phiInner_0    =    0.0;
+double protonabsorber.phiInner_1    =    0.00281438;
+double protonabsorber.phiInner_2    =    0.0;
+
+double protonabsorber.phiOuter_0    =    0.0;
+double protonabsorber.phiOuter_1    =    0.00281438;
+double protonabsorber.phiOuter_2    =    0.0;
+
+int    protonabsorber.verbosityLevel=  0;
+bool   protonabsorber.visible       = true;
+bool   protonabsorber.solid         = true;
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

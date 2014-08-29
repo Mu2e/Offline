@@ -1,0 +1,43 @@
+// Original author David Norvil Brown
+// These numbers based on G4Bl geometry 13 as of 24 August 2013
+
+
+double ExtNeutShieldCavexRight.length = 3922; // mm
+
+string ExtNeutShieldCavexRight.materialName  = "BARITE";
+
+//vertices, in mm, in mu2e frame
+double ExtNeutShieldCavexRight.X1 = -10247;   
+double ExtNeutShieldCavexRight.Y1 = 5679; 
+double ExtNeutShieldCavexRight.X2 = -3360; 
+double ExtNeutShieldCavexRight.Y2 = 5679; 
+double ExtNeutShieldCavexRight.X3 = -3360; 
+double ExtNeutShieldCavexRight.Y3 = 6179; 
+double ExtNeutShieldCavexRight.X4 = -5391; 
+double ExtNeutShieldCavexRight.Y4 = 6179; 
+double ExtNeutShieldCavexRight.X5 = -5391; 
+double ExtNeutShieldCavexRight.Y5 = 6587; 
+double ExtNeutShieldCavexRight.X6 = -9331; 
+double ExtNeutShieldCavexRight.Y6 = 6587; 
+double ExtNeutShieldCavexRight.X7 = -9331; 
+double ExtNeutShieldCavexRight.Y7 = 10804; 
+double ExtNeutShieldCavexRight.X8 = -10247; 
+double ExtNeutShieldCavexRight.Y8 = 10804; 
+
+// The center of the detector in Mu2e coordinates
+
+double ExtNeutShieldCavexRight.centerX = 3904;
+double ExtNeutShieldCavexRight.centerY = -351;
+double ExtNeutShieldCavexRight.centerZ = -7929;
+
+double ExtNeutShieldCavexRight.rotateX = -90;
+
+bool  ExtNeutShieldCavexRight.visible = true;
+bool  ExtNeutShieldCavexRight.solid   = false;
+
+int   ExtNeutShieldCavexRight.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

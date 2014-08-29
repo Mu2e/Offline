@@ -1,0 +1,71 @@
+//
+// Geometry description of the MECO version of the TTracker.
+// See:  Mu2e-doc-726 ( originally MECO-TRK-05-001 )
+//
+// $Id: ttracker_meco.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/08/29 16:37:09 $
+//
+// Original author Rob Kutschke
+//
+// Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+
+bool hasTTracker      = true;
+
+int TTrackerVersion   = 3;
+
+int    ttracker.numDevices         =   54;
+int    ttracker.sectorsPerDevice   =    4;
+int    ttracker.layersPerSector    =    1;
+int    ttracker.manifoldsPerEnd    =    4;
+int    ttracker.strawsPerManifold  =   16;
+int    ttracker.rotationPattern    =    0;
+int    ttracker.spacingPattern     =    0;
+
+double ttracker.z0                   = 10200.0;
+double ttracker.envelopeInnerRadius  =   380.0;
+double ttracker.strawOuterRadius     =     2.5;
+double ttracker.strawWallThickness   =     0.015;
+double ttracker.strawGap             =     0.0;
+double ttracker.deviceSpacing        =    57.;
+double ttracker.deviceHalfSeparation =    49.;
+double ttracker.deviceRotation       =    60.;
+double ttracker.outerSupportRadius   =   830.0;
+double ttracker.innerSupportRadius   =   700.0;
+double ttracker.supportHalfThickness =    10.0;
+double ttracker.wireRadius           =     0.0125;
+double ttracker.manifoldYOffset      =    10.;
+
+
+bool   ttracker.envelopeVisible      =  true;
+bool   ttracker.envelopeSolid        =  false;
+
+bool   ttracker.deviceEnvelopeVisible = true;
+bool   ttracker.deviceEnvelopeSolid   = false;
+
+bool   ttracker.sectorEnvelopeVisible = true;
+bool   ttracker.sectorEnvelopeSolid   = false;
+
+bool   ttracker.strawVisible         =  false;
+bool   ttracker.strawSolid           =  false;
+
+vector<double> ttracker.manifoldHalfLengths  = { 40.0, 35.0, 5.25};
+vector<string> ttracker.strawMaterials       = { "Kapton", "StrawGas", "G4_W" };
+
+string ttracker.mat.vacuum    = "WAGVacuum";
+string ttracker.mat.strawgas  = "StrawGas";
+string ttracker.mat.strawwall = "Kapton";
+string ttracker.mat.wire      = "G4_W";
+string ttracker.mat.manifold  = "G4_Al";
+string ttracker.mat.support   = "CarbonFiber";
+
+// Debug control for TTracker; uncomment to make only a selected sector.
+// it is not about drawing, but about the construction itself
+int    ttracker.devDraw  =   -1;
+int    ttracker.secDraw  =   -1;
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,84 @@
+// Crystal calorimeter
+
+double calorimeter.caloMotherInRadius           = 349;   
+double calorimeter.caloMotherOutRadius          = 765;   
+double calorimeter.caloMotherZ0                 = 11842;   
+double calorimeter.caloMotherZ1                 = 13220;   
+
+double calorimeter.calorimeterZFront            = 11843.0;     // front posiiton of calo section in mu2e coordinates 
+                                                               // MUST be at least 1 mm larger than caloMotherZ0 for placing virtual detectors
+string calorimeter.calorimeterFillMaterial      = "DSVacuum";
+string calorimeter.calorimeterDiskMaterial      = "DSVacuum";
+double calorimeter.caseThickness                = 0;  // mm
+
+
+//vane description
+int    calorimeter.numberOfVanes                =  4;
+int    calorimeter.nCrystalRSlices              =  11;
+int    calorimeter.nCrystalZSlices              =  44;
+double calorimeter.rInscribed                   = 360.;
+
+string calorimeter.shieldMaterial               = "G4_Pb"; 
+string calorimeter.neutronAbsorberMaterial      = "Polyethylene092Li075d106";
+double calorimeter.shieldHalfThickness          = 0.0;
+double calorimeter.neutronAbsorberHalfThickness = 0.0;
+
+
+
+
+//disk description
+int    calorimeter.numberOfDisks               =  2;
+vector<double> calorimeter.diskInnerRadius     = {351.,351.}; //mm
+vector<double> calorimeter.diskOuterRadius     = {660.,660.}; //mm
+vector<double> calorimeter.diskRotationAngle   = {0.,0.};     //rad
+vector<double> calorimeter.diskSeparation      = {0.,700.};   //mm  separation w.r.t first disk
+
+
+
+//crystal characteristics
+
+double calorimeter.crystalHalfLong             = 100.0;
+double calorimeter.crystalHalfTrans            = 16.5;
+double calorimeter.crystalHexsize              = 16.5;  //mm  half distance across flats of hex crystal
+string calorimeter.crystalMaterial             = "G4_BARIUM_FLUORIDE"; //"G4_PbWO4" "G4_BARIUM_FLUORIDE" "Lyso_01"
+
+string calorimeter.crystalWrapper              = "Polyethylene092";
+double calorimeter.crystalWrapperThickness     = 0.065; //mm
+double calorimeter.crystalShellThickness       = 0.0 ;
+
+string calorimeter.crystalReadoutMaterial      = "G4_Si";
+double calorimeter.crystalReadoutHalfTrans     = 5;
+double calorimeter.crystalReadoutHalfThickness = 1;
+int    calorimeter.crystalReadoutChannelCount  = 2; // APDs per crystal
+
+double calorimeter.crystalNonUniformity        = 0.0; // -2 to 2  (A(ro)-A(front))/A(middle)
+double calorimeter.timeGap                     = 5.0;  // ns
+double calorimeter.electronDepositionAPD       = 1000.0; // MeV
+double calorimeter.electronMinEnergyAPD        = 0.1;    // MeV
+
+
+// calibrtion system
+int    calorimeter.nPipes                      = 6;   // claibration pipe radius
+vector<double> calorimeter.pipeTorRadius       = {360,420,480,540,600,650}; //mm
+double calorimeter.pipeRadius                  = 5;    // claibration pipe radius //mm
+double calorimeter.pipeThickness               = 0.5; // claibration pipe thickness //mm
+string calorimeter.pipeMaterial                = "G4_Al";
+
+
+
+// Control display and debug printout.
+
+bool calorimeter.calorimeterVisible           = true;
+bool calorimeter.calorimeterSolid             = false;
+bool calorimeter.boxVisible                   = true;
+bool calorimeter.boxSolid                     = false;
+bool calorimeter.caseVisible                  = false;
+bool calorimeter.caseSolid                    = false;
+bool calorimeter.pipeVisible                  = false;
+bool calorimeter.pipeSolid                    = false;
+bool calorimeter.crystalVisible               = false;
+bool calorimeter.crystalSolid                 = false;
+bool calorimeter.absorberBoxVisible           = false;
+bool calorimeter.absorberBoxSolid             = false;
+
+int  calorimeter.verbosityLevel               = 1;

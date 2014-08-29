@@ -1,0 +1,102 @@
+// Original author David Norvil Brown
+
+int ExtNeutShieldCendBoxes.numberOfBoxes = 7;
+
+// These numbers based on G4Bl geometry 13 as of 24 August 2013
+
+// Concrete and Iron
+string ExtNeutShieldCendBoxes.b1materialName  = "CONCRETE_MARS";
+string ExtNeutShieldCendBoxes.b2materialName  = "CONCRETE_MARS";
+string ExtNeutShieldCendBoxes.b3materialName  = "CONCRETE_MARS";
+string ExtNeutShieldCendBoxes.b4materialName  = "CONCRETE_MARS";
+string ExtNeutShieldCendBoxes.b5materialName  = "CONCRETE_MARS";
+string ExtNeutShieldCendBoxes.b6materialName  = "CONCRETE_MARS";
+string ExtNeutShieldCendBoxes.b7materialName  = "CONCRETE_MARS";
+
+
+//box lengths, widths, and heights, in mm, in mu2e frame
+double ExtNeutShieldCendBoxes.b1length = 2716;   
+double ExtNeutShieldCendBoxes.b1width = 4878.4; 
+double ExtNeutShieldCendBoxes.b1height = 916; 
+
+double ExtNeutShieldCendBoxes.b2length = 2716;   
+double ExtNeutShieldCendBoxes.b2width = 916; 
+double ExtNeutShieldCendBoxes.b2height = 3657.6; 
+
+double ExtNeutShieldCendBoxes.b3length = 2716;   
+double ExtNeutShieldCendBoxes.b3width = 916; 
+double ExtNeutShieldCendBoxes.b3height = 3657.6; 
+
+double ExtNeutShieldCendBoxes.b4length = 916;   
+double ExtNeutShieldCendBoxes.b4width = 3060; 
+double ExtNeutShieldCendBoxes.b4height = 3657.5; 
+
+double ExtNeutShieldCendBoxes.b5length = 1720.85;   
+double ExtNeutShieldCendBoxes.b5width = 1240; 
+double ExtNeutShieldCendBoxes.b5height = 458; 
+
+double ExtNeutShieldCendBoxes.b6length = 1720.85;   
+double ExtNeutShieldCendBoxes.b6width = 1240; 
+double ExtNeutShieldCendBoxes.b6height = 458; 
+
+double ExtNeutShieldCendBoxes.b7length = 876.3;   
+double ExtNeutShieldCendBoxes.b7width = 580; 
+double ExtNeutShieldCendBoxes.b7height = 458; 
+
+
+// The center of the detector relative to its parent volume (detector hall).
+// For x:  add 3904 to G4bl, for z:  subtract 7929 from G4bl
+double ExtNeutShieldCendBoxes.b1centerX = -3904;
+double ExtNeutShieldCendBoxes.b1centerY = 2038;
+double ExtNeutShieldCendBoxes.b1centerZ = 17107;
+
+double ExtNeutShieldCendBoxes.b2centerX = -5892;
+double ExtNeutShieldCendBoxes.b2centerY = -249;
+double ExtNeutShieldCendBoxes.b2centerZ = 17107;
+
+double ExtNeutShieldCendBoxes.b3centerX = -1916;
+double ExtNeutShieldCendBoxes.b3centerY = -249;
+double ExtNeutShieldCendBoxes.b3centerZ = 17107;
+
+double ExtNeutShieldCendBoxes.b4centerX = -3904;
+double ExtNeutShieldCendBoxes.b4centerY = -249;
+double ExtNeutShieldCendBoxes.b4centerZ = 18007;
+
+double ExtNeutShieldCendBoxes.b5centerX = -4814;
+double ExtNeutShieldCendBoxes.b5centerY = -1847.84;
+double ExtNeutShieldCendBoxes.b5centerZ = 16687;
+
+double ExtNeutShieldCendBoxes.b6centerX = -2994;
+double ExtNeutShieldCendBoxes.b6centerY = -1847.84;
+double ExtNeutShieldCendBoxes.b6centerZ = 16687;
+
+double ExtNeutShieldCendBoxes.b7centerX = -3904;
+double ExtNeutShieldCendBoxes.b7centerY = -1847.84;
+double ExtNeutShieldCendBoxes.b7centerZ = 17109.3;
+
+// About holes...
+bool ExtNeutShieldCendBoxes.b1hasHole = false;
+bool ExtNeutShieldCendBoxes.b2hasHole = false;
+bool ExtNeutShieldCendBoxes.b3hasHole = false;
+bool ExtNeutShieldCendBoxes.b4hasHole = true;
+bool ExtNeutShieldCendBoxes.b5hasHole = false;
+bool ExtNeutShieldCendBoxes.b6hasHole = false;
+bool ExtNeutShieldCendBoxes.b7hasHole = false;
+
+double ExtNeutShieldCendBoxes.b4holeRadius = 76.2;
+double ExtNeutShieldCendBoxes.b4holeHalfLength = 458.0;
+double ExtNeutShieldCendBoxes.b4holeDeltaR   = 0.;
+double ExtNeutShieldCendBoxes.b4holeDeltaPhi = 0.;
+
+bool  ExtNeutShieldCendBoxes.holeVisible = true;
+bool  ExtNeutShieldCendBoxes.holeSolid = false;
+
+bool  ExtNeutShieldCendBoxes.visible = true;
+bool  ExtNeutShieldCendBoxes.solid   = false;
+
+int   ExtNeutShieldCendBoxes.verbosityLevel = 1;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

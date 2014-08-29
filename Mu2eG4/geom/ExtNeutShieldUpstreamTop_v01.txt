@@ -1,0 +1,36 @@
+// Original author David Norvil Brown
+// These numbers based on G4Bl geometry 13 as of 24 August 2013
+
+
+double ExtNeutShieldUpstreamTop.length = 764; // mm
+
+// This is the only concrete-like material name I found in other classes
+string ExtNeutShieldUpstreamTop.materialName  = "BARITE";
+
+//vertices, in mm, in mu2e frame
+double ExtNeutShieldUpstreamTop.X1 = -3359;   
+double ExtNeutShieldUpstreamTop.Y1 = 6587; 
+double ExtNeutShieldUpstreamTop.X2 = -2446; 
+double ExtNeutShieldUpstreamTop.Y2 = 6587; 
+double ExtNeutShieldUpstreamTop.X3 = -2446; 
+double ExtNeutShieldUpstreamTop.Y3 = 8886; 
+double ExtNeutShieldUpstreamTop.X4 = -3359; 
+double ExtNeutShieldUpstreamTop.Y4 = 8886; 
+
+// The center of the detector in Mu2e coordinates
+
+double ExtNeutShieldUpstreamTop.centerX = 3904;
+double ExtNeutShieldUpstreamTop.centerY = 1742;
+double ExtNeutShieldUpstreamTop.centerZ = -7929;
+
+double ExtNeutShieldUpstreamTop.rotateX = -90;
+
+bool  ExtNeutShieldUpstreamTop.visible = true;
+bool  ExtNeutShieldUpstreamTop.solid   = false;
+
+int   ExtNeutShieldUpstreamTop.verbosityLevel = 1;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

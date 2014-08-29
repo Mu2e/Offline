@@ -1,0 +1,57 @@
+// PS heat and radiation shield: TDR version.
+// Taking numbers from G4beamline
+//
+// Original author: Andrei Gaponenko
+
+// The shield consists of a number of nested polycones
+int PSShield.nShells = 4; // steel, water_in, bronze, water_out
+
+// Reference Z planes for all polycones
+vector<double> PSShield.zPlane = { 1210., 2410., 3000., 3500., 5000.};
+
+// Define the n+1 boundaries, starting from the innermost
+vector<double> PSShield.r1 = { 650., 200., 200., 200., 200. };
+string PSShield.material1 = "StainlessSteel";
+vector<double> PSShield.color1 = { 0.1, 0.1, 0.1};
+
+// HRS_Water_in
+vector<double> PSShield.r2 = { 670., 220., 220., 220., 220. };
+string PSShield.material2 = "G4_WATER";
+vector<double> PSShield.color2 = { 0., 0., 1};
+
+// HRS_Bronze
+vector<double> PSShield.r3 = { 680., 230., 230., 230., 230. };
+string PSShield.material3 = "G4_Cu";
+vector<double> PSShield.color3 = { 1., 0.5, 0.};
+
+// HRS_Water_out
+vector<double> PSShield.r4 = { 700., 700., 700., 500., 500. };
+string PSShield.material4 = "G4_WATER";
+vector<double> PSShield.color4 = { 0., 0., 1};
+
+// Outer boundary
+vector<double> PSShield.r5 = { 750., 750., 750., 750., 750. };
+
+// Each groove is a cylinder of the given dimensions, with the center
+// at the given reference point and rotated by the given angles, which
+// is subtracted from the polycone above.
+int PSShield.nGrooves = 0;
+
+// The shield is positioned on the PS axis.
+// To fix its Z position we specify the offset w.r.t. to the production target center
+// of the PSShield point at the most negative z.
+//
+// From Peter Kasper's e-mail May 17, 2012, + updates from V. Pronskikh:
+//     HRS downstream end z = -7858.0
+//     Target center      z = -6164.5
+double PSShield.zOffsetFromProductionTarget = -1693.5;
+
+bool PSShield.visible = true;
+bool PSShield.solid = false;
+
+int PSShield.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
