@@ -1,0 +1,125 @@
+# Variant of g4test_03 but with transport only.
+# used to make plots used in the ttracker geometry note 1166
+#
+# $Id: transportOnlyAndRoot.fcl,v 1.1 2014/08/29 16:16:17 knoepfel Exp $
+# $Author: knoepfel $
+# $Date: 2014/08/29 16:16:17 $
+# original author KLG
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+
+# Give this job a name.
+process_name : transportAndRoot
+
+# Start form an empty source
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 1
+}
+
+services :
+{
+  message : @local::default_message
+
+  TFileService :
+  {
+    fileName : "transportOnlyAndRoot.root"
+  }
+
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService :
+    {
+      inputFile : "Mu2eG4/test/transportOnlyGeom.txt"
+    }
+
+    ConditionsService :
+    {
+      conditionsfile : "Mu2eG4/test/conditions_01.txt"
+    }
+
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+
+    G4Helper : { }
+
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+
+    # Generate Event
+    generate:
+    {
+      module_type   : EventGenerator
+      inputfile     : "Mu2eG4/test/genconfig_tonly.txt"
+      seed          : [7789]
+    }
+
+    # Run G4 and add hits to the event
+    g4run :
+    {
+      module_type          : G4
+      generatorModuleLabel : generate
+      rmvlevel             : 2
+      seed                 : [9877]
+    }
+
+    randomsaver:
+    {
+      module_type          : RandomSaverNumber
+    }
+
+  }
+
+
+  analyzers:
+  {
+
+    checkhits:
+    {
+      module_type          : ReadBack
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      minimumEnergy        : 0.000
+      maxFullPrint         : 201
+    }
+
+    geometryplots:
+    {
+      module_type          : TTrackerGeomIntRootPlots
+    }
+
+  }
+
+# randomsaver is currently broken.
+#  p1 : [generate , g4run, randomsaver ]
+  p1 : [generate , g4run]
+  e1 : [geometryplots, checkhits, outfile]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "data_06.root"
+    outputCommands:   [ "keep *_*_*_*"
+#                       "drop mu2eSimParticles_*_*_*" # Uncomment this line to reduce file size.
+                      ]
+  }
+
+}
+

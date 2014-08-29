@@ -1,0 +1,142 @@
+# Configuration file for extmon uci simulation 
+#
+#  - Read single particle events from particle.txt with G4BL.
+#  - Run these through G4.
+#  - No event display.
+#  - Form ExtMonUCITofHits from StepPointMC objects
+#  - Filter events with at least 1 ExtMonUCITofStepPoint
+#  - Write event data to an output file
+#  - Save state of random numbers to the event-data output file
+#
+# $Id: extmon_uci_sim_01.fcl,v 1.1 2014/08/29 16:16:17 knoepfel Exp $
+# $Author: knoepfel $
+# $Date: 2014/08/29 16:16:17 $
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+# Give this job a name.
+process_name : ExtMonUCISim01
+
+# Start form an empty source
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : -1
+}
+
+services :
+{
+  message : @local::default_message
+
+  TFileService :
+  {
+    fileName : "myg4test_03.root"
+  }
+
+  RandomNumberGenerator : { }
+
+# Uncomment to enable memory use profiling
+# SimpleMemoryCheck :
+# {
+#   oncePerEventMode : false
+#   showMallocInfo   : false
+#   ignoreTotal      : 5
+#)
+# Uncomment to enable per module timing
+#   Timing :
+#   {
+#    useJobReport : true
+#   }
+
+# Uncomment to enable trace printout to show what the framework calls when.
+#  scheduler: { wantTracer : true }
+
+
+  user :
+  {
+    GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper          : { }
+    SeedService       : @local::automaticSeeds
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+
+    # Generate Event
+    generate:
+    {
+      module_type   : EventGenerator
+      inputfile     : "Mu2eG4/test/genconfig_extMonUCI_G4BL.txt"
+    }
+
+    # Run G4 and add hits to the event
+    g4run :
+    {
+      module_type          : G4
+      generatorModuleLabel : generate
+#      visMacro             : "Mu2eG4/test/extmon_uci_visxz.mac"
+    }
+
+    filter :
+    {
+      module_type          : ExtMonUCIFilter
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+    }
+
+    # Form ExtMonUCITofHits
+    ExtMonUCITofHitsMaker : @local::ExtMonUCITofHitsMaker
+
+    randomsaver : @local::randomsaver
+
+  }
+
+  p1 : [generate, g4run,
+        ExtMonUCITofHitsMaker,
+        filter,
+        randomsaver ]
+  e1 : [outfile]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "data_03.root"
+    outputCommands:   [ "keep *_*_*_*",
+                        "keep mu2e::ExtMonUCITofHitMCTruths_*_*_*",
+                        "keep mu2e::ExtMonUCITofHits_*_*_*"
+#                        "drop mu2e::SimParticlemv_*_*_*",
+#                        "drop mu2e::PointTrajectorymv_*_*_*"
+                      ]
+    SelectEvents  : { SelectEvents: [p1]  }
+  }
+
+}
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
+
+physics.producers.makeSH.diagLevel : 0
+physics.producers.makeSH.maxFullPrint : 5
+physics.producers.CaloReadoutHitsMaker.diagLevel : 0
+physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
+physics.producers.CaloCrystalHitsMaker.diagLevel : 0
+physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
+physics.producers.ExtMonUCITofHitsMaker.diagLevel : 3
+physics.producers.ExtMonUCITofHitsMaker.maxFullPrint : 11
+

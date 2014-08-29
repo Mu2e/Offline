@@ -1,0 +1,41 @@
+// A minimalistic config to check geometry.
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+process_name : G4TestOverlapCheck
+
+source : {
+  module_type : EmptyEvent
+  maxEvents : 1
+}
+
+services : {
+
+  message               : @local::default_message
+  TFileService          : { fileName : "g4test_overlapCheck.root" }
+  RandomNumberGenerator : { }
+
+  user : {
+    GeometryService        : { inputFile      : "Mu2eG4/test/geom_overlapCheck.txt"  }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper               : { }
+    SeedService            : @local::automaticSeeds
+  }
+}
+
+physics : {
+  producers: {
+    generate: @local::generate
+    g4run : @local::g4run
+  }
+
+  p1 : [generate, g4run]
+  trigger_paths  : [p1]
+}
+
+// Initialze seeding of random engines
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20

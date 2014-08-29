@@ -1,0 +1,137 @@
+# Configuration file for extinction monitor proton generation
+#
+#  - Generate 200 events including one conversion electron plus
+#    some number of background processes.
+#  - Run these through G4.
+#  - No event display.
+#  - Form StrawHits from StepPointMC objects
+#  - Write event data to an output file
+#  - Save state of random numbers to the event-data output file
+#
+# $Id: extmon_uci_protongen_01.fcl,v 1.1 2014/08/29 16:16:17 knoepfel Exp $
+# $Author: knoepfel $
+# $Date: 2014/08/29 16:16:17 $
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+# Give this job a name.
+process_name : ExtMonUCIProtonGen01
+
+# Start form an empty source
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : 100
+  firstRun  : 33
+  numberEventsInRun : 90000000
+}
+
+services :
+{
+  message               : @local::default_message
+  TFileService          : { fileName : "g4test_03.root" }
+  RandomNumberGenerator : { }
+
+# Uncomment to enable memory use profiling
+# SimpleMemoryCheck :
+# {
+#   oncePerEventMode : false
+#   showMallocInfo   : false
+#   ignoreTotal      : 5
+#)
+# Uncomment to enable per module timing
+#   Timing :
+#   {
+#    useJobReport : true
+#   }
+
+# Uncomment to enable trace printout to show what the framework calls when.
+#  scheduler: { wantTracer : true }
+
+
+  user :
+  {
+    GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper          : { }
+    SeedService       : @local::automaticSeeds
+  }
+
+}
+
+physics :
+{
+  producers:
+  {
+
+    # Generate Event
+    generate:
+    {
+      module_type   : EventGenerator
+      inputfile     : "Mu2eG4/test/genconfig_extMonUCI.txt"
+    }
+
+    # Run G4 and add hits to the event
+    g4run :
+    {
+      module_type          : G4
+      generatorModuleLabel : generate
+#      visMacro             : "Mu2eG4/test/extmon_uci_visxz.mac"
+    }
+
+    randomsaver : @local::randomsaver
+
+  }
+
+  filters: {
+    fvd21: {
+      module_type: FilterVDHits
+      inputModuleLabel   : "g4run"
+      inputInstanceName  : "virtualdetector"
+      acceptedVids       : [ 21 ]
+      storeParents       : true
+    }
+  }
+
+  p1 : [generate, g4run,
+        fvd21,
+        randomsaver ]
+  e1 : [outfile]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  outfile :
+  {
+    module_type   :   RootOutput
+    fileName      :   "data_03.root"
+    outputCommands:   [ "keep *_*_*_*",
+#                        "drop mu2e::StepPointMCs_g4run_*_*",
+#                        "drop mu2e::SimParticlemv_g4run_*_*",
+                        "drop mu2e::PointTrajectorymv_*_*_*"
+                      ]
+    SelectEvents  : { SelectEvents: [p1]  }
+  }
+
+}
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
+
+physics.producers.makeSH.diagLevel : 0
+physics.producers.makeSH.maxFullPrint : 5
+physics.producers.CaloReadoutHitsMaker.diagLevel : 0
+physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
+physics.producers.CaloCrystalHitsMaker.diagLevel : 0
+physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
+physics.producers.ExtMonUCITofHitsMaker.diagLevel : 1
+physics.producers.ExtMonUCITofHitsMaker.maxFullPrint : 11
+
