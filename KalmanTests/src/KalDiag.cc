@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalDiag.cc,v 1.2 2014/08/28 19:26:04 brownd Exp $
+// $Id: KalDiag.cc,v 1.3 2014/08/29 23:40:41 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/08/28 19:26:04 $
+// $Date: 2014/08/29 23:40:41 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -191,11 +191,10 @@ namespace mu2e
       if(_diag > 1)
 	hitsDiag(krep,spp);
     } else if(_fillmc && _mcdata._simparts != 0){
-// Assume the 1st particle is the primary (I have no other information in this case)
-      static cet::map_vector_key trkid(1);
+// Assume the 1st particle is the primary 
       for ( auto isp = _mcdata._simparts->begin(); isp != _mcdata._simparts->end(); ++isp ){
-	if(isp->second.id() == trkid){
-	  art::Ptr<SimParticle> spp(_mcdata._simparthandle,trkid.asInt());
+	if(isp->second.isPrimary()){
+	  art::Ptr<SimParticle> spp(_mcdata._simparthandle,isp->second.id().asInt());
 	  fillMCTrkInfo(spp);
 	  break;
 	}
