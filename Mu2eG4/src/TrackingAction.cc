@@ -3,9 +3,9 @@
 // If Mu2e needs many different user tracking actions, they
 // should be called from this class.
 //
-// $Id: TrackingAction.cc,v 1.45 2014/08/25 20:01:30 genser Exp $
+// $Id: TrackingAction.cc,v 1.46 2014/08/29 22:37:41 genser Exp $
 // $Author: genser $
-// $Date: 2014/08/25 20:01:30 $
+// $Date: 2014/08/29 22:37:41 $
 //
 // Original author Rob Kutschke
 //
@@ -81,7 +81,6 @@ namespace mu2e {
       _debugList.add(list);
     }
 
-
   }
 
   TrackingAction::~TrackingAction(){
@@ -102,23 +101,78 @@ namespace mu2e {
 
   void TrackingAction::PreUserTrackingAction(const G4Track* trk){
 
+    G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
+
     // Create a user track information object and attach it to the track.
     G4VUserTrackInformation* tui = trk->GetUserInformation();
     UserTrackInformation* ti =  new UserTrackInformation();
+
     if (tui) {
-      // G4cout << __func__ 
-      // 	     << " the track was labeled as " << tui->GetType() << G4endl;
+      if ( trackingVerbosityLevel > 0 ) {
+        G4cout << __func__ 
+               << " the track was labeled as " << tui->GetType() << G4endl;
+      }
       ProcessCode cCode = Mu2eG4UserHelpers::findCreationCode(trk);
       if (cCode == ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
 	ti->setMuCapCode(ProcessCode::findByName((tui->GetType()).c_str()));
-	// G4cout << __func__ << " set UserTrackInformation  muCapCode " 
-	//        << ti->muCapCode()  << G4endl;
+        if ( trackingVerbosityLevel > 0 ) {
+          G4cout << __func__ << " set UserTrackInformation  muCapCode " 
+                 << ti->muCapCode()  << G4endl;
+        }
       }
     } 
-    // else {
-    //   G4cout << __func__ 
-    // 	     << " the track was not labeled" << G4endl;
-    // }
+    else {
+      if ( trackingVerbosityLevel > 0 ) {
+        G4cout << __func__ 
+               << " the track was not labeled" << G4endl;
+      }
+
+#if G4VERSION>4100
+
+      // here we call G4String& GetCreatorModelName() and extract the part after _
+      const G4String& creatorModelName =  trk->GetCreatorModelName();
+      size_t delPosition = creatorModelName.find_last_of("_");
+
+      if ( trackingVerbosityLevel > 0 ) {
+        G4cout << __func__ 
+               << " full creatorModelName " 
+               << creatorModelName << G4endl;
+      }
+
+      if (delPosition != G4String::npos ) {
+
+        string modelName = creatorModelName.substr(delPosition+1);
+        ProcessCode cCode = Mu2eG4UserHelpers::findCreationCode(trk);
+
+        if ( trackingVerbosityLevel > 0 ) {
+          G4cout << __func__ 
+                 << " Mu2e used model name: " 
+                 << modelName << G4endl;
+
+          G4cout << __func__ 
+                 << " Creator Process name from model: " 
+                 << creatorModelName.substr(0,delPosition) << G4endl;
+
+          G4cout << __func__ 
+                 << " Creator Process name from trk:   " 
+                 << ProcessCode::name(cCode) << G4endl;
+        }
+
+        // we label the track using the UserTrackInformation as above
+ 
+        if (cCode == ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
+          ti->setMuCapCode(ProcessCode::findByName(modelName.c_str()));
+
+          if ( trackingVerbosityLevel > 0 ) {
+            G4cout << __func__ << " set UserTrackInformation  muCapCode " 
+                   << ti->muCapCode()  << G4endl;
+          }
+
+        }
+
+      }
+#endif
+    }
 
     // Need to cast away const-ness to do this.
     const_cast<G4Track*>(trk)->SetUserInformation(ti);
@@ -218,6 +272,8 @@ namespace mu2e {
   // Save start of track info.
   void TrackingAction::saveSimParticleStart(const G4Track* trk){
 
+    G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
+
     _currentSize += 1;
 
     if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
@@ -248,21 +304,23 @@ namespace mu2e {
     // we shall replace creationCode with muCapCode from UserTrackInformation if needed/present
     if (creationCode==ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
 
-      // G4cout << __func__ 
-      // 	     << " particle created by " << creationCode.name()
-      // 	     << " will try to replace the creation code "
-      // 	     << G4endl;
+      if ( trackingVerbosityLevel > 0 ) {
+        G4cout << __func__ 
+               << " particle created by " << creationCode.name()
+               << " will try to replace the creation code "
+               << G4endl;
 
-      // G4VUserTrackInformation* tui = trk->GetUserInformation();
-      // if (tui) {
-      // 	G4cout << __func__ 
-      // 	       << " the track is labeled as " << tui->GetType() 
-      // 	       << G4endl;
-      // 	G4cout << __func__ 
-      // 	       << " muCapCode is: " 
-      // 	       << (static_cast<UserTrackInformation*>(tui))->muCapCode()
-      // 	       << G4endl;
-      // }
+        G4VUserTrackInformation* tui = trk->GetUserInformation();
+        if (tui) {
+          G4cout << __func__ 
+                 << " the track is labeled as " << tui->GetType() 
+                 << G4endl;
+          G4cout << __func__ 
+                 << " muCapCode is: " 
+                 << (static_cast<UserTrackInformation*>(tui))->muCapCode()
+                 << G4endl;
+        }
+      }
 
       ProcessCode utic = 
 	(static_cast<UserTrackInformation*>(trk->GetUserInformation()))->muCapCode();
@@ -270,9 +328,11 @@ namespace mu2e {
 	creationCode=utic;
       }
     }
-    // G4cout << __func__ 
-    // 	   << " saving particle as created by " << creationCode.name()
-    // 	   << G4endl;
+    if ( trackingVerbosityLevel > 0 ) {
+      G4cout << __func__ 
+             << " saving particle as created by " << creationCode.name()
+             << G4endl;
+    }
 
     // Track should not yet be in the map.  Add a debug clause to skip this test?
     if ( _transientMap.find(kid) != _transientMap.end() ){
