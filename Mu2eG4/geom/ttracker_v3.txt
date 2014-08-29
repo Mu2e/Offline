@@ -3,9 +3,9 @@
 //   All lengths are given in mm.
 //   All angles are given in degrees.
 //
-// $Id: ttracker_v3.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
+// $Id: ttracker_v3.txt,v 1.2 2014/08/29 16:53:32 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/08/29 16:37:09 $
+// $Date: 2014/08/29 16:53:32 $
 //
 // Most paramaters are from Mu2e-doc-888-v5
 // Parameters not found in that document are:
@@ -41,7 +41,7 @@
 // 1) The services section of the staves is not yet described and for now is left as solid Al.
 //
 
-#include "Mu2eG4/test/ttracker_v0.txt"
+#include "Mu2eG4/geom/ttracker_v0.txt"
 
 // Tell the TTracker object that we using the detailed support structure.
 string ttrackerSupport.model = "detailedv0";
