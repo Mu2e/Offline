@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.238 2014/08/29 16:37:09 knoepfel Exp $
+// $Id: geom_01.txt,v 1.239 2014/08/29 18:57:40 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/08/29 16:37:09 $
+// $Date: 2014/08/29 18:57:40 $
 //
 // Original author Rob Kutschke
 //
@@ -34,8 +34,6 @@ string GDMLFileName     = "mu2e.gdml";
 // Uncomment exactly one tracker.
 #include "Mu2eG4/geom/ttracker_v3.txt"
 //#include "Mu2eG4/geom/ttracker_meco.txt"
-//#include "Mu2eG4/geom/ltracker_v0.txt"
-//#include "Mu2eG4/geom/itracker_v42.txt"
 //#include "Mu2eG4/geom/dummytracker.txt"
 
 // Uncomment to enable debug printout on a per event or per track basis.
