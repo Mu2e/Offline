@@ -15,12 +15,12 @@
 // up in Y by 0.52 mm. There is no correction for that in this config.
 //
 
-#include "Mu2eG4/test/geom_01.txt"
+#include "Mu2eG4/geom/geom_01.txt"
 
-#include "Mu2eG4/test/PSShield_v03.txt"
+#include "Mu2eG4/geom/PSShield_v03.txt"
 int PSShield.verbosityLevel = 1;
 
-#include "Mu2eG4/test/psEnclosure_v03.txt"
+#include "Mu2eG4/geom/psEnclosure_v03.txt"
 int PSEnclosure.verbosityLevel = 1;
 
 

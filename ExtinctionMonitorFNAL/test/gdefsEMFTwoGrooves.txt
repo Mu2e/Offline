@@ -1,6 +1,6 @@
 // Make sure we use the two-grooves HRS and the matching PSEnclosure
-#include "Mu2eG4/test/PSShield_v03.txt"
-#include "Mu2eG4/test/psEnclosure_v03.txt"
+#include "Mu2eG4/geom/PSShield_v03.txt"
+#include "Mu2eG4/geom/psEnclosure_v03.txt"
 
 //----------------------------------------------------------------
 // Set the twogrooves filter channel geometry
