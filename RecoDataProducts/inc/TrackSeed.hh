@@ -3,9 +3,9 @@
 //
 // out data of the time pattern recognition algorithm to seed the Kalman filter (used for the ITracker)
 //
-// $Id: TrackSeed.hh,v 1.1 2012/05/23 07:58:06 tassiell Exp $
+// $Id: TrackSeed.hh,v 1.2 2014/08/30 12:16:39 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2012/05/23 07:58:06 $
+// $Date: 2014/08/30 12:16:39 $
 //
 // Original author G. Tassielli
 //
@@ -58,6 +58,13 @@ public:
 inline std::ostream& operator<<( std::ostream& ost,
                 TrackSeed const& seed){
         ost<<"Reconstructed track with parameters: d0= " << seed.d0() << " phi0= "<< seed.phi0() << " omega= "<< seed.omega() << " z0 = "<< seed.z0() << " tanDip= "<< seed.tanDip() << std::endl;
+        ost<<"Cov Matrix:"<<std::endl;
+        for (int row=0; row<5;++row) {
+                for (int col=0;col<5;++col) {
+                        ost<<seed._fullTrkSeed._covMtrx[row][col]<<" ";
+                }
+                ost<<std::endl;
+        }
         ost<<"with "<<seed.nLoops()<<" loops and potential t0 "<<seed.t0()<<" with error "<<seed.errt0()<<std::endl;
         return ost;
 }
