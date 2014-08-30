@@ -1,9 +1,13 @@
 // utilities for the Module to perform BaBar Kalman fit
 //
-// $Id: TrkPatRecUtils.hh,v 1.2 2014/08/25 12:08:29 tassiell Exp $
+// $Id: TrkPatRecUtils.hh,v 1.3 2014/08/30 12:19:38 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2014/08/25 12:08:29 $
+// $Date: 2014/08/30 12:19:38 $
 //
+// Original author G. Tassielli
+//
+#ifndef TrkPatRecUtils_HH
+#define TrkPatRecUtils_HH
 
 // framework
 #include "KalmanTests/inc/TrkDef.hh"
@@ -17,7 +21,9 @@
 #include "RecoDataProducts/inc/TrackSeed.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/HelixVal.hh"
 // BaBar
+#include "TrkBase/HelixTraj.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkBase/TrkPoca.hh"
 // C++
@@ -52,7 +58,7 @@ namespace mu2e
           tmpseed._fullTrkSeed._tanDip=seeddef.helix().tanDip();
           for(int i=0;i<5;i++) {
             for(int j=0;j<5;j++) {
-              tmpseed._fullTrkSeed._covMtrx[i][j]=seeddef.convMatr()[i+1][j+1];
+              tmpseed._fullTrkSeed._covMtrx[i][j]=seeddef.helixCovMatr()[i][j];
             }
           }
 
@@ -62,6 +68,25 @@ namespace mu2e
           }
   }
 
-  void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca, int diag=0, vector<TrkHitFilter> *thfvec=0, KalDiag *kdiag=0);
+  inline void HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
+          //TrkExchangePar helParams( helIn._d0, helIn._phi0, helIn._omega, helIn._z0, helIn._tanDip );
+          HepVector helParams(5);
+          helParams(1) = helIn._d0;
+          helParams(2) = helIn._phi0;
+          helParams(3) = helIn._omega;
+          helParams(4) = helIn._z0;
+          helParams(5) = helIn._tanDip;
+          HepSymMatrix conv(5,1);
+          conv(1,1)=helIn._covMtrx[0][0]; conv(1,2)=helIn._covMtrx[0][1]; conv(1,3)=helIn._covMtrx[0][2]; conv(1,4)=helIn._covMtrx[0][3]; conv(1,5)=helIn._covMtrx[0][4];
+          conv(2,1)=helIn._covMtrx[1][0]; conv(2,2)=helIn._covMtrx[1][1]; conv(2,3)=helIn._covMtrx[1][2]; conv(2,4)=helIn._covMtrx[1][3]; conv(2,5)=helIn._covMtrx[1][4];
+          conv(3,1)=helIn._covMtrx[2][0]; conv(3,2)=helIn._covMtrx[2][1]; conv(3,3)=helIn._covMtrx[2][2]; conv(3,4)=helIn._covMtrx[2][3]; conv(3,5)=helIn._covMtrx[2][4];
+          conv(4,1)=helIn._covMtrx[3][0]; conv(4,2)=helIn._covMtrx[3][1]; conv(4,3)=helIn._covMtrx[3][2]; conv(4,4)=helIn._covMtrx[3][3]; conv(4,5)=helIn._covMtrx[3][4];
+          conv(5,1)=helIn._covMtrx[4][0]; conv(5,2)=helIn._covMtrx[4][1]; conv(5,3)=helIn._covMtrx[4][2]; conv(5,4)=helIn._covMtrx[4][3]; conv(5,5)=helIn._covMtrx[4][4];
+          //helParams.setError(conv);
+          HelixTraj tmpHelix(helParams,conv);
+          helOut=tmpHelix;
+  }
 
-}
+}  // end namespace mu2e
+#endif
+

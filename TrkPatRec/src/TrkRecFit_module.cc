@@ -1,9 +1,9 @@
 //
 // TTracker Kalman Fit launcher
 //
-// $Id: TrkRecFit_module.cc,v 1.3 2014/08/27 18:32:28 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/08/27 18:32:28 $
+// $Id: TrkRecFit_module.cc,v 1.4 2014/08/30 12:19:38 tassiell Exp $
+// $Author: tassiell $
+// $Date: 2014/08/30 12:19:38 $
 //
 //
 // Original author D. Brown and G. Tassielli
@@ -49,7 +49,6 @@
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "TrkPatRec/inc/HelixFit.hh"
-#include "FastPatternReco/inc/TrackSeedUtils.hh"
 #include "TrkPatRec/inc/TrkPatRecUtils.hh"
 #include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
 #include "TrkPatRec/inc/PayloadSaver.hh"
@@ -155,7 +154,7 @@ namespace mu2e
       PayloadSaver _payloadSaver;
       // helper functions
       bool findData(const art::Event& e);
-//      void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,vector<TrkHitFilter>& thfvec);
+      void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,vector<TrkHitFilter>& thfvec);
       void findMissingHits(KalFitResult& kalfit, vector<hitIndex>& indices);
       void createDiagnostics();
       void fillStrawDiag();
@@ -332,7 +331,7 @@ namespace mu2e
     unique_ptr<StrawHitFlagCollection> flags(_flags );
     // find mc truth if we're making diagnostics
     if(_diag > 0 && !_kdiag.findMCData(event)){
-      throw cet::exception("RECO")<<"mu2e::TrkRecFit: MC information missing "<< endl;
+      throw cet::exception("RECO")<<"mu2e::TrkRecFit: MC data missing or incomplete"<< endl;
     }
     if(_diag > 1){
       fillStrawDiag();
@@ -411,29 +410,15 @@ namespace mu2e
         }*/
       }
 
-      // this function doesn't seem to be working, FIXME!!!
-      // HelixTraj recoseed(TrkParams(HelixTraj::NHLXPRM));
-      //HelixVal2HelixTraj(iTrkSeed._fullTrkSeed,recoseed);
+      //this function doesn't seem to be working, FIXME!!!
+      HelixTraj recoseed(TrkParams(HelixTraj::NHLXPRM));
+      HelixVal2HelixTraj(iTrkSeed._fullTrkSeed,recoseed);
+      if(_debug>0) {
+              std::cout<<"Seed parameters:"<<std::endl<<iTrkSeed;
+              std::cout<<"Converted into HelixTraj:"<<std::endl;
+              recoseed.printAll(std::cout);
+      }
 
-// transfer the seed parameters
-      CLHEP::HepVector pvec(5,0);
-      pvec[HelixTraj::d0Index] = iTrkSeed._fullTrkSeed._d0;
-      pvec[HelixTraj::phi0Index] = iTrkSeed._fullTrkSeed._phi0;
-      pvec[HelixTraj::omegaIndex] = iTrkSeed._fullTrkSeed._omega;
-      pvec[HelixTraj::tanDipIndex] = iTrkSeed._fullTrkSeed._z0;
-      pvec[HelixTraj::z0Index] = iTrkSeed._fullTrkSeed._tanDip;
-// estimated covariance based on average performance.  These should be parameters, FIXME!!!
-      CLHEP::HepVector perr(5,0);
-      perr[HelixTraj::d0Index] = 34.0;
-      perr[HelixTraj::phi0Index] = 0.02;
-      perr[HelixTraj::omegaIndex]  = 0.0002;
-      perr[HelixTraj::tanDipIndex] = 0.05;
-      perr[HelixTraj::z0Index] = 15.0;
-
-      if(_debug>0)
-	cout << "helix params " << pvec << "and errors " << perr << endl;
-      HepSymMatrix pcov = vT_times_v(perr);
-      HelixTraj recoseed(pvec,pcov);
       TrkDef seeddef(_shcol,goodhits,recoseed,_tpart,_fdir);
 
 //      TrkDef seeddef(_shcol,_tpart,_fdir);
@@ -462,27 +447,22 @@ namespace mu2e
       _hfilt.clear();
       _sfilt.clear();
 
-
-// this needs to be fixed, FIXME!!
-//      filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca,_hfilt);
-
+      filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca,_hfilt);
       // now, fit the seed helix from the filtered hits
       //seedfit._tdef.helix().printAll(std::cout);
       _seedfit.makeTrack(seedfit);
       if(seedfit._fit.success()){
         findseed = true;
-        cout<<"Seed found"<<endl;
         // find the helix parameters from the helix fit, and initialize the full Kalman fit with this
         double locflt;
         const HelixTraj* shelix = dynamic_cast<const HelixTraj*>(seedfit._krep->localTrajectory(seedfit._krep->flt0(),locflt));
         kaldef.setHelix(*shelix);
         // filter the outliers
-        filterOutliers(kaldef,seedfit._krep->traj(),_maxseeddoca,_diag,&_sfilt,&_kdiag);
+        filterOutliers(kaldef,seedfit._krep->traj(),_maxseeddoca,_sfilt);
         _kfit.makeTrack(kalfit);
         // if successfull, try to add missing hits
         if(kalfit._fit.success()){
           findkal = true;
-          cout<<"Fit found"<<endl;
           if(_addhits){
             // first, add back the hits on this track
             _kfit.unweedHits(kalfit,_maxaddchi);
@@ -574,6 +554,60 @@ namespace mu2e
 // don't require stereo hits: they are only used for diagnostics
     return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0 && _tscol != 0;
   }
+
+  void TrkRecFit::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,vector<TrkHitFilter>& thfvec){
+    //  Trajectory info
+    Hep3Vector tdir;
+    HepPoint tpos;
+    traj.getInfo(0.0,tpos,tdir);
+    // tracker and conditions
+    const Tracker& tracker = getTrackerOrThrow();
+    ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    const StrawHitCollection* hits = mytrk.strawHitCollection();
+    const vector<hitIndex>& indices = mytrk.strawHitIndices();
+    vector<hitIndex> goodhits;
+    for(unsigned ihit=0;ihit<indices.size();++ihit){
+      StrawHit const& sh = hits->at(indices[ihit]._index);
+      Straw const& straw = tracker.getStraw(sh.strawIndex());
+      CLHEP::Hep3Vector hpos = straw.getMidPoint();
+      CLHEP::Hep3Vector hdir = straw.getDirection();
+      // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
+      HepPoint spt(hpos.x(),hpos.y(),hpos.z());
+      TrkLineTraj htraj(spt,hdir,-20,20);
+      // estimate flightlength along track.  This assumes a constant BField!!!
+      double fltlen = (hpos.z()-tpos.z())/tdir.z();
+      TrkPoca hitpoca(traj,fltlen,htraj,0.0);
+      // flag hits with small residuals
+      if(fabs(hitpoca.doca()) < maxdoca){
+        goodhits.push_back(indices[ihit]);
+      }
+      // optional diagnostics
+      if(_diag > 0){
+        // summarize the MC truth for this strawhit
+        TrkHitFilter thfilter;
+        HepPoint tpos =  traj.position(hitpoca.flt1());
+        thfilter._pos = CLHEP::Hep3Vector(tpos.x(),tpos.y(),tpos.z());
+        thfilter._doca = hitpoca.doca();
+        if(_kdiag.mcData()._mcdigis != 0){
+          StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(indices[ihit]._index);
+          // use TDC channel 0 to define the MC match
+          StrawDigi::TDCChannel itdc = StrawDigi::zero;
+          if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+          art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+          art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+          thfilter._mcpdg = spp->pdgId();
+          thfilter._mcproc = spp->creationCode();
+          thfilter._mcgen = -1;
+          if(spp->genParticle().isNonnull())
+            thfilter._mcgen = spp->genParticle()->generatorId().id();
+        }
+        thfvec.push_back(thfilter);
+      }
+    }
+    // update track
+    mytrk.setIndices(goodhits);
+  }
+
   void TrkRecFit::findMissingHits(KalFitResult& kalfit,vector<hitIndex>& misshits) {
     const Tracker& tracker = getTrackerOrThrow();
     //  Trajectory info
@@ -607,7 +641,6 @@ namespace mu2e
       }
     }
   }
-
 
   void TrkRecFit::createDiagnostics() {
     art::ServiceHandle<art::TFileService> tfs;

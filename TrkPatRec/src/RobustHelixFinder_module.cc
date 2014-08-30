@@ -1,9 +1,9 @@
 //
 // TTracker Pattern Recognition based on Robust Helix Fit
 //
-// $Id: RobustHelixFinder_module.cc,v 1.1 2014/08/22 16:10:41 tassiell Exp $
+// $Id: RobustHelixFinder_module.cc,v 1.2 2014/08/30 12:19:38 tassiell Exp $
 // $Author: tassiell $
-// $Date: 2014/08/22 16:10:41 $
+// $Date: 2014/08/30 12:19:38 $
 //
 // Original author D. Brown and G. Tassielli
 //
@@ -158,8 +158,7 @@ namespace mu2e
 	HepSymMatrix hcov = vT_times_v(hparerr);
 	seeddef.setHelix(HelixTraj(hpar,hcov));
 	// Filter outliers using this helix
-	filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca);
-
+	if (_debug>0) {std::cout <<"RobustHelixFinder::produce - helix params " << hpar << "and errors " << hparerr << endl;}
 	//fill seed information
 	TrackSeed tmpseed;
 	fillTrackSeed(tmpseed, seeddef, _tclusthitH, ipeak, _strawhitsH);
