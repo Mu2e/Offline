@@ -2,6 +2,17 @@
 
            Release notes for Mu2e Offline software, v4_2_7
 
+(5) Sep 2, 2014 - knoepfel
+    The Mu2eG4 directory has been restructured.  All .fcl files are
+    now placed in a Mu2eG4/fcl/, and any SimpleConfig *.txt files that
+    are #included in geom_01.txt or geom_STM.txt have been placed in
+    Mu2eG4/geom/.  I have also removed files corresponding to
+    deprecated configurations: 
+      Anything ExtMonUCI related
+      Any SimpleConfig ITracker files
+      ttracker_v1.txt and ttracker_v2.txt
+      Various PSShield versions
+
 (4) Aug 29, 2014 - genser
     Added provisions for new track labeling in Geant4 v10.1
     and added more diagnostic printout
