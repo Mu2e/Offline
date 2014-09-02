@@ -124,7 +124,7 @@ class mu2e {
     mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true,double np=3.6e20,double mustopfrac=1.87e-3) : dio(d), con(c),diogenrange(dgenrange),
     ndio(nd),ncon(nc),weightdio(weightd),nproton(np),nstopped(np*mustopfrac),capfrac(0.609),rmue(1e-16),trueconvmom(104.973),
     tdlow(0.57735027),tdhigh(1.0),t0min(700),t0max(1695),rpc(0.025), ap(0.083333),cmu(0.041666),mu2ecut(2),
-    reco("fitstatus>0")
+    reco("fitstatus>0"),_init(false)
   {
   }
     void init();
@@ -178,10 +178,13 @@ void mu2e::init(){
   _diocz_f->SetParameter(0,1.0);
   // integrate the DIO spectrum over the range specified.  This is relative to the free decay rate
   dioint = _diocz_f->Integral(trueconvmom-diogenrange,trueconvmom);
-  if(weightdio){ 
-    dioscale =ndecay*diogenrange/ndio;
-  } else {
-    dioscale = dioint*ndecay/ndio;
+  dioscale = 0.0;
+  if(ndio>0){
+    if(weightdio){ 
+      dioscale =ndecay*diogenrange/ndio;
+    } else {
+      dioscale = dioint*ndecay/ndio;
+    }
   }
   cout << "DIO scale factor = " << dioscale << endl;
 //  flat = rpc+ap+cmu;

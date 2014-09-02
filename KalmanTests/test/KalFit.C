@@ -53,6 +53,7 @@ class KalFit {
   void KalFitNHits(TTree* t);
   void KalFitNactive(TTree* t);
   void KalFitMom(TTree* t);
+  void KalFitRad(TTree* t);
 };
 
 KalFit::KalFit() : tdlow(0.57735027),
@@ -97,15 +98,15 @@ void KalFit::KalCuts() {
   snprintf(ctext,80,"t0>%f&&t0<%f",t0min,t0max);
   livegate = TCut(ctext);
   snprintf(ctext,80,"mcenttd>%4.3f&&mcenttd<%4.3f",tdlow-0.02,tdhigh+0.02);
-//  tpitch = TCut(ctext);
-  tpitch = TCut("mcenttd>-1");
-  snprintf(ctext,80,"mct0>%f",t0min);
+  tpitch = TCut(ctext);
+//  tpitch = TCut("mcenttd>-1");
+  snprintf(ctext,80,"mct0%%1695>%f",500);
   tt0 = TCut(ctext);
-  tmom = TCut("mcentmom>-1");
+  tmom = TCut("mcentmom>100.0");
   snprintf(ctext,80,"nmcgood>=%i",minnhits);
   nmch = TCut(ctext);
-  mcsel = nmch+tmom+tpitch;
-//  mcsel = nmch+tmom;
+//  mcsel = nmch+tmom+tpitch;
+  mcsel = tmom+tpitch+tt0;
 
   reco = TCut("fitstatus>0");
   cosmic = TCut("d0<105 && d0>-80 && (d0+2/om)>450 && (d0+2/om)<680");
@@ -603,7 +604,7 @@ void KalFit::KalFitAccPlots(TTree* trks) {
 
 void KalFit::KalFitAcc(TTree* trks,double norm) {
   if(!donecuts)KalCuts();
-  unsigned nbins(10);
+  unsigned nbins(8);
   double bmax = nbins-0.5;
   TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
   TH1F* racc = new TH1F("racc","CE Acceptance #times Efficiency;;Relative a#times#epsilon",nbins,-0.5,bmax);
@@ -611,9 +612,7 @@ void KalFit::KalFitAcc(TTree* trks,double norm) {
 //  racc->Sumw2();
   unsigned ibin(1);
   acc->GetXaxis()->SetBinLabel(ibin++,"All CE");
-  acc->GetXaxis()->SetBinLabel(ibin++,">=20 CE SH");
-  acc->GetXaxis()->SetBinLabel(ibin++,"CE p>100 MeV/c");
-  acc->GetXaxis()->SetBinLabel(ibin++,"CE pitch");
+  acc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
   acc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
   acc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   acc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
@@ -624,9 +623,7 @@ void KalFit::KalFitAcc(TTree* trks,double norm) {
 
   ibin = 1;
   racc->GetXaxis()->SetBinLabel(ibin++,"All CE");
-  racc->GetXaxis()->SetBinLabel(ibin++,">=20 CE SH");
-  racc->GetXaxis()->SetBinLabel(ibin++,"CE p>100 MeV/c");
-  racc->GetXaxis()->SetBinLabel(ibin++,"CE pitch");
+  racc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
   racc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
   racc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   racc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
@@ -637,15 +634,13 @@ void KalFit::KalFitAcc(TTree* trks,double norm) {
   ibin = 0;
   const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
   trks->Project("acc",binnames[ibin++]);
-  trks->Project("+acc",binnames[ibin++],nmch);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+quality);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+quality+livegate);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+quality+livegate+rpitch);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+quality);
-  trks->Project("+acc",binnames[ibin++],nmch+tmom+tpitch+reco+rpitch+livegate+cosmic+quality+rmom);
+  trks->Project("+acc",binnames[ibin++],mcsel);
+  trks->Project("+acc",binnames[ibin++],mcsel+reco);
+  trks->Project("+acc",binnames[ibin++],mcsel+reco+quality);
+  trks->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate);
+  trks->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch);
+  trks->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch+cosmic);
+  trks->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch+cosmic+rmom);
 
   double all = acc->GetBinContent(1);
   if(norm < 0)norm=all;
@@ -1340,4 +1335,27 @@ void KalFit::KalFitMom(TTree* t) {
   snprintf(line,50,"Reconstructed, FWHM = %3.1f KeV/c",1000.0*rfwhm);
   cemleg->AddEntry(cemomr,line,"L");
   cemleg->Draw();
+}
+
+void KalFit::KalFitRad(TTree* trks) {
+  TH1F* rmax = new TH1F("rmax","Track R_{max}, nominal BField;d_{0}+2/#omega (mm)",100,300,900);
+  TH1F* rmaxm = new TH1F("rmaxm","Track R_{max}, B *= 0.95;d_{0}+2/(0.95#times#omega) (mm)",100,300,900);
+  rmax->SetStats(0);
+  rmaxm->SetStats(0);
+  
+  trks->Project("rmax","d0+2.0/om",reco+nmch+tmom+quality+livegate);
+  trks->Project("rmaxm","d0+2.0/(0.95*om)",reco+nmch+tmom+quality+livegate);
+
+  
+  TCanvas* radcan = new TCanvas("radcan","radcan",800,800);
+  radcan->Divide(1,2);
+  radcan->cd(1);
+  rmax->Draw();
+  radcan->cd(2);
+  rmaxm->Draw();
+  TLine* rmaxcut = new TLine(700,0.0,700,rmaxm->GetMaximum());
+  rmaxcut->SetLineColor(kBlack);
+  rmaxcut->SetLineStyle(2);
+  rmaxcut->SetLineWidth(2);
+  rmaxcut->Draw();
 }
