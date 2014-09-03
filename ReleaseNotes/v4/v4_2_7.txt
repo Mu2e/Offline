@@ -2,6 +2,38 @@
 
            Release notes for Mu2e Offline software, v4_2_7
 
+(6) Sep 3, 2014 - knoepfel 
+    The ITrackerGeom, KalmanTestsI, and TrkPatRecI directories have
+    been removed (more specifically, the files therein).  Various
+    files have been either removed completely (those that were
+    specific to the ITracker geometry), and others were simply
+    modified to reflect the removal of the ITracker.
+    
+    Modified files:
+      Analyses/src/BkgRates_module.cc
+      Analyses/src/NeutronCRV_module.cc
+      Analyses/src/ReadBack_module.cc
+      Analyses/src/TTSig_module.cc
+      EventDisplay/src/DataInterface.cc
+      GeometryService/src/GeometryService_service.cc
+      GeometryService/src/SConscript
+      GeometryService/src/VirtualDetectorMaker.cc
+      GeometryService/src/getTrackerOrThrow.cc
+
+    Removed files:
+      Analyses/src/ITSig_module.cc
+      Analyses/src/TestTO_module.cc
+      ConditionsService/src/TrackerCalibrationsI.cc   
+      FastPatternReco/src/SConscript
+      ITrackerGeom/
+      HitMakers/src/MakeCellsWithTurningOff_module.cc
+      HitMakers/src/MakeDriftCellHit_module.cc
+      KalmanTestsI/
+      Mu2eG4/inc/ITGasLayerSD*.hh
+      Mu2eG4/src/ITGasLayerSD*.cc
+      Mu2eG4/src/Mu2eWorld.cc
+      TrkPatRecI/
+
 (5) Sep 2, 2014 - knoepfel
     The Mu2eG4 directory has been restructured.  All .fcl files are
     now placed in a Mu2eG4/fcl/, and any SimpleConfig *.txt files that
