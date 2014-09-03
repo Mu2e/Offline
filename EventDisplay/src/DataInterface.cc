@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.75 2014/08/01 20:57:45 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:45 $
+// $Id: DataInterface.cc,v 1.76 2014/09/03 16:39:15 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/03 16:39:15 $
 //
 
 #include "DataInterface.h"
@@ -44,10 +44,6 @@
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "ITrackerGeom/inc/SuperLayer.hh"
-#include "ITrackerGeom/inc/Cell.hh"
-#include "ITrackerGeom/inc/CellGeometryHandle.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Principal/Run.h"
@@ -313,170 +309,6 @@ void DataInterface::fillGeometry()
     _components.push_back(shapeEnvelope);
     _supportstructures.push_back(shapeEnvelope);
   } 
-  else if(geom->hasElement<mu2e::ITracker>()) 
-  {
-//Cells
-    //mu2e::GeomHandle<mu2e::ITracker> itracker;
-
-    const mu2e::Tracker& tracker = mu2e::getTrackerOrThrow();
-    const mu2e::ITracker &itracker = static_cast<const mu2e::ITracker&>( tracker );
-
-    double zoff = itracker.z0()-config.getDouble("mu2e.detectorSystemZ0");
-
-    mu2e::CellGeometryHandle *itwp = itracker.getCellGeometryHandle();
-
-    const boost::shared_array<mu2e::SuperLayer> sprlr=itracker.getSuperLayersArray();
-    for ( int iS=0; iS<itracker.nSuperLayers(); iS++) {
-            for ( int iL=0; iL<sprlr[iS].nLayers(); iL++ ) {
-                    boost::shared_ptr<mu2e::ITLayer> ilr = sprlr[iS].getLayer(iL);
-                    for ( int iC=0; iC<ilr->nCells(); iC++ ) {
-                            mu2e::Cell *s = ilr->getCell(iC).get();
-
-                            int idLayer =  s->Id().getLayer();
-                            itwp->SelectCell(iS,idLayer,iC);
-
-//                            const CLHEP::Hep3Vector& p = itwp->GetWireCenter(); //s->getMidPoint();
-//                            const CLHEP::Hep3Vector& d = itwp->GetWireDirection(); //s->getDirection();
-//                            double theta = d.theta();
-//                            double phi = d.phi();
-
-                            if (itracker.isDumbbell()){
-                                    /*
-                                    float wCntPos[3];
-                                    double l = (itracker.zHalfLength()-itracker.zZonesLimits()[1])*0.5;
-                                    float zWCnt = itracker.zZonesLimits()[1]+l;
-                                    itwp->WirePosAtZ(zWCnt,wCntPos);
-                                    wCntPos[2]+=zoff;
-                                    double wl=l/cos(itwp->GetWireEpsilon()) ;
-                                    */
-                                    const CLHEP::Hep3Vector& p = itwp->GetCellCenter(); //s->getMidPoint();
-                                    const CLHEP::Hep3Vector& d = itwp->GetCellDirection(); //s->getDirection();
-                                    double theta = d.theta();
-                                    double phi = d.phi();
-                                    double x = p.x();
-                                    double y = p.y();
-                                    double z = p.z()+zoff;
-                                    double l = itwp->GetCellHalfLength();
-                                    int index = itwp->computeDet(iS,idLayer,iC); //s->index().asInt();
-
-                                    char c[200];
-                                    sprintf(c,"Cell %i  Layer %i  SuperLayer %i DownStream",iC,idLayer,iS);
-                                    boost::shared_ptr<ComponentInfo> infoDnS(new ComponentInfo());
-                                    infoDnS->setName(c);
-                                    infoDnS->setText(0,c);
-                                    //boost::shared_ptr<Straw> shapeDnS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], 
-                                    //                                  NAN, theta, phi, wl, 
-                                    //                                  _geometrymanager, _topvolume, _mainframe, 
-                                    //                                  infoDnS, true));
-                                    boost::shared_ptr<Straw> shapeDnS(new Straw(x,y,z, NAN, theta, phi, l, 
-                                                                      _geometrymanager, _topvolume, _mainframe, 
-                                                                      infoDnS, true));
-                                    _components.push_back(shapeDnS);
-                                    _straws[index]=shapeDnS;
-
-                                    /*
-                                    zWCnt = itracker.zZonesLimits()[0]-l;
-                                    itwp->WirePosAtZ(zWCnt,wCntPos);
-                                    wCntPos[2]+=zoff;
-                                    */
-                                    itwp->SelectCell(iS,idLayer,iC,true);
-                                    const CLHEP::Hep3Vector& pUp = itwp->GetCellCenter(); //s->getMidPoint();
-                                    const CLHEP::Hep3Vector& dUp = itwp->GetCellDirection(); //s->getDirection();
-                                    theta = dUp.theta();
-                                    phi = dUp.phi();
-                                    x = pUp.x();
-                                    y = pUp.y();
-                                    z = pUp.z()+zoff;
-                                    l = itwp->GetCellHalfLength();
-                                    index = itwp->computeDet(iS,idLayer,iC,true); //s->index().asInt();
-
-                                    sprintf(c,"Cell %i  Layer %i  SuperLayer %i UpStream",iC,idLayer,iS);
-                                    boost::shared_ptr<ComponentInfo> infoUpS(new ComponentInfo());
-                                    infoUpS->setName(c);
-                                    infoUpS->setText(0,c);
-                                    //boost::shared_ptr<Straw> shapeUpS(new Straw(wCntPos[0],wCntPos[1],wCntPos[2], 
-                                    //                                  NAN, theta, phi, wl, 
-                                    //                                  _geometrymanager, _topvolume, _mainframe, 
-                                    //                                  infoUpS, true));
-                                    boost::shared_ptr<Straw> shapeUpS(new Straw(x,y,z, NAN, theta, phi, l, 
-                                                                      _geometrymanager, _topvolume, _mainframe, 
-                                                                      infoUpS, true));
-                                    _components.push_back(shapeUpS);
-                                    _straws[index]=shapeUpS;
-
-                            }else {
-                                    const CLHEP::Hep3Vector& p = itwp->GetCellCenter(); //s->getMidPoint();
-                                    const CLHEP::Hep3Vector& d = itwp->GetCellDirection(); //s->getDirection();
-                                    double theta = d.theta();
-                                    double phi = d.phi();
-                                    double x = p.x();
-                                    double y = p.y();
-                                    double z = p.z()+zoff;
-                                    double l = s->getHalfLength();
-                                    int index = itwp->computeDet(iS,idLayer,iC); //s->index().asInt();
-
-                                    char c[200];
-                                    sprintf(c,"Cell %i  Layer %i  SuperLayer %i",iC,idLayer,iS);
-                                    boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-                                    info->setName(c);
-                                    info->setText(0,c);
-                                    boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, 
-                                                                   _geometrymanager, _topvolume, _mainframe, 
-                                                                   info, true));
-                                    _components.push_back(shape);
-                                    _straws[index]=shape;
-                            }
-                    }
-            }
-    }
-/*
-//Support Structure
-    double innerRadius=itracker.getSupportParams().innerRadius();
-    double outerRadius=itracker.getSupportParams().outerRadius();
-    double zHalfLength=itracker.getInnerTrackerEnvelopeParams().zHalfLength();
-    findBoundaryP(_trackerMinmax, outerRadius, outerRadius, zHalfLength);
-    findBoundaryP(_trackerMinmax, -outerRadius, -outerRadius, -zHalfLength);
-
-    char c[200];
-    boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-    sprintf(c,"TTracker Support Structure");
-    info->setName(c);
-    info->setText(0,c);
-    sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);
-    info->setText(1,c);
-    sprintf(c,"Length %.f mm",2.0*zHalfLength/CLHEP::mm);
-    info->setText(2,c);
-    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: 0 mm");
-    info->setText(3,c);
-    boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,0, 0,0,0,
-                                          zHalfLength,innerRadius,outerRadius, NAN,
-                                          _geometrymanager, _topvolume, _mainframe, info, true));
-    _components.push_back(shape);
-    _supportstructures.push_back(shape);
-*/
-//Envelope
-    double innerRadius=itracker.r0();//getInnerTrackerEnvelopeParams().innerRadius();
-    double outerRadius=itracker.rOut();//getInnerTrackerEnvelopeParams().outerRadius();
-    double zHalfLength=itracker.maxEndCapDim();
-
-    char c[200];
-    boost::shared_ptr<ComponentInfo> infoEnvelope(new ComponentInfo());
-    sprintf(c,"ITracker Envelope");
-    infoEnvelope->setName(c);
-    infoEnvelope->setText(0,c);
-    sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);
-    infoEnvelope->setText(1,c);
-    sprintf(c,"Length %.f mm",2.0*zHalfLength/CLHEP::mm);
-    infoEnvelope->setText(2,c);
-    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %f mm",zoff);
-    infoEnvelope->setText(3,c);
-    boost::shared_ptr<Cylinder> shapeEnvelope(new Cylinder(0,0,zoff, 0,0,0,
-                                                  zHalfLength,innerRadius,outerRadius, NAN,
-                                                  _geometrymanager, _topvolume, _mainframe, infoEnvelope, true));
-    shapeEnvelope->makeGeometryVisible(true);
-    _components.push_back(shapeEnvelope);
-    _supportstructures.push_back(shapeEnvelope);
-  }
 
   art::ServiceHandle<mu2e::GeometryService> geoservice;
   if(geoservice->hasElement<mu2e::DetectorSolenoid>())

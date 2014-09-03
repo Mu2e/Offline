@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.33 2014/07/29 16:23:01 genser Exp $
-// $Author: genser $
+// $Id: VirtualDetectorMaker.cc,v 1.34 2014/09/03 16:39:15 knoepfel Exp $
+// $Author: knoepfel $
 //
 
 #include <iostream>
@@ -29,7 +29,6 @@
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
@@ -240,26 +239,6 @@ namespace mu2e {
 
         vd->addVirtualDetector( VirtualDetectorId::TT_InSurf,
                                  ttOffset, 0, vdTTOutSurfOffset);
-
-      } else if (c.getBool("hasITracker",false) && c.getBool("itracker.VirtualDetect",false)) {
-              ITracker const & itracker = *(GeomHandle<ITracker>());
-              Hep3Vector itOffset(-solenoidOffset,0.,itracker.z0());
-              Hep3Vector vdITInSurfOffset(0.,0.,0.);
-
-              vd->addVirtualDetector( VirtualDetectorId::IT_VD_InSurf,
-                                       itOffset, 0, vdITInSurfOffset);
-
-              Hep3Vector vdITFrontOffset(0.,
-                                         0.,
-                                         -itracker.maxEndCapDim()-vdHL);
-              vd->addVirtualDetector( VirtualDetectorId::IT_VD_EndCap_Front,
-                                       itOffset, 0, vdITFrontOffset);
-
-              Hep3Vector vdITBackOffset(0.,
-                                        0.,
-                                        itracker.maxEndCapDim()+vdHL);
-             vd->addVirtualDetector( VirtualDetectorId::IT_VD_EndCap_Back,
-                                       itOffset, 0, vdITBackOffset);
 
       }
 

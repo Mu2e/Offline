@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.64 2014/08/01 20:57:45 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:45 $
+// $Id: GeometryService_service.cc,v 1.65 2014/09/03 16:39:15 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/03 16:39:15 $
 //
 // Original author Rob Kutschke
 //
@@ -82,8 +82,6 @@
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorberMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TTrackerGeom/inc/TTrackerMaker.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "ITrackerGeom/inc/ITrackerMaker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -258,10 +256,7 @@ namespace mu2e {
     const StoppingTarget& target = *tmptgt.get();
     addDetector(std::move(tmptgt));
 
-    if (_config->getBool("hasITracker",false)){
-      ITrackerMaker itm( *_config );
-      addDetector( itm.getITrackerPtr() );
-    } else if (_config->getBool("hasTTracker",false)){
+    if (_config->getBool("hasTTracker",false)){
       TTrackerMaker ttm( *_config );
       addDetector( ttm.getTTrackerPtr() );
     }
@@ -356,11 +351,6 @@ namespace mu2e {
       allTrackers += " TTracker";
       ++ntrackers;
     }
-    if ( _config->getBool("hasITracker",false) ) {
-      allTrackers += " ITracker";
-      ++ntrackers;
-    }
-
     if ( ntrackers > 1 ){
       throw cet::exception("GEOM")
         << "This configuration has more than one tracker: "
