@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.171 2014/08/01 20:57:45 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:45 $
+// $Id: Mu2eWorld.cc,v 1.172 2014/09/03 16:37:05 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/03 16:37:05 $
 //
 // Original author Rob Kutschke
 //
@@ -59,8 +59,6 @@
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/ExtMonUCITofSD.hh"
-#include "Mu2eG4/inc/ITGasLayerSD_Hexagonal.hh"
-#include "Mu2eG4/inc/ITGasLayerSD_Square.hh"
 #include "Mu2eG4/inc/TrackerWireSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
@@ -71,7 +69,6 @@
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestCons.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eG4/inc/ITrackerBuilder.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
@@ -153,17 +150,8 @@ namespace mu2e {
     GeomHandle<WorldG4> worldGeom;
     G4ThreeVector tmpTrackercenter = GeomHandle<DetectorSystem>()->getOrigin();
 
-    if ( _config.getBool("hasITracker",false) ) {
-      ITGasLayerSD::setMu2eDetCenterInWorld( tmpTrackercenter );
-
-      if (_config.getBool("itracker.ActiveWiresSD",false)) {
-        TrackerWireSD::setMu2eDetCenterInWorld( tmpTrackercenter );
-      }
-
-    } else {
-            if (_config.getBool("ttracker.ActiveWr_Wl_SD",false)) {
-              TrackerWireSD::setMu2eDetCenterInWorld( tmpTrackercenter );
-            }
+    if (_config.getBool("ttracker.ActiveWr_Wl_SD",false)) {
+      TrackerWireSD::setMu2eDetCenterInWorld( tmpTrackercenter );
     }
 
     instantiateSensitiveDetectors();
@@ -247,9 +235,6 @@ namespace mu2e {
     // Create magnetic fields and managers only after all volumes have been defined.
     constructBFieldAndManagers();
     constructStepLimiters();
-    if ( _config.getBool("hasITracker",false) ) {
-            constructITStepLimiters();
-    }
 
     // Write out mu2e geometry into a gdml file.
     if ( _config.getBool("writeGDML",false) ) {
@@ -272,12 +257,8 @@ namespace mu2e {
 
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
-    if ( _config.getBool("hasITracker",false) ) {
-      trackerInfo = ITrackerBuilder::constructTracker( detSolDownstreamVacInfo.logical, z0DSdown );
-      // Hack alert: These belong in constructTracker
-      trackerInfo.name = "TrackerMother"; // this belongs to construct..., some of them do it now
-      _helper->addVolInfo(trackerInfo);
-    } else if ( _config.getBool("hasTTracker",false) ) {
+    
+    if ( _config.getBool("hasTTracker",false) ) {
       int ver = _config.getInt("TTrackerVersion",3);
       if ( ver == 3 ){
         trackerInfo = constructTTrackerv3( detSolDownstreamVacInfo, _config );
@@ -503,45 +484,6 @@ namespace mu2e {
 
   } // end Mu2eWorld::constructStepLimiters(){
 
-  void Mu2eWorld::constructITStepLimiters(){
-
-    bool physicalStep =  _config.getBool("itracker.usePhysicalStep",false);
-    // Maximum step length, in mm.
-    double maxStep = 10.0;
-    if (physicalStep){
-            maxStep = 10.0/12.0;
-    }else {
-            maxStep = _config.getDouble("itracker.freePath", 0.5);
-    }
-    G4LogicalVolume* tracker        = _helper->locateVolInfo("TrackerMother").logical;
-
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-    G4UserLimits* stepLimit = reg.add( G4UserLimits(maxStep) );
-
-    GeomHandle<ITracker> itracker;
-    SuperLayer *iSpl;
-    int ilay;
-    for (int ispls=0; ispls<itracker->nSuperLayers(); ispls++){
-            iSpl = itracker->getSuperLayer(ispls);
-            for ( ilay=0; ilay<iSpl->nLayers(); ilay++){
-                    iSpl->getLayer(ilay)->getDetail();
-            }
-
-    }
-    G4VPhysicalVolume *iDau;
-    cout<<"N IT daughter: "<<tracker->GetNoDaughters()<<endl;
-    for (int iDaughter=0; iDaughter<tracker->GetNoDaughters(); iDaughter++){
-            iDau = tracker->GetDaughter(iDaughter);
-	    if (!iDau) break;
-	    //            cout<<"Vol Name "<< iDau->GetName()<<" is Tracking: "<<iDau->GetName().contains("volS")<<endl;
-            if ( iDau->GetName().contains("gvolS") || iDau->GetName().contains("wvolS") ) iDau->GetLogicalVolume()->SetUserLimits(stepLimit);
-    }
-
-    cout<<"IT Step limits set"<<endl;
-
-
-  } // end Mu2eWorld::constructITStepLimiters(){
-
 
   // Construct calorimeter if needed.
   VolumeInfo Mu2eWorld::constructCal(){
@@ -578,40 +520,16 @@ namespace mu2e {
 
     // G4 takes ownership and will delete the detectors at the job end
 
-    if ( _config.getBool("hasITracker",false) ) {
-      GeomHandle<ITracker> itracker;
-
-      if(sdHelper_->enabled(StepInstanceName::tracker)) {
-        ITGasLayerSD* itrackerSD=0x0;
-        if ( itracker->geomType()==ITracker::Hexagonal )
-          itrackerSD = new ITGasLayerSD_Hexagonal(SensitiveDetectorName::TrackerGas(), _config);
-        else if ( itracker->geomType()==ITracker::Square )
-          itrackerSD = new ITGasLayerSD_Square(   SensitiveDetectorName::TrackerGas(), _config);
-        SDman->AddNewDetector(itrackerSD);
-      }
-
-      if (_config.getBool("itracker.ActiveWiresSD",false)) {
-        if(sdHelper_->enabled(StepInstanceName::trackerSWires)) {
-          SDman->AddNewDetector(new TrackerWireSD(    SensitiveDetectorName::TrackerSWires(),  _config));
-        }
-        if(sdHelper_->enabled(StepInstanceName::itrackerFWires)) {
-          SDman->AddNewDetector(new TrackerWireSD(    SensitiveDetectorName::ITrackerFWires(),  _config));
-        }
-      }
-
+    if(sdHelper_->enabled(StepInstanceName::tracker)) {
+      StrawSD* strawSD      =
+        new StrawSD(                SensitiveDetectorName::TrackerGas(),  _config);
+      SDman->AddNewDetector(strawSD);
     }
-    else {
-      if(sdHelper_->enabled(StepInstanceName::tracker)) {
-        StrawSD* strawSD      =
-          new StrawSD(                SensitiveDetectorName::TrackerGas(),  _config);
-        SDman->AddNewDetector(strawSD);
-      }
-
-      if(sdHelper_->enabled(StepInstanceName::ttrackerDS)) {
-        TTrackerDeviceSupportSD* ttdsSD =
-          new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), _config);
-        SDman->AddNewDetector(ttdsSD);
-      }
+    
+    if(sdHelper_->enabled(StepInstanceName::ttrackerDS)) {
+      TTrackerDeviceSupportSD* ttdsSD =
+        new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), _config);
+      SDman->AddNewDetector(ttdsSD);
     }
     
     if(sdHelper_->enabled(StepInstanceName::virtualdetector)) {
