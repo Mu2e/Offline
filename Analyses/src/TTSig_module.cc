@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: TTSig_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
+// $Id: TTSig_module.cc,v 1.3 2014/09/03 15:51:18 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/03 15:51:18 $
 //
 // Original author G. Tassielli
 //
@@ -13,8 +13,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "ITrackerGeom/inc/Cell.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"

@@ -1,9 +1,9 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.27 2013/10/21 20:44:04 genser Exp $
-// $Author: genser $
-// $Date: 2013/10/21 20:44:04 $
+// $Id: ReadBack_module.cc,v 1.28 2014/09/03 15:50:00 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/03 15:50:00 $
 //
 // Original author Rob Kutschke
 //
@@ -19,7 +19,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
@@ -176,7 +175,6 @@ namespace mu2e {
 
     // Examine various parts of the event.
     void doTTracker         ( const art::Event& event );
-    void doITracker         ( const art::Event& event );
     void doCalorimeter      ( const art::Event& event );
     void doStoppingTarget   ( const art::Event& event );
     void doCRV              ( const art::Event& event );
@@ -393,9 +391,6 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
     if( geom->hasElement<TTracker>() ){
       doTTracker(event);
-    }
-    else if ( geom->hasElement<ITracker>() ){
-      doITracker(event);
     }
 
     doCalorimeter(event);
@@ -874,182 +869,6 @@ namespace mu2e {
     }
 
   } // end doTTracker
-
-  void ReadBack::doITracker(const art::Event& event){
-
-    // Instance name of the module that created the hits of interest;
-    //static const string creatorName("g4run");
-
-    // Gometry for the ITracker.
-    GeomHandle<ITracker> itracker;
-    CellGeometryHandle *itwp = itracker->getCellGeometryHandle();
-
-    // Maintain a counter for number of events seen.
-    ++_nAnalyzed;
-
-    // Ask the event to give us a "handle" to the requested hits.
-    art::Handle<StepPointMCCollection> hits;
-    event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
-
-    art::Handle<SimParticleCollection> simParticles;
-    event.getByLabel(_g4ModuleLabel,simParticles);
-
-    // Handle to information about G4 physical volumes.
-    art::Handle<PhysicalVolumeInfoCollection> volumes;
-    event.getRun().getByLabel(_g4ModuleLabel,volumes);
-
-    // Some files might not have the SimParticle and volume information.
-    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
-
-    // Other files might have empty collections.
-    if ( haveSimPart ){
-      haveSimPart = !(simParticles->empty() || volumes->empty());
-    }
-
-    // Fill histogram with number of hits per event.
-    _hMultiplicity->Fill(hits->size());
-
-    // A silly example just to show that we have a messsage logger.
-    if ( hits->size() > 300 ){
-      mf::LogWarning("HitInfo")
-        << "Number of hits "
-        << hits->size()
-        << " may be too large.";
-    }
-
-    // A silly example just to show how to throw.
-    if ( hits->size() > 1000000 ){
-      throw cet::exception("RANGE")
-        << "Way too many hits in this event.  Something is really wrong."
-        << hits->size();
-    }
-
-    // ntuple buffer.
-    //float nt[13];
-    float nt[_ntup->GetNvar()];
-
-    // Loop over all hits.
-    int n(0);
-    StepPointMCCollection::const_iterator i = hits->begin();
-    StepPointMCCollection::const_iterator e = hits->end();
-    for ( ; i!=e; ++i){
-
-      // Aliases, used for readability.
-      const StepPointMC& hit = *i;
-
-      // Skip hits with low pulse height.
-      if ( hit.eDep() < _minimumEnergy ) continue;
-
-      const CLHEP::Hep3Vector& pos = hit.position();
-      const CLHEP::Hep3Vector& mom = hit.momentum();
-
-      itwp->SelectCellDet(hit.volumeId());
-      //Get the cell information.
-      boost::shared_ptr<mu2e::Cell> cell = itwp->GetITCell();
-      //Cell const& cell = itwp->GetITCell();
-      CLHEP::Hep3Vector mid = cell->getMidPoint();
-      CLHEP::Hep3Vector w   = cell->getDirection();
-
-      // Count how many nearest neighbours are also hit.
-      //    int nNeighbours = countHitNeighbours( cell, hits );
-
-      // Compute an estimate of the drift distance.
-      TwoLinePCA pca( mid, w, pos, mom);
-
-      // Check that the radius of the reference point in the local
-      // coordinates of the cell.  Should be 2.5 mm.
-      double s = w.dot(pos-mid);
-      CLHEP::Hep3Vector point = pos - (mid + s*w);
-
-      // The simulated particle that made this hit.
-      SimParticleCollection::key_type trackId(hit.trackId());
-
-      // I don't understand the distribution of the time variable.
-      // I want it to be the time from the start of the spill.
-      // It appears to be the time since start of tracking.
-
-      // Fill some histograms
-      //    _hRadius->Fill(pos.perp());
-      _hTime->Fill(hit.time());
-      //    _hHitNeighbours->Fill(nNeighbours);
-      //    _hCheckPointRadius->Fill(point.mag());
-
-      _hxHit->Fill(pos.x());
-      _hyHit->Fill(pos.y());
-      _hzHit->Fill(pos.z());
-
-      //    _hDriftDist->Fill(pca.dca());
-      double distUnit = (itracker->isExternal()) ? 1.0*CLHEP::cm : 1.0*CLHEP::mm ;
-      double invDistUnit = 1.0/distUnit;
-      double hitpos[3] = {pos.x()*invDistUnit,pos.y()*invDistUnit,pos.z()*invDistUnit};
-      double lclhitpos[3] = {0.0,0.0,0.0};
-      itwp->Global2Local(hitpos,lclhitpos);
-
-      // Default values for these, in case information is not available.
-      int pdgId(0);
-      GenId genId;
-
-      if ( haveSimPart ){
-        SimParticle const& sim = simParticles->at(trackId);
-
-        // PDG Particle Id of the sim particle that made this hit.
-        pdgId = sim.pdgId();
-
-        // If this is a generated particle, which generator did it come from?
-        // This default constructs to "unknown".
-        if ( sim.fromGenerator() ){
-          GenParticle const& gen = *sim.genParticle();
-          genId = gen.generatorId();
-        }
-      }
-
-      // Fill the ntuple.
-      nt[0]  = event.id().event();
-      nt[1]  = hit.trackId().asInt();
-      nt[2]  = hit.volumeId();
-      nt[3]  = pos.x();
-      nt[4]  = pos.y();
-      nt[5]  = pos.z();
-      nt[6]  = distUnit*lclhitpos[0];//mid.x();
-      nt[7]  = distUnit*lclhitpos[1];//mid.y();
-      nt[8]  = distUnit*lclhitpos[2];//mid.z();
-      nt[9]  = distUnit*itwp->DistFromWire(hitpos);//pca.dca();
-      nt[10] = hit.time();
-      nt[11] = itwp->GetITCell()->Id().getCell();
-      nt[12] = itwp->GetITCell()->Id().getLayer();
-      nt[13] = itwp->GetITCell()->Id().getLayerId().getSuperLayer();
-      nt[14] = pdgId;
-      nt[15] = genId.id();
-      nt[16] = hit.eDep()/keV;
-      nt[17] = mom.mag();
-      nt[18] = hit.stepLength();
-      nt[19] = s/itwp->GetITCell()->getHalfLength();
-
-      //    if (nt[6]<-3.0) {
-      //
-      //    }
-
-      _ntup->Fill(nt);
-
-      // Print out limited to the first few events.
-      if ( _nAnalyzed < _maxFullPrint ){
-        cerr << "ReadBack"
-             << " hit: "
-             << event.id().event() << " "
-             << n++ <<  " "
-             << hit.trackId()  << "   "
-             << hit.volumeId() << " | "
-          /*<< pca.dca()   << " "*/
-             << pos  << " "
-             << mom  << " "
-          /*<< point.mag()*/
-             << endl;
-      }
-
-    } // end loop over hits.
-
-  }  // end doITracker
-
 
   // Count how many of this straw's nearest neighbours are hit.
   // If we have enough hits per event, it will make sense to make
