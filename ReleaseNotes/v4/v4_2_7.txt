@@ -19,6 +19,7 @@
       GeometryService/src/SConscript
       GeometryService/src/VirtualDetectorMaker.cc
       GeometryService/src/getTrackerOrThrow.cc
+      Mu2eG4/src/Mu2eWorld.cc
 
     Removed files:
       Analyses/src/ITSig_module.cc
@@ -31,7 +32,6 @@
       KalmanTestsI/
       Mu2eG4/inc/ITGasLayerSD*.hh
       Mu2eG4/src/ITGasLayerSD*.cc
-      Mu2eG4/src/Mu2eWorld.cc
       TrkPatRecI/
 
 (5) Sep 2, 2014 - knoepfel
