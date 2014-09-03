@@ -1,9 +1,9 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: BkgRates_module.cc,v 1.41 2014/08/01 20:57:44 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
+// $Id: BkgRates_module.cc,v 1.42 2014/09/03 15:47:05 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/03 15:47:05 $
 //
 // Original author Gianni Onorato
 //
@@ -14,8 +14,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "ITrackerGeom/inc/Cell.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
@@ -101,7 +99,6 @@ namespace mu2e {
   private:
 
     void doTracker(art::Event const& evt, bool skip);
-    void doITracker(art::Event const& evt, bool skip);
 
     void doCalorimeter(art::Event const& evt, bool skip);
     void doStoppingTarget(art::Event const& evt);
@@ -201,10 +198,8 @@ namespace mu2e {
       if (geom->hasElement<TTracker>()) {
         _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
                                             "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:trkId:pdgId:isGen:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:StepFromEva:EvaIsGen:EvaCreationCode:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
-      } else if(geom->hasElement<ITracker>()) {
-        _tNtup        = tfs->make<TNtuple>( "CellHits", "Cell Ntuple",
-                                            "evt:run:time:eDep:lay:superlay:cellId:MChitX:MChitY:wireZMC:trkId:pdgId:isGen:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:StepFromEva:EvaIsGen:EvaCreationCode:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
-      }
+      } 
+
       _cNtup        = tfs->make<TNtuple>( "CaloHits", "Calo Ntuple",
                                           "evt:run:time:eDep:rad:crId:crVane:crX:crY:crZ:trkId:pdgId:isGen:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:cryFrameEnterX:cryFrameEnterY:cryFrameEnterZ:StepFromEva:EvaIsGen:EvaCreationCode:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime" );
 
@@ -217,9 +212,6 @@ namespace mu2e {
 
     if (_doStoppingTarget) doStoppingTarget(evt);
 
-    if (geom->hasElement<ITracker>()) {
-      doITracker(evt, _skipEvent);
-    }
     if (geom->hasElement<TTracker>()) {
       doTracker(evt, _skipEvent);
     }
@@ -482,254 +474,6 @@ namespace mu2e {
     } //end of Strawhits loop
   
   } // end of doTracker
-
-
-
-  void BkgRates::doITracker(art::Event const& evt, bool skip) {
-
-    if (skip) return;
-
-    const Tracker& tracker = getTrackerOrThrow();
-    art::Handle<StrawHitCollection> pdataHandle;
-    evt.getByLabel(_makerModuleLabel,pdataHandle);
-    StrawHitCollection const* hits = pdataHandle.product();
-
-    // Get the persistent data about the StrawHitsMCTruth.
-    art::Handle<StrawHitMCTruthCollection> truthHandle;
-    evt.getByLabel(_makerModuleLabel,truthHandle);
-    StrawHitMCTruthCollection const* hits_truth = truthHandle.product();
-
-    // Get the persistent data about pointers to StepPointMCs
-    art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
-    evt.getByLabel(_makerModuleLabel,"StrawHitMCPtr",mcptrHandle);
-    PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
-
-    if (!(hits->size() == hits_truth->size() &&
-          hits_mcptr->size() == hits->size() ) ) {
-      throw cet::exception("RANGE")
-        << "Strawhits: " << hits->size()
-        << " MCTruthStrawHits: " << hits_truth->size()
-        << " MCPtr: " << hits_mcptr->size();
-    }
-
-    // Get handles to the generated and simulated particles.
-    art::Handle<GenParticleCollection> genParticles;
-    evt.getByLabel(_generatorModuleLabel, genParticles);
-
-    art::Handle<SimParticleCollection> simParticles;
-    evt.getByLabel(_g4ModuleLabel, simParticles);
-
-    // Handle to information about G4 physical volumes.
-    art::Handle<PhysicalVolumeInfoCollection> volumes;
-    evt.getRun().getByLabel(_g4ModuleLabel, volumes);
-
-    // Some files might not have the SimParticle and volume information.
-    bool haveSimPart = ( simParticles.isValid() && volumes.isValid() );
-
-    // Other files might have empty collections.
-    if ( haveSimPart ){
-      haveSimPart = !(simParticles->empty() || volumes->empty());
-    }
-
-    size_t nStrawPerEvent = hits->size();
-
-    for (size_t i=0; i<nStrawPerEvent; ++i) {
-
-      // Access data
-      StrawHit             const&  hit(hits->at(i));
-      StrawHitMCTruth      const&  truth(hits_truth->at(i));
-      PtrStepPointMCVector const&  mcptr(hits_mcptr->at(i));
-
-      double hitEnergy = hit.energyDep();
-
-      //Skip the straw if the energy of the hit is smaller than the minimum required
-      if (hitEnergy < _minimumEnergyTracker) continue;
-
-      //Get hit straw
-      StrawIndex si = hit.strawIndex();
-      const Straw & str = tracker.getStraw(si);
-      const Cell & cell = static_cast<const Cell&>( str );
-
-
-      // cout << "Getting informations about cells" << endl;
-
-      int sid = cell.Id().getCell();
-      int lid = cell.Id().getLayer();
-      int did = cell.Id().getLayerId().getSuperLayer();
-
-      const CLHEP::Hep3Vector stMidPoint3 = str.getMidPoint();
-
-      //time of the hit
-      double hitTime = hit.time();
-
-      //direction of the straw
-      const CLHEP::Hep3Vector stDirection3 = str.getDirection();
-
-      // cout << "Reading MCtruth info" << endl;
-
-      // Get MC truth data
-      double driftTime = truth.driftTime();
-      double driftDistance = truth.driftDistance();
-
-      //Position along the wire using mctruth info
-      double vMC = truth.distanceToMid();
-
-      const CLHEP::Hep3Vector MCHitPoint = stMidPoint3 + (vMC/stDirection3.mag())*stDirection3;
-
-      //  cout << "Filling ntupla" << endl;
-
-      float tntpArray[40];
-      int idx(0);
-      tntpArray[idx++] = evt.id().event(); //1
-      tntpArray[idx++] = evt.run();//2
-      tntpArray[idx++] = hitTime;//3
-      tntpArray[idx++] = hitEnergy;//4
-      tntpArray[idx++] = lid;//5
-      tntpArray[idx++] = did;//6
-      tntpArray[idx++] = sid;//7
-      tntpArray[idx++] = MCHitPoint.getX();//8
-      tntpArray[idx++] = MCHitPoint.getY();//9
-      tntpArray[idx++] = vMC;//10
-
-
-
-      if ( haveSimPart ){
-	//Find the first stepPointMC by time of flight
-	double temptime = 10e9;
-	size_t jfirst = 0;
-	for (size_t j = 0; j < mcptr.size(); ++j) {
-	  
-	  if (mcptr[j]->time() < temptime) {
-	    temptime = mcptr[j]->time(); 
-	    jfirst = j;
-	  }
-	}
-	
-	StepPointMC const& mchit = *mcptr[jfirst];
-	
-	// The simulated particle that made this hit.
-	SimParticleCollection::key_type trackId(mchit.trackId());
-		
-	SimParticle const& sim = simParticles->at(trackId);
-	
-	tntpArray[idx++] = trackId.asInt(); //leaf 11
-	tntpArray[idx++] = sim.pdgId();//leaf 12
-	tntpArray[idx++] = sim.fromGenerator();//leaf 13
-	tntpArray[idx++] = sim.startMomentum().vect().mag(); // leaf 17
-	tntpArray[idx++] = sim.creationCode(); // leaf 18
-	tntpArray[idx++] = sim.startVolumeIndex(); // leaf 19
-	tntpArray[idx++] = sim.startPosition().x(); // leaf 20
-	tntpArray[idx++] = sim.startPosition().y(); // leaf 21
-	tntpArray[idx++] = sim.startPosition().z(); // leaf 22
-	tntpArray[idx++] = sim.startGlobalTime(); // leaf 23
-	
-	tntpArray[idx++] = sim.stoppingCode(); // leaf 24
-	tntpArray[idx++] = sim.endVolumeIndex(); // leaf 25
-	tntpArray[idx++] = sim.endPosition().x(); // leaf 26
-	tntpArray[idx++] = sim.endPosition().y(); // leaf 27
-	tntpArray[idx++] = sim.endPosition().z(); // leaf 28
-	tntpArray[idx++] = sim.endGlobalTime(); // leaf 29
-	
-	
-	int steps = 0;
-	bool foundEva = false;
-	int evaIsGen = 0;
-	int evaCreationCode = 0;
-	SimParticle& tempSim = const_cast<SimParticle&>(sim);
-	while (!foundEva) {
-	  if (!(tempSim.hasParent()) ) {
-	    foundEva = true;
-	    if ( tempSim.fromGenerator()) {
-	      evaIsGen = 1;
-	    }
-	    evaCreationCode = tempSim.creationCode();
-	    break;
-	  }
-	  
-	  tempSim = const_cast<SimParticle&>(*tempSim.parent());
-	  steps++;
-	}
-	
-	tntpArray[idx++] = steps; // leaf 14
-	tntpArray[idx++] = evaIsGen; // leaf 15
-	tntpArray[idx++] = evaCreationCode; // leaf 16
-	
-      } else if ( !haveSimPart) {
-
-	tntpArray[idx++] = 0; // leaf 11
-	tntpArray[idx++] = 0; // leaf 12
-	tntpArray[idx++] = 0; // leaf 13
-	tntpArray[idx++] = 0; // leaf 14
-	tntpArray[idx++] = 0; // leaf 15
-	tntpArray[idx++] = 0; // leaf 16
-	tntpArray[idx++] = 0; // leaf 17
-	tntpArray[idx++] = 0; // leaf 18
-	tntpArray[idx++] = 0; // leaf 19
-	tntpArray[idx++] = 0; // leaf 20
-	tntpArray[idx++] = 0; // leaf 21
-	tntpArray[idx++] = 0; // leaf 22
-	tntpArray[idx++] = 0; // leaf 23
-	tntpArray[idx++] = 0; // leaf 24
-	tntpArray[idx++] = 0; // leaf 25
-	tntpArray[idx++] = 0; // leaf 26
-	tntpArray[idx++] = 0; // leaf 27
-	tntpArray[idx++] = 0; // leaf 28
-	tntpArray[idx++] = 0; // leaf 29
-
-
-      }
-      
-      size_t ngen = genParticles->size();
-      if (ngen>1) {
-        cout << "The plugin is supposed to analyze single background rates,"
-             << "with one generated particle per event"
-             << "\nThis event has more than one genparticle. Only the "
-             << "first one will be stored" << endl;
-      }
-
-      if (ngen > 0) {
-	SimParticleCollection::key_type idxInSim = SimParticleCollection::key_type(1);
-	SimParticle const& geninSim = simParticles->at(idxInSim);
-	if (!geninSim.fromGenerator()) {
-	  cout << "Watch out. First particle is not from generator. What's happening?" << endl;
-	}
-        GenParticle const& gen = genParticles->at(0);
-        tntpArray[idx++] = gen.generatorId().id(); //30
-        tntpArray[idx++] = gen.momentum().vect().mag(); //31
-        tntpArray[idx++] = gen.momentum().e(); //32
-        tntpArray[idx++] = gen.position().x(); //33
-        tntpArray[idx++] = gen.position().y(); //34
-        tntpArray[idx++] = gen.position().z(); //35
-        tntpArray[idx++] = gen.momentum().cosTheta(); //36
-        tntpArray[idx++] = gen.momentum().phi(); //37
-        tntpArray[idx++] = gen.time(); //38
-      } else if ( ngen == 0 ) {
-        tntpArray[idx++] = 0; //30
-        tntpArray[idx++] = 0; //31
-        tntpArray[idx++] = 0; //32
-        tntpArray[idx++] = 0; //33
-        tntpArray[idx++] = 0; //34
-        tntpArray[idx++] = 0; //35
-        tntpArray[idx++] = 0; //36
-        tntpArray[idx++] = 0; //37
-        tntpArray[idx++] = 0; //38
-      }
-
-      tntpArray[idx++] = driftTime; //39
-      tntpArray[idx++] = driftDistance; //40
-      
-      _tNtup->Fill(tntpArray);
-      
-    } //end of Cellhits loop
-
-  } // end of doITracker
-
-
-
-
-
-
-
 
 
   void BkgRates::doCalorimeter(art::Event const& evt, bool skip) {
