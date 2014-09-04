@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.239 2014/08/29 18:57:40 knoepfel Exp $
+// $Id: geom_01.txt,v 1.240 2014/09/04 14:24:21 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/08/29 18:57:40 $
+// $Date: 2014/09/04 14:24:21 $
 //
 // Original author Rob Kutschke
 //
@@ -128,21 +128,6 @@ bool g4.printPhysicsProcessSummary = false;
 bool g4.doCosmicKiller = false;
 double g4.cosmicPcut = 0.;
 double g4.yaboveDirtYmin = 0.;
-
-// Load other materials defined specifically for Mu2e.
-vector<string> mu2e.materials =
-  { "HeavyConcrete", "ShieldingConcrete", "IsoButane", "StrawGas",
-    "Kapton", "Scintillator", "WAGVacuum", "DSVacuum", "MBOverburden",
-    "ITGasHe_90Isob_10", "ITGasHe_90CF4_10", "ITGasMix", "ITGasHe_75Isob_25_400mbar",
-    "CarbonFiber_resin", "CarbonFiber", "PolypropyleneFoam", "CFoam", "CFoam_332", 
-    "CFoam_166", "CFoam_080", "KptFoam_030", "Polyethylene", 
-    "Polyethylene092B050d095", "Polyethylene092B300d119",
-    "Polyethylene092Li075d106", "Polyethylene092", "Polyethylene096", "StainlessSteel", "Lyso_01",
-    "A95083", "NbTi", "NbTiCu", "AL999Ni001", "C_19_H_20_O_4", "C_10_H_18_O_4",
-    "C_9_H_22_N_2", "Epotek301", "G10", "SCCableInsulation", "SCCable",
-    "ZirconiumHydridePolyethylene", "EGlass", "G10_FR4",
-    "Polyethylene0020", "StoppingTarget_Al", "CONCRETE_MARS", "BARITE", "Half_Poly"
-};
 
 // Control printout of element and material lists.
 bool g4.printElements  = false;
