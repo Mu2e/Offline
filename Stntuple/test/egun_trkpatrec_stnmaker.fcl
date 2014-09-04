@@ -1,0 +1,37 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# generate 105 MeV/c electrons
+# make STNTUPLE in one go, without creating an intermediate file
+# use TrkPatRec-only
+#------------------------------------------------------------------------------
+# $Id: egun_trkpatrec_stnmaker.fcl,v 1.1 2014/09/04 18:57:02 murat Exp $
+# $Author: murat $
+# $Date: 2014/09/04 18:57:02 $
+
+//test: // This must be commented out for grid production.
+BEGIN_PROLOG
+#  muStops    : [ "/mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+#  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
+#  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00000/data_mixBG.root"]
+END_PROLOG
+
+#include "Stntuple/test/generate_trkpatrec_stnmaker_template.fcl"
+
+process_name : EgunTrkPatRecStnmaker
+
+# for 105 MeV/c electron : E = 105.00124           MeV
+# for 105 MeV/c muon     : E = 148.9584269653785   MeV
+
+physics.producers.generate.physics.pdgId  : 11
+physics.producers.generate.physics.elow   : 105.0010
+physics.producers.generate.physics.ehi    : 105.0015
+
+services.TFileService.fileName            : "egun_trkpatrec_stnmaker.hist"
+physics.filters.InitStntuple.histFileName : "egun_trkpatrec_stnmaker.stn" 
+
+# uncomment the next 2 lines if you want the DST file to be written out
+physics.out                               : [ detectorOutput ]
+outputs.detectorOutput.fileName           : "egun_trkpatrec_stnmaker.root"
+#------------------------------------------------------------------------------
+# everything below is appended by murat/scripts/submit_mu2e_job
+#------------------------------------------------------------------------------

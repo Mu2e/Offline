@@ -63,7 +63,7 @@ physics : {
 # by default, StoppedParticleReactionGun has 'mean' set to +1, 
 # which means the Poisson mean of 1 !!! 
 #------------------------------------------------------------------------------
-	    module_type      : StntupleParticleGun
+	    module_type      : StoppedParticleReactionGun
 	    mean             : -1
 	    physics          : {
 		pdgId            : 13
@@ -152,9 +152,9 @@ physics : {
 # 
 	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec 
 #
-	  , MakeStrawHitPositions 
-	  , CalPatRec
-	  , MergePatRec
+#	  , MakeStrawHitPositions 
+#	  , CalPatRec
+#	  , MergePatRec
 #	  
 	  , TrkExtrapol, CaloMatching, ParticleID
 #
@@ -196,10 +196,10 @@ services.scheduler.wantSummary: true
 physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 
-physics.producers.TrkExtrapol.fitterModuleLabel    : MergePatRec
-physics.producers.CaloMatching.fitterModuleLabel   : MergePatRec
-physics.producers.ParticleID.fitterModuleLabel     : MergePatRec
+# physics.producers.TrkExtrapol.fitterModuleLabel    : MergePatRec
+# physics.producers.CaloMatching.fitterModuleLabel   : MergePatRec
+# physics.producers.ParticleID.fitterModuleLabel     : MergePatRec
 
-physics.filters.StntupleMaker.trkPatRecDem         : MergePatRec
+# physics.filters.StntupleMaker.trkPatRecDem         : MergePatRec
 physics.filters.StntupleMaker.makeStrawData        : 1
 physics.filters.StntupleMaker.g4ModuleLabel        : "g4run"     # 
