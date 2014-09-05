@@ -115,7 +115,7 @@ physics : {
     }
 
     //================================================================
-    detPath : [generate, genCounter, g4run, "detectorFilter" ]
+    detPath : [generate, genCounter, g4run, "-detectorFilter" ]
  
    crvPath : [generate, genCounter, g4run, crvFilter, compressPVCRV]
     g4StatusFilter :  [generate, genCounter, g4run, "!g4status", compressPVFull ]
