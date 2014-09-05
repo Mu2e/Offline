@@ -17,4 +17,7 @@ physics.producers.generate.physics: {
     spectrumResolution: 0.1 // MeV
 }
 
+
 services.user.GeometryService.inputFile   : "murat/test/geom_tdr_half_field.txt"
+
+physics.producers.generate.muonStops.inputFiles : ["mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root"] 
