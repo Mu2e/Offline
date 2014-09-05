@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // A half-interactive 2D event display. 
 //
-// $Id: MuHitDisplay_module.cc,v 1.1 2014/08/25 18:55:21 murat Exp $
+// $Id: MuHitDisplay_module.cc,v 1.2 2014/09/05 20:14:28 murat Exp $
 // $Author: murat $
-// $Date: 2014/08/25 18:55:21 $
+// $Date: 2014/09/05 20:14:28 $
 //
 // Contact person:  Pavel Murat, Gianantonio Pezzulo
 //
@@ -412,7 +412,9 @@ namespace mu2e {
 				  art::ModuleLabelSelector(fG4ModuleLabel)  );
     //Evt->getByLabel(fG4ModuleLabel,trackerStepPoints_,stepsHandle);
     Evt->get(getTrackerSteps, stepsHandle);
-    fSteps =  (const mu2e::StepPointMCCollection*) &(*stepsHandle);
+
+    if (stepsHandle.isValid()) fSteps = stepsHandle.product();
+    else                       fSteps = NULL;
 //-----------------------------------------------------------------------------
 //  straw hit information
 //-----------------------------------------------------------------------------
@@ -621,6 +623,7 @@ namespace mu2e {
     //    int             vane_id;
     double xl, yl,      event_time;
     TString             opt; 
+    Hep3Vector          pos1, mom1, pos2, mom2;
 
     printf("[%s] RUN: %10i EVENT: %10i\n",oname,Evt.run(),Evt.event());
 
@@ -694,57 +697,8 @@ namespace mu2e {
       box->SetLineColor(4);
     }
 
-    SortedStepPoints sortedSteps(key,*fSteps);
-    
-    const StepPointMC* midStep = & sortedSteps.middleByZ();
-    
-    if ((midStep == 0) || (firstStep ==0)) {
-      printf("[%s] **** ERROR : firstStep = %8p midstep = %8p, BAIL OUT\n",
-	     oname,firstStep, midStep);
-      //      goto END_OF_ROUTINE;
-    }
-
-    Hep3Vector pos1, mom1, pos2, mom2;
-    if (firstStep ) {
-      pos1 = firstStep->position();
-      mom1 = firstStep->momentum();
-    }
-    else {
-      pos1.set(1.,1.,1.);
-      mom1.set(1.,1.,1.);
-    }
-
-    if (midStep) {
-      pos2 = midStep->position();
-      mom2 = midStep->momentum();
-    }
-    else {
-      pos2.set(1.,1.,1.);
-      mom2.set(1.,1.,1.);
-    }
-//-----------------------------------------------------------------------------
-// The generated signal particle.
-//-----------------------------------------------------------------------------
-    gen_signal = &fGenpColl->at(0);
-
-    tt   = new TrackTool(gen_signal->pdgId(), -1.,pos1,mom1,1.,Hep3Vector());
-    tg   = new TrackTool(gen_signal->pdgId(), -1.,gen_signal->position()      ,gen_signal->momentum()      ,1.,Hep3Vector());
-    tmid = new TrackTool(gen_signal->pdgId(), -1.,pos2  ,mom2 ,1.,Hep3Vector());
-
-    int npt = fSteps->size();
-    for (int ipt=0; ipt<npt; ++ipt){
-      StepPointMC const& step =  fSteps->at(ipt);
-      if ( step.totalEDep() > minEnergyDep_ ) {
-        xStep.push_back( step.position().x() );
-        yStep.push_back( step.position().y() );
-      }
-    }
-
-    arc->SetFillStyle(0);
-    arccalo->SetFillStyle(0);
-
     //  DISPLAY:;
-
+    
     fCanvas->cd(0);
     fCanvas->Clear();
 //-----------------------------------------------------------------------------
@@ -752,21 +706,72 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     double plotLimits(850.);
     fCanvas->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
-      
+    
     t.SetText(-800.,900.,Form("[%s] RUN: %10i EVENT: %10i NTRACKS: %4i NCLUSTERS: %4i",
 			      oname, Evt.run(),Evt.event(),fNTracks[0],fNClusters));
     t.SetTextSize(0.02);
     t.Draw();
-      
-    // Draw the inner and outer arc of the tracker.
+
+					// Draw the inner and outer arc of the tracker.
     arc->SetLineColor(kBlack);
     arc->DrawArc(0.,0., envelope.outerRadius());
     arc->DrawArc(0.,0., envelope.innerRadius());
-    arc->SetLineColor(kRed);
-    arc->DrawArc( tt->xc(), tt->yc(), tt->rho());
-    arc->SetLineColor(kMagenta);
-    arc->DrawArc( tmid->xc(), tmid->yc(), tmid->rho());
-    arc->SetLineColor(kRed);
+
+    if (fSteps != NULL) {
+
+      SortedStepPoints sortedSteps(key,*fSteps);
+    
+      const StepPointMC* midStep = & sortedSteps.middleByZ();
+    
+      if ((midStep == 0) || (firstStep ==0)) {
+	printf("[%s] **** ERROR : firstStep = %8p midstep = %8p, BAIL OUT\n",
+	       oname,firstStep, midStep);
+	//      goto END_OF_ROUTINE;
+      }
+
+      if (firstStep ) {
+	pos1 = firstStep->position();
+	mom1 = firstStep->momentum();
+      }
+      else {
+	pos1.set(1.,1.,1.);
+	mom1.set(1.,1.,1.);
+      }
+
+      if (midStep) {
+	pos2 = midStep->position();
+	mom2 = midStep->momentum();
+      }
+      else {
+	pos2.set(1.,1.,1.);
+	mom2.set(1.,1.,1.);
+      }
+      //-----------------------------------------------------------------------------
+      // The generated signal particle.
+      //-----------------------------------------------------------------------------
+      gen_signal = &fGenpColl->at(0);
+
+      tt   = new TrackTool(gen_signal->pdgId(), -1.,pos1,mom1,1.,Hep3Vector());
+      tg   = new TrackTool(gen_signal->pdgId(), -1.,gen_signal->position()      ,gen_signal->momentum()      ,1.,Hep3Vector());
+      tmid = new TrackTool(gen_signal->pdgId(), -1.,pos2  ,mom2 ,1.,Hep3Vector());
+
+      int npt = fSteps->size();
+      for (int ipt=0; ipt<npt; ++ipt){
+	StepPointMC const& step =  fSteps->at(ipt);
+	if ( step.totalEDep() > minEnergyDep_ ) {
+	  xStep.push_back( step.position().x() );
+	  yStep.push_back( step.position().y() );
+	}
+      }
+      arc->SetFillStyle(0);
+      arccalo->SetFillStyle(0);
+     
+      arc->SetLineColor(kRed);
+      arc->DrawArc( tt->xc(), tt->yc(), tt->rho());
+      arc->SetLineColor(kMagenta);
+      arc->DrawArc( tmid->xc(), tmid->yc(), tmid->rho());
+      arc->SetLineColor(kRed);
+    }
 //-----------------------------------------------------------------------------
 // draw vanes or disks
 //-----------------------------------------------------------------------------
@@ -988,13 +993,13 @@ namespace mu2e {
 	  }
 	}
 	
-	Hep3Vector pos(tt->positionAtZ( mid->z()));
-	Hep3Vector mom(tt->momentumAtZ( mid->z()));
-	TwoLinePCA pca(pos, mom.unit(), *mid, *w);
+	//	Hep3Vector pos(tt->positionAtZ( mid->z()));
+	//	Hep3Vector mom(tt->momentumAtZ( mid->z()));
+	//	TwoLinePCA pca(pos, mom.unit(), *mid, *w);
 	
-	Hep3Vector posMid(tmid->positionAtZ( mid->z() ) );
-	Hep3Vector momMid(tmid->momentumAtZ( mid->z() ) );
-	TwoLinePCA pcaMid(posMid, momMid.unit(), *mid, *w);
+	//	Hep3Vector posMid(tmid->positionAtZ( mid->z() ) );
+	//	Hep3Vector momMid(tmid->momentumAtZ( mid->z() ) );
+	//	TwoLinePCA pcaMid(posMid, momMid.unit(), *mid, *w);
 	
 	// Position along wire, from delta t.
 	
@@ -1087,14 +1092,16 @@ namespace mu2e {
     double yf2 = yf1 + arrowLength*mom1.y()/mom1.perp();
     arrow->SetLineColor(kRed);
     arrow->DrawArrow( xf1, yf1, xf2, yf2, 0.01, ">");
+
+    if (fSteps != NULL) {
+      double d0x  = tt->d0x();
+      double d0y  = tt->d0y();
+      double d0x2 =  tt->d0x() + arrowLength*tt->u0();
+      double d0y2 =  tt->d0y() + arrowLength*tt->v0();
       
-    double d0x  = tt->d0x();
-    double d0y  = tt->d0y();
-    double d0x2 =  tt->d0x() + arrowLength*tt->u0();
-    double d0y2 =  tt->d0y() + arrowLength*tt->v0();
-      
-    arrow->SetLineColor(kBlue);
-    arrow->DrawArrow(d0x, d0y, d0x2, d0y2, 0.01, ">");
+      arrow->SetLineColor(kBlue);
+      arrow->DrawArrow(d0x, d0y, d0x2, d0y2, 0.01, ">");
+    }
 //-----------------------------------------------------------------------------
 // blue cross - origin.
 //-----------------------------------------------------------------------------
