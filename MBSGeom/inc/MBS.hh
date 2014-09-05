@@ -3,9 +3,9 @@
 
 // Muon Beam Stop Object
 //
-// $Id: MBS.hh,v 1.4 2013/07/02 15:57:07 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/07/02 15:57:07 $
+// $Id: MBS.hh,v 1.5 2014/09/05 14:42:20 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/05 14:42:20 $
 //
 // Original author KLG
 //
@@ -26,16 +26,16 @@ namespace mu2e {
   public:
 
     // Volume names a per figure 8.29 in the CDR
-    Polycone const * const getMBSMPtr() const {return _pMBSMParams.get();}
-    Tube const * const getBSTSPtr() const {return _pBSTSParams.get();}
-    Tube const * const getSPBSSup1Ptr() const {return _pSPBSSup1Params.get();}
-    Tube const * const getSPBSSup2Ptr() const {return _pSPBSSup2Params.get();}
-    Tube const * const getSPBSLPtr() const {return _pSPBSLParams.get();}
-    Tube const * const getSPBSCPtr() const {return _pSPBSCParams.get();}
-    Tube const * const getSPBSRPtr() const {return _pSPBSRParams.get();}
-    Polycone const * const getBSTCPtr() const {return _pBSTCParams.get();}
-    Polycone const * const getBSBSPtr() const {return _pBSBSParams.get();}
-    Polycone const * const getCLV2Ptr() const {return _pCLV2Params.get();}
+    Polycone const * getMBSMPtr()     const { return _pMBSMParams.get();     }
+    Tube     const * getBSTSPtr()     const { return _pBSTSParams.get();     }
+    Tube     const * getSPBSSup1Ptr() const { return _pSPBSSup1Params.get(); }
+    Tube     const * getSPBSSup2Ptr() const { return _pSPBSSup2Params.get(); }
+    Tube     const * getSPBSLPtr()    const { return _pSPBSLParams.get();    }
+    Tube     const * getSPBSCPtr()    const { return _pSPBSCParams.get();    }
+    Tube     const * getSPBSRPtr()    const { return _pSPBSRParams.get();    }
+    Polycone const * getBSTCPtr()     const { return _pBSTCParams.get();     }
+    Polycone const * getBSBSPtr()     const { return _pBSBSParams.get();     }
+    Polycone const * getCLV2Ptr()     const { return _pCLV2Params.get();     }
 
     CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; };
 
@@ -59,12 +59,12 @@ namespace mu2e {
     // several concentric components
 
     std::unique_ptr<Polycone> _pMBSMParams;
-    std::unique_ptr<Tube> _pBSTSParams;
-    std::unique_ptr<Tube> _pSPBSSup1Params;
-    std::unique_ptr<Tube> _pSPBSSup2Params;
-    std::unique_ptr<Tube> _pSPBSLParams;
-    std::unique_ptr<Tube> _pSPBSCParams;
-    std::unique_ptr<Tube> _pSPBSRParams;
+    std::unique_ptr<Tube>     _pBSTSParams;
+    std::unique_ptr<Tube>     _pSPBSSup1Params;
+    std::unique_ptr<Tube>     _pSPBSSup2Params;
+    std::unique_ptr<Tube>     _pSPBSLParams;
+    std::unique_ptr<Tube>     _pSPBSCParams;
+    std::unique_ptr<Tube>     _pSPBSRParams;
     std::unique_ptr<Polycone> _pBSTCParams;
     std::unique_ptr<Polycone> _pBSBSParams;
     std::unique_ptr<Polycone> _pCLV2Params;
