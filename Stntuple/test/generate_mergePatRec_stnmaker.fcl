@@ -63,8 +63,7 @@ physics : {
 # by default, StoppedParticleReactionGun has 'mean' set to +1, 
 # which means the Poisson mean of 1 !!! 
 #------------------------------------------------------------------------------
-	    module_type      : StntupleParticleGun
-	    mean             : -1
+	    module_type      : StoppedParticleReactionGun
 	    physics          : {
 		pdgId            : 13
 		spectrumVariable : "totalEnergy"

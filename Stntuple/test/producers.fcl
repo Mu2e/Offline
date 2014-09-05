@@ -61,36 +61,6 @@ FillStntuple : {
 	# bit51:1
     }
 }
-
-StntupleParticleGun         : {
-#------------------------------------------------------------------------------
-# for 105 MeV/c electron : E = 105.00130           MeV
-# for muon: sqrt(105.*105+105.658*105.658) = 148.9584269653785
-# by default, StoppedParticleReactionGun has 'mean' set to +1, 
-# which means the Poisson mean of 1 !!! 
-#------------------------------------------------------------------------------
-    module_type      : StntupleParticleGun
-    mean             : -1
-    physics          : {
-	pdgId            : 13
-	spectrumVariable : "totalEnergy"
-	spectrumShape    : "flat"
-	elow             : 148.953 
-	ehi              : 148.963 
-    }
-    muonStops            : {
-#------------------------------------------------------------------------------
-# use --fclinput=@muStops:datasets/mustops for grid submission 
-# [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ] 
-#------------------------------------------------------------------------------
-	inputFiles            : @local::muStops
-	averageNumRecordsToUse: 500000
-	treeName              : "stoppedMuonDumper/stops"
-	branchName            : "stops"
-	verbosityLevel        : 1
-    }
-}
-
 #------------------------------------------------------------------------------
 # 
 #------------------------------------------------------------------------------
