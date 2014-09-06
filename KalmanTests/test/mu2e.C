@@ -162,6 +162,8 @@ class mu2e {
     TLegend* _leg;
     TPaveText* _info;
     bool _init;
+    double _conint[4];
+    double _conint_err[4];
 };
 
 void mu2e::init(){
@@ -335,6 +337,8 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     double dint = _diospec[icut]->IntegralAndError(istart,istop,dint_err);
     double cint = _conspec[icut]->IntegralAndError(istart,istop,cint_err);
 //    double fint = _flat_f[icut]->Integral(momlow,momhigh)/mevperbin;
+    _conint[icut] = cint;
+    _conint_err[icut] = cint_err;
 
     TPaveText* inttext = new TPaveText(0.15,0.4,0.4,0.9,"NDC");
     char itext[50];
