@@ -1,0 +1,22 @@
+// Pion degrader 
+bool   piondegrader.build = false;
+double piondeg.xoffset = 0.0;
+double piondeg.zoffset =5.0;//-2350;
+double piondeg.radius = 250.0;
+double piondeg.halfLength = 1.75;
+string piondeg.materialName = "G4_Be";
+bool   piondeg.visible = true;
+bool   piondeg.solid = true;
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

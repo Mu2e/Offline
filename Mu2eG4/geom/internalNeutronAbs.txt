@@ -1,0 +1,44 @@
+// Neutron Absorber (document draft dated 2010-07-16)
+
+double intneutronabs.rOut        = 940.; // 1cm clearance between INS and DS cryo. 
+double intneutronabs.r4		 = 447; // outer radius, inner radius is TS5
+double intneutronabs.rIn3        = 890.;
+double intneutronabs.rIn2        = 850.;
+double intneutronabs.rIn1        = 650.;
+double intneutronabs.halfLength4 = 25.0;
+double intneutronabs.halfLength3 = 2000.;
+double intneutronabs.halfLength2 = 1000.;
+double intneutronabs.halfLength1 = 500.;
+double intneutronabs.z0          = 5871.;
+string intneutronabs.material1Name = "DSVacuum";
+string intneutronabs.material2Name = "DSVacuum";
+// piec 2 and 3 of the INA are experimental, for now turn them off
+string intneutronabs.material3Name = "DSVacuum";
+string intneutronabs.material4Name = "Polyethylene092B050d095";
+
+int    intneutronabs.verbosityLevel = 0;
+bool   intneutronabs.visible      = true;
+bool   intneutronabs.solid        = false;
+
+string extneutronabs.materialName  = "Polyethylene092Li075d106";
+double extneutronabs.halfLengthZ   = 6220.0;
+double extneutronabs.halfLengthXY  = 1475.0;
+double extneutronabs.halfThickness =   75.0;
+double extneutronabs.z0            = 9219.0; // 2999+15439/2
+
+int    extneutronabs.verbosityLevel = 0;
+bool   extneutronabs.visible      = true;
+bool   extneutronabs.solid        = false;
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

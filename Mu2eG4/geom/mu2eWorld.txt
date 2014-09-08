@@ -1,0 +1,37 @@
+// The world volume contains a formal "hall" box that is surrounded by
+// dirt at the bottom and (part way) on the sides.  The rest is filled
+// with air.  The "margins" are the distances from the hall box to the
+// world boundaries.   We specify the minimal allowed margins; the actual
+// values may be increased to position Mu2e in the G4 world volume as
+// specified by world.mu2eOriginInWorld
+//
+double world.minimalMargin.top = 5000;
+double world.minimalMargin.bottom = 5000;
+double world.minimalMargin.xmin = 5000;
+double world.minimalMargin.xmax = 5000;
+double world.minimalMargin.zmin = 5000;
+double world.minimalMargin.zmax =  5000;
+vector<double> world.mu2eOriginInWorld = { 0, 0, 0}; // mm
+
+string world.materialName = "G4_AIR";
+bool   world.boxVisible   = true;
+bool   world.boxSolid     = false;
+int    world.verbosityLevel = 0;
+
+string dirt.overburdenMaterialName = "MBOverburden";
+
+bool   world.dirt.visible         = true;
+bool   world.dirt.solid           = false;
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

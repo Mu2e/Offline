@@ -1,0 +1,80 @@
+// Muon Beam Dump/Stop
+
+// except for one of the Z offset values the rest is computable from the other values
+
+// the Z values were adjusted from mu2e doc-1351 based on doc-1186 also to
+// fit with the previously implemented components
+
+// the initial implementation is described in doc-1519
+
+double mbs.MBSCZ              = 15258.0;
+
+double mbs.BSTSInnerRadius    =   470.0;
+double mbs.BSTSOuterRadius    =   480.0;
+double mbs.BSTSHLength        =  2043.0;
+string mbs.BSTSMaterialName   = "StainlessSteel";
+double mbs.BSTSZrelCntr       =    15.0;
+
+double mbs.SPBSSup1InnerRadius  =   480.0;
+double mbs.SPBSSup1OuterRadius  =   700.0;
+double mbs.SPBSSup1HLength      =    20.0;
+string mbs.SPBSSup1MaterialName = "StainlessSteel";
+double mbs.SPBSSup1ZrelCntr     =  -878.0;
+double mbs.SPBSSup2InnerRadius  =   480.0;
+double mbs.SPBSSup2OuterRadius  =   700.0;
+double mbs.SPBSSup2HLength      =    20.0;
+string mbs.SPBSSup2MaterialName = "StainlessSteel";
+double mbs.SPBSSup2ZrelCntr     =  662.0;
+
+double mbs.SPBSLInnerRadius   =   480.0;
+double mbs.SPBSLOuterRadius   =   700.0;
+double mbs.SPBSLHLength       =   300.0;
+string mbs.SPBSLMaterialName  = "Polyethylene096";
+double mbs.SPBLZrelCntr       = -1198.0;
+double mbs.SPBSCInnerRadius   =   480.0;
+double mbs.SPBSCOuterRadius   =   640.0;
+double mbs.SPBSCHLength       =   750.0;
+double mbs.SPBSCminAngle      =   -67.5;
+double mbs.SPBSCmaxAngle      =   247.5;
+string mbs.SPBSCMaterialName  = "Polyethylene096";
+double mbs.SPBCZrelCntr       =  -108.0;
+double mbs.SPBSRInnerRadius   =   480.0;
+double mbs.SPBSROuterRadius   =   700.0;
+double mbs.SPBSRHLength       =   280.0;
+string mbs.SPBSRMaterialName  = "Polyethylene096";
+double mbs.SPBRZrelCntr       = 962.0;
+
+vector<double> mbs.BSTCInnerRadii  =   { 390.0, 320.0 }; 
+vector<double> mbs.BSTCOuterRadii  =   { 470.0, 470.0 };
+vector<double> mbs.BSTCLengths     =   { 570.0, 600.0 };
+string mbs.BSTCMaterialName   = "Polyethylene096";
+double mbs.BSTCZrelCntr       =  -1428.0;
+
+vector<double> mbs.BSBSInnerRadii  =   { 370.0, 320.0 };
+vector<double> mbs.BSBSOuterRadii  =   { 470.0, 470.0 };
+vector<double> mbs.BSBSLengths     =   { 1486.0, 1400.0 };
+string mbs.BSBSMaterialName   = "Polyethylene096";
+double mbs.BSBSZrelCntr            =  615.0;
+
+vector<double> mbs.CLV2InnerRadii  =   {  40.0 };
+vector<double> mbs.CLV2OuterRadii  =   { 320.0 };
+vector<double> mbs.CLV2Lengths     =   { 240.0 };
+string mbs.CLV2MaterialName   = "Polyethylene096";
+double mbs.CLV2ZrelCntr            =  1938.0;
+
+int    mbs.verbosityLevel = 0;
+bool   mbs.visible      = true;
+bool   mbs.solid        = false;
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
