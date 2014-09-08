@@ -1,3 +1,27 @@
+//-----------------------
+// Physics lists
+//-----------------------
+string g4.physicsListName = "Shielding_MU2E01";
+double g4.minRangeCut     = 0.01;  // mm
+
+bool   g4.printPhysicsProcessSummary = false;
+
+//-----------------------
+// Surface checker
+//-----------------------
+
+// invoke volume overlap check where enabled (draws random numbers)
+bool g4.doSurfaceCheck = false;
+
+// number of random points on the volume surface
+int  g4.nSurfaceCheckPointsPercmsq =   1;
+int  g4.minSurfaceCheckPoints      = 100; // per volume
+int  g4.maxSurfaceCheckPoints = 10000000; // per volume
+
+//-----------------------
+// Other options
+//-----------------------
+
 // Uncomment to enable debug printout on a per event or per track basis.
 //vector<int> g4.steppingActionEventList = { 0, 1 };
 //vector<int> g4.steppingActionTrackList = { 1 };
@@ -80,12 +104,6 @@ int    g4.PiENuPolicyVerbosity = 0;
 // List of PDG ids of particles for which to switch off decay.
 vector<int> g4.noDecay = {};
 
-// Choose a PhysicsList and set related parameters.
-string g4.physicsListName = "Shielding_MU2E01";
-double g4.minRangeCut     = 0.01;            // mm
-
-bool g4.printPhysicsProcessSummary = false;
-
 // Enable the code to kill low p secondaries from cosmics.
 bool g4.doCosmicKiller = false;
 double g4.cosmicPcut = 0.;
@@ -97,13 +115,6 @@ bool g4.printMaterials = false;
 
 // make detector volume structure visible where enabled
 bool g4.forceAuxEdgeVisible = true;
-
-// invoke volume overlap check where enabled (draws random numbers)
-bool g4.doSurfaceCheck = false;
-// number of random points on the volume surface
-int  g4.nSurfaceCheckPointsPercmsq =   1;
-int  g4.minSurfaceCheckPoints      = 100; // per volume
-int  g4.maxSurfaceCheckPoints = 10000000; // per volume
 
 //
 //
