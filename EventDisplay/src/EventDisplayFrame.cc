@@ -874,7 +874,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1==50)
                          {
                            std::string filename;
-                           if(SaveDialogManager::singleImage(filename)) _mainPad->SaveAs(filename.c_str());
+                           if(SaveDialogManager::singleImage(filename)) _mainPad->GetCanvas()->SaveAs(filename.c_str());
                          }
                          if(param1==51)
                          {
@@ -1123,7 +1123,7 @@ Bool_t EventDisplayFrame::HandleTimer(TTimer *)
       {
         char c[_saveAnimFile.length()+15];
         sprintf(c,"%s.tmp_%04i.gif",_saveAnimFile.c_str(),_saveAnimCounter);
-        _mainPad->SaveAs(c);
+        _mainPad->GetCanvas()->SaveAs(c);
       }
     }
   }
