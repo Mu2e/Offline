@@ -1,8 +1,8 @@
 #define USETRAJECTORY
 //
-// $Id: DataInterface.cc,v 1.76 2014/09/03 16:39:15 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/03 16:39:15 $
+// $Id: DataInterface.cc,v 1.77 2014/09/10 07:40:38 ehrlich Exp $
+// $Author: ehrlich $
+// $Date: 2014/09/10 07:40:38 $
 //
 
 #include "DataInterface.h"
@@ -202,7 +202,9 @@ void DataInterface::createGeometryManager()
 {
   _geometrymanager = new TGeoManager("GeoManager", "GeoManager");
   _geometrymanager->SetVerboseLevel(0); 
-  _topvolume = _geometrymanager->MakeBox("TopVolume", nullptr, 1000, 1000, 1500);
+   TGeoMaterial *matVacuum = new TGeoMaterial("Vacuum", 0,0,0);
+   TGeoMedium *Vacuum = new TGeoMedium("Vacuum",1, matVacuum);
+  _topvolume = _geometrymanager->MakeBox("TopVolume", Vacuum, 1000, 1000, 1500);
   _geometrymanager->SetTopVolume(_topvolume);
   _geometrymanager->SetTopVisible(false);
   _geometrymanager->CloseGeometry();
