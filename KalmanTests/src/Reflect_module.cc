@@ -2,9 +2,9 @@
 // Look for particles coming from the calorimeter and reflecting back in the
 // magnetic mirror
 //
-// $Id: Reflect_module.cc,v 1.11 2014/08/22 19:55:50 brownd Exp $
+// $Id: Reflect_module.cc,v 1.12 2014/09/10 18:49:17 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/08/22 19:55:50 $
+// $Date: 2014/09/10 18:49:17 $
 //
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -105,6 +105,7 @@ namespace mu2e {
     Float_t _et0;
     threevec _emom, _epos;
     Float_t _pt0;
+    Int_t _mcpdgid, _mcgenid, _mcproc;
     Int_t _ppdg;
     threevec _ppos, _pmom, _pppos;
     Int_t _uextnpa,_dextnpa,_uextnst,_dextnst;
@@ -351,8 +352,7 @@ namespace mu2e {
     _reflect->Branch("utent",&_utent,"utent/F");
     _reflect->Branch("utenterr",&_utenterr,"utenterr/F");
     _reflect->Branch("uentf",&_uentf,"uentf/F");
-    _reflect->Branch("umcinfo",&_umcinfo,"umcpdgid/I:umctime/F:umcmom/F:umcx/F:umcy/F:umcz/F:umcd0/F:umcp0/F:umcom/F:umcz0/F:umctd/F");
-    // downstream information
+    _reflect->Branch("umcinfo",&_umcinfo,"umct0/F:umcmom/F:umcx/F:umcy/F:umcz/F:umcd0/F:umcp0/F:umcom/F:umcz0/F:umctd/F");
     _reflect->Branch("dpart",&_dpart,"dpart/I");
     _reflect->Branch("dfitstat",&_dfitstat,"dfitstat/I");
     _reflect->Branch("dnactive",&_dnactive,"dnactive/I");
@@ -370,8 +370,11 @@ namespace mu2e {
     _reflect->Branch("dtent",&_dtent,"dtent/F");
     _reflect->Branch("dtenterr",&_dtenterr,"dtenterr/F");
     _reflect->Branch("dentf",&_dentf,"dentf/F");
-    _reflect->Branch("dmcinfo",&_dmcinfo,"dmcpdgid/I:dmctime/F:dmcmom/F:dmcx/F:dmcy/F:dmcz/F:dmcd0/F:dmcp0/F:dmcom/F:dmcz0/F:dmctd/F");
-    // general information about production electron and muon
+    _reflect->Branch("dmcinfo",&_dmcinfo,"dmct0/F:dmcmom/F:dmcx/F:dmcy/F:dmcz/F:dmcd0/F:dmcp0/F:dmcom/F:dmcz0/F:dmctd/F");
+        // general information about production electron and muon
+    _reflect->Branch("mcpdgid",&_mcpdgid,"mcpdgid/I");
+    _reflect->Branch("mcgenid",&_mcgenid,"mcgenid/I");
+    _reflect->Branch("mcproc",&_mcproc,"mcproc/I");
     _reflect->Branch("emom",&_emom,"emx/F:emy/F:emz/F");
     _reflect->Branch("et0",&_et0,"et0/F");
     _reflect->Branch("epos",&_epos,"ex/F:ey/F:ez/F");
@@ -433,6 +436,11 @@ namespace mu2e {
   Reflect::fillParentInfo(art::Ptr<SimParticle> sp) {
     GeomHandle<DetectorSystem> det;
     if(!sp.isNull()){
+      _mcgenid = -1;
+      if(sp->genParticle().isNonnull())
+	_mcgenid = sp->genParticle()->generatorId().id();
+      _mcpdgid = sp->pdgId();
+      _mcproc = sp->creationCode();
       _emom = sp->startMomentum().vect();
       _et0 = sp->startGlobalTime();
       _epos = det->toDetector(sp->startPosition());
