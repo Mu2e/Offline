@@ -1,9 +1,9 @@
 //
 // Main geometry file for Mu2e.
 //
-// $Id: geom_01.txt,v 1.241 2014/09/08 17:23:22 knoepfel Exp $
+// $Id: geom_01.txt,v 1.242 2014/09/11 14:26:10 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/09/08 17:23:22 $
+// $Date: 2014/09/11 14:26:10 $
 //
 // Original author Rob Kutschke
 //
@@ -86,10 +86,7 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/protonBeamDump_v02.txt"
 #include "Mu2eG4/geom/extmon_fnal_v02.txt"
 
-// Uncomment exactly one tracker.
 #include "Mu2eG4/geom/ttracker_v3.txt"
-//#include "Mu2eG4/geom/ttracker_meco.txt"
-//#include "Mu2eG4/geom/dummytracker.txt"
 
 // Crystal calorimeter
 //#include "Mu2eG4/geom/calorimeter_LYSO.txt"
