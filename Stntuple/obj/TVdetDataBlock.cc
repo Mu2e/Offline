@@ -40,11 +40,27 @@ void TVdetDataBlock::Clear(Option_t* opt) {
 }
 
 //______________________________________________________________________________
-void TVdetDataBlock::Print(Option_t* opt) const {
+void TVdetDataBlock::Print(Option_t* Option) const {
   // print all hits in the virtual detectors
-  printf(" *** print Virtual detectors hits *** \nNumber of hits: %d\n",fNHits);
+
+  int banner_printed(0);
+  const TVdetHitData* hit;
+
+  TString opt = Option;
+  opt.ToLower();
+
   for(int i=0; i<fNHits; i++) {
-    fListOfHits->At(i)->Print();
+    hit = ((TVdetDataBlock*) this)->Hit(i);
+    if ((opt == "") || (opt.Index("banner") >= 0)) {
+      if (banner_printed == 0) {
+	hit->Print("banner");
+	banner_printed = 1;
+      }
+    }
+
+    if ((opt == "") || (opt.Index("data") >= 0)) {
+      hit->Print("data");
+    }
   }
 }
 
