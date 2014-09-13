@@ -315,6 +315,8 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     CLHEP::Hep3Vector fitmom2 = krep->momentum(s2);
 
     track->fP2 = fitmom2.mag();
+    track->fC0 = krep->helix(entlen).omega();
+
 
     CLHEP::Hep3Vector momdir = fitmom.unit();
     
@@ -380,11 +382,11 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     }
     
     int     loc, ipart, nhits, n_straw_hits, found; // , pdg_code;
-    int     id,  npart(0), part_pdg_code[100], part_nh[100], part_id[100];
+    int     id(-1),  npart(0), part_pdg_code[100], part_nh[100], part_id[100];
 
     const mu2e::StrawHit      *s_hit0;
     const mu2e::StrawHit      *s_hit; 
-    const mu2e::SimParticle   *sim; 
+    const mu2e::SimParticle   *sim(NULL); 
 
     n_straw_hits = list_of_straw_hits->size();
 
@@ -619,8 +621,6 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 // number of true MC hits in the tracker
 //-----------------------------------------------------------------------------
     const mu2e::PtrStepPointMCVectorCollection* stepPointMCVectorCollection;
-    //    art::Handle<mu2e::StepPointMCCollection>    stepsHandle;
-    //    const mu2e::StepPointMCCollection*          steps;
     const mu2e::StepPointMC*                    step;
 
     track->fNMcStrawHits = 0;
@@ -629,28 +629,15 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     AnEvent->getByLabel(strh_module_label,"StrawHitMCPtr",mcptrHandleStraw);
     stepPointMCVectorCollection = mcptrHandleStraw.product();
 
-//     art::Selector getTrackerSteps(art::ProductInstanceNameSelector("tracker") &&
-// 				  art::ProcessNameSelector("") &&
-// 				  art::ModuleLabelSelector(g4_module_label)  );
-//     AnEvent->get(getTrackerSteps, stepsHandle);
-//     steps =  (const mu2e::StepPointMCCollection*) &(*stepsHandle);
-
     for (int i=0; i<n_straw_hits; i++) {
-      //      const mu2e::StepPointMC* hit = &(*steps)[i];
-	  
-      mu2e::PtrStepPointMCVector const& mcptr(stepPointMCVectorCollection->at(i) );
+      mu2e::PtrStepPointMCVector const& mcptr(stepPointMCVectorCollection->at(i));
 
-      step = mcptr[0].operator ->();
+      step = mcptr[0].get();
     
-      //      hit   = &list_of_straw_hits->at(i);
-
       art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle(); 
       art::Ptr<mu2e::SimParticle> mother = simptr;
       while(mother->hasParent())  mother = mother->parent();
       const mu2e::SimParticle*    sim    = mother.operator ->();
-
-      //      int pdg_id        = simptr->pdgId();
-      //      int mother_pdg_id = sim->pdgId();
 
       int sim_id = sim->id().asInt();
 

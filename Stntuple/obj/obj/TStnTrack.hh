@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by the track finding and fitting code.
 //
-// $Id: TStnTrack.hh,v 1.2 2014/06/24 19:08:19 murat Exp $
+// $Id: TStnTrack.hh,v 1.3 2014/09/13 01:16:28 murat Exp $
 // $Author: murat $
-// $Date: 2014/06/24 19:08:19 $
+// $Date: 2014/09/13 01:16:28 $
 //
 // Contact person Pavel Murat
 //
@@ -73,8 +73,11 @@ class TStnTrack : public TObject {
     kNFreeIntsV5   =  7,
     kNFreeFloatsV5 =  6,
 
+    kNFreeIntsV6   =  7,
+    kNFreeFloatsV6 =  6,
+
     kNFreeInts     =  7,
-    kNFreeFloats   =  6
+    kNFreeFloats   =  5
   };
 
   enum { kMaxNLayers = 88 }; // 22x2*2
@@ -109,7 +112,7 @@ public:
     float        fChi2Match;		// track-cluster match chi&^2 (coord)
     float        fChi2Time;		// track-cluster match chi&^2 (time)
     float        fPath;			// track path in the disk
-    float        fIntDepth;             // assumed interaction depth, adedd in V6;
+    float        fIntDepth;             // assumed interaction depth, added in V6;
     const mu2e::CaloCluster*       fCluster;
     const mu2e::TrkToCaloExtrapol* fExtrk;
   };
@@ -172,6 +175,7 @@ public:
   float                     fZ1;
   float                     fP0;            // momentum defined at Z0
   float                     fP2;            // momentum defined at Z0
+  float                     fC0;	    // curvature
   float                     fFloat[kNFreeFloats]; // provision for future I/O expansion
 
   InterData_t               fDisk[kNDisks];  // track intersections with disks
@@ -212,6 +216,9 @@ public:
 
   float  T0       () { return fT0;    }
   float  T0Err    () { return fT0Err; }
+  float  FitCons  () { return fFitCons; }
+  float  FitMomErr() { return fFitMomErr; }
+  float  TanDip   () { return fTanDip; }
 
   float  D0       () { return fD0; }
   float  Z0       () { return fZ0; }
@@ -261,8 +268,9 @@ public:
 //-----------------------------------------------------------------------------
   void ReadV4(TBuffer& R__b);
   void ReadV5(TBuffer& R__b);
+  void ReadV6(TBuffer& R__b);
 
-  ClassDef(TStnTrack,6)
+  ClassDef(TStnTrack,7)
 
 };
 
