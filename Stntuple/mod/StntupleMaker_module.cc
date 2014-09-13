@@ -392,7 +392,7 @@ void StntupleMaker::beginJob() {
   if (fMakeVirtualHits) {
     TStnDataBlock* virtual_data;
 
-    virtual_data = AddDataBlock("VirtualBlock",
+    virtual_data = AddDataBlock("VdetBlock",
 				"TVdetDataBlock",
 				StntupleInitMu2eVirtualDataBlock,
 				buffer_size,
