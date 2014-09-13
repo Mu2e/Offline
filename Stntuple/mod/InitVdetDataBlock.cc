@@ -73,8 +73,7 @@ Int_t StntupleInitMu2eVirtualDataBlock(TStnDataBlock* Block, AbsEvent* AnEvent, 
 
   TVdetHitData*           hit; 
 
-  int   vdIndex;
-  int   pdg_id, gen_index;
+  int                     vdIndex, pdg_id, gen_index;
   float time;
   float energyKin, energy;
   float mass;
