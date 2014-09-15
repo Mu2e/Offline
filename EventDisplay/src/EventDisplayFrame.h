@@ -1,9 +1,9 @@
 //
 // Class which builds the main frame for the event display, and provides functions to control the display, e.g. quit, moving to the next event, animations, storing the events into gif files (static and animated), detailed infos of tracks, hits, etc.
 //
-// $Id: EventDisplayFrame.h,v 1.28 2014/04/20 10:57:09 ehrlich Exp $
+// $Id: EventDisplayFrame.h,v 1.29 2014/09/15 17:57:48 ehrlich Exp $
 // $Author: ehrlich $
-// $Date: 2014/04/20 10:57:09 $
+// $Date: 2014/09/15 17:57:48 $
 //
 // Original author Ralf Ehrlich
 //
@@ -71,11 +71,15 @@ namespace mu2e_eventdisplay
     void             fillZoomAngleFields();
     void             addHistDraw();
     virtual void     CloseWindow(); //inherited from TGMainFrame
-    void             changeSetup(bool whiteBackground, bool useHitColors, bool useTrackColors);
+    void             changeSetup(bool whiteBackground, bool useHitColors, bool useTrackColors,
+                                 bool showSupportStructures,
+                                 bool showCRV,
+                                 bool showOtherStructures,
+                                 bool showMuonBeamStop, 
+                                 bool showProtonAbsorber);
 
     private:
     void initSetup();
-    void shrinkButton(TGTextButton *button);
     void fillEvent(bool firstLoop=false);
     void updateTimeIntervalFields(bool allTracks=false);
     void updateHitLegend(bool draw);
@@ -107,6 +111,8 @@ namespace mu2e_eventdisplay
     int                 _saveAnimCounter;
     std::string         _saveAnimFile;
     bool                _whiteBackground, _useHitColors, _useTrackColors;
+    bool                _showSupportStructures, _showCRV, _showOtherStructures;
+    bool                _showMuonBeamStop, _showProtonAbsorber;
 
     //bare pointers needed since ROOT manages these objects
     TGHorizontalFrame   *_mainFrame, *_footLine;
@@ -116,8 +122,6 @@ namespace mu2e_eventdisplay
     TPad                *_mainPad, *_infoPad;
     TText               *_clock, *_eventNumberText, *_subrunNumberText, *_runNumberText;
     TTimer              *_timer;
-    TGCheckButton       *_supportStructuresButton, *_crvScintillatorBarsButton, *_otherStructuresButton;
-    TGCheckButton       *_muonBeamStopStructuresButton, *_mecoStyleProtonAbsorberButton;
     TGCheckButton       *_repeatAnimationButton;
     TGTextEntry         *_timeIntervalField1, *_timeIntervalField2;
     TGTextEntry         *_minHitField, *_eventToFindField;

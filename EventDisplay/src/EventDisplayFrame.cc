@@ -119,48 +119,20 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, trackBox, 
                                                                           _g4ModuleLabel, _physicalVolumesMultiLabel));
 
-  _supportStructuresButton = new TGCheckButton(_subFrame,"Show Tracker Supports, Calo Disks, Target",32);
-  _supportStructuresButton->SetState(kButtonDown);
-  _subFrame->AddFrame(_supportStructuresButton, lh1);
-  _supportStructuresButton->Associate(this);
-
-  _crvScintillatorBarsButton = new TGCheckButton(_subFrame,"Show CRV Scintillator Bars",36);
-  _crvScintillatorBarsButton->SetState(kButtonUp);
-  _subFrame->AddFrame(_crvScintillatorBarsButton, lh1);
-  _crvScintillatorBarsButton->Associate(this);
-
-  _otherStructuresButton = new TGCheckButton(_subFrame,"Show Toy DS",37);
-  _otherStructuresButton->SetState(kButtonUp);
-  _subFrame->AddFrame(_otherStructuresButton, lh1);
-  _otherStructuresButton->Associate(this);
-
-  _muonBeamStopStructuresButton = new TGCheckButton(_subFrame, "Show Toy MBS", 38);
-  _muonBeamStopStructuresButton->SetState(kButtonUp);
-  _subFrame->AddFrame(_muonBeamStopStructuresButton, lh1);
-  _muonBeamStopStructuresButton->Associate(this);
-
-  _mecoStyleProtonAbsorberButton = new TGCheckButton(_subFrame, "Show Conical PA", 39);
-  _mecoStyleProtonAbsorberButton->SetState(kButtonUp);
-  _subFrame->AddFrame(_mecoStyleProtonAbsorberButton, lh1);
-  _mecoStyleProtonAbsorberButton->Associate(this);
-
-  TGHorizontalFrame *subFrameView   = new TGHorizontalFrame(_subFrame,300,15);
-  TGTextButton *endViewButton       = new TGTextButton(subFrameView, "___  End V", 70, buttoncontext);
-  TGTextButton *sideViewButton      = new TGTextButton(subFrameView, "___  Side V", 71, buttoncontext);
-  TGTextButton *topViewButton       = new TGTextButton(subFrameView, "___  Top V", 72, buttoncontext);
-  TGTextButton *allTracksViewButton = new TGTextButton(subFrameView, "_____  All Tracks", 73, buttoncontext);
-  TGTextButton *resetViewButton     = new TGTextButton(subFrameView, "___  Reset View", 74, buttoncontext);
-  shrinkButton(endViewButton);
-  shrinkButton(sideViewButton);
-  shrinkButton(topViewButton);
-  shrinkButton(allTracksViewButton);
-  shrinkButton(resetViewButton);
-  subFrameView->AddFrame(endViewButton, lh1);
-  subFrameView->AddFrame(sideViewButton, lh1);
-  subFrameView->AddFrame(topViewButton, lh1);
-  subFrameView->AddFrame(allTracksViewButton, lh1);
-  subFrameView->AddFrame(resetViewButton, lh1);
-  _subFrame->AddFrame(subFrameView, lh0);
+  TGHorizontalFrame *subFrameView1   = new TGHorizontalFrame(_subFrame,300,15);
+  TGHorizontalFrame *subFrameView2   = new TGHorizontalFrame(_subFrame,300,15);
+  TGTextButton *endViewButton       = new TGTextButton(subFrameView1, "End View", 70, buttoncontext);
+  TGTextButton *sideViewButton      = new TGTextButton(subFrameView1, "Side View", 71, buttoncontext);
+  TGTextButton *topViewButton       = new TGTextButton(subFrameView1, "Top View", 72, buttoncontext);
+  TGTextButton *allTracksViewButton = new TGTextButton(subFrameView2, "All Tracks View", 73, buttoncontext);
+  TGTextButton *resetViewButton     = new TGTextButton(subFrameView2, "Reset View", 74, buttoncontext);
+  subFrameView1->AddFrame(endViewButton, lh1);
+  subFrameView1->AddFrame(sideViewButton, lh1);
+  subFrameView1->AddFrame(topViewButton, lh1);
+  subFrameView2->AddFrame(allTracksViewButton, lh1);
+  subFrameView2->AddFrame(resetViewButton, lh1);
+  _subFrame->AddFrame(subFrameView1, lh0);
+  _subFrame->AddFrame(subFrameView2, lh0);
   endViewButton->Associate(this);
   sideViewButton->Associate(this);
   topViewButton->Associate(this);
@@ -196,11 +168,9 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _timeIntervalField1->SetWidth(50);
   _timeIntervalField2->SetWidth(50);
 
-  TGHorizontalFrame *subFrameTimeWindow = new TGHorizontalFrame(_subFrame,300,15);
-  TGTextButton *allHitsTimeButton       = new TGTextButton(subFrameTimeWindow, "______  Time Window for all Hits", 80, buttoncontext);
-  TGTextButton *allTracksTimeButton     = new TGTextButton(subFrameTimeWindow, "______  Time Window for all Tracks", 81, buttoncontext);
-  shrinkButton(allHitsTimeButton);
-  shrinkButton(allTracksTimeButton);
+  TGVerticalFrame *subFrameTimeWindow = new TGVerticalFrame(_subFrame,300,15);
+  TGTextButton *allHitsTimeButton     = new TGTextButton(subFrameTimeWindow, "Time Window for all Hits", 80, buttoncontext);
+  TGTextButton *allTracksTimeButton   = new TGTextButton(subFrameTimeWindow, "Time Window for all Tracks", 81, buttoncontext);
   subFrameTimeWindow->AddFrame(allHitsTimeButton, lh1);
   subFrameTimeWindow->AddFrame(allTracksTimeButton, lh1);
   _subFrame->AddFrame(subFrameTimeWindow, lh0);
@@ -455,22 +425,24 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   gPad->AddExec("keyboardInput",TString::Format("((mu2e_eventdisplay::EventDisplayFrame*)%p)->keyboardInput()",this));
 }
 
-void EventDisplayFrame::shrinkButton(TGTextButton *button)
-{
-  button->ChangeOptions(button->GetOptions() | kFixedSize);
-  double w=button->GetWidth()*0.6;
-  double h=button->GetHeight();
-  button->Resize(w,h);
-}
-
 void EventDisplayFrame::initSetup()
 {
   _whiteBackground=false;
   _useHitColors=true;
   _useTrackColors=true;
+  _showSupportStructures=true;
+  _showCRV=false;
+  _showOtherStructures=false;
+  _showMuonBeamStop=false;
+  _showProtonAbsorber=false;
 }
 
-void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, bool useTrackColors)
+void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, bool useTrackColors,
+                                    bool showSupportStructures,
+                                    bool showCRV,
+                                    bool showOtherStructures,
+                                    bool showMuonBeamStop, 
+                                    bool showProtonAbsorber)
 {
   _mainPad->cd();
   if(_whiteBackground!=whiteBackground)
@@ -498,7 +470,39 @@ void EventDisplayFrame::changeSetup(bool whiteBackground, bool useHitColors, boo
     updateTrackLegend(useTrackColors);
   }
 
-  if(isnan(_timeCurrent)) drawEverything();
+  bool redraw=false;
+  if(_showSupportStructures!=showSupportStructures)
+  {
+     redraw=true;
+     _showSupportStructures=showSupportStructures;
+     _dataInterface->makeSupportStructuresVisible(showSupportStructures);
+  }  
+  if(_showCRV!=showCRV)
+  {
+     redraw=true;
+     _showCRV=showCRV;
+     _dataInterface->makeCrvScintillatorBarsVisible(showCRV);
+  }  
+  if(_showOtherStructures!=showOtherStructures)
+  {
+     redraw=true;
+     _showOtherStructures=showOtherStructures;
+     _dataInterface->makeOtherStructuresVisible(showOtherStructures);
+  }  
+  if(_showMuonBeamStop!=showMuonBeamStop)
+  {
+     redraw=true;
+     _showMuonBeamStop=showMuonBeamStop;
+     _dataInterface->makeMuonBeamStopStructuresVisible(showMuonBeamStop);
+  }  
+  if(_showProtonAbsorber!=showProtonAbsorber)
+  {
+     redraw=true;
+     _showProtonAbsorber=showProtonAbsorber;
+     _dataInterface->makeMecoStyleProtonAbsorberVisible(showProtonAbsorber);
+  }  
+
+  if(isnan(_timeCurrent) || redraw) drawEverything();
   else drawSituation();
 }
 
@@ -988,7 +992,9 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                          if(param1==64)
                          {
                            new SetupDialog(gClient->GetRoot(), this, _whiteBackground, 
-                                           _useHitColors, _useTrackColors);
+                                           _useHitColors, _useTrackColors,
+                                           _showSupportStructures, _showCRV, _showOtherStructures,
+                                           _showMuonBeamStop, _showProtonAbsorber);
                          }
                          break;
    case kCM_RADIOBUTTON: if(param1==1700)
@@ -1008,72 +1014,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->Update();
                          }
                          break;
-   case kCM_CHECKBUTTON: if(param1==32)
-                         {
-                           _mainPad->cd();
-                           if(_supportStructuresButton->GetState()==kButtonDown)
-                           {
-                             _dataInterface->makeSupportStructuresVisible(true);
-                           }
-                           else
-                           {
-                             _dataInterface->makeSupportStructuresVisible(false);
-                           }
-                           drawEverything();
-                         }
-                         if(param1==36)
-                         {
-                           _mainPad->cd();
-                           if(_crvScintillatorBarsButton->GetState()==kButtonDown)
-                           {
-                             _dataInterface->makeCrvScintillatorBarsVisible(true);
-                           }
-                           else
-                           {
-                             _dataInterface->makeCrvScintillatorBarsVisible(false);
-                           }
-                           drawEverything();
-                         }
-                         if(param1==37)
-                         {
-                           _mainPad->cd();
-                           if(_otherStructuresButton->GetState()==kButtonDown)
-                           {
-                             _dataInterface->makeOtherStructuresVisible(true);
-                           }
-                           else
-                           {
-                             _dataInterface->makeOtherStructuresVisible(false);
-                           }
-                           drawEverything();
-                         }
-                         if(param1 == 38) 
-                         {
-                           _mainPad->cd();
-                           if(_muonBeamStopStructuresButton->GetState() == kButtonDown) 
-                           {
-                             _dataInterface->makeMuonBeamStopStructuresVisible(true);
-                           }
-                           else 
-                           {
-                             _dataInterface->makeMuonBeamStopStructuresVisible(false);
-                           }
-                           drawEverything();
-                         }
-                         if(param1 == 39) 
-                         {
-                           _mainPad->cd();
-                           if(_mecoStyleProtonAbsorberButton->GetState() == kButtonDown) 
-                           {
-                             _dataInterface->makeMecoStyleProtonAbsorberVisible(true);
-                           }
-                           else 
-                           {
-                             _dataInterface->makeMecoStyleProtonAbsorberVisible(false);
-                           }
-                           drawEverything();
-                         }
-                         break;
+
   case kCM_COMBOBOX : if(param1==10) fillEvent();
                       if(param1==11) fillEvent();
                       break;
