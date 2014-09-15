@@ -7,10 +7,6 @@ process_name : EventDisplay
 source :
 {
   module_type : RootInput
-  fileNames   : [ "data_03.root" ] #that's the file that gets produced after running
-                                   #Mu2eG4/test/g4test_03.fcl
-                                   #replace it with your own file either here or in the command line
-                                   #e.g. mu2e -c EventDisplay/test/EventDisplay.fcl myfile.root
 }
 
 services :
@@ -47,8 +43,9 @@ physics :
   {
     eventdisplay:
     {
-      module_type     : EventDisplay
-      g4ModuleLabel   : "g4filter"
+      module_type               : EventDisplay
+      g4ModuleLabel             : "g4run"
+      physicalVolumesMultiLabel : "compressPV"
     }
   }
 
