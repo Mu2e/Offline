@@ -66,6 +66,7 @@ double pbarwedge.dz1 = 1.1;  // This makes total thickness changing
 bool   pbar.coll1In.build = true;      // pbar absorber at TS1 entrance
 double pbar.coll1In.halfLength = 0.175;
 double pbar.coll1In.offset = 1.0;       // distance to the TS1 entrance on +z
+double pbar.coll1In.material1Name = "G4_KAPTON";
 
 bool   pbar.coll1Out.build = true;     // pbar absorber inside TS1 collimator near end
 string pbar.coll1Out.material1Name = "G4_C";

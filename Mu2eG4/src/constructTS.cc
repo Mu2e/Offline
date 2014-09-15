@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.31 2014/05/09 18:47:09 youzy Exp $
+// $Id: constructTS.cc,v 1.32 2014/09/15 23:31:58 youzy Exp $
 // $Author: youzy $
-// $Date: 2014/05/09 18:47:09 $
+// $Date: 2014/09/15 23:31:58 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -1077,6 +1077,7 @@ namespace mu2e {
     if (is_pbarTS1In) {
       CollimatorTS1 const& coll1  = ts.getColl1() ;
 
+      string pbarTS1InMaterial   = config.getString("pbar.coll1In.material1Name");
       double pbarTS1InHalfLength = config.getDouble("pbar.coll1In.halfLength", 0.05);
       double pbarTS1InParams[5]  = { 0.0, coll1.rIn1(), pbarTS1InHalfLength, 0.0, CLHEP::twopi };
       double pbarTS1InOffset = config.getDouble("pbar.coll1In.offset", 1.0);
@@ -1087,7 +1088,7 @@ namespace mu2e {
 
       nestTubs( "PbarAbsTS1In",
                 pbarTS1InParams,
-                pbarMaterial,
+                findMaterialOrThrow(pbarTS1InMaterial),
                 0,
                 pbarTS1InPos,
                 _helper->locateVolInfo("TS1Vacuum"),
