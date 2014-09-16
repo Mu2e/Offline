@@ -1,8 +1,8 @@
 //
 // Construct VirtualDetectors
 //
-// $Id: VirtualDetectorMaker.cc,v 1.34 2014/09/03 16:39:15 knoepfel Exp $
-// $Author: knoepfel $
+// $Id: VirtualDetectorMaker.cc,v 1.35 2014/09/16 21:57:43 jrquirk Exp $
+// $Author: jrquirk $
 //
 
 #include <iostream>
@@ -598,16 +598,22 @@ namespace mu2e {
         // VirtualDetector in front of the MSTM detector crystal
         // temporary arrangements till MSTM is in GeometryService
         
-        const double mstmPipe0HalfLength     = c.getDouble("mstm.pipe0.halfLength");
-        const double mstmPipe1HalfLength     = c.getDouble("mstm.pipe1.halfLength");
-        const double mstmAbsorber1HalfLength = c.getDouble("mstm.absorber1.halfLength");
-        const double mstmPipe2HalfLength     = c.getDouble("mstm.pipe2.halfLength");
-        const double mstmPipe3HalfLength     = c.getDouble("mstm.pipe3.halfLength");
-        const double mstmPipe4HalfLength     = c.getDouble("mstm.pipe4.halfLength");
-        const double mstmAbsorber2HalfLength = c.getDouble("mstm.absorber2.halfLength");
-        const double mstmPipe5HalfLength     = c.getDouble("mstm.pipe5.halfLength");
-        const double mstmCanHalfLength       = c.getDouble("mstm.can.halfLength");
-        const double mstmCrystalHalfLength   = c.getDouble("mstm.crystal.halfLength");
+        const double mstmPipe0HalfLength       = c.getDouble("mstm.pipe0.halfLength");
+        const double mstmPipe1HalfLength       = c.getDouble("mstm.pipe1.halfLength");
+        const double mstmShutterNumberSegments = c.getInt("mstm.shutter.numberSegments");
+	double mstmShutterHalfLength           = 0.;
+	for (int segment = 1; segment <= mstmShutterNumberSegments; ++segment) {
+	  std::stringstream mstmShutterSegmentConfig;
+	  mstmShutterSegmentConfig << "mstm.shutter.segment" << segment << ".halfLength";
+	  mstmShutterHalfLength += c.getDouble(mstmShutterSegmentConfig.str());
+	}
+        const double mstmPipe2HalfLength       = c.getDouble("mstm.pipe2.halfLength");
+        const double mstmPipe3HalfLength       = c.getDouble("mstm.pipe3.halfLength");
+        const double mstmPipe4HalfLength       = c.getDouble("mstm.pipe4.halfLength");
+        const double mstmAbsorberHalfLength    = c.getDouble("mstm.absorber.halfLength");
+        const double mstmPipe5HalfLength       = c.getDouble("mstm.pipe5.halfLength");
+        const double mstmCanHalfLength         = c.getDouble("mstm.can.halfLength");
+        const double mstmCrystalHalfLength     = c.getDouble("mstm.crystal.halfLength");
 
         GeomHandle<ExtNeutShieldCendBoxes> enscendb;
 
@@ -634,11 +640,11 @@ namespace mu2e {
         double vdZshift = 
           mstmPipe0HalfLength     +
           2.0*mstmPipe1HalfLength     +
-          2.0*mstmAbsorber1HalfLength +
+          2.0*mstmShutterHalfLength +
           2.0*mstmPipe2HalfLength     +
           2.0*mstmPipe3HalfLength     +
           2.0*mstmPipe4HalfLength     +
-          2.0*mstmAbsorber2HalfLength +
+          2.0*mstmAbsorberHalfLength +
           2.0*mstmPipe5HalfLength     +
           mstmCanHalfLength       -
           mstmCrystalHalfLength   -
