@@ -2,9 +2,9 @@
 // Free function to create MSTM.
 // Muon Stopping Target Monitor
 //
-// $Id: constructMSTM.cc,v 1.4 2014/07/29 16:23:24 genser Exp $
-// $Author: genser $
-// $Date: 2014/07/29 16:23:24 $
+// $Id: constructMSTM.cc,v 1.5 2014/09/16 21:58:31 jrquirk Exp $
+// $Author: jrquirk $
+// $Date: 2014/09/16 21:58:31 $
 //
 // Original author K.L.Genser 
 //
@@ -45,6 +45,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include <vector>
+#include <sstream>
 
 using namespace std;
 
@@ -206,36 +207,42 @@ namespace mu2e {
 
     mstmPipe1Info.logical->SetFieldManager(localPipe1FieldManager, true); // propagate it down the hierarchy
 
-    // absorber1
+    // shutter of variable number of segments
+    const int mstmShutterNumberSegments = _config.getInt("mstm.shutter.numberSegments");
+    const double mstmShutterHalfHeight  = _config.getDouble("mstm.shutter.halfHeight");
+    double mstmShutterSegmentLastHalfLength = mstmPipe1HalfLength;
+    G4ThreeVector mstmShutterSegmentPositionInMu2e = mstmPipe1PositionInMu2e;
+    for (int segment = 1; segment <= mstmShutterNumberSegments; ++segment) {
+      std::stringstream material_config_name, halfLength_config_name;
+      material_config_name << "mstm.shutter.segment" << segment << ".material";
+      halfLength_config_name << "mstm.shutter.segment" << segment << ".halfLength";
+      
+      G4Material* mstmShutterSegmentMaterial = materialFinder.get(material_config_name.str());
 
-    G4Material* mstmAbsorber1Material = materialFinder.get("mstm.absorber1.material");
+      const double mstmShutterSegmentHalfLength = _config.getDouble(halfLength_config_name.str());
+      const double mstmShutterSegmentHalfLengths[3] = {mstmShutterHalfHeight,
+						       mstmShutterHalfHeight,
+						       mstmShutterSegmentHalfLength};
+      mstmShutterSegmentPositionInMu2e += G4ThreeVector(0.0, 0.0, mstmShutterSegmentLastHalfLength + mstmShutterSegmentHalfLength);
 
-    const double mstmAbsorber1HalfHeight    = _config.getDouble("mstm.absorber1.halfHeight");
-    const double mstmAbsorber1HalfLength    = _config.getDouble("mstm.absorber1.halfLength");
-
-    const double mstmAbsorber1HalfLengths[3] = {mstmAbsorber1HalfHeight,
-                                                mstmAbsorber1HalfHeight, 
-                                                mstmAbsorber1HalfLength};
-
-    G4ThreeVector mstmAbsorber1PositionInMu2e = mstmPipe1PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe1HalfLength + mstmAbsorber1HalfLength);
-
-    VolumeInfo mstmAbsorber1Info = nestBox("mstmAbsorber1",
-                                           mstmAbsorber1HalfLengths,
-                                           mstmAbsorber1Material,
-                                           0x0,
-                                           mstmAbsorber1PositionInMu2e - _hallOriginInMu2e,
-                                           parent,
-                                           0,
-                                           mstmVisible,
-                                           G4Color::Gray(),
-                                           mstmSolid,
-                                           forceAuxEdgeVisible,
-                                           placePV,
-                                           doSurfaceCheck
-                                           );
-
-
+      std::stringstream volume_info_name;
+      volume_info_name << "mstmShutterSegment" << segment;
+      VolumeInfo mstmShutterSegmentInfo = nestBox(volume_info_name.str(),
+						  mstmShutterSegmentHalfLengths,
+						  mstmShutterSegmentMaterial,
+						  0x0,
+						  mstmShutterSegmentPositionInMu2e - _hallOriginInMu2e,
+						  parent,
+						  0,
+						  mstmVisible,
+						  G4Color::Gray(),
+						  mstmSolid,
+						  forceAuxEdgeVisible,
+						  placePV,
+						  doSurfaceCheck
+						  );
+      mstmShutterSegmentLastHalfLength = mstmShutterSegmentHalfLength;
+    }
 
     // pipe2
 
@@ -249,8 +256,8 @@ namespace mu2e {
     const TubsParams mstmPipe2Params(0., mstmPipe2ROut, mstmPipe2HalfLength);
     const TubsParams mstmPipe2GasParams(0.,  mstmPipe2RIn, mstmPipe2HalfLength);
       
-    G4ThreeVector mstmPipe2PositionInMu2e =  mstmAbsorber1PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmAbsorber1HalfLength + mstmPipe2HalfLength);
+    G4ThreeVector mstmPipe2PositionInMu2e =  mstmShutterSegmentPositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmShutterSegmentLastHalfLength + mstmPipe2HalfLength);
 
     VolumeInfo mstmPipe2Info = nestTubs( "mstmPipe2",
                                          mstmPipe2Params,
@@ -470,25 +477,25 @@ namespace mu2e {
                                             );
 
 
-    // absorber2
+    // absorber
 
-    G4Material* mstmAbsorber2Material = materialFinder.get("mstm.absorber2.material");
+    G4Material* mstmAbsorberMaterial = materialFinder.get("mstm.absorber.material");
 
-    const double mstmAbsorber2HalfHeight    = _config.getDouble("mstm.absorber2.halfHeight");
-    const double mstmAbsorber2HalfLength    = _config.getDouble("mstm.absorber2.halfLength");
+    const double mstmAbsorberHalfHeight    = _config.getDouble("mstm.absorber.halfHeight");
+    const double mstmAbsorberHalfLength    = _config.getDouble("mstm.absorber.halfLength");
 
-    const double mstmAbsorber2HalfLengths[3] = {mstmAbsorber2HalfHeight, 
-                                                mstmAbsorber2HalfHeight, 
-                                                mstmAbsorber2HalfLength};
+    const double mstmAbsorberHalfLengths[3] = {mstmAbsorberHalfHeight, 
+                                                mstmAbsorberHalfHeight, 
+                                                mstmAbsorberHalfLength};
 
-    G4ThreeVector mstmAbsorber2PositionInMu2e = mstmPipe4PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe4HalfLength + mstmAbsorber2HalfLength);
+    G4ThreeVector mstmAbsorberPositionInMu2e = mstmPipe4PositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmPipe4HalfLength + mstmAbsorberHalfLength);
 
-    VolumeInfo mstmAbsorber2Info = nestBox("mstmAbsorber2",
-                                           mstmAbsorber2HalfLengths,
-                                           mstmAbsorber2Material,
+    VolumeInfo mstmAbsorberInfo = nestBox("mstmAbsorber",
+                                           mstmAbsorberHalfLengths,
+                                           mstmAbsorberMaterial,
                                            0x0,
-                                           mstmAbsorber2PositionInMu2e - _hallOriginInMu2e,
+                                           mstmAbsorberPositionInMu2e - _hallOriginInMu2e,
                                            parent,
                                            0,
                                            mstmVisible,
@@ -511,8 +518,8 @@ namespace mu2e {
     const TubsParams mstmPipe5Params(0., mstmPipe5ROut, mstmPipe5HalfLength);
     const TubsParams mstmPipe5GasParams(0.,  mstmPipe5RIn, mstmPipe5HalfLength);
 
-    G4ThreeVector mstmPipe5PositionInMu2e = mstmAbsorber2PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmAbsorber2HalfLength + mstmPipe5HalfLength);
+    G4ThreeVector mstmPipe5PositionInMu2e = mstmAbsorberPositionInMu2e + 
+      G4ThreeVector(0.0, 0.0, mstmAbsorberHalfLength + mstmPipe5HalfLength);
 
 
     VolumeInfo mstmPipe5Info = nestTubs( "mstmPipe5",
