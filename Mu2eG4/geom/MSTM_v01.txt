@@ -1,8 +1,8 @@
 // Muon Stoping Target Monitor 
 //
-// $Id: MSTM_v01.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/08/29 16:37:09 $
+// $Id: MSTM_v01.txt,v 1.2 2014/09/16 21:59:33 jrquirk Exp $
+// $Author: jrquirk $
+// $Date: 2014/09/16 21:59:33 $
 //
 // Original author: K. L. Genser
 // inspired by DSShielding and DS_PNNL_Shield
@@ -37,10 +37,14 @@ double mstm.pipe1.rOut       = 50.;
 double mstm.pipe1.halfLength = 150.;
 double mstm.pipe1.magfield   = 0.05;
 
-string mstm.absorber1.material   = "G4_Pb";
-
-double mstm.absorber1.halfHeight  = 100.;
-double mstm.absorber1.halfLength  = 100.;
+int mstm.shutter.numberSegments         = 3;
+double mstm.shutter.halfHeight          = 100.;
+string mstm.shutter.segment1.material   = "Polyethylene096";
+double mstm.shutter.segment1.halfLength = 50.;
+string mstm.shutter.segment2.material   = "G4_Pb";
+double mstm.shutter.segment2.halfLength = 50.;
+string mstm.shutter.segment3.material   = "StainlessSteel"; 
+double mstm.shutter.segment3.halfLength = 25.;
 
 string mstm.pipe2.material   = "StainlessSteel";
 string mstm.pipe2.gas        = "G4_He"; 
@@ -87,10 +91,10 @@ double mstm.pipe4.rIn        = 49.;
 double mstm.pipe4.rOut       = 50.;
 double mstm.pipe4.halfLength = 100.;
 
-string mstm.absorber2.material   = "G4_Pb";
+string mstm.absorber.material   = "G4_Pb";
 
-double mstm.absorber2.halfHeight  = 100.;
-double mstm.absorber2.halfLength  = 100.;
+double mstm.absorber.halfHeight  = 100.;
+double mstm.absorber.halfLength  = 100.;
 
 string mstm.pipe5.material   = "StainlessSteel";
 string mstm.pipe5.gas        = "G4_He"; 
