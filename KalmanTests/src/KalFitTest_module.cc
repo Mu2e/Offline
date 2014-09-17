@@ -1,9 +1,9 @@
 //
 // Module to perform BaBar Kalman fit
 //
-// $Id: KalFitTest_module.cc,v 1.22 2014/08/22 19:55:50 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/08/22 19:55:50 $
+// $Id: KalFitTest_module.cc,v 1.23 2014/09/17 15:02:43 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2014/09/17 15:02:43 $
 //
 
 // framework
@@ -118,8 +118,7 @@ namespace mu2e
     }
 // find mc truth
     if(!(_kdiag.findMCData(event))){  
-      cout<<"MC information missing "<< endl;
-      return;
+            throw cet::exception("RECO")<<"mu2e::KalFitTest: MC data missing or incomplete"<< endl;
     }
     TrkDef tdef(_strawhits,TrkParticle(),TrkFitDirection());
     // must initialize t0, momentum, initial trajectory.  These should come from patrec

@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.12 2014/06/06 21:35:08 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/06/06 21:35:08 $
+// $Id: CalPatRec_module.cc,v 1.13 2014/09/17 15:03:32 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2014/09/17 15:03:32 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -425,7 +425,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if (_diag > 0){
       if(!_kfitmc.findMCData(event)){
-	cout<<"MC information missing "<< endl;
+        throw cet::exception("RECO")<<"mu2e::CalPatRec: MC data missing or incomplete"<< endl;
       }
     }
 //-----------------------------------------------------------------------------

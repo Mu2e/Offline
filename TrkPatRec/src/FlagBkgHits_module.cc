@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.28 2014/08/22 21:09:04 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/08/22 21:09:04 $
+// $Id: FlagBkgHits_module.cc,v 1.29 2014/09/17 15:04:00 rhbob Exp $
+// $Author: rhbob $ 
+// $Date: 2014/09/17 15:04:00 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -250,7 +250,8 @@ namespace mu2e
     // find mc truth if we're making diagnostics
     if(_diag > 0){
       if(!_kdiag.findMCData(event)){
-	cout<<"MC information missing "<< endl;
+        throw cet::exception("RECO")<<"mu2e::FlgBkgHits: MC data missing or incomplete"<< endl;
+
 	//	return;
       }
     }
