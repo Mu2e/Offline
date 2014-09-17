@@ -1,0 +1,32 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSelevator_upper.ccl
+
+string dirt.dsArea.elevator.upper.name     = "dirtDsAreaElevatorUpper";
+
+string dirt.dsArea.elevator.upper.material = "MBOverburden";
+
+double dirt.dsArea.elevator.upper.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.dsArea.elevator.upper.offsetFromFloorSurface.y = 5410.2;
+double dirt.dsArea.elevator.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.dsArea.elevator.upper.yHalfThickness           = 1955.8;
+
+vector<double> dirt.dsArea.elevator.upper.xPositions = {
+  38061.9,   // g6
+  29083,   // g7
+  29083,   // g7_to_S
+  38061.9   // g6_to_S
+};
+
+vector<int>    dirt.dsArea.elevator.upper.yreplace   = { 2, 3 }; 
+vector<double> dirt.dsArea.elevator.upper.yPositions = {
+  -18186.4,   // g6
+  -18186.4,   // g7
+  -50000,   // g7_to_S
+  -50000   // g6_to_S
+};
+
+// Local Variables:
+// mode:c++
+// End:

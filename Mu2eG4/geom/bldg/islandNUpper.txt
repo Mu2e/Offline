@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_Island_N_upperExtension.ccl
+
+string building.island.N.upper.name     = "islandNUpper";
+
+string building.island.N.upper.material = "CONCRETE_MARS";
+
+double building.island.N.upper.offsetFromMu2eOrigin.x   = 947.4;
+double building.island.N.upper.offsetFromFloorSurface.y = 4241.8;
+double building.island.N.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.island.N.upper.yHalfThickness           = 1651;
+
+vector<double> building.island.N.upper.xPositions = {
+  6705.6,   // a
+  7366,   // b
+  7366,   // c
+  17500.6,   // d
+  17500.6,   // e
+  6708.79   // f
+};
+
+vector<double> building.island.N.upper.yPositions = {
+  2438.4,   // a
+  2438.4,   // b
+  3728.42,   // c
+  6195.22,   // d
+  6874.92,   // e
+  4248.15   // f
+};
+
+// Local Variables:
+// mode:c++
+// End:

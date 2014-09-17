@@ -1,0 +1,47 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_IslandFoundationDirt.ccl
+
+string dirt.foundation.island.name     = "dirtFoundationIsland";
+
+string dirt.foundation.island.material = "MBOverburden";
+
+double dirt.foundation.island.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.foundation.island.offsetFromFloorSurface.y = -685.8;
+double dirt.foundation.island.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.foundation.island.yHalfThickness           = 533.4;
+
+vector<double> dirt.foundation.island.xPositions = {
+  7467.6,   // G5
+  7467.6,   // G6
+  8077.2,   // G7
+  8077.2,   // F3
+  13131.8,   // F4
+  13131.8,   // F5
+  14046.2,   // F6
+  14046.2,   // F7
+  19481.8,   // F8
+  19481.8,   // F9
+  15824.2,   // G0
+  15824.2   // G1
+};
+
+vector<double> dirt.foundation.island.yPositions = {
+  3648.58,   // G5
+  2518.28,   // G6
+  2518.28,   // G7
+  -50.8,   // F3
+  -50.8,   // F4
+  2540,   // F5
+  2540,   // F6
+  -50.8,   // F7
+  -50.8,   // F8
+  1803.4,   // F9
+  1803.4,   // G0
+  5682.49   // G1
+};
+
+// Local Variables:
+// mode:c++
+// End:

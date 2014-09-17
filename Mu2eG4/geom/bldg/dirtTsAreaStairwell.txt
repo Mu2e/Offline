@@ -1,0 +1,32 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSstairwell.ccl
+
+string dirt.tsArea.stairwell.name     = "dirtTsAreaStairwell";
+
+string dirt.tsArea.stairwell.material = "MBOverburden";
+
+double dirt.tsArea.stairwell.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.tsArea.stairwell.offsetFromFloorSurface.y = 1219.2;
+double dirt.tsArea.stairwell.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.tsArea.stairwell.yHalfThickness           = 1371.6;
+
+vector<double> dirt.tsArea.stairwell.xPositions = {
+  5308.6,   // s4
+  3784.6,   // s5
+  3784.6,   // s5_to_S
+  5308.6   // s4_to_S
+};
+
+vector<int>    dirt.tsArea.stairwell.yreplace   = { 2, 3 }; 
+vector<double> dirt.tsArea.stairwell.yPositions = {
+  -11734.8,   // s4
+  -11734.8,   // s5
+  -50000,   // s5_to_S
+  -50000   // s4_to_S
+};
+
+// Local Variables:
+// mode:c++
+// End:

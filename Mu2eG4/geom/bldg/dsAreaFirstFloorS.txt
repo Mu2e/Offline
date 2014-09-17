@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSarea_firstFloor_S.ccl
+
+string building.dsArea.firstFloor.S.name     = "dsAreaFirstFloorS";
+
+string building.dsArea.firstFloor.S.material = "CONCRETE_MARS";
+
+double building.dsArea.firstFloor.S.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.firstFloor.S.offsetFromFloorSurface.y = 7569.2;
+double building.dsArea.firstFloor.S.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.firstFloor.S.yHalfThickness           = 203.2;
+
+vector<double> building.dsArea.firstFloor.S.xPositions = {
+  -1270,   // A
+  45745.4,   // q
+  45745.4,   // g2
+  38061.9,   // q2
+  38061.9,   // q4
+  -1270   // q5
+};
+
+vector<double> building.dsArea.firstFloor.S.yPositions = {
+  -8661.4,   // A
+  -8661.4,   // q
+  -10617.2,   // g2
+  -10617.2,   // q2
+  -18110.2,   // q4
+  -18110.2   // q5
+};
+
+// Local Variables:
+// mode:c++
+// End:

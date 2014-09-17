@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSarea_alcove1_ceiling.ccl
+
+string building.dsArea.alcove1.ceiling.name     = "dsAreaAlcove1Ceiling";
+
+string building.dsArea.alcove1.ceiling.material = "CONCRETE_MARS";
+
+double building.dsArea.alcove1.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.alcove1.ceiling.offsetFromFloorSurface.y = 3251.2;
+double building.dsArea.alcove1.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.alcove1.ceiling.yHalfThickness           = 203.2;
+
+vector<double> building.dsArea.alcove1.ceiling.xPositions = {
+  29083,   // H
+  29083,   // G
+  21971,   // F
+  21971   // E
+};
+
+vector<double> building.dsArea.alcove1.ceiling.yPositions = {
+  -1041.4,   // H
+  2006.6,   // G
+  2006.6,   // F
+  -1041.4   // E
+};
+
+// Local Variables:
+// mode:c++
+// End:

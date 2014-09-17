@@ -1,0 +1,34 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_PSarea_upperExtension.ccl
+
+string dirt.psWall.upper.name     = "dirtPsWallUpper";
+
+string dirt.psWall.upper.material = "MBOverburden";
+
+double dirt.psWall.upper.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.psWall.upper.offsetFromFloorSurface.y = 2625.72;
+double dirt.psWall.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.psWall.upper.yHalfThickness           = 1768.47;
+
+vector<double> dirt.psWall.upper.xPositions = {
+  -18204.4,   // q1
+  -6035.4,   // q2
+  -1270,   // q3
+  -1270,   // q3_to_S
+  -18204.4   // q1_to_S
+};
+
+vector<int>    dirt.psWall.upper.yreplace   = { 3, 4 }; 
+vector<double> dirt.psWall.upper.yPositions = {
+  -3627.89,   // q1
+  -574.861,   // q2
+  -609.6,   // q3
+  -50000,   // q3_to_S
+  -50000   // q1_to_S
+};
+
+// Local Variables:
+// mode:c++
+// End:

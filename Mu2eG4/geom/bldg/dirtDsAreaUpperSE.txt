@@ -1,0 +1,41 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSwall_upper_dirt.ccl
+
+string dirt.dsArea.upper.SE.name     = "dirtDsAreaUpperSE";
+
+string dirt.dsArea.upper.SE.material = "MBOverburden";
+
+double dirt.dsArea.upper.SE.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.dsArea.upper.SE.offsetFromFloorSurface.y = 5410.2;
+double dirt.dsArea.upper.SE.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.dsArea.upper.SE.yHalfThickness           = 1955.8;
+
+vector<int>    dirt.dsArea.upper.SE.xreplace   = { 5, 6 }; 
+vector<double> dirt.dsArea.upper.SE.xPositions = {
+  38061.9,   // g5
+  44932.6,   // g4
+  44932.6,   // g3
+  45745.4,   // g2
+  45745.4,   // g1
+  50000,   // g1_to_E
+  50000,   // SEcorner
+  38061.9   // g5_to_S
+};
+
+vector<int>    dirt.dsArea.upper.SE.yreplace   = { 6, 7 }; 
+vector<double> dirt.dsArea.upper.SE.yPositions = {
+  -9474.2,   // g5
+  -9474.2,   // g4
+  -10617.2,   // g3
+  -10617.2,   // g2
+  2616.2,   // g1
+  2616.2,   // g1_to_E
+  -50000,   // SEcorner
+  -50000   // g5_to_S
+};
+
+// Local Variables:
+// mode:c++
+// End:

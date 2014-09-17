@@ -1,0 +1,39 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_passageCeiling.ccl
+
+string building.passage.ceiling.name     = "passageCeiling";
+
+string building.passage.ceiling.material = "CONCRETE_MARS";
+
+double building.passage.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double building.passage.ceiling.offsetFromFloorSurface.y = 2438.4;
+double building.passage.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.passage.ceiling.yHalfThickness           = 152.4;
+
+vector<double> building.passage.ceiling.xPositions = {
+  21158.2,   // A1
+  21158.2,   // A2
+  17500.6,   // A3
+  17500.6,   // A4
+  16281.4,   // A5
+  16281.4,   // A6
+  19939,   // A7
+  19939   // A8
+};
+
+vector<double> building.passage.ceiling.yPositions = {
+  -1041.4,   // A1
+  3530.6,   // A2
+  3530.6,   // A3
+  6883.4,   // A4
+  6586.64,   // A5
+  2311.4,   // A6
+  2311.4,   // A7
+  -1041.4   // A8
+};
+
+// Local Variables:
+// mode:c++
+// End:

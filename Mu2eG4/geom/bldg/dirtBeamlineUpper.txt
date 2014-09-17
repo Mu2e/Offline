@@ -1,0 +1,47 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_beamline_upper.ccl
+
+string dirt.beamline.upper.name     = "dirtBeamlineUpper";
+
+string dirt.beamline.upper.material = "MBOverburden";
+
+double dirt.beamline.upper.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.upper.offsetFromFloorSurface.y = 5537.2;
+double dirt.beamline.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.beamline.upper.yHalfThickness           = 355.6;
+
+vector<int>    dirt.beamline.upper.xreplace   = { 9, 10 }; 
+vector<double> dirt.beamline.upper.xPositions = {
+  17856.3,   // o2
+  27363.7,   // o3
+  25934,   // o4
+  14485.9,   // o5
+  14558,   // o6
+  2477.62,   // o7
+  585.724,   // o8
+  -2006.6,   // o9
+  -2006.6,   // o9_to_N
+  50000,   // NEcorner
+  50000   // o2_to_E
+};
+
+vector<int>    dirt.beamline.upper.yreplace   = { 8, 9 }; 
+vector<double> dirt.beamline.upper.yPositions = {
+  6281.78,   // o2
+  8595.96,   // o3
+  14469.7,   // o4
+  11683.1,   // o5
+  11387,   // o6
+  8394.32,   // o7
+  6502.4,   // o8
+  6502.4,   // o9
+  50000,   // o9_to_N
+  50000,   // NEcorner
+  6281.78   // o2_to_E
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSrWall_upperExtension.ccl
+
+string building.tsArea.upper.W.name     = "tsAreaUpperW";
+
+string building.tsArea.upper.W.material = "CONCRETE_MARS";
+
+double building.tsArea.upper.W.offsetFromMu2eOrigin.x   = 947.4;
+double building.tsArea.upper.W.offsetFromFloorSurface.y = 3886.2;
+double building.tsArea.upper.W.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.tsArea.upper.W.yHalfThickness           = 1295.4;
+
+vector<double> building.tsArea.upper.W.xPositions = {
+  -609.6,   // A
+  5308.6,   // K
+  5308.6,   // j
+  -1270,   // l
+  -1270,   // M
+  -609.6   // N
+};
+
+vector<double> building.tsArea.upper.W.yPositions = {
+  -11277.6,   // A
+  -11277.6,   // K
+  -11734.8,   // j
+  -11734.8,   // l
+  0,   // M
+  0   // N
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,43 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remotePSseparator.ccl
+
+string building.psArea.remote.handling.wall.name     = "psAreaRemoteHandlingWall";
+
+string building.psArea.remote.handling.wall.material = "CONCRETE_MARS";
+
+double building.psArea.remote.handling.wall.offsetFromMu2eOrigin.x   = 947.4;
+double building.psArea.remote.handling.wall.offsetFromFloorSurface.y = 2514.6;
+double building.psArea.remote.handling.wall.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.psArea.remote.handling.wall.yHalfThickness           = 2667;
+
+vector<double> building.psArea.remote.handling.wall.xPositions = {
+  1193.8,   // H
+  -6121.4,   // G
+  -6121.4,   // F
+  -3022.6,   // R6
+  -3022.6,   // R7x
+  -2108.2,   // R8
+  -2108.2,   // R9x
+  941.324,   // S0
+  982.764,   // S1
+  1413.82   // S2
+};
+
+vector<double> building.psArea.remote.handling.wall.yPositions = {
+  6248.4,   // H
+  6248.4,   // G
+  6858,   // F
+  6858,   // R6
+  7467.6,   // R7x
+  7467.6,   // R8
+  6858,   // R9x
+  6858,   // S0
+  6899.47,   // S1
+  6468.42   // S2
+};
+
+// Local Variables:
+// mode:c++
+// End:

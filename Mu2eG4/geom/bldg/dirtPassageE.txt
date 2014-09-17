@@ -1,0 +1,36 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_passageFar.ccl
+
+string dirt.passage.E.name     = "dirtPassageE";
+
+string dirt.passage.E.material = "MBOverburden";
+
+double dirt.passage.E.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.passage.E.offsetFromFloorSurface.y = 1219.2;
+double dirt.passage.E.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.passage.E.yHalfThickness           = 1371.6;
+
+vector<int>    dirt.passage.E.xreplace   = { 4, 5 }; 
+vector<double> dirt.passage.E.xPositions = {
+  17856.2,   // q5
+  17856.2,   // q6
+  21513.8,   // q7
+  21513.8,   // q8
+  50000,   // q8_to_E
+  50000   // q5_to_E
+};
+
+vector<double> dirt.passage.E.yPositions = {
+  6280.61,   // q5
+  3886.2,   // q6
+  3886.2,   // q7
+  2616.2,   // q8
+  2616.2,   // q8_to_E
+  6280.61   // q5_to_E
+};
+
+// Local Variables:
+// mode:c++
+// End:

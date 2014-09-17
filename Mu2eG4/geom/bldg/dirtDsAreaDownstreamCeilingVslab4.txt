@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSarea_downstreamCeiling_dirt4.ccl
+
+string dirt.dsArea.downstreamCeiling.vslab4.name     = "dirtDsAreaDownstreamCeilingVslab4";
+
+string dirt.dsArea.downstreamCeiling.vslab4.material = "MBOverburden";
+
+double dirt.dsArea.downstreamCeiling.vslab4.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.dsArea.downstreamCeiling.vslab4.offsetFromFloorSurface.y = 6591.3;
+double dirt.dsArea.downstreamCeiling.vslab4.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.dsArea.downstreamCeiling.vslab4.yHalfThickness           = 876.3;
+
+vector<double> dirt.dsArea.downstreamCeiling.vslab4.xPositions = {
+  37896.8,   // v1
+  39928.8,   // v2
+  39928.8,   // v3
+  37896.8   // v4
+};
+
+vector<double> dirt.dsArea.downstreamCeiling.vslab4.yPositions = {
+  -8661.4,   // v1
+  -8661.4,   // v2
+  -1041.4,   // v3
+  -1041.4   // v4
+};
+
+// Local Variables:
+// mode:c++
+// End:

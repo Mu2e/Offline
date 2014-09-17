@@ -1,0 +1,39 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_passageNear.ccl
+
+string building.passage.W.name     = "passageW";
+
+string building.passage.W.material = "CONCRETE_MARS";
+
+double building.passage.W.offsetFromMu2eOrigin.x   = 947.4;
+double building.passage.W.offsetFromFloorSurface.y = 1219.2;
+double building.passage.W.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.passage.W.yHalfThickness           = 1371.6;
+
+vector<double> building.passage.W.xPositions = {
+  16281.4,   // S
+  19939,   // R
+  19939,   // C
+  19583.4,   // a
+  19583.4,   // b
+  15925.8,   // c
+  15925.8,   // d
+  16281.4   // e
+};
+
+vector<double> building.passage.W.yPositions = {
+  2311.4,   // S
+  2311.4,   // R
+  -152.4,   // C
+  -152.4,   // a
+  1955.8,   // b
+  1955.8,   // c
+  5810.76,   // d
+  5897.35   // e
+};
+
+// Local Variables:
+// mode:c++
+// End:

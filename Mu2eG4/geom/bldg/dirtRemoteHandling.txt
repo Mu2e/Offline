@@ -1,0 +1,41 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remote.ccl
+
+string dirt.remote.handling.name     = "dirtRemoteHandling";
+
+string dirt.remote.handling.material = "MBOverburden";
+
+double dirt.remote.handling.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.remote.handling.offsetFromFloorSurface.y = 2514.6;
+double dirt.remote.handling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.remote.handling.yHalfThickness           = 2667;
+
+vector<int>    dirt.remote.handling.xreplace   = { 5, 6 }; 
+vector<double> dirt.remote.handling.xPositions = {
+  3073.4,   // r1
+  -9779,   // r2
+  -9779,   // r3
+  -12319,   // r4
+  -12319,   // r5
+  -50000,   // r5_to_W
+  -50000,   // NWcorner
+  3073.4   // r1_to_N
+};
+
+vector<int>    dirt.remote.handling.yreplace   = { 6, 7 }; 
+vector<double> dirt.remote.handling.yPositions = {
+  14782.8,   // r1
+  14782.8,   // r2
+  10312.4,   // r3
+  10312.4,   // r4
+  6858,   // r5
+  6858,   // r5_to_W
+  50000,   // NWcorner
+  50000   // r1_to_N
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_PSarea_upperNotch.ccl
+
+string building.psArea.upperNotch.name     = "psAreaUpperNotch";
+
+string building.psArea.upperNotch.material = "CONCRETE_MARS";
+
+double building.psArea.upperNotch.offsetFromMu2eOrigin.x   = 947.4;
+double building.psArea.upperNotch.offsetFromFloorSurface.y = 4800.6;
+double building.psArea.upperNotch.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.psArea.upperNotch.yHalfThickness           = 381;
+
+vector<double> building.psArea.upperNotch.xPositions = {
+  -11709.4,   // G
+  -4241.8,   // H
+  -4241.8,   // H0
+  -11709.4   // H1
+};
+
+vector<double> building.psArea.upperNotch.yPositions = {
+  5892.8,   // G
+  5892.8,   // H
+  6248.4,   // H0
+  6248.4   // H1
+};
+
+// Local Variables:
+// mode:c++
+// End:

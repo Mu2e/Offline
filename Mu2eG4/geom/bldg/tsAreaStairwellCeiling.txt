@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSstairwellCeiling.ccl
+
+string building.tsArea.stairwell.ceiling.name     = "tsAreaStairwellCeiling";
+
+string building.tsArea.stairwell.ceiling.material = "CONCRETE_MARS";
+
+double building.tsArea.stairwell.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double building.tsArea.stairwell.ceiling.offsetFromFloorSurface.y = 2438.4;
+double building.tsArea.stairwell.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.tsArea.stairwell.ceiling.yHalfThickness           = 152.4;
+
+vector<double> building.tsArea.stairwell.ceiling.xPositions = {
+  4089.4,   // h
+  5308.6,   // h0
+  5308.6,   // h1
+  4089.4   // h2
+};
+
+vector<double> building.tsArea.stairwell.ceiling.yPositions = {
+  -8661.4,   // h
+  -8661.4,   // h0
+  -11277.6,   // h1
+  -11277.6   // h2
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,39 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_foundation_ExtMonPSarea.ccl
+
+string dirt.foundation.extMonPSarea.name     = "dirtFoundationExtMonPSarea";
+
+string dirt.foundation.extMonPSarea.material = "MBOverburden";
+
+double dirt.foundation.extMonPSarea.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.foundation.extMonPSarea.offsetFromFloorSurface.y = 1587.5;
+double dirt.foundation.extMonPSarea.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.foundation.extMonPSarea.yHalfThickness           = 1739.9;
+
+vector<int>    dirt.foundation.extMonPSarea.xreplace   = { 4, 5 }; 
+vector<double> dirt.foundation.extMonPSarea.xPositions = {
+  -18204.4,   // q1
+  -19241.2,   // q2
+  -20533.2,   // q3
+  -19496.4,   // q4
+  -50000,   // q4_to_W
+  -50000,   // SWcorner
+  -18204.4   // q1_to_S
+};
+
+vector<int>    dirt.foundation.extMonPSarea.yreplace   = { 5, 6 }; 
+vector<double> dirt.foundation.extMonPSarea.yPositions = {
+  -3627.89,   // q1
+  -3879.1,   // q2
+  1453.01,   // q3
+  1704.22,   // q4
+  1704.22,   // q4_to_W
+  -50000,   // SWcorner
+  -50000   // q1_to_S
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,32 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_extMon_upper.ccl
+
+string dirt.extMon.upper.name     = "dirtExtMonUpper";
+
+string dirt.extMon.upper.material = "MBOverburden";
+
+double dirt.extMon.upper.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.extMon.upper.offsetFromFloorSurface.y = 6464.3;
+double dirt.extMon.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.extMon.upper.yHalfThickness           = 368.3;
+
+vector<double> dirt.extMon.upper.xPositions = {
+  -16032.1,   // e
+  -16328.3,   // f
+  -16328.3,   // f_to_S
+  -16032.1   // e_to_S
+};
+
+vector<int>    dirt.extMon.upper.yreplace   = { 2, 3 }; 
+vector<double> dirt.extMon.upper.yPositions = {
+  -2683.4,   // e
+  -2755.17,   // f
+  -50000,   // f_to_S
+  -50000   // e_to_S
+};
+
+// Local Variables:
+// mode:c++
+// End:

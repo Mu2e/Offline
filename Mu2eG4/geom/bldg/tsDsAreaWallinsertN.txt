@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSDS_NwallInsert.ccl
+
+string building.tsDsArea.wallinsert.N.name     = "tsDsAreaWallinsertN";
+
+string building.tsDsArea.wallinsert.N.material = "CONCRETE_MARS";
+
+double building.tsDsArea.wallinsert.N.offsetFromMu2eOrigin.x   = 947.4;
+double building.tsDsArea.wallinsert.N.offsetFromFloorSurface.y = 6731;
+double building.tsDsArea.wallinsert.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.tsDsArea.wallinsert.N.yHalfThickness           = 635;
+
+vector<double> building.tsDsArea.wallinsert.N.xPositions = {
+  -1270,   // A
+  0,   // B
+  0,   // C
+  6705.6,   // E
+  6705.6,   // F
+  -1270   // G
+};
+
+vector<double> building.tsDsArea.wallinsert.N.yPositions = {
+  0,   // A
+  0,   // B
+  609.6,   // C
+  609.6,   // E
+  2438.4,   // F
+  2438.4   // G
+};
+
+// Local Variables:
+// mode:c++
+// End:

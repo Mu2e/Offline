@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remoteDoorFrame.ccl
+
+string building.remote.handling.door.frame.name     = "remoteHandlingDoorFrame";
+
+string building.remote.handling.door.frame.material = "CONCRETE_MARS";
+
+double building.remote.handling.door.frame.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.door.frame.offsetFromFloorSurface.y = 4254.5;
+double building.remote.handling.door.frame.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.door.frame.yHalfThickness           = 139.7;
+
+vector<double> building.remote.handling.door.frame.xPositions = {
+  -7721.6,   // H
+  -6121.4,   // H0
+  -6121.4,   // H1
+  -7721.6   // H2
+};
+
+vector<double> building.remote.handling.door.frame.yPositions = {
+  6248.4,   // H
+  6248.4,   // H0
+  6858,   // H1
+  6858   // H2
+};
+
+// Local Variables:
+// mode:c++
+// End:

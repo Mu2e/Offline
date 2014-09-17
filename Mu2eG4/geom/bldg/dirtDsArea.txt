@@ -1,0 +1,57 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSarea.ccl
+
+string dirt.dsArea.name     = "dirtDsArea";
+
+string dirt.dsArea.material = "MBOverburden";
+
+double dirt.dsArea.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.dsArea.offsetFromFloorSurface.y = 1651;
+double dirt.dsArea.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.dsArea.yHalfThickness           = 1803.4;
+
+vector<int>    dirt.dsArea.xreplace   = { 14, 15 }; 
+vector<double> dirt.dsArea.xPositions = {
+  45745.4,   // g1
+  45745.4,   // g2
+  44932.6,   // g3
+  44932.6,   // g4
+  38061.9,   // g5
+  38061.9,   // g6
+  29083,   // g7
+  29083,   // g8
+  13233.4,   // g9
+  13233.4,   // h0
+  6121.4,   // h1
+  6121.4,   // h2
+  5308.6,   // h3
+  5308.6,   // h3_to_S
+  50000,   // SEcorner
+  50000   // g1_to_E
+};
+
+vector<int>    dirt.dsArea.yreplace   = { 13, 14 }; 
+vector<double> dirt.dsArea.yPositions = {
+  2616.2,   // g1
+  -10617.2,   // g2
+  -10617.2,   // g3
+  -9474.2,   // g4
+  -9474.2,   // g5
+  -18186.4,   // g6
+  -18186.4,   // g7
+  -12014.2,   // g8
+  -12014.2,   // g9
+  -9550.4,   // h0
+  -9550.4,   // h1
+  -11734.8,   // h2
+  -11734.8,   // h3
+  -50000,   // h3_to_S
+  -50000,   // SEcorner
+  2616.2   // g1_to_E
+};
+
+// Local Variables:
+// mode:c++
+// End:

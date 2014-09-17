@@ -1,0 +1,32 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSrWall_upperExtension.ccl
+
+string dirt.tsArea.upper.W.name     = "dirtTsAreaUpperW";
+
+string dirt.tsArea.upper.W.material = "MBOverburden";
+
+double dirt.tsArea.upper.W.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.tsArea.upper.W.offsetFromFloorSurface.y = 3886.2;
+double dirt.tsArea.upper.W.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.tsArea.upper.W.yHalfThickness           = 1295.4;
+
+vector<double> dirt.tsArea.upper.W.xPositions = {
+  5308.6,   // j
+  -1270,   // l
+  -1270,   // l_to_S
+  5308.6   // j_to_S
+};
+
+vector<int>    dirt.tsArea.upper.W.yreplace   = { 2, 3 }; 
+vector<double> dirt.tsArea.upper.W.yPositions = {
+  -11734.8,   // j
+  -11734.8,   // l
+  -50000,   // l_to_S
+  -50000   // j_to_S
+};
+
+// Local Variables:
+// mode:c++
+// End:

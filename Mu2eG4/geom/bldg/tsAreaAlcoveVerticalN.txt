@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSrWall_alcoveVnear.ccl
+
+string building.tsArea.alcove.vertical.N.name     = "tsAreaAlcoveVerticalN";
+
+string building.tsArea.alcove.vertical.N.material = "CONCRETE_MARS";
+
+double building.tsArea.alcove.vertical.N.offsetFromMu2eOrigin.x   = 947.4;
+double building.tsArea.alcove.vertical.N.offsetFromFloorSurface.y = 6426.2;
+double building.tsArea.alcove.vertical.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.tsArea.alcove.vertical.N.yHalfThickness           = 939.8;
+
+vector<double> building.tsArea.alcove.vertical.N.xPositions = {
+  -609.6,   // h
+  5308.6,   // h0
+  5308.6,   // h1
+  -609.6   // h2
+};
+
+vector<double> building.tsArea.alcove.vertical.N.yPositions = {
+  -8661.4,   // h
+  -8661.4,   // h0
+  -9271,   // h1
+  -9271   // h2
+};
+
+// Local Variables:
+// mode:c++
+// End:

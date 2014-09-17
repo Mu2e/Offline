@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSarea_downstreamUpstairsFloor.ccl
+
+string building.dsArea.downstreamUpstairs.floor.name     = "dsAreaDownstreamUpstairsFloor";
+
+string building.dsArea.downstreamUpstairs.floor.material = "CONCRETE_MARS";
+
+double building.dsArea.downstreamUpstairs.floor.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.downstreamUpstairs.floor.offsetFromFloorSurface.y = 7620;
+double building.dsArea.downstreamUpstairs.floor.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.downstreamUpstairs.floor.yHalfThickness           = 152.4;
+
+vector<double> building.dsArea.downstreamUpstairs.floor.xPositions = {
+  29362.4,   // c1
+  44932.6,   // Q
+  44932.6,   // Q1
+  29362.4   // c2
+};
+
+vector<double> building.dsArea.downstreamUpstairs.floor.yPositions = {
+  -8661.4,   // c1
+  -8661.4,   // Q
+  -1041.4,   // Q1
+  -1041.4   // c2
+};
+
+// Local Variables:
+// mode:c++
+// End:

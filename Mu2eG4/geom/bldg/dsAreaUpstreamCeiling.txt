@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSarea_upstreamCeiling.ccl
+
+string building.dsArea.upstreamCeiling.name     = "dsAreaUpstreamCeiling";
+
+string building.dsArea.upstreamCeiling.material = "CONCRETE_MARS";
+
+double building.dsArea.upstreamCeiling.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.upstreamCeiling.offsetFromFloorSurface.y = 6858;
+double building.dsArea.upstreamCeiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.upstreamCeiling.yHalfThickness           = 914.4;
+
+vector<double> building.dsArea.upstreamCeiling.xPositions = {
+  6705.6,   // B
+  29362.4,   // C
+  29362.4,   // C1
+  0,   // A
+  0,   // D
+  6705.6   // E
+};
+
+vector<double> building.dsArea.upstreamCeiling.yPositions = {
+  -1041.4,   // B
+  -1041.4,   // C
+  -8661.4,   // C1
+  -8661.4,   // A
+  609.6,   // D
+  609.6   // E
+};
+
+// Local Variables:
+// mode:c++
+// End:

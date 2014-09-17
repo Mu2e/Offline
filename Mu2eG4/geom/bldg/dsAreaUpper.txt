@@ -1,0 +1,95 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSwall_upper.ccl
+
+string building.dsArea.upper.name     = "dsAreaUpper";
+
+string building.dsArea.upper.material = "CONCRETE_MARS";
+
+double building.dsArea.upper.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.upper.offsetFromFloorSurface.y = 5410.2;
+double building.dsArea.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.upper.yHalfThickness           = 1955.8;
+
+vector<double> building.dsArea.upper.xPositions = {
+  5308.6,   // D0
+  14046.2,   // D1
+  44932.6,   // E7
+  44932.6,   // U0
+  21158.2,   // F9
+  21158.2,   // G0
+  21971,   // G1
+  21971,   // G2
+  29083,   // G3
+  29083,   // G4
+  29895.8,   // G5
+  29895.8,   // G6
+  37007.8,   // G7
+  37007.8,   // G8
+  37820.6,   // G9
+  37820.6,   // H0
+  44932.6,   // H1
+  44932.6,   // H2
+  45745.4,   // H3
+  45745.4,   // H4
+  44932.6,   // H5
+  44932.6,   // H6
+  37249.1,   // H7
+  37249.1,   // H8
+  29083,   // h9
+  21971,   // i0
+  21971,   // i1
+  21158.2,   // i2
+  21158.2,   // i3
+  14046.2,   // i4
+  14046.2,   // i5
+  13233.4,   // i6
+  13233.4,   // i7
+  6121.4,   // i8
+  6121.4,   // i9
+  5308.6   // j0
+};
+
+vector<double> building.dsArea.upper.yPositions = {
+  -8661.4,   // D0
+  -8661.4,   // D1
+  -8661.4,   // E7
+  -1041.4,   // U0
+  -1041.4,   // F9
+  2616.2,   // G0
+  2616.2,   // G1
+  -431.8,   // G2
+  -431.8,   // G3
+  2616.2,   // G4
+  2616.2,   // G5
+  -431.8,   // G6
+  -431.8,   // G7
+  2616.2,   // G8
+  2616.2,   // G9
+  -431.8,   // H0
+  -431.8,   // H1
+  2616.2,   // H2
+  2616.2,   // H3
+  -10617.2,   // H4
+  -10617.2,   // H5
+  -9474.2,   // H6
+  -9474.2,   // H7
+  -9271,   // H8
+  -9271,   // h9
+  -9271,   // i0
+  -12014.2,   // i1
+  -12014.2,   // i2
+  -9271,   // i3
+  -9271,   // i4
+  -12014.2,   // i5
+  -12014.2,   // i6
+  -9550.4,   // i7
+  -9550.4,   // i8
+  -11734.8,   // i9
+  -11734.8   // j0
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSarea_alcove3_dirt.ccl
+
+string dirt.dsArea.alcove3.name     = "dirtDsAreaAlcove3";
+
+string dirt.dsArea.alcove3.material = "MBOverburden";
+
+double dirt.dsArea.alcove3.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.dsArea.alcove3.offsetFromFloorSurface.y = 4673.6;
+double dirt.dsArea.alcove3.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.dsArea.alcove3.yHalfThickness           = 1219.2;
+
+vector<double> dirt.dsArea.alcove3.xPositions = {
+  37820.6,   // M
+  37820.6,   // N
+  44932.6,   // O
+  44932.6   // O1
+};
+
+vector<double> dirt.dsArea.alcove3.yPositions = {
+  -431.8,   // M
+  2616.2,   // N
+  2616.2,   // O
+  -431.8   // O1
+};
+
+// Local Variables:
+// mode:c++
+// End:

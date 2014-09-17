@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_trenchFloor_TS.ccl
+
+string building.tsArea.trench.floor.name     = "tsAreaTrenchFloor";
+
+string building.tsArea.trench.floor.material = "CONCRETE_MARS";
+
+double building.tsArea.trench.floor.offsetFromMu2eOrigin.x   = 947.4;
+double building.tsArea.trench.floor.offsetFromFloorSurface.y = -1143;
+double building.tsArea.trench.floor.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.tsArea.trench.floor.yHalfThickness           = 76.2;
+
+vector<double> building.tsArea.trench.floor.xPositions = {
+  2870.2,   // T0
+  2870.2,   // T1
+  3784.6,   // T2
+  3784.6   // T3
+};
+
+vector<double> building.tsArea.trench.floor.yPositions = {
+  -11277.6,   // T0
+  -5461,   // T1
+  -5461,   // T2
+  -11277.6   // T3
+};
+
+// Local Variables:
+// mode:c++
+// End:

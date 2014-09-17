@@ -1,0 +1,39 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSelevator_ceiling.ccl
+
+string building.dsArea.elevator.ceiling.name     = "dsAreaElevatorCeiling";
+
+string building.dsArea.elevator.ceiling.material = "CONCRETE_MARS";
+
+double building.dsArea.elevator.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.elevator.ceiling.offsetFromFloorSurface.y = 3251.2;
+double building.dsArea.elevator.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.elevator.ceiling.yHalfThickness           = 203.2;
+
+vector<double> building.dsArea.elevator.ceiling.xPositions = {
+  29895.8,   // Y
+  29895.8,   // X
+  29794.2,   // W
+  29794.2,   // V
+  37350.7,   // U
+  37350.7,   // T
+  37249.1,   // S
+  37249.1   // R
+};
+
+vector<double> building.dsArea.elevator.ceiling.yPositions = {
+  -8661.4,   // Y
+  -12090.4,   // X
+  -12090.4,   // W
+  -17475.2,   // V
+  -17475.2,   // U
+  -11887.2,   // T
+  -11887.2,   // S
+  -8661.4   // R
+};
+
+// Local Variables:
+// mode:c++
+// End:

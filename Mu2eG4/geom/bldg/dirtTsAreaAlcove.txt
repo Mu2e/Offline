@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSrWall_alcove_dirt.ccl
+
+string dirt.tsArea.alcove.name     = "dirtTsAreaAlcove";
+
+string dirt.tsArea.alcove.material = "MBOverburden";
+
+double dirt.tsArea.alcove.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.tsArea.alcove.offsetFromFloorSurface.y = 6426.2;
+double dirt.tsArea.alcove.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.tsArea.alcove.yHalfThickness           = 939.8;
+
+vector<double> dirt.tsArea.alcove.xPositions = {
+  -609.6,   // h0
+  -609.6,   // h1
+  5308.6,   // h2
+  5308.6   // h3
+};
+
+vector<double> dirt.tsArea.alcove.yPositions = {
+  -10312.4,   // h0
+  -9271,   // h1
+  -9271,   // h2
+  -10312.4   // h3
+};
+
+// Local Variables:
+// mode:c++
+// End:

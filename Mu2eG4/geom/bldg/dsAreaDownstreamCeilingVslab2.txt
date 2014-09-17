@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSarea_downstreamCeiling_vslab2.ccl
+
+string building.dsArea.downstreamCeiling.vslab2.name     = "dsAreaDownstreamCeilingVslab2";
+
+string building.dsArea.downstreamCeiling.vslab2.material = "CONCRETE_MARS";
+
+double building.dsArea.downstreamCeiling.vslab2.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.downstreamCeiling.vslab2.offsetFromFloorSurface.y = 6591.3;
+double building.dsArea.downstreamCeiling.vslab2.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.downstreamCeiling.vslab2.yHalfThickness           = 876.3;
+
+vector<double> building.dsArea.downstreamCeiling.vslab2.xPositions = {
+  32004,   // v1
+  32613.6,   // v2
+  32613.6,   // v3
+  32004   // v4
+};
+
+vector<double> building.dsArea.downstreamCeiling.vslab2.yPositions = {
+  -8661.4,   // v1
+  -8661.4,   // v2
+  -1041.4,   // v3
+  -1041.4   // v4
+};
+
+// Local Variables:
+// mode:c++
+// End:

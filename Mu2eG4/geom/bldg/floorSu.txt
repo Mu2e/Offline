@@ -1,0 +1,83 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_floor_Su.ccl
+
+string building.floor.Su.name     = "floorSu";
+
+string building.floor.Su.material = "CONCRETE_MARS";
+
+double building.floor.Su.offsetFromMu2eOrigin.x   = 947.4;
+double building.floor.Su.offsetFromFloorSurface.y = -76.2;
+double building.floor.Su.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.floor.Su.yHalfThickness           = 76.2;
+
+vector<double> building.floor.Su.xPositions = {
+  0,   // F9
+  0,   // A
+  2870.2,   // G0
+  2870.2,   // G1
+  3784.6,   // G2
+  3784.6,   // G3
+  4089.4,   // G4
+  4089.4,   // G5
+  5308.6,   // G6
+  5308.6,   // G7
+  14046.2,   // G8
+  14046.2,   // G9
+  20345.4,   // H0
+  20345.4,   // H1
+  19431,   // H2
+  19431,   // H3
+  44932.6,   // H4
+  44932.6,   // O
+  37820.6,   // N
+  37820.6,   // M
+  37007.8,   // L
+  37007.8,   // K
+  29895.8,   // J
+  29895.8,   // I
+  29083,   // H
+  29083,   // G
+  21971,   // F
+  21971,   // E
+  6705.6,   // B
+  6705.6   // X
+};
+
+vector<double> building.floor.Su.yPositions = {
+  609.6,   // F9
+  -8661.4,   // A
+  -8661.4,   // G0
+  -5461,   // G1
+  -5461,   // G2
+  -8661.4,   // G3
+  -8661.4,   // G4
+  -11277.6,   // G5
+  -11277.6,   // G6
+  -8661.4,   // G7
+  -8661.4,   // G8
+  -11404.6,   // G9
+  -11404.6,   // H0
+  -11303,   // H1
+  -11303,   // H2
+  -4394.2,   // H3
+  -4394.2,   // H4
+  2006.6,   // O
+  2006.6,   // N
+  -1041.4,   // M
+  -1041.4,   // L
+  2006.6,   // K
+  2006.6,   // J
+  -1041.4,   // I
+  -1041.4,   // H
+  2006.6,   // G
+  2006.6,   // F
+  -1041.4,   // E
+  -1041.4,   // B
+  609.6   // X
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,37 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSDS_NfirstFloorEdge.ccl
+
+string dirt.tsDsArea.firstFloorEdge.N.name     = "dirtTsDsAreaFirstFloorEdgeN";
+
+string dirt.tsDsArea.firstFloorEdge.N.material = "MBOverburden";
+
+double dirt.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.tsDsArea.firstFloorEdge.N.offsetFromFloorSurface.y = 7569.2;
+double dirt.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.tsDsArea.firstFloorEdge.N.yHalfThickness           = 203.2;
+
+vector<int>    dirt.tsDsArea.firstFloorEdge.N.xreplace   = { 4, 5 }; 
+vector<double> dirt.tsDsArea.firstFloorEdge.N.xPositions = {
+  45745.4,   // f2
+  45745.4,   // g1
+  -1270,   // g
+  -1270,   // g_to_N
+  50000,   // NEcorner
+  50000   // f2_to_E
+};
+
+vector<int>    dirt.tsDsArea.firstFloorEdge.N.yreplace   = { 3, 4 }; 
+vector<double> dirt.tsDsArea.firstFloorEdge.N.yPositions = {
+  -8661.4,   // f2
+  2438.4,   // g1
+  2438.4,   // g
+  50000,   // g_to_N
+  50000,   // NEcorner
+  -8661.4   // f2_to_E
+};
+
+// Local Variables:
+// mode:c++
+// End:
