@@ -32,6 +32,14 @@ physics : {
     RKFDownstreameMinus : {
       module_type       : ReadKalFits
       fitterModuleLabel : TPRDownstreameMinus
+      KalDiag : { 
+	MCPtrLabel : "makeSH"
+	MCStepsLabel : "detectorFilter"
+	SimParticleLabel : "detectorFilter"
+	SimParticleInstance : "s0"
+	StrawHitMCLabel : "makeSH"
+	TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      }
     }
   }
 

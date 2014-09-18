@@ -168,7 +168,8 @@ physics: {
 	  SimParticleLabel : "detectorFilter"
 	  SimParticleInstance : "s0"
 	  StrawHitMCLabel : "makeSH"
-	  TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] } }
+	  TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	}
       }
    }
 
