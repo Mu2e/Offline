@@ -5,12 +5,21 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 CalPatRec            : {
     module_type                                 : CalPatRec
-    caloClusterModuleLabel                      : "MakeCaloCluster"
+    diagLevel                                   : 0
+    debugLevel                                  : 0
+    printFrequency                              : 100
+    addhits                                     : true
     StrawHitCollectionLabel                     : "makeSH"
     StrawHitPositionCollectionLabel             : "MakeStrawHitPositions"
     StrawHitFlagCollectionLabel                 : "FlagBkgHits"
-    includeCaloInfo				: 0
-    minClusterEnergy                            : 60. # MeV
+    caloClusterModuleLabel                      : "MakeCaloCluster"
+    caloClusterAlgorithm                        : "closest"
+    caloClusterSeeding                          : "energy"
+    fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
+    fitdirection                                : 0      # 0:downstream, 1:upstream
+    tmin                                        : 0.
+    tmax                                        : 2000.  # ns
+    minClusterEnergy                            : 60.    # MeV
     # Kalman fit configuration for the helix seed fit
     SeedFit : {
 	debugLevel                              : 0
