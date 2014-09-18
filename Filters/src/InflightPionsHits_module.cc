@@ -1,8 +1,8 @@
 //
 // Select events with a minimum number of StepPointMC's in various detectors.
-// $Id: InflightPionsHits_module.cc,v 1.2 2014/04/18 16:47:54 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:47:54 $
+// $Id: InflightPionsHits_module.cc,v 1.3 2014/09/18 08:40:53 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/09/18 08:40:53 $
 //
 // Contact person Rob Kutschke.
 //
@@ -35,7 +35,6 @@
 
 // mu2e tracking
 #include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
