@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.13 2014/09/17 15:03:32 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2014/09/17 15:03:32 $
+// $Id: CalPatRec_module.cc,v 1.14 2014/09/18 22:18:05 murat Exp $
+// $Author: murat $ 
+// $Date: 2014/09/18 22:18:05 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -38,10 +38,9 @@
 #include "TROOT.h"
 #include "TFolder.h"
 #include "CalPatRec/inc/KalFitHack.hh"
-// #include "CalPatRec/inc/THackData.hh"
 
 #include "TrkBase/TrkPoca.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+// #include "KalmanTests/inc/KalFitMC.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
@@ -180,23 +179,20 @@ namespace mu2e {
 			   KalFitResult       const& seedfit ,
 			   KalFitResult       const& kalfit  );
 
-    void fillStrawHitInfo (size_t ish, StrawHitInfo& shinfo) const;
-
-    //      void initializeReaders();
 					// MC tools
-    KalFitMC _kfitmc;
+    //    KalFitMC _kfitmc;
 //-----------------------------------------------------------------------------
 // strawhit tuple variables
 //-----------------------------------------------------------------------------
     TTree*   _shdiag;
     Int_t    _eventid;
-    threevec _shp;
+    //    threevec _shp;
     Float_t  _edep;
     Float_t  _time, _rho;
     Int_t    _nmcsteps;
     Int_t    _mcnunique,_mcnmax;
     Int_t    _mcpdg,_mcgen,_mcproc;
-    threevec _mcshp, _mcop;
+    //    threevec _mcshp, _mcop;
     Float_t  _mcshlen;
     Float_t  _mcedep,_mcemax;
     Float_t  _pdist,_pperp,_pmom;
@@ -212,8 +208,8 @@ namespace mu2e {
     Float_t  _hcx, _hcy, _hr, _hdfdz, _hfz0;
     Float_t  _mccx, _mccy, _mcr, _mcdfdz, _mcfz0;
     Int_t    _helixfail,_seedfail,_kalfail;
-    helixpar _hpar,_spar;
-    helixpar _hparerr,_sparerr;
+    //    helixpar _hpar,_spar;
+    //    helixpar _hparerr,_sparerr;
     Int_t    _snhits, _snactive, _sniter, _sndof, _snweediter;
     Float_t  _schisq, _st0;
     Int_t    _nchit;
@@ -230,16 +226,16 @@ namespace mu2e {
   };
 
   CalPatRec::CalPatRec(fhicl::ParameterSet const& pset) :
-    _diag        (pset.get<int>        ("diagLevel",0)),
-    _debug       (pset.get<int>        ("debugLevel",0)),
-    _printfreq   (pset.get<int>        ("printFrequency",100)),
-    _addhits     (pset.get<bool>       ("addhits",true)),
-    _shLabel     (pset.get<std::string>("StrawHitCollectionLabel"        ,"makeSH")),
-    _shpLabel    (pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStrawHitPositions")),
-    _shfLabel    (pset.get<std::string>("StrawHitFlagCollectionLabel"    ,"FlagBkgHits"   )),
-    _ccmLabel    (pset.get<std::string>("caloClusterModuleLabel"         ,"MakeCaloCluster")),
-    _ccAlgorithm (pset.get<std::string>("caloClusterAlgorithm"           , "closest")),
-    _ccSeeding   (pset.get<std::string>("caloClusterSeeding"             , "energy")),
+    _diag        (pset.get<int>        ("diagLevel")),
+    _debug       (pset.get<int>        ("debugLevel")),
+    _printfreq   (pset.get<int>        ("printFrequency")),
+    _addhits     (pset.get<bool>       ("addhits")),
+    _shLabel     (pset.get<std::string>("StrawHitCollectionLabel"        )),
+    _shpLabel    (pset.get<std::string>("StrawHitPositionCollectionLabel")),
+    _shfLabel    (pset.get<std::string>("StrawHitFlagCollectionLabel"    )),
+    _ccmLabel    (pset.get<std::string>("caloClusterModuleLabel"         )),
+    _ccAlgorithm (pset.get<std::string>("caloClusterAlgorithm"           )),
+    _ccSeeding   (pset.get<std::string>("caloClusterSeeding"             )),
 
     _dtspecpar   (pset.get<std::string>("DeltaTSpectrumParams","nobackgroundnomarkovgoff")),
     _tsel        (pset.get<std::vector<std::string> >("TimeSelectionBits")),
@@ -251,27 +247,26 @@ namespace mu2e {
     _maxdt       (pset.get<double>("DtMax", 20.0)),
     _maxdtmiss   (pset.get<double>("DtMaxMiss",55.0)),
     _fbf         (pset.get<double>("PhiEdgeBuffer",1.1)),
-    //    _findtpeak   (pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak    (pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits    (pset.get<unsigned>("MinNHits" ,20)),
-    _tmin            (pset.get<double>("tmin"             ,0.0)),
-    _tmax            (pset.get<double>("tmax"             ,2000.0)),
+    _tmin            (pset.get<double>("tmin")),
+    _tmax            (pset.get<double>("tmax")),
+    _minClusterEnergy(pset.get<double>("minClusterEnergy" )),
     _tbin            (pset.get<double>("tbin"             ,20.0)),
     _ymin            (pset.get<double>("ymin"             ,4)),
     _1dthresh        (pset.get<double>("OneDPeakThreshold",4.0)),
-    _minClusterEnergy(pset.get<double>("minClusterEnergy" ,60.)),
     _pitchAngle      (pset.get<double>("_pitchAngle"      ,0.67)),
     _maxseeddoca     (pset.get<double>("MaxSeedDoca"      ,10.0)),
     _maxhelixdoca    (pset.get<double>("MaxHelixDoca"     ,40.0)),
     _maxadddoca      (pset.get<double>("MaxAddDoca"       ,2.75)),
     _maxaddchi       (pset.get<double>("MaxAddChi"        ,4.0)),
-    _tpart           ((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
-    _fdir            ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
+    _tpart           ((TrkParticle::type)(pset.get<int>("fitparticle"))),
+    _fdir            ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _seedfit     (pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
     _kfit        (pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
     _hfit        (pset.get<fhicl::ParameterSet>("HelixFit",fhicl::ParameterSet())),
-    _payloadSaver(pset),
-    _kfitmc      (pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet()))
+    _payloadSaver(pset)
+		      //    , _kfitmc      (pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet()))
   {
 					// tag the data product instance by the direction 
 					// and particle type found by this fitter
@@ -381,10 +376,6 @@ namespace mu2e {
 
     static StrawHitFlag       esel(StrawHitFlag::energysel), flag;
 
-//     static int first_call(1.);
-//     if (first_call) {
-//       fHackData = (THackData*) gROOT->GetRootFolder()->FindObject("HackData");
-//     }
 					// event printout
     _eventid = event.event();
     _iev     = event.id().event();
@@ -435,11 +426,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics, MC truth
 //-----------------------------------------------------------------------------
-    if(_diag>0){
-      _kfitmc.mcTrkInfo(_kfitmc.mcData()._simparts->begin()->second);
-    }
-    if (_diag > 2)fillTimeDiag();
-    if (_diag > 1)fillStrawDiag();
+//     if(_diag>0){
+//       _kfitmc.mcTrkInfo(_kfitmc.mcData()._simparts->begin()->second);
+//     }
+//     if (_diag > 2)fillTimeDiag();
+//     if (_diag > 1)fillStrawDiag();
+
     if (_tpeaks->size()>0)_cutflow->Fill(1.0);
 //-----------------------------------------------------------------------------
 // loop over found time peaks - for us, - "eligible" calorimeter clusters 
@@ -750,12 +742,12 @@ namespace mu2e {
 	HepPoint tpos =  traj.position(hitpoca.flt1());
 	thfilter._pos = CLHEP::Hep3Vector(tpos.x(),tpos.y(),tpos.z());
 	thfilter._doca = hitpoca.doca();
-	if(_kfitmc.mcData()._mcsteps != 0){
-	  const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ihit);
-	  thfilter._mcpdg = mcsum[0]._pdgid;
-	  thfilter._mcgen = mcsum[0]._gid;
-	  thfilter._mcproc = mcsum[0]._pid;
-	}
+// 	if(_kfitmc.mcData()._mcsteps != 0){
+// 	  const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ihit);
+// 	  thfilter._mcpdg = mcsum[0]._pdgid;
+// 	  thfilter._mcgen = mcsum[0]._gid;
+// 	  thfilter._mcproc = mcsum[0]._pid;
+// 	}
 	thfvec.push_back(thfilter);
       }
     }
@@ -809,199 +801,200 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // straw hit tuple
 //-----------------------------------------------------------------------------
-    _shdiag=tfs->make<TTree>("shdiag","strawhit diagnostics");
-    _shdiag->Branch("eventid",&_eventid,"eventid/I");
-    _shdiag->Branch("shpos",&_shp,"x/F:y/F:z/F");
-    _shdiag->Branch("edep",&_edep,"edep/F");
-    _shdiag->Branch("time",&_time,"time/F");
-    _shdiag->Branch("rho",&_rho,"rho/F");
-    _shdiag->Branch("device",&_device,"device/I");
-    _shdiag->Branch("sector",&_sector,"sector/I");
-    _shdiag->Branch("layer",&_layer,"layer/I");
-    _shdiag->Branch("straw",&_straw,"straw/I");
-    _shdiag->Branch("ishpeak",&_ishpeak,"ishpeak/I");
-    _shdiag->Branch("ntpeak",&_ntpeak,"ntpeak/I");
-    //    _shdiag->Branch("tpeak",&_shtpeak,"tpeak/F");
-    _shdiag->Branch("nshtpeak",&_nshtpeak,"nshtpeak/I");
-    _shdiag->Branch("mcshpos",&_mcshp,"x/F:y/F:z/F");
-    _shdiag->Branch("mcopos",&_mcop,"x/F:y/F:z/F");
-    _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
-    _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
-    _shdiag->Branch("mcemax",&_mcemax,"mcemax/F");
-    _shdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/I");
-    _shdiag->Branch("mcnunique",&_mcnunique,"mcnunique/I");
-    _shdiag->Branch("mcnmax",&_mcnmax,"mcnmax/I");
-    _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
-    _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
-    _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
-    _shdiag->Branch("mctime",&_mctime,"mctime/F");
-    _shdiag->Branch("esel",&_esel,"esel/I");
-    _shdiag->Branch("rsel",&_rsel,"rsel/I");
-    _shdiag->Branch("tsel",&_timesel,"tsel/I");
-    _shdiag->Branch("delta",&_delta,"delta/I");
-    _shdiag->Branch("stereo",&_stereo,"stereo/I");
-    _shdiag->Branch("isolated",&_isolated,"isolated/I");
-    _shdiag->Branch("pdist",&_pdist,"pdist/F");
-    _shdiag->Branch("pperp",&_pperp,"pperp/F");
-    _shdiag->Branch("pmom",&_pmom,"pmom/F");
-    _shdiag->Branch("pres",&_shpres,"pres/F");
-    _shdiag->Branch("rres",&_shrres,"rres/F");
-    _shdiag->Branch("chisq",&_shchisq,"chisq/F");
-    _shdiag->Branch("dt",&_shdt,"dt/F");
-    _shdiag->Branch("dist",&_shdist,"dist/F");
-    _shdiag->Branch("mct0",&_shmct0,"mct0/F");
-    _shdiag->Branch("mcmom",&_shmcmom,"mcmom/F");
-    _shdiag->Branch("mctd",&_shmctd,"mctd/F");
+//     _shdiag=tfs->make<TTree>("shdiag","strawhit diagnostics");
+//     _shdiag->Branch("eventid",&_eventid,"eventid/I");
+//     _shdiag->Branch("shpos",&_shp,"x/F:y/F:z/F");
+//     _shdiag->Branch("edep",&_edep,"edep/F");
+//     _shdiag->Branch("time",&_time,"time/F");
+//     _shdiag->Branch("rho",&_rho,"rho/F");
+//     _shdiag->Branch("device",&_device,"device/I");
+//     _shdiag->Branch("sector",&_sector,"sector/I");
+//     _shdiag->Branch("layer",&_layer,"layer/I");
+//     _shdiag->Branch("straw",&_straw,"straw/I");
+//     _shdiag->Branch("ishpeak",&_ishpeak,"ishpeak/I");
+//     _shdiag->Branch("ntpeak",&_ntpeak,"ntpeak/I");
+//     //    _shdiag->Branch("tpeak",&_shtpeak,"tpeak/F");
+//     _shdiag->Branch("nshtpeak",&_nshtpeak,"nshtpeak/I");
+//     _shdiag->Branch("mcshpos",&_mcshp,"x/F:y/F:z/F");
+//     _shdiag->Branch("mcopos",&_mcop,"x/F:y/F:z/F");
+//     _shdiag->Branch("mcshlen",&_mcshlen,"mcshlen/F");
+//     _shdiag->Branch("mcedep",&_mcedep,"mcedep/F");
+//     _shdiag->Branch("mcemax",&_mcemax,"mcemax/F");
+//     _shdiag->Branch("nmcsteps",&_nmcsteps,"nmcsteps/I");
+//     _shdiag->Branch("mcnunique",&_mcnunique,"mcnunique/I");
+//     _shdiag->Branch("mcnmax",&_mcnmax,"mcnmax/I");
+//     _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
+//     _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
+//     _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
+//     _shdiag->Branch("mctime",&_mctime,"mctime/F");
+//     _shdiag->Branch("esel",&_esel,"esel/I");
+//     _shdiag->Branch("rsel",&_rsel,"rsel/I");
+//     _shdiag->Branch("tsel",&_timesel,"tsel/I");
+//     _shdiag->Branch("delta",&_delta,"delta/I");
+//     _shdiag->Branch("stereo",&_stereo,"stereo/I");
+//     _shdiag->Branch("isolated",&_isolated,"isolated/I");
+//     _shdiag->Branch("pdist",&_pdist,"pdist/F");
+//     _shdiag->Branch("pperp",&_pperp,"pperp/F");
+//     _shdiag->Branch("pmom",&_pmom,"pmom/F");
+//     _shdiag->Branch("pres",&_shpres,"pres/F");
+//     _shdiag->Branch("rres",&_shrres,"rres/F");
+//     _shdiag->Branch("chisq",&_shchisq,"chisq/F");
+//     _shdiag->Branch("dt",&_shdt,"dt/F");
+//     _shdiag->Branch("dist",&_shdist,"dist/F");
+//     _shdiag->Branch("mct0",&_shmct0,"mct0/F");
+//     _shdiag->Branch("mcmom",&_shmcmom,"mcmom/F");
+//     _shdiag->Branch("mctd",&_shmctd,"mctd/F");
 //-----------------------------------------------------------------------------
 // extend the KalFitMC track diagnostic tuple
 //-----------------------------------------------------------------------------
-    TTree* trkdiag = _kfitmc.createTrkDiag();
+//     TTree* trkdiag = _kfitmc.createTrkDiag();
 
-    trkdiag->Branch("eventid",&_eventid,"eventid/I");
-    trkdiag->Branch("nadd",&_nadd,"nadd/I");
-    trkdiag->Branch("ipeak",&_ipeak,"ipeak/I");
-    trkdiag->Branch("hcx",&_hcx,"hcx/F");
-    trkdiag->Branch("hcy",&_hcy,"hcy/F");
-    trkdiag->Branch("hr",&_hr,"hr/F");
-    trkdiag->Branch("hdfdz",&_hdfdz,"hdfdz/F");
-    trkdiag->Branch("hfz0",&_hfz0,"hfz0/F");
-    trkdiag->Branch("mccx",&_mccx,"mccx/F");
-    trkdiag->Branch("mccy",&_mccy,"mccy/F");
-    trkdiag->Branch("mcr",&_mcr,"mcr/F");
-    trkdiag->Branch("mcdfdz",&_mcdfdz,"mcdfdz/F");
-    trkdiag->Branch("mcfz0",&_mcfz0,"mcfz0/F");
-    trkdiag->Branch("helixfail",&_helixfail,"helixfail/I");
-    trkdiag->Branch("seedfail",&_seedfail,"seedfail/I");
-    trkdiag->Branch("kalfail",&_kalfail,"kalfail/I");
-    trkdiag->Branch("hpar",&_hpar,"hd0/F:hp0/F:hom/F:hz0/F:htd/F");
-    trkdiag->Branch("herr",&_hparerr,"hd0err/F:hp0err/F:homerr/F:hz0err/F:htderr/F");
-    trkdiag->Branch("spar",&_spar,"sd0/F:sp0/F:som/F:sz0/F:std/F");
-    trkdiag->Branch("serr",&_sparerr,"sd0err/F:sp0err/F:somerr/F:sz0err/F:stderr/F");
-    trkdiag->Branch("st0",&_st0,"st0/F");
-    trkdiag->Branch("snhits",&_snhits,"snhits/I");
-    trkdiag->Branch("sndof",&_sndof,"sndof/I");
-    trkdiag->Branch("sniter",&_sniter,"sniter/I");
-    trkdiag->Branch("snweediter",&_snweediter,"snweediter/I");
-    trkdiag->Branch("snactive",&_snactive,"snactive/I");
-    trkdiag->Branch("schisq",&_schisq,"schisq/F");
-    trkdiag->Branch("nchit",&_nchit,"nchit/I");
-    trkdiag->Branch("npeak",&_npeak,"npeak/I");
-    trkdiag->Branch("tpeak",&_tpeak,"tpeak/F");
-    trkdiag->Branch("nmc",&_nmc,"nmc/I");
-    trkdiag->Branch("seedfilt",&_sfilt);
-    trkdiag->Branch("helixfilt",&_hfilt);
+//     trkdiag->Branch("eventid",&_eventid,"eventid/I");
+//     trkdiag->Branch("nadd",&_nadd,"nadd/I");
+//     trkdiag->Branch("ipeak",&_ipeak,"ipeak/I");
+//     trkdiag->Branch("hcx",&_hcx,"hcx/F");
+//     trkdiag->Branch("hcy",&_hcy,"hcy/F");
+//     trkdiag->Branch("hr",&_hr,"hr/F");
+//     trkdiag->Branch("hdfdz",&_hdfdz,"hdfdz/F");
+//     trkdiag->Branch("hfz0",&_hfz0,"hfz0/F");
+//     trkdiag->Branch("mccx",&_mccx,"mccx/F");
+//     trkdiag->Branch("mccy",&_mccy,"mccy/F");
+//     trkdiag->Branch("mcr",&_mcr,"mcr/F");
+//     trkdiag->Branch("mcdfdz",&_mcdfdz,"mcdfdz/F");
+//     trkdiag->Branch("mcfz0",&_mcfz0,"mcfz0/F");
+//     trkdiag->Branch("helixfail",&_helixfail,"helixfail/I");
+//     trkdiag->Branch("seedfail",&_seedfail,"seedfail/I");
+//     trkdiag->Branch("kalfail",&_kalfail,"kalfail/I");
+//     trkdiag->Branch("hpar",&_hpar,"hd0/F:hp0/F:hom/F:hz0/F:htd/F");
+//     trkdiag->Branch("herr",&_hparerr,"hd0err/F:hp0err/F:homerr/F:hz0err/F:htderr/F");
+//     trkdiag->Branch("spar",&_spar,"sd0/F:sp0/F:som/F:sz0/F:std/F");
+//     trkdiag->Branch("serr",&_sparerr,"sd0err/F:sp0err/F:somerr/F:sz0err/F:stderr/F");
+//     trkdiag->Branch("st0",&_st0,"st0/F");
+//     trkdiag->Branch("snhits",&_snhits,"snhits/I");
+//     trkdiag->Branch("sndof",&_sndof,"sndof/I");
+//     trkdiag->Branch("sniter",&_sniter,"sniter/I");
+//     trkdiag->Branch("snweediter",&_snweediter,"snweediter/I");
+//     trkdiag->Branch("snactive",&_snactive,"snactive/I");
+//     trkdiag->Branch("schisq",&_schisq,"schisq/F");
+//     trkdiag->Branch("nchit",&_nchit,"nchit/I");
+//     trkdiag->Branch("npeak",&_npeak,"npeak/I");
+//     trkdiag->Branch("tpeak",&_tpeak,"tpeak/F");
+//     trkdiag->Branch("nmc",&_nmc,"nmc/I");
+//     trkdiag->Branch("seedfilt",&_sfilt);
+//     trkdiag->Branch("helixfilt",&_hfilt);
   }
 
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
   void CalPatRec::fillStrawDiag() {
-    GeomHandle<DetectorSystem> det;
-    const Tracker& tracker = getTrackerOrThrow();
-    _nchit = 0;
-    unsigned nstrs = _shcol->size();
-    for(unsigned istr=0; istr<nstrs;++istr){
-      StrawHit const& sh = _shcol->at(istr);
-      StrawHitPosition const& shp = _shpcol->at(istr);
-      const Straw& straw = tracker.getStraw( sh.strawIndex() );
-      _device = straw.id().getDevice();
-      _sector = straw.id().getSector();
-      _layer = straw.id().getLayer();
-      _straw = straw.id().getStraw();
+//     GeomHandle<DetectorSystem> det;
+//     const Tracker& tracker = getTrackerOrThrow();
+//     _nchit = 0;
+//     unsigned nstrs = _shcol->size();
+//     for(unsigned istr=0; istr<nstrs;++istr){
+//       StrawHit const& sh = _shcol->at(istr);
+//       StrawHitPosition const& shp = _shpcol->at(istr);
+//       const Straw& straw = tracker.getStraw( sh.strawIndex() );
+//       _device = straw.id().getDevice();
+//       _sector = straw.id().getSector();
+//       _layer = straw.id().getLayer();
+//       _straw = straw.id().getStraw();
 
-      _shp = shp.pos();
-      _stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
-      _edep = sh.energyDep();
-      _time = sh.time();
-      _rho = shp.pos().perp();
-      // find proximity for different radii
-      double esum(0.0);
-      // MC information
-      //      StrawHitMCTruth const& mcstrawhit = (_kfitmc.mcData()._mcstrawhits->at(istr));
-      PtrStepPointMCVector const& mcptr(_kfitmc.mcData()._mchitptr->at(istr));
-      // compute weighted distance from particle production
-      _pdist = 0.0;
-      _pperp = 0.0;
-      _pmom = 0.0;
-      _nmcsteps = mcptr.size();
-      for( size_t imc=0; imc< mcptr.size(); ++imc ) {
-	StepPointMC const& mchit = *mcptr[imc];
-	// distance from production
-	double edep = mchit.eDep();
-	esum += edep;
-	CLHEP::Hep3Vector dprod = mchit.position()-det->toDetector(mchit.simParticle()->startPosition());
-	_pdist += dprod.mag()*edep;
-	static Hep3Vector zdir(0.0,0.0,1.0);
-	_pperp += dprod.perp(zdir)*edep;
-	_pmom += mchit.momentum().mag()*edep;
-      }
-      if(esum > 0.0){
-	_pdist /= esum;
-	_pperp /= esum;
-	_pmom /= esum;
-      }
-      // summarize the MC truth for this strawhit
-      if(_kfitmc.mcData()._mcsteps != 0){
-	const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
-	_mcnunique = mcsum.size();
-	// compute energy sum
-	_mcedep = 0.0;
-	for(std::vector<MCHitSum>::const_iterator isum=mcsum.begin(); isum != mcsum.end(); ++isum){
-	  _mcedep += isum->_esum;
-	}
-	// first entry
-	_mcemax = mcsum[0]._esum;
-	_mcnmax = mcsum[0]._count;
-	_mcpdg = mcsum[0]._pdgid;
-	_mcgen = mcsum[0]._gid;
-	_mcproc = mcsum[0]._pid;
-	_mctime = mcsum[0]._time;
-	_mcshp = mcsum[0]._pos;
-	_mcop = det->toDetector(mcsum[0]._spp->startPosition());
-	_mcshlen = (mcsum[0]._pos-straw.getMidPoint()).dot(straw.getDirection());
-	bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
-	if(conversion){
-	  ++_nchit;
-	}
-      }
-      _esel     = _flags->at(istr).hasAllProperties(StrawHitFlag::energysel);
-      _rsel     = _flags->at(istr).hasAllProperties(StrawHitFlag::radsel);
-      _timesel  = _flags->at(istr).hasAllProperties(StrawHitFlag::timesel);
-      _stereo   = _flags->at(istr).hasAllProperties(StrawHitFlag::stereo);
-      _isolated = _flags->at(istr).hasAllProperties(StrawHitFlag::isolated);
-      _delta    = _flags->at(istr).hasAllProperties(StrawHitFlag::delta);
-      _shpres   = _shpcol->at(istr).posRes(StrawHitPosition::phi);
-      _shrres   = _shpcol->at(istr).posRes(StrawHitPosition::rho);
-      _shmct0   = _kfitmc.MCT0(KalFitMC::trackerMid);
-      _shmcmom  = _kfitmc.MCMom(KalFitMC::trackerMid);
-      _shmctd   = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+//       _shp = shp.pos();
+//       _stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
+//       _edep = sh.energyDep();
+//       _time = sh.time();
+//       _rho = shp.pos().perp();
+//       // find proximity for different radii
+//       double esum(0.0);
+//       // MC information
+//       //      StrawHitMCTruth const& mcstrawhit = (_kfitmc.mcData()._mcstrawhits->at(istr));
 
-      _shchisq  = -1.0;
-      _shdt     = 0.0;
-      _shdist   = -1.0;
-
-      // compare to different time peaks
-      _ntpeak = _tpeaks->size();
-      //      _nshtpeak = 0;
-      //      _shtpeak = -1.0;
-      //      _ishpeak = -1;
-      //      hitIndex myindex(istr);
-//       if(_shmcmom >0){
-// 	for(unsigned ipeak=0;ipeak<_tpeaks->size();++ipeak){
-// 	  std::vector<hitIndex>::iterator ifind =
-// 	    std::find(_tpeaks[ipeak]._trkptrs.begin(),_tpeaks->at(ipeak)._trkptrs.end(),myindex);
-// 	  if(ifind != _tpeaks[ipeak]._trkptrs.end()){
-// 	    _ishpeak = ipeak;
-// 	    break;
-// 	  }
+//       PtrStepPointMCVector const& mcptr(_kfitmc.mcData()._mchitptr->at(istr));
+//       // compute weighted distance from particle production
+//       _pdist = 0.0;
+//       _pperp = 0.0;
+//       _pmom = 0.0;
+//       _nmcsteps = mcptr.size();
+//       for( size_t imc=0; imc< mcptr.size(); ++imc ) {
+// 	StepPointMC const& mchit = *mcptr[imc];
+// 	// distance from production
+// 	double edep = mchit.eDep();
+// 	esum += edep;
+// 	CLHEP::Hep3Vector dprod = mchit.position()-det->toDetector(mchit.simParticle()->startPosition());
+// 	_pdist += dprod.mag()*edep;
+// 	static Hep3Vector zdir(0.0,0.0,1.0);
+// 	_pperp += dprod.perp(zdir)*edep;
+// 	_pmom += mchit.momentum().mag()*edep;
+//       }
+//       if(esum > 0.0){
+// 	_pdist /= esum;
+// 	_pperp /= esum;
+// 	_pmom /= esum;
+//       }
+//       // summarize the MC truth for this strawhit
+//       if(_kfitmc.mcData()._mcsteps != 0){
+// 	const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
+// 	_mcnunique = mcsum.size();
+// 	// compute energy sum
+// 	_mcedep = 0.0;
+// 	for(std::vector<MCHitSum>::const_iterator isum=mcsum.begin(); isum != mcsum.end(); ++isum){
+// 	  _mcedep += isum->_esum;
+// 	}
+// 	// first entry
+// 	_mcemax = mcsum[0]._esum;
+// 	_mcnmax = mcsum[0]._count;
+// 	_mcpdg = mcsum[0]._pdgid;
+// 	_mcgen = mcsum[0]._gid;
+// 	_mcproc = mcsum[0]._pid;
+// 	_mctime = mcsum[0]._time;
+// 	_mcshp = mcsum[0]._pos;
+// 	_mcop = det->toDetector(mcsum[0]._spp->startPosition());
+// 	_mcshlen = (mcsum[0]._pos-straw.getMidPoint()).dot(straw.getDirection());
+// 	bool conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
+// 	if(conversion){
+// 	  ++_nchit;
 // 	}
 //       }
-//      if(_ishpeak>=0){
-//	_nshtpeak = _tpeaks[_ishpeak]._trkptrs.size();
-	//	_shtpeak = _tpeaks[_ishpeak]._tpeak;
-      //      }
-      _shdiag->Fill();
-    }
+//       _esel     = _flags->at(istr).hasAllProperties(StrawHitFlag::energysel);
+//       _rsel     = _flags->at(istr).hasAllProperties(StrawHitFlag::radsel);
+//       _timesel  = _flags->at(istr).hasAllProperties(StrawHitFlag::timesel);
+//       _stereo   = _flags->at(istr).hasAllProperties(StrawHitFlag::stereo);
+//       _isolated = _flags->at(istr).hasAllProperties(StrawHitFlag::isolated);
+//       _delta    = _flags->at(istr).hasAllProperties(StrawHitFlag::delta);
+//       _shpres   = _shpcol->at(istr).posRes(StrawHitPosition::phi);
+//       _shrres   = _shpcol->at(istr).posRes(StrawHitPosition::rho);
+//       _shmct0   = _kfitmc.MCT0(KalFitMC::trackerMid);
+//       _shmcmom  = _kfitmc.MCMom(KalFitMC::trackerMid);
+//       _shmctd   = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
+
+//       _shchisq  = -1.0;
+//       _shdt     = 0.0;
+//       _shdist   = -1.0;
+
+//       // compare to different time peaks
+//       _ntpeak = _tpeaks->size();
+//       //      _nshtpeak = 0;
+//       //      _shtpeak = -1.0;
+//       //      _ishpeak = -1;
+//       //      hitIndex myindex(istr);
+// //       if(_shmcmom >0){
+// // 	for(unsigned ipeak=0;ipeak<_tpeaks->size();++ipeak){
+// // 	  std::vector<hitIndex>::iterator ifind =
+// // 	    std::find(_tpeaks[ipeak]._trkptrs.begin(),_tpeaks->at(ipeak)._trkptrs.end(),myindex);
+// // 	  if(ifind != _tpeaks[ipeak]._trkptrs.end()){
+// // 	    _ishpeak = ipeak;
+// // 	    break;
+// // 	  }
+// // 	}
+// //       }
+// //      if(_ishpeak>=0){
+// //	_nshtpeak = _tpeaks[_ishpeak]._trkptrs.size();
+// 	//	_shtpeak = _tpeaks[_ishpeak]._tpeak;
+//       //      }
+//       _shdiag->Fill();
+//     }
   }
 
   void CalPatRec::fillTimeDiag() {
@@ -1034,10 +1027,10 @@ namespace mu2e {
       double time = _shcol->at(istr).time();
       bool conversion(false);
       // summarize the MC truth for this strawhit
-      if(_kfitmc.mcData()._mcsteps != 0) {
-	const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
-	conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
-      }
+//       if(_kfitmc.mcData()._mcsteps != 0) {
+// 	const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr); 
+// 	conversion = (mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2);
+//       }
       // fill plots
       rtsp->Fill(time);
       if(_flags->at(istr).hasAllProperties(_tsel)){
@@ -1069,9 +1062,9 @@ namespace mu2e {
 			       KalFitResult const&       seedfit , 
 			       KalFitResult const&       kalfit  ) {
     // convenience numbers
-    static const double pi     (M_PI);
-    static const double twopi  (2*pi);
-    static const double halfpi (0.5*pi);
+    //    static const double pi     (M_PI);
+    //    static const double twopi  (2*pi);
+    //    static const double halfpi (0.5*pi);
     // initialize some variables
     _ipeak = ipeak;
     _nmc = 0;
@@ -1083,11 +1076,11 @@ namespace mu2e {
       _npeak   = tpeak._trkptrs.size();
       for(std::vector<hitIndex>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
 	// summarize the MC truth for this strawhit
-	if(_kfitmc.mcData()._mcsteps != 0) {
-	  const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr->_index); 
-	  if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2)
-	    ++_nmc;
-	}
+// 	if(_kfitmc.mcData()._mcsteps != 0) {
+// 	  const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(istr->_index); 
+// 	  if(mcsum[0]._pdgid == 11 && mcsum[0]._gid == 2)
+// 	    ++_nmc;
+// 	}
       } 
     } else {
       _tpeak   = -1.0;
@@ -1098,106 +1091,64 @@ namespace mu2e {
     _seedfail  = seedfit._fit.failure();
     _kalfail   = kalfit._fit.failure();
     // helix information
-    HepVector hpar;
-    HepVector hparerr;
-    _hfit.helixParams(helixfit,hpar,hparerr);
-    _hpar = helixpar(hpar);
-    _hparerr = helixpar(hparerr);
-    _hcx = helixfit._center.x(); _hcy = helixfit._center.y(); _hr = helixfit._radius;
-    _hdfdz = helixfit._dfdz; _hfz0 = helixfit._fz0;
-    // seed fit information
-    if(seedfit._fit.success()){
-      _snhits = seedfit._tdef.strawHitIndices().size();
-      _snactive = seedfit._krep->nActive();
-      _sniter = seedfit._krep->iterations();
-      _sndof = seedfit._krep->nDof();
-      _schisq = seedfit._krep->chisq();
-      _st0 = seedfit._krep->t0()._t0;
-      _snweediter = seedfit._nweediter;
-      double loclen;
-      const TrkSimpTraj* ltraj = seedfit._krep->localTrajectory(0.0,loclen);
-      _spar = helixpar(ltraj->parameters()->parameter());
-      _sparerr = helixpar(ltraj->parameters()->covariance());
-    } else {
-      _snhits = -1;
-      _snactive = -1;
-      _sniter = -1;
-      _sndof = -1;
-      _schisq = -1.0;
-      _st0 = -1.0;
-      _snweediter = -1;
-    }
-    // use MC truth to define hits and seed helix
-    TrkDef mctrk(_shcol,_tpart,_fdir);
-    // should be chosing the track ID for conversion a better way, FIXME!!!
-    cet::map_vector_key itrk(1);
-    if(_kfitmc.trkFromMC(itrk,mctrk)){
-      // find true center, radius
-      double rtrue = fabs(1.0/mctrk.helix().omega());
-      double rad = 1.0/mctrk.helix().omega() + mctrk.helix().d0();
-      double cx = -rad*sin(mctrk.helix().phi0());
-      double cy = rad*cos(mctrk.helix().phi0());
-      _mccx = cx; _mccy = cy; _mcr = rtrue;
-      _mcdfdz = mctrk.helix().omega()/mctrk.helix().tanDip();
-      // fix loop for MC values
-      _mcfz0 = -mctrk.helix().z0()*mctrk.helix().omega()/mctrk.helix().tanDip() + mctrk.helix().phi0() - copysign(halfpi,mctrk.helix().omega());
-      int nloop = (int)rint((helixfit._fz0 - _mcfz0)/twopi);
-      _mcfz0 += nloop*twopi;
-    }
-    // count # of added hits
-    _nadd = 0;
-    for(std::vector<TrkStrawHit*>::const_iterator ish=kalfit._hits.begin();ish!=kalfit._hits.end();++ish){
-      if((*ish)->usability()==3)++_nadd;
-    }
-    // fill kalman fit info.  This needs to be last, as it calls TTree::Fill().
-    _kfitmc.kalDiag(kalfit._krep);
+//     HepVector hpar;
+//     HepVector hparerr;
+//     _hfit.helixParams(helixfit,hpar,hparerr);
+//     _hpar = helixpar(hpar);
+//     _hparerr = helixpar(hparerr);
+//     _hcx = helixfit._center.x(); _hcy = helixfit._center.y(); _hr = helixfit._radius;
+//     _hdfdz = helixfit._dfdz; _hfz0 = helixfit._fz0;
+//     // seed fit information
+//     if(seedfit._fit.success()){
+//       _snhits = seedfit._tdef.strawHitIndices().size();
+//       _snactive = seedfit._krep->nActive();
+//       _sniter = seedfit._krep->iterations();
+//       _sndof = seedfit._krep->nDof();
+//       _schisq = seedfit._krep->chisq();
+//       _st0 = seedfit._krep->t0()._t0;
+//       _snweediter = seedfit._nweediter;
+//       double loclen;
+//       const TrkSimpTraj* ltraj = seedfit._krep->localTrajectory(0.0,loclen);
+//       _spar = helixpar(ltraj->parameters()->parameter());
+//       _sparerr = helixpar(ltraj->parameters()->covariance());
+//     } else {
+//       _snhits = -1;
+//       _snactive = -1;
+//       _sniter = -1;
+//       _sndof = -1;
+//       _schisq = -1.0;
+//       _st0 = -1.0;
+//       _snweediter = -1;
+//     }
+//-----------------------------------------------------------------------------
+// use MC truth to define hits and seed helix
+//-----------------------------------------------------------------------------
+//     TrkDef mctrk(_shcol,_tpart,_fdir);
+//     // should be chosing the track ID for conversion a better way, FIXME!!!
+//     cet::map_vector_key itrk(1);
+//     if(_kfitmc.trkFromMC(itrk,mctrk)){
+//       // find true center, radius
+//       double rtrue = fabs(1.0/mctrk.helix().omega());
+//       double rad = 1.0/mctrk.helix().omega() + mctrk.helix().d0();
+//       double cx = -rad*sin(mctrk.helix().phi0());
+//       double cy = rad*cos(mctrk.helix().phi0());
+//       _mccx = cx; _mccy = cy; _mcr = rtrue;
+//       _mcdfdz = mctrk.helix().omega()/mctrk.helix().tanDip();
+//       // fix loop for MC values
+//       _mcfz0 = -mctrk.helix().z0()*mctrk.helix().omega()/mctrk.helix().tanDip() + 
+// 	mctrk.helix().phi0() - copysign(halfpi,mctrk.helix().omega());
+//       int nloop = (int)rint((helixfit._fz0 - _mcfz0)/twopi);
+//       _mcfz0 += nloop*twopi;
+//     }
+//     // count # of added hits
+//     _nadd = 0;
+//     for(std::vector<TrkStrawHit*>::const_iterator ish=kalfit._hits.begin();ish!=kalfit._hits.end();++ish){
+//       if((*ish)->usability()==3)++_nadd;
+//     }
+//     // fill kalman fit info.  This needs to be last, as it calls TTree::Fill().
+//     _kfitmc.kalDiag(kalfit._krep);
   }
 
-//-----------------------------------------------------------------------------
-// 2014-04-03 P.M.: as far as I understand, this routine is not being used
-//-----------------------------------------------------------------------------
-  void CalPatRec::fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const {
-
-    const Tracker& tracker = getTrackerOrThrow();
-
-    StrawHit const& sh          = _shcol->at(ish);
-    StrawHitPosition const& shp = _shpcol->at(ish);
-
-    shinfo._pos   = shp.pos();
-    shinfo._time  = sh.time();
-    shinfo._rho   = shp.pos().perp();
-    shinfo._pres  = shp.posRes(StrawHitPosition::phi);
-    shinfo._rres  = shp.posRes(StrawHitPosition::rho);
-
-    shinfo._chisq = -1.0;
-    shinfo._stdt  = 0.0;
-    shinfo._dist  = -1.0;
-
-    shinfo._edep  = sh.energyDep();
-    const Straw& straw = tracker.getStraw( sh.strawIndex() );
-
-    shinfo._device = straw.id().getDevice();
-    shinfo._sector = straw.id().getSector();
-    shinfo._layer  = straw.id().getLayer();
-    shinfo._straw  = straw.id().getStraw();
-    shinfo._esel   = shp.flag().hasAllProperties(StrawHitFlag::energysel);
-    shinfo._rsel   = shp.flag().hasAllProperties(StrawHitFlag::radsel);
-    shinfo._delta  = shp.flag().hasAllProperties(StrawHitFlag::delta);
-    shinfo._stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
-
-    if(_kfitmc.mcData()._mcsteps != 0) {
-      const std::vector<MCHitSum>& mcsum = _kfitmc.mcHitSummary(ish);
-      shinfo._mcpdg  = mcsum[0]._pdgid;
-      shinfo._mcgen  = mcsum[0]._gid;
-      shinfo._mcproc = mcsum[0]._pid;
-      shinfo._mcpos  = mcsum[0]._pos;
-      shinfo._mctime = mcsum[0]._time;
-      shinfo._mcedep = mcsum[0]._esum;
-      shinfo._mct0   = _kfitmc.MCT0(KalFitMC::trackerMid);
-      shinfo._mcmom  = _kfitmc.MCMom(KalFitMC::trackerMid);
-      shinfo._mctd   = _kfitmc.MCHelix(KalFitMC::trackerMid)._td;
-    }
-  }
 }
 using mu2e::CalPatRec;
 DEFINE_ART_MODULE(CalPatRec);
