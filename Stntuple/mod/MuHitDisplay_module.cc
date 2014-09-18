@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // A half-interactive 2D event display. 
 //
-// $Id: MuHitDisplay_module.cc,v 1.2 2014/09/05 20:14:28 murat Exp $
-// $Author: murat $
-// $Date: 2014/09/05 20:14:28 $
+// $Id: MuHitDisplay_module.cc,v 1.3 2014/09/18 17:24:39 rhbob Exp $
+// $Author: rhbob $
+// $Date: 2014/09/18 17:24:39 $
 //
 // Contact person:  Pavel Murat, Gianantonio Pezzulo
 //
@@ -75,6 +75,8 @@
 #include "TrkBase/HelixParams.hh"
 #include "TrkBase/TrkHotList.hh"
 #include "KalmanTrack/KalHit.hh"
+#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "TrkBase/TrkParticle.hh"
 
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -152,7 +154,11 @@ namespace mu2e {
     std::string        fTrkCalMatch;
     std::string        fPidModuleLabel;
     std::string        fCalPatRecModuleLabel;
-    
+
+    TrkFitDirection    fTrkDirection;
+    TrkParticle        fParticleHypo;
+
+
     int                fGeneratorID;
     // Name of the tracker StepPoint collection
     std::string        trackerStepPoints_;
@@ -160,6 +166,10 @@ namespace mu2e {
     // Cuts used inside SimParticleWithHits:
     //  - drop hits with too little energy deposited.
     //  - drop SimParticles with too few hits.
+
+
+    // name for creating module label
+    string             fDirectionAndParticle;
 
     double             minEnergyDep_;
     double             timeWindow_;
@@ -253,6 +263,10 @@ namespace mu2e {
     fPidModuleLabel           (pset.get<std::string> ("pidModuleLabel"       , "ParticleID"   )),
     fCalPatRecModuleLabel     (pset.get<std::string>("calPatRecModuleLabel"  , "CalPatRec"    )),
 
+    fTrkDirection             ( (TrkFitDirection::FitDirection)(pset.get<int>        ("fitDirection"          , TrkFitDirection::downstream))),
+    fParticleHypo             ( (TrkParticle::type)            (pset.get<int>        ("fitParticle"           , TrkParticle::e_minus))),          
+
+
     fGeneratorID              (pset.get<int>        ("generatorID"           ,GenId::conversionGun)),
     trackerStepPoints_        (pset.get<std::string>("trackerStepPoints"           )),
     minEnergyDep_             (pset.get<double>     ("minEnergyDep"         ,0     )),
@@ -278,6 +292,8 @@ namespace mu2e {
     fSimParticlesWithHits = NULL;
 
     fTrackID      = new TStnTrackID();
+
+    fDirectionAndParticle = fTrkDirection.name() + fParticleHypo.name(); 
  }
 
 //-----------------------------------------------------------------------------
@@ -308,13 +324,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // define collection names to be used for initialization
 //-----------------------------------------------------------------------------
+
+    const char* charDirectionAndParticle = fDirectionAndParticle.c_str();
+
+
     fClusterBlock->AddCollName("mu2e::CaloClusterCollection",
 			       caloClusterModuleLabel_.data(),
 			       "AlgoCLOSESTSeededByENERGY");
     fClusterBlock->AddCollName("mu2e::TrackClusterLink",fTrkCalMatch.data(),"");
     
     fTrackBlock->AddCollName("mu2e::CaloClusterCollection"         ,caloClusterModuleLabel_.data(),"AlgoCLOSESTSeededByENERGY");
-    fTrackBlock->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecModuleLabel.data()  ,"DownstreameMinus");
+    fTrackBlock->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecModuleLabel.data()  , charDirectionAndParticle);
     fTrackBlock->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol.data()           ,"");
     fTrackBlock->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()           ,"");
     fTrackBlock->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()         ,"");
@@ -449,7 +469,9 @@ namespace mu2e {
     fTimePeak        = NULL;
 
     art::Handle<CalTimePeakCollection> tpch;
-    Evt->getByLabel("CalPatRec","DownstreameMinus",tpch);
+    const char* charDirectionAndParticle = fDirectionAndParticle.c_str();
+    //   Evt->getByLabel("CalPatRec","DownstreameMinus",tpch);
+    Evt->getByLabel("CalPatRec",charDirectionAndParticle,tpch);
     if (tpch.isValid()) { 
       fCalTimePeakColl = tpch.product();
 //-----------------------------------------------------------------------------
@@ -474,7 +496,9 @@ namespace mu2e {
 // tracking data - downstream moving electrons
 //-----------------------------------------------------------------------------
     art::Handle<KalRepPtrCollection> demHandle;
-    Evt->getByLabel(fTrkPatRecModuleLabel.data(),"DownstreameMinus", demHandle);
+    //    Evt->getByLabel(fTrkPatRecModuleLabel.data(),"DownstreameMinus", demHandle);
+    Evt->getByLabel(fTrkPatRecModuleLabel.data(),charDirectionAndParticle, demHandle);
+
     fNTracks[0] = 0;
     fDem        = NULL;
     if (demHandle.isValid()) { 
