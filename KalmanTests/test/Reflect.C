@@ -84,7 +84,7 @@ void init() {
   dgood = dreco+dnact+dmomerr+dt0err+dmom+dtd+dfitc;
 
   goodpair = ugood+dgood;
-  goodmc = TCut("umcmom>0.0&&dmcmom>0.0&&abs(umcpdgid)==11&&umcpdgid==dmcpdgid");
+  goodmc = TCut("umcmom>0.0&&dmcmom>0.0&&abs(mcpdgid)==11");
 
   ud0low = TCut("ud0<100");
   dd0low = TCut("dd0<100");
