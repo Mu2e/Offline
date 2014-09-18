@@ -1,9 +1,9 @@
 //
 // Read the tracks added to the event by KalFitTest_module.
 //
-// $Id: ReadTrkExt_module.cc,v 1.9 2014/04/18 16:43:44 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/04/18 16:43:44 $
+// $Id: ReadTrkExt_module.cc,v 1.10 2014/09/18 08:43:11 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/09/18 08:43:11 $
 //
 // Original author MyeongJae Lee
 //
@@ -30,7 +30,7 @@ using namespace CLHEP;
 #include "TrkBase/TrkParticle.hh"
 // mu2e tracking
 #include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "KalmanTests/inc/KalDiag.hh"
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -71,7 +71,7 @@ namespace mu2e {
     
     // diagnostic of Kalman fit
     bool _recordKalFit;
-    KalFitMC _kfitmc;
+    KalDiag _kdiag;
     TrkExtDiag _trkext;
 
     // Control level of printout.
@@ -96,7 +96,7 @@ namespace mu2e {
     _fitdirectionArray(pset.get<std::vector<int> >("fitdirectionArray")),
     _trkextModuleLabel(pset.get<string>("trkextModuleLabel")),
     _recordKalFit(pset.get<bool>("recordKalFit", false)),
-    _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet())),
+    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
     _trkext(pset.get<fhicl::ParameterSet>("TrkExt", fhicl::ParameterSet())),
     _verbosity(pset.get<int>("verbosity",0)),
     _maxPrint(pset.get<int>("maxPrint",0)),
@@ -127,7 +127,7 @@ namespace mu2e {
 
   void ReadTrkExt::beginJob( ){
     art::ServiceHandle<art::TFileService> tfs;
-    if (_recordKalFit) _trkdiag    = _kfitmc.createTrkDiag();
+    if (_recordKalFit) _trkdiag    = _kdiag.createTrkDiag();
     _extdiag = _trkext.createTrkExtDiag();
 // add local branches
     _extdiag->Branch("eventid",&_eventid,"eventid/I");
@@ -147,7 +147,7 @@ namespace mu2e {
 
   void ReadTrkExt::analyze(const art::Event& event) {
 
-    if (_recordKalFit) _kfitmc.findMCData(event);
+    if (_recordKalFit) _kdiag.findMCData(event);
     art::Handle<KalRepCollection> trksHandle;
     art::Handle<TrkExtTrajCollection> trkextHandle;
     _eventid = event.id().event();
@@ -194,7 +194,7 @@ namespace mu2e {
               <<"ReadTrkExt Error : krep object not exist" << endl;
           }
           else {
-            _kfitmc.kalDiag(krep);
+            _kdiag.kalDiag(krep);
           }
           TrkExtTraj const *trkext = &(trkexts[i]);
           if ( !trkext) {
@@ -212,7 +212,7 @@ namespace mu2e {
       // if there are no tracks, enter dummies
       if(trks.size() == 0 && _processEmpty){
         if (_recordKalFit) {
-          _kfitmc.kalDiag(0);
+          _kdiag.kalDiag(0);
           _trkext.trkExtDiag();
         }
       }

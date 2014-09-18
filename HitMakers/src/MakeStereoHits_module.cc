@@ -2,9 +2,9 @@
 // A module to create simple stereo hits out of StrawHits.  This can work
 // with either tracker.  StrawHit selection is done by flagging in an upstream module
 //
-// $Id: MakeStereoHits_module.cc,v 1.22 2014/06/03 16:11:47 mwang Exp $
-// $Author: mwang $
-// $Date: 2014/06/03 16:11:47 $
+// $Id: MakeStereoHits_module.cc,v 1.23 2014/09/18 08:42:47 brownd Exp $
+// $Author: brownd $
+// $Date: 2014/09/18 08:42:47 $
 // 
 //  Original Author: David Brown, LBNL
 //  
@@ -21,7 +21,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "KalmanTests/inc/KalDiag.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 
@@ -415,7 +415,7 @@ namespace mu2e {
 	                    if(_mcdigis != 0){
 	                      StrawDigiMC const& mcd1 = _mcdigis->at(ish);
 	                      StrawDigiMC const& mcd2 = _mcdigis->at(jsh);
-	                      _mcrel = KalFitMC::relationship(mcd1,mcd2);
+	                      _mcrel = KalDiag::relationship(mcd1,mcd2);
 	                      if(mcd1.stepPointMC(StrawDigi::zero).isNonnull() &&
 	                         mcd2.stepPointMC(StrawDigi::zero).isNonnull() )
 	                        _mcdist = (mcd1.stepPointMC(StrawDigi::zero)->position() -
@@ -478,7 +478,7 @@ namespace mu2e {
 	  _sdz = fabs(straw1.getMidPoint().z()-straw2.getMidPoint().z());
 	  StrawDigiMC const& mcd1 = _mcdigis->at(sh.hitIndex1());
 	  StrawDigiMC const& mcd2 = _mcdigis->at(sh.hitIndex2());
-	  _mcr = KalFitMC::relationship(mcd1,mcd2);
+	  _mcr = KalDiag::relationship(mcd1,mcd2);
 	}
 	StrawDigiMC const& mcd = _mcdigis->at(ish);
 	StrawDigi::TDCChannel itdc = StrawDigi::zero;
