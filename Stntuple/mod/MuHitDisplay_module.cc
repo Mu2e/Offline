@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // A half-interactive 2D event display. 
 //
-// $Id: MuHitDisplay_module.cc,v 1.3 2014/09/18 17:24:39 rhbob Exp $
+// $Id: MuHitDisplay_module.cc,v 1.4 2014/09/18 17:41:44 rhbob Exp $
 // $Author: rhbob $
-// $Date: 2014/09/18 17:24:39 $
+// $Date: 2014/09/18 17:41:44 $
 //
 // Contact person:  Pavel Murat, Gianantonio Pezzulo
 //
@@ -263,8 +263,8 @@ namespace mu2e {
     fPidModuleLabel           (pset.get<std::string> ("pidModuleLabel"       , "ParticleID"   )),
     fCalPatRecModuleLabel     (pset.get<std::string>("calPatRecModuleLabel"  , "CalPatRec"    )),
 
-    fTrkDirection             ( (TrkFitDirection::FitDirection)(pset.get<int>        ("fitDirection"          , TrkFitDirection::downstream))),
-    fParticleHypo             ( (TrkParticle::type)            (pset.get<int>        ("fitParticle"           , TrkParticle::e_minus))),          
+    fTrkDirection             ( (TrkFitDirection::FitDirection)(pset.get<int>        ("fitDirection"   , TrkFitDirection::downstream    ))),
+    fParticleHypo             ( (TrkParticle::type)            (pset.get<int>        ("fitParticle"    , TrkParticle::e_minus   ))),          
 
 
     fGeneratorID              (pset.get<int>        ("generatorID"           ,GenId::conversionGun)),
