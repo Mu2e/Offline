@@ -1,6 +1,6 @@
-// $Id: TrkPatRec_module.cc,v 1.85 2014/08/28 19:26:04 brownd Exp $
+// $Id: TrkPatRec_module.cc,v 1.86 2014/09/18 09:34:08 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/08/28 19:26:04 $
+// $Date: 2014/09/18 09:34:08 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -157,7 +157,7 @@ namespace mu2e
       TimePeakMVA _pmva; // input variables to TMVA for peak cleaning
 
       // MC tools
-      KalDiag _kdiag;
+      KalDiag* _kdiag;
       // strawhit tuple variables
       TTree *_shdiag;
       Int_t _eventid;
@@ -246,7 +246,7 @@ namespace mu2e
     _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
     _hfit(pset.get<fhicl::ParameterSet>("HelixFit",fhicl::ParameterSet())),
     _payloadSaver(pset),
-    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()))
+    _kdiag(0)
   {
     // tag the data product instance by the direction and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();
@@ -260,6 +260,8 @@ namespace mu2e
     ConfigFileLookupPolicy configFile;
     std::string weights = pset.get<std::string>("PeakMVAWeights","TrkPatRec/test/TimePeak.weights.xml");
     _PMVAWeights = configFile(weights);
+    if(_diag>0)
+      _kdiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag"));
   }
 
   TrkPatRec::~TrkPatRec(){}
@@ -315,7 +317,7 @@ namespace mu2e
     _flags = new StrawHitFlagCollection(*_shfcol);
     unique_ptr<StrawHitFlagCollection> flags(_flags );
     // find mc truth if we're making diagnostics
-    if(_diag > 0 && !_kdiag.findMCData(event)){
+    if(_diag > 0 && !_kdiag->findMCData(event)){
       throw cet::exception("RECO")<<"mu2e::TrkPatRec: MC data missing or incomplete"<< endl;
     }
     if(_diag > 1){
@@ -335,7 +337,7 @@ namespace mu2e
     }
     if(_diag>0){
 // fill primary particle MC truth information
-      _kdiag.kalDiag(0,false);
+      _kdiag->kalDiag(0,false);
     }
     // fill diagnostics if requested
     if(_diag > 2 && _nchit>0 && _ctime > _tmin)fillTimeDiag();
@@ -512,7 +514,7 @@ namespace mu2e
     // sort the peaks so that the largest comes first
     sort(_tpeaks.begin(),_tpeaks.end(),greater<TrkTimePeak>());
     // if requested, fill diagnostics
-    if(_diag>1 && _kdiag.mcData()._mcsteps != 0){
+    if(_diag>1 && _kdiag->mcData()._mcsteps != 0){
       for(size_t ip=0;ip<_tpeaks.size();++ip){
 	TrkTimePeak const& tp = _tpeaks[ip];
 	fillPeakDiag(ip,tp);
@@ -577,8 +579,8 @@ namespace mu2e
 	HepPoint tpos =  traj.position(hitpoca.flt1());
 	thfilter._pos = CLHEP::Hep3Vector(tpos.x(),tpos.y(),tpos.z());
 	thfilter._doca = hitpoca.doca();
-	if(_kdiag.mcData()._mcdigis != 0){
-	  StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(indices[ihit]._index);
+	if(_kdiag->mcData()._mcdigis != 0){
+	  StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(indices[ihit]._index);
 	  // use TDC channel 0 to define the MC match
 	  StrawDigi::TDCChannel itdc = StrawDigi::zero;
 	  if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -706,7 +708,7 @@ namespace mu2e
     _tpdiag->Branch("tphinfo",&_tphinfo);
  
     // extend the KalDiag track diagnostic tuple
-    TTree* trkdiag = _kdiag.createTrkDiag();
+    TTree* trkdiag = _kdiag->createTrkDiag();
     trkdiag->Branch("eventid",&_eventid,"eventid/I");
     trkdiag->Branch("nadd",&_nadd,"nadd/I");
     trkdiag->Branch("ipeak",&_ipeak,"ipeak/I");
@@ -794,8 +796,8 @@ namespace mu2e
       _mcpop = threevec(); 
       _mcpoe = _mcpom = -1.0;
       _xtalk = false;
-      if(_kdiag.mcData()._mcdigis != 0){
-	StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(istr);
+      if(_kdiag->mcData()._mcdigis != 0){
+	StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(istr);
 	// use TDC channel 0 to define the MC match
 	StrawDigi::TDCChannel itdc = StrawDigi::zero;
 	if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -930,8 +932,8 @@ namespace mu2e
       bool conversion(false);
       bool proton(false);
       // summarize the MC truth for this strawhit
-      if(_kdiag.mcData()._mcsteps != 0) {
-	StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(istr);
+      if(_kdiag->mcData()._mcsteps != 0) {
+	StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(istr);
 	// use TDC channel 0 to define the MC match
 	StrawDigi::TDCChannel itdc = StrawDigi::zero;
 	if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -988,9 +990,9 @@ namespace mu2e
       _npeak = tpeak._trkptrs.size();
       for(vector<hitIndex>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
 	// summarize the MC truth for this strawhit
-	if(_kdiag.mcData()._mcsteps != 0) {
+	if(_kdiag->mcData()._mcsteps != 0) {
 
-	  StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(istr->_index);
+	  StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(istr->_index);
 	  // use TDC channel 0 to define the MC match
 	  StrawDigi::TDCChannel itdc = StrawDigi::zero;
 	  if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -1047,7 +1049,7 @@ namespace mu2e
     TrkDef mctrk(_shcol,_tpart,_fdir);
     // should be chosing the track ID for conversion a better way, FIXME!!!
     cet::map_vector_key itrk(1);
-    if(_kdiag.trkFromMC(itrk,mctrk)){
+    if(_kdiag->trkFromMC(itrk,mctrk)){
       // find true center, radius
       double rtrue = fabs(1.0/mctrk.helix().omega());
       double rad = 1.0/mctrk.helix().omega() + mctrk.helix().d0();
@@ -1066,7 +1068,7 @@ namespace mu2e
       if((*ish)->usability()==3)++_nadd;
     }
     // fill kalman fit info.  This needs to be last, as it calls TTree::Fill().
-    _kdiag.kalDiag(kalfit._krep);
+    _kdiag->kalDiag(kalfit._krep);
   }
 
 
@@ -1100,9 +1102,9 @@ namespace mu2e
     shinfo._delta = shp.flag().hasAllProperties(StrawHitFlag::delta);
     shinfo._stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
 
-    if(_kdiag.mcData()._mcdigis != 0) {
+    if(_kdiag->mcData()._mcdigis != 0) {
 
-      StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(ish);
+      StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
       // use TDC channel 0 to define the MC match
       StrawDigi::TDCChannel itdc = StrawDigi::zero;
       if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -1177,7 +1179,7 @@ namespace mu2e
       double dt = _shcol->at(ish).time() - _ptime;
       if(fabs(dt) > _pdtimemax)_pdtimemax=fabs(dt);
 
-      StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(ish);
+      StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
       // use TDC channel 0 to define the MC match
       StrawDigi::TDCChannel itdc = StrawDigi::zero;
       if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;

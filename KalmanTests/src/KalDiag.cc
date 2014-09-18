@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalDiag.cc,v 1.3 2014/08/29 23:40:41 brownd Exp $
+// $Id: KalDiag.cc,v 1.4 2014/09/18 09:34:21 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/08/29 23:40:41 $
+// $Date: 2014/09/18 09:34:21 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -84,12 +84,12 @@ namespace mu2e
   KalDiag::~KalDiag(){}
   
   KalDiag::KalDiag(fhicl::ParameterSet const& pset) :
-    _mcptrlabel(pset.get<string>("MCPtrLabel","makeSH")),
-    _mcstepslabel(pset.get<string>("MCStepsLabel","g4run")),
-    _simpartslabel(pset.get<string>("SimParticleLabel","g4run")),
-    _simpartsinstance(pset.get<string>("SimParticleInstance","")),
-    _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
+    _mcptrlabel(pset.get<string>("MCPtrLabel")),
+    _mcstepslabel(pset.get<string>("MCStepsLabel")),
+    _simpartslabel(pset.get<string>("SimParticleLabel")),
+    _simpartsinstance(pset.get<string>("SimParticleInstance")),
+    _mcdigislabel(pset.get<string>("StrawHitMCLabel")),
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _debug(pset.get<int>("debugLevel",0)),
     _diag(pset.get<int>("diagLevel",1)),

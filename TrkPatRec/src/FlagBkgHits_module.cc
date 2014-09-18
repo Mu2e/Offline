@@ -1,6 +1,6 @@
-// $Id: FlagBkgHits_module.cc,v 1.29 2014/09/17 15:04:00 rhbob Exp $
-// $Author: rhbob $ 
-// $Date: 2014/09/17 15:04:00 $
+// $Id: FlagBkgHits_module.cc,v 1.30 2014/09/18 09:34:08 brownd Exp $
+// $Author: brownd $ 
+// $Date: 2014/09/18 09:34:08 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -158,7 +158,7 @@ namespace mu2e
       void createDiagnostics();
       void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
       // MC tools
-      KalDiag _kdiag;
+      KalDiag* _kdiag;
       // clusterer
       ClusterStrawHits _clusterer;
       // delta removal diagnostics
@@ -207,7 +207,7 @@ namespace mu2e
     _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.8)),
     _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
     _nonstereoclustermvacut(pset.get<double>("NonStereoClusterMVACut",0.8)),
-    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
+    _kdiag(0),
     _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet()))
   {
     // location-independent files
@@ -221,6 +221,9 @@ namespace mu2e
     _stereoclusterweights = configFile(stereoclusterweights);
     _nonstereoclusterweights = configFile(nonstereoclusterweights);
     produces<StrawHitFlagCollection>();
+    if(_diag > 0)
+      _kdiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag"));
+
 // eventually, should also produce a collection of delta-rays and their properties, FIXME!!
   }
 
@@ -249,7 +252,7 @@ namespace mu2e
     }
     // find mc truth if we're making diagnostics
     if(_diag > 0){
-      if(!_kdiag.findMCData(event)){
+      if(!_kdiag->findMCData(event)){
         throw cet::exception("RECO")<<"mu2e::FlgBkgHits: MC data missing or incomplete"<< endl;
 
 	//	return;
@@ -547,8 +550,8 @@ namespace mu2e
     shinfo._delta = shflag.hasAllProperties(StrawHitFlag::delta);
     shinfo._stereo = shflag.hasAllProperties(StrawHitFlag::stereo);
 
-    if(_kdiag.mcData()._mcdigis != 0) {
-      StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(ish);
+    if(_kdiag->mcData()._mcdigis != 0) {
+      StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
       // use TDC channel 0 to define the MC match
       StrawDigi::TDCChannel itdc = StrawDigi::zero;
       if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -678,7 +681,7 @@ namespace mu2e
 	size_t ish = dhinfo._hindex;
 	StrawHitInfo shinfo;
 	fillStrawHitInfo(ish,shinfo);
-	StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(ish);
+	StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
       // use TDC channel 0 to define the MC match
 	StrawDigi::TDCChannel itdc = StrawDigi::zero;
 	if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -719,7 +722,7 @@ namespace mu2e
     std::set<art::Ptr<SimParticle> > pp;
     for(size_t ih=0;ih< delta._dhinfo.size(); ++ih){
       size_t ish = delta._dhinfo[ih]._hindex;
-      StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(ish);
+      StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
       // use TDC channel 0 to define the MC match
       StrawDigi::TDCChannel itdc = StrawDigi::zero;
       if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -811,7 +814,7 @@ namespace mu2e
     // find the momentum for the first step point from the primary particle in this delta
     for(size_t ih=0;ih< delta._dhinfo.size(); ++ih){
       size_t ish = delta._dhinfo[ih]._hindex;
-      StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(ish);
+      StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
       // use TDC channel 0 to define the MC match
       StrawDigi::TDCChannel itdc = StrawDigi::zero;
       if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
