@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // A half-interactive 2D event display. 
 //
-// $Id: MuHitDisplay_module.cc,v 1.4 2014/09/18 17:41:44 rhbob Exp $
-// $Author: rhbob $
-// $Date: 2014/09/18 17:41:44 $
+// $Id: MuHitDisplay_module.cc,v 1.5 2014/09/18 22:58:01 murat Exp $
+// $Author: murat $
+// $Date: 2014/09/18 22:58:01 $
 //
 // Contact person:  Pavel Murat, Gianantonio Pezzulo
 //
@@ -153,14 +153,13 @@ namespace mu2e {
     std::string        fTrkExtrapol;
     std::string        fTrkCalMatch;
     std::string        fPidModuleLabel;
-    std::string        fCalPatRecModuleLabel;
 
     TrkFitDirection    fTrkDirection;
     TrkParticle        fParticleHypo;
 
 
     int                fGeneratorID;
-    // Name of the tracker StepPoint collection
+					       // Name of the tracker StepPoint collection
     std::string        trackerStepPoints_;
     
     // Cuts used inside SimParticleWithHits:
@@ -245,9 +244,9 @@ namespace mu2e {
     processName_(pset.get<string>("processName","")),
     generatorModuleLabel_     (pset.get<std::string>("generatorModuleLabel"        )),
     fG4ModuleLabel            (pset.get<std::string>("g4ModuleLabel"               )),
-    caloClusterModuleLabel_   (pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
-    fCaloClusterAlgorithm     (pset.get<std::string>("caloClusterAlgorithm"  , "closest")),
-    fCaloClusterSeeding       (pset.get<std::string>("caloClusterSeeding"    , "energy")),
+    caloClusterModuleLabel_   (pset.get<std::string>("caloClusterModuleLabel")),
+    fCaloClusterAlgorithm     (pset.get<std::string>("caloClusterAlgorithm"  )),
+    fCaloClusterSeeding       (pset.get<std::string>("caloClusterSeeding"    )),
 
     producerName_             ("Algo"+mu2e::TOUpper(fCaloClusterAlgorithm)
 			       +"SeededBy"+mu2e::TOUpper(fCaloClusterSeeding)),
@@ -256,16 +255,14 @@ namespace mu2e {
     fStrawHitPosMaker         (pset.get<std::string>("strawHitPosMakerModuleLabel" )),
     fStrawHitFlagMaker        (pset.get<std::string>("strawHitFlagMakerModuleLabel")),
 
-    fTrkPatRecModuleLabel     (pset.get<std::string>("trkPatRecModuleLabel"  , "TrkPatRec")),
-    fCrystalHitMaker          (pset.get<std::string>("crystalHitMaker"       , "CaloCrystalHitsMaker")),
-    fTrkExtrapol              (pset.get<std::string> ("trkExtrapol"          , "trkExtrapol"  )),
-    fTrkCalMatch              (pset.get<std::string> ("trkCalMatch"          , "caloMatching" )),
-    fPidModuleLabel           (pset.get<std::string> ("pidModuleLabel"       , "ParticleID"   )),
-    fCalPatRecModuleLabel     (pset.get<std::string>("calPatRecModuleLabel"  , "CalPatRec"    )),
+    fTrkPatRecModuleLabel     (pset.get<std::string>("trkPatRecModuleLabel"        )),
+    fCrystalHitMaker          (pset.get<std::string>("caloCrystalHitsMaker"  )),
+    fTrkExtrapol              (pset.get<std::string> ("trkExtrapol"          )),
+    fTrkCalMatch              (pset.get<std::string> ("trkCalMatch"          )),
+    fPidModuleLabel           (pset.get<std::string> ("pidModuleLabel"       )),
 
-    fTrkDirection             ( (TrkFitDirection::FitDirection)(pset.get<int>        ("fitDirection"   , TrkFitDirection::downstream    ))),
-    fParticleHypo             ( (TrkParticle::type)            (pset.get<int>        ("fitParticle"    , TrkParticle::e_minus   ))),          
-
+    fTrkDirection             ( (TrkFitDirection::FitDirection)(pset.get<int>("fitDirection"))),
+    fParticleHypo             ( (TrkParticle::type)            (pset.get<int>("fitParticle" ))),          
 
     fGeneratorID              (pset.get<int>        ("generatorID"           ,GenId::conversionGun)),
     trackerStepPoints_        (pset.get<std::string>("trackerStepPoints"           )),

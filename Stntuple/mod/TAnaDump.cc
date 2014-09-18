@@ -725,16 +725,31 @@ void TAnaDump::printCaloClusterCollection(const char* ModuleLabel,
 
   //data about hits in the calorimeter crystals
 
-  art::Handle<mu2e::CaloClusterCollection> caloClusterHandle;
+  art::Handle<mu2e::CaloClusterCollection> handle;
   const mu2e::CaloClusterCollection* caloCluster;
 
-  art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
-			  art::ProcessNameSelector(ProcessName)         && 
-			  art::ModuleLabelSelector(ModuleLabel)            );
+  if (ProductName[0] != 0) {
+    art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
+			    art::ProcessNameSelector(ProcessName)         && 
+			    art::ModuleLabelSelector(ModuleLabel)            );
+    fEvent->get(selector,handle);
+  }
+  else {
+    art::Selector  selector(art::ProcessNameSelector(ProcessName)         && 
+			    art::ModuleLabelSelector(ModuleLabel)            );
+    fEvent->get(selector,handle);
+  }
+//-----------------------------------------------------------------------------
+// make sure collection exists
+//-----------------------------------------------------------------------------
+  if (! handle.isValid()) {
+    printf("TAnaDump::printCaloClusterCollection: no CaloClusterCollection ");
+    printf("for module %s and ProductName=%s found, BAIL OUT\n",
+	   ModuleLabel,ProductName);
+    return;
+  }
 
-  fEvent->get(selector, caloClusterHandle);
-
-  caloCluster = caloClusterHandle.operator ->();
+  caloCluster = handle.product();
 
   int nhits = caloCluster->size();
 
@@ -1156,7 +1171,7 @@ void TAnaDump::printSimParticle(const mu2e::SimParticle* P, const char* Opt) {
 
     if ((opt == "") || (opt == "banner")) {
       printf("----------------------------------------------------------------------------------\n");
-      printf("Index  ID Parent   PDG      X      Y       Z      T      Px      Py     Pz      E \n");
+      printf("Index  Primary     ID Parent   PDG      X      Y       Z      T      Px      Py     Pz      E \n");
       printf("----------------------------------------------------------------------------------\n");
     }
  
@@ -1171,7 +1186,7 @@ void TAnaDump::printSimParticle(const mu2e::SimParticle* P, const char* Opt) {
       int  pdg_id    = P->pdgId();
       int  primary   = P->isPrimary();
 
-      printf("%5i %2i %5i %5i %10i  %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n",
+      printf("%5i %10i %8i %5i %10i  %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n",
 	     -1, primary, id, parent_id, pdg_id, 
 	     P->startPosition().x(),
 	     P->startPosition().y(),
