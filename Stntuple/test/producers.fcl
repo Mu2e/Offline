@@ -74,11 +74,20 @@ MuHitDisplay: {
     strawHitMakerModuleLabel     : makeSH
     strawHitPosMakerModuleLabel  : MakeStereoHits
     strawHitFlagMakerModuleLabel : FlagStrawHits
+    
     caloClusterModuleLabel       : MakeCaloCluster
     trkExtrapol                  : TrkExtrapol
     trkCalMatch                  : CaloMatching
     trkPatRecModuleLabel         : TrkPatRec
+    fitParticle                  : 11  # 11:electron
+    fitDirection                 : 0   # 0:downstream, 1:upstream
+
     pidModuleLabel               : ParticleID
+    #                                              label becomes AlgoCLOSESTSeededByENERGY
+
+    caloCrystalHitsMaker         : CaloCrystalHitsMaker
+    caloClusterAlgorithm         : closest
+    caloClusterSeeding           : energy
 	
     # if set to true, all hits will be displayed unconditionally
     # otherwise, display only hits with right flags
