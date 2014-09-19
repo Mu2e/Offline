@@ -1,9 +1,9 @@
 // Free function to create world mother volume and partly fill it with
 // dirt around the formal hall box.
 //
-// $Id: constructWorldVolume.cc,v 1.7 2012/04/25 18:19:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/04/25 18:19:14 $
+// $Id: constructWorldVolume.cc,v 1.8 2014/09/19 19:15:15 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:15:15 $
 //
 // Original author KLG based on Mu2eWorld constructDirt
 // Updated by Andrei Gaponenko.
@@ -11,6 +11,7 @@
 // Mu2e includes.
 #include "Mu2eG4/inc/constructWorldVolume.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eBuildingGeom/inc/BuildingBasics.hh"
@@ -37,15 +38,9 @@ namespace mu2e {
     G4Material* worldMaterial = materialFinder.get("world.materialName");
     G4Material* dirtMaterial = MaterialFinder(config).get("dirt.overburdenMaterialName");
 
-    const bool worldBoxVisible = config.getBool("world.boxVisible");
-    const bool worldBoxSolid   = config.getBool("world.boxSolid");
-
-    const bool dirtVisible    = config.getBool("world.dirt.visible");
-    const bool dirtSolid      = config.getBool("world.dirt.solid");
-
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
-    const bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck");
-    const bool placePV             = true;
+    G4GeometryOptions * geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "World"    , "world.box" );
+    geomOptions->loadEntry( config, "worldDirt", "world.dirt");
 
     GeomHandle<WorldG4> world;
     GeomHandle<BuildingBasics> basics;
@@ -53,10 +48,9 @@ namespace mu2e {
 
     VolumeInfo worldInfo = nestBox("World", world->halfLengths(),
                                    worldMaterial, 0, G4ThreeVector(),
-                                   0,
-                                   0, worldBoxVisible, G4Colour::Red(), worldBoxSolid,
-                                   forceAuxEdgeVisible, placePV, false);
-
+                                   nullptr,
+                                   0, G4Colour::Red() );
+    
     //----------------------------------------------------------------
     // Here we create dirt slabs and place them in the World volume
     // around the formal "hall" box.
@@ -76,8 +70,7 @@ namespace mu2e {
 
       nestBox("worldDirtBottom", hs, dirtMaterial, 0, centerInWorld,
               worldInfo,
-              0, dirtVisible, G4Color::Magenta(), dirtSolid,
-              forceAuxEdgeVisible, placePV, doSurfaceCheck);
+              0, G4Color::Magenta(), "worldDirt" );
     }
 
     // The height parameters are common to all 4 side slabs
@@ -100,8 +93,7 @@ namespace mu2e {
       nestBox("worldDirtNW", hs, dirtMaterial, 0,
               CLHEP::Hep3Vector((xmax+xmin)/2, dirtCenterY, (zmax+zmin)/2),
               worldInfo,
-              0, dirtVisible, G4Color::Magenta(), dirtSolid,
-              forceAuxEdgeVisible, placePV, doSurfaceCheck);
+              0, G4Color::Magenta(), "worldDirt" );
     }
 
     // SW: slab covering the West corner and extending to the South
@@ -118,8 +110,7 @@ namespace mu2e {
       nestBox("worldDirtSW", hs, dirtMaterial, 0,
               CLHEP::Hep3Vector((xmax+xmin)/2, dirtCenterY, (zmax+zmin)/2),
               worldInfo,
-              0, dirtVisible, G4Color::Magenta(), dirtSolid,
-              forceAuxEdgeVisible, placePV, doSurfaceCheck);
+              0, G4Color::Magenta(), "worldDirt" );
     }
 
     // SE: slab covering the South corner and extending to the East
@@ -136,8 +127,7 @@ namespace mu2e {
       nestBox("worldDirtSE", hs, dirtMaterial, 0,
               CLHEP::Hep3Vector((xmax+xmin)/2, dirtCenterY, (zmax+zmin)/2),
               worldInfo,
-              0, dirtVisible, G4Color::Magenta(), dirtSolid,
-              forceAuxEdgeVisible, placePV, doSurfaceCheck);
+              0, G4Color::Magenta(), "worldDirt" );
     }
 
     // NE: slab covering the East corner and extending to the North
@@ -154,8 +144,7 @@ namespace mu2e {
       nestBox("worldDirtNE", hs, dirtMaterial, 0,
               CLHEP::Hep3Vector((xmax+xmin)/2, dirtCenterY, (zmax+zmin)/2),
               worldInfo,
-              0, dirtVisible, G4Color::Magenta(), dirtSolid,
-              forceAuxEdgeVisible, placePV, doSurfaceCheck);
+              0, G4Color::Magenta(), "worldDirt" );
     }
 
     //----------------------------------------------------------------

@@ -1,9 +1,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 //
-// $Id: nestTubs.cc,v 1.10 2011/09/29 22:47:38 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/09/29 22:47:38 $
+// $Id: nestTubs.cc,v 1.11 2014/09/19 19:15:27 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:15:27 $
 //
 // Original author Rob Kutschke
 //
@@ -102,6 +102,41 @@ namespace mu2e {
                   );
 
     return info;
+
+    
+
+  }
+
+  
+  VolumeInfo nestTubs ( string const & name,
+                        double const params[5],
+                        G4Material* material,
+                        G4RotationMatrix const* rot,
+                        G4ThreeVector const & offset,
+                        VolumeInfo const & parent,
+                        int copyNo,
+                        G4Colour const color,
+			string const & lookupToken
+                        ){
+
+
+    VolumeInfo info(name,offset,parent.centerInWorld);
+
+    info.solid    = new G4Tubs( name, params[0], params[1], params[2], params[3], params[4] );
+
+    finishNesting(info,
+                  material,
+                  rot,
+                  offset,
+                  parent.logical,
+                  copyNo,
+                  color,
+		  lookupToken
+                  );
+
+    return info;
+
+    
 
   }
 

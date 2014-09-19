@@ -14,14 +14,14 @@ double world.minimalMargin.zmax =  5000;
 vector<double> world.mu2eOriginInWorld = { 0, 0, 0}; // mm
 
 string world.materialName = "G4_AIR";
-bool   world.boxVisible   = true;
-bool   world.boxSolid     = false;
+bool   world.box.isVisible   = true;
+bool   world.box.isSolid     = false;
 int    world.verbosityLevel = 0;
 
 string dirt.overburdenMaterialName = "MBOverburden";
 
-bool   world.dirt.visible         = true;
-bool   world.dirt.solid           = false;
+bool   world.dirt.isVisible  = true;
+bool   world.dirt.isSolid    = false;
 
 //
 //

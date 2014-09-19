@@ -32,8 +32,8 @@ double PSShield.zOffsetFromProductionTarget = -1853.5;
 // FIXME: should be low density bronze
 string PSShield.materialName = "G4_Cu";
 
-bool PSShield.visible = true;
-bool PSShield.solid = false;
+bool PSShield.isVisible = true;
+bool PSShield.isSolid = false;
 
 int PSShield.verbosityLevel = 0;
 

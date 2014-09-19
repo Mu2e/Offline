@@ -1,7 +1,7 @@
 //
 // Free function to create and place a new G4Torus, place inside a logical volume.
 //
-// $Id: nestTorus.cc,v 1.7 2013/08/16 19:54:34 knoepfel Exp $
+// $Id: nestTorus.cc,v 1.8 2014/09/19 19:15:25 knoepfel Exp $
 // $Author: knoepfel $
 // $Date: 2010/03/15
 //
@@ -94,6 +94,36 @@ namespace mu2e {
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck
+                  );
+
+    return info;
+
+  }
+
+  VolumeInfo nestTorus ( string const & name,
+                         array<double,5> const halfDim,
+                         G4Material* material,
+                         G4RotationMatrix const* rot,
+                         G4ThreeVector const & offset,
+                         VolumeInfo const & parent,
+                         int copyNo,
+                         G4Colour const color,
+			 string const & lookupToken
+                         ){
+
+
+    VolumeInfo info(name,offset,parent.centerInWorld);
+
+    info.solid    = new G4Torus( name, halfDim[0], halfDim[1], halfDim[2], halfDim[3], halfDim[4] );
+
+    finishNesting(info,
+                  material,
+                  rot,
+                  offset,
+                  parent.logical,
+                  copyNo,
+                  color,
+		  lookupToken
                   );
 
     return info;

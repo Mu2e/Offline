@@ -27,7 +27,7 @@ namespace mu2e {
                               const std::string& varString );
                               
 
-    void loadVolume   ( const SimpleConfig& config,
+    void loadEntry    ( const SimpleConfig& config,
                         const std::string& volName,
                         const std::string& prefix );
 

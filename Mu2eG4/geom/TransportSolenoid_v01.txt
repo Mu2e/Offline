@@ -36,8 +36,8 @@ double ts.ts1.halfLength  = 537.5;
 double ts.ts5.halfLength  = 625.;  
 
 int  ts.cryo.verbosityLevel = 0.;
-bool ts.cryo.visible = true;
-bool ts.cryo.solid   = false;
+bool ts.cryo.isVisible = true;
+bool ts.cryo.isSolid   = false;
 
 // TS polylining option
 bool   ts.polyliner.Up.build     = false;
@@ -45,12 +45,12 @@ bool   ts.polyliner.Down.build   = false;
 string ts.polyliner.materialName = "G4_POLYETHYLENE";
 double ts.polyliner.rIn          = 210.; 
 double ts.polyliner.rOut         = 247.;
-bool   ts.polyliner.visible      = true;
-bool   ts.polyliner.solid        = true;
+bool   ts.polyliner.isVisible      = true;
+bool   ts.polyliner.isSolid        = true;
 
 // Pbar Absorber
-bool   pbar.visible = true;
-bool   pbar.solid   = false;
+bool   pbar.isVisible = true;
+bool   pbar.isSolid   = false;
 int    pbar.verbosityLevel = 0;
 double pbar.halfLength = 100.0e-3; // Update to 0.10 in conjuction with wedgte
 string pbar.Type       = "wedge"; // default is "disk"
@@ -90,8 +90,8 @@ double pbar.coll31In.halfLength = 0.001;
 double pbar.coll31In.offset = 1.0;      // distance to the TS3 coll31 entrance plane
 
 // Collimators
-bool   ts.coll.visible        = true;
-bool   ts.coll.solid          = false;
+bool   ts.coll.isVisible        = true;
+bool   ts.coll.isSolid          = false;
 int    ts.coll.verbosityLevel = 0;
 
 // Offsets of collimators wrt parent volumes (TS straight sections)
@@ -125,8 +125,8 @@ double ts.coll5.outerRadius   = 240.0;
 string ts.coll5.materialName = "G4_POLYETHYLENE";
 
 // Muon degrader
-bool muondegrader.visible = true;
-bool muondegrader.solid   = false;
+bool muondegrader.isVisible = true;
+bool muondegrader.isSolid   = false;
 bool muondegrader.build   = false;
 int  muondegrader.verbosityLevel = 0;
 string muondegrader.materialName = "Polyethylene0020";
@@ -136,8 +136,8 @@ vector<double> muondegrader.DZT = { 50.0, 30.0, 10.0};
 vector<double> muondegrader.Phi = {0.5,0.2,0.2};
 
 // Coils
-bool ts.coils.visible = true;
-bool ts.coils.solid   = false;
+bool ts.coils.isVisible = true;
+bool ts.coils.isSolid   = false;
 int  ts.coils.verbosityLevel = 0;
 string ts.coils.material = "SCCable";
 

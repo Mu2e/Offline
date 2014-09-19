@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Polycone, place inside a logical volume.
 //
-// $Id: nestPolycone.hh,v 1.2 2013/12/02 20:12:16 genser Exp $
-// $Author: genser $
-// $Date: 2013/12/02 20:12:16 $
+// $Id: nestPolycone.hh,v 1.3 2014/09/19 19:14:55 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:14:55 $
 //
 // Original author Rob Kutschke
 //
@@ -45,6 +45,17 @@ namespace mu2e {
                             bool const forceAuxEdgeVisible,
                             bool const placePV,
                             bool const doSurfaceCheck
+                            );
+
+  VolumeInfo nestPolycone ( std::string const& name,
+                            PolyconsParams const & polyObj,
+                            G4Material* material,
+                            G4RotationMatrix const* rot,
+                            G4ThreeVector const & offset,
+                            VolumeInfo const & parent,
+                            int copyNo,
+                            G4Colour const color,
+			    std::string const& lookupToken
                             );
 
 }

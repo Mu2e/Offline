@@ -1,9 +1,9 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.172 2014/09/03 16:37:05 knoepfel Exp $
+// $Id: Mu2eWorld.cc,v 1.173 2014/09/19 19:14:58 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/09/03 16:37:05 $
+// $Date: 2014/09/19 19:14:58 $
 //
 // Original author Rob Kutschke
 //
@@ -193,7 +193,7 @@ namespace mu2e {
 
     // Check for stale names
     checkForStale( "hasExternalNeutronAbsorber", _config );
-
+    
     if ( _config.getBool("hasExternalNeutronShielding",false) ) {
       constructExternalNeutronShielding(hallInfo, _config);
     }

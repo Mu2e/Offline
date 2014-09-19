@@ -3,7 +3,7 @@
 //
 // Free function to create and place a new G4Torus inside a logical volume.
 //
-// $Id: nestTorus.hh,v 1.9 2013/08/16 19:54:34 knoepfel Exp $
+// $Id: nestTorus.hh,v 1.10 2014/09/19 19:14:56 knoepfel Exp $
 // $Author: knoepfel $
 // $Date: 2010/03/15
 //
@@ -56,6 +56,19 @@ namespace mu2e {
                          bool const forceAuxEdgeVisible,
                          bool const placePV,
                          bool const doSurfaceCheck
+                         );
+
+  // Alternate argument list (and different behavior)
+  // using  VolumeInfo object
+  VolumeInfo nestTorus ( std::string const& name,
+                         std::array<double,5> const halfDim,
+                         G4Material* material,
+                         G4RotationMatrix const* rot,
+                         G4ThreeVector const& offset,
+                         const VolumeInfo& parent,
+                         int copyNo,
+                         G4Colour const color,
+			 std::string const& lookupToken = ""
                          );
 
 

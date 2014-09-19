@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.65 2014/09/03 16:39:15 knoepfel Exp $
+// $Id: GeometryService_service.cc,v 1.66 2014/09/19 19:14:43 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/09/03 16:39:15 $
+// $Date: 2014/09/19 19:14:43 $
 //
 // Original author Rob Kutschke
 //
@@ -23,6 +23,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e include files
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/src/DetectorSystemMaker.hh"
@@ -188,6 +189,9 @@ namespace mu2e {
 
     // Throw if the configuration is not self consistent.
     checkConfig();
+
+    // Initialize geometry options
+    _g4GeomOptions = unique_ptr<G4GeometryOptions>( new G4GeometryOptions( *_config ) );
 
     // This must be the first detector added since other makers may wish to use it.
     std::unique_ptr<DetectorSystem> tmpDetSys(DetectorSystemMaker::make(*_config));

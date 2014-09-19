@@ -1,6 +1,6 @@
-// $Id: constructExternalNeutronShielding.cc,v 1.5 2014/06/09 23:16:27 genser Exp $
-// $Author: genser $
-// $Date: 2014/06/09 23:16:27 $
+// $Id: constructExternalNeutronShielding.cc,v 1.6 2014/09/19 19:15:02 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:15:02 $
 // David Norvil Brown, August 2013
 //
 //
@@ -385,9 +385,14 @@ namespace mu2e {
                                              G4TwoVector(0,0), 1.,
                                              G4TwoVector(0,0), 1.);
 
+    std::cout << " Rotation: "  << enscel->getRotation() << std::endl;
+
     // rotation, needed for next call
     static CLHEP::HepRotation enscelRotat(CLHEP::HepRotation::IDENTITY);
     enscelRotat.rotateX(enscel->getRotation());
+
+    std::cout << __func__ << " : Line " << __LINE__ << " Offset          : " << enscel->centerOfShield()-parent.centerInMu2e() << std::endl;
+    std::cout << __func__ << " : Line " << __LINE__ << " Center in parent: " << enscelShield.centerInParent << std::endl;
 
     finishNesting(enscelShield,
  		  findMaterialOrThrow(enscel->materialName()),
@@ -589,7 +594,7 @@ namespace mu2e {
  	  // Now make the window (AKA "Hole")
  	  name << "window";
 
-          // std::cout << __func__ " making " << name.str() << std::endl;
+          std::cout << __func__ << " making " << name.str() << std::endl;
 
           std::ostringstream name1;
           name1 << "ExtNeutShieldCendBox_sub_" << i+1;

@@ -1,9 +1,9 @@
 //
 // Free function to create DS. (Detector Solenoid)
 //
-// $Id: constructDS.cc,v 1.21 2014/01/09 18:15:21 ejbarnes Exp $
-// $Author: ejbarnes $
-// $Date: 2014/01/09 18:15:21 $
+// $Id: constructDS.cc,v 1.22 2014/09/19 19:14:59 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:14:59 $
 //
 // Original author KLG based on Mu2eWorld constructDS
 //
@@ -45,23 +45,18 @@ namespace mu2e {
                     SimpleConfig const & _config
                     ){
     MaterialFinder materialFinder(_config);
-    // Flags
+
+    // Load flags
     int const verbosityLevel = _config.getInt("ds.verbosityLevel",0);
-    bool dsVisible           = _config.getBool("ds.visible",true);
-    bool dsSolid             = _config.getBool("ds.solid",true);
-    bool dsCoilVisible       = _config.getBool("dsCoil.visible",true);
-    bool dsCoilSolid         = _config.getBool("dsCoil.solid",true);
-    bool dsSupportVisible    = _config.getBool("dsSupport.visible",true);
-    bool dsSupportSolid      = _config.getBool("dsSupport.solid",true);
-    bool dsThShieldVisible   = _config.getBool("dsThShield.visible",true);
-    bool dsThShieldSolid     = _config.getBool("dsThShield.solid",true);
-    bool dsVacuumVisible     = _config.getBool("dsVacuum.visible",true);
-    bool dsVacuumSolid       = _config.getBool("dsVacuum.solid",true);
-    bool dsShieldVisible     = _config.getBool("dsShielding.visible",true);
-    bool dsShieldSolid       = _config.getBool("dsShielding.solid",true);
-    bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV       = true;
+
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "DS"         , "ds"          );
+    geomOptions->loadEntry( _config, "DSCoil"     , "dsCoil"      );
+    geomOptions->loadEntry( _config, "DSSupport"  , "dsSupport"   );
+    geomOptions->loadEntry( _config, "DSThShield" , "dsThShield"  );
+    geomOptions->loadEntry( _config, "DSVacuum"   , "dsVacuum"    );
+    geomOptions->loadEntry( _config, "DSShielding", "dsShielding" );
+    geomOptions->loadEntry( _config, "PiondegAbs" , "piondeg"     );
 
     // Fetch parent (hall) position
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
@@ -83,12 +78,8 @@ namespace mu2e {
               dsInnerCryoPosition-_hallOriginInMu2e,
               parent,
               0,
-              dsVisible,
               G4Color::Magenta(),
-              dsSolid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "DS"
               );
 
     // - outer cryo shell
@@ -101,12 +92,8 @@ namespace mu2e {
               dsOuterCryoPosition-_hallOriginInMu2e,
               parent,
               0,
-              dsVisible,
               G4Color::Magenta(),
-              dsSolid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "DS"
               );
 
     // - end walls
@@ -120,12 +107,8 @@ namespace mu2e {
               dsUpEndWallPosition-_hallOriginInMu2e,
               parent,
               0,
-              dsVisible,
               G4Color::Magenta(),
-              dsSolid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "DS"
               );
 
     G4ThreeVector dsDownEndWallPosition( dsP.x(), dsP.y(), 
@@ -137,12 +120,8 @@ namespace mu2e {
               dsDownEndWallPosition-_hallOriginInMu2e,
               parent,
               0,
-              dsVisible,
               G4Color::Magenta(),
-              dsSolid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "DS"
               );
 
     // - upstream face
@@ -161,12 +140,8 @@ namespace mu2e {
               dsFrontPosition-_hallOriginInMu2e,
               parent,
               0,
-              dsVisible,
               G4Color::Blue(),
-              dsSolid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "DS"
               );
 
     // DS thermal shield
@@ -182,12 +157,8 @@ namespace mu2e {
               dsInnerThShieldPosition-_hallOriginInMu2e,
               parent,
               0,
-              dsThShieldVisible,
               G4Color::Cyan(),
-              dsThShieldSolid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "DSThShield"
               );
 
     // - outer shield shell
@@ -200,12 +171,8 @@ namespace mu2e {
               dsOuterThShieldPosition-_hallOriginInMu2e,
               parent,
               0,
-              dsThShieldVisible,
               G4Color::Cyan(),
-              dsThShieldSolid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "DSThShield"
               );
 
     // SKIPPING END WALLS OF THERMAL SHIELD
@@ -231,12 +198,8 @@ namespace mu2e {
                 coilPosition-_hallOriginInMu2e,
                 parent,
                 0,
-                dsCoilVisible,
                 G4Color::Green(),
-                dsCoilSolid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
+		"DSCoil"
                 );
     }
 
@@ -251,12 +214,8 @@ namespace mu2e {
               dsSupportPosition-_hallOriginInMu2e,
               parent,
               0,
-              dsSupportVisible,
               G4Color::Blue(),
-              dsSupportSolid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "DSSupport"
               );
 
     // DS vacuum volumes
@@ -271,11 +230,6 @@ namespace mu2e {
     double ds2Z0     = ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2();
     double ds2HalfLength     = _config.getDouble("ds2.halfLength");
     
-    bool piondegVisible = _config.getBool("piondeg.visible",true);
-    bool piondegSolid   = _config.getBool("piondeg.solid",true);
- 
-    
-
     if ( verbosityLevel > 0 ) {
       cout << __func__ << " DS2 vacuum extent: " 
            << " [ " << ds2Z0 - ds->vac_halfLengthDs2() << " , " 
@@ -292,29 +246,21 @@ namespace mu2e {
               ds1Position-_hallOriginInMu2e,
               parent,
               0,
-              dsVacuumVisible,
               G4Colour::Green(),
-              dsVacuumSolid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "DSVacuum"
               );
 
     VolumeInfo ds2VacInfo = 
       nestTubs( "DS2Vacuum",
-              ds2VacParams,
-              vacuumMaterial,
-              0,
-              ds2Position-_hallOriginInMu2e,
-              parent,
-              0,
-              dsVacuumVisible,
-              G4Colour::Yellow(),
-              dsVacuumSolid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
-              );
+		ds2VacParams,
+		vacuumMaterial,
+		0,
+		ds2Position-_hallOriginInMu2e,
+		parent,
+		0,
+		G4Colour::Yellow(),
+		"DSVacuum"
+		);
 
     // Polycone geometry allows for MBS to extend beyond solenoid
     // physical boundaries
@@ -359,19 +305,15 @@ namespace mu2e {
     CLHEP::Hep3Vector ds3positionInMu2e( dsP.x(), dsP.y(), 0.);
     
     VolumeInfo dsShieldParent = nestPolycone( "DS3Vacuum",
-                                            ds3PolyParams,
-                                            vacuumMaterial,
-                                            0,
-                                            ds3positionInMu2e - parent.centerInMu2e(),
-                                            parent,
-                                            0,
-                                            dsVacuumVisible,
-                                            G4Colour::Yellow(),
-                                            dsVacuumSolid,
-                                            forceAuxEdgeVisible,
-                                            placePV,
-                                            doSurfaceCheck
-                                            );
+					      ds3PolyParams,
+					      vacuumMaterial,
+					      0,
+					      ds3positionInMu2e - parent.centerInMu2e(),
+					      parent,
+					      0,
+					      G4Colour::Yellow(),
+					      "DSVacuum"
+					      );
 
     // Construct shielding downstream of DS
     for ( const auto & shield : dss->getTubes() ) {
@@ -383,12 +325,8 @@ namespace mu2e {
                 shield->originInMu2e()-dsShieldParent.centerInMu2e(),
                 dsShieldParent,
                 0,
-                dsShieldVisible,
                 G4Colour::Blue(),
-                dsShieldSolid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
+		"DSShielding"
                 );
 
     }
@@ -407,8 +345,6 @@ namespace mu2e {
 	       <<" Pion degrader halflength:"<<piondegHalfLength
 	       <<std::endl;
 
-
-
       G4Material* piondegMaterial  = materialFinder.get("piondeg.materialName");
       VolumeInfo piondegInfo = nestTubs( "PiondegAbs",
 					 piondegParams,
@@ -417,12 +353,7 @@ namespace mu2e {
 					 G4ThreeVector(piondegXoffset,0.,-ds2HalfLength + piondegZoffset + piondegHalfLength),
 					 ds2VacInfo,
 					 0,
-					 piondegVisible,
-					 G4Color::Blue(),
-					 piondegSolid,
-					 forceAuxEdgeVisible,
-					 placePV,
-					 doSurfaceCheck
+					 G4Color::Blue()
 					 );
       
       if ( verbosityLevel > 0) {

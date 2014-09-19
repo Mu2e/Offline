@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Cons inside a logical volume.
 //
-// $Id: nestCons.hh,v 1.5 2011/09/29 22:47:38 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/09/29 22:47:38 $
+// $Id: nestCons.hh,v 1.6 2014/09/19 19:14:54 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:14:54 $
 //
 // Original author Rob Kutschke
 //
@@ -92,6 +92,42 @@ namespace mu2e {
                         bool const placePV,
                         bool const doSurfaceCheck
                         );
+
+ 
+  // Alternate argument list (and different behavior)
+  // using VolumeInfo object for the parameters.
+  VolumeInfo nestCons ( std::string const& name,
+                        double const params[7],
+                        G4Material* material,
+                        G4RotationMatrix const* rot,
+                        G4ThreeVector const & offset,
+                        VolumeInfo const & parent,
+                        int copyNo,
+                        G4Colour const color,
+			std::string const& lookupToken
+                        ); 
+
+  inline VolumeInfo nestCons ( std::string const& name,
+			       std::vector<double>& params,
+			       G4Material* material,
+			       G4RotationMatrix const* rot,
+			       G4ThreeVector const & offset,
+			       VolumeInfo const & parent,
+			       int copyNo,
+			       G4Colour const color,
+			       std::string const& lookupToken
+			       ) {
+    return nestCons ( name,
+		      &params[0],
+		      material,
+		      rot,
+		      offset,
+		      parent,
+		      copyNo,
+		      color,
+		      lookupToken
+		      ); 
+  }
 
 }
 

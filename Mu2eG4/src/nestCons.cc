@@ -1,9 +1,9 @@
 //
 // Free function to create and place a new G4Cons inside a logical volume.
 //
-// $Id: nestCons.cc,v 1.3 2011/09/29 22:47:38 gandr Exp $
-// $Author: gandr $
-// $Date: 2011/09/29 22:47:38 $
+// $Id: nestCons.cc,v 1.4 2014/09/19 19:15:21 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:15:21 $
 //
 // Original author Rob Kutschke
 //
@@ -106,5 +106,37 @@ namespace mu2e {
     return info;
 
   }
+
+  VolumeInfo nestCons ( string const & name,
+                        double const params[7],
+                        G4Material* material,
+                        G4RotationMatrix const* rot,
+                        G4ThreeVector const & offset,
+                        VolumeInfo const & parent,
+                        int copyNo,
+                        G4Colour const color,
+			string const & lookupToken
+                        ){
+
+
+    VolumeInfo info(name,offset,parent.centerInWorld);
+
+    info.solid   = new G4Cons( name, params[0], params[1], params[2], params[3],
+                               params[4], params[5], params[6]  );
+
+    finishNesting(info,
+                  material,
+                  rot,
+                  offset,
+                  parent.logical,
+                  copyNo,
+                  color,
+		  lookupToken
+                  );
+
+    return info;
+
+  }
+
 
 }

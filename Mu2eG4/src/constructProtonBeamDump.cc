@@ -31,6 +31,7 @@
 
 #include "cetlib/exception.h"
 
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
@@ -66,9 +67,12 @@ namespace mu2e {
 
     MaterialFinder materialFinder(config);
 
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
-    const bool placePV             = true;
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "ProtonBeamDumpDirt"     , "protonBeamDump.dirt"       );
+    geomOptions->loadEntry( config, "ProtonBeamDumpShielding", "protonBeamDump.shielding"  );
+    geomOptions->loadEntry( config, "ProtonBeamDumpCore"     , "protonBeamDump.core"       );
+    geomOptions->loadEntry( config, "ProtonBeamDumpMouth"    , "protonBeamDump.mouth"      );
+    geomOptions->loadEntry( config, "ProtonBeamNeutronCave"  , "protonBeamDump.neutronCave");
 
     //----------------------------------------------------------------
     // Re-fill a part of the formal "HallAir" with dirt.
@@ -134,18 +138,14 @@ namespace mu2e {
                                              (dumpDirtYmax - dumpDirtYmin)/2,
                                              G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
 
+
     finishNesting(beamDumpDirt,
                   materialFinder.get("dirt.overburdenMaterialName"),
                   &beamDumpDirtRotationInv,
                   beamDumpDirt.centerInParent,
                   parent.logical,
                   0,
-                  config.getBool("protonBeamDump.dirtVisible"),
-                  G4Colour(0.9, 0, 0.9), //G4Colour::Magenta(),
-                  config.getBool("protonBeamDump.dirtSolid"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
+                  G4Colour(0.9, 0, 0.9) //G4Colour::Magenta(),
                   );
 
     //----------------------------------------------------------------
@@ -162,12 +162,8 @@ namespace mu2e {
                                         &rotationInDirtInv,
                                         frontShieldingPositionInDirt,
                                         beamDumpDirt, 0,
-                                        config.getBool("protonBeamDump.shieldingVisible"),
                                         G4Colour::Grey(),
-                                        config.getBool("protonBeamDump.shieldingSolid"),
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
+					"ProtonBeamDumpShielding"
                                         );
 
     // FIXME: we should not need to correct the wrong information
@@ -180,12 +176,8 @@ namespace mu2e {
             &rotationInDirtInv,
             beamDumpDirtRotationInv * (dump->backShieldingCenterInMu2e() - beamDumpDirt.centerInMu2e()),
             beamDumpDirt, 0,
-            config.getBool("protonBeamDump.shieldingVisible"),
             G4Colour::Grey(),
-            config.getBool("protonBeamDump.shieldingSolid"),
-            forceAuxEdgeVisible,
-            placePV,
-            doSurfaceCheck
+	    "ProtonBeamDumpShielding"
             );
 
     nestBox("ProtonBeamDumpCore",
@@ -194,12 +186,7 @@ namespace mu2e {
             0,
             dump->coreRotationInMu2e().inverse()*(dump->coreCenterInMu2e() - dump->frontShieldingCenterInMu2e()),
             frontShielding, 0,
-            config.getBool("protonBeamDump.coreVisible"),
-            G4Colour::Blue(),
-            config.getBool("protonBeamDump.coreSolid"),
-            forceAuxEdgeVisible,
-            placePV,
-            doSurfaceCheck
+            G4Colour::Blue()
             );
 
     nestBox("ProtonBeamDumpMouth",
@@ -208,12 +195,7 @@ namespace mu2e {
             0,
             dump->coreRotationInMu2e().inverse()*(dump->mouthCenterInMu2e() - dump->frontShieldingCenterInMu2e()),
             frontShielding, 0,
-            config.getBool("protonBeamDump.mouthVisible"),
-            G4Colour::Cyan(),
-            config.getBool("protonBeamDump.mouthSolid"),
-            forceAuxEdgeVisible,
-            placePV,
-            doSurfaceCheck
+            G4Colour::Cyan()
             );
 
     nestBox("ProtonBeamNeutronCave",
@@ -222,12 +204,7 @@ namespace mu2e {
             0,
             dump->coreRotationInMu2e().inverse()*(dump->neutronCaveCenterInMu2e() - dump->frontShieldingCenterInMu2e()),
             frontShielding, 0,
-            config.getBool("protonBeamDump.neutronCaveVisible"),
-            G4Colour::Cyan(),
-            config.getBool("protonBeamDump.neutronCaveSolid"),
-            forceAuxEdgeVisible,
-            placePV,
-            doSurfaceCheck
+            G4Colour::Cyan()
             );
 
     //----------------------------------------------------------------

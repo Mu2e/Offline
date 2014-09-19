@@ -3,9 +3,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 //
-// $Id: nestTubs.hh,v 1.13 2012/03/30 15:13:35 gandr Exp $
-// $Author: gandr $
-// $Date: 2012/03/30 15:13:35 $
+// $Id: nestTubs.hh,v 1.14 2014/09/19 19:14:57 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:14:57 $
 //
 // Original author Rob Kutschke
 //
@@ -155,8 +155,44 @@ namespace mu2e {
                      placePV,
                      doSurfaceCheck
                      );
-  }
 
+  }
+  
+  // Alternate argument list (and different behavior)
+  // using a TubsParams & VolumeInfo object for the parameters.
+  VolumeInfo nestTubs ( std::string const& name,
+                        double const params[5],
+                        G4Material* material,
+                        G4RotationMatrix const* rot,
+                        G4ThreeVector const & offset,
+                        VolumeInfo const & parent,
+                        int copyNo,
+                        G4Colour const color,
+			std::string const& lookupToken=""
+                        );
+
+  inline VolumeInfo nestTubs ( std::string const& name,             
+				TubsParams const & params,
+				G4Material* material,
+				G4RotationMatrix const* rot,
+				G4ThreeVector const & offset,
+				VolumeInfo const & parent,
+				int copyNo,
+				G4Colour const color,
+				std::string const& lookupToken=""
+				) {
+
+    return nestTubs ( name,
+		      params.data(),
+		      material,
+		      rot,
+		      offset,
+		      parent,
+		      copyNo,
+		      color,
+		      lookupToken
+		      );
+  }
 
 }
 

@@ -1,9 +1,9 @@
 //
 // Production Target and its supports in PS:
 //
-// $Id: ProductionTargetInPS.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
+// $Id: ProductionTargetInPS.txt,v 1.2 2014/09/19 19:14:48 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/08/29 16:37:09 $
+// $Date: 2014/09/19 19:14:48 $
 //
 // Original author Giovanni F. Tassielli
 //
@@ -21,8 +21,8 @@ double targetPS_rOut              =      3.15; // mm
 double targetPS_rotX              =      0.;   // degree. Active rotation.
 double targetPS_rotY              =     14.00; // degree.
 string targetPS_materialName      = "G4_W";
-bool   targetPS.visible           = true;
-bool   targetPS.solid             = false;
+bool   targetPS.isVisible           = true;
+bool   targetPS.isSolid             = false;
 
 bool   targetPS.hasVD.backward = false;
 bool   targetPS.hasVD.forward  = false;
@@ -46,8 +46,8 @@ double supWheel_trgtPS_halfLength =      9.525;// mm
 double supWheel_trgtPS_rIn        =    177.8;  // mm
 double supWheel_trgtPS_rOut       =    196.85; // mm
 string supWheel_trgtPS_material   =  "G4_Al";
-bool   supWheel_trgtPS.visible    = true;
-bool   supWheel_trgtPS.solid      = false;
+bool   supWheel_trgtPS.isVisible  = true;
+bool   supWheel_trgtPS.isSolid    = false;
 //double supWheel_trgtPS_relZpos    =      0.0;  // mm
 
 // Part of the inside of the HRS that at which the support wheel is anchored 
@@ -55,8 +55,8 @@ double clamp_supWheel_halfLength  =     12.7;  // mm
 double clamp_supWheel_rIn         =    193.65; // mm
 double clamp_supWheel_rOut        =    200.00; // mm
 string clamp_supWheel_material    =  "StainlessSteel";  //must be the same material as the innermost part of the HRS
-bool   clamp_supWheel.visible     = true;
-bool   clamp_supWheel.solid       = false;
+bool   clamp_supWheel.isVisible   = true;
+bool   clamp_supWheel.isSolid     = false;
 //double clamp_supWheel_relZpos     =      0.0;  // mm
 
 //

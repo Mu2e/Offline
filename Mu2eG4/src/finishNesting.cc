@@ -1,9 +1,9 @@
 //
 // Free function to be used by the nest... functions
 //
-// $Id: finishNesting.cc,v 1.8 2013/08/30 16:40:44 genser Exp $
-// $Author: genser $
-// $Date: 2013/08/30 16:40:44 $
+// $Id: finishNesting.cc,v 1.9 2014/09/19 19:15:17 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:15:17 $
 //
 // Original author KLG based on nest... functions
 //
@@ -14,9 +14,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
 #include "G4Helper/inc/G4Helper.hh"
-#include "GeometryService/inc/GeometryService.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 

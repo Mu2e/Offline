@@ -1,9 +1,9 @@
 //
 // Free function to create Transport Solenoid
 //
-// $Id: constructTS.cc,v 1.32 2014/09/15 23:31:58 youzy Exp $
-// $Author: youzy $
-// $Date: 2014/09/15 23:31:58 $
+// $Id: constructTS.cc,v 1.33 2014/09/19 19:15:10 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:15:10 $
 //
 // Original author KLG based on Mu2eWorld constructTS
 //
@@ -89,13 +89,10 @@ namespace mu2e {
     const int  verbosityLevel      = config.getInt ("ts.cryo.verbosityLevel", 0     );
     const bool polyLiningUp        = config.getBool("ts.polyliner.Up.build"   , false );
     const bool polyLiningDown      = config.getBool("ts.polyliner.Down.build" , false );
-    const bool polyLinerVisible    = config.getBool("ts.polyliner.visible"  , true  );
-    const bool polyLinerSolid      = config.getBool("ts.polyliner.solid"    , false );
-    const bool visible             = config.getBool("ts.cryo.visible"       , true  );
-    const bool solid               = config.getBool("ts.cryo.solid"         , true  );
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible", false );
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck"     , false );
-    const bool placePV             = true;
+
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "TSCryo", "ts.cryo"      );
+    geomOptions->loadEntry( config, "TSPoly", "ts.polyliner" );
 
     // For how all pieces are made from one of two types of material,
     // vacuum or average coils + cryostat material.
@@ -110,6 +107,7 @@ namespace mu2e {
     CLHEP::Hep3Vector pos( strsec->getGlobal().x(), 
                            strsec->getGlobal().y(), 
                            strsec->getGlobal().z()-strsec->getHalfLength()+ts->endWallU1_halfLength() );
+
     nestTubs( "TS1UpstreamEndwall",
               TubsParams( ts->endWallU1_rIn(),
                           ts->endWallU1_rOut(),
@@ -119,12 +117,8 @@ namespace mu2e {
               pos-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     if ( verbosityLevel ) {
@@ -142,12 +136,8 @@ namespace mu2e {
               strsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::IN);
@@ -160,12 +150,8 @@ namespace mu2e {
               strsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
     
     if ( verbosityLevel > 0) {
@@ -185,12 +171,8 @@ namespace mu2e {
               strsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
     
     if ( verbosityLevel > 0) {
@@ -212,12 +194,8 @@ namespace mu2e {
               pos2-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
               
     if ( verbosityLevel ) {
@@ -234,12 +212,8 @@ namespace mu2e {
               torsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Green(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     torsec = ts->getTSPolyLining(TransportSolenoid::TSRegion::TS2);
@@ -252,12 +226,8 @@ namespace mu2e {
                 torsec->getGlobal()-ts2Vacuum.centerInMu2e(),
                 ts2Vacuum,
                 0,
-                polyLinerVisible,
                 G4Color::Yellow(),
-                polyLinerSolid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
+		"TSPoly"
                 );
     }
 
@@ -271,12 +241,8 @@ namespace mu2e {
               torsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS2,TransportSolenoid::TSRadialPart::OUT );
@@ -289,12 +255,8 @@ namespace mu2e {
               torsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     // Build TS3
@@ -306,12 +268,8 @@ namespace mu2e {
               strsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Green(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     nestTubs( "TS3InnerCryoShell",
@@ -323,12 +281,8 @@ namespace mu2e {
               strsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::OUT );
@@ -341,12 +295,8 @@ namespace mu2e {
               strsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     if ( verbosityLevel > 0) {
@@ -363,12 +313,8 @@ namespace mu2e {
               torsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Yellow(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     torsec = ts->getTSPolyLining(TransportSolenoid::TSRegion::TS4);
@@ -381,12 +327,8 @@ namespace mu2e {
                 torsec->getGlobal()-ts4Vacuum.centerInMu2e(),
                 ts4Vacuum,
                 0,
-                polyLinerVisible,
                 G4Color::Yellow(),
-                polyLinerSolid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
+		"TSPoly"
                 );
     }
 
@@ -399,12 +341,8 @@ namespace mu2e {
               torsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::OUT );
@@ -417,12 +355,8 @@ namespace mu2e {
               torsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
     // Build TS5.
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::IN );    
@@ -437,12 +371,8 @@ namespace mu2e {
               globalVac5Position-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Green(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     nestTubs( "TS5InnerCryoShell",
@@ -454,12 +384,8 @@ namespace mu2e {
               strsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::OUT );  
@@ -472,12 +398,8 @@ namespace mu2e {
               strsec->getGlobal()-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     
@@ -500,12 +422,8 @@ namespace mu2e {
               pos3-_hallOriginInMu2e,
               parent,
               0,
-              visible,
               G4Color::Red(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSCryo"
               );
 
     if ( verbosityLevel ) {
@@ -523,11 +441,9 @@ namespace mu2e {
                        Beamline const& bl ) {
 
     const int  verbosityLevel      = config.getInt("ts.coils.verbosityLevel", 0);
-    const bool visible             = config.getBool("ts.coils.visible",true);
-    const bool solid               = config.getBool("ts.coils.solid",false);
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
-    const bool placePV             = true;
+
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "TSCoils", "ts.coils"      );
 
     G4Material* coilMaterial = findMaterialOrThrow( bl.getTS().coil_material() );
 
@@ -546,12 +462,8 @@ namespace mu2e {
                   coil.getGlobal()-parent.centerInMu2e(),
                   parent,
                   0,
-                  visible,
                   G4Color::Green(),
-                  solid,
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
+		  "TSCoils"
                   );
 
         if ( verbosityLevel > 0 ) {
@@ -575,12 +487,10 @@ namespace mu2e {
                              Beamline const& bl ) {
     
     // Flags
-    const bool visible             = config.getBool("ts.coll.visible",true);
-    const bool solid               = config.getBool("ts.coll.solid",true);
     const int  verbosityLevel      = config.getInt("ts.coll.verbosityLevel", 0);
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
-    const bool placePV             = true;
+
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "TSColl", "ts.coll"      );
 
     // Get collimators
     TransportSolenoid const& ts = bl.getTS();
@@ -618,12 +528,8 @@ namespace mu2e {
               coll1.getLocal(),
               _helper->locateVolInfo("TS1Vacuum"),
               0,
-              visible,
               G4Color::Cyan(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSColl"
               );
 
     TubsParams coll1Param2 ( coll1.rIn3(),  ts.innerRadius(), coll1.halfLength()-2.*vdHalfLength);
@@ -635,12 +541,8 @@ namespace mu2e {
               coll1.getLocal(),
               _helper->locateVolInfo("TS1Vacuum"),
               0,
-              visible,
               G4Color::Blue(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSColl"
               );
     
     if ( verbosityLevel > 0) {
@@ -712,12 +614,8 @@ namespace mu2e {
                   coll31.getLocal(),
                   _helper->locateVolInfo("TS3Vacuum").logical,
                   0,
-                  visible,
                   G4Color::Gray(),
-                  solid,
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck);
+		  "TSColl");
 
     finishNesting(coll32Info,
                   findMaterialOrThrow( coll32.material() ),
@@ -725,12 +623,8 @@ namespace mu2e {
                   coll32.getLocal(),
                   _helper->locateVolInfo("TS3Vacuum").logical,
                   0,
-                  visible,
                   G4Color::Gray(),
-                  solid,
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck);
+		  "TSColl");
 
     // Now add a Recorder at the Coll31 exit and Coll32 entrance
     // (do not use VirtualDetector because of _ in its volume name)
@@ -745,12 +639,8 @@ namespace mu2e {
               coll31OutRecordTrans,
               _helper->locateVolInfo("TS3Vacuum"),
               0,
-              visible,
               G4Color::Blue(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSColl"
             );
 
     TubsParams coll32InRecordParam ( 0,  ts.innerRadius(), vdHalfLength );
@@ -764,12 +654,8 @@ namespace mu2e {
               coll32InRecordTrans,
               _helper->locateVolInfo("TS3Vacuum"),
               0,
-              visible,
               G4Color::Blue(),
-              solid,
-              forceAuxEdgeVisible,
-              placePV,
-              doSurfaceCheck
+	      "TSColl"
             );
 
     if ( verbosityLevel > 0) {
@@ -812,12 +698,8 @@ namespace mu2e {
                                      coll5.getLocal(),
                                      _helper->locateVolInfo("TS5Vacuum"),
                                      0,
-                                     visible,
                                      G4Color::Blue(),
-                                     solid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     doSurfaceCheck
+				     "TSColl"
                                      );
     
   }
@@ -836,12 +718,10 @@ namespace mu2e {
     // Each layer is intersection of cylinder and trapezoid.
     
     // Flag
-    bool visible             = config.getBool("muondegrader.visible",false);
-    bool solid               = config.getBool("muondegrader.solid" ,false);
     int const verbosityLevel = config.getInt("muondegrader.verbosityLevel", 0);
-    bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV       = true;
+    
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "MuonDegrader", "muondegrader" );
 
     bool addDegrader  = config.getBool("muondegrader.build",false);
     vector<double> degraderR, degraderDZB, degraderDZT, degraderPhi;
@@ -901,12 +781,7 @@ namespace mu2e {
                       coll5.getLocal(),
                       parent.logical,
                       0,
-                      visible,
-                      G4Color::Blue(),
-                      solid,
-                      forceAuxEdgeVisible,
-                      placePV,
-                      doSurfaceCheck
+                      G4Color::Blue()
                       );
 
         if ( verbosityLevel > 0 ) {
@@ -937,11 +812,10 @@ namespace mu2e {
 
     // -- vacuum wall
     int const verbosityLevel = config.getInt("pbar.verbosityLevel", 0);
-    bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV       = true;
-    bool visible = config.getBool("pbar.visible",false);
-    bool solid   = config.getBool("pbar.solid",false);
+
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "PbarAbs", "pbar" );
+    
 
     // Throw exception if pbarwedge.build is used
     if ( config.hasName("pbarwedge.build") )
@@ -968,12 +842,7 @@ namespace mu2e {
                 pbarWindow.getLocal(),
                 parent,
                 0,
-                visible,
-                G4Color::Yellow(),
-                solid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
+                G4Color::Yellow()
                 );
       
     }
@@ -1020,12 +889,8 @@ namespace mu2e {
                       G4ThreeVector(0.,0.,pbarWedge_dz/2+pbarWindow.halfLength()),
                       parent.logical,
                       0,
-                      visible,
                       G4Color::Yellow(),
-                      solid,
-                      forceAuxEdgeVisible,
-                      placePV,
-                      doSurfaceCheck
+		      "PbarAbs"
                       );
 
       } 
@@ -1049,12 +914,8 @@ namespace mu2e {
                       polyPositionInMu2e - parent.centerInMu2e(),
                       parent,
                       0,
-                      visible,
                       G4Colour::Yellow(),
-                      solid,
-                      forceAuxEdgeVisible,
-                      placePV,
-                      doSurfaceCheck
+		      "PbarAbs"
                       );
       }
     else 
@@ -1093,12 +954,8 @@ namespace mu2e {
                 pbarTS1InPos,
                 _helper->locateVolInfo("TS1Vacuum"),
                 0,
-                visible,
                 G4Color::Yellow(),
-                solid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
+		"PbarAbs"
               );
     }
 
@@ -1128,12 +985,8 @@ namespace mu2e {
                 pbarTS1OutPos,
                 _helper->locateVolInfo("TS1Vacuum"),
                 0,
-                visible,
                 G4Color::Yellow(),
-                solid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
+		"PbarAbs"
               );
     }
 
@@ -1172,12 +1025,8 @@ namespace mu2e {
                 pbarTS2Pos,
                 _helper->locateVolInfo("TS2Vacuum"),
                 0,
-                visible,
                 G4Color::Yellow(),
-                solid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
+		"PbarAbs"
               );
     }
 
@@ -1203,12 +1052,8 @@ namespace mu2e {
                 pbarTS31Pos,
                 _helper->locateVolInfo("TS3Vacuum"),
                 0,
-                visible,
                 G4Color::Yellow(),
-                solid,
-                forceAuxEdgeVisible,
-                placePV,
-                doSurfaceCheck
+		"PbarAbs"
               );
     }
 

@@ -1,9 +1,9 @@
 //
 // Free function to create and place a new G4Tubs, place inside a logical volume.
 //
-// $Id: nestPolycone.cc,v 1.1 2013/04/30 14:56:57 knoepfel Exp $
+// $Id: nestPolycone.cc,v 1.2 2014/09/19 19:15:23 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/04/30 14:56:57 $
+// $Date: 2014/09/19 19:15:23 $
 //
 // Original author Rob Kutschke
 //
@@ -72,5 +72,43 @@ namespace mu2e {
 
   }
 
+
+  //
+  // Create and place a G4Polycone inside a logical volume.
+  //
+  VolumeInfo nestPolycone ( string const & name,
+			    PolyconsParams const & polyParams,
+			    G4Material* material,
+			    G4RotationMatrix const* rot,
+			    G4ThreeVector const & offset,
+			    VolumeInfo const & parent,
+			    int copyNo,
+			    G4Colour const color,
+			    string const & lookupToken
+			    ){
+    
+    VolumeInfo info(name,offset,parent.centerInWorld);
+    
+    info.solid    = new G4Polycone( name, 
+				    polyParams.phi0(),
+				    polyParams.phiTotal(),
+				    polyParams.numZPlanes(),
+				    &polyParams.zPlanes()[0],
+				    &polyParams.rInner()[0],
+				    &polyParams.rOuter()[0] );
+
+    finishNesting(info,
+                  material,
+                  rot,
+                  offset,
+                  parent.logical,
+                  copyNo,
+                  color,
+		  lookupToken
+                  );
+
+    return info;
+
+  }
 
 }

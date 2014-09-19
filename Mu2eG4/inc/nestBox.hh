@@ -3,9 +3,9 @@
 //
 // Free function to create a new G4 Box, placed inside a logical volume.
 //
-// $Id: nestBox.hh,v 1.10 2013/09/26 19:06:02 knoepfel Exp $
+// $Id: nestBox.hh,v 1.11 2014/09/19 19:14:53 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2013/09/26 19:06:02 $
+// $Date: 2014/09/19 19:14:53 $
 //
 // Original author Rob Kutschke
 //
@@ -139,6 +139,58 @@ namespace mu2e {
                        bool const placePV,
                        bool const doSurfaceCheck
                        );
+
+  // Alternate argument list 
+  // using VolumeInfo object
+  VolumeInfo nestBox ( std::string const& name,
+		       std::vector<double> const&  halfDim,
+		       G4Material* material,
+		       G4RotationMatrix const* rot,
+		       G4ThreeVector const& offset,
+		       G4LogicalVolume* parent,
+		       int copyNo,
+		       G4Colour const color,
+		       std::string const& lookupToken = ""
+		       );
+
+  // Alternate argument list 
+  // using VolumeInfo object
+  VolumeInfo nestBox ( std::string const& name,
+		       double const halfDim[3],
+		       G4Material* material,
+		       G4RotationMatrix const* rot,
+		       G4ThreeVector const& offset,
+		       VolumeInfo const & parent,
+		       int copyNo,
+		       G4Colour const color,
+		       std::string const& lookupToken = ""
+		       );
+
+  // Alternate argument list 
+  // using VolumeInfo object
+  inline VolumeInfo nestBox ( std::string const& name,
+			      std::vector<double> const&  halfDim,
+			      G4Material* material,
+			      G4RotationMatrix const* rot,
+			      G4ThreeVector const& offset,
+			      VolumeInfo const & parent,
+			      int copyNo,
+			      G4Colour const color,
+			      std::string const& lookupToken = ""
+			      ) {
+    return nestBox( name,
+		    halfDim,
+		    material,
+		    rot,
+		    offset,
+		    parent.logical,
+		    copyNo,
+		    color,
+		    lookupToken
+		    );
+
+  }
+  
 
 }
 

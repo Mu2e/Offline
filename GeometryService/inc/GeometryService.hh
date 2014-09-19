@@ -5,9 +5,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService.hh,v 1.21 2013/03/15 15:52:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:04 $
+// $Id: GeometryService.hh,v 1.22 2014/09/19 19:14:41 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:14:41 $
 //
 // Original author Rob Kutschke
 //
@@ -37,6 +37,7 @@ namespace mu2e {
   class Target;
   class G4;
   class Mu2eG4Study;
+  class G4GeometryOptions;
 
   class GeometryService {
 public:
@@ -48,6 +49,9 @@ public:
     void postEndJob();
 
     SimpleConfig const& config() const { return *_config;}
+
+    G4GeometryOptions const * geomOptions() const { return _g4GeomOptions.get(); }
+    G4GeometryOptions       * geomOptions()       { return _g4GeomOptions.get(); }
 
     template <class DET>
     bool hasElement()
@@ -85,6 +89,10 @@ private:
 
     // The object that parses run-time configuration file.
     std::unique_ptr<SimpleConfig> _config;
+
+    // Load G4 geometry options
+    std::unique_ptr<G4GeometryOptions> _g4GeomOptions;
+    
 
     // Check the configuration.
     void checkConfig();

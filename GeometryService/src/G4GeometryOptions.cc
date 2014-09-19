@@ -32,9 +32,9 @@ namespace mu2e {
   }
 
   //======================================================================
-  void G4GeometryOptions::loadVolume( const SimpleConfig& config, 
-                                      const std::string& volName, 
-                                      const std::string& prefix ) {
+  void G4GeometryOptions::loadEntry( const SimpleConfig& config, 
+                                     const std::string& volName, 
+                                     const std::string& prefix ) {
     
     mapInserter( doSurfaceCheck_     , config, volName, prefix+".doSurfaceCheck"     , defaultDoSurfaceCheck_      );
     mapInserter( isSolid_            , config, volName, prefix+".isSolid"            , defaultIsSolid_             );

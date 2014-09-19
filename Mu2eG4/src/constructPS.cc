@@ -1,9 +1,9 @@
 //
 // Free function to create  Production Solenoid and Production Target.
 //
-// $Id: constructPS.cc,v 1.19 2013/09/06 19:39:18 tassiell Exp $
-// $Author: tassiell $
-// $Date: 2013/09/06 19:39:18 $
+// $Id: constructPS.cc,v 1.20 2014/09/19 19:15:04 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 19:15:04 $
 //
 // Original author KLG based on Mu2eWorld constructPS
 //
@@ -19,6 +19,7 @@
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/Polycone.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -57,17 +58,14 @@ namespace mu2e {
     // Extract some information from the config file.
 
     int verbosityLevel                  = _config.getInt("PS.verbosityLevel");
-    bool const _psVisible               = _config.getBool("PS.visible");
-    bool const _psSolid                 = _config.getBool("PS.solid");
                                                 
     G4Material* psVacVesselMaterial = findMaterialOrThrow(psVacVesselInnerParams.materialName());
 
     verbosityLevel >0 && 
       cout << __func__ << " verbosityLevel                   : " << verbosityLevel  << endl;
 
-    bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV       = true;
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "PS", "PS" );
 
     bool psVacuumSensitive = _config.getBool("PS.Vacuum.Sensitive", false);
 
@@ -89,12 +87,8 @@ namespace mu2e {
                psVacVesselInnerParams.originInMu2e()-_hallOriginInMu2e,
                parent,
                0,
-               _psVisible,
                G4Colour::Green(),
-               _psSolid,
-               forceAuxEdgeVisible,
-               placePV,
-               doSurfaceCheck
+	       "PS"
                );
 
     VolumeInfo psVacVesselOuterInfo = 
@@ -105,12 +99,8 @@ namespace mu2e {
                psVacVesselOuterParams.originInMu2e()-_hallOriginInMu2e,
                parent,
                0,
-               _psVisible,
                G4Colour::Green(),
-               _psSolid,
-               forceAuxEdgeVisible,
-               placePV,
-               doSurfaceCheck
+	       "PS"
                );
 
     // two endplates
@@ -126,12 +116,8 @@ namespace mu2e {
                psVacVesselEndPlateDParams.originInMu2e()-_hallOriginInMu2e,
                parent,
                0,
-               _psVisible,
                G4Colour::Yellow(),
-               _psSolid,
-               forceAuxEdgeVisible,
-               placePV,
-               doSurfaceCheck
+	       "PS"
                );
 
     VolumeInfo psVacVesselEndPlateUInfo 
@@ -142,12 +128,8 @@ namespace mu2e {
                  psVacVesselEndPlateUParams.originInMu2e()-_hallOriginInMu2e,
                  parent,
                  0,
-                 _psVisible,
                  G4Colour::Red(),
-                 _psSolid,
-                 forceAuxEdgeVisible,
-                 placePV,
-                 doSurfaceCheck
+		 "PS"
                  );
 
     Polycone const & psCoilShellParams = *psgh.getCoilShellParamsPtr();
@@ -177,12 +159,8 @@ namespace mu2e {
                   psCoilShellParams.originInMu2e()-parent.centerInMu2e(),
                   parent.logical,
                   0,
-                  _psVisible,
                   G4Colour::White(),
-                  _psSolid,
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
+		  "PS"
                   );
 
     // the superconducting Coils
@@ -201,12 +179,8 @@ namespace mu2e {
                                       psCoil1Params.originInMu2e()- psCoilShellParams.originInMu2e(),
                                       psCoilShellInfo,
                                       0,
-                                      _psVisible,
                                       G4Colour::Red(),
-                                      _psSolid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
+				      "PS"
                                       );
 
 
@@ -219,12 +193,8 @@ namespace mu2e {
                                       psCoil2Params.originInMu2e()- psCoilShellParams.originInMu2e(),
                                       psCoilShellInfo,
                                       0,
-                                      _psVisible,
                                       G4Colour::Red(),
-                                      _psSolid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
+				      "PS"
                                       );
 
 
@@ -237,12 +207,8 @@ namespace mu2e {
                                       psCoil3Params.originInMu2e()- psCoilShellParams.originInMu2e(),
                                       psCoilShellInfo,
                                       0,
-                                      _psVisible,
                                       G4Colour::Red(),
-                                      _psSolid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      doSurfaceCheck
+				      "PS"
                                       );
 
 
@@ -299,12 +265,8 @@ namespace mu2e {
                                           psVacuumParams.originInMu2e()-_hallOriginInMu2e,
                                           parent,
                                           0,
-                                          _psVisible,
                                           G4Colour::Blue(),
-                                          _psSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          doSurfaceCheck
+					  "PS"
                                           );
 
     if(psVacuumSensitive) {
@@ -319,8 +281,7 @@ namespace mu2e {
 //
 //    G4Material* prodTargetMaterial = findMaterialOrThrow(_config.getString("targetPS_materialName"));
 //
-//    bool prodTargetVisible = _config.getBool("targetPS.visible",true);
-//    bool prodTargetSolid   = _config.getBool("targetPS.solid",true);
+//    geomOptions->loadEntry( config, "ProductionTarget", "targetPS" );
 //
 //    VolumeInfo prodTargetInfo   = nestTubs( "ProductionTarget",
 //                                            prodTargetParams,
@@ -329,12 +290,7 @@ namespace mu2e {
 //                                            tgt->position() - psVacuumInfo.centerInMu2e(),
 //                                            psVacuumInfo,
 //                                            0,
-//                                            prodTargetVisible,
-//                                            G4Colour::Magenta(),
-//                                            prodTargetSolid,
-//                                            forceAuxEdgeVisible,
-//                                            placePV,
-//                                            doSurfaceCheck
+//                                            G4Colour::Magenta()
 //                                            );
     constructTargetPS(psVacuumInfo, _config);
 

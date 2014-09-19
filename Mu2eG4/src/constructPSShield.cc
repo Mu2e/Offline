@@ -24,6 +24,9 @@
 
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
+
+#include "GeometryService/inc/G4GeometryOptions.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
@@ -37,9 +40,16 @@ namespace mu2e {
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
-    const bool placePV             = true;
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "PSShield", "PSShield" );
+
+    // Do not want to put these lookups in a loop, since it would
+    // increase the processing time
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible( "PSShield" );
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck     ( "PSShield" );
+    const bool placePV             = geomOptions->placePV            ( "PSShield" );
+    const bool isVisible           = geomOptions->isVisible          ( "PSShield" );
+    const bool isSolid             = geomOptions->isSolid            ( "PSShield" );
 
     // place the polycone shells
     for(unsigned ishell=0; ishell < hrs->shells().size(); ++ishell) {
@@ -69,12 +79,10 @@ namespace mu2e {
                     pss.centerInParent,
                     parent.logical,
                     0,
-                    config.getBool("PSShield.visible"),
-
+		    isVisible,
                     //G4Colour(0xFF/double(0xFF), 0x99/double(0xFF), 0),
                     G4Colour(config.getHep3Vector("PSShield.color"+osnum.str())),
-
-                    config.getBool("PSShield.solid"),
+		    isSolid,
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck

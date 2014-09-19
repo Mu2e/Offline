@@ -25,8 +25,8 @@ double PS.coilRefZ  = -7929;
 double PS.cryostatRefZ  = -7943;
 
 int    PS.verbosityLevel      = 0;
-bool   PS.visible             = true;
-bool   PS.solid               = false;
+bool   PS.isVisible           = true;
+bool   PS.isSolid             = false;
 
 double PS.VacVessel.rIn            =  750.;
 double PS.VacVessel.rOut           = 1300.;
