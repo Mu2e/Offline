@@ -1,6 +1,6 @@
-// $Id: CalPatRec_module.cc,v 1.14 2014/09/18 22:18:05 murat Exp $
+// $Id: CalPatRec_module.cc,v 1.15 2014/09/19 20:49:45 murat Exp $
 // $Author: murat $ 
-// $Date: 2014/09/18 22:18:05 $
+// $Date: 2014/09/19 20:49:45 $
 //
 // framework
 #include "art/Framework/Principal/Event.h"
@@ -251,8 +251,8 @@ namespace mu2e {
     _minnhits    (pset.get<unsigned>("MinNHits" ,20)),
     _tmin            (pset.get<double>("tmin")),
     _tmax            (pset.get<double>("tmax")),
-    _minClusterEnergy(pset.get<double>("minClusterEnergy" )),
     _tbin            (pset.get<double>("tbin"             ,20.0)),
+    _minClusterEnergy(pset.get<double>("minClusterEnergy" )),
     _ymin            (pset.get<double>("ymin"             ,4)),
     _1dthresh        (pset.get<double>("OneDPeakThreshold",4.0)),
     _pitchAngle      (pset.get<double>("_pitchAngle"      ,0.67)),
@@ -414,11 +414,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // find mc truth if we're making diagnostics
 //-----------------------------------------------------------------------------
-    if (_diag > 0){
-      if(!_kfitmc.findMCData(event)){
-        throw cet::exception("RECO")<<"mu2e::CalPatRec: MC data missing or incomplete"<< endl;
-      }
-    }
+//     if (_diag > 0){
+//       if(!_kfitmc.findMCData(event)){
+//         throw cet::exception("RECO")<<"mu2e::CalPatRec: MC data missing or incomplete"<< endl;
+//       }
+//     }
 //-----------------------------------------------------------------------------
 // find the time peaks in the time spectrum of selected hits.  
 //-----------------------------------------------------------------------------

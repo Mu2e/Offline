@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: MergePatRec_module.cc,v 1.7 2014/08/15 14:59:18 murat Exp $
+// $Id: MergePatRec_module.cc,v 1.8 2014/09/19 20:49:45 murat Exp $
 // $Author: murat $ 
-// $Date: 2014/08/15 14:59:18 $
+// $Date: 2014/09/19 20:49:45 $
 // takes inputs from two track finding algorithms, produces one track collection 
 // on output to be used for analysis
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,15 +70,16 @@ namespace mu2e {
   MergePatRec::MergePatRec(fhicl::ParameterSet const& pset) :
     _diag          (pset.get<int>("diagLevel",0)),
     _debug         (pset.get<int>("debugLevel",0)),
-    _tpart         ((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
-    _fdir          ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
+    _tpart         ((TrkParticle::type)(pset.get<int>("fitparticle"))),
+    _fdir          ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _trkPatRecLabel(pset.get<std::string>("trkPatReclabel","TrkPatRec")),
     _calPatRecLabel(pset.get<std::string>("calPatReclabel","CalPatRec"))
   {
     // tag the data product instance by the direction and particle type found by this module
     _iname = _fdir.name() + _tpart.name();
-    produces<AlgorithmIDCollection>("DownstreameMinus");
-    produces<KalRepPtrCollection>  ("DownstreameMinus");
+
+    produces<AlgorithmIDCollection>(_iname);
+    produces<KalRepPtrCollection>  (_iname);
   }
 
   MergePatRec::~MergePatRec(){
@@ -99,8 +100,8 @@ namespace mu2e {
     unique_ptr<AlgorithmIDCollection> algs     (new AlgorithmIDCollection);
     unique_ptr<KalRepPtrCollection>   trackPtrs(new KalRepPtrCollection  );
 
-    AnEvent.getByLabel(_trkPatRecLabel,"DownstreameMinus",tpr_h);
-    AnEvent.getByLabel(_calPatRecLabel,"DownstreameMinus",cpr_h);
+    AnEvent.getByLabel(_trkPatRecLabel,_iname,tpr_h);
+    AnEvent.getByLabel(_calPatRecLabel,_iname,cpr_h);
 
     list_of_kreps_tpr = (mu2e::KalRepPtrCollection*) &(*tpr_h);
     list_of_kreps_cpr = (mu2e::KalRepPtrCollection*) &(*cpr_h);
