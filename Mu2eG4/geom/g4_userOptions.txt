@@ -12,6 +12,10 @@ bool   g4.printPhysicsProcessSummary = false;
 
 // invoke volume overlap check where enabled (draws random numbers)
 bool g4.doSurfaceCheck = false;
+vector<string> g4.doSurfaceCheck.drop  = {};
+vector<string> g4.doSurfaceCheck.keep  = {};
+vector<string> g4.doSurfaceCheck.order = { "g4.doSurfaceCheck.drop", 
+                                           "g4.doSurfaceCheck.keep" };
 
 // number of random points on the volume surface
 int  g4.nSurfaceCheckPointsPercmsq =   1;
@@ -21,6 +25,29 @@ int  g4.maxSurfaceCheckPoints = 10000000; // per volume
 //-----------------------
 // Other options
 //-----------------------
+
+bool g4.isSolid   = false;
+vector<string> g4.isSolid.drop  = {};
+vector<string> g4.isSolid.keep  = {};
+vector<string> g4.isSolid.order = { "g4.isSolid.drop",
+                                    "g4.isSolid.keep" };
+
+bool g4.isVisible = true;
+vector<string> g4.isVisible.drop  = {};
+vector<string> g4.isVisible.keep  = {};
+vector<string> g4.isVisible.order = { "g4.isVisible.drop",
+                                      "g4.isVisible.keep" };
+
+bool g4.placePV   = true;
+vector<string> g4.placePV.drop  = {};
+vector<string> g4.placePV.keep  = {};
+vector<string> g4.placePV.order = { "g4.placePV.drop",
+                                    "g4.placePV.keep" };
+bool g4.forceAuxEdgeVisible = true;
+vector<string> g4.forceAuxEdgeVisible.drop  = {};
+vector<string> g4.forceAuxEdgeVisible.keep  = {};
+vector<string> g4.forceAuxEdgeVisible.order = { "g4.forceAuxEdgeVisible.drop",
+                                                "g4.forceAuxEdgeVisible.keep" };
 
 // Uncomment to enable debug printout on a per event or per track basis.
 //vector<int> g4.steppingActionEventList = { 0, 1 };
