@@ -1,3 +1,12 @@
+// G4 geometry options look-up facility, to be used in conjunction
+// with SimpleConfig.
+//
+// $Id: G4GeometryOptions.cc,v 1.3 2014/09/19 20:06:25 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/09/19 20:06:25 $
+//
+// Original author: Kyle Knoepfel
+
 // C++ includes
 #include <regex>
 
@@ -122,8 +131,8 @@ namespace mu2e {
                                        const bool default_value ){
     
     auto test = map.emplace( volName,
-                              config.getBool( var, default_value )
-                              );
+			     config.getBool( var, default_value )
+			     );
     if ( !test.second ) 
       cet::exception("GEOM") << volName << " not successfully inserted into map using var " << var << "\n" ;
     
