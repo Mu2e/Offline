@@ -15,6 +15,10 @@
 #include "TNamed.h"
 
 #include "Stntuple/mod/StntupleModule.hh"
+
+#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "TrkBase/TrkParticle.hh"
+
 namespace mu2e {
 class StntupleMaker : public StntupleModule {
 //------------------------------------------------------------------------------
@@ -41,7 +45,12 @@ protected:
 //-----------------------------------------------------------------------------
   std::string   fG4ModuleLabel;
   std::string   fStrawHitMaker;
-  std::string   fTrkPatRecDem;
+
+
+  std::string           fTrkPatRec1;
+  TrkParticle           fFitParticle1;
+  mu2e::TrkFitDirection fFitDirection1;
+
   std::string   fTrkPatRecUem;
   std::string   fTrkPatRecDmm;
   std::string   fTrkPatRecUmm;

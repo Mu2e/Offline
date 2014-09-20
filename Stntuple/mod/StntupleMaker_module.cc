@@ -16,6 +16,8 @@
 #include "Stntuple/obj/AbsEvent.hh"
 #include "Stntuple/obj/TStnEvent.hh"
 
+#include "fhiclcpp/ParameterSet.h"
+
 #include <assert.h>
 #include <iostream>
 #include <iomanip>
@@ -67,17 +69,20 @@ StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet):
   , fMakeSimp           (PSet.get<int>         ("makeSimp"       ,        1       ))
   , fMakeVirtualHits    (PSet.get<int>         ("makeVirtualHits",        0       ))
 
-  , fG4ModuleLabel      (PSet.get<std::string> ("g4ModuleLabel"      , "g4run"        ))
-  , fStrawHitMaker      (PSet.get<std::string> ("strawHitMaker"      , "makeSH"       ))
-  , fTrkPatRecDem       (PSet.get<std::string> ("trkPatRecDem"       , "trkPatRecDem" ))
+  , fG4ModuleLabel      (PSet.get<std::string> ("g4ModuleLabel"      ))
+  , fStrawHitMaker      (PSet.get<std::string> ("strawHitMaker"      ))
+  , fTrkPatRec1         (PSet.get<std::string> ("trkPatRec1"         ))
+  , fFitParticle1       ((TrkParticle::type)(PSet.get<int>("fitparticle1")))
+  , fFitDirection1      ((mu2e::TrkFitDirection::FitDirection)(PSet.get<int>("fitdirection1")))
+
   , fTrkPatRecUem       (PSet.get<std::string> ("trkPatRecUem"       , "trkPatRecUem" ))
   , fTrkPatRecDmm       (PSet.get<std::string> ("trkPatRecDmm"       , "trkPatRecDmm" ))
   , fTrkPatRecUmm       (PSet.get<std::string> ("trkPatRecUmm"       , "trkPatRecUmm" ))
-  , fCaloCrystalHitMaker(PSet.get<std::string> ("caloCrystalHitMaker", "CaloCrystalHitsMaker"))
-  , fCaloClusterMaker   (PSet.get<std::string> ("caloClusterMaker"   , "makeCaloCluster"))
-  , fTrkExtrapol        (PSet.get<std::string> ("trkExtrapol"        , "trkExtrapol"  ))
-  , fTrkCalMatch        (PSet.get<std::string> ("trkCalMatch"        , "trackCaloMatching"))
-  , fPidDem             (PSet.get<std::string> ("pidDem"             , "undefined"    ))
+  , fCaloCrystalHitMaker(PSet.get<std::string> ("caloCrystalHitsMaker"))
+  , fCaloClusterMaker   (PSet.get<std::string> ("caloClusterMaker"    ))
+  , fTrkExtrapol        (PSet.get<std::string> ("trkExtrapol"         ))
+  , fTrkCalMatch        (PSet.get<std::string> ("trkCalMatch"         ))
+  , fPidDem             (PSet.get<std::string> ("pidDem"              ))
 
   , fTrkPatRecDem2       (PSet.get<std::string> ("trkPatRecDem2"       , "trkPatRecDemHack" ))
   , fTrkPatRecUem2       (PSet.get<std::string> ("trkPatRecUem2"       , "trkPatRecUemHack" ))
@@ -87,8 +92,8 @@ StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet):
   , fTrkCalMatch2        (PSet.get<std::string> ("trkCalMatch2"        , "caloMatchingHack"   ))
   , fPidDem2             (PSet.get<std::string> ("pidDem2"             , "undefined"          ))
 
-  , fMinTActive         (PSet.get<double>      ("minTActive"     ,   710.         ))
-  , fMinECrystal        (PSet.get<double>      ("minECrystal"    ,    0.1         ))
+  , fMinTActive         (PSet.get<double>      ("minTActive"     ))
+  , fMinECrystal        (PSet.get<double>      ("minECrystal"    ))
 {
 
   char  *ver, *text;
@@ -152,6 +157,8 @@ void StntupleMaker::beginJob() {
 
   int split_mode, compression_level, buffer_size;
 
+  std::string      _iname1;	// data instance name
+
   THistModule::beforeBeginJob();
 
   // create data blocks and branches
@@ -165,6 +172,8 @@ void StntupleMaker::beginJob() {
   split_mode        = THistModule::SplitLevel();
   compression_level = THistModule::CompressionLevel();
   buffer_size       = THistModule::BufferSize();
+
+  _iname1           = fFitDirection1.name() + fFitParticle1.name();
 //-----------------------------------------------------------------------------
 // calorimeter hit data
 // this is not RAW hit data yet...
@@ -228,7 +237,7 @@ void StntupleMaker::beginJob() {
     SetResolveLinksMethod("TrackBlock",StntupleInitMu2eTrackBlockLinks);
 
     if (track_data) {
-      track_data->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecDem.data()    ,"DownstreameMinus");
+      track_data->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRec1.data()    ,_iname1.data());
       track_data->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"AlgoCLOSESTSeededByENERGY");
       track_data->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol.data()     ,"");
       //      track_data->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()     ,"");
@@ -421,7 +430,7 @@ bool StntupleMaker::filter(AbsEvent& AnEvent) {
 //-----------------------------------------------------------------------------
 // connect to the error reporting facility
 //-----------------------------------------------------------------------------
-  TStnErrorLogger* logger = Event()->GetErrorLogger();
+//  TStnErrorLogger* logger = Event()->GetErrorLogger();
 //   logger->Connect("Report(Int_t, const char*)",
 // 		  "StntupleModule",
 // 		  this,
