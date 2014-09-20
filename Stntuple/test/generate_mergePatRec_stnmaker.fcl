@@ -65,7 +65,7 @@ physics : {
 #------------------------------------------------------------------------------
 	    module_type      : StoppedParticleReactionGun
 	    physics          : {
-		pdgId            : 13
+		pdgId            : @local::pdgCode
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "flat"
 		elow             : 148.953 
@@ -195,10 +195,22 @@ services.scheduler.wantSummary: true
 physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 
-physics.producers.TrkExtrapol.fitterModuleLabel    : MergePatRec
-physics.producers.CaloMatching.fitterModuleLabel   : MergePatRec
-physics.producers.ParticleID.fitterModuleLabel     : MergePatRec
+physics.producers.TrkPatRec.fitparticle            : @local::pdgCode
+physics.producers.CalPatRec.fitparticle            : @local::pdgCode
+physics.producers.MergePatRec.fitparticle          : @local::pdgCode
 
-physics.filters.StntupleMaker.trkPatRecDem         : MergePatRec
+physics.producers.TrkExtrapol.fitterModuleLabel    : MergePatRec
+physics.producers.TrkExtrapol.fitparticle          : @local::pdgCode
+
+physics.producers.CaloMatching.fitterModuleLabel   : MergePatRec
+physics.producers.CaloMatching.fitparticle         : @local::pdgCode
+
+physics.producers.ParticleID.fitterModuleLabel     : MergePatRec
+physics.producers.ParticleID.fitparticle           : @local::pdgCode
+
+physics.filters.StntupleMaker.trkPatRec1           : MergePatRec
+physics.filters.StntupleMaker.fitparticle1         : @local::pdgCode
+physics.filters.StntupleMaker.fitdirection1        : 0
+
 physics.filters.StntupleMaker.makeStrawData        : 1
 physics.filters.StntupleMaker.g4ModuleLabel        : "g4run"     # 

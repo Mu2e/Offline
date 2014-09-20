@@ -1,9 +1,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // A half-interactive 2D event display. 
 //
-// $Id: MuHitDisplay_module.cc,v 1.5 2014/09/18 22:58:01 murat Exp $
+// $Id: MuHitDisplay_module.cc,v 1.6 2014/09/20 17:54:06 murat Exp $
 // $Author: murat $
-// $Date: 2014/09/18 22:58:01 $
+// $Date: 2014/09/20 17:54:06 $
 //
 // Contact person:  Pavel Murat, Gianantonio Pezzulo
 //
@@ -104,6 +104,7 @@
 #include "TEllipse.h"
 #include "TText.h"
 #include "TNtuple.h"
+#include "TDatabasePDG.h"
 
 // Other includes
 // #include "CLHEP/Units/SystemOfUnits.h"
@@ -619,7 +620,7 @@ namespace mu2e {
   }
 
 
-  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
   bool MuHitDisplay::filter(art::Event& Evt) {
     const char* oname = "MuHitDisplay::filter";
 
@@ -630,6 +631,7 @@ namespace mu2e {
 
     TrackTool           *tt(0), *tg(0), *tmid(0);
     const GenParticle*  gen_signal;
+    int                 pdg_id, ndisks;
  
     TObjArray           list_of_ellipses;
     int                 n_displayed_hits, color(1), intime;
@@ -642,13 +644,16 @@ namespace mu2e {
     const KalRep*       trk;
     const CaloCluster   *cl, *clj;
     //    int             vane_id;
-    double xl, yl,      event_time;
+    double              xl, yl, event_time;
+    float               q;
+
     TString             opt; 
     Hep3Vector          pos1, mom1, pos2, mom2;
 
     printf("[%s] RUN: %10i EVENT: %10i\n",oname,Evt.run(),Evt.event());
 
     // Geometry of tracker envelope.
+
     mu2e::GeomHandle<mu2e::TTracker> ttHandle;
     const mu2e::TTracker* tracker = ttHandle.get();
 
@@ -767,14 +772,18 @@ namespace mu2e {
 	pos2.set(1.,1.,1.);
 	mom2.set(1.,1.,1.);
       }
-      //-----------------------------------------------------------------------------
-      // The generated signal particle.
-      //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// The generated signal particle.
+//-----------------------------------------------------------------------------
+					// this is not necessarily correct (for mixed events) !
       gen_signal = &fGenpColl->at(0);
-
-      tt   = new TrackTool(gen_signal->pdgId(), -1.,pos1,mom1,1.,Hep3Vector());
-      tg   = new TrackTool(gen_signal->pdgId(), -1.,gen_signal->position()      ,gen_signal->momentum()      ,1.,Hep3Vector());
-      tmid = new TrackTool(gen_signal->pdgId(), -1.,pos2  ,mom2 ,1.,Hep3Vector());
+      pdg_id     = gen_signal->pdgId();
+					// ROOT returns charge in units of dbar-quark charge
+ 
+      q    = TDatabasePDG::Instance()->GetParticle(pdg_id)->Charge()/3.;
+      tt   = new TrackTool(pdg_id, q,pos1,mom1,1.,Hep3Vector());
+      tg   = new TrackTool(pdg_id, q,gen_signal->position(),gen_signal->momentum(),1.,Hep3Vector());
+      tmid = new TrackTool(pdg_id, q,pos2  ,mom2 ,1.,Hep3Vector());
 
       int npt = fSteps->size();
       for (int ipt=0; ipt<npt; ++ipt){
@@ -793,65 +802,19 @@ namespace mu2e {
       arc->DrawArc( tmid->xc(), tmid->yc(), tmid->rho());
       arc->SetLineColor(kRed);
     }
+    double rmin, rmax;
 //-----------------------------------------------------------------------------
-// draw vanes or disks
+// Draw disks: the inner and outer calorimeter boundaries
 //-----------------------------------------------------------------------------
-    int nv(0);// = vc->nVane();
-    if( geom->hasElement<mu2e::VaneCalorimeter>() ){
-      mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
-      nv = vc->nVane();
-    }else if( geom->hasElement<mu2e::DiskCalorimeter>() ){
-      mu2e::GeomHandle<mu2e::DiskCalorimeter> dc;
-      nv = dc->nDisk();
-    }
-    //mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
-    double rmin, rmax, x1,y1,x2,y2;
-    if( geom->hasElement<mu2e::VaneCalorimeter>() ){
-      mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
-      for (int iv=0; iv<nv; iv++) {
-	const Vane* vane = &vc->vane(iv);
-	rmin = vane->innerRadius();
-	rmax = vane->outerRadius();
-	if(iv == 3) {			// top
-	  x1 = -50;
-	  y1 = rmin;
-	  x2 = 50;
-	  y2 = rmax;
-	}
-	else if (iv == 0) { // left
-	  x1 = -rmax;;
-	  y1 = -50;
-	  x2 = -rmin;
-	  y2 = +50;
-	}
-	else if (iv == 1) {		// bottom
-	  x1 = -50;
-	  y1 = -rmax;
-	  x2 = +50;
-	  y2 = -rmin;
-	}
-	else if (iv == 2) {		// right
-	  x1 = rmin;
-	  y1 = -50;
-	  x2 = rmax;
-	  y2 = +50;
-	}
-	box->DrawBox(x1,y1,x2,y2);
-      }
-    }
-    else if(geom->hasElement<mu2e::DiskCalorimeter>()) {
-      
-      mu2e::GeomHandle<mu2e::DiskCalorimeter> dc;
-      // Draw the inner and outer arc of calorimeter
+    mu2e::GeomHandle<mu2e::DiskCalorimeter> dc;
+    ndisks = dc->nDisk();
 
-      for (int iv=0; iv<nv; iv++) {
-	
-	rmin = dc->disk(iv).innerRadius();
-	rmax = dc->disk(iv).outerRadius();
-	arccalo->SetLineColor(kGreen+iv);
-	arccalo->DrawArc(0.,0., rmax);
-	arccalo->DrawArc(0.,0., rmin);
-      }
+    for (int id=0; id<ndisks; id++) {
+      rmin = dc->disk(id).innerRadius();
+      rmax = dc->disk(id).outerRadius();
+      arccalo->SetLineColor(kGreen+id);
+      arccalo->DrawArc(0.,0., rmax);
+      arccalo->DrawArc(0.,0., rmin);
     }
 //-----------------------------------------------------------------------------
 // print reconstructed tracks - all 4 hypotheses for comparison...
@@ -863,9 +826,8 @@ namespace mu2e {
     if (fPrintHits) opt += "+hits";
     
     if (fNTracks[0] > 0) {
-      //      HelixParams hel(HepVector, HepSymMatrix);
       
-      double  d0, r, phi0, x0, y0;
+      double  d0, om, r, phi0, x0, y0;
 
       printf(" I  alg ");
       TAnaDump::Instance()->printKalRep(0,"banner");
@@ -878,11 +840,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //	HelixParams hel = trk->helix(0);
 	d0   = trk->helix(0.).d0();
-	r    = fabs(1./trk->helix(0.).omega());
+	om   = trk->helix(0.).omega();
+	r    = fabs(1./om);
 	phi0 = trk->helix(0.).phi0();
 
-	x0   = -(r+d0)*sin(phi0);
-	y0   =  (r+d0)*cos(phi0);
+	x0   =  -(1/om+d0)*sin(phi0);
+	y0   =   (1/om+d0)*cos(phi0);
 // 	printf("[MuHitDispla::printHelixParams] d0 = %5.3f r = %5.3f phi0 = %5.3f x0 = %5.3f y0 = %5.3f\n",
 // 	       d0, r, phi0, x0, y0);
 	

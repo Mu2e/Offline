@@ -23,14 +23,19 @@ StntupleMaker : {
     processName         : undefined
     
     TimeOffsets         : { inputs : [ "protonTimeMap", "muonTimeMap" ] }    
-	    
-    strawHitMaker       : makeSH
-    caloCrystalHitMaker : CaloCrystalHitsMaker
-    caloClusterMaker    : MakeCaloCluster
-    trkPatRecDem        : TrkPatRec
-    trkExtrapol         : TrkExtrapol
-    trkCalMatch         : CaloMatching
-    pidDem              : ParticleID
+
+    g4ModuleLabel        : g4run
+    strawHitMaker        : makeSH
+    caloCrystalHitsMaker : CaloCrystalHitsMaker
+    caloClusterMaker     : MakeCaloCluster
+
+    trkPatRec1           : TrkPatRec
+    fitparticle1         : 11
+    fitdirection1        : 0
+
+    trkExtrapol          : TrkExtrapol
+    trkCalMatch          : CaloMatching
+    pidDem               : ParticleID
 
     makeCalData         : 1
     makeStrawData       : 0
@@ -43,7 +48,9 @@ StntupleMaker : {
     makeSimp            : 1
     makeVirtualHits     : 1
 	    
-    minTActive          : 0.
+    minTActive          : 0.     # ns
+    minECrystal         : 1.0    # MeV
+
     debugBits           : { 
 	# bit0:1  
 	# bit1:1 

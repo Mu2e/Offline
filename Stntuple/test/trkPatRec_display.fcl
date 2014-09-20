@@ -1,5 +1,5 @@
 # -*- mode: tcl -*-
-# $Id: trkPatRec_display.fcl,v 1.1 2014/08/26 20:27:55 murat Exp $
+# $Id: trkPatRec_display.fcl,v 1.2 2014/09/20 17:54:05 murat Exp $
 #------------------------------------------------------------------------------
 # 2D event display example
 # generate 105 MeV/c electrons, display them
@@ -21,8 +21,8 @@ process_name : trkPatRec
 # Read events from a file (made by example 3)
 #------------------------------------------------------------------------------
 source : {
-    module_type : EmptyEvent
-#    module_type : RootInput
+#    module_type : EmptyEvent
+    module_type : RootInput
     maxEvents   : 100
 }
 #------------------------------------------------------------------------------
@@ -53,8 +53,8 @@ services : {
 #------------------------------------------------------------------------------
 physics : {
     producers : {
-	generate      : @local::generate
-	g4run         : @local::g4run
+#	generate      : @local::generate
+#	g4run         : @local::g4run
 #------------------------------------------------------------------------------
 # digitization
 #------------------------------------------------------------------------------
@@ -91,8 +91,8 @@ physics : {
 # paths, start from clustering
 #------------------------------------------------------------------------------
     p1 : [
-	  generate, g4run,
-	  protonTimeMap, muonTimeMap, 
+#	  generate, g4run,
+#	  protonTimeMap, muonTimeMap, 
 	  makeSD, makeSH, FSHPreStereo,
 	  CaloReadoutHitsMaker, CaloCrystalHitsMaker,
 	  MakeCaloCluster, 
@@ -133,9 +133,9 @@ services.user.SeedService.maxUniqueEngines :  20
 #------------------------------------------------------------------------------
 # event generation,simulation and digitization
 #------------------------------------------------------------------------------
-physics.producers.generate.physics.pdgId   : 11
-physics.producers.generate.physics.elow    : 105.0010
-physics.producers.generate.physics.ehi     : 105.0015
+# physics.producers.generate.physics.pdgId   : 11
+# physics.producers.generate.physics.elow    : 105.0010
+# physics.producers.generate.physics.ehi     : 105.0015
 
 # physics.producers.generate.inputfile               : "Mu2eG4/test/genconfig_DownstreameMinus.txt"
 physics.producers.makeSD.TimeOffsets               :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
