@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalDiag.hh,v 1.2 2014/08/22 20:51:05 brownd Exp $
+// $Id: KalDiag.hh,v 1.3 2014/09/20 14:34:22 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/08/22 20:51:05 $
+// $Date: 2014/09/20 14:34:22 $
 //
 #ifndef KalDiag_HH
 #define KalDiag_HH
@@ -113,6 +113,7 @@ namespace mu2e
     bool _fillmc;
     int _debug,_diag;
     bool _uresid;
+    double _mingood;
     double _mintrkmom; // minimum true momentum at z=0 to create a track from
     double _mct0err;
     bool _mcambig;
@@ -145,6 +146,7 @@ namespace mu2e
     std::vector<TrkStrawHitInfo> _tshinfo;
 
 // MC true tuple variables
+    Int_t _npdigi, _npdgood;
     Int_t _nmc;
     Int_t _nmcactive;
     Int_t _nmchits;
