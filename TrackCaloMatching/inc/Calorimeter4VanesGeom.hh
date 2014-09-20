@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.hh,v 1.17 2014/08/01 20:57:45 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:45 $
+// $Id: Calorimeter4VanesGeom.hh,v 1.18 2014/09/20 18:04:22 murat Exp $
+// $Author: murat $
+// $Date: 2014/09/20 18:04:22 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -157,24 +157,24 @@ public :
 
         bool behindVane(HepPoint pos, int& vane);//{
 
-        void caloExtrapol(int&          diagLevel,
-			  int           evtNumber,
+        void caloExtrapol(int&             diagLevel,
+			  int              evtNumber,
 			  TrkFitDirection  fdir,
-			  TrkRep const* trep,
-			  double&       lowrange, 
-			  double&       highrange,
-			  HelixTraj     &trkHel, 
-			  int           &res0, 
+			  KalRep*          Krep,
+			  double&          lowrange, 
+			  double&          highrange,
+			  HelixTraj        &trkHel, 
+			  int              &res0, 
 			  int&             NIntersections,
 			  IntersectData_t* Intersections);
 
-        void caloExtrapol(TrkRep const* trep, 
-			  double& lowrange, 
-			  double& highrange, 
-			  HelixTraj &trkHel, 
-			  int &res0, 
+        void caloExtrapol(KalRep*         Krep, 
+			  double&         lowrange, 
+			  double&         highrange, 
+			  HelixTraj       &trkHel, 
+			  int             &res0, 
 			  DetIntersection &intersec0, 
-			  Length *pathLengths);
+			  Length *        pathLengths);
 
         void minimumPathLength(Length *length, int& vane, double& lowrange, double& highrange);
         

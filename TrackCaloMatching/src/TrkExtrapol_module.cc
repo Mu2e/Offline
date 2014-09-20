@@ -1,9 +1,9 @@
 //
 //
 //
-// $Id: TrkExtrapol_module.cc,v 1.19 2014/08/20 14:23:09 murat Exp $
+// $Id: TrkExtrapol_module.cc,v 1.20 2014/09/20 18:04:22 murat Exp $
 // $Author: murat $
-// $Date: 2014/08/20 14:23:09 $
+// $Date: 2014/09/20 18:04:22 $
 //
 // Original author G. Pezzullo
 //
@@ -312,15 +312,16 @@ namespace mu2e {
     
     for (int itrk=0; itrk< ntrk; ++itrk ){
       res0 = -1;
+					// extrapolation extends the track and thus changes it...
 
-      KalRep const* trep = trks->at(itrk).get();
-      if ( !trep ) continue;
-      TrkDifTraj const& traj = trep->traj();
+      KalRep* krep = (KalRep*) trks->at(itrk).get();
+      if ( !krep ) continue;
+      TrkDifTraj const& traj = krep->traj();
       double pos = 0.0;
     
-      double endTrk = trep->endFoundRange();
+      double endTrk = krep->endFoundRange();
       // starting from the end of the tracker!!!FIXME
-      HelixTraj trkHel(trep->helix(endTrk).params(),trep->helix(endTrk).covariance());
+      HelixTraj trkHel(krep->helix(endTrk).params(),krep->helix(endTrk).covariance());
 
       angle = Constants::pi*0.5 + trkHel.phi0();
 
@@ -363,7 +364,7 @@ namespace mu2e {
 
       fCaloVanes->caloExtrapol(_diagLevel, 
 			       (int) evt.event(), 
-			       _fitDir, trep, lowrange, highrange, 
+			       _fitDir, krep, lowrange, highrange, 
 			       trkHel,  
 			       res0, 
 			       nint,
@@ -375,19 +376,19 @@ namespace mu2e {
 	        evt.id().run(), evt.id().event(),
 	       res0,
 	       _fdir.name().c_str());
-	point = trep->traj().position(lowrange);
+	point = krep->traj().position(lowrange);
 	printf("point of trj at lowrange(%10.3f)  : ( %10.3f, %10.3f, %10.3f )\n", 
 	       lowrange,
 	       point.x(), point.y(), point.z());
       
-	point = trep->traj().position(highrange);
+	point = krep->traj().position(highrange);
 	printf("point of trj at highrange(%10.3f) : ( %10.3f, %10.3f, %10.3f )\n", 
 	       highrange,
 	       point.x(), point.y(), point.z());
       }
 
       if(_outPutNtup ==1){
-	filltrkdiag(int(itrk), intersection, nint, trep);
+	filltrkdiag(int(itrk), intersection, nint, krep);
       }
     
       for (int i=0; i<nint; i++) {

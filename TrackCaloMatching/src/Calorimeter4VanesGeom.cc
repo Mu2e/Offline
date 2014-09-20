@@ -1,7 +1,7 @@
 //
-// $Id: Calorimeter4VanesGeom.cc,v 1.14 2014/08/01 20:57:45 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:45 $
+// $Id: Calorimeter4VanesGeom.cc,v 1.15 2014/09/20 18:04:22 murat Exp $
+// $Author: murat $
+// $Date: 2014/09/20 18:04:22 $
 //
 // Original author G. Pezzullo & G. Tassielli
 //
@@ -271,7 +271,7 @@ namespace mu2e {
   void Calorimeter4VanesGeom::caloExtrapol(int&             diagLevel,
 					   int              evtNumber, 
 					   TrkFitDirection  fdir,
-					   TrkRep const*    trep,
+					   KalRep*          Krep,
 					   double&          lowrange, 
 					   double&          highrange,
 					   HelixTraj        &trkHel, 
@@ -282,20 +282,18 @@ namespace mu2e {
     
     static const char* oname = "Calorimeter4VanesGeom::caloExtrapol";
 
-    const KalRep* kalrepc = dynamic_cast<const KalRep*>(trep);
-    KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
     if(diagLevel>2){
 
       cout<<"start caloExtrapol, lowrange = "<<lowrange<<
 	", highrange = "<<highrange<<endl;
-      cout<<"point of traj at lowrange : "<<kalrep->traj().position(lowrange)<<endl;
-      cout<<"point of traj at highrange : "<<kalrep->traj().position(highrange)<<endl;
-      cout<<"fltLMin = "<<kalrep->startValidRange()<<
-	", fltLMax = "<<kalrep->endValidRange()<<endl;
+      cout<<"point of traj at lowrange : "<<Krep->traj().position(lowrange)<<endl;
+      cout<<"point of traj at highrange : "<<Krep->traj().position(highrange)<<endl;
+      cout<<"fltLMin = "<<Krep->startValidRange()<<
+	", fltLMax = "<<Krep->endValidRange()<<endl;
     }
 
     TrkErrCode rc;
-    rc = kalrep->extendThrough(lowrange);
+    rc = Krep->extendThrough(lowrange);
 
     if (rc.success() != 1 && rc.success() !=13) {
       printf(" %s ERROR: could not extend to lowrange = %10.3f, rc = %i, BAIL OUT\n",oname,lowrange,rc.success());
@@ -306,24 +304,25 @@ namespace mu2e {
       cout<<", after extention..."<<
 	", lowrange = "<<lowrange<<
 	", highrange = "<<highrange<<endl;
-      cout<<"point of traj at lowrange : "<<kalrep->traj().position(lowrange)<<endl;
-      cout<<"point of traj at highrange : "<<kalrep->traj().position(highrange)<<endl;
-      cout<<"fltLMin = "<<kalrep->startValidRange()<<
-	", fltLMax = "<<kalrep->endValidRange()<<endl;
+      cout<<"point of traj at lowrange : "<<Krep->traj().position(lowrange)<<endl;
+      cout<<"point of traj at highrange : "<<Krep->traj().position(highrange)<<endl;
+      cout<<"fltLMin = "<<Krep->startValidRange()<<
+	", fltLMax = "<<Krep->endValidRange()<<endl;
     }
 
-    TrkDifTraj const &traj = kalrep->traj();
+    TrkDifTraj const &traj = Krep->traj();
 
-    double circleRadius = 0.0;//, centerCircleX=0.0, centerCircleY = 0.0, angle = 0.0;
-    double startLowrange = lowrange;//, startHighrange = highrange;
+    double circleRadius; // P.Murat: has to be always positive
+    double startLowrange = lowrange;  
     if(fdir.dzdt() == -1.0) startLowrange = highrange;
-    circleRadius = 1.0/trkHel.omega();
+    circleRadius = fabs(1.0/trkHel.omega());
 
-    const int nVanes = _nVanes;
+    int nVanes = _nVanes;
 
-    double *entr = new double[nVanes];
-    double *ex = new double[nVanes];
+    double *entr   = new double[nVanes];
+    double *ex     = new double[nVanes];
     bool *isInside = new bool[nVanes];
+
     for(int jVane=0; jVane<nVanes; ++jVane){
       isInside[jVane] = false;
       entr[jVane] = 0.0;
@@ -346,137 +345,139 @@ namespace mu2e {
     NIntersections = 0;
     CLHEP::Hep3Vector trjVec;
     HepPoint trjPoint;
-    if(geom->hasElement<VaneCalorimeter>()){
-      GeomHandle<VaneCalorimeter> cg;// 05 - 21 - 2013 gianipez
-      for(int iStep = 0; iStep< nAngleSteps; ++iStep){
-	for(int jVane=0; jVane<nVanes; ++jVane){
-	  // if(diagLevel>4){
-// 	    cout<<" tmpRange = "<< tmpRange<<
-// 	      ", trj.position(tmpRange) = "<<traj.position(tmpRange)<<endl;
+ //    if(geom->hasElement<VaneCalorimeter>()){
+//       GeomHandle<VaneCalorimeter> cg;// 05 - 21 - 2013 gianipez
+//       for(int iStep = 0; iStep< nAngleSteps; ++iStep){
+// 	for(int jVane=0; jVane<nVanes; ++jVane){
+// 	  // if(diagLevel>4){
+// // 	    cout<<" tmpRange = "<< tmpRange<<
+// // 	      ", trj.position(tmpRange) = "<<traj.position(tmpRange)<<endl;
+// // 	  }
+// 	  trjPoint = traj.position(tmpRange);
+// 	  trjVec.setX(trjPoint.x());// 05 - 21 - 2013 gianipez
+// 	  trjVec.setY(trjPoint.y());// 05 - 21 - 2013 gianipez
+// 	  trjVec.setZ(trjPoint.z());// 05 - 21 - 2013 gianipez
+
+// 	  trjVec = fromTrkToMu2eFrame(trjVec);// 05 - 21 - 2013 gianipez
+// 	  if(diagLevel > 4){
+// 	    printf("\nrange = %10.3f\n trj.position(%10.3f, %10.3f, %10.3f)\n"
+// 		    , tmpRange, trjVec.x(), trjVec.y(), trjVec.z() );
 // 	  }
-	  trjPoint = traj.position(tmpRange);
-	  trjVec.setX(trjPoint.x());// 05 - 21 - 2013 gianipez
-	  trjVec.setY(trjPoint.y());// 05 - 21 - 2013 gianipez
-	  trjVec.setZ(trjPoint.z());// 05 - 21 - 2013 gianipez
-
-	  trjVec = fromTrkToMu2eFrame(trjVec);// 05 - 21 - 2013 gianipez
-	  if(diagLevel > 4){
-	    printf("\nrange = %10.3f\n trj.position(%10.3f, %10.3f, %10.3f)\n"
-		    , tmpRange, trjVec.x(), trjVec.y(), trjVec.z() );
-	  }
-	  if( cg->isInsideVane(jVane,trjVec ) ){// if(behindVane(traj.position(tmpRange), jVane) ){
-	    if(!isInside[jVane]){
-	      if(diagLevel>4){
-		cout<<"Event Number : "<< evtNumber<< endl;
-		cout<<" vane "<<jVane<<
-		  "isInside : true"<<
-		  "pathLength entrance = "<<tmpRange<<endl;
-	      }
-	      isInside[jVane] = true;
-	      if(fdir.dzdt() == 1.0){
-		entr[jVane] = tmpRange - pathStepSize;
-	      }else if(fdir.dzdt() == -1.0){
-		entr[jVane] = tmpRange + pathStepSize;
-	      }
-	    }
-	  }else if(isInside[jVane]){
-	    if(fdir.dzdt() == 1.0){
-	      ex[jVane] = tmpRange + pathStepSize;
-	    }else if(fdir.dzdt() == -1.0){
-	      ex[jVane] = tmpRange - pathStepSize;
-	    }
+// 	  if( cg->isInsideVane(jVane,trjVec ) ){// if(behindVane(traj.position(tmpRange), jVane) ){
+// 	    if(!isInside[jVane]){
+// 	      if(diagLevel>4){
+// 		cout<<"Event Number : "<< evtNumber<< endl;
+// 		cout<<" vane "<<jVane<<
+// 		  "isInside : true"<<
+// 		  "pathLength entrance = "<<tmpRange<<endl;
+// 	      }
+// 	      isInside[jVane] = true;
+// 	      if(fdir.dzdt() == 1.0){
+// 		entr[jVane] = tmpRange - pathStepSize;
+// 	      }else if(fdir.dzdt() == -1.0){
+// 		entr[jVane] = tmpRange + pathStepSize;
+// 	      }
+// 	    }
+// 	  }else if(isInside[jVane]){
+// 	    if(fdir.dzdt() == 1.0){
+// 	      ex[jVane] = tmpRange + pathStepSize;
+// 	    }else if(fdir.dzdt() == -1.0){
+// 	      ex[jVane] = tmpRange - pathStepSize;
+// 	    }
 	    
-	    if(diagLevel>4){
-	      cout<<"Event Number : "<< evtNumber<< endl;
-	      cout<<" vane "<<jVane<<
-		"isInside : true"<<
-		"hasExit : true"<<
-		"pathLength entrance = "<<entr[jVane]<<
-		"pathLength exit = "<<tmpRange<<endl;
-	    }
-	    isInside[jVane] = false;
+// 	    if(diagLevel>4){
+// 	      cout<<"Event Number : "<< evtNumber<< endl;
+// 	      cout<<" vane "<<jVane<<
+// 		"isInside : true"<<
+// 		"hasExit : true"<<
+// 		"pathLength entrance = "<<entr[jVane]<<
+// 		"pathLength exit = "<<tmpRange<<endl;
+// 	    }
+// 	    isInside[jVane] = false;
 
-	    if (NIntersections < 100) {
-	      Intersection[NIntersections].fVane  = jVane;
-	      Intersection[NIntersections].fRC    = 0;
-	      Intersection[NIntersections].fSEntr = entr[jVane];
-	      Intersection[NIntersections].fSExit = ex  [jVane];
-	      NIntersections++;
-	    }
-	    else {
-	      printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
-	    }
-	  }
-	}
-	if(fdir.dzdt() == 1.0){
-	  tmpRange += pathStepSize;
-	}else if(fdir.dzdt() == -1.0){
-	  tmpRange -= pathStepSize;
-	}
-      }
-    }else if(geom->hasElement<DiskCalorimeter>()){
+// 	    if (NIntersections < 100) {
+// 	      Intersection[NIntersections].fVane  = jVane;
+// 	      Intersection[NIntersections].fRC    = 0;
+// 	      Intersection[NIntersections].fSEntr = entr[jVane];
+// 	      Intersection[NIntersections].fSExit = ex  [jVane];
+// 	      NIntersections++;
+// 	    }
+// 	    else {
+// 	      printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
+// 	    }
+// 	  }
+// 	}
+// 	if(fdir.dzdt() == 1.0){
+// 	  tmpRange += pathStepSize;
+// 	}else if(fdir.dzdt() == -1.0){
+// 	  tmpRange -= pathStepSize;
+// 	}
+//       }
+//     }else 
 
-      GeomHandle<DiskCalorimeter> cg;
-      for(int iStep = 0; iStep< nAngleSteps; ++iStep){
-	for(int jVane=0; jVane<nVanes; ++jVane){
-	  trjPoint = traj.position(tmpRange);
-	  if(diagLevel>4){
-	    cout<<" tmpRange = "<< tmpRange<<
-	      ", trj.position(tmpRange) = "<<trjPoint<<endl;
-	  }
+//    if(geom->hasElement<DiskCalorimeter>()){
+
+    GeomHandle<DiskCalorimeter> cg;
+    for(int iStep = 0; iStep< nAngleSteps; ++iStep){
+      for(int jVane=0; jVane<nVanes; ++jVane){
+	trjPoint = traj.position(tmpRange);
+	if(diagLevel>4){
+	  cout<<" tmpRange = "<< tmpRange<<
+	    ", trj.position(tmpRange) = "<<trjPoint<<endl;
+	}
 	  
-	  trjVec.setX(trjPoint.x());
-	  trjVec.setY(trjPoint.y());
-	  trjVec.setZ(trjPoint.z());
-
-	  trjVec = fromTrkToMu2eFrame(trjVec);
-
-	  if( cg->isInsideDisk(jVane,trjVec ) ){
-	    if(!isInside[jVane]){
-	      if(diagLevel>4){
-		cout<<"Event Number : "<< evtNumber<< endl;
-		cout<<" vane "<<jVane<<
-		  "isInside : true"<<
-		  "pathLength entrance = "<<tmpRange<<endl;
-	      }
-	      isInside[jVane] = true;
-	      if(fdir.dzdt() == 1.0){
-		entr[jVane] = tmpRange - pathStepSize;
-	      }else if(fdir.dzdt() == -1.0){
-		entr[jVane] = tmpRange + pathStepSize;
-	      }
-	    }
-	  }else if(isInside[jVane]){
-	    ex[jVane] = tmpRange + pathStepSize;
+	trjVec.setX(trjPoint.x());
+	trjVec.setY(trjPoint.y());
+	trjVec.setZ(trjPoint.z());
+	
+	trjVec = fromTrkToMu2eFrame(trjVec);
+	
+	if( cg->isInsideDisk(jVane,trjVec ) ){
+	  if(!isInside[jVane]){
 	    if(diagLevel>4){
 	      cout<<"Event Number : "<< evtNumber<< endl;
 	      cout<<" vane "<<jVane<<
 		"isInside : true"<<
-		"hasExit : true"<<
-		"pathLength entrance = "<<entr[jVane]<<
-		"pathLength exit = "<<tmpRange<<endl;
+		"pathLength entrance = "<<tmpRange<<endl;
 	    }
-	    isInside[jVane] = false;
-
-	    if (NIntersections < 100) {
-	      Intersection[NIntersections].fVane  = jVane;
-	      Intersection[NIntersections].fRC    = 0;
-	      Intersection[NIntersections].fSEntr = entr[jVane];
-	      Intersection[NIntersections].fSExit = ex  [jVane];
-	      NIntersections++;
-	    }
-	    else {
-	      printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
+	    isInside[jVane] = true;
+	    if(fdir.dzdt() == 1.0){
+	      entr[jVane] = tmpRange - pathStepSize;
+	    }else if(fdir.dzdt() == -1.0){
+	      entr[jVane] = tmpRange + pathStepSize;
 	    }
 	  }
-	} 
-	if(fdir.dzdt() == 1.0){
-	  tmpRange += pathStepSize;
-	}else if(fdir.dzdt() == -1.0){
-	  tmpRange -= pathStepSize;
+	}else if(isInside[jVane]){
+	  ex[jVane] = tmpRange + pathStepSize;
+	  if(diagLevel>4){
+	    cout<<"Event Number : "<< evtNumber<< endl;
+	    cout<<" vane "<<jVane<<
+	      "isInside : true"<<
+	      "hasExit : true"<<
+	      "pathLength entrance = "<<entr[jVane]<<
+	      "pathLength exit = "<<tmpRange<<endl;
+	  }
+	  isInside[jVane] = false;
+	  
+	  if (NIntersections < 100) {
+	    Intersection[NIntersections].fVane  = jVane;
+	    Intersection[NIntersections].fRC    = 0;
+	    Intersection[NIntersections].fSEntr = entr[jVane];
+	    Intersection[NIntersections].fSExit = ex  [jVane];
+	    NIntersections++;
+	  }
+	  else {
+	    printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
+	  }
 	}
+      } 
+      if(fdir.dzdt() == 1.0){
+	tmpRange += pathStepSize;
+      }else if(fdir.dzdt() == -1.0){
+	tmpRange -= pathStepSize;
       }
     }
+    //  }
     
     
     if (diagLevel>2) {
@@ -490,7 +491,7 @@ namespace mu2e {
     for (int i=0; i<NIntersections; i++) {
       lrange = Intersection[i].fSEntr;
       //      hrange = Intersection[i].fSEntr;
-      trk_rc = kalrep->extendThrough(lrange);
+      trk_rc = Krep->extendThrough(lrange);
       if (trk_rc.success() != 1) { 
 	//-----------------------------------------------------------------------------
 	// failed to extend 
@@ -502,7 +503,7 @@ namespace mu2e {
 	}
       }
       //       else {
-      // 	TrkDifTraj const& traj =  kalrep->traj();
+      // 	TrkDifTraj const& traj =  Krep->traj();
 	
       // 	//	DetIntersection intersec0( vane(Intersection[i].fVane), &traj, lrange, lrange, hrange );
       // 	// turn off the BaBar extrapolation, it seems to be getting confused
@@ -527,18 +528,21 @@ namespace mu2e {
   // -> doesn't have the event index;
   // -> it returns the DetIntersection element relative to the first intersection of the trajectory with the volume,
   //    the previous one returns the DetIntersection element relative to the last intersection.
-  void Calorimeter4VanesGeom::caloExtrapol(TrkRep const* trep,double& lowrange, double& highrange,
-					   HelixTraj &trkHel, int &res0, DetIntersection &intersec0, Length *pathLengths){
-    const KalRep* kalrepc = dynamic_cast<const KalRep*>(trep);
-    KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
+  void Calorimeter4VanesGeom::caloExtrapol(KalRep* Krep, 
+					   double& lowrange, 
+					   double& highrange,
+					   HelixTraj &trkHel, 
+					   int &res0, 
+					   DetIntersection &intersec0, 
+					   Length *pathLengths)
+  {
+    //if(Krep->extendThrough(lowrange).success() != 1) return;
 
-    //if(kalrep->extendThrough(lowrange).success() != 1) return;
+    TrkDifTraj const &traj = Krep->traj();
 
-    TrkDifTraj const &traj = kalrep->traj();
-
-    double circleRadius = 0.0;//, centerCircleX=0.0, centerCircleY = 0.0, angle = 0.0;
+    double circleRadius;
     double startLowrange = lowrange;//, startHighrange = highrange;
-    circleRadius = 1.0/trkHel.omega();
+    circleRadius = fabs(1.0/trkHel.omega());
 
     const int nVanes = _nVanes;
 
@@ -590,9 +594,9 @@ namespace mu2e {
 	highrange = it->second;
 
 
-	//if(kalrep->extendThrough(lowrange).success() != 1) continue;
+	//if(Krep->extendThrough(lowrange).success() != 1) continue;
 
-	TrkDifTraj const& traj =  kalrep->traj();
+	TrkDifTraj const& traj =  Krep->traj();
 
 	DetIntersection tmp3( vane(jVane), &traj, lowrange, lowrange, highrange );
 	//intersec0 = tmp3;
