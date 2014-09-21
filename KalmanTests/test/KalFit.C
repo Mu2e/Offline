@@ -112,7 +112,7 @@ void KalFit::KalCuts() {
   cosmic = TCut("d0<105 && d0>-80 && (d0+2/om)>450 && (d0+2/om)<680");
   for(size_t icut=0;icut<4;++icut)
     goodfit[icut] = ncuts[icut]+momcuts[icut]+fitcuts[icut]+t0cuts[icut];
-  quality = goodfit[icut];
+  quality = goodfit[2];
   snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
   rmom = TCut(ctext);
   donecuts = true;
@@ -732,6 +732,7 @@ void KalFit::KalFitRes(TTree* trks,int mincut,int maxcut) {
     snprintf(fitname,50,"fitmomres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV/c",251,-4,4);
 //  momres[ires]->SetStats(0);
+    quality = goodfit[ires];
     TCut final = reco+quality+rpitch+cosmic+livegate+rmomloose;
     trks->Project(mname,"fitmom-mcentmom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
