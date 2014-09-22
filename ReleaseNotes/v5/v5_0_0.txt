@@ -1,0 +1,2 @@
+v5_0_0 is the first tag of Mu2e Offline after switching to git.
+The software is exactly the same as CVS v4_2_7.
