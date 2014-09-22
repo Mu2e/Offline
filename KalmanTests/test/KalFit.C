@@ -19,6 +19,7 @@
 // basic parameters
 class KalFit {  
   public:
+  TTree* _tdiag;
   double tdlow;
   double tdhigh;
   double t0min,t0max;
@@ -36,27 +37,27 @@ class KalFit {
   TCut rmomloose;
   bool donecuts;
 
-  KalFit();
-  void KalCuts();
-  void KalFitHit (TTree* hits );
-  void KalFitT2d(TTree* trks);
-  void KalFitTrk (TTree* trks );
-  void KalFitAccPlots(TTree* trks);
-  void KalFitAcc(TTree* trks,double norm=-1);
-  void KalFitRes(TTree* trks,int mincut=0,int maxcut=3);
-  void KalFitRes2(TTree* trks,int ires);
-  void KalFitAmbig(TTree* t, int acut=0);
-  void KalFitResid(TTree* t);
-  void KalFitCon(TTree* t);
-  void KalFitError(TTree* t);
-  void KalFitDrift(TTree* t);
-  void KalFitNHits(TTree* t);
-  void KalFitNactive(TTree* t);
-  void KalFitMom(TTree* t);
-  void KalFitRad(TTree* t);
+  KalFit(TTree*);
+  void Cuts();
+  void Hit();
+  void T2d();
+  void Trk();
+  void AccPlots();
+  void Acc(double norm=-1);
+  void Res(unsigned mincut=0,unsigned maxcut=3);
+  void Res2(int ires);
+  void Ambig(int acut=0);
+  void Resid();
+  void Con();
+  void Error();
+  void Drift();
+  void NHits();
+  void Nactive();
+  void Mom();
+  void Rad();
 };
 
-KalFit::KalFit() : tdlow(0.57735027),
+KalFit::KalFit(TTree* trkdiag) : _tdiag(trkdiag), tdlow(0.57735027),
   tdhigh(1.0),
   t0min(700),t0max(1695),
   momlow(103.75),
@@ -77,10 +78,11 @@ KalFit::KalFit() : tdlow(0.57735027),
     minfitcon[icut] = t_minfitcon[icut];
 
   }
+  Cuts();
 }
 
 
-void KalFit::KalCuts() {
+void KalFit::Cuts() {
   for(size_t ic=0;ic<4;++ic){
     char cutstring[100];
     snprintf(cutstring,100,"nactive>=%i",minnactive[ic]);
@@ -100,7 +102,7 @@ void KalFit::KalCuts() {
   snprintf(ctext,80,"mcenttd>%4.3f&&mcenttd<%4.3f",tdlow-0.02,tdhigh+0.02);
   tpitch = TCut(ctext);
 //  tpitch = TCut("mcenttd>-1");
-  snprintf(ctext,80,"mct0%%1695>%f",500);
+  snprintf(ctext,80,"mct0%%1695>%f",500.);
   tt0 = TCut(ctext);
   tmom = TCut("mcentmom>100.0");
   snprintf(ctext,80,"nmcgood>=%i",minnhits);
@@ -178,8 +180,7 @@ Double_t crystalball (Double_t *x, Double_t *par) {
   }
 }
 
-void KalFit::KalFitHit (TTree* hits ) {
-  if(!donecuts)KalCuts();
+void KalFit::Hit () {
   TCut goodhit = reco+ncuts[icut]+momcuts[icut];
   TCut active = "_active";
 
@@ -207,14 +208,14 @@ void KalFit::KalFitHit (TTree* hits ) {
   irpull->SetFillColor(kBlue);
   irpull->SetStats(0);
 
-  hits->Project("dres","_rdrift-_mcdist",goodhit+active);
-  hits->Project("dpull","(_rdrift-_mcdist)/_rdrifterr",goodhit+active);
+  _tdiag->Project("dres","_rdrift-_mcdist",goodhit+active);
+  _tdiag->Project("dpull","(_rdrift-_mcdist)/_rdrifterr",goodhit+active);
 
-  hits->Project("iresid","_resid",goodhit+!active);
-  hits->Project("aresid","_resid",goodhit+active);
+  _tdiag->Project("iresid","_resid",goodhit+!active);
+  _tdiag->Project("aresid","_resid",goodhit+active);
 
-  hits->Project("irpull","_resid/_residerr",goodhit+!active);
-  hits->Project("arpull","_resid/_residerr",goodhit+active);
+  _tdiag->Project("irpull","_resid/_residerr",goodhit+!active);
+  _tdiag->Project("arpull","_resid/_residerr",goodhit+active);
   
   dcan->Clear();
   dcan->Divide(2,1);
@@ -243,11 +244,11 @@ void KalFit::KalFitHit (TTree* hits ) {
   TProfile* pdresidt = new TProfile("pdresidt","Drift Residual vs true drift radius;MC true drift radius (mm);reco - true radius (mm)",25,0.0,2.5,0.,2.5,"s");
   TH2F* dresid = new TH2F("dresid","Drift Residual vs drift radius;reco drift radius (mm);reco - true radius (mm)",25,0.0,2.5,25,-0.5,0.8);
   TH2F* dresidt = new TH2F("dresidt","Drift Residual vs true drift radius;MC true drift radius (mm);reco - true radius (mm)",25,0.0,2.5,25,-0.5,0.8);
-  hits->Project("drad","_rdrift:_mcdist",goodhit+active);
-  hits->Project("pdresid","_rdrift-_mcdist:_rdrift",goodhit+active);
-  hits->Project("pdresidt","_rdrift-_mcdist:_mcdist",goodhit+active);
-  hits->Project("dresid","_rdrift-_mcdist:_rdrift",goodhit+active);
-  hits->Project("dresidt","_rdrift-_mcdist:_mcdist",goodhit+active);
+  _tdiag->Project("drad","_rdrift:_mcdist",goodhit+active);
+  _tdiag->Project("pdresid","_rdrift-_mcdist:_rdrift",goodhit+active);
+  _tdiag->Project("pdresidt","_rdrift-_mcdist:_mcdist",goodhit+active);
+  _tdiag->Project("dresid","_rdrift-_mcdist:_rdrift",goodhit+active);
+  _tdiag->Project("dresidt","_rdrift-_mcdist:_mcdist",goodhit+active);
   TH1F* pdresid_1 = new TH1F("pdresid_1","Mean drift residual vs drift radius;reco drift radius (mm); mean reco - true radius (mm)",25,0.0,2.5);
   TH1F* pdresid_2 = new TH1F("pdresid_2","Drift residual RMS vs drift radius;reco drift radius (mm); RMS reco - true radius (mm)",25,0.0,2.5);
   TH1F* pdresidt_1 = new TH1F("pdresidt_1","Mean drift residual vs true radius;true radius (mm); mean reco - true radius (mm)",25,0.0,2.5);
@@ -307,12 +308,12 @@ void KalFit::KalFitHit (TTree* hits ) {
 //  TH1F* t0pull = new TH1F("t0pull","hit t0 pull",200,-30,30);
 //  TH2F* dt0 = new TH2F("dt0","Hit t0;true t0 (nsec);reco t0 (nsec)",
 //      100,0,2000,100,0,2000);
-//  hits->Project("t0res","_ht-_mcht","_active");
-//  hits->Project("t0pull","(_ht-_mcht)/_t0err","_active");
+//  _tdiag->Project("t0res","_ht-_mcht","_active");
+//  _tdiag->Project("t0pull","(_ht-_mcht)/_t0err","_active");
 //  tcan->Clear();
 //  tcan->Divide(2,2);
 //  tcan->cd(1);
-//  hits->Draw("_ht:_mcht>>dt0","_active");
+//  _tdiag->Draw("_ht:_mcht>>dt0","_active");
 //  tcan->cd(2);
 //  t0res->Fit("gaus");
 //  tcan->cd(3);
@@ -326,12 +327,12 @@ void KalFit::KalFitHit (TTree* hits ) {
 //  TH2F* pocatd = new TH2F("pocatd","Hit POCA V;true V (mm);POCA V (mm)",
 //      100,-600,600,100,-600,600);
 
-  hits->Project("tdres","_tddist-_mclen","_active");
-  hits->Project("tdpull","(_tddist-_mclen)/_tdderr","_active");
+  _tdiag->Project("tdres","_tddist-_mclen","_active");
+  _tdiag->Project("tdpull","(_tddist-_mclen)/_tdderr","_active");
   tdcan->Clear();
   tdcan->Divide(2,2);
   tdcan->cd(1);
-  hits->Draw("_tddist:_mclen>>dtd","_active");
+  _tdiag->Draw("_tddist:_mclen>>dtd","_active");
   tdcan->cd(2);
   dtd->FitSlicesY(0,20,80);
   TH1D* dtd_1 = (TH1D*)gDirectory->Get("dtd_1");
@@ -344,19 +345,19 @@ void KalFit::KalFitHit (TTree* hits ) {
 
 }
 
-void KalFit::KalFitT2d(TTree* trks){
+void KalFit::T2d(){
   TH2F* rt2d = new TH2F("rt2d","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,100,-0.05,2.55);
   TH2F* tt2d = new TH2F("tt2d","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",25,0,50.0,50,-0.05,2.55);
   TProfile* rt2dp = new TProfile("rt2dp","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* tt2dp = new TProfile("tt2dp","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* rt2dp2 = new TProfile("rt2dp2","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,-0.05,2.55,"s");
   TProfile* tt2dp2 = new TProfile("tt2dp2","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55,"s");
-  trks->Project("tt2d","_mcdist:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
-  trks->Project("rt2d","_rdrift:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
-  trks->Project("tt2dp","_mcdist:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
-  trks->Project("rt2dp","_rdrift:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
-  trks->Project("tt2dp2","_mcdist:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
-  trks->Project("rt2dp2","_rdrift:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("tt2d","_mcdist:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("rt2d","_rdrift:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("tt2dp","_mcdist:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("rt2dp","_rdrift:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("tt2dp2","_mcdist:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("rt2dp2","_rdrift:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
 
   TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
   t2dcan->Divide(2,2);
@@ -387,21 +388,20 @@ void KalFit::KalFitT2d(TTree* trks){
  
 }
 
-void KalFit::KalFitTrk (TTree* trks ) {
-  if(!donecuts)KalCuts();
+void KalFit::Trk () {
   TCanvas* tcan = new TCanvas("tt0can","trk_t0can",1200,800);
   TH1F* t00res = new TH1F("t00res","Initial t0 resolution;nsec",100,-20,20);
   TH1F* t0res = new TH1F("t0res","Final t0 resolution;nsec",100,-10,10);
   TH1F* t0pull = new TH1F("t0pull","Track t0 pull",100,-10,10);
 //  TH2F* dt0 = new TH2F("dt0","Track t0;true t0 (nsec);Initial t0 (nsec)",
 //      100,500,4000,100,500,4000);
-  trks->Project("t00res","t00-mct0","fitstatus>0");
-  trks->Project("t0res","t0-mct0","fitstatus>0");
-  trks->Project("t0pull","(t0-mct0)/t0err","fitstatus>0");
+  _tdiag->Project("t00res","t00-mct0","fitstatus>0");
+  _tdiag->Project("t0res","t0-mct0","fitstatus>0");
+  _tdiag->Project("t0pull","(t0-mct0)/t0err","fitstatus>0");
   tcan->Clear();
   tcan->Divide(2,2);
   tcan->cd(1);
-  trks->Draw("t00:mct0>>dt0","fitstatus>0");
+  _tdiag->Draw("t00:mct0>>dt0","fitstatus>0");
   tcan->cd(2);
   t00res->Fit("gaus");
   tcan->cd(3);
@@ -416,11 +416,11 @@ void KalFit::KalFitTrk (TTree* trks ) {
   TH1F* ompull = new TH1F("ompull","#omega pull",100,-10,10);
   TH1F* z0pull = new TH1F("z0pull","z0 pull",100,-10,10);
   TH1F* tdpull = new TH1F("tdpull","tan(#lambda) pull",100,-10,10);
-  trks->Project("d0pull","(d0-mcd0)/d0err","fitstatus>0");
-  trks->Project("p0pull","(p0-mcp0)/p0err","fitstatus>0");
-  trks->Project("ompull","(om-mcom)/omerr","fitstatus>0");
-  trks->Project("z0pull","(z0-mcz0)/z0err","fitstatus>0");
-  trks->Project("tdpull","(td-mctd)/tderr","fitstatus>0");
+  _tdiag->Project("d0pull","(d0-mcd0)/d0err","fitstatus>0");
+  _tdiag->Project("p0pull","(p0-mcp0)/p0err","fitstatus>0");
+  _tdiag->Project("ompull","(om-mcom)/omerr","fitstatus>0");
+  _tdiag->Project("z0pull","(z0-mcz0)/z0err","fitstatus>0");
+  _tdiag->Project("tdpull","(td-mctd)/tderr","fitstatus>0");
   pcan->Clear();
   pcan->Divide(3,2);
   pcan->cd(1);
@@ -440,13 +440,13 @@ void KalFit::KalFitTrk (TTree* trks ) {
   TH1F* mres = new TH1F("mres","momentum resolution at first hit;MeV/c",100,-2,2);
   TH1F* mpull = new TH1F("mpull","momentum pull at first hit",100,-10,10);
   TH1F* chisq = new TH1F("chisq","Chisq/NDof",100,0,10);
-  trks->Project("mres","fitmom-mcmom","fitstatus>0");
-  trks->Project("mpull","(fitmom-mcmom)/fitmomerr","fitstatus>0");
-  trks->Project("chisq","chisq/ndof","fitstatus>0");
+  _tdiag->Project("mres","fitmom-mcmom","fitstatus>0");
+  _tdiag->Project("mpull","(fitmom-mcmom)/fitmomerr","fitstatus>0");
+  _tdiag->Project("chisq","chisq/ndof","fitstatus>0");
   fcan->Clear();
   fcan->Divide(2,2);
   fcan->cd(1);
-  trks->Draw("fitmom:mcmom>>mom","fitstatus>0");
+  _tdiag->Draw("fitmom:mcmom>>mom","fitstatus>0");
   fcan->cd(2);
   mres->Draw();
   fcan->cd(3);
@@ -455,8 +455,7 @@ void KalFit::KalFitTrk (TTree* trks ) {
   chisq->Draw();
 }
 
-void KalFit::KalFitAccPlots(TTree* trks) {
-  if(!donecuts)KalCuts();
+void KalFit::AccPlots() {
 
   TH1F* nmc = new TH1F("nmc","N Straw Hits from CE;N straws",81,-0.5,80.5);
   TH1F* mcmom = new TH1F("mcmom","CE true momentum at tracker;CE momentum (MeV/c)",57,49,106);
@@ -473,21 +472,21 @@ void KalFit::KalFitAccPlots(TTree* trks) {
 
   TH1F* fitmom = new TH1F("fitmom","Track fit momentum;fit momentum (MeV/c)",100,98,107);
 
-  trks->Project("nmc","nmcgood");
-  trks->Project("mcmom","mcentmom",nmch);
+  _tdiag->Project("nmc","nmcgood");
+  _tdiag->Project("mcmom","mcentmom",nmch);
   
-  trks->Project("fitcon","log10(fitcon)",reco+nmch+tmom);
-  trks->Project("momerr","fitmomerr",reco+nmch+tmom);
-  trks->Project("t0err","t0err",reco+nmch+tmom);
-  trks->Project("na","nactive",reco+nmch+tmom);
+  _tdiag->Project("fitcon","log10(fitcon)",reco+nmch+tmom);
+  _tdiag->Project("momerr","fitmomerr",reco+nmch+tmom);
+  _tdiag->Project("t0err","t0err",reco+nmch+tmom);
+  _tdiag->Project("na","nactive",reco+nmch+tmom);
 
-  trks->Project("t0","t0",reco+nmch+tmom+quality);
-  trks->Project("td","td",reco+nmch+tmom+quality+livegate);
+  _tdiag->Project("t0","t0",reco+nmch+tmom+quality);
+  _tdiag->Project("td","td",reco+nmch+tmom+quality+livegate);
 
-  trks->Project("d0","d0",reco+nmch+tmom+quality+livegate);
-  trks->Project("rmax","d0+2.0/om",reco+nmch+tmom+quality+livegate);
+  _tdiag->Project("d0","d0",reco+nmch+tmom+quality+livegate);
+  _tdiag->Project("rmax","d0+2.0/om",reco+nmch+tmom+quality+livegate);
 
-  trks->Project("fitmom","fitmom",reco+nmch+tmom+quality+livegate+cosmic);
+  _tdiag->Project("fitmom","fitmom",reco+nmch+tmom+quality+livegate+cosmic);
 
   TCanvas* pcan = new TCanvas("pcan","Pre-acceptance",1200,800);
   pcan->Clear();
@@ -602,8 +601,7 @@ void KalFit::KalFitAccPlots(TTree* trks) {
 
 } 
 
-void KalFit::KalFitAcc(TTree* trks,double norm) {
-  if(!donecuts)KalCuts();
+void KalFit::Acc(double norm) {
   unsigned nbins(8);
   double bmax = nbins-0.5;
   TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
@@ -633,14 +631,14 @@ void KalFit::KalFitAcc(TTree* trks,double norm) {
   
   ibin = 0;
   const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
-  trks->Project("acc",binnames[ibin++]);
-  trks->Project("+acc",binnames[ibin++],mcsel);
-  trks->Project("+acc",binnames[ibin++],mcsel+reco);
-  trks->Project("+acc",binnames[ibin++],mcsel+reco+quality);
-  trks->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate);
-  trks->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch);
-  trks->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch+cosmic);
-  trks->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch+cosmic+rmom);
+  _tdiag->Project("acc",binnames[ibin++]);
+  _tdiag->Project("+acc",binnames[ibin++],mcsel);
+  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco);
+  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality);
+  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate);
+  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch);
+  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch+cosmic);
+  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch+cosmic+rmom);
 
   double all = acc->GetBinContent(1);
   if(norm < 0)norm=all;
@@ -676,8 +674,7 @@ void KalFit::KalFitAcc(TTree* trks,double norm) {
   racc->Draw("histtext0");
 }
 
-void KalFit::KalFitRes(TTree* trks,int mincut,int maxcut) {
-  if(!donecuts)KalCuts();
+void KalFit::Res(unsigned mincut,unsigned maxcut) {
 //  TF1* sgau = new TF1("sgau",splitgaus,-1.5,1.5,7);
 //  sgau->SetParName(0,"Norm");
 //  sgau->SetParName(1,"Mean");
@@ -710,7 +707,7 @@ void KalFit::KalFitRes(TTree* trks,int mincut,int maxcut) {
   TH1F* momres[4];
   TF1*  fitmomres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
-  trks->Project("effnorm","mcentmom",mcsel);
+  _tdiag->Project("effnorm","mcentmom",mcsel);
  
   TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
   rcan->Clear();
@@ -734,7 +731,7 @@ void KalFit::KalFitRes(TTree* trks,int mincut,int maxcut) {
 //  momres[ires]->SetStats(0);
     quality = goodfit[ires];
     TCut final = reco+quality+rpitch+cosmic+livegate+rmomloose;
-    trks->Project(mname,"fitmom-mcentmom",final);
+    _tdiag->Project(mname,"fitmom-mcentmom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     cout << "Integral = " << integral << " mean = " << momres[ires]->GetMean() << " rms = " << momres[ires]->GetRMS() << endl;
     cball->SetParameters(3*integral,momres[ires]->GetMean()+0.07,0.3*momres[ires]->GetRMS(),3.0,1.0,0.02,0.2);
@@ -786,8 +783,7 @@ void KalFit::KalFitRes(TTree* trks,int mincut,int maxcut) {
   rcan->cd(0);
 }
 
-void KalFit::KalFitRes2(TTree* trks,int ires) {
-  if(!donecuts)KalCuts();
+void KalFit::Res2(int ires) {
   TF1* cball2 = new TF1("cball2",crystalball,-5.0,2.0,7);
   cball2->SetParName(0,"Norm");
   cball2->SetParName(1,"x0");
@@ -799,8 +795,8 @@ void KalFit::KalFitRes2(TTree* trks,int ires) {
 
   unsigned nbins(250);
   TH1F* momres = new TH1F("momres","Tracker Momentum Resolution;P_{RECO}-P_{TRUE} (MeV/c);Arbitrary Units",nbins,-4.0,2.0);
-  TCut final = reco+quality+mcsel;
-  trks->Project("momres","fitmom-mcentmom",final);
+  TCut final = reco+goodfit[ires]+mcsel;
+  _tdiag->Project("momres","fitmom-mcentmom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
   cball2->SetParameters(3*integral,momres->GetMean()+0.07,0.3*momres->GetRMS(),3.0,1.0,0.02,0.2);
@@ -811,7 +807,7 @@ void KalFit::KalFitRes2(TTree* trks,int ires) {
   momres->Fit("cball2","LRNQ");
 
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
-  trks->Project("effnorm","mcentmom",mcsel);
+  _tdiag->Project("effnorm","mcentmom",mcsel);
 
   TCanvas* rcan2 = new TCanvas("rcan2","Momentum Resolution",800,800);
   rcan2->Clear();
@@ -845,8 +841,7 @@ void KalFit::KalFitRes2(TTree* trks,int ires) {
   rtext2->Draw();
 }
 
-void KalFit::KalFitAmbig(TTree* t, int acut) {
-  if(!donecuts)KalCuts();
+void KalFit::Ambig(int acut) {
   gStyle->SetOptStat(1111);
 
   TCut gambig("_mcambig==_ambig");
@@ -855,7 +850,7 @@ void KalFit::KalFitAmbig(TTree* t, int acut) {
   TCut active("_active>0");
 // apply requested cuts
 
-  TCut goodtrk = (reco+quality+mcsel);
+  TCut goodtrk = (reco+goodfit[acut]+mcsel);
 
 //  TCut goodtrk ="fitstatus>0";
 
@@ -879,11 +874,11 @@ void KalFit::KalFitAmbig(TTree* t, int acut) {
   rdb->Sumw2();
   rda->Sumw2();
 
-  t->Project("rdg","_mcdist",goodtrk+active+gambig);
-  t->Project("rdn","_mcdist",goodtrk+active+nambig);
-  t->Project("rdb","_mcdist",goodtrk+active+bambig);
-  t->Project("rda","_mcdist",goodtrk+active);
-  t->Project("rdi","_mcdist",goodtrk+!active);
+  _tdiag->Project("rdg","_mcdist",goodtrk+active+gambig);
+  _tdiag->Project("rdn","_mcdist",goodtrk+active+nambig);
+  _tdiag->Project("rdb","_mcdist",goodtrk+active+bambig);
+  _tdiag->Project("rda","_mcdist",goodtrk+active);
+  _tdiag->Project("rdi","_mcdist",goodtrk+!active);
   Double_t ntotal = rda->GetEntries();
   Double_t nright = rdg->GetEntries();
   Double_t nneutral = rdn->GetEntries();
@@ -899,8 +894,8 @@ void KalFit::KalFitAmbig(TTree* t, int acut) {
 //  frdg->SetStats(0);
 //  frdb->SetStats(0);
 
-//  t->Project("frdg","_mcdist",mcsel+active+ambig+(!goodfit));
-//  t->Project("frdb","_mcdist",mcsel+active+(!ambig)+(!goodfit));
+//  _tdiag->Project("frdg","_mcdist",mcsel+active+ambig+(!goodfit));
+//  _tdiag->Project("frdb","_mcdist",mcsel+active+(!ambig)+(!goodfit));
 
   TH1F* momres0 = new TH1F("momres0","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",151,-4,4);
   TH1F* momres1 = new TH1F("momres1","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",151,-4,4);
@@ -911,9 +906,9 @@ void KalFit::KalFitAmbig(TTree* t, int acut) {
   momres2->SetMarkerColor(kOrange);
   momres2->SetMarkerStyle(5);
  //  momres->SetStats(0);
-  t->Project("momres0","fitmom-mcentmom",goodtrk);
-  t->Project("momres1","fitmom-mcentmom",goodtrk&&"fitstatus==1");
-  t->Project("momres2","fitmom-mcentmom",goodtrk&&"fitstatus==2");
+  _tdiag->Project("momres0","fitmom-mcentmom",goodtrk);
+  _tdiag->Project("momres1","fitmom-mcentmom",goodtrk&&"fitstatus==1");
+  _tdiag->Project("momres2","fitmom-mcentmom",goodtrk&&"fitstatus==2");
 
   TH1F* afg = new TH1F("afg","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);hit fraction",41,-4,4);
   TH1F* afn = new TH1F("afn","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c):hit fraction",41,-4,4);
@@ -930,10 +925,10 @@ void KalFit::KalFitAmbig(TTree* t, int acut) {
   afn->Sumw2();
   afb->Sumw2();
   afa->Sumw2();
-  t->Project("afg","fitmom-mcentmom",goodtrk+active+gambig);
-  t->Project("afn","fitmom-mcentmom",goodtrk+active+nambig);
-  t->Project("afb","fitmom-mcentmom",goodtrk+active+bambig);
-  t->Project("afa","fitmom-mcentmom",goodtrk+active);
+  _tdiag->Project("afg","fitmom-mcentmom",goodtrk+active+gambig);
+  _tdiag->Project("afn","fitmom-mcentmom",goodtrk+active+nambig);
+  _tdiag->Project("afb","fitmom-mcentmom",goodtrk+active+bambig);
+  _tdiag->Project("afa","fitmom-mcentmom",goodtrk+active);
   afg->Divide(afa);
   afn->Divide(afa);
   afb->Divide(afa);
@@ -1035,9 +1030,7 @@ void KalFit::KalFitAmbig(TTree* t, int acut) {
 
 }
 
-void KalFit::KalFitResid(TTree* t) {
-  if(!donecuts)KalCuts();
-
+void KalFit::Resid() {
 
   TCut delta("_mcproc==17");
   TCut primary("_mcproc==56");
@@ -1065,14 +1058,14 @@ void KalFit::KalFitResid(TTree* t) {
   rpulln->SetLineColor(kGreen);
   rpulld->SetLineColor(kCyan);
 
-  t->Project("rdg","_mcdist",reco+mcsel+active+gambig+primary);
-  t->Project("rdb","_mcdist",reco+mcsel+active+bambig+primary);
-  t->Project("rdn","_mcdist",reco+mcsel+active+nambig+primary);
+  _tdiag->Project("rdg","_mcdist",reco+mcsel+active+gambig+primary);
+  _tdiag->Project("rdb","_mcdist",reco+mcsel+active+bambig+primary);
+  _tdiag->Project("rdn","_mcdist",reco+mcsel+active+nambig+primary);
 
-  t->Project("rpullg","_resid/_residerr",reco+mcsel+active+gambig+primary);
-  t->Project("rpullb","_resid/_residerr",reco+mcsel+active+bambig+primary);
-  t->Project("rpulln","_resid/_residerr",reco+mcsel+active+nambig+primary);
-  t->Project("rpulld","_resid/_residerr",reco+mcsel+active+delta);
+  _tdiag->Project("rpullg","_resid/_residerr",reco+mcsel+active+gambig+primary);
+  _tdiag->Project("rpullb","_resid/_residerr",reco+mcsel+active+bambig+primary);
+  _tdiag->Project("rpulln","_resid/_residerr",reco+mcsel+active+nambig+primary);
+  _tdiag->Project("rpulld","_resid/_residerr",reco+mcsel+active+delta);
 
   TCanvas* residcan = new TCanvas("residcan","Residuals",1200,800);
   residcan->Divide(2,1);
@@ -1102,8 +1095,7 @@ void KalFit::KalFitResid(TTree* t) {
 
 }
 
-void KalFit::KalFitCon(TTree* t) {
-  if(!donecuts)KalCuts();
+void KalFit::Con() {
   TH1F* con1 = new TH1F("con1","#chi^{2} fit consistency",500,0.0,1.0);
   TH1F* con2 = new TH1F("con2","#chi^{2} fit consistency",500,0.0,1.0);
   TH1F* lcon1 = new TH1F("lcon1","log_{10}(#chi^{2}) fit consistency",100,-10,0);
@@ -1115,10 +1107,10 @@ void KalFit::KalFitCon(TTree* t) {
 //  fcon1->SetStats(0);
 //  fcon2->SetStats(0);
 
-  t->Project("con1","fitcon",mcsel+"fitstatus==1");
-  t->Project("con2","fitcon",mcsel+"fitstatus==2");
-  t->Project("lcon1","log10(fitcon)",mcsel+"fitstatus==1");
-  t->Project("lcon2","log10(fitcon)",mcsel+"fitstatus==2");
+  _tdiag->Project("con1","fitcon",mcsel+"fitstatus==1");
+  _tdiag->Project("con2","fitcon",mcsel+"fitstatus==2");
+  _tdiag->Project("lcon1","log10(fitcon)",mcsel+"fitstatus==1");
+  _tdiag->Project("lcon2","log10(fitcon)",mcsel+"fitstatus==2");
 
   TCanvas* fcan = new TCanvas("fcan","fit consistency",500,800);
   fcan->Clear();
@@ -1137,8 +1129,7 @@ void KalFit::KalFitCon(TTree* t) {
 
 }
 
-void KalFit::KalFitError(TTree* t){
-  if(!donecuts)KalCuts();
+void KalFit::Error(){
     TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
     sgau->SetParName(0,"Norm");
     sgau->SetParName(1,"Mean");
@@ -1152,8 +1143,8 @@ void KalFit::KalFitError(TTree* t){
     TH1F* momres1 = new TH1F("momres1","momentum resolution at start of tracker;MeV/c",151,-2.5,2.5);
     TH1F* momres2 = new TH1F("momres2","momentum resolution at start of tracker;MeV/c",151,-2.5,2.5);
    
-    t->Project("momres1","fitmom-mcentmom",final+"fitmomerr<0.15");
-    t->Project("momres2","fitmom-mcentmom",final+"fitmomerr>0.2");
+    _tdiag->Project("momres1","fitmom-mcentmom",final+"fitmomerr<0.15");
+    _tdiag->Project("momres2","fitmom-mcentmom",final+"fitmomerr>0.2");
     
     double integral = momres1->GetEntries()*momres1->GetBinWidth(1);
     sgau->SetParameters(integral,0.0,momres1->GetRMS(),momres1->GetRMS(),0.01,2*momres1->GetRMS(),2*momres1->GetRMS());
@@ -1178,16 +1169,15 @@ void KalFit::KalFitError(TTree* t){
 
 }
 
-void KalFit::KalFitDrift(TTree* t){
-  if(!donecuts)KalCuts();
+void KalFit::Drift(){
 
   TH1F* rdg = new TH1F("rdg","Reco Hit Drift Radius;radius (mm);N hits",100,-0.05,2.55);
   TH1F* rdb = new TH1F("rdb","Reco Hit Drift Radius;radius (mm);N hits",100,-0.05,2.55);
   rdg->SetStats(0);
   rdb->SetStats(0);
 
-  t->Project("rdg","_rdrift","fitstatus==1&&fitmomerr<0.15&&_active");
-  t->Project("rdb","_rdrift","fitstatus==1&&fitmomerr>0.2&&_active");
+  _tdiag->Project("rdg","_rdrift","fitstatus==1&&fitmomerr<0.15&&_active");
+  _tdiag->Project("rdb","_rdrift","fitstatus==1&&fitmomerr>0.2&&_active");
 
   TCanvas* dcan = new TCanvas("dcan","Drift Radius",800,500);
   dcan->Divide(2,1);
@@ -1198,14 +1188,13 @@ void KalFit::KalFitDrift(TTree* t){
 
 }
 
-void KalFit::KalFitNHits(TTree* t){
-  if(!donecuts)KalCuts();
+void KalFit::NHits(){
   TH1F* nch = new TH1F("nch","Number of Conversion Electron Tracker Hits;N hits;N Conversion Tracks",100,-0.5,99.5);
   TH1F* ncha = new TH1F("ncha","Number of Conversion Electron Tracker Hits;N hits;N Conversion Tracks",100,-0.5,99.5);
   nch->SetStats(0);
   nch->SetStats(0);
-  t->Project("nch","nmcgood",tmom+tpitch);
-  t->Project("ncha","nmcgood",tmom+tpitch+"fitstatus>0");
+  _tdiag->Project("nch","nmcgood",tmom+tpitch);
+  _tdiag->Project("ncha","nmcgood",tmom+tpitch+"fitstatus>0");
   nch->SetLineColor(kRed);
   ncha->SetLineColor(kBlue);
   TLegend* leg = new TLegend(0.6,0.7,0.9,0.9);
@@ -1219,14 +1208,13 @@ void KalFit::KalFitNHits(TTree* t){
   leg->Draw();
 }
 
-void KalFit::KalFitNactive(TTree* t) {
-  if(!donecuts)KalCuts();
+void KalFit::Nactive() {
   gStyle->SetOptStat(111111);
   TCut pure("nactive-nmcactive==0");
   TCut goodtrk =mcsel+reco+rpitch;
 
   TH1F* dna = new TH1F("dna","N non-conversion hits active in fit;N_{active}-N_{active,conversion}",10,-0.5,9.5);
-  t->Project("dna","nactive-nmcactive",goodtrk);
+  _tdiag->Project("dna","nactive-nmcactive",goodtrk);
 
   TH1F* momres0 = new TH1F("momres0","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
   TH1F* momres1 = new TH1F("momres1","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",101,-4,4);
@@ -1237,9 +1225,9 @@ void KalFit::KalFitNactive(TTree* t) {
   momres2->SetMarkerColor(kOrange);
   momres2->SetMarkerStyle(5);
  //  momres->SetStats(0);
-  t->Project("momres0","fitmom-mcentmom",goodtrk);
-  t->Project("momres1","fitmom-mcentmom",goodtrk&&pure);
-  t->Project("momres2","fitmom-mcentmom",goodtrk&&!pure);
+  _tdiag->Project("momres0","fitmom-mcentmom",goodtrk);
+  _tdiag->Project("momres1","fitmom-mcentmom",goodtrk&&pure);
+  _tdiag->Project("momres2","fitmom-mcentmom",goodtrk&&!pure);
 
   TCanvas* ncan = new TCanvas("ncan","N hits",1000,800);
   ncan->Divide(1,2);
@@ -1280,8 +1268,7 @@ void KalFit::KalFitNactive(TTree* t) {
 
 }
 
-void KalFit::KalFitMom(TTree* t) {
-  if(!donecuts)KalCuts();
+void KalFit::Mom() {
   TH1F* cemomtp = new TH1F("cemomtp","Conversion Electron Momentum;p (MeV/c)",200,97,107);
   TH1F* cemomte = new TH1F("cemomte","Conversion Electron Momentum;p (MeV/c)",200,97,107);
   TH1F* cemomr = new TH1F("cemomr","Conversion Electron Momentum;p (MeV/c)",200,97,107);
@@ -1293,9 +1280,9 @@ void KalFit::KalFitMom(TTree* t) {
   cemomte->SetFillColor(kBlue);
   cemomr->SetStats(0);
   cemomr->SetLineColor(kRed);
-  t->Project("cemomtp","mcmom",quality);
-  t->Project("cemomte","mcentmom",quality);
-  t->Project("cemomr","fitmom",quality);
+  _tdiag->Project("cemomtp","mcmom",quality);
+  _tdiag->Project("cemomte","mcentmom",quality);
+  _tdiag->Project("cemomr","fitmom",quality);
   TCanvas* cemcan = new TCanvas("cemcan","Conversion Momentum",800,600);
   cemcan->Divide(1,1);
   cemcan->cd(1);
@@ -1338,14 +1325,14 @@ void KalFit::KalFitMom(TTree* t) {
   cemleg->Draw();
 }
 
-void KalFit::KalFitRad(TTree* trks) {
+void KalFit::Rad() {
   TH1F* rmax = new TH1F("rmax","Track R_{max}, nominal BField;d_{0}+2/#omega (mm)",100,300,900);
   TH1F* rmaxm = new TH1F("rmaxm","Track R_{max}, B *= 0.95;d_{0}+2/(0.95#times#omega) (mm)",100,300,900);
   rmax->SetStats(0);
   rmaxm->SetStats(0);
   
-  trks->Project("rmax","d0+2.0/om",reco+nmch+tmom+quality+livegate);
-  trks->Project("rmaxm","d0+2.0/(0.95*om)",reco+nmch+tmom+quality+livegate);
+  _tdiag->Project("rmax","d0+2.0/om",reco+nmch+tmom+quality+livegate);
+  _tdiag->Project("rmaxm","d0+2.0/(0.95*om)",reco+nmch+tmom+quality+livegate);
 
   
   TCanvas* radcan = new TCanvas("radcan","radcan",800,800);
