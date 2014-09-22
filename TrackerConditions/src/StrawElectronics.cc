@@ -2,9 +2,9 @@
 // StrawElectronics collects the electronics response behavior of a Mu2e straw in
 // several functions.
 //
-// $Id: StrawElectronics.cc,v 1.16 2014/04/28 13:41:38 brownd Exp $
+// $Id: StrawElectronics.cc,v 1.17 2014/09/22 12:23:28 brownd Exp $
 // $Author: brownd $
-// $Date: 2014/04/28 13:41:38 $
+// $Date: 2014/09/22 12:23:28 $
 //
 // Original author David Brown, LBNL
 //
@@ -37,7 +37,7 @@ namespace mu2e {
     _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
     _TDCLSB(pset.get<double>("TDCLSB",0.037)),  // nsec
     _maxTDC(pset.get<unsigned>("maxTDC",65535)),
-    _clockStart(pset.get<double>("clockStart",200.0)), // nsec
+    _clockStart(pset.get<double>("clockStart",10.0)), // nsec
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
     _flashEnd(pset.get<double>("FlashEnd",300.0)) // nsec
