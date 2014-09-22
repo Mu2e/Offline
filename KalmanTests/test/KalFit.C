@@ -31,7 +31,7 @@ class KalFit {
   double maxt0err[4];
   double maxmomerr[4];
   double minfitcon[4];
-  TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4], goodfit[4], final[4];
+  TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4], goodfit[4];
   TCut reco,quality,cosmic,rmom,rpitch,livegate;
   TCut tpitch, tt0,tmom,nmch,mcsel;
   TCut rmomloose;
@@ -55,6 +55,7 @@ class KalFit {
   void Nactive();
   void Mom();
   void Rad();
+  void MomTails(unsigned ires=2,double tailmom=1.0);
 };
 
 KalFit::KalFit(TTree* trkdiag) : _tdiag(trkdiag), tdlow(0.57735027),
@@ -67,15 +68,15 @@ KalFit::KalFit(TTree* trkdiag) : _tdiag(trkdiag), tdlow(0.57735027),
   rmomloose("fitmom>100.0"),
   donecuts(false)
 {
-  double t_minnactive[] = {20,22,25,30};
-  double t_maxt0err[] = {1.5,0.95,0.9,0.8};
-  double t_maxmomerr[]   = {0.3,0.28,0.25,0.22};
-  double t_minfitcon[]  = {1e-6,1e-3,2e-3,1e-2};
-  for(size_t icut=0;icut<4;++icut){
-    minnactive[icut] = t_minnactive[icut];
-    maxt0err[icut] = t_maxt0err[icut];
-    maxmomerr[icut] = t_maxmomerr[icut];
-    minfitcon[icut] = t_minfitcon[icut];
+  double t_minnactive[] = {15,22,25,30};
+  double t_maxt0err[] = {10,0.95,0.9,0.8};
+  double t_maxmomerr[]   = {1.0,0.28,0.25,0.22};
+  double t_minfitcon[]  = {1e-15,1e-3,2e-3,1e-2};
+  for(size_t jcut=0;jcut<4;++jcut){
+    minnactive[jcut] = t_minnactive[jcut];
+    maxt0err[jcut] = t_maxt0err[jcut];
+    maxmomerr[jcut] = t_maxmomerr[jcut];
+    minfitcon[jcut] = t_minfitcon[jcut];
 
   }
   Cuts();
@@ -112,8 +113,8 @@ void KalFit::Cuts() {
 
   reco = TCut("fitstatus>0");
   cosmic = TCut("d0<105 && d0>-80 && (d0+2/om)>450 && (d0+2/om)<680");
-  for(size_t icut=0;icut<4;++icut)
-    goodfit[icut] = ncuts[icut]+momcuts[icut]+fitcuts[icut]+t0cuts[icut];
+  for(size_t jcut=0;jcut<4;++jcut)
+    goodfit[jcut] = ncuts[jcut]+momcuts[jcut]+fitcuts[jcut]+t0cuts[jcut];
   quality = goodfit[2];
   snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
   rmom = TCut(ctext);
@@ -350,7 +351,6 @@ void KalFit::T2d(){
   TH2F* tt2d = new TH2F("tt2d","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",25,0,50.0,50,-0.05,2.55);
   TProfile* rt2dp = new TProfile("rt2dp","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* tt2dp = new TProfile("tt2dp","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55);
-  TProfile* rt2dp2 = new TProfile("rt2dp2","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,-0.05,2.55,"s");
   TProfile* tt2dp2 = new TProfile("tt2dp2","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55,"s");
   _tdiag->Project("tt2d","_mcdist:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
   _tdiag->Project("rt2d","_rdrift:_ht-_mct0","fitstatus>0&&_active&&fitcon>1e-2");
@@ -375,7 +375,7 @@ void KalFit::T2d(){
     dresid->Fill(tt2dp2->GetBinCenter(ibin+1),tt2dp2->GetBinError(ibin+1));
   }
   tt2d->FitSlicesY();
-  TH1D *tt2d_1 = (TH1D*)gDirectory->Get("tt2d_1");
+  //TH1D *tt2d_1 = (TH1D*)gDirectory->Get("tt2d_1");
   TH1D *tt2d_2 = (TH1D*)gDirectory->Get("tt2d_2");
 
   TCanvas* t2drcan = new TCanvas("t2drcan","t2drcan",800,800);
@@ -706,8 +706,8 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
 
   TH1F* momres[4];
   TF1*  fitmomres[4];
-  TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
-  _tdiag->Project("effnorm","mcentmom",mcsel);
+//  TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
+//  _tdiag->Project("effnorm","mcentmom",mcsel);
  
   TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
   rcan->Clear();
@@ -749,8 +749,7 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
     zero->SetLineStyle(2);
     zero->Draw();
   
-    double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
-
+//    double keff = momres[ires]->GetEntries()/effnorm->GetEntries();
 //    TPaveText* ttext = new TPaveText(0.1,0.75,0.4,0.9,"NDC");  
 //    ttext->AddText("Truth Cuts");
 //    ttext->AddText(nmch.GetTitle());
@@ -1346,4 +1345,152 @@ void KalFit::Rad() {
   rmaxcut->SetLineStyle(2);
   rmaxcut->SetLineWidth(2);
   rmaxcut->Draw();
+}
+
+void KalFit::MomTails(unsigned ires,double tailmom) {
+  gStyle->SetOptStat(0);
+  TCut core = goodfit[ires] + TCut("abs(fitmom-mcentmom)<0.4");
+  char cstring[100];
+  snprintf(cstring,100,"fitmom-mcentmom>%f",tailmom);
+  TCut tail = goodfit[ires] + TCut(cstring);
+  TH1F* cnact = new TH1F("cnact","N Active hits",86,14.5,100.5);
+  TH1F* tnact = new TH1F("tnact","N Active hits",86,14.5,100.5);
+  cnact->SetLineColor(kBlue);
+  tnact->SetLineColor(kRed);
+
+  TH1F* cnactf = new TH1F("cnactf","Active hit fraction",100,0.5,1.01);
+  TH1F* tnactf = new TH1F("tnactf","Active hit fraction",100,0.5,1.01);
+  cnactf->SetLineColor(kBlue);
+  tnactf->SetLineColor(kRed);
+
+  TH1F* cfitcon = new TH1F("cfitcon","Log_{10} Fit Consistency",100,-15,0.0);
+  TH1F* tfitcon = new TH1F("tfitcon","Log_{10} Fit Consistency",100,-15,0.0);
+  cfitcon->SetLineColor(kBlue);
+  tfitcon->SetLineColor(kRed);
+
+  TH1F* cmomerr = new TH1F("cmomerr","Mom Err;MeV/c",100,0.0,0.5);
+  TH1F* tmomerr = new TH1F("tmomerr","Mom Err;MeV/c",100,0.0,0.5);
+  cmomerr->SetLineColor(kBlue);
+  tmomerr->SetLineColor(kRed);
+
+  TH1F* ct0err = new TH1F("ct0err","t0 Err;nsec",100,0.0,1.5);
+  TH1F* tt0err = new TH1F("tt0err","t0 Err;nsec",100,0.0,1.5);
+  ct0err->SetLineColor(kBlue);
+  tt0err->SetLineColor(kRed);
+
+  TH1F* cd0 = new TH1F("cd0","d0;mm",100,-150,150);
+  TH1F* td0 = new TH1F("td0","d0;mm",100,-150,150);
+  cd0->SetLineColor(kBlue);
+  td0->SetLineColor(kRed);
+
+  TH1F* crmax = new TH1F("crmax","Rmax;mm",100,400,680);
+  TH1F* trmax = new TH1F("trmax","Rmax;mm",100,400,680);
+  crmax->SetLineColor(kBlue);
+  trmax->SetLineColor(kRed);
+
+  TH1F* cnpanel = new TH1F("cnpanel","N panel",5,-0.5,4.5);
+  TH1F* tnpanel = new TH1F("tnpanel","N panel",5,-0.5,4.5);
+  cnpanel->SetLineColor(kBlue);
+  tnpanel->SetLineColor(kRed);
+
+  TH1F* crdrift = new TH1F("crdrift","Drift Radius",100,-0.001,2.5);
+  TH1F* trdrift = new TH1F("trdrift","Drift radius",100,-0.001,2.5);
+  crdrift->SetLineColor(kBlue);
+  trdrift->SetLineColor(kRed);
+
+  TH1F* cmcambig = new TH1F("cmcambig","Ambiguity",3,-1.5,1.5);
+  TH1F* tmcambig = new TH1F("tmcambig","Ambiguity",3,-1.5,1.5);
+  cmcambig->SetLineColor(kBlue);
+  tmcambig->SetLineColor(kRed);
+
+  _tdiag->Project("cnact","nactive",core);
+  _tdiag->Project("tnact","nactive",tail);
+
+  _tdiag->Project("cnactf","nactive/nhits",core);
+  _tdiag->Project("tnactf","nactive/nhits",tail);
+
+  _tdiag->Project("cfitcon","log10(fitcon)",core);
+  _tdiag->Project("tfitcon","log10(fitcon)",tail);
+
+  _tdiag->Project("cmomerr","fitmomerr",core);
+  _tdiag->Project("tmomerr","fitmomerr",tail);
+
+  _tdiag->Project("ct0err","t0err",core);
+  _tdiag->Project("tt0err","t0err",tail);
+
+  _tdiag->Project("cd0","d0",core);
+  _tdiag->Project("td0","d0",tail);
+
+  _tdiag->Project("crmax","d0+2/om",core);
+  _tdiag->Project("trmax","d0+2/om",tail);
+
+// hit variables
+
+  _tdiag->Project("cnpanel","_npanel",core+"_active");
+  _tdiag->Project("tnpanel","_npanel",tail+"_active");
+
+  _tdiag->Project("crdrift","_rdrift",core+"_active");
+  _tdiag->Project("trdrift","_rdrift",tail+"_active");
+
+  _tdiag->Project("crdrift","_rdrift",core+"_active");
+  _tdiag->Project("trdrift","_rdrift",tail+"_active");
+
+  _tdiag->Project("cmcambig","_ambig*_mcambig",core+"_active");
+  _tdiag->Project("tmcambig","_ambig*_mcambig",tail+"_active");
+
+  double factor = 0.5*cnact->GetEntries()/tnact->GetEntries();
+  tnact->Scale(factor);
+  tnactf->Scale(factor);
+  tfitcon->Scale(factor);
+  tmomerr->Scale(factor);
+  tt0err->Scale(factor);
+  td0->Scale(factor);
+  trmax->Scale(factor);
+  tnpanel->Scale(factor);
+  trdrift->Scale(factor);
+  tmcambig->Scale(factor);
+
+  TLegend* leg = new TLegend(0.5,0.7,0.9,0.9);
+  leg->AddEntry(cnact,"Mom Res Core","L");
+  snprintf(cstring,100,"Mom Res Tail (#times%3.0f)",factor);
+  leg->AddEntry(tnact,cstring,"L");
+
+  TCanvas* mtcan1 = new TCanvas("mtcan1","Mom res tail",1000,800);
+  mtcan1->Divide(3,3);
+  mtcan1->cd(1);
+  tnact->Draw();
+  cnact->Draw("same");
+  leg->Draw();
+  mtcan1->cd(2);
+  cnactf->Draw();
+  tnactf->Draw("same");
+  mtcan1->cd(3);
+  cfitcon->Draw();
+  tfitcon->Draw("same");
+  mtcan1->cd(4);
+  cmomerr->Draw();
+  tmomerr->Draw("same");
+  mtcan1->cd(5);
+  ct0err->Draw();
+  tt0err->Draw("same");
+  mtcan1->cd(6);
+  cd0->Draw();
+  td0->Draw("same");
+  mtcan1->cd(7);
+  crmax->Draw();
+  trmax->Draw("same");
+
+  TCanvas* mtcan2 = new TCanvas("mtcan2","Mom res tail",1000,800);
+  mtcan2->Divide(2,2);
+  mtcan2->cd(1);
+  cnpanel->Draw();
+  tnpanel->Draw("same");
+  mtcan2->cd(2);
+  crdrift->Draw();
+  trdrift->Draw("same");
+  mtcan2->cd(3);
+  cmcambig->Draw();
+  tmcambig->Draw("same");
+
+
 }
