@@ -1,8 +1,8 @@
 //
 // Struct to hold pointers to MC data in event.
-// $Id: TrkStrawHitInfo.hh,v 1.1 2014/08/22 20:51:05 brownd Exp $
+// $Id: TrkStrawHitInfo.hh,v 1.2 2014/09/22 12:13:17 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/08/22 20:51:05 $
+// $Date: 2014/09/22 12:13:17 $
 //
 #ifndef TrkStrawHitInfo_HH
 #define TrkStrawHitInfo_HH
@@ -16,10 +16,11 @@ namespace mu2e
     TrkStrawHitInfo();
     Int_t _active, _usable;
     Int_t _device, _sector, _layer, _straw;
+    Int_t _nplane, _npanel, _nlayer;
     Float_t _z, _phi, _rho;
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
     Float_t _doca, _exerr, _penerr, _t0, _t0err;
-    Float_t _ht, _tddist, _tdderr, _hlen;
+    Float_t _ht, _tddist, _tdderr, _hlen, _wdot;
     Float_t _edep, _dx;
     Int_t _ambig;
   };
@@ -29,6 +30,7 @@ namespace mu2e
     Int_t _mcpdg, _mcgen, _mcproc, _mcrel;
     Float_t _mct0, _mcht, _mcdist, _mclen;
     Float_t _mcedep;
+    Float_t _mcr, _mcphi;
     Int_t _mcambig;
     Bool_t _xtalk;
   };

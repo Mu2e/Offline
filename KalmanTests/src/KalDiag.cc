@@ -1,8 +1,8 @@
 //
 // MC functions associated with KalFit
-// $Id: KalDiag.cc,v 1.5 2014/09/20 14:34:22 brownd Exp $
+// $Id: KalDiag.cc,v 1.6 2014/09/22 12:13:17 brownd Exp $
 // $Author: brownd $ 
-// $Date: 2014/09/20 14:34:22 $
+// $Date: 2014/09/22 12:13:17 $
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -72,14 +72,19 @@ namespace mu2e
 
 
   TrkStrawHitInfo::TrkStrawHitInfo() : _active(false), _usable(false), _device(-1),
-  _sector(-1), _layer(-1), _straw(-1), _z(-1000.0), _phi(-1000.0), _rho(-1000.0),
-  _resid(-1000.0), _residerr(-1000.0), _rdrift(-1000.0), _rdrifterr(-1000.0) 
+  _sector(-1), _layer(-1), _straw(-1), _nplane(0), _npanel(0), _nlayer(0), 
+  _z(-1000.0), _phi(-1000.0), _rho(-1000.0),
+  _resid(-1000.0), _residerr(-1000.0), _rdrift(-1000.0), _rdrifterr(-1000.0),
+  _trklen(-1000.0),_doca(-1000.0), _exerr(-1000.0), _penerr(-1000.0),
+  _t0(-1000.0), _t0err(-1000.0), _ht(-1000.0), _tddist(-1000.0), _tdderr(-1000.0),
+  _hlen(-1000.0), _edep(-1000.0), _dx(-1000.0), _ambig(-1)
   {}
 
   TrkStrawHitInfoMC::TrkStrawHitInfoMC() : 
   _mcpdg(-1), _mcgen(-1), _mcproc(-1),
   _mct0(-1000.0), _mcht(-1000.0), _mcdist(-1000.0), _mclen(-1000.0),
-  _mcedep(-1000.0), _mcambig(-100), _xtalk(false) {}
+  _mcedep(-1000.0),_mcr(-1000.0),_mcphi(-1000.0),
+  _mcambig(-100), _xtalk(false) {}
 
   KalDiag::~KalDiag(){}
   
@@ -235,7 +240,8 @@ namespace mu2e
 	  bool found(false);
 	  for(size_t isp=0;isp<sct.size();++isp){
 // count direct daughter/parent as part the same particle
-	    if(sct[isp]._spp == spp || sct[isp]._spp->parent()==spp || spp->parent() == sct[isp]._spp){
+	    if(sct[isp]._spp == spp ){
+//	    || sct[isp]._spp->parent()==spp || spp->parent() == sct[isp]._spp){
 	      found = true;
 	      sct[isp].append(spp);
 	      break;
@@ -288,6 +294,8 @@ namespace mu2e
 	tshinfo._dx = sqrt(max(0.0,rstraw*rstraw-tshinfo._rdrift*tshinfo._rdrift));
 	tshinfo._trklen = tsh->fltLen();
 	tshinfo._hlen = tsh->hitLen();
+	Hep3Vector tdir = tsh->trkTraj()->direction(tshinfo._trklen);
+	tshinfo._wdot = tdir.dot(tsh->straw().getDirection());
 	tshinfo._t0 = tsh->hitT0()._t0;
 	// include signal propagation time correction
 	tshinfo._ht = tsh->time()-tsh->signalTime();
@@ -301,6 +309,24 @@ namespace mu2e
 	tshinfo._exerr = tsh->extErr();
 	tshinfo._penerr = tsh->penaltyErr();
 	tshinfo._t0err = tsh->t0Err()/tsh->driftVelocity();
+// count correlations with other TSH
+	tshinfo._nlayer = tshinfo._npanel = tshinfo._nplane = 0;
+	for(TrkHotList::hot_iterator jhot=hots->begin();jhot != hots->end();++jhot){
+	  if(jhot != ihot){
+	    const TrkStrawHit* otsh = dynamic_cast<const TrkStrawHit*>(jhot.get());
+	    if(otsh != 0 && otsh->isActive()){
+	      if(tshinfo._device ==  otsh->straw().id().getDevice()){
+		tshinfo._nplane++;
+		if(tshinfo._sector == otsh->straw().id().getSector()){
+		  tshinfo._npanel++;
+		  if(tshinfo._layer == otsh->straw().id().getLayer()){
+		    tshinfo._nlayer++;
+		  }
+		}
+	      }
+	    }
+	  }
+	}
 	_tshinfo.push_back(tshinfo);
 	// MC information
 	if(_fillmc && mcgood){
@@ -326,6 +352,8 @@ namespace mu2e
 	  Hep3Vector dir = spmcp->momentum().unit();
 	  Hep3Vector mcperp = (dir.cross(tsh->straw().getDirection())).unit();
 	  double dperp = mcperp.dot(mcsep);
+	  tshinfomc._mcr =spmcp->position().perp();
+	  tshinfomc._mcphi =spmcp->position().phi();
 	  tshinfomc._mcdist = fabs(dperp);
 	  tshinfomc._mcambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
 	  tshinfomc._mclen = mcsep.dot(tsh->straw().getDirection());
@@ -337,6 +365,7 @@ namespace mu2e
 	    // count hits with at least givien fraction of the original momentum as 'good'
 	    if(spmcp->momentum().mag()/mcmom > _mingood )++_nmcgood;
 	  }
+// fill entry
 	  _tshinfomc.push_back(tshinfomc);
 	}
       }
