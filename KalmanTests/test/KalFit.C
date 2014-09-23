@@ -55,7 +55,7 @@ class KalFit {
   void Nactive();
   void Mom();
   void Rad();
-  void MomTails(unsigned ires=2,double tailmom=1.0);
+  void MomTails(double tailmom=0.5);
 };
 
 KalFit::KalFit(TTree* trkdiag) : _tdiag(trkdiag), tdlow(0.57735027),
@@ -1347,12 +1347,12 @@ void KalFit::Rad() {
   rmaxcut->Draw();
 }
 
-void KalFit::MomTails(unsigned ires,double tailmom) {
+void KalFit::MomTails(double tailmom) {
   gStyle->SetOptStat(0);
-  TCut core = goodfit[ires] + TCut("abs(fitmom-mcentmom)<0.3");
+  TCut core = reco + TCut("abs(fitmom-mcentmom)<0.3");
   char cstring[100];
   snprintf(cstring,100,"fitmom-mcentmom>%f",tailmom);
-  TCut tail = goodfit[ires] + TCut(cstring);
+  TCut tail = reco + TCut(cstring);
   TH1F* cnact = new TH1F("cnact","N Active hits",86,14.5,100.5);
   TH1F* tnact = new TH1F("tnact","N Active hits",86,14.5,100.5);
   cnact->SetLineColor(kBlue);
@@ -1394,9 +1394,14 @@ void KalFit::MomTails(unsigned ires,double tailmom) {
   tnpanel->SetLineColor(kRed);
 
   TH1F* crdrift = new TH1F("crdrift","Drift Radius",100,-0.001,2.5);
-  TH1F* trdrift = new TH1F("trdrift","Drift radius",100,-0.001,2.5);
+  TH1F* trdrift = new TH1F("trdrift","Drift Radius",100,-0.001,2.5);
   crdrift->SetLineColor(kBlue);
   trdrift->SetLineColor(kRed);
+
+  TH1F* ctandip = new TH1F("ctandip","Tan #lambda",100,0.4,1.2);
+  TH1F* ttandip = new TH1F("ttandip","Tan #lambda",100,0.4,1.2);
+  ctandip->SetLineColor(kBlue);
+  ttandip->SetLineColor(kRed);
 
   TH1F* cmcambig = new TH1F("cmcambig","Ambiguity",3,-1.5,1.5);
   TH1F* tmcambig = new TH1F("tmcambig","Ambiguity",3,-1.5,1.5);
@@ -1424,6 +1429,9 @@ void KalFit::MomTails(unsigned ires,double tailmom) {
   _tdiag->Project("crmax","d0+2/om",core);
   _tdiag->Project("trmax","d0+2/om",tail);
 
+  _tdiag->Project("ctandip","td",core);
+  _tdiag->Project("ttandip","td",tail);
+
 // hit variables
 
   _tdiag->Project("cnpanel","_npanel",core+"_active");
@@ -1446,6 +1454,7 @@ void KalFit::MomTails(unsigned ires,double tailmom) {
   tt0err->Scale(factor);
   td0->Scale(factor);
   trmax->Scale(factor);
+  ttandip->Scale(factor);
   tnpanel->Scale(factor);
   trdrift->Scale(factor);
   tmcambig->Scale(factor);
@@ -1479,6 +1488,9 @@ void KalFit::MomTails(unsigned ires,double tailmom) {
   mtcan1->cd(7);
   crmax->Draw();
   trmax->Draw("same");
+  mtcan1->cd(8);
+  ctandip->Draw();
+  ttandip->Draw("same");
 
   TCanvas* mtcan2 = new TCanvas("mtcan2","Mom res tail",1000,800);
   mtcan2->Divide(2,2);

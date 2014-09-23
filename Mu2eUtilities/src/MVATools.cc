@@ -22,7 +22,7 @@ namespace mu2e
   MVATools::MVATools(fhicl::ParameterSet const& pset){
     // location-independent files
     ConfigFileLookupPolicy configFile;
-    string weights = pset.get<std::string>("MVAWeights","HitMakers/test/StereoMVA.weights.xml");
+    string weights = pset.get<std::string>("MVAWeights");
     _mvaWgtsFile = configFile(weights);
   }
   MVATools::~MVATools()

@@ -96,7 +96,6 @@ namespace mu2e {
     bool _writepairs; // write out the stereo pairs
     StrawHitFlag _stmask; // selection 
     MVATools _mvatool;
-    std::string _MVAType; // type of MVA
     std::string _MVAWeights; // file of MVA weights
     vector<double> _vmva; // input variables to TMVA for stereo selection
     // for optimized Stereo Hit finding
@@ -142,7 +141,6 @@ namespace mu2e {
     _minMVA(pset.get<double>("minMVA",0.7)), // MVA cut
     _writepairs(pset.get<bool>("WriteStereoPairs",false)),
     _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet())),
-    _MVAType(pset.get<std::string>("MVAType","MLP method")),
     _nhits(0),_deltat(0),_deltaE(0),_deltaz(0),_fsep(0),_dL(0),_mva(0),
     _mcdigis(0),_sdiag(0)
   {
