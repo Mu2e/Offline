@@ -1349,7 +1349,7 @@ void KalFit::Rad() {
 
 void KalFit::MomTails(unsigned ires,double tailmom) {
   gStyle->SetOptStat(0);
-  TCut core = goodfit[ires] + TCut("abs(fitmom-mcentmom)<0.4");
+  TCut core = goodfit[ires] + TCut("abs(fitmom-mcentmom)<0.3");
   char cstring[100];
   snprintf(cstring,100,"fitmom-mcentmom>%f",tailmom);
   TCut tail = goodfit[ires] + TCut(cstring);
