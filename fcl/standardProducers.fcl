@@ -266,7 +266,7 @@ MakeStrawHitPositions : {
 
 MakeStereoHits : {
   module_type : MakeStereoHits
-  MVATool.MVAWeights :"HitMakers/test/StereoMVA.weights.xml" 
+  MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
 }
 
 FSHPreStereo  : {
