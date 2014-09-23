@@ -2,6 +2,9 @@
 #------------------------------------------------------------------------------
 # generate 105 MeV/c electrons
 # make STNTUPLE in one go, without creating an intermediate file
+# global variables:
+# -----------------
+# pdgCode 
 #------------------------------------------------------------------------------
 # $Id: egun_stnmaker.fcl,v 1.2 2014/08/27 19:59:09 murat Exp $
 # $Author: murat $
