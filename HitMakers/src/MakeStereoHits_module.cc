@@ -96,7 +96,6 @@ namespace mu2e {
     bool _writepairs; // write out the stereo pairs
     StrawHitFlag _stmask; // selection 
     MVATools _mvatool;
-    std::string _MVAWeights; // file of MVA weights
     vector<double> _vmva; // input variables to TMVA for stereo selection
     // for optimized Stereo Hit finding
     size_t _nsta;
@@ -145,10 +144,6 @@ namespace mu2e {
     _mcdigis(0),_sdiag(0)
   {
     _maxChi = sqrt(_maxChisq);
-    // location-independent files
-    ConfigFileLookupPolicy configFile;
-    std::string weights = pset.get<std::string>("MVAWeights","HitMakers/test/StereoMVA.weights.xml");
-    _MVAWeights = configFile(weights);
     // Tell the framework what we make.
     if(_writepairs)produces<StereoHitCollection>();
     produces<StrawHitPositionCollection>();
