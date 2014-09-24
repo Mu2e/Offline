@@ -599,7 +599,9 @@ namespace mu2e {
         // temporary arrangements till MSTM is in GeometryService
         
         const double mstmPipe0HalfLength       = c.getDouble("mstm.pipe0.halfLength");
-        const double mstmPipe1HalfLength       = c.getDouble("mstm.pipe1.halfLength");
+        const double mstmColl1UpStrSpace       = c.getDouble("mstm.collimator1.UpStrSpace");
+        const double mstmColl1HalfLength       = c.getDouble("mstm.collimator1.halfLength");
+        const double mstmShutterUpStrSpace     = c.getDouble("mstm.shutter.UpStrSpace");
         const double mstmShutterNumberSegments = c.getInt("mstm.shutter.numberSegments");
 	double mstmShutterHalfLength           = 0.;
 	for (int segment = 1; segment <= mstmShutterNumberSegments; ++segment) {
@@ -607,11 +609,13 @@ namespace mu2e {
 	  mstmShutterSegmentConfig << "mstm.shutter.segment" << segment << ".halfLength";
 	  mstmShutterHalfLength += c.getDouble(mstmShutterSegmentConfig.str());
 	}
-        const double mstmPipe2HalfLength       = c.getDouble("mstm.pipe2.halfLength");
-        const double mstmPipe3HalfLength       = c.getDouble("mstm.pipe3.halfLength");
-        const double mstmPipe4HalfLength       = c.getDouble("mstm.pipe4.halfLength");
-        const double mstmAbsorberHalfLength    = c.getDouble("mstm.absorber.halfLength");
-        const double mstmPipe5HalfLength       = c.getDouble("mstm.pipe5.halfLength");
+	const double mstmColl2UpStrSpace       = c.getDouble("mstm.collimator2.UpStrSpace");
+        const double mstmColl2HalfLength       = c.getDouble("mstm.collimator2.halfLength");
+        const double mstmPipe1UpStrSpace       = c.getDouble("mstm.pipe1.UpStrSpace");
+	const double mstmPipe1HalfLength       = c.getDouble("mstm.pipe1.halfLength");
+        const double mstmColl3UpStrSpace       = c.getDouble("mstm.collimator3.UpStrSpace");
+        const double mstmColl3HalfLength       = c.getDouble("mstm.collimator3.halfLength");
+        const double mstmCanUpStrSpace         = c.getDouble("mstm.can.UpStrSpace");        
         const double mstmCanHalfLength         = c.getDouble("mstm.can.halfLength");
         const double mstmCrystalHalfLength     = c.getDouble("mstm.crystal.halfLength");
 
@@ -637,21 +641,23 @@ namespace mu2e {
                                                   holeLocation.z() + enscendb->holeHalfLength(hID) +
                                                   2.*vd->getHalfLength() + mstmPipe0HalfLength);
 
-        double vdZshift = 
-          mstmPipe0HalfLength     +
-          2.0*mstmPipe1HalfLength     +
-          2.0*mstmShutterHalfLength +
-          2.0*mstmPipe2HalfLength     +
-          2.0*mstmPipe3HalfLength     +
-          2.0*mstmPipe4HalfLength     +
-          2.0*mstmAbsorberHalfLength +
-          2.0*mstmPipe5HalfLength     +
-          mstmCanHalfLength       -
-          mstmCrystalHalfLength   -
-          vd->_halfLength;
+        double vdZshift =   mstmPipe0HalfLength
+                          + mstmColl1UpStrSpace
+                          + 2.0*mstmColl1HalfLength
+                          + mstmShutterUpStrSpace
+                          + 2.0*mstmShutterHalfLength
+                          + mstmColl2UpStrSpace
+                          + 2.0*mstmColl2HalfLength
+                          + mstmPipe1UpStrSpace
+                          + 2.0*mstmPipe1HalfLength
+                          + mstmColl3UpStrSpace
+                          + 2.0*mstmColl3HalfLength
+                          + mstmCanUpStrSpace
+                          + mstmCanHalfLength
+                          - mstmCrystalHalfLength 
+                          - vd->_halfLength;
 
-        CLHEP::Hep3Vector vdPositionInMu2e = mstmPipe0PositionInMu2e + 
-          CLHEP::Hep3Vector(0.0,0.0,vdZshift);
+        CLHEP::Hep3Vector vdPositionInMu2e = mstmPipe0PositionInMu2e + CLHEP::Hep3Vector(0.0,0.0,vdZshift);
 
         GeomHandle<Mu2eEnvelope> env;
         const CLHEP::Hep3Vector hallFormalCenterInMu2e(
