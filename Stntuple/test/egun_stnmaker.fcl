@@ -2,6 +2,9 @@
 #------------------------------------------------------------------------------
 # generate 105 MeV/c electrons
 # make STNTUPLE in one go, without creating an intermediate file
+# global variables:
+# -----------------
+# pdgCode 
 #------------------------------------------------------------------------------
 # $Id: egun_stnmaker.fcl,v 1.2 2014/08/27 19:59:09 murat Exp $
 # $Author: murat $
@@ -12,6 +15,7 @@ BEGIN_PROLOG
 #  muStops    : [ "/mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 #  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
 #  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00000/data_mixBG.root"]
+  pdgCode   : 11
 END_PROLOG
 
 #include "Stntuple/test/generate_mergePatRec_stnmaker.fcl"
@@ -21,7 +25,7 @@ process_name : EgunMergePatRecStnmaker
 # for 105 MeV/c electron : E = 105.00124           MeV
 # for 105 MeV/c muon     : E = 148.9584269653785   MeV
 
-physics.producers.generate.physics.pdgId  : 11
+physics.producers.generate.physics.pdgId  : @local::pdgCode
 physics.producers.generate.physics.elow   : 105.0010
 physics.producers.generate.physics.ehi    : 105.0015
 
