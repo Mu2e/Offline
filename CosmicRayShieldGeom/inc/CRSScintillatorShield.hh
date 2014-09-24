@@ -28,11 +28,14 @@ namespace mu2e
 
     friend class CosmicRayShieldMaker;
 
+    //disable default constructor
+    CRSScintillatorShield();
+
     public:
 
-    CRSScintillatorShield():_id(-1){}
-
-    CRSScintillatorShield(CRSScintillatorShieldId const & id, std::string const & name);
+    CRSScintillatorShield(CRSScintillatorShieldId const & id, 
+                          std::string const & name,
+                          CRSScintillatorBarDetail const &barDetails);
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
