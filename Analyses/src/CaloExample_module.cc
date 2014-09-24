@@ -57,6 +57,7 @@
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Utilities/InputTag.h"
 
 #include "TDirectory.h"
 #include "TNtuple.h"
@@ -110,24 +111,32 @@ namespace mu2e {
        typedef art::Ptr<SimParticle> SimParticlePtr;
 
 
-       int _diagLevel;
-       int _nProcess;
+    int _diagLevel;
+    int _nProcess;
 
-       std::string _g4ModuleLabel;
-       std::string _generatorModuleLabel;
-       std::string _caloReadoutModuleLabel;
-       std::string _caloCrystalModuleLabel;
-       std::string _caloHitMCCrystalPtrLabel;
-       std::string _caloClusterModuleLabel;
-       std::string _caloClusterAlgorithm;
-       std::string _caloClusterSeeding;
-       const std::string _producerName;
-       std::string _virtualDetectorLabel;
-       std::string _trkPatRecModuleLabel;
-       std::string _instanceName;
+    std::string _g4ModuleLabel;
+    std::string _generatorModuleLabel;
+    art::InputTag _simParticleTag;
 
-       TrkParticle _tpart;
-       TrkFitDirection _fdir;
+
+    std::string _caloReadoutModuleLabel;
+    std::string _caloCrystalModuleLabel;
+    std::string _caloHitMCCrystalPtrLabel;
+    std::string _caloClusterModuleLabel;
+    std::string _caloClusterAlgorithm;
+    std::string _caloClusterSeeding;
+    const std::string _producerName;
+    std::string _virtualDetectorLabel;
+    std::string _stepPointMCLabel;
+    std::string _trkPatRecModuleLabel;
+    std::string _instanceName;
+
+
+ 
+
+
+    TrkParticle _tpart;
+    TrkFitDirection _fdir;
 
        
        
@@ -138,7 +147,7 @@ namespace mu2e {
 
        int   _nGen,_genPdgId[16384],_genCrCode[16384];
        float _genmomX[16384],_genmomY[16384],_genmomZ[16384],_genStartX[16384],_genStartY[16384],_genStartZ[16384],_genStartT[16384];
-       
+          
        int   _nHits,_cryId[16384],_crySectionId[16384],_crySimIdx[16384],_crySimLen[16384];
        float _cryEtot,_cryTime[16384],_cryEdep[16384],_cryDose[16384],_cryPosX[16384],_cryPosY[16384],_cryPosZ[16384],_cryLeak[16384];
               
@@ -173,6 +182,9 @@ namespace mu2e {
     _nProcess(0),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel","g4run")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel","generate")),
+    //rhbadd
+    _simParticleTag(pset.get<string>("simParticleTag")),
+    //rhbadd
     _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel","CaloReadoutHitsMaker")),
     _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitsMaker")),
     _caloHitMCCrystalPtrLabel(pset.get<string>("calorimeterHitMCCrystalPtr","CaloHitMCCrystalPtr")),
@@ -181,6 +193,7 @@ namespace mu2e {
     _caloClusterSeeding(pset.get<std::string>("caloClusterSeeding", "energy")),
     _producerName("Algo"+mu2e::TOUpper(_caloClusterAlgorithm)+"SeededBy"+mu2e::TOUpper(_caloClusterSeeding)),
     _virtualDetectorLabel(pset.get<string>("virtualDetectorName","virtualdetector")),
+    _stepPointMCLabel(pset.get<string>("stepPointMCLabel")),
     _trkPatRecModuleLabel(pset.get<string>("trkPatRecModuleLabel")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
@@ -308,18 +321,15 @@ namespace mu2e {
       if( ! geom->hasElement<Calorimeter>() ) return;
       Calorimeter const & cal = *(GeomHandle<Calorimeter>());
   
-
       //Get generated particles
       art::Handle<GenParticleCollection> gensHandle;
       event.getByLabel(_generatorModuleLabel, gensHandle);
       GenParticleCollection const& genParticles(*gensHandle);
 
       //Get simulated particles by Geant4
-      art::Handle<SimParticleCollection> simsHandle;
-      event.getByLabel(_g4ModuleLabel, simsHandle);            
+      auto simsHandle = event.getValidHandle<SimParticleCollection>(_simParticleTag);
       SimParticleCollection const& simParticles(*simsHandle);
 
-      
       
       //Get calorimeter readout hits (2 readout / crystal as of today)
       art::Handle<CaloHitCollection> caloHitsHandle;
@@ -522,23 +532,24 @@ namespace mu2e {
        //--------------------------  Do virtual detectors --------------------------------
        //73/74/77/78 front back inner outer edges disk 0
        //75/76/79/80 front back inner outer edges disk 1
-       
-       for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter)
-       {	   
-	  const StepPointMC& hit = *iter;
+       if (vdhits.isValid())
+	 {
+	   for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter)
+	     {	   
+	       const StepPointMC& hit = *iter;
 
-	  if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
+	       if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
 
-	  _vdId[_nVd]    = hit.volumeId();
-	  _vdPdgId[_nVd] = hit.simParticle()->pdgId();
-	  _vdTime[_nVd]  = hit.time();
-	  _vdPosX[_nVd]  = hit.position().x()+ 3904;
-	  _vdPosY[_nVd]  = hit.position().y();
-	  _vdPosZ[_nVd]  = hit.position().z()-10200;
-	  _vdMom[_nVd]   = hit.momentum().mag();
-          ++_nVd;	   
-       }
-          
+	       _vdId[_nVd]    = hit.volumeId();
+	       _vdPdgId[_nVd] = hit.simParticle()->pdgId();
+	       _vdTime[_nVd]  = hit.time();
+	       _vdPosX[_nVd]  = hit.position().x()+ 3904;
+	       _vdPosY[_nVd]  = hit.position().y();
+	       _vdPosZ[_nVd]  = hit.position().z()-10200;
+	       _vdMom[_nVd]   = hit.momentum().mag();
+	       ++_nVd;	   
+	     }
+	 }          
 
 
        //--------------------------  Do tracks  --------------------------------
