@@ -164,6 +164,8 @@ class mu2e {
     bool _init;
     double _conint[4];
     double _conint_err[4];
+    TCut trkqualcut[4] = {"trkqual>0.1","trkqual>0.2","trkqual>0.4","trkqual>0.6"};
+
 };
 
 void mu2e::init(){
@@ -183,8 +185,10 @@ void mu2e::init(){
   dioscale = 0.0;
   if(ndio>0){
     if(weightdio){ 
+      cout << "Weighting DIO" << endl;
       dioscale =ndecay*diogenrange/ndio;
     } else {
+      cout << "Not weighting DIO" << endl;
       dioscale = dioint*ndecay/ndio;
     }
   }
@@ -220,8 +224,9 @@ void mu2e::init(){
   fitcuts[3] = "fitcon>1e-2";
 
   for(unsigned icut=0;icut<4;icut++){
-    quality[icut] = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
-    final[icut] = (reco+pitch+livegate+quality[icut]+cosmic);
+//    quality[icut] = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
+   quality[icut] = trkqualcut[icut];
+   final[icut] = (reco+pitch+livegate+quality[icut]+cosmic);
   }
   _init = true;
 }
@@ -387,13 +392,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     cuttext->AddText(line);
     snprintf(line,80,"%s",livegate.GetTitle());
     cuttext->AddText(line);
-    snprintf(line,80,"%s",ncuts[icut].GetTitle());
-    cuttext->AddText(line);
-    snprintf(line,80,"%s",t0cuts[icut].GetTitle());
-    cuttext->AddText(line);
-    snprintf(line,80,"%s",momcuts[icut].GetTitle());
-    cuttext->AddText(line);
-    snprintf(line,80,"%s",fitcuts[icut].GetTitle());
+    snprintf(line,80,"%s",trkqualcut[icut].GetTitle());
     cuttext->AddText(line);
     snprintf(line,80,"%s",cosmic.GetTitle());
     cuttext->AddText(line);
@@ -439,8 +438,8 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   dioc->Divide(2,2);
   Double_t dmhi = trueconvmom;
   Double_t dmlow = trueconvmom - diogenrange;
-  TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV",_nbins,dmlow,dmhi);
-  TH1F* evtwt = new TH1F("evtwt","True DIO momentum;MeV",_nbins,dmlow,dmhi);
+  TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV/c",_nbins,dmlow,dmhi);
+  TH1F* evtwt = new TH1F("evtwt","True DIO momentum;MeV/c",_nbins,dmlow,dmhi);
   //  evtwt->Sumw2();
   if(dio)dio->Project("diogen","mcmom");
   if(dio)dio->Project("evtwt","mcmom","evtwt");
@@ -477,10 +476,13 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   dioc->cd(1);
   gPad->SetLogy();
   // dead-reconing on spectrum, accounting for bins
-  double diofscale = ndecay*diogenrange/_nbins;
+  double diofscale = ndecay*diogenrange*diogen->GetEntries()/(_nbins*ndio);
+  cout << "dio function scale = " << diofscale << endl;
   _diocz_f->SetParameter(0,diofscale);
   evtwt->Draw();
+
   _diocz_f->Draw("same");
+  cout << "dio function @103 = " << _diocz_f->Eval(103.0) << endl;
   diogen->Draw("same");
   TLegend* dioleg = new TLegend(.2,.4,.6,.6);
   dioleg->AddEntry(diogen,"Generated","l");
