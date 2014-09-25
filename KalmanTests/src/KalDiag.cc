@@ -259,6 +259,8 @@ namespace mu2e
     _tshinfo.clear();
     _tshinfomc.clear();
     _nmcactive = _nmchits = _nmcgood = 0;
+    _nmcambig = 0;
+    _ndouble = _ndactive = 0;
     bool mcgood = _mcdata.good();
     double mcmom(100.0);
     if(pspp.isNonnull())
@@ -311,14 +313,18 @@ namespace mu2e
 	tshinfo._t0err = tsh->t0Err()/tsh->driftVelocity();
 // count correlations with other TSH
 	tshinfo._nlayer = tshinfo._npanel = tshinfo._nplane = 0;
+	bool dhit(false);
+	bool dactive(false);
 	for(TrkHotList::hot_iterator jhot=hots->begin();jhot != hots->end();++jhot){
 	  if(jhot != ihot){
 	    const TrkStrawHit* otsh = dynamic_cast<const TrkStrawHit*>(jhot.get());
-	    if(otsh != 0 && otsh->isActive()){
+	    if(otsh != 0){
 	      if(tshinfo._device ==  otsh->straw().id().getDevice()){
 		tshinfo._nplane++;
 		if(tshinfo._sector == otsh->straw().id().getSector()){
 		  tshinfo._npanel++;
+		  dhit = true;
+		  if(tsh->isActive() && otsh->isActive())dactive = true;
 		  if(tshinfo._layer == otsh->straw().id().getLayer()){
 		    tshinfo._nlayer++;
 		  }
@@ -327,6 +333,8 @@ namespace mu2e
 	    }
 	  }
 	}
+	if(dhit)_ndouble++;
+	if(dactive)_ndactive++;
 	_tshinfo.push_back(tshinfo);
 	// MC information
 	if(_fillmc && mcgood){
@@ -364,6 +372,8 @@ namespace mu2e
 	    if(tsh->isActive())++_nmcactive;
 	    // count hits with at least givien fraction of the original momentum as 'good'
 	    if(spmcp->momentum().mag()/mcmom > _mingood )++_nmcgood;
+	    // count hits with correct left-right ambiguity
+	    if(tshinfo._active && tshinfomc._mcambig*tshinfo._ambig > 0)++_nmcambig;
 	  }
 // fill entry
 	  _tshinfomc.push_back(tshinfomc);
@@ -454,6 +464,8 @@ namespace mu2e
     _trkdiag->Branch("ndof",&_ndof,"ndof/I");
     _trkdiag->Branch("niter",&_niter,"niter/I");
     _trkdiag->Branch("nactive",&_nactive,"nactive/I");
+    _trkdiag->Branch("ndouble",&_ndouble,"ndouble/I");
+    _trkdiag->Branch("ndactive",&_ndactive,"ndactive/I");
     _trkdiag->Branch("chisq",&_chisq,"chisq/F");
     _trkdiag->Branch("fitcon",&_fitcon,"fitcon/F");
     _trkdiag->Branch("radlen",&_radlen,"radlen/F");
@@ -473,6 +485,7 @@ namespace mu2e
       _trkdiag->Branch("nmcactive",&_nmcactive,"nmcactive/I");
       _trkdiag->Branch("nmchits",&_nmchits,"nmchits/I");
       _trkdiag->Branch("nmcgood",&_nmcgood,"nmcgood/I");
+      _trkdiag->Branch("nmcambig",&_nmcambig,"nmcambig/I");
       _trkdiag->Branch("mcpdgid",&_mcpdgid,"mcpdgid/I");
       _trkdiag->Branch("mcgenid",&_mcgenid,"mcgenid/I");
       _trkdiag->Branch("mcproc",&_mcproc,"mcproc/I");
@@ -644,12 +657,12 @@ namespace mu2e
   void KalDiag::reset() {
     // reset ttree variables that might otherwise be stale and misleading
     _fitstatus = -1000;
-    _nhits = _nactive = _ndof = _niter = _nsites = -1;
+    _nhits = _nactive = _ndouble = _ndactive = _ndof = _niter = _nsites = -1;
     _fitmom = _seedmom = _t0 = _t0err = -1.0;
     _chisq = _fitcon = _radlen = _firstflt = _lastflt = -1.0;
     _tshinfo.clear();
     if(_fillmc){
-      _nmc = _nmcactive = _nmchits = _nmcgood = -1;
+      _nmc = _nmcactive = _nmchits = _nmcgood = _nmcambig = -1;
       _mcpdgid = _mcgenid = _mcproc = -1;
       _mcppdgid = _mcpgenid = _mcpproc = -1;
       _mcinfo.reset();

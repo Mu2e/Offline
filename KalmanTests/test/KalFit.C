@@ -115,7 +115,7 @@ void KalFit::Cuts() {
   cosmic = TCut("d0<105 && d0>-80 && (d0+2/om)>450 && (d0+2/om)<680");
   for(size_t jcut=0;jcut<4;++jcut){
 //    goodfit[jcut] = ncuts[jcut]+momcuts[jcut]+fitcuts[jcut]+t0cuts[jcut];
-    goodfit[jcut] = reco+trkqualcut[jcut];
+    goodfit[jcut] = trkqualcut[jcut];
   }
   quality = goodfit[icut]+rpitch;
   snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
@@ -1354,7 +1354,7 @@ void KalFit::Rad() {
 
 void KalFit::MomTails(double tailmom) {
   gStyle->SetOptStat(0);
-  TCut core = reco + TCut("abs(fitmom-mcentmom)<0.3");
+  TCut core = reco + TCut("abs(fitmom-mcentmom)<0.2");
   char cstring[100];
   snprintf(cstring,100,"fitmom-mcentmom>%f",tailmom);
   TCut tail = reco + TCut(cstring);
@@ -1367,6 +1367,11 @@ void KalFit::MomTails(double tailmom) {
   TH1F* tnactf = new TH1F("tnactf","Active hit fraction",100,0.5,1.01);
   cnactf->SetLineColor(kBlue);
   tnactf->SetLineColor(kRed);
+
+  TH1F* cndoubf = new TH1F("cndoubf","Double hit fraction",100,0.5,1.01);
+  TH1F* tndoubf = new TH1F("tndoubf","Double hit fraction",100,0.5,1.01);
+  cndoubf->SetLineColor(kBlue);
+  tndoubf->SetLineColor(kRed);
 
   TH1F* cfitcon = new TH1F("cfitcon","Log_{10} Fit Consistency",100,-15,0.0);
   TH1F* tfitcon = new TH1F("tfitcon","Log_{10} Fit Consistency",100,-15,0.0);
@@ -1413,16 +1418,29 @@ void KalFit::MomTails(double tailmom) {
   ctrkqual->SetLineColor(kBlue);
   ttrkqual->SetLineColor(kRed);
 
-  TH1F* cmcambig = new TH1F("cmcambig","Ambiguity",3,-1.5,1.5);
-  TH1F* tmcambig = new TH1F("tmcambig","Ambiguity",3,-1.5,1.5);
-  cmcambig->SetLineColor(kBlue);
-  tmcambig->SetLineColor(kRed);
+  TH1F* cmchambig = new TH1F("cmcambig","Hit Ambiguity reco*true",3,-1.5,1.5);
+  TH1F* tmchambig = new TH1F("tmcambig","Hit Ambiguity reco*true",3,-1.5,1.5);
+  cmchambig->SetLineColor(kBlue);
+  tmchambig->SetLineColor(kRed);
+
+  TH1F* cmcambigf = new TH1F("cmcambig","Correct Ambiguity Fraction",100,0.5,1.01);
+  TH1F* tmcambig = new TH1F("tmcambig","Correct Ambiguity Fraction",10,0.5,1.01);
+  cmchambig->SetLineColor(kBlue);
+  tmchambig->SetLineColor(kRed);
+
+  TH1F* cmcdp = new TH1F("cmcambig","Correct Ambiguity Fraction",100,0.5,1.01);
+  TH1F* tmcdp = new TH1F("tmcambig","Correct Ambiguity Fraction",10,0.5,1.01);
+  cmchambig->SetLineColor(kBlue);
+  tmchambig->SetLineColor(kRed);
 
   _tdiag->Project("cnact","nactive",core);
   _tdiag->Project("tnact","nactive",tail);
 
   _tdiag->Project("cnactf","nactive/nhits",core);
   _tdiag->Project("tnactf","nactive/nhits",tail);
+
+  _tdiag->Project("cndoubf","ndactive/nactive",core);
+  _tdiag->Project("tndoubf","ndactive/nactive",tail);
 
   _tdiag->Project("cfitcon","log10(fitcon)",core);
   _tdiag->Project("tfitcon","log10(fitcon)",tail);
@@ -1456,12 +1474,18 @@ void KalFit::MomTails(double tailmom) {
   _tdiag->Project("crdrift","_rdrift",core+"_active");
   _tdiag->Project("trdrift","_rdrift",tail+"_active");
 
-  _tdiag->Project("cmcambig","_ambig*_mcambig",core+"_active");
-  _tdiag->Project("tmcambig","_ambig*_mcambig",tail+"_active");
+// MC variables
+
+  _tdiag->Project("cmchambig","_ambig*_mcambig",core+"_active");
+  _tdiag->Project("tmchambig","_ambig*_mcambig",tail+"_active");
+
+  _tdiag->Project("cmcambigf","nmcambig/nmcactive",core);
+  _tdiag->Project("tmcambigf","nmcambig/nmcactive",tail);
 
   double factor = 0.5*cnact->GetEntries()/tnact->GetEntries();
   tnact->Scale(factor);
   tnactf->Scale(factor);
+  tndoubf->Scale(factor);
   tfitcon->Scale(factor);
   tmomerr->Scale(factor);
   tt0err->Scale(factor);
@@ -1480,46 +1504,50 @@ void KalFit::MomTails(double tailmom) {
 
   TCanvas* mtcan1 = new TCanvas("mtcan1","Mom res tail",1000,800);
   mtcan1->Divide(3,3);
-  mtcan1->cd(1);
+  unsigned ipad(1);
+  mtcan1->cd(ipad++);
   tnact->Draw();
   cnact->Draw("same");
   leg->Draw();
-  mtcan1->cd(2);
+  mtcan1->cd(ipad++);
   cnactf->Draw();
   tnactf->Draw("same");
-  mtcan1->cd(3);
+  mtcan1->cd(ipad++);
+  cndoubf->Draw();
+  tndoubf->Draw("same");
+  mtcan1->cd(ipad++);
   cfitcon->Draw();
   tfitcon->Draw("same");
-  mtcan1->cd(4);
+  mtcan1->cd(ipad++);
   cmomerr->Draw();
   tmomerr->Draw("same");
-  mtcan1->cd(5);
+  mtcan1->cd(ipad++);
   ct0err->Draw();
   tt0err->Draw("same");
-  mtcan1->cd(6);
+  mtcan1->cd(ipad++);
   cd0->Draw();
   td0->Draw("same");
-  mtcan1->cd(7);
+  mtcan1->cd(ipad++);
   crmax->Draw();
   trmax->Draw("same");
-  mtcan1->cd(8);
-  ctandip->Draw();
-  ttandip->Draw("same");
-  mtcan1->cd(9);
+  mtcan1->cd(ipad++);
   ctrkqual->Draw();
   ttrkqual->Draw("same");
 
   TCanvas* mtcan2 = new TCanvas("mtcan2","Mom res tail",1000,800);
   mtcan2->Divide(2,2);
-  mtcan2->cd(1);
+  ipad = 1;
+  mtcan2->cd(ipad++);
   cnpanel->Draw();
   tnpanel->Draw("same");
-  mtcan2->cd(2);
+  mtcan2->cd(ipad++);
   crdrift->Draw();
   trdrift->Draw("same");
-  mtcan2->cd(3);
+  mtcan2->cd(ipad++);
   cmcambig->Draw();
   tmcambig->Draw("same");
-
+  mtcan2->cd(ipad++);
+  ctandip->Draw();
+  ttandip->Draw("same");
 
 }
