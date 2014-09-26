@@ -77,8 +77,8 @@ namespace mu2e {
       EMC_Disk_0_EdgeIn, EMC_Disk_0_EdgeOut, EMC_Disk_1_EdgeIn, EMC_Disk_1_EdgeOut,// 77, 78, 79,80
       DSNeutronShieldExit, // 81
       PSTargetSurf, // 82
-      PT_Front, PT_Back, STMUpstream,                         // 83, 84:  Forward and backward side of the production targets
-      MSTM_DUpstream,                                         // 85:  Upstream of MSTS detector crystal
+      PT_Front, PT_Back,                         // 83, 84:  Forward and backward side of the production targets
+      STMUpstream, MSTM_DUpstream,               // 85, 86:  Upstream of MSTM area, Upstream of MSTM detector crystal
       lastEnum
     };
 

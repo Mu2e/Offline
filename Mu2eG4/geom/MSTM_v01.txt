@@ -20,14 +20,16 @@ bool mstm.solid   = false;
 // mstm pipe, magnet absorber, detector
 
 bool   mstm.build  = true;
-int    mstm.verbosityLevel = 0;
+int    mstm.verbosityLevel = 1;
 
 string mstm.wallUpStr.material   = "G4_CONCRETE";
+double mstm.wallUpStr.UpStrSpace =  100.0; // z=10cm space between this and previous element
 double mstm.wallUpStr.halfLength =  304.8; // 1 foot = 30.48 cm = 304.8 mm
-double mstm.wallUpStr.halfWidth  = 2000.0; // Make it 4m wide for now
-double mstm.wallUpStr.holeRadius =  55.0; // 0.5cm larger than the pipe
+double mstm.wallUpStr.halfWidth  = 3000.0; // Make it 6m wide for now
+double mstm.wallUpStr.holeRadius =  55.0; // 5.5cm, therefore 0.5cm larger than the pipe
 
 string mstm.magnet.material       = "StainlessSteel";
+double mstm.magnet.UpStrSpace     =  100.0;  // z=10cm space between this and previous element
 double mstm.magnet.halfLength     = 500.0;  // 1m long magnet
 double mstm.magnet.halfWidth      = 500.0;  // 1m wide magnet
 double mstm.magnet.halfHeight     = 500.0;  // 1m high magnet
@@ -39,15 +41,14 @@ string mstm.pipe0.material              = "StainlessSteel";
 string mstm.pipe0.gas                   = "G4_He"; 
 double mstm.pipe0.rIn                   = 49.;
 double mstm.pipe0.rOut                  = 50.;
-double mstm.pipe0.halfLength            = 304.8+500.0+150.0;// = (mstm.wallUpStr.halfLength+mstm.magnet.halfLength+300.0); //add an extra 30cm
+double mstm.pipe0.halfLength            = 879.8; // = (2*mstm.wallUpStr.halfLength + mstm.magnet.UpStrSpace + 2*mstm.magnet.halfLength + 0.5*mstm.collimator1.UpStrSpace ) / 2 
 string mstm.pipe0.UpStrWindowMaterial   = "G4_MYLAR";
 double mstm.pipe0.UpStrWindowHalfLength = 2.5; // 2.5mm thick window
 string mstm.pipe0.DnStrWindowMaterial   = "G4_MYLAR";
 double mstm.pipe0.DnStrWindowHalfLength = 2.5; // 2.5mm thick window
 
-
 string mstm.collimator1.material   = "G4_Pb";
-double mstm.collimator1.UpStrSpace =  20.0;  // z=2cm space between this and previous element
+double mstm.collimator1.UpStrSpace =  100.0;  // z=10cm space between this and previous element
 double mstm.collimator1.halfLength =  200.0; //20cm thick 
 double mstm.collimator1.halfWidth  = 1000.0; // 2m wide
 double mstm.collimator1.halfHeight = 1000.0; // 2m tall
@@ -84,7 +85,7 @@ string mstm.pipe1.DnStrWindowMaterial   = "G4_MYLAR";
 double mstm.pipe1.DnStrWindowHalfLength = 2.5; // 2.5mm thick window
 
 string mstm.collimator3.material   = "G4_Pb";
-double mstm.collimator3.UpStrSpace =  20.0;  // z=2cm space between this and previous element
+double mstm.collimator3.UpStrSpace =  50.0;  // z=5cm space between this and previous element
 double mstm.collimator3.halfLength =  200.0; //20cm thick 
 double mstm.collimator3.halfWidth  = 1000.0; // 2m wide
 double mstm.collimator3.halfHeight = 1000.0; // 2m tall
@@ -92,14 +93,14 @@ double mstm.collimator3.holeRadius =   20.0; // 2cm radius hole
 
 double mstm.can.material              = "StainlessSteel";
 double mstm.can.gas                   = "G4_Galactic"; // ~vacuum
-double mstm.can.rIn                   = 55.0;
-double mstm.can.rOut                  = 56.0;
-double mstm.can.UpStrSpace            = 20.0;  // z=2cm space between this and previous element
-double mstm.can.halfLength            = 36.0;
+double mstm.can.rIn                   =  55.0;
+double mstm.can.rOut                  =  56.0;
+double mstm.can.UpStrSpace            = 250.0;  // z=25cm space between this and previous element
+double mstm.can.halfLength            =  36.0;
 string mstm.can.UpStrWindowMaterial   = "StainlessSteel";
-double mstm.can.UpStrWindowHalfLength =  0.5;
+double mstm.can.UpStrWindowHalfLength =   0.5;
 string mstm.can.DnStrWindowMaterial   = "StainlessSteel";
-double mstm.can.DnStrWindowHalfLength =  0.5.;
+double mstm.can.DnStrWindowHalfLength =   0.5.;
 
 double mstm.crystal.material   = "G4_Ge";
 double mstm.crystal.rIn        = 0.;
