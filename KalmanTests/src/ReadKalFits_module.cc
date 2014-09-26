@@ -195,7 +195,7 @@ namespace mu2e {
       _trkqualinput[4] = _kdiag._t0err;
       _trkqualinput[5] = _kdiag._fitpar._d0;
       _trkqualinput[6] = _kdiag._fitpar._d0+2.0/_kdiag._fitpar._om;
-      _trkqualinput[7] = _kdiag._ndactive/_kdiag._nactive;
+      _trkqualinput[7] = (float)_kdiag._ndactive/(float)_kdiag._nactive;
       _trkqual = _trkqualmva.evalMVA(_trkqualinput);
 
       _kdiag._trkdiag->Fill();
