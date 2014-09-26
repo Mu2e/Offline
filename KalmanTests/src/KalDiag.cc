@@ -193,9 +193,8 @@ namespace mu2e
 	  fillMCTrkInfo(spp);
 	}
       }
-      // if requested, add info on individual hits
-      if(_diag > 1)
-	hitsDiag(krep,spp);
+      // compute hit information no matter what, as summary information is still used      if(_diag > 1)
+      hitsDiag(krep,spp);
     } else if(_fillmc && _mcdata._simparts != 0){
 // Assume the 1st particle is the primary 
       for ( auto isp = _mcdata._simparts->begin(); isp != _mcdata._simparts->end(); ++isp ){
