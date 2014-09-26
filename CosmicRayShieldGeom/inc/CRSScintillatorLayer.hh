@@ -28,9 +28,9 @@ namespace mu2e
     friend class CRSScintillatorShield;
     friend class CosmicRayShieldMaker;
 
-    public:
-
     CRSScintillatorLayer();
+
+    public:
 
     CRSScintillatorLayer(CRSScintillatorLayerId const & id);
 
@@ -66,9 +66,7 @@ namespace mu2e
     // These pointers do not own the bars to which they point.
     // These are not persisted and may need to be recomputed after readback.
     // CosmicRayShield "owns" the bars
-
     mutable std::vector<const CRSScintillatorBar*> _bars;
-    std::vector<CRSScintillatorBarIndex> _indices;
 
     CLHEP::Hep3Vector _position;
     std::vector<double> _halfLengths;

@@ -19,9 +19,11 @@ using namespace std;
 namespace mu2e {
 
   CRSScintillatorShield::CRSScintillatorShield(CRSScintillatorShieldId const & id,
-                                               std::string const & name) :
+                                               std::string const & name,
+                                               CRSScintillatorBarDetail const &barDetails) : 
     _id(id),
-    _name(name)
+    _name(name),
+    _barDetails(barDetails)
   {
   }
 

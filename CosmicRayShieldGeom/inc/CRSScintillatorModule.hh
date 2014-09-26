@@ -32,9 +32,9 @@ namespace mu2e
     friend class CRSScintillatorShield;
     friend class CosmicRayShieldMaker;
 
-    public:
-
     CRSScintillatorModule();
+
+    public:
 
     CRSScintillatorModule(CRSScintillatorModuleId const & id);
 

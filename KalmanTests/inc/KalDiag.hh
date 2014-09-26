@@ -133,6 +133,7 @@ namespace mu2e
     Int_t _ndof;
     Int_t _niter;
     Int_t _nactive;
+    Int_t _ndouble,_ndactive;
     Float_t _chisq;
     Float_t _fitcon;
     Float_t _radlen;
@@ -149,8 +150,7 @@ namespace mu2e
     Int_t _npdigi, _npdgood;
     Int_t _nmc;
     Int_t _nmcactive;
-    Int_t _nmchits;
-    Int_t _nmcgood;
+    Int_t _nmchits, _nmcgood, _nmcambig;
     Int_t _mcpdgid, _mcgenid, _mcproc;
     Int_t _mcppdgid, _mcpgenid, _mcpproc;
     MCTrkInfo _mcinfo;
