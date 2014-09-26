@@ -27,6 +27,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "GeometryService/inc/Mu2eEnvelope.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
@@ -57,6 +58,7 @@ namespace mu2e {
   void constructMSTM( const VolumeInfo& parent,
                       SimpleConfig const & _config
                       ){
+
     MaterialFinder materialFinder(_config);
 
     bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
@@ -67,6 +69,11 @@ namespace mu2e {
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
     int const verbosityLevel = _config.getInt("mstm.verbosityLevel",0);
+
+    if ( verbosityLevel > 0 ) {
+      std::cout << __func__ << " Constructing MSTM..." << std::endl;
+    }
+
 
     // Fetch DS geom. object
     GeomHandle<DetectorSolenoid> ds;
@@ -106,6 +113,15 @@ namespace mu2e {
                                               dsP.y(), 
                                               holeLocation.z() + enscendb->holeHalfLength(hID) + 2.*vd->getHalfLength());
     
+    GeomHandle<Mu2eEnvelope> env;
+        const CLHEP::Hep3Vector hallFormalCenterInMu2e(
+                                                       (env->xmax() + env->xmin())/2.,
+                                                       (env->ymax() + env->ymin())/2.,
+                                                       (env->zmax() + env->zmin())/2.
+                                                       );
+
+    mstmReferencePositionInMu2e  = mstmReferencePositionInMu2e - hallFormalCenterInMu2e;
+    
     
     //----- Upstream shielding wall of MSTM area (2 ft thick concrete wall?)-------
 
@@ -115,6 +131,7 @@ namespace mu2e {
     const double yExtentLow = building->hallInsideYmin();
     
     G4Material*  mstmUpStreamWallMaterial   = materialFinder.get("mstm.wallUpStr.material");
+    const double mstmUpStreamWallUpStrSpace =  _config.getDouble("mstm.wallUpStr.UpStrSpace");
     const double mstmUpStreamWallHalfLength =  _config.getDouble("mstm.wallUpStr.halfLength");
     const double mstmUpStreamWallHalfWidth  =  _config.getDouble("mstm.wallUpStr.halfWidth");
     const double mstmUpStreamWallHoleROut   =  _config.getDouble("mstm.wallUpStr.holeRadius");
@@ -144,14 +161,14 @@ namespace mu2e {
     boxWithWindow.name = "boxWallUpStreamWithWindow";
           
     // we need to put the window on the z axis
-    G4ThreeVector mstmUpStreamWallPositionInMu2e = mstmReferencePositionInMu2e + G4ThreeVector(0.0,0.0,mstmUpStreamWallHalfLength);
+    G4ThreeVector mstmUpStreamWallPositionInMu2e = mstmReferencePositionInMu2e + G4ThreeVector(0.0,0.0,+mstmUpStreamWallUpStrSpace + mstmUpStreamWallHalfLength);
         
     boxWithWindow.solid = new G4SubtractionSolid(boxWithWindow.name,boxWallUpStream,windowTub,0,mstmUpStreamWallPositionInMu2e);
 
     finishNesting(boxWithWindow,
                   mstmUpStreamWallMaterial,
                   0,
-                  zeroVector, /*  should is be mstmUpStreamWallPositionInMu2e ??? */
+                  mstmUpStreamWallPositionInMu2e, /*  should is be zeroVector or mstmUpStreamWallPositionInMu2e ??? */
                   parent.logical,
                   0,
                   _config.getBool("mstm.visible"),
@@ -167,6 +184,7 @@ namespace mu2e {
     //Just use a block of material for now (maybe stainless steel?)
     
     G4Material*  mstmMagnetMaterial       = materialFinder.get("mstm.magnet.material");
+    const double mstmMagnetUpStrSpace     =  _config.getDouble("mstm.magnet.UpStrSpace");
     const double mstmMagnetHalfLength     =  _config.getDouble("mstm.magnet.halfLength");
     const double mstmMagnetHalfWidth      =  _config.getDouble("mstm.magnet.halfWidth");
     const double mstmMagnetHalfHeight     =  _config.getDouble("mstm.magnet.halfHeight");
@@ -189,14 +207,14 @@ namespace mu2e {
           
     // We need to put both the magnet and its window on the z axis
     // For now just put the magnet 10cm downstream of the wall
-    G4ThreeVector mstmMagnetPositionInMu2e =  mstmUpStreamWallPositionInMu2e + G4ThreeVector(0.0, 0.0, mstmMagnetHalfLength + 100.0);
+    G4ThreeVector mstmMagnetPositionInMu2e =  mstmUpStreamWallPositionInMu2e + G4ThreeVector(0.0, 0.0, mstmUpStreamWallHalfLength+mstmMagnetHalfLength + mstmMagnetUpStrSpace);
                      
     boxWithRectWindow.solid = new G4SubtractionSolid(boxWithRectWindow.name,boxMagnet,windowRect,0,mstmMagnetPositionInMu2e);
 
     finishNesting(boxWithRectWindow,
                   mstmMagnetMaterial,
                   0,
-                  zeroVector, /*  should is be mstmUpStreamWallPositionInMu2e ??? */
+                  mstmMagnetPositionInMu2e, /*  should it be zeroVector or mstmMagnetPositionInMu2e ??? */
                   parent.logical,
                   0,
                   _config.getBool("mstm.visible"),
@@ -246,13 +264,13 @@ namespace mu2e {
     const TubsParams mstmPipe0UpStrWindowParams(0., mstmPipe0RIn, mstmPipe0UpStrWindowHalfLength);
     const TubsParams mstmPipe0DnStrWindowParams(0., mstmPipe0RIn, mstmPipe0DnStrWindowHalfLength);
     
-    G4ThreeVector mstmPipe0PositionInMu2e    = mstmReferencePositionInMu2e + G4ThreeVector(0.0,0.0,mstmPipe0HalfLength);
+    G4ThreeVector mstmPipe0PositionInMu2e    = mstmReferencePositionInMu2e + G4ThreeVector(0.0,0.0,mstmUpStreamWallUpStrSpace + mstmPipe0HalfLength);
     
     VolumeInfo mstmPipe0Info = nestTubs( "mstmPipe0",
                                          mstmPipe0Params,
                                          mstmPipe0Material,
                                          0x0,
-                                         mstmPipe0PositionInMu2e - _hallOriginInMu2e,
+                                         mstmPipe0PositionInMu2e, // - _hallOriginInMu2e,
                                          parent,
                                          0,
                                          mstmVisible,
@@ -344,14 +362,14 @@ namespace mu2e {
           
     // We need to put the window on the z axis
     // Leave a gap between the end of the pipe and the collimator
-    G4ThreeVector mstmColl1PositionInMu2e = mstmPipe0PositionInMu2e + G4ThreeVector(0.0,0.0,mstmPipe0HalfLength + mstmColl1UpStrSpace + mstmColl1HalfLength);
+    G4ThreeVector mstmColl1PositionInMu2e = mstmMagnetPositionInMu2e + G4ThreeVector(0.0,0.0, mstmMagnetHalfLength + mstmColl1UpStrSpace + mstmColl1HalfLength);
         
     boxColl1WithWindow.solid = new G4SubtractionSolid(boxColl1WithWindow.name,boxColl1,windowColl1,0,mstmColl1PositionInMu2e);
 
     finishNesting(boxColl1WithWindow,
                   mstmColl1Material,
                   0,
-                  zeroVector, /*  should is be mstmColl1PositionInMu2e ??? */
+                  mstmColl1PositionInMu2e, /*  should is be zeroVector or mstmColl1PositionInMu2e ??? */
                   parent.logical,
                   0,
                   _config.getBool("mstm.visible"),
@@ -388,11 +406,11 @@ namespace mu2e {
 						  mstmShutterSegmentHalfLengths,
 						  mstmShutterSegmentMaterial,
 						  0x0,
-						  mstmShutterSegmentPositionInMu2e - _hallOriginInMu2e,
+						  mstmShutterSegmentPositionInMu2e,// - _hallOriginInMu2e,
 						  parent,
 						  0,
 						  mstmVisible,
-						  G4Color::Gray(),
+						  G4Color::Yellow(), //Gray
 						  mstmSolid,
 						  forceAuxEdgeVisible,
 						  placePV,
@@ -444,7 +462,7 @@ namespace mu2e {
     finishNesting(boxColl2WithWindow,
                   mstmColl2Material,
                   0,
-                  zeroVector, /*  should is be mstmColl2PositionInMu2e ??? */
+                  mstmColl2PositionInMu2e,
                   parent.logical,
                   0,
                   _config.getBool("mstm.visible"),
@@ -483,7 +501,7 @@ namespace mu2e {
                                          mstmPipe1Params,
                                          mstmPipe1Material,
                                          0x0,
-                                         mstmPipe1PositionInMu2e - _hallOriginInMu2e,
+                                         mstmPipe1PositionInMu2e,// - _hallOriginInMu2e,
                                          parent,
                                          0,
                                          mstmVisible,
@@ -582,7 +600,7 @@ namespace mu2e {
     finishNesting(boxColl3WithWindow,
                   mstmColl3Material,
                   0,
-                  zeroVector, /*  should is be mstmColl3PositionInMu2e ??? */
+                  mstmColl3PositionInMu2e, /*  should is be mstmColl3PositionInMu2e ??? */
                   parent.logical,
                   0,
                   _config.getBool("mstm.visible"),
@@ -614,17 +632,17 @@ namespace mu2e {
     const TubsParams mstmCanDnStrWindowParams(0., mstmCanRIn, mstmCanDnStrWindowHalfLength);
     
     // Leave a gap between this and the previous element
-    G4ThreeVector mstmCanPositionInMu2e    = mstmColl2PositionInMu2e + G4ThreeVector(0.0,0.0,mstmColl2HalfLength + mstmCanUpStrSpace + mstmCanHalfLength);
+    G4ThreeVector mstmCanPositionInMu2e    = mstmColl3PositionInMu2e + G4ThreeVector(0.0,0.0,mstmColl3HalfLength + mstmCanUpStrSpace + mstmCanHalfLength);
     
     VolumeInfo mstmCanInfo = nestTubs( "mstmCan",
                                          mstmCanParams,
                                          mstmCanMaterial,
                                          0x0,
-                                         mstmCanPositionInMu2e - _hallOriginInMu2e,
+                                         mstmCanPositionInMu2e,// - _hallOriginInMu2e,
                                          parent,
                                          0,
                                          mstmVisible,
-                                         G4Color::Red(),
+                                         G4Color::Green(),
                                          mstmSolid,
                                          forceAuxEdgeVisible,
                                          placePV,
@@ -654,7 +672,7 @@ namespace mu2e {
                                             mstmCanInfo,
                                             0,
                                             mstmVisible,
-                                            G4Color::Red(),
+                                            G4Color::Green(),
                                             mstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
@@ -669,7 +687,7 @@ namespace mu2e {
                                             mstmCanInfo,
                                             0,
                                             mstmVisible,
-                                            G4Color::Red(),
+                                            G4Color::Green(),
                                             mstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
@@ -695,7 +713,7 @@ namespace mu2e {
                                       mstmCrystalParams,
                                       mstmCrystalMaterial,
                                       0x0,
-                                      mstmCrystalPositionInMu2e - _hallOriginInMu2e,
+                                      mstmCrystalPositionInMu2e,// - _hallOriginInMu2e,
                                       parent,
                                       0,
                                       mstmVisible,

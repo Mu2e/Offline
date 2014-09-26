@@ -598,9 +598,15 @@ namespace mu2e {
         // VirtualDetector in front of the MSTM detector crystal
         // temporary arrangements till MSTM is in GeometryService
         
-        const double mstmPipe0HalfLength       = c.getDouble("mstm.pipe0.halfLength");
-        const double mstmColl1UpStrSpace       = c.getDouble("mstm.collimator1.UpStrSpace");
-        const double mstmColl1HalfLength       = c.getDouble("mstm.collimator1.halfLength");
+	const double mstmUpStreamWallUpStrSpace = c.getDouble("mstm.wallUpStr.UpStrSpace");
+        const double mstmUpStreamWallHalfLength = c.getDouble("mstm.wallUpStr.halfLength");
+	const double mstmMagnetUpStrSpace       = c.getDouble("mstm.magnet.UpStrSpace");
+        const double mstmMagnetHalfLength       = c.getDouble("mstm.magnet.halfLength");
+        const double mstmColl1UpStrSpace        = c.getDouble("mstm.collimator1.UpStrSpace");
+        const double mstmColl1HalfLength        = c.getDouble("mstm.collimator1.halfLength");
+        //const double mstmPipe0HalfLength       = c.getDouble("mstm.pipe0.halfLength");
+        //const double mstmColl1UpStrSpace       = c.getDouble("mstm.collimator1.UpStrSpace");
+        //const double mstmColl1HalfLength       = c.getDouble("mstm.collimator1.halfLength");
         const double mstmShutterUpStrSpace     = c.getDouble("mstm.shutter.UpStrSpace");
         const double mstmShutterNumberSegments = c.getInt("mstm.shutter.numberSegments");
 	double mstmShutterHalfLength           = 0.;
@@ -616,8 +622,8 @@ namespace mu2e {
         const double mstmColl3UpStrSpace       = c.getDouble("mstm.collimator3.UpStrSpace");
         const double mstmColl3HalfLength       = c.getDouble("mstm.collimator3.halfLength");
         const double mstmCanUpStrSpace         = c.getDouble("mstm.can.UpStrSpace");        
-        const double mstmCanHalfLength         = c.getDouble("mstm.can.halfLength");
-        const double mstmCrystalHalfLength     = c.getDouble("mstm.crystal.halfLength");
+        //const double mstmCanHalfLength         = c.getDouble("mstm.can.halfLength");
+        //const double mstmCrystalHalfLength     = c.getDouble("mstm.crystal.halfLength");
 
         GeomHandle<ExtNeutShieldCendBoxes> enscendb;
 
@@ -637,11 +643,14 @@ namespace mu2e {
 
         GeomHandle<DetectorSolenoid> ds;
         CLHEP::Hep3Vector const & dsP ( ds->position() );
-        CLHEP::Hep3Vector mstmPipe0PositionInMu2e(dsP.x(), dsP.y(),
+        CLHEP::Hep3Vector mstmReferencePositionInMu2e(dsP.x(), dsP.y(),
                                                   holeLocation.z() + enscendb->holeHalfLength(hID) +
-                                                  2.*vd->getHalfLength() + mstmPipe0HalfLength);
+                                                  2.*vd->getHalfLength() );
 
-        double vdZshift =   mstmPipe0HalfLength
+        double vdZshift =   mstmUpStreamWallUpStrSpace
+                          + 2.0*mstmUpStreamWallHalfLength
+                          + mstmMagnetUpStrSpace
+                          + 2.0*mstmMagnetHalfLength
                           + mstmColl1UpStrSpace
                           + 2.0*mstmColl1HalfLength
                           + mstmShutterUpStrSpace
@@ -652,25 +661,30 @@ namespace mu2e {
                           + 2.0*mstmPipe1HalfLength
                           + mstmColl3UpStrSpace
                           + 2.0*mstmColl3HalfLength
-                          + mstmCanUpStrSpace
-                          + mstmCanHalfLength
-                          - mstmCrystalHalfLength 
+                          + 0.5*mstmCanUpStrSpace
+                          //+ mstmCanHalfLength
+                          //- mstmCrystalHalfLength 
                           - vd->_halfLength;
 
-        CLHEP::Hep3Vector vdPositionInMu2e = mstmPipe0PositionInMu2e + CLHEP::Hep3Vector(0.0,0.0,vdZshift);
+        CLHEP::Hep3Vector vdPositionInMu2e = mstmReferencePositionInMu2e + CLHEP::Hep3Vector(0.0,0.0,vdZshift);
 
-        GeomHandle<Mu2eEnvelope> env;
-        const CLHEP::Hep3Vector hallFormalCenterInMu2e(
-                                                       (env->xmax() + env->xmin())/2.,
-                                                       (env->ymax() + env->ymin())/2.,
-                                                       (env->zmax() + env->zmin())/2.
-                                                       );
+//         GeomHandle<Mu2eEnvelope> env;
+//         const CLHEP::Hep3Vector hallFormalCenterInMu2e(
+//                                                        (env->xmax() + env->xmin())/2.,
+//                                                        (env->ymax() + env->ymin())/2.,
+//                                                        (env->zmax() + env->zmin())/2.
+//                                                        );
 
+//         vd->addVirtualDetector(VirtualDetectorId::MSTM_DUpstream,
+//                                hallFormalCenterInMu2e,
+//                                0x0,
+//                                vdPositionInMu2e - hallFormalCenterInMu2e);
+        
         vd->addVirtualDetector(VirtualDetectorId::MSTM_DUpstream,
-                               hallFormalCenterInMu2e,
+                               mstmReferencePositionInMu2e,
                                0x0,
-                               vdPositionInMu2e - hallFormalCenterInMu2e);
-
+                               vdPositionInMu2e - mstmReferencePositionInMu2e);
+        
 
         // int static const verbosityLevel = 1;
         // if ( verbosityLevel > -1) {
