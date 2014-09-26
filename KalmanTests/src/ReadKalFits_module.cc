@@ -146,7 +146,7 @@ namespace mu2e {
     // initialize TrkQual MVA.  Note the weight file MUST BE SPECIFIED IN FCL!!!
     _trkqualmva.initMVA();
     _trkqualmva.showMVA();
-    _trkqualinput.resize(7);
+    _trkqualinput.resize(8);
 }
 
   // For each event, look at tracker hits and calorimeter hits.
@@ -195,6 +195,7 @@ namespace mu2e {
       _trkqualinput[4] = _kdiag._t0err;
       _trkqualinput[5] = _kdiag._fitpar._d0;
       _trkqualinput[6] = _kdiag._fitpar._d0+2.0/_kdiag._fitpar._om;
+      _trkqualinput[7] = _kdiag._ndactive/_kdiag._nactive;
       _trkqual = _trkqualmva.evalMVA(_trkqualinput);
 
       _kdiag._trkdiag->Fill();
