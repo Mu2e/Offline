@@ -22,17 +22,20 @@
 #include "Mu2eG4/inc/constructMSTM.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestBox.hh"
+#include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
 #include "G4Material.hh"
 #include "G4Color.hh"
+#include "G4Box.hh"
 #include "G4Tubs.hh"
-
 #include "G4LogicalVolume.hh"
+#include "G4SubtractionSolid.hh"
 #include "G4UniformMagField.hh"
 #include "G4Mag_UsualEqRhs.hh"
 #include "G4ExactHelixStepper.hh"
@@ -74,21 +77,9 @@ namespace mu2e {
     const bool mstmVisible = _config.getBool("mstm.visible", true );
     const bool mstmSolid   = _config.getBool("mstm.solid",   false);
 
-    // pipe0
-
-    const double mstmPipe0RIn        = _config.getDouble("mstm.pipe0.rIn");     
-    const double mstmPipe0ROut       = _config.getDouble("mstm.pipe0.rOut");      
-    const double mstmPipe0HalfLength = _config.getDouble("mstm.pipe0.halfLength");
-
-    G4Material* mstmPipe0Material  = materialFinder.get("mstm.pipe0.material");
-    G4Material* mstmPipe0Gas       = materialFinder.get("mstm.pipe0.gas");
-
-    const TubsParams mstmPipe0Params(0., mstmPipe0ROut, mstmPipe0HalfLength);
-    const TubsParams mstmPipe0GasParams(0.,  mstmPipe0RIn, mstmPipe0HalfLength);
-      
     GeomHandle<DetectorSolenoidShielding> dss;
 
-    // place the MSTM wrt to ENS; account for the vd half lenght
+    // place the MSTM wrt to ENS; account for the vd half length
     GeomHandle<ExtNeutShieldCendBoxes> enscendb;
 
     const std::vector<CLHEP::Hep3Vector>& ENSCBcentersOfBoxes = enscendb->centersOfBoxes();
@@ -109,11 +100,154 @@ namespace mu2e {
     // for some reason the location has to be taken from the box not the hole tbd
     //        CLHEP::Hep3Vector holeLocation = enscendb->holeLocation(hID);
     CLHEP::Hep3Vector holeLocation = ENSCBcentersOfBoxes[ib];
+    
+    //Create a reference position (everything in MSTM will be defined w.r.t. this position)
+    G4ThreeVector mstmReferencePositionInMu2e(dsP.x(), 
+                                              dsP.y(), 
+                                              holeLocation.z() + enscendb->holeHalfLength(hID) + 2.*vd->getHalfLength());
+    
+    
+    //----- Upstream shielding wall of MSTM area (2 ft thick concrete wall?)-------
 
-    G4ThreeVector mstmPipe0PositionInMu2e(dsP.x(), dsP.y(),
-                                          holeLocation.z() + enscendb->holeHalfLength(hID) +
-                                          2.*vd->getHalfLength() + mstmPipe0HalfLength);
+    //We want the shielding wall to go down to the floor, so get the necessary info
+    GeomHandle<Mu2eBuilding> building;
+    //const double yExtentLow = building->hallInsideYmin() - building->hallFloorThickness();
+    const double yExtentLow = building->hallInsideYmin();
+    
+    G4Material*  mstmUpStreamWallMaterial   = materialFinder.get("mstm.wallUpStr.material");
+    const double mstmUpStreamWallHalfLength =  _config.getDouble("mstm.wallUpStr.halfLength");
+    const double mstmUpStreamWallHalfWidth  =  _config.getDouble("mstm.wallUpStr.halfWidth");
+    const double mstmUpStreamWallHoleROut   =  _config.getDouble("mstm.wallUpStr.holeRadius");
 
+    // This box has a window.  implemented as a
+    // G4SubtractionSolid to alow for another volume placement
+    // through it
+
+    // Make the box for the wall
+    G4Box* boxWallUpStream = new G4Box("boxWallUpStream",mstmUpStreamWallHalfWidth,fabs(yExtentLow),mstmUpStreamWallHalfLength);
+
+    //Make the tube for the hole
+    const TubsParams windparams(0.0,                        //inner radius
+                                mstmUpStreamWallHoleROut,   //outer raius
+                                mstmUpStreamWallHalfLength  //
+                               );
+
+    G4Tubs* windowTub = new G4Tubs( "window", 
+                                   windparams.data()[0], 
+                                   windparams.data()[1], 
+                                   windparams.data()[2]+2.,// to satisfy a G4SubtractionSolid feature
+                                   windparams.data()[3], 
+                                   windparams.data()[4]);
+
+    // Combine into the Wall with the Hole
+    VolumeInfo boxWithWindow;
+    boxWithWindow.name = "boxWallUpStreamWithWindow";
+          
+    // we need to put the window on the z axis
+    G4ThreeVector mstmUpStreamWallPositionInMu2e = mstmReferencePositionInMu2e + G4ThreeVector(0.0,0.0,mstmUpStreamWallHalfLength);
+        
+    boxWithWindow.solid = new G4SubtractionSolid(boxWithWindow.name,boxWallUpStream,windowTub,0,mstmUpStreamWallPositionInMu2e);
+
+    finishNesting(boxWithWindow,
+                  mstmUpStreamWallMaterial,
+                  0,
+                  zeroVector, /*  should is be mstmUpStreamWallPositionInMu2e ??? */
+                  parent.logical,
+                  0,
+                  _config.getBool("mstm.visible"),
+                  G4Colour::Magenta(),
+                  _config.getBool("mstm.solid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck);
+
+    
+    //----- Magnet ----------------------------
+    
+    //Just use a block of material for now (maybe stainless steel?)
+    
+    G4Material*  mstmMagnetMaterial       = materialFinder.get("mstm.magnet.material");
+    const double mstmMagnetHalfLength     =  _config.getDouble("mstm.magnet.halfLength");
+    const double mstmMagnetHalfWidth      =  _config.getDouble("mstm.magnet.halfWidth");
+    const double mstmMagnetHalfHeight     =  _config.getDouble("mstm.magnet.halfHeight");
+    const double mstmMagnetHoleHalfHeight =  _config.getDouble("mstm.magnet.holeHalfHeight");
+    const double mstmMagnetHoleHalfWidth  =  _config.getDouble("mstm.magnet.holeHalfWidth");
+    
+    //TODO: Throw if mstmMagnetHalfHeight is larger than distance to the floor.
+    
+    // This box has a window.  implemented as a
+    // G4SubtractionSolid to alow for another volume placement
+    // through it
+    
+    // Make the magnet
+    G4Box* boxMagnet  = new G4Box("boxMagnet",mstmMagnetHalfWidth,mstmMagnetHalfHeight,mstmMagnetHalfLength);
+    // Make the rectangular window
+    G4Box* windowRect = new G4Box( "window", mstmMagnetHoleHalfWidth, mstmMagnetHoleHalfHeight, mstmMagnetHalfLength);
+
+    VolumeInfo boxWithRectWindow;
+    boxWithRectWindow.name = "boxMagnetWithWindow";
+          
+    // We need to put both the magnet and its window on the z axis
+    // For now just put the magnet 10cm downstream of the wall
+    G4ThreeVector mstmMagnetPositionInMu2e =  mstmUpStreamWallPositionInMu2e + G4ThreeVector(0.0, 0.0, mstmMagnetHalfLength + 100.0);
+                     
+    boxWithRectWindow.solid = new G4SubtractionSolid(boxWithRectWindow.name,boxMagnet,windowRect,0,mstmMagnetPositionInMu2e);
+
+    finishNesting(boxWithRectWindow,
+                  mstmMagnetMaterial,
+                  0,
+                  zeroVector, /*  should is be mstmUpStreamWallPositionInMu2e ??? */
+                  parent.logical,
+                  0,
+                  _config.getBool("mstm.visible"),
+                  G4Colour::Magenta(),
+                  _config.getBool("mstm.solid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck);
+    
+    // Create a magnetic field inside the window (hole) of the magnet box
+    // Note the local values for the stepper etc...
+    // Geant4 should take ownership of the objects created here
+
+    const double mstmMagnetField = _config.getDouble("mstm.magnet.field");
+
+    G4MagneticField        *localMagField          = new G4UniformMagField(G4ThreeVector(mstmMagnetField*CLHEP::tesla,0.0,0.0));
+    G4Mag_EqRhs            *MagRHS               = new G4Mag_UsualEqRhs(localMagField);
+    G4MagIntegratorStepper *localMagStepper      = new G4ExactHelixStepper(MagRHS); // we use a specialized stepper
+    G4ChordFinder          *localMagChordFinder  = new G4ChordFinder(localMagField,1.0e-2*CLHEP::mm,localMagStepper);
+    G4FieldManager         *localMagFieldManager = new G4FieldManager(localMagField,localMagChordFinder,false);// pure magnetic filed does not change energy
+
+    //WARNING: this puts the field in the whole size of the magnet
+    //TODO:    change this so the field is just inside the window.
+    boxWithRectWindow.logical->SetFieldManager(localMagFieldManager, true); // propagate it down the hierarchy
+
+    
+    //----- pipe0 -----------------------------
+    // This pipe starts right after the VD at the entrance of the MSTM area
+    // and goes inside the upstream shielding wall and inside the magnet.
+
+    G4Material*  mstmPipe0Material              = materialFinder.get("mstm.pipe0.material");
+    G4Material*  mstmPipe0Gas                   = materialFinder.get("mstm.pipe0.gas");
+    const double mstmPipe0RIn                   =  _config.getDouble("mstm.pipe0.rIn");     
+    const double mstmPipe0ROut                  =  _config.getDouble("mstm.pipe0.rOut");      
+    const double mstmPipe0HalfLength            =  _config.getDouble("mstm.pipe0.halfLength");
+    G4Material*  mstmPipe0UpStrWindowMaterial   = materialFinder.get("mstm.pipe0.UpStrWindowMaterial");
+    const double mstmPipe0UpStrWindowHalfLength =  _config.getDouble("mstm.pipe0.UpStrWindowHalfLength");
+    G4Material*  mstmPipe0DnStrWindowMaterial   = materialFinder.get("mstm.pipe0.DnStrWindowMaterial");
+    const double mstmPipe0DnStrWindowHalfLength =  _config.getDouble("mstm.pipe0.DnStrWindowHalfLength");
+    
+    //TODO: Throw if pipe is too big to fit through the holes in the wall and magnet
+
+    //TODO: Throw if pipe is not longer than the Wall+Magnet length
+    
+    const TubsParams mstmPipe0Params(0., mstmPipe0ROut, mstmPipe0HalfLength);
+    const TubsParams mstmPipe0GasParams(0.,  mstmPipe0RIn, mstmPipe0HalfLength - 2.0*mstmPipe0UpStrWindowHalfLength - 2.0*mstmPipe0DnStrWindowHalfLength);
+    const TubsParams mstmPipe0UpStrWindowParams(0., mstmPipe0RIn, mstmPipe0UpStrWindowHalfLength);
+    const TubsParams mstmPipe0DnStrWindowParams(0., mstmPipe0RIn, mstmPipe0DnStrWindowHalfLength);
+    
+    G4ThreeVector mstmPipe0PositionInMu2e    = mstmReferencePositionInMu2e + G4ThreeVector(0.0,0.0,mstmPipe0HalfLength);
+    
     VolumeInfo mstmPipe0Info = nestTubs( "mstmPipe0",
                                          mstmPipe0Params,
                                          mstmPipe0Material,
@@ -133,7 +267,7 @@ namespace mu2e {
                                             mstmPipe0GasParams,
                                             mstmPipe0Gas,
                                             0x0,
-                                            zeroVector,
+                                            zeroVector + G4ThreeVector(0.0,0.0,2.0*(mstmPipe0UpStrWindowHalfLength-mstmPipe0DnStrWindowHalfLength)),
                                             mstmPipe0Info,
                                             0,
                                             mstmVisible,
@@ -144,74 +278,97 @@ namespace mu2e {
                                             doSurfaceCheck
                                             );
 
-
-    // pipe1
-
-    const double mstmPipe1RIn        = _config.getDouble("mstm.pipe1.rIn");     
-    const double mstmPipe1ROut       = _config.getDouble("mstm.pipe1.rOut");      
-    const double mstmPipe1HalfLength = _config.getDouble("mstm.pipe1.halfLength");
-
-    G4Material* mstmPipe1Material  = materialFinder.get("mstm.pipe1.material");
-    G4Material* mstmPipe1Gas       = materialFinder.get("mstm.pipe1.gas");
-
-    const TubsParams mstmPipe1Params(0., mstmPipe1ROut, mstmPipe1HalfLength);
-    const TubsParams mstmPipe1GasParams(0.,  mstmPipe1RIn, mstmPipe1HalfLength);
-
-    G4ThreeVector mstmPipe1PositionInMu2e =  mstmPipe0PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe0HalfLength + mstmPipe1HalfLength);
-
-    VolumeInfo mstmPipe1Info = nestTubs( "mstmPipe1",
-                                         mstmPipe1Params,
-                                         mstmPipe1Material,
-                                         0x0,
-                                         mstmPipe1PositionInMu2e - _hallOriginInMu2e,
-                                         parent,
-                                         0,
-                                         mstmVisible,
-                                         G4Color::Magenta(),
-                                         mstmSolid,
-                                         forceAuxEdgeVisible,
-                                         placePV,
-                                         doSurfaceCheck
-                                         );
-
-    VolumeInfo mstmPipe1GasInfo = nestTubs( "mstmPipe1Gas",
-                                            mstmPipe1GasParams,
-                                            mstmPipe1Gas,
+    VolumeInfo mstmPipe0UpStrWindowInfo = nestTubs( "mstmPipe0UpStrWindow",
+                                            mstmPipe0UpStrWindowParams,
+                                            mstmPipe0UpStrWindowMaterial,
                                             0x0,
-                                            zeroVector,
-                                            mstmPipe1Info,
+                                            zeroVector + G4ThreeVector(0.0,0.0,-1.0*mstmPipe0HalfLength + mstmPipe0UpStrWindowHalfLength),
+                                            mstmPipe0Info,
                                             0,
                                             mstmVisible,
-                                            G4Color::Yellow(),
+                                            G4Color::Red(),
                                             mstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
                                             doSurfaceCheck
                                             );
+    
+    VolumeInfo mstmPipe0DnStrWindowInfo = nestTubs( "mstmPipe0DnStrWindow",
+                                            mstmPipe0DnStrWindowParams,
+                                            mstmPipe0DnStrWindowMaterial,
+                                            0x0,
+                                            zeroVector + G4ThreeVector(0.0,0.0, mstmPipe0HalfLength - mstmPipe0DnStrWindowHalfLength),
+                                            mstmPipe0Info,
+                                            0,
+                                            mstmVisible,
+                                            G4Color::Red(),
+                                            mstmSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
+    
+    
+    //----- Collimator 1 --------------------------------------------------------
+    
+    G4Material*  mstmColl1Material   = materialFinder.get("mstm.collimator1.material");
+    const double mstmColl1UpStrSpace =  _config.getDouble("mstm.collimator1.UpStrSpace");
+    const double mstmColl1HalfLength =  _config.getDouble("mstm.collimator1.halfLength");
+    const double mstmColl1HalfWidth  =  _config.getDouble("mstm.collimator1.halfWidth");
+    const double mstmColl1HalfHeight =  _config.getDouble("mstm.collimator1.halfHeight");
+    const double mstmColl1HoleROut   =  _config.getDouble("mstm.collimator1.holeRadius");
 
+    // This box has a window.  implemented as a
+    // G4SubtractionSolid to alow for another volume placement
+    // through it
 
-    // creating magnetic field for the mstmPipe1 hierarchy
-    // note the local values for the stepper etc...
-    // Geant4 should take ownership of the objects created here
+    // Make the box for the collimator
+    G4Box* boxColl1 = new G4Box("boxColl1",mstmColl1HalfWidth,mstmColl1HalfHeight,mstmColl1HalfLength);
 
-    const double mstmPipe1MagField = _config.getDouble("mstm.pipe1.magfield");
+    //Make the tube for the hole
+    const TubsParams windColl1Params(0.0,                        //inner radius
+                                     mstmColl1HoleROut,   //outer raius
+                                     mstmColl1HalfLength  //
+                                    );
 
-    G4MagneticField *localPipe1MagField = 
-      new G4UniformMagField(G4ThreeVector(mstmPipe1MagField*CLHEP::tesla,0.0,0.0));
-    G4Mag_EqRhs *Pipe1RHS  = new G4Mag_UsualEqRhs(localPipe1MagField);
-    G4MagIntegratorStepper *localPipe1Stepper = new G4ExactHelixStepper(Pipe1RHS); // we use a specialized stepper
-    G4ChordFinder *localPipe1ChordFinder = new G4ChordFinder(localPipe1MagField,1.0e-2*CLHEP::mm,localPipe1Stepper);
-    G4FieldManager *localPipe1FieldManager    
-      = new G4FieldManager(localPipe1MagField,localPipe1ChordFinder,false);// pure magnetic filed does not change energy
+    G4Tubs* windowColl1 = new G4Tubs( "window", 
+                                   windColl1Params.data()[0], 
+                                   windColl1Params.data()[1], 
+                                   windColl1Params.data()[2]+2.,// to satisfy a G4SubtractionSolid feature
+                                   windColl1Params.data()[3], 
+                                   windColl1Params.data()[4]);
 
-    mstmPipe1Info.logical->SetFieldManager(localPipe1FieldManager, true); // propagate it down the hierarchy
+    // Combine into the Wall with the Hole
+    VolumeInfo boxColl1WithWindow;
+    boxColl1WithWindow.name = "boxColl1WithWindow";
+          
+    // We need to put the window on the z axis
+    // Leave a gap between the end of the pipe and the collimator
+    G4ThreeVector mstmColl1PositionInMu2e = mstmPipe0PositionInMu2e + G4ThreeVector(0.0,0.0,mstmPipe0HalfLength + mstmColl1UpStrSpace + mstmColl1HalfLength);
+        
+    boxColl1WithWindow.solid = new G4SubtractionSolid(boxColl1WithWindow.name,boxColl1,windowColl1,0,mstmColl1PositionInMu2e);
 
-    // shutter of variable number of segments
+    finishNesting(boxColl1WithWindow,
+                  mstmColl1Material,
+                  0,
+                  zeroVector, /*  should is be mstmColl1PositionInMu2e ??? */
+                  parent.logical,
+                  0,
+                  _config.getBool("mstm.visible"),
+                  G4Colour::Magenta(),
+                  _config.getBool("mstm.solid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck);
+
+    
+    //----- shutter of variable number of segments  -----------------------------
+    
     const int mstmShutterNumberSegments = _config.getInt("mstm.shutter.numberSegments");
+    const double mstmShutterUpStrSpace  = _config.getDouble("mstm.shutter.UpStrSpace");
     const double mstmShutterHalfHeight  = _config.getDouble("mstm.shutter.halfHeight");
-    double mstmShutterSegmentLastHalfLength = mstmPipe1HalfLength;
-    G4ThreeVector mstmShutterSegmentPositionInMu2e = mstmPipe1PositionInMu2e;
+    double mstmShutterSegmentLastHalfLength = mstmShutterUpStrSpace; //this starts as the inital offset between Coll1 and the Shutter
+    G4ThreeVector mstmShutterSegmentPositionInMu2e = mstmColl1PositionInMu2e + G4ThreeVector(0.0,0.0,mstmColl1HalfLength);
     for (int segment = 1; segment <= mstmShutterNumberSegments; ++segment) {
       std::stringstream material_config_name, halfLength_config_name;
       material_config_name << "mstm.shutter.segment" << segment << ".material";
@@ -244,213 +401,89 @@ namespace mu2e {
       mstmShutterSegmentLastHalfLength = mstmShutterSegmentHalfLength;
     }
 
-    // pipe2
-
-    const double mstmPipe2RIn        = _config.getDouble("mstm.pipe2.rIn");     
-    const double mstmPipe2ROut       = _config.getDouble("mstm.pipe2.rOut");      
-    const double mstmPipe2HalfLength = _config.getDouble("mstm.pipe2.halfLength");
-
-    G4Material* mstmPipe2Material  = materialFinder.get("mstm.pipe2.material");
-    G4Material* mstmPipe2Gas       = materialFinder.get("mstm.pipe2.gas");
-
-    const TubsParams mstmPipe2Params(0., mstmPipe2ROut, mstmPipe2HalfLength);
-    const TubsParams mstmPipe2GasParams(0.,  mstmPipe2RIn, mstmPipe2HalfLength);
-      
-    G4ThreeVector mstmPipe2PositionInMu2e =  mstmShutterSegmentPositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmShutterSegmentLastHalfLength + mstmPipe2HalfLength);
-
-    VolumeInfo mstmPipe2Info = nestTubs( "mstmPipe2",
-                                         mstmPipe2Params,
-                                         mstmPipe2Material,
-                                         0x0,
-                                         mstmPipe2PositionInMu2e - _hallOriginInMu2e,
-                                         parent,
-                                         0,
-                                         mstmVisible,
-                                         G4Color::Red(),
-                                         mstmSolid,
-                                         forceAuxEdgeVisible,
-                                         placePV,
-                                         doSurfaceCheck
-                                         );
-
-    VolumeInfo mstmPipe2GasInfo = nestTubs( "mstmPipe2Gas",
-                                            mstmPipe2GasParams,
-                                            mstmPipe2Gas,
-                                            0x0,
-                                            zeroVector,
-                                            mstmPipe2Info,
-                                            0,
-                                            mstmVisible,
-                                            G4Color::Yellow(),
-                                            mstmSolid,
-                                            forceAuxEdgeVisible,
-                                            placePV,
-                                            doSurfaceCheck
-                                            );
-
-
-    // boxes for pipe3 (they have the length of pipe3 as they are all placed one in the other)
-    // and pipe3
-
-    G4Material* mstmPipe3BoxInMaterial  = materialFinder.get("mstm.boxIn.material");
-
-    const double mstmPipe3BoxInHalfHeight     = _config.getDouble("mstm.boxIn.halfHeight");
-
-    G4Material* mstmPipe3BoxOutMaterial = materialFinder.get("mstm.boxOut.material");
-
-    const double mstmPipe3BoxOutHalfHeight    = _config.getDouble("mstm.boxOut.halfHeight");
-
-    const double mstmPipe3RIn        = _config.getDouble("mstm.pipe3.rIn");     
-    const double mstmPipe3ROut       = _config.getDouble("mstm.pipe3.rOut");      
-    const double mstmPipe3HalfLength = _config.getDouble("mstm.pipe3.halfLength");
-
-    G4Material* mstmPipe3Material  = materialFinder.get("mstm.pipe3.material");
-    G4Material* mstmPipe3Gas       = materialFinder.get("mstm.pipe3.gas");
-
-    // constructing boxes
-
-    const double mstmPipe3BoxOutHalfLengths[3] = {mstmPipe3BoxOutHalfHeight, 
-                                                  mstmPipe3BoxOutHalfHeight, 
-                                                  mstmPipe3HalfLength};
-
-    const double mstmPipe3BoxInHalfLengths[3] = {mstmPipe3BoxInHalfHeight, 
-                                                 mstmPipe3BoxInHalfHeight, 
-                                                 mstmPipe3HalfLength};
-
-    const TubsParams mstmPipe3Params(0., mstmPipe3ROut, mstmPipe3HalfLength);
-    const TubsParams mstmPipe3GasParams(0., mstmPipe3RIn,  mstmPipe3HalfLength);
-
-    G4ThreeVector mstmPipe3PositionInMu2e = mstmPipe2PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe2HalfLength + mstmPipe3HalfLength);
-
-    VolumeInfo mstmPipe3BoxOutInfo = nestBox("mstmPipe3BoxOut",
-                                             mstmPipe3BoxOutHalfLengths,
-                                             mstmPipe3BoxOutMaterial,
-                                             0x0,
-                                             mstmPipe3PositionInMu2e - _hallOriginInMu2e,
-                                             parent,
-                                             0,
-                                             mstmVisible,
-                                             G4Color::Gray(),
-                                             mstmSolid,
-                                             forceAuxEdgeVisible,
-                                             placePV,
-                                             doSurfaceCheck
-                                             );
-
-    VolumeInfo mstmPipe3BoxInInfo = nestBox("mstmPipe3BoxIn",
-                                            mstmPipe3BoxInHalfLengths,
-                                            mstmPipe3BoxInMaterial,
-                                            0x0,
-                                            zeroVector,
-                                            mstmPipe3BoxOutInfo,
-                                            0,
-                                            mstmVisible,
-                                            G4Color::Cyan(),
-                                            mstmSolid,
-                                            forceAuxEdgeVisible,
-                                            placePV,
-                                            doSurfaceCheck
-                                            );
-
-    // constructing pipe3
-
-    VolumeInfo mstmPipe3Info = nestTubs( "mstmPipe3",
-                                         mstmPipe3Params,
-                                         mstmPipe3Material,
-                                         0x0,
-                                         zeroVector,
-                                         mstmPipe3BoxInInfo,
-                                         0,
-                                         mstmVisible,
-                                         G4Color::Magenta(),
-                                         mstmSolid,
-                                         forceAuxEdgeVisible,
-                                         placePV,
-                                         doSurfaceCheck
-                                         );
-
-    // creating magnetic field for the mstmPipe3 hierarchy
-    // note the local values for the stepper etc...
-    // Geant4 should take ownership of the objects created here
-
-    const double mstmPipe3MagField = _config.getDouble("mstm.pipe3.magfield");
-
-    G4MagneticField *localPipe3MagField = 
-      new G4UniformMagField(G4ThreeVector(mstmPipe3MagField*CLHEP::tesla,0.0,0.0));
-    G4Mag_EqRhs *Pipe3RHS  = new G4Mag_UsualEqRhs(localPipe3MagField);
-    G4MagIntegratorStepper *localPipe3Stepper = new G4ExactHelixStepper(Pipe3RHS); // we use a specialized stepper
-    G4ChordFinder *localPipe3ChordFinder = new G4ChordFinder(localPipe3MagField,1.0e-2*CLHEP::mm,localPipe3Stepper);
-    G4FieldManager *localPipe3FieldManager    
-      = new G4FieldManager(localPipe3MagField,localPipe3ChordFinder,false);// pure magnetic filed does not change energy
-
-    mstmPipe3Info.logical->SetFieldManager(localPipe3FieldManager, true); // propagate it down the hierarchy
-
-    VolumeInfo mstmPipe3GasInfo = nestTubs("mstmPipe3Gas",
-                                           mstmPipe3GasParams,
-                                           mstmPipe3Gas,
-                                           0x0,
-                                           zeroVector,
-                                           mstmPipe3Info,
-                                           0,
-                                           mstmVisible,
-                                           G4Color::Yellow(),
-                                           mstmSolid,
-                                           forceAuxEdgeVisible,
-                                           placePV,
-                                           doSurfaceCheck
-                                           );
     
-    // window, placed inside the pipe; we need to place it inside the
-    // gas at the end of it to avoid volume overlaps
+    //----- Collimator 2 --------------------------------------------------------
+    
+    G4Material*  mstmColl2Material   = materialFinder.get("mstm.collimator2.material");
+    const double mstmColl2UpStrSpace =  _config.getDouble("mstm.collimator2.UpStrSpace");
+    const double mstmColl2HalfLength =  _config.getDouble("mstm.collimator2.halfLength");
+    const double mstmColl2HalfWidth  =  _config.getDouble("mstm.collimator2.halfWidth");
+    const double mstmColl2HalfHeight =  _config.getDouble("mstm.collimator2.halfHeight");
+    const double mstmColl2HoleROut   =  _config.getDouble("mstm.collimator2.holeRadius");
 
-    const double mstmOutWindowRIn        = _config.getDouble("mstm.outWindow.rIn");
-    const double mstmOutWindowROut       = _config.getDouble("mstm.outWindow.rOut");
-    const double mstmOutWindowHalfLength = _config.getDouble("mstm.outWindow.halfLength");
+    // This box has a window.  implemented as a
+    // G4SubtractionSolid to alow for another volume placement
+    // through it
 
-    G4Material* mstmOutWindowMaterial = materialFinder.get("mstm.outWindow.material");
+    // Make the box for the collimator
+    G4Box* boxColl2 = new G4Box("boxColl2",mstmColl2HalfWidth,mstmColl2HalfHeight,mstmColl2HalfLength);
 
-    const TubsParams mstmOutWindowParams(mstmOutWindowRIn, mstmOutWindowROut, mstmOutWindowHalfLength);
-    G4ThreeVector mstmOutWindowPositionInMu2e = mstmPipe3PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe3HalfLength - mstmOutWindowHalfLength);
+    //Make the tube for the hole
+    const TubsParams windColl2Params(0.0,                        //inner radius
+                                     mstmColl2HoleROut,   //outer raius
+                                     mstmColl2HalfLength  //
+                                    );
 
-    VolumeInfo mstmOutWindow = nestTubs("mstmOutWindow",
-                                        mstmOutWindowParams,
-                                        mstmOutWindowMaterial,
-                                        0x0,
-                                        mstmOutWindowPositionInMu2e - mstmPipe3PositionInMu2e,
-                                        mstmPipe3GasInfo,
-                                        0,
-                                        mstmVisible,
-                                        G4Color::Red(),
-                                        mstmSolid,
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck
-                                        );
+    G4Tubs* windowColl2 = new G4Tubs( "window", 
+                                   windColl2Params.data()[0], 
+                                   windColl2Params.data()[1], 
+                                   windColl2Params.data()[2]+2.,// to satisfy a G4SubtractionSolid feature
+                                   windColl2Params.data()[3], 
+                                   windColl2Params.data()[4]);
 
-    // pipe4
+    // Combine into the Wall with the Hole
+    VolumeInfo boxColl2WithWindow;
+    boxColl2WithWindow.name = "boxColl2WithWindow";
+          
+    // We need to put the window on the z axis
+    // Leave a gap between the this and the previous element
+    G4ThreeVector mstmColl2PositionInMu2e = mstmShutterSegmentPositionInMu2e + G4ThreeVector(0.0,0.0,mstmShutterSegmentLastHalfLength) + G4ThreeVector(0.0,0.0, mstmColl2UpStrSpace + mstmColl2HalfLength);
+        
+    boxColl2WithWindow.solid = new G4SubtractionSolid(boxColl2WithWindow.name,boxColl2,windowColl2,0,mstmColl2PositionInMu2e);
 
-    const double mstmPipe4RIn        = _config.getDouble("mstm.pipe4.rIn");     
-    const double mstmPipe4ROut       = _config.getDouble("mstm.pipe4.rOut");      
-    const double mstmPipe4HalfLength = _config.getDouble("mstm.pipe4.halfLength");
+    finishNesting(boxColl2WithWindow,
+                  mstmColl2Material,
+                  0,
+                  zeroVector, /*  should is be mstmColl2PositionInMu2e ??? */
+                  parent.logical,
+                  0,
+                  _config.getBool("mstm.visible"),
+                  G4Colour::Magenta(),
+                  _config.getBool("mstm.solid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck);
 
-    G4Material* mstmPipe4Material    = materialFinder.get("mstm.pipe4.material");
-    G4Material* mstmPipe4Gas         = materialFinder.get("mstm.pipe4.gas");
+    
+    //----- Pipe 1 -----------------------------------------------------------
+    // This pipe goes between collimators 2 and 3.
 
-    const TubsParams mstmPipe4Params(0., mstmPipe4ROut, mstmPipe4HalfLength);
-    const TubsParams mstmPipe4GasParams(0.,  mstmPipe4RIn, mstmPipe4HalfLength);
-
-    G4ThreeVector mstmPipe4PositionInMu2e = mstmPipe3PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe3HalfLength + mstmPipe4HalfLength);
-
-
-    VolumeInfo mstmPipe4Info = nestTubs( "mstmPipe4",
-                                         mstmPipe4Params,
-                                         mstmPipe4Material,
+    G4Material*  mstmPipe1Material              = materialFinder.get("mstm.pipe1.material");
+    G4Material*  mstmPipe1Gas                   = materialFinder.get("mstm.pipe1.gas");
+    const double mstmPipe1RIn                   =  _config.getDouble("mstm.pipe1.rIn");     
+    const double mstmPipe1ROut                  =  _config.getDouble("mstm.pipe1.rOut");      
+    const double mstmPipe1UpStrSpace            =  _config.getDouble("mstm.pipe1.UpStrSpace");
+    const double mstmPipe1HalfLength            =  _config.getDouble("mstm.pipe1.halfLength");
+    G4Material*  mstmPipe1UpStrWindowMaterial   = materialFinder.get("mstm.pipe1.UpStrWindowMaterial");
+    const double mstmPipe1UpStrWindowHalfLength =  _config.getDouble("mstm.pipe1.UpStrWindowHalfLength");
+    G4Material*  mstmPipe1DnStrWindowMaterial   = materialFinder.get("mstm.pipe1.DnStrWindowMaterial");
+    const double mstmPipe1DnStrWindowHalfLength =  _config.getDouble("mstm.pipe1.DnStrWindowHalfLength");
+    
+    //TODO: Throw if pipe is too big to fit through the holes in the wall and magnet
+    
+    const TubsParams mstmPipe1Params(0., mstmPipe1ROut, mstmPipe1HalfLength);
+    const TubsParams mstmPipe1GasParams(0.,  mstmPipe1RIn, mstmPipe1HalfLength - 2.0*mstmPipe1UpStrWindowHalfLength - 2.0*mstmPipe1DnStrWindowHalfLength);
+    const TubsParams mstmPipe1UpStrWindowParams(0., mstmPipe1RIn, mstmPipe1UpStrWindowHalfLength);
+    const TubsParams mstmPipe1DnStrWindowParams(0., mstmPipe1RIn, mstmPipe1DnStrWindowHalfLength);
+    
+    // Leave a gap between this and the previous element
+    G4ThreeVector mstmPipe1PositionInMu2e    = mstmColl2PositionInMu2e + G4ThreeVector(0.0,0.0,mstmColl2HalfLength + mstmPipe1UpStrSpace + mstmPipe1HalfLength);
+    
+    VolumeInfo mstmPipe1Info = nestTubs( "mstmPipe1",
+                                         mstmPipe1Params,
+                                         mstmPipe1Material,
                                          0x0,
-                                         mstmPipe4PositionInMu2e - _hallOriginInMu2e,
+                                         mstmPipe1PositionInMu2e - _hallOriginInMu2e,
                                          parent,
                                          0,
                                          mstmVisible,
@@ -461,12 +494,12 @@ namespace mu2e {
                                          doSurfaceCheck
                                          );
 
-    VolumeInfo mstmPipe4GasInfo = nestTubs( "mstmPipe4Gas",
-                                            mstmPipe4GasParams,
-                                            mstmPipe4Gas,
+    VolumeInfo mstmPipe1GasInfo = nestTubs( "mstmPipe1Gas",
+                                            mstmPipe1GasParams,
+                                            mstmPipe1Gas,
                                             0x0,
-                                            zeroVector,
-                                            mstmPipe4Info,
+                                            zeroVector + G4ThreeVector(0.0,0.0,2.0*(mstmPipe1UpStrWindowHalfLength-mstmPipe1DnStrWindowHalfLength)),
+                                            mstmPipe1Info,
                                             0,
                                             mstmVisible,
                                             G4Color::Yellow(),
@@ -476,176 +509,184 @@ namespace mu2e {
                                             doSurfaceCheck
                                             );
 
-
-    // absorber
-
-    G4Material* mstmAbsorberMaterial = materialFinder.get("mstm.absorber.material");
-
-    const double mstmAbsorberHalfHeight    = _config.getDouble("mstm.absorber.halfHeight");
-    const double mstmAbsorberHalfLength    = _config.getDouble("mstm.absorber.halfLength");
-
-    const double mstmAbsorberHalfLengths[3] = {mstmAbsorberHalfHeight, 
-                                                mstmAbsorberHalfHeight, 
-                                                mstmAbsorberHalfLength};
-
-    G4ThreeVector mstmAbsorberPositionInMu2e = mstmPipe4PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe4HalfLength + mstmAbsorberHalfLength);
-
-    VolumeInfo mstmAbsorberInfo = nestBox("mstmAbsorber",
-                                           mstmAbsorberHalfLengths,
-                                           mstmAbsorberMaterial,
-                                           0x0,
-                                           mstmAbsorberPositionInMu2e - _hallOriginInMu2e,
-                                           parent,
-                                           0,
-                                           mstmVisible,
-                                           G4Color::Gray(),
-                                           mstmSolid,
-                                           forceAuxEdgeVisible,
-                                           placePV,
-                                           doSurfaceCheck
-                                           );
-
-    // pipe5
-
-    const double mstmPipe5RIn        = _config.getDouble("mstm.pipe5.rIn");     
-    const double mstmPipe5ROut       = _config.getDouble("mstm.pipe5.rOut");      
-    const double mstmPipe5HalfLength = _config.getDouble("mstm.pipe5.halfLength");
-
-    G4Material* mstmPipe5Material    = materialFinder.get("mstm.pipe5.material");
-    G4Material* mstmPipe5Gas         = materialFinder.get("mstm.pipe5.gas");
-
-    const TubsParams mstmPipe5Params(0., mstmPipe5ROut, mstmPipe5HalfLength);
-    const TubsParams mstmPipe5GasParams(0.,  mstmPipe5RIn, mstmPipe5HalfLength);
-
-    G4ThreeVector mstmPipe5PositionInMu2e = mstmAbsorberPositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmAbsorberHalfLength + mstmPipe5HalfLength);
-
-
-    VolumeInfo mstmPipe5Info = nestTubs( "mstmPipe5",
-                                         mstmPipe5Params,
-                                         mstmPipe5Material,
-                                         0x0,
-                                         mstmPipe5PositionInMu2e - _hallOriginInMu2e,
-                                         parent,
-                                         0,
-                                         mstmVisible,
-                                         G4Color::Red(),
-                                         mstmSolid,
-                                         forceAuxEdgeVisible,
-                                         placePV,
-                                         doSurfaceCheck
-                                         );
-
-    VolumeInfo mstmPipe5GasInfo = nestTubs( "mstmPipe5Gas",
-                                            mstmPipe5GasParams,
-                                            mstmPipe5Gas,
+    VolumeInfo mstmPipe1UpStrWindowInfo = nestTubs( "mstmPipe1UpStrWindow",
+                                            mstmPipe1UpStrWindowParams,
+                                            mstmPipe1UpStrWindowMaterial,
                                             0x0,
-                                            zeroVector,
-                                            mstmPipe5Info,
+                                            zeroVector + G4ThreeVector(0.0,0.0,-1.0*mstmPipe1HalfLength + mstmPipe1UpStrWindowHalfLength),
+                                            mstmPipe1Info,
                                             0,
                                             mstmVisible,
-                                            G4Color::Yellow(),
+                                            G4Color::Red(),
                                             mstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
                                             doSurfaceCheck
                                             );
+    
+    VolumeInfo mstmPipe1DnStrWindowInfo = nestTubs( "mstmPipe1DnStrWindow",
+                                            mstmPipe1DnStrWindowParams,
+                                            mstmPipe1DnStrWindowMaterial,
+                                            0x0,
+                                            zeroVector + G4ThreeVector(0.0,0.0, mstmPipe1HalfLength - mstmPipe1DnStrWindowHalfLength),
+                                            mstmPipe1Info,
+                                            0,
+                                            mstmVisible,
+                                            G4Color::Red(),
+                                            mstmSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
+    
+
+    //----- Collimator 3 --------------------------------------------------------
+    
+    G4Material*  mstmColl3Material   = materialFinder.get("mstm.collimator3.material");
+    const double mstmColl3UpStrSpace =  _config.getDouble("mstm.collimator3.UpStrSpace");
+    const double mstmColl3HalfLength =  _config.getDouble("mstm.collimator3.halfLength");
+    const double mstmColl3HalfWidth  =  _config.getDouble("mstm.collimator3.halfWidth");
+    const double mstmColl3HalfHeight =  _config.getDouble("mstm.collimator3.halfHeight");
+    const double mstmColl3HoleROut   =  _config.getDouble("mstm.collimator3.holeRadius");
+
+    // This box has a window.  implemented as a
+    // G4SubtractionSolid to alow for another volume placement
+    // through it
+
+    // Make the box for the collimator
+    G4Box* boxColl3 = new G4Box("boxColl3",mstmColl3HalfWidth,mstmColl3HalfHeight,mstmColl3HalfLength);
+
+    //Make the tube for the hole
+    const TubsParams windColl3Params(0.0,                        //inner radius
+                                     mstmColl3HoleROut,   //outer raius
+                                     mstmColl3HalfLength  //
+                                    );
+
+    G4Tubs* windowColl3 = new G4Tubs( "window", 
+                                   windColl3Params.data()[0], 
+                                   windColl3Params.data()[1], 
+                                   windColl3Params.data()[2]+2.,// to satisfy a G4SubtractionSolid feature
+                                   windColl3Params.data()[3], 
+                                   windColl3Params.data()[4]);
+
+    // Combine into the Wall with the Hole
+    VolumeInfo boxColl3WithWindow;
+    boxColl3WithWindow.name = "boxColl3WithWindow";
+          
+    // We need to put the window on the z axis
+    // Leave a gap between the this and the next element
+    G4ThreeVector mstmColl3PositionInMu2e = mstmPipe1PositionInMu2e + G4ThreeVector(0.0,0.0,mstmPipe1HalfLength + mstmColl3UpStrSpace + mstmColl3HalfLength);
+        
+    boxColl3WithWindow.solid = new G4SubtractionSolid(boxColl3WithWindow.name,boxColl3,windowColl3,0,mstmColl3PositionInMu2e);
+
+    finishNesting(boxColl3WithWindow,
+                  mstmColl3Material,
+                  0,
+                  zeroVector, /*  should is be mstmColl3PositionInMu2e ??? */
+                  parent.logical,
+                  0,
+                  _config.getBool("mstm.visible"),
+                  G4Colour::Magenta(),
+                  _config.getBool("mstm.solid"),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck);
 
 
-
-
-    // can
+    //----- Can (What is this?) --------------------------------------------------
     // (it has it's plugs "inside" the main part)
 
-    G4Material* mstmCanMaterial = materialFinder.get("mstm.can.material");
+    G4Material*  mstmCanMaterial              = materialFinder.get("mstm.can.material");
+    G4Material*  mstmCanGas                   = materialFinder.get("mstm.can.gas");
+    const double mstmCanRIn                   =  _config.getDouble("mstm.can.rIn");     
+    const double mstmCanROut                  =  _config.getDouble("mstm.can.rOut");      
+    const double mstmCanUpStrSpace            =  _config.getDouble("mstm.can.UpStrSpace");
+    const double mstmCanHalfLength            =  _config.getDouble("mstm.can.halfLength");
+    G4Material*  mstmCanUpStrWindowMaterial   = materialFinder.get("mstm.can.UpStrWindowMaterial");
+    const double mstmCanUpStrWindowHalfLength =  _config.getDouble("mstm.can.UpStrWindowHalfLength");
+    G4Material*  mstmCanDnStrWindowMaterial   = materialFinder.get("mstm.can.DnStrWindowMaterial");
+    const double mstmCanDnStrWindowHalfLength =  _config.getDouble("mstm.can.DnStrWindowHalfLength");
 
-    const double mstmCanUpSRIn            = _config.getDouble("mstm.canUpS.rIn");
-    const double mstmCanUpSROut           = _config.getDouble("mstm.canUpS.rOut");
-    const double mstmCanUpSHalfLength     = _config.getDouble("mstm.canUpS.halfLength");
+    
+    const TubsParams mstmCanParams(0., mstmCanROut, mstmCanHalfLength);
+    const TubsParams mstmCanGasParams(0.,  mstmCanRIn, mstmCanHalfLength - 2.0*mstmCanUpStrWindowHalfLength - 2.0*mstmCanDnStrWindowHalfLength);
+    const TubsParams mstmCanUpStrWindowParams(0., mstmCanRIn, mstmCanUpStrWindowHalfLength);
+    const TubsParams mstmCanDnStrWindowParams(0., mstmCanRIn, mstmCanDnStrWindowHalfLength);
+    
+    // Leave a gap between this and the previous element
+    G4ThreeVector mstmCanPositionInMu2e    = mstmColl2PositionInMu2e + G4ThreeVector(0.0,0.0,mstmColl2HalfLength + mstmCanUpStrSpace + mstmCanHalfLength);
+    
+    VolumeInfo mstmCanInfo = nestTubs( "mstmCan",
+                                         mstmCanParams,
+                                         mstmCanMaterial,
+                                         0x0,
+                                         mstmCanPositionInMu2e - _hallOriginInMu2e,
+                                         parent,
+                                         0,
+                                         mstmVisible,
+                                         G4Color::Red(),
+                                         mstmSolid,
+                                         forceAuxEdgeVisible,
+                                         placePV,
+                                         doSurfaceCheck
+                                         );
 
-    const double mstmCanRIn               = _config.getDouble("mstm.can.rIn");
-    const double mstmCanROut              = _config.getDouble("mstm.can.rOut");
-    const double mstmCanHalfLength        = _config.getDouble("mstm.can.halfLength");
+    VolumeInfo mstmCanGasInfo = nestTubs( "mstmCanGas",
+                                            mstmCanGasParams,
+                                            mstmCanGas,
+                                            0x0,
+                                            zeroVector + G4ThreeVector(0.0,0.0,2.0*(mstmCanUpStrWindowHalfLength-mstmCanDnStrWindowHalfLength)),
+                                            mstmCanInfo,
+                                            0,
+                                            mstmVisible,
+                                            G4Color::Yellow(),
+                                            mstmSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
 
-    const double mstmCanDownSRIn          = _config.getDouble("mstm.canDownS.rIn");
-    const double mstmCanDownSROut         = _config.getDouble("mstm.canDownS.rOut");
-    const double mstmCanDownSHalfLength   = _config.getDouble("mstm.canDownS.halfLength");
+    VolumeInfo mstmCanUpStrWindowInfo = nestTubs( "mstmCanUpStrWindow",
+                                            mstmCanUpStrWindowParams,
+                                            mstmCanUpStrWindowMaterial,
+                                            0x0,
+                                            zeroVector + G4ThreeVector(0.0,0.0,-1.0*mstmCanHalfLength + mstmCanUpStrWindowHalfLength),
+                                            mstmCanInfo,
+                                            0,
+                                            mstmVisible,
+                                            G4Color::Red(),
+                                            mstmSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
+    
+    VolumeInfo mstmCanDnStrWindowInfo = nestTubs( "mstmCanDnStrWindow",
+                                            mstmCanDnStrWindowParams,
+                                            mstmCanDnStrWindowMaterial,
+                                            0x0,
+                                            zeroVector + G4ThreeVector(0.0,0.0, mstmCanHalfLength - mstmCanDnStrWindowHalfLength),
+                                            mstmCanInfo,
+                                            0,
+                                            mstmVisible,
+                                            G4Color::Red(),
+                                            mstmSolid,
+                                            forceAuxEdgeVisible,
+                                            placePV,
+                                            doSurfaceCheck
+                                            );
 
-    // the can upstream part
- 
-    const TubsParams mstmCanUpSParams(mstmCanUpSRIn, mstmCanUpSROut, mstmCanUpSHalfLength);
+    
+    //----- the sensitive detector ("crystal") -------------------------------------------
 
-    G4ThreeVector mstmCanUpSPositionInMu2e = mstmPipe5PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe5HalfLength + mstmCanUpSHalfLength);
+    G4Material*  mstmCrystalMaterial   = materialFinder.get("mstm.crystal.material");
+    const double mstmCrystalRIn        =  _config.getDouble("mstm.crystal.rIn");
+    const double mstmCrystalROut       =  _config.getDouble("mstm.crystal.rOut");
+    const double mstmCrystalHalfLength =  _config.getDouble("mstm.crystal.halfLength");
 
-    VolumeInfo mstmCanUpS = nestTubs("mstmCanUpS",
-                                     mstmCanUpSParams,
-                                     mstmCanMaterial,
-                                     0x0,
-                                     mstmCanUpSPositionInMu2e - _hallOriginInMu2e,
-                                     parent,
-                                     0,
-                                     mstmVisible,
-                                     G4Color::Blue(),
-                                     mstmSolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     doSurfaceCheck
-                                     );
+    //TODO: Throw if crystal doesn't fit inside the can
 
-    // the main can
-
-    const TubsParams mstmCanParams(mstmCanRIn, mstmCanROut, mstmCanHalfLength);
-
-    G4ThreeVector mstmCanPositionInMu2e = mstmPipe5PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe5HalfLength + mstmCanHalfLength);
-
-    VolumeInfo mstmCan = nestTubs("mstmCan",
-                                  mstmCanParams,
-                                  mstmCanMaterial,
-                                  0x0,
-                                  mstmCanPositionInMu2e - _hallOriginInMu2e,
-                                  parent,
-                                  0,
-                                  mstmVisible,
-                                  G4Color::Blue(),
-                                  mstmSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  doSurfaceCheck
-                                  );
-
-    // the can downstream part
- 
-    const TubsParams mstmCanDownSParams(mstmCanDownSRIn, mstmCanDownSROut, mstmCanDownSHalfLength);
-
-    G4ThreeVector mstmCanDownSPositionInMu2e = mstmPipe5PositionInMu2e + 
-      G4ThreeVector(0.0, 0.0, mstmPipe5HalfLength + 2.0*mstmCanHalfLength - mstmCanDownSHalfLength);
-
-    VolumeInfo mstmCanDownS = nestTubs("mstmCanDownS",
-                                       mstmCanDownSParams,
-                                       mstmCanMaterial,
-                                       0x0,
-                                       mstmCanDownSPositionInMu2e - _hallOriginInMu2e,
-                                       parent,
-                                       0,
-                                       mstmVisible,
-                                       G4Color::Blue(),
-                                       mstmSolid,
-                                       forceAuxEdgeVisible,
-                                       placePV,
-                                       doSurfaceCheck
-                                       );
-
-    // the detector ("crystal")
-
-    G4Material* mstmCrystalMaterial = materialFinder.get("mstm.crystal.material");
-
-    const double mstmCrystalRIn           = _config.getDouble("mstm.crystal.rIn");
-    const double mstmCrystalROut          = _config.getDouble("mstm.crystal.rOut");
-    const double mstmCrystalHalfLength    = _config.getDouble("mstm.crystal.halfLength");
-
+    
     const TubsParams mstmCrystalParams(mstmCrystalRIn, mstmCrystalROut, mstmCrystalHalfLength);
 
     G4ThreeVector mstmCrystalPositionInMu2e = mstmCanPositionInMu2e;
@@ -667,8 +708,8 @@ namespace mu2e {
 
 
     // Make mstmCrystal a sensitive detector.
-    G4VSensitiveDetector *sd = 
-      G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::MSTMCrystal());
+    G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::MSTMCrystal());
+
     if(sd) mstmCrystal.logical->SetSensitiveDetector(sd);
 
     if ( verbosityLevel > 0) {
@@ -696,10 +737,10 @@ namespace mu2e {
       std::cout << __func__ << " mstmPipe0PositionInHall " << 
         mstmPipe0PositionInMu2e - _hallOriginInMu2e <<  std::endl;
 
-      std::cout << __func__ << " mstmPipe2PositionInMu2e " << 
-        mstmPipe2PositionInMu2e <<  std::endl;
-      std::cout << __func__ << " mstmPipe2PositionInHall " << 
-        mstmPipe2PositionInMu2e - _hallOriginInMu2e <<  std::endl;
+      std::cout << __func__ << " mstmPipe1PositionInMu2e " << 
+        mstmPipe1PositionInMu2e <<  std::endl;
+      std::cout << __func__ << " mstmPipe1PositionInHall " << 
+        mstmPipe1PositionInMu2e - _hallOriginInMu2e <<  std::endl;
 
       std::cout << __func__ << " mstmCanPositionInMu2e " << 
         mstmCanPositionInMu2e <<  std::endl;

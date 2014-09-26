@@ -28,15 +28,16 @@ namespace mu2e
     CosmicRayShieldMaker(SimpleConfig const & config, double solenoidOffset);
 
     void parseConfig( SimpleConfig const & _config );
-    void makeShields();
-    void makeSingleShield(const std::vector<double> &counterHalfLengths, 
-                          const CLHEP::Hep3Vector &thicknessDirection,
+    void makeCRVSectors();
+    void makeSingleSector(const std::vector<double> &counterHalfLengths, 
+                          int isector,
                           const std::string &name, 
                           const CLHEP::Hep3Vector &firstCounter, 
                           const CLHEP::Hep3Vector *layerOffsets,
                           const CLHEP::Hep3Vector &VTNCSmallGap,
                           const CLHEP::Hep3Vector &VTNCLargeGap,
                           const CLHEP::Hep3Vector &VTNCBetweenModules,
+                          const std::vector<int> &localToWorld,
                           int nModules, int nCounters);
 
   // This is deprecated and will go away soon.
@@ -54,13 +55,19 @@ namespace mu2e
 
     double  _counterThickness, _counterWidth;
     double  _offset, _gapLarge, _gapSmall, _gapBetweenModules;
-    int     _nShields, _nLayers;
+    int     _nSectors, _nLayers;
 
-    std::vector<double> _gapBetweenLayers;
-    double              _counterLength[18];
-    int                 _nModules[18];
-    int                 _nCountersPerModule[18];
-    CLHEP::Hep3Vector   _firstCounter[18];
+    std::vector<std::string> _crvSectorNames;
+    std::vector<double>      _gapBetweenLayers;
+
+    //vector size is _nSectors
+    std::vector<double>             _counterLength;        
+    std::vector<int>                _nModules;
+    std::vector<int>                _nCountersPerModule;
+    std::vector<CLHEP::Hep3Vector>  _firstCounter;
+    std::vector<CLHEP::Hep3Vector>  _offsetDirection;   //direction in which the layers are shifted
+    std::vector<CLHEP::Hep3Vector>  _gapDirection;      //direction to the next gap between the counters
+    std::vector<CLHEP::Hep3Vector>  _layerDirection;    //direction to the next layer
 
     std::string _scintillatorBarMaterialName;
     std::string _absorberMaterialName;

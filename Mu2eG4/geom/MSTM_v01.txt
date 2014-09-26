@@ -22,103 +22,86 @@ bool mstm.solid   = false;
 bool   mstm.build  = true;
 int    mstm.verbosityLevel = 0;
 
-string mstm.pipe0.material   = "StainlessSteel";
-string mstm.pipe0.gas        = "G4_He"; 
+string mstm.wallUpStr.material   = "G4_CONCRETE";
+double mstm.wallUpStr.halfLength =  304.8; // 1 foot = 30.48 cm = 304.8 mm
+double mstm.wallUpStr.halfWidth  = 2000.0; // Make it 4m wide for now
+double mstm.wallUpStr.holeRadius =  55.0; // 0.5cm larger than the pipe
 
-double mstm.pipe0.rIn        = 49.;
-double mstm.pipe0.rOut       = 50.;
-double mstm.pipe0.halfLength = 328.;//850
+string mstm.magnet.material       = "StainlessSteel";
+double mstm.magnet.halfLength     = 500.0;  // 1m long magnet
+double mstm.magnet.halfWidth      = 500.0;  // 1m wide magnet
+double mstm.magnet.halfHeight     = 500.0;  // 1m high magnet
+double mstm.magnet.holeHalfHeight =  60.0;  //12cm high hole
+double mstm.magnet.holeHalfWidth  = 120.0;  //24cm wide hole
+double mstm.magnet.field          =   0.1; // Tesla
 
-string mstm.pipe1.material   = "StainlessSteel";
-string mstm.pipe1.gas        = "G4_He"; 
+string mstm.pipe0.material              = "StainlessSteel";
+string mstm.pipe0.gas                   = "G4_He"; 
+double mstm.pipe0.rIn                   = 49.;
+double mstm.pipe0.rOut                  = 50.;
+double mstm.pipe0.halfLength            = 304.8+500.0+150.0;// = (mstm.wallUpStr.halfLength+mstm.magnet.halfLength+300.0); //add an extra 30cm
+string mstm.pipe0.UpStrWindowMaterial   = "G4_MYLAR";
+double mstm.pipe0.UpStrWindowHalfLength = 2.5; // 2.5mm thick window
+string mstm.pipe0.DnStrWindowMaterial   = "G4_MYLAR";
+double mstm.pipe0.DnStrWindowHalfLength = 2.5; // 2.5mm thick window
 
-double mstm.pipe1.rIn        = 49.;
-double mstm.pipe1.rOut       = 50.;
-double mstm.pipe1.halfLength = 150.;
-double mstm.pipe1.magfield   = 0.05;
 
-int mstm.shutter.numberSegments         = 3;
-double mstm.shutter.halfHeight          = 100.;
-string mstm.shutter.segment1.material   = "Polyethylene096";
-double mstm.shutter.segment1.halfLength = 50.;
-string mstm.shutter.segment2.material   = "G4_Pb";
-double mstm.shutter.segment2.halfLength = 50.;
-string mstm.shutter.segment3.material   = "StainlessSteel"; 
-double mstm.shutter.segment3.halfLength = 25.;
+string mstm.collimator1.material   = "G4_Pb";
+double mstm.collimator1.UpStrSpace =  20.0;  // z=2cm space between this and previous element
+double mstm.collimator1.halfLength =  200.0; //20cm thick 
+double mstm.collimator1.halfWidth  = 1000.0; // 2m wide
+double mstm.collimator1.halfHeight = 1000.0; // 2m tall
+double mstm.collimator1.holeRadius =   20.0; // 2cm radius hole
 
-string mstm.pipe2.material   = "StainlessSteel";
-string mstm.pipe2.gas        = "G4_He"; 
+int    mstm.shutter.numberSegments      =   4;
+double mstm.shutter.UpStrSpace          =  50.0;  // z=5cm space between this and previous element
+double mstm.shutter.halfHeight          = 100.;   // 20cm high
+string mstm.shutter.segment1.material   = "StainlessSteel";
+double mstm.shutter.segment1.halfLength = 50.; // 10cm long
+string mstm.shutter.segment2.material   = "Polyethylene096";
+double mstm.shutter.segment2.halfLength = 50.; // 10cm long
+string mstm.shutter.segment3.material   = "G4_Pb"; 
+double mstm.shutter.segment3.halfLength = 27.5; // 5.5cm long
+string mstm.shutter.segment4.material   = "G4_Cu"; 
+double mstm.shutter.segment4.halfLength = 2.5;  // 0.5cm long
 
-double mstm.pipe2.rIn        = 49.;
-double mstm.pipe2.rOut       = 50.;
-double mstm.pipe2.halfLength = 150.;
+string mstm.collimator2.material   = "G4_Pb";
+double mstm.collimator2.UpStrSpace =  50.0;  // z=5cm space between this and previous element
+double mstm.collimator2.halfLength =  200.0; //20cm thick 
+double mstm.collimator2.halfWidth  = 1000.0; // 2m wide
+double mstm.collimator2.halfHeight = 1000.0; // 2m tall
+double mstm.collimator2.holeRadius =   20.0; // 2cm radius hole
 
-string mstm.pipe2.material   = "StainlessSteel";
-string mstm.pipe2.gas        = "G4_He"; 
+string mstm.pipe1.material              = "StainlessSteel";
+string mstm.pipe1.gas                   = "G4_He"; 
+double mstm.pipe1.rIn                   =  49.0;
+double mstm.pipe1.rOut                  =  50.0;
+double mstm.pipe1.UpStrSpace            =  20.0;  // z=2cm space between this and previous element
+double mstm.pipe1.halfLength            = 500.0; // 1m long
+string mstm.pipe1.UpStrWindowMaterial   = "G4_MYLAR";
+double mstm.pipe1.UpStrWindowHalfLength = 2.5; // 2.5mm thick window
+string mstm.pipe1.DnStrWindowMaterial   = "G4_MYLAR";
+double mstm.pipe1.DnStrWindowHalfLength = 2.5; // 2.5mm thick window
 
-double mstm.pipe2.rIn        = 49.;
-double mstm.pipe2.rOut       = 50.;
-double mstm.pipe2.halfLength = 150.;
+string mstm.collimator3.material   = "G4_Pb";
+double mstm.collimator3.UpStrSpace =  20.0;  // z=2cm space between this and previous element
+double mstm.collimator3.halfLength =  200.0; //20cm thick 
+double mstm.collimator3.halfWidth  = 1000.0; // 2m wide
+double mstm.collimator3.halfHeight = 1000.0; // 2m tall
+double mstm.collimator3.holeRadius =   20.0; // 2cm radius hole
 
-string mstm.pipe3.material   = "StainlessSteel";
-string mstm.pipe3.gas        = "G4_He"; 
+double mstm.can.material              = "StainlessSteel";
+double mstm.can.gas                   = "G4_Galactic"; // ~vacuum
+double mstm.can.rIn                   = 55.0;
+double mstm.can.rOut                  = 56.0;
+double mstm.can.UpStrSpace            = 20.0;  // z=2cm space between this and previous element
+double mstm.can.halfLength            = 36.0;
+string mstm.can.UpStrWindowMaterial   = "StainlessSteel";
+double mstm.can.UpStrWindowHalfLength =  0.5;
+string mstm.can.DnStrWindowMaterial   = "StainlessSteel";
+double mstm.can.DnStrWindowHalfLength =  0.5.;
 
-double mstm.pipe3.rIn        = 49.;
-double mstm.pipe3.rOut       = 50.;
-double mstm.pipe3.halfLength = 1000.;
-double mstm.pipe3.magfield   = 0.05;
-
-string mstm.boxIn.material   = "Polyethylene096";
-
-double mstm.boxIn.halfHeight =  800.;
-//double mstm.boxIn.halfLength = 1000.;
-
-string mstm.boxOut.material   = "G4_CONCRETE";
-
-double mstm.boxOut.halfHeight = 1000.;
-//double mstm.boxOut.halfLength = 1000.;
-
-string mstm.outWindow.material   = "StainlessSteel";
-
-double mstm.outWindow.rIn         = 0.;
-double mstm.outWindow.rOut        = 49.;
-double mstm.outWindow.halfLength  = 0.5;
-
-string mstm.pipe4.material   = "StainlessSteel";
-string mstm.pipe4.gas        = "G4_He"; 
-
-double mstm.pipe4.rIn        = 49.;
-double mstm.pipe4.rOut       = 50.;
-double mstm.pipe4.halfLength = 100.;
-
-string mstm.absorber.material   = "G4_Pb";
-
-double mstm.absorber.halfHeight  = 100.;
-double mstm.absorber.halfLength  = 100.;
-
-string mstm.pipe5.material   = "StainlessSteel";
-string mstm.pipe5.gas        = "G4_He"; 
-
-double mstm.pipe5.rIn        = 49.;
-double mstm.pipe5.rOut       = 50.;
-double mstm.pipe5.halfLength = 100.;
-
-double mstm.can.material          = "StainlessSteel";
-
-double mstm.can.rIn         = 55.;
-double mstm.can.rOut        = 56.;
-double mstm.can.halfLength  = 36.;
-
-double mstm.canUpS.rIn          = 0.;
-double mstm.canUpS.rOut         = 55.;
-double mstm.canUpS.halfLength   = 0.5.;
-
-double mstm.canDownS.rIn        = 0.;
-double mstm.canDownS.rOut       = 55.;
-double mstm.canDownS.halfLength = 0.5.;
-
-double mstm.crystal.material    = "G4_Ge";
-
+double mstm.crystal.material   = "G4_Ge";
 double mstm.crystal.rIn        = 0.;
 double mstm.crystal.rOut       = 45.;
 double mstm.crystal.halfLength = 25.;
