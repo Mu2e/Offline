@@ -252,7 +252,7 @@ namespace mu2e {
     // Need the signed value of p.y() here - the variable py will not do.
     if ( p.y() < 0 ) by = -by;
 
-    result = CLHEP::Hep3Vector( bx, by, bz);
+    result = _scaleFactor * CLHEP::Hep3Vector( bx, by, bz);
 
     return true;
   }
