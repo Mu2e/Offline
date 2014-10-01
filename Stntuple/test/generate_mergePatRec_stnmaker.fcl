@@ -1,12 +1,12 @@
 # -*- mode: tcl -*-
-// 2014-06-02: run local, write output file
-//
-// Andrei Gaponenko, 2014
 #------------------------------------------------------------------------------
 # quick comments: reads signal MC and also background MC inputs with steppoints
 # so need to define input and 
+# used global variables: (to be defined in the top-level PROLOG ?)
+# ----------------------------------------------------------------
+# pdgCode
+# muStops
 #------------------------------------------------------------------------------
-
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
