@@ -142,7 +142,7 @@ namespace mu2e {
     // Return BField 3Vector
     return CLHEP::Hep3Vector(gmcpoly2(x1d,zin),
                              gmcpoly2(y1d,zin),
-                             gmcpoly2(z1d,zin))*_scaleFactor;
+                             gmcpoly2(z1d,zin));
   }
 
   // Standard Lagrange formula for 2nd order polynomial fit of
@@ -160,16 +160,21 @@ namespace mu2e {
   bool BFMap::getBFieldWithStatus(const CLHEP::Hep3Vector & testpoint,
                                   CLHEP::Hep3Vector & result) const {
 
-      if ( _interpStyle == BFInterpolationStyle::meco ){
-        return interpolateQuadratic( testpoint, result);
+    bool retval(false);
 
-      } else if ( _interpStyle == BFInterpolationStyle::trilinear ){
-        return interpolateTriLinear(testpoint, result );
+    if ( _interpStyle == BFInterpolationStyle::trilinear ){
+      retval = interpolateTriLinear(testpoint, result );
 
-      }
+    } else if ( _interpStyle == BFInterpolationStyle::meco ){
+      retval = interpolateQuadratic( testpoint, result);
+
+    } else{
       throw cet::exception("GEOM")
-        << "Unrecognized style of BField: " << _interpStyle
+        << "Unrecognized option for interpolation into the BField: " << _interpStyle
         << "\n";
+    }
+    result *= _scaleFactor;
+    return retval;
   }
 
   // The algorithm is:
