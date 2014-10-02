@@ -36,6 +36,9 @@
 
 #include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
 
+//#include "G4Helper/inc/G4Helper.hh"
+//#include "G4Helper/inc/VolumeInfo.hh"
+
 using namespace std;
 using namespace CLHEP;
 
@@ -426,8 +429,7 @@ namespace mu2e {
         GeomHandle<DetectorSolenoid> ds;
         CLHEP::Hep3Vector const & dsP ( ds->position() );
         CLHEP::Hep3Vector vdPositionInMu2e(dsP.x(), dsP.y(),
-                                           holeLocation.z() + enscendb->holeHalfLength(hID) +
-                                           vd->getHalfLength());
+                                           holeLocation.z() + enscendb->holeHalfLength(hID) + vd->getHalfLength());
 
         GeomHandle<Mu2eEnvelope> env;
         const CLHEP::Hep3Vector hallFormalCenterInMu2e(
@@ -445,7 +447,6 @@ namespace mu2e {
                               
 
       //placing virtual detector around the calorimeter vanes
-      
       if (c.getBool("hasVaneCalorimeter",true)){
 	GeomHandle<VaneCalorimeter> cg;
 	
@@ -644,66 +645,169 @@ namespace mu2e {
         GeomHandle<DetectorSolenoid> ds;
         CLHEP::Hep3Vector const & dsP ( ds->position() );
         CLHEP::Hep3Vector mstmReferencePositionInMu2e(dsP.x(), dsP.y(),
-                                                  holeLocation.z() + enscendb->holeHalfLength(hID) +
-                                                  2.*vd->getHalfLength() );
+                                                      holeLocation.z() + enscendb->holeHalfLength(hID) + 2.0*vd->getHalfLength() );
 
-        double vdZshift =   mstmUpStreamWallUpStrSpace
-                          + 2.0*mstmUpStreamWallHalfLength
-                          + mstmMagnetUpStrSpace
-                          + 2.0*mstmMagnetHalfLength
-                          + mstmColl1UpStrSpace
-                          + 2.0*mstmColl1HalfLength
-                          + mstmShutterUpStrSpace
-                          + 2.0*mstmShutterHalfLength
-                          + mstmColl2UpStrSpace
-                          + 2.0*mstmColl2HalfLength
-                          + mstmPipe1UpStrSpace
-                          + 2.0*mstmPipe1HalfLength
-                          + mstmColl3UpStrSpace
-                          + 2.0*mstmColl3HalfLength
-                          + 0.5*mstmCanUpStrSpace
-                          //+ mstmCanHalfLength
-                          //- mstmCrystalHalfLength 
-                          - vd->_halfLength;
-
-        CLHEP::Hep3Vector vdPositionInMu2e = mstmReferencePositionInMu2e + CLHEP::Hep3Vector(0.0,0.0,vdZshift);
-
-//         GeomHandle<Mu2eEnvelope> env;
-//         const CLHEP::Hep3Vector hallFormalCenterInMu2e(
-//                                                        (env->xmax() + env->xmin())/2.,
-//                                                        (env->ymax() + env->ymin())/2.,
-//                                                        (env->zmax() + env->zmin())/2.
-//                                                        );
-
-//         vd->addVirtualDetector(VirtualDetectorId::MSTM_DUpstream,
-//                                hallFormalCenterInMu2e,
-//                                0x0,
-//                                vdPositionInMu2e - hallFormalCenterInMu2e);
+        GeomHandle<Mu2eEnvelope> env;
+        const CLHEP::Hep3Vector hallFormalCenterInMu2e(
+                                                       (env->xmax() + env->xmin())/2.,
+                                                       (env->ymax() + env->ymin())/2.,
+                                                       (env->zmax() + env->zmin())/2.
+                                                       );        
+        mstmReferencePositionInMu2e  = mstmReferencePositionInMu2e - hallFormalCenterInMu2e;
+      
+        //WARNING: This must be changed so that we can use the VolumeInfo to get the 
+        //         mother position
+        //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
+        //CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+        //WARNING: This must be the same as in constructMSTM.cc for now.
+        const double mstmMotherHalfLength =   1.0 * c.getDouble("mstm.pipe0.halfLength")
+                                    + 0.5 * c.getDouble("mstm.collimator1.UpStrSpace")
+                                    + 1.0 * c.getDouble("mstm.collimator1.halfLength")
+                                    + 0.5 * c.getDouble("mstm.collimator2.UpStrSpace")
+                                    + 1.0 * c.getDouble("mstm.collimator2.halfLength")
+                                    + 0.5 * c.getDouble("mstm.shutter.UpStrSpace")
+                                    + 1.0 * 500.0 //over-estimate 1 meter for the shutter length
+                                    + 1.0 * c.getDouble("mstm.pipe1.halfLength")
+                                    + 0.5 * c.getDouble("mstm.collimator3.UpStrSpace")
+                                    + 1.0 * c.getDouble("mstm.collimator3.halfLength")
+                                    + 0.5 * c.getDouble("mstm.can.UpStrSpace")
+                                    + 1.0 * c.getDouble("mstm.can.halfLength")
+                                    + 0.5 * 500.0; //make the Mother another 0.5m longer
         
-        vd->addVirtualDetector(VirtualDetectorId::MSTM_DUpstream,
-                               mstmReferencePositionInMu2e,
-                               0x0,
-                               vdPositionInMu2e - mstmReferencePositionInMu2e);
+        const CLHEP::Hep3Vector mstmMotherPositionInMu2e = mstmReferencePositionInMu2e + CLHEP::Hep3Vector(0.0, 0.0, mstmMotherHalfLength);      
+
         
-
-        // int static const verbosityLevel = 1;
-        // if ( verbosityLevel > -1) {
-        //   cout << __func__ << " constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_DUpstream) 
-        //        << endl;
-        //   std::cout << __func__ << " mstmPipe0PositionInMu2e " << 
-        //     mstmPipe0PositionInMu2e <<  std::endl;
-        //   std::cout << __func__ << " mstmPipe0PositionInHall " << 
-        //     mstmPipe0PositionInMu2e - hallFormalCenterInMu2e <<  std::endl;
-        //   cout << __func__ << " vdPositionInMu2e " << vdPositionInMu2e << endl;
-        //   cout << __func__ << " hallFormalCenterInMu2e " << hallFormalCenterInMu2e << endl;
-        //   cout << __func__ << " vdPositionIn Hall " << vdPositionInMu2e - hallFormalCenterInMu2e << endl;
-
-        //   cout << __func__ << " ib, hID: " << ib << ", " << hID << endl;
-        //   cout << __func__ << " holeLocation.z() " <<  holeLocation.z() << endl;
-        //   cout << __func__ << " enscendb->holeHalfLength(hID) " <<  enscendb->holeHalfLength(hID) << endl;
-
-        // }
-
+        if ( c.getBool("vd.MSTMWallUpStr.build", false) ) {
+           
+           double z_offset =  0.5*mstmUpStreamWallUpStrSpace
+                            - vd->_halfLength;
+                 
+           CLHEP::Hep3Vector vdPositionWRTmstmMother = CLHEP::Hep3Vector(0.0,0.0,z_offset - mstmMotherHalfLength);        
+           
+           vd->addVirtualDetector(VirtualDetectorId::MSTM_WallUpStr, //ID
+                                  mstmMotherPositionInMu2e,          //reference position
+                                  0x0,                               //rotation
+                                  vdPositionWRTmstmMother);          //placement w.r.t. reference
+           
+           int static const verbosityLevel = 1;
+           if ( verbosityLevel > -1) {
+              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_WallUpStr) << endl;
+           }
+        }
+        
+        if ( c.getBool("vd.MSTMColl1DnStr.build", false) ) {
+           
+           double z_offset =  mstmUpStreamWallUpStrSpace
+                            + 2.0*mstmUpStreamWallHalfLength
+                            + mstmMagnetUpStrSpace
+                            + 2.0*mstmMagnetHalfLength
+                            + mstmColl1UpStrSpace
+                            + 2.0*mstmColl1HalfLength
+                            + 0.5*mstmShutterUpStrSpace
+                            - vd->_halfLength;
+                 
+           CLHEP::Hep3Vector vdPositionWRTmstmMother = CLHEP::Hep3Vector(0.0,0.0,z_offset - mstmMotherHalfLength);        
+           
+           vd->addVirtualDetector(VirtualDetectorId::MSTM_Coll1DnStr, //ID
+                                  mstmMotherPositionInMu2e,           //reference position
+                                  0x0,                                //rotation
+                                  vdPositionWRTmstmMother);           //placement w.r.t. reference
+           
+           int static const verbosityLevel = 1;
+           if ( verbosityLevel > -1) {
+              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_Coll1DnStr) << endl;
+           }
+        }
+        
+        if ( c.getBool("vd.MSTMShutterDnStr.build", false) ) {
+           
+           double z_offset =  mstmUpStreamWallUpStrSpace
+                            + 2.0*mstmUpStreamWallHalfLength
+                            + mstmMagnetUpStrSpace
+                            + 2.0*mstmMagnetHalfLength
+                            + mstmColl1UpStrSpace
+                            + 2.0*mstmColl1HalfLength
+                            + mstmShutterUpStrSpace
+                            + 2.0*mstmShutterHalfLength
+                            + 0.5*mstmColl2UpStrSpace
+                            - vd->_halfLength;
+                 
+           CLHEP::Hep3Vector vdPositionWRTmstmMother = CLHEP::Hep3Vector(0.0,0.0,z_offset - mstmMotherHalfLength);        
+           
+           vd->addVirtualDetector(VirtualDetectorId::MSTM_ShutterDnStr, //ID
+                                  mstmMotherPositionInMu2e,           //reference position
+                                  0x0,                                //rotation
+                                  vdPositionWRTmstmMother);           //placement w.r.t. reference
+           
+           int static const verbosityLevel = 1;
+           if ( verbosityLevel > -1) {
+              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_ShutterDnStr) << endl;
+           }
+        }
+        
+        if ( c.getBool("vd.MSTMColl2DnStr.build", false) ) {
+           
+           double z_offset =  mstmUpStreamWallUpStrSpace
+                 + 2.0*mstmUpStreamWallHalfLength
+                 + mstmMagnetUpStrSpace
+                 + 2.0*mstmMagnetHalfLength
+                 + mstmColl1UpStrSpace
+                 + 2.0*mstmColl1HalfLength
+                 + mstmShutterUpStrSpace
+                 + 2.0*mstmShutterHalfLength
+                 + mstmColl2UpStrSpace
+                 + 2.0*mstmColl2HalfLength
+                 + 0.5*mstmPipe1UpStrSpace
+                 - vd->_halfLength;
+                 
+           CLHEP::Hep3Vector vdPositionWRTmstmMother = CLHEP::Hep3Vector(0.0,0.0,z_offset - mstmMotherHalfLength);        
+           
+           vd->addVirtualDetector(VirtualDetectorId::MSTM_Coll2DnStr, //ID
+                                  mstmMotherPositionInMu2e,           //reference position
+                                  0x0,                                //rotation
+                                  vdPositionWRTmstmMother);           //placement w.r.t. reference
+           
+           int static const verbosityLevel = 1;
+           if ( verbosityLevel > -1) {
+              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_Coll2DnStr) << endl;
+           }
+        }
+        
+        if ( c.getBool("vd.MSTMColl3DnStr.build", false) ) {
+           
+           double z_offset =  mstmUpStreamWallUpStrSpace
+                 + 2.0*mstmUpStreamWallHalfLength
+                 + mstmMagnetUpStrSpace
+                 + 2.0*mstmMagnetHalfLength
+                 + mstmColl1UpStrSpace
+                 + 2.0*mstmColl1HalfLength
+                 + mstmShutterUpStrSpace
+                 + 2.0*mstmShutterHalfLength
+                 + mstmColl2UpStrSpace
+                 + 2.0*mstmColl2HalfLength
+                 + mstmPipe1UpStrSpace
+                 + 2.0*mstmPipe1HalfLength
+                 + mstmColl3UpStrSpace
+                 + 2.0*mstmColl3HalfLength
+                 + 0.5*mstmCanUpStrSpace
+                 //+ mstmCanHalfLength
+                 //- mstmCrystalHalfLength 
+                 - vd->_halfLength;
+                 
+           CLHEP::Hep3Vector vdPositionWRTmstmMother = CLHEP::Hep3Vector(0.0,0.0,z_offset - mstmMotherHalfLength);        
+           
+           vd->addVirtualDetector(VirtualDetectorId::MSTM_Coll3DnStr, //ID
+                                  mstmMotherPositionInMu2e,           //reference position
+                                  0x0,                                //rotation
+                                  vdPositionWRTmstmMother);           //placement w.r.t. reference
+           
+           int static const verbosityLevel = 1;
+           if ( verbosityLevel > -1) {
+              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_Coll3DnStr) << endl;
+           }
+        }
+        
+        
       }
 
     } // if(hasVirtualDetector)
