@@ -164,7 +164,7 @@ class mu2e {
     bool _init;
     double _conint[4];
     double _conint_err[4];
-    TCut trkqualcut[4] = {"trkqual>0.1","trkqual>0.2","trkqual>0.4","trkqual>0.6"};
+    TCut trkqualcut[4] = {"trkqual>0.2","trkqual>0.3","trkqual>0.4","trkqual>0.5"};
 
 };
 
@@ -554,7 +554,7 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   ttail->SetNDC();
   tcore->Draw();
   ttail->Draw();
-  diores->SaveAs("diores.png");
+  diores->SaveAs((std::string("diores")+ssuf).c_str());
 }
 
 void mu2e::fitReco(unsigned icut) {

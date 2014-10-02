@@ -49,7 +49,7 @@
 #include "TMVA/Tools.h"
 #endif
 
-enum bkgweight{linear=0,exponential=1};
+enum bkgweight{linear=0,exponential=1,polynomial=2};
 
 int
 TrainTrkQual(TTree* mytree,int bkgw=exponential,char* tname = "TrkQual")
@@ -161,16 +161,18 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,char* tname = "TrkQual")
       "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
 // signal is defined as the momentum resolution core,
-  TCut signal("fitstatus>0&&mcentmom>100&&abs(fitmom-mcentmom)<0.2");
+  TCut signal("fitstatus>0&&mcentmom>100&&mcenttd>0.57&&mcenttd<1.0&&fitmom-mcentmom<0.05&&fitmom-mcentmom>-0.15");
   // tail is defined as the high-side tail
-  TCut bkg("fitstatus>0&&mcentmom>100&&fitmom-mcentmom>0.5");
+  TCut bkg("fitstatus>0&&mcentmom>100&&mcenttd>0.57&&mcenttd<1.0&&fitmom-mcentmom>0.5");
 
   // weight the tail by the momentum difference
 
   if(bkgw == linear){
-    factory->SetBackgroundWeightExpression("min(10.0,max(1.0,2.0*(fitmom-mcentmom)))");
+    factory->SetBackgroundWeightExpression("max(1.0,5.0*(min(fitmom-mcentmom,2.0)))");
   } else if(bkgw == exponential){
-    factory->SetBackgroundWeightExpression("min(10.0,max(1.0,0.36788*exp(2.0*(fitmom-mcentmom))))");
+    factory->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(fitmom-mcentmom,2.0)))");
+  } else if(bkgw == polynomial){
+    factory->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(fitmom-mcentmom,2.0),5.0))");
   } else {
     return -1;
   }

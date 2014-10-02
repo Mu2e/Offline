@@ -1,5 +1,5 @@
 #include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexLeft.hh"
-
+// This code will be superceded in a package called ExternalShieldingGeom
 namespace mu2e {
 
   // genreflex perstency requires default ctr

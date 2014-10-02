@@ -2,7 +2,17 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_0_1
 
-(1) Sep 24, 2014 - ehrlich
+3) Oct 1, 2014 - brownd
+    Added TrkQual variable to KalDiag, with associated weights and
+    tests to KalmanTests.
+
+2) Sep 30, 2014 - kutschke
+   BFieldGeom/src/BFMap.cc
+     - The trilinear interpolation code did not use the
+       scale factor.  The code now multiplies the final
+       result by the scale factor.
+
+1) Sep 24, 2014 - ehrlich
     Updates to the CosmicRayShieldGeom directory and the Mu2eG4/geom/crv_counters.txt file. 
     Removed a lot of hard-coded settings. This makes it possible, 
     that data files produced with different CRV versions can still be read, 
