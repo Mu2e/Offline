@@ -120,6 +120,10 @@ namespace mu2e {
                                                        );
 
     mstmReferencePositionInMu2e  = mstmReferencePositionInMu2e - hallFormalCenterInMu2e;
+
+
+    
+    //----- Create the Mother volume for everything in the MSTM area--------------------------------
     
     //We want the Mother and the Shielding Wall to go down to the floor, so get the necessary info:
     GeomHandle<Mu2eBuilding> building;
@@ -127,7 +131,6 @@ namespace mu2e {
     const double yExtentLow = building->hallInsideYmin();
     //std::cout << "Distance from hole center to Hall floor = " << fabs(yExtentLow) << std::endl;
     
-    //----- Create a MSTM Mother Volume to contain everything in the MSTM area -------
     const double mstmMotherHalfHeight =  fabs(yExtentLow);
     const double mstmMotherHalfWidth  =  _config.getDouble("mstm.wallUpStr.halfWidth");
     const double mstmMotherHalfLength =   1.0 * _config.getDouble("mstm.pipe0.halfLength")
@@ -142,7 +145,7 @@ namespace mu2e {
                                         + 1.0 * _config.getDouble("mstm.collimator3.halfLength")
                                         + 0.5 * _config.getDouble("mstm.can.UpStrSpace")
                                         + 1.0 * _config.getDouble("mstm.can.halfLength")
-                                        + 0.5 * 500.0; //make the Mother another 0.5m longer
+                                        + 0.5 * 1500.0; //make the Mother another 1.5m longer
                                         
     const double mstmMotherHalfLengths[3] = {mstmMotherHalfWidth, mstmMotherHalfHeight, mstmMotherHalfLength};
     
@@ -224,6 +227,128 @@ namespace mu2e {
                   placePV,
                   doSurfaceCheck);
 
+
+    //----- Downstream shielding wall of MSTM area (2 ft thick? concrete wall)-------
+
+    G4Material*  mstmDnStreamWallMaterial   = materialFinder.get("mstm.wallDnStr.material");
+    const double mstmDnStreamWallHalfLength =  _config.getDouble("mstm.wallDnStr.halfLength");
+
+    // Make the box for the wall
+    const double mstmDnStreamWallHalfLengths[3] = {mstmUpStreamWallHalfWidth,
+                                                   fabs(yExtentLow),
+                                                   mstmDnStreamWallHalfLength};
+    //G4Box* boxWallDnStream = new G4Box("boxWallDnStream",mstmDnStreamWallHalfLengths[0],mstmDnStreamWallHalfLengths[1],mstmDnStreamWallHalfLengths[2]);
+
+    G4ThreeVector mstmDnStreamWallPositionInMother(0.0,0.0,mstmMotherHalfLength - mstmDnStreamWallHalfLength);
+    
+    VolumeInfo mstmDnStreamWallInfo = nestBox("boxWallDnStream",
+                                                  mstmDnStreamWallHalfLengths,
+                                                  mstmDnStreamWallMaterial,
+                                                  0x0,
+                                                  mstmDnStreamWallPositionInMother,
+                                                  mstmMotherInfo,
+                                                  0,
+                                                  mstmVisible,
+                                                  G4Color::Magenta(),
+                                                  mstmSolid,
+                                                  forceAuxEdgeVisible,
+                                                  placePV,
+                                                  doSurfaceCheck
+                                                  );
+
+
+    //----- Beam Left shielding wall of MSTM area (2 ft thick? concrete wall)-------
+
+    G4Material*  mstmBeamLeftWallMaterial  = materialFinder.get("mstm.wallBeamLeft.material");
+    const double mstmBeamLeftWallHalfWidth =  _config.getDouble("mstm.wallBeamLeft.halfWidth");
+    const double mstmCeilingWallHalfHeight =  _config.getDouble("mstm.wallCeiling.halfHeight");
+
+    // Make the box for the wall
+    const double mstmBeamLeftWallHalfLengths[3] = {mstmBeamLeftWallHalfWidth,
+                                                   fabs(yExtentLow) - mstmCeilingWallHalfHeight,
+                                                   mstmMotherHalfLength - 0.5*mstmUpStreamWallUpStrSpace - mstmUpStreamWallHalfLength - mstmDnStreamWallHalfLength};
+    //G4Box* boxWallBeamLeft = new G4Box("boxWallBeamLeft",mstmBeamLeftWallHalfLengths[0],mstmBeamLeftWallHalfLengths[1],mstmBeamLeftWallHalfLengths[2]);
+
+    G4ThreeVector mstmBeamLeftWallPositionInMother = zeroVector + G4ThreeVector(-1.0*(mstmMotherHalfWidth-mstmBeamLeftWallHalfLengths[0]),
+                                                                                -1.0*mstmCeilingWallHalfHeight,
+                                                                                0.5*mstmUpStreamWallUpStrSpace + mstmUpStreamWallHalfLength - mstmDnStreamWallHalfLength);
+    
+    VolumeInfo mstmBeamLeftWallInfo = nestBox("boxWallBeamLeft",
+                                                  mstmBeamLeftWallHalfLengths,
+                                                  mstmBeamLeftWallMaterial,
+                                                  0x0,
+                                                  mstmBeamLeftWallPositionInMother,
+                                                  mstmMotherInfo,
+                                                  0,
+                                                  mstmVisible,
+                                                  G4Color::Magenta(),
+                                                  mstmSolid,
+                                                  forceAuxEdgeVisible,
+                                                  placePV,
+                                                  doSurfaceCheck
+                                                  );
+    
+
+    //----- Beam Right shielding wall of MSTM area (2 ft thick? concrete wall)-------
+
+    G4Material*  mstmBeamRightWallMaterial  = materialFinder.get("mstm.wallBeamRight.material");
+    const double mstmBeamRightWallHalfWidth =  _config.getDouble("mstm.wallBeamRight.halfWidth");
+    //const double mstmCeilingWallHalfHeight =  _config.getDouble("mstm.wallCeiling.halfHeight");
+
+    // Make the box for the wall
+    const double mstmBeamRightWallHalfLengths[3] = {mstmBeamRightWallHalfWidth,
+                                                   fabs(yExtentLow) - mstmCeilingWallHalfHeight,
+                                                   mstmMotherHalfLength - 0.5*mstmUpStreamWallUpStrSpace - mstmUpStreamWallHalfLength - mstmDnStreamWallHalfLength};
+    //G4Box* boxWallBeamRight = new G4Box("boxWallBeamRight",mstmBeamRightWallHalfLengths[0],mstmBeamRightWallHalfLengths[1],mstmBeamRightWallHalfLengths[2]);
+
+    G4ThreeVector mstmBeamRightWallPositionInMother = zeroVector + G4ThreeVector(1.0*(mstmMotherHalfWidth-mstmBeamRightWallHalfLengths[0]),
+                                                                                -1.0*mstmCeilingWallHalfHeight,
+                                                                                0.5*mstmUpStreamWallUpStrSpace + mstmUpStreamWallHalfLength - mstmDnStreamWallHalfLength);
+    
+    VolumeInfo mstmBeamRightWallInfo = nestBox("boxWallBeamRight",
+                                                  mstmBeamRightWallHalfLengths,
+                                                  mstmBeamRightWallMaterial,
+                                                  0x0,
+                                                  mstmBeamRightWallPositionInMother,
+                                                  mstmMotherInfo,
+                                                  0,
+                                                  mstmVisible,
+                                                  G4Color::Magenta(),
+                                                  mstmSolid,
+                                                  forceAuxEdgeVisible,
+                                                  placePV,
+                                                  doSurfaceCheck
+                                                  );
+
+    
+    //----- Ceiling shielding wall of MSTM area (2 ft thick? concrete wall)-------
+
+    G4Material*  mstmCeilingWallMaterial  = materialFinder.get("mstm.wallCeiling.material");
+    //const double mstmCeilingWallHalfHeight =  _config.getDouble("mstm.wallCeiling.halfHeight");
+
+    // Make the box for the wall
+    const double mstmCeilingWallHalfLengths[3] = {mstmMotherHalfWidth,
+                                                  mstmCeilingWallHalfHeight,
+                                                  mstmMotherHalfLength - 0.5*mstmUpStreamWallUpStrSpace - mstmUpStreamWallHalfLength - mstmDnStreamWallHalfLength};
+
+    G4ThreeVector mstmCeilingWallPositionInMother = zeroVector + G4ThreeVector(1.0*(mstmMotherHalfWidth-mstmCeilingWallHalfLengths[0]),
+                                                                               mstmMotherHalfHeight - mstmCeilingWallHalfHeight,
+                                                                               0.5*mstmUpStreamWallUpStrSpace + mstmUpStreamWallHalfLength - mstmDnStreamWallHalfLength);
+    
+    VolumeInfo mstmCeilingWallInfo = nestBox("boxWallCeiling",
+                                                  mstmCeilingWallHalfLengths,
+                                                  mstmCeilingWallMaterial,
+                                                  0x0,
+                                                  mstmCeilingWallPositionInMother,
+                                                  mstmMotherInfo,
+                                                  0,
+                                                  mstmVisible,
+                                                  G4Color::Magenta(),
+                                                  mstmSolid,
+                                                  forceAuxEdgeVisible,
+                                                  placePV,
+                                                  doSurfaceCheck
+                                                  );    
     
     //----- Magnet ----------------------------
     

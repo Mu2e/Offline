@@ -672,7 +672,7 @@ namespace mu2e {
                                     + 1.0 * c.getDouble("mstm.collimator3.halfLength")
                                     + 0.5 * c.getDouble("mstm.can.UpStrSpace")
                                     + 1.0 * c.getDouble("mstm.can.halfLength")
-                                    + 0.5 * 500.0; //make the Mother another 0.5m longer
+                                    + 0.5 * 1500.0; //make the Mother another 0.5m longer
         
         const CLHEP::Hep3Vector mstmMotherPositionInMu2e = mstmReferencePositionInMu2e + CLHEP::Hep3Vector(0.0, 0.0, mstmMotherHalfLength);      
 
