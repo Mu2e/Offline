@@ -1,5 +1,6 @@
 //-----------------------------------------------------------------------------
-
+//
+//-----------------------------------------------------------------------------
 #include "Stntuple/alg/TEmuLogLH.hh"
 #include "TMath.h"
 // #include "murat/plot/smooth_new.hh"
@@ -593,14 +594,25 @@ void TEmuLogLH::InitMuoEpHist(const TH2F* Hist) {
 //-----------------------------------------------------------------------------
 int TEmuLogLH::Init_v4_2_4() {
 
-  InitEleEpHist("ConditionsService/data/pid_ele_ep_vs_path_v4_2_4.tab");
-  InitEleDtHist("ConditionsService/data/pid_ele_dt_v4_2_4.tab");
+  char f_ele_ep_vs_path[256], f_ele_dt[256], f_ele_xs[256];
+  char f_muo_ep_vs_path[256], f_muo_dt[256], f_muo_xs[256];
 
-  InitMuoEpHist("ConditionsService/data/pid_muo_ep_vs_path_v4_2_4.tab");
-  InitMuoDtHist("ConditionsService/data/pid_muo_dt_v4_2_4.tab");
+  const char* dir = getenv("MU2E_BASE_RELEASE");
 
-  InitEleXsHist("ConditionsService/data/pid_ele_xs_v4_2_4.tab");
-  InitMuoXsHist("ConditionsService/data/pid_muo_xs_v4_2_4.tab");
+  sprintf(f_ele_ep_vs_path,"%s/ConditionsService/data/pid_ele_ep_vs_path_v4_2_4.tab",dir);
+  sprintf(f_ele_dt        ,"%s/ConditionsService/data/pid_ele_dt_v4_2_4.tab",dir);
+  sprintf(f_ele_xs        ,"%s/ConditionsService/data/pid_ele_xs_v4_2_4.tab",dir);
+  sprintf(f_muo_ep_vs_path,"%s/ConditionsService/data/pid_muo_ep_vs_path_v4_2_4.tab",dir);
+  sprintf(f_muo_dt        ,"%s/ConditionsService/data/pid_muo_dt_v4_2_4.tab",dir);
+  sprintf(f_muo_xs        ,"%s/ConditionsService/data/pid_muo_xs_v4_2_4.tab",dir);
+
+  InitEleEpHist(f_ele_ep_vs_path);
+  InitEleDtHist(f_ele_dt);
+  InitEleXsHist(f_ele_xs);
+
+  InitMuoEpHist(f_muo_ep_vs_path);
+  InitMuoDtHist(f_muo_dt);
+  InitMuoXsHist(f_muo_xs);
 
   return 0;
 }

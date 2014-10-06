@@ -9,24 +9,56 @@
 
 
 // build VD inside DS Neutron Shielding
+//bool vd.DSNeutronShieldExit.build = false;
 
-bool vd.DSNeutronShieldExit.build = true;
 
+// build virtual detectors throughout the MSTM area
+bool   vd.MSTMWallUpStr.build  = true;
+double vd.MSTMWallUpStr.r      = 100.0; // r=10cm 
+
+bool vd.MSTMColl1DnStr.build   = true;
+double vd.MSTMColl1DnStr.r     = 100.0; // r=10cm 
+
+bool vd.MSTMShutterDnStr.build = true;
+double vd.MSTMShutterDnStr.r   = 100.0; // r=10cm 
+
+bool vd.MSTMColl2DnStr.build   = true;
+double vd.MSTMColl2DnStr.r     = 100.0; // r=10cm 
+
+bool vd.MSTMColl3DnStr.build   = true;
+double vd.MSTMColl3DnStr.r     = 70.0; // r=7cm 
+
+
+
+// MSTM walls, collimators, pipes, magnet, absorber, and detector
 // z-positions are skipped and taken from the dss in the code
-
-bool mstm.visible = true;
-bool mstm.solid   = false;
-
-// mstm pipe, magnet absorber, detector
 
 bool   mstm.build  = true;
 int    mstm.verbosityLevel = 1;
+bool   mstm.visible = true;
+bool   mstm.solid   = false;
+
+//double mstm.mother.halfHeight =  5000.0; 
+//double mstm.mother.halfWidth  =  5000.0;
+//double mstm.mother.halfLength =  5000.0;
 
 string mstm.wallUpStr.material   = "G4_CONCRETE";
-double mstm.wallUpStr.UpStrSpace =  100.0; // z=10cm space between this and previous element
+double mstm.wallUpStr.UpStrSpace =  500.0; // z=50cm space between this and previous element
 double mstm.wallUpStr.halfLength =  304.8; // 1 foot = 30.48 cm = 304.8 mm
 double mstm.wallUpStr.halfWidth  = 3000.0; // Make it 6m wide for now
 double mstm.wallUpStr.holeRadius =  55.0; // 5.5cm, therefore 0.5cm larger than the pipe
+
+string mstm.wallDnStr.material      = "G4_CONCRETE";
+double mstm.wallDnStr.halfLength    =  304.8; // 1 foot = 30.48 cm = 304.8 mm
+
+string mstm.wallBeamLeft.material   = "G4_CONCRETE";
+double mstm.wallBeamLeft.halfWidth  =  304.8; // 1 foot = 30.48 cm = 304.8 mm
+
+string mstm.wallBeamRight.material  = "G4_CONCRETE";
+double mstm.wallBeamRight.halfWidth =  304.8; // 1 foot = 30.48 cm = 304.8 mm
+
+string mstm.wallCeiling.material    = "G4_CONCRETE";
+double mstm.wallCeiling.halfHeight  =  304.8; // 1 foot = 30.48 cm = 304.8 mm
 
 string mstm.magnet.material       = "StainlessSteel";
 double mstm.magnet.UpStrSpace     =  100.0;  // z=10cm space between this and previous element
@@ -77,7 +109,7 @@ string mstm.pipe1.material              = "StainlessSteel";
 string mstm.pipe1.gas                   = "G4_He"; 
 double mstm.pipe1.rIn                   =  49.0;
 double mstm.pipe1.rOut                  =  50.0;
-double mstm.pipe1.UpStrSpace            =  20.0;  // z=2cm space between this and previous element
+double mstm.pipe1.UpStrSpace            =  50.0;  // z=5cm space between this and previous element
 double mstm.pipe1.halfLength            = 500.0; // 1m long
 string mstm.pipe1.UpStrWindowMaterial   = "G4_MYLAR";
 double mstm.pipe1.UpStrWindowHalfLength = 2.5; // 2.5mm thick window
@@ -95,7 +127,7 @@ double mstm.can.material              = "StainlessSteel";
 double mstm.can.gas                   = "G4_Galactic"; // ~vacuum
 double mstm.can.rIn                   =  55.0;
 double mstm.can.rOut                  =  56.0;
-double mstm.can.UpStrSpace            = 250.0;  // z=25cm space between this and previous element
+double mstm.can.UpStrSpace            = 100.0;  // z=10cm space between this and previous element
 double mstm.can.halfLength            =  36.0;
 string mstm.can.UpStrWindowMaterial   = "StainlessSteel";
 double mstm.can.UpStrWindowHalfLength =   0.5;

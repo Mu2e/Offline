@@ -1425,7 +1425,7 @@ namespace mu2e {
                                    vdParams,
                                    vacuumMaterial,
                                    0,
-                                   vdg->getGlobal(vdId) - parentInMu2e,
+                                   vdg->getGlobal(vdId) - parentInMu2e, //position w.r.t. parent
                                    parent,
                                    vdId,
                                    vdIsVisible,
@@ -1715,37 +1715,204 @@ namespace mu2e {
       }// end loop on disks
     }//hasDiskCalorimeter
 
-    // placing virtual detector in the MSTM can (hall air actually)
-    // fixme get MSTM from GeometryService once in there
-    vdId = VirtualDetectorId::MSTM_DUpstream;
+    //-----------------------------------------------------------------------------------------------------------------------------
+    // placing virtual detector in the MSTM Mother
+    // FIXME get MSTM from GeometryService once in there
+    vdId = VirtualDetectorId::MSTM_WallUpStr;
     if ( vdg->exist(vdId) ) {
 
-      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+      const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
       CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+      
+      const double vdRIn  = 0.0;
+      const double vdROut = _config.getDouble("vd.MSTMWallUpStr.r");
 
-      const double mstmCrystalRIn  = _config.getDouble("mstm.crystal.rIn");
-      const double mstmCrystalROut = _config.getDouble("mstm.crystal.rOut");
-
-      const TubsParams vdParams(mstmCrystalRIn, mstmCrystalROut, vdg->getHalfLength());
+      const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
                                    vacuumMaterial,
                                    0,
-                                   vdg->getGlobal(vdId) - parentInMu2e,
+                                   vdg->getLocal(vdId), //local position w.r.t. parent
                                    parent,
                                    vdId,
-                                   vdIsVisible,
-                                   G4Color::Red(),
+                                   vdIsVisible, //
+                                   G4Color::White(),
                                    vdIsSolid,
                                    forceAuxEdgeVisible,
                                    placePV,
                                    false
                                    );
 
+      if ( verbosityLevel > 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) - parentInMu2e << " w.r.t. parent (MSTMMother) " << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+      
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
+    
+    vdId = VirtualDetectorId::MSTM_Coll1DnStr;
+    if ( vdg->exist(vdId) ) {
+
+      const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
+      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+      
+      const double vdRIn  = 0.0;
+      const double vdROut = _config.getDouble("vd.MSTMColl1DnStr.r");
+
+      const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
+
+      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   vdParams,
+                                   vacuumMaterial,
+                                   0,
+                                   vdg->getLocal(vdId), //local position w.r.t. parent
+                                   parent,
+                                   vdId,
+                                   vdIsVisible, //
+                                   G4Color::White(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                   );
+
+      if ( verbosityLevel > 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) - parentInMu2e << " w.r.t. parent (MSTMMother) " << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+      
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+    
+    vdId = VirtualDetectorId::MSTM_ShutterDnStr;
+    if ( vdg->exist(vdId) ) {
+
+      const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
+      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+      
+      const double vdRIn  = 0.0;
+      const double vdROut = _config.getDouble("vd.MSTMShutterDnStr.r");
+
+      const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
+
+      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   vdParams,
+                                   vacuumMaterial,
+                                   0,
+                                   vdg->getLocal(vdId), //local position w.r.t. parent
+                                   parent,
+                                   vdId,
+                                   vdIsVisible, //
+                                   G4Color::White(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                   );
+
+      if ( verbosityLevel > 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) - parentInMu2e << " w.r.t. parent (MSTMMother) " << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+      
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+    
+    vdId = VirtualDetectorId::MSTM_Coll2DnStr;
+    if ( vdg->exist(vdId) ) {
+
+      const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
+      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+      
+      const double vdRIn  = 0.0;
+      const double vdROut = _config.getDouble("vd.MSTMColl2DnStr.r");
+
+      const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
+
+      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   vdParams,
+                                   vacuumMaterial,
+                                   0,
+                                   vdg->getLocal(vdId), //local position w.r.t. parent
+                                   parent,
+                                   vdId,
+                                   vdIsVisible, //
+                                   G4Color::White(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                   );
+
+      if ( verbosityLevel > 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) - parentInMu2e << " w.r.t. parent (MSTMMother) " << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+      
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+    
+    vdId = VirtualDetectorId::MSTM_Coll3DnStr;
+    if ( vdg->exist(vdId) ) {
+
+      const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
+      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+      
+      const double vdRIn  = 0.0;
+      const double vdROut = _config.getDouble("vd.MSTMColl3DnStr.r");
+
+      const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
+
+      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   vdParams,
+                                   vacuumMaterial,
+                                   0,
+                                   vdg->getLocal(vdId), //local position w.r.t. parent
+                                   parent,
+                                   vdId,
+                                   vdIsVisible, //
+                                   G4Color::White(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                   );
+
+      if ( verbosityLevel > 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) - parentInMu2e << " w.r.t. parent (MSTMMother) " << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+      
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+    
+    
   } // constructVirtualDetectors()
 }
