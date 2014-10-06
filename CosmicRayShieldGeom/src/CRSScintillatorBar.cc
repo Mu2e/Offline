@@ -14,27 +14,14 @@
 
 namespace mu2e 
 {
-    CRSScintillatorBar::CRSScintillatorBar() :
-    _index(CRSScintillatorBarIndex(0)),
-    _id(CRSScintillatorBarId()),
-    _position(CLHEP::Hep3Vector(0.,0.,0.))
-    {
-    }
-
-    CRSScintillatorBar::CRSScintillatorBar(CRSScintillatorBarIndex const &index, 
-                       CRSScintillatorBarId const &id) :
-    _index(index),
-    _id(id),
-    _position(CLHEP::Hep3Vector(0.,0.,0.))
-    {
-    }
-
     CRSScintillatorBar::CRSScintillatorBar(CRSScintillatorBarIndex const &index, 
                        CRSScintillatorBarId const &id,
-                       CLHEP::Hep3Vector const &position) : 
+                       CLHEP::Hep3Vector const &position,
+                       CRSScintillatorBarDetail const &detail) : 
     _index(index),
     _id(id),
-    _position(position)
+    _position(position),
+    _detail(detail)
     {
     }
 

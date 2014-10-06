@@ -32,18 +32,16 @@ namespace mu2e
     friend class CRSScintillatorModule;
     friend class CRSScintillatorShield;
     friend class CosmicRayShield;
-    friend class CosmicRayShieldMaker;
-
-    public:
+//    friend class CosmicRayShieldMaker;
 
     CRSScintillatorBar();
 
-    CRSScintillatorBar(CRSScintillatorBarIndex const &index, 
-                       CRSScintillatorBarId const &id);
+    public:
 
     CRSScintillatorBar(CRSScintillatorBarIndex const &index, 
                        CRSScintillatorBarId const &id,
-                       CLHEP::Hep3Vector const &position);
+                       CLHEP::Hep3Vector const &position,
+                       CRSScintillatorBarDetail const &detail);
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
     CRSScintillatorBarIndex index() const {return _index;}
@@ -53,13 +51,30 @@ namespace mu2e
     std::string name( std::string const & base ) const;
 
     CLHEP::Hep3Vector const & getPosition() const {return _position;}
-    std::vector<double> const & getHalfLengths() const {return _detail->getHalfLengths();}
-    std::string const & getMaterialNames() const {return _detail->getMaterialName();}
+    std::vector<double> const & getHalfLengths() const {return _detail.getHalfLengths();}
+    std::string const & getMaterialNames() const {return _detail.getMaterialName();}
 
-    // On readback from persistency, recursively recompute mutable members.
-    //    void fillPointers ( const CosmicRayShield& cosmicRayShield ) const;
+    double getHalfThickness() const { return _detail.getHalfThickness();}
+    double getHalfWidth() const { return _detail.getHalfWidth();}
+    double getHalfLength() const { return _detail.getHalfLength();}
 
-//FIXME: what is this for?
+    CLHEP::Hep3Vector toWorld(const CLHEP::Hep3Vector &localPosition) const
+    {
+      return _detail.toWorld(localPosition,_position);
+    }
+    CLHEP::Hep3Vector toLocal(const CLHEP::Hep3Vector &worldPosition) const
+    {
+      return _detail.toLocal(worldPosition,_position);
+    }
+    CLHEP::Hep3Vector toLocalNormalized(const CLHEP::Hep3Vector &worldPosition) const
+    {
+      return _detail.toLocalNormalized(worldPosition,_position);
+    }
+    bool isInside(const CLHEP::Hep3Vector &worldPosition) const
+    {
+      return _detail.isInside(worldPosition,_position);
+    }
+
     bool operator==(const CRSScintillatorBar other) const 
     {
       return _index == other.index();
@@ -85,7 +100,7 @@ namespace mu2e
     CLHEP::Hep3Vector _position;
 
     // Detailed description of a bar
-    mutable const CRSScintillatorBarDetail* _detail;
+    const CRSScintillatorBarDetail &_detail;
   };
 
 }  //namespace mu2e
