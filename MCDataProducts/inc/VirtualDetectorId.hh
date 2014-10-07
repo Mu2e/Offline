@@ -78,7 +78,8 @@ namespace mu2e {
       DSNeutronShieldExit, // 81
       PSTargetSurf, // 82
       PT_Front, PT_Back,                         // 83, 84:  Forward and backward side of the production targets
-      STMUpstream, MSTM_DUpstream,               // 85, 86:  Upstream of MSTM area, Upstream of MSTM detector crystal
+      STMUpstream,                  // 85:  I'm not sure who named this STM, because it's not in the MSTM area (FIXME)
+      MSTM_WallUpStr, MSTM_Coll1DnStr, MSTM_ShutterDnStr, MSTM_Coll2DnStr, MSTM_Coll3DnStr,  // 86, 87, 88, 89, 90:  All inside MSTM area
       lastEnum
     };
 
@@ -119,7 +120,7 @@ namespace mu2e {
       "DSNeutronShieldExit", \
       "PSTargetSurf", \
       "PT_Front", "PT_Back","STMUpstream", \
-      "MSTM_DUpstream"
+      "MSTM_WallUpStr", "MSTM_Coll1DnStr", "MSTM_ShutterDnStr", "MSTM_Coll2DnStr", "MSTM_Coll3DnStr"
 
   public:
 

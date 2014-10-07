@@ -205,7 +205,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     printf("------------------------------------------------------------------------------------------\n");
   }
  
-  if ((opt == "") || (opt == "data")) {
+  if ((opt == "") || (opt.Index("data") >= 0)) {
     //      Trk->printAll();
     double mom   = Trk->momentum().mag();
     double pt    = Trk->momentum().perp();
