@@ -6,7 +6,6 @@
 //
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
