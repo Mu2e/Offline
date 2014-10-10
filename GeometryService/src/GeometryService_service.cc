@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.66 2014/09/19 19:14:43 knoepfel Exp $
+// $Id: GeometryService_service.cc,v 1.65 2014/09/03 16:39:15 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/09/19 19:14:43 $
+// $Date: 2014/09/03 16:39:15 $
 //
 // Original author Rob Kutschke
 //
@@ -33,6 +33,8 @@
 #include "Mu2eBuildingGeom/inc/BuildingBasicsMaker.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuildingMaker.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eHallMaker.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ProductionTargetGeom/inc/ProductionTargetMaker.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
@@ -243,10 +245,23 @@ namespace mu2e {
     const ProtonBeamDump& dump = *tmpDump.get();
     addDetector(std::move(tmpDump));
 
-
+    // Add old building to GeometryService -- FIXME!!! Needs to be removed
     std::unique_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, beamline, dump));
-    const Mu2eBuilding& building = *tmpbld.get();
+    //    const Mu2eBuilding& building = *tmpbld.get();
     addDetector(std::move(tmpbld));
+
+    // Construct building solids
+    std::unique_ptr<Mu2eHall> tmpbldnew(Mu2eHallMaker::makeBuilding(*_g4GeomOptions,*_config));
+    const Mu2eHall& hall = *tmpbldnew.get();
+
+    // Determine Mu2e envelope from building solids
+    std::unique_ptr<Mu2eEnvelope> mu2eEnv (new Mu2eEnvelope(hall,*_config));
+
+    // Make dirt based on Mu2e envelope
+    Mu2eHallMaker::makeDirt( *tmpbldnew.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );    
+
+    addDetector(std::move( tmpbldnew ) );
+    addDetector(std::move( mu2eEnv   ) );
 
     // beamline info used to position DS
     std::unique_ptr<DetectorSolenoid> tmpDS( DetectorSolenoidMaker::make( *_config, beamline ) );
@@ -320,8 +335,6 @@ namespace mu2e {
       ExtMonUCI::ExtMonMaker extmon( *_config );
       addDetector( extmon.getDetectorPtr() );
     }
-
-    addDetector(std::unique_ptr<Mu2eEnvelope>(new Mu2eEnvelope(building, dump, emfb)));
 
     if(_config->getBool("hasVirtualDetector",false)){
       addDetector(VirtualDetectorMaker::make(*_config));

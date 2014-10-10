@@ -11,16 +11,16 @@
 // Construct the earthen overburden
 
 // Mu2e includes
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
 #include "Mu2eG4/inc/constructHall.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
-#include "Mu2eG4/inc/nestBox.hh"
+#include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
+#include "Mu2eG4/inc/nestBox.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -40,20 +40,14 @@ using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructHall(const VolumeInfo& worldInfo, const SimpleConfig& config) {
+  VolumeInfo constructHall(const VolumeInfo& worldInfo, const SimpleConfig& config ) {
 
-    bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
-    bool const doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
-    bool const placePV             = true;
-
-    MaterialFinder materialFinder(config);
-
-    // Materials for the hall walls, floor, and ceiling
-    G4Material* wallMaterial = materialFinder.get("hall.wallMaterialName");
-    G4Material* ceilingMaterial = materialFinder.get("hall.ceilingMaterialName");
+    MaterialFinder materialFinder( config );
 
     GeomHandle<WorldG4> world;
-    GeomHandle<Mu2eBuilding> building;
+    GeomHandle<Mu2eHall> building;
+
+    const auto& geoOptions = art::ServiceHandle<GeometryService>()->geomOptions();
 
     // The formal hall volume
     VolumeInfo hallInfo = nestBox( "HallAir",
@@ -66,257 +60,62 @@ namespace mu2e {
                                    config.getBool("hall.formalBoxVisible"),
                                    G4Colour::Red(),
                                    config.getBool("hall.formalBoxSolid"),
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   doSurfaceCheck
+                                   geoOptions->forceAuxEdgeVisible( "HallAir" ),
+                                   geoOptions->placePV( "HallAir" ),
+                                   geoOptions->doSurfaceCheck( "HallAir" )
                                    );
 
-    //----------------------------------------------------------------
-    // Floor and ceiling concrete are extruded solids.
-    // The concrete extends beyond the hall air outline to "support" the walls.
-
-    // points need to be in the clock-wise order
-    std::vector<G4TwoVector> horizontalConcreteOutline; // same for floor and ceiling
-    std::copy(building->concreteOuterOutline1().begin(),
-              building->concreteOuterOutline1().end(),
-              std::back_inserter(horizontalConcreteOutline));
-
-    std::copy(building->concreteOuterOutline2().begin(),
-              building->concreteOuterOutline2().end(),
-              std::back_inserter(horizontalConcreteOutline));
-
-    std::copy(building->concreteOuterOutline3().begin(),
-              building->concreteOuterOutline3().end(),
-              std::back_inserter(horizontalConcreteOutline));
-
-    std::vector<G4TwoVector> horizontalConcreteOutlineExt; // ceiling extension
-    std::copy(building->concreteOuterOutline1().begin(),
-              building->concreteOuterOutline1().end(),
-              std::back_inserter(horizontalConcreteOutlineExt));
-
-    std::copy(building->concreteOuterOutlineExt().begin(),
-              building->concreteOuterOutlineExt().end(),
-              std::back_inserter(horizontalConcreteOutlineExt));
-
-    std::copy(building->concreteOuterOutline3().begin(),
-              building->concreteOuterOutline3().end(),
-              std::back_inserter(horizontalConcreteOutlineExt));
-
-    //----------------
+    // Rotation is static because rotations are not copied into G4.
     static CLHEP::HepRotation horizontalConcreteRotation(CLHEP::HepRotation::IDENTITY);
-    horizontalConcreteRotation.rotateX(-90*CLHEP::degree);
+    horizontalConcreteRotation.rotateX( 90*CLHEP::degree);
+    horizontalConcreteRotation.rotateZ( 90*CLHEP::degree);
 
-    VolumeInfo hallFloor("HallConcreteFloor",
-                         CLHEP::Hep3Vector(0, building->hallInsideYmin() - building->hallFloorThickness()/2, 0)
-                         - hallInfo.centerInMu2e(),
-                         hallInfo.centerInWorld);
+    constructSolids( hallInfo, building->getBldgSolids(), horizontalConcreteRotation );
+    constructSolids( hallInfo, building->getDirtSolids(), horizontalConcreteRotation );
 
-    hallFloor.solid = new G4ExtrudedSolid(hallFloor.name, horizontalConcreteOutline,
-                                          building->hallFloorThickness()/2,
-                                          G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-    finishNesting(hallFloor,
-                  wallMaterial,
-                  &horizontalConcreteRotation,
-                  hallFloor.centerInParent,
-                  hallInfo.logical,
-                  0,
-                  config.getBool("hall.floorVisible"),
-                  G4Colour::Grey(),
-                  config.getBool("hall.floorSolid"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
-
-
-    VolumeInfo hallCeiling("HallConcreteCeiling",
-                           CLHEP::Hep3Vector(0, building->hallInsideYmax() + building->hallCeilingThickness()/2, 0)
-                           - hallInfo.centerInMu2e(),
-                           hallInfo.centerInWorld);
-
-    hallCeiling.solid = new G4ExtrudedSolid(hallCeiling.name, horizontalConcreteOutline,
-                                            building->hallCeilingThickness()/2,
-                                            G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-    finishNesting(hallCeiling,
-                  ceilingMaterial,
-                  &horizontalConcreteRotation,
-                  hallCeiling.centerInParent,
-                  hallInfo.logical,
-                  0,
-                  config.getBool("hall.ceilingVisible"),
-                  G4Colour::Grey(),
-                  config.getBool("hall.ceilingSolid"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
-
-    VolumeInfo hallCeilingExt("HallConcreteCeilingExt",
-                           CLHEP::Hep3Vector(0, building->hallInsideYmax() + 3*building->hallCeilingThickness()/2, 0)
-                           - hallInfo.centerInMu2e(),
-                           hallInfo.centerInWorld);
-
-    hallCeilingExt.solid = new G4ExtrudedSolid(hallCeilingExt.name,
-                                               horizontalConcreteOutlineExt,
-                                               building->hallCeilingThickness()/2,
-                                               G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-    finishNesting(hallCeilingExt,
-                  ceilingMaterial,
-                  &horizontalConcreteRotation,
-                  hallCeilingExt.centerInParent,
-                  hallInfo.logical,
-                  0,
-                  config.getBool("hall.ceilingVisible"),
-                  G4Colour::Grey(),
-                  config.getBool("hall.ceilingSolid"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
-    
-    VolumeInfo hallInnerTSLowerCeilingExt("HallConcreteInnerTSLowerCeilingExt",
-                                          CLHEP::Hep3Vector(0, building->hallInsideYmax() - building->hallInnerTSCeilingThickness()/2, 0)
-                                          - hallInfo.centerInMu2e(),
-                                          hallInfo.centerInWorld);
-    
-    hallInnerTSLowerCeilingExt.solid = new G4ExtrudedSolid(hallInnerTSLowerCeilingExt.name,
-                                                           building->concreteInnerOutlineLowerExt(),
-                                                           building->hallInnerTSCeilingThickness()/2,
-                                                           G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-    
-    finishNesting(hallInnerTSLowerCeilingExt,
-                  ceilingMaterial,
-                  &horizontalConcreteRotation,
-                  hallInnerTSLowerCeilingExt.centerInParent,
-                  hallInfo.logical,
-                  0,
-                  config.getBool("hall.ceilingVisible"),
-                  G4Colour::Grey(),
-                  config.getBool("hall.ceilingSolid"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
-
-
-    // Create beamline shielding slabs
-    //
-    // - EMFB dirt overlaps first slab.  Introduce kludge to make
-    // - first slab not overlab with dirt; and the remaining part of
-    // - the first slab extend the full intended width (36')
-    double yElev = building->hallInsideYmax() + 2*building->hallCeilingThickness();
-
-    // Get height of dirt
-    GeomHandle<ProtonBeamDump> dump;
-    GeomHandle<ExtMonFNALBuilding> emfb;
-
-    // Ugly kludge to account for proton beam dump dirt
-    // - fix later
-    for ( std::size_t iSlab = 0 ; iSlab < 2; iSlab++ ) {
-      ostringstream slab;
-      slab << "BeamlineSlab" << iSlab+1;
-
-      Box const& box = building->concreteBeamlineSlab( iSlab );
-
-      // Edge of building/dirt
-      const double buildingEdge = box.getZhalfLength()-std::abs(building->hallInsideZPSCorner()-building->hallWallThickness());
-      Box adjustedBox( box.getXhalfLength(), box.getYhalfLength(), box.getZhalfLength() - 0.5*buildingEdge );
-
-      yElev += box.getYhalfLength();
-      CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(building->xPosOfSlabEnd()-adjustedBox.getXhalfLength(), yElev, buildingEdge*0.5 )-hallInfo.centerInMu2e();
-
-      nestBox( slab.str(),
-               adjustedBox,
-               ceilingMaterial,
-               0,
-               pos, // position wrt hall
-               hallInfo,
-               0,
-               config.getBool("hall.ceilingVisible"),
-               G4Colour::Grey(),
-               config.getBool("hall.ceilingSolid"),
-               forceAuxEdgeVisible,
-               placePV,
-               doSurfaceCheck );
-
-      yElev += box.getYhalfLength();
-    }
-
-
-    for ( std::size_t iSlab = 2 ; iSlab < building->nBeamlineSlabs() ; iSlab++ ) {
-      ostringstream slab;
-      slab << "BeamlineSlab" << iSlab+1;
-
-      Box const& box = building->concreteBeamlineSlab( iSlab );
-
-      yElev += box.getYhalfLength();
-      CLHEP::Hep3Vector pos = CLHEP::Hep3Vector(building->xPosOfSlabEnd()-box.getXhalfLength(), yElev, 0)-hallInfo.centerInMu2e();
-
-      nestBox( slab.str(),
-               box,
-               ceilingMaterial,
-               0,
-               pos, // position wrt hall
-               hallInfo,
-               0,
-               config.getBool("hall.ceilingVisible"),
-               G4Colour::Grey(),
-               config.getBool("hall.ceilingSolid"),
-               forceAuxEdgeVisible,
-               placePV,
-               doSurfaceCheck );
-
-      yElev += box.getYhalfLength();
-    }
-
-    //----------------------------------------------------------------
-    // Create hall walls. The walls are placed inside the formal hall box.
-
-    std::vector<G4TwoVector> wallConcreteOutline(building->hallInsideOutline());
-
-    // Need the points go clockwise w.r.t. the wall concrete.
-    std::reverse(wallConcreteOutline.begin(), wallConcreteOutline.end());
-
-    // Remove the duplicate
-    if(wallConcreteOutline.back() == horizontalConcreteOutline.front()) {
-      wallConcreteOutline.pop_back();
-    }
-
-    std::copy(horizontalConcreteOutline.begin(),
-              horizontalConcreteOutline.end(),
-              std::back_inserter(wallConcreteOutline));
-
-    static CLHEP::HepRotation hallWallsRotation(CLHEP::HepRotation::IDENTITY);
-    hallWallsRotation.rotateX(-90*CLHEP::degree);
-
-    VolumeInfo hallWalls("HallWalls",
-                         CLHEP::Hep3Vector(0, (building->hallInsideYmin() + building->hallInsideYmax())/2, 0)
-                         - hallInfo.centerInMu2e(),
-                            hallInfo.centerInWorld);
-
-    hallWalls.solid = new G4ExtrudedSolid(hallWalls.name, wallConcreteOutline,
-                                             (building->hallInsideYmax() - building->hallInsideYmin())/2,
-                                             G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-    finishNesting(hallWalls,
-                  materialFinder.get("hall.wallMaterialName"),
-                  &hallWallsRotation,
-                  hallWalls.centerInParent,
-                  hallInfo.logical,
-                  0,
-                  config.getBool("hall.wallsVisible"),
-                  G4Colour(0.8, 0.8, 0.8), // lighter grey
-                  config.getBool("hall.wallsSolid"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
-
-    //----------------------------------------------------------------
     return hallInfo;
+
+  }
+
+  //================================================================================
+  void constructSolids( const VolumeInfo& hallInfo, 
+			const std::map<std::string,ExtrudedSolid>& solidMap,
+			const CLHEP::HepRotation& rot) {
+    
+    //-----------------------------------------------------------------
+    // Building and dirt volumes are extruded solids.
+    //-----------------------------------------------------------------
+    
+    const auto& geoOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+
+    for ( const auto& keyVolumePair : solidMap ) {
+
+      const auto& volume = keyVolumePair.second;
+
+      VolumeInfo tmpVol(volume.getName(),
+                        volume.getOffsetFromMu2eOrigin() - hallInfo.centerInMu2e(),
+                        hallInfo.centerInWorld);
+      
+      tmpVol.solid = new G4ExtrudedSolid(tmpVol.name, 
+                                         volume.getVertices(),
+                                         volume.getYhalfThickness(),
+                                         G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+      
+      finishNesting(tmpVol,
+                    findMaterialOrThrow( volume.getMaterial() ),
+                    &rot,
+                    tmpVol.centerInParent,
+                    hallInfo.logical,
+                    0,
+                    geoOptions->isVisible( volume.getName() ),
+                    G4Colour::Grey(),
+                    geoOptions->isSolid( volume.getName() ),
+                    geoOptions->forceAuxEdgeVisible( volume.getName() ),
+                    geoOptions->placePV( volume.getName() ),
+                    geoOptions->doSurfaceCheck( volume.getName() )
+                    );
+    }
+
   }
 
 }

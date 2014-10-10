@@ -139,9 +139,10 @@ namespace mu2e {
     _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("worldDirtSW"));
     _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("worldDirtSE"));
     _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("worldDirtNE"));
-    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("HallConcreteFloor"));
-    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("HallConcreteCeiling"));
-    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("HallWalls"));
+    // FIXME!!! need to replace the below volumes with new building/dirt volumes
+    //    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("HallConcreteFloor"));
+    //    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("HallConcreteCeiling"));
+    //    _dirtBodyPhysVol.push_back(G4PhysicalVolumeStore::GetInstance ()->GetVolume("HallWalls"));
 
     if( _killPitchToLowToStore ) {
 

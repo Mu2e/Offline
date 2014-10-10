@@ -37,7 +37,6 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/constructWorldVolume.hh"
-#include "Mu2eG4/inc/constructDirt.hh"
 #include "Mu2eG4/inc/constructHall.hh"
 #include "Mu2eG4/inc/constructProtonBeamDump.hh"
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
@@ -165,15 +164,15 @@ namespace mu2e {
 
     VolumeInfo hallInfo  = constructHall(worldVInfo, _config);
 
-    constructDirt(hallInfo, _config);
-
     if ( _verbosityLevel > 0) {
       cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
       cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << endl;
       cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
     }
 
-    constructProtonBeamDump(hallInfo, _config);
+    // ==== BEGIN COMMENT-OUT: to allow construction of new building dirt volumes w/o overlaps (knoepfel)
+    //    constructProtonBeamDump(hallInfo, _config);
+    // ==== END COMMENT-OUT
 
     constructDS(hallInfo, _config);
     constructTS(hallInfo, _config);
@@ -471,16 +470,21 @@ namespace mu2e {
 
     // An option to limit the step size in these non-vaccum volumes to
     // visually validate geometry of the filter channel
-    G4LogicalVolume* emfcMagnetAperture = _helper->locateVolInfo("ExtMonFNALfilterMagnetAperture").logical;
-    if(emfcMagnetAperture) {
-      const double maxStepLength = _config.getDouble("extMonFNAL.maxG4StepLength", 0)*CLHEP::millimeter;
-      if(maxStepLength > 0) {
-        std::cout<<"Adding step limiter for ExtMonFNALFilterMagnet: maxStepLength = "<<maxStepLength<<std::endl;
-        G4UserLimits* emfcStepLimit = reg.add(G4UserLimits(maxStepLength));
-        emfcMagnetAperture->SetUserLimits(emfcStepLimit);
-        _helper->locateVolInfo("ExtMonFNALfilterMagnetIron").logical->SetUserLimits(emfcStepLimit);
-      }
-    }
+    //
+    // ==== BEGIN COMMENT-OUT: to allow construction of new building dirt volumes w/o overlaps (knoepfel)
+    //
+    //     G4LogicalVolume* emfcMagnetAperture = _helper->locateVolInfo("ExtMonFNALfilterMagnetAperture").logical;
+    //     if(emfcMagnetAperture) {
+    //       const double maxStepLength = _config.getDouble("extMonFNAL.maxG4StepLength", 0)*CLHEP::millimeter;
+    //       if(maxStepLength > 0) {
+    //         std::cout<<"Adding step limiter for ExtMonFNALFilterMagnet: maxStepLength = "<<maxStepLength<<std::endl;
+    //         G4UserLimits* emfcStepLimit = reg.add(G4UserLimits(maxStepLength));
+    //         emfcMagnetAperture->SetUserLimits(emfcStepLimit);
+    //         _helper->locateVolInfo("ExtMonFNALfilterMagnetIron").logical->SetUserLimits(emfcStepLimit);
+    //       }
+    //     }
+    //
+    // ==== END COMMENT-OUT
 
   } // end Mu2eWorld::constructStepLimiters(){
 

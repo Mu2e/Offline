@@ -239,8 +239,10 @@ vector<double> extMonFNAL.dn.module_rotation = { 0., 0., 180. };
 //      "physical" parameters and VDs are virtual G4-only objects,
 //      these sizes are not a part of the ExtMonFNAL object.
 //
-bool   extMonFNAL.filter.vd.enabled = true;
-bool   extMonFNAL.detector.vd.enabled = true;
+// The following two values are 'false' until the extMonFNAL vds can
+// be reconciled with the new building/dirt geometries. (knoepfel)
+bool   extMonFNAL.filter.vd.enabled = false; 
+bool   extMonFNAL.detector.vd.enabled = false;
 double extMonFNAL.detector.vd.halfdx = 100; // transverse size
 double extMonFNAL.detector.vd.halfdy = 100; // transverse size
 
