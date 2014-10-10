@@ -11,6 +11,12 @@ double world.minimalMargin.xmin = 5000;
 double world.minimalMargin.xmax = 5000;
 double world.minimalMargin.zmin = 5000;
 double world.minimalMargin.zmax =  5000;
+
+double world.dirt.minimalMargin.xmin = 5000;
+double world.dirt.minimalMargin.xmax = 5000;
+double world.dirt.minimalMargin.zmin = 5000;
+double world.dirt.minimalMargin.zmax = 5000;
+
 vector<double> world.mu2eOriginInWorld = { 0, 0, 0}; // mm
 
 string world.materialName = "G4_AIR";
@@ -20,8 +26,8 @@ int    world.verbosityLevel = 0;
 
 string dirt.overburdenMaterialName = "MBOverburden";
 
-bool   world.dirt.isVisible  = true;
-bool   world.dirt.isSolid    = false;
+bool   world.dirt.isVisible         = true;
+bool   world.dirt.isSolid           = false;
 
 //
 //

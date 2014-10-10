@@ -12,6 +12,9 @@
 
 #include "CLHEP/Vector/TwoVector.h"
 
+#include "ConfigTools/inc/SimpleConfig.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
@@ -40,57 +43,38 @@ namespace mu2e {
   {}
 
   //----------------------------------------------------------------
-  Mu2eEnvelope::Mu2eEnvelope(const Mu2eBuilding& building,
-                             const ProtonBeamDump& dump,
-                             const ExtMonFNALBuilding& emfb)
+  Mu2eEnvelope::Mu2eEnvelope(const Mu2eHall& building,
+			     const SimpleConfig& config)
     : xmin_(0), xmax_(0), ymin_(0), ymax_(0), zmin_(0), zmax_(0)
   {
-    const std::pair<double,double> emfXlimits = getMinMax(emfb.wallOutsideOutline(), &CLHEP::Hep2Vector::x);
-    const std::pair<double,double> emfZlimits = getMinMax(emfb.wallOutsideOutline(), &CLHEP::Hep2Vector::y);
 
-    zmin_ =
-      std::min(
-               building.hallInsideZExtMonUCIWall() - building.hallWallThickness()
-               ,
-               emfZlimits.first - emfb.dirtOverheadHorizontalMargin()
-               );
+    // Determine envelope from building solids
+    for ( const auto& volPair : building.getBldgSolids() ) {
+      const ExtrudedSolid& vol = volPair.second;
+      
+      const auto xMinMax = getMinMax( vol.getVertices(), &CLHEP::Hep2Vector::y );
+      xmin_ = std::min( xmin_, xMinMax.first  + vol.getOffsetFromMu2eOrigin().x() );
+      xmax_ = std::max( xmax_, xMinMax.second + vol.getOffsetFromMu2eOrigin().x() );
 
-    zmax_ = building.hallInsideZmax() + building.hallWallThickness();
+      const auto zMinMax = getMinMax( vol.getVertices(), &CLHEP::Hep2Vector::x );
+      zmin_ = std::min( zmin_, zMinMax.first  + vol.getOffsetFromMu2eOrigin().z() );
+      zmax_ = std::max( zmax_, zMinMax.second + vol.getOffsetFromMu2eOrigin().z() );
 
-    xmin_ =
-      std::min(
-               building.hallInsideXmin() - building.hallWallThickness()
-               ,
-               emfXlimits.first - emfb.dirtOverheadHorizontalMargin()
-               );
+      const double yCenter = vol.getOffsetFromMu2eOrigin().y();
+      ymin_ = std::min( ymin_ , yCenter-vol.getYhalfThickness() );
+      ymax_ = std::max( ymax_ , yCenter+vol.getYhalfThickness() );      
 
-    xmax_ =
-      std::max(
-               building.hallInsideXmax() + building.hallWallThickness()
-               ,
-               emfXlimits.second + emfb.dirtOverheadHorizontalMargin()
-               );
+    }
 
-    ymin_ =
-      std::min(
-               building.hallInsideYmin() - building.hallFloorThickness()
-               ,
-               emfb.roomInsideYmin() - emfb.roomFloorThickness()
-               );
+    // Add extra room for dirt margins -- cannot be zero!
+    zmin_ -= config.getDouble( "world.dirt.minimalMargin.zmin" );
+    zmax_ += config.getDouble( "world.dirt.minimalMargin.zmax" );
 
-    const double dirtFormalYmax  = std::max(
-                                            emfb.roomInsideYmax() + emfb.roomCeilingThickness() + emfb.dirtOverheadThickness()
-                                            ,
-                                            dump.frontShieldingCenterInMu2e()[1] + dump.frontShieldingHalfSize()[1]
-                                            );
+    xmin_ -= config.getDouble( "world.dirt.minimalMargin.xmin" );
+    xmax_ += config.getDouble( "world.dirt.minimalMargin.xmax" );
 
-    ymax_ =
-      std::max(
-               dirtFormalYmax
-               ,
-               building.hallInsideYmax() + 2*building.hallCeilingThickness() + 4*building.concreteBeamlineSlab(0).getYhalfLength()*2
-               // + building.dirtOverburdenDepth() + 2*building.dirtCapHalfHeight()
-               );
+    std::cout << *this << std::endl; 
+
   }
 
   //================================================================

@@ -18,7 +18,7 @@ namespace mu2e {
   {
     std::unique_ptr<BuildingBasics> b(new BuildingBasics());
 
-    b->detectorHallFloorTopY_ = -c.getDouble("mu2e.origin.heightAboveHallFloor");
+    b->detectorHallFloorTopY_ = c.getDouble("yOfFloorSurface.below.mu2eOrigin");
     b->detectorHallInsideFullHeight_ = c.getDouble("hall.insideFullHeight");
     b->detectorHallCeilingThickness_ = c.getDouble("hall.ceilingThick");
     b->detectorHallInnerTSCeilingThickness_ = c.getDouble("hall.innerTSCeilingThick");
