@@ -1,0 +1,6 @@
+*.root
+*.d
+*.pcm
+*.cxx
+*.DS_Store
+*.so
