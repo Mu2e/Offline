@@ -27,6 +27,8 @@
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "KalmanTrack/KalRep.hh"
 #include "TrkBase/HelixTraj.hh"
+#include "TrkBase/HelixParams.hh"
+
 
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
@@ -168,7 +170,7 @@ namespace mu2e {
 
        int _nTrkOk,_nTrk,_trkOk[8192],_trkstat[8192],_trknHit[8192];
        float _trkDip[8192],_trkpt[8192],_trkcon[8192],_trkmomErr[8192];
-
+       float _trkOmega[8192],_trkPhi0[8192],_trkz0[8192],_trkd0[8192];
 
 
        
@@ -291,6 +293,10 @@ namespace mu2e {
     _Ntup->Branch("nTrkOk",       &_nTrkOk ,      "nTrkOk/I");
     _Ntup->Branch("nTrk",         &_nTrk ,        "nTrk/I");
     _Ntup->Branch("trkDip",       &_trkDip ,      "trkDip[nTrk]/F");
+    _Ntup->Branch("trkOmega",     &_trkOmega ,    "trkOmega[nTrk]/F");
+    _Ntup->Branch("trkPhi0",      &_trkPhi0 ,     "trkPhi0[nTrk]/F");
+    _Ntup->Branch("trkZ0",        &_trkz0 ,       "trkz0[nTrk]/F");
+    _Ntup->Branch("trkD0",        &_trkd0 ,       "trkd0[nTrk]/F");
     _Ntup->Branch("trkOk",        &_trkOk ,       "trkOk[nTrk]/I");
     _Ntup->Branch("trkpt",        &_trkpt ,       "trkpt[nTrk]/F");
     _Ntup->Branch("trkstat",      &_trkstat ,     "trkstat[nTrk]/I");
@@ -581,6 +587,8 @@ namespace mu2e {
 
          double fitmompt = p0.mag()*(1.0-p0.cosTheta()*p0.cosTheta());
 
+
+
          // Does this fit pass cut set C?
          bool cutC = ( krep.fitStatus().success() >0) &&
            ( fitCon             > 2.e-3  ) &&
@@ -588,6 +596,10 @@ namespace mu2e {
            ( fitMomErr          < 0.25   );
 	   
 	  _trkDip[_nTrk] = tanDip;
+	  _trkOmega[_nTrk] = krep.helix(0.).omega();
+	  _trkPhi0[_nTrk] = krep.helix(0.).phi0();
+	  _trkd0[_nTrk] = krep.helix(0.).d0();
+	  _trkz0[_nTrk] = krep.helix(0.).z0();
 	  _trkOk[_nTrk]  = cutC? 1 : 0;
 	  _trkpt[_nTrk]  = fitmompt;
 	  _trkstat[_nTrk]  = krep.fitStatus().success();

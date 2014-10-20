@@ -45,6 +45,7 @@
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "StoppingTargetGeom/inc/TargetFoil.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Principal/Run.h"
 #include "cetlib/map_vector.h"
@@ -343,34 +344,37 @@ void DataInterface::fillGeometry()
   if(geom->hasElement<mu2e::StoppingTarget>())
   {
     mu2e::GeomHandle<mu2e::StoppingTarget> target;
-    double radius=target->cylinderRadius();
-    double length=target->cylinderLength();
-    double z=target->centerInMu2e().z() - _detSysOrigin.z();
     unsigned int n=target->nFoils();
     for(unsigned int i=0; i<n; i++)
     {
-//      const TargetFoil &foil=target->foil(i);
-    }
+      const mu2e::TargetFoil &foil=target->foil(i);
+      int id = foil.id();
+      double x = foil.centerInDetectorSystem().x();
+      double y = foil.centerInDetectorSystem().y();
+      double z = foil.centerInDetectorSystem().z();
+      double radius = foil.rOut();
+      double halfThickness = foil.halfThickness();
 
-    findBoundaryP(_targetMinmax, radius, radius, z+length);
-    findBoundaryP(_targetMinmax, -radius, -radius, z-length);
+      findBoundaryP(_targetMinmax, x+radius, y+radius, z+halfThickness);
+      findBoundaryP(_targetMinmax, x-radius, y-radius, z-halfThickness);
 
-    char c[200];
-    boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-    sprintf(c,"Target");
-    info->setName(c);
-    info->setText(0,c);
-    sprintf(c,"Outer Radius %.f mm",radius/CLHEP::mm);
-    info->setText(1,c);
-    sprintf(c,"Length %.f mm",length/CLHEP::mm);
-    info->setText(2,c);
-    sprintf(c,"Center at x: 0 mm, y: 0 mm, z: %.f mm",z/CLHEP::mm);
-    info->setText(3,c);
-    boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,z, 0,0,0, length/2.0,0,radius, NAN, 
+      char c[200];
+      boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
+      sprintf(c,"Target Foil ID %i",id);
+      info->setName(c);
+      info->setText(0,c);
+      sprintf(c,"Outer Radius %.2f mm",radius/CLHEP::mm);
+      info->setText(1,c);
+      sprintf(c,"Half thickness %.2f mm",halfThickness/CLHEP::mm);
+      info->setText(2,c);
+      sprintf(c,"Center at x: %.2f mm, y: %.2f mm, z: %.2f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
+      info->setText(3,c);
+      boost::shared_ptr<Cylinder> shape(new Cylinder(x,y,z, 0,0,0, halfThickness,0,radius, NAN, 
                                           _geometrymanager, _topvolume, _mainframe, info, true));
-    shape->makeGeometryVisible(true);
-    _components.push_back(shape);
-    _supportstructures.push_back(shape);
+      shape->makeGeometryVisible(true);
+      _components.push_back(shape);
+      _supportstructures.push_back(shape);
+    }
   }
 
   if(geom->hasElement<mu2e::DiskCalorimeter>())
