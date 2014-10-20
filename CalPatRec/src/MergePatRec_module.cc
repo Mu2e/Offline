@@ -119,29 +119,59 @@ namespace mu2e {
       cpr_flag[i] = 1;
     }
 
-    art::Ptr<KalRep>  tpr, cpr;
-    Hep3Vector        cpr_mom, tpr_mom;
-    short             best, mask;
-    AlgorithmID       alg_id;
+    art::Ptr<KalRep>          tpr, cpr;
+    Hep3Vector                cpr_mom, tpr_mom;
+    short                     best, mask;
+    AlgorithmID               alg_id;
+    const TrkHotList         *tlist, *clist;
+    int                       nat, nac, natc;
+    const mu2e::TrkStrawHit  *hitt, *hitc;
+    double                    tfcons, cfcons;
 
     for (int i1=0; i1<ntpr; i1++) {
       //      tpr     = (KalRep*) list_of_kreps_tpr->get(i1);
       tpr     = list_of_kreps_tpr->at(i1);
       tpr_mom = tpr->momentum();
       mask    = 1 << AlgorithmID::TrkPatRecBit;
+      tlist   = tpr->hotList();
+      nat     = tpr->nActive();
+      natc    = 0;
+      tfcons  = tpr->chisqConsistency().consistency();
 
       for (int i2=0; i2<ncpr; i2++) {
-	cpr = list_of_kreps_cpr->at(i2);
+	cpr     = list_of_kreps_cpr->at(i2);
 	cpr_mom = cpr->momentum();
+	clist   = cpr->hotList();
+	nac     = cpr->nActive();
+	cfcons  = cpr->chisqConsistency().consistency();
 //-----------------------------------------------------------------------------
 // primitive check if this is the same track - require delta(p) less than 5 MeV/c
 // ultimately - check the number of common hits
 //-----------------------------------------------------------------------------
-	if (fabs (cpr_mom.mag()-tpr_mom.mag()) < 5.) {
+	for(TrkHotList::hot_iterator itt=tlist->begin(); itt<tlist->end(); itt++) {
+	  hitt = (const mu2e::TrkStrawHit*) &(*itt);
+	  if (hitt->isActive()) {
+	    for(TrkHotList::hot_iterator itc=clist->begin(); itc<clist->end(); itc++) {
+	      hitc = (const mu2e::TrkStrawHit*) &(*itc);
+	      if (hitc->isActive()) {
+		if (&hitt->strawHit() == &hitc->strawHit()) {
+		  natc += 1;
+		  break;
+		}
+	      }
+	    }
+	  }
+	}
+//-----------------------------------------------------------------------------
+// if > 50% of all hits are common, consider cpr and tpr to be the same
+// choose the one which has better fit consistency
+//-----------------------------------------------------------------------------
+	//	if (fabs (cpr_mom.mag()-tpr_mom.mag()) < 5.) {
+	if (natc > (nac+nat)/4.) {
 
 	  mask = mask | (1 << AlgorithmID::CalPatRecBit);
 
-	  if (tpr->nDof() >= cpr->nDof()) {
+	  if (tfcons > cfcons) {
 	    trackPtrs->push_back(tpr);
 	    best    = AlgorithmID::TrkPatRecBit;
 	  }
