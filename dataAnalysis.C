@@ -60,6 +60,29 @@ float currentFunction2(double *x, double *par)
 }
 
 
+//2 Parameters (shaping power set to 1.0)
+//par[0] - Shaping Time
+//par[1] - sigma
+float currentFunction3(double *x, double *par)
+{
+    float returnValue = 0.0;
+
+    if (par[1] == 0.0)
+    {
+      double parameters[2] = {1.0,par[0]}; 
+      returnValue = currentFunction(x,parameters);
+    }
+    else
+    {
+      const float a = TMath::Max((x[0] + par[1]) / par[0],0.0);
+      // Assuming that shaping time is positive and thus b is negative (if t - sigma is)
+      const float b = TMath::Max((x[0] - par[1]) / par[0],0.0);
+      returnValue =  (-exp(-a)*(1+a) + exp(-b)*(1+b)) / (2.0 * par[1]);
+    }
+    return returnValue;
+}
+
+
 
 //Fitting function for current Function2
 //par[0] is shifted time 1st peak
@@ -67,8 +90,7 @@ float currentFunction2(double *x, double *par)
 //par[2] is vertical shift 1st peak
 //par[3] is sigma 1st peak
 //par[4] is the level of truncation (set to either 1023 or 1023 - 64)
-//par[5] is the shaping time
-//shaping time is set to 100.0
+//par[5] is the shaping timec
 
 
 // Note that this function truncates above 1023-64 bits
@@ -221,6 +243,57 @@ float fittingFunction8(double *x, double *par)
 
     return TMath::Min(fittingFunction3(x,doublePeakParam) + dynamicPedestal(x,dynamicPedestalParameters), truncationValue);
 } **/
+
+float fittingFunction10(double *x, double *par)
+{
+    // Note that the second vertical shift is set to 0.0
+    double doublePeakParam[7] = {par[0],par[1],par[2],par[3],par[4],0.0,par[5]};
+    float truncationValue = 1023.0 - 64.0;
+    return TMath::Min(fittingFunction3(x,doublePeakParam), truncationValue);
+}
+
+
+//Fitting function for current Function2
+//par[0] is shifted time 1st peak
+//par[1] is scalingfactor 1st peak
+//par[2] is vertical shift 1st peak
+//par[3] is sigma 1st peak
+//par[4] is the level of truncation (set to either 1023 or 1023 - 64)
+//par[5] is the shaping timec
+
+
+// Note that this function truncates above 1023-64 bits
+float fittingFunction4Uniform(double *x, double *par)
+{
+    double currentX[1] = {x[0] - par[0]};
+    double currentParameters[2] = {par[5],par[3]};
+
+    double truncatingValue = par[4];
+
+    return TMath::Min((par[1] * currentFunction3(currentX, currentParameters) + par[2]),truncatingValue);
+}
+
+// This is a truncating fitting function with a dynamical pedestal
+// par[0] is shifted time
+// par[1] is scaling factor
+// par[2] is Q
+// par[3] is sigma
+// par[4] is shapin time
+// Note that this function depends on fittingFunction4
+float fittingFunction7Uniform(double *x, double *par)
+{
+    // vertical shift is set to 0.0 so that dynamic pedestal can be used
+    double fittingFunction4Parameters[6] = {par[0],par[1],0.0,par[3], 1023.0 - 64.0,par[4]};
+    
+    // Shaping time is set to 100.0
+    double dynamicPedestalParameters[2] = {par[2],par[4]};
+
+    return fittingFunction4Uniform(x,fittingFunction4Parameters) + dynamicPedestal(x,dynamicPedestalParameters);
+
+}
+
+
+
 
 
 

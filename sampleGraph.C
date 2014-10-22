@@ -1,7 +1,7 @@
 {
 	gROOT->ProcessLine("#include <vector>");
 	gROOT->ProcessLine(".L dataAnalysis.C+");
-	int entry = 1125;
+	int entry = 0;
 	TFile f("electronFit25ns_8DoublePeak6.root");
 	TTree *treeData = (TTree*) gDirectory->Get("convolvedFitTree");
 	TGraphErrors *gr;
@@ -33,4 +33,10 @@
 	fitFunction8->SetParameters(func8param);
 	gr->Draw("A*");
 	fitFunction8->Draw("same");
+
+	std::vector<Float_t> tPeak;
+	std::vector<Float_t> adcPeak;
+	findPeaks(gr,tPeak,adcPeak,2.0);
+
+
 }

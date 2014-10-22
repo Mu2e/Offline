@@ -37,10 +37,10 @@ void fitAllFuncs()
 		gDirectory->cd("makeSD");
 		TTree *oldtree = (TTree*) gDirectory->Get("sddiag");
 		TString elDataFileName = "electronData" + shapingTime + "ns_" + numberOfSample + "DoublePeak6.root";
-		TString prDataFileName = "protonData" + shapingTime + "ns_" + numberOfSample + "DoublePeak6.root";	
-		getElectronData(oldtree,shapingTime, elDataFileName);
-		getProtonData(oldtree,shapingTime,prDataFileName);
-		TString newElFileName = "electronFit" + shapingTime + "ns_" + numberOfSample + "DoublePeak6.root";
+		//TString prDataFileName = "protonData" + shapingTime + "ns_" + numberOfSample + "DoublePeak6.root";	
+		//getElectronData(oldtree,shapingTime, elDataFileName);
+		//getProtonData(oldtree,shapingTime,prDataFileName);
+		TString newElFileName = "electronFit" + shapingTime + "ns_" + numberOfSample + "DoublePeak6Uniform.root";
 		cout << shapingTimes[i] << " : " << numberOfSamples[j] << endl;
 		fitElectronData(elDataFileName,newElFileName,shapingTimes[i],numberOfSamples[j]);
 		//TString newPrFileName = "protonFit" + shapingTime + "ns_" + numberOfSample + "DoublePeak6.root";
@@ -59,6 +59,9 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 
 	TString numSample;
 	convert2StringInt(numSample, numberOfSamples);
+
+	int option = 0;
+	TF1 *fittingFunction = new TF1();
 	
 
 	std::vector<unsigned int> *adc = new std::vector<unsigned int>;
@@ -67,12 +70,9 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 
 	Double_t qMeasurementTimes[numberOfSamples];
 	Double_t qAdc[numberOfSamples];
-	TGraphErrors graph;
-	int qFuncNum;
+	TGraphErrors *graph = new TGraphErrors();
 	float qMcenergy;
 	float qMctrigenergy;
-	double func7param[5];
-	double func8param[6];
 
 
 	treeData->SetBranchAddress("adc",&adc);
@@ -82,13 +82,13 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 
 	TTree * convolvedFitTree = new TTree("convolvedFitTree","convolvedFitTree");
 
+
+	convolvedFitTree->Branch("option",&option);
+	convolvedFitTree->Branch("fittingFunction",&fittingFunction);
 	convolvedFitTree->Branch("qAdc",qAdc,"qAdc[" + numSample + "]/D");
 	convolvedFitTree->Branch("qMeasurementTimes",qMeasurementTimes,"qMeasurementTimes[" + numSample + "]/D");
 	convolvedFitTree->Branch("graph",&graph);
-	convolvedFitTree->Branch("func7param",func7param,"func7param[5]/D");
-	convolvedFitTree->Branch("func8param",func8param,"func8param[6]/D");
 	convolvedFitTree->Branch("qMcenergy",&qMcenergy);
-	convolvedFitTree->Branch("qFuncNum",&qFuncNum);
 	convolvedFitTree->Branch("qMctrigenergy",&qMctrigenergy);
 
 	for (int trial = 0; trial < 10000; ++trial) //treeData->GetEntries(); ++trial)
@@ -98,56 +98,107 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 		treeData->GetEntry(trial);
 
 		// convert adc data from int to double
-		for (int k = 0; k < numberOfSamples; ++k){qAdc[k] = (Double_t) (*adc)[k] - 64.0; qMeasurementTimes[k] = (Double_t) 20.0 * k;}
-
-		TF1 *func1 = new TF1("fittingFunction7", fittingFunction7, 0.0, numberOfSamples*20.0, 5);
-		const Double_t param1_1 = TMath::Max(TMath::MaxElement(numberOfSamples,qAdc) /0.015, 1000.0);
-		const Double_t param1_2 = TMath::Max(qAdc[0],0.0);
-		func1->SetParameters(35.0, param1_1, param1_2, 10.0,shapingTime);
-		func1->SetParLimits(2,0.0,1000.0);
-		func1->SetParLimits(0,0.0,100.0);
-		func1->SetParLimits(1,1000.0, 1.0e9);
-		func1->SetParLimits(3,0.0,30.0);
-		func1->FixParameter(4,shapingTime);
-
-		TF1 *func2 = new TF1("fittingFunction8", fittingFunction8, 0, numberOfSamples*20.0, 6);
-
-		const Double_t param2_1 = TMath::Max(TMath::MaxElement(numberOfSamples,qAdc)/0.015, 1000.0);
-		const Double_t param2_2 = qAdc[0];
-		const Double_t param2_4 = TMath::Max(TMath::MaxElement(numberOfSamples,qAdc)/0.015, 1000.0);
-
-		func2->SetParameters(35.0, param2_1, param2_2, 50.0 ,param2_4, shapingTime);
-		func2->SetParLimits(0,20.0,100.0);
-		func2->SetParLimits(1,1000.0,1.0e9);
-		func2->SetParLimits(3,25.0,80.0);
-		func2->SetParLimits(4,1000.0,1.0e9);
-		func2->FixParameter(5,shapingTime); 
-
-		qMcenergy = mcenergy;
-		qMctrigenergy = mctrigenergy;
-
+		for (int k = 0; k < numberOfSamples; ++k){
+			qAdc[k] = (Double_t) (*adc)[k] - 64.0; 
+			qMeasurementTimes[k] = (Double_t) 20.0 * k;}
 
 		Double_t errorY[numberOfSamples]; 
 		Double_t errorX[numberOfSamples];
 		for (int i = 0; i < numberOfSamples; ++i){ errorY[i] = 3.0; errorX[i] = 0.0;}
+		graph = new TGraphErrors(numberOfSamples,qMeasurementTimes,qAdc,errorX,errorY);
 
-		graph = TGraphErrors(numberOfSamples,qMeasurementTimes,qAdc,errorX,errorY);
 
-		graph.Fit(func2,"QN");
-	    graph.Fit(func1,"QN"); 
+		std::vector<Float_t> tPeak;
+		std::vector<Float_t> adcPeak;
+		findPeaks(graph,tPeak,adcPeak,2.0);
+			if (tPeak.size() == 0){
+			cout << graph->GetX()[0] << endl;
+			cout << "fail : " << trial << endl;}
 
-		if ( (func2->GetChisquare()*3.0) < func1->GetChisquare())
+		fittingFunction = new TF1();
+		// If we have a dynamic pedestal
+		if (tPeak[0] == 0.0)
+		{
+			if (tPeak.size() == 1)
 			{
-				qFuncNum = 8;}
-		else {
-			qFuncNum = 7;
-		}
+				option = 1; 
+				fittingFunction = new TF1("fittingFunction", dynamicPedestal, 0.0, numberOfSamples*20.0, 2);
+				const double Q = qAdc[0];
+				fittingFunction->SetParameters(Q,shapingTime);
+				fittingFunction->SetParLimits(0,0.0,1000.0);
+				fittingFunction->FixParameter(1,shapingTime);
+			}
+			if (tPeak.size() == 2)
+			{
+				option = 2;
+				fittingFunction = new TF1("fittingFunction",fittingFunction7Uniform,0.0,numberOfSamples*20.0,5);
+				const double timeShift = tPeak[1] - shapingTime;
+				const double scalingFactor = TMath::Max(adcPeak[1] /0.015, 1000.0);
+				const double Q = TMath::Max(qAdc[0],0.0);
+				const double sigma = 10.0;
+				fittingFunction->SetParameters(timeShift,scalingFactor,Q,sigma,shapingTime);
+				fittingFunction->SetParLimits(2,0.0,1000.0);
+				fittingFunction->SetParLimits(0,0.0-shapingTime,140.0-shapingTime); //This is a concession at 0.0
+				fittingFunction->SetParLimits(1,1000.0, 1.0e9);
+				fittingFunction->SetParLimits(3,0.0,30.0);
+				fittingFunction->FixParameter(4,shapingTime);
+			}
+			if (tPeak.size() == 3)
+			{
+				option = 3;
+				fittingFunction = new TF1("fittingFunction", fittingFunction8,0.0,numberOfSamples*20.0, 6);
+				const double timeShift0 = tPeak[1] - shapingTime;
+				const double scalingFactor0 = TMath::Max(adcPeak[1] /0.015, 1000.0);
+				const double Q = TMath::Max(qAdc[0],0.0);
+				const double timeShift1 = tPeak[2] - tPeak[1];
+				const double scalingFactor1 = TMath::Max(adcPeak[2] /0.015, 1000.0);
 
-		for (int i = 0; i < 5; ++i){
-			func7param[i] = func1->GetParameter(i);
+				fittingFunction->SetParameters(timeShift0, scalingFactor0, Q, timeShift1, scalingFactor1, shapingTime);
+				fittingFunction->SetParLimits(0,0.0-shapingTime,80.0-shapingTime);
+				fittingFunction->SetParLimits(1,1000.0,1.0e9);
+				fittingFunction->SetParLimits(3,25.0,80.0);
+				fittingFunction->SetParLimits(4,1000.0,1.0e9);
+				fittingFunction->FixParameter(5,shapingTime); 
+			}
+			graph->Fit(fittingFunction,"QN");
 		}
-		for (int i = 0; i < 6; ++i){
-			func8param[i] = func2->GetParameter(i);
+		else
+		{
+			if (tPeak.size() == 1)
+			{
+				option = 4;
+				fittingFunction = new TF1("fittingFunction",fittingFunction4Uniform,0.0,numberOfSamples*20.0,6);
+				const double timeShift = tPeak[0] - shapingTime;
+				const double scalingFactor = TMath::Max(adcPeak[0] /0.015, 1000.0);
+				const double verticalShift = 0.5 * (qAdc[0] + qAdc[1]);
+				const double sigma = 10.0;
+				const double truncationLevel = 1024.0 - 64.0;
+				fittingFunction->SetParameters(timeShift,scalingFactor,verticalShift,sigma,truncationLevel,shapingTime);
+				fittingFunction->SetParLimits(0,20.0-shapingTime,140.0-shapingTime); 
+				fittingFunction->SetParLimits(1,1000.0, 1.0e9);
+				fittingFunction->SetParLimits(2,-20.0,1000.0); // This bound currently works but is questionable
+				fittingFunction->SetParLimits(3,0.0,30.0);
+				fittingFunction->FixParameter(4,1024.0-64.0); 
+				fittingFunction->FixParameter(5,shapingTime);
+			}
+			if (tPeak.size() == 2)
+			{
+				option = 5;
+				fittingFunction = new TF1("fittingFunction",fittingFunction10,0.0,numberOfSamples*20.0,6);
+				const double timeShift0 = tPeak[0] - shapingTime;
+				const double scalingFactor0 = TMath::Max(adcPeak[0] /0.015, 1000.0);
+				const double verticalShift = 0.5 * (qAdc[0] + qAdc[1]);
+				const double timeShift1 = tPeak[1] - tPeak[0];
+				const double scalingFactor1 = TMath::Max(adcPeak[1] /0.015, 1000.0);
+				fittingFunction->SetParameters(timeShift0, scalingFactor0, verticalShift, timeShift1, scalingFactor1, shapingTime);
+				fittingFunction->SetParLimits(0,20.0-shapingTime,100.0-shapingTime);
+				fittingFunction->SetParLimits(1,1000.0,1.0e9);
+				fittingFunction->SetParLimits(2,-20.0,1000.0); // This bound currently works but is questionable
+				fittingFunction->SetParLimits(3,25.0,100.0);
+				fittingFunction->SetParLimits(4,1000.0,1.0e9);
+				fittingFunction->FixParameter(5,shapingTime); 
+			}
+			graph->Fit(fittingFunction,"QN");
 		}
 
 		convolvedFitTree->Fill();
