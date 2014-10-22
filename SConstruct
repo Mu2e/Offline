@@ -77,7 +77,7 @@ babarlibs = [ 'mu2e_BaBar_KalmanTrack',     'mu2e_BaBar_DetectorModel',      'mu
 
 # Define scons-local environment - it will be exported later.
 osenv = {}
-for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR', 'SQLITE_DIR' ]:
+for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR', 'SQLITE_DIR', 'SQLITE_FQ_DIR' ]:
     if var in os.environ.keys():
         osenv[var] = os.environ[var]
         pass
@@ -119,17 +119,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                  )
 
 # Define the rule for building dictionaries.
-genreflex_flags = '--deep --fail_on_warnings --iocomments --capabilities=classes_ids.cc '\
-                + '-D_REENTRANT -DGNU_SOURCE -DGNU_GCC -D__STRICT_ANSI__ '\
-                + '-DPROJECT_NAME="mu2e" -DPROJECT_VERSION="development"'
-aa="if   t1=`expr ${TARGET} : '\(.*\)_dict.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp;"\
-  +"elif t1=`expr ${TARGET} : '\(.*\)_map.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp; fi;"\
-  +"if genreflex $SOURCE -s ${SOURCE.srcdir}/classes_def.xml $_CPPINCFLAGS"\
-  +" -o $$t1 "\
-  +genreflex_flags\
-  +"; then mv ${TARGET.dir}/classes_ids.cc $$t2; else rm -f $$t1; false; fi"
-
-genreflex = Builder(action=aa)
+genreflex = Builder(action="genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\"")
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # Get the flag that controls compiler options. Check that it is legal.
@@ -170,7 +160,7 @@ env.Append( MU2EOPTS = [level, graphicssys] );
 
 # Set compile and link flags.
 SetOption('warn', 'no-fortran-cxx-mix')
-env.MergeFlags('-std=c++11')
+env.MergeFlags('-std=c++1y')
 env.MergeFlags('-rdynamic')
 env.MergeFlags('-Wall')
 env.MergeFlags('-Wno-unused-local-typedefs')
