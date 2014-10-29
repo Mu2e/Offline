@@ -123,7 +123,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                  )
 
 # Define the rule for building dictionaries.
-genreflex = Builder(action="genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\"")
+genreflex = Builder(action="./genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\"")
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # Get the flag that controls compiler options. Check that it is legal.
@@ -353,6 +353,10 @@ if (cleanopt and not COMMAND_LINE_TARGETS):
             ff =  os.path.join(top, name)
             print "removing file ", ff
             os.unlink (ff)
+
+    for ff in ("EventDisplay/src/EventDisplayDict.cc", "EventDisplay/src/EventDisplayDict.h"):
+        print "removing file ", ff
+        os.unlink (ff)
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
