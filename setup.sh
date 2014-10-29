@@ -45,18 +45,20 @@ echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 
 build=prof
 # Setup the framework and its dependent products
-#setup -B art v1_08_09 -q+e4:+mu2e:+${build}
-setup -B art v1_10_00b -q+e5:+${build}
+setup -B art v1_12_02 -q+e6:+${build}
+
+# The interface to SAM
+setup -B ifdh_art v1_5_4 -q+e6:+prof:+s5
 
 # Geant4 and its cross-section files.
-setup -B geant4 v4_9_6_p03b -q+e5:+${build}
+setup -B geant4 v4_9_6_p03e -q+e6:+${build}
 
 # Other libraries we need.
-setup -B heppdt v3_04_01a -q+e5:+${build}
-setup -B splines v1_04_00 -q+e5:+${build}
+setup -B heppdt v3_04_01b -q+e6:+${build}
+setup -B splines v1_05_02 -q+e6:+${build}
 
 # The build system.
-setup -B scons v2_3_1
+setup -B scons v2_3_2
 
 
 # Search path for fcl files

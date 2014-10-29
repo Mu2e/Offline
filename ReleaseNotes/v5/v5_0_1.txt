@@ -1,5 +1,3 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_0_1
 
 3) Oct 1, 2014 - brownd
@@ -13,9 +11,9 @@ Still under construction
        result by the scale factor.
 
 1) Sep 24, 2014 - ehrlich
-    Updates to the CosmicRayShieldGeom directory and the Mu2eG4/geom/crv_counters.txt file. 
-    Removed a lot of hard-coded settings. This makes it possible, 
-    that data files produced with different CRV versions can still be read, 
+    Updates to the CosmicRayShieldGeom directory and the Mu2eG4/geom/crv_counters.txt file.
+    Removed a lot of hard-coded settings. This makes it possible,
+    that data files produced with different CRV versions can still be read,
     if the appropriate CRV geometry configuration file is used.
     Added some functions to convert between world and local CRV bar coordinates.
     Modified Files:
