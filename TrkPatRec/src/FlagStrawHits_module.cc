@@ -85,8 +85,7 @@ namespace mu2e {
     if(event.getByLabel(_shLabel,shcolH));
     const StrawHitCollection* shcol = shcolH.product();
     if(shcol == 0){
-      if(_debug > 0) cout << "No StrawHit collection found for label " <<  _shLabel << endl;
-      return;
+      throw cet::exception("RECO")<< "No StrawHit collection found for label " <<  _shLabel << endl;
     }
     const StrawHitPositionCollection* shpcol(0);
     if(_shpLabel.length() >0){
@@ -94,8 +93,7 @@ namespace mu2e {
       if(event.getByLabel(_shpLabel,shpcolH));
       shpcol = shpcolH.product();
       if(shpcol == 0){
-	if(_debug > 0) cout << "No StrawHitPosition collection found for label " <<  _shpLabel << endl;
-	return;
+	throw cet::exception("RECO") << "No StrawHitPosition collection found for label " <<  _shpLabel << endl;
       }
     }
   
