@@ -247,8 +247,7 @@ namespace mu2e
     if((_iev%_printfreq)==0)cout<<"FlagBkgHits: event="<<_iev<<endl;
     // find the data
     if(!findData(event)){
-      cout << "No straw hits found " << endl;
-      return;
+      throw cet::exception("RECO")<< "Missing input collection" << endl;
     }
     // find mc truth if we're making diagnostics
     if(_diag > 0){
