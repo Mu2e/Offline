@@ -51,6 +51,8 @@ root_inc      = os.environ['ROOT_INC']
 root_sys      = os.environ['ROOTSYS']
 fhicl_inc     = os.environ['FHICLCPP_INC']
 fhicl_lib     = os.environ['FHICLCPP_LIB']
+sqlite_inc     = os.environ['SQLITE_INC']
+sqlite_lib     = os.environ['SQLITE_LIB']
 cpp0x_inc     = os.environ['CPP0X_INC']
 cpp0x_lib     = os.environ['CPP0X_LIB']
 mesfac_inc     = os.environ['MESSAGEFACILITY_INC']
@@ -89,6 +91,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              art_inc,
                              mesfac_inc,
                              fhicl_inc,
+                             sqlite_inc,
                              cetlib_inc,
                              cpp0x_inc,
                              boost_inc,
@@ -103,6 +106,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              art_lib,
                              mesfac_lib,
                              fhicl_lib,
+                             sqlite_lib,
                              cetlib_lib,
                              cpp0x_lib,
                              boost_lib,
@@ -119,7 +123,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                  )
 
 # Define the rule for building dictionaries.
-genreflex = Builder(action="genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\"")
+genreflex = Builder(action="./genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\"")
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # Get the flag that controls compiler options. Check that it is legal.
@@ -349,6 +353,10 @@ if (cleanopt and not COMMAND_LINE_TARGETS):
             ff =  os.path.join(top, name)
             print "removing file ", ff
             os.unlink (ff)
+
+    for ff in ("EventDisplay/src/EventDisplayDict.cc", "EventDisplay/src/EventDisplayDict.h"):
+        print "removing file ", ff
+        os.unlink (ff)
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

@@ -50,7 +50,7 @@ bool g4.doSurfaceCheck         = false;
 bool g4.printElements          = true;
 
 // print g4 material table
-bool g4.printMaterials         = true;
+bool g4.printMaterials         = false;
 
 // print g4 processe summary (using a mu2e utility class)
 bool g4.printPhysicsProcessSummary = true;

@@ -225,7 +225,7 @@ namespace mu2e {
     explicit MuHitDisplay(fhicl::ParameterSet const& pset);
     virtual ~MuHitDisplay();
 
-    void     getData(const art::Event* Evt);
+    int      getData(const art::Event* Evt);
     void     Init   (art::Event* Evt);
     void     InitVisManager();
 
@@ -402,27 +402,29 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // get data from the event record
 //-----------------------------------------------------------------------------
-  void MuHitDisplay::getData(const art::Event* Evt) {
-    //    const char* oname = "MuHitDisplay::getData";
+  int MuHitDisplay::getData(const art::Event* Evt) {
+    const char* oname = "MuHitDisplay::getData";
 
 //-----------------------------------------------------------------------------
 //  MC truth - gen particles
 //-----------------------------------------------------------------------------
     art::Handle<GenParticleCollection> gensHandle;
     Evt->getByLabel(generatorModuleLabel_,gensHandle);
-    fGenpColl = gensHandle.product();
-
-    // art::Handle<SimParticleCollection> simsHandle;
-    // Evt->getByLabel(fG4ModuleLabel,simsHandle);
-    // SimParticleCollection const& sims = *simsHandle;
-
-    // art::Handle<StrawHitMCTruthCollection> hitsTruthHandle;
-    // Evt->getByLabel(hitMakerModuleLabel_,hitsTruthHandle);
-    // StrawHitMCTruthCollection const& hitsTruth = *hitsTruthHandle;
+    if (gensHandle.isValid()) fGenpColl = gensHandle.product();
+    else {
+      printf(">>> %s ERROR: GenParticleCollection by %s is missing. BAIL OUT\n",
+	     oname,generatorModuleLabel_.data());
+      return -1;
+    }
 
     art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
     Evt->getByLabel(fStrawHitMaker,"StrawHitMCPtr",mcptrHandle);
     if(mcptrHandle.isValid()) hits_mcptr = mcptrHandle.product();
+    else {
+      printf(">>> %s ERROR:PtrStepPointMCVectorCollection  by %s is missing. BAIL OUT\n",
+	     oname,fStrawHitMaker.data());
+      return -1;
+    }
 
     art::Handle<StepPointMCCollection> stepsHandle;
     art::Selector getTrackerSteps(art::ProductInstanceNameSelector(trackerStepPoints_) &&
@@ -438,28 +440,52 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     art::Handle<StrawHitCollection> shH;
     Evt->getByLabel(fStrawHitMaker,shH);
-    fStrawHitColl = shH.product();
+    if (shH.isValid()) fStrawHitColl = shH.product();
+    else {
+      printf(">>> %s ERROR:StrawHitCollection by %s is missing. BAIL OUT\n",
+	     oname,fStrawHitMaker.data());
+      return -1;
+    }
     
     art::Handle<mu2e::StrawHitPositionCollection> shpH;
     Evt->getByLabel(fStrawHitPosMaker,shpH);
-    fStrawHitPosColl = shpH.product();
+    if (shpH.isValid()) fStrawHitPosColl = shpH.product();
+    else {
+      printf(">>> %s ERROR:StrawHitPositionCollection by %s is missing. BAIL OUT\n",
+	     oname,fStrawHitPosMaker.data());
+      return -1;
+    }
 
     art::Handle<mu2e::StrawHitFlagCollection> shfH;
     Evt->getByLabel(fStrawHitFlagMaker,shfH);
-    fStrawHitFlagColl = shfH.product();
+    if (shfH.isValid()) fStrawHitFlagColl = shfH.product();
+    else {
+      printf(">>> %s ERROR: StrawHitFlagCollection by %s is missing. BAIL OUT\n",
+	     oname,fStrawHitFlagMaker.data());
+      return -1;
+    }
 //-----------------------------------------------------------------------------
 // calorimeter crystal hit data
 //-----------------------------------------------------------------------------
     art::Handle<CaloCrystalHitCollection> ccHandle;
     Evt->getByLabel(fCrystalHitMaker.data(),ccHandle);
-    fListOfCrystalHits = (CaloCrystalHitCollection*) ccHandle.product();
+    if (ccHandle.isValid()) fListOfCrystalHits = (CaloCrystalHitCollection*) ccHandle.product();
+    else {
+      printf(">>> %s ERROR: CaloCrystalHitCollection by %s is missing. BAIL OUT\n",
+	     oname,fCrystalHitMaker.data());
+      return -1;
+    }
 //-----------------------------------------------------------------------------
 // calorimeter cluster data
 //-----------------------------------------------------------------------------
     art::Handle<CaloClusterCollection> calo_cluster_handle;
     Evt->getByLabel(caloClusterModuleLabel_, producerName_ ,calo_cluster_handle);
-    // Evt->getByLabel("makeCaloCluster","AlgoCLOSESTSeededByENERGY",calo_cluster_handle);
-    fListOfClusters = (CaloClusterCollection*) &(*calo_cluster_handle);
+    if (calo_cluster_handle.isValid()) fListOfClusters = calo_cluster_handle.product();
+    else {
+      printf(">>> %s ERROR: CaloClusterCollection by %s is missing. BAIL OUT\n",
+	     oname,caloClusterModuleLabel_.data());
+      return -1;
+    }
 //-----------------------------------------------------------------------------
 // timepeaks 
 //-----------------------------------------------------------------------------
@@ -494,7 +520,6 @@ namespace mu2e {
 // tracking data - downstream moving electrons
 //-----------------------------------------------------------------------------
     art::Handle<KalRepPtrCollection> demHandle;
-    //    Evt->getByLabel(fTrkPatRecModuleLabel.data(),"DownstreameMinus", demHandle);
     Evt->getByLabel(fTrkPatRecModuleLabel.data(),charDirectionAndParticle, demHandle);
 
     fNTracks[0] = 0;
@@ -521,6 +546,7 @@ namespace mu2e {
     //     const KalRepPtrCollection*  ump = &(*umpHandle);
     //     fNTracks[3] = ump->size();
 
+    return 0;
   }
 
 //-----------------------------------------------------------------------------
@@ -631,7 +657,7 @@ namespace mu2e {
 
     TrackTool           *tt(0), *tg(0), *tmid(0);
     const GenParticle*  gen_signal;
-    int                 pdg_id, ndisks;
+    int                 pdg_id, ndisks, rc;
  
     TObjArray           list_of_ellipses;
     int                 n_displayed_hits, color(1), intime;
@@ -673,7 +699,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // get event data and initialize data blocks
 //-----------------------------------------------------------------------------
-    getData(&Evt);
+    rc = getData(&Evt);
+
+    if (rc < 0) {
+      printf(" %s ERROR: not all data products present, BAIL OUT\n",oname);
+      return true;
+    }
+
     Init   (&Evt);
 
     art::ServiceHandle<mu2e::GeometryService> geom;
@@ -752,7 +784,6 @@ namespace mu2e {
       if ((midStep == 0) || (firstStep ==0)) {
 	printf("[%s] **** ERROR : firstStep = %8p midstep = %8p, BAIL OUT\n",
 	       oname,firstStep, midStep);
-	//      goto END_OF_ROUTINE;
       }
 
       if (firstStep ) {
@@ -1119,7 +1150,7 @@ namespace mu2e {
     }
     
     if (graph) delete graph;
-    
+
     return true;
   } // end of ::filter.
     
