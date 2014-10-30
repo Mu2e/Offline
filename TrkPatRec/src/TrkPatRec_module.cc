@@ -310,8 +310,7 @@ namespace mu2e
     if((_iev%_printfreq)==0)cout<<"TrkPatRec: event="<<_iev<<endl;
     // find the data
     if(!findData(event)){
-      cout << "No straw hits found " << endl;
-      return;
+      throw cet::exception("RECO")<<"mu2e::TrkPatRec: data missing or incomplete"<< endl;
     }
     // copy in the existing flags
     _flags = new StrawHitFlagCollection(*_shfcol);
