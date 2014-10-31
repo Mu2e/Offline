@@ -2,7 +2,24 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_1_1
 
-1) Oct 29, 2014 - genser
+
+2)  Oct 31, 2014 - genser
+
+    Changed the interface to G4RunManager: Used its new (requested by
+    Mu2e) API instead of inheriting from it. The change should
+    decrease the need for potential future maintenance
+    (also minimally modified timing printout) 
+
+    Deleted files:    
+      Mu2eG4/inc/Mu2eG4RunManager.hh
+      Mu2eG4/src/Mu2eG4RunManager.cc
+
+    Modified Files:
+      Mu2eG4/src/G4_module.cc
+      Mu2eG4/src/Mu2eG4Study_module.cc
+
+
+1)  Oct 29, 2014 - genser
     Corrected and enhanced SConstruct
       added sqlite inc and lib to the paths
       fixed genreflex invocation 
