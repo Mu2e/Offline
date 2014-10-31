@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 #
 # Build a Mu2e base release or test release.
-#
-# $Id: SConstruct,v 1.54 2014/08/02 05:23:26 gandr Exp $
-# $Author: gandr $
-# $Date: 2014/08/02 05:23:26 $
-#
+##
 # Original author Rob Kutschke.
 #
 import os, re, string
