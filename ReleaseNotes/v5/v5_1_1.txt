@@ -2,6 +2,20 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_1_1
 
+3)  Nov 1, 2014 -brownd
+    Restructure KalDiag to return information by structs.  Structs
+    return descriptions of the variables as TTree leaves, allow the
+    entire struct to be placed as a branch without exposing any details.
+    There are small changes in ReadKalFits TTree branch names as a result.
+    New features allow major simplification to Reflect_module.
+    primary changes in:
+      KalmanTests/*/KalDiag and included files
+      KalmanTests/src/Reflect_module.cc
+      KalmanTests/src/ReadKalFits_module.cc
+    follow-on effects:
+      KalmanTests/test/KalFit.C
+      JobConfig/TDR/digiMixAndTrackFile.fcl
+      Mu2eG4/test/sthktfO.C
 
 2)  Oct 31, 2014 - genser
 
