@@ -33,8 +33,8 @@ void Cosmics(TTree* cr, const char* page="prod") {
     pxyem->SetMarkerColor(kRed);
     pxyem->SetStats(0);
     
-    cr->Project("pxyem","ey:ex","mcpdgid==11");
-    cr->Project("pxyep","ey:ex","mcpdgid==-11");
+    cr->Project("pxyem","ey:ex","mc.pdg==11");
+    cr->Project("pxyep","ey:ex","mc.pdg==-11");
 
     TH2F* pxzep = new TH2F("pxzep","Electron production position;z(mm); x(mm)",100,1000,3600,100,-800,800);
     TH2F* pxzem = new TH2F("pxzem","Electron production position;z(mm); x(mm)",100,1000,3600,100,-800,800);
@@ -47,8 +47,8 @@ void Cosmics(TTree* cr, const char* page="prod") {
     pxzem->SetStats(0);
   
 
-    cr->Project("pxzem","ex:ez","mcpdgid==11");
-    cr->Project("pxzep","ex:ez","mcpdgid==-11");
+    cr->Project("pxzem","ex:ez","mc.pdg==11");
+    cr->Project("pxzep","ex:ez","mc.pdg==-11");
 
     TH2F* ppxzep = new TH2F("ppxzep","Projected parent production position y=0;z(mm); x(mm)",100,0,4500,100,-2000,2000);
     TH2F* ppxzem = new TH2F("ppxzem","Projected parent production position y=0;z(mm); x(mm)",100,0,4500,100,-2000,2000);
@@ -72,10 +72,10 @@ void Cosmics(TTree* cr, const char* page="prod") {
     ppxzmm->SetLineColor(kOrange);
     ppxzmm->SetStats(0);
   
-    cr->Project("ppxzem","ppx:ppz","mcpdgid==11");
-    cr->Project("ppxzep","ppx:ppz","mcpdgid==-11");
-    cr->Project("ppxzmm","ppx:ppz","mcpdgid==13");
-    cr->Project("ppxzmp","ppx:ppz","mcpdgid==-13");
+    cr->Project("ppxzem","ppx:ppz","mc.pdg==11");
+    cr->Project("ppxzep","ppx:ppz","mc.pdg==-11");
+    cr->Project("ppxzmm","ppx:ppz","mc.pdg==13");
+    cr->Project("ppxzmp","ppx:ppz","mc.pdg==-13");
 
     TH1F* mcmomem = new TH1F("mcmomem","Tracker Momentum, reflected particle;MeV/c",100,25,250);
     TH1F* mcmomep = new TH1F("mcmomep","Tracker Momentum, reflected particle;MeV/c",100,25,250);
@@ -90,10 +90,10 @@ void Cosmics(TTree* cr, const char* page="prod") {
     mcmommp->SetStats(0);
     mcmommp->SetLineColor(kCyan);
 
-    cr->Project("mcmomem","umcmom","mcpdgid==11");
-    cr->Project("mcmomep","umcmom","mcpdgid==-11");
-    cr->Project("mcmommm","umcmom","mcpdgid==13");
-    cr->Project("mcmommp","umcmom","mcpdgid==-13");
+    cr->Project("mcmomem","umc.mom","mc.pdg==11");
+    cr->Project("mcmomep","umc.mom","mc.pdg==-11");
+    cr->Project("mcmommm","umc.mom","mc.pdg==13");
+    cr->Project("mcmommp","umc.mom","mc.pdg==-13");
 
     TH1F* mcd0em = new TH1F("mcd0em","Track D_{0}, reflected particle;mm",100,-500,500);
     TH1F* mcd0ep = new TH1F("mcd0ep","Track D_{0}, reflected particle;mm",100,-500,500);
@@ -108,10 +108,10 @@ void Cosmics(TTree* cr, const char* page="prod") {
     mcd0mp->SetStats(0);
     mcd0mp->SetLineColor(kCyan);
 
-    cr->Project("mcd0em","umcd0","mcpdgid==11");
-    cr->Project("mcd0ep","umcd0","mcpdgid==-11");
-    cr->Project("mcd0mm","umcd0","mcpdgid==13");
-    cr->Project("mcd0mp","umcd0","mcpdgid==-13");
+    cr->Project("mcd0em","umc.d0","mc.pdg==11");
+    cr->Project("mcd0ep","umc.d0","mc.pdg==-11");
+    cr->Project("mcd0mm","umc.d0","mc.pdg==13");
+    cr->Project("mcd0mp","umc.d0","mc.pdg==-13");
 
     TH1F* pmomem = new TH1F("pmomem","Parent momentum;MeV/c",100,0,50000);
     TH1F* pmomep = new TH1F("pmomep","Parent momentum;MeV/c",100,0,50000);
@@ -126,10 +126,10 @@ void Cosmics(TTree* cr, const char* page="prod") {
     pmommp->SetStats(0);
     pmommp->SetLineColor(kCyan);
 
-    cr->Project("pmomem","sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==11");
-    cr->Project("pmomep","sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==-11");
-    cr->Project("pmommm","sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==13");
-    cr->Project("pmommp","sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==-13");
+    cr->Project("pmomem","sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==11");
+    cr->Project("pmomep","sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==-11");
+    cr->Project("pmommm","sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==13");
+    cr->Project("pmommp","sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==-13");
 
     TH1F* pmomlowem = new TH1F("pmomlowem","Parent momentum;MeV/c",100,0,10000);
     TH1F* pmomlowep = new TH1F("pmomlowep","Parent momentum;MeV/c",100,0,10000);
@@ -144,10 +144,10 @@ void Cosmics(TTree* cr, const char* page="prod") {
     pmomlowmp->SetStats(0);
     pmomlowmp->SetLineColor(kCyan);
 
-    cr->Project("pmomlowem","sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==11");
-    cr->Project("pmomlowep","sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==-11");
-    cr->Project("pmomlowmm","sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==13");
-    cr->Project("pmomlowmp","sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==-13");
+    cr->Project("pmomlowem","sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==11");
+    cr->Project("pmomlowep","sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==-11");
+    cr->Project("pmomlowmm","sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==13");
+    cr->Project("pmomlowmp","sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==-13");
 
     TH1F* pctem = new TH1F("pctem","Projected parent cos(#theta)",100,-1,1);
     TH1F* pctep = new TH1F("pctep","Projected parent cos(#theta)",100,-1,1);
@@ -161,10 +161,10 @@ void Cosmics(TTree* cr, const char* page="prod") {
     pctmm->SetLineColor(kOrange);
     pctmp->SetStats(0);
     pctmp->SetLineColor(kCyan);
-    cr->Project("pctem","pmz/sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==11");
-    cr->Project("pctep","pmz/sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==-11");
-    cr->Project("pctmm","pmz/sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==13");
-    cr->Project("pctmp","pmz/sqrt(pmx^2+pmy^2+pmz^2)","mcpdgid==-13");
+    cr->Project("pctem","pmz/sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==11");
+    cr->Project("pctep","pmz/sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==-11");
+    cr->Project("pctmm","pmz/sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==13");
+    cr->Project("pctmp","pmz/sqrt(pmx^2+pmy^2+pmz^2)","mc.pdg==-13");
     
     TLegend* leg = new TLegend(0.7,0.5,0.9,0.9);
     leg->AddEntry(ppxzem,"e^{-}","LP");
@@ -232,23 +232,23 @@ void Cosmics(TTree* cr, const char* page="prod") {
     TH2F* ctand = new TH2F("ctand","Downstream vs Upstream tan#lambda;tan(#lambda)_{d};tan(#lambda)_{u}",100,-1.25,-0.25,100,0.25,1.25);
     TH2F* cp0 = new TH2F("cp0","Downstream vs Upstream #phi_{0};radians;radians",100,-3.15,3.15,100,-3.15,3.15);
     TH2F* cd0 = new TH2F("cd0","Downstream vs Upstream d_{0};mm;mm",100,-400,400,100,-400,400);
-    TH1F* dt0e = new TH1F("dt0e","Downstream - Upstream t_{0};nsec",100,50,120);
-    TH1F* dt0m = new TH1F("dt0m","Downstream - Upstream t_{0};nsec",100,50,120);
+    TH1F* dtrkt0e = new TH1F("dtrkt0e","Downstream - Upstream t_{0};nsec",100,50,120);
+    TH1F* dtrkt0m = new TH1F("dtrkt0m","Downstream - Upstream t_{0};nsec",100,50,120);
     cmom->SetStats(0);
     ctand->SetStats(0);
     cd0->SetStats(0);
     cp0->SetStats(0);
-    dt0e->SetStats(0);
-    dt0m->SetStats(0);
-    dt0e->SetLineColor(kRed);
-    dt0m->SetLineColor(kCyan);
+    dtrkt0e->SetStats(0);
+    dtrkt0m->SetStats(0);
+    dtrkt0e->SetLineColor(kRed);
+    dtrkt0m->SetLineColor(kCyan);
     
-    cr->Project("cmom","dmom:umom");
-    cr->Project("ctand","dtd:utd");
-    cr->Project("cp0","dp0:up0");
-    cr->Project("cd0","dd0:ud0");
-    cr->Project("dt0e","dt0-ut0","abs(mcpdgid)==11");
-    cr->Project("dt0m","dt0-ut0","abs(mcpdgid)==13");
+    cr->Project("cmom","dtrk.fitmom:utrk.fitmom");
+    cr->Project("ctand","dtrk.td:utrk.td");
+    cr->Project("cp0","dtrk.p0:utrk.p0");
+    cr->Project("cd0","dtrk.d0:utrk.d0");
+    cr->Project("dtrkt0e","dtrk.t0-utrk.t0","abs(mc.pdg)==11");
+    cr->Project("dtrkt0m","dtrk.t0-utrk.t0","abs(mc.pdg)==13");
 
     TCanvas* scan = new TCanvas("scan","Selection",1200,800);
     scan->Divide(3,2);
@@ -261,8 +261,8 @@ void Cosmics(TTree* cr, const char* page="prod") {
     scan->cd(4);
     cd0->Draw();
     scan->cd(5);
-    dt0e->Draw();
-    dt0m->Draw("same");
+    dtrkt0e->Draw();
+    dtrkt0m->Draw("same");
 
 
   }
