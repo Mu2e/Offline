@@ -10,11 +10,13 @@
 #include "KalmanTests/inc/MCEvtData.hh"
 #include "KalmanTests/inc/threevec.hh"
 #include "KalmanTests/inc/helixpar.hh"
-#include "KalmanTests/inc/MCTrkInfo.hh"
+#include "KalmanTests/inc/TrkInfo.hh"
 // data
 #include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+// Utilities
+#include "Mu2eUtilities/inc/MVATools.hh"
 // MC data
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
@@ -27,6 +29,7 @@
 #include "BaBar/BaBar.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
+#include "KalmanTests/inc/TrkInfo.hh"
 #include "KalmanTests/inc/TrkStrawHitInfo.hh"
 #include "KalmanTests/inc/KalFit.hh"
 //CLHEP
@@ -35,9 +38,11 @@
 #include "Rtypes.h"
 #include "TTree.h"
 #include "TClass.h"
+#include "TString.h"
 // C++
 #include <vector>
 #include <string>
+#include <memory>
 
 namespace mu2e 
 {  
@@ -54,11 +59,7 @@ namespace mu2e
   };
   
   typedef StepPointMCCollection::const_iterator MCStepItr;
-//  struct test : public binary_function<double,double,bool> {
-//    bool operator()(double x, double y) { return x < y;}
-//  };
 
-//  Simple helper class to find MC information within collections
   
   class KalDiag {
   public:
@@ -72,23 +73,29 @@ namespace mu2e
     bool findMCData(const art::Event& evt);
 // diagnostic comparison of reconstructed tracks with MC truth
     void kalDiag(const KalRep* krep,bool fill=true);
+// create Branches.  The user can provide their own tree, or one will be created automatically if necessary
+    TTree* createTrkDiag(TTree* trkdiag=0,const char* branchprefix="");
 // find associated sim particles to a track.  The first returns a hit-weighted vector of
 // all particles, the second just the one with the most hits
     void findMCTrk(const KalRep* krep,std::vector<spcount>& sct);
     void findMCTrk(const KalRep* krep,art::Ptr<SimParticle>& spp);
-// allow creating the trees
-    TTree* createTrkDiag();
-    TTree* createHitDiag();
 // access to MC data
     MCEvtData const& mcData() const { return _mcdata; }
     void findMCSteps(StepPointMCCollection const* mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids,
 	std::vector<MCStepItr>& steps);
 // access to event-specific MC truth for conversion electron
     std::vector<int> const& VDids(TRACKERPOS tpos) const;
+// functions to fill track information from KalRep
+    void fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo);
+    void fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo);
 // MC info about a track
-    void fillMCTrkInfo(MCStepItr const& imcs, MCTrkInfo& trkinfo) const;
-    void fillMCTrkInfo(art::Ptr<SimParticle> const& spp, MCTrkInfo& einfo) const;
-    void fillMCTrkInfo(art::Ptr<SimParticle> const& spp);
+    void fillTrkInfoMC(art::Ptr<SimParticle> const& spp,const KalRep* krep,TrkInfoMC& trkinfomc);
+    void fillTrkInfoMCStep(MCStepItr const& imcs, TrkInfoMCStep& trkinfomcstep) const;
+    void fillTrkInfoMCStep(art::Ptr<SimParticle> const& spp, TrkInfoMCStep& trkinfomcstep) const; 
+// hit information
+    void fillHitInfo(const KalRep* krep, std::vector<TrkStrawHitInfo>& hitinfos);
+    void fillHitInfoMC(art::Ptr<SimParticle> const& primary,const KalRep* krep,std::vector<TrkStrawHitInfoMC>& tshinfomc);
+// relationship information
     static relation relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj);
     static relation relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2);
 // MC track finder.  this function is deprecated
@@ -97,6 +104,8 @@ namespace mu2e
   private:
 // cache of event data
     MCEvtData _mcdata;
+// branch prefix
+    std::string _branchprefix;
 // event data labels
     std::string _mcptrlabel;
     std::string _mcstepslabel;
@@ -106,7 +115,12 @@ namespace mu2e
     SimParticleTimeOffset _toff;
 // helper functions
     static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
-    void hitsDiag(const KalRep* krep,art::Ptr<SimParticle> const& primary);
+    void fillTrkInfoMCStep(CLHEP::Hep3Vector const& mom, CLHEP::Hep3Vector const& pos, double charge, TrkInfoMCStep& einfo) const;
+    void fillHitInfo(const TrkStrawHit* tsh,TrkStrawHitInfo& tshinfo) const;
+    void fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& mcdigi,Straw const& straw, 
+    TrkStrawHitInfoMC& tshinfomc) const;
+    void countDoubles(const KalRep* krep, int& ndouble, int& ndactive) const;
+    void fillTrkQual(TrkInfo& trkinfo) const;
     const helixpar& MCHelix(TRACKERPOS tpos) const;
     void reset();
     // config parameters
@@ -126,37 +140,19 @@ namespace mu2e
 // trk tuple variables
     public:
     TTree *_trkdiag;
-    Int_t _fitstatus;
-    Float_t _t0;
-    Float_t _t0err;
-    Int_t _nhits;
-    Int_t _ndof;
-    Int_t _niter;
-    Int_t _nactive;
-    Int_t _ndouble,_ndactive;
-    Float_t _chisq;
-    Float_t _fitcon;
-    Float_t _radlen;
-    Float_t _fitmom;
-    Float_t _fitmomerr;
-    Float_t _firstflt, _lastflt;
-    Int_t _nsites;
-    Float_t _seedmom;
-    helixpar _fitpar;
-    helixpar _fiterr;
+// track quality computation
+    std::unique_ptr<MVATools> _trkqualmva;
+    std::string _trkqualweights;
+// struct for track info
+    TrkInfo _trkinfo;
+// hit information
     std::vector<TrkStrawHitInfo> _tshinfo;
-
 // MC true tuple variables
-    Int_t _npdigi, _npdgood;
-    Int_t _nmc;
-    Int_t _nmcactive;
-    Int_t _nmchits, _nmcgood, _nmcambig;
-    Int_t _mcpdgid, _mcgenid, _mcproc;
-    Int_t _mcppdgid, _mcpgenid, _mcpproc;
-    MCTrkInfo _mcinfo;
-    MCTrkInfo _mcentinfo;
-    MCTrkInfo _mcmidinfo;
-    MCTrkInfo _mcxitinfo;
+    TrkInfoMC _mcinfo;
+    TrkInfoMCStep _mcgeninfo;
+    TrkInfoMCStep _mcentinfo;
+    TrkInfoMCStep _mcmidinfo;
+    TrkInfoMCStep _mcxitinfo;
     std::vector<TrkStrawHitInfoMC> _tshinfomc;
 
   };

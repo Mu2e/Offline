@@ -21,24 +21,24 @@ void dioacc(TTree* dio, TCut acut) {
 //  TH1F* apitchd = new TH1F("apitchd","DIO acceptance vs tan#lambda;tan#lambda",200,0.5,1.1);
 //  apitch->Sumw2();
 //  apitchd->Sumw2();
-//  dio->Project("apitchd","mcenttd");
-//  dio->Project("apitch","mcenttd",acut);
+//  dio->Project("apitchd","mcent.td");
+//  dio->Project("apitch","mcent.td",acut);
 //  apitch->Divide(apitchd);
 //
 //  TH1F* aradius = new TH1F("aradius","DIO acceptance vs curvature radius;#rho (mm)",200,200,310);
 //  TH1F* aradiusd = new TH1F("aradiusd","DIO acceptance vs curvature radius;#rho (mm)",200,200,310);
 //  aradius->Sumw2();
 //  aradiusd->Sumw2();
-//  dio->Project("aradiusd","1.0/mcentom");
-//  dio->Project("aradius","1.0/mcentom",acut);
+//  dio->Project("aradiusd","1.0/mcent.om");
+//  dio->Project("aradius","1.0/mcent.om",acut);
 //  aradius->Divide(aradiusd);
 
 //  TH1F* ad0 = new TH1F("ad0","DIO acceptance vs d0;d0 (mm)",200,-100,120);
 //  TH1F* ad0d = new TH1F("ad0d","DIO acceptance vs d0;d0 (mm)",200,-100,120);
 //  ad0->Sumw2();
 //  ad0d->Sumw2();
-//  dio->Project("ad0d","mcentd0");
-//  dio->Project("ad0","mcentd0",acut);
+//  dio->Project("ad0d","mcent.d0");
+//  dio->Project("ad0","mcent.d0",acut);
 //  ad0->Divide(ad0d);
 
   TH1F* acost = new TH1F("acost","DIO acceptance vs cos(#theta);cos(#theta)",200,-1.0,1.0);
@@ -53,8 +53,8 @@ void dioacc(TTree* dio, TCut acut) {
   TH1F* aphid = new TH1F("aphid","DIO acceptance vs #phi;#phi (mm)",200,-3.1416,3.1416);
   aphi->Sumw2();
   aphid->Sumw2();
-  dio->Project("aphid","mcentp0");
-  dio->Project("aphi","mcentp0",acut);
+  dio->Project("aphid","mcent.p0");
+  dio->Project("aphi","mcent.p0",acut);
   aphi->Divide(aphid);
 
   TH1F* atargetr = new TH1F("atargetr","DIO acceptance vs target radius;target #rho (mm)",200,0.0,90.0);
@@ -77,8 +77,8 @@ void dioacc(TTree* dio, TCut acut) {
 //  TH1F* armaxd = new TH1F("armaxd","DIO acceptance vs rmax;rmax (mm)",200,450,680);
 //  armax->Sumw2();
 //  armaxd->Sumw2();
-//  dio->Project("armaxd","mcentd0+2.0/mcentom");
-//  dio->Project("armax","mcentd0+2.0/mcentom",acut);
+//  dio->Project("armaxd","mcent.d0+2.0/mcent.om");
+//  dio->Project("armax","mcent.d0+2.0/mcent.om",acut);
 //  armax->Divide(armaxd);
 
   TCanvas* acan = new TCanvas("acan","acceptance",1200,800);

@@ -37,9 +37,9 @@ void dio(){
 
     TCut quality = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
     TCut final = (reco+pitch+livegate+quality);
-    dio->Project(diogenname,"mcentmom","evtwt"*(final+momwin));
+    dio->Project(diogenname,"mcent..mom","evtwt"*(final+momwin));
     diogenwin[icut]->SetFillColor(colors[icut]);
-    dio->Project(diodiffname,"fitmom-mcentmom","evtwt"*(final+momwin));
+    dio->Project(diodiffname,"fitmom-mcent..mom","evtwt"*(final+momwin));
     diodiffwin[icut]->SetFillColor(colors[icut]);
     dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
   }

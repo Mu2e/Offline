@@ -466,9 +466,9 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
     diodiffwin[icut] = new TH1F(diodiffname,"Reco - True Momentum of DIO in Signal Box;#Delta Momentum (MeV/c)",100,-1,2.5);
     diodiffwin[icut]->SetStats(0);
 
-    if(dio)dio->Project(diogenname,"mcentmom","evtwt"*(final[icut]+momwin));
+    if(dio)dio->Project(diogenname,"mcent.mom","evtwt"*(final[icut]+momwin));
     diogenwin[icut]->SetFillColor(colors[icut]);
-    if(dio)dio->Project(diodiffname,"fitmom-mcentmom","evtwt"*(final[icut]+momwin));
+    if(dio)dio->Project(diodiffname,"fitmom-mcent.mom","evtwt"*(final[icut]+momwin));
     diodiffwin[icut]->SetFillColor(colors[icut]);
     dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
   }
