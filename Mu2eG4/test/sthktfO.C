@@ -525,9 +525,9 @@ void sthktfO()
   rpitch = TCut(cutstring);
   snprintf(cutstring,100,"t0>%f",t0min);
   livegate = TCut(cutstring);
-  snprintf(cutstring,100,"mcenttd>%4.3f&&mcenttd<%4.3f",tdlow-0.02,tdhigh+0.02);
+  snprintf(cutstring,100,"mcent.td>%4.3f&&mcent.td<%4.3f",tdlow-0.02,tdhigh+0.02);
   tpitch = TCut(cutstring);
-  tmom = TCut("mcentmom>100");
+  tmom = TCut("mcent.mom>100");
   snprintf(cutstring,100,"nchits>=%i",minnhits);
   nmch = TCut(cutstring);
   reco = TCut("fitstatus>0");
@@ -642,7 +642,7 @@ void sthktfO()
          << ", " << fileText[ii]
          <<endl;
 
-    ((*_trees[0])[ii])->Project(htmpname,"fitmom-mcentmom",goodmc+goodfit);
+    ((*_trees[0])[ii])->Project(htmpname,"fitmom-mcent.mom",goodmc+goodfit);
     _histograms_orig[ii]->Draw();
     cout << 0 << " done"  <<endl;
 

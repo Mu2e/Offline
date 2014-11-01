@@ -29,7 +29,7 @@ Double_t splitgaus(Double_t *x, Double_t *par) {
   return retval;
 }
 
-TCut mcsel("mcentmom>100&&mcenttd<1.0&&mcenttd>0.5774&&nmc>=20");
+TCut mcsel("mcent.mom>100&&mcent.td<1.0&&mcent.td>0.5774&&mc.ngood>=20");
 TCut helix("helixfail==0");
 TCut seed("seedfail==0");
 
@@ -48,7 +48,7 @@ void KalTest (TTree* trk) {
   sgau->SetParName(6,"TSigL");
   
   TH1F* t0 = new TH1F("t0","t0 resolution;nsec",100,-5,5);
-  trk->Project("t0","t0-mcmidt0","kalfail==0&&nactive>=20");
+  trk->Project("t0","t0-mcmid.t0","kalfail==0&&nactive>=20");
   TH1F* nh = new TH1F("nh","N hits",66,-0.5,65.5);
   TH1F* na = new TH1F("na","N hits",66,-0.5,65.5);
   TH1F* nd = new TH1F("nd","N hits",66,-0.5,65.5);
@@ -60,13 +60,13 @@ void KalTest (TTree* trk) {
   TH2F* mom = new TH2F("mom","momentum at start of tracker;true momentum (MeV);fit momentum (MeV)",
     100,90,107,100,90,107);
   mom->SetStats(0);
-  trk->Project("fstat","fitstatus","mcentmom>100");
+  trk->Project("fstat","fitstatus","mcent.mom>100");
   trk->Project("nh","nhits","kalfail==0");
   trk->Project("na","nactive","kalfail==0");
   trk->Project("nd","nhits-nactive","kalfail==0");
 //  trk->Project("momr","fitmom-mcmom","kalfail==0");
 //  trk->Project("momr","fitmom-mcmom","kalfail==0&&nactive>=20&&fitmom>100&&t0err<1&&chisq/ndof<5&&fitmomerr<0.2");
-  trk->Project("momr","fitmom-mcentmom","mcentmom>100&&kalfail==0");
+  trk->Project("momr","fitmom-mcent.mom","mcent.mom>100&&kalfail==0");
   //"&&t0err<0.8&&fitmomerr<0.1&&chisq/ndof<2");
   kcan->Clear();
   kcan->Divide(2,2);
@@ -83,7 +83,7 @@ void KalTest (TTree* trk) {
   t0->SetStats(1);
   t0->Fit("gaus");
   kcan->cd(3);
-  trk->Draw("fitmom:mcentmom>>mom","kalfail==0&&nactive>=20");
+  trk->Draw("fitmom:mcent.mom>>mom","kalfail==0&&nactive>=20");
   kcan->cd(4);
   momr->SetStats(1);
   double integral = momr->GetEntries()*momr->GetBinWidth(1);
@@ -179,15 +179,15 @@ void KalTest (TTree* trk) {
   hpcan->Clear();
   hpcan->Divide(3,2);
   hpcan->cd(1);
-  trk->Draw("hd0:mcmidd0>>d0",helix+mcsel);
+  trk->Draw("hd0:mcmid.d0>>d0",helix+mcsel);
   hpcan->cd(2);
-  trk->Draw("hp0:mcmidp0>>phi0",helix+mcsel);
+  trk->Draw("hp0:mcmid.p0>>phi0",helix+mcsel);
   hpcan->cd(3);
-  trk->Draw("hom:mcmidom>>om",helix+mcsel);
+  trk->Draw("hom:mcmid.om>>om",helix+mcsel);
   hpcan->cd(4);
-  trk->Draw("hz0:mcmidz0>>z0",helix+mcsel);
+  trk->Draw("hz0:mcmid.z0>>z0",helix+mcsel);
   hpcan->cd(5);
-  trk->Draw("htd:mcmidtd>>td",helix+mcsel);
+  trk->Draw("htd:mcmid.td>>td",helix+mcsel);
 
   
   TCanvas* hprcan = new TCanvas("hprcan","Helix parameter Resolution",1200,800);
@@ -198,11 +198,11 @@ void KalTest (TTree* trk) {
   TH1F* z0r = new TH1F("z0r","seed z0 resolution;mm",100,-150,150);
   TH1F* tdr = new TH1F("tdr","seed tan(#lambda) resolution",100,-0.3,0.3);
 
-  trk->Project("d0r","hd0-mcmidd0",helix+mcsel);
-  trk->Project("phi0r","hp0-mcmidp0",helix+mcsel);
-  trk->Project("omr","hom-mcmidom",helix+mcsel);
-  trk->Project("z0r","hz0-mcmidz0",helix+mcsel);
-  trk->Project("tdr","htd-mcmidtd",helix+mcsel);
+  trk->Project("d0r","hd0-mcmid.d0",helix+mcsel);
+  trk->Project("phi0r","hp0-mcmid.p0",helix+mcsel);
+  trk->Project("omr","hom-mcmid.om",helix+mcsel);
+  trk->Project("z0r","hz0-mcmid.z0",helix+mcsel);
+  trk->Project("tdr","htd-mcmid.td",helix+mcsel);
   
   hprcan->Clear();
   hprcan->Divide(3,2);
@@ -228,7 +228,7 @@ void AntiMomRes(TTree* trk) {
 // selection cuts
 
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
-  trk->Project("effnorm","mcentmom",mcsel);
+  trk->Project("effnorm","mcent.mom",mcsel);
   
   TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
   sgau->SetParName(0,"Norm");
@@ -266,7 +266,7 @@ void AntiMomRes(TTree* trk) {
     snprintf(mname,50,"momres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",151,-2.5,2.5);
     TCut total = ncuts[ires] || t0cuts[ires] || momcuts[ires] || fitcuts[ires];
-    trk->Project(mname,"fitmom-mcentmom",total+tsel);
+    trk->Project(mname,"fitmom-mcent.mom",total+tsel);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     if(integral > 0){
       sgau->SetParameters(integral,0.0,momres[ires]->GetRMS(),momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
@@ -306,7 +306,7 @@ void MomRes(TTree* trk) {
   TCut tsel = mcsel +TCut("kalfail==0");
 // selection cuts
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
-  trk->Project("effnorm","mcentmom",mcsel);
+  trk->Project("effnorm","mcent.mom",mcsel);
   
   TF1* sgau = new TF1("sgau",splitgaus,-1.,1.,7);
   sgau->SetParName(0,"Norm");
@@ -343,7 +343,7 @@ void MomRes(TTree* trk) {
     char mname[50];
     snprintf(mname,50,"momres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",151,-2.5,2.5);
-    trk->Project(mname,"fitmom-mcentmom",ncuts[ires]+t0cuts[ires]+momcuts[ires]+fitcuts[ires]+tsel);
+    trk->Project(mname,"fitmom-mcent.mom",ncuts[ires]+t0cuts[ires]+momcuts[ires]+fitcuts[ires]+tsel);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     sgau->SetParameters(integral,0.0,momres[ires]->GetRMS(),momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
     sgau->SetParLimits(5,1.0*momres[ires]->GetRMS(),1.0);
@@ -382,11 +382,11 @@ void SeedTest (TTree* trk) {
   TH1F* tds = new TH1F("tds","seed tan(#lambda) resolution",100,-0.07,0.07);
 
 
-  trk->Project("d0s","sd0-mcmidd0",seed+mcsel);
-  trk->Project("phi0s","sp0-mcmidp0",seed+mcsel);
-  trk->Project("oms","som-mcmidom",seed+mcsel);
-  trk->Project("z0s","sz0-mcmidz0",seed+mcsel);
-  trk->Project("tds","std-mcmidtd",seed+mcsel);
+  trk->Project("d0s","sd0-mcmid.d0",seed+mcsel);
+  trk->Project("phi0s","sp0-mcmid.p0",seed+mcsel);
+  trk->Project("oms","som-mcmid.om",seed+mcsel);
+  trk->Project("z0s","sz0-mcmid.z0",seed+mcsel);
+  trk->Project("tds","std-mcmid.td",seed+mcsel);
   
   scan->Clear();
   scan->Divide(3,2);
