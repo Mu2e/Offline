@@ -12,7 +12,7 @@
 #include "TProfile.h"
 
 
-TCut utd,dtd,umom,dmom, umomerr, dmomerr,ut0err,dt0err,unact,dnact,ureco,dreco,ugood,dgood,goodpair,goodmc,ufitc,dfitc;
+TCut utd,dtd,umom,dmom, umomerr, dmomerr,ut0err,dt0err,unact,dnact,ureco,dreco,ugood,dgood,goodpair,goodmc,ufitc,dfitc, utq, dtq;
 TCut ud0low,dd0low,ud0hi,dd0hi;
 TF1* cball;
 TF1* diffcball;
@@ -53,43 +53,46 @@ void init() {
   double tdlow(0.57735027);
   double tdhigh(1.0);
   char ctext[80];
-  snprintf(ctext,80,"utd<%4.3f&&utd>%4.3f",-tdlow,-tdhigh);
+  snprintf(ctext,80,"utrk.td<%4.3f&&utrk.td>%4.3f",-tdlow,-tdhigh);
   utd = TCut(ctext);
-  snprintf(ctext,80,"dtd>%4.3f&&dtd<%4.3f",tdlow,tdhigh);
+  snprintf(ctext,80,"dtrk.td>%4.3f&&dtrk.td<%4.3f",tdlow,tdhigh);
   dtd = TCut(ctext);
 
   double momlow(80);
   double momhigh(140);
-  snprintf(ctext,80,"umom>%4.3f&&umom<%4.3f",momlow,momhigh);
+  snprintf(ctext,80,"utrk.fitmom>%4.3f&&utrk.fitmom<%4.3f",momlow,momhigh);
   umom = TCut(ctext);
-  snprintf(ctext,80,"dmom>%4.3f&&dmom<%4.3f",momlow,momhigh);
+  snprintf(ctext,80,"dtrk.fitmom>%4.3f&&dtrk.fitmom<%4.3f",momlow,momhigh);
   dmom = TCut(ctext);
 
-  ut0err = TCut("ut0err<0.9");
-  dt0err = TCut("dt0err<0.9");
+  ut0err = TCut("utrk.t0err<0.9");
+  dt0err = TCut("dtrk.t0err<0.9");
 
-  umomerr = TCut("umomerr<0.25");
-  dmomerr = TCut("dmomerr<0.25");
+  umomerr = TCut("utrk.fitmomerr<0.25");
+  dmomerr = TCut("dtrk.fitmomerr<0.25");
 
-  unact = TCut("unactive>=25");
-  dnact = TCut("dnactive>=25");
+  unact = TCut("utrk.nactive>=25");
+  dnact = TCut("dtrk.nactive>=25");
 
-  ureco = TCut("ufitstat>0");
-  dreco = TCut("dfitstat>0");
+  ureco = TCut("utrk.fitstat>0");
+  dreco = TCut("dtrk.fitstat>0");
 
-  ufitc = TCut("ufitcon>2e-3");
-  dfitc = TCut("dfitcon>2e-3");
+  ufitc = TCut("utrk.fitcon>2e-3");
+  dfitc = TCut("dtrk.fitcon>2e-3");
 
-  ugood = ureco+unact+umomerr+ut0err+umom+utd+ufitc;
-  dgood = dreco+dnact+dmomerr+dt0err+dmom+dtd+dfitc;
+  utq = TCut("utrk.trkqual>0.4");
+  dtq = TCut("dtrk.trkqual>0.4");
+
+  ugood = umom+utq;
+  dgood = dmom+dtq;
 
   goodpair = ugood+dgood;
-  goodmc = TCut("umcmom>0.0&&dmcmom>0.0&&abs(mcpdgid)==11");
+  goodmc = TCut("umc.mom>0.0&&dmc.mom>0.0&&abs(mc.pdg)==11");
 
-  ud0low = TCut("ud0<100");
-  dd0low = TCut("dd0<100");
-  ud0hi = TCut("ud0>100");
-  dd0hi = TCut("dd0>100");
+  ud0low = TCut("utrk.d0<100");
+  dd0low = TCut("dtrk.d0<100");
+  ud0hi = TCut("utrk.d0>100");
+  dd0hi = TCut("dtrk.d0>100");
 
   cball = new TF1("cball",crystalball,-2.0,2.0,7);
   cball->SetParName(0,"Norm");
@@ -135,9 +138,9 @@ void momres(TTree* ref) {
   rcan->cd(1);
   gPad->SetLogy();
   TH1F* momres = new TH1F("momres","Single Track Momentum Resolution;MeV/c",201,momlo,momhi);
-  ref->Project("momres","umcmom-umom",ugood+goodmc);
+  ref->Project("momres","umc.mom-utrk.fitmom",ugood+goodmc);
   cout << momres->GetEntries() <<endl;
-  ref->Project("+momres","dmom-dmcmom",dgood+goodmc);
+  ref->Project("+momres","dtrk.fitmom-dmc.mom",dgood+goodmc);
   cout << momres->GetEntries() <<endl;
   double upint = 2*momres->GetEntries()*momres->GetBinWidth(1);
   cball->SetParameters(upint,0.0,0.1,3.0,0.8,0.02,0.3);
@@ -148,8 +151,8 @@ void momres(TTree* ref) {
   rcan->cd(2);
   gPad->SetLogy();
   TH1F* momresd = new TH1F("momresd","Single Track Momentum Resolution, d0 cut;MeV/c",201,momlo,momhi);
-  ref->Project("momresd","umcmom-umom",ugood+goodmc+ud0low);
-  ref->Project("+dmomresd","dmom-dmcmom",dgood+goodmc+dd0low);
+  ref->Project("momresd","umc.mom-utrk.fitmom",ugood+goodmc+ud0low);
+  ref->Project("+dmomresd","dtrk.fitmom-dmc.mom",dgood+goodmc+dd0low);
   double upintd = 2*momresd->GetEntries()*momresd->GetBinWidth(1);
   cball->SetParameters(upintd,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
@@ -164,13 +167,13 @@ void diffres(TTree* ref) {
   TH1F* dmomdiff = new TH1F("dmomdiff","Reco Downstream - Upstream momentum, d0 cut",201,difflo,diffhi);
   TH1F* dmcmomdiff = new TH1F("dmcmomdiff","True Downstream - Upstream momentum, d0 cut",201,difflo,diffhi);
 
-  TCut notarget("abs(ud0>100)||(abs(uz0>200)&&utd>-.7)");
+  TCut notarget("abs(utrk.d0>100)||(abs(uz0>200)&&utrk.td>-.7)");
 
-  ref->Project("momdiff","dmom-umom",ugood+dgood+goodmc);
-  ref->Project("mcmomdiff","dmcmom-umcmom",ugood+dgood+goodmc);
+  ref->Project("momdiff","dtrk.fitmom-utrk.fitmom",ugood+dgood+goodmc);
+  ref->Project("mcmomdiff","dmc.mom-umc.mom",ugood+dgood+goodmc);
 
-  ref->Project("dmomdiff","dmom-umom",ugood+dgood+goodmc+dd0low+ud0low);
-  ref->Project("dmcmomdiff","dmcmom-umcmom",ugood+dgood+goodmc+dd0low+ud0low);
+  ref->Project("dmomdiff","dtrk.fitmom-utrk.fitmom",ugood+dgood+goodmc+dd0low+ud0low);
+  ref->Project("dmcmomdiff","dmc.mom-umc.mom",ugood+dgood+goodmc+dd0low+ud0low);
 
   TCanvas* dcan = new TCanvas("dcan","Momentum Difference",1200,800);
   dcan->Clear();
