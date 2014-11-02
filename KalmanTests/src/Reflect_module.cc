@@ -71,8 +71,7 @@ namespace mu2e {
     int _ipart; // particle PDG code
     double _mindmom, _maxdmom, _maxdtd;
     double _maxdp0, _mindt0, _maxdt0;
-    double _zent; // z position of the entrance of the tracker
-    unsigned _eventid;
+    Int_t _trkid,_eventid, _runid, _subrunid;
     bool _extrapolate;
     // diagnostic of Kalman fits
     KalDiag _kdiag;
@@ -82,14 +81,16 @@ namespace mu2e {
     TrkInfo _utrkinfo, _dtrkinfo;
     TrkInfoMC _mcinfo;
     TrkInfoMCStep _umcinfo,_dmcinfo;
-    threevec _ppos, _pmom, _pppos;
+    threevec _opos, _omom, _ppos, _pmom, _pppos;
+    Int_t _ppdg;
+    Float_t _ot0, _pt0;
     Int_t _uextnpa,_dextnpa,_uextnst,_dextnst;
     Float_t _uextdppa,_dextdppa,_uextdpst,_dextdpst;
 // create 
     void createTree();
     // Function to pair upstream and downstream fits
     bool reflection() const;
-    void getEntranceZ();
+    void fillMCInfo(art::Ptr<SimParticle> sp);
   };
 
   Reflect::Reflect(fhicl::ParameterSet const& pset):
@@ -126,22 +127,13 @@ namespace mu2e {
   void Reflect::beginJob( ){
 // create the tree
     createTree();
-// initialize counter
-    _eventid = 0;
   }
-
-  void Reflect::getEntranceZ( ){
- // get the virtual detector at the tracker entrance and take its z position
-    GeomHandle<VirtualDetector> vdg;
-    GeomHandle<DetectorSystem> det;
-    CLHEP::Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
-    _zent = entpos.z();
-  } 
 
   // For each event, look at tracker hits and calorimeter hits.
   void Reflect::analyze(const art::Event& event) {
-    if(_eventid==0)getEntranceZ();
-    _eventid++;
+    _eventid = event.event();
+    _runid = event.run();
+    _subrunid = event.subRun();
 // get MC info
     bool hasmc = _kdiag.findMCData(event);
 // loop over particle type
@@ -195,6 +187,8 @@ namespace mu2e {
 		    _kdiag.fillTrkInfoMC(umcsp,0,_mcinfo);
 		    std::vector<MCStepItr> steps;
 		    _kdiag.findMCSteps(_kdiag.mcData()._mcvdsteps,umcsp->id(),_kdiag.VDids(KalDiag::trackerEnt),steps);
+		    // fill specific MC information
+		    fillMCInfo(umcsp);
 		    if(steps.size() == 2){
 // These are sorted by time: first should be upstream, second down
 		      _kdiag.fillTrkInfoMCStep(steps[0],_umcinfo);
@@ -249,21 +243,56 @@ namespace mu2e {
     return retval;
   }
 
+
+  void
+  Reflect::fillMCInfo(art::Ptr<SimParticle> sp) {
+    GeomHandle<DetectorSystem> det;
+    if(!sp.isNull()){
+      CLHEP::Hep3Vector opos = det->toDetector(sp->startPosition());
+      CLHEP::Hep3Vector omom = sp->startMomentum().vect();
+      _opos = opos;
+      _omom = omom;
+      _ot0 = sp->startGlobalTime();
+// find the ultimate parent info
+      art::Ptr<SimParticle> parsp = sp;
+      while(!parsp->parent().isNull()){
+       parsp = parsp->parent();
+      }
+      _ppdg = parsp->pdgId();
+      CLHEP::Hep3Vector ppos = det->toDetector(parsp->startPosition());
+      CLHEP::Hep3Vector pmom = parsp->startMomentum().vect();
+      _ppos = ppos;
+      _pmom = pmom;
+      _pt0 = parsp->startGlobalTime();
+// project position into y=0 plane
+      double flen = -ppos.y()/pmom.y();
+      CLHEP::Hep3Vector planepos = ppos + flen*pmom;
+      _pppos = planepos;
+    }
+  }
+
   void
   Reflect::createTree() {
     art::ServiceHandle<art::TFileService> tfs;
     _reflect=tfs->make<TTree>("reflect","reflection diagnostics");
 // create the branches
     _reflect->Branch("eventid",&_eventid,"eventid/I");
+    _reflect->Branch("runid",&_runid,"runid/I");
+    _reflect->Branch("subrunid",&_subrunid,"subrunid/I");
     // upstream and downstream track information
     _reflect->Branch("utrk",&_utrkinfo,TrkInfo::leafnames().c_str());
     _reflect->Branch("dtrk",&_dtrkinfo,TrkInfo::leafnames().c_str());
     _reflect->Branch("mc",&_mcinfo,TrkInfoMC::leafnames().c_str());
     _reflect->Branch("umc",&_umcinfo,TrkInfoMCStep::leafnames().c_str());
     _reflect->Branch("dmc",&_dmcinfo,TrkInfoMCStep::leafnames().c_str());
-    _reflect->Branch("ppos",&_ppos,"px/F:py/F:pz/F");
-    _reflect->Branch("pmom",&_pmom,"pmx/F:pmy/F:pmz/F");
-    _reflect->Branch("pppos",&_pppos,"ppx/F:ppy/F:ppz/F");
+    _reflect->Branch("opos",&_opos,threevec::leafnames().c_str());
+    _reflect->Branch("omom",&_omom,threevec::leafnames().c_str());
+    _reflect->Branch("ot0",&_ot0,"ot0/F");
+    _reflect->Branch("ppdg",&_ppdg,"ppdg/I");
+    _reflect->Branch("ppos",&_ppos,threevec::leafnames().c_str());
+    _reflect->Branch("pmom",&_pmom,threevec::leafnames().c_str());
+    _reflect->Branch("pt0",&_pt0,"pt0/F");
+    _reflect->Branch("pppos",&_pppos,threevec::leafnames().c_str());
     if(_extrapolate){
       _reflect->Branch("uextnPA",&_uextnpa,"uextnpa/I");
       _reflect->Branch("dextnPA",&_dextnpa,"dextnpa/I");
@@ -275,8 +304,6 @@ namespace mu2e {
       _reflect->Branch("dextdpST",&_dextdpst,"dextdpst/F");
     }
   }
-
-
 }  // end namespace md2e
 
 // Part of the magic that makes this class a moddle.
