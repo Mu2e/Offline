@@ -19,6 +19,7 @@ tmp
 *.os
 *.root
 *.log
+*.log.*
 BaBar/include
 EventDisplay/src/EventDisplayDict.cc
 EventDisplay/src/EventDisplayDict.h
