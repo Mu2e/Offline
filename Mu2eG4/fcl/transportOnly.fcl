@@ -15,7 +15,7 @@ process_name : transportOnly
 # Start form an empty source
 source : {
   module_type : EmptyEvent
-  maxEvents : 100
+  maxEvents : 1000
 }
 
 services : {
