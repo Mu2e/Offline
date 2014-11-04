@@ -124,7 +124,7 @@ class mu2e {
     mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true,double np=3.6e20,double mustopfrac=1.87e-3) : dio(d), con(c),diogenrange(dgenrange),
     ndio(nd),ncon(nc),weightdio(weightd),nproton(np),nstopped(np*mustopfrac),capfrac(0.609),rmue(1e-16),trueconvmom(104.973),
     tdlow(0.57735027),tdhigh(1.0),t0min(700),t0max(1695),rpc(0.025), ap(0.083333),cmu(0.041666),mu2ecut(2),
-    reco("fitstatus>0"),_init(false)
+    reco("fit.status>0"),_init(false)
   {
   }
     void init();
@@ -214,10 +214,10 @@ void mu2e::init(){
   t0cuts[1] = "t0err<0.95";
   t0cuts[2] = "t0err<0.9";
   t0cuts[3] = "t0err<0.8";
-  momcuts[0] = "fitmomerr<0.3";
-  momcuts[1] = "fitmomerr<0.28";
-  momcuts[2] = "fitmomerr<0.25";
-  momcuts[3] = "fitmomerr<0.22";
+  momcuts[0] = "fit.momerr<0.3";
+  momcuts[1] = "fit.momerr<0.28";
+  momcuts[2] = "fit.momerr<0.25";
+  momcuts[3] = "fit.momerr<0.22";
   fitcuts[0] = "fitcon>1e-6";
   fitcuts[1] = "fitcon>1e-3";
   fitcuts[2] = "fitcon>2e-3";
@@ -258,12 +258,12 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
     _conspec[icut]->Sumw2();
 
     if(dio){
-      dio->Project(dioname,"fitmom","evtwt"*final[icut]);
+      dio->Project(dioname,"fit.mom","evtwt"*final[icut]);
       _diospec[icut]->Scale(dioscale);
       _diospec[icut]->SetMinimum(0.08*_diocz_f->Eval(trueconvmom-0.1)*ndecay*mevperbin);
       _diospec[icut]->SetMaximum(0.08*_diocz_f->Eval(_mmin)*ndecay*mevperbin);
     }
-    con->Project(conname,"fitmom",final[icut]);
+    con->Project(conname,"fit.mom",final[icut]);
     _conspec[icut]->Scale(conscale);
     
 //    _flat_f[icut] = new TF1(flatname,"[0]",_mmin,_mmax);
@@ -291,7 +291,7 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
 
 void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsigned ihi,const char* suffix) {
   char ctext[80];
-  snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
+  snprintf(ctext,80,"fit.mom>%f&&fit.mom<%f",momlow,momhigh);
   TCut momwin(ctext);
   // plot results
   TCanvas* allcan = new TCanvas("mu2eall","mu2e results",1200,800);
@@ -431,7 +431,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
 
 void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   char ctext[80];
-  snprintf(ctext,80,"fitmom>%f&&fitmom<%f",momlow,momhigh);
+  snprintf(ctext,80,"fit.mom>%f&&fit.mom<%f",momlow,momhigh);
   TCut momwin(ctext);
   std::string ssuf(suffix);
   TCanvas* dioc = new TCanvas("dioc","dio",1200,800);
@@ -468,7 +468,7 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
 
     if(dio)dio->Project(diogenname,"mcent.mom","evtwt"*(final[icut]+momwin));
     diogenwin[icut]->SetFillColor(colors[icut]);
-    if(dio)dio->Project(diodiffname,"fitmom-mcent.mom","evtwt"*(final[icut]+momwin));
+    if(dio)dio->Project(diodiffname,"fit.mom-mcent.mom","evtwt"*(final[icut]+momwin));
     diodiffwin[icut]->SetFillColor(colors[icut]);
     dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
   }
@@ -566,8 +566,8 @@ void mu2e::fitReco(unsigned icut) {
   amom->Sumw2();
   amomd->Sumw2();
 //  char fmomcut[80];
-//  snprintf(fmomcut,80,"fitmom>%5.3f",mcmom);
-  if(dio)dio->Project("amom","mcmom",final[icut]+TCut("fitmom>mcmom-4.0"));
+//  snprintf(fmomcut,80,"fit.mom>%5.3f",mcmom);
+  if(dio)dio->Project("amom","mcmom",final[icut]+TCut("fit.mom>mcmom-4.0"));
   if(dio)dio->Project("amomd","mcmom");
   amom->Divide(amomd);
   amom->SetMinimum(0.08);
@@ -587,7 +587,7 @@ void mu2e::fitReco(unsigned icut) {
 // set parameters according to cutset 'C'
   _momres = new TH1F("momres","Reco Momentum Resolution;P_{RECO}-P_{Conversion} (MeV/c)",_nbins,-5,1.0);
 //  _momres->Sumw2();
-  con->Project("momres","fitmom-mcmom",final[icut]);
+  con->Project("momres","fit.mom-mcmom",final[icut]);
 //  _momres->Scale(conscale);
   TCanvas* fcan = new TCanvas("fcan","Fits",1000,800);
   fcan->Clear();

@@ -161,18 +161,18 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,char* tname = "TrkQual")
       "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
 // signal is defined as the momentum resolution core,
-  TCut signal("fitstatus>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fitmom-mcent.mom<0.05&&fitmom-mcent.mom>-0.15");
+  TCut signal("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom<0.05&&fit.mom-mcent.mom>-0.15");
   // tail is defined as the high-side tail
-  TCut bkg("fitstatus>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fitmom-mcent.mom>0.5");
+  TCut bkg("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom>0.5");
 
   // weight the tail by the momentum difference
 
   if(bkgw == linear){
-    factory->SetBackgroundWeightExpression("max(1.0,5.0*(min(fitmom-mcent.mom,2.0)))");
+    factory->SetBackgroundWeightExpression("max(1.0,5.0*(min(fit.mom-mcent.mom,2.0)))");
   } else if(bkgw == exponential){
-    factory->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(fitmom-mcent.mom,2.0)))");
+    factory->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(fit.mom-mcent.mom,2.0)))");
   } else if(bkgw == polynomial){
-    factory->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(fitmom-mcent.mom,2.0),5.0))");
+    factory->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(fit.mom-mcent.mom,2.0),5.0))");
   } else {
     return -1;
   }
@@ -193,7 +193,7 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,char* tname = "TrkQual")
   factory->AddVariable("nactive","NActive","Count",'I');
   factory->AddVariable("nactive/nhits","FActive","Fraction",'F');
   factory->AddVariable("log10(fitcon)","LogFitCon","Probability",'F');
-  factory->AddVariable("fitmomerr","FitMomErr","MeV/c",'F');
+  factory->AddVariable("fit.momerr","FitMomErr","MeV/c",'F');
   factory->AddVariable("t0err","T0Err","nsec",'F');
   factory->AddVariable("d0","D0","mm",'F');
   factory->AddVariable("d0+2./om","MaxRadius","mm",'F');

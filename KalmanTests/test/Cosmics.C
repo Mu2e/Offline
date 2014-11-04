@@ -232,8 +232,8 @@ void Cosmics(TTree* cr, const char* page="prod") {
     TH2F* ctand = new TH2F("ctand","Downstream vs Upstream tan#lambda;tan(#lambda)_{d};tan(#lambda)_{u}",100,-1.25,-0.25,100,0.25,1.25);
     TH2F* cp0 = new TH2F("cp0","Downstream vs Upstream #phi_{0};radians;radians",100,-3.15,3.15,100,-3.15,3.15);
     TH2F* cd0 = new TH2F("cd0","Downstream vs Upstream d_{0};mm;mm",100,-400,400,100,-400,400);
-    TH1F* dtrkt0e = new TH1F("dtrkt0e","Downstream - Upstream t_{0};nsec",100,50,120);
-    TH1F* dtrkt0m = new TH1F("dtrkt0m","Downstream - Upstream t_{0};nsec",100,50,120);
+    TH1F* dtrkt0e = new TH1F("dtrkt0e","Downstream - Upstream t_{0};nsec",100,50,200);
+    TH1F* dtrkt0m = new TH1F("dtrkt0m","Downstream - Upstream t_{0};nsec",100,50,200);
     cmom->SetStats(0);
     ctand->SetStats(0);
     cd0->SetStats(0);
