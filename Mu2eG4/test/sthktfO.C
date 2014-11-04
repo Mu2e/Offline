@@ -516,7 +516,7 @@ void sthktfO()
   nacut = TCut(cutstring);
   snprintf(cutstring,100,"t0err<%f",maxt0err);
   t0errcut = TCut(cutstring);
-  snprintf(cutstring,100,"fitmomerr<%f",maxmomerr);
+  snprintf(cutstring,100,"fit.momerr<%f",maxmomerr);
   momerrcut = TCut(cutstring);
   snprintf(cutstring,100,"fitcon>%f",minfitcon);
   fitconcut = TCut(cutstring);
@@ -530,9 +530,9 @@ void sthktfO()
   tmom = TCut("mcent.mom>100");
   snprintf(cutstring,100,"nchits>=%i",minnhits);
   nmch = TCut(cutstring);
-  reco = TCut("fitstatus>0");
+  reco = TCut("fit.status>0");
   cosmic = TCut("abs(d0)<105 && d0+2/om>450 && d0+2/om<680");
-  snprintf(cutstring,100,"fitmom>%f&&fitmom<%f",momlow,momhigh);
+  snprintf(cutstring,100,"fit.mom>%f&&fit.mom<%f",momlow,momhigh);
   rmom = TCut(cutstring);
 
   goodmc = tpitch+tmom+nmch;
@@ -642,7 +642,7 @@ void sthktfO()
          << ", " << fileText[ii]
          <<endl;
 
-    ((*_trees[0])[ii])->Project(htmpname,"fitmom-mcent.mom",goodmc+goodfit);
+    ((*_trees[0])[ii])->Project(htmpname,"fit.mom-mcent.mom",goodmc+goodfit);
     _histograms_orig[ii]->Draw();
     cout << 0 << " done"  <<endl;
 

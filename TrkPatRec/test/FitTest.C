@@ -60,14 +60,14 @@ void KalTest (TTree* trk) {
   TH2F* mom = new TH2F("mom","momentum at start of tracker;true momentum (MeV);fit momentum (MeV)",
     100,90,107,100,90,107);
   mom->SetStats(0);
-  trk->Project("fstat","fitstatus","mcent.mom>100");
+  trk->Project("fstat","fit.status","mcent.mom>100");
   trk->Project("nh","nhits","kalfail==0");
   trk->Project("na","nactive","kalfail==0");
   trk->Project("nd","nhits-nactive","kalfail==0");
-//  trk->Project("momr","fitmom-mcmom","kalfail==0");
-//  trk->Project("momr","fitmom-mcmom","kalfail==0&&nactive>=20&&fitmom>100&&t0err<1&&chisq/ndof<5&&fitmomerr<0.2");
-  trk->Project("momr","fitmom-mcent.mom","mcent.mom>100&&kalfail==0");
-  //"&&t0err<0.8&&fitmomerr<0.1&&chisq/ndof<2");
+//  trk->Project("momr","fit.mom-mcmom","kalfail==0");
+//  trk->Project("momr","fit.mom-mcmom","kalfail==0&&nactive>=20&&fit.mom>100&&t0err<1&&chisq/ndof<5&&fit.momerr<0.2");
+  trk->Project("momr","fit.mom-mcent.mom","mcent.mom>100&&kalfail==0");
+  //"&&t0err<0.8&&fit.momerr<0.1&&chisq/ndof<2");
   kcan->Clear();
   kcan->Divide(2,2);
   kcan->cd(1);
@@ -83,7 +83,7 @@ void KalTest (TTree* trk) {
   t0->SetStats(1);
   t0->Fit("gaus");
   kcan->cd(3);
-  trk->Draw("fitmom:mcent.mom>>mom","kalfail==0&&nactive>=20");
+  trk->Draw("fit.mom:mcent.mom>>mom","kalfail==0&&nactive>=20");
   kcan->cd(4);
   momr->SetStats(1);
   double integral = momr->GetEntries()*momr->GetBinWidth(1);
@@ -251,9 +251,9 @@ void AntiMomRes(TTree* trk) {
   t0cuts[2] = "t0err>1.0";
   t0cuts[3] = "t0err>0.9";
   momcuts[0] = "";
-  momcuts[1] = "fitmomerr>0.2";
-  momcuts[2] = "fitmomerr>0.18";
-  momcuts[3] = "fitmomerr>0.15";
+  momcuts[1] = "fit.momerr>0.2";
+  momcuts[2] = "fit.momerr>0.18";
+  momcuts[3] = "fit.momerr>0.15";
   fitcuts[0] = "";
   fitcuts[1] = "fitcon<1e-4";
   fitcuts[2] = "fitcon<1e-3";
@@ -266,7 +266,7 @@ void AntiMomRes(TTree* trk) {
     snprintf(mname,50,"momres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",151,-2.5,2.5);
     TCut total = ncuts[ires] || t0cuts[ires] || momcuts[ires] || fitcuts[ires];
-    trk->Project(mname,"fitmom-mcent.mom",total+tsel);
+    trk->Project(mname,"fit.mom-mcent.mom",total+tsel);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     if(integral > 0){
       sgau->SetParameters(integral,0.0,momres[ires]->GetRMS(),momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
@@ -329,9 +329,9 @@ void MomRes(TTree* trk) {
   t0cuts[2] = "t0err<1.0";
   t0cuts[3] = "t0err<0.9";
   momcuts[0] = "";
-  momcuts[1] = "fitmomerr<0.2";
-  momcuts[2] = "fitmomerr<0.18";
-  momcuts[3] = "fitmomerr<0.15";
+  momcuts[1] = "fit.momerr<0.2";
+  momcuts[2] = "fit.momerr<0.18";
+  momcuts[3] = "fit.momerr<0.15";
   fitcuts[0] = "";
   fitcuts[1] = "fitcon>1e-4";
   fitcuts[2] = "fitcon>1e-3";
@@ -343,7 +343,7 @@ void MomRes(TTree* trk) {
     char mname[50];
     snprintf(mname,50,"momres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV",151,-2.5,2.5);
-    trk->Project(mname,"fitmom-mcent.mom",ncuts[ires]+t0cuts[ires]+momcuts[ires]+fitcuts[ires]+tsel);
+    trk->Project(mname,"fit.mom-mcent.mom",ncuts[ires]+t0cuts[ires]+momcuts[ires]+fitcuts[ires]+tsel);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     sgau->SetParameters(integral,0.0,momres[ires]->GetRMS(),momres[ires]->GetRMS(),0.01,2*momres[ires]->GetRMS(),2*momres[ires]->GetRMS());
     sgau->SetParLimits(5,1.0*momres[ires]->GetRMS(),1.0);
