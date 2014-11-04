@@ -528,7 +528,7 @@ namespace mu2e
     } else 
       _trkdiag = trkdiag;
       // general track info
-      _trkdiag->Branch((brapre+"trk").c_str(),&_trkinfo,TrkInfo::leafnames().c_str());
+      _trkdiag->Branch((brapre+"fit").c_str(),&_trkinfo,TrkInfo::leafnames().c_str());
 // basic MC info
     if(_fillmc){
       // general MC info

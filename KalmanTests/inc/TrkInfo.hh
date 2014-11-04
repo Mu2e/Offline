@@ -16,7 +16,7 @@ namespace mu2e
     TrkFitInfo() { reset(); }
     void reset() { _fitmom=_fitmomerr=_fltlen-1000.0; _fitpar.reset(); _fitparerr.reset(); }
     static std::string const& leafnames() { static const std::string leaves =
-      std::string("fitmom/F:fitmomerr/F:fltlen/F:")+helixpar::leafnames()+std::string(":d0err/F:p0err/F:omerr/F:z0err/F:tderr/F");
+      std::string("mom/F:momerr/F:fltlen/F:")+helixpar::leafnames()+std::string(":d0err/F:p0err/F:omerr/F:z0err/F:tderr/F");
       return leaves;
     }
   };
@@ -47,7 +47,7 @@ namespace mu2e
       _ent.reset();
     }
     static std::string const& leafnames() { static const std::string leaves =
-    std::string("fitstatus/I:fitpart/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:t0/F:t0err/F:chisq/F:fitcon/F:radlen/F:firstflt/F:lastflt/F:seedmom/F:trkqual/F:")+TrkFitInfo::leafnames();
+    std::string("status/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:t0/F:t0err/F:chisq/F:con/F:radlen/F:firstflt/F:lastflt/F:seedmom/F:trkqual/F:")+TrkFitInfo::leafnames();
      return leaves;
     }
   };
