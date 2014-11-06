@@ -12,6 +12,7 @@ BaBar/TrajGeom/
 BaBar/TrkBase/
 BaBar/difAlgebra/
 .sconsign.dblite
+bin/artProductSizes
 lib
 tmp
 *.o
