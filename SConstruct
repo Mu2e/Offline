@@ -182,7 +182,10 @@ env.gcc_ver=gcc_version.replace('.','')
 # Then guess at the correct location of Spectrum and MLP.
 rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
              'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
-env.Append( ROOTLIBS = rootlibs );
+env.Append( ROOTLIBS = rootlibs )
+
+bindir = base+'/bin/'
+env.Append( BINDIR = bindir )
 
 # Make the modified environment visible to all of the SConscript files
 Export('env')
