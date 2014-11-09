@@ -2,7 +2,12 @@
 // Main program for a utility that looks at an art format event-data file
 // and reports on on which objects use how much disk space.
 //
-
+// Fixme:
+// 1) Add an option to print sizes in kB, MB, GB
+// 2) Add an option to choose "sensible units" for each number.
+// 3) Add options to print size of branches of named trees, regardless of size"
+//      -r -s -e --run --subrun --event --tree=name
+//
 #include "Arguments.hh"
 #include "RootSizeOnDisk.hh"
 

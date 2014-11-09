@@ -1,5 +1,5 @@
-#ifndef Mu2eUtilities_Arguments_hh
-#define Mu2eUtilities_Arguments_hh
+#ifndef ROOTtools_artProductSizes_Arguments_hh
+#define ROOTtools_artProductSizes_Arguments_hh
 //
 // Parse and validate the argument list for the artProductSizes executable.
 //
@@ -28,4 +28,4 @@ namespace mu2e {
 
 }
 
-#endif /* Mu2eUtilities_Arguments_hh */
+#endif /* ROOTtools_artProductSizes_Arguments_hh */

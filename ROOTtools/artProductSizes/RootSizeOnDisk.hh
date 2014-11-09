@@ -1,5 +1,5 @@
-#ifndef Mu2eUtilities_RootSizeOnDisk_hh
-#define Mu2eUtilities_RootSizeOnDisk_hh
+#ifndef ROOTtools_artProductSizes_RootSizeOnDisk_hh
+#define ROOTtools_artProductSizes_RootSizeOnDisk_hh
 //
 // Collect information about the disk space used by the top tier and second
 // tier objects inside an art format root event-data file.
@@ -42,6 +42,7 @@ namespace mu2e {
       Record ( std::string const& aname,
                std::string const& aclassName,
                Long64_t           asize=0,
+               Long64_t           acount=1,
                double             afraction=0. );
       bool operator< ( Record const& rhs) const{
         return (name() < rhs.name());
@@ -55,22 +56,27 @@ namespace mu2e {
         return (className_ == "TKey");
       }
 
-      std::string const&    name()      const { return name_; }
-      std::string const&    className() const { return className_; }
-      Long64_t              size()      const { return size_; }
-      double                fraction()  const { return fraction_; }
+      std::string const&         name()      const { return name_; }
+      std::string const&         className() const { return className_; }
+      Long64_t                   size()      const { return size_; }
+      Long64_t                   count()     const { return count_; }
+      double                     fraction()  const { return fraction_; }
       std::vector<Record> const& contents()  const { return contents_; }
 
+      double sizePerEvent() const;
+
       // Modifiers
-      void size( Long64_t s )  { size_     = s;}
+      void size ( Long64_t s ) { size_     = s;}
+      void count( Long64_t c ) { count_    = c;}
       void fraction( double f) { fraction_ = f;}
       void contents( std::vector<Record>& c ) { contents_.swap(c); }
 
     private:
-      std::string name_;
-      std::string className_;
-      Long64_t    size_;
-      double      fraction_;
+      std::string name_;       // Name of the object
+      std::string className_;  // Classname, either TTree or TKey
+      Long64_t    size_;       // Total space on disk occupied by this object
+      Long64_t    count_;      // If a TTree, the number of events in the TTree; if a TKey then it is 1
+      double      fraction_;   // Fraction of the space occupied by objects at this level that is occupied by this object
 
       std::vector<Record> contents_;
 
@@ -104,4 +110,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif /* Mu2eUtilities_RootSizeOnDisk_hh */
+#endif /* ROOTtools_artProductSizes_RootSizeOnDisk_hh */

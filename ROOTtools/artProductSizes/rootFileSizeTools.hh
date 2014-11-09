@@ -1,5 +1,5 @@
-#ifndef Mu2eUtilities_rootFileSizeTools_hh
-#define Mu2eUtilities_rootFileSizeTools_hh
+#ifndef ROOTtools_artProductSizes_rootFileSizeTools_hh
+#define ROOTtools_artProductSizes_rootFileSizeTools_hh
 //
 // Utilties for finding the size on disk of TTrees and TBranches
 // Adapted from code given to us by Philippe Canal, pcanal@fnal.gov.
@@ -29,4 +29,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif /* Mu2eUtilities_rootFileSizeTools_hh */
+#endif /* ROOTtools_artProductSizes_rootFileSizeTools_hh */

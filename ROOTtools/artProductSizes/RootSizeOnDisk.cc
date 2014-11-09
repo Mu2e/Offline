@@ -2,10 +2,6 @@
 // Collect information about the disk space used by the top tier and second
 // tier objects inside an art format root event-data file.
 //
-// $Id: $
-// $Author: $
-// $Date: $
-//
 
 #include <iostream>
 #include <iomanip>
@@ -52,11 +48,17 @@ namespace {
 mu2e::RootSizeOnDisk::Record::Record ( std::string const& aname,
                                        std::string const& aclassName,
                                        Long64_t           asize,
+                                       Long64_t           acount,
                                        double             afraction ):
   name_(aname),
   className_(aclassName),
   size_(asize),
+  count_(acount),
   fraction_(afraction){
+}
+
+double mu2e::RootSizeOnDisk::Record::sizePerEvent() const{
+  return ( count_ > 0 ) ? size_/double(count_) : size_;
 }
 
 bool mu2e::greaterBySize( mu2e::RootSizeOnDisk::Record const& lhs, mu2e::RootSizeOnDisk::Record const& rhs ){
@@ -66,21 +68,34 @@ bool mu2e::greaterBySize( mu2e::RootSizeOnDisk::Record const& lhs, mu2e::RootSiz
 void mu2e::RootSizeOnDisk::print( ostream& os, double minimumFraction ) const{
 
   os << "\nSize on disk for the file: " << filename() << "\n"
-     << "Total size on disk: " << size()
-     << "\n"
+     << "Size on disk (bytes):      " << size()
      << endl;
-  os << setw(18) << "Size in bytes"
-     << setw(10) << "   Fraction"
-     << " TTree/TKey Name"
+  os << setw(13) << "Size"
+     << setw(13) << "Size/Entry"
+     << setw(14) << "Entries"
+     << setw(12) << "Fraction"
+     << "  TTree/TKey Name"
+
      << endl;
+  os << setw(13) << "(bytes)"
+     << setw(13) << "(bytes)"
+     << endl;
+
   for ( RootSizeOnDisk::Record const& key : contents() ){
     if ( key.isTree() || key.isTKey() ){
-      os << setw(18) << key.size() << " "
-         << boost::format("%10.3f") % key.fraction() << " "
+      os << setw(13) << key.size();
+      if ( key.isTree() ) {
+        os << boost::format("%13.1f") % key.sizePerEvent()
+           << boost::format("%14d") % key.count();
+      } else{
+        os << setw(13) << "--"
+           << setw(14) << "--";
+      }
+      os << boost::format("%12.3f") % key.fraction() << "  "
          << key.name()
          << endl;
     } else {
-      os << setw(18) << key.size() << " "
+      os << setw(13) << key.size() << " "
          << boost::format("%10.3f") % key.fraction() << " "
          << key.name()
          << "  (skipped because not a TTree or a TKey; it is a"
@@ -88,9 +103,10 @@ void mu2e::RootSizeOnDisk::print( ostream& os, double minimumFraction ) const{
          << endl;
     }
   }
-  os << "------------------------------\n"
-     << setw(18) << sum() << " "
-     << boost::format("%10.3f") % fraction() << " "
+  os << "----------------------------------------------------\n"
+     << setw(13) << sum()
+     << setw(29) << " "
+     << boost::format("%10.3f") % fraction() << "  "
      << "Total\n"
      << endl;
 
@@ -101,25 +117,33 @@ void mu2e::RootSizeOnDisk::print( ostream& os, double minimumFraction ) const{
 
   for ( RootSizeOnDisk::Record const& key : contents() ){
     if ( key.isTree() && (key.fraction() > minimumFraction ) ){
-      os << "\nDetails for branch: "  << key.name() << "\n"        << endl;
-      os << setw(18) << "Size in bytes"
+      os << "\nDetails for branch: "  << key.name() << endl;
+      os << "Number of entries:  " << key.count() << endl;
+      os << setw(12) << "Size"
+         << setw(15) << "Size/Entry"
          << setw(10) << "   Fraction"
-         << " Data Product Name"
+         << "  Data Product Name"
+         << endl;
+      os << setw(12) << "(bytes)"
+         << setw(15) << "(bytes)\n"
          << endl;
 
       Long64_t sum(0);
       for ( auto const& branch : key.contents() ){
         sum += branch.size();
-        os << setw(18) << branch.size() << " "
-           << boost::format("%10.3f") % branch.fraction() << " "
+        os << setw(12) << branch.size() << " "
+           << boost::format("%14.1f") % branch.sizePerEvent()  << " "
+           << boost::format("%10.3f") % branch.fraction()      << "  "
            << branch.name()
            << endl;
       }
       double ratio = double(sum)/double(key.size());
-      os << "------------------------------\n"
-         << setw(18) << sum << " "
-         << boost::format("%10.3f") % ratio << " "
-         << "Total\n"
+      double sizePerEvent = (key.count()>0) ? double(sum)/double(key.count()) : sum;
+      os << "--------------------------------------\n"
+         << setw(12) << sum << " "
+         << boost::format("%14.1f") % sizePerEvent  << " "
+         << boost::format("%10.3f") % ratio
+         << "  Total\n"
          << endl;
     }
   }
@@ -154,6 +178,7 @@ mu2e::RootSizeOnDisk::RootSizeOnDisk ( std::string const& aFileName, TFile* file
       sum_ += size;
       double f = double(size)/double(size_);
       key.size(size);
+      key.count(tree->GetEntries());
       key.fraction(f);
       fillLevel2( key, tree );
     } else if ( key.isTKey() ){
@@ -185,7 +210,7 @@ void mu2e::RootSizeOnDisk::fillLevel2( RootSizeOnDisk::Record& key, TTree* tree)
     TBranch *subbr = dynamic_cast<TBranch*>(branches->At(i));
     Long64_t size =  sizeOnDisk(subbr,true);
     double f = double(size)/double(key.size());
-    branchInfo.emplace_back( subbr->GetName(), "TBranch", size, f );
+    branchInfo.emplace_back( subbr->GetName(), "TBranch", size, key.count(), f );
   }
 
   sort( branchInfo.begin(), branchInfo.end(), greaterBySize);
