@@ -192,13 +192,6 @@
 
  <class name="mu2e::CRSScintillatorBarIndex" />
 
- <class name="mu2e::CRVHit" />
- <class name="std::set<mu2e::CRVHit>" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,std::set<mu2e::CRVHit> >" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,std::set<mu2e::CRVHit> >" />
- <class name="mu2e::CRVHitCollection" />
- <class name="art::Wrapper<mu2e::CRVHitCollection>" />
-
  <class name="mu2e::CRVPEs" />
  <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CRVPEs>" />
  <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CRVPEs>" />
