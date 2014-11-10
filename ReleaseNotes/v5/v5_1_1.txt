@@ -14,6 +14,10 @@ Still under construction
       MCDataProducts/inc/CRVPEsCollection.hh
       MCDataProducts/inc/CRVWaveforms.hh
       MCDataProducts/inc/CRVWaveformsCollection.hh
+    Removed files:
+      HitMakers/src/MakeCRVHits_module.cc
+      MCDataProducts/inc/CRVHit.hh
+      MCDataProducts/inc/CRVHitCollection.hh
 
 4)  Nov 3, 2014 - genser
     Enabled ups build qualifier as a parameter
