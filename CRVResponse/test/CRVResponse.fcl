@@ -1,0 +1,58 @@
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+process_name : CRVResponse
+
+source :
+{
+  module_type : RootInput
+}
+
+services :
+{
+  user :
+  {
+    GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  }
+}
+
+physics :
+{
+  producers:
+  {
+    CrvPEs:
+    {
+      module_type               : MakeCrvPEs
+      g4ModuleLabel             : "g4filter"
+      lookupTableFileName       : "CRVResponse/test/CRVLookupTable.root"
+      scintillationYield        : 820.0    //820.0 photons per MeV
+      scintillatorDecayTimeFast : 3.0      //3.0 ns
+      scintillatorDecayTimeSlow : 10.0     //10.0 ns
+      fiberDecayTime            : 7.4      //7.4 ns
+    }
+    CrvWaveforms:
+    {
+      module_type               : MakeCrvWaveforms
+      crvPEsModuleLabel         : "CrvPEs"
+      singlePEWaveformFileName  : "CRVResponse/test/singlePEWaveform.txt"
+      binWidth                  : 12.5   //12.5 ns (digitizer sampling rate)
+      maxTime                   : 200.0  //200.0 ns
+    }
+  }
+
+  an : [CrvPEs, CrvWaveforms]
+  out: [Output]
+  end_paths: [an, out]
+}
+
+outputs: 
+{
+    Output : 
+    {
+        module_type : RootOutput
+        fileName    : "data_crv.root"
+    }
+}
+
