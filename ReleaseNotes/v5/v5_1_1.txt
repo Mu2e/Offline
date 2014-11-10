@@ -2,6 +2,19 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_1_1
 
+5)  Nov 10, 2014 - ehrlich
+    Added the code for the CRV counter simulation
+    Modified files:
+      MCDataProducts/src/classes_def.xml
+      MCDataProducts/src/classes.h
+    Added directory:
+      CRVResponse
+    Added files:
+      MCDataProducts/inc/CRVPEs.hh
+      MCDataProducts/inc/CRVPEsCollection.hh
+      MCDataProducts/inc/CRVWaveforms.hh
+      MCDataProducts/inc/CRVWaveformsCollection.hh
+
 4)  Nov 3, 2014 - genser
     Enabled ups build qualifier as a parameter
     Modified Files:
