@@ -190,12 +190,25 @@
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::SimParticleTrackerHitSummary,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void> >" />
 
- <class name="mu2e::CRVHit" />
  <class name="mu2e::CRSScintillatorBarIndex" />
+
+ <class name="mu2e::CRVHit" />
  <class name="std::set<mu2e::CRVHit>" />
  <class name="std::pair<mu2e::CRSScintillatorBarIndex,std::set<mu2e::CRVHit> >" />
  <class name="std::map<mu2e::CRSScintillatorBarIndex,std::set<mu2e::CRVHit> >" />
  <class name="mu2e::CRVHitCollection" />
  <class name="art::Wrapper<mu2e::CRVHitCollection>" />
+
+ <class name="mu2e::CRVPEs" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CRVPEs>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CRVPEs>" />
+ <class name="mu2e::CRVPEsCollection" />
+ <class name="art::Wrapper<mu2e::CRVPEsCollection>" />
+
+ <class name="mu2e::CRVWaveforms" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CRVWaveforms>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CRVWaveforms>" />
+ <class name="mu2e::CRVWaveformsCollection" />
+ <class name="art::Wrapper<mu2e::CRVWaveformsCollection>" />
 
 </lcgdict>
