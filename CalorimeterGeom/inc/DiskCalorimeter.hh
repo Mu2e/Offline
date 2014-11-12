@@ -55,7 +55,7 @@ namespace mu2e {
           virtual double           crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const; 
           virtual std::vector<int> neighborsByLevel(int crystalId, int level)                  const; 
 
-  	  bool                     isInsideDisk(int idisk, CLHEP::Hep3Vector const& pos) const ;       	 
+  	  bool                     isInsideDisk(int idisk, CLHEP::Hep3Vector const& pos)       const ;       	 
 
 
         private:

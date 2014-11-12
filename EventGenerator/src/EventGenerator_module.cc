@@ -55,6 +55,7 @@
 #include "EventGenerator/inc/ExtMonFNALGun.hh"
 #include "EventGenerator/inc/BremElectronGun.hh"
 #include "EventGenerator/inc/MuonicXRayGun.hh"
+#include "EventGenerator/inc/CaloCalibGun.hh"
 #include "SeedService/inc/SeedService.hh"
 
 // Includes from art and its toolchain.
@@ -173,6 +174,7 @@ namespace mu2e {
     bool doStoppedMuonGun       = config.getBool( "stoppedMuonGun.do",   false );
     bool doBremElectronGun      = config.getBool( "bremElectronGun.do",  false );
     bool doMuonicXRayGun        = config.getBool( "muonicXRayGun.do",    false );
+    bool doCaloCalibGun         = config.getBool( "caloCalibGun.do",     false );
 
     // Instantiate generators for this run.
     if ( doParticleGun)          _generators.push_back( GeneratorBasePtr( new ParticleGun(      run, config)) );
@@ -189,8 +191,9 @@ namespace mu2e {
     if ( doNuclearCapture)       _generators.push_back( GeneratorBasePtr( new NuclearCaptureGun(run, config)) );
     if ( doExtMonFNALGun)        _generators.push_back( GeneratorBasePtr( new ExtMonFNALGun(    run, config)) );
     if ( doStoppedMuonGun)       _generators.push_back( GeneratorBasePtr( new StoppedMuonGun(   run, config)) );
-    if ( doBremElectronGun)      _generators.push_back( GeneratorBasePtr( new BremElectronGun(   run, config)) );
-    if ( doMuonicXRayGun)        _generators.push_back( GeneratorBasePtr( new MuonicXRayGun(   run, config)) );
+    if ( doBremElectronGun)      _generators.push_back( GeneratorBasePtr( new BremElectronGun(  run, config)) );
+    if ( doMuonicXRayGun)        _generators.push_back( GeneratorBasePtr( new MuonicXRayGun(    run, config)) );
+    if ( doCaloCalibGun)         _generators.push_back( GeneratorBasePtr( new CaloCalibGun(     run, config)) );
 
     if ( _generators.size() == 0 ){
       mf::LogWarning("CONTROL")
