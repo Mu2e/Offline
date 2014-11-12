@@ -691,12 +691,6 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
 	ir  = cgvane->nCrystalR();
       }
       else {
-	mu2e::HexMap hmap;
-	  //	  HexLK lk = hmap.lk(id);
-
-// 	  iz = lk._l;
-// 	  ir = lk._k;
-
 	iz = -1;
 	ir = -1;
       }
