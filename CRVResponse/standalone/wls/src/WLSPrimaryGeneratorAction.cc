@@ -131,7 +131,8 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
       BuildEmissionSpectrum();
     }
 
-    int generatedPhotons=100000;  //takes about 5 min
+//    int generatedPhotons=100000;  //takes about 5 min
+int generatedPhotons=100;  //takes about 5 min
     G4ThreeVector startCenter = GetOptPhotonStartPoint();
     double binWidthX = WLSEventAction::Instance()->GetHistBinWidthX(_binx);
     double binWidthY = WLSEventAction::Instance()->GetHistBinWidthY(_biny);
@@ -141,7 +142,8 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
     double fiberSeparation = WLSDetectorConstruction::Instance()->GetFiberSeparation();
     if(anEvent->GetEventID()>=2) //Cerenkov inside of fiber
     {
-      generatedPhotons=10000;
+//      generatedPhotons=10000;
+generatedPhotons=100;
       startCenter.setX(0);
       startCenter.setY(anEvent->GetEventID()==2?-fiberSeparation/2.0:fiberSeparation/2.0); //two fibers
       binWidthX=fiberRadius*2.0;
