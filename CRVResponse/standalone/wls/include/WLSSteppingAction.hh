@@ -14,7 +14,7 @@ class WLSSteppingAction : public G4UserSteppingAction
 {
   public:
 
-    WLSSteppingAction(int mode);
+    WLSSteppingAction(int mode, const std::string &lookupFileName = "");
     ~WLSSteppingAction();
 
     void                      UserSteppingAction(const G4Step*);

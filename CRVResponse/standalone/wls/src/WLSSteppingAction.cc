@@ -18,20 +18,19 @@
 #include "G4SystemOfUnits.hh"
 #include <sstream>
 
-#include <TFile.h>
 #include <TH3D.h>
 #include <TNtuple.h>
 
 WLSSteppingAction* WLSSteppingAction::fgInstance = NULL;
 
-WLSSteppingAction::WLSSteppingAction(int mode) : _crvPEresponse(NULL), _mode(mode)
+WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName) : _crvPEresponse(NULL), _mode(mode)
 {
   fgInstance = this;
 
   if(_mode==0)
   {
     _crvPEresponse = new CrvPEresponse();
-    _crvPEresponse->LoadLookupTable("CRVLookupTable.root");
+    _crvPEresponse->LoadLookupTable(lookupFileName);
   }
 }
 

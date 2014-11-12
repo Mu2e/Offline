@@ -28,6 +28,7 @@ int main(int argc,char** argv)
   if(argc<2) return(-1);
   int mode=atoi(argv[1]);
   if(mode==-1 && argc!=6) return(-1);
+  if(mode==0 && argc!=3) return(-1);
 
   G4String physName = "QGSP_BERT_EMV";
 //  G4String physName = "QGSP_BERT_HP";  //for neutrons
@@ -57,7 +58,9 @@ int main(int argc,char** argv)
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);
   runManager->SetUserAction(eventAction);
-  runManager->SetUserAction( new WLSSteppingAction(mode) );
+
+  if(mode==-1) runManager->SetUserAction( new WLSSteppingAction(mode) );
+  else runManager->SetUserAction( new WLSSteppingAction(mode, argv[2]) );
 
 #if 0 
   G4VisManager *visManager = new G4VisExecutive();

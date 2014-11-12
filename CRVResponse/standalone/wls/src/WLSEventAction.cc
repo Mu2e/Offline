@@ -88,9 +88,6 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
 
   if(_mode==0)
   {
-    _fileLookupTable = new TFile("CRVLookupTable.root");
-    if(_fileLookupTable==NULL) throw std::logic_error("CRVLookupTable.root not found.");
-
     _histPE = new TH1D**[2];
     _histPE[0] = new TH1D*[4];
     _histPE[1] = new TH1D*[4];
