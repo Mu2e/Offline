@@ -1,5 +1,5 @@
-#ifndef MCDataProducts_CRVPEs_hh
-#define MCDataProducts_CRVPEs_hh
+#ifndef RecoDataProducts_CRVRecoPulses_hh
+#define RecoDataProducts_CRVRecoPulses_hh
 //
 // $Id: $
 // $Author: ehrlich $
@@ -11,58 +11,66 @@
 
 namespace mu2e 
 {
-  class CRVPEs
+  class CRVRecoPulses
   {
     public:
 
-    CRVPEs() {}
+    CRVRecoPulses() {}
 
-    std::vector<double> &GetPEtimes(int fiberNumber, int side) 
+    struct CRVSingleRecoPulse
+    {
+      int    _PEs;
+      double _leadingEdge;
+      double _timeOverThreshold;
+      double _pulseHeight;
+    };
+
+    std::vector<CRVSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) 
     {
       if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
       if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
       int SiPM = 2*fiberNumber + side;
-      return _PEtimes[SiPM];
+      return _crvPulses[SiPM];
     }
 
-    std::vector<double> &GetPEtimes(int SiPMNumber) 
+    std::vector<CRVSingleRecoPulse> &GetRecoPulses(int SiPMNumber) 
     {
       if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _PEtimes[SiPMNumber];
+      return _crvPulses[SiPMNumber];
     }
 
-    const std::vector<double> &GetPEtimes(int fiberNumber, int side) const 
+    const std::vector<CRVSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) const 
     {
       if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
       if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
       int SiPM = 2*fiberNumber + side;
-      return _PEtimes[SiPM];
+      return _crvPulses[SiPM];
     }
 
-    const std::vector<double> &GetPEtimes(int SiPMNumber) const
+    const std::vector<CRVSingleRecoPulse> &GetRecoPulses(int SiPMNumber) const
     {
       if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _PEtimes[SiPMNumber];
+      return _crvPulses[SiPMNumber];
     }
 
-    unsigned int GetNumberOfPEs(int fiberNumber, int side) const 
+    unsigned int GetNumberOfRecoPulses(int fiberNumber, int side) 
     {
       if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
       if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
       int SiPM = 2*fiberNumber + side;
-      return _PEtimes[SiPM].size();
+      return _crvPulses[SiPM].size();
     }
 
-    unsigned int GetNumberOfPEs(int SiPMNumber) const
+    unsigned int GetNumberOfRecoPulses(int SiPMNumber) 
     {
       if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _PEtimes[SiPMNumber].size();
+      return _crvPulses[SiPMNumber].size();
     }
 
     private:
 
-    std::vector<double> _PEtimes[4];
+    std::vector<CRVSingleRecoPulse> _crvPulses[4];
   };
 }
 
-#endif /* MCDataProducts_CRVPEs_hh */
+#endif /* RecoDataProducts_CRVRecoPulses_hh */

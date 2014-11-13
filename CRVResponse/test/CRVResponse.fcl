@@ -40,9 +40,14 @@ physics :
       binWidth                  : 12.5   //12.5 ns (digitizer sampling rate)
       maxTime                   : 200.0  //200.0 ns
     }
+    CrvRecoPulses:
+    {
+      module_type               : ExtractCrvRecoPEs
+      crvWaveformsModuleLabel   : "CrvWaveforms"
+    }
   }
 
-  an : [CrvPEs, CrvWaveforms]
+  an : [CrvPEs, CrvWaveforms, CrvRecoPulses]
   out: [Output]
   end_paths: [an, out]
 }

@@ -21,6 +21,7 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
+#include "RecoDataProducts/inc/CRVRecoPulsesCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
@@ -51,6 +52,8 @@
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/TrackSummary.hh"
 
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
 template class std::vector<art::Ptr<mu2e::CaloHit> >;
@@ -80,6 +83,9 @@ template class std::vector<mu2e::TrkExtTraj>;
 template class art::Ptr<mu2e::PIDProduct>;
 template class std::vector<mu2e::PIDProduct>;
 template class std::vector<std::pair<unsigned int, unsigned int> >;
+template class std::vector<mu2e::CRVRecoPulses::CRVSingleRecoPulse>;
+template class std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CRVRecoPulses>;
+template class std::map<mu2e::CRSScintillatorBarIndex,mu2e::CRVRecoPulses>;
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
 template class art::Wrapper<mu2e::StereoHitCollection>;
@@ -102,6 +108,8 @@ template class art::Wrapper<mu2e::TrackerHitByID>;
 template class art::Wrapper<mu2e::TrackSeedCollection>;
 template class art::Wrapper<mu2e::TrkExtTrajCollection>;
 template class art::Wrapper<mu2e::PIDProductCollection>;
+template class art::Wrapper<std::vector <mu2e::CRVRecoPulses::CRVSingleRecoPulse> >;
+template class art::Wrapper<mu2e::CRVRecoPulsesCollection>;
 
 template class std::vector<mu2e::ExtMonFNALRawHit>;
 template class art::Wrapper<mu2e::ExtMonFNALRawHitCollection>;

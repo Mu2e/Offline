@@ -241,8 +241,8 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 void WLSEventAction::Draw(const G4Event* evt) const
 {
   CrvWaveformResponse waveformResponse;
-  double binWidth = 0.25; //ns
-  double maxTime = 80.0; //ns
+  double binWidth = 12.5; //ns
+  double maxTime = 200.0; //ns
   gStyle->SetOptStat(0);
   waveformResponse.LoadSinglePEWaveform("singlePEWaveform.txt", binWidth, maxTime);
 
@@ -299,9 +299,12 @@ void WLSEventAction::Draw(const G4Event* evt) const
     }
     graph[SiPM]=new TGraph();
     graph[SiPM]->SetTitle("");
-    graph[SiPM]->SetLineWidth(5);
-    graph[SiPM]->SetLineColor(kRed);
-    graph[SiPM]->DrawGraph(n,t,v,"same");
+    graph[SiPM]->SetMarkerStyle(20);
+    graph[SiPM]->SetMarkerSize(1);
+    graph[SiPM]->SetMarkerColor(kRed);
+//    graph[SiPM]->SetLineWidth(5);
+//    graph[SiPM]->SetLineColor(kRed);
+    graph[SiPM]->DrawGraph(n,t,v,"sameP");
 
     TGaxis *axis = new TGaxis(maxTime,0,maxTime,histMax,0,waveformMax,10,"+L");
     axis->SetTitle("voltage [V]");
