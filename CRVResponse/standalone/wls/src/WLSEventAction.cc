@@ -114,6 +114,13 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
       _histT[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),1000,0,1000);
     }
   }
+
+  _PEvsIntegral = new TH2D("PEvsIntegral","PEvsIntegral", 60,0,60, 100,0,1.2);
+  _PEvsIntegral->SetXTitle("PEs");
+  _PEvsIntegral->SetYTitle("Integral");
+  _PEvsPulseHeight = new TH2D("PEvsPulseHeight","PEvsPulseHeight", 60,0,60, 100,0,0.4);
+  _PEvsPulseHeight->SetXTitle("PEs");
+  _PEvsPulseHeight->SetYTitle("PulseHeight [mV]");
 }
 
 WLSEventAction::~WLSEventAction()
@@ -235,6 +242,11 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     std::cout<<std::endl;
 
     if(evt->GetEventID()<10) Draw(evt);
+    if(evt->GetEventID()==10)
+    {
+      _PEvsIntegral->SaveAs("PEvsIntegral.C");
+      _PEvsPulseHeight->SaveAs("PEvsPulseHeight.C");
+    }
   }
 }
 
@@ -242,16 +254,15 @@ void WLSEventAction::Draw(const G4Event* evt) const
 {
   CrvWaveformResponse waveformResponse;
   double binWidth = 12.5; //ns
-  double maxTime = 200.0; //ns
   gStyle->SetOptStat(0);
-  waveformResponse.LoadSinglePEWaveform("singlePEWaveform.txt", binWidth, maxTime);
+  waveformResponse.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 200);
 
-  double startTime[4];
+  double startTime=-G4UniformRand()*binWidth;
   std::vector<double> waveform[4];
   for(int SiPM=0; SiPM<4; SiPM++)
   {
     const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
-    waveformResponse.makeWaveforms(arrivalTimes, waveform[SiPM], startTime[SiPM]);
+    waveformResponse.MakeWaveforms(arrivalTimes, waveform[SiPM], startTime, binWidth);
   }
 
   std::ostringstream s1;
@@ -269,7 +280,6 @@ void WLSEventAction::Draw(const G4Event* evt) const
     std::ostringstream s2, s3;
     s2<<"waveform_"<<evt->GetEventID()<<"__"<<SiPM;
     s3<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
-    double maxTime = 200.0; //ns
     hist[SiPM]=new TH1D(s2.str().c_str(),s3.str().c_str(),100,0,200);
     const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
     for(unsigned int i=0; i<arrivalTimes.size(); i++)
@@ -291,10 +301,23 @@ void WLSEventAction::Draw(const G4Event* evt) const
     if(n==0) continue;
     double *t = new double[n];
     double *v = new double[n];
+    double integral = 0;
+    double maxBin = NAN;
+    int pulsesFound = 0;
     for(unsigned int j=0; j<n; j++)
     {
-      t[j]=startTime[SiPM]+j*binWidth;
+      t[j]=startTime+j*binWidth;
       v[j]=waveform[SiPM][j];
+      if(v[j]>0.005)
+      {
+        if(j>0)
+        {
+          if(v[j-1]<=0.005) pulsesFound++;
+        }
+        else pulsesFound++;
+        if(isnan(maxBin) || v[j]>maxBin) maxBin=v[j];
+        integral+=v[j];
+      }
       v[j]*=scale;
     }
     graph[SiPM]=new TGraph();
@@ -302,11 +325,17 @@ void WLSEventAction::Draw(const G4Event* evt) const
     graph[SiPM]->SetMarkerStyle(20);
     graph[SiPM]->SetMarkerSize(1);
     graph[SiPM]->SetMarkerColor(kRed);
-//    graph[SiPM]->SetLineWidth(5);
-//    graph[SiPM]->SetLineColor(kRed);
     graph[SiPM]->DrawGraph(n,t,v,"sameP");
 
-    TGaxis *axis = new TGaxis(maxTime,0,maxTime,histMax,0,waveformMax,10,"+L");
+    if(pulsesFound==1)
+    {
+      int PEs = arrivalTimes.size();
+      std::cout<<"PEs/integral: "<<PEs/integral<<"         PEs/maxBin: "<<PEs/maxBin<<std::endl;
+      _PEvsIntegral->Fill(PEs,integral);
+      _PEvsPulseHeight->Fill(PEs,maxBin);
+    }
+
+    TGaxis *axis = new TGaxis(180.0,0,180.0,histMax,0,waveformMax,10,"+L");
     axis->SetTitle("voltage [V]");
     axis->SetTitleOffset(-0.5);
     axis->SetTitleColor(kRed);

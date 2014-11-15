@@ -51,6 +51,8 @@ class WLSEventAction : public G4UserEventAction
 
     void                    Draw();
     void                    Draw(const G4Event* evt) const;
+
+    TH2D                    *_PEvsIntegral, *_PEvsPulseHeight;
 };
 
 #endif

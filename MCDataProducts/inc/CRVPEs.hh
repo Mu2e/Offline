@@ -59,6 +59,18 @@ namespace mu2e
       return _PEtimes[SiPMNumber].size();
     }
 
+    double GetFirstPEtime() const
+    {
+      double firstTime = NAN;
+      for(int SiPM=0; SiPM<4; SiPM++)
+      {
+        if(_PEtimes[SiPM].size()==0) continue;
+        double t = *std::min_element(_PEtimes[SiPM].begin(),_PEtimes[SiPM].end());
+        if(isnan(firstTime) || t<firstTime) firstTime=t;
+      }
+      return firstTime;
+    }
+
     private:
 
     std::vector<double> _PEtimes[4];

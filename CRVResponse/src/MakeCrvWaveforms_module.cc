@@ -29,7 +29,7 @@
 
 #include <string>
 
-#include <TRandom3.h>
+#include "Randomize.hh"
 #include <TMath.h>
 
 namespace mu2e 
@@ -50,17 +50,17 @@ namespace mu2e
     boost::shared_ptr<CrvWaveformResponse> _crvWaveformResponse;
 
     double  _binWidth;
-    double  _maxTime;
   };
 
   MakeCrvWaveforms::MakeCrvWaveforms(fhicl::ParameterSet const& pset) :
     _crvPEsModuleLabel(pset.get<std::string>("crvPEsModuleLabel")),
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
-    _binWidth(pset.get<double>("binWidth",12.5)),    //12.5 ns (digitizer sampling rate)
-    _maxTime(pset.get<double>("maxTime",200.0))  //200.0 ns
+    _binWidth(pset.get<double>("binWidth",12.5))                   //12.5 ns (digitizer sampling rate)
   {
+    double singlePEWaveformBinWidth(pset.get<double>("singlePEWaveformBinWidth",1.0));    //1.0 ns
+    int nBins(pset.get<int>("singlePEWaveformBins",200));          //200
     _crvWaveformResponse = boost::shared_ptr<CrvWaveformResponse>(new CrvWaveformResponse());
-    _crvWaveformResponse->LoadSinglePEWaveform(_singlePEWaveformFileName, _binWidth, _maxTime);
+    _crvWaveformResponse->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformBinWidth, nBins);
     produces<CRVWaveformsCollection>();
   }
 
@@ -79,6 +79,15 @@ namespace mu2e
     art::Handle<CRVPEsCollection> crvPEsCollection;
     event.getByLabel(_crvPEsModuleLabel,"",crvPEsCollection);
 
+    double startTime=NAN;
+    for(CRVPEsCollection::const_iterator iter=crvPEsCollection->begin(); iter!=crvPEsCollection->end(); iter++)
+    {
+      const CRVPEs &crvPEs = iter->second;
+      double t = crvPEs.GetFirstPEtime();
+      if(isnan(startTime) || t<startTime) startTime=t;
+    }
+    startTime-=G4UniformRand()*_binWidth;
+
     for(CRVPEsCollection::const_iterator iter=crvPEsCollection->begin(); iter!=crvPEsCollection->end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = iter->first;
@@ -90,8 +99,7 @@ namespace mu2e
       {
         const std::vector<double> &arrivalTimes = crvPEs.GetPEtimes(SiPM);
         std::vector<double> &waveform = crvWaveforms.GetWaveform(SiPM);
-        double startTime;
-        _crvWaveformResponse->makeWaveforms(arrivalTimes, waveform, startTime);
+        _crvWaveformResponse->MakeWaveforms(arrivalTimes, waveform, startTime, _binWidth);
         crvWaveforms.SetStartTime(SiPM,startTime);
       }
     }

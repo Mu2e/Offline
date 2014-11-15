@@ -45,9 +45,16 @@ physics :
       module_type               : ExtractCrvRecoPEs
       crvWaveformsModuleLabel   : "CrvWaveforms"
     }
+    CrvTest:
+    {
+      module_type               : CRVTest
+      crvPEsModuleLabel         : "CrvPEs"
+      crvWaveformsModuleLabel   : "CrvWaveforms"
+      crvRecoPulsesModuleLabel  : "CrvRecoPulses"
+    }
   }
 
-  an : [CrvPEs, CrvWaveforms, CrvRecoPulses]
+  an : [CrvPEs, CrvWaveforms, CrvRecoPulses, CrvTest]
   out: [Output]
   end_paths: [an, out]
 }

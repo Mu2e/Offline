@@ -58,6 +58,14 @@ WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
   _clad2Radius      = 0.70*mm;
   _sipmLength       = 1.*mm;
   _sipmRadius       = 0.70*mm;
+
+  double xbinsTmp[17] = {-10.0, -7.5, -5.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 5.0, 7.5, 10.0};
+  double ybinsTmp[36] = {-25.0, -20.0, -15.0, -12.5, -12.0, -11.5, -11.0, -10.5, -10.0, -9.5, -9.0, -8.5, -8.0, -7.5, -6.5, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 6.5, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 15.0, 20.0, 25.0};
+
+  for(int i=0; i<17; i++) _xbins.push_back(xbinsTmp[i]*mm); //16 bins
+  for(int i=0; i<36; i++) _ybins.push_back(ybinsTmp[i]*mm); //35 bins
+  for(int i=0; i<121; i++) _zbins.push_back(-3300.0*mm+i*6600.0*mm/120.0); //100 bins
+
 /*
   _barLength        = 80.*cm;
   _barWidth         = 4.*cm;
@@ -70,16 +78,8 @@ WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
   _clad2Radius      = 0.50*mm;
   _sipmLength       = 1.*mm;
   _sipmRadius       = 0.5*mm;
-*/
 
-  double xbinsTmp[17] = {-10.0, -7.5, -5.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 5.0, 7.5, 10.0};
-  double ybinsTmp[36] = {-25.0, -20.0, -15.0, -12.5, -12.0, -11.5, -11.0, -10.5, -10.0, -9.5, -9.0, -8.5, -8.0, -7.5, -6.5, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 6.5, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 15.0, 20.0, 25.0};
 
-  for(int i=0; i<17; i++) _xbins.push_back(xbinsTmp[i]*mm); //16 bins
-  for(int i=0; i<36; i++) _ybins.push_back(ybinsTmp[i]*mm); //35 bins
-  for(int i=0; i<121; i++) _zbins.push_back(-3300.0*mm+i*6600.0*mm/120.0); //100 bins
-
-/*
   double xbinsTmp[17] = {-10.0, -7.5, -5.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 5.0, 7.5, 10.0};
   double ybinsTmp[36] = {-20.0, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -9.0, -7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0, 9.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.0};
 

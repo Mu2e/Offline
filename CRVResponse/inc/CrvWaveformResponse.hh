@@ -10,14 +10,16 @@ class CrvWaveformResponse
     CrvWaveformResponse() {}
     ~CrvWaveformResponse() {}
    
-    void LoadSinglePEWaveform(const std::string &filename, double binWidth, double maxTime);
-    void makeWaveforms(const std::vector<double> &arrivalTimes, 
+//the bin width which is used when the single PE waveform is stored must be more precise than
+//the bin width of the final waveform
+    void LoadSinglePEWaveform(const std::string &filename, double binWidth, unsigned int nBins);
+    void MakeWaveforms(const std::vector<double> &arrivalTimes, 
                        std::vector<double> &waveform,
-                       double &startTime);
+                       double startTime, double binWidth);
 
   private:
-    double _binWidth;
     std::vector<double> _waveformSinglePE;
+    double _singlePEbinWidth;
 };
 
 #endif
