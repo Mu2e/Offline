@@ -37,13 +37,16 @@ physics :
       module_type               : MakeCrvWaveforms
       crvPEsModuleLabel         : "CrvPEs"
       singlePEWaveformFileName  : "CRVResponse/test/singlePEWaveform.txt"
+      singlePEWaveformBinWidth  : 1.0    //1.0 ns
+      singlePEWaveformBins      : 200
       binWidth                  : 12.5   //12.5 ns (digitizer sampling rate)
-      maxTime                   : 200.0  //200.0 ns
     }
     CrvRecoPulses:
     {
       module_type               : ExtractCrvRecoPEs
       crvWaveformsModuleLabel   : "CrvWaveforms"
+      integralFactor            : 51.0
+      threshold                 : 0.005    //mV
     }
     CrvTest:
     {

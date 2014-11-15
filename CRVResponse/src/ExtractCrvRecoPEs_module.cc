@@ -44,13 +44,15 @@ namespace mu2e
 
     private:
     std::string _crvWaveformsModuleLabel;
+    double      _integralFactor;
     double      _threshold;
   };
 
   ExtractCrvRecoPulses::ExtractCrvRecoPulses(fhicl::ParameterSet const& pset) :
-    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel"))
+    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
+    _integralFactor(pset.get<double>("integralFactor",51.0)),
+    _threshold(pset.get<double>("threshold",0.005))
   {
-    _threshold = 0.005;
     produces<CRVRecoPulsesCollection>();
   }
 
@@ -99,7 +101,7 @@ namespace mu2e
             }
 
             CRVRecoPulses::CRVSingleRecoPulse pulse;
-            pulse._PEs = static_cast<int>(integral*51.0+0.5);
+            pulse._PEs = static_cast<int>(integral*_integralFactor+0.5);
             pulse._leadingEdge = leadingEdge;
             pulse._timeOverThreshold = time - leadingEdge;
             pulse._pulseHeight = maxVoltage;

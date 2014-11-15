@@ -47,6 +47,7 @@ namespace mu2e
     std::string _crvPEsModuleLabel;
     std::string _crvWaveformsModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
+    double      _threshold;
 
     TH2D  *_PEvsIntegral, *_PEvsPulseHeight;
   };
@@ -54,7 +55,8 @@ namespace mu2e
   CRVTest::CRVTest(fhicl::ParameterSet const& pset) :
     _crvPEsModuleLabel(pset.get<std::string>("crvPEsModuleLabel")),
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
-    _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel"))
+    _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
+    _threshold(pset.get<double>("threshold",0.005))
   {
     _PEvsIntegral = new TH2D("PEvsIntegral","PEvsIntegral", 60,0,60, 100,0,1.2);
     _PEvsIntegral->SetXTitle("PEs");
@@ -126,7 +128,7 @@ namespace mu2e
           for(unsigned bin=0; bin<waveform.size(); bin++)
           {
             double voltage = waveform[bin];
-            if(voltage>0.005) integral[SiPM] += voltage;
+            if(voltage>_threshold) integral[SiPM] += voltage;
           }
         }
       }
