@@ -304,7 +304,7 @@ namespace mu2e {
     _Ntup->Branch("trknHit",      &_trknHit ,     "trknHit[nTrk]/I");
     _Ntup->Branch("trkmomErr",    &_trkmomErr ,   "trkmomErr[nTrk]/F");
     _Ntup->Branch("trkt0",        &_trkt0 ,       "trkt0[nTrk]/F");
-    _Ntup->Branch("trkt0err",     &_trkt0Err,     "trkt0[nTrk]/F");
+    _Ntup->Branch("trkt0Err",     &_trkt0Err,     "trkt0Err[nTrk]/F");
 
     _Ntup->Branch("trkMom",       &_trkMom ,      "trkMom[nTrk]/F");
     _Ntup->Branch("trkd0",        &_trkd0 ,       "trkd0[nTrk]/F");
@@ -517,9 +517,6 @@ namespace mu2e {
           _cluSimIdx[_nCluster] = _nCluSim;   	              
 	  _cluSimLen[_nCluster] = sim1.size();
 	  _cluList.push_back(_list);
-	  if (_diagLevel>2 && _cluTime[_nCluster] > 1695.)
-	    {std::cout << "ncluster, cluster energy = " << _nCluster << " " << _cluEnergy[_nCluster] << std::endl;}
-	  
 	  	  
 	  //note: a signal cluster is defined as _cluConv==1 and _cluSimLen==1 (if it has a signal and there is only one inside)
 	  
