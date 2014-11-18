@@ -48,16 +48,25 @@ physics :
       integralFactor            : 51.0
       threshold                 : 0.005    //mV
     }
+    CrvCoincidence:
+    {
+      module_type               : SimpleCrvCoincidenceCheck
+      crvRecoPulsesModuleLabel  : "CrvRecoPulses"
+      PEthreshold               : 20
+      maxDistance               : 200
+      maxTimeDifference         : 5
+    }
     CrvTest:
     {
-      module_type               : CRVTest
-      crvPEsModuleLabel         : "CrvPEs"
-      crvWaveformsModuleLabel   : "CrvWaveforms"
-      crvRecoPulsesModuleLabel  : "CrvRecoPulses"
+      module_type                     : CRVTest
+      crvPEsModuleLabel               : "CrvPEs"
+      crvWaveformsModuleLabel         : "CrvWaveforms"
+      crvRecoPulsesModuleLabel        : "CrvRecoPulses"
+      crvCoincidenceCheckModuleLabel  : "CrvCoincidence"
     }
   }
 
-  an : [CrvPEs, CrvWaveforms, CrvRecoPulses, CrvTest]
+  an : [CrvPEs, CrvWaveforms, CrvRecoPulses, CrvCoincidence, CrvTest]
   out: [Output]
   end_paths: [an, out]
 }
