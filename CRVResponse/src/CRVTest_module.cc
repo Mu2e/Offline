@@ -16,6 +16,7 @@
 #include "MCDataProducts/inc/CRVPEsCollection.hh"
 #include "MCDataProducts/inc/CRVWaveformsCollection.hh"
 #include "RecoDataProducts/inc/CRVRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CRVCoincidenceCheckResult.hh"
 
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -47,6 +48,7 @@ namespace mu2e
     std::string _crvPEsModuleLabel;
     std::string _crvWaveformsModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
+    std::string _crvCoincidenceCheckModuleLabel;
     double      _threshold;
 
     TH2D  *_PEvsIntegral, *_PEvsPulseHeight;
@@ -56,6 +58,7 @@ namespace mu2e
     _crvPEsModuleLabel(pset.get<std::string>("crvPEsModuleLabel")),
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
+    _crvCoincidenceCheckModuleLabel(pset.get<std::string>("crvCoincidenceCheckModuleLabel")),
     _threshold(pset.get<double>("threshold",0.005))
   {
     _PEvsIntegral = new TH2D("PEvsIntegral","PEvsIntegral", 60,0,60, 100,0,1.2);
@@ -78,6 +81,8 @@ namespace mu2e
 
   void CRVTest::produce(art::Event& event) 
   {
+    GeomHandle<CosmicRayShield> CRS;
+
     art::Handle<CRVPEsCollection> crvPEsCollection;
     event.getByLabel(_crvPEsModuleLabel,"",crvPEsCollection);
 
@@ -87,6 +92,9 @@ namespace mu2e
     art::Handle<CRVRecoPulsesCollection> crvRecoPulsesCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
 
+    art::Handle<CRVCoincidenceCheckResult> crvCoincidenceCheckResult;
+    event.getByLabel(_crvCoincidenceCheckModuleLabel,"",crvCoincidenceCheckResult);
+
     for(CRVPEsCollection::const_iterator iter1=crvPEsCollection->begin(); 
         iter1!=crvPEsCollection->end(); iter1++)
     {
@@ -94,6 +102,7 @@ namespace mu2e
       int PEsFromPulses[4]={0};
       int nPulses[4]={0};
       double singlePulseHeight[4]={0};
+      double singlePulseLeadingEdge[4]={0};
       double integral[4]={0};
 
       const CRSScintillatorBarIndex &barIndex = iter1->first;
@@ -115,6 +124,8 @@ namespace mu2e
           nPulses[SiPM]=pulseVector.size();
           if(pulseVector.size()==1) singlePulseHeight[SiPM]=pulseVector[0]._pulseHeight;
           else singlePulseHeight[SiPM]=NAN;
+          if(pulseVector.size()>=1) singlePulseLeadingEdge[SiPM]=pulseVector[0]._leadingEdge;
+          else singlePulseLeadingEdge[SiPM]=NAN;
         }
       }
 
@@ -134,6 +145,33 @@ namespace mu2e
       }
 
       std::cout<<"CRV bar: "<<barIndex<<std::endl;
+      const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
+      int   moduleNumber=CRSbar.id().getShieldNumber();
+      double pos=NAN;
+      switch (moduleNumber)
+      {
+          case 0: 
+          case 1: 
+          case 2: 
+          case 3: 
+          case 4: 
+          case 5: 
+          case 6: 
+          case 7: 
+         case  8: 
+         case  9: 
+         case 10: 
+         case 11: 
+         case 12: pos=CRSbar.getPosition().z();
+                  break;
+         case 13: 
+         case 14: pos=CRSbar.getPosition().y();
+                  break;
+         case 15: 
+         case 16: 
+         case 17: pos=CRSbar.getPosition().x();
+                  break;
+      };
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         std::cout<<"SiPM: "<<SiPM;
@@ -142,6 +180,8 @@ namespace mu2e
         std::cout<<"   PEs/integral: "<<PEs[SiPM]/integral[SiPM];
         std::cout<<"   PEs/pulseHeight: "<<PEs[SiPM]/singlePulseHeight[SiPM];
         std::cout<<"   nPulses: "<<nPulses[SiPM];
+        std::cout<<"   leadingeEdge: "<<singlePulseLeadingEdge[SiPM];
+        std::cout<<"   pos: "<<pos;
         std::cout<<std::endl;
         if(nPulses[SiPM]==1)
         {
@@ -151,6 +191,7 @@ namespace mu2e
       }
 
     }
+    std::cout<<(crvCoincidenceCheckResult->GetCoincidence()?"Coincidence satisfied":"No coincidence found")<<std::endl;
   } // end produce
 
 } // end namespace mu2e

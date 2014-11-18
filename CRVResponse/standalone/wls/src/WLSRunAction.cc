@@ -89,8 +89,8 @@ void WLSRunAction::EndOfRunAction(const G4Run* )
         if(WLSEventAction::Instance()->GetHistPE(1,SiPM)->GetBinContent(ibin)!=0 && maxbin1[SiPM]==-1) maxbin1[SiPM]=ibin;
       }
     }
-    int minbin=std::min(*std::min_element(minbin0,minbin0+3),*std::min_element(minbin1,minbin1+3));
-    int maxbin=std::max(*std::max_element(maxbin0,maxbin0+3),*std::max_element(maxbin1,maxbin1+3));
+    int minbin=std::min(*std::min_element(minbin0,minbin0+4),*std::min_element(minbin1,minbin1+4));
+    int maxbin=std::max(*std::max_element(maxbin0,maxbin0+4),*std::max_element(maxbin1,maxbin1+4));
     for(int SiPM=0; SiPM<4; SiPM++)
     {
       c1.cd(SiPM+1);
@@ -151,8 +151,8 @@ void WLSRunAction::EndOfRunAction(const G4Run* )
         if(WLSEventAction::Instance()->GetHistT(1,SiPM)->GetBinContent(ibin)!=0 && maxbin1[SiPM]==-1) maxbin1[SiPM]=ibin;
       }
     }
-    minbin=std::min(*std::min_element(minbin0,minbin0+3),*std::min_element(minbin1,minbin1+3));
-    maxbin=std::max(*std::max_element(maxbin0,maxbin0+3),*std::max_element(maxbin1,maxbin1+3));
+    minbin=std::min(*std::min_element(minbin0,minbin0+4),*std::min_element(minbin1,minbin1+4));
+    maxbin=std::max(*std::max_element(maxbin0,maxbin0+4),*std::max_element(maxbin1,maxbin1+4));
     for(int SiPM=0; SiPM<4; SiPM++)
     {
       c2.cd(SiPM+1);

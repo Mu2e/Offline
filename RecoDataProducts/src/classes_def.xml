@@ -176,4 +176,7 @@
  <class name="mu2e::CRVRecoPulsesCollection" />
  <class name="art::Wrapper<mu2e::CRVRecoPulsesCollection>" />
 
+ <class name="mu2e::CRVCoincidenceCheckResult" />
+ <class name="art::Wrapper<mu2e::CRVCoincidenceCheckResult>" />
+
 </lcgdict>

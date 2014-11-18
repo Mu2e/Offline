@@ -46,6 +46,7 @@ WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
 
   extrusionPolish = 1.;
   extrusionReflectivity = 0.95;
+
  
   _barLength        = 660.*cm;
   _barWidth         = 5.*cm;

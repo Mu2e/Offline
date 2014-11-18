@@ -22,6 +22,7 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "RecoDataProducts/inc/CRVRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CRVCoincidenceCheckResult.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
@@ -110,6 +111,7 @@ template class art::Wrapper<mu2e::TrkExtTrajCollection>;
 template class art::Wrapper<mu2e::PIDProductCollection>;
 template class art::Wrapper<std::vector <mu2e::CRVRecoPulses::CRVSingleRecoPulse> >;
 template class art::Wrapper<mu2e::CRVRecoPulsesCollection>;
+template class art::Wrapper<mu2e::CRVCoincidenceCheckResult>;
 
 template class std::vector<mu2e::ExtMonFNALRawHit>;
 template class art::Wrapper<mu2e::ExtMonFNALRawHitCollection>;

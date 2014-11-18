@@ -241,8 +241,8 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     for(int SiPM=0; SiPM<4; SiPM++) std::cout<<_histT[0][SiPM]->GetMean()<<"/"<<_histT[1][SiPM]->GetMean()<<"  ";
     std::cout<<std::endl;
 
-    if(evt->GetEventID()<10) Draw(evt);
-    if(evt->GetEventID()==10)
+    if(evt->GetEventID()<99) Draw(evt);
+    if(evt->GetEventID()==99)
     {
       _PEvsIntegral->SaveAs("PEvsIntegral.C");
       _PEvsPulseHeight->SaveAs("PEvsPulseHeight.C");
