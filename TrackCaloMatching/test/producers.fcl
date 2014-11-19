@@ -37,6 +37,8 @@ TrackCaloMatching : {
     trkToCaloExtrapolModuleLabel : TrkExtrapol
     caloClusterModuleLabel       : MakeCaloCluster
     outPutNtup                   : 0
+    caloClusterAlgorithm         : closest
+    caloClusterSeeding           : energy
 }
 
 END_PROLOG

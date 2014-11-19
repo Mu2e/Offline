@@ -91,6 +91,9 @@ namespace mu2e {
 
 					// Label of the calo clusters  maker
     string          _caloClusterModuleLabel;
+    string          _caloClusterAlgorithm;
+    string          _caloClusterSeeding;
+    string          _caloClusterCollName;
 
 					// Label of the extrapolated impact points
     string          _trkToCaloExtrapolModuleLabel;
@@ -116,6 +119,9 @@ namespace mu2e {
       _meanInteractionDepth  (pset.get<double>("meanInteractionDepth")),  // 50 mm
       _dtOffset              (pset.get<double>("dtOffset"        )),  // 1. ns
       _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
+      _caloClusterAlgorithm  (pset.get<std::string>("caloClusterAlgorithm"  , "closest")),
+      _caloClusterSeeding    (pset.get<std::string>("caloClusterSeeding"    , "energy")),
+      _caloClusterCollName   ("Algo"+mu2e::TOUpper(_caloClusterAlgorithm)+"SeededBy"+mu2e::TOUpper(_caloClusterSeeding)),
       _trkToCaloExtrapolModuleLabel(pset.get<std::string>("trkToCaloExtrapolModuleLabel", "TrkExtrapol")),
       _firstEvent(true)
     {
@@ -208,7 +214,7 @@ namespace mu2e {
     ntracks = trks->size();
   
     art::Handle<CaloClusterCollection> caloClusters;
-    evt.getByLabel(_caloClusterModuleLabel, caloClusters );
+    evt.getByLabel(_caloClusterModuleLabel,_caloClusterCollName, caloClusters );
     nclusters = caloClusters->size();
 
     art::Handle<TrkToCaloExtrapolCollection>  trjExtrapols;

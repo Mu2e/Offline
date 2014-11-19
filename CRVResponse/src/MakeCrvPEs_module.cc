@@ -120,6 +120,12 @@ namespace mu2e
       double energyDepositedNonIonizing = step.nonIonizingEDep();
 
       int PDGcode = step.simParticle()->pdgId();
+      if(_particleTable->FindParticle(PDGcode)==NULL)
+      {
+        std::cerr<<"Error in MakeCrvPEs: Found a PDG code which is not in the GEANT particle table: "<<PDGcode<<std::endl;
+        std::cerr<<"FIXME: Skipping this StepPoint."<<std::endl;
+        continue;
+      }
       double mass = _particleTable->FindParticle(PDGcode)->GetPDGMass();  //MeV/c^2
       double charge = _particleTable->FindParticle(PDGcode)->GetPDGCharge(); 
 
