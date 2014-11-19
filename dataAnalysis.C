@@ -8,14 +8,39 @@
 #include <sstream>
 #include <vector>
 
+using namespace std; 
 // Par0 - Q
-// Par1 - shapingTime
+// TMath::Min((par[1 - shapingTime
 // The dynamic pedestal is of the form Q e^(-t / tau). 
 //Note that normal it is Q / tau rather than Q 
 float dynamicPedestal(double *x, double *par)
 {
     return par[0] * exp(-x[0] / par[1]);
 
+}
+
+// currentFunctionValue is result from current function/parameterFunction 
+// used. 
+float dynamicTruncation(float currentFunctionValue)
+{
+  const float vMax = 1023.0 - 64.0;
+  const float vSat = 1023.0*0.8 - 64.0;
+  const float vDiff = vMax - vSat;
+
+  float returnValue = 0.0;
+
+  if (currentFunctionValue < vSat)
+    returnValue = currentFunctionValue;
+  else if (currentFunctionValue > vMax)
+    returnValue = vMax;
+  else
+    returnValue = vMax - vDiff*exp(-(currentFunctionValue - vSat) / vDiff);
+  return returnValue;
+}
+
+float fixedTruncation(float currentFunctionValue)
+{
+  return TMath::Min(currentFunctionValue,(float)(1023.0-64.0));
 }
 
 // Current function used to calculate current
@@ -94,41 +119,32 @@ float currentFunction3(double *x, double *par)
 
 
 // Note that this function truncates above 1023-64 bits
-float fittingFunction4(double *x, double *par)
+float parameterFunction4(double *x, double *par)
 {
     double currentX[1] = {x[0] - par[0]};
     double currentParameters[2] = {par[5],par[3]};
 
-    double truncatingValue = par[4];
+    float truncatingValue = par[4];
 
-    return TMath::Min((par[1] * currentFunction2(currentX, currentParameters) + par[2]),truncatingValue);
+    float unTruncatedResult = (par[1] * currentFunction2(currentX, currentParameters) + par[2]);
+
+    return unTruncatedResult;
 }
 
 
-// Sum of two convolved fitting functions (fittingFunction4)
+// Sum of two convolved fitting functions (parameterFunction4)
 //par[0] is shifted time
 //par[1] is scalingfactor
 //par[2] is vertical shift
 //par[3] is sigma
-float fittingFunction5(double *x, double *par)
+float parameterFunction5(double *x, double *par)
 {
     double firstParam[4] = {par[0], par[1], par[2], par[3]};
     double secondParam[4] = {par[0] + par[4], par[5], par[6], par[7]};
 
-    return fittingFunction4(x,firstParam)
-          +fittingFunction4(x, secondParam);
+    return parameterFunction4(x,firstParam)
+          +parameterFunction4(x, secondParam);
 }
-
-
-// Note that this function DOES NOT truncate
-float fittingFunction6(double *x, double *par)
-{
-    double currentX[1] = {x[0] - par[0]};
-    double currentParameters[2] = {100.0,par[3]};
-
-    return (par[1] * currentFunction2(currentX, currentParameters) + par[2]);
-}
-
 
 
 // This is a truncating fitting function with a dynamical pedestal
@@ -136,17 +152,19 @@ float fittingFunction6(double *x, double *par)
 // par[1] is scaling factor
 // par[2] is Q
 // par[3] is sigma
-// par[4] is shapin time
-// Note that this function depends on fittingFunction4
-float fittingFunction7(double *x, double *par)
+// par[4] is shaping time
+// Note that this function depends on parameterFunction4
+float parameterFunction7(double *x, double *par)
 {
+    float  truncatingValue = 1023.0 - 64.0;
+
     // vertical shift is set to 0.0 so that dynamic pedestal can be used
-    double fittingFunction4Parameters[6] = {par[0],par[1],0.0,par[3], 1023.0 - 64.0,par[4]};
+    double parameterFunction4Parameters[6] = {par[0],par[1],0.0,par[3], 1023.0 - 64.0,par[4]};
     
     // Shaping time is set to 100.0
     double dynamicPedestalParameters[2] = {par[2],par[4]};
 
-    return fittingFunction4(x,fittingFunction4Parameters) + dynamicPedestal(x,dynamicPedestalParameters);
+    return TMath::Min(truncatingValue,parameterFunction4(x,parameterFunction4Parameters) + dynamicPedestal(x,dynamicPedestalParameters));
 
 }
 
@@ -158,7 +176,7 @@ float fittingFunction7(double *x, double *par)
 // par[1] is scaling factor
 // par[2] is constant pedestal
 // par[3] is shaping time
-float fittingFunction1(double *x, double *par)
+float parameterFunction1(double *x, double *par)
 {
     // These values must be doubles here
 
@@ -173,8 +191,8 @@ float fittingFunction1(double *x, double *par)
 }
 
 
-// Sum of two fittingFunctions
-float fittingFunction2(double *x, double *par)
+// Sum of two parameterFunctions
+float parameterFunction2(double *x, double *par)
 {
 
     double firstParam[3] = {par[0], par[1], par[2]};
@@ -183,11 +201,11 @@ float fittingFunction2(double *x, double *par)
     //double firstX[1] = {x[0]};
    // double secondX[1] = {x[1]};
 
-    return fittingFunction1(x,firstParam)
-          +fittingFunction1(x, secondParam);
+    return parameterFunction1(x,firstParam)
+          +parameterFunction1(x, secondParam);
 }
 
-float fittingFunction3(double *x, double *par)
+float parameterFunction3(double *x, double *par)
 {
     // Par0 - shift in X 1st peak
     // Par1 - scalingFactor 1st peak
@@ -202,8 +220,8 @@ float fittingFunction3(double *x, double *par)
     //double firstX[1] = {x[0]};
    // double secondX[1] = {x[1]};
 
-    return fittingFunction1(x, firstParam)
-          +fittingFunction1(x, secondParam);
+    return parameterFunction1(x, firstParam)
+          +parameterFunction1(x, secondParam);
 
 }
 
@@ -215,7 +233,7 @@ float fittingFunction3(double *x, double *par)
 // Par3 - shift in 2nd peak minus shift in 1st peak
 // Par4 - scaling factor 2nd peak
 // Par5 - shaping time
-float fittingFunction8(double *x, double *par)
+float parameterFunction8(double *x, double *par)
 {
     // Note that pedestals are set to 0.0
     double doublePeakParam[7] = {par[0],par[1],0.0,par[3],par[4],0.0,par[5]};
@@ -223,33 +241,14 @@ float fittingFunction8(double *x, double *par)
     // Shaping time is set to 100.0
     double dynamicPedestalParameters[2] = {par[2],par[5]};
 
-    // 
-    float truncationValue = 1023.0 - 64.0;
-
-    return TMath::Min(fittingFunction3(x,doublePeakParam) + dynamicPedestal(x,dynamicPedestalParameters), truncationValue);
+    return parameterFunction3(x,doublePeakParam) + dynamicPedestal(x,dynamicPedestalParameters);
 }
 
-// Just like fitting function 9 but fixes sigma at 7 instead of 0
-/**float fittingFunction9(double *x, double *par)
-{
-    // Note that pedestals are set to 0.0
-    double doublePeakParam[7] = {par[0],par[1],0.0,par[3],par[4],0.0,par[5]};
-
-    // Shaping time is set to 100.0
-    double dynamicPedestalParameters[2] = {par[2],par[5]};
-
-    // 
-    float truncationValue = 1023.0 - 64.0;
-
-    return TMath::Min(fittingFunction3(x,doublePeakParam) + dynamicPedestal(x,dynamicPedestalParameters), truncationValue);
-} **/
-
-float fittingFunction10(double *x, double *par)
+float parameterFunction10(double *x, double *par)
 {
     // Note that the second vertical shift is set to 0.0
     double doublePeakParam[7] = {par[0],par[1],par[2],par[3],par[4],0.0,par[5]};
-    float truncationValue = 1023.0 - 64.0;
-    return TMath::Min(fittingFunction3(x,doublePeakParam), truncationValue);
+    return parameterFunction3(x,doublePeakParam);
 }
 
 
@@ -263,14 +262,16 @@ float fittingFunction10(double *x, double *par)
 
 
 // Note that this function truncates above 1023-64 bits
-float fittingFunction4Uniform(double *x, double *par)
+float parameterFunction4Uniform(double *x, double *par)
 {
     double currentX[1] = {x[0] - par[0]};
     double currentParameters[2] = {par[5],par[3]};
 
-    double truncatingValue = par[4];
+    float truncatingValue = par[4];
 
-    return TMath::Min((par[1] * currentFunction3(currentX, currentParameters) + par[2]),truncatingValue);
+    float unTruncatedResult = (par[1] * currentFunction3(currentX, currentParameters) + par[2]);
+
+    return unTruncatedResult;
 }
 
 // This is a truncating fitting function with a dynamical pedestal
@@ -279,18 +280,74 @@ float fittingFunction4Uniform(double *x, double *par)
 // par[2] is Q
 // par[3] is sigma
 // par[4] is shapin time
-// Note that this function depends on fittingFunction4
-float fittingFunction7Uniform(double *x, double *par)
+// Note that this function depends on parameterFunction4
+float parameterFunction7Uniform(double *x, double *par)
 {
+
+    float truncatingValue = 1023.0 - 64.0;
+
     // vertical shift is set to 0.0 so that dynamic pedestal can be used
-    double fittingFunction4Parameters[6] = {par[0],par[1],0.0,par[3], 1023.0 - 64.0,par[4]};
+    double parameterFunction4Parameters[6] = {par[0],par[1],0.0,par[3], truncatingValue,par[4]};
     
     // Shaping time is set to 100.0
     double dynamicPedestalParameters[2] = {par[2],par[4]};
 
-    return fittingFunction4Uniform(x,fittingFunction4Parameters) + dynamicPedestal(x,dynamicPedestalParameters);
+    return parameterFunction4Uniform(x,parameterFunction4Parameters) + dynamicPedestal(x,dynamicPedestalParameters);
 
 }
+
+
+float fittingFunction1(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction1(x,par));
+}
+
+float fittingFunction2(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction2(x,par));
+}
+
+float fittingFunction3(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction3(x,par));
+}
+
+float fittingFunction4(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction4(x,par));
+}
+
+float fittingFunction5(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction5(x,par));
+}
+
+float fittingFunction7(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction7(x,par));
+}
+
+float fittingFunction8(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction7(x,par));
+}
+
+float fittingFunction10(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction10(x,par));
+}
+
+
+float fittingFunction4Uniform(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction4Uniform(x,par));
+}
+
+float fittingFunction7Uniform(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction7Uniform(x,par));
+}
+
 
 
 
@@ -319,6 +376,50 @@ void convert2StringDouble(TString &string, double doubleNum)
   string = convert.str();
 }
 
+/**TGraph* computeRejectionGraph(TH1F *electronHist, TH1F *protonHist, const int numberOfBins)
+{
+  Double_t truncX[numberOfBins], truncY[numberOfBins];
+
+  int protonSum = 0;
+  int electronSum = 0;
+  for (int i = 1; i <= numberOfBins; ++i)
+  {
+    // For some reason bin number starts with 1 for TH1F
+    protonSum += protonHist->GetBinContent(i);
+    electronSum += electronHist->GetBinContent(i);
+    // acceptance rate of electrons
+    truncX[i - 1] = electronSum / (double) electronHist->GetEntries();
+    // 1 - rejection rate
+    truncY[i - 1] = 1 - (protonSum / (double) protonHist->GetEntries());
+  }
+
+  TGraph * rejectionGraph = new TGraph(numberOfBins,truncX,truncY);
+  return rejectionGraph;
+
+}**/
+
+TGraph* computeRejectionGraph(TH1F &electronHist, TH1F &protonHist, const int numberOfBins)
+{
+  Double_t truncX[numberOfBins], truncY[numberOfBins];
+
+  int protonSum = 0;
+  int electronSum = 0;
+  for (int i = 1; i <= numberOfBins; ++i)
+  {
+    // For some reason bin number starts with 1 for TH1F
+    protonSum += protonHist.GetBinContent(i);
+    electronSum += electronHist.GetBinContent(i);
+    // acceptance rate of electrons
+    truncX[i - 1] = electronSum / (double) electronHist.GetEntries();
+    // 1 - rejection rate
+    truncY[i - 1] = 1 - (protonSum / (double) protonHist.GetEntries());
+  }
+
+  TGraph * rejectionGraph = new TGraph(numberOfBins,truncX,truncY);
+  return rejectionGraph;
+
+}
+
 TGraph* computeRejectionGraph(TH1F *electronHist, TH1F *protonHist, const int numberOfBins)
 {
   Double_t truncX[numberOfBins], truncY[numberOfBins];
@@ -340,6 +441,7 @@ TGraph* computeRejectionGraph(TH1F *electronHist, TH1F *protonHist, const int nu
   return rejectionGraph;
 
 }
+
 
 
 

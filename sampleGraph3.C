@@ -11,7 +11,7 @@
 
 void sampleGraph(Long64_t entry)
 {
-	TFile f("electronFit25ns_8DoublePeak6UniformSecond.root");
+	TFile f("protonFit25ns_8DoublePeak6Uniform.root");
 
 	TTree *treeData = (TTree*) gDirectory->Get("convolvedFitTree");
 	TGraphErrors *gr = new TGraphErrors();
@@ -28,7 +28,7 @@ void sampleGraph(Long64_t entry)
 	treeData->SetBranchAddress("suboption",&suboption);
 	treeData->GetEntry(entry);
 
-	TFile g("electronFit25ns_8DoublePeak6Gaussian.root");
+	TFile g("protonFit25ns_8DoublePeak6UniformSecond.root");
 	TTree *treeDataGauss = (TTree*) gDirectory->Get("convolvedFitTree");
 
 
@@ -38,48 +38,50 @@ void sampleGraph(Long64_t entry)
 	const double numberOfSamples = 8.0;
 	TF1 *fittingFunction = new TF1();
 	TF1 *fittingFunctionGauss = new TF1();
+	int option2;
+	int suboption2;
 
 	TF1 *funcGauss = new TF1();
 	TGraphErrors *grGauss = new TGraphErrors();
 	treeDataGauss->SetBranchAddress("fittingFunction",&funcGauss);
 	treeDataGauss->SetBranchAddress("graph",&grGauss);
+	treeDataGauss->SetBranchAddress("option",&option2);
+	treeDataGauss->SetBranchAddress("suboption",&suboption2);
 	treeDataGauss->GetEntry(entry);
 
 	if (option == 1)
 	{
 		fittingFunction = new TF1("fittingFunction", fittingFunction7Uniform, 0.0, numberOfSamples*20.0, 5);
-		fittingFunctionGauss = new TF1("fittingFunctionGauss", dynamicPedestal, 0.0, numberOfSamples*20.0, 2);
+		fittingFunctionGauss = new TF1("fittingFunctionGauss", fittingFunction7Uniform, 0.0, numberOfSamples*20.0, 5);
 	}
+	if (option2 == 1)
+		fittingFunctionGauss = new TF1("fittingFunctionGauss", fittingFunction7Uniform, 0.0, numberOfSamples*20.0, 5);
 	if (option == 2)
-	{
 		fittingFunction = new TF1("fittingFunction",fittingFunction7Uniform,0.0,numberOfSamples*20.0,5);
-		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction7,0.0,numberOfSamples*20.0,5);
-	}
+	if (option2 == 2)
+		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction7Uniform,0.0,numberOfSamples*20.0,5);
 	if (option == 3)
-	{
 		fittingFunction = new TF1("fittingFunction", fittingFunction8,0.0,numberOfSamples*20.0, 6);
+	if (option2 == 3)
 		fittingFunctionGauss = new TF1("fittingFunctionGauss", fittingFunction8,0.0,numberOfSamples*20.0, 6);
-	}
 	if (option == 4)
-	{
 		fittingFunction = new TF1("fittingFunction",fittingFunction4Uniform,0.0,numberOfSamples*20.0,6);
-		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction4,0.0,numberOfSamples*20.0,6);
-	}
+	if (option2 == 4)
+		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction4Uniform,0.0,numberOfSamples*20.0,6);
 	if (option == 5)
-	{
 		fittingFunction = new TF1("fittingFunction",fittingFunction10,0.0,numberOfSamples*20.0,6);
+	if (option2 == 5)
 		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction10,0.0,numberOfSamples*20.0,6);
-	}
 
-	cout << "option : " << option << endl;
-	cout << "par[0] : " << func->GetParameters()[0] << endl;
-	cout << "par[1] : " << func->GetParameters()[1] << endl;
-	cout << "par[2] : " << func->GetParameters()[2] << endl;
-	cout << "par[3] : " << func->GetParameters()[3] << endl;
-	cout << "par[4] : " << func->GetParameters()[4] << endl;
-	cout << "par[5] : " << func->GetParameters()[5] << endl;
+	cout << "option : " << option2 << endl;
+	cout << "par[0] : " << funcGauss->GetParameters()[0] << endl;
+	cout << "par[1] : " << funcGauss->GetParameters()[1] << endl;
+	cout << "par[2] : " << funcGauss->GetParameters()[2] << endl;
+	cout << "par[3] : " << funcGauss->GetParameters()[3] << endl;
+	cout << "par[4] : " << funcGauss->GetParameters()[4] << endl;
+	cout << "par[5] : " << funcGauss->GetParameters()[5] << endl;
 	cout << "MC Trigenergy" << mctrigenergy << endl;
-	cout << "suboption : " << suboption << endl; 
+	cout << "suboption : " << suboption2 << endl; 
 	fittingFunction->SetParameters(func->GetParameters());
 	fittingFunctionGauss->SetParameters(funcGauss->GetParameters());
 
@@ -92,7 +94,7 @@ void sampleGraph(Long64_t entry)
 	c1->cd(2);
 	grGauss->Draw("A*");
 	fittingFunctionGauss->Draw("same");
-	grGauss->SetTitle("Gauss");
+	grGauss->SetTitle("Second Pass");
 
 	//cout << gr->GetX()[0] << endl;
 }
