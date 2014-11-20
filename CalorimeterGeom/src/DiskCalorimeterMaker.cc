@@ -61,6 +61,7 @@ namespace mu2e{
 	
 
 	//Fill the Common Calo Data
+	_calo->_caloGeomInfo.crystalNedges(      config.getInt("calorimeter.crystalNumEdges",6));
 	_calo->_caloGeomInfo.nROPerCrystal(      config.getInt("calorimeter.crystalReadoutChannelCount"));
 	_calo->_caloGeomInfo.crystalHalfTrans(   config.getDouble("calorimeter.crystalHalfTrans") );
 	_calo->_caloGeomInfo.crystalHalfLength(  config.getDouble("calorimeter.crystalHalfLong") );
@@ -98,8 +99,11 @@ namespace mu2e{
         double zOrigin                = config.getDouble("calorimeter.calorimeterZFront",11750);
 	_calo->_origin                = CLHEP::Hep3Vector(xOrigin,0,zOrigin);
 
-        //standard formula to get the volume of the hexagon
-	_calo->_caloGeomInfo.crystalVolume(6.9282032*_calo->_caloGeomInfo.crystalHalfTrans()*_calo->_caloGeomInfo.crystalHalfTrans()*_calo->_caloGeomInfo.crystalHalfLength());
+        //Get the volume of the solid with hexagonal / rectangular base
+	double hl        = _calo->_caloGeomInfo.crystalHalfLength();
+	double ht        = _calo->_caloGeomInfo.crystalHalfTrans();
+	double cryVolume = (_calo->_caloGeomInfo.crystalNedges()==4) ? 8*ht*ht*hl : 6.9282032*ht*ht*hl;        
+	_calo->_caloGeomInfo.crystalVolume(cryVolume);
 		
         
 	_verbosityLevel = config.getInt("calorimeter.verbosityLevel",0);
@@ -123,6 +127,7 @@ namespace mu2e{
   void DiskCalorimeterMaker::MakeDisks(void)
   {
 
+      int    crystalNedges      = _calo->_caloGeomInfo.crystalNedges();
       double crystalHalfLength  = _calo->_caloGeomInfo.crystalHalfLength();
       double crystalHalfTrans   = _calo->_caloGeomInfo.crystalHalfTrans();
       double roHalfThickness    = _calo->_caloGeomInfo.roHalfThickness();
@@ -146,7 +151,7 @@ namespace mu2e{
 	      double dR2    = _calo->_diskOuterRadius[idisk] + caseThickness;
 	      double dZ     = 2.0*diskHalfZLength;
 
-	      std::shared_ptr<Disk> thisDisk( new Disk(idisk,_calo->_diskInnerRadius[idisk], _calo->_diskOuterRadius[idisk], 2.0*crystalCellRadius, crystalShiftInDisk) );	 
+	      std::shared_ptr<Disk> thisDisk( new Disk(idisk,_calo->_diskInnerRadius[idisk], _calo->_diskOuterRadius[idisk], 2.0*crystalCellRadius, crystalNedges, crystalShiftInDisk) );	 
 	      _calo->_sections.push_back(thisDisk);
 
 	      thisDisk->setSize(        CLHEP::Hep3Vector(dR1,dR2,dZ) );
@@ -157,7 +162,6 @@ namespace mu2e{
   	      
 	      //COORDINATE OF CENTER OF VOLUME CONTAINING THE CRYSTALS ONLY (NO READOUT,..) W.R.T CENTER OF OUTMOST DISK VOLUME
 	      // outmost disk volume = volume ___originLocal vector____ points to, i.e outermost disk volume 
-              CLHEP::Hep3Vector(0,0, pipeRadius - crystalHalfLength);
 	      thisDisk->setCrystalShift( CLHEP::Hep3Vector(0,0, pipeRadius - crystalHalfLength) );
 	      
 
@@ -206,7 +210,8 @@ namespace mu2e{
   void DiskCalorimeterMaker::CheckIt(void)
   {
       
-      int nROPerCrystal         = _calo->_caloGeomInfo.nROPerCrystal();
+      int    crystalNedges      = _calo->_caloGeomInfo.crystalNedges();
+      int    nROPerCrystal      = _calo->_caloGeomInfo.nROPerCrystal();
       double crystalHalfLength  = _calo->_caloGeomInfo.crystalHalfLength();
       double roHalfThickness    = _calo->_caloGeomInfo.roHalfThickness();
       double roHalfTrans        = _calo->_caloGeomInfo.roHalfTrans();
@@ -214,6 +219,8 @@ namespace mu2e{
       double wrapperThickness   = _calo->_caloGeomInfo.wrapperThickness();
       double pipeRadius         = _calo->_caloGeomInfo.pipeRadius();
  
+       if( ! (crystalNedges == 4 || crystalNedges==6 ) )
+          {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalNumEdges can only be 4 (squares) or 6 (hexagons)\n";}       
       
       if( ! (nROPerCrystal ==1 || nROPerCrystal ==2 || nROPerCrystal ==4) ) 
           throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutChannelCount can only be 1,2 or 4.\n";      

@@ -30,12 +30,13 @@ namespace mu2e {
            BaseCalorimeterInfoGeom()  {}
            virtual ~BaseCalorimeterInfoGeom() {}
 
+           void crystalNedges(int value)           {_crystalNumEdges = value;}
            void nROPerCrystal(int value)           {_nROPerCrystal = value;}
            void crystalHalfLength(double value)    {_crystalHalfLength = value;}
            void crystalHalfTrans(double value)     {_crystalHalfTrans = value;}
            void crystalVolume(double value)        {_crystalVolume = value;}
 	   void wrapperThickness(double value)     {_wrapperThickness = value;}
-           void shellThickness(double value)       {_shellThickness = value;}
+	   void shellThickness(double value)       {_shellThickness = value;}
            void caseThickness(double value)        {_caseThickness = value;}
            void roHalfTrans(double value)          {_roHalfTrans = value;}
            void roHalfThickness(double value)      {_roHalfThickness = value;}
@@ -44,6 +45,7 @@ namespace mu2e {
            void enveloppeZ0(double value)          {_enveloppeZ0 = value;}
            void enveloppeZ1(double value)          {_enveloppeZ1 = value;} 
 
+           int    crystalNedges()       const      {return _crystalNumEdges;}
            int    nROPerCrystal()       const      {return _nROPerCrystal;}
            double crystalHalfLength()   const      {return _crystalHalfLength;}
            double crystalHalfTrans()    const      {return _crystalHalfTrans;}
@@ -99,14 +101,15 @@ namespace mu2e {
 
        private:
 
+          int    _crystalNumEdges;
           int    _nROPerCrystal;
 	  double _crystalHalfTrans;
 	  double _crystalHalfLength;
 	  double _crystalVolume;
           double _wrapperThickness;
+          double _shellThickness;
           double _roHalfTrans;
           double _roHalfThickness;
-          double _shellThickness;
           double _caseThickness;
 
           double _enveloppeInRadius;

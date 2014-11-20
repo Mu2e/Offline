@@ -30,7 +30,8 @@
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
-#include "MCDataProducts/inc/CRVHitCollection.hh"
+#include "MCDataProducts/inc/CRVPEsCollection.hh"
+#include "MCDataProducts/inc/CRVWaveformsCollection.hh"
 #include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
@@ -88,9 +89,10 @@ template class std::vector<std::vector<art::Ptr<mu2e::StepPointMC> > >;
 template class std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>;
 template class std::map<art::Ptr<mu2e::SimParticle>::key_type,mu2e::GenElHitData>;// GenElHitDataCollection;
 template class std::vector<mu2e::ExtMonFNALSimHit>;
-template class std::set<mu2e::CRVHit>;
-template class std::pair<mu2e::CRSScintillatorBarIndex,std::set<mu2e::CRVHit> >;
-template class std::map<mu2e::CRSScintillatorBarIndex,std::set<mu2e::CRVHit> >;
+template class std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CRVPEs>;
+template class std::map<mu2e::CRSScintillatorBarIndex,mu2e::CRVPEs>;
+template class std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CRVWaveforms>;
+template class std::map<mu2e::CRSScintillatorBarIndex,mu2e::CRVWaveforms>;
 
 template class art::Wrapper<mu2e::GenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
@@ -112,7 +114,8 @@ template class art::Wrapper<mu2e::PtrStepPointMCVectorCollection>;
 template class art::Wrapper<mu2e::MixingSummary>;
 template class art::Wrapper<std::vector<art::RNGsnapshot> >;
 template class art::Wrapper<mu2e::ExtMonFNALSimHitCollection>;
-template class art::Wrapper<mu2e::CRVHitCollection>;
+template class art::Wrapper<mu2e::CRVPEsCollection>;
+template class art::Wrapper<mu2e::CRVWaveformsCollection>;
 
 template class art::Wrapper<mu2e::GenElHitData>;
 template class art::Wrapper<mu2e::VisibleGenElTrackCollection>;

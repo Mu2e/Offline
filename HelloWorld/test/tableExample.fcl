@@ -1,0 +1,26 @@
+#include "HelloWorld/test/prolog.fcl"
+
+process : HelloWorld
+
+source : {
+  module_type : EmptyEvent
+  maxEvents : 3
+}
+
+physics :{
+
+  analyzers: {
+
+    @table::hello_1_2
+
+    hello3: {
+      module_type : HelloWorld2
+      magicNumber : 3
+    }
+
+  }
+
+  e1         : [ @sequence::both, hello3 ]
+  end_paths  : [e1]
+
+}

@@ -1,0 +1,16 @@
+BEGIN_PROLOG
+
+hello_1_2 : {
+    hello1: {
+      module_type : HelloWorld2
+      magicNumber : 1
+    }
+    hello2: {
+      module_type : HelloWorld2
+      magicNumber : 2
+    }
+}
+
+both : [ hello1, hello2 ]
+
+END_PROLOG

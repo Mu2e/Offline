@@ -1,0 +1,22 @@
+import os
+Import('env')
+
+base      = os.environ['MU2E_BASE_RELEASE']
+rootlibs  = env['ROOTLIBS']
+bindir    = env['BINDIR']
+
+# Boost libraries need for this executable only.
+boostlibs = [ 'boost_filesystem', 'boost_iostreams' ]
+
+
+env.Program(
+  target = bindir+'artProductSizes',
+  source = [ 'Arguments.cc', 'artProductSizes.cc', 'rootFileSizeTools.cc',
+             'RootSizeOnDisk.cc' ],
+  LIBS   = [ rootlibs, boostlibs ]
+  )
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

@@ -5,9 +5,6 @@
 #include "TVector2.h"
 #include "TPolyLine.h"
 
-#include "CalorimeterGeom/inc/HexMap.hh"
-// #include "CalorimeterGeom/inc/HexPositionMap.hh"
-// #include "CalorimeterGeom/inc/HexPosition.hh"
 #include "base/THexagon.hh"
 
 ClassImp(THexagon)

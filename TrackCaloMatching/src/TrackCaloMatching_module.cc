@@ -94,8 +94,8 @@ namespace mu2e {
     string          _caloClusterAlgorithm;
     string          _caloClusterSeeding;
     string          _caloClusterCollName;
-					// Label of the extrapolated impact points
 
+					// Label of the extrapolated impact points
     string          _trkToCaloExtrapolModuleLabel;
 
     double          _timeChiSquare, _energyChiSquare, _posVChiSquare, _posWChiSquare;
