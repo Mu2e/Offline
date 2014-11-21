@@ -90,10 +90,10 @@ void Cosmics(TTree* cr, const char* page="prod") {
     mcmommp->SetStats(0);
     mcmommp->SetLineColor(kCyan);
 
-    cr->Project("mcmomem","umc.mom","mc.pdg==11");
-    cr->Project("mcmomep","umc.mom","mc.pdg==-11");
-    cr->Project("mcmommm","umc.mom","mc.pdg==13");
-    cr->Project("mcmommp","umc.mom","mc.pdg==-13");
+    cr->Project("mcmomem","umcent.mom","mc.pdg==11");
+    cr->Project("mcmomep","umcent.mom","mc.pdg==-11");
+    cr->Project("mcmommm","umcent.mom","mc.pdg==13");
+    cr->Project("mcmommp","umcent.mom","mc.pdg==-13");
 
     TH1F* mcd0em = new TH1F("mcd0em","Track D_{0}, reflected particle;mm",100,-500,500);
     TH1F* mcd0ep = new TH1F("mcd0ep","Track D_{0}, reflected particle;mm",100,-500,500);
@@ -108,10 +108,10 @@ void Cosmics(TTree* cr, const char* page="prod") {
     mcd0mp->SetStats(0);
     mcd0mp->SetLineColor(kCyan);
 
-    cr->Project("mcd0em","umc.d0","mc.pdg==11");
-    cr->Project("mcd0ep","umc.d0","mc.pdg==-11");
-    cr->Project("mcd0mm","umc.d0","mc.pdg==13");
-    cr->Project("mcd0mp","umc.d0","mc.pdg==-13");
+    cr->Project("mcd0em","umcent.d0","mc.pdg==11");
+    cr->Project("mcd0ep","umcent.d0","mc.pdg==-11");
+    cr->Project("mcd0mm","umcent.d0","mc.pdg==13");
+    cr->Project("mcd0mp","umcent.d0","mc.pdg==-13");
 
     TH1F* pmomem = new TH1F("pmomem","Parent momentum;MeV/c",100,0,50000);
     TH1F* pmomep = new TH1F("pmomep","Parent momentum;MeV/c",100,0,50000);
@@ -243,7 +243,7 @@ void Cosmics(TTree* cr, const char* page="prod") {
     dtrkt0e->SetLineColor(kRed);
     dtrkt0m->SetLineColor(kCyan);
     
-    cr->Project("cmom","dtrk.fitmom:utrk.fitmom");
+    cr->Project("cmom","dtrk.mom:utrk.mom");
     cr->Project("ctand","dtrk.td:utrk.td");
     cr->Project("cp0","dtrk.p0:utrk.p0");
     cr->Project("cd0","dtrk.d0:utrk.d0");
@@ -264,6 +264,27 @@ void Cosmics(TTree* cr, const char* page="prod") {
     dtrkt0e->Draw();
     dtrkt0m->Draw("same");
 
+
+  } else if(tpage == "momdiff" ){
+
+    TH2F* umomdiff = new TH2F("umomdiff","Upstream particle #Delta P, tracker exit - entrance;True #Delta P (MeV/c);Reco #Delta P (MeV/c)",100,-1,5,100,-1,5);
+    TH2F* dmomdiff = new TH2F("dmomdiff","Downstream particle #Delta P, tracker entrance - exit;True #Delta P (MeV/c);Reco #Delta P (MeV/c)",100,-1,5,100,-1,5);
+    umomdiff->SetStats(0);
+    dmomdiff->SetStats(0);
+    cr->Project("umomdiff","utrkxit.mom-utrk.mom:umcxit.mom-umcent.mom","umcent.mom>100&&utrk.pdg==mc.pdg");
+    cr->Project("dmomdiff","dtrk.mom-dtrkxit.mom:dmcent.mom-dmcxit.mom","dmcent.mom>100&&dtrk.pdg==mc.pdg");
+    TCanvas* mdcan = new TCanvas("mdcan","Momentum Difference",1000,800);
+    TLine* diag = new TLine(0.0,0.0,5.0,5.0);
+    diag->SetLineColor(kBlack);
+    diag->SetLineStyle(2);
+    diag->SetLineWidth(2);
+    mdcan->Divide(2,1);
+    mdcan->cd(1);
+    umomdiff->Draw("colorz");
+    diag->Draw();
+    mdcan->cd(2);
+    dmomdiff->Draw("colorz");
+    diag->Draw();
 
   }
 

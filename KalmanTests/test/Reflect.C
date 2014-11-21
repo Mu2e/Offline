@@ -40,10 +40,10 @@ public:
   void init();
   void momres();
   void diffres();
-  Reflect(TTree* ref,double momlow, double momhigh);
+  Reflect(TTree* ref,double momlow, double momhigh,int pdg=11);
 private:
   TTree* _ref;
-  TCut utd,dtd,ud0, dd0, umom,dmom, umomerr, dmomerr,ut0err,dt0err,unact,dnact,ureco,dreco,ugood,dgood,goodpair,goodmc,ufitc,dfitc, utq, dtq;
+  TCut utd,dtd,ud0, dd0, umom,dmom, umomerr, dmomerr,ut0err,dt0err,unact,dnact,ureco,dreco,ugood,dgood,goodpair,goodmc,ufitc,dfitc, utq, dtq, updg, dpdg;
   TCut ud0low,dd0low,ud0hi,dd0hi;
   TF1* cball;
   TF1* diffcball;
@@ -56,9 +56,10 @@ private:
   double diffhi;
 
   double _momlow, _momhigh;
+  int _pdg;
 };
 
-Reflect::Reflect(TTree* ref,double momlow, double momhigh) : _ref(ref), _momlow(momlow), _momhigh(momhigh) 
+Reflect::Reflect(TTree* ref,double momlow, double momhigh,int pdg) : _ref(ref), _momlow(momlow), _momhigh(momhigh), _pdg(pdg) 
 { init(); }
 
 void Reflect::init() {
@@ -81,34 +82,39 @@ void Reflect::init() {
   snprintf(ctext,80,"dtrk.d0>%4.3f&&dtrk.d0<%4.3f",d0low,d0high);
   dd0 = TCut(ctext);
 // note upstream selection is on MC, downstream on fit, due to inverted direction
-  snprintf(ctext,80,"umc.mom>%4.3f&&umc.mom<%4.3f",_momlow,_momhigh);
+  snprintf(ctext,80,"umcent.mom>%4.3f&&umcent.mom<%4.3f",_momlow,_momhigh);
   umom = TCut(ctext);
-  snprintf(ctext,80,"dtrk.fitmom>%4.3f&&dtrk.fitmom<%4.3f",_momlow,_momhigh);
+  snprintf(ctext,80,"dtrk.mom>%4.3f&&dtrk.mom<%4.3f",_momlow,_momhigh);
   dmom = TCut(ctext);
+
+  snprintf(ctext,80,"utrk.pdg==%i",_pdg);
+  updg = TCut(ctext);
+  snprintf(ctext,80,"dtrk.pdg==%i",_pdg);
+  dpdg = TCut(ctext);
 
   ut0err = TCut("utrk.t0err<0.9");
   dt0err = TCut("dtrk.t0err<0.9");
 
-  umomerr = TCut("utrk.fitmomerr<0.25");
-  dmomerr = TCut("dtrk.fitmomerr<0.25");
+  umomerr = TCut("utrk.momerr<0.25");
+  dmomerr = TCut("dtrk.momerr<0.25");
 
   unact = TCut("utrk.nactive>=25");
   dnact = TCut("dtrk.nactive>=25");
 
-  ureco = TCut("utrk.fitstat>0");
-  dreco = TCut("dtrk.fitstat>0");
+  ureco = TCut("utrk.status>0");
+  dreco = TCut("dtrk.status>0");
 
-  ufitc = TCut("utrk.fitcon>2e-3");
-  dfitc = TCut("dtrk.fitcon>2e-3");
+  ufitc = TCut("utrk.con>2e-3");
+  dfitc = TCut("dtrk.con>2e-3");
 
   utq = TCut("utrk.trkqual>0.4");
   dtq = TCut("dtrk.trkqual>0.4");
 
-  ugood = umom+utq+utd+ud0;
-  dgood = dmom+dtq+dtd+ud0;
+  ugood = umom+utq+utd+ud0+unact+updg;
+  dgood = dmom+dtq+dtd+dd0+dnact+dpdg;
 
   goodpair = ugood+dgood;
-  goodmc = TCut("umc.mom>0.0&&dmc.mom>0.0&&mc.pdg==11&&mc.pdg==utrk.fitpart");
+  goodmc = TCut("umcent.mom>0.0&&dmcent.mom>0.0&&mc.pdg==utrk.pdg");
 
   ud0low = TCut("utrk.d0<100");
   dd0low = TCut("dtrk.d0<100");
@@ -150,20 +156,24 @@ void Reflect::init() {
 
 void Reflect::momres() {
   if(!isinit)init();
-  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,500);
+  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,1200);
   rcan->Clear();
-  rcan->Divide(2,1);
+  rcan->Divide(2,2);
   gStyle->SetOptFit(111111);
   gStyle->SetOptStat("oumr");
 
   gPad->SetLogy();
-  TH1F* dmomres = new TH1F("dmomres","Downstream Single Track Momentum Resolution;fitmom-mcmom (MeV/c)",201,momlo,momhi);
-  TH1F* umomres = new TH1F("umomres","Upstream Single Track Momentum Resolution;mcmom-fitmom (MeV/c)",201,momlo,momhi);
-  _ref->Project("umomres","umc.mom-utrk.fitmom",ugood+goodmc);
+  TH1F* dmomres = new TH1F("dmomres","Downstream Single Track Momentum Resolution, Tracker Entrance;Trk-MC mom (MeV/c)",201,momlo,momhi);
+  TH1F* umomres = new TH1F("umomres","Upstream Single Track Momentum Resolution, Tracker Entrance;MC-Trk mom (MeV/c)",201,momlo,momhi);
+  TH1F* dmomresxit = new TH1F("dmomresxit","Downstream Single Track Momentum Resolution, Tracker Exit;MC - Trkmom (MeV/c)",201,momlo,momhi);
+  TH1F* umomresxit = new TH1F("umomresxit","Upstream Single Track Momentum Resolution, Tracker Exit;Trk -MC mom (MeV/c)",201,momlo,momhi);
+  _ref->Project("umomres","umcent.mom-utrk.mom",goodpair+goodmc);
   cout << umomres->GetEntries() <<endl;
-  _ref->Project("dmomres","dtrk.fitmom-dmc.mom",dgood+goodmc);
+  _ref->Project("dmomres","dtrk.mom-dmcent.mom",goodpair+goodmc);
   cout << dmomres->GetEntries() <<endl;
-  double upint = 2*umomres->GetEntries()*umomres->GetBinWidth(1);
+  _ref->Project("umomresxit","utrkxit.mom-umcxit.mom",goodpair+goodmc);
+  _ref->Project("dmomresxit","dmcxit.mom-dtrkxit.mom",goodpair+goodmc);
+   double upint = 2*umomres->GetEntries()*umomres->GetBinWidth(1);
   cball->SetParameters(upint,0.0,0.1,3.0,0.8,0.02,0.3);
   cball->SetParLimits(5,0.001,0.4);
   cball->SetParLimits(6,0.1,umomres->GetRMS());
@@ -180,11 +190,24 @@ void Reflect::momres() {
   dmomres->Fit(cball,"LRQ");
   dmomres->Fit(cball,"LRM");
 
+  rcan->cd(3);
+  gPad->SetLogy();
+  umomresxit->Fit(cball,"RQN");
+  umomresxit->Fit(cball,"LRQN");
+  umomresxit->Fit(cball,"LRQ");
+  umomresxit->Fit(cball,"LRM");
+  rcan->cd(4);
+  gPad->SetLogy();
+  dmomresxit->Fit(cball,"RQN");
+  dmomresxit->Fit(cball,"LRQN");
+  dmomresxit->Fit(cball,"LRQ");
+  dmomresxit->Fit(cball,"LRM");
+
 //  rcan->cd(2);
 //  gPad->SetLogy();
 //  TH1F* momresd = new TH1F("momresd","Single Track Momentum Resolution, d0 cut;MeV/c",201,momlo,momhi);
-//  _ref->Project("momresd","umc.mom-utrk.fitmom",ugood+goodmc+ud0low);
-//  _ref->Project("+dmomresd","dtrk.fitmom-dmc.mom",dgood+goodmc+dd0low);
+//  _ref->Project("momresd","umcent.mom-utrk.mom",ugood+goodmc+ud0low);
+//  _ref->Project("+dmomresd","dtrk.mom-dmcent.mom",dgood+goodmc+dd0low);
 //  double upintd = 2*momresd->GetEntries()*momresd->GetBinWidth(1);
 //  cball->SetParameters(upintd,0.0,0.1,3.0,0.8,0.02,0.3);
 //  cball->SetParLimits(5,0.001,0.4);
@@ -201,11 +224,11 @@ void Reflect::diffres() {
 
   TCut notarget("abs(utrk.d0>100)||(abs(uz0>200)&&utrk.td>-.7)");
 
-  _ref->Project("momdiff","dtrk.fitmom-utrk.fitmom",ugood+dgood+goodmc);
-  _ref->Project("mcmomdiff","dmc.mom-umc.mom",ugood+dgood+goodmc);
+  _ref->Project("momdiff","dtrk.mom-utrk.mom",ugood+dgood+goodmc);
+  _ref->Project("mcmomdiff","dmcent.mom-umcent.mom",ugood+dgood+goodmc);
 
-  _ref->Project("dmomdiff","dtrk.fitmom-utrk.fitmom",ugood+dgood+goodmc+dd0low+ud0low);
-  _ref->Project("dmcmomdiff","dmc.mom-umc.mom",ugood+dgood+goodmc+dd0low+ud0low);
+  _ref->Project("dmomdiff","dtrk.mom-utrk.mom",ugood+dgood+goodmc+dd0low+ud0low);
+  _ref->Project("dmcmomdiff","dmcent.mom-umcent.mom",ugood+dgood+goodmc+dd0low+ud0low);
 
   TCanvas* dcan = new TCanvas("dcan","Momentum Difference",1200,800);
   dcan->Clear();
