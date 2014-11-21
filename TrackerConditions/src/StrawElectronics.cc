@@ -90,8 +90,6 @@ namespace mu2e {
   // up to saturation voltage the response is linear
     if(vlin < _vsat)
       retval = vlin;
-    else if (vlin > _vmax)
-      retval = _vmax;
     else {
       retval = _vmax - _vdiff*exp(-(vlin-_vsat)/_vdiff);
     }
