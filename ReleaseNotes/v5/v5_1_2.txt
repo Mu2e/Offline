@@ -2,6 +2,20 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_1_2
 
+2)  Nov 20, 2014 - youzy
+    Modify TS1 entrance pbar absorber and change its default config
+    Modified files:
+        Mu2eG4/src/constructTS.cc
+        Mu2eG4/src/Mu2eWorld.cc
+        Mu2eG4/geom/TransportSolenoid_v01.txt
+    Added files:
+        JobConfig/TDR/geom_pbar_s123.txt 
+        JobConfig/TDR/geom_pbar_s456_muon.txt 
+        JobConfig/TDR/geom_pbar_s4_muon.txt 
+        JobConfig/TDR/geom_pbar_s56_muon.txt 
+        JobConfig/TDR/geom_pbar_s56.txt 
+
+
 1)  Nov 19, 2014 - ehrlich
     Removed the product instance name from the CaloClusterCollection 
     in TrackCaloMatching_module to follow the changes 

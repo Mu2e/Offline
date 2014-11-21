@@ -176,10 +176,10 @@ namespace mu2e {
     constructProtonBeamDump(hallInfo, _config);
 
     constructDS(hallInfo, _config);
-    constructTS(hallInfo, _config);
     constructPS(hallInfo, _config);
     constructPSEnclosure(hallInfo, _config);
     constructPSExternalShielding(hallInfo, _config);
+    constructTS(hallInfo, _config);
 
     VolumeInfo trackerInfo = constructTracker();
     VolumeInfo targetInfo  = constructTarget();
