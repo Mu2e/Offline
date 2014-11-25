@@ -45,10 +45,10 @@ echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 
 build=${1:-prof}
 # Setup the framework and its dependent products
-setup -B art v1_12_02 -q+e6:+${build}
+setup -B art v1_12_04 -q+e6:+${build}
 
 # The interface to SAM
-setup -B ifdh_art v1_5_4 -q+e6:+${build}:+s5
+setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
 # Geant4 and its cross-section files.
 setup -B geant4 v4_9_6_p03e -q+e6:+${build}
