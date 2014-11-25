@@ -74,6 +74,7 @@ namespace mu2e {
     double vac_halfLengthDs1() const { return _ds1HalfLength; }
     double vac_halfLengthDs2() const { return _ds2HalfLength; }
     double vac_zLocDs23Split() const { return _locationDs23Split; }
+    double vac_pressure()      const { return _vacuumPressure;    }
     std::string vacuumMaterial() const { return _vacuumMaterialName; }
 
 
@@ -122,6 +123,7 @@ namespace mu2e {
     double      _support_halfLength; 
 
     // Vacuum volumes inside DS
+    double _vacuumPressure;
     std::string _vacuumMaterialName; 
     double _ds1HalfLength;
     double _ds2HalfLength;

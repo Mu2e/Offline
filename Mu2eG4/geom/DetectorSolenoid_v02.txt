@@ -78,6 +78,7 @@ bool   dsVacuum.solid        = false;
 
 // Vacuum volumes inside DS
 string ds.vacuumMaterialName = "DSVacuum";
+double ds.vacuumPressure     = 1.e-4;      // torr
 
 double ds1.halfLength        =  455.;
 double ds2.halfLength        = 2080.;
