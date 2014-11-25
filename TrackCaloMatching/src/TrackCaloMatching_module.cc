@@ -214,7 +214,8 @@ namespace mu2e {
     ntracks = trks->size();
   
     art::Handle<CaloClusterCollection> caloClusters;
-    evt.getByLabel(_caloClusterModuleLabel,_caloClusterCollName, caloClusters );
+    //    evt.getByLabel(_caloClusterModuleLabel,_caloClusterCollName, caloClusters );
+    evt.getByLabel(_caloClusterModuleLabel, caloClusters );
     nclusters = caloClusters->size();
 
     art::Handle<TrkToCaloExtrapolCollection>  trjExtrapols;
