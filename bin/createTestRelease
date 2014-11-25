@@ -59,10 +59,19 @@ done
 outputDirBase=/mu2e/data/users/
 outputDir=$outputDirBase`/bin/pwd | sed -e 's|^.*/'$(whoami)'/|'$(whoami)/'|'`
 
+createOutputDir=1
 if [ -e  ${outputDir} ]; then
+ echo " "
  echo "The matching data directory already exists: " ${outputDir}
- echo "Please mv or rm that directory and restart."
- return 1
+ echo "You have two choices: "
+ echo "   1) Continue: the sym link in this directory will point to that directory"
+ echo "   2) Abort: you can mv or rm that directory and rerun this script"
+ echo -n "Enter c to continue anything else to abort: "
+ read answer
+ if [[ "${answer}" != "c" ]]; then
+   return 1
+ fi
+ createOutputDir=0
 fi
 
 # If the optional argument has been specified, get it.
@@ -81,8 +90,13 @@ mkdir -p bin
 mkdir -p lib
 
 # Create the output directory.
-echo "Making matching directory for output files:" ${outputDir}
-mkdir -p ${outputDir}/out
+if [[ "${createOutputDir}" == "1" ]]; then
+  echo "Making matching directory for output files:" ${outputDir}/out
+  mkdir -p ${outputDir}/out
+fi
+if [[ -s out ]]; then
+  /bin/rm out
+fi
 ln -s ${outputDir}/out
 
 # Create the setup script for the test release.
@@ -97,7 +111,13 @@ cat >> setup.sh <<EOF
 
 # Connect to the base release.
 source ${candidate_base_release}/${setupname}
+retstat=\$?
 
+if [[ "\$retstat" != "0" ]]; then
+  return \$retstat;
+fi
+
+# Add the test release to the two important path variables.
 export PATH="\`pwd\`/bin/:\${PATH}"
 export LD_LIBRARY_PATH="\`pwd\`/lib/:\${LD_LIBRARY_PATH}"
 
