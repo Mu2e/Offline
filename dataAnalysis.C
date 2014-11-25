@@ -31,8 +31,6 @@ float dynamicTruncation(float currentFunctionValue)
 
   if (currentFunctionValue < vSat)
     returnValue = currentFunctionValue;
-  else if (currentFunctionValue > vMax)
-    returnValue = vMax;
   else
     returnValue = vMax - vDiff*exp(-(currentFunctionValue - vSat) / vDiff);
   return returnValue;
@@ -297,57 +295,107 @@ float parameterFunction7Uniform(double *x, double *par)
 }
 
 
-float fittingFunction1(double *x, double *par)
+float fittingFunction1fixed(double *x, double *par)
+{
+  return fixedTruncation(parameterFunction1(x,par));
+}
+
+float fittingFunction2fixed(double *x, double *par)
+{
+  return fixedTruncation(parameterFunction2(x,par));
+}
+
+float fittingFunction3fixed(double *x, double *par)
+{
+  return fixedTruncation(parameterFunction3(x,par));
+}
+
+float fittingFunction4fixed(double *x, double *par)
+{
+  return fixedTruncation(parameterFunction4(x,par));
+}
+
+float fittingFunction5fixed(double *x, double *par)
+{
+  return fixedTruncation(parameterFunction5(x,par));
+}
+
+float fittingFunction7fixed(double *x, double *par)
+{
+  return fixedTruncation(parameterFunction7(x,par));
+}
+
+float fittingFunction8fixed(double *x, double *par)
+{
+  return dynamicTruncation(parameterFunction7(x,par));
+}
+
+float fittingFunction10fixed(double *x, double *par)
+{
+  return fixedTruncation(parameterFunction10(x,par));
+}
+
+
+float fittingFunction4Uniformfixed(double *x, double *par)
+{
+  return fixedTruncation(parameterFunction4Uniform(x,par));
+}
+
+float fittingFunction7Uniformfixed(double *x, double *par)
+{
+  return fixedTruncation(parameterFunction7Uniform(x,par));
+}
+
+float fittingFunction1dynamic(double *x, double *par)
 {
   return dynamicTruncation(parameterFunction1(x,par));
 }
 
-float fittingFunction2(double *x, double *par)
+float fittingFunction2dynamic(double *x, double *par)
 {
   return dynamicTruncation(parameterFunction2(x,par));
 }
 
-float fittingFunction3(double *x, double *par)
+float fittingFunction3dynamic(double *x, double *par)
 {
   return dynamicTruncation(parameterFunction3(x,par));
 }
 
-float fittingFunction4(double *x, double *par)
+float fittingFunction4dynamic(double *x, double *par)
 {
   return dynamicTruncation(parameterFunction4(x,par));
 }
 
-float fittingFunction5(double *x, double *par)
+float fittingFunction5dynamic(double *x, double *par)
 {
   return dynamicTruncation(parameterFunction5(x,par));
 }
 
-float fittingFunction7(double *x, double *par)
+float fittingFunction7dynamic(double *x, double *par)
 {
   return dynamicTruncation(parameterFunction7(x,par));
 }
 
-float fittingFunction8(double *x, double *par)
+float fittingFunction8dynamic(double *x, double *par)
 {
   return dynamicTruncation(parameterFunction7(x,par));
 }
 
-float fittingFunction10(double *x, double *par)
+float fittingFunction10dynamic(double *x, double *par)
 {
   return dynamicTruncation(parameterFunction10(x,par));
 }
 
 
-float fittingFunction4Uniform(double *x, double *par)
+float fittingFunction4Uniformdynamic(double *x, double *par)
 {
   return dynamicTruncation(parameterFunction4Uniform(x,par));
 }
 
-float fittingFunction7Uniform(double *x, double *par)
+float fittingFunction7Uniformdynamic(double *x, double *par)
 {
   return dynamicTruncation(parameterFunction7Uniform(x,par));
 }
-
 
 
 

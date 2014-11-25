@@ -11,7 +11,7 @@
 
 void sampleGraph(Long64_t entry)
 {
-	TFile f("protonFit25ns_8DoublePeak6Uniform.root");
+	TFile f("protonFit25ns_8UniformSecond.root");
 
 	TTree *treeData = (TTree*) gDirectory->Get("convolvedFitTree");
 	TGraphErrors *gr = new TGraphErrors();
@@ -28,7 +28,7 @@ void sampleGraph(Long64_t entry)
 	treeData->SetBranchAddress("suboption",&suboption);
 	treeData->GetEntry(entry);
 
-	TFile g("protonFit25ns_8DoublePeak6UniformSecond.root");
+	TFile g("protonFit25ns_8UniformFirst.root");
 	TTree *treeDataGauss = (TTree*) gDirectory->Get("convolvedFitTree");
 
 
@@ -51,27 +51,27 @@ void sampleGraph(Long64_t entry)
 
 	if (option == 1)
 	{
-		fittingFunction = new TF1("fittingFunction", fittingFunction7Uniform, 0.0, numberOfSamples*20.0, 5);
-		fittingFunctionGauss = new TF1("fittingFunctionGauss", fittingFunction7Uniform, 0.0, numberOfSamples*20.0, 5);
+		fittingFunction = new TF1("fittingFunction", fittingFunction7Uniformdynamic, 0.0, numberOfSamples*20.0, 5);
+		fittingFunctionGauss = new TF1("fittingFunctionGauss", fittingFunction7Uniformfixed, 0.0, numberOfSamples*20.0, 5);
 	}
 	if (option2 == 1)
-		fittingFunctionGauss = new TF1("fittingFunctionGauss", fittingFunction7Uniform, 0.0, numberOfSamples*20.0, 5);
+		fittingFunctionGauss = new TF1("fittingFunctionGauss", fittingFunction7Uniformfixed, 0.0, numberOfSamples*20.0, 5);
 	if (option == 2)
-		fittingFunction = new TF1("fittingFunction",fittingFunction7Uniform,0.0,numberOfSamples*20.0,5);
+		fittingFunction = new TF1("fittingFunction",fittingFunction7Uniformdynamic,0.0,numberOfSamples*20.0,5);
 	if (option2 == 2)
-		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction7Uniform,0.0,numberOfSamples*20.0,5);
+		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction7Uniformfixed,0.0,numberOfSamples*20.0,5);
 	if (option == 3)
-		fittingFunction = new TF1("fittingFunction", fittingFunction8,0.0,numberOfSamples*20.0, 6);
+		fittingFunction = new TF1("fittingFunction", fittingFunction8dynamic,0.0,numberOfSamples*20.0, 6);
 	if (option2 == 3)
-		fittingFunctionGauss = new TF1("fittingFunctionGauss", fittingFunction8,0.0,numberOfSamples*20.0, 6);
+		fittingFunctionGauss = new TF1("fittingFunctionGauss", fittingFunction8fixed,0.0,numberOfSamples*20.0, 6);
 	if (option == 4)
-		fittingFunction = new TF1("fittingFunction",fittingFunction4Uniform,0.0,numberOfSamples*20.0,6);
+		fittingFunction = new TF1("fittingFunction",fittingFunction4Uniformdynamic,0.0,numberOfSamples*20.0,6);
 	if (option2 == 4)
-		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction4Uniform,0.0,numberOfSamples*20.0,6);
+		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction4Uniformfixed,0.0,numberOfSamples*20.0,6);
 	if (option == 5)
-		fittingFunction = new TF1("fittingFunction",fittingFunction10,0.0,numberOfSamples*20.0,6);
+		fittingFunction = new TF1("fittingFunction",fittingFunction10dynamic,0.0,numberOfSamples*20.0,6);
 	if (option2 == 5)
-		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction10,0.0,numberOfSamples*20.0,6);
+		fittingFunctionGauss = new TF1("fittingFunctionGauss",fittingFunction10fixed,0.0,numberOfSamples*20.0,6);
 
 	cout << "option : " << option2 << endl;
 	cout << "par[0] : " << funcGauss->GetParameters()[0] << endl;
@@ -89,12 +89,12 @@ void sampleGraph(Long64_t entry)
 	//fitFunction7->SetParameters(func7param);
 	gr->Draw("A*");
 	fittingFunction->Draw("same");
-	gr->SetTitle("Uniform");
+	gr->SetTitle("Dynamic Truncation");
 
 	c1->cd(2);
 	grGauss->Draw("A*");
 	fittingFunctionGauss->Draw("same");
-	grGauss->SetTitle("Second Pass");
+	grGauss->SetTitle("Fixed Truncation");
 
 	//cout << gr->GetX()[0] << endl;
 }
