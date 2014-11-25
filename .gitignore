@@ -13,6 +13,7 @@ BaBar/TrkBase/
 BaBar/difAlgebra/
 .sconsign.dblite
 bin/artProductSizes
+bin/eventCount
 lib
 tmp
 *.o
@@ -21,6 +22,7 @@ tmp
 *.root
 *.log
 *.log.*
+*.pdf
 BaBar/include
 EventDisplay/src/EventDisplayDict.cc
 EventDisplay/src/EventDisplayDict.h
