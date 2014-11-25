@@ -79,7 +79,6 @@ echo "Creating test release:"
 cp ${candidate_base_release}/SConstruct .
 mkdir -p bin
 mkdir -p lib
-cp ${candidate_base_release}/bin/setup_mu2e_project.sh bin
 
 # Create the output directory.
 echo "Making matching directory for output files:" ${outputDir}
@@ -99,10 +98,7 @@ cat >> setup.sh <<EOF
 # Connect to the base release.
 source ${candidate_base_release}/${setupname}
 
-# Add the test release to PATH, LD_LIBRARY_PATH and PYTHON_PATH
-source bin/setup_mu2e_project.sh
-
-# Define the test release environment variables.
-source  \${MU2E_BASE_RELEASE}/bin/addlocal.sh
+export PATH="\`pwd\`/bin/:\${PATH}"
+export LD_LIBRARY_PATH="\`pwd\`/lib/:\${LD_LIBRARY_PATH}"
 
 EOF
