@@ -63,9 +63,11 @@ if os.environ.has_key('MU2E_TEST_RELEASE'):
     testrelease          = os.environ['MU2E_TEST_RELEASE']
     cpppath_frag         = [ testrelease, testrelease + '/BaBar/include' ]
     libpath_frag         = [ testrelease+'/lib/' ]
+    isTestRelease        = 1
 else:
     cpppath_frag         = [ ]
     libpath_frag         = [ ]
+    isTestRelease        = 0
 
 # The link libraries needed when building the BaBar code.
 babarlibs = [ 'mu2e_BaBar_KalmanTrack',     'mu2e_BaBar_DetectorModel',      'mu2e_BaBar_TrkBase',    'mu2e_BaBar_BField',
@@ -220,7 +222,11 @@ class mu2e_helper:
                 tokens.pop()
                 pass
             pass
-        return 'mu2e_' + string.join(tokens,'_')
+        prefix = 'mu2e_'
+        if ( isTestRelease == 1 ):
+            prefix = 'mu2euser_'
+            pass
+        return prefix + string.join(tokens,'_')
     def prefixed_libname(self):
         return '#/lib/' + self.libname()
 #
@@ -354,8 +360,9 @@ if (cleanopt and not COMMAND_LINE_TARGETS):
             os.unlink (ff)
 
     for ff in ("EventDisplay/src/EventDisplayDict.cc", "EventDisplay/src/EventDisplayDict.h"):
-        print "removing file ", ff
-        os.unlink (ff)
+        if os.path.exists(ff):
+            print "removing file ", ff
+            os.unlink (ff)
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
