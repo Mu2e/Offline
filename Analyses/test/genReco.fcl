@@ -1,10 +1,12 @@
 # -*- mode: tcl -*-
-// 2014-06-02: run local, write output file
-//
-// Andrei Gaponenko, 2014
 #------------------------------------------------------------------------------
-# quick comments: reads signal MC and also background MC inputs with steppoints
-# so need to define input and 
+# a) to prepare muon stop file for the interactive job: 
+#
+#     ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops 
+#
+# b) when submitting to the grid, comment out the PROLOG definition and use
+#
+#     --fclinput=@muStops:/mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root
 #------------------------------------------------------------------------------
 
 #include "minimalMessageService.fcl"
@@ -16,8 +18,6 @@
 #include "CalPatRec/test/producers.fcl"
 #include "ParticleID/test/producers.fcl"
 
-# use --fclInput when submitting to the grid
-
 BEGIN_PROLOG
   muStops      : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 END_PROLOG
@@ -26,27 +26,12 @@ process_name : GenReco
 
 source : { 
     module_type : EmptyEvent
-#    module_type : RootInput
-#    fileNames   : [ {INPUT_DATA_FILE} ]
-#    fileNames : ["/mu2e/data/tdr/beam/g4s4p5/tdr.beam.g4s4.conversion.1504a.15729672/good/00000/dsStopsToHitsConversion.root"]
-#    maxEvents   : 100
-
-#    inputCommands : ['keep *_*_*_*'
-#		     , 'drop *_muonTimeMap_*_*'
-#		     , 'drop *_protonTimeMap_*_*'
-#		     , 'drop mu2eStrawDigis_*_*_*'
-#		     , 'drop mu2eStrawHits_*_*_*'
-#		     , 'drop *_CaloReadoutHitsMaker_*_*'
-#		     , 'drop *_CaloCrystalHitsMaker_*_*'
-# Uncomment the above lines to reduce file size.
-#		     ]  
 }
 
 services : {
 
     message               : @local::default_message
     TFileService          : { fileName : "genReco.hist" }
-#    TFileService: { fileName : "digiMixAndTrackFile.hist" }
     RandomNumberGenerator : { }
 
     user : {
