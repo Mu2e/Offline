@@ -11,6 +11,7 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -71,6 +72,8 @@ namespace mu2e
     _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow",10.0)), //10.0 ns
     _fiberDecayTime(pset.get<double>("fiberDecayTime",7.4))     //7.4 ns
   {
+//    ConfigFileLookupPolicy configFile;
+//    _lookupTableFileName = configFile(_lookupTableFileName);
     _crvPEresponse = boost::shared_ptr<CrvPEresponse>(new CrvPEresponse());
     _crvPEresponse->LoadLookupTable(_lookupTableFileName.c_str());
     _crvPEresponse->SetScintillationYield(_scintillationYield);

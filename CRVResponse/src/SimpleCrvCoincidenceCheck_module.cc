@@ -1,5 +1,5 @@
 //
-// A module to extract number of PEs, arrival times, hit positions, etc. from the CRV waveforms
+// A module to check for coincidences of CRV pulses
 //
 // $Id: $
 // $Author: ehrlich $
@@ -132,15 +132,18 @@ namespace mu2e
          case 17: if(SiPM==0) {coincidenceGroup = 11; c.pos=CRSbar.getPosition().x();}
                   break;
         };
+//std::cout<<"coincidence group: "<<coincidenceGroup<<std::endl;
         const std::vector<CRVRecoPulses::CRVSingleRecoPulse> &pulseVector1 = crvRecoPulses.GetRecoPulses(SiPM);
         for(unsigned int i = 0; i<pulseVector1.size(); i++) 
         {
-          if(pulseVector1[i]._PEs>_PEthreshold) c.time.push_back(pulseVector1[i]._leadingEdge);
+          if(pulseVector1[i]._PEs>=_PEthreshold) c.time.push_back(pulseVector1[i]._leadingEdge);
+//std::cout<<"PEs: "<<pulseVector1[i]._PEs<<"   LE: "<<pulseVector1[i]._leadingEdge<<"   pos: "<<c.pos<<std::endl;
         }
         const std::vector<CRVRecoPulses::CRVSingleRecoPulse> &pulseVector2 = crvRecoPulses.GetRecoPulses(SiPM+2);
         for(unsigned int i = 0; i<pulseVector2.size(); i++) 
         {
-          if(pulseVector2[i]._PEs>_PEthreshold) c.time.push_back(pulseVector2[i]._leadingEdge);
+          if(pulseVector2[i]._PEs>=_PEthreshold) c.time.push_back(pulseVector2[i]._leadingEdge);
+//std::cout<<"PEs: "<<pulseVector2[i]._PEs<<"   LE: "<<pulseVector2[i]._leadingEdge<<"   pos: "<<c.pos<<std::endl;
         }
         coincidenceMap[coincidenceGroup].push_back(c);
       }
@@ -176,6 +179,8 @@ namespace mu2e
       } 
     }
     crvCoincidenceCheckResult->SetCoincidence(foundCoincidence);
+std::cout<<"run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
+std::cout<<(foundCoincidence?"Coincidence satisfied":"No coincidence found")<<std::endl;
     event.put(std::move(crvCoincidenceCheckResult));
   } // end produce
 

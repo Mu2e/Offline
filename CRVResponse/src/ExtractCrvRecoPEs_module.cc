@@ -7,6 +7,8 @@
 // 
 // Original Author: Ralf Ehrlich
 
+#include "CRVResponse/inc/CrvRecoPulseResponse.hh"
+
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
@@ -43,17 +45,22 @@ namespace mu2e
     void endJob();
 
     private:
+    boost::shared_ptr<CrvRecoPulseResponse> _crvRecoPulseResponse;
+
     std::string _crvWaveformsModuleLabel;
     double      _integralFactor;
-    double      _threshold;
+    double      _pulseThreshold;
+    double      _leadingEdgeThreshold;
   };
 
   ExtractCrvRecoPulses::ExtractCrvRecoPulses(fhicl::ParameterSet const& pset) :
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
     _integralFactor(pset.get<double>("integralFactor",51.0)),
-    _threshold(pset.get<double>("threshold",0.005))
+    _pulseThreshold(pset.get<double>("pulseThreshold",0.005)),
+    _leadingEdgeThreshold(pset.get<double>("leadingEdgeThreshold",0.2))
   {
     produces<CRVRecoPulsesCollection>();
+    _crvRecoPulseResponse = boost::shared_ptr<CrvRecoPulseResponse>(new CrvRecoPulseResponse(_pulseThreshold, _leadingEdgeThreshold, _integralFactor));
   }
 
   void ExtractCrvRecoPulses::beginJob()
@@ -82,31 +89,17 @@ namespace mu2e
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         const std::vector<double> waveform = crvWaveforms.GetWaveform(SiPM);
-        unsigned int nBins = waveform.size();
-        double time = crvWaveforms.GetStartTime(SiPM);
-        for(unsigned bin=0; bin<nBins; bin++, time+=binWidth)
-        {
-          double voltage = waveform[bin];
-          if(voltage>_threshold)
-          {
-            double leadingEdge = time;
-            double integral = 0;
-            double maxVoltage = 0;
-            for( ; bin<nBins; bin++, time+=binWidth)
-            {
-              voltage = waveform[bin];
-              if(voltage<_threshold) break;
-              integral += voltage;
-              if(voltage>maxVoltage) maxVoltage=voltage;
-            }
+        double startTime = crvWaveforms.GetStartTime(SiPM);
+        _crvRecoPulseResponse->SetWaveform(waveform, startTime, binWidth);
 
-            CRVRecoPulses::CRVSingleRecoPulse pulse;
-            pulse._PEs = static_cast<int>(integral*_integralFactor+0.5);
-            pulse._leadingEdge = leadingEdge;
-            pulse._timeOverThreshold = time - leadingEdge;
-            pulse._pulseHeight = maxVoltage;
-            crvRecoPulses.GetRecoPulses(SiPM).push_back(pulse);
-          }
+        unsigned int n = _crvRecoPulseResponse->GetNPulses();
+        for(unsigned int i=0; i<n; i++)
+        {
+          CRVRecoPulses::CRVSingleRecoPulse pulse;
+          pulse._PEs = _crvRecoPulseResponse->GetPEs(i);
+          pulse._leadingEdge = _crvRecoPulseResponse->GetLeadingEdge(i);
+          pulse._pulseHeight = _crvRecoPulseResponse->GetPulseHeight(i);
+          crvRecoPulses.GetRecoPulses(SiPM).push_back(pulse);
         }
       }
     }

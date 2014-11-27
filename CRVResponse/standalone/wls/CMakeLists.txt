@@ -38,10 +38,12 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${ROOT_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc
                   ${PROJECT_SOURCE_DIR}/../../src/CrvPEresponse.cc
-                  ${PROJECT_SOURCE_DIR}/../../src/CrvWaveformResponse.cc)
+                  ${PROJECT_SOURCE_DIR}/../../src/CrvWaveformResponse.cc
+                  ${PROJECT_SOURCE_DIR}/../../src/CrvRecoPulseResponse.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh
                   ${PROJECT_SOURCE_DIR}/../../inc/CrvPEresponse.hh
-                  ${PROJECT_SOURCE_DIR}/../../inc/CrvWaveformResponse.hh)
+                  ${PROJECT_SOURCE_DIR}/../../inc/CrvWaveformResponse.hh
+                  ${PROJECT_SOURCE_DIR}/../../inc/CrvRecoPulseResponse.hh)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries

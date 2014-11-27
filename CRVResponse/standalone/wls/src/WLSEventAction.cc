@@ -6,6 +6,10 @@
 #include "WLSDetectorConstruction.hh"
 
 #include "Randomize.hh"
+#include <TMath.h>
+#include <TFitResult.h>
+#include <TFitResultPtr.h>
+#include <TF1.h>
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TH3D.h>
@@ -15,10 +19,12 @@
 #include <TStyle.h>
 #include <TText.h>
 #include <TGraph.h>
+#include <TMarker.h>
 #include <TGaxis.h>
 #include <TCanvas.h>
 
 #include "CrvWaveformResponse.hh"
+#include "CrvRecoPulseResponse.hh"
 
 #include <stdexcept>
 
@@ -252,17 +258,20 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 
 void WLSEventAction::Draw(const G4Event* evt) const
 {
-  CrvWaveformResponse waveformResponse;
+  CrvWaveformResponse waveformResponse, waveformResponse2;
   double binWidth = 12.5; //ns
+  double binWidth2 = 1.0; //ns
   gStyle->SetOptStat(0);
   waveformResponse.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 200);
+  waveformResponse2.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 200);
 
   double startTime=-G4UniformRand()*binWidth;
-  std::vector<double> waveform[4];
+  std::vector<double> waveform[4], waveform2[4];
   for(int SiPM=0; SiPM<4; SiPM++)
   {
     const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
     waveformResponse.MakeWaveforms(arrivalTimes, waveform[SiPM], startTime, binWidth);
+    waveformResponse2.MakeWaveforms(arrivalTimes, waveform2[SiPM], startTime, binWidth2);
   }
 
   std::ostringstream s1;
@@ -270,13 +279,16 @@ void WLSEventAction::Draw(const G4Event* evt) const
 
   TCanvas c(s1.str().c_str(),s1.str().c_str(),1000,1000);
   c.Divide(2,2);
-  TGraph *graph[4];
+  TGraph *graph[4], *graph2[4];
+  std::vector<TGraph*> graphLvector;
+  std::vector<TMarker*> markers;
   TH1D *hist[4];
 
   for(int SiPM=0; SiPM<4; SiPM++)
   {
     c.cd(SiPM+1);
 
+//PEs
     std::ostringstream s2, s3;
     s2<<"waveform_"<<evt->GetEventID()<<"__"<<SiPM;
     s3<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
@@ -294,45 +306,111 @@ void WLSEventAction::Draw(const G4Event* evt) const
     hist[SiPM]->Draw();
 
     double histMax = hist[SiPM]->GetMaximum();
-    double waveformMax = *std::max_element(waveform[SiPM].begin(),waveform[SiPM].end());
+    double waveformMax = *std::max_element(waveform2[SiPM].begin(),waveform2[SiPM].end());
     double scale = histMax/waveformMax;
 
+//waveforms with 1 ns bin width
+    unsigned int n2 = waveform2[SiPM].size();
+    if(n2==0) continue;
+    double *t2 = new double[n2];
+    double *v2 = new double[n2];
+    for(unsigned int j=0; j<n2; j++)
+    {
+      t2[j]=startTime+j*binWidth2;
+      v2[j]=waveform2[SiPM][j];
+      v2[j]*=scale;
+    }
+    graph2[SiPM]=new TGraph();
+    graph2[SiPM]->SetTitle("");
+    graph2[SiPM]->SetLineWidth(1);
+    graph2[SiPM]->SetLineColor(kBlack);
+    graph2[SiPM]->DrawGraph(n2,t2,v2,"same");
+
+    delete[] t2;
+    delete[] v2;
+
+//waveforms with 12.5 ns bin width
     unsigned int n = waveform[SiPM].size();
     if(n==0) continue;
     double *t = new double[n];
     double *v = new double[n];
-    double integral = 0;
-    double maxBin = NAN;
-    int pulsesFound = 0;
     for(unsigned int j=0; j<n; j++)
     {
       t[j]=startTime+j*binWidth;
       v[j]=waveform[SiPM][j];
-      if(v[j]>0.005)
-      {
-        if(j>0)
-        {
-          if(v[j-1]<=0.005) pulsesFound++;
-        }
-        else pulsesFound++;
-        if(isnan(maxBin) || v[j]>maxBin) maxBin=v[j];
-        integral+=v[j];
-      }
       v[j]*=scale;
     }
-    graph[SiPM]=new TGraph();
+    graph[SiPM]=new TGraph(n,t,v);
     graph[SiPM]->SetTitle("");
     graph[SiPM]->SetMarkerStyle(20);
     graph[SiPM]->SetMarkerSize(1);
-    graph[SiPM]->SetMarkerColor(kRed);
-    graph[SiPM]->DrawGraph(n,t,v,"sameP");
+    graph[SiPM]->SetMarkerColor(kBlack);
+    graph[SiPM]->Draw("sameP");
 
-    if(pulsesFound==1)
+    delete[] t;
+    delete[] v;
+
+//waveforms with 12.5 ns bin width for points above the threshold
+//used for the integral
+    for(unsigned int j=0; j<n; j++)
+    {
+      double tI=startTime+j*binWidth;
+      double vI=waveform[SiPM][j];
+      if(tI>200) break;
+      if(vI<=0.005) continue;
+      TMarker *marker = new TMarker(tI, vI*scale, markers.size());
+      marker->SetMarkerStyle(20);
+      marker->SetMarkerSize(1);
+      marker->SetMarkerColor(kRed);
+      marker->Draw("same");
+      markers.push_back(marker);
+    }
+
+//Landau fit
+    CrvRecoPulseResponse recoPulseResponse(0.005,0.2,51.0);
+    recoPulseResponse.SetWaveform(waveform[SiPM], startTime, binWidth);
+    unsigned int nPulse = recoPulseResponse.GetNPulses();
+    for(unsigned int pulse=0; pulse<nPulse; pulse++)
+    {
+      TGraph *graphL=new TGraph();
+      graphLvector.push_back(graphL);
+      double tL1=recoPulseResponse.GetT1(pulse);
+      double tL2=recoPulseResponse.GetT2(pulse);
+      int nL=(tL2-tL1)/1.0 + 1;
+      double *tL = new double[nL];
+      double *vL = new double[nL];
+      for(int iL=0; iL<nL; iL++)
+      {
+        double p0 = recoPulseResponse.GetLandauParam0(pulse);
+        double p1 = recoPulseResponse.GetLandauParam1(pulse);
+        double p2 = recoPulseResponse.GetLandauParam2(pulse);
+        tL[iL] = tL1 + iL*1.0;
+        vL[iL] = p0*TMath::Landau(tL[iL], p1, p2);
+        vL[iL]*=scale;
+      }
+      graphL->SetTitle("");
+      graphL->SetLineWidth(2);
+      graphL->SetLineColor(kGreen);
+      graphL->DrawGraph(nL,tL,vL,"same");
+
+      double leadingEdge=recoPulseResponse.GetLeadingEdge(pulse);
+      TMarker *marker = new TMarker(leadingEdge,
+                                    0.2*recoPulseResponse.GetPulseHeight(pulse)*scale,
+                                    markers.size());
+      marker->SetMarkerStyle(21);
+      marker->SetMarkerSize(1);
+      marker->SetMarkerColor(kGreen);
+      marker->Draw("same");
+      markers.push_back(marker);
+    }
+
+    if(recoPulseResponse.GetNPulses()==1)
     {
       int PEs = arrivalTimes.size();
-      std::cout<<"PEs/integral: "<<PEs/integral<<"         PEs/maxBin: "<<PEs/maxBin<<std::endl;
-      _PEvsIntegral->Fill(PEs,integral);
-      _PEvsPulseHeight->Fill(PEs,maxBin);
+      std::cout<<"PEs/integral: "<<PEs/recoPulseResponse.GetIntegral(0)<<"         ";
+      std::cout<<"PEs/maxBin: "<<PEs/recoPulseResponse.GetPulseHeight(0)<<std::endl;
+      _PEvsIntegral->Fill(PEs,recoPulseResponse.GetIntegral(0));
+      _PEvsPulseHeight->Fill(PEs,recoPulseResponse.GetPulseHeight(0));
     }
 
     TGaxis *axis = new TGaxis(180.0,0,180.0,histMax,0,waveformMax,10,"+L");
@@ -342,9 +420,6 @@ void WLSEventAction::Draw(const G4Event* evt) const
     axis->SetLineColor(kRed);
     axis->SetLabelColor(kRed);
     axis->Draw("same");
-
-    delete[] t;
-    delete[] v;
   }
   c.SaveAs((s1.str()+".C").c_str());
 }

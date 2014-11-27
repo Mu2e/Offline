@@ -11,6 +11,7 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -59,6 +60,8 @@ namespace mu2e
   {
     double singlePEWaveformBinWidth(pset.get<double>("singlePEWaveformBinWidth",1.0));    //1.0 ns
     int nBins(pset.get<int>("singlePEWaveformBins",200));          //200
+    ConfigFileLookupPolicy configFile;
+    _singlePEWaveformFileName = configFile(_singlePEWaveformFileName);
     _crvWaveformResponse = boost::shared_ptr<CrvWaveformResponse>(new CrvWaveformResponse());
     _crvWaveformResponse->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformBinWidth, nBins);
     produces<CRVWaveformsCollection>();

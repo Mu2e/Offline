@@ -46,13 +46,14 @@ physics :
       module_type               : ExtractCrvRecoPEs
       crvWaveformsModuleLabel   : "CrvWaveforms"
       integralFactor            : 51.0
-      threshold                 : 0.005    //mV
+      pulseThreshold            : 0.005    //mV
+      leadingEdgeThreshold      : 0.2      //% of the maximum bin
     }
     CrvCoincidence:
     {
       module_type               : SimpleCrvCoincidenceCheck
       crvRecoPulsesModuleLabel  : "CrvRecoPulses"
-      PEthreshold               : 20
+      PEthreshold               : 15
       maxDistance               : 200
       maxTimeDifference         : 5
     }

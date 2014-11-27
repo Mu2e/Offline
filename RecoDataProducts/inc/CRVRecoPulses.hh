@@ -21,7 +21,6 @@ namespace mu2e
     {
       int    _PEs;
       double _leadingEdge;
-      double _timeOverThreshold;
       double _pulseHeight;
     };
 
