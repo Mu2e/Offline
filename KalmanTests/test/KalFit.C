@@ -397,12 +397,12 @@ void KalFit::Trk () {
   TH1F* t0pull = new TH1F("t0pull","Track t0 pull",100,-10,10);
   TH2F* dt0 = new TH2F("dt0","Track t0;true t0 (nsec);Initial t0 (nsec)",
       100,500,4000,100,500,4000);
-  _tdiag->Project("t0res","t0-mcmid.t0","fit.status>0");
-  _tdiag->Project("t0pull","(t0-mcmid.t0)/t0err","fit.status>0");
+  _tdiag->Project("t0res","fit.t0-mcmid.t0","fit.status>0");
+  _tdiag->Project("t0pull","(fit.t0-mcmid.t0)/fit.t0err","fit.status>0");
   tcan->Clear();
   tcan->Divide(2,2);
   tcan->cd(1);
-  _tdiag->Draw("t0:mcmid.t0>>dt0","fit.status>0");
+  _tdiag->Draw("fit.t0:mcmid.t0>>dt0","fit.status>0");
   tcan->cd(3);
   t0res->Fit("gaus");
   tcan->cd(4);
@@ -415,11 +415,11 @@ void KalFit::Trk () {
   TH1F* ompull = new TH1F("ompull","#omega pull",100,-10,10);
   TH1F* z0pull = new TH1F("z0pull","z0 pull",100,-10,10);
   TH1F* tdpull = new TH1F("tdpull","tan(#lambda) pull",100,-10,10);
-  _tdiag->Project("d0pull","(d0-mcent.d0)/d0err","fit.status>0");
-  _tdiag->Project("p0pull","(p0-mcent.p0)/p0err","fit.status>0");
-  _tdiag->Project("ompull","(om-mcent.om)/omerr","fit.status>0");
-  _tdiag->Project("z0pull","(z0-mcent.z0)/z0err","fit.status>0");
-  _tdiag->Project("tdpull","(td-mcent.td)/tderr","fit.status>0");
+  _tdiag->Project("d0pull","(fit.d0-mcent.d0)/fit.d0err","fit.status>0");
+  _tdiag->Project("p0pull","(fit.p0-mcent.p0)/fit.p0err","fit.status>0");
+  _tdiag->Project("ompull","(fit.om-mcent.om)/fit.omerr","fit.status>0");
+  _tdiag->Project("z0pull","(fit.z0-mcent.z0)/fit.z0err","fit.status>0");
+  _tdiag->Project("tdpull","(fit.td-mcent.td)/fit.tderr","fit.status>0");
   pcan->Clear();
   pcan->Divide(3,2);
   pcan->cd(1);
@@ -441,7 +441,7 @@ void KalFit::Trk () {
   TH1F* chisq = new TH1F("chisq","Chisq/NDof",100,0,10);
   _tdiag->Project("mres","fit.mom-mcent.mom","fit.status>0");
   _tdiag->Project("mpull","(fit.mom-mcent.mom)/fit.momerr","fit.status>0");
-  _tdiag->Project("chisq","chisq/ndof","fit.status>0");
+  _tdiag->Project("chisq","fit.chisq/fit.ndof","fit.status>0");
   fcan->Clear();
   fcan->Divide(2,2);
   fcan->cd(1);

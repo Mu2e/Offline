@@ -1,6 +1,8 @@
 #include "TH1F.h"
 #include "TF1.h"
 #include "TTree.h"
+#include "TLine.h"
+#include "TArrow.h"
 #include "TLegend.h"
 #include "TPad.h"
 #include "TPaveText.h"
@@ -40,6 +42,7 @@ public:
   void init();
   void momres();
   void diffres();
+  void params(TTree* ce=0);
   Reflect(TTree* ref,double momlow, double momhigh,int pdg=11);
 private:
   TTree* _ref;
@@ -50,11 +53,10 @@ private:
   TF1* truecball;
 
   bool isinit;
-  double momlo;
-  double momhi;
-  double difflo;
-  double diffhi;
-
+  double difflow, diffhigh;
+  double d0low,d0high;
+  double tdlow,tdhigh;
+  double tqlow,tqhigh;
   double _momlow, _momhigh;
   int _pdg;
 };
@@ -63,15 +65,15 @@ Reflect::Reflect(TTree* ref,double momlow, double momhigh,int pdg) : _ref(ref), 
 { init(); }
 
 void Reflect::init() {
-  momlo = -4.0;
-  momhi = 4.0;
-  difflo = -10.0;
-  diffhi = 5.0;
+  difflow = -10.0;
+  diffhigh = 5.0;
 
-  double tdlow(0.57735027);
-  double tdhigh(1.0);
-  double d0low(-80.0);
-  double d0high(80.0);
+  tdlow = 0.57735027;
+  tdhigh = 1.0;
+  d0low = -80.0;
+  d0high =80.0;
+  tqlow = 0.4;
+  tqhigh =1.5;
   char ctext[80];
   snprintf(ctext,80,"utrk.td<%4.3f&&utrk.td>%4.3f",-tdlow,-tdhigh);
   utd = TCut(ctext);
@@ -86,6 +88,11 @@ void Reflect::init() {
   umom = TCut(ctext);
   snprintf(ctext,80,"dtrk.mom>%4.3f&&dtrk.mom<%4.3f",_momlow,_momhigh);
   dmom = TCut(ctext);
+
+  snprintf(ctext,80,"utrk.trkqual> %4.3f & &utrk.trkqual < %4.3f",tqlow,tqhigh);
+  utq = TCut(ctext);
+  snprintf(ctext,80,"dtrk.trkqual> %4.3f & &dtrk.trkqual < %4.3f",tqlow,tqhigh);
+  dtq = TCut(ctext);
 
   snprintf(ctext,80,"utrk.pdg==%i",_pdg);
   updg = TCut(ctext);
@@ -107,8 +114,6 @@ void Reflect::init() {
   ufitc = TCut("utrk.con>2e-3");
   dfitc = TCut("dtrk.con>2e-3");
 
-  utq = TCut("utrk.trkqual>0.4");
-  dtq = TCut("dtrk.trkqual>0.4");
 
   ugood = umom+utq+utd+ud0+unact+updg;
   dgood = dmom+dtq+dtd+dd0+dnact+dpdg;
@@ -162,11 +167,13 @@ void Reflect::momres() {
   gStyle->SetOptFit(111111);
   gStyle->SetOptStat("oumr");
 
+  double momlo(-4.0);
+  double momhigh(4.0);
   gPad->SetLogy();
-  TH1F* dmomres = new TH1F("dmomres","Downstream Single Track Momentum Resolution, Tracker Entrance;Trk-MC mom (MeV/c)",201,momlo,momhi);
-  TH1F* umomres = new TH1F("umomres","Upstream Single Track Momentum Resolution, Tracker Entrance;MC-Trk mom (MeV/c)",201,momlo,momhi);
-  TH1F* dmomresxit = new TH1F("dmomresxit","Downstream Single Track Momentum Resolution, Tracker Exit;MC - Trkmom (MeV/c)",201,momlo,momhi);
-  TH1F* umomresxit = new TH1F("umomresxit","Upstream Single Track Momentum Resolution, Tracker Exit;Trk -MC mom (MeV/c)",201,momlo,momhi);
+  TH1F* dmomres = new TH1F("dmomres","Downstream Single Track Momentum Resolution, Tracker Entrance;Trk-MC mom (MeV/c)",201,momlo,momhigh);
+  TH1F* umomres = new TH1F("umomres","Upstream Single Track Momentum Resolution, Tracker Entrance;MC-Trk mom (MeV/c)",201,momlo,momhigh);
+  TH1F* dmomresxit = new TH1F("dmomresxit","Downstream Single Track Momentum Resolution, Tracker Exit;MC - Trkmom (MeV/c)",201,momlo,momhigh);
+  TH1F* umomresxit = new TH1F("umomresxit","Upstream Single Track Momentum Resolution, Tracker Exit;Trk -MC mom (MeV/c)",201,momlo,momhigh);
   _ref->Project("umomres","umcent.mom-utrk.mom",goodpair+goodmc);
   cout << umomres->GetEntries() <<endl;
   _ref->Project("dmomres","dtrk.mom-dmcent.mom",goodpair+goodmc);
@@ -205,7 +212,7 @@ void Reflect::momres() {
 
 //  rcan->cd(2);
 //  gPad->SetLogy();
-//  TH1F* momresd = new TH1F("momresd","Single Track Momentum Resolution, d0 cut;MeV/c",201,momlo,momhi);
+//  TH1F* momresd = new TH1F("momresd","Single Track Momentum Resolution, d0 cut;MeV/c",201,momlo,momhigh);
 //  _ref->Project("momresd","umcent.mom-utrk.mom",ugood+goodmc+ud0low);
 //  _ref->Project("+dmomresd","dtrk.mom-dmcent.mom",dgood+goodmc+dd0low);
 //  double upintd = 2*momresd->GetEntries()*momresd->GetBinWidth(1);
@@ -217,10 +224,10 @@ void Reflect::momres() {
 
 void Reflect::diffres() {
   if(!isinit)init();
-  TH1F* momdiff = new TH1F("momdiff","Reco Downstream - Upstream momentum",201,difflo,diffhi);
-  TH1F* mcmomdiff = new TH1F("mcmomdiff","True Downstream - Upstream momentum",201,difflo,diffhi);
-  TH1F* dmomdiff = new TH1F("dmomdiff","Reco Downstream - Upstream momentum, d0 cut",201,difflo,diffhi);
-  TH1F* dmcmomdiff = new TH1F("dmcmomdiff","True Downstream - Upstream momentum, d0 cut",201,difflo,diffhi);
+  TH1F* momdiff = new TH1F("momdiff","Reco Downstream - Upstream momentum",201,difflow,diffhigh);
+  TH1F* mcmomdiff = new TH1F("mcmomdiff","True Downstream - Upstream momentum",201,difflow,diffhigh);
+  TH1F* dmomdiff = new TH1F("dmomdiff","Reco Downstream - Upstream momentum, d0 cut",201,difflow,diffhigh);
+  TH1F* dmcmomdiff = new TH1F("dmcmomdiff","True Downstream - Upstream momentum, d0 cut",201,difflow,diffhigh);
 
   TCut notarget("abs(utrk.d0>100)||(abs(uz0>200)&&utrk.td>-.7)");
 
@@ -266,5 +273,131 @@ void Reflect::diffres() {
   mean = dmomdiff->GetMean();
   truecball->SetParameters(dmcdifint,mean,0.25,3.5,0.65,0.01,0.5);
   dmcmomdiff->Fit("truecball","LIR");
+
+}
+
+void Reflect::params( TTree* ce) {
+  TH1F* crdtd = new TH1F("crdtd","Downstream tan(#lambda)",100,0.2,1.2);
+  TH1F* crdmom = new TH1F("crdmom","Downstream Momentum",100,30,150);
+  TH1F* crdd0 = new TH1F("crdd0","Downstream d0;mm",100,-500,500);
+  TH1F* crdp0 = new TH1F("crdp0","Downstream #phi0",100,-3.142,3.142);
+  TH1F* crdtq = new TH1F("crdtq","Downstream TrkQual",100,-0.2,1.5);
+  TH1F* crdna = new TH1F("crdna","Downstream N Active",100,-0.5,99.5);
+  crdtd->SetLineColor(kBlue);
+  crdmom->SetLineColor(kBlue);
+  crdd0->SetLineColor(kBlue);
+  crdp0->SetLineColor(kBlue);
+  crdtq->SetLineColor(kBlue);
+  crdna->SetLineColor(kBlue);
+  crdtd->SetStats(0);
+  crdmom->SetStats(0);
+  crdd0->SetStats(0);
+  crdp0->SetStats(0);
+  crdtq->SetStats(0);
+  crdna->SetStats(0);
+  _ref->Project("crdtd","dtrk.td",dreco+dpdg+goodmc);
+  _ref->Project("crdmom","dtrk.mom",dreco+dpdg+goodmc);
+  _ref->Project("crdd0","dtrk.d0",dreco+dpdg+goodmc);
+  _ref->Project("crdp0","dtrk.p0",dreco+dpdg+goodmc);
+  _ref->Project("crdtq","dtrk.trkqual",dreco+dpdg+goodmc);
+  _ref->Project("crdna","dtrk.nactive",dreco+dpdg+goodmc);
+  
+  unsigned ncr = crdtd->GetEntries();
+
+  TH1F* cetd(0);
+  TH1F* cemom(0);
+  TH1F* ced0(0);
+  TH1F* cep0(0);
+  TH1F* cetq(0);
+  TH1F* cena(0);
+  TLegend* leg = new TLegend(0.6,0.7,0.9,0.9);
+  leg->AddEntry(crdtd,"CR Branch","L");
+  if(ce != 0){
+    cetd = new TH1F("cetd","Downstream tan(#lambda)",100,0.2,1.2);
+    cemom = new TH1F("cemom","Downstream Momentum",100,30,150);
+    ced0 = new TH1F("ced0","Downstream d0;mm",100,-500,500);
+    cep0 = new TH1F("cep0","Downstream #phi0",100,-3.142,3.142);
+    cetq = new TH1F("cetq","Downstream TrkQual",100,-0.2,1.5);
+    cena = new TH1F("cena","Downstream N Active",100,-0.5,99.5);
+    cetd->SetLineColor(kRed);
+    cemom->SetLineColor(kRed);
+    ced0->SetLineColor(kRed);
+    cep0->SetLineColor(kRed);
+    cetq->SetLineColor(kRed);
+    cena->SetLineColor(kRed);
+    cetd->SetStats(0);
+    cemom->SetStats(0);
+    ced0->SetStats(0);
+    cep0->SetStats(0);
+    cetq->SetStats(0);
+    cena->SetStats(0);
+    ce->Project("cetd","fit.td","fit.status>0");
+    ce->Project("cemom","fit.mom","fit.status>0");
+    ce->Project("ced0","fit.d0","fit.status>0");
+    ce->Project("cep0","fit.p0","fit.status>0");
+    ce->Project("cetq","fit.trkqual","fit.status>0");
+    ce->Project("cena","fit.nactive","fit.status>0");
+
+    unsigned nce = cetd->GetEntries();
+    float scale(ncr/nce);
+    cetd->Scale(scale);
+    cemom->Scale(scale);
+    ced0->Scale(scale);
+    cep0->Scale(scale);
+    cetq->Scale(scale);
+    cena->Scale(scale);
+    leg->AddEntry(cetd,"Conversion","L");
+  }
+
+  TLine *ltdlow , *ltdhigh, *lmomlow, *lmomhigh, *ld0low, *ld0high, *ltqlow, *ltqhigh;
+  if(ce != 0){
+    ltdlow = new TLine(tdlow,0,tdlow,cetd->GetMaximum());
+    ltdhigh= new TLine(tdhigh,0,tdhigh,cetd->GetMaximum());
+    lmomlow = new TLine(_momlow,0,_momlow,cemom->GetMaximum());
+    lmomhigh= new TLine(_momhigh,0,_momhigh,cemom->GetMaximum());
+    ld0low = new TLine(d0low,0,d0low,ced0->GetMaximum());
+    ld0high= new TLine(d0high,0,d0high,ced0->GetMaximum());
+    ltqlow = new TLine(tqlow,0,tqlow,cetq->GetMaximum());
+    ltqhigh= new TLine(tqhigh,0,tqhigh,cetq->GetMaximum());
+  } else {
+    ltdlow = new TLine(tdlow,0,tdlow,crdtd->GetMaximum());
+    ltdhigh= new TLine(tdhigh,0,tdhigh,crdtd->GetMaximum());
+    lmomlow = new TLine(_momlow,0,_momlow,crdmom->GetMaximum());
+    lmomhigh= new TLine(_momhigh,0,_momhigh,crdmom->GetMaximum());
+    ld0low = new TLine(d0low,0,d0low,crdd0->GetMaximum());
+    ld0high= new TLine(d0high,0,d0high,crdd0->GetMaximum());
+    ltqlow = new TLine(tqlow,0,tqlow,crdtq->GetMaximum());
+    ltqhigh= new TLine(tqhigh,0,tqhigh,crdtq->GetMaximum());
+  }
+
+  TCanvas* pcan = new TCanvas("pcan","Parameters",1200,800);
+  pcan->Divide(3,2);
+  pcan->cd(1);
+  if(cetd)cetd->Draw("same");
+  crdtd->Draw("same");
+  leg->Draw("same");
+  ltdlow->Draw();
+  ltdhigh->Draw();
+  pcan->cd(2);
+  if(cemom)cemom->Draw("same");
+  crdmom->Draw("same");
+  lmomlow->Draw();
+  lmomhigh->Draw();
+  pcan->cd(3);
+  if(ced0)ced0->Draw("same");
+  crdd0->Draw("same");
+  ld0low->Draw();
+  ld0high->Draw();
+  pcan->cd(4);
+  crdtq->Draw("same");
+  if(cetq)cetq->Draw("same");
+  ltqlow->Draw();
+  ltqhigh->Draw();
+  pcan->cd(5);
+  if(cena)cena->Draw("same");
+  crdna->Draw("same");
+  pcan->cd(6);
+  crdp0->Draw("same");
+  if(cep0)cep0->Draw("same");
 
 }
