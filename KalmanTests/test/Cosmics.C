@@ -192,42 +192,42 @@ void Cosmics(TTree* cr, const char* page="parent") {
     TLine* momcut = new TLine(1500,0,1500,pmommm->GetMaximum());
     momcut->SetLineStyle(3);
     momcut->SetLineWidth(3);
-    TArrow* momcutdir = new TArrow(1500,pmommm->GetMaximum(), 3000, pmommm->GetMaximum(),0.02,"|>");
+    TArrow* momcutdir = new TArrow(500,pmommm->GetMaximum(), 1500, pmommm->GetMaximum(),0.02,"|>");
     momcutdir->SetLineWidth(3);
     momcutdir->SetFillColor(kWhite);
 
     TLine* costcut = new TLine(0,0,0,pctmm->GetMaximum());
     costcut->SetLineStyle(3);
     costcut->SetLineWidth(3);
-    TArrow* costcutdir = new TArrow(0,pctmm->GetMaximum(), -0.3, pctmm->GetMaximum(),0.02,"|>");
+    TArrow* costcutdir = new TArrow(0.2,pctmm->GetMaximum(), 0.0, pctmm->GetMaximum(),0.02,"|>");
     costcutdir->SetLineWidth(3);
     costcutdir->SetFillColor(kWhite);
 
     TLine* x1cut = new TLine(-1500,0,-1500,ppxmm->GetMaximum());
     x1cut->SetLineStyle(3);
     x1cut->SetLineWidth(3);
-    TArrow* x1cutdir = new TArrow(-1500,ppxmm->GetMaximum(), -800, ppxmm->GetMaximum(),0.02,"|>");
+    TArrow* x1cutdir = new TArrow(-2000,ppxmm->GetMaximum(), -1500, ppxmm->GetMaximum(),0.02,"|>");
     x1cutdir->SetLineWidth(3);
     x1cutdir->SetFillColor(kWhite);
 
     TLine* x2cut = new TLine(1500,0,1500,ppxmm->GetMaximum());
     x2cut->SetLineStyle(3);
     x2cut->SetLineWidth(3);
-    TArrow* x2cutdir = new TArrow(1500,ppxmm->GetMaximum(), 800, ppxmm->GetMaximum(),0.02,"|>");
+    TArrow* x2cutdir = new TArrow(2000,ppxmm->GetMaximum(), 1500, ppxmm->GetMaximum(),0.02,"|>");
     x2cutdir->SetLineWidth(3);
     x2cutdir->SetFillColor(kWhite);
 
     TLine* z1cut = new TLine(800,0,800,ppzmm->GetMaximum());
     z1cut->SetLineStyle(3);
     z1cut->SetLineWidth(3);
-    TArrow* z1cutdir = new TArrow(800,ppzmm->GetMaximum(), 1500, ppzmm->GetMaximum(),0.02,"|>");
+    TArrow* z1cutdir = new TArrow(300,ppzmm->GetMaximum(), 800, ppzmm->GetMaximum(),0.02,"|>");
     z1cutdir->SetLineWidth(3);
     z1cutdir->SetFillColor(kWhite);
 
     TLine* z2cut = new TLine(3200,0,3200,ppzmm->GetMaximum());
     z2cut->SetLineStyle(3);
     z2cut->SetLineWidth(3);
-    TArrow* z2cutdir = new TArrow(3200,ppzmm->GetMaximum(), 2500, ppzmm->GetMaximum(),0.02,"|>");
+    TArrow* z2cutdir = new TArrow(3700,ppzmm->GetMaximum(), 3200, ppzmm->GetMaximum(),0.02,"|>");
     z2cutdir->SetLineWidth(3);
     z2cutdir->SetFillColor(kWhite);
 
