@@ -227,44 +227,48 @@ void Cosmics(TTree* cr, const char* page="prod") {
     pxzep->Draw("same");
 
     
-  } else if(tpage =="select") {
-    TH2F* cmom = new TH2F("cmom","Downstream vs Upstream momentum;P_{d} (MeV);P_{u} (MeV)",100,60,200,100,60,200);
+  } else if(tpage =="pselect") {
+    TH2F* cmom = new TH2F("cmom","Downstream vs Upstream momentum;P_{d} (MeV);P_{u} (MeV)",100,30,250,100,30,250);
     TH2F* ctand = new TH2F("ctand","Downstream vs Upstream tan#lambda;tan(#lambda)_{d};tan(#lambda)_{u}",100,-1.25,-0.25,100,0.25,1.25);
     TH2F* cp0 = new TH2F("cp0","Downstream vs Upstream #phi_{0};radians;radians",100,-3.15,3.15,100,-3.15,3.15);
-    TH2F* cd0 = new TH2F("cd0","Downstream vs Upstream d_{0};mm;mm",100,-400,400,100,-400,400);
-    TH1F* dtrkt0e = new TH1F("dtrkt0e","Downstream - Upstream t_{0};nsec",100,50,200);
-    TH1F* dtrkt0m = new TH1F("dtrkt0m","Downstream - Upstream t_{0};nsec",100,50,200);
+    TH2F* cd0 = new TH2F("cd0","Downstream vs Upstream d_{0};mm;mm",100,-600,600,100,-600,600);
     cmom->SetStats(0);
     ctand->SetStats(0);
     cd0->SetStats(0);
     cp0->SetStats(0);
-    dtrkt0e->SetStats(0);
-    dtrkt0m->SetStats(0);
-    dtrkt0e->SetLineColor(kRed);
-    dtrkt0m->SetLineColor(kCyan);
-    
+   
     cr->Project("cmom","dtrk.mom:utrk.mom");
     cr->Project("ctand","dtrk.td:utrk.td");
     cr->Project("cp0","dtrk.p0:utrk.p0");
     cr->Project("cd0","dtrk.d0:utrk.d0");
+    TCanvas* scan = new TCanvas("scan","Selection",1200,800);
+    scan->Divide(2,2);
+    scan->cd(1);
+    cmom->Draw("colorz");
+    scan->cd(2);
+    ctand->Draw("colorz");
+    scan->cd(3);
+    cp0->Draw("colorz");
+    scan->cd(4);
+    cd0->Draw("colorz");
+
+  } else if(tpage == "dt") {
+    TH1F* dtrkt0e = new TH1F("dtrkt0e","Downstream - Upstream t_{0};nsec",100,50,200);
+    TH1F* dtrkt0m = new TH1F("dtrkt0m","Downstream - Upstream t_{0};nsec",100,50,200);
+    dtrkt0e->SetLineColor(kRed);
+    dtrkt0m->SetLineColor(kCyan);
+    dtrkt0e->SetStats(0);
+    dtrkt0m->SetStats(0);
     cr->Project("dtrkt0e","dtrk.t0-utrk.t0","abs(mc.pdg)==11");
     cr->Project("dtrkt0m","dtrk.t0-utrk.t0","abs(mc.pdg)==13");
-
-    TCanvas* scan = new TCanvas("scan","Selection",1200,800);
-    scan->Divide(3,2);
-    scan->cd(1);
-    cmom->Draw();
-    scan->cd(2);
-    ctand->Draw();
-    scan->cd(3);
-    cp0->Draw();
-    scan->cd(4);
-    cd0->Draw();
-    scan->cd(5);
+    TLegend* leg = new TLegend(0.7,0.5,0.9,0.9);
+    leg->AddEntry(dtrkt0e,"e^{#pm}","L");
+    leg->AddEntry(dtrkt0m,"#mu^{#pm}","L");
+    TCanvas* dt = new TCanvas("dt","Time difference",600,600);
     dtrkt0e->Draw();
     dtrkt0m->Draw("same");
-
-
+    leg->Draw();
+    
   } else if(tpage == "momdiff" ){
 
     TH2F* umomdiff = new TH2F("umomdiff","Upstream particle #Delta P, tracker exit - entrance;True #Delta P (MeV/c);Reco #Delta P (MeV/c)",100,-1,5,100,-1,5);
