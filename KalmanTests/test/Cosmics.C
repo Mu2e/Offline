@@ -390,6 +390,44 @@ void Cosmics(TTree* cr, const char* page="parent") {
     dtrkt0e->Draw();
     dtrkt0m->Draw("same");
     leg->Draw();
+
+    TLine* ecutl = new TLine(60,0,60,dtrkt0e->GetMaximum());
+    ecutl->SetLineStyle(3);
+    ecutl->SetLineWidth(3);
+    TArrow* ecutldir = new TArrow(50,dtrkt0e->GetMaximum(), 60, dtrkt0e->GetMaximum(),0.02,"|>");
+    ecutldir->SetLineWidth(3);
+    ecutldir->SetFillColor(kRed);
+    ecutl->Draw();
+    ecutldir->Draw();
+
+    TLine* ecuth = new TLine(90,0,90,dtrkt0e->GetMaximum());
+    ecuth->SetLineStyle(3);
+    ecuth->SetLineWidth(3);
+    TArrow* ecuthdir = new TArrow(100,dtrkt0e->GetMaximum(), 90, dtrkt0e->GetMaximum(),0.02,"|>");
+    ecuthdir->SetLineWidth(3);
+    ecuthdir->SetFillColor(kRed);
+    ecuth->Draw();
+    ecuthdir->Draw();
+
+    TLine* mucutl = new TLine(75,0,75,dtrkt0m->GetMaximum());
+    mucutl->SetLineStyle(3);
+    mucutl->SetLineWidth(3);
+    TArrow* mucutldir = new TArrow(65,dtrkt0m->GetMaximum(), 75, dtrkt0m->GetMaximum(),0.02,"|>");
+    mucutldir->SetLineWidth(3);
+    mucutldir->SetFillColor(kCyan);
+    mucutl->Draw();
+    mucutldir->Draw();
+
+    TLine* mucuth = new TLine(150,0,150,dtrkt0m->GetMaximum());
+    mucuth->SetLineStyle(3);
+    mucuth->SetLineWidth(3);
+    TArrow* mucuthdir = new TArrow(160,dtrkt0m->GetMaximum(), 150, dtrkt0m->GetMaximum(),0.02,"|>");
+    mucuthdir->SetLineWidth(3);
+    mucuthdir->SetFillColor(kCyan);
+    mucuth->Draw();
+    mucuthdir->Draw();
+
+
     
   } else if(tpage == "momdiff" ){
 
@@ -413,7 +451,4 @@ void Cosmics(TTree* cr, const char* page="parent") {
     diag->Draw();
 
   }
-
-
-
 }
