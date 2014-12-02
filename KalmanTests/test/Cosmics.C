@@ -19,12 +19,12 @@
 
 
 
-void Cosmics(TTree* cr, const char* page="prod") {
+void Cosmics(TTree* cr, const char* page="parent") {
   TString tpage(page);
 
-  if(tpage=="prod"){
-    TH2F* pxyep = new TH2F("pxyep","Electron production position;x(mm); y(mm)",100,-800,800,100,-800,800);
-    TH2F* pxyem = new TH2F("pxyem","Electron production position;x(mm); y(mm)",100,-800,800,100,-800,800);
+  if(tpage=="electron"){
+    TH2F* pxyep = new TH2F("pxyep","Electron Production Position;x(mm); y(mm)",100,-800,800,100,-800,800);
+    TH2F* pxyem = new TH2F("pxyem","Electron Production Position;x(mm); y(mm)",100,-800,800,100,-800,800);
   
     pxyep->SetMarkerStyle(4);
     pxyep->SetMarkerColor(kBlue);
@@ -36,8 +36,8 @@ void Cosmics(TTree* cr, const char* page="prod") {
     cr->Project("pxyem","opos.y:opos.x","mc.pdg==11");
     cr->Project("pxyep","opos.y:opos.x","mc.pdg==-11");
 
-    TH2F* pxzep = new TH2F("pxzep","Electron production position;z(mm); x(mm)",100,1000,3600,100,-800,800);
-    TH2F* pxzem = new TH2F("pxzem","Electron production position;z(mm); x(mm)",100,1000,3600,100,-800,800);
+    TH2F* pxzep = new TH2F("pxzep","Electron Production Position;z(mm); x(mm)",100,1000,3600,100,-800,800);
+    TH2F* pxzem = new TH2F("pxzem","Electron Production Position;z(mm); x(mm)",100,1000,3600,100,-800,800);
   
     pxzep->SetMarkerStyle(4);
     pxzep->SetMarkerColor(kBlue);
@@ -46,77 +46,93 @@ void Cosmics(TTree* cr, const char* page="prod") {
     pxzem->SetMarkerColor(kRed);
     pxzem->SetStats(0);
   
-
     cr->Project("pxzem","opos.x:opos.z","mc.pdg==11");
     cr->Project("pxzep","opos.x:opos.z","mc.pdg==-11");
 
-    TH2F* ppxzep = new TH2F("ppxzep","Projected parent production position y=0;z(mm); x(mm)",100,0,4500,100,-2000,2000);
-    TH2F* ppxzem = new TH2F("ppxzem","Projected parent production position y=0;z(mm); x(mm)",100,0,4500,100,-2000,2000);
-    TH2F* ppxzmp = new TH2F("ppxzmp","Projected parent production position y=0;z(mm); x(mm)",100,0,4500,100,-2000,2000);
-    TH2F* ppxzmm = new TH2F("ppxzmm","Projected parent production position y=0;z(mm); x(mm)",100,0,4500,100,-2000,2000);
-   
-    ppxzep->SetMarkerStyle(4);
-    ppxzep->SetMarkerColor(kBlue);
-    ppxzep->SetLineColor(kBlue);
-    ppxzep->SetStats(0);
-    ppxzem->SetMarkerStyle(4);
-    ppxzem->SetMarkerColor(kRed);
-    ppxzem->SetLineColor(kRed);
-    ppxzem->SetStats(0);
-    ppxzmp->SetMarkerStyle(5);
-    ppxzmp->SetMarkerColor(kCyan);
-    ppxzmp->SetLineColor(kCyan);
-    ppxzmp->SetStats(0);
-    ppxzmm->SetMarkerStyle(5);
-    ppxzmm->SetMarkerColor(kOrange);
-    ppxzmm->SetLineColor(kOrange);
-    ppxzmm->SetStats(0);
-  
-    cr->Project("ppxzem","pppos.x:pppos.z","mc.pdg==11");
-    cr->Project("ppxzep","pppos.x:pppos.z","mc.pdg==-11");
-    cr->Project("ppxzmm","pppos.x:pppos.z","mc.pdg==13");
-    cr->Project("ppxzmp","pppos.x:pppos.z","mc.pdg==-13");
+    TLegend* leg = new TLegend(0.7,0.7,0.9,0.9);
+    leg->AddEntry(pxyem,"e^{-}","P");
+    leg->AddEntry(pxyep,"e^{+}","P");
 
-    TH1F* mcmomem = new TH1F("mcmomem","Tracker Momentum, reflected particle;MeV/c",100,25,250);
-    TH1F* mcmomep = new TH1F("mcmomep","Tracker Momentum, reflected particle;MeV/c",100,25,250);
-    TH1F* mcmommm = new TH1F("mcmommm","Tracker Momentum, reflected particle;MeV/c",100,25,250);
-    TH1F* mcmommp = new TH1F("mcmommp","Tracker Momentum, reflected particle;MeV/c",100,25,250);
-    mcmomem->SetStats(0);
-    mcmomem->SetLineColor(kRed);
-    mcmomep->SetStats(0);
-    mcmomep->SetLineColor(kBlue);
-    mcmommm->SetStats(0);
-    mcmommm->SetLineColor(kOrange);
-    mcmommp->SetStats(0);
-    mcmommp->SetLineColor(kCyan);
+    TCanvas* ecan = new TCanvas("ecan","Electrons",800,500);
+    ecan->Divide(2,1);
 
-    cr->Project("mcmomem","umcent.mom","mc.pdg==11");
-    cr->Project("mcmomep","umcent.mom","mc.pdg==-11");
-    cr->Project("mcmommm","umcent.mom","mc.pdg==13");
-    cr->Project("mcmommp","umcent.mom","mc.pdg==-13");
+    unsigned ican(1);
+    ecan->cd(ican++);
+    pxyem->Draw();
+    pxyep->Draw("same");
 
-    TH1F* mcd0em = new TH1F("mcd0em","Track D_{0}, reflected particle;mm",100,-500,500);
-    TH1F* mcd0ep = new TH1F("mcd0ep","Track D_{0}, reflected particle;mm",100,-500,500);
-    TH1F* mcd0mm = new TH1F("mcd0mm","Track D_{0}, reflected particle;mm",100,-500,500);
-    TH1F* mcd0mp = new TH1F("mcd0mp","Track D_{0}, reflected particle;mm",100,-500,500);
-    mcd0em->SetStats(0);
-    mcd0em->SetLineColor(kRed);
-    mcd0ep->SetStats(0);
-    mcd0ep->SetLineColor(kBlue);
-    mcd0mm->SetStats(0);
-    mcd0mm->SetLineColor(kOrange);
-    mcd0mp->SetStats(0);
-    mcd0mp->SetLineColor(kCyan);
+    ecan->cd(ican++);
+    pxzem->Draw();
+    pxzep->Draw("same");
+    leg->Draw();
 
-    cr->Project("mcd0em","umcent.d0","mc.pdg==11");
-    cr->Project("mcd0ep","umcent.d0","mc.pdg==-11");
-    cr->Project("mcd0mm","umcent.d0","mc.pdg==13");
-    cr->Project("mcd0mp","umcent.d0","mc.pdg==-13");
+  } else if(tpage=="parent") {
 
-    TH1F* pmomem = new TH1F("pmomem","Parent momentum;MeV/c",100,0,50000);
-    TH1F* pmomep = new TH1F("pmomep","Parent momentum;MeV/c",100,0,50000);
-    TH1F* pmommm = new TH1F("pmommm","Parent momentum;MeV/c",100,0,50000);
-    TH1F* pmommp = new TH1F("pmommp","Parent momentum;MeV/c",100,0,50000);
+    TH1F* ppxep = new TH1F("ppxep","Projected Parent x Position, y=0;x(mm)",100,-2500,2500);
+    TH1F* ppxem = new TH1F("ppxem","Projected Parent x Position, y=0;x(mm)",100,-2500,2500);
+    TH1F* ppxmp = new TH1F("ppxmp","Projected Parent x Position, y=0;x(mm)",100,-2500,2500);
+    TH1F* ppxmm = new TH1F("ppxmm","Projected Parent x Position, y=0;x(mm)",100,-2500,2500);
+
+    TH1F* ppzep = new TH1F("ppzep","Projected Parent z Position, y=0;z(mm)",100,-1000,5000);
+    TH1F* ppzem = new TH1F("ppzem","Projected Parent z Position, y=0;z(mm)",100,-1000,5000);
+    TH1F* ppzmp = new TH1F("ppzmp","Projected Parent z Position, y=0;z(mm)",100,-1000,5000);
+    TH1F* ppzmm = new TH1F("ppzmm","Projected Parent z Position, y=0;z(mm)",100,-1000,5000);
+
+//    TH2F* ppxzep = new TH2F("ppxzep","Projected parent production position y=0;z(mm); x(mm)",50,-500,5000,50,-2500,2500);
+//    TH2F* ppxzem = new TH2F("ppxzem","Projected parent production position y=0;z(mm); x(mm)",50,-500,5000,50,-2500,2500);
+//    TH2F* ppxzmp = new TH2F("ppxzmp","Projected parent production position y=0;z(mm); x(mm)",50,-500,5000,50,-2500,2500);
+//    TH2F* ppxzmm = new TH2F("ppxzmm","Projected parent production position y=0;z(mm); x(mm)",50,-500,5000,50,-2500,2500);
+ 
+    TH1F* pmomem = new TH1F("pmomem","Parent Momentum;MeV/c",200,-1000,10000);
+    TH1F* pmomep = new TH1F("pmomep","Parent Momentum;MeV/c",200,-1000,10000);
+    TH1F* pmommm = new TH1F("pmommm","Parent Momentum;MeV/c",200,-1000,10000);
+    TH1F* pmommp = new TH1F("pmommp","Parent Momentum;MeV/c",200,-1000,10000);
+
+//    TH1F* pmomlowem = new TH1F("pmomlowem","Parent momentum;MeV/c",100,0,10000);
+//    TH1F* pmomlowep = new TH1F("pmomlowep","Parent momentum;MeV/c",100,0,10000);
+//    TH1F* pmomlowmm = new TH1F("pmomlowmm","Parent momentum;MeV/c",100,0,10000);
+//    TH1F* pmomlowmp = new TH1F("pmomlowmp","Parent momentum;MeV/c",100,0,10000);
+
+    TH1F* pctem = new TH1F("pctem","Parent cos(#theta)",100,-1,1);
+    TH1F* pctep = new TH1F("pctep","Parent cos(#theta)",100,-1,1);
+    TH1F* pctmm = new TH1F("pctmm","Parent cos(#theta)",100,-1,1);
+    TH1F* pctmp = new TH1F("pctmp","Parent cos(#theta)",100,-1,1);
+
+    ppxem->SetStats(0);
+    ppxem->SetLineColor(kRed);
+    ppxep->SetStats(0);
+    ppxep->SetLineColor(kBlue);
+    ppxmm->SetStats(0);
+    ppxmm->SetLineColor(kOrange);
+    ppxmp->SetStats(0);
+    ppxmp->SetLineColor(kCyan);
+
+    ppzem->SetStats(0);
+    ppzem->SetLineColor(kRed);
+    ppzep->SetStats(0);
+    ppzep->SetLineColor(kBlue);
+    ppzmm->SetStats(0);
+    ppzmm->SetLineColor(kOrange);
+    ppzmp->SetStats(0);
+    ppzmp->SetLineColor(kCyan);
+
+//    ppxzep->SetMarkerStyle(4);
+//    ppxzep->SetMarkerColor(kBlue);
+//    ppxzep->SetLineColor(kBlue);
+//    ppxzep->SetStats(0);
+//    ppxzem->SetMarkerStyle(4);
+//    ppxzem->SetMarkerColor(kRed);
+//    ppxzem->SetLineColor(kRed);
+//    ppxzem->SetStats(0);
+//    ppxzmp->SetMarkerStyle(5);
+//    ppxzmp->SetMarkerColor(kCyan);
+//    ppxzmp->SetLineColor(kCyan);
+//    ppxzmp->SetStats(0);
+//    ppxzmm->SetMarkerStyle(5);
+//    ppxzmm->SetMarkerColor(kOrange);
+//    ppxzmm->SetLineColor(kOrange);
+//    ppxzmm->SetStats(0);
+
     pmomem->SetStats(0);
     pmomem->SetLineColor(kRed);
     pmomep->SetStats(0);
@@ -126,33 +142,15 @@ void Cosmics(TTree* cr, const char* page="prod") {
     pmommp->SetStats(0);
     pmommp->SetLineColor(kCyan);
 
-    cr->Project("pmomem","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==11");
-    cr->Project("pmomep","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-11");
-    cr->Project("pmommm","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==13");
-    cr->Project("pmommp","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-13");
+//    pmomlowem->SetStats(0);
+//    pmomlowem->SetLineColor(kRed);
+//    pmomlowep->SetStats(0);
+//    pmomlowep->SetLineColor(kBlue);
+//    pmomlowmm->SetStats(0);
+//    pmomlowmm->SetLineColor(kOrange);
+//    pmomlowmp->SetStats(0);
+//    pmomlowmp->SetLineColor(kCyan);
 
-    TH1F* pmomlowem = new TH1F("pmomlowem","Parent momentum;MeV/c",100,0,10000);
-    TH1F* pmomlowep = new TH1F("pmomlowep","Parent momentum;MeV/c",100,0,10000);
-    TH1F* pmomlowmm = new TH1F("pmomlowmm","Parent momentum;MeV/c",100,0,10000);
-    TH1F* pmomlowmp = new TH1F("pmomlowmp","Parent momentum;MeV/c",100,0,10000);
-    pmomlowem->SetStats(0);
-    pmomlowem->SetLineColor(kRed);
-    pmomlowep->SetStats(0);
-    pmomlowep->SetLineColor(kBlue);
-    pmomlowmm->SetStats(0);
-    pmomlowmm->SetLineColor(kOrange);
-    pmomlowmp->SetStats(0);
-    pmomlowmp->SetLineColor(kCyan);
-
-    cr->Project("pmomlowem","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==11");
-    cr->Project("pmomlowep","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-11");
-    cr->Project("pmomlowmm","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==13");
-    cr->Project("pmomlowmp","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-13");
-
-    TH1F* pctem = new TH1F("pctem","Parent cos(#theta)",100,-1,1);
-    TH1F* pctep = new TH1F("pctep","Parent cos(#theta)",100,-1,1);
-    TH1F* pctmm = new TH1F("pctmm","Parent cos(#theta)",100,-1,1);
-    TH1F* pctmp = new TH1F("pctmp","Parent cos(#theta)",100,-1,1);
     pctem->SetStats(0);
     pctem->SetLineColor(kRed);
     pctep->SetStats(0);
@@ -161,18 +159,86 @@ void Cosmics(TTree* cr, const char* page="prod") {
     pctmm->SetLineColor(kOrange);
     pctmp->SetStats(0);
     pctmp->SetLineColor(kCyan);
+
+    cr->Project("ppxem","pppos.x","mc.pdg==11");
+    cr->Project("ppxep","pppos.x","mc.pdg==-11");
+    cr->Project("ppxmm","pppos.x","mc.pdg==13");
+    cr->Project("ppxmp","pppos.x","mc.pdg==-13");
+    cr->Project("ppzem","pppos.z","mc.pdg==11");
+    cr->Project("ppzep","pppos.z","mc.pdg==-11");
+    cr->Project("ppzmm","pppos.z","mc.pdg==13");
+    cr->Project("ppzmp","pppos.z","mc.pdg==-13");
+
+//    cr->Project("ppxzem","pppos.x:pppos.z","mc.pdg==11");
+//    cr->Project("ppxzep","pppos.x:pppos.z","mc.pdg==-11");
+//    cr->Project("ppxzmm","pppos.x:pppos.z","mc.pdg==13");
+//    cr->Project("ppxzmp","pppos.x:pppos.z","mc.pdg==-13");
+
+//    cr->Project("pmomlowem","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==11");
+//    cr->Project("pmomlowep","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-11");
+//    cr->Project("pmomlowmm","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==13");
+//    cr->Project("pmomlowmp","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-13");
+
+    cr->Project("pmomem","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==11");
+    cr->Project("pmomep","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-11");
+    cr->Project("pmommm","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==13");
+    cr->Project("pmommp","sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-13");
+
     cr->Project("pctem","pmom.z/sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==11");
     cr->Project("pctep","pmom.z/sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-11");
     cr->Project("pctmm","pmom.z/sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==13");
     cr->Project("pctmp","pmom.z/sqrt(pmom.x^2+pmom.y^2+pmom.z^2)","mc.pdg==-13");
     
-    TLegend* leg = new TLegend(0.7,0.5,0.9,0.9);
-    leg->AddEntry(ppxzem,"e^{-}","LP");
-    leg->AddEntry(ppxzep,"e^{+}","LP");
-    leg->AddEntry(ppxzmm,"#mu^{-}","LP");
-    leg->AddEntry(ppxzmp,"#mu^{+}","LP");
+    TLine* momcut = new TLine(1500,0,1500,pmommm->GetMaximum());
+    momcut->SetLineStyle(3);
+    momcut->SetLineWidth(3);
+    TArrow* momcutdir = new TArrow(1500,pmommm->GetMaximum(), 3000, pmommm->GetMaximum(),0.02,"|>");
+    momcutdir->SetLineWidth(3);
+    momcutdir->SetFillColor(kWhite);
 
-    TCanvas* pcan = new TCanvas("pcan","Production",1000,800);
+    TLine* costcut = new TLine(0,0,0,pctmm->GetMaximum());
+    costcut->SetLineStyle(3);
+    costcut->SetLineWidth(3);
+    TArrow* costcutdir = new TArrow(0,pctmm->GetMaximum(), -0.3, pctmm->GetMaximum(),0.02,"|>");
+    costcutdir->SetLineWidth(3);
+    costcutdir->SetFillColor(kWhite);
+
+    TLine* x1cut = new TLine(-1500,0,-1500,ppxmm->GetMaximum());
+    x1cut->SetLineStyle(3);
+    x1cut->SetLineWidth(3);
+    TArrow* x1cutdir = new TArrow(-1500,ppxmm->GetMaximum(), -800, ppxmm->GetMaximum(),0.02,"|>");
+    x1cutdir->SetLineWidth(3);
+    x1cutdir->SetFillColor(kWhite);
+
+    TLine* x2cut = new TLine(1500,0,1500,ppxmm->GetMaximum());
+    x2cut->SetLineStyle(3);
+    x2cut->SetLineWidth(3);
+    TArrow* x2cutdir = new TArrow(1500,ppxmm->GetMaximum(), 800, ppxmm->GetMaximum(),0.02,"|>");
+    x2cutdir->SetLineWidth(3);
+    x2cutdir->SetFillColor(kWhite);
+
+    TLine* z1cut = new TLine(800,0,800,ppzmm->GetMaximum());
+    z1cut->SetLineStyle(3);
+    z1cut->SetLineWidth(3);
+    TArrow* z1cutdir = new TArrow(800,ppzmm->GetMaximum(), 1500, ppzmm->GetMaximum(),0.02,"|>");
+    z1cutdir->SetLineWidth(3);
+    z1cutdir->SetFillColor(kWhite);
+
+    TLine* z2cut = new TLine(3200,0,3200,ppzmm->GetMaximum());
+    z2cut->SetLineStyle(3);
+    z2cut->SetLineWidth(3);
+    TArrow* z2cutdir = new TArrow(3200,ppzmm->GetMaximum(), 2500, ppzmm->GetMaximum(),0.02,"|>");
+    z2cutdir->SetLineWidth(3);
+    z2cutdir->SetFillColor(kWhite);
+
+    TLegend* leg = new TLegend(0.6,0.6,0.9,0.9);
+    leg->AddEntry(ppxem,"e^{-}","LP");
+    leg->AddEntry(ppxep,"e^{+}","LP");
+    leg->AddEntry(ppxmm,"#mu^{-}","LP");
+    leg->AddEntry(ppxmp,"#mu^{+}","LP");
+    leg->AddEntry(momcutdir,"Generator Cut","L");
+
+    TCanvas* pcan = new TCanvas("pcan","Parent",1000,800);
 
     pcan->Divide(2,2);
     unsigned ican(1);
@@ -182,29 +248,93 @@ void Cosmics(TTree* cr, const char* page="prod") {
     pmomem->Draw("same");
     pmomep->Draw("same");
     leg->Draw();
+    momcut->Draw();
+    momcutdir->Draw();
 
-    pcan->cd(ican++);
-    pmomlowmp->Draw();
-    pmomlowmm->Draw("same");
-    pmomlowem->Draw("same");
-    pmomlowep->Draw("same");
+//    pcan->cd(ican++);
+//    pmomlowmp->Draw();
+//    pmomlowmm->Draw("same");
+//    pmomlowem->Draw("same");
+//    pmomlowep->Draw("same");
 
     pcan->cd(ican++);
     pctem->Draw();
     pctep->Draw("same");
     pctmp->Draw("same");
     pctmm->Draw("same");
+    costcut->Draw();
+    costcutdir->Draw();
+
 
     pcan->cd(ican++);
-    ppxzem->Draw();
-    ppxzep->Draw("same");
-    ppxzmm->Draw("same");
-    ppxzmp->Draw("same");
+    ppxem->Draw();
+    ppxep->Draw("same");
+    ppxmm->Draw("same");
+    ppxmp->Draw("same");
+    x1cut->Draw();
+    x1cutdir->Draw();
+    x2cut->Draw();
+    x2cutdir->Draw();
+
+
+    pcan->cd(ican++);
+    ppzem->Draw();
+    ppzep->Draw("same");
+    ppzmm->Draw("same");
+    ppzmp->Draw("same");
+    z1cut->Draw();
+    z1cutdir->Draw();
+    z2cut->Draw();
+    z2cutdir->Draw();
+
+  } else if (tpage=="reflected") {
+    TH1F* mcmomem = new TH1F("mcmomem","Reflected Particle Momentum;MeV/c",100,25,250);
+    TH1F* mcmomep = new TH1F("mcmomep","Reflected Particle Momentum;MeV/c",100,25,250);
+    TH1F* mcmommm = new TH1F("mcmommm","Reflected Particle Momentum;MeV/c",100,25,250);
+    TH1F* mcmommp = new TH1F("mcmommp","Reflected Particle Momentum;MeV/c",100,25,250);
+
+    TH1F* mcd0em = new TH1F("mcd0em","Reflected Particle d_{0};mm",100,-500,500);
+    TH1F* mcd0ep = new TH1F("mcd0ep","Reflected Particle d_{0};mm",100,-500,500);
+    TH1F* mcd0mm = new TH1F("mcd0mm","Reflected Particle d_{0};mm",100,-500,500);
+    TH1F* mcd0mp = new TH1F("mcd0mp","Reflected Particle d_{0};mm",100,-500,500);
+    mcmomem->SetStats(0);
+    mcmomem->SetLineColor(kRed);
+    mcmomep->SetStats(0);
+    mcmomep->SetLineColor(kBlue);
+    mcmommm->SetStats(0);
+    mcmommm->SetLineColor(kOrange);
+    mcmommp->SetStats(0);
+    mcmommp->SetLineColor(kCyan);
+
+    mcd0em->SetStats(0);
+    mcd0em->SetLineColor(kRed);
+    mcd0ep->SetStats(0);
+    mcd0ep->SetLineColor(kBlue);
+    mcd0mm->SetStats(0);
+    mcd0mm->SetLineColor(kOrange);
+    mcd0mp->SetStats(0);
+    mcd0mp->SetLineColor(kCyan);
+
+    cr->Project("mcmomem","umcent.mom","mc.pdg==11");
+    cr->Project("mcmomep","umcent.mom","mc.pdg==-11");
+    cr->Project("mcmommm","umcent.mom","mc.pdg==13");
+    cr->Project("mcmommp","umcent.mom","mc.pdg==-13");
+
+    cr->Project("mcd0em","umcent.d0","mc.pdg==11");
+    cr->Project("mcd0ep","umcent.d0","mc.pdg==-11");
+    cr->Project("mcd0mm","umcent.d0","mc.pdg==13");
+    cr->Project("mcd0mp","umcent.d0","mc.pdg==-13");
+
+    TLegend* leg = new TLegend(0.7,0.5,0.9,0.9);
+    leg->AddEntry(mcmomem,"e^{-}","LP");
+    leg->AddEntry(mcmomep,"e^{+}","LP");
+    leg->AddEntry(mcmommm,"#mu^{-}","LP");
+    leg->AddEntry(mcmommp,"#mu^{+}","LP");
 
     TCanvas* rcan = new TCanvas("rcan","Reflected",800,800);
 
     rcan->Divide(2,2);
-    ican = 1;
+    unsigned ican = 1;
     rcan->cd(ican++);
     mcmomem->Draw();
     mcmomep->Draw("same");
@@ -217,21 +347,12 @@ void Cosmics(TTree* cr, const char* page="prod") {
     mcd0ep->Draw("same");
     mcd0mp->Draw("same");
     mcd0mm->Draw("same");
- 
-    rcan->cd(ican++);
-    pxyem->Draw();
-    pxyep->Draw("same");
 
-    rcan->cd(ican++);
-    pxzem->Draw();
-    pxzep->Draw("same");
-
-    
   } else if(tpage =="select") {
-    TH2F* cmom = new TH2F("cmom","Downstream vs Upstream momentum;P_{d} (MeV);P_{u} (MeV)",100,60,200,100,60,200);
+    TH2F* cmom = new TH2F("cmom","Downstream vs Upstream momentum;P_{d} (MeV);P_{u} (MeV)",100,40,200,100,40,200);
     TH2F* ctand = new TH2F("ctand","Downstream vs Upstream tan#lambda;tan(#lambda)_{d};tan(#lambda)_{u}",100,-1.25,-0.25,100,0.25,1.25);
     TH2F* cp0 = new TH2F("cp0","Downstream vs Upstream #phi_{0};radians;radians",100,-3.15,3.15,100,-3.15,3.15);
-    TH2F* cd0 = new TH2F("cd0","Downstream vs Upstream d_{0};mm;mm",100,-400,400,100,-400,400);
+    TH2F* cd0 = new TH2F("cd0","Downstream vs Upstream d_{0};mm;mm",100,-500,500,100,-500,500);
     TH1F* dtrkt0e = new TH1F("dtrkt0e","Downstream - Upstream t_{0};nsec",100,50,200);
     TH1F* dtrkt0m = new TH1F("dtrkt0m","Downstream - Upstream t_{0};nsec",100,50,200);
     cmom->SetStats(0);
