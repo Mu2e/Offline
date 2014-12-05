@@ -16,7 +16,6 @@
 #include "TrackCaloMatching/inc/TrkToCaloExtrapol.hh"
 // #include "KalmanTrack/KalRep.hh"
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
-#include "TrackCaloMatching/inc/TrackClusterLink.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
@@ -30,10 +29,3 @@ template class art::Wrapper<mu2e::TrackClusterMatchCollection>;
 template class art::Ptr<mu2e::TrkToCaloExtrapol>;
 template class std::vector<art::Ptr<mu2e::TrkToCaloExtrapol> >;
 template class art::Wrapper<mu2e::TrkToCaloExtrapolCollection>;
-
-namespace {
-  struct Instantiations {
-    mu2e::TrackClusterLink tcl;
-  };
-}
-template class art::Wrapper<mu2e::TrackClusterLink>;

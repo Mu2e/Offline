@@ -32,14 +32,14 @@ namespace mu2e {
 
   bool TrkToCaloExtrapol::operator == (const TrkToCaloExtrapol & other) const{
     bool res = true;
-    res &= (_vaneId == other._vaneId);
+    res &= (_sectionId == other._sectionId);
     res &= (_pathLengthEntrance == other._pathLengthEntrance);
     res &= (_pathLengthExit == other._pathLengthExit);
     res &= (_trk == other._trk);
     return res;
   }
-  int TrkToCaloExtrapol::vaneId() const{
-    return _vaneId;
+  int TrkToCaloExtrapol::sectionId() const{
+    return _sectionId;
   }
 
   double TrkToCaloExtrapol::time() const{
@@ -65,16 +65,6 @@ namespace mu2e {
   }
 
   double TrkToCaloExtrapol::pathLenghtEntranceErr() const{
-
-    // double errTanDip2 = ( ((*_trk.get())->getRep(PdtPid::electron))->helix(_pathLengthEntrance).covariance() )(5, 5);
-    // double TanDip = ((*_trk.get())->getRep(PdtPid::electron))->helix(_pathLengthEntrance).tanDip();
-    // HelixTraj trkHel(((*_trk.get())->getRep(PdtPid::electron))->helix(_pathLengthEntrance).params(),
-    //                 ((*_trk.get())->getRep(PdtPid::electron))->helix(_pathLengthEntrance).covariance());
-    //        double z0 = trkHel.z0()
-    //                                        , z = _pathLengthEntrance*trkHel.sinDip() + z0;
-    //        std::cout<<"z0 = "<< z0<<
-    //                        ", z_pathLenght = "<< z<<std::endl;
-
     art::ServiceHandle<GeometryService> geom;
 
     double errTanDip2 = _trk->helix(_pathLengthEntrance).covariance()(5,5);
@@ -92,7 +82,7 @@ namespace mu2e {
     Hep3Vector momentumRotUnit = TrkToCaloExtrapol::momentum().unit();
     if( geom->hasElement<VaneCalorimeter>()){
       GeomHandle<VaneCalorimeter> cg;
-      Vane const &v = cg->vane(_vaneId);
+      Vane const &v = cg->vane(_sectionId);
       Waxes = (v.rotation())*(Waxes);
       momentumRotUnit =(v.rotation())*TrkToCaloExtrapol::momentum().unit();
     }//FIXME
@@ -206,7 +196,7 @@ namespace mu2e {
   void TrkToCaloExtrapol::print( ostream& ost, bool doEndl ) const {
 
     ost << "TrkToCaloExtrapol :   "
-	<< " vane: "          << _vaneId
+	<< " section: "          << _sectionId
 	<< " time: "          << TrkToCaloExtrapol::time();
 
 
