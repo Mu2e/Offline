@@ -27,7 +27,6 @@
 #include "KalmanTests/inc/TrkStrawHit.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
-#include "TrackCaloMatching/inc/TrackClusterLink.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapol.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
@@ -675,7 +674,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 //-----------------------------------------------------------------------------
 // store coordinates of the best intersection in a plane
 //-----------------------------------------------------------------------------
-	  iv   = extrk->vaneId();
+	  iv   = extrk->sectionId();
 	  vint = &(track->fDisk[iv]);
 
 	  if (vint->fID == -1) {

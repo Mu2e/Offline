@@ -16,4 +16,16 @@ PrintStrawHits : {
     makeSHinstance    : "CosmicFilter"
 }
 
+ReadTrkExtrapol: {
+     module_type                  : ReadTrkExtrapol
+    diagLevel                     : 0
+    trkToCaloExtrapolModuleLabel  : TrkExtrapol
+    
+}
+
+ReadTrackCaloMatching: {
+    module_type                   : ReadTrackCaloMatching 
+    diagLevel                     : 0
+    trackClusterMatchModuleLabel  : CaloMatching
+}
 END_PROLOG

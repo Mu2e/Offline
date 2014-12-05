@@ -162,7 +162,6 @@ namespace mu2e {
 
     PayloadSaver             _payloadSaver;
 
-    std::string              _ccAlgLabel;   // calo cluster algorithm label
 //-----------------------------------------------------------------------------
 // helper functions
 //-----------------------------------------------------------------------------
@@ -281,8 +280,6 @@ namespace mu2e {
 					// set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
 
-    _ccAlgLabel = "Algo"+babar::String::toUpper(_ccAlgorithm)+"SeededBy"+
-                         babar::String::toUpper(_ccSeeding);
   }
 
 //-----------------------------------------------------------------------------
@@ -343,13 +340,13 @@ namespace mu2e {
     }
 
     art::Handle<CaloClusterCollection> ccH;
-    if (evt.getByLabel(_ccmLabel,_ccAlgLabel, ccH)) {
+    if (evt.getByLabel(_ccmLabel, ccH)) {
       _ccCollection = ccH.product();
     }
     else {
       _ccCollection = 0;
-      printf(" >>> ERROR in CalPatRec::findData: CaloClusterCollection with label=%s:%s not found.\n",
-	     _ccmLabel.data(),_ccAlgLabel.data());
+      printf(" >>> ERROR in CalPatRec::findData: CaloClusterCollection with label=%s not found.\n",
+	     _ccmLabel.data());
     }
 //-----------------------------------------------------------------------------
 // 

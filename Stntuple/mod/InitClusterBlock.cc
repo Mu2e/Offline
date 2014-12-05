@@ -26,7 +26,7 @@
 #include "KalmanTests/inc/TrkStrawHit.hh"
 
 // #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
-// #include "TrackCaloMatching/inc/TrackClusterLink.hh"
+#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
 // #include "TrackCaloMatching/inc/TrkToCaloExtrapol.hh"
 
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -73,8 +73,8 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
   cb->GetModuleLabel("mu2e::CaloClusterCollection",calo_module_label);
   cb->GetDescription("mu2e::CaloClusterCollection",calo_description);
 
-  cb->GetModuleLabel("mu2e::TrackClusterLink",trcl_module_label);
-  cb->GetDescription("mu2e::TrackClusterLink",trcl_description );
+  cb->GetModuleLabel("mu2e::TrackClusterMatchCollection",trcl_module_label);
+  cb->GetDescription("mu2e::TrackClusterMatchCollection",trcl_description );
 
   art::Handle<mu2e::CaloClusterCollection> calo_cluster_handle;
   if (calo_description[0] == 0) Evt->getByLabel(calo_module_label,calo_cluster_handle);

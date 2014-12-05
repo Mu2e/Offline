@@ -328,10 +328,10 @@ namespace mu2e {
 
     fClusterBlock->AddCollName("mu2e::CaloClusterCollection",
 			       caloClusterModuleLabel_.data(),
-			       "AlgoCLOSESTSeededByENERGY");
+			       "");
     fClusterBlock->AddCollName("mu2e::TrackClusterLink",fTrkCalMatch.data(),"");
     
-    fTrackBlock->AddCollName("mu2e::CaloClusterCollection"         ,caloClusterModuleLabel_.data(),"AlgoCLOSESTSeededByENERGY");
+    fTrackBlock->AddCollName("mu2e::CaloClusterCollection"         ,caloClusterModuleLabel_.data(),"");
     fTrackBlock->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecModuleLabel.data()  , charDirectionAndParticle);
     fTrackBlock->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol.data()           ,"");
     fTrackBlock->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()           ,"");
