@@ -249,8 +249,9 @@ namespace mu2e {
     fCaloClusterAlgorithm     (pset.get<std::string>("caloClusterAlgorithm"  )),
     fCaloClusterSeeding       (pset.get<std::string>("caloClusterSeeding"    )),
 
-    producerName_             ("Algo"+mu2e::TOUpper(fCaloClusterAlgorithm)
-			       +"SeededBy"+mu2e::TOUpper(fCaloClusterSeeding)),
+//     producerName_             ("Algo"+mu2e::TOUpper(fCaloClusterAlgorithm)
+// 			       +"SeededBy"+mu2e::TOUpper(fCaloClusterSeeding)),
+    producerName_             (""),
 
     fStrawHitMaker            (pset.get<std::string>("strawHitMakerModuleLabel"    )),
     fStrawHitPosMaker         (pset.get<std::string>("strawHitPosMakerModuleLabel" )),

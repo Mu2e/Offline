@@ -350,6 +350,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     track->fPt        = track->Momentum()->Pt();
     track->fD0        = krep->helix(0).d0();
     track->fZ0        = krep->helix(0).z0();
+    track->fFloat[0]  = krep->helix(0).phi0();
 //-----------------------------------------------------------------------------
 // fP0 : track momentum at Z0
 //-----------------------------------------------------------------------------

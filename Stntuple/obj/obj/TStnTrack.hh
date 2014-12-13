@@ -254,6 +254,8 @@ public:
   
   KalRep*   GetKalRep() { return fKalRep[0]; }
   
+  float  Phi0 () { return fFloat[0];}
+  
   void   SetNumber(int I ) { fNumber = I; }
 
   void   SetAlgorithmID (int ID) { fAlgorithmID = ID; }
