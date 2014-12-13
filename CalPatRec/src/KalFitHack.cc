@@ -55,6 +55,10 @@
 
 using namespace std; 
 
+namespace {
+  double DT_OFFSET = 1.4; // in ns
+}
+
 namespace mu2e 
 {
 // comparison functor for ordering hits
@@ -85,6 +89,7 @@ namespace mu2e
     // t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
     _updatet0(pset.get<bool>("updateT0",true)),
+    _daveMode(pset.get<int>("daveMode" ,1)),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
@@ -165,7 +170,7 @@ namespace mu2e
 					// first, find t0
       TrkT0 t0;
       bool caloInitCond(false);
-      if (TPeak->Cluster() != NULL){
+      if (TPeak->Cluster() != NULL) {
 	caloInitCond = true;
       }
 
@@ -213,7 +218,7 @@ namespace mu2e
       //09 - 26 - 2013 
       //giani changed these following lines in order to include also the calorimeter
       // information (whene these are avaiable) to the fit procedure
-      if (caloInitCond) {
+      if ((_daveMode == 0) && caloInitCond) {
 	fitTrack(kres, TPeak);
       } 
       else {
@@ -349,8 +354,9 @@ namespace mu2e
       kres._krep->resetFit();
       kres.fit();
       if(! kres._fit.success())break;
-      if(_updatet0){
-	if(TPeak != NULL){
+      if(_updatet0 ){
+	// 2014-12-11: G.Pezzullo and P.Murat - temporary *FIXME*
+	if (TPeak != NULL){
 	  updateCalT0(kres,TPeak);
 	} else{
 	  updateT0(kres);
@@ -405,6 +411,108 @@ namespace mu2e
  // sort the hits by flightlength
     std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(tdef.fitdir().fitDirection()));
   }
+
+  void
+  KalFitHack::printHits(KalFitResult& kres) {
+    const KalRep* Trk  = kres._krep;
+    double d0(-1.), om(-1.), r(-1.), phi0(-1.), x0(-1.), y0(-1.), chi2N(-1.);
+
+    if (Trk != 0){
+      d0    = Trk->helix(0.).d0();
+      om    = Trk->helix(0.).omega();
+      r     = fabs(1./om);
+      phi0  = Trk->helix(0.).phi0();
+      x0    =  -(1/om+d0)*sin(phi0);
+      y0    =   (1/om+d0)*cos(phi0);
+      chi2N = Trk->chisq()/(Trk->nDof());
+    
+      printf("------------------------------------------------------------------------------------------\n");
+      printf("  TrkID    Address      Q    momentum       pt       costh       T0     Nact     chi2  N(dof)  FitCons\n");
+      printf("------------------------------------------------------------------------------------------\n");
+
+      Hep3Vector trk_mom;
+      //      Trk->printAll();
+      double h1_fltlen = Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+      trk_mom          = Trk->momentum(h1_fltlen);
+      double mom       = trk_mom.mag();
+      double pt        = trk_mom.perp();
+      double costh     = trk_mom.cosTheta();
+      double chi2      = Trk->chisq();
+      int    ndof      = Trk->nDof ();
+      int    nact      = Trk->nActive();
+      double t0        = Trk->t0().t0();
+      double fit_consistency = Trk->chisqConsistency().consistency();
+      int q            = Trk->charge();
+      
+      printf("%5i   %16p   %2i %10.3f %10.3f %10.3f %10.3f   %3i %10.3f  %3i %10.3e\n",
+	     -1,Trk,q,mom,pt,costh,t0,nact,chi2,ndof,fit_consistency);
+      
+    }
+    printf("[KalFitHack::printHits] x0 = %12.5f y0 = %12.5f r = %12.5f chi2 = %12.5g\n",
+	   x0, y0, r,  chi2N);
+
+    
+    //-----------------------------------------------------------------------------
+    // print detailed information about the track hits
+    //-----------------------------------------------------------------------------
+    //    const TrkHotList* hot_list = Trk->hotList();
+    int nhits = kres._hits.size();
+    printf("---------------------------------------------------------------------------");
+    printf("-------------------------------------------------------------------------------\n");
+    printf(" ih U A     len      rms       x          y          z       HitT     HitDt");
+    printf("  SInd  Dev Sec Lay  N  Iamb     T0    Rdrift     Xs         Ys          Zs        resid\n");
+    printf("---------------------------------------------------------------------------");
+    printf("-------------------------------------------------------------------------------\n");
+
+    int i = 0;
+    //    for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
+    for(int it=0; it<nhits; ++it){
+      //	  const KalHit* kh = (*it).kalHit();
+
+      // TrkStrawHit inherits from TrkHitOnTrk
+
+      mu2e::TrkStrawHit* hit =  kres._hits.at(it);
+
+      const mu2e::StrawHit* sh = &hit->strawHit();
+      mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
+
+      double len = hit->fltLen();
+
+      HepPoint  plen(-9999,-9999.,-9999);
+      if (Trk != 0){
+	plen = Trk->position(len);
+      }
+
+      printf("%3i %1i %1i %10.3f %6.3f %10.3f %10.3f %10.3f %8.3f %7.3f",
+	     ++i,
+	     hit->isUsable(),
+	     hit->isActive(),
+	     len,
+	     hit->hitRms(),
+	     plen.x(),plen.y(),plen.z(),
+	     sh->time(), sh->dt()
+	     );
+
+      Hep3Vector pos;
+      hit->hitPosition(pos);
+      printf("%6i %3i %3i %3i %3i %3i %8.3f %8.3f %10.3f %10.3f %10.3f %10.3f\n",
+	     straw->index().asInt(), 
+	     straw->id().getDevice(),
+	     straw->id().getSector(),
+	     straw->id().getLayer(),
+	     straw->id().getStraw(),
+		 
+	     hit->ambig(),
+	     hit->hitT0().t0(),
+	     hit->driftRadius(),
+	     pos.x(),
+	     pos.y(),
+	     pos.z(),
+	     hit->resid()
+	     );
+    }
+  }
+  
 
   void
   KalFitHack::makeMaterials(KalFitResult& kres) {
@@ -523,6 +631,7 @@ namespace mu2e
 // time initialization
 //-----------------------------------------------------------------------------
   void KalFitHack::initCaloT0(CalTimePeak* TPeak, TrkDef const& tdef, TrkT0& t0) {
+//    2014-11-24 gianipez and Pasha removed time offset between caloriemter and tracker
 
     // get flight distance of z=0
     double t0flt = tdef.helix().zFlight(0.0);
@@ -537,10 +646,10 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     double path = TPeak->ClusterZ()/tdef.helix().sinDip();
 
-    t0._t0 = TPeak->ClusterT0() - path/vflt;
+    t0._t0 = TPeak->ClusterT0() + DT_OFFSET - path/vflt;
     
     //Set dummy error value
-    t0._t0err = 0.2;
+    t0._t0err = 1.;
   }
 
 
@@ -600,10 +709,12 @@ namespace mu2e
 // 
 //-----------------------------------------------------------------------------
   void KalFitHack::updateCalT0(KalFitResult& kres, CalTimePeak* TPeak) {
+//    2014-11-24 gianipez and Pasha removed time offset between caloriemter and tracker
+
     TrkT0 t0;
     double mom, vflt, path, t0flt, flt0(0.0);
     bool converged = TrkHelixUtils::findZFltlen(kres._krep->traj(),0.0,flt0);
-
+    
     //get helix from kalrep
     HelixTraj trkHel(kres._krep->helix(flt0).params(),kres._krep->helix(flt0).covariance());
     
@@ -623,7 +734,7 @@ namespace mu2e
 // set dummy error value
 //-----------------------------------------------------------------------------
       path      = TPeak->ClusterZ()/trkHel.sinDip();
-      t0._t0    = TPeak->ClusterT0() - path/vflt;
+      t0._t0    = TPeak->ClusterT0() + DT_OFFSET - path/vflt;
       t0._t0err = 1.0;
       
       kres._krep->setT0(t0,flt0);
@@ -743,6 +854,11 @@ namespace mu2e
 // update the reference flightlength
       hflt = hit->fltLen();
     }
+    if (_debug > 0) {
+      printf("[KalFitHack::updateHitTimes] moving forward\n");
+      printHits(kres);
+    }
+
 // now the same, moving backwards
     hflt = kres._krep->flt0();
     hitt0 = kres._krep->t0();
@@ -755,6 +871,12 @@ namespace mu2e
       (*ihit)->updateHitT0(hitt0);
       hflt = hit->fltLen();
     }
+
+    if (_debug > 0) {
+      printf("[KalFitHack::updateHitTimes] moving backwards\n");
+      printHits(kres);
+    }
+
   }
 
   void
