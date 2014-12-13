@@ -16,6 +16,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 
@@ -43,6 +44,8 @@
 // C++ includes.
 #include <iostream>
 #include <float.h>
+
+//#include "CalPatRec/inc/THackData.hh"
 
 using namespace std;
 
@@ -75,6 +78,7 @@ namespace mu2e {
     int _printHits;
     // Name of the StrawHit collection
     string _shLabel;
+    string _shfLabel;
     // diagnostics
     TH1F* _nhits;
     TH1F* _deltat;
@@ -87,6 +91,8 @@ namespace mu2e {
 
     const Tracker* _tracker;
     void drawStations(); 
+
+    //    THackData* fHackData;
   };
 
   MakeStrawHitPositions::MakeStrawHitPositions(fhicl::ParameterSet const& pset) :
@@ -95,10 +101,15 @@ namespace mu2e {
     _diagLevel(pset.get<int>("diagLevel",0)),
     _printHits(pset.get<int>("printHits",0)),
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
+    _shfLabel(pset.get<string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
     _nhits(0),_deltat(0),_deltaE(0),_dperp(0),_sep(0),_dTD(0),_chisq(0)
  {
     // Tell the framework what we make.
     produces<StrawHitPositionCollection>();
+
+    //    fHackData = new THackData("HackData","Hack Data");
+    //    gROOT->GetRootFolder()->Add(fHackData);
+ 
   }
 
    void MakeStrawHitPositions::beginJob(){
@@ -131,19 +142,20 @@ namespace mu2e {
     if(banner==0){
       printf("-----------------------------------------------------------------------------------");
       printf("------------------------------\n");
-      printf("   x       y     z   SHID    Station Sector Layer Straw     Time          dt       eDep \n");
+      printf("   x       y     z   SHID    Station Sector Layer Straw     Flags      Time          dt       eDep \n");
       printf("-----------------------------------------------------------------------------------");
       printf("------------------------------\n");
       banner = false;
     }
 
-    printf("%5.3f %5.3f %5.3f %5i  %5i  %5i   %5i   %5i   %8.3f   %8.3f   %9.6f\n",
+    printf("%5.3f %5.3f %5.3f %5i  %5i  %5i   %5i   %5i   0x%s %8.3f   %8.3f   %9.6f\n",
 	   x,y,z,
 	   Hit.strawIndex().asInt(),
 	   straw.id().getDevice(),
 	   straw.id().getSector(),
 	   straw.id().getLayer(),
 	   straw.id().getStraw(),
+	   Pos.flag().hex().data(),
 	   Hit.time(),
 	   Hit.dt(),
 	   Hit.energyDep() );
@@ -163,6 +175,13 @@ namespace mu2e {
 
    // Handle to the conditions service
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
+
+    const StrawHitFlagCollection *_shfcol;
+    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
+    if(event.getByLabel(_shfLabel,shflagH))
+      _shfcol = shflagH.product();
+    else 
+      _shfcol = 0;
 
     art::Handle<mu2e::StrawHitCollection> strawhitsH; 
     const StrawHitCollection* strawhits(0);
@@ -187,8 +206,8 @@ namespace mu2e {
       StrawHit const& hit = strawhits->at(ish);
       Straw const& straw = _tracker->getStraw(hit.strawIndex());
       tcal->StrawHitInfo(straw,hit,shinfo);
-
-      StrawHitPosition shp(hit,straw,shinfo);
+      StrawHitFlag shflag = _shfcol->at(ish);
+      StrawHitPosition shp(hit,straw,shinfo,shflag);
 
       if (_printHits>0) {
 	printHits(hit,shp, banner);

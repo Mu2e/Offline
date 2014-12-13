@@ -13,8 +13,6 @@ CalPatRec            : {
     StrawHitPositionCollectionLabel             : "MakeStrawHitPositions"
     StrawHitFlagCollectionLabel                 : "FlagBkgHits"
     caloClusterModuleLabel                      : "MakeCaloCluster"
-    caloClusterAlgorithm                        : "closest"
-    caloClusterSeeding                          : "energy"
     fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
     fitdirection                                : 0      # 0:downstream, 1:upstream
     MinNHits                                    : 15
