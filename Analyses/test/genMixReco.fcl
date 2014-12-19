@@ -1,0 +1,185 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this example shows how to configure a job to 
+#
+# - generate conversion electron events 
+# - add accidental background 
+# - run simulation+reconstruction chain
+# - run particle ID
+# 
+# a) to prepare muon stop file for the interactive job: 
+#
+#     ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops 
+#
+# b) when submitting to the grid, comment out the PROLOG definition,
+#
+#    ls /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/*.root > muStops.txt
+#
+#    and use 
+#
+#     --fclinput=@muStops:muStops.txt 
+#------------------------------------------------------------------------------
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+#include "CaloCluster/test/producers.fcl"
+#include "TrackCaloMatching/test/producers.fcl"
+#include "CalPatRec/test/producers.fcl"
+#include "ParticleID/test/producers.fcl"
+
+BEGIN_PROLOG
+  muStops      : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+END_PROLOG
+
+process_name : GenReco
+
+source : { 
+    module_type : EmptyEvent
+}
+
+services : {
+
+    message               : @local::default_message
+    TFileService          : { fileName : "genReco.hist" }
+    RandomNumberGenerator : { }
+
+    user : {
+        GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
+        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+        G4Helper               : { }
+        SeedService            : @local::automaticSeeds
+    }
+}
+
+physics : {
+
+    producers: {
+	generate             : {
+#------------------------------------------------------------------------------
+# for 105 MeV/c electron : E = 105.00130           MeV
+# for muon: sqrt(105.*105+105.658*105.658) = 148.9584269653785
+# by default, StoppedParticleReactionGun has 'mean' set to +1, 
+# which means the Poisson mean of 1 !!! 
+#------------------------------------------------------------------------------
+	    module_type      : StoppedParticleReactionGun
+	    mean             : -1
+	    physics          : {
+		pdgId            : 11
+		spectrumVariable : "totalEnergy"
+		spectrumShape    : "flat"
+		elow             : 105.0012
+		ehi              : 105.0014
+	    }
+	    muonStops            : {
+#------------------------------------------------------------------------------
+# use --fclinput=@muStops:datasets/mustops for grid submission 
+# [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ] 
+#------------------------------------------------------------------------------
+		inputFiles            : @local::muStops
+		averageNumRecordsToUse: 500000
+		treeName              : "stoppedMuonDumper/stops"
+		branchName            : "stops"
+		verbosityLevel        : 1
+	    }
+	}
+	
+	g4run                : @local::g4run
+#------------------------------------------------------------------------------
+# hit makers
+#------------------------------------------------------------------------------
+	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+        protonTimeMap        : { module_type : GenerateProtonTimes }
+        muonTimeMap          : { module_type : GenerateMuonLife }
+        makeSD               : @local::makeSD
+        makeSH               : @local::makeSHfromSD
+	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+#------------------------------------------------------------------------------
+#  default tracking
+#------------------------------------------------------------------------------
+	FSHPreStereo         : @local::FSHPreStereo
+	MakeStereoHits       : @local::MakeStereoHits
+	FlagStrawHits        : @local::FlagStrawHits
+	FlagBkgHits          : @local::FlagBkgHits
+	TrkPatRec            : @local::TrkPatRecDownstreameMinus
+#------------------------------------------------------------------------------
+# CalPatRec modules
+#------------------------------------------------------------------------------
+	MakeCaloCluster      : @local::MakeCaloCluster
+	MakeStrawHitPositions: @local::MakeStrawHitPositions
+	CalPatRec            : @local::CalPatRec
+	MergePatRec          : @local::MergePatRec
+#------------------------------------------------------------------------------
+# needed for analysis
+#------------------------------------------------------------------------------
+	CaloMatching         : @local::TrackCaloMatching
+	TrkExtrapol          : @local::TrkExtrapol
+	ParticleID           : @local::ParticleID
+    }
+
+    filters: {
+#------------------------------------------------------------------------------
+# Andrej's filter
+# Reject events with no hits from signal-like tracks in the detectors.  
+# The filter does not look at the background hits from mixed events.
+#------------------------------------------------------------------------------
+	FilterStepPointMomentum: {
+            module_type    : FilterStepPointMomentum
+            inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
+            cutMomentumMin : 10. # MeV/c
+        }
+    }
+#------------------------------------------------------------------------------
+# paths
+# write out ntuple only, so don't need compression modules...
+#------------------------------------------------------------------------------
+    p1 : [generate, g4run
+	  , protonTimeMap, muonTimeMap 
+	  , makeSD, makeSH
+	  , CaloReadoutHitsMaker, CaloCrystalHitsMaker
+	  , MakeCaloCluster
+# 
+	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec 
+#
+	  , TrkExtrapol, CaloMatching, ParticleID
+	 ]
+
+    trigger_paths  : [p1]
+    
+    out : [detectorOutput]
+    out : []
+#    an  : [genCountLogger]
+    end_paths      : [out]
+}
+
+outputs: {
+    detectorOutput : {
+        module_type : RootOutput
+#        SelectEvents: { SelectEvents: [p1] }
+        outputCommands:   [ "keep *_*_*_*",
+                            "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
+                          ]
+        fileName    : "renReco.art"
+    }
+}
+#------------------------------------------------------------------------------
+# redefinitions
+#------------------------------------------------------------------------------
+# 1. only for interactive submission
+#------------------------------------------------------------------------------
+services.user.SeedService.baseSeed             :  0
+services.user.SeedService.maxUniqueEngines     :  20
+
+# print per event timing for ::event entry points
+# services.Timing: { }
+# print 
+services.scheduler.wantSummary: true
+
+# Apply the time offsets at the digitization stage
+physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+
