@@ -17,6 +17,10 @@
 #    , and use 
 #
 #     --fclinput=@muStops:muStops.txt 
+#
+# c) local submission: 
+#
+#  mu2e -c Analyses/test/genReco.fcl -n 1000 >| results/2014-12-19-Analyses_test_genReco.log &
 #------------------------------------------------------------------------------
 
 #include "minimalMessageService.fcl"
@@ -33,11 +37,28 @@ BEGIN_PROLOG
 END_PROLOG
 
 process_name : GenReco
-
+#------------------------------------------------------------------------------
+# define input module
+#------------------------------------------------------------------------------
 source : { 
     module_type : EmptyEvent
 }
-
+#------------------------------------------------------------------------------
+# define output module
+#------------------------------------------------------------------------------
+outputs: {
+    detectorOutput : {
+        module_type : RootOutput
+#        SelectEvents: { SelectEvents: [p1] }
+        outputCommands:   [ "keep *_*_*_*",
+                            "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
+                          ]
+        fileName    : "genReco.art"
+    }
+}
+#------------------------------------------------------------------------------
+# services  section
+#------------------------------------------------------------------------------
 services : {
 
     message               : @local::default_message
@@ -52,9 +73,10 @@ services : {
         SeedService            : @local::automaticSeeds
     }
 }
-
+#------------------------------------------------------------------------------
+# specify modules
+#------------------------------------------------------------------------------
 physics : {
-
     producers: {
 	generate             : {
 #------------------------------------------------------------------------------
@@ -133,8 +155,7 @@ physics : {
         }
     }
 #------------------------------------------------------------------------------
-# paths
-# write out ntuple only, so don't need compression modules...
+# paths: 
 #------------------------------------------------------------------------------
     p1 : [generate, g4run
 	  , protonTimeMap, muonTimeMap 
@@ -148,22 +169,11 @@ physics : {
 	 ]
 
     trigger_paths  : [p1]
-    
-    out : [detectorOutput]
-    out : []
-#    an  : [genCountLogger]
-    end_paths      : [out]
-}
 
-outputs: {
-    detectorOutput : {
-        module_type : RootOutput
-#        SelectEvents: { SelectEvents: [p1] }
-        outputCommands:   [ "keep *_*_*_*",
-                            "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
-                          ]
-        fileName    : "renReco.art"
-    }
+# to disable writing out the DST file, replace [detectorOutput] with []
+    out : [detectorOutput]
+#    out : []
+    end_paths      : [out]
 }
 #------------------------------------------------------------------------------
 # redefinitions
