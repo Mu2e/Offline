@@ -9,8 +9,8 @@
 
 
 // build VD inside DS Neutron Shielding
-//bool vd.DSNeutronShieldExit.build = false;
-
+bool vd.DSNeutronShieldExit.build = true;
+int  vd.verbosityLevel = 2;
 
 // build virtual detectors throughout the MSTM area
 bool   vd.MSTMWallUpStr.build  = true;
@@ -37,16 +37,17 @@ bool   mstm.build  = true;
 int    mstm.verbosityLevel = 1;
 bool   mstm.visible = true;
 bool   mstm.solid   = false;
+double mstm.UpStrSpace = 3000.0; //Put the whole MSTM mother volume 3m downstream of the DS
 
 //double mstm.mother.halfHeight =  5000.0; 
 //double mstm.mother.halfWidth  =  5000.0;
 //double mstm.mother.halfLength =  5000.0;
 
 string mstm.wallUpStr.material   = "G4_CONCRETE";
-double mstm.wallUpStr.UpStrSpace =  500.0; // z=50cm space between this and previous element
+double mstm.wallUpStr.UpStrSpace =  50.0; // z=5cm space between this and the start of the MSTM mother volume
 double mstm.wallUpStr.halfLength =  304.8; // 1 foot = 30.48 cm = 304.8 mm
 double mstm.wallUpStr.halfWidth  = 3000.0; // Make it 6m wide for now
-double mstm.wallUpStr.holeRadius =  55.0; // 5.5cm, therefore 0.5cm larger than the pipe
+double mstm.wallUpStr.holeRadius =  60.0; // 6.0cm, therefore 0.5cm larger than the pipe
 
 string mstm.wallDnStr.material      = "G4_CONCRETE";
 double mstm.wallDnStr.halfLength    =  304.8; // 1 foot = 30.48 cm = 304.8 mm
@@ -67,7 +68,7 @@ double mstm.magnet.halfWidth      = 500.0;  // 1m wide magnet
 double mstm.magnet.halfHeight     = 500.0;  // 1m high magnet
 double mstm.magnet.holeHalfHeight =  60.0;  //12cm high hole
 double mstm.magnet.holeHalfWidth  = 120.0;  //24cm wide hole
-double mstm.magnet.field          =   0.1; // Tesla
+double mstm.magnet.field          =   0.0; // Tesla
 
 string mstm.pipe0.material              = "StainlessSteel";
 string mstm.pipe0.gas                   = "G4_He"; 
@@ -75,9 +76,9 @@ double mstm.pipe0.rIn                   = 49.;
 double mstm.pipe0.rOut                  = 50.;
 double mstm.pipe0.halfLength            = 879.8; // = (2*mstm.wallUpStr.halfLength + mstm.magnet.UpStrSpace + 2*mstm.magnet.halfLength + 0.5*mstm.collimator1.UpStrSpace ) / 2 
 string mstm.pipe0.UpStrWindowMaterial   = "G4_MYLAR";
-double mstm.pipe0.UpStrWindowHalfLength = 2.5; // 2.5mm thick window
+double mstm.pipe0.UpStrWindowHalfLength = 0.125; // 0.25mm thick window
 string mstm.pipe0.DnStrWindowMaterial   = "G4_MYLAR";
-double mstm.pipe0.DnStrWindowHalfLength = 2.5; // 2.5mm thick window
+double mstm.pipe0.DnStrWindowHalfLength = 0.125; // 0.25mm thick window
 
 string mstm.collimator1.material   = "G4_Pb";
 double mstm.collimator1.UpStrSpace =  100.0;  // z=10cm space between this and previous element
@@ -87,19 +88,19 @@ double mstm.collimator1.halfHeight = 1000.0; // 2m tall
 double mstm.collimator1.holeRadius =   20.0; // 2cm radius hole
 
 int    mstm.shutter.numberSegments      =   4;
-double mstm.shutter.UpStrSpace          =  50.0;  // z=5cm space between this and previous element
+double mstm.shutter.UpStrSpace          = 500.0;  // z=50cm space between this and previous element
 double mstm.shutter.halfHeight          = 100.;   // 20cm high
-string mstm.shutter.segment1.material   = "StainlessSteel";
+string mstm.shutter.segment1.material   = "G4_AIR"; //"StainlessSteel";
 double mstm.shutter.segment1.halfLength = 50.; // 10cm long
-string mstm.shutter.segment2.material   = "Polyethylene096";
+string mstm.shutter.segment2.material   = "G4_AIR"; //"Polyethylene096";
 double mstm.shutter.segment2.halfLength = 50.; // 10cm long
-string mstm.shutter.segment3.material   = "G4_Pb"; 
+string mstm.shutter.segment3.material   = "G4_AIR"; //"G4_Pb"; 
 double mstm.shutter.segment3.halfLength = 27.5; // 5.5cm long
-string mstm.shutter.segment4.material   = "G4_Cu"; 
+string mstm.shutter.segment4.material   = "G4_AIR"; //"G4_Cu"; 
 double mstm.shutter.segment4.halfLength = 2.5;  // 0.5cm long
 
 string mstm.collimator2.material   = "G4_Pb";
-double mstm.collimator2.UpStrSpace =  50.0;  // z=5cm space between this and previous element
+double mstm.collimator2.UpStrSpace =  500.0;  // z=50cm space between this and previous element
 double mstm.collimator2.halfLength =  200.0; //20cm thick 
 double mstm.collimator2.halfWidth  = 1000.0; // 2m wide
 double mstm.collimator2.halfHeight = 1000.0; // 2m tall
@@ -112,9 +113,9 @@ double mstm.pipe1.rOut                  =  50.0;
 double mstm.pipe1.UpStrSpace            =  50.0;  // z=5cm space between this and previous element
 double mstm.pipe1.halfLength            = 500.0; // 1m long
 string mstm.pipe1.UpStrWindowMaterial   = "G4_MYLAR";
-double mstm.pipe1.UpStrWindowHalfLength = 2.5; // 2.5mm thick window
+double mstm.pipe1.UpStrWindowHalfLength = 0.125; // 0.25mm thick window
 string mstm.pipe1.DnStrWindowMaterial   = "G4_MYLAR";
-double mstm.pipe1.DnStrWindowHalfLength = 2.5; // 2.5mm thick window
+double mstm.pipe1.DnStrWindowHalfLength = 0.125; // 0.25mm thick window
 
 string mstm.collimator3.material   = "G4_Pb";
 double mstm.collimator3.UpStrSpace =  50.0;  // z=5cm space between this and previous element

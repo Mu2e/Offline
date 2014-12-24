@@ -255,7 +255,9 @@ namespace mu2e {
           VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
             _helper->locateVolInfo("DS3Vacuum") :
             _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
-
+            
+          CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+          
           if (verbosityLevel >0) {
             cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z offset in Mu2e    : " <<
               zvd << endl;
@@ -278,6 +280,14 @@ namespace mu2e {
           doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
 
           vd.logical->SetSensitiveDetector(vdSD);
+          
+          if ( verbosityLevel > 0) {
+            cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+                 << " at " << vdg->getGlobal(vdId) << endl
+                 << " at " << vdg->getLocal(vdId) << " w.r.t. parent (DS3Vacuum or DS2Vacuum?) " << endl;
+            cout << __func__ << "    VD parameters: " << vdParams << endl;
+            cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+          }
         }
     }
 
@@ -1439,6 +1449,14 @@ namespace mu2e {
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
+      
+      if ( verbosityLevel > 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) - parentInMu2e <<" or local "<< vdg->getLocal(vdId)<< " w.r.t. parent (HallAir) " << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
     }
 
     // placing virtual detector around the calorimeter vanes
@@ -1747,7 +1765,7 @@ namespace mu2e {
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) - parentInMu2e << " w.r.t. parent (MSTMMother) " << endl;
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (MSTMMother) " << endl;
           cout << __func__ << "    VD parameters: " << vdParams << endl;
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
@@ -1761,7 +1779,7 @@ namespace mu2e {
     if ( vdg->exist(vdId) ) {
 
       const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+      //CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
       
       const double vdRIn  = 0.0;
       const double vdROut = _config.getDouble("vd.MSTMColl1DnStr.r");
@@ -1786,7 +1804,7 @@ namespace mu2e {
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) - parentInMu2e << " w.r.t. parent (MSTMMother) " << endl;
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (MSTMMother) " << endl;
           cout << __func__ << "    VD parameters: " << vdParams << endl;
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
@@ -1800,7 +1818,7 @@ namespace mu2e {
     if ( vdg->exist(vdId) ) {
 
       const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+      //CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
       
       const double vdRIn  = 0.0;
       const double vdROut = _config.getDouble("vd.MSTMShutterDnStr.r");
@@ -1825,7 +1843,7 @@ namespace mu2e {
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) - parentInMu2e << " w.r.t. parent (MSTMMother) " << endl;
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (MSTMMother) " << endl;
           cout << __func__ << "    VD parameters: " << vdParams << endl;
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
@@ -1839,7 +1857,7 @@ namespace mu2e {
     if ( vdg->exist(vdId) ) {
 
       const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+      //CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
       
       const double vdRIn  = 0.0;
       const double vdROut = _config.getDouble("vd.MSTMColl2DnStr.r");
@@ -1864,7 +1882,7 @@ namespace mu2e {
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) - parentInMu2e << " w.r.t. parent (MSTMMother) " << endl;
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (MSTMMother) " << endl;
           cout << __func__ << "    VD parameters: " << vdParams << endl;
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
@@ -1903,7 +1921,7 @@ namespace mu2e {
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) - parentInMu2e << " w.r.t. parent (MSTMMother) " << endl;
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (MSTMMother) " << endl;
           cout << __func__ << "    VD parameters: " << vdParams << endl;
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
