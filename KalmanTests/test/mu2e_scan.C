@@ -49,7 +49,7 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   TH1F* diospec[4];
   TH1F* conspec[4];
   // basic cuts
-  TCut reco("fitstatus>0");
+  TCut reco("fit.status>0");
   double tdlow(0.57735027);
   double tdhigh(1.0);
   double t0min(710);
@@ -71,10 +71,10 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   t0cuts[1] = "t0err<0.95";
   t0cuts[2] = "t0err<0.9";
   t0cuts[3] = "t0err<0.8";
-  momcuts[0] = "fitmomerr<0.3";
-  momcuts[1] = "fitmomerr<0.28";
-  momcuts[2] = "fitmomerr<0.25";
-  momcuts[3] = "fitmomerr<0.22";
+  momcuts[0] = "fit.momerr<0.3";
+  momcuts[1] = "fit.momerr<0.28";
+  momcuts[2] = "fit.momerr<0.25";
+  momcuts[3] = "fit.momerr<0.22";
   fitcuts[0] = "fitcon>1e-6";
   fitcuts[1] = "fitcon>1e-3";
   fitcuts[2] = "fitcon>2e-3";
@@ -100,10 +100,10 @@ void mu2e_scan(TTree* dio, TTree* con, double diogenrange, double ndio, double n
   TCut quality = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
   TCut final = (reco+pitch+livegate+quality+cosmic);
 
-  dio->Project(dioname,"fitmom","evtwt"*final);
+  dio->Project(dioname,"fit.mom","evtwt"*final);
   diospec[icut]->Scale(dioscale);
 
-  con->Project(conname,"fitmom",final);
+  con->Project(conname,"fit.mom",final);
   conspec[icut]->Scale(conscale);
 
 

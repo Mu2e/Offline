@@ -24,6 +24,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/ConstructMaterials.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
@@ -484,10 +485,13 @@ namespace mu2e {
     mat = uniqueMaterialOrThrow( "DSVacuum");
     {
 
+      const double oneTorr = CLHEP::atmosphere/760.;
+      GeomHandle<DetectorSolenoid> ds;
+
       G4Material* StrawLeak = findMaterialOrThrow("StrawGas");
 
       G4double temperature = 300.00*CLHEP::kelvin; // Temperature of the DS
-      G4double pressure    = 133.322e-4*CLHEP::pascal; // 10e-4 Torr
+      G4double pressure    = oneTorr * ds->vac_pressure();
       G4double refTemp     = StrawLeak->GetTemperature();
       G4double refPress    = StrawLeak->GetPressure();
 

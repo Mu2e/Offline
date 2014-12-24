@@ -33,9 +33,7 @@
     <class name="mu2e::TrkToCaloExtrapolCollection" />
 
     <class name="std::vector<art::Ptr<mu2e::TrkToCaloExtrapol> >" />
-    <class name="mu2e::TrackClusterLink" />
 
     <class name="art::Wrapper<mu2e::TrkToCaloExtrapolCollection>" />
-    <class name="art::Wrapper<mu2e::TrackClusterLink>"/>
 
 </lcgdict>

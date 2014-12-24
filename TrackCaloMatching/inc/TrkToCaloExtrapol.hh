@@ -45,7 +45,7 @@ namespace mu2e {
   struct TrkToCaloExtrapol{
 
   private:
-    int                                    _vaneId;            // vane index, runs from 0 to nVanes
+    int                                    _sectionId;            // vane index, runs from 0 to nVanes
     int                                    _trackNumber;       // track numeber
     KalRepPtr                              _trk;
     double                                 _pathLengthEntrance;
@@ -55,14 +55,15 @@ namespace mu2e {
 
   public:
 
-    TrkToCaloExtrapol():_vaneId(-1),
+    TrkToCaloExtrapol():_sectionId(-1),
 			_pathLengthEntrance(0.0),
 			_pathLengthExit(0.0){}
 
 
 
-    TrkToCaloExtrapol(int& vane, int trkNumber, KalRepPtr& trk, double& entrance, double& exit):
-      _vaneId(vane),
+    TrkToCaloExtrapol(int& section, int trkNumber, 
+		      KalRepPtr& trk, double& entrance, double& exit):
+      _sectionId(section),
       _trackNumber(trkNumber),
       _trk(trk),
       _pathLengthEntrance(entrance),
@@ -71,7 +72,7 @@ namespace mu2e {
     ~TrkToCaloExtrapol(){}
 
     //Accessors
-    int                                             vaneId() const;
+    int                                          sectionId() const;
     int                                        trackNumber() const {return _trackNumber;}
     double                                            time() const;
     double                                         timeErr() const;

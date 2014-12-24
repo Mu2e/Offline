@@ -1,0 +1,46 @@
+
+           Release notes for Mu2e Offline software, v5_1_2
+
+5) Nov 24, 2014 - kutschke
+   Add a new geometry parameter:
+      double ds.vacuumPressure = 1.e-4; // torr
+
+   This touches all of:
+     DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+     DetectorSolenoidGeom/src/DetectorSolenoidMaker.cc
+     Mu2eG4/geom/DetectorSolenoid_v02.txt
+     Mu2eG4/src/ConstructMaterials.cc
+
+4) Nov 24, 2014 - kutschke
+   Touchups to make test releases more robust:
+     SConstruct - lib prefix for test releases is now mu2euser, not just mu2e
+     bin/createTestRelease
+     bin/rebindTestRelease
+
+3) Nov 24, 2014 - kutschke
+   Add new patterns to .gitignore
+     *.pdf
+     bin/countEvents
+
+2)  Nov 20, 2014 - youzy
+    Modify TS1 entrance pbar absorber and change its default config
+    Modified files:
+        Mu2eG4/src/constructTS.cc
+        Mu2eG4/src/Mu2eWorld.cc
+        Mu2eG4/geom/TransportSolenoid_v01.txt
+    Added files:
+        JobConfig/TDR/geom_pbar_s123.txt
+        JobConfig/TDR/geom_pbar_s456_muon.txt
+        JobConfig/TDR/geom_pbar_s4_muon.txt
+        JobConfig/TDR/geom_pbar_s56_muon.txt
+        JobConfig/TDR/geom_pbar_s56.txt
+
+
+1)  Nov 19, 2014 - ehrlich
+    Removed the product instance name from the CaloClusterCollection
+    in TrackCaloMatching_module to follow the changes
+    in MakeCaloClusterNew_module.
+    Modified files:
+         TrackCaloMatching/src/TrackCaloMatching_module.cc
+         TrackCaloMatching/test/producers.fcl
+

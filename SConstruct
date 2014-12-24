@@ -2,10 +2,6 @@
 #
 # Build a Mu2e base release or test release.
 #
-# $Id: SConstruct,v 1.54 2014/08/02 05:23:26 gandr Exp $
-# $Author: gandr $
-# $Date: 2014/08/02 05:23:26 $
-#
 # Original author Rob Kutschke.
 #
 import os, re, string
@@ -51,6 +47,8 @@ root_inc      = os.environ['ROOT_INC']
 root_sys      = os.environ['ROOTSYS']
 fhicl_inc     = os.environ['FHICLCPP_INC']
 fhicl_lib     = os.environ['FHICLCPP_LIB']
+sqlite_inc     = os.environ['SQLITE_INC']
+sqlite_lib     = os.environ['SQLITE_LIB']
 cpp0x_inc     = os.environ['CPP0X_INC']
 cpp0x_lib     = os.environ['CPP0X_LIB']
 mesfac_inc     = os.environ['MESSAGEFACILITY_INC']
@@ -65,9 +63,11 @@ if os.environ.has_key('MU2E_TEST_RELEASE'):
     testrelease          = os.environ['MU2E_TEST_RELEASE']
     cpppath_frag         = [ testrelease, testrelease + '/BaBar/include' ]
     libpath_frag         = [ testrelease+'/lib/' ]
+    isTestRelease        = 1
 else:
     cpppath_frag         = [ ]
     libpath_frag         = [ ]
+    isTestRelease        = 0
 
 # The link libraries needed when building the BaBar code.
 babarlibs = [ 'mu2e_BaBar_KalmanTrack',     'mu2e_BaBar_DetectorModel',      'mu2e_BaBar_TrkBase',    'mu2e_BaBar_BField',
@@ -77,7 +77,7 @@ babarlibs = [ 'mu2e_BaBar_KalmanTrack',     'mu2e_BaBar_DetectorModel',      'mu
 
 # Define scons-local environment - it will be exported later.
 osenv = {}
-for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR', 'SQLITE_DIR' ]:
+for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR', 'SQLITE_DIR', 'SQLITE_FQ_DIR' ]:
     if var in os.environ.keys():
         osenv[var] = os.environ[var]
         pass
@@ -89,6 +89,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              art_inc,
                              mesfac_inc,
                              fhicl_inc,
+                             sqlite_inc,
                              cetlib_inc,
                              cpp0x_inc,
                              boost_inc,
@@ -103,6 +104,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              art_lib,
                              mesfac_lib,
                              fhicl_lib,
+                             sqlite_lib,
                              cetlib_lib,
                              cpp0x_lib,
                              boost_lib,
@@ -119,17 +121,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                  )
 
 # Define the rule for building dictionaries.
-genreflex_flags = '--deep --fail_on_warnings --iocomments --capabilities=classes_ids.cc '\
-                + '-D_REENTRANT -DGNU_SOURCE -DGNU_GCC -D__STRICT_ANSI__ '\
-                + '-DPROJECT_NAME="mu2e" -DPROJECT_VERSION="development"'
-aa="if   t1=`expr ${TARGET} : '\(.*\)_dict.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp;"\
-  +"elif t1=`expr ${TARGET} : '\(.*\)_map.cpp'`;then t2=$${t1}_map.cpp; t1=$${t1}_dict.cpp; fi;"\
-  +"if genreflex $SOURCE -s ${SOURCE.srcdir}/classes_def.xml $_CPPINCFLAGS"\
-  +" -o $$t1 "\
-  +genreflex_flags\
-  +"; then mv ${TARGET.dir}/classes_ids.cc $$t2; else rm -f $$t1; false; fi"
-
-genreflex = Builder(action=aa)
+genreflex = Builder(action="./genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\"")
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # Get the flag that controls compiler options. Check that it is legal.
@@ -170,7 +162,7 @@ env.Append( MU2EOPTS = [level, graphicssys] );
 
 # Set compile and link flags.
 SetOption('warn', 'no-fortran-cxx-mix')
-env.MergeFlags('-std=c++11')
+env.MergeFlags('-std=c++1y')
 env.MergeFlags('-rdynamic')
 env.MergeFlags('-Wall')
 env.MergeFlags('-Wno-unused-local-typedefs')
@@ -192,7 +184,10 @@ env.gcc_ver=gcc_version.replace('.','')
 # Then guess at the correct location of Spectrum and MLP.
 rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
              'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
-env.Append( ROOTLIBS = rootlibs );
+env.Append( ROOTLIBS = rootlibs )
+
+bindir = base+'/bin/'
+env.Append( BINDIR = bindir )
 
 # Make the modified environment visible to all of the SConscript files
 Export('env')
@@ -227,7 +222,11 @@ class mu2e_helper:
                 tokens.pop()
                 pass
             pass
-        return 'mu2e_' + string.join(tokens,'_')
+        prefix = 'mu2e_'
+        if ( isTestRelease == 1 ):
+            prefix = 'mu2euser_'
+            pass
+        return prefix + string.join(tokens,'_')
     def prefixed_libname(self):
         return '#/lib/' + self.libname()
 #
@@ -357,6 +356,11 @@ if (cleanopt and not COMMAND_LINE_TARGETS):
     for top, dirs, files in os.walk("./tmp"):
         for name in files:
             ff =  os.path.join(top, name)
+            print "removing file ", ff
+            os.unlink (ff)
+
+    for ff in ("EventDisplay/src/EventDisplayDict.cc", "EventDisplay/src/EventDisplayDict.h"):
+        if os.path.exists(ff):
             print "removing file ", ff
             os.unlink (ff)
 

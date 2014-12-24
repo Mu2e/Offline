@@ -1,0 +1,76 @@
+
+           Release notes for Mu2e Offline software, v5_1_1
+
+6)  Nov 12, 2014 - ehrlich
+    Added a module which extracts reco pulses from the CRV waveforms
+    Modified files:
+      CRVResponse/standalone/wls/src/WLSEventAction.cc
+      CRVResponse/test/CRVResponse.fcl
+      MCDataProducts/inc/CRVPEs.hh
+      MCDataProducts/inc/CRVWaveforms.hh
+      RecoDataProducts/src/classes.h
+      RecoDataProducts/src/classes_def.xml
+    Added files:
+      CRVResponse/src/ExtractCrvRecoPEs_module.cc
+      RecoDataProducts/inc/CRVRecoPulses.hh
+      RecoDataProducts/inc/CRVRecoPulsesCollection.hh
+
+5)  Nov 10, 2014 - ehrlich
+    Added the code for the CRV counter simulation
+    Modified files:
+      MCDataProducts/src/classes_def.xml
+      MCDataProducts/src/classes.h
+    Added directory:
+      CRVResponse
+    Added files:
+      MCDataProducts/inc/CRVPEs.hh
+      MCDataProducts/inc/CRVPEsCollection.hh
+      MCDataProducts/inc/CRVWaveforms.hh
+      MCDataProducts/inc/CRVWaveformsCollection.hh
+    Removed files:
+      HitMakers/src/MakeCRVHits_module.cc
+      MCDataProducts/inc/CRVHit.hh
+      MCDataProducts/inc/CRVHitCollection.hh
+
+4)  Nov 3, 2014 - genser
+    Enabled ups build qualifier as a parameter
+    Modified Files:
+      setup.sh
+
+3)  Nov 1, 2014 -brownd
+    Restructure KalDiag to return information by structs.  Structs
+    return descriptions of the variables as TTree leaves, allow the
+    entire struct to be placed as a branch without exposing any details.
+    There are small changes in ReadKalFits TTree branch names as a result.
+    New features allow major simplification to Reflect_module.
+    primary changes in:
+      KalmanTests/*/KalDiag and included files
+      KalmanTests/src/Reflect_module.cc
+      KalmanTests/src/ReadKalFits_module.cc
+    follow-on effects:
+      KalmanTests/test/KalFit.C
+      JobConfig/TDR/digiMixAndTrackFile.fcl
+      Mu2eG4/test/sthktfO.C
+
+2)  Oct 31, 2014 - genser
+
+    Changed the interface to G4RunManager: Used its new (requested by
+    Mu2e) API instead of inheriting from it. The change should
+    decrease the need for potential future maintenance
+    (also minimally modified timing printout) 
+
+    Deleted files:    
+      Mu2eG4/inc/Mu2eG4RunManager.hh
+      Mu2eG4/src/Mu2eG4RunManager.cc
+
+    Modified Files:
+      Mu2eG4/src/G4_module.cc
+      Mu2eG4/src/Mu2eG4Study_module.cc
+
+
+1)  Oct 29, 2014 - genser
+    Corrected and enhanced SConstruct
+      added sqlite inc and lib to the paths
+      fixed genreflex invocation 
+      added removal of EventDisplayDict to the cleanup
+

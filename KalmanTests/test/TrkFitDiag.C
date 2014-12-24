@@ -61,7 +61,7 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
   nacut = TCut(cutstring);
   snprintf(cutstring,100,"t0err<%f",maxt0err);
   t0errcut = TCut(cutstring);
-  snprintf(cutstring,100,"fitmomerr<%f",maxmomerr);
+  snprintf(cutstring,100,"fit.momerr<%f",maxmomerr);
   momerrcut = TCut(cutstring);
   snprintf(cutstring,100,"fitcon>%f",minfitcon);
   fitconcut = TCut(cutstring);
@@ -70,14 +70,14 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
   rpitch = TCut(cutstring);
   snprintf(cutstring,100,"t0>%f",t0min);
   livegate = TCut(cutstring);
-  snprintf(cutstring,100,"mcenttd>%4.3f&&mcenttd<%4.3f",tdlow-0.02,tdhigh+0.02);
+  snprintf(cutstring,100,"mcent.td>%4.3f&&mcent.td<%4.3f",tdlow-0.02,tdhigh+0.02);
   tpitch = TCut(cutstring);
-  tmom = TCut("mcentmom>100");
+  tmom = TCut("mcent.mom>100");
   snprintf(cutstring,100,"nchits>=%i",minnhits);
   nmch = TCut(cutstring);
-  reco = TCut("fitstatus>0");
+  reco = TCut("fit.status>0");
   cosmic = TCut("abs(d0)<105 && d0+2/om>450 && d0+2/om<680");
-  snprintf(cutstring,100,"fitmom>%f&&fitmom<%f",momlow,momhigh);
+  snprintf(cutstring,100,"fit.mom>%f&&fit.mom<%f",momlow,momhigh);
   rmom = TCut(cutstring);
 
   goodmc = tpitch+tmom+nmch;
@@ -109,7 +109,7 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
 
   //  cout << "first plots pushed " << endl;
 
-  trks->Project("fitstatus","fitstatus");
+  trks->Project("fitstatus","fit.status");
   trks->Project("chisq","chisq/ndof");
   trks->Project("fitcon","fitcon",goodmc);
   trks->Project("fitconl","log10(fitcon)",goodmc);
@@ -150,11 +150,11 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
   plots.push_back(ompull);
   plots.push_back(z0pull);
   plots.push_back(tdpull);
-  trks->Project("d0pull","(d0-mcentd0)/d0err",goodmc+goodfit);
-  trks->Project("p0pull","(p0-mcentp0)/p0err",goodmc+goodfit);
-  trks->Project("ompull","(om-mcentom)/omerr",goodmc+goodfit);
-  trks->Project("z0pull","(z0-mcentz0)/z0err",goodmc+goodfit);
-  trks->Project("tdpull","(td-mcenttd)/tderr",goodmc+goodfit);
+  trks->Project("d0pull","(d0-mcent.d0)/d0err",goodmc+goodfit);
+  trks->Project("p0pull","(p0-mcent.p0)/p0err",goodmc+goodfit);
+  trks->Project("ompull","(om-mcent.om)/omerr",goodmc+goodfit);
+  trks->Project("z0pull","(z0-mcent.z0)/z0err",goodmc+goodfit);
+  trks->Project("tdpull","(td-mcent.td)/tderr",goodmc+goodfit);
 //  d0pull->Fit("gaus","Q0");
 //  p0pull->Fit("gaus","Q0");
 //  ompull->Fit("gaus","Q0");
@@ -171,11 +171,11 @@ void TrkFitDiag(TFile* tfile,std::vector<TH1*>& plots) {
   plots.push_back(momerr);
   plots.push_back(mres);
   plots.push_back(mpull);
-  trks->Project("fitmom","fitmom",goodmc+goodfit);
-  trks->Project("mcmom","mcentmom",tpitch+nmch);
-  trks->Project("momerr","fitmomerr",goodmc+goodfit);
-  trks->Project("mres","fitmom-mcentmom",goodmc+goodfit);
-  trks->Project("mpull","(fitmom-mcentmom)/fitmomerr",goodmc+goodfit);
+  trks->Project("fitmom","fit.mom",goodmc+goodfit);
+  trks->Project("mcmom","mcent.mom",tpitch+nmch);
+  trks->Project("momerr","fit.momerr",goodmc+goodfit);
+  trks->Project("mres","fit.mom-mcent.mom",goodmc+goodfit);
+  trks->Project("mpull","(fit.mom-mcent.mom)/fit.momerr",goodmc+goodfit);
 //  mpull->Fit("gaus","Q0");
 
   unsigned nbins(10);

@@ -13,13 +13,13 @@ CalPatRec            : {
     StrawHitPositionCollectionLabel             : "MakeStrawHitPositions"
     StrawHitFlagCollectionLabel                 : "FlagBkgHits"
     caloClusterModuleLabel                      : "MakeCaloCluster"
-    caloClusterAlgorithm                        : "closest"
-    caloClusterSeeding                          : "energy"
     fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
     fitdirection                                : 0      # 0:downstream, 1:upstream
+    MinNHits                                    : 15
     tmin                                        : 0.
     tmax                                        : 2000.  # ns
     minClusterEnergy                            : 60.    # MeV
+    minClusterSize                              : 0      # number of crystals
     # Kalman fit configuration for the helix seed fit
     SeedFit : {
 	debugLevel                              : 0
@@ -36,7 +36,10 @@ CalPatRec            : {
     # HelixFitHack configuraton
     HelixFit : {
 	debugLevel                              : 0
-	distPatRec                              : 1600.
+	mostProbableDfDz                        : 0.00475
+	maxDfDz                                 : 0.01
+	minDfDz                                 : 0.002
+	distPatRec                              : 40. # mm
     }
     # Kalman fit configuration for the final track fit
     KalFit : {

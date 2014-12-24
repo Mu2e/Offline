@@ -170,7 +170,6 @@ physics: {
 	  StrawHitMCLabel : "makeSH"
 	  TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	}
-	TrkQualMVA : { MVAWeights : "KalmanTests/test/TrkQual.weights.xml" }
       }
    }
 

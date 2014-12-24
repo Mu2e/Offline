@@ -1,0 +1,25 @@
+process : HelloWorld
+
+source : {
+  module_type : EmptyEvent
+  maxEvents : 3
+}
+
+physics :{
+
+  analyzers: {
+
+    hello: {
+      module_type : HelloWorld2
+      magicNumber : 3
+    }
+
+  }
+
+  e1         : [ hello ]
+  end_paths  : [ e1 ]
+
+}
+
+physics.analyzers.hello.magicNumber : @erase
+

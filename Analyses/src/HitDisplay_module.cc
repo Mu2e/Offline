@@ -376,12 +376,6 @@ namespace mu2e {
 	  iz  = cgvane->nCrystalZ();
 	  ir  = cgvane->nCrystalR();
 	}else{
-	  HexMap hmap;
-	  //	  HexLK lk = hmap.lk(id);
-
-// 	  iz = lk._l;
-// 	  ir = lk._k;
-
  	  iz = -1;
 	  ir = -1;
 	}

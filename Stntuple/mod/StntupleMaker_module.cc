@@ -238,7 +238,7 @@ void StntupleMaker::beginJob() {
 
     if (track_data) {
       track_data->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRec1.data()    ,_iname1.data());
-      track_data->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"AlgoCLOSESTSeededByENERGY");
+      track_data->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"");
       track_data->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol.data()     ,"");
       //      track_data->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()     ,"");
       track_data->AddCollName("mu2e::TrackClusterMatchCollection"   ,fTrkCalMatch.data()     ,"");
@@ -269,7 +269,7 @@ void StntupleMaker::beginJob() {
       track_data_uem->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecUem.data()    ,"UpstreameMinus");
       track_data_uem->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
       track_data_uem->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
-      track_data_uem->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"AlgoCLOSESTSeededByENERGY");
+      track_data_uem->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"");
 //-----------------------------------------------------------------------------
 // for the moment, don't run extrapolation and PID for these
 //-----------------------------------------------------------------------------
@@ -298,7 +298,7 @@ void StntupleMaker::beginJob() {
       track_data_dmm->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
       track_data_dmm->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
       track_data_dmm->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
-      track_data_dmm->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"AlgoCLOSESTSeededByENERGY");
+      track_data_dmm->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"");
 //-----------------------------------------------------------------------------
 // for the moment, don't run extrapolation and PID for these
 //-----------------------------------------------------------------------------
@@ -327,7 +327,7 @@ void StntupleMaker::beginJob() {
       track_data_umm->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
       track_data_umm->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
       track_data_umm->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
-      track_data_umm->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"AlgoCLOSESTSeededByENERGY");
+      track_data_umm->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"");
 //-----------------------------------------------------------------------------
 // for the moment, don't run extrapolation and PID for these
 //-----------------------------------------------------------------------------
@@ -352,7 +352,7 @@ void StntupleMaker::beginJob() {
     SetResolveLinksMethod("ClusterBlock",StntupleInitMu2eClusterBlockLinks);
 
     if (cluster_data) {
-      cluster_data->AddCollName("mu2e::CaloClusterCollection",fCaloClusterMaker.data(),"AlgoCLOSESTSeededByENERGY");
+      cluster_data->AddCollName("mu2e::CaloClusterCollection",fCaloClusterMaker.data(),"");
     }
   }
 //-----------------------------------------------------------------------------

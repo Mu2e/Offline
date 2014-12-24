@@ -12,7 +12,6 @@
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -93,12 +92,8 @@ namespace mu2e {
 
     TTree* _trkdiag;
 
-// track quality computation
-    MVATools _trkqualmva;
-    vector<double> _trkqualinput; // input variables for TrkQual computation
-    Float_t _trkqual;
 
-    Int_t _trkid,_eventid;
+    Int_t _trkid,_eventid, _runid, _subrunid;
     Double_t _evtwt; 
     Float_t g4bl_weight;
 
@@ -121,8 +116,7 @@ namespace mu2e {
     _hmomentum0(0),
     _hdp(0),
     _hz0(0),
-    _trkdiag(0),
-    _trkqualmva(pset.get<fhicl::ParameterSet>("TrkQualMVA",fhicl::ParameterSet())){
+    _trkdiag(0) {
 // construct the data product instance name
     _iname = _fdir.name() + _tpart.name();
   }
@@ -138,22 +132,20 @@ namespace mu2e {
     _trkdiag    = _kdiag.createTrkDiag();
     // add local branches
     _trkdiag->Branch("eventid",&_eventid,"eventid/I");
+    _trkdiag->Branch("runid",&_runid,"runid/I");
+    _trkdiag->Branch("subrunid",&_subrunid,"subrunid/I");
     _trkdiag->Branch("trkid",&_trkid,"trkid/I");
     _trkdiag->Branch("evtwt",&_evtwt,"evtwt/d");
     _trkdiag->Branch("g4bl_weight",&g4bl_weight,"g4bl_weight/f");
-    _trkdiag->Branch("trkqual",&_trkqual,"trkqual/F");
-    _eventid = 0;
-    // initialize TrkQual MVA.  Note the weight file MUST BE SPECIFIED IN FCL!!!
-    _trkqualmva.initMVA();
-    _trkqualmva.showMVA();
-    _trkqualinput.resize(8);
 }
 
   // For each event, look at tracker hits and calorimeter hits.
   void ReadKalFits::analyze(const art::Event& event) {
     //    cout << "Enter ReadKalFits:: analyze: " << _verbosity << endl;
 
-    _eventid++;
+    _eventid = event.event();
+    _runid = event.run();
+    _subrunid = event.subRun();
     if(!_kdiag.findMCData(event)){
       throw cet::exception("RECO")<<"mu2e::KalDiag: MC data missing or incoplete" << std::endl;
     }
@@ -164,9 +156,7 @@ namespace mu2e {
 
     art::Handle<G4BeamlineInfoCollection> g4beamlineData;
     event.getByLabel(_generatorModuleLabel, g4beamlineData);
-    haveG4BL = g4beamlineData.isValid();
-    if ( haveG4BL ) haveG4BL = (g4beamlineData->size()==1);
-    
+   
     if ( _verbosity > 0 && _eventid <= _maxPrint ){
       cout << "ReadKalmanFits  for event: " << event.id() << "  Number of fitted tracks: " << trks.size() << endl;
     }
@@ -176,29 +166,25 @@ namespace mu2e {
     for ( const auto& ievtWt : _evtWtModules ) {
       _evtwt *= event.getValidHandle<EventWeight>( ievtWt )->weight();
     }
+  //	g4bl_weight=1;
+    haveG4BL = g4beamlineData.isValid();
+    if ( haveG4BL ) haveG4BL = (g4beamlineData->size()==1);
+     if( haveG4BL ) { 
+      G4BeamlineInfo const& extra = g4beamlineData->at(0);
+      g4bl_weight=extra.weight();
+    } else{
+      g4bl_weight=1;
+    }
 
-    _hNTracks->Fill( trks.size() );
-    _trkid = -1;
-    _trkqual=-1000.0;
+     _hNTracks->Fill( trks.size() );
+     _trkid = -1;
 
     for ( size_t i=0; i< trks.size(); ++i ){
       _trkid = i;
       KalRep const* krep = trks.get(i);
       if ( !krep ) continue;
 
-      _kdiag.kalDiag(krep,false);
-// compute the TrkQual value
-      _trkqualinput[0] = _kdiag._nactive;
-      _trkqualinput[1] = (float)_kdiag._nactive/(float)_kdiag._nhits;
-      _trkqualinput[2] = log10(_kdiag._fitcon);
-      _trkqualinput[3] = _kdiag._fitmomerr;
-      _trkqualinput[4] = _kdiag._t0err;
-      _trkqualinput[5] = _kdiag._fitpar._d0;
-      _trkqualinput[6] = _kdiag._fitpar._d0+2.0/_kdiag._fitpar._om;
-      _trkqualinput[7] = (float)_kdiag._ndactive/(float)_kdiag._nactive;
-      _trkqual = _trkqualmva.evalMVA(_trkqualinput);
-
-      _kdiag._trkdiag->Fill();
+     _kdiag.kalDiag(krep);
 
       // For some quantities you require the concrete representation, not
       // just the base class.
@@ -218,17 +204,6 @@ namespace mu2e {
       _hdp->Fill(dp);
 
       _hz0->Fill(pos0.z());
-
-      //	g4bl_weight=1;
-
-      
-      if( haveG4BL ) { 
-	G4BeamlineInfo const& extra = g4beamlineData->at(0);
-      	g4bl_weight=extra.weight();
-      }
-      else{
-      	g4bl_weight=1;
-      }
 
 
 
@@ -250,8 +225,7 @@ namespace mu2e {
     }
     // if there are no tracks, enter dummies
     if(trks.size() == 0 && _processEmpty){
-      _kdiag.kalDiag(0,false);
-      _kdiag._trkdiag->Fill();
+      _kdiag.kalDiag(0);
     }
   }
 

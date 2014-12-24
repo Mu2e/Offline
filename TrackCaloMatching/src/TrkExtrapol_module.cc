@@ -57,14 +57,11 @@
 
 //calorimeter includes
 #include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "TrackCaloMatching/inc/CaloVolumeElem.hh"
-#include "TrackCaloMatching/inc/CaloVolumeType.hh"
-#include "TrackCaloMatching/inc/CaloSurface.hh"
 #include "CaloCluster/inc/CaloClusterer.hh"
-#include "TrackCaloMatching/inc/Calorimeter4VanesGeom.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
@@ -113,7 +110,13 @@
 using namespace std;
 
 namespace mu2e {
-
+  
+  struct IntersectData_t {
+      int    fSection;
+      int    fRC;			// return code, 0=success, <0: failure, details TBD
+      double fSEntr;
+      double fSExit;
+    };
 
   class TrkExtrapol : public art::EDProducer {
   public:
@@ -135,8 +138,6 @@ namespace mu2e {
 						    "CaloReadoutHitsMaker")),
       _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel",
 						    "CaloCrystalHitsMaker")),
-      fCaloVanes(0),
-      _application(nullptr),
       _directory(0),
       _firstEvent(true),
       _trkdiag(0){
@@ -149,15 +150,28 @@ namespace mu2e {
 
     }
   
-    virtual ~TrkExtrapol() {
-      if (fCaloVanes) delete fCaloVanes;
-    }
+    virtual ~TrkExtrapol() {}
 
     void beginJob();
     void endJob() {}
 
     void produce(art::Event & e );
 
+    void caloExtrapol(int&             diagLevel,
+		      int              evtNumber,
+		      TrkFitDirection  fdir,
+		      KalRep*          Krep,
+		      double&          lowrange, 
+		      double&          highrange,
+		      HelixTraj        &trkHel, 
+		      int              &res0, 
+		      int&             NIntersections,
+		      IntersectData_t* Intersections);
+    
+    double ZfrontFaceCalo() const{ return _ZfrontFaceCalo;}
+    
+    double ZbackFaceCalo() const{ return _ZbackFaceCalo;}
+    
   private:
 
     void doExtrapolation(art::Event & evt, bool skip);
@@ -192,14 +206,7 @@ namespace mu2e {
     // Label of the calo crystal hists maker
     std::string _caloCrystalModuleLabel;
 
-    std::unique_ptr<MCCaloUtilities> CaloManager;
-
-    Calorimeter4VanesGeom* fCaloVanes;
-
     bool _skipEvent;
-
-    // The job needs exactly one instance of TApplication.  See note 1.
-    unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob. See note 3.
     TDirectory* _directory;
@@ -219,12 +226,206 @@ namespace mu2e {
       , _trkmomy[1000]
       , _trkmomz[1000]
       , _trkmom[1000];
-
-
     
-    void filltrkdiag(int itrk, Calorimeter4VanesGeom::IntersectData_t *intersec, int size, KalRep const* kalrep);
+    double _solenoidOffSetX;
+    double _solenoidOffSetZ;
+    double _ZfrontFaceCalo;
+    double _ZbackFaceCalo;
+
+   
+    CLHEP::Hep3Vector fromTrkToMu2eFrame(CLHEP::Hep3Vector  &vec);
+    
+    void filltrkdiag(int itrk, IntersectData_t *intersec, 
+		     int size, KalRep const* kalrep);
 
   };
+  
+  CLHEP::Hep3Vector TrkExtrapol::fromTrkToMu2eFrame(CLHEP::Hep3Vector  &vec){
+    art::ServiceHandle<GeometryService> geom;
+    double solenoidOffSetX = geom->config().getDouble("mu2e.solenoidOffset");
+    double solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");
+    CLHEP::Hep3Vector res;
+    
+    res.setX(vec.x() - solenoidOffSetX);
+    res.setZ(vec.z() - solenoidOffSetZ);
+    res.setY(vec.y());
+    return res;
+  }
+  
+  void TrkExtrapol::caloExtrapol(int&             diagLevel,
+				 int              evtNumber, 
+				 TrkFitDirection  fdir,
+				 KalRep*          Krep,
+				 double&          lowrange, 
+				 double&          highrange,
+				 HelixTraj        &trkHel, 
+				 int              &res0, 
+				 int&              NIntersections,
+				 IntersectData_t*  Intersection  ) {
+    art::ServiceHandle<GeometryService> geom;
+    GeomHandle<DiskCalorimeter> cg;
+    static const char* oname = "TrkExtrapol::caloExtrapol";
+
+    if(diagLevel>2){
+
+      cout<<"start caloExtrapol, lowrange = "<<lowrange<<
+	", highrange = "<<highrange<<endl;
+      cout<<"point of traj at lowrange : "<<Krep->traj().position(lowrange)<<endl;
+      cout<<"point of traj at highrange : "<<Krep->traj().position(highrange)<<endl;
+      cout<<"fltLMin = "<<Krep->startValidRange()<<
+	", fltLMax = "<<Krep->endValidRange()<<endl;
+    }
+
+    TrkErrCode rc;
+    rc = Krep->extendThrough(lowrange);
+
+    if (rc.success() != 1 && rc.success() !=13) {
+      printf(" %s ERROR: could not extend to lowrange = %10.3f, rc = %i, BAIL OUT\n",oname,lowrange,rc.success());
+      return;
+    }
+
+    if(diagLevel>2){
+      cout<<", after extention..."<<
+	", lowrange = "<<lowrange<<
+	", highrange = "<<highrange<<endl;
+      cout<<"point of traj at lowrange : "<<Krep->traj().position(lowrange)<<endl;
+      cout<<"point of traj at highrange : "<<Krep->traj().position(highrange)<<endl;
+      cout<<"fltLMin = "<<Krep->startValidRange()<<
+	", fltLMax = "<<Krep->endValidRange()<<endl;
+    }
+
+    TrkDifTraj const &traj = Krep->traj();
+
+    double circleRadius; // P.Murat: has to be always positive
+    double startLowrange = lowrange;  
+    if(fdir.dzdt() == -1.0) startLowrange = highrange;
+    circleRadius = fabs(1.0/trkHel.omega());
+
+    int nSections = cg->nDisk();
+
+    double *entr   = new double[nSections];
+    double *ex     = new double[nSections];
+    bool *isInside = new bool[nSections];
+
+    for(int jSection=0; jSection<nSections; ++jSection){
+      isInside[jSection] = false;
+      entr[jSection] = 0.0;
+      ex[jSection] = 0.0;
+    }
+    int nAngleSteps = 500;
+    
+    double pathStepSize = Constants::twoPi / (double) nAngleSteps;
+    nAngleSteps *= 2.0;
+    
+    pathStepSize *= circleRadius/fabs(trkHel.cosDip());
+    
+    if (diagLevel>2){
+      cout<< "circle radius = "<< circleRadius<<
+	", pathStepSize = "<<pathStepSize<<endl;
+    }
+    
+    double tmpRange = startLowrange;
+
+    NIntersections = 0;
+    CLHEP::Hep3Vector trjVec;
+    HepPoint trjPoint;
+    
+    for(int iStep = 0; iStep< nAngleSteps; ++iStep){
+      for(int jSection=0; jSection<nSections; ++jSection){
+	trjPoint = traj.position(tmpRange);
+	if(diagLevel>4){
+	  cout<<" tmpRange = "<< tmpRange<<
+	    ", trj.position(tmpRange) = "<<trjPoint<<endl;
+	}
+	  
+	trjVec.setX(trjPoint.x());
+	trjVec.setY(trjPoint.y());
+	trjVec.setZ(trjPoint.z());
+	
+	trjVec = fromTrkToMu2eFrame(trjVec);
+	
+	if( cg->isInsideDisk(jSection,trjVec ) ){
+	  if(!isInside[jSection]){
+	    if(diagLevel>4){
+	      cout<<"Event Number : "<< evtNumber<< endl;
+	      cout<<" vane "<<jSection<<
+		"isInside : true"<<
+		"pathLength entrance = "<<tmpRange<<endl;
+	    }
+	    isInside[jSection] = true;
+	    if(fdir.dzdt() == 1.0){
+	      entr[jSection] = tmpRange - pathStepSize;
+	    }else if(fdir.dzdt() == -1.0){
+	      entr[jSection] = tmpRange + pathStepSize;
+	    }
+	  }
+	}else if(isInside[jSection]){
+	  ex[jSection] = tmpRange + pathStepSize;
+	  if(diagLevel>4){
+	    cout<<"Event Number : "<< evtNumber<< endl;
+	    cout<<" vane "<<jSection<<
+	      "isInside : true"<<
+	      "hasExit : true"<<
+	      "pathLength entrance = "<<entr[jSection]<<
+	      "pathLength exit = "<<tmpRange<<endl;
+	  }
+	  isInside[jSection] = false;
+	  
+	  if (NIntersections < 100) {
+	    Intersection[NIntersections].fSection  = jSection;
+	    Intersection[NIntersections].fRC    = 0;
+	    Intersection[NIntersections].fSEntr = entr[jSection];
+	    Intersection[NIntersections].fSExit = ex  [jSection];
+	    NIntersections++;
+	  }
+	  else {
+	    printf("%s ERROR: NIntersections > 100, TRUNCATE LIST\n",oname);
+	  }
+	}
+      } 
+      if(fdir.dzdt() == 1.0){
+	tmpRange += pathStepSize;
+      }else if(fdir.dzdt() == -1.0){
+	tmpRange -= pathStepSize;
+      }
+    }
+    //  }
+    
+    
+    if (diagLevel>2) {
+      cout<<"end search behindSection(), position is : "<<traj.position(tmpRange)<<endl;
+    }
+
+    //    int        resT = -1;
+    double     lrange, hrange;
+    TrkErrCode trk_rc;
+
+    for (int i=0; i<NIntersections; i++) {
+      lrange = Intersection[i].fSEntr;
+      //      hrange = Intersection[i].fSEntr;
+      trk_rc = Krep->extendThrough(lrange);
+      if (trk_rc.success() != 1) { 
+	//-----------------------------------------------------------------------------
+	// failed to extend 
+	//-----------------------------------------------------------------------------
+	Intersection[i].fRC = -1;
+	if (diagLevel>2) {
+	  printf("%s ERROR vane = %2i FAILED to EXTEND TRAJECTORY, rc = %i\n",
+		 oname,Intersection[i].fSection,trk_rc.success());
+	}
+      }
+    
+    }
+
+    delete [] isInside ;
+    delete [] entr ;
+    delete [] ex;
+
+  }//end proce_dUre
+
+
+
+
 
   void TrkExtrapol::beginJob() {
 
@@ -244,16 +445,18 @@ namespace mu2e {
       _trkdiag->Branch("trkmomz[trkint]", _trkmomz, "trkmomz[trkint]/F");
       _trkdiag->Branch("trkmom[trkint]", _trkmom, "trkmom[trkint]/F");
     }
+
+    
   }
 
 
-  void TrkExtrapol::filltrkdiag(int itrk, Calorimeter4VanesGeom::IntersectData_t *intersec, int size, KalRep const* kalrep){
+  void TrkExtrapol::filltrkdiag(int itrk, IntersectData_t *intersec, int size, KalRep const* kalrep){
     _trkid = itrk;
     double lenght(0.0);    
     _trkint = size;
     TrkDifTraj const &traj = kalrep->traj();
     for(int i=0; i<size; ++i){
-      _trksection[i] = intersec[i].fVane;
+      _trksection[i] = intersec[i].fSection;
       lenght = intersec[i].fSEntr;
       _trkpath[i] = lenght;
       _trktof[i] =  kalrep->arrivalTime(lenght);
@@ -272,18 +475,22 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void TrkExtrapol::produce(art::Event & evt ) {
 
-    if (fCaloVanes == 0) {
-      fCaloVanes = new Calorimeter4VanesGeom();
-
-      if (_diagLevel>0) fCaloVanes->print();
-    }
-   
     doExtrapolation(evt, _skipEvent);
   } 
 
 
 //-----------------------------------------------------------------------------
   void TrkExtrapol::doExtrapolation(art::Event & evt, bool skip){
+    
+    art::ServiceHandle<GeometryService> geom;
+    GeomHandle<Calorimeter> cg;
+    _solenoidOffSetX = geom->config().getDouble("mu2e.solenoidOffset");//3904.;//[mm]
+    _solenoidOffSetZ = -geom->config().getDouble("mu2e.detectorSystemZ0");//-10200.;
+    
+    _ZfrontFaceCalo = cg->origin().z() + _solenoidOffSetZ;
+    _ZbackFaceCalo = cg->origin().z() + _solenoidOffSetZ;
+
+
     const char* oname = "TrkExtrapol::doExtrapolation";
     double      lowrange, highrange, zmin, zmax;
     HepPoint    point;
@@ -293,9 +500,6 @@ namespace mu2e {
     unique_ptr<TrkToCaloExtrapolCollection> extrapolatedTracks(new TrkToCaloExtrapolCollection );
     TrkToCaloExtrapolCollection tmpExtrapolatedTracks;
   
-    //Get handle to calorimeter
-    art::ServiceHandle<GeometryService> geom;
-
     art::Handle<KalRepPtrCollection> trksHandle;
     evt.getByLabel(_fitterModuleLabel,_iname,trksHandle);
     const KalRepPtrCollection* trks = trksHandle.product();
@@ -331,8 +535,8 @@ namespace mu2e {
       centerCircleX *= cos(angle);
 
       // 2013-05-23 gianipez : add 10cm tolerance
-      zmin = fCaloVanes->ZfrontFaceCalo()-100.;
-      zmax = fCaloVanes->ZbackFaceCalo ()+100.;
+      zmin = _ZfrontFaceCalo - 100.;
+      zmax = _ZbackFaceCalo  + 100.;
     
       if(_fitDir ==  TrkFitDirection::downstream){
 	lowrange  = trkHel.zFlight(zmin);  /*1740*/
@@ -357,18 +561,16 @@ namespace mu2e {
 	       circleRadius,centerCircleX,centerCircleY,angle);
       }
 
-      //    const int nVanes = cg->nVane();
-
-      Calorimeter4VanesGeom::IntersectData_t  intersection[100];
+      IntersectData_t  intersection[100];
       int                                     nint(0);
 
-      fCaloVanes->caloExtrapol(_diagLevel, 
-			       (int) evt.event(), 
-			       _fitDir, krep, lowrange, highrange, 
-			       trkHel,  
-			       res0, 
-			       nint,
-			       intersection);
+      caloExtrapol(_diagLevel, 
+		   (int) evt.event(), 
+		   _fitDir, krep, lowrange, highrange, 
+		   trkHel,  
+		   res0, 
+		   nint,
+		   intersection);
     
       if (nint == 0) {
 	printf("\n%s , run / event : %d / %d, \nERROR: intersection not found : res0 = %i\nfitdirection = %s \n",
@@ -394,7 +596,7 @@ namespace mu2e {
       for (int i=0; i<nint; i++) {
 	KalRepPtr tmpRecTrk = trksHandle->at(itrk);
 	tmpExtrapolatedTracks.push_back(
-					TrkToCaloExtrapol(intersection[i].fVane,
+					TrkToCaloExtrapol(intersection[i].fSection,
 							  itrk,
 							  tmpRecTrk,
 							  intersection[i].fSEntr,

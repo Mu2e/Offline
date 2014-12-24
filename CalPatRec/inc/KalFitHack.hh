@@ -46,6 +46,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     virtual void makeTrack(KalFitResult& kres, CalTimePeak* TPeak=NULL);
 
+//---------------------------------------------------------------------------------------------
+// 2014-11-24 gianipez added the following function for printing the hits included in the track
+//----------------------------------------------------------------------------------------------
+    void printHits(KalFitResult& kres);
+
 // add a set of hits to an existing fit
     virtual void addHits(KalFitResult&             kres   , 
 			 const StrawHitCollection* straws , 
@@ -68,6 +73,7 @@ namespace mu2e {
     std::vector<AmbigResolver*> _ambigresolver;
     bool _initt0;
     bool _updatet0;
+    int  _daveMode;
     std::vector<double> _t0tol;
 
     bool fitable              (TrkDef const& tdef);

@@ -94,6 +94,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _pos;		// position
     double            _phi;	        // ambiguity-resolved phi angle
     StrawHitFlag      _flag;		// flag
+    int               _used;            // index or telling if the strawhit has already been used by an other track-candidate
     CLHEP::Hep3Vector _wdir;		// wire direction
     CLHEP::Hep3Vector _sdir;            // straw radial direction, perp to Z and wire direction
 					// errors are asymmetric; along the wire is given by time division, 
@@ -115,6 +116,7 @@ namespace mu2e {
     virtual void rinfo     (CLHEP::Hep3Vector const& center, VALERR& rad) const;
     virtual void finfo     (CLHEP::Hep3Vector const& center, VALERR& phi) const;
     bool         use       () const;
+    int          isUsed    () { return _used;}
     bool         stereo    () const;
     bool         isOutlier () const;
     bool         isCalosel () const;
@@ -149,8 +151,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     const CalTimePeak*   fTimePeak;
     
-    int  fSeedIndex;   // hack->fData[2]
-    int  fLastIndex;   // hack->fData[3]
+    int  fSeedIndex;   
+    int  fCandidateIndex;
+    int  fLastIndex;   
+    int  fUseDefaultDfDz;
 
     int                 _diag;
     int                 _debug;
@@ -167,7 +171,7 @@ namespace mu2e {
 
 					//2014-03-10 Gianipez and P. Murat introduced the following paramter to limit 
 					// the dfdz value in the pattern-recognition stage
-    double   _maxDfDz, _minDfDz;
+    double   _mpDfDz, _maxDfDz, _minDfDz;
 
     //201-03-31 Gianipez added th following parameter for changing the value of the 
     // squared distance requed bewtween the strawhits and the theretical position
@@ -195,6 +199,14 @@ namespace mu2e {
 // and direction
 //-----------------------------------------------------------------------------
     double    _rmin, _rmax, _smin, _smax, _dfdzsign;
+//-----------------------------------------------------------------------------//    
+// store the paramters value of the most reliable track candidate              
+//-----------------------------------------------------------------------------//
+    double    _x0, _y0, _phi0, _radius, _dfdz;
+    int       _goodPointsTrkCandidate;
+    double    _chi2TrkCandidate;
+    int       _indecesTrkCandidate[400];
+
     TH1F*     _hDist;
     double    _chi2nFindZ;
     double    _eventToLook;
@@ -215,7 +227,10 @@ namespace mu2e {
     void helixParams (HelixFitHackResult const& helix, 
 		      CLHEP::HepVector&         pvec , 
 		      CLHEP::HepVector&         perr ) const;
-
+    
+    
+    TH1F* hDist() {return _hDist;}
+    
   protected:
 //-----------------------------------------------------------------------------
 // utlity functions
@@ -260,7 +275,10 @@ namespace mu2e {
 
     void filterDist(XYZPHackVector& xyzp);
 					// 12-10-2013 Gianipez: new pattern recognition functions
+    void filterUsingPatternRecognition(XYZPHackVector& xyzp);
     
+    void resetTrackParamters();
+
     void doPatternRecognition(XYZPHackVector& xyzp, HelixFitHackResult& mytrk);
 
     void findTrack(XYZPHackVector&      xyzp, 
@@ -268,7 +286,8 @@ namespace mu2e {
 		   double&              chi2,
 		   int&                 countGoodPoint,
 		   HelixFitHackResult&  mytrk, 
-		   bool                 cleanPatetrn=false);
+		   int&                 mode,
+		   bool                 useDefaultDfDz=false);
 
     void calculateTrackParameters(Hep3Vector& p0, double&radius,
 				  double& phi0, double& tanLambda,

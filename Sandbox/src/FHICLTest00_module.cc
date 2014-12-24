@@ -38,7 +38,8 @@ namespace mu2e {
   FHICLTest00::FHICLTest00(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset){
 
-    mf::LogVerbatim("Tracing") << "FHICLTest00:analyze: pset:    " << pset;
+    mf::LogVerbatim("Tracing") << "FHICLTest00:analyze: pset:    "
+                               << pset.to_string();
 
     string s(pset.get<string>("p00"));
     mf::LogVerbatim("Tracing") << "FHICLTest00:analyze: p00 as string: " << s;
@@ -75,7 +76,6 @@ namespace mu2e {
 
     b = pset.get<bool>("p02f");
     mf::LogVerbatim("Tracing") << "FHICLTest00:analyze: p02f as bool: " << b;
-
 
   }
 

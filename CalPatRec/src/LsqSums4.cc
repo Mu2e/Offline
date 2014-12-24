@@ -160,7 +160,7 @@ double LsqSums4::chi2DofCircle() {
   double chi2, x_0, y_0, r, sx2, sy2;
 
   x_0 = x0();
-  y_0 = x0();
+  y_0 = y0();
   r   = radius();
 
   sx2 = sigX2X()+sigXY2();

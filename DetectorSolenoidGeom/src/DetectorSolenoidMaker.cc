@@ -60,6 +60,7 @@ namespace mu2e {
 
     // Vacuum volumes
     ds->_vacuumMaterialName = c.getString("ds.vacuumMaterialName");
+    ds->_vacuumPressure     = c.getDouble("ds.vacuumPressure");
     ds->_ds1HalfLength      = c.getDouble("ds1.halfLength");
     ds->_ds2HalfLength      = c.getDouble("ds2.halfLength");
 

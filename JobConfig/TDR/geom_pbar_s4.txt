@@ -16,7 +16,7 @@ int g4.steppingActionMaxSteps = 100000;
 int g4.stepsSizeLimit         = 100000;
 int g4.particlesSizeLimit     = 100000;
 
-vector<string> g4SteppingAction.killInTheseVolumes = { "HallAir", "PSVacuum", "Coll31OutRecord" };
+vector<string> g4SteppingAction.killInTheseVolumes = { "HallAir", "Coll31OutRecord" }; //"PSVacuum"
 bool   g4SteppingAction.killerVerbose = false;
 
 vector<int>  g4.stackingActionDropPDG  = { -12, 12, -14, 14, -16, 16 };

@@ -27,7 +27,6 @@
 #include "KalmanTests/inc/TrkFitDirection.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
-#include "TrackCaloMatching/inc/TrackClusterLink.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
 
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
@@ -91,11 +90,8 @@ namespace mu2e {
 
 					// Label of the calo clusters  maker
     string          _caloClusterModuleLabel;
-    string          _caloClusterAlgorithm;
-    string          _caloClusterSeeding;
-    string          _caloClusterCollName;
-					// Label of the extrapolated impact points
 
+					// Label of the extrapolated impact points
     string          _trkToCaloExtrapolModuleLabel;
 
     double          _timeChiSquare, _energyChiSquare, _posVChiSquare, _posWChiSquare;
@@ -119,9 +115,6 @@ namespace mu2e {
       _meanInteractionDepth  (pset.get<double>("meanInteractionDepth")),  // 50 mm
       _dtOffset              (pset.get<double>("dtOffset"        )),  // 1. ns
       _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
-      _caloClusterAlgorithm  (pset.get<std::string>("caloClusterAlgorithm"  , "closest")),
-      _caloClusterSeeding    (pset.get<std::string>("caloClusterSeeding"    , "energy")),
-      _caloClusterCollName   ("Algo"+mu2e::TOUpper(_caloClusterAlgorithm)+"SeededBy"+mu2e::TOUpper(_caloClusterSeeding)),
       _trkToCaloExtrapolModuleLabel(pset.get<std::string>("trkToCaloExtrapolModuleLabel", "TrkExtrapol")),
       _firstEvent(true)
     {
@@ -214,7 +207,7 @@ namespace mu2e {
     ntracks = trks->size();
   
     art::Handle<CaloClusterCollection> caloClusters;
-    evt.getByLabel(_caloClusterModuleLabel,_caloClusterCollName, caloClusters );
+    evt.getByLabel(_caloClusterModuleLabel, caloClusters );
     nclusters = caloClusters->size();
 
     art::Handle<TrkToCaloExtrapolCollection>  trjExtrapols;
@@ -270,7 +263,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // apparently, ntupling stuff was mixed in, almost removed
 //-----------------------------------------------------------------------------
-      vane_id  = extrk->vaneId();
+      vane_id  = extrk->sectionId();
 					// assume Z(middle of the disk)
 
       s1       = extrk->pathLengthEntrance();

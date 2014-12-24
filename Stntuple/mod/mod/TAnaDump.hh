@@ -102,9 +102,9 @@ public:
 					 const char* ProductName = "", 
 					 const char* ProcessName = "");
 
-  void printTrackClusterLink            (const char* ModuleLabel, 
-					 const char* ProductName = "", 
-					 const char* ProcessName = "");
+//   void printTrackClusterLink            (const char* ModuleLabel, 
+// 					 const char* ProductName = "", 
+// 					 const char* ProcessName = "");
     
 
   void printCalTimePeak   (const mu2e::CalTimePeak* TimePeak, const char* Opt = "");

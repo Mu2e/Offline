@@ -152,7 +152,9 @@ namespace mu2e {
     Int_t _sddevice, _sdsector, _sdlayer, _sdstraw;
     Int_t _nend, _nstep;
     Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1, _vstart0, _vstart1, _vcross0, _vcross1;
-    Float_t _mctime, _mcenergy, _mctrigenergy, _mcdca;
+    Float_t _mctime, _mcenergy, _mctrigenergy, _mcthreshenergy;
+    Int_t _mcthreshpdg, _mcthreshproc;
+    Float_t _mcdca;
     Int_t _dmcpdg, _dmcproc, _dmcgen;
     Float_t _dmcmom;
     Bool_t _xtalk;
@@ -279,6 +281,9 @@ namespace mu2e {
 	_sddiag->Branch("mctime",&_mctime,"mctime/F");
 	_sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
 	_sddiag->Branch("mctrigenergy",&_mctrigenergy,"mctrigenergy/F");
+	_sddiag->Branch("mcthreshenergy",&_mcthreshenergy,"mcthreshenergy/F");
+	_sddiag->Branch("mcthreshpdg",&_mcthreshpdg,"mcthreshpdg/I");
+	_sddiag->Branch("mcthreshproc",&_mcthreshproc,"mcthreshproc/I");
 	_sddiag->Branch("mcdca",&_mcdca,"mcdca/F");
 	_sddiag->Branch("mcpdg",&_dmcpdg,"mcpdg/I");
 	_sddiag->Branch("mcproc",&_dmcproc,"mcproc/I");
@@ -841,7 +846,8 @@ namespace mu2e {
     // mc truth information
     _dmcpdg = _dmcproc = _dmcgen = 0;
     _dmcmom = -1.0;
-    _mctime = _mcenergy = _mctrigenergy = _mcdca = -1000.0;
+    _mctime = _mcenergy = _mctrigenergy = _mcthreshenergy = _mcdca = -1000.0;
+    _mcthreshpdg = _mcthreshproc = 0;
     art::Ptr<StepPointMC> const& spmc = xpair[0]->_ihitlet->stepPointMC();
     if(!spmc.isNull()){
       _mctime = _toff.timeWithOffsetsApplied(*spmc);
@@ -859,6 +865,18 @@ namespace mu2e {
     }
     _mcenergy = mcdigi.energySum();
     _mctrigenergy = mcdigi.triggerEnergySum();
+// sum the energy from the explicit trigger particle, and find it's releationship 
+    _mcthreshenergy = 0.0;
+    art::Ptr<StepPointMC> threshpart = mcdigi.stepPointMC(StrawDigi::zero);
+    if(threshpart.isNull()) threshpart = mcdigi.stepPointMC(StrawDigi::one);
+    for(auto imcs = mcdigi.stepPointMCs().begin(); imcs!= mcdigi.stepPointMCs().end(); ++ imcs){
+    // if the simParticle for this step is the same as the one which fired the discrim, add the energy
+      if( (*imcs)->simParticle() == threshpart->simParticle() )
+	_mcthreshenergy += (*imcs)->eDep();
+    }
+    _mcthreshpdg = threshpart->simParticle()->pdgId();
+    _mcthreshproc = threshpart->simParticle()->creationCode();
+
     // check for x-talk
     _xtalk = digi.strawIndex() != spmc->strawIndex();
     // fill the tree entry

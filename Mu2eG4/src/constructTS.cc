@@ -43,6 +43,7 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "GeomPrimitives/inc/Tube.hh"
+#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
@@ -939,23 +940,73 @@ namespace mu2e {
       CollimatorTS1 const& coll1  = ts.getColl1() ;
 
       string pbarTS1InMaterial   = config.getString("pbar.coll1In.material1Name");
-      double pbarTS1InHalfLength = config.getDouble("pbar.coll1In.halfLength", 0.05);
-      double pbarTS1InParams[5]  = { 0.0, coll1.rIn1(), pbarTS1InHalfLength, 0.0, CLHEP::twopi };
+      double pbarTS1InHalfLength = config.getDouble("pbar.coll1In.halfLength");
+      double pbarTS1InROut       = config.getDouble("pbar.coll1In.rOut");
+      double pbarTS1InRecordROut = config.getDouble("pbar.coll1In.rOutRecord");
+
+      double pbarTS1InParams[5]  = { 0.0, pbarTS1InROut, pbarTS1InHalfLength, 0.0, CLHEP::twopi };  // coll1.rIn1()
       double pbarTS1InOffset = config.getDouble("pbar.coll1In.offset", 1.0);
-      std::cout << "Pbar absorber at TS1 coll1 entrance halfLength : " << pbarTS1InHalfLength << std::endl;
+      if ( verbosityLevel > 0 ) {
+        cout << __func__ << "Pbar absorber at TS1 coll1 entrance halfLength : " << pbarTS1InHalfLength << std::endl;
+        cout << __func__ << "Pbar absorber at TS1 coll1 entrance offset : " << pbarTS1InOffset << std::endl;
+      }
 
       CLHEP::Hep3Vector pbarTS1InPos = coll1.getLocal();
-      pbarTS1InPos.setZ( pbarTS1InPos.z() - coll1.halfLength() + 2.*vdHalfLength + pbarTS1InHalfLength + pbarTS1InOffset);
+      VolumeInfo motherVolume = _helper->locateVolInfo("TS1Vacuum");
+      if (pbarTS1InOffset >= 0.0) {
+        // use local when put in the TS1Vacuum
+        pbarTS1InPos = coll1.getLocal();
+        pbarTS1InPos.setZ( pbarTS1InPos.z() - coll1.halfLength() + 2.*vdHalfLength + pbarTS1InHalfLength + pbarTS1InOffset);
+        motherVolume = _helper->locateVolInfo("TS1Vacuum");
+      }
+      else { // pbarTS1InOffset < 0.0
+        // use global when put in the HallAir
+
+        Tube const & psVacuumParams  = GeomHandle<PSVacuum>()->vacuum();
+
+        pbarTS1InPos = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getGlobal();
+        pbarTS1InPos.setZ( pbarTS1InPos.z() - ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() - pbarTS1InHalfLength + pbarTS1InOffset);
+        motherVolume = _helper->locateVolInfo("PSVacuum");
+        G4ThreeVector psVacuumOriginInMu2e = psVacuumParams.originInMu2e();
+        pbarTS1InPos = pbarTS1InPos - psVacuumOriginInMu2e;
+
+        if ( verbosityLevel > 0 ) {
+          cout << __func__ << "coll1 halflength " << ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() << endl;
+          cout << __func__ << "pbarTS1InHalfLength " << pbarTS1InHalfLength << endl;
+          cout << __func__ << "pbarTS1InOffset " << pbarTS1InOffset << endl;
+          cout << __func__ << "pbarTS1InPos " << pbarTS1InPos << endl;
+        }
+      }
 
       nestTubs( "PbarAbsTS1In",
                 pbarTS1InParams,
                 findMaterialOrThrow(pbarTS1InMaterial),
                 0,
                 pbarTS1InPos,
-                _helper->locateVolInfo("TS1Vacuum"),
+                motherVolume,
                 0,
                 G4Color::Yellow(),
 		"PbarAbs"
+              );
+
+      double pbarTS1InRecordParams[5]  = { 0.0, pbarTS1InRecordROut, vdHalfLength, 0.0, CLHEP::twopi };  
+      CLHEP::Hep3Vector pbarTS1InRecordPos = pbarTS1InPos;
+      pbarTS1InRecordPos.setZ(pbarTS1InPos.z() - pbarTS1InHalfLength - pbarTS1InRecordParams[2]);
+
+      if ( verbosityLevel > 0 ) {
+        cout << __func__ << "pbarTS1InRecordParams " << pbarTS1InRecordParams[1] << "  " << pbarTS1InRecordParams[2] << endl;
+        cout << __func__ << "pbarTS1InRecordPos " << pbarTS1InRecordPos << endl;
+      }
+
+      nestTubs( "PbarAbsTS1InRecord",
+                pbarTS1InRecordParams,
+                findMaterialOrThrow(ts.insideMaterial()),
+                0,
+                pbarTS1InRecordPos,
+                motherVolume,
+                0,
+                G4Color::Yellow(),
+                "PbarAbs"
               );
     }
 
@@ -970,8 +1021,10 @@ namespace mu2e {
       double pbarTS1OutParams[5]  = { pbarTS1OutrIn, coll1.rIn1(), pbarTS1OutHalfLength,
                                       pbarTS1OutphiBegin*CLHEP::degree, pbarTS1OutphiDelta*CLHEP::degree };
       double pbarTS1OutPosz       = config.getDouble("pbar.coll1Out.z", -3144.0);
-      std::cout << "Pbar absorber at TS1 coll1 near exit halfLength : " << pbarTS1OutHalfLength << " rIn " << pbarTS1OutrIn 
+      if ( verbosityLevel > 0 ) {
+        std::cout << "Pbar absorber at TS1 coll1 near exit halfLength : " << pbarTS1OutHalfLength << " rIn " << pbarTS1OutrIn 
           << " pbarTS1OutPosz " << pbarTS1OutPosz << " phiBegin " << pbarTS1OutphiBegin << " dPhi " << pbarTS1OutphiDelta << std::endl;
+      }
 
       CLHEP::Hep3Vector pbarTS1OutPos = coll1.getLocal();
 //      CLHEP::Hep3Vector TS1VacuumPos = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT)->getGlobal()-_hallOriginInMu2e;

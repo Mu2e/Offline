@@ -17,7 +17,6 @@
 
 // Mu2e includes
 #include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "Mu2eG4/inc/Mu2eG4RunManager.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eStudyWorld.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
@@ -48,7 +47,6 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
-//#include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
 
 // From art and its tool chain.
@@ -69,6 +67,8 @@
 #include "G4Run.hh"
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
+#include "G4RunManagerKernel.hh"
+#include "G4RunManager.hh"
 #include "G4SDManager.hh"
 #include "G4ThreeVector.hh"
 
@@ -102,7 +102,15 @@ namespace mu2e {
     virtual void endRun(art::Run &);
 
   private:
-    unique_ptr<Mu2eG4RunManager> _runManager;
+    // the remnants of Mu2eG4RunManager
+
+    // The four functions that call new G4RunManger functions and braeak the BeamOn into 4 pieces.
+    void BeamOnBeginRun( unsigned int runNumber, const char* macroFile=0, G4int n_select=-1);
+    void BeamOnDoOneEvent( int eventNumber );
+    void BeamOnEndEvent();
+    void BeamOnEndRun();
+
+    unique_ptr<G4RunManager> _runManager;
 
     // Do we issue warnings about multiple runs?
     bool _warnEveryNewRun;
@@ -122,8 +130,8 @@ namespace mu2e {
     int _tmvlevel;
     int _checkFieldMap;
 
-    // Name of a macro file for visualization.
-    string _visMacro;
+    // Names of macro files for visualization.
+    string _visMacro;  // init
     string _visGUIMacro; // end of Event GUI
 
     // Name of a macro file to be used for controling G4 parameters after
@@ -182,15 +190,7 @@ namespace mu2e {
     _steppingPointsOutputName(StepInstanceName::stepper)
   {
 
-    //    produces<StatusG4>();
     produces<SimParticleCollection>();
-
-    // The main group of StepPointMCCollections.
-    // vector<string> const& instanceNames = _sensitiveDetectorHelper.stepInstanceNamesToBeProduced();
-//     for ( vector<string>::const_iterator i=instanceNames.begin();
-//           i != instanceNames.end(); ++i){
-//       produces<StepPointMCCollection>(*i);
-//     }
 
     // The timevd collection is special.
     produces<StepPointMCCollection>(_tvdOutputName.name());
@@ -208,7 +208,7 @@ namespace mu2e {
 
   // Create an instance of the run manager.
   void Mu2eG4Study::beginJob(){
-    _runManager = unique_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
+    _runManager = unique_ptr<G4RunManager>(new G4RunManager);
   }
 
   void Mu2eG4Study::beginRun( art::Run &run){
@@ -232,7 +232,7 @@ namespace mu2e {
     }
 
     // Tell G4 that we are starting a new run.
-    _runManager->BeamOnBeginRun( run.id().run() );
+    BeamOnBeginRun( run.id().run() );
 
     // Helps with indexology related to persisting G4 volume information.
     _physVolHelper.beginRun();
@@ -390,46 +390,19 @@ namespace mu2e {
     _steppingAction->BeginOfEvent(*tvdHits, *steppingPoints, simPartId, event );
 
     // Run G4 for this event and access the completed event.
-    _runManager->BeamOnDoOneEvent( event.id().event() );
-    //    G4Event const* g4event = _runManager->getCurrentEvent();
+    BeamOnDoOneEvent( event.id().event() );
+    // G4Event const* g4event = _runManager->GetCurrentEvent();
 
     // Populate the output data products.
-//     GeomHandle<WorldG4>  world;
-//     GeomHandle<Mu2eBuilding>  building;
-    // addPointTrajectories( g4event, *pointTrajectories, world->mu2eOriginInWorld());
 
     // Run self consistency checks if enabled.
     _trackingAction->endEvent(*simParticles);
 
-    // Fill the status object.
-    // G4Timer const* timer = _runManager->getG4Timer();
-    // float cpuTime  = timer->GetSystemElapsed()+timer->GetUserElapsed();
-
-//    int status(0);
-//     if (  _steppingAction->nKilledStepLimit() > 0 ) status =  1;
-//     if (  _trackingAction->overflowSimParticles() ) status = 10;
-
-//     unique_ptr<StatusG4> g4stat(new StatusG4( status,
-//                                             _trackingAction->nG4Tracks(),
-//                                             _trackingAction->overflowSimParticles(),
-//                                             _steppingAction->nKilledStepLimit(),
-//                                             cpuTime,
-//                                             timer->GetRealElapsed() )
-//                              );
-
-//     _diagnostics.fill( *g4stat,
-//                        *simParticles,
-//                        _sensitiveDetectorHelper.steps(StepInstanceName::virtualdetector).ref(),
-//                        *pointTrajectories,
-//                        _physVolHelper.persistentInfo() );
-
     // Add data products to the event.
-    // event.put(std::move(g4stat));
+
     event.put(std::move(simParticles));
     event.put(std::move(tvdHits), _tvdOutputName.name());
     event.put(std::move(steppingPoints), _steppingPointsOutputName.name());
-
-    //  event.put(std::move(pointTrajectories));
 
     // Pause to see graphics.
     if ( !_visMacro.empty() ){
@@ -513,13 +486,13 @@ namespace mu2e {
     }   // end !_visMacro.empty()
 
     // This deletes the object pointed to by currentEvent.
-    _runManager->BeamOnEndEvent();
+    BeamOnEndEvent();
 
   }
 
   // Tell G4 that this run is over.
   void Mu2eG4Study::endRun(art::Run & run){
-    _runManager->BeamOnEndRun();
+    BeamOnEndRun();
   }
 
   void Mu2eG4Study::endJob(){
@@ -534,6 +507,51 @@ namespace mu2e {
       _processInfo.endRun();
     }
 
+  }
+
+
+  // Do the "begin run" parts of BeamOn.
+  void Mu2eG4Study::BeamOnBeginRun( unsigned int runNumber, const char* macroFile, G4int n_select){
+
+    _runManager->SetRunIDCounter(runNumber);
+
+    bool cond = _runManager->ConfirmBeamOnCondition();
+    if(!cond){
+      // throw here
+      return;
+    }
+
+    //numberOfEventsToBeProcessed should be the total number of events to be processed 
+    // or a large number and NOT 1 for G4 to work properly
+
+    G4int numberOfEventsToBeProcessed = std::numeric_limits<int>::max(); // largest int for now
+
+    _runManager->SetNumberOfEventsToBeProcessed(numberOfEventsToBeProcessed);
+    _runManager->ConstructScoringWorlds();
+    _runManager->RunInitialization();
+
+    _runManager->InitializeEventLoop(numberOfEventsToBeProcessed,macroFile,n_select);
+
+  }
+
+  // Do the "per event" part of DoEventLoop.
+  void Mu2eG4Study::BeamOnDoOneEvent( int eventNumber){
+
+    _runManager->ProcessOneEvent(eventNumber);
+
+  }
+
+  void Mu2eG4Study::BeamOnEndEvent(){
+    _runManager->TerminateOneEvent();
+  }
+
+  // Do the "end of run" parts of DoEventLoop and BeamOn.
+  void Mu2eG4Study::BeamOnEndRun(){
+
+    _runManager->TerminateEventLoop();
+
+    // From G4RunManager::BeamOn.
+    _runManager->RunTermination();
   }
 
 } // End of namespace mu2e

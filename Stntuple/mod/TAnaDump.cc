@@ -40,7 +40,6 @@
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
-#include "TrackCaloMatching/inc/TrackClusterLink.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
 
 #include "CalPatRec/inc/CalTimePeak.hh"
@@ -500,60 +499,60 @@ void TAnaDump::printCaloCrystalHits(const char* ModuleLabel,
 }
 
 //------------------------------------------------------------------
-void TAnaDump::printTrackClusterLink(const char* ModuleLabel, 
-			     const char* ProductName,
-			     const char* ProcessName) {
+// void TAnaDump::printTrackClusterLink(const char* ModuleLabel, 
+// 			     const char* ProductName,
+// 			     const char* ProcessName) {
 
-  printf(">>>> ModuleLabel = %s\n",ModuleLabel);
+//   printf(">>>> ModuleLabel = %s\n",ModuleLabel);
 
-  //data about hits in the calorimeter crystals
+//   //data about hits in the calorimeter crystals
 
-  art::Handle<mu2e::TrackClusterLink> trkCluLinkHandle;
-  const mu2e::TrackClusterLink* trkCluLink;
+//   art::Handle<mu2e::TrackClusterLink> trkCluLinkHandle;
+//   const mu2e::TrackClusterLink* trkCluLink;
 
-  if (ProductName[0] != 0) {
-    art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
-			    art::ProcessNameSelector(ProcessName)         && 
-			    art::ModuleLabelSelector(ModuleLabel)            );
-    fEvent->get(selector, trkCluLinkHandle);
-  }
-  else {
-    art::Selector  selector(art::ProcessNameSelector(ProcessName)         && 
-			    art::ModuleLabelSelector(ModuleLabel)            );
-    fEvent->get(selector, trkCluLinkHandle);
-  }
+//   if (ProductName[0] != 0) {
+//     art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
+// 			    art::ProcessNameSelector(ProcessName)         && 
+// 			    art::ModuleLabelSelector(ModuleLabel)            );
+//     fEvent->get(selector, trkCluLinkHandle);
+//   }
+//   else {
+//     art::Selector  selector(art::ProcessNameSelector(ProcessName)         && 
+// 			    art::ModuleLabelSelector(ModuleLabel)            );
+//     fEvent->get(selector, trkCluLinkHandle);
+//   }
   
-  trkCluLink = trkCluLinkHandle.operator ->();
+//   trkCluLink = trkCluLinkHandle.operator ->();
 
-  int nhits = trkCluLink->size();
+//   int nhits = trkCluLink->size();
 
-  const mu2e::CaloCluster* clu;
-  //const KalRep *trk;
+//   const mu2e::CaloCluster* clu;
+//   //const KalRep *trk;
 
-  int banner_printed = 0;
-  const mu2e::TrkToCaloExtrapol* extrk;
+//   int banner_printed = 0;
+//   const mu2e::TrkToCaloExtrapol* extrk;
   
 
 
-  for (int i=0; i<nhits; i++) {
-    clu = &(*(trkCluLink->at(i).second.get()) );
-    extrk = &(*(trkCluLink->at(i).first));
-    if (banner_printed == 0) {
-      printCaloCluster(clu, "banner");
-      //banner_printed = 1;
-    }
-    printCaloCluster(clu,"data");
+//   for (int i=0; i<nhits; i++) {
+//     clu = &(*(trkCluLink->at(i).second.get()) );
+//     extrk = &(*(trkCluLink->at(i).first));
+//     if (banner_printed == 0) {
+//       printCaloCluster(clu, "banner");
+//       //banner_printed = 1;
+//     }
+//     printCaloCluster(clu,"data");
     
-    if (banner_printed == 0) {
-      printTrkToCaloExtrapol(extrk,"banner");
-      //printKalRep(trk,"banner");
-      banner_printed = 1;
-    }
-    // printKalRep(trk,"data");
-    printTrkToCaloExtrapol(extrk,"data");
-  }
+//     if (banner_printed == 0) {
+//       printTrkToCaloExtrapol(extrk,"banner");
+//       //printKalRep(trk,"banner");
+//       banner_printed = 1;
+//     }
+//     // printKalRep(trk,"data");
+//     printTrkToCaloExtrapol(extrk,"data");
+//   }
   
-}
+// }
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -563,7 +562,7 @@ void TAnaDump::printTrkToCaloExtrapol(const mu2e::TrkToCaloExtrapol* trkToCalo,
 
   if ((opt == "") || (opt == "banner")) {
     printf("-------------------------------------------------------------------------------------------------------\n");
-    printf("VaneId      Time     ExtPath     Ds       FitCon      t0          X           Y        Z          Mom  \n");
+    printf("sectionId      Time     ExtPath     Ds       FitCon      t0          X           Y        Z          Mom  \n");
     printf("-------------------------------------------------------------------------------------------------------\n");
   }
   
@@ -572,7 +571,7 @@ void TAnaDump::printTrkToCaloExtrapol(const mu2e::TrkToCaloExtrapol* trkToCalo,
     double ds = trkToCalo->pathLengthExit()-trkToCalo->pathLengthEntrance();
   
     printf("%6i %10.3f %10.3f %8.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n",
-	   trkToCalo->vaneId(),
+	   trkToCalo->sectionId(),
 	   trkToCalo->time(),
 	   trkToCalo->pathLengthEntrance(),
 	   ds,
@@ -691,12 +690,6 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
 	ir  = cgvane->nCrystalR();
       }
       else {
-	mu2e::HexMap hmap;
-	  //	  HexLK lk = hmap.lk(id);
-
-// 	  iz = lk._l;
-// 	  ir = lk._k;
-
 	iz = -1;
 	ir = -1;
       }

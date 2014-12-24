@@ -16,7 +16,7 @@ int g4.steppingActionMaxSteps = 100000;
 int g4.stepsSizeLimit         = 100000;
 int g4.particlesSizeLimit     = 100000;
 
-vector<string> g4SteppingAction.killInTheseVolumes = { "HallAir", "VirtualDetector_PS_FrontExit", "PSEnclosureShell", "PSVacVesselInner", "TS1Vacuum", "Coll11", "Coll12"}; 
+vector<string> g4SteppingAction.killInTheseVolumes = { "HallAir", "VirtualDetector_PS_FrontExit", "PSEnclosureShell", "PSVacVesselInner", "TS1Vacuum", "Coll11", "Coll12", "PbarAbsTS1InRecord"}; 
 //, "VirtualDetector_Coll1_In" };
 bool   g4SteppingAction.killerVerbose = false;
 

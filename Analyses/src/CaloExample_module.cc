@@ -166,10 +166,16 @@ namespace mu2e {
        int   _nVd,_vdId[16384],_vdPdgId[16384];
        float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMom[16384];
 
-       int _nTrkOk,_nTrk,_trkOk[8192],_trkstat[8192],_trknHit[8192];
+       int   _nTrkOk,_nTrk,_trkOk[8192],_trkstat[8192],_trknHit[8192];
        float _trkDip[8192],_trkpt[8192],_trkcon[8192],_trkmomErr[8192];
 
-
+    float _trkt0[8192]; //rhb add
+    float _trkMom[8192]; //rhb add
+    float _trkd0[8192]; //rhb add
+    float _trkz0[8192]; //rhb add
+    float _trkOmega[8192]; //rhb add
+    float _trkPhi0[8192]; //rhb add
+    float _trkt0Err[8192]; //rhb add
 
        
 
@@ -297,7 +303,14 @@ namespace mu2e {
     _Ntup->Branch("trkcon",       &_trkcon ,      "trkcon[nTrk]/F");
     _Ntup->Branch("trknHit",      &_trknHit ,     "trknHit[nTrk]/I");
     _Ntup->Branch("trkmomErr",    &_trkmomErr ,   "trkmomErr[nTrk]/F");
+    _Ntup->Branch("trkt0",        &_trkt0 ,       "trkt0[nTrk]/F");
+    _Ntup->Branch("trkt0Err",     &_trkt0Err,     "trkt0Err[nTrk]/F");
 
+    _Ntup->Branch("trkMom",       &_trkMom ,      "trkMom[nTrk]/F");
+    _Ntup->Branch("trkd0",        &_trkd0 ,       "trkd0[nTrk]/F");
+    _Ntup->Branch("trkz0",        &_trkz0 ,       "trkz0[nTrk]/F");
+    _Ntup->Branch("trkOmega",     &_trkOmega ,    "trkOmega[nTrk]/F");
+    _Ntup->Branch("trkPhi0",      &_trkPhi0 ,     "trkPhi0[nTrk]/F");
    
 
   }
@@ -313,9 +326,9 @@ namespace mu2e {
   void CaloExample::analyze(const art::Event& event) {
 
       ++_nProcess;
-      if (_nProcess%10==0) std::cout<<"Processing event "<<_nProcess<<std::endl;
+      if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CaloExample =  "<<_nProcess << " with instance name " << _instanceName <<std::endl;
       
-      
+ 
       //Get handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
       if( ! geom->hasElement<Calorimeter>() ) return;
@@ -391,7 +404,10 @@ namespace mu2e {
        _evt = event.id().event();
        _run = event.run();
               
-       _nGen = genParticles.size();
+       if (_diagLevel == 3){std::cout << "processing event in calo_example " << _nProcess << " run and event  = " << _run << " " << _evt << " with instance name = " << _instanceName << std::endl;}
+ 
+
+      _nGen = genParticles.size();
        for (unsigned int i=0; i < genParticles.size(); ++i)
        {
            GenParticle const* gen = &genParticles[i];
@@ -571,14 +587,17 @@ namespace mu2e {
          // Some other properties at s0.
          double loclen(0.);
          const TrkSimpTraj* ltraj = krep.localTrajectory(s0,loclen);
-
          HepVector momvec(3);
          momvec = p0.unit();
          BbrVectorErr momCov = krep.momentumErr(s0);
          double fitMomErr    = sqrt(momCov.covMatrix().similarity(momvec));
          double tanDip       = ltraj->parameters()->parameter()[HelixTraj::tanDipIndex];
+	 double omega        = ltraj->parameters()->parameter()[HelixTraj::omegaIndex];
+	 double d0           = ltraj->parameters()->parameter()[HelixTraj::d0Index];
+	 double z0           = ltraj->parameters()->parameter()[HelixTraj::z0Index];
+	 double trkPhi0      = ltraj->parameters()->parameter()[HelixTraj::phi0Index];
          double fitCon       = krep.chisqConsistency().significanceLevel();
-
+	 double trkt0Err     = krep.t0().t0Err();
          double fitmompt = p0.mag()*(1.0-p0.cosTheta()*p0.cosTheta());
 
          // Does this fit pass cut set C?
@@ -594,11 +613,20 @@ namespace mu2e {
 	  _trkcon[_nTrk]  = fitCon;
 	  _trknHit[_nTrk]  = krep.nActive();
 	  _trkmomErr[_nTrk]  = fitMomErr ;
+	  _trkt0[_nTrk] = krep.t0().t0();
+	  _trkMom[_nTrk] = p0.mag();
+	  _trkd0[_nTrk] = d0;
+	  _trkz0[_nTrk] = z0;
+	  _trkOmega[_nTrk] = omega;
+	  _trkPhi0[_nTrk] = trkPhi0;
+	  _trkt0Err[_nTrk] = trkt0Err;
 	  ++_nTrk;
+
+	  //		  std:: cout << "CaloExample t0 = " << krep.t0().t0() << std::endl;
+	  //	  std:: cout << "CaloExample fitstatus = " << krep.fitStatus().success() << " " << _fitStatus[_nTrk] << std::endl;
 
 	   if (cutC)  ++_nTrkOk;
         }
-
 
   	_Ntup->Fill();
   

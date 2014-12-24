@@ -1,3 +1,21 @@
+#include "TH1F.h"
+#include "TF1.h"
+#include "TTree.h"
+#include "TLegend.h"
+#include "TPad.h"
+#include "TPaveText.h"
+#include "TCanvas.h"
+#include "TH2F.h"
+#include "TStyle.h"
+#include "TLine.h"
+#include "TArrow.h"
+#include "TCut.h"
+#include "TBox.h"
+#include "TMath.h"
+#include "TProfile.h"
+#include "TDirectory.h"
+#include "Math/Math.h"
+#include "THStack.h"
 void dio(){
 
   TCanvas* dioc = new TCanvas("dioc","dio",1200,800);
@@ -37,9 +55,9 @@ void dio(){
 
     TCut quality = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
     TCut final = (reco+pitch+livegate+quality);
-    dio->Project(diogenname,"mcentmom","evtwt"*(final+momwin));
+    dio->Project(diogenname,"mcent.mom","evtwt"*(final+momwin));
     diogenwin[icut]->SetFillColor(colors[icut]);
-    dio->Project(diodiffname,"fitmom-mcentmom","evtwt"*(final+momwin));
+    dio->Project(diodiffname,"fit.mom-mcent.mom","evtwt"*(final+momwin));
     diodiffwin[icut]->SetFillColor(colors[icut]);
     dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
   }

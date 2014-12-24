@@ -17,7 +17,6 @@
 
 // Mu2e includes
 #include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "Mu2eG4/inc/Mu2eG4RunManager.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
@@ -83,6 +82,7 @@
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
 #include "G4RunManagerKernel.hh"
+#include "G4RunManager.hh"
 #include "G4SDManager.hh"
 
 // ROOT includes
@@ -121,7 +121,15 @@ namespace mu2e {
     typedef std::vector<art::InputTag> InputTags;
     typedef std::vector<std::string> Strings;
 
-    unique_ptr<Mu2eG4RunManager> _runManager;
+    // the remnants of Mu2eG4RunManager
+
+    // The four functions that call new G4RunManger functions and braeak the BeamOn into 4 pieces.
+    void BeamOnBeginRun( unsigned int runNumber, const char* macroFile=0, G4int n_select=-1);
+    void BeamOnDoOneEvent( int eventNumber );
+    void BeamOnEndEvent();
+    void BeamOnEndRun();
+
+    unique_ptr<G4RunManager> _runManager;
 
     // Do we issue warnings about multiple runs?
     bool _warnEveryNewRun;
@@ -184,6 +192,12 @@ namespace mu2e {
     // Do the G4 initialization that must be done only once per job, not once per run
     void initializeG4( GeometryService& geom, art::Run const& run );
 
+    std::unique_ptr<G4Timer> _timer; // local Mu2e per Geant4 event timer
+    // Counters for cumulative time spent processing events by Geant4
+    G4double _realElapsed;
+    G4double _systemElapsed;
+    G4double _userElapsed;
+
   }; // end G4 header
 
   G4::G4(fhicl::ParameterSet const& pSet):
@@ -218,7 +232,12 @@ namespace mu2e {
     _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
     _inputMCTrajectories(pSet.get<std::string>("inputMCTrajectories", "")),
     _diagnostics(),
-    _pointTrajectoryMinSteps(-1){
+    _pointTrajectoryMinSteps(-1),
+    _timer(nullptr),
+    _realElapsed(0.),
+    _systemElapsed(0.),
+    _userElapsed(0.)
+{
 
     Strings genHitsStr(pSet.get<Strings>("genInputHits", Strings()));
     for(const auto& s : genHitsStr) {
@@ -256,7 +275,8 @@ namespace mu2e {
 
   // Create an instance of the run manager.
   void G4::beginJob(){
-    _runManager = unique_ptr<Mu2eG4RunManager>(new Mu2eG4RunManager);
+    _runManager = unique_ptr<G4RunManager>(new G4RunManager);
+    _timer = unique_ptr<G4Timer>(new G4Timer);
   }
 
   void G4::beginRun( art::Run &run){
@@ -280,7 +300,7 @@ namespace mu2e {
     }
 
     // Tell G4 that we are starting a new run.
-    _runManager->BeamOnBeginRun( run.id().run() );
+    BeamOnBeginRun( run.id().run() );
 
     // Helps with indexology related to persisting G4 volume information.
     _physVolHelper.beginRun();
@@ -388,7 +408,6 @@ namespace mu2e {
     // At this point G4 geometry and physics processes have been initialized.
     // So it is safe to modify physics processes and to compute information
     // that is derived from the G4 geometry or physics processes.
-
 
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(config);
@@ -498,8 +517,8 @@ namespace mu2e {
     }
 
     // Run G4 for this event and access the completed event.
-    _runManager->BeamOnDoOneEvent( event.id().event() );
-    G4Event const* g4event = _runManager->getCurrentEvent();
+    BeamOnDoOneEvent( event.id().event() );
+    G4Event const* g4event = _runManager->GetCurrentEvent();
 
     // Populate the output data products.
     GeomHandle<WorldG4>  world;
@@ -510,8 +529,7 @@ namespace mu2e {
     _trackingAction->endEvent(*simParticles);
 
     // Fill the status object.
-    G4Timer const* timer = _runManager->getG4Timer();
-    float cpuTime  = timer->GetSystemElapsed()+timer->GetUserElapsed();
+    float cpuTime  = _timer->GetSystemElapsed()+_timer->GetUserElapsed();
 
     int status(0);
     if (  _steppingAction->nKilledStepLimit() > 0 ) status =  1;
@@ -522,7 +540,7 @@ namespace mu2e {
                                             _trackingAction->overflowSimParticles(),
                                             _steppingAction->nKilledStepLimit(),
                                             cpuTime,
-                                            timer->GetRealElapsed() )
+                                            _timer->GetRealElapsed() )
                               );
 
     _diagnostics.fill( &*g4stat,
@@ -650,13 +668,13 @@ namespace mu2e {
     }   // end !_visMacro.empty()
 
     // This deletes the object pointed to by currentEvent.
-    _runManager->BeamOnEndEvent();
+    BeamOnEndEvent();
 
   }
 
   // Tell G4 that this run is over.
   void G4::endRun(art::Run & run){
-    _runManager->BeamOnEndRun();
+    BeamOnEndRun();
   }
 
   void G4::endJob(){
@@ -671,6 +689,69 @@ namespace mu2e {
       _processInfo.endRun();
     }
 
+  }
+
+
+  // Do the "begin run" parts of BeamOn.
+  void G4::BeamOnBeginRun( unsigned int runNumber, const char* macroFile, G4int n_select){
+
+    _runManager->SetRunIDCounter(runNumber);
+
+    bool cond = _runManager->ConfirmBeamOnCondition();
+    if(!cond){
+      // throw here
+      return;
+    }
+
+    _realElapsed   = 0.;
+    _systemElapsed = 0.;
+    _userElapsed   = 0.;
+
+    //numberOfEventsToBeProcessed should be the total number of events to be processed 
+    // or a large number and NOT 1 for G4 to work properly
+
+    G4int numberOfEventsToBeProcessed = std::numeric_limits<int>::max(); // largest int for now
+
+    _runManager->SetNumberOfEventsToBeProcessed(numberOfEventsToBeProcessed);// this would have been set by BeamOn
+    _runManager->ConstructScoringWorlds();
+    _runManager->RunInitialization();
+
+    _runManager->InitializeEventLoop(numberOfEventsToBeProcessed,macroFile,n_select);
+
+  }
+
+  // Do the "per event" part of DoEventLoop.
+  void G4::BeamOnDoOneEvent( int eventNumber){
+
+    // local Mu2e "per ProcessOneEvent" timer
+    _timer->Start();
+    _runManager->ProcessOneEvent(eventNumber);
+    _timer->Stop();
+
+    // Accumulate time spent in G4 for all events in this run.
+    _realElapsed   += _timer->GetRealElapsed();
+    _systemElapsed += _timer->GetSystemElapsed();
+    _userElapsed   += _timer->GetUserElapsed();
+
+  }
+
+  void G4::BeamOnEndEvent(){
+    _runManager->TerminateOneEvent();
+  }
+
+  // Do the "end of run" parts of DoEventLoop and BeamOn.
+  void G4::BeamOnEndRun(){
+
+    _runManager->TerminateEventLoop();
+
+    // From G4RunManager::BeamOn.
+    _runManager->RunTermination();
+
+    G4cout << "  Event processing inside ProcessOneEvent time summary" << G4endl;
+    G4cout << "  User="  << _userElapsed
+           << "s Real="  << _realElapsed
+           << "s Sys="   << _systemElapsed
+           << "s" << G4endl;
   }
 
 } // End of namespace mu2e
