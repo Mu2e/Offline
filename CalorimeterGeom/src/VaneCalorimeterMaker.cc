@@ -115,6 +115,13 @@ namespace mu2e{
          //standard formula to get the volume of the rectangle
 	_calo->_caloGeomInfo.crystalVolume(8*_calo->_caloGeomInfo.crystalHalfTrans()*_calo->_caloGeomInfo.crystalHalfTrans()*_calo->_caloGeomInfo.crystalHalfLength());
 
+//----------------------------------------------------------------------//
+// 2014-10-29 gianipez added the following parameter in order to have       //
+// the 1-vane configuration (such like the calo prototype or a single   //
+// crystal ortiginal to the detector solenoid axes                      //
+//----------------------------------------------------------------------//
+	_tiltVane = config.getInt("calorimeter.tiltVane", 0);
+	
  	
 	//make sure above information is consistent
 	CheckIt();
@@ -160,6 +167,12 @@ namespace mu2e{
 	  double dphi   = 2*CLHEP::pi/_calo->_nSections;
           CLHEP::Hep3Vector crystalShiftInDisk(-roHalfThickness,0,0);
 
+//----------------------------------------------------------------------//
+// 2014-10-29 gianipez hacked the following loop in order to have       //
+// the 1-vane configuration (such like the calo prototype or a single   //
+// crystal ortiginal to the detector solenoid axes                      //
+//----------------------------------------------------------------------//
+
 	  for (unsigned int i=0; i<_calo->_nSections; ++i ) 
 	  {
               double phi = -CLHEP::pi + i*dphi;
@@ -167,10 +180,19 @@ namespace mu2e{
 	      std::shared_ptr<Vane> thisVane( new Vane(i,_calo->_rMin,_calo->_nCrystalR,_calo->_nCrystalZ, crystalFullTrans, crystalShiftInDisk) );	 
 	      _calo->_sections.push_back(thisVane);
 
-	      CLHEP::Hep3Vector localOrigin(radius*cos(phi),radius*sin(phi),absorberHalfLength + caloHalfLength + caseThickness);
+	      CLHEP::Hep3Vector localOrigin;
 
               thisVane->setSize(        CLHEP::Hep3Vector(dX,dR,dZ) );
-              thisVane->setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(CLHEP::pi/2 - i*dphi) );
+
+	      if(_tiltVane){
+		localOrigin = CLHEP::Hep3Vector(radius*cos(phi),radius*sin(phi),/*absorberHalfLength + caloHalfLength + caseThickness + */2.*crystalHalfLength);
+
+		thisVane->setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(CLHEP::pi/2 - i*dphi)*CLHEP::HepRotationX(CLHEP::pi/2) );
+	      } else {
+		localOrigin = CLHEP::Hep3Vector(radius*cos(phi),radius*sin(phi),absorberHalfLength + caloHalfLength + caseThickness);
+ 
+		thisVane->setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(CLHEP::pi/2 - i*dphi) );
+	      }
               thisVane->setOriginLocal( localOrigin );
               thisVane->setOrigin(      localOrigin + _calo->origin() );             
 	      thisVane->setCrystalShift( CLHEP::Hep3Vector(-_calo->_caloGeomInfo.crystalHalfLength(), 0 ,absorberHalfLength) );
