@@ -430,7 +430,7 @@ namespace mu2e {
                                                   G4Color::Magenta(),
                                                   false,           //mstmSolid (this is just a field, not a solid)
                                                   forceAuxEdgeVisible,
-                                                  placePV,
+                                                  false,        //placePV,  (try false to not place physical volume)
                                                   false         //doSurfaceCheck (set to false because we should be able to put a volume inside a mag field)
                                                   );     
     // Create a magnetic field inside the window (hole) of the magnet box

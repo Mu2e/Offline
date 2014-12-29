@@ -66,8 +66,8 @@ double mstm.magnet.UpStrSpace     =  100.0;  // z=10cm space between this and pr
 double mstm.magnet.halfLength     = 500.0;  // 1m long magnet
 double mstm.magnet.halfWidth      = 500.0;  // 1m wide magnet
 double mstm.magnet.halfHeight     = 500.0;  // 1m high magnet
-double mstm.magnet.holeHalfHeight =  60.0;  //12cm high hole
-double mstm.magnet.holeHalfWidth  = 120.0;  //24cm wide hole
+double mstm.magnet.holeHalfHeight = 120.0;  //12cm high hole
+double mstm.magnet.holeHalfWidth  = 60.0;  //24cm wide hole
 double mstm.magnet.field          =   0.0; // Tesla
 
 string mstm.pipe0.material              = "StainlessSteel";
