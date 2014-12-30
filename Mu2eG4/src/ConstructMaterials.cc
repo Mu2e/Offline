@@ -300,7 +300,7 @@ namespace mu2e {
     // AL999Ni001 by volume ?
     mat = uniqueMaterialOrThrow( "AL999Ni001"); // FIXME verify it
     {
-      G4Material* AL999Ni001 = new G4Material( mat.name, 2.706*CLHEP::g/CLHEP::cm3, 3);
+      G4Material* AL999Ni001 = new G4Material( mat.name, 2.706*CLHEP::g/CLHEP::cm3, 2);
       AL999Ni001->AddMaterial(findMaterialOrThrow("G4_Al"), 0.9967);
       AL999Ni001->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.0033);
     }
