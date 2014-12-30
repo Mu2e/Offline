@@ -27,6 +27,8 @@ if g4_version[2] == '9':
 else:
     g4_version = g4_version[1:5]
 
+# print "GEANT4_VERSION ",  g4_version
+
 # Compiler switches needed by the default G4 build.
 G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
                '-DG4_STORE_TRAJECTORY',  '-DG4UI_USE_TCSH ',
@@ -47,8 +49,6 @@ if mu2eopts[1] == 'Qt':
 else:
     G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
 
-#G4OGL_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
-#G4QT_CPPFLAGS  = [ '-DG4UI_USE_QT',          '-DG4VIS_USE_OPENGLQT' ]
 
 # The granular version of the G4 libraries.
 G4GRANULARLIBS = [
@@ -163,6 +163,10 @@ if mu2eopts[1] == 'Qt':
     GS_LIBS = [ 'GLU', 'GL', 'QtOpenGL', 'QtGui', 'QtCore' ]
 else:
     GS_LIBS = [ 'GLU', 'GL']
+
+# it looks like we do not need them, so we use an empty list before we
+# remove it from here
+GS_LIBS = []
 
 mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'art_Framework_Services_Optional_TFileService_service',
