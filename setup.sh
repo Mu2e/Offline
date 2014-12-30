@@ -44,6 +44,12 @@ export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
 echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 
 build=${1:-prof}
+if [ "${build}" == "debug" ];then
+    # echo "debug option selected; setting up gdb"
+    setup gdb v7_8
+    # echo "use scons --mu2elevel=debug to create debug libraries"
+fi
+
 # Setup the framework and its dependent products
 setup -B art v1_12_04 -q+e6:+${build}
 
