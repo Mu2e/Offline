@@ -12,7 +12,7 @@
 #include "G4ProcessType.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4VParticleChange.hh"
-#include "G4StopElementSelector.hh"
+#include "G4ElementSelector.hh"
 
 class G4MuonMinusAtomicCapture : public G4VRestProcess {
 
@@ -38,7 +38,7 @@ public:
 
 
 private:
-  G4StopElementSelector *pSelector;
+  G4ElementSelector *pSelector;
 };
 
 

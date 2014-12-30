@@ -21,9 +21,9 @@
 G4MuonMinusAtomicCapture::  
 G4MuonMinusAtomicCapture(G4String const& name, G4ProcessType type) : 
   G4VRestProcess(name,type),
-  pSelector(new G4StopElementSelector)
+  pSelector(new G4ElementSelector)
 {
-  SetProcessSubType(fCapture); // FIXME ... posibly need to register a new process
+  SetProcessSubType(fCapture); // FIXME ... possibly need to register a new process
                                // subtype with someone...
 }
 
@@ -41,7 +41,15 @@ G4MuonMinusAtomicCapture::AtRestDoIt(const G4Track& track, const G4Step& step){
   aParticleChange.Initialize(track);
 
   // select element and get Z,A.
-  G4Element const* aEle = pSelector->GetElement(track.GetMaterial());
+  // G4Element const* aEle = pSelector->GetElement(track.GetMaterial());
+
+  // replacing deprecated G4StopElementSelector with G4ElementSelector
+  // the fuctionality below is probably a duplication of what is in
+  // the G4ElementSelector
+
+  G4Nucleus* nucleus = new G4Nucleus(); // the next call sets its Z & A, we will ignore it
+  G4Element const* aEle = pSelector->SelectZandA(track, nucleus);
+
   G4int const targetZ = aEle->GetZ();
   G4int targetA;
   G4int ni = 0;
