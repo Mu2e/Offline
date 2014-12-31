@@ -53,7 +53,11 @@ namespace mu2e
     const std::vector<const CRSScintillatorBar*>& getBars() const { return _bars; }
 
     const CLHEP::Hep3Vector &getPosition() const {return _position;}
+
     const std::vector<double> &getHalfLengths() const {return _halfLengths;}
+    double getHalfThickness() const { return _halfLengths[_localToWorld[0]];}
+    double getHalfWidth() const { return _halfLengths[_localToWorld[1]];}
+    double getHalfLength() const { return _halfLengths[_localToWorld[2]];}
 
     // Formatted string embedding the id of the layer.
     std::string name( std::string const & base ) const;
@@ -70,6 +74,9 @@ namespace mu2e
 
     CLHEP::Hep3Vector _position;
     std::vector<double> _halfLengths;
+    std::vector<int> _localToWorld;  //0th entry: thickness
+                                     //1st entry: width
+                                     //2nd entry: length
   };
 }
 

@@ -23,13 +23,18 @@ using CLHEP::Hep3Vector;
 namespace mu2e 
 {
 
-  CRSScintillatorLayer::CRSScintillatorLayer():
-    _id(CRSScintillatorLayerId())
-  {}
+  CRSScintillatorLayer::CRSScintillatorLayer()
+  {
+    _halfLengths.resize(3);
+    _localToWorld.resize(3);
+  }
 
-  CRSScintillatorLayer::CRSScintillatorLayer(CRSScintillatorLayerId const& id):
+  CRSScintillatorLayer::CRSScintillatorLayer(CRSScintillatorLayerId const& id) :
     _id(id)
-  {}
+  {
+    _halfLengths.resize(3);
+    _localToWorld.resize(3);
+  }
 
   string CRSScintillatorLayer::name( string const& base ) const
   {

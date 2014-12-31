@@ -43,9 +43,27 @@ namespace mu2e
     ~CosmicRayShield() {}
 
     // Get ScintillatorShield
-    CRSScintillatorShield  const & getCRSScintillatorShield(std::string name)  const;
+    CRSScintillatorShield const & getCRSScintillatorShield(const CRSScintillatorShieldId& id) const
+    {
+      return _scintillatorShields.at(id);
+    }
 
-    std::map<std::string,CRSScintillatorShield> const & getCRSScintillatorShields() const 
+    CRSScintillatorModule const & getModule( const CRSScintillatorModuleId& moduleid ) const
+    {
+      return _scintillatorShields.at(moduleid.getShieldNumber()).getModule(moduleid);
+    }
+
+    CRSScintillatorLayer const & getLayer( const CRSScintillatorLayerId& lid ) const
+    {
+      return _scintillatorShields.at(lid.getShieldNumber()).getLayer(lid);
+    }
+
+    CRSScintillatorBar const & getBar( const CRSScintillatorBarId& bid ) const
+    {
+      return _scintillatorShields.at(bid.getShieldNumber()).getBar(bid);
+    }
+
+    std::vector<CRSScintillatorShield> const & getCRSScintillatorShields() const 
     {
       return _scintillatorShields;
     }
@@ -62,8 +80,8 @@ namespace mu2e
 
     private:
 
-    std::map<std::string,CRSScintillatorShield>  _scintillatorShields;
-    std::vector<CRSScintillatorBar>  _allCRSScintillatorBars;  // global holder of all scintillator bars
+    std::vector<CRSScintillatorShield>  _scintillatorShields;
+    std::vector<CRSScintillatorBar>     _allCRSScintillatorBars;  // global holder of all scintillator bars
   };
 
 }

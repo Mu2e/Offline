@@ -614,11 +614,11 @@ void DataInterface::fillGeometry()
   {
     mu2e::GeomHandle<mu2e::CosmicRayShield> CosmicRayShieldGeomHandle;
 
-    std::map<std::string,mu2e::CRSScintillatorShield> const& shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
-    for(std::map<std::string,mu2e::CRSScintillatorShield>::const_iterator ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
+    std::vector<mu2e::CRSScintillatorShield> const& shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
+    for(std::vector<mu2e::CRSScintillatorShield>::const_iterator ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
     {
-      mu2e::CRSScintillatorShield const& shield = ishield->second;
-      std::string shieldName = ishield->first;
+      mu2e::CRSScintillatorShield const& shield = *ishield;
+      std::string const& shieldName = shield.getName();
 
       mu2e::CRSScintillatorBarDetail const& barDetail = shield.getCRSScintillatorBarDetail();
       double dx=barDetail.getHalfLengths()[0];

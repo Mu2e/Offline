@@ -42,7 +42,7 @@ namespace mu2e
     // Accessors
     const CRSScintillatorShieldId id() const { return _id;}
 
-    const std::string& getName() {return _name;}
+    const std::string& getName() const {return _name;}
 
     int nModules() const {return _modules.size();}
 
