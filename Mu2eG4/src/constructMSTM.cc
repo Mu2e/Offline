@@ -418,21 +418,22 @@ namespace mu2e {
     const double mstmMagnetHoleHalfLengths[3] = {mstmMagnetHoleHalfWidth,
                                                  mstmMagnetHoleHalfHeight,
                                                  mstmMagnetHalfLength};
-    G4Box* magRect = new G4Box( "mstmMagneticField", mstmMagnetHoleHalfWidth, mstmMagnetHoleHalfHeight, mstmMagnetHalfLength);
+    //G4Box* magRect = new G4Box( "mstmMagneticField", mstmMagnetHoleHalfWidth, mstmMagnetHoleHalfHeight, mstmMagnetHalfLength);
     VolumeInfo mstmMagneticFieldBoxInfo = nestBox("mstmMagneticField",
                                                   mstmMagnetHoleHalfLengths,
-                                                  hallAirMaterial,
+                                                  hallAirMaterial, //findMaterialOrThrow("G4_Galactic"),
                                                   0x0,
                                                   mstmMagnetPositionInMother,
                                                   mstmMotherInfo,
                                                   0,
-                                                  false,  //magnet not visible
-                                                  G4Color::Magenta(),
+                                                  true,            //magnet visible
+                                                  G4Color::Blue(),
                                                   false,           //mstmSolid (this is just a field, not a solid)
                                                   forceAuxEdgeVisible,
-                                                  false,        //placePV,  (try false to not place physical volume)
-                                                  false         //doSurfaceCheck (set to false because we should be able to put a volume inside a mag field)
-                                                  );     
+                                                  placePV,         //must be true
+                                                  false            //doSurfaceCheck (set to false because we should be able to put a volume inside a mag field)
+                                                  );    
+    
     // Create a magnetic field inside the window (hole) of the magnet box
     // Note the local values for the stepper etc...
     // Geant4 should take ownership of the objects created here
@@ -445,30 +446,12 @@ namespace mu2e {
     G4ChordFinder          *localMagChordFinder  = new G4ChordFinder(localMagField,1.0e-2*CLHEP::mm,localMagStepper);
     G4FieldManager         *localMagFieldManager = new G4FieldManager(localMagField,localMagChordFinder,false);// pure magnetic filed does not change energy
 
-    mstmMagneticFieldBoxInfo.logical->SetFieldManager(localMagFieldManager, true); // propagate it down the hierarchy    
+    mstmMagneticFieldBoxInfo.logical->SetFieldManager(localMagFieldManager, true); // last "true" arg propagates field to all volumes it contains
     
     G4UserLimits* mstmMagStepLimit = new G4UserLimits(5.*CLHEP::mm);
     mstmMagneticFieldBoxInfo.logical->SetUserLimits(mstmMagStepLimit);    
     
-    // Create a magnetic field inside the window (hole) of the magnet box
-    // Note the local values for the stepper etc...
-    // Geant4 should take ownership of the objects created here
 
-//     const double mstmMagnetField = _config.getDouble("mstm.magnet.field");
-// 
-//     G4MagneticField        *localMagField        = new G4UniformMagField(G4ThreeVector(mstmMagnetField*CLHEP::tesla,0.0,0.0));//This makes negatively charged particles go towards the floor
-//     //G4MagneticField        *localMagField        = new G4UniformMagField(G4ThreeVector(-1.0*mstmMagnetField*CLHEP::tesla,0.0,0.0));//This makes positively charged particles go towards the floor
-//     G4Mag_EqRhs            *MagRHS               = new G4Mag_UsualEqRhs(localMagField);
-//     G4MagIntegratorStepper *localMagStepper      = new G4ExactHelixStepper(MagRHS); // we use a specialized stepper
-//     G4ChordFinder          *localMagChordFinder  = new G4ChordFinder(localMagField,1.0e-2*CLHEP::mm,localMagStepper);
-//     G4FieldManager         *localMagFieldManager = new G4FieldManager(localMagField,localMagChordFinder,false);// pure magnetic filed does not change energy
-// 
-//     //WARNING: this puts the field in the whole size of the magnet
-//     //TODO:    change this so the field is just inside the window.
-//     boxWithRectWindow.logical->SetFieldManager(localMagFieldManager, true); // propagate it down the hierarchy 
-//     
-//     G4UserLimits* mstmMagStepLimit = new G4UserLimits(5.*CLHEP::mm);
-//     boxWithRectWindow.logical->SetUserLimits(mstmMagStepLimit);
     
     //----- pipe0 -----------------------------
     // This pipe starts right after the VD at the entrance of the MSTM area
@@ -478,7 +461,8 @@ namespace mu2e {
     G4Material*  mstmPipe0Gas                   = materialFinder.get("mstm.pipe0.gas");
     const double mstmPipe0RIn                   =  _config.getDouble("mstm.pipe0.rIn");     
     const double mstmPipe0ROut                  =  _config.getDouble("mstm.pipe0.rOut");      
-    const double mstmPipe0HalfLength            =  _config.getDouble("mstm.pipe0.halfLength");
+    //const double mstmPipe0HalfLength            =  _config.getDouble("mstm.pipe0.halfLength");
+    const double mstmPipe0HalfLength            =  _config.getDouble("mstm.magnet.halfLength");//must be same size so we can place it inside the magnetic field volume 
     G4Material*  mstmPipe0UpStrWindowMaterial   = materialFinder.get("mstm.pipe0.UpStrWindowMaterial");
     const double mstmPipe0UpStrWindowHalfLength =  _config.getDouble("mstm.pipe0.UpStrWindowHalfLength");
     G4Material*  mstmPipe0DnStrWindowMaterial   = materialFinder.get("mstm.pipe0.DnStrWindowMaterial");
@@ -502,15 +486,17 @@ namespace mu2e {
     const TubsParams mstmPipe0UpStrWindowParams(0., mstmPipe0RIn, mstmPipe0UpStrWindowHalfLength);
     const TubsParams mstmPipe0DnStrWindowParams(0., mstmPipe0RIn, mstmPipe0DnStrWindowHalfLength);
     
-    G4ThreeVector mstmPipe0PositionInMu2e   = mstmReferencePositionInMu2e + G4ThreeVector(0.0,0.0,mstmUpStreamWallUpStrSpace + mstmPipe0HalfLength);
-    G4ThreeVector mstmPipe0PositionInMother = mstmPipe0PositionInMu2e - mstmMotherPositionInMu2e;
+//     G4ThreeVector mstmPipe0PositionInMu2e   = mstmReferencePositionInMu2e + G4ThreeVector(0.0,0.0,mstmUpStreamWallUpStrSpace + mstmPipe0HalfLength);
+//     G4ThreeVector mstmPipe0PositionInMother = mstmPipe0PositionInMu2e - mstmMotherPositionInMu2e;
+    G4ThreeVector mstmPipe0PositionInMu2e   = mstmReferencePositionInMu2e + G4ThreeVector(0.0,0.0,0.0);
+    G4ThreeVector mstmPipe0PositionInMother = mstmPipe0PositionInMu2e - mstmMagnetPositionInMu2e;
     
     VolumeInfo mstmPipe0Info = nestTubs( "mstmPipe0",
                                          mstmPipe0Params,
                                          mstmPipe0Material,
                                          0x0,
-                                         mstmPipe0PositionInMother,
-                                         mstmMotherInfo,
+                                         G4ThreeVector(0.0,0.0,0.0), //we put the pipe centered on the magnetic field
+                                         mstmMagneticFieldBoxInfo, //mstmMotherInfo,
                                          0,
                                          mstmVisible,
                                          G4Color::Red(),
