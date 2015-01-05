@@ -171,7 +171,7 @@ namespace mu2e {
     }
 
     // ==== BEGIN COMMENT-OUT: to allow construction of new building dirt volumes w/o overlaps (knoepfel)
-    //    constructProtonBeamDump(hallInfo, _config);
+    constructProtonBeamDump(hallInfo, _config);
     // ==== END COMMENT-OUT
 
     constructDS(hallInfo, _config);

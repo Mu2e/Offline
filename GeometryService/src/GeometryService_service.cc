@@ -236,19 +236,7 @@ namespace mu2e {
     const BuildingBasics& buildingBasics = *tmpBasics.get();
     addDetector(std::move(tmpBasics));
 
-    const double dumpFrontShieldingYmin = buildingBasics.detectorHallFloorTopY() - buildingBasics.detectorHallFloorThickness();
-    const double dumpFrontShieldingYmax = dumpFrontShieldingYmin +
       buildingBasics.detectorHallInsideFullHeight() + buildingBasics.detectorHallCeilingThickness();
-
-    std::unique_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, dumpFrontShieldingYmin, dumpFrontShieldingYmax));
-
-    const ProtonBeamDump& dump = *tmpDump.get();
-    addDetector(std::move(tmpDump));
-
-    // Add old building to GeometryService -- FIXME!!! Needs to be removed
-    std::unique_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, beamline, dump));
-    //    const Mu2eBuilding& building = *tmpbld.get();
-    addDetector(std::move(tmpbld));
 
     // Construct building solids
     std::unique_ptr<Mu2eHall> tmpbldnew(Mu2eHallMaker::makeBuilding(*_g4GeomOptions,*_config));
@@ -262,6 +250,15 @@ namespace mu2e {
 
     addDetector(std::move( tmpbldnew ) );
     addDetector(std::move( mu2eEnv   ) );
+
+    std::unique_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, hall));
+    const ProtonBeamDump& dump = *tmpDump.get();
+    addDetector(std::move(tmpDump));
+
+    // Add old building to GeometryService -- FIXME!!! Needs to be removed
+    std::unique_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, beamline, dump));
+    //    const Mu2eBuilding& building = *tmpbld.get();
+    addDetector(std::move(tmpbld));
 
     // beamline info used to position DS
     std::unique_ptr<DetectorSolenoid> tmpDS( DetectorSolenoidMaker::make( *_config, beamline ) );
@@ -324,7 +321,7 @@ namespace mu2e {
     }
 
 
-    std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));
+    std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, hall, dump));
     const ExtMonFNALBuilding& emfb = *tmpemb.get();
     addDetector(std::move(tmpemb));
     if(_config->getBool("hasExtMonFNAL",false)){
