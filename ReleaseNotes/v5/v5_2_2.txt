@@ -14,3 +14,35 @@ Still under construction
       EventDisplay/src/DataInterface.cc
       Mu2eG4/src/constructCRV.cc
 
+0) December 30, 2014 - genser
+
+   Enabled version 10.1 of Geant4
+
+      CRVResponse/src/CrvPEresponse.cc
+      Mu2eG4/inc/HadronPhysicsShielding_MU2E00.hh
+      Mu2eG4/inc/HadronPhysicsShielding_MU2E02.hh
+      Mu2eG4/inc/QGSP_BERT_HP_MU2E00.icc 
+      Mu2eG4/inc/QGSP_BERT_MU2E00.icc
+      Mu2eG4/inc/Shielding_MU2E00.icc
+      Mu2eG4/inc/Shielding_MU2E01.icc
+      Mu2eG4/inc/Shielding_MU2E02.icc      
+      Mu2eG4/src/HadronPhysicsShielding_MU2E00.cc
+      Mu2eG4/src/HadronPhysicsShielding_MU2E02.cc
+      Mu2eG4/src/PrimaryGeneratorAction.cc 
+      mucapture/inc/G4MuonMinusAtomicCapture.hh
+      mucapture/src/G4MuAtomCaptureRateModel.cc
+      mucapture/src/G4MuonMinusAtomicCapture.cc
+
+   Disabled unnecessary graphic libraries
+
+      CRVResponse/src/SConscript                  
+      mucapture/src/SConscript                    
+      Mu2eG4/src/SConscript                       
+
+   Corected material creation (Lyso_01, AL999Ni001)
+
+      Mu2eG4/src/ConstructMaterials.cc
+
+   Added setup of recent gdb when debug input option is used
+      
+      setup.sh
