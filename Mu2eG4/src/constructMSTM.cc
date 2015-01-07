@@ -26,7 +26,6 @@
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 
 // G4 includes
@@ -85,34 +84,35 @@ namespace mu2e {
     G4ThreeVector zeroVector(0.,0.,0.);
 
 
-    GeomHandle<DetectorSolenoidShielding> dss;
+//     GeomHandle<DetectorSolenoidShielding> dss;
 
     // place the MSTM wrt to ENS; account for the vd half length
-    GeomHandle<ExtNeutShieldCendBoxes> enscendb;
+//     GeomHandle<ExtNeutShieldCendBoxes> enscendb;
 
-    const std::vector<CLHEP::Hep3Vector>& ENSCBcentersOfBoxes = enscendb->centersOfBoxes();
+//     const std::vector<CLHEP::Hep3Vector>& ENSCBcentersOfBoxes = enscendb->centersOfBoxes();
 
-    size_t nBox = ENSCBcentersOfBoxes.size();
-    size_t ib;
-    for(ib = 0; ib < nBox; ++ib) {
-      if ( enscendb->hasHole(ib) ) break;
-    }
-    int hID = enscendb->holeIndex(ib);
+//     size_t nBox = ENSCBcentersOfBoxes.size();
+//     size_t ib;
+//     for(ib = 0; ib < nBox; ++ib) {
+//       if ( enscendb->hasHole(ib) ) break;
+//     }
+//     int hID = enscendb->holeIndex(ib);
 //     if ( verbosityLevel > 0 ) {
 //       std::cout << __func__ << " ib: " << ib << std::endl;
 //     }
 
-    GeomHandle<VirtualDetector> vd;
+//     GeomHandle<VirtualDetector> vd;
 
     // locations are wrt HallAir
     // for some reason the location has to be taken from the box not the hole tbd
     //        CLHEP::Hep3Vector holeLocation = enscendb->holeLocation(hID);
-    CLHEP::Hep3Vector holeLocation = ENSCBcentersOfBoxes[ib];
+//     CLHEP::Hep3Vector holeLocation = ENSCBcentersOfBoxes[ib];
     
     //Create a reference position (everything in MSTM will be defined w.r.t. this position)
+    
     G4ThreeVector mstmReferencePositionInMu2e(dsP.x(), 
-                                              dsP.y(), 
-                                              holeLocation.z() + enscendb->holeHalfLength(hID) + _config.getDouble("mstm.UpStrSpace") ); // 2.*vd->getHalfLength());
+                                              0.0, 
+                                              _config.getDouble("mstm.refz0InMu2e") );
     
 //     GeomHandle<Mu2eEnvelope> env;
 //     const CLHEP::Hep3Vector hallFormalCenterInMu2e(
@@ -128,10 +128,8 @@ namespace mu2e {
     //----- Create the Mother volume for everything in the MSTM area--------------------------------
     
     //We want the Mother and the Shielding Wall to go down to the floor, so get the necessary info:
-    GeomHandle<Mu2eBuilding> building;
-    //const double yExtentLow = building->hallInsideYmin() - building->hallFloorThickness();
-    const double yExtentLow = building->hallInsideYmin();
-    //std::cout << "Distance from hole center to Hall floor = " << fabs(yExtentLow) << std::endl;
+    const double yExtentLow = _config.getDouble("mu2e.origin.heightAboveHallFloor");
+    //std::cout << " yExtentLow = " << yExtentLow << std::endl;
     
     const double mstmMotherHalfHeight =  fabs(yExtentLow);
     const double mstmMotherHalfWidth  =  _config.getDouble("mstm.wallUpStr.halfWidth");
@@ -938,7 +936,7 @@ namespace mu2e {
     //----- the sensitive detector ("crystal") -------------------------------------------
 
     G4Material*  mstmCrystalMaterial   = materialFinder.get("mstm.crystal.material");
-    const double mstmCrystalRIn        =  _config.getDouble("mstm.crystal.rIn");
+    //const double mstmCrystalRIn        =  _config.getDouble("mstm.crystal.rIn");
     const double mstmCrystalROut       =  _config.getDouble("mstm.crystal.rOut");
     const double mstmCrystalHalfLength =  _config.getDouble("mstm.crystal.halfLength");
 
