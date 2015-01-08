@@ -59,6 +59,7 @@ double mstm.wallBeamRight.halfWidth =  304.8; // 1 foot = 30.48 cm = 304.8 mm
 string mstm.wallCeiling.material    = "G4_CONCRETE";
 double mstm.wallCeiling.halfHeight  =  304.8; // 1 foot = 30.48 cm = 304.8 mm
 
+bool   mstm.magnet.fieldVisible   = true;
 string mstm.magnet.material       = "StainlessSteel";
 double mstm.magnet.UpStrSpace     =  100.0;  // z=10cm space between this and previous element
 double mstm.magnet.halfLength     = 500.0;  // 1m long magnet

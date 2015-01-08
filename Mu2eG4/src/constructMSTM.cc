@@ -424,12 +424,12 @@ namespace mu2e {
                                                   mstmMagnetPositionInMother,
                                                   mstmMotherInfo,
                                                   0,
-                                                  true,            //magnet visible
+                                                  _config.getBool("mstm.magnet.fieldVisible"),            //magnet visible
                                                   G4Color::Blue(),
                                                   false,           //mstmSolid (this is just a field, not a solid)
                                                   forceAuxEdgeVisible,
                                                   placePV,         //must be true
-                                                  false            //doSurfaceCheck (set to false because we should be able to put a volume inside a mag field)
+                                                  doSurfaceCheck
                                                   );    
     
     // Create a magnetic field inside the window (hole) of the magnet box
