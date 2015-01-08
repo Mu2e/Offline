@@ -98,3 +98,6 @@ fi
 
 # A hack that we hope can go away soon.
 export G4LIBDIR=$G4LIB/$G4SYSTEM
+
+# Add useful functions to the shell environment.
+source ${MU2E_BASE_RELEASE}/bin/functions.sh
