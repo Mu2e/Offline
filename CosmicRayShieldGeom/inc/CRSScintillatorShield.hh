@@ -12,6 +12,7 @@
 
 // C++ includes
 #include <vector>
+#include <memory>
 
 // Mu2e includes
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShieldId.hh"
@@ -35,7 +36,7 @@ namespace mu2e
 
     CRSScintillatorShield(CRSScintillatorShieldId const & id, 
                           std::string const & name,
-                          CRSScintillatorBarDetail const &barDetails);
+                          const std::shared_ptr<CRSScintillatorBarDetail> barDetails);
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
@@ -71,7 +72,7 @@ namespace mu2e
       return _modules.at(bid.getModuleNumber()).getBar(bid);
     }
 
-    CRSScintillatorBarDetail const & getCRSScintillatorBarDetail() const 
+    const std::shared_ptr<CRSScintillatorBarDetail> getCRSScintillatorBarDetail() const 
     {
       return _barDetails;
     }
@@ -96,7 +97,7 @@ namespace mu2e
     std::vector<CRSScintillatorModule> _modules;
 
     // Detailed info about scintillator bars assuming they are the same for all bars within a shield
-    CRSScintillatorBarDetail _barDetails;
+    std::shared_ptr<CRSScintillatorBarDetail> _barDetails;
 
     std::string _absorberMaterialName;
   };

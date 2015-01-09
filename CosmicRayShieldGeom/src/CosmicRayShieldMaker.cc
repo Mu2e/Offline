@@ -107,7 +107,7 @@ namespace mu2e
                                               const std::vector<int> &localToWorld,
                                               int nModules, int nCounters)
   {
-    CRSScintillatorBarDetail barDetails(_scintillatorBarMaterialName, counterHalfLengths, localToWorld);
+    std::shared_ptr<CRSScintillatorBarDetail> barDetails(new CRSScintillatorBarDetail(_scintillatorBarMaterialName, counterHalfLengths, localToWorld));
     
     _crs->_scintillatorShields.push_back(CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails));
     CRSScintillatorShield &shield = _crs->_scintillatorShields.back();
@@ -138,7 +138,7 @@ namespace mu2e
           CRSScintillatorBarIndex index(_crs->_allCRSScintillatorBars.size());
           _crs->_allCRSScintillatorBars.push_back(CRSScintillatorBar(index, 
                                                   CRSScintillatorBarId(isector,imodule,ilayer,icounter), 
-                                                  counterPosition, shield._barDetails));
+                                                  counterPosition, barDetails));
 
           CRSScintillatorBar &counter = _crs->_allCRSScintillatorBars.back();
           layer._bars.push_back(&counter);

@@ -75,10 +75,10 @@ namespace mu2e
       if(verbosityLevel > 0) cout << __func__ << " constructing            : " << scintillatorBarName << endl;
 
       // all materials and dimensions are the same within a particular shield
-      CRSScintillatorBarDetail const & barDetail = shield.getCRSScintillatorBarDetail();
+      const std::shared_ptr<CRSScintillatorBarDetail> barDetail = shield.getCRSScintillatorBarDetail();
 
-      G4Material* scintillatorBarMaterial = findMaterialOrThrow(barDetail.getMaterialName());
-      std::vector<double> const &  scintillatorBarHalfLengths = barDetail.getHalfLengths();
+      G4Material* scintillatorBarMaterial = findMaterialOrThrow(barDetail->getMaterialName());
+      std::vector<double> const &  scintillatorBarHalfLengths = barDetail->getHalfLengths();
 
       G4VSolid* scintillatorBarSolid = new G4Box(scintillatorBarName,
                                                  scintillatorBarHalfLengths[0],

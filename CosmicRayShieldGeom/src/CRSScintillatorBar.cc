@@ -17,7 +17,7 @@ namespace mu2e
     CRSScintillatorBar::CRSScintillatorBar(CRSScintillatorBarIndex const &index, 
                        CRSScintillatorBarId const &id,
                        CLHEP::Hep3Vector const &position,
-                       CRSScintillatorBarDetail const &detail) : 
+                       const std::shared_ptr<CRSScintillatorBarDetail> detail) : 
     _index(index),
     _id(id),
     _position(position),

@@ -2,6 +2,18 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_2_2
 
+2) January 8, 2015 - ehrlich
+   Bug fix in CRV geometry (bar details)
+   Modified files:
+     CosmicRayShieldGeom/inc/CRSScintillatorBar.hh
+     CosmicRayShieldGeom/inc/CRSScintillatorShield.hh
+     CosmicRayShieldGeom/src/CRSScintillatorBar.cc
+     CosmicRayShieldGeom/src/CRSScintillatorShield.cc
+     CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc
+     EventDisplay/src/DataInterface.cc
+     Mu2eG4/src/constructCRV.cc
+
+
 1) December 30, 2014 - ehrlich
    Added more access functions to the CRV classes
    Modified files:

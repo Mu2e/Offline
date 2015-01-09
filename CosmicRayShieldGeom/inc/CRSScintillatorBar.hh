@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarId.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
@@ -41,7 +42,7 @@ namespace mu2e
     CRSScintillatorBar(CRSScintillatorBarIndex const &index, 
                        CRSScintillatorBarId const &id,
                        CLHEP::Hep3Vector const &position,
-                       CRSScintillatorBarDetail const &detail);
+                       const std::shared_ptr<CRSScintillatorBarDetail> detail);
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
     CRSScintillatorBarIndex index() const {return _index;}
@@ -51,28 +52,28 @@ namespace mu2e
     std::string name( std::string const & base ) const;
 
     CLHEP::Hep3Vector const & getPosition() const {return _position;}
-    std::vector<double> const & getHalfLengths() const {return _detail.getHalfLengths();}
-    std::string const & getMaterialNames() const {return _detail.getMaterialName();}
+    std::vector<double> const & getHalfLengths() const {return _detail->getHalfLengths();}
+    std::string const & getMaterialNames() const {return _detail->getMaterialName();}
 
-    double getHalfThickness() const { return _detail.getHalfThickness();}
-    double getHalfWidth() const { return _detail.getHalfWidth();}
-    double getHalfLength() const { return _detail.getHalfLength();}
+    double getHalfThickness() const { return _detail->getHalfThickness();}
+    double getHalfWidth() const { return _detail->getHalfWidth();}
+    double getHalfLength() const { return _detail->getHalfLength();}
 
     CLHEP::Hep3Vector toWorld(const CLHEP::Hep3Vector &localPosition) const
     {
-      return _detail.toWorld(localPosition,_position);
+      return _detail->toWorld(localPosition,_position);
     }
     CLHEP::Hep3Vector toLocal(const CLHEP::Hep3Vector &worldPosition) const
     {
-      return _detail.toLocal(worldPosition,_position);
+      return _detail->toLocal(worldPosition,_position);
     }
     CLHEP::Hep3Vector toLocalNormalized(const CLHEP::Hep3Vector &worldPosition) const
     {
-      return _detail.toLocalNormalized(worldPosition,_position);
+      return _detail->toLocalNormalized(worldPosition,_position);
     }
     bool isInside(const CLHEP::Hep3Vector &worldPosition) const
     {
-      return _detail.isInside(worldPosition,_position);
+      return _detail->isInside(worldPosition,_position);
     }
 
     bool operator==(const CRSScintillatorBar other) const 
@@ -100,7 +101,7 @@ namespace mu2e
     CLHEP::Hep3Vector _position;
 
     // Detailed description of a bar
-    const CRSScintillatorBarDetail &_detail;
+    std::shared_ptr<CRSScintillatorBarDetail> _detail;
   };
 
 }  //namespace mu2e
