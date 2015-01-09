@@ -1,0 +1,87 @@
+#! /bin/bash
+#
+# Rebind an existing satellite release to the base release in which this file lives.
+#
+# The script takes an optional command line argument: the name of the
+# setup file in the base release that you should source when you setup
+# the base release.
+#
+
+if [ "${MU2E}" = '' ];then
+    echo "The environment variable MU2E is not set."
+    echo "You must setup the local Mu2e environment before sourcing this script."
+    return 1
+fi
+
+# The base release will be the release in which we find this rebindSatelliteRelease script.
+export candidate_base_release=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && echo \$PWD | sed 's/\/bin//'`
+
+# If a base release is already setup, then it must match the candidate_base_release.
+if [ "${MU2E_BASE_RELEASE}" != '' ];then
+    if [ "${MU2E_BASE_RELEASE}"  != "${candidate_base_release}" ]; then
+      echo "You already have a Mu2e base release established:  " ${MU2E_BASE_RELEASE}
+      echo "You are trying to rebind this satellite release to a different base release: " ${candidate_base_release}
+      echo "This is only permitted BEFORE setting up a base release.  To fix this:"
+      echo "  1) Logout and log in again"
+      echo "  2) cd " `pwd`
+      echo "  3) setup mu2e"
+      echo "  4) source " ${candidate_base_release}"/bin/rebindSatelliteRelease"
+      echo " "
+      echo " Do not source setup.sh from this directory before rebinding."
+      echo " "
+      echo "Stopping now."
+      return 1
+    fi
+fi
+
+# If the optional argument has been specified, get it.
+setupname="setup.sh"
+if [ $# == 1 ]; then
+  setupname=$1
+fi
+
+# Save a copy of each file that will be overwritten.
+# Stop if it is not safe to do so.
+if [ -e oldBaseRelease ]; then
+    echo "There is already a directory named oldBaseRelease."
+    echo "This rebind script will create this directory and populate it but will not do so if it is already present."
+    echo "Please remove or rename this directory and then rerun rebindSatelliteRelease."
+    echo "You must setup the local Mu2e environment before sourcing this script."
+    return 1
+fi
+mkdir oldBaseRelease
+mv SConstruct                oldBaseRelease
+mv setup.sh                  oldBaseRelease
+
+# All tests passed. Now rebind the satellite release.
+
+# Copy some files from the base release.
+echo "Rebinding this satellite release to the base release: " ${candidate_base_release}
+cp ${candidate_base_release}/SConstruct .
+
+# Create the setup script for the satellite release.
+# Hardcode the path to the base release.
+cat >> setup.sh <<EOF
+#! /bin/bash
+#
+# This script was written by rebindSatelliteRelease
+# Normally you should not edit it.
+#
+#
+
+# Connect to the base release.
+source ${candidate_base_release}/${setupname}
+retstat=\$?
+
+if [[ "\$retstat" != "0" ]]; then
+  return \$retstat;
+fi
+
+# Add the satellite release to the two important path variables.
+export PATH="\`pwd\`/bin/:\${PATH}"
+export LD_LIBRARY_PATH="\`pwd\`/lib/:\${LD_LIBRARY_PATH}"
+
+EOF
+
+echo " "
+echo "The superceded SConstruct and setup.sh files have been copied to ./oldBaseRelease"

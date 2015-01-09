@@ -1,0 +1,28 @@
+#! /bin/bash
+#
+# Script to clean up a satellite release so that it can be pointed at a new base release.
+#
+# If scons is not run abort the script. If we run the rest of script it can leave .os
+# files lying around, which we must not allow.
+#
+
+read -p "Ready to do scons -c [y/n]: " var
+if [ "${var}" != 'y' ]; then
+    echo "Retry when you are ready to clean up."
+    return 1
+fi
+if [ -e SConstruct ]; then
+ echo "doing scons"
+ scons -c -j 8
+fi
+
+stuff_to_clean="SConstruct setup.sh bin lib"
+for stuff in ${stuff_to_clean}
+do
+if [ -d ${stuff} ];then
+   rm -r -i ${stuff}
+fi
+if [ -e ${stuff} ]; then
+   rm -i ${stuff}
+fi
+done
