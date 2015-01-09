@@ -62,7 +62,6 @@ namespace mu2e {
                                      const VolumeInfo& parent,
                                      const CLHEP::Hep3Vector& collimatorCenterInParent,
                                      const CLHEP::HepRotation& collimatorRotationInParent,
-                                     double cutboxdx, double cutboxdy,
                                      const SimpleConfig& config
                                      )
   {
@@ -94,12 +93,6 @@ namespace mu2e {
     double zPlane[] = {-cylHalfLength, -0.5*collimator.radiusTransitiondZ(), +0.5*collimator.radiusTransitiondZ(), +cylHalfLength };
     double rzero[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-
-    G4Box* cutbox = new G4Box(collimator.name()+"cutbox",
-                              cutboxdx,
-                              cutboxdy,
-                              0.5*collimator.horizontalLength());
-
     //----------------------------------------------------------------
     // Alignment hole
 
@@ -122,16 +115,16 @@ namespace mu2e {
                              parent.centerInWorld);
 
     alignmentHole.solid = new G4IntersectionSolid(alignmentHole.name,
-                                                  cutbox,
+                                                  parent.solid,
                                                   holeCylinder,
                                                   colrot,
-                                                  CLHEP::Hep3Vector(0,0,0)
+                                                  alignmentHole.centerInParent
                                                   );
 
     finishNesting(alignmentHole,
                   materialFinder.get("hall.insideMaterialName"),
                   0,
-                  alignmentHole.centerInParent,
+                  CLHEP::Hep3Vector(0,0,0),
                   parent.logical,
                   0,
                   config.getBool("extMonFNAL."+collimator.name()+".alignmentHole.visible"),
@@ -163,16 +156,16 @@ namespace mu2e {
                              alignmentHole.centerInWorld);
 
     alignmentPlug.solid = new G4IntersectionSolid(alignmentPlug.name,
-                                                  cutbox,
+                                                  parent.solid,
                                                   plugCylinder,
                                                   colrot,
-                                                  CLHEP::Hep3Vector(0,0,0)
+                                                  alignmentHole.centerInParent
                                                   );
 
     finishNesting(alignmentPlug,
                   materialFinder.get("protonBeamDump.material.shielding"),
                   0,
-                  alignmentPlug.centerInParent,
+                  CLHEP::Hep3Vector(0,0,0),
                   alignmentHole.logical,
                   0,
                   config.getBool("extMonFNAL."+collimator.name()+".alignmentPlug.visible"),
@@ -201,19 +194,19 @@ namespace mu2e {
 
     VolumeInfo channel(collimator.name()+"Channel",
                        CLHEP::Hep3Vector(0,0,0),
-                       alignmentPlug.centerInWorld);
+                       alignmentHole.centerInWorld);
 
     channel.solid = new G4IntersectionSolid(channel.name,
-                                            cutbox,
+                                            parent.solid,
                                             channelCylinder,
                                             colrot,
-                                            CLHEP::Hep3Vector(0,0,0)
+                                            alignmentHole.centerInParent
                                             );
 
     finishNesting(channel,
                   materialFinder.get("hall.insideMaterialName"),
                   0,
-                  channel.centerInParent,
+                  CLHEP::Hep3Vector(0,0,0),
                   alignmentPlug.logical,
                   0,
                   config.getBool("extMonFNAL."+collimator.name()+".channel.visible"),
@@ -383,14 +376,13 @@ namespace mu2e {
   }
 
   //================================================================
-  VolumeInfo constructExtMonFNALBuilding(const VolumeInfo& collimator1Parent,
+  void constructExtMonFNALBuilding(const VolumeInfo& collimator1Parent,
                                          const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
                                          const VolumeInfo& mainParent,
                                          const CLHEP::HepRotation& mainParentRotationInMu2e,
                                          const SimpleConfig& config)
   {
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
     bool const placePV             = true;
 
     MaterialFinder materialFinder(config);
@@ -398,167 +390,37 @@ namespace mu2e {
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNALBuilding> emfb;
 
-    static const CLHEP::HepRotation roomRotationInParentInv((mainParentRotationInMu2e.inverse() * emfb->roomRotationInMu2e()).inverse());
-
-    // Test
-    if(false) {
-      G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
-      const VolumeInfo& hall = _helper->locateVolInfo("HallAir");
-      VolumeInfo test("emfroomtest", emfb->roomRefPointInMu2e() - hall.centerInMu2e(), hall.centerInWorld);
-      test.solid = new G4Orb(test.name, 3000.);
-
-      finishNesting(test,
-                    materialFinder.get("extMonFNAL.room.materialName"),
-                    0,
-                    test.centerInParent,
-                    hall.logical,
-                    0,
-                    true/*visible*/,
-                    G4Colour::Magenta(),
-                    true/*solid*/,
-                    forceAuxEdgeVisible,
-                    placePV,
-                    false
-                    );
-    }
-
-    const CLHEP::Hep3Vector roomRefPointInParent(mainParentRotationInMu2e.inverse()*(emfb->roomRefPointInMu2e() - mainParent.centerInMu2e()));
-
-    VolumeInfo roomAir("ExtMonFNALRoomAir", roomRefPointInParent, mainParent.centerInWorld);
-    // FIXME: we should not need to correct the wrong information
-    roomAir.centerInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld() + emfb->roomRefPointInMu2e();
-
-    roomAir.solid = new G4ExtrudedSolid(roomAir.name,
-                                        emfb->roomInsideOutline(),
-                                        0.5*emfb->roomInsideFullHeight(),
-                                        G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-    finishNesting(roomAir,
-                  materialFinder.get("extMonFNAL.room.materialName"),
-                  &roomRotationInParentInv,
-                  roomAir.centerInParent,
-                  mainParent.logical,
-                  0,
-                  config.getBool("extMonFNAL.room.visible"),
-                  G4Colour::Cyan(),
-                  config.getBool("extMonFNAL.room.solid"),
-                  forceAuxEdgeVisible,
-                  placePV,
-                  doSurfaceCheck
-                  );
-
-    //----------------------------------------------------------------
-    if(true) {
-      VolumeInfo roomWall("ExtMonFNALRoomWall", roomRefPointInParent, mainParent.centerInWorld);
-      // FIXME: we should not need to correct the wrong information
-      roomWall.centerInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld() + emfb->roomRefPointInMu2e();
-
-      std::vector<CLHEP::Hep2Vector> wallConcreteOutline(emfb->wallOutsideOutline());
-      // the inside points go in the reverse order
-      std::copy(emfb->roomInsideOutline().rbegin(), emfb->roomInsideOutline().rend(),
-                std::back_inserter(wallConcreteOutline));
-
-      roomWall.solid = new G4ExtrudedSolid(roomWall.name,
-                                           wallConcreteOutline,
-                                           0.5*emfb->roomInsideFullHeight(),
-                                           G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-      finishNesting(roomWall,
-                    materialFinder.get("extMonFNAL.room.wall.materialName"),
-                    &roomRotationInParentInv,
-                    roomAir.centerInParent,
-                    mainParent.logical,
-                    0,
-                    config.getBool("extMonFNAL.room.wall.visible"),
-                    G4Colour::Grey(),
-                    config.getBool("extMonFNAL.room.wall.solid"),
-                    forceAuxEdgeVisible,
-                    placePV,
-                    doSurfaceCheck
-                    );
-    }
-
-    //----------------------------------------------------------------
-    if(true) {
-      const CLHEP::Hep3Vector ceilingRefPointInParent(mainParentRotationInMu2e.inverse()*(emfb->ceilingRefPointInMu2e() - mainParent.centerInMu2e()));
-
-      VolumeInfo ceiling("ExtMonFNALRoomCeiling", ceilingRefPointInParent, mainParent.centerInWorld);
-      // FIXME: we should not need to correct the wrong information
-      ceiling.centerInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld() + emfb->ceilingRefPointInMu2e();
-
-      ceiling.solid = new G4ExtrudedSolid(ceiling.name,
-                                          emfb->ceilingOutline(),
-                                          0.5*emfb->roomCeilingThickness(),
-                                          G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-      finishNesting(ceiling,
-                    materialFinder.get("extMonFNAL.room.wall.materialName"),
-                    &roomRotationInParentInv,
-                    ceiling.centerInParent,
-                    mainParent.logical,
-                    0,
-                    config.getBool("extMonFNAL.room.ceiling.visible"),
-                    G4Colour::Grey(),
-                    config.getBool("extMonFNAL.room.ceiling.solid"),
-                    forceAuxEdgeVisible,
-                    placePV,
-                    doSurfaceCheck
-                    );
-    }
-
-    //----------------------------------------------------------------
-    if(true) {
-      const CLHEP::Hep3Vector floorRefPointInParent(mainParentRotationInMu2e.inverse()*(emfb->floorRefPointInMu2e() - mainParent.centerInMu2e()));
-
-      VolumeInfo floor("ExtMonFNALRoomFloor", floorRefPointInParent, mainParent.centerInWorld);
-      // FIXME: we should not need to correct the wrong information
-      floor.centerInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld() + emfb->floorRefPointInMu2e();
-
-      floor.solid = new G4ExtrudedSolid(floor.name,
-                                          emfb->floorOutline(),
-                                          0.5*emfb->roomFloorThickness(),
-                                          G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-
-      finishNesting(floor,
-                    materialFinder.get("extMonFNAL.room.wall.materialName"),
-                    &roomRotationInParentInv,
-                    floor.centerInParent,
-                    mainParent.logical,
-                    0,
-                    config.getBool("extMonFNAL.room.floor.visible"),
-                    G4Colour::Grey(),
-                    config.getBool("extMonFNAL.room.floor.solid"),
-                    forceAuxEdgeVisible,
-                    placePV,
-                    doSurfaceCheck
-                    );
-    }
+    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
 
     //----------------------------------------------------------------
     // Collimator2 shielding
 
-    static const CLHEP::HepRotation coll2ShieldingRotationInRoomInv
-      (emfb->coll2ShieldingRotationInMu2e().inverse() * emfb->roomRotationInMu2e());
+    static CLHEP::HepRotation collimator2ParentRotationInMu2e(CLHEP::HepRotation::IDENTITY);
+    collimator2ParentRotationInMu2e.rotateX( 90*CLHEP::degree);
+    collimator2ParentRotationInMu2e.rotateZ( 90*CLHEP::degree);
 
-    const CLHEP::Hep3Vector coll2ShieldingCenterInRoom
-      (emfb->roomRotationInMu2e().inverse()*(emfb->coll2ShieldingCenterInMu2e() - emfb->roomRefPointInMu2e()));
+    VolumeInfo coll2Shielding("ExtMonFNALColl2Shielding",
+                            CLHEP::Hep3Vector(0, (emfb->roomInsideYmin()+emfb->roomInsideYmax())/2.0, 0)
+                            - mainParent.centerInMu2e(),
+                            mainParent.centerInWorld);
 
-    VolumeInfo coll2Shielding = nestBox("ExtMonFNALColl2Shielding",
-                                        emfb->coll2ShieldingHalfSize(),
-                                        materialFinder.get("extMonFNAL.room.wall.materialName"),
-                                        &coll2ShieldingRotationInRoomInv,
-                                        coll2ShieldingCenterInRoom,
-                                        roomAir,
-                                        0,
-                                        config.getBool("extMonFNAL.collimator2.shielding.visible"),
-                                        G4Colour::Grey(),
-                                        config.getBool("extMonFNAL.collimator2.shielding.solid"),
-                                        forceAuxEdgeVisible,
-                                        placePV,
-                                        doSurfaceCheck);
+    coll2Shielding.solid = new G4ExtrudedSolid(coll2Shielding.name, emfb->coll2ShieldingOutline(),
+                                             emfb->roomInsideFullHeight()/2.0,
+                                             G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
 
-    // FIXME: we should not need to correct the wrong information
-    coll2Shielding.centerInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld() + emfb->coll2ShieldingCenterInMu2e();
+    finishNesting(coll2Shielding,
+                  materialFinder.get("extMonFNAL.room.wall.materialName"),
+                  &collimator2ParentRotationInMu2e,
+                  coll2Shielding.centerInParent,
+                  mainParent.logical,
+                  0,
+                  geomOptions->isVisible( "coll2Shielding" ),
+                  G4Colour::Red() ,
+                    geomOptions->isSolid( "coll2Shielding" ),
+                    geomOptions->forceAuxEdgeVisible( "coll2Shielding" ),
+                    geomOptions->placePV( "coll2Shielding" ),
+                    geomOptions->doSurfaceCheck( "coll2Shielding" )
+                  );
 
     //----------------------------------------------------------------
     // The filter channel
@@ -568,24 +430,16 @@ namespace mu2e {
 
     constructCollimatorExtMonFNAL(emfb->collimator1(),
                                   collimator1Parent,
-
-                                  collimator1ParentRotationInMu2e.inverse()*(emfb->collimator1CenterInMu2e()-collimator1Parent.centerInMu2e()),
-
-                                  collimator1ParentRotationInMu2e.inverse()*emfb->collimator1RotationInMu2e(),
-
-                                  dump->frontShieldingHalfSize()[0],
-                                  dump->frontShieldingHalfSize()[1],
+                                  collimator1ParentRotationInMu2e*(emfb->collimator1CenterInMu2e()-collimator1Parent.centerInMu2e()),
+                                  collimator1ParentRotationInMu2e*emfb->collimator1RotationInMu2e(),
                                   config);
 
-    //constructFilterMagnet(*emfb, roomAir, emfb->roomRotationInMu2e(), config);
-    constructExtMonFNALMagnet(emfb->filterMagnet(), roomAir, "filter", emfb->roomRotationInMu2e(), config);
+    constructExtMonFNALMagnet(emfb->filterMagnet(), mainParent, "filter", mainParentRotationInMu2e, config);
 
     constructCollimatorExtMonFNAL(emfb->collimator2(),
                                   coll2Shielding,
-                                  emfb->coll2ShieldingRotationInMu2e().inverse()*(emfb->collimator2CenterInMu2e() - emfb->coll2ShieldingCenterInMu2e()),
-                                  emfb->coll2ShieldingRotationInMu2e().inverse()*emfb->collimator2RotationInMu2e(),
-                                  emfb->coll2ShieldingHalfSize()[0],
-                                  emfb->coll2ShieldingHalfSize()[1],
+                                  collimator2ParentRotationInMu2e*(emfb->collimator2CenterInMu2e() - coll2Shielding.centerInMu2e()),
+                                  collimator2ParentRotationInMu2e*emfb->collimator2RotationInMu2e(),
                                   config);
 
     // Test
@@ -612,7 +466,6 @@ namespace mu2e {
     }
 
     //----------------------------------------------------------------
-    return roomAir;
 
   } // constructExtMonFNALBuilding()
 } // namespace mu2e

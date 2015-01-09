@@ -13,6 +13,7 @@
 #include "art/Persistency/Common/Wrapper.h"
 
 #include "Mu2eInterfaces/inc/Detector.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
 
 namespace mu2e {
 
@@ -55,11 +56,15 @@ namespace mu2e {
     const std::vector<double>& backShieldingHalfSize() const { return _backShieldingHalfSize; }
     const CLHEP::Hep3Vector& backShieldingCenterInMu2e() const { return _backShieldingCenterInMu2e; }
 
+    double shieldingFaceYmin() const { return _shieldingFaceYmin; }
     double shieldingFaceXmin() const { return _shieldingFaceXmin; }
     double shieldingFaceXmax() const { return _shieldingFaceXmax; }
 
     double shieldingFaceZatXmin() const { return _shieldingFaceZatXmin; }
     double shieldingFaceZatXmax() const { return _shieldingFaceZatXmax; }
+
+    std::vector<CLHEP::Hep2Vector> frontShieldingOutline() const { return _frontShieldingOutline; }
+    std::vector<CLHEP::Hep2Vector> backShieldingOutline()  const { return _backShieldingOutline; }
 
     //----------------------------------------------------------------
     // Transform to the "beam dump" coordinate system, which is centered
@@ -89,16 +94,19 @@ namespace mu2e {
     double _minCoreShieldingThickness;
 
     // computed stuff
+    std::vector<CLHEP::Hep2Vector> _frontShieldingOutline;
     double _coreCenterDistanceToShieldingFace;
     std::vector<double> _frontShieldingHalfSize;
     CLHEP::Hep3Vector _frontShieldingCenterInMu2e;
 
+    std::vector<CLHEP::Hep2Vector> _backShieldingOutline;
     std::vector<double> _backShieldingHalfSize;
     CLHEP::Hep3Vector _backShieldingCenterInMu2e;
 
     CLHEP::Hep3Vector _mouthCenterInMu2e;
     CLHEP::Hep3Vector _neutronCaveCenterInMu2e;
 
+    double _shieldingFaceYmin;
     double _shieldingFaceXmin;
     double _shieldingFaceXmax;
     double _shieldingFaceZatXmin;

@@ -170,9 +170,7 @@ namespace mu2e {
       cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
     }
 
-    // ==== BEGIN COMMENT-OUT: to allow construction of new building dirt volumes w/o overlaps (knoepfel)
-    //    constructProtonBeamDump(hallInfo, _config);
-    // ==== END COMMENT-OUT
+    constructProtonBeamDump(hallInfo, _config);
 
     constructDS(hallInfo, _config);
     constructTS(hallInfo, _config);

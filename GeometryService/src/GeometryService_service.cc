@@ -236,12 +236,22 @@ namespace mu2e {
     const BuildingBasics& buildingBasics = *tmpBasics.get();
     addDetector(std::move(tmpBasics));
 
-    const double dumpFrontShieldingYmin = buildingBasics.detectorHallFloorTopY() - buildingBasics.detectorHallFloorThickness();
-    const double dumpFrontShieldingYmax = dumpFrontShieldingYmin +
       buildingBasics.detectorHallInsideFullHeight() + buildingBasics.detectorHallCeilingThickness();
 
-    std::unique_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, dumpFrontShieldingYmin, dumpFrontShieldingYmax));
+    // Construct building solids
+    std::unique_ptr<Mu2eHall> tmpbldnew(Mu2eHallMaker::makeBuilding(*_g4GeomOptions,*_config));
+    const Mu2eHall& hall = *tmpbldnew.get();
 
+    // Determine Mu2e envelope from building solids
+    std::unique_ptr<Mu2eEnvelope> mu2eEnv (new Mu2eEnvelope(hall,*_config));
+
+    // Make dirt based on Mu2e envelope
+    Mu2eHallMaker::makeDirt( *tmpbldnew.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );    
+
+    addDetector(std::move( tmpbldnew ) );
+    addDetector(std::move( mu2eEnv   ) );
+
+    std::unique_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, hall));
     const ProtonBeamDump& dump = *tmpDump.get();
     addDetector(std::move(tmpDump));
 
@@ -324,7 +334,7 @@ namespace mu2e {
     }
 
 
-    std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));
+    std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, hall, dump));
     const ExtMonFNALBuilding& emfb = *tmpemb.get();
     addDetector(std::move(tmpemb));
     if(_config->getBool("hasExtMonFNAL",false)){
