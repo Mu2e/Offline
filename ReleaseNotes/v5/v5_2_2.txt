@@ -1,8 +1,17 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_2_2
 
-3) Jan 9, 2015
+4) Jan 9, 2015 - kutschke
+   Changed the environment variable MU2E_BASE_RELEASE to MU2E_SATELLITE_RELEASE
+   This affects: SConstruct bin/addlocal.sh setup.sh
+
+   Added new scripts in bin:
+      createSatelliteRelease
+      cleanSatelliteRelease
+      rebindSatelliteRelease
+
+   The corresponding TestRelease scripts are depecrated and will soon go away.
+
+3) Jan 9, 2015 - kutschke
      - Move functions.sh and genreflex.sh from top level directory to bin/
      - Fix SConstruct to call genreflex.sh from the right place
      - Add call to functions.sh from setup.sh
