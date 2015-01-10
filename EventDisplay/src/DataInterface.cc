@@ -620,10 +620,10 @@ void DataInterface::fillGeometry()
       mu2e::CRSScintillatorShield const& shield = *ishield;
       std::string const& shieldName = shield.getName();
 
-      const std::shared_ptr<mu2e::CRSScintillatorBarDetail> barDetail = shield.getCRSScintillatorBarDetail();
-      double dx=barDetail->getHalfLengths()[0];
-      double dy=barDetail->getHalfLengths()[1];
-      double dz=barDetail->getHalfLengths()[2];
+      mu2e::CRSScintillatorBarDetail const& barDetail = shield.getCRSScintillatorBarDetail();
+      double dx=barDetail.getHalfLengths()[0];
+      double dy=barDetail.getHalfLengths()[1];
+      double dz=barDetail.getHalfLengths()[2];
 
       int nModules = shield.nModules();
       for (int im = 0; im < nModules; ++im) 

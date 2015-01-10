@@ -59,6 +59,11 @@ namespace mu2e
     double getHalfWidth() const { return _detail->getHalfWidth();}
     double getHalfLength() const { return _detail->getHalfLength();}
 
+    const CRSScintillatorBarDetail& getBarDetail() const 
+    {
+      return *_detail;
+    }
+
     CLHEP::Hep3Vector toWorld(const CLHEP::Hep3Vector &localPosition) const
     {
       return _detail->toWorld(localPosition,_position);

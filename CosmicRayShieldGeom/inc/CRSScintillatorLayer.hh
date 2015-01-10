@@ -11,7 +11,6 @@
 //
 
 #include <vector>
-#include <deque>
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorLayerId.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
@@ -50,7 +49,7 @@ namespace mu2e
       return getBar(id.getBarNumber());
     }
 
-    const std::vector<const CRSScintillatorBar*>& getBars() const { return _bars; }
+    const std::vector<std::shared_ptr<CRSScintillatorBar> >& getBars() const { return _bars; }
 
     const CLHEP::Hep3Vector &getPosition() const {return _position;}
 
@@ -67,10 +66,8 @@ namespace mu2e
     CRSScintillatorLayerId _id;
 
     // Pointers to the bars in this layer.
-    // These pointers do not own the bars to which they point.
-    // These are not persisted and may need to be recomputed after readback.
-    // CosmicRayShield "owns" the bars
-    mutable std::vector<const CRSScintillatorBar*> _bars;
+    // They refer to the same objects as the bars in CosmicRayShield (which holds all CRV bars)
+    std::vector<std::shared_ptr<CRSScintillatorBar> > _bars;
 
     CLHEP::Hep3Vector _position;
     std::vector<double> _halfLengths;

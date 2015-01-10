@@ -14,6 +14,7 @@
 // c++ includes
 #include <map>
 #include <string>
+#include <memory>
 
 // clhep includes
 #include "CLHEP/Vector/Rotation.h"
@@ -68,20 +69,24 @@ namespace mu2e
       return _scintillatorShields;
     }
 
-    std::vector<CRSScintillatorBar> const & getAllCRSScintillatorBars() const 
+    std::vector<std::shared_ptr<CRSScintillatorBar> > const & getAllCRSScintillatorBars() const 
     {
       return _allCRSScintillatorBars;
     }
 
     const CRSScintillatorBar& getBar ( CRSScintillatorBarIndex index ) const 
     {
-      return _allCRSScintillatorBars.at(index.asInt());
+      return *_allCRSScintillatorBars.at(index.asInt());
     }
 
     private:
 
-    std::vector<CRSScintillatorShield>  _scintillatorShields;
-    std::vector<CRSScintillatorBar>     _allCRSScintillatorBars;  // global holder of all scintillator bars
+    std::vector<CRSScintillatorShield>                _scintillatorShields;    //Every "shield" holds a vector of modules.
+                                                                               //Every module hold a vector of layers.
+                                                                               //Every layer holds a vector of pointers 
+                                                                               //to CRV bars.
+    std::vector<std::shared_ptr<CRSScintillatorBar> > _allCRSScintillatorBars; //This vector holds pointers to all CRV bars,
+                                                                               //(the same objects used in all layers).
   };
 
 }

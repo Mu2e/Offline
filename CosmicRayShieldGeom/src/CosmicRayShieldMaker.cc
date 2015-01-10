@@ -136,12 +136,11 @@ namespace mu2e
           counterPosition += largeGaps * VTNCLargeGap + smallGaps * VTNCSmallGap;
 
           CRSScintillatorBarIndex index(_crs->_allCRSScintillatorBars.size());
-          _crs->_allCRSScintillatorBars.push_back(CRSScintillatorBar(index, 
-                                                  CRSScintillatorBarId(isector,imodule,ilayer,icounter), 
-                                                  counterPosition, barDetails));
-
-          CRSScintillatorBar &counter = _crs->_allCRSScintillatorBars.back();
-          layer._bars.push_back(&counter);
+          std::shared_ptr<CRSScintillatorBar> counter(new CRSScintillatorBar(index, 
+                                                          CRSScintillatorBarId(isector,imodule,ilayer,icounter), 
+                                                          counterPosition, barDetails));
+          _crs->_allCRSScintillatorBars.push_back(counter);
+          layer._bars.push_back(counter);
         } //counters
 
         //Scintillator layer position and dimension

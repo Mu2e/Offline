@@ -72,9 +72,9 @@ namespace mu2e
       return _modules.at(bid.getModuleNumber()).getBar(bid);
     }
 
-    const std::shared_ptr<CRSScintillatorBarDetail> getCRSScintillatorBarDetail() const 
+    const CRSScintillatorBarDetail& getCRSScintillatorBarDetail() const 
     {
-      return _barDetails;
+      return *_barDetails;
     }
 
     const std::string &getAbsorberMaterialName() const 
