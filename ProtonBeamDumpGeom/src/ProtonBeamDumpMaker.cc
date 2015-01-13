@@ -41,34 +41,48 @@ namespace mu2e {
     const double coreRotY = dump->_coreRotY = c.getDouble("protonBeamDump.coreRotY") * CLHEP::degree;
     dump->_coreRotationInMu2e.rotateY(coreRotY);
 
+    std::vector<double> additionalSteel;
     c.getVectorDouble("protonBeamDump.coreHalfSize", dump->_coreHalfSize, 3);
     c.getVectorDouble("protonBeamDump.neutronCaveHalfSize", dump->_neutronCaveHalfSize, 3);
     c.getVectorDouble("protonBeamDump.mouthHalfSize", dump->_mouthHalfSize, 3);
+    c.getVectorDouble("protonBeamDump.additionalSteel", additionalSteel, 3);
     dump->_minCoreShieldingThickness = c.getDouble("protonBeamDump.minCoreShieldingThickness");
-
+    const double coreAirGap = c.getDouble("protonBeamDump.coreAirGap");
+ 
     const CLHEP::Hep3Vector& offset = psWall.getOffsetFromMu2eOrigin();
     dump->_shieldingFaceYmin = offset[1] - psWall.getYhalfThickness();
     const CLHEP::Hep3Vector& ceiling = psCeil.getOffsetFromMu2eOrigin();
- 
+
     // Compute the overall size of the nominal dump front portion
     dump->_frontShieldingHalfSize.resize(3);
     dump->_frontShieldingHalfSize[0] = dump->_coreHalfSize[0] + dump->_minCoreShieldingThickness;
     dump->_frontShieldingHalfSize[1] = (ceiling[1] - psCeil.getYhalfThickness() - dump->_shieldingFaceYmin)/2.0;
     dump->_frontShieldingHalfSize[2] = dump->_coreHalfSize[2]	+ dump->_neutronCaveHalfSize[2]
-								+ dump->_mouthHalfSize[2];
+								+ dump->_mouthHalfSize[2] + coreAirGap/2.0;
     if(verbose) {
       std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump frontShielding half size = ";
       std::copy(dump->_frontShieldingHalfSize.begin(), dump->_frontShieldingHalfSize.end(), std::ostream_iterator<double>(std::cout, ", "));
       std::cout<<std::endl;
     }
 
+    dump->_frontSteelHalfSize.resize(3);
+    dump->_frontSteelHalfSize[0] = additionalSteel[0]/2.0;
+    dump->_frontSteelHalfSize[1] = additionalSteel[1]/2.0;
+    dump->_frontSteelHalfSize[2] = dump->_coreHalfSize[2] + coreAirGap/2.0;
+    dump->_backSteelHalfSize.resize(3);
+    dump->_backSteelHalfSize[0] = dump->_frontSteelHalfSize[0];
+    dump->_backSteelHalfSize[1] = dump->_frontSteelHalfSize[1];
+    dump->_backSteelHalfSize[2] = additionalSteel[2]/2.0 - dump->_frontSteelHalfSize[2];
+    dump->_coreAirHalfSize.resize(3);
+    dump->_coreAirHalfSize[0] = dump->_coreHalfSize[0] + coreAirGap;
+    dump->_coreAirHalfSize[1] = dump->_coreHalfSize[1] + coreAirGap;
+    dump->_coreAirHalfSize[2] = dump->_coreHalfSize[2] + coreAirGap/2.0;
 
-    // The offset of the front shielding box center w.r.t. the core, along the dump z
-    dump->_coreCenterDistanceToShieldingFace = dump->_coreHalfSize[2] + 2*dump->_neutronCaveHalfSize[2]
-								      + 2*dump->_mouthHalfSize[2];
+    // The offset of the front shielding coordinates w.r.t. the core, along the dump z
+    dump->_coreCenterDistanceToReferencePlane = c.getDouble("protonBeamDump.coreCenterDistanceToReferencePlane");
+    dump->_coreCenterDistanceToShieldingFace = 2.0*dump->_frontShieldingHalfSize[2] - dump->_coreHalfSize[2] - coreAirGap;
 
-    const double frontShieldingOffset = dump->_coreCenterDistanceToShieldingFace
-								      - dump->_frontShieldingHalfSize[2];
+    const double frontShieldingOffset = dump->_coreCenterDistanceToShieldingFace - dump->_frontShieldingHalfSize[2];
     dump->_frontShieldingCenterInMu2e[0] = dump->_coreCenterInMu2e[0] + frontShieldingOffset*sin(coreRotY);
     dump->_frontShieldingCenterInMu2e[1] = dump->_shieldingFaceYmin   + dump->_frontShieldingHalfSize[1];
     dump->_frontShieldingCenterInMu2e[2] = dump->_coreCenterInMu2e[2] + frontShieldingOffset*cos(coreRotY);
@@ -89,6 +103,15 @@ namespace mu2e {
     dump->_neutronCaveCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e
       *CLHEP::Hep3Vector(0,0, frontShieldingOffset + dump->_frontShieldingHalfSize[2] - 2*dump->_mouthHalfSize[2] - dump->_neutronCaveHalfSize[2]);
 
+    dump->_coreAirCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e * CLHEP::Hep3Vector(0,0,-coreAirGap/2.0);
+
+    dump->_frontSteelCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e 
+      *CLHEP::Hep3Vector(0,	dump->_coreAirHalfSize[1] + dump->_frontSteelHalfSize[1],
+				dump->_coreHalfSize[2] - dump->_frontSteelHalfSize[2]);
+    
+    dump->_backSteelCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e 
+      *CLHEP::Hep3Vector(0,	dump->_coreAirHalfSize[1] + dump->_backSteelHalfSize[1],
+				dump->_coreHalfSize[2] - 2.0*dump->_frontSteelHalfSize[2] - dump->_backSteelHalfSize[2]);
 
     //----------------------------------------------------------------
     // Shielding face coordinates
@@ -153,14 +176,14 @@ namespace mu2e {
     dump->_frontShieldingOutline.emplace_back(dump->_shieldingFaceZatXmax,dump->_shieldingFaceXmax);
     dump->_frontShieldingOutline.emplace_back(psaVertices[3][0]+psAoffset[2],psaVertices[3][1]+psAoffset[0]);
 
-	for( int i=0; i<dump->_frontShieldingOutline.size(); i++ ) {
-		std::cout<<"front "	<<	dump->_frontShieldingOutline[i][0]
-			 <<"\t"		<<	dump->_frontShieldingOutline[i][1]	<<"\n";
-	}
-	for( int i=0; i<dump->_backShieldingOutline.size(); i++ ) {
-		std::cout<<"back "	<<	dump->_backShieldingOutline[i][0]
-			 <<"\t"		<<	dump->_backShieldingOutline[i][1]	<<"\n";
-	}
+//	for( int i=0; i<dump->_frontShieldingOutline.size(); i++ ) {
+//		std::cout<<"front "	<<	dump->_frontShieldingOutline[i][0]
+//			 <<"\t"		<<	dump->_frontShieldingOutline[i][1]	<<"\n";
+//	}
+//	for( int i=0; i<dump->_backShieldingOutline.size(); i++ ) {
+//		std::cout<<"back "	<<	dump->_backShieldingOutline[i][0]
+//			 <<"\t"		<<	dump->_backShieldingOutline[i][1]	<<"\n";
+//	}
     //----------------------------------------------------------------
     if(verbose) {
       std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump core center in mu2e = "<<dump->_coreCenterInMu2e<<std::endl;

@@ -14,6 +14,7 @@
 #include "G4Trap.hh"
 #include "G4Orb.hh"
 #include "G4Box.hh"
+#include "G4Tubs.hh"
 #include "G4Polycone.hh"
 #include "G4ExtrudedSolid.hh"
 #include "G4IntersectionSolid.hh"
@@ -391,17 +392,59 @@ namespace mu2e {
     GeomHandle<ExtMonFNALBuilding> emfb;
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    
+
+    static CLHEP::HepRotation shieldingRotationInMu2e = emfb->shieldingRotationInMu2e();
+    const CLHEP::Hep3Vector offset(0.0,2*emfb->shieldingNHalfSize()[1],0.0);
+
+    nestBox("ExtMonShieldingNorthsteel",
+            emfb->shieldingNHalfSize(),
+            materialFinder.get("protonBeamDump.material.core"),
+            &shieldingRotationInMu2e,
+            emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e(),
+            mainParent.logical, 0,
+            G4Colour::Red()
+            );
+    nestBox("ExtMonShieldingNorthconcrete",
+            emfb->shieldingNHalfSize(),
+            materialFinder.get("protonBeamDump.material.shielding"),
+            &shieldingRotationInMu2e,
+            emfb->shieldingNCenterInMu2e() - mainParent.centerInMu2e() + offset,
+            mainParent.logical, 0,
+            G4Colour::Grey()
+            );
+    nestBox("ExtMonShieldingSouthsteel",
+            emfb->shieldingSHalfSize(),
+            materialFinder.get("protonBeamDump.material.core"),
+            &shieldingRotationInMu2e,
+            emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e(),
+            mainParent.logical, 0,
+            G4Colour::Red()
+            );
+    nestBox("ExtMonShieldingSouthconcrete",
+            emfb->shieldingSHalfSize(),
+            materialFinder.get("protonBeamDump.material.shielding"),
+            &shieldingRotationInMu2e,
+            emfb->shieldingSCenterInMu2e() - mainParent.centerInMu2e() + offset,
+            mainParent.logical, 0,
+            G4Colour::Grey()
+            );
+    nestBox("ExtMonShieldingFloorConcrete",
+            emfb->shieldingBHalfSize(),
+            materialFinder.get("protonBeamDump.material.shielding"),
+            &shieldingRotationInMu2e,
+            emfb->shieldingBCenterInMu2e() - mainParent.centerInMu2e(),
+            mainParent.logical, 0,
+            G4Colour::Grey()
+            );
 
     //----------------------------------------------------------------
     // Collimator2 shielding
 
-    static CLHEP::HepRotation collimator2ParentRotationInMu2e(CLHEP::HepRotation::IDENTITY);
-    collimator2ParentRotationInMu2e.rotateX( 90*CLHEP::degree);
-    collimator2ParentRotationInMu2e.rotateZ( 90*CLHEP::degree);
+    static CLHEP::HepRotation collimator2ParentRotationInMu2e = emfb->coll2ShieldingRotationInMu2e();
 
     VolumeInfo coll2Shielding("ExtMonFNALColl2Shielding",
-                            CLHEP::Hep3Vector(0, (emfb->roomInsideYmin()+emfb->roomInsideYmax())/2.0, 0)
-                            - mainParent.centerInMu2e(),
+                            emfb->coll2ShieldingCenterInMu2e() - mainParent.centerInMu2e(),
                             mainParent.centerInWorld);
 
     coll2Shielding.solid = new G4ExtrudedSolid(coll2Shielding.name, emfb->coll2ShieldingOutline(),
@@ -420,6 +463,39 @@ namespace mu2e {
                     geomOptions->forceAuxEdgeVisible( "coll2Shielding" ),
                     geomOptions->placePV( "coll2Shielding" ),
                     geomOptions->doSurfaceCheck( "coll2Shielding" )
+                  );
+
+
+    static const CLHEP::HepRotation HVACductRotInParent( collimator2ParentRotationInMu2e*emfb->shieldingRotationInMu2e().inverse() );
+
+    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    CLHEP::HepRotation *ductrot = reg.add(HVACductRotInParent.inverse());
+
+    G4Tubs *holeCylinder = new G4Tubs( "holeCylinder", 0.0, emfb->HVACductRadius(), emfb->HVACductHalfLength(), 0.0, 360.0 );
+
+    VolumeInfo HVACduct("coll2ShieldingHVACduct",
+                             collimator2ParentRotationInMu2e*(emfb->HVACductCenterInMu2e() - emfb->coll2ShieldingCenterInMu2e()),
+                             coll2Shielding.centerInWorld);
+
+    HVACduct.solid = new G4IntersectionSolid(HVACduct.name,
+                                                  coll2Shielding.solid,
+                                                  holeCylinder,
+                                                  ductrot,
+                                                  HVACduct.centerInParent
+                                                  );
+
+    finishNesting(HVACduct,
+                  materialFinder.get("hall.insideMaterialName"),
+                  0,
+                  CLHEP::Hep3Vector(0,0,0),
+                  coll2Shielding.logical,
+                  0,
+                  geomOptions->isVisible( "coll2ShieldingHVACduct" ),
+                  G4Colour::G4Colour::Cyan(),
+                  geomOptions->isSolid( "coll2ShieldingHVACduct" ),
+                  geomOptions->forceAuxEdgeVisible( "coll2ShieldingHVACduct" ),
+                  geomOptions->placePV( "coll2ShieldingHVACduct" ),
+                  geomOptions->doSurfaceCheck( "coll2ShieldingHVACduct" )
                   );
 
     //----------------------------------------------------------------
