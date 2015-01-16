@@ -15,7 +15,7 @@
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "Mu2eG4/inc/constructHall.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"

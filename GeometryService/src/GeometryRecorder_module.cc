@@ -8,7 +8,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"

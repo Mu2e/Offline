@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
 namespace mu2e {

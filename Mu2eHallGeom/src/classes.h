@@ -5,7 +5,7 @@
 // Original author Andrei Gaponenko
 //
 
-#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "art/Persistency/Common/Wrapper.h"
 
 template class art::Wrapper<mu2e::Mu2eHall>;

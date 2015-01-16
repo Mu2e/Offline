@@ -6,7 +6,7 @@
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 
-#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "GeometryService/inc/WorldG4.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"

@@ -13,7 +13,7 @@
 #include "art/Persistency/Common/Wrapper.h"
 
 #include "Mu2eInterfaces/inc/Detector.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
 
 namespace mu2e {
 
