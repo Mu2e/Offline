@@ -1,6 +1,4 @@
 <lcgdict>
- <class name="mu2e::BuildingBasics"/>
- <class name="art::Wrapper<mu2e::BuildingBasics>"/> 
- <class name="mu2e::Mu2eBuilding"/>
- <class name="art::Wrapper<mu2e::Mu2eBuilding>"/> 
+ <class name="mu2e::Mu2eHall"/>
+ <class name="art::Wrapper<mu2e::Mu2eHall>"/> 
 </lcgdict>

@@ -27,7 +27,6 @@
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 
 // Other external includes.
 #include "CLHEP/Random/RandFlat.h"
@@ -88,7 +87,6 @@ namespace mu2e {
 
     // Get access to the geometry system.
     GeomHandle<StoppingTarget> target;
-    GeomHandle<Mu2eBuilding> building;
 
     int nFoils = target->nFoils();
 

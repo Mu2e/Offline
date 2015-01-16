@@ -26,7 +26,6 @@
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 
 // G4 includes
@@ -48,6 +47,7 @@
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include <cmath>
 #include <vector>
 #include <sstream>
 
@@ -126,9 +126,7 @@ namespace mu2e {
     //----- Create the Mother volume for everything in the MSTM area--------------------------------
     
     //We want the Mother and the Shielding Wall to go down to the floor, so get the necessary info:
-    GeomHandle<Mu2eBuilding> building;
-    //const double yExtentLow = building->hallInsideYmin() - building->hallFloorThickness();
-    const double yExtentLow = building->hallInsideYmin();
+    const double yExtentLow = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
     //std::cout << "Distance from hole center to Hall floor = " << fabs(yExtentLow) << std::endl;
     
     const double mstmMotherHalfHeight =  fabs(yExtentLow);

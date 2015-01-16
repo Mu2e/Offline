@@ -8,8 +8,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
-#include "Mu2eBuildingGeom/inc/BuildingBasics.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
@@ -40,8 +39,7 @@ namespace mu2e {
 
   //================================================================
   GeometryRecorder::GeometryRecorder(const fhicl::ParameterSet&) {
-    produces<BuildingBasics, art::InRun>();
-    produces<Mu2eBuilding, art::InRun>();
+    produces<Mu2eHall, art::InRun>();
     produces<ProductionTarget, art::InRun>();
     produces<ProtonBeamDump, art::InRun>();
     produces<ExtMonFNALBuilding, art::InRun>();
@@ -58,8 +56,7 @@ namespace mu2e {
   // Better do the work in endRun() than beginRun(), otherwise
   // the WorldG4 object may not yet be available.
   void GeometryRecorder::endRun(art::Run& run) {
-    put<BuildingBasics>(run);
-    put<Mu2eBuilding>(run);
+    put<Mu2eHall>(run);
     put<ProductionTarget>(run);
     put<ProtonBeamDump>(run);
     put<ExtMonFNALBuilding>(run);

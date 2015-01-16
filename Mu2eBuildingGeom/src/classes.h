@@ -5,9 +5,7 @@
 // Original author Andrei Gaponenko
 //
 
-#include "Mu2eBuildingGeom/inc/BuildingBasics.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
 #include "art/Persistency/Common/Wrapper.h"
 
-template class art::Wrapper<mu2e::BuildingBasics>;
-template class art::Wrapper<mu2e::Mu2eBuilding>;
+template class art::Wrapper<mu2e::Mu2eHall>;

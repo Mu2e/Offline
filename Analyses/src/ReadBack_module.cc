@@ -15,13 +15,11 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -32,7 +30,6 @@
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"
 #include "TDirectory.h"
 #include "TGraph.h"
 #include "TH1F.h"
@@ -99,9 +96,6 @@ namespace mu2e {
     // Name of the CRSScintillatorBar(CRV) StepPoint collection
     std::string _crvStepPoints;
 
-    // Module which made the ExtMonUCIHits
-    std::string _extMonUCIModuleLabel;
-
     // Cut on the minimum energy.
     double _minimumEnergy;
 
@@ -167,10 +161,6 @@ namespace mu2e {
     TH1F*    _hCRVMultiplicity;
     TNtuple* _ntupCRV;
 
-    // ExtMonUCI ntuples
-    TNtuple* _ntupExtMonUCITof;
-    TNtuple* _ntupExtMonUCITofMC;
-
     int _nBadG4Status;
 
     // Examine various parts of the event.
@@ -178,7 +168,6 @@ namespace mu2e {
     void doCalorimeter      ( const art::Event& event );
     void doStoppingTarget   ( const art::Event& event );
     void doCRV              ( const art::Event& event );
-    void doExtMonUCI        ( const art::Event& event );
     void doPointTrajectories( const art::Event& event );
 
     // A helper function.
@@ -198,7 +187,6 @@ namespace mu2e {
     _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitsMaker")),
     _targetStepPoints(pset.get<string>("targetStepPoints","stoppingtarget")),
     _crvStepPoints(pset.get<string>("CRVStepPoints","CRV")),
-    _extMonUCIModuleLabel(pset.get<string>("extMonUCITofModuleLabel","ExtMonUCITofHitsMaker")),
     _minimumEnergy(pset.get<double>("minimumEnergy")),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _xyHitsMax(pset.get<int>("xyHitsMax",10000)),
@@ -244,9 +232,6 @@ namespace mu2e {
     // CRV
     _hCRVMultiplicity(0),
     _ntupCRV(0),
-    //
-    _ntupExtMonUCITof(0),
-    _ntupExtMonUCITofMC(0),
     // Remaining member data
     _nBadG4Status(0){
   }
@@ -355,13 +340,6 @@ namespace mu2e {
     _ntupCRV = tfs->make<TNtuple>( "ntupCRV", "CRV Hit ntuple",
                                    "evt:trk:bid:hx:hy:hz:bx:by:bz:dx:dy:dz:lx:ly:lz:time:shld:mod:lay:pdgId:genId:edep:p:step");
 
-    // ExtMonUCI Tof ntuple.
-    _ntupExtMonUCITof = tfs->make<TNtuple>( "ntupExtMonUCITof", "Extinction Monitor UCI Tof Hits",
-                                            "run:evt:stId:segId:t:edep:x:y:z");
-
-    _ntupExtMonUCITofMC = tfs->make<TNtuple>( "ntupExtMonUCITofMC", "Extinction Monitor UCI Tof Hits MC Truth",
-                                              "run:evt:stId:segId:t:edep:trk:pdgId:x:y:z:px:py:pz:vx:vy:vz:vpx:vpy:vpz:vt:primary:otrk:opdgId:ox:oy:oz:opx:opy:opz:ot");
-
   }
 
   void ReadBack::analyze(const art::Event& event) {
@@ -400,10 +378,6 @@ namespace mu2e {
     if( geom->hasElement<CosmicRayShield>() ) 
     {
       doCRV(event);
-    }
-
-    if(geom->hasElement<ExtMonUCI::ExtMon>() ) {
-      doExtMonUCI(event);
     }
 
     doPointTrajectories( event );
@@ -1140,127 +1114,6 @@ namespace mu2e {
     } // end loop over hits.
 
   } // end doCRV
-
-  void ReadBack::doExtMonUCI(const art::Event& event) {
-
-    // Gometry for the extMonUCI.
-    GeomHandle<ExtMonUCI::ExtMon> extMonUCI;
-    int nTofStations = extMonUCI->nTofStations();
-    int nTofSegments = extMonUCI->nTofSegments();
-    if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ){
-      cout << "Readback: ExtMonUCI nTofStations " << nTofStations << " nTofSegments " << nTofSegments << endl;
-    }
-
-    // Get handles to extmonuci collections
-    art::Handle<ExtMonUCITofHitCollection> tofHits;
-    art::Handle<ExtMonUCITofHitMCTruthCollection> tofMC;
-    event.getByLabel(_extMonUCIModuleLabel,tofHits);
-    event.getByLabel(_extMonUCIModuleLabel,tofMC);
-
-    // Find pointers to the original G4 steps
-    art::Handle<PtrStepPointMCVectorCollection> tofMCPtr;
-    event.getByLabel(_extMonUCIModuleLabel,tofMCPtr);
-
-    bool haveExtMonUCITof = ( tofHits.isValid() && tofMC.isValid() );
-
-    if( ! haveExtMonUCITof) return;
-
-    //art::ServiceHandle<GeometryService> geom;
-    //if( ! geom->hasElement<Calorimeter>() ) return;
-    //GeomHandle<Calorimeter> cg;
-
-    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
-      cout << "EVENT " << event.id().run() << " subRunID " << event.id().subRun() << " event " << event.id().event() << endl;
-      cout << " time " << event.time().value() << endl;
-    }
-
-    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
-      for ( size_t i=0; i<tofHits->size(); ++i ) {
-        ExtMonUCITofHit const & hit = (*tofHits).at(i);
-        cout << "Readback: ExtMonUCITofHit " << hit << endl;
-      }
-    }
-
-    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
-      for ( size_t i=0; i<tofMC->size(); ++i ) {
-        ExtMonUCITofHitMCTruth const & hit = (*tofMC).at(i);
-        cout << "Readback: ExtMonUCITofHitMCTruth " << hit << endl;
-      }
-    }
-
-
-    // ntuple buffer.
-    float nt[_ntupExtMonUCITof->GetNvar()];
-
-    // Loop over all hits.
-    for ( size_t i=0; i<tofHits->size(); ++i ){
-
-      // Alias, used for readability.
-      const ExtMonUCITofHit& hit = (*tofHits)[i];
-
-      // Fill the ntuple.
-      nt[ 0] = event.id().run();
-      nt[ 1] = event.id().event();
-      nt[ 2] = hit.stationId();
-      nt[ 3] = hit.segmentId();
-      nt[ 4] = hit.time();
-      nt[ 5] = hit.energyDep();
-      CLHEP::Hep3Vector const &  mid = extMonUCI->tof(hit.stationId(), hit.segmentId())->origin();
-      nt[ 6] = mid.x();
-      nt[ 7] = mid.y();
-      nt[ 8] = mid.z();
-
-      _ntupExtMonUCITof->Fill(nt);
-
-    }
-
-    // ntuple buffer.
-    float ntmc[_ntupExtMonUCITofMC->GetNvar()];
-
-    // Loop over all hits.
-    for ( size_t i=0; i<tofMC->size(); ++i ){
-
-      // Alias, used for readability.
-      const ExtMonUCITofHitMCTruth& hit = (*tofMC)[i];
-
-      // Fill the ntuple.
-      ntmc[ 0] = event.id().run();
-      ntmc[ 1] = event.id().event();
-      ntmc[ 2] = hit.stationId();
-      ntmc[ 3] = hit.segmentId();
-      ntmc[ 4] = hit.time();
-      ntmc[ 5] = hit.energyDep();
-      ntmc[ 6] = hit.trackId();
-      ntmc[ 7] = hit.pdgId();
-      ntmc[ 8] = hit.position().x();
-      ntmc[ 9] = hit.position().y();
-      ntmc[10] = hit.position().z();
-      ntmc[11] = hit.momentum().x();
-      ntmc[12] = hit.momentum().y();
-      ntmc[13] = hit.momentum().z();
-      ntmc[14] = hit.vertex().x();
-      ntmc[15] = hit.vertex().y();
-      ntmc[16] = hit.vertex().z();
-      ntmc[17] = hit.vertexMomentum().x();
-      ntmc[18] = hit.vertexMomentum().y();
-      ntmc[19] = hit.vertexMomentum().z();
-      ntmc[20] = hit.vertexTime();
-      ntmc[21] = hit.isPrimary();
-      ntmc[22] = hit.orgTrackId();
-      ntmc[23] = hit.orgPdgId();
-      ntmc[24] = hit.orgVertex().x();
-      ntmc[25] = hit.orgVertex().y();
-      ntmc[26] = hit.orgVertex().z();
-      ntmc[27] = hit.orgVertexMomentum().x();
-      ntmc[28] = hit.orgVertexMomentum().y();
-      ntmc[29] = hit.orgVertexMomentum().z();
-      ntmc[30] = hit.orgTime();
-
-      _ntupExtMonUCITofMC->Fill(ntmc);
-
-    }
-
-  } // end of doExtMonUCI
 
   void ReadBack::doPointTrajectories ( const art::Event& event ){
 

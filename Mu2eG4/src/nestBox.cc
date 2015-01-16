@@ -11,9 +11,9 @@
 #include <string>
 
 // Mu2e includes
+#include "GeomPrimitives/inc/Box.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 
 // G4 includes
 #include "G4Box.hh"
@@ -104,25 +104,25 @@ namespace mu2e {
 
   }
 
-   VolumeInfo nestBox ( string const& name,
-                        Box const& box,
-                        G4Material* material,
-                        G4RotationMatrix const* rot,
-                        G4ThreeVector const& offset,
-                        const VolumeInfo& parent,
-                        int copyNo,
-                        bool const isVisible,
-                        G4Colour const color,
-                        bool const forceSolid,
-                        bool const forceAuxEdgeVisible,
-                        bool const placePV,
-                        bool const doSurfaceCheck
-                        ){
-
+  VolumeInfo nestBox ( string const& name,
+                       Box const& box,
+                       G4Material* material,
+                       G4RotationMatrix const* rot,
+                       G4ThreeVector const& offset,
+                       const VolumeInfo& parent,
+                       int copyNo,
+                       bool const isVisible,
+                       G4Colour const color,
+                       bool const forceSolid,
+                       bool const forceAuxEdgeVisible,
+                       bool const placePV,
+                       bool const doSurfaceCheck
+                       ){
+     
     VolumeInfo info(name,offset,parent.centerInWorld);
-
+     
     info.solid   = new G4Box( name, box.getXhalfLength(), box.getYhalfLength(), box.getZhalfLength() );
-
+     
     finishNesting(info,
                   material,
                   rot,
@@ -136,9 +136,9 @@ namespace mu2e {
                   placePV,
                   doSurfaceCheck
                   );
-
+     
     return info;
-
+     
   } 
 
   VolumeInfo nestBox ( string const& name,

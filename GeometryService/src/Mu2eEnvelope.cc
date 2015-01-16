@@ -15,7 +15,6 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
@@ -39,13 +38,13 @@ namespace mu2e {
 
   //----------------------------------------------------------------
   Mu2eEnvelope::Mu2eEnvelope()
-    : xmin_(0), xmax_(0), ymin_(0), ymax_(0), zmin_(0), zmax_(0)
+    : xmin_(), xmax_(), ymin_(), ymax_(), zmin_(), zmax_()
   {}
 
   //----------------------------------------------------------------
   Mu2eEnvelope::Mu2eEnvelope(const Mu2eHall& building,
 			     const SimpleConfig& config)
-    : xmin_(0), xmax_(0), ymin_(0), ymax_(0), zmin_(0), zmax_(0)
+    : xmin_(), xmax_(), ymin_(), ymax_(), zmin_(), zmax_()
   {
 
     // Determine envelope from building solids
@@ -65,8 +64,17 @@ namespace mu2e {
       ymax_ = std::max( ymax_ , yCenter+vol.getYhalfThickness() );      
 
     }
-
+     
     // Add extra room for dirt margins -- cannot be zero!
+
+    if ( config.getDouble( "world.dirt.minimalMargin.zmin" ) <= 0. ||
+         config.getDouble( "world.dirt.minimalMargin.zmax" ) <= 0. || 
+         config.getDouble( "world.dirt.minimalMargin.xmin" ) <= 0. || 
+         config.getDouble( "world.dirt.minimalMargin.xmax" ) <= 0. ) {
+      throw cet::exception("GEOM") << "All world margins must be greater than 0.";
+    }
+
+
     zmin_ -= config.getDouble( "world.dirt.minimalMargin.zmin" );
     zmax_ += config.getDouble( "world.dirt.minimalMargin.zmax" );
 
