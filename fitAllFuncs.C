@@ -40,10 +40,10 @@ void fitAllFuncs()
 		TString prDataFileName = "protonData" + shapingTime + "ns_" + numberOfSample + ".root";	
 		getElectronData(oldtree,shapingTime, elDataFileName);
 		getProtonData(oldtree,shapingTime,prDataFileName);
-		TString newElFileName = "electronFit" + shapingTime + "ns_" + numberOfSample + "UniformSecond.root";
-		cout << shapingTimes[i] << " : " << numberOfSamples[j] << endl;
+		TString newElFileName = "electronFit" + shapingTime + "ns_" + numberOfSample + "UniformFirst.root";
+		//cout << shapingTimes[i] << " : " << numberOfSamples[j] << endl;
 		fitElectronData(elDataFileName,newElFileName,shapingTimes[i],numberOfSamples[j]);
-		TString newPrFileName = "protonFit" + shapingTime + "ns_" + numberOfSample + "UniformSecond.root";
+		TString newPrFileName = "protonFit" + shapingTime + "ns_" + numberOfSample + "UniformFirst.root";
 		fitElectronData(prDataFileName,newPrFileName,shapingTimes[i],numberOfSamples[j]);
 
 	}
@@ -96,6 +96,7 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 	for (int trial = 0; trial < 1e5; ++trial) //treeData->GetEntries(); ++trial)
 	{
 		suboption = 0;
+		option = 0;
 		if (trial % 1000 == 0)
 		{std::cout << trial << endl;}
 		treeData->GetEntry(trial);
@@ -142,7 +143,7 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 				const Double_t newTimePeak = TMath::LocMax(numberOfSamples,newData);
 
 				fittingFunction = new TF1("fittingFunction",fittingFunction7Uniformfixed,0.0,numberOfSamples*20.0,5);
-				const double timeShift = newTimePeak - shapingTime - 5.0;
+				const double timeShift = newTimePeak - shapingTime;
 				const double scalingFactor = TMath::Max(newAdcPeak /0.015, 1000.0);
 				const double sigma = 10.0;
 				fittingFunction->SetParameters(timeShift,scalingFactor,Q,sigma,shapingTime);
@@ -156,7 +157,7 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 			{
 				option = 2;
 				fittingFunction = new TF1("fittingFunction",fittingFunction7Uniformfixed,0.0,numberOfSamples*20.0,5);
-				const double timeShift = tPeak[1] - shapingTime - 5.0;
+				const double timeShift = tPeak[1] - shapingTime;
 				const double scalingFactor = TMath::Max(adcPeak[1] /0.015, 1000.0);
 				const double Q = TMath::Max(qAdc[0],0.0);
 				const double sigma = 10.0;
@@ -166,12 +167,48 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 				fittingFunction->SetParLimits(1,1000.0, 1.0e9);
 				fittingFunction->SetParLimits(3,0.0,50.0);
 				fittingFunction->FixParameter(4,shapingTime);
+
+				/**if (fittingFunction->GetChisquare()>500.0)
+				{
+
+					fittingFunctionTemp = fittingFunction;
+
+					double adcResidual[8];
+					for (int j = 0; j < numberOfSamples; ++j)
+					{
+						adcResidual[j] = qAdc[j] - fittingFunction->Eval(qMeasurementTimes[j]);
+					}
+					
+					// Technically this is the 3rd peak if you include the dynamic pedestal
+					const double secondPeak = TMath::MaxElement(numberOfSamples,adcResidual);
+					const double locSecondPeak = 20.0*TMath::LocMax(numberOfSamples,adcResidual);
+
+					if (locSecondPeak != 0.0 && abs(locSecondPeak-tPeak[0]) > 20.0)
+					{
+					suboption = 1;
+
+					if (locSecondPeak > tPeak[0] )
+					{
+						adcPeak.push_back(secondPeak);
+						tPeak.push_back(locSecondPeak);
+					}
+					// why doesn't locSecondPeak != 0.0 do what it's supposed to do??
+					else if (locSecondPeak < tPeak[0] )
+					{
+						adcPeak.insert(adcPeak.begin(),secondPeak);
+						tPeak.insert(tPeak.begin(),locSecondPeak);
+					}
+				}
+				}	**/
+
+
+
 			}
 			if (tPeak.size() == 3)
 			{
 				option = 3;
 				fittingFunction = new TF1("fittingFunction", fittingFunction8fixed,0.0,numberOfSamples*20.0, 6);
-				const double timeShift0 = tPeak[1] - shapingTime - 5.0;
+				const double timeShift0 = tPeak[1] - shapingTime;
 				const double scalingFactor0 = TMath::Max(adcPeak[1] /0.015, 1000.0);
 				const double Q = TMath::Max(qAdc[0],0.0);
 				const double timeShift1 = tPeak[2] - tPeak[1];
@@ -195,29 +232,36 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 
 			if (tPeak.size() == 1)
 			{
-				option = 4;
+				option = 4; 
 				fittingFunction = new TF1("fittingFunction",fittingFunction4Uniformfixed,0.0,numberOfSamples*20.0,6);
-				const double timeShift = tPeak[0] - shapingTime - 5.0;
+				//const double timeShift = tPeak[0] - shapingTime - 5.0;
+				const double timeShift = 30.0;
 				const double scalingFactor = TMath::Max(adcPeak[0] /0.015, 1000.0);
-				const double verticalShift = 0.0;
+				double verticalShift = 0.0;
 				const double sigma = 10.0;
 				const double truncationLevel = 1024.0 - 64.0;
-				fittingFunction->SetParameters(timeShift,scalingFactor,verticalShift,sigma,truncationLevel,shapingTime);
 				fittingFunction->SetParLimits(0,20.0-shapingTime,140.0-shapingTime); 
 				fittingFunction->SetParLimits(1,1000.0, 1.0e9);
 
 				if (nonZeroPedestal)
 				{
 					fittingFunction->SetParLimits(2,-20.0,1000.0);
+					verticalShift = (qAdc[0] + qAdc[1])*0.5;
+
 				}
 				else
 				{
+					verticalShift = 0.0;
 					fittingFunction->FixParameter(2,verticalShift);
 				}
 				fittingFunction->SetParLimits(3,0.0,50.0);
 				fittingFunction->FixParameter(4,1024.0-64.0); 
 				fittingFunction->FixParameter(5,shapingTime);
+				fittingFunction->SetParameters(timeShift,scalingFactor,verticalShift,sigma,truncationLevel,shapingTime);
 				graph->Fit(fittingFunction,"QN");
+
+
+
 				//graph->Fit(fittingFunction,"QNM");
 
 
@@ -228,13 +272,6 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 				{
 
 					fittingFunctionTemp = fittingFunction;
-
-					//cout << "par0 : " << fittingFunction->GetParameter(0) << endl;
-					//cout << "par1 : " << fittingFunction->GetParameter(1) << endl;
-					//cout << "par2 : " << fittingFunction->GetParameter(2) << endl;
-					//cout << "par3 : " << fittingFunction->GetParameter(3) << endl;
-					//cout << "par4 : " << fittingFunction->GetParameter(4) << endl;
-					//cout << "par5 : " << fittingFunction->GetParameter(5) << endl;
 
 					double adcResidual[8];
 					for (int j = 0; j < numberOfSamples; ++j)
@@ -260,7 +297,6 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 						tPeak.insert(tPeak.begin(),locSecondPeak);
 					}
 				}
-					//cout << trial << " : " << tPeak[1] - tPeak[0] << endl;
 				}
 			}
 
@@ -269,7 +305,7 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 			{
 				option = 5;
 				fittingFunction = new TF1("fittingFunction",fittingFunction10fixed,0.0,numberOfSamples*20.0,6);
-				const double timeShift0 = tPeak[0] - shapingTime - 5.0;
+				const double timeShift0 = 30.0;
 				const double scalingFactor0 = TMath::Max(adcPeak[0] /0.015, 1000.0);
 				double verticalShift;
 				const double timeShift1 = tPeak[1] - tPeak[0];
@@ -295,16 +331,20 @@ int fitElectronData(TString dataName, TString newFileName, double shapingTime, c
 				graph->Fit(fittingFunction,"QN");
 
 				// If the 1st fit was "better" keep the 1st fit
-				if (fittingFunction->GetChisquare() > fittingFunctionTemp->GetChisquare())
+				if (suboption == 1 && fittingFunction->GetChisquare() > fittingFunctionTemp->GetChisquare())
 				{
 					fittingFunction = fittingFunctionTemp;
 					option = 4;
+
 				}
 
 				//graph->Fit(fittingFunction,"QNM");
 			}
 			//graph->Fit(fittingFunction,"QNM");
 		}
+
+
+
 
 		convolvedFitTree->Fill();
 	}
@@ -342,7 +382,6 @@ void getElectronData(TTree *oldtree, TString shapingTime, TString dataFileName)
       if (mcpdg==11&&mcproc==56&&!xtalk&&nend==2&&mcenergy!=0.0&&mcmom>50.0) 
       	{newtree->Fill();}
    }
-   //newtree->Print();
    newtree->AutoSave();
    delete newfile;
 }
@@ -369,13 +408,12 @@ void getProtonData(TTree *oldtree, TString shapingTime, TString dataFileName)
 
     TFile *newfile = new TFile(dataFileName,"recreate");
     TTree *newtree = oldtree->CloneTree(0);
-    for (Long64_t i=0;i<oldtree->GetEntries(); i++) 
+    for (Long64_t i=0;i<oldtree->GetEntries(); ++i) 
     {
       oldtree->GetEntry(i);
       if (mcpdg==2212&&mcproc==56&&!xtalk&&nend==2&&mcenergy!=0.0) 
       	{newtree->Fill();}
    }
-   //newtree->Print();
    newtree->AutoSave();
    delete newfile;
  }
