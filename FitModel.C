@@ -4,6 +4,8 @@
 
 using namespace std;
 
+// ADD FIXED TRUNCATION
+ 
 class FitModelBase{
 	public:
 		virtual float fitModel(double *x, double *par) = 0;
@@ -30,6 +32,8 @@ class FitModelBase{
     }
 
 
+    // Shaping power set to 1
+    // MAYBE GET RID OF PAR
 		float unConvolvedSinglePeak(double *x, double *par)
 		{
   		// Initial return value
@@ -39,9 +43,8 @@ class FitModelBase{
   
   		if (xValue > 0.0)
   		{
-    	returnValue = (pow(par[0]*xValue/par[1],par[0])
-                  /(par[1]*TMath::Gamma(par[0])))
-                    *exp(-par[0]*xValue/par[1]);
+    	returnValue = xValue*pow(shapingTime,-2)
+                    *exp(-xValue/shapingTime);
   		}
   		return returnValue;
 		}
@@ -49,23 +52,22 @@ class FitModelBase{
 
 		// Note that this is a convolution with a uniform distribution
 		//2 Parameters (shaping power set to 1.0)
-		//par[0] - Shaping Time
-		//par[1] - sigma
+		//par[0] - sigma
 		float convolvedSinglePeak(double *x, double *par)
 		{
     	float returnValue = 0.0;
 		
-		if (par[1] == 0.0)
+		if (par[0] == 0.0)
     	{
-      		double parameters[2] = {1.0,par[0]}; 
+      		double parameters[2] = {1.0,shapingTime}; 
       		returnValue = unConvolvedSinglePeak(x,parameters);
     	}
     	else
     	{
-      		const float a = TMath::Max((x[0] + par[1]) / par[0],0.0);
+      		const float a = TMath::Max((x[0] + par[0]) / shapingTime,0.0);
       		// Assuming that shaping time is positive and thus b is negative (if t - sigma is)
-      		const float b = TMath::Max((x[0] - par[1]) / par[0],0.0);
-      		returnValue =  (-exp(-a)*(1+a) + exp(-b)*(1+b)) / (2.0 * par[1]);
+      		const float b = TMath::Max((x[0] - par[0]) / shapingTime,0.0);
+      		returnValue =  (-exp(-a)*(1+a) + exp(-b)*(1+b)) / (2.0 * par[0]);
     	}
     	return returnValue;
     }
@@ -91,7 +93,7 @@ class convolutionSinglePeak : protected FitModelBase{
 
       double convolvedSinglePeakX[1] = {x[0] - par[0]};
 
-      double convolvedSinglePeakParams[2] = {shapingTime,par[3]};
+      double convolvedSinglePeakParams[2] = {par[3]};
 
       return (float) par[1] * convolvedSinglePeak(convolvedSinglePeakX,convolvedSinglePeakParams) + par[2];
 
@@ -106,7 +108,7 @@ class convolutionSinglePeak : protected FitModelBase{
 // par[3] is sigma
 
 // This should inherit from convolutionSinglePeak not FitModelBase
-class convolutionSinglePeakWithDyamicPedestal : FitModelBase{
+class convolutionSinglePeakWithDynamicPedestal : protected convolutionSinglePeak{
 
   public: 
     virtual float fitModel(double *x, double *par)
@@ -116,12 +118,49 @@ class convolutionSinglePeakWithDyamicPedestal : FitModelBase{
 
       double dynamicPedestalParam[1] = {par[2]};
 
-
-      // This looks like a awful way of calling the function
-      // convolution single peak
-      convolutionSinglePeak c;
-
-      return (float) c.convolutionSinglePeak::fitModel(x,convolutionSinglePeakParams) + dynamicPedestal(x,dynamicPedestalParam);
+      return (float) convolutionSinglePeak::fitModel(x,convolutionSinglePeakParams) 
+                    + FitModelBase::dynamicPedestal(x,dynamicPedestalParam);
     }
 };
 
+// PUT THE DOUBLE PEAK FUNCTIONS HERE
+class doublePeak : public FitModelBase{
+  public:
+    // Par0 - shift in X 1st peak
+    // Par1 - scalingFactor 1st peak
+    // Par2 - vertical shift 1st peak
+    // Par3 - shift in 2nd peak minus shift in 1st peak
+    // Par4 - scaling factor 2nd peak
+    // Par5 - vertical shift 2nd peak ?????? - I JUST USE THE PEDESTAL OF THE 1ST PEAK
+    virtual float fitModel(double *x, double *par)
+    {
+      // Why can't these be constant arrays???
+      convolutionSinglePeak c;
+      double firstPeakPar[4] = {par[0], par[1], par[2], 0.0};
+      double secondPeakPar[4] = {par[3] + par[0], par[4], par[2], 0.0};
+
+      return c.fitModel(x, firstPeakPar) 
+           + c.fitModel(x, secondPeakPar);
+    }
+
+};
+
+// Par0 - shift in X 1st peak
+// Par1 - scalingFactor 1st peak
+// Par2 - Q
+// Par3 - shift in 2nd peak minus shift in 1st peak
+// Par4 - scaling factor 2nd peak
+class doublePeakWithDynamicPedestal : public doublePeak{
+public:
+  virtual float fitModel(double *x, double *par)
+  {
+    const double fixedPedestal = 0.0;
+    double doublePeakParams[5] = {par[0],par[1],fixedPedestal,par[3],par[4]};
+    double dynamicPedestalParam[1] = {par[2]};
+
+    return doublePeak::fitModel(x,doublePeakParams) 
+        + FitModelBase::dynamicPedestal(x,dynamicPedestalParam);
+
+  }
+
+};
