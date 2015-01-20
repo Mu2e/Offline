@@ -5,48 +5,21 @@
 bool           hasExtMonFNAL = true;
 
 //----------------------------------------------------------------
-// ExtMonFNAL detector and magnet room inside outline.  The shielding
-// between the two rooms (collimator2.shielding) is defined separately.
-// The magnet room is adjacent to beam dump "front" shielding, there
-// is no extra wall on that side.  If we look at the plan view
-// oriented so that the dump X axis points to the left and dump Z
-// axis points up, the points are defined in the clockwise order
-// starting from the top (touching the dump shielding) right corner.
-// One coordinate is dump X, the other is dump Z shifted by
-// the dump Z of the shielding surface we touch.
+// ExtMonFNAL enclosure walls are no longer part of this module.
+// However, the shielding between the two rooms (collimator2.shielding) is.
 
-// This version follows the civil drawings for the outline and some sizes,
-// but assumes L(magnet room)=4200, coll2 shielding = 2000, L(extmon room)=3000
-// to position the stair hall and ventilation shaft
-//
-// The length of the stair hall is 1612 + 1219 + 1613 = 4444 mm
-// Position it symmetrically about the center of coll2 shieling at Zdump=-5200:  -7422 and -2978
+//----------------------------------------------------------------
+// The hand stacked shielding in the magnet room consists of a layer of steel blocks
+// placed along the east wall with a gap for the entrance collimator
+// The steel blocks and the rest of the magnet room floor are also covered with a layer of concrete blocks
+// both the steel and concrete layers are a foot thick
 
-
-// // From the drawing:
-// vector<double> extMonFNAL.roomInsideX = { -1750, -1750, -3731, -3731, -1750, -1750, +2822, +2822, +3584, +3584, +2822, +2822 };
-// vector<double> extMonFNAL.roomInsideZ = {     0, -2928, -2928, -7422, -7422, -9200, -9200, -4200, -4200,  -796,  -796,     0};
-//
-// The above conflicts with ExtMonUCI location.  The easiest solution is to adjust the corner near the shaft
-// to avoid the overlap.
-vector<double> extMonFNAL.roomInsideX = { -1750, -1750, -3731, -3731, -1750, -1750, +2822, +2822, +3584, +3584, +1780, +1780 };
-vector<double> extMonFNAL.roomInsideZ = {     0, -2928, -2928, -7422, -7422, -9200, -9200, -4200, -4200, -1700, -1700,     0 };
-
-// The top of the room floor is assumed to be at the same level as the
-// top of ProtonBeamDump "back" shielding,
-// i.e. minCoreShieldingThickness above the top surface dump core.
-double extMonFNAL.room.insideFullHeight = 2743;
-
-double extMonFNAL.room.wall.thickness = 300;
-double extMonFNAL.room.floor.thickness = 300;
-double extMonFNAL.room.ceiling.thickness = 300;
-
-// Amount of dirt above ExtMonFNAL room.  From drawing S-9:  6'-0'' minus ceiling thickness
-double extMonFNAL.dirtOverhead.thickness = 1530;
-
-// Guaranteed horizontal extension along x and z of the dirt shielding
-// beyond the extMonFNAL ceiling outline.
-double extMonFNAL.dirtOverhead.horizontalMargin = 2000;
+double extMonFNAL.steelLength = 914.4;
+double extMonFNAL.steelWidthN = 1168.4;
+double extMonFNAL.steelWidthS = 2082.8;
+double extMonFNAL.layerHeight = 304.8;
+string extMonFNAL.steelMaterial = "G4_Fe";
+string extMonFNAL.concreteMaterial = "ShieldingConcrete";
 
 //----------------------------------------------------------------
 // The extinction monitor filter channel
@@ -85,9 +58,9 @@ bool extMonFNAL.collimator1.channel.visible = true;
 bool extMonFNAL.collimator1.channel.solid = false;
 
 //----------------------------------------------------------------
-// The filter magnet room.  "Length" is along beam dump Z.
-//
-double extMonFNAL.magnetRoomLength = 4200.;
+// The filter magnet room.  "Length" is along beam dump Z. Taken from civil drawings 13' 11"
+// 
+double extMonFNAL.magnetRoomLength = 4241.8;
 
 // The magnet
 vector<double> extMonFNAL.filter.magnet.outerHalfSize = { 120.65, 147.85, 1841.5 }; // mm
@@ -119,9 +92,12 @@ double extMonFNAL.filter.nominalMomentum = 4200.; // MeV/c
 // The second collimator
 
 // The thickness of the shielding between magnet and detector rooms.
-double         extMonFNAL.collimator2.shielding.thickness = 2000.;
-double         extMonFNAL.collimator2.shielding.dumpXmin  = -2050.; // to outside the wall
-double         extMonFNAL.collimator2.shielding.dumpXmax  = +2822.; // touch the wall
+double         extMonFNAL.collimator2.shielding.thickness = 2000.25;
+double         extMonFNAL.collimator2.shielding.width = 4419.6;
+
+// HVAC duct in the collimator shield wall
+// it is located in the top north corner of shield wall => depends on room dimensions
+double         extMonFNAL.HVACductRadius = 101.6;
 
 // Channel aperture (vector since upstream and downstream halves
 // may be different):  {upstream size, downstream size}
@@ -256,18 +232,6 @@ vector<double> extMonFNAL.box.vd.halfSize = {100, 200, 650.};
 //----------------------------------------------------------------
 string         extMonFNAL.room.materialName  = "G4_AIR";
 string         extMonFNAL.room.wall.materialName  = "ShieldingConcrete";
-
-bool           extMonFNAL.room.visible   = false;
-bool           extMonFNAL.room.solid     = false;
-
-bool           extMonFNAL.room.wall.visible   = true;
-bool           extMonFNAL.room.wall.solid     = false;
-
-bool           extMonFNAL.room.ceiling.visible   = true;
-bool           extMonFNAL.room.ceiling.solid     = false;
-
-bool           extMonFNAL.room.floor.visible   = true;
-bool           extMonFNAL.room.floor.solid     = true;
 
 bool extMonFNAL.collimator2.shielding.visible = true;
 bool extMonFNAL.collimator2.shielding.solid = false;

@@ -12,8 +12,6 @@ namespace mu2e {
     , _filterEntranceAngleV(0.)
     , roomInsideFullHeight_(0.)
     , magnetRoomLength_(0.)
-    , coll2ShieldingDumpXmin_(0.)
-    , coll2ShieldingDumpXmax_(0.)
     , roomInsideYmin_(0.)
     , roomInsideYmax_(0.)
   {}

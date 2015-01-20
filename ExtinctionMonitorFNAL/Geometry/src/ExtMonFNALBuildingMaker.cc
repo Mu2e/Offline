@@ -78,13 +78,16 @@ namespace mu2e {
   // Get relevant Hall solid
     ExtrudedSolid extMonRoom = hall.getBldgSolid("extMon");
     const CLHEP::Hep3Vector& offset = extMonRoom.getOffsetFromMu2eOrigin();
-  // Get front and back corner coordinates of north wall
+  // Get corner coordinates of extinction monitor room
     const auto & roomVertices = extMonRoom.getVertices();
-    const double zfront = roomVertices[0][0]+offset[2];
-    const double zback = roomVertices[1][0]+offset[2];
     const double xfront = roomVertices[0][1]+offset[0];
+    const double zfront = roomVertices[0][0]+offset[2];
     const double xback = roomVertices[1][1]+offset[0];
+    const double zback = roomVertices[1][0]+offset[2];
+    const double xScorner = roomVertices[9][1]+offset[0];
+    const double zScorner = roomVertices[9][0]+offset[2];
     const double roomLength = sqrt((zfront-zback)*(zfront-zback)+(xfront-xback)*(xfront-xback));
+    const double roomWidth = sqrt((zfront-zScorner)*(zfront-zScorner)+(xfront-xScorner)*(xfront-xScorner));
 
 
     emfb->roomInsideFullHeight_ = 2*extMonRoom.getYhalfThickness();
@@ -95,7 +98,7 @@ namespace mu2e {
     const double magnetRoomLength = c.getDouble("extMonFNAL.magnetRoomLength");
     const double dxdL = (xback-xfront)/roomLength;
     const double dzdL = (zback-zfront)/roomLength;
-    const double shieldwidth = 2*dump.backShieldingHalfSize()[1];
+    const double shieldwidth = c.getDouble("extMonFNAL.collimator2.shielding.width");
     emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*magnetRoomLength,
 					      xfront+dxdL*magnetRoomLength);
     emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*(magnetRoomLength+col2zLength),
@@ -106,14 +109,47 @@ namespace mu2e {
 					      xfront+dxdL*magnetRoomLength-shieldwidth*cos(dump.coreRotY()));
 
     emfb->magnetRoomLength_ = magnetRoomLength;
-    emfb->coll2ShieldingDumpXmin_ = c.getDouble("extMonFNAL.collimator2.shielding.dumpXmin");
-    emfb->coll2ShieldingDumpXmax_ = c.getDouble("extMonFNAL.collimator2.shielding.dumpXmax");
 
-    //----------------------------------------------------------------
-    // We need to rotate the extruded solid coordinates by +90 degrees to bring it to the horizontal plane.
-    // No other rotation is needed since the outline is already in Mu2e (x,z), i.e. rorated with the dump
-//    emfb->roomRefPointInMu2e_ = Hep3Vector(0, (emfb->roomInsideYmax() + emfb->roomInsideYmin())/2, 0);
-//    emfb->roomRotationInMu2e_ = CLHEP::HepRotationX(+90.*CLHEP::degree);
+  // hand stacked shielding sizes and locations in magnet room
+    const double steelLength = c.getDouble("extMonFNAL.steelLength");
+    const double steelwidthN = c.getDouble("extMonFNAL.steelWidthN");
+    const double steelwidthS = c.getDouble("extMonFNAL.steelWidthS");
+    const double layerHeight = c.getDouble("extMonFNAL.layerHeight");
+    emfb->shieldingNCenterInMu2e_[0] = xfront + (dxdL*steelLength + dzdL*steelwidthN)/2.0;
+    emfb->shieldingNCenterInMu2e_[1] = emfb->roomInsideYmin_ + layerHeight/2.0;
+    emfb->shieldingNCenterInMu2e_[2] = zfront + (dzdL*steelLength - dxdL*steelwidthN)/2.0;
+
+    emfb->shieldingSCenterInMu2e_[0] = xScorner + (dxdL*steelLength - dzdL*steelwidthS)/2.0;
+    emfb->shieldingSCenterInMu2e_[1] = emfb->roomInsideYmin_ + layerHeight/2.0;
+    emfb->shieldingSCenterInMu2e_[2] = zScorner + (dzdL*steelLength + dxdL*steelwidthS)/2.0;
+
+    emfb->shieldingBCenterInMu2e_[0] = xfront + (dxdL*(magnetRoomLength+steelLength) + dzdL*roomWidth)/2.0;
+    emfb->shieldingBCenterInMu2e_[1] = emfb->roomInsideYmin_ + layerHeight/2.0;
+    emfb->shieldingBCenterInMu2e_[2] = zfront + (dzdL*(magnetRoomLength+steelLength) - dxdL*roomWidth)/2.0;
+
+    emfb->shieldingNHalfSize_.resize(3);
+    emfb->shieldingNHalfSize_[0] = steelwidthN/2.0;
+    emfb->shieldingNHalfSize_[1] = layerHeight/2.0;
+    emfb->shieldingNHalfSize_[2] = steelLength/2.0;
+
+    emfb->shieldingSHalfSize_.resize(3);
+    emfb->shieldingSHalfSize_[0] = steelwidthS/2.0;
+    emfb->shieldingSHalfSize_[1] = layerHeight/2.0;
+    emfb->shieldingSHalfSize_[2] = steelLength/2.0;
+
+    emfb->shieldingBHalfSize_.resize(3);
+    emfb->shieldingBHalfSize_[0] = roomWidth/2.0;
+    emfb->shieldingBHalfSize_[1] = layerHeight/2.0;
+    emfb->shieldingBHalfSize_[2] = (magnetRoomLength-steelLength)/2.0;
+
+    CLHEP::HepRotation nonrotation(CLHEP::HepRotation::IDENTITY);
+    emfb->shieldingRotationInMu2e_ = nonrotation.rotateY(asin(dxdL) * CLHEP::radian);
+
+    emfb->_HVACductRadius = c.getDouble("extMonFNAL.HVACductRadius");
+    emfb->_HVACductHalfLength = shieldwidth/2;
+    emfb->HVACductCenterInMu2e_[0] = xfront + dxdL*(magnetRoomLength+shieldwidth/2) + dzdL*emfb->_HVACductRadius;
+    emfb->HVACductCenterInMu2e_[1] = emfb->roomInsideYmin_ + emfb->roomInsideFullHeight_ - emfb->_HVACductRadius;
+    emfb->HVACductCenterInMu2e_[2] = zfront + dzdL*(magnetRoomLength+shieldwidth/2) - dxdL*emfb->_HVACductRadius;
 
     //----------------------------------------------------------------
     emfb->_filterEntranceOffsetX = c.getDouble("extMonFNAL.entranceOffsetX") * CLHEP::mm;
@@ -127,11 +163,13 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     // collimator1
+    const double referenceLength = dump.coreCenterDistanceToReferencePlane() 	- dump.coreCenterDistanceToShieldingFace()
+										+ dump.frontShieldingHalfSize()[2];
     const Hep3Vector collimator1CenterInDump(emfb->filterEntranceOffsetX()
-                                             + 0.5*col1zLength*tan(emfb->collimator1().angleH()),
+                                             + referenceLength*tan(emfb->collimator1().angleH()),
 
                                              emfb->filterEntranceOffsetY()
-                                             + 0.5*col1zLength*tan(emfb->collimator1().angleV())/cos(emfb->filterAngleH()),
+                                             + referenceLength*tan(emfb->collimator1().angleV())/cos(emfb->filterAngleH()),
 
                                              dump.coreCenterDistanceToShieldingFace() - dump.frontShieldingHalfSize()[2]
                                              );
@@ -224,211 +262,17 @@ namespace mu2e {
       std::cout<<"ExtMonFNALBuildingMaker"<<": ExtMonFNALBuilding::filterEntranceInMu2e() = "<<emfb->filterEntranceInMu2e()<<std::endl;
       std::cout<<"ExtMonFNALBuildingMaker"<<": ExtMonFNALBuilding::filterExitInMu2e() = "<<emfb->filterExitInMu2e()<<std::endl;
     }
-/*
     //----------------------------------------------------------------
-    std::vector<double> roomInsideX, roomInsideZ;
-    c.getVectorDouble("extMonFNAL.roomInsideX", roomInsideX);
-    c.getVectorDouble("extMonFNAL.roomInsideZ", roomInsideZ);
-    if(roomInsideZ.size() != roomInsideX.size()) {
-      throw cet::exception("GEOM")<<"ExtMonFNALBuildingMaker: ERROR: "
-                                  <<"different sizes for extMonFNAL.roomInsideX (="<<roomInsideX.size()
-                                  <<") and extMonFNAL.roomInsideZ (="<<roomInsideZ.size()<<")"
-        ;
-    }
 
-    if(roomInsideX.size() < 3) {
-      throw cet::exception("GEOM")<<"ExtMonFNALBuildingMaker: ERROR: "
-                                  <<"too few points in extMonFNAL.roomInsideX, roomInsideZ: "
-                                  <<" need at least 3 points to define the outline, got "
-                                  <<roomInsideX.size()
-        ;
-    }
+    static CLHEP::HepRotation shieldingRot(CLHEP::HepRotation::IDENTITY);
+    shieldingRot.rotateX( 90*CLHEP::degree);
+    shieldingRot.rotateZ( 90*CLHEP::degree);
 
-    if(roomInsideZ[0] != 0.) {
-      throw cet::exception("GEOM")<<"ExtMonFNALBuildingMaker: ERROR: roomInsideZ[0] must be 0";
-    }
-    if(roomInsideZ.back() != 0.) {
-      throw cet::exception("GEOM")<<"ExtMonFNALBuildingMaker: ERROR: the last entry in roomInsideZ must be 0";
-    }
-
-    // Convert inside outline to Mu2e coords
-    for(unsigned i=0; i<roomInsideX.size(); ++i) {
-      // Convert inputs to Mu2e coordinates
-      Hep3Vector pointInDump(roomInsideX[i],
-                             0,
-                             roomInsideZ[i] + dump.coreCenterDistanceToShieldingFace() - 2*dump.frontShieldingHalfSize()[2]);
-
-      Hep3Vector pointInMu2e(dump.beamDumpToMu2e_position(pointInDump));
-      emfb->roomInsideOutline_.push_back(Hep2Vector(pointInMu2e.x(), pointInMu2e.z()));
-    }
-
-    // Add the wall thickness as appropriate to the inside outline to get the outside outline
-    // then convert to Mu2e
-    for(unsigned i=0; i<roomInsideX.size(); ++i) {
-
-      Hep3Vector insidePointInDump
-        (roomInsideX[i],
-         0,
-         roomInsideZ[i] + dump.coreCenterDistanceToShieldingFace() - 2*dump.frontShieldingHalfSize()[2]);
-
-      // For ExtMonFNAL area all the angles are straight in the civil
-      // drawing and the walls are parallel to the dump coordinate
-      // axes, so we'll just handle this case.
-      // The "regular" inside points need to be shifted in one of the four directions
-      // (xz) \in { (++), (+-), (-+), (--) }
-      // The first and the last points are special: we know to shift them by (-0) and (+0).
-
-      // All the shifts are in the units of wallThickness.
-      int xdir(0), zdir(0);
-      if(i==0) {
-        xdir = -1;
-        zdir = 0;
-      }
-      else if(i==(roomInsideX.size()-1)) {
-        xdir = +1;
-        zdir = 0;
-      }
-      else {
-        // This is a regular point - need to decide among the four directions
-
-        // First check the "wall parallel to dump coordinate axes" assumption.
-        // The doubles here are not computed but read from user input,
-        // there is no rounding and the "==" comparison should work fine.
-        if((roomInsideX[i-1] != roomInsideX[i]) && (roomInsideZ[i-1] != roomInsideZ[i])) {
-          throw cet::exception("GEOM")<<"ExtMonFNALBuildingMaker: ERROR:"
-                                      <<" the wall between the points "<<(i-1)<<" and "<<i
-                                      <<" of the room outline extMonFNAL.roomInsideX, roomInsideZ"
-                                      <<" is not parallel to a dump coordinate axis."
-            ;
-        }
-        if((roomInsideX[i+1] != roomInsideX[i]) && (roomInsideZ[i+1] != roomInsideZ[i])) {
-          throw cet::exception("GEOM")<<"ExtMonFNALBuildingMaker: ERROR:"
-                                      <<" the wall between the points "<<i<<" and "<<(i+1)
-                                      <<" of the room outline extMonFNAL.roomInsideX, roomInsideZ"
-                                      <<" is not parallel to a dump coordinate axis."
-            ;
-        }
-
-        // Decide the direction of the shift
-        if(roomInsideZ[i] < roomInsideZ[i-1]) {
-          xdir = -1;
-          zdir = (roomInsideX[i+1] < roomInsideX[i]) ? +1 : -1;
-        }
-        else if(roomInsideZ[i] > roomInsideZ[i-1]) {
-          xdir = +1;
-          zdir = (roomInsideX[i+1] < roomInsideX[i]) ? +1 : -1;
-        }
-        else { // the (i-1)--(i) wall is parallel to the X axis
-          if(roomInsideX[i] < roomInsideX[i-1]) {
-            zdir = +1;
-            xdir = (roomInsideZ[i+1] < roomInsideZ[i]) ? -1 : +1;
-          }
-          else if(roomInsideX[i] > roomInsideX[i-1]) {
-            zdir = -1;
-            xdir = (roomInsideZ[i+1] < roomInsideZ[i]) ? -1 : +1;
-          }
-        }
-      } // special vs regular point
-
-      //std::cout<<"# AG: point "<<i<<", (xdir, zdir): "<<xdir<<" "<<zdir<<std::endl;
-      Hep3Vector outsidePointInDump = insidePointInDump + wallThickness * Hep3Vector(xdir, 0, zdir);
-
-      // Convert inputs to Mu2e coordinates
-      Hep3Vector outsidePointInMu2e(dump.beamDumpToMu2e_position(outsidePointInDump));
-      emfb->wallOutsideOutline_.push_back(Hep2Vector(outsidePointInMu2e.x(), outsidePointInMu2e.z()));
-
-      // debug:
-      if(false) {
-        std::cout<<"extMonFNAL_outlines"
-                 <<" "<<insidePointInDump.x()
-                 <<" "<<insidePointInDump.z()
-                 <<" "<<outsidePointInDump.x()
-                 <<" "<<outsidePointInDump.z()
-                 <<" "<<emfb->roomInsideOutline_[i].x()
-                 <<" "<<emfb->roomInsideOutline_[i].y()
-                 <<" "<<emfb->wallOutsideOutline_[i].x()
-                 <<" "<<emfb->wallOutsideOutline_[i].y()
-                 <<std::endl;
-      }
-    } // for(points)
-
-    //----------------------------------------------------------------
-    // Floor outline differs from the ceiling because the back dump
-    // core back shielding protrudes there.
-    //
-    // Need to add new first/last points, or shift the existing ones.
-    if(true) {
-      emfb->floorOutsideOutline_ = emfb->wallOutsideOutline_;
-
-      Hep3Vector shiftInDump(0, 0, -2*dump.backShieldingHalfSize()[2]);
-      Hep3Vector shiftInMu2e = dump.coreRotationInMu2e() * shiftInDump;
-      Hep2Vector shift(shiftInMu2e.x(), shiftInMu2e.z());
-
-      Hep3Vector fsRef(0,
-                       0,
-                       dump.coreCenterDistanceToShieldingFace() - 2*dump.frontShieldingHalfSize()[2]
-                       );
-
-      // Start of the path:
-      if(roomInsideX[0] - wallThickness < -dump.backShieldingHalfSize()[0]) { // Need to add points
-
-        Hep3Vector startFirst = dump.beamDumpToMu2e_position
-          (fsRef + Hep3Vector(-dump.backShieldingHalfSize()[0], 0, -2*dump.backShieldingHalfSize()[2]));
-
-        Hep3Vector startSecond =  dump.beamDumpToMu2e_position
-          (fsRef + Hep3Vector(-dump.backShieldingHalfSize()[0], 0, 0));
-
-        emfb->floorOutsideOutline_.insert(emfb->floorOutsideOutline_.begin(),
-                                          Hep2Vector(startSecond.x(), startSecond.z()));
-
-        emfb->floorOutsideOutline_.insert(emfb->floorOutsideOutline_.begin(),
-                                          Hep2Vector(startFirst.x(), startFirst.z()));
-      }
-      else { // need to shift
-        emfb->floorOutsideOutline_.front() += shift;
-      }
-
-      // End of the path:
-      if(roomInsideX.back() + wallThickness > +dump.backShieldingHalfSize()[0]) { // Need to add points
-        Hep3Vector endLast = dump.beamDumpToMu2e_position
-          (fsRef + Hep3Vector(+dump.backShieldingHalfSize()[0], 0, -2*dump.backShieldingHalfSize()[2]));
-
-        Hep3Vector endSecond =  dump.beamDumpToMu2e_position
-          (fsRef + Hep3Vector(+dump.backShieldingHalfSize()[0], 0, 0));
-
-        emfb->floorOutsideOutline_.push_back(Hep2Vector(endSecond.x(), endSecond.z()));
-        emfb->floorOutsideOutline_.push_back(Hep2Vector(endLast.x(), endLast.z()));
-      }
-      else { // need to shift
-        emfb->floorOutsideOutline_.back()  += shift;
-      }
-    }
-
-    // debug:
-    if(false) {
-      for(unsigned i = 0; i < emfb->floorOutsideOutline_.size(); ++i) {
-        std::cout<<"extMonFNAL_floor "
-                 <<" "<<emfb->floorOutsideOutline_[i].x()
-                 <<" "<<emfb->floorOutsideOutline_[i].y()
-                 <<std::endl;
-      }
-    }
-*/
-    //----------------------------------------------------------------
-    const Hep3Vector coll2ShieldingCenterInDump(
-                                                (emfb->coll2ShieldingDumpXmax() + emfb->coll2ShieldingDumpXmin())/2
-                                                ,
-                                                dump.backShieldingHalfSize()[1] + 0.5*emfb->roomInsideFullHeight()
-                                                ,
-                                                dump.coreCenterDistanceToShieldingFace() - 2*dump.frontShieldingHalfSize()[2]
-                                                -(emfb->magnetRoomLength()+0.5*emfb->collimator2().horizontalLength())
-                                                );
-
-    emfb->coll2ShieldingCenterInMu2e_ = dump.beamDumpToMu2e_position(coll2ShieldingCenterInDump);
-    emfb->coll2ShieldingRotationInMu2e_ = dump.coreRotationInMu2e();
+    emfb->coll2ShieldingRotationInMu2e_ = shieldingRot;
+    emfb->coll2ShieldingCenterInMu2e_ = CLHEP::Hep3Vector(0, (emfb->roomInsideYmin()+emfb->roomInsideYmax())/2.0, 0);
 
     emfb->coll2ShieldingHalfSize_.resize(3);
-    emfb->coll2ShieldingHalfSize_[0] = 0.5*(emfb->coll2ShieldingDumpXmax_ - emfb->coll2ShieldingDumpXmin_);
+    emfb->coll2ShieldingHalfSize_[0] = 0.5*shieldwidth;
     emfb->coll2ShieldingHalfSize_[1] = 0.5*emfb->roomInsideFullHeight();
     emfb->coll2ShieldingHalfSize_[2] = 0.5*col2zLength;
 

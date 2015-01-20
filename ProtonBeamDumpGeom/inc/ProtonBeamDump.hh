@@ -26,10 +26,11 @@ namespace mu2e {
     // Primary inputs: sizes
 
     const std::vector<double>& coreHalfSize() const { return _coreHalfSize; }
-
     const std::vector<double>& neutronCaveHalfSize() const { return _neutronCaveHalfSize; }
-
     const std::vector<double>& mouthHalfSize() const { return _mouthHalfSize; }
+    const std::vector<double>& frontSteelHalfSize() const { return _frontSteelHalfSize; }
+    const std::vector<double>& backSteelHalfSize() const { return _backSteelHalfSize; }
+    const std::vector<double>& coreAirHalfSize() const { return _coreAirHalfSize; }
 
     double minCoreShieldingThickness() const { return _minCoreShieldingThickness; }
 
@@ -45,14 +46,17 @@ namespace mu2e {
 
     // Front core shielding: contains the dump core and collimator1.
     double coreCenterDistanceToShieldingFace() const { return _coreCenterDistanceToShieldingFace; }
+    double coreCenterDistanceToReferencePlane() const { return _coreCenterDistanceToReferencePlane; }
 
     const std::vector<double>& frontShieldingHalfSize() const { return _frontShieldingHalfSize; }
     const CLHEP::Hep3Vector& frontShieldingCenterInMu2e() const { return _frontShieldingCenterInMu2e; }
 
     const CLHEP::Hep3Vector& mouthCenterInMu2e() const { return _mouthCenterInMu2e; }
     const CLHEP::Hep3Vector& neutronCaveCenterInMu2e() const { return _neutronCaveCenterInMu2e; }
+    const CLHEP::Hep3Vector& frontSteelCenterInMu2e() const { return _frontSteelCenterInMu2e; }
+    const CLHEP::Hep3Vector& backSteelCenterInMu2e() const { return _backSteelCenterInMu2e; }
+    const CLHEP::Hep3Vector& coreAirCenterInMu2e() const { return _coreAirCenterInMu2e; }
 
-    // May need to add extra shielding to "frontShielding" to satisfy the min. shielding requirement
     const std::vector<double>& backShieldingHalfSize() const { return _backShieldingHalfSize; }
     const CLHEP::Hep3Vector& backShieldingCenterInMu2e() const { return _backShieldingCenterInMu2e; }
 
@@ -91,11 +95,16 @@ namespace mu2e {
     std::vector<double> _coreHalfSize;
     std::vector<double> _neutronCaveHalfSize;
     std::vector<double> _mouthHalfSize;
+    std::vector<double> _frontSteelHalfSize;
+    std::vector<double> _backSteelHalfSize;
+    std::vector<double> _coreAirHalfSize;
     double _minCoreShieldingThickness;
+
 
     // computed stuff
     std::vector<CLHEP::Hep2Vector> _frontShieldingOutline;
     double _coreCenterDistanceToShieldingFace;
+    double _coreCenterDistanceToReferencePlane;
     std::vector<double> _frontShieldingHalfSize;
     CLHEP::Hep3Vector _frontShieldingCenterInMu2e;
 
@@ -105,6 +114,9 @@ namespace mu2e {
 
     CLHEP::Hep3Vector _mouthCenterInMu2e;
     CLHEP::Hep3Vector _neutronCaveCenterInMu2e;
+    CLHEP::Hep3Vector _frontSteelCenterInMu2e;
+    CLHEP::Hep3Vector _backSteelCenterInMu2e;
+    CLHEP::Hep3Vector _coreAirCenterInMu2e;
 
     double _shieldingFaceYmin;
     double _shieldingFaceXmin;
