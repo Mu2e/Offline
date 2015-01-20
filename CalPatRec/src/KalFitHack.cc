@@ -12,6 +12,7 @@
 #include "KalmanTests/inc/PanelAmbigResolver.hh"
 #include "KalmanTests/inc/PocaAmbigResolver.hh"
 #include "KalmanTests/inc/HitAmbigResolver.hh"
+#include "KalmanTests/inc/HitAmbigResolverHack.hh"
 #include "KalmanTests/inc/FixedAmbigResolver.hh"
 #include "KalmanTests/inc/BaBarMu2eField.hh"
 //geometry
@@ -55,9 +56,9 @@
 
 using namespace std; 
 
-namespace {
-  double DT_OFFSET = 1.4; // in ns
-}
+// namespace {
+//   double DT_OFFSET = 1.4; // in ns
+// }
 
 namespace mu2e 
 {
@@ -89,17 +90,20 @@ namespace mu2e
     // t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
     _updatet0(pset.get<bool>("updateT0",true)),
-    _daveMode(pset.get<int>("daveMode" ,1)),
+    _daveMode(pset.get<int>("daveMode" ,0)),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
+    _dtoffset(pset.get<double>("dtOffset")),
     //
     _removefailed(pset.get<bool>("RemoveFailedFits",true)),
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
-    _bfield(0)
+    _bfield(0),
+    fNiter(0)
   {
+    //    fStopwatch = new TStopwatch();
 // set KalContext parameters
     _disttol = pset.get<double>("IterationTolerance",0.1);
     _intertol = pset.get<double>("IntersectionTolerance",100.0);
@@ -122,12 +126,23 @@ namespace mu2e
     // DOF counting subdivision is illogical, FIXME!!!!
     _mindof[0] = _mindof[2] = pset.get<double>("MinNDOF",10);
     _mindof[1] = 0;
+//----------------------------------------------------------------------
+// 2015 - 01 -09 G. Pezzullo and P. Murat
+// we noticed that with respect to KalmanTest/src/KalFit.cc we were using
+// different ranges and divisions for the magnetic field
+//----------------------------------------------------------------------
+//     _bintconfig._maxRange = pset.get<double>("BFieldIntMaxRange",1.0e5); // 100 m
+//     _bintconfig._intTolerance = pset.get<double>("BFieldIntTol",0.01); // 1 KeV
+//     _bintconfig._intPathMin = pset.get<double>("BFieldIntMin",5.0); // 5 mm
+//     _bintconfig._divTolerance = pset.get<double>("BFieldIntDivTol",0.01); // 10 KeV
+//     _bintconfig._divPathMin = pset.get<double>("BFieldIntDivMin",10.0); // 10 mm
+//     _bintconfig._divStepCeiling = pset.get<double>("BFieldIntDivMax",100.0); // 100 mm
     _bintconfig._maxRange = pset.get<double>("BFieldIntMaxRange",1.0e5); // 100 m
-    _bintconfig._intTolerance = pset.get<double>("BFieldIntTol",0.001); // 1 KeV
-    _bintconfig._intPathMin = pset.get<double>("BFieldIntMin",5.0); // 5 mm
-    _bintconfig._divTolerance = pset.get<double>("BFieldIntDivTol",0.01); // 10 KeV
-    _bintconfig._divPathMin = pset.get<double>("BFieldIntDivMin",10.0); // 10 mm
-    _bintconfig._divStepCeiling = pset.get<double>("BFieldIntDivMax",100.0); // 100 mm
+    _bintconfig._intTolerance = pset.get<double>("BFieldIntTol",0.01); // 10 KeV
+    _bintconfig._intPathMin = pset.get<double>("BFieldIntMin",20.0); // 20 mm
+    _bintconfig._divTolerance = pset.get<double>("BFieldIntDivTol",0.05); // 50 KeV
+    _bintconfig._divPathMin = pset.get<double>("BFieldIntDivMin",50.0); // 50 mm
+    _bintconfig._divStepCeiling = pset.get<double>("BFieldIntDivMax",500.0); // 500 mm
     // make sure we have at least one entry for additional errors
     if(_herr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFitHack: no hit errors specified" << endl;
     if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFitHack: inconsistent ambiguity resolution" << endl;
@@ -147,6 +162,9 @@ namespace mu2e
 	case pocaambig:
 	  _ambigresolver.push_back(new PocaAmbigResolver(pset));
 	  break;
+	case hitambig_hack:
+	  _ambigresolver.push_back(new HitAmbigResolverHack(pset,_herr[iambig]));
+	  break;
       }
     }
   }
@@ -156,6 +174,8 @@ namespace mu2e
       delete _ambigresolver[iambig];
     }
     delete _bfield;
+
+    //    delete fStopwatch;
   }
 
 //-----------------------------------------------------------------------------
@@ -189,6 +209,8 @@ namespace mu2e
 // knowing t0, create the hits
 //-----------------------------------------------------------------------------
       makeHits(kres, t0);
+
+  
 //-----------------------------------------------------------------------------
 // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
 // This will go away when we cleanup the BaBar hit storage, FIXME!!!
@@ -208,6 +230,10 @@ namespace mu2e
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
       double flt0 = kres._tdef.helix().zFlight(0.0);
       kres._krep->setT0(t0,flt0);
+
+      if (_debug>0){
+	printHits(kres);
+      }
 //-----------------------------------------------------------------------------
 // now fit
 // 10-07-2013 giani added the following line. It updates the hit times
@@ -339,6 +365,8 @@ namespace mu2e
 //-----------------------------------------------------------------------------
   void KalFitHack::fitIteration(KalFitResult& kres, size_t iherr, CalTimePeak* TPeak) {
     // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
+
+    //    printf("[KalFitHack::fitIteration] BEGIN iherr:%i \n",iherr);
     for(std::vector<TrkStrawHit*>::iterator itsh = kres._hits.begin(); itsh != kres._hits.end(); ++itsh){
       (*itsh)->setExtErr(_herr[iherr]);
     }
@@ -346,14 +374,30 @@ namespace mu2e
     double oldt0 = kres._krep->t0()._t0;
     kres._nt0iter = 0;
     unsigned niter(0);
+
     bool changed(true);
     kres._fit = TrkErrCode::succeed;
-    while(kres._fit.success() && changed && niter < maxIterations()){
+    bool fit_success;
+
+    double t2, t3;
+
+    while(kres._fit.success() && changed && niter < maxIterations()) {
+      //      printf("[KalFitHack::fitIteration] new iteration: iherr:%i niter:%i\n", iherr,niter);
       changed = false;
       _ambigresolver[iherr]->resolveTrk(kres);
       kres._krep->resetFit();
+//----------------------------------------------------------------------
+//      t2 = fStopwatch->CpuTime();
+//      fStopwatch->Start();
       kres.fit();
-      if(! kres._fit.success())break;
+      //      t3 = fStopwatch->CpuTime();
+      //      fStopwatch->Continue();
+//       printf("[KalFitHack::fitIteration] iherr:%i fit time:%7.4f nhits:%5i nactive:%3i niter:%i\n", 
+// 	     iherr,t3, kres._hits.size(),kres._krep->nActive(),niter);
+
+
+      fit_success = kres._fit.success();
+      if(! fit_success) break;
       if(_updatet0 ){
 	// 2014-12-11: G.Pezzullo and P.Murat - temporary *FIXME*
 	if (TPeak != NULL){
@@ -371,7 +415,17 @@ namespace mu2e
       }
       niter++;
     }
+//----------------------------------------------------------------------
+// 2014-12-29 G. Pezzullo and P. Murat added the following counter 
+    fNiter += niter;
+
+    fit_success = kres._fit.success();
+    if (fit_success) {
+      _ambigresolver[iherr]->resolveTrk(kres);
+    }
     kres._ninter = kres._krep->intersections();
+
+    //    printf("[KalFitHack::fitIteration] END iherr:%i \n",iherr);
   }
 
   bool
@@ -477,10 +531,12 @@ namespace mu2e
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
       double len = hit->fltLen();
-
+      double resid(-9999), rms(-9999);
       HepPoint  plen(-9999,-9999.,-9999);
       if (Trk != 0){
-	plen = Trk->position(len);
+	plen  = Trk->position(len);
+	resid =  hit->resid();
+	rms   = hit->hitRms();
       }
 
       printf("%3i %1i %1i %10.3f %6.3f %10.3f %10.3f %10.3f %8.3f %7.3f",
@@ -488,7 +544,7 @@ namespace mu2e
 	     hit->isUsable(),
 	     hit->isActive(),
 	     len,
-	     hit->hitRms(),
+	     rms,
 	     plen.x(),plen.y(),plen.z(),
 	     sh->time(), sh->dt()
 	     );
@@ -508,7 +564,7 @@ namespace mu2e
 	     pos.x(),
 	     pos.y(),
 	     pos.z(),
-	     hit->resid()
+	     resid
 	     );
     }
   }
@@ -646,7 +702,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     double path = TPeak->ClusterZ()/tdef.helix().sinDip();
 
-    t0._t0 = TPeak->ClusterT0() + DT_OFFSET - path/vflt;
+    t0._t0 = TPeak->ClusterT0() + _dtoffset - path/vflt;
     
     //Set dummy error value
     t0._t0err = 1.;
@@ -734,7 +790,7 @@ namespace mu2e
 // set dummy error value
 //-----------------------------------------------------------------------------
       path      = TPeak->ClusterZ()/trkHel.sinDip();
-      t0._t0    = TPeak->ClusterT0() + DT_OFFSET - path/vflt;
+      t0._t0    = TPeak->ClusterT0() + _dtoffset - path/vflt;
       t0._t0err = 1.0;
       
       kres._krep->setT0(t0,flt0);
@@ -854,7 +910,7 @@ namespace mu2e
 // update the reference flightlength
       hflt = hit->fltLen();
     }
-    if (_debug > 0) {
+    if (_debug > 1) {
       printf("[KalFitHack::updateHitTimes] moving forward\n");
       printHits(kres);
     }
@@ -872,7 +928,7 @@ namespace mu2e
       hflt = hit->fltLen();
     }
 
-    if (_debug > 0) {
+    if (_debug > 1) {
       printf("[KalFitHack::updateHitTimes] moving backwards\n");
       printHits(kres);
     }

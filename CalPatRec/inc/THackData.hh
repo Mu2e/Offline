@@ -17,7 +17,9 @@ public:
   const HelixTraj*  fSHelix;
 
   double  fData[100];
-
+  
+  double  fDist[300];
+  double  fDz[300];
   //  TH1F *fHdist;
 
   THackData();
@@ -34,12 +36,16 @@ public:
   double TheoRadius(){ return fData[5];   }
   double TheoPhi0  (){ return fData[6];   }
   double TheoTanL  (){ return fData[7];   }
-  double Theodfdz  (){ return fData[8];   }  
+  double dfdz      (){ return fData[8];   }  
   int    mode0Points(){ return fData[9];   }  
   double shDz      (){ return fData[10];  }  
   int    goodPoints(){ return fData[11];  }  
   double chi2      (){ return fData[12];  }
 
+  
+  double* distVec  (){ return fDist;      }
+  double* dzVec    (){ return fDz;      }
+  
   
   void   SetClusterT0(double T0) { fClusterT0 = T0; }
   void   SetClusterZ (double z)  { fClusterZ  = z;  }

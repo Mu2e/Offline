@@ -14,13 +14,13 @@
 #include "Stntuple/test/producers.fcl"
 
 #                             Give this process a name
-process_name : trkPPatRec
+process_name : trkPatRecDisplay
 #------------------------------------------------------------------------------
 # Read events from a file (made by example 3)
 #------------------------------------------------------------------------------
 source : {
-#    module_type : EmptyEvent
-    module_type : RootInput
+    module_type : EmptyEvent
+#    module_type : RootInput
     maxEvents   : 100
 }
 #------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ services : {
     # Limit of 5 per category; then exponential backoff.
     #  message.destinations.log.default.limit : 5
     
-    TFileService          : { fileName   : "calPatRec.root" }
+    TFileService          : { fileName   : "trkPatRec_display.art" }
     RandomNumberGenerator : { }
 
     user : {
@@ -89,16 +89,16 @@ physics : {
 # paths, start from clustering
 #------------------------------------------------------------------------------
     p1 : [
-	  # generate, g4run,
-	  # protonTimeMap, muonTimeMap, 
-	  # makeSD, makeSH, FSHPreStereo,
-	  # CaloReadoutHitsMaker, CaloCrystalHitsMaker,
-	  MakeCaloCluster, 
-	  MakeStereoHits, FlagStrawHits, FlagBkgHits, 
-	  TrkPatRec,
-	  TrkExtrapol, CaloMatching,
-	  ParticleID, 
-	  MuHitDisplay
+	   generate, g4run,
+	   protonTimeMap, muonTimeMap, 
+	   makeSD, makeSH, FSHPreStereo,
+	   CaloReadoutHitsMaker, CaloCrystalHitsMaker,
+	   MakeCaloCluster, 
+	   MakeStereoHits, FlagStrawHits, FlagBkgHits, 
+	   TrkPatRec,
+	   TrkExtrapol, CaloMatching,
+	   ParticleID, 
+	   MuHitDisplay
 	 ]
 
     e1 : [
@@ -133,8 +133,8 @@ services.user.SeedService.maxUniqueEngines :  20
 # event generation,simulation and digitization
 #------------------------------------------------------------------------------
 # physics.producers.generate.inputfile               : "Mu2eG4/test/genconfig_DownstreameMinus.txt"
-# physics.producers.makeSD.TimeOffsets               :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-# physics.producers.CaloReadoutHitsMaker.TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+ physics.producers.makeSD.TimeOffsets               :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+ physics.producers.CaloReadoutHitsMaker.TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 #------------------------------------------------------------------------------
 # event reconstruction
 #------------------------------------------------------------------------------

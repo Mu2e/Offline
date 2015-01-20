@@ -34,6 +34,7 @@
 #include "BaBar/BbrStringUtils.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
+#include "TrkBase/HelixParams.hh"
 
 #include "TROOT.h"
 #include "TFolder.h"
@@ -62,6 +63,7 @@
 #include "TApplication.h"
 #include "TGMsgBox.h"
 #include "TTree.h"
+//#include "TStopwatch.h"
 // #include "TSpectrum.h"
 // #include "TSpectrum2.h"
 // #include "TSpectrum3.h"
@@ -101,6 +103,8 @@ namespace mu2e {
     virtual void endJob();
 
   private:
+    //    TStopwatch*   fStopwatch;
+
     unsigned     _iev;
 					// configuration parameters
     int          _diag; 
@@ -222,6 +226,10 @@ namespace mu2e {
 
 					// flow diagnostic
     TH1F* _cutflow;
+    TH1F* _hTpeaks;   //number of time-peaks found per event
+    TH1F* _hNfitIter; //number of call to kalman addHits
+//     TH1F* _hTfit[2];     //time spent on kalman filter per event
+//     TH1F* _hTtot;     //total time spent per event
     TH1F* _hdfdzmode; // ditribution of the loop index where the findTrack search converged
     TH1F* _hradius; //radius of the theretical helix used by findTrack
     TH1F* _hphi0; //phi0 of the theretical helix used by findTrack
@@ -231,18 +239,20 @@ namespace mu2e {
     TH1F* _hdz;
     TH1F* _hNpoints;
     TH1F* _hchi2;
+    TH2F* _hdistvsdz;
 
     TH1F* _hkdfdzmode; // ditribution of the loop index where the findTrack search converged
-    TH1F* _hkradius; //radius of the theretical helix used by findTrack
+    TH1F* _hkradius[2]; //radius of the theretical helix used by findTrack
     TH1F* _hkphi0; //phi0 of the theretical helix used by findTrack
     TH1F* _hktanlambda; //tanLambda (tangent of the pitch angle) of the theretical helix
-    TH1F* _hkdfdz; //dfdz of the theretical helix. dfdz = tanLambda/radius
+    TH1F* _hkdfdz[2]; //dfdz of the theretical helix. dfdz = tanLambda/radius
     TH1F* _h0mode;
     TH1F* _hk0mode;
     TH1F* _hkdist;
     TH1F* _hkdz;
     TH1F* _hkNpoints;
     TH1F* _hkchi2;
+    TH2F* _hkdistvsdz[2];
 
     THackData* fHackData;
   };
@@ -285,12 +295,14 @@ namespace mu2e {
     _maxaddchi       (pset.get<double>("MaxAddChi"        ,4.0)),
     _tpart           ((TrkParticle::type)(pset.get<int>("fitparticle"))),
     _fdir            ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-    _seedfit     (pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
-    _kfit        (pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
-    _hfit        (pset.get<fhicl::ParameterSet>("HelixFit",fhicl::ParameterSet())),
+    _seedfit     (pset.get<fhicl::ParameterSet>("SeedFitHack",fhicl::ParameterSet())),
+    _kfit        (pset.get<fhicl::ParameterSet>("KalFitHack",fhicl::ParameterSet())),
+    _hfit        (pset.get<fhicl::ParameterSet>("HelixFitHack",fhicl::ParameterSet())),
     _payloadSaver(pset)
 		      //    , _kfitmc      (pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet()))
   {
+    //    fStopwatch = new TStopwatch();
+
 					// tag the data product instance by the direction 
 					// and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();
@@ -312,6 +324,7 @@ namespace mu2e {
 // destructor
 //-----------------------------------------------------------------------------
   CalPatRec::~CalPatRec() {
+    //    delete fStopwatch;
   }
 
 //-----------------------------------------------------------------------------
@@ -324,6 +337,19 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     _cutflow = tfs->make<TH1F>("cutflow","Cutflow",10,-0.5,9.5);
 
+    _hTpeaks    = tfs->make<TH1F>("hTpeaks",
+				 "Time peaks per event",100,0,100);
+    _hNfitIter  = tfs->make<TH1F>("hNfitIter",
+				 "Numebr of fit iteration on kalman::fiIteration",100,0,100);
+     
+  //   _hTfit[0]   = tfs->make<TH1F>("hTfit0",
+// 				 "Time per event spent on kalman maketrack",200,0,10);
+//     _hTfit[1]   = tfs->make<TH1F>("hTfit1",
+// 				 "Time per event spent on Kalman addHits",200,0,10);
+
+//     _hTtot      = tfs->make<TH1F>("hTtot",
+// 				 "Total time per event",200,0,10);
+    
     _hdfdzmode  = tfs->make<TH1F>("hdfdzmode",
 				 "index of the loop on dfdz modes",20,0,20);
     _hradius    = tfs->make<TH1F>("hradius",
@@ -335,8 +361,8 @@ namespace mu2e {
     _htanlambda = tfs->make<TH1F>("htanlambda",
 				  "#tan(#lambda) of the theretical helix",
 				  600,0.,6.);
-    _hdfdz      = tfs->make<TH1F>("hdfdz","dfdz of the theretical helix",
-				  1000,0.,0.1);
+    _hdfdz      = tfs->make<TH1F>("hdfdz","dfdz rfom findDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+				  200,-0.01,0.01);
     _h0mode     = tfs->make<TH1F>("h0mode",
 				  "point rescued with dfdz recalculation",
 				  20,0,20);
@@ -345,27 +371,37 @@ namespace mu2e {
 				 1000, 0.,1e3);
     _hdz        = tfs->make<TH1F>("hdz",
 				 "distance along z between the two strahits used for the pattern-reco; dz [mm]",
-				 1200, -600.,600.);
+				 200, 600.,600.);
     _hNpoints   = tfs->make<TH1F>("hNpoints",
 				 "Number of points belong to the predictedtrajectory; N-points [#]",
 				 100, 0., 100.);
     _hchi2      = tfs->make<TH1F>("hchi2",
 				 "#chi^{2} distribution for track candidate; #chi^{2}",
 				 50000, 0., 5000.);
+    _hdistvsdz  = tfs->make<TH2F>("hdistvsdz",
+				  "Distance from prediction versus z-distance form the seed; Distance from prediction [mm]; z-distance from the seed [mm]",
+				  1400, -3500., 3500.,
+				  500, 0, 500);
+
 
     _hkdfdzmode  = tfs->make<TH1F>("hkdfdzmode",
-				 "index of the loop on dfdz modes when Kalman filter converge",20,0,20);
-    _hkradius    = tfs->make<TH1F>("hkradius",
-				 "radius of the theretical helix when Kalman filter converge",
-				 1000,0.,700.);
+				 "index of the loop on dfdz modes when Kalman filter converged",20,0,20);
+    _hkradius[0]    = tfs->make<TH1F>("hkradius0",
+				      "radius of the theretical helix when Kalman filter converged",
+				      2000,-100.,100.);
+    _hkradius[1]    = tfs->make<TH1F>("hkradius1",
+				      "radius of the theretical helix when Kalman filter converged + cut set ''C'' and p>100 MeV/c",
+				      2000,-100.,100.);
     _hkphi0      = tfs->make<TH1F>("hkphi0",
-				 "#phi_{0} of the theretical helix when Kalman filter converge",
+				 "#phi_{0} of the theretical helix when Kalman filter converged",
 				 1000,-10.,10.);
     _hktanlambda = tfs->make<TH1F>("hktanlambda",
-				  "#tan(#lambda) of the theretical helix when Kalman filter converge",
+				  "#tan(#lambda) of the theretical helix when Kalman filter converged",
 				  600,0.,6.);
-    _hkdfdz      = tfs->make<TH1F>("hkdfdz","dfdz of the theretical helix when Kalman filter converge",
-				  1000,0.,0.1);
+    _hkdfdz[0]      = tfs->make<TH1F>("hkdfdz0","dfdz rfom findDfDz() when Kalman filter converged; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+				   200,-0.01,0.01);
+    _hkdfdz[1]      = tfs->make<TH1F>("hkdfdz1","dfdz rfom findDfDz() when Kalman filter converged + cut set ''C'' and p>100 MeV/c; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+				   200,-0.01,0.01);
     _hk0mode  = tfs->make<TH1F>("hk0mode",
 				"point rescued with dfdz recalculation",
 				20,0,20);
@@ -381,7 +417,14 @@ namespace mu2e {
     _hkchi2      = tfs->make<TH1F>("hkchi2",
 				 "#chi^{2} distribution for track candidate in case also the kalman fit converged; #chi^{2}",
 				 50000, 0., 5000.);
-
+    _hkdistvsdz[0]  = tfs->make<TH2F>("hkdistvsdz0",
+				  "Distance from prediction versus z-distance form the seed in case also the kalman fit converged; z-distance from the seed [mm]; Distance from prediction [mm]",
+				  1400, -3500., 3500.,
+				  500, 0, 500);
+    _hkdistvsdz[1]  = tfs->make<TH2F>("hkdistvsdz1",
+				  "Distance from prediction versus z-distance form the seed in case also the kalman fit converged + cut set ''C'' and p>100 MeV/c; z-distance from the seed [mm]; Distance from prediction [mm]",
+				  1400, -3500., 3500.,
+				  500, 0, 500);
     _eventid = 0;
   }
 
@@ -458,6 +501,15 @@ namespace mu2e {
 
     static StrawHitFlag       esel(StrawHitFlag::energysel), flag;
 
+  //   double t1, t2, t3, t4, t5, t6;
+//     double tfit0(0.), tfit1(0.),ttot(0.);
+    //    int    nAddHits(0);
+
+//reset the fit iteration counter
+    _kfit.fNiter = 0;
+
+//     t1 = fStopwatch->RealTime();
+//     fStopwatch->Continue();
 					// event printout
     _eventid = event.event();
     _iev     = event.id().event();
@@ -505,6 +557,8 @@ namespace mu2e {
 // find the time peaks in the time spectrum of selected hits.  
 //-----------------------------------------------------------------------------
     findTimePeaks(_tpeaks);
+
+    _hTpeaks->Fill(_tpeaks->size());
 //-----------------------------------------------------------------------------
 // diagnostics, MC truth
 //-----------------------------------------------------------------------------
@@ -519,6 +573,8 @@ namespace mu2e {
 // loop over found time peaks - for us, - "eligible" calorimeter clusters 
 //-----------------------------------------------------------------------------
     npeaks = _tpeaks->size();
+
+   
     for (int ipeak=0; ipeak<npeaks; ipeak++) {
       CalTimePeak* tp = &_tpeaks->at(ipeak);
 //-----------------------------------------------------------------------------
@@ -563,6 +619,12 @@ namespace mu2e {
 // pattern recognition step - find initial approximation for Kalman fitter
 //-----------------------------------------------------------------------------
       int rc = _hfit.findHelix(helixfit,tp);
+
+      if (_debug > 0) {
+	printf("[CalPatRec::produce] helixFit status = %i\n", rc);
+	  _hfit.printInfo(helixfit);
+      }
+      
       if (rc) {
 //-----------------------------------------------------------------------------
 // pattern recognition succeeded
@@ -586,18 +648,20 @@ namespace mu2e {
 	_hradius->Fill(fHackData->TheoRadius());
 	_hphi0->Fill(fHackData->TheoPhi0());
 	_htanlambda->Fill(fHackData->TheoTanL());
-	_hdfdz->Fill(fHackData->Theodfdz());
+
+	_hdfdz->Fill(fHackData->dfdz() );
 	_h0mode->Fill(fHackData->mode0Points());
 	_hdz->Fill(fHackData->shDz());
 	_hNpoints->Fill(fHackData->goodPoints());
 	_hchi2->Fill(fHackData->chi2());
-	double content, bin;
-// 	for (int i=1; i<=_hfit.hDist()->GetNbinsX(); ++i) {
-// 	  content = _hfit.hDist()->GetBinContent(i);
-// 	  bin     = _hfit.hDist()->GetBinCenter(i);
-// 	  _hdist->Fill(bin, content);
-// 	}
-//----------------------------------------------------------------------
+
+	double dz, dist;
+	for (int i=0; i< fHackData->goodPoints(); ++i){
+	  dz   = fHackData->fDz[i];
+	  dist = fHackData->fDist[i]; 
+	  _hdistvsdz->Fill(dz, dist);
+	}
+
 	findhelix = true;
 	HepVector hpar;
 	HepVector hparerr;
@@ -605,10 +669,52 @@ namespace mu2e {
 	HepSymMatrix hcov = vT_times_v(hparerr);
 	seeddef.setHelix(HelixTraj(hpar,hcov));
 
+
+	std::vector<hitIndex> goodhits;
+	XYZPHackVector indexes = _hfit._xyzp;
+	std::sort(indexes.begin(), indexes.end(), [ ]( const XYZPHack& lhs,
+						       const XYZPHack& rhs )
+		  {
+		    return lhs._ind < rhs._ind;
+		  } );
+
+	int           nIndexes = indexes.size();
+
+	Hep3Vector shPos;
+	for (int i=0; i< nIndexes; ++i){
+	  if (_debug > 0) {
+	    if (i==0)
+	      printf("[CalPatRec::printGoodHits]   point  type |    X    |    Y    |    Z    |  straw-index |\n");
+	  }
+	  if (indexes[i].isOutlier()) continue;
+	  shPos = indexes[i]._pos;
+	  if (_debug > 0) {
+	    printf("[CalPatRec::printGoodHits]    active      | %5.3f | %5.3f | %5.3f | %8i  |\n", 
+		   shPos.x(), shPos.y(), shPos.z(), indexes[i]._ind);
+	  }
+	  goodhits.push_back(indexes[i]._ind);
+	}
+
+	if (_debug > 0) {
+	  printf("[CalPatRec::seeddef] goodhits = %i over nIndexes = %i\n", goodhits.size(), nIndexes); 
+	}
+	
+	helixdef.setIndices(goodhits);
+	seeddef.setIndices(goodhits);
 					// Filter outliers using this helix
 
-	filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca,_hfilt);
-
+	//	filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca,_hfilt);
+	if (_debug > 0) {
+	  int shIndeces = seeddef.strawHitIndices().size();
+	  int nSh       = seeddef.strawHitCollection()->size();
+	  printf("[CalPatRec::seedfit] seedfit starting \n");
+	  printf("[CalPatRec::seedfit] N-straws = %i N-indeces = %i \n", nSh, shIndeces);
+	  printf("[CalPatRec::seedfit]");
+	  for(int i=0; i<5; ++i)
+	    printf(" hpar[%i] =  %5.5f", i, hpar[i]);
+	  printf("\n");
+	  //	  _seedfit.printHits(seedfit);
+	}
 					// now, fit the seed helix from the filtered hits
 
 	_seedfit.makeTrack(seedfit, tp);
@@ -638,7 +744,16 @@ namespace mu2e {
 					// 2013-09-16: use HackData - not sure, what for
 	  //	  fHackData->fSHelix = shelix;
 
+// 	  t2 = fStopwatch->RealTime();
+// 	  fStopwatch->Continue();
+
 	  _kfit.makeTrack(kalfit,tp);
+
+// 	  t3 = fStopwatch->RealTime();
+
+				// total time spent in kalman fit timing
+// 	  tfit0 += (t3-t2);
+// 	  fStopwatch->Continue();
 //-----------------------------------------------------------------------------
 // if successfull, try to add missing hits
 //-----------------------------------------------------------------------------
@@ -648,20 +763,7 @@ namespace mu2e {
 	  }
 	  if (kalfit._fit.success()) {
 	    findkal = true;
-//----------------------------------------------------------------------
-// 2014-11-02 gianipez added some diagnostic
-//----------------------------------------------------------------------
-	    _hkdfdzmode->Fill(fHackData->TheoImode());
-	    _hkradius->Fill(fHackData->TheoRadius());
-	    _hkphi0->Fill(fHackData->TheoPhi0());
-	    _hktanlambda->Fill(fHackData->TheoTanL());
-	    _hkdfdz->Fill(fHackData->Theodfdz());
-	    _hk0mode->Fill(fHackData->mode0Points());
-	    
-	    _hkdz->Fill(fHackData->shDz());
-	    _hkNpoints->Fill(fHackData->goodPoints());
-	    _hkchi2->Fill(fHackData->chi2());
-	    double content, bin;
+
 // 	for (int i=1; i<=_hfit.hDist()->GetNbinsX(); ++i) {
 // 	  content = _hfit.hDist()->GetBinContent(i);
 // 	  bin     = _hfit.hDist()->GetBinCenter(i);
@@ -669,9 +771,12 @@ namespace mu2e {
 // 	}
 //----------------------------------------------------------------------
 
-
+// 	    t4 = fStopwatch->RealTime();
+// 	    fStopwatch->Continue();
+	    
 	    if (_addhits) {
-					// first, add back the hits on this track
+	      //	      ++nAddHits;
+				// first, add back the hits on this track
 	      _kfit.unweedHits(kalfit,_maxaddchi);
 	      std::vector<hitIndex> misshits;
 	      findMissingHits(kalfit,misshits);
@@ -679,9 +784,14 @@ namespace mu2e {
 		_kfit.addHits(kalfit,_shcol,misshits,_maxaddchi);
 	      }
 	    }
+
+// 	    t5 = fStopwatch->RealTime();
+// 	    tfit1 += (t5-t4);
+// 	    fStopwatch->Continue();
 	  }
 	}
       }
+   
 //-----------------------------------------------------------------------------
 //  fill fit diagnostics histograms if requested
 //-----------------------------------------------------------------------------
@@ -710,6 +820,85 @@ namespace mu2e {
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	tp->SetCprIndex(tracks->size());
+
+	
+	//----------------------------------------------------------------------
+// 2014-11-02 gianipez added some diagnostic
+//----------------------------------------------------------------------
+	
+	_hkdfdzmode->Fill(fHackData->TheoImode());
+	_hkphi0->Fill(fHackData->TheoPhi0());
+	_hktanlambda->Fill(fHackData->TheoTanL());
+
+
+	Hep3Vector mom = krep->momentum(0);
+	double pt      = sqrt(mom.x()*mom.x() + mom.y()*mom.y());
+	double pz      = mom.z();
+	double tanL    = pt/pz;
+	double radius  = fabs(1./krep->helix(0).omega());//mom.mag()*10./3.;//convert MeV to mm
+	double kdfdz   = tanL/radius;
+	
+	_hkdfdz[0]->Fill(fHackData->dfdz() - kdfdz);
+	_hkradius[0]->Fill(fHackData->TheoRadius() - radius);
+
+	_hk0mode->Fill(fHackData->mode0Points());
+	
+	_hkdz->Fill(fHackData->shDz());
+	_hkNpoints->Fill(fHackData->goodPoints());
+	_hkchi2->Fill(fHackData->chi2());
+	
+	double dz, dist;
+	for (int i=0; i< fHackData->goodPoints(); ++i){
+	  dz   = fHackData->fDz[i];
+	  dist = fHackData->fDist[i]; 
+	  _hkdistvsdz[0]->Fill(dz, dist);
+	}
+
+
+
+//----------------------------------------------------------------------
+//  2015-01-17 G. Pezzu added the followinf diagnostic for tracks 
+// passing cut set "C", except for the timing cut!
+//----------------------------------------------------------------------
+
+	double  fMinFitCons      = 2.e-3;
+	double  fMinNActive      = 25;
+	double  fMaxT0Err        = 0.9;  		// in ns
+	double  fMaxFitMomErr    = 0.25;  		// in MeV
+	double  fMinTanDip       = tan(M_PI/6.);	// 0.5773
+	double  fMaxTanDip       = 1.0;  
+	double  fMinD1           = -80.;		// in mm
+	double  fMaxD1           = 105.;
+
+	double  minMom           = 100.;//MeV/c
+	BbrVectorErr      momerr = krep->momentumErr(0);
+
+	CLHEP::Hep3Vector momdir =  krep->momentum(0).unit();
+	HepVector momvec(3);
+	for (int i=0; i<3; i++) momvec[i] = momdir[i];
+	
+	double fitmom_err = sqrt(momerr.covMatrix().similarity(momvec));
+    
+	if ( (krep->chisqConsistency().consistency() > fMinFitCons  ) &&
+	     (krep->nActive()                        > fMinNActive  ) &&
+	     (krep->t0().t0Err()                     < fMaxT0Err    ) &&
+	     (fitmom_err                             < fMaxFitMomErr) &&
+	     (krep->helix(0).tanDip()                > fMinTanDip   ) &&
+	     (krep->helix(0).tanDip()                < fMaxTanDip   ) &&
+	     (krep->helix(0).d0()                    < fMaxD1       ) &&
+	     (krep->helix(0).d0()                    > fMinD1       ) &&
+	     (mom.mag()                              > minMom       )){
+	  
+	  _hkradius[1]->Fill(fHackData->TheoRadius() - radius);
+	  _hkdfdz[1]->Fill(fHackData->dfdz() - kdfdz);
+
+	  for (int i=0; i< fHackData->goodPoints(); ++i){
+	    dz   = fHackData->fDz[i];
+	    dist = fHackData->fDist[i]; 
+	    _hkdistvsdz[1]->Fill(dz, dist);
+	  }
+	}
+
       } 
       else {
 	kalfit.deleteTrack();
@@ -725,6 +914,18 @@ namespace mu2e {
     if (findhelix) _cutflow->Fill(2.0);
     if (findseed ) _cutflow->Fill(3.0);
     if (findkal  ) _cutflow->Fill(4.0);
+
+   //  t6 = fStopwatch->RealTime();
+//     fStopwatch->Continue();
+
+    //   ttot = t6-t1;
+  //   _hTtot->Fill(ttot);
+//     _hTfit[0]->Fill(tfit0);
+//     _hTfit[1]->Fill(tfit1);
+    _hNfitIter->Fill(_kfit.fNiter);
+//-----------------------------------------------------------------------------
+// fill timing hists
+//-----------------------------------------------------------------------------
 
     // add a dummy entry in case there are no peaks
     if(_diag > 0 && _tpeaks->size() == 0)

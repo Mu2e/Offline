@@ -204,12 +204,24 @@ namespace mu2e {
 //-----------------------------------------------------------------------------//
     double    _x0, _y0, _phi0, _radius, _dfdz;
     int       _goodPointsTrkCandidate;
+    int       _minPointsTrkCandidate;
     double    _chi2TrkCandidate;
+    double    _maxChi2TrkCandidate;
+    int       _markCandidateHits;
+
+    //indeces, distance from prediction and distance along z axis from the seeding hit
+    // of the hits found in the pattern recognition
     int       _indecesTrkCandidate[400];
+    double    _distTrkCandidate[400];
+    double    _dzTrkCandidate[400];
+
+    //error on dfdz resulting from the proceedure ::findDfDz
+    double    _dfdzErr;
 
     TH1F*     _hDist;
     double    _chi2nFindZ;
     double    _eventToLook;
+    TH1F*     _hDfDzRes;
 
   public:
 					// parameter set should be passed in on construction
@@ -230,6 +242,12 @@ namespace mu2e {
     
     
     TH1F* hDist() {return _hDist;}
+
+    int   isHitUsed(int index);
+    
+    void printInfo(HelixFitHackResult& myhel);
+
+    XYZPHackVector  _xyzp;
     
   protected:
 //-----------------------------------------------------------------------------
@@ -241,13 +259,16 @@ namespace mu2e {
     bool findXY        (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
     bool findXY_new    (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
     bool findZ         (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
+    void findDfDz      (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
+    
 
     bool initCircle    (XYZPHackVector const& xyzp,HelixFitHackResult& myhel);
     bool initCircle_new(XYZPHackVector const& xyzp,HelixFitHackResult& myhel);
 
   private:
 
-    void fillXYZP(HelixDefHack const& mytrk, XYZPHackVector& xyzp);
+    //    void fillXYZP(HelixDefHack const& mytrk, XYZPHackVector& xyzp);
+    void fillXYZP(HelixDefHack const& mytrk);
 
 // cached bfield accessor
 
@@ -275,6 +296,8 @@ namespace mu2e {
 
     void filterDist(XYZPHackVector& xyzp);
 					// 12-10-2013 Gianipez: new pattern recognition functions
+    void rescueHits(XYZPHackVector& xyzp, HelixFitHackResult&  mytrk);
+
     void filterUsingPatternRecognition(XYZPHackVector& xyzp);
     
     void resetTrackParamters();
@@ -287,7 +310,8 @@ namespace mu2e {
 		   int&                 countGoodPoint,
 		   HelixFitHackResult&  mytrk, 
 		   int&                 mode,
-		   bool                 useDefaultDfDz=false);
+		   bool                 useDefaultDfDz=false,
+		   int                  useMPVdfdz = 0);
 
     void calculateTrackParameters(Hep3Vector& p0, double&radius,
 				  double& phi0, double& tanLambda,

@@ -32,12 +32,14 @@
 
 #include "CalPatRec/inc/CalTimePeak.hh"
 
+//ROOT
+#include "TStopwatch.h"
 
 namespace mu2e {
   class KalFitHack : public KalContext {
   public:
 // define different ambiguity resolution strategies
-    enum ambigStrategy {fixedambig=0,pocaambig,hitambig,panelambig};
+    enum ambigStrategy {fixedambig=0,pocaambig=1,hitambig=2,panelambig=3,hitambig_hack=4};
 // parameter set should be passed in on construction
     explicit KalFitHack(fhicl::ParameterSet const&);
     virtual ~KalFitHack();
@@ -62,6 +64,7 @@ namespace mu2e {
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
     BField const& bField() const;
+    int                 fNiter;
   protected:
     // configuration parameters
     int _debug;
@@ -90,10 +93,11 @@ namespace mu2e {
     virtual void makeMaterials(KalFitResult& kres);
 
   private:
-
+    TStopwatch* fStopwatch;// = new TStopwatch();
     double             _t0errfac;       // fudge factor for the calculated t0 error
     double             _mint0doca;      // minimum (?) doca for t0 hits
     double             _t0nsig;	        // # of sigma to include when selecting hits for t0
+    double             _dtoffset;       // track - luster time offset, ns
     bool               _removefailed;
     unsigned           _minnstraws;
     TrkParticle        _tpart;
@@ -101,6 +105,7 @@ namespace mu2e {
     std::vector<int>   _ambigstrategy;
     mutable BField*    _bfield;
     const CalTimePeak*  fTimePeak;
+
 //-----------------------------------------------------------------------------
 // helper functions
 //-----------------------------------------------------------------------------

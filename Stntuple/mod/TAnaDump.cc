@@ -205,10 +205,13 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
   }
  
   if ((opt == "") || (opt.Index("data") >= 0)) {
+    Hep3Vector trk_mom;
     //      Trk->printAll();
-    double mom   = Trk->momentum().mag();
-    double pt    = Trk->momentum().perp();
-    double costh = Trk->momentum().cosTheta();
+    double h1_fltlen = Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+    trk_mom          = Trk->momentum(h1_fltlen);
+    double mom   = trk_mom.mag();
+    double pt    = trk_mom.perp();
+    double costh = trk_mom.cosTheta();
     double chi2  = Trk->chisq();
     int    ndof  = Trk->nDof ();
     int    nact  = Trk->nActive();

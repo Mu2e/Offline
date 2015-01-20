@@ -32,7 +32,8 @@ TrackCaloMatching : {
 # 2014-08-08: set dtOffset to 1.4 to avoid DT corrections in other places
 #------------------------------------------------------------------------------
     meanInteractionDepth         : 59.             # mm
-    dtOffset                     : 1.4             # ns
+#    dtOffset                     : 1.4             # ns
+    dtOffset                     : @local::DtOffset             # ns
     fitterModuleLabel            : TrkPatRec
     trkToCaloExtrapolModuleLabel : TrkExtrapol
     caloClusterModuleLabel       : MakeCaloCluster
