@@ -5,11 +5,8 @@
 // ----------------------------------------------------------------
 
 #include "G4MuAtomCaptureRateModel.hh"
-#include "G4StopElementSelector.hh"
+#include "G4MuonMinusBoundDecay.hh"
 
 G4double G4MuAtomCaptureRateModel::GetCaptureRate(G4int Z, G4int A, G4int /*iSpin*/) const {
-
-  static G4StopElementSelector ses;
-
-  return ses.GetMuonCaptureRate(Z,A);
+  return G4MuonMinusBoundDecay::GetMuonCaptureRate(Z,A);
 }

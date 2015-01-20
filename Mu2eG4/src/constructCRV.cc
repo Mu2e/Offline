@@ -63,25 +63,22 @@ namespace mu2e
 
     std::string hallAirMaterialName = _config.getString("hall.insideMaterialName");
 
-    std::map<std::string,CRSScintillatorShield> const &shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
-
     CLHEP::Hep3Vector parentCenterInMu2e = parent.centerInMu2e();
 
-    std::map<std::string,CRSScintillatorShield>::const_iterator ishield;
+    std::vector<CRSScintillatorShield> const &shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
+    std::vector<CRSScintillatorShield>::const_iterator ishield;
     for(ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
     {
-      CRSScintillatorShield const & shield = ishield->second;
-      std::string shieldName = ishield->first;
+      CRSScintillatorShield const & shield = *ishield;
+      std::string const & scintillatorBarName = shield.getName();
 
-      if(verbosityLevel > 0) cout << __func__ << " constructing            : " << shieldName << endl;
+      if(verbosityLevel > 0) cout << __func__ << " constructing            : " << scintillatorBarName << endl;
 
       // all materials and dimensions are the same within a particular shield
-      CRSScintillatorBarDetail const & barDetail = shield.getCRSScintillatorBarDetail();
+     CRSScintillatorBarDetail const & barDetail = shield.getCRSScintillatorBarDetail();
 
       G4Material* scintillatorBarMaterial = findMaterialOrThrow(barDetail.getMaterialName());
       std::vector<double> const &  scintillatorBarHalfLengths = barDetail.getHalfLengths();
-
-      std::string scintillatorBarName = shieldName;
 
       G4VSolid* scintillatorBarSolid = new G4Box(scintillatorBarName,
                                                  scintillatorBarHalfLengths[0],
@@ -145,8 +142,8 @@ namespace mu2e
                                          true/*placePV*/,
                                          doSurfaceCheck);
 
-          const std::vector<const CRSScintillatorBar*> &bars = ilayer->getBars();
-          std::vector<const CRSScintillatorBar*>::const_iterator ibar;
+          const std::vector<std::shared_ptr<CRSScintillatorBar> > &bars = ilayer->getBars();
+          std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator ibar;
           for(ibar=bars.begin(); ibar!=bars.end(); ++ibar) 
           {
             const CRSScintillatorBar &bar = **ibar; 

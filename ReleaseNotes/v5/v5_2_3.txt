@@ -1,0 +1,16 @@
+Still under construction
+
+           Release notes for Mu2e Offline software, v5_2_3
+
+0) January 10, 2015 - ehrlich
+   Updates in CRV geometry. Only the internal management was changed.
+   Modified files:
+     Analyses/src/NeutronCRV_module.cc
+     CosmicRayShieldGeom/inc/CRSScintillatorBar.hh
+     CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh
+     CosmicRayShieldGeom/inc/CRSScintillatorShield.hh
+     CosmicRayShieldGeom/inc/CosmicRayShield.hh
+     CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc
+     EventDisplay/src/DataInterface.cc
+     Mu2eG4/src/constructCRV.cc
+

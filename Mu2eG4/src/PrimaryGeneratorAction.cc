@@ -27,7 +27,9 @@
 // G4 Includes
 #include "G4Event.hh"
 #include "G4ParticleGun.hh"
+#if G4VERSION<4099
 #include "G4ParticleTable.hh"
+#endif
 #include "G4IonTable.hh"
 #include "Randomize.hh"
 #include "globals.hh"
@@ -155,7 +157,11 @@ namespace mu2e {
 
     //       static bool firstTime = true; // uncomment generate all nuclei ground states
     //       if (firstTime) {
+    //#if G4VERSION<4099
     //         G4ParticleTable::GetParticleTable()->GetIonTable()->CreateAllIon();
+    //#else
+    //         G4IonTable::GetIonTable()->GetIonTable()->CreateAllIon();
+    //#endif
     //         firstTime = false;
     //       }
 
@@ -186,14 +192,21 @@ namespace mu2e {
 
         // a ground state
 
+#if G4VERSION<4099
         pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,LL,0.0);
+#else
+        pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,LL,0.0);
+#endif
         // looks like spin is ignored and should never be non zero...
 
       } else {
 
         // an excited state; we will fudge it by adding 1keV
+#if G4VERSION<4099
         pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,LL,0.001);
-
+#else
+        pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,LL,0.001);
+#endif
       }
 
       if ( verbosityLevel > 0) {

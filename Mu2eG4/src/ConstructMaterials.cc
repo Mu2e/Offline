@@ -300,7 +300,7 @@ namespace mu2e {
     // AL999Ni001 by volume ?
     mat = uniqueMaterialOrThrow( "AL999Ni001"); // FIXME verify it
     {
-      G4Material* AL999Ni001 = new G4Material( mat.name, 2.706*CLHEP::g/CLHEP::cm3, 3);
+      G4Material* AL999Ni001 = new G4Material( mat.name, 2.706*CLHEP::g/CLHEP::cm3, 2);
       AL999Ni001->AddMaterial(findMaterialOrThrow("G4_Al"), 0.9967);
       AL999Ni001->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.0033);
     }
@@ -719,7 +719,8 @@ namespace mu2e {
       G4double density, fiberFrac=46.0*CLHEP::perCent;
       G4int nel, natoms;
       G4Material* CFresin = findMaterialOrThrow("CarbonFiber_resin");
-      G4Material* CFibers = new G4Material("CFibers",density = 1.8*CLHEP::g/CLHEP::cm3,nel=1);
+      CheckedG4String mat0 = uniqueMaterialOrThrow("CFibers");
+      G4Material* CFibers = new G4Material(mat0.name, density = 1.8*CLHEP::g/CLHEP::cm3,nel=1);
       CFibers->AddElement(getElementOrThrow("C"),natoms=1);
 
       density = fiberFrac*CFibers->GetDensity()+(1.0-fiberFrac)*CFresin->GetDensity();
@@ -733,8 +734,9 @@ namespace mu2e {
     {
       G4double density;
       G4int nel;
+      CheckedG4String mat0 = uniqueMaterialOrThrow( "Lyso_00");
       G4Material* Lyso_00 =
-        new G4Material(mat.name, density = 7.4*CLHEP::g/CLHEP::cm3, nel=4);
+        new G4Material(mat0.name, density = 7.4*CLHEP::g/CLHEP::cm3, nel=4);
       G4Element* Lu  = getElementOrThrow("Lu");
       G4Element* Si  = getElementOrThrow("Si");
       G4Element* O  = getElementOrThrow("O");

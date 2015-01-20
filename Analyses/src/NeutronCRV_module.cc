@@ -269,9 +269,6 @@ namespace mu2e {
 
     GeomHandle<CosmicRayShield> cosmicRayShieldGeomHandle;
 
-    std::vector<CRSScintillatorBar> const & allBars =
-      cosmicRayShieldGeomHandle->getAllCRSScintillatorBars();
-
     art::Handle<StatusG4> g4StatusHandle;
     event.getByLabel( _g4ModuleLabel, g4StatusHandle);
     StatusG4 const& g4Status = *g4StatusHandle;
@@ -332,7 +329,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector& mom = hit.momentum();
 
       // Get the CRSScintillatorBar information:
-      const CRSScintillatorBar&  bar = allBars.at( hit.volumeId() );
+      const CRSScintillatorBar&  bar = cosmicRayShieldGeomHandle->getBar( hit.barIndex() );
       CLHEP::Hep3Vector const &  mid = bar.getPosition();
 
       CLHEP::Hep3Vector barLengths = CLHEP::Hep3Vector(bar.getHalfLengths()[0],

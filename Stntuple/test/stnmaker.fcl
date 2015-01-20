@@ -1,13 +1,15 @@
 # -*- mode: tcl -*-
-# to be used by submit_mu2e_job
+# 2014-12-19 P.Murat: to be used with submit_mu2e_job, 
+#                     otherwise rename 'outfile.fileName' and TFileService.fileName
 #
-# read digitized hits from the input file, no digitization, no random numbers, do not drop hits
+# read digitized hits from the input file, no digitization, no random numbers
 #
 # $Id: stnmaker.fcl,v 1.1 2014/06/13 06:13:03 murat Exp $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
+
 #include "CaloCluster/test/producers.fcl"
 #include "TrackCaloMatching/test/producers.fcl"
 #include "ParticleID/test/producers.fcl"
@@ -35,6 +37,9 @@ outputs: {
 #			  , 'drop *_CaloReadoutHitsMaker_*_*'
 #			  , 'drop *_CaloCrystalHitsMaker_*_*'
 #			  , 'drop mu2eCaloClusters_*_*_*'
+			  , 'drop *_TrkExtrapol_*_*_*'
+			  , 'drop *_CaloMatching_*_*_*'
+			  , 'drop *_ParticleID_*_*_*'
 			  #                   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
 			  #                   , 'drop mu2eSimParticles_*_*_*'
 			  # Uncomment the above line to reduce file size.
@@ -66,16 +71,16 @@ physics : {
 #    CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
 #    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 
-	MakeStereoHits       : @local::MakeStereoHits
-	FlagStrawHits        : @local::FlagStrawHits
-	FlagBkgHits          : @local::FlagBkgHits
+#	MakeStereoHits       : @local::MakeStereoHits
+#	FlagStrawHits        : @local::FlagStrawHits
+#	FlagBkgHits          : @local::FlagBkgHits
 	TrkPatRec            : @local::TrkPatRecDownstreameMinus
-	MakeCaloCluster      : @local::MakeCaloCluster
+#	MakeCaloCluster      : @local::MakeCaloCluster
 #------------------------------------------------------------------------------
 # analysis module needed by STNTUPLE maker
 #------------------------------------------------------------------------------	
 	TrkExtrapol          : @local::TrkExtrapol
-	CaloMatching         : @local::CaloMatching
+	CaloMatching         : @local::TrackCaloMatching
 	ParticleID           : @local::ParticleID
     }
     filters: {
@@ -98,8 +103,9 @@ physics : {
 #	  protonTimeMap, muonTimeMap, 
 #	  makeSD, makeSH,
 #	  CaloReadoutHitsMaker, CaloCrystalHitsMaker, 
-	  MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, 
-	  MakeCaloCluster, 
+#	  MakeStereoHits, FlagStrawHits, FlagBkgHits, 
+#	  MakeCaloCluster, 
+          TrkPatRec, 
 	  TrkExtrapol, CaloMatching, 
 	  ParticleID,
 	  InitStntuple, StntupleMaker, FillStntuple

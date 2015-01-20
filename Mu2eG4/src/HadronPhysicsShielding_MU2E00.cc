@@ -124,8 +124,9 @@ void HadronPhysicsShielding_MU2E00::CreateModels()
 {
 
 #if G4VERSION>4099
-  mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
-  G4cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << G4endl;
+  mf::LogError("PHYS") << " This Mu2e Physics Constructor has not been certified for use with Geant4 v10+.";
+  G4cout << "Error: This Mu2e Physics Constructor has not been certified for use with Geant4 v10+." << G4endl;
+  throw cet::exception("BADINPUT")<<"This Mu2e Physics Constructor has not been certified for use with Geant4 v10+.\n";
 #endif
 
   const G4double minFTFPEnergy         =  9.5*GeV;
@@ -139,12 +140,13 @@ void HadronPhysicsShielding_MU2E00::CreateModels()
   theNeutrons->RegisterMe(theBertiniNeutron=new G4BertiniNeutronBuilder);
   theBertiniNeutron->SetMinEnergy(minNonHPNeutronEnergy);
   theBertiniNeutron->SetMaxEnergy(maxBertiniEnergy);
+#if G4VERSION<4099
   theNeutrons->RegisterMe(theLEPNeutron=new G4LEPNeutronBuilder);
   theLEPNeutron->SetMinEnergy(minNonHPNeutronEnergy);
   theLEPNeutron->SetMinInelasticEnergy(0.0*eV);   // no inelastic from LEP
   theLEPNeutron->SetMaxInelasticEnergy(0.0*eV);  
   //theNeutrons->RegisterMe(theHPNeutron=new G4NeutronHPBuilder);
-
+#endif
     if ( useLEND != true )
      theNeutrons->RegisterMe(theLENeutron=new G4NeutronHPBuilder);
   else

@@ -75,6 +75,13 @@ template<class T> TShielding_MU2E00<T>::TShielding_MU2E00( G4int verbose, G4Stri
   G4DataQuestionaire it(photon, neutron, radioactive);
   G4cout << "<<< Geant4 Physics List simulation engine: Shielding_MU2E00 2.0"<<G4endl;
   G4cout <<G4endl;
+
+#if G4VERSION>4099
+  mf::LogError("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
+  G4cout << "Error: This Mu2e Physics List has not been certified for use with Geant4 v10+." << G4endl;
+  throw cet::exception("BADINPUT")<<"This Mu2e Physics List has not been certified for use with Geant4 v10+. consider ShieldingM_EMZ\n";
+#endif
+
   this->defaultCutValue = 0.7*CLHEP::mm;  
   this->SetVerboseLevel(verbose);
 

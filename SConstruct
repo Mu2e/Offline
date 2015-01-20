@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Build a Mu2e base release or test release.
+# Build a Mu2e base release or satellite release.
 #
 # Original author Rob Kutschke.
 #
@@ -58,16 +58,16 @@ cetlib_lib     = os.environ['CETLIB_LIB']
 xercesc_inc    = os.environ['XERCES_C_INC']
 xercesc_root   = os.environ['XERCESCROOT']
 
-# If we are working in a test release, extract more information from the environment.
-if os.environ.has_key('MU2E_TEST_RELEASE'):
-    testrelease          = os.environ['MU2E_TEST_RELEASE']
-    cpppath_frag         = [ testrelease, testrelease + '/BaBar/include' ]
-    libpath_frag         = [ testrelease+'/lib/' ]
-    isTestRelease        = 1
+# If we are working in a satellite release, extract more information from the environment.
+if os.environ.has_key('MU2E_SATELLITE_RELEASE'):
+    satelliterelease          = os.environ['MU2E_SATELLITE_RELEASE']
+    cpppath_frag         = [ satelliterelease, satelliterelease + '/BaBar/include' ]
+    libpath_frag         = [ satelliterelease+'/lib/' ]
+    isSatelliteRelease        = 1
 else:
     cpppath_frag         = [ ]
     libpath_frag         = [ ]
-    isTestRelease        = 0
+    isSatelliteRelease        = 0
 
 # The link libraries needed when building the BaBar code.
 babarlibs = [ 'mu2e_BaBar_KalmanTrack',     'mu2e_BaBar_DetectorModel',      'mu2e_BaBar_TrkBase',    'mu2e_BaBar_BField',
@@ -121,7 +121,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                  )
 
 # Define the rule for building dictionaries.
-genreflex = Builder(action="./genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\"")
+genreflex = Builder(action="./bin/genreflex.sh $SOURCE $TARGET  \"$_CPPINCFLAGS\"")
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # Get the flag that controls compiler options. Check that it is legal.
@@ -223,7 +223,7 @@ class mu2e_helper:
                 pass
             pass
         prefix = 'mu2e_'
-        if ( isTestRelease == 1 ):
+        if ( isSatelliteRelease == 1 ):
             prefix = 'mu2euser_'
             pass
         return prefix + string.join(tokens,'_')

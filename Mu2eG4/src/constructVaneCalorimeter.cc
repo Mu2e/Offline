@@ -93,6 +93,17 @@ namespace mu2e {
     G4Material* shieldMaterial           = materialFinder.get("calorimeter.shieldMaterial");
     G4Material* neutronAbsorberMaterial  = materialFinder.get("calorimeter.neutronAbsorberMaterial");
 
+
+    //-- parameters for beam scintillator trigger for TestBeam configuration
+    int        hasScint                  = config.getInt("calorimeter.hasScint", 0);
+    G4Material*scintMaterial             = materialFinder.get("calorimeter.scintMaterial", "G4_PLASTIC_SC_VINYLTOLUENE");
+    double     scintDx                   = config.getDouble("calorimeter.scintDz", 20.);
+    double     scintDy                   = config.getDouble("calorimeter.scintDz", 20.);
+    double     scintDz                   = config.getDouble("calorimeter.scintDz", 10.);
+    std::vector<double> scintPos;
+    config.getVectorDouble("calorimeter.scintPos", scintPos, 3);
+
+
     //-- Get calorimeter handle
     VaneCalorimeter const & cal = *(GeomHandle<VaneCalorimeter>());
 
@@ -199,7 +210,9 @@ namespace mu2e {
     VolumeInfo vaneInInfo[nvane];
     VolumeInfo shieldInfo[nvane];
     VolumeInfo neutronAbsorberInfo[nvane];
-
+    
+    //-- plastic scintillator finger for test beam
+    VolumeInfo scintInfo;
 
     G4VPhysicalVolume* pv;
 
@@ -406,6 +419,27 @@ namespace mu2e {
 
     }//end loop over vanes
 
+    if (hasScint == 1){
+      double posx = scintPos[0] - posCaloMother.x();
+      double posy = scintPos[1] - posCaloMother.y();
+      double posz = scintPos[2] - posCaloMother.z();
+      G4ThreeVector pos(posx, posy, posz);
+      double dimScint[3] = {scintDx, scintDy, scintDz};
+
+      scintInfo =  nestBox("ScintillatorFinger",
+			   dimScint,
+			   scintMaterial,
+			   0,
+			   pos,
+			   calorimeterInfo,
+			   0,
+			   true,
+			   G4Colour::Red(),
+			   isVaneBoxSolid,
+			   forceAuxEdgeVisible,
+			   placePV,
+			   doSurfaceCheck );
+    }
 
     return calorimeterInfo;
 

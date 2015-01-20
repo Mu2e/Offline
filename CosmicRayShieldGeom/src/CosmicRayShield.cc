@@ -12,11 +12,6 @@
 
 namespace mu2e 
 {
-  // Get ScintillatorShield
-  CRSScintillatorShield const &CosmicRayShield::getCRSScintillatorShield(std::string name) const 
-  {
-    return _scintillatorShields.find(name)->second;
-  }
 }
 
 

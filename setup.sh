@@ -27,11 +27,11 @@ if [ "${MU2E_BASE_RELEASE}" != '' ];then
     return 1
 fi
 
-# A very ill-defined state.  We have  a test release but no base release!
-if [ "${MU2E_TEST_RELEASE}" != '' ];then
-    echo "ERROR: A test release has already been setup but there is no base release."
+# A very ill-defined state.  We have  a satellite release but no base release!
+if [ "${MU2E_SATELLITE_RELEASE}" != '' ];then
+    echo "ERROR: A satellite release has already been setup but there is no base release."
     echo "Suggest that you log out, log in and restart from the beginning."
-    echo "The test release is: " ${MU2E_TEST_RELEASE}
+    echo "The satellite release is: " ${MU2E_SATELLITE_RELEASE}
     return 1
 fi
 
@@ -39,11 +39,17 @@ fi
 export MU2E_BASE_RELEASE=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && /bin/pwd`
 echo "Base release directory is: " $MU2E_BASE_RELEASE
 
-# Remove any test release environment.  TODO: test this and abort.
+# Remove any satellite release environment.  TODO: test this and abort.
 export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
 echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 
 build=${1:-prof}
+if [ "${build}" == "debug" ];then
+    # echo "debug option selected; setting up gdb"
+    setup gdb v7_8
+    # echo "use scons --mu2elevel=debug to create debug libraries"
+fi
+
 # Setup the framework and its dependent products
 setup -B art v1_12_04 -q+e6:+${build}
 
@@ -92,3 +98,6 @@ fi
 
 # A hack that we hope can go away soon.
 export G4LIBDIR=$G4LIB/$G4SYSTEM
+
+# Add useful functions to the shell environment.
+source ${MU2E_BASE_RELEASE}/bin/functions.sh

@@ -319,7 +319,7 @@ double CrvPEresponse::VisibleEnergyDeposition(int PDGcode, double stepLength,
       chargeSq = Z*Z*w;
       norm += w;
     }
-    ratio *= proton_mass_c2/norm;
+    ratio *= CLHEP::proton_mass_c2/norm;
     chargeSq /= norm;
   }
 

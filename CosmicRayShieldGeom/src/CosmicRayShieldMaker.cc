@@ -107,11 +107,10 @@ namespace mu2e
                                               const std::vector<int> &localToWorld,
                                               int nModules, int nCounters)
   {
-    CRSScintillatorBarDetail barDetails(_scintillatorBarMaterialName, counterHalfLengths, localToWorld);
+    std::shared_ptr<CRSScintillatorBarDetail> barDetails(new CRSScintillatorBarDetail(_scintillatorBarMaterialName, counterHalfLengths, localToWorld));
     
-    _crs->_scintillatorShields.insert(std::pair<std::string,mu2e::CRSScintillatorShield>(name, 
-                                      CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails)));
-    CRSScintillatorShield &shield = _crs->_scintillatorShields.at(name);
+    _crs->_scintillatorShields.push_back(CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails));
+    CRSScintillatorShield &shield = _crs->_scintillatorShields.back();
     shield._absorberMaterialName = _absorberMaterialName;
     int thicknessDirection = localToWorld[0];
   
@@ -137,12 +136,11 @@ namespace mu2e
           counterPosition += largeGaps * VTNCLargeGap + smallGaps * VTNCSmallGap;
 
           CRSScintillatorBarIndex index(_crs->_allCRSScintillatorBars.size());
-          _crs->_allCRSScintillatorBars.push_back(CRSScintillatorBar(index, 
-                                                  CRSScintillatorBarId(isector,imodule,ilayer,icounter), 
-                                                  counterPosition, shield._barDetails));
-
-          CRSScintillatorBar &counter = _crs->_allCRSScintillatorBars.back();
-          layer._bars.push_back(&counter);
+          std::shared_ptr<CRSScintillatorBar> counter(new CRSScintillatorBar(index, 
+                                                          CRSScintillatorBarId(isector,imodule,ilayer,icounter), 
+                                                          counterPosition, barDetails));
+          _crs->_allCRSScintillatorBars.push_back(counter);
+          layer._bars.push_back(counter);
         } //counters
 
         //Scintillator layer position and dimension
@@ -158,9 +156,9 @@ namespace mu2e
         layerEnd += largeGaps * VTNCLargeGap + smallGaps * VTNCSmallGap;
 
         layer._position = 0.5*(layerStart + layerEnd);
-        layer._halfLengths.resize(3);
         //layerStart and layerEnd are only the position at the center of the first and last bar
         for(int i=0; i<3; i++) layer._halfLengths[i] = abs(0.5*(layerStart[i] - layerEnd[i]))+counterHalfLengths[i];
+        for(int i=0; i<3; i++) layer._localToWorld[i] = localToWorld[i];
 
         //Absorber layer position and dimension
         if(ilayer<_nLayers-1)

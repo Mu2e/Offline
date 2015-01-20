@@ -442,6 +442,12 @@ namespace mu2e {
                                 hallFormalCenterInMu2e,
                                 0x0,
                                 vdPositionInMu2e - hallFormalCenterInMu2e);
+        
+        int static const verbosityLevel = 1;
+        if ( verbosityLevel > 0) {
+           cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::DSNeutronShieldExit) << endl;
+           cout << "               at local=" << vd->getLocal(VirtualDetectorId::DSNeutronShieldExit) << " global="<< vd->getGlobal(VirtualDetectorId::DSNeutronShieldExit) <<endl;
+        }
 
       }
                               
@@ -653,7 +659,7 @@ namespace mu2e {
                                                        (env->ymax() + env->ymin())/2.,
                                                        (env->zmax() + env->zmin())/2.
                                                        );        
-        mstmReferencePositionInMu2e  = mstmReferencePositionInMu2e - hallFormalCenterInMu2e;
+        //mstmReferencePositionInMu2e  = mstmReferencePositionInMu2e - hallFormalCenterInMu2e;
       
         //WARNING: This must be changed so that we can use the VolumeInfo to get the 
         //         mother position
@@ -679,19 +685,23 @@ namespace mu2e {
         
         if ( c.getBool("vd.MSTMWallUpStr.build", false) ) {
            
-           double z_offset =  0.5*mstmUpStreamWallUpStrSpace
+	   //place this VD 1 cm in front of the concrete shielding wall of the STM area
+           double z_offset =  1.0*mstmUpStreamWallUpStrSpace
+                            - 1.0*cm
                             - vd->_halfLength;
                  
            CLHEP::Hep3Vector vdPositionWRTmstmMother = CLHEP::Hep3Vector(0.0,0.0,z_offset - mstmMotherHalfLength);        
-           
+
            vd->addVirtualDetector(VirtualDetectorId::MSTM_WallUpStr, //ID
                                   mstmMotherPositionInMu2e,          //reference position
                                   0x0,                               //rotation
                                   vdPositionWRTmstmMother);          //placement w.r.t. reference
            
+           
            int static const verbosityLevel = 1;
            if ( verbosityLevel > -1) {
               cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_WallUpStr) << endl;
+              cout << "               at local=" << vd->getLocal(VirtualDetectorId::MSTM_WallUpStr) << " global="<< vd->getGlobal(VirtualDetectorId::MSTM_WallUpStr) <<endl;
            }
         }
         
@@ -707,11 +717,12 @@ namespace mu2e {
                             - vd->_halfLength;
                  
            CLHEP::Hep3Vector vdPositionWRTmstmMother = CLHEP::Hep3Vector(0.0,0.0,z_offset - mstmMotherHalfLength);        
-           
+
            vd->addVirtualDetector(VirtualDetectorId::MSTM_Coll1DnStr, //ID
                                   mstmMotherPositionInMu2e,           //reference position
                                   0x0,                                //rotation
                                   vdPositionWRTmstmMother);           //placement w.r.t. reference
+           
            
            int static const verbosityLevel = 1;
            if ( verbosityLevel > -1) {
@@ -733,11 +744,12 @@ namespace mu2e {
                             - vd->_halfLength;
                  
            CLHEP::Hep3Vector vdPositionWRTmstmMother = CLHEP::Hep3Vector(0.0,0.0,z_offset - mstmMotherHalfLength);        
-           
+
            vd->addVirtualDetector(VirtualDetectorId::MSTM_ShutterDnStr, //ID
                                   mstmMotherPositionInMu2e,           //reference position
                                   0x0,                                //rotation
                                   vdPositionWRTmstmMother);           //placement w.r.t. reference
+           
            
            int static const verbosityLevel = 1;
            if ( verbosityLevel > -1) {
@@ -767,6 +779,7 @@ namespace mu2e {
                                   0x0,                                //rotation
                                   vdPositionWRTmstmMother);           //placement w.r.t. reference
            
+           
            int static const verbosityLevel = 1;
            if ( verbosityLevel > -1) {
               cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_Coll2DnStr) << endl;
@@ -795,15 +808,17 @@ namespace mu2e {
                  - vd->_halfLength;
                  
            CLHEP::Hep3Vector vdPositionWRTmstmMother = CLHEP::Hep3Vector(0.0,0.0,z_offset - mstmMotherHalfLength);        
-           
+
            vd->addVirtualDetector(VirtualDetectorId::MSTM_Coll3DnStr, //ID
                                   mstmMotherPositionInMu2e,           //reference position
                                   0x0,                                //rotation
                                   vdPositionWRTmstmMother);           //placement w.r.t. reference
            
+           
            int static const verbosityLevel = 1;
            if ( verbosityLevel > -1) {
               cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_Coll3DnStr) << endl;
+              cout << "               at local=" << vd->getLocal(VirtualDetectorId::MSTM_Coll3DnStr) << " global="<< vd->getGlobal(VirtualDetectorId::MSTM_Coll3DnStr) <<endl;
            }
         }
         
