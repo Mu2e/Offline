@@ -75,7 +75,7 @@ namespace mu2e
       if(verbosityLevel > 0) cout << __func__ << " constructing            : " << scintillatorBarName << endl;
 
       // all materials and dimensions are the same within a particular shield
-      CRSScintillatorBarDetail const & barDetail = shield.getCRSScintillatorBarDetail();
+     CRSScintillatorBarDetail const & barDetail = shield.getCRSScintillatorBarDetail();
 
       G4Material* scintillatorBarMaterial = findMaterialOrThrow(barDetail.getMaterialName());
       std::vector<double> const &  scintillatorBarHalfLengths = barDetail.getHalfLengths();
@@ -142,8 +142,8 @@ namespace mu2e
                                          true/*placePV*/,
                                          doSurfaceCheck);
 
-          const std::vector<const CRSScintillatorBar*> &bars = ilayer->getBars();
-          std::vector<const CRSScintillatorBar*>::const_iterator ibar;
+          const std::vector<std::shared_ptr<CRSScintillatorBar> > &bars = ilayer->getBars();
+          std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator ibar;
           for(ibar=bars.begin(); ibar!=bars.end(); ++ibar) 
           {
             const CRSScintillatorBar &bar = **ibar; 

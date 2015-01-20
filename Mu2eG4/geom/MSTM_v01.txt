@@ -37,11 +37,9 @@ bool   mstm.build  = true;
 int    mstm.verbosityLevel = 1;
 bool   mstm.visible = true;
 bool   mstm.solid   = false;
-double mstm.UpStrSpace = 1500.0; //Put the whole MSTM mother volume 1.5m downstream of the DS
 
-//double mstm.mother.halfHeight =  5000.0; 
-//double mstm.mother.halfWidth  =  5000.0;
-//double mstm.mother.halfLength =  5000.0;
+// All dimensions in mm
+double mstm.refz0InMu2e  = 19965.0 ; //this is the z position of the upstream edge of the MSTM mother volume
 
 string mstm.wallUpStr.material   = "G4_CONCRETE";
 double mstm.wallUpStr.UpStrSpace =  50.0; // z=5cm space between this and the start of the MSTM mother volume
@@ -61,6 +59,7 @@ double mstm.wallBeamRight.halfWidth =  304.8; // 1 foot = 30.48 cm = 304.8 mm
 string mstm.wallCeiling.material    = "G4_CONCRETE";
 double mstm.wallCeiling.halfHeight  =  304.8; // 1 foot = 30.48 cm = 304.8 mm
 
+bool   mstm.magnet.fieldVisible   = true;
 string mstm.magnet.material       = "StainlessSteel";
 double mstm.magnet.UpStrSpace     =  100.0;  // z=10cm space between this and previous element
 double mstm.magnet.halfLength     = 500.0;  // 1m long magnet
