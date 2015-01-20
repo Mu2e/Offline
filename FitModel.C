@@ -82,23 +82,40 @@ class convolutionSinglePeak : protected FitModelBase{
 
 	public: 
 
+  public:
+//Fitting function for current Function2
+//par[0] is shifted time 1st peak
+//par[1] is scalingfactor 1st peak
+//par[2] is sigma 1st peak
+		virtual float fitModel(double *x, double *par)
+    {
+
+      double convolvedSinglePeakX[1] = {x[0] - par[0]};
+
+      double convolvedSinglePeakParams[2] = {par[2]};
+
+      return (float) par[1] * convolvedSinglePeak(convolvedSinglePeakX,convolvedSinglePeakParams);
+
+    }
+			
+};
+
+class convolutionSinglePeakWithConstantPedestal : protected convolutionSinglePeak{
+
+public:
 //Fitting function for current Function2
 //par[0] is shifted time 1st peak
 //par[1] is scalingfactor 1st peak
 //par[2] is vertical shift 1st peak
 //par[3] is sigma 1st peak
 
-		virtual float fitModel(double *x, double *par)
+    virtual float fitModel(double *x, double *par)
     {
+      double convolutionSinglePeakParams[3] = {par[0],par[1],par[3]};
 
-      double convolvedSinglePeakX[1] = {x[0] - par[0]};
-
-      double convolvedSinglePeakParams[2] = {par[3]};
-
-      return (float) par[1] * convolvedSinglePeak(convolvedSinglePeakX,convolvedSinglePeakParams) + par[2];
-
+      return (float) convolutionSinglePeak::fitModel(x,convolutionSinglePeakParams) + par[2];
     }
-			
+
 };
 
 // This is a truncating fitting function with a dynamical pedestal
@@ -128,20 +145,34 @@ class doublePeak : public FitModelBase{
   public:
     // Par0 - shift in X 1st peak
     // Par1 - scalingFactor 1st peak
-    // Par2 - vertical shift 1st peak
-    // Par3 - shift in 2nd peak minus shift in 1st peak
-    // Par4 - scaling factor 2nd peak
-    // Par5 - vertical shift 2nd peak ?????? - I JUST USE THE PEDESTAL OF THE 1ST PEAK
+    // Par2 - shift in 2nd peak minus shift in 1st peak
+    // Par3 - scaling factor 2nd peak
     virtual float fitModel(double *x, double *par)
     {
       // Why can't these be constant arrays???
       convolutionSinglePeak c;
-      double firstPeakPar[4] = {par[0], par[1], par[2], 0.0};
-      double secondPeakPar[4] = {par[3] + par[0], par[4], par[2], 0.0};
+      double firstPeakPar[3] = {par[0], par[1], 0.0};
+      double secondPeakPar[3] = {par[2] + par[0], par[3], 0.0};
 
       return c.fitModel(x, firstPeakPar) 
            + c.fitModel(x, secondPeakPar);
     }
+
+};
+
+class doublePeakWithConstantPedestal : public doublePeak{
+public:
+
+  // Par0 - shift in X 1st peak
+  // Par1 - scalingFactor 1st peak
+  // Par2 - vertical shift
+  // Par3 - shift in 2nd peak minus shift in 1st peak
+  // Par4 - scaling factor 2nd peak
+  virtual float fitModel(double *x, double *par)
+  {
+    double doublePeakParams[4] = {par[0],par[1],par[3],par[4]};
+    return doublePeak::fitModel(x, doublePeakParams) + par[2];
+  }
 
 };
 
@@ -154,8 +185,7 @@ class doublePeakWithDynamicPedestal : public doublePeak{
 public:
   virtual float fitModel(double *x, double *par)
   {
-    const double fixedPedestal = 0.0;
-    double doublePeakParams[5] = {par[0],par[1],fixedPedestal,par[3],par[4]};
+    double doublePeakParams[4] = {par[0],par[1],par[3],par[4]};
     double dynamicPedestalParam[1] = {par[2]};
 
     return doublePeak::fitModel(x,doublePeakParams) 
