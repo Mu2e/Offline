@@ -11,7 +11,7 @@
 #include "TrackCaloMatching/test/producers.fcl"
 #include "CalPatRec/test/producers.fcl"
 #include "ParticleID/test/producers.fcl"
-#include "Stntuple/test/producers.fcl"
+#include "Stntuple/fcl/profile.fcl"
 
 process_name : conversionMergePatRecStnmaker
 

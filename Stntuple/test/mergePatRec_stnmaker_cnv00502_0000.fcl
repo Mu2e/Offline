@@ -23,7 +23,7 @@ END_PROLOG
 #include "TrackCaloMatching/test/producers.fcl"
 #include "CalPatRec/test/producers.fcl"
 #include "ParticleID/test/producers.fcl"
-#include "Stntuple/test/producers.fcl"
+#include "Stntuple/fcl/profile.fcl"
 
 #test: // This must be commented out for production.
 # BEGIN_PROLOG
