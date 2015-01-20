@@ -1,0 +1,116 @@
+# -*- mode: tcl -*-
+BEGIN_PROLOG
+#------------------------------------------------------------------------------
+# Stntuple maker sequence
+#------------------------------------------------------------------------------
+InitStntuple : { 
+    module_type       : InitStntuple
+    module_name       : InitStntuple
+	    
+    histFileName      : "{DATASET}.{JOB}.stn"
+    splitLevel        : 0
+	    
+    debugBits         : { 
+	# bit0:1  
+	# bit1:1 
+	# bit51:1
+    }
+}
+	
+StntupleMaker : { 
+    module_type         : StntupleMaker
+    module_name         : StntupleMaker
+    processName         : undefined
+    
+    TimeOffsets         : { inputs : [ "protonTimeMap", "muonTimeMap" ] }    
+
+    g4ModuleLabel        : g4run
+    strawHitMaker        : makeSH
+    caloCrystalHitsMaker : CaloCrystalHitsMaker
+    caloClusterMaker     : MakeCaloCluster
+
+    trkPatRec1           : TrkPatRec
+    fitparticle1         : 11
+    fitdirection1        : 0
+
+    trkExtrapol          : TrkExtrapol
+    trkCalMatch          : CaloMatching
+    pidDem               : ParticleID
+
+    makeCalData         : 1
+    makeStrawData       : 0
+    makeTracks          : 1
+    makeTracksUem       : 0
+    makeTracksDmm       : 0
+    makeTracksUmm       : 0
+    makeClusters        : 1
+    makeGenp            : 1
+    makeSimp            : 1
+    makeVirtualHits     : 1
+	    
+    minTActive          : 0.     # ns
+    minECrystal         : 1.0    # MeV
+
+    debugBits           : { 
+	# bit0:1  
+	# bit1:1 
+	# bit51:1
+    }
+}
+	
+FillStntuple : { 
+    module_type       : FillStntuple
+    module_name       : FillStntuple
+    
+    debugBits         : { 
+	# bit0:1  
+	# bit1:1 
+	# bit51:1
+    }
+}
+#------------------------------------------------------------------------------
+# 
+#------------------------------------------------------------------------------
+MuHitDisplay: {
+    module_type                  : MuHitDisplay # the class name
+    debugBits                    : { }          # need for TAnaModule
+    interactiveMode              : 1
+	
+    generatorModuleLabel         : generate
+    g4ModuleLabel                : g4run
+    strawHitMakerModuleLabel     : makeSH
+    strawHitPosMakerModuleLabel  : MakeStereoHits
+    strawHitFlagMakerModuleLabel : FlagStrawHits
+    
+    caloClusterModuleLabel       : MakeCaloCluster
+    trkExtrapol                  : TrkExtrapol
+    trkCalMatch                  : CaloMatching
+    trkPatRecModuleLabel         : TrkPatRec
+    fitParticle                  : 11  # 11:electron
+    fitDirection                 : 0   # 0:downstream, 1:upstream
+
+    pidModuleLabel               : ParticleID
+    #                                              label becomes AlgoCLOSESTSeededByENERGY
+
+    caloCrystalHitsMaker         : CaloCrystalHitsMaker
+    caloClusterAlgorithm         : closest
+    caloClusterSeeding           : energy
+	
+    # if set to true, all hits will be displayed unconditionally
+    # otherwise, display only hits with right flags
+    displayBackgroundHits        : true
+    useStereoHits                : false
+
+    #      goodHitMask                 : ["EnergySelection","RadiusSelection","TimeSelection"]
+    goodHitMask                  : ["EnergySelection", "RadiusSelection"]
+    badHitMask                   : ["DeltaRay", "Isolated"]
+	
+    trackerStepPoints            : tracker
+    minHits                      : 5
+    clickToAdvance               : true
+    printHits                    : false
+    timeWindow                   : 100000.
+    #      timeWindow           : 50.
+}
+
+END_PROLOG
