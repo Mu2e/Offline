@@ -50,6 +50,7 @@ TStrawHitVisNode::TStrawHitVisNode(const char* name): TVisNode(name) {
 
   fListOfStrawHits = new TObjArray();
   fTimePeak        = NULL;
+  fUseStereoHits   = 0;
 }
 
 //_____________________________________________________________________________
@@ -133,7 +134,8 @@ int TStrawHitVisNode::InitEvent() {
 	else {
 	  if ( sim->fromGenerator() ){
 	    mu2e::GenParticle* gen = (mu2e::GenParticle*) &(*sim->genParticle());
-	    if ( gen->generatorId() == mu2e::GenId::conversionGun ){
+	    //	    if ( gen->generatorId() == mu2e::GenId::conversionGun ){
+	    if ( gen->generatorId() == mu2e::GenId::StoppedParticleReactionGun ){
 	      isFromConversion = true;
 	      break;
 	    }
