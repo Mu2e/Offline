@@ -1,4 +1,9 @@
-// Automatically produced by ProduceSimpleConfig
+string hall.insideMaterialName  = "G4_AIR";
+
+bool   hall.formalBoxVisible    = false;
+bool   hall.formalBoxSolid      = false;
+
+// The following is automatically produced by ProduceSimpleConfig
 
 // This defines the vertical position of the hall air volume
 double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')

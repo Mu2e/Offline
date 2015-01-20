@@ -17,6 +17,7 @@
 
 // Mu2e includes
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "Mu2eG4/inc/Mu2eG4RunManager.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
@@ -26,7 +27,6 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "Mu2eG4/inc/DetectorConstruction.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/EventAction.hh"
@@ -327,7 +327,7 @@ namespace mu2e {
 
     SimpleConfig const& config = geom.config();
 
-    geom.addWorldG4();
+    geom.addWorldG4(*GeomHandle<Mu2eHall>());
 
     if ( _rmvlevel > 0 ) {
       mf::LogInfo logInfo("GEOM");
@@ -503,7 +503,6 @@ namespace mu2e {
 
     // Populate the output data products.
     GeomHandle<WorldG4>  world;
-    GeomHandle<Mu2eBuilding>  building;
     addPointTrajectories( g4event, *pointTrajectories, spHelper, world->mu2eOriginInWorld(), _pointTrajectoryMinSteps);
 
     // Run self consistency checks if enabled.

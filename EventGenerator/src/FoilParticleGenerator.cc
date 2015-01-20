@@ -27,7 +27,6 @@
 // Mu2e includes
 #include "EventGenerator/inc/FoilParticleGenerator.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"

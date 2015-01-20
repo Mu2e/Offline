@@ -37,10 +37,8 @@ namespace mu2e {
     // All the coordinates are in the G4 world reference frame
     const CLHEP::Hep3Vector& mu2eOriginInWorld() const { return _mu2eOriginInWorld; }
 
-    // FIXME: these vars don't have a well defined meaning after the
-    // dirt/hall geometry restructuring.
-    double dirtG4Ymin() const { return _dirtG4Ymin; }
     double dirtG4Ymax() const { return _dirtG4Ymax; }
+    double dirtG4Ymin() const { return _dirtG4Ymin; }  // FIXME: not set
 
     // The argument is a point in Mu2e coordinates.  Return true if this point
     // is inside the G4 world, false otherwise.

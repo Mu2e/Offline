@@ -19,8 +19,6 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
-#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
-#include "G4Helper/inc/AntiLeakRegistry.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeomPrimitives/inc/Tube.hh"
@@ -29,7 +27,6 @@
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -70,11 +67,8 @@ namespace mu2e {
       _config.getBool("vd.doSurfaceCheck",false);
     bool const placePV       = true;
 
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
-
-    GeomHandle<Mu2eBuilding> building;
 
     GeomHandle<Beamline> beamg;
     double rVac         = CLHEP::mm * beamg->getTS().innerRadius();
@@ -1048,7 +1042,7 @@ namespace mu2e {
       if ( verbosityLevel > 0) {
         cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
       }
-
+      /*
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
       GeomHandle<ProtonBeamDump> dump;
 
@@ -1069,9 +1063,9 @@ namespace mu2e {
       // NB: it's not "shielding" center in Y in case the ceiling height is a limitation
       CLHEP::Hep3Vector shieldingFaceCenterInMu2e( (dump->shieldingFaceXmin()+
                                                     dump->shieldingFaceXmax())/2,
-
+                                                   
                                                    (vdYmax + vdYmin)/2,
-
+                                                   
                                                    (dump->shieldingFaceZatXmin()+
                                                     dump->shieldingFaceZatXmax())/2
                                                    );
@@ -1103,6 +1097,7 @@ namespace mu2e {
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
+      */
     }
 
 
@@ -1203,159 +1198,10 @@ namespace mu2e {
             }
     }
 
-    if ( _config.getBool("hasExtMonUCI", false) )
-    {
-    // placing virtual detector infront of ExtMonUCI removable shielding
-    vdId = VirtualDetectorId::EMIEntrance1;
-    if( vdg->exist(vdId) ) {
-      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
-      GeomHandle<ExtMonUCI::ExtMon> extmon;
-
-      std::vector<double> hlen(3);
-      hlen[0] = _config.getDouble("vd.ExtMonUCIEntrance1.HalfLengths", 100.0);
-      hlen[1] = _config.getDouble("vd.ExtMonUCIEntrance1.HalfLengths", 100.0);
-      hlen[2] = vdg->getHalfLength();
-
-      std::vector<double> pos;
-      _config.getVectorDouble("vd.ExtMonUCIEntrance1.Position", pos, 3);
-      G4ThreeVector vdLocalOffset = G4ThreeVector( pos[0], pos[1], pos[2] ) - parent.centerInMu2e();
-
-      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                  hlen,
-                                  vacuumMaterial,
-                                  0,
-                                  vdLocalOffset,
-                                  parent,
-                                  vdId,
-                                  vdIsVisible,
-                                  G4Color::Red(),
-                                  vdIsSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  false
-                                  );
-
-      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-      vdInfo.logical->SetSensitiveDetector(vdSD);
-    }
-
-    // placing virtual detector between ExtMonUCI removable shielding and front shielding
-    vdId = VirtualDetectorId::EMIEntrance2;
-    if( vdg->exist(vdId) ) {
-      VolumeInfo const & parent = _helper->locateVolInfo("ExtMonUCI");
-      GeomHandle<ExtMonUCI::ExtMon> extmon;
-
-      std::vector<double> hlen(3);
-      hlen[0] = extmon->envelopeParams()[0];
-      hlen[1] = extmon->envelopeParams()[1];
-      hlen[2] = vdg->getHalfLength();
-
-      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                  hlen,
-                                  vacuumMaterial,
-                                  0,
-                                  vdg->getLocal(vdId),
-                                  parent,
-                                  vdId,
-                                  vdIsVisible,
-                                  G4Color::Red(),
-                                  vdIsSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  false
-                                  );
-
-      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-      vdInfo.logical->SetSensitiveDetector(vdSD);
-    }
-
-    // placing virtual detector at the entrance and exit collimator0-3
-    vdId = VirtualDetectorId::EMIC0Entrance;
-    for (int iCol = 0; iCol < 4; iCol++) {
-      if( vdg->exist(vdId) ) {
-        VolumeInfo const & parent = _helper->locateVolInfo("ExtMonUCI");
-        GeomHandle<ExtMonUCI::ExtMon> extmon;
-
-        std::vector<double> hlen(3);
-        hlen[0] = extmon->col(iCol)->paramsOuter()[0];
-        hlen[1] = extmon->col(iCol)->paramsOuter()[1];
-        hlen[2] = vdg->getHalfLength();
-
-        for (int iFrontBack = 0; iFrontBack < 2; iFrontBack++) {
-          VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                      hlen,
-                                      vacuumMaterial,
-                                      0,
-                                      vdg->getLocal(vdId),
-                                      parent,
-                                      vdId,
-                                      vdIsVisible,
-                                      G4Color::Red(),
-                                      vdIsSolid,
-                                      forceAuxEdgeVisible,
-                                      placePV,
-                                      false
-                                      );
-
-          doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-          vdInfo.logical->SetSensitiveDetector(vdSD);
-
-          vdId++;
-        }
-      }
-    }
-    } // hasExtMonUCI
-
     // An XY plane between the PS and anything ExtMon
     vdId = VirtualDetectorId::ExtMonCommonPlane;
     if( vdg->exist(vdId) ) {
-      if ( verbosityLevel > 0) {
-        cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-      }
-
-      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
-      GeomHandle<ProtonBeamDump> dump;
-
-      const double requested_z = _config.getDouble("vd.ExtMonCommonPlane.z");
-
-      const double xmin = std::min(building->hallInsideXPSCorner(),
-                                   dump->frontShieldingCenterInMu2e()[0]
-                                   + (requested_z - dump->frontShieldingCenterInMu2e()[2])*tan(dump->coreRotY())
-                                   - dump->frontShieldingHalfSize()[0]/cos(dump->coreRotY())
-                                   );
-
-      CLHEP::Hep3Vector centerInMu2e(
-                                     (building->hallInsideXmax() + xmin)/2,
-                                     (building->hallInsideYmax() + building->hallInsideYmin())/2,
-                                     requested_z
-                                     );
-
-      std::vector<double> hlen(3);
-      hlen[0] = (building->hallInsideXmax() - xmin)/2;
-      hlen[1] = (building->hallInsideYmax() - building->hallInsideYmin())/2;
-      hlen[2] = vdg->getHalfLength();
-
-      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                  hlen,
-                                  vacuumMaterial,
-                                  0,
-                                  centerInMu2e - parent.centerInMu2e(),
-                                  parent,
-                                  vdId,
-                                  vdIsVisible,
-                                  G4Color::Red(),
-                                  vdIsSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  false
-                                  );
-
-      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-      vdInfo.logical->SetSensitiveDetector(vdSD);
+      // Not currently supported
     }
 
     // placing virtual detector at the dump core face

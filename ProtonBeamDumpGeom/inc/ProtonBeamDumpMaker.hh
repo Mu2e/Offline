@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "Mu2eBuildingGeom/inc/Mu2eHall.hh"
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 namespace mu2e { class SimpleConfig; }
 
