@@ -1,8 +1,21 @@
+#include <vector>
+#include <iostream>
 struct resultantPeakData
 {
-	Double_t scalingFactor;
-	Double_t peakTime;
+	double scalingFactor;
+	double peakTime;
 
 	resultantPeakData() : scalingFactor(0.0), peakTime(0.0){};
-	resultantPeakData(Double_t scalingFactor, Double_t peakTime) : scalingFactor(scalingFactor), peakTime(peakTime){};
+	resultantPeakData(double scalingFactor, double peakTime) : scalingFactor(scalingFactor), peakTime(peakTime){};
 };
+
+typedef std::vector<resultantPeakData> resultantHitData;
+
+void testit() {
+
+//resultantPeakData a(10.0, 20.0);
+resultantPeakData b(30.0,40.0);
+
+resultantHitData c;
+c.push_back(resultantPeakData a(10.0, 20.0));
+}

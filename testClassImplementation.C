@@ -1,15 +1,13 @@
 {
 	#include "classImplementation.C"
-	convolutionSinglePeakWithDynamicPedestal *c = new convolutionSinglePeakWithDynamicPedestal();
 	unsigned int adc[8] = {64, 60, 103, 125, 116, 108, 93, 92};
 
-	paramStruct initParams;
+	configStruct initParams;
 
-
-	FindSinglePeak *d = new FindSinglePeak(initParams, adc);
-	d->adcPeaks.push_back(125.0);
-	d->timePeaks.push_back(60.0);
-
-	//d->process();
+	resultantHitData result;
+	resultantPeakData peakData(60.0,125.0);
+	result.push_back(peakData);
+	FindSinglePeak d(initParams);
+	d.process(result,adc);
 
 }
