@@ -7,11 +7,11 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "CaloCluster/test/producers.fcl"
-#include "TrackCaloMatching/test/producers.fcl"
-#include "CalPatRec/test/producers.fcl"
-#include "ParticleID/test/producers.fcl"
-#include "Stntuple/test/producers.fcl"
+#include "CaloCluster/fcl/prolog.fcl"
+#include "TrackCaloMatching/fcl/prolog.fcl"
+#include "CalPatRec/fcl/prolog.fcl"
+#include "ParticleID/fcl/prolog.fcl"
+#include "Stntuple/fcl/prolog.fcl"
 
 # process_name : DigiMixMergePatRecStnmaker
 

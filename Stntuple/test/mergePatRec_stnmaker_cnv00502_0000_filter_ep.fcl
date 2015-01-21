@@ -1,10 +1,9 @@
+# -*- mode: tcl -*-
 BEGIN_PROLOG
 bgHitFiles : [
      "/mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00084/data_mixBG.root"
 ]
 END_PROLOG
-# -*- mode: tcl -*-
-// Andrei Gaponenko, 2014
 #------------------------------------------------------------------------------
 # quick comments: reads signal MC and also background MC inputs with steppoints
 # so need to define input
@@ -19,13 +18,13 @@ END_PROLOG
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "CaloCluster/test/producers.fcl"
-#include "TrackCaloMatching/test/producers.fcl"
-#include "CalPatRec/test/producers.fcl"
-#include "ParticleID/test/producers.fcl"
-#include "Stntuple/fcl/profile.fcl"
+#include "CaloCluster/fcl/prolog.fcl"
+#include "TrackCaloMatching/fcl/prolog.fcl"
+#include "CalPatRec/fcl/prolog.fcl"
+#include "ParticleID/fcl/prolog.fcl"
+#include "Stntuple/fcl/prolog.fcl"
 
-#include "murat/test/producers.fcl"
+#include "murat/fcl/prolog.fcl"
 
 #test: // This must be commented out for production.
 # BEGIN_PROLOG
