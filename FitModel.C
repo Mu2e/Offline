@@ -1,29 +1,43 @@
 #include "TMath.h"
 #include <iostream>
-#include "TF1.h"
 
 using namespace std;
 
 // Switch Double_t to Double_t
 
 // ADD FIXED TRUNCATION
- 
+// This struct contains all parameters which remain constant throughout the simulation
+struct tempStruct{
+    const Double_t shapingTime; // Shaping time (in units of ns)
+    const Int_t numSamplesPerHit; // Number of samples measured per hit
+    const Double_t adcError; // Assumes constant error for all adc measurements (in units of bits)
+    const Double_t measurementFrequency; // Sample frequency of adc values (in units of ns)
+    const Double_t truncationLevel; // Level of truncation of waveform (in units of bits)
+    const Double_t defaultPedestal; // Count value corresponding to the default pedestal (in units of bits)
 
-// These need to eventually be DELETED
-const Double_t shapingTime = 25.0;
-const Double_t truncationLevel = 1023.0 - 64.0;
+    tempStruct() : shapingTime(25.0), 
+             numSamplesPerHit(8), 
+             measurementFrequency(20.0), 
+             adcError(3.0), 
+             truncationLevel(1023.0),
+             defaultPedestal(64.0){}
+}; 
+
+
+// THIS CODE WILL NOT WORK SINCE configStruct is not defined.
+tempStruct initParams;
 
 // Par0 - Q
 // The dynamic pedestal is of the form Q e^(-t / tau). 
 //Note that normalized it is Q / tau rather than Q 
 Float_t dynamicPedestal(Double_t *x, Double_t *par)
 {
-  return par[0] * exp(-x[0] / shapingTime);
+  return par[0] * exp(-x[0] / initParams.shapingTime);
 }
 
 Float_t fixedTruncation(Float_t currentFunctionValue)
 {
-  return TMath::Min(currentFunctionValue,(Float_t)(1023.0-64.0));
+  return TMath::Min(currentFunctionValue,(Float_t)initParams.truncationLevel);
 }
 
 
@@ -39,8 +53,8 @@ Float_t unConvolvedSinglePeak(Double_t *x, Double_t *par)
   
 		if (xValue > 0.0)
 		{
-  	 returnValue = xValue*pow(shapingTime,-2)
-                    *exp(-xValue/shapingTime);
+  	 returnValue = xValue*pow(initParams.shapingTime,-2)
+                    *exp(-xValue/initParams.shapingTime);
 		}
 		return returnValue;
 	}
@@ -55,14 +69,14 @@ Float_t convolvedSinglePeak(Double_t *x, Double_t *par)
 		
 		if (par[0] == 0.0)
     	{
-      		Double_t parameters[2] = {1.0,shapingTime}; 
+      		Double_t parameters[2] = {1.0,initParams.shapingTime}; 
       		returnValue = unConvolvedSinglePeak(x,parameters);
     	}
     	else
     	{
-      		const Float_t a = TMath::Max((x[0] + par[0]) / shapingTime,0.0);
+      		const Float_t a = TMath::Max((x[0] + par[0]) / initParams.shapingTime,0.0);
       		// Assuming that shaping time is positive and thus b is negative (if t - sigma is)
-      		const Float_t b = TMath::Max((x[0] - par[0]) / shapingTime,0.0);
+      		const Float_t b = TMath::Max((x[0] - par[0]) / initParams.shapingTime,0.0);
       		returnValue =  (-exp(-a)*(1+a) + exp(-b)*(1+b)) / (2.0 * par[0]);
     	}
     	return returnValue;
@@ -123,8 +137,12 @@ Float_t doublePeak(Double_t *x, Double_t *par)
       Double_t firstPeakPar[3] = {par[0], par[1], 0.0};
       Double_t secondPeakPar[3] = {par[2] + par[0], par[3], 0.0};
 
+
+      // The default pedestal is subtracted since it is double counted by adding two single peaks
+      // together. 
       return convolutionSinglePeak(x, firstPeakPar) 
-           + convolutionSinglePeak(x, secondPeakPar);
+           + convolutionSinglePeak(x, secondPeakPar)
+           - initParams.defaultPedestal;
 }
  
   // Par0 - shift in X 1st peak

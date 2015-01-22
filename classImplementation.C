@@ -20,20 +20,27 @@ struct resultantPeakData
 	// Check the order of the parameters where this is called
 	resultantPeakData(Float_t peakTime, Float_t peakHeight) : peakTime(peakTime), peakHeight(peakHeight){};
 };
-typedef std::vector<resultantPeakData> resultantHitData;
-resultantHitData test; // Dummy initialization
-
 
 // This struct contains all parameters which remain constant throughout the simulation
 struct configStruct{
-		const Double_t shapingTime; // Shaping time (in units of ns)
-		const Int_t numSamplesPerHit; // Number of samples measured per hit
-		const Double_t adcError; // Assumes constant error for all adc measurements (in units of bits)
-		const Double_t measurementFrequency; // Sample frequency of adc values (in units of ns)
-		const Double_t truncationLevel; // Level of truncation of waveform (in units of bits)
+    const Double_t shapingTime; // Shaping time (in units of ns)
+    const Int_t numSamplesPerHit; // Number of samples measured per hit
+    const Double_t adcError; // Assumes constant error for all adc measurements (in units of bits)
+    const Double_t measurementFrequency; // Sample frequency of adc values (in units of ns)
+    const Double_t truncationLevel; // Level of truncation of waveform (in units of bits)
+    const Double_t defaultPedestal; // Count value corresponding to the default pedestal (in units of bits)
 
-		configStruct() : shapingTime(25.0), numSamplesPerHit(8), measurementFrequency(20.0), adcError(3.0), truncationLevel(1023.0 - 64.0){}
-};
+    configStruct() : shapingTime(25.0), 
+             numSamplesPerHit(8), 
+             measurementFrequency(20.0), 
+             adcError(3.0), 
+             truncationLevel(1023.0),
+             defaultPedestal(64.0){}
+}; 
+
+// This is object top which will be filled by the process method 
+typedef std::vector<resultantPeakData> resultantHitData;
+
 
 // Virtual class providing structure for FindSinglePeak, FindDoublePeak, FindMutiplePeaks, etc. 
 class FindPeakBase{
@@ -62,12 +69,18 @@ class FindPeakBase{
 		// Fits a model function to a waveform
 		void fitModel2Waveform(TF1 &fitModel, TGraphErrors &fitData, const Double_t *initialParameters, Double_t *fitParameters)
 		{
-			// These lines will be replaced with the chi-square minimization
+ 			// These lines will be replaced with the chi-square minimization
 			TF1 * fitModelPtr = &fitModel; 
 			TGraphErrors *fitDataPtr = &fitData;
 			fitModel.SetParameters(initialParameters);
 			fitDataPtr->Fit(fitModelPtr,"QN");
-			fitParameters = fitModel.GetParameters();
+
+			const Int_t numParameters = fitModel.GetNumberFreeParameters();
+			std::cout << "numParam : " << numParameters << std::endl;
+			for (int i = 0; i < numParameters; ++i)
+			{
+				fitParameters[i] = fitModel.GetParameter(i);
+			}
 		}
 
 		// Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT
@@ -87,8 +100,13 @@ class FindPeakBase{
 			}
 
 			fitData = TGraphErrors(initParams.numSamplesPerHit,adcDataTemp,measurementTimes,measurementTimesErrors,adcDataErrors);
-
 		}
+
+		// Precomputed constants
+		const Double_t bits2scalingFactor = initParams.shapingTime * TMath::E(); // approximately 67.96
+		const Double_t scalingFactor2bits  = 1.0 / bits2scalingFactor; // approximately 0.0147
+		const Double_t hitPeriod = initParams.numSamplesPerHit * (initParams.measurementFrequency - 1.0);
+
 };
 
 class FindSinglePeakWithDynamicPedestal : public FindPeakBase{
@@ -104,31 +122,42 @@ class FindSinglePeakWithDynamicPedestal : public FindPeakBase{
 
 			// Set initial fit parameters
 			const double timeshift = 30.0;
-			const double scalingFactor = (double) result[1].peakHeight / 0.015;
-			const double Q = (double) result[0].peakHeight;
+			const double scalingFactor = result[1].peakHeight * bits2scalingFactor;
+			const double Q = result[0].peakHeight;
 			const double sigma = 10.0;
 			Double_t initialParameters[4] = {timeshift, scalingFactor, Q, sigma};
 
 			// Define fit function
-			fitModel = TF1("fitModel",convolutionSinglePeakWithDynamicPedestal,0.0,140.0,4);
+			fitModel = TF1("fitModel",convolutionSinglePeakWithDynamicPedestal,0.0,hitPeriod,4);
 
 			Double_t finalParameters[4];
 
 			adcWaveform2TGraphErrors(adcData, fitData);
 			fitModel2Waveform(fitModel, fitData, initialParameters, finalParameters);
-
-			resultantPeakData peakData(finalParameters[0],finalParameters[1]);
-
-			// Remove last element of result since dynamic pedestal is not recorded as a peak
-			result.pop_back();
-
-			// Replace data in result
-			result[0] = peakData;
+			fitParams2ResultantData(result,finalParameters);
 		}
 
 	private:
 		TGraphErrors fitData;
 		TF1 fitModel;
+
+		void fitParams2ResultantData(resultantHitData &result, Double_t *fitParameters)
+		{
+			resultantPeakData peakData;
+
+			// If there's time maybe make timeshift,scaling factor enumerated like true anomaly and eccentricity
+			peakData.peakTime = fitParameters[0];
+			peakData.peakHeight = fitParameters[1];
+
+			result[0] = peakData;
+
+			// Since dynamic pedestal is not counted as peak
+			result.pop_back();
+		}
+
+
+
+
 };
 
 class FindSinglePeak : public FindPeakBase{
@@ -143,29 +172,38 @@ class FindSinglePeak : public FindPeakBase{
 		{	
 			// Set initial fit parameters
 			const double timeshift = 30.0;
-			const double scalingFactor = TMath::Max(result[0].peakHeight / 0.015, 1000.0);
+			const double scalingFactor = TMath::Max(result[0].peakHeight * bits2scalingFactor, 1000.0);
 			const double sigma = 10.0;
 			double verticalShift = 0.0;
 			const Double_t initialParameters[4] = {timeshift, scalingFactor, verticalShift, sigma};
 
 			
 			// DEAL WITH CASE OF ZERO PEDESTAL
-			// const bool nonZeroPedestal = (qAdc[0] + qAdc[1])*0.5 > 4.0 / sqrt(2.0) * 3.0;
+			//const bool nonZeroPedestal = (qAdc[0] + qAdc[1])*0.5 > 4.0 / sqrt(2.0) * 3.0;
 
 			// Define fit function
-			fitModel = TF1("fitModel",convolutionSinglePeakWithConstantPedestal,0.0,140.0,4);
+			fitModel = TF1("fitModel",convolutionSinglePeakWithConstantPedestal,0.0,hitPeriod,4);
 	
 			Double_t finalParameters[4];
 
 			adcWaveform2TGraphErrors(adcData, fitData);
 			fitModel2Waveform(fitModel, fitData, initialParameters, finalParameters);
-
-			resultantPeakData peakData(finalParameters[0], finalParameters[1]);
-
-			// Replace data in result
-			result[0] = peakData;
+			fitParams2ResultantData(result,finalParameters);
 		}
 	private:
+		void fitParams2ResultantData(resultantHitData &result, Double_t *fitParameters)
+		{
+			resultantPeakData peakData;
+
+			// If there's time maybe make timeshift,scaling factor enumerated like true anomaly and eccentricity
+			peakData.peakTime = fitParameters[0];
+			peakData.peakHeight = fitParameters[1];
+
+			result[0] = peakData;
+		}
+
+
+
 		TGraphErrors fitData;
 		TF1 fitModel;
 };
@@ -187,7 +225,7 @@ class FindDoublePeak : public FindPeakBase{
 			const Double_t initialParameters[5] = {timeShift0, scalingFactor0, verticalShift, timeshift1, scalingFactor1};
 
 			// Define fit function
-			fitModel = TF1("fitModel",doublePeak,0.0,140.0,5);
+			fitModel = TF1("fitModel",doublePeak,0.0,hitPeriod,5);
 
 			Double_t finalParameters[5];
 
@@ -198,7 +236,6 @@ class FindDoublePeak : public FindPeakBase{
 
 	protected:
 
-		// THIS IS NOT GOING TO WORK BECAUSE FOR A DYNAMIC PEDESTAL THE LAST VALUE NEEDS TO BE POPPED OFF
 		void fitParams2ResultantData(resultantHitData &result, Double_t *fitParameters)
 		{
 			resultantPeakData firstPeakData;
@@ -230,24 +267,42 @@ class FindDoublePeakWithDynamicPedestal : public FindDoublePeak{
 		// NOTE : This function may begin with peak data provided in result which is replaced
 		virtual void process(resultantHitData &result, const adcWaveform adcData)
 		{
-			fitModel = TF1("fitModel",fitModel,0.0,140.0,5);
+			fitModel = TF1("fitModel",fitModel,0.0,hitPeriod,5);
 			const double timeShift0 = 30.0;
-			const double scalingFactor0 = TMath::Max(result[1].peakHeight / 0.015, 1000.0);
+			const double scalingFactor0 = TMath::Max(result[1].peakHeight * bits2scalingFactor, 1000.0);
 			const double Q = result[0].peakHeight;
 			const double timeshift1 = result[2].peakTime - result[1].peakTime;
-			const double scalingFactor1 = TMath::Max(result[2].peakHeight / 0.015, 1000.0);
+			const double scalingFactor1 = TMath::Max(result[2].peakHeight * bits2scalingFactor, 1000.0);
 
 			Double_t initialParameters[5] = {timeShift0, scalingFactor0, Q, timeshift1, scalingFactor1};
 			Double_t finalParameters[5];
 
 			adcWaveform2TGraphErrors(adcData, fitData);
 			fitModel2Waveform(fitModel, fitData, initialParameters, finalParameters);
-			FindDoublePeak::fitParams2ResultantData(result, finalParameters);
+			fitParams2ResultantData(result, finalParameters);
 		}
 
 	private:
 		TGraphErrors fitData;
 		TF1 fitModel;
+
+
+		void fitParams2ResultantData(resultantHitData &result, Double_t *fitParameters)
+		{
+			resultantPeakData firstPeakData;
+
+			// If there's time maybe make timeshift,scaling factor enumerated like true anomaly and eccentricity
+			firstPeakData.peakTime = fitParameters[0];
+			firstPeakData.peakHeight = fitParameters[1];
+
+			resultantPeakData secondPeakData;
+			secondPeakData.peakTime = fitParameters[3];
+			secondPeakData.peakHeight = fitParameters[4];
+
+			result[0] = firstPeakData;
+			result[1] = secondPeakData;
+			result.pop_back();
+		}
 };
 
 
@@ -309,7 +364,7 @@ class FindMultiplePeaks : public FindPeakBase{
 
 	private:
 		// Performs explicit peak search on adc waveform data
-		void findPeaks(TGraphErrors &gr,resultantHitData &result, configStruct &initParams, double sigma = 3.0)
+		void findPeaks(TGraphErrors &gr,resultantHitData &result, const configStruct &initParams, double sigma = 3.0)
 		{
   			int ientry = 0; // Start time at 0
   			const double *measurementTimes = gr.GetX();
@@ -356,20 +411,22 @@ class FindMultiplePeaks : public FindPeakBase{
 		// This function is applied when no peak is found in the explicit peak search (findPeaks).
 		void dynamicPedestalAddPeak(TGraphErrors &gr, resultantHitData &result)
 		{	
-			//const int numSamples = gr->GetN();
-
 			// This maybe could be done using linear algebra vectors
 			// instead of arrays
 			const Double_t *adcValues = gr.GetY();
 			const Double_t *measurementTimes = gr.GetX();
 			Double_t subtractedValues[initParams.numSamplesPerHit];
 
-			const Double_t dynamicPedstalValue = adcValues[0];
+			Double_t dynamicPedstalParam[1] = {adcValues[0]};
+			Double_t dynamicPedestalX[1];
 
 			for (int i = 0; i < initParams.numSamplesPerHit; ++i)
 			{
-				subtractedValues[i] = adcValues[i] - dynamicPedstalValue * exp(-measurementTimes[i] / initParams.shapingTime);
+				dynamicPedestalX[0] = measurementTimes[i];
+				subtractedValues[i] = adcValues[i] - dynamicPedestal(dynamicPedestalX, dynamicPedstalParam);
 			}
+
+			// New peak is max value of difference between of adc values and dynamic pedestal
 			const Float_t newAdcPeak = TMath::MaxElement(initParams.numSamplesPerHit, subtractedValues);
 			const Float_t newTPeak = TMath::LocMax(initParams.numSamplesPerHit, subtractedValues);
 
