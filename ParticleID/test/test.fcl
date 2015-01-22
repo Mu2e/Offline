@@ -1,8 +1,12 @@
-
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# standalone test by Vadim
+#------------------------------------------------------------------------------
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
+#include "ParticleID/fcl/prolog.fcl"
 
 process_name : TestPID
 
@@ -23,29 +27,19 @@ services : {
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
   }
-
 }
 
 physics : {
 
   producers : {
-    FSHPreStereo   : @local::FSHPreStereo
-    MakeStereoHits : @local::MakeStereoHits
-    FlagStrawHits : @local::FlagStrawHits
-    FlagBkgHits : @local::FlagBkgHits
+    FSHPreStereo         : @local::FSHPreStereo
+    MakeStereoHits       : @local::MakeStereoHits
+    FlagStrawHits        : @local::FlagStrawHits
+    FlagBkgHits          : @local::FlagBkgHits
 # Tracking for some different particle types
-    TPRDownstreameMinus : @local::TrkPatRecDownstreameMinus
+    TPRDownstreameMinus  : @local::TrkPatRecDownstreameMinus
     TPRDownstreammuMinus : @local::TrkPatRecDownstreammuMinus
-
-    PID:
-{
-	module_type : ParticleID
-	fitterModuleLabel : TPRDownstreameMinus
-        fitparticle : 11
-        fitdirection : 0
-	verbosity : 0
-        diagLevel : 1 
-	doDisplay : false
+    PID                  : @local::ParticleID
 }
     
   }
@@ -55,36 +49,32 @@ physics : {
 
       RKFDownstreameMinus :
     {
-      module_type    : ReadKalFits
+      module_type       : ReadKalFits
       fitterModuleLabel : TPRDownstreameMinus
-      fitparticle : 11
-      fitdirection : 0
-      verbosity : 0
-      maxPrint : 0
+      fitparticle       : 11
+      fitdirection      : 0
+      verbosity         : 0
+      maxPrint          : 0
 
 
     }
       RKFDownstreammuMinus :
     {
-      module_type    : ReadKalFits
+      module_type       : ReadKalFits
       fitterModuleLabel : TPRDownstreammuMinus
-      fitparticle : 13
-      fitdirection : 0
-      verbosity : 0
-      maxPrint : 0
+      fitparticle       : 13
+      fitdirection      : 0
+      verbosity         : 0
+      maxPrint          : 0
     }
 
-      PIDReadDownstreameMinus :
-    {
+      PIDReadDownstreameMinus :  {
       module_type    : ParticleIDRead
       fitterModuleLabel : PID
       verbosity : 0
       maxPrint : 10
 
          }
-
-
-
   }
 
   p1 : [ FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDownstreameMinus, TPRDownstreammuMinus, PID]
@@ -103,3 +93,9 @@ physics : {
       module_type   : DataProductDump
     }
   }
+
+#------------------------------------------------------------------------------
+# re-definitions
+#------------------------------------------------------------------------------
+physics.producers.PID.fitterModuleLabel    : TPRDownstreameMinus
+
