@@ -22,11 +22,11 @@ namespace mu2e {
                            const CLHEP::HepRotation& mainParentRotationInMu2e,
                            const SimpleConfig& config);
 
-  VolumeInfo constructExtMonFNALBuilding(const VolumeInfo& collimator1Parent,
-                                         const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
-                                         const VolumeInfo& mainParent,
-                                         const CLHEP::HepRotation& mainParentRotationInMu2e,
-                                         const SimpleConfig& config);
+  void constructExtMonFNALBuilding(const VolumeInfo& collimator1Parent,
+                                   const CLHEP::HepRotation& collimator1ParentRotationInMu2e,
+                                   const VolumeInfo& mainParent,
+                                   const CLHEP::HepRotation& mainParentRotationInMu2e,
+                                   const SimpleConfig& config);
 
   void constructExtMonFNALDetector(const VolumeInfo& room, const SimpleConfig& config);
 

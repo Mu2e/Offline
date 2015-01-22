@@ -37,12 +37,10 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/constructWorldVolume.hh"
-#include "Mu2eG4/inc/constructDirt.hh"
 #include "Mu2eG4/inc/constructHall.hh"
 #include "Mu2eG4/inc/constructProtonBeamDump.hh"
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
-#include "Mu2eG4/inc/constructExtMonUCI.hh"
 #include "Mu2eG4/inc/constructExternalNeutronShielding.hh"
 #include "Mu2eG4/inc/constructInternalNeutronAbsorber.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
@@ -58,7 +56,6 @@
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
-#include "Mu2eG4/inc/ExtMonUCITofSD.hh"
 #include "Mu2eG4/inc/TrackerWireSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
@@ -73,7 +70,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -93,7 +89,6 @@
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
 
 // G4 includes
 #include "G4SDManager.hh"
@@ -165,8 +160,6 @@ namespace mu2e {
 
     VolumeInfo hallInfo  = constructHall(worldVInfo, _config);
 
-    constructDirt(hallInfo, _config);
-
     if ( _verbosityLevel > 0) {
       cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
       cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << endl;
@@ -210,9 +203,6 @@ namespace mu2e {
       constructMSTM(hallInfo, _config);
     }
 
-    if ( _config.getBool("hasExtMonUCI",false) ) {
-      constructExtMonUCI(hallInfo, _config);
-    }
 
     if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
 
@@ -229,7 +219,6 @@ namespace mu2e {
     if ( _verbosityLevel > 0) {
       mf::LogInfo log("GEOM");
       log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
-      log << "Mu2e Detector Origin: " << GeomHandle<Mu2eBuilding>()->relicMECOOriginInMu2e() + worldGeom->mu2eOriginInWorld()   << "\n";
     }
 
     // Create magnetic fields and managers only after all volumes have been defined.
@@ -471,16 +460,21 @@ namespace mu2e {
 
     // An option to limit the step size in these non-vaccum volumes to
     // visually validate geometry of the filter channel
-    G4LogicalVolume* emfcMagnetAperture = _helper->locateVolInfo("ExtMonFNALfilterMagnetAperture").logical;
-    if(emfcMagnetAperture) {
-      const double maxStepLength = _config.getDouble("extMonFNAL.maxG4StepLength", 0)*CLHEP::millimeter;
-      if(maxStepLength > 0) {
-        std::cout<<"Adding step limiter for ExtMonFNALFilterMagnet: maxStepLength = "<<maxStepLength<<std::endl;
-        G4UserLimits* emfcStepLimit = reg.add(G4UserLimits(maxStepLength));
-        emfcMagnetAperture->SetUserLimits(emfcStepLimit);
-        _helper->locateVolInfo("ExtMonFNALfilterMagnetIron").logical->SetUserLimits(emfcStepLimit);
-      }
-    }
+    //
+    // ==== BEGIN COMMENT-OUT: to allow construction of new building dirt volumes w/o overlaps (knoepfel)
+    //
+    //     G4LogicalVolume* emfcMagnetAperture = _helper->locateVolInfo("ExtMonFNALfilterMagnetAperture").logical;
+    //     if(emfcMagnetAperture) {
+    //       const double maxStepLength = _config.getDouble("extMonFNAL.maxG4StepLength", 0)*CLHEP::millimeter;
+    //       if(maxStepLength > 0) {
+    //         std::cout<<"Adding step limiter for ExtMonFNALFilterMagnet: maxStepLength = "<<maxStepLength<<std::endl;
+    //         G4UserLimits* emfcStepLimit = reg.add(G4UserLimits(maxStepLength));
+    //         emfcMagnetAperture->SetUserLimits(emfcStepLimit);
+    //         _helper->locateVolInfo("ExtMonFNALfilterMagnetIron").logical->SetUserLimits(emfcStepLimit);
+    //       }
+    //     }
+    //
+    // ==== END COMMENT-OUT
 
   } // end Mu2eWorld::constructStepLimiters(){
 
@@ -567,12 +561,6 @@ namespace mu2e {
     if(true) { // this SD does not derive from Mu2eSensitiveDetector as it does not produce StepPointMCCollection
       GeomHandle<mu2e::ExtMonFNAL::ExtMon> extmon;
       SDman->AddNewDetector(new ExtMonFNALPixelSD(_config, *extmon));
-    }
-
-    if(sdHelper_->enabled(StepInstanceName::ExtMonUCITof)) {
-      ExtMonUCITofSD* emuTofSD =
-        new ExtMonUCITofSD(           SensitiveDetectorName::ExtMonUCITof(),  _config);
-      SDman->AddNewDetector(emuTofSD);
     }
 
     if(sdHelper_->enabled(StepInstanceName::stoppingtarget)) {

@@ -49,6 +49,7 @@
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include <cmath>
 #include <vector>
 #include <sstream>
 
@@ -128,8 +129,7 @@ namespace mu2e {
     //----- Create the Mother volume for everything in the MSTM area--------------------------------
     
     //We want the Mother and the Shielding Wall to go down to the floor, so get the necessary info:
-    const double yExtentLow = _config.getDouble("mu2e.origin.heightAboveHallFloor");
-    //std::cout << " yExtentLow = " << yExtentLow << std::endl;
+    const double yExtentLow = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );    //std::cout << " yExtentLow = " << yExtentLow << std::endl;
     
     const double mstmMotherHalfHeight =  fabs(yExtentLow);
     const double mstmMotherHalfWidth  =  _config.getDouble("mstm.wallUpStr.halfWidth");

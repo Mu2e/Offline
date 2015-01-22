@@ -31,7 +31,7 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "ITrackerGeom/inc/ITracker.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
+#include "Mu2eHallGeom/inc/Mu2eBuilding.hh"
 
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
