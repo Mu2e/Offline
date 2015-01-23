@@ -1,11 +1,12 @@
+///////////////////////////////////////////////////////////////////////////////
 //  $Id: 
 //  $Author: 
 //  $Date: 
 //
 //  Original author Vadim Rusu
 //
-//
-
+// 2015-01-23 P.Murat: default condiguration is stored in ParticleID/fcl/prolog.fcl
+///////////////////////////////////////////////////////////////////////////////
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -33,7 +34,6 @@
 #include "TDirectory.h"
 #include "TROOT.h"
 #include "TStyle.h"
-
 
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "TrkBase/TrkHotList.hh"

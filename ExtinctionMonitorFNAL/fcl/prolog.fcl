@@ -1,0 +1,101 @@
+# -*- mode: tcl -*- 
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+# Form ExtMonFNAL pixel hits
+pixelDigitization : {
+    module_type : ExtMonFNALHitMaker
+    inputModuleLabel : "g4run"
+    inputInstanceName : ""
+
+    geomModuleLabel : "geom"
+
+    // global time corresponding to the starting edge of time bin 0
+    t0 : 0
+
+    // Hardware feature of FE-I4
+    maxToT : 13
+
+    // threshold in units of electron charge
+    discriminatorThreshold : 3000
+
+    // ToT calibration injected charge
+    qCalib : 19000
+
+    // ToT calibration target
+    totCalib : 1
+
+    pixelNoisePerBC : 6.e-10 // 1e-10 electronics + 5e-10 radioactivity
+
+    // Arbitrary, but must be sane
+    numClustersPerHit : 128
+
+    applyProtonPulseShape : false
+}
+
+# Form ExtMonFNAL pixel clusters
+pixelRawClusterization : {
+    module_type : ExtMonFNALRawClusterization
+    inputModuleLabel : "pixelDigitization"
+    geomModuleLabel : "geom"
+}
+
+pixelRecoClusterization : {
+    module_type : ExtMonFNALRecoClusterization
+    inputModuleLabel : "pixelRawClusterization"
+    geomModuleLabel : "geom"
+}
+
+pixelRecoClusterTruthMaking : {
+    module_type : RecoClusterTruthMaker
+    recoClusterModuleLabel : "pixelRecoClusterization"
+    hitTruthModuleLabel : "pixelDigitization"
+}
+
+EMFPatRecFromTracklets : {
+    module_type : EMFPatRecFromTracklets
+    inputModuleLabel : "pixelRecoClusterization"
+    geomModuleLabel : "geom"
+
+    // clock tolerance used for both cluster association and tracklet match
+    clusterClockTolerance : 0 // clock cycle
+
+    // cut on two-cluster tracklet seeds
+    maxTrackSlope  : 0.1 // 0.025 // signal cut 0.015
+
+    // these 3 pars control association of middle clusters to a tracklet
+    alignmentToleranceX : 0.250 // pixel size
+    alignmentToleranceY : 0.050 // pixel size
+    stackScatterAngleTolerance : 0.005 // scattering 0.5 mrad in 300 um Si + 1 mm Al
+
+    // tracklet match cut
+    trackletMatchSlopeXTolerance : 0.005// FIXME: what's reasonable?
+
+    // This is used to increase errors on hits for downstream planes
+    // Radiation length of 300 um silicon X/X0 = 0.00321
+    // For beta*c*p = 3000 MeV, theta0 = 0.20 mrad
+    thetaScatterOnePlane : 0.0002
+
+    cutMinTrackProb : 1.e-3
+}
+
+EMFPatRecFromTrackletsTruthMaking : {
+    module_type : PatRecTruthMaker
+    patRecModuleLabel : "EMFPatRecFromTracklets"
+    clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
+}
+
+EMFTrackClusterArbiter: {
+    module_type: EMFTrackClusterArbiter
+    tracksModuleLabel  : "EMFPatRecFromTracklets"
+    clustersModuleLabel  : "pixelRecoClusterization"
+    cutMaxSharedClustersOnTrack : 0
+}
+
+EMFTrackClusterArbiterTruthMaking: {
+    module_type : PatRecTruthMaker
+    patRecModuleLabel : "EMFTrackClusterArbiter"
+    clusterTruthModuleLabel : "pixelRecoClusterTruthMaking"
+}
+END_PROLOG

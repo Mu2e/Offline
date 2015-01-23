@@ -1,0 +1,13 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+# Generate Event
+generate: {
+    module_type          : EventGenerator
+    inputfile            : "Mu2eG4/test/genconfig_02.txt"
+    allowReplacement     : true
+    messageOnReplacement : true
+}
+END_PROLOG

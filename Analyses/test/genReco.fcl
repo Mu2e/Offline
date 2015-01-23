@@ -27,11 +27,6 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "CaloCluster/fcl/prolog.fcl"
-#include "TrackCaloMatching/fcl/prolog.fcl"
-#include "CalPatRec/fcl/prolog.fcl"
-#include "ParticleID/fcl/prolog.fcl"
-
 BEGIN_PROLOG
   muStops      : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 END_PROLOG
