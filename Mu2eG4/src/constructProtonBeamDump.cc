@@ -34,7 +34,6 @@
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
@@ -60,7 +59,6 @@ namespace mu2e {
   void constructProtonBeamDump(const VolumeInfo& parent, const SimpleConfig& config) {
 
     GeomHandle<ProtonBeamDump> dump;
-    GeomHandle<Mu2eBuilding> building;
     GeomHandle<ExtMonFNALBuilding> emfb;
     GeomHandle<Mu2eEnvelope> env;
     GeomHandle<WorldG4> world;
@@ -74,141 +72,141 @@ namespace mu2e {
     geomOptions->loadEntry( config, "ProtonBeamDumpMouth"    , "protonBeamDump.mouth"      );
     geomOptions->loadEntry( config, "ProtonBeamNeutronCave"  , "protonBeamDump.neutronCave");
 
-    //----------------------------------------------------------------
-    // Re-fill a part of the formal "HallAir" with dirt.
-    // Use an extruded solid to have a properly angled facet
-    // at which the beam dump can be placed.
 
-    std::vector<G4TwoVector> beamDumpDirtOutline;
+    static CLHEP::HepRotation shieldingRot(CLHEP::HepRotation::IDENTITY);
+    shieldingRot.rotateX( 90*CLHEP::degree);
+    shieldingRot.rotateZ( 90*CLHEP::degree);
 
-    std::copy(building->concreteOuterOutline3().begin(),
-              building->concreteOuterOutline3().end(),
-              std::back_inserter(beamDumpDirtOutline));
+    VolumeInfo beamDumpFront("ProtonBeamDumpFront",
+                             CLHEP::Hep3Vector(0, dump->frontShieldingCenterInMu2e()[1], 0)
+                             - parent.centerInMu2e(),
+                             parent.centerInWorld);
 
-    std::copy(building->concreteOuterOutline1().begin(),
-              building->concreteOuterOutline1().end(),
-              std::back_inserter(beamDumpDirtOutline));
+    beamDumpFront.solid = new G4ExtrudedSolid(beamDumpFront.name, dump->frontShieldingOutline(),
+                                              dump->frontShieldingHalfSize()[1],
+                                              G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+    
+    
+    finishNesting(beamDumpFront,
+                  materialFinder.get("protonBeamDump.material.shielding"),
+                  &shieldingRot,
+                  beamDumpFront.centerInParent,
+                  parent.logical,
+                  0,
+                  geomOptions->isVisible( "ProtonBeamDumpFront" ),
+                  G4Colour::Red() ,
+                  geomOptions->isSolid( "ProtonBeamDumpFront" ),
+                  geomOptions->forceAuxEdgeVisible( "ProtonBeamDumpFront" ),
+                  geomOptions->placePV( "ProtonBeamDumpFront" ),
+                  geomOptions->doSurfaceCheck( "ProtonBeamDumpFront" )
+                  );
 
-    // points need to be in the clock-wise order, need to reverse:
-    std::reverse(beamDumpDirtOutline.begin(), beamDumpDirtOutline.end());
-
-    // Add points to complete the outline
-    const CLHEP::Hep3Vector mu2eCenterInHall(world->mu2eOriginInWorld() - world->hallFormalCenterInWorld());
-    const double hallFormalZminInMu2e  = -world->hallFormalHalfSize()[2] - mu2eCenterInHall.z();
-    const double dumpDirtXmin = env->xmin();
-    const double dumpDirtXmax = env->xmax();
-
-    if(dumpDirtXmin < beamDumpDirtOutline.back().x()) {
-      beamDumpDirtOutline.push_back(G4TwoVector(dumpDirtXmin, beamDumpDirtOutline.back().y()));
-    }
-
-    // Two points at the back
-    beamDumpDirtOutline.push_back(G4TwoVector(dumpDirtXmin, hallFormalZminInMu2e));
-    beamDumpDirtOutline.push_back(G4TwoVector(dumpDirtXmax, hallFormalZminInMu2e));
-
-    if(dumpDirtXmax > beamDumpDirtOutline.front().x()) {
-      beamDumpDirtOutline.push_back(G4TwoVector(dumpDirtXmax, beamDumpDirtOutline.front().y()));
-    }
-
-    // We want to rotate the X'Y' plane of the extruded solid
-    // to become XZ plane of Mu2e.   Need to rotate by +90 degrees around X.
-    // Because the interfaces below use a backward interpretation of rotations,
-    // it's more convenient to work with the inverse matrix
-    static const CLHEP::HepRotation beamDumpDirtRotationInv(CLHEP::HepRotationX(-90*CLHEP::degree));
-
-    // To the bottom of the formal hall box, in mu2e coords
-    const double dumpDirtYmin =
-      world->hallFormalCenterInWorld()[1] - world->hallFormalHalfSize()[1]
-      - world->mu2eOriginInWorld()[1]
-      ;
-
-    const double dumpDirtYmax = std::max(
-                                         emfb->roomInsideYmax() + emfb->roomCeilingThickness() + emfb->dirtOverheadThickness()
-                                         ,
-                                         dump->frontShieldingCenterInMu2e()[1] + dump->frontShieldingHalfSize()[1]
-                                         );
-
-
-    VolumeInfo beamDumpDirt("ProtonBeamDumpDirt",
-                            CLHEP::Hep3Vector(0, (dumpDirtYmax+dumpDirtYmin)/2, 0)
+    VolumeInfo beamDumpBack("ProtonBeamDumpBack",
+                            CLHEP::Hep3Vector(0, dump->backShieldingCenterInMu2e()[1], 0)
                             - parent.centerInMu2e(),
                             parent.centerInWorld);
 
-    beamDumpDirt.solid = new G4ExtrudedSolid(beamDumpDirt.name, beamDumpDirtOutline,
-                                             (dumpDirtYmax - dumpDirtYmin)/2,
+    beamDumpBack.solid = new G4ExtrudedSolid(beamDumpBack.name, dump->backShieldingOutline(),
+                                             dump->backShieldingHalfSize()[1],
                                              G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
 
-
-    finishNesting(beamDumpDirt,
-                  materialFinder.get("dirt.overburdenMaterialName"),
-                  &beamDumpDirtRotationInv,
-                  beamDumpDirt.centerInParent,
+    finishNesting(beamDumpBack,
+                  materialFinder.get("protonBeamDump.material.shielding"),
+                  &shieldingRot,
+                  beamDumpBack.centerInParent,
                   parent.logical,
                   0,
-                  G4Colour(0.9, 0, 0.9) //G4Colour::Magenta(),
+                  geomOptions->isVisible( "ProtonBeamDumpBack" ),
+                  G4Colour::Red() ,
+                  geomOptions->isSolid( "ProtonBeamDumpBack" ),
+                  geomOptions->forceAuxEdgeVisible( "ProtonBeamDumpBack" ),
+                  geomOptions->placePV( "ProtonBeamDumpBack" ),
+                  geomOptions->doSurfaceCheck( "ProtonBeamDumpBack" )
                   );
 
-    //----------------------------------------------------------------
-    CLHEP::Hep3Vector frontShieldingPositionInDirt( beamDumpDirtRotationInv * (dump->frontShieldingCenterInMu2e() - beamDumpDirt.centerInMu2e()));
+    static const CLHEP::HepRotation rotationInShield( (shieldingRot*dump->coreRotationInMu2e()).inverse() );
 
-    // finishNesting() uses the backwards interpretation of rotations.
-    // We need: (beamDumpDirtRotation.inverse()*dump.coreRotationInMu2e()).inverse()
-    static const CLHEP::HepRotation rotationInDirtInv( (beamDumpDirtRotationInv*dump->coreRotationInMu2e()).inverse() );
+    double px = dump->coreAirHalfSize()[0];
+    double py = dump->coreAirHalfSize()[1];
+    std::vector<G4TwoVector> polygon;
+    polygon.push_back({+px,+py});
+    polygon.push_back({-px,+py});
+    polygon.push_back({-px,-py});
+    polygon.push_back({+px,-py});
 
-    // FIXME: from nestBo() here we get VolumeInfo with wrong centerInWorld
-    VolumeInfo frontShielding = nestBox("ProtonBeamDumpFrontShielding",
-                                        dump->frontShieldingHalfSize(),
-                                        materialFinder.get("protonBeamDump.material.shielding"),
-                                        &rotationInDirtInv,
-                                        frontShieldingPositionInDirt,
-                                        beamDumpDirt, 0,
-                                        G4Colour::Grey(),
-					"ProtonBeamDumpShielding"
-                                        );
+    CLHEP::Hep3Vector coreAirPositionInShield( shieldingRot * (dump->coreAirCenterInMu2e() - beamDumpFront.centerInMu2e()));
+ 
+    VolumeInfo beamDumpCoreAir("ProtonBeamDumpCoreAir", coreAirPositionInShield, beamDumpFront.centerInWorld);
+    beamDumpCoreAir.solid = new G4ExtrudedSolid(beamDumpCoreAir.name, polygon,
+                                                dump->coreAirHalfSize()[2],
+                                                G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
 
-    // FIXME: we should not need to correct the wrong information
-    frontShielding.centerInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld() + dump->frontShieldingCenterInMu2e();
+    finishNesting(beamDumpCoreAir,
+                  materialFinder.get("protonBeamDump.material.air"),
+                  &rotationInShield,
+                  beamDumpCoreAir.centerInParent,
+                  beamDumpFront.logical,
+                  0,
+                  geomOptions->isVisible( "ProtonBeamDumpCoreAir" ),
+                  G4Colour::Cyan() ,
+                  geomOptions->isSolid( "ProtonBeamDumpCoreAir" ),
+                  geomOptions->forceAuxEdgeVisible( "ProtonBeamDumpCoreAir" ),
+                  geomOptions->placePV( "ProtonBeamDumpCoreAir" ),
+                  geomOptions->doSurfaceCheck( "ProtonBeamDumpCoreAir" )
+                  );
 
-
-    nestBox("ProtonBeamDumpBackShielding",
-            dump->backShieldingHalfSize(),
-            materialFinder.get("protonBeamDump.material.shielding"),
-            &rotationInDirtInv,
-            beamDumpDirtRotationInv * (dump->backShieldingCenterInMu2e() - beamDumpDirt.centerInMu2e()),
-            beamDumpDirt, 0,
-            G4Colour::Grey(),
-	    "ProtonBeamDumpShielding"
-            );
-
+    
+    CLHEP::Hep3Vector corePositionInCoreAir( dump->coreCenterInMu2e()-dump->coreAirCenterInMu2e() );
     nestBox("ProtonBeamDumpCore",
             dump->coreHalfSize(),
             materialFinder.get("protonBeamDump.material.core"),
             0,
-            dump->coreRotationInMu2e().inverse()*(dump->coreCenterInMu2e() - dump->frontShieldingCenterInMu2e()),
-            frontShielding, 0,
+            corePositionInCoreAir,
+            beamDumpCoreAir, 0,
             G4Colour::Blue()
             );
 
+    CLHEP::Hep3Vector mouthPositionInShield( shieldingRot * (dump->mouthCenterInMu2e() - beamDumpFront.centerInMu2e()));
     nestBox("ProtonBeamDumpMouth",
             dump->mouthHalfSize(),
             materialFinder.get("protonBeamDump.material.air"),
-            0,
-            dump->coreRotationInMu2e().inverse()*(dump->mouthCenterInMu2e() - dump->frontShieldingCenterInMu2e()),
-            frontShielding, 0,
+            &rotationInShield,
+            mouthPositionInShield,
+            beamDumpFront, 0,
             G4Colour::Cyan()
             );
 
+    CLHEP::Hep3Vector cavePositionInShield( shieldingRot * (dump->neutronCaveCenterInMu2e() - beamDumpFront.centerInMu2e()));
     nestBox("ProtonBeamNeutronCave",
             dump->neutronCaveHalfSize(),
             materialFinder.get("protonBeamDump.material.air"),
-            0,
-            dump->coreRotationInMu2e().inverse()*(dump->neutronCaveCenterInMu2e() - dump->frontShieldingCenterInMu2e()),
-            frontShielding, 0,
+            &rotationInShield,
+            cavePositionInShield,
+            beamDumpFront, 0,
             G4Colour::Cyan()
             );
 
-    //----------------------------------------------------------------
-    constructExtMonFNAL(frontShielding, dump->coreRotationInMu2e(), beamDumpDirt, beamDumpDirtRotationInv.inverse(), config);
+    CLHEP::Hep3Vector frontSteelPositionInShield( shieldingRot * (dump->frontSteelCenterInMu2e() - beamDumpFront.centerInMu2e()));
+    nestBox("ProtonBeamDumpFrontSteel",
+            dump->frontSteelHalfSize(),
+            materialFinder.get("protonBeamDump.material.core"),
+            &rotationInShield,
+            frontSteelPositionInShield,
+            beamDumpFront, 0,
+            G4Colour::Blue()
+            );
+
+    CLHEP::Hep3Vector backSteelPositionInShield( shieldingRot * (dump->backSteelCenterInMu2e() - beamDumpBack.centerInMu2e()));
+    nestBox("ProtonBeamDumpBackSteel",
+            dump->backSteelHalfSize(),
+            materialFinder.get("protonBeamDump.material.core"),
+            &rotationInShield,
+            backSteelPositionInShield,
+            beamDumpBack, 0,
+            G4Colour::Blue()
+            );
+
+    constructExtMonFNAL(beamDumpFront, shieldingRot, parent, CLHEP::HepRotation::IDENTITY, config);
 
   } // constructProtonBeamDump()
 

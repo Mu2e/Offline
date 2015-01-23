@@ -360,7 +360,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     const CLHEP::HepRotation* vdRotInRoomInv =
-      reg.add(emfb->coll2ShieldingRotationInMu2e().inverse() * emfb->roomRotationInMu2e());
+      reg.add(emfb->coll2ShieldingRotationInMu2e().inverse() * parentRotationInMu2e);
 
     for(int vdId = VirtualDetectorId::EMFC2Entrance; vdId <= VirtualDetectorId::EMFC2Exit; ++vdId) {
       if( vdg->exist(vdId) ) {
@@ -383,7 +383,7 @@ namespace mu2e {
                                     hlen,
                                     vacuumMaterial,
                                     vdRotInRoomInv,
-                                    emfb->roomRotationInMu2e().inverse()*(vdCenterInMu2e - roomAir.centerInMu2e()),
+                                    parentRotationInMu2e.inverse()*(vdCenterInMu2e - roomAir.centerInMu2e()),
                                     roomAir,
                                     vdId,
                                     vdIsVisible,
@@ -516,11 +516,12 @@ namespace mu2e {
                            const CLHEP::HepRotation& mainParentRotationInMu2e,
                            const SimpleConfig& config)
   {
-    const VolumeInfo roomAir = constructExtMonFNALBuilding(collimator1Parent,
-                                                           collimator1ParentRotationInMu2e,
-                                                           mainParent,
-                                                           mainParentRotationInMu2e,
-                                                           config);
+    constructExtMonFNALBuilding(collimator1Parent,
+                                  collimator1ParentRotationInMu2e,
+                                  mainParent,
+                                  mainParentRotationInMu2e,
+                                  config);
+
 
     GeomHandle<ExtMonFNAL::ExtMon> extmon;
     GeomHandle<ExtMonFNALBuilding> emfb;
@@ -530,31 +531,31 @@ namespace mu2e {
                                   extmon->dn(),
                                   "Dn",
                                   VirtualDetectorId::EMFDetectorDnEntrance,
-                                  roomAir,
-                                  emfb->roomRotationInMu2e(),
+                                  mainParent,
+                                  mainParentRotationInMu2e,
                                   config);
 
     constructExtMonFNALPlaneStack(extmon->module(),
                                   extmon->up(),
                                   "Up",
                                   VirtualDetectorId::EMFDetectorUpEntrance,
-                                  roomAir,
-                                  emfb->roomRotationInMu2e(),
+                                  mainParent,
+                                  mainParentRotationInMu2e,
                                   config);
     
     constructExtMonFNALMagnet(extmon->spectrometerMagnet(),
-                              roomAir,
+                              mainParent,
                               "spectrometer",
-                              emfb->roomRotationInMu2e(),
+                              mainParentRotationInMu2e,
                               config);
 
     // EMFC2* VDs
-    constructExtMonFNALVirtualDetectors(roomAir, emfb->roomRotationInMu2e(), config);
+    constructExtMonFNALVirtualDetectors(mainParent, mainParentRotationInMu2e, config);
 
     // enclose whole ExtMon magnet+sensors in a set of VDs
     constructExtMonFNALBoxVirtualDetectors(*extmon,
-                                           roomAir,
-                                           emfb->roomRotationInMu2e(),
+                                           mainParent,
+                                           mainParentRotationInMu2e,
                                            config);
 
   } // constructExtMonFNAL()

@@ -2,9 +2,9 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.66 2014/09/19 19:14:43 knoepfel Exp $
+// $Id: GeometryService_service.cc,v 1.65 2014/09/03 16:39:15 knoepfel Exp $
 // $Author: knoepfel $
-// $Date: 2014/09/19 19:14:43 $
+// $Date: 2014/09/03 16:39:15 $
 //
 // Original author Rob Kutschke
 //
@@ -29,10 +29,8 @@
 #include "GeometryService/src/DetectorSystemMaker.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/WorldG4Maker.hh"
-#include "Mu2eBuildingGeom/inc/BuildingBasics.hh"
-#include "Mu2eBuildingGeom/inc/BuildingBasicsMaker.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuildingMaker.hh"
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "Mu2eHallGeom/inc/Mu2eHallMaker.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ProductionTargetGeom/inc/ProductionTargetMaker.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
@@ -103,8 +101,6 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuildingMaker.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL_Maker.hh"
-#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCI.hh"
-#include "ExtinctionMonitorUCIGeom/inc/ExtMonUCIMaker.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberMaker.hh"
 #include "MBSGeom/inc/MBS.hh"
@@ -230,23 +226,22 @@ namespace mu2e {
 
     addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
 
-    std::unique_ptr<BuildingBasics> tmpBasics(BuildingBasicsMaker::make(*_config));
-    const BuildingBasics& buildingBasics = *tmpBasics.get();
-    addDetector(std::move(tmpBasics));
+    // Construct building solids
+    std::unique_ptr<Mu2eHall> tmphall(Mu2eHallMaker::makeBuilding(*_g4GeomOptions,*_config));
+    const Mu2eHall& hall = *tmphall.get();
 
-    const double dumpFrontShieldingYmin = buildingBasics.detectorHallFloorTopY() - buildingBasics.detectorHallFloorThickness();
-    const double dumpFrontShieldingYmax = dumpFrontShieldingYmin +
-      buildingBasics.detectorHallInsideFullHeight() + buildingBasics.detectorHallCeilingThickness();
+    // Determine Mu2e envelope from building solids
+    std::unique_ptr<Mu2eEnvelope> mu2eEnv (new Mu2eEnvelope(hall,*_config));
 
-    std::unique_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, dumpFrontShieldingYmin, dumpFrontShieldingYmax));
+    // Make dirt based on Mu2e envelope
+    Mu2eHallMaker::makeDirt( *tmphall.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );
 
+    addDetector(std::move( tmphall ) );
+    addDetector(std::move( mu2eEnv ) );
+
+    std::unique_ptr<ProtonBeamDump> tmpDump(ProtonBeamDumpMaker::make(*_config, hall));
     const ProtonBeamDump& dump = *tmpDump.get();
     addDetector(std::move(tmpDump));
-
-
-    std::unique_ptr<Mu2eBuilding> tmpbld(Mu2eBuildingMaker::make(*_config, buildingBasics, beamline, dump));
-    const Mu2eBuilding& building = *tmpbld.get();
-    addDetector(std::move(tmpbld));
 
     // beamline info used to position DS
     std::unique_ptr<DetectorSolenoid> tmpDS( DetectorSolenoidMaker::make( *_config, beamline ) );
@@ -309,19 +304,12 @@ namespace mu2e {
     }
 
 
-    std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, dump));
+    std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, hall, dump));
     const ExtMonFNALBuilding& emfb = *tmpemb.get();
     addDetector(std::move(tmpemb));
     if(_config->getBool("hasExtMonFNAL",false)){
       addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
     }
-
-    if(_config->getBool("hasExtMonUCI",false)){
-      ExtMonUCI::ExtMonMaker extmon( *_config );
-      addDetector( extmon.getDetectorPtr() );
-    }
-
-    addDetector(std::unique_ptr<Mu2eEnvelope>(new Mu2eEnvelope(building, dump, emfb)));
 
     if(_config->getBool("hasVirtualDetector",false)){
       addDetector(VirtualDetectorMaker::make(*_config));
@@ -388,8 +376,8 @@ namespace mu2e {
   // WorldG4 could be added along with all the other detectors in preBeginRun().
   // However we don't want to make WorldG4 available in non-Geant jobs.
   // Therefore it is added by G4_module via this dedicated call.
-  void GeometryService::addWorldG4() {
-    addDetector(WorldG4Maker::make(*_config));
+  void GeometryService::addWorldG4(const Mu2eHall& hall) {
+    addDetector(WorldG4Maker::make(hall,*_config));
   }
 
   // Called after all modules have completed their end of job.

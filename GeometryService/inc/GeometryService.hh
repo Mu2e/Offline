@@ -37,6 +37,7 @@ namespace mu2e {
   class Target;
   class G4;
   class Mu2eG4Study;
+  class Mu2eHall;
   class G4GeometryOptions;
 
   class GeometryService {
@@ -151,7 +152,7 @@ private:
     // used by G4 to make this info available.
     friend class G4;
     friend class Mu2eG4Study;
-    void addWorldG4();
+    void addWorldG4(const Mu2eHall&);
 
   };
 

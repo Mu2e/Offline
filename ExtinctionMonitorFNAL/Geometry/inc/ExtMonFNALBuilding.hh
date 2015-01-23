@@ -57,9 +57,6 @@ namespace mu2e {
       double angleV() const { return _angleV; }
     };
 
-    const CLHEP::Hep3Vector& roomRefPointInMu2e() const { return roomRefPointInMu2e_; }
-    const CLHEP::HepRotation& roomRotationInMu2e() const { return roomRotationInMu2e_; }
-
     // The offsets are w.r.t. the dump core center, in the plane of the
     // dump shielding face.
     double filterEntranceOffsetX() const { return _filterEntranceOffsetX; }
@@ -87,38 +84,31 @@ namespace mu2e {
     //----------------------------------------------------------------
     // Civil construction details
 
-    // (x,z) points in Mu2e coordinates (not a direct copy of inputs!)
-    const std::vector<CLHEP::Hep2Vector>& roomInsideOutline() const { return roomInsideOutline_; }
-    const std::vector<CLHEP::Hep2Vector>& wallOutsideOutline() const { return wallOutsideOutline_; }
-    // the ceiling is the same as the outside wall
-    const std::vector<CLHEP::Hep2Vector>& ceilingOutline() const { return wallOutsideOutline_; }
-    // the floor is different because of interference with core back shielding
-    const std::vector<CLHEP::Hep2Vector>& floorOutline() const { return floorOutsideOutline_; }
-
     double roomInsideFullHeight() const { return roomInsideFullHeight_; }
-
-    double roomWallThickness() const { return roomWallThickness_; }
-    double roomFloorThickness() const { return roomFloorThickness_; }
-    double roomCeilingThickness() const { return roomCeilingThickness_; }
-
-    double dirtOverheadThickness() const { return dirtOverheadThickness_; }
-    // min. extension outide of the ceiling outline
-    double dirtOverheadHorizontalMargin() const { return dirtOverheadHorizontalMargin_; }
-
     double magnetRoomLength() const { return magnetRoomLength_; }
-    double coll2ShieldingDumpXmin() const { return coll2ShieldingDumpXmin_; }
-    double coll2ShieldingDumpXmax() const { return coll2ShieldingDumpXmax_; }
 
-    // computed:
     double roomInsideYmin() const { return roomInsideYmin_; }
     double roomInsideYmax() const { return roomInsideYmax_; }
 
-    CLHEP::Hep3Vector ceilingRefPointInMu2e() const;
-    CLHEP::Hep3Vector floorRefPointInMu2e() const;
+    double HVACductRadius() const { return _HVACductRadius; }
+    double HVACductHalfLength() const { return _HVACductHalfLength; }
+    CLHEP::Hep3Vector HVACductCenterInMu2e() const { return HVACductCenterInMu2e_; }
+
+    //----------------------------------------------------------------
+    // Shielding that is not part of the civil construction
+
+    CLHEP::HepRotation shieldingRotationInMu2e() const { return shieldingRotationInMu2e_; }
+    CLHEP::Hep3Vector shieldingNCenterInMu2e() const { return shieldingNCenterInMu2e_; }
+    CLHEP::Hep3Vector shieldingSCenterInMu2e() const { return shieldingSCenterInMu2e_; }
+    CLHEP::Hep3Vector shieldingBCenterInMu2e() const { return shieldingBCenterInMu2e_; }
+    const std::vector<double>& shieldingNHalfSize() const { return shieldingNHalfSize_; }
+    const std::vector<double>& shieldingSHalfSize() const { return shieldingSHalfSize_; }
+    const std::vector<double>& shieldingBHalfSize() const { return shieldingBHalfSize_; }
 
     CLHEP::Hep3Vector coll2ShieldingCenterInMu2e() const { return coll2ShieldingCenterInMu2e_; }
     CLHEP::HepRotation coll2ShieldingRotationInMu2e() const { return coll2ShieldingRotationInMu2e_; }
     const std::vector<double>& coll2ShieldingHalfSize() const { return coll2ShieldingHalfSize_; }
+    std::vector<CLHEP::Hep2Vector> coll2ShieldingOutline() const { return coll2ShieldingOutline_; }
 
   private:
     friend class ExtMonFNALBuildingMaker;
@@ -126,9 +116,6 @@ namespace mu2e {
     ExtMonFNALBuilding();
     // Or read back from persistent storage
     template<class T> friend class art::Wrapper;
-
-    CLHEP::Hep3Vector roomRefPointInMu2e_;
-    CLHEP::HepRotation roomRotationInMu2e_;
 
     double _filterEntranceOffsetX;
     double _filterEntranceOffsetY;
@@ -145,26 +132,28 @@ namespace mu2e {
     CLHEP::Hep3Vector _collimator2CenterInMu2e;
     CLHEP::HepRotation _collimator2RotationInMu2e;
 
-    std::vector<CLHEP::Hep2Vector> roomInsideOutline_;
-    std::vector<CLHEP::Hep2Vector> wallOutsideOutline_;
-    std::vector<CLHEP::Hep2Vector> floorOutsideOutline_;
     double roomInsideFullHeight_;
-    double roomWallThickness_;
-    double roomFloorThickness_;
-    double roomCeilingThickness_;
-    double dirtOverheadThickness_;
-    double dirtOverheadHorizontalMargin_;
-
     double magnetRoomLength_;
-    double coll2ShieldingDumpXmin_;
-    double coll2ShieldingDumpXmax_;
 
     double roomInsideYmin_;
     double roomInsideYmax_;
 
+    double _HVACductRadius;
+    double _HVACductHalfLength;
+    CLHEP::Hep3Vector HVACductCenterInMu2e_;
+
+    CLHEP::HepRotation shieldingRotationInMu2e_;
+    CLHEP::Hep3Vector shieldingNCenterInMu2e_;
+    CLHEP::Hep3Vector shieldingSCenterInMu2e_;
+    CLHEP::Hep3Vector shieldingBCenterInMu2e_;
+    std::vector<double> shieldingNHalfSize_;
+    std::vector<double> shieldingSHalfSize_;
+    std::vector<double> shieldingBHalfSize_;
+
     CLHEP::Hep3Vector coll2ShieldingCenterInMu2e_;
     CLHEP::HepRotation coll2ShieldingRotationInMu2e_;
     std::vector<double> coll2ShieldingHalfSize_;
+    std::vector<CLHEP::Hep2Vector> coll2ShieldingOutline_;
   };
 
 
