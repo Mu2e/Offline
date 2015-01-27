@@ -22,7 +22,6 @@ THexagon::~THexagon() {
 
 //-----------------------------------------------------------------------------
 THexagon::THexagon(double Size, double X0, double Y0) {
-
   fSize = Size;
   fX0   = X0; 
   fY0   = Y0;

@@ -18,10 +18,6 @@ END_PROLOG
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "CaloCluster/fcl/prolog.fcl"
-#include "TrackCaloMatching/fcl/prolog.fcl"
-#include "CalPatRec/fcl/prolog.fcl"
-#include "ParticleID/fcl/prolog.fcl"
 #include "Stntuple/fcl/prolog.fcl"
 
 #include "murat/fcl/prolog.fcl"

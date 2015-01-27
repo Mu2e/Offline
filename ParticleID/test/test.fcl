@@ -1,20 +1,19 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
-# standalone test by Vadim
+# standalone test by Vadim Rusu
+# creates output histogram file testpid.root
 #------------------------------------------------------------------------------
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "ParticleID/fcl/prolog.fcl"
-
 process_name : TestPID
 
 source : {
   module_type : RootInput
-#  fileNames   : [ "/grid/data/mu2e/outstage/murat/cb000101/cb000101.04861x0000"]
-  fileNames   : [ "/grid/data/mu2e/outstage/murat/cb000101/cb000101.04861x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04862x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04863x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04865x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04866x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04867x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04868x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04869x0000"]
-  maxEvents   : 100
+    #  fileNames   : [ "/grid/data/mu2e/outstage/murat/cb000101/cb000101.04861x0000"]
+    fileNames   : [ "/grid/data/mu2e/outstage/murat/cb000101/cb000101.04861x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04862x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04863x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04865x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04866x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04867x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04868x0000","/grid/data/mu2e/outstage/murat/cb000101/cb000101.04869x0000"]
+    #    maxEvents   : 100
 }
 
 services : {
@@ -31,71 +30,69 @@ services : {
 
 physics : {
 
-  producers : {
-    FSHPreStereo         : @local::FSHPreStereo
-    MakeStereoHits       : @local::MakeStereoHits
-    FlagStrawHits        : @local::FlagStrawHits
-    FlagBkgHits          : @local::FlagBkgHits
+    producers : {
+	FSHPreStereo         : @local::FSHPreStereo
+	MakeStereoHits       : @local::MakeStereoHits
+	FlagStrawHits        : @local::FlagStrawHits
+	FlagBkgHits          : @local::FlagBkgHits
 # Tracking for some different particle types
-    TPRDownstreameMinus  : @local::TrkPatRecDownstreameMinus
-    TPRDownstreammuMinus : @local::TrkPatRecDownstreammuMinus
-    PID                  : @local::ParticleID
-}
+	TPRDownstreameMinus  : @local::TrkPatRecDownstreameMinus
+	TPRDownstreammuMinus : @local::TrkPatRecDownstreammuMinus
+	PID                  : @local::ParticleID
+    }
+
+    analyzers : {
+	RKFDownstreameMinus : {
+	    module_type       : ReadKalFits
+	    fitterModuleLabel : TPRDownstreameMinus
+	    fitparticle       : 11
+	    fitdirection      : 0
+	verbosity         : 0
+	    maxPrint          : 0
+	    
+	
+    }
+	RKFDownstreammuMinus : {
+	    module_type       : ReadKalFits
+	    fitterModuleLabel : TPRDownstreammuMinus
+	    fitparticle       : 13
+	    fitdirection      : 0
+	    verbosity         : 0
+	    maxPrint          : 0
+	}
+	
+	PIDReadDownstreameMinus :  {
+	    module_type    : ParticleIDRead
+	    fitterModuleLabel : PID
+	    verbosity : 0
+	    maxPrint : 10
+	    
+	}
+    }
     
-  }
-
-  analyzers : {
-
-
-      RKFDownstreameMinus :
-    {
-      module_type       : ReadKalFits
-      fitterModuleLabel : TPRDownstreameMinus
-      fitparticle       : 11
-      fitdirection      : 0
-      verbosity         : 0
-      maxPrint          : 0
-
-
-    }
-      RKFDownstreammuMinus :
-    {
-      module_type       : ReadKalFits
-      fitterModuleLabel : TPRDownstreammuMinus
-      fitparticle       : 13
-      fitdirection      : 0
-      verbosity         : 0
-      maxPrint          : 0
-    }
-
-      PIDReadDownstreameMinus :  {
-      module_type    : ParticleIDRead
-      fitterModuleLabel : PID
-      verbosity : 0
-      maxPrint : 10
-
-         }
-  }
-
-  p1 : [ FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TPRDownstreameMinus, TPRDownstreammuMinus, PID]
-  e1 : [ PIDReadDownstreameMinus]
-
-  trigger_paths  : [p1]
-  end_paths      : [e1]
-
+    p1 : [ FSHPreStereo
+	   , MakeStereoHits, FlagStrawHits, FlagBkgHits
+	   , TPRDownstreameMinus, TPRDownstreammuMinus, PID]
+    
+    e1 : [ PIDReadDownstreameMinus]
+    
+    trigger_paths  : [p1]
+    end_paths      : [e1]
 }
 
-  outputs:
-  {
+outputs: {
     # Print info about all data products in the file.
-    dump:
-    {
-      module_type   : DataProductDump
+    dump: {
+	module_type   : DataProductDump
     }
-  }
-
+}
 #------------------------------------------------------------------------------
 # re-definitions
 #------------------------------------------------------------------------------
+# print per event timing for ::event entry points
+# services.Timing: { }
+# print 
+
+services.scheduler.wantSummary: true
 physics.producers.PID.fitterModuleLabel    : TPRDownstreameMinus
 

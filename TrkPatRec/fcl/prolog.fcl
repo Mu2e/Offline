@@ -1,0 +1,115 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+
+FSHPreStereo  : {
+  module_type : FlagStrawHits
+  StrawHitPositionCollectionLabel : ""
+}
+
+FlagStrawHits  : {
+  module_type : FlagStrawHits
+}
+
+FlagBkgHits : {
+  module_type : FlagBkgHits
+}
+
+# pattern reconition protype
+TrkPatRec :
+{
+        module_type                             : TrkPatRec
+	includeCaloInfo				: 0
+# Kalman fit configuration for the helix seed fit
+        SeedFit :
+        {
+                maxiter                                 : 3
+                materialCorrection                      : false
+                seedsmear       			: 10000
+                maxhitchi                               : 5.0
+                hiterr                                  : [ 5.0, 1.44 ]
+                ambiguityStrategy       		: [0,0]
+		t0Tolerance				: [5.0,5.0]
+		initT0					: true 
+		updateT0				: false
+        }
+# Kalman fit configuration for the final track fit
+        KalFit :
+        {
+                materialCorrection                      : true
+		mingap					: 1.0
+		hiterr 					: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
+		ambiguityStrategy    			: [ 0, 0, 2, 2, 2, 2, 2, 2, 2 ]
+		t0Tolerance				: [2.0, 1.0, 1.0, 1.0, 0.5, 0.5, 0.2, 0.2, 0.1]
+		HitAmbigPenalty 			: false
+		HitMinDrift 				: 0.1
+		ZeroDriftPenalty 			: 0.05
+		Neutralize 				: true
+		fieldCorrection				: true
+                maxhitchi                               : 3.5
+	}
+# MC Time offsets for diagnostics configuration can be done generically
+	KalDiag : 
+	{
+	    TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	}
+
+} # end TrkPatRec
+# variants of TrkPatRec for specific particle species and directions. These constitute the 'standard' fits
+# in future we need names instead of values for the particle type
+TrkPatRecDownstreameMinus : @local::TrkPatRec
+TrkPatRecDownstreameMinus.fitparticle : 11
+TrkPatRecDownstreameMinus.fitdirection : 0 
+
+TrkPatRecUpstreameMinus : @local::TrkPatRec
+TrkPatRecUpstreameMinus.fitparticle : 11
+TrkPatRecUpstreameMinus.fitdirection : 1
+
+TrkPatRecDownstreamePlus : @local::TrkPatRec
+TrkPatRecDownstreamePlus.fitparticle : -11
+TrkPatRecDownstreamePlus.fitdirection : 0
+
+TrkPatRecUpstreamePlus : @local::TrkPatRec
+TrkPatRecUpstreamePlus.fitparticle : -11
+TrkPatRecUpstreamePlus.fitdirection : 1
+
+TrkPatRecDownstreammuMinus : @local::TrkPatRec
+TrkPatRecDownstreammuMinus.fitparticle : 13
+TrkPatRecDownstreammuMinus.fitdirection : 0
+
+TrkPatRecUpstreammuMinus : @local::TrkPatRec
+TrkPatRecUpstreammuMinus.fitparticle : 13
+TrkPatRecUpstreammuMinus.fitdirection : 1
+
+TrkPatRecDownstreammuPlus : @local::TrkPatRec
+TrkPatRecDownstreammuPlus.fitparticle : -13
+TrkPatRecDownstreammuPlus.fitdirection : 0
+
+TrkPatRecUpstreammuPlus : @local::TrkPatRec
+TrkPatRecUpstreammuPlus.fitparticle : -13
+TrkPatRecUpstreammuPlus.fitdirection : 1
+
+TrkPatRecDownstreampPlus : @local::TrkPatRec
+TrkPatRecDownstreampPlus.fitparticle : 2212
+TrkPatRecDownstreampPlus.fitdirection : 0
+
+TrkPatRecUpstreampiPlus : @local::TrkPatRec 
+TrkPatRecUpstreampiPlus.fitparticle : 211
+TrkPatRecUpstreampiPlus.fitdirection : 1
+ 
+TrkPatRecDownstreampiPlus : @local::TrkPatRec 
+TrkPatRecDownstreampiPlus.fitparticle : 211
+TrkPatRecDownstreampiPlus.fitdirection : 0
+
+
+TrkPatRecDownstreampiMinus : @local::TrkPatRec 
+TrkPatRecDownstreampiMinus.fitparticle : -211
+TrkPatRecDownstreampiMinus.fitdirection : 0
+
+TrkPatRecUpstreampiMinus : @local::TrkPatRec 
+TrkPatRecUpstreampiMinus.fitparticle : -211
+TrkPatRecUpstreampiMinus.fitdirection : 1
+
+END_PROLOG

@@ -1,18 +1,21 @@
 # -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+# CalPatRec: calorimeter-seeded track finding
+#------------------------------------------------------------------------------
 BEGIN_PROLOG
-#------------------------------------------------------------------------------
-# this is a modified version which uses T0 defined by the calorimeter cluster
-#------------------------------------------------------------------------------
 CalPatRec            : {
     module_type                                 : CalPatRec
+
+    StrawHitCollectionLabel                     : makeSH
+    StrawHitPositionCollectionLabel             : MakeStrawHitPositions
+    StrawHitFlagCollectionLabel                 : FlagBkgHits
+    caloClusterModuleLabel                      : MakeCaloCluster
+
     diagLevel                                   : 0
     debugLevel                                  : 0
     printFrequency                              : 100
     addhits                                     : true
-    StrawHitCollectionLabel                     : "makeSH"
-    StrawHitPositionCollectionLabel             : "MakeStrawHitPositions"
-    StrawHitFlagCollectionLabel                 : "FlagBkgHits"
-    caloClusterModuleLabel                      : "MakeCaloCluster"
     fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
     fitdirection                                : 0      # 0:downstream, 1:upstream
     MinNHits                                    : 15

@@ -6,8 +6,8 @@ BEGIN_PROLOG
 ParticleID : {
     module_type       : ParticleID
     fitterModuleLabel : TrkPatRec
-    ElectronTemplates : ParticleID/test/electrontemplates_v427.hist
-    MuonTemplates     : ParticleID/test/muontemplates_v427.hist
+    ElectronTemplates : "ParticleID/test/electrontemplates_v427.dedx"
+    MuonTemplates     : "ParticleID/test/muontemplates_v427.dedx"
     fitparticle       : 11
     fitdirection      : 0
     verbosity         : 0

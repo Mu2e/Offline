@@ -4,10 +4,6 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "CaloCluster/fcl/prolog.fcl"
-#include "TrackCaloMatching/fcl/prolog.fcl"
-#include "CalPatRec/fcl/prolog.fcl"
-#include "ParticleID/fcl/prolog.fcl"
 #include "Stntuple/fcl/prolog.fcl"
 
 process_name : mergePatRecStnmaker

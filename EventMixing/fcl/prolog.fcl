@@ -1,0 +1,81 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+
+stepInstanceNames   : [ "tracker", "virtualdetector", "calorimeter", "calorimeterRO" ]
+
+dioMixer: {
+   // Parameters for the MixFilter template
+   module_type         : MixMCEvents
+   fileNames           : @nil
+   readMode            : random
+   wrapFiles           : true
+
+   // Parameters for the MixDetail class
+   detail : {
+     mean                : @nil
+     genModuleLabel      : generate
+     g4ModuleLabel       : g4filter
+     g4StatusTag         : g4run
+     stepInstanceNames   : @local::stepInstanceNames
+     doPointTrajectories : false
+   }
+}
+
+protonMixer: {
+   // Parameters for the MixFilter template
+   module_type         : MixMCEvents
+   fileNames           : @nil
+   readMode            : random
+   wrapFiles           : true
+
+   // Parameters for the MixDetail class
+   detail : {
+     mean                : @nil
+     genModuleLabel      : generate
+     g4ModuleLabel       : g4filter
+     g4StatusTag         : g4run
+     stepInstanceNames   : @local::stepInstanceNames
+     doPointTrajectories : false
+   }
+}
+
+neutronMixer: {
+   // Parameters for the MixFilter template
+   module_type         : MixMCEvents
+   fileNames           : @nil
+   readMode            : random
+   wrapFiles           : true
+
+   // Parameters for the MixDetail class
+   detail : {
+     mean                : @nil
+     genModuleLabel      : generate
+     g4ModuleLabel       : g4filter
+     g4StatusTag         : g4run
+     stepInstanceNames   : @local::stepInstanceNames
+     doPointTrajectories : false
+  }
+}
+
+photonMixer: {
+   // Parameters for the MixFilter template
+   module_type         : MixMCEvents
+   fileNames           : @nil
+   readMode            : random
+   wrapFiles           : true
+
+   // Parameters for the MixDetail class
+   detail : {
+     mean                :  @nil
+     genModuleLabel      : generate
+     g4ModuleLabel       : g4filter
+     g4StatusTag         : g4run
+     stepInstanceNames   : @local::stepInstanceNames
+     doPointTrajectories : false
+  }
+}
+
+END_PROLOG

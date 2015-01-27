@@ -141,9 +141,6 @@ namespace mu2e {
       _EminSplitSeed(pset.get<double>("EminSplitSeed", 2.)),//MeV
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
       _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
-      _caloClusterAlgorithm(pset.get<std::string>("caloClusterAlgorithm", "closest")),
-      _caloClusterSeeding(pset.get<std::string>("caloClusterSeeding", "ENERGY")),
-      //      _producerName("Algo"+TOUpper(_caloClusterAlgorithm)+"SeededBy"+TOUpper(_caloClusterSeeding)),
       _producerName(""),
       _messageCategory("HITS"),
       _firstEvent(true)
@@ -216,16 +213,6 @@ namespace mu2e {
 
   // must include a check of the parameters here
   void MakeCaloClusterNew::beginJob() {
-           
-    if ( (_caloClusterSeeding.compare("TIME") != 0 ) &&  (_caloClusterSeeding.compare("ENERGY") != 0 ) )	     
-      throw cet::exception("CaloCluster") << "caloClusterSeeding must be either \"energy\" or \"time\" \n";
-    
-    cout<<"selected clustering algorithm--> "<<_caloClusterAlgorithm <<", seeded by "<< _caloClusterSeeding<<endl;
-    //        cout << "Diaglevel: "
-    //                        << _diagLevel << " "
-    //                        << _maxFullPrint
-    //                        << endl;
-    
   }
 
 
