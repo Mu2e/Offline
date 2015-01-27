@@ -122,12 +122,17 @@ namespace mu2e
     // DOF counting subdivision is illogical, FIXME!!!!
     _mindof[0] = _mindof[2] = pset.get<double>("MinNDOF",10);
     _mindof[1] = 0;
-    _bintconfig._maxRange = pset.get<double>("BFieldIntMaxRange",1.0e5); // 100 m
-    _bintconfig._intTolerance = pset.get<double>("BFieldIntTol",0.001); // 1 KeV
-    _bintconfig._intPathMin = pset.get<double>("BFieldIntMin",5.0); // 5 mm
-    _bintconfig._divTolerance = pset.get<double>("BFieldIntDivTol",0.01); // 10 KeV
-    _bintconfig._divPathMin = pset.get<double>("BFieldIntDivMin",10.0); // 10 mm
-    _bintconfig._divStepCeiling = pset.get<double>("BFieldIntDivMax",100.0); // 100 mm
+//----------------------------------------------------------------------
+// 2015-01-09 G. Pezzullo and P. Murat : noticed that with respect to 
+// KalmanTest/src/KalFit.cc we were using different ranges and divisions 
+// for the magnetic field, fixed
+//----------------------------------------------------------------------
+    _bintconfig._maxRange = pset.get<double>      ("BFieldIntMaxRange",1.0e5); // 100 m
+    _bintconfig._intTolerance = pset.get<double>  ("BFieldIntTol"     , 0.01); //  10 KeV
+    _bintconfig._intPathMin = pset.get<double>    ("BFieldIntMin"     , 20.0); //  20 mm
+    _bintconfig._divTolerance = pset.get<double>  ("BFieldIntDivTol"  , 0.05); //  50 KeV
+    _bintconfig._divPathMin = pset.get<double>    ("BFieldIntDivMin"  , 50.0); //  50 mm
+    _bintconfig._divStepCeiling = pset.get<double>("BFieldIntDivMax"  ,500.0); // 100 mm
     // make sure we have at least one entry for additional errors
     if(_herr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFitHack: no hit errors specified" << endl;
     if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFitHack: inconsistent ambiguity resolution" << endl;
