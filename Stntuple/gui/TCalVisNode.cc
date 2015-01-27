@@ -116,7 +116,7 @@ int TCalVisNode::InitEvent() {
   const mu2e::CaloCluster*     cl;
   const mu2e::CaloCrystalHit*  hit;
 
-  //  TEvdCluster*              evd_cl;
+  TEvdCluster*              evd_cl;
   TEvdCrystal*              evd_cr;
 
   int      ncl, loc, nhits, id;
@@ -152,7 +152,7 @@ int TCalVisNode::InitEvent() {
   for (int i=0; i<ncl; i++) {
     cl = &(*fListOfClusters)->at(i);
     if (cl->vaneId() == fSectionID) {
-      NewEvdCluster(cl); // evd_cl = NewEvdCluster(cl);
+      evd_cl = NewEvdCluster(cl);
 //-----------------------------------------------------------------------------
 // set colors of the crystals
 //-----------------------------------------------------------------------------
@@ -164,9 +164,15 @@ int TCalVisNode::InitEvent() {
 	int id = hit->id();
 
 	loc = LocalCrystalID(id);
-	// find a crystal with a given ID, display it in red
+//-----------------------------------------------------------------------------
+// find a crystal with a given ID, display it in red
+//-----------------------------------------------------------------------------
 	evd_cr = (TEvdCrystal*) fListOfEvdCrystals->At(loc);
 
+	evd_cl->AddCrystal(evd_cr);
+//-----------------------------------------------------------------------------
+// displayed color of the crystal is define by the max hit energy
+//-----------------------------------------------------------------------------
 	energy = hit->energyDep();
 
 	if (energy > fMinCrystalEnergy) {
@@ -298,6 +304,13 @@ void TCalVisNode::PaintCal(Option_t* Option) {
 // display only clusters with E > 5 MeV
 //-----------------------------------------------------------------------------
     if (cl->Cluster()->energyDep() > fMinClusterEnergy) {
+
+      int ncc = cl->NCrystals();
+      for (int i=0; i<ncc; i++) {
+	cr = cl->Crystal(i);
+	cr->SetLineColor(kRed);
+	cr->PaintCal(Option);
+      }
       cl->PaintCal(Option);
     }
   }

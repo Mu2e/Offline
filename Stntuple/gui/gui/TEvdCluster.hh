@@ -11,6 +11,7 @@
 #include "TArc.h"
 
 #include "Stntuple/base/TVisNode.hh"
+#include "Stntuple/gui/TEvdCrystal.hh"
 
 #ifndef __CINT__
 #include "RecoDataProducts/inc/CaloCluster.hh"
@@ -20,16 +21,17 @@ namespace mu2e {
 };
 #endif
 
-
 class TEvdCluster: public TObject {
 public:
   
 protected:
 
-  TEllipse* fTrkEllipse;
-  TEllipse* fCalEllipse;
+  TEllipse*                fTrkEllipse;
+  TEllipse*                fCalEllipse;
 
   const mu2e::CaloCluster* fCluster;
+
+  TObjArray*               fListOfCrystals;
 
 public:
 //-----------------------------------------------------------------------------
@@ -43,9 +45,14 @@ public:
 // accessors
 //-----------------------------------------------------------------------------
   const mu2e::CaloCluster*  Cluster() { return fCluster; }
+
+  TEvdCrystal* Crystal  (int I) { return (TEvdCrystal*) fListOfCrystals->At(I); }
+  int          NCrystals()      { return fListOfCrystals->GetEntriesFast(); }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------
+  void    AddCrystal(TEvdCrystal* Crystal) { fListOfCrystals->Add(Crystal); }
+
   virtual void  Paint   (Option_t* Option = "");
   virtual void  PaintXY (Option_t* Option = "");
   virtual void  PaintCal(Option_t* Option = "");
@@ -56,7 +63,8 @@ public:
   virtual Int_t DistancetoPrimitiveXY(Int_t px, Int_t py);
   virtual Int_t DistancetoPrimitiveRZ(Int_t px, Int_t py);
 
-  //  virtual void   Print(const char* Opt = "") const ; // **MENU**
+  virtual void  Clear(const char* Opt = "");
+  virtual void  Print(const char* Opt = "") const ; // **MENU**
 
   ClassDef(TEvdCluster,0)
 };

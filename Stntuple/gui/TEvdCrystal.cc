@@ -43,7 +43,7 @@ ClassImp(TEvdCrystal)
 
   pos = &Cr->position();
 
-  fHexagon.SetPos(pos->x(),pos->y());
+  fHexagon.SetPos(pos->x()+3904.,pos->y());
   fHexagon.SetSize(30.);
   fHexagon.SetLineColor(1);
   fHexagon.SetFillColor(0);

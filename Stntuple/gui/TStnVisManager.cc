@@ -123,7 +123,9 @@ TStnVisManager::~TStnVisManager() {
   if (! gROOT->IsBatch()) {
 
     delete fTrkXYView;
-    delete [] fCalView;
+					// only two views for disk calorimeter
+    delete fCalView[0];
+    delete fCalView[1];
     
     delete fMenuBarHelpLayout;
     
@@ -305,7 +307,7 @@ Int_t TStnVisManager::OpenCalView() {
 //-----------------------------------------------------------------------------
 					// divide horisontally
   p1->Divide(2,1);
-
+					// ranges in mm
   p1->cd(1);
   gPad->Range(-800.,-800.,800.,800.);
   fCalView[0]->SetPad(gPad);
