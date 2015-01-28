@@ -7,7 +7,7 @@ BEGIN_PROLOG
 # "muon stop" vertex files by Andrei. 
 # - to use interactively, create a symbolic link: 
 #
-#      ln -s mergedMuonStops /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops
+#      ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops  
 #
 # - for grid submission, set muonStops.inputFiles to @nil and use --fclinput 
 #------------------------------------------------------------------------------
