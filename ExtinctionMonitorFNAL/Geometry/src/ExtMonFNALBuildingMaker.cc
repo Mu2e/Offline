@@ -103,10 +103,10 @@ namespace mu2e {
 					      xfront+dxdL*magnetRoomLength);
     emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*(magnetRoomLength+col2zLength),
 					      xfront+dxdL*(magnetRoomLength+col2zLength));
-    emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*(magnetRoomLength+col2zLength)+shieldwidth*sin(dump.coreRotY()),
-					      xfront+dxdL*(magnetRoomLength+col2zLength)-shieldwidth*cos(dump.coreRotY()));
-    emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*magnetRoomLength+shieldwidth*sin(dump.coreRotY()),
-					      xfront+dxdL*magnetRoomLength-shieldwidth*cos(dump.coreRotY()));
+    emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*(magnetRoomLength+col2zLength)-shieldwidth*dxdL,
+					      xfront+dxdL*(magnetRoomLength+col2zLength)+shieldwidth*dzdL);
+    emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*magnetRoomLength-shieldwidth*dxdL,
+					      xfront+dxdL*magnetRoomLength+shieldwidth*dzdL);
 
     emfb->magnetRoomLength_ = magnetRoomLength;
 
@@ -140,7 +140,7 @@ namespace mu2e {
     emfb->shieldingBHalfSize_.resize(3);
     emfb->shieldingBHalfSize_[0] = roomWidth/2.0;
     emfb->shieldingBHalfSize_[1] = layerHeight/2.0;
-    emfb->shieldingBHalfSize_[2] = (magnetRoomLength-steelLength)/2.0;
+    emfb->shieldingBHalfSize_[2] = (magnetRoomLength-steelLength)/2.0-2;
 
     CLHEP::HepRotation nonrotation(CLHEP::HepRotation::IDENTITY);
     emfb->shieldingRotationInMu2e_ = nonrotation.rotateY(asin(dxdL) * CLHEP::radian);

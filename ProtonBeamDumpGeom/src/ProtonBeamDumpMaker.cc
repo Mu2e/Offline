@@ -57,8 +57,7 @@ namespace mu2e {
     dump->_frontShieldingHalfSize.resize(3);
     dump->_frontShieldingHalfSize[0] = dump->_coreHalfSize[0] + dump->_minCoreShieldingThickness;
     dump->_frontShieldingHalfSize[1] = (ceiling[1] - psCeil.getYhalfThickness() - dump->_shieldingFaceYmin)/2.0;
-    dump->_frontShieldingHalfSize[2] = dump->_coreHalfSize[2]	+ dump->_neutronCaveHalfSize[2]
-      + dump->_mouthHalfSize[2];
+    dump->_frontShieldingHalfSize[2] = dump->_coreHalfSize[2] + dump->_neutronCaveHalfSize[2] + dump->_mouthHalfSize[2] + coreAirGap/2.;
     if(verbose) {
       std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump frontShielding half size = ";
       std::copy(dump->_frontShieldingHalfSize.begin(), dump->_frontShieldingHalfSize.end(), std::ostream_iterator<double>(std::cout, ", "));
