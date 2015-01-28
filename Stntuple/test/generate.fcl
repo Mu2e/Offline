@@ -4,9 +4,7 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "Stntuple/fcl/prolog.fcl"
-
-process_name : mergePatRecStnmaker
+process_name : generate
 
 source : {  
     module_type : EmptyEvent
@@ -24,7 +22,7 @@ source : {
 services : {
 
     message               : @local::default_message
-    TFileService          : { fileName : "mergePatRec_stnmaker.hist" }
+    TFileService          : { fileName : "generate.hist" }
     RandomNumberGenerator : { }
 
     user : {
@@ -50,40 +48,9 @@ physics : {
         makeSH               : @local::makeSHfromSD
 	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
 	CaloCrystalHitsMaker : @local::MakeCaloCrystalHitsNew
-#------------------------------------------------------------------------------
-#  default tracking
-#------------------------------------------------------------------------------
-	FSHPreStereo         : @local::FSHPreStereo
-	MakeStereoHits       : @local::MakeStereoHits
-	FlagStrawHits        : @local::FlagStrawHits
-	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : @local::TrkPatRecDownstreameMinus
-#------------------------------------------------------------------------------
-# CalPatRec modules
-#------------------------------------------------------------------------------
-	MakeCaloCluster      : @local::MakeCaloCluster
-
-	MakeStrawHitPositions: @local::MakeStrawHitPositions
-	FlagStrawHits2       : @local::FlagStrawHits
-	FlagBkgHits2         : @local::FlagBkgHits
-	CalPatRec            : @local::CalPatRec
-
-	MergePatRec          : @local::MergePatRec
-#------------------------------------------------------------------------------
-# needed for analysis
-#------------------------------------------------------------------------------
-	CaloMatching         : @local::TrackCaloMatching
-	TrkExtrapol          : @local::TrkExtrapol
-	ParticleID           : @local::ParticleID
     }
 
     filters: {
-#------------------------------------------------------------------------------
-# Stntuple maker sequence
-#------------------------------------------------------------------------------
-	InitStntuple         : @local::InitStntuple
-	StntupleMaker        : @local::StntupleMaker
-	FillStntuple         : @local::FillStntuple
 #------------------------------------------------------------------------------
 # Reject events with no hits from signal-like tracks in the detectors.  
 # The filter does not look at the background hits from mixed events.
@@ -110,20 +77,11 @@ physics : {
 	       , protonTimeMap, muonTimeMap
 	       , makeSD, makeSH
 	       , MakeCaloReadoutHits, CaloCrystalHitsMaker
-
-	       , MakeCaloCluster
-	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-	       , MakeStrawHitPositions, CalPatRec
-	       , MergePatRec
-	       , TrkExtrapol, CaloMatching, ParticleID
-	       , InitStntuple, StntupleMaker, FillStntuple
 	      ]
     trigger_paths  : [detPath]
     
-#    out : [detectorOutput]
-    out : []
-    an  : [genCountLogger, gpa]
-
+    out : [detectorOutput]
+#    out : []
     end_paths      : [out]
 }
 
@@ -134,7 +92,7 @@ outputs: {
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
-        fileName    : "dataDigiMixConversion.root"
+        fileName    : "generate.art"
     }
 }
 #------------------------------------------------------------------------------
@@ -157,17 +115,4 @@ physics.producers.g4run.SDConfig.enableSD     : [ tracker, calorimeter, calorime
 # Apply the time offsets in tracker digitization
 physics.producers.makeSD.TimeOffsets              : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 physics.producers.MakeCaloReadoutHits.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-#
-physics.producers.MakeStrawHitPositions.StrawHitCollectionLabel  : makeSH
 
-physics.producers.CalPatRec.StrawHitCollectionLabel              : makeSH
-physics.producers.CalPatRec.StrawHitPositionCollectionLabel      : MakeStrawHitPositions
-physics.producers.CalPatRec.StrawHitFlagCollectionLabel          : FlagBkgHits
-physics.producers.CalPatRec.FindTimePeaks                        : true
-
-physics.producers.TrkExtrapol.fitterModuleLabel                  : MergePatRec
-physics.producers.CaloMatching.fitterModuleLabel                 : MergePatRec
-physics.producers.ParticleID.fitterModuleLabel                   : MergePatRec
-
-physics.filters.InitStntuple.histFileName                        : "mergePatRec_stnmaker.stn"
-physics.filters.StntupleMaker.trkPatRecDem                       : MergePatRec

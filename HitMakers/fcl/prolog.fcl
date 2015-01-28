@@ -76,7 +76,7 @@ makeDcHWTOff : {
 #------------------------------------------------------------------------------
 # Form CaloHits (APD hits)
 #------------------------------------------------------------------------------
-CaloReadoutHitsMaker : {
+MakeCaloReadoutHits : {
   module_type          : MakeCaloReadoutHits
   diagLevel            : 0
   caloLRUcorrection    : false
@@ -105,14 +105,14 @@ CaloCrystalHitsMaker : {
 MakeCaloCrystalHitsNew     : {
     module_type            : MakeCaloCrystalHitsNew
     g4ModuleLabel          : "g4run"
-    caloReadoutModuleLabel : "CaloReadoutHitsMaker"
+    caloReadoutModuleLabel : MakeCaloReadoutHits
 
     diagLevel              : 0
     drawLevel              : 0	
     maxFullPrint           : 0
 
     tRise                  : 10.
-    tDecay                 : 25.
+    tDecay                 : 15.
     minimumEnergy          : 0.00001
     maximumEnergy          : 1000.
     minimumTimeGap         : 1        # ns
