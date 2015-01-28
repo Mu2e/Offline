@@ -1,6 +1,7 @@
 # -*- mode: tcl -*-
 
 #include "EventGenerator/fcl/prolog.fcl"
+#include "Filters/fcl/prolog.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
 #include "HitMakers/fcl/prolog.fcl"
 #include "CaloCluster/fcl/prolog.fcl"
@@ -13,22 +14,6 @@
 
 
 BEGIN_PROLOG
-
-# Save state of random numbers at the start of each event
-randomsaver: {
-    module_type          : RandomNumberSaver
-}
-
-//================================================================
-// Defs for StoppedParticleReactionGun and others
-
-muonStops : {
-    inputFiles: @nil // use --fclinput for grid submission
-    averageNumRecordsToUse: 500000
-    treeName: "stoppedMuonDumper/stops"
-    branchName : "stops"
-    verbosityLevel : 1
-}
 
 //================================================================
 // analysis cuts
