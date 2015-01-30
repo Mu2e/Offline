@@ -1,0 +1,210 @@
+// Original author David Norvil Brown, University of Louisville
+// Numbers based on Mu2e geometry 14 as of November 2014
+
+// Sort boxes into "types"
+int ExtShieldUpstream.numberOfBoxTypes = 9;
+
+// How many of each type box to make
+int ExtShieldUpstream.nBoxType1 = 10;  // Block label  BRP-152
+int ExtShieldUpstream.nBoxType2 = 3;   // Block label  BRQ-152
+int ExtShieldUpstream.nBoxType3 = 1;   // Block label  BRR-152
+int ExtShieldUpstream.nBoxType4 = 1;   // Block label  BRR-132
+int ExtShieldUpstream.nBoxType5 = 1;   // Block label  BRN-264
+int ExtShieldUpstream.nBoxType6 = 8;   // Block label  BRW-175
+int ExtShieldUpstream.nBoxType7 = 1;   // Block label  CRN-262
+int ExtShieldUpstream.nBoxType8 = 2;   // Block label  CRW-262
+int ExtShieldUpstream.nBoxType9 = 1;   // Poly Bead "box"
+
+// Dimensions in u, v, w for each type of box.  Dimensions should be in mm.
+double ExtShieldUpstream.dimsUType1 = 523;  // BRP-152 21"x46"x152" tall
+double ExtShieldUpstream.dimsVType1 = 3851;
+double ExtShieldUpstream.dimsWType1 = 1158;
+double ExtShieldUpstream.dimsUType2 = 523;  // BRQ-152 (east side only)
+double ExtShieldUpstream.dimsVType2 = 3851;
+double ExtShieldUpstream.dimsWType2 = 574;
+double ExtShieldUpstream.dimsUType3 = 371.0;  // BRR-152
+double ExtShieldUpstream.dimsVType3 = 3851;
+double ExtShieldUpstream.dimsWType3 = 599;
+double ExtShieldUpstream.dimsUType4 = 599;  // BRR-132 NW corner column
+double ExtShieldUpstream.dimsVType4 = 3343;
+double ExtShieldUpstream.dimsWType4 = 371;
+double ExtShieldUpstream.dimsUType5 = 993;  // BRN-264 isolation wall north
+double ExtShieldUpstream.dimsVType5 = 574;
+double ExtShieldUpstream.dimsWType5 = 6696;
+double ExtShieldUpstream.dimsUType6 = 828.2;  // BRW-175 west wall
+double ExtShieldUpstream.dimsVType6 = 4435.0;
+double ExtShieldUpstream.dimsWType6 = 967.9;
+double ExtShieldUpstream.dimsUType7 = 993;  // CRN-262 shield cap north
+double ExtShieldUpstream.dimsVType7 = 701;
+double ExtShieldUpstream.dimsWType7 = 6645;
+double ExtShieldUpstream.dimsUType8 = 6645;  // CRW-262 shield cap west
+double ExtShieldUpstream.dimsVType8 = 701;
+double ExtShieldUpstream.dimsWType8 = 967.9;
+double ExtShieldUpstream.dimsUType9 = 942;  // Poly bead "box"
+double ExtShieldUpstream.dimsVType9 = 903;
+double ExtShieldUpstream.dimsWType9 = 2267;
+
+// "Tolerances" on the dimensions in u, v, and w for each type of box.
+// Tolerance here means the amount the size is changed from nominal, in mm.
+// MAXIMUM VALUE IS 10.0 mm.  Tolerances above that value will cause program
+// to terminate.
+double ExtShieldUpstream.tolsUType1 = 0.0; // BRP-152
+double ExtShieldUpstream.tolsVType1 = 0.0;
+double ExtShieldUpstream.tolsWType1 = 0.0;
+double ExtShieldUpstream.tolsUType2 = 0.0; // BRQ-152
+double ExtShieldUpstream.tolsVType2 = 0.0;
+double ExtShieldUpstream.tolsWType2 = 0.0;
+double ExtShieldUpstream.tolsUType3 = 0.0; // BRR-152
+double ExtShieldUpstream.tolsVType3 = 0.0;
+double ExtShieldUpstream.tolsWType3 = 0.0;
+double ExtShieldUpstream.tolsUType4 = 0.0; // BRR-132 NW corner
+double ExtShieldUpstream.tolsVType4 = 0.0;
+double ExtShieldUpstream.tolsWType4 = 0.0;
+double ExtShieldUpstream.tolsUType5 = 0.0; // BRN-264
+double ExtShieldUpstream.tolsVType5 = 0.0;
+double ExtShieldUpstream.tolsWType5 = 0.0;
+double ExtShieldUpstream.tolsUType6 = 0.0; // BRW-175
+double ExtShieldUpstream.tolsVType6 = 0.0;
+double ExtShieldUpstream.tolsWType6 = 0.0;
+double ExtShieldUpstream.tolsUType7 = 0.0; // CRN-262
+double ExtShieldUpstream.tolsVType7 = 0.0;
+double ExtShieldUpstream.tolsWType7 = 0.0;
+double ExtShieldUpstream.tolsUType8 = 0.0; // CRW-262
+double ExtShieldUpstream.tolsVType8 = 0.0;
+double ExtShieldUpstream.tolsWType8 = 0.0;
+double ExtShieldUpstream.tolsUType9 = 0.0; // Poly bead "box"
+double ExtShieldUpstream.tolsVType9 = 0.0;
+double ExtShieldUpstream.tolsWType9 = 0.0;
+
+
+// Materials for each type of box.  Here, Barite and regular concrete.
+string ExtShieldUpstream.materialType1   = "BARITE";
+string ExtShieldUpstream.materialType2   = "BARITE";
+string ExtShieldUpstream.materialType3   = "BARITE";
+string ExtShieldUpstream.materialType4   = "BARITE";
+string ExtShieldUpstream.materialType5   = "BARITE";
+string ExtShieldUpstream.materialType6   = "BARITE";
+string ExtShieldUpstream.materialType7   = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType8   = "CONCRETE_MARS";
+string ExtShieldUpstream.materialType9   = "Half_Poly";
+
+// The center of the detector in Mu2e Offline coordinates
+double ExtShieldUpstream.centerXType1Box1 = 812.5;// 10 BRP-152 boxes
+double ExtShieldUpstream.centerYType1Box1 = -382;
+double ExtShieldUpstream.centerZType1Box1 = -3002;
+double ExtShieldUpstream.centerXType1Box2 = 1345.5;// 10 BRP-152 boxes
+double ExtShieldUpstream.centerYType1Box2 = -382;
+double ExtShieldUpstream.centerZType1Box2 = -3002;
+double ExtShieldUpstream.centerXType1Box3 = 812.5;// 10 BRP-152 boxes
+double ExtShieldUpstream.centerYType1Box3 = -382;
+double ExtShieldUpstream.centerZType1Box3 = -1834;
+double ExtShieldUpstream.centerXType1Box4 = 1345.5;// 10 BRP-152 boxes
+double ExtShieldUpstream.centerYType1Box4 = -382;
+double ExtShieldUpstream.centerZType1Box4 = -1834;
+double ExtShieldUpstream.centerXType1Box5 = 1878.5;// 10 BRP-152 boxes
+double ExtShieldUpstream.centerYType1Box5 = -382;
+double ExtShieldUpstream.centerZType1Box5 = -2550;
+double ExtShieldUpstream.centerXType1Box6 = 2411.5;// 10 BRP-152 boxes
+double ExtShieldUpstream.centerYType1Box6 = -382;
+double ExtShieldUpstream.centerZType1Box6 = -2550;
+double ExtShieldUpstream.centerXType1Box7 = 812.5;// 10 BRP-152 boxes
+double ExtShieldUpstream.centerYType1Box7 = -382;
+double ExtShieldUpstream.centerZType1Box7 = 2195;
+double ExtShieldUpstream.centerXType1Box8 = 1345.5;// 10 BRP-152 boxes
+double ExtShieldUpstream.centerYType1Box8 = -382;
+double ExtShieldUpstream.centerZType1Box8 = 1611;
+double ExtShieldUpstream.centerXType1Box9 = 2196;// 10 BRP-152 boxes
+double ExtShieldUpstream.centerYType1Box9 = -382;
+double ExtShieldUpstream.centerZType1Box9 = 1979.5;
+double ExtShieldUpstream.centerXType1Box10 = 2196;// 10 BRP-152 boxes
+double ExtShieldUpstream.centerYType1Box10 = -382;
+double ExtShieldUpstream.centerZType1Box10 = 2512.5;
+
+double ExtShieldUpstream.centerXType2Box1 = 812.5;// 3 BRQ-152 boxes
+double ExtShieldUpstream.centerYType2Box1 = -382;
+double ExtShieldUpstream.centerZType2Box1 = 1319;
+double ExtShieldUpstream.centerXType2Box2 = 1345.5;// 3 BRQ-152 boxes
+double ExtShieldUpstream.centerYType2Box2 = -382;
+double ExtShieldUpstream.centerZType2Box2 = 2487;
+double ExtShieldUpstream.centerXType2Box3 = 1878.5;// 3 BRQ-152 boxes
+double ExtShieldUpstream.centerYType2Box3 = -382;
+double ExtShieldUpstream.centerZType2Box3 = 1421;
+
+double ExtShieldUpstream.centerXType3Box1 = 1802.5;// 1 BRR-152 box
+double ExtShieldUpstream.centerYType3Box1 = -382;
+double ExtShieldUpstream.centerZType3Box1 = -1661.5;
+
+double ExtShieldUpstream.centerXType4Box1 = 1258.5;// 1 BRR-132 box NW corner
+double ExtShieldUpstream.centerYType4Box1 = -636;
+double ExtShieldUpstream.centerZType4Box1 = -3776.5;
+
+double ExtShieldUpstream.centerXType5Box1 = 1047.5;// 1 BRN-264 box - isolation
+double ExtShieldUpstream.centerYType5Box1 = 1840;
+double ExtShieldUpstream.centerZType5Box1 = -574;
+
+double ExtShieldUpstream.centerXType6Box1 = 127;// 8 BRW-175 boxes West wall
+double ExtShieldUpstream.centerYType6Box1 = -90;
+double ExtShieldUpstream.centerZType6Box1 = -3087;
+double ExtShieldUpstream.centerXType6Box2 = -711;// 8 BRW-175 boxes West wall
+double ExtShieldUpstream.centerYType6Box2 = -90;
+double ExtShieldUpstream.centerZType6Box2 = -3087;
+double ExtShieldUpstream.centerXType6Box3 = -1549;// 8 BRW-175 boxes West wall
+double ExtShieldUpstream.centerYType6Box3 = -90;
+double ExtShieldUpstream.centerZType6Box3 = -3087;
+double ExtShieldUpstream.centerXType6Box4 = -2387;// 8 BRW-175 boxes West wall
+double ExtShieldUpstream.centerYType6Box4 = -90;
+double ExtShieldUpstream.centerZType6Box4 = -3087;
+double ExtShieldUpstream.centerXType6Box5 = -3225;// 8 BRW-175 boxes West wall
+double ExtShieldUpstream.centerYType6Box5 = -90;
+double ExtShieldUpstream.centerZType6Box5 = -3087;
+double ExtShieldUpstream.centerXType6Box6 = -4063;// 8 BRW-175 boxes West wall
+double ExtShieldUpstream.centerYType6Box6 = -90;
+double ExtShieldUpstream.centerZType6Box6 = -3087;
+double ExtShieldUpstream.centerXType6Box7 = -4901;// 8 BRW-175 boxes West wall
+double ExtShieldUpstream.centerYType6Box7 = -90;
+double ExtShieldUpstream.centerZType6Box7 = -3087;
+double ExtShieldUpstream.centerXType6Box8 = -5739;// 8 BRW-175 boxes West wall
+double ExtShieldUpstream.centerYType6Box8 = -90;
+double ExtShieldUpstream.centerZType6Box8 = -3087;
+
+double ExtShieldUpstream.centerXType7Box1 = 1047.5;// 2 BRN-264 box - north cap
+double ExtShieldUpstream.centerYType7Box1 = 2488;
+double ExtShieldUpstream.centerZType7Box1 = -548.5;
+double ExtShieldUpstream.centerXType7Box2 = 1047.5;// 
+double ExtShieldUpstream.centerYType7Box2 = 3199;
+double ExtShieldUpstream.centerZType7Box2 = -548.5;
+
+double ExtShieldUpstream.centerXType8Box1 = -2781.5;//2 West cap
+double ExtShieldUpstream.centerYType8Box1 = 2488;
+double ExtShieldUpstream.centerZType8Box1 = -3087;
+double ExtShieldUpstream.centerXType8Box2 = -2781.5;
+double ExtShieldUpstream.centerYType8Box2 = 3199;
+double ExtShieldUpstream.centerZType8Box2 = -3087;
+
+double ExtShieldUpstream.centerXType9Box1 = 1052;//1 Poly bead "box"
+double ExtShieldUpstream.centerYType9Box1 = -1856;
+double ExtShieldUpstream.centerZType9Box1 = -111.5;
+
+
+// The orientation of each detector.  See docdb xxx for details.
+string ExtShieldUpstream.orientationType1Box1 = "000";
+string ExtShieldUpstream.orientationType1Box9 = "010";
+string ExtShieldUpstream.orientationType1Box10 = "010";
+
+// For the upstream, most are oriented with default orientation, so
+// don't need to specify all.
+
+bool  ExtShieldUpstream.visible = true;
+bool  ExtShieldUpstream.solid   = false;
+
+int   ExtShieldUpstream.verbosityLevel = 1;
+
+// This is a hack to allow the Mu2eBuilding to build - a dependence on
+// the old ExtNeutShieldLAbove consts was built in.  This should be seen
+// as a temporary fix!
+double ExtShieldUpstream.XExtentHack = 1250.0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
