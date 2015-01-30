@@ -41,7 +41,7 @@
 #include "Mu2eG4/inc/constructProtonBeamDump.hh"
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
-#include "Mu2eG4/inc/constructExternalNeutronShielding.hh"
+#include "Mu2eG4/inc/constructExternalShielding.hh"
 #include "Mu2eG4/inc/constructInternalNeutronAbsorber.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
@@ -185,10 +185,9 @@ namespace mu2e {
     constructMagnetYoke();
 
     // Check for stale names
-    checkForStale( "hasExternalNeutronAbsorber", _config );
-    
-    if ( _config.getBool("hasExternalNeutronShielding",false) ) {
-      constructExternalNeutronShielding(hallInfo, _config);
+
+    if ( _config.getBool("hasExternalShielding",false) ) {
+      constructExternalShielding(hallInfo, _config);
     }
 
     if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {

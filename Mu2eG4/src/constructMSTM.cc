@@ -12,7 +12,7 @@
 // Mu2e includes.
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
+//#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -52,7 +52,7 @@
 #include <cmath>
 #include <vector>
 #include <sstream>
-
+#include <iostream>
 using namespace std;
 
 namespace mu2e {
@@ -87,43 +87,12 @@ namespace mu2e {
 
 //     GeomHandle<DetectorSolenoidShielding> dss;
 
-    // place the MSTM wrt to ENS; account for the vd half length
-//     GeomHandle<ExtNeutShieldCendBoxes> enscendb;
-
-//     const std::vector<CLHEP::Hep3Vector>& ENSCBcentersOfBoxes = enscendb->centersOfBoxes();
-
-//     size_t nBox = ENSCBcentersOfBoxes.size();
-//     size_t ib;
-//     for(ib = 0; ib < nBox; ++ib) {
-//       if ( enscendb->hasHole(ib) ) break;
-//     }
-//     int hID = enscendb->holeIndex(ib);
-//     if ( verbosityLevel > 0 ) {
-//       std::cout << __func__ << " ib: " << ib << std::endl;
-//     }
-
-//     GeomHandle<VirtualDetector> vd;
-
-    // locations are wrt HallAir
-    // for some reason the location has to be taken from the box not the hole tbd
-    //        CLHEP::Hep3Vector holeLocation = enscendb->holeLocation(hID);
-//     CLHEP::Hep3Vector holeLocation = ENSCBcentersOfBoxes[ib];
-    
     //Create a reference position (everything in MSTM will be defined w.r.t. this position)
     
     G4ThreeVector mstmReferencePositionInMu2e(dsP.x(), 
                                               0.0, 
                                               _config.getDouble("mstm.refz0InMu2e") );
     
-//     GeomHandle<Mu2eEnvelope> env;
-//     const CLHEP::Hep3Vector hallFormalCenterInMu2e(
-//                                                    (env->xmax() + env->xmin())/2.,
-//                                                    (env->ymax() + env->ymin())/2.,
-//                                                    (env->zmax() + env->zmin())/2.
-//                                                   );
-// 
-//     mstmReferencePositionInMu2e  = mstmReferencePositionInMu2e - hallFormalCenterInMu2e;
-
     G4ThreeVector mstmReferencePositionInParent = mstmReferencePositionInMu2e - parentCenterInMu2e;
     
     //----- Create the Mother volume for everything in the MSTM area--------------------------------

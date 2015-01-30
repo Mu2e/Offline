@@ -18,7 +18,6 @@
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeomPrimitives/inc/Tube.hh"
@@ -1264,18 +1263,26 @@ namespace mu2e {
       VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
       CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
 
-      GeomHandle<ExtNeutShieldCendBoxes> enscendb;
+      // The following code was built on the Geometry #13 description of
+      // External shielding.  To break that dependency, I have created
+      // a work-around that is currently meant to be a temporary solution.
+      // David Norvil Brown, December 2014.
 
-      const std::vector<std::string>& ENSCBMaterialNames = enscendb->materialNames();
+//       GeomHandle<ExtNeutShieldCendBoxes> enscendb;
 
-      size_t nBox = ENSCBMaterialNames.size();
-      size_t ib;
-      for(ib = 0; ib < nBox; ++ib) {
-        if ( enscendb->hasHole(ib) ) break;
-      }
+//       const std::vector<std::string>& ENSCBMaterialNames = enscendb->materialNames();
+
+//       size_t nBox = ENSCBMaterialNames.size();
+//       size_t ib;
+//       for(ib = 0; ib < nBox; ++ib) {
+//         if ( enscendb->hasHole(ib) ) break;
+//       }
  
-      int hID = enscendb->holeIndex(ib);
-      const TubsParams vdParams(0, enscendb->holeRadius(hID), vdg->getHalfLength());
+//       int hID = enscendb->holeIndex(ib);
+
+      double shieldHoleRadius = _config.getDouble("ExtShieldDownstream.detecHoleRadius")*CLHEP::mm;
+
+      const TubsParams vdParams(0, shieldHoleRadius, vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,

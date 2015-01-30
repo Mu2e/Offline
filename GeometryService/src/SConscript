@@ -35,6 +35,7 @@ mainlib = helper.make_mainlib ( [
     'mu2e_ProductionSolenoidGeom',
     'mu2e_InternalNeutronAbsorberGeom',
     'mu2e_ExternalNeutronShieldingGeom',
+    'mu2e_ExternalShieldingGeom',
     'mu2e_DetectorSolenoidGeom',
     'mu2e_BeamlineGeom',
     'mu2e_MECOStyleProtonAbsorberGeom',

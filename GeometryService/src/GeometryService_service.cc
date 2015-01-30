@@ -77,6 +77,10 @@
 #include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCryoBoxesMaker.hh"
 #include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
 #include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxesMaker.hh"
+#include "ExternalShieldingGeom/inc/ExtShieldUpstream.hh"
+#include "ExternalShieldingGeom/inc/ExtShieldUpstreamMaker.hh"
+#include "ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
+#include "ExternalShieldingGeom/inc/ExtShieldDownstreamMaker.hh"
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorber.hh"
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorberMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
@@ -286,21 +290,25 @@ namespace mu2e {
       addDetector( InternalNeutronAbsorberMaker::make(*_config,ds) );
     }
 
+    if(_config->getBool("hasExternalShielding",false)) {
+      addDetector( ExtShieldUpstreamMaker::make(*_config)  );
+      addDetector( ExtShieldDownstreamMaker::make(*_config));
+    }
 
-    if(_config->getBool("hasExternalNeutronShielding",false)) {
-      addDetector( ExtNeutShieldUpstream1aMaker::make(*_config)     );
-      addDetector( ExtNeutShieldUpstream1bMaker::make(*_config)     );
-      addDetector( ExtNeutShieldUpstream2Maker::make(*_config)      );
-      addDetector( ExtNeutShieldUpstreamTopMaker::make(*_config)    );
-      addDetector( ExtNeutShieldUpstreamBottomMaker::make(*_config) );
-      addDetector( ExtNeutShieldCavexRightMaker::make(*_config)     );
-      addDetector( ExtNeutShieldCavexRightbMaker::make(*_config)    );
-      addDetector( ExtNeutShieldCavexLeftMaker::make(*_config)      );
-      addDetector( ExtNeutShieldCavexRoofMaker::make(*_config)      );
-      addDetector( ExtNeutShieldLAboveMaker::make(*_config)         );
-      addDetector( ExtNeutShieldLCeilingMaker::make(*_config)       );
-      addDetector( ExtNeutShieldCryoBoxesMaker::make(*_config)      );
-      addDetector( ExtNeutShieldCendBoxesMaker::make(*_config, beamline.solenoidOffset() )      );
+     if(_config->getBool("hasExternalNeutronShielding",false)) {
+       addDetector( ExtNeutShieldUpstream1aMaker::make(*_config)     );
+       addDetector( ExtNeutShieldUpstream1bMaker::make(*_config)     );
+       addDetector( ExtNeutShieldUpstream2Maker::make(*_config)      );
+       addDetector( ExtNeutShieldUpstreamTopMaker::make(*_config)    );
+       addDetector( ExtNeutShieldUpstreamBottomMaker::make(*_config) );
+       addDetector( ExtNeutShieldCavexRightMaker::make(*_config)     );
+       addDetector( ExtNeutShieldCavexRightbMaker::make(*_config)    );
+       addDetector( ExtNeutShieldCavexLeftMaker::make(*_config)      );
+       addDetector( ExtNeutShieldCavexRoofMaker::make(*_config)      );
+       addDetector( ExtNeutShieldLAboveMaker::make(*_config)         );
+       addDetector( ExtNeutShieldLCeilingMaker::make(*_config)       );
+       addDetector( ExtNeutShieldCryoBoxesMaker::make(*_config)      );
+       addDetector( ExtNeutShieldCendBoxesMaker::make(*_config, beamline.solenoidOffset() )      );
     }
 
 
