@@ -47,7 +47,8 @@ class Parms:
         self.validFF = ["phy-sim","phy-nts","phy-etc",
                         "usr-sim","usr-nts","usr-etc","tst-cos"]
         self.validGenerator = ["beam","stopped_particle","cosmic","mix"]
-        self.validPrimary = ["proton","electron","mix"]
+        self.validPrimary = ["proton","electron","muon","photon",
+                             "neutron""mix"]
         self.resExeOk = checkRES(self)
         self.fileCount = 0
 
@@ -906,6 +907,41 @@ def writeJson(par,files):
     for file in files:
 
         #
+        # move data file to the FTS area, if requested
+        #
+        odir = par.fts+"/"+par.file_family+"/"+hdir
+        newfn = odir+"/"+file.baseName
+        if par.copy or par.move:
+
+            if par.copy:
+                cmd = "ifdh cp "+file.dataFileName+" "+newfn
+            else:
+                cmd = "mv "+file.dataFileName+" "+newfn
+
+            if par.execute:
+                if par.verbose>4:
+                    print "Executing: "+cmd
+                try:
+                    subprocess.check_call(cmd,shell=True)
+                except subprocess.CalledProcessError as cpe:
+                    if par.verbose>0:
+                        print "ERROR executing "+cmd
+                        print "Exiting now..."
+                    sys.exit(2)
+            else:
+                if par.verbose>4:
+                    print "Would execute: "+cmd
+
+        #
+        # write the move in the log if requested
+        #
+        if writeLog:
+                # we know the json file is now in the
+                # json output dir and newfnj points to it
+                # write the idfh command
+            lfs.write(file.dataFileName+" "+newfn+"\n")
+
+        #
         # create json output file in tmp area
         #
         fnj = "/tmp/jsonMaker_"+"{0:d}".format(os.getpid())
@@ -976,40 +1012,6 @@ def writeJson(par,files):
                           +file.baseName+".json"+"\n")
 
 
-        #
-        # also move data file to the FTS area, if requested
-        #
-        odir = par.fts+"/"+par.file_family+"/"+hdir
-        newfn = odir+"/"+file.baseName
-        if par.copy or par.move:
-
-            if par.copy:
-                cmd = "ifdh cp "+file.dataFileName+" "+newfn
-            else:
-                cmd = "mv "+file.dataFileName+" "+newfn
-
-            if par.execute:
-                if par.verbose>4:
-                    print "Executing: "+cmd
-                try:
-                    subprocess.check_call(cmd,shell=True)
-                except subprocess.CalledProcessError as cpe:
-                    if par.verbose>0:
-                        print "ERROR executing "+cmd
-                        print "Exiting now..."
-                    sys.exit(2)
-            else:
-                if par.verbose>4:
-                    print "Would execute: "+cmd
-
-        #
-        # write the move in the log if requested
-        #
-        if writeLog:
-                # we know the json file is now in the
-                # json output dir and newfnj points to it
-                # write the idfh command
-            lfs.write(file.dataFileName+" "+newfn+"\n")
 
 
     if writeLog:
