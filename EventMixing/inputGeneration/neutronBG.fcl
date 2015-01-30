@@ -40,7 +40,7 @@ physics : {
     generate             : @local::generate
     g4run                : @local::g4run
     makeSH               : @local::makeSH
-    CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
     randomsaver          : @local::randomsaver
 

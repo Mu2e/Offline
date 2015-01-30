@@ -103,7 +103,7 @@ physics :
     CaloCrystalHitsMaker: @local::CaloCrystalHitsMaker
 
     # Form CaloROHits (APD hits)
-    CaloReadoutHitsMaker: @local::CaloReadoutHitsMaker
+    CaloReadoutHitsMaker: @local::MakeCaloReadoutHits
 
     # Save state of random numbers to the event.
     randomsaver : @local::randomsaver

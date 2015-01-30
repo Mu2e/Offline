@@ -57,7 +57,7 @@ physics :
     # test module for Kalman fit: the 
     
     # Form CaloHits (APD hits)
-    CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker

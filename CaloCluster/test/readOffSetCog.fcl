@@ -69,7 +69,7 @@ physics :
     makeSH : @local::makeSH
 
     # Form CaloHits (APD hits)
-    CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
 
     # Form CaloCrystalHits (reconstruct crystals from APDs)
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker

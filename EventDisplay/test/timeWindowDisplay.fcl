@@ -35,7 +35,7 @@ services : {
 physics : {
 
   producers:  {
-    CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
   }
 
