@@ -29,7 +29,7 @@ bool hasMBS             = true; // note the two subcomponents, see mbs section b
                                 // Magnetic field may be affected as well
 
 // Write mu2e geometry into a GDML file
-bool   writeGDML        = true;
+bool   writeGDML        = false;
 string GDMLFileName     = "mu2e.gdml";
 
 #include "Mu2eG4/geom/g4_userOptions.txt"
