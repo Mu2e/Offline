@@ -6,18 +6,20 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # Run geant4 on the generated event.
 #------------------------------------------------------------------------------
-g4run : {
+g4run : {      			   
     module_type             : G4
     generatorModuleLabel    : generate
     diagLevel               : 0
     trackingVerbosityLevel  : 0
     simParticleNumberOffset : 0
     visGUIMacro             : "Mu2eG4/test/visqtGUI.mac"
-    
+
 					# Can selectively enable sensitive detectors here
     SDConfig : {
-	enableAllSDs : true  # this will activate all SDs listed in StepInstanceName enum
-	# enableSD : [ calorimeter, tracker ] # activate just the explicitly listed SDs
+	enableAllSDs : false  # this will activate all SDs listed in StepInstanceName enum
+
+# activate minimal set of sensitive detectors used by everybody
+	enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
 	
 	# Make arbitrary LogicalVolumes sensitive:
 	# sensitiveVolumes: [ ToyDS3Vacuum ]
