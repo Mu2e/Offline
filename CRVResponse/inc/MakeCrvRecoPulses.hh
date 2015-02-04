@@ -1,12 +1,12 @@
 #include <vector>
 
-class CrvRecoPulseResponse
+class MakeCrvRecoPulses
 {
   private:
-  CrvRecoPulseResponse();
+  MakeCrvRecoPulses();
 
   public:
-  CrvRecoPulseResponse(double pulseThreshold, double leadingEdgeThreshold, double integralFactor);
+  MakeCrvRecoPulses(double pulseThreshold, double leadingEdgeThreshold, double integralFactor);
   void         SetWaveform(const std::vector<double> &waveform, double startTime, double binWidth);
   unsigned int GetNPulses();
   double       GetPEs(int pulse);

@@ -1,5 +1,5 @@
-#ifndef MCDataProducts_CRVPEs_hh
-#define MCDataProducts_CRVPEs_hh
+#ifndef MCDataProducts_CrvPhotonArrivals_hh
+#define MCDataProducts_CrvPhotonArrivals_hh
 //
 // $Id: $
 // $Author: ehrlich $
@@ -11,61 +11,61 @@
 
 namespace mu2e 
 {
-  class CRVPEs
+  class CrvPhotonArrivals
   {
     public:
 
-    CRVPEs() {}
+    CrvPhotonArrivals() {}
 
-    std::vector<double> &GetPEtimes(int fiberNumber, int side) 
+    std::vector<double> &GetPhotonArrivalTimes(int fiberNumber, int side) 
     {
       if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
       if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
       int SiPM = 2*fiberNumber + side;
-      return _PEtimes[SiPM];
+      return _times[SiPM];
     }
 
-    std::vector<double> &GetPEtimes(int SiPMNumber) 
+    std::vector<double> &GetPhotonArrivalTimes(int SiPMNumber) 
     {
       if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _PEtimes[SiPMNumber];
+      return _times[SiPMNumber];
     }
 
-    const std::vector<double> &GetPEtimes(int fiberNumber, int side) const 
+    const std::vector<double> &GetPhotonArrivalTimes(int fiberNumber, int side) const 
     {
       if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
       if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
       int SiPM = 2*fiberNumber + side;
-      return _PEtimes[SiPM];
+      return _times[SiPM];
     }
 
-    const std::vector<double> &GetPEtimes(int SiPMNumber) const
+    const std::vector<double> &GetPhotonArrivalTimes(int SiPMNumber) const
     {
       if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _PEtimes[SiPMNumber];
+      return _times[SiPMNumber];
     }
 
-    unsigned int GetNumberOfPEs(int fiberNumber, int side) const 
+    unsigned int GetNumberOfPhotonArrivals(int fiberNumber, int side) const 
     {
       if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
       if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
       int SiPM = 2*fiberNumber + side;
-      return _PEtimes[SiPM].size();
+      return _times[SiPM].size();
     }
 
-    unsigned int GetNumberOfPEs(int SiPMNumber) const
+    unsigned int GetNumberOfPhotonArrivals(int SiPMNumber) const
     {
       if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _PEtimes[SiPMNumber].size();
+      return _times[SiPMNumber].size();
     }
 
-    double GetFirstPEtime() const
+    double GetFirstPhotonArrivalTime() const
     {
       double firstTime = NAN;
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-        if(_PEtimes[SiPM].size()==0) continue;
-        double t = *std::min_element(_PEtimes[SiPM].begin(),_PEtimes[SiPM].end());
+        if(_times[SiPM].size()==0) continue;
+        double t = *std::min_element(_times[SiPM].begin(),_times[SiPM].end());
         if(isnan(firstTime) || t<firstTime) firstTime=t;
       }
       return firstTime;
@@ -73,8 +73,8 @@ namespace mu2e
 
     private:
 
-    std::vector<double> _PEtimes[4];
+    std::vector<double> _times[4];
   };
 }
 
-#endif /* MCDataProducts_CRVPEs_hh */
+#endif /* MCDataProducts_CrvPhotonArrivals_hh */

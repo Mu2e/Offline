@@ -1,5 +1,5 @@
-#ifndef MCDataProducts_CRVWaveforms_hh
-#define MCDataProducts_CRVWaveforms_hh
+#ifndef MCDataProducts_CrvWaveforms_hh
+#define MCDataProducts_CrvWaveforms_hh
 //
 // $Id: $
 // $Author: ehrlich $
@@ -11,11 +11,11 @@
 
 namespace mu2e 
 {
-  class CRVWaveforms
+  class CrvWaveforms
   {
     public:
 
-    CRVWaveforms() {}
+    CrvWaveforms() {}
 
     std::vector<double> &GetWaveform(int fiberNumber, int side) 
     {
@@ -91,4 +91,4 @@ namespace mu2e
   };
 }
 
-#endif /* MCDataProducts_CRVWaveforms_hh */
+#endif /* MCDataProducts_CrvWaveforms_hh */

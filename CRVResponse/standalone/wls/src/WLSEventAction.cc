@@ -23,8 +23,9 @@
 #include <TGaxis.h>
 #include <TCanvas.h>
 
-#include "CrvWaveformResponse.hh"
-#include "CrvRecoPulseResponse.hh"
+#include "MakeCrvSiPMResponses.hh"
+#include "MakeCrvWaveforms.hh"
+#include "MakeCrvRecoPulses.hh"
 
 #include <stdexcept>
 
@@ -170,7 +171,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      double p=(double)WLSSteppingAction::Instance()->GetPEs(0,SiPM)/(double)_generatedPhotons;
+      double p=(double)WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM).size()/(double)_generatedPhotons;
       _histSurvivalProb[table][SiPM]->Fill(_start.x(),_start.y(),_start.z(), p);
 
       double zSiPM=(SiPM%2==0?-detector->GetScintillatorHalfLength():detector->GetScintillatorHalfLength());
@@ -228,13 +229,12 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     }
   }
 
-
   if(_mode==0)
   {
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      _histPE[0][SiPM]->Fill(WLSSteppingAction::Instance()->GetPEs(0,SiPM));
-      _histPE[1][SiPM]->Fill(WLSSteppingAction::Instance()->GetPEs(1,SiPM));
+      _histPE[0][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM).size());
+      _histPE[1][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM).size());
 
       const std::vector<double> &arrivalTimes0 = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);
       const std::vector<double> &arrivalTimes1 = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
@@ -258,20 +258,42 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 
 void WLSEventAction::Draw(const G4Event* evt) const
 {
-  CrvWaveformResponse waveformResponse, waveformResponse2;
+  MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
+  probabilities._constGeigerProbCoef = 2;
+  probabilities._constGeigerProbVoltScale = 3;
+  probabilities._constTrapType0Prob = 0.14;   //trap_prob*trap_type0_prob=0.2*0.7
+  probabilities._constTrapType1Prob = 0.06;   //trap_prob*trap_type1_pron=0.2*0.3
+  probabilities._constTrapType0Lifetime = 5;
+  probabilities._constTrapType1Lifetime = 50;
+  probabilities._constThermalProb = 6.25e-7; //1MHz at SiPM --> 1e-3/(#pixel*t[ns])  //exp(-E_th/T)=1.6e-6
+  probabilities._constPhotonProduction = 0.1; //0.4;
+  MakeCrvSiPMResponses sim;
+  sim.SetSiPMConstants(1600, 2.5, 1695, 0.08, probabilities);
+
+  MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
   double binWidth = 12.5; //ns
   double binWidth2 = 1.0; //ns
   gStyle->SetOptStat(0);
-  waveformResponse.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 200);
-  waveformResponse2.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 200);
+  makeCrvWaveform.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 200);
+  makeCrvWaveform2.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 200);
 
   double startTime=-G4UniformRand()*binWidth;
+  std::vector<double> siPMtimes[4], siPMcharges[4];
   std::vector<double> waveform[4], waveform2[4];
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-    const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
-    waveformResponse.MakeWaveforms(arrivalTimes, waveform[SiPM], startTime, binWidth);
-    waveformResponse2.MakeWaveforms(arrivalTimes, waveform2[SiPM], startTime, binWidth2);
+    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
+
+    std::vector<SiPMresponse> SiPMresponseVector;
+    sim.Simulate(photonTimes, SiPMresponseVector);
+    for(unsigned int i=0; i<SiPMresponseVector.size(); i++)
+    {
+      siPMtimes[SiPM].push_back(SiPMresponseVector[i]._time);
+      siPMcharges[SiPM].push_back(SiPMresponseVector[i]._charge);
+    }
+
+    makeCrvWaveform.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform[SiPM], startTime, binWidth);
+    makeCrvWaveform2.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform2[SiPM], startTime, binWidth2);
   }
 
   std::ostringstream s1;
@@ -282,32 +304,45 @@ void WLSEventAction::Draw(const G4Event* evt) const
   TGraph *graph[4], *graph2[4];
   std::vector<TGraph*> graphLvector;
   std::vector<TMarker*> markers;
-  TH1D *hist[4];
+  TH1D *hist[4], *histSiPMResponse[4];
 
   for(int SiPM=0; SiPM<4; SiPM++)
   {
     c.cd(SiPM+1);
 
-//PEs
+//Photon Arrival Times
     std::ostringstream s2, s3;
-    s2<<"waveform_"<<evt->GetEventID()<<"__"<<SiPM;
+    s2<<"Photons_"<<evt->GetEventID()<<"__"<<SiPM;
     s3<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
     hist[SiPM]=new TH1D(s2.str().c_str(),s3.str().c_str(),100,0,200);
-    const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
-    for(unsigned int i=0; i<arrivalTimes.size(); i++)
+    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
+    for(unsigned int i=0; i<photonTimes.size(); i++)
     {
-      hist[SiPM]->Fill(arrivalTimes[i]);
+      hist[SiPM]->Fill(photonTimes[i]);
     }
 
-    hist[SiPM]->SetLineColor(kBlack);
+    hist[SiPM]->SetLineColor(kBlue);
     hist[SiPM]->GetXaxis()->SetTitle("t [ns]");
-    hist[SiPM]->GetYaxis()->SetTitle("PEs");
+    hist[SiPM]->GetYaxis()->SetTitle("Photons");
     hist[SiPM]->GetYaxis()->SetTitleOffset(0.5);
+    hist[SiPM]->GetYaxis()->SetAxisColor(kBlue);
+    hist[SiPM]->GetYaxis()->SetTitleColor(kBlue);
+    hist[SiPM]->GetYaxis()->SetLabelColor(kBlue);
     hist[SiPM]->Draw();
 
     double histMax = hist[SiPM]->GetMaximum();
     double waveformMax = *std::max_element(waveform2[SiPM].begin(),waveform2[SiPM].end());
     double scale = histMax/waveformMax;
+    double scaleSiPMResponse = 0.25;
+
+//SiPM response
+    histSiPMResponse[SiPM]=new TH1D((s2.str()+"SiPMResponse").c_str(),"",100,0,200);
+    for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++)
+    {
+      histSiPMResponse[SiPM]->Fill(siPMtimes[SiPM][j], siPMcharges[SiPM][j]*scaleSiPMResponse);
+    }
+    histSiPMResponse[SiPM]->SetLineColor(kOrange);
+    histSiPMResponse[SiPM]->Draw("same");
 
 //waveforms with 1 ns bin width
     unsigned int n2 = waveform2[SiPM].size();
@@ -323,7 +358,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
     graph2[SiPM]=new TGraph();
     graph2[SiPM]->SetTitle("");
     graph2[SiPM]->SetLineWidth(1);
-    graph2[SiPM]->SetLineColor(kBlack);
+    graph2[SiPM]->SetLineColor(kRed);
     graph2[SiPM]->DrawGraph(n2,t2,v2,"same");
 
     delete[] t2;
@@ -342,9 +377,9 @@ void WLSEventAction::Draw(const G4Event* evt) const
     }
     graph[SiPM]=new TGraph(n,t,v);
     graph[SiPM]->SetTitle("");
-    graph[SiPM]->SetMarkerStyle(20);
-    graph[SiPM]->SetMarkerSize(1);
-    graph[SiPM]->SetMarkerColor(kBlack);
+    graph[SiPM]->SetMarkerStyle(24);
+    graph[SiPM]->SetMarkerSize(1.5);
+    graph[SiPM]->SetMarkerColor(kRed);
     graph[SiPM]->Draw("sameP");
 
     delete[] t;
@@ -360,66 +395,100 @@ void WLSEventAction::Draw(const G4Event* evt) const
       if(vI<=0.005) continue;
       TMarker *marker = new TMarker(tI, vI*scale, markers.size());
       marker->SetMarkerStyle(20);
-      marker->SetMarkerSize(1);
+      marker->SetMarkerSize(1.5);
       marker->SetMarkerColor(kRed);
       marker->Draw("same");
       markers.push_back(marker);
     }
 
 //Landau fit
-    CrvRecoPulseResponse recoPulseResponse(0.005,0.2,51.0);
-    recoPulseResponse.SetWaveform(waveform[SiPM], startTime, binWidth);
-    unsigned int nPulse = recoPulseResponse.GetNPulses();
+    MakeCrvRecoPulses makeRecoPulses(0.005,0.2,51.0);
+    makeRecoPulses.SetWaveform(waveform[SiPM], startTime, binWidth);
+    unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
     {
-      TGraph *graphL=new TGraph();
-      graphLvector.push_back(graphL);
-      double tL1=recoPulseResponse.GetT1(pulse);
-      double tL2=recoPulseResponse.GetT2(pulse);
+      double tL1=makeRecoPulses.GetT1(pulse);
+      double tL2=makeRecoPulses.GetT2(pulse);
       int nL=(tL2-tL1)/1.0 + 1;
       double *tL = new double[nL];
       double *vL = new double[nL];
       for(int iL=0; iL<nL; iL++)
       {
-        double p0 = recoPulseResponse.GetLandauParam0(pulse);
-        double p1 = recoPulseResponse.GetLandauParam1(pulse);
-        double p2 = recoPulseResponse.GetLandauParam2(pulse);
+        double p0 = makeRecoPulses.GetLandauParam0(pulse);
+        double p1 = makeRecoPulses.GetLandauParam1(pulse);
+        double p2 = makeRecoPulses.GetLandauParam2(pulse);
         tL[iL] = tL1 + iL*1.0;
         vL[iL] = p0*TMath::Landau(tL[iL], p1, p2);
         vL[iL]*=scale;
+        if(isnan(vL[iL])) nL=0;
       }
-      graphL->SetTitle("");
-      graphL->SetLineWidth(2);
-      graphL->SetLineColor(kGreen);
-      graphL->DrawGraph(nL,tL,vL,"same");
+      if(nL>0)
+      {
+        TGraph *graphL=new TGraph();
+        graphLvector.push_back(graphL);
+        graphL->SetTitle("");
+        graphL->SetLineWidth(2);
+        graphL->SetLineColor(kGreen);
+        graphL->DrawGraph(nL,tL,vL,"same");
+      }
 
-      double leadingEdge=recoPulseResponse.GetLeadingEdge(pulse);
-      TMarker *marker = new TMarker(leadingEdge,
-                                    0.2*recoPulseResponse.GetPulseHeight(pulse)*scale,
-                                    markers.size());
-      marker->SetMarkerStyle(21);
-      marker->SetMarkerSize(1);
-      marker->SetMarkerColor(kGreen);
-      marker->Draw("same");
-      markers.push_back(marker);
+      double leadingEdge=makeRecoPulses.GetLeadingEdge(pulse);
+      if(!isnan(leadingEdge) && leadingEdge<200.0)
+      {
+        TMarker *marker = new TMarker(leadingEdge,
+                                      0.2*makeRecoPulses.GetPulseHeight(pulse)*scale,
+                                      markers.size());
+        marker->SetMarkerStyle(21);
+        marker->SetMarkerSize(1.5);
+        marker->SetMarkerColor(kGreen);
+        marker->Draw("same");
+        markers.push_back(marker);
+      }
     }
 
-    if(recoPulseResponse.GetNPulses()==1)
+    if(makeRecoPulses.GetNPulses()==1)
     {
-      int PEs = arrivalTimes.size();
-      std::cout<<"PEs/integral: "<<PEs/recoPulseResponse.GetIntegral(0)<<"         ";
-      std::cout<<"PEs/maxBin: "<<PEs/recoPulseResponse.GetPulseHeight(0)<<std::endl;
-      _PEvsIntegral->Fill(PEs,recoPulseResponse.GetIntegral(0));
-      _PEvsPulseHeight->Fill(PEs,recoPulseResponse.GetPulseHeight(0));
+      int photons = photonTimes.size();
+      std::cout<<"PEs/integral: "<<photons/makeRecoPulses.GetIntegral(0)<<"         ";
+      std::cout<<"PEs/maxBin: "<<photons/makeRecoPulses.GetPulseHeight(0)<<std::endl;
+      _PEvsIntegral->Fill(photons,makeRecoPulses.GetIntegral(0));
+      _PEvsPulseHeight->Fill(photons,makeRecoPulses.GetPulseHeight(0));
     }
 
-    TGaxis *axis = new TGaxis(180.0,0,180.0,histMax,0,waveformMax,10,"+L");
+    TGaxis *axis = new TGaxis(170.0,0,170.0,histMax,0,histMax/scale,10,"+L");
     axis->SetTitle("voltage [V]");
     axis->SetTitleOffset(-0.5);
     axis->SetTitleColor(kRed);
     axis->SetLineColor(kRed);
     axis->SetLabelColor(kRed);
     axis->Draw("same");
+
+    TGaxis *axisSiPMResponse = new TGaxis(200.0,0,200.0,histMax,0,histMax/scaleSiPMResponse,10,"+L");
+    axisSiPMResponse->SetTitle("SiPM output [PE]");
+    axisSiPMResponse->SetTitleOffset(-0.5);
+    axisSiPMResponse->SetTitleColor(kOrange);
+    axisSiPMResponse->SetLineColor(kOrange);
+    axisSiPMResponse->SetLabelColor(kOrange);
+    axisSiPMResponse->Draw("same");
+
+    TLine *landauLine = new TLine(100, histMax*0.9, 130, histMax*0.9);
+    landauLine->SetLineWidth(2);
+    landauLine->SetLineColor(kGreen);
+    landauLine->Draw("same");
+    TMarker *landauMarker = new TMarker(110, histMax*0.9, markers.size());
+    landauMarker->SetMarkerStyle(21);
+    landauMarker->SetMarkerSize(1.5);
+    landauMarker->SetMarkerColor(kGreen);
+    landauMarker->Draw("same");
+    markers.push_back(landauMarker);
+    TText *landauText1 = new TText(100, histMax*0.82, "Landau fit with");
+    TText *landauText2 = new TText(100, histMax*0.76, "leading edge");
+    landauText1->SetTextSize(0.03);
+    landauText2->SetTextSize(0.03);
+    landauText1->SetTextColor(kGreen);
+    landauText2->SetTextColor(kGreen);
+    landauText1->Draw("same");
+    landauText2->Draw("same");
   }
   c.SaveAs((s1.str()+".C").c_str());
 }

@@ -13,10 +13,11 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CRVPEsCollection.hh"
-#include "MCDataProducts/inc/CRVWaveformsCollection.hh"
-#include "RecoDataProducts/inc/CRVRecoPulsesCollection.hh"
-#include "RecoDataProducts/inc/CRVCoincidenceCheckResult.hh"
+#include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
+#include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
+#include "MCDataProducts/inc/CrvWaveformsCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
 
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -45,7 +46,8 @@ namespace mu2e
     void endJob();
 
     private:
-    std::string _crvPEsModuleLabel;
+    std::string _crvPhotonArrivalsModuleLabel;
+    std::string _crvSiPMResponsesModuleLabel;
     std::string _crvWaveformsModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     std::string _crvCoincidenceCheckModuleLabel;
@@ -55,7 +57,8 @@ namespace mu2e
   };
 
   CRVTest::CRVTest(fhicl::ParameterSet const& pset) :
-    _crvPEsModuleLabel(pset.get<std::string>("crvPEsModuleLabel")),
+    _crvPhotonArrivalsModuleLabel(pset.get<std::string>("crvPhotonArrivalsModuleLabel")),
+    _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _crvCoincidenceCheckModuleLabel(pset.get<std::string>("crvCoincidenceCheckModuleLabel")),
@@ -83,20 +86,23 @@ namespace mu2e
   {
     GeomHandle<CosmicRayShield> CRS;
 
-    art::Handle<CRVPEsCollection> crvPEsCollection;
-    event.getByLabel(_crvPEsModuleLabel,"",crvPEsCollection);
+    art::Handle<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection;
+    event.getByLabel(_crvPhotonArrivalsModuleLabel,"",crvPhotonArrivalsCollection);
 
-    art::Handle<CRVWaveformsCollection> crvWaveformsCollection;
+    art::Handle<CrvSiPMResponsesCollection> crvSiPMResponsesCollection;
+    event.getByLabel(_crvSiPMResponsesModuleLabel,"",crvSiPMResponsesCollection);
+
+    art::Handle<CrvWaveformsCollection> crvWaveformsCollection;
     event.getByLabel(_crvWaveformsModuleLabel,"",crvWaveformsCollection);
 
-    art::Handle<CRVRecoPulsesCollection> crvRecoPulsesCollection;
+    art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
 
-    art::Handle<CRVCoincidenceCheckResult> crvCoincidenceCheckResult;
+    art::Handle<CrvCoincidenceCheckResult> crvCoincidenceCheckResult;
     event.getByLabel(_crvCoincidenceCheckModuleLabel,"",crvCoincidenceCheckResult);
 
-    for(CRVPEsCollection::const_iterator iter1=crvPEsCollection->begin(); 
-        iter1!=crvPEsCollection->end(); iter1++)
+    for(CrvPhotonArrivalsCollection::const_iterator iter1=crvPhotonArrivalsCollection->begin(); 
+        iter1!=crvPhotonArrivalsCollection->end(); iter1++)
     {
       int PEs[4]={0};
       int PEsFromPulses[4]={0};
@@ -106,20 +112,20 @@ namespace mu2e
       double integral[4]={0};
 
       const CRSScintillatorBarIndex &barIndex = iter1->first;
-      const CRVPEs &crvPEs = iter1->second;
+      const CrvPhotonArrivals &crvPhotonArrivals = iter1->second;
 
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-        PEs[SiPM] = crvPEs.GetNumberOfPEs(SiPM);
+        PEs[SiPM] = crvPhotonArrivals.GetNumberOfPhotonArrivals(SiPM);
       }
 
-      CRVRecoPulsesCollection::const_iterator iter2 = crvRecoPulsesCollection->find(barIndex);
+      CrvRecoPulsesCollection::const_iterator iter2 = crvRecoPulsesCollection->find(barIndex);
       if(iter2!=crvRecoPulsesCollection->end())
       {
-        const CRVRecoPulses &crvRecoPulses = iter2->second;
+        const CrvRecoPulses &crvRecoPulses = iter2->second;
         for(int SiPM=0; SiPM<4; SiPM++)
         {
-          const std::vector<CRVRecoPulses::CRVSingleRecoPulse> &pulseVector = crvRecoPulses.GetRecoPulses(SiPM);
+          const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector = crvRecoPulses.GetRecoPulses(SiPM);
           for(unsigned int i = 0; i<pulseVector.size(); i++) PEsFromPulses[SiPM]+=pulseVector[i]._PEs;
           nPulses[SiPM]=pulseVector.size();
           if(pulseVector.size()==1) singlePulseHeight[SiPM]=pulseVector[0]._pulseHeight;
@@ -129,10 +135,10 @@ namespace mu2e
         }
       }
 
-      CRVWaveformsCollection::const_iterator iter3 = crvWaveformsCollection->find(barIndex);
+      CrvWaveformsCollection::const_iterator iter3 = crvWaveformsCollection->find(barIndex);
       if(iter3!=crvWaveformsCollection->end())
       {
-        const CRVWaveforms &crvWaveforms = iter3->second;
+        const CrvWaveforms &crvWaveforms = iter3->second;
         for(int SiPM=0; SiPM<4; SiPM++)
         {
           const std::vector<double> waveform = crvWaveforms.GetWaveform(SiPM);

@@ -1,4 +1,4 @@
-#include "CrvPEresponse.hh"
+#include "MakeCrvPhotonArrivals.hh"
 
 #include "G4LossTableManager.hh"
 #include "G4NistManager.hh"
@@ -18,11 +18,11 @@
 
 #include "CLHEP/Vector/TwoVector.h"
 
-CrvPEresponse::CrvPEresponse() : _actualHalfLength(NAN), _fileLookupTable(NULL)
+MakeCrvPhotonArrivals::MakeCrvPhotonArrivals() : _actualHalfLength(NAN), _fileLookupTable(NULL)
 {
 }
 
-void CrvPEresponse::LoadLookupTable(std::string filename)
+void MakeCrvPhotonArrivals::LoadLookupTable(std::string filename)
 {
   _fileLookupTable = new TFile(filename.c_str());
   if(_fileLookupTable==NULL) throw std::logic_error((filename+" not found.").c_str());
@@ -68,7 +68,7 @@ void CrvPEresponse::LoadLookupTable(std::string filename)
   ntuple->GetEntry(0);
 }
 
-CrvPEresponse::~CrvPEresponse()
+MakeCrvPhotonArrivals::~MakeCrvPhotonArrivals()
 {
   if(_fileLookupTable) _fileLookupTable->Close();
   _fileLookupTable=NULL;
@@ -77,7 +77,7 @@ CrvPEresponse::~CrvPEresponse()
 
 }
 
-void CrvPEresponse::MakePEs(const CLHEP::Hep3Vector &stepStart,   //they need to be points
+void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //they need to be points
                           const CLHEP::Hep3Vector &stepEnd,     //local to the CRV bar
                           double timeStart, double timeEnd,
                           int PDGcode, double beta, double charge,
@@ -131,10 +131,8 @@ void CrvPEresponse::MakePEs(const CLHEP::Hep3Vector &stepStart,   //they need to
       int bin = _histSurvivalProb[table][SiPM]->FindBin(p.x(),p.y(),p.z());
       double probability = _histSurvivalProb[table][SiPM]->GetBinContent(bin);
 
-      if(G4UniformRand()<=probability)  //a PE can be created
+      if(G4UniformRand()<=probability)  //a photon arrives at the SiPM
       {
-        PEs[SiPM]++;
-
         double arrivalTime = timeStart + (timeEnd-timeStart)*i/nPhotons;
 
         double zSiPM=(SiPM%2==0?-_halfLength:_halfLength);
@@ -154,13 +152,13 @@ void CrvPEresponse::MakePEs(const CLHEP::Hep3Vector &stepStart,   //they need to
 
         arrivalTime+=GetRandomTime(_histTimeDifference[table][SiPM], p.y(), p.z());
 
-        ArrivalTimes[SiPM].push_back(arrivalTime);
+        _arrivalTimes[SiPM].push_back(arrivalTime);
       }
     }
   }
 }
 
-bool CrvPEresponse::IsInsideScintillator(const CLHEP::Hep3Vector &p)
+bool MakeCrvPhotonArrivals::IsInsideScintillator(const CLHEP::Hep3Vector &p)
 {
   if(abs(p.x())>=_halfThickness) return false;
   if(abs(p.y())>=_halfWidth) return false;
@@ -174,7 +172,7 @@ bool CrvPEresponse::IsInsideScintillator(const CLHEP::Hep3Vector &p)
   return true;
 }
 
-int CrvPEresponse::IsInsideFiber(const CLHEP::Hep3Vector &p)
+int MakeCrvPhotonArrivals::IsInsideFiber(const CLHEP::Hep3Vector &p)
 {
   CLHEP::Hep2Vector p2D(p.x(), p.y());
   CLHEP::Hep2Vector fiber0(0.0, -_fiberSeparation/2.0);
@@ -186,7 +184,7 @@ int CrvPEresponse::IsInsideFiber(const CLHEP::Hep3Vector &p)
   return -1;
 }
 
-double CrvPEresponse::GetRandomTime(TH3D *timeDifference, double y, double z)
+double MakeCrvPhotonArrivals::GetRandomTime(TH3D *timeDifference, double y, double z)
 {
   int binx = timeDifference->GetXaxis()->FindBin(y);
   int biny = timeDifference->GetYaxis()->FindBin(z);
@@ -210,7 +208,7 @@ double CrvPEresponse::GetRandomTime(TH3D *timeDifference, double y, double z)
   return time;
 }
 
-int CrvPEresponse::GetRandomFiberEmissions(TH3D *fiberEmissions, double y, double z)
+int MakeCrvPhotonArrivals::GetRandomFiberEmissions(TH3D *fiberEmissions, double y, double z)
 {
   int binx = fiberEmissions->GetXaxis()->FindBin(y);
   int biny = fiberEmissions->GetYaxis()->FindBin(z);
@@ -237,7 +235,7 @@ int CrvPEresponse::GetRandomFiberEmissions(TH3D *fiberEmissions, double y, doubl
 //we have several CRV bars with different lengths
 //in order to avoid different lookup tables, an adjusted position for side 1 is used for shorter CRV bars
 //(moving it closer to the SiPM for side 1) 
-void CrvPEresponse::AdjustPosition(CLHEP::Hep3Vector &p) 
+void MakeCrvPhotonArrivals::AdjustPosition(CLHEP::Hep3Vector &p) 
 {
   if(isnan(_actualHalfLength)) return; //no adjustment
   if(_actualHalfLength>_halfLength) 
@@ -247,26 +245,25 @@ void CrvPEresponse::AdjustPosition(CLHEP::Hep3Vector &p)
   p.setZ(p.z()+difference);
 }
 
-int CrvPEresponse::GetPEs(int SiPM)
+int MakeCrvPhotonArrivals::GetNumberOfPhotons(int SiPM)
 {
-  return PEs[SiPM];
+  return _arrivalTimes[SiPM].size();
 }
 
-const std::vector<double> &CrvPEresponse::GetArrivalTimes(int SiPM)
+const std::vector<double> &MakeCrvPhotonArrivals::GetArrivalTimes(int SiPM)
 {
-  return ArrivalTimes[SiPM];
+  return _arrivalTimes[SiPM];
 }
 
-void CrvPEresponse::Reset()
+void MakeCrvPhotonArrivals::Reset()
 {
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-    PEs[SiPM]=0;
-    ArrivalTimes[SiPM].clear();
+    _arrivalTimes[SiPM].clear();
   }
 }
 
-double CrvPEresponse::GetAverageNumberOfCerenkovPhotons(double beta, double charge) 
+double MakeCrvPhotonArrivals::GetAverageNumberOfCerenkovPhotons(double beta, double charge) 
 { 
   const double Rfact = 369.81/(eV * cm); //from G4Cerenkov::GetAverageNumberOfPhotons() 
 
@@ -278,7 +275,7 @@ double CrvPEresponse::GetAverageNumberOfCerenkovPhotons(double beta, double char
   return n;		
 }
 
-double CrvPEresponse::VisibleEnergyDeposition(int PDGcode, double stepLength,
+double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLength,
                                             double energyDepositedTotal,
                                             double energyDepositedNonIonizing)
 {

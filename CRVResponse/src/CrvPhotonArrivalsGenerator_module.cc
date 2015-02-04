@@ -1,5 +1,5 @@
 //
-// A module to create CRV PEs from StepPointMCs
+// A module to create CRV photons arriving at the SiPMs (using StepPointMCs)
 //
 // $Id: $
 // $Author: ehrlich $
@@ -7,7 +7,7 @@
 // 
 // Original Author: Ralf Ehrlich
 
-#include "CRVResponse/inc/CrvPEresponse.hh"
+#include "CRVResponse/inc/MakeCrvPhotonArrivals.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
@@ -17,7 +17,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
-#include "MCDataProducts/inc/CRVPEsCollection.hh"
+#include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
 
 #include "G4PhysListFactory.hh"
 #include "G4VPhysicsConstructor.hh"
@@ -41,11 +41,11 @@
 
 namespace mu2e 
 {
-  class MakeCrvPEs : public art::EDProducer 
+  class CrvPhotonArrivalsGenerator : public art::EDProducer 
   {
 
     public:
-    explicit MakeCrvPEs(fhicl::ParameterSet const& pset);
+    explicit CrvPhotonArrivalsGenerator(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
     void beginJob();
     void endJob();
@@ -54,7 +54,7 @@ namespace mu2e
     std::string _g4ModuleLabel;
     std::string _lookupTableFileName;
 
-    boost::shared_ptr<CrvPEresponse> _crvPEresponse;
+    boost::shared_ptr<MakeCrvPhotonArrivals> _makeCrvPhotonArrivals;
 
     double      _scintillationYield;
     double      _scintillatorDecayTimeFast;
@@ -64,7 +64,7 @@ namespace mu2e
     G4ParticleTable *_particleTable;
   };
 
-  MakeCrvPEs::MakeCrvPEs(fhicl::ParameterSet const& pset) :
+  CrvPhotonArrivalsGenerator::CrvPhotonArrivalsGenerator(fhicl::ParameterSet const& pset) :
     _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
     _lookupTableFileName(pset.get<std::string>("lookupTableFileName")),
     _scintillationYield(pset.get<double>("scintillationYield",820.0)),    //820.0 photons per MeV
@@ -74,13 +74,13 @@ namespace mu2e
   {
 //    ConfigFileLookupPolicy configFile;
 //    _lookupTableFileName = configFile(_lookupTableFileName);
-    _crvPEresponse = boost::shared_ptr<CrvPEresponse>(new CrvPEresponse());
-    _crvPEresponse->LoadLookupTable(_lookupTableFileName.c_str());
-    _crvPEresponse->SetScintillationYield(_scintillationYield);
-    _crvPEresponse->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
-    _crvPEresponse->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
-    _crvPEresponse->SetFiberDecayTime(_fiberDecayTime);
-    produces<CRVPEsCollection>();
+    _makeCrvPhotonArrivals = boost::shared_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals());
+    _makeCrvPhotonArrivals->LoadLookupTable(_lookupTableFileName.c_str());
+    _makeCrvPhotonArrivals->SetScintillationYield(_scintillationYield);
+    _makeCrvPhotonArrivals->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
+    _makeCrvPhotonArrivals->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
+    _makeCrvPhotonArrivals->SetFiberDecayTime(_fiberDecayTime);
+    produces<CrvPhotonArrivalsCollection>();
 
     std::string physName = "QGSP_BERT_EMV";
     G4PhysListFactory factory;
@@ -96,17 +96,17 @@ namespace mu2e
     _particleTable->SetReadiness();
   }
 
-  void MakeCrvPEs::beginJob()
+  void CrvPhotonArrivalsGenerator::beginJob()
   {
   }
 
-  void MakeCrvPEs::endJob()
+  void CrvPhotonArrivalsGenerator::endJob()
   {
   }
 
-  void MakeCrvPEs::produce(art::Event& event) 
+  void CrvPhotonArrivalsGenerator::produce(art::Event& event) 
   {
-    std::unique_ptr<CRVPEsCollection> crvPEsCollection(new CRVPEsCollection);
+    std::unique_ptr<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection(new CrvPhotonArrivalsCollection);
 
     GeomHandle<CosmicRayShield> CRS;
     StepInstanceName CRVInstance(StepInstanceName::CRV);
@@ -125,7 +125,8 @@ namespace mu2e
       int PDGcode = step.simParticle()->pdgId();
       if(_particleTable->FindParticle(PDGcode)==NULL)
       {
-        std::cerr<<"Error in MakeCrvPEs: Found a PDG code which is not in the GEANT particle table: "<<PDGcode<<std::endl;
+        std::cerr<<"Error in CrvPhotonArrivalsGenerator: Found a PDG code which is not in the GEANT particle table: ";
+        std::cerr<<PDGcode<<std::endl;
         std::cerr<<"FIXME: Skipping this StepPoint."<<std::endl;
         continue;
       }
@@ -169,8 +170,8 @@ namespace mu2e
       CLHEP::Hep3Vector p1Local = CRSbar.toLocal(p1);
       CLHEP::Hep3Vector p2Local = CRSbar.toLocal(p2);
 
-      _crvPEresponse->SetActualHalfLength(CRSbar.getHalfLength());
-      _crvPEresponse->MakePEs(p1Local, p2Local, t1, t2,  
+      _makeCrvPhotonArrivals->SetActualHalfLength(CRSbar.getHalfLength());
+      _makeCrvPhotonArrivals->MakePhotons(p1Local, p2Local, t1, t2,  
                               PDGcode, beta, charge,
                               energyDepositedTotal,
                               energyDepositedNonIonizing);
@@ -184,20 +185,20 @@ namespace mu2e
 
       if(needToStore)
       {
-        CRVPEs &crvPEs = (*crvPEsCollection)[step.barIndex()];
+        CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
         for(int SiPM=0; SiPM<4; SiPM++)
         {
-          std::vector<double> times=_crvPEresponse->GetArrivalTimes(SiPM);
-          crvPEs.GetPEtimes(SiPM).insert(crvPEs.GetPEtimes(SiPM).begin(),times.begin(),times.end());
+          const std::vector<double> &times=_makeCrvPhotonArrivals->GetArrivalTimes(SiPM);
+          crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).begin(),times.begin(),times.end());
         }
-        _crvPEresponse->Reset();
+        _makeCrvPhotonArrivals->Reset();
       }
     }
 
-    event.put(std::move(crvPEsCollection));
+    event.put(std::move(crvPhotonArrivalsCollection));
   } // end produce
 
 } // end namespace mu2e
 
-using mu2e::MakeCrvPEs;
-DEFINE_ART_MODULE(MakeCrvPEs)
+using mu2e::CrvPhotonArrivalsGenerator;
+DEFINE_ART_MODULE(CrvPhotonArrivalsGenerator)

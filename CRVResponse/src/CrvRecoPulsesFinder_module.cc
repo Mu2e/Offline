@@ -1,5 +1,5 @@
 //
-// A module to extract number of PEs, arrival times, hit positions, etc. from the CRV waveforms
+// A module to extract leading edge times, pulse heights, integrals and number of photons from the CRV waveforms
 //
 // $Id: $
 // $Author: ehrlich $
@@ -7,7 +7,7 @@
 // 
 // Original Author: Ralf Ehrlich
 
-#include "CRVResponse/inc/CrvRecoPulseResponse.hh"
+#include "CRVResponse/inc/MakeCrvRecoPulses.hh"
 
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
@@ -15,8 +15,8 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/CRVWaveformsCollection.hh"
-#include "RecoDataProducts/inc/CRVRecoPulsesCollection.hh"
+#include "MCDataProducts/inc/CrvWaveformsCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -35,17 +35,17 @@
 
 namespace mu2e 
 {
-  class ExtractCrvRecoPulses : public art::EDProducer 
+  class CrvRecoPulsesFinder : public art::EDProducer 
   {
 
     public:
-    explicit ExtractCrvRecoPulses(fhicl::ParameterSet const& pset);
+    explicit CrvRecoPulsesFinder(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
     void beginJob();
     void endJob();
 
     private:
-    boost::shared_ptr<CrvRecoPulseResponse> _crvRecoPulseResponse;
+    boost::shared_ptr<MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvWaveformsModuleLabel;
     double      _integralFactor;
@@ -53,52 +53,52 @@ namespace mu2e
     double      _leadingEdgeThreshold;
   };
 
-  ExtractCrvRecoPulses::ExtractCrvRecoPulses(fhicl::ParameterSet const& pset) :
+  CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
     _integralFactor(pset.get<double>("integralFactor",51.0)),
     _pulseThreshold(pset.get<double>("pulseThreshold",0.005)),
     _leadingEdgeThreshold(pset.get<double>("leadingEdgeThreshold",0.2))
   {
-    produces<CRVRecoPulsesCollection>();
-    _crvRecoPulseResponse = boost::shared_ptr<CrvRecoPulseResponse>(new CrvRecoPulseResponse(_pulseThreshold, _leadingEdgeThreshold, _integralFactor));
+    produces<CrvRecoPulsesCollection>();
+    _makeCrvRecoPulses = boost::shared_ptr<MakeCrvRecoPulses>(new MakeCrvRecoPulses(_pulseThreshold, _leadingEdgeThreshold, _integralFactor));
   }
 
-  void ExtractCrvRecoPulses::beginJob()
+  void CrvRecoPulsesFinder::beginJob()
   {
   }
 
-  void ExtractCrvRecoPulses::endJob()
+  void CrvRecoPulsesFinder::endJob()
   {
   }
 
-  void ExtractCrvRecoPulses::produce(art::Event& event) 
+  void CrvRecoPulsesFinder::produce(art::Event& event) 
   {
-    std::unique_ptr<CRVRecoPulsesCollection> crvRecoPulsesCollection(new CRVRecoPulsesCollection);
+    std::unique_ptr<CrvRecoPulsesCollection> crvRecoPulsesCollection(new CrvRecoPulsesCollection);
 
-    art::Handle<CRVWaveformsCollection> crvWaveformsCollection;
+    art::Handle<CrvWaveformsCollection> crvWaveformsCollection;
     event.getByLabel(_crvWaveformsModuleLabel,"",crvWaveformsCollection);
 
-    for(CRVWaveformsCollection::const_iterator iter=crvWaveformsCollection->begin(); 
+    for(CrvWaveformsCollection::const_iterator iter=crvWaveformsCollection->begin(); 
         iter!=crvWaveformsCollection->end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = iter->first;
-      const CRVWaveforms &crvWaveforms = iter->second;
+      const CrvWaveforms &crvWaveforms = iter->second;
       double binWidth = crvWaveforms.GetBinWidth(); //ns
 
-      CRVRecoPulses &crvRecoPulses = (*crvRecoPulsesCollection)[barIndex];
+      CrvRecoPulses &crvRecoPulses = (*crvRecoPulsesCollection)[barIndex];
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         const std::vector<double> waveform = crvWaveforms.GetWaveform(SiPM);
         double startTime = crvWaveforms.GetStartTime(SiPM);
-        _crvRecoPulseResponse->SetWaveform(waveform, startTime, binWidth);
+        _makeCrvRecoPulses->SetWaveform(waveform, startTime, binWidth);
 
-        unsigned int n = _crvRecoPulseResponse->GetNPulses();
+        unsigned int n = _makeCrvRecoPulses->GetNPulses();
         for(unsigned int i=0; i<n; i++)
         {
-          CRVRecoPulses::CRVSingleRecoPulse pulse;
-          pulse._PEs = _crvRecoPulseResponse->GetPEs(i);
-          pulse._leadingEdge = _crvRecoPulseResponse->GetLeadingEdge(i);
-          pulse._pulseHeight = _crvRecoPulseResponse->GetPulseHeight(i);
+          CrvRecoPulses::CrvSingleRecoPulse pulse;
+          pulse._PEs = _makeCrvRecoPulses->GetPEs(i);
+          pulse._leadingEdge = _makeCrvRecoPulses->GetLeadingEdge(i);
+          pulse._pulseHeight = _makeCrvRecoPulses->GetPulseHeight(i);
           crvRecoPulses.GetRecoPulses(SiPM).push_back(pulse);
         }
       }
@@ -109,5 +109,5 @@ namespace mu2e
 
 } // end namespace mu2e
 
-using mu2e::ExtractCrvRecoPulses;
-DEFINE_ART_MODULE(ExtractCrvRecoPulses)
+using mu2e::CrvRecoPulsesFinder;
+DEFINE_ART_MODULE(CrvRecoPulsesFinder)

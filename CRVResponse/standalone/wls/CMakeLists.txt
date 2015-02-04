@@ -37,13 +37,15 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${Geant4_INCLUDE_DIR}
                     ${ROOT_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc
-                  ${PROJECT_SOURCE_DIR}/../../src/CrvPEresponse.cc
-                  ${PROJECT_SOURCE_DIR}/../../src/CrvWaveformResponse.cc
-                  ${PROJECT_SOURCE_DIR}/../../src/CrvRecoPulseResponse.cc)
+                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvPhotonArrivals.cc
+                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvSiPMResponses.cc
+                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvWaveforms.cc
+                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvRecoPulses.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh
-                  ${PROJECT_SOURCE_DIR}/../../inc/CrvPEresponse.hh
-                  ${PROJECT_SOURCE_DIR}/../../inc/CrvWaveformResponse.hh
-                  ${PROJECT_SOURCE_DIR}/../../inc/CrvRecoPulseResponse.hh)
+                  ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvPhotonArrivals.hh
+                  ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvSiPMResponses.hh
+                  ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvWaveforms.hh
+                  ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvRecoPulses.hh)
 
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries

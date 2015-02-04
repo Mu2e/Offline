@@ -1,5 +1,5 @@
-#ifndef CrvPEresponse_h
-#define CrvPEresponse_h
+#ifndef MakeCrvPhotonArrivals_h
+#define MakeCrvPhotonArrivals_h
 
 #include <vector>
 #include <map>
@@ -9,22 +9,22 @@
 class TFile;
 class TH3D;
 
-class CrvPEresponse
+class MakeCrvPhotonArrivals
 {
   public:
 
-    CrvPEresponse();
-    ~CrvPEresponse();
+    MakeCrvPhotonArrivals();
+    ~MakeCrvPhotonArrivals();
 
     void                      LoadLookupTable(std::string filename);
-    void                      MakePEs(const CLHEP::Hep3Vector &stepStart,   //they need to be points
-                                      const CLHEP::Hep3Vector &stepEnd,     //local to the CRV bar
+    void                      MakePhotons(const CLHEP::Hep3Vector &stepStart,   //they need to be points
+                                      const CLHEP::Hep3Vector &stepEnd,         //local to the CRV bar
                                       double timeStart, double timeEnd,
                                       int PDGcode, double beta, double charge,
                                       double energyDepositedTotal,
                                       double energyDepositedNonIonizing);
     void                      Reset();
-    int                       GetPEs(int SiPM);
+    int                       GetNumberOfPhotons(int SiPM);
     const std::vector<double> &GetArrivalTimes(int SiPM);
     void                      SetScintillationYield(double scintillationYield) {_scintillationYield=scintillationYield;}
     void                      SetScintillatorDecayTimeFast(double decayTime) {_scintillatorDecayTimeFast=decayTime;}
@@ -35,8 +35,8 @@ class CrvPEresponse
 
   private:
 
-    int                       PEs[4];
-    std::vector<double>       ArrivalTimes[4];
+//    int                       _photonArrivals[4];
+    std::vector<double>       _arrivalTimes[4];
     double                    _scintillationYield;
     double                    _scintillatorDecayTimeFast, _scintillatorDecayTimeSlow; 
     double                    _fiberDecayTime;

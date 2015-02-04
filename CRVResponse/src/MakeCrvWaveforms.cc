@@ -1,4 +1,4 @@
-#include "CrvWaveformResponse.hh"
+#include "MakeCrvWaveforms.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -6,7 +6,7 @@
 #include <iostream>
 #include <fstream>
 
-void CrvWaveformResponse::LoadSinglePEWaveform(const std::string &filename, double binWidth, unsigned int nBins) 
+void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double binWidth, unsigned int nBins) 
 {
   _singlePEbinWidth = binWidth;
   std::ifstream f(filename.c_str());
@@ -15,7 +15,6 @@ void CrvWaveformResponse::LoadSinglePEWaveform(const std::string &filename, doub
   unsigned int bin=0;
   while(f >> currentTime >> currentVoltage)
   {
-    currentTime*=1e9; //convert s into ns, since the text file is in s.
     if(!isnan(previousTime))
     {
       double t=bin*binWidth;  
@@ -40,29 +39,32 @@ void CrvWaveformResponse::LoadSinglePEWaveform(const std::string &filename, doub
   f.close();
 }
 
-void CrvWaveformResponse::MakeWaveforms(const std::vector<double> &arrivalTimes, 
-                                        std::vector<double> &waveform,
-                                        double startTime, double binWidth) 
+void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times, 
+                                    const std::vector<double> &charges, 
+                                    std::vector<double> &waveform,
+                                    double startTime, double binWidth) 
 {
   waveform.clear();
 
-  if(arrivalTimes.size()==0) return;
+  if(times.size()==0) return;
 
-  std::vector<double>::const_iterator iter;
-  for(iter=arrivalTimes.begin(); iter!=arrivalTimes.end(); iter++)
+  std::vector<double>::const_iterator iterTime=times.begin();
+  std::vector<double>::const_iterator iterCharge=charges.begin();
+  for(; iterTime!=times.end() && iterCharge!=charges.end(); iterTime++, iterCharge++)
   {
-    double arrivalTime=*iter;
-    unsigned int waveformIndex=ceil((arrivalTime-startTime)/binWidth);  //first available time index
+    double time=*iterTime;
+    double charge=*iterCharge;
+    unsigned int waveformIndex=ceil((time-startTime)/binWidth);  //first available time index
     double digiTime = waveformIndex*binWidth + startTime;  //the time of this time index
 
     for(; ; waveformIndex++, digiTime+=binWidth)
     {
-      double singlePEtime = digiTime - arrivalTime;
+      double singlePEtime = digiTime - time;
       unsigned int singlePEwaveformIndex=static_cast<unsigned int>(singlePEtime/_singlePEbinWidth + 0.5);
       if(singlePEwaveformIndex>=_waveformSinglePE.size()) break; 
 
       if(waveform.size()<waveformIndex+1) waveform.resize(waveformIndex+1);
-      waveform[waveformIndex]+=_waveformSinglePE[singlePEwaveformIndex];
+      waveform[waveformIndex]+=_waveformSinglePE[singlePEwaveformIndex]*charge; 
     }
   }
 }

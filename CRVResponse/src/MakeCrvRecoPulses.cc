@@ -1,19 +1,19 @@
-#include "CrvRecoPulseResponse.hh"
+#include "MakeCrvRecoPulses.hh"
 #include <TFitResult.h>
 #include <TFitResultPtr.h>
 #include <TF1.h>
 #include <TGraph.h>
 #include <TMath.h>
 
-CrvRecoPulseResponse::CrvRecoPulseResponse(double pulseThreshold,       //in V
-                                           double leadingEdgeThreshold, //in percent
-                                           double integralFactor) : 
-                                           _pulseThreshold(pulseThreshold), 
-                                           _leadingEdgeThreshold(leadingEdgeThreshold), 
-                                           _integralFactor(integralFactor)
+MakeCrvRecoPulses::MakeCrvRecoPulses(double pulseThreshold,       //in V
+                                     double leadingEdgeThreshold, //in percent
+                                     double integralFactor) : 
+                                     _pulseThreshold(pulseThreshold), 
+                                     _leadingEdgeThreshold(leadingEdgeThreshold), 
+                                     _integralFactor(integralFactor)
 {}
 
-void CrvRecoPulseResponse::SetWaveform(const std::vector<double> &waveform, double startTime, double binWidth)
+void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double startTime, double binWidth)
 {
   _PEs.clear();
   _leadingEdges.clear();
@@ -54,8 +54,10 @@ void CrvRecoPulseResponse::SetWaveform(const std::vector<double> &waveform, doub
         if(voltage>maxVoltage || isnan(maxVoltage)) maxVoltage=voltage;
         else
         {
-          insideFitInterval=false;  //a local maximum (and possibly the global maximum) has been reached
-          if(isnan(T2)) T2=time;    //don't include subsequent points in fit
+          insideFitInterval=false;  //the first local maximum (and possibly the global maximum) of this pulse 
+          if(isnan(T2)) T2=time;    //has been reached; don't include subsequent points in fit
+                                    //subsequent points of this pulse are still used to determine the integral
+                                    //and the pulse height
         }
       }
       if(isnan(T2)) T2=time;    //if T2 hasn't been found yet, take the last time
@@ -106,68 +108,68 @@ void CrvRecoPulseResponse::SetWaveform(const std::vector<double> &waveform, doub
   }
 }
 
-unsigned int CrvRecoPulseResponse::GetNPulses()
+unsigned int MakeCrvRecoPulses::GetNPulses()
 {
   return _PEs.size();
 }
 
-double CrvRecoPulseResponse::GetPEs(int pulse)
+double MakeCrvRecoPulses::GetPEs(int pulse)
 {
   int n = _PEs.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _PEs[pulse];
 }
 
-double CrvRecoPulseResponse::GetLeadingEdge(int pulse)
+double MakeCrvRecoPulses::GetLeadingEdge(int pulse)
 {
   int n = _leadingEdges.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _leadingEdges[pulse];
 }
 
-double CrvRecoPulseResponse::GetPulseHeight(int pulse)
+double MakeCrvRecoPulses::GetPulseHeight(int pulse)
 {
   int n = _pulseHeights.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _pulseHeights[pulse];
 }
 
-double CrvRecoPulseResponse::GetIntegral(int pulse)
+double MakeCrvRecoPulses::GetIntegral(int pulse)
 {
   int n = _integrals.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _integrals[pulse];
 }
 
-double CrvRecoPulseResponse::GetLandauParam0(int pulse)
+double MakeCrvRecoPulses::GetLandauParam0(int pulse)
 {
   int n = _landauParams0.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _landauParams0[pulse];
 }
 
-double CrvRecoPulseResponse::GetLandauParam1(int pulse)
+double MakeCrvRecoPulses::GetLandauParam1(int pulse)
 {
   int n = _landauParams1.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _landauParams1[pulse];
 }
 
-double CrvRecoPulseResponse::GetLandauParam2(int pulse)
+double MakeCrvRecoPulses::GetLandauParam2(int pulse)
 {
   int n = _landauParams2.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _landauParams2[pulse];
 }
 
-double CrvRecoPulseResponse::GetT1(int pulse)
+double MakeCrvRecoPulses::GetT1(int pulse)
 {
   int n = _T1s.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _T1s[pulse];
 }
 
-double CrvRecoPulseResponse::GetT2(int pulse)
+double MakeCrvRecoPulses::GetT2(int pulse)
 {
   int n = _T2s.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");

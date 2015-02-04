@@ -1,5 +1,5 @@
-#ifndef RecoDataProducts_CRVRecoPulses_hh
-#define RecoDataProducts_CRVRecoPulses_hh
+#ifndef RecoDataProducts_CrvRecoPulses_hh
+#define RecoDataProducts_CrvRecoPulses_hh
 //
 // $Id: $
 // $Author: ehrlich $
@@ -11,20 +11,20 @@
 
 namespace mu2e 
 {
-  class CRVRecoPulses
+  class CrvRecoPulses
   {
     public:
 
-    CRVRecoPulses() {}
+    CrvRecoPulses() {}
 
-    struct CRVSingleRecoPulse
+    struct CrvSingleRecoPulse
     {
       int    _PEs;
       double _leadingEdge;
       double _pulseHeight;
     };
 
-    std::vector<CRVSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) 
+    std::vector<CrvSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) 
     {
       if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
       if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
@@ -32,13 +32,13 @@ namespace mu2e
       return _crvPulses[SiPM];
     }
 
-    std::vector<CRVSingleRecoPulse> &GetRecoPulses(int SiPMNumber) 
+    std::vector<CrvSingleRecoPulse> &GetRecoPulses(int SiPMNumber) 
     {
       if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
       return _crvPulses[SiPMNumber];
     }
 
-    const std::vector<CRVSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) const 
+    const std::vector<CrvSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) const 
     {
       if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
       if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
@@ -46,7 +46,7 @@ namespace mu2e
       return _crvPulses[SiPM];
     }
 
-    const std::vector<CRVSingleRecoPulse> &GetRecoPulses(int SiPMNumber) const
+    const std::vector<CrvSingleRecoPulse> &GetRecoPulses(int SiPMNumber) const
     {
       if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
       return _crvPulses[SiPMNumber];
@@ -68,8 +68,8 @@ namespace mu2e
 
     private:
 
-    std::vector<CRVSingleRecoPulse> _crvPulses[4];
+    std::vector<CrvSingleRecoPulse> _crvPulses[4];
   };
 }
 
-#endif /* RecoDataProducts_CRVRecoPulses_hh */
+#endif /* RecoDataProducts_CrvRecoPulses_hh */

@@ -1,21 +1,22 @@
-#ifndef CrvWaveformResponse_h
-#define CrvWaveformResponse_h
+#ifndef MakeCrvWaveforms_h
+#define MakeCrvWaveforms_h
 
 #include <string>
 #include <vector>
 
-class CrvWaveformResponse
+class MakeCrvWaveforms
 {
   public:
-    CrvWaveformResponse() {}
-    ~CrvWaveformResponse() {}
+    MakeCrvWaveforms() {}
+    ~MakeCrvWaveforms() {}
    
 //the bin width which is used when the single PE waveform is stored must be more precise than
 //the bin width of the final waveform
     void LoadSinglePEWaveform(const std::string &filename, double binWidth, unsigned int nBins);
-    void MakeWaveforms(const std::vector<double> &arrivalTimes, 
-                       std::vector<double> &waveform,
-                       double startTime, double binWidth);
+    void MakeWaveform(const std::vector<double> &times, 
+                      const std::vector<double> &charges, 
+                      std::vector<double> &waveform,
+                      double startTime, double binWidth);
 
   private:
     std::vector<double> _waveformSinglePE;

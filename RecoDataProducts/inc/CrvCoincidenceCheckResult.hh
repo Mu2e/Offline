@@ -1,5 +1,5 @@
-#ifndef RecoDataProducts_CRVCoincidenceCheckResult_hh
-#define RecoDataProducts_CRVCoincidenceCheckResult_hh
+#ifndef RecoDataProducts_CrvCoincidenceCheckResult_hh
+#define RecoDataProducts_CrvCoincidenceCheckResult_hh
 //
 // $Id: $
 // $Author: ehrlich $
@@ -11,11 +11,11 @@
 
 namespace mu2e 
 {
-  class CRVCoincidenceCheckResult
+  class CrvCoincidenceCheckResult
   {
     public:
 
-    CRVCoincidenceCheckResult() {}
+    CrvCoincidenceCheckResult() {}
 
     void SetCoincidence(bool coincidence)
     {
@@ -33,4 +33,4 @@ namespace mu2e
   };
 }
 
-#endif /* RecoDataProducts_CRVCoincidenceCheckResult_hh */
+#endif /* RecoDataProducts_CrvCoincidenceCheckResult_hh */

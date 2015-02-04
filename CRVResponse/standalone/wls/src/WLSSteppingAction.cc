@@ -8,7 +8,7 @@
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
 
-#include "CrvPEresponse.hh"
+#include "MakeCrvPhotonArrivals.hh"
 
 #include "G4ProcessManager.hh"
 #include "G4OpBoundaryProcess.hh"
@@ -21,23 +21,23 @@
 #include <TH3D.h>
 #include <TNtuple.h>
 
-WLSSteppingAction* WLSSteppingAction::fgInstance = NULL;
+WLSSteppingAction* WLSSteppingAction::_fgInstance = NULL;
 
-WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName) : _crvPEresponse(NULL), _mode(mode)
+WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName) : _crvPhotonArrivals(NULL), _mode(mode)
 {
-  fgInstance = this;
+  _fgInstance = this;
 
   if(_mode==0)
   {
-    _crvPEresponse = new CrvPEresponse();
-    _crvPEresponse->LoadLookupTable(lookupFileName);
+    _crvPhotonArrivals = new MakeCrvPhotonArrivals();
+    _crvPhotonArrivals->LoadLookupTable(lookupFileName);
   }
 }
 
 WLSSteppingAction::~WLSSteppingAction()
 {
-  if(_crvPEresponse) delete _crvPEresponse;
-  _crvPEresponse=NULL;
+  if(_crvPhotonArrivals) delete _crvPhotonArrivals;
+  _crvPhotonArrivals=NULL;
 }
 
 void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
@@ -67,8 +67,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
      {
          if(thePostPV->GetName()=="PhotonDet")
          {
-           PEs[0][thePostPV->GetCopyNo()]++;
-           ArrivalTimes[0][thePostPV->GetCopyNo()].push_back(theStep->GetPostStepPoint()->GetGlobalTime());
+           _arrivalTimes[0][thePostPV->GetCopyNo()].push_back(theStep->GetPostStepPoint()->GetGlobalTime());
            if(_mode==-1)
            {
              int numberOfFiberEmissions=0;
@@ -83,7 +82,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
                 }
                 else break;
              }
-             FiberEmissions[thePostPV->GetCopyNo()].push_back(numberOfFiberEmissions);
+             _fiberEmissions[thePostPV->GetCopyNo()].push_back(numberOfFiberEmissions);
            }
          }
      }
@@ -118,42 +117,36 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
     if(first)
     {
       first=false;
-      _crvPEresponse->SetScintillationYield(_scintillationYield);
-      _crvPEresponse->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
-      _crvPEresponse->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
-      _crvPEresponse->SetFiberDecayTime(_fiberDecayTime);
+      _crvPhotonArrivals->SetScintillationYield(_scintillationYield);
+      _crvPhotonArrivals->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
+      _crvPhotonArrivals->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
+      _crvPhotonArrivals->SetFiberDecayTime(_fiberDecayTime);
     }
 
     if(PDGcode!=0)  //ignore optical photons
     {
-      _crvPEresponse->MakePEs(p1, p2, t1, t2,  
+      _crvPhotonArrivals->MakePhotons(p1, p2, t1, t2,  
                             PDGcode, beta, charge,
                             energyDepositedTotal,
                             energyDepositedNonIonizing);
  
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-        PEs[1][SiPM]=_crvPEresponse->GetPEs(SiPM);
-        std::vector<double> times=_crvPEresponse->GetArrivalTimes(SiPM);
-        ArrivalTimes[1][SiPM].assign(times.begin(),times.end());
+        std::vector<double> times=_crvPhotonArrivals->GetArrivalTimes(SiPM);
+        _arrivalTimes[1][SiPM].assign(times.begin(),times.end());
       }
     }
   }
 }
 
-int WLSSteppingAction::GetPEs(int i, int SiPM)
-{
-  return PEs[i][SiPM];
-}
-
 const std::vector<double> &WLSSteppingAction::GetArrivalTimes(int i, int SiPM)
 {
-  return ArrivalTimes[i][SiPM];
+  return _arrivalTimes[i][SiPM];
 }
 
 const std::vector<int> &WLSSteppingAction::GetFiberEmissions(int SiPM)
 {
-  return FiberEmissions[SiPM];
+  return _fiberEmissions[SiPM];
 }
 
 void WLSSteppingAction::Reset()
@@ -161,16 +154,15 @@ void WLSSteppingAction::Reset()
   for(int i=0; i<2; i++)
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-    PEs[i][SiPM]=0;
-    ArrivalTimes[i][SiPM].clear();
-    if(i==0) FiberEmissions[SiPM].clear();
+    _arrivalTimes[i][SiPM].clear();
+    if(i==0) _fiberEmissions[SiPM].clear();
   }
 
   _wlsTracks.clear();
 
   if(_mode==0)
   {
-    _crvPEresponse->Reset();
+    _crvPhotonArrivals->Reset();
   }
 }
 

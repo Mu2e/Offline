@@ -8,7 +8,7 @@
 
 class TFile;
 class TH3D;
-class CrvPEresponse;
+class MakeCrvPhotonArrivals;
 
 class WLSSteppingAction : public G4UserSteppingAction
 {
@@ -18,9 +18,8 @@ class WLSSteppingAction : public G4UserSteppingAction
     ~WLSSteppingAction();
 
     void                      UserSteppingAction(const G4Step*);
-    static WLSSteppingAction* Instance() {return fgInstance;}
+    static WLSSteppingAction* Instance() {return _fgInstance;}
     void                      Reset();
-    int                       GetPEs(int i, int SiPM);
     const std::vector<double> &GetArrivalTimes(int i, int SiPM);
     const std::vector<int>    &GetFiberEmissions(int SiPM);
     void                      SetScintillationYield(double scintillationYield) {_scintillationYield=scintillationYield;}
@@ -30,11 +29,10 @@ class WLSSteppingAction : public G4UserSteppingAction
 
   private:
 
-    static WLSSteppingAction  *fgInstance;  
-    CrvPEresponse               *_crvPEresponse;
-    int                       PEs[2][4];
-    std::vector<double>       ArrivalTimes[2][4];
-    std::vector<int>          FiberEmissions[4];
+    static WLSSteppingAction *_fgInstance;  
+    MakeCrvPhotonArrivals    *_crvPhotonArrivals;
+    std::vector<double>       _arrivalTimes[2][4];
+    std::vector<int>          _fiberEmissions[4];
     double                    _scintillationYield;
     double                    _scintillatorDecayTimeFast, _scintillatorDecayTimeSlow; 
     double                    _fiberDecayTime;
