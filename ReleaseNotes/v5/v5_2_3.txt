@@ -23,3 +23,8 @@ Still under construction
 
   c) return to the TDR version of CaloCluster/src/MakeCaloClusterNew_modules.cc
 
+2) February 4, 2015 - ehrlich
+   Restructured the CRV counter simulation. 
+   Included the SiPM response.
+   Modified directories: CRVResponse, MCDataProducts, RecoDataProducts
+simulation
