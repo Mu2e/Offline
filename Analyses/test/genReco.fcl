@@ -27,11 +27,6 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "CaloCluster/test/producers.fcl"
-#include "TrackCaloMatching/test/producers.fcl"
-#include "CalPatRec/test/producers.fcl"
-#include "ParticleID/test/producers.fcl"
-
 BEGIN_PROLOG
   muStops      : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
 END_PROLOG
@@ -111,13 +106,11 @@ physics : {
 #------------------------------------------------------------------------------
 # hit makers
 #------------------------------------------------------------------------------
-	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
-	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
         protonTimeMap        : { module_type : GenerateProtonTimes }
         muonTimeMap          : { module_type : GenerateMuonLife }
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
-	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+	CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
 	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 #------------------------------------------------------------------------------
 #  default tracking

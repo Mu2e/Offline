@@ -45,11 +45,15 @@
 #include "CalPatRec/inc/CalTimePeak.hh"
 
 #include "Stntuple/base/TNamedHandle.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 ClassImp(TAnaDump)
 
 TAnaDump* TAnaDump::fgInstance = 0;
 
+namespace {
+  mu2e::SimParticleTimeOffset *fgTimeOffsets(NULL);
+}
 //______________________________________________________________________________
 TAnaDump::TAnaDump() {
 //   if (! TROOT::Initialized()) {
@@ -58,6 +62,15 @@ TAnaDump::TAnaDump() {
   fEvent = 0;
   fListOfObjects          = new TObjArray();
   fFlagBgrHitsModuleLabel = "FlagBkgHits";
+
+  std::vector<std::string> VS;
+  VS.push_back(std::string("protonTimeMap"));
+  VS.push_back(std::string("muonTimeMap"));
+  
+  fhicl::ParameterSet  pset;
+  pset.put("inputs", VS);
+  fgTimeOffsets = new mu2e::SimParticleTimeOffset(pset);
+
 }
 
 //------------------------------------------------------------------------------
@@ -1030,6 +1043,10 @@ void TAnaDump::printStepPointMC(const mu2e::StepPointMC* Step, const char* Opt) 
     art::Handle<mu2e::PhysicalVolumeInfoCollection> volumes;
     fEvent->getRun().getByLabel("g4run", volumes);
 
+//2014-26-11 gianipez added teh timeoffsets to the steppoints time
+    fgTimeOffsets->updateMap(*fEvent);
+    
+    double stepTime = fgTimeOffsets->timeWithOffsetsApplied(*Step);
     //    const mu2e::PhysicalVolumeInfo& pvinfo = volumes->at(sim->startVolumeIndex());
     //    const mu2e::PhysicalVolumeInfo& pvinfo = volumes->at(Step->volumeId()); - sometimes crashes..
 
@@ -1045,7 +1062,7 @@ void TAnaDump::printStepPointMC(const mu2e::StepPointMC* Step, const char* Opt) 
 	     Step->position().x(),
 	     Step->position().y(),
 	     Step->position().z(),
-	     Step->time(),
+	     stepTime,                             // Step->time(),
 	     sim->startPosition().x(),
 	     sim->startPosition().y(),
 	     sim->startPosition().z(),

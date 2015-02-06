@@ -165,18 +165,18 @@
  <class name="art::Wrapper<std::vector<mu2e::TrackSummary> >"/>
  <class name="art::Ptr<mu2e::TrackSummary>" />
 
- <class name="mu2e::CRVRecoPulses::CRVSingleRecoPulse" />
- <class name="std::vector<mu2e::CRVRecoPulses::CRVSingleRecoPulse>" />
+ <class name="mu2e::CrvRecoPulses::CrvSingleRecoPulse" />
+ <class name="std::vector<mu2e::CrvRecoPulses::CrvSingleRecoPulse>" />
 
  <class name="mu2e::CRSScintillatorBarIndex" />
 
- <class name="mu2e::CRVRecoPulses" />
- <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CRVRecoPulses>" />
- <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CRVRecoPulses>" />
- <class name="mu2e::CRVRecoPulsesCollection" />
- <class name="art::Wrapper<mu2e::CRVRecoPulsesCollection>" />
+ <class name="mu2e::CrvRecoPulses" />
+ <class name="std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvRecoPulses>" />
+ <class name="std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvRecoPulses>" />
+ <class name="mu2e::CrvRecoPulsesCollection" />
+ <class name="art::Wrapper<mu2e::CrvRecoPulsesCollection>" />
 
- <class name="mu2e::CRVCoincidenceCheckResult" />
- <class name="art::Wrapper<mu2e::CRVCoincidenceCheckResult>" />
+ <class name="mu2e::CrvCoincidenceCheckResult" />
+ <class name="art::Wrapper<mu2e::CrvCoincidenceCheckResult>" />
 
 </lcgdict>

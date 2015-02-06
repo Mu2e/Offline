@@ -40,7 +40,6 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
@@ -209,7 +208,7 @@ namespace mu2e {
     //================================================================
     void EMFRoomFluxAnalyzer::beginRun(const art::Run& run) {
 
-      const ExtMonFNALBuilding *building(0);
+//old_geom:      const ExtMonFNALBuilding *building(0);
 
       if(!geomModuleLabel_.empty()) {
         art::Handle<ProtonBeamDump> dump;
@@ -220,9 +219,10 @@ namespace mu2e {
         run.getByLabel(geomModuleLabel_, geomInstanceName_, extmon);
         extmon_ = &*extmon;
 
-        art::Handle<ExtMonFNALBuilding> bh;
-        run.getByLabel(geomModuleLabel_, geomInstanceName_, bh);
-        building = &*bh;
+//old_geom:        art::Handle<ExtMonFNALBuilding> bh;
+//old_geom:        run.getByLabel(geomModuleLabel_, geomInstanceName_, bh);
+//old_geom:        building = &*bh;
+
       }
       else {
         GeomHandle<ProtonBeamDump> dump;
@@ -231,27 +231,28 @@ namespace mu2e {
         GeomHandle<ExtMon> extmon;
         extmon_ = &*extmon;
 
-        GeomHandle<ExtMonFNALBuilding> bh;
-        building = &*bh;
+//old_geom:       GeomHandle<ExtMonFNALBuilding> bh;
+//old_geom:       building = &*bh;
       }
 
-      const double yFloor = dump_->mu2eToBeamDump_position(CLHEP::Hep3Vector(0,building->roomInsideYmin(),0)).y();
-      const double yCeiling = dump_->mu2eToBeamDump_position(CLHEP::Hep3Vector(0,building->roomInsideYmax(),0)).y();
 
-      const double zFront = dump_->mu2eToBeamDump_position(building->coll2ShieldingCenterInMu2e()).z()
-        - building->coll2ShieldingHalfSize()[2]
-        ;
-
-      const double xSW =  building->coll2ShieldingDumpXmin();
-      const double xNE =  building->coll2ShieldingDumpXmax();
-
-      if(verbosityLevel_ > 0) {
-        std::cout<<"EMFRoomFluxAnalyzer INFO: src zFront offset into room   = "<<(zFront - srcGeom_.zFront)<<std::endl;
-        std::cout<<"EMFRoomFluxAnalyzer INFO: src yFloor offset into room   = "<<(srcGeom_.yFloor - yFloor)<<std::endl;
-        std::cout<<"EMFRoomFluxAnalyzer INFO: src yCeiling offset into room = "<<(yCeiling - srcGeom_.yCeiling)<<std::endl;
-        std::cout<<"EMFRoomFluxAnalyzer INFO: src xSW offset into room      = "<<(srcGeom_.xSW - xSW)<<std::endl;
-        std::cout<<"EMFRoomFluxAnalyzer INFO: src xNE offset into room      = "<<(xNE - srcGeom_.xNE)<<std::endl;
-      }
+//old_geom:      const double yFloor = dump_->mu2eToBeamDump_position(CLHEP::Hep3Vector(0,building->roomInsideYmin(),0)).y();
+//old_geom:      const double yCeiling = dump_->mu2eToBeamDump_position(CLHEP::Hep3Vector(0,building->roomInsideYmax(),0)).y();
+//old_geom:
+//old_geom:      const double zFront = dump_->mu2eToBeamDump_position(building->coll2ShieldingCenterInMu2e()).z()
+//old_geom:        - building->coll2ShieldingHalfSize()[2]
+//old_geom:        ;
+//old_geom:
+//old_geom:      const double xSW =  building->coll2ShieldingDumpXmin();
+//old_geom:      const double xNE =  building->coll2ShieldingDumpXmax();
+//old_geom:
+//old_geom:      if(verbosityLevel_ > 0) {
+//old_geom:        std::cout<<"EMFRoomFluxAnalyzer INFO: src zFront offset into room   = "<<(zFront - srcGeom_.zFront)<<std::endl;
+//old_geom:        std::cout<<"EMFRoomFluxAnalyzer INFO: src yFloor offset into room   = "<<(srcGeom_.yFloor - yFloor)<<std::endl;
+//old_geom:        std::cout<<"EMFRoomFluxAnalyzer INFO: src yCeiling offset into room = "<<(yCeiling - srcGeom_.yCeiling)<<std::endl;
+//old_geom:        std::cout<<"EMFRoomFluxAnalyzer INFO: src xSW offset into room      = "<<(srcGeom_.xSW - xSW)<<std::endl;
+//old_geom:        std::cout<<"EMFRoomFluxAnalyzer INFO: src xNE offset into room      = "<<(xNE - srcGeom_.xNE)<<std::endl;
+//old_geom:      }
     }
 
     //================================================================

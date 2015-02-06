@@ -12,7 +12,7 @@ ifndef G4INSTALL
 endif
 
 .PHONY: all
-all: lib bin
+all: lib bin 
 
 # ROOT support
 CPPFLAGS += -I$(shell root-config --incdir) 

@@ -1,7 +1,6 @@
 # -*- mode: tcl -*-
 // 2014-06-02: run local, write output file
 //
-// Andrei Gaponenko, 2014
 #------------------------------------------------------------------------------
 # quick comments: reads signal MC and also background MC inputs with steppoints
 # so need to define input and 
@@ -10,11 +9,7 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "CaloCluster/test/producers.fcl"
-#include "TrackCaloMatching/test/producers.fcl"
-#include "CalPatRec/test/producers.fcl"
-#include "ParticleID/test/producers.fcl"
-#include "Stntuple/test/producers.fcl"
+#include "Stntuple/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 mixerTemplate: {

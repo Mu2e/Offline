@@ -1,11 +1,12 @@
+///////////////////////////////////////////////////////////////////////////////
 //  $Id: 
 //  $Author: 
 //  $Date: 
 //
 //  Original author Vadim Rusu
 //
-//
-
+// 2015-01-23 P.Murat: default condiguration is stored in ParticleID/fcl/prolog.fcl
+///////////////////////////////////////////////////////////////////////////////
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -33,7 +34,6 @@
 #include "TDirectory.h"
 #include "TROOT.h"
 #include "TStyle.h"
-
 
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "TrkBase/TrkHotList.hh"
@@ -122,6 +122,9 @@ int findlowhist(float d){
     int _evtid;
 
     std::string _fitterModuleLabel;
+    std::string _electronTemplateFile;
+    std::string _muonTemplateFile;
+
     TrkParticle _tpart;
     TrkFitDirection _fdir;
     std::string _iname; // data instance name
@@ -145,13 +148,13 @@ int findlowhist(float d){
     TH1D* _heletemp[nbounds];
     TH1D* _hmuotemp[nbounds];
 
-    int _templatesnbins ;
+    int   _templatesnbins ;
     float _templateslastbin ;
     float _templatesbinsize ;
 
 
 
-    TTree * _pidtree;
+    TTree *       _pidtree;
     TCanvas*      _plotCanvas;
 
     
@@ -168,28 +171,27 @@ int findlowhist(float d){
 
   ParticleID::ParticleID(fhicl::ParameterSet const& pset):
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
+    _electronTemplateFile(pset.get<std::string>("ElectronTemplates")),
+    _muonTemplateFile    (pset.get<std::string>("MuonTemplates"    )),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _debugLevel(pset.get<int>("debugLevel", 0)),
-    _verbosity(pset.get<int>("verbosity", 0)),
-    _diagLevel(pset.get<int>("diagLevel", 0)),
+    _verbosity(pset.get<int> ("verbosity", 0)),
+    _diagLevel(pset.get<int> ("diagLevel", 0)),
     _doDisplay(pset.get<bool>("doDisplay",false)),
     _pidtree(0),
     _plotCanvas(0)
   {
     _processed_events = -1;
 
-
     _iname = _fdir.name() + _tpart.name();
     produces<PIDProductCollection>();
 
     // location-independent files
     ConfigFileLookupPolicy configFile;
-    std::string electrontemplates = pset.get<std::string>("ElectronTemplates","ParticleID/test/electrontemplates.root");
-    std::string muontemplates = pset.get<std::string>("MuonTemplates","ParticleID/test/muontemplates.root");
-    _electrontemplates = configFile(electrontemplates);
-    _muontemplates = configFile(muontemplates);
 
+    _electrontemplates = configFile(_electronTemplateFile);
+    _muontemplates     = configFile(_muonTemplateFile    );
 
     char name[50];
     TFile* electrontemplatefile = TFile::Open(_electrontemplates.c_str());

@@ -15,7 +15,8 @@ bool hasHall            = true;
 bool hasTarget          = true;
 bool hasProtonAbsorber  = true;
 bool hasInternalNeutronAbsorber = true;
-bool hasExternalNeutronShielding = true;
+bool hasExternalNeutronShielding = false;
+bool hasExternalShielding = true;
 bool hasVaneCalorimeter = false;
 bool hasDiskCalorimeter = true;
 bool hasHybridCalorimeter = false;
@@ -43,7 +44,7 @@ double mu2e.solenoidOffset   =  3904.;   // mm
 double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
 #include "Mu2eG4/geom/mu2eWorld.txt"
-#include "Mu2eG4/geom/mu2eBuilding.txt"
+#include "Mu2eG4/geom/mu2eHall.txt"
 
 // Solenoids
 #include "Mu2eG4/geom/DetectorSolenoid_v02.txt"
@@ -55,22 +56,9 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/TransportSolenoid_v01.txt"
 #include "Mu2eG4/geom/pionDegrader.txt"
 
-// Neutron shielding - TS region
-#include "Mu2eG4/geom/ExtNeutShieldUpstream1a_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldUpstream1b_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldUpstream2_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldUpstreamTop_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldUpstreamBottom_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldCavexRight_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldCavexRightb_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldCavexLeft_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldCavexRoof_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldLAbove_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldLCeiling_v01.txt"
-
-// Neutron shielding - DS region
-#include "Mu2eG4/geom/ExtNeutShieldCryoBoxes_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldCendBoxes_v01.txt"
+// External Shielding
+#include "Mu2eG4/geom/ExtShieldUpstream_v01.txt"
+#include "Mu2eG4/geom/ExtShieldDownstream_v01.txt"
 
 #include "Mu2eG4/geom/stoppingTarget.txt"
 #include "Mu2eG4/geom/internalNeutronAbs.txt"

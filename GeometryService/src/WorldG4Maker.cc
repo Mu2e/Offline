@@ -6,6 +6,7 @@
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "GeometryService/inc/WorldG4.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
@@ -14,7 +15,8 @@
 namespace mu2e {
 
   //----------------------------------------------------------------
-  std::unique_ptr<WorldG4> WorldG4Maker::make(const SimpleConfig& c) {
+  std::unique_ptr<WorldG4> WorldG4Maker::make(const Mu2eHall& hall,
+                                              const SimpleConfig& c) {
 
     std::unique_ptr<WorldG4> res(new WorldG4());
 
@@ -82,6 +84,9 @@ namespace mu2e {
                                                    );
 
     res->_hallFormalCenterInWorld = hallFormalCenterInMu2e + res->_mu2eOriginInWorld;
+
+    const auto& vol  = hall.getDirtSolid("dirtDsAreaFirstFloorS");
+    res->_dirtG4Ymax = vol.getOffsetFromMu2eOrigin().y()+vol.getYhalfThickness();
 
     if ( diagLevel > 0) {
       std::cout<<*env<<std::endl;

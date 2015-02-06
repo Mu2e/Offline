@@ -13,8 +13,8 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "RecoDataProducts/inc/CRVRecoPulsesCollection.hh"
-#include "RecoDataProducts/inc/CRVCoincidenceCheckResult.hh"
+#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
 
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -61,7 +61,7 @@ namespace mu2e
     _maxDistance(pset.get<double>("maxDistance")),
     _maxTimeDifference(pset.get<double>("maxTimeDifference"))
   {
-    produces<CRVCoincidenceCheckResult>();
+    produces<CrvCoincidenceCheckResult>();
   }
 
   void SimpleCrvCoincidenceCheck::beginJob()
@@ -74,23 +74,23 @@ namespace mu2e
 
   void SimpleCrvCoincidenceCheck::produce(art::Event& event) 
   {
-    std::unique_ptr<CRVCoincidenceCheckResult> crvCoincidenceCheckResult(new CRVCoincidenceCheckResult);
+    std::unique_ptr<CrvCoincidenceCheckResult> crvCoincidenceCheckResult(new CrvCoincidenceCheckResult);
 
     GeomHandle<CosmicRayShield> CRS;
 
-    art::Handle<CRVRecoPulsesCollection> crvRecoPulsesCollection;
+    art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
 
     std::map<int, std::vector<coincidenceStruct> > coincidenceMap;
 
-    for(CRVRecoPulsesCollection::const_iterator iter=crvRecoPulsesCollection->begin(); 
+    for(CrvRecoPulsesCollection::const_iterator iter=crvRecoPulsesCollection->begin(); 
         iter!=crvRecoPulsesCollection->end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = iter->first;
       const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
       int   moduleNumber=CRSbar.id().getShieldNumber();
 
-      const CRVRecoPulses &crvRecoPulses = iter->second;
+      const CrvRecoPulses &crvRecoPulses = iter->second;
       for(int SiPM=0; SiPM<2; SiPM++)
       {
         coincidenceStruct c;
@@ -133,13 +133,13 @@ namespace mu2e
                   break;
         };
 //std::cout<<"coincidence group: "<<coincidenceGroup<<std::endl;
-        const std::vector<CRVRecoPulses::CRVSingleRecoPulse> &pulseVector1 = crvRecoPulses.GetRecoPulses(SiPM);
+        const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector1 = crvRecoPulses.GetRecoPulses(SiPM);
         for(unsigned int i = 0; i<pulseVector1.size(); i++) 
         {
           if(pulseVector1[i]._PEs>=_PEthreshold) c.time.push_back(pulseVector1[i]._leadingEdge);
 //std::cout<<"PEs: "<<pulseVector1[i]._PEs<<"   LE: "<<pulseVector1[i]._leadingEdge<<"   pos: "<<c.pos<<std::endl;
         }
-        const std::vector<CRVRecoPulses::CRVSingleRecoPulse> &pulseVector2 = crvRecoPulses.GetRecoPulses(SiPM+2);
+        const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector2 = crvRecoPulses.GetRecoPulses(SiPM+2);
         for(unsigned int i = 0; i<pulseVector2.size(); i++) 
         {
           if(pulseVector2[i]._PEs>=_PEthreshold) c.time.push_back(pulseVector2[i]._leadingEdge);

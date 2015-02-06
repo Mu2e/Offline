@@ -15,7 +15,8 @@
 namespace mu2e {
 
   class GeometryService;
-  class Mu2eBuilding;
+  class Mu2eHall;
+  class SimpleConfig;
   class ProtonBeamDump;
   class ExtMonFNALBuilding;
 
@@ -33,7 +34,7 @@ namespace mu2e {
   private:
     // Private ctr: the class should be only obtained via GeometryService
     friend class GeometryService;
-    Mu2eEnvelope(const Mu2eBuilding&, const ProtonBeamDump&, const ExtMonFNALBuilding&);
+    Mu2eEnvelope(const Mu2eHall&, const SimpleConfig&);
 
     template<class T> friend class art::Wrapper; // Needed for persistency
     Mu2eEnvelope(); // Needed for persistency

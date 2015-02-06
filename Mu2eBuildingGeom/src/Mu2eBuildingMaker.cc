@@ -117,8 +117,7 @@ namespace mu2e {
     // Get TS shielding L-above x-extent
     // - hack for now
     const double xExtentOfLowerCeiling = 
-      c.getDouble("ExtNeutShieldLAbove.X5")+
-      c.getDouble("ExtNeutShieldLAbove.centerX");
+      c.getDouble("ExtShieldUpstream.XExtentHack");
     b->_concreteInnerOutlineLowerExt.push_back(Hep2Vector( xExtentOfLowerCeiling, b->hallInsideZDSCorner() ) );
 
     //----------------

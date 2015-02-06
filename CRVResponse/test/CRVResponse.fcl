@@ -14,6 +14,7 @@ services :
   user :
   {
     GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
     GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   }
 }
@@ -22,9 +23,9 @@ physics :
 {
   producers:
   {
-    CrvPEs:
+    CrvPhotonArrivals:
     {
-      module_type               : MakeCrvPEs
+      module_type               : CrvPhotonArrivalsGenerator
       g4ModuleLabel             : "g4filter"
       lookupTableFileName       : "/mu2e/data/outstage/ehrlich/CRVLookupTables/CRVLookupTable.root"
       scintillationYield        : 820.0    //820.0 photons per MeV
@@ -32,18 +33,36 @@ physics :
       scintillatorDecayTimeSlow : 10.0     //10.0 ns
       fiberDecayTime            : 7.4      //7.4 ns
     }
+    CrvSiPMResponses:
+    {
+      module_type                  : CrvSiPMResponsesGenerator
+      crvPhotonArrivalsModuleLabel : "CrvPhotonArrivals"
+      numberPixels                 : 1600
+      bias                         : 2.5        //V
+      timeStep                     : 1.0        //ns
+      scaleFactor                  : 0.08
+      minCharge                    : 3.0        //PEs
+      GeigerProbCoef               : 2.0
+      GeigerProbVoltScale          : 3.0
+      TrapType0Prob                : 0.14       //trap_prob*trap_type0_prob=0.2*0.7
+      TrapType1Prob                : 0.06       //trap_prob*trap_type1_prob=0.2*0.3
+      TrapType0Lifetime            : 5.0        //ns
+      TrapType1Lifetime            : 50.0       //ns
+      ThermalProb                  : 6.25e-7    //1MHz at SiPM --> 1e-3/(#pixel*t[ns]  //exp(-E_th/T)=1.6e-6
+      PhotonProduction             : 0.1        //0.4
+    }
     CrvWaveforms:
     {
-      module_type               : MakeCrvWaveforms
-      crvPEsModuleLabel         : "CrvPEs"
-      singlePEWaveformFileName  : "CRVResponse/test/singlePEWaveform.txt"
-      singlePEWaveformBinWidth  : 1.0    //1.0 ns
-      singlePEWaveformBins      : 200
-      binWidth                  : 12.5   //12.5 ns (digitizer sampling rate)
+      module_type                  : CrvWaveformsGenerator
+      crvSiPMResponsesModuleLabel  : "CrvSiPMResponses"
+      singlePEWaveformFileName     : "CRVResponse/test/singlePEWaveform.txt"
+      singlePEWaveformBinWidth     : 1.0    //1.0 ns
+      singlePEWaveformBins         : 200
+      binWidth                     : 12.5   //12.5 ns (digitizer sampling rate)
     }
     CrvRecoPulses:
     {
-      module_type               : ExtractCrvRecoPEs
+      module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
       integralFactor            : 51.0
       pulseThreshold            : 0.005    //mV
@@ -60,14 +79,17 @@ physics :
     CrvTest:
     {
       module_type                     : CRVTest
-      crvPEsModuleLabel               : "CrvPEs"
+      crvPhotonArrivalsModuleLabel    : "CrvPhotonArrivals"
+      crvSiPMResponsesModuleLabel     : "CrvSiPMResponses"
       crvWaveformsModuleLabel         : "CrvWaveforms"
       crvRecoPulsesModuleLabel        : "CrvRecoPulses"
       crvCoincidenceCheckModuleLabel  : "CrvCoincidence"
     }
   }
 
-  an : [CrvPEs, CrvWaveforms, CrvRecoPulses, CrvCoincidence, CrvTest]
+#  an : [CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence, CrvTest]
+#  an : [CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]
+  an : [CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms]
   out: [Output]
   end_paths: [an, out]
 }

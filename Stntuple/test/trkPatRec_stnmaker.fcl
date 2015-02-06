@@ -1,15 +1,10 @@
 # -*- mode: tcl -*-
-// Andrei Gaponenko, 2014
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "CaloCluster/test/producers.fcl"
-#include "TrackCaloMatching/test/producers.fcl"
-#include "CalPatRec/test/producers.fcl"
-#include "ParticleID/test/producers.fcl"
-#include "Stntuple/test/producers.fcl"
+#include "Stntuple/fcl/prolog.fcl"
 
 process_name : trkPatRecStnmaker
 

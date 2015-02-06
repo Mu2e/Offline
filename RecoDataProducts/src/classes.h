@@ -21,8 +21,8 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
-#include "RecoDataProducts/inc/CRVRecoPulsesCollection.hh"
-#include "RecoDataProducts/inc/CRVCoincidenceCheckResult.hh"
+#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
@@ -84,9 +84,9 @@ template class std::vector<mu2e::TrkExtTraj>;
 template class art::Ptr<mu2e::PIDProduct>;
 template class std::vector<mu2e::PIDProduct>;
 template class std::vector<std::pair<unsigned int, unsigned int> >;
-template class std::vector<mu2e::CRVRecoPulses::CRVSingleRecoPulse>;
-template class std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CRVRecoPulses>;
-template class std::map<mu2e::CRSScintillatorBarIndex,mu2e::CRVRecoPulses>;
+template class std::vector<mu2e::CrvRecoPulses::CrvSingleRecoPulse>;
+template class std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvRecoPulses>;
+template class std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvRecoPulses>;
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
 template class art::Wrapper<mu2e::StereoHitCollection>;
@@ -109,9 +109,9 @@ template class art::Wrapper<mu2e::TrackerHitByID>;
 template class art::Wrapper<mu2e::TrackSeedCollection>;
 template class art::Wrapper<mu2e::TrkExtTrajCollection>;
 template class art::Wrapper<mu2e::PIDProductCollection>;
-template class art::Wrapper<std::vector <mu2e::CRVRecoPulses::CRVSingleRecoPulse> >;
-template class art::Wrapper<mu2e::CRVRecoPulsesCollection>;
-template class art::Wrapper<mu2e::CRVCoincidenceCheckResult>;
+template class art::Wrapper<std::vector <mu2e::CrvRecoPulses::CrvSingleRecoPulse> >;
+template class art::Wrapper<mu2e::CrvRecoPulsesCollection>;
+template class art::Wrapper<mu2e::CrvCoincidenceCheckResult>;
 
 template class std::vector<mu2e::ExtMonFNALRawHit>;
 template class art::Wrapper<mu2e::ExtMonFNALRawHitCollection>;

@@ -1,0 +1,46 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+#------------------------------------------------------------------------------
+# "muon stop" vertex files by Andrei. 
+# - to use interactively, create a symbolic link: 
+#
+#      ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops  
+#
+# - for grid submission, set muonStops.inputFiles to @nil and use --fclinput 
+#------------------------------------------------------------------------------
+muonStops : {
+    #		inputFiles            : @nil // use --fclinput for grid submission
+    inputFiles            : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+    averageNumRecordsToUse: 500000
+    treeName              : "stoppedMuonDumper/stops"
+    branchName            : "stops"
+    verbosityLevel        : 1
+}
+
+# Generate Event
+generate: {
+    module_type          : EventGenerator
+    inputfile            : "Mu2eG4/test/genconfig_02.txt"
+    allowReplacement     : true
+    messageOnReplacement : true
+}
+
+StoppedMuonConversionGun: {
+    module_type    : StoppedMuonConversionGun
+    czmin          : -1.0
+    czmax          :  1.0
+    muonStops      : @local::muonStops
+    verbosityLevel : 1
+}
+
+# Save state of random numbers at the start of each event
+# the module is defined in art/Framework/Modules
+
+randomsaver: {
+    module_type          : RandomNumberSaver
+}
+
+END_PROLOG

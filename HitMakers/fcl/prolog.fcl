@@ -1,0 +1,124 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+# Form StrawHits (SH).
+makeSH : {
+  module_type          : MakeStrawHit
+  g4ModuleLabel        : g4run
+  diagLevel            : 0
+  maxFullPrint         : 0
+  deadStrawList        : {
+    verbosity   : 0
+    deadDevices : [ ]
+    deadSectors : [ ]
+    deadLayers  : [ ]
+    deadStraws  : [ ]
+  }
+}
+# straw digis
+makeSD : {
+  module_type : StrawDigisFromStepPointMCs
+  g4ModuleLabel : g4run
+  deadStrawList        : {
+    verbosity   : 0
+    deadDevices : [ ]
+    deadSectors : [ ]
+    deadLayers  : [ ]
+    deadStraws  : [ ]
+  }
+}
+
+#  straw hit making from straw digis
+makeSHfromSD : {
+  module_type : StrawHitsFromStrawDigis
+  StrawDigis : makeSD
+}
+
+# Form DCHHits (DcH). - 2015-01-23 P.Murat: is it obsolete?
+makeDcH : {
+  module_type          : MakeDriftCellHit
+  g4ModuleLabel        : g4run
+  diagLevel            : 0
+  maxFullPrint         : 0
+  minimumEnergy        : 0.00004
+  nzHittingZone        : 1
+  zZoneLimits          : [ 0 ]
+  zZoneActive          : [ true ]
+  zZoneMinLiveTime     : [ 0.0 ]
+}
+# pattern recognition precursors
+
+MakeStrawHitPositions : {
+  module_type             : MakeStrawHitPositions
+  StrawHitCollectionLabel : "makeSH"
+}
+
+MakeStereoHits : {
+  module_type : MakeStereoHits
+  MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
+}
+
+#------------------------------------------------------------------------------
+# Form DCHHits turning off some cells (DcH).
+# 2015-01-22 P.Murat: is this module obsolete ?
+#------------------------------------------------------------------------------
+makeDcHWTOff : {
+  module_type          : MakeCellsWithTurningOff
+  g4ModuleLabel        : g4run
+  diagLevel            : 1
+  maxFullPrint         : 0
+  minimumEnergy        : 0.00004
+  makerModuleLabel     : makeDcH
+}
+
+#------------------------------------------------------------------------------
+# Form CaloHits (APD hits)
+#------------------------------------------------------------------------------
+MakeCaloReadoutHits : {
+  module_type          : MakeCaloReadoutHits
+  diagLevel            : 0
+  caloLRUcorrection    : false
+  caloNonLinCorrection : false
+  maxFullPrint         : 0
+  g4ModuleLabel        : g4run
+  blindTime            : 300.   // ignore hits with T< 300 ns
+  timeGap              :   2.   // this is a relatively large window, still << pulse width
+}
+
+#------------------------------------------------------------------------------
+# Form CaloCrystalHits (reconstruct crystals from APDs)
+#------------------------------------------------------------------------------
+CaloCrystalHitsMaker : {
+  module_type          			: MakeCaloCrystalHits
+  diagLevel            			: 0
+  caloChargeProductionEffects       	: false
+  caloROnoiseEffect    			: false
+  maxFullPrint         			: 0
+  g4ModuleLabel        			: g4run
+  minimumEnergy       			: 0.0
+  maximumEnergy       			: 1000.0
+  minimumTimeGap       			: 100.0
+}
+
+MakeCaloCrystalHitsNew     : {
+    module_type            : MakeCaloCrystalHitsNew
+    g4ModuleLabel          : "g4run"
+    caloReadoutModuleLabel : MakeCaloReadoutHits
+
+    diagLevel              : 0
+    drawLevel              : 0	
+    maxFullPrint           : 0
+
+    tRise                  : 10.
+    tDecay                 : 15.
+    minimumEnergy          : 0.00001
+    maximumEnergy          : 1000.
+    minimumTimeGap         : 1        # ns
+
+# not sure why do we need these now...
+    caloChargeProductionEffects : false
+    caloROnoiseEffect           : false
+}
+END_PROLOG

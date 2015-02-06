@@ -1,0 +1,23 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+#------------------------------------------------------------------------------
+# Reject events with no hits from signal-like tracks in the detectors.  
+# The filter does not look at the background hits from mixed events.
+#------------------------------------------------------------------------------
+CompressPhysicalVolumes : {
+    module_type    : CompressPhysicalVolumes
+    volumesInput   : "g4run"
+    hitInputs      : []
+    particleInputs : [ "g4run" ]
+}
+
+FilterStepPointMomentum : {
+    module_type    : FilterStepPointMomentum
+    inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
+    cutMomentumMin : 10. # MeV/c
+}
+
+END_PROLOG

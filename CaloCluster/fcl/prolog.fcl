@@ -1,0 +1,22 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+MakeCaloCluster: {
+    module_type             : MakeCaloClusterNew
+    generatorModuleLabel    : generate
+    caloCrystalModuleLabel  : CaloCrystalHitsMaker
+    g4ModuleLabel           : g4run
+#
+    deltaTimePlus           : 5.0  # ns
+    deltaTimeMinus          : 5.0  # ns
+    nCryPerCrystal          : 1    # currently unused
+    EclusterCut             : 5.0  # MeV  
+    EnoiseCut               : 1.0  # MeV assume readout threshold of 1 MeV
+    ExpandCut               : 1.0  # MeV
+    EminSplitSeed           : 2.0  # MeV
+    diagLevel               : 0
+    maxFullPrint            : 201
+}
+END_PROLOG

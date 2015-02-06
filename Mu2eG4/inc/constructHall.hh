@@ -7,17 +7,26 @@
 // $Author: gandr $
 // $Date: 2012/04/17 19:56:56 $
 //
-// Original author KLG
-//
+// Original author: Kyle Knoepfel
 
-// Mu2e includes.
-#include "G4Helper/inc/VolumeInfo.hh"
+// C++ includes
+#include <map>
+#include <string>
+
+// CLHEP includes
+#include "CLHEP/Vector/Rotation.h"
 
 namespace mu2e {
 
+  class ExtrudedSolid;
   class SimpleConfig;
+  class VolumeInfo;
 
   VolumeInfo constructHall(const VolumeInfo& worldInfo, const SimpleConfig& config);
+
+  void constructSolids( const VolumeInfo& hallInfo, 
+		        const std::map<std::string,ExtrudedSolid>& solidMap,
+			const CLHEP::HepRotation& rot);
 
 }
 

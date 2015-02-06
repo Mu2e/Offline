@@ -81,13 +81,11 @@ physics : {
 #------------------------------------------------------------------------------
 # hit makers
 #------------------------------------------------------------------------------
-	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
-	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
         protonTimeMap        : { module_type : GenerateProtonTimes }
         muonTimeMap          : { module_type : GenerateMuonLife }
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
-	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+	CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
 	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 #------------------------------------------------------------------------------
 #  default tracking

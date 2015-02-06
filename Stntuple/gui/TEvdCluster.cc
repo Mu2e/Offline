@@ -65,12 +65,15 @@ TEvdCluster::TEvdCluster(const mu2e::CaloCluster* Cl): TObject() {
   fCalEllipse = new TEllipse(xl,yl,rcal,rcal,0,360);
   fCalEllipse->SetFillColor(2);
   fCalEllipse->SetFillStyle(3001);
+
+  fListOfCrystals = new TObjArray();
 }
 
 //-----------------------------------------------------------------------------
 TEvdCluster::~TEvdCluster() {
   delete fTrkEllipse;
   delete fCalEllipse;
+  delete fListOfCrystals;
 }
 
 //-----------------------------------------------------------------------------
@@ -102,9 +105,25 @@ void TEvdCluster::PaintXY(Option_t* Option) {
   fTrkEllipse->Paint(Option);
 }
 
-//_____________________________________________________________________________
+//-----------------------------------------------------------------------------
+// 2015-01-27: doesn't do anything
+//-----------------------------------------------------------------------------
 void TEvdCluster::PaintCal(Option_t* Option) {
-  fCalEllipse->Paint(Option);
+  TEvdCrystal* cr; 
+  THexagon     hex;
+  
+  int nc = fListOfCrystals->GetEntries();
+  
+  for (int i=0; i<nc; i++) {
+    cr = Crystal(i);
+    hex = *cr->Hexagon();
+//     hex.SetFillStyle(1024);
+//     hex.SetFillColor(0);
+//     hex.SetLineColor(kBlue);
+    //    hex.SetLineWidth(2);
+    //    hex.Paint();
+  }
+  //  fCalEllipse->Paint(Option);
 }
 
 
@@ -131,5 +150,15 @@ Int_t TEvdCluster::DistancetoPrimitiveXY(Int_t px, Int_t py) {
 //_____________________________________________________________________________
 Int_t TEvdCluster::DistancetoPrimitiveRZ(Int_t px, Int_t py) {
   return 9999;
+}
+
+//_____________________________________________________________________________
+void  TEvdCluster::Clear(Option_t* Option) {
+  fListOfCrystals->Clear();
+}
+
+//_____________________________________________________________________________
+void  TEvdCluster::Print(Option_t* Option) const {
+  printf(" >>> WARNING: TEvdCluster::Print is not implemented yet\n");
 }
 

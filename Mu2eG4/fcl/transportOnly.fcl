@@ -57,7 +57,7 @@ physics : {
     }
 
     makeSH               : @local::makeSH
-    CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
+    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
     randomsaver          : @local::randomsaver
 

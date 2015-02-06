@@ -14,3 +14,17 @@ Still under construction
      EventDisplay/src/DataInterface.cc
      Mu2eG4/src/constructCRV.cc
 
+1) Jan 22 2015 P.Murat
+
+  a) re-factor fcl/standardProducers.fcl: introduce <pkg>/fcl/prolog.fcl files 
+     included from fcl/standardProducers.fcl
+
+  b) update PID de/dx templates in ParticleID package
+
+  c) return to the TDR version of CaloCluster/src/MakeCaloClusterNew_modules.cc
+
+2) February 4, 2015 - ehrlich
+   Restructured the CRV counter simulation. 
+   Included the SiPM response.
+   Modified directories: CRVResponse, MCDataProducts, RecoDataProducts
+simulation

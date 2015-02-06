@@ -1,12 +1,31 @@
 // To do list
+// 2014-12-244 P.Murat: back to git commit ID 6310127
+
 // Must form a calo Cluster object
+/*
+
+- get the main cluster
+  - loop over crystals, find the ones with a time compatible with the cluster time
+  - use them to find the other clusters
+repeat
+
+- find all the main clusters
+- filter by time
+- form the clusters and connect them to main clusters
+
+  - 
+  
+   
+
+
+*/
 
 // then must compute COG / direction / other crap
 // then must check effciency
 // then must redo everything to include splitting
 // and finally get a beer for all these trouble
 /*
- * MakeCaloClusterNew_module.cc
+ * MakeCaloClusterNew3_module.cc
  *
  *  Created on: Feb 10, 2012
  *      Author: echenard
@@ -21,6 +40,8 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <unordered_map>
+
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
@@ -47,10 +68,13 @@
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "CaloCluster/inc/CaloClusterer.hh"
 #include "CaloCluster/inc/CaloClusterCogCalculator.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
+
+#include "CaloCluster/inc/CaloClusterFinderNew.hh"
+#include "CaloCluster/inc/CaloSeedManager.hh"
+#include "CaloCluster/inc/CaloClusterUtilities.hh"
 
 // Other includes.
 #include "CLHEP/Random/RandGaussQ.h"
@@ -117,11 +141,13 @@ namespace mu2e {
       _EminSplitSeed(pset.get<double>("EminSplitSeed", 2.)),//MeV
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
       _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel", "CaloCrystalHitsMaker")),
+      _producerName(""),
       _messageCategory("HITS"),
       _firstEvent(true)
     {
+      TOUpper(_caloClusterSeeding);
 					// Tell the framework what we make.
-      produces<CaloClusterCollection>();
+      produces<CaloClusterCollection>(_producerName);
     }
            
 	   
@@ -155,6 +181,9 @@ namespace mu2e {
     string _g4ModuleLabel;  // Name of the module that made these hits.
     string _caloReadoutModuleLabel;
     string _caloCrystalModuleLabel;
+    string _caloClusterAlgorithm;
+    string _caloClusterSeeding;
+    const string _producerName;
 
     const Calorimeter* _cal;
 
@@ -184,13 +213,6 @@ namespace mu2e {
 
   // must include a check of the parameters here
   void MakeCaloClusterNew::beginJob() {
-           
-  
-    //        cout << "Diaglevel: "
-    //                        << _diagLevel << " "
-    //                        << _maxFullPrint
-    //                        << endl;
-    
   }
 
 
@@ -215,7 +237,7 @@ namespace mu2e {
      unique_ptr<CaloClusterCollection> caloClusters(new CaloClusterCollection);
      makeCaloClusters(*caloClusters,caloCrystalHitsHandle);
      
-     event.put(std::move(caloClusters));
+     event.put(std::move(caloClusters), _producerName);
    }
    
 //-----------------------------------------------------------------------------
@@ -233,10 +255,11 @@ namespace mu2e {
        //Get a working copy of the CaloCrystalHits 
      CaloCrystalList caloCrystalHitsWork;
      for ( CaloCrystalHitCollection::const_iterator i=caloCrystalHits.begin(); i!=caloCrystalHits.end(); ++i )
-       if ((*i).energyDep() > _EnoiseCut) caloCrystalHitsWork.push_back( &(*i));
+       caloCrystalHitsWork.push_back( &(*i));
 
      // Sort crystals by energy/time -> seed of new cluster is always the first of the current list
-     caloCrystalHitsWork.sort(mu2e::caloCrystalHitEnergyPredicate);
+     if (_caloClusterSeeding.compare("TIME") == 0)  caloCrystalHitsWork.sort(mu2e::caloCrystalHitTimePredicate);
+     else                                           caloCrystalHitsWork.sort(mu2e::caloCrystalHitEnergyPredicate);
 	  
      // First, find clusters with seed energy above _EminCluster
      std::vector< CaloCrystalList > protoClusterList;
@@ -380,7 +403,7 @@ namespace mu2e {
 
     while (!crystalToVisit.empty()) {
 	    
-      std::vector<int> neighborsId = _cal->neighborsByLevel(crystalToVisit.front()->id(),1);
+      std::vector<int> neighborsId = _cal->neighbors(crystalToVisit.front()->id());
       crystalToVisit.pop();
 
       //check if there are crystals in the hit list corresponding to the neighbours with consistent time
@@ -408,9 +431,14 @@ namespace mu2e {
     double Emax((*iseed)->energyDep());       
     double Tmin((*iseed)->time());
     
-    for (CaloCrystalList_iter it = hitList.begin(); it != hitList.end(); ++it)
-      if ((*it)->energyDep() > Emax) {iseed=it, Emax=(*it)->energyDep();}
-
+    if (_caloClusterSeeding.compare("TIME") == 0) {       	  
+      for (CaloCrystalList_iter it = hitList.begin(); it != hitList.end(); ++it)
+	if ((*it)->time() > Tmin) {iseed=it, Tmin=(*it)->time();}	    
+    } 
+    else {	    
+      for (CaloCrystalList_iter it = hitList.begin(); it != hitList.end(); ++it)
+	if ((*it)->energyDep() > Emax) {iseed=it, Emax=(*it)->energyDep();}
+    }
 
     return iseed;      
   }

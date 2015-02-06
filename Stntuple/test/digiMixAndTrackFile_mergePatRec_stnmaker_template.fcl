@@ -11,11 +11,7 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "CaloCluster/test/producers.fcl"
-#include "TrackCaloMatching/test/producers.fcl"
-#include "CalPatRec/test/producers.fcl"
-#include "ParticleID/test/producers.fcl"
-#include "Stntuple/test/producers.fcl"
+#include "Stntuple/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 mixerTemplate: {

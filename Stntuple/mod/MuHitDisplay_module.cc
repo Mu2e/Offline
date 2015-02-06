@@ -732,7 +732,6 @@ namespace mu2e {
     if ( !info ) {
       printf("[%s] *** ERROR: SimParticleInfo missing, SKIPPING EVENT: %10i\n",oname,Evt.event());
       firstStep = 0;
-      //      return;
     }
     else {
       firstStep = &info->firstStepPointMCinTracker();
@@ -770,9 +769,12 @@ namespace mu2e {
 			      oname, Evt.run(),Evt.event(),fNTracks[0],fNClusters));
     t.SetTextSize(0.02);
     t.Draw();
-
-					// Draw the inner and outer arc of the tracker.
+//-----------------------------------------------------------------------------
+// Draw the inner and outer boundaries of the tracker
+//-----------------------------------------------------------------------------
+    arc->SetFillStyle(0);
     arc->SetLineColor(kBlack);
+
     arc->DrawArc(0.,0., envelope.outerRadius());
     arc->DrawArc(0.,0., envelope.innerRadius());
 

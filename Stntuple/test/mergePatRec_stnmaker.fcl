@@ -1,15 +1,10 @@
 # -*- mode: tcl -*-
-// Andrei Gaponenko, 2014
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-#include "CaloCluster/test/producers.fcl"
-#include "TrackCaloMatching/test/producers.fcl"
-#include "CalPatRec/test/producers.fcl"
-#include "ParticleID/test/producers.fcl"
-#include "Stntuple/test/producers.fcl"
+#include "Stntuple/fcl/prolog.fcl"
 
 process_name : mergePatRecStnmaker
 
@@ -43,58 +38,10 @@ services : {
 
 physics : {
     producers: {
-        generate: {
-            module_type    : StoppedMuonConversionGun
-	    czmin          : -0.6
-	    czmax          :  0.8
-	    verbosityLevel : 1
-	    muonStops : {
-#		inputFiles            : @nil // use --fclinput for grid submission
-		inputFiles            : [ "mergedMuonStops/mustops.1009a_1025a_1316a.14278088.root" ]
-		averageNumRecordsToUse: 500000
-		treeName              : "stoppedMuonDumper/stops"
-		branchName            : "stops"
-		verbosityLevel        : 1
-	    }
-        }
-
-        g4run : {
-            module_type                 : G4
-            simParticleNumberOffset     : 0
-            generatorModuleLabel        : "generate"
-            doWriteLegacyPhysVolumeInfo : false
-#------------------------------------------------------------------------------
-# do not want e.g. the "stoppingtarget" SD, thus do not use enableAllSDs
-#  Instead explicitly list all the detectors we want
-#------------------------------------------------------------------------------
-            SDConfig : {
-                enableSD         : [ tracker, calorimeter, calorimeterRO, virtualdetector ]
-                sensitiveVolumes : []
-            }
-
-            SimParticlePrinter : {
-                enabled       : false
-                primariesOnly : false
-                prefix        : "SimParticle: "
-            }
-        }
-
-        compressPVDetector: {
-            module_type    : CompressPhysicalVolumes
-            volumesInput   : "g4run"
-            hitInputs      : []
-            particleInputs : [ "g4run" ]
-        }
-
-        protonTimeMap        : { module_type : GenerateProtonTimes }
-        muonTimeMap          : { module_type : GenerateMuonLife }
-        makeSD               : @local::makeSD
-        makeSH               : @local::makeSHfromSD
-	CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
-	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
 #------------------------------------------------------------------------------
 #  default tracking
 #------------------------------------------------------------------------------
+	FSHPreStereo         : @local::FSHPreStereo
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
@@ -102,8 +49,7 @@ physics : {
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	MakeCaloCluster      : @local::MakeCaloClusterHack
-	MakeSHNew            : @local::MakeStrawHitsNew
+	MakeCaloCluster      : @local::MakeCaloCluster
 
 	MakeStrawHitPositions: @local::MakeStrawHitPositions
 	FlagStrawHits2       : @local::FlagStrawHits
@@ -114,7 +60,7 @@ physics : {
 #------------------------------------------------------------------------------
 # needed for analysis
 #------------------------------------------------------------------------------
-	CaloMatching         : @local::CaloMatching
+	CaloMatching         : @local::TrackCaloMatching
 	TrkExtrapol          : @local::TrkExtrapol
 	ParticleID           : @local::ParticleID
     }
@@ -130,33 +76,12 @@ physics : {
 # Reject events with no hits from signal-like tracks in the detectors.  
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
-        detectorFilter: {
-            module_type: FilterStepPointMomentum
-            inputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
-            cutMomentumMin : 10. // MeV/c
-        }
-    }
-
-    analyzers: {
-	genCountLogger: {
-	    module_type: GenEventCountReader
-	}
-	gpa: {
-	    module_type: GenParticlesAnalyzer
-	    inputs: generate
-	}
     }
 #------------------------------------------------------------------------------
 # paths
 #------------------------------------------------------------------------------
-    detPath : [ 
-	       # generate, g4run, detectorFilter, compressPVDetector
-	       protonTimeMap, muonTimeMap
-	       makeSD, makeSH
-	       CaloReadoutHitsMaker, CaloCrystalHitsMaker
-
-	       MakeCaloCluster
-	       , MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+    detPath : [  MakeCaloCluster
+	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
 	       , MakeStrawHitPositions 
 	       , CalPatRec
 	       , MergePatRec
@@ -166,9 +91,7 @@ physics : {
     trigger_paths  : [detPath]
     
 #    out : [detectorOutput]
-    out : []
-    an  : [genCountLogger, gpa]
-
+    out            : []
     end_paths      : [out]
 }
 
@@ -195,10 +118,6 @@ services.user.SeedService.maxUniqueEngines     :  20
 # print 
 services.scheduler.wantSummary: true
 
-# Apply the time offsets in tracker digitization
-physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-#
 physics.producers.MakeStrawHitPositions.StrawHitCollectionLabel  : makeSH
 
 physics.producers.CalPatRec.StrawHitCollectionLabel              : makeSH

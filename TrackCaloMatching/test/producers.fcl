@@ -33,7 +33,7 @@ TrackCaloMatching : {
 #------------------------------------------------------------------------------
     meanInteractionDepth         : 59.             # mm
 #    dtOffset                     : 1.4             # ns
-    dtOffset                     : @local::DtOffset             # ns
+    dtOffset                     : @local::TrackCaloMatchingDtOffset             # ns
     fitterModuleLabel            : TrkPatRec
     trkToCaloExtrapolModuleLabel : TrkExtrapol
     caloClusterModuleLabel       : MakeCaloCluster

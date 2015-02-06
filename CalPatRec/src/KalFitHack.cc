@@ -12,7 +12,7 @@
 #include "KalmanTests/inc/PanelAmbigResolver.hh"
 #include "KalmanTests/inc/PocaAmbigResolver.hh"
 #include "KalmanTests/inc/HitAmbigResolver.hh"
-#include "KalmanTests/inc/HitAmbigResolverHack.hh"
+#include "CalPatRec/inc/HitAmbigResolverHack.hh"
 #include "KalmanTests/inc/FixedAmbigResolver.hh"
 #include "KalmanTests/inc/BaBarMu2eField.hh"
 //geometry
@@ -276,7 +276,7 @@ namespace mu2e
 	const StrawHit& strawhit(straws->at(istraw));
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 // estimate  initial flightlength
-	double hflt;
+	double hflt(0);
 	TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
 // find the bounding sites near this hit, and extrapolate to get the hit t0
 	std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef.fitdir().fitDirection()));

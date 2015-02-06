@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 
 namespace mu2e {
@@ -21,7 +22,9 @@ namespace mu2e {
                                                                              const SimpleConfig& c);
 
   public:
-    static std::unique_ptr<ExtMonFNALBuilding> make(const SimpleConfig& config, const ProtonBeamDump& dump);
+    static std::unique_ptr<ExtMonFNALBuilding> make(const SimpleConfig& config,
+						    const Mu2eHall& hall,
+						    const ProtonBeamDump& dump);
   };
 }
 

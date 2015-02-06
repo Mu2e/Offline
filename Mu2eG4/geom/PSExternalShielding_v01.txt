@@ -8,22 +8,22 @@ double PSExternalShielding.length = 5250; // mm
 string PSExternalShielding.materialName  = "CONCRETE_MARS";
 
 //vertices, in mm, in mu2e frame
-double PSExternalShielding.X1 = 1750;   
-double PSExternalShielding.Y1 = -2300; 
-double PSExternalShielding.X2 = 1750; 
-double PSExternalShielding.Y2 = 1750; 
-double PSExternalShielding.X3 = -1750; 
-double PSExternalShielding.Y3 = 1750; 
-double PSExternalShielding.X4 = -1750; 
-double PSExternalShielding.Y4 = -2300; 
-double PSExternalShielding.X5 = -2300; 
-double PSExternalShielding.Y5 = -2300; 
-double PSExternalShielding.X6 = -2300; 
-double PSExternalShielding.Y6 = 2300; 
-double PSExternalShielding.X7 = 2300; 
-double PSExternalShielding.Y7 = 2300; 
-double PSExternalShielding.X8 = 2300; 
-double PSExternalShielding.Y8 = -2300; 
+double PSExternalShielding.X1 = 1500;   
+double PSExternalShielding.Y1 = -2312; 
+double PSExternalShielding.X2 = 1500; 
+double PSExternalShielding.Y2 = 1532; 
+double PSExternalShielding.X3 = -1500; 
+double PSExternalShielding.Y3 = 1532; 
+double PSExternalShielding.X4 = -1500; 
+double PSExternalShielding.Y4 = -2312; 
+double PSExternalShielding.X5 = -2050; 
+double PSExternalShielding.Y5 = -2312; 
+double PSExternalShielding.X6 = -2050; 
+double PSExternalShielding.Y6 = 2082; 
+double PSExternalShielding.X7 = 2050; 
+double PSExternalShielding.Y7 = 2082; 
+double PSExternalShielding.X8 = 2050; 
+double PSExternalShielding.Y8 = -2312; 
 
 // The center of the detector relative to its parent volume (detector hall).
 

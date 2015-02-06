@@ -59,14 +59,16 @@ public:
 //-----------------------------------------------------------------------------
 // accessors
 //-----------------------------------------------------------------------------
-  TClonesArray*  ListOfHits   () { return fListOfHits; }
-  int            NHits        () const { return fNHits;      }
-  float          Energy       () const { return fEnergy;     }
-  double         Radius       () const { return fHexagon.Radius(); }
+  TClonesArray*   ListOfHits   () { return fListOfHits; }
+  int             NHits        () const { return fNHits;      }
+  float           Energy       () const { return fEnergy;     }
+  double          Radius       () const { return fHexagon.Radius(); }
+  TDisk*          Disk         () const { return fDisk; }
+  double          X0           () const { return fHexagon.X0(); }
+  double          Y0           () const { return fHexagon.Y0(); }
+  const THexagon* Hexagon      () const { return (const THexagon*) &fHexagon; }
+
   const mu2e::Crystal* Crystal() const { return fCrystal;    }
-  TDisk*         Disk         () const { return fDisk; }
-  double         X0           () const { return fHexagon.X0(); }
-  double         Y0           () const { return fHexagon.Y0(); }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------

@@ -27,6 +27,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
+#include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 
 // From the art tool-chain
@@ -39,7 +40,7 @@
 #include "TrkBase/HelixParams.hh"
 #include "TrkBase/TrkRep.hh"
 #include "KalmanTrack/KalRep.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+// #include "KalmanTests/inc/KalFitMC.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -123,14 +124,10 @@ namespace mu2e {
 
     explicit TrkExtrapol(fhicl::ParameterSet const& pset):
       _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
-      _tpart((TrkParticle::type)(pset.get<int>("fitparticle",
-					       TrkParticle::e_minus))),
-      _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",
-							  TrkFitDirection::downstream))),
-      _kfitmc(pset.get<fhicl::ParameterSet>("KalFitMC")),
+      _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
+      _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
       _diagLevel(pset.get<int>("diagLevel",0)),
       _outPutNtup(pset.get<int>("outPutNtup",0)),
-      _maxNumberStoresPoints(pset.get<int>("maxNumberStoresPoints",2)),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel",
 						  "generate")),
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
@@ -187,12 +184,10 @@ namespace mu2e {
     std::string _iname;
         
     // diagnostic of Kalman fit
-    KalFitMC _kfitmc;
 
     // Diagnostic level
     int _diagLevel;
     int _outPutNtup;
-    int _maxNumberStoresPoints;
 
     // Label of the generator.
     std::string _generatorModuleLabel;
@@ -396,13 +391,11 @@ namespace mu2e {
       cout<<"end search behindSection(), position is : "<<traj.position(tmpRange)<<endl;
     }
 
-    //    int        resT = -1;
-    double     lrange, hrange;
+    double     lrange;
     TrkErrCode trk_rc;
 
     for (int i=0; i<NIntersections; i++) {
       lrange = Intersection[i].fSEntr;
-      //      hrange = Intersection[i].fSEntr;
       trk_rc = Krep->extendThrough(lrange);
       if (trk_rc.success() != 1) { 
 	//-----------------------------------------------------------------------------

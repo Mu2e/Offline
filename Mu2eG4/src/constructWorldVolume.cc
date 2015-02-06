@@ -14,8 +14,6 @@
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eBuildingGeom/inc/BuildingBasics.hh"
-#include "Mu2eBuildingGeom/inc/Mu2eBuilding.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -43,8 +41,6 @@ namespace mu2e {
     geomOptions->loadEntry( config, "worldDirt", "world.dirt");
 
     GeomHandle<WorldG4> world;
-    GeomHandle<BuildingBasics> basics;
-    GeomHandle<Mu2eBuilding> building;
 
     VolumeInfo worldInfo = nestBox("World", world->halfLengths(),
                                    worldMaterial, 0, G4ThreeVector(),
@@ -75,7 +71,7 @@ namespace mu2e {
 
     // The height parameters are common to all 4 side slabs
     const double dirtYmin = -world->hallFormalHalfSize()[1] + world->hallFormalCenterInWorld().y();
-    const double dirtYmax = basics->yFlatEarth() + world->mu2eOriginInWorld().y();
+    const double dirtYmax =  world->dirtG4Ymax();
     const double dirtCenterY = (dirtYmax + dirtYmin)/2;
     const double dirtHalfSizeY = (dirtYmax - dirtYmin)/2;
 
