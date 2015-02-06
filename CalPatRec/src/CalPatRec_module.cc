@@ -253,6 +253,9 @@ namespace mu2e {
     TH1F* _hkNpoints;
     TH1F* _hkchi2;
     TH2F* _hkdistvsdz[2];
+    
+    TH1F* _hdrw  [2];
+    TH1F* _hchi2w[2];
 
     THackData* fHackData;
   };
@@ -425,6 +428,13 @@ namespace mu2e {
 				  "Distance from prediction versus z-distance form the seed in case also the kalman fit converged + cut set ''C'' and p>100 MeV/c; z-distance from the seed [mm]; Distance from prediction [mm]",
 				  1400, -3500., 3500.,
 				  500, 0, 500);
+
+    _hdrw[0]    = tfs->make<TH1F>("hdrw_0","r(fitw) - r(track)[0]", 200,-100.,100.);
+    _hdrw[1]    = tfs->make<TH1F>("hdrw_1","r(fitw) - r(track)[1]", 200,-100.,100.);
+
+    _hchi2w[0]  = tfs->make<TH1F>("hchi2w_0","chi2(fitw)[0]", 250,0.,500.);
+    _hchi2w[1]  = tfs->make<TH1F>("hchi2w_1","chi2(fitw)[1]", 250,0.,500.);
+
     _eventid = 0;
   }
 
@@ -506,7 +516,7 @@ namespace mu2e {
     //    int    nAddHits(0);
 
 //reset the fit iteration counter
-    _kfit.fNiter = 0;
+    _kfit.SetNIter(0);
 
 //     t1 = fStopwatch->RealTime();
 //     fStopwatch->Continue();
@@ -840,9 +850,11 @@ namespace mu2e {
 	
 	_hkdfdz[0]->Fill(fHackData->dfdz() - kdfdz);
 	_hkradius[0]->Fill(fHackData->TheoRadius() - radius);
-
 	_hk0mode->Fill(fHackData->mode0Points());
 	
+	_hdrw  [0]->Fill(fHackData->fData[14]-radius);
+	_hchi2w[0]->Fill(fHackData->fData[15]);
+
 	_hkdz->Fill(fHackData->shDz());
 	_hkNpoints->Fill(fHackData->goodPoints());
 	_hkchi2->Fill(fHackData->chi2());
@@ -892,6 +904,9 @@ namespace mu2e {
 	  _hkradius[1]->Fill(fHackData->TheoRadius() - radius);
 	  _hkdfdz[1]->Fill(fHackData->dfdz() - kdfdz);
 
+	  _hdrw  [1]->Fill(fHackData->fData[14]-radius);
+	  _hchi2w[1]->Fill(fHackData->fData[15]);
+
 	  for (int i=0; i< fHackData->goodPoints(); ++i){
 	    dz   = fHackData->fDz[i];
 	    dist = fHackData->fDist[i]; 
@@ -922,7 +937,7 @@ namespace mu2e {
   //   _hTtot->Fill(ttot);
 //     _hTfit[0]->Fill(tfit0);
 //     _hTfit[1]->Fill(tfit1);
-    _hNfitIter->Fill(_kfit.fNiter);
+    _hNfitIter->Fill(_kfit.NIter());
 //-----------------------------------------------------------------------------
 // fill timing hists
 //-----------------------------------------------------------------------------

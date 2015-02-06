@@ -61,18 +61,19 @@ namespace mu2e {
 
 // Try to put back inactive hits
     bool unweedHits(KalFitResult& kres, double maxchi);
+    int  NIter                () { return fNIter; }
+    void SetNIter             (int N) { fNIter = N; }
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
     BField const& bField() const;
-    int                 fNiter;
   protected:
     // configuration parameters
-    int _debug;
-    bool _weedhits;
-    double _maxhitchi;
-    unsigned _maxweed;
+    int       _debug;
+    bool      _weedhits;
+    double              _maxhitchi;
+    unsigned            _maxweed;
     std::vector<double> _herr;
-    double _maxdriftpull;
+    double                      _maxdriftpull;
     std::vector<AmbigResolver*> _ambigresolver;
     bool _initt0;
     bool _updatet0;
@@ -93,7 +94,7 @@ namespace mu2e {
     virtual void makeMaterials(KalFitResult& kres);
 
   private:
-    TStopwatch* fStopwatch;// = new TStopwatch();
+    TStopwatch*        fStopwatch;       // = new TStopwatch();
     double             _t0errfac;       // fudge factor for the calculated t0 error
     double             _mint0doca;      // minimum (?) doca for t0 hits
     double             _t0nsig;	        // # of sigma to include when selecting hits for t0
@@ -104,6 +105,7 @@ namespace mu2e {
     TrkFitDirection    _fdir;
     std::vector<int>   _ambigstrategy;
     mutable BField*    _bfield;
+    int                 fNIter;
     const CalTimePeak*  fTimePeak;
 
 //-----------------------------------------------------------------------------

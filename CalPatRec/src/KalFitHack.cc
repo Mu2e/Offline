@@ -101,7 +101,7 @@ namespace mu2e
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
     _bfield(0),
-    fNiter(0)
+    fNIter(0)
   {
     //    fStopwatch = new TStopwatch();
 // set KalContext parameters
@@ -163,6 +163,7 @@ namespace mu2e
 	  _ambigresolver.push_back(new PocaAmbigResolver(pset));
 	  break;
 	case hitambig_hack:
+	  //	  _ambigresolver.push_back(new PocaAmbigResolver(pset));
 	  _ambigresolver.push_back(new HitAmbigResolverHack(pset,_herr[iambig]));
 	  break;
       }
@@ -379,7 +380,7 @@ namespace mu2e
     kres._fit = TrkErrCode::succeed;
     bool fit_success;
 
-    double t2, t3;
+    //    double t2, t3;
 
     while(kres._fit.success() && changed && niter < maxIterations()) {
       //      printf("[KalFitHack::fitIteration] new iteration: iherr:%i niter:%i\n", iherr,niter);
@@ -417,7 +418,7 @@ namespace mu2e
     }
 //----------------------------------------------------------------------
 // 2014-12-29 G. Pezzullo and P. Murat added the following counter 
-    fNiter += niter;
+    fNIter += niter;
 
     fit_success = kres._fit.success();
     if (fit_success) {

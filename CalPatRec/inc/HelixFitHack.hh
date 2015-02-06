@@ -40,13 +40,22 @@ namespace mu2e {
   struct HelixFitHackResult {
     HelixDefHack       _hdef;         // must copy by value as references can't be re-assigned
     TrkErrCode         _fit;	      // fit status code from last fit
-				      // circle parameters; the z center is ignored.
+//-----------------------------------------------------------------------------
+// circle parameters; the z center is ignored.
+//-----------------------------------------------------------------------------
     ::LsqSums4         _sxy;
     ::LsqSums4         _srphi;
     double             _chi2;
 
     CLHEP::Hep3Vector  _center;
     double             _radius;
+//-----------------------------------------------------------------------------
+// 2015-02-06 P.Murat: fit with non-equal weights - XY -only
+//-----------------------------------------------------------------------------
+    ::LsqSums4         _sxyw;
+    CLHEP::Hep3Vector  _cw;
+    double             _rw;
+    double             _chi2w;
 //-----------------------------------------------------------------------------
 // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), 
 // fz0 is the phi value of the particle where it goes through z=0
@@ -71,6 +80,19 @@ namespace mu2e {
       _fz0(0.0) {
     }
 
+    HelixFitHackResult(HelixFitHackResult & hfitRes) :
+      _hdef(hfitRes._hdef),
+      _fit(hfitRes._fit),
+      _sxy(hfitRes._sxy),
+      _srphi(hfitRes._srphi),
+      _chi2(hfitRes._chi2),
+      _center(hfitRes._center),
+      _radius(hfitRes._radius),
+      _dfdz(hfitRes._dfdz),
+      _fz0(hfitRes._fz0){
+    
+    }
+
     HelixFitHackResult& operator =(HelixFitHackResult const& other);
  };
 
@@ -90,17 +112,18 @@ namespace mu2e {
 // utility struct
 //-----------------------------------------------------------------------------
   struct XYZPHack {
-    size_t            _ind;		// straw hit index
-    CLHEP::Hep3Vector _pos;		// position
-    double            _phi;	        // ambiguity-resolved phi angle
-    StrawHitFlag      _flag;		// flag
-    int               _used;            // index or telling if the strawhit has already been used by an other track-candidate
-    CLHEP::Hep3Vector _wdir;		// wire direction
-    CLHEP::Hep3Vector _sdir;            // straw radial direction, perp to Z and wire direction
+    size_t             _ind;		// straw hit index
+    CLHEP::Hep3Vector  _pos;		// position
+    double             _phi;	        // ambiguity-resolved phi angle
+    StrawHitFlag       _flag;		// flag
+    int                _used;           // = 1 if the strawhit is used by another track-candidate
+    CLHEP::Hep3Vector  _wdir;		// wire direction
+    CLHEP::Hep3Vector  _sdir;           // straw radial direction, perp to Z and wire direction
 					// errors are asymmetric; along the wire is given by time division, 
 					// perp to the wire by the straw size/sqrt(12)
-    double            _perr;
-    double            _rerr;
+    const mu2e::Straw* _straw;          // pointer to the straw
+    double             _perr;
+    double             _rerr;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -172,6 +195,10 @@ namespace mu2e {
 					//2014-03-10 Gianipez and P. Murat introduced the following paramter to limit 
 					// the dfdz value in the pattern-recognition stage
     double   _mpDfDz, _maxDfDz, _minDfDz;
+    
+    double   _hdfdz;		        // estimated d(phi)/dz value
+    double   _sdfdz;		        // estimated d(phi)/dz error
+    double   _hphi0;
 
     //201-03-31 Gianipez added th following parameter for changing the value of the 
     // squared distance requed bewtween the strawhits and the theretical position
@@ -209,9 +236,13 @@ namespace mu2e {
     double    _maxChi2TrkCandidate;
     int       _markCandidateHits;
 
-    //indeces, distance from prediction and distance along z axis from the seeding hit
+    //thresholds for the xy and zphi chi2 fit
+    double    _chi2xyMax;
+    double    _chi2zphiMax;
+
+    //indices, distance from prediction and distance along z axis from the seeding hit
     // of the hits found in the pattern recognition
-    int       _indecesTrkCandidate[400];
+    int       _indicesTrkCandidate[400];
     double    _distTrkCandidate[400];
     double    _dzTrkCandidate[400];
 
@@ -257,9 +288,9 @@ namespace mu2e {
 
     bool findHelix     (XYZPHackVector& xyzp, HelixFitHackResult& myfit);
     bool findXY        (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
-    bool findXY_new    (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
-    bool findZ         (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
-    void findDfDz      (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
+    bool findXY_new    (XYZPHackVector& xyzp, HelixFitHackResult& myhel, int seedIndex, int *indexVec);
+    bool findZ         (XYZPHackVector& xyzp, HelixFitHackResult& myhel, int seedIndex, int *indexVec);
+    void findDfDz      (XYZPHackVector& xyzp, HelixFitHackResult& myhel, int seedIndex, int *indexVec);
     
 
     bool initCircle    (XYZPHackVector const& xyzp,HelixFitHackResult& myhel);
@@ -298,7 +329,7 @@ namespace mu2e {
 					// 12-10-2013 Gianipez: new pattern recognition functions
     void rescueHits(XYZPHackVector& xyzp, HelixFitHackResult&  mytrk);
 
-    void filterUsingPatternRecognition(XYZPHackVector& xyzp);
+    void filterUsingPatternRecognition(XYZPHackVector& xyzp, HelixFitHackResult&  mytrk);
     
     void resetTrackParamters();
 
@@ -320,6 +351,8 @@ namespace mu2e {
 				  bool cleanPattern=false);
 
     void calculateDfDz(double &phi0, double &phi1, double &z0,  double &z1, double &dfdz);
+
+    int  refineHelixParameters(XYZPHackVector& Xyzp, HelixFitHackResult& Trk);
   };
 }
 #endif
