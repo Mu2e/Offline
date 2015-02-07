@@ -122,10 +122,10 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
     }
   }
 
-  _PEvsIntegral = new TH2D("PEvsIntegral","PEvsIntegral", 60,0,60, 100,0,1.2);
+  _PEvsIntegral = new TH2D("PEvsIntegral","PEvsIntegral", 60,0,60, 200,0,2.0);
   _PEvsIntegral->SetXTitle("PEs");
   _PEvsIntegral->SetYTitle("Integral");
-  _PEvsPulseHeight = new TH2D("PEvsPulseHeight","PEvsPulseHeight", 60,0,60, 100,0,0.4);
+  _PEvsPulseHeight = new TH2D("PEvsPulseHeight","PEvsPulseHeight", 60,0,60, 200,0,1.0);
   _PEvsPulseHeight->SetXTitle("PEs");
   _PEvsPulseHeight->SetYTitle("PulseHeight [mV]");
 }
@@ -247,12 +247,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     for(int SiPM=0; SiPM<4; SiPM++) std::cout<<_histT[0][SiPM]->GetMean()<<"/"<<_histT[1][SiPM]->GetMean()<<"  ";
     std::cout<<std::endl;
 
-    if(evt->GetEventID()<99) Draw(evt);
-    if(evt->GetEventID()==99)
-    {
-      _PEvsIntegral->SaveAs("PEvsIntegral.C");
-      _PEvsPulseHeight->SaveAs("PEvsPulseHeight.C");
-    }
+    Draw(evt);
   }
 }
 
@@ -490,6 +485,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
     landauText1->Draw("same");
     landauText2->Draw("same");
   }
-  c.SaveAs((s1.str()+".C").c_str());
+  if(evt->GetEventID()<20) c.SaveAs((s1.str()+".C").c_str());
+  _PEvsIntegral->SaveAs("PEvsIntegral.C");
+  _PEvsPulseHeight->SaveAs("PEvsPulseHeight.C");
 }
 

@@ -145,16 +145,18 @@ namespace mu2e
           if(pulseVector2[i]._PEs>=_PEthreshold) c.time.push_back(pulseVector2[i]._leadingEdge);
 //std::cout<<"PEs: "<<pulseVector2[i]._PEs<<"   LE: "<<pulseVector2[i]._leadingEdge<<"   pos: "<<c.pos<<std::endl;
         }
-        coincidenceMap[coincidenceGroup].push_back(c);
+        if(c.time.size()>0) coincidenceMap[coincidenceGroup].push_back(c);
       }
     }
 
+//std::cout<<"comparing all reco hits ..."<<std::endl;
     bool foundCoincidence=false;
     std::map<int, std::vector<coincidenceStruct> >::const_iterator iterC;
     for(iterC = coincidenceMap.begin(); iterC!=coincidenceMap.end() && foundCoincidence==false; iterC++)
     {
       const std::vector<coincidenceStruct> &vectorC = iterC->second;
       unsigned int n=vectorC.size();
+//std::cout<<"coincidence map #"<<iterC->first<<": "<<n<<" entries"<<std::endl;
       for(unsigned int i1=0; i1<n && foundCoincidence==false; i1++) 
       for(unsigned int i2=i1+1; i2<n && foundCoincidence==false; i2++) 
       for(unsigned int i3=i2+1; i3<n && foundCoincidence==false; i3++)
