@@ -78,11 +78,12 @@ makeDcHWTOff : {
 #------------------------------------------------------------------------------
 MakeCaloReadoutHits : {
   module_type          : MakeCaloReadoutHits
+  g4ModuleLabel        : g4run
+  TimeOffsets          : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
   diagLevel            : 0
   caloLRUcorrection    : false
   caloNonLinCorrection : false
   maxFullPrint         : 0
-  g4ModuleLabel        : g4run
   blindTime            : 300.   // ignore hits with T< 300 ns
   timeGap              :   2.   // this is a relatively large window, still << pulse width
 }
@@ -91,20 +92,21 @@ MakeCaloReadoutHits : {
 # Form CaloCrystalHits (reconstruct crystals from APDs)
 #------------------------------------------------------------------------------
 CaloCrystalHitsMaker : {
-  module_type          			: MakeCaloCrystalHits
-  diagLevel            			: 0
-  caloChargeProductionEffects       	: false
-  caloROnoiseEffect    			: false
-  maxFullPrint         			: 0
-  g4ModuleLabel        			: g4run
-  minimumEnergy       			: 0.0
-  maximumEnergy       			: 1000.0
-  minimumTimeGap       			: 100.0
+    module_type          			: MakeCaloCrystalHits
+    g4ModuleLabel        			: g4run
+    caloReadoutModuleLabel                      : MakeCaloReadoutHits
+    diagLevel            			: 0
+    caloChargeProductionEffects                 : false
+    caloROnoiseEffect    			: false
+    maxFullPrint         			: 0
+    minimumEnergy       			: 0.0
+    maximumEnergy       			: 1000.0
+    minimumTimeGap       			: 100.0
 }
 
 MakeCaloCrystalHitsNew     : {
     module_type            : MakeCaloCrystalHitsNew
-    g4ModuleLabel          : "g4run"
+    g4ModuleLabel          : g4run
     caloReadoutModuleLabel : MakeCaloReadoutHits
 
     diagLevel              : 0

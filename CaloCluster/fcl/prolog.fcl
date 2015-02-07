@@ -6,8 +6,8 @@ BEGIN_PROLOG
 MakeCaloCluster: {
     module_type             : MakeCaloClusterNew
     generatorModuleLabel    : generate
-    caloCrystalModuleLabel  : CaloCrystalHitsMaker
     g4ModuleLabel           : g4run
+    caloCrystalModuleLabel  : CaloCrystalHitsMaker
 #
     deltaTimePlus           : 5.0  # ns
     deltaTimeMinus          : 5.0  # ns

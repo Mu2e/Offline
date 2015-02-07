@@ -61,14 +61,15 @@ physics : {
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	MakeCaloCluster      : @local::MakeCaloCluster
+	MakeCaloCluster                 : @local::MakeCaloCluster
 
-	MakeStrawHitPositions: @local::MakeStrawHitPositions
-	FlagStrawHits2       : @local::FlagStrawHits
-	FlagBkgHits2         : @local::FlagBkgHits
-	CalPatRec            : @local::CalPatRec
+	CalPatRecFSHP                   : @local::CalPatRecFSHP
+	CalPatRecMakeStrawHitPositions  : @local::CalPatRecMakeStrawHitPositions
+	CalPatRecFlagStrawHits          : @local::CalPatRecFlagStrawHits
+	CalPatRecFlagBkgHits            : @local::CalPatRecFlagBkgHits
+	CalPatRec                       : @local::CalPatRec
 
-	MergePatRec          : @local::MergePatRec
+	MergePatRec                     : @local::MergePatRec
 #------------------------------------------------------------------------------
 # needed for analysis
 #------------------------------------------------------------------------------
@@ -113,7 +114,10 @@ physics : {
 
 	       , MakeCaloCluster
 	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-	       , MakeStrawHitPositions, CalPatRec
+
+	       , CalPatRecFSHP, CalPatRecMakeStrawHitPositions 
+	       , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+	       , CalPatRec
 	       , MergePatRec
 	       , TrkExtrapol, CaloMatching, ParticleID
 	       , InitStntuple, StntupleMaker, FillStntuple
@@ -150,21 +154,9 @@ services.user.SeedService.maxUniqueEngines     :  20
 # print 
 services.scheduler.wantSummary: true
 
-# sensitive detectors
-physics.producers.g4run.SDConfig.enableAllSDs : false
-physics.producers.g4run.SDConfig.enableSD     : [ tracker, calorimeter, calorimeterRO, virtualdetector ]
-
 # Apply the time offsets in tracker digitization
 physics.producers.makeSD.TimeOffsets              : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-physics.producers.MakeCaloReadoutHits.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 #
-physics.producers.MakeStrawHitPositions.StrawHitCollectionLabel  : makeSH
-
-physics.producers.CalPatRec.StrawHitCollectionLabel              : makeSH
-physics.producers.CalPatRec.StrawHitPositionCollectionLabel      : MakeStrawHitPositions
-physics.producers.CalPatRec.StrawHitFlagCollectionLabel          : FlagBkgHits
-physics.producers.CalPatRec.FindTimePeaks                        : true
-
 physics.producers.TrkExtrapol.fitterModuleLabel                  : MergePatRec
 physics.producers.CaloMatching.fitterModuleLabel                 : MergePatRec
 physics.producers.ParticleID.fitterModuleLabel                   : MergePatRec

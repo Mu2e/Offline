@@ -49,12 +49,13 @@ physics : {
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	MakeCaloCluster      : @local::MakeCaloCluster
+	MakeCaloCluster                 : @local::MakeCaloCluster
 
-	MakeStrawHitPositions: @local::MakeStrawHitPositions
-	FlagStrawHits2       : @local::FlagStrawHits
-	FlagBkgHits2         : @local::FlagBkgHits
-	CalPatRec            : @local::CalPatRec
+	CalPatRecFSHP                   : @local::CalPatRecFSHP
+	CalPatRecMakeStrawHitPositions  : @local::CalPatRecMakeStrawHitPositions
+	CalPatRecFlagStrawHits          : @local::CalPatRecFlagStrawHits
+	CalPatRecFlagBkgHits            : @local::CalPatRecFlagBkgHits
+	CalPatRec                       : @local::CalPatRec
 
 	MergePatRec          : @local::MergePatRec
 #------------------------------------------------------------------------------
@@ -82,7 +83,9 @@ physics : {
 #------------------------------------------------------------------------------
     detPath : [  MakeCaloCluster
 	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-	       , MakeStrawHitPositions 
+
+	       , CalPatRecFSHP, CalPatRecMakeStrawHitPositions 
+	       , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
 	       , CalPatRec
 	       , MergePatRec
 	       , TrkExtrapol, CaloMatching, ParticleID

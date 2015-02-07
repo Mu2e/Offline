@@ -79,8 +79,8 @@ MuHitDisplay: {
     generatorModuleLabel         : generate
     g4ModuleLabel                : g4run
     strawHitMakerModuleLabel     : makeSH
-    strawHitPosMakerModuleLabel  : MakeStereoHits
-    strawHitFlagMakerModuleLabel : FlagStrawHits
+    strawHitPosMakerModuleLabel  : CalPatRecMakeStrawHitPositions
+    strawHitFlagMakerModuleLabel : CalPatRecFlagStrawHits
     
     caloClusterModuleLabel       : MakeCaloCluster
     trkExtrapol                  : TrkExtrapol
