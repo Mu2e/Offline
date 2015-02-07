@@ -1925,7 +1925,7 @@ namespace mu2e
 int HelixFitHack::refineHelixParameters(XYZPHackVector& Xyzp, HelixFitHackResult& Trk) {
 
   double    wt, x0, y0, sinth2, costh, e2, x, y, dx, dy;
-  double    rs( 1.5);  // mm
+  double    rs( 2.5);  // mm
   double    ew(30.0);  // mm - erro along the wire   
 
   int np = Xyzp.size();

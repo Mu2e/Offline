@@ -192,9 +192,10 @@ TrackCaloMatching : {
 #------------------------------------------------------------------------------
 # not a guess any more, but the number by Alex
 # 2014-08-08: set dtOffset to 1.4 to avoid DT corrections in other places
+# 2015-02-07: dtOffset set in fcl/standardProducers.fcl to 1.2 ns
 #------------------------------------------------------------------------------
     meanInteractionDepth         : 59.             # mm
-    dtOffset                     : 1.4             # ns
+    dtOffset                     : @local::TrackCaloMatchingDtOffset             # ns
     fitterModuleLabel            : TrkPatRec
     trkToCaloExtrapolModuleLabel : TrkExtrapol
     caloClusterModuleLabel       : MakeCaloCluster

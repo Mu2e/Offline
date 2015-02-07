@@ -2,14 +2,65 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 # CalPatRec: calorimeter-seeded track finding
+# CalPatRec uses its own instance of the hit flags
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
+
+#------------------------------------------------------------------------------
+# there seems to be a circular dependence between MakeStrawHitPositions and 
+# FlagStrawHits ... FlagBkgHits ?
+# MakeStrawHitPositions stores the hit flag in StrawHitPosition object
+# StrawHitFlagCollection is required
+#
+# in its turn, the FlagStrawHits module flags if the corresponding hit 
+# position 'stereo' and also sets radial selection flag
+# it also sets 'timesel' and 'energysel' flags
+# if, however, the StrawHitPosition doesnt exist, the 'stereo' and 'radsel' 
+# flags are not set
+#
+# FlagBkgHits produces yet another hit flag collection, copying flags set by 
+# the OR of FlagStrawHits and flags stored in StrawHitPositions, and potentially adding 
+# a 'delta' and 'isolated' flags
+# in principle, FlagBkgHits also uses StereoHitCollection, but that is not a must
+#
+# yes, there is a circular dependence between the data products.
+# Dave runs several instances of the hit flagging modules for a reason
+#------------------------------------------------------------------------------ 
+CalPatRecFSHP : {
+    module_type                     : FlagStrawHits
+    StrawHitCollectionLabel         : makeSH
+    StrawHitPositionCollectionLabel : ""
+    maximumEnergy                   : 0.005   # 5 KeV, in MeV
+}
+
+CalPatRecMakeStrawHitPositions : {
+    module_type                 : MakeStrawHitPositions
+    StrawHitCollectionLabel     : makeSH
+    StrawHitFlagCollectionLabel : CalPatRecFSHP
+    diagLevel                   : 0
+    printHits                   : 0
+}
+
+CalPatRecFlagStrawHits : {
+    module_type                     : FlagStrawHits
+    StrawHitCollectionLabel         : makeSH
+    StrawHitPositionCollectionLabel : CalPatRecMakeStrawHitPositions
+    minimumRadius                   : 380.    # mm
+}
+
+CalPatRecFlagBkgHits : {
+    module_type                     : FlagBkgHits
+    StrawHitCollectionLabel         : makeSH
+    StrawHitFlagCollectionLabel     : CalPatRecFlagStrawHits
+    StrawHitPositionCollectionLabel : CalPatRecMakeStrawHitPositions
+}
+
 CalPatRec            : {
     module_type                                 : CalPatRec
 
     StrawHitCollectionLabel                     : makeSH
-    StrawHitPositionCollectionLabel             : MakeStrawHitPositions
-    StrawHitFlagCollectionLabel                 : FlagBkgHits
+    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
+    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions
     caloClusterModuleLabel                      : MakeCaloCluster
 
     diagLevel                                   : 0
@@ -39,7 +90,7 @@ CalPatRec            : {
 	t0Tolerance				: [5.0,5.0]
 	initT0					: true 
 	updateT0				: false
-	dtOffset                                : @local::DtOffset
+	dtOffset                                : @local::TrackCaloMatchingDtOffset
     }
     # HelixFitHack configuraton
     HelixFitHack : {
@@ -47,11 +98,14 @@ CalPatRec            : {
 	mostProbableDfDz                        : 0.00475
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
-	dfdzErr                                 : 0.1
 	distPatRec                              : 100. # mm
 	maxChi2TrkCandidate                     : 1500
 	markCandidateHits                       : 0
 	minPointsTrkCandidate                   : 25
+# confirmed on 2015-02-07
+	chi2xyMax                               : 300
+	chi2zphiMax                             : 0.1
+	dfdzErr                                 : 0.1
     }
     # Kalman fit hack configuration for the final track fit
     KalFitHack : {
@@ -71,7 +125,7 @@ CalPatRec            : {
 	Neutralize 				: true
 	fieldCorrection				: true
 	maxhitchi                               : 3.5
-	dtOffset                                : @local::DtOffset
+	dtOffset                                : @local::TrackCaloMatchingDtOffset
     }
     MaxStrawEDep            : 0.005
     TimeSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]

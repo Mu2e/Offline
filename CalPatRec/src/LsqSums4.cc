@@ -11,7 +11,8 @@ LsqSums4::LsqSums4() {
 }
 
 LsqSums4::LsqSums4(const LsqSums4& S) {
-  printf(" LsqSums4::LsqSums4 : dont use me!\n");
+  init(S);
+  //  printf(" LsqSums4::LsqSums4 : dont use me!\n");
 }
 
 LsqSums4::~LsqSums4() {
@@ -157,10 +158,10 @@ double LsqSums4::dfdz(){
 
 double LsqSums4::chi2DofCircle() {
 
-  double chi2, x_0, y_0, r, sx2, sy2;
+  double chi2, /*x_0, y_0,*/ r, sx2, sy2;
 
-  x_0 = x0();
-  y_0 = y0();
+//   x_0 = x0();
+//   y_0 = y0();
   r   = radius();
 
   sx2 = sigX2X()+sigXY2();
