@@ -1,5 +1,4 @@
 #include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
 #include "standardServices.fcl"
 
 process_name : CRVResponse
@@ -64,7 +63,7 @@ physics :
     {
       module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
-      integralFactor            : 51.0
+      integralFactor            : 37.3     //51.0
       pulseThreshold            : 0.005    //mV
       leadingEdgeThreshold      : 0.2      //% of the maximum bin
     }
@@ -72,7 +71,7 @@ physics :
     {
       module_type               : SimpleCrvCoincidenceCheck
       crvRecoPulsesModuleLabel  : "CrvRecoPulses"
-      PEthreshold               : 15
+      PEthreshold               : 14
       maxDistance               : 200
       maxTimeDifference         : 5
     }
@@ -88,10 +87,10 @@ physics :
   }
 
 #  an : [CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence, CrvTest]
-#  an : [CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]
-  an : [CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms]
+  an : [CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]
   out: [Output]
-  end_paths: [an, out]
+#  end_paths: [an, out]
+  end_paths: [an]
 }
 
 outputs: 
