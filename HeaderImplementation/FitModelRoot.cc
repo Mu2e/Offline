@@ -40,10 +40,9 @@ namespace FitModelRoot
 	//par[2] is sigma 1st peak
 	Float_t convolutionSinglePeak(Double_t *x, Double_t *par)
 	{
-	  Double_t convolvedSinglePeakX[1] = {x[0] - par[0]};
-	  Double_t convolvedSinglePeakParams[2] = {par[2]};
+	  singlePeakParamStruct parStruct(par[0],par[1],par[2]);
 
-	  return (Float_t) par[1] * convolvedSinglePeak(convolvedSinglePeakX,convolvedSinglePeakParams);
+	  return FitModel::singlePeak(x[0],parStruct,initParams);
 
 	}
 				

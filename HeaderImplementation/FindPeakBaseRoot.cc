@@ -1,4 +1,4 @@
-#include "RootBase.hh"
+#include "FindPeakBaseRoot.hh"
 
 // Fits a model function to a waveform
 // Note: It is assumed that the waveform being fitted is normalized. 

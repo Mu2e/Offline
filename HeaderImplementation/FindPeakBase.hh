@@ -1,5 +1,5 @@
-#ifndef Base_hh
-#define Base_hh
+#ifndef FindPeakBase_hh
+#define FindPeakBase_hh
 
 #include <vector>
 #include "TMath.h"
@@ -7,7 +7,6 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include <vector>
-#include "FitModel.C"
 #include "config.hh"
 
 typedef unsigned int * adcWaveform;

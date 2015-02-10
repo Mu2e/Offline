@@ -1,7 +1,7 @@
-#ifndef RootBase_hh
-#define RootBase_hh
+#ifndef FindPeakBaseRoot_hh
+#define FindPeakBaseRoot_hh
 
-#include "Base.hh"
+#include "FindPeakBase.hh"
 
 class FindPeakBaseRoot : public FindPeakBase{
 	public:

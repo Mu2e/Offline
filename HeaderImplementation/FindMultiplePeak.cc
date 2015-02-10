@@ -20,11 +20,9 @@ void FindSinglePeak::process(const adcWaveform adcData, resultantHitData &result
 	// Set initial fit parameters
 	const double timeshift = 30.0;
 	const double scalingFactor = TMath::Max(result[0]._peakHeight * _bits2scalingFactor, 1000.0);
-	std::cout << "peak height : " << result[0]._peakHeight << std::endl; 
 	const double sigma = 10.0;
 	double verticalShift = 0.0;
 	const Double_t initialParameters[4] = {timeshift, scalingFactor , verticalShift, sigma};
-	std::cout << "scalingFactor : " << scalingFactor << endl;
 
 	// DEAL WITH CASE OF ZERO PEDESTAL
 	//const bool nonZeroPedestal = (qAdc[0] + qAdc[1])*0.5 > 4.0 / sqrt(2.0) * 3.0;
@@ -32,16 +30,12 @@ void FindSinglePeak::process(const adcWaveform adcData, resultantHitData &result
 	Double_t finalParameters[4];
 
 	FindPeakBaseRoot::adcWaveform2TGraphErrors(adcData, _fitData);
-	FindPeakBaseRoot::fitModel2NormalizedWaveform(_fitModel, _fitData, initialParameters, finalParameters);
-	std::cout <<  " final param 0  : " << finalParameters[0] << std::endl; 
-	std::cout <<  " final param 1  : " << finalParameters[1] << std::endl;
-	std::cout <<  " final param 2  : " << finalParameters[2] << std::endl; 
-	std::cout <<  " final param 3  : " << finalParameters[3] << std::endl;  
+	FindPeakBaseRoot::fitModel2NormalizedWaveform(_fitModel, _fitData, initialParameters, finalParameters); 
 	fitParams2ResultantData(finalParameters, result);
 }
 
 
-void FindSinglePeak::fitParams2ResultantData(Double_t *fitParameters, resultantHitData &result)
+void FindSinglePeak::fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result)
 {
 	resultantPeakData peakData;
 
@@ -78,7 +72,7 @@ FindPeakBaseRoot::fitModel2NormalizedWaveform(_fitModel, _fitData, initialParame
 fitParams2ResultantData(finalParameters, result);
 }
 
-void FindSinglePeakWithDynamicPedestal::fitParams2ResultantData(Double_t *fitParameters, resultantHitData &result)
+void FindSinglePeakWithDynamicPedestal::fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result)
 {
 
 	// Dynamic Pedestal is treated as the first peak with a "peak time" of 0.0
@@ -123,7 +117,7 @@ void FindDoublePeak::process(const adcWaveform adcData, resultantHitData &result
 	fitParams2ResultantData(finalParameters, result);
 }
 
-void FindDoublePeak::fitParams2ResultantData(Double_t *fitParameters, resultantHitData &result)
+void FindDoublePeak::fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result)
 {
 	resultantPeakData firstPeakData;
 
@@ -165,7 +159,7 @@ void FindDoublePeakWithDynamicPedestal::process(const adcWaveform adcData, resul
 	fitParams2ResultantData(finalParameters, result);
 }
 
-void FindDoublePeakWithDynamicPedestal::fitParams2ResultantData(Double_t *fitParameters, resultantHitData &result)
+void FindDoublePeakWithDynamicPedestal::fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result)
 {
 	// First peak is dynamic pedestal with a "peak time" of 0.0
 	resultantPeakData dynamicPedestalData;
@@ -194,10 +188,7 @@ void FindDoublePeakWithDynamicPedestal::fitParams2ResultantData(Double_t *fitPar
 void FindMultiplePeaks::process(const adcWaveform adcData, resultantHitData &result)
 {
 	FindPeakBaseRoot::adcWaveform2TGraphErrors(adcData, _fitData);
-	findPeaks(_fitData, initParams, result);
-	std::cout << "Peak Time : " << result[0]._peakTime << std::endl;
-	std::cout << "Peak Height : " << result[0]._peakHeight << std::endl;
-
+	findPeaks(_fitData,_initParams, result);
 
 	const int numPeaks = result.size();
 
@@ -208,17 +199,17 @@ void FindMultiplePeaks::process(const adcWaveform adcData, resultantHitData &res
 		if (numPeaks == 1) 
 		{
 			dynamicPedestalAddPeak(_fitData, result);
-			FindSinglePeakWithDynamicPedestal singlePeak(initParams);
+			FindSinglePeakWithDynamicPedestal singlePeak(_initParams);
 			singlePeak.process(adcData, result);
 		}
 		else if (numPeaks == 2)
 		{
-			FindSinglePeakWithDynamicPedestal singlePeak(initParams);
+			FindSinglePeakWithDynamicPedestal singlePeak(_initParams);
 			singlePeak.process(adcData, result);
 		}
 		else if (numPeaks == 3)
 		{
-			FindDoublePeakWithDynamicPedestal doublePeak(initParams);
+			FindDoublePeakWithDynamicPedestal doublePeak(_initParams);
 			doublePeak.process(adcData, result);
 		}
 	}
@@ -227,12 +218,12 @@ void FindMultiplePeaks::process(const adcWaveform adcData, resultantHitData &res
 	{
 		if (numPeaks == 1)
 		{
-			FindSinglePeak singlePeak(initParams);
+			FindSinglePeak singlePeak(_initParams);
 			singlePeak.process(adcData, result);
 		}
 		if (numPeaks == 2)
 		{
-			FindDoublePeak doublePeak(initParams);
+			FindDoublePeak doublePeak(_initParams);
 			doublePeak.process(adcData, result);
 		}
 
@@ -241,7 +232,7 @@ void FindMultiplePeaks::process(const adcWaveform adcData, resultantHitData &res
 
 // TODO : FIGURE OUT WHY THIS FUNCTION IS NO LONGER RETURNING THE CORRECT VALUE
 // Performs explicit peak search on adc waveform data
-void FindMultiplePeaks::findPeaks(TGraphErrors &gr, const configStruct &initParams, resultantHitData &result, double sigma)
+void FindMultiplePeaks::findPeaks(const TGraphErrors &gr, const configStruct &initParams, resultantHitData &result, const double sigma)
 {
 		int ientry = 0; // Start time at 0
 		const double *measurementTimes = gr.GetX();
@@ -286,7 +277,7 @@ void FindMultiplePeaks::findPeaks(TGraphErrors &gr, const configStruct &initPara
 // This function searches for another peak in the waveform data by subtracting out a dynamic pedestal 
 // from the adc waveform and finding the maximum adc value in the "subtracted data".
 // This function is applied when no peak is found in the explicit peak search (findPeaks).
-void FindMultiplePeaks::dynamicPedestalAddPeak(TGraphErrors &gr, resultantHitData &result)
+void FindMultiplePeaks::dynamicPedestalAddPeak(const TGraphErrors &gr, resultantHitData &result)
 {	
 	// This maybe could be done using linear algebra vectors
 	// instead of arrays
@@ -300,7 +291,7 @@ void FindMultiplePeaks::dynamicPedestalAddPeak(TGraphErrors &gr, resultantHitDat
 	for (int i = 0; i < FindPeakBase::_initParams._numSamplesPerHit; ++i)
 	{
 		dynamicPedestalX[0] = measurementTimes[i];
-		subtractedValues[i] = adcValues[i] - dynamicPedestal(dynamicPedestalX, dynamicPedstalParam);
+		subtractedValues[i] = adcValues[i] - FitModelRoot::dynamicPedestal(dynamicPedestalX, dynamicPedstalParam);
 	}
 
 	// New peak is max value of difference between of adc values and dynamic pedestal

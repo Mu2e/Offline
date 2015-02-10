@@ -1,7 +1,7 @@
 #ifndef FindMultiplePeak_hh
 #define FindMultiplePeak_hh
 
-#include "RootBase.hh"
+#include "FindPeakBaseRoot.hh"
 
 class FindSinglePeak : public FindPeakBaseRoot{
 	public:
@@ -13,7 +13,7 @@ class FindSinglePeak : public FindPeakBaseRoot{
 		virtual void process(const adcWaveform adcData, resultantHitData &result);
 
 	private:
-		void fitParams2ResultantData(Double_t *fitParameters, resultantHitData &result);
+		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
 
 		TGraphErrors _fitData;
 		TF1 _fitModel;
@@ -33,7 +33,7 @@ class FindSinglePeakWithDynamicPedestal : public FindPeakBaseRoot{
 		TGraphErrors _fitData;
 		TF1 _fitModel;
 
-		void fitParams2ResultantData(Double_t *fitParameters, resultantHitData &result);
+		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
 
 };
 
@@ -47,7 +47,7 @@ class FindDoublePeak : public FindPeakBaseRoot{
 
 	protected:
 
-		void fitParams2ResultantData(Double_t *fitParameters, resultantHitData &result);
+		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
 
 	private:
 		TGraphErrors _fitData;
@@ -68,7 +68,7 @@ class FindDoublePeakWithDynamicPedestal : public FindPeakBaseRoot{
 		TF1 _fitModel;
 
 
-		void fitParams2ResultantData(Double_t *fitParameters, resultantHitData &result);
+		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
 };
 
 class FindMultiplePeaks : public FindPeakBaseRoot{
@@ -83,12 +83,12 @@ class FindMultiplePeaks : public FindPeakBaseRoot{
 
 	private:
 		// Performs explicit peak search on adc waveform data
-		void findPeaks(TGraphErrors &gr, const configStruct &initParams, resultantHitData &result, double sigma = 3.0);
+		void findPeaks(const TGraphErrors &gr, const configStruct &initParams, resultantHitData &result, const double sigma = 3.0);
 
 		// This function searches for another peak in the waveform data by subtracting out a dynamic pedestal 
 		// from the adc waveform and finding the maximum adc value in the "subtracted data".
 		// This function is applied when no peak is found in the explicit peak search (findPeaks).
-		void dynamicPedestalAddPeak(TGraphErrors &gr, resultantHitData &result);
+		void dynamicPedestalAddPeak(const TGraphErrors &gr, resultantHitData &result);
 
 		TGraphErrors _fitData;
 		TF1 _fitModel;

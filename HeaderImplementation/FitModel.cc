@@ -6,18 +6,18 @@
 
 namespace FitModel
 {
-  Float_t dynamicPedestal(Double_t t, dynamicPedestalParamStruct &fitParams, configStruct &initParams)
+  Float_t dynamicPedestal(const Double_t t, const dynamicPedestalParamStruct &fitParams, const configStruct &initParams)
   {
     return fitParams._Q * exp(-t / initParams._shapingTime);
   }
 
-  Float_t fixedTruncation(Float_t currentFunctionValue, configStruct &initParams)
+  Float_t fixedTruncation(const Float_t currentFunctionValue, const configStruct &initParams)
   {
     return TMath::Min(currentFunctionValue,(Float_t)initParams._truncationLevel);
   }
 
   // Shaping power set to 1
-  Float_t unConvolvedSinglePeak(Double_t t, configStruct &initParams)
+  Float_t unConvolvedSinglePeak(const Double_t t, const configStruct &initParams)
   {
   		// Initial return value
   		Float_t returnValue = 0.0;
@@ -34,7 +34,7 @@ namespace FitModel
   		// Note that this is a convolution with a uniform distribution
   		//2 Parameters (shaping power set to 1.0)
   		//par[0] - sigma
-  Float_t convolvedSinglePeak(Double_t t, Double_t sigma, configStruct &initParams)
+  Float_t convolvedSinglePeak(const Double_t t, const Double_t sigma, const configStruct &initParams)
   {
     	Float_t returnValue = 0.0;
   		
@@ -56,9 +56,9 @@ namespace FitModel
   //par[0] is shifted time 1st peak
   //par[1] is scalingfactor 1st peak
   //par[2] is sigma 1st peak
-  Float_t singlePeak(Double_t t, singlePeakParamStruct &fitParams, configStruct &initParams)
+  Float_t singlePeak(const Double_t t, const singlePeakParamStruct &fitParams, const configStruct &initParams)
   {
-    return (Float_t) fitParams._scalingFactor * convolvedSinglePeak(t,fitParams._sigma, initParams);
+    return (Float_t) fitParams._scalingFactor * convolvedSinglePeak(t - fitParams._shiftedTime, fitParams._sigma, initParams);
 
   }
   			
@@ -68,11 +68,9 @@ namespace FitModel
   //par[2] is vertical shift 1st peak
   //par[3] is sigma 1st peak
 
-  Float_t singlePeakWithConstantPedestal(Double_t t, singlePeakWithConstantPedestalParamStruct &fitParams, configStruct &initParams)
+  Float_t singlePeakWithConstantPedestal(const Double_t t, const singlePeakWithConstantPedestalParamStruct &fitParams, const configStruct &initParams)
   {
     singlePeakParamStruct singlePeakFitParams(fitParams._shiftedTime, fitParams._scalingFactor, fitParams._sigma);
-    std::cout << singlePeakFitParams._shiftedTime << std::endl;
-
     return (Float_t) singlePeak(t, singlePeakFitParams, initParams) + fitParams._verticalShift;
   }
 
@@ -83,7 +81,7 @@ namespace FitModel
   // par[3] is sigma
 
   // This should inherit from convolutionSinglePeak not FitModelBase
-  Float_t singlePeakWithDynamicPedestal(Double_t t, singlePeakWithDynamicPedestalParamStruct &fitParams, configStruct &initParams)
+  Float_t singlePeakWithDynamicPedestal(const Double_t t, const singlePeakWithDynamicPedestalParamStruct &fitParams, const configStruct &initParams)
   {
     singlePeakParamStruct singlePeakFitParams(fitParams._shiftedTime, fitParams._scalingFactor, fitParams._sigma);
 
@@ -99,7 +97,7 @@ namespace FitModel
       // Par1 - scalingFactor 1st peak
       // Par2 - shift in 2nd peak minus shift in 1st peak
       // Par3 - scaling factor 2nd peak
-  Float_t doublePeak(Double_t t, doublePeakParamStruct &fitParams, configStruct &initParams)
+  Float_t doublePeak(const Double_t t, const doublePeakParamStruct &fitParams, const configStruct &initParams)
   { 
         // Sigma is set to 0 for each peak
         singlePeakParamStruct firstPeakFitPar(fitParams._shiftedTimeFirstPeak, fitParams._scalingFactorFirstPeak);
@@ -120,7 +118,7 @@ namespace FitModel
     // Par2 - vertical shift
     // Par3 - shift in 2nd peak minus shift in 1st peak
     // Par4 - scaling factor 2nd peak
-  Float_t doublePeakWithConstantPedestal(Double_t t, doublePeakWithConstantPedestalParamStruct &fitParams, configStruct &initParams)
+  Float_t doublePeakWithConstantPedestal(const Double_t t, const doublePeakWithConstantPedestalParamStruct &fitParams, const configStruct &initParams)
   {
       doublePeakParamStruct doublePeakFitPar(fitParams._shiftedTimeFirstPeak, fitParams._scalingFactorFirstPeak,
                                       fitParams._shiftedTimeSecondPeak, fitParams._scalingFactorSecondPeak);
@@ -133,7 +131,7 @@ namespace FitModel
   // Par2 - Q
   // Par3 - shift in 2nd peak minus shift in 1st peak
   // Par4 - scaling factor 2nd peak
-  Float_t doublePeakWithDynamicPedestal(Double_t t, doublePeakWithDynamicPedestalParamStruct &fitParams, configStruct &initParams)
+  Float_t doublePeakWithDynamicPedestal(const Double_t t, const doublePeakWithDynamicPedestalParamStruct &fitParams, const configStruct &initParams)
   {
     doublePeakParamStruct doublePeakFitPar(fitParams._shiftedTimeFirstPeak, fitParams._scalingFactorFirstPeak, 
                                       fitParams._shiftedTimeSecondPeak, fitParams._scalingFactorSecondPeak);
