@@ -1,3 +1,4 @@
+# -*- mode: tcl -*-
 #
 # fcl config file to perform Geant4 studies using the Mu2e framework infrastructure and simple geometry
 #
