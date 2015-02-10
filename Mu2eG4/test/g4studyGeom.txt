@@ -23,15 +23,17 @@ bool           mu2e.standardDetector = false;
 
 // version of the target geometry configuration
 
-int            mu2e.studyEnvVersion      = 1;
-// 1 tube; 2 box
+int            mu2e.studyEnvVersion      = 4;
+// 1 tube; 2 box; 3 "calorimeter", 4 tube and a box
 
-vector<string> mu2e.materials = {"WAGVacuum"};
+// we do not use mu2e materials as they require geometry service detector info
+// vector<string> mu2e.materials = {"G4_Galactic"};
 
 bool           mu2e.printParticleDataTable = false;
 
 // Use a decent physics list
 string g4.physicsListName      = "Shielding";
+// string g4.physicsListName = "FTFP_BERT_EMZ";
 int g4.physicsListVerbosity = 1;
 
 // Use a specific range cut
@@ -97,7 +99,7 @@ bool g4.printTrackTiming = false;
 int world.verbosityLevel         = 2;
 
 // a very "thin" vacuum
-string world.materialName        = "WAGVacuum";
+string world.materialName        = "G4_Galactic";
 
 // make the world boundaries visible
 bool   world.boxVisible          = true;
@@ -116,15 +118,15 @@ bool           tube.solid   = false;
 string         tube.wallMaterialName = "G4_W";
 
 double         tube.rIn        = 0.0;
-double         tube.rOut       = 0.001;
+double         tube.rOut       = 1.0;
 double         tube.halfLength = 3.0;
 
-int            tube.copyNumber = 2; // non 0 for volume tracking purposes
+int            tube.copyNumber = 3; // non 0 for volume tracking purposes
                                     // 0 & 1 are World and an auxiliary 
                                     // volume almost filling up the world
 
 // tube position in the world
-vector<double> tube.centerInWorld = {0., 0., 0.};
+vector<double> tube.centerInWorld = {0., 0., 10.};
 
 // another target (a plane/box) for mu2e.studyEnvVersion == 2
 
@@ -134,7 +136,7 @@ bool           box.solid   = false;
 // fixme: may need to use pure isotopes
 string         box.wallMaterialName = "G4_W";
 
-vector<double> box.halfLengths = {1., 1., 0.0005};
+vector<double> box.halfLengths = {1., 1., 5.0};
 
 int            box.copyNumber = 2; // non 0 for volume tracking purposes
                                    // 0 & 1 are World and an auxiliary 
