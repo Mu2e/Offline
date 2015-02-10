@@ -65,6 +65,12 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& config = geom->config();
 
+    if (!config.getBool("mu2e.standardDetector",true)) {
+      cout  << "Non standard mu2e configuration, Will NOT construct mu2e materials " << endl;
+      // one could move this down to constructMu2eMaterials before using GeomHandle's
+     return;
+    }
+
     // Construct the requested materials.
     constructMu2eMaterials();
 
