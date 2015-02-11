@@ -51,6 +51,9 @@ physics : {
     # Run G4 and add its output to the event.
     g4run : @local::g4run
 
+    protonTimeMap        : { module_type : GenerateProtonTimes }
+    muonTimeMap          : { module_type : GenerateMuonLife }
+
     # Form StrawHits (SH).
     makeSH : @local::makeSH
 
@@ -86,7 +89,7 @@ physics : {
 
   }
 
-  p1 : [generate, g4run, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
+  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
   e1 : [checkhits, readStrawHits, outfile]
 
   trigger_paths  : [p1]
@@ -106,6 +109,9 @@ outputs: {
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20
+
+# physics.producers.g4run.SDConfig.enableAllSDs : true
+physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
 
 // Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel : 0
