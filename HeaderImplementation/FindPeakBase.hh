@@ -26,9 +26,10 @@ struct resultantPeakData
 // This is object top which will be filled by the process method 
 typedef std::vector<resultantPeakData> resultantHitData;
 
-
-// Virtual class providing structure for FindSinglePeak, FindDoublePeak, FindMutiplePeaks, etc. 
-class FindPeakBase{
+/** \class FindPeakBase
+ * Virtual class providing structure for FindSinglePeak, FindDoublePeak, FindMutiplePeaks, etc. 
+ */
+ class FindPeakBase{
   public:
     
     // Fills result using adc waveform data

@@ -23,7 +23,7 @@ void FindPeakBaseRoot::fitModel2NormalizedWaveform(TF1 &fitModel, TGraphErrors &
 
 
 // Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT
-void FindPeakBaseRoot::adcWaveform2TGraphErrors(adcWaveform adcData, TGraphErrors &fitData)
+void FindPeakBaseRoot::adcWaveform2TGraphErrors(const adcWaveform adcData, TGraphErrors &fitData)
 {
 	Double_t adcDataTemp[_initParams._numSamplesPerHit];
 	Double_t measurementTimes[_initParams._numSamplesPerHit];
