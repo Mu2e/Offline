@@ -120,6 +120,8 @@ namespace mu2e {
     Float_t _schi2, _smvaout, _sddot, _sdist, _sdz;
     Float_t _mcdist;
     Int_t _stereo, _fs, _sfs, _mcr, _mcrel, _mcpdg, _mcgen, _mcproc;
+    bool  _genmap;
+    bool  _first_call_to_produce;
  };
 
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
@@ -147,6 +149,8 @@ namespace mu2e {
     // Tell the framework what we make.
     if(_writepairs)produces<StereoHitCollection>();
     produces<StrawHitPositionCollection>();
+    _genmap                = true;
+    _first_call_to_produce = true;
   }
 
   void MakeStereoHits::beginJob(){
@@ -213,15 +217,13 @@ namespace mu2e {
     const Tracker& tracker = getTrackerOrThrow();
 
     // setup imap, dosec, and hdx
-    static bool genmap(true);
-    if(genmap){
-      genmap = false;
+    if(_genmap){
+      _genmap = false;
       genMap(tracker);
     }
 
-    static bool first(true);
-    if(_diagLevel >0 && first){
-      first = false;
+    if(_diagLevel >0 && _first_call_to_produce){
+      _first_call_to_produce = false;
       const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
       art::ServiceHandle<art::TFileService> tfs;
       unsigned nsta = tt.nDevices()/2;

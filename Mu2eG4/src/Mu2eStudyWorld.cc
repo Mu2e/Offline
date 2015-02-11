@@ -25,6 +25,7 @@
 #include "Mu2eG4/inc/constructStudyEnv_v001.hh"
 #include "Mu2eG4/inc/constructStudyEnv_v002.hh"
 #include "Mu2eG4/inc/constructStudyEnv_v003.hh"
+#include "Mu2eG4/inc/constructStudyEnv_v004.hh"
 #include "Mu2eG4/inc/Mu2eStudyWorld.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -149,6 +150,8 @@ namespace mu2e {
       constructStudyEnv_v002(boxInTheWorldVInfo, _config);
     } else if ( seVer == 3 ) {
       constructStudyEnv_v003(boxInTheWorldVInfo, _config);
+    } else if ( seVer == 4 ) {
+      constructStudyEnv_v004(boxInTheWorldVInfo, _config);
     } else {
       throw cet::exception("CONFIG")
         << __func__ << ": unknown study environment: " << seVer << "\n";
