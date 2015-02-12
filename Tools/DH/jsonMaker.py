@@ -19,7 +19,61 @@ import hashlib
 ##############################################################
 
 def printHelp():
-    print("here is the help")
+    print """
+jsonMaker  [OPTIONS] ... [FILES] ...
+
+  Create json files which hold metadata information about the file
+to be uploaded. The file list can contain data, and other types,
+of files (foo.bar) to be uploaded.  If foo.bar.json is in the list, 
+its contents will be added to the json for foo.bar.
+If a generic json file is supplied, it's contents will be
+added to all output json files.  Output is a json file for each input 
+file, suitable to presenting to the upload FTS server together with 
+the data file.
+   If the input file is an art file, jsonMaker must run
+a module over the file in order to extract run and event
+information, so a mu2e offline release that contains the module
+must be setup.
+
+   -h 
+       print help
+   -v LEVEL
+       verbose level, 0 to 10, default=1
+   -x 
+       perform write/copy of files.  Default is to evaluate, not execute.
+   -c
+       copy the data file to the upload area after processing
+   -m
+       mv the data file to the upload area after processing. 
+       Useful if the data file is already in
+       /pnfs/mu2e/scratch where the FTS is.
+   -s FILE
+       FILE contains a list of input files to operate on
+   -p METHOD
+      METHOD="file" pair a json file with a data file based on the 
+      fact that the if the file is foo, the json is foo.bar.
+      METHOD="dir" pair a json and a data file based on the fact 
+      that they are in the same directory, whatever their names are
+   -j FILE
+       a json file fragment to add to the json for all files
+   -d DIR
+       directory to write the json files in.  Default is ".".
+       if DIR="same" then write the json in the same directory as the 
+       the data file. if DIR="fts" then write it to the FTS directory. 
+   -f FILE_FAMILY
+       the file_family for these files - required
+   -r NAME
+       this will trigger renaming the data files by the pattern in NAME
+       example: -r mcs.batman.beam-2014.fcl-100..art
+       the blank sequencer ".." will be replaced by a sequence number 
+       like ".0001." or first run and subrun for art files.
+   -l DIR
+       write a log file of the data file name and json file name
+       followed by the fts directory where they should go, suitable
+       for driving a "ifdh cp -f" command to move all files in one lock.
+       This file will be named for the dataset.
+
+    """
 
 ##############################################################
 # class to hold the command line settings
