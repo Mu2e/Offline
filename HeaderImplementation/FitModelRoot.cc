@@ -1,6 +1,6 @@
 #include "FitModelRoot.hh"
 #include "TMath.h"
-#include "config.hh" // PROBABLY GET RID OF THIS INCLUDE STATEMENT EVENTUALLY
+#include "configStruct.hh" // PROBABLY GET RID OF THIS INCLUDE STATEMENT EVENTUALLY
 #include "FitModel.hh"
 
 namespace FitModelRoot

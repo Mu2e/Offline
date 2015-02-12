@@ -19,10 +19,12 @@ void FindSinglePeak::process(const adcWaveform adcData, resultantHitData &result
 {	
 	// Set initial fit parameters
 	const double timeshift = 30.0;
-	const double scalingFactor = TMath::Max(result[0]._peakHeight * _bits2scalingFactor, 1000.0);
+	const double scalingFactor = TMath::Max((result[0]._peakHeight - _initParams._defaultPedestal) * _bits2scalingFactor, 1000.0);
 	const double sigma = 10.0;
 	double verticalShift = 0.0;
 	const Double_t initialParameters[4] = {timeshift, scalingFactor , verticalShift, sigma};
+
+	std::cout << "i'm here : " << scalingFactor << std::endl;
 
 	// DEAL WITH CASE OF ZERO PEDESTAL
 	//const bool nonZeroPedestal = (qAdc[0] + qAdc[1])*0.5 > 4.0 / sqrt(2.0) * 3.0;

@@ -4,7 +4,7 @@
 #include "TF1.h"
 #include "FindPeakBase.hh"
 
-int  testit(int num)
+int  testit(const int num)
 {
 	adcWaveform adcData;
 	unsigned int adc[8] = {64, 60, 103, 125, 116, 108, 93, 92};
@@ -13,11 +13,11 @@ int  testit(int num)
 	resultantHitData result;
 	const configStruct initParams;
 	FindMultiplePeaks peak(initParams);
-	for (int i = 0; i < num; ++num)
+	for (int i = 0; i < num; ++i)
 	{peak.process(adcData, result);}
 
-	//std::cout << result[0]._peakTime << std::endl;
-	//std::cout << result[0]._peakHeight << std::endl;
+	std::cout << "result[0]._peakTime" << result[0]._peakTime << std::endl;
+	std::cout << "result[0]._peakHeight" << result[0]._peakHeight << std::endl;
 	return 0;
 }
 

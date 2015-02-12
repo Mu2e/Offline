@@ -7,7 +7,7 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include <vector>
-#include "config.hh"
+#include "configStruct.hh"
 
 typedef unsigned int * adcWaveform;
 

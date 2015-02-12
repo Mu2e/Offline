@@ -9,7 +9,7 @@
 	gROOT->ProcessLine(".L FitModel.hh+");
 	gROOT->ProcessLine(".L FitModelRoot.hh+");
 	gROOT->ProcessLine(".L FindMultiplePeak.hh+");
-	gROOT->ProcessLine(".L config.hh+");
+	gROOT->ProcessLine(".L configStruct.hh+");
 	gROOT->ProcessLine(".L ParamStructs.hh+");
 
 }

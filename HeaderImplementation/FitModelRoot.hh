@@ -2,7 +2,7 @@
 #define FitModelRoot_hh
 
 #include "TMath.h"
-#include "config.hh" // PROBABLY GET RID OF THIS INCLUDE STATEMENT EVENTUALLY
+#include "configStruct.hh" // PROBABLY GET RID OF THIS INCLUDE STATEMENT EVENTUALLY
 
 namespace FitModelRoot
 {

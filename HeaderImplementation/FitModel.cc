@@ -1,6 +1,6 @@
 #include "TMath.h"
 #include "ParamStructs.hh"
-#include "config.hh"
+#include "configStruct.hh"
 #include "FitModel.hh"
 #include <iostream>
 
