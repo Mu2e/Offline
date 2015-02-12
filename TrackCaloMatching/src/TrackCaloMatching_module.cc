@@ -338,7 +338,7 @@ namespace mu2e {
 // for now - transform back to the local coordinate system
 //-----------------------------------------------------------------------------
 	cogVaneFrame = cg->toSectionFrame(vane_id, cl->cog3Vector());
-      
+       
 	cl_v         = cogVaneFrame.x();
 	cl_w         = cogVaneFrame.y();
 	cl_energy    = cl->energyDep();
