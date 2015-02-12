@@ -7,7 +7,7 @@
 #include "TGraph.h"
 #include "TGraphErrors.h"
 #include <vector>
-#include "configStruct.hh"
+#include "ConfigStruct.hh"
 
 typedef unsigned int * adcWaveform;
 
@@ -39,15 +39,15 @@ typedef std::vector<resultantPeakData> resultantHitData;
     // Destructor
     virtual ~FindPeakBase(){}
 
-    // FindPeakBase normal constructor with configStruct initilization parameters
-    FindPeakBase(const configStruct &initParams) : _initParams(initParams), 
+    // FindPeakBase normal constructor with ConfigStruct initilization parameters
+    FindPeakBase(const ConfigStruct &initParams) : _initParams(initParams), 
                     _bits2scalingFactor(initParams._shapingTime * TMath::E()),
                     _scalingFactor2bits(1.0 / _bits2scalingFactor),
                     _hitPeriod(initParams._numSamplesPerHit * initParams._measurementFrequency - 1.0){}
 
   protected:
 
-    configStruct _initParams; 
+    ConfigStruct _initParams; 
 
     // Precomputed constants
     const Double_t _bits2scalingFactor; // approximately 67.96

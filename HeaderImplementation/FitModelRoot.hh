@@ -2,20 +2,19 @@
 #define FitModelRoot_hh
 
 #include "TMath.h"
-#include "configStruct.hh" // PROBABLY GET RID OF THIS INCLUDE STATEMENT EVENTUALLY
+#include "ConfigStruct.hh" // PROBABLY GET RID OF THIS INCLUDE STATEMENT EVENTUALLY
 
 namespace FitModelRoot
 {
-	configStruct initParams; // THIS NEEDS TO EVENTUALLY BE DELETED
+	ConfigStruct initParams; // THIS NEEDS TO EVENTUALLY BE DELETED
 
 	Float_t dynamicPedestal(Double_t *x, Double_t *par);
 
-	Float_t fixedTruncation(Float_t currentFunctionValue);
+	Float_t fixedTruncation(Double_t *x, Double_t *par);
 
     // Shaping power set to 1
     // MAYBE GET RID OF PAR
 	Float_t unConvolvedSinglePeak(Double_t *x, Double_t *par);
-
 
 		// Note that this is a convolution with a uniform distribution
 		//2 Parameters (shaping power set to 1.0)

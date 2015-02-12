@@ -5,8 +5,8 @@
 
 class FindSinglePeak : public FindPeakBaseRoot{
 	public:
-		// FindSinglePeak normal constructor with configStruct initilization parameters
-		FindSinglePeak(const configStruct &initParams);
+		// FindSinglePeak normal constructor with ConfigStruct initilization parameters
+		FindSinglePeak(const ConfigStruct &initParams);
 
 		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
 		// NOTE : This function may begin with peak data provided in result which is replaced
@@ -19,11 +19,28 @@ class FindSinglePeak : public FindPeakBaseRoot{
 		TF1 _fitModel;
 };
 
+class FindSinglePeakWithConstantPedestal : public FindPeakBaseRoot{
+	public:
+		// FindSinglePeak normal constructor with ConfigStruct initilization parameters
+		FindSinglePeakWithConstantPedestal(const ConfigStruct &initParams);
+
+		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
+		// NOTE : This function may begin with peak data provided in result which is replaced
+		virtual void process(const adcWaveform adcData, resultantHitData &result);
+
+	private:
+		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
+
+		TGraphErrors _fitData;
+		TF1 _fitModel;
+};
+
+
 class FindSinglePeakWithDynamicPedestal : public FindPeakBaseRoot{
 	public:
 
-		// FindSinglePeakWithDynamicPedestal normal constructor with configStruct initilization parameters
-		FindSinglePeakWithDynamicPedestal(const configStruct &initParams);
+		// FindSinglePeakWithDynamicPedestal normal constructor with ConfigStruct initilization parameters
+		FindSinglePeakWithDynamicPedestal(const ConfigStruct &initParams);
 
 		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
 		// NOTE : This function may begin with peak data provided in result which is replaced
@@ -39,7 +56,7 @@ class FindSinglePeakWithDynamicPedestal : public FindPeakBaseRoot{
 
 class FindDoublePeak : public FindPeakBaseRoot{
 	public:
-		FindDoublePeak(const configStruct &initParams);
+		FindDoublePeak(const ConfigStruct &initParams);
 
 		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
 		// NOTE : This function may begin with peak data provided in result which is replaced
@@ -56,8 +73,8 @@ class FindDoublePeak : public FindPeakBaseRoot{
 
 class FindDoublePeakWithDynamicPedestal : public FindPeakBaseRoot{
 	public:
-		// FindDoublePeakWithDynamicPedestal normal constructor with configStruct initilization parameters
-		FindDoublePeakWithDynamicPedestal(const configStruct &initParams);
+		// FindDoublePeakWithDynamicPedestal normal constructor with ConfigStruct initilization parameters
+		FindDoublePeakWithDynamicPedestal(const ConfigStruct &initParams);
 
 		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
 		// NOTE : This function may begin with peak data provided in result which is replaced
@@ -74,8 +91,8 @@ class FindDoublePeakWithDynamicPedestal : public FindPeakBaseRoot{
 class FindMultiplePeaks : public FindPeakBaseRoot{
 	public:
 
-		// FindMultiplePeaks normal constructor with configStruct initilization parameters
-		FindMultiplePeaks(const configStruct &initParams) : FindPeakBaseRoot(initParams){}
+		// FindMultiplePeaks normal constructor with ConfigStruct initilization parameters
+		FindMultiplePeaks(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams){}
 		
 		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
 		// NOTE : This function may begin with peak data provided in result which is replaced
@@ -83,7 +100,7 @@ class FindMultiplePeaks : public FindPeakBaseRoot{
 
 	private:
 		// Performs explicit peak search on adc waveform data
-		void findPeaks(const TGraphErrors &gr, const configStruct &initParams, resultantHitData &result, const double sigma = 3.0);
+		void findPeaks(const TGraphErrors &gr, const ConfigStruct &initParams, resultantHitData &result, const double sigma = 3.0);
 
 		// This function searches for another peak in the waveform data by subtracting out a dynamic pedestal 
 		// from the adc waveform and finding the maximum adc value in the "subtracted data".

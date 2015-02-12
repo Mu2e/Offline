@@ -6,10 +6,10 @@
 // TODO : ADD CLASS FindSinglePeakWithConstantPedestal
 
 
-// FindSinglePeak normal constructor with configStruct initilization parameters
-FindSinglePeak::FindSinglePeak(const configStruct &initParams) : FindPeakBaseRoot(initParams)
+// FindSinglePeak normal constructor with ConfigStruct initilization parameters
+FindSinglePeak::FindSinglePeak(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams)
 {
-  _fitModel = TF1("fitModel",FitModelRoot::convolutionSinglePeakWithConstantPedestal,0.0,_hitPeriod,4);
+  _fitModel = TF1("fitModel",FitModelRoot::convolutionSinglePeak,0.0,_hitPeriod,3);
 }
 
 
@@ -21,15 +21,9 @@ void FindSinglePeak::process(const adcWaveform adcData, resultantHitData &result
 	const double timeshift = 30.0;
 	const double scalingFactor = TMath::Max((result[0]._peakHeight - _initParams._defaultPedestal) * _bits2scalingFactor, 1000.0);
 	const double sigma = 10.0;
-	double verticalShift = 0.0;
-	const Double_t initialParameters[4] = {timeshift, scalingFactor , verticalShift, sigma};
+	const Double_t initialParameters[3] = {timeshift, scalingFactor, sigma};
 
-	std::cout << "i'm here : " << scalingFactor << std::endl;
-
-	// DEAL WITH CASE OF ZERO PEDESTAL
-	//const bool nonZeroPedestal = (qAdc[0] + qAdc[1])*0.5 > 4.0 / sqrt(2.0) * 3.0;
-	
-	Double_t finalParameters[4];
+	Double_t finalParameters[3];
 
 	FindPeakBaseRoot::adcWaveform2TGraphErrors(adcData, _fitData);
 	FindPeakBaseRoot::fitModel2NormalizedWaveform(_fitModel, _fitData, initialParameters, finalParameters); 
@@ -49,8 +43,48 @@ void FindSinglePeak::fitParams2ResultantData(const Double_t *fitParameters, resu
 }	
 
 
-// FindSinglePeakWithDynamicPedestal normal constructor with configStruct initilization parameters
-FindSinglePeakWithDynamicPedestal::FindSinglePeakWithDynamicPedestal(const configStruct &initParams) : FindPeakBaseRoot(initParams)
+// FindSinglePeakWithConstantPedestal normal constructor with ConfigStruct initilization parameters
+FindSinglePeakWithConstantPedestal::FindSinglePeakWithConstantPedestal(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams)
+{
+  _fitModel = TF1("fitModel",FitModelRoot::convolutionSinglePeakWithConstantPedestal,0.0,_hitPeriod,4);
+}
+
+// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
+// NOTE : This function may begin with peak data provided in result which is replaced
+void FindSinglePeakWithConstantPedestal::process(const adcWaveform adcData, resultantHitData &result)
+{	
+	// Set initial fit parameters
+	const double timeshift = 30.0;
+	const double scalingFactor = TMath::Max((result[0]._peakHeight - _initParams._defaultPedestal) * _bits2scalingFactor, 1000.0);
+	const double sigma = 10.0;
+	double verticalShift = 0.0;
+	const Double_t initialParameters[4] = {timeshift, scalingFactor , verticalShift, sigma};
+
+	// DEAL WITH CASE OF ZERO PEDESTAL
+	//const bool nonZeroPedestal = (qAdc[0] + qAdc[1])*0.5 > 4.0 / sqrt(2.0) * 3.0;
+	
+	Double_t finalParameters[4];
+
+	FindPeakBaseRoot::adcWaveform2TGraphErrors(adcData, _fitData);
+	FindPeakBaseRoot::fitModel2NormalizedWaveform(_fitModel, _fitData, initialParameters, finalParameters); 
+	fitParams2ResultantData(finalParameters, result);
+}
+
+
+void FindSinglePeakWithConstantPedestal::fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result)
+{
+	resultantPeakData peakData;
+
+	// If there's time maybe make timeshift,scaling factor enumerated like true anomaly and eccentricity
+	peakData._peakTime = fitParameters[0];
+	peakData._peakHeight = fitParameters[1] * _scalingFactor2bits;
+
+	result[0] = peakData;
+}	
+
+
+// FindSinglePeakWithDynamicPedestal normal constructor with ConfigStruct initilization parameters
+FindSinglePeakWithDynamicPedestal::FindSinglePeakWithDynamicPedestal(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams)
 {
 	_fitModel = TF1("fitModel",FitModelRoot::convolutionSinglePeakWithDynamicPedestal,0.0,_hitPeriod,4);
 }
@@ -95,7 +129,7 @@ void FindSinglePeakWithDynamicPedestal::fitParams2ResultantData(const Double_t *
 }
 
 
-FindDoublePeak::FindDoublePeak(const configStruct &initParams) : FindPeakBaseRoot(initParams)
+FindDoublePeak::FindDoublePeak(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams)
 {
 	_fitModel = TF1("fitModel",FitModelRoot::doublePeak,0.0,_hitPeriod,5);
 }
@@ -137,8 +171,8 @@ void FindDoublePeak::fitParams2ResultantData(const Double_t *fitParameters, resu
 
 
 
-// FindDoublePeakWithDynamicPedestal normal constructor with configStruct initilization parameters
-FindDoublePeakWithDynamicPedestal::FindDoublePeakWithDynamicPedestal(const configStruct &initParams) : FindPeakBaseRoot(initParams)
+// FindDoublePeakWithDynamicPedestal normal constructor with ConfigStruct initilization parameters
+FindDoublePeakWithDynamicPedestal::FindDoublePeakWithDynamicPedestal(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams)
 {
 	_fitModel = TF1("fitModel",FitModelRoot::doublePeakWithDynamicPedestal,0.0,_hitPeriod,5);
 }
@@ -234,7 +268,7 @@ void FindMultiplePeaks::process(const adcWaveform adcData, resultantHitData &res
 
 // TODO : FIGURE OUT WHY THIS FUNCTION IS NO LONGER RETURNING THE CORRECT VALUE
 // Performs explicit peak search on adc waveform data
-void FindMultiplePeaks::findPeaks(const TGraphErrors &gr, const configStruct &initParams, resultantHitData &result, const double sigma)
+void FindMultiplePeaks::findPeaks(const TGraphErrors &gr, const ConfigStruct &initParams, resultantHitData &result, const double sigma)
 {
 		int ientry = 0; // Start time at 0
 		const double *measurementTimes = gr.GetX();

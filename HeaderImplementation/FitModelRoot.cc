@@ -1,6 +1,5 @@
 #include "FitModelRoot.hh"
 #include "TMath.h"
-#include "configStruct.hh" // PROBABLY GET RID OF THIS INCLUDE STATEMENT EVENTUALLY
 #include "FitModel.hh"
 
 namespace FitModelRoot
@@ -10,13 +9,13 @@ namespace FitModelRoot
 	//Note that normalized it is Q / tau rather than Q 
 	Float_t dynamicPedestal(Double_t *x, Double_t *par)
 	{
-	  dynamicPedestalParamStruct parStruct(par[0]);	
+	  DynamicPedestalParamStruct parStruct(par[0]);	
 	  return FitModel::dynamicPedestal(x[0],parStruct, initParams);
 	}
 
-	Float_t fixedTruncation(Float_t currentFunctionValue)
+	Float_t fixedTruncation(Double_t *x, Double_t *par)
 	{
-  		return FitModel::fixedTruncation(currentFunctionValue, initParams);
+		return FitModel::fixedTruncation(x[0], initParams);
 	}
 
     // Shaping power set to 1
@@ -40,7 +39,7 @@ namespace FitModelRoot
 	//par[2] is sigma 1st peak
 	Float_t convolutionSinglePeak(Double_t *x, Double_t *par)
 	{
-	  singlePeakParamStruct parStruct(par[0],par[1],par[2]);
+	  SinglePeakParamStruct parStruct(par[0],par[1],par[2]);
 
 	  return FitModel::singlePeak(x[0],parStruct,initParams);
 
@@ -54,7 +53,7 @@ namespace FitModelRoot
 
 	Float_t convolutionSinglePeakWithConstantPedestal(Double_t *x, Double_t *par)
 	{
-	  singlePeakWithConstantPedestalParamStruct parStruct(par[0],par[1],par[2],par[3]);
+	  SinglePeakWithConstantPedestalParamStruct parStruct(par[0],par[1],par[2],par[3]);
 
 	  return FitModel::singlePeakWithConstantPedestal(x[0],parStruct,initParams);
 	}
@@ -69,7 +68,7 @@ namespace FitModelRoot
 	Float_t convolutionSinglePeakWithDynamicPedestal(Double_t *x, Double_t *par)
 	{
 
-		singlePeakWithDynamicPedestalParamStruct parStruct(par[0],par[1],par[2],par[3]);
+		SinglePeakWithDynamicPedestalParamStruct parStruct(par[0],par[1],par[2],par[3]);
 
   		return FitModel::singlePeakWithDynamicPedestal(x[0],parStruct,initParams);
   	}
@@ -81,7 +80,7 @@ namespace FitModelRoot
 	Float_t doublePeak(Double_t *x, Double_t *par)
 	{
 	    
-		doublePeakParamStruct parStruct(par[0],par[1],par[2],par[3]);
+		DoublePeakParamStruct parStruct(par[0],par[1],par[2],par[3]);
 
       	return FitModel::doublePeak(x[0],parStruct,initParams);
 	}
@@ -93,7 +92,7 @@ namespace FitModelRoot
     // Par4 - scaling factor 2nd peak
 	Float_t doublePeakWithConstantPedestal(Double_t *x, Double_t *par)
 	{
-		doublePeakWithConstantPedestalParamStruct parStruct(par[0],par[1],par[2],par[3],par[4]);
+		DoublePeakWithConstantPedestalParamStruct parStruct(par[0],par[1],par[2],par[3],par[4]);
 
       	return FitModel::doublePeakWithConstantPedestal(x[0],parStruct,initParams);
 	}
@@ -106,7 +105,7 @@ namespace FitModelRoot
 	Float_t doublePeakWithDynamicPedestal(Double_t *x, Double_t *par)
 	{
 
-		doublePeakWithDynamicPedestalParamStruct parStruct(par[0],par[1],par[2],par[3],par[4]);
+		DoublePeakWithDynamicPedestalParamStruct parStruct(par[0],par[1],par[2],par[3],par[4]);
 
   		return FitModel::doublePeakWithDynamicPedestal(x[0],parStruct,initParams);
 	}

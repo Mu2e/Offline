@@ -6,8 +6,8 @@
 class FindPeakBaseRoot : public FindPeakBase{
 	public:
 
-		// FindPeakBaseRoot normal constructor with configStruct initilization parameters
-		FindPeakBaseRoot(const configStruct &initParams) : FindPeakBase(initParams){};
+		// FindPeakBaseRoot normal constructor with ConfigStruct initilization parameters
+		FindPeakBaseRoot(const ConfigStruct &initParams) : FindPeakBase(initParams){};
 
 	protected:
 

@@ -11,7 +11,7 @@ int  testit(const int num)
 	adcData = adc;
 
 	resultantHitData result;
-	const configStruct initParams;
+	const ConfigStruct initParams;
 	FindMultiplePeaks peak(initParams);
 	for (int i = 0; i < num; ++i)
 	{peak.process(adcData, result);}
@@ -32,5 +32,18 @@ void testit2(Double_t timeShift)
 	gr->Draw("A*");
 	func->Draw("same");
 }
+
+using namespace FitModelRoot;
+
+void testit3()
+{
+	/**TF1 *func1 =new TF1("func1",FitModelRoot::convolutionSinglePeakWithConstantPedestal,0.0,140.0,4);
+	TF1 *func2 = new TF1("func2", FitModelRoot::fixedTruncation,0.0,2000.0,0);
+	TF1 *func3 = new TF1("func3",func1*func2, 0.0, 140.0,4);
+	func3->SetParameters(20.0,8494,0.0,10.0);
+	func3->Draw();**/
+}
+
+
 
 
