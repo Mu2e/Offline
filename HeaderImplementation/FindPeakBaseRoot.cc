@@ -17,7 +17,6 @@ void FindPeakBaseRoot::fitModel2NormalizedWaveform(TF1 &fitModel, TGraphErrors &
 	for (int i = 0; i < numParameters; ++i)
 	{
 		fitParameters[i] = fitModel.GetParameter(i);
-		std::cout << "init param [" << i << "]" << initialParameters[i] << std::endl;
 	}
 }
 
