@@ -17,5 +17,8 @@ class FindPeakBaseRoot : public FindPeakBase{
 		// Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT
 		void adcWaveform2TGraphErrors(const adcWaveform adcData, TGraphErrors &fitData);
 
+		TGraphErrors _fitData;
+		TF1 _fitModel;
+
 };
 #endif
