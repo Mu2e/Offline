@@ -356,7 +356,7 @@ namespace mu2e {
 // point closest to the cluster in 2D (XY) - want to understand the resolutions
 // in coordinate and in angle
 //-----------------------------------------------------------------------------
-##
+
 //-----------------------------------------------------------------------------
 // 2014-05-14 P.Murat: use 10 MeV as the matching resolution, 
 //            for a 10 MeV cluster the energy term in the chi2 would be (90/10)^2

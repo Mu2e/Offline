@@ -26,6 +26,7 @@ physics :
     {
       module_type               : CrvPhotonArrivalsGenerator
       g4ModuleLabels            : ["g4filter"]
+      processNames              : ["cosmics2"]
       lookupTableFileName       : "/mu2e/data/outstage/ehrlich/CRVLookupTables/CRVLookupTable.root"
       scintillationYield        : 820.0    //820.0 photons per MeV
       scintillatorDecayTimeFast : 3.0      //3.0 ns
@@ -72,8 +73,10 @@ physics :
       module_type               : SimpleCrvCoincidenceCheck
       crvRecoPulsesModuleLabel  : "CrvRecoPulses"
       PEthreshold               : 14
-      maxDistance               : 200
-      maxTimeDifference         : 5
+      maxDistance               : 200      //mm
+      maxTimeDifference         : 5        //ns
+      timeWindowStart           : 550      //ns
+      timeWindowEnd             : 1695     //ns
     }
     CrvTest:
     {
