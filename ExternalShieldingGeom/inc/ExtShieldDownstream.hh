@@ -9,9 +9,10 @@
 
 // The Downstream external shielding is described in WBS 5.9.  The
 // geometry is described here for the TS Downstream portion of the shielding.
-// Details can be found in docdb #xxxx.
+// Details can be found in docdb #4678 and #xxxx.
 // Found in this class:
-// T-shaped blocks constituting all parts of the Downstream External Shield
+// Various shaped blocks formed from extrusions, 
+// constituting all parts of the Downstream External Shield
 
 
 #include <vector>
@@ -34,7 +35,7 @@ namespace mu2e {
     // class for shields, though?  Sort of a fake identifier.
   public:
 
-    // The downstream shielding can be built entirely from T-shaped
+    // The downstream shielding can be built entirely from 
     // extrusions of concrete or Barite concrete.
 
 
@@ -50,10 +51,10 @@ namespace mu2e {
     { return _centerPositions; }
     const std::vector<std::string>&          getOrientations() const 
     { return _orientations; }
-    const std::vector<bool>&                 getHasHole() const 
-    { return _hasHole; }
-    const std::vector<bool>&                 getHasNotch() const
-    { return _hasNotch; }
+    const std::vector<int>&                  getNHoles() const 
+    { return _nHoles; }
+    const std::vector<int>&                  getNNotches() const
+    { return _nNotches; }
     const std::vector<int>&                  getHoleIndices() const
     { return _holeIndices; }
     const std::vector<CLHEP::Hep3Vector>&    getHoleLocations() const
@@ -82,8 +83,8 @@ namespace mu2e {
 			const std::vector<std::string>&          mats, 
 			const std::vector<CLHEP::Hep3Vector>&    sites, 
 			const std::vector<std::string>&          orients,
-			const std::vector<bool>&                 holeYes,
-			const std::vector<bool>&                 notchYa,
+			const std::vector<int>&                  nHoles,
+			const std::vector<int>&                  nNotches,
 			const std::vector<int>&                  iHole,
 			const std::vector<CLHEP::Hep3Vector>&    locHole,
 			const std::vector<double>&               radHole,
@@ -98,8 +99,8 @@ namespace mu2e {
 	_materialNames    (mats),
 	_centerPositions  (sites),
 	_orientations     (orients),
-	_hasHole          (holeYes),
-	_hasNotch         (notchYa),
+	_nHoles           (nHoles),
+	_nNotches         (nNotches),
 	_holeIndices      (iHole),
 	_holeLocations    (locHole),
         _holeRadii        (radHole),
@@ -125,8 +126,8 @@ namespace mu2e {
     std::vector< std::string >           _materialNames;
     std::vector< CLHEP::Hep3Vector >     _centerPositions;
     std::vector< std::string >           _orientations;
-    std::vector< bool >                  _hasHole;
-    std::vector< bool >                  _hasNotch;
+    std::vector< int >                   _nHoles;
+    std::vector< int >                   _nNotches;
     std::vector< int >                   _holeIndices;
     // The following vectors hold one piece of information per "hole"
     std::vector< CLHEP::Hep3Vector >     _holeLocations;

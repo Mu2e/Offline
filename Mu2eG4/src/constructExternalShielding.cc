@@ -23,7 +23,6 @@
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-//#include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
@@ -212,8 +211,8 @@ namespace mu2e {
     std::vector<std::string> matsDS          = extshldDn->getMaterialNames();
     std::vector<CLHEP::Hep3Vector> sitesDS   = extshldDn->getCentersOfBoxes();
     std::vector<std::string> orientsDS       = extshldDn->getOrientations();
-    std::vector<bool> hasHoleDS              = extshldDn->getHasHole();
-    std::vector<bool> hasNotchDS             = extshldDn->getHasNotch();
+    std::vector<int> nHolesDS                = extshldDn->getNHoles();
+    std::vector<int> nNotchesDS              = extshldDn->getNNotches();
     std::vector<int> holeIDDS                = extshldDn->getHoleIndices();
     std::vector<CLHEP::Hep3Vector> holeLocDS = extshldDn->getHoleLocations();
     std::vector<double> holeRadDS            = extshldDn->getHoleRadii();
@@ -253,64 +252,137 @@ namespace mu2e {
 	CLHEP::HepRotation* itsDSRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	getRotationFromOrientation( *itsDSRotat, orientDSInit );
 
-	if ( hasHoleDS[i] ) {
+	// ****************************************
+	// Now add holes and notches
+	// ***************************************
+	if ( nHolesDS[i] + nNotchesDS[i] > 0 ) {
 
-	  // Build each box here, with window.
-
- 	  // This box has a window.  implemented as a
+ 	  // This box has at least one window or notch.  
+	  // Each is implemented as a
 	  // G4SubtractionSolid to allow for another volume placement
-	  // through it
-
-  	  // Now make the window (AKA "Hole")
-  	  name << "window";
-
-	  std::cout << __func__ << " making " << name.str() << std::endl;
-
+	  // through it.  First go ahead and make the extrusion for the block.
 	  std::ostringstream name1;
 	  name1 << "ExtShieldDownstreamBox_sub_" << i+1;
-
 
 	  G4ExtrudedSolid* block = new G4ExtrudedSolid( name1.str(),
 							itsOutline,
 							hlen,
 							G4TwoVector(0,0), 1.,
 							G4TwoVector(0,0), 1.);
-
-
-  	  // Find the index of this hole, for accessing info lists...
-  	  int hID = holeIDDS[i];
-
-	  const TubsParams windparams(0.0,  //inner radius
-				      holeRadDS[hID], // outer
-				      holeLenDS[hID]  //obvious?
-				      );
-
-	  std::ostringstream name2;
-	  name2 << "ExtShieldDownstreamBox" << i+1 << "window";
-
-          G4Tubs* aWindTub = new G4Tubs( name2.str(), 
-                                         windparams.data()[0], 
-                                         windparams.data()[1], 
-                                         windparams.data()[2]+2.,// to satisfy a G4SubtractionSolid feature
-                                         windparams.data()[3], 
-                                         windparams.data()[4]);
-
-	CLHEP::HepRotation* windRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	getRotationFromOrientation( *windRotat, holeOrientsDS[hID] );
-
-	//	std::cout << "DNB** Making extShieldVol" << std::endl;
-
+	  
+	  // Now create the volume for the block
 	  VolumeInfo extShieldVol(name.str(),
 				  sitesDS[i]-parent.centerInMu2e(),
 				  parent.centerInWorld);
 
-	  //	  std::cout << "DNB** About to make SubtractionSolid" << std::endl;
 
-	  extShieldVol.solid = new G4SubtractionSolid( extShieldVol.name,
-						       block,
-						       aWindTub,
-						       windRotat,
-						       holeLocDS[hID]);
+	  // Create a subtraction solid that will become the solid for the 
+	  // volume.
+
+	  G4SubtractionSolid* aSolid = 0;
+
+	  // Find the index of the first hole, for accessing info lists...
+	  int hID = holeIDDS[i];
+
+	  // Now loop over the holes and make them.
+	  for ( int jHole = 0; jHole < nHolesDS[i]; jHole++ ) {
+	    // Now make the window (AKA "Hole")
+	    name << "h" << jHole+1;
+	    std::cout << __func__ << " making " << name.str() << std::endl;
+
+	    int thisHID = hID + jHole; // get pointer for right hole
+
+	    const TubsParams windparams(0.0,  //inner radius
+					holeRadDS[thisHID], // outer
+					holeLenDS[thisHID]  //obvious?
+					);
+
+	    std::ostringstream name2;
+	    name2 << "ExtShieldDownstreamBox" << i+1 << "hole" << jHole+1;
+
+	    G4Tubs* aWindTub = new G4Tubs( name2.str(), 
+					   windparams.data()[0], 
+					   windparams.data()[1], 
+					   windparams.data()[2]+2.,// to satisfy a G4SubtractionSolid feature
+					   windparams.data()[3], 
+					   windparams.data()[4]);
+	    
+	    CLHEP::HepRotation* windRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	    getRotationFromOrientation( *windRotat, holeOrientsDS[hID] );
+
+	    //	std::cout << "DNB** Making extShieldVol" << std::endl;
+
+	    //	  std::cout << "DNB** About to make SubtractionSolid" << std::endl;
+
+	    if ( 0 == aSolid ) { 
+	      aSolid = new G4SubtractionSolid( extShieldVol.name,
+					       block,
+					       aWindTub,
+					       windRotat,
+					       holeLocDS[thisHID]);
+	    } else {
+	      G4SubtractionSolid * bSolid = new G4SubtractionSolid 
+		( extShieldVol.name,
+		  aSolid,
+		  aWindTub,
+		  windRotat,
+		  holeLocDS[thisHID]);
+	      aSolid = bSolid;
+	    }
+	  } // End of loop over holes. Now loop over notches.
+
+
+  	  // Find the index of the first notch, for accessing info lists...
+  	  int notchID = notchIDDS[i];
+
+	  for ( int jNotch = 0; jNotch < nNotchesDS[i]; jNotch++ ) {
+	    int thisNID = notchID + jNotch; //index for this notch
+
+	    // Put notch(es) into box now
+
+	    // Each notch is implemented as a
+	    // G4SubtractionSolid to allow for another volume placement
+	    // through it
+
+	    // Now make the notch 
+	    name << "n" << jNotch+1;
+
+	    std::cout << __func__ << " making " << name.str() << std::endl;
+
+
+	    // Get dimensions of this box
+	    std::vector<double>tempDims = notchDimDS[thisNID];
+
+	    std::ostringstream name2;
+	    name2 << "ExtShieldDownstreamBox" << i+1 << "Notch" << jNotch+1;
+
+	    G4Box* aNotchBox = new G4Box(  name2.str(), 
+					   tempDims[0],
+					   tempDims[1],
+					   tempDims[2]);
+
+	    CLHEP::HepRotation* notchRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+
+	    //	  std::cout << "DNB** About to make SubtractionSolid" << std::endl;
+
+	    if ( 0 == aSolid ) { 
+	      aSolid = new G4SubtractionSolid( extShieldVol.name,
+					       block,
+					       aNotchBox,
+					       notchRotat,
+					       notchLocDS[thisNID]);
+	    } else {
+	      G4SubtractionSolid * bSolid = new G4SubtractionSolid 
+		( extShieldVol.name,
+		  aSolid,
+		  aNotchBox,
+		  notchRotat,
+		  notchLocDS[thisNID]);
+	      aSolid = bSolid;
+	    }
+	  } // End of loop over notches
+
+	  extShieldVol.solid = aSolid;
 
 	  //	  std::cout << "DNB** About to finish nesting" << std::endl;
 
@@ -326,77 +398,9 @@ namespace mu2e {
 			forceAuxEdgeVisible,
 			placePV,
 			doSurfaceCheck);
-
-	} else if ( hasNotchDS[i] ) {
-
-	  // Build each box here, with Notch.
-
- 	  // This box has a notch.  implemented as a
-	  // G4SubtractionSolid to allow for another volume placement
-	  // through it
-
-  	  // Now make the notch 
-  	  name << "notch";
-
-	  std::cout << __func__ << " making " << name.str() << std::endl;
-
-	  std::ostringstream name1;
-	  name1 << "ExtShieldDownstreamBox_sub_" << i+1;
-
-
-	  G4ExtrudedSolid* block = new G4ExtrudedSolid( name1.str(),
-							itsOutline,
-							hlen,
-							G4TwoVector(0,0), 1.,
-							G4TwoVector(0,0), 1.);
-
-
-  	  // Find the index of this hole, for accessing info lists...
-  	  int hID = notchIDDS[i];
-
-	  // Get dimensions of this box
-	  std::vector<double>tempDims = notchDimDS[hID];
-
-	  std::ostringstream name2;
-	  name2 << "ExtShieldDownstreamBox" << i+1 << "Notch";
-
-          G4Box* aNotchBox = new G4Box(  name2.str(), 
-                                         tempDims[0],
-					 tempDims[1],
-                                         tempDims[2]);
-
-	  CLHEP::HepRotation* notchRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-
-	  VolumeInfo extShieldVol(name.str(),
-				  sitesDS[i]-parent.centerInMu2e(),
-				  parent.centerInWorld);
-
-	  //	  std::cout << "DNB** About to make SubtractionSolid" << std::endl;
-
-	  extShieldVol.solid = new G4SubtractionSolid( extShieldVol.name,
-						       block,
-						       aNotchBox,
-						       notchRotat,
-						       notchLocDS[hID]);
-
-	  //	  std::cout << "DNB** About to finish nesting" << std::endl;
-
-	  finishNesting(extShieldVol,
-			findMaterialOrThrow(matsDS[i]),
-			itsDSRotat,
-			extShieldVol.centerInParent,
-			parent.logical,
-			0,
-			config.getBool("ExtShieldDownstream.visible"),
-			G4Colour::Magenta(),
-			config.getBool("ExtShieldDownstream.solid"),
-			forceAuxEdgeVisible,
-			placePV,
-			doSurfaceCheck);
-
 	} else {
 
-	  // Build each box here
+	  // Build each normal box here.  Normal means no holes or notches.
 
 	  VolumeInfo extShieldVol(name.str(),
 				  sitesDS[i]-parent.centerInMu2e(),
@@ -426,92 +430,6 @@ namespace mu2e {
 
       }
 
-//     //----------------------------------------------------------------
-//     // DS-Cend boxes <=====
-//     //----------------------------------------------------------------
-
-//     std::vector<std::vector<double>> dimes = enscendb->getDimensions();
-//     std::vector<std::string> mates = enscendb->materialNames();
-//     std::vector<CLHEP::Hep3Vector> sitees = enscendb->centersOfBoxes();
-    
-//     nBox = dimes.size();
-
-//     for(int i = 0; i < nBox; i++)
-//       {
-
-// 	std::vector<double> lwhs = dimes[i];
-
-// 	//  Make the name of the box
-// 	std::ostringstream name;
-// 	name << "ExtShieldCendBox_" << i+1 ;
-
-// 	// Make a non-rotating rotation
-// 	static CLHEP::HepRotation fakeRotat(CLHEP::HepRotation::IDENTITY);
-
-// 	// Build each box here
-
-
-//  	  const TubsParams windparams(0.0,  //inner radius
-//  				      enscendb->holeRadius(hID), // outer
-//  				      enscendb->holeHalfLength(hID)  //obvious?
-//  				      );
-
-//           std::ostringstream name2;
-//           name2 << "ExtShieldCendBox_sub_" << i+1 << "window";
-
-//           G4Tubs* awindTub = new G4Tubs( name2.str(), 
-//                                          windparams.data()[0], 
-//                                          windparams.data()[1], 
-//                                          windparams.data()[2]+2.,// to satisfy a G4SubtractionSolid feature
-//                                          windparams.data()[3], 
-//                                          windparams.data()[4]);
-
-// 	  VolumeInfo awindBox;
-//           awindBox.name = name.str();
-          
-//           // we need to put the window on the DS axis
-
-//           // fixme, this is specific to the Box #4 (but windows in any
-//           // other boxes will probably never be needed anyway)
-
-//           GeomHandle<DetectorSolenoid> ds;
-//           G4ThreeVector const & dsP ( ds->position() );
-
-//           G4ThreeVector offsetWRTDS(sitees[i].x()-dsP.x(), sitees[i].y()-dsP.y(), 0.0);
-
-//           awindBox.solid = new G4SubtractionSolid(awindBox.name,awindBox1,awindTub,0,-offsetWRTDS);
-
-//           finishNesting(awindBox,
-//                         findMaterialOrThrow(mates[i]),
-//                         0,
-//                         sitees[i]-parent.centerInMu2e(),
-//                         parent.logical,
-//                         0,
-//                         config.getBool("ExtShieldCendBoxes.visible"),
-//                         G4Colour::Magenta(),
-//                         config.getBool("ExtShieldCendBoxes.solid"),
-//                         forceAuxEdgeVisible,
-//                         placePV,
-//                         doSurfaceCheck);
-
-// 	} else {
-
-// 	  // Just put the box in the world, no window
-// 	  nestBox( name.str(), lwhs, findMaterialOrThrow(mates[i]),
-// 		   &fakeRotat, sitees[i]-parent.centerInMu2e(),
-// 		   parent.logical,
-// 		   0,
-// 		   config.getBool("ExtShieldCendBoxes.visible"),
-// 		   G4Colour::Magenta(),
-// 		   config.getBool("ExtShieldCendBoxes.solid"),
-// 		   forceAuxEdgeVisible,
-// 		   placePV,
-// 		   doSurfaceCheck);
-
-// 	}
-
-//       }
-    
   }
 
 }
