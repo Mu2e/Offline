@@ -9,8 +9,13 @@
 #include "Mu2eG4/test/geom_01.txt"
 
 bool g4.doSurfaceCheck    = true;
-string g4.physicsListName = "QGSP_BERT";
 
+// number of random points on the volume surface
+int  g4.nSurfaceCheckPointsPercmsq =   1;
+int  g4.minSurfaceCheckPoints      = 100; // per volume
+int  g4.maxSurfaceCheckPoints = 10000000; // per volume
+
+string g4.physicsListName = "Minimal";
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
