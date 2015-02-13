@@ -3,6 +3,9 @@
 #include "FitModel.hh"
 #include <iostream>
 
+
+//TODO : FINISH TRUNCATION FIT FUNCTIONS
+
 namespace FitModel
 {
 
@@ -13,9 +16,9 @@ namespace FitModel
 
   Float_t fixedTruncation(const Float_t currentFunctionValue, const ConfigStruct &initParams)
   {
-    Float_t result(currentFunctionValue);
-    if (currentFunctionValue > initParams._truncationLevel)
-      result = initParams._truncationLevel;
+    Float_t result = currentFunctionValue;
+    if (currentFunctionValue > initParams._truncationLevel) 
+      {result = initParams._truncationLevel;}
     return result;
   }
 
@@ -144,4 +147,19 @@ namespace FitModel
     return doublePeak(t, doublePeakFitPar, initParams) 
         + dynamicPedestal(t, dynamicPedestalFitPar, initParams);
   }
+
+  /**Float_t fitModel2ADC(const Double_t voltageValue, const ConfigStruct &initParams)
+  {
+    return  fixedTruncation(initParams._bits2scalingFactor * voltageValue);
+  }**/
+
+
+
+  /**Float_t dynamicPedestalTrunc(const Double_t t, const DynamicPedestalParamStruct &fitParams, const ConfigStruct &initParams)
+  {
+    return Tr
+  }**/
+
+
+
 }

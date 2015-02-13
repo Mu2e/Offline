@@ -10,17 +10,6 @@ namespace FitModelRoot
 
 	Float_t dynamicPedestal(Double_t *x, Double_t *par);
 
-	Float_t fixedTruncation(Double_t *x, Double_t *par);
-
-    // Shaping power set to 1
-    // MAYBE GET RID OF PAR
-	Float_t unConvolvedSinglePeak(Double_t *x, Double_t *par);
-
-		// Note that this is a convolution with a uniform distribution
-		//2 Parameters (shaping power set to 1.0)
-		//par[0] - sigma
-	Float_t convolvedSinglePeak(Double_t *x, Double_t *par);
-
 	//Fitting function for current Function2
 	//par[0] is shifted time 1st peak
 	//par[1] is scalingfactor 1st peak

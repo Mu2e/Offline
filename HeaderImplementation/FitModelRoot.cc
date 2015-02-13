@@ -3,7 +3,7 @@
 #include "FitModel.hh"
 
 namespace FitModelRoot
-{	
+{
 	// Par0 - Q
 	// The dynamic pedestal is of the form Q e^(-t / tau). 
 	//Note that normalized it is Q / tau rather than Q 
@@ -11,27 +11,7 @@ namespace FitModelRoot
 	{
 	  DynamicPedestalParamStruct parStruct(par[0]);	
 	  return FitModel::dynamicPedestal(x[0],parStruct, initParams);
-	}
-
-	Float_t fixedTruncation(Double_t *x, Double_t *par)
-	{
-		return FitModel::fixedTruncation(x[0], initParams);
-	}
-
-    // Shaping power set to 1
-    // MAYBE GET RID OF PAR
-	Float_t unConvolvedSinglePeak(Double_t *x, Double_t *par)
-	{
-		return FitModel::unConvolvedSinglePeak(x[0], initParams);
-	}
-
-	// Note that this is a convolution with a uniform distribution
-	//2 Parameters (shaping power set to 1.0)
-	//par[0] - sigma
-	Float_t convolvedSinglePeak(Double_t *x, Double_t *par)
-	{
-		return FitModel::convolvedSinglePeak(x[0], par[0], initParams);
-	}
+	}	
 
 	//Fitting function for current Function2
 	//par[0] is shifted time 1st peak

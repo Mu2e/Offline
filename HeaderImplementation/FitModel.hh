@@ -63,5 +63,9 @@ namespace FitModel
   // Par3 - shift in 2nd peak minus shift in 1st peak
   // Par4 - scaling factor 2nd peak
   Float_t doublePeakWithDynamicPedestal(const Double_t t, const DoublePeakWithDynamicPedestalParamStruct &fitParams, const ConfigStruct &initParams);
+
+
+  Float_t 
+
 }
 #endif

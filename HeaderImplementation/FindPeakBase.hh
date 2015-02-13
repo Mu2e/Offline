@@ -1,12 +1,7 @@
 #ifndef FindPeakBase_hh
 #define FindPeakBase_hh
 
-#include <vector>
 #include "TMath.h"
-#include "TF1.h"
-#include "TGraph.h"
-#include "TGraphErrors.h"
-#include <vector>
 #include "ConfigStruct.hh"
 
 typedef unsigned int * adcWaveform;
@@ -40,18 +35,9 @@ typedef std::vector<resultantPeakData> resultantHitData;
     virtual ~FindPeakBase(){}
 
     // FindPeakBase normal constructor with ConfigStruct initilization parameters
-    FindPeakBase(const ConfigStruct &initParams) : _initParams(initParams), 
-                    _bits2scalingFactor(initParams._shapingTime * TMath::E()),
-                    _scalingFactor2bits(1.0 / _bits2scalingFactor),
-                    _hitPeriod(initParams._numSamplesPerHit * initParams._measurementFrequency - 1.0){}
-
+    FindPeakBase(const ConfigStruct &initParams) : _initParams(initParams){}
   protected:
 
     ConfigStruct _initParams; 
-
-    // Precomputed constants
-    const Double_t _bits2scalingFactor; // approximately 67.96
-    const Double_t _scalingFactor2bits; // approximately 0.0147
-    const Double_t _hitPeriod;
 };
 #endif

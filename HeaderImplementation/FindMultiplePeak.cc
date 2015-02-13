@@ -9,7 +9,7 @@
 // FindSinglePeak normal constructor with ConfigStruct initilization parameters
 FindSinglePeak::FindSinglePeak(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams)
 {
-  _fitModel = TF1("fitModel",FitModelRoot::convolutionSinglePeak,0.0,_hitPeriod,3);
+  _fitModel = TF1("fitModel",FitModelRoot::convolutionSinglePeak,0.0,_initParams._hitPeriod,3);
 }
 
 
@@ -19,7 +19,7 @@ void FindSinglePeak::process(const adcWaveform adcData, resultantHitData &result
 {	
 	// Set initial fit parameters
 	const double timeshift = 30.0;
-	const double scalingFactor = TMath::Max((result[0]._peakHeight - _initParams._defaultPedestal) * _bits2scalingFactor, 1000.0);
+	const double scalingFactor = TMath::Max((result[0]._peakHeight - _initParams._defaultPedestal) * _initParams._bits2scalingFactor, 1000.0);
 	const double sigma = 10.0;
 	const Double_t initialParameters[3] = {timeshift, scalingFactor, sigma};
 
@@ -37,7 +37,7 @@ void FindSinglePeak::fitParams2ResultantData(const Double_t *fitParameters, resu
 
 	// If there's time maybe make timeshift,scaling factor enumerated like true anomaly and eccentricity
 	peakData._peakTime = fitParameters[0];
-	peakData._peakHeight = fitParameters[1] * _scalingFactor2bits;
+	peakData._peakHeight = fitParameters[1] * _initParams._scalingFactor2bits;
 
 	result[0] = peakData;
 }	
@@ -46,7 +46,7 @@ void FindSinglePeak::fitParams2ResultantData(const Double_t *fitParameters, resu
 // FindSinglePeakWithConstantPedestal normal constructor with ConfigStruct initilization parameters
 FindSinglePeakWithConstantPedestal::FindSinglePeakWithConstantPedestal(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams)
 {
-  _fitModel = TF1("fitModel",FitModelRoot::convolutionSinglePeakWithConstantPedestal,0.0,_hitPeriod,4);
+  _fitModel = TF1("fitModel",FitModelRoot::convolutionSinglePeakWithConstantPedestal,0.0,_initParams._hitPeriod,4);
 }
 
 // Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
@@ -55,7 +55,7 @@ void FindSinglePeakWithConstantPedestal::process(const adcWaveform adcData, resu
 {	
 	// Set initial fit parameters
 	const double timeshift = 30.0;
-	const double scalingFactor = TMath::Max((result[0]._peakHeight - _initParams._defaultPedestal) * _bits2scalingFactor, 1000.0);
+	const double scalingFactor = TMath::Max((result[0]._peakHeight - _initParams._defaultPedestal) * _initParams._bits2scalingFactor, 1000.0);
 	const double sigma = 10.0;
 	double verticalShift = 0.0;
 	const Double_t initialParameters[4] = {timeshift, scalingFactor , verticalShift, sigma};
@@ -77,7 +77,7 @@ void FindSinglePeakWithConstantPedestal::fitParams2ResultantData(const Double_t 
 
 	// If there's time maybe make timeshift,scaling factor enumerated like true anomaly and eccentricity
 	peakData._peakTime = fitParameters[0];
-	peakData._peakHeight = fitParameters[1] * _scalingFactor2bits;
+	peakData._peakHeight = fitParameters[1] * _initParams._scalingFactor2bits;
 
 	result[0] = peakData;
 }	
@@ -86,7 +86,7 @@ void FindSinglePeakWithConstantPedestal::fitParams2ResultantData(const Double_t 
 // FindSinglePeakWithDynamicPedestal normal constructor with ConfigStruct initilization parameters
 FindSinglePeakWithDynamicPedestal::FindSinglePeakWithDynamicPedestal(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams)
 {
-	_fitModel = TF1("fitModel",FitModelRoot::convolutionSinglePeakWithDynamicPedestal,0.0,_hitPeriod,4);
+	_fitModel = TF1("fitModel",FitModelRoot::convolutionSinglePeakWithDynamicPedestal,0.0,_initParams._hitPeriod,4);
 }
 
 // Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
@@ -96,7 +96,7 @@ void FindSinglePeakWithDynamicPedestal::process(const adcWaveform adcData, resul
 
 // Set initial fit parameters
 const double timeshift = 30.0;
-const double scalingFactor = result[1]._peakHeight * _bits2scalingFactor;
+const double scalingFactor = result[1]._peakHeight * _initParams._bits2scalingFactor;
 const double Q = result[0]._peakHeight;
 const double sigma = 10.0;
 Double_t initialParameters[4] = {timeshift, scalingFactor, Q, sigma};
@@ -121,7 +121,7 @@ void FindSinglePeakWithDynamicPedestal::fitParams2ResultantData(const Double_t *
 
 	// If there's time maybe make timeshift,scaling factor enumerated like true anomaly and eccentricity
 	peakData._peakTime = fitParameters[0];
-	peakData._peakHeight = fitParameters[1] *_scalingFactor2bits;
+	peakData._peakHeight = fitParameters[1] * _initParams._scalingFactor2bits;
 
 	result[0] = dynamicPedestalData;
 	result[1] = peakData;
@@ -131,7 +131,7 @@ void FindSinglePeakWithDynamicPedestal::fitParams2ResultantData(const Double_t *
 
 FindDoublePeak::FindDoublePeak(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams)
 {
-	_fitModel = TF1("fitModel",FitModelRoot::doublePeak,0.0,_hitPeriod,5);
+	_fitModel = TF1("fitModel",FitModelRoot::doublePeak,0.0,_initParams._hitPeriod,5);
 }
 
 // Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
@@ -159,11 +159,11 @@ void FindDoublePeak::fitParams2ResultantData(const Double_t *fitParameters, resu
 
 	// If there's time maybe make timeshift,scaling factor enumerated like true anomaly and eccentricity
 	firstPeakData._peakTime = fitParameters[0];
-	firstPeakData._peakHeight = fitParameters[1] * _scalingFactor2bits;
+	firstPeakData._peakHeight = fitParameters[1] * _initParams._scalingFactor2bits;
 
 	resultantPeakData secondPeakData;
 	secondPeakData._peakTime = fitParameters[3];
-	secondPeakData._peakHeight = fitParameters[4] * _scalingFactor2bits;
+	secondPeakData._peakHeight = fitParameters[4] * _initParams._scalingFactor2bits;
 
 	result[0] = firstPeakData;
 	result[1] = secondPeakData;
@@ -174,7 +174,7 @@ void FindDoublePeak::fitParams2ResultantData(const Double_t *fitParameters, resu
 // FindDoublePeakWithDynamicPedestal normal constructor with ConfigStruct initilization parameters
 FindDoublePeakWithDynamicPedestal::FindDoublePeakWithDynamicPedestal(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams)
 {
-	_fitModel = TF1("fitModel",FitModelRoot::doublePeakWithDynamicPedestal,0.0,_hitPeriod,5);
+	_fitModel = TF1("fitModel",FitModelRoot::doublePeakWithDynamicPedestal,0.0,_initParams._hitPeriod,5);
 }
 
 // Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
@@ -182,10 +182,10 @@ FindDoublePeakWithDynamicPedestal::FindDoublePeakWithDynamicPedestal(const Confi
 void FindDoublePeakWithDynamicPedestal::process(const adcWaveform adcData, resultantHitData &result)
 {
 	const double timeShift0 = 30.0;
-	const double scalingFactor0 = TMath::Max(result[1]._peakHeight * _bits2scalingFactor, 1000.0);
+	const double scalingFactor0 = TMath::Max(result[1]._peakHeight * _initParams._bits2scalingFactor, 1000.0);
 	const double Q = result[0]._peakHeight;
 	const double timeshift1 = result[2]._peakTime - result[1]._peakTime;
-	const double scalingFactor1 = TMath::Max(result[2]._peakHeight * _bits2scalingFactor, 1000.0);
+	const double scalingFactor1 = TMath::Max(result[2]._peakHeight * _initParams._bits2scalingFactor, 1000.0);
 
 	Double_t initialParameters[5] = {timeShift0, scalingFactor0, Q, timeshift1, scalingFactor1};
 	Double_t finalParameters[5];
@@ -208,11 +208,11 @@ void FindDoublePeakWithDynamicPedestal::fitParams2ResultantData(const Double_t *
 
 	// If there's time maybe make timeshift,scaling factor enumerated like true anomaly and eccentricity
 	firstPeakData._peakTime = fitParameters[0];
-	firstPeakData._peakHeight = fitParameters[1] * _scalingFactor2bits;
+	firstPeakData._peakHeight = fitParameters[1] * _initParams._scalingFactor2bits;
 
 	resultantPeakData secondPeakData;
 	secondPeakData._peakTime = fitParameters[3];
-	secondPeakData._peakHeight = fitParameters[4] * _scalingFactor2bits;
+	secondPeakData._peakHeight = fitParameters[4] * _initParams._scalingFactor2bits;
 
 	result[0] = dynamicPedestalData;
 	result[1] = firstPeakData;

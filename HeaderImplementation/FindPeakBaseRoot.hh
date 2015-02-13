@@ -2,6 +2,8 @@
 #define FindPeakBaseRoot_hh
 
 #include "FindPeakBase.hh"
+#include "TF1.h"
+#include "TGraphErrors.h"
 
 class FindPeakBaseRoot : public FindPeakBase{
 	public:
