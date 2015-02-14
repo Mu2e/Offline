@@ -51,7 +51,6 @@
 #include "Mu2eG4/inc/constructTS.hh"
 #include "Mu2eG4/inc/constructPS.hh"
 #include "Mu2eG4/inc/constructPSEnclosure.hh"
-#include "Mu2eG4/inc/constructPSExternalShielding.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/CaloCrystalSD.hh"
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
@@ -171,7 +170,6 @@ namespace mu2e {
     constructDS(hallInfo, _config);
     constructPS(hallInfo, _config);
     constructPSEnclosure(hallInfo, _config);
-    constructPSExternalShielding(hallInfo, _config);
     constructTS(hallInfo, _config);
 
     VolumeInfo trackerInfo = constructTracker();

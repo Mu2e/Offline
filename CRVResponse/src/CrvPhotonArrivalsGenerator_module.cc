@@ -16,7 +16,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StepInstanceName.hh"
 #include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
 
 #include "G4PhysListFactory.hh"
@@ -52,6 +51,7 @@ namespace mu2e
 
     private:
     std::vector<std::string> _g4ModuleLabels;
+    std::vector<std::string> _processNames;
     std::string              _lookupTableFileName;
 
     boost::shared_ptr<MakeCrvPhotonArrivals> _makeCrvPhotonArrivals;
@@ -66,12 +66,15 @@ namespace mu2e
 
   CrvPhotonArrivalsGenerator::CrvPhotonArrivalsGenerator(fhicl::ParameterSet const& pset) :
     _g4ModuleLabels(pset.get<std::vector<std::string> >("g4ModuleLabels")),
+    _processNames(pset.get<std::vector<std::string> >("processNames")),
     _lookupTableFileName(pset.get<std::string>("lookupTableFileName")),
     _scintillationYield(pset.get<double>("scintillationYield",820.0)),    //820.0 photons per MeV
     _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast",3.0)),  //3.0 ns
     _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow",10.0)), //10.0 ns
     _fiberDecayTime(pset.get<double>("fiberDecayTime",7.4))     //7.4 ns
   {
+    if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("mismatch between specified selectors (g4ModuleLabels/processNames");
+
 //    ConfigFileLookupPolicy configFile;
 //    _lookupTableFileName = configFile(_lookupTableFileName);
     _makeCrvPhotonArrivals = boost::shared_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals());
@@ -109,13 +112,25 @@ namespace mu2e
     std::unique_ptr<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection(new CrvPhotonArrivalsCollection);
 
     GeomHandle<CosmicRayShield> CRS;
-    StepInstanceName CRVInstance(StepInstanceName::CRV);
+    std::string productInstanceName("CRV");
 
-    size_t nLabels = _g4ModuleLabels.size();
-    art::Handle<StepPointMCCollection> CRVSteps;
-    for(size_t iLabel=0; iLabel<nLabels; iLabel++)
+    std::vector<art::Handle<StepPointMCCollection> > CRVStepsVector;
+    event.getManyByType(CRVStepsVector);
+    for(size_t i=0; i<CRVStepsVector.size(); i++)
     {
-      event.getByLabel(_g4ModuleLabels[iLabel],CRVInstance.name(),CRVSteps);
+      art::Handle<StepPointMCCollection> CRVSteps = CRVStepsVector[i];
+
+      bool selected=true;
+      const art::Provenance *provenance = CRVSteps.provenance(); 
+      for(size_t j=0; j<_g4ModuleLabels.size(); j++)
+      {
+        selected=true;
+        if(provenance->productInstanceName()!=productInstanceName) selected=false;
+        if(_g4ModuleLabels[j]!="" && _g4ModuleLabels[j]!="*" &&  provenance->moduleLabel()!=_g4ModuleLabels[j]) selected=false;
+        if(_processNames[j]!="" && _processNames[j]!="*" && provenance->processName()!=_processNames[j]) selected=false;
+        if(selected) break;
+      }
+      if(!selected) continue;
 
       for(StepPointMCCollection::const_iterator iter=CRVSteps->begin(); iter!=CRVSteps->end(); iter++)
       {
@@ -204,7 +219,7 @@ namespace mu2e
           for(int SiPM=0; SiPM<4; SiPM++)
           {
             const std::vector<double> &times=_makeCrvPhotonArrivals->GetArrivalTimes(SiPM);
-            crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).begin(),times.begin(),times.end());
+            crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
           }
           _makeCrvPhotonArrivals->Reset();
         }

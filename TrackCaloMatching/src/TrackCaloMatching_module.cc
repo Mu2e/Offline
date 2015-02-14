@@ -316,7 +316,7 @@ namespace mu2e {
       tcm_data[ltrk][vane_id].ttrk      = trk_time;
       tcm_data[ltrk][vane_id].nx        = mom.x()/trk_mom;
       tcm_data[ltrk][vane_id].ny        = mom.y()/trk_mom;
-      tcm_data[ltrk][vane_id].nx        = mom.z()/trk_mom;
+      tcm_data[ltrk][vane_id].nz        = mom.z()/trk_mom;
       tcm_data[ltrk][vane_id].int_depth = _meanInteractionDepth;
       tcm_data[ltrk][vane_id].ds        = ds;
 //-----------------------------------------------------------------------------
@@ -338,7 +338,7 @@ namespace mu2e {
 // for now - transform back to the local coordinate system
 //-----------------------------------------------------------------------------
 	cogVaneFrame = cg->toSectionFrame(vane_id, cl->cog3Vector());
-      
+       
 	cl_v         = cogVaneFrame.x();
 	cl_w         = cogVaneFrame.y();
 	cl_energy    = cl->energyDep();
@@ -352,13 +352,11 @@ namespace mu2e {
 	dvv = dv*nx+dw*ny;
 	dww = dv*ny-dw*nx;
 //-----------------------------------------------------------------------------
-// ad-hoc corrections 
-// at this point do not understand their origin
-// the numbers, obviously, come from analysis distributions and correspond 
-// to the BaF2 crystal length of 21cm
+// to study pattern recognition accuracies, calculate track parameters in the 
+// point closest to the cluster in 2D (XY) - want to understand the resolutions
+// in coordinate and in angle
 //-----------------------------------------------------------------------------
-// 	dvv -= 70;
-// 	dww += 18;
+// ##
 //-----------------------------------------------------------------------------
 // 2014-05-14 P.Murat: use 10 MeV as the matching resolution, 
 //            for a 10 MeV cluster the energy term in the chi2 would be (90/10)^2

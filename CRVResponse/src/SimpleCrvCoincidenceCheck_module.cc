@@ -47,6 +47,8 @@ namespace mu2e
     double      _PEthreshold;
     double      _maxDistance;
     double      _maxTimeDifference;
+    double      _timeWindowStart;
+    double      _timeWindowEnd;
 
     struct coincidenceStruct
     {
@@ -59,7 +61,9 @@ namespace mu2e
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _PEthreshold(pset.get<double>("PEthreshold")),
     _maxDistance(pset.get<double>("maxDistance")),
-    _maxTimeDifference(pset.get<double>("maxTimeDifference"))
+    _maxTimeDifference(pset.get<double>("maxTimeDifference")),
+    _timeWindowStart(pset.get<double>("timeWindowStart")),
+    _timeWindowEnd(pset.get<double>("timeWindowEnd"))
   {
     produces<CrvCoincidenceCheckResult>();
   }
@@ -136,13 +140,19 @@ namespace mu2e
         const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector1 = crvRecoPulses.GetRecoPulses(SiPM);
         for(unsigned int i = 0; i<pulseVector1.size(); i++) 
         {
-          if(pulseVector1[i]._PEs>=_PEthreshold) c.time.push_back(pulseVector1[i]._leadingEdge);
+          const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector1[i];
+          if(pulse._PEs>=_PEthreshold && 
+             pulse._leadingEdge>=_timeWindowStart && 
+             pulse._leadingEdge<=_timeWindowEnd) c.time.push_back(pulse._leadingEdge);
 //std::cout<<"PEs: "<<pulseVector1[i]._PEs<<"   LE: "<<pulseVector1[i]._leadingEdge<<"   pos: "<<c.pos<<std::endl;
         }
         const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector2 = crvRecoPulses.GetRecoPulses(SiPM+2);
         for(unsigned int i = 0; i<pulseVector2.size(); i++) 
         {
-          if(pulseVector2[i]._PEs>=_PEthreshold) c.time.push_back(pulseVector2[i]._leadingEdge);
+          const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector2[i];
+          if(pulse._PEs>=_PEthreshold && 
+             pulse._leadingEdge>=_timeWindowStart && 
+             pulse._leadingEdge<=_timeWindowEnd) c.time.push_back(pulse._leadingEdge);
 //std::cout<<"PEs: "<<pulseVector2[i]._PEs<<"   LE: "<<pulseVector2[i]._leadingEdge<<"   pos: "<<c.pos<<std::endl;
         }
         if(c.time.size()>0) coincidenceMap[coincidenceGroup].push_back(c);

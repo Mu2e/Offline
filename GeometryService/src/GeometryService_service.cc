@@ -37,8 +37,6 @@
 #include "ProductionSolenoidGeom/inc/ProductionSolenoidMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosureMaker.hh"
-#include "ProductionSolenoidGeom/inc/PSExternalShielding.hh"
-#include "ProductionSolenoidGeom/inc/PSExternalShieldingMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuumMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
@@ -218,9 +216,6 @@ namespace mu2e {
       tmpPSE(PSEnclosureMaker::make(*_config, ps.psEndRefPoint()));
     const PSEnclosure& pse = *tmpPSE.get();
     addDetector(std::move(tmpPSE));
-
-    std::unique_ptr<PSExternalShielding> tmpPSE2(PSExternalShieldingMaker::make(*_config));
-    addDetector(std::move(tmpPSE2));
 
     // The Z coordinate of the boundary between PS and TS vacua
     StraightSection const * ts1vac = beamline.getTS().getTSVacuum<StraightSection>( TransportSolenoid::TSRegion::TS1 );
