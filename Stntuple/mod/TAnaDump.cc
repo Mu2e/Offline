@@ -36,7 +36,6 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
@@ -46,6 +45,10 @@
 
 #include "Stntuple/base/TNamedHandle.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+
+
+//BaBar includes
+#include "TrajGeom/TrkLineTraj.hh"
 
 ClassImp(TAnaDump)
 
@@ -1010,6 +1013,9 @@ void TAnaDump::printStepPointMC(const mu2e::StepPointMC* Step, const char* Opt) 
       printf("-------------------------------------------------------------------------------------------------------------\n");
     }
 
+    mu2e::GeomHandle<mu2e::TTracker> ttHandle;
+    const mu2e::TTracker* tracker = ttHandle.get();
+  
     art::Ptr<mu2e::SimParticle> const& simptr = Step->simParticle();
     const mu2e::SimParticle* sim  = simptr.operator ->();
     if (sim == NULL) {
@@ -1026,6 +1032,19 @@ void TAnaDump::printStepPointMC(const mu2e::StepPointMC* Step, const char* Opt) 
       parent_id     = (int) par->id().asInt();
     }
 
+    const mu2e::Straw* straw = &tracker->getStraw(mu2e::StrawIndex(Step->volumeId()));
+
+    const Hep3Vector* v1 = &straw->getMidPoint();
+    HepPoint p1(v1->x(),v1->y(),v1->z());
+
+    const Hep3Vector* v2 = &Step->position();
+    HepPoint    p2(v2->x(),v2->y(),v2->z());
+
+    TrkLineTraj trstraw(p1,straw->getDirection()  ,0.,0.);
+    TrkLineTraj trstep (p2,Step->momentum().unit(),0.,0.);
+
+    //2015-02-16 G. Pezzu and Murat change in the print out to be finished
+    //TrkPoca poca(trstraw,trstep
 
     //    art::Ptr<mu2e::GenParticle> const& apgen = sim->genParticle();
 
@@ -1043,7 +1062,7 @@ void TAnaDump::printStepPointMC(const mu2e::StepPointMC* Step, const char* Opt) 
     art::Handle<mu2e::PhysicalVolumeInfoCollection> volumes;
     fEvent->getRun().getByLabel("g4run", volumes);
 
-//2014-26-11 gianipez added teh timeoffsets to the steppoints time
+//2014-26-11 gianipez added the timeoffsets to the steppoints time
     fgTimeOffsets->updateMap(*fEvent);
     
     double stepTime = fgTimeOffsets->timeWithOffsetsApplied(*Step);
