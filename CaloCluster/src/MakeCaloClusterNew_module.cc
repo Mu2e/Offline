@@ -228,14 +228,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
    void MakeCaloClusterNew::produce(art::Event& event) {
 
-     //Get handles to calorimeter crystal hits
-     art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-     event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-     if ( !caloCrystalHitsHandle.isValid()) return;
      
      //Create a new CaloCluster collection and fill it
      unique_ptr<CaloClusterCollection> caloClusters(new CaloClusterCollection);
-     makeCaloClusters(*caloClusters,caloCrystalHitsHandle);
+
+     //Get handles to calorimeter crystal hits
+     art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
+     event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
+
+     if ( caloCrystalHitsHandle.isValid()) {
+       makeCaloClusters(*caloClusters,caloCrystalHitsHandle);
+     }
      
      event.put(std::move(caloClusters), _producerName);
    }
