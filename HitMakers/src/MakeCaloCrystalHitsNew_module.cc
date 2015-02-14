@@ -167,11 +167,12 @@ namespace mu2e {
      //Get handles to calorimeter RO (aka APD) collection
      art::Handle<CaloHitCollection> caloHitsHandle;
      event.getByLabel(_caloReadoutModuleLabel, caloHitsHandle);
-     if ( !caloHitsHandle.isValid()) return;
      
     //Create a new CaloCrystalHit collection and fill it
      unique_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
-     makeCrystalHits(*caloCrystalHits,caloHitsHandle);
+     if ( caloHitsHandle.isValid()) {
+       makeCrystalHits(*caloCrystalHits,caloHitsHandle);
+     }
 
      if ( _diagLevel > 0 ) {
         for (std::vector<CaloCrystalHit>::iterator i = (*caloCrystalHits).begin(); i != (*caloCrystalHits).end(); ++i) 

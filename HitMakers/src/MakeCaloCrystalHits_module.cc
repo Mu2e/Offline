@@ -129,20 +129,19 @@ namespace mu2e {
      art::ServiceHandle<GeometryService> geom;    
      if( !(geom->hasElement<Calorimeter>()) ) return;
 
+    //Create a new CaloCrystalHit collection and fill it
+     unique_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
 
      //Get handles to calorimeter RO (aka APD) collection
      art::Handle<CaloHitCollection> caloHitsHandle;
      event.getByLabel(_caloReadoutModuleLabel, caloHitsHandle);
-     if ( !caloHitsHandle.isValid()) return;
+
+     if ( caloHitsHandle.isValid()) {
+       makeCrystalHits(*caloCrystalHits,caloHitsHandle);
+     }
      
-    //Create a new CaloCrystalHit collection and fill it
-     unique_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
-     makeCrystalHits(*caloCrystalHits,caloHitsHandle);
-
-
-
      if ( _diagLevel > 0 ) {
-        for (std::vector<CaloCrystalHit>::iterator i = (*caloCrystalHits).begin(); i != (*caloCrystalHits).end(); ++i) 
+       for (std::vector<CaloCrystalHit>::iterator i = (*caloCrystalHits).begin(); i != (*caloCrystalHits).end(); ++i) 
           std::cout<<"I have produced the CaloCrystalHit "<<(*i)<<std::endl;
         cout << __func__ << ": caloCrystalHits.size() "<< caloCrystalHits->size() << endl;
         cout << __func__ << ": ncalls " << ncalls << endl;
@@ -151,9 +150,7 @@ namespace mu2e {
 
      event.put(std::move(caloCrystalHits));
 
-       
      return;
-   
   }
 
 
