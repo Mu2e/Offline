@@ -246,8 +246,8 @@ namespace mu2e {
     generatorModuleLabel_     (pset.get<std::string>("generatorModuleLabel"        )),
     fG4ModuleLabel            (pset.get<std::string>("g4ModuleLabel"               )),
     caloClusterModuleLabel_   (pset.get<std::string>("caloClusterModuleLabel")),
-    fCaloClusterAlgorithm     (pset.get<std::string>("caloClusterAlgorithm"  )),
-    fCaloClusterSeeding       (pset.get<std::string>("caloClusterSeeding"    )),
+//     fCaloClusterAlgorithm     (pset.get<std::string>("caloClusterAlgorithm"  )),
+//     fCaloClusterSeeding       (pset.get<std::string>("caloClusterSeeding"    )),
 
 //     producerName_             ("Algo"+mu2e::TOUpper(fCaloClusterAlgorithm)
 // 			       +"SeededBy"+mu2e::TOUpper(fCaloClusterSeeding)),
