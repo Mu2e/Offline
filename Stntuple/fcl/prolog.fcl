@@ -93,8 +93,8 @@ MuHitDisplay: {
     #                                              label becomes AlgoCLOSESTSeededByENERGY
 
     caloCrystalHitsMaker         : CaloCrystalHitsMaker
-    caloClusterAlgorithm         : closest
-    caloClusterSeeding           : energy
+#    caloClusterAlgorithm         : closest
+#    caloClusterSeeding           : energy
 	
     # if set to true, all hits will be displayed unconditionally
     # otherwise, display only hits with right flags
