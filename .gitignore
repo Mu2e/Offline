@@ -16,6 +16,8 @@ bin/artProductSizes
 bin/eventCount
 lib
 tmp
+*.stn
+*.hist
 *.o
 *.so
 *.os
