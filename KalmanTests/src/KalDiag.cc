@@ -570,6 +570,7 @@ namespace mu2e
 	_mcdata._mcdigis = mcdigisHandle.product();
       // update time offsets
       _toff.updateMap(evt);
+      if (!_mcdata.good()) _mcdata.printPointerValues();
       return _mcdata.good();
     }
     return true;

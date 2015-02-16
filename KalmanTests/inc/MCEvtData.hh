@@ -23,6 +23,12 @@ namespace mu2e
     void clear() { _mchitptr = 0; _mcsteps = 0; _mcvdsteps = 0; _simparts = 0; _mcdigis = 0; }
     MCEvtData() {clear();}
     bool good() { return _mchitptr != 0 && _mcsteps != 0 && _mcvdsteps != 0 && _simparts !=0 && _mcdigis !=0; }
+    void printPointerValues() { 
+      std::cout << __func__ 
+                << " _mchitptr, _mcsteps, _mcvdsteps, _simparts, _mcdigis: "
+                << _mchitptr << ", " << _mcsteps << ", " << _mcvdsteps << ", " << _simparts << ", " << _mcdigis 
+                << std::endl;
+    }
     const PtrStepPointMCVectorCollection* _mchitptr;
     const StepPointMCCollection *_mcsteps, *_mcvdsteps;
     const StrawDigiMCCollection *_mcdigis;
