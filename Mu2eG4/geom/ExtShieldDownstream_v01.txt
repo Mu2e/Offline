@@ -850,7 +850,7 @@ int ExtShieldDownstream.nHolesType11Box4 = 1;
 double ExtShieldDownstream.holeCenterUType11Box4Hole1 = -67.0;
 double ExtShieldDownstream.holeCenterVType11Box4Hole1 = 0.0;
 double ExtShieldDownstream.holeCenterWType11Box4Hole1 = 0.0;
-double ExtShieldDownstream.holeRadiusType11Box4Hole1 =  78.2;
+double ExtShieldDownstream.holeRadiusType11Box4Hole1 =  100.0;
 double ExtShieldDownstream.holeLengthType11Box4Hole1 =  915.0;
 string ExtShieldDownstream.holeOrientationType11Box4Hole1 = "100";
 
@@ -908,8 +908,6 @@ double ExtShieldDownstream.notchDimWType17Box1Notch1 = 1011.78;
 double ExtShieldDownstream.centerXType17Box1 = 3904; //3904
 double ExtShieldDownstream.centerYType17Box1 = 0;    //0
 double ExtShieldDownstream.centerZType17Box1 = -5804;//-5804
-
-
 
 
 // This tells emacs to view this file in c++ mode.
