@@ -26,9 +26,12 @@ struct ConfigStruct{
                      _adcError(3.0), 
                      _truncationLevel(1023.0),
                      _defaultPedestal(64.0),
-                     _bits2scalingFactor(_shapingTime * TMath::E()),
+                     /**_bits2scalingFactor(_shapingTime * TMath::E()),
                      _scalingFactor2bits(1.0 / _bits2scalingFactor),
-                     _hitPeriod((_numSamplesPerHit - 1.0) * _measurementFrequency)
+                     _hitPeriod((_numSamplesPerHit - 1.0) * _measurementFrequency)**/
+                     _bits2scalingFactor(25.0 * TMath::E()),
+                     _scalingFactor2bits(1.0 / 25.0 / TMath::E()),
+                     _hitPeriod(14.0)
                      {} 
 
 

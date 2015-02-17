@@ -2,9 +2,9 @@
 #include <iostream>
 #include "FitModelRoot.hh" 
 #include "TF1.h"
-#include "FindPeakBase.hh"
+ 
 
-int  testit(const int num)
+int testit(const int num)
 {
 	adcWaveform adcData;
 	unsigned int adc[8] = {64, 60, 103, 125, 116, 108, 93, 92};
@@ -14,7 +14,8 @@ int  testit(const int num)
 	const ConfigStruct initParams;
 	FindMultiplePeaks peak(initParams);
 	for (int i = 0; i < num; ++i)
-	{peak.process(adcData, result);}
+	{peak.process(adcData, result);
+	}
 
 	std::cout << "result[0]._peakTime" << result[0]._peakTime << std::endl;
 	std::cout << "result[0]._peakHeight" << result[0]._peakHeight << std::endl;
@@ -23,8 +24,8 @@ int  testit(const int num)
 
 void testit2(Double_t timeShift)
 {
-	TF1 *func = new TF1("func",FitModelRoot::convolutionSinglePeakWithConstantPedestal,0.0,140.0,4);
-	func->SetParameters(timeShift,8494,0.0,10.0);
+	TF1 *func = new TF1("func",FitModelRoot::convolutionSinglePeakTrunc,0.0,140.0,3);
+	func->SetParameters(timeShift,108494.0,10.0);
 	Double_t adc[8] = {64, 60, 103, 125, 116, 108, 93, 92};
 	Double_t times[8] = {0.0, 20.0, 40.0, 60.0, 80.0, 100.0, 120.0, 140.0};
 	TGraph * gr = new TGraph(8, times, adc);
@@ -32,9 +33,6 @@ void testit2(Double_t timeShift)
 	gr->Draw("A*");
 	func->Draw("same");
 }
-
-using namespace FitModelRoot;
-
 void testit3()
 {
 	/**TF1 *func1 =new TF1("func1",FitModelRoot::convolutionSinglePeakWithConstantPedestal,0.0,140.0,4);

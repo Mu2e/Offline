@@ -64,8 +64,21 @@ namespace FitModel
   // Par4 - scaling factor 2nd peak
   Float_t doublePeakWithDynamicPedestal(const Double_t t, const DoublePeakWithDynamicPedestalParamStruct &fitParams, const ConfigStruct &initParams);
 
+  // Apply truncation to necessary fit models
 
-  Float_t 
+  Float_t dynamicPedestalTrunc(const Double_t t, const DynamicPedestalParamStruct &fitParams, const ConfigStruct &initParams);
+
+  Float_t singlePeakTrunc(const Double_t t, const SinglePeakParamStruct &fitParams, const ConfigStruct &initParams);
+
+  Float_t singlePeakWithConstantPedestalTrunc(const Double_t t, const SinglePeakWithConstantPedestalParamStruct &fitParams, const ConfigStruct &initParams);
+
+  Float_t singlePeakWithDynamicPedestalTrunc(const Double_t t, const SinglePeakWithDynamicPedestalParamStruct &fitParams, const ConfigStruct &initParams);
+
+  Float_t doublePeakTrunc(const Double_t t, const DoublePeakParamStruct &fitParams, const ConfigStruct &initParams);
+
+  Float_t doublePeakWithConstantPedestalTrunc(const Double_t t, const DoublePeakWithConstantPedestalParamStruct &fitParams, const ConfigStruct &initParams);
+
+  Float_t doublePeakWithDynamicPedestalTrunc(const Double_t t, const DoublePeakWithDynamicPedestalParamStruct &fitParams, const ConfigStruct &initParams);
 
 }
 #endif

@@ -77,7 +77,7 @@ class FindMultiplePeaks : public FindPeakBaseRoot{
 	public:
 
 		// FindMultiplePeaks normal constructor with ConfigStruct initilization parameters
-		FindMultiplePeaks(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams){}
+		FindMultiplePeaks(const ConfigStruct &initParams) : FindPeakBaseRoot(initParams){};
 		
 		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
 		// NOTE : This function may begin with peak data provided in result which is replaced

@@ -12,6 +12,7 @@ class FindPeakBaseRoot : public FindPeakBase{
 		FindPeakBaseRoot(const ConfigStruct &initParams) : FindPeakBase(initParams){};
 
 	protected:
+		
 
 		// Fits a model function to a waveform
 		void fitModel2NormalizedWaveform(TF1 &fitModel, TGraphErrors &fitData, const Double_t *initialParameters, Double_t *fitParameters);

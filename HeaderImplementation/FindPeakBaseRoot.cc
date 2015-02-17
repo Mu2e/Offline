@@ -10,8 +10,9 @@ void FindPeakBaseRoot::fitModel2NormalizedWaveform(TF1 &fitModel, TGraphErrors &
 	TF1 *fitModelPtr = &fitModel; 
 	TGraphErrors *fitDataPtr = &fitData;
 	fitModel.SetParameters(initialParameters);
-	fitDataPtr->Fit(fitModelPtr,"QN");
 
+	fitDataPtr->Fit(fitModelPtr,"QN");
+	
 	const Int_t numParameters = fitModel.GetNumberFreeParameters();
 
 	for (int i = 0; i < numParameters; ++i)
@@ -19,6 +20,7 @@ void FindPeakBaseRoot::fitModel2NormalizedWaveform(TF1 &fitModel, TGraphErrors &
 		fitParameters[i] = fitModel.GetParameter(i);
 	}
 }
+
 
 
 // Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT

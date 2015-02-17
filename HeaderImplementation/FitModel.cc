@@ -64,7 +64,7 @@ namespace FitModel
   //par[2] is sigma 1st peak
   Float_t singlePeak(const Double_t t, const SinglePeakParamStruct &fitParams, const ConfigStruct &initParams)
   {
-    return (Float_t) fitParams._scalingFactor * convolvedSinglePeak(t - fitParams._shiftedTime, fitParams._sigma, initParams);
+    return (Float_t) fitParams._scalingFactor * convolvedSinglePeak(t - fitParams._shiftedTime, fitParams._sigma, initParams) + initParams._defaultPedestal;
 
   }
   			
@@ -155,10 +155,42 @@ namespace FitModel
 
 
 
-  /**Float_t dynamicPedestalTrunc(const Double_t t, const DynamicPedestalParamStruct &fitParams, const ConfigStruct &initParams)
+  // Apply truncation to necessary fit models
+
+  Float_t dynamicPedestalTrunc(const Double_t t, const DynamicPedestalParamStruct &fitParams, const ConfigStruct &initParams)
   {
-    return Tr
-  }**/
+    return fixedTruncation(dynamicPedestal(t,fitParams,initParams), initParams);
+  }
+
+  Float_t singlePeakTrunc(const Double_t t, const SinglePeakParamStruct &fitParams, const ConfigStruct &initParams)
+  {
+    return fixedTruncation(singlePeak(t,fitParams,initParams), initParams);
+  }
+
+  Float_t singlePeakWithConstantPedestalTrunc(const Double_t t, const SinglePeakWithConstantPedestalParamStruct &fitParams, const ConfigStruct &initParams)
+  {
+    return fixedTruncation(singlePeakWithConstantPedestal(t,fitParams,initParams), initParams);
+  }
+
+  Float_t singlePeakWithDynamicPedestalTrunc(const Double_t t, const SinglePeakWithDynamicPedestalParamStruct &fitParams, const ConfigStruct &initParams)
+  {
+    return fixedTruncation(singlePeakWithDynamicPedestal(t,fitParams,initParams), initParams);
+  }
+
+  Float_t doublePeakTrunc(const Double_t t, const DoublePeakParamStruct &fitParams, const ConfigStruct &initParams)
+  {
+    return fixedTruncation(doublePeak(t,fitParams,initParams), initParams);
+  }
+
+  Float_t doublePeakWithConstantPedestalTrunc(const Double_t t, const DoublePeakWithConstantPedestalParamStruct &fitParams, const ConfigStruct &initParams)
+  {
+    return fixedTruncation(doublePeakWithConstantPedestal(t,fitParams,initParams), initParams);
+  }
+
+  Float_t doublePeakWithDynamicPedestalTrunc(const Double_t t, const DoublePeakWithDynamicPedestalParamStruct &fitParams, const ConfigStruct &initParams)
+  {
+    return fixedTruncation(doublePeakWithDynamicPedestal(t,fitParams,initParams), initParams);
+  }
 
 
 
