@@ -10,11 +10,13 @@ source :
 
 services :
 {
+  RandomNumberGenerator: { }
   user :
   {
     GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
     GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    SeedService            : @local::automaticSeeds
   }
 }
 
@@ -22,6 +24,9 @@ physics :
 {
   producers:
   {
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+
     CrvPhotonArrivals:
     {
       module_type               : CrvPhotonArrivalsGenerator
@@ -32,6 +37,8 @@ physics :
       scintillatorDecayTimeFast : 3.0      //3.0 ns
       scintillatorDecayTimeSlow : 10.0     //10.0 ns
       fiberDecayTime            : 7.4      //7.4 ns
+      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      startTime                 : 400.0    //0.0 ns
     }
     CrvSiPMResponses:
     {
@@ -39,9 +46,9 @@ physics :
       crvPhotonArrivalsModuleLabel : "CrvPhotonArrivals"
       numberPixels                 : 1600
       bias                         : 2.5        //V
-      timeStep                     : 1.0        //ns
       scaleFactor                  : 0.08
       minCharge                    : 3.0        //PEs
+      blindTime                    : 500.0      //ns
       GeigerProbCoef               : 2.0
       GeigerProbVoltScale          : 3.0
       TrapType0Prob                : 0.14       //trap_prob*trap_type0_prob=0.2*0.7
@@ -80,7 +87,7 @@ physics :
     }
   }
 
-  an : [CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]
+  an : [protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]
 #  out: [Output]
 #  end_paths: [an, out]
   end_paths: [an]
@@ -94,4 +101,7 @@ outputs:
         fileName    : "data_crv.root"
     }
 }
+
+services.user.SeedService.baseSeed         :  773651
+services.user.SeedService.maxUniqueEngines :  20
 

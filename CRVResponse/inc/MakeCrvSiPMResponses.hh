@@ -44,6 +44,7 @@ Based on Paul Rubinov's C# code
   {
     int    _numberPixels;
     double _bias;           //in V above breakdown
+    double _timeStart;      //in ns
     double _timeEnd;        //in ns
     double _scaleFactor;    //based on a time step of 1.0ns
 
@@ -74,7 +75,7 @@ Based on Paul Rubinov's C# code
 
     public:
     void SetSiPMConstants(double numberPixels, double bias, 
-                          double timeEnd, double scaleFactor, 
+                          double timeStart, double timeEnd, double scaleFactor, 
                           ProbabilitiesStruct probabilities);
     void Simulate(const std::vector<double> &photons, 
                   std::vector<SiPMresponse> &SiPMresponseVector);

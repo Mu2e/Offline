@@ -95,11 +95,12 @@ void MakeCrvSiPMResponses::RechargeCell(Pixel &pixel)
 }
 
 void MakeCrvSiPMResponses::SetSiPMConstants(double numberPixels, double bias,  
-                                            double timeEnd, double scaleFactor, 
+                                            double timeStart, double timeEnd, double scaleFactor, 
                                             ProbabilitiesStruct probabilities)
 {
   _numberPixels = numberPixels;
   _bias = bias;
+  _timeStart = timeStart;
   _timeEnd = timeEnd;
   _scaleFactor = scaleFactor;
   _probabilities = probabilities;
@@ -125,6 +126,7 @@ void MakeCrvSiPMResponses::SetSiPMConstants(double numberPixels, double bias,
 void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
 {
 //schedule charges caused by the CRV counter photons
+//no check whether time<_timeStart, since this should be done in the calling method
   std::vector<double>::const_iterator iter;
   for(iter=photons.begin(); iter!=photons.end(); iter++)
   {
@@ -133,12 +135,13 @@ void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
   }
 
 //schedule random thermal charges
+  double timeWindow = _timeEnd - _timeStart;
   for(int cellid=0; cellid<_numberPixels; cellid++)
   {
     int numberThermalCharges = CLHEP::RandPoisson::shoot(_probabilities._constThermalProb * _timeEnd);
     for(int i=0; i<numberThermalCharges; i++)
     {
-      double time = _timeEnd * CLHEP::RandFlat::shoot();
+      double time = _timeStart + timeWindow * CLHEP::RandFlat::shoot();
       _scheduledCharges.emplace(cellid, time); //constructs ScheduledCharge(cellid, time)
     }
   }

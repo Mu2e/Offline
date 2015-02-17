@@ -17,6 +17,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "G4PhysListFactory.hh"
 #include "G4VPhysicsConstructor.hh"
@@ -61,6 +62,13 @@ namespace mu2e
     double      _scintillatorDecayTimeSlow;
     double      _fiberDecayTime;
 
+    double      _startTime;             //StepPoint times before this time will be ignored to reduce computation times
+                                        //(in particular by ignoring hits during the beam flash).
+                                        //This time should be at least 100ns before the end of the SiPM's blind time
+                                        //to account for the travel time of the photons inside the CRV bar.
+                                        //Default is 0.
+    SimParticleTimeOffset _timeOffsets;
+
     G4ParticleTable *_particleTable;
   };
 
@@ -71,7 +79,9 @@ namespace mu2e
     _scintillationYield(pset.get<double>("scintillationYield",820.0)),    //820.0 photons per MeV
     _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast",3.0)),  //3.0 ns
     _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow",10.0)), //10.0 ns
-    _fiberDecayTime(pset.get<double>("fiberDecayTime",7.4))     //7.4 ns
+    _fiberDecayTime(pset.get<double>("fiberDecayTime",7.4)),     //7.4 ns
+    _startTime(pset.get<double>("startTime",0)),                 //0.0 ns
+    _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet()))
   {
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("mismatch between specified selectors (g4ModuleLabels/processNames");
 
@@ -109,6 +119,8 @@ namespace mu2e
 
   void CrvPhotonArrivalsGenerator::produce(art::Event& event) 
   {
+    _timeOffsets.updateMap(event);
+
     std::unique_ptr<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection(new CrvPhotonArrivalsCollection);
 
     GeomHandle<CosmicRayShield> CRS;
@@ -135,6 +147,8 @@ namespace mu2e
       for(StepPointMCCollection::const_iterator iter=CRVSteps->begin(); iter!=CRVSteps->end(); iter++)
       {
         StepPointMC const& step(*iter);
+
+        if(step.time()<_startTime) continue;   //Ignore this StepPoint to reduce computation time.
 
         const CLHEP::Hep3Vector &p1 = step.position();
         CLHEP::Hep3Vector p2 = p1 + step.momentum().unit()*step.stepLength();
@@ -174,7 +188,7 @@ namespace mu2e
         double beta2 = sqrt(1.0-1.0/(gamma2*gamma2));
         double beta = (beta1+beta2)/2.0;
         double velocity = beta*CLHEP::c_light;
-        double t1 = step.time();
+	double t1 = _timeOffsets.timeWithOffsetsApplied(step);
         double t2 = t1 + step.stepLength()/velocity;
 
 //if there is a following step point, it will give a more realistic energy and time
@@ -192,7 +206,7 @@ namespace mu2e
             beta2 = sqrt(1.0-1.0/(gamma2*gamma2));
             beta = (beta1+beta2)/2.0;
             velocity = beta*CLHEP::c_light;
-            t2 = nextStep.time();
+	    t2 = _timeOffsets.timeWithOffsetsApplied(nextStep);
           }
         }
 

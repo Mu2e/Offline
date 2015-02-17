@@ -53,6 +53,8 @@ namespace mu2e
     double      _bias;
     double      _scaleFactor;
     double      _minCharge;
+    double      _blindTime;             //time during which the SiPM is blind
+    double      _microBunchPeriod;
     MakeCrvSiPMResponses::ProbabilitiesStruct _probabilities;
 
     boost::shared_ptr<MakeCrvSiPMResponses> _makeCrvSiPMResponses;
@@ -63,7 +65,8 @@ namespace mu2e
     _numberPixels(pset.get<int>("numberPixels",1600)),
     _bias(pset.get<double>("bias",2.5)),                //V
     _scaleFactor(pset.get<double>("scaleFactor",0.08)), //based on a time step of 1.0ns
-    _minCharge(pset.get<double>("minCharge",3.0))       //in units of PE
+    _minCharge(pset.get<double>("minCharge",3.0)),      //in units of PE
+    _blindTime(pset.get<double>("blindTime",500))       //ns
   {
     produces<CrvSiPMResponsesCollection>();
     _probabilities._constGeigerProbCoef = pset.get<double>("GeigerProbCoef",2.0);
@@ -83,9 +86,9 @@ namespace mu2e
   void CrvSiPMResponsesGenerator::beginRun(art::Run &run)
   {
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
-    double timeEnd = accPar->deBuncherPeriod;
+    _microBunchPeriod = accPar->deBuncherPeriod;
     _makeCrvSiPMResponses = boost::shared_ptr<MakeCrvSiPMResponses>(new MakeCrvSiPMResponses);
-    _makeCrvSiPMResponses->SetSiPMConstants(_numberPixels, _bias, timeEnd, 
+    _makeCrvSiPMResponses->SetSiPMConstants(_numberPixels, _bias, _blindTime, _microBunchPeriod, 
                                             _scaleFactor, _probabilities);
   }
 
@@ -117,15 +120,20 @@ namespace mu2e
         std::vector<SiPMresponse> SiPMresponseVector;
         std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &responsesOneSiPM = crvSiPMResponses.GetSiPMResponses(SiPM);
 
+        std::vector<double> photonArrivalTimesAdjusted;
         if(crvPhotons!=crvPhotonArrivalsCollection->end())
         {
-          _makeCrvSiPMResponses->Simulate(crvPhotons->second.GetPhotonArrivalTimes(SiPM), SiPMresponseVector);
+          const std::vector<double> &photonArrivalTimes = crvPhotons->second.GetPhotonArrivalTimes(SiPM);
+          std::vector<double>::const_iterator timeIter;
+          for(timeIter=photonArrivalTimes.begin(); timeIter!=photonArrivalTimes.end(); timeIter++)
+          {
+            double time = *timeIter;
+	    time = fmod(time,_microBunchPeriod);  //"ghost hits" are not used / "splitting of hits" is acceptable, 
+                                                  //since we are blind outside the window
+            if(time>_blindTime) photonArrivalTimesAdjusted.emplace_back(time);
+          }
         }
-        else
-        {
-          std::vector<double> empty;
-          _makeCrvSiPMResponses->Simulate(empty, SiPMresponseVector);
-        }
+        _makeCrvSiPMResponses->Simulate(photonArrivalTimesAdjusted, SiPMresponseVector);
 
         double totalCharge=0;
         for(unsigned int i=0; i<SiPMresponseVector.size(); i++)

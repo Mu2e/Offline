@@ -263,7 +263,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
   probabilities._constThermalProb = 6.25e-7; //1MHz at SiPM --> 1e-3/(#pixel*t[ns])  //exp(-E_th/T)=1.6e-6
   probabilities._constPhotonProduction = 0.1; //0.4;
   MakeCrvSiPMResponses sim;
-  sim.SetSiPMConstants(1600, 2.5, 1695, 0.08, probabilities);
+  sim.SetSiPMConstants(1600, 2.5, 0, 1695, 0.08, probabilities);
 
   MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
   double binWidth = 12.5; //ns
