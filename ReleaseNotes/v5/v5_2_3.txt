@@ -2,6 +2,10 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_2_3
 
+4) February 17, 2015 - genser
+   Added diagnostic printout to:
+     KalmanTests/inc/MCEvtData.hh
+     KalmanTests/src/KalDiag.cc
 
 3) February 12, 2015 - genser
    Enabled the use of StrawDigiMC in 
