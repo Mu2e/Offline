@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 *~
 BaBar/BField/
 BaBar/BaBar/
@@ -31,11 +30,3 @@ EventDisplay/src/EventDisplayDict.cc
 EventDisplay/src/EventDisplayDict.h
 EMFCAnalysis
 .tup
-=======
-*.root
-*.d
-*.pcm
-*.cxx
-*.DS_Store
-*.so
->>>>>>> 77001882402672b282fa6a68f9b1bb2dc8fcc6bb
