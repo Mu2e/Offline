@@ -1,6 +1,7 @@
 // Original author David Norvil Brown, University of Louisville
 // Numbers based on Mu2e geometry 14 as of November 2014
 // Based in large part on WBS 5.9 documentation.
+// See Mu2e docdb #4678 for more details on parameters
 
 // Sort boxes into "types"
 int ExtShieldDownstream.numberOfBoxTypes = 17; 
@@ -897,9 +898,7 @@ string ExtShieldDownstream.materialType17  = "CONCRETE_MARS";
 int ExtShieldDownstream.nNotchesType17Box1 = 1;
 double ExtShieldDownstream.notchCenterUType17Box1Notch1 = -1775;
 double ExtShieldDownstream.notchCenterVType17Box1Notch1 = 1277.9;
-double ExtShieldDownstream.notchCenterWType17Box1Notch1 = 1813.31;
-//1814.31 for shortened  
-//nominally 2119.11 but reduced to due geometry issue // was 2118.11
+double ExtShieldDownstream.notchCenterWType17Box1Notch1 = 2118.11;
 double ExtShieldDownstream.notchDimUType17Box1Notch1 = 560;
 double ExtShieldDownstream.notchDimVType17Box1Notch1 = 508;
 double ExtShieldDownstream.notchDimWType17Box1Notch1 = 1011.78;
