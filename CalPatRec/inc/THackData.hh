@@ -41,6 +41,7 @@ public:
   double shDz      (){ return fData[10];  }  
   int    goodPoints(){ return fData[11];  }  
   double chi2      (){ return fData[12];  }
+  double chi2zphi  (){ return fData[13];  }
 
   
   double* distVec  (){ return fDist;      }

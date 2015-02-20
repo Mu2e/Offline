@@ -31,6 +31,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "CalPatRec/inc/CalTimePeak.hh"
+#include "CalPatRec/inc/Doublet.hh"
 
 //ROOT
 #include "TStopwatch.h"
@@ -46,12 +47,29 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // main function: given a track definition, create a fit object from it
 //-----------------------------------------------------------------------------
-    virtual void makeTrack(KalFitResult& kres, CalTimePeak* TPeak=NULL);
+    virtual void makeTrack(KalFitResult& kres, CalTimePeak* TPeak=NULL, int markDoubs=0);
 
 //---------------------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following function for printing the hits included in the track
 //----------------------------------------------------------------------------------------------
     void printHits(KalFitResult& kres);
+
+//----------------------------------------------------------------------    
+// 2015 - 02 - 17 G. Pezzullo added a method for searching the doublets
+    void findDoublets      (KalRep* krep,   std::vector<TrkStrawHit*> *hits,  DoubletCollection *dcol);//search doublets in a giventimepeak
+    void markDoublets      (DoubletCollection *dcol);
+    void findAndMarkMultiplets(KalRep* krep,   std::vector<TrkStrawHit*> *hits);
+    
+    void setMultipletsAmbig(std::vector<TrkStrawHit*> *hits);
+
+//-----------------------------------------------------------------------------------------
+//2015 - 02 -20 G. Pezzu addedd the function for calculataing the slope of the lines
+// tangent to two given circles
+//-----------------------------------------------------------------------------------------
+    void findLines(double xa, double ya, double ra,
+		   double xb, double yb, double rb,
+		   double *slopes);
+    
 
 // add a set of hits to an existing fit
     virtual void addHits(KalFitResult&             kres   , 
@@ -68,17 +86,19 @@ namespace mu2e {
     BField const& bField() const;
   protected:
     // configuration parameters
-    int       _debug;
-    bool      _weedhits;
-    double              _maxhitchi;
-    unsigned            _maxweed;
-    std::vector<double> _herr;
+    int                         _debug;
+    bool                        _weedhits;
+    double                      _maxhitchi;
+    unsigned                    _maxweed;
+    std::vector<double>         _herr;
     double                      _maxdriftpull;
     std::vector<AmbigResolver*> _ambigresolver;
-    bool _initt0;
-    bool _updatet0;
-    int  _daveMode;
-    std::vector<double> _t0tol;
+    bool                        _initt0;
+    bool                        _updatet0;
+    double                      fMinHitDrift;
+    double                      fRdriftMinusDocaTol;
+    int                         _daveMode;
+    std::vector<double>         _t0tol;
 
     bool fitable              (TrkDef const& tdef);
     bool weedHits             (KalFitResult& kres);
@@ -99,6 +119,9 @@ namespace mu2e {
     double             _mint0doca;      // minimum (?) doca for t0 hits
     double             _t0nsig;	        // # of sigma to include when selecting hits for t0
     double             _dtoffset;       // track - luster time offset, ns
+    double             fScaleErrDoublet;
+    int                fMarkDoublets;
+    int                fILoopMarkDoublets;
     bool               _removefailed;
     unsigned           _minnstraws;
     TrkParticle        _tpart;
@@ -107,7 +130,8 @@ namespace mu2e {
     mutable BField*    _bfield;
     int                 fNIter;
     const CalTimePeak*  fTimePeak;
-
+    int                 fAmbigVec[40000];
+    int                 fAmbigVecSlope[40000];
 //-----------------------------------------------------------------------------
 // helper functions
 //-----------------------------------------------------------------------------

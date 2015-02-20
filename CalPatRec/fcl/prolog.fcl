@@ -41,18 +41,31 @@ CalPatRecMakeStrawHitPositions : {
     printHits                   : 0
 }
 
+CalPatRecMakeStereoHits : {
+    module_type                 : MakeStereoHits
+    StrawHitCollectionLabel     : makeSH
+    StrawHitFlagCollectionLabel : CalPatRecFSHP
+    MVATool                     : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
+    diagLevel                   : 0
+    printHits                   : 0
+}
+
 CalPatRecFlagStrawHits : {
     module_type                     : FlagStrawHits
     StrawHitCollectionLabel         : makeSH
-    StrawHitPositionCollectionLabel : CalPatRecMakeStrawHitPositions
+    StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
     minimumRadius                   : 380.    # mm
+    maximumEnergy                   : 0.005   # 5 KeV, in MeV
 }
 
 CalPatRecFlagBkgHits : {
     module_type                     : FlagBkgHits
     StrawHitCollectionLabel         : makeSH
     StrawHitFlagCollectionLabel     : CalPatRecFlagStrawHits
-    StrawHitPositionCollectionLabel : CalPatRecMakeStrawHitPositions
+    StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
+# make sure the stereo hit collection name is undefined , 
+# according to the  comments this shouldn't change anything
+    StereoHitCollectionLabel        : ""
 }
 
 CalPatRec            : {
@@ -60,7 +73,7 @@ CalPatRec            : {
 
     StrawHitCollectionLabel                     : makeSH
     StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
-    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions
+    StrawHitPositionCollectionLabel             : CalPatRecMakeStereoHits
     caloClusterModuleLabel                      : MakeCaloCluster
 
     diagLevel                                   : 0
@@ -77,7 +90,7 @@ CalPatRec            : {
     minClusterEnergy                            : 60.    # MeV
     minClusterSize                              : 0      # number of crystals
     MaxHelixDoca                                : 60.    # in mm
-
+    MaxAddDoca                                  : 7.     # in mm
     # Kalman fit configuration for the helix seed fit
     SeedFitHack : {
 	debugLevel                              : 0
@@ -90,7 +103,11 @@ CalPatRec            : {
 	t0Tolerance				: [5.0,5.0]
 	initT0					: true 
 	updateT0				: false
+	HitMinDrift 				: 0.2
+	RdriftMinusDocaTol                      : 1.
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
+	scaleErrDoublet                         : 1.
+	iLoopMarkDoublets                       : 0
     }
     # HelixFitHack configuraton
     HelixFitHack : {
@@ -120,14 +137,18 @@ CalPatRec            : {
 	initT0					: true
 	updateT0				: true
 	HitAmbigPenalty 			: false
-	HitMinDrift 				: 0.1
+	HitMinDrift 				: 0.2
+	RdriftMinusDocaTol                      : 1.
 	ZeroDriftPenalty 			: 0.05
 	Neutralize 				: true
 	fieldCorrection				: true
 	maxhitchi                               : 3.5
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
+	scaleErrDoublet                         : 1.
+	iLoopMarkDoublets                       : 0
     }
     MaxStrawEDep            : 0.005
+    useDoublets             : 0
     TimeSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
     HelixFitSelectionBits   : ["EnergySelection","TimeSelection","RadiusSelection"]
     KalmanFitSelectionBits  : []

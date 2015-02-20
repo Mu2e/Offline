@@ -122,6 +122,7 @@ namespace mu2e {
 					// errors are asymmetric; along the wire is given by time division, 
 					// perp to the wire by the straw size/sqrt(12)
     const mu2e::Straw* _straw;          // pointer to the straw
+    const mu2e::StrawHit* _strawhit;          // pointer to the strawHit
     double             _perr;
     double             _rerr;
 //-----------------------------------------------------------------------------
@@ -288,9 +289,12 @@ namespace mu2e {
 
     bool findHelix     (XYZPHackVector& xyzp, HelixFitHackResult& myfit);
     bool findXY        (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
-    bool findXY_new    (XYZPHackVector& xyzp, HelixFitHackResult& myhel, int seedIndex, int *indexVec);
-    bool findZ         (XYZPHackVector& xyzp, HelixFitHackResult& myhel, int seedIndex, int *indexVec);
-    void findDfDz      (XYZPHackVector& xyzp, HelixFitHackResult& myhel, int seedIndex, int *indexVec);
+    bool findXY_new    (XYZPHackVector& xyzp, HelixFitHackResult& myhel,
+			int seedIndex, int *indexVec);
+    bool findZ         (XYZPHackVector& xyzp, HelixFitHackResult& myhel, 
+			int seedIndex, int *indexVec);
+    void findDfDz      (XYZPHackVector& xyzp, HelixFitHackResult& myhel, 
+			int seedIndex, int *indexVec);
     
 
     bool initCircle    (XYZPHackVector const& xyzp,HelixFitHackResult& myhel);
@@ -352,7 +356,8 @@ namespace mu2e {
 
     void calculateDfDz(double &phi0, double &phi1, double &z0,  double &z1, double &dfdz);
 
-    int  refineHelixParameters(XYZPHackVector& Xyzp, HelixFitHackResult& Trk);
+    int  refineHelixParameters(XYZPHackVector& Xyzp, HelixFitHackResult& Trk,
+			       int seedIndex, int *indexVec);
   };
 }
 #endif
