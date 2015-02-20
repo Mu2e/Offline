@@ -49,6 +49,7 @@
 
 //BaBar includes
 #include "TrajGeom/TrkLineTraj.hh"
+#include "TrkBase/TrkPoca.hh"
 
 ClassImp(TAnaDump)
 
@@ -1007,7 +1008,7 @@ void TAnaDump::printStepPointMC(const mu2e::StepPointMC* Step, const char* Opt) 
       printf("-------------------------------------------------------------------------------------------------------------\n");
       printf("  Vol          PDG    ID GenIndex PPdg ParID     X          Y         Z            T      ");
       printf("  X0          Y0         Z0 ");
-      printf("  Edep(Tot) Edep(NI) Edep(I)  Step   EndCode  Energy      EKin       Mom        Pt      Creation    StopProc\n");
+      printf("  Edep(Tot) Edep(NI) Edep(I)  Step   EndCode  Energy      EKin     Mom      Pt    doca  Creation      StopProc\n");
       printf("------------------------------------------------------------------------------------------");
       printf("----------------------------");
       printf("-------------------------------------------------------------------------------------------------------------\n");
@@ -1044,8 +1045,10 @@ void TAnaDump::printStepPointMC(const mu2e::StepPointMC* Step, const char* Opt) 
     TrkLineTraj trstep (p2,Step->momentum().unit(),0.,0.);
 
     //2015-02-16 G. Pezzu and Murat change in the print out to be finished
-    //TrkPoca poca(trstraw,trstep
-
+    TrkPoca poca(trstraw, 0., trstep, 0.);
+    
+    double doca = poca.doca();
+    
     //    art::Ptr<mu2e::GenParticle> const& apgen = sim->genParticle();
 
     //    mu2e::GenParticle* gen = (mu2e::GenParticle*) &(*sim->genParticle());
@@ -1070,7 +1073,7 @@ void TAnaDump::printStepPointMC(const mu2e::StepPointMC* Step, const char* Opt) 
     //    const mu2e::PhysicalVolumeInfo& pvinfo = volumes->at(Step->volumeId()); - sometimes crashes..
 
     if ((opt == "") || (opt.Index("data") >= 0)) {
-      printf("%5i %12i %5i %5i %5i %5i %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %8.2f %8.2f %8.2f %8.3f %4i %10.3f %10.3f %10.3f %10.3f %-16s %-s\n",
+      printf("%5i %12i %5i %5i %5i %5i %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %8.2f %8.2f %8.2f %8.3f %4i %10.3f %8.3f %8.3f %8.3f %6.2f %-12s %-s\n",
 	     (int) Step->volumeId(),
 	     //	     pvinfo.name().data(), // smth is wrong with the name defined by volumeId()....
 	     (int) sim->pdgId(),
@@ -1094,6 +1097,7 @@ void TAnaDump::printStepPointMC(const mu2e::StepPointMC* Step, const char* Opt) 
 	     ekin,
 	     pabs,
 	     pt,
+	     doca,
 	     sim->creationCode().name().data(),
 	     Step->endProcessCode().name().data());
     }

@@ -124,8 +124,8 @@ physics : {
 	      ]
     trigger_paths  : [detPath]
     
-#    out : [detectorOutput]
-    out : []
+    out : [detectorOutput]
+#    out : []
     an  : [genCountLogger, gpa]
 
     end_paths      : [out]
@@ -138,7 +138,7 @@ outputs: {
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
-        fileName    : "dataDigiMixConversion.root"
+        fileName    : "mergePatRec_stnmaker.art"
     }
 }
 #------------------------------------------------------------------------------
@@ -157,6 +157,11 @@ services.scheduler.wantSummary: true
 # Apply the time offsets in tracker digitization
 physics.producers.makeSD.TimeOffsets              : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 #
+
+# physics.producers.CalPatRec.debugLevel                            : 1
+# physics.producers.CalPatRec.HelixFitHack.debugLevel              : 1
+# physics.producers.CalPatRec.KalFitHack.debugLevel                : 1
+
 physics.producers.TrkExtrapol.fitterModuleLabel                  : MergePatRec
 physics.producers.CaloMatching.fitterModuleLabel                 : MergePatRec
 physics.producers.ParticleID.fitterModuleLabel                   : MergePatRec
