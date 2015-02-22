@@ -27,10 +27,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
+#include "CLHEP/Random/Randomize.h"
 
 #include <string>
 
-#include "Randomize.hh"
 #include <TMath.h>
 
 namespace mu2e 
@@ -89,7 +89,7 @@ namespace mu2e
       const CrvSiPMResponses &siPMResponses = iter->second;
 
       double startTime = siPMResponses.GetFirstSiPMResponseTime();
-      startTime-=G4UniformRand()*_binWidth;
+      startTime-=CLHEP::RandFlat::shoot()*_binWidth;
 
       CrvWaveforms &crvWaveforms = (*crvWaveformsCollection)[barIndex];
       crvWaveforms.SetBinWidth(_binWidth);
