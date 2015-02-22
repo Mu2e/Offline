@@ -11,6 +11,8 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -18,11 +20,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-
-#include "G4PhysListFactory.hh"
-#include "G4VPhysicsConstructor.hh"
-#include "G4VModularPhysicsList.hh"
-#include "G4ParticleTable.hh"
+#include "SeedService/inc/SeedService.hh"
 
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -33,10 +31,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
+#include "CLHEP/Random/Randomize.h"
 
 #include <string>
 
-#include <TRandom3.h>
 #include <TMath.h>
 
 namespace mu2e 
@@ -69,7 +67,7 @@ namespace mu2e
                                         //Default is 0.
     SimParticleTimeOffset _timeOffsets;
 
-    G4ParticleTable *_particleTable;
+    CLHEP::RandFlat       _randFlat;
   };
 
   CrvPhotonArrivalsGenerator::CrvPhotonArrivalsGenerator(fhicl::ParameterSet const& pset) :
@@ -81,32 +79,20 @@ namespace mu2e
     _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow",10.0)), //10.0 ns
     _fiberDecayTime(pset.get<double>("fiberDecayTime",7.4)),     //7.4 ns
     _startTime(pset.get<double>("startTime",0)),                 //0.0 ns
-    _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet()))
+    _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet())),
+    _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
   {
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("mismatch between specified selectors (g4ModuleLabels/processNames");
 
 //    ConfigFileLookupPolicy configFile;
 //    _lookupTableFileName = configFile(_lookupTableFileName);
-    _makeCrvPhotonArrivals = boost::shared_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals());
+    _makeCrvPhotonArrivals = boost::shared_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals(_randFlat));
     _makeCrvPhotonArrivals->LoadLookupTable(_lookupTableFileName.c_str());
     _makeCrvPhotonArrivals->SetScintillationYield(_scintillationYield);
     _makeCrvPhotonArrivals->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
     _makeCrvPhotonArrivals->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
     _makeCrvPhotonArrivals->SetFiberDecayTime(_fiberDecayTime);
     produces<CrvPhotonArrivalsCollection>();
-
-    std::string physName = "QGSP_BERT_EMV";
-    G4PhysListFactory factory;
-    G4VModularPhysicsList* phys = factory.GetReferencePhysList(physName);
-    if(!phys) throw std::logic_error("can't find physics list "+physName);
-    for (int i=0; ; i++) 
-    {
-       G4VPhysicsConstructor* elem = const_cast<G4VPhysicsConstructor*>(phys->GetPhysics(i));
-       if (elem == NULL) break;
-       elem->ConstructParticle();;
-    }
-    _particleTable = G4ParticleTable::GetParticleTable();
-    _particleTable->SetReadiness();
   }
 
   void CrvPhotonArrivalsGenerator::beginJob()
@@ -130,7 +116,7 @@ namespace mu2e
     event.getManyByType(CRVStepsVector);
     for(size_t i=0; i<CRVStepsVector.size(); i++)
     {
-      art::Handle<StepPointMCCollection> CRVSteps = CRVStepsVector[i];
+      const art::Handle<StepPointMCCollection> &CRVSteps = CRVStepsVector[i];
 
       bool selected=true;
       const art::Provenance *provenance = CRVSteps.provenance(); 
@@ -155,26 +141,20 @@ namespace mu2e
         double energyDepositedTotal= step.totalEDep();
         double energyDepositedNonIonizing = step.nonIonizingEDep();
 
+        GlobalConstantsHandle<ParticleDataTable> particleDataTable;
         double mass, charge;
         int PDGcode = step.simParticle()->pdgId();
-        if(_particleTable->FindParticle(PDGcode)==NULL)
+        ParticleDataTable::maybe_ref particle = particleDataTable->particle(PDGcode);
+        if(!particle) 
         {
-          if(PDGcode>1000000000 && PDGcode<1010000000)
-          {
-            mass = CLHEP::amu_c2 * (PDGcode%10000) / 10;   //MeV/c^2
-            charge = (PDGcode%10000000) / 10000;  //in units of elementary charges / assuming the atom lost all electrons //TODO: Is this correct?
-          }
-          else
-          {
-            std::cerr<<"Error in CrvPhotonArrivalsGenerator: Found a PDG code which is not in the GEANT particle table: ";
-            std::cerr<<PDGcode<<std::endl;
-            continue;
-          }
+          std::cerr<<"Error in CrvPhotonArrivalsGenerator: Found a PDG code which is not in the GEANT particle table: ";
+          std::cerr<<PDGcode<<std::endl;
+          continue;
         }
         else
         {
-          mass = _particleTable->FindParticle(PDGcode)->GetPDGMass();  //MeV/c^2
-          charge = _particleTable->FindParticle(PDGcode)->GetPDGCharge(); //in units of elementary charges 
+          mass = particle.ref().mass();  //MeV/c^2
+          charge = particle.ref().charge(); //in units of elementary charges 
         }
 
         double momentum1 = step.momentum().mag(); //MeV/c

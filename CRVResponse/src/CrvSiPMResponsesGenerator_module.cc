@@ -19,6 +19,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
+#include "SeedService/inc/SeedService.hh"
 
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -29,10 +30,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
+#include "CLHEP/Random/Randomize.h"
 
 #include <string>
 
-#include "Randomize.hh"
 #include <TMath.h>
 
 namespace mu2e 
@@ -58,6 +59,9 @@ namespace mu2e
     MakeCrvSiPMResponses::ProbabilitiesStruct _probabilities;
 
     boost::shared_ptr<MakeCrvSiPMResponses> _makeCrvSiPMResponses;
+
+    CLHEP::RandFlat     _randFlat;
+    CLHEP::RandPoissonQ _randPoissonQ;
   };
 
   CrvSiPMResponsesGenerator::CrvSiPMResponsesGenerator(fhicl::ParameterSet const& pset) :
@@ -66,7 +70,9 @@ namespace mu2e
     _bias(pset.get<double>("bias",2.5)),                //V
     _scaleFactor(pset.get<double>("scaleFactor",0.08)), //based on a time step of 1.0ns
     _minCharge(pset.get<double>("minCharge",3.0)),      //in units of PE
-    _blindTime(pset.get<double>("blindTime",500))       //ns
+    _blindTime(pset.get<double>("blindTime",500)),      //ns
+    _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
+    _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
     produces<CrvSiPMResponsesCollection>();
     _probabilities._constGeigerProbCoef = pset.get<double>("GeigerProbCoef",2.0);
@@ -87,7 +93,7 @@ namespace mu2e
   {
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
-    _makeCrvSiPMResponses = boost::shared_ptr<MakeCrvSiPMResponses>(new MakeCrvSiPMResponses);
+    _makeCrvSiPMResponses = boost::shared_ptr<MakeCrvSiPMResponses>(new MakeCrvSiPMResponses(_randFlat, _randPoissonQ));
     _makeCrvSiPMResponses->SetSiPMConstants(_numberPixels, _bias, _blindTime, _microBunchPeriod, 
                                             _scaleFactor, _probabilities);
   }

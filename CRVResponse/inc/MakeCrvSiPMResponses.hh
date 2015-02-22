@@ -10,6 +10,7 @@ Based on Paul Rubinov's C# code
 #include <set>
 #include <map>
 #include <vector>
+#include "CLHEP/Random/Randomize.h"
 
   struct Pixel
   {
@@ -73,7 +74,14 @@ Based on Paul Rubinov's C# code
     void   RechargeCell(Pixel &pixel);
     void   FillPhotonQueue(const std::vector<double> &photons);
 
+    CLHEP::RandFlat     &_randFlat;
+    CLHEP::RandPoissonQ &_randPoissonQ;
+
     public:
+
+    MakeCrvSiPMResponses(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ) :
+                         _randFlat(randFlat), _randPoissonQ(randPoissonQ) {}
+
     void SetSiPMConstants(double numberPixels, double bias, 
                           double timeStart, double timeEnd, double scaleFactor, 
                           ProbabilitiesStruct probabilities);
