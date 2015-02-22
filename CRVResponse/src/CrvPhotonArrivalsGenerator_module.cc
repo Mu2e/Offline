@@ -113,112 +113,113 @@ namespace mu2e
     std::string productInstanceName("CRV");
 
     std::vector<art::Handle<StepPointMCCollection> > CRVStepsVector;
-    event.getManyByType(CRVStepsVector);
-    for(size_t i=0; i<CRVStepsVector.size(); i++)
+    std::unique_ptr<art::Selector> selector;
+    for(size_t j=0; j<_g4ModuleLabels.size(); j++)
     {
-      const art::Handle<StepPointMCCollection> &CRVSteps = CRVStepsVector[i];
+      if(_g4ModuleLabels[j]!="" && _g4ModuleLabels[j]!="*")
+        selector = std::unique_ptr<art::Selector>(new art::Selector(art::ProductInstanceNameSelector("CRV") &&
+                                                                    art::ModuleLabelSelector(_g4ModuleLabels[j]) && 
+                                                                    art::ProcessNameSelector(_processNames[j])));
+      else
+        selector = std::unique_ptr<art::Selector>(new art::Selector(art::ProductInstanceNameSelector("CRV") &&
+                                                                    art::ProcessNameSelector(_processNames[j])));
+      //the ProcessNameSelector allows "*" and ""
 
-      bool selected=true;
-      const art::Provenance *provenance = CRVSteps.provenance(); 
-      for(size_t j=0; j<_g4ModuleLabels.size(); j++)
+      event.getMany(*selector, CRVStepsVector);
+      for(size_t i=0; i<CRVStepsVector.size(); i++)
       {
-        selected=true;
-        if(provenance->productInstanceName()!=productInstanceName) selected=false;
-        if(_g4ModuleLabels[j]!="" && _g4ModuleLabels[j]!="*" &&  provenance->moduleLabel()!=_g4ModuleLabels[j]) selected=false;
-        if(_processNames[j]!="" && _processNames[j]!="*" && provenance->processName()!=_processNames[j]) selected=false;
-        if(selected) break;
-      }
-      if(!selected) continue;
+        const art::Handle<StepPointMCCollection> &CRVSteps = CRVStepsVector[i];
 
-      for(StepPointMCCollection::const_iterator iter=CRVSteps->begin(); iter!=CRVSteps->end(); iter++)
-      {
-        StepPointMC const& step(*iter);
-
-        if(step.time()<_startTime) continue;   //Ignore this StepPoint to reduce computation time.
-
-        const CLHEP::Hep3Vector &p1 = step.position();
-        CLHEP::Hep3Vector p2 = p1 + step.momentum().unit()*step.stepLength();
-        double energyDepositedTotal= step.totalEDep();
-        double energyDepositedNonIonizing = step.nonIonizingEDep();
-
-        GlobalConstantsHandle<ParticleDataTable> particleDataTable;
-        double mass, charge;
-        int PDGcode = step.simParticle()->pdgId();
-        ParticleDataTable::maybe_ref particle = particleDataTable->particle(PDGcode);
-        if(!particle) 
+        for(StepPointMCCollection::const_iterator iter=CRVSteps->begin(); iter!=CRVSteps->end(); iter++)
         {
-          std::cerr<<"Error in CrvPhotonArrivalsGenerator: Found a PDG code which is not in the GEANT particle table: ";
-          std::cerr<<PDGcode<<std::endl;
-          continue;
-        }
-        else
-        {
-          mass = particle.ref().mass();  //MeV/c^2
-          charge = particle.ref().charge(); //in units of elementary charges 
-        }
+          StepPointMC const& step(*iter);
 
-        double momentum1 = step.momentum().mag(); //MeV/c
-        double energy1 = sqrt(momentum1*momentum1 + mass*mass); //MeV
+          if(step.time()<_startTime) continue;   //Ignore this StepPoint to reduce computation time.
+
+          const CLHEP::Hep3Vector &p1 = step.position();
+          CLHEP::Hep3Vector p2 = p1 + step.momentum().unit()*step.stepLength();
+          double energyDepositedTotal= step.totalEDep();
+          double energyDepositedNonIonizing = step.nonIonizingEDep();
+
+          GlobalConstantsHandle<ParticleDataTable> particleDataTable;
+          double mass, charge;
+          int PDGcode = step.simParticle()->pdgId();
+          ParticleDataTable::maybe_ref particle = particleDataTable->particle(PDGcode);
+          if(!particle) 
+          {
+            std::cerr<<"Error in CrvPhotonArrivalsGenerator: Found a PDG code which is not in the GEANT particle table: ";
+            std::cerr<<PDGcode<<std::endl;
+            continue;
+          }
+          else
+          {
+            mass = particle.ref().mass();  //MeV/c^2
+            charge = particle.ref().charge(); //in units of elementary charges 
+          }
+
+          double momentum1 = step.momentum().mag(); //MeV/c
+          double energy1 = sqrt(momentum1*momentum1 + mass*mass); //MeV
 //FIXME: does not take the energy of daughter particles into account
-        double energy2 = energy1 - energyDepositedTotal; //MeV  
+          double energy2 = energy1 - energyDepositedTotal; //MeV  
 
-        double gamma1 = energy1 / mass;
-        double gamma2 = energy2 / mass;
-        double beta1 = sqrt(1.0-1.0/(gamma1*gamma1));
-        double beta2 = sqrt(1.0-1.0/(gamma2*gamma2));
-        double beta = (beta1+beta2)/2.0;
-        double velocity = beta*CLHEP::c_light;
-	double t1 = _timeOffsets.timeWithOffsetsApplied(step);
-        double t2 = t1 + step.stepLength()/velocity;
+          double gamma1 = energy1 / mass;
+          double gamma2 = energy2 / mass;
+          double beta1 = sqrt(1.0-1.0/(gamma1*gamma1));
+          double beta2 = sqrt(1.0-1.0/(gamma2*gamma2));
+          double beta = (beta1+beta2)/2.0;
+          double velocity = beta*CLHEP::c_light;
+          double t1 = _timeOffsets.timeWithOffsetsApplied(step);
+          double t2 = t1 + step.stepLength()/velocity;
 
 //if there is a following step point, it will give a more realistic energy and time
-        StepPointMCCollection::const_iterator iterNextStep = iter;
-        iterNextStep++;
-        if(iterNextStep!=CRVSteps->end())
-        {
-          StepPointMC const& nextStep(*iterNextStep);
-          if(nextStep.barIndex()==step.barIndex() && nextStep.simParticle()->id()==step.simParticle()->id())
+          StepPointMCCollection::const_iterator iterNextStep = iter;
+          iterNextStep++;
+          if(iterNextStep!=CRVSteps->end())
           {
-            p2 = nextStep.position();
-            double momentum2 = nextStep.momentum().mag(); //MeV/c
-            energy2 = sqrt(momentum2*momentum2 + mass*mass); //MeV
-            gamma2 = energy2 / mass;
-            beta2 = sqrt(1.0-1.0/(gamma2*gamma2));
-            beta = (beta1+beta2)/2.0;
-            velocity = beta*CLHEP::c_light;
-	    t2 = _timeOffsets.timeWithOffsetsApplied(nextStep);
+            StepPointMC const& nextStep(*iterNextStep);
+            if(nextStep.barIndex()==step.barIndex() && nextStep.simParticle()->id()==step.simParticle()->id())
+            {
+              p2 = nextStep.position();
+              double momentum2 = nextStep.momentum().mag(); //MeV/c
+              energy2 = sqrt(momentum2*momentum2 + mass*mass); //MeV
+              gamma2 = energy2 / mass;
+              beta2 = sqrt(1.0-1.0/(gamma2*gamma2));
+              beta = (beta1+beta2)/2.0;
+              velocity = beta*CLHEP::c_light;
+	      t2 = _timeOffsets.timeWithOffsetsApplied(nextStep);
+            }
           }
-        }
 
-        const CRSScintillatorBar &CRSbar = CRS->getBar(step.barIndex());
-        CLHEP::Hep3Vector p1Local = CRSbar.toLocal(p1);
-        CLHEP::Hep3Vector p2Local = CRSbar.toLocal(p2);
+          const CRSScintillatorBar &CRSbar = CRS->getBar(step.barIndex());
+          CLHEP::Hep3Vector p1Local = CRSbar.toLocal(p1);
+          CLHEP::Hep3Vector p2Local = CRSbar.toLocal(p2);
 
-        _makeCrvPhotonArrivals->SetActualHalfLength(CRSbar.getHalfLength());
-        _makeCrvPhotonArrivals->MakePhotons(p1Local, p2Local, t1, t2,  
-                                PDGcode, beta, charge,
-                                energyDepositedTotal,
-                                energyDepositedNonIonizing);
+          _makeCrvPhotonArrivals->SetActualHalfLength(CRSbar.getHalfLength());
+          _makeCrvPhotonArrivals->MakePhotons(p1Local, p2Local, t1, t2,  
+                                  PDGcode, beta, charge,
+                                  energyDepositedTotal,
+                                  energyDepositedNonIonizing);
 
-        bool needToStore = false;
-        if(iterNextStep==CRVSteps->end()) needToStore=true;
-        else
-        {
-          if(iterNextStep->barIndex()!=step.barIndex()) needToStore=true;
-        }
-
-        if(needToStore)
-        {
-          CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
-          for(int SiPM=0; SiPM<4; SiPM++)
+          bool needToStore = false;
+          if(iterNextStep==CRVSteps->end()) needToStore=true;
+          else
           {
-            const std::vector<double> &times=_makeCrvPhotonArrivals->GetArrivalTimes(SiPM);
-            crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
+            if(iterNextStep->barIndex()!=step.barIndex()) needToStore=true;
           }
-          _makeCrvPhotonArrivals->Reset();
-        }
-      } //loop over StepPointMCs
-    } //loop over iLabels
+
+          if(needToStore)
+          {
+            CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
+            for(int SiPM=0; SiPM<4; SiPM++)
+            {
+              const std::vector<double> &times=_makeCrvPhotonArrivals->GetArrivalTimes(SiPM);
+              crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
+            }
+            _makeCrvPhotonArrivals->Reset();
+          }
+        } //loop over StepPointMCs in the StepPointMC collection
+      } //loop over all StepPointMC collections
+    } //loop over all module labels / process names from the fcl file
 
     event.put(std::move(crvPhotonArrivalsCollection));
   } // end produce
