@@ -1,11 +1,8 @@
 # Run the random number generator test and save the state to the output file
 #
-# $Id: random01.fcl,v 1.3 2013/05/23 19:16:30 kutschke Exp $
-# $Author: kutschke $
-# $Id: random01.fcl,v 1.3 2013/05/23 19:16:30 kutschke Exp $
-#
 
 #include "minimalMessageService.fcl"
+#include "standardServices.fcl"
 
 process_name : random01
 
@@ -17,25 +14,23 @@ source : {
 services : {
   message               : @local::default_message
   RandomNumberGenerator : {}
+
+  user : {
+     SeedService : @local::automaticSeeds
+  }
 }
 
 physics : {
 
   analyzers : {
-    foo : {
-      module_type : Random01
-      seed        : 1
-    }
+     foo : { module_type : Random01 }
+     bar : { module_type : Random01 }
   }
 
-  producers : {
-    randomsaver : {
-      module_type          : RandomNumberSaver
-    }
-  }
+  producers : { randomsaver : { module_type : RandomNumberSaver } }
 
-  t1 : [ foo, randomsaver ]
-  e1 : [ outfile ]
+  t1 : [ randomsaver ]
+  e1 : [ foo, bar, outfile ]
 
   trigger_paths : [ t1 ]
   end_paths     : [ e1 ]
@@ -50,3 +45,6 @@ outputs: {
   }
 
 }
+
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
