@@ -2,24 +2,31 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_2_3
 
+5) February 23, 2015 - kutschke
+    - Update the random number examples in Sandbox to use the
+      SeedService rather than getSeed.
+    - Add a bit more pedagody
+    - Add Sandbox/src/Random02_module.cc to illustrate how to use
+      getEngine().
+
 4) February 17, 2015 - genser
    Added diagnostic printout to:
      KalmanTests/inc/MCEvtData.hh
      KalmanTests/src/KalDiag.cc
 
 3) February 12, 2015 - genser
-   Enabled the use of StrawDigiMC in 
+   Enabled the use of StrawDigiMC in
      HitMakers/src/ReadStrawHit_module.cc
 
 2) February 4, 2015 - ehrlich
-   Restructured the CRV counter simulation. 
+   Restructured the CRV counter simulation.
    Included the SiPM response.
    Modified directories: CRVResponse, MCDataProducts, RecoDataProducts
 simulation
 
 1) Jan 22 2015 P.Murat
 
-  a) re-factor fcl/standardProducers.fcl: introduce <pkg>/fcl/prolog.fcl files 
+  a) re-factor fcl/standardProducers.fcl: introduce <pkg>/fcl/prolog.fcl files
      included from fcl/standardProducers.fcl
 
   b) update PID de/dx templates in ParticleID package
