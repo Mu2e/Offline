@@ -23,21 +23,19 @@
 
 WLSSteppingAction* WLSSteppingAction::_fgInstance = NULL;
 
-WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName) : _crvPhotonArrivals(NULL), _mode(mode)
+WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName) : _mode(mode), _engine(0), _randFlat(_engine)
 {
   _fgInstance = this;
 
   if(_mode==0)
   {
-    _crvPhotonArrivals = new MakeCrvPhotonArrivals();
+    _crvPhotonArrivals = std::unique_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals(_randFlat));
     _crvPhotonArrivals->LoadLookupTable(lookupFileName);
   }
 }
 
 WLSSteppingAction::~WLSSteppingAction()
 {
-  if(_crvPhotonArrivals) delete _crvPhotonArrivals;
-  _crvPhotonArrivals=NULL;
 }
 
 void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
