@@ -48,7 +48,9 @@
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
+#endif
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -77,7 +79,9 @@
 // Geant4 includes
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 #include "G4VisExecutive.hh"
+#endif
 #include "G4Run.hh"
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
@@ -145,7 +149,9 @@ namespace mu2e {
 
     G4UIsession  *_session;
     G4UImanager  *_UI;
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
     std::unique_ptr<G4VisManager> _visManager;
+#endif
     int _rmvlevel;
     int _tmvlevel;
     int _checkFieldMap;
@@ -211,7 +217,9 @@ namespace mu2e {
     _stackingAction(nullptr),
     _session(nullptr),
     _UI(nullptr),
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
     _visManager(nullptr),
+#endif
     _rmvlevel(pSet.get<int>("diagLevel",0)),
     _tmvlevel(pSet.get<int>("trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
@@ -417,6 +425,7 @@ namespace mu2e {
                                        ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
 
 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
@@ -431,6 +440,7 @@ namespace mu2e {
       _UI->ApplyCommand( command );
 
     }
+#endif
 
     // Book some diagnostic histograms.
     art::ServiceHandle<art::TFileService> tfs;
@@ -616,13 +626,18 @@ namespace mu2e {
 	    new G4UIExecutive(argc, argv,"tcsh") :
 	    new G4UIExecutive(argc, argv);
 	  
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+
 	  if (UIE->IsGUI()) {
 
-	    // we add a command here and initialize it (/vis/sceneHandler has to exist prior to this)
-	    Mu2eVisCommandSceneHandlerDrawEvent* drEv = new Mu2eVisCommandSceneHandlerDrawEvent();
+	    // we add a command here and initialize it
+	    // (/vis/sceneHandler has to exist prior to this)
+	    Mu2eVisCommandSceneHandlerDrawEvent* drEv = 
+              new Mu2eVisCommandSceneHandlerDrawEvent();
 	    _visManager->RegisterMessenger(drEv); // assumes ownership;
 	    // drEv->SetVisManager(_visManager.get());  
-	    // vis manager pointer is static member of the drEv base class so the above is not needed
+	    // vis manager pointer is static member of the drEv base
+	    // class so the above is not needed
 
 	    if ( !_visGUIMacro.empty() ){
 	      G4String command("/control/execute ");
@@ -639,6 +654,7 @@ namespace mu2e {
 	    }
 
 	  } // end UIE->IsGUI()
+#endif
           UIE->SessionStart(); 
           delete UIE;
 
@@ -648,6 +664,7 @@ namespace mu2e {
 
 	  // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 	  G4String viewerToLookFor("viewer-0");
 	  G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
 	  if (pViewer) {
@@ -659,7 +676,7 @@ namespace mu2e {
 	  // if (gsys) {
 	  //   cout << __func__ << " current GraphicsSystem Name " << gsys->GetName() <<  endl;
 	  // }
-
+#endif
 	} // end c == 'q'
 
       } // end !userinput.empty()

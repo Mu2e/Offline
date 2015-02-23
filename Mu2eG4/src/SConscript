@@ -51,8 +51,13 @@ mu2eopts = env['MU2EOPTS'];
 if mu2eopts[1] == 'Qt':
     G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL',
                       '-DG4UI_USE_QT',          '-DG4VIS_USE_OPENGLQT' ]
+elif  mu2eopts[1] == 'NOOGL':
+    G4GS_CPPFLAGS = []
 else:
     G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
+
+# print "mu2eopts      ",  mu2eopts
+# print "G4GS_CPPFLAGS ",  G4GS_CPPFLAGS
 
 # The granular version of the G4 libraries.
 G4GRANULARLIBS = [
@@ -124,7 +129,6 @@ G4GRANULARLIBS = [
 G4GLOBALIBS = [
               'libG4FR',
               'libG4GMocren',
-              'libG4OpenGL',
               'libG4RayTracer',
               'libG4Tree',
               'libG4VRML',
@@ -155,6 +159,9 @@ G4GLOBALIBS = [
               'libG4zlib'
               ]
 
+if mu2eopts[1] != 'NOOGL':
+    G4GLOBALIBS.append('libG4OpenGL')
+
 if g4_version < '4095':
     G4LIBS = G4GRANULARLIBS
 else:
@@ -163,10 +170,10 @@ else:
 # Link libraries needed to build G4 with OPENGL and possibly Qt
 #OPENGL_LIBS = [ 'GLU', 'GL' ]
 
-if mu2eopts[1] == 'Qt':
-    GS_LIBS = [ 'GLU', 'GL', 'QtOpenGL', 'QtGui', 'QtCore' ]
-else:
-    GS_LIBS = [ 'GLU', 'GL']
+#if mu2eopts[1] == 'Qt':
+#    GS_LIBS = [ 'GLU', 'GL', 'QtOpenGL', 'QtGui', 'QtCore' ]
+#else:
+#    GS_LIBS = [ 'GLU', 'GL']
 
 # it looks like we do not need them, so we use an empty list before we
 # remove it from here
