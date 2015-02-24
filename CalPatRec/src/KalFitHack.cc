@@ -213,9 +213,9 @@ namespace mu2e
     double phiPanel;
 
     if (_debug >0){
-      printf("[KalFitHack::findDoublets]-------------------------------------------\n");
-      printf("[KalFitHack::findDoublets]  i  shId  sec  panel     driftR       doca\n");
-      printf("[KalFitHack::findDoublets]-------------------------------------------\n");
+      printf("[KalFitHack::findDoublets]-------------------------------------------------\n");
+      printf("[KalFitHack::findDoublets]  i  shId  ch  panel  il   iw   driftR       doca\n");
+      printf("[KalFitHack::findDoublets]-------------------------------------------------\n");
     }
     for (int i=0; i< nhits; ++i){
       hit                    = hits->at(i);//(const mu2e::TrkStrawHit*) &(*it);
@@ -238,7 +238,6 @@ namespace mu2e
       
       TrkLineTraj trstraw(p1, wdir, 0., 0.);
       TrkLineTraj trtrk  (p2, tdir, 0., 0.);
-
 //-----------------------------------------------------------------------------
 // distance of closest approach calculated from the track to the hit,
 // track trajectory is the first parameter
@@ -253,8 +252,8 @@ namespace mu2e
       if (_debug >0){
 	layer  = straw->id().getLayer();
 	istraw = straw->id().getStraw();
-	printf("[KalFitHack::findDoublets] %2i  %5i %3i  %4i   %10.3f  %10.3f \n",
-	       i, shId, station, panel, layer, ist, rdrift, doca);
+	printf("[KalFitHack::findDoublets] %2i  %5i %3i  %4i  %3i %3i %8.3f %8.3f\n",
+	       i, shId, station, panel, layer, istraw, rdrift, doca);
       }
 
 //do not use straw hits with small drift radius
@@ -299,7 +298,7 @@ namespace mu2e
     if (_debug >0){
       printf("[KalFitHack::findDoublets] BEGIN iherr:%i \n", fAnnealingStep);
       printf("[KalFitHack::findDoublets]-----------------------------------------------------------------------------------------------------------------------------------------\n");
-      printf("[KalFitHack::findDoublets]  i ch pnl lay str shId      x        y         z       sinphi  tksphi    xtrk      ytrk      ztrk      xr      yr     zr      doca    rdr \n");
+      printf("[KalFitHack::findDoublets]  i  shId ch pnl lay str      x        y         z      sinphi  tksphi    xtrk     ytrk      ztrk      xr      yr     zr      doca   rdr \n");
       printf("[KalFitHack::findDoublets]-----------------------------------------------------------------------------------------------------------------------------------------\n");
     }
     for (int i=0; i<dcolsize; ++i){
@@ -361,11 +360,10 @@ namespace mu2e
 	}
 	
 	if (_debug>0){
-	  printf("[KalFitHack::findDoublets] %2i %3i %3i %3i %3i  %5i %9.3f %9.3f %9.3f  %6.3f  %6.3f %9.3f %9.3f %9.3f %9.3f  %4.1f %9.3f %6.3f %5.3f\n",
-		 i, doub->fStationId, doub->fPanelId, 
+	  printf("[KalFitHack::findDoublets] %2i %5i %2i %3i %3i %3i %9.3f %9.3f %9.3f  %6.3f  %6.3f %9.3f %8.3f %9.3f %8.3f %4.1f %9.3f %6.3f %5.3f\n",
+		 i, shId, doub->fStationId, doub->fPanelId, 
 		 straw->id().getLayer(),
 		 straw->id().getStraw(),
-		 shId, 
 		 straw->getMidPoint().x(), straw->getMidPoint().y(), straw->getMidPoint().z(),
 		 wdir.y(), 
 		 //tdir.y()/sqrt(1-tdir.z()*tdir.z()),
@@ -418,9 +416,9 @@ namespace mu2e
 
     if (_debug >0){
       printf("[KalFitHack::markDoublets] BEGIN iherr:%i \n", fAnnealingStep);
-      printf("[KalFitHack::markDoublets]--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-      printf("[KalFitHack::markDoublets]  i   sec  panel shId       x        y         z       cth     trkth    xtrk      ytrk      ztrk       xr      yr     zr    doca   rdr    am    s1    amb1   s2   amb1   s3   amb3   s4   amb4 ns\n");
-      printf("[KalFitHack::markDoublets]--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+      printf("[KalFitHack::markDoublets]---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
+      printf("[KalFitHack::markDoublets]  i  shId ch pnl il is      x       y        z       cth    trkth    xtrk      ytrk       ztrk     xr     yr      zr     doca    rdr   am     s1  amb1    s2  amb1   s3   amb3   s4   amb4 ns\n");
+      printf("[KalFitHack::markDoublets]---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
     }
     
     for (int i=0; i<dcolsize; ++i){
@@ -559,8 +557,10 @@ namespace mu2e
 	  
 	  doca2   = poca2.doca();
 
-	  printf("[KalFitHack::markDoublets] %2i  %3i   %3i   %5i  %8.3f  %8.3f  %9.3f  %6.3f  %6.3f  %8.3f  %8.3f %9.3f %5.3f %4.1f %9.3f %8.3f %5.3f ",
-		 i, doub->fStationId, doub->fPanelId, shId1, 
+	  printf("[KalFitHack::markDoublets] %2i %5i %2i %3i %2i %2i %8.3f %8.3f %9.3f %6.3f  %6.3f  %8.3f  %8.3f %9.3f %5.3f %4.1f %9.3f %6.3f %6.3f ",
+		 i, shId1, doub->fStationId, doub->fPanelId, 
+		 tmpstraw->id().getLayer(),
+		 tmpstraw->id().getStraw(),
 		 tmpstraw->getMidPoint().x(), tmpstraw->getMidPoint().y(), tmpstraw->getMidPoint().z(),
 		 wdir.y(), 
 		 trkslope,
@@ -569,7 +569,7 @@ namespace mu2e
 		 doca1,
 		 rdrift1); 
 
-	  printf("%6i %6.3f %2i%2i %6.3f %2i%2i %6.3f %2i%2i %6.3f %2i%2i %2i\n",
+	  printf("%5i %6.3f %2i%2i %6.3f %2i%2i %6.3f %2i%2i %6.3f %2i%2i %2i\n",
 		 fAmbigVec[shId1],
 		 lineSlopes[0], trkSlopeSign*ambStrawA[0], trkSlopeSign*ambStrawB[0],
 		 lineSlopes[1], trkSlopeSign*ambStrawA[1], trkSlopeSign*ambStrawB[1],
@@ -577,8 +577,10 @@ namespace mu2e
 		 lineSlopes[3], trkSlopeSign*ambStrawA[3], trkSlopeSign*ambStrawB[3], 
 		 nsol);
 	
-	  printf("[KalFitHack::markDoublets] %2i  %3i   %3i   %5i  %8.3f  %8.3f  %9.3f  %6.3f  %6.3f  %8.3f  %8.3f %9.3f %5.3f %4.1f %9.3f %8.3f %5.3f ",
-		 i, doub->fStationId, doub->fPanelId, shId2, 
+	  printf("[KalFitHack::markDoublets] %2i %5i %2i %3i %2i %2i %8.3f %8.3f %9.3f %6.3f  %6.3f  %8.3f  %8.3f %9.3f %5.3f %4.1f %9.3f %6.3f %6.3f ",
+		 i, shId2, doub->fStationId, doub->fPanelId,  
+		 tmpstraw2->id().getLayer(),
+		 tmpstraw2->id().getStraw(),
 		 tmpstraw2->getMidPoint().x(), tmpstraw2->getMidPoint().y(), tmpstraw2->getMidPoint().z(),
 		 wdir.y(), 
 		 trkslope,
@@ -586,7 +588,7 @@ namespace mu2e
 		 tmppos.x(), tmppos.y(), tmppos.z(),
 		 doca2,
 		 rdrift2); 
-	  printf("%6i %6.3f %2i%2i %6.3f %2i%2i %6.3f %2i%2i %6.3f %2i%2i %2i\n",
+	  printf("%5i %6.3f %2i%2i %6.3f %2i%2i %6.3f %2i%2i %6.3f %2i%2i %2i\n",
 		 fAmbigVec[shId2],
 		 lineSlopes[0], trkSlopeSign*ambStrawA[0], trkSlopeSign*ambStrawB[0],
 		 lineSlopes[1], trkSlopeSign*ambStrawA[1], trkSlopeSign*ambStrawB[1],
