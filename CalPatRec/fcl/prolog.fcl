@@ -108,6 +108,8 @@ CalPatRec            : {
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
 	scaleErrDoublet                         : 1.
 	iLoopMarkDoublets                       : 0
+	minDriftdoublet                         : 1.
+	deltaDriftDoublet                       : 0.3
     }
     # HelixFitHack configuraton
     HelixFitHack : {
@@ -146,6 +148,8 @@ CalPatRec            : {
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
 	scaleErrDoublet                         : 1.
 	iLoopMarkDoublets                       : 0
+	minDriftdoublet                         : 1.
+	deltaDriftDoublet                       : 0.3
     }
     MaxStrawEDep            : 0.005
     useDoublets             : 0

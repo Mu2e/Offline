@@ -68,7 +68,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------------------
     void findLines(double xa, double ya, double ra,
 		   double xb, double yb, double rb,
-		   double *slopes);
+		   double *slopes,
+		   int    *ambStrawA, int *ambStrawB);
     
 
 // add a set of hits to an existing fit
@@ -122,6 +123,8 @@ namespace mu2e {
     double             fScaleErrDoublet;
     int                fMarkDoublets;
     int                fILoopMarkDoublets;
+    double             fMinDriftDoublet;
+    double             fDeltaDriftDoublet;
     bool               _removefailed;
     unsigned           _minnstraws;
     TrkParticle        _tpart;
@@ -132,6 +135,7 @@ namespace mu2e {
     const CalTimePeak*  fTimePeak;
     int                 fAmbigVec[40000];
     int                 fAmbigVecSlope[40000];
+    int                 fAnnealingStep;
 //-----------------------------------------------------------------------------
 // helper functions
 //-----------------------------------------------------------------------------
