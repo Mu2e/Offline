@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Random/Randomize.h"
 
 
 class TFile;
@@ -13,7 +14,8 @@ class MakeCrvPhotonArrivals
 {
   public:
 
-    MakeCrvPhotonArrivals();
+    MakeCrvPhotonArrivals(CLHEP::RandFlat &randFlat) : _actualHalfLength(NAN), _fileLookupTable(NULL), _randFlat(randFlat) {}
+
     ~MakeCrvPhotonArrivals();
 
     void                      LoadLookupTable(std::string filename);
@@ -59,6 +61,8 @@ class MakeCrvPhotonArrivals
     float                     _fiberSeparation;
     float                     _holeRadius;
     float                     _fiberRadius;
+
+    CLHEP::RandFlat           &_randFlat;
 
     bool   IsInsideScintillator(const CLHEP::Hep3Vector &p);
     int    IsInsideFiber(const CLHEP::Hep3Vector &p);

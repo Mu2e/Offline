@@ -1,10 +1,6 @@
 //
 // Module used to test the random number servce.
 //
-// $Id: Random01_module.cc,v 1.3 2013/05/23 19:15:56 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/05/23 19:15:56 $
-//
 // Contact person Rob Kutschke
 //
 // Notes:
@@ -13,7 +9,9 @@
 //    service does not know the identity of the engine to which to restore the state.
 //
 
-#include "art/Framework/Core/EDProducer.h"
+#include "SeedService/inc/SeedService.hh"
+
+#include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -29,12 +27,12 @@ using namespace std;
 
 namespace mu2e {
 
-  class Random01 : public art::EDProducer {
+  class Random01 : public art::EDAnalyzer {
   public:
 
     explicit Random01(fhicl::ParameterSet const& pset);
 
-    virtual void produce(art::Event& e);
+    virtual void analyze(art::Event const& e) override;
 
   private:
 
@@ -47,13 +45,18 @@ namespace mu2e {
   };
 
   Random01::Random01(fhicl::ParameterSet const& pset):
+    EDAnalyzer(pset),
     myLabel_(pset.get<std::string>("module_label")),
-    seed_(pset.get<int>("seed")),
+    seed_( art::ServiceHandle<SeedService>()->getSeed() ),
     engine_(createEngine(seed_)),
     flat_(engine_){
+    mf::LogVerbatim("TEST") << "Constructor: "
+                            << myLabel_
+                            << " Seed: " << seed_
+                            << endl;
   }
 
-  void Random01::produce( art::Event& event ) {
+  void Random01::analyze( art::Event const& event ) {
     mf::LogVerbatim("TEST") << "Event: "
                             << myLabel_           << " "
                             << event.id().event() << " "

@@ -29,6 +29,8 @@
 
 #include <stdexcept>
 
+#include "CLHEP/Random/Randomize.h"
+
 WLSEventAction* WLSEventAction::_fgInstance = NULL;
 
 WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(false)
@@ -59,14 +61,8 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
     for(unsigned int v=0; v<2001; v++) tbins[v]=0.1*v;
     for(unsigned int v=0; v<101; v++) ebins[v]=v;
 
-    _histSurvivalProb = new TH3D**[4];
-    _histTimeDifference = new TH3D**[4];
-    _histFiberEmissions = new TH3D**[4];
     for(int table=0; table<4; table++)  //0...scintillation, 1...cerenkov, 
     {                                   //2...cerenkovFiber0, 3...cerenkovFiber1
-      _histSurvivalProb[table] = new TH3D*[4];
-      _histTimeDifference[table] = new TH3D*[4];
-      _histFiberEmissions[table] = new TH3D*[4];
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         std::string tableTag[4]={"scintillation","cerenkov","cerenkovFiber0","cerenkovFiber1"};
@@ -91,13 +87,15 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
                         100, ebins);
       }
     }
+    delete[] xbins;
+    delete[] ybins;
+    delete[] zbins;
+    delete[] tbins;
+    delete[] ebins;
   }
 
   if(_mode==0)
   {
-    _histPE = new TH1D**[2];
-    _histPE[0] = new TH1D*[4];
-    _histPE[1] = new TH1D*[4];
     for(int SiPM=0; SiPM<4; SiPM++)
     {
       std::stringstream s0, s1, title;
@@ -108,9 +106,6 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
       _histPE[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),2000,0,2000);
     }
 
-    _histT = new TH1D**[2];
-    _histT[0] = new TH1D*[4];
-    _histT[1] = new TH1D*[4];
     for(int SiPM=0; SiPM<4; SiPM++)
     {
       std::stringstream s0, s1, title;
@@ -120,20 +115,46 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
       _histT[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),1000,0,1000);
       _histT[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),1000,0,1000);
     }
-  }
 
-  _PEvsIntegral = new TH2D("PEvsIntegral","PEvsIntegral", 60,0,60, 200,0,2.0);
-  _PEvsIntegral->SetXTitle("PEs");
-  _PEvsIntegral->SetYTitle("Integral");
-  _PEvsPulseHeight = new TH2D("PEvsPulseHeight","PEvsPulseHeight", 60,0,60, 200,0,1.0);
-  _PEvsPulseHeight->SetXTitle("PEs");
-  _PEvsPulseHeight->SetYTitle("PulseHeight [mV]");
+    _PEvsIntegral = new TH2D("PEvsIntegral","PEvsIntegral", 60,0,60, 200,0,2.0);
+    _PEvsIntegral->SetXTitle("PEs");
+    _PEvsIntegral->SetYTitle("Integral");
+    _PEvsPulseHeight = new TH2D("PEvsPulseHeight","PEvsPulseHeight", 60,0,60, 200,0,1.0);
+    _PEvsPulseHeight->SetXTitle("PEs");
+    _PEvsPulseHeight->SetYTitle("PulseHeight [mV]");
+  }
 }
 
 WLSEventAction::~WLSEventAction()
 {
-  if(_fileLookupTable) _fileLookupTable->Close();
-  _fileLookupTable=NULL;
+  if(_mode==-1)
+  {
+    for(int table=0; table<4; table++)
+    {
+      for(int SiPM=0; SiPM<4; SiPM++)
+      {
+        delete _histSurvivalProb[table][SiPM];
+        delete _histTimeDifference[table][SiPM];
+        delete _histFiberEmissions[table][SiPM];
+      }
+    }
+    _fileLookupTable->Close();
+    delete _fileLookupTable;
+  }
+
+  if(_mode==0)
+  {
+    for(int SiPM=0; SiPM<4; SiPM++)
+    {
+      delete _histPE[0][SiPM];
+      delete _histPE[1][SiPM];
+      delete _histT[0][SiPM];
+      delete _histT[1][SiPM];
+    }
+  
+    delete _PEvsIntegral;
+    delete _PEvsPulseHeight;
+  }
 }
 
 G4ThreeVector WLSEventAction::GetHistBinCenter(int binx, int biny, int binz) 
@@ -226,6 +247,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
                    detector->GetHoleRadius(),
                    detector->GetClad2Radius());
       ntuple->Write();
+      delete ntuple;
     }
   }
 
@@ -262,7 +284,11 @@ void WLSEventAction::Draw(const G4Event* evt) const
   probabilities._constTrapType1Lifetime = 50;
   probabilities._constThermalProb = 6.25e-7; //1MHz at SiPM --> 1e-3/(#pixel*t[ns])  //exp(-E_th/T)=1.6e-6
   probabilities._constPhotonProduction = 0.1; //0.4;
-  MakeCrvSiPMResponses sim;
+
+  CLHEP::HepJamesRandom engine(1);
+  CLHEP::RandFlat randFlat(engine);
+  CLHEP::RandPoissonQ randPoissonQ(engine);
+  MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
   sim.SetSiPMConstants(1600, 2.5, 0, 1695, 0.08, probabilities);
 
   MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
@@ -297,9 +323,12 @@ void WLSEventAction::Draw(const G4Event* evt) const
   TCanvas c(s1.str().c_str(),s1.str().c_str(),1000,1000);
   c.Divide(2,2);
   TGraph *graph[4], *graph2[4];
-  std::vector<TGraph*> graphLvector;
-  std::vector<TMarker*> markers;
   TH1D *hist[4], *histSiPMResponse[4];
+  std::vector<TGraph*> graphVector;
+  std::vector<TMarker*> markerVector;
+  std::vector<TGaxis*> axisVector;
+  std::vector<TLine*> lineVector;
+  std::vector<TText*> textVector;
 
   for(int SiPM=0; SiPM<4; SiPM++)
   {
@@ -388,12 +417,12 @@ void WLSEventAction::Draw(const G4Event* evt) const
       double vI=waveform[SiPM][j];
       if(tI>200) break;
       if(vI<=0.005) continue;
-      TMarker *marker = new TMarker(tI, vI*scale, markers.size());
+      TMarker *marker = new TMarker(tI, vI*scale, markerVector.size());
+      markerVector.push_back(marker);
       marker->SetMarkerStyle(20);
       marker->SetMarkerSize(1.5);
       marker->SetMarkerColor(kRed);
       marker->Draw("same");
-      markers.push_back(marker);
     }
 
 //Landau fit
@@ -420,7 +449,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
       if(nL>0)
       {
         TGraph *graphL=new TGraph();
-        graphLvector.push_back(graphL);
+        graphVector.push_back(graphL);
         graphL->SetTitle("");
         graphL->SetLineWidth(2);
         graphL->SetLineColor(kGreen);
@@ -432,13 +461,15 @@ void WLSEventAction::Draw(const G4Event* evt) const
       {
         TMarker *marker = new TMarker(leadingEdge,
                                       0.2*makeRecoPulses.GetPulseHeight(pulse)*scale,
-                                      markers.size());
+                                      markerVector.size());
+        markerVector.push_back(marker);
         marker->SetMarkerStyle(21);
         marker->SetMarkerSize(1.5);
         marker->SetMarkerColor(kGreen);
         marker->Draw("same");
-        markers.push_back(marker);
       }
+      delete[] tL;
+      delete[] vL;
     }
 
     if(makeRecoPulses.GetNPulses()==1)
@@ -451,6 +482,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
     }
 
     TGaxis *axis = new TGaxis(170.0,0,170.0,histMax,0,histMax/scale,10,"+L");
+    axisVector.push_back(axis);
     axis->SetTitle("voltage [V]");
     axis->SetTitleOffset(-0.5);
     axis->SetTitleColor(kRed);
@@ -459,6 +491,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
     axis->Draw("same");
 
     TGaxis *axisSiPMResponse = new TGaxis(200.0,0,200.0,histMax,0,histMax/scaleSiPMResponse,10,"+L");
+    axisVector.push_back(axisSiPMResponse);
     axisSiPMResponse->SetTitle("SiPM output [PE]");
     axisSiPMResponse->SetTitleOffset(-0.5);
     axisSiPMResponse->SetTitleColor(kOrange);
@@ -467,17 +500,20 @@ void WLSEventAction::Draw(const G4Event* evt) const
     axisSiPMResponse->Draw("same");
 
     TLine *landauLine = new TLine(100, histMax*0.9, 130, histMax*0.9);
+    lineVector.push_back(landauLine);
     landauLine->SetLineWidth(2);
     landauLine->SetLineColor(kGreen);
     landauLine->Draw("same");
-    TMarker *landauMarker = new TMarker(110, histMax*0.9, markers.size());
+    TMarker *landauMarker = new TMarker(110, histMax*0.9, markerVector.size());
+    markerVector.push_back(landauMarker);
     landauMarker->SetMarkerStyle(21);
     landauMarker->SetMarkerSize(1.5);
     landauMarker->SetMarkerColor(kGreen);
     landauMarker->Draw("same");
-    markers.push_back(landauMarker);
     TText *landauText1 = new TText(100, histMax*0.82, "Landau fit with");
     TText *landauText2 = new TText(100, histMax*0.76, "leading edge");
+    textVector.push_back(landauText1);
+    textVector.push_back(landauText2);
     landauText1->SetTextSize(0.03);
     landauText2->SetTextSize(0.03);
     landauText1->SetTextColor(kGreen);
@@ -488,5 +524,18 @@ void WLSEventAction::Draw(const G4Event* evt) const
   if(evt->GetEventID()<20) c.SaveAs((s1.str()+".C").c_str());
   _PEvsIntegral->SaveAs("PEvsIntegral.C");
   _PEvsPulseHeight->SaveAs("PEvsPulseHeight.C");
+
+  for(int SiPM=0; SiPM<4; SiPM++)
+  {
+    delete hist[SiPM];
+    delete histSiPMResponse[SiPM];
+    delete graph[SiPM];
+    delete graph2[SiPM];
+  }
+  for(size_t i=0; i<graphVector.size(); i++) delete graphVector[i];
+  for(size_t i=0; i<markerVector.size(); i++) delete markerVector[i];
+  for(size_t i=0; i<axisVector.size(); i++) delete axisVector[i];
+  for(size_t i=0; i<textVector.size(); i++) delete textVector[i];
+  for(size_t i=0; i<lineVector.size(); i++) delete lineVector[i];
 }
 

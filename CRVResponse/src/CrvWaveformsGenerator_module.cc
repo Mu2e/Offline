@@ -17,6 +17,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
 #include "MCDataProducts/inc/CrvWaveformsCollection.hh"
+#include "SeedService/inc/SeedService.hh"
 
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -27,10 +28,10 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
+#include "CLHEP/Random/Randomize.h"
 
 #include <string>
 
-#include "Randomize.hh"
 #include <TMath.h>
 
 namespace mu2e 
@@ -50,13 +51,16 @@ namespace mu2e
 
     boost::shared_ptr<MakeCrvWaveforms> _makeCrvWaveforms;
 
-    double  _binWidth;
+    double                              _binWidth;
+
+    CLHEP::RandFlat                     _randFlat;
   };
 
   CrvWaveformsGenerator::CrvWaveformsGenerator(fhicl::ParameterSet const& pset) :
     _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
-    _binWidth(pset.get<double>("binWidth",12.5))                   //12.5 ns (digitizer sampling rate)
+    _binWidth(pset.get<double>("binWidth",12.5)),                   //12.5 ns (digitizer sampling rate)
+    _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
   {
     double singlePEWaveformBinWidth(pset.get<double>("singlePEWaveformBinWidth",1.0));    //1.0 ns
     int nBins(pset.get<int>("singlePEWaveformBins",200));          //200
@@ -89,7 +93,7 @@ namespace mu2e
       const CrvSiPMResponses &siPMResponses = iter->second;
 
       double startTime = siPMResponses.GetFirstSiPMResponseTime();
-      startTime-=G4UniformRand()*_binWidth;
+      startTime-=_randFlat.fire()*_binWidth;
 
       CrvWaveforms &crvWaveforms = (*crvWaveformsCollection)[barIndex];
       crvWaveforms.SetBinWidth(_binWidth);

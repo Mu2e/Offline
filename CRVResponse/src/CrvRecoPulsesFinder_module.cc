@@ -30,7 +30,6 @@
 
 #include <string>
 
-#include <TRandom3.h>
 #include <TMath.h>
 
 namespace mu2e 

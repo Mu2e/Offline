@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 
+#include "CLHEP/Random/Randomize.h"
+
 class TFile;
 class TH3D;
 class MakeCrvPhotonArrivals;
@@ -29,8 +31,8 @@ class WLSSteppingAction : public G4UserSteppingAction
 
   private:
 
+    std::unique_ptr<MakeCrvPhotonArrivals> _crvPhotonArrivals;
     static WLSSteppingAction *_fgInstance;  
-    MakeCrvPhotonArrivals    *_crvPhotonArrivals;
     std::vector<double>       _arrivalTimes[2][4];
     std::vector<int>          _fiberEmissions[4];
     double                    _scintillationYield;
@@ -39,6 +41,9 @@ class WLSSteppingAction : public G4UserSteppingAction
     int                       _mode;
 
     std::map<int,int>         _wlsTracks;
+
+    CLHEP::HepJamesRandom     _engine;
+    CLHEP::RandFlat           _randFlat;
 };
 
 #endif

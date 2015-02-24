@@ -30,8 +30,8 @@ physics :
     CrvPhotonArrivals:
     {
       module_type               : CrvPhotonArrivalsGenerator
-      g4ModuleLabels            : []
-      processNames              : []
+      g4ModuleLabels            : ["*"]
+      processNames              : ["*"]
       lookupTableFileName       : "/mu2e/data/outstage/ehrlich/CRVLookupTables/CRVLookupTable.root"
       scintillationYield        : 820.0    //820.0 photons per MeV
       scintillatorDecayTimeFast : 3.0      //3.0 ns

@@ -40,7 +40,9 @@
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "SeedService/inc/SeedService.hh"
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
+#endif
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -63,7 +65,9 @@
 // Geant4 includes
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 #include "G4VisExecutive.hh"
+#endif
 #include "G4Run.hh"
 #include "G4Timer.hh"
 #include "G4VUserPhysicsList.hh"
@@ -125,7 +129,9 @@ namespace mu2e {
 
     G4UIsession  *_session;
     G4UImanager  *_UI;
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
     std::unique_ptr<G4VisManager> _visManager;
+#endif
     int _rmvlevel;
     int _tmvlevel;
     int _checkFieldMap;
@@ -174,7 +180,9 @@ namespace mu2e {
     _steppingAction(nullptr),
     _session(nullptr),
     _UI(nullptr),
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
     _visManager(nullptr),
+#endif
     _rmvlevel(pSet.get<int>("diagLevel",0)),
     _tmvlevel(pSet.get<int>("trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
@@ -337,6 +345,7 @@ namespace mu2e {
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(config);
 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
@@ -351,6 +360,7 @@ namespace mu2e {
       _UI->ApplyCommand( command );
 
     }
+#endif
 
     // Book some diagnostic histograms.
     art::ServiceHandle<art::TFileService> tfs;
@@ -435,6 +445,8 @@ namespace mu2e {
 	    new G4UIExecutive(argc, argv,"tcsh") :
 	    new G4UIExecutive(argc, argv);
 	  
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+
 	  if (UIE->IsGUI()) {
 
 	    // we add a command here and initialize it (/vis/sceneHandler has to exist prior to this)
@@ -458,6 +470,7 @@ namespace mu2e {
 	    }
 
 	  } // end UIE->IsGUI()
+#endif
           UIE->SessionStart(); 
           delete UIE;
 
@@ -467,6 +480,7 @@ namespace mu2e {
 
 	  // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 	  G4String viewerToLookFor("viewer-0");
 	  G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
 	  if (pViewer) {
@@ -478,7 +492,7 @@ namespace mu2e {
 	  // if (gsys) {
 	  //   cout << __func__ << " current GraphicsSystem Name " << gsys->GetName() <<  endl;
 	  // }
-
+#endif
 	} // end c == 'q'
 
       } // end !userinput.empty()

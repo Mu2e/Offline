@@ -134,7 +134,7 @@ if not level in known_levels:
     raise Exception('foo')
 
 graphicssys = GetOption('mu2egs')
-known_gs = ['OGL', 'Qt' ]
+known_gs = ['OGL', 'Qt', 'NOOGL' ]
 if not graphicssys in known_gs:
     print 'Unrecognized value for --mu2egs ' + graphicssys
     print '   The value must be one of the known systems: ' + str(known_gs)
@@ -143,19 +143,19 @@ if not graphicssys in known_gs:
 # the following may not be needed as the compiler rebuilds it all, but
 # we may still want to "latch" to qt
 
-qtfilename='.isqt'
-if os.path.exists(qtfilename):
-    qtf = open(qtfilename,'r')
+gsoptfilename='.gsopt'
+if os.path.exists(gsoptfilename):
+    qtf = open(gsoptfilename,'r')
     rgs = qtf.readline(100)
     rgs.strip()
     if graphicssys!=rgs:
         print 'Inconsitent build; the previous --mu2egs was: ' \
             + str(rgs) + ' current one is ' + graphicssys
-        print 'inspect (remove?) file: ' +  qtfilename + ' or verify option --mu2egs'
+        print 'inspect (remove?) file: ' +  gsoptfilename + ' or verify option --mu2egs'
         raise Exception('gs')
 else:
-    if graphicssys == 'Qt':
-        qtf = open(qtfilename,'w')
+    if graphicssys == 'Qt' or graphicssys == 'NOOGL':
+        qtf = open(gsoptfilename,'w')
         qtf.write(graphicssys)
 
 env.Append( MU2EOPTS = [level, graphicssys] );
@@ -200,7 +200,8 @@ for root,dirs,files in os.walk('.'):
         pass
     pass
 
-# Define a helper class to construct names of .so libaries. Make an instance of it available to the SConscript files.
+# Define a helper class to construct names of .so libaries. Make an
+# instance of it available to the SConscript files.
 class mu2e_helper:
     """mu2e_helper: class to produce library names"""
 #   This appears to behave like c++ static member and is initialized at class defintion time.
@@ -243,7 +244,8 @@ class mu2e_helper:
     def plugin_cc(self):
         return Glob('*_module.cc', strings=True) + Glob('*_service.cc', strings=True) + Glob('*_source.cc', strings=True)
 #
-#   Build a list of .cc files that are not plugings; these go into the library named after the directory.
+#   Build a list of .cc files that are not plugings; these go into the
+#   library named after the directory.
 #
     def non_plugin_cc(self):
         tmp = non_plugin_cc = Glob('*.cc', strings=True)
@@ -304,7 +306,8 @@ class mu2e_helper:
                            parse_flags=pf
                            )
 #
-#   Make all plugin libraries, excluding _dict and _map; this works if all libraries need the same link list.
+#   Make all plugin libraries, excluding _dict and _map; this works if
+#   all libraries need the same link list.
 #
     def make_plugins( self, userlibs, exclude_cc = [], cppf = [], pf = [] ):
         plugin_cc = self.plugin_cc()

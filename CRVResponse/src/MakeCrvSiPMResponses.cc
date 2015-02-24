@@ -8,7 +8,6 @@ Based on Paul Rubinov's C# code
 #include <math.h>
 #include <iostream>
 #include <algorithm>
-#include <CLHEP/Random/Randomize.h>
 
 
 //to get standalone version: compile with
@@ -35,31 +34,31 @@ double MakeCrvSiPMResponses::GenerateAvalanche(Pixel &pixel, int cellid)
 
   double GeigerProb = 1 - exp(-pow(v, _probabilities._constGeigerProbCoef)/_probabilities._constGeigerProbVoltScale);
 
-  if(CLHEP::RandFlat::shoot() < GeigerProb)
+  if(_randFlat.fire() < GeigerProb)
   {
-    int trapsType0 = CLHEP::RandPoisson::shoot(_probabilities._constTrapType0Prob * v);
-    int trapsType1 = CLHEP::RandPoisson::shoot(_probabilities._constTrapType1Prob * v);
-    int photons    = CLHEP::RandPoisson::shoot(_probabilities._constPhotonProduction * v);
+    int trapsType0 = _randPoissonQ.fire(_probabilities._constTrapType0Prob * v);
+    int trapsType1 = _randPoissonQ.fire(_probabilities._constTrapType1Prob * v);
+    int photons    = _randPoissonQ.fire(_probabilities._constPhotonProduction * v);
   
     double trap0Lifetime = _probabilities._constTrapType0Lifetime;
     double trap1Lifetime = _probabilities._constTrapType1Lifetime;
     for(int i=0; i<trapsType0; i++)
     {
       //create new Type0 trap (fast)
-      double life = -trap0Lifetime * log(CLHEP::RandFlat::shoot());
+      double life = -trap0Lifetime * log(_randFlat.fire());
       _scheduledCharges.emplace(cellid,_time + life); //constructs ScheduledCharge(cellid,_time+life)
     }
     for(int i=0; i<trapsType1; i++)
     {
       //create new Type1 trap (slow)
-      double life = -trap1Lifetime * log(CLHEP::RandFlat::shoot());
+      double life = -trap1Lifetime * log(_randFlat.fire());
       _scheduledCharges.emplace(cellid,_time + life); //constructs ScheduledCharge(cellid,_time+life)
     }
 
     //cross talk (distribute photons over all pixels leading to release of free charges there)
     for(int i=0; i<photons; i++)
     {
-      int cellidCrossTalk = CLHEP::RandFlat::shootInt(_numberPixels);
+      int cellidCrossTalk = _randFlat.fireInt(_numberPixels);
       _scheduledCharges.emplace_hint(_scheduledCharges.begin(),cellidCrossTalk,_time); 
                                                       //constructs ScheduledCharge(cellidCrossTalk,time)
     }
@@ -130,7 +129,7 @@ void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
   std::vector<double>::const_iterator iter;
   for(iter=photons.begin(); iter!=photons.end(); iter++)
   {
-    int cellid = CLHEP::RandFlat::shootInt(_numberPixels);
+    int cellid = _randFlat.fireInt(_numberPixels);
     _scheduledCharges.emplace(cellid, *iter);  //constructs ScheduledCharge(cellid, *iter)
   }
 
@@ -138,10 +137,10 @@ void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
   double timeWindow = _timeEnd - _timeStart;
   for(int cellid=0; cellid<_numberPixels; cellid++)
   {
-    int numberThermalCharges = CLHEP::RandPoisson::shoot(_probabilities._constThermalProb * _timeEnd);
+    int numberThermalCharges = _randPoissonQ.fire(_probabilities._constThermalProb * _timeEnd);
     for(int i=0; i<numberThermalCharges; i++)
     {
-      double time = _timeStart + timeWindow * CLHEP::RandFlat::shoot();
+      double time = _timeStart + timeWindow * _randFlat.fire();
       _scheduledCharges.emplace(cellid, time); //constructs ScheduledCharge(cellid, time)
     }
   }

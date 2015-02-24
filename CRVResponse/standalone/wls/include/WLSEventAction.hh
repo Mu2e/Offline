@@ -38,11 +38,11 @@ class WLSEventAction : public G4UserEventAction
   private:
 
     static WLSEventAction*  _fgInstance;  
-    TH1D***                 _histPE;
-    TH1D***                 _histT;
-    TH3D***                 _histSurvivalProb;
-    TH3D***                 _histTimeDifference;
-    TH3D***                 _histFiberEmissions;
+    TH1D*                   _histPE[2][4];
+    TH1D*                   _histT[2][4];
+    TH3D*                   _histSurvivalProb[4][4];
+    TH3D*                   _histTimeDifference[4][4];
+    TH3D*                   _histFiberEmissions[4][4];
     G4ThreeVector           _start;
     int                     _generatedPhotons;
     int                     _mode;

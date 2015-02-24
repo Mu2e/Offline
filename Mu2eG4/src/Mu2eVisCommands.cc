@@ -31,7 +31,7 @@
 //
 // Modeled after G4VisCommandSceneHandler...
 //
-
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 
 #include "G4VVisCommand.hh"
@@ -148,3 +148,4 @@ void Mu2eVisCommandSceneHandlerDrawEvent::SetNewValue(G4UIcommand*,
   return;
 
 }
+#endif

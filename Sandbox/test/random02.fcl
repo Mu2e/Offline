@@ -1,11 +1,8 @@
 # Read back random number state from an event-data file.
 #
-# $Id: random02.fcl,v 1.2 2013/05/23 18:31:28 kutschke Exp $
-# $Author: kutschke $
-# $Id: random02.fcl,v 1.2 2013/05/23 18:31:28 kutschke Exp $
-#
 
 #include "minimalMessageService.fcl"
+#include "standardServices.fcl"
 
 process_name : random02
 
@@ -17,6 +14,11 @@ source : {
 services : {
   message               : @local::default_message
   RandomNumberGenerator : {  restoreStateLabel :  randomsaver }
+
+  user : {
+     SeedService : @local::automaticSeeds
+  }
+
 }
 
 physics : {
@@ -24,12 +26,13 @@ physics : {
   analyzers : {
     foo : {
       module_type : Random01
-      seed        : -1
     }
   }
 
-  t1 : [ foo  ]
+  e1 : [ foo  ]
 
-  trigger_paths : [ t1 ]
+  end_paths : [ e1 ]
 
 }
+services.user.SeedService.baseSeed         :  20
+services.user.SeedService.maxUniqueEngines :  20

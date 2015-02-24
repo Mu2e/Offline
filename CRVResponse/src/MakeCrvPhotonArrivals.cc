@@ -5,11 +5,6 @@
 #include "G4ParticleDefinition.hh"
 #include "G4ParticleTypes.hh"
 
-#include "G4RunManager.hh"
-#include "G4UImanager.hh"
-
-#include "G4ios.hh"
-#include "G4SystemOfUnits.hh"
 #include <sstream>
 
 #include <TFile.h>
@@ -17,10 +12,6 @@
 #include <TNtuple.h>
 
 #include "CLHEP/Vector/TwoVector.h"
-
-MakeCrvPhotonArrivals::MakeCrvPhotonArrivals() : _actualHalfLength(NAN), _fileLookupTable(NULL)
-{
-}
 
 void MakeCrvPhotonArrivals::LoadLookupTable(std::string filename)
 {
@@ -103,7 +94,7 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
       CLHEP::Hep3Vector p = stepStart + distanceVector*i/nPhotons;
       if(SiPM%2==1) AdjustPosition(p); //side 1
 
-      bool isScintillation = (G4UniformRand()>=cerenkovFraction);
+      bool isScintillation = (_randFlat.fire()>=cerenkovFraction);
       bool isInScintillator = IsInsideScintillator(p);
       int table = -1;
 
@@ -131,7 +122,7 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
       int bin = _histSurvivalProb[table][SiPM]->FindBin(p.x(),p.y(),p.z());
       double probability = _histSurvivalProb[table][SiPM]->GetBinContent(bin);
 
-      if(G4UniformRand()<=probability)  //a photon arrives at the SiPM
+      if(_randFlat.fire()<=probability)  //a photon arrives at the SiPM
       {
         double arrivalTime = timeStart + (timeEnd-timeStart)*i/nPhotons;
 
@@ -140,14 +131,14 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
         arrivalTime+=straightLineTravelTime;
 
         int nEmissions = GetRandomFiberEmissions(_histFiberEmissions[table][SiPM], p.y(), p.z());
-        for(int iEmission=0; iEmission<nEmissions; iEmission++) arrivalTime+=-_fiberDecayTime*log(G4UniformRand());
+        for(int iEmission=0; iEmission<nEmissions; iEmission++) arrivalTime+=-_fiberDecayTime*log(_randFlat.fire());
 
         if(isScintillation)
         {
-          if(G4UniformRand()<=_ratioFastSlow)
-            arrivalTime+=-_scintillatorDecayTimeFast*log(G4UniformRand());
+          if(_randFlat.fire()<=_ratioFastSlow)
+            arrivalTime+=-_scintillatorDecayTimeFast*log(_randFlat.fire());
           else
-            arrivalTime+=-_scintillatorDecayTimeSlow*log(G4UniformRand());
+            arrivalTime+=-_scintillatorDecayTimeSlow*log(_randFlat.fire());
         }
 
         arrivalTime+=GetRandomTime(_histTimeDifference[table][SiPM], p.y(), p.z());
@@ -195,7 +186,7 @@ double MakeCrvPhotonArrivals::GetRandomTime(TH3D *timeDifference, double y, doub
     integral+=timeDifference->GetBinContent(binx,biny,binz);
   }
 
-  double r=G4UniformRand();
+  double r=_randFlat.fire();
   double sum=0;
   binz=1;
   for(; binz<=timeDifference->GetNbinsZ(); binz++)
@@ -219,7 +210,7 @@ int MakeCrvPhotonArrivals::GetRandomFiberEmissions(TH3D *fiberEmissions, double 
     integral+=fiberEmissions->GetBinContent(binx,biny,binz);
   }
 
-  double r=G4UniformRand();
+  double r=_randFlat.fire();
   double sum=0;
   binz=1;
   for(; binz<=fiberEmissions->GetNbinsZ(); binz++)
@@ -275,6 +266,7 @@ double MakeCrvPhotonArrivals::GetAverageNumberOfCerenkovPhotons(double beta, dou
   return n;		
 }
 
+//this mimics G4EmSaturation::VisibleEnergyDeposition
 double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLength,
                                             double energyDepositedTotal,
                                             double energyDepositedNonIonizing)
