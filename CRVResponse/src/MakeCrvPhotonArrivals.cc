@@ -263,7 +263,8 @@ double MakeCrvPhotonArrivals::GetAverageNumberOfCerenkovPhotons(double beta, dou
 }
 
 //this mimics G4EmSaturation::VisibleEnergyDeposition
-//but approximates the electron and proton ranges as infinite
+//but approximates the proton range as large
+//and uses a fit for the electron range which was obtained specifically for Polystyrene
 //the error seems to be less than 1%
 double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLength,
                                             double energyDepositedTotal,
@@ -273,7 +274,15 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
 
   double evis = energyDepositedTotal;
 
-  if(PDGcode!=22) 
+  if(PDGcode==22)
+  {
+    if(evis>0)
+    {
+      double eDepOverElectronRange = 27.0*exp(-0.247*pow(fabs(log(evis)+8.2),1.6));
+      evis /= (1.0 + _scintillatorBirksConstant*eDepOverElectronRange);
+    }
+  }
+  else 
   {
     // protections
     double nloss = energyDepositedNonIonizing;
@@ -293,6 +302,7 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
     evis = eloss + nloss;
   }
 
+//  std::cout<<"Visible Energy Deposition (manual): "<<evis<<"   PDGcode: "<<PDGcode<<std::endl;
   return evis;
 }
 
