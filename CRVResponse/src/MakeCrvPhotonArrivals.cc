@@ -256,7 +256,7 @@ void MakeCrvPhotonArrivals::Reset()
 
 double MakeCrvPhotonArrivals::GetAverageNumberOfCerenkovPhotons(double beta, double charge) 
 { 
-  const double Rfact = 369.81/(eV * cm); //from G4Cerenkov::GetAverageNumberOfPhotons() 
+  const double Rfact = 369.81/(CLHEP::eV * CLHEP::cm); //from G4Cerenkov::GetAverageNumberOfPhotons() 
 
   if(beta<=1.0/_cerenkovRindex) return(0);  //particle too slow -> no Cerenkov radiation
 
