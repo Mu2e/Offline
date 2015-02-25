@@ -1,16 +1,12 @@
 #include "MakeCrvPhotonArrivals.hh"
 
-#include "G4LossTableManager.hh"
-#include "G4NistManager.hh"
-#include "G4ParticleDefinition.hh"
-#include "G4ParticleTypes.hh"
-
 #include <sstream>
 
 #include <TFile.h>
 #include <TH3D.h>
 #include <TNtuple.h>
 
+#include "CLHEP/Units/GlobalSystemOfUnits.h"
 #include "CLHEP/Vector/TwoVector.h"
 
 void MakeCrvPhotonArrivals::LoadLookupTable(std::string filename)
@@ -267,62 +263,17 @@ double MakeCrvPhotonArrivals::GetAverageNumberOfCerenkovPhotons(double beta, dou
 }
 
 //this mimics G4EmSaturation::VisibleEnergyDeposition
+//but approximates the electron and proton ranges as infinite
+//the error seems to be less than 1%
 double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLength,
                                             double energyDepositedTotal,
                                             double energyDepositedNonIonizing)
 {
-  static bool first=true;
-
-  static G4ParticleDefinition* electron    = G4Electron::Electron();
-  static G4ParticleDefinition* proton      = G4Proton::Proton();
-  static G4LossTableManager*   manager     = G4LossTableManager::Instance();
-  static G4NistManager*        nist        = G4NistManager::Instance();
-  static G4Material*           Polystyrene = NULL;
-  static G4MaterialCutsCouple* couple      = NULL;
-
-  static double ratio = 0;
-  static double chargeSq = 0; 
-  if(first)
-  {
-    first=false;
-
-    std::vector<G4int> natoms;
-    std::vector<G4String> elements;
-    elements.push_back("C");     natoms.push_back(8);
-    elements.push_back("H");     natoms.push_back(8);
-    Polystyrene = nist->ConstructNewMaterial("PolystyreneScintillator", elements, natoms, _scintillatorDensity);
-    Polystyrene->GetIonisation()->SetBirksConstant(_scintillatorBirksConstant);
-
-    couple = new G4MaterialCutsCouple(Polystyrene);
-
-    double norm = 0.0;
-    const G4ElementVector* theElementVector = Polystyrene->GetElementVector();
-    const double* theAtomNumDensityVector = Polystyrene->GetVecNbOfAtomsPerVolume();
-    size_t nelm = Polystyrene->GetNumberOfElements();
-    for(size_t i=0; i<nelm; ++i) 
-    {
-      const G4Element* elm = (*theElementVector)[i];
-      double Z = elm->GetZ();
-      double w = Z*Z*theAtomNumDensityVector[i];
-      ratio += w/nist->GetAtomicMassAmu(G4int(Z));
-      chargeSq = Z*Z*w;
-      norm += w;
-    }
-    ratio *= CLHEP::proton_mass_c2/norm;
-    chargeSq /= norm;
-  }
-
   if(energyDepositedTotal <= 0.0) { return 0.0; }
 
   double evis = energyDepositedTotal;
 
-  if(22 == PDGcode) 
-  {
-    // atomic relaxations for gamma incident
-    double electronRange = manager->GetRange(electron,energyDepositedTotal,couple);
-    evis /= (1.0 + _scintillatorBirksConstant*energyDepositedTotal/electronRange);
-  } 
-  else 
+  if(PDGcode!=22) 
   {
     // protections
     double nloss = energyDepositedNonIonizing;
@@ -330,7 +281,7 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
     double eloss = energyDepositedTotal - nloss;
 
     // neutrons
-    if(2112 == PDGcode || eloss < 0.0 || stepLength <= 0.0) 
+    if(PDGcode==2112 || eloss < 0.0 || stepLength <= 0.0) 
     {
       nloss = energyDepositedTotal;
       eloss = 0.0;
@@ -339,14 +290,6 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
     // continues energy loss
     if(eloss > 0.0) { eloss /= (1.0 + _scintillatorBirksConstant*eloss/stepLength); }
  
-    // non-ionizing energy loss
-    if(nloss > 0.0) 
-    {
-      double escaled = nloss*ratio;
-      double protonRange = manager->GetRange(proton,escaled,couple)/chargeSq; 
-      nloss /= (1.0 + _scintillatorBirksConstant*nloss/protonRange);
-    }
-
     evis = eloss + nloss;
   }
 

@@ -322,7 +322,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
 
   TCanvas c(s1.str().c_str(),s1.str().c_str(),1000,1000);
   c.Divide(2,2);
-  TGraph *graph[4], *graph2[4];
+  TGraph *graph[4]={NULL};
+  TGraph *graph2[4]={NULL};
   TH1D *hist[4], *histSiPMResponse[4];
   std::vector<TGraph*> graphVector;
   std::vector<TMarker*> markerVector;
@@ -354,12 +355,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
     hist[SiPM]->GetYaxis()->SetLabelColor(kBlue);
     hist[SiPM]->Draw();
 
-    double histMax = hist[SiPM]->GetMaximum();
-    double waveformMax = *std::max_element(waveform2[SiPM].begin(),waveform2[SiPM].end());
-    double scale = histMax/waveformMax;
-    double scaleSiPMResponse = 0.25;
-
 //SiPM response
+    double scaleSiPMResponse = 0.25;
     histSiPMResponse[SiPM]=new TH1D((s2.str()+"SiPMResponse").c_str(),"",100,0,200);
     for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++)
     {
@@ -373,6 +370,9 @@ void WLSEventAction::Draw(const G4Event* evt) const
     if(n2==0) continue;
     double *t2 = new double[n2];
     double *v2 = new double[n2];
+    double histMax = hist[SiPM]->GetMaximum();
+    double waveformMax = *std::max_element(waveform2[SiPM].begin(),waveform2[SiPM].end());
+    double scale = histMax/waveformMax;
     for(unsigned int j=0; j<n2; j++)
     {
       t2[j]=startTime+j*binWidth2;
@@ -529,8 +529,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
   {
     delete hist[SiPM];
     delete histSiPMResponse[SiPM];
-    delete graph[SiPM];
-    delete graph2[SiPM];
+    if(graph[SiPM]) delete graph[SiPM];
+    if(graph2[SiPM]) delete graph2[SiPM];
   }
   for(size_t i=0; i<graphVector.size(); i++) delete graphVector[i];
   for(size_t i=0; i<markerVector.size(); i++) delete markerVector[i];

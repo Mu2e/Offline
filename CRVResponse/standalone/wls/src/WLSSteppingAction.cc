@@ -21,6 +21,11 @@
 #include <TH3D.h>
 #include <TNtuple.h>
 
+/*
+#include "G4LossTableManager.hh"
+#include "G4EmSaturation.hh"
+*/
+
 WLSSteppingAction* WLSSteppingAction::_fgInstance = NULL;
 
 WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName) : _mode(mode), _engine(0), _randFlat(_engine)
@@ -123,6 +128,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
 
     if(PDGcode!=0)  //ignore optical photons
     {
+//std::cout<<"G4 : "<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDeposition(theStep)<<std::endl;
       _crvPhotonArrivals->MakePhotons(p1, p2, t1, t2,  
                             PDGcode, beta, charge,
                             energyDepositedTotal,
