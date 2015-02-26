@@ -47,6 +47,7 @@ namespace mu2e
     void produce(art::Event& e);
     void beginJob();
     void endJob();
+    void beginRun(art::Run& r);
 
     private:
     std::vector<std::string> _g4ModuleLabels;
@@ -101,6 +102,20 @@ namespace mu2e
 
   void CrvPhotonArrivalsGenerator::endJob()
   {
+  }
+
+  void CrvPhotonArrivalsGenerator::beginRun(art::Run& rr)
+  {
+    GeomHandle<CosmicRayShield> CRS;
+    std::vector<CRSScintillatorShield> const &shields = CRS->getCRSScintillatorShields();
+    std::vector<CRSScintillatorShield>::const_iterator ishield;
+    for(ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
+    {
+      if(ishield->getCRSScintillatorBarDetail().getMaterialName()!="G4_POLYSTYRENE")
+      {
+        throw std::logic_error("scintillator material is not the expected G4_POLYSTYRENE which is used in the look-up tables");
+      }
+    }
   }
 
   void CrvPhotonArrivalsGenerator::produce(art::Event& event) 
@@ -191,23 +206,13 @@ namespace mu2e
                                   energyDepositedTotal,
                                   energyDepositedNonIonizing);
 
-          bool needToStore = false;
-          if(iterNextStep==CRVSteps->end()) needToStore=true;
-          else
+          CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
+          for(int SiPM=0; SiPM<4; SiPM++)
           {
-            if(iterNextStep->barIndex()!=step.barIndex()) needToStore=true;
+            const std::vector<double> &times=_makeCrvPhotonArrivals->GetArrivalTimes(SiPM);
+            crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
           }
 
-          if(needToStore)
-          {
-            CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
-            for(int SiPM=0; SiPM<4; SiPM++)
-            {
-              const std::vector<double> &times=_makeCrvPhotonArrivals->GetArrivalTimes(SiPM);
-              crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
-            }
-            _makeCrvPhotonArrivals->Reset();
-          }
         } //loop over StepPointMCs in the StepPointMC collection
       } //loop over all StepPointMC collections
     } //loop over all module labels / process names from the fcl file

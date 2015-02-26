@@ -26,6 +26,7 @@ Based on Paul Rubinov's C# code
   {
     double _time;
     double _charge;
+    SiPMresponse(double time, double charge) : _time(time), _charge(charge) {}
   };
 
   struct ScheduledCharge

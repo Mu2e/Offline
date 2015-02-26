@@ -22,6 +22,10 @@ namespace mu2e
       int    _PEs;
       double _leadingEdge;
       double _pulseHeight;
+      CrvSingleRecoPulse(int PEs, double leadingEdge, double pulseHeight) : _PEs(PEs), 
+                                                                            _leadingEdge(leadingEdge), 
+                                                                            _pulseHeight(pulseHeight) {}
+      CrvSingleRecoPulse();
     };
 
     std::vector<CrvSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) 

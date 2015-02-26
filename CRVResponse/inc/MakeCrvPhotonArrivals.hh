@@ -25,7 +25,6 @@ class MakeCrvPhotonArrivals
                                       int PDGcode, double beta, double charge,
                                       double energyDepositedTotal,
                                       double energyDepositedNonIonizing);
-    void                      Reset();
     int                       GetNumberOfPhotons(int SiPM);
     const std::vector<double> &GetArrivalTimes(int SiPM);
     void                      SetScintillationYield(double scintillationYield) {_scintillationYield=scintillationYield;}

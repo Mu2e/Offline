@@ -94,11 +94,9 @@ namespace mu2e
         unsigned int n = _makeCrvRecoPulses->GetNPulses();
         for(unsigned int i=0; i<n; i++)
         {
-          CrvRecoPulses::CrvSingleRecoPulse pulse;
-          pulse._PEs = _makeCrvRecoPulses->GetPEs(i);
-          pulse._leadingEdge = _makeCrvRecoPulses->GetLeadingEdge(i);
-          pulse._pulseHeight = _makeCrvRecoPulses->GetPulseHeight(i);
-          crvRecoPulses.GetRecoPulses(SiPM).push_back(pulse);
+          crvRecoPulses.GetRecoPulses(SiPM).emplace_back(_makeCrvRecoPulses->GetPEs(i),
+                                                         _makeCrvRecoPulses->GetLeadingEdge(i),
+                                                         _makeCrvRecoPulses->GetPulseHeight(i));
         }
       }
     }

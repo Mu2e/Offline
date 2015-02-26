@@ -85,6 +85,8 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
 
   for(int SiPM=0; SiPM<4; SiPM++)
   {
+    _arrivalTimes[SiPM].clear();
+
     for(double i=0; i<nPhotons; i++)
     {
       CLHEP::Hep3Vector p = stepStart + distanceVector*i/nPhotons;
@@ -242,14 +244,6 @@ const std::vector<double> &MakeCrvPhotonArrivals::GetArrivalTimes(int SiPM)
   return _arrivalTimes[SiPM];
 }
 
-void MakeCrvPhotonArrivals::Reset()
-{
-  for(int SiPM=0; SiPM<4; SiPM++)
-  {
-    _arrivalTimes[SiPM].clear();
-  }
-}
-
 double MakeCrvPhotonArrivals::GetAverageNumberOfCerenkovPhotons(double beta, double charge) 
 { 
   const double Rfact = 369.81/(CLHEP::eV * CLHEP::cm); //from G4Cerenkov::GetAverageNumberOfPhotons() 
@@ -278,7 +272,7 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
   {
     if(evis>0)
     {
-      double eDepOverElectronRange = 27.0*exp(-0.247*pow(fabs(log(evis)+8.2),1.6));
+      double eDepOverElectronRange = 27.0*exp(-0.247*pow(fabs(log(evis)+8.2),1.6))+0.177;
       evis /= (1.0 + _scintillatorBirksConstant*eDepOverElectronRange);
     }
   }

@@ -8,6 +8,7 @@
 // Contact person Ralf Ehrlich
 //
 
+#include "StepPointMC.hh"
 
 namespace mu2e 
 {
@@ -67,13 +68,14 @@ namespace mu2e
         if(_times[SiPM].size()==0) continue;
         double t = *std::min_element(_times[SiPM].begin(),_times[SiPM].end());
         if(isnan(firstTime) || t<firstTime) firstTime=t;
+
       }
       return firstTime;
     }
 
     private:
 
-    std::vector<double> _times[4];
+    std::vector<double>  _times[4];
   };
 }
 

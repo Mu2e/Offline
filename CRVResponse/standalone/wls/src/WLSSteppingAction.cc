@@ -129,7 +129,6 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
 
     if(PDGcode!=0)  //ignore optical photons
     {
-//      Test(theStep, PDGcode);
       _crvPhotonArrivals->MakePhotons(p1, p2, t1, t2,  
                             PDGcode, beta, charge,
                             energyDepositedTotal,
@@ -140,6 +139,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
         std::vector<double> times=_crvPhotonArrivals->GetArrivalTimes(SiPM);
         _arrivalTimes[1][SiPM].assign(times.begin(),times.end());
       }
+//      Test(theStep, PDGcode);
     }
   }
 }
@@ -164,16 +164,14 @@ void WLSSteppingAction::Reset()
   }
 
   _wlsTracks.clear();
-
-  if(_mode==0)
-  {
-    _crvPhotonArrivals->Reset();
-  }
 }
 
 void WLSSteppingAction::Test(const G4Step *theStep, int PDGcode)
 {
   std::cout<<"Visible Energy Deposition (G4): "<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDeposition(theStep)<<"   PDGcode: "<<PDGcode<<std::endl;
+
+  G4Material* Polystyrene = G4Material::GetMaterial("Polystyrene",true);
+  double BirksConstant = Polystyrene->GetIonisation()->GetBirksConstant();
 
   std::cout<<"ELECTRON RANGE"<<std::endl;
   for(double e=0.001*eV; e<100.0*TeV; e*=1.5)
@@ -181,13 +179,12 @@ void WLSSteppingAction::Test(const G4Step *theStep, int PDGcode)
     std::cout<<theStep->GetTrack()->GetMaterialCutsCouple()->GetMaterial()->GetName();
     std::cout<<"  Energy: "<<e;
     std::cout<<"  Range: "<<G4LossTableManager::Instance()->GetRange(G4Electron::Electron(), e, theStep->GetTrack()->GetMaterialCutsCouple());
-    std::cout<<"  Error: "<<0.126*mm/MeV*e/G4LossTableManager::Instance()->GetRange(G4Electron::Electron(), e, theStep->GetTrack()->GetMaterialCutsCouple());
-    std::cout<<"  Fit: "<<0.126*mm/MeV*27.0*exp(-0.247*pow(fabs(log(e)+8.2),1.6));
+    std::cout<<"  Error: "<<BirksConstant*e/G4LossTableManager::Instance()->GetRange(G4Electron::Electron(), e, theStep->GetTrack()->GetMaterialCutsCouple());
+    std::cout<<"  Fit: "<<BirksConstant*(27.0*exp(-0.247*pow(fabs(log(e)+8.2),1.6))+0.177);
     std::cout<<std::endl;
   }
 
   std::cout<<"PROTON RANGE"<<std::endl;
-  G4Material* Polystyrene = G4Material::GetMaterial("Polystyrene",true);
   double ratio = 0;
   double chargeSq = 0; 
   double norm = 0.0;
@@ -210,7 +207,7 @@ void WLSSteppingAction::Test(const G4Step *theStep, int PDGcode)
     std::cout<<theStep->GetTrack()->GetMaterialCutsCouple()->GetMaterial()->GetName();
     std::cout<<"  Energy: "<<e;
     std::cout<<"  Range: "<<G4LossTableManager::Instance()->GetRange(G4Proton::Proton(), e*ratio, theStep->GetTrack()->GetMaterialCutsCouple());
-    std::cout<<"  Error: "<<0.126*mm/MeV*e/(G4LossTableManager::Instance()->GetRange(G4Proton::Proton(), e*ratio, theStep->GetTrack()->GetMaterialCutsCouple())/chargeSq);
+    std::cout<<"  Error: "<<BirksConstant*e/(G4LossTableManager::Instance()->GetRange(G4Proton::Proton(), e*ratio, theStep->GetTrack()->GetMaterialCutsCouple())/chargeSq);
     std::cout<<std::endl;
   }
 }
