@@ -222,6 +222,12 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
   }
  
   if ((opt == "") || (opt.Index("data") >= 0)) {
+    double chi2  = Trk->chisq();
+    int    ndof  = Trk->nDof ();
+    int    nact  = Trk->nActive();
+    double t0    = Trk->t0().t0();
+    double fit_consistency = Trk->chisqConsistency().consistency();
+    int q        = Trk->charge();
     Hep3Vector trk_mom;
     //      Trk->printAll();
     double h1_fltlen = Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
@@ -229,13 +235,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     double mom   = trk_mom.mag();
     double pt    = trk_mom.perp();
     double costh = trk_mom.cosTheta();
-    double chi2  = Trk->chisq();
-    int    ndof  = Trk->nDof ();
-    int    nact  = Trk->nActive();
-    double t0    = Trk->t0().t0();
-    double fit_consistency = Trk->chisqConsistency().consistency();
-    int q        = Trk->charge();
-    
+
     printf("%5i   %16p   %2i %10.3f %10.3f %10.3f %10.3f   %3i %10.3f  %3i %10.3e\n",
 	   -1,Trk,q,mom,pt,costh,t0,nact,chi2,ndof,fit_consistency);
   }
@@ -249,7 +249,8 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     printf("---------------------------------------------------------------------------");
     printf("-------------------------------------------------------------------------------\n");
     printf(" ih U A     len      rms       x          y          z       HitT     HitDt");
-    printf("  SInd  Dev Sec Lay  N  Iamb     T0    Rdrift     Xs         Ys          Zs        resid\n");
+    printf("  SInd  Dev Sec Lay  N  Iamb     T0    Rdrift     Xs         Ys          Zs        resid");
+    printf("     hitErr     t0Err    penaltyErr   extErr     totalErr\n");
     printf("---------------------------------------------------------------------------");
     printf("-------------------------------------------------------------------------------\n");
 
@@ -280,7 +281,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
 
       Hep3Vector pos;
       hit->hitPosition(pos);
-      printf("%6i %3i %3i %3i %3i %3i %8.3f %8.3f %10.3f %10.3f %10.3f %10.3f\n",
+      printf("%6i %3i %3i %3i %3i %3i %8.3f %8.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f\n",
 	     straw->index().asInt(), 
 	     straw->id().getDevice(),
 	     straw->id().getSector(),
@@ -293,7 +294,12 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
 	     pos.x(),
 	     pos.y(),
 	     pos.z(),
-	     hit->resid()
+	     hit->resid(true),
+	     hit->hitErr(),
+	     hit->t0Err(),
+	     hit->penaltyErr(),
+	     hit->extErr(),
+	     hit->totalErr()
 	     );
       //  	  trkhit->print(std::cout);
     }
