@@ -71,6 +71,11 @@ namespace mu2e {
 		   double *slopes,
 		   int    *ambStrawA, int *ambStrawB);
     
+    void findLines1(double xa, double ya, double ra,
+		   double xb, double yb, double rb,
+		   double *slopes,
+		   int    *ambStrawA, int *ambStrawB);
+    
 
 // add a set of hits to an existing fit
     virtual void addHits(KalFitResult&             kres   , 
@@ -133,7 +138,7 @@ namespace mu2e {
     mutable BField*    _bfield;
     int                 fNIter;
     const CalTimePeak*  fTimePeak;
-    int                 fAmbigVec[40000];
+    int                 fAmbigVec     [40000];
     int                 fAmbigVecSlope[40000];
     int                 fAnnealingStep;
 //-----------------------------------------------------------------------------

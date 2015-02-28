@@ -27,15 +27,17 @@ using namespace std;
 
 namespace mu2e {
 
-class Doublet{
+  class Doublet{
   public:
     Doublet(int station, int panel, 
 	    CLHEP::Hep3Vector shdir, 
 	    CLHEP::Hep3Vector trkdir,
 	    CLHEP::Hep3Vector trkpos,
-	    TrkStrawHit *hit):
-      fStationId(station), fPanelId(panel),
-      fShDir(shdir){
+	    TrkStrawHit*      hit):
+      fStationId(station), 
+      fPanelId(panel),
+      fShDir(shdir)
+    {
       fTrkDirCol.push_back(trkdir);
       fTrkPosCol.push_back(trkpos);
       fTrkshcol.push_back(hit);
@@ -43,12 +45,11 @@ class Doublet{
     
     ~Doublet(){}
     
-    int fStationId;
-    int fPanelId;
-    CLHEP::Hep3Vector fShDir;
-    std::vector<CLHEP::Hep3Vector> fTrkDirCol;
-    std::vector<CLHEP::Hep3Vector> fTrkPosCol;
-
+    int                              fStationId;
+    int                              fPanelId;
+    CLHEP::Hep3Vector                fShDir;
+    std::vector<CLHEP::Hep3Vector>   fTrkDirCol;
+    std::vector<CLHEP::Hep3Vector>   fTrkPosCol;
     std::vector< mu2e::TrkStrawHit*> fTrkshcol;
     
 
