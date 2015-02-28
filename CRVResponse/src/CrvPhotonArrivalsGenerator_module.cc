@@ -47,6 +47,7 @@ namespace mu2e
     void produce(art::Event& e);
     void beginJob();
     void endJob();
+    void beginRun(art::Run& r);
 
     private:
     std::vector<std::string> _g4ModuleLabels;
@@ -103,6 +104,20 @@ namespace mu2e
   {
   }
 
+  void CrvPhotonArrivalsGenerator::beginRun(art::Run& rr)
+  {
+    GeomHandle<CosmicRayShield> CRS;
+    std::vector<CRSScintillatorShield> const &shields = CRS->getCRSScintillatorShields();
+    std::vector<CRSScintillatorShield>::const_iterator ishield;
+    for(ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
+    {
+      if(ishield->getCRSScintillatorBarDetail().getMaterialName()!="G4_POLYSTYRENE")
+      {
+        throw std::logic_error("scintillator material is not the expected G4_POLYSTYRENE which is used in the look-up tables");
+      }
+    }
+  }
+
   void CrvPhotonArrivalsGenerator::produce(art::Event& event) 
   {
     _timeOffsets.updateMap(event);
@@ -142,7 +157,6 @@ namespace mu2e
           double energyDepositedNonIonizing = step.nonIonizingEDep();
 
           GlobalConstantsHandle<ParticleDataTable> particleDataTable;
-          double mass, charge;
           int PDGcode = step.simParticle()->pdgId();
           ParticleDataTable::maybe_ref particle = particleDataTable->particle(PDGcode);
           if(!particle) 
@@ -151,16 +165,14 @@ namespace mu2e
             std::cerr<<PDGcode<<std::endl;
             continue;
           }
-          else
-          {
-            mass = particle.ref().mass();  //MeV/c^2
-            charge = particle.ref().charge(); //in units of elementary charges 
-          }
+          double mass = particle.ref().mass();  //MeV/c^2
+          double charge = particle.ref().charge(); //in units of elementary charges 
 
           double momentum1 = step.momentum().mag(); //MeV/c
           double energy1 = sqrt(momentum1*momentum1 + mass*mass); //MeV
 //FIXME: does not take the energy of daughter particles into account
           double energy2 = energy1 - energyDepositedTotal; //MeV  
+          if(energy2<mass) energy2=mass;
 
           double gamma1 = energy1 / mass;
           double gamma2 = energy2 / mass;
@@ -172,27 +184,21 @@ namespace mu2e
           double t2 = t1 + step.stepLength()/velocity;
 
 //if there is a following step point, it will give a more realistic energy and time
-          StepPointMCCollection::const_iterator iterNextStep = iter;
-          iterNextStep++;
+          StepPointMCCollection::const_iterator iterNextStep = iter+1;
           if(iterNextStep!=CRVSteps->end())
           {
             StepPointMC const& nextStep(*iterNextStep);
             if(nextStep.barIndex()==step.barIndex() && nextStep.simParticle()->id()==step.simParticle()->id())
             {
-              p2 = nextStep.position();
-              double momentum2 = nextStep.momentum().mag(); //MeV/c
-              energy2 = sqrt(momentum2*momentum2 + mass*mass); //MeV
-              gamma2 = energy2 / mass;
-              beta2 = sqrt(1.0-1.0/(gamma2*gamma2));
-              beta = (beta1+beta2)/2.0;
-              velocity = beta*CLHEP::c_light;
 	      t2 = _timeOffsets.timeWithOffsetsApplied(nextStep);
+              velocity = (p2-p1).mag()/(t2-t1);
+              beta = velocity/CLHEP::c_light;
             }
           }
 
           const CRSScintillatorBar &CRSbar = CRS->getBar(step.barIndex());
-          CLHEP::Hep3Vector p1Local = CRSbar.toLocal(p1);
-          CLHEP::Hep3Vector p2Local = CRSbar.toLocal(p2);
+          const CLHEP::Hep3Vector &p1Local = CRSbar.toLocal(p1);
+          const CLHEP::Hep3Vector &p2Local = CRSbar.toLocal(p2);
 
           _makeCrvPhotonArrivals->SetActualHalfLength(CRSbar.getHalfLength());
           _makeCrvPhotonArrivals->MakePhotons(p1Local, p2Local, t1, t2,  
@@ -200,23 +206,13 @@ namespace mu2e
                                   energyDepositedTotal,
                                   energyDepositedNonIonizing);
 
-          bool needToStore = false;
-          if(iterNextStep==CRVSteps->end()) needToStore=true;
-          else
+          CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
+          for(int SiPM=0; SiPM<4; SiPM++)
           {
-            if(iterNextStep->barIndex()!=step.barIndex()) needToStore=true;
+            const std::vector<double> &times=_makeCrvPhotonArrivals->GetArrivalTimes(SiPM);
+            crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
           }
 
-          if(needToStore)
-          {
-            CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
-            for(int SiPM=0; SiPM<4; SiPM++)
-            {
-              const std::vector<double> &times=_makeCrvPhotonArrivals->GetArrivalTimes(SiPM);
-              crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
-            }
-            _makeCrvPhotonArrivals->Reset();
-          }
         } //loop over StepPointMCs in the StepPointMC collection
       } //loop over all StepPointMC collections
     } //loop over all module labels / process names from the fcl file

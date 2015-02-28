@@ -21,6 +21,12 @@
 #include <TH3D.h>
 #include <TNtuple.h>
 
+#include "G4LossTableManager.hh"
+#include "G4NistManager.hh"
+#include "G4EmSaturation.hh"
+#include "G4ParticleDefinition.hh"
+#include "G4ParticleTypes.hh"
+
 WLSSteppingAction* WLSSteppingAction::_fgInstance = NULL;
 
 WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName) : _mode(mode), _engine(0), _randFlat(_engine)
@@ -133,6 +139,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
         std::vector<double> times=_crvPhotonArrivals->GetArrivalTimes(SiPM);
         _arrivalTimes[1][SiPM].assign(times.begin(),times.end());
       }
+//      Test(theStep, PDGcode);
     }
   }
 }
@@ -157,10 +164,51 @@ void WLSSteppingAction::Reset()
   }
 
   _wlsTracks.clear();
+}
 
-  if(_mode==0)
+void WLSSteppingAction::Test(const G4Step *theStep, int PDGcode)
+{
+  std::cout<<"Visible Energy Deposition (G4): "<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDeposition(theStep)<<"   PDGcode: "<<PDGcode<<std::endl;
+
+  G4Material* Polystyrene = G4Material::GetMaterial("Polystyrene",true);
+  double BirksConstant = Polystyrene->GetIonisation()->GetBirksConstant();
+
+  std::cout<<"ELECTRON RANGE"<<std::endl;
+  for(double e=0.001*eV; e<100.0*TeV; e*=1.5)
   {
-    _crvPhotonArrivals->Reset();
+    std::cout<<theStep->GetTrack()->GetMaterialCutsCouple()->GetMaterial()->GetName();
+    std::cout<<"  Energy: "<<e;
+    std::cout<<"  Range: "<<G4LossTableManager::Instance()->GetRange(G4Electron::Electron(), e, theStep->GetTrack()->GetMaterialCutsCouple());
+    std::cout<<"  Error: "<<BirksConstant*e/G4LossTableManager::Instance()->GetRange(G4Electron::Electron(), e, theStep->GetTrack()->GetMaterialCutsCouple());
+    std::cout<<"  Fit: "<<BirksConstant*(27.0*exp(-0.247*pow(fabs(log(e)+8.2),1.6))+0.177);
+    std::cout<<std::endl;
+  }
+
+  std::cout<<"PROTON RANGE"<<std::endl;
+  double ratio = 0;
+  double chargeSq = 0; 
+  double norm = 0.0;
+  const G4ElementVector* theElementVector = Polystyrene->GetElementVector();
+  const double* theAtomNumDensityVector = Polystyrene->GetVecNbOfAtomsPerVolume();
+  size_t nelm = Polystyrene->GetNumberOfElements();
+  for(size_t i=0; i<nelm; ++i) 
+  {
+    const G4Element* elm = (*theElementVector)[i];
+    double Z = elm->GetZ();
+    double w = Z*Z*theAtomNumDensityVector[i];
+    ratio += w/G4NistManager::Instance()->GetAtomicMassAmu(G4int(Z));
+    chargeSq = Z*Z*w;
+    norm += w;
+  }
+  ratio *= CLHEP::proton_mass_c2/norm;
+  chargeSq /= norm;
+  for(double e=1.0*eV; e<1.0*TeV; e*=2.0)
+  {
+    std::cout<<theStep->GetTrack()->GetMaterialCutsCouple()->GetMaterial()->GetName();
+    std::cout<<"  Energy: "<<e;
+    std::cout<<"  Range: "<<G4LossTableManager::Instance()->GetRange(G4Proton::Proton(), e*ratio, theStep->GetTrack()->GetMaterialCutsCouple());
+    std::cout<<"  Error: "<<BirksConstant*e/(G4LossTableManager::Instance()->GetRange(G4Proton::Proton(), e*ratio, theStep->GetTrack()->GetMaterialCutsCouple())/chargeSq);
+    std::cout<<std::endl;
   }
 }
 

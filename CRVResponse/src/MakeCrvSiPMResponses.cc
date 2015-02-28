@@ -174,13 +174,7 @@ void MakeCrvSiPMResponses::Simulate(const std::vector<double> &photons,
     RechargeCell(pixel);
     double output = GenerateAvalanche(pixel, cellid); //in units of PEs*biasVoltage
 
-    if(output>0)
-    {
-      SiPMresponse s;
-      s._time = _time;
-      s._charge = output/_bias;  //s.charge is in units of PEs
-      SiPMresponseVector.push_back(s);
-    }
+    if(output>0) SiPMresponseVector.emplace_back(_time, output/_bias); //output/bias is the charge is in units of PEs
   } //while(1)
 }
 

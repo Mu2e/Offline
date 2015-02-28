@@ -117,13 +117,11 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
       CrvPhotonArrivalsCollection::const_iterator crvPhotons=crvPhotonArrivalsCollection->find(barIndex); 
 
-//      CrvSiPMResponses &crvSiPMResponses = (*crvSiPMResponsesCollection)[barIndex];
       CrvSiPMResponses crvSiPMResponses;
       bool minChargeReached = false;
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
-        std::vector<SiPMresponse> SiPMresponseVector;
         std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &responsesOneSiPM = crvSiPMResponses.GetSiPMResponses(SiPM);
 
         std::vector<double> photonArrivalTimesAdjusted;
@@ -136,19 +134,19 @@ namespace mu2e
             double time = *timeIter;
 	    time = fmod(time,_microBunchPeriod);  //"ghost hits" are not used / "splitting of hits" is acceptable, 
                                                   //since we are blind outside the window
-            if(time>_blindTime) photonArrivalTimesAdjusted.emplace_back(time);
+            if(time>_blindTime) photonArrivalTimesAdjusted.push_back(time);
           }
         }
+
+        std::vector<SiPMresponse> SiPMresponseVector;
         _makeCrvSiPMResponses->Simulate(photonArrivalTimesAdjusted, SiPMresponseVector);
 
         double totalCharge=0;
-        for(unsigned int i=0; i<SiPMresponseVector.size(); i++)
+        std::vector<SiPMresponse>::const_iterator responseIter;
+        for(responseIter=SiPMresponseVector.begin(); responseIter!=SiPMresponseVector.end(); responseIter++)
         {
-          CrvSiPMResponses::CrvSingleSiPMResponse response;
-          response._time = SiPMresponseVector[i]._time;
-          response._charge = SiPMresponseVector[i]._charge;
-          responsesOneSiPM.push_back(response);
-          totalCharge+=response._charge;
+          responsesOneSiPM.emplace_back(responseIter->_time, responseIter->_charge);
+          totalCharge+=responseIter->_charge;
         }
         if(totalCharge>=_minCharge) minChargeReached=true;
       }

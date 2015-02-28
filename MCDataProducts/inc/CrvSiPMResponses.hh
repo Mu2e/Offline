@@ -21,6 +21,8 @@ namespace mu2e
     {
       double _time;
       double _charge;
+      CrvSingleSiPMResponse(double time, double charge) : _time(time), _charge(charge) {}
+      CrvSingleSiPMResponse();
     };
 
     std::vector<CrvSingleSiPMResponse> &GetSiPMResponses(int fiberNumber, int side) 
