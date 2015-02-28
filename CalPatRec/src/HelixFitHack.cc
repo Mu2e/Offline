@@ -1404,11 +1404,6 @@ namespace mu2e
     const std::vector<hitIndex> shIndices = mytrk.strawHitIndices();
     
     int size = shIndices.size();
-    int stIndices[size];
-    // initialize the vector
-    for(int i=0; i<size;++i){
-      stIndices[i] = -9999;
-    }
 
     //--------------------------------------------------------------------------------
     if (mytrk.strawHitPositionCollection() != 0) {
@@ -1432,26 +1427,6 @@ namespace mu2e
 		 shp.pos().x(), shp.pos().y(), shp.pos().z());
 	}
 	_xyzp.push_back(pos);
-	//if the stereo index is <0, it means that no stereo hit was created
-// 	if (shp.stereoHitIndex() < 0 ){
-// 	  _xyzp.push_back(pos);
-// 	} else {
-// 	  bool  found(false);
-// 	  int   k=0, t=0;
-// 	  while (!found && k< size) {
-// 	    //  printf("stIndices[%d] = %5.3d ? %u\n",k,stIndices[k], shp.stereoHitIndex());
-	    
-// 	    if ( stIndices[k] == shp.stereoHitIndex()) found = true;
-// 	    if (stIndices[k]>0) ++t;
-// 	    ++k;
-// 	  }
-// 	  // printf("indexes: k = %d, t = %d\n", k, t);
-// 	  if (!found) {
-// 	    _xyzp.push_back(pos);
-// 	    stIndices[t] = shp.stereoHitIndex();
-// 	  }
-	  
-// 	}
       }	// end loop over the strawindexes
     }
 //----------------------------------------------------------------------
@@ -1463,7 +1438,6 @@ namespace mu2e
 	      {
 		return lhs._pos.z() < rhs._pos.z();
 	      } );
-    
   }
 
 //-----------------------------------------------------------------------------
