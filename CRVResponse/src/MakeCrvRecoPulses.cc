@@ -7,10 +7,12 @@
 
 MakeCrvRecoPulses::MakeCrvRecoPulses(double pulseThreshold,       //in V
                                      double leadingEdgeThreshold, //in percent
-                                     double integralFactor) : 
+                                     double param0, 
+                                     double param1) : 
                                      _pulseThreshold(pulseThreshold), 
                                      _leadingEdgeThreshold(leadingEdgeThreshold), 
-                                     _integralFactor(integralFactor)
+                                     _param0(param0),
+                                     _param1(param1)
 {}
 
 void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double startTime, double binWidth)
@@ -64,7 +66,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
                                 //this can happen e.g. if the voltage drops below the pulse threshold
                                 //right after the maximum
 
-      double PEs = static_cast<int>(integral*_integralFactor+0.5);
+      double PEs = static_cast<int>(integral*_param1+_param0+0.5);  //the 0.5 is used to properly round the doubles
       double leadingEdge = T1;
 
       TF1 f("","landau");

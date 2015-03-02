@@ -192,12 +192,18 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   {
     double beamsize=1.0*mm;
     double x0 = -1.5*cm;
-//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);
-//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,1.3*cm,beamsize);
+#ifndef testbeam
+#pragma message("Uses the real geometry setup.")
+#pragma message("Compile with -Dtestbeam to use the test beam geometry setup.")
     double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,1.0*cm,beamsize);
-//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,1.8*cm,beamsize); 
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,20.0*cm,beamsize);
     double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,200.0*cm,beamsize);
+#else
+#pragma message("Uses the test beam geometry setup.")
+    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,1.3*cm,beamsize);
+    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,20.0*cm,beamsize);
+#endif
+//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);
+//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,1.8*cm,beamsize); 
   
     _particleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
     _particleGun->GeneratePrimaryVertex(anEvent);

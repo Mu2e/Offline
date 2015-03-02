@@ -47,19 +47,21 @@ namespace mu2e
     boost::shared_ptr<MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvWaveformsModuleLabel;
-    double      _integralFactor;
+    double      _param0;
+    double      _param1;
     double      _pulseThreshold;
     double      _leadingEdgeThreshold;
   };
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
-    _integralFactor(pset.get<double>("integralFactor",51.0)),
-    _pulseThreshold(pset.get<double>("pulseThreshold",0.005)),
+    _param0(pset.get<double>("param0",3.2)),
+    _param1(pset.get<double>("param1",33.6)),
+    _pulseThreshold(pset.get<double>("pulseThreshold",0.015)),
     _leadingEdgeThreshold(pset.get<double>("leadingEdgeThreshold",0.2))
   {
     produces<CrvRecoPulsesCollection>();
-    _makeCrvRecoPulses = boost::shared_ptr<MakeCrvRecoPulses>(new MakeCrvRecoPulses(_pulseThreshold, _leadingEdgeThreshold, _integralFactor));
+    _makeCrvRecoPulses = boost::shared_ptr<MakeCrvRecoPulses>(new MakeCrvRecoPulses(_pulseThreshold, _leadingEdgeThreshold, _param0, _param1));
   }
 
   void CrvRecoPulsesFinder::beginJob()

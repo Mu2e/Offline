@@ -22,10 +22,7 @@ class WLSEventAction : public G4UserEventAction
     void   BeginOfEventAction(const G4Event*);
     void     EndOfEventAction(const G4Event*);
 
-    G4int GetEventNo();
     static WLSEventAction* Instance()                      {return _fgInstance;}
-    TH1D*                  GetHistPE(int mode, int SiPM)   {return _histPE[mode][SiPM];}
-    TH1D*                  GetHistT(int mode, int SiPM)    {return _histT[mode][SiPM];}
     void                   SetOptPhotonStart(G4ThreeVector start) {_start=start;}
     void                   SetGeneratedOptPhotons(int n)          {_generatedPhotons=n;}
     
@@ -38,7 +35,7 @@ class WLSEventAction : public G4UserEventAction
   private:
 
     static WLSEventAction*  _fgInstance;  
-    TH1D*                   _histPE[2][4];
+    TH1D*                   _histP[2][4];
     TH1D*                   _histT[2][4];
     TH3D*                   _histSurvivalProb[4][4];
     TH3D*                   _histTimeDifference[4][4];
@@ -49,10 +46,10 @@ class WLSEventAction : public G4UserEventAction
     TFile*                  _fileLookupTable;
     bool                    _storeConstants;
 
-    void                    Draw();
     void                    Draw(const G4Event* evt) const;
 
-    TH2D                    *_PEvsIntegral, *_PEvsPulseHeight;
+    TH2D                    *_photonsVsIntegral, *_photonsVsPulseHeight;
+    TH2D                    *_PEsVsIntegral, *_PEsVsPulseHeight;
 };
 
 #endif

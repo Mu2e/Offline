@@ -22,6 +22,7 @@
 #include <TMarker.h>
 #include <TGaxis.h>
 #include <TCanvas.h>
+#include <TPaveStats.h>
 
 #include "MakeCrvSiPMResponses.hh"
 #include "MakeCrvWaveforms.hh"
@@ -99,11 +100,15 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
     for(int SiPM=0; SiPM<4; SiPM++)
     {
       std::stringstream s0, s1, title;
-      s0<<"PEs_Mode_"<<0<<"__SiPM_"<<SiPM;
-      s1<<"PEs_Mode_"<<1<<"__SiPM_"<<SiPM;
+      s0<<"Photons_Mode_"<<0<<"__SiPM_"<<SiPM;
+      s1<<"Photons_Mode_"<<1<<"__SiPM_"<<SiPM;
       title<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
-      _histPE[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),2000,0,2000);
-      _histPE[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),2000,0,2000);
+      _histP[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),300,0,300);
+      _histP[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),300,0,300);
+      _histP[0][SiPM]->GetXaxis()->SetTitle("Photons");
+      _histP[0][SiPM]->SetLineColor(1);
+      _histP[1][SiPM]->GetXaxis()->SetTitle("Photons");
+      _histP[1][SiPM]->SetLineColor(2);
     }
 
     for(int SiPM=0; SiPM<4; SiPM++)
@@ -112,16 +117,26 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
       s0<<"ArrivalTimes_Mode_"<<0<<"__SiPM_"<<SiPM;
       s1<<"ArrivalTimes_Mode_"<<1<<"__SiPM_"<<SiPM;
       title<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
-      _histT[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),1000,0,1000);
-      _histT[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),1000,0,1000);
+      _histT[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),200,0,200);
+      _histT[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),200,0,200);
+      _histT[0][SiPM]->GetXaxis()->SetTitle("t [ns]");
+      _histT[0][SiPM]->SetLineColor(1);
+      _histT[1][SiPM]->GetXaxis()->SetTitle("t [ns]");
+      _histT[1][SiPM]->SetLineColor(2);
     }
 
-    _PEvsIntegral = new TH2D("PEvsIntegral","PEvsIntegral", 60,0,60, 200,0,2.0);
-    _PEvsIntegral->SetXTitle("PEs");
-    _PEvsIntegral->SetYTitle("Integral");
-    _PEvsPulseHeight = new TH2D("PEvsPulseHeight","PEvsPulseHeight", 60,0,60, 200,0,1.0);
-    _PEvsPulseHeight->SetXTitle("PEs");
-    _PEvsPulseHeight->SetYTitle("PulseHeight [mV]");
+    _photonsVsIntegral = new TH2D("PhotonsVsIntegral","PhotonsVsIntegral", 200,0,2.0, 100,0,100);
+    _photonsVsIntegral->SetYTitle("Photons");
+    _photonsVsIntegral->SetXTitle("Integral");
+    _photonsVsPulseHeight = new TH2D("PhotonsVsPulseHeight","PhotonVsPulseHeight", 200,0,0.5, 100,0,100);
+    _photonsVsPulseHeight->SetYTitle("Photons");
+    _photonsVsPulseHeight->SetXTitle("PulseHeight [mV]");
+    _PEsVsIntegral = new TH2D("PEsVsIntegral","PEsVsIntegral", 200,0,2.0, 100,0,100);
+    _PEsVsIntegral->SetYTitle("PEs");
+    _PEsVsIntegral->SetXTitle("Integral");
+    _PEsVsPulseHeight = new TH2D("PEsVsPulseHeight","PEsVsPulseHeight", 200,0,0.5, 100,0,100);
+    _PEsVsPulseHeight->SetYTitle("PEs");
+    _PEsVsPulseHeight->SetXTitle("PulseHeight [mV]");
   }
 }
 
@@ -146,15 +161,16 @@ WLSEventAction::~WLSEventAction()
   {
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      delete _histPE[0][SiPM];
-      delete _histPE[1][SiPM];
+      delete _histP[0][SiPM];
+      delete _histP[1][SiPM];
       delete _histT[0][SiPM];
       delete _histT[1][SiPM];
     }
   
-    delete _PEvsIntegral;
-    delete _PEvsPulseHeight;
+    delete _photonsVsIntegral;
+    delete _photonsVsPulseHeight;
   }
+
 }
 
 G4ThreeVector WLSEventAction::GetHistBinCenter(int binx, int biny, int binz) 
@@ -255,8 +271,8 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
   {
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      _histPE[0][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM).size());
-      _histPE[1][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM).size());
+      _histP[0][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM).size());
+      _histP[1][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM).size());
 
       const std::vector<double> &arrivalTimes0 = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);
       const std::vector<double> &arrivalTimes1 = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
@@ -264,7 +280,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       for(size_t i=0; i<arrivalTimes1.size(); i++) _histT[1][SiPM]->Fill(arrivalTimes1[i]);
     }
 
-    for(int SiPM=0; SiPM<4; SiPM++) std::cout<<_histPE[0][SiPM]->GetMean()<<"/"<<_histPE[1][SiPM]->GetMean()<<"  ";
+    for(int SiPM=0; SiPM<4; SiPM++) std::cout<<_histP[0][SiPM]->GetMean()<<"/"<<_histP[1][SiPM]->GetMean()<<"  ";
     std::cout<<std::endl;
     for(int SiPM=0; SiPM<4; SiPM++) std::cout<<_histT[0][SiPM]->GetMean()<<"/"<<_histT[1][SiPM]->GetMean()<<"  ";
     std::cout<<std::endl;
@@ -320,6 +336,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
   std::ostringstream s1;
   s1<<"waveform_"<<evt->GetEventID();
 
+  gStyle->SetOptStat(0);
   TCanvas c(s1.str().c_str(),s1.str().c_str(),1000,1000);
   c.Divide(2,2);
   TGraph *graph[4]={NULL};
@@ -416,7 +433,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
       double tI=startTime+j*binWidth;
       double vI=waveform[SiPM][j];
       if(tI>200) break;
-      if(vI<=0.005) continue;
+      if(vI<=0.015) continue;
       TMarker *marker = new TMarker(tI, vI*scale, markerVector.size());
       markerVector.push_back(marker);
       marker->SetMarkerStyle(20);
@@ -426,7 +443,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
     }
 
 //Landau fit
-    MakeCrvRecoPulses makeRecoPulses(0.005,0.2,51.0);
+    MakeCrvRecoPulses makeRecoPulses(0.015,0.2, 3.2,33.6);
     makeRecoPulses.SetWaveform(waveform[SiPM], startTime, binWidth);
     unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
@@ -475,10 +492,16 @@ void WLSEventAction::Draw(const G4Event* evt) const
     if(makeRecoPulses.GetNPulses()==1)
     {
       int photons = photonTimes.size();
-      std::cout<<"PEs/integral: "<<photons/makeRecoPulses.GetIntegral(0)<<"         ";
-      std::cout<<"PEs/maxBin: "<<photons/makeRecoPulses.GetPulseHeight(0)<<std::endl;
-      _PEvsIntegral->Fill(photons,makeRecoPulses.GetIntegral(0));
-      _PEvsPulseHeight->Fill(photons,makeRecoPulses.GetPulseHeight(0));
+      std::cout<<"Photons/integral: "<<photons/makeRecoPulses.GetIntegral(0)<<"         ";
+      std::cout<<"Photons/maxBin: "<<photons/makeRecoPulses.GetPulseHeight(0)<<std::endl;
+      _photonsVsIntegral->Fill(makeRecoPulses.GetIntegral(0),photons);
+      _photonsVsPulseHeight->Fill(makeRecoPulses.GetPulseHeight(0),photons);
+      double PEs=0;
+      for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++) PEs+=siPMcharges[SiPM][j];
+      std::cout<<"PEs/integral: "<<PEs/makeRecoPulses.GetIntegral(0)<<"         ";
+      std::cout<<"PEs/maxBin: "<<PEs/makeRecoPulses.GetPulseHeight(0)<<std::endl;
+      _PEsVsIntegral->Fill(makeRecoPulses.GetIntegral(0),PEs);
+      _PEsVsPulseHeight->Fill(makeRecoPulses.GetPulseHeight(0),PEs);
     }
 
     TGaxis *axis = new TGaxis(170.0,0,170.0,histMax,0,histMax/scale,10,"+L");
@@ -522,8 +545,70 @@ void WLSEventAction::Draw(const G4Event* evt) const
     landauText2->Draw("same");
   }
   if(evt->GetEventID()<20) c.SaveAs((s1.str()+".C").c_str());
-  _PEvsIntegral->SaveAs("PEvsIntegral.C");
-  _PEvsPulseHeight->SaveAs("PEvsPulseHeight.C");
+  _photonsVsIntegral->SaveAs("PhotonsVsIntegral.C");
+  _photonsVsPulseHeight->SaveAs("PhotonsVsPulseHeight.C");
+  _PEsVsIntegral->SaveAs("PEsVsIntegral.C");
+  _PEsVsPulseHeight->SaveAs("PEsVsPulseHeight.C");
+
+
+  gStyle->SetOptStat(1111);
+  TCanvas c1("Photons","Photons",1000,1000);
+  c1.Divide(2,2);
+  for(int SiPM=0; SiPM<4; SiPM++)
+  {
+    c1.cd(SiPM+1);
+    gPad->SetLogy();
+    _histP[0][SiPM]->Draw();
+    gPad->Update();
+    TPaveStats *stats0 = (TPaveStats*)_histP[0][SiPM]->FindObject("stats");
+    stats0->SetTextColor(1);
+    stats0->SetLineColor(1);
+    double X1 = stats0->GetX1NDC();
+    double Y1 = stats0->GetY1NDC();
+    double X2 = stats0->GetX2NDC();
+    double Y2 = stats0->GetY2NDC();
+    _histP[1][SiPM]->Draw();
+    gPad->Update();
+    TPaveStats *stats1 = (TPaveStats*)_histP[1][SiPM]->FindObject("stats");
+    stats1->SetTextColor(2);
+    stats1->SetLineColor(2);
+    stats1->SetX1NDC(X1);
+    stats1->SetY1NDC(Y1-(Y2-Y1));
+    stats1->SetX2NDC(X2);
+    stats1->SetY2NDC(Y1);
+    _histP[0][SiPM]->Draw();
+    _histP[1][SiPM]->Draw("same");
+  }      
+  c1.SaveAs("Photons.C");
+
+  TCanvas c2("ArrivalTimes","ArrivalTimes",1000,1000);
+  c2.Divide(2,2);
+  for(int SiPM=0; SiPM<4; SiPM++)
+  {
+    c2.cd(SiPM+1);
+    gPad->SetLogy();
+    _histT[0][SiPM]->Draw();
+    gPad->Update();
+    TPaveStats *stats0 = (TPaveStats*)_histT[0][SiPM]->FindObject("stats");
+    stats0->SetTextColor(1);
+    stats0->SetLineColor(1);
+    double X1 = stats0->GetX1NDC();
+    double Y1 = stats0->GetY1NDC();
+    double X2 = stats0->GetX2NDC();
+    double Y2 = stats0->GetY2NDC();
+    _histT[1][SiPM]->Draw();
+    gPad->Update();
+    TPaveStats *stats1 = (TPaveStats*)_histT[1][SiPM]->FindObject("stats");
+    stats1->SetTextColor(2);
+    stats1->SetLineColor(2);
+    stats1->SetX1NDC(X1);
+    stats1->SetY1NDC(Y1-(Y2-Y1));
+    stats1->SetX2NDC(X2);
+    stats1->SetY2NDC(Y1);
+    _histT[0][SiPM]->Draw();
+    _histT[1][SiPM]->Draw("same");
+  }      
+  c2.SaveAs("ArrivalTimes.C");
 
   for(int SiPM=0; SiPM<4; SiPM++)
   {

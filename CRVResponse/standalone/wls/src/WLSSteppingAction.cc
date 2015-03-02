@@ -137,7 +137,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         std::vector<double> times=_crvPhotonArrivals->GetArrivalTimes(SiPM);
-        _arrivalTimes[1][SiPM].assign(times.begin(),times.end());
+        _arrivalTimes[1][SiPM].insert(_arrivalTimes[1][SiPM].end(),times.begin(),times.end());
       }
 //      Test(theStep, PDGcode);
     }

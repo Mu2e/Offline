@@ -16,7 +16,7 @@ Based on Paul Rubinov's C# code
   {
     double _v;
     double _t;
-    Pixel(double bias) : _v(bias), _t(0) {}
+    Pixel(double bias, double time) : _v(bias), _t(time) {}
 
     private:
     Pixel();  //disables the default constructor

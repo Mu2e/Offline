@@ -50,7 +50,7 @@ int main(int argc,char** argv)
   runManager->SetUserInitialization(new WLSPhysicsList(physName));
 
   WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode);
-  WLSRunAction* runAction = new WLSRunAction(mode);
+  WLSRunAction* runAction = new WLSRunAction();
 
   WLSEventAction* eventAction;     
   if(mode==0) eventAction = new WLSEventAction(mode);     

@@ -8,6 +8,7 @@
 // Contact person Ralf Ehrlich
 //
 
+#include <vector>
 
 namespace mu2e 
 {
@@ -17,73 +18,26 @@ namespace mu2e
 
     CrvWaveforms() {}
 
-    std::vector<double> &GetWaveform(int fiberNumber, int side) 
-    {
-      if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
-      if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
-      int SiPM = 2*fiberNumber + side;
-      return _waveform[SiPM];
-    }
+    std::vector<double> &GetWaveform(int fiberNumber, int side);
+    std::vector<double> &GetWaveform(int SiPMNumber);
 
-    std::vector<double> &GetWaveform(int SiPMNumber) 
-    {
-      if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _waveform[SiPMNumber];
-    }
+    const std::vector<double> &GetWaveform(int fiberNumber, int side) const;
+    const std::vector<double> &GetWaveform(int SiPMNumber) const;
 
-    const std::vector<double> &GetWaveform(int fiberNumber, int side) const
-    {
-      if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
-      if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
-      int SiPM = 2*fiberNumber + side;
-      return _waveform[SiPM];
-    }
+    double GetStartTime(int fiberNumber, int side) const;
+    double GetStartTime(int SiPMNumber) const;
 
-    const std::vector<double> &GetWaveform(int SiPMNumber) const
-    {
-      if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _waveform[SiPMNumber];
-    }
+    void SetStartTime(int fiberNumber, int side, double startTime);
+    void SetStartTime(int SiPMNumber, double startTime);
 
-    double GetStartTime(int fiberNumber, int side) const 
-    {
-      if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
-      if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
-      int SiPM = 2*fiberNumber + side;
-      return _startTime[SiPM];
-    }
+    double GetBinWidth() const; 
 
-    double GetStartTime(int SiPMNumber) const
-    {
-      if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _startTime[SiPMNumber];
-    }
-
-    void SetStartTime(int fiberNumber, int side, double startTime) 
-    {
-      if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
-      if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
-      int SiPM = 2*fiberNumber + side;
-      _startTime[SiPM]=startTime;
-    }
-
-    void SetStartTime(int SiPMNumber, double startTime) 
-    {
-      if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      _startTime[SiPMNumber]=startTime;
-    }
-
-    double GetBinWidth() const 
-    {
-      return _binWidth;
-    }
-
-    void SetBinWidth(double binWidth) 
-    {
-      _binWidth=binWidth;
-    }
+    void SetBinWidth(double binWidth);
 
     private:
+
+    static int  FindSiPMNumber(int fiberNumber, int side);
+    static void CheckSiPMNumber(int SiPMNumber);
 
     std::vector<double> _waveform[4];
     double _startTime[4];

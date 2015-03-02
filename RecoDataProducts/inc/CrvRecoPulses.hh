@@ -8,6 +8,7 @@
 // Contact person Ralf Ehrlich
 //
 
+#include <vector>
 
 namespace mu2e 
 {
@@ -28,49 +29,19 @@ namespace mu2e
       CrvSingleRecoPulse();
     };
 
-    std::vector<CrvSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) 
-    {
-      if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
-      if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
-      int SiPM = 2*fiberNumber + side;
-      return _crvPulses[SiPM];
-    }
+    std::vector<CrvSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side);
+    std::vector<CrvSingleRecoPulse> &GetRecoPulses(int SiPMNumber); 
 
-    std::vector<CrvSingleRecoPulse> &GetRecoPulses(int SiPMNumber) 
-    {
-      if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _crvPulses[SiPMNumber];
-    }
+    const std::vector<CrvSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) const;
+    const std::vector<CrvSingleRecoPulse> &GetRecoPulses(int SiPMNumber) const;
 
-    const std::vector<CrvSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) const 
-    {
-      if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
-      if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
-      int SiPM = 2*fiberNumber + side;
-      return _crvPulses[SiPM];
-    }
-
-    const std::vector<CrvSingleRecoPulse> &GetRecoPulses(int SiPMNumber) const
-    {
-      if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _crvPulses[SiPMNumber];
-    }
-
-    unsigned int GetNumberOfRecoPulses(int fiberNumber, int side) 
-    {
-      if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
-      if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
-      int SiPM = 2*fiberNumber + side;
-      return _crvPulses[SiPM].size();
-    }
-
-    unsigned int GetNumberOfRecoPulses(int SiPMNumber) 
-    {
-      if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
-      return _crvPulses[SiPMNumber].size();
-    }
+    unsigned int GetNumberOfRecoPulses(int fiberNumber, int side);
+    unsigned int GetNumberOfRecoPulses(int SiPMNumber);
 
     private:
+
+    static int  FindSiPMNumber(int fiberNumber, int side);
+    static void CheckSiPMNumber(int SiPMNumber);
 
     std::vector<CrvSingleRecoPulse> _crvPulses[4];
   };

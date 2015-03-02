@@ -194,6 +194,7 @@ double MakeCrvPhotonArrivals::GetRandomTime(TH3D *timeDifference, double y, doub
   }
 
   double time=timeDifference->GetZaxis()->GetBinCenter(binz);
+
   return time;
 }
 

@@ -47,6 +47,9 @@ WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
   extrusionPolish = 1.;
   extrusionReflectivity = 0.95;
 
+#ifndef testbeam
+#pragma message("Uses the real geometry setup.")
+#pragma message("Compile with -Dtestbeam to use the test beam geometry setup.")
  
   _barLength        = 660.*cm;
   _barWidth         = 5.*cm;
@@ -67,7 +70,9 @@ WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
   for(int i=0; i<36; i++) _ybins.push_back(ybinsTmp[i]*mm); //35 bins
   for(int i=0; i<121; i++) _zbins.push_back(-3300.0*mm+i*6600.0*mm/120.0); //100 bins
 
-/*
+#else
+#pragma message("Uses the test beam geometry setup.")
+
   _barLength        = 80.*cm;
   _barWidth         = 4.*cm;
   _barThickness     = 2.*cm;
@@ -87,7 +92,8 @@ WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
   for(int i=0; i<17; i++) _xbins.push_back(xbinsTmp[i]*mm); //16 bins
   for(int i=0; i<36; i++) _ybins.push_back(ybinsTmp[i]*mm); //35 bins
   for(int i=0; i<61; i++) _zbins.push_back(-400.0*mm+i*800.0*mm/60.0); //60 bins
-*/
+
+#endif
 
   UpdateGeometryParameters();
 }

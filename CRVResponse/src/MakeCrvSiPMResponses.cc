@@ -163,11 +163,10 @@ void MakeCrvSiPMResponses::Simulate(const std::vector<double> &photons,
     if(_time>_timeEnd) break;  //current time is outside the time window
 
     _scheduledCharges.erase(currentCharge);
-    if(_time<0) continue;
 
     //find pixel with cellid, create if it doesn't exist
     std::map<int,Pixel>::iterator p = _pixels.find(cellid);
-    if(p==_pixels.end()) p=_pixels.emplace(cellid, Pixel(_bias)).first; 
+    if(p==_pixels.end()) p=_pixels.emplace(cellid, Pixel(_bias, _time)).first; 
     // .first returns the iterator to the new pixel
 
     Pixel &pixel = p->second;
