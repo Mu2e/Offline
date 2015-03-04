@@ -87,8 +87,13 @@ class RootFileManager
         }
         if(obj->InheritsFrom(TText::Class()))
         {
-          TText *p = new TText(*dynamic_cast<TText*>(obj));
-          if(p) _objArray->Add(p);
+          TText *t = dynamic_cast<TText*>(obj);
+          if(t)
+          { 
+            TText *p = new TText();
+            *p = *t;    //copy constructor of TText seems to have a bug, that's why I use the assignment operator
+            _objArray->Add(p);
+          }
         }
         lnk = lnk->Next();
       }

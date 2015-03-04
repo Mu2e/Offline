@@ -90,7 +90,7 @@ void setup()
   gPad->SetPhi(-90-180);
   gPad->SetTheta(90-0);
   gPad->GetView()->ShowAxis();
-  gPad->SetFillColor(1);
+  gPad->SetFillColor(0);
   TAxis3D::GetPadAxis(gPad)->SetLabelSize(0.025);
   TAxis3D::GetPadAxis(gPad)->SetTitleOffset(-0.5);
   TAxis3D::GetPadAxis(gPad)->SetXTitle("x [mm]");

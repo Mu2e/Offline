@@ -16,7 +16,6 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -55,7 +54,6 @@ class ContentSelector
   std::vector<art::Handle<mu2e::CaloHitCollection> > _caloHitVector;
   std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticleVector;
   std::vector<art::Handle<mu2e::MCTrajectoryCollection> > _mcTrajectoryVector;
-  std::vector<art::Handle<mu2e::PointTrajectoryCollection> > _pointTrajectoryVector;
 #ifdef BABARINSTALLED
   std::vector<art::Handle<mu2e::KalRepCollection> > _trkRecoTrkVector;
   std::vector<art::Handle<mu2e::KalRepCollection> > _hitOnTrackVector; //Hits on Tracks are stored inside of KalRep
@@ -116,7 +114,6 @@ class ContentSelector
   const mu2e::PhysicalVolumeInfoCollection *getPhysicalVolumeInfoCollection() const;
   const mu2e::PhysicalVolumeInfoMultiCollection *getPhysicalVolumeInfoMultiCollection() const;
   const mu2e::MCTrajectoryCollection *getMCTrajectoryCollection(const trackInfoStruct &t) const;
-  const mu2e::PointTrajectoryCollection *getPointTrajectoryCollection(const trackInfoStruct &t) const;
 
   //for filter and setup dialog
   const std::vector<entryStruct> &getStrawHitFlagEntries() const     {return _hitFlagEntries;}
