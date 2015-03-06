@@ -52,21 +52,24 @@ namespace mu2e {
 //---------------------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following function for printing the hits included in the track
 //----------------------------------------------------------------------------------------------
-    void printHits(KalFitResult& kres);
+    void printHits(KalFitResult& kres, const char* Caller);
 
 //----------------------------------------------------------------------    
 // 2015 - 02 - 17 G. Pezzullo added a method for searching the doublets
     void findDoublets      (KalRep* krep,   std::vector<TrkStrawHit*> *hits,  DoubletCollection *dcol);//search doublets in a giventimepeak
-    void markDoublets      (DoubletCollection *dcol);
+    void markMultiplets       (DoubletCollection *dcol);
+    void markDoublet          (Doublet *doub, int index0, int index1);
     void findAndMarkMultiplets(KalRep* krep,   std::vector<TrkStrawHit*> *hits);
     
-    void setMultipletsAmbig(std::vector<TrkStrawHit*> *hits);
+    //    void setMultipletsAmbig(std::vector<TrkStrawHit*> *hits);
 
 //-----------------------------------------------------------------------------------------
 //2015 - 02 -20 G. Pezzu addedd the function for calculataing the slope of the lines
 // tangent to two given circles
 //-----------------------------------------------------------------------------------------
-    void findLines(double xa, double ya, double ra,
+    void findLines(Hep3Vector A[2], double rb[2], double *Slopes);
+    
+    void findLines1(double xa, double ya, double ra,
 		   double xb, double yb, double rb,
 		   double *slopes,
 		   int    *ambStrawA, int *ambStrawB);
@@ -76,7 +79,8 @@ namespace mu2e {
     virtual void addHits(KalFitResult&             kres   , 
 			 const StrawHitCollection* straws , 
 			 std::vector<hitIndex>     indices, 
-			 double                    maxchi );
+			 double                    maxchi ,
+			 CalTimePeak*              TPeak=NULL );
 
 // Try to put back inactive hits
     bool unweedHits(KalFitResult& kres, double maxchi);
@@ -98,6 +102,7 @@ namespace mu2e {
     bool                        _updatet0;
     double                      fMinHitDrift;
     double                      fRdriftMinusDocaTol;
+    int                         fSign[4][2];
     int                         _daveMode;
     std::vector<double>         _t0tol;
 
@@ -125,6 +130,7 @@ namespace mu2e {
     int                fILoopMarkDoublets;
     double             fMinDriftDoublet;
     double             fDeltaDriftDoublet;
+    double             fSigmaSlope;
     bool               _removefailed;
     unsigned           _minnstraws;
     TrkParticle        _tpart;
@@ -133,7 +139,7 @@ namespace mu2e {
     mutable BField*    _bfield;
     int                 fNIter;
     const CalTimePeak*  fTimePeak;
-    int                 fAmbigVec[40000];
+    int                 fAmbigVec     [40000];
     int                 fAmbigVecSlope[40000];
     int                 fAnnealingStep;
 //-----------------------------------------------------------------------------
