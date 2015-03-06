@@ -74,12 +74,6 @@ namespace mu2e {
 		   double *slopes,
 		   int    *ambStrawA, int *ambStrawB);
     
-    void findLines1(double xa, double ya, double ra,
-		   double xb, double yb, double rb,
-		   double *slopes,
-		   int    *ambStrawA, int *ambStrawB);
-    
-
 // add a set of hits to an existing fit
     virtual void addHits(KalFitResult&             kres   , 
 			 const StrawHitCollection* straws , 
