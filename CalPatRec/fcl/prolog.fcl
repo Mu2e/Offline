@@ -106,10 +106,14 @@ CalPatRec            : {
 	HitMinDrift 				: 0.2
 	RdriftMinusDocaTol                      : 1.
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
+#------------------------------------------------------------------------------
+# shouldn't be used during the seed fit, only during the hit-based fit 
+#------------------------------------------------------------------------------
 	scaleErrDoublet                         : 1.
 	iLoopMarkDoublets                       : 0
-	minDriftdoublet                         : 1.
+	minDriftDoublet                         : 0.4
 	deltaDriftDoublet                       : 0.3
+	sigmaSlope                              : 0.025
     }
     # HelixFitHack configuraton
     HelixFitHack : {
@@ -146,13 +150,14 @@ CalPatRec            : {
 	fieldCorrection				: true
 	maxhitchi                               : 3.5
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
-	scaleErrDoublet                         : 1.
-	iLoopMarkDoublets                       : 0
-	minDriftdoublet                         : 1.
+	scaleErrDoublet                         : 5.
+	iLoopMarkDoublets                       : 4
+	minDriftDoublet                         : 0.4
 	deltaDriftDoublet                       : 0.3
+	sigmaSlope                              : 0.025
     }
     MaxStrawEDep            : 0.005
-    useDoublets             : 0
+    useDoublets             : 1
     TimeSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
     HelixFitSelectionBits   : ["EnergySelection","TimeSelection","RadiusSelection"]
     KalmanFitSelectionBits  : []

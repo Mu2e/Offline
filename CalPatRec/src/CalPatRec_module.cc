@@ -95,36 +95,6 @@ using namespace boost::accumulators;
 
 namespace mu2e {
 
- //  class Doublet{
-//   public:
-//     Doublet(int station, int panel, 
-// 	    CLHEP::Hep3Vector shdir, 
-// 	    CLHEP::Hep3Vector trkdir,
-// 	    CLHEP::Hep3Vector trkpos,
-// 	    const TrkStrawHit *hit):
-//       fStationId(station), fPanelId(panel),
-//       fShDir(shdir){
-//       fTrkDirCol.push_back(trkdir);
-//       fTrkPosCol.push_back(trkpos);
-//       fTrkshcol.push_back(hit);
-//     }
-    
-//     ~Doublet(){}
-    
-//     int fStationId;
-//     int fPanelId;
-//     CLHEP::Hep3Vector fShDir;
-//     std::vector<CLHEP::Hep3Vector> fTrkDirCol;
-//     std::vector<CLHEP::Hep3Vector> fTrkPosCol;
-
-//     std::vector<const mu2e::TrkStrawHit*> fTrkshcol;
-    
-
-//   };
-  
-//   typedef std::vector<Doublet> DoubletCollection;
-
-
   class CalPatRec : public art::EDProducer {
   public:
     enum fitType {helixFit=0,seedFit,kalFit};
@@ -829,16 +799,7 @@ namespace mu2e {
 //----------------------------------------------------------------------
 // 2014-11-02 gianipez added some diagnostic
 //----------------------------------------------------------------------
-	if (tp->_tmin > 500. ){ 
-	 //  if (fHackData->TheoImode() == 0){
-// 	    printf ("[CalPatRec::produce] event = %i Index = %5.0f\n", 
-// 		    _eventid,fHackData->TheoImode());
-// 	  }
-// 	  if (fHackData->shDz() < 0.){
-// 	    printf ("[CalPatRec::produce] event = %i dz = %5.0f\n", 
-// 		    _eventid,fHackData->shDz());
-// 	  }
-	}
+
 	_hdfdzmode->Fill(fHackData->TheoImode());
 	_hradius->Fill(fHackData->TheoRadius());
 	_hphi0->Fill(fHackData->TheoPhi0());
@@ -884,7 +845,7 @@ namespace mu2e {
 	  if (indexes[i].isOutlier()) continue;
 	  shPos = indexes[i]._pos;
 	  if (_debug > 0) {
-	    printf("[CalPatRec::printGoodHits]    active      | %5.3f | %5.3f | %5.3f | %8i  |\n", 
+	    printf("[CalPatRec::printGoodHits]    active      | %8.3f | %8.3f | %9.3f | %8i  |\n", 
 		   shPos.x(), shPos.y(), shPos.z(), int(indexes[i]._ind));
 	  }
 	  goodhits.push_back(indexes[i]._ind);
@@ -908,18 +869,17 @@ namespace mu2e {
 	  for(int i=0; i<5; ++i)
 	    printf(" hpar[%i] =  %5.5f", i, hpar[i]);
 	  printf("\n");
-	  //	  _seedfit.printHits(seedfit);
+	  //	  _seedfit.printHits(seedfit,"CalPatRec::produce seedfit_001");
 	}
 					// now, fit the seed helix from the filtered hits
 
 	_seedfit.makeTrack(seedfit, tp);
-
 //--------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following diagnnostic
 //--------------------------------------------------------------------------------
 	if (_debug > 0) {
 	  printf("[CalPatRec::produce] seedfit status = %i\n", seedfit._fit.success() ? 1 :0);
-	  _seedfit.printHits(seedfit);
+	  _seedfit.printHits(seedfit,"CalPatRec::produce seedfit_002");
 	}
 
 
@@ -942,17 +902,6 @@ namespace mu2e {
 	  int   index;
 	  const TrkHotList* hot_list = seedfit._krep->hotList();
 
-// 	  for(TrkHotList::hot_iterator it=hot_list->begin(); 
-// 	      it<hot_list->end(); it++) {
-// 	    hit   = (const mu2e::TrkStrawHit*) &(*it);
-// 	    if (!hit->isActive()) continue;
-// 	    index = int(hit->index());
-// 	    goodhits.push_back(index);
-// 	  }
-//	  kaldef.setIndices(goodhits);
-//----------------------------------------------------------------------	  
-    //filterOutliers(kaldef,seedfit._krep->traj(),_maxseeddoca,_sfilt);
-	  
 	  //fill diag
 	  //  Trajectory info
 	  Hep3Vector tdir;
@@ -966,16 +915,18 @@ namespace mu2e {
 	  bool active;
 	  int npointsrescued(0), npointsdeactivated(0);
 	  double rdrift;
+	  double hitResid;
 	  
-	  printf("[CalPatRec::produce] ---------------------------------------------------------------------\n");
-	  printf("[CalPatRec::produce]  ih  A  Sind  Rdrift  doca \n");
-	  printf("[CalPatRec::produce] ---------------------------------------------------------------------\n");
-
+	  if (_debug >0){
+	    printf("[CalPatRec::hitSelectionAfterSeedFit] ---------------------------------------------------------------------------------\n");
+	    printf("[CalPatRec::hitSelectionAfterSeedFit]  ih  A   Sind   station   panel  layer       Rdrift          doca       hitResid \n");
+	    printf("[CalPatRec::hitSelectionAfterSeedFit] ---------------------------------------------------------------------------------\n");	  }
+	  
 	  for (int i=0; i< nIndexes; ++i){
-	    StrawHit const*     sh = indexes[i]._strawhit;
-	    Straw const&     straw = tracker.getStraw(sh->strawIndex());
-	    CLHEP::Hep3Vector wpos = straw.getMidPoint();
-	    CLHEP::Hep3Vector wdir = straw.getDirection();
+	    StrawHit const*   sh    = indexes[i]._strawhit;
+	    Straw const&      straw = tracker.getStraw(sh->strawIndex());
+	    CLHEP::Hep3Vector wpos  = straw.getMidPoint();
+	    CLHEP::Hep3Vector wdir  = straw.getDirection();
 	    rdrift = -9990;
 	    found  = false;
 	    active = false;
@@ -987,30 +938,34 @@ namespace mu2e {
 	    double fltlen = (wpos.z()-tpos.z())/tdir.z();
 	    TrkPoca   wpoca(seedfit._krep->traj(),fltlen,wtraj,0.0);
 	    
-	    doc = wpoca.doca();
+	    doc      = wpoca.doca();
+	    index    = indexes[i]._ind;
 
-	    if (std::fabs(doc) < _maxadddoca){
-	      index = indexes[i]._ind;
-	      goodhits.push_back(index);
-	    }
-	    
+	    hitResid = -999.999;
+	    active   = false;
+
 	    for(TrkHotList::hot_iterator it=hot_list->begin(); 
 		it<hot_list->end(); it++) {
 	      hit   = (const mu2e::TrkStrawHit*) &(*it);
 	      rdrift = hit->driftRadius();
-	      if (!hit->isActive()){
-		active = false;
-	      }else{
-		active = true;
-	      }
-	      index = int(hit->index());
-	      if (int(indexes[i]._ind) == index){
-		found = true;
+	      int shIndex = int(hit->index());
+	      if (index == shIndex){
+		found    = true;
+		hitResid = hit->resid(true);
 		break;
 	      }
 	    }
-	    printf("[CalPatRec::produce]  %2i  %1i  %5i  %10.3f  %10.3f \n", 
-		   i, active? 1:0, straw.index().asInt(), rdrift, doc );
+	    
+	    if ( std::fabs(doc) < _maxadddoca ){
+	      active = true;
+	      goodhits.push_back(index);
+	    } 
+	    
+	    if (_debug>0){
+	      printf("[CalPatRec::hitSelectionAfterSeedFit]  %2i  %1i  %5i  %10.3f  %10.3f \n", 
+		     i, active? 1:0, straw.index().asInt(), rdrift, doc );
+	    }
+
 	    if (found){
 	      if (active){
 		_hseeddoca[0]->Fill(doc);
@@ -1033,17 +988,8 @@ namespace mu2e {
 	  }
 	  _hNpointsSeed[0]->Fill(npointsdeactivated);
 
-	  DoubletCollection seedDcol;//, kalDcol;
-
-	  //_seedfit.findDoublets (seedfit._krep, &seedDcol);
-
-
-
-
 	  kaldef.setIndices(goodhits);
 
-	  //	  findDoublets (kalfit._krep, &kalDcol);
-	  //	  int useDoublets=1;
 	  _kfit.makeTrack(kalfit,tp, fUseDoublets);
 
 //-----------------------------------------------------------------------------
@@ -1051,7 +997,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	  if (_debug > 0) {
 	    printf("[CalPatRec::produce] kalfit status = %i\n", kalfit._fit.success() ? 1 :0);
-	    _kfit.printHits(kalfit);
+	    _kfit.printHits(kalfit,"CalPatRec::produce kalfit_001");
 	  }
 	  if (kalfit._fit.success()) {
 	    findkal = true;
@@ -1063,7 +1009,7 @@ namespace mu2e {
 	      std::vector<hitIndex> misshits;
 	      findMissingHits(kalfit,misshits);
 	      if (misshits.size() > 0) {
-		_kfit.addHits(kalfit,_shcol,misshits,_maxaddchi);
+		_kfit.addHits(kalfit,_shcol,misshits,_maxaddchi, tp);
 	      }
 	    }
 
@@ -1135,7 +1081,7 @@ namespace mu2e {
 	tp->SetCprIndex(tracks->size());
 
 	
-	//----------------------------------------------------------------------
+//----------------------------------------------------------------------
 // 2014-11-02 gianipez added some diagnostic
 //----------------------------------------------------------------------
 	
@@ -1464,7 +1410,7 @@ namespace mu2e {
 	    TrkPoca hitpoca(kalfit._krep->pieceTraj(),fltlen,htraj,0.0);
 
 	    if (_debug>0){
-	      printf("[CalPatRec::findMissingHits] %5i | %3i | %3i | %10.3f |\n",
+	      printf("[CalPatRec::findMissingHits] %8i  %6i  %8i  %10.3f \n",
 		     straw.index().asInt(),
 		     straw.id().getDevice(),
 		     straw.id().getSector(),
