@@ -155,6 +155,10 @@ public:
 					 const char* ProductName = "", 
 					 const char* ProcessName = "");
 			      
+  void printStepPointMCVectorCollection(const char* ModuleLabel     ,
+					const char* ProductName = "", 
+					const char* ProcessName = "");
+			      
 					// refit track dropping hits away > NSig sigma (0.1)
   void  refitTrack(void* Trk, double NSig);
 

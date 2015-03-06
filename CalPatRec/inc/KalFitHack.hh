@@ -12,6 +12,7 @@
 #include "fhiclcpp/ParameterSet.h"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -48,11 +49,10 @@ namespace mu2e {
 // main function: given a track definition, create a fit object from it
 //-----------------------------------------------------------------------------
     virtual void makeTrack(KalFitResult& kres, CalTimePeak* TPeak=NULL, int markDoubs=0);
-
 //---------------------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following function for printing the hits included in the track
 //----------------------------------------------------------------------------------------------
-    void printHits(KalFitResult& kres);
+    void printHits(KalFitResult& kres, const char* Caller);
 
 //----------------------------------------------------------------------    
 // 2015 - 02 - 17 G. Pezzullo added a method for searching the doublets
@@ -60,16 +60,13 @@ namespace mu2e {
     void markDoublets      (DoubletCollection *dcol);
     void findAndMarkMultiplets(KalRep* krep,   std::vector<TrkStrawHit*> *hits);
     
-    void setMultipletsAmbig(std::vector<TrkStrawHit*> *hits);
+    //    void setMultipletsAmbig(std::vector<TrkStrawHit*> *hits);
 
 //-----------------------------------------------------------------------------------------
 //2015 - 02 -20 G. Pezzu addedd the function for calculataing the slope of the lines
 // tangent to two given circles
 //-----------------------------------------------------------------------------------------
-    void findLines(double xa, double ya, double ra,
-		   double xb, double yb, double rb,
-		   double *slopes,
-		   int    *ambStrawA, int *ambStrawB);
+    void findLines(Hep3Vector A[2], double rb[2], double *Slopes);
     
     void findLines1(double xa, double ya, double ra,
 		   double xb, double yb, double rb,
@@ -103,6 +100,7 @@ namespace mu2e {
     bool                        _updatet0;
     double                      fMinHitDrift;
     double                      fRdriftMinusDocaTol;
+    int                         fSign[4][2];
     int                         _daveMode;
     std::vector<double>         _t0tol;
 
@@ -130,6 +128,9 @@ namespace mu2e {
     int                fILoopMarkDoublets;
     double             fMinDriftDoublet;
     double             fDeltaDriftDoublet;
+    double             fSigmaSlope;
+    std::string        fMakeStrawHitModuleLabel;
+
     bool               _removefailed;
     unsigned           _minnstraws;
     TrkParticle        _tpart;
@@ -141,6 +142,8 @@ namespace mu2e {
     int                 fAmbigVec     [40000];
     int                 fAmbigVecSlope[40000];
     int                 fAnnealingStep;
+
+    mu2e::PtrStepPointMCVectorCollection*  fListOfMCStrawHits;
 //-----------------------------------------------------------------------------
 // helper functions
 //-----------------------------------------------------------------------------
