@@ -1140,6 +1140,8 @@ void EventDisplayFrame::showInfo(TObject *o)  //ROOT accepts only bare pointers 
   container->getComponentInfo()->getExpectedSize(w,h);
   if(w<_infoCanvas->GetWidth()-20) w=_infoCanvas->GetWidth()-20;
   if(h<_infoCanvas->GetHeight()-20) h=_infoCanvas->GetHeight()-20;
+  if(w>10000) w=10000;
+  if(h>10000) h=10000;
   _infoEmbeddedCanvas->SetWidth(w);
   _infoEmbeddedCanvas->SetHeight(h);
   _infoCanvas->Layout();

@@ -56,6 +56,8 @@ physics : {
     {
       module_type          : Mu2eG4Study
       diagLevel            : 1
+#      use trackingVerbosityLevel to see e.g. track labeling and step info
+#      trackingVerbosityLevel : 1
       generatorModuleLabel : generate
 
       // Can selectively enable sensitive detectors here

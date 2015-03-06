@@ -159,7 +159,6 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
 
 //PointTrajectories
   event.getManyByType(_mcTrajectoryVector);
-  event.getManyByType(_pointTrajectoryVector);
 
 //Other
   _hasPhysicalVolumes=event.getRun().getByLabel(_g4ModuleLabel, _physicalVolumes);
@@ -372,19 +371,6 @@ const mu2e::MCTrajectoryCollection* ContentSelector::getMCTrajectoryCollection(c
   {
 //    if(t.moduleLabel==iter->provenance()->moduleLabel() && t.productInstanceName==iter->provenance()->productInstanceName()) 
     if(t.moduleLabel==iter->provenance()->moduleLabel()) //TODO: why no check for product instance name?
-      return(iter->product());
-  }
-  return(nullptr);
-}
-
-const mu2e::PointTrajectoryCollection* ContentSelector::getPointTrajectoryCollection(const trackInfoStruct &t) const
-{
-  typedef std::vector<art::Handle<mu2e::PointTrajectoryCollection> > CollectionVector;
-  typedef typename CollectionVector::const_iterator itertype;
-  itertype iter;
-  for(iter=_pointTrajectoryVector.begin(); iter!=_pointTrajectoryVector.end(); iter++)
-  {
-    if(t.moduleLabel==iter->provenance()->moduleLabel() && t.productInstanceName==iter->provenance()->productInstanceName()) 
       return(iter->product());
   }
   return(nullptr);
