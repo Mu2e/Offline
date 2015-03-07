@@ -760,7 +760,7 @@ namespace mu2e
     if (_debug >5){
       printf("[HelixFitHack::findDfDz] x0 = %9.3f y0 = %9.3f radius = %9.3f dfdz = %9.6f straw-hits = %9.5f\n",
 	     center.x(), center.y(), myhel._radius, myhel._dfdz, (myhel._sxy.qn() - 1) );// -1 to remove the EMC cluster contribute
-      printInfo(myhel);
+      //      printInfo(myhel);
     }
 
     int  np, ist, nstations;
@@ -2359,12 +2359,7 @@ namespace mu2e
     tmp2HelFitRes._center.set(p0.x(), p0.y(), 0.0);
     tmp2HelFitRes._radius = radius;
     
-    //    if ( findXY_new(xyzp, tmp1HelFitRes, seedIndex, markIndexList)){
     if ( refineHelixParameters(xyzp, tmp1HelFitRes, seedIndex, markIndexList) >=0){
-//       tmp2HelFitRes._center.set(tmp1HelFitRes._center.x(), tmp1HelFitRes._center.y(), 0.0);
-//       tmp2HelFitRes._radius = tmp1HelFitRes._radius;
-//       radius_end            = tmp1HelFitRes._radius;
-//       sxy.init(tmp1HelFitRes._sxy);
       tmp2HelFitRes._center.set(tmp1HelFitRes._cw.x(), tmp1HelFitRes._cw.y(), 0.0);
       tmp2HelFitRes._radius = tmp1HelFitRes._rw;
       radius_end            = tmp1HelFitRes._rw;

@@ -161,7 +161,7 @@ CalPatRec            : {
     TimeSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
     HelixFitSelectionBits   : ["EnergySelection","TimeSelection","RadiusSelection"]
     KalmanFitSelectionBits  : []
-    BackgroundSelectionBits : []
+    BackgroundSelectionBits : ["DeltaRay","Isolated"]
 }
 
 MergePatRec : {
