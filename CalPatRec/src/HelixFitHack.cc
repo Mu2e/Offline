@@ -1020,7 +1020,7 @@ namespace mu2e
       phi_corrected[i] = phi;
 
       if (_debug > 5) printf("[HelixFitHack::findZ] %08x %2i %6i %12.5f %12.5f \n",
-			     *((int*) &xyzp[i]._flag), indexVec[i], xyzp[i]._ind,  z, phi_corrected[i]);
+			     *((int*) &xyzp[i]._flag), indexVec[i] < 0 ? 0 : indexVec[i], int(xyzp[i]._ind),  z, phi_corrected[i]);
       
       if (xyzp[i].isOutlier())                        goto NEXT_POINT;
       if (  indexVec[i] < 1  )                        goto NEXT_POINT;
@@ -1080,6 +1080,7 @@ namespace mu2e
       if(myhel._srphi.qn()<=3) chi2min = myhel._srphi.chi2rphiDofCircle();
   
       if (chi2min >= 1.) {
+      //      if (chi2min > 0.1) {
     
 	if (myhel._srphi.qn() > 10.) {
 	  goto NEXT_ITERATION;
@@ -1498,17 +1499,15 @@ namespace mu2e
 
       if( _debug>0){
 	
-	printf("[%s] X0 = %5.3f Y0 = %5.3f r = %5.3f dfdz = %5.5f \n", banner.Data(), 
-	       x0, y0, radius, dfdz);
-	printf("[%s]   measured    | %5.3f | %5.3f | %5.3f | %8i \n", banner.Data(), 
+	printf("[%s]   measured     %10.3f  %10.3f  %10.3f  %8i \n", banner.Data(), 
 	       shPos.x(), shPos.y(), shPos.z(), i);
-	printf("[%s]  predicted    | %5.3f | %5.3f | %5.3f | %8i \n", banner.Data(), 
+	printf("[%s]  predicted     %10.3f  %10.3f  %10.3f  %8i \n", banner.Data(), 
 	       hePos.x(), hePos.y(), hePos.z(), i);
-	printf("[%s] dist-from-prediction = %5.3f  dist-from-seedXY = %5.3f dz-from-seed = %5.3f\n", banner.Data(), 
-	       dist, distXY, deltaZ);
+	printf("[%s] X0 = %5.3f Y0 = %5.3f r = %5.3f dfdz = %5.5f  dist-from-prediction = %5.3f  dist-from-seedXY = %5.3f dz-from-seed = %5.3f\n", banner.Data(), 
+	       x0, y0, radius, dfdz, dist, distXY, deltaZ);
       }
  
-      max_dist = _distPatRec + _dfdzErr*deltaZ;
+      max_dist = _distPatRec + _dfdzErr*fabs(deltaZ);
       if( dist <= max_dist ){
 
 	//store index of last good point
@@ -1533,6 +1532,13 @@ namespace mu2e
 	radius  = mytrk._sxy.radius();
 
 	++rescuedPoints;
+	
+	if( _debug>0){
+	  printf("[%s] rescued %08x %2i %12.5f %12.5f %12.5f \n", banner.Data(),
+		 *((int*) &_xyzp[i]._flag), _indicesTrkCandidate[i], 
+		 _xyzp[i]._pos.x(), _xyzp[i]._pos.y(), _xyzp[i]._pos.z()
+		 );
+	}
       }
 
     NEXT_POINT:;
@@ -1567,7 +1573,7 @@ namespace mu2e
       int np = _xyzp.size();
       for (int i=0; i<np; i++) {
 	printf("[%s] %08x %2i %12.5f %12.5f %12.5f \n", banner.Data(),
-	       *((int*) &_xyzp[i]._flag), _xyzp[i].use(), 
+	       *((int*) &_xyzp[i]._flag), _indicesTrkCandidate[i] < 0 ? 0 : _indicesTrkCandidate[i], 
 	       _xyzp[i]._pos.x(), _xyzp[i]._pos.y(), _xyzp[i]._pos.z()
 	       );
       }
@@ -1601,12 +1607,12 @@ namespace mu2e
 	  dz   = pCand.z() - pSeed.z();
 	  printf("[HelixFitHack::filterUsingPatternRecognition]  filterUsingPatternRecognition() will set asOutlier the following hits using helix parameters\n");
 	  printf("[HelixFitHack::filterUsingPatternRecognition] X0 = %5.3f Y0 = %5.3f r = %5.3f chi2N = %5.5f phi0 = %5.5f dfdz = %5.5f chi2N = %5.5f straw-hits = %i\n", 
-		 _x0, _y0, _radius, mytrk._sxy.chi2DofCircle(), mytrk._srphi.phi0(), mytrk._srphi.dfdz(), mytrk._srphi.chi2rphiDofCircle(), _goodPointsTrkCandidate );// +1 for counting also the seeding hit
-	  printf("[HelixFitHack::filterUsingPatternRecognition]   point  type |    X       |    Y       |    Z       | xyzp-index |   hit index  |  dist   |    Dz    |\n");
+		 mytrk._sxy.x0(), mytrk._sxy.y0(), _radius, mytrk._sxy.chi2DofCircle(), mytrk._srphi.phi0(), mytrk._srphi.dfdz(), mytrk._srphi.chi2rphiDofCircle(), _goodPointsTrkCandidate );// +1 for counting also the seeding hit
+	  printf("[HelixFitHack::filterUsingPatternRecognition]   point  type     X         Y        Z        xyzp-index    hit index    dist       Dz    \n");
 	  printf("[HelixFitHack::filterUsingPatternRecognition] ----------------------------------------------------------\n");
-	  printf("[HelixFitHack::filterUsingPatternRecognition]    seeding    | %8.3f | %8.3f | %8.3f | %7i |\n",
+	  printf("[HelixFitHack::filterUsingPatternRecognition]    seeding     %8.3f  %8.3f  %10.3f  %7i \n",
 		 pSeed.x(), pSeed.y(), pSeed.z(), fSeedIndex);
-	  printf("[HelixFitHack::filterUsingPatternRecognition]   candidate   | %8.3f | %8.3f | %8.3f | %7i |\n",
+	  printf("[HelixFitHack::filterUsingPatternRecognition]   candidate    %8.3f  %8.3f  %10.3f  %7i \n",
 		 pCand.x(), pCand.y(), pCand.z(), fCandidateIndex);
 	}
       }
@@ -1617,13 +1623,13 @@ namespace mu2e
 	xyzp[i].setOutlier();
 	
 	if (_debug>0){
-	  printf("[HelixFitHack::filterUsingPatternRecognition]   outlier     | %8.3f | %8.3f | %8.3f | %8i | %7i | %8.3f | %8.3f |\n", 
+	  printf("[HelixFitHack::filterUsingPatternRecognition]   outlier     | %8.3f | %8.3f | %10.3f | %8i | %7i | %8.3f | %8.3f |\n", 
 		 shPos.x(), shPos.y(), shPos.z(), i, xyzp[i]._strawhit->strawIndex().asInt(), dist, dz);
 	}
       }else {
 	++nActive;
 	if (_debug>0){
-	  printf("[HelixFitHack::filterUsingPatternRecognition]    active     | %8.3f | %8.3f | %8.3f | %8i | %7i | %8.3f | %8.3f |\n", 
+	  printf("[HelixFitHack::filterUsingPatternRecognition]    active     | %8.3f | %8.3f | %10.3f | %8i | %7i | %8.3f | %8.3f |\n", 
 		 shPos.x(), shPos.y(), shPos.z(), i, xyzp[i]._strawhit->strawIndex().asInt(), dist, dz);
 	}
       }
@@ -1641,7 +1647,7 @@ namespace mu2e
     static const double twopi(2*pi);
 
     // 2013-10-17 G.Pezzullo, P.Murat : try to change the cleanup logic
-    double mphi;
+    double mphi(-9999.);
     if (fTimePeak->ClusterT0() > 0.) {
       mphi = atan2(fTimePeak->ClusterY(),fTimePeak->ClusterX());
     }
@@ -1781,20 +1787,26 @@ namespace mu2e
     // 2015-01-17 G. Pezzullo added the following procedure to rescue points with z-coordinate 
     // less than the seed hit
     if (_debug != 0) printf("[HelixFitHack::doPatternRecognition]: calling rescueHits\n");
+
     rescueHits(xyzp, mytrk);
-
-    // 2014-11-09 gianipez changed the cleanup process. now it is faster and cleaner
-    if (_debug != 0) printf("[HelixFitHack::doPatternRecognition]: calling filterUsingPatternRecognition\n");
-
-    //   filterUsingPatternRecognition(xyzp, mytrk);
 
 //-----------------------------------------------------------------------------
 // finally, assume that the found helix is already close enough and refine  
 // the helix parameters accounting for different weights
 //-----------------------------------------------------------------------------
-    refineHelixParameters(xyzp,mytrk, 0, _indicesTrkCandidate);
-    //    findDfDz(xyzp, mytrk, 0, _indicesTrkCandidate);
+    if (_debug != 0)  printInfo(mytrk);
+    if (refineHelixParameters(xyzp,mytrk, 0, _indicesTrkCandidate)){
+      mytrk._center.setX(mytrk._sxyw.x0());
+      mytrk._center.setY(mytrk._sxyw.y0());
+      mytrk._radius    = mytrk._sxyw.radius();
+      mytrk._sxy.init(mytrk._sxyw);
+      if (_debug != 0)  printInfo(mytrk);
+    }
+
     findZ(xyzp, mytrk, 0, _indicesTrkCandidate);
+
+    // 2014-11-09 gianipez changed the cleanup process. now it is faster and cleaner
+    if (_debug != 0) printf("[HelixFitHack::doPatternRecognition]: calling filterUsingPatternRecognition\n");
 
     filterUsingPatternRecognition(xyzp, mytrk);
 
@@ -1815,13 +1827,18 @@ namespace mu2e
 
   int np = Xyzp.size();
 
-  int success = 0;
+  double weights[np];
+  int    success = 0;
   
-  x0 = Trk._center.x();
-  y0 = Trk._center.y();
+  x0 = Trk._sxy.x0();//_center.x();
+  y0 = Trk._sxy.y0();//_center.y();
 
   if (_debug > 5) {
-    printf(" i       X        Y        dx        dy         costh        sinth2         e2 \n");
+    printf("[HelixFitHack::refineHelixParameters] starts x0 = %8.3f y0 = %8.3f radius = %8.3f chi2 = %8.3f \n",
+	   Trk._sxy.x0(), Trk._sxy.y0(), Trk._sxy.radius(), Trk._sxy.chi2DofCircle());
+  }
+  if (_debug > 5) {
+    printf("[HelixFitHack::refineHelixParameters] i       X        Y        dx        dy         costh        sinth2         e2 \n");
   }
 //-----------------------------------------------------------------------------
 // add cluster with a position error of 10 mm => wt = 1/100
@@ -1842,10 +1859,13 @@ namespace mu2e
 
     e2    = ew*ew*sinth2+rs*rs*costh*costh;
     wt    = 1./e2;
-    Trk._sxyw.addPoint(Xyzp[i]._pos.x(),Xyzp[i]._pos.y(),wt);
+    
+    weights[i] = wt;
+
+    Trk._sxyw.addPoint(Xyzp[i]._pos.x(),Xyzp[i]._pos.y(), weights[i]);
 
     if (_debug > 5) {
-      printf("%3i %10.3f %10.3f %10.5f %10.5f %10.5f %10.5f %12.5e\n",i,x,y,dx,dy,costh,sinth2, e2);
+      printf("[HelixFitHack::refineHelixParameters] %3i %10.3f %10.3f %10.5f %10.5f %10.5f %10.5f %12.5e\n",i,x,y,dx,dy,costh,sinth2, e2);
     }
 
   NEXT_POINT: ;
@@ -1867,6 +1887,11 @@ namespace mu2e
   x0 = Trk._sxyw.x0();
   y0 = Trk._sxyw.y0();
 
+  if (_debug > 5) {
+    printf("[HelixFitHack::refineHelixParameters] x0 = %8.3f y0 = %8.3f radius = %8.3f chi2 = %8.3f \n",
+	   Trk._sxyw.x0(), Trk._sxyw.y0(), Trk._sxyw.radius(), Trk._sxyw.chi2DofCircle());
+  }
+
   NEXT_ITERATION:;
   chi2_min    = 1e6;
   iworst      = -1;
@@ -1883,14 +1908,14 @@ namespace mu2e
 
     x  = Xyzp[i]._pos.x();
     y  = Xyzp[i]._pos.y();
-    dx = x-x0;
-    dy = y-y0;
+//     dx = x-x0;
+//     dy = y-y0;
 
-    costh  = (dx*Xyzp[i]._sdir.x()+dy*Xyzp[i]._sdir.y())/sqrt(dx*dx+dy*dy);
-    sinth2 = 1-costh*costh;
+//     costh  = (dx*Xyzp[i]._sdir.x()+dy*Xyzp[i]._sdir.y())/sqrt(dx*dx+dy*dy);
+//     sinth2 = 1-costh*costh;
 
-    e2    = ew*ew*sinth2+rs*rs*costh*costh;
-    wt    = 1./e2;
+    //    e2    = ew*ew*sinth2+rs*rs*costh*costh;
+    wt    = weights[i];//1./e2;
     sxy.removePoint(x, y, wt);
     
     chi2  = sxy.chi2DofCircle();
@@ -1910,8 +1935,8 @@ namespace mu2e
     //remove point from the track    
     Trk._sxyw.removePoint(x, y, wtWorst);
     if (_debug > 5) {
-      printf("[HelixFitHack::refineHelixParameters] chi2 = %5.5f chi2Maxxy = %5.5f index point removed = %i\n",
-	     Trk._sxyw.chi2DofCircle(), _chi2xyMax, iworst);
+      printf("[HelixFitHack::refineHelixParameters]  x0 = %8.3f y0 = %8.3f radius = %8.3f  chi2 = %5.5f chi2Maxxy = %5.5f index point removed = %i\n",
+	     Trk._sxyw.x0(), Trk._sxyw.y0(), Trk._sxyw.radius(), Trk._sxyw.chi2DofCircle(), _chi2xyMax, iworst);
       
     }
     x0 = Trk._sxyw.x0();
@@ -2454,6 +2479,17 @@ namespace mu2e
 	_goodPointsTrkCandidate = countGoodPoints;
 	_chi2TrkCandidate       = chi2;
       
+	
+	//reset the vector holding the informations aboit:
+	// -> hit belonging to the track candidate
+	// -> distance in the X-Y plane from the prediction
+	// -> distance from the seeding hit along the z-axes
+	for(int i=0; i<400; ++i){
+	  _indicesTrkCandidate[i] = -9999;
+	  _distTrkCandidate[i]    = -9999;
+	  _dzTrkCandidate[i]      = -9999;
+	}
+	
 	for (int i=seedIndex; i<np; ++i){
 	  _indicesTrkCandidate[i] = markIndexList[i];
 	  _distTrkCandidate[i]    = distList[i];
