@@ -46,6 +46,7 @@
 #include "TROOT.h"
 #include "TFolder.h"
 #include "TFile.h"
+#include "TVector2.h"
 // C++
 #include <vector>
 #include <string>
@@ -936,8 +937,9 @@ namespace mu2e
 
     int N = xyzp.size();
 
+    double phi_corrected[N];
     double phi(0.0), z(0.0), weight(0.0);
-
+    
     CLHEP::Hep3Vector center = myhel._center;
     CLHEP::Hep3Vector pos;
 
@@ -959,7 +961,7 @@ namespace mu2e
 // gianipez: procedure for alligning the phi vector
 //-----------------------------------------------------------------------------
     ::LsqSums4 srphi;
-    int        i, iworst, count(0);
+    int        iworst, count(0), indexWorst;
     double     chi2,chi2min, dfdz, deltaPhi;
 
 
@@ -996,7 +998,9 @@ namespace mu2e
       z                    = pos.z();
       
       phi = CLHEP::Hep3Vector(pos - center).phi();
-      if (phi<0.0) phi +=twopi;
+      phi = TVector2::Phi_0_2pi(phi);
+
+      //      if (phi<0.0) phi +=twopi;
 
       if (count>=2) dfdz = myhel._srphi.dfdz();
 
@@ -1011,14 +1015,17 @@ namespace mu2e
 	phi -= 2*M_PI;
 	deltaPhi = phiCl - phi;
       }
-      
-      if (_debug > 5) printf("[HelixFitHack::findZ] %08x %2i %12.5f %12.5f \n",
-		 *((int*) &xyzp[i]._flag), indexVec[i], z, phi);
+
+      //store the corrected value of phi
+      phi_corrected[i] = phi;
+
+      if (_debug > 5) printf("[HelixFitHack::findZ] %08x %2i %6i %12.5f %12.5f \n",
+			     *((int*) &xyzp[i]._flag), indexVec[i], xyzp[i]._ind,  z, phi_corrected[i]);
       
       if (xyzp[i].isOutlier())                        goto NEXT_POINT;
       if (  indexVec[i] < 1  )                        goto NEXT_POINT;
 
-      myhel._srphi.addPoint(z, phi, weight);
+      myhel._srphi.addPoint(z, phi_corrected[i], weight);
 
       ++count;
 
@@ -1034,9 +1041,9 @@ namespace mu2e
     //-----------------------------------------------------------------------------
     if ( myhel._srphi.chi2rphiDofCircle() > _chi2zphiMax){
     NEXT_ITERATION:;
-      i=0;
-      iworst = -1;
-      chi2min = 1e10;
+      iworst     = -1;
+      indexWorst = -1;
+      chi2min    = 1e10;
       //    chi2min = myhel._srphi.chi2rphiDofCircle();
       for(int ixyzp=seedIndex+1; ixyzp < N; ++ixyzp){
 	if (xyzp[ixyzp].isOutlier())     goto NEXT_P;
@@ -1044,16 +1051,16 @@ namespace mu2e
 	srphi.init(myhel._srphi);
 	pos = xyzp[ixyzp]._pos;
 	z   = pos.z();//z_vec[i];
-	phi = CLHEP::Hep3Vector(pos - center).phi();//phi_vec[i];
+	phi = phi_corrected[ixyzp];//CLHEP::Hep3Vector(pos - center).phi();//phi_vec[i];
 	weight = 1.;
 	srphi.removePoint(z, phi, weight);
 	chi2 = srphi.chi2rphiDofCircle();
 	//printf("[HelixFitHack::findZ] chi2 = %5.3e chi2min = %5.3e\n", chi2, chi2min);
 	if (chi2 < chi2min) {
-	  iworst   = ixyzp;
-	  chi2min = chi2;
+	  iworst     = ixyzp;
+	  indexWorst = xyzp[ixyzp]._ind;
+	  chi2min    = chi2;
 	}
-	++i;
       NEXT_P:;
       }
   
@@ -1061,14 +1068,13 @@ namespace mu2e
 	indexVec[iworst] = 0;//.setOutlier();
 	pos = xyzp[iworst]._pos;
 	z   = pos.z();
-	phi = CLHEP::Hep3Vector(pos - center).phi();
+	phi = phi_corrected[iworst];//CLHEP::Hep3Vector(pos - center).phi();
     
 	weight = 1.;
 	myhel._srphi.removePoint(z, phi, weight);
 	chi2min = myhel._srphi.chi2rphiDofCircle();
 	if (_debug > 5) {
-	  printf("[HelixFitHack::findZ_removed] %5.3f     %5.3f   \n", z, phi);
-	  printf("[HelixFitHack::findZ_removed] chi2 = %5.3f    \n", chi2min);
+	  printf("[HelixFitHack::findZ_removed] %6i %5.3f     %5.3f chi2 = %5.3f  \n", indexWorst, z, phi, chi2min);
 	}
       }
       if(myhel._srphi.qn()<=3) chi2min = myhel._srphi.chi2rphiDofCircle();
@@ -1595,7 +1601,7 @@ namespace mu2e
 	  dz   = pCand.z() - pSeed.z();
 	  printf("[HelixFitHack::filterUsingPatternRecognition]  filterUsingPatternRecognition() will set asOutlier the following hits using helix parameters\n");
 	  printf("[HelixFitHack::filterUsingPatternRecognition] X0 = %5.3f Y0 = %5.3f r = %5.3f chi2N = %5.5f phi0 = %5.5f dfdz = %5.5f chi2N = %5.5f straw-hits = %i\n", 
-		 _x0, _y0, _radius, mytrk._sxy.chi2DofCircle(), _phi0, _dfdz, mytrk._srphi.chi2rphiDofCircle(), _goodPointsTrkCandidate );// +1 for counting also the seeding hit
+		 _x0, _y0, _radius, mytrk._sxy.chi2DofCircle(), mytrk._srphi.phi0(), mytrk._srphi.dfdz(), mytrk._srphi.chi2rphiDofCircle(), _goodPointsTrkCandidate );// +1 for counting also the seeding hit
 	  printf("[HelixFitHack::filterUsingPatternRecognition]   point  type |    X       |    Y       |    Z       | xyzp-index |   hit index  |  dist   |    Dz    |\n");
 	  printf("[HelixFitHack::filterUsingPatternRecognition] ----------------------------------------------------------\n");
 	  printf("[HelixFitHack::filterUsingPatternRecognition]    seeding    | %8.3f | %8.3f | %8.3f | %7i |\n",
@@ -1787,7 +1793,8 @@ namespace mu2e
 // the helix parameters accounting for different weights
 //-----------------------------------------------------------------------------
     refineHelixParameters(xyzp,mytrk, 0, _indicesTrkCandidate);
-    findDfDz(xyzp, mytrk, 0, _indicesTrkCandidate);
+    //    findDfDz(xyzp, mytrk, 0, _indicesTrkCandidate);
+    findZ(xyzp, mytrk, 0, _indicesTrkCandidate);
 
     filterUsingPatternRecognition(xyzp, mytrk);
 
@@ -2358,7 +2365,7 @@ namespace mu2e
     //2015-01-23 G. Pezzu and P. Murat
     // findZ returns negative value in case it fails, so take it into account!
     // use the previous value for dfdz and phi0
-    if (findZ   (xyzp, tmp2HelFitRes, seedIndex, markIndexList)){
+    if ( findZ(xyzp, tmp2HelFitRes, seedIndex, markIndexList)){
       dfdz_end   = tmp2HelFitRes._dfdz;
       phi0_end   = tmp2HelFitRes._fz0;
       //      _hdfdz     = dfdz_end;
@@ -2385,7 +2392,7 @@ namespace mu2e
       printf("[%s]   candidate    %5.3f  %5.3f  %5.3f   %i  \n", name.Data(),p1.x(), p1.y(), p1.z(), goodPoint);
       printf("[%s]  emc cluster   %5.3f  %5.3f  %5.3f \n", name.Data(),p3.x(), p3.y(), p3.z());
       printf("[%s] x0 = %5.3f y0 = %5.3f radius = %5.3f dfdz = %5.6f chi2 = %5.3f \n", name.Data(),
-	     p0.x(), p0.y(), radius, dfdz , sxy.chi2DofCircle());
+	     sxy.x0(), sxy.y0(), radius_end, dfdz_end , sxy.chi2DofCircle());
       printf("[%s] countGoodPoints = %i\n", name.Data(), countGoodPoints);
     }
 
