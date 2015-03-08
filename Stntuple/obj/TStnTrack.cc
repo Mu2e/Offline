@@ -605,7 +605,6 @@ void TStnTrack::ReadV6(TBuffer &R__b) {
   fZ1           = data.fZ1          ;
   fP0           = data.fP0          ;            // momentum defined at Z0
   fP2           = data.fP2          ;            // momentum defined at Z0
-
 //-----------------------------------------------------------------------------
 // read intersection info 
 //-----------------------------------------------------------------------------
@@ -683,7 +682,8 @@ void TStnTrack::Streamer(TBuffer& R__b) {
     else if (R__v == 6) ReadV6(R__b);
     else {
 //-----------------------------------------------------------------------------
-// current version: v6
+// current version: v8 
+// I/O for V7 is exactly the same
 //-----------------------------------------------------------------------------
       fMomentum.Streamer(R__b);
       fHitMask.Streamer(R__b);

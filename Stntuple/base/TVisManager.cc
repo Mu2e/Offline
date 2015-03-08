@@ -31,6 +31,7 @@ TVisManager::TVisManager(const char* name, const char* title):
   fListOfCanvases = new TList();
   fListOfNodes    = new TObjArray();
   fgInstance      = this;
+  fDebugLevel     = 0;
 }
 
 

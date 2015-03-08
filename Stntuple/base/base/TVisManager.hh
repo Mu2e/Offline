@@ -25,7 +25,6 @@ protected:
 //  data members
 //-----------------------------------------------------------------------------
 protected:
-
   TGeometryManager* fGeometryManager;   // ! geometry (do we need to know? )
   TList*            fListOfCanvases;	// ! list of canvases
   TCanvas*          fActiveCanvas;	// ! pointer to the active canvas
@@ -37,6 +36,7 @@ protected:
   Int_t             fMinDistDetElement;	// !
   TVisNode*         fTitleNode;         // !
   TString           fCurrentView;       // !
+  int               fDebugLevel; 	// !
 //-----------------------------------------------------------------------------
 // methods
 //-----------------------------------------------------------------------------
@@ -74,6 +74,8 @@ public:
   TVisNode*          GetNode      (Int_t i) { 
     return (TVisNode*) fListOfNodes->UncheckedAt(i);
   }
+
+  int  DebugLevel() { return fDebugLevel; }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------
@@ -93,10 +95,11 @@ public:
       fListOfNodes->Add(node); 
     }
   }
-  void  SetTitleNode(TVisNode* node) { fTitleNode = node; }
-
-					// ****** drawing functions
-
+  void  SetTitleNode (TVisNode* node) { fTitleNode = node; }
+  void  SetDebugLevel(int      Level) { fDebugLevel = Level; }
+//-----------------------------------------------------------------------------
+// drawing functions
+//-----------------------------------------------------------------------------
   virtual TCanvas*       NewCanvas(const char* Name, 
 				   const char* Title, 
 				   Int_t       SizeX, 

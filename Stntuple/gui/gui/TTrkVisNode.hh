@@ -23,7 +23,7 @@ protected:
   TObjArray*      fListOfTracks;
   Color_t         fTrackColor;
 
-  const mu2e::KalRepCollection* fKalRepCollection;
+  const mu2e::KalRepCollection** fKalRepCollection;
 
 public:
 					// ****** constructors and destructor
@@ -36,6 +36,10 @@ public:
   Color_t    GetTrackColor  () { return fTrackColor;   }
 
 					// ****** modifiers
+
+  void  SetKalRepCollection(const mu2e::KalRepCollection** Coll) {
+    fKalRepCollection = Coll;
+  }
 
   void  SetListOfTracks(TObjArray* List) { fListOfTracks = List; }
   void  SetTrackColor  (Color_t      c ) { fTrackColor   = c   ; }

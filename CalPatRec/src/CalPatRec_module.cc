@@ -778,7 +778,7 @@ namespace mu2e {
 	  kaldef.setHelix(*shelix);
 					// filter the outliers
 //----------------------------------------------------------------------
-//2015-02-07 G. Pezzu added new selection using seedFit results	  
+//2015-02-07 G. Pezzu added new selection using seedFit results	
 //----------------------------------------------------------------------
 	  goodhits.clear();
 	  const mu2e::TrkStrawHit* hit;
@@ -809,10 +809,7 @@ namespace mu2e {
 	  bool active;
 	  int npointsrescued(0), npointsdeactivated(0);
 	  double rdrift;
-	  
-	  printf("[CalPatRec::produce] ---------------------------------------------------------------------\n");
-	  printf("[CalPatRec::produce]  ih  A  Sind  Rdrift  doca \n");
-	  printf("[CalPatRec::produce] ---------------------------------------------------------------------\n");
+	  int    banner_11_printed(0);
 
 	  for (int i=0; i< nIndexes; ++i){
 	    StrawHit const*   sh    = indexes[i]._strawhit;
@@ -852,8 +849,19 @@ namespace mu2e {
 		break;
 	      }
 	    }
-	    printf("[CalPatRec::produce]  %2i  %1i  %5i  %10.3f  %10.3f \n", 
-		   i, active? 1:0, straw.index().asInt(), rdrift, doc );
+
+	    if (_debug > 0) {
+	      if (banner_11_printed == 0) { 
+		banner_11_printed = 1;
+		printf("[CalPatRec::produce] -------------------------------------\n");
+		printf("[CalPatRec::produce]  ih  A   Sind      Rdrift        doca\n");
+		printf("[CalPatRec::produce] -------------------------------------\n");
+	      }
+
+	      printf("[CalPatRec::produce]  %2i  %1i  %5i  %10.3f  %10.3f \n", 
+		     i, active? 1:0, straw.index().asInt(), rdrift, doc );
+	    }
+
 	    if (found){
 	      if (active){
 		_hseeddoca[0]->Fill(doc);

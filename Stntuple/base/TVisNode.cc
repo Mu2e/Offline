@@ -8,6 +8,7 @@ TVisNode::TVisNode(const char* name):
   fName(name)
 {
   fClosestObject = NULL;
+  fDebugLevel    = 0;
 }
 
 
