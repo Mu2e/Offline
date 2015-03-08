@@ -1135,10 +1135,12 @@ namespace mu2e
 //-----------------------------------------------------------------------------
       for (int i=0; i<nhits; ++i){
 	hit     = kres._hits.at(i);
-	if (iamb[i] != hit->ambig()) {
-	  printf("[KalFitHack::fitIteration] WARNING: hit %i drift sign changed from %2i to %2i\n",
-		 i,iamb[i],hit->ambig());
-	};
+	if (_debug>0){
+	  if (iamb[i] != hit->ambig()) {
+	    printf("[KalFitHack::fitIteration] WARNING: hit %i drift sign changed from %2i to %2i\n",
+		   i,iamb[i],hit->ambig());
+	  }
+	}
       }      
     }
     kres._ninter = kres._krep->intersections();

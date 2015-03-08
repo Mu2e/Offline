@@ -32,6 +32,7 @@ protected:
   int           fMakeClusters;
   int           fMakeStrawData;
   int           fMakeTracks;
+  int           fMakeTracksDem;
   int           fMakeTracksUem;
   int           fMakeTracksDmm;
   int           fMakeTracksUmm;

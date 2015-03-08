@@ -61,6 +61,7 @@ StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet):
   , fMakeClusters       (PSet.get<int>         ("makeClusters"   ,        1       ))
   , fMakeStrawData      (PSet.get<int>         ("makeStrawData"  ,        0       ))
   , fMakeTracks         (PSet.get<int>         ("makeTracks"     ,        1       ))
+  , fMakeTracksDem      (PSet.get<int>         ("makeTracksDem"  ,        0       ))
   , fMakeTracksUem      (PSet.get<int>         ("makeTracksUem"  ,        0       ))
   , fMakeTracksDmm      (PSet.get<int>         ("makeTracksDmm"  ,        0       ))
   , fMakeTracksUmm      (PSet.get<int>         ("makeTracksUmm"  ,        0       ))
@@ -248,6 +249,37 @@ void StntupleMaker::beginJob() {
       track_data->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
     }
   }
+
+//--------------------------------------------------------------------------------
+// DEM: Downstream moving e minus
+//--------------------------------------------------------------------------------
+ if (fMakeTracksDem) {
+    TStnDataBlock* track_data;
+					// always store defTracks for the 
+					// default process in the "TrackBlock"
+
+    track_data = AddDataBlock("TrackBlockDem2",
+			      "TStnTrackBlock",
+			      StntupleInitMu2eTrackBlock,
+			      buffer_size,
+			      split_mode,
+			      compression_level);
+
+    SetResolveLinksMethod("TrackBlockDem2",StntupleInitMu2eTrackBlockLinks);
+
+    if (track_data) {
+      track_data->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecDem2.data()    ,"DownstreameMinus");
+      track_data->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"");
+      track_data->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol2.data()     ,"");
+      //      track_data->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()     ,"");
+      track_data->AddCollName("mu2e::TrackClusterMatchCollection"   ,fTrkCalMatch2.data()     ,"");
+      track_data->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
+      track_data->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
+      //      track_data->AddCollName("mu2e::PIDProductCollection"          ,fPidDem.data()          ,"");
+      track_data->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
+    }
+  }
+
 
 //-----------------------------------------------------------------------------
 // UEM: Upstream Electron Minus

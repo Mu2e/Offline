@@ -198,8 +198,8 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   data->GetDescription("mu2e::StepPointMCCollection",g4_description );
 
   art::Handle<mu2e::AlgorithmIDCollection> algsHandle;
-  strcpy(algs_module_label,"MergePatRec");
-  strcpy(algs_description,krep_description);
+  strcpy(algs_module_label, krep_module_label);
+  strcpy(algs_description , krep_description);
   if (algs_module_label[0] != 0) {
     if (algs_description[0] == 0) AnEvent->getByLabel(algs_module_label,algsHandle);
     else                          AnEvent->getByLabel(algs_module_label,algs_description, algsHandle);
