@@ -40,6 +40,7 @@ StntupleMaker : {
     makeCalData         : 1
     makeStrawData       : 0
     makeTracks          : 1
+    makeTracksDem       : 0
     makeTracksUem       : 0
     makeTracksDmm       : 0
     makeTracksUmm       : 0
