@@ -12,6 +12,7 @@
 #include "fhiclcpp/ParameterSet.h"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -48,7 +49,6 @@ namespace mu2e {
 // main function: given a track definition, create a fit object from it
 //-----------------------------------------------------------------------------
     virtual void makeTrack(KalFitResult& kres, CalTimePeak* TPeak=NULL, int markDoubs=0);
-
 //---------------------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following function for printing the hits included in the track
 //----------------------------------------------------------------------------------------------
@@ -130,6 +130,8 @@ namespace mu2e {
     double             fMinDriftDoublet;
     double             fDeltaDriftDoublet;
     double             fSigmaSlope;
+    std::string        fMakeStrawHitModuleLabel;
+
     bool               _removefailed;
     unsigned           _minnstraws;
     TrkParticle        _tpart;
@@ -141,6 +143,8 @@ namespace mu2e {
     int                 fAmbigVec     [40000];
     int                 fAmbigVecSlope[40000];
     int                 fAnnealingStep;
+
+    mu2e::PtrStepPointMCVectorCollection*  fListOfMCStrawHits;
 //-----------------------------------------------------------------------------
 // helper functions
 //-----------------------------------------------------------------------------

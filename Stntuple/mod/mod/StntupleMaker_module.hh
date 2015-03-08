@@ -26,40 +26,40 @@ class StntupleMaker : public StntupleModule {
 //------------------------------------------------------------------------------
 protected:
 					// process name, default - PROD
-  std::string   fProcessName;
-
-  int           fMakeCalData;
-  int           fMakeClusters;
-  int           fMakeStrawData;
-  int           fMakeTracks;
-  int           fMakeTracksDem;
-  int           fMakeTracksUem;
-  int           fMakeTracksDmm;
-  int           fMakeTracksUmm;
-  int           fMakeTracks2;
-  int           fMakeTrigger;
-  int           fMakeGenp;
-  int           fMakeSimp;
-  int           fMakeVirtualHits;
+  std::string      fProcessName;
+					// switches for individual branches
+  int              fMakeCalData;
+  int              fMakeClusters;
+  int              fMakeStrawData;
+  int              fMakeTracksA;
+  int              fMakeTracks;
+  int              fMakeTracksUem;
+  int              fMakeTracksDmm;
+  int              fMakeTracksUmm;
+  int              fMakeTracks2;
+  int              fMakeTrigger;
+  int              fMakeGenp;
+  int              fMakeSimp;
+  int              fMakeVirtualHits;
 //-----------------------------------------------------------------------------
 // module parameters
 //-----------------------------------------------------------------------------
-  std::string   fG4ModuleLabel;
-  std::string   fStrawHitMaker;
+  std::string              fG4ModuleLabel;
+  std::string              fMakeStrawHitModuleLabel;
 
+  std::vector<std::string> fTrackBlockName;
+  std::vector<std::string> fTrkRecoModuleLabel;
+  std::vector<std::string> fTrkExtrapolModuleLabel;
+  std::vector<std::string> fTrkCaloMatchModuleLabel;
+  std::vector<std::string> fPidModuleLabel;
 
-  std::string           fTrkPatRec1;
-  TrkParticle           fFitParticle1;
-  mu2e::TrkFitDirection fFitDirection1;
+  std::vector<int>         fFitParticle;
+  std::vector<int>         fFitDirection;
 
-  std::string   fTrkPatRecUem;
-  std::string   fTrkPatRecDmm;
-  std::string   fTrkPatRecUmm;
   std::string   fCaloCrystalHitMaker;
   std::string   fCaloClusterMaker;
   std::string   fTrkExtrapol;
   std::string   fTrkCalMatch;
-  std::string   fPidDem;
   
   std::string   fStrawHitMaker2;
   std::string   fTrkPatRecDem2;

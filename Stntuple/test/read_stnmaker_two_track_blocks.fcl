@@ -22,6 +22,13 @@ source : {
 #		     , 'drop mu2eStrawDigis_*_*_*'
 #		     , 'drop *_CaloReadoutHitsMaker_*_*'
 #		     , 'drop *_CaloCrystalHitsMaker_*_*'
+#------------------------------------------------------------------------------
+# drop output of reconstruction
+#------------------------------------------------------------------------------
+                     , 'drop *_MakeCaloCluster_*_*'
+                     , 'drop *_TrkExtrapol_*_*'
+                     , 'drop *_CaloMatching_*_*'
+                     , 'drop *_ParticleID_*_*'
 # Uncomment the above lines to reduce file size.
 		     ]  
 }
@@ -112,13 +119,13 @@ physics : {
 	  , CalPatRecMakeStereoHits
 	  , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
 	  , CalPatRec
-	  , MergePatRec
+#	  , MergePatRec
 #	  
-	  , TrkExtrapol, CaloMatching, ParticleID
+#	  , TrkExtrapol, CaloMatching, ParticleID
 #------------------------------------------------------------------------------
 # Event Display 
 #------------------------------------------------------------------------------
-	  , MuHitDisplay
+#	  , MuHitDisplay
 #------------------------------------------------------------------------------
 # STNTUPLE maker modules
 #------------------------------------------------------------------------------
@@ -160,13 +167,18 @@ services.scheduler.wantSummary: true
 # physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 # physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 
-physics.producers.TrkExtrapol.fitterModuleLabel    : MergePatRec
-physics.producers.CaloMatching.fitterModuleLabel   : MergePatRec
-physics.producers.ParticleID.fitterModuleLabel     : MergePatRec
+# physics.producers.TrkExtrapol.fitterModuleLabel    : MergePatRec
+# physics.producers.CaloMatching.fitterModuleLabel   : MergePatRec
+# physics.producers.ParticleID.fitterModuleLabel     : MergePatRec
 
-physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel : CalPatRecMakeStereoHits
-physics.filters.MuHitDisplay.strawHitFlagMakerModuleLabel: CalPatRecFlagBkgHits
+# physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel : CalPatRecMakeStereoHits
+# physics.filters.MuHitDisplay.strawHitFlagMakerModuleLabel: CalPatRecFlagBkgHits
 
+physics.filters.InitStntuple.histFileName          : "read_stnmaker_two_track_blocks.stn"
 physics.filters.StntupleMaker.g4ModuleLabel        : "g4run"
-physics.filters.StntupleMaker.trkRecoModuleLabel   : [ "MergePatRec" ]
+
+physics.filters.StntupleMaker.trackBlockName       : [ "TrkPatRec" , "CalPatRec" ] 
+physics.filters.StntupleMaker.trkRecoModuleLabel   : [ "TrkPatRec" , "CalPatRec" ]
+physics.filters.StntupleMaker.fitParticle          : [           11,          11 ]
+physics.filters.StntupleMaker.fitDirection         : [            0,           0 ]
 

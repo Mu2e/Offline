@@ -76,8 +76,11 @@ class TStnTrack : public TObject {
     kNFreeIntsV6   =  7,
     kNFreeFloatsV6 =  6,
 
+    kNFreeIntsV7   =  7,
+    kNFreeFloatsV7 =  5,
+
     kNFreeInts     =  7,
-    kNFreeFloats   =  5
+    kNFreeFloats   =  4
   };
 
   enum { kMaxNLayers = 88 }; // 22x2*2
@@ -138,16 +141,16 @@ public:
   int                       fInt[kNFreeInts];     // provision for future expension
   
   float                     fChi2;
-  float                     fChi2C;          // calculated...
+  float                     fChi2C;          // *NOT USED* 
   float                     fFitCons;
   float                     fT0;
   float                     fT0Err;
   float                     fFitMomErr;
-  float                     fTanDip;
-  float                     fP;		 // total momentum
+  float                     fTanDip;	 // at Z=Z0
+  float                     fP;		 // total momentum in the first point
   float                     fCharge;
-  float                     fPt;	 // transverse momentum
-  float                     fD0;
+  float                     fPt;	 // transverse momentum in the first point
+  float                     fD0;	 // at Z=Z0
   float                     fZ0;
 
   float                     fPStOut;    // MC momentum in the VD ST_Out 
@@ -160,25 +163,26 @@ public:
   float                     fDy;	// 
   float                     fDz;	// about 0 for disks
   
-  float                     fEleLogLHCal;  // log likelihood of the electron hypothesis
-  float                     fMuoLogLHCal;	// log lilelihood of the muon     hypothesis
+  float                     fEleLogLHCal;         // log likelihood of the electron hypothesis
+  float                     fMuoLogLHCal;	  // log lilelihood of the muon     hypothesis
 
-  float                     fRSlope;	    // timing residual slope dres(T)/dZ
+  float                     fRSlope;	          // timing residual slope dres(T)/dZ
   float                     fRSlopeErr;
 
-  float                     fLogLHRXs;      // XSlope-only-based likelihood
+  float                     fLogLHRXs;            // XSlope-only-based likelihood
 
-  float                     fEleLogLHDeDx;  // dE/dX LH calculated by Vadim based 
-  float                     fMuoLogLHDeDx;  // 
-  float                     fX1;	    // momentum defined at Z1
+  float                     fEleLogLHDeDx;        // dE/dX LH calculated by Vadim based 
+  float                     fMuoLogLHDeDx;        // 
+  float                     fX1;	          // momentum defined at Z1
   float                     fY1;
   float                     fZ1;
-  float                     fP0;            // momentum defined at Z0
-  float                     fP2;            // momentum defined at Z0
-  float                     fC0;	    // curvature
+  float                     fP0;                  // momentum defined at Z0
+  float                     fP2;                  // momentum defined at Z0
+  float                     fC0;	          // curvature at Z0
+  float                     fPhi0;	          // phi0 at Z0 **specify in V8 , no I/O changes***
   float                     fFloat[kNFreeFloats]; // provision for future I/O expansion
 
-  InterData_t               fDisk[kNDisks];  // track intersections with disks
+  InterData_t               fDisk[kNDisks];       // track intersections with disks
 //-----------------------------------------------------------------------------
 //  transient data members, all the persistent ones should go above
 //-----------------------------------------------------------------------------
@@ -272,7 +276,7 @@ public:
   void ReadV5(TBuffer& R__b);
   void ReadV6(TBuffer& R__b);
 
-  ClassDef(TStnTrack,7)
+  ClassDef(TStnTrack,8)
 
 };
 

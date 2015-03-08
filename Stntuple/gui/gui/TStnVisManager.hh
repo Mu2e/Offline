@@ -23,6 +23,7 @@ class TGLayoutHints;
 class TGMainFrame;
 
 class TTrkXYView;
+class TTrkRZView;
 class TCalView;
 class TSubdetector;
 class TExtrapolator;
@@ -31,7 +32,8 @@ class TStnVisManager: public TVisManager {
 public:
   enum { 
     kXYView       = 1,
-    kCalView      = 2
+    kRZView       = 2,
+    kCalView      = 3
   };
 //-----------------------------------------------------------------------------
 //  data members
@@ -54,6 +56,7 @@ protected:
   TSubdetector*       fClosestSubdetector;
 
   TTrkXYView*         fTrkXYView;
+  TTrkRZView*         fTrkRZView;
   TCalView*           fCalView[4];	// to provide for the now obsolete 
 					// vane-based geometry
 
@@ -64,6 +67,7 @@ protected:
   int                 fMinStation;
   int                 fMaxStation;
   int                 fTimePeak;
+  int                 fDebugLevel;
 //-----------------------------------------------------------------------------
 //  functions
 //-----------------------------------------------------------------------------
@@ -107,6 +111,11 @@ public:
 
   Int_t   OpenTrkXYView();
   Int_t   OpenTrkXYView(TTrkXYView* mother,
+			Axis_t x1, Axis_t y1, 
+			Axis_t x2, Axis_t y2);
+  
+  Int_t   OpenTrkRZView();
+  Int_t   OpenTrkRZView(TTrkRZView* mother,
 			Axis_t x1, Axis_t y1, 
 			Axis_t x2, Axis_t y2);
   

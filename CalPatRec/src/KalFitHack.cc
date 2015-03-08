@@ -100,6 +100,7 @@ namespace mu2e
     fMinDriftDoublet  (pset.get<double>("minDriftDoublet")),
     fDeltaDriftDoublet(pset.get<double>("deltaDriftDoublet")),
     fSigmaSlope       (pset.get<double>("sigmaSlope")),
+    fMakeStrawHitModuleLabel(pset.get<std::string>("makeStrawHitModuleLabel")),
     //
     _removefailed(pset.get<bool>("RemoveFailedFits",true)),
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
@@ -314,16 +315,16 @@ namespace mu2e
 
     if (_debug >0){
       printf("[KalFitHack::findDoublets] BEGIN iherr:%i \n", fAnnealingStep);
-      printf("[KalFitHack::findDoublets]-----------------------------------------------------------------------------------------------------------------------------------------\n");
-      printf("[KalFitHack::findDoublets]  i  shId ch pnl lay str      x        y         z      sinphi  tksphi    xtrk     ytrk      ztrk      xr      yr     zr      doca   rdr \n");
-      printf("[KalFitHack::findDoublets]-----------------------------------------------------------------------------------------------------------------------------------------\n");
+      printf("-----------------------------------------------------------------------------------------------------------------------------------------\n");
+      printf("  i  shId ch pnl lay str      x        y         z      sinphi  tksphi    xtrk     ytrk      ztrk      xr      yr     zr      doca   rdr \n");
+      printf("-----------------------------------------------------------------------------------------------------------------------------------------\n");
     }
 
     int      ndoublets = dcol->size();
     for (int i=0; i<ndoublets; ++i){
       doublet   = &dcol->at(i);
       trkshsize = doublet->fNstrawHits;//fTrkshcol.size();
-    //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // assume wires are perpendicular to the radial direction to the panel
 // this is already ambiguos
 // use atan2 to get the right quadrant
@@ -366,7 +367,7 @@ namespace mu2e
 	tdir    = rot*tdir;
 
 	if (_debug > 0) {
-	  printf("[KalFitHack::findDoublets] %2i %5i %2i %3i %3i %3i %9.3f %9.3f %9.3f  %6.3f  %6.3f %9.3f %8.3f %9.3f %8.3f %4.1f %9.3f %6.3f %5.3f\n",
+	  printf(" %2i %5i %2i %3i %3i %3i %9.3f %9.3f %9.3f  %6.3f  %6.3f %9.3f %8.3f %9.3f %8.3f %4.1f %9.3f %6.3f %5.3f\n",
 		 i, shId, doublet->fStationId, doublet->fPanelId, 
 		 straw->id().getLayer(),
 		 straw->id().getStraw(),
@@ -385,7 +386,6 @@ namespace mu2e
 //--------------------------------------------------------------------------------
 // given a multiplet, resolve the ambiguity for hit: index0 and index1
 //--------------------------------------------------------------------------------
-
   void KalFitHack::markDoublet(Doublet *doublet, int index0, int index1){
     mu2e::TrkStrawHit *hit  [2];
     const mu2e::Straw *straw[2];
@@ -538,12 +538,24 @@ namespace mu2e
 	  }
 	}
 	else {
+//-----------------------------------------------------------------------------
+// SS doublet
+//-----------------------------------------------------------------------------
 	  if (fabs(rdrift[0]-rdrift[1]) < fDeltaDriftDoublet) {
 //-----------------------------------------------------------------------------
 // SS doublet with close radii, keep external error large for a while
 //-----------------------------------------------------------------------------
 	    if (fAnnealingStep < fILoopMarkDoublets) {
 	      hit[i]->setExtErr(2.5);
+	    }
+	  }
+	  else {
+	    if ((rdrift[0] > fMinDriftDoublet) && (rdrift[1] > fMinDriftDoublet)) {
+//-----------------------------------------------------------------------------
+// SS doublet, radii are different and both are large enough - doublet drift signs 
+// are determined reliably
+//-----------------------------------------------------------------------------
+	      hit[i]->setExtErr(ext_err/fScaleErrDoublet);
 	    }
 	  }
 	}
@@ -681,9 +693,9 @@ namespace mu2e
 // drift signs for doublet hits are defined, set hit drift signs
 //-----------------------------------------------------------------------------
     if (_debug > 0) {
-      printf("--------------------------------------------------------\n");
+      printf("----------------------------------------------------------\n");
       printf("[KalFitHack::markMultiplets]   shId    sec   panel  ambig \n");
-      printf("--------------------------------------------------------\n");
+      printf("----------------------------------------------------------\n");
     }
   }
 
@@ -1031,7 +1043,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // one step of the track fit
 //-----------------------------------------------------------------------------
-  void KalFitHack::fitIteration(KalFitResult& kres, size_t iherr, CalTimePeak* TPeak) {
+  void KalFitHack::fitIteration(KalFitResult& kres, size_t IHErr, CalTimePeak* TPeak) {
     // update external hit errors.  This isn't strictly necessary on the 1st iteration.
 
     TrkStrawHit* hit;
@@ -1044,14 +1056,14 @@ namespace mu2e
 
     if (_debug >0) {
       printf("------------------------------------------------------------------------------------------\n");
-      printf("[KalFitHack::fitIteration] BEGIN iherr:%i \n", int(iherr));
+      printf("[KalFitHack::fitIteration] BEGIN IHErr:%i \n", int(IHErr));
       printf("------------------------------------------------------------------------------------------\n");
     }
 //-----------------------------------------------------------------------------------
 // 2015 -02 -17 G. Pezzullo: loop over the hits and assign a smaller external error 
 // for the doublets
 //-----------------------------------------------------------------------------------
-    fAnnealingStep = iherr;
+    fAnnealingStep = IHErr;
     if ((fAnnealingStep < fILoopMarkDoublets) && (fMarkDoublets==1)) {
 //--------------------------------------------------------------------------------
 // 2015-02-19 G. Pezzu: re-search multiplets using updated fit results
@@ -1067,7 +1079,7 @@ namespace mu2e
 
     while (kres._fit.success() && changed && niter < maxIterations()) {
       changed = false;
-      _ambigresolver[iherr]->resolveTrk(kres);
+      _ambigresolver[IHErr]->resolveTrk(kres);
 //--------------------------------------------------------------------------------
 //2015-02-17 G. Pezzu: fix the ambiguity of the doublets!
 //2015-02-19 G. Pezzu: re-search hit multiplets using updated fit results
@@ -1095,7 +1107,7 @@ namespace mu2e
 	if (TPeak != NULL)  updateCalT0(kres,TPeak);
 	else                updateT0(kres);
 
-	changed |= fabs(kres._krep->t0()._t0-oldt0) > _t0tol[iherr];
+	changed |= fabs(kres._krep->t0()._t0-oldt0) > _t0tol[IHErr];
 	oldt0    = kres._krep->t0()._t0;
       }
 //-----------------------------------------------------------------------------
@@ -1125,7 +1137,7 @@ namespace mu2e
 	iamb[i] = hit->ambig();
       }      
 
-      _ambigresolver[iherr]->resolveTrk(kres);
+      _ambigresolver[IHErr]->resolveTrk(kres);
       findAndMarkMultiplets(kres._krep, &kres._hits);
       if (_debug>0) {
 	printHits(kres,"fitIteration_003");
@@ -1137,8 +1149,8 @@ namespace mu2e
 	hit     = kres._hits.at(i);
 	if (_debug>0){
 	  if (iamb[i] != hit->ambig()) {
-	    printf("[KalFitHack::fitIteration] WARNING: hit %i drift sign changed from %2i to %2i\n",
-		   i,iamb[i],hit->ambig());
+	    printf("[KalFitHack::fitIteration] WARNING: IHErr=%2i hit %3i drift sign changed from %2i to %2i\n",
+		   IHErr,i,iamb[i],hit->ambig());
 	  }
 	}
       }      

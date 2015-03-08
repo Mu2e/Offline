@@ -9,6 +9,7 @@ protected:
   TString    fName;
   TObject*   fClosestObject;
   int        fSectionToDisplay;
+  int        fDebugLevel;
 public:
 					// ****** constructors and destructor
   TVisNode(const char* name = "");
@@ -22,6 +23,8 @@ public:
 
   int   SectionToDisplay() { return fSectionToDisplay; }
 
+  int   DebugLevel() { return fDebugLevel; }
+
 					// called by TEvdManager::DisplayEvent
   virtual int   InitEvent() = 0;
 
@@ -30,6 +33,7 @@ public:
   virtual Int_t DistancetoPrimitiveXY(Int_t px, Int_t py) = 0;
 
   void SetSectionToDisplay(int Section) { fSectionToDisplay= Section; }
+  void SetDebugLevel(int Level) { fDebugLevel = Level; }
 
   ClassDef(TVisNode,0)
 };
