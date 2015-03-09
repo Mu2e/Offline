@@ -13,6 +13,7 @@ import subprocess
 import traceback
 import time
 import hashlib
+from string import maketrans
 
 ##############################################################
 # print the help
@@ -56,6 +57,12 @@ must be setup.
       that they are in the same directory, whatever their names are
    -j FILE
        a json file fragment to add to the json for all files
+   -a FILE
+       a text file with parent file sam names - usually would only
+       be used if there was one file to be processed.
+   -t TAG
+       a text tag to prepend to the sequencer field of the output
+       fil ename
    -d DIR
        directory to write the json files in.  Default is ".".
        if DIR="same" then write the json in the same directory as the 
@@ -86,6 +93,8 @@ class Parms:
         self.inFile = ""
         self.genericJson = {}
         self.jsonDir = ""
+        self.parentTxt = ""
+        self.seqTag = ""
         self.logDir = ""
         self.copy = False
         self.move = False
@@ -102,7 +111,7 @@ class Parms:
                         "usr-sim","usr-nts","usr-etc","tst-cos"]
         self.validGenerator = ["beam","stopped_particle","cosmic","mix"]
         self.validPrimary = ["proton","electron","muon","photon",
-                             "neutron""mix"]
+                             "neutron","mix"]
         self.resExeOk = checkRES(self)
         self.fileCount = 0
 
@@ -618,14 +627,16 @@ def buildJsonOther(par, file, jp):
         # if art file, use first run_subrun
         if jp['file_format'] == "art":
             if jp.has_key('dh.first_run_subrun') :
-                jp['dh.sequencer'] = "{0:08d}_{1:06d}".format(     \
-                jp['dh.first_run_subrun'],jp['dh.first_subrun'])
+                jp['dh.sequencer'] = "{0:s}{1:08d}_{2:06d}".format(     \
+                par.seqTag,jp['dh.first_run_subrun'],jp['dh.first_subrun'])
             else:
                 # in case RES failed
-                jp['dh.sequencer'] = "{0:04d}".format(par.fileCount)
+                jp['dh.sequencer'] = "{0:s}{1:04d}".format(  \
+                    par.seqTag,par.fileCount)
         else:
             # use file counter
-            jp['dh.sequencer'] = "{0:04d}".format(par.fileCount)
+            jp['dh.sequencer'] = "{0:s}{1:04d}".format(  \
+                par.seqTag,par.fileCount)
 
         jp['file_name'] = \
                    jp['data_tier']+"."+jp['dh.owner']+"."+ \
@@ -786,7 +797,7 @@ def parseCommandOptions(par,files):
 
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                 "hxcmp:v:j:d:f:r:l:s:",["help"])
+                 "hxcmp:v:j:d:a:t:f:r:l:s:",["help"])
     except getopt.GetoptError:
         printHelp
         sys.exit(2)
@@ -811,6 +822,10 @@ def parseCommandOptions(par,files):
             genericJsonFs = arg
         elif opt == "-d":
             par.jsonDir = arg
+        elif opt == "-a":
+            par.parentTxt = arg
+        elif opt == "-t":
+            par.seqTag = arg
         elif opt == "-f":
             par.file_family = arg
         elif opt == "-r":
@@ -828,6 +843,8 @@ def parseCommandOptions(par,files):
         print  ' -p ',par.pair,' (pairing method)'
         print  ' -j ',genericJsonFs,' (generic json file)'
         print  ' -d ',par.jsonDir,' (destination for json files)'
+        print  ' -a ',par.parentTxt,' (txt fle of parent file sam files)'
+        print  ' -t ',par.seqTag,' (txt to prepend to sequencer field)'
         print  ' -f ',par.file_family,' (file_family)'
         print  ' -r ',par.reName,' (rename files)'
         print  ' -l ',par.logDir,' (log of renamed files)'
@@ -871,14 +888,13 @@ def parseCommandOptions(par,files):
     if par.verbose > 1:
         printSummary1(files)
 
-
     if genericJsonFs != "":
         jt = {}
         fj = open(genericJsonFs,"r")
         try:
             jt = json.load(fj)
         except:
-            print "Error reading json content in file "+inp
+            print "Error reading json content in file "+fj
             print sys.exc_info()[0]
         fj.close()
         if par.verbose> 8:
@@ -888,6 +904,30 @@ def parseCommandOptions(par,files):
         # save it for when file json is created
         par.genericJson = jt
 
+    if par.parentTxt != "":
+        lt = []
+        try:
+            fj = open(par.parentTxt,"r")
+            tt = fj.read()
+            tt = tt.translate(maketrans(",;[]{}\n","       "))
+            lt = tt.split();
+            fj.close()
+        except:
+            print "Error reading content in file ",fj
+            print sys.exc_info()[0]
+
+        if par.verbose> 8:
+            print "Reading parents from "+par.parentTxt
+            print lt
+
+        # save it for when file json is created
+        if len(lt) > 0:
+            if par.genericJson.has_key('parents'):
+                par.genericJson['parents'] = par.genericJson['parents'] +lt
+            else:
+                par.genericJson['parents'] = lt
+        
+    
 
 
 ##############################################################
@@ -961,6 +1001,12 @@ def writeJson(par,files):
     for file in files:
 
         #
+        # the fts area has subdirectories to manage large
+        # numbers of files.  Pick a 2-digit subdir based on file's name
+        #
+        hdir = "%02d"%( hash(file.baseName)%100 )
+        
+        #
         # move data file to the FTS area, if requested
         #
         odir = par.fts+"/"+par.file_family+"/"+hdir
@@ -1004,12 +1050,6 @@ def writeJson(par,files):
             outfile.write("\n")
         outfile.close()
 
-        #
-        # the fts area has subdirectories to manage large
-        # numbers of files.  Pick a 2-digit subdir based on file's name
-        #
-        hdir = "%02d"%( hash(file.baseName)%100 )
-        
         #
         # move json to the output area
         #
