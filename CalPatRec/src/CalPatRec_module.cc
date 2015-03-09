@@ -156,11 +156,16 @@ namespace mu2e {
 
 					// cache of event objects
 
-    const StrawHitCollection*         _shcol;
-    const StrawHitFlagCollection*     _shfcol;
-    StrawHitFlagCollection*           _flags;
-    const StrawHitPositionCollection* _shpcol;
-    const CaloClusterCollection*      _ccCollection;
+    const StrawHitCollection*             _shcol;
+    const StrawHitFlagCollection*         _shfcol;
+    const StrawHitPositionCollection*     _shpcol;
+    const CaloClusterCollection*          _ccCollection;
+    const StepPointMCCollection*          _stepcol;
+    const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
+
+					// flags are not const - for a reason ?
+
+    StrawHitFlagCollection*            _flags;
 
 					// Kalman fitters.  Seed fit has a special configuration
     KalFitHack               _seedfit;
@@ -317,9 +322,9 @@ namespace mu2e {
     _maxaddchi       (pset.get<double>("MaxAddChi"        ,4.0)),
     _tpart           ((TrkParticle::type)(pset.get<int>("fitparticle"))),
     _fdir            ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-    _seedfit     (pset.get<fhicl::ParameterSet>("SeedFitHack",fhicl::ParameterSet())),
-    _kfit        (pset.get<fhicl::ParameterSet>("KalFitHack",fhicl::ParameterSet())),
-    _hfit        (pset.get<fhicl::ParameterSet>("HelixFitHack",fhicl::ParameterSet())),
+    _seedfit         (pset.get<fhicl::ParameterSet>("SeedFitHack",fhicl::ParameterSet())),
+    _kfit            (pset.get<fhicl::ParameterSet>("KalFitHack",fhicl::ParameterSet())),
+    _hfit            (pset.get<fhicl::ParameterSet>("HelixFitHack",fhicl::ParameterSet())),
     _payloadSaver(pset)
 		      //    , _kfitmc      (pset.get<fhicl::ParameterSet>("KalFitMC",fhicl::ParameterSet()))
   {
@@ -350,129 +355,6 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-//  void CalPatRec::findDoublets (KalRep* krep, DoubletCollection *dcol) {
-
-//     //first step: create list of doublets
-//     const TrkHotList* hot_list = krep->hotList();
-//     const mu2e::TrkStrawHit* hit;
-   
-//     int station,panel;
-//     int oldStation(-1), oldPanel(-1), idlast(0);
-    
-//     CLHEP::Hep3Vector wdir, pos,  wpos[10];    
-//     CLHEP::Hep3Vector tdir, trkpos;
-//     HepPoint          tpos;
-
-//     double flen;
-//     double endTrk = 0.0;//krep->endFoundRange();
-
-//     for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
-//       hit                    = (const mu2e::TrkStrawHit*) &(*it);
-//       Straw const* straw     = &hit ->straw();
-//       wdir                   = straw->getDirection();
-//       pos                    = straw->getMidPoint();
-//       station                = straw->id().getDevice();
-//       panel                  = straw->id().getSector();
-
-
-//       //track info 
-//       HelixTraj trkHel(krep->helix(endTrk).params(),krep->helix(endTrk).covariance());
-//       flen    = trkHel.zFlight(pos.z());
-//       krep->traj().getInfo(flen, tpos, tdir);
-//       trkpos  = CLHEP::Hep3Vector(tpos.x(), tpos.y(), tpos.z());
-      
-//       if ( (station != oldStation) && (panel != oldPanel)){
-// 	dcol->push_back(Doublet(station, panel, wdir, tdir, trkpos, hit));
-// 	oldStation = station;
-// 	oldPanel   = panel;
-// 	++idlast;
-//       }else if ( (station == oldStation) && (panel == oldPanel)){
-// 	dcol->at(idlast-1).fTrkshcol.push_back(hit);
-// 	dcol->at(idlast-1).fTrkDirCol.push_back(tdir);
-// 	dcol->at(idlast-1).fTrkPosCol.push_back(trkpos);
-
-//       }
-      
-//     }
-
-
-//     //resolve ambig for doublets
-//     int dcolsize  = dcol->size();
-//     int trkshsize, shId;
-//     double doca, rdrift;
-//     Doublet *doub;
-//     printf("[CalPatRec::findDoublets]-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-//     printf("[CalPatRec::findDoublets]  i |  sec | panel| shId  |      x     |     y      |     z      |    cth     |    trkth   |     xtrk   |     ytrk   |     ztrk   |     xr     |     yr     |     zr     |    doca    |   rdrift   |\n");
-//     printf("[CalPatRec::findDoublets]-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
-
-//     for (int i=0; i<dcolsize; ++i){
-//       doub = &dcol->at(i);
-//       trkshsize = doub->fTrkshcol.size();
-    
-//       for (int j=0; j<trkshsize; ++j){
-// 	hit  = doub->fTrkshcol.at(j);
-// 	Straw const* straw     = &hit->straw();
-// 	shId = straw->index().asInt();
-
-// 	//take the wires positions 
-// 	wpos[j] = straw->getMidPoint();
-// 	wdir    = doub->fShDir;
-	
-// 	//get track info
-// 	trkpos  = doub->fTrkPosCol.at(j);
-// 	tdir    = doub->fTrkDirCol.at(j);
-
-// 	HepPoint p1(wpos[j].x(),wpos[j].y(),wpos[j].z());
-// 	HepPoint p2(trkpos.x() ,trkpos.y() ,trkpos.z());
-	
-// 	TrkLineTraj trstraw(p1, wdir, 0., 0.);
-// 	TrkLineTraj trtrk  (p2, tdir, 0., 0.);
-	
-// 	TrkPoca poca  (trstraw, 0.,trtrk   , 0.);
-	
-// 	doca   = poca.doca();
-// 	rdrift = hit->driftRadius();
-
-// 	//rotate the wire positions
-// 	wpos[j] = CLHEP::HepRotationZ(std::acos(wdir.y()))*wpos[j];
-// 	//	wdir    = CLHEP::HepRotationZ(std::acos(wdir.y()))*wdir;
-// 	trkpos  = CLHEP::HepRotationZ(std::acos(wdir.y()))*trkpos;
-// 	//	tdir    = CLHEP::HepRotationZ(std::acos(wdir.y()))*tdir;
-
-
-// // 	tdir.setY(0.0);
-// // 	HepPoint pr1(wpos[j].x(),wpos[j].y(),wpos[j].z());
-// // 	HepPoint pr2(trkpos.x() ,trkpos.y() ,trkpos.z());
-// // 	TrkLineTraj trstraw2d(pr1, wdir, 0., 0.);
-// // 	TrkLineTraj trtrk2d  (pr2, tdir, 0., 0.);
-
-// // 	TrkPoca poca2d(trstraw2d, 0.,trtrk2d , 0.);
-// // 	doca2d = poca2d.doca();
-
-
-
-// 	printf("[CalPatRec::findDoublets] %2i | %3i  | %3i  | %5i | %10.3f | %10.3f | %10.3f | %10.3f | %10.3f | %10.3f | %10.3f | %10.3f | %10.3f | %10.3f | %10.3f | %10.3f | %10.3f |\n",
-// 	       i, doub->fStationId, doub->fPanelId, shId, 
-// 	       straw->getMidPoint().x(), straw->getMidPoint().y(), straw->getMidPoint().z(),
-// 	       wdir.y(), 
-// 	       tdir.y(),
-// 	       trkpos.x(), trkpos.y(), trkpos.z(),
-// 	       wpos[j].x(), wpos[j].y(), wpos[j].z(),
-// 	       doca,
-// 	       rdrift);
-
-//       }
-//       //use positions and drift radiai for resolving the ambig
-//       //      rdrift[10];
-      
-      
-//     }
-
-    
-//   }
-
-
-
   void CalPatRec::beginJob(){
 					// create diagnostics ntuple if requested
     if(_diag > 0)createDiagnostics();
@@ -642,7 +524,18 @@ namespace mu2e {
 	     _ccmLabel.data());
     }
 //-----------------------------------------------------------------------------
-// 
+// find list of MC hits - for debugging only
+//-----------------------------------------------------------------------------
+    art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
+    evt.getByLabel(_shLabel,"StrawHitMCPtr",mcptrHandle);
+    if (mcptrHandle.isValid()) {
+      _listOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
+    }
+    else {
+      _listOfMCStrawHits = NULL;
+    }
+//-----------------------------------------------------------------------------
+// done
 //-----------------------------------------------------------------------------
     return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_ccCollection != 0);
   }
@@ -665,10 +558,6 @@ namespace mu2e {
     static KalFitResult       dummykfit(dummydef);
 
     static StrawHitFlag       esel(StrawHitFlag::energysel), flag;
-
-  //   double t1, t2, t3, t4, t5, t6;
-//     double tfit0(0.), tfit1(0.),ttot(0.);
-    //    int    nAddHits(0);
 
 //reset the fit iteration counter
     _kfit.SetNIter(0);
@@ -698,6 +587,9 @@ namespace mu2e {
       printf("CalPatRec::produce ERROR: No straw hits found, RETURN\n");
                                                             goto END;
     }
+
+    _kfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
+    _seedfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
 //-----------------------------------------------------------------------------
 // all needed pieces of data have been found, 
 // tighten the energy cut and copy flags, clear 
@@ -895,7 +787,7 @@ namespace mu2e {
 	  kaldef.setHelix(*shelix);
 					// filter the outliers
 //----------------------------------------------------------------------
-//2015-02-07 G. Pezzu added new selection using seedFit results	  
+//2015-02-07 G. Pezzu added new selection using seedFit results	
 //----------------------------------------------------------------------
 	  goodhits.clear();
 	  const mu2e::TrkStrawHit* hit;
@@ -916,12 +808,8 @@ namespace mu2e {
 	  int npointsrescued(0), npointsdeactivated(0);
 	  double rdrift;
 	  double hitResid;
-	  
-	  if (_debug >0){
-	    printf("[CalPatRec::hitSelectionAfterSeedFit] ---------------------------------------------------------------------------------\n");
-	    printf("[CalPatRec::hitSelectionAfterSeedFit]  ih  A   Sind   station   panel  layer       Rdrift          doca       hitResid \n");
-	    printf("[CalPatRec::hitSelectionAfterSeedFit] ---------------------------------------------------------------------------------\n");	  }
-	  
+	  int    banner_11_printed(0);
+
 	  for (int i=0; i< nIndexes; ++i){
 	    StrawHit const*   sh    = indexes[i]._strawhit;
 	    Straw const&      straw = tracker.getStraw(sh->strawIndex());
@@ -961,8 +849,15 @@ namespace mu2e {
 	      goodhits.push_back(index);
 	    } 
 	    
-	    if (_debug>0){
-	      printf("[CalPatRec::hitSelectionAfterSeedFit]  %2i  %1i  %5i  %10.3f  %10.3f \n", 
+	    if (_debug > 0) {
+	      if (banner_11_printed == 0) { 
+		banner_11_printed = 1;
+		printf("[CalPatRec::produce] -------------------------------------\n");
+		printf("[CalPatRec::produce]  ih  A   Sind      Rdrift        doca\n");
+		printf("[CalPatRec::produce] -------------------------------------\n");
+	      }
+
+	      printf("[CalPatRec::produce]  %2i  %1i  %5i  %10.3f  %10.3f \n", 
 		     i, active? 1:0, straw.index().asInt(), rdrift, doc );
 	    }
 

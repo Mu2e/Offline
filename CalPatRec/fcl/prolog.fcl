@@ -115,6 +115,7 @@ CalPatRec            : {
 	minDriftDoublet                         : 0.4
 	deltaDriftDoublet                       : 0.3
 	sigmaSlope                              : 0.025
+	makeStrawHitModuleLabel                 : makeSH
     }
     # HelixFitHack configuraton
     HelixFitHack : {
@@ -156,6 +157,7 @@ CalPatRec            : {
 	minDriftDoublet                         : 0.4
 	deltaDriftDoublet                       : 0.3
 	sigmaSlope                              : 0.025
+	makeStrawHitModuleLabel                 : makeSH
     }
     MaxStrawEDep            : 0.005
     useDoublets             : 1
