@@ -12,6 +12,7 @@
 #include "TGStatusBar.h"
 
 #include "Stntuple/gui/TTrkXYView.hh"
+#include "Stntuple/gui/TTrkRZView.hh"
 #include "Stntuple/gui/TCalView.hh"
 #include "Stntuple/gui/TStnFrame.hh"
 #include "Stntuple/gui/TStnVisManager.hh"
@@ -21,6 +22,7 @@ ClassImp(TStnVisManager)
 //-----------------------------------------------------------------------------
 enum TStmVisManagerCommandIdentifiers {
   M_TRACKER_XY,
+  M_TRACKER_RZ,
   M_CALORIMETER_XY,
   M_EXIT,
 
@@ -73,15 +75,16 @@ TStnVisManager::TStnVisManager(const char* Name, const char* Title):
 
   fMenuSubdetectors = new TGPopupMenu(gClient->GetRoot());
   fMenuSubdetectors->AddEntry("&Tracker(XY view)", M_TRACKER_XY);
-  fMenuSubdetectors->AddEntry("&Calorimeter", M_CALORIMETER_XY);
-  fMenuSubdetectors->AddEntry("&Exit", M_EXIT);
+  fMenuSubdetectors->AddEntry("&Tracker(RZ view)", M_TRACKER_RZ);
+  fMenuSubdetectors->AddEntry("&Calorimeter"     , M_CALORIMETER_XY);
+  fMenuSubdetectors->AddEntry("&Exit"            , M_EXIT);
   fMenuSubdetectors->Associate(fMain);
 
   fMenuHelp = new TGPopupMenu(gClient->GetRoot());
-  fMenuHelp->AddEntry("&Contents", M_HELP_CONTENTS);
+  fMenuHelp->AddEntry("&Contents" , M_HELP_CONTENTS);
   fMenuHelp->AddEntry("&Search...", M_HELP_SEARCH);
   fMenuHelp->AddSeparator();
-  fMenuHelp->AddEntry("&About", M_HELP_ABOUT);
+  fMenuHelp->AddEntry("&About"    , M_HELP_ABOUT);
   fMenuHelp->Associate(fMain);
 
   fMenuBar = new TGMenuBar(fMain, 1, 1, kHorizontalFrame);
@@ -253,13 +256,91 @@ Int_t TStnVisManager::OpenTrkXYView(TTrkXYView* mother, Axis_t x1, Axis_t y1,
   sprintf(name,"xy_view_%i",n);
   sprintf(title,"XY view number %i",n);
 
-				// try to preserve the aspect ration
+				// try to preserve the aspect ratio
   Int_t   xsize, ysize;
 
   xsize = 540;
   ysize = (Int_t) (xsize*TMath::Abs((y2-y1)/(x2-x1))+20);
 
   TStnFrame* win = new TStnFrame(name, title, kXYView, xsize,ysize);
+  TCanvas* c = win->GetCanvas();
+  fListOfCanvases->Add(c);
+
+  TString name1(name);
+  name1 += "_1";
+  TPad* p1 = (TPad*) c->FindObject(name1);
+  p1->Range(x1,y1,x2,y2);
+  p1->cd();
+  mother->Draw();
+
+  TString name_title(name);
+  name1 += "_title";
+  TPad* title_pad = (TPad*) c->FindObject(name_title);
+  title_pad->cd();
+  fTitleNode->Draw();
+
+  c->Modified();
+  c->Update();
+  return 0;
+}
+
+//-----------------------------------------------------------------------------
+// open new RZ view of the detector with the default options
+//-----------------------------------------------------------------------------
+Int_t TStnVisManager::OpenTrkRZView() {
+
+  int n = fListOfCanvases->GetSize();
+
+  char name[100], title[100];
+
+  sprintf(name ,"rz_view_%i"       ,n);
+  sprintf(title,"RZ view number %i",n);
+  
+  TStnFrame* win = new TStnFrame(name, title, kRZView,740,760);
+  TCanvas* c = win->GetCanvas();
+  fListOfCanvases->Add(c);
+
+  TString name1(name);
+  name1 += "_1";
+  TPad* p1 = (TPad*) c->FindObject(name1);
+  p1->Range(-800.,-800.,800.,800.);
+  p1->cd();
+  fTrkRZView->Draw();
+
+  TString name_title(name);
+  name1 += "_title";
+  TPad* title_pad = (TPad*) c->FindObject(name_title);
+  title_pad->cd();
+  fTitleNode->Draw();
+
+  c->Modified();
+  c->Update();
+  return 0;
+}
+
+//-----------------------------------------------------------------------------
+// open new RZ view of the detector with the default options
+//-----------------------------------------------------------------------------
+Int_t TStnVisManager::OpenTrkRZView(TTrkRZView* mother, 
+				    Axis_t      x1, Axis_t y1,
+				    Axis_t      x2, Axis_t y2) 
+{
+
+  int n = fListOfCanvases->GetSize();
+
+  char name[100], title[100];
+
+  sprintf(name ,"rz_view_%i"       ,n);
+  sprintf(title,"RZ view number %i",n);
+//-----------------------------------------------------------------------------
+// try to preserve the aspect ratio
+//-----------------------------------------------------------------------------
+  Int_t   xsize, ysize;
+
+  xsize = 540;
+  ysize = (Int_t) (xsize*TMath::Abs((y2-y1)/(x2-x1))+20);
+
+  TStnFrame* win = new TStnFrame(name, title, kRZView, xsize,ysize);
   TCanvas* c = win->GetCanvas();
   fListOfCanvases->Add(c);
 

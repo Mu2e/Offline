@@ -7,7 +7,7 @@ InitStntuple : {
     module_type       : InitStntuple
     module_name       : InitStntuple
 	    
-    histFileName      : "{DATASET}.{JOB}.stn"
+    histFileName      : "default.stn"
     splitLevel        : 0
 	    
     debugBits         : { 
@@ -21,34 +21,50 @@ StntupleMaker : {
     module_type         : StntupleMaker
     module_name         : StntupleMaker
     processName         : undefined
-    
-    TimeOffsets         : { inputs : [ "protonTimeMap", "muonTimeMap" ] }    
-
-    g4ModuleLabel        : g4run
-    strawHitMaker        : makeSH
-    caloCrystalHitsMaker : CaloCrystalHitsMaker
-    caloClusterMaker     : MakeCaloCluster
-
-    trkPatRec1           : TrkPatRec
-    fitparticle1         : 11
-    fitdirection1        : 0
-
-    trkExtrapol          : TrkExtrapol
-    trkCalMatch          : CaloMatching
-    pidDem               : ParticleID
-
-    makeCalData         : 1
+#------------------------------------------------------------------------------
+# define which branches to make
+#------------------------------------------------------------------------------    
+    makeCalData         : 0
     makeStrawData       : 0
     makeTracks          : 1
-    makeTracksDem       : 0
-    makeTracksUem       : 0
-    makeTracksDmm       : 0
-    makeTracksUmm       : 0
     makeClusters        : 1
     makeGenp            : 1
     makeSimp            : 1
     makeVirtualHits     : 1
 	    
+    TimeOffsets          : { inputs : [ "protonTimeMap", "muonTimeMap" ] }    
+
+    g4ModuleLabel        : "g4run"
+    caloCrystalHitsMaker : "CaloCrystalHitsMaker"
+    caloClusterMaker     : "MakeCaloCluster"
+#------------------------------------------------------------------------------
+# sometimes may need to store multiple track blocks, thus - vectors
+#------------------------------------------------------------------------------
+    makeStrawHitModuleLabel : "makeSH"
+
+    trackBlockName          : [ "TrackBlock"   ]
+    trkRecoModuleLabel      : [ "TrkPatRec"    ]
+    fitParticle             : [             11 ] # 11:electron  , 13:muon etc
+    fitDirection            : [              0 ] #  0:downstream,  1:upstream
+    trkExtrapolModuleLabel  : [ "TrkExtrapol"  ]
+    trkCaloMatchModuleLabel : [ "CaloMatching" ]
+    pidModuleLabel          : [ "ParticleID"   ]
+#------------------------------------------------------------------------------
+# in case of more than one track block, keep name of the first block the same
+#------------------------------------------------------------------------------
+#    trkRecoModuleLabel      : [ "TrkPatRec"   , "CalPatRec"      ]
+#    trackBlockName          : [ "TrackBlock"  , "CalPatRecBlock" ] 
+#    fitParticle             : [             11,               11 ]
+#    fitDirection            : [              0,                0 ]
+#    trkExtrapolModuleLabel  : [ "TrkExtrapol" ,               "" ]
+#    trkCaloMatchModuleLabel : [ "CaloMatching",               "" ]
+#    makeStrawHitModuleLabel : [ "makeSH"      ,         "makeSH" ]
+#    pidModuleLabel          : [ "ParticleID"  ,               "" ]
+
+    trkExtrapol          : TrkExtrapol
+    trkCalMatch          : CaloMatching
+    pidDem               : ParticleID
+
     minTActive          : 0.     # ns
     minECrystal         : 1.0    # MeV
 
@@ -84,9 +100,10 @@ MuHitDisplay: {
     strawHitFlagMakerModuleLabel : CalPatRecFlagStrawHits
     
     caloClusterModuleLabel       : MakeCaloCluster
+    trkRecoModuleLabel           : TrkPatRec
     trkExtrapol                  : TrkExtrapol
     trkCalMatch                  : CaloMatching
-    trkPatRecModuleLabel         : TrkPatRec
+
     fitParticle                  : 11  # 11:electron
     fitDirection                 : 0   # 0:downstream, 1:upstream
 

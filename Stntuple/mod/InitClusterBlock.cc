@@ -94,15 +94,15 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
 
   if      (geom->hasElement<mu2e::Calorimeter>() ) {
     mu2e::GeomHandle<mu2e::Calorimeter> cc;
-    cal = cc.operator->();
+    cal = cc.get();
   }
   else if (geom->hasElement<mu2e::VaneCalorimeter>() ) {
     mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
-    cal = vc.operator->();
+    cal = vc.get();
   }
   else if (geom->hasElement<mu2e::DiskCalorimeter>() ) {
     mu2e::GeomHandle<mu2e::DiskCalorimeter> dc;
-    cal = dc.operator->();
+    cal = dc.get();
   }
 //-----------------------------------------------------------------------------
 // tracks are supposed to be already initialized
@@ -111,9 +111,8 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
   const mu2e::CaloCrystalHit    *hit;
   int                           id, ncl;
 
-  double                        sume, sume2, sumy, sumz, sumy2, sumz2, qn;
+  double                        sume, sume2, sumy, sumx, sumy2, sumx2, sumxy, qn;
   double                        e, e1, e2, emean, e2mean;
-  double                        ymean, zmean, y2mean, z2mean;
   
   ncl = list_of_clusters->size();
   for (int i=0; i<ncl; i++) {
@@ -135,10 +134,11 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
     qn     = 0;
     sume   = 0;
     sume2  = 0;
+    sumx   = 0;
     sumy   = 0;
-    sumz   = 0;
+    sumx2  = 0;
+    sumxy  = 0;
     sumy2  = 0;
-    sumz2  = 0;
     
     e2     = 0;
     
@@ -152,10 +152,11 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
 	qn    += 1.;
 	sume  += e;
 	sume2 += e*e;
+	sumx  += e*pos.x();
 	sumy  += e*pos.y();
-	sumz  += e*pos.z();
+	sumx2 += e*pos.x()*pos.x();
+	sumxy += e*pos.x()*pos.y();
 	sumy2 += e*pos.y()*pos.y();
-	sumz2 += e*pos.z()*pos.z();
 	
 	if (ih<2) {
 	  e2 += e;
@@ -167,10 +168,17 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
     emean  = sume/(qn+1.e-12);
     e2mean = sume2/(qn+1.e-12);
     
+    double xmean, ymean, x2mean, xymean, y2mean, sigxx, sigyy, sigxy, phi;
+
+    xmean  = sumx /(sume+1.e-12);
     ymean  = sumy /(sume+1.e-12);
-    zmean  = sumz /(sume+1.e-12);
+    x2mean = sumx2/(sume+1.e-12);
     y2mean = sumy2/(sume+1.e-12);
-    z2mean = sumz2/(sume+1.e-12);
+    xymean = sumxy/(sume+1.e-12);
+
+    sigxx  = x2mean-xmean*xmean;
+    sigxy  = xymean-xmean*ymean;
+    sigyy  = y2mean-ymean*ymean;
 
     cluster->fX         = cl->cog3Vector().x();
     cluster->fY         = cl->cog3Vector().y();
@@ -181,10 +189,11 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
     cluster->fNCrystals = nh;
     cluster->fNCr1      = qn;
     cluster->fYMean     = ymean;
-    cluster->fZMean     = zmean;
+					// reuse fZ to store X
+    cluster->fZMean     = xmean;
     cluster->fSigY      = sqrt(y2mean-ymean*ymean);
-    cluster->fSigZ      = sqrt(z2mean-zmean*zmean);
-    cluster->fSigR      = sqrt(y2mean+z2mean-ymean*ymean-zmean*zmean);
+    cluster->fSigZ      = sqrt(x2mean-xmean*xmean);
+    cluster->fSigR      = sqrt(y2mean+x2mean-ymean*ymean-xmean*xmean);
 //-----------------------------------------------------------------------------
 // make sure that nothing goes into an overflow
 //_____________________________________________________________________________
@@ -192,7 +201,24 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
     cluster->fFrE2      = e2/(sume+1.e-5);
     cluster->fSigE1     = sqrt(qn*(e2mean-emean*emean))/(sume+1.e-12);
     cluster->fSigE2     = sqrt(qn*(e2mean-emean*emean))/(emean+1.e-12);
-    
+//------------------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+    cluster->fSigXX     = sigxx;
+    cluster->fSigXY     = sigxy;
+    cluster->fSigYY     = sigyy;
+
+    phi = 0.5*atan2(2*sigxy,sigxx-sigyy);
+
+//     if (sigxx < sigyy) { 
+//       phi = phi + M_PI/2.;
+//       cluster->fSigXX = sigyy;
+//       cluster->fSigYY = sigxx;
+//     }
+
+    cluster->fNx   = cos(phi);
+    cluster->fNy   = sin(phi);
+
 //     unsigned int nm = (*trk_cal_map).size();
 //     for(size_t im=0; i<nm; im++) {
 //       //	KalRepPtr const& trkPtr = fTrkCalMap->at(i).first->trk();

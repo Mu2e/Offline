@@ -149,7 +149,7 @@ namespace mu2e {
     std::string        fStrawHitMaker;
     std::string        fStrawHitPosMaker;
     std::string        fStrawHitFlagMaker;
-    std::string        fTrkPatRecModuleLabel;
+    std::string        fTrkRecoModuleLabel;
     std::string        fCrystalHitMaker;
     std::string        fTrkExtrapol;
     std::string        fTrkCalMatch;
@@ -257,11 +257,11 @@ namespace mu2e {
     fStrawHitPosMaker         (pset.get<std::string>("strawHitPosMakerModuleLabel" )),
     fStrawHitFlagMaker        (pset.get<std::string>("strawHitFlagMakerModuleLabel")),
 
-    fTrkPatRecModuleLabel     (pset.get<std::string>("trkPatRecModuleLabel"        )),
+    fTrkRecoModuleLabel       (pset.get<std::string>("trkRecoModuleLabel"    )),
     fCrystalHitMaker          (pset.get<std::string>("caloCrystalHitsMaker"  )),
-    fTrkExtrapol              (pset.get<std::string> ("trkExtrapol"          )),
-    fTrkCalMatch              (pset.get<std::string> ("trkCalMatch"          )),
-    fPidModuleLabel           (pset.get<std::string> ("pidModuleLabel"       )),
+    fTrkExtrapol              (pset.get<std::string>("trkExtrapol"           )),
+    fTrkCalMatch              (pset.get<std::string>("trkCalMatch"           )),
+    fPidModuleLabel           (pset.get<std::string>("pidModuleLabel"        )),
 
     fTrkDirection             ( (TrkFitDirection::FitDirection)(pset.get<int>("fitDirection"))),
     fParticleHypo             ( (TrkParticle::type)            (pset.get<int>("fitParticle" ))),          
@@ -333,7 +333,7 @@ namespace mu2e {
     fClusterBlock->AddCollName("mu2e::TrackClusterLink",fTrkCalMatch.data(),"");
     
     fTrackBlock->AddCollName("mu2e::CaloClusterCollection"         ,caloClusterModuleLabel_.data(),"");
-    fTrackBlock->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecModuleLabel.data()  , charDirectionAndParticle);
+    fTrackBlock->AddCollName("mu2e::KalRepCollection"              ,fTrkRecoModuleLabel.data()  , charDirectionAndParticle);
     fTrackBlock->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol.data()           ,"");
     fTrackBlock->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()           ,"");
     fTrackBlock->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()         ,"");
@@ -353,7 +353,7 @@ namespace mu2e {
     fVisManager->SetTitleNode(new THeaderVisNode("HeaderVisNode",fHeaderBlock));
 
     TCalVisNode      *cal_node[2];
-    TVisNode         *trk_node;
+    TTrkVisNode      *trk_node;
     TStrawHitVisNode *strh_node;
     TMcTruthVisNode  *mctr_node;
     const mu2e::DiskCalorimeter* dc;
@@ -521,7 +521,7 @@ namespace mu2e {
 // tracking data - downstream moving electrons
 //-----------------------------------------------------------------------------
     art::Handle<KalRepPtrCollection> demHandle;
-    Evt->getByLabel(fTrkPatRecModuleLabel.data(),charDirectionAndParticle, demHandle);
+    Evt->getByLabel(fTrkRecoModuleLabel.data(),charDirectionAndParticle, demHandle);
 
     fNTracks[0] = 0;
     fDem        = NULL;

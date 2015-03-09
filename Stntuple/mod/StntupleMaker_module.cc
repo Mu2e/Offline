@@ -22,6 +22,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include "TNamed.h"
 #include "TH1.h"
 #include "TString.h"
 #include "TProfile.h"
@@ -36,14 +37,20 @@
 
 //  #include "Stntuple/obj/TStnTriggerBlock.hh"
 
+#include "Stntuple/mod/StntupleModule.hh"
 #include "Stntuple/mod/StntupleGlobals.hh"
-#include "Stntuple/mod/StntupleMaker_module.hh"
+// #include "Stntuple/mod/StntupleMaker_module.hh"
 
 #include "Stntuple/mod/InitStntupleDataBlocks.hh"
 #include "Stntuple/mod/StntupleUtilities.hh"
 
+#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "TrkBase/TrkParticle.hh"
+
 #include "Stntuple/alg/TStntuple.hh"
 #include "Stntuple/mod/StntupleGlobals.hh"
+
+using namespace std; 
 
 // ClassImp(StntupleMaker)
 
@@ -51,48 +58,103 @@ static const char rcsid[] = "$Name:  $";
 
 void stntuple_get_version(char*& ver, char*& test);
 namespace mu2e {
+class StntupleMaker : public StntupleModule {
+//------------------------------------------------------------------------------
+//  data members
+//------------------------------------------------------------------------------
+protected:
+					// process name, default - PROD
+  std::string      fProcessName;
+					// switches for individual branches
+  int              fMakeCalData;
+  int              fMakeClusters;
+  int              fMakeStrawData;
+  int              fMakeTracks;
+  int              fMakeTrigger;
+  int              fMakeGenp;
+  int              fMakeSimp;
+  int              fMakeVirtualHits;
+//-----------------------------------------------------------------------------
+// module parameters
+//-----------------------------------------------------------------------------
+  std::string              fG4ModuleLabel;
+  std::string              fMakeStrawHitModuleLabel;
+
+  std::vector<std::string> fTrackBlockName;
+  std::vector<std::string> fTrkRecoModuleLabel;
+  std::vector<std::string> fTrkExtrapolModuleLabel;
+  std::vector<std::string> fTrkCaloMatchModuleLabel;
+  std::vector<std::string> fPidModuleLabel;
+
+  std::vector<int>         fFitParticle;
+  std::vector<int>         fFitDirection;
+
+  std::string              fCaloCrystalHitMaker;
+  std::string              fCaloClusterMaker;
+  
+  double                   fMinTActive  ;  // start of the active window
+  double                   fMinECrystal ;  // 
+
+  TNamed*                  fVersion;
+//------------------------------------------------------------------------------
+// function members
+//------------------------------------------------------------------------------
+public:
+					// constructors and destructor
+
+  StntupleMaker(fhicl::ParameterSet const& pset);
+
+  ~StntupleMaker();
+//-----------------------------------------------------------------------------
+// functions of the module
+//-----------------------------------------------------------------------------
+  void GetDefTrackCollName(char* Name);
+
+					// ****** setters
+
+//-----------------------------------------------------------------------------
+// overloaded virtual functions of EDFilter
+//-----------------------------------------------------------------------------
+  virtual bool beginRun(art::Run& ARun);
+  virtual bool endRun  (art::Run& ARun);
+  virtual void beginJob();
+  virtual void endJob  ();
+  virtual bool filter  (AbsEvent& event);
+
+  //  ClassDef(StntupleMaker,0)
+};
+
+
+
 //------------------------------------------------------------------------------
 // constructors
 //------------------------------------------------------------------------------
 StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet): 
   StntupleModule        (PSet,"StntupleMaker")
-  , fProcessName        (PSet.get<std::string> ("processName"    ,"PROD"          ))
+  , fProcessName        (PSet.get<string> ("processName"    ,"PROD"          ))
   , fMakeCalData        (PSet.get<int>         ("makeCalData"    ,        0       ))
   , fMakeClusters       (PSet.get<int>         ("makeClusters"   ,        1       ))
-  , fMakeStrawData      (PSet.get<int>         ("makeStrawData"  ,        0       ))
-  , fMakeTracks         (PSet.get<int>         ("makeTracks"     ,        1       ))
-  , fMakeTracksDem      (PSet.get<int>         ("makeTracksDem"  ,        0       ))
-  , fMakeTracksUem      (PSet.get<int>         ("makeTracksUem"  ,        0       ))
-  , fMakeTracksDmm      (PSet.get<int>         ("makeTracksDmm"  ,        0       ))
-  , fMakeTracksUmm      (PSet.get<int>         ("makeTracksUmm"  ,        0       ))
+  , fMakeStrawData      (PSet.get<int>         ("makeStrawData"  ))
+  , fMakeTracks         (PSet.get<int>         ("makeTracks"     ))
   , fMakeTrigger        (PSet.get<int>         ("makeTrigger"    ,        0       ))
   , fMakeGenp           (PSet.get<int>         ("makeGenp"       ,        1       ))
   , fMakeSimp           (PSet.get<int>         ("makeSimp"       ,        1       ))
   , fMakeVirtualHits    (PSet.get<int>         ("makeVirtualHits",        0       ))
+  
+  , fG4ModuleLabel          (PSet.get<string>             ("g4ModuleLabel"          ))
+  , fMakeStrawHitModuleLabel(PSet.get<string>             ("makeStrawHitModuleLabel"))
+  , fTrackBlockName         (PSet.get<vector<string>>("trackBlockName"         ))
+  , fTrkRecoModuleLabel     (PSet.get<vector<string>>("trkRecoModuleLabel"     ))
+  , fTrkExtrapolModuleLabel (PSet.get<vector<string>>("trkExtrapolModuleLabel" ))
+  , fTrkCaloMatchModuleLabel(PSet.get<vector<string>>("trkCaloMatchModuleLabel"))
+  , fPidModuleLabel         (PSet.get<vector<string>>("pidModuleLabel"         ))
+  
+  , fFitParticle            (PSet.get<vector<int>>        ("fitParticle"       ))
+  , fFitDirection           (PSet.get<vector<int>>        ("fitDirection"      ))
 
-  , fG4ModuleLabel      (PSet.get<std::string> ("g4ModuleLabel"      ))
-  , fStrawHitMaker      (PSet.get<std::string> ("strawHitMaker"      ))
-  , fTrkPatRec1         (PSet.get<std::string> ("trkPatRec1"         ))
-  , fFitParticle1       ((TrkParticle::type)(PSet.get<int>("fitparticle1")))
-  , fFitDirection1      ((mu2e::TrkFitDirection::FitDirection)(PSet.get<int>("fitdirection1")))
-
-  , fTrkPatRecUem       (PSet.get<std::string> ("trkPatRecUem"       , "trkPatRecUem" ))
-  , fTrkPatRecDmm       (PSet.get<std::string> ("trkPatRecDmm"       , "trkPatRecDmm" ))
-  , fTrkPatRecUmm       (PSet.get<std::string> ("trkPatRecUmm"       , "trkPatRecUmm" ))
-  , fCaloCrystalHitMaker(PSet.get<std::string> ("caloCrystalHitsMaker"))
-  , fCaloClusterMaker   (PSet.get<std::string> ("caloClusterMaker"    ))
-  , fTrkExtrapol        (PSet.get<std::string> ("trkExtrapol"         ))
-  , fTrkCalMatch        (PSet.get<std::string> ("trkCalMatch"         ))
-  , fPidDem             (PSet.get<std::string> ("pidDem"              ))
-
-  , fTrkPatRecDem2       (PSet.get<std::string> ("trkPatRecDem2"       , "trkPatRecDemHack" ))
-  , fTrkPatRecUem2       (PSet.get<std::string> ("trkPatRecUem2"       , "trkPatRecUemHack" ))
-  , fCaloCrystalHitMaker2(PSet.get<std::string> ("caloCrystalHitMaker2", "CaloCrystalHitsMakerHack"))
-  , fCaloClusterMaker2   (PSet.get<std::string> ("caloClusterMaker2"   , "makeCaloClusterHack"))
-  , fTrkExtrapol2        (PSet.get<std::string> ("trkExtrapol2"        , "trkExtrapolHack"    ))
-  , fTrkCalMatch2        (PSet.get<std::string> ("trkCalMatch2"        , "caloMatchingHack"   ))
-  , fPidDem2             (PSet.get<std::string> ("pidDem2"             , "undefined"          ))
-
+  , fCaloCrystalHitMaker(PSet.get<string> ("caloCrystalHitsMaker"))
+  , fCaloClusterMaker   (PSet.get<string> ("caloClusterMaker"    ))
+  
   , fMinTActive         (PSet.get<double>      ("minTActive"     ))
   , fMinECrystal        (PSet.get<double>      ("minECrystal"    ))
 {
@@ -158,7 +220,7 @@ void StntupleMaker::beginJob() {
 
   int split_mode, compression_level, buffer_size;
 
-  std::string      _iname1;	// data instance name
+  string      _iname1;	// data instance name
 
   THistModule::beforeBeginJob();
 
@@ -174,7 +236,7 @@ void StntupleMaker::beginJob() {
   compression_level = THistModule::CompressionLevel();
   buffer_size       = THistModule::BufferSize();
 
-  _iname1           = fFitDirection1.name() + fFitParticle1.name();
+  //  _iname1           = fFitDirection1.name() + fFitParticle1.name();
 //-----------------------------------------------------------------------------
 // calorimeter hit data
 // this is not RAW hit data yet...
@@ -203,7 +265,7 @@ void StntupleMaker::beginJob() {
 			      split_mode,
 			      compression_level);
     if (straw_data) {
-      straw_data->AddCollName("mu2e::StrawHitCollection",fStrawHitMaker.data(),"");
+      straw_data->AddCollName("mu2e::StrawHitCollection",fMakeStrawHitModuleLabel.data(),"");
     }
   }
 //-----------------------------------------------------------------------------
@@ -223,149 +285,42 @@ void StntupleMaker::beginJob() {
 //-----------------------------------------------------------------------------
 // track branches: for ROOT v3 to use streamers one has to specify split=-1
 //-----------------------------------------------------------------------------
+  TStnDataBlock *track_data;
+  const char    *block_name;
+  int            nblocks;
+  string         iname;
+
   if (fMakeTracks) {
-    TStnDataBlock* track_data;
+    nblocks = fTrackBlockName.size();
+
+    for (int i=0; i<nblocks; i++) {
 					// always store defTracks for the 
 					// default process in the "TrackBlock"
 
-    track_data = AddDataBlock("TrackBlock",
-			      "TStnTrackBlock",
-			      StntupleInitMu2eTrackBlock,
-			      buffer_size,
-			      split_mode,
-			      compression_level);
+      block_name = fTrackBlockName[i].data();
+      track_data = AddDataBlock(block_name,
+				"TStnTrackBlock",
+				StntupleInitMu2eTrackBlock,
+				buffer_size,
+				split_mode,
+				compression_level);
 
-    SetResolveLinksMethod("TrackBlock",StntupleInitMu2eTrackBlockLinks);
+      SetResolveLinksMethod(block_name,StntupleInitMu2eTrackBlockLinks);
 
-    if (track_data) {
-      track_data->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRec1.data()    ,_iname1.data());
-      track_data->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"");
-      track_data->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol.data()     ,"");
-      //      track_data->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()     ,"");
-      track_data->AddCollName("mu2e::TrackClusterMatchCollection"   ,fTrkCalMatch.data()     ,"");
-      track_data->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
-      track_data->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
-      track_data->AddCollName("mu2e::PIDProductCollection"          ,fPidDem.data()          ,"");
-      track_data->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
-    }
-  }
+      if (track_data) {
+	TrkFitDirection fit_dir = TrkFitDirection((TrkFitDirection::FitDirection)fFitDirection[i]);
+	TrkParticle     part    = TrkParticle((TrkParticle::type)fFitParticle[i]);
+	iname                   = fit_dir.name() + part.name();
 
-//--------------------------------------------------------------------------------
-// DEM: Downstream moving e minus
-//--------------------------------------------------------------------------------
- if (fMakeTracksDem) {
-    TStnDataBlock* track_data;
-					// always store defTracks for the 
-					// default process in the "TrackBlock"
-
-    track_data = AddDataBlock("TrackBlockDem2",
-			      "TStnTrackBlock",
-			      StntupleInitMu2eTrackBlock,
-			      buffer_size,
-			      split_mode,
-			      compression_level);
-
-    SetResolveLinksMethod("TrackBlockDem2",StntupleInitMu2eTrackBlockLinks);
-
-    if (track_data) {
-      track_data->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecDem2.data()    ,"DownstreameMinus");
-      track_data->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"");
-      track_data->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol2.data()     ,"");
-      //      track_data->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()     ,"");
-      track_data->AddCollName("mu2e::TrackClusterMatchCollection"   ,fTrkCalMatch2.data()     ,"");
-      track_data->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
-      track_data->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
-      //      track_data->AddCollName("mu2e::PIDProductCollection"          ,fPidDem.data()          ,"");
-      track_data->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
-    }
-  }
-
-
-//-----------------------------------------------------------------------------
-// UEM: Upstream Electron Minus
-//-----------------------------------------------------------------------------
-  if (fMakeTracksUem) {
-    TStnDataBlock* track_data_uem;
-
-    track_data_uem = AddDataBlock("TrackBlockUem",
-				  "TStnTrackBlock",
-				  StntupleInitMu2eTrackBlock,
-				  buffer_size,
-				  split_mode,
-				  compression_level);
-
-    SetResolveLinksMethod("TrackBlockUem",StntupleInitMu2eTrackBlockLinks);
-
-    if (track_data_uem) {
-      track_data_uem->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
-      track_data_uem->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecUem.data()    ,"UpstreameMinus");
-      track_data_uem->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
-      track_data_uem->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
-      track_data_uem->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"");
-//-----------------------------------------------------------------------------
-// for the moment, don't run extrapolation and PID for these
-//-----------------------------------------------------------------------------
-//       track_data_uem->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol2.data()    ,"");
-//       track_data_uem->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch2.data()    ,"");
-//       track_data_uem->AddCollName("mu2e::PIDProductCollection"          ,fPidDem2.data()         ,"");
-    }
-  }
-//-----------------------------------------------------------------------------
-// DMM: Downstream Muon Minus
-//-----------------------------------------------------------------------------
-  if (fMakeTracksDmm) {
-    TStnDataBlock* track_data_dmm;
-
-    track_data_dmm = AddDataBlock("TrackBlockDmm",
-				  "TStnTrackBlock",
-				  StntupleInitMu2eTrackBlock,
-				  buffer_size,
-				  split_mode,
-				  compression_level);
-
-    SetResolveLinksMethod("TrackBlockDmm",StntupleInitMu2eTrackBlockLinks);
-
-    if (track_data_dmm) {
-      track_data_dmm->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecDmm.data()    ,"DownstreammuMinus");
-      track_data_dmm->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
-      track_data_dmm->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
-      track_data_dmm->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
-      track_data_dmm->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"");
-//-----------------------------------------------------------------------------
-// for the moment, don't run extrapolation and PID for these
-//-----------------------------------------------------------------------------
-//       track_data_uem->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol2.data()    ,"");
-//       track_data_uem->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch2.data()    ,"");
-//       track_data_uem->AddCollName("mu2e::PIDProductCollection"          ,fPidDem2.data()         ,"");
-    }
-  }
-//-----------------------------------------------------------------------------
-// UMM: Upstream Muon Minus
-//-----------------------------------------------------------------------------
-  if (fMakeTracksUmm) {
-    TStnDataBlock* track_data_umm;
-
-    track_data_umm = AddDataBlock("TrackBlockUmm",
-				  "TStnTrackBlock",
-				  StntupleInitMu2eTrackBlock,
-				  buffer_size,
-				  split_mode,
-				  compression_level);
-
-    SetResolveLinksMethod("TrackBlockUmm",StntupleInitMu2eTrackBlockLinks);
-
-    if (track_data_umm) {
-      track_data_umm->AddCollName("mu2e::KalRepCollection"              ,fTrkPatRecUmm.data()    ,"UpstreammuMinus");
-      track_data_umm->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()   ,"");
-      track_data_umm->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()   ,"");
-      track_data_umm->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()   ,"StrawHitMCPtr");
-      track_data_umm->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data(),"");
-//-----------------------------------------------------------------------------
-// for the moment, don't run extrapolation and PID for these
-//-----------------------------------------------------------------------------
-//       track_data_uem->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol2.data()    ,"");
-//       track_data_uem->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch2.data()    ,"");
-//       track_data_uem->AddCollName("mu2e::PIDProductCollection"          ,fPidDem2.data()         ,"");
+	track_data->AddCollName("mu2e::KalRepCollection"              ,fTrkRecoModuleLabel[i].data()     ,iname.data());
+	track_data->AddCollName("mu2e::StrawHitCollection"            ,fMakeStrawHitModuleLabel.data()   ,"");
+	track_data->AddCollName("mu2e::PtrStepPointMCVectorCollection",fMakeStrawHitModuleLabel.data()   ,"StrawHitMCPtr");
+	track_data->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapolModuleLabel [i].data(),"");
+	track_data->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data()          ,"");
+	track_data->AddCollName("mu2e::TrackClusterMatchCollection"   ,fTrkCaloMatchModuleLabel[i].data(),"");
+	track_data->AddCollName("mu2e::PIDProductCollection"          ,fPidModuleLabel[i].data()         ,"");
+	track_data->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()             ,"");
+      }
     }
   }
 //-----------------------------------------------------------------------------
@@ -423,7 +378,7 @@ void StntupleMaker::beginJob() {
 
     if (simp_data) {
       simp_data->AddCollName("mu2e::SimParticleCollection",""                   ,"");
-      simp_data->AddCollName("mu2e::StrawHitCollection"   ,fStrawHitMaker.data(),"");
+      simp_data->AddCollName("mu2e::StrawHitCollection"   ,fMakeStrawHitModuleLabel.data(),"");
       simp_data->AddCollName("mu2e::StepPointMCCollection",fG4ModuleLabel.data(),"");
     }
   }

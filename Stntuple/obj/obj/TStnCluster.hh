@@ -23,6 +23,7 @@
 //namespace murat {
 
 class TStnTrack;
+
 namespace mu2e {
   class CaloCluster;
 }
@@ -30,37 +31,53 @@ namespace mu2e {
 class TStnCluster : public TObject {
 
   enum {
-    kNFreeInts   = 10,
-    kNFreeFloats = 10
+    kNFreeIntsV1   = 10,		// V1
+    kNFreeFloatsV1 = 10,		// V1
+
+    kNFreeInts     = 10,		// V2
+    kNFreeFloats   =  3			// V2
   };
 
 public:
-  int                       fNumber;          // track index in the list of reconstructed clusters
+//-----------------------------------------------------------------------------
+// integers
+//-----------------------------------------------------------------------------
+  int                       fNumber;          // index in the list of reconstructed clusters
   int                       fDiskID;	      // 
   int                       fNCrystals;       //
-  int                       fNCr1     ;       // above 1 MeV
+  int                       fNCr1     ;       // N crystals above 1 MeV
   int                       fTrackNumber;     // closest track in TStnTrackBlock
   int                       fIx1;	      // [row, column] or [x1,x2] for a disk
   int                       fIx2;
   int                       fInt[kNFreeInts];
-					      // float part
+//-----------------------------------------------------------------------------
+// floats
+//-----------------------------------------------------------------------------
   float                     fX;
   float                     fY;
   float                     fZ;
   float                     fYMean;
   float                     fZMean;
-  float                     fSigY;
-  float                     fSigZ;
-  float                     fSigR;
-  float                     fEnergy;
+  float                     fSigY;      // cluster width in Y 
+  float                     fSigZ;	// cluster width in Z/X (fSigZ is reused)
+  float                     fSigR;      // don't know what it is
+  float                     fEnergy   ;
   float                     fTime     ; 
   float                     fFrE1     ; // e1/etotal
   float                     fFrE2     ; // (e1+e2)/etotal
   float                     fSigE1    ;
   float                     fSigE2    ;
+//-----------------------------------------------------------------------------
+// 7 words added in version 2
+//-----------------------------------------------------------------------------
+  float                     fSigXX;    // sums over crystals
+  float                     fSigXY;
+  float                     fSigYY;
+  float                     fNx   ;    // cluster direction
+  float                     fNy   ;
   float                     fFloat[kNFreeFloats];
 //-----------------------------------------------------------------------------
-// transient variables
+// transients
 //-----------------------------------------------------------------------------
   const mu2e::CaloCluster*  fCaloCluster;  //!
   TStnTrack*                fClosestTrack; //!
@@ -82,14 +99,32 @@ public:
   float   Energy     () { return fEnergy; }
   float   Time       () { return fTime  ; }
 
+  float   Nx         () { return fNx;    }
+  float   Ny         () { return fNy;    }
+
+  float   SigX       () { return fSigZ;  }
+  float   SigY       () { return fSigY;  }
+  float   SigZ       () { return fSigZ;  }
+
+  float   SigXX      () { return fSigXX; }
+  float   SigXY      () { return fSigXY; }
+  float   SigYY      () { return fSigYY; }
+
   TStnTrack* ClosestTrack() { return fClosestTrack; }
 
   void    SetNumber(int I) { fNumber = I; } // 
 
-  void    Print(Option_t* Opt) const ;
-					// I/O: Mu2e version 1
-  ClassDef(TStnCluster,1)
+//-----------------------------------------------------------------------------
+// overloaded methods of TObject
+//-----------------------------------------------------------------------------
+  virtual void Clear(Option_t* Opt = "") ;
+  virtual void Print(Option_t* Opt = "") const ;
+//-----------------------------------------------------------------------------
+// schema evolution
+//-----------------------------------------------------------------------------
+  void ReadV1(TBuffer& R__b);
 
+  ClassDef(TStnCluster,2)
 };
 
 #endif

@@ -11,7 +11,7 @@ echo "
      Copy the files of a sam dataset defintion from tape to dCache.
      When the script completes, the files will be in the tape queue,
      not necessary in dCache yet.
-     You need to "setup mu2e", kinit and getcert to run this procedure
+     You need to setup mu2e, kinit and getcert to run this procedure
      Only for interactive use, not intended for grid jobs.
 "
 }

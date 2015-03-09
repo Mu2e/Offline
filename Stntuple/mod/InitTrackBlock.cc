@@ -132,24 +132,22 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 
   const mu2e::TTracker*     tracker;
 
+  mu2e::AlgorithmIDCollection*             list_of_algs               (0);
+  mu2e::KalRepPtrCollection*               list_of_kreps              (0);
+  mu2e::PtrStepPointMCVectorCollection*    list_of_mc_straw_hits      (0);
+  const mu2e::StrawHitCollection*          list_of_straw_hits         (0);
+  const mu2e::TrkToCaloExtrapolCollection* list_of_extrapolated_tracks(0);
+  const mu2e::PIDProductCollection*        list_of_pidp               (0);
 
-  mu2e::AlgorithmIDCollection*           list_of_algs               (0);
-  mu2e::KalRepPtrCollection*             list_of_kreps              (0);
-  mu2e::PtrStepPointMCVectorCollection*  list_of_mc_straw_hits      (0);
-  //  mu2e::CaloClusterCollection*           list_of_clusters(0);
-  const mu2e::StrawHitCollection*              list_of_straw_hits         (0);
-  const mu2e::TrkToCaloExtrapolCollection*     list_of_extrapolated_tracks(0);
-  const mu2e::PIDProductCollection*            list_of_pidp               (0);
-
-  static char   algs_module_label[100], algs_description[100];
-  static char   krep_module_label[100], krep_description[100];
-  static char   trex_module_label[100], trex_description[100];
-  static char   trcl_module_label[100], trcl_description[100];
-  static char   strh_module_label[100], strh_description[100];
-  static char   stmc_module_label[100], stmc_description[100];
-  static char   calo_module_label[100], calo_description[100];
-  static char   pidp_module_label[100], pidp_description[100];
-  static char   g4_module_label  [100], g4_description  [100];
+  char   algs_module_label[100], algs_description[100];
+  char   krep_module_label[100], krep_description[100];
+  char   trex_module_label[100], trex_description[100];
+  char   trcl_module_label[100], trcl_description[100];
+  char   strh_module_label[100], strh_description[100];
+  char   stmc_module_label[100], stmc_description[100];
+  char   calo_module_label[100], calo_description[100];
+  char   pidp_module_label[100], pidp_description[100];
+  char   g4_module_label  [100], g4_description  [100];
 
 
   mu2e::GeomHandle<mu2e::TTracker> ttHandle;
@@ -252,7 +250,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   art::Handle<mu2e::PIDProductCollection>  pidpHandle;
   if (pidp_module_label[0] != 0) {
     AnEvent->getByLabel(pidp_module_label,pidp_description,pidpHandle);
-    list_of_pidp = pidpHandle.product();
+    if (pidpHandle.isValid()) list_of_pidp = pidpHandle.product();
   }
 
   //  const mu2e::Calorimeter* cal;
@@ -297,9 +295,18 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 //-----------------------------------------------------------------------------
 // in all cases define momentum at lowest Z - ideally, at the tracker entrance
 //-----------------------------------------------------------------------------
-    h1_fltlen      = krep->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-    hn_fltlen      = krep->lastHit ()->kalHit()->hitOnTrack()->fltLen() - 10;
+    h1_fltlen      = krep->firstHit()->kalHit()->hitOnTrack()->fltLen();
+    hn_fltlen      = krep->lastHit ()->kalHit()->hitOnTrack()->fltLen();
     entlen         = std::min(h1_fltlen,hn_fltlen);
+
+//-----------------------------------------------------------------------------
+// determine, approximately, 's0' - flight length corresponding to Z=0
+//-----------------------------------------------------------------------------
+    double   z1    = krep->position(h1_fltlen).z();
+    double   z2    = krep->position(hn_fltlen).z();
+    double   dzds  = (z2-z1)/(hn_fltlen-h1_fltlen);
+    
+    double   s0    = h1_fltlen+(0-z1)/dzds;
     
     CLHEP::Hep3Vector fitmom = krep->momentum(entlen);
     HepPoint   pos    = krep->position(entlen);
@@ -307,18 +314,17 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     track->fX1 = pos.x();
     track->fY1 = pos.y();
     track->fZ1 = pos.z();
+//-----------------------------------------------------------------------------
+// fP2 - track momentum value at Z=-1540 (cross check)
+//-----------------------------------------------------------------------------
+    z2 = -1540.;
+    double s2 = h1_fltlen+(z2-z1)/dzds;
 
-    double z2 = -1540.;
-
-    double s2 = entlen*z2/track->fZ1;
     CLHEP::Hep3Vector fitmom2 = krep->momentum(s2);
 
     track->fP2 = fitmom2.mag();
-    track->fC0 = krep->helix(entlen).omega();
-
 
     CLHEP::Hep3Vector momdir = fitmom.unit();
-    
     BbrVectorErr      momerr = krep->momentumErr(entlen);
     
     HepVector momvec(3);
@@ -332,25 +338,31 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     px = fitmom.x();
     py = fitmom.y();
     pz = fitmom.z();
-
+//-----------------------------------------------------------------------------
+// parameters used in Dave's selections
+//-----------------------------------------------------------------------------
     track->Momentum()->SetXYZM(px,py,pz,0.511);
     track->fNActive   = krep->nActive();
     track->fChi2      = krep->chisq();
     track->fFitCons   = krep->chisqConsistency().consistency();
     track->fT0        = krep->t0().t0();
     track->fT0Err     = krep->t0().t0Err();
-    track->fTanDip    = krep->helix(0).tanDip();
-
-    double curv = krep->helix(0).omega();
-    if (curv > 0) track->fCharge = 1.;
-    else          track->fCharge = -1;
 
     track->fFitMomErr = fitmom_err;
     track->fP         = track->Momentum()->P ();
     track->fPt        = track->Momentum()->Pt();
+//-----------------------------------------------------------------------------
+// want track parameters at Z=0
+// fC0 - curvature at s=0 ... would be better to define helix just once
+//-----------------------------------------------------------------------------
+    track->fC0        = krep->helix(0).omega(); // old
     track->fD0        = krep->helix(0).d0();
     track->fZ0        = krep->helix(0).z0();
-    track->fFloat[0]  = krep->helix(0).phi0();
+    track->fPhi0      = krep->helix(0).phi0();
+    track->fTanDip    = krep->helix(0).tanDip(); // old
+
+    if (track->fC0 > 0) track->fCharge =  1.;
+    else                track->fCharge = -1.;
 //-----------------------------------------------------------------------------
 // fP0 : track momentum at Z0
 //-----------------------------------------------------------------------------
@@ -468,9 +480,10 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 //-----------------------------------------------------------------------------
 // given track parameters, build the expected hit mask
 //-----------------------------------------------------------------------------
-    double z, closest_z, dz, zw, dz_min, s0, s;
+    double z, closest_z, dz, zw, dz_min, s;
     int    station, offset;
-    int    nz = 88;
+    int    nz(88);
+
     for (int iz=0; iz<nz; iz++) {
       z = zmap.fZ[iz];
 					// find the track hit closest to that Z
@@ -657,12 +670,8 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     int                            iv, next;
     TStnTrack::InterData_t*        vint;
 
-    if (list_of_extrapolated_tracks != NULL) {
-      next = list_of_extrapolated_tracks->size();
-    }
-    else {
-      next = 0;
-    }
+    if (list_of_extrapolated_tracks != NULL) next = list_of_extrapolated_tracks->size();
+    else                                     next = 0;
   
     for (int iext=0; iext<next; iext++) {
       extrk = &list_of_extrapolated_tracks->at(iext);
@@ -840,23 +849,46 @@ Int_t StntupleInitMu2eTrackBlockLinks(TStnDataBlock* Block, AbsEvent* AnEvent, i
 {
   // Mu2e version, do nothing
 
-  Int_t  ev_number, rn_number;
+  int    ev_number, rn_number;
+  char   calo_module_label[100], calo_description[100];
+
+  const mu2e::CaloClusterCollection*  list_of_clusters(0);
 
   ev_number = AnEvent->event();
   rn_number = AnEvent->run();
 
   if (! Block->Initialized(ev_number,rn_number)) return -1;
-
-					// do not do initialize links 2nd time
-
+//-----------------------------------------------------------------------------
+// do not do initialize links for 2nd time
+//-----------------------------------------------------------------------------
   if (Block->LinksInitialized()) return 0;
 
-  TStnTrackBlock* header = (TStnTrackBlock*) Block;
-  //  TStnEvent* ev   = header->GetEvent();
+  TStnTrackBlock* tb = (TStnTrackBlock*) Block;
+  TStnEvent* ev      = tb->GetEvent();
+
+  tb->GetModuleLabel("mu2e::CaloClusterCollection",calo_module_label);
+  tb->GetDescription("mu2e::CaloClusterCollection",calo_description );
+
+  art::Handle<mu2e::CaloClusterCollection> cch;
+  if (calo_module_label[0] != 0) {
+    if (calo_description[0] == 0) AnEvent->getByLabel(calo_module_label,cch);
+    else                          AnEvent->getByLabel(calo_module_label,calo_description,cch);
+
+    if (cch.isValid()) list_of_clusters = cch.product();
+  }
+//-----------------------------------------------------------------------------
+// TStnTrackBlock is already initialized
+//-----------------------------------------------------------------------------
+  TStnTrack* trk;
+  int ntrk = tb->NTracks();
+  for (int i=0; i<ntrk; i++) {
+    trk = tb->Track(i);
+    // ### TO BE COMPLETED
+  }
 //-----------------------------------------------------------------------------
 // mark links as initialized
 //-----------------------------------------------------------------------------
-  header->fLinksInitialized = 1;
+  Block->SetLinksInitialized();
 
   return 0;
 }

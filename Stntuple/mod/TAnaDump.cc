@@ -56,7 +56,8 @@ ClassImp(TAnaDump)
 TAnaDump* TAnaDump::fgInstance = 0;
 
 namespace {
-  mu2e::SimParticleTimeOffset *fgTimeOffsets(NULL);
+  mu2e::SimParticleTimeOffset           *fgTimeOffsets(NULL);
+  mu2e::PtrStepPointMCVectorCollection  *fgListOfMCStrawHits;
 }
 //______________________________________________________________________________
 TAnaDump::TAnaDump() {
@@ -210,6 +211,15 @@ void TAnaDump::printCalTimePeakCollection(const char* ModuleLabel,
 }
 
 //-----------------------------------------------------------------------------
+void TAnaDump::printEventHeader() {
+
+  printf(" Run / Subrun / Event : %10i / %10i / %10i\n",
+	 fEvent->run(),
+	 fEvent->subRun(),
+	 fEvent->event());
+}
+
+//-----------------------------------------------------------------------------
 void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefix) {
 
   TString opt = Opt;
@@ -246,15 +256,19 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
 //-----------------------------------------------------------------------------
     const TrkHotList* hot_list = Trk->hotList();
 
-    printf("---------------------------------------------------------------------------");
-    printf("-------------------------------------------------------------------------------\n");
-    printf(" ih U A     len      rms       x          y          z       HitT     HitDt");
-    printf("  SInd  Dev Sec Lay  N  Iamb     T0    Rdrift     Xs         Ys          Zs        resid");
-    printf("     hitErr     t0Err    penaltyErr   extErr     totalErr\n");
-    printf("---------------------------------------------------------------------------");
-    printf("-------------------------------------------------------------------------------\n");
+    printf("--------------------------------------------------------------------");
+    printf("----------------------------------------------------------------");
+    printf("--------------------------------------------\n");
+    printf(" ih  SInd U A     len         x        y        z      HitT    HitDt");
+    printf(" Ch Pl  L  W     T0       Xs      Ys        Zs     resid");
+    printf(" Rdrift   mcdoca  totErr hitErr  t0Err penErr extErr\n");
+    printf("--------------------------------------------------------------------");
+    printf("----------------------------------------------------------------");
+    printf("--------------------------------------------\n");
 
+    Hep3Vector pos;
     int i = 0;
+
     for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
       //	  const KalHit* kh = (*it).kalHit();
 
@@ -265,56 +279,85 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
       const mu2e::StrawHit* sh = &hit->strawHit();
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
-      double len = hit->fltLen();
+      hit->hitPosition(pos);
 
+      double    len  = hit->fltLen();
       HepPoint  plen = Trk->position(len);
+//-----------------------------------------------------------------------------
+// find MC truth DOCA in a given straw
+// start from finding the right vector of StepPointMC's
+//-----------------------------------------------------------------------------
+      int nstraws = fgListOfMCStrawHits->size();
 
-      printf("%3i %1i %1i %10.3f %6.3f %10.3f %10.3f %10.3f %8.3f %7.3f",
+      const mu2e::StepPointMC* step(0);
+
+      for (int i=0; i<nstraws; i++) {
+	mu2e::PtrStepPointMCVector  const& mcptr(fgListOfMCStrawHits->at(i));
+	step = &(*mcptr.at(0));
+ 	if (step->volumeId() == straw->index().asInt()) {
+ 					// step found - use the first one in the straw
+ 	  break;
+ 	}
+      }
+
+      double step_doca = -99.0;
+
+      if (step) {
+	const Hep3Vector* v1 = &straw->getMidPoint();
+	HepPoint p1(v1->x(),v1->y(),v1->z());
+
+	const Hep3Vector* v2 = &step->position();
+	HepPoint    p2(v2->x(),v2->y(),v2->z());
+
+	TrkLineTraj trstraw(p1,straw->getDirection()  ,0.,0.);
+	TrkLineTraj trstep (p2,step->momentum().unit(),0.,0.);
+
+	TrkPoca poca(trstep, 0., trstraw, 0.);
+    
+	step_doca = poca.doca();
+      }
+
+      printf("%3i %5i %1i %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
 	     ++i,
+	     straw->index().asInt(), 
 	     hit->isUsable(),
 	     hit->isActive(),
 	     len,
-	     hit->hitRms(),
+	     //	     hit->hitRms(),
 	     plen.x(),plen.y(),plen.z(),
 	     sh->time(), sh->dt()
 	     );
 
-      Hep3Vector pos;
-      hit->hitPosition(pos);
-      printf("%6i %3i %3i %3i %3i %3i %8.3f %8.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f\n",
-	     straw->index().asInt(), 
+      printf(" %2i %2i %2i %2i",
 	     straw->id().getDevice(),
 	     straw->id().getSector(),
 	     straw->id().getLayer(),
-	     straw->id().getStraw(),
-		 
-	     hit->ambig(),
-	     hit->hitT0().t0(),
-	     hit->driftRadius(),
+	     straw->id().getStraw()
+	     );
+
+      printf(" %8.3f",hit->hitT0().t0());
+
+      printf("%8.3f %8.3f %9.3f %7.3f",
 	     pos.x(),
 	     pos.y(),
 	     pos.z(),
-	     hit->resid(true),
+	     hit->resid(true)
+	     );
+
+      if (hit->ambig() != 0) printf(" %6.3f",hit->ambig()*hit->driftRadius());
+      else                   printf(" *%5.3f",hit->driftRadius());
+
+      printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f\n",		 
+	     step_doca, 
+	     hit->totalErr(),
 	     hit->hitErr(),
 	     hit->t0Err(),
 	     hit->penaltyErr(),
-	     hit->extErr(),
-	     hit->totalErr()
+	     hit->extErr()
 	     );
-      //  	  trkhit->print(std::cout);
     }
   }
 }
-
-//-----------------------------------------------------------------------------
-void TAnaDump::printEventHeader() {
-
-  printf(" Run / Subrun / Event : %10i / %10i / %10i\n",
-	 fEvent->run(),
-	 fEvent->subRun(),
-	 fEvent->event());
-}
-
 
 //-----------------------------------------------------------------------------
 void TAnaDump::printKalRepCollection(const char* ModuleLabel, 
@@ -344,6 +387,18 @@ void TAnaDump::printKalRepCollection(const char* ModuleLabel,
     return;
   }
 
+  art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
+  if (ModuleLabel[0] != 0) {
+    fEvent->getByLabel("makeSH","StrawHitMCPtr",mcptrHandle);
+    if (mcptrHandle.isValid()) {
+      fgListOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
+    }
+    else {
+      printf(">>> ERROR in TAnaDump::printKalRepCollection: failed to locate StepPointMCCollection makeSH:StrawHitMCPtr\n");
+      fgListOfMCStrawHits = NULL;
+    }
+  }
+
   int ntrk = krepsHandle->size();
 
   const KalRep *trk;
@@ -365,28 +420,83 @@ void TAnaDump::printKalRepCollection(const char* ModuleLabel,
 //-----------------------------------------------------------------------------
 void TAnaDump::printGenParticle(const mu2e::GenParticle* P, const char* Opt) {
 
-    TString opt = Opt;
+  TString opt = Opt;
+  
+  if ((opt == "") || (opt == "banner")) {
+    printf("------------------------------------------------------------------------------------\n");
+    printf("Index                 generator     PDG      Time      Momentum       Pt       CosTh\n");
+    printf("------------------------------------------------------------------------------------\n");
+  }
+  
+  if ((opt == "") || (opt == "data")) {
+    int    gen_code   = P->generatorId().id();
+    std::string gen_name   = P->generatorId().name();
+    int    pdg_code   = P->pdgId();
+    double time       = P->time();
+    
+    double mom   = P->momentum().vect().mag();
+    double pt    = P->momentum().vect().perp();
+    double costh = P->momentum().vect().cosTheta();
+    
+    printf("%5i %2i:%-26s %3i %10.3f %10.3f %10.3f %10.3f\n",
+	   -1,gen_code,gen_name.data(),pdg_code,time,mom,pt,costh);
+  }
+}
 
-    if ((opt == "") || (opt == "banner")) {
-      printf("------------------------------------------------------------------------------------\n");
-      printf("Index                 generator     PDG      Time      Momentum       Pt       CosTh\n");
-      printf("------------------------------------------------------------------------------------\n");
+//-----------------------------------------------------------------------------
+// there could be multiple collections in the event
+//-----------------------------------------------------------------------------
+void TAnaDump::printGenParticleCollections() {
+  
+  std::vector<art::Handle<mu2e::GenParticleCollection>> list_of_gp;
+
+  const mu2e::GenParticleCollection*        coll(0);
+  const mu2e::GenParticle*        genp(0);
+
+  const art::Provenance* prov;
+
+  //  art::Selector  selector(art::ProductInstanceNameSelector("mu2e::GenParticleCollection"));
+  art::Selector  selector(art::ProductInstanceNameSelector(""));
+
+  fEvent->getMany(selector, list_of_gp);
+
+  const art::Handle<mu2e::GenParticleCollection>* handle;
+
+  int banner_printed;
+  for (std::vector<art::Handle<mu2e::GenParticleCollection>> ::const_iterator it = list_of_gp.begin();
+       it != list_of_gp.end(); it++) {
+    handle = it.operator -> ();
+
+    if (handle->isValid()) {
+      coll = handle->product();
+      prov = handle->provenance();
+
+      printf("moduleLabel = %-20s, producedClassname = %-30s, productInstanceName = %-20s\n",
+	     prov->moduleLabel().data(),
+	     prov->producedClassName().data(),
+	     prov->productInstanceName().data());
+
+      banner_printed = 0;
+      for (std::vector<mu2e::GenParticle>::const_iterator ip = coll->begin();
+	   ip != coll->end(); ip++) {
+	genp = ip.operator -> ();
+	if (banner_printed == 0) {
+	  printGenParticle(genp,"banner");
+	  banner_printed = 1;
+	}
+	printGenParticle(genp,"data");
+      }
+
+      
     }
- 
-    if ((opt == "") || (opt == "data")) {
-      int    gen_code   = P->generatorId().id();
-      std::string gen_name   = P->generatorId().name();
-      int    pdg_code   = P->pdgId();
-      double time       = P->time();
-
-      double mom   = P->momentum().vect().mag();
-      double pt    = P->momentum().vect().perp();
-      double costh = P->momentum().vect().cosTheta();
-
-      printf("%5i %2i:%-26s %3i %10.3f %10.3f %10.3f %10.3f\n",
-	     -1,gen_code,gen_name.data(),pdg_code,time,mom,pt,costh);
+    else {
+      printf(">>> ERROR in TAnaDump::printStepPointMCCollection: failed to locate collection");
+      printf(". BAIL OUT. \n");
+      return;
     }
   }
+}
+
 
 // //-----------------------------------------------------------------------------
 //   void TAnaDump::printCaloHit(const CaloHit* Hit, const char* Opt) {
@@ -947,61 +1057,81 @@ void TAnaDump::printStrawHitCollection(const char* ModuleLabel,
 
 
 //-----------------------------------------------------------------------------
-void TAnaDump::printStrawHitMCTruth(const mu2e::StrawHitMCTruth* Hit, const char* Opt) {
-  TString opt = Opt;
-  
-  if ((opt == "") || (opt == "banner")) {
-    printf("--------------------------------------------------------------------\n");
-    printf(" Time Distance DistToMid         dt       eDep \n");
-    printf("--------------------------------------------------------------------\n");
+void TAnaDump::printSimParticle(const mu2e::SimParticle* P, const char* Opt) {
+
+    TString opt = Opt;
+
+    if ((opt == "") || (opt == "banner")) {
+      printf("----------------------------------------------------------------------------------\n");
+      printf("Index  Primary     ID Parent   PDG      X      Y       Z      T      Px      Py     Pz      E \n");
+      printf("----------------------------------------------------------------------------------\n");
+    }
+ 
+    if ((opt == "") || (opt == "data")) {
+      int  id        = P->id().asInt();
+      
+      int  parent_id (-1);
+
+      if (P->parent()) {
+	parent_id = P->parent()->id().asInt();
+      }
+      int  pdg_id    = P->pdgId();
+      int  primary   = P->isPrimary();
+
+      printf("%5i %10i %8i %5i %10i  %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n",
+	     -1, primary, id, parent_id, pdg_id, 
+	     P->startPosition().x(),
+	     P->startPosition().y(),
+	     P->startPosition().z(),
+	     P->startGlobalTime(),
+	     P->startMomentum().x(),
+	     P->startMomentum().y(),
+	     P->startMomentum().z(),
+	     P->startMomentum().e());
+    }
   }
 
-  if ((opt == "") || (opt == "data")) {
-    printf("%12.5f  %12.5f  %12.5f\n",
-	   Hit->driftTime(),
-	   Hit->driftDistance(),
-	   Hit->distanceToMid());
-  }
-}
 
 
 //-----------------------------------------------------------------------------
-void TAnaDump::printStrawHitMCTruthCollection(const char* ModuleLabel, 
-				       const char* ProductName,
-				       const char* ProcessName) {
+void TAnaDump::printSimParticleCollection(const char* ModuleLabel, 
+					  const char* ProductName, 
+					  const char* ProcessName) {
 
-  art::Handle<mu2e::StrawHitMCTruthCollection> shcHandle;
-  const mu2e::StrawHitMCTruthCollection*       shc;
+  art::Handle<mu2e::SimParticleCollection> handle;
+  const mu2e::SimParticleCollection*       coll(0);
+  const mu2e::SimParticle*                 simp(0);
 
   if (ProductName[0] != 0) {
     art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
-			    art::ProcessNameSelector(ProcessName)         && 
-			    art::ModuleLabelSelector(ModuleLabel)            );
-    fEvent->get(selector, shcHandle);
+			    art::ProcessNameSelector        (ProcessName) && 
+			    art::ModuleLabelSelector        (ModuleLabel)    );
+    fEvent->get(selector, handle);
   }
   else {
     art::Selector  selector(art::ProcessNameSelector(ProcessName)         && 
 			    art::ModuleLabelSelector(ModuleLabel)            );
-    fEvent->get(selector, shcHandle);
+    fEvent->get(selector, handle);
   }
 
-  shc = shcHandle.product();
+  if (handle.isValid()) coll = handle.product();
+  else {
+    printf(">>> ERROR in TAnaDump::printSimParticleCollection: failed to locate collection");
+    printf(". BAIL OUT. \n");
+    return;
+  }
 
-  int nhits = shc->size();
+  int banner_printed(0);
 
-  const mu2e::StrawHitMCTruth* hit;
+  for ( mu2e::SimParticleCollection::const_iterator j=coll->begin(); j != coll->end(); ++j ){
+    simp = &j->second;
 
-
-  int banner_printed = 0;
-  for (int i=0; i<nhits; i++) {
-    hit = &shc->at(i);
     if (banner_printed == 0) {
-      printStrawHitMCTruth(hit, "banner");
+      printSimParticle(simp,"banner");
       banner_printed = 1;
     }
-    printStrawHitMCTruth(hit,"data");
+    printSimParticle(simp,"data");
   }
- 
 }
 
 
@@ -1052,13 +1182,15 @@ void TAnaDump::printStepPointMC(const mu2e::StepPointMC* Step, const char* Opt) 
     TrkLineTraj trstraw(p1,straw->getDirection()  ,0.,0.);
     TrkLineTraj trstep (p2,Step->momentum().unit(),0.,0.);
 
-    //2015-02-16 G. Pezzu and Murat change in the print out to be finished
-    TrkPoca poca(trstraw, 0., trstep, 0.);
+    // 2015-02-16 G. Pezzu and Murat change in the print out to be finished
+    // 2015-02-25 P.Murat: fix sign - trajectory is the first !
+    //  however, the sign of the disptance of closest approach is invariant
+    // wrt the order
+    TrkPoca poca(trstep, 0., trstraw, 0.);
     
     double doca = poca.doca();
     
     //    art::Ptr<mu2e::GenParticle> const& apgen = sim->genParticle();
-
     //    mu2e::GenParticle* gen = (mu2e::GenParticle*) &(*sim->genParticle());
 
     double mass = sim->startMomentum().m();
@@ -1157,133 +1289,107 @@ void TAnaDump::printStepPointMCCollection(const char* ModuleLabel,
 }
 
 //-----------------------------------------------------------------------------
-void TAnaDump::printGenParticleCollections() {
+// this is 
+//-----------------------------------------------------------------------------
+void TAnaDump::printStepPointMCVectorCollection(const char* ModuleLabel, 
+						const char* ProductName,
+						const char* ProcessName) {
+  int banner_printed(0);
 
-  std::vector<art::Handle<mu2e::GenParticleCollection>> list_of_gp;
-
-  const mu2e::GenParticleCollection*        coll(0);
-  const mu2e::GenParticle*        genp(0);
-
-  const art::Provenance* prov;
-
-  //  art::Selector  selector(art::ProductInstanceNameSelector("mu2e::GenParticleCollection"));
-  art::Selector  selector(art::ProductInstanceNameSelector(""));
-
-  fEvent->getMany(selector, list_of_gp);
-
-  const art::Handle<mu2e::GenParticleCollection>* handle;
-
-  int banner_printed;
-  for (std::vector<art::Handle<mu2e::GenParticleCollection>> ::const_iterator it = list_of_gp.begin();
-       it != list_of_gp.end(); it++) {
-    handle = it.operator -> ();
-
-    if (handle->isValid()) {
-      coll = handle->product();
-      prov = handle->provenance();
-
-      printf("moduleLabel = %-20s, producedClassname = %-30s, productInstanceName = %-20s\n",
-	     prov->moduleLabel().data(),
-	     prov->producedClassName().data(),
-	     prov->productInstanceName().data());
-
-      banner_printed = 0;
-      for (std::vector<mu2e::GenParticle>::const_iterator ip = coll->begin();
-	   ip != coll->end(); ip++) {
-	genp = ip.operator -> ();
-	if (banner_printed == 0) {
-	  printGenParticle(genp,"banner");
-	  banner_printed = 1;
-	}
-	printGenParticle(genp,"data");
-      }
-
-      
+  art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
+  if (ModuleLabel[0] != 0) {
+    fEvent->getByLabel(ModuleLabel,"StrawHitMCPtr", mcptrHandle);
+    if (mcptrHandle.isValid()) {
+      fgListOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
     }
     else {
-      printf(">>> ERROR in TAnaDump::printStepPointMCCollection: failed to locate collection");
+      printf(">>> ERROR in TAnaDump::printStepPointMCVectorCollection: failed to locate collection");
       printf(". BAIL OUT. \n");
       return;
     }
   }
-}
+  else {
+    printf(">>> ERROR in TAnaDump::printStepPointMCVectorCollection: ModuleLabel undefined");
+    printf(". BAIL OUT. \n");
+    return;
+  }
+  
+  const mu2e::StepPointMC  *step;
 
-//-----------------------------------------------------------------------------
-void TAnaDump::printSimParticle(const mu2e::SimParticle* P, const char* Opt) {
+  int nv = fgListOfMCStrawHits->size();
+  printf("[TAnaDump::printStepPointMCVectorCollection] nv = %i\n",nv);
 
-    TString opt = Opt;
-
-    if ((opt == "") || (opt == "banner")) {
-      printf("----------------------------------------------------------------------------------\n");
-      printf("Index  Primary     ID Parent   PDG      X      Y       Z      T      Px      Py     Pz      E \n");
-      printf("----------------------------------------------------------------------------------\n");
-    }
- 
-    if ((opt == "") || (opt == "data")) {
-      int  id        = P->id().asInt();
-      
-      int  parent_id (-1);
-
-      if (P->parent()) {
-	parent_id = P->parent()->id().asInt();
+  for (int i=0; i<nv; i++) {
+    mu2e::PtrStepPointMCVector  const& mcptr(fgListOfMCStrawHits->at(i));
+    int nj = mcptr.size();
+    printf("[TAnaDump::printStepPointMCVectorCollection] i = %i, nj=%i\n",i,nj);
+    for (int j=0; j<nj; j++) {
+      step = &(*mcptr.at(j));
+      if (banner_printed == 0) {
+	printStepPointMC(step, "banner");
+	banner_printed = 1;
       }
-      int  pdg_id    = P->pdgId();
-      int  primary   = P->isPrimary();
-
-      printf("%5i %10i %8i %5i %10i  %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f \n",
-	     -1, primary, id, parent_id, pdg_id, 
-	     P->startPosition().x(),
-	     P->startPosition().y(),
-	     P->startPosition().z(),
-	     P->startGlobalTime(),
-	     P->startMomentum().x(),
-	     P->startMomentum().y(),
-	     P->startMomentum().z(),
-	     P->startMomentum().e());
+      printStepPointMC(step,"data");
     }
   }
+}
+ 
+//-----------------------------------------------------------------------------
+void TAnaDump::printStrawHitMCTruth(const mu2e::StrawHitMCTruth* Hit, const char* Opt) {
+  TString opt = Opt;
+  
+  if ((opt == "") || (opt == "banner")) {
+    printf("--------------------------------------------------------------------\n");
+    printf(" Time Distance DistToMid         dt       eDep \n");
+    printf("--------------------------------------------------------------------\n");
+  }
 
+  if ((opt == "") || (opt == "data")) {
+    printf("%12.5f  %12.5f  %12.5f\n",
+	   Hit->driftTime(),
+	   Hit->driftDistance(),
+	   Hit->distanceToMid());
+  }
+}
 
 
 //-----------------------------------------------------------------------------
-void TAnaDump::printSimParticleCollection(const char* ModuleLabel, 
-					  const char* ProductName, 
-					  const char* ProcessName) {
+void TAnaDump::printStrawHitMCTruthCollection(const char* ModuleLabel, 
+					      const char* ProductName,
+					      const char* ProcessName) {
 
-  art::Handle<mu2e::SimParticleCollection> handle;
-  const mu2e::SimParticleCollection*       coll(0);
-  const mu2e::SimParticle*                 simp(0);
+  art::Handle<mu2e::StrawHitMCTruthCollection> shcHandle;
+  const mu2e::StrawHitMCTruthCollection*       shc;
 
   if (ProductName[0] != 0) {
     art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
-			    art::ProcessNameSelector        (ProcessName) && 
-			    art::ModuleLabelSelector        (ModuleLabel)    );
-    fEvent->get(selector, handle);
+			    art::ProcessNameSelector(ProcessName)         && 
+			    art::ModuleLabelSelector(ModuleLabel)            );
+    fEvent->get(selector, shcHandle);
   }
   else {
     art::Selector  selector(art::ProcessNameSelector(ProcessName)         && 
 			    art::ModuleLabelSelector(ModuleLabel)            );
-    fEvent->get(selector, handle);
+    fEvent->get(selector, shcHandle);
   }
 
-  if (handle.isValid()) coll = handle.product();
-  else {
-    printf(">>> ERROR in TAnaDump::printSimParticleCollection: failed to locate collection");
-    printf(". BAIL OUT. \n");
-    return;
-  }
+  shc = shcHandle.product();
 
-  int banner_printed(0);
+  int nhits = shc->size();
 
-  for ( mu2e::SimParticleCollection::const_iterator j=coll->begin(); j != coll->end(); ++j ){
-    simp = &j->second;
+  const mu2e::StrawHitMCTruth* hit;
 
+
+  int banner_printed = 0;
+  for (int i=0; i<nhits; i++) {
+    hit = &shc->at(i);
     if (banner_printed == 0) {
-      printSimParticle(simp,"banner");
+      printStrawHitMCTruth(hit, "banner");
       banner_printed = 1;
     }
-    printSimParticle(simp,"data");
+    printStrawHitMCTruth(hit,"data");
   }
+ 
 }
 
 

@@ -1,5 +1,28 @@
 # -*- mode: tcl -*-
-
+#------------------------------------------------------------------------------
+# this example shows how to configure a job to 
+#
+# - generate conversion electron events 
+# - run simulation+reconstruction chain
+# - run particle ID
+# - make an ntuple
+# 
+# a) to prepare muon stop file for the interactive job: 
+#
+#     ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops 
+#
+# b) when submitting to the grid, comment out the PROLOG definition, do
+#
+#    ls /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/*.root > muStops.txt
+#
+#    , and use 
+#
+#     --fclinput=@muStops:muStops.txt 
+#
+# c) local submission: 
+#
+#  mu2e -c Analyses/test/genReco.fcl -n 1000 >| results/2014-12-19-Analyses_test_genReco.log &
+#------------------------------------------------------------------------------
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"

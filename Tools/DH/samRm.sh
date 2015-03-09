@@ -6,9 +6,9 @@
 ################################
 # usage function
 ################################
-uasage() {
+usage() {
 echo "
-   rmSam.bash [OPTIONS] [-f FILE]  [-s FILEOFNAMES] -[-d DATASET]
+   samRm [OPTIONS] [-f FILE]  [-s FILEOFNAMES] -[-d DATASET]
       -n interpret file lists, but don't actually do the delete
       -h print help
   
