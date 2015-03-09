@@ -48,6 +48,8 @@ must be setup.
        mv the data file to the upload area after processing. 
        Useful if the data file is already in
        /pnfs/mu2e/scratch where the FTS is.
+   -e
+       just rename the data file where it is
    -s FILE
        FILE contains a list of input files to operate on
    -p METHOD
@@ -98,6 +100,7 @@ class Parms:
         self.logDir = ""
         self.copy = False
         self.move = False
+        self.inPlace = False
         self.pair = "file"
         self.reName = ""
         self.file_family = ""
@@ -797,7 +800,7 @@ def parseCommandOptions(par,files):
 
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                 "hxcmp:v:j:d:a:t:f:r:l:s:",["help"])
+                 "hxcmep:v:j:d:a:t:f:r:l:s:",["help"])
     except getopt.GetoptError:
         printHelp
         sys.exit(2)
@@ -812,6 +815,8 @@ def parseCommandOptions(par,files):
             par.copy = True
         elif opt == "-m":
             par.move = True
+        elif opt == "-e":
+            par.inPlace = True
         elif opt == "-v":
             par.verbose = int(arg)
         elif opt == "-p":
@@ -840,6 +845,7 @@ def parseCommandOptions(par,files):
         print  ' -s ',par.inFile,' (file with list of input files)'
         print  ' -c ',par.copy,' (copy output files to FTS)'
         print  ' -m ',par.move,' (move output files to FTS)'
+        print  ' -e ',par.inPlace,' (rename data file in place)'
         print  ' -p ',par.pair,' (pairing method)'
         print  ' -j ',genericJsonFs,' (generic json file)'
         print  ' -d ',par.jsonDir,' (destination for json files)'
@@ -1017,6 +1023,31 @@ def writeJson(par,files):
                 cmd = "ifdh cp "+file.dataFileName+" "+newfn
             else:
                 cmd = "mv "+file.dataFileName+" "+newfn
+
+            if par.execute:
+                if par.verbose>4:
+                    print "Executing: "+cmd
+                try:
+                    subprocess.check_call(cmd,shell=True)
+                except subprocess.CalledProcessError as cpe:
+                    if par.verbose>0:
+                        print "ERROR executing "+cmd
+                        print "Exiting now..."
+                    sys.exit(2)
+            else:
+                if par.verbose>4:
+                    print "Would execute: "+cmd
+
+        #
+        # just rename if requested
+        #
+        if par.inPlace:
+            
+            if file.baseDir == "":
+                cmd = "mv "+file.dataFileName+" "+file.baseName
+            else:
+                cmd = "mv "+file.dataFileName+" "+ \
+                file.baseDir+"/"+file.baseName
 
             if par.execute:
                 if par.verbose>4:
