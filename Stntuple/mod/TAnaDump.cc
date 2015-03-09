@@ -225,36 +225,66 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
   TString opt = Opt;
   
   if ((opt == "") || (opt == "banner")) {
-    printf("-----------------------------------------------------------------------------------------------------\n");
+    printf("---------------------------------------------------------------------------------");
+    printf("-----------------------------------------------------\n");
     printf("%s",Prefix);
-    printf("  TrkID    Address  N   Na    P    pT   costh    T0  T0Err  Omega  D0  Z0  Phi0  TanDip   Chi2  FCons\n");
-    printf("-----------------------------------------------------------------------------------------------------\n");
+    printf("  TrkID       Address    N  NA      P       pT     costh    T0      T0Err   Omega");
+    printf("      D0       Z0      Phi0   TanDip    Chi2    FCons\n");
+    printf("---------------------------------------------------------------------------------");
+    printf("-----------------------------------------------------\n");
   }
  
   if ((opt == "") || (opt.Index("data") >= 0)) {
-    double chi2  = Trk->chisq();
-    int    ndof  = Trk->nDof ();
-    int    nact  = Trk->nActive();
+    double chi2   = Trk->chisq();
 
-    double t0    = Trk->t0().t0();
-    double t0err = Trk->t0().t0err();
-    double d0    = Trk->helix(0).d0();
-    double z0    = Trk->helix(0).z0();
-    double phi0  = Trk->helix(0).phi0();
-    double c0    = Trk->helix(0).omega();
+    int    nhits(0);
+
+    const TrkHotList* hots = Trk->hotList();
+    for (TrkHotList::hot_iterator ihot=hots->begin(); ihot != hots->end(); ++ihot) {
+      nhits++;
+    }
+
+    int    nact   = Trk->nActive();
+    double t0     = Trk->t0().t0();
+    double t0err  = Trk->t0().t0Err();
+
+//-----------------------------------------------------------------------------
+// in all cases define momentum at lowest Z - ideally, at the tracker entrance
+//-----------------------------------------------------------------------------
+    double s1     = Trk->firstHit()->kalHit()->hitOnTrack()->fltLen();
+    double s2     = Trk->lastHit ()->kalHit()->hitOnTrack()->fltLen();
+    double s      = std::min(s1,s2);
+
+    double d0     = Trk->helix(s).d0();
+    double z0     = Trk->helix(s).z0();
+    double phi0   = Trk->helix(s).phi0();
+    double omega  = Trk->helix(s).omega();
+    double tandip = Trk->helix(s).omega();
 
     double fit_consistency = Trk->chisqConsistency().consistency();
-    int q        = Trk->charge();
-    Hep3Vector trk_mom;
-    //      Trk->printAll();
-    double h1_fltlen = Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-    trk_mom          = Trk->momentum(h1_fltlen);
-    double mom   = trk_mom.mag();
-    double pt    = trk_mom.perp();
-    double costh = trk_mom.cosTheta();
+    int q         = Trk->charge();
 
-    printf("%5i   %16p   %2i %10.3f %10.3f %10.3f %10.3f   %3i %10.3f  %3i %10.3e\n",
-	   -1,Trk,q,mom,pt,costh,t0,nact,chi2,ndof,fit_consistency);
+    Hep3Vector trk_mom;
+
+    trk_mom       = Trk->momentum(s);
+    double mom    = trk_mom.mag();
+    double pt     = trk_mom.perp();
+    double costh  = trk_mom.cosTheta();
+
+    printf("%5i %16p %3i %3i %8.3f %7.3f %8.4f %7.3f %7.4f",
+	   -1,
+	   Trk,
+	   nhits,
+	   nact,
+	   q*mom,pt,costh,t0,t0err
+	   );
+
+    printf(" %8.5f %8.3f %8.3f %8.4f %7.4f",
+	   omega,d0,z0,phi0,tandip
+	   );
+    printf(" %8.3f %10.3e\n",
+	   chi2,
+	   fit_consistency);
   }
 
   if (opt.Index("hits") >= 0) {
