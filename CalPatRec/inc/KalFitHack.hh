@@ -12,6 +12,7 @@
 #include "fhiclcpp/ParameterSet.h"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -48,7 +49,6 @@ namespace mu2e {
 // main function: given a track definition, create a fit object from it
 //-----------------------------------------------------------------------------
     virtual void makeTrack(KalFitResult& kres, CalTimePeak* TPeak=NULL, int markDoubs=0);
-
 //---------------------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following function for printing the hits included in the track
 //----------------------------------------------------------------------------------------------
@@ -63,16 +63,20 @@ namespace mu2e {
     
     //    void setMultipletsAmbig(std::vector<TrkStrawHit*> *hits);
 
+
+    void setStepPointMCVectorCollection(const mu2e::PtrStepPointMCVectorCollection* List) {
+      fListOfMCStrawHits = List;
+    }
 //-----------------------------------------------------------------------------------------
 //2015 - 02 -20 G. Pezzu addedd the function for calculataing the slope of the lines
 // tangent to two given circles
 //-----------------------------------------------------------------------------------------
     void findLines(Hep3Vector A[2], double rb[2], double *Slopes);
     
-    void findLines1(double xa, double ya, double ra,
-		   double xb, double yb, double rb,
-		   double *slopes,
-		   int    *ambStrawA, int *ambStrawB);
+//     void findLines1(double xa, double ya, double ra,
+// 		   double xb, double yb, double rb,
+// 		   double *slopes,
+// 		   int    *ambStrawA, int *ambStrawB);
     
 // add a set of hits to an existing fit
     virtual void addHits(KalFitResult&             kres   , 
@@ -130,6 +134,8 @@ namespace mu2e {
     double             fMinDriftDoublet;
     double             fDeltaDriftDoublet;
     double             fSigmaSlope;
+    std::string        fMakeStrawHitModuleLabel;
+
     bool               _removefailed;
     unsigned           _minnstraws;
     TrkParticle        _tpart;
@@ -141,6 +147,8 @@ namespace mu2e {
     int                 fAmbigVec     [40000];
     int                 fAmbigVecSlope[40000];
     int                 fAnnealingStep;
+
+    const mu2e::PtrStepPointMCVectorCollection*  fListOfMCStrawHits;
 //-----------------------------------------------------------------------------
 // helper functions
 //-----------------------------------------------------------------------------
