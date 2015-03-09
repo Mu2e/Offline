@@ -6,7 +6,6 @@
 #include "art/Persistency/Common/CollectionUtilities.h"
 #include "art/Persistency/Common/PtrVector.h"
 #include "cetlib/map_vector.h"
-#include "cpp0x/memory"
 #include "art/Utilities/InputTag.h"
 
 #include "boost/noncopyable.hpp"

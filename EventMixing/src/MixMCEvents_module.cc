@@ -110,7 +110,6 @@
 
 // Includes from the art tool chain.
 #include "cetlib/map_vector.h"
-#include "cpp0x/memory"
 
 // ROOT includes
 #include "TH1F.h"
