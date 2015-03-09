@@ -266,7 +266,9 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     printf("----------------------------------------------------------------");
     printf("--------------------------------------------\n");
 
+    Hep3Vector pos;
     int i = 0;
+
     for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
       //	  const KalHit* kh = (*it).kalHit();
 
@@ -277,11 +279,9 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
       const mu2e::StrawHit* sh = &hit->strawHit();
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
-      Hep3Vector pos;
-
       hit->hitPosition(pos);
-      double len = hit->fltLen();
 
+      double    len  = hit->fltLen();
       HepPoint  plen = Trk->position(len);
 //-----------------------------------------------------------------------------
 // find MC truth DOCA in a given straw
