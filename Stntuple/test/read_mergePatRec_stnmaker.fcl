@@ -43,17 +43,6 @@ services : {
 }
 
 physics : {
-
-    filters: {
-#------------------------------------------------------------------------------
-# Stntuple maker sequence
-#------------------------------------------------------------------------------
-	InitStntuple         : @local::InitStntuple
-	StntupleMaker        : @local::StntupleMaker
-	FillStntuple         : @local::FillStntuple
-	MuHitDisplay         : @local::MuHitDisplay
-    }
-
     producers: {
         protonTimeMap        : { module_type : GenerateProtonTimes }
         muonTimeMap          : { module_type : GenerateMuonLife }
@@ -89,6 +78,17 @@ physics : {
 	TrkExtrapol                     : @local::TrkExtrapol
 	ParticleID                      : @local::ParticleID
     }
+
+    filters: {
+#------------------------------------------------------------------------------
+# Stntuple maker sequence and the event display
+#------------------------------------------------------------------------------
+	InitStntuple         : @local::InitStntuple
+	StntupleMaker        : @local::StntupleMaker
+	FillStntuple         : @local::FillStntuple
+	MuHitDisplay         : @local::MuHitDisplay
+    }
+
 
     analyzers: {
 	genCountLogger: {

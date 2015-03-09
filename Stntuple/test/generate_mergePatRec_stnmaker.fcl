@@ -88,6 +88,7 @@ physics : {
 
 	CalPatRecFSHP                   : @local::CalPatRecFSHP
 	CalPatRecMakeStrawHitPositions  : @local::CalPatRecMakeStrawHitPositions
+	CalPatRecMakeStereoHits         : @local::CalPatRecMakeStereoHits
 	CalPatRecFlagStrawHits          : @local::CalPatRecFlagStrawHits
 	CalPatRecFlagBkgHits            : @local::CalPatRecFlagBkgHits
 	CalPatRec                       : @local::CalPatRec
@@ -138,7 +139,8 @@ physics : {
 	       , MakeCaloCluster
 	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
 
-	       , CalPatRecFSHP, CalPatRecMakeStrawHitPositions 
+	       , CalPatRecFSHP
+	       , CalPatRecMakeStereoHits 
 	       , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
 	       , CalPatRec
 	       , MergePatRec
@@ -181,13 +183,29 @@ services.scheduler.wantSummary: true
 physics.producers.makeSD.TimeOffsets              : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 #
 
-# physics.producers.CalPatRec.debugLevel                            : 1
+# physics.producers.CalPatRec.debugLevel                           : 1
 # physics.producers.CalPatRec.HelixFitHack.debugLevel              : 1
 # physics.producers.CalPatRec.KalFitHack.debugLevel                : 1
 
-physics.producers.TrkExtrapol.fitterModuleLabel                  : MergePatRec
-physics.producers.CaloMatching.fitterModuleLabel                 : MergePatRec
-physics.producers.ParticleID.fitterModuleLabel                   : MergePatRec
+physics.producers.TrkExtrapol.fitterModuleLabel         : MergePatRec
+physics.producers.CaloMatching.fitterModuleLabel        : MergePatRec
+physics.producers.ParticleID.fitterModuleLabel          : MergePatRec
 
-physics.filters.InitStntuple.histFileName                        : "mergePatRec_stnmaker.stn"
-physics.filters.StntupleMaker.trkPatRecDem                       : MergePatRec
+physics.filters.InitStntuple.histFileName               : "mergePatRec_stnmaker.stn"
+physics.filters.StntupleMaker.g4ModuleLabel             : "g4run"
+
+#------------------------------------------------------------------------------
+# just one track block "TrackBlock" with output of MergePatRec
+#------------------------------------------------------------------------------
+# physics.filters.StntupleMaker.trkRecoModuleLabel   : [ "MergePatRec" ]
+
+#------------------------------------------------------------------------------
+#  3 track blocks, for the moment need to specify all other labels
+#------------------------------------------------------------------------------
+physics.filters.StntupleMaker.trackBlockName          : [ "TrackBlock" , "TrkPatRec" , "CalPatRec" ] 
+physics.filters.StntupleMaker.trkRecoModuleLabel      : [ "MergePatRec", "TrkPatRec" , "CalPatRec" ]
+physics.filters.StntupleMaker.trkExtrapolModuleLabel  : [ "TrkExtrapol",          "" ,          "" ]
+physics.filters.StntupleMaker.trkCaloMatchModuleLabel : [            "",          "" ,          "" ]
+physics.filters.StntupleMaker.pidModuleLabel          : [            "",          "" ,          "" ]
+physics.filters.StntupleMaker.fitParticle             : [            11,           11,          11 ]
+physics.filters.StntupleMaker.fitDirection            : [             0,            0,           0 ]

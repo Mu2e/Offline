@@ -225,17 +225,24 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
   TString opt = Opt;
   
   if ((opt == "") || (opt == "banner")) {
-    printf("------------------------------------------------------------------------------------------\n");
+    printf("-----------------------------------------------------------------------------------------------------\n");
     printf("%s",Prefix);
-    printf("  TrkID    Address      Q    momentum       pt       costh       T0     Nact     chi2  N(dof)  FitCons\n");
-    printf("------------------------------------------------------------------------------------------\n");
+    printf("  TrkID    Address  N   Na    P    pT   costh    T0  T0Err  Omega  D0  Z0  Phi0  TanDip   Chi2  FCons\n");
+    printf("-----------------------------------------------------------------------------------------------------\n");
   }
  
   if ((opt == "") || (opt.Index("data") >= 0)) {
     double chi2  = Trk->chisq();
     int    ndof  = Trk->nDof ();
     int    nact  = Trk->nActive();
+
     double t0    = Trk->t0().t0();
+    double t0err = Trk->t0().t0err();
+    double d0    = Trk->helix(0).d0();
+    double z0    = Trk->helix(0).z0();
+    double phi0  = Trk->helix(0).phi0();
+    double c0    = Trk->helix(0).omega();
+
     double fit_consistency = Trk->chisqConsistency().consistency();
     int q        = Trk->charge();
     Hep3Vector trk_mom;
