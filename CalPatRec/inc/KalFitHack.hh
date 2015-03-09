@@ -63,16 +63,20 @@ namespace mu2e {
     
     //    void setMultipletsAmbig(std::vector<TrkStrawHit*> *hits);
 
+
+    void setStepPointMCVectorCollection(const mu2e::PtrStepPointMCVectorCollection* List) {
+      fListOfMCStrawHits = List;
+    }
 //-----------------------------------------------------------------------------------------
 //2015 - 02 -20 G. Pezzu addedd the function for calculataing the slope of the lines
 // tangent to two given circles
 //-----------------------------------------------------------------------------------------
     void findLines(Hep3Vector A[2], double rb[2], double *Slopes);
     
-    void findLines1(double xa, double ya, double ra,
-		   double xb, double yb, double rb,
-		   double *slopes,
-		   int    *ambStrawA, int *ambStrawB);
+//     void findLines1(double xa, double ya, double ra,
+// 		   double xb, double yb, double rb,
+// 		   double *slopes,
+// 		   int    *ambStrawA, int *ambStrawB);
     
 // add a set of hits to an existing fit
     virtual void addHits(KalFitResult&             kres   , 
@@ -144,7 +148,7 @@ namespace mu2e {
     int                 fAmbigVecSlope[40000];
     int                 fAnnealingStep;
 
-    mu2e::PtrStepPointMCVectorCollection*  fListOfMCStrawHits;
+    const mu2e::PtrStepPointMCVectorCollection*  fListOfMCStrawHits;
 //-----------------------------------------------------------------------------
 // helper functions
 //-----------------------------------------------------------------------------

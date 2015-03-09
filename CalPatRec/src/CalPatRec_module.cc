@@ -156,12 +156,16 @@ namespace mu2e {
 
 					// cache of event objects
 
-    const StrawHitCollection*         _shcol;
-    const StrawHitFlagCollection*     _shfcol;
-    StrawHitFlagCollection*           _flags;
-    const StrawHitPositionCollection* _shpcol;
-    const CaloClusterCollection*      _ccCollection;
-    const StepPointMCCollection*      _stepcol;
+    const StrawHitCollection*             _shcol;
+    const StrawHitFlagCollection*         _shfcol;
+    const StrawHitPositionCollection*     _shpcol;
+    const CaloClusterCollection*          _ccCollection;
+    const StepPointMCCollection*          _stepcol;
+    const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
+
+					// flags are not const - for a reason ?
+
+    StrawHitFlagCollection*            _flags;
 
 					// Kalman fitters.  Seed fit has a special configuration
     KalFitHack               _seedfit;
@@ -520,7 +524,18 @@ namespace mu2e {
 	     _ccmLabel.data());
     }
 //-----------------------------------------------------------------------------
-// 
+// find list of MC hits - for debugging only
+//-----------------------------------------------------------------------------
+    art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
+    evt.getByLabel(_shLabel,"StrawHitMCPtr",mcptrHandle);
+    if (mcptrHandle.isValid()) {
+      _listOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
+    }
+    else {
+      _listOfMCStrawHits = NULL;
+    }
+//-----------------------------------------------------------------------------
+// done
 //-----------------------------------------------------------------------------
     return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_ccCollection != 0);
   }
@@ -572,6 +587,9 @@ namespace mu2e {
       printf("CalPatRec::produce ERROR: No straw hits found, RETURN\n");
                                                             goto END;
     }
+
+    _kfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
+    _seedfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
 //-----------------------------------------------------------------------------
 // all needed pieces of data have been found, 
 // tighten the energy cut and copy flags, clear 
