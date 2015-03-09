@@ -376,16 +376,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     const mu2e::TrkStrawHit  *hit, *closest_hit;
     const TrkHotList*        hot_list = krep->hotList();
     
-    double chi2c(0), dr;
-    for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
-      hit = (const mu2e::TrkStrawHit*) &(*it);
-      dr  = hit->resid();
-      //      Hist->fResid->Fill(dr);
-      // normalize by 100 microns
-      chi2c += dr*dr/0.01;
-    }
-
-    track->fChi2C = chi2c;
+    track->fChi2C = -1.;   // unused
 
     //      id_word = fTrackID->IDWord(TMu2eStnTrackID = TrackPassedSelectionC(track);
     
