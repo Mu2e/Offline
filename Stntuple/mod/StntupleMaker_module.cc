@@ -22,6 +22,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include "TNamed.h"
 #include "TH1.h"
 #include "TString.h"
 #include "TProfile.h"
@@ -36,16 +37,20 @@
 
 //  #include "Stntuple/obj/TStnTriggerBlock.hh"
 
+#include "Stntuple/mod/StntupleModule.hh"
 #include "Stntuple/mod/StntupleGlobals.hh"
-#include "Stntuple/mod/StntupleMaker_module.hh"
+// #include "Stntuple/mod/StntupleMaker_module.hh"
 
 #include "Stntuple/mod/InitStntupleDataBlocks.hh"
 #include "Stntuple/mod/StntupleUtilities.hh"
 
+#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "TrkBase/TrkParticle.hh"
+
 #include "Stntuple/alg/TStntuple.hh"
 #include "Stntuple/mod/StntupleGlobals.hh"
 
-// using namespace std; 
+using namespace std; 
 
 // ClassImp(StntupleMaker)
 
@@ -53,40 +58,102 @@ static const char rcsid[] = "$Name:  $";
 
 void stntuple_get_version(char*& ver, char*& test);
 namespace mu2e {
+class StntupleMaker : public StntupleModule {
+//------------------------------------------------------------------------------
+//  data members
+//------------------------------------------------------------------------------
+protected:
+					// process name, default - PROD
+  std::string      fProcessName;
+					// switches for individual branches
+  int              fMakeCalData;
+  int              fMakeClusters;
+  int              fMakeStrawData;
+  int              fMakeTracks;
+  int              fMakeTrigger;
+  int              fMakeGenp;
+  int              fMakeSimp;
+  int              fMakeVirtualHits;
+//-----------------------------------------------------------------------------
+// module parameters
+//-----------------------------------------------------------------------------
+  std::string              fG4ModuleLabel;
+  std::string              fMakeStrawHitModuleLabel;
+
+  std::vector<std::string> fTrackBlockName;
+  std::vector<std::string> fTrkRecoModuleLabel;
+  std::vector<std::string> fTrkExtrapolModuleLabel;
+  std::vector<std::string> fTrkCaloMatchModuleLabel;
+  std::vector<std::string> fPidModuleLabel;
+
+  std::vector<int>         fFitParticle;
+  std::vector<int>         fFitDirection;
+
+  std::string              fCaloCrystalHitMaker;
+  std::string              fCaloClusterMaker;
+  
+  double                   fMinTActive  ;  // start of the active window
+  double                   fMinECrystal ;  // 
+
+  TNamed*                  fVersion;
+//------------------------------------------------------------------------------
+// function members
+//------------------------------------------------------------------------------
+public:
+					// constructors and destructor
+
+  StntupleMaker(fhicl::ParameterSet const& pset);
+
+  ~StntupleMaker();
+//-----------------------------------------------------------------------------
+// functions of the module
+//-----------------------------------------------------------------------------
+  void GetDefTrackCollName(char* Name);
+
+					// ****** setters
+
+//-----------------------------------------------------------------------------
+// overloaded virtual functions of EDFilter
+//-----------------------------------------------------------------------------
+  virtual bool beginRun(art::Run& ARun);
+  virtual bool endRun  (art::Run& ARun);
+  virtual void beginJob();
+  virtual void endJob  ();
+  virtual bool filter  (AbsEvent& event);
+
+  //  ClassDef(StntupleMaker,0)
+};
+
+
+
 //------------------------------------------------------------------------------
 // constructors
 //------------------------------------------------------------------------------
 StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet): 
   StntupleModule        (PSet,"StntupleMaker")
-  , fProcessName        (PSet.get<std::string> ("processName"    ,"PROD"          ))
+  , fProcessName        (PSet.get<string> ("processName"    ,"PROD"          ))
   , fMakeCalData        (PSet.get<int>         ("makeCalData"    ,        0       ))
   , fMakeClusters       (PSet.get<int>         ("makeClusters"   ,        1       ))
   , fMakeStrawData      (PSet.get<int>         ("makeStrawData"  ))
-  , fMakeTracksA        (PSet.get<int>         ("makeTracksA"    ))
   , fMakeTracks         (PSet.get<int>         ("makeTracks"     ))
-  , fMakeTracksUem      (PSet.get<int>         ("makeTracksUem"  ,        0       ))
-  , fMakeTracksDmm      (PSet.get<int>         ("makeTracksDmm"  ,        0       ))
-  , fMakeTracksUmm      (PSet.get<int>         ("makeTracksUmm"  ,        0       ))
   , fMakeTrigger        (PSet.get<int>         ("makeTrigger"    ,        0       ))
   , fMakeGenp           (PSet.get<int>         ("makeGenp"       ,        1       ))
   , fMakeSimp           (PSet.get<int>         ("makeSimp"       ,        1       ))
   , fMakeVirtualHits    (PSet.get<int>         ("makeVirtualHits",        0       ))
   
-  , fG4ModuleLabel          (PSet.get<std::string>("g4ModuleLabel"      ))
-  , fMakeStrawHitModuleLabel(PSet.get<std::string>("makeStrawHitModuleLabel"     ))
-  , fTrackBlockName         (PSet.get<std::vector<std::string>>("trackBlockName"    ))
-  , fTrkRecoModuleLabel     (PSet.get<std::vector<std::string>>("trkRecoModuleLabel"))
-  , fTrkExtrapolModuleLabel (PSet.get<std::vector<std::string>>("trkExtrapolModuleLabel"))
-  , fTrkCaloMatchModuleLabel(PSet.get<std::vector<std::string>>("trkCaloMatchModuleLabel"))
-  , fPidModuleLabel         (PSet.get<std::vector<std::string>>("pidModuleLabel"))
+  , fG4ModuleLabel          (PSet.get<string>             ("g4ModuleLabel"          ))
+  , fMakeStrawHitModuleLabel(PSet.get<string>             ("makeStrawHitModuleLabel"))
+  , fTrackBlockName         (PSet.get<vector<string>>("trackBlockName"         ))
+  , fTrkRecoModuleLabel     (PSet.get<vector<string>>("trkRecoModuleLabel"     ))
+  , fTrkExtrapolModuleLabel (PSet.get<vector<string>>("trkExtrapolModuleLabel" ))
+  , fTrkCaloMatchModuleLabel(PSet.get<vector<string>>("trkCaloMatchModuleLabel"))
+  , fPidModuleLabel         (PSet.get<vector<string>>("pidModuleLabel"         ))
   
-  , fFitParticle            (PSet.get<std::vector<int>>        ("fitParticle"       ))
-  , fFitDirection           (PSet.get<std::vector<int>>        ("fitDirection"      ))
+  , fFitParticle            (PSet.get<vector<int>>        ("fitParticle"       ))
+  , fFitDirection           (PSet.get<vector<int>>        ("fitDirection"      ))
 
-  , fCaloCrystalHitMaker(PSet.get<std::string> ("caloCrystalHitsMaker"))
-  , fCaloClusterMaker   (PSet.get<std::string> ("caloClusterMaker"    ))
-  , fTrkExtrapol        (PSet.get<std::string> ("trkExtrapol"         ))
-  , fTrkCalMatch        (PSet.get<std::string> ("trkCalMatch"         ))
+  , fCaloCrystalHitMaker(PSet.get<string> ("caloCrystalHitsMaker"))
+  , fCaloClusterMaker   (PSet.get<string> ("caloClusterMaker"    ))
   
   , fMinTActive         (PSet.get<double>      ("minTActive"     ))
   , fMinECrystal        (PSet.get<double>      ("minECrystal"    ))
@@ -153,7 +220,7 @@ void StntupleMaker::beginJob() {
 
   int split_mode, compression_level, buffer_size;
 
-  std::string      _iname1;	// data instance name
+  string      _iname1;	// data instance name
 
   THistModule::beforeBeginJob();
 
@@ -221,9 +288,9 @@ void StntupleMaker::beginJob() {
   TStnDataBlock *track_data;
   const char    *block_name;
   int            nblocks;
-  std::string    iname;
+  string         iname;
 
-  if (fMakeTracksA) {
+  if (fMakeTracks) {
     nblocks = fTrackBlockName.size();
 
     for (int i=0; i<nblocks; i++) {

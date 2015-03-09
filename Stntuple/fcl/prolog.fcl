@@ -24,13 +24,9 @@ StntupleMaker : {
 #------------------------------------------------------------------------------
 # define which branches to make
 #------------------------------------------------------------------------------    
-    makeCalData         : 1
+    makeCalData         : 0
     makeStrawData       : 0
-    makeTracksA         : 1 
-    makeTracks          : 0
-    makeTracksUem       : 0
-    makeTracksDmm       : 0
-    makeTracksUmm       : 0
+    makeTracks          : 1
     makeClusters        : 1
     makeGenp            : 1
     makeSimp            : 1
