@@ -91,6 +91,7 @@ CalPatRec            : {
     minClusterSize                              : 0      # number of crystals
     MaxHelixDoca                                : 60.    # in mm
     MaxAddDoca                                  : 7.     # in mm
+    MaxAddChi                                   : 3.5    # normalized unit
     # Kalman fit configuration for the helix seed fit
     SeedFitHack : {
 	debugLevel                              : 0

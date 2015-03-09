@@ -991,7 +991,6 @@ namespace mu2e {
 	  kaldef.setIndices(goodhits);
 
 	  _kfit.makeTrack(kalfit,tp, fUseDoublets);
-
 //-----------------------------------------------------------------------------
 // if successfull, try to add missing hits
 //-----------------------------------------------------------------------------
@@ -1003,16 +1002,34 @@ namespace mu2e {
 	    findkal = true;
 	    
 	    if (_addhits) {
-	      //	      ++nAddHits;
-				// first, add back the hits on this track
+//-----------------------------------------------------------------------------
+// first, add back the hits on this track
+//-----------------------------------------------------------------------------
 	      _kfit.unweedHits(kalfit,_maxaddchi);
+	      if (_debug > 0) {
+		_kfit.printHits(kalfit,"CalPatRec::produce after unweedHits 001");
+	      }
+
 	      std::vector<hitIndex> misshits;
 	      findMissingHits(kalfit,misshits);
 	      if (misshits.size() > 0) {
-		_kfit.addHits(kalfit,_shcol,misshits,_maxaddchi, tp);
+		_kfit.addHits(kalfit,_shcol,misshits, 15.0/*FIX ME*/, tp);
+
+		if (_debug > 0) {
+		  _kfit.printHits(kalfit,"CalPatRec::produce after addHits");
+		}
+	      }
+//-----------------------------------------------------------------------------
+// and weed hits again to insure that addHits doesn't add junk
+//-----------------------------------------------------------------------------
+	      _kfit.unweedHits(kalfit,_maxaddchi);
+	      if (_debug > 0) {
+		_kfit.printHits(kalfit,"CalPatRec::produce after unweedHits 002");
 	      }
 	    }
-
+//-----------------------------------------------------------------------------
+// done, fill debug histograms
+//-----------------------------------------------------------------------------
 	   const TrkHotList* hot_l = kalfit._krep->hotList();
 	    
 	    for (int i=0; i< nIndexes; ++i){
@@ -1383,7 +1400,7 @@ namespace mu2e {
     kalfit._krep->pieceTraj().getInfo(0.0,tpos,tdir);
     unsigned nstrs = _shcol->size();
     if (_debug>0){
-      printf("[CalPatRec::findMissingHits]  shId  |  sec | panel |  doca   |\n");
+      printf("[CalPatRec::findMissingHits]      shId    sec     panel       doca   \n");
       }
 
     for(unsigned istr=0; istr<nstrs;++istr){

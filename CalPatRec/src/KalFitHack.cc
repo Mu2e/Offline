@@ -546,6 +546,15 @@ namespace mu2e
 	      hit[i]->setExtErr(2.5);
 	    }
 	  }
+	  else {
+	    if ((rdrift[0] > fMinDriftDoublet) && (rdrift[1] > fMinDriftDoublet)) {
+//-----------------------------------------------------------------------------
+// SS doublet, radii are different and both are large enough - doublet drift signs 
+// are determined reliably
+//-----------------------------------------------------------------------------
+	      hit[i]->setExtErr(ext_err/fScaleErrDoublet);
+	    }
+	  }
 	}
       }
     
@@ -704,7 +713,8 @@ namespace mu2e
       hit->setExtErr(_herr[fAnnealingStep]);
     }
 
-    if (fMarkDoublets == 0) return;
+    //    if (fMarkDoublets == 0) return;
+    if ( (fAnnealingStep >= fILoopMarkDoublets) || (fMarkDoublets == 0) ) return;
 //-----------------------------------------------------------------------------
 // create list of doublets 
 //-----------------------------------------------------------------------------
@@ -736,8 +746,8 @@ namespace mu2e
 // and
 // |xB cos theta + yB sin theta + C| = rB
 // Solving these equations for costheta and sintheta isn't easy, but when we do, we get:
-// A = costheta = ((xA-xB)(±rA±rB) + (yA-yB) sqrt((xA-xB)2+(yA-yB)2-(±rA±rB)2))/((xA-xB)2+(yA-yB)2)
-// B = sintheta = ((yA-yB)(±rA±rB) - (xA-xB) sqrt((xA-xB)2+(yA-yB)2-(±rA±rB)2))/((xA-xB)2+(yA-yB)2)
+// A = costheta = ((xA-xB)(±rA±rB) + (yA-yB) sqrt((xA-xB)^2+(yA-yB)^2-(±rA±rB)^2))/((xA-xB)^2+(yA-yB)^2)
+// B = sintheta = ((yA-yB)(±rA±rB) - (xA-xB) sqrt((xA-xB)^2+(yA-yB)^2-(±rA±rB)^2))/((xA-xB)^2+(yA-yB)^2)
 
 // points tangent to the circles are
 // (xA±-rA cos theta, yA±-rA sin theta) and
@@ -912,7 +922,7 @@ namespace mu2e
 			   CalTimePeak*               tpeak   ) {
 
 					// there must be a valid Kalman fit to add hits to
-
+    int activity(0);
     if(kres._krep != 0 && kres._fit.success()){
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
       const Tracker& tracker = getTrackerOrThrow();
@@ -924,7 +934,7 @@ namespace mu2e
       const TrkDifPieceTraj* reftraj = kres._krep->referenceTraj();
 
       if (_debug>0){
-	printf("[KalFitHack::addHits]  shId  |  sec | panel |  res  | drift |  chi  |\n");
+	printf("[KalFitHack::addHits]  shId   A      sec      panel      res        hitRMS       drift      chi2  \n");
       }
 
       for(unsigned iind=0;iind<indices.size(); ++iind){
@@ -969,18 +979,22 @@ namespace mu2e
 	  kres._krep->addInter(gasinter);
 // check the raw residual: This call works because the HOT isn't yet processed as part of the fit.
         double chi = fabs(trkhit->residual()/trkhit->hitRms());
-	if (_debug>0){
-	  printf("[KalFitHack::addHits] %5i | %3i | %3i | %10.3f | %10.3f | %10.3f |\n",
-		 straw.index().asInt(),
-		 straw.id().getDevice(),
-		 straw.id().getSector(),
-		 trkhit->residual(),
-		 trkhit->driftRadius(),
-		 chi);
-	}
+	activity = 1;
 // if it's outside limits, deactivate the HOT
 	if (chi > maxchi || !trkhit->physicalDrift(maxchi)) {
 	  trkhit->setActivity(false);
+	  activity = 0;
+	}
+	if (_debug>0){
+	  printf("[KalFitHack::addHits] %5i %3i  %6i  %6i  %10.3f  %10.3f %10.3f  %10.3f \n",
+		 straw.index().asInt(),
+		 activity,
+		 straw.id().getDevice(),
+		 straw.id().getSector(),
+		 trkhit->residual(),
+		 trkhit->hitRms(),
+		 trkhit->driftRadius(),
+		 chi);
 	}
 // now that we've got the residual, turn off auto-ambiguity resolution
 	trkhit->setAmbigUpdate(false);
@@ -993,7 +1007,13 @@ namespace mu2e
 //2015 - 02 - 27 Gianipez added the loop for including the external errors 
 //---------------------------------------------------------------------------
       if (tpeak){
-	fitIteration(kres,_herr.size()-1, tpeak);
+//------------------------------------------------------------------------------------------
+// 2015 - 03 - 09 Gainipez added the following line for forcing the fiITeration procedure
+// to use findAndMarkDoublets
+//------------------------------------------------------------------------------------------
+	for (size_t iherr=_herr.size()-2; iherr<_herr.size();++iherr) {
+	  fitIteration(kres, iherr, tpeak);
+	}
       }else{
 	fitIteration(kres,_herr.size()-1);
       }
@@ -1008,22 +1028,10 @@ namespace mu2e
 // and store the last fit that converges
 
     for (size_t iherr=0; iherr<_herr.size();++iherr) {
-      //      condition = false;
       fitIteration(kres,iherr,TPeak);
 
       if (! kres._fit.success()) break; //commented by gianipez
-      // if(iherr==0){
-// 	condition = false;
-// 	chisqN = kres._krep->chisq();
-// 	fitIndex = 0;
-//       }else {
-// 	condition = (kres._krep->chisq() < chisqN);
-//       }
-//       if( kres._fit.success() && condition ) {
-// 	fitIndex = int(iherr);
-// 	chisqN   = kres._krep->chisq();
-//       }
-    }
+     }
 
     if(kres._krep != 0) kres._krep->addHistory(kres._fit,"KalFitHack");
   }
@@ -1047,12 +1055,14 @@ namespace mu2e
       printf("[KalFitHack::fitIteration] BEGIN iherr:%i \n", int(iherr));
       printf("------------------------------------------------------------------------------------------\n");
     }
+
+    fAnnealingStep = iherr;
+
 //-----------------------------------------------------------------------------------
 // 2015 -02 -17 G. Pezzullo: loop over the hits and assign a smaller external error 
 // for the doublets
 //-----------------------------------------------------------------------------------
-    fAnnealingStep = iherr;
-    if ((fAnnealingStep < fILoopMarkDoublets) && (fMarkDoublets==1)) {
+//    if ((fAnnealingStep < fILoopMarkDoublets) && (fMarkDoublets==1)) {
 //--------------------------------------------------------------------------------
 // 2015-02-19 G. Pezzu: re-search multiplets using updated fit results
 //-----------------------------------------------------------------------------
@@ -1060,7 +1070,7 @@ namespace mu2e
       if (_debug>0){
 	printHits(kres,"fitIteration_001");
       }
-    }
+      //   }
 
     kres._nt0iter = 0;
     kres._fit     = TrkErrCode::succeed;
@@ -1072,12 +1082,12 @@ namespace mu2e
 //2015-02-17 G. Pezzu: fix the ambiguity of the doublets!
 //2015-02-19 G. Pezzu: re-search hit multiplets using updated fit results
 //--------------------------------------------------------------------------------
-      if ( (fAnnealingStep < fILoopMarkDoublets) && (fMarkDoublets == 1)) {
+//      if ( (fAnnealingStep < fILoopMarkDoublets) && (fMarkDoublets == 1)) {
 	findAndMarkMultiplets(kres._krep, &kres._hits);
 	if (_debug > 0) {
 	  printHits(kres,"fitIteration_002");
 	}
-      }
+	//      }
 //--------------------------------------------------------------------------------
 // perform the track fit
 //-----------------------------------------------------------------------------
@@ -1116,33 +1126,33 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     fNIter += niter;
 
-    if (fit_success) {
-      int iamb[200];
-					// cache old ambiguities
-      nhits = kres._hits.size();
-      for (int i=0; i<nhits; ++i){
-	hit     = kres._hits.at(i);
-	iamb[i] = hit->ambig();
-      }      
+    // if (fit_success) {
+//       int iamb[200];
+// 					// cache old ambiguities
+//       nhits = kres._hits.size();
+//       for (int i=0; i<nhits; ++i){
+// 	hit     = kres._hits.at(i);
+// 	iamb[i] = hit->ambig();
+//       }      
 
-      _ambigresolver[iherr]->resolveTrk(kres);
-      findAndMarkMultiplets(kres._krep, &kres._hits);
-      if (_debug>0) {
-	printHits(kres,"fitIteration_003");
-      }
-//-----------------------------------------------------------------------------
-// want to know whether the drift signs change at this stage
-//-----------------------------------------------------------------------------
-      for (int i=0; i<nhits; ++i){
-	hit     = kres._hits.at(i);
-	if (_debug>0){
-	  if (iamb[i] != hit->ambig()) {
-	    printf("[KalFitHack::fitIteration] WARNING: hit %i drift sign changed from %2i to %2i\n",
-		   i,iamb[i],hit->ambig());
-	  }
-	}
-      }      
-    }
+//       _ambigresolver[iherr]->resolveTrk(kres);
+//       findAndMarkMultiplets(kres._krep, &kres._hits);
+//       if (_debug>0) {
+// 	printHits(kres,"fitIteration_003");
+//       }
+// //-----------------------------------------------------------------------------
+// // want to know whether the drift signs change at this stage
+// //-----------------------------------------------------------------------------
+//       for (int i=0; i<nhits; ++i){
+// 	hit     = kres._hits.at(i);
+// 	if (_debug>0){
+// 	  if (iamb[i] != hit->ambig()) {
+// 	    printf("[KalFitHack::fitIteration] WARNING: hit %i drift sign changed from %2i to %2i\n",
+// 		   i,iamb[i],hit->ambig());
+// 	  }
+// 	}
+//       }      
+//     }
     kres._ninter = kres._krep->intersections();
   }
 
@@ -1236,7 +1246,7 @@ namespace mu2e
     printf("---------------------------------------------------------------------------");
     printf("-----------------------------------------------------------------------------\n");
     printf(" ih U A     len      rms       x          y          z       HitT     HitDt");
-    printf("  SInd  Dev Sec Lay  N      T0    Rdrift     Xs       Ys        Zs      resid\n");
+    printf("  SInd  Dev Sec Lay  N      T0    Rdrift     Xs       Ys        Zs      resid   rErr\n");
     printf("---------------------------------------------------------------------------");
     printf("-----------------------------------------------------------------------------\n");
 
@@ -1286,7 +1296,7 @@ namespace mu2e
       if (hit->ambig() != 0) printf(" %8.3f" ,hit->ambig()*hit->driftRadius());
       else                   printf(" *%7.3f",hit->driftRadius());
 
-      printf(" %8.3f %8.3f %9.3f %8.3f\n",pos.x(),pos.y(),pos.z(),resid);
+      printf(" %8.3f %8.3f %9.3f %8.3f %8.3f\n",pos.x(),pos.y(),pos.z(),resid,re);
     }
     printf("---------------------------------------------------------------------------");
     printf("-----------------------------------------------------------------------------\n");

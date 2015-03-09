@@ -1562,6 +1562,7 @@ namespace mu2e
 //--------------------------------------------------------------------------------
   void HelixFitHack::printInfo(HelixFitHackResult& mytrk){
     TString banner="HelixFitHack::printInfo";
+    double radialDist(0), dx, dy;
 
     if (_debug > 0) {
       printf("[%s] N - points = %3.3f\n",   banner.Data(),  mytrk._sxy.qn() - 1);
@@ -1572,9 +1573,12 @@ namespace mu2e
 
       int np = _xyzp.size();
       for (int i=0; i<np; i++) {
-	printf("[%s] %08x %2i %12.5f %12.5f %12.5f \n", banner.Data(),
+	dx = _xyzp[i]._pos.x() - mytrk._sxy.x0();
+	dy = _xyzp[i]._pos.y() - mytrk._sxy.y0();
+	radialDist = sqrt(dx*dx+dy*dy) - mytrk._sxy.radius();
+	printf("[%s] %08x %2i %12.5f %12.5f %12.5f %10.3f\n", banner.Data(),
 	       *((int*) &_xyzp[i]._flag), _indicesTrkCandidate[i] < 0 ? 0 : _indicesTrkCandidate[i], 
-	       _xyzp[i]._pos.x(), _xyzp[i]._pos.y(), _xyzp[i]._pos.z()
+	       _xyzp[i]._pos.x(), _xyzp[i]._pos.y(), _xyzp[i]._pos.z(), radialDist
 	       );
       }
     }
@@ -1821,7 +1825,7 @@ namespace mu2e
   int HelixFitHack::refineHelixParameters(XYZPHackVector& Xyzp, HelixFitHackResult& Trk,
 					  int seedIndex, int *indexVec) {
 
-  double    wt, x0, y0, sinth2, costh, e2, x, y, dx, dy;
+    double    wt, x0, y0, sinth2, costh, e2, x, y, dx, dy, r, radialDist;
   double    rs( 2.5);  // mm
   double    ew(30.0);  // mm - erro along the wire   
 
@@ -1830,15 +1834,16 @@ namespace mu2e
   double weights[np];
   int    success = 0;
   
-  x0 = Trk._sxy.x0();//_center.x();
-  y0 = Trk._sxy.y0();//_center.y();
+  x0 = Trk._sxy.x0();		//_center.x();
+  y0 = Trk._sxy.y0();		//_center.y();
+  r  = Trk._sxy.radius();
 
   if (_debug > 5) {
     printf("[HelixFitHack::refineHelixParameters] starts x0 = %8.3f y0 = %8.3f radius = %8.3f chi2 = %8.3f \n",
 	   Trk._sxy.x0(), Trk._sxy.y0(), Trk._sxy.radius(), Trk._sxy.chi2DofCircle());
   }
   if (_debug > 5) {
-    printf("[HelixFitHack::refineHelixParameters] i       X        Y        dx        dy         costh        sinth2         e2 \n");
+    printf("[HelixFitHack::refineHelixParameters] i       X        Y        dx        dy         costh        sinth2         e2     radial-dist\n");
   }
 //-----------------------------------------------------------------------------
 // add cluster with a position error of 10 mm => wt = 1/100
@@ -1864,8 +1869,9 @@ namespace mu2e
 
     Trk._sxyw.addPoint(Xyzp[i]._pos.x(),Xyzp[i]._pos.y(), weights[i]);
 
+    radialDist = sqrt(dx*dx + dy*dy)-r;
     if (_debug > 5) {
-      printf("[HelixFitHack::refineHelixParameters] %3i %10.3f %10.3f %10.5f %10.5f %10.5f %10.5f %12.5e\n",i,x,y,dx,dy,costh,sinth2, e2);
+      printf("[HelixFitHack::refineHelixParameters] %3i %10.3f %10.3f %10.5f %10.5f %10.5f %10.5f %12.5e %10.3f\n",i,x,y,dx,dy,costh,sinth2, e2, radialDist);
     }
 
   NEXT_POINT: ;
@@ -1876,14 +1882,39 @@ namespace mu2e
   int        pointsRemoved(0);
   int        iworst;
   double     wtWorst;
-  double     chi2, chi2_min;
+  double     chi2, chi2_min, dr_max(0), dr;
   int        chi2Updated;
-  chi2 = Trk._sxyw.chi2DofCircle();
-  if (chi2 <= _chi2xyMax) {
-    success = 0;
-    goto F_END;
+
+  x0 = Trk._sxyw.x0();		//_center.x();
+  y0 = Trk._sxyw.y0();		//_center.y();
+  r  = Trk._sxyw.radius();
+
+  for (int i=seedIndex; i<np; i++) {
+    if (Xyzp[i].isOutlier())           continue;
+
+    // avoid the use of hit rejected by the helix search
+    if ( indexVec[i] < 1)              continue;
+    x  = Xyzp[i]._pos.x();
+    y  = Xyzp[i]._pos.y();
+
+    dx = x-x0;
+    dy = y-y0;
+    
+    dr = sqrt(dx*dx+dy*dy)-r;
+    if (fabs(dr) > dr_max) {
+      dr_max = fabs(dr);
+      iworst = i;
+    }
   }
 
+  chi2 = Trk._sxyw.chi2DofCircle();
+  if ((chi2 <= _chi2xyMax) && (dr_max < 30.)) {
+    success = 0;
+                                                            goto F_END;		 
+  }
+//-----------------------------------------------------------------------------
+// cleanup is needed
+//-----------------------------------------------------------------------------
   x0 = Trk._sxyw.x0();
   y0 = Trk._sxyw.y0();
 
@@ -1946,8 +1977,29 @@ namespace mu2e
     indexVec[iworst] = 0;
     ++pointsRemoved;
   }
+//-----------------------------------------------------------------------------
+// recalculate the worst radial residual
+//-----------------------------------------------------------------------------
+  dr_max = 0;
+  for (int i=seedIndex; i<np; i++) {
+    if (Xyzp[i].isOutlier())           continue;
 
-  if ( (chi2_min    >= _chi2xyMax) && 
+    // avoid the use of hit rejected by the helix search
+    if ( indexVec[i] < 1)              continue;
+    x  = Xyzp[i]._pos.x();
+    y  = Xyzp[i]._pos.y();
+
+    dx = x-x0;
+    dy = y-y0;
+    
+    dr = sqrt(dx*dx+dy*dy)-r;
+    if (fabs(dr) > dr_max) {
+      dr_max = fabs(dr);
+      iworst = i;
+    }
+  }
+
+  if (( (chi2_min    >= _chi2xyMax) || (dr_max >= 30.)) && 
        (chi2Updated == 1)              ){
     //-----------------------------------------------------------------------------
     // still bad chi2, repeat the cleanup cycle
