@@ -92,7 +92,7 @@ if [  -f "./BaBar/makeInclude.sh" ]; then
 fi
 
 #
-if [ "${MU2E_BASE_RELEASE}" != `pwd` ]; then
+if [ "${MU2E_BASE_RELEASE}" != `/bin/pwd` ]; then
   source ${MU2E_BASE_RELEASE}/bin/addlocal.sh
 fi
 
