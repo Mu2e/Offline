@@ -277,6 +277,8 @@ namespace mu2e {
     TH1F* _hchi2zphi[2];
     
     TH1F* _hseeddoca[3];
+    TH1F* _hseeddr  [2];
+    TH1F* _hseeddfdz[2];
     TH1F* _hNpointsSeed[2];
     TH1F* _hkaldoca[2];
     
@@ -425,10 +427,17 @@ namespace mu2e {
     _hktanlambda = tfs->make<TH1F>("hktanlambda",
 				  "#tan(#lambda) of the theretical helix when Kalman filter converged",
 				  600,0.,6.);
-    _hkdfdz[0]      = tfs->make<TH1F>("hkdfdz0","dfdz rfom findDfDz() when Kalman filter converged; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+    _hkdfdz[0]      = tfs->make<TH1F>("hkdfdz0","dfdz from pattern recognition when Kalman filter converged; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
 				   1000,-0.001,0.001);
-    _hkdfdz[1]      = tfs->make<TH1F>("hkdfdz1","dfdz rfom findDfDz() when Kalman filter converged + cut set ''C'' and p>100 MeV/c; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+    _hkdfdz[1]      = tfs->make<TH1F>("hkdfdz1","dfdz from pattern recognition when Kalman filter converged + cut set ''C'' and p>100 MeV/c; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
 				   1000,-0.001,0.001);
+
+    _hseeddfdz[0]      = tfs->make<TH1F>("hseeddfdz0",
+					 "dfdz from seedFit when Kalman filter converged; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+				      1000,-0.001,0.001);
+    _hseeddfdz[1]      = tfs->make<TH1F>("hseeddfdz1",
+					 "dfdz from seedFit when Kalman filter converged + cut set ''C'' and p>100 MeV/c; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+				      1000,-0.001,0.001);
     _hk0mode  = tfs->make<TH1F>("hk0mode",
 				"point rescued with dfdz recalculation",
 				20,0,20);
@@ -455,6 +464,9 @@ namespace mu2e {
 
     _hdrw[0]    = tfs->make<TH1F>("hdrw_0","r(fitw) - r(track)[0]", 200,-100.,100.);
     _hdrw[1]    = tfs->make<TH1F>("hdrw_1","r(fitw) - r(track)[1]", 200,-100.,100.);
+ 
+    _hseeddr[0]    = tfs->make<TH1F>("hseeddr_0","r(seedfit) - r(track)[0]", 200,-100.,100.);
+    _hseeddr[1]    = tfs->make<TH1F>("hseeddr_1","r(seedfit) - r(track)[1]", 200,-100.,100.);
 
     _hchi2w[0]  = tfs->make<TH1F>("hchi2w_0","chi2(fitw)[0]", 250,0.,500.);
     _hchi2w[1]  = tfs->make<TH1F>("hchi2w_1","chi2(fitw)[1]", 250,0.,500.);
@@ -464,7 +476,7 @@ namespace mu2e {
 
     _hseeddoca    [0]  = tfs->make<TH1F>("hseeddoca_0","doca seedfit active hits; doca [mm]", 1000, -20., 20);
     _hseeddoca    [1]  = tfs->make<TH1F>("hseeddoca_1","doca seedfit non active hits; doca [mm]", 1000, -20., 20);
-    _hseeddoca    [2]  = tfs->make<TH1F>("hseeddoca_2","doca seedfit de-activated hits; doca [mm]", 1000, -20., 20);
+    _hseeddoca    [2]  = tfs->make<TH1F>("hseeddoca_2","doca seedfit all hits; doca [mm]", 1000, -20., 20);
 
     _hNpointsSeed [0]  = tfs->make<TH1F>("hnpseed_0","# of points de-activatedby seedfit; N points de-activated [#]", 50, 0., 50);
     _hNpointsSeed [1]  = tfs->make<TH1F>("hnpseed_1","# of points not found in the pattern-reco and rescued ; N points rescued [#]", 50, 0., 50);
@@ -559,6 +571,14 @@ namespace mu2e {
 
     static StrawHitFlag       esel(StrawHitFlag::energysel), flag;
 
+    //parameters for diagnostic
+    Hep3Vector seedMom ;
+    double seedPt;
+    double seedPz;      
+    double seedTanL;    
+    double seedRadius;  
+    double seeddfdz;    
+
 //reset the fit iteration counter
     _kfit.SetNIter(0);
 
@@ -572,6 +592,7 @@ namespace mu2e {
 
     _cutflow->Fill(0.0);
 					// create output
+
     _tpeaks = new CalTimePeakCollection;
     unique_ptr<KalRepCollection>       tracks(new KalRepCollection      );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection);
@@ -775,8 +796,19 @@ namespace mu2e {
 	}
 
 
+
 	if (seedfit._fit.success()) {
 	  findseed = true;
+//------------------------------------------------------------------------------------------
+//take info from the seed fit for filling diagnostic histograms
+//------------------------------------------------------------------------------------------
+	  seedMom      = seedfit._krep->momentum(0);
+	  seedPt       = sqrt(seedMom.x()*seedMom.x() + seedMom.y()*seedMom.y());
+	  seedPz       = seedMom.z();
+	  seedTanL     = seedPt/seedPz;
+	  seedRadius   = fabs(1./seedfit._krep->helix(0).omega());//mom.mag()*10./3.;//convert MeV to mm
+	  seeddfdz     = seedTanL/seedRadius;
+	  
 //-----------------------------------------------------------------------------
 // find the helix parameters from the helix fit, and initialize 
 // the full Kalman fit with this
@@ -860,16 +892,17 @@ namespace mu2e {
 	      printf("[CalPatRec::produce]  %2i  %1i  %5i  %10.3f  %10.3f \n", 
 		     i, active? 1:0, straw.index().asInt(), rdrift, doc );
 	    }
+	    
+	    _hseeddoca[2]->Fill(doc);
 
-	    if (found){
-	      if (active){
-		_hseeddoca[0]->Fill(doc);
-	      }	else {
-		_hseeddoca[3]->Fill(doc);
-	      }
+	    if (active){
+	      _hseeddoca[0]->Fill(doc);
 	    }else {
-	      ++npointsrescued;
 	      _hseeddoca[1]->Fill(doc);
+	    }
+
+	    if (!found && active){
+	      ++npointsrescued;
 	    }
 	    
 	  }
@@ -922,6 +955,13 @@ namespace mu2e {
 		_kfit.printHits(kalfit,"CalPatRec::produce after unweedHits 002");
 	      }
 	    }
+
+//-----------------------------------------------------------------------------
+// now evaluate the T0 ad its error using the straw hits
+//-----------------------------------------------------------------------------
+	    _kfit.updateT0(kalfit);
+
+
 //-----------------------------------------------------------------------------
 // done, fill debug histograms
 //-----------------------------------------------------------------------------
@@ -1009,10 +1049,12 @@ namespace mu2e {
 	double radius  = fabs(1./krep->helix(0).omega());//mom.mag()*10./3.;//convert MeV to mm
 	double kdfdz   = tanL/radius;
 	
+	_hseeddfdz[0]->Fill(seeddfdz - kdfdz);
 	_hkdfdz[0]->Fill(fHackData->dfdz() - kdfdz);
 	_hkradius[0]->Fill(fHackData->TheoRadius() - radius);
 	_hk0mode->Fill(fHackData->mode0Points());
 	
+	_hseeddr[0]->Fill(seedRadius - radius);
 	_hdrw  [0]->Fill(fHackData->fData[14]-radius);
 	_hchi2w[0]->Fill(fHackData->fData[15]);
 	_hchi2zphi[0]->Fill(fHackData->fData[13]);
@@ -1065,6 +1107,9 @@ namespace mu2e {
 	  
 	  _hkradius[1]->Fill(fHackData->TheoRadius() - radius);
 	  _hkdfdz[1]->Fill(fHackData->dfdz() - kdfdz);
+
+	  _hseeddfdz[1]->Fill(seeddfdz - kdfdz);
+	  _hseeddr[1]->Fill(seedRadius - radius);
 
 	  _hdrw  [1]->Fill(fHackData->fData[14]-radius);
 	  _hchi2w[1]->Fill(fHackData->fData[15]);

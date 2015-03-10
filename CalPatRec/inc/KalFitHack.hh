@@ -85,6 +85,8 @@ namespace mu2e {
 			 double                    maxchi ,
 			 CalTimePeak*              TPeak=NULL );
 
+    bool updateT0             (KalFitResult& kres);
+
 // Try to put back inactive hits
     bool unweedHits(KalFitResult& kres, double maxchi);
     int  NIter                () { return fNIter; }
@@ -114,7 +116,7 @@ namespace mu2e {
     void initCaloT0           (CalTimePeak* TPeak, TrkDef const& tdef, TrkT0& t0);
     void initT0               (TrkDef const& tdef, TrkT0& t0);
     void updateCalT0          (KalFitResult& kres, CalTimePeak* TPeak);
-    bool updateT0             (KalFitResult& kres);
+
     void fitTrack             (KalFitResult& kres, CalTimePeak* TPeak=NULL);
 //-----------------------------------------------------------------------------
 // overloaded functions of KalContext

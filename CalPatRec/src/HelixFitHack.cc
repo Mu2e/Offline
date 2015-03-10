@@ -1096,6 +1096,15 @@ namespace mu2e
     myhel._fz0  = myhel._srphi.phi0();
     myhel._dfdz = myhel._srphi.dfdz();
 
+    if (seedIndex ==0){
+      THackData* hack;
+      hack = (THackData*) gROOT->GetRootFolder()->FindObject("HackData");
+      hack->fData[6]  = myhel._fz0;
+      hack->fData[7]  = myhel._dfdz*hack->fData[9];
+      hack->fData[8]  = myhel._dfdz;//_dfdz;//_mpDfDz; 
+      hack->fData[13] = myhel._srphi.chi2rphiDofCircle();
+    }
+    
     if ( myhel._dfdz < 0.) 
       success = false;
     
@@ -1730,7 +1739,9 @@ namespace mu2e
       if ( isHitUsed(i) == 1 )  goto NEXT_POINT;
 
       if (_debug != 0) printf("[HelixFitHack::doPatternRecognition]: calling findTrack i=%3i\n",i);
-      findTrack(xyzp, i, chi2, countGoodPoints, mytrk, mode, false); 
+      if ( (np -i) > _goodPointsTrkCandidate){
+	findTrack(xyzp, i, chi2, countGoodPoints, mytrk, mode, false); 
+      }
 //------------------------------------------------------------------------------
 // 2015-01-22 P.Murat: what happens when the very first candidate is good enough ?
 //                     where is the comparison of the found candidate with the best previous one ?
@@ -1832,7 +1843,7 @@ namespace mu2e
   int np = Xyzp.size();
 
   double weights[np];
-  int    success = 0;
+  int    success = -1;
   
   x0 = Trk._sxy.x0();		//_center.x();
   y0 = Trk._sxy.y0();		//_center.y();
@@ -2407,6 +2418,10 @@ namespace mu2e
     tmp1HelFitRes._center.set(sxy.x0(), sxy.y0(), 0.0);
 
     radius_end = sxy.radius();
+
+    //2015-03-10 G. Pezzu debugged the following line
+    tmp2HelFitRes._center.set(p0.x(), p0.y(), 0.0);
+    tmp2HelFitRes._radius = radius;
 
     tmp2HelFitRes._center.set(p0.x(), p0.y(), 0.0);
     tmp2HelFitRes._radius = radius;

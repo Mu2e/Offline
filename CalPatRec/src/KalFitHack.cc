@@ -1479,7 +1479,7 @@ namespace mu2e
     t0._t0 = TPeak->ClusterT0() + _dtoffset - path/vflt;
     
     //Set dummy error value
-    t0._t0err = 1.;
+    t0._t0err = .5;
   }
 
 
@@ -1565,7 +1565,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
       path      = TPeak->ClusterZ()/trkHel.sinDip();
       t0._t0    = TPeak->ClusterT0() + _dtoffset - path/vflt;
-      t0._t0err = 1.0;
+      t0._t0err = .5;
       
       kres._krep->setT0(t0,flt0);
       updateHitTimes(kres);
