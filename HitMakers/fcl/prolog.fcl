@@ -4,6 +4,14 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 # Form StrawHits (SH).
+protonTimeMap : { 
+    module_type        : GenerateProtonTimes 
+}
+
+muonTimeMap : { 
+    module_type        : GenerateMuonLife 
+}
+
 makeSH : {
   module_type          : MakeStrawHit
   g4ModuleLabel        : g4run
