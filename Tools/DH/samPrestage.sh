@@ -5,20 +5,29 @@
 
 usage() {
 echo "
-   samPrestage DATASETDEFINTION
+   samPrestage [ -d DATASETDEFINTION ] [-s DATASET ]
      -v verbose
-  
-     Copy the files of a sam dataset defintion from tape to dCache.
+     -d or -s with arguments is required 
+
+     Copy the files of a sam dataset or dataset definition from tape to dCache.
      When the script completes, the files will be in the tape queue,
-     not necessary in dCache yet.
+     not necessary in dCache yet. The script will run at about 1s/file.
      You need to setup mu2e, kinit and getcert to run this procedure
      Only for interactive use, not intended for grid jobs.
 "
 }
 
 export V=""
-while getopts hv OPT; do
+export DS=""
+export DD=""
+while getopts hvd:s: OPT; do
     case $OPT in
+        d)
+            export DD=$OPTARG
+            ;;
+        s)
+            export DS=$OPTARG
+            ;;
         h)
             usage
             exit 0
@@ -34,7 +43,7 @@ while getopts hv OPT; do
      esac
 done
 
-if [ ! $1 ];
+if [ ! "$DD$DS" ];
 then
   usage
   exit 1
@@ -56,7 +65,13 @@ export SAM_EXPERIMENT=mu2e
 # will need sam_web_client, setup if not already there
 [ -z "$SETUP_SAM_WEB_CLIENT" ] && setup sam_web_client 
 
-export SAM_DD=$1
+if [ "$DD" ]; then
+  export SAM_DD=$DD
+else
+  export SAM_DD=${USER}_zzz_samPrestage_`date +%s`
+  samweb create-definition $SAM_DD "dh.dataset=$DS"
+  samweb take-snapshot $SAM_DD
+fi
 
 echo "Summary of files to be prestaged:"
 samweb list-files --summary "dataset_def_name=$SAM_DD"
@@ -81,6 +96,7 @@ if [ ! $SAM_CONSUMER_ID ]; then
   exit 1
 fi
 
+STIME=`date +%s`
 N=0
 export SAM_FILE=`samweb get-next-file $SAM_PROJECT_URL $SAM_CONSUMER_ID`
 while [ $SAM_FILE ];
@@ -108,7 +124,9 @@ do
   export SAM_FILE=`samweb get-next-file $SAM_PROJECT_URL $SAM_CONSUMER_ID`
 
 done
+DTIME=`date +%s`
+ELTIME=$(($DTIME - $STIME))
 
-echo "Prestaged $N files"
+echo "Prestaged $N files in "$ELTIME" seconds"
 
 exit 0
