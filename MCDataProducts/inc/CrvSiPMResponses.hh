@@ -9,6 +9,7 @@
 //
 
 #include <vector>
+#include <cmath>
 
 namespace mu2e 
 {
@@ -23,7 +24,7 @@ namespace mu2e
       double _time;
       double _charge;
       CrvSingleSiPMResponse(double time, double charge) : _time(time), _charge(charge) {}
-      CrvSingleSiPMResponse();
+      CrvSingleSiPMResponse() : _time(NAN), _charge(NAN) {}  //to make ROOT happy
     };
 
     std::vector<CrvSingleSiPMResponse> &GetSiPMResponses(int fiberNumber, int side);

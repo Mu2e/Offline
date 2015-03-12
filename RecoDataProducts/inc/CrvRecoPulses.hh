@@ -9,6 +9,7 @@
 //
 
 #include <vector>
+#include <cmath>
 
 namespace mu2e 
 {
@@ -26,7 +27,7 @@ namespace mu2e
       CrvSingleRecoPulse(int PEs, double leadingEdge, double pulseHeight) : _PEs(PEs), 
                                                                             _leadingEdge(leadingEdge), 
                                                                             _pulseHeight(pulseHeight) {}
-      CrvSingleRecoPulse();
+      CrvSingleRecoPulse() : _PEs(0), _leadingEdge(NAN), _pulseHeight(NAN) {}  //to make ROOT happy
     };
 
     std::vector<CrvSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side);

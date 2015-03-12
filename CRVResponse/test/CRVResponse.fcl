@@ -33,7 +33,7 @@ physics :
       g4ModuleLabels            : ["g4filter"]
       processNames              : ["cosmics2"]
       lookupTableFileName       : "/mu2e/data/outstage/ehrlich/CRVLookupTables/CRVLookupTable.root"
-      scintillationYield        : 820.0    //820.0 photons per MeV
+      scintillationYield        : 850.0    //850.0 photons per MeV
       scintillatorDecayTimeFast : 3.0      //3.0 ns
       scintillatorDecayTimeSlow : 10.0     //10.0 ns
       fiberDecayTime            : 7.4      //7.4 ns

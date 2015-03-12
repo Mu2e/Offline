@@ -1,6 +1,5 @@
 #include "RecoDataProducts/inc/CrvRecoPulses.hh"
 #include <stdexcept>
-#include <cmath>
 #include <algorithm>
 
 namespace mu2e 

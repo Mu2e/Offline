@@ -103,8 +103,8 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
       s0<<"Photons_Mode_"<<0<<"__SiPM_"<<SiPM;
       s1<<"Photons_Mode_"<<1<<"__SiPM_"<<SiPM;
       title<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
-      _histP[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),300,0,300);
-      _histP[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),300,0,300);
+      _histP[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),700,0,700);
+      _histP[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),700,0,700);
       _histP[0][SiPM]->GetXaxis()->SetTitle("Photons");
       _histP[0][SiPM]->SetLineColor(1);
       _histP[1][SiPM]->GetXaxis()->SetTitle("Photons");
@@ -117,8 +117,8 @@ WLSEventAction::WLSEventAction(int mode, int id) : _mode(mode), _storeConstants(
       s0<<"ArrivalTimes_Mode_"<<0<<"__SiPM_"<<SiPM;
       s1<<"ArrivalTimes_Mode_"<<1<<"__SiPM_"<<SiPM;
       title<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
-      _histT[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),200,0,200);
-      _histT[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),200,0,200);
+      _histT[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),250,0,250);
+      _histT[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),250,0,250);
       _histT[0][SiPM]->GetXaxis()->SetTitle("t [ns]");
       _histT[0][SiPM]->SetLineColor(1);
       _histT[1][SiPM]->GetXaxis()->SetTitle("t [ns]");

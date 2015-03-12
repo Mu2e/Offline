@@ -38,7 +38,7 @@ int main(int argc,char** argv)
 
   G4String physName = "QGSP_BERT_EMV";
 //  G4String physName = "QGSP_BERT_HP";  //for neutrons
-  G4int seed = 123;
+  G4int seed = 0;
 
   CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
   CLHEP::HepRandom::setTheSeed(seed);

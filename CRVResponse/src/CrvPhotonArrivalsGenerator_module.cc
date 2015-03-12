@@ -75,7 +75,7 @@ namespace mu2e
     _g4ModuleLabels(pset.get<std::vector<std::string> >("g4ModuleLabels")),
     _processNames(pset.get<std::vector<std::string> >("processNames")),
     _lookupTableFileName(pset.get<std::string>("lookupTableFileName")),
-    _scintillationYield(pset.get<double>("scintillationYield",820.0)),    //820.0 photons per MeV
+    _scintillationYield(pset.get<double>("scintillationYield",850.0)),    //850.0 photons per MeV
     _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast",3.0)),  //3.0 ns
     _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow",10.0)), //10.0 ns
     _fiberDecayTime(pset.get<double>("fiberDecayTime",7.4)),     //7.4 ns
