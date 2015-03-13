@@ -247,7 +247,6 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     int    nact   = Trk->nActive();
     double t0     = Trk->t0().t0();
     double t0err  = Trk->t0().t0Err();
-
 //-----------------------------------------------------------------------------
 // in all cases define momentum at lowest Z - ideally, at the tracker entrance
 //-----------------------------------------------------------------------------
@@ -294,13 +293,13 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     const TrkHotList* hot_list = Trk->hotList();
 
     printf("--------------------------------------------------------------------");
-    printf("----------------------------------------------------------------");
+    printf("---------------------------------------------------------------");
     printf("--------------------------------------------\n");
     printf(" ih  SInd U A     len         x        y        z      HitT    HitDt");
-    printf(" Ch Pl  L  W     T0       Xs      Ys        Zs     resid");
+    printf(" Ch Pl  L  W     T0       Xs      Ys        Zs     resid sigres");
     printf(" Rdrift   mcdoca  totErr hitErr  t0Err penErr extErr\n");
     printf("--------------------------------------------------------------------");
-    printf("----------------------------------------------------------------");
+    printf("---------------------------------------------------------------");
     printf("--------------------------------------------\n");
 
     Hep3Vector pos;
@@ -374,11 +373,14 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
 
       printf(" %8.3f",hit->hitT0().t0());
 
-      printf("%8.3f %8.3f %9.3f %7.3f",
+      double res, sigres;
+      bool s =  hit->resid(res, sigres, true);
+      printf("%8.3f %8.3f %9.3f %7.3f %7.3f",
 	     pos.x(),
 	     pos.y(),
 	     pos.z(),
-	     hit->resid(true)
+	     res,
+	     sigres
 	     );
 
       if (hit->ambig() != 0) printf(" %6.3f",hit->ambig()*hit->driftRadius());
