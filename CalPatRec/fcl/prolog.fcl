@@ -131,6 +131,7 @@ CalPatRec            : {
 	chi2xyMax                               : 300
 	chi2zphiMax                             : 0.1
 	dfdzErr                                 : 0.1
+	drMax                                   : 30  # mm
     }
     # Kalman fit hack configuration for the final track fit
     KalFitHack : {
