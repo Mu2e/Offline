@@ -294,7 +294,9 @@ namespace mu2e
     _markCandidateHits(pset.get<int>("markCandidateHits")),
     _chi2xyMax(pset.get<double>("chi2xyMax")),
     _chi2zphiMax(pset.get<double>("chi2zphiMax")),
-    _dfdzErr(pset.get<double>("dfdzErr")){
+    _dfdzErr(pset.get<double>("dfdzErr")),
+    _drMax   (pset.get<double>("drMax"))
+  {
     XYZPHack::_efac = _efac;
     std::vector<std::string> bitnames;
     bitnames.push_back("Outlier");
@@ -1919,7 +1921,7 @@ namespace mu2e
   }
 
   chi2 = Trk._sxyw.chi2DofCircle();
-  if ((chi2 <= _chi2xyMax) && (dr_max < 30.)) {
+  if ((chi2 <= _chi2xyMax) && (dr_max < _drMax)) {
     success = 0;
                                                             goto F_END;		 
   }
@@ -2010,8 +2012,8 @@ namespace mu2e
     }
   }
 
-  if (( (chi2_min    >= _chi2xyMax) || (dr_max >= 30.)) && 
-       (chi2Updated == 1)              ){
+  if (( (chi2_min   >= _chi2xyMax) || (dr_max >= _drMax)) && 
+      (chi2Updated  == 1)                                    ) {
     //-----------------------------------------------------------------------------
     // still bad chi2, repeat the cleanup cycle
     //-----------------------------------------------------------------------------

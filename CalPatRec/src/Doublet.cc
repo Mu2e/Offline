@@ -9,15 +9,15 @@ namespace mu2e {
 		   CLHEP::Hep3Vector trkdir,
 		   CLHEP::Hep3Vector trkpos,
 		   TrkStrawHit*      hit){
-    fDoubletIndex = index;
-    fStationId    = station; 
-    fPanelId      = panel;
-    fShDir        = shdir;
-    fNstrawHits   = 1;
+    fIndex      = index;
+    fStationId  = station; 
+    fPanelId    = panel;
+    fShDir      = shdir;
+    fNstrawHits = 1;
     
-    fTrkDirCol[0] = trkdir;
-    fTrkPosCol[0] = trkpos;
-    fTrkshcol [0] = hit;
+    fTrkDir[0]  = trkdir;
+    fTrkPos[0]  = trkpos;
+    fHit   [0]  = hit;
   }
   
   Doublet::~Doublet(){}
@@ -25,13 +25,12 @@ namespace mu2e {
   void Doublet::addStrawHit(CLHEP::Hep3Vector trkdir,
 			    CLHEP::Hep3Vector trkpos,
 			    TrkStrawHit*      hit){
-    if (fNstrawHits <5){
-    //set the parameters of the new staw hit
-    fTrkDirCol[fNstrawHits] = trkdir;
-    fTrkPosCol[fNstrawHits] = trkpos;
-    fTrkshcol [fNstrawHits] = hit;
-
-    //now increment the size 
+    if (fNstrawHits < 5) {
+					// set the parameters of the new staw hit
+    fTrkDir[fNstrawHits] = trkdir;
+    fTrkPos[fNstrawHits] = trkpos;
+    fHit   [fNstrawHits] = hit;
+					// increment the size 
     ++fNstrawHits;
     } else {
       printf("[Doublet::addStrawhit] ERROR: trying to add more than 5 hits in the same panel!\n");

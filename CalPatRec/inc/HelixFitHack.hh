@@ -237,11 +237,11 @@ namespace mu2e {
     double    _maxChi2TrkCandidate;
     int       _markCandidateHits;
 
-    //thresholds for the xy and zphi chi2 fit
+    // thresholds for the xy and zphi chi2 fit
     double    _chi2xyMax;
     double    _chi2zphiMax;
 
-    //indices, distance from prediction and distance along z axis from the seeding hit
+    // indices, distance from prediction and distance along z axis from the seeding hit
     // of the hits found in the pattern recognition
     int       _indicesTrkCandidate[400];
     double    _distTrkCandidate[400];
@@ -249,6 +249,7 @@ namespace mu2e {
 
     //error on dfdz resulting from the proceedure ::findDfDz
     double    _dfdzErr;
+    double    _drMax;    // max point radial residual from the weighted fit XY circle
 
     TH1F*     _hDist;
     double    _chi2nFindZ;

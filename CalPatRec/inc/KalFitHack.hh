@@ -54,6 +54,7 @@ namespace mu2e {
 //----------------------------------------------------------------------------------------------
     void printHits(KalFitResult& kres, const char* Caller);
 
+    std::vector<Doublet>*     listOfDoublets() { return &fListOfDoublets; }
 //----------------------------------------------------------------------    
 // 2015 - 02 - 17 G. Pezzullo added a method for searching the doublets
     void findDoublets      (KalRep* krep,   std::vector<TrkStrawHit*> *hits,  DoubletCollection *dcol);//search doublets in a giventimepeak
@@ -72,12 +73,7 @@ namespace mu2e {
 // tangent to two given circles
 //-----------------------------------------------------------------------------------------
     void findLines(Hep3Vector A[2], double rb[2], double *Slopes);
-    
-//     void findLines1(double xa, double ya, double ra,
-// 		   double xb, double yb, double rb,
-// 		   double *slopes,
-// 		   int    *ambStrawA, int *ambStrawB);
-    
+
 // add a set of hits to an existing fit
     virtual void addHits(KalFitResult&             kres   , 
 			 const StrawHitCollection* straws , 
@@ -88,9 +84,10 @@ namespace mu2e {
     bool updateT0             (KalFitResult& kres);
 
 // Try to put back inactive hits
-    bool unweedHits(KalFitResult& kres, double maxchi);
-    int  NIter                () { return fNIter; }
-    void SetNIter             (int N) { fNIter = N; }
+    bool unweedHits  (KalFitResult& kres, double maxchi);
+    bool weedHits    (KalFitResult& kres);
+    int  NIter       () { return fNIter; }
+    void SetNIter    (int N) { fNIter = N; }
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
     BField const& bField() const;
@@ -110,9 +107,9 @@ namespace mu2e {
     int                         fSign[4][2];
     int                         _daveMode;
     std::vector<double>         _t0tol;
+    std::vector<Doublet>        fListOfDoublets;
 
     bool fitable              (TrkDef const& tdef);
-    bool weedHits             (KalFitResult& kres);
     void initCaloT0           (CalTimePeak* TPeak, TrkDef const& tdef, TrkT0& t0);
     void initT0               (TrkDef const& tdef, TrkT0& t0);
     void updateCalT0          (KalFitResult& kres, CalTimePeak* TPeak);
