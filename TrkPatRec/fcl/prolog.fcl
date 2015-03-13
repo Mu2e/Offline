@@ -53,7 +53,13 @@ TrkPatRec :
 # MC Time offsets for diagnostics configuration can be done generically
 	KalDiag : 
 	{
-	    TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	    MCPtrLabel          : makeSH
+	    MCStepsLabel        : g4run
+	    SimParticleLabel    : g4run
+	    SimParticleInstance : tracker
+	    StrawHitMCLabel     : makeSD
+	    TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	    FillMCInfo          : false
 	}
 
 } # end TrkPatRec
