@@ -6,19 +6,7 @@
 # - run simulation+reconstruction chain
 # - run particle ID
 # 
-# a) to prepare muon stop file for the interactive job: 
-#
-#     ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops 
-#
-# b) when submitting to the grid, comment out the PROLOG definition, do
-#
-#    ls /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/*.root > muStops.txt
-#
-#    , and use 
-#
-#     --fclinput=@muStops:muStops.txt 
-#
-# c) local submission: 
+# local submission: 
 #
 #  mu2e -c Analyses/test/genReco.fcl -n 1000 >| results/2014-12-19-Analyses_test_genReco.log &
 #------------------------------------------------------------------------------
@@ -27,9 +15,9 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
-BEGIN_PROLOG
-  muStops      : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
-END_PROLOG
+# BEGIN_PROLOG
+#   muStops      : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+# END_PROLOG
 
 process_name : GenReco
 #------------------------------------------------------------------------------
@@ -65,7 +53,10 @@ services : {
         ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
         GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
         G4Helper               : { }
-        SeedService            : @local::automaticSeeds
+        SeedService            : { @table::automaticSeeds
+	    baseSeed             :  0
+	    maxUniqueEngines     :  20
+	}
     }
 }
 #------------------------------------------------------------------------------
@@ -73,41 +64,13 @@ services : {
 #------------------------------------------------------------------------------
 physics : {
     producers: {
-	generate             : {
-#------------------------------------------------------------------------------
-# for 105 MeV/c electron : E = 105.00130           MeV
-# for muon: sqrt(105.*105+105.658*105.658) = 148.9584269653785
-# by default, StoppedParticleReactionGun has 'mean' set to +1, 
-# which means the Poisson mean of 1 !!! 
-#------------------------------------------------------------------------------
-	    module_type      : StoppedParticleReactionGun
-	    mean             : -1
-	    physics          : {
-		pdgId            : 11
-		spectrumVariable : "totalEnergy"
-		spectrumShape    : "flat"
-		elow             : 105.0012
-		ehi              : 105.0014
-	    }
-	    muonStops            : {
-#------------------------------------------------------------------------------
-# use --fclinput=@muStops:datasets/mustops for grid submission 
-# [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ] 
-#------------------------------------------------------------------------------
-		inputFiles            : @local::muStops
-		averageNumRecordsToUse: 500000
-		treeName              : "stoppedMuonDumper/stops"
-		branchName            : "stops"
-		verbosityLevel        : 1
-	    }
-	}
-	
+	generate             : { @table::StoppedParticleReactionGun }
 	g4run                : @local::g4run
 #------------------------------------------------------------------------------
 # hit makers
 #------------------------------------------------------------------------------
-        protonTimeMap        : { module_type : GenerateProtonTimes }
-        muonTimeMap          : { module_type : GenerateMuonLife }
+        protonTimeMap        : @local::protonTimeMap
+        muonTimeMap          : @local::muonTimeMap
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
 	CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
@@ -173,8 +136,6 @@ physics : {
 #------------------------------------------------------------------------------
 # 1. only for interactive submission
 #------------------------------------------------------------------------------
-services.user.SeedService.baseSeed             :  0
-services.user.SeedService.maxUniqueEngines     :  20
 
 # print per event timing for ::event entry points
 # services.Timing: { }
@@ -182,6 +143,6 @@ services.user.SeedService.maxUniqueEngines     :  20
 services.scheduler.wantSummary: true
 
 # Apply the time offsets at the digitization stage
-physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+# physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+# physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 

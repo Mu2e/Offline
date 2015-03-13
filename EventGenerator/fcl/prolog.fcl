@@ -13,7 +13,7 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 muonStops : {
     #		inputFiles            : @nil // use --fclinput for grid submission
-    inputFiles            : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+    inputFiles            : [ "ExampleDataFiles/StoppedMuons/mustops.1025a_1426a_1504a.15318715.root" ]
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
@@ -43,6 +43,11 @@ StoppedParticleReactionGun: {
     muonStops      : @local::muonStops
     verbosityLevel : 1
     physics        : {
+	pdgId            : 11
+	spectrumVariable : "totalEnergy"
+	spectrumShape    : "flat"
+	elow             : 105.0012
+	ehi              : 105.0014
     }
 }
 

@@ -39,15 +39,16 @@ makeSH : {
 }
 # straw digis
 makeSD : {
-  module_type : StrawDigisFromStepPointMCs
-  g4ModuleLabel : g4run
-  deadStrawList        : {
-    verbosity   : 0
-    deadDevices : [ ]
-    deadSectors : [ ]
-    deadLayers  : [ ]
-    deadStraws  : [ ]
-  }
+    module_type : StrawDigisFromStepPointMCs
+    g4ModuleLabel : g4run
+    TimeOffsets   : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    deadStrawList        : {
+	verbosity   : 0
+	deadDevices : [ ]
+	deadSectors : [ ]
+	deadLayers  : [ ]
+	deadStraws  : [ ]
+    }
 }
 
 #  straw hit making from straw digis
