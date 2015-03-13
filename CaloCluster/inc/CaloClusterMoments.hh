@@ -26,7 +26,7 @@ namespace mu2e {
 
 	 public:
              
-	     enum cogtype {Linear,Sqrt,Logarithm};
+	     enum cogtype {Linear,LinearMod,Sqrt,Logarithm};
              
 	     CaloClusterMoments(Calorimeter const& cal, CaloCluster const& caloCluster, int iSection) : 
 	       _cal(cal), _caloCluster(caloCluster),_iSection(iSection),_cog(),_secondMoment(0),_angle(0) 

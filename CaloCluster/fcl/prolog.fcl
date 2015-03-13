@@ -27,6 +27,7 @@ BEGIN_PROLOG
 	  deltaTimeMinus         : 10
 	  maxDistSplit           : 100
 	  maxDistMain            : 100
+	  cogTypeName            : Linear
 	  diagLevel              : 0
 	}  
 END_PROLOG

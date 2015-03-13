@@ -75,6 +75,8 @@ class MakeCaloCluster : public art::EDProducer {
              _deltaTimeMinus(pset.get<double>("deltaTimeMinus")),  
              _maxDistSplit(pset.get<double>("maxDistSplit")),                
              _maxDistMain(pset.get<double>("maxDistMain")),                
+             _cogTypeName(pset.get<std::string>("cogTypeName")),
+	     _cogType(CaloClusterMoments::Linear),                
              _messageCategory("CLUSTER")
              {
                  produces<CaloClusterCollection>();
@@ -95,7 +97,10 @@ class MakeCaloCluster : public art::EDProducer {
              double             _deltaTimeMinus;
              double             _maxDistSplit;
              double             _maxDistMain;
+             std::string        _cogTypeName;
 	     
+	     CaloClusterMoments::cogtype _cogType;
+
              const std::string  _messageCategory;
 
              void makeCaloClusters(CaloClusterCollection& caloClusters, 
@@ -109,8 +114,11 @@ class MakeCaloCluster : public art::EDProducer {
 
 
 
-     void MakeCaloCluster::beginJob(){
-
+     void MakeCaloCluster::beginJob()
+     {
+         if (_cogTypeName.compare("LinearMod"))   _cogType = CaloClusterMoments::LinearMod;
+         if (_cogTypeName.compare("Sqrt"))        _cogType = CaloClusterMoments::Sqrt;
+         if (_cogTypeName.compare("Logarithm"))   _cogType = CaloClusterMoments::Logarithm;	 
      }
 
 
@@ -252,7 +260,7 @@ class MakeCaloCluster : public art::EDProducer {
 		   CaloCluster caloCluster(seed_section,seed_time,totalEnergy,caloCrystalHitPtrVector,isSplit);	      
 
 		   CaloClusterMoments cogCalculator(cal,caloCluster, seed_section);
-		   cogCalculator.calculate(CaloClusterMoments::Logarithm);
+		   cogCalculator.calculate(_cogType);
                    caloCluster.cog3Vector(cogCalculator.cog());
                    caloCluster.secondMoment(cogCalculator.secondMoment());
                    caloCluster.angle(cogCalculator.angle());

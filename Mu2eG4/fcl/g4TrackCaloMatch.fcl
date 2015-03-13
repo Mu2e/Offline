@@ -8,7 +8,7 @@ process_name: TrackCaloMatchProd
 
 source: { 
   module_type: EmptyEvent
-  maxEvents : 500
+  maxEvents : 5000
  }
 
 services : {
@@ -145,6 +145,9 @@ physics: {
 
 services.user.SeedService.baseSeed         :  99
 services.user.SeedService.maxUniqueEngines :  20
+
+//switch cog type calculation for this version of TrackCaloMatching
+physics.producers.MakeCaloCluster.cogTypeName : LinearMod
 
 //needed for CaloExample
 physics.producers.MakeCaloReadoutHits.fillDetailedHit : true

@@ -37,16 +37,15 @@ namespace mu2e {
 		double energy((*it)->energyDep());
 
 		if (_cal.crystal(crId).sectionId() != _iSection) continue;
-		if (energy/clusterEnergy < 0.05)                 continue;
-
 
 		double xCrystal = _cal.crystalOrigin(crId).x();
 		double yCrystal = _cal.crystalOrigin(crId).y();
 		double zCrystal = _cal.crystalOrigin(crId).z();
 
-		double weight = -5.26 + 1.24*energy;
-		//if (mode == Logarithm)   weight = -1.73+log(energy);
-		//if (mode == Sqrt) weight = sqrt(energy);
+		double weight = energy;
+		if (mode == LinearMod)   weight = 1.01*energy - 6.25;
+		if (mode == Logarithm)   weight = log(energy);
+		if (mode == Sqrt)        weight = sqrt(energy);
 
 		sxi  += xCrystal*weight;
 		sxi2 += xCrystal*xCrystal*weight;
