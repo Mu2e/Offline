@@ -62,6 +62,7 @@ services : {
 physics : {
     producers: {
         generate             : @local::StoppedMuonConversionGun
+#        generate             : @local::StoppedParticleReactionGun
         g4run                : @local::g4run
         compressPVDetector   : @local::CompressPhysicalVolumes
         protonTimeMap        : { module_type : GenerateProtonTimes }
@@ -126,7 +127,7 @@ physics : {
 	}
     }
 #------------------------------------------------------------------------------
-# paths
+# paths (a sequence in FHICL terms)
 #------------------------------------------------------------------------------
     detPath : [ 
 	       generate, g4run 
@@ -178,10 +179,6 @@ services.user.SeedService.maxUniqueEngines     :  20
 # services.Timing: { }
 # print 
 services.scheduler.wantSummary: true
-
-# Apply the time offsets in tracker digitization
-physics.producers.makeSD.TimeOffsets              : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-#
 
 # physics.producers.CalPatRec.debugLevel                           : 1
 # physics.producers.CalPatRec.HelixFitHack.debugLevel              : 1
