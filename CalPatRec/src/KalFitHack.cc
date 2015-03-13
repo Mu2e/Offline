@@ -397,12 +397,12 @@ namespace mu2e
     
     CLHEP::Hep3Vector wdir, wdir1, wdir2;
 
-    int               layer[2], ibest;
+    int               layer[2], ibest, inext;
     double            rdrift[2], phiPanel; 
     
     int               shId[2];
     double            trkslope, lineSlopes[4], dxdz[2], chi2[4], doca[4][2];
-    double            xdr, dsl, xdsl, sig, chi2min;
+    double            xdr, dsl, xdsl, sig, chi2min, chi2next;
 
     double            sflt[2], tflt[2];
     HepPoint          spi[2] , tpi[2], hpos[2];
