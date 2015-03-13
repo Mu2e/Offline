@@ -42,15 +42,23 @@ namespace mu2e {
 		     CLHEP::Hep3Vector trkpos,
 		     TrkStrawHit*      hit);
     
-    int                 fDoubletIndex;
+    int                 fIndex;		// double index in the list
     int                 fStationId;
     int                 fPanelId;
     CLHEP::Hep3Vector   fShDir;
     int                 fNstrawHits;
     int                 fStrawAmbig[5];
-    CLHEP::Hep3Vector   fTrkDirCol [5];
-    CLHEP::Hep3Vector   fTrkPosCol [5];
-    mu2e::TrkStrawHit*  fTrkshcol  [5];
+    CLHEP::Hep3Vector   fTrkDir    [5];
+    CLHEP::Hep3Vector   fTrkPos    [5];
+    mu2e::TrkStrawHit*  fHit       [5];
+    int                 fHitIndex  [2]; // indices of the used paid of hits 
+    double              fTrkDxDz;	// track dx/dz in the local panel frame
+    double              fDxDz      [4];	// 4 combinations
+    double              fChi2      [4];	// 4 combinations
+    int                 fIBest;		// best combination
+    int                 fINext;		// next-to-best combination
+    int                 fOs;		// 0:opposite sign, +/-2:same sign
+    double              fMcDoca    [5]; // signed MC distance of closest approach
 
   };
   
