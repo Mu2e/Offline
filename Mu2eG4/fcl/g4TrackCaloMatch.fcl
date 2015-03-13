@@ -8,7 +8,7 @@ process_name: TrackCaloMatchProd
 
 source: { 
   module_type: EmptyEvent
-  maxEvents : 5000
+  maxEvents : 100
  }
 
 services : {
@@ -51,9 +51,9 @@ physics: {
 	MakeCaloCluster      : @local::MakeCaloCluster
 	
 
-	TrkCaloExtrapolator :
+	TrackCaloIntersection :
 	{
-	  module_type            : TrkExtrapolBis
+	  module_type            : TrackCaloIntersection
 	  fitterModuleLabel      : TPRDownstreameMinus
 	  fitparticle            : 11
 	  fitdirection           : 0 
@@ -64,14 +64,14 @@ physics: {
 	  diagLevel              : 0
 	}  
 
-	TrkCaloMatcher :
+	TrkCaloMatcherBis :
 	{
 	  module_type             : TrackCaloMatchingBis
+	  caloClusterModuleLabel  : MakeCaloCluster
+	  trkIntersectModuleLabel : TrackCaloIntersection
 	  fitterModuleLabel       : TPRDownstreameMinus
 	  fitparticle             : 11
 	  fitdirection            : 0 
-	  caloClusterModuleLabel  : MakeCaloCluster
-	  trkExtrapolModuleLabel  : TrkCaloExtrapolator
 	  diagLevel               : 0
 	  minClusterEnergy        : 10
 	  maxDeltaT               : 10
@@ -107,15 +107,14 @@ physics: {
             module_type             : ReadTrackCaloMatchingBis
 	    caloCrystalModuleLabel  : MakeCaloCrystalHits
 	    caloClusterModuleLabel  : MakeCaloCluster
-	    trkExtrapolModuleLabel  : TrkCaloExtrapolator
-	    trkCaloMatchModuleLabel : TrkCaloMatcher
+	    trkIntersectModuleLabel : TrackCaloIntersection
+	    trkCaloMatchModuleLabel : TrkCaloMatcherBis
   	    fitterModuleLabel       : TPRDownstreameMinus
 	    fitparticle             : 11
 	    fitdirection            : 0 
 	    trkCaloMatchModuleLabel : TrkCaloMatcher
 	    g4ModuleLabel           : g4run
-	    virtualDetectorName     : virtualdetector
-	    
+	    virtualDetectorName     : virtualdetector	    
 	}
 
 	CaloTrackMatchExample: {
@@ -124,7 +123,7 @@ physics: {
 	    fitparticle             : 11
 	    fitdirection            : 0 
 	    caloClusterModuleLabel  : MakeCaloCluster
-	    trkCaloMatchModuleLabel : TrkCaloMatcher
+	    trkCaloMatchModuleLabel : TrkCaloMatcherBis
 	    caloCrystalModuleLabel  : MakeCaloCrystalHits
 	    maxChi2Match            : 10	    
 	}
@@ -133,11 +132,11 @@ physics: {
 
     p1: [ generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, FSHPreStereo,MakeStereoHits, FlagStrawHits, FlagBkgHits,
           TPRDownstreameMinus, MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster, 
-	  TrkCaloExtrapolator, TrkCaloMatcher]
+	  TrackCaloIntersection, TrkCaloMatcherBis]
 
     trigger_paths: [p1]
 
-    e1: [ CaloExample, ReadTrackCaloMatching, CaloTrackMatchExample]
+    e1: [ CaloExample, CaloTrackMatchExample]
     end_paths: [e1]
 }
 

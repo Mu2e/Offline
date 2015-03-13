@@ -36,28 +36,28 @@ namespace mu2e {
 
 	   TrkCaloMatch() {}
 
-	   TrkCaloMatch(art::Ptr<TrkCaloIntersect> const& extrapolTrk, art::Ptr<CaloCluster> const& cluster, int cluId, double chi2, double chi2Pos, double chi2Time) :
-	      _extrapolTrk(extrapolTrk), _cluster(cluster), _cluId(cluId), _chi2(chi2), _chi2Pos(chi2Pos), _chi2Time(chi2Time)
+	   TrkCaloMatch(art::Ptr<TrkCaloIntersect> const& intersect, art::Ptr<CaloCluster> const& cluster, int cluId, double chi2, double chi2Pos, double chi2Time) :
+	      _intersect(intersect), _cluster(cluster), _cluId(cluId), _chi2(chi2), _chi2Pos(chi2Pos), _chi2Time(chi2Time)
 	   {}
 
 	   ~TrkCaloMatch(){}
 
-	   art::Ptr<TrkCaloIntersect>  const&  extrapolTrk()  const {return _extrapolTrk;}
-	   KalRepPtr                   const&  trk()          const {return _extrapolTrk->trk();}
-	   int                                 trkId()        const {return _extrapolTrk->trkId();}
+	   art::Ptr<TrkCaloIntersect>  const&  intersect()  const {return _intersect;}
+	   KalRepPtr                   const&  trk()        const {return _intersect->trk();}
+	   int                                 trkId()      const {return _intersect->trkId();}
 	   
-	   art::Ptr<CaloCluster>       const&  cluster()      const {return _cluster;}
-	   int                                 cluId()        const {return _cluId;}
+	   art::Ptr<CaloCluster>       const&  cluster()    const {return _cluster;}
+	   int                                 cluId()      const {return _cluId;}
            
-	   double                              chi2()         const {return _chi2;} 
-           double                              chi2Pos()      const {return _chi2Pos;} 
-           double                              chi2Time()     const {return _chi2Time;} 
+	   double                              chi2()       const {return _chi2;} 
+           double                              chi2Pos()    const {return _chi2Pos;} 
+           double                              chi2Time()   const {return _chi2Time;} 
 
 
 
        private:
 
-	   art::Ptr<TrkCaloIntersect>  _extrapolTrk;
+	   art::Ptr<TrkCaloIntersect>   _intersect;
 	   art::Ptr<CaloCluster>        _cluster;
 	   int                          _cluId;	   	   
 	   double                       _chi2;	   

@@ -1,7 +1,7 @@
 //
 //
 //
-// $Id: ReadExtrapol_module.cc,v 1.18 2014/08/20 14:23:09 murat Exp $
+// $Id: ReadTrackCaloMatching_module.cc,v 1.18 2014/08/20 14:23:09 murat Exp $
 // $Author: murat $
 // $Date: 2014/08/20 14:23:09 $
 //
@@ -77,7 +77,7 @@ namespace mu2e {
             _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
 	    _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
 	    _trkCaloMatchModuleLabel(pset.get<std::string>("trkCaloMatchModuleLabel")),
-	    _trkExtrapolModuleLabel(pset.get<std::string>("trkExtrapolModuleLabel")),
+	    _trkIntersectModuleLabel(pset.get<std::string>("trkIntersectModuleLabel")),
 	    _trkFitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
 	    _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
 	    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
@@ -105,7 +105,7 @@ namespace mu2e {
 	  std::string      _caloCrystalModuleLabel;
 	  std::string      _caloClusterModuleLabel;
 	  std::string      _trkCaloMatchModuleLabel;
-	  std::string      _trkExtrapolModuleLabel;
+	  std::string      _trkIntersectModuleLabel;
 	  std::string      _trkFitterModuleLabel;
 	  std::string      _trkfitInstanceName;
 	  TrkParticle      _tpart;
@@ -233,9 +233,9 @@ namespace mu2e {
         event.getByLabel(_trkCaloMatchModuleLabel, trkCaloMatchHandle);
         TrkCaloMatchCollection const& trkCaloMatches(*trkCaloMatchHandle);
 
-        art::Handle<TrkCaloIntersectCollection>  trjExtrapolHandle;
-        event.getByLabel(_trkExtrapolModuleLabel, trjExtrapolHandle);
-        TrkCaloIntersectCollection const& trkExtrapols(*trjExtrapolHandle);
+        art::Handle<TrkCaloIntersectCollection>  trjIntersectHandle;
+        event.getByLabel(_trkIntersectModuleLabel, trjIntersectHandle);
+        TrkCaloIntersectCollection const& trkIntersect(*trjIntersectHandle);
 
 	art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
 	event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
@@ -266,11 +266,11 @@ namespace mu2e {
 
 	//--------------------------  Dump extrapolator info --------------------------------
 	_nTrk=0;	   
-	for (auto const& extrapol: trkExtrapols)
+	for (auto const& intersect: trkIntersect)
 	{
-              KalRep const& trk = *(extrapol.trk());
+              KalRep const& trk = *(intersect.trk());
 
-	      double pathLength             = extrapol.pathLengthEntrance();
+	      double pathLength             = intersect.pathLengthEntrance();
 	      CLHEP::Hep3Vector trkMomentum = trk.momentum(pathLength);
 	      double trkTime                = trk.arrivalTime(pathLength);
 	      double tprob                  = trk.chisqConsistency().significanceLevel();
@@ -280,31 +280,31 @@ namespace mu2e {
 
 	      HepPoint point = trk.position(pathLength);
 	      CLHEP::Hep3Vector posTrkInTracker(point.x(),point.y(),point.z());
-	      CLHEP::Hep3Vector posTrkInSectionFF = cal.toSectionFrameFF(extrapol.sectionId(),cal.fromTrackerFrame(posTrkInTracker));
+	      CLHEP::Hep3Vector posTrkInSectionFF = cal.toSectionFrameFF(intersect.sectionId(),cal.fromTrackerFrame(posTrkInTracker));
 
  	      HelixTraj trkHel(trk.helix(pathLength).params(),trk.helix(pathLength).covariance());
 
-	      _trkFFx[_nTrk]   = posTrkInSectionFF.x();
-	      _trkFFy[_nTrk]   = posTrkInSectionFF.y();
-	      _trkFFz[_nTrk]   = posTrkInSectionFF.z();
-	      _trkx[_nTrk]     = posTrkInTracker.x();
-	      _trky[_nTrk]     = posTrkInTracker.y();
-	      _trkz[_nTrk]     = posTrkInTracker.z();
-	      _trkt[_nTrk]     = trkTime;
-	      _trke[_nTrk]     = trkMomentum.mag();
-	      _trkpx[_nTrk]    = trkMomentum.x();
-	      _trkpy[_nTrk]    = trkMomentum.y();
-	      _trkpz[_nTrk]    = trkMomentum.z();
-	      _trknHit[_nTrk]  = tNhits;
-	      _trkprob[_nTrk]  = tprob;
-	      _trkStat[_nTrk]  = tStatus;
-	      _trkd0[_nTrk]    = trkHel.d0();
-	      _trkz0[_nTrk]    = trkHel.z0();
-	      _trkphi0[_nTrk]  = trkHel.phi0();
-	      _trkomega[_nTrk] = trkHel.omega();
-	      _trkcdip[_nTrk]  = trkHel.cosDip();
-	      _trkdlen[_nTrk]  = extrapol.pathLengthExit()-extrapol.pathLengthEntrance();
-	      _trkCluIdx[_nTrk] = findBestCluster(trkCaloMatches,extrapol.trkId(),50);
+	      _trkFFx[_nTrk]    = posTrkInSectionFF.x();
+	      _trkFFy[_nTrk]    = posTrkInSectionFF.y();
+	      _trkFFz[_nTrk]    = posTrkInSectionFF.z();
+	      _trkx[_nTrk]      = posTrkInTracker.x();
+	      _trky[_nTrk]      = posTrkInTracker.y();
+	      _trkz[_nTrk]      = posTrkInTracker.z();
+	      _trkt[_nTrk]      = trkTime;
+	      _trke[_nTrk]      = trkMomentum.mag();
+	      _trkpx[_nTrk]     = trkMomentum.x();
+	      _trkpy[_nTrk]     = trkMomentum.y();
+	      _trkpz[_nTrk]     = trkMomentum.z();
+	      _trknHit[_nTrk]   = tNhits;
+	      _trkprob[_nTrk]   = tprob;
+	      _trkStat[_nTrk]   = tStatus;
+	      _trkd0[_nTrk]     = trkHel.d0();
+	      _trkz0[_nTrk]     = trkHel.z0();
+	      _trkphi0[_nTrk]   = trkHel.phi0();
+	      _trkomega[_nTrk]  = trkHel.omega();
+	      _trkcdip[_nTrk]   = trkHel.cosDip();
+	      _trkdlen[_nTrk]   = intersect.pathLengthExit()-intersect.pathLengthEntrance();
+	      _trkCluIdx[_nTrk] = findBestCluster(trkCaloMatches,intersect.trkId(),50);
 
 	      ++_nTrk;
            }

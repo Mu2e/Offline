@@ -66,7 +66,7 @@ namespace mu2e {
 
 	  explicit TrackCaloMatchingBis(fhicl::ParameterSet const& pset):
 	    _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
-	    _trkExtrapolModuleLabel(pset.get<std::string>("trkExtrapolModuleLabel")),
+	    _trkIntersectModuleLabel(pset.get<std::string>("trkIntersectModuleLabel")),
 	    _trkFitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
 	    _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
 	    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
@@ -96,7 +96,7 @@ namespace mu2e {
       private:
 
 	  void doMatching(TrkCaloMatchCollection& trackClusterMatch, KalRepPtrCollection const& trksPtrColl, 
-                          art::Handle<CaloClusterCollection> caloClustersHandle, art::Handle<TrkCaloIntersectCollection>  trjExtrapolHandle);
+                          art::Handle<CaloClusterCollection> caloClustersHandle, art::Handle<TrkCaloIntersectCollection>  trjIntersectHandle);
 
           void matchBest(TrkCaloMatchCollection& trackClusterMatch, art::Handle<CaloClusterCollection> caloClustersHandle, 
                          art::Ptr<TrkCaloIntersect> const& extrapolPtr, CLHEP::Hep3Vector const& posTrkMatch, double trkTime);
@@ -105,7 +105,7 @@ namespace mu2e {
                         art::Ptr<TrkCaloIntersect> const& extrapolPtr, CLHEP::Hep3Vector const& posTrkMatch, double trkTime);
 
 	  std::string      _caloClusterModuleLabel;
-	  std::string      _trkExtrapolModuleLabel;
+	  std::string      _trkIntersectModuleLabel;
 	  std::string      _trkFitterModuleLabel;
 	  std::string      _trkfitInstanceName;
 	  TrkParticle      _tpart;
@@ -153,9 +153,9 @@ namespace mu2e {
 	event.getByLabel(_caloClusterModuleLabel, caloClustersHandle);
 	CaloClusterCollection const& caloClusters(*caloClustersHandle);
 
-        art::Handle<TrkCaloIntersectCollection>  trjExtrapolHandle;
-        event.getByLabel(_trkExtrapolModuleLabel, trjExtrapolHandle);
-        TrkCaloIntersectCollection const& trkExtrapols(*trjExtrapolHandle);
+        art::Handle<TrkCaloIntersectCollection>  trjIntersectHandle;
+        event.getByLabel(_trkIntersectModuleLabel, trjIntersectHandle);
+        TrkCaloIntersectCollection const& trkIntersects(*trjIntersectHandle);
 		
 
 	//output of TrackCaloMatchingBis
@@ -163,9 +163,9 @@ namespace mu2e {
 
 
 	if (_diagLevel) std::cout<<"Event Number: "<< event.event()<<"\nStart TrkCaloMatching with nTrk="<<trksPtrColl.size()
-	                         <<", nExtrapol = "<<trkExtrapols.size()<<", nCluster="<<caloClusters.size()<<std::endl;
+	                         <<", nExtrapol = "<<trkIntersects.size()<<", nCluster="<<caloClusters.size()<<std::endl;
 	
-	if (trksPtrColl.size() && caloClusters.size()) doMatching(*trackClusterMatch, trksPtrColl, caloClustersHandle, trjExtrapolHandle);
+	if (trksPtrColl.size() && caloClusters.size()) doMatching(*trackClusterMatch, trksPtrColl, caloClustersHandle, trjIntersectHandle);
 
 	event.put(std::move(trackClusterMatch));
   }
@@ -174,22 +174,22 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   void TrackCaloMatchingBis::doMatching(TrkCaloMatchCollection& trackClusterMatch, KalRepPtrCollection const& trksPtrColl, 
-                                     art::Handle<CaloClusterCollection> caloClustersHandle, art::Handle<TrkCaloIntersectCollection>  trjExtrapolHandle)
+                                     art::Handle<CaloClusterCollection> caloClustersHandle, art::Handle<TrkCaloIntersectCollection>  trjIntersectHandle)
   {
   
 	 Calorimeter const& cal = *(GeomHandle<Calorimeter>());
 
- 	 TrkCaloIntersectCollection const& trkExtrapols(*trjExtrapolHandle);
+ 	 TrkCaloIntersectCollection const& trkIntersects(*trjIntersectHandle);
 	 CaloClusterCollection const& caloClusters(*caloClustersHandle);
 	 
 	 if (_diagLevel > 1)
 	     for (auto const& cluster: caloClusters) std::cout<<"In TrackClusterMatching, cluster energy="<<cluster.energyDep()<<"  time="<<cluster.time()<<"  cog="<<cluster.cog3Vector()<<std::endl;
 
 	 
-	   for (unsigned int itrk=0;itrk<trkExtrapols.size();++itrk)
+	   for (unsigned int itrk=0;itrk<trkIntersects.size();++itrk)
 	   {
       
-               TrkCaloIntersect const& extrapol = trkExtrapols.at(itrk);
+               TrkCaloIntersect const& extrapol = trkIntersects.at(itrk);
 
 	       double pathLength             = extrapol.pathLengthEntrance();	       
 	       double trkTime                = extrapol.trk()->arrivalTime(pathLength);
@@ -218,7 +218,7 @@ namespace mu2e {
                double z = posTrkInTracker.z();
                CLHEP::Hep3Vector posTrkMatch(x,y,z);
 
- 	       art::Ptr<TrkCaloIntersect> extrapolPtr = art::Ptr<TrkCaloIntersect>(trjExtrapolHandle,itrk);	       
+ 	       art::Ptr<TrkCaloIntersect> extrapolPtr = art::Ptr<TrkCaloIntersect>(trjIntersectHandle,itrk);	       
               
 	       if (_saveBestOnly) matchBest(trackClusterMatch, caloClustersHandle, extrapolPtr, posTrkMatch,trkTime);
                else               matchAll( trackClusterMatch, caloClustersHandle, extrapolPtr, posTrkMatch,trkTime);
