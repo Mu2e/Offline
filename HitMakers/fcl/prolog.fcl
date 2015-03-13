@@ -3,7 +3,10 @@
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
-# Form StrawHits (SH).
+
+#------------------------------------------------------------------------------
+# time map generation modules, used by the MC digi makers
+#------------------------------------------------------------------------------
 protonTimeMap : { 
     module_type        : GenerateProtonTimes 
 }
@@ -12,6 +15,7 @@ muonTimeMap : {
     module_type        : GenerateMuonLife 
 }
 
+# Form StrawHits (SH).
 makeSH : {
   module_type          : MakeStrawHit
   g4ModuleLabel        : g4run
