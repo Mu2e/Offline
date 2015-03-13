@@ -64,6 +64,7 @@ namespace mu2e {
       _maximumEnergy(pset.get<double>("maximumEnergy",1000.0)), //MeV
       _minimumTimeGap(pset.get<double>("minimumTimeGap",1.0)),// ns
       _caloChargeProductionEffects(pset.get<bool>("caloChargeProductionEffects",0)),
+      _caloCalibNoise(pset.get<double>("caloCalibNoise",0)),
       _caloROnoiseEffect(pset.get<bool>("caloROnoiseEffect",0)),
       _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
       _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
@@ -92,6 +93,7 @@ namespace mu2e {
     double _maximumEnergy;  // energy of a saturated RO
     double _minimumTimeGap; // to merge the hits
     bool   _caloChargeProductionEffects;
+    double _caloCalibNoise;
     bool   _caloROnoiseEffect;
 
     string _g4ModuleLabel;  // Name of the module that made the input hits.
@@ -129,19 +131,20 @@ namespace mu2e {
      art::ServiceHandle<GeometryService> geom;    
      if( !(geom->hasElement<Calorimeter>()) ) return;
 
-    //Create a new CaloCrystalHit collection and fill it
-     unique_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
 
      //Get handles to calorimeter RO (aka APD) collection
      art::Handle<CaloHitCollection> caloHitsHandle;
      event.getByLabel(_caloReadoutModuleLabel, caloHitsHandle);
-
-     if ( caloHitsHandle.isValid()) {
-       makeCrystalHits(*caloCrystalHits,caloHitsHandle);
-     }
+     if ( !caloHitsHandle.isValid()) return;
      
+    //Create a new CaloCrystalHit collection and fill it
+     unique_ptr<CaloCrystalHitCollection> caloCrystalHits(new CaloCrystalHitCollection);
+     makeCrystalHits(*caloCrystalHits,caloHitsHandle);
+
+
+
      if ( _diagLevel > 0 ) {
-       for (std::vector<CaloCrystalHit>::iterator i = (*caloCrystalHits).begin(); i != (*caloCrystalHits).end(); ++i) 
+        for (std::vector<CaloCrystalHit>::iterator i = (*caloCrystalHits).begin(); i != (*caloCrystalHits).end(); ++i) 
           std::cout<<"I have produced the CaloCrystalHit "<<(*i)<<std::endl;
         cout << __func__ << ": caloCrystalHits.size() "<< caloCrystalHits->size() << endl;
         cout << __func__ << ": ncalls " << ncalls << endl;
@@ -261,9 +264,16 @@ namespace mu2e {
 		  {
         	    double esave = caloCrystalHit.energyDep();
 		    readoutNoiseCorrection(caloCrystalHit,roId, calorimeterCalibrations);
-		    if(_diagLevel) std::cout<<"after ROnoiseEffects-correction, energy = "<<  esave<<" / "<<caloCrystalHit.energyDep()<<std::endl;	      
+		    if (_diagLevel) std::cout<<"after ROnoiseEffects-correction, energy = "<<  esave<<" / "<<caloCrystalHit.energyDep()<<std::endl;	      
 		  }
 
+		  if (_caloCalibNoise > 1e-6)
+		  {
+		    double esave = caloCrystalHit.energyDep();
+		    double energy = caloCrystalHit.energyDep()*_randGauss.fire(1.0, _caloCalibNoise );
+		    caloCrystalHit.setEnergyDep( (energy > 0 ? energy : 0.0));
+		    if(_diagLevel) std::cout<<"after noiseCalib-correction, energy = "<<  esave<<" / "<<caloCrystalHit.energyDep()<<std::endl;	      
+		  }
 		  
 		  caloCrystalHits.push_back(caloCrystalHit);
              }
@@ -283,8 +293,35 @@ namespace mu2e {
 
 
 
-    if (caloCrystalHit.energyDep()>0.0) {
+    if (caloCrystalHit.energyDep()>0.0) 
+    {
       if (_diagLevel) cout << __func__ << ": Inserting last old hit: " << caloCrystalHit << endl;
+
+      int roId = caloCrystalHit.id();
+
+      if (_caloChargeProductionEffects) 
+      {
+	  double esave = caloCrystalHit.energyDep();
+	  chargeProductionCorrection(caloCrystalHit, roId, calorimeterCalibrations);
+	  if(_diagLevel) std::cout<<"before / after ChargeProductionEffects-correction, last id="<<caloCrystalHit.id()<<" energy = "<< esave<<" / "<<caloCrystalHit.energyDep()<<"   ratio   "<<esave/caloCrystalHit.energyDep()<<std::endl;
+      }
+
+      if (_caloROnoiseEffect)
+      {
+        double esave = caloCrystalHit.energyDep();
+	readoutNoiseCorrection(caloCrystalHit,roId, calorimeterCalibrations);
+	if(_diagLevel) std::cout<<"after ROnoiseEffects-correction, energy = "<<  esave<<" / "<<caloCrystalHit.energyDep()<<std::endl;	      
+      }
+
+      if (_caloCalibNoise > 1e-6)
+      {
+	double esave = caloCrystalHit.energyDep();
+	double energy = caloCrystalHit.energyDep()*_randGauss.fire(1.0, _caloCalibNoise );
+	caloCrystalHit.setEnergyDep( (energy > 0 ? energy : 0.0));
+	if(_diagLevel) std::cout<<"after noiseCalib-correction, energy = "<<  esave<<" / "<<caloCrystalHit.energyDep()<<std::endl;	      
+      }
+
+
       caloCrystalHits.push_back(caloCrystalHit);
     }
 

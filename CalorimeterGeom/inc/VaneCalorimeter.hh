@@ -44,48 +44,48 @@ class VaneCalorimeter: public BaseCalorimeter{
           ~VaneCalorimeter(){}
 
 
-          int nVane()               const  {return _nSections; }
-	  Vane const&  vane(int i)  const  {return static_cast<Vane const&>(section(i));}
+	  //vane components
+          int          nVane()            const  {return _nSections; }
+	  Vane const&  vane(int i)        const  {return static_cast<Vane const&>(section(i));}
 
-          int    nCrystalR()        const  {return _nCrystalR; }
-          int    nCrystalZ()        const  {return _nCrystalZ; }
-          double innerRadius ()     const  {return _rMin;}
-          double outherRadius()     const  {return _rMax;}
+          //few accessors to vane internal composition
+	  int          nCrystalX()        const  {return _nCrystalX;}
+          int          nCrystalY()        const  {return _nCrystalY;}
+          int          crystalX(int crid) const  {return (crid%(_nCrystalX*_nCrystalY))%_nCrystalX;}
+          int          crystalY(int crid) const  {return (crid%(_nCrystalX*_nCrystalY))/_nCrystalX;}
+          int          vaneId(int crid)   const  {return crid/(_nCrystalX*_nCrystalY);}
+          double       innerRadius ()     const  {return _rMin;}
+          double       outherRadius()     const  {return _rMax;}
+          bool         isTilted()         const  {return _isVaneTilted;}
                   
 		  
-	  virtual int               crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)        const;
-          virtual double            crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const; 
-          virtual bool              isInsideCalorimeter(CLHEP::Hep3Vector const& pos)           const;        
-          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)                  const; 
-
-          bool                      isInsideVane(int ivane, CLHEP::Hep3Vector const& pos)       const ;
-
-        
+	
+	  //geometry components / print
+          virtual bool              isInsideCalorimeter(CLHEP::Hep3Vector const& pos)              const;        
+          virtual bool              isInsideSection(int iSection, CLHEP::Hep3Vector const& pos)    const;
+	  virtual void              print()                                                        const;
 
 
-//keep only for backward compatibility, will disappear in the future.
 
-int crystalRByRO(int roid) const {return ((roid/_caloGeomInfo.nROPerCrystal())%(_nCrystalZ*_nCrystalR))/_nCrystalZ;}
-int crystalZByRO(int roid) const {return ((roid/_caloGeomInfo.nROPerCrystal())%(_nCrystalZ*_nCrystalR))%_nCrystalZ;}
+	  //crystal id and neighbors component
+	  virtual int               crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)            const;
+          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)                      const; 
 
-CLHEP::Hep3Vector crystalOriginByRO(int roid) const { return crystalOrigin(crystalByRO(roid));  }
-int vaneByRO(int roid) const {return roid/(_nCrystalZ*_nCrystalR*_caloGeomInfo.nROPerCrystal());}
-CLHEP::Hep3Vector crystalAxisByRO(int roid) const { return crystalAxis(crystalByRO(roid));  }
 
-CLHEP::Hep3Vector toVaneFrame(int vaneId, CLHEP::Hep3Vector const& pos) const   {return toSectionFrame(vaneId,pos);}
-CLHEP::Hep3Vector fromVaneFrame(int vaneId, CLHEP::Hep3Vector const& pos) const {return fromSectionFrame(vaneId,pos);}
+          
 
 
 
 
       private:
 
-          int    _nCrystalZ;
-          int    _nCrystalR;
+          int    _nCrystalX;
+          int    _nCrystalY;
           double _rMin;
           double _rMax;
           double _shieldHalfThickness;
           double _absorberHalfThickness;
+          bool   _isVaneTilted;
 
 
 

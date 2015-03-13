@@ -3,20 +3,30 @@
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
-MakeCaloCluster: {
-    module_type             : MakeCaloClusterNew
-    generatorModuleLabel    : generate
-    g4ModuleLabel           : g4run
-    caloCrystalModuleLabel  : CaloCrystalHitsMaker
-#
-    deltaTimePlus           : 5.0  # ns
-    deltaTimeMinus          : 5.0  # ns
-    nCryPerCrystal          : 1    # currently unused
-    EclusterCut             : 5.0  # MeV  
-    EnoiseCut               : 1.0  # MeV assume readout threshold of 1 MeV
-    ExpandCut               : 1.0  # MeV
-    EminSplitSeed           : 2.0  # MeV
-    diagLevel               : 0
-    maxFullPrint            : 201
-}
+	MakeCaloProtoCluster :
+	{
+	  module_type            : MakeCaloProtoCluster
+	  caloCrystalModuleLabel : MakeCaloCrystalHits
+	  mainClusterCollName    : mainCluster
+	  splitClusterCollName   : splitCluster
+	  EminSeed               : 10
+	  ExpandCut              : 0.9
+	  EnoiseCut              : 0.9
+	  deltaTimePlus          : 10
+	  deltaTimeMinus         : 10
+	  diagLevel              : 0
+	}  
+
+	MakeCaloCluster :
+	{
+	  module_type            : MakeCaloCluster
+	  caloClusterModuleLabel : MakeCaloProtoCluster
+	  mainClusterCollName    : mainCluster
+	  splitClusterCollName   : splitCluster
+	  deltaTimePlus          : 10
+	  deltaTimeMinus         : 10
+	  maxDistSplit           : 100
+	  maxDistMain            : 100
+	  diagLevel              : 0
+	}  
 END_PROLOG

@@ -30,30 +30,28 @@ namespace mu2e{
   class SimpleConfig;
 
     
-  //forward declarations
-  class VaneCalorimeter;
+    //forward declarations
+    class VaneCalorimeter;
 
-  class VaneCalorimeterMaker{
+    class VaneCalorimeterMaker{
 
-  public:
+    public:
      
-    VaneCalorimeterMaker(SimpleConfig const& config, double solenoidOffset);
-    ~VaneCalorimeterMaker();
+      VaneCalorimeterMaker(SimpleConfig const& config, double solenoidOffset);
+      ~VaneCalorimeterMaker();
       
       
-    // Accessor and unique_ptr to VaneCalorimeter needed by GeometryService.
-    std::unique_ptr<VaneCalorimeter> _calo;
-    std::unique_ptr<VaneCalorimeter> calorimeterPtr() { return std::move(_calo); }
-    int isTilted() {return _tiltVane;}
-    
-  private:
+      // Accessor and unique_ptr to VaneCalorimeter needed by GeometryService.
+      std::unique_ptr<VaneCalorimeter> _calo;
+      std::unique_ptr<VaneCalorimeter> calorimeterPtr() { return std::move(_calo); }
 
-    void CheckIt(void);
-    void MakeVanes(void);
+    private:
 
-    int _tiltVane;
+       void CheckIt(void);
+       void MakeVanes(void);
 
-  };
+       int _verbosityLevel;
+   };
 
 } //namespace mu2e
 

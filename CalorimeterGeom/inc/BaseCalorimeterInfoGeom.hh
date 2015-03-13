@@ -36,7 +36,6 @@ namespace mu2e {
            void crystalHalfTrans(double value)     {_crystalHalfTrans = value;}
            void crystalVolume(double value)        {_crystalVolume = value;}
 	   void wrapperThickness(double value)     {_wrapperThickness = value;}
-	   void shellThickness(double value)       {_shellThickness = value;}
            void caseThickness(double value)        {_caseThickness = value;}
            void roHalfTrans(double value)          {_roHalfTrans = value;}
            void roHalfThickness(double value)      {_roHalfThickness = value;}
@@ -51,7 +50,6 @@ namespace mu2e {
            double crystalHalfTrans()    const      {return _crystalHalfTrans;}
            double crystalVolume()       const      {return _crystalVolume;}
            double wrapperThickness()    const      {return _wrapperThickness;}
-           double shellThickness()      const      {return _shellThickness;}
            double caseThickness()       const      {return _caseThickness;}
            double roHalfTrans()         const      {return _roHalfTrans;}
            double roHalfThickness()     const      {return _roHalfThickness;}
@@ -107,7 +105,6 @@ namespace mu2e {
 	  double _crystalHalfLength;
 	  double _crystalVolume;
           double _wrapperThickness;
-          double _shellThickness;
           double _roHalfTrans;
           double _roHalfThickness;
           double _caseThickness;

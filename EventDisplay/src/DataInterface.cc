@@ -476,10 +476,10 @@ void DataInterface::fillGeometry()
     unsigned int nro=calo->nRO();
     for(unsigned int i=0; i<nro; i+=roPerCrystal)
     {
-      int vaneid=calo->vaneByRO(i);
       int crystalid=calo->crystalByRO(i);
-      int rPos=calo->crystalRByRO(i);
-      int zPos=calo->crystalZByRO(i);
+      int vaneid=calo->vaneId(crystalid);
+      int rPos=calo->crystalY(crystalid);
+      int zPos=calo->crystalX(crystalid);
       double crystalHalfTrans=calo->caloGeomInfo().crystalHalfTrans();
 
       const mu2e::Vane &v=calo->vane(vaneid);

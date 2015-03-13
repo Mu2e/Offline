@@ -6,13 +6,14 @@
 //
 // Notes
 //
-//  1. a crystal has readouts at the back, both are surrounded by the wrapping, and the wrapping by a shell
-//  2. by default, the wrapping surrounds the front/back face of the crystal+ro, the shell does not (shell is a casing)
-//  3.  placement (z=0 at the base of the polyhedra, not in the middle of the polyhedra in G4!)
-//       - crystal is at z=wrapThickness in wrapping frame
-//       - RO is at z=wrapThickness+crystalDepth+ROHalfThickness in wrapping
-//       - wrapping is at z=shellThickness in crystal
-//  4. Disk holds the crystals but have dead space, so they are enclosed in a larger disk to simulate the casing material
+//  1. a crystal has readouts at the back, crystal+readout are surrounded by the wrapper
+//  3. placement (z=0 at the base of the polyhedra, not in the middle of the polyhedra in G4!)
+//       - crystal is at z = wrapThickness in wrapping frame
+//       - RO is at z = wrapThickness+crystalDepth+ROHalfThickness in wrapping
+//  4. Disk holds the wrapped crystals, but the casing is only for the inner / outer radii (no front/back casing yet), so z wrapping = wrapdepth/2.0
+//  5. Calibration pipes go in front
+
+
 
 #include <array>
 #include <iostream>
@@ -149,6 +150,7 @@ namespace mu2e {
     G4double ZPosR0       = wrapThickness+crystalDepth+ROHalfThickness;
 
 
+
     // disk position
     G4double ZposPipe     = -diskDepth/2.0+pipeRadius;                                            
     G4double ZposCase     = pipeRadius;                                            
@@ -192,7 +194,7 @@ namespace mu2e {
     //
     // define required logical volumes
 
-    G4LogicalVolume *CrystalLog  = new G4LogicalVolume(crystal, crysMaterial, "CrystalLog");
+    G4LogicalVolume *CrystalLog  = new G4LogicalVolume(crystal,   crysMaterial, "CrystalLog");
     G4LogicalVolume *ROLog       = new G4LogicalVolume(crystalRO, readMaterial, "CrystalROLog" );    
     
     G4VisAttributes* crys_visAtt = new G4VisAttributes(isCrystalVisible, G4Color::Green());
@@ -201,6 +203,7 @@ namespace mu2e {
 
     CrystalLog->SetVisAttributes(crys_visAtt);    
     ROLog->SetVisAttributes(G4VisAttributes::Invisible);
+    //ROLog->SetVisAttributes(G4Color::Cyan());
    
     //-- Sensitive detector
     G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
@@ -268,7 +271,6 @@ namespace mu2e {
 
     for (unsigned int idisk=0;idisk<nDisks;++idisk)
     {
-
 	ostringstream discname0;      discname0<<"DiskCalorimeter_" <<idisk;
 	ostringstream discname1;      discname1<<"DiskCase_" <<idisk;
 
@@ -277,8 +279,8 @@ namespace mu2e {
 	double diskpar0[5]    = {radiusIn,radiusOut, diskDepth/2.0, 0., CLHEP::twopi};
 	double diskpar1[5]    = {radiusIn,radiusOut, caseDepth/2.0, 0., CLHEP::twopi};
 
+	//origin gives the position of the center of the disk, irrespective of the coordinate origin set in the calo description
 	G4ThreeVector posDisk = cal.disk(idisk).origin() - posCaloMother;
-
 
 	diskBoxInfo[idisk] =  nestTubs(discname0.str(),
                         	       diskpar0,fillMaterial,&cal.disk(idisk).rotation(),posDisk,
@@ -306,14 +308,13 @@ namespace mu2e {
 	// fill it with crystals
 	for(int ic=0; ic <cal.disk(idisk).nCrystals(); ++ic)
 	{
-
 	      G4int id       = nTotCrystal+ic;
 	      G4int roidBase = cal.ROBaseByCrystal(id);
 
-              //position of shell in the disk
-              CLHEP::Hep3Vector crystalPosition = cal.disk(idisk).crystal(ic).localPosition();
-              double x = crystalPosition.x();
-              double y = crystalPosition.y();
+              //position of crystal unit in the disk (same as crystal for x,y, but different for z)
+              CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPosition();
+              double x = unitPosition.x();
+              double y = unitPosition.y();
               double z = -wrapDepth/2.0; 	      
 
 
@@ -343,7 +344,7 @@ namespace mu2e {
      //--------------------------------------
      // Construct Calibration system
      //
-     if (nPipes>0) 
+     if (nPipes>0 && pipeRadius > 0.001) 
      {
 	for (unsigned int idisk=0;idisk<nDisks;++idisk)
 	{

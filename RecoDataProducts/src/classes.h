@@ -33,9 +33,12 @@
 #include "RecoDataProducts/inc/SctrSttnClusterGroupCollection.hh"
 #include "RecoDataProducts/inc/ZRotStrawHitMapCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
+#include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
+#include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
 #include "RecoDataProducts/inc/PIDProductCollection.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
@@ -73,6 +76,8 @@ template class std::vector<art::Ptr<mu2e::TrackerHitTimeCluster> >;
 template class std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >;
 template class art::Ptr<mu2e::CaloCrystalHit>;
 template class std::vector<art::Ptr<mu2e::CaloCrystalHit> >;
+template class art::Ptr<mu2e::CaloProtoCluster>;
+template class std::vector<art::Ptr<mu2e::CaloProtoCluster> >;
 template class art::Ptr<mu2e::CaloCluster>;
 template class std::vector<art::Ptr<mu2e::CaloCluster> >;
 template class art::Ptr<mu2e::TrackSeed>;
@@ -81,6 +86,10 @@ template class art::Ptr<mu2e::TrkExtTrajPoint>;
 template class std::vector<mu2e::TrkExtTrajPoint>;
 template class art::Ptr<mu2e::TrkExtTraj>;
 template class std::vector<mu2e::TrkExtTraj>;
+template class art::Ptr<mu2e::TrkCaloIntersect>;
+template class std::vector<mu2e::TrkCaloIntersect>;
+template class art::Ptr<mu2e::TrkCaloMatch>;
+template class std::vector<mu2e::TrkCaloMatch>;
 template class art::Ptr<mu2e::PIDProduct>;
 template class std::vector<mu2e::PIDProduct>;
 template class std::vector<std::pair<unsigned int, unsigned int> >;
@@ -95,7 +104,10 @@ template class art::Wrapper<mu2e::StrawHitFlagCollection>;
 template class art::Wrapper<mu2e::StrawClusterCollection>;
 template class art::Wrapper<mu2e::CaloHitCollection>;
 template class art::Wrapper<mu2e::CaloCrystalHitCollection>;
+template class art::Wrapper<mu2e::CaloProtoClusterCollection>;
 template class art::Wrapper<mu2e::CaloClusterCollection>;
+template class art::Wrapper<mu2e::TrkCaloIntersectCollection>;
+template class art::Wrapper<mu2e::TrkCaloMatchCollection>;
 template class art::Wrapper<mu2e::KalRepPayloadCollection>;
 template class art::Wrapper<mu2e::KalRepExtensionPayloadCollection>;
 

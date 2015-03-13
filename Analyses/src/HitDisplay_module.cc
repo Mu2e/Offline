@@ -325,6 +325,10 @@ namespace mu2e {
   // 'banner' : print banner
   //-----------------------------------------------------------------------------
   void HitDisplay::printCaloCluster(const CaloCluster* Cl, const char* Opt) {
+
+    typedef art::Ptr< CaloCrystalHit>                CaloCrystalHitPtr;
+    typedef std::vector<CaloCrystalHitPtr>     CaloCrystalHitPtrVector;
+
     const char oname[] = "HitDisplay::printCaloCluster";
 
     int row, col, ir, iz;
@@ -343,20 +347,6 @@ namespace mu2e {
     }
     
     if ((opt == "") || (opt.Index("data") >= 0)) {
-      row = Cl->cogRow();
-      col = Cl->cogColumn();
-
-      if ((row < 0) || (row > 9999)) row = -9999;
-      if ((col < 0) || (col > 9999)) col = -9999;
-
-      printf("%6i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f\n",
-	     Cl->vaneId(),
-	     Cl->time(),
-	     row, col,
-	     Cl->energyDep(),
-	     Cl->cog3Vector().x(),
-	     Cl->cog3Vector().y(),
-	     Cl->cog3Vector().z() );
 
       const CaloCrystalHitPtrVector caloClusterHits = Cl->caloCrystalHitsPtrVector();
 
@@ -373,8 +363,8 @@ namespace mu2e {
 
 	if(geom->hasElement<mu2e::VaneCalorimeter>() ){
 	  GeomHandle<VaneCalorimeter> cgvane;
-	  iz  = cgvane->nCrystalZ();
-	  ir  = cgvane->nCrystalR();
+	  iz  = cgvane->nCrystalX();
+	  ir  = cgvane->nCrystalY();
 	}else{
  	  iz = -1;
 	  ir = -1;
@@ -729,7 +719,7 @@ namespace mu2e {
 	  if( geom->hasElement<mu2e::VaneCalorimeter>() ){
 	    color = 2;
 	  }else if(geom->hasElement<mu2e::DiskCalorimeter>()){
-	    color = module_color[cl->vaneId()];
+	    color = module_color[cl->sectionId()];
 	  }
 	  e->SetFillColor(color);
 	  e->SetLineColor(color);

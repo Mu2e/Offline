@@ -90,20 +90,8 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
 
   art::ServiceHandle<mu2e::GeometryService> geom;
 
-  const mu2e::Calorimeter* cal;
-
-  if      (geom->hasElement<mu2e::Calorimeter>() ) {
-    mu2e::GeomHandle<mu2e::Calorimeter> cc;
-    cal = cc.get();
-  }
-  else if (geom->hasElement<mu2e::VaneCalorimeter>() ) {
-    mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
-    cal = vc.get();
-  }
-  else if (geom->hasElement<mu2e::DiskCalorimeter>() ) {
-    mu2e::GeomHandle<mu2e::DiskCalorimeter> dc;
-    cal = dc.get();
-  }
+  mu2e::GeomHandle<mu2e::Calorimeter> cc;
+  const mu2e::Calorimeter *cal =  cc.operator->();
 //-----------------------------------------------------------------------------
 // tracks are supposed to be already initialized
 //-----------------------------------------------------------------------------
@@ -119,11 +107,11 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
     cluster               = cb->NewCluster();
     cl                    = &list_of_clusters->at(i);
     cluster->fCaloCluster = cl;
-    cluster->fDiskID      = cl->vaneId();
+    cluster->fDiskID      = cl->sectionId();
     cluster->fEnergy      = cl->energyDep();
     cluster->fTime        = cl->time();
     
-    const mu2e::CaloCrystalHitPtrVector list_of_crystals = cluster->fCaloCluster->caloCrystalHitsPtrVector();
+    const mu2e::CaloCluster::CaloCrystalHitPtrVector list_of_crystals = cluster->fCaloCluster->caloCrystalHitsPtrVector();
 
     int nh = list_of_crystals.size();
     Hep3Vector pos;
@@ -183,8 +171,8 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
     cluster->fX         = cl->cog3Vector().x();
     cluster->fY         = cl->cog3Vector().y();
     cluster->fZ         = cl->cog3Vector().z();
-    cluster->fIx1       = cl->cogRow();
-    cluster->fIx2       = cl->cogColumn();
+    //cluster->fIx1       = cl->cogRow();
+    //cluster->fIx2       = cl->cogColumn();
 
     cluster->fNCrystals = nh;
     cluster->fNCr1      = qn;

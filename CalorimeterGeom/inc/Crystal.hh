@@ -28,36 +28,33 @@ namespace mu2e {
 
 	  public:
 
-             Crystal(int localId, CLHEP::Hep3Vector localPosition) : 
-	       _localId(localId), _localPosition(localPosition),_position(), _neighborsLevel1(),_neighborsLevel2(),_neighborsLevel3()
+             Crystal(int localId, int sectionId, CLHEP::Hep3Vector localPosition) : 
+	       _localId(localId), _sectionId(sectionId), _localPosition(localPosition), _position(), _neighbors(), _nextNeighbors()
 	     {}
 
 
              int localId()                             const        {return _localId;}
+             int sectionId()                           const        {return _sectionId;}
              CLHEP::Hep3Vector const& localPosition()  const        {return _localPosition;}
 
              CLHEP::Hep3Vector const& position()       const        {return _position;}
+             std::vector<int> const& neighbors()       const        {return _neighbors;}	     
+             std::vector<int> const& nextNeighbors()   const        {return _nextNeighbors;}	     
+
              void setPosition(CLHEP::Hep3Vector const& pos)         {_position = pos;}
-
-
-             std::vector<int> const& neighborsLevel1() const        {return _neighborsLevel1;}
-             std::vector<int> const& neighborsLevel2() const        {return _neighborsLevel2;}
-             std::vector<int> const& neighborsLevel3() const        {return _neighborsLevel3;}
-	     
-             void setNeighborsLevel1(std::vector<int> const& list)  {_neighborsLevel1 = list;}
-             void setNeighborsLevel2(std::vector<int> const& list)  {_neighborsLevel2 = list;}
-             void setNeighborsLevel3(std::vector<int> const& list)  {_neighborsLevel3 = list;}
+             void setNeighbors(std::vector<int> const& list)        {_neighbors = list;}
+             void setNextNeighbors(std::vector<int> const& list)    {_nextNeighbors = list;}
 
 
 
 	 private:
 	 
 	     int                 _localId;
+	     int                 _sectionId;
              CLHEP::Hep3Vector   _localPosition;
              CLHEP::Hep3Vector   _position;
-	     std::vector<int>    _neighborsLevel1;
-	     std::vector<int>    _neighborsLevel2;
-	     std::vector<int>    _neighborsLevel3;
+	     std::vector<int>    _neighbors;
+	     std::vector<int>    _nextNeighbors;
 
      };
 

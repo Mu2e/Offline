@@ -46,16 +46,24 @@ namespace mu2e {
           DiskCalorimeter()  {}
           ~DiskCalorimeter() {}
 
-	  unsigned int nDisk()                const  {return _nSections;}
-	  Disk const&  disk(int i)            const  {return static_cast<Disk const&>(section(i));}
-	  double       diskSeparation(int i)  const  {return _diskSeparation.at(i);}
+	  
+	  
+	  //disk components
+	  unsigned int nDisk()                  const  {return _nSections;}
+	  Disk const&  disk(int i)              const  {return static_cast<Disk const&>(section(i));}
+	  double       diskSeparation(int i)    const  {return _diskSeparation.at(i);}
 
-	  virtual bool             isInsideCalorimeter(CLHEP::Hep3Vector const& pos)           const ;       	 	 
-	  virtual int              crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)        const ;
-          virtual double           crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const; 
-          virtual std::vector<int> neighborsByLevel(int crystalId, int level)                  const; 
+	  
+	  //geometry components
+	  virtual bool              isInsideCalorimeter(CLHEP::Hep3Vector const& pos)               const ;       	 	 
+          virtual bool              isInsideSection(int iSection, CLHEP::Hep3Vector const& pos)     const ;
 
-  	  bool                     isInsideDisk(int idisk, CLHEP::Hep3Vector const& pos)       const ;       	 
+	  
+	  //crystal id and neighbors component
+	  virtual int               crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)            const ;
+          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)                      const; 
+	  virtual void              print()                                                         const;
+
 
 
         private:

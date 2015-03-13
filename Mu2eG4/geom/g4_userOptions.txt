@@ -1,7 +1,8 @@
 //-----------------------
 // Physics lists
 //-----------------------
-string g4.physicsListName = "Shielding_MU2E01";
+//string g4.physicsListName = "Shielding_MU2E01";
+string g4.physicsListName = "QGSP_BERT";
 double g4.minRangeCut     = 0.01;  // mm
 
 bool   g4.printPhysicsProcessSummary = false;

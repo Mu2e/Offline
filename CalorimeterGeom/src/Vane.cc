@@ -7,9 +7,8 @@
 //
 // Original author B Echenard - P. Ongmongkolkul
 //
-
-// Note: crystalShift indicates the shift of the crystal center from the center of 
-// the cell in the calo due to the readout (or other things).
+// Note: We define the xy position of the crystal relative to the disk local coordinate system
+// x is the "long" side, y is the short side.
 
 
 // C++ includes
@@ -27,72 +26,88 @@
 
 namespace mu2e {
 
-      Vane::Vane(int id, double rMin, int nCrystalR, int nCrystalZ, double cellSize, CLHEP::Hep3Vector crystalShift) : 
-        CaloSection(id, crystalShift),
-        _rMin(rMin), _nCrystalR(nCrystalR), _nCrystalZ(nCrystalZ),_cellSize(cellSize)
+      Vane::Vane(int vaneId, double rMin, int nCrystalX, int nCrystalY, CLHEP::Hep3Vector const& size, 
+                 double cellSize, double crystalHalfLength, 
+		 CLHEP::Hep3Vector const& vaneOriginToCrystalOrigin) : 
+		 
+        CaloSection(vaneId,size,crystalHalfLength,vaneOriginToCrystalOrigin),
+	_rMin(rMin),
+	_nCrystalX(nCrystalX),
+	_nCrystalY(nCrystalY), 
+	_cellSize(cellSize)
       {
-        fillCrystals();
-      }
+          fillCrystals(vaneOriginToCrystalOrigin); //see note in VaneCalorimeterMaker
+
+ 	  _xActiveHalf = nCrystalX*cellSize+1e-6;   
+	  _yActiveHalf = nCrystalY*cellSize+1e-6;   
+     }
 
      
-      void Vane::fillCrystals(void)
+      void Vane::fillCrystals(CLHEP::Hep3Vector const& crystalOriginInVane)
       {         
 
-          int nCrystals = _nCrystalZ*_nCrystalR;	  
+          int nCrystals = _nCrystalX*_nCrystalY;	  
           for (int i=0; i< nCrystals; ++i)
 	  {              
-              double y = (2*(i/_nCrystalZ) - _nCrystalR+1)*_cellSize;
-              double z = (2*(i%_nCrystalZ) - _nCrystalZ+1)*_cellSize;
-              CLHEP::Hep3Vector pos(0,y,z);
-              pos += _crystalShift;  //see note 
-              _crystalList.push_back( Crystal(i,pos) );
+              double x = (2*(i%_nCrystalX) - _nCrystalX+1)*_cellSize;
+              double y = (2*(i/_nCrystalX) - _nCrystalY+1)*_cellSize;
+
+              CLHEP::Hep3Vector pos(x,y,0);
+              pos += crystalOriginInVane; 
+              _crystalList.push_back( Crystal(i,_id, pos) );
           }
 
       }
 
-      int Vane::idxFromPosition(double y, double z) const 
+      int Vane::idxFromPosition(double x, double y) const 
       {        
-	return  int(y/2.0/_cellSize+0.5*_nCrystalR)*_nCrystalZ + int(z/2.0/_cellSize + 0.5*_nCrystalZ);
+	return  int(x/2.0/_cellSize + 0.5*_nCrystalX) + int(y/2.0/_cellSize+0.5*_nCrystalY)*_nCrystalX ;
       }
 
 
       //find the local index of the neighbors for a given level (level = number of "layers" away)
       std::vector<int> Vane::findLocalNeighbors(int crystalId, int level) const
       {
-          int Z0 = crystalId % _nCrystalZ;
-          int R0 = crystalId / _nCrystalZ;
+          int X0 = crystalId % _nCrystalX;
+          int Y0 = crystalId / _nCrystalX;
 
           std::vector<int> list;
 	  
-	  //Z0-level -> Z0+level with R=R0+level
+	  //X0-level -> X0+level with Y=Y0+level
           for (int i=-level;i<=level;++i) {
-            int Z = Z0+i, R = R0+level;
-            if (Z < 0 || Z > (_nCrystalZ-1)  || R > (_nCrystalR-1) ) continue;
-            list.push_back(R*_nCrystalZ + Z);
+            int X = X0+i, Y = Y0+level;
+            if (X < 0 || X > (_nCrystalX-1)  || Y > (_nCrystalY-1) ) continue;
+            list.push_back(Y*_nCrystalX + X);
           }
 
-          //R0+level-1 -> R0-level with Z=Z0+level
+          //Y0+level-1 -> Y0-level with X=X0+level
           for (int i=level-1;i>=-level;--i) {
-             int Z = Z0+level, R = R0+i;
-             if (R < 0 || R > (_nCrystalR-1)|| Z > (_nCrystalZ-1)  ) continue;
-             list.push_back(R*_nCrystalZ + Z); 
+             int X = X0+level, Y = Y0+i;
+             if (Y < 0 || Y > (_nCrystalY-1)|| X > (_nCrystalX-1)  ) continue;
+             list.push_back(Y*_nCrystalX + X); 
            }
 
-           //Z0+level-1 -> Z0-level with R=R0-level
+           //X0+level-1 -> X0-level with Y=Y0-level
            for (int i=level-1;i>=-level;--i) {
-             int Z = Z0+i, R = R0-level;
-             if (Z < 0 || Z > (_nCrystalZ-1) || R<0) continue;
-             list.push_back(R*_nCrystalZ + Z); 
+             int X = X0+i, Y = Y0-level;
+             if (X < 0 || X > (_nCrystalX-1) || Y<0) continue;
+             list.push_back(Y*_nCrystalX + X); 
            }
 
-           //R0-level+1 -> R0-level-1 with Z=Z0-level
+           //Y0-level+1 -> Y0-level-1 with X=X0-level
            for (int i=-level+1;i<level;++i) {
-             int Z = Z0-level, R = R0+i;
-             if (R < 0 || R > (_nCrystalR-1) || Z < 0) continue;
-             list.push_back(R*_nCrystalZ + Z); 
+             int X = X0-level, Y = Y0+i;
+             if (Y < 0 || Y > (_nCrystalY-1) || X < 0) continue;
+             list.push_back(Y*_nCrystalX + X); 
            }
            
 	   return list;	   
+      }
+
+      void Vane::print() const 
+      {        
+	std::cout<<"Number of crystals X / Y= "<<_nCrystalX<<" / "<<_nCrystalY<<" / "<<_nCrystalX*_nCrystalY<<std::endl;
+	std::cout<<"Radius In / Out "<<_rMin<<" / "<<_rMin+_nCrystalY*_cellSize<<std::endl;
       }
 
 

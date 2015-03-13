@@ -21,36 +21,34 @@ namespace mu2e {
 
 
 
-
-    bool VaneCalorimeter::isInsideVane(int ivane, CLHEP::Hep3Vector const& pos) const 
+    bool VaneCalorimeter::isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const 
     {   
-	CLHEP::Hep3Vector posInSection = toSectionFrame(ivane, pos);
+        for (unsigned int ivane=0;ivane<_nSections;++ivane) if (isInsideSection(ivane,pos)) return true;
+        return false;    
+    }
 
-	double xlim = _caloGeomInfo.crystalHalfLength() + _caloGeomInfo.wrapperThickness() + _caloGeomInfo.roHalfThickness()  + 0.5;
-	double ylim = _nCrystalR*(_caloGeomInfo.crystalHalfTrans() +_caloGeomInfo.wrapperThickness()+_caloGeomInfo.shellThickness()) + 0.5;   
-	double zlim = _nCrystalZ*(_caloGeomInfo.crystalHalfTrans() +_caloGeomInfo.wrapperThickness()+_caloGeomInfo.shellThickness()) + 0.5;   
 
-	if (posInSection.x() < -xlim || posInSection.x() > xlim ) return false;      
-	if (posInSection.y() < -ylim || posInSection.y() > ylim ) return false;      
-	if (posInSection.z() < -zlim || posInSection.z() > zlim ) return false;      
+    bool VaneCalorimeter::isInsideSection(int ivane, CLHEP::Hep3Vector const& pos) const 
+    {   
+	//in the Section coordinate system, the crystal are oriented along the y direction
+	CLHEP::Hep3Vector posInSection = toSectionFrameFF(ivane, pos);
+	double zlim = 2*_caloGeomInfo.crystalHalfLength()+1e-6;
 
+	if (posInSection.x() < -vane(ivane).xActiveHalf() || posInSection.x() > vane(ivane).xActiveHalf()) return false;      
+	if (posInSection.y() < -vane(ivane).yActiveHalf() || posInSection.y() > vane(ivane).yActiveHalf()) return false;      
+	if (posInSection.z() <  -1e-6                     || posInSection.z() > zlim  )                    return false;
 	return true;
     }
   
-    bool VaneCalorimeter::isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const 
-    {   
-        for (unsigned int ivane=0;ivane<_nSections;++ivane) if (isInsideVane(ivane,pos)) return true;
-        return false;    
-    }
 
    
     int VaneCalorimeter::crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const 
     {   
         int offset(0);
         for (unsigned int ivane=0;ivane<_nSections;++ivane) {
-           if ( isInsideVane(ivane,pos) ) {
+           if ( isInsideSection(ivane,pos) ) {
                  CLHEP::Hep3Vector posInSection = toSectionFrame(ivane, pos);
-                 return offset + vane(ivane).idxFromPosition(posInSection.y(),posInSection.z());
+                 return offset + vane(ivane).idxFromPosition(posInSection.x(),posInSection.y());
   	   }
            offset +=vane(ivane).nCrystals();
         }       	  
@@ -60,7 +58,7 @@ namespace mu2e {
     std::vector<int> VaneCalorimeter::neighborsByLevel(int crystalId, int level) const 
     {
 
-	int iv = caloSectionId(crystalId);
+	int iv = _fullCrystalList.at(crystalId)->sectionId();
 
 	int offset(0);
 	for (int i=0;i<iv;++i) offset += vane(i).nCrystals();
@@ -72,12 +70,14 @@ namespace mu2e {
 
     }
 
+    void VaneCalorimeter::print() const 
+    {
+      std::cout<<"Vane calorimeter "<<std::endl;
+      std::cout<<"Number of vanes :"<< _nSections<<std::endl;
+      for (unsigned int ivane=0;ivane<_nSections;++ivane) vane(ivane).print();
+        
+    }
 
-   double VaneCalorimeter::crystalLongPos(int crystalId, CLHEP::Hep3Vector const& pos) const
-   {   
-	CLHEP::Hep3Vector posInSection = toCrystalFrame(crystalId, pos);
-	return posInSection.x();
-   }
 
 
 }

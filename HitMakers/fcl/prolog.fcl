@@ -144,4 +144,24 @@ MakeCaloCrystalHitsNew     : {
     caloChargeProductionEffects : false
     caloROnoiseEffect           : false
 }
+
+MakeCaloCrystalHits     : {
+    module_type            : MakeCaloCrystalHits
+    g4ModuleLabel          : g4run
+    caloReadoutModuleLabel : MakeCaloReadoutHits
+
+    diagLevel              : 0
+    drawLevel              : 0	
+    maxFullPrint           : 0
+
+    tRise                  : 10.
+    tDecay                 : 15.
+    minimumEnergy          : 0.00001
+    maximumEnergy          : 1000.
+    minimumTimeGap         : 1        # ns
+
+# not sure why do we need these now...
+    caloChargeProductionEffects : true
+    caloROnoiseEffect           : true
+}
 END_PROLOG

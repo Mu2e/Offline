@@ -713,7 +713,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
       krep  = extrk->trk().get();
       if (krep == track->fKalRep[0]) {
 	const mu2e::CaloCluster* cl = tcm->caloCluster();
-	iv   = cl->vaneId();
+	iv   = cl->sectionId();
 	vint = &track->fDisk[iv];
 	if (bc == 0) {
 	  printf(">>> ERROR: %s VANE calorimeter is not defined \n",oname);

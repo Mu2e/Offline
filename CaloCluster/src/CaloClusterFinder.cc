@@ -1,16 +1,14 @@
 //
-// Utility to study the MC content of a calo cluster
-// 
-// If the CaloHitSimPartMC information is not available, recompute it
+// Class to find cluster of simply connected crystals
 // 
 // Original author B. Echenard
 //
 
 // Mu2e includes
+#include "CaloCluster/inc/CaloClusterFinder.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "CaloCluster/inc/CaloClusterFinderNew.hh"
 
 // C++ includes
 #include <iostream>
@@ -23,7 +21,7 @@
 namespace mu2e {
 
 
-       CaloClusterFinderNew::CaloClusterFinderNew(Calorimeter const& cal, CaloCrystalHit const& crystalSeed, double deltaTimePlus, double deltaTimeMinus, double ExpandCut) : 
+       CaloClusterFinder::CaloClusterFinder(Calorimeter const& cal, CaloCrystalHit const& crystalSeed, double deltaTimePlus, double deltaTimeMinus, double ExpandCut) : 
           _cal(&cal), _crystalSeed(&crystalSeed),_seedTime(_crystalSeed->time()), _clusterList(), _inspected(), _crystalToVisit(), _isVisited(cal.nCrystal()),
 	  _deltaTimePlus(deltaTimePlus), _deltaTimeMinus(deltaTimeMinus), _ExpandCut(ExpandCut)
        {}
@@ -31,7 +29,7 @@ namespace mu2e {
        
 
 
-       void CaloClusterFinderNew::formCluster(std::vector<CaloCrystalVec>& idHitVec)  
+       void CaloClusterFinder::formCluster(std::vector<CaloCrystalVec>& idHitVec)  
        { 
 
 	    _inspected.clear();
@@ -79,7 +77,9 @@ namespace mu2e {
 		 _crystalToVisit.pop();		 
 	    }
 	    
-	    _clusterList.sort([] (CaloCrystalHit const* lhs, CaloCrystalHit const* rhs) {return lhs->energyDep() < rhs->energyDep();} );
+	   // keep sorting proto-clustres, even if they are sorted in the cluster module, in case somebody 
+	   // uses the proto-clusters instead of clusters he will get the same behaviour
+	   _clusterList.sort([] (CaloCrystalHit const* lhs, CaloCrystalHit const* rhs) {return lhs->energyDep() > rhs->energyDep();} );
 	    	    
        } 
 

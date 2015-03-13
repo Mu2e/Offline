@@ -10,15 +10,19 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CaloCluster/inc/CaloContentMC.hh"
+
 #include "HitMakers/inc/CaloReadoutUtilities.hh"
+#include "HitMakers/inc/CaloHitSimUtil.hh"
+
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
+
 #include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
+
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "HitMakers/inc/CaloHitSimUtil.hh"
 
 
 // C++ includes

@@ -561,7 +561,7 @@ namespace mu2e {
 
       int crystalId = cg->crystalByRO(thehit.id());
       CLHEP::Hep3Vector cryCenter =  cg->crystalOrigin(crystalId);
-      int sectionId = cg->caloSectionId(crystalId);
+      int sectionId = cg->crystal(crystalId).sectionId();
 
 
 

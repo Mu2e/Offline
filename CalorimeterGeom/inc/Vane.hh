@@ -30,26 +30,39 @@ namespace mu2e {
  
       public:
 
-          Vane(int id, double rMin, int nCrystalR, int nCrystalZ, double cellSize, CLHEP::Hep3Vector crystalOffset);
+          Vane(int vaneId, double rMin, int nCrystalX, int nCrystalY, CLHEP::Hep3Vector const& size,
+	       double cellSize, double crystalHalfLength,
+	       CLHEP::Hep3Vector const& vaneOriginToCrystalOrigin);
+
+
 
           std::vector<int> findLocalNeighbors(int crystalId, int level) const; 
-          int              idxFromPosition(double y, double z)          const;
+          int              idxFromPosition(double x, double z)          const;
+
+          void             print()                                      const;
 
 
-          double innerRadius() const    {return _rMin; }
-          double outerRadius() const    {return _rMin+_nCrystalR*2.0*_cellSize;}
-          int crystalR(int id) const    {return id/_nCrystalZ;}
-          int crystalZ(int id) const    {return id%_nCrystalZ;}
+
+          double innerRadius()    const    {return _rMin; }
+          double outerRadius()    const    {return _rMin+_nCrystalY*2.0*_cellSize;}
+          int    crystalY(int id) const    {return id/_nCrystalX;}
+          int    crystalX(int id) const    {return id%_nCrystalX;}
+          double xActiveHalf()    const    {return _xActiveHalf; }
+          double yActiveHalf()    const    {return _yActiveHalf; }
+
 
 
        private:
  
-          void fillCrystals();
+          void     fillCrystals(CLHEP::Hep3Vector const& crystalOriginInVane);
 
           double   _rMin;
-          int      _nCrystalR;
-          int      _nCrystalZ;
+          int      _nCrystalX;
+          int      _nCrystalY;
           double   _cellSize;
+	  
+	  double   _xActiveHalf;
+	  double   _yActiveHalf;
 
 
     };

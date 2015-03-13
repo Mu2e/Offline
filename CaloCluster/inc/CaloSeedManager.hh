@@ -18,14 +18,10 @@
 namespace mu2e {
 
 
-
-
-
-    class CaloSeedManager{
+    class CaloSeedManager {
 
 
 	 public:
-
 
              enum SeedType{Energy,Time};
 
@@ -37,13 +33,11 @@ namespace mu2e {
              ~CaloSeedManager(){};
 
 
-	     void add(CaloCrystalHit const&);
-             
 	     CaloCrystalHit const* seed();
-             
+
+	     void add(CaloCrystalHit const&);
 	     void checkSeedbyList(CaloCrystalList const& crystalsInCluster, std::vector<CaloCrystalVec> const& idHitMap);
              void checkSeedbyId(int iId, CaloCrystalVec const& hits);
-      
              void dumpSeed();
 	
 	
@@ -57,6 +51,6 @@ namespace mu2e {
     };
 
 
-} // end namespace mu2e
+} 
 
 #endif

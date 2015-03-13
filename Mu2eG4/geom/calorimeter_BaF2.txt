@@ -14,14 +14,14 @@ double calorimeter.caseThickness                = 0;  // mm
 
 //vane description
 int    calorimeter.numberOfVanes                =  4;
-int    calorimeter.nCrystalRSlices              =  11;
-int    calorimeter.nCrystalZSlices              =  44;
+int    calorimeter.nCrystalXSlices              =  40;
+int    calorimeter.nCrystalYSlices              =  11;
 double calorimeter.rInscribed                   = 360.;
 
 string calorimeter.shieldMaterial               = "G4_Pb"; 
 string calorimeter.neutronAbsorberMaterial      = "Polyethylene092Li075d106";
-double calorimeter.shieldHalfThickness          = 0.0;
-double calorimeter.neutronAbsorberHalfThickness = 0.0;
+double calorimeter.shieldHalfThickness          = 2.0;
+double calorimeter.neutronAbsorberHalfThickness = 2.0;
 
 
 
@@ -36,11 +36,11 @@ vector<double> calorimeter.diskSeparation      = {0.,700.};   //mm  separation w
 
 
 //crystal characteristics
-
-double calorimeter.crystalHalfLong             = 100.0;
+int    calorimeter.crystalNumEdges             = 6;
 double calorimeter.crystalHalfTrans            = 16.5;
 double calorimeter.crystalHexsize              = 16.5;  //mm  half distance across flats of hex crystal
-string calorimeter.crystalMaterial             = "G4_BARIUM_FLUORIDE"; //"G4_PbWO4" "G4_BARIUM_FLUORIDE" "Lyso_01"
+double calorimeter.crystalHalfLong             = 100.0;
+string calorimeter.crystalMaterial             = "G4_BARIUM_FLUORIDE"; //"G4_PbWO4" "G4_BARIUM_FLUORIDE" "Lyso_01" "G4_CESIUM_IODIDE"
 
 string calorimeter.crystalWrapper              = "Polyethylene092";
 double calorimeter.crystalWrapperThickness     = 0.065; //mm

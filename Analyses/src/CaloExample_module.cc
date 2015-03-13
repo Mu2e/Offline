@@ -15,7 +15,6 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CaloCluster/inc/CaloClusterer.hh"
 #include "CaloCluster/inc/CaloContentMC.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
@@ -62,6 +61,8 @@
 #include "TDirectory.h"
 #include "TNtuple.h"
 #include "TTree.h"
+#include "TH2F.h"
+#include "TH1F.h"
 
 #include <cmath>
 #include <iostream>
@@ -111,34 +112,31 @@ namespace mu2e {
        typedef art::Ptr<SimParticle> SimParticlePtr;
 
 
-    int _diagLevel;
-    int _nProcess;
+       int _diagLevel;
+       int _nProcess;
 
-    std::string _g4ModuleLabel;
-    std::string _generatorModuleLabel;
-    art::InputTag _simParticleTag;
-
-
-    std::string _caloReadoutModuleLabel;
-    std::string _caloCrystalModuleLabel;
-    std::string _caloHitMCCrystalPtrLabel;
-    std::string _caloClusterModuleLabel;
-    std::string _caloClusterAlgorithm;
-    std::string _caloClusterSeeding;
-    const std::string _producerName;
-    std::string _virtualDetectorLabel;
-    std::string _stepPointMCLabel;
-    std::string _trkPatRecModuleLabel;
-    std::string _instanceName;
+       std::string _g4ModuleLabel;
+       std::string _generatorModuleLabel;
+       art::InputTag _simParticleTag;
 
 
- 
+       std::string _caloReadoutModuleLabel;
+       std::string _caloCrystalModuleLabel;
+       std::string _caloHitMCCrystalPtrLabel;
+       std::string _caloClusterModuleLabel;
+       std::string _caloClusterAlgorithm;
+       std::string _caloClusterSeeding;
+       const std::string _producerName;
+       std::string _virtualDetectorLabel;
+       std::string _stepPointMCLabel;
+       std::string _trkPatRecModuleLabel;
+       std::string _instanceName;
+       TrkParticle _tpart;
+       TrkFitDirection _fdir;
 
-
-    TrkParticle _tpart;
-    TrkFitDirection _fdir;
-
-       
+      
+       TH1F *_hcryE,*_hcryT,*_hcryX,*_hcryY,*_hcryZ;
+       TH1F *_hcluE,*_hcluT,*_hcluX,*_hcluY,*_hcluZ,*_hcluE1Et,*_hcluE1E9,*_hcluE1E25;
        
        TTree* _Ntup;
 
@@ -156,8 +154,8 @@ namespace mu2e {
        float _motTime[16384],_motEdep[16348],_motPosX[16384],_motPosY[16384],_motPosZ[16384];
 
        int   _nCluster,_nCluSim,_cluNcrys[16384];
-       float _cluEnergy[16384],_cluTime[16384],_cluCogX[16384],_cluCogY[16384],_cluCogZ[16384],_cluDist[16384];
-       int   _cluDad[16384],_cluConv[16384],_cluSimIdx[16384],_cluSimLen[16384];
+       float _cluEnergy[16384],_cluTime[16384],_cluCogX[16384],_cluCogY[16384],_cluCogZ[16384];
+       int   _cluConv[16384],_cluSimIdx[16384],_cluSimLen[16384];
        std::vector<std::vector<int> > _cluList;	 
 
        int   _clusimId[16384],_clusimPdgId[16384],_clusimGenIdx[16384];
@@ -169,15 +167,9 @@ namespace mu2e {
        int   _nTrkOk,_nTrk,_trkOk[8192],_trkstat[8192],_trknHit[8192];
        float _trkDip[8192],_trkpt[8192],_trkcon[8192],_trkmomErr[8192];
 
-    float _trkt0[8192]; //rhb add
-    float _trkMom[8192]; //rhb add
-    float _trkd0[8192]; //rhb add
-    float _trkz0[8192]; //rhb add
-    float _trkOmega[8192]; //rhb add
-    float _trkPhi0[8192]; //rhb add
-    float _trkt0Err[8192]; //rhb add
+       float _trkt0[8192],_trkMom[8192], _trkd0[8192],_trkz0[8192],_trkOmega[8192],_trkPhi0[8192],_trkt0Err[8192]; //rhb added
 
-       
+
 
   };
 
@@ -186,19 +178,14 @@ namespace mu2e {
     art::EDAnalyzer(pset),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _nProcess(0),
-    _g4ModuleLabel(pset.get<string>("g4ModuleLabel","g4run")),
-    _generatorModuleLabel(pset.get<string>("generatorModuleLabel","generate")),
-    //rhbadd
+    _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
+    _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _simParticleTag(pset.get<string>("simParticleTag")),
-    //rhbadd
-    _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel","CaloReadoutHitsMaker")),
-    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel","CaloCrystalHitsMaker")),
-    _caloHitMCCrystalPtrLabel(pset.get<string>("calorimeterHitMCCrystalPtr","CaloHitMCCrystalPtr")),
-    _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel","CaloClusterMakerNew")),
-    _caloClusterAlgorithm(pset.get<std::string>("caloClusterAlgorithm", "closest")),
-    _caloClusterSeeding(pset.get<std::string>("caloClusterSeeding", "energy")),
-    _producerName("Algo"+mu2e::TOUpper(_caloClusterAlgorithm)+"SeededBy"+mu2e::TOUpper(_caloClusterSeeding)),
-    _virtualDetectorLabel(pset.get<string>("virtualDetectorName","virtualdetector")),
+    _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel")),
+    _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel")),
+    _caloHitMCCrystalPtrLabel(pset.get<string>("calorimeterHitMCCrystalPtr")),
+    _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
+    _virtualDetectorLabel(pset.get<string>("virtualDetectorName")),
     _stepPointMCLabel(pset.get<string>("stepPointMCLabel")),
     _trkPatRecModuleLabel(pset.get<string>("trkPatRecModuleLabel")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
@@ -211,107 +198,119 @@ namespace mu2e {
 
   void CaloExample::beginJob(){
 
-    art::ServiceHandle<art::TFileService> tfs;
+       art::ServiceHandle<art::TFileService> tfs;
 
-    _Ntup  = tfs->make<TTree>("Calo", "Calo");
+       _Ntup  = tfs->make<TTree>("Calo", "Calo");
 
 
 
-    _Ntup->Branch("evt",          &_evt ,        "evt/I");
-    _Ntup->Branch("run",          &_run ,        "run/I");
-    _Ntup->Branch("cryEtot",      &_cryEtot ,    "cryEtot/F");
+       _Ntup->Branch("evt",          &_evt ,        "evt/I");
+       _Ntup->Branch("run",          &_run ,        "run/I");
+       _Ntup->Branch("cryEtot",      &_cryEtot ,    "cryEtot/F");
 
-    _Ntup->Branch("nGen",         &_nGen ,        "nGen/I");
-    _Ntup->Branch("genId",        &_genPdgId,     "genId[nGen]/I");
-    _Ntup->Branch("genCrCode",    &_genCrCode,    "genCrCode[nGen]/I");
-    _Ntup->Branch("genMomX",      &_genmomX,      "genMomX[nGen]/F");
-    _Ntup->Branch("genMomY",      &_genmomY,      "genMomX[nGen]/F");
-    _Ntup->Branch("genMomZ",      &_genmomZ,      "genMomX[nGen]/F");
-    _Ntup->Branch("genStartX",    &_genStartX,    "genStartX[nGen]/F");
-    _Ntup->Branch("genStartY",    &_genStartY,    "genStartY[nGen]/F");
-    _Ntup->Branch("genStartZ",    &_genStartZ,    "genStartZ[nGen]/F");
-    _Ntup->Branch("genStartT",    &_genStartT,    "genStartT[nGen]/F");
+       _Ntup->Branch("nGen",         &_nGen ,        "nGen/I");
+       _Ntup->Branch("genId",        &_genPdgId,     "genId[nGen]/I");
+       _Ntup->Branch("genCrCode",    &_genCrCode,    "genCrCode[nGen]/I");
+       _Ntup->Branch("genMomX",      &_genmomX,      "genMomX[nGen]/F");
+       _Ntup->Branch("genMomY",      &_genmomY,      "genMomX[nGen]/F");
+       _Ntup->Branch("genMomZ",      &_genmomZ,      "genMomX[nGen]/F");
+       _Ntup->Branch("genStartX",    &_genStartX,    "genStartX[nGen]/F");
+       _Ntup->Branch("genStartY",    &_genStartY,    "genStartY[nGen]/F");
+       _Ntup->Branch("genStartZ",    &_genStartZ,    "genStartZ[nGen]/F");
+       _Ntup->Branch("genStartT",    &_genStartT,    "genStartT[nGen]/F");
 
-    _Ntup->Branch("nCry",         &_nHits ,       "nCry/I");
-    _Ntup->Branch("cryId",        &_cryId ,       "cryId[nCry]/I");
-    _Ntup->Branch("crySectionId", &_crySectionId, "crySectionId[nCry]/I");
-    _Ntup->Branch("cryPosX",      &_cryPosX ,     "cryPosX[nCry]/F");
-    _Ntup->Branch("cryPosY",      &_cryPosY ,     "cryPosY[nCry]/F");
-    _Ntup->Branch("cryPosZ",      &_cryPosZ ,     "cryPosZ[nCry]/F");
-    _Ntup->Branch("cryEdep",      &_cryEdep ,     "cryEdep[nCry]/F");
-    _Ntup->Branch("cryTime",      &_cryTime ,     "cryTime[nCry]/F");
-    _Ntup->Branch("cryDose",      &_cryDose ,     "cryDose[nCry]/F");
-    _Ntup->Branch("crySimIdx",    &_crySimIdx ,   "crySimIdx[nCry]/I");
-    _Ntup->Branch("crySimLen",    &_crySimLen ,   "crySimLen[nCry]/I");
+       _Ntup->Branch("nCry",         &_nHits ,       "nCry/I");
+       _Ntup->Branch("cryId",        &_cryId ,       "cryId[nCry]/I");
+       _Ntup->Branch("crySectionId", &_crySectionId, "crySectionId[nCry]/I");
+       _Ntup->Branch("cryPosX",      &_cryPosX ,     "cryPosX[nCry]/F");
+       _Ntup->Branch("cryPosY",      &_cryPosY ,     "cryPosY[nCry]/F");
+       _Ntup->Branch("cryPosZ",      &_cryPosZ ,     "cryPosZ[nCry]/F");
+       _Ntup->Branch("cryEdep",      &_cryEdep ,     "cryEdep[nCry]/F");
+       _Ntup->Branch("cryTime",      &_cryTime ,     "cryTime[nCry]/F");
+       _Ntup->Branch("cryDose",      &_cryDose ,     "cryDose[nCry]/F");
+       _Ntup->Branch("crySimIdx",    &_crySimIdx ,   "crySimIdx[nCry]/I");
+       _Ntup->Branch("crySimLen",    &_crySimLen ,   "crySimLen[nCry]/I");
 
-    _Ntup->Branch("nSim",         &_nSim ,        "nSim/I");
-    _Ntup->Branch("simId",        &_motId ,       "simId[nSim]/I");
-    _Ntup->Branch("simPdgId",     &_motPdgId ,    "simPdgId[nSim]/I");
-    _Ntup->Branch("simCrCode",    &_motcrCode ,   "simCrCode[nSim]/I");
-    _Ntup->Branch("simMom",       &_motmom ,      "simMom[nSim]/F");
-    _Ntup->Branch("simStartX",    &_motStartX ,   "simStartX[nSim]/F");
-    _Ntup->Branch("simStartY",    &_motStartY ,   "simStartY[nSim]/F");
-    _Ntup->Branch("simStartZ",    &_motStartZ ,   "simStartZ[nSim]/F");
-    _Ntup->Branch("simStartT",    &_motStartT ,   "simStartT[nSim]/F");
-    _Ntup->Branch("simPosX",      &_motPosX ,     "simPosX[nSim]/F");
-    _Ntup->Branch("simPosY",      &_motPosY ,     "simPosY[nSim]/F");
-    _Ntup->Branch("simPosZ",      &_motPosZ ,     "simPosZ[nSim]/F");
-    _Ntup->Branch("simTime",      &_motTime ,     "simTime[nSim]/F");
-    _Ntup->Branch("simEdep",      &_motEdep ,     "simEdep[nSim]/F");
-    _Ntup->Branch("simGenIdx",    &_motGenIdx ,   "simGenIdx[nSim]/I");
+       _Ntup->Branch("nSim",         &_nSim ,        "nSim/I");
+       _Ntup->Branch("simId",        &_motId ,       "simId[nSim]/I");
+       _Ntup->Branch("simPdgId",     &_motPdgId ,    "simPdgId[nSim]/I");
+       _Ntup->Branch("simCrCode",    &_motcrCode ,   "simCrCode[nSim]/I");
+       _Ntup->Branch("simMom",       &_motmom ,      "simMom[nSim]/F");
+       _Ntup->Branch("simStartX",    &_motStartX ,   "simStartX[nSim]/F");
+       _Ntup->Branch("simStartY",    &_motStartY ,   "simStartY[nSim]/F");
+       _Ntup->Branch("simStartZ",    &_motStartZ ,   "simStartZ[nSim]/F");
+       _Ntup->Branch("simStartT",    &_motStartT ,   "simStartT[nSim]/F");
+       _Ntup->Branch("simPosX",      &_motPosX ,     "simPosX[nSim]/F");
+       _Ntup->Branch("simPosY",      &_motPosY ,     "simPosY[nSim]/F");
+       _Ntup->Branch("simPosZ",      &_motPosZ ,     "simPosZ[nSim]/F");
+       _Ntup->Branch("simTime",      &_motTime ,     "simTime[nSim]/F");
+       _Ntup->Branch("simEdep",      &_motEdep ,     "simEdep[nSim]/F");
+       _Ntup->Branch("simGenIdx",    &_motGenIdx ,   "simGenIdx[nSim]/I");
 
-    _Ntup->Branch("nCluster",     &_nCluster ,    "nCluster/I");
-    _Ntup->Branch("cluEnergy",    &_cluEnergy ,   "cluEnergy[nCluster]/F");
-    _Ntup->Branch("cluTime",      &_cluTime ,     "cluTime[nCluster]/F");
-    _Ntup->Branch("cluCogX",      &_cluCogX ,     "cluCogX[nCluster]/F");	
-    _Ntup->Branch("cluCogY",      &_cluCogY ,     "cluCogY[nCluster]/F");	
-    _Ntup->Branch("cluCogZ",      &_cluCogZ ,     "cluCogZ[nCluster]/F");	
-    _Ntup->Branch("cluNcrys",     &_cluNcrys ,    "cluNcrys[nCluster]/I");	
-    _Ntup->Branch("cluDist",      &_cluDist ,     "cluDist[nCluster]/F");	
-    _Ntup->Branch("cluDad",       &_cluDad ,      "cluDad[nCluster]/I");	
-    _Ntup->Branch("cluConv",      &_cluConv ,     "cluConv[nCluster]/I");	
-    _Ntup->Branch("cluSimIdx",    &_cluSimIdx ,   "cluSimIdx[nCluster]/I");
-    _Ntup->Branch("cluSimLen",    &_cluSimLen ,   "cluSimLen[nCluster]/I");
-    _Ntup->Branch("cluList",      &_cluList);
+       _Ntup->Branch("nCluster",     &_nCluster ,    "nCluster/I");
+       _Ntup->Branch("cluEnergy",    &_cluEnergy ,   "cluEnergy[nCluster]/F");
+       _Ntup->Branch("cluTime",      &_cluTime ,     "cluTime[nCluster]/F");
+       _Ntup->Branch("cluCogX",      &_cluCogX ,     "cluCogX[nCluster]/F");	
+       _Ntup->Branch("cluCogY",      &_cluCogY ,     "cluCogY[nCluster]/F");	
+       _Ntup->Branch("cluCogZ",      &_cluCogZ ,     "cluCogZ[nCluster]/F");	
+       _Ntup->Branch("cluNcrys",     &_cluNcrys ,    "cluNcrys[nCluster]/I");	
+       _Ntup->Branch("cluConv",      &_cluConv ,     "cluConv[nCluster]/I");	
+       _Ntup->Branch("cluSimIdx",    &_cluSimIdx ,   "cluSimIdx[nCluster]/I");
+       _Ntup->Branch("cluSimLen",    &_cluSimLen ,   "cluSimLen[nCluster]/I");
+       _Ntup->Branch("cluList",      &_cluList);
 
-    _Ntup->Branch("nCluSim",      &_nCluSim ,     "nCluSim/I");
-    _Ntup->Branch("clusimId",     &_clusimId ,    "clusimId[nCluSim]/I");
-    _Ntup->Branch("clusimPdgId",  &_clusimPdgId , "clusimPdgId[nCluSim]/I");
-    _Ntup->Branch("clusimGenIdx", &_clusimGenIdx ,"clusimGenIdx[nCluSim]/I");
-    _Ntup->Branch("clusimMom",    &_clusimMom ,   "clusimMom[nCluSim]/F");
-    _Ntup->Branch("clusimPosX",   &_clusimPosX ,  "clusimPosX[nCluSim]/F");
-    _Ntup->Branch("clusimPosY",   &_clusimPosY ,  "clusimPosY[nCluSim]/F");
-    _Ntup->Branch("clusimPosZ",   &_clusimPosZ ,  "clusimPosZ[nCluSim]/F");
-    _Ntup->Branch("clusimTime",   &_clusimTime ,  "clusimTime[nCluSim]/F");
-    _Ntup->Branch("clusimEdep",   &_clusimEdep ,  "clusimEdep[nCluSim]/F");
+       _Ntup->Branch("nCluSim",      &_nCluSim ,     "nCluSim/I");
+       _Ntup->Branch("clusimId",     &_clusimId ,    "clusimId[nCluSim]/I");
+       _Ntup->Branch("clusimPdgId",  &_clusimPdgId , "clusimPdgId[nCluSim]/I");
+       _Ntup->Branch("clusimGenIdx", &_clusimGenIdx ,"clusimGenIdx[nCluSim]/I");
+       _Ntup->Branch("clusimMom",    &_clusimMom ,   "clusimMom[nCluSim]/F");
+       _Ntup->Branch("clusimPosX",   &_clusimPosX ,  "clusimPosX[nCluSim]/F");
+       _Ntup->Branch("clusimPosY",   &_clusimPosY ,  "clusimPosY[nCluSim]/F");
+       _Ntup->Branch("clusimPosZ",   &_clusimPosZ ,  "clusimPosZ[nCluSim]/F");
+       _Ntup->Branch("clusimTime",   &_clusimTime ,  "clusimTime[nCluSim]/F");
+       _Ntup->Branch("clusimEdep",   &_clusimEdep ,  "clusimEdep[nCluSim]/F");
 
-    _Ntup->Branch("nVd",      &_nVd ,     "nVd/I");
-    _Ntup->Branch("vdId",     &_vdId ,    "vdId[nVd]/I");
-    _Ntup->Branch("vdPdgId",  &_vdPdgId , "vdPdgId[nVd]/I");
-    _Ntup->Branch("vdMom",    &_vdMom ,   "vdMom[nVd]/F");
-    _Ntup->Branch("vdPosX",   &_vdPosX ,  "vdPosX[nVd]/F");
-    _Ntup->Branch("vdPosY",   &_vdPosY ,  "vdPosY[nVd]/F");
-    _Ntup->Branch("vdPosZ",   &_vdPosZ ,  "vdPosZ[nVd]/F");
-    _Ntup->Branch("vdTime",   &_vdTime ,  "vdTime[nVd]/F");
+       _Ntup->Branch("nVd",      &_nVd ,     "nVd/I");
+       _Ntup->Branch("vdId",     &_vdId ,    "vdId[nVd]/I");
+       _Ntup->Branch("vdPdgId",  &_vdPdgId , "vdPdgId[nVd]/I");
+       _Ntup->Branch("vdMom",    &_vdMom ,   "vdMom[nVd]/F");
+       _Ntup->Branch("vdPosX",   &_vdPosX ,  "vdPosX[nVd]/F");
+       _Ntup->Branch("vdPosY",   &_vdPosY ,  "vdPosY[nVd]/F");
+       _Ntup->Branch("vdPosZ",   &_vdPosZ ,  "vdPosZ[nVd]/F");
+       _Ntup->Branch("vdTime",   &_vdTime ,  "vdTime[nVd]/F");
 
-    _Ntup->Branch("nTrkOk",       &_nTrkOk ,      "nTrkOk/I");
-    _Ntup->Branch("nTrk",         &_nTrk ,        "nTrk/I");
-    _Ntup->Branch("trkDip",       &_trkDip ,      "trkDip[nTrk]/F");
-    _Ntup->Branch("trkOk",        &_trkOk ,       "trkOk[nTrk]/I");
-    _Ntup->Branch("trkpt",        &_trkpt ,       "trkpt[nTrk]/F");
-    _Ntup->Branch("trkstat",      &_trkstat ,     "trkstat[nTrk]/I");
-    _Ntup->Branch("trkcon",       &_trkcon ,      "trkcon[nTrk]/F");
-    _Ntup->Branch("trknHit",      &_trknHit ,     "trknHit[nTrk]/I");
-    _Ntup->Branch("trkmomErr",    &_trkmomErr ,   "trkmomErr[nTrk]/F");
-    _Ntup->Branch("trkt0",        &_trkt0 ,       "trkt0[nTrk]/F");
-    _Ntup->Branch("trkt0Err",     &_trkt0Err,     "trkt0Err[nTrk]/F");
+       _Ntup->Branch("nTrkOk",       &_nTrkOk ,      "nTrkOk/I");
+       _Ntup->Branch("nTrk",         &_nTrk ,        "nTrk/I");
+       _Ntup->Branch("trkDip",       &_trkDip ,      "trkDip[nTrk]/F");
+       _Ntup->Branch("trkOk",        &_trkOk ,       "trkOk[nTrk]/I");
+       _Ntup->Branch("trkpt",        &_trkpt ,       "trkpt[nTrk]/F");
+       _Ntup->Branch("trkstat",      &_trkstat ,     "trkstat[nTrk]/I");
+       _Ntup->Branch("trkcon",       &_trkcon ,      "trkcon[nTrk]/F");
+       _Ntup->Branch("trknHit",      &_trknHit ,     "trknHit[nTrk]/I");
+       _Ntup->Branch("trkmomErr",    &_trkmomErr ,   "trkmomErr[nTrk]/F");
+       _Ntup->Branch("trkt0",        &_trkt0 ,       "trkt0[nTrk]/F");
+       _Ntup->Branch("trkt0Err",     &_trkt0Err,     "trkt0Err[nTrk]/F");
 
-    _Ntup->Branch("trkMom",       &_trkMom ,      "trkMom[nTrk]/F");
-    _Ntup->Branch("trkd0",        &_trkd0 ,       "trkd0[nTrk]/F");
-    _Ntup->Branch("trkz0",        &_trkz0 ,       "trkz0[nTrk]/F");
-    _Ntup->Branch("trkOmega",     &_trkOmega ,    "trkOmega[nTrk]/F");
-    _Ntup->Branch("trkPhi0",      &_trkPhi0 ,     "trkPhi0[nTrk]/F");
-   
+       _Ntup->Branch("trkMom",       &_trkMom ,      "trkMom[nTrk]/F");
+       _Ntup->Branch("trkd0",        &_trkd0 ,       "trkd0[nTrk]/F");
+       _Ntup->Branch("trkz0",        &_trkz0 ,       "trkz0[nTrk]/F");
+       _Ntup->Branch("trkOmega",     &_trkOmega ,    "trkOmega[nTrk]/F");
+       _Ntup->Branch("trkPhi0",      &_trkPhi0 ,     "trkPhi0[nTrk]/F");
+
+       _hcryE = tfs->make<TH1F>("cryEdep","Energy deposited / crystal",100,0.,50.);
+       _hcryT = tfs->make<TH1F>("cryTime","Time of crystal hit",100,0.,2000.);
+       _hcryX = tfs->make<TH1F>("cryX","X coord of crystal hit",100,300.,700.);
+       _hcryY = tfs->make<TH1F>("cryY","Y coord of crystal hit",100,300.,700.);
+       _hcryZ = tfs->make<TH1F>("cryZ","Z coord of crystal hit",100,11000.,13000.);
+
+       _hcluE = tfs->make<TH1F>("cluEdep","Energy deposited / clustal",150,0.,150.);
+       _hcluT = tfs->make<TH1F>("cluTime","Time of clustal hit",100,0.,2000.);
+       _hcluX = tfs->make<TH1F>("cluX","X coord of clustal hit",100,300.,700.);
+       _hcluY = tfs->make<TH1F>("cluY","Y coord of clustal hit",100,300.,700.);
+       _hcluZ = tfs->make<TH1F>("cluZ","Z coord of clustal hit",100,11000.,13000.);
+       _hcluE1Et = tfs->make<TH1F>("cluE1Et","E1/Etot",100,0,1.1);
+       _hcluE1E9 = tfs->make<TH1F>("cluE1E9","E1/E9",100,0,1.1);
+       _hcluE1E25 = tfs->make<TH1F>("cluE1E25","E1/E25",100,0,1.1);
 
   }
 
@@ -371,7 +370,7 @@ namespace mu2e {
 
       //Get calo cluster
       art::Handle<CaloClusterCollection> caloClustersHandle;
-      event.getByLabel(_caloClusterModuleLabel,_producerName, caloClustersHandle);
+      event.getByLabel(_caloClusterModuleLabel, caloClustersHandle);
       CaloClusterCollection const& caloClusters(*caloClustersHandle);
 
       //Get virtual detector hits
@@ -442,14 +441,19 @@ namespace mu2e {
 	   _cryTime[_nHits]      = hit.time();
 	   _cryEdep[_nHits]      = hit.energyDep();
 	   _cryDose[_nHits]      = hit.energyDep() / CrMass / (CLHEP::joule/CLHEP::kg); //dose
-	   _cryPosX[_nHits]      = crystalPos.x()+ 3904;
+	   _cryPosX[_nHits]      = crystalPos.x();
 	   _cryPosY[_nHits]      = crystalPos.y();
-	   _cryPosZ[_nHits]      = crystalPos.z()-10200;
+	   _cryPosZ[_nHits]      = crystalPos.z();
 	   _cryId[_nHits]        = hit.id();
-	   _crySectionId[_nHits] = cal.caloSectionId(hit.id());
+	   _crySectionId[_nHits] = cal.crystal(hit.id()).sectionId();
            _crySimIdx[_nHits]    = _nSim;   	              
            _crySimLen[_nHits]    = nPartInside;
 
+	   _hcryE->Fill(hit.energyDep());
+	   _hcryT->Fill(hit.time());
+	   _hcryX->Fill(crystalPos.x());
+	   _hcryY->Fill(crystalPos.y());
+	   _hcryZ->Fill(crystalPos.z());
 
 	   for (int ip=0; ip<nPartInside;++ip) 
 	   { 
@@ -499,7 +503,7 @@ namespace mu2e {
 	  std::vector<double>                 const& edep = clutil.edepTot();
 
 	  std::vector<int> _list;
-	  for (unsigned int i=0;i<clusterIt->size();++i) 
+	  for (int i=0;i<clusterIt->size();++i) 
 	  {
 	    int idx = int(clusterIt->caloCrystalHitsPtrVector().at(i).get()- &caloCrystalHits.at(0));
 	    _list.push_back(idx);	    
@@ -508,16 +512,22 @@ namespace mu2e {
 	  _cluEnergy[_nCluster] = clusterIt->energyDep();
 	  _cluTime[_nCluster]   = clusterIt->time();
 	  _cluNcrys[_nCluster]  = clusterIt->size();
-          _cluCogX[_nCluster]   = clusterIt->cog3Vector().x()+ 3904.;
+          _cluCogX[_nCluster]   = clusterIt->cog3Vector().x();
           _cluCogY[_nCluster]   = clusterIt->cog3Vector().y();
           _cluCogZ[_nCluster]   = clusterIt->cog3Vector().z();
-	  _cluDist[_nCluster]   = clusterIt->distance();
-	  _cluDad[_nCluster]    = clusterIt->daddy();	  
 	  _cluConv[_nCluster]   = clutil.hasConversion();	  
           _cluSimIdx[_nCluster] = _nCluSim;   	              
 	  _cluSimLen[_nCluster] = sim1.size();
 	  _cluList.push_back(_list);
 	  	  
+	  _hcluE->Fill(clusterIt->energyDep());
+          _hcluT->Fill(clusterIt->time());
+	  _hcluX->Fill(clusterIt->cog3Vector().x());
+	  _hcluY->Fill(clusterIt->cog3Vector().y());
+	  _hcluZ->Fill(clusterIt->cog3Vector().z());
+	  _hcluE1Et->Fill(clusterIt->e1()/clusterIt->energyDep());
+	  _hcluE1E9->Fill(clusterIt->e1()/clusterIt->e9());
+	  _hcluE1E25->Fill(clusterIt->e1()/clusterIt->e25());
 	  //note: a signal cluster is defined as _cluConv==1 and _cluSimLen==1 (if it has a signal and there is only one inside)
 	  
 	  for (unsigned int ip=0; ip<sim1.size();++ip) 
@@ -569,7 +579,6 @@ namespace mu2e {
 
 
        //--------------------------  Do tracks  --------------------------------
- 
        _nTrkOk = 0;
        _nTrk = 0;
 

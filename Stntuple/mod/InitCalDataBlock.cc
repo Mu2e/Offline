@@ -101,7 +101,7 @@ Int_t StntupleInitMu2eCalDataBlock(TStnDataBlock* Block, AbsEvent* AnEvent, int 
 				        // also a dummy line
   data->fMinFraction      = 1.0;
   data->fWrapperThickness = cal->caloGeomInfo().wrapperThickness();
-  data->fShellThickness   = cal->caloGeomInfo().shellThickness  ();
+  data->fShellThickness   = 0;
 
 					// on return set event and run numbers
 					// to mark block as initialized

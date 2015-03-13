@@ -4,10 +4,7 @@
 // Original author B Echenard - P. Ongmongkolkul
 //
 
-//Notes: CrystalMap tesselates a plane with hexagons or squares, we need a ring
-//
-// CrystalShift indicates the shift of the crystal center from the center of 
-// the cell in the calo due to the readout and other things. This is usually disk/vane dependent
+// Notes: CrystalMap tesselates a plane with hexagons or squares, then selects crystals inside the ring
 
 
 // C++ includes
@@ -28,19 +25,25 @@
 
 namespace mu2e {
 
-      Disk::Disk(int id, double rin, double rout, double cellSize, int crystalNedges, CLHEP::Hep3Vector crystalShift) : 
-        CaloSection(id, crystalShift),_radiusIn(rin),_radiusOut(rout),_cellSize(cellSize),_mapToCrystal(),_crystalToMap()
+      Disk::Disk(int diskId, double rin, double rout, CLHEP::Hep3Vector const& size, 
+                 double cellSize, int crystalNedges, double crystalHalfLength, 
+		 CLHEP::Hep3Vector const& diskOriginToCrystalOrigin) : 
+        
+	CaloSection(diskId,size,crystalHalfLength,diskOriginToCrystalOrigin),
+	_radiusIn(rin),
+	_radiusOut(rout),
+	_cellSize(cellSize),
+	_mapToCrystal(),_crystalToMap()
       { 
-         
 	  if (crystalNedges==4) _crystalMap = std::unique_ptr<CrystalMapper>(new SquareMapper());
 	  else                  _crystalMap = std::unique_ptr<CrystalMapper>(new HexMapper());  
 
-	  fillCrystals(); 
+	  fillCrystals(diskOriginToCrystalOrigin); //See note in DiskCalorimeterMaker
       }
 
      
       // take the crystals from the CrystalMap, and keep only those who are in the annulus
-      void Disk::fillCrystals(void)
+      void Disk::fillCrystals(CLHEP::Hep3Vector const& crystalOriginInDisk)
       {   
 	  int nRingsMax = int(2*_radiusOut/_cellSize);
 
@@ -50,13 +53,13 @@ namespace mu2e {
 
 	      CLHEP::Hep2Vector xy = _cellSize*_crystalMap->xyFromIndex(i);
               CLHEP::Hep3Vector pos(xy.x(),xy.y(),0);
-              pos += _crystalShift;
+              pos += crystalOriginInDisk; 
 
  	      if ( !isInsideDisk(xy.x(),xy.y()) ) {_mapToCrystal.push_back(-1); continue;}
 
 	      _crystalToMap.push_back(i);
 	      _mapToCrystal.push_back(nCrystal);
-	      _crystalList.push_back( Crystal(nCrystal,pos) );		
+	      _crystalList.push_back( Crystal(nCrystal,_id, pos) );		
 
 	      ++nCrystal;
 	  }
@@ -138,6 +141,13 @@ namespace mu2e {
 	    }
 
 	    return 4.0*sum;
+      }
+
+
+      void Disk::print() const 
+      {        
+	std::cout<<"Number of crystals = "<<_crystalList.size()<<std::endl;
+	std::cout<<"Radius In / Out "<<_radiusIn<<" / "<<_radiusOut<<std::endl;
       }
 
  

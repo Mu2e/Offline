@@ -821,19 +821,20 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
   }
  
   if ((opt == "") || (opt.Index("data") >= 0)) {
-    row = Cl->cogRow();
-    col = Cl->cogColumn();
+    //row = Cl->cogRow();
+    //col = Cl->cogColumn();
+    row = -1;
+    col = -1;
     
-    const mu2e::CaloCrystalHitPtrVector caloClusterHits = Cl->caloCrystalHitsPtrVector();
+    const std::vector<art::Ptr<mu2e::CaloCrystalHit> >  caloClusterHits = Cl->caloCrystalHitsPtrVector();
     int nh = caloClusterHits.size();
 
     if ((row < 0) || (row > 9999)) row = -9999;
     if ((col < 0) || (col > 9999)) col = -9999;
     
-    printf("%16p %5i %7i %3i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f\n",
+    printf("%16p %5i %3i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f\n",
 	   Cl,
-	   Cl->vaneId(),
-	   Cl->daddy(),
+	   Cl->sectionId(),
 	   nh,
 	   Cl->time(),
 	   row, col,
@@ -850,7 +851,7 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
 //-----------------------------------------------------------------------------
 // print individual crystals in local vane coordinate system
 //-----------------------------------------------------------------------------
-    const mu2e::CaloCrystalHitPtrVector caloClusterHits = Cl->caloCrystalHitsPtrVector();
+    const std::vector<art::Ptr<mu2e::CaloCrystalHit> >  caloClusterHits = Cl->caloCrystalHitsPtrVector();
     int nh = caloClusterHits.size();
 
     for (int i=0; i<nh; i++) {
@@ -861,8 +862,8 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
 
       if(geom->hasElement<mu2e::VaneCalorimeter>() ){
 	mu2e::GeomHandle<mu2e::VaneCalorimeter> cgvane;
-	iz  = cgvane->nCrystalZ();
-	ir  = cgvane->nCrystalR();
+	iz  = cgvane->nCrystalX();
+	ir  = cgvane->nCrystalY();
       }
       else {
 	iz = -1;
@@ -1448,7 +1449,7 @@ void TAnaDump::printTrackClusterMatch(const mu2e::TrackClusterMatch* Tcm, const 
     const mu2e::CaloCluster*       cl  = Tcm->caloCluster();
     const mu2e::TrkToCaloExtrapol* tex = Tcm->textrapol  ();
 
-    int disk     = cl->vaneId();
+    int disk     = cl->sectionId();
     double chi2  = Tcm->chi2();
 
     printf("%5i %16p  %16p  %10.3f\n",

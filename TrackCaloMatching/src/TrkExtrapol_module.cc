@@ -62,7 +62,6 @@
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "CaloCluster/inc/CaloClusterer.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
@@ -339,7 +338,7 @@ namespace mu2e {
 	
 	trjVec = fromTrkToMu2eFrame(trjVec);
 	
-	if( cg->isInsideDisk(jSection,trjVec ) ){
+	if( cg->isInsideSection(jSection,trjVec ) ){
 	  if(!isInside[jSection]){
 	    if(diagLevel>4){
 	      cout<<"Event Number : "<< evtNumber<< endl;

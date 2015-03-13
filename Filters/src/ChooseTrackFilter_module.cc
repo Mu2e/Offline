@@ -11,7 +11,6 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CaloCluster/inc/CaloClusterer.hh"
 #include "CaloCluster/inc/CaloContentMC.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"

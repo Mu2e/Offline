@@ -60,7 +60,7 @@
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CaloCluster/inc/CaloClusterUtilities.hh"
+//#include "CaloCluster/inc/CaloClusterUtilities.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "Mu2eUtilities/inc/SortedStepPoints.hh"
 #include "Mu2eUtilities/inc/TrackTool.hh"
@@ -900,7 +900,6 @@ namespace mu2e {
     
       for (int i=0; i<fNClusters; i++) {
 	cl = &fListOfClusters->at(i);
-	if (cl->daddy() == -1) {
 	  TAnaDump::Instance()->printCaloCluster(cl,opt);
 //-----------------------------------------------------------------------------
 // event time defined by the first, most energetic cluster
@@ -911,11 +910,9 @@ namespace mu2e {
 
 	  for (int j=i+1; j<fNClusters; j++) {
 	    clj = &fListOfClusters->at(j);
-	    if (clj->daddy() == i) {
-	      TAnaDump::Instance()->printCaloCluster(clj,opt);
-	    }
+            TAnaDump::Instance()->printCaloCluster(clj,opt);
 	  }
-	}
+	
       }
 
       for (int i=0; i<fNClusters; i++) {
@@ -925,7 +922,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	if (cl->energyDep() > 5.) {
 	  // poor-man's translation
-	  //	  vane_id = cl->vaneId();
+	  //	  vane_id = cl->sectionId();
 	  xl      = cl->cog3Vector().x()+3904.1;
 	  yl      = cl->cog3Vector().y();
 	  
@@ -934,7 +931,7 @@ namespace mu2e {
 	  if( geom->hasElement<mu2e::VaneCalorimeter>() ){
 	    color = 2;
 	  }else if(geom->hasElement<mu2e::DiskCalorimeter>()){
-	    color = module_color[cl->vaneId()];
+	    color = module_color[cl->sectionId()];
 	  }
 	  e->SetFillColor(color);
 	  e->SetLineColor(color);

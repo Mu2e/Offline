@@ -5,20 +5,67 @@
 // $Author: echenard $
 // $Date: 2014/08/01 21:54:46 $
 
-// original authors Julie Managan and Robert Bernstein
-// quite a few changes by Bertrand Echenarrd
+// original authors  Bertrand Echenarrd
 
 // Disk geometry
 //
 //  crystals + readout are places in the wrapping material
-//  optional shell around the wrapping material, only on the sides of the crystal (no shell on front/back faces)
-//  wrapper/shell are placed in the disk
-//  disk is placed into the casing (i.e. a bigger disk)
-//  outermost layer is the casing
+//  wrapper are placed in the disk
+//  disk is placed into the casing, but the casing has only an inside / outside radii thickness, no front back thickness (no cover on the crystals)
+//  calibration system (pipes) in front of the crystals
+//  pipes + casing form a disk
 //
-//  cross section in z: casing - wrapper - crystal - readout - wrapper - casing
+//  cross section in z:      pipes - wrapper - crystal - readout - wrapper 
 //  cross section in radius: casing - wrapper - crystal - wrapper - crystal - ... - wrapper - casing
- 
+
+
+
+//  Coordinate systems 
+      
+//    Intro: We model the crtsyals as polyhedra, so they can be either squares or hexagons. In G4, 
+//           polyhedra have the origin of the coordinate system at their _base_, and are always 
+//           oriented along the z direction. 
+//           On the other hand, the disk have origin of the coordinate system at their _center_
+//
+//           This choice is the easiest for creation of the geometry and reconstruction. 
+//           It is also convenient when analyzing track/calo matching to have a coordinate system 
+//           at the front face of the active volume, the crystals in our case. This one is available 
+//           in addiiton to the base choice.
+
+//           The idea is to go from the calorimeter -> disk frame -> crystal frame to navigate the geometry
+
+
+//    Coordinate system
+//
+//           - crystal: 
+//                      origin:      base of the crystal
+//                      orientation: crystal oriented along the z direction (direction fron face - back face)
+//                                   the front (back) face is at z=0 (z=crysdtal length), see above about polyhedra.                     
+//           - disk:
+//                      origin:      center of the disk
+//                      orientation: along the z axis
+//                      other:       extra coordinate system placed at the front of the crystal - used for track-calo matching
+//
+//           - calorimeter:
+//                      origin:      center of front face, point closest to the traclker along z
+//
+//         Note: the "disk" is defined as whatever volume containing the crystal is rotated in G4. For example, if 
+//               the crystal + calibration systems are rotated/placed as a single volume, then this is the disk. 
+//               if the crystals and the calibration systems are rotated/placed separately, then the disk contains only the crystals
+//
+//         Note: The extra disk coordinate system is suffixed "FF" for FrontFace
+//
+//    Placement: 
+//
+//         The position of the crystals in the disks (see disk.cc) = the position of the crystal w.r.t disk origin, given by 
+//         diskOriginToCrystalOrigin:
+//              diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness);
+        
+
+// There is a git tag (ef94504f51edbbfeb54a5e63651856bdf5c0a60d) that has the code for a generic placement of the disk origin. 
+// This is however more complicated, and I think this choice is the best at the moment.
+
+
 
 // C++ includes
 #include <math.h>
@@ -29,6 +76,7 @@
 #include "cetlib/exception.h"
 #include "CalorimeterGeom/inc/DiskCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
 #include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
@@ -52,6 +100,7 @@ namespace mu2e{
   {
 
         _calo = std::unique_ptr<DiskCalorimeter>(new DiskCalorimeter());
+	_calo->_caloType = Calorimeter::CaloType::disk;
 
 	_calo->_nSections  = config.getInt("calorimeter.numberOfDisks");      
         config.getVectorDouble("calorimeter.diskInnerRadius",  _calo->_diskInnerRadius, _calo->_nSections);
@@ -61,14 +110,13 @@ namespace mu2e{
 	
 
 	//Fill the Common Calo Data
-	_calo->_caloGeomInfo.crystalNedges(      config.getInt("calorimeter.crystalNumEdges",6));
+	_calo->_caloGeomInfo.crystalNedges(      config.getInt("calorimeter.crystalNumEdges"));
 	_calo->_caloGeomInfo.nROPerCrystal(      config.getInt("calorimeter.crystalReadoutChannelCount"));
 	_calo->_caloGeomInfo.crystalHalfTrans(   config.getDouble("calorimeter.crystalHalfTrans") );
 	_calo->_caloGeomInfo.crystalHalfLength(  config.getDouble("calorimeter.crystalHalfLong") );
 	_calo->_caloGeomInfo.wrapperThickness(   config.getDouble("calorimeter.crystalWrapperThickness") );
-	_calo->_caloGeomInfo.roHalfTrans(         config.getDouble("calorimeter.crystalReadoutHalfTrans") );
+	_calo->_caloGeomInfo.roHalfTrans(        config.getDouble("calorimeter.crystalReadoutHalfTrans") );
 	_calo->_caloGeomInfo.roHalfThickness(    config.getDouble("calorimeter.crystalReadoutHalfThickness") );
-	_calo->_caloGeomInfo.shellThickness(     config.getDouble("calorimeter.crystalShellThickness") );
 	_calo->_caloGeomInfo.caseThickness(      config.getDouble("calorimeter.caseThickness") );
 	_calo->_caloGeomInfo.enveloppeInRadius(  config.getDouble("calorimeter.caloMotherInRadius") );
 	_calo->_caloGeomInfo.enveloppeOutRadius( config.getDouble("calorimeter.caloMotherOutRadius") );
@@ -94,15 +142,18 @@ namespace mu2e{
 	_calo->_caloGeomInfo.pipeTorRadius( temp );
 
 
+
 	//THE CALORIMETER ORIGIN IS TAKEN AS THE POINT CLOSEST TO THE TRACKER IN MU2E COORDINATES
-        double xOrigin                = -config.getDouble("mu2e.solenoidOffset");
-        double zOrigin                = config.getDouble("calorimeter.calorimeterZFront",11750);
-	_calo->_origin                = CLHEP::Hep3Vector(xOrigin,0,zOrigin);
+        double xOrigin         = -config.getDouble("mu2e.solenoidOffset");
+        double zCaloFront      = config.getDouble("calorimeter.calorimeterZFront");
+        double zTrackerCenter  = config.getDouble("mu2e.detectorSystemZ0");
+	_calo->_origin         = CLHEP::Hep3Vector(xOrigin,0,zCaloFront);
+	_calo->_trackerCenter  = CLHEP::Hep3Vector(xOrigin,0,zTrackerCenter);
 
         //Get the volume of the solid with hexagonal / rectangular base
-	double hl        = _calo->_caloGeomInfo.crystalHalfLength();
-	double ht        = _calo->_caloGeomInfo.crystalHalfTrans();
-	double cryVolume = (_calo->_caloGeomInfo.crystalNedges()==4) ? 8*ht*ht*hl : 6.9282032*ht*ht*hl;        
+	double hl              = _calo->_caloGeomInfo.crystalHalfLength();
+	double ht              = _calo->_caloGeomInfo.crystalHalfTrans();
+	double cryVolume       = (_calo->_caloGeomInfo.crystalNedges()==4) ? 8*ht*ht*hl : 6.9282032*ht*ht*hl;        
 	_calo->_caloGeomInfo.crystalVolume(cryVolume);
 		
         
@@ -133,64 +184,71 @@ namespace mu2e{
       double roHalfThickness    = _calo->_caloGeomInfo.roHalfThickness();
       double caseThickness      = _calo->_caloGeomInfo.caseThickness();
       double wrapperThickness   = _calo->_caloGeomInfo.wrapperThickness();
-      double shellThickness     = _calo->_caloGeomInfo.shellThickness();
       double pipeRadius         = _calo->_caloGeomInfo.pipeRadius();
       
       
-      double diskHalfZLength    = crystalHalfLength + roHalfThickness  + wrapperThickness + caseThickness + pipeRadius;
-      double crystalCellRadius  = crystalHalfTrans  + wrapperThickness + shellThickness;      
-      CLHEP::Hep3Vector crystalShiftInDisk(0,0,-roHalfThickness);
-      
+      double diskHalfZLength    = crystalHalfLength + roHalfThickness + wrapperThickness + pipeRadius;
+      double crystalCellRadius  = crystalHalfTrans  + wrapperThickness;      
 
 
-      for (unsigned int idisk=0; idisk<_calo->_nSections; ++idisk){			 
-	 
-	      CLHEP::Hep3Vector originLocal(0, 0, diskHalfZLength + _calo->_diskSeparation[idisk]);
+      // This is where the offsets between the different coordinate systems are set, see Note for full explanation
+      // Seriously, read the note at the top before changing this! Really!      
+      CLHEP::Hep3Vector diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness);
+
+
+
+      for (unsigned int idisk=0; idisk<_calo->_nSections; ++idisk)
+      {			 	 
 
 	      double dR1    = _calo->_diskInnerRadius[idisk] - caseThickness;
 	      double dR2    = _calo->_diskOuterRadius[idisk] + caseThickness;
 	      double dZ     = 2.0*diskHalfZLength;
 
-	      std::shared_ptr<Disk> thisDisk( new Disk(idisk,_calo->_diskInnerRadius[idisk], _calo->_diskOuterRadius[idisk], 2.0*crystalCellRadius, crystalNedges, crystalShiftInDisk) );	 
+	      CLHEP::Hep3Vector size(dR1,dR2,dZ) ;
+	      CLHEP::Hep3Vector originLocal(0, 0, diskHalfZLength + _calo->_diskSeparation[idisk]);
+
+	      //this is expressed in the Mu2e coordinate system, need to go to the tracker system
+	      double frontFaceZ0 = _calo->origin().z() + originLocal.z() + diskOriginToCrystalOrigin.z();
+	      double frontFaceZ1 = frontFaceZ0 + 2.0*crystalHalfLength+2*roHalfThickness+2*wrapperThickness;
+
+
+
+	      std::shared_ptr<Disk> thisDisk( new Disk(idisk,_calo->_diskInnerRadius[idisk], _calo->_diskOuterRadius[idisk], size, 
+	                                               2.0*crystalCellRadius,crystalNedges, crystalHalfLength, diskOriginToCrystalOrigin) );	 
 	      _calo->_sections.push_back(thisDisk);
 
-	      thisDisk->setSize(        CLHEP::Hep3Vector(dR1,dR2,dZ) );
-              thisDisk->setRotation(    (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationZ(_calo->_diskRotAngle[idisk]) );
-              thisDisk->setOriginLocal( originLocal );
-              thisDisk->setOrigin(      originLocal + _calo->origin() );
+              thisDisk->setOriginLocal(     originLocal );
+              thisDisk->setOrigin(          _calo->origin() + originLocal );
+              thisDisk->setRotation(        CLHEP::HepRotation::IDENTITY*CLHEP::HepRotationZ(_calo->_diskRotAngle[idisk]) );
+	      thisDisk->setBoundsInTracker(  _calo->_trackerCenter, frontFaceZ0, frontFaceZ1, dR1,dR2);
 
-  	      
-	      //COORDINATE OF CENTER OF VOLUME CONTAINING THE CRYSTALS ONLY (NO READOUT,..) W.R.T CENTER OF OUTMOST DISK VOLUME
-	      // outmost disk volume = volume ___originLocal vector____ points to, i.e outermost disk volume 
-	      thisDisk->setCrystalShift( CLHEP::Hep3Vector(0,0, pipeRadius - crystalHalfLength) );
+
 	      
-
-	      //fill the full Crystal List / CaloSectionId (direct access to speed up computations) 
+	      //fill the full Crystal List / CaloSectionId (direct access for performance optimization) 
               int crystalOffset = _calo->_fullCrystalList.size();
 	      for (int icry=0;icry<thisDisk->nCrystals();++icry)
-	      {
-	         
-		 Crystal& thisCrystal = thisDisk->crystal(icry);
-		 _calo->_fullCrystalList.push_back(&thisCrystal);
-		 _calo->_crystalSectionId.push_back(idisk);
-	      
-	         //precompute the neighbors in the global frame
-		 thisCrystal.setNeighborsLevel1(_calo->neighborsByLevel(icry+crystalOffset,1));
-		 thisCrystal.setNeighborsLevel2(_calo->neighborsByLevel(icry+crystalOffset,2));
-		 thisCrystal.setNeighborsLevel3(_calo->neighborsByLevel(icry+crystalOffset,3));
-                 		 
-                 //calculate the crystal position in the mu2e frame (aka global frame), taken from BaseCalorimeter.cc
-		 CLHEP::Hep3Vector globalPosition = thisDisk->origin() + thisDisk->inverseRotation()*(thisCrystal.localPosition() + thisDisk->crystalShift()); 		 
-		 thisCrystal.setPosition(globalPosition);
+	      {	         
+		  Crystal& thisCrystal = thisDisk->crystal(icry);
+		  _calo->_fullCrystalList.push_back(&thisCrystal);
 
+	          //precompute the neighbors in the global frame
+		  thisCrystal.setNeighbors(_calo->neighborsByLevel(icry+crystalOffset,1));
+		  thisCrystal.setNextNeighbors(_calo->neighborsByLevel(icry+crystalOffset,2));
+
+                  //pre-compute the crystal position in the mu2e frame (aka global frame), taken from BaseCalorimeter.cc
+		  CLHEP::Hep3Vector globalPosition = thisDisk->origin() + thisDisk->inverseRotation()*(thisCrystal.localPosition()); 		 
+		  thisCrystal.setPosition(globalPosition);
+		  
 	      }	 
 
 
 	      if (_verbosityLevel) std::cout<<"Constructed Disk "<<thisDisk->id()<<":  Rin="<<thisDisk->innerRadius()<<"  Rout="<<thisDisk->outerRadius()
         	                            <<" (X,Y,Z)="<<thisDisk->origin()<<"  local_(X,Y,Z)="<<thisDisk->originLocal()
-					    <<"  with "<<thisDisk->nCrystals()<<" crystals"<<std::endl;          
+					    <<"  with "<<thisDisk->nCrystals()<<" crystals"<<std::endl;   
+					    
+   	      if (_verbosityLevel > 1) thisDisk->print()		           ;
 	      
-	      if (_verbosityLevel > 1)
+	      if (_verbosityLevel > 2)
 	      {
 		  double espace          = thisDisk->estimateEmptySpace();
         	  double diskVolume    = 3.1415926*(thisDisk->outerRadius()*thisDisk->outerRadius()-thisDisk->innerRadius()*thisDisk->innerRadius());
@@ -279,4 +337,4 @@ namespace mu2e{
   }
 
 
-}//end mu2e namespace
+}

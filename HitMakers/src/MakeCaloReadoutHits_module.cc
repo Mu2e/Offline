@@ -217,7 +217,8 @@ namespace mu2e {
 						  ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
 
     void fillMapById(HitMap& map,HandleVector const& crystalStepsHandles);
-    
+    void printStepPointDebug(Calorimeter const & cal,StepPointMC const& h, int crid);
+
 
     // Print information about the data products found by the selector functions. 
     void printDataProductInfo( HandleVector const& crystalStepsHandles,
@@ -364,7 +365,7 @@ namespace mu2e {
 
 	// Calculate correction for edep
 	CLHEP::Hep3Vector const& posInMu2e = h.position();
-	double posZ = cal.crystalLongPos(crid,posInMu2e);
+        double posZ = cal.toCrystalFrame(crid,posInMu2e).z();
 	
 	//should probably go to another class when the code for these corrections grows larger
 	if (_caloNonLinCorrection && h.simParticle().isNonnull()) {
@@ -631,8 +632,6 @@ namespace mu2e {
   {
     double edep_save(energy);
     
-    //posZ *= -1.0;
-    //posZ += cryhalflength;
     posZ *= -_randGauss.fire(calorimeterCalibrations->LRUpar0(crid), calorimeterCalibrations->LRUpar0Err(crid) );
     posZ += 1.0;
     energy *= posZ;
@@ -642,6 +641,27 @@ namespace mu2e {
 	       << edep_save<<"  /  "<<energy
 	       << std::endl;	  
     }
+  }
+
+
+//-----------------------------------------------------------------------------
+  void MakeCaloReadoutHits::printStepPointDebug(Calorimeter const & cal,StepPointMC const& h, int crid)
+  {
+     CLHEP::Hep3Vector testpos = h.position();
+     std::cout<<"Reco "<<crid<<"   "<<h.volumeId()<<std::endl;
+     std::cout<<"reco position Mu2e    "<<testpos<<std::endl;
+     std::cout<<"reco position disk    "<<cal.toSectionFrame(cal.crystal(crid).sectionId(),testpos)<<std::endl;
+     std::cout<<"reco position diskFF  "<<cal.toSectionFrameFF(cal.crystal(crid).sectionId(),testpos)<<std::endl;
+     std::cout<<"reco position local   "<<cal.toCrystalFrame(crid,testpos)<<std::endl;
+     std::cout<<"reco position disk    "<<cal.fromSectionFrame(cal.crystal(crid).sectionId(),cal.toSectionFrame(cal.crystal(crid).sectionId(),testpos))<<std::endl;
+     std::cout<<"reco position diskFF  "<<cal.fromSectionFrameFF(cal.crystal(crid).sectionId(),cal.toSectionFrameFF(cal.crystal(crid).sectionId(),testpos))<<std::endl;
+     std::cout<<"reco position local   "<<cal.fromCrystalFrame(crid,cal.toCrystalFrame(crid,testpos))<<std::endl;
+
+     std::cout<<"reco Crystal orig     "<<cal.crystalOrigin(crid)<<std::endl;
+     std::cout<<"reco Crystal orig sec "<<cal.crystalOriginInSection(crid)<<std::endl;
+     std::cout<<"Is inside I           "<<cal.isInsideCalorimeter(testpos)<<std::endl;
+     std::cout<<"Is inside II          "<<cal.isInsideCalorimeter(testpos+CLHEP::Hep3Vector(0,-1,0))<<std::endl;
+     std::cout<<"Is inside III         "<<cal.isInsideCalorimeter(testpos+CLHEP::Hep3Vector(0,0,-1))<<std::endl;
   }
 
 } // end namespace mu2e

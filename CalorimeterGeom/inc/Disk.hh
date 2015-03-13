@@ -29,7 +29,11 @@ namespace mu2e {
 
        public:
 
-	   Disk(int id, double rin, double rout, double cellSize, int crystalNedges, CLHEP::Hep3Vector crystalOffset); 
+	   Disk(int id, double rin, double rout, CLHEP::Hep3Vector const& size,
+	        double cellSize, int crystalNedges, double crystalHalfLength, 
+		CLHEP::Hep3Vector const& diskOriginToCrystalOrigin); 
+	   
+	   
 	   
 	   double                          innerRadius()                                const {return _radiusIn;}
            double                          outerRadius()                                const {return _radiusOut;}
@@ -38,10 +42,12 @@ namespace mu2e {
 	   int                             idxFromPosition(double x, double y)          const;           
 	   std::vector<int>                findLocalNeighbors(int crystalId, int level) const;            
 
+           void                            print()                                      const;
+
 
        private:
 
-           void                            fillCrystals();
+           void                            fillCrystals(CLHEP::Hep3Vector const& crystalOriginInDisk);
            bool                            isInsideDisk(double x, double y) const;
 	   double                          calcDistToSide(CLHEP::Hep2Vector& a, CLHEP::Hep2Vector& b) const;
 

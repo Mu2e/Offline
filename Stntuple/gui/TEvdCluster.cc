@@ -56,7 +56,7 @@ TEvdCluster::TEvdCluster(const mu2e::CaloCluster* Cl): TObject() {
   if( geom->hasElement<mu2e::VaneCalorimeter>() ) {
     color = 2;
   } else if(geom->hasElement<mu2e::DiskCalorimeter>()){
-    color = module_color[Cl->vaneId()];
+    color = module_color[Cl->sectionId()];
   }
 
   fTrkEllipse->SetFillColor(color);
@@ -89,7 +89,7 @@ void TEvdCluster::Paint(Option_t* Option) {
   }
   else if (strstr(view,"cal"   ) != 0) {
     sscanf(view,"cal,%i",&iv);
-    if (iv == fCluster->vaneId()) {
+    if (iv == fCluster->sectionId()) {
       PaintCal(Option);
     }
   }
