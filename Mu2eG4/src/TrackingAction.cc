@@ -30,7 +30,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
-#include "Mu2eG4/inc/SteppingAction.hh"
+#include "Mu2eG4/inc/IMu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
@@ -56,7 +56,7 @@ using namespace std;
 namespace mu2e {
 
   TrackingAction::TrackingAction( const SimpleConfig& config,
-                                  SteppingAction     * steppingAction ):
+                                  IMu2eG4SteppingAction     * steppingAction ):
     _debugList(),
     _physVolHelper(0),
     _timer(),

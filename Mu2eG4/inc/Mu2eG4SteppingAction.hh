@@ -9,6 +9,7 @@
 #include <string>
 
 // Mu2e includes
+#include "Mu2eG4/inc/IMu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
@@ -36,11 +37,12 @@ namespace mu2e {
   class SimpleConfig;
   class SimParticleHelper;
 
-  class Mu2eG4SteppingAction : public G4UserSteppingAction{
+  class Mu2eG4SteppingAction : public G4UserSteppingAction,
+                               virtual public IMu2eG4SteppingAction
+  {
 
   public:
     Mu2eG4SteppingAction( const SimpleConfig& config );
-    ~Mu2eG4SteppingAction(){}
 
     void UserSteppingAction(const G4Step*);
 
@@ -48,8 +50,8 @@ namespace mu2e {
                       const SimParticleHelper& spHelper);
     void EndOfEvent();
 
-    void BeginOfTrack();
-    void EndOfTrack();
+    virtual void BeginOfTrack() override;
+    virtual void EndOfTrack() override;
 
     int nKilledStepLimit() const { return _nKilledStepLimit; }
 
@@ -67,15 +69,13 @@ namespace mu2e {
       _zref=zref;
     }
 
-    std::vector<CLHEP::HepLorentzVector> const&  trajectory() { return _trajectory; }
+    virtual std::vector<CLHEP::HepLorentzVector> const&  trajectory() override;
 
     // Give away ownership of the trajectory information ( to the data product ).
     // This is called from TrackingAction::addTrajectory which is called from
     // TrackingAction::PostUserTrackingAction.  The result is that the
     // _trajectory data member is empty.
-    void swapTrajectory( std::vector<CLHEP::HepLorentzVector>& trajectory){
-      std::swap( trajectory, _trajectory);
-    }
+    virtual void swapTrajectory( std::vector<CLHEP::HepLorentzVector>& trajectory) override;
 
     // A helper function to manage the printout.
     static void printit( G4String const& s,

@@ -37,7 +37,7 @@ namespace mu2e {
 
   // Forward declarations in mu2e namespace
   class SimpleConfig;
-  class SteppingAction;
+  class IMu2eG4SteppingAction;
   class SimParticleHelper;
   class SimParticlePrimaryHelper;
 
@@ -45,7 +45,7 @@ namespace mu2e {
 
   public:
 
-    TrackingAction( const SimpleConfig& config, SteppingAction *);
+    TrackingAction( const SimpleConfig& config, IMu2eG4SteppingAction *);
     virtual ~TrackingAction();
 
     // These methods are required by G4
@@ -116,7 +116,7 @@ namespace mu2e {
     int    _mcTrajectoryMinSteps;
 
     // Non-owning pointer to stepping action; lifetime of pointee is one run.
-    SteppingAction * _steppingAction;
+    IMu2eG4SteppingAction * _steppingAction;
 
     // Non-owning pointer to the information about physical processes;
     // lifetime of pointee is one run.
