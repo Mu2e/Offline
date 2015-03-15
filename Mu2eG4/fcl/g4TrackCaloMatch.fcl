@@ -112,7 +112,6 @@ physics: {
   	    fitterModuleLabel       : TPRDownstreameMinus
 	    fitparticle             : 11
 	    fitdirection            : 0 
-	    trkCaloMatchModuleLabel : TrkCaloMatcher
 	    g4ModuleLabel           : g4run
 	    virtualDetectorName     : virtualdetector	    
 	}
