@@ -15,7 +15,6 @@
 
 #include "splines/Grid.h"
 #include "splines/Spline.h"
-#include "cpp0x/functional"
 #include "FigureOfMerit/inc/FeldmanCousinsSensitivity.h"
 // include of root THF1 header and maybe others
 

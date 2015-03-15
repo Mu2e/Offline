@@ -22,7 +22,6 @@
 #include <vector>
 #ifndef __CINT__
 #include "boost/shared_ptr.hpp"
-#include "cpp0x/type_traits"
 #endif
 
 namespace mu2e_eventdisplay
