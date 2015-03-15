@@ -1,8 +1,7 @@
 //-----------------------
 // Physics lists
 //-----------------------
-//string g4.physicsListName = "Shielding_MU2E01";
-string g4.physicsListName = "QGSP_BERT";
+string g4.physicsListName = "Shielding_MU2E01";
 double g4.minRangeCut     = 0.01;  // mm
 
 bool   g4.printPhysicsProcessSummary = false;
@@ -15,7 +14,7 @@ bool   g4.printPhysicsProcessSummary = false;
 bool g4.doSurfaceCheck = false;
 vector<string> g4.doSurfaceCheck.drop  = {};
 vector<string> g4.doSurfaceCheck.keep  = {};
-vector<string> g4.doSurfaceCheck.order = { "g4.doSurfaceCheck.drop", 
+vector<string> g4.doSurfaceCheck.order = { "g4.doSurfaceCheck.drop",
                                            "g4.doSurfaceCheck.keep" };
 
 // number of random points on the volume surface
