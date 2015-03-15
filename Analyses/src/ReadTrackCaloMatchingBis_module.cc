@@ -129,6 +129,7 @@ namespace mu2e {
 	  	  
 	  int   _nCluster,_cluNcrys[1024];
 	  float _cluEnergy[1024],_cluTime[1024],_cluCogX[1024],_cluCogY[1024],_cluCogZ[1024];
+	  float _cluE1[1024],_cluE9[1024],_cluE25[1024],_clu2Mom[1024],_cluAngle[1024];
 	  std::vector<std::vector<int> > _cluList;	 
 
 	  int   _nHits,_cryId[1024],_crySecId[1024];
@@ -188,7 +189,11 @@ namespace mu2e {
        _Ntup->Branch("cluCogX",   &_cluCogX ,   "cluCogX[nCluster]/F");	
        _Ntup->Branch("cluCogY",   &_cluCogY ,   "cluCogY[nCluster]/F");	
        _Ntup->Branch("cluCogZ",   &_cluCogZ ,   "cluCogZ[nCluster]/F");	
-       _Ntup->Branch("cluNcrys",  &_cluNcrys ,  "cluNcrys[nCluster]/I");	
+       _Ntup->Branch("cluE9",     &_cluE1 ,     "cluE1[nCluster]/F");	
+       _Ntup->Branch("cluE9",     &_cluE1 ,     "cluE9[nCluster]/F");	
+       _Ntup->Branch("cluE25",    &_cluE25 ,    "cluE25[nCluster]/F");	
+       _Ntup->Branch("clu2Mom",   &_clu2Mom ,   "clu2Mom[nCluster]/F");	
+       _Ntup->Branch("cluAngle",  &_cluAngle ,  "cluAngle[nCluster]/F");	
        _Ntup->Branch("cluList",   &_cluList);
 
        _Ntup->Branch("nCry",      &_nHits ,    "nCry/I");
@@ -325,6 +330,11 @@ namespace mu2e {
               _cluCogX[_nCluster]   = clusterIt->cog3Vector().x();
               _cluCogY[_nCluster]   = clusterIt->cog3Vector().y();
               _cluCogZ[_nCluster]   = clusterIt->cog3Vector().z();
+	      _cluE1[_nCluster]     = clusterIt->e1();
+	      _cluE9[_nCluster]     = clusterIt->e9();
+	      _cluE25[_nCluster]    = clusterIt->e25();
+	      _clu2Mom[_nCluster]   = clusterIt->secondMoment();
+	      _cluAngle[_nCluster]  = clusterIt->angle();
 	      _cluList.push_back(_list);
 
 	      ++_nCluster;
