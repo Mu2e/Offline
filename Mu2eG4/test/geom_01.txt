@@ -33,6 +33,7 @@ bool   writeGDML        = false;
 string GDMLFileName     = "mu2e.gdml";
 
 #include "Mu2eG4/geom/g4_userOptions.txt"
+#include "Mu2eG4/geom/g4_visOptions.txt"
 
 //-------------------------------------------
 // Mu2e geometry includes
