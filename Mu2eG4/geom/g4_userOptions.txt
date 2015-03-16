@@ -1,0 +1,53 @@
+// Some G4 controls which does not allow it to consume all the memory
+// or to spend all the time tracking one bad particle
+int g4.steppingActionMaxSteps = 10000;
+int g4.stepsSizeLimit = 10000;
+
+// The last point is saved regardless of the cuts.
+double g4.mcTrajectoryDefaultMinPointDistance = 0.; // mm
+// Per-volume cuts can override the global one above
+//vector<string> g4.mcTrajectoryVolumes = { "DS2Vacuum", "DS3Vacuum"};
+//vector<double> g4.mcTrajectoryVolumePtDistances = { 10., 10. };
+
+// If the following number is not zero, G4 will kill all particles alive
+// at that time.
+double g4.steppingActionMaxGlobalTime = 0; //ns
+
+// The information (location, momentum) of all particles will be
+// recorded in the output files for particular moments in time
+//vector<double> g4.steppingActionTimeVD = { 500, 700, 1000 }; //ns
+
+// Enable/disable code that kills uninteresting tracks in SteppingAction,
+// Put a list of G4 volume names where the tracks should be killed,
+// for example { "HallAir" }.
+vector<string> g4SteppingAction.killInTheseVolumes = {};
+bool   g4SteppingAction.killerVerbose = false;
+
+// These are used in both SteppingAction and StackingAction.
+bool   g4.killLowEKine  = false;
+double g4.eKineMin      = 0.0;    // Kinetic energy in MeV
+
+// One can set this limit particle-specific:
+// vector<int>    g4.killLowEKinePDG = {211, -211,   13,  -13,   11,  -11};
+// vector<double> g4.eKineMinPDG     = {9.0,  9.0, 20.0, 20.0, 95.0, 95.0};
+
+// This setting is used for special studies (stored muons)
+// bool g4.killPitchToLowToStore = false;
+
+// Enable the code to kill low p secondaries from cosmics.
+bool g4.doCosmicKiller = false;
+double g4.cosmicPcut = 0.;
+double g4.yaboveDirtYmin = 0.;
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

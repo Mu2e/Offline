@@ -24,8 +24,7 @@
 #include "G4ThreeVector.hh"
 
 // Art includes
-#include "art/Persistency/Provenance/ProductID.h"
-#include "art/Framework/Principal/Event.h"
+#include "fhiclcpp/ParameterSet.h"
 
 // Forward declarations outside of mu2e namespace.
 class G4VPhysicalVolume;
@@ -42,32 +41,23 @@ namespace mu2e {
   {
 
   public:
-    Mu2eG4SteppingAction( const SimpleConfig& config );
+    Mu2eG4SteppingAction(const fhicl::ParameterSet& pset);
 
     void UserSteppingAction(const G4Step*);
 
-    void BeginOfEvent(StepPointMCCollection& outputHits,
-                      const SimParticleHelper& spHelper);
-    void EndOfEvent();
+    void BeginOfEvent(StepPointMCCollection& outputHits, const SimParticleHelper& spHelper);
 
     virtual void BeginOfTrack() override;
     virtual void EndOfTrack() override;
 
-    int nKilledStepLimit() const { return _nKilledStepLimit; }
+    int nKilledStepLimit() const { return numKilledTracks_; }
 
     // Called by G4_plugin.
     void beginRun(PhysicsProcessInfo&, CLHEP::Hep3Vector const& mu2eOrigin );
 
     // Called by G4_plugin: the final phase of the c'tor cannot be completed until after
     // G4 has initialized itself.
-    void finishConstruction(const SimpleConfig& config);
-
-    G4ThreeVector const& lastPosition() const { return _lastPosition; }
-    G4ThreeVector const& lastMomentum() const { return _lastMomentum; }
-
-    void setZRef( G4double zref){
-      _zref=zref;
-    }
+    void finishConstruction();
 
     virtual std::vector<CLHEP::HepLorentzVector> const&  trajectory() override;
 
@@ -85,66 +75,37 @@ namespace mu2e {
                          double localTime,
                          double globalTime );
 
+
+    // throws if obsolete config parameters are detected
+    static void checkConfigRelics(const SimpleConfig& config);
+
   private:
+    fhicl::ParameterSet pset_;
 
-    // Start: information from the run time configuration.
+    // Protection against "too complicated" events
+    int maxStepsPerTrack_;
+    int numTrackSteps_;
+    int numKilledTracks_;
+    bool stepLimitKillerVerbose_;
 
-    // Which killers will be enabled?
-    bool _doKillLowEKine;
-    // A potentially emtpy list of volumes names where tracks are killed
-    std::vector<std::string> _killInTheseVolumes;
-    bool _killerVerbose;
+    // Limit maximum size of the steps collection
+    StepPointMCCollection::size_type stepPointCollectionSizeLimit_;
 
-    // Minimum energy cut.
-    double _eKineMin;
-    std::vector<int> _killLowKineticEnergyPDG;
-    std::vector<double> _eKineMinPDG;
-
-    // Maximum allowed number of steps per event
-    int _maxSteps;
-    int _nSteps;
-    int _nKilledStepLimit;
-
-    // Maximum global time of particle
-    double _maxGlobalTime;
+    // List of times for time virtual detector
+    std::vector<double> tvd_time_;
+    StepPointMCCollection* tvd_collection_;
+    bool tvd_warning_printed_;
 
     // MCTrajectory point filtering cuts
     double mcTrajectoryDefaultMinPointDistance_;
     typedef std::map<const G4VPhysicalVolume*, double> VolumeCutMap;
     VolumeCutMap mcTrajectoryVolumePtDistances_;
+    // Store point and time at each G4Step; cleared at beginOfTrack time.
+    std::vector<CLHEP::HepLorentzVector> _trajectory;
 
     // Lists of events and tracks for which to enable debug printout.
     EventNumberList _debugEventList;
     EventNumberList _debugTrackList;
-
-    // End: information from the run time configuration.
-
-    // cached pointers to physical volumes on the _killInTheseVolumes list
-    typedef std::set<const G4VPhysicalVolume*> KillerVolumesCache;
-    KillerVolumesCache _killerVolumes;
-
-    // Used in the turn around code.
-    G4ThreeVector _lastPosition;
-    G4ThreeVector _lastMomentum;
-    G4double      _zref;
-
-    // Kinetic energy at the beginning of the step point
-    double _preStepEK;
-
-    // Functions to decide whether or not to kill tracks.
-    bool killTooManySteps ( const G4Track* );
-    bool killLowEKine     ( const G4Track* );
-    bool killInTheseVolumes( const G4Track* );
-
-    // A helper function to kill the track and record the reason for killing it.
-    void killTrack( G4Track* track, ProcessCode::enum_type code, G4TrackStatus status );
-
-    // Collection to hold time virtual detector hits
-    StepPointMCCollection* _collection;
-
-    // Limit maximum size of the steps collection
-    int _sizeLimit;
-    int _currentSize;
 
     // Information about the SimParticleCollection, needed to instantiate art::Ptr.
     const SimParticleHelper *_spHelper;
@@ -156,14 +117,14 @@ namespace mu2e {
     // Origin of Mu2e Coordinate system in the G4 world system.
     CLHEP::Hep3Vector _mu2eOrigin;
 
-    // List of times for time virtual detector
-    std::vector<double> tvd_time;
+    // Functions to decide whether or not to kill tracks.
+    bool killTooManySteps ( const G4Track* );
+
+    // A helper function to kill the track and record the reason for killing it.
+    void killTrack( G4Track* track, ProcessCode::enum_type code, G4TrackStatus status );
 
     // Add time virtual detector hit to the collection
     G4bool addTimeVDHit(const G4Step*, int);
-
-    // Store point and time at each G4Step; cleared at beginOfTrack time.
-    std::vector<CLHEP::HepLorentzVector> _trajectory;
 
     // per-volume or the default
     double mcTrajectoryMinDistanceCut(const G4VPhysicalVolume* vol) const;

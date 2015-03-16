@@ -1,0 +1,197 @@
+// Andrei Gaponenko, 2013
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+# Give this job a name.
+process_name :  beamg4s1
+
+source : {
+   module_type : EmptyEvent
+   maxEvents : @nil
+}
+
+services : {
+
+   message               : @local::default_message
+   TFileService          : { fileName : "histBeamPrimaryToTS3DS23.root" }
+   RandomNumberGenerator : { }
+
+   user : {
+      GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+      ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+      GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+      G4Helper               : { }
+      SeedService            : @local::automaticSeeds
+   }
+}
+
+physics : {
+   producers: {
+      generate: {
+         module_type          : EventGenerator
+         inputfile            : "JobConfig/TDR/genconfig_PrimaryProtons.txt"
+      }
+
+      genCounter: {
+         module_type: GenEventCounter
+      }
+
+      g4run : {
+         module_type          : Mu2eG4
+         generatorModuleLabel : generate
+         doWriteLegacyPhysVolumeInfo : false
+         simParticleNumberOffset : 0
+         SDConfig : {
+            enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
+         }
+
+	 // The GeoCuts checks are made in the listed order.
+	 // The first match wins.
+	 //
+	 // The cuts are applied to the end point of a G4 step,
+	 // but the data products store the start of the step.
+
+         GeoCuts: [
+            {
+	       name: dsregion 
+               stopParticles: true
+	       // cut: { type : plane   pars: [...] }
+	       // cut: { type : union   pars: [ {...}, {...}] }
+	       // cut: { type : intersection   pars: [ {...}, {...}] }
+	       // cut: { type : inVolume pars: [ vol1, vol2 ] }
+	       // cut: { type : notInVolume pars: [ vol1, vol2 ] }
+
+	       // plane def:    par0*x + par1*y + par2*z > par3
+
+               cut: {
+		  type: intersection
+		  pars: [
+		     { type: plane pars: [ 0, 0, 1, 6000. ] },
+		     { type: plane pars: [ -1, 0, 0, -200 ] }
+		  ]
+	       }
+
+	       outputs : {
+		  substreams: [
+		     {
+			name: MuonBeam 
+			/// will  write dsregionMuonBeam
+			cut: { type: inVolume pars: [ "TS3Vacuum" ] }
+                     }
+		  ]
+		  writeAll : true
+		  //  will write dsregionDefault
+		  //  would write dsregion if there were no substreams
+	       }
+	    }
+	    //// More geoCuts
+	    // , { name : extmon }
+         ]
+
+	 TrajectoryControl: {
+	    defaultMinPointDistance : 500
+
+	    /// FIXME: this should not be here, but cosmic config will have something like that
+	    perVolumeMinDistance: {
+	       PSVacuum : 15
+	       DS3Vacuum : 15
+	       TrackerMother: 15
+	    }
+	 }
+	 
+	 ResourceLimits: {
+	    maxStepsPerTrack : 100000
+	    maxStepPointCollectionSize : 100000
+	 }
+
+	 debug: {
+	    stepLimitKillerVerbose: true
+	 }
+
+      }
+
+      compressPV : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "g4filter:s0" ]
+      }
+
+      compressPVFull : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "g4run" ]
+      }
+   }
+
+   filters: {
+      g4filter: {
+         module_type: FilterG4Out
+         mainHitInputs : [ "g4run:TS3Vacuum", "g4run:TS5Vacuum", "g4run:DS2Vacuum", "g4run:DS3Vacuum", "g4run:CRV" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
+         numSimParticleCollections : 1
+         vetoDaughters: []
+      }
+      g4status: {
+         module_type: FilterStatusG4
+         input: "g4run"
+      }
+   }
+
+   trigFilter : [generate, genCounter, g4run]
+   //trigFilter : [generate, genCounter, g4run, g4filter, compressPV ]
+   g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
+   //trigger_paths  : [trigFilter, g4StatusFilter]
+   trigger_paths  : [trigFilter]
+
+   //e1 : [filteredOutput, filteredEvtsOutput, fullOutput]
+   //e1 : [filteredOutput, truncatedEvtsOutput]
+   e1 : [fullOutput]
+   end_paths      : [e1]
+}
+
+outputs: {
+
+   fullOutput : {
+      module_type : RootOutput
+      fileName    : "beam_g4s1_full.root"
+   }
+
+   filteredOutput : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: ["trigFilter"] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_g4filter_*_*",
+         "keep *_compressPV_*_*"
+      ]
+      fileName    : "dataBeamPrimaryToTS3DS23.root"
+   }
+
+   truncatedEvtsOutput : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: ["g4StatusFilter"] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_g4run_*_*",
+         "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
+         "keep *_compressPVFull_*_*"
+      ]
+      fileName    : "truncatedBeamPrimaryToTS3DS23.root"
+   }
+
+}
+
+// Enable G4 graphics
+//physics.producers.g4run.visMacro : "JobConfig/TDR/vis_muonTransport.mac"
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20

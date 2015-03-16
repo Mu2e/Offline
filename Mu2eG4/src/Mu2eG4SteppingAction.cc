@@ -1,4 +1,3 @@
-//
 // Called at every G4 step.
 //
 // Original author Rob Kutschke
@@ -32,119 +31,48 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eG4SteppingAction::Mu2eG4SteppingAction( const SimpleConfig& config ):
+  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset) :
+    pset_(pset),
 
-    // Default values for parameters that are optional in the run time configuration.
-    _doKillLowEKine(false),
-    _killerVerbose(false),
-    _eKineMin(0.),
-    _killLowKineticEnergyPDG(),
-    _eKineMinPDG(),
-    _debugEventList(),
-    _debugTrackList(),
+    maxStepsPerTrack_(pset.get<int>("ResourceLimits.maxStepsPerTrack")),
+    numTrackSteps_(),
+    numKilledTracks_(),
+    stepLimitKillerVerbose_(pset.get<bool>("debug.stepLimitKillerVerbose")),
 
-    // Other parameters.
-    _lastPosition(),
-    _lastMomentum(),
-    _zref(0.),
-    _preStepEK(-1),
+    stepPointCollectionSizeLimit_(pset.get<StepPointMCCollection::size_type>("ResourceLimits.maxStepPointCollectionSize")),
 
     // Things related to time virtual detector
-    _collection(0),
-    _sizeLimit(config.getInt("g4.steppingActionStepsSizeLimit",0)),
-    _currentSize(0),
-    _spHelper() {
+    tvd_time_(pset.get<vector<double> >("TimeVD", vector<double>())),
+    tvd_collection_(nullptr),
+    tvd_warning_printed_(false),
 
-    // Look up parameter values in the run time configuration.
-    _doKillLowEKine  = config.getBool("g4.killLowEKine",                _doKillLowEKine);
-    config.getVectorString("g4SteppingAction.killInTheseVolumes", _killInTheseVolumes);
-    _killerVerbose   = config.getBool("g4SteppingAction.killerVerbose", _killerVerbose);
+    mcTrajectoryDefaultMinPointDistance_(pset.get<double>("TrajectoryControl.defaultMinPointDistance")),
 
-    // this can be removed after a grace period
-    // make sure the old job options are fixed:
-    if(config.hasName("g4SteppingAction.killInHallAir")) {
-      throw cet::exception("G4CONTROL")
-        << "The parameter g4SteppingAction.killInHallAir "
-        << "has been replaced with g4SteppingAction.killInTheseVolumes. "
-        << "Please fix the geometry configuration file. "
-        << "\n";
+    // Default values for parameters that are optional in the run time configuration.
+    _debugEventList(pset.get<std::vector<int> >("debug.eventList", std::vector<int>())),
+    _debugTrackList(pset.get<std::vector<int> >("debug.trackList", std::vector<int>())),
+
+    _spHelper()
+  {
+    if(maxStepsPerTrack_ > 0) {
+      cout << "Limit maximum number of steps per track in Mu2eG4SteppingAction to "
+           << maxStepsPerTrack_ << endl;
     }
 
-    // If this cut is enabled, the cut value must be supplied in the run time config.
-    // It is also used in StackingAction.
-    if ( _doKillLowEKine ){
-      _eKineMin = config.getDouble("g4.eKineMin");
-      config.getVectorInt("g4.killLowEKinePDG", _killLowKineticEnergyPDG, vector<int>() );
-      config.getVectorDouble("g4.eKineMinPDG", _eKineMinPDG, vector<double>() );
-      if( _killLowKineticEnergyPDG.size() != _eKineMinPDG.size() ) {
-        throw cet::exception("G4CONTROL")
-          << "Sizes of g4.killLowEKinePDG and g4.eKineMinPDG do not match: "
-          << _killLowKineticEnergyPDG.size() <<  " "
-          << _eKineMinPDG.size() <<  " "
-          << "\n";
-      }
-    }
-
-    vector<int> tmp1;
-    config.getVectorInt( "g4.steppingActionEventList", tmp1, vector<int>() );
-    _debugEventList.add(tmp1);
-
-    vector<int> tmp2;
-    config.getVectorInt( "g4.steppingActionTrackList", tmp2, vector<int>() );
-    _debugTrackList.add(tmp2);
-
-    //config.getVectorInt( "g4.steppingActionEventList", _debugEventList, vector<int>() );
-    //config.getVectorInt( "g4.steppingActionTrackList", _debugTrackList, vector<int>() );
-    // Get list of events for which to make debug printout.
-    /*
-    string key("g4.steppingActionEventList");
-    if ( config.hasName(key) ){
-      vector<int> list;
-      config.getVectorInt(key,list);
-      _debugEventList.add(list);
-    }
-
-    // Get list of tracks (within the above events) for which to make debug printout.
-    // If empty list, then make printout for all tracks.
-    string key2("g4.steppingActionTrackList");
-    if ( config.hasName(key2) ){
-      vector<int> list;
-      config.getVectorInt(key2,list);
-      _debugTrackList.add(list);
-    }
-    */
-
-    // Get maximum allowed number of steps per event
-    _maxSteps = config.getInt("g4.steppingActionMaxSteps", 0);
-    if( _maxSteps>0 ) {
-      cout << "Limit maximum number of steps in Mu2eG4SteppingAction to "
-           << _maxSteps << endl;
-    }
-
-    // Get maximum global time
-    _maxGlobalTime = config.getDouble("g4.steppingActionMaxGlobalTime", 0.0);
-    if( _maxGlobalTime>0.1 ) {
-      cout << "Limit maximum global time in Mu2eG4SteppingAction to "
-           << _maxGlobalTime << " ns" << endl;
-    }
-
-    // Read times for time virtual detector
-    config.getVectorDouble( "g4.steppingActionTimeVD", tvd_time, vector<double>() );
-    if( tvd_time.size()>0 ) {
+    if(!tvd_time_.empty()) {
       cout << "Time virtual detector is enabled. Particles are recorded at";
-      for( unsigned int i=0; i<tvd_time.size(); ++i ) cout << " " << tvd_time[i];
+      for( unsigned int i=0; i<tvd_time_.size(); ++i ) cout << " " << tvd_time_[i];
       cout << " ns" << endl;
     }
-
   }
 
   // A helper function to manage the printout.
   void Mu2eG4SteppingAction::printit( G4String const& s,
-                                G4int id,
-                                G4ThreeVector const& pos,
-                                G4ThreeVector const& mom,
-                                double localTime,
-                                double globalTime ){
+                                      G4int id,
+                                      G4ThreeVector const& pos,
+                                      G4ThreeVector const& mom,
+                                      double localTime,
+                                      double globalTime ){
 
     // It is easier to line up printout in columns with printf than with cout.
     printf ( "%-8s %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %13.4f %13.4f\n",
@@ -156,46 +84,47 @@ namespace mu2e {
   }
 
   void Mu2eG4SteppingAction::beginRun(PhysicsProcessInfo& processInfo,
-                                CLHEP::Hep3Vector const& mu2eOrigin ){
-
-    _currentSize    = 0;
+                                      CLHEP::Hep3Vector const& mu2eOrigin ){
     _processInfo    = &processInfo;
     _mu2eOrigin     =  mu2eOrigin;
-
   }
 
-  void Mu2eG4SteppingAction::finishConstruction(const SimpleConfig& config) {
-
-    for(unsigned i=0; i<_killInTheseVolumes.size(); ++i) {
-      if ( true ){
-        std::cout<<"Adding G4 killer volume = "<<_killInTheseVolumes[i]<<std::endl;
-      }
-      _killerVolumes.insert(getPhysicalVolumeOrThrow(_killInTheseVolumes[i]));
-    }
-
-    std::vector<std::string> mctv;
-    config.getVectorString("g4.mcTrajectoryVolumes", mctv, std::vector<std::string>());
-    std::vector<double> mctcuts;
-    config.getVectorDouble("g4.mcTrajectoryVolumePtDistances", mctcuts, std::vector<double>());
-    if(mctv.size() != mctcuts.size() ) {
-      throw cet::exception("BADCONFIG")<<"Mu2eG4SteppingAction::finishConstruction(): size mismatch for vectors"
-                                       <<" g4.mcTrajectoryVolumes = "<<mctv.size()
-                                       <<" and g4.mcTrajectoryVolumePtDistances = "<<mctcuts.size()
-                                       <<"\n";
-    }
-
-    mcTrajectoryDefaultMinPointDistance_ = config.getDouble("g4.mcTrajectoryDefaultMinPointDistance", 0.);
+  void Mu2eG4SteppingAction::finishConstruction() {
+    // We have to wait until G4 geometry is constructed
+    // to get phys volume pointers that are used in the
+    // volume to cut value map.
     std::cout<<"Mu2eG4SteppingAction: mcTrajectoryDefaultMinPointDistance = "<<mcTrajectoryDefaultMinPointDistance_<<std::endl;
-    for(unsigned i=0; i<mctv.size(); ++i) {
-      auto vol = getPhysicalVolumeOrThrow(mctv[i]);
-      mcTrajectoryVolumePtDistances_[vol] = mctcuts[i];
-      std::cout<<"Mu2eG4SteppingAction: mcTrajectory distance cut = "<<mctcuts[i]<<" for volume "<<mctv[i]<<std::endl;
+    const fhicl::ParameterSet& volumeCutsPS{pset_.get<fhicl::ParameterSet>("TrajectoryControl.perVolumeMinDistance")};
+    const std::vector<std::string> volnames{volumeCutsPS.get_keys()};
+    for(const auto& k: volnames) {
+      auto vol = getPhysicalVolumeOrThrow(k);
+      double cut = mcTrajectoryVolumePtDistances_[vol] = volumeCutsPS.get<double>(k);
+      std::cout<<"Mu2eG4SteppingAction: mcTrajectory distance cut = "
+               <<cut<<" for volume "<<k<<std::endl;
     }
+  }
+
+  void Mu2eG4SteppingAction::BeginOfTrack() {
+    numTrackSteps_ = 0;
+    const auto oldSize = _trajectory.size();
+    _trajectory.clear();
+    _trajectory.reserve(oldSize + oldSize/8);
+  }
+
+  void Mu2eG4SteppingAction::EndOfTrack() {
+  }
+
+  void Mu2eG4SteppingAction::BeginOfEvent(StepPointMCCollection& outputHits,
+                                          const SimParticleHelper& spHelper) {
+    numKilledTracks_ = 0;
+    tvd_collection_  = &outputHits;
+    tvd_warning_printed_ = false;
+    _spHelper    = &spHelper;
   }
 
   void Mu2eG4SteppingAction::UserSteppingAction(const G4Step* step){
 
-    _nSteps++;
+    numTrackSteps_++;
 
     G4Track* track = step->GetTrack();
 
@@ -203,6 +132,12 @@ namespace mu2e {
     G4StepPoint const* prept  = step->GetPreStepPoint();
     G4StepPoint const* postpt = step->GetPostStepPoint();
 
+    /// FIXME: Optimization: if the current track (not step!) has
+    /// initial momentum below the "g4.mcTrajectoryMomentumCut"
+    /// threshold, we can skip adding trajectory points completely.
+    /// NB: there is also "g4.saveTrajectoryMomentumCut".
+    /// Do we need to look at both of them?
+    //
     // Determine whether we add the current step to MCTrajectory
     const double mcTrajCurrentCut = mcTrajectoryMinDistanceCut(prept->GetPhysicalVolume());
     // In some cases we know to accept the point even without computing the distance
@@ -210,44 +145,28 @@ namespace mu2e {
     if(!computeMCTrajDistance || ((prept->GetPosition() -  _trajectory.back().vect()).mag() >= mcTrajCurrentCut)) {
       _trajectory.emplace_back ( prept->GetPosition(), prept->GetGlobalTime() );
     }
-    
+
     // Get kinetic energy at the begin of the step
-    _preStepEK = prept->GetKineticEnergy();
+    const double preStepEK = prept->GetKineticEnergy();
 
     G4VUserTrackInformation* info = track->GetUserInformation();
     UserTrackInformation* tinfo   = static_cast<UserTrackInformation*>(info);
 
-    tinfo->setStepInfo(_preStepEK, _nSteps);
+    tinfo->setStepInfo(preStepEK, numTrackSteps_);
 
     // Save hits in time virtual detector
-    for( unsigned int i=0; i<tvd_time.size(); ++i ) {
-      if( prept->GetGlobalTime()<=tvd_time[i] && postpt->GetGlobalTime()>tvd_time[i] ) {
+    for( unsigned int i=0; i<tvd_time_.size(); ++i ) {
+      if( prept->GetGlobalTime()<=tvd_time_[i] && postpt->GetGlobalTime()>tvd_time_[i] ) {
         addTimeVDHit(step,i+1);
       }
     }
 
-    // Have we reached maximum allowed number of steps per track?
-    if( _maxSteps>0 && _nSteps>_maxSteps ) {
-      cout << "Mu2eG4SteppingAction: kill particle pdg="
-           << track->GetDefinition()->GetPDGEncoding()
-           << " due to large number of steps." << endl;
-      killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
-      ++_nKilledStepLimit;
-    }
-
-    // Have we reached maximum allowed global time?
-    if( _maxGlobalTime>0.1 && track->GetGlobalTime()>_maxGlobalTime ) {
-      cout << "Mu2eG4SteppingAction: kill particle pdg="
-           << track->GetDefinition()->GetPDGEncoding()
-           << " because maximum global time is reached." << endl;
-      killTrack( track, ProcessCode::mu2eMaxGlobalTime, fStopAndKill);
-    }
-
-    if ( killInTheseVolumes(track) ){
-      killTrack( track, ProcessCode::mu2eKillerVolume, fStopAndKill);
-    } else if ( _doKillLowEKine && killLowEKine(track) ){
-      killTrack( track, ProcessCode::mu2eLowEKine, fStopAndKill);
-    } else if ( _maxSteps>0 && killTooManySteps(track) ) {
+//FIXME:    if ( killInTheseVolumes(track) ){
+//FIXME:      killTrack( track, ProcessCode::mu2eKillerVolume, fStopAndKill);
+//FIXME:    } else if ( _doKillLowEKine && killLowEKine(track) ){
+//FIXME:      killTrack( track, ProcessCode::mu2eLowEKine, fStopAndKill);
+//FIXME:    } else 
+    if(killTooManySteps(track)) {
       killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
     }
 
@@ -262,8 +181,6 @@ namespace mu2e {
     if ( _debugTrackList.size() > 0 ){
       if ( !_debugTrackList.inList(id) ) return;
     }
-
-    //G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
     // Position and momentum at the the pre point.
     G4ThreeVector const& pos = prept->GetPosition();
@@ -285,22 +202,8 @@ namespace mu2e {
       postCopy   = postpt->GetPhysicalVolume()->GetCopyNo();
     }
 
-    // On the forward trace, save the particle status at the start of the
-    // last reporting volume.
-    bool save = (std::abs(pos.z()+_zref)<0.0001) && (mom.z() > 0.);
-
-    // On the backward trace, report the position when at the first
-    // reporting volume.
-    //bool report = (std::abs(pos.z()-_zref)<0.0001) && (mom.z() < 0.);
-
-    // Save the status.
-    if ( save ){
-      _lastPosition = prept->GetPosition();
-      _lastMomentum = prept->GetMomentum();
-    }
-
     // Status report.
-    printf ( "Step number: %d\n", _nSteps );
+    printf ( "Step number: %d\n", numTrackSteps_ );
 
     printit ( "Pre: ", id,
               prept->GetPosition(),
@@ -332,61 +235,21 @@ namespace mu2e {
 
   } // end Mu2eG4SteppingAction
 
-  // Kill tracks that drop below the kinetic energy cut.
-  // It might be smarter to program G4 to do this itself?
-  bool Mu2eG4SteppingAction::killLowEKine ( const G4Track* trk ){
-    if ( trk->GetKineticEnergy() <= _eKineMin ){
-      if ( _killerVerbose ){
-        cout << "Killed track: low energy. " << trk->GetTrackID() << endl;
-      }
-      return true;
-    }
-
-    int pdg(trk->GetDefinition()->GetPDGEncoding());
-    for( size_t i=0; i<_killLowKineticEnergyPDG.size(); ++i ) {
-      if( _killLowKineticEnergyPDG[i] == pdg ) {
-        if( trk->GetKineticEnergy() <= _eKineMinPDG[i] ){
-					if ( _killerVerbose ){
-						cout << "Killed track PDG " << pdg << " : low energy. " << trk->GetTrackID() << endl;
-					}
-					return true;
-				}
-				break;
-      }
-    }
-
-    return false;
-  }
-
-  // Kill tracks that enter the hall air.
-  bool Mu2eG4SteppingAction::killInTheseVolumes( const G4Track* trk ){
-
-    KillerVolumesCache::const_iterator p = _killerVolumes.find(trk->GetVolume());
-    if( p == _killerVolumes.end() ) {
-      return false;
-    }
-
-    if ( _killerVerbose ){
-      cout << "Killed track " << trk->GetTrackID()
-           << " in volume " << (*p)->GetName()
-           << endl;
-    }
-    return true;
-  }
 
   // Kill tracks that take too many steps.
   bool Mu2eG4SteppingAction::killTooManySteps( const G4Track* track ){
 
-    if( _nSteps <= _maxSteps ) {
+    if(maxStepsPerTrack_ > 0 && numTrackSteps_ <= maxStepsPerTrack_ ) {
       return false;
     }
 
-    if ( _killerVerbose ) {
+    if ( stepLimitKillerVerbose_ ) {
       cout << "Mu2eG4SteppingAction: kill particle pdg="
            << track->GetDefinition()->GetPDGEncoding()
            << " due to large number of steps." << endl;
     }
-    ++_nKilledStepLimit;
+
+    ++numKilledTracks_;
     return true;
   }
 
@@ -404,34 +267,13 @@ namespace mu2e {
     track->SetTrackStatus(status);
   }
 
-  void Mu2eG4SteppingAction::BeginOfEvent(StepPointMCCollection& outputHits,
-                                    const SimParticleHelper& spHelper) {
-    _nKilledStepLimit = 0;
-    _collection  = &outputHits;
-    _spHelper    = &spHelper;
-  }
-
-  void Mu2eG4SteppingAction::EndOfEvent() {
-  }
-
-  void Mu2eG4SteppingAction::BeginOfTrack() {
-    _nSteps = 0;
-    _trajectory.clear();
-    _trajectory.reserve(10);
-  }
-
-  void Mu2eG4SteppingAction::EndOfTrack() {
-  }
-
-
   G4bool Mu2eG4SteppingAction::addTimeVDHit(const G4Step* aStep, int id){
 
-    _currentSize += 1;
-
-    if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
-      if( (_currentSize - _sizeLimit)==1 ) {
-        mf::LogWarning("G4") << "Maximum number of particles reached in time virtual detector "
-                             << _currentSize << endl;
+    if( tvd_collection_->size() >= stepPointCollectionSizeLimit_ ) {
+      if(!tvd_warning_printed_) {
+        tvd_warning_printed_ = true;
+        mf::LogWarning("G4") << "Maximum number of entries reached in time virtual detector "
+                             << stepPointCollectionSizeLimit_ << endl;
       }
       return false;
     }
@@ -441,7 +283,7 @@ namespace mu2e {
                         findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
     // The point's coordinates are saved in the mu2e coordinate system.
-    _collection->
+    tvd_collection_->
       push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                             id,
                             0,
@@ -455,7 +297,6 @@ namespace mu2e {
                             ));
 
     return true;
-
   }
 
   std::vector<CLHEP::HepLorentzVector> const& Mu2eG4SteppingAction::trajectory() {
@@ -469,6 +310,38 @@ namespace mu2e {
   double Mu2eG4SteppingAction::mcTrajectoryMinDistanceCut(const G4VPhysicalVolume* vol) const {
     const auto it = mcTrajectoryVolumePtDistances_.find(vol);
     return (it != mcTrajectoryVolumePtDistances_.end()) ? it->second : mcTrajectoryDefaultMinPointDistance_;
+  }
+
+  void Mu2eG4SteppingAction::checkConfigRelics(const SimpleConfig& config) {
+    static const std::vector<std::string> keys = {
+      "g4.steppingActionStepsSizeLimit",
+      "g4.killLowEKine",
+      "g4SteppingAction.killInTheseVolumes",
+      "g4SteppingAction.killerVerbose",
+      "g4SteppingAction.killInHallAir",
+      "g4.eKineMin",
+      "g4.killLowEKinePDG",
+      "g4.eKineMinPDG",
+      "g4.steppingActionEventList",
+      "g4.steppingActionTrackList",
+      "g4.steppingActionMaxSteps",
+      "g4.steppingActionMaxGlobalTime",
+      "g4.steppingActionTimeVD",
+      "g4.mcTrajectoryVolumes",
+      "g4.mcTrajectoryVolumePtDistances",
+      "g4.mcTrajectoryDefaultMinPointDistance"
+    };
+
+    std::string present;
+    for(const auto k: keys) {
+      if(config.hasName(k)) {
+        present += k+" ";
+      }
+    }
+    if(!present.empty()) {
+      throw cet::exception("CONFIG")<<"Mu2eG4SteppingAction: Please use fcl to configure Mu2eG4_module. "
+                                    <<"Detected obsolete SimpleConfig parameters: "<<present;
+    }
   }
 
 } // end namespace mu2e

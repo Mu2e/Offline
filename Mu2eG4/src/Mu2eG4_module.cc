@@ -20,9 +20,7 @@
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/DetectorConstruction.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
-#include "Mu2eG4/inc/EventAction.hh"
-#include "Mu2eG4/inc/SteppingAction.hh"
-#include "Mu2eG4/inc/SteppingVerbose.hh"
+#include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/StackingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
@@ -111,6 +109,8 @@ namespace mu2e {
     virtual void beginSubRun(art::SubRun &sr);
 
   private:
+    fhicl::ParameterSet pset_;
+
     typedef std::vector<art::InputTag> InputTags;
     typedef std::vector<std::string> Strings;
 
@@ -133,7 +133,7 @@ namespace mu2e {
 
     PrimaryGeneratorAction* _genAction;
     TrackingAction*         _trackingAction;
-    SteppingAction*         _steppingAction;
+    Mu2eG4SteppingAction*   _steppingAction;
     StackingAction*         _stackingAction;
 
     G4UIsession  *_session;
@@ -196,6 +196,7 @@ namespace mu2e {
   }; // end G4 header
 
   Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
+    pset_(pSet),
     _runManager(nullptr),
     _warnEveryNewRun(pSet.get<bool>("warnEveryNewRun",false)),
     _exportPDTStart(pSet.get<bool>("exportPDTStart",false)),
@@ -209,6 +210,7 @@ namespace mu2e {
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
     _visManager(nullptr),
 #endif
+    // FIXME:  naming of pset parameters
     _rmvlevel(pSet.get<int>("diagLevel",0)),
     _tmvlevel(pSet.get<int>("trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
@@ -324,10 +326,12 @@ namespace mu2e {
 
     // Get some run-time configuration information that is stored in the geometry file.
     SimpleConfig const& config  = geom->config();
+    Mu2eG4SteppingAction::checkConfigRelics(config);
+
 
     if ( ncalls == 1 ) {
 
-      _steppingAction->finishConstruction(config);
+      _steppingAction->finishConstruction();
 
       if( _checkFieldMap>0 ) generateFieldMap(worldGeom->mu2eOriginInWorld(),_checkFieldMap);
 
@@ -369,11 +373,8 @@ namespace mu2e {
     _genAction = new PrimaryGeneratorAction();
     _runManager->SetUserAction(_genAction);
 
-    _steppingAction = new SteppingAction(config);
+    _steppingAction = new Mu2eG4SteppingAction(pset_);
     _runManager->SetUserAction(_steppingAction);
-
-    G4UserEventAction* event_action = new EventAction(_steppingAction);
-    _runManager->SetUserAction(event_action);
 
     _stackingAction = new StackingAction(config);
     _runManager->SetUserAction(_stackingAction);
