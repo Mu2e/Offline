@@ -53,7 +53,7 @@ do
     echo "   Required version: " ${requiredVersion}
     echo "   Actual version:   " ${version}
     echo " "
-    badBaBarPackage=${package} "  "  ${badBaBarPackage}
+    set badBaBarPackage=${package} "  "  ${badBaBarPackage}
   fi
 
   # Step 2: no changes since checkout.
