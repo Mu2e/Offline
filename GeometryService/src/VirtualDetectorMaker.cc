@@ -21,6 +21,8 @@
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
+#include "BeamlineGeom/inc/Collimator_TS1.hh"
+#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -760,8 +762,50 @@ namespace mu2e {
               cout << "               at local=" << vd->getLocal(VirtualDetectorId::MSTM_Coll3DnStr) << " global="<< vd->getGlobal(VirtualDetectorId::MSTM_Coll3DnStr) <<endl;
            }
         }
-        
-        
+      }
+
+      if ( c.getBool("pbar.coll1In.build", false) ) {
+
+         GeomHandle<Beamline> bl;
+         TransportSolenoid const& ts = bl->getTS();
+         CollimatorTS1 const& coll1  = ts.getColl1() ;
+
+         double pbarTS1InHalfLength = c.getDouble("pbar.coll1In.halfLength");
+         double pbarTS1InOffset = c.getDouble("pbar.coll1In.offset", 1.0);
+
+         CLHEP::Hep3Vector pbarTS1InPos = coll1.getLocal();
+         CLHEP::Hep3Vector parentCenterInMu2e;
+         if (pbarTS1InOffset >= 0.0) {
+            // use local when put in the TS1Vacuum
+            pbarTS1InPos = coll1.getLocal();
+            pbarTS1InPos.setZ( pbarTS1InPos.z() - coll1.halfLength() + 2.*vdHL + pbarTS1InHalfLength + pbarTS1InOffset);
+            parentCenterInMu2e = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getGlobal();
+         }
+         else { // pbarTS1InOffset < 0.0
+            // use global when put in the HallAir
+            Tube const & psVacuumParams  = GeomHandle<PSVacuum>()->vacuum();
+            pbarTS1InPos = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getGlobal();
+            pbarTS1InPos.setZ( pbarTS1InPos.z() - ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() - pbarTS1InHalfLength + pbarTS1InOffset);
+            CLHEP::Hep3Vector psVacuumOriginInMu2e = psVacuumParams.originInMu2e();
+            pbarTS1InPos = pbarTS1InPos - psVacuumOriginInMu2e;
+            parentCenterInMu2e = psVacuumOriginInMu2e;
+         }
+
+         CLHEP::Hep3Vector posPSPbarIn = pbarTS1InPos;
+         posPSPbarIn.setZ( pbarTS1InPos.z() - pbarTS1InHalfLength - vdHL );
+         vd->addVirtualDetector(VirtualDetectorId::PSPbarIn, parentCenterInMu2e, 0, posPSPbarIn);
+
+         CLHEP::Hep3Vector posPSPbarOut = pbarTS1InPos;
+         posPSPbarOut.setZ( pbarTS1InPos.z() + pbarTS1InHalfLength + vdHL );
+         vd->addVirtualDetector(VirtualDetectorId::PSPbarOut, parentCenterInMu2e, 0, posPSPbarOut);
+
+         int static const verbosityLevel = 1;
+         if ( verbosityLevel > 0 ) {
+            cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarIn) << endl;
+            cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarIn) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarIn) <<endl;
+            cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarOut) << endl;
+            cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarOut) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarOut) <<endl;
+         }
       }
 
     } // if(hasVirtualDetector)

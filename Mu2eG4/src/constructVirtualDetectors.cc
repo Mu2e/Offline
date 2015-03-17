@@ -1783,7 +1783,82 @@ namespace mu2e {
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
-    
+
+    vdId = VirtualDetectorId::PSPbarIn;
+    if ( vdg->exist(vdId) ) {
+
+      VolumeInfo& parent = _helper->locateVolInfo("TS1Vacuum");
+      double pbarTS1InOffset = _config.getDouble("pbar.coll1In.offset", 1.0);
+      if (pbarTS1InOffset < 0.0) parent = _helper->locateVolInfo("PSVacuum");
+      
+      const double pbarTS1InRecordROut = _config.getDouble("pbar.coll1In.rOutRecord");
+      const TubsParams vdParams(0.0, pbarTS1InRecordROut, vdg->getHalfLength());
+
+      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   vdParams,
+                                   vacuumMaterial,
+                                   0,
+                                   vdg->getLocal(vdId), //local position w.r.t. parent
+                                   parent,
+                                   vdId,
+                                   vdIsVisible, //
+                                   G4Color::White(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                  );
+
+      if ( verbosityLevel >= 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) << endl
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (PSVacuum) " << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+
+    vdId = VirtualDetectorId::PSPbarOut;
+    if ( vdg->exist(vdId) ) {
+
+      VolumeInfo& parent = _helper->locateVolInfo("TS1Vacuum");
+      double pbarTS1InOffset = _config.getDouble("pbar.coll1In.offset", 1.0);
+      if (pbarTS1InOffset < 0.0) parent = _helper->locateVolInfo("PSVacuum");
+
+      const double pbarTS1InRecordROut = _config.getDouble("pbar.coll1In.rOutRecord");
+      const TubsParams vdParams(0.0, pbarTS1InRecordROut, vdg->getHalfLength());
+
+      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   vdParams,
+                                   vacuumMaterial,
+                                   0,
+                                   vdg->getLocal(vdId), //local position w.r.t. parent
+                                   parent,
+                                   vdId,
+                                   vdIsVisible, //
+                                   G4Color::White(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                  );
+
+      if ( verbosityLevel >= 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) << endl
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (PSVacuum) " << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
     
   } // constructVirtualDetectors()
 }

@@ -991,7 +991,7 @@ namespace mu2e {
 
       double pbarTS1InRecordParams[5]  = { 0.0, pbarTS1InRecordROut, vdHalfLength, 0.0, CLHEP::twopi };  
       CLHEP::Hep3Vector pbarTS1InRecordPos = pbarTS1InPos;
-      pbarTS1InRecordPos.setZ(pbarTS1InPos.z() - pbarTS1InHalfLength - pbarTS1InRecordParams[2]);
+      pbarTS1InRecordPos.setZ(pbarTS1InPos.z() - pbarTS1InHalfLength - 2*vdHalfLength - pbarTS1InRecordParams[2]);
 
       if ( verbosityLevel > 0 ) {
         cout << __func__ << "pbarTS1InRecordParams " << pbarTS1InRecordParams[1] << "  " << pbarTS1InRecordParams[2] << endl;

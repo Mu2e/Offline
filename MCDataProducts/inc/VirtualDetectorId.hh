@@ -80,6 +80,7 @@ namespace mu2e {
       PT_Front, PT_Back,                         // 83, 84:  Forward and backward side of the production targets
       STMUpstream,                  // 85:  I'm not sure who named this STM, because it's not in the MSTM area (FIXME)
       MSTM_WallUpStr, MSTM_Coll1DnStr, MSTM_ShutterDnStr, MSTM_Coll2DnStr, MSTM_Coll3DnStr,  // 86, 87, 88, 89, 90:  All inside MSTM area
+      PSPbarIn, PSPbarOut, // 91, 92: Front and back of the new pbar window in the PS 
       lastEnum
     };
 
@@ -120,7 +121,8 @@ namespace mu2e {
       "DSNeutronShieldExit", \
       "PSTargetSurf", \
       "PT_Front", "PT_Back","STMUpstream", \
-      "MSTM_WallUpStr", "MSTM_Coll1DnStr", "MSTM_ShutterDnStr", "MSTM_Coll2DnStr", "MSTM_Coll3DnStr"
+      "MSTM_WallUpStr", "MSTM_Coll1DnStr", "MSTM_ShutterDnStr", "MSTM_Coll2DnStr", "MSTM_Coll3DnStr", \
+      "PSPbarIn", "PSPbarOut"
 
   public:
 
