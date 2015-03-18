@@ -31,7 +31,7 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4SteppingCut& cuts) :
+  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut& cuts) :
     pset_(pset),
 
     steppingCuts_(&cuts),

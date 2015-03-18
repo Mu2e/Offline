@@ -2,10 +2,10 @@
 //
 // Andrei Gaponenko, 2015
 
-#ifndef Mu2eG4_Mu2eG4SteppingCuts_hh
-#define Mu2eG4_Mu2eG4SteppingCuts_hh
+#ifndef Mu2eG4_Mu2eG4Cuts_hh
+#define Mu2eG4_Mu2eG4Cuts_hh
 
-#include "Mu2eG4/inc/IMu2eG4SteppingCut.hh"
+#include "Mu2eG4/inc/IMu2eG4Cut.hh"
 
 #include <string>
 #include <memory>
@@ -21,8 +21,8 @@ namespace mu2e {
   namespace SteppingCuts {
 
     //================================================================
-    // A common implementation for some of the required IMu2eG4SteppingCut methods
-    class IOHelper: virtual public IMu2eG4SteppingCut {
+    // A common implementation for some of the required IMu2eG4Cut methods
+    class IOHelper: virtual public IMu2eG4Cut {
     public:
       virtual void declareProducts(art::EDProducer *parent) override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
@@ -40,7 +40,7 @@ namespace mu2e {
     };
 
     //================================================================
-    class Union: virtual public IMu2eG4SteppingCut,
+    class Union: virtual public IMu2eG4Cut,
                  public IOHelper
     {
     public:
@@ -55,11 +55,11 @@ namespace mu2e {
 
     private:
       explicit Union(const fhicl::ParameterSet& pset);
-      std::vector<std::unique_ptr<IMu2eG4SteppingCut> > cuts_;
+      std::vector<std::unique_ptr<IMu2eG4Cut> > cuts_;
     };
 
     //================================================================
-    class Intersection: virtual public IMu2eG4SteppingCut,
+    class Intersection: virtual public IMu2eG4Cut,
                         public IOHelper
     {
     public:
@@ -74,11 +74,11 @@ namespace mu2e {
 
     private:
       explicit Intersection(const fhicl::ParameterSet& pset);
-      std::vector<std::unique_ptr<IMu2eG4SteppingCut> > cuts_;
+      std::vector<std::unique_ptr<IMu2eG4Cut> > cuts_;
     };
 
     //================================================================
-    class Plane: virtual public IMu2eG4SteppingCut,
+    class Plane: virtual public IMu2eG4Cut,
                  public IOHelper
     {
     public:
@@ -92,7 +92,7 @@ namespace mu2e {
 
 
     //================================================================
-    class Constant: virtual public IMu2eG4SteppingCut,
+    class Constant: virtual public IMu2eG4Cut,
                     public IOHelper
     {
     public:
@@ -105,10 +105,10 @@ namespace mu2e {
     };
 
     //================================================================
-    std::unique_ptr<IMu2eG4SteppingCut> createCuts(const fhicl::ParameterSet& pset);
+    std::unique_ptr<IMu2eG4Cut> createCuts(const fhicl::ParameterSet& pset);
 
   }
 
 } // end namespace mu2e
 
-#endif /* Mu2eG4_Mu2eG4SteppingCuts_hh */
+#endif /* Mu2eG4_Mu2eG4Cuts_hh */

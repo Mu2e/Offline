@@ -2,8 +2,8 @@
 //
 // Andrei Gaponenko, 2015
 
-#ifndef Mu2eG4_IMu2eG4SteppingCut_hh
-#define Mu2eG4_IMu2eG4SteppingCut_hh
+#ifndef Mu2eG4_IMu2eG4Cut_hh
+#define Mu2eG4_IMu2eG4Cut_hh
 
 class G4Step;
 namespace CLHEP { class Hep3Vector; }
@@ -15,7 +15,7 @@ namespace mu2e {
 
   class SimParticleHelper;
 
-  class IMu2eG4SteppingCut {
+  class IMu2eG4Cut {
   public:
 
     virtual bool evaluate(const G4Step *aStep) = 0;
@@ -30,9 +30,9 @@ namespace mu2e {
     // Put the data products into the event.
     virtual void put(art::Event& event) = 0;
 
-    virtual ~IMu2eG4SteppingCut() {}
+    virtual ~IMu2eG4Cut() {}
   };
 
 } // end namespace mu2e
 
-#endif /* Mu2eG4_IMu2eG4SteppingCut_hh */
+#endif /* Mu2eG4_IMu2eG4Cut_hh */

@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2015
 
-#include "Mu2eG4/inc/Mu2eG4SteppingCuts.hh"
+#include "Mu2eG4/inc/Mu2eG4Cuts.hh"
 
 #include <vector>
 #include <algorithm>
@@ -289,8 +289,8 @@ namespace mu2e {
     }
 
     //================================================================
-    std::unique_ptr<IMu2eG4SteppingCut> createCuts(const fhicl::ParameterSet& pset) {
-      std::unique_ptr<IMu2eG4SteppingCut> res;
+    std::unique_ptr<IMu2eG4Cut> createCuts(const fhicl::ParameterSet& pset) {
+      std::unique_ptr<IMu2eG4Cut> res;
 
       if(pset.is_empty()) {
         res = make_unique<Constant>(false); // no cuts

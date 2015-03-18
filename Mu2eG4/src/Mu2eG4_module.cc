@@ -14,8 +14,8 @@
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
-#include "Mu2eG4/inc/IMu2eG4SteppingCut.hh"
-#include "Mu2eG4/inc/Mu2eG4SteppingCuts.hh"
+#include "Mu2eG4/inc/IMu2eG4Cut.hh"
+#include "Mu2eG4/inc/Mu2eG4Cuts.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "Mu2eG4/inc/exportG4PDT.hh"
@@ -140,7 +140,7 @@ namespace mu2e {
     Mu2eG4SteppingAction*   _steppingAction;
     StackingAction*         _stackingAction;
 
-    std::unique_ptr<IMu2eG4SteppingCut> steppingCuts_;
+    std::unique_ptr<IMu2eG4Cut> steppingCuts_;
 
     G4UIsession  *_session;
     G4UImanager  *_UI;
