@@ -47,48 +47,51 @@ physics : {
             enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
          }
 
-	 // The GeoCuts checks are made in the listed order.
-	 // The first match wins.
-	 //
-	 // The cuts are applied to the end point of a G4 step,
-	 // but the data products store the start of the step.
-
-         GeoCuts: [
-            {
-	       name: dsregion 
-               stopParticles: true
-	       // cut: { type : plane   pars: [...] }
-	       // cut: { type : union   pars: [ {...}, {...}] }
-	       // cut: { type : intersection   pars: [ {...}, {...}] }
-	       // cut: { type : inVolume pars: [ vol1, vol2 ] }
-	       // cut: { type : notInVolume pars: [ vol1, vol2 ] }
-
-	       // plane def:    par0*x + par1*y + par2*z > par3
-
-               cut: {
+	 // Mu2eG4 cuts are evaluated in the listed order.
+	 // The first match wins.  For the "intersection"
+	 // type, the first false stops the evaluation.
+	 // For the "union" type the first true stops the evaluation.
+         Mu2eG4SteppingCut: {
+	    type: union
+	    pars: [
+               {
 		  type: intersection
+		  stopParticles: true  // the default
+
+		  // cut: { type : plane   pars: [...] }
+		  // cut: { type : union   pars: [ {...}, {...}] }
+		  // cut: { type : intersection   pars: [ {...}, {...}] }
+		  // cut: { type : inVolume pars: [ vol1, vol2 ] }
+		  // cut: { type : notInVolume pars: [ vol1, vol2 ] }
+
+		  // plane def:    par0*x + par1*y + par2*z > par3
+
 		  pars: [
-		     { type: plane pars: [ 0, 0, 1, 6000. ] },
-		     { type: plane pars: [ -1, 0, 0, -200 ] }
+		     { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, 6000 ] },
+		     { type: plane normal: [ -1, 0, 0 ] point : [ 200, 0, 0 ] },
+
+{}
+//tmp:		     // This union splits the output into two exclusive streams
+//tmp:		     { type: union pars:  [
+//tmp:			   { type: inVolume  pars: [TS3Vacuum] write: g4s1beam },
+//tmp:			   { type: constant  value: true       write: g4s1dsregion }
+//tmp:			]
+//tmp:		     }
 		  ]
+	       }
+	       ,
+               {
+		  type: plane
+		  normal: [ 0, 0, -1 ]
+		  point : [0, 0, -14000]
+		  stopParticles: true
+		  write: toBeamDump
 	       }
 
-	       outputs : {
-		  substreams: [
-		     {
-			name: MuonBeam 
-			/// will  write dsregionMuonBeam
-			cut: { type: inVolume pars: [ "TS3Vacuum" ] }
-                     }
-		  ]
-		  writeAll : true
-		  //  will write dsregionDefault
-		  //  would write dsregion if there were no substreams
-	       }
-	    }
-	    //// More geoCuts
-	    // , { name : extmon }
-         ]
+	       //// More cuts
+	       // , { name : extmon }
+            ]
+	 }
 
 	 TrajectoryControl: {
 	    defaultMinPointDistance : 500

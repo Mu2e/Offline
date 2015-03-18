@@ -31,8 +31,10 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset) :
+  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4SteppingCut& cuts) :
     pset_(pset),
+
+    steppingCuts_(&cuts),
 
     maxStepsPerTrack_(pset.get<int>("ResourceLimits.maxStepsPerTrack")),
     numTrackSteps_(),
@@ -161,15 +163,14 @@ namespace mu2e {
       }
     }
 
-//FIXME:    if ( killInTheseVolumes(track) ){
-//FIXME:      killTrack( track, ProcessCode::mu2eKillerVolume, fStopAndKill);
-//FIXME:    } else if ( _doKillLowEKine && killLowEKine(track) ){
-//FIXME:      killTrack( track, ProcessCode::mu2eLowEKine, fStopAndKill);
-//FIXME:    } else 
-    if(killTooManySteps(track)) {
+    if(steppingCuts_->evaluate(step)) {
+      // FIXME: do we need to differentiate stopping codes?
+      killTrack(track, ProcessCode::mu2eKillerVolume, fStopAndKill);
+    } else if(killTooManySteps(track)) {
       killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);
     }
 
+    //----------------------------------------------------------------
     // Do we want to do make debug printout for this event?
     if ( !_debugEventList.inList() ) return;
 
@@ -312,6 +313,7 @@ namespace mu2e {
     return (it != mcTrajectoryVolumePtDistances_.end()) ? it->second : mcTrajectoryDefaultMinPointDistance_;
   }
 
+  //================================================================
   void Mu2eG4SteppingAction::checkConfigRelics(const SimpleConfig& config) {
     static const std::vector<std::string> keys = {
       "g4.steppingActionStepsSizeLimit",

@@ -15,6 +15,7 @@
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Mu2eG4/inc/IMu2eG4SteppingCut.hh"
 
 // G4 includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -41,7 +42,7 @@ namespace mu2e {
   {
 
   public:
-    Mu2eG4SteppingAction(const fhicl::ParameterSet& pset);
+    Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4SteppingCut &cuts);
 
     void UserSteppingAction(const G4Step*);
 
@@ -81,6 +82,9 @@ namespace mu2e {
 
   private:
     fhicl::ParameterSet pset_;
+
+    // owned by Mu2eG4 module.
+    IMu2eG4SteppingCut *steppingCuts_;
 
     // Protection against "too complicated" events
     int maxStepsPerTrack_;

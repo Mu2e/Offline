@@ -1,3 +1,5 @@
+// FIXME: add checkConfigRelics() to Mu2eG4_module
+
 // A Producer Module that runs Geant4 and adds its output to the event.
 //
 // Original author Rob Kutschke
@@ -12,6 +14,8 @@
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
+#include "Mu2eG4/inc/IMu2eG4SteppingCut.hh"
+#include "Mu2eG4/inc/Mu2eG4SteppingCuts.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "Mu2eG4/inc/exportG4PDT.hh"
@@ -136,6 +140,8 @@ namespace mu2e {
     Mu2eG4SteppingAction*   _steppingAction;
     StackingAction*         _stackingAction;
 
+    std::unique_ptr<IMu2eG4SteppingCut> steppingCuts_;
+
     G4UIsession  *_session;
     G4UImanager  *_UI;
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
@@ -205,6 +211,9 @@ namespace mu2e {
     _trackingAction(nullptr),
     _steppingAction(nullptr),
     _stackingAction(nullptr),
+
+    steppingCuts_(SteppingCuts::createCuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingCut", fhicl::ParameterSet()))),
+
     _session(nullptr),
     _UI(nullptr),
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
@@ -264,6 +273,9 @@ namespace mu2e {
     produces<PointTrajectoryCollection>();
     produces<MCTrajectoryCollection>();
     produces<ExtMonFNALSimHitCollection>();
+
+    steppingCuts_->declareProducts(this);
+
     produces<PhysicalVolumeInfoCollection,art::InRun>();
     produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
 
@@ -328,10 +340,10 @@ namespace mu2e {
     SimpleConfig const& config  = geom->config();
     Mu2eG4SteppingAction::checkConfigRelics(config);
 
-
     if ( ncalls == 1 ) {
 
       _steppingAction->finishConstruction();
+      steppingCuts_->finishConstruction(worldGeom->mu2eOriginInWorld());
 
       if( _checkFieldMap>0 ) generateFieldMap(worldGeom->mu2eOriginInWorld(),_checkFieldMap);
 
@@ -373,7 +385,7 @@ namespace mu2e {
     _genAction = new PrimaryGeneratorAction();
     _runManager->SetUserAction(_genAction);
 
-    _steppingAction = new Mu2eG4SteppingAction(pset_);
+    _steppingAction = new Mu2eG4SteppingAction(pset_, *steppingCuts_);
     _runManager->SetUserAction(_steppingAction);
 
     _stackingAction = new StackingAction(config);
@@ -503,6 +515,8 @@ namespace mu2e {
     unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);
     _sensitiveDetectorHelper.createProducts(event, spHelper);
 
+    steppingCuts_->beginEvent(event, spHelper);
+
     // Some of the user actions have begin event methods. These are not G4 standards.
     _trackingAction->beginEvent(inputSimHandle, inputMCTracjectoryHandle,
                                 spHelper, parentHelper, *mcTrajectories );
@@ -571,7 +585,7 @@ namespace mu2e {
 
     _diagnostics.fillPA(_sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber) ?
                         &_sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber).ref() : nullptr );
-    
+
     _simParticlePrinter.print(std::cout, *simParticles);
 
     // Add data products to the event.
@@ -584,6 +598,7 @@ namespace mu2e {
       event.put(std::move(extMonFNALHits));
     }
     _sensitiveDetectorHelper.put(event);
+    steppingCuts_->put(event);
 
     // Pause to see graphics.
     if ( !_visMacro.empty() ){
@@ -759,6 +774,8 @@ namespace mu2e {
            << "s Sys="   << _systemElapsed
            << "s" << G4endl;
   }
+
+  //================================================================
 
 } // End of namespace mu2e
 
