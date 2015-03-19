@@ -13,7 +13,7 @@
 
 #include "CLHEP/Vector/ThreeVector.h"
 
-//#include "G4Track.hh"
+#include "G4Track.hh"
 #include "G4Step.hh"
 
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
@@ -116,27 +116,16 @@ namespace mu2e {
     virtual bool steppingActionCut(const G4Step  *step);
     virtual bool stackingActionCut(const G4Track *trk);
 
-    static std::unique_ptr<Union> maybe_instance(const fhicl::ParameterSet& pset);
-
     // Sequences need a different implementation
     virtual void declareProducts(art::EDProducer *parent) override;
     virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
     virtual void put(art::Event& event) override;
     virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
 
-  private:
     explicit Union(const fhicl::ParameterSet& pset);
+  private:
     std::vector<std::unique_ptr<IMu2eG4Cut> > cuts_;
   };
-
-
-  std::unique_ptr<Union> Union::maybe_instance(const fhicl::ParameterSet& pset) {
-    unique_ptr<Union> res;
-    if(pset.get<string>("type", "") == "union") {
-      res.reset(new Union(pset));
-    }
-    return res;
-  }
 
   Union::Union(const fhicl::ParameterSet& pset)
     : IOHelper{pset.get<string>("write", "")}
@@ -208,26 +197,16 @@ namespace mu2e {
     virtual bool steppingActionCut(const G4Step  *step);
     virtual bool stackingActionCut(const G4Track *trk);
 
-    static std::unique_ptr<Intersection> maybe_instance(const fhicl::ParameterSet& pset);
-
     // Sequences need a different implementation
     virtual void declareProducts(art::EDProducer *parent) override;
     virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
     virtual void put(art::Event& event) override;
     virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
 
-  private:
     explicit Intersection(const fhicl::ParameterSet& pset);
+  private:
     std::vector<std::unique_ptr<IMu2eG4Cut> > cuts_;
   };
-
-  std::unique_ptr<Intersection> Intersection::maybe_instance(const fhicl::ParameterSet& pset) {
-    unique_ptr<Intersection> res;
-    if(pset.get<string>("type", "") == "intersection") {
-      res.reset(new Intersection(pset));
-    }
-    return res;
-  }
 
   Intersection::Intersection(const fhicl::ParameterSet& pset)
     : IOHelper{pset.get<string>("write", "")}
@@ -300,22 +279,13 @@ namespace mu2e {
     virtual bool steppingActionCut(const G4Step  *step);
     virtual bool stackingActionCut(const G4Track *trk);
 
-    static std::unique_ptr<Plane> maybe_instance(const fhicl::ParameterSet& pset);
-  private:
     explicit Plane(const fhicl::ParameterSet& pset);
+  private:
     std::array<double,3> normal_;
     double offset_;
 
     bool cut_impl(const CLHEP::Hep3Vector& pos);
   };
-
-  std::unique_ptr<Plane> Plane::maybe_instance(const fhicl::ParameterSet& pset) {
-    unique_ptr<Plane> res;
-    if(pset.get<string>("type", "") == "plane") {
-      res.reset(new Plane(pset));
-    }
-    return res;
-  }
 
   Plane::Plane(const fhicl::ParameterSet& pset)
     : IOHelper{pset.get<string>("write", "")}
@@ -371,21 +341,11 @@ namespace mu2e {
     virtual bool steppingActionCut(const G4Step  *step);
     virtual bool stackingActionCut(const G4Track *trk);
 
-    static std::unique_ptr<Constant> maybe_instance(const fhicl::ParameterSet& pset);
     explicit Constant(bool val);
-  private:
     explicit Constant(const fhicl::ParameterSet& pset);
+  private:
     bool value_;
   };
-
-  std::unique_ptr<Constant> Constant::maybe_instance(const fhicl::ParameterSet& pset) {
-    unique_ptr<Constant> res;
-    if(pset.get<string>("type", "") == "constant") {
-      //res = make_unique<Constant>(pset);
-      res.reset(new Constant(pset));
-    }
-    return res;
-  }
 
   Constant::Constant(const fhicl::ParameterSet& pset)
     : IOHelper{pset.get<string>("write", "")}
@@ -407,24 +367,15 @@ namespace mu2e {
 
   //================================================================
   std::unique_ptr<IMu2eG4Cut> createMu2eG4Cuts(const fhicl::ParameterSet& pset) {
-    std::unique_ptr<IMu2eG4Cut> res;
 
-    if(pset.is_empty()) {
-      res = make_unique<Constant>(false); // no cuts
-      return res;
-    }
+    if(pset.is_empty()) return make_unique<Constant>(false); // no cuts
 
-    res = Union::maybe_instance(pset);
-    if(res) return res;
+    const string cuttype =  pset.get<string>("type");
 
-    res = Intersection::maybe_instance(pset);
-    if(res) return res;
-
-    res = Plane::maybe_instance(pset);
-    if(res) return res;
-
-    res = Constant::maybe_instance(pset);
-    if(res) return res;
+    if(cuttype == "union") return make_unique<Union>(pset);
+    if(cuttype == "intersection") return make_unique<Intersection>(pset);
+    if(cuttype == "plane") return make_unique<Plane>(pset);
+    if(cuttype == "const") return make_unique<Constant>(pset);
 
     throw std::runtime_error("mu2e::createMu2eG4Cuts(pset): can not parse pset = "+pset.to_string());
   }
