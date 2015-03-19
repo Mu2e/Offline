@@ -9,23 +9,17 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+
+#include "G4Step.hh"
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
-#include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
-
-// G4 includes
-#include "G4Event.hh"
-#include "G4EventManager.hh"
-#include "G4PhysicalVolumeStore.hh"
-#include "G4RunManager.hh"
-#include "G4SteppingManager.hh"
-#include "G4String.hh"
+#include "Mu2eG4/inc/UserTrackInformation.hh"
+#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
 using namespace std;
 
@@ -313,39 +307,6 @@ namespace mu2e {
   double Mu2eG4SteppingAction::mcTrajectoryMinDistanceCut(const G4VPhysicalVolume* vol) const {
     const auto it = mcTrajectoryVolumePtDistances_.find(vol);
     return (it != mcTrajectoryVolumePtDistances_.end()) ? it->second : mcTrajectoryDefaultMinPointDistance_;
-  }
-
-  //================================================================
-  void Mu2eG4SteppingAction::checkConfigRelics(const SimpleConfig& config) {
-    static const std::vector<std::string> keys = {
-      "g4.steppingActionStepsSizeLimit",
-      "g4.killLowEKine",
-      "g4SteppingAction.killInTheseVolumes",
-      "g4SteppingAction.killerVerbose",
-      "g4SteppingAction.killInHallAir",
-      "g4.eKineMin",
-      "g4.killLowEKinePDG",
-      "g4.eKineMinPDG",
-      "g4.steppingActionEventList",
-      "g4.steppingActionTrackList",
-      "g4.steppingActionMaxSteps",
-      "g4.steppingActionMaxGlobalTime",
-      "g4.steppingActionTimeVD",
-      "g4.mcTrajectoryVolumes",
-      "g4.mcTrajectoryVolumePtDistances",
-      "g4.mcTrajectoryDefaultMinPointDistance"
-    };
-
-    std::string present;
-    for(const auto k: keys) {
-      if(config.hasName(k)) {
-        present += k+" ";
-      }
-    }
-    if(!present.empty()) {
-      throw cet::exception("CONFIG")<<"Mu2eG4SteppingAction: Please use fcl to configure Mu2eG4_module. "
-                                    <<"Detected obsolete SimpleConfig parameters: "<<present;
-    }
   }
 
 } // end namespace mu2e

@@ -5,22 +5,16 @@
 
 #include "G4UserStackingAction.hh"
 
+#include "fhiclcpp/ParameterSet.h"
+
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 
 namespace mu2e {
-  class SimpleConfig;
 
   class Mu2eG4StackingAction: public G4UserStackingAction{
   public:
     Mu2eG4StackingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut& stackingCuts, IMu2eG4Cut& commonCuts);
-
-    // throws if obsolete config parameters are detected
-    static void checkConfigRelics(const SimpleConfig& config);
-
-    // Specified by G4UserMu2eG4StackingAction.
     G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack) override;
-    void NewStage() override;
-    void PrepareNewEvent() override;
 
   private:
     // owned by Mu2eG4 module.

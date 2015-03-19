@@ -1,5 +1,3 @@
-// FIXME: add checkConfigRelics() to Mu2eG4_module
-
 // A Producer Module that runs Geant4 and adds its output to the event.
 //
 // Original author Rob Kutschke
@@ -100,15 +98,15 @@ namespace mu2e {
     Mu2eG4(fhicl::ParameterSet const& pSet);
     // Accept compiler supplied d'tor
 
-    virtual void produce(art::Event& e);
+    virtual void produce(art::Event& e) override;
 
-    virtual void beginJob();
-    virtual void endJob();
+    virtual void beginJob() override;
+    virtual void endJob() override;
 
-    virtual void beginRun(art::Run &r);
-    virtual void endRun(art::Run &);
+    virtual void beginRun(art::Run &r) override;
+    virtual void endRun(art::Run &) override;
 
-    virtual void beginSubRun(art::SubRun &sr);
+    virtual void beginSubRun(art::SubRun &sr) override;
 
   private:
     fhicl::ParameterSet pset_;
@@ -198,14 +196,17 @@ namespace mu2e {
     G4double _systemElapsed;
     G4double _userElapsed;
 
+    // throws if obsolete config parameters are detected
+    static void checkConfigRelics(const SimpleConfig& config);
+
   }; // end G4 header
 
   Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     pset_(pSet),
     _runManager(nullptr),
-    _warnEveryNewRun(pSet.get<bool>("warnEveryNewRun",false)),
-    _exportPDTStart(pSet.get<bool>("exportPDTStart",false)),
-    _exportPDTEnd(pSet.get<bool>("exportPDTEnd",false)),
+    _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
+    _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
+    _exportPDTEnd(pSet.get<bool>("debug.exportPDTEnd",false)),
     _genAction(nullptr),
     _trackingAction(nullptr),
     _steppingAction(nullptr),
@@ -221,11 +222,11 @@ namespace mu2e {
     _visManager(nullptr),
 #endif
     // FIXME:  naming of pset parameters
-    _rmvlevel(pSet.get<int>("diagLevel",0)),
-    _tmvlevel(pSet.get<int>("trackingVerbosityLevel",0)),
-    _checkFieldMap(pSet.get<int>("checkFieldMap",0)),
-    _visMacro(pSet.get<std::string>("visMacro","")),
-    _visGUIMacro(pSet.get<std::string>("visGUIMacro","")),
+    _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
+    _tmvlevel(pSet.get<int>("debug.trackingVerbosityLevel",0)),
+    _checkFieldMap(pSet.get<int>("debug.checkFieldMap",0)),
+    _visMacro(pSet.get<std::string>("visualization.macro","")),
+    _visGUIMacro(pSet.get<std::string>("visualization.GUIMacro","")),
     _g4Macro(pSet.get<std::string>("g4Macro","")),
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
     _inputPhysVolumeMultiInfoLabel(pSet.get<string>("inputPhysVolumeMultiInfoLabel", "")),
@@ -330,8 +331,7 @@ namespace mu2e {
 
     // Get some run-time configuration information that is stored in the geometry file.
     SimpleConfig const& config  = geom->config();
-    Mu2eG4StackingAction::checkConfigRelics(config);
-    Mu2eG4SteppingAction::checkConfigRelics(config);
+    checkConfigRelics(config);
 
     if ( ncalls == 1 ) {
 
@@ -772,6 +772,58 @@ namespace mu2e {
            << "s Real="  << _realElapsed
            << "s Sys="   << _systemElapsed
            << "s" << G4endl;
+  }
+
+  //================================================================
+  void Mu2eG4::checkConfigRelics(const SimpleConfig& config) {
+    static const std::vector<std::string> keys = {
+
+      // old StackingAction
+      "g4.doCosmicKiller",
+      "g4.cosmicKillLevel",
+      "g4.cosmicVerbose",
+      "g4.cosmicPcut",
+      "g4.yaboveDirtYmin",
+      "g4.stackPrimaryOnly",
+      "g4.killLowEKine",
+      "g4.killPitchToLowToStore",
+      "g4.minPitch",
+      "g4.stackingActionDropPDG",
+      "g4.stackingActionKeepPDG",
+      "g4.eKineMin",
+      "g4.killLowEKinePDG",
+      "g4.eKineMinPDG",
+
+      // old SteppingAction
+      "g4.steppingActionStepsSizeLimit",
+      "g4.killLowEKine",
+      "g4SteppingAction.killInTheseVolumes",
+      "g4SteppingAction.killerVerbose",
+      "g4SteppingAction.killInHallAir",
+      "g4.eKineMin",
+      "g4.killLowEKinePDG",
+      "g4.eKineMinPDG",
+      "g4.steppingActionEventList",
+      "g4.steppingActionTrackList",
+      "g4.steppingActionMaxSteps",
+      "g4.steppingActionMaxGlobalTime",
+      "g4.steppingActionTimeVD",
+      "g4.mcTrajectoryVolumes",
+      "g4.mcTrajectoryVolumePtDistances",
+      "g4.mcTrajectoryDefaultMinPointDistance"
+
+    };
+
+    std::string present;
+    for(const auto k: keys) {
+      if(config.hasName(k)) {
+        present += k+" ";
+      }
+    }
+    if(!present.empty()) {
+      throw cet::exception("CONFIG")<<"Please use fcl to configure Mu2eG4_module. "
+                                    <<"Detected obsolete SimpleConfig parameters: "<<present;
+    }
   }
 
   //================================================================

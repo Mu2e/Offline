@@ -11,9 +11,7 @@
 // Mu2e includes
 #include "Mu2eG4/inc/IMu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
-#include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
-#include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 
@@ -34,8 +32,8 @@ class G4Track;
 namespace mu2e {
 
   // Forward declarations in mu2e namespace
-  class SimpleConfig;
   class SimParticleHelper;
+  class PhysicsProcessInfo;
 
   class Mu2eG4SteppingAction : public G4UserSteppingAction,
                                virtual public IMu2eG4SteppingAction
@@ -76,10 +74,6 @@ namespace mu2e {
                          double localTime,
                          double globalTime );
 
-
-    // throws if obsolete config parameters are detected
-    static void checkConfigRelics(const SimpleConfig& config);
-
   private:
     fhicl::ParameterSet pset_;
 
@@ -94,7 +88,7 @@ namespace mu2e {
     bool stepLimitKillerVerbose_;
 
     // Limit maximum size of the steps collection
-    StepPointMCCollection::size_type stepPointCollectionSizeLimit_;
+    unsigned stepPointCollectionSizeLimit_;
 
     // List of times for time virtual detector
     std::vector<double> tvd_time_;

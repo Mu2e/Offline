@@ -120,6 +120,9 @@ physics : {
 	    stepLimitKillerVerbose: true
 	 }
 
+	 visualization: {
+	 }
+
       }
 
       compressPV : {
