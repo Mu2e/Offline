@@ -106,20 +106,28 @@ namespace mu2e {
       }
 
 
-    bool Union::evaluate(const G4Step *step) {
+    bool Union::steppingActionCut(const G4Step *step) {
       bool result = false;
       for(const auto& cut : cuts_) {
-        if(cut->evaluate(step)) {
+        if(cut->steppingActionCut(step)) {
           result = true;
-
           if(output_) {
             addHit(step, ProcessCode::mu2eKillerVolume);
           }
-
           break;
         }
       }
+      return result;
+    }
 
+    bool Union::stackingActionCut(const G4Track *trk) {
+      bool result = false;
+      for(const auto& cut : cuts_) {
+        if(cut->stackingActionCut(trk)) {
+          result = true;
+          break;
+        }
+      }
       return result;
     }
 
@@ -169,20 +177,29 @@ namespace mu2e {
         }
       }
 
-    bool Intersection::evaluate(const G4Step *step) {
-      bool result = false;
+    bool Intersection::steppingActionCut(const G4Step *step) {
+      bool result = true;
       for(const auto& cut : cuts_) {
-        if(cut->evaluate(step)) {
-          result = true;
-
-          if(output_) {
-            addHit(step, ProcessCode::mu2eKillerVolume);
-          }
-
+        if(!cut->steppingActionCut(step)) {
+          result = false;
           break;
         }
       }
+      if(result && output_) {
+        addHit(step, ProcessCode::mu2eKillerVolume);
+      }
 
+      return result;
+    }
+
+    bool Intersection::stackingActionCut(const G4Track *trk) {
+      bool result = true;
+      for(const auto& cut : cuts_) {
+        if(!cut->stackingActionCut(trk)) {
+          result = false;
+          break;
+        }
+      }
       return result;
     }
 
@@ -249,19 +266,25 @@ namespace mu2e {
       offset_ = std::inner_product(normal_.begin(), normal_.end(), x0.begin(), 0.);
     }
 
-    bool Plane::evaluate(const G4Step *step) {
-      const CLHEP::Hep3Vector& pos2 = step->GetPostStepPoint()->GetPosition();
-
+    bool Plane::cut_impl(const CLHEP::Hep3Vector& pos) {
       const bool result =
-        (pos2.x()*normal_[0] + pos2.y()*normal_[1] + pos2.z()*normal_[2] >= offset_);
+        (pos.x()*normal_[0] + pos.y()*normal_[1] + pos.z()*normal_[2] >= offset_);
 
-      //std::cout<<"Plane["<<outputName_<<"]::evaluate() = "<<result<<" for pos2 = "<<pos2<<std::endl;
+      return result;
+    }
 
+    bool Plane::steppingActionCut(const G4Step *step) {
+      const CLHEP::Hep3Vector& pos = step->GetPostStepPoint()->GetPosition();
+      const bool result = cut_impl(pos);
       if(result && output_) {
         addHit(step, ProcessCode::mu2eKillerVolume);
       }
-
       return result;
+    }
+
+    bool Plane::stackingActionCut(const G4Track *trk) {
+      const CLHEP::Hep3Vector& pos = trk->GetPosition();
+      return cut_impl(pos);
     }
 
     //================================================================
@@ -281,10 +304,14 @@ namespace mu2e {
 
     Constant::Constant(bool val) : IOHelper{std::string()}, value_(val) {}
 
-    bool Constant::evaluate(const G4Step *step) {
+    bool Constant::steppingActionCut(const G4Step *step) {
       if(output_) {
         addHit(step, ProcessCode::mu2eKillerVolume);
       }
+      return value_;
+    }
+
+    bool Constant::stackingActionCut(const G4Track *) {
       return value_;
     }
 

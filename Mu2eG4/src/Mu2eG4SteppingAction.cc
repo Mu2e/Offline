@@ -163,7 +163,7 @@ namespace mu2e {
       }
     }
 
-    if(steppingCuts_->evaluate(step)) {
+    if(steppingCuts_->steppingActionCut(step)) {
       // FIXME: do we need to differentiate stopping codes?
       killTrack(track, ProcessCode::mu2eKillerVolume, fStopAndKill);
     } else if(killTooManySteps(track)) {

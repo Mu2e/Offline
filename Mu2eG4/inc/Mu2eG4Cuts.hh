@@ -44,7 +44,9 @@ namespace mu2e {
                  public IOHelper
     {
     public:
-      virtual bool evaluate(const G4Step *aStep);
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
       static std::unique_ptr<Union> maybe_instance(const fhicl::ParameterSet& pset);
 
       // Sequences need a different implementation
@@ -63,7 +65,9 @@ namespace mu2e {
                         public IOHelper
     {
     public:
-      virtual bool evaluate(const G4Step *aStep);
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
       static std::unique_ptr<Intersection> maybe_instance(const fhicl::ParameterSet& pset);
 
       // Sequences need a different implementation
@@ -82,12 +86,16 @@ namespace mu2e {
                  public IOHelper
     {
     public:
-      virtual bool evaluate(const G4Step *aStep);
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
       static std::unique_ptr<Plane> maybe_instance(const fhicl::ParameterSet& pset);
     private:
       explicit Plane(const fhicl::ParameterSet& pset);
       std::array<double,3> normal_;
       double offset_;
+
+      bool cut_impl(const CLHEP::Hep3Vector& pos);
     };
 
 
@@ -96,7 +104,9 @@ namespace mu2e {
                     public IOHelper
     {
     public:
-      virtual bool evaluate(const G4Step *aStep);
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
       static std::unique_ptr<Constant> maybe_instance(const fhicl::ParameterSet& pset);
       explicit Constant(bool val);
     private:
