@@ -68,6 +68,9 @@ namespace mu2e {
     virtual ~IMu2eG4Cut() {}
   };
 
+  //================================================================
+  std::unique_ptr<IMu2eG4Cut> createMu2eG4Cuts(const fhicl::ParameterSet& pset);
+
 } // end namespace mu2e
 
 #endif /* Mu2eG4_IMu2eG4Cut_hh */

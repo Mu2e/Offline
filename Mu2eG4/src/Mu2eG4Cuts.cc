@@ -1,249 +1,325 @@
 // Andrei Gaponenko, 2015
 
-#include "Mu2eG4/inc/Mu2eG4Cuts.hh"
-
+#include <string>
+#include <memory>
+#include <array>
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
 
+#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDProducer.h"
+
+#include "CLHEP/Vector/ThreeVector.h"
 
 //#include "G4Track.hh"
 #include "G4Step.hh"
 
+#include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 //#include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 
 namespace mu2e {
-  namespace SteppingCuts {
+  using namespace std;
+  typedef std::vector<fhicl::ParameterSet> PSVector;
 
-    using namespace std;
+  //================================================================
+  // A common implementation for some of the required IMu2eG4Cut methods
+  class IOHelper: virtual public IMu2eG4Cut {
+  public:
+    virtual void declareProducts(art::EDProducer *parent) override;
+    virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
+    virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
+    virtual void put(art::Event& event) override;
 
-    typedef std::vector<fhicl::ParameterSet> PSVector;
-
-    //================================================================
-    IOHelper::IOHelper(const std::string& outputName)
+  protected:
+    explicit IOHelper(const std::string& outputName)
       : outputName_(outputName)
       , spHelper_()
     {}
 
-    void IOHelper::declareProducts(art::EDProducer *parent) {
-      if(!outputName_.empty()) {
-        parent->produces<StepPointMCCollection>(outputName_);
-      }
+    std::string outputName_;
+    std::unique_ptr<StepPointMCCollection> output_;
+    CLHEP::Hep3Vector mu2eOrigin_;
+    const SimParticleHelper *spHelper_;
+
+    void addHit(const G4Step *aStep, ProcessCode endCode);
+  };
+
+  void IOHelper::declareProducts(art::EDProducer *parent) {
+    if(!outputName_.empty()) {
+      parent->produces<StepPointMCCollection>(outputName_);
     }
+  }
 
-    void IOHelper::beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) {
-      spHelper_ = &spHelper;
-      if(!outputName_.empty()) {
-        output_ = make_unique<StepPointMCCollection>();
-        std::cout<<"IOHelper: Creating output collection "<<outputName_
-                 <<" ptr = "<<output_.get()
-                 <<std::endl;
-        // FIXME: handle pre-generated hits
-      }
+  void IOHelper::beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) {
+    spHelper_ = &spHelper;
+    if(!outputName_.empty()) {
+      output_ = make_unique<StepPointMCCollection>();
+      std::cout<<"IOHelper: Creating output collection "<<outputName_
+               <<" ptr = "<<output_.get()
+               <<std::endl;
+      // FIXME: handle pre-generated hits
     }
+  }
 
-    void IOHelper::put(art::Event& evt) {
-      if(output_) {
-        std::cout<<"IOHelper: recording output collection "<<outputName_<<std::endl;
-        evt.put(std::move(output_), outputName_);
-      }
+  void IOHelper::put(art::Event& evt) {
+    if(output_) {
+      std::cout<<"IOHelper: recording output collection "<<outputName_<<std::endl;
+      evt.put(std::move(output_), outputName_);
     }
+  }
 
-    void IOHelper::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
-      mu2eOrigin_ = mu2eOriginInWorld;
+  void IOHelper::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
+    mu2eOrigin_ = mu2eOriginInWorld;
+  }
+
+  void IOHelper::addHit(const G4Step *aStep, ProcessCode endCode) {
+
+    //FIXME: _currentSize += 1;
+    //FIXME:
+    //FIXME: if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
+    //FIXME:   if( (_currentSize - _sizeLimit)==1 ) {
+    //FIXME:     mf::LogWarning("G4") << "Maximum number of particles reached in " 
+    //FIXME:                          << SensitiveDetectorName
+    //FIXME:                          << ": "
+    //FIXME:                          << _currentSize << endl;
+    //FIXME:   }
+    //FIXME:   return false;
+    //FIXME: }
+
+    // The point's coordinates are saved in the mu2e coordinate system.
+    output_->
+      push_back(StepPointMC(spHelper_->particlePtr(aStep->GetTrack()),
+                            aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
+                            aStep->GetTotalEnergyDeposit(),
+                            aStep->GetNonIonizingEnergyDeposit(),
+                            aStep->GetPreStepPoint()->GetGlobalTime(),
+                            aStep->GetPreStepPoint()->GetProperTime(),
+                            aStep->GetPreStepPoint()->GetPosition() - mu2eOrigin_,
+                            aStep->GetPreStepPoint()->GetMomentum(),
+                            aStep->GetStepLength(),
+                            endCode
+                            ));
+
+  }
+
+
+  //================================================================
+  class Union: virtual public IMu2eG4Cut,
+               public IOHelper
+  {
+  public:
+    virtual bool steppingActionCut(const G4Step  *step);
+    virtual bool stackingActionCut(const G4Track *trk);
+
+    static std::unique_ptr<Union> maybe_instance(const fhicl::ParameterSet& pset);
+
+    // Sequences need a different implementation
+    virtual void declareProducts(art::EDProducer *parent) override;
+    virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
+    virtual void put(art::Event& event) override;
+    virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
+
+  private:
+    explicit Union(const fhicl::ParameterSet& pset);
+    std::vector<std::unique_ptr<IMu2eG4Cut> > cuts_;
+  };
+
+
+  std::unique_ptr<Union> Union::maybe_instance(const fhicl::ParameterSet& pset) {
+    unique_ptr<Union> res;
+    if(pset.get<string>("type", "") == "union") {
+      res.reset(new Union(pset));
     }
+    return res;
+  }
 
-    void IOHelper::addHit(const G4Step *aStep, ProcessCode endCode) {
-
-      //FIXME: _currentSize += 1;
-      //FIXME:
-      //FIXME: if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
-      //FIXME:   if( (_currentSize - _sizeLimit)==1 ) {
-      //FIXME:     mf::LogWarning("G4") << "Maximum number of particles reached in " 
-      //FIXME:                          << SensitiveDetectorName
-      //FIXME:                          << ": "
-      //FIXME:                          << _currentSize << endl;
-      //FIXME:   }
-      //FIXME:   return false;
-      //FIXME: }
-
-      // The point's coordinates are saved in the mu2e coordinate system.
-      output_->
-        push_back(StepPointMC(spHelper_->particlePtr(aStep->GetTrack()),
-                              aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
-                              aStep->GetTotalEnergyDeposit(),
-                              aStep->GetNonIonizingEnergyDeposit(),
-                              aStep->GetPreStepPoint()->GetGlobalTime(),
-                              aStep->GetPreStepPoint()->GetProperTime(),
-                              aStep->GetPreStepPoint()->GetPosition() - mu2eOrigin_,
-                              aStep->GetPreStepPoint()->GetMomentum(),
-                              aStep->GetStepLength(),
-                              endCode
-                              ));
-
-    }
-
-    //================================================================
-    std::unique_ptr<Union> Union::maybe_instance(const fhicl::ParameterSet& pset) {
-      unique_ptr<Union> res;
-      if(pset.get<string>("type", "") == "union") {
-        res.reset(new Union(pset));
-      }
-      return res;
-    }
-
-    Union::Union(const fhicl::ParameterSet& pset)
-      : IOHelper{pset.get<string>("write", "")}
+  Union::Union(const fhicl::ParameterSet& pset)
+    : IOHelper{pset.get<string>("write", "")}
       {
         PSVector pars = pset.get<PSVector>("pars");
         for(const auto& p: pars) {
-          cuts_.emplace_back(createCuts(p));
+          cuts_.emplace_back(createMu2eG4Cuts(p));
         }
       }
 
-
-    bool Union::steppingActionCut(const G4Step *step) {
-      bool result = false;
-      for(const auto& cut : cuts_) {
-        if(cut->steppingActionCut(step)) {
-          result = true;
-          if(output_) {
-            addHit(step, ProcessCode::mu2eKillerVolume);
-          }
-          break;
+  bool Union::steppingActionCut(const G4Step *step) {
+    bool result = false;
+    for(const auto& cut : cuts_) {
+      if(cut->steppingActionCut(step)) {
+        result = true;
+        if(output_) {
+          addHit(step, ProcessCode::mu2eKillerVolume);
         }
-      }
-      return result;
-    }
-
-    bool Union::stackingActionCut(const G4Track *trk) {
-      bool result = false;
-      for(const auto& cut : cuts_) {
-        if(cut->stackingActionCut(trk)) {
-          result = true;
-          break;
-        }
-      }
-      return result;
-    }
-
-    void Union::declareProducts(art::EDProducer *parent) {
-      IOHelper::declareProducts(parent);
-      for(auto& cut: cuts_) {
-        cut->declareProducts(parent);
+        break;
       }
     }
+    return result;
+  }
 
-    void Union::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
-      IOHelper::finishConstruction(mu2eOriginInWorld);
-      for(auto& cut: cuts_) {
-        cut->finishConstruction(mu2eOriginInWorld);
+  bool Union::stackingActionCut(const G4Track *trk) {
+    bool result = false;
+    for(const auto& cut : cuts_) {
+      if(cut->stackingActionCut(trk)) {
+        result = true;
+        break;
       }
     }
+    return result;
+  }
 
-    void Union::beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) {
-      IOHelper::beginEvent(evt, spHelper);
-      for(auto& cut: cuts_) {
-        cut->beginEvent(evt, spHelper);
-      }
+  void Union::declareProducts(art::EDProducer *parent) {
+    IOHelper::declareProducts(parent);
+    for(auto& cut: cuts_) {
+      cut->declareProducts(parent);
     }
+  }
 
-    void Union::put(art::Event& evt) {
-      IOHelper::put(evt);
-      for(auto& cut: cuts_) {
-        cut->put(evt);
-      }
+  void Union::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
+    IOHelper::finishConstruction(mu2eOriginInWorld);
+    for(auto& cut: cuts_) {
+      cut->finishConstruction(mu2eOriginInWorld);
     }
+  }
 
-    //================================================================
-    std::unique_ptr<Intersection> Intersection::maybe_instance(const fhicl::ParameterSet& pset) {
-      unique_ptr<Intersection> res;
-      if(pset.get<string>("type", "") == "intersection") {
-        res.reset(new Intersection(pset));
-      }
-      return res;
+  void Union::beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) {
+    IOHelper::beginEvent(evt, spHelper);
+    for(auto& cut: cuts_) {
+      cut->beginEvent(evt, spHelper);
     }
+  }
 
-    Intersection::Intersection(const fhicl::ParameterSet& pset)
-      : IOHelper{pset.get<string>("write", "")}
+  void Union::put(art::Event& evt) {
+    IOHelper::put(evt);
+    for(auto& cut: cuts_) {
+      cut->put(evt);
+    }
+  }
+
+  //================================================================
+  class Intersection: virtual public IMu2eG4Cut,
+                      public IOHelper
+  {
+  public:
+    virtual bool steppingActionCut(const G4Step  *step);
+    virtual bool stackingActionCut(const G4Track *trk);
+
+    static std::unique_ptr<Intersection> maybe_instance(const fhicl::ParameterSet& pset);
+
+    // Sequences need a different implementation
+    virtual void declareProducts(art::EDProducer *parent) override;
+    virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
+    virtual void put(art::Event& event) override;
+    virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
+
+  private:
+    explicit Intersection(const fhicl::ParameterSet& pset);
+    std::vector<std::unique_ptr<IMu2eG4Cut> > cuts_;
+  };
+
+  std::unique_ptr<Intersection> Intersection::maybe_instance(const fhicl::ParameterSet& pset) {
+    unique_ptr<Intersection> res;
+    if(pset.get<string>("type", "") == "intersection") {
+      res.reset(new Intersection(pset));
+    }
+    return res;
+  }
+
+  Intersection::Intersection(const fhicl::ParameterSet& pset)
+    : IOHelper{pset.get<string>("write", "")}
       {
         PSVector pars = pset.get<PSVector>("pars");
         for(const auto& p: pars) {
-          cuts_.emplace_back(createCuts(p));
+          cuts_.emplace_back(createMu2eG4Cuts(p));
         }
       }
 
-    bool Intersection::steppingActionCut(const G4Step *step) {
-      bool result = true;
-      for(const auto& cut : cuts_) {
-        if(!cut->steppingActionCut(step)) {
-          result = false;
-          break;
-        }
-      }
-      if(result && output_) {
-        addHit(step, ProcessCode::mu2eKillerVolume);
-      }
-
-      return result;
-    }
-
-    bool Intersection::stackingActionCut(const G4Track *trk) {
-      bool result = true;
-      for(const auto& cut : cuts_) {
-        if(!cut->stackingActionCut(trk)) {
-          result = false;
-          break;
-        }
-      }
-      return result;
-    }
-
-    void Intersection::declareProducts(art::EDProducer *parent) {
-      IOHelper::declareProducts(parent);
-      for(auto& cut: cuts_) {
-        cut->declareProducts(parent);
+  bool Intersection::steppingActionCut(const G4Step *step) {
+    bool result = true;
+    for(const auto& cut : cuts_) {
+      if(!cut->steppingActionCut(step)) {
+        result = false;
+        break;
       }
     }
-
-    void Intersection::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
-      IOHelper::finishConstruction(mu2eOriginInWorld);
-      for(auto& cut: cuts_) {
-        cut->finishConstruction(mu2eOriginInWorld);
-      }
+    if(result && output_) {
+      addHit(step, ProcessCode::mu2eKillerVolume);
     }
 
-    void Intersection::beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) {
-      IOHelper::beginEvent(evt, spHelper);
-      for(auto& cut: cuts_) {
-        cut->beginEvent(evt, spHelper);
+    return result;
+  }
+
+  bool Intersection::stackingActionCut(const G4Track *trk) {
+    bool result = true;
+    for(const auto& cut : cuts_) {
+      if(!cut->stackingActionCut(trk)) {
+        result = false;
+        break;
       }
     }
+    return result;
+  }
 
-    void Intersection::put(art::Event& evt) {
-      IOHelper::put(evt);
-      for(auto& cut: cuts_) {
-        cut->put(evt);
-      }
+  void Intersection::declareProducts(art::EDProducer *parent) {
+    IOHelper::declareProducts(parent);
+    for(auto& cut: cuts_) {
+      cut->declareProducts(parent);
     }
+  }
 
-
-    //================================================================
-    std::unique_ptr<Plane> Plane::maybe_instance(const fhicl::ParameterSet& pset) {
-      unique_ptr<Plane> res;
-      if(pset.get<string>("type", "") == "plane") {
-        res.reset(new Plane(pset));
-      }
-      return res;
+  void Intersection::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
+    IOHelper::finishConstruction(mu2eOriginInWorld);
+    for(auto& cut: cuts_) {
+      cut->finishConstruction(mu2eOriginInWorld);
     }
+  }
 
-    Plane::Plane(const fhicl::ParameterSet& pset)
-      : IOHelper{pset.get<string>("write", "")}
-      , offset_()
+  void Intersection::beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) {
+    IOHelper::beginEvent(evt, spHelper);
+    for(auto& cut: cuts_) {
+      cut->beginEvent(evt, spHelper);
+    }
+  }
+
+  void Intersection::put(art::Event& evt) {
+    IOHelper::put(evt);
+    for(auto& cut: cuts_) {
+      cut->put(evt);
+    }
+  }
+
+  //================================================================
+  class Plane: virtual public IMu2eG4Cut,
+               public IOHelper
+  {
+  public:
+    virtual bool steppingActionCut(const G4Step  *step);
+    virtual bool stackingActionCut(const G4Track *trk);
+
+    static std::unique_ptr<Plane> maybe_instance(const fhicl::ParameterSet& pset);
+  private:
+    explicit Plane(const fhicl::ParameterSet& pset);
+    std::array<double,3> normal_;
+    double offset_;
+
+    bool cut_impl(const CLHEP::Hep3Vector& pos);
+  };
+
+  std::unique_ptr<Plane> Plane::maybe_instance(const fhicl::ParameterSet& pset) {
+    unique_ptr<Plane> res;
+    if(pset.get<string>("type", "") == "plane") {
+      res.reset(new Plane(pset));
+    }
+    return res;
+  }
+
+  Plane::Plane(const fhicl::ParameterSet& pset)
+    : IOHelper{pset.get<string>("write", "")}
+    , offset_()
     {
       // FIXME: use pset.get<array>() when it is available
       vector<double> n{pset.get<vector<double> >("normal")};
@@ -266,81 +342,92 @@ namespace mu2e {
       offset_ = std::inner_product(normal_.begin(), normal_.end(), x0.begin(), 0.);
     }
 
-    bool Plane::cut_impl(const CLHEP::Hep3Vector& pos) {
-      const bool result =
-        (pos.x()*normal_[0] + pos.y()*normal_[1] + pos.z()*normal_[2] >= offset_);
+  bool Plane::cut_impl(const CLHEP::Hep3Vector& pos) {
+    const bool result =
+      (pos.x()*normal_[0] + pos.y()*normal_[1] + pos.z()*normal_[2] >= offset_);
 
-      return result;
+    return result;
+  }
+
+  bool Plane::steppingActionCut(const G4Step *step) {
+    const CLHEP::Hep3Vector& pos = step->GetPostStepPoint()->GetPosition();
+    const bool result = cut_impl(pos);
+    if(result && output_) {
+      addHit(step, ProcessCode::mu2eKillerVolume);
     }
+    return result;
+  }
 
-    bool Plane::steppingActionCut(const G4Step *step) {
-      const CLHEP::Hep3Vector& pos = step->GetPostStepPoint()->GetPosition();
-      const bool result = cut_impl(pos);
-      if(result && output_) {
-        addHit(step, ProcessCode::mu2eKillerVolume);
-      }
-      return result;
+  bool Plane::stackingActionCut(const G4Track *trk) {
+    const CLHEP::Hep3Vector& pos = trk->GetPosition();
+    return cut_impl(pos);
+  }
+
+  //================================================================
+  class Constant: virtual public IMu2eG4Cut,
+                  public IOHelper
+  {
+  public:
+    virtual bool steppingActionCut(const G4Step  *step);
+    virtual bool stackingActionCut(const G4Track *trk);
+
+    static std::unique_ptr<Constant> maybe_instance(const fhicl::ParameterSet& pset);
+    explicit Constant(bool val);
+  private:
+    explicit Constant(const fhicl::ParameterSet& pset);
+    bool value_;
+  };
+
+  std::unique_ptr<Constant> Constant::maybe_instance(const fhicl::ParameterSet& pset) {
+    unique_ptr<Constant> res;
+    if(pset.get<string>("type", "") == "constant") {
+      //res = make_unique<Constant>(pset);
+      res.reset(new Constant(pset));
     }
+    return res;
+  }
 
-    bool Plane::stackingActionCut(const G4Track *trk) {
-      const CLHEP::Hep3Vector& pos = trk->GetPosition();
-      return cut_impl(pos);
+  Constant::Constant(const fhicl::ParameterSet& pset)
+    : IOHelper{pset.get<string>("write", "")}
+    , value_{pset.get<double>("value")}
+    {}
+
+  Constant::Constant(bool val) : IOHelper{std::string()}, value_(val) {}
+
+  bool Constant::steppingActionCut(const G4Step *step) {
+    if(output_) {
+      addHit(step, ProcessCode::mu2eKillerVolume);
     }
+    return value_;
+  }
 
-    //================================================================
-    std::unique_ptr<Constant> Constant::maybe_instance(const fhicl::ParameterSet& pset) {
-      unique_ptr<Constant> res;
-      if(pset.get<string>("type", "") == "constant") {
-        //res = make_unique<Constant>(pset);
-        res.reset(new Constant(pset));
-      }
+  bool Constant::stackingActionCut(const G4Track *) {
+    return value_;
+  }
+
+  //================================================================
+  std::unique_ptr<IMu2eG4Cut> createMu2eG4Cuts(const fhicl::ParameterSet& pset) {
+    std::unique_ptr<IMu2eG4Cut> res;
+
+    if(pset.is_empty()) {
+      res = make_unique<Constant>(false); // no cuts
       return res;
     }
 
-    Constant::Constant(const fhicl::ParameterSet& pset)
-      : IOHelper{pset.get<string>("write", "")}
-      , value_{pset.get<double>("value")}
-    {}
+    res = Union::maybe_instance(pset);
+    if(res) return res;
 
-    Constant::Constant(bool val) : IOHelper{std::string()}, value_(val) {}
+    res = Intersection::maybe_instance(pset);
+    if(res) return res;
 
-    bool Constant::steppingActionCut(const G4Step *step) {
-      if(output_) {
-        addHit(step, ProcessCode::mu2eKillerVolume);
-      }
-      return value_;
-    }
+    res = Plane::maybe_instance(pset);
+    if(res) return res;
 
-    bool Constant::stackingActionCut(const G4Track *) {
-      return value_;
-    }
+    res = Constant::maybe_instance(pset);
+    if(res) return res;
 
-    //================================================================
-    std::unique_ptr<IMu2eG4Cut> createCuts(const fhicl::ParameterSet& pset) {
-      std::unique_ptr<IMu2eG4Cut> res;
-
-      if(pset.is_empty()) {
-        res = make_unique<Constant>(false); // no cuts
-        return res;
-      }
-
-      res = Union::maybe_instance(pset);
-      if(res) return res;
-
-      res = Intersection::maybe_instance(pset);
-      if(res) return res;
-
-      res = Plane::maybe_instance(pset);
-      if(res) return res;
-
-      res = Constant::maybe_instance(pset);
-      if(res) return res;
-
-      throw std::runtime_error("mu2e::SteppingCuts::createCuts(pset): can not parse pset = "+pset.to_string());
-    }
-
-
-    //================================================================
-
+    throw std::runtime_error("mu2e::createMu2eG4Cuts(pset): can not parse pset = "+pset.to_string());
   }
-}
+
+  //================================================================
+} // end namespace mu2e

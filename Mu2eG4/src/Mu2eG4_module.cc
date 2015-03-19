@@ -15,7 +15,6 @@
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
-#include "Mu2eG4/inc/Mu2eG4Cuts.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "Mu2eG4/inc/exportG4PDT.hh"
@@ -212,7 +211,7 @@ namespace mu2e {
     _steppingAction(nullptr),
     _stackingAction(nullptr),
 
-    steppingCuts_(SteppingCuts::createCuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingCut", fhicl::ParameterSet()))),
+    steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingCut", fhicl::ParameterSet()))),
 
     _session(nullptr),
     _UI(nullptr),
