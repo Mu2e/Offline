@@ -48,7 +48,6 @@
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
@@ -164,7 +163,6 @@ namespace mu2e {
     InputTags _genInputHitLabels;
 
     string _inputPhysVolumeMultiInfoLabel;
-    bool   _doWriteLegacyPhysVolumeInfo;
 
     // Helps with indexology related to persisting info about G4 volumes.
     PhysicalVolumeHelper _physVolHelper;
@@ -231,7 +229,6 @@ namespace mu2e {
     _g4Macro(pSet.get<std::string>("g4Macro","")),
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
     _inputPhysVolumeMultiInfoLabel(pSet.get<string>("inputPhysVolumeMultiInfoLabel", "")),
-    _doWriteLegacyPhysVolumeInfo(pSet.get<bool>("doWriteLegacyPhysVolumeInfo", true)),
     _physVolHelper(),
     _processInfo(),
     _printPhysicsProcessSummary(false),
@@ -281,7 +278,6 @@ namespace mu2e {
     steppingCuts_->declareProducts(this);
     commonCuts_->declareProducts(this);
 
-    produces<PhysicalVolumeInfoCollection,art::InRun>();
     produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
 
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
@@ -321,14 +317,6 @@ namespace mu2e {
     // Helps with indexology related to persisting G4 volume information.
     _physVolHelper.beginRun();
     _processInfo.beginRun();
-
-    if(_doWriteLegacyPhysVolumeInfo) {
-      // Add info about the G4 volumes to the run-data.
-      // The framework rules requires we make a copy and add the copy.
-      const PhysicalVolumeInfoCollection& vinfo = _physVolHelper.persistentInfo();
-      unique_ptr<PhysicalVolumeInfoCollection> volumes(new PhysicalVolumeInfoCollection(vinfo));
-      run.put(std::move(volumes));
-    }
 
     // Some of the user actions have beginRun methods.
     GeomHandle<WorldG4>  worldGeom;
