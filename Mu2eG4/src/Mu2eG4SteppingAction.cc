@@ -31,10 +31,11 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut& cuts) :
+  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut& steppingCuts, IMu2eG4Cut& commonCuts) :
     pset_(pset),
 
-    steppingCuts_(&cuts),
+    steppingCuts_(&steppingCuts),
+    commonCuts_(&commonCuts),
 
     maxStepsPerTrack_(pset.get<int>("ResourceLimits.maxStepsPerTrack")),
     numTrackSteps_(),
@@ -164,7 +165,8 @@ namespace mu2e {
     }
 
     if(steppingCuts_->steppingActionCut(step)) {
-      // FIXME: do we need to differentiate stopping codes?
+      killTrack(track, ProcessCode::mu2eKillerVolume, fStopAndKill);
+    } else if(commonCuts_->steppingActionCut(step)) {
       killTrack(track, ProcessCode::mu2eKillerVolume, fStopAndKill);
     } else if(killTooManySteps(track)) {
       killTrack( track, ProcessCode::mu2eMaxSteps, fStopAndKill);

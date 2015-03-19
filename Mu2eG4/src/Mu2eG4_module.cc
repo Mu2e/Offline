@@ -24,7 +24,7 @@
 #include "Mu2eG4/inc/DetectorConstruction.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
-#include "Mu2eG4/inc/StackingAction.hh"
+#include "Mu2eG4/inc/Mu2eG4StackingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
@@ -137,9 +137,11 @@ namespace mu2e {
     PrimaryGeneratorAction* _genAction;
     TrackingAction*         _trackingAction;
     Mu2eG4SteppingAction*   _steppingAction;
-    StackingAction*         _stackingAction;
+    Mu2eG4StackingAction*   _stackingAction;
 
+    std::unique_ptr<IMu2eG4Cut> stackingCuts_;
     std::unique_ptr<IMu2eG4Cut> steppingCuts_;
+    std::unique_ptr<IMu2eG4Cut> commonCuts_;
 
     G4UIsession  *_session;
     G4UImanager  *_UI;
@@ -211,7 +213,9 @@ namespace mu2e {
     _steppingAction(nullptr),
     _stackingAction(nullptr),
 
-    steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingCut", fhicl::ParameterSet()))),
+    stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", fhicl::ParameterSet()))),
+    steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", fhicl::ParameterSet()))),
+    commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()))),
 
     _session(nullptr),
     _UI(nullptr),
@@ -273,7 +277,9 @@ namespace mu2e {
     produces<MCTrajectoryCollection>();
     produces<ExtMonFNALSimHitCollection>();
 
+    stackingCuts_->declareProducts(this);
     steppingCuts_->declareProducts(this);
+    commonCuts_->declareProducts(this);
 
     produces<PhysicalVolumeInfoCollection,art::InRun>();
     produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
@@ -328,7 +334,6 @@ namespace mu2e {
     GeomHandle<WorldG4>  worldGeom;
     _trackingAction->beginRun( _physVolHelper, _processInfo, worldGeom->mu2eOriginInWorld() );
     _steppingAction->beginRun( _processInfo, worldGeom->mu2eOriginInWorld() );
-    _stackingAction->beginRun( worldGeom->dirtG4Ymin(), worldGeom->dirtG4Ymax() );
 
     // A few more things that only need to be done only once per job,
     // not once per run, but which need to be done after the call to
@@ -337,12 +342,15 @@ namespace mu2e {
 
     // Get some run-time configuration information that is stored in the geometry file.
     SimpleConfig const& config  = geom->config();
+    Mu2eG4StackingAction::checkConfigRelics(config);
     Mu2eG4SteppingAction::checkConfigRelics(config);
 
     if ( ncalls == 1 ) {
 
       _steppingAction->finishConstruction();
+      stackingCuts_->finishConstruction(worldGeom->mu2eOriginInWorld());
       steppingCuts_->finishConstruction(worldGeom->mu2eOriginInWorld());
+      commonCuts_->finishConstruction(worldGeom->mu2eOriginInWorld());
 
       if( _checkFieldMap>0 ) generateFieldMap(worldGeom->mu2eOriginInWorld(),_checkFieldMap);
 
@@ -384,10 +392,10 @@ namespace mu2e {
     _genAction = new PrimaryGeneratorAction();
     _runManager->SetUserAction(_genAction);
 
-    _steppingAction = new Mu2eG4SteppingAction(pset_, *steppingCuts_);
+    _steppingAction = new Mu2eG4SteppingAction(pset_, *steppingCuts_, *commonCuts_);
     _runManager->SetUserAction(_steppingAction);
 
-    _stackingAction = new StackingAction(config);
+    _stackingAction = new Mu2eG4StackingAction(pset_, *stackingCuts_, *commonCuts_);
     _runManager->SetUserAction(_stackingAction);
 
     _trackingAction = new TrackingAction(config,_steppingAction);
@@ -514,7 +522,9 @@ namespace mu2e {
     unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);
     _sensitiveDetectorHelper.createProducts(event, spHelper);
 
+    stackingCuts_->beginEvent(event, spHelper);
     steppingCuts_->beginEvent(event, spHelper);
+    commonCuts_->beginEvent(event, spHelper);
 
     // Some of the user actions have begin event methods. These are not G4 standards.
     _trackingAction->beginEvent(inputSimHandle, inputMCTracjectoryHandle,
@@ -597,7 +607,9 @@ namespace mu2e {
       event.put(std::move(extMonFNALHits));
     }
     _sensitiveDetectorHelper.put(event);
+    stackingCuts_->put(event);
     steppingCuts_->put(event);
+    commonCuts_->put(event);
 
     // Pause to see graphics.
     if ( !_visMacro.empty() ){

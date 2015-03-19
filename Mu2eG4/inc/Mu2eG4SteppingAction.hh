@@ -42,7 +42,7 @@ namespace mu2e {
   {
 
   public:
-    Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut &cuts);
+    Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut &steppingCuts, IMu2eG4Cut& commonCuts);
 
     void UserSteppingAction(const G4Step*);
 
@@ -85,6 +85,7 @@ namespace mu2e {
 
     // owned by Mu2eG4 module.
     IMu2eG4Cut *steppingCuts_;
+    IMu2eG4Cut *commonCuts_;
 
     // Protection against "too complicated" events
     int maxStepsPerTrack_;

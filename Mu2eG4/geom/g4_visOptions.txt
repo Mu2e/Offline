@@ -78,9 +78,6 @@ int    g4.pointTrajectoryMinSteps    =  5;
 double g4.mcTrajectoryMomentumCut = 50.;
 int    g4.mcTrajectoryMinSteps    =  5;
 
-// Do not stack neutrinos
-vector<int> g4.stackingActionDropPDG = { 12, -12, 14, -14, 16, -16 };
-
 // current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
 // G4ClassicalRK4
 // G4ImplicitEuler

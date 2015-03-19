@@ -23,7 +23,7 @@
 //#include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 
 namespace mu2e {
-  namespace Mu2G4Cuts {
+  namespace Mu2eG4Cuts {
     using namespace std;
     typedef std::vector<fhicl::ParameterSet> PSVector;
 
@@ -367,20 +367,31 @@ namespace mu2e {
     }
 
     //================================================================
-    std::unique_ptr<IMu2eG4Cut> createMu2eG4Cuts(const fhicl::ParameterSet& pset) {
-
-      if(pset.is_empty()) return make_unique<Constant>(false); // no cuts
-
-      const string cuttype =  pset.get<string>("type");
-
-      if(cuttype == "union") return make_unique<Union>(pset);
-      if(cuttype == "intersection") return make_unique<Intersection>(pset);
-      if(cuttype == "plane") return make_unique<Plane>(pset);
-      if(cuttype == "const") return make_unique<Constant>(pset);
-
-      throw std::runtime_error("mu2e::createMu2eG4Cuts(pset): can not parse pset = "+pset.to_string());
-    }
+    // FIXME: more cuts:
+    //    VolumeCut, PDGIdCut, PrimaryOnly
+    //     if ( _primaryOnly ){
+    //       if ( trk->GetParentID() != 0 ) {
+    //         return fKill;
+    //       }
+    //     }
 
     //================================================================
   } // end namespace Mu2eG4Cuts
+
+  //================================================================
+  std::unique_ptr<IMu2eG4Cut> createMu2eG4Cuts(const fhicl::ParameterSet& pset) {
+    using namespace Mu2eG4Cuts;
+
+    if(pset.is_empty()) return make_unique<Constant>(false); // no cuts
+
+    const string cuttype =  pset.get<string>("type");
+
+    if(cuttype == "union") return make_unique<Union>(pset);
+    if(cuttype == "intersection") return make_unique<Intersection>(pset);
+    if(cuttype == "plane") return make_unique<Plane>(pset);
+    if(cuttype == "const") return make_unique<Constant>(pset);
+
+    throw std::runtime_error("mu2e::createMu2eG4Cuts(pset): can not parse pset = "+pset.to_string());
+  }
+
 } // end namespace mu2e

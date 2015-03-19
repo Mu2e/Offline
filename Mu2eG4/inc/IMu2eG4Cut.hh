@@ -29,14 +29,12 @@
 // which would be collected by the stacking cut and re-used by the
 // next stage despite of the last steb being re-simulated as well.
 //
-// Note: we definitely want to use a set of common cuts for stacking
-// and stepping actions, but can also have additional lists of
-// stacking-only and stepping-only cuts.
-//
 // Andrei Gaponenko, 2015
 
 #ifndef Mu2eG4_IMu2eG4Cut_hh
 #define Mu2eG4_IMu2eG4Cut_hh
+
+#include <memory>
 
 class G4Step;
 class G4Track;
@@ -44,6 +42,7 @@ namespace CLHEP { class Hep3Vector; }
 
 namespace art { class Event; }
 namespace art { class EDProducer; }
+namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 

@@ -23,6 +23,9 @@ double g4.steppingActionMaxGlobalTime = 0; //ns
 vector<string> g4SteppingAction.killInTheseVolumes = {};
 bool   g4SteppingAction.killerVerbose = false;
 
+// Do not stack neutrinos
+vector<int> g4.stackingActionDropPDG = { 12, -12, 14, -14, 16, -16 };
+
 // These are used in both SteppingAction and StackingAction.
 bool   g4.killLowEKine  = false;
 double g4.eKineMin      = 0.0;    // Kinetic energy in MeV
