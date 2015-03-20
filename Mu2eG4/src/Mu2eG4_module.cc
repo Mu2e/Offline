@@ -232,7 +232,7 @@ namespace mu2e {
     _inputPhysVolumeMultiInfoLabel(pSet.get<string>("inputPhysVolumeMultiInfoLabel", "")),
     _physVolHelper(),
     _processInfo(),
-    _printPhysicsProcessSummary(false),
+    _printPhysicsProcessSummary(pSet.get<bool>("printPhysicsProcessSummary",false)),
     _simParticlePrinter(pSet.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet())),
     _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
     _extMonFNALPixelSD(),
@@ -241,7 +241,7 @@ namespace mu2e {
     _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
     _inputMCTrajectories(pSet.get<std::string>("inputMCTrajectories", "")),
     _diagnostics(),
-    _pointTrajectoryMinSteps(-1),
+    _pointTrajectoryMinSteps(pSet.get<int>("g4.pointTrajectoryMinSteps",5)),
     _timer(nullptr),
     _realElapsed(0.),
     _systemElapsed(0.),
@@ -344,11 +344,6 @@ namespace mu2e {
 
       if ( _exportPDTStart ) exportG4PDT( "Start:" );
     }
-
-    _printPhysicsProcessSummary = config.getBool("g4.printPhysicsProcessSummary",false);
-
-    _pointTrajectoryMinSteps = config.getInt("g4.pointTrajectoryMinSteps",5);
-
   }
 
   void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
@@ -777,6 +772,10 @@ namespace mu2e {
   //================================================================
   void Mu2eG4::checkConfigRelics(const SimpleConfig& config) {
     static const std::vector<std::string> keys = {
+
+      // G4_module
+      "g4.printPhysicsProcessSummary",
+      "g4.pointTrajectoryMinSteps",
 
       // old StackingAction
       "g4.doCosmicKiller",

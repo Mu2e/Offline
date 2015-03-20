@@ -1,7 +1,12 @@
+bool   g4.printPhysicsProcessSummary = false;
+
 // Some G4 controls which does not allow it to consume all the memory
 // or to spend all the time tracking one bad particle
 int g4.steppingActionMaxSteps = 10000;
 int g4.stepsSizeLimit = 10000;
+
+// Control saving of PointTrajectory information - deprecated.
+int    g4.pointTrajectoryMinSteps    =  5;
 
 // The last point is saved regardless of the cuts.
 double g4.mcTrajectoryDefaultMinPointDistance = 0.; // mm

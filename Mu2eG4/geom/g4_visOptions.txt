@@ -8,8 +8,6 @@
 string g4.physicsListName = "Shielding_MU2E01";
 double g4.minRangeCut     = 0.01;  // mm
 
-bool   g4.printPhysicsProcessSummary = false;
-
 //-----------------------
 // Surface checker
 //-----------------------
@@ -70,9 +68,6 @@ int g4.particlesSizeLimit = 100000;
 // Enable saving of trajectories for G4 graphics on a per track basis.
 // Only save trajectories for tracks with momentum above this cut.
 double g4.saveTrajectoryMomentumCut = 50.;
-
-// Control saving of PointTrajectory information - deprecated.
-int    g4.pointTrajectoryMinSteps    =  5;
 
 // Control saving of MCTrajectory information - replacement for PointTrajectory
 double g4.mcTrajectoryMomentumCut = 50.;

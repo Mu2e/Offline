@@ -102,7 +102,7 @@ physics : {
 
 	 TrajectoryControl: {
 	    defaultMinPointDistance : 500
-
+	    pointTrajectoryMinSteps : 5
 	    /// FIXME: this should not be here, but cosmic config will have something like that
 	    perVolumeMinDistance: {
 	       PSVacuum : 15
@@ -118,6 +118,8 @@ physics : {
 
 	 debug: {
 	    stepLimitKillerVerbose: true
+	    printPhysicsProcessSummary : false
+
 	 }
 
 	 visualization: {
