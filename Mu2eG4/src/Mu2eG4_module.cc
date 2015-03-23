@@ -362,7 +362,7 @@ namespace mu2e {
 
     _runManager->SetUserInitialization(allMu2e);
 
-    G4VUserPhysicsList* pL = physicsListDecider(config);
+    G4VUserPhysicsList* pL = physicsListDecider(pset_);
     pL->SetVerboseLevel(_rmvlevel);
 
     _runManager->SetUserInitialization(pL);
@@ -778,6 +778,11 @@ namespace mu2e {
       "g4.noDecay",
       "g4.doMuMinusConversionAtRest",
       "g4.useNewMuMinusAtomicCapture",
+
+      // physicsListDecider() call tree
+      "g4.physicsListName",
+      "g4.useNewMuMinusAtomicCapture",
+      "g4.decayMuonsWithSpin",
 
       // old StackingAction
       "g4.doCosmicKiller",

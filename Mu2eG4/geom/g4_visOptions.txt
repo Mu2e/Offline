@@ -3,11 +3,6 @@
 // file into g4_userOptions.txt
 
 //-----------------------
-// Physics lists
-//-----------------------
-string g4.physicsListName = "Shielding_MU2E01";
-
-//-----------------------
 // Surface checker
 //-----------------------
 

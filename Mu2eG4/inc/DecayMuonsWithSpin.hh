@@ -70,12 +70,11 @@ private:
   G4bool   wasActivated;
 };
 
+
+namespace mu2e { class SimpleConfig; }
+bool getDecayMuonsWithSpin(const mu2e::SimpleConfig& config);
+
+namespace fhicl { class ParameterSet; } 
+bool getDecayMuonsWithSpin(const fhicl::ParameterSet& pset);
+
 #endif
-
-
-
-
-
-
-
-

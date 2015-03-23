@@ -1,6 +1,7 @@
 //-----------------------
 // Physics lists
 //-----------------------
+string g4.physicsListName = "Shielding_MU2E01";
 double g4.minRangeCut     = 0.01;  // mm
 
 bool   g4.printPhysicsProcessSummary = false;

@@ -134,6 +134,7 @@ physics : {
 	 noDecay: []
 	 useNewMuMinusAtomicCapture: false
 	 minRangeCut: 0.01 // mm
+	 physicsListName: "Shielding_MU2E01"
       }
 
       compressPV : {

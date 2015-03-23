@@ -76,9 +76,19 @@
 // FIXME once migrated to G4
 #include "mucapture/inc/G4MuonMinusCapturePhysics.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "fhiclcpp/ParameterSet.h"
 
-template<class T> TQGSP_BERT_HP_MU2E00<T>::TQGSP_BERT_HP_MU2E00(mu2e::SimpleConfig const & config, 
-                                                                G4int ver):  T()
+namespace {
+  bool getUseNewMuMinusAtomicCapture(const mu2e::SimpleConfig& config) {
+    return config.getBool("g4.useNewMuMinusAtomicCapture", false);
+  }
+  bool getUseNewMuMinusAtomicCapture(const fhicl::ParameterSet& pset) {
+    return pset.get<bool>("useNewMuMinusAtomicCapture", false);
+  }
+}
+
+template<class T, class Config> TQGSP_BERT_HP_MU2E00<T,Config>::TQGSP_BERT_HP_MU2E00(Config const & config,
+                                                                                     G4int ver):  T()
 {
 
   G4DataQuestionaire it(photon, neutron);
@@ -117,7 +127,7 @@ template<class T> TQGSP_BERT_HP_MU2E00<T>::TQGSP_BERT_HP_MU2E00(mu2e::SimpleConf
 #endif
 
   // use Kevin's muon stopping 
-  if ( config.getBool( "g4.useNewMuMinusAtomicCapture", false) ) {
+  if ( getUseNewMuMinusAtomicCapture(config) ) {
     this->RegisterPhysics( new G4MuonMinusCapturePhysics(ver));
   }
 
@@ -126,11 +136,11 @@ template<class T> TQGSP_BERT_HP_MU2E00<T>::TQGSP_BERT_HP_MU2E00(mu2e::SimpleConf
 
 }
 
-template<class T> TQGSP_BERT_HP_MU2E00<T>::~TQGSP_BERT_HP_MU2E00()
+template<class T, class Config> TQGSP_BERT_HP_MU2E00<T,Config>::~TQGSP_BERT_HP_MU2E00()
 {
 }
 
-template<class T> void TQGSP_BERT_HP_MU2E00<T>::SetCuts()
+template<class T, class Config> void TQGSP_BERT_HP_MU2E00<T,Config>::SetCuts()
 {
   if (this->verboseLevel >1){
     G4cout << "QGSP_BERT_HP_MU2E00::SetCuts:";
