@@ -51,20 +51,20 @@ if [ "${build}" == "debug" ];then
 fi
 
 # Setup the framework and its dependent products
-setup -B art v1_12_04 -q+e6:+${build}
+setup -B art v1_13_01 -q+e7:+${build}
 
 # The interface to SAM - conflicts with ifdhc from the grid runtime environment
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
 # Geant4 and its cross-section files.
-setup -B geant4 v4_9_6_p03e -q+e6:+${build}
+setup -B geant4 v4_9_6_p04a -q+e7:+${build}
 
 # Other libraries we need.
-setup -B heppdt v3_04_01b -q+e6:+${build}
-setup -B splines v1_05_02 -q+e6:+${build}
+setup -B heppdt v3_04_01c -q+e7:+${build}
+setup -B splines v1_06_00 -q+e7:+${build}
 
 # The build system.
-setup -B scons v2_3_2
+setup -B scons v2_3_4
 
 
 # Search path for fcl files
