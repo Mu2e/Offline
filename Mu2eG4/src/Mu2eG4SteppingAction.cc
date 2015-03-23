@@ -20,23 +20,26 @@
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut& steppingCuts, IMu2eG4Cut& commonCuts) :
+  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset,
+                                             IMu2eG4Cut& steppingCuts,
+                                             IMu2eG4Cut& commonCuts,
+                                             const Mu2eG4ResourceLimits& lim) :
     pset_(pset),
 
     steppingCuts_(&steppingCuts),
     commonCuts_(&commonCuts),
 
-    maxStepsPerTrack_(pset.get<int>("ResourceLimits.maxStepsPerTrack")),
+    mu2elimits_(&lim),
+
     numTrackSteps_(),
     numKilledTracks_(),
     stepLimitKillerVerbose_(pset.get<bool>("debug.stepLimitKillerVerbose")),
-
-    stepPointCollectionSizeLimit_(pset.get<StepPointMCCollection::size_type>("ResourceLimits.maxStepPointCollectionSize")),
 
     // Things related to time virtual detector
     tvd_time_(pset.get<vector<double> >("TimeVD", vector<double>())),
@@ -51,9 +54,9 @@ namespace mu2e {
 
     _spHelper()
   {
-    if(maxStepsPerTrack_ > 0) {
+    if(mu2elimits_->maxStepsPerTrack() > 0) {
       cout << "Limit maximum number of steps per track in Mu2eG4SteppingAction to "
-           << maxStepsPerTrack_ << endl;
+           << mu2elimits_->maxStepsPerTrack() << endl;
     }
 
     if(!tvd_time_.empty()) {
@@ -236,7 +239,7 @@ namespace mu2e {
   // Kill tracks that take too many steps.
   bool Mu2eG4SteppingAction::killTooManySteps( const G4Track* track ){
 
-    if(maxStepsPerTrack_ > 0 && numTrackSteps_ <= maxStepsPerTrack_ ) {
+    if(numTrackSteps_ <= mu2elimits_->maxStepsPerTrack()) {
       return false;
     }
 
@@ -266,11 +269,11 @@ namespace mu2e {
 
   G4bool Mu2eG4SteppingAction::addTimeVDHit(const G4Step* aStep, int id){
 
-    if( tvd_collection_->size() >= stepPointCollectionSizeLimit_ ) {
+    if(tvd_collection_->size() >= mu2elimits_->maxStepPointCollectionSize()) {
       if(!tvd_warning_printed_) {
         tvd_warning_printed_ = true;
-        mf::LogWarning("G4") << "Maximum number of entries reached in time virtual detector "
-                             << stepPointCollectionSizeLimit_ << endl;
+        mf::LogWarning("G4") << "Maximum number of entries reached in time virtual detector: "
+                             << tvd_collection_->size() << endl;
       }
       return false;
     }

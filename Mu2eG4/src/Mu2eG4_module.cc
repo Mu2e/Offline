@@ -374,13 +374,13 @@ namespace mu2e {
     _genAction = new PrimaryGeneratorAction();
     _runManager->SetUserAction(_genAction);
 
-    _steppingAction = new Mu2eG4SteppingAction(pset_, *steppingCuts_, *commonCuts_);
+    _steppingAction = new Mu2eG4SteppingAction(pset_, *steppingCuts_, *commonCuts_, mu2elimits_);
     _runManager->SetUserAction(_steppingAction);
 
     _stackingAction = new Mu2eG4StackingAction(pset_, *stackingCuts_, *commonCuts_);
     _runManager->SetUserAction(_stackingAction);
 
-    _trackingAction = new TrackingAction(pset_, _steppingAction);
+    _trackingAction = new TrackingAction(pset_, _steppingAction, mu2elimits_);
     _runManager->SetUserAction(_trackingAction);
 
     // setting tracking/stepping verbosity level; tracking manager

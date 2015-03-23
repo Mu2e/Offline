@@ -40,7 +40,7 @@ namespace mu2e {
   {
 
   public:
-    Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut &steppingCuts, IMu2eG4Cut& commonCuts);
+    Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut &steppingCuts, IMu2eG4Cut& commonCuts, const Mu2eG4ResourceLimits& mu2elimits);
 
     void UserSteppingAction(const G4Step*);
 
@@ -81,14 +81,12 @@ namespace mu2e {
     IMu2eG4Cut *steppingCuts_;
     IMu2eG4Cut *commonCuts_;
 
+    const Mu2eG4ResourceLimits *mu2elimits_;
+
     // Protection against "too complicated" events
-    int maxStepsPerTrack_;
-    int numTrackSteps_;
+    unsigned numTrackSteps_;
     int numKilledTracks_;
     bool stepLimitKillerVerbose_;
-
-    // Limit maximum size of the steps collection
-    unsigned stepPointCollectionSizeLimit_;
 
     // List of times for time virtual detector
     std::vector<double> tvd_time_;
