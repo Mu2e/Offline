@@ -37,7 +37,6 @@
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/postG4InitializeTasks.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
-#include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "SeedService/inc/SeedService.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 

@@ -29,9 +29,6 @@ namespace mu2e{
     // Switch off the decay of some particles
     switchDecayOff(config);
 
-    // Add user processes
-    addUserProcesses(config);
-
     // If requested, change the minimum range cut.
     setMinimumRangeCut(config);
   }

@@ -40,7 +40,6 @@
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
-#include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "Mu2eUtilities/inc/DiagnosticsG4.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
