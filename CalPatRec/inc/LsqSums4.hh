@@ -71,7 +71,7 @@ public:
   double dfdz();
 
   double chi2DofCircle();
-  double chi2rphiDofCircle();
+  double chi2DofLine();
   //  ClassDef(LsqSums4,0)
 
 };

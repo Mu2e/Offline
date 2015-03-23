@@ -14,6 +14,9 @@ protected:
 
   TMarker*            fCenter;
 
+  int                 fCursorX;
+  int                 fCursorY;
+
 public:
   TTrkRZView();
   virtual ~TTrkRZView();

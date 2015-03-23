@@ -172,16 +172,18 @@ double LsqSums4::chi2DofCircle() {
   // normalization, assuming spread of points << R
   //-----------------------------------------------------------------------------
   chi2 = chi2/(4*r*r);
-
+  chi2 *= sw/_qn;
+  
   return chi2;
 }
 
-double LsqSums4::chi2rphiDofCircle() {
+double LsqSums4::chi2DofLine() {
 
   double chi2;
   chi2  = sigYY()*sigXX() - sigXY()*sigXY();
-  chi2 /= sigXX(); 
-  
+  chi2 /= sigXX();
+  chi2 *= sw/_qn;
+
  //  double chi2_new = sigYY() - dfdz()*sigXY();
 //   printf("[LsqSum4::chi2rphiDofCircle] chi2 = %5.3e chi2_new = %5.3e\n", chi2 , chi2_new);
   

@@ -6,6 +6,8 @@
 // $Date: 2014/04/08 04:25:46 $
 //
 
+// framework
+#include "fhiclcpp/ParameterSet.h"
 // the following has to come before other BaBar includes
 #include "BaBar/BaBar.hh"
 #include "CalPatRec/inc/KalFitHack.hh"
@@ -78,7 +80,7 @@ namespace mu2e
   KalFitHack::KalFitHack(fhicl::ParameterSet const& pset) :
 // KalFitHack parameters
     _debug(pset.get<int>("debugLevel",0)),
-    _weedhits(pset.get<bool>("weedhits",true)),
+    _weedhits(pset.get<bool>("weedhits")),
     _maxhitchi(pset.get<double>("maxhitchi",4.0)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
     _herr(pset.get< vector<double> >("hiterr")),
@@ -95,8 +97,8 @@ namespace mu2e
     _t0nsig(pset.get<double>("t0window",2.5)),
     _dtoffset(pset.get<double>("dtOffset")),
     fScaleErrDoublet(pset.get<double>("scaleErrDoublet")),
-    fMarkDoublets(0),
-    fILoopMarkDoublets(pset.get<int>("iLoopMarkDoublets")),
+    fUseDoublets(0),
+    fILoopUseDoublets(pset.get<int>("iLoopUseDoublets")),
     fMinDriftDoublet  (pset.get<double>("minDriftDoublet")),
     fDeltaDriftDoublet(pset.get<double>("deltaDriftDoublet")),
     fSigmaSlope       (pset.get<double>("sigmaSlope")),
@@ -123,7 +125,7 @@ namespace mu2e
     _minfltlen = pset.get<double>("MinFltLen",0.1);
     _minmom = pset.get<double>("MinMom",10.0);
     _fltepsilon = pset.get<double>("FltEpsilon",0.001);
-    _divergeflt = pset.get<double>("DivergeFlt",1.0e3);
+    _divergeflt = pset.get<double>("DivergeFlt");
     _mindot = pset.get<double>("MinDot",0.0);
     _maxmomdiff = pset.get<double>("MaxMomDiff",0.5);
     _momfac = pset.get<double>("MomFactor",0.0);
@@ -430,7 +432,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // skip doublets with both hits in the same layer
 //-----------------------------------------------------------------------------
-    if (layer[0] != layer[1]) {
+// 2015-03-22 P.Murat   if (layer[0] == layer[1])                    continue ;
       for (int i=0; i<2; i++) {
 	spos [i] = straw[i]->getMidPoint();
 	phiPanel = std::atan2(spos[i].y(),spos[i].x());
@@ -538,19 +540,34 @@ namespace mu2e
       }
     
       for (int i=0; i<2; i++) {
-	hit[i]->setAmbig(fSign[ibest][i]);
 	hit[i]->setAmbigUpdate(false);
 //-----------------------------------------------------------------------------
-// update the straw hit info inside the doublet
+// update the straw hit info inside the doublet, however don't rush 
+// to resolve the hit sign ambiguities, do it only when completely sure
+// this code is executed after the standard HitAmbigResolver, so when not sure, 
+// do nothing and default to HitAmbigResolver
 //-----------------------------------------------------------------------------
 	doublet->fStrawAmbig[index[i]] = fSign[ibest][i];
 	if (os == 0) {
-	  if ((fabs(rdrift[0]+rdrift[1]) > 0.8) && 
-	      (rdrift[0] > fMinDriftDoublet) && (rdrift[1] > fMinDriftDoublet)) {
+	  if (fabs(rdrift[0]+rdrift[1]) > 0.8) {
 //-----------------------------------------------------------------------------
 // OS doublet reliably resolved, reduce the error
 //-----------------------------------------------------------------------------
-	    hit[i]->setExtErr(ext_err/fScaleErrDoublet);
+	    if (rdrift[i] > fMinDriftDoublet) {
+//-----------------------------------------------------------------------------
+// the hit drift radius is large - reduce the external error
+//-----------------------------------------------------------------------------
+	      hit[i]->setExtErr(ext_err/fScaleErrDoublet);
+	      hit[i]->setAmbig(fSign[ibest][i]);
+	    }
+	    else {
+//-----------------------------------------------------------------------------
+// small drift radius : keep the external error large and set the ambiguity 
+// to zero to use the wire coordinate
+//-----------------------------------------------------------------------------
+	      hit[i]->setExtErr(2*rdrift[i]);
+	      hit[i]->setAmbig(0);
+	    }
 	  }
 	}
 	else {
@@ -561,19 +578,41 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // SS doublet with close radii, scale of uncertainty is defined by the radius
 //-----------------------------------------------------------------------------
-	    if (fAnnealingStep < fILoopMarkDoublets) {
+	    if (fAnnealingStep < fILoopUseDoublets) {
 	      double err = fabs(rdrift[0]+rdrift[1])/2.;
 	      hit[i]->setExtErr(err);
+	      hit[i]->setAmbig(0);
 	    }
 	  }
 	  else {
-	    if ((rdrift[0] > fMinDriftDoublet) && (rdrift[1] > fMinDriftDoublet)) {
 //-----------------------------------------------------------------------------
-// SS doublet, radii are different and both are large enough 
+// SS doublet, the two radii are different 
+//-----------------------------------------------------------------------------
+	    if (chi2min < 50) {
+//-----------------------------------------------------------------------------
 // if the best chi2 is good, the doublet drift signs are determined reliably
 //-----------------------------------------------------------------------------
-	      if (chi2min < 50) hit[i]->setExtErr(ext_err/fScaleErrDoublet);
-	      else              hit[i]->setExtErr(1.0);
+	      if (rdrift[i] > fMinDriftDoublet) {
+		hit[i]->setExtErr(ext_err/fScaleErrDoublet);
+		hit[i]->setAmbig(fSign[ibest][i]);
+	      }
+	      else {
+//-----------------------------------------------------------------------------
+// small radius
+//-----------------------------------------------------------------------------
+		hit[i]->setExtErr(2*rdrift[i]);
+		hit[i]->setAmbig(0);
+	      }
+	    }
+	    else {
+//-----------------------------------------------------------------------------
+// the best chi2 is large - cant believe anything
+//-----------------------------------------------------------------------------
+	      if (fAnnealingStep < fILoopUseDoublets) {
+		double err = fabs(rdrift[i]);
+		hit[i]->setExtErr(err);
+		hit[i]->setAmbig(0);
+	      }
 	    }
 	  }
 	}
@@ -602,7 +641,7 @@ namespace mu2e
 		 );
 	}
       }
-    }
+      //    }
   }
 
 //---------------------------------------------------------------------------
@@ -619,8 +658,8 @@ namespace mu2e
     int ndoublets  = DCol->size();
 
     if (_debug > 0) {
-      printf("[KalFitHack::markDoublets] BEGIN iherr:%i , ILoopMarkDoublets:%2i\n", 
-	     fAnnealingStep,fILoopMarkDoublets);
+      printf("[KalFitHack::markDoublets] BEGIN iherr:%i , ILoopUseDoublets:%2i\n", 
+	     fAnnealingStep,fILoopUseDoublets);
       printf("----------------------------------------------------");
       printf("------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------------------\n");
@@ -662,7 +701,7 @@ namespace mu2e
 	    layer1  = straw->id().getLayer();
 	    id1     = straw->index().asInt();
 
-	    if (layer1 == layer0)  continue;
+	    // 2015-03-22 P.Murat	    if (layer1 == layer0)  continue;
 	    if (nDoublets  == 1  ) continue;
 	                                                       //try to search for a doublet
 	    markDoublet(doublet, j, k);                        //request of both: doublet found and oppposite
@@ -732,8 +771,8 @@ namespace mu2e
       hit->setExtErr(_herr[fAnnealingStep]);
     }
 
-    //    if (fMarkDoublets == 0) return;
-    if ( (fAnnealingStep >= fILoopMarkDoublets) || (fMarkDoublets == 0) ) return;
+    //    if (fUseDoublets == 0) return;
+    if ( (fAnnealingStep >= fILoopUseDoublets) || (fUseDoublets == 0) ) return;
 //-----------------------------------------------------------------------------
 // create list of doublets 
 //-----------------------------------------------------------------------------
@@ -749,73 +788,6 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     if (fListOfDoublets.size() > 0) markMultiplets(&fListOfDoublets);
   }
-
-//-----------------------------------------------------------------------------------------
-//2015 - 02 -20 G. Pezzu addedd the function for calculataing the slope of the lines
-// tangent to two given circles
-//
-// Then the tangent lines, expressed as (costheta)x+(sintheta)y+C=0, 
-// and parameterized by theta and C are the four solutions of:
-// |xA cos theta + yA sin theta + C| = rA
-// and
-// |xB cos theta + yB sin theta + C| = rB
-// Solving these equations for costheta and sintheta isn't easy, but when we do, we get:
-// A = costheta = ((xA-xB)(±rA±rB) + (yA-yB) sqrt((xA-xB)^2+(yA-yB)^2-(±rA±rB)^2))/((xA-xB)^2+(yA-yB)^2)
-// B = sintheta = ((yA-yB)(±rA±rB) - (xA-xB) sqrt((xA-xB)^2+(yA-yB)^2-(±rA±rB)^2))/((xA-xB)^2+(yA-yB)^2)
-
-// points tangent to the circles are
-// (xA±-rA cos theta, yA±-rA sin theta) and
-// (xB±rB cos theta , yB±rB sin theta) 
-//-----------------------------------------------------------------------------
-//   void KalFitHack::findLines1(double xa, double ya, double ra,
-// 			     double xb, double yb, double rb,
-// 			     double *slopes, int *ambStrawA, int *ambStrawB){
-    
-//     double            cosVec[4], sinVec[4], dx, dy, dr2;
-
-//     CLHEP::Hep3Vector dir1;               // traj direction
-//     CLHEP::Hep3Vector dir2(0., 0., -1.);  // wire direction
-
-//     CLHEP::Hep3Vector pos1, pos2, delta, between;
-//     double signA[4] = {+1, +1, -1, -1};
-//     double signB[4] = {+1, -1, -1, +1};
-
-//     dx  = xa-xb;
-//     dy  = ya-yb;
-//     dr2 = dx*dx+dy*dy;
-
-//     cosVec[0] = (dx*(+ra+rb) + dy*sqrt(dr2 - (+ra+rb)*(+ra+rb)))/dr2;
-//     cosVec[1] = (dx*(+ra-rb) + dy*sqrt(dr2 - (+ra-rb)*(+ra-rb)))/dr2;
-//     cosVec[2] = (dx*(-ra-rb) + dy*sqrt(dr2 - (-ra-rb)*(-ra-rb)))/dr2;
-//     cosVec[3] = (dx*(-ra+rb) + dy*sqrt(dr2 - (-ra+rb)*(-ra+rb)))/dr2;
-    
-//     sinVec[0] = (dy*(+ra+rb) - dx*sqrt(dr2 - (+ra+rb)*(+ra+rb)))/dr2;
-//     sinVec[1] = (dy*(+ra-rb) - dx*sqrt(dr2 - (+ra-rb)*(+ra-rb)))/dr2;
-//     sinVec[2] = (dy*(-ra-rb) - dx*sqrt(dr2 - (-ra-rb)*(-ra-rb)))/dr2;
-//     sinVec[3] = (dy*(-ra+rb) - dx*sqrt(dr2 - (-ra+rb)*(-ra+rb)))/dr2;
-// //-----------------------------------------------------------------------------
-// // now determine the ambiguities
-// //-----------------------------------------------------------------------------
-//     for (int i=0; i<4; ++i){
-//       slopes[i] = -cosVec[i]/sinVec[i];
-
-//       dir1.set(-cosVec[i],sinVec[i],0);
-
-//       pos1.set(xa-ra*signA[i]*cosVec[i],ya-ra*signA[i]*sinVec[i],0);
-//       pos2.set(xa,ya,0);
-
-//       delta   = pos2-pos1;
-//       between = dir1.cross(dir2).unit();
-    
-//       ambStrawA[i] = delta.dot(between) > 0.0 ? 1 : -1;
-  
-//       pos1.set(xb+rb*signB[i]*cosVec[i],yb+rb*signB[i]*sinVec[i],0);
-//       pos2.set(xb, yb,0);
-
-//       delta        = pos2-pos1;
-//       ambStrawB[i] = delta.dot(between) > 0.0 ? 1 : -1;
-//     }
-//   }
 
 //-----------------------------------------------------------------------------
 // 2015-02-25 P.Murat: new resolver
@@ -856,7 +828,7 @@ namespace mu2e
 //------------------------------------------------------------------------------------------
 // called once per event from CalPatRec_module::produce
 //-----------------------------------------------------------------------------
-  void KalFitHack::makeTrack(KalFitResult& kres, CalTimePeak* TPeak, int markDoubs) {
+  void KalFitHack::makeTrack(KalFitResult& kres, CalTimePeak* TPeak, int USE_DOUBLETS) {
 
     kres._fit = TrkErrCode(TrkErrCode::fail);
 
@@ -912,7 +884,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
       if(caloInitCond) updateHitTimes(kres);
 
-      fMarkDoublets = markDoubs;
+      fUseDoublets = USE_DOUBLETS;
       fListOfDoublets.clear();
 //-----------------------------------------------------------------------------
 // 09 - 26 - 2013 giani 
@@ -1026,7 +998,7 @@ namespace mu2e
       if (tpeak){
 //------------------------------------------------------------------------------------------
 // 2015 - 03 - 09 Gainipez added the following line for forcing the fiITeration procedure
-// to use findAndMarkDoublets
+// to use findAndUseDoublets
 //------------------------------------------------------------------------------------------
 	for (size_t iherr=_herr.size()-2; iherr<_herr.size();++iherr) {
 	  fitIteration(kres, iherr, tpeak);
@@ -1080,14 +1052,14 @@ namespace mu2e
 // for the doublets
 //-----------------------------------------------------------------------------------
     fAnnealingStep = IHErr;
-    //    if ((fAnnealingStep < fILoopMarkDoublets) && (fMarkDoublets==1)) {
+    //    if ((fAnnealingStep < fILoopUseDoublets) && (fUseDoublets==1)) {
 //--------------------------------------------------------------------------------
 // 2015-02-19 G. Pezzu: re-search multiplets using updated fit results
 //-----------------------------------------------------------------------------
-      findAndMarkMultiplets(kres._krep, &kres._hits);
-      if (_debug>0){
-	printHits(kres,"fitIteration_001");
-      }
+    findAndMarkMultiplets(kres._krep, &kres._hits);
+    if (_debug>0){
+      printHits(kres,"fitIteration_001");
+    }
       //   }
 
     kres._nt0iter = 0;
@@ -1100,12 +1072,12 @@ namespace mu2e
 //2015-02-17 G. Pezzu: fix the ambiguity of the doublets!
 //2015-02-19 G. Pezzu: re-search hit multiplets using updated fit results
 //--------------------------------------------------------------------------------
-//      if ( (fAnnealingStep < fILoopMarkDoublets) && (fMarkDoublets == 1)) {
+
 	findAndMarkMultiplets(kres._krep, &kres._hits);
 	if (_debug > 0) {
 	  printHits(kres,"fitIteration_002");
 	}
-	//      }
+
 //--------------------------------------------------------------------------------
 // perform the track fit
 //-----------------------------------------------------------------------------
@@ -1144,33 +1116,6 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     fNIter += niter;
 
-    // if (fit_success) {
-//       int iamb[200];
-// 					// cache old ambiguities
-//       nhits = kres._hits.size();
-//       for (int i=0; i<nhits; ++i){
-// 	hit     = kres._hits.at(i);
-// 	iamb[i] = hit->ambig();
-//       }      
-
-//       _ambigresolver[iherr]->resolveTrk(kres);
-//       findAndMarkMultiplets(kres._krep, &kres._hits);
-//       if (_debug>0) {
-// 	printHits(kres,"fitIteration_003");
-//       }
-// //-----------------------------------------------------------------------------
-// // want to know whether the drift signs change at this stage
-// //-----------------------------------------------------------------------------
-//       for (int i=0; i<nhits; ++i){
-// 	hit     = kres._hits.at(i);
-// 	if (_debug>0){
-// 	  if (iamb[i] != hit->ambig()) {
-// 	    printf("[KalFitHack::fitIteration] WARNING: hit %i drift sign changed from %2i to %2i\n",
-// 		   i,iamb[i],hit->ambig());
-// 	  }
-// 	}
-//       }      
-//     }
     kres._ninter = kres._krep->intersections();
   }
 
@@ -1181,7 +1126,7 @@ namespace mu2e
   }
   
 //-----------------------------------------------------------------------------
-  void KalFitHack::makeHits(KalFitResult& kres,TrkT0 const& t0) {
+  void KalFitHack::makeHits(KalFitResult& kres, TrkT0 const& t0) {
     const Tracker& tracker = getTrackerOrThrow();
     TrkDef const& tdef = kres._tdef;
 // compute the propagaion velocity
@@ -1268,7 +1213,7 @@ namespace mu2e
       double z0     = Trk->helix(s).z0();
       double phi0   = Trk->helix(s).phi0();
       double omega  = Trk->helix(s).omega();
-      double tandip = Trk->helix(s).omega();
+      double tandip = Trk->helix(s).tanDip();
 
       double fit_consistency = Trk->chisqConsistency().consistency();
       int q         = Trk->charge();
@@ -1404,7 +1349,7 @@ namespace mu2e
 	     );
     }
   }
-  
+ 
 
   void
   KalFitHack::makeMaterials(KalFitResult& kres) {

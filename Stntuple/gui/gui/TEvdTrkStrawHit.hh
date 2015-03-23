@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // vis node displays one wedge
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef TEvdStrawHit_hh
-#define TEvdStrawHit_hh
+#ifndef TEvdTrkStrawHit_hh
+#define TEvdTrkStrawHit_hh
 
 #include "Gtypes.h"
 #include "TClonesArray.h"
@@ -10,22 +10,19 @@
 #include "TPad.h"
 #include "TArc.h"
 #include "TVector2.h"
-#include "TVector3.h"
 #include "TLine.h"
 
 #ifndef __CINT__
-
-#include "RecoDataProducts/inc/StrawHit.hh"
-
+#include "KalmanTests/inc/TrkStrawHit.hh"
 #else
 namespace mu2e {
-  class StrawHit;
+  class TrkStrawHit;
 };
 #endif
 
 class TEvdStraw;
 
-class TEvdStrawHit: public TObject {
+class TEvdTrkStrawHit: public TObject {
 public:
 
   enum { 
@@ -35,39 +32,31 @@ public:
 
 protected:
 
-  const mu2e::StrawHit*  fHit;
-  TEvdStraw*             fStraw;
-
+  const mu2e::TrkStrawHit*  fHit;
+  TEvdStraw*                fStraw;
 
   int        fMask;			// hit mask
   int        fColor;
-  TVector3   fPos;			// position in 3D, Z=zwire
-  TVector2   fDir;                      // direction of the straw
+  TVector2   fPos;
+  TVector2   fStrawDir;
   double     fSigW;      		// error in the wire direction
   double     fSigR;      		// error in radial direction
-  TLine      fLineW;			// paint on XY view
+  TLine      fLineW;
   TLine      fLineR;
+  TEllipse   fEllipse;
 
 public:
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------
-  TEvdStrawHit();
+  TEvdTrkStrawHit() {}
+  TEvdTrkStrawHit(const mu2e::TrkStrawHit* Hit);
 
-  TEvdStrawHit(const mu2e::StrawHit* Hit,
-	       double X, double Y, double Z, 
-	       double                Wx,
-	       double                Wy,
-	       double                SigW,
-	       double                SigR,
-	       int                   Mask, 
-	       int                   Color);
-
-  virtual ~TEvdStrawHit();
+  virtual ~TEvdTrkStrawHit();
 //-----------------------------------------------------------------------------
 // accessors
 //-----------------------------------------------------------------------------
-  const mu2e::StrawHit*  StrawHit() { return fHit; }
+  const mu2e::TrkStrawHit*  TrkStrawHit() { return fHit; }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------
@@ -79,8 +68,8 @@ public:
   void SetSigR(double Sig) { fSigR = Sig; }
   void SetSigW(double Sig) { fSigW = Sig; }
 
-  void SetPos(double X, double Y, double Z) { fPos.SetXYZ(X,Y,Z); }
-  void SetStrawDir(double X, double Y) { fDir.Set(X,Y); }
+  void SetPos(double X, double Y) { fPos.Set(X,Y); }
+  void SetStrawDir(double X, double Y) { fStrawDir.Set(X,Y); }
 
   //  virtual void  Draw    (Option_t* option = "");
 
@@ -97,7 +86,7 @@ public:
 
   //  virtual void   Print(const char* Opt = "") const ; // **MENU**
 
-  ClassDef(TEvdStrawHit,0)
+  ClassDef(TEvdTrkStrawHit,0)
 };
 
 

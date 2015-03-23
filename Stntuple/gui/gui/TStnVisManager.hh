@@ -30,11 +30,28 @@ class TExtrapolator;
 
 class TStnVisManager: public TVisManager {
 public:
+
   enum { 
     kXYView       = 1,
     kRZView       = 2,
     kCalView      = 3
   };
+//-----------------------------------------------------------------------------
+// command codes
+//-----------------------------------------------------------------------------
+  enum CommandIdentifiers {
+    M_TRACKER_XY,
+    M_TRACKER_RZ,
+    M_CALORIMETER_XY,
+    M_EXIT,
+
+    M_OPTION_EVENT_STATUS,
+
+    M_HELP_CONTENTS,
+    M_HELP_SEARCH,
+    M_HELP_ABOUT
+  };
+
 //-----------------------------------------------------------------------------
 //  data members
 //-----------------------------------------------------------------------------
@@ -68,6 +85,9 @@ protected:
   int                 fMaxStation;
   int                 fTimePeak;
   int                 fDebugLevel;
+					// to display all the data in a given time window
+  double              fTMin;
+  double              fTMax;
 //-----------------------------------------------------------------------------
 //  functions
 //-----------------------------------------------------------------------------
@@ -90,9 +110,17 @@ public:
 
   const art::Event* Event() { return fEvent; }
 
-  int  MinStation() { return fMinStation; }
-  int  MaxStation() { return fMaxStation; }
-  int  TimePeak  () { return fTimePeak;   }
+  int    MinStation() { return fMinStation; }
+  int    MaxStation() { return fMaxStation; }
+  int    TimePeak  () { return fTimePeak;   }
+
+  double TMin() { return fTMin; }
+  double TMax() { return fTMax; }
+
+  void   GetTimeWindow(double& TMin, double& TMax) { 
+    TMin = fTMin;
+    TMax = fTMax;
+  }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------

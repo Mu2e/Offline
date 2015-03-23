@@ -39,11 +39,13 @@ StntupleMaker : {
     caloClusterMaker     : "MakeCaloCluster"
 #------------------------------------------------------------------------------
 # sometimes may need to store multiple track blocks, thus - vectors
+# by default, always run MergePatRec, which, in case only one track reconstruction
+# module is running upstream, simply copies its output
 #------------------------------------------------------------------------------
     makeStrawHitModuleLabel : "makeSH"
 
     trackBlockName          : [ "TrackBlock"   ]
-    trkRecoModuleLabel      : [ "TrkPatRec"    ]
+    trkRecoModuleLabel      : [ "MergePatRec"  ]
     fitParticle             : [             11 ] # 11:electron  , 13:muon etc
     fitDirection            : [              0 ] #  0:downstream,  1:upstream
     trkExtrapolModuleLabel  : [ "TrkExtrapol"  ]

@@ -24,17 +24,45 @@
 #include "Stntuple/gui/TEvdStrawHit.hh"
 #include "Stntuple/gui/TStnVisManager.hh"
 
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
-#include "CalorimeterGeom/inc/Crystal.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
-#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
-
 ClassImp(TEvdStrawHit)
 
-//_____________________________________________________________________________
-TEvdStrawHit::TEvdStrawHit(const mu2e::StrawHit* Hit): TObject() {
-  fHit = Hit;
+//-----------------------------------------------------------------------------
+TEvdStrawHit::TEvdStrawHit() {
+}
+
+//-----------------------------------------------------------------------------
+TEvdStrawHit::TEvdStrawHit(const mu2e::StrawHit* Hit,
+			   double X, double Y, double Z, 
+			   double                Wx,
+			   double                Wy,
+			   double                SigW,
+			   double                SigR,
+			   int                   Mask, 
+			   int                   Color): 
+  TObject(),
+  fHit(Hit),
+  fPos(X,Y,Z),
+  fDir(Wx,Wy)
+ {
+  fSigW  = SigW;
+  fSigR  = SigR;
+  fMask  = Mask;
+  fColor = Color;
+//-----------------------------------------------------------------------------
+// define lines
+//-----------------------------------------------------------------------------
+  fLineW.SetX1(fPos.X()-fDir.X()*fSigW);
+  fLineW.SetY1(fPos.Y()-fDir.Y()*fSigW);
+  fLineW.SetX2(fPos.X()+fDir.X()*fSigW);
+  fLineW.SetY2(fPos.Y()+fDir.Y()*fSigW);
+  fLineW.SetLineColor(Color);
+
+  fLineR.SetX1(fPos.X()+fDir.Y()*fSigR);
+  fLineR.SetY1(fPos.Y()-fDir.X()*fSigR);
+  fLineR.SetX2(fPos.X()-fDir.Y()*fSigR);
+  fLineR.SetY2(fPos.Y()+fDir.X()*fSigR);
+  fLineR.SetLineColor(Color);
+
 }
 
 //-----------------------------------------------------------------------------
@@ -49,28 +77,10 @@ void TEvdStrawHit::Paint(Option_t* Option) {
 
   const char* view = TVisManager::Instance()->GetCurrentView();
 
-//-----------------------------------------------------------------------------
-// define lines
-//-----------------------------------------------------------------------------
-  fLineW.SetX1(fPos.X()-fStrawDir.X()*fSigW);
-  fLineW.SetY1(fPos.Y()-fStrawDir.Y()*fSigW);
-  fLineW.SetX2(fPos.X()+fStrawDir.X()*fSigW);
-  fLineW.SetY2(fPos.Y()+fStrawDir.Y()*fSigW);
 
-  fLineR.SetX1(fPos.X()+fStrawDir.Y()*fSigR);
-  fLineR.SetY1(fPos.Y()-fStrawDir.X()*fSigR);
-  fLineR.SetX2(fPos.X()-fStrawDir.Y()*fSigR);
-  fLineR.SetY2(fPos.Y()+fStrawDir.X()*fSigR);
-
-  if      (strstr(view,"trkxy" ) != 0) {
-    PaintXY(Option);
-  }
-  else if (strstr(view,"cal"   ) != 0) {
-//     sscanf(view,"cal,%i",&iv);
-//     if (iv == fSectionNumber) {
-    PaintCal(Option);
-    //    }
-  }
+  if      (strstr(view,"trkxy" ) != 0) PaintXY(Option);
+  else if (strstr(view,"trkrz" ) != 0) PaintRZ(Option);
+  else if (strstr(view,"cal"   ) != 0) PaintCal(Option);
   else {
     printf("[%s] >>> ERROR: unknown view: %s, DO NOTHING\n",oname,view);
   }
@@ -82,6 +92,10 @@ void TEvdStrawHit::Paint(Option_t* Option) {
 void TEvdStrawHit::PaintXY(Option_t* Option) {
   fLineW.Paint(Option);
   fLineR.Paint(Option);
+}
+
+//_____________________________________________________________________________
+void TEvdStrawHit::PaintRZ(Option_t* Option) {
 }
 
 //_____________________________________________________________________________

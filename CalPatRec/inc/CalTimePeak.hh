@@ -25,24 +25,27 @@ namespace mu2e {
 
 // struct to keep track of hits in a time peak
 
-  typedef std::vector<hitIndex> hitIndexCollection;
-
+//  typedef std::vector<hitIndex> hitIndexCollection;
   
   struct CalTimePeak {
+//-----------------------------------------------------------------------------
+// data members
+//-----------------------------------------------------------------------------
     const CaloCluster*    _cluster;	// not owned, just a pointer
-    int                   _cprIndex;    // index of track as found by CalPatRec or -1
+    int                   _cprIndex;    // CalPatRec track index or -1 (if track not found)
     double                _x;
     double                _y;
     double                _z;		// wrt the tracker center
     double                _tpeak;
-    hitIndexCollection    _trkptrs;
+    std::vector<hitIndex> _index;       // selects subset of _shcol hits
     double                _tmin;
     double                _tmax;
 
     const StrawHitCollection*      _shcol;
     const StrawHitFlagCollection*  _shfcol;
-    
-
+//-----------------------------------------------------------------------------
+// functions
+//-----------------------------------------------------------------------------
     CalTimePeak();
     CalTimePeak(const CaloCluster* Cl, double X, double Y, double Z);
     ~CalTimePeak();
@@ -55,15 +58,15 @@ namespace mu2e {
     double             ClusterT0()      const { return _cluster->time(); }
     double             TMin     ()      const { return _tmin; }
     double             TMax     ()      const { return _tmax; }
-    int                NHits    ()      const { return _trkptrs.size(); }
-    int                HitIndex (int I) const { return _trkptrs.at(I)._index ; }
+    int                NHits    ()      const { return _index.size(); }
+    int                HitIndex (int I) const { return _index.at(I)._index ; }
 
     void               SetCprIndex(int Index) { _cprIndex = Index; }
 
     void               clear();
 
-    bool operator < (CalTimePeak const& other ) const { return _trkptrs.size() < other._trkptrs.size(); }
-    bool operator > (CalTimePeak const& other ) const { return _trkptrs.size() > other._trkptrs.size(); }
+    bool operator < (CalTimePeak const& other ) const { return _index.size() < other._index.size(); }
+    bool operator > (CalTimePeak const& other ) const { return _index.size() > other._index.size(); }
   };
 
   typedef std::vector<CalTimePeak> CalTimePeakCollection;

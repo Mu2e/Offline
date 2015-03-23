@@ -1,23 +1,23 @@
 //-----------------------------------------------------------------------------
-//  TGeant visualization
+//  Mu2e Event display - stolen from TGeant visualization
 //-----------------------------------------------------------------------------
 #include <time.h>
 
-#include <TROOT.h>
-#include <TApplication.h>
-#include <TVirtualX.h>
+#include "TROOT.h"
+#include "TApplication.h"
+#include "TVirtualX.h"
 
-#include <TPad.h>
-#include <TText.h>
-#include <TGMenu.h>
-#include <TGMsgBox.h>
-#include <TGFrame.h>
-#include <TGFileDialog.h>
-#include <TControlBar.h>
-#include <TInterpreter.h>
-#include <TGStatusBar.h>
-#include <TRootEmbeddedCanvas.h>
-#include <TCanvas.h>
+#include "TPad.h"
+#include "TText.h"
+#include "TGMenu.h"
+#include "TGMsgBox.h"
+#include "TGFrame.h"
+#include "TGFileDialog.h"
+#include "TControlBar.h"
+#include "TInterpreter.h"
+#include "TGStatusBar.h"
+#include "TRootEmbeddedCanvas.h"
+#include "TCanvas.h"
 
 #include "Stntuple/gui/TStnFrame.hh"
 #include "Stntuple/gui/TStnVisManager.hh"
@@ -80,9 +80,9 @@ TStnFrame::TStnFrame(const char* Name,
 		     Int_t       View,
 		     UInt_t      w,
 		     UInt_t      h, 
-		     UInt_t options):
+		     UInt_t      Options):
 
-  TGMainFrame(gClient->GetRoot(),w, h, options),
+  TGMainFrame(gClient->GetRoot(),w, h, Options),
   fView(View)
 {
   // create a TGeant event display window
@@ -162,9 +162,9 @@ TStnFrame::TStnFrame(const char* Name,
 
   fCanvasLayout = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
   TCanvas* c = fEmbeddedCanvas->GetCanvas();
-  c->cd();
-
+  c->ToggleEventStatus();   
 					// pad for the event display
+  c->cd();
   TString name1(Name);
   name1 += "_1";
   TPad *p1 = new TPad(name1, "p1",0.0,0.0,1,0.96);
@@ -209,7 +209,7 @@ TStnFrame::TStnFrame(const char* Name,
    fStatusBarLayout = new TGLayoutHints(kLHintsBottom | kLHintsLeft | 
 					kLHintsExpandX, 2, 2, 1, 1);
    AddFrame(fStatusBar, fStatusBarLayout);
-//     HideFrame(fStatusBar);
+   HideFrame(fStatusBar);
 //-----------------------------------------------------------------------------
 // final actions
 //-----------------------------------------------------------------------------
@@ -282,10 +282,19 @@ Bool_t TStnFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) {
 
   TCanvas* c;
   int message = GET_MSG(msg);
+  double     x,y;
+  int        px, py;
+
+  TVisManager* vm = TVisManager::Instance();
+
+  c = GetCanvas();
 
   switch (message) {
   case kC_COMMAND:
     int submessage = GET_SUBMSG(msg);
+
+    printf(" *** TStnFrame::ProcessMessage SUBMESSAGE: %i \n",submessage);
+
     switch (submessage) {
     case kCM_MENU:
       switch (parm1) {
@@ -316,7 +325,9 @@ Bool_t TStnFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) {
 //  OPTIONS menu
 //-----------------------------------------------------------------------------
       case M_OPTION_EVENT_STATUS:
-	c = GetCanvas();
+
+	printf(" *** TStnFrame::ProcessMessage M_OPTION_EVENT_STATUS: msg = %li parm1 = %li parm2 = %li\n", 
+	       msg,parm1,parm2);
 	c->ToggleEventStatus();
 	if (c->GetShowEventStatus()) {
 	  ShowFrame(fStatusBar);
@@ -342,16 +353,32 @@ Bool_t TStnFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) {
 //  default
 //-----------------------------------------------------------------------------
       default:
-	printf(" *** TStnFrame::ProcessMessage msg = %i parm1 = %li parm2 = %li\n", 
-	       msg,parm1,parm2);
+	if (vm->DebugLevel() > 0) {
+	  printf(" *** TStnFrame::ProcessMessage msg = %li parm1 = %li parm2 = %li\n", 
+		 msg,parm1,parm2);
+	}
 	break;
       }
     default:
-      printf(" *** TStnFrame::ProcessMessage msg = %i parm1 = %li parm2 = %li\n", 
-	     msg,parm1,parm2);
+      if (vm->DebugLevel() > 0) {
+	printf(" *** TStnFrame::ProcessMessage msg = %li parm1 = %li parm2 = %li\n", 
+	       msg,parm1,parm2);
+      }
       break;
     }
   }
+
+  px = gPad->GetEventX();
+  py = gPad->GetEventY();
+  
+  x = ((TPad*) gPad)->AbsPixeltoX(px);
+  y = ((TPad*) gPad)->AbsPixeltoY(py);
+  
+  fStatusBar->SetText(Form("Z = %8.3f",x),0);
+  fStatusBar->SetText(Form("R = %8.3f",y),1);
+  fStatusBar->SetText("ccc",2);
+  fStatusBar->SetText("ddd",3);
+  
   return true;
 }
 

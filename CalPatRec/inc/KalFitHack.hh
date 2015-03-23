@@ -8,8 +8,6 @@
 #ifndef KalFitHack_HH
 #define KalFitHack_HH
 
-// framework
-#include "fhiclcpp/ParameterSet.h"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -36,6 +34,10 @@
 
 //ROOT
 #include "TStopwatch.h"
+
+namespace fhicl {
+  class ParameterSet;
+}
 
 namespace mu2e {
   class KalFitHack : public KalContext {
@@ -84,10 +86,10 @@ namespace mu2e {
     bool updateT0             (KalFitResult& kres);
 
 // Try to put back inactive hits
-    bool unweedHits  (KalFitResult& kres, double maxchi);
-    bool weedHits    (KalFitResult& kres);
-    int  NIter       () { return fNIter; }
-    void SetNIter    (int N) { fNIter = N; }
+    bool unweedHits(KalFitResult& kres, double maxchi);
+    bool weedHits             (KalFitResult& kres);
+    int  NIter                () { return fNIter; }
+    void SetNIter             (int N) { fNIter = N; }
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
     BField const& bField() const;
@@ -128,8 +130,8 @@ namespace mu2e {
     double             _t0nsig;	        // # of sigma to include when selecting hits for t0
     double             _dtoffset;       // track - luster time offset, ns
     double             fScaleErrDoublet;
-    int                fMarkDoublets;
-    int                fILoopMarkDoublets;
+    int                fUseDoublets;
+    int                fILoopUseDoublets;
     double             fMinDriftDoublet;
     double             fDeltaDriftDoublet;
     double             fSigmaSlope;

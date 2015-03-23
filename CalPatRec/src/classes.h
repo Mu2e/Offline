@@ -18,6 +18,11 @@
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"
 
 #include "CalPatRec/inc/CalTimePeak.hh"
+#include "CalPatRec/inc/LsqSums4.hh"
+#include "CalPatRec/inc/HelixFitHack.hh"
+#include "CalPatRec/inc/KalFitHack.hh"
+#include "CalPatRec/inc/Ref.hh"
+
 #include "KalmanTests/inc/TrkDef.hh"
 
 // Cannot use the typedefs in here - not sure why.
@@ -30,6 +35,9 @@ template class art::Ptr<mu2e::CalTimePeak>;
 template class std::vector<art::Ptr<mu2e::CalTimePeak> >;
 template class art::Wrapper<mu2e::CalTimePeakCollection>;
 
-template class art::Ptr<mu2e::hitIndex>;
-template class std::vector<art::Ptr<mu2e::hitIndex> >;
-template class art::Wrapper<mu2e::hitIndexCollection>;
+template class std::vector<mu2e::hitIndex>;
+template class std::vector<mu2e::XYZPHack>;
+
+// template class art::Ptr<mu2e::hitIndex>;
+// template class std::vector<art::Ptr<mu2e::hitIndex> >;
+// template class art::Wrapper<mu2e::hitIndexCollection>;

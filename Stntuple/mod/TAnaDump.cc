@@ -155,9 +155,9 @@ void TAnaDump::printCalTimePeak(const mu2e::CalTimePeak* TPeak, const char* Opt)
       printStrawHit(0,0,"banner",0,0);
 
       int  nhits, loc;
-      nhits = TPeak->_trkptrs.size();
+      nhits = TPeak->NHits();
       for (int i=0; i<nhits; i++) {
-	loc   = TPeak->_trkptrs[i]._index;
+	loc   = TPeak->_index[i]._index;
 	hit   = &TPeak->_shcol->at(loc);
 	flags = *((int*) &TPeak->_shfcol->at(loc));
 
@@ -258,7 +258,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     double z0     = Trk->helix(s).z0();
     double phi0   = Trk->helix(s).phi0();
     double omega  = Trk->helix(s).omega();
-    double tandip = Trk->helix(s).omega();
+    double tandip = Trk->helix(s).tanDip();
 
     double fit_consistency = Trk->chisqConsistency().consistency();
     int q         = Trk->charge();
@@ -323,6 +323,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
 // find MC truth DOCA in a given straw
 // start from finding the right vector of StepPointMC's
 //-----------------------------------------------------------------------------
+      int vol_id;
       int nstraws = fgListOfMCStrawHits->size();
 
       const mu2e::StepPointMC* step(0);
@@ -330,7 +331,8 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
       for (int i=0; i<nstraws; i++) {
 	mu2e::PtrStepPointMCVector  const& mcptr(fgListOfMCStrawHits->at(i));
 	step = &(*mcptr.at(0));
- 	if (step->volumeId() == straw->index().asInt()) {
+	vol_id = step->volumeId();
+ 	if (vol_id == straw->index().asInt()) {
  					// step found - use the first one in the straw
  	  break;
  	}
@@ -374,7 +376,8 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
       printf(" %8.3f",hit->hitT0().t0());
 
       double res, sigres;
-      bool s =  hit->resid(res, sigres, true);
+      hit->resid(res, sigres, true);
+
       printf("%8.3f %8.3f %9.3f %7.3f %7.3f",
 	     pos.x(),
 	     pos.y(),
@@ -821,20 +824,19 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
   }
  
   if ((opt == "") || (opt.Index("data") >= 0)) {
-    //row = Cl->cogRow();
-    //col = Cl->cogColumn();
-    row = -1;
-    col = -1;
+    row = -1; // Cl->cogRow();
+    col = -1; // Cl->cogColumn();
     
-    const std::vector<art::Ptr<mu2e::CaloCrystalHit> >  caloClusterHits = Cl->caloCrystalHitsPtrVector();
+    const mu2e::CaloCluster::CaloCrystalHitPtrVector caloClusterHits = Cl->caloCrystalHitsPtrVector();
     int nh = caloClusterHits.size();
 
     if ((row < 0) || (row > 9999)) row = -9999;
     if ((col < 0) || (col > 9999)) col = -9999;
     
-    printf("%16p %5i %3i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f\n",
+    printf("%16p %5i %7i %3i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f\n",
 	   Cl,
 	   Cl->sectionId(),
+	   -999, // Cl->daddy(),
 	   nh,
 	   Cl->time(),
 	   row, col,
@@ -851,7 +853,7 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
 //-----------------------------------------------------------------------------
 // print individual crystals in local vane coordinate system
 //-----------------------------------------------------------------------------
-    const std::vector<art::Ptr<mu2e::CaloCrystalHit> >  caloClusterHits = Cl->caloCrystalHitsPtrVector();
+    const mu2e::CaloCluster::CaloCrystalHitPtrVector caloClusterHits = Cl->caloCrystalHitsPtrVector();
     int nh = caloClusterHits.size();
 
     for (int i=0; i<nh; i++) {

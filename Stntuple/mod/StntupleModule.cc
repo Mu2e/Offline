@@ -40,7 +40,7 @@ StntupleModule::StntupleModule(fhicl::ParameterSet const& PSet, const char* Name
     fgEvent       = new TStnEvent();
     //    fgErrorLogger = new TStnErrorLogger();
     //    fgEvent->SetErrorLogger(fgErrorLogger);
-    fgStntupleFolder = gROOT->GetRootFolder()->AddFolder("StntupleFolder",
+    fgStntupleFolder = gROOT->GetRootFolder()->AddFolder("Stntuple",
 							 "STNTUPLE folder");
     //    fgStntupleFolder->Add(fgErrorLogger);
     THistModule::fgMaxFileSize = 8000;

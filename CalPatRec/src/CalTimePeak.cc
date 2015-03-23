@@ -47,7 +47,7 @@ namespace mu2e {
     _tpeak    = 0;
     _shcol    = NULL;
     _shfcol   = NULL;
-    _trkptrs.clear();
+    _index.clear();
   }
 
 } // end namespace mu2e

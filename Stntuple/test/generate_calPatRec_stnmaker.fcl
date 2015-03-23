@@ -7,9 +7,7 @@
 # - run particle ID
 # - make an ntuple
 # 
-#  2015-03-18: muon stop file now is available by default
-#
-# c) local submission: 
+# local submission: 
 #
 #  mu2e -c Analyses/test/genReco.fcl -n 1000 >| results/2014-12-19-Analyses_test_genReco.log &
 #------------------------------------------------------------------------------
@@ -19,8 +17,11 @@
 
 #include "Stntuple/fcl/prolog.fcl"
 
-process_name : mergePatRecStnmaker
+process_name : generateTrkPatRecStnmaker
 
+#------------------------------------------------------------------------------
+# define input module
+#------------------------------------------------------------------------------
 source : {  
     module_type : EmptyEvent
 #    module_type : RootInput
@@ -37,9 +38,9 @@ source : {
 services : {
 
     message               : @local::default_message
-    TFileService          : { fileName : "mergePatRec_stnmaker.hist" }
+    TFileService          : { fileName : "calPatRec_stnmaker.hist" }
     RandomNumberGenerator : { }
-#    Timing                : { }
+#    Timing                : { }   # this prints per-event summaries
 
     user : {
         GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
@@ -47,64 +48,72 @@ services : {
         GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
         G4Helper               : { }
         SeedService            : { @table::automaticSeeds
-	    baseSeed             :  0
-	    maxUniqueEngines     :  20
+	    baseSeed         :  0
+	    maxUniqueEngines : 20
 	}
     }
 }
-
-services.scheduler.wantSummary : true
-
+services.scheduler.wantSummary: true
+#------------------------------------------------------------------------------
+# redefinitions
+#------------------------------------------------------------------------------
 physics : {
     producers: {
-        generate             : { @table::StoppedMuonConversionGun }
-#        generate             : @local::StoppedParticleReactionGun
+#        generate             : @local::StoppedMuonConversionGun
+        generate             : @local::StoppedParticleReactionGun
         g4run                : @local::g4run
         compressPVDetector   : @local::CompressPhysicalVolumes
-        protonTimeMap        : { module_type : GenerateProtonTimes }
-        muonTimeMap          : { module_type : GenerateMuonLife }
+        protonTimeMap        : @local::protonTimeMap
+        muonTimeMap          : @local::muonTimeMap
 #------------------------------------------------------------------------------
-# digitization, detector hit makers
+# tracker digitization, detector hit makers, default tracking (TrkPatRec)
 #------------------------------------------------------------------------------
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
-	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-	CaloCrystalHitsMaker : @local::MakeCaloCrystalHitsNew
-#------------------------------------------------------------------------------
-#  default tracking
-#------------------------------------------------------------------------------
 	FSHPreStereo         : @local::FSHPreStereo
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : @local::TrkPatRecDownstreameMinus
+	TrkPatRec            : { @table::TrkPatRecDownstreameMinus 
+#	    diagLevel:10
+	}
+#------------------------------------------------------------------------------
+# calorimeter digitization and reconstruction
+#------------------------------------------------------------------------------
+	MakeCaloReadoutHits  : { @table::MakeCaloReadoutHits }
+	CaloCrystalHitsMaker : { @table::MakeCaloCrystalHitsNew }
+	MakeCaloCluster      : { @table::MakeCaloCluster }
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	MakeCaloCluster                 : @local::MakeCaloCluster
-
 	CalPatRecFSHP                   : @local::CalPatRecFSHP
+	CalPatRecMakeStrawHitPositions  : @local::CalPatRecMakeStrawHitPositions
 	CalPatRecMakeStereoHits         : @local::CalPatRecMakeStereoHits
 	CalPatRecFlagStrawHits          : @local::CalPatRecFlagStrawHits
 	CalPatRecFlagBkgHits            : @local::CalPatRecFlagBkgHits
 	CalPatRec                       : { @table::CalPatRec
-	    diagLevel  : 0
-	    debugLevel : 0
-	    HelixFitHack : { @table::CalPatRec.HelixFitHack 
+	    diagLevel   : 1
+	    debugLevel  : 0
+	    HelixFitHack: { @table::CalPatRec.HelixFitHack 
 		debugLevel : 0 
 	    }
-	    KalFitHack   : { @table::CalPatRec.KalFitHack   
+	    SeedFitHack: { @table::CalPatRec.SeedFitHack 
+		debugLevel : 0
+	    }
+	    KalFitHack  : { @table::CalPatRec.KalFitHack   
 		debugLevel : 0
 	    }
 	}
-
-	MergePatRec : @local::MergePatRec
+#------------------------------------------------------------------------------
+# merge output of the tracking algorithms
+#------------------------------------------------------------------------------
+	MergePatRec                     : @local::MergePatRec
 #------------------------------------------------------------------------------
 # needed for analysis
 #------------------------------------------------------------------------------
-	CaloMatching         : { @table::TrackCaloMatching fitterModuleLabel : MergePatRec }
-	TrkExtrapol          : { @table::TrkExtrapol       fitterModuleLabel : MergePatRec }
-	ParticleID           : { @table::ParticleID        fitterModuleLabel : MergePatRec }
+	CaloMatching: { @table::TrackCaloMatching fitterModuleLabel : MergePatRec }
+	TrkExtrapol : { @table::TrkExtrapol       fitterModuleLabel : MergePatRec }
+	ParticleID  : { @table::ParticleID        fitterModuleLabel : MergePatRec }
     }
 
     filters: {
@@ -112,25 +121,26 @@ physics : {
 # Stntuple maker sequence
 #------------------------------------------------------------------------------
 	InitStntuple         : { @table::InitStntuple 
-	    histFileName : "mergePatRec_stnmaker.stn"
+	    histFileName   : "calPatRec_stnmaker.stn"
 	}
+
 	StntupleMaker        : { @table::StntupleMaker
-	    g4ModuleLabel            : "g4run"
-#------------------------------------------------------------------------------
-# just one track block "TrackBlock" with output of MergePatRec
-#------------------------------------------------------------------------------
-	    # trkRecoModuleLabel   : [ "MergePatRec" ]
-#------------------------------------------------------------------------------
-#  3 track blocks, for the moment need to specify all other labels
-#------------------------------------------------------------------------------
-	    trackBlockName          : [ "TrackBlock" , "TrkPatRec" , "CalPatRec" ] 
-	    trkRecoModuleLabel      : [ "MergePatRec", "TrkPatRec" , "CalPatRec" ]
-	    trkExtrapolModuleLabel  : [ "TrkExtrapol",          "" ,          "" ]
-	    trkCaloMatchModuleLabel : [            "",          "" ,          "" ]
-	    pidModuleLabel          : [            "",          "" ,          "" ]
-	    fitParticle             : [            11,           11,          11 ]
-	    fitDirection            : [             0,            0,           0 ]
+	    g4ModuleLabel        : "g4run"
+	    #------------------------------------------------------------------------------
+	    #  3 track blocks, for the moment need to specify all other labels
+	    #------------------------------------------------------------------------------
+	    # trackBlockName          : [ "TrackBlock" , "TrkPatRec" , "CalPatRec" ] 
+	    # trkRecoModuleLabel      : [ "MergePatRec", "TrkPatRec" , "CalPatRec" ]
+	    # trkExtrapolModuleLabel  : [ "TrkExtrapol",          "" ,          "" ]
+	    # trkCaloMatchModuleLabel : [            "",          "" ,          "" ]
+	    # pidModuleLabel          : [            "",          "" ,          "" ]
+	    # fitParticle             : [            11,           11,          11 ]
+	    # fitDirection            : [             0,            0,           0 ]
+#
+	    # makeCalData         : 1
+	    # makeStrawData       : 1
 	}
+
 	FillStntuple         : @local::FillStntuple
 #------------------------------------------------------------------------------
 # Reject events with no hits from signal-like tracks in the detectors.  
@@ -149,31 +159,28 @@ physics : {
 	}
     }
 #------------------------------------------------------------------------------
-# paths (a sequence in FHICL terms)
+# paths
 #------------------------------------------------------------------------------
     detPath : [ 
 	       generate, g4run 
 	       , detectorFilter 
-#	       , compressPVDetector
 	       , protonTimeMap, muonTimeMap
-#
-	       , MakeCaloReadoutHits, CaloCrystalHitsMaker
-	       , MakeCaloCluster
-#
 	       , makeSD, makeSH
-	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-#
+	       , MakeCaloReadoutHits, CaloCrystalHitsMaker
+
+	       , MakeCaloCluster
+
+#	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+
 	       , CalPatRecFSHP, CalPatRecMakeStereoHits 
 	       , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
 	       , CalPatRec
-#
+
 	       , MergePatRec
-#
+
 	       , TrkExtrapol, CaloMatching, ParticleID
-#
 	       , InitStntuple, StntupleMaker, FillStntuple
 	      ]
-#
     trigger_paths  : [detPath]
     
     out : [detectorOutput]
@@ -182,7 +189,9 @@ physics : {
 
     end_paths      : [out]
 }
-
+#------------------------------------------------------------------------------
+# configure output module
+#------------------------------------------------------------------------------
 outputs: {
     detectorOutput : {
         module_type : RootOutput
@@ -190,6 +199,6 @@ outputs: {
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
-        fileName    : "mergePatRec_stnmaker.art"
+        fileName    : "calPatRec_stnmaker.art"
     }
 }

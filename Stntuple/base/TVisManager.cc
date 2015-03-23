@@ -11,6 +11,7 @@
 #include "TPolyMarker.h"
 #include "TPaveLabel.h"
 #include "TText.h"
+#include "TEnv.h"
 #include <string.h> 
 #include <ctype.h> 
 #include "TCanvas.h"
@@ -31,7 +32,9 @@ TVisManager::TVisManager(const char* name, const char* title):
   fListOfCanvases = new TList();
   fListOfNodes    = new TObjArray();
   fgInstance      = this;
-  fDebugLevel     = 0;
+  fDebugLevel     = gEnv->GetValue("TVisManager.DebugLevel",0);
+
+  
 }
 
 

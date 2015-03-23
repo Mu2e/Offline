@@ -28,14 +28,14 @@ void TTrkRZView::Paint(Option_t* Option) {
   //
   TStnVisManager* vm = TStnVisManager::Instance();
 
-  vm->SetCurrentView("trkxy");
+  vm->SetCurrentView("trkrz");
 
   fCenter->Paint(Option);
 
   Int_t n = vm->GetNNodes();
   for (int i=0; i<n; i++) {
     TVisNode* node =  vm->GetNode(i);
-    node->PaintXY(Option);
+    node->Paint(Option);
   }
   gPad->Modified();
 }
@@ -96,24 +96,33 @@ void TTrkRZView::ExecuteEvent(Int_t event, Int_t px, Int_t py) {
     o->ExecuteEvent(event,px,py);
     return;
   }
-
 //-----------------------------------------------------------------------------
 // view...
 //-----------------------------------------------------------------------------
-  Axis_t x, y, x1, x2, y1, y2;
+  Axis_t x, y, x1, x2, y1, y2, dx, dy;
+  
+  double shift_scale = 0.02;
+  double zoom_scale  = 0.05;
+
+  TVirtualX::EBoxMode ebox_mode = TVirtualX::kHollow;
+  //  TVirtualX::EBoxMode ebox_mode = TVirtualX::kFilled;
+
+  gVirtualX->SetLineColor(1);
+  gVirtualX->SetFillColor(1);
+  gVirtualX->SetFillStyle(3003);
 
   switch (event) {
 
   case kButton1Down:
 
-    printf(" TTrkRZView::ExecuteEvent  kButton1Down\n");
+    if (vm->DebugLevel() > 0) printf(" TTrkRZView::ExecuteEvent  kButton1Down\n");
 
     fPx1 = px;
     fPy1 = py;
     fPx2 = px;
     fPy2 = py;
 
-    gVirtualX->DrawBox(fPx1, fPy1, fPx2, fPy2, TVirtualX::kHollow);
+    gVirtualX->DrawBox(fPx1, fPy1, fPx2, fPy2, ebox_mode);
 
     break;
 
@@ -121,32 +130,56 @@ void TTrkRZView::ExecuteEvent(Int_t event, Int_t px, Int_t py) {
 				// redraw the opaque rectangle
     gPad->SetCursor(kCross);
 
-    gVirtualX->DrawBox(fPx1, fPy1, fPx2, fPy2, TVirtualX::kHollow);
+    gVirtualX->DrawBox(fPx1, fPy1, fPx2, fPy2, ebox_mode);
     fPx2 = px;
     fPy2 = py;
-    gVirtualX->DrawBox(fPx1, fPy1, fPx2, fPy2, TVirtualX::kHollow);
+    gVirtualX->DrawBox(fPx1, fPy1, fPx2, fPy2, ebox_mode);
 
     break;
+  case kKeyPress:
+    if (vm->DebugLevel() > 0) printf(" TTrkRZView::ExecuteEvent kKeyPress: px=%3i py:%i\n",px,py);
+
+    if (px == py) {
+      Axis_t  x1new, x2new, y1new, y2new;
+
+      gPad->GetRange(x1,y1,x2,y2);
+
+      if (char(px) == 'z') {            // zoom in
+	x1new = x1+(x2-x1)/2.*zoom_scale;
+	x2new = x2-(x2-x1)/2.*zoom_scale;
+	y1new = y1+(y2-y1)/2.*zoom_scale;
+	y2new = y2-(y2-y1)/2.*zoom_scale;
+      }
+      else if (char(px) == 'Z') { 	// zoom out
+	x1new = x1-(x2-x1)/2.*zoom_scale;
+	x2new = x2+(x2-x1)/2.*zoom_scale;
+	y1new = y1-(y2-y1)/2.*zoom_scale;
+	y2new = y2+(y2-y1)/2.*zoom_scale;
+      }
+
+      gPad->Range(x1new,y1new,x2new,y2new);
+      gPad->Modified();
+      gPad->Update();
+    }
+    break;
   case kButton2Up:
-    printf(" TTrkRZView::ExecuteEvent kButton2Up\n");
+    if (vm->DebugLevel() > 0) printf(" TTrkRZView::ExecuteEvent kButton2Up\n");
     break;
   case kButton2Down:
-    printf("TTrkRZView::ExecuteEvent  kButton2Down\n");
+    if (vm->DebugLevel() > 0) printf("TTrkRZView::ExecuteEvent  kButton2Down\n");
     break;
   case kButton3Up:
-    printf(" TTrkRZView::ExecuteEvent kButton3Up\n");
+    if (vm->DebugLevel() > 0) printf(" TTrkRZView::ExecuteEvent kButton3Up\n");
     break;
   case kButton3Down:
-    printf(" TTrkRZView::ExecuteEvent kButton3Down\n");
+    if (vm->DebugLevel() > 0) printf(" TTrkRZView::ExecuteEvent kButton3Down\n");
     break;
   case kButton1Up:
     printf(" TTrkRZView::ExecuteEvent kButton1Up\n");
-
-				        // open new window only if something
-					// has really been selected (it is a 
-					// rectangle, but not a occasional 
-					// click)
-
+//-----------------------------------------------------------------------------
+// open new window only if something has really been selected (it is a 
+// rectangle, but not a occasional click)
+//-----------------------------------------------------------------------------
     if ( (fPx1 != fPx2) && (fPy1 != fPy2) ) {
       x1 = gPad->AbsPixeltoX(fPx1);
       y1 = gPad->AbsPixeltoY(fPy1);
@@ -167,21 +200,84 @@ void TTrkRZView::ExecuteEvent(Int_t event, Int_t px, Int_t py) {
       vm->OpenTrkRZView(this,x1,y1,x2,y2);
     }
     break;
-  case 26:
-    gPad->GetRange(x1,y1,x2,y2);
-    gPad->Range(x1*1.1,y1*1.1,x2*1.1,y2*1.1);
-    gPad->Modified();
+  case kArrowKeyPress: // 25
+//-----------------------------------------------------------------------------
+// arrow key released
+//-----------------------------------------------------------------------------
+    if (vm->DebugLevel() > 0) printf(" ARROW key pressed  = %3i  py = %3i\n",px,py);
+    fCursorX = px;
+    fCursorY = py;
+//     gPad->GetRange(x1,y1,x2,y2);
+//     gPad->Range(x1*1.1,y1*1.1,x2*1.1,y2*1.1);
+//    gPad->Modified();
     break;
-  case 60:
+  case kArrowKeyRelease: // 26
+//-----------------------------------------------------------------------------
+// arrow key released
+//-----------------------------------------------------------------------------
+    if (vm->DebugLevel() > 0) printf(" ARROW key  releasedx = %3i  py = %3i\n",px,py);
+
     gPad->GetRange(x1,y1,x2,y2);
-    gPad->Range(x1/1.1,y1/1.1,x2/1.1,y2/1.1);
+
+    if (px == fCursorX) {
+					         // up or down arrow
+      dy = y2-y1;
+      if (fCursorY > py) {
+					         // down arrow
+
+	gPad->Range(x1,y1-shift_scale*dy,x2,y2-shift_scale*dy);
+      }
+      else {
+	gPad->Range(x1,y1+shift_scale*dy,x2,y2+shift_scale*dy);
+      }
+    }
+    else if (py == fCursorY) {
+					// left or right arrow
+      dx = x2-x1;
+      if (fCursorX > px) {
+					         // left arrow
+	gPad->Range(x1+shift_scale*dx,y1,x2+shift_scale*dx,y2);
+      }
+      else {
+	gPad->Range(x1-shift_scale*dx,y1,x2-shift_scale*dx,y2);
+      }
+    }
     gPad->Modified();
+    gPad->Update();
+
     break;
   default:
-    //    printf(" ----- event = %i\n",event);
+    if (vm->DebugLevel() > 0) printf(" ----- event = %i px:%4i py:%4i\n",
+				     event,px,py);
     break;
   }
+
+//   if (event != kMouseLeave) {                  // signal was already emitted for this event
+//     DrawEventStatus(event, px, py);
+//   }
 }
+
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+// void TTrkRZView::DrawEventStatus(event,px,py) {
+
+//   if (!TestBit(kShowEventStatus) || !selected) return;
+ 
+//   TVirtualPad* savepad;
+//   savepad = gPad;
+
+//   gPad = GetSelectedPad();
+ 
+//   fCanvasImp->SetStatusText(selected->GetTitle(),0);
+//   fCanvasImp->SetStatusText(selected->GetName(),1);
+
+//   snprintf(atext, kTMAX, "%d,%d", px, py);
+
+//   fCanvasImp->SetStatusText(atext,2);
+//   fCanvasImp->SetStatusText(selected->GetObjectInfo(px,py),3);
+//}
 
 //-----------------------------------------------------------------------------
 void    TTrkRZView::SetStations(int I1, int I2) {

@@ -88,11 +88,16 @@ namespace mu2e {
   void MergePatRec::beginJob() {
   }
   
-  void MergePatRec::beginRun(art::Run& ){}
+  void MergePatRec::beginRun(art::Run& ){
+  }
   
 //-----------------------------------------------------------------------------
   void MergePatRec::produce(art::Event& AnEvent) {
-    
+
+					// assume less than 100 tracks
+    int const   max_ntrk(100);
+    int         tpr_flag[max_ntrk], cpr_flag[max_ntrk], ntpr(0), ncpr(0);
+
     art::Handle<mu2e::KalRepPtrCollection> tpr_h, cpr_h;
 
     mu2e::KalRepPtrCollection  *list_of_kreps_tpr(0), *list_of_kreps_cpr(0);
@@ -103,17 +108,16 @@ namespace mu2e {
     AnEvent.getByLabel(_trkPatRecLabel,_iname,tpr_h);
     AnEvent.getByLabel(_calPatRecLabel,_iname,cpr_h);
 
-    list_of_kreps_tpr = (mu2e::KalRepPtrCollection*) &(*tpr_h);
-    list_of_kreps_cpr = (mu2e::KalRepPtrCollection*) &(*cpr_h);
+    if (tpr_h.isValid()) { 
+      list_of_kreps_tpr = (mu2e::KalRepPtrCollection*) &(*tpr_h);
+      ntpr              = list_of_kreps_tpr->size();
+    }
+
+    if (cpr_h.isValid()) {
+      list_of_kreps_cpr = (mu2e::KalRepPtrCollection*) &(*cpr_h);
+      ncpr              = list_of_kreps_cpr->size();
+    }
     
-    // assume less than 100 tracks
-
-    int const max_ntrk(100);
-    int   tpr_flag[max_ntrk], cpr_flag[max_ntrk], ntpr, ncpr;
-
-    ntpr = list_of_kreps_tpr->size();
-    ncpr = list_of_kreps_cpr->size();
-
     for (int i=0; i<max_ntrk; i++) {
       tpr_flag[i] = 1;
       cpr_flag[i] = 1;

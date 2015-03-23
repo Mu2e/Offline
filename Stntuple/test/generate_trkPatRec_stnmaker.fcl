@@ -7,19 +7,7 @@
 # - run particle ID
 # - make an ntuple
 # 
-# a) to prepare muon stop file for the interactive job: 
-#
-#     ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops 
-#
-# b) when submitting to the grid, comment out the PROLOG definition, do
-#
-#    ls /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops/*.root > muStops.txt
-#
-#    , and use 
-#
-#     --fclinput=@muStops:muStops.txt 
-#
-# c) local submission: 
+# local submission: 
 #
 #  mu2e -c Analyses/test/genReco.fcl -n 1000 >| results/2014-12-19-Analyses_test_genReco.log &
 #------------------------------------------------------------------------------
@@ -29,8 +17,11 @@
 
 #include "Stntuple/fcl/prolog.fcl"
 
-process_name : mergePatRecStnmaker
+process_name : generateTrkPatRecStnmaker
 
+#------------------------------------------------------------------------------
+# define input module
+#------------------------------------------------------------------------------
 source : {  
     module_type : EmptyEvent
 #    module_type : RootInput
@@ -47,7 +38,7 @@ source : {
 services : {
 
     message               : @local::default_message
-    TFileService          : { fileName : "mergePatRec_stnmaker.hist" }
+    TFileService          : { fileName : "trkPatRec_stnmaker.hist" }
     RandomNumberGenerator : { }
 #    Timing                : { }   # this prints per-event summaries
 
@@ -68,60 +59,51 @@ services.scheduler.wantSummary: true
 #------------------------------------------------------------------------------
 physics : {
     producers: {
-        generate             : @local::StoppedMuonConversionGun
+#        generate             : @local::StoppedMuonConversionGun
+        generate             : @local::StoppedParticleReactionGun
         g4run                : @local::g4run
         compressPVDetector   : @local::CompressPhysicalVolumes
         protonTimeMap        : @local::protonTimeMap
         muonTimeMap          : @local::muonTimeMap
 #------------------------------------------------------------------------------
-# digitization, detector hit makers
+# tracker digitization, detector hit makers, default tracking (TrkPatRec)
 #------------------------------------------------------------------------------
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
-	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-	CaloCrystalHitsMaker : @local::MakeCaloCrystalHitsNew
-#------------------------------------------------------------------------------
-#  default tracking
-#------------------------------------------------------------------------------
 	FSHPreStereo         : @local::FSHPreStereo
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : { @table::TrkPatRecDownstreameMinus diagLevel:10}
+	TrkPatRec            : { @table::TrkPatRecDownstreameMinus 
+#	    diagLevel:10
+	}
+#------------------------------------------------------------------------------
+# calorimeter digitization and reconstruction
+#------------------------------------------------------------------------------
+	MakeCaloReadoutHits  : { @table::MakeCaloReadoutHits }
+	CaloCrystalHitsMaker : { @table::MakeCaloCrystalHitsNew }
+	MakeCaloCluster      : { @table::MakeCaloCluster }
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	MakeCaloCluster                 : { @table::MakeCaloCluster }
-
 	CalPatRecFSHP                   : @local::CalPatRecFSHP
 	CalPatRecMakeStrawHitPositions  : @local::CalPatRecMakeStrawHitPositions
 	CalPatRecMakeStereoHits         : @local::CalPatRecMakeStereoHits
 	CalPatRecFlagStrawHits          : @local::CalPatRecFlagStrawHits
 	CalPatRecFlagBkgHits            : @local::CalPatRecFlagBkgHits
 	CalPatRec                       : { @table::CalPatRec
-	    debugLevel     : 1
-	    KalFitHack :  { @table::CalPatRec.KalFitHack
-		debugLevel : 1
-	    }
-	    HelixFitHack: { @table::CalPatRec.HelixFitHack
-		debugLevel : 1
-	    }
+	    debugLevel  : 1
+	    KalFitHack  : { @table::CalPatRec.KalFitHack   debugLevel : 1 }
+	    HelixFitHack: { @table::CalPatRec.HelixFitHack debugLevel : 1 }
 	}
 
 	MergePatRec                     : @local::MergePatRec
 #------------------------------------------------------------------------------
 # needed for analysis
 #------------------------------------------------------------------------------
-	CaloMatching: { @table::TrackCaloMatching 
-	    fitterModuleLabel : MergePatRec
-	}
-	TrkExtrapol : { @table::TrkExtrapol
-	    fitterModuleLabel : MergePatRec
-	}
-
-	ParticleID : { @table::ParticleID
-	    fitterModuleLabel : MergePatRec
-	}
+	CaloMatching: { @table::TrackCaloMatching fitterModuleLabel : MergePatRec }
+	TrkExtrapol : { @table::TrkExtrapol       fitterModuleLabel : MergePatRec }
+	ParticleID  : { @table::ParticleID        fitterModuleLabel : MergePatRec }
     }
 
     filters: {
@@ -133,11 +115,10 @@ physics : {
 	}
 
 	StntupleMaker        : { @table::StntupleMaker
+#------------------------------------------------------------------------------
+# redefine for cosmics
+#------------------------------------------------------------------------------
 	    g4ModuleLabel : "g4run"
-	    #------------------------------------------------------------------------------
-	    # just one track block "TrackBlock" with output of MergePatRec
-	    #------------------------------------------------------------------------------
-	    # trkRecoModuleLabel   : [ "MergePatRec" ]
 	    #------------------------------------------------------------------------------
 	    #  3 track blocks, for the moment need to specify all other labels
 	    #------------------------------------------------------------------------------
@@ -173,21 +154,21 @@ physics : {
     detPath : [ 
 	       generate, g4run 
 	       , detectorFilter 
-#	       , compressPVDetector
 	       , protonTimeMap, muonTimeMap
-	       , makeSD, makeSH
+#
 	       , MakeCaloReadoutHits, CaloCrystalHitsMaker
-
+	       , MakeCaloCluster
+#
+	       , makeSD, makeSH
 	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
 
-#	       , MakeCaloCluster
-#	       , CalPatRecFSHP
-#	       , CalPatRecMakeStereoHits 
+#	       , CalPatRecFSHP, CalPatRecMakeStereoHits 
 #	       , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
 #	       , CalPatRec
-#	       , MergePatRec
-#	       , TrkExtrapol, CaloMatching, ParticleID
-#	       , InitStntuple, StntupleMaker, FillStntuple
+
+	       , MergePatRec
+	       , TrkExtrapol, CaloMatching, ParticleID
+	       , InitStntuple, StntupleMaker, FillStntuple
 	      ]
     trigger_paths  : [detPath]
     
@@ -197,7 +178,9 @@ physics : {
 
     end_paths      : [out]
 }
-
+#------------------------------------------------------------------------------
+# configure output module
+#------------------------------------------------------------------------------
 outputs: {
     detectorOutput : {
         module_type : RootOutput
@@ -205,6 +188,6 @@ outputs: {
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
-        fileName    : "mergePatRec_stnmaker.art"
+        fileName    : "trkPatRec_stnmaker.art"
     }
 }

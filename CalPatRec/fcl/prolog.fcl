@@ -76,6 +76,8 @@ CalPatRec            : {
     StrawHitPositionCollectionLabel             : CalPatRecMakeStereoHits
     caloClusterModuleLabel                      : MakeCaloCluster
 
+    useDoublets             : 1
+
     diagLevel                                   : 0
     debugLevel                                  : 0
     printFrequency                              : 100
@@ -92,50 +94,63 @@ CalPatRec            : {
     MaxHelixDoca                                : 60.    # in mm
     MaxAddDoca                                  : 7.     # in mm
     MaxAddChi                                   : 3.5    # normalized unit
-    # Kalman fit configuration for the helix seed fit
-    SeedFitHack : {
+    MaxStrawEDep                                : 0.005
+    TimeSelectionBits                           : ["EnergySelection","TimeSelection","RadiusSelection"]
+    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
+    KalmanFitSelectionBits                      : []
+    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
+
+    # HelixFitHack configuraton (pattern recognition)
+    HelixFitHack : {
 	debugLevel                              : 0
+	debugLevel2                             : 0
+	hitChi2Max                              : 25.
+	mostProbableDfDz                        : 0.00475
+	maxDfDz                                 : 0.01
+	minDfDz                                 : 0.002
+	sigmaPhi                                : 0.1  # radians
+	maxXDPhi                                : 5    #
+	distPatRec                              : 100. # mm
+	maxChi2TrkCandidate                     : 1500
+	markCandidateHits                       : 0
+	minPointsTrkCandidate                   : 25
+# confirmed on 2015-02-07
+	chi2xyMax                               : 5    #default value is 300
+	chi2zphiMax                             : 6    #0.1 #default is 0.1, use 0.05 for debugging puposes
+	dfdzErr                                 : 0.1
+    }
+    # Kalman fitter configuration for the seed fit
+    SeedFitHack : {
+	makeStrawHitModuleLabel                 : makeSH
+	debugLevel                              : 0
+	minnstraws                              : 10
+	weedhits                                : true   # default:true
 	maxiter                                 : 3
 	materialCorrection                      : false
 	seedsmear       			: 10000
 	maxhitchi                               : 5.0
 	hiterr                                  : [ 5.0, 1.44 ]
-	ambiguityStrategy       		: [0,0]
-	t0Tolerance				: [5.0,5.0]
+	ambiguityStrategy       		: [ 0  , 0    ]
+	t0Tolerance				: [ 5.0, 5.0  ]
 	initT0					: true 
 	updateT0				: false
 	HitMinDrift 				: 0.2
+	DivergeFlt                              : 1000.  #  default: 1000.
 	RdriftMinusDocaTol                      : 1.
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
 #------------------------------------------------------------------------------
 # shouldn't be used during the seed fit, only during the hit-based fit 
 #------------------------------------------------------------------------------
 	scaleErrDoublet                         : 1.
-	iLoopMarkDoublets                       : 0
+	iLoopUseDoublets                        : 0
 	minDriftDoublet                         : 0.4
 	deltaDriftDoublet                       : 0.3
 	sigmaSlope                              : 0.025
-	makeStrawHitModuleLabel                 : makeSH
-    }
-    # HelixFitHack configuraton
-    HelixFitHack : {
-	debugLevel                              : 0
-	mostProbableDfDz                        : 0.00475
-	maxDfDz                                 : 0.01
-	minDfDz                                 : 0.002
-	distPatRec                              : 100. # mm
-	maxChi2TrkCandidate                     : 1500
-	markCandidateHits                       : 0
-	minPointsTrkCandidate                   : 25
-# confirmed on 2015-02-07
-	chi2xyMax                               : 300
-	chi2zphiMax                             : 0.1
-	dfdzErr                                 : 0.1
-	drMax                                   : 30  # mm
     }
     # Kalman fit hack configuration for the final track fit
     KalFitHack : {
 	debugLevel                              : 0
+	weedhits                                : true
 	materialCorrection                      : true
 	mingap					: 1.0
 	ambiguityStrategy    			: [ 0  , 0  , 4  , 4   , 4    , 4   , 4  , 4  , 4  ]
@@ -147,25 +162,20 @@ CalPatRec            : {
 	updateT0				: true
 	HitAmbigPenalty 			: false
 	HitMinDrift 				: 0.2
+	DivergeFlt                              : 1000.
 	RdriftMinusDocaTol                      : 1.
 	ZeroDriftPenalty 			: 0.05
 	Neutralize 				: true
 	fieldCorrection				: true
 	maxhitchi                               : 3.5
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
-	scaleErrDoublet                         : 5.
-	iLoopMarkDoublets                       : 4
+	scaleErrDoublet                         : 10.
+	iLoopUseDoublets                        : 8
 	minDriftDoublet                         : 0.4
 	deltaDriftDoublet                       : 0.3
 	sigmaSlope                              : 0.025
 	makeStrawHitModuleLabel                 : makeSH
     }
-    MaxStrawEDep            : 0.005
-    useDoublets             : 1
-    TimeSelectionBits       : ["EnergySelection","TimeSelection","RadiusSelection"]
-    HelixFitSelectionBits   : ["EnergySelection","TimeSelection","RadiusSelection"]
-    KalmanFitSelectionBits  : []
-    BackgroundSelectionBits : ["DeltaRay","Isolated"]
 }
 
 MergePatRec : {

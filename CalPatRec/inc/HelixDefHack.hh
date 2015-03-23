@@ -23,22 +23,23 @@ namespace mu2e {
   private:
     const StrawHitPositionCollection* _shpos;
     const StrawHitFlagCollection*     _shfcol;
+
   public:
-    HelixDefHack(TrkDef const& tdef) : TrkDef(tdef), _shpos(0) {}
+
+    HelixDefHack(TrkDef const& tdef);
 
     HelixDefHack(const StrawHitCollection*         strawcollection,
 		 const StrawHitPositionCollection* shposcollection, 
 		 const StrawHitFlagCollection*     ShFlagCollection, 
 		 const std::vector<hitIndex>&      strawhits,
 		 TrkParticle const&                tpart = _eminus, 
-		 TrkFitDirection const&            fdir  = _downstream) : 
-      TrkDef(strawcollection,strawhits,tpart,fdir) 
-    {
-      _shpos  = shposcollection;
-      _shfcol = ShFlagCollection; 
-    }
+		 TrkFitDirection const&            fdir  = _downstream);
 
-    HelixDefHack() {}
+    HelixDefHack();
+
+    ~HelixDefHack();
+
+    void init();
 
     const StrawHitPositionCollection* strawHitPositionCollection() const { return _shpos ; }
     const StrawHitFlagCollection*     strawHitFlagCollection    () const { return _shfcol; }

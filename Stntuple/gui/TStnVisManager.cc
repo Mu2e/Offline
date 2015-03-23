@@ -11,6 +11,8 @@
 #include "TGFrame.h"
 #include "TGStatusBar.h"
 
+#include "Stntuple/gui/TEvdMainFrame.hh"
+
 #include "Stntuple/gui/TTrkXYView.hh"
 #include "Stntuple/gui/TTrkRZView.hh"
 #include "Stntuple/gui/TCalView.hh"
@@ -19,58 +21,19 @@
 
 ClassImp(TStnVisManager)
 
-//-----------------------------------------------------------------------------
-enum TStmVisManagerCommandIdentifiers {
-  M_TRACKER_XY,
-  M_TRACKER_RZ,
-  M_CALORIMETER_XY,
-  M_EXIT,
-
-  M_OPTION_EVENT_STATUS,
-
-  M_HELP_CONTENTS,
-  M_HELP_SEARCH,
-  M_HELP_ABOUT
-};
-
-
-//_____________________________________________________________________________
-class TMyMainFrame: public TGMainFrame {
-public:
-  TMyMainFrame();
-  TMyMainFrame(const TGWindow* p, UInt_t w, UInt_t h, Int_t options);
-  virtual ~TMyMainFrame() {};
-
-  virtual Bool_t ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2);
-};
-
-//_____________________________________________________________________________
-TMyMainFrame::TMyMainFrame():
-  TGMainFrame(gClient->GetRoot(),100,200,kMainFrame)
-{}
-
-//_____________________________________________________________________________
-TMyMainFrame::TMyMainFrame(const TGWindow* p, UInt_t w, UInt_t h, Int_t options):
-  TGMainFrame(gClient->GetRoot(),w,h,options)
-{}
-
-
-
-
 //_____________________________________________________________________________
 TStnVisManager::TStnVisManager(const char* Name, const char* Title):
   TVisManager(Name,Title)
 {
   if (gROOT->IsBatch()) return ;
 
-  fMain = new  TMyMainFrame(gClient->GetRoot(),200,100, 
-			    kMainFrame | kVerticalFrame);
+  fMain = new  TEvdMainFrame(gClient->GetRoot(),200,100, 
+			     kMainFrame | kVerticalFrame);
 //-----------------------------------------------------------------------------
 //  create menu bar
 //-----------------------------------------------------------------------------
-  fMenuBarLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX,
-				     0, 0, 1, 1);
-  fMenuBarItemLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft, 0, 4, 0, 0);
+  fMenuBarLayout     = new TGLayoutHints(kLHintsTop | kLHintsLeft | kLHintsExpandX,0,0,1,1);
+  fMenuBarItemLayout = new TGLayoutHints(kLHintsTop | kLHintsLeft                 ,0,4,0,0);
   fMenuBarHelpLayout = new TGLayoutHints(kLHintsTop | kLHintsRight);
 
   fMenuSubdetectors = new TGPopupMenu(gClient->GetRoot());
@@ -96,6 +59,7 @@ TStnVisManager::TStnVisManager(const char* Name, const char* Title):
 // views
 //-----------------------------------------------------------------------------
   fTrkXYView       = new TTrkXYView();
+  fTrkRZView       = new TTrkRZView();
 					// for vanes - 4 "views"
   fCalView[0]      = new TCalView (0);
   fCalView[1]      = new TCalView (1);
@@ -114,6 +78,9 @@ TStnVisManager::TStnVisManager(const char* Name, const char* Title):
 
   fMinStation = 0;
   fMaxStation = 50;
+					// by default, no timing constraints
+  fTMin       = 0;
+  fTMax       = 1.e5;
   
   fTimePeak   = -1;
 }
@@ -124,8 +91,9 @@ TStnVisManager::TStnVisManager(const char* Name, const char* Title):
 TStnVisManager::~TStnVisManager() {
 
   if (! gROOT->IsBatch()) {
-
+					// delete tracking views
     delete fTrkXYView;
+    delete fTrkRZView;
 					// only two views for disk calorimeter
     delete fCalView[0];
     delete fCalView[1];
@@ -164,50 +132,6 @@ TCanvas* TStnVisManager::NewCanvas(const char* Name,
   TCanvas*c = win->GetCanvas();
   DeclareCanvas(c);
   return c;
-}
-
-
-//_____________________________________________________________________________
-Bool_t TMyMainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) {
-   // Handle menu items.
-
-  int message = GET_MSG(msg);
-
-  switch (message) {
-  case kC_COMMAND:
-    int submessage = GET_SUBMSG(msg);
-    switch (submessage) {
-    case kCM_MENU:
-      switch (parm1) {
-//-----------------------------------------------------------------------------
-//  SUBDETECTOR menu
-//-----------------------------------------------------------------------------
-      case M_TRACKER_XY: 
-	TStnVisManager::Instance()->OpenTrkXYView();
-	break;
-
-      case M_CALORIMETER_XY: 
-	TStnVisManager::Instance()->OpenCalView();
-	break;
-
-      case M_EXIT:
-	TStnVisManager::Instance()->CloseWindow();
-	break;
-//-----------------------------------------------------------------------------
-//  default
-//-----------------------------------------------------------------------------
-      default:
-//  	printf(" *** TStnFrame::ProcessMessage msg = %i parm1 = %i parm2 = %i\n", 
-//  	       msg,parm1,parm2);
-	break;
-      }
-    default:
-//      printf(" *** TStnFrame::ProcessMessage msg = %i parm1 = %i parm2 = %i\n", 
-//     msg,parm1,parm2);
-      break;
-    }
-  }
-  return true;
 }
 
 //_____________________________________________________________________________
@@ -296,14 +220,15 @@ Int_t TStnVisManager::OpenTrkRZView() {
   sprintf(name ,"rz_view_%i"       ,n);
   sprintf(title,"RZ view number %i",n);
   
-  TStnFrame* win = new TStnFrame(name, title, kRZView,740,760);
+  TStnFrame* win = new TStnFrame(name, title, kRZView,1500,500);
   TCanvas* c = win->GetCanvas();
   fListOfCanvases->Add(c);
 
   TString name1(name);
   name1 += "_1";
   TPad* p1 = (TPad*) c->FindObject(name1);
-  p1->Range(-800.,-800.,800.,800.);
+  //  p1->Range(8500.,-200.,12500.,800.);
+  p1->Range(-2000.,-300.,3000.,700.);
   p1->cd();
   fTrkRZView->Draw();
 

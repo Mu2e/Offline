@@ -114,7 +114,7 @@
 #include "Stntuple/gui/THeaderVisNode.hh"
 #include "Stntuple/gui/TCalVisNode.hh"
 #include "Stntuple/gui/TTrkVisNode.hh"
-#include "Stntuple/gui/TStrawHitVisNode.hh"
+// #include "Stntuple/gui/TStrawHitVisNode.hh"
 #include "Stntuple/gui/TMcTruthVisNode.hh"
 
 #include "Stntuple/alg/TStnTrackID.hh"
@@ -205,7 +205,7 @@ namespace mu2e {
 					// 4 hypotheses: dem, uep, dmm, ump
     int       fNTracks[4];
 
-    const mu2e::KalRepPtrCollection*  fDem; 
+    const mu2e::KalRepPtrCollection*  fKalRepPtrCollection; 
 
     TMarker*            fMarker;
 
@@ -221,6 +221,8 @@ namespace mu2e {
 
     const CalTimePeak*  fTimePeak;
 
+    const TTracker*     fTracker;    // straw tracker geometry
+
   public:
     explicit MuHitDisplay(fhicl::ParameterSet const& pset);
     virtual ~MuHitDisplay();
@@ -234,6 +236,7 @@ namespace mu2e {
 // overloaded virtual methods of the base class
 //-----------------------------------------------------------------------------
     virtual void     beginJob();
+    virtual bool     beginRun(art::Run& aRun);
     virtual bool     filter  (art::Event& Evt);
   };
 
@@ -246,11 +249,6 @@ namespace mu2e {
     generatorModuleLabel_     (pset.get<std::string>("generatorModuleLabel"        )),
     fG4ModuleLabel            (pset.get<std::string>("g4ModuleLabel"               )),
     caloClusterModuleLabel_   (pset.get<std::string>("caloClusterModuleLabel")),
-//     fCaloClusterAlgorithm     (pset.get<std::string>("caloClusterAlgorithm"  )),
-//     fCaloClusterSeeding       (pset.get<std::string>("caloClusterSeeding"    )),
-
-//     producerName_             ("Algo"+mu2e::TOUpper(fCaloClusterAlgorithm)
-// 			       +"SeededBy"+mu2e::TOUpper(fCaloClusterSeeding)),
     producerName_             (""),
 
     fStrawHitMaker            (pset.get<std::string>("strawHitMakerModuleLabel"    )),
@@ -345,25 +343,35 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
+  bool MuHitDisplay::beginRun(art::Run& Run) {
+    mu2e::GeomHandle<mu2e::TTracker> handle;
+    fTracker = handle.get();
+    return true;
+  }
+  
+
+//-----------------------------------------------------------------------------
 // initialize the visualization manager
+// TStnVisManager is responsible for deleting all nodes created here
 //-----------------------------------------------------------------------------
   void MuHitDisplay::InitVisManager() {
     const char oname[] = "MuHitDisplay::InitVisManager";
 
     fVisManager->SetTitleNode(new THeaderVisNode("HeaderVisNode",fHeaderBlock));
 
-    TCalVisNode      *cal_node[2];
-    TTrkVisNode      *trk_node;
-    TStrawHitVisNode *strh_node;
-    TMcTruthVisNode  *mctr_node;
-    const mu2e::DiskCalorimeter* dc;
-
+    TCalVisNode                  *cal_node[2];
+    TTrkVisNode                  *trk_node;
+    TMcTruthVisNode              *mctr_node;
+    const mu2e::DiskCalorimeter  *dc;
+    
     art::ServiceHandle<mu2e::GeometryService> geom;
 
     if (geom->hasElement<mu2e::DiskCalorimeter>()) {
       mu2e::GeomHandle<mu2e::DiskCalorimeter> dc_handle;
       dc = dc_handle.get();
-
+//-----------------------------------------------------------------------------
+// TCalVisNode: calorimeter, CaloCrystalHits and CaloCrystals
+//-----------------------------------------------------------------------------
       cal_node[0] = new TCalVisNode("CalVisNode#0",&dc->disk(0),0);
       cal_node[0]->SetListOfClusters(&fListOfClusters);
       cal_node[0]->SetListOfCrystalHits(&fListOfCrystalHits);
@@ -380,18 +388,20 @@ namespace mu2e {
       printf("[%s] >>> ERROR : DiskCalorimeter is not defined\n",oname);
       dc = 0;
     }
-
-    trk_node = new TTrkVisNode("TrkVisNode");
+//-----------------------------------------------------------------------------
+// TrkVisNode: tracker, tracks and straw hits
+//-----------------------------------------------------------------------------
+    trk_node = new TTrkVisNode("TrkVisNode",fTracker,NULL);
+    trk_node->SetStrawHitColl       (&fStrawHitColl     );
+    trk_node->SetStrawHitPosColl    (&fStrawHitPosColl  );
+    trk_node->SetStrawHitFlagColl   (&fStrawHitFlagColl );
+    trk_node->SetCalTimePeakColl    (&fCalTimePeakColl  );
+    trk_node->SetKalRepPtrCollection(&fKalRepPtrCollection);
+    trk_node->SetMcPtrColl(&hits_mcptr);
     fVisManager->AddNode(trk_node);
-
-    strh_node = new TStrawHitVisNode("StrawHitVisNode");
-    strh_node->SetStrawHitColl    (&fStrawHitColl     );
-    strh_node->SetStrawHitPosColl (&fStrawHitPosColl  );
-    strh_node->SetStrawHitFlagColl(&fStrawHitFlagColl );
-    strh_node->SetCalTimePeakColl (&fCalTimePeakColl  );
-    strh_node->SetMcPtrColl(&hits_mcptr);
-    fVisManager->AddNode(strh_node);
-
+//-----------------------------------------------------------------------------
+// MC truth: StepPointMC's and something else - not entirely sure
+//-----------------------------------------------------------------------------
     mctr_node = new TMcTruthVisNode("McTruthVisNode");
     mctr_node->SetListOfHitsMcPtr(&hits_mcptr);
     mctr_node->SetStepPointMCCollection(&fSteps);
@@ -495,7 +505,6 @@ namespace mu2e {
 
     art::Handle<CalTimePeakCollection> tpch;
     const char* charDirectionAndParticle = fDirectionAndParticle.c_str();
-    //   Evt->getByLabel("CalPatRec","DownstreameMinus",tpch);
     Evt->getByLabel("CalPatRec",charDirectionAndParticle,tpch);
     if (tpch.isValid()) { 
       fCalTimePeakColl = tpch.product();
@@ -523,30 +532,12 @@ namespace mu2e {
     art::Handle<KalRepPtrCollection> demHandle;
     Evt->getByLabel(fTrkRecoModuleLabel.data(),charDirectionAndParticle, demHandle);
 
-    fNTracks[0] = 0;
-    fDem        = NULL;
+    fNTracks[0]          = 0;
+    fKalRepPtrCollection = NULL;
     if (demHandle.isValid()) { 
-      fDem        = demHandle.product();
-      fNTracks[0] = fDem->size();
+      fKalRepPtrCollection        = demHandle.product();
+      fNTracks[0] = fKalRepPtrCollection->size();
     }
-//-----------------------------------------------------------------------------
-// three other track collections
-//-----------------------------------------------------------------------------
-//     art::Handle<KalRepPtrCollection> uepHandle;
-//     Evt->getByLabel("TrkPatRec2","UpstreamePlus", uepHandle);
-//     const KalRepPtrCollection*  uep = &(*uepHandle);
-//     fNTracks[1] = uep->size();
-
-    //     art::Handle<KalRepPtrCollection> dmmHandle;
-    //     Evt->getByLabel("trkPatRec3","DownstreammuMinus", dmmHandle);
-    //     const KalRepPtrCollection*  dmm = &(*dmmHandle);
-    //     fNTracks[2] = dmm->size();
-
-    //     art::Handle<KalRepPtrCollection> umpHandle;
-    //     Evt->getByLabel("trkPatRec4","UpstreammuPlus", umpHandle);
-    //     const KalRepPtrCollection*  ump = &(*umpHandle);
-    //     fNTracks[3] = ump->size();
-
     return 0;
   }
 
@@ -593,60 +584,36 @@ namespace mu2e {
       return;
     }
     
-  int nsteps = coll->size();
+    int nsteps = coll->size();
 
-  const mu2e::StepPointMC* step;
+    const mu2e::StepPointMC* step;
 
-  const CLHEP::Hep3Vector* mom;
+    const CLHEP::Hep3Vector* mom;
 
-  double px, py, pt;
+    double px, py, pt;
 
-  fTrackerP  = -1.;
-  fTrackerPt = -1.;
+    fTrackerP  = -1.;
+    fTrackerPt = -1.;
 
-  for (int i=0; i<nsteps; i++) {
-    step = &coll->at(i);
-    if (step->volumeId() == 13) {
-      mom = &step->momentum();
-      fDump->printStepPointMC(step, "banner+data");
-
-      px = mom->x();
-      py = mom->x();
-
-      pt = sqrt(px*px+py*py);
-
-      fTrackerP  = mom->mag();
-      fTrackerPt = pt;
-
-      break;
+    for (int i=0; i<nsteps; i++) {
+      step = &coll->at(i);
+      if (step->volumeId() == 13) {
+	mom = &step->momentum();
+	fDump->printStepPointMC(step, "banner+data");
+	
+	px = mom->x();
+	py = mom->x();
+	
+	pt = sqrt(px*px+py*py);
+	
+	fTrackerP  = mom->mag();
+	fTrackerPt = pt;
+	
+	break;
+      }
     }
   }
-//-----------------------------------------------------------------------------
-// then - clusters, tracks are supposed to be already initialized
-//-----------------------------------------------------------------------------
-//     const mu2e::CaloCluster       *cl;
-//     unsigned int nm(0);
-
-//     if (fTrkCalMap) nm = fTrkCalMap->size();
-
-//     for (int i=0; i<fNClusters; i++) {
-//       cluster               = fClusterBlock->NewCluster();
-
-//       for(size_t i=0; i<nm; i++) {
-// 	//	KalRepPtr const& trkPtr = fTrkCalMap->at(i).first->trk();
-// 	//	const KalRep *  const &trk = *trkPtr;
-
-// 	cl = &(*(fTrkCalMap->at(i).second));
-
-// 	if (cl == cluster->fCaloCluster) { 
-// 	  cluster->fClosestTrack = fTrackBlock->Track(i);
-// 	  break;
-// 	}
-//       }
-//     }
-  }
-
-
+  
 //-----------------------------------------------------------------------------
   bool MuHitDisplay::filter(art::Event& Evt) {
     const char* oname = "MuHitDisplay::filter";
@@ -679,16 +646,12 @@ namespace mu2e {
 
     printf("[%s] RUN: %10i EVENT: %10i\n",oname,Evt.run(),Evt.event());
 
-    // Geometry of tracker envelope.
+    // Geometry of the tracker envelope.
 
-    mu2e::GeomHandle<mu2e::TTracker> ttHandle;
-    const mu2e::TTracker* tracker = ttHandle.get();
-
-    TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+    TubsParams envelope(fTracker->getInnerTrackerEnvelopeParams());
 
     // Tracker calibration object.
     mu2e::ConditionsHandle<mu2e::TrackerCalibrations> trackCal("ignored");
-
 //-----------------------------------------------------------------------------
 // init VisManager - failed to do it in beginJob - what is the right place for doing it?
 //-----------------------------------------------------------------------------
@@ -866,7 +829,7 @@ namespace mu2e {
       printf(" I  alg ");
       TAnaDump::Instance()->printKalRep(0,"banner");
       for (int i=0; i<fNTracks[0]; i++ ) {
-	trk = fDem->at(i).get();
+	trk = fKalRepPtrCollection->at(i).get();
 	printf(" %2i dem ",i);
 	TAnaDump::Instance()->printKalRep(trk,opt);
 //-----------------------------------------------------------------------------
@@ -900,6 +863,7 @@ namespace mu2e {
     
       for (int i=0; i<fNClusters; i++) {
 	cl = &fListOfClusters->at(i);
+	if (cl->isSplit() /*daddy()*/ == -1) {
 	  TAnaDump::Instance()->printCaloCluster(cl,opt);
 //-----------------------------------------------------------------------------
 // event time defined by the first, most energetic cluster
@@ -910,9 +874,11 @@ namespace mu2e {
 
 	  for (int j=i+1; j<fNClusters; j++) {
 	    clj = &fListOfClusters->at(j);
-            TAnaDump::Instance()->printCaloCluster(clj,opt);
+	    if (clj->isSplit() /*daddy()*/ == i) {
+	      TAnaDump::Instance()->printCaloCluster(clj,opt);
+	    }
 	  }
-	
+	}
       }
 
       for (int i=0; i<fNClusters; i++) {
@@ -922,7 +888,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	if (cl->energyDep() > 5.) {
 	  // poor-man's translation
-	  //	  vane_id = cl->sectionId();
+	  //	  vane_id = cl->vaneId();
 	  xl      = cl->cog3Vector().x()+3904.1;
 	  yl      = cl->cog3Vector().y();
 	  
@@ -951,7 +917,7 @@ namespace mu2e {
     const StrawHit*              hit; 
     const StrawHitPosition*      hitpos; 
     const StrawHitFlag*          hit_id_word; 
-    const CLHEP::Hep3Vector      *mid, *w; 
+    const CLHEP::Hep3Vector      /**mid,*/ *w; 
     const Straw*                 straw; 
     const PtrStepPointMCVector*  mcptr;
     CLHEP::Hep3Vector            vx0, vx1, vx2; 
@@ -966,8 +932,8 @@ namespace mu2e {
       if (fTimePeak != NULL) ihit = fTimePeak->HitIndex(ih);
       else                   ihit = ih;
 
-      hit         = &fStrawHitColl->at(ihit);
-      hitpos      = &fStrawHitPosColl->at(ihit);
+      hit         = &fStrawHitColl    ->at(ihit);
+      hitpos      = &fStrawHitPosColl ->at(ihit);
       hit_id_word = &fStrawHitFlagColl->at(ihit);
 
       display_hit = 1;
@@ -975,12 +941,11 @@ namespace mu2e {
       if (display_hit) {
 
 	mu2e::GenId gen_id(fGeneratorID);
-      //StrawHitMCTruth const& truth(hitsTruth.at(ihit));
 	mcptr = &hits_mcptr->at(ihit);
 	
 	// Get the straw information:
-	straw = &tracker->getStraw( hit->strawIndex() );
-	mid   = &straw->getMidPoint();
+	straw = &fTracker->getStraw( hit->strawIndex() );
+	//	mid   = &straw->getMidPoint();
 	w     = &straw->getDirection();
 
 	isFromConversion = false;
@@ -1007,81 +972,62 @@ namespace mu2e {
 	    }
 	  }
 	}
-	
-	//	Hep3Vector pos(tt->positionAtZ( mid->z()));
-	//	Hep3Vector mom(tt->momentumAtZ( mid->z()));
-	//	TwoLinePCA pca(pos, mom.unit(), *mid, *w);
-	
-	//	Hep3Vector posMid(tmid->positionAtZ( mid->z() ) );
-	//	Hep3Vector momMid(tmid->momentumAtZ( mid->z() ) );
-	//	TwoLinePCA pcaMid(posMid, momMid.unit(), *mid, *w);
-	
-	// Position along wire, from delta t.
-	
-	v     = trackCal->TimeDiffToDistance( straw->index(), hit->dt() );
-	vnorm = v/straw->getHalfLength();
+//-----------------------------------------------------------------------------
+// Position along the wire comes from time division - but we are only displaying
+// StrawHitPositions
+//-----------------------------------------------------------------------------
+	v      = trackCal->TimeDiffToDistance( straw->index(), hit->dt() );
+	vnorm  = v/straw->getHalfLength();
 	if (fUseStereoHits) {
 //-----------------------------------------------------------------------------
 // new default, hit position errors come from StrawHitPositionCollection
 //-----------------------------------------------------------------------------
-	  sigv  = hitpos->posRes(StrawHitPosition::phi); 
-	  sigr  = hitpos->posRes(StrawHitPosition::rho); 
+	  sigv = hitpos->posRes(StrawHitPosition::phi); 
+	  sigr = hitpos->posRes(StrawHitPosition::rho); 
 	}
 	else {
 //-----------------------------------------------------------------------------
 // old default, draw semi-random errors
 //-----------------------------------------------------------------------------
-	  sigv  = trackCal->TimeDivisionResolution( straw->index(), vnorm )/2.; // P.Murat
-	  sigr  = 5.; // in mm
+	  sigv = trackCal->TimeDivisionResolution( straw->index(), vnorm )/2.; // P.Murat
+	  sigr = 5.; // in mm
 	}
 	
-	//	vx0 = (*mid) + v   *(*w);
-
-	vx0 = hitpos->pos();
-
-	vx1 = vx0    + sigv*(*w);
-	vx2 = vx0    - sigv*(*w);
-	
+	vx0    = hitpos->pos();
+	vx1    = vx0    + sigv*(*w);
+	vx2    = vx0    - sigv*(*w);
 	intime = fabs(hit->time()-event_time) < timeWindow_;
-	
 //-----------------------------------------------------------------------------
-// choose the hit color
+// hit colors:
+// -----------
+// CE hits : red (in time), blue (out-of-time)
+// the rest: cyan+3 (if any bad bit), otherwise - black 
 //-----------------------------------------------------------------------------
-	color = kBlack;
-
 	if ( isFromConversion ) {
 	  if (intime) color = kRed;
 	  else        color = kBlue;
 	}
 	else {
-	  //	  if (! hit_id_word->hasAllProperties(fGoodHitMask)) display_hit = 0;
-	  if (hit_id_word->hasAnyProperty(fBadHitMask)) {
-	    color = kCyan+3;
-	  }
+	  if (hit_id_word->hasAnyProperty(fBadHitMask)) color = kCyan+3;
+	  else                                          color = kBlack;
 	}
-	
+//-----------------------------------------------------------------------------
+// not sure why the logic is that complicated
+//-----------------------------------------------------------------------------
 	if ((isFromConversion) || (intime)) {
-// 	  double x,y;
-// 	  x =hitpos->pos().x(); 
-// 	  y =hitpos->pos().y(); 
-
-// 	  if ((x > 350) && (x < 500) && (y > 0) && (y < 200)) {
-// 	    printf(" [MuHitDisplay::filter] hit x,y,z = %10.3f %10.3f %10.3f\n",
-// 		   hitpos->pos().x(),hitpos->pos().y(),hitpos->pos().z());
-// 	  }
 
 	  line->SetLineColor(color);
 	  line->DrawLine(vx1.x(),vx1.y(),vx2.x(),vx2.y() );
-	  
-	  line->DrawLine(vx0.x()+sigr*w->y(),vx0.y()-sigr*w->x(),vx0.x()-sigr*w->y(),vx0.y()+sigr*w->x());
+
+	  line->DrawLine(vx0.x()+sigr*w->y(),vx0.y()-sigr*w->x(),
+			 vx0.x()-sigr*w->y(),vx0.y()+sigr*w->x());
 
 	  n_displayed_hits++;
 	}
       }
     }
-
 //-----------------------------------------------------------------------------
-// Draw the generated hits.
+// Draw StepPointMCCollection.
 //-----------------------------------------------------------------------------
     if (xStep.size() <= 0) {
     }

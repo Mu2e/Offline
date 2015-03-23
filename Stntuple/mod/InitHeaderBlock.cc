@@ -24,7 +24,7 @@ Int_t StntupleInitMu2eHeaderBlock(TStnDataBlock* block, AbsEvent* AnEvent, int m
 //-----------------------------------------------------------------------------
 //  initialize local static variables
 //-----------------------------------------------------------------------------
-    fol     = (TFolder*) gROOT->GetRootFolder()->FindObject("StntupleFolder");
+    fol     = (TFolder*) gROOT->GetRootFolder()->FindObject("Stntuple");
     processName      = (TNamed*) fol->FindObject("ProcessName");
   }
 

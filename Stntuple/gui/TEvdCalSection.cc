@@ -105,9 +105,8 @@ TEvdCalSection::TEvdCalSection(const mu2e::Disk* Disk, int SectionID): TObject()
 
 //_____________________________________________________________________________
 TEvdCalSection::~TEvdCalSection() {
-  delete [] fEllipse;
-//   delete fListOfArches;
-//   delete fListOfBoxes;
+  delete fEllipse[0];
+  delete fEllipse[1];
 }
 
 //-----------------------------------------------------------------------------
