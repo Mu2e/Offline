@@ -1787,19 +1787,21 @@ namespace mu2e {
     vdId = VirtualDetectorId::PSPbarIn;
     if ( vdg->exist(vdId) ) {
 
-      VolumeInfo& parent = _helper->locateVolInfo("TS1Vacuum");
+      const VolumeInfo& parentTS1 = _helper->locateVolInfo("TS1Vacuum");
+      const VolumeInfo& parentPS = _helper->locateVolInfo("PSVacuum");
+
       double pbarTS1InOffset = _config.getDouble("pbar.coll1In.offset", 1.0);
-      if (pbarTS1InOffset < 0.0) parent = _helper->locateVolInfo("PSVacuum");
-      
       const double pbarTS1InRecordROut = _config.getDouble("pbar.coll1In.rOutRecord");
       const TubsParams vdParams(0.0, pbarTS1InRecordROut, vdg->getHalfLength());
 
-      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+      VolumeInfo vdInfo; 
+      if (pbarTS1InOffset < 0.0) {
+                 vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
                                    vacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
-                                   parent,
+                                   parentPS,
                                    vdId,
                                    vdIsVisible, //
                                    G4Color::White(),
@@ -1808,6 +1810,23 @@ namespace mu2e {
                                    placePV,
                                    false
                                   );
+      }
+      else {
+                 vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   vdParams,
+                                   vacuumMaterial,
+                                   0,
+                                   vdg->getLocal(vdId), //local position w.r.t. parent
+                                   parentTS1,
+                                   vdId,
+                                   vdIsVisible, //
+                                   G4Color::White(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                  );
+      }
 
       if ( verbosityLevel >= 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
@@ -1825,19 +1844,21 @@ namespace mu2e {
     vdId = VirtualDetectorId::PSPbarOut;
     if ( vdg->exist(vdId) ) {
 
-      VolumeInfo& parent = _helper->locateVolInfo("TS1Vacuum");
-      double pbarTS1InOffset = _config.getDouble("pbar.coll1In.offset", 1.0);
-      if (pbarTS1InOffset < 0.0) parent = _helper->locateVolInfo("PSVacuum");
+      const VolumeInfo& parentTS1 = _helper->locateVolInfo("TS1Vacuum");
+      const VolumeInfo& parentPS = _helper->locateVolInfo("PSVacuum");
 
+      double pbarTS1InOffset = _config.getDouble("pbar.coll1In.offset", 1.0);
       const double pbarTS1InRecordROut = _config.getDouble("pbar.coll1In.rOutRecord");
       const TubsParams vdParams(0.0, pbarTS1InRecordROut, vdg->getHalfLength());
 
-      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+      VolumeInfo vdInfo;
+      if (pbarTS1InOffset < 0.0) {
+                 vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
                                    vacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
-                                   parent,
+                                   parentPS,
                                    vdId,
                                    vdIsVisible, //
                                    G4Color::White(),
@@ -1846,6 +1867,23 @@ namespace mu2e {
                                    placePV,
                                    false
                                   );
+      }
+      else {
+                 vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+                                   vdParams,
+                                   vacuumMaterial,
+                                   0,
+                                   vdg->getLocal(vdId), //local position w.r.t. parent
+                                   parentTS1,
+                                   vdId,
+                                   vdIsVisible, //
+                                   G4Color::White(),
+                                   vdIsSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   false
+                                  );
+      }
 
       if ( verbosityLevel >= 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
@@ -1859,6 +1897,6 @@ namespace mu2e {
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
-    
+   
   } // constructVirtualDetectors()
 }
