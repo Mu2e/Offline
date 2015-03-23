@@ -96,6 +96,10 @@ double g4.yaboveDirtYmin = 0.;
 // G4HelixSimpleRunge
 string g4.stepper = "G4ClassicalRK4";
 
+// Control printout of element and material lists.
+bool g4.printElements  = false;
+bool g4.printMaterials = false;
+
 int    world.verbosityLevel = 0;
 bool   ttracker.ActiveWr_Wl_SD    = false;   //Active the Sensitive Detector for the wires and straw wall.
 

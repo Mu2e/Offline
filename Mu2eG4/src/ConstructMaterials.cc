@@ -20,6 +20,7 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
+#include "fhiclcpp/ParameterSet.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/ConstructMaterials.hh"
@@ -52,8 +53,19 @@ using namespace std;
 
 namespace mu2e {
 
-  ConstructMaterials::ConstructMaterials(){
+  ConstructMaterials::ConstructMaterials() {
+    art::ServiceHandle<GeometryService> geom;
+    SimpleConfig const& config = geom->config();
+    mu2eStandardDetector_ = config.getBool("mu2e.standardDetector",true);
+    printElements_ = config.getBool("g4.printElements",false);
+    printMaterials_ = config.getBool("g4.printMaterials",false);
   }
+
+  ConstructMaterials::ConstructMaterials(const fhicl::ParameterSet& pset)
+    : mu2eStandardDetector_(pset.get<bool>("mu2eStandardDetector",true))
+    , printElements_(pset.get<bool>("debug.printElements"))
+    , printMaterials_(pset.get<bool>("debug.printMaterials"))
+  {}
 
   ConstructMaterials::~ConstructMaterials(){
   }
@@ -61,11 +73,7 @@ namespace mu2e {
   // This is the main function.
   void ConstructMaterials::construct(){
 
-    // Get access to the master geometry system and its run time config.
-    art::ServiceHandle<GeometryService> geom;
-    SimpleConfig const& config = geom->config();
-
-    if (!config.getBool("mu2e.standardDetector",true)) {
+    if (!mu2eStandardDetector_) {
       cout  << "Non standard mu2e configuration, Will NOT construct mu2e materials " << endl;
       // one could move this down to constructMu2eMaterials before using GeomHandle's
      return;
@@ -75,13 +83,13 @@ namespace mu2e {
     constructMu2eMaterials();
 
     // Print element table, if requested.
-    if ( config.getBool("g4.printElements",false) ){
+    if (printElements_){
       mf::LogInfo  log("GEOM");
       log << *G4Element::GetElementTable();
     }
 
     // Print material table, if requested.
-    if ( config.getBool("g4.printMaterials",false) ){
+    if (printMaterials_){
       mf::LogInfo  log("GEOM");
       log << *G4Material::GetMaterialTable();
     }

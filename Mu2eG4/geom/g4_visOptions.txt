@@ -45,10 +45,6 @@ vector<string> g4.forceAuxEdgeVisible.keep  = {};
 vector<string> g4.forceAuxEdgeVisible.order = { "g4.forceAuxEdgeVisible.drop",
                                                 "g4.forceAuxEdgeVisible.keep" };
 
-// Control printout of element and material lists.
-bool g4.printElements  = false;
-bool g4.printMaterials = false;
-
 // make detector volume structure visible where enabled
 bool g4.forceAuxEdgeVisible = true;
 

@@ -356,7 +356,8 @@ namespace mu2e {
 
     // Create user actions and register them with G4.
 
-    auto* allMu2e = new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &_sensitiveDetectorHelper));
+    auto* allMu2e = new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &_sensitiveDetectorHelper),
+                                              std::make_unique<ConstructMaterials>(pset_));
 
     _runManager->SetVerboseLevel(_rmvlevel);
 
@@ -791,6 +792,11 @@ namespace mu2e {
       "GDMLFileName",
       "g4.stepper",
       "bfield.maxStep",
+
+      // ConstructMaterials
+      "mu2e.standardDetector",
+      "g4.printElements",
+      "g4.printMaterials",
 
       // old StackingAction
       "g4.doCosmicKiller",

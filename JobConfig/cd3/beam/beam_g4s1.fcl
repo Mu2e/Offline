@@ -127,6 +127,8 @@ physics : {
 	    PiENuPolicyVerbosity : 0
 	    printTrackTiming: false
 	    worldVerbosityLevel : 0
+	    printElements : false
+	    printMaterials : false
 	 }
 
 	 visualization: {
