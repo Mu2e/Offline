@@ -16,8 +16,6 @@
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
 
-#include "Mu2eG4/inc/checkMSCmodel.hh"
-
 namespace mu2e{
 
   void postG4InitializeTasks( SimpleConfig const& config ){
@@ -33,9 +31,6 @@ namespace mu2e{
 
     // If requested, change the minimum range cut.
     setMinimumRangeCut(config);
-
-    // If the ITracker is used, check the geant4 Multiple Scattering Model selected.
-    checkMSCmodel(config);
 
   }
 
