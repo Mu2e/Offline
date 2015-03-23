@@ -36,7 +36,6 @@
 
 // Mu2e includes
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
