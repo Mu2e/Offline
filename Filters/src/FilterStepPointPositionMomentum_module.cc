@@ -50,6 +50,8 @@ namespace mu2e {
     double pyMax_;
     double pzMin_;
     double pzMax_;  
+    double pMin_;
+    double pMax_;
 
     // statistics
     unsigned numInputHits_;
@@ -117,7 +119,8 @@ namespace mu2e {
     pyMax_ = pset.get<double>("pyMax", kMax);    
     pzMin_ = pset.get<double>("pzMin", kMin);
     pzMax_ = pset.get<double>("pzMax", kMax);
-
+    pMin_  = pset.get<double>("pMin",  kMin);
+    pMax_  = pset.get<double>("pMax",  kMax);
   }
 
   //================================================================
@@ -146,13 +149,15 @@ namespace mu2e {
         const double px = hit.momentum().x();
         const double py = hit.momentum().y();
         const double pz = hit.momentum().z();
+        const double p  = hit.momentum().mag();
 
         if ( x <  xMin_ ||  x >  xMax_ ||
              y <  yMin_ ||  y >  yMax_ ||
              z <  zMin_ ||  z >  zMax_ ||
             px < pxMin_ || px > pxMax_ ||
             py < pyMin_ || py > pyMax_ ||
-            pz < pzMin_ || pz > pzMax_) {
+            pz < pzMin_ || pz > pzMax_ || 
+            p  < pMin_  || p  > pMax_  ) {
           continue;
         }
 
