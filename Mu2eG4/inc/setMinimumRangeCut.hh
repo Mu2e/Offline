@@ -9,14 +9,15 @@
 //
 //-----------------------------------------------------------------------------
 
+namespace fhicl { class ParameterSet; }
+
 namespace mu2e{
 
   class SimpleConfig;
 
   void setMinimumRangeCut( SimpleConfig const& config );
+  void setMinimumRangeCut(const fhicl::ParameterSet& pset);
 
 }  // end namespace mu2e
 
 #endif /* Mu2eG4_setMinimumRangeangeCut_hh */
-
-

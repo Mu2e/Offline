@@ -292,10 +292,12 @@ namespace mu2e {
   // necessitates workarounds for G4 geometry.
   void Mu2eG4::beginRun( art::Run &run){
 
+    art::ServiceHandle<GeometryService> geom;
+    SimpleConfig const& config  = geom->config();
+    checkConfigRelics(config);
+
     static int ncalls(0);
     ++ncalls;
-
-    art::ServiceHandle<GeometryService> geom;
 
     // Do the main initialization of G4; only once per job.
     if ( ncalls == 1 ) {
@@ -326,10 +328,6 @@ namespace mu2e {
     // not once per run, but which need to be done after the call to
     // BeamOnBeginRun.
 
-
-    // Get some run-time configuration information that is stored in the geometry file.
-    SimpleConfig const& config  = geom->config();
-    checkConfigRelics(config);
 
     if ( ncalls == 1 ) {
 
@@ -408,7 +406,7 @@ namespace mu2e {
     // that is derived from the G4 geometry or physics processes.
 
     // Mu2e specific customizations that must be done after the call to Initialize.
-    postG4InitializeTasks(config);
+    postG4InitializeTasks(pset_);
     _sensitiveDetectorHelper.registerSensitiveDetectors();
     _extMonFNALPixelSD =
       dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
@@ -773,6 +771,14 @@ namespace mu2e {
       // G4_module
       "g4.printPhysicsProcessSummary",
       "g4.pointTrajectoryMinSteps",
+
+      // postG4InitializeTasks() call tree
+      "g4.PiENuPolicy",
+      "g4.PiENuPolicyVerbosity",
+      "g4.minRangeCut",
+      "g4.noDecay",
+      "g4.doMuMinusConversionAtRest",
+      "g4.useNewMuMinusAtomicCapture",
 
       // old StackingAction
       "g4.doCosmicKiller",

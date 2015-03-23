@@ -6,7 +6,6 @@
 // Physics lists
 //-----------------------
 string g4.physicsListName = "Shielding_MU2E01";
-double g4.minRangeCut     = 0.01;  // mm
 
 //-----------------------
 // Surface checker
@@ -82,17 +81,6 @@ int    g4.mcTrajectoryMinSteps    =  5;
 // G4HelixImplicitEuler
 // G4HelixSimpleRunge
 string g4.stepper = "G4ClassicalRK4";
-
-// Enable the Mu2e written version of the decay of muonic atoms.
-bool g4.doMuMinusConversionAtRest = false;
-
-// Define the value of B(pi-> e nu).
-// The allowed values are: { PDG, All, None, nnnnnn } where nnnnnn is any numerical value in the range [0,1]
-string g4.PiENuPolicy          = PDG;
-int    g4.PiENuPolicyVerbosity = 0;
-
-// List of PDG ids of particles for which to switch off decay.
-vector<int> g4.noDecay = {};
 
 // Control printout of element and material lists.
 bool g4.printElements  = false;

@@ -119,12 +119,16 @@ physics : {
 	 debug: {
 	    stepLimitKillerVerbose: true
 	    printPhysicsProcessSummary : false
-
+	    PiENuPolicyVerbosity : 0
 	 }
 
 	 visualization: {
 	 }
 
+	 PiENuPolicy : "PDG"
+	 noDecay: []
+	 useNewMuMinusAtomicCapture: false
+	 minRangeCut: 0.01 // mm
       }
 
       compressPV : {

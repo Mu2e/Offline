@@ -15,14 +15,18 @@
 //
 //-----------------------------------------------------------------------------
 
+namespace fhicl { class ParameterSet; }
+
 namespace mu2e{
+  class SimpleConfig;
 
   // Specializations for particular trackers.  Called by the public entry point.
   void switchDecayOff( const SimpleConfig& config  );
   void addUserProcesses( const SimpleConfig& config  );
 
+  void switchDecayOff(const fhicl::ParameterSet& pset);
+  void addUserProcesses(const fhicl::ParameterSet& pset);
+
 }  // end namespace mu2e
 
 #endif /* Mu2eG4_toggleProcesses_hh */
-
-

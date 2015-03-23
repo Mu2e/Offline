@@ -1,3 +1,8 @@
+//-----------------------
+// Physics lists
+//-----------------------
+double g4.minRangeCut     = 0.01;  // mm
+
 bool   g4.printPhysicsProcessSummary = false;
 
 // Some G4 controls which does not allow it to consume all the memory
@@ -41,6 +46,17 @@ double g4.eKineMin      = 0.0;    // Kinetic energy in MeV
 
 // This setting is used for special studies (stored muons)
 // bool g4.killPitchToLowToStore = false;
+
+// Enable the Mu2e written version of the decay of muonic atoms.
+bool g4.doMuMinusConversionAtRest = false;
+
+// Define the value of B(pi-> e nu).
+// The allowed values are: { PDG, All, None, nnnnnn } where nnnnnn is any numerical value in the range [0,1]
+string g4.PiENuPolicy          = PDG;
+int    g4.PiENuPolicyVerbosity = 0;
+
+// List of PDG ids of particles for which to switch off decay.
+vector<int> g4.noDecay = {};
 
 // Enable the code to kill low p secondaries from cosmics.
 bool g4.doCosmicKiller = false;

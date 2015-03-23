@@ -12,6 +12,7 @@
 //-----------------------------------------------------------------------------
 // Framework includes
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "cetlib/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
@@ -30,6 +31,12 @@
 namespace mu2e {
 
 static const double pEndPoint = 104.96;
+
+  muMinusConversionAtRest::muMinusConversionAtRest( const fhicl::ParameterSet& config, const G4String& processName, G4ProcessType aType )
+    : G4VRestProcess (processName, aType)
+  {
+    throw cet::exception("CONFIG")<<"muMinusConversionAtRest(ParameterSet,...) is not implemented\n";
+  }
 
 muMinusConversionAtRest::muMinusConversionAtRest( const SimpleConfig& config, const G4String& processName, G4ProcessType aType ) :
     G4VRestProcess (processName, aType),

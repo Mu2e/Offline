@@ -11,9 +11,9 @@
 
 namespace mu2e{
 
-  class SimpleConfig;
-
-  void postG4InitializeTasks( SimpleConfig const& config );
+  // This only needs to be templated to share
+  // code for fhicl::ParameterSet and SimpleConfig cases.
+  template<class Config> void postG4InitializeTasks(const Config& config);
 
 }  // end namespace mu2e
 

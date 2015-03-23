@@ -31,17 +31,14 @@
 // Mu2e includes
 #include "Mu2eG4/inc/MuonMinusConversionAtRest.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "fhiclcpp/ParameterSet.h"
 
 using namespace std;
 
 namespace mu2e{
 
-  void switchDecayOff(const SimpleConfig& config) {
-
-    // Read list of particles for which the decay should be switched off
-    vector<int> plist;
-    if( ! config.hasName("g4.noDecay") ) return;
-    config.getVectorInt("g4.noDecay",plist);
+  //================================================================
+  void switchDecayOff(const std::vector<int>& plist) {
 
     G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
     for( size_t i=0; i<plist.size(); ++i ) {
@@ -76,8 +73,22 @@ namespace mu2e{
 
   }
 
+  void switchDecayOff(const SimpleConfig& config) {
+    // Read list of particles for which the decay should be switched off
+    std::vector<int> plist;
+    if( ! config.hasName("g4.noDecay") ) return;
+    config.getVectorInt("g4.noDecay",plist);
+    switchDecayOff(plist);
+  }
 
-  void addUserProcesses(const SimpleConfig& config) {
+  void switchDecayOff(const fhicl::ParameterSet& pset) {
+    std::vector<int> plist = pset.get<std::vector<int> >("noDecay");
+    switchDecayOff(plist);
+  }
+
+  //================================================================
+  template<class Config>
+  void addUserProcesses(bool muConversionAtRest, bool muAtomicCapture, const Config& config) {
 
     G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
 
@@ -88,9 +99,6 @@ namespace mu2e{
     G4String const & particleName = particle->GetParticleName();
 
     G4String pNameToRemove("muMinusCaptureAtRest");
-
-    bool muConversionAtRest = config.getBool( "g4.doMuMinusConversionAtRest", false);
-    bool muAtomicCapture    = config.getBool( "g4.useNewMuMinusAtomicCapture", false);
 
     if ( muAtomicCapture && muConversionAtRest )
       throw cet::exception("muon processes")
@@ -125,4 +133,17 @@ namespace mu2e{
     }
   }
 
+  void addUserProcesses(const SimpleConfig& config) {
+    bool muConversionAtRest = config.getBool( "g4.doMuMinusConversionAtRest", false);
+    bool muAtomicCapture    = config.getBool( "g4.useNewMuMinusAtomicCapture", false);
+    addUserProcesses(muConversionAtRest, muAtomicCapture, config);
+  }
+
+  void addUserProcesses(const fhicl::ParameterSet& pset) {
+    bool muConversionAtRest = false;
+    bool muAtomicCapture    = pset.get<bool>( "useNewMuMinusAtomicCapture");
+    addUserProcesses(muConversionAtRest, muAtomicCapture, pset);
+  }
+
+  //================================================================
 } // end namespace mu2e

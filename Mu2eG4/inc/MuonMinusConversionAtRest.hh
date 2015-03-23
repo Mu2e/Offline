@@ -24,6 +24,8 @@
 // CLHEP includes
 #include "CLHEP/Random/RandomEngine.h"
 
+namespace fhicl { class ParameterSet; }
+
 namespace mu2e {
    class SimpleConfig;
 
@@ -33,6 +35,8 @@ class muMinusConversionAtRest : public G4VRestProcess
 public:
 
   muMinusConversionAtRest( const SimpleConfig& config, const G4String& processName ="muMinusConversionAtRest", G4ProcessType   aType = fHadronic );
+
+  muMinusConversionAtRest( const fhicl::ParameterSet& config, const G4String& processName ="muMinusConversionAtRest", G4ProcessType   aType = fHadronic );
 
    ~muMinusConversionAtRest();
 
