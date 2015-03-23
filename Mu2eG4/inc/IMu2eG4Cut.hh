@@ -47,6 +47,7 @@ namespace fhicl { class ParameterSet; }
 namespace mu2e {
 
   class SimParticleHelper;
+  class Mu2eG4ResourceLimits;
 
   class IMu2eG4Cut {
   public:
@@ -68,7 +69,7 @@ namespace mu2e {
   };
 
   //================================================================
-  std::unique_ptr<IMu2eG4Cut> createMu2eG4Cuts(const fhicl::ParameterSet& pset);
+  std::unique_ptr<IMu2eG4Cut> createMu2eG4Cuts(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& mu2elimits);
 
 } // end namespace mu2e
 

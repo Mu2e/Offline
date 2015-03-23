@@ -17,10 +17,12 @@
 #include "G4Step.hh"
 
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
+#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 //#include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
+
 
 namespace mu2e {
   namespace Mu2eG4Cuts {
@@ -37,15 +39,19 @@ namespace mu2e {
       virtual void put(art::Event& event) override;
 
     protected:
-      explicit IOHelper(const std::string& outputName)
+      explicit IOHelper(const std::string& outputName, const Mu2eG4ResourceLimits& mu2elimits)
         : outputName_(outputName)
         , spHelper_()
+        , mu2elimits_(&mu2elimits)
+        , overflowWarningPrinted_(false)
       {}
 
       std::string outputName_;
       std::unique_ptr<StepPointMCCollection> output_;
       CLHEP::Hep3Vector mu2eOrigin_;
       const SimParticleHelper *spHelper_;
+      const Mu2eG4ResourceLimits *mu2elimits_;
+      bool overflowWarningPrinted_; // in the current event
 
       void addHit(const G4Step *aStep, ProcessCode endCode);
     };
@@ -58,6 +64,7 @@ namespace mu2e {
 
     void IOHelper::beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) {
       spHelper_ = &spHelper;
+      overflowWarningPrinted_ = false;
       if(!outputName_.empty()) {
         output_ = make_unique<StepPointMCCollection>();
         std::cout<<"IOHelper: Creating output collection "<<outputName_
@@ -79,33 +86,29 @@ namespace mu2e {
     }
 
     void IOHelper::addHit(const G4Step *aStep, ProcessCode endCode) {
+      if(output_->size() < mu2elimits_->maxStepPointCollectionSize()) {
 
-      //FIXME: _currentSize += 1;
-      //FIXME:
-      //FIXME: if ( _sizeLimit>0 && _currentSize>_sizeLimit ) {
-      //FIXME:   if( (_currentSize - _sizeLimit)==1 ) {
-      //FIXME:     mf::LogWarning("G4") << "Maximum number of particles reached in " 
-      //FIXME:                          << SensitiveDetectorName
-      //FIXME:                          << ": "
-      //FIXME:                          << _currentSize << endl;
-      //FIXME:   }
-      //FIXME:   return false;
-      //FIXME: }
-
-      // The point's coordinates are saved in the mu2e coordinate system.
-      output_->
-        push_back(StepPointMC(spHelper_->particlePtr(aStep->GetTrack()),
-                              aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
-                              aStep->GetTotalEnergyDeposit(),
-                              aStep->GetNonIonizingEnergyDeposit(),
-                              aStep->GetPreStepPoint()->GetGlobalTime(),
-                              aStep->GetPreStepPoint()->GetProperTime(),
-                              aStep->GetPreStepPoint()->GetPosition() - mu2eOrigin_,
-                              aStep->GetPreStepPoint()->GetMomentum(),
-                              aStep->GetStepLength(),
-                              endCode
-                              ));
-
+        // The point's coordinates are saved in the mu2e coordinate system.
+        output_->
+          push_back(StepPointMC(spHelper_->particlePtr(aStep->GetTrack()),
+                                aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
+                                aStep->GetTotalEnergyDeposit(),
+                                aStep->GetNonIonizingEnergyDeposit(),
+                                aStep->GetPreStepPoint()->GetGlobalTime(),
+                                aStep->GetPreStepPoint()->GetProperTime(),
+                                aStep->GetPreStepPoint()->GetPosition() - mu2eOrigin_,
+                                aStep->GetPreStepPoint()->GetMomentum(),
+                                aStep->GetStepLength(),
+                                endCode
+                                ));
+      }
+      else {
+        if(!overflowWarningPrinted_) {
+          overflowWarningPrinted_ = true;
+          mf::LogWarning("G4") << "Maximum number of entries reached in output collection "
+                               << outputName_ << ": " << output_->size() << endl;
+        }
+      }
     }
 
 
@@ -123,17 +126,17 @@ namespace mu2e {
       virtual void put(art::Event& event) override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
 
-      explicit Union(const fhicl::ParameterSet& pset);
+      explicit Union(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
     private:
       std::vector<std::unique_ptr<IMu2eG4Cut> > cuts_;
     };
 
-    Union::Union(const fhicl::ParameterSet& pset)
-      : IOHelper{pset.get<string>("write", "")}
+    Union::Union(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
+      : IOHelper(pset.get<string>("write", ""), lim)
       {
         PSVector pars = pset.get<PSVector>("pars");
         for(const auto& p: pars) {
-          cuts_.emplace_back(createMu2eG4Cuts(p));
+          cuts_.emplace_back(createMu2eG4Cuts(p, lim));
         }
       }
 
@@ -204,17 +207,17 @@ namespace mu2e {
       virtual void put(art::Event& event) override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
 
-      explicit Intersection(const fhicl::ParameterSet& pset);
+      explicit Intersection(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
     private:
       std::vector<std::unique_ptr<IMu2eG4Cut> > cuts_;
     };
 
-    Intersection::Intersection(const fhicl::ParameterSet& pset)
-      : IOHelper{pset.get<string>("write", "")}
+    Intersection::Intersection(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
+      : IOHelper(pset.get<string>("write", ""), lim)
       {
         PSVector pars = pset.get<PSVector>("pars");
         for(const auto& p: pars) {
-          cuts_.emplace_back(createMu2eG4Cuts(p));
+          cuts_.emplace_back(createMu2eG4Cuts(p, lim));
         }
       }
 
@@ -280,7 +283,7 @@ namespace mu2e {
       virtual bool steppingActionCut(const G4Step  *step);
       virtual bool stackingActionCut(const G4Track *trk);
 
-      explicit Plane(const fhicl::ParameterSet& pset);
+      explicit Plane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
     private:
       std::array<double,3> normal_;
       double offset_;
@@ -288,8 +291,8 @@ namespace mu2e {
       bool cut_impl(const CLHEP::Hep3Vector& pos);
     };
 
-    Plane::Plane(const fhicl::ParameterSet& pset)
-      : IOHelper{pset.get<string>("write", "")}
+    Plane::Plane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
+      : IOHelper(pset.get<string>("write", ""), lim)
       , offset_()
       {
         // FIXME: use pset.get<array>() when it is available
@@ -342,18 +345,18 @@ namespace mu2e {
       virtual bool steppingActionCut(const G4Step  *step);
       virtual bool stackingActionCut(const G4Track *trk);
 
-      explicit Constant(bool val);
-      explicit Constant(const fhicl::ParameterSet& pset);
+      explicit Constant(bool val, const Mu2eG4ResourceLimits& lim);
+      explicit Constant(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
     private:
       bool value_;
     };
 
-    Constant::Constant(const fhicl::ParameterSet& pset)
-      : IOHelper{pset.get<string>("write", "")}
+    Constant::Constant(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
+      : IOHelper(pset.get<string>("write", ""), lim)
       , value_{pset.get<double>("value")}
     {}
 
-    Constant::Constant(bool val) : IOHelper{std::string()}, value_(val) {}
+    Constant::Constant(bool val, const Mu2eG4ResourceLimits& lim) : IOHelper(std::string(), lim), value_(val) {}
 
     bool Constant::steppingActionCut(const G4Step *step) {
       if(output_) {
@@ -379,17 +382,17 @@ namespace mu2e {
   } // end namespace Mu2eG4Cuts
 
   //================================================================
-  std::unique_ptr<IMu2eG4Cut> createMu2eG4Cuts(const fhicl::ParameterSet& pset) {
+  std::unique_ptr<IMu2eG4Cut> createMu2eG4Cuts(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim) {
     using namespace Mu2eG4Cuts;
 
-    if(pset.is_empty()) return make_unique<Constant>(false); // no cuts
+    if(pset.is_empty()) return make_unique<Constant>(false, lim); // no cuts
 
     const string cuttype =  pset.get<string>("type");
 
-    if(cuttype == "union") return make_unique<Union>(pset);
-    if(cuttype == "intersection") return make_unique<Intersection>(pset);
-    if(cuttype == "plane") return make_unique<Plane>(pset);
-    if(cuttype == "const") return make_unique<Constant>(pset);
+    if(cuttype == "union") return make_unique<Union>(pset, lim);
+    if(cuttype == "intersection") return make_unique<Intersection>(pset, lim);
+    if(cuttype == "plane") return make_unique<Plane>(pset, lim);
+    if(cuttype == "const") return make_unique<Constant>(pset, lim);
 
     throw std::runtime_error("mu2e::createMu2eG4Cuts(pset): can not parse pset = "+pset.to_string());
   }

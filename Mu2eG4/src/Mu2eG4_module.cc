@@ -38,6 +38,7 @@
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
+#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
@@ -108,6 +109,7 @@ namespace mu2e {
 
   private:
     fhicl::ParameterSet pset_;
+    Mu2eG4ResourceLimits mu2elimits_;
 
     typedef std::vector<art::InputTag> InputTags;
     typedef std::vector<std::string> Strings;
@@ -201,6 +203,7 @@ namespace mu2e {
 
   Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     pset_(pSet),
+    mu2elimits_(pSet.get<fhicl::ParameterSet>("ResourceLimits")),
     _runManager(std::make_unique<G4RunManager>()),
     _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
     _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
@@ -210,9 +213,9 @@ namespace mu2e {
     _steppingAction(nullptr),
     _stackingAction(nullptr),
 
-    stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", fhicl::ParameterSet()))),
-    steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", fhicl::ParameterSet()))),
-    commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()))),
+    stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", fhicl::ParameterSet()), mu2elimits_)),
+    steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", fhicl::ParameterSet()), mu2elimits_)),
+    commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()), mu2elimits_)),
 
     _session(nullptr),
     _UI(nullptr),
