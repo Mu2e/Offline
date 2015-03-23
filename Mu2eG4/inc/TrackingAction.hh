@@ -32,6 +32,7 @@
 #include <map>
 #include <string>
 
+namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
@@ -46,6 +47,7 @@ namespace mu2e {
   public:
 
     TrackingAction( const SimpleConfig& config, IMu2eG4SteppingAction *);
+    TrackingAction(const fhicl::ParameterSet& pset, IMu2eG4SteppingAction *);
     virtual ~TrackingAction();
 
     // These methods are required by G4

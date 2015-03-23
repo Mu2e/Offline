@@ -55,6 +55,25 @@ using namespace std;
 
 namespace mu2e {
 
+  TrackingAction::TrackingAction(const fhicl::ParameterSet& pset,
+                                 IMu2eG4SteppingAction * steppingAction ):
+    _debugList(pset.get<std::vector<int> >("debug.trackingActionEventList", std::vector<int>())),
+    _physVolHelper(0),
+    _timer(),
+    _trajectories(nullptr),
+    _sizeLimit(pset.get<int>("ResourceLimits.maxSimParticleCollectionSize")),
+    _currentSize(0),
+    _overflowSimParticles(false),
+    _mcTrajectoryMomentumCut(pset.get<double>("TrajectoryControl.mcTrajectoryMomentumCut")),
+    _saveTrajectoryMomentumCut(pset.get<double>("TrajectoryControl.saveTrajectoryMomentumCut")),
+    _mcTrajectoryMinSteps(pset.get<int>("TrajectoryControl.mcTrajectoryMinSteps")),
+    _steppingAction(steppingAction),
+    _processInfo(0),
+    _printTrackTiming(pset.get<bool>("debug.printTrackTiming")),
+    _spHelper(),
+    _primaryHelper()
+  {}
+
   TrackingAction::TrackingAction( const SimpleConfig& config,
                                   IMu2eG4SteppingAction     * steppingAction ):
     _debugList(),

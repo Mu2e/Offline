@@ -377,7 +377,7 @@ namespace mu2e {
     _stackingAction = new Mu2eG4StackingAction(pset_, *stackingCuts_, *commonCuts_);
     _runManager->SetUserAction(_stackingAction);
 
-    _trackingAction = new TrackingAction(config,_steppingAction);
+    _trackingAction = new TrackingAction(pset_, _steppingAction);
     _runManager->SetUserAction(_trackingAction);
 
     // setting tracking/stepping verbosity level; tracking manager
@@ -795,6 +795,14 @@ namespace mu2e {
       "g4.eKineMin",
       "g4.killLowEKinePDG",
       "g4.eKineMinPDG",
+
+      // old TrackingAction
+      "g4.particlesSizeLimit",
+      "g4.mcTrajectoryMomentumCut",
+      "g4.saveTrajectoryMomentumCut",
+      "g4.mcTrajectoryMinSteps",
+      "g4.printTrackTiming",
+      "g4.trackingActionEventList",
 
       // old SteppingAction
       "g4.steppingActionStepsSizeLimit",

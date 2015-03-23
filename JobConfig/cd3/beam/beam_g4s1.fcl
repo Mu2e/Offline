@@ -103,6 +103,9 @@ physics : {
 	 TrajectoryControl: {
 	    defaultMinPointDistance : 500
 	    pointTrajectoryMinSteps : 5
+	    mcTrajectoryMinSteps : 5
+	    mcTrajectoryMomentumCut : 999999. // 50.
+	    saveTrajectoryMomentumCut : 999999. // 50.
 	    /// FIXME: this should not be here, but cosmic config will have something like that
 	    perVolumeMinDistance: {
 	       PSVacuum : 15
@@ -114,12 +117,14 @@ physics : {
 	 ResourceLimits: {
 	    maxStepsPerTrack : 100000
 	    maxStepPointCollectionSize : 100000
+	    maxSimParticleCollectionSize: 100000
 	 }
 
 	 debug: {
 	    stepLimitKillerVerbose: true
 	    printPhysicsProcessSummary : false
 	    PiENuPolicyVerbosity : 0
+	    printTrackTiming: false
 	 }
 
 	 visualization: {
