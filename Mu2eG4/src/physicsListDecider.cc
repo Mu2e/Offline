@@ -35,7 +35,6 @@
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
-#include "Mu2eG4/inc/PhysicsList.hh"
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
