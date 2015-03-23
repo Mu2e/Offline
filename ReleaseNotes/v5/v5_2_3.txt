@@ -1,6 +1,7 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_2_3
+
+9) March 23, 2015 kutschke
+    Final.
 
 8) March 22, 2015 - Zhengyun You
    fixed a bug in Mu2eG4/src/constructVirtualDetectors.cc
