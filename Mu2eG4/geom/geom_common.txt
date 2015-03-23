@@ -28,10 +28,6 @@ bool hasMBS             = true; // note the two subcomponents, see mbs section b
                                 // no MBS implies no downstream hole in Cosmic Ray Passive Shield
                                 // Magnetic field may be affected as well
 
-// Write mu2e geometry into a GDML file
-bool   writeGDML        = false;
-string GDMLFileName     = "mu2e.gdml";
-
 #include "Mu2eG4/geom/g4_visOptions.txt"
 
 //-------------------------------------------
@@ -59,6 +55,7 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 // External Shielding
 #include "Mu2eG4/geom/ExtShieldUpstream_v01.txt"
 #include "Mu2eG4/geom/ExtShieldDownstream_v01.txt"
+#include "Mu2eG4/geom/Saddle_v01.txt"
 
 #include "Mu2eG4/geom/stoppingTarget.txt"
 #include "Mu2eG4/geom/internalNeutronAbs.txt"

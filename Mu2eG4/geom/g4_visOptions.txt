@@ -45,16 +45,6 @@ vector<string> g4.forceAuxEdgeVisible.keep  = {};
 vector<string> g4.forceAuxEdgeVisible.order = { "g4.forceAuxEdgeVisible.drop",
                                                 "g4.forceAuxEdgeVisible.keep" };
 
-// current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
-// G4ClassicalRK4
-// G4ImplicitEuler
-// G4ExplicitEuler
-// G4SimpleRunge
-// G4SimpleHeum
-// G4HelixImplicitEuler
-// G4HelixSimpleRunge
-string g4.stepper = "G4ClassicalRK4";
-
 // Control printout of element and material lists.
 bool g4.printElements  = false;
 bool g4.printMaterials = false;

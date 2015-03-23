@@ -129,6 +129,34 @@ using namespace std;
 
 namespace mu2e {
 
+  Mu2eWorld::Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
+    : sdHelper_(sdHelper)
+    , pset_(fhicl::ParameterSet())
+
+    , activeWr_Wl_SD_(_config.getBool("ttracker.ActiveWr_Wl_SD",false))
+    , writeGDML_(_config.getBool("writeGDML",false))
+    , gdmlFileName_(_config.getString("GDMLFileName","mu2e.gdml"))
+    , g4stepperName_(_config.getString("g4.stepper","G4SimpleRunge"))
+    , bfieldMaxStep_(_config.getDouble("bfield.maxStep", 20.))
+  {
+    _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
+  }
+
+  Mu2eWorld::Mu2eWorld(const fhicl::ParameterSet& pset,
+                       SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
+    : sdHelper_(sdHelper)
+    , pset_(pset)
+
+    , activeWr_Wl_SD_(pset.get<bool>("SDConfig.activeWr_Wl_SD"))
+    , writeGDML_(pset.get<bool>("writeGDML"))
+    , gdmlFileName_(pset.get<std::string>("GDMLFileName"))
+    , g4stepperName_(pset.get<std::string>("stepper"))
+    , bfieldMaxStep_(pset.get<double>("bfieldMaxStep"))
+  {
+    _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
+  }
+
+
   // This is the callback called by G4 via G4VPhysicalVolume* WorldMaker::Construct()
   G4VPhysicalVolume * Mu2eWorld::construct(){
     // Construct all of the Mu2e world, hall, detectors, beamline ...
@@ -138,13 +166,11 @@ namespace mu2e {
   // Construct all of the Mu2e world, hall, detectors, beamline ...
   G4VPhysicalVolume * Mu2eWorld::constructWorld(){
 
-    _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
-
     // If you play with the order of these calls, you may break things.
     GeomHandle<WorldG4> worldGeom;
     G4ThreeVector tmpTrackercenter = GeomHandle<DetectorSystem>()->getOrigin();
 
-    if (_config.getBool("ttracker.ActiveWr_Wl_SD",false)) {
+    if (activeWr_Wl_SD_) {
       TrackerWireSD::setMu2eDetCenterInWorld( tmpTrackercenter );
     }
 
@@ -223,10 +249,9 @@ namespace mu2e {
     constructStepLimiters();
 
     // Write out mu2e geometry into a gdml file.
-    if ( _config.getBool("writeGDML",false) ) {
-      string gdmlFileName = _config.getString("GDMLFileName","mu2e.gdml");
+    if (writeGDML_) {
       G4GDMLParser parser;
-      parser.Write(gdmlFileName, worldVInfo.logical);
+      parser.Write(gdmlFileName_, worldVInfo.logical);
     }
 
     return worldVInfo.physical;
@@ -311,8 +336,6 @@ namespace mu2e {
     bool needDSUniform = (bfconf->dsFieldForm() == BFieldConfig::dsModelSplit || bfconf->dsFieldForm() == BFieldConfig::dsModelUniform );
     bool needDSGradient = false;
 
-    string stepper = _config.getString("g4.stepper","G4SimpleRunge");
-
     // Create field manager for the uniform DS field.
     if (needDSUniform) {
 
@@ -332,9 +355,9 @@ namespace mu2e {
     G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
-    if ( stepper  == "G4ClassicalRK4" ) {
+    if ( g4stepperName_  == "G4ClassicalRK4" ) {
       _stepper = new G4ClassicalRK4(_rhs);
-    } else if ( stepper  == "G4ClassicalRK4WSpin" ) {
+    } else if ( g4stepperName_  == "G4ClassicalRK4WSpin" ) {
       delete _rhs; // FIXME: avoid the delete
       _rhs  = new G4Mag_SpinEqRhs(_field);
       _stepper = new G4ClassicalRK4(_rhs, 12);
@@ -342,15 +365,15 @@ namespace mu2e {
 	cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4ClassicalRK4WSpin " 
 	     << "and used G4ClassicalRK4 with Spin" << endl;
       }
-    } else if ( stepper  == "G4ImplicitEuler" ) {
+    } else if ( g4stepperName_  == "G4ImplicitEuler" ) {
       _stepper = new G4ImplicitEuler(_rhs);
-    } else if ( stepper  == "G4ExplicitEuler" ) {
+    } else if ( g4stepperName_  == "G4ExplicitEuler" ) {
       _stepper = new G4ExplicitEuler(_rhs);
-    } else if ( stepper  == "G4SimpleHeum" ) {
+    } else if ( g4stepperName_  == "G4SimpleHeum" ) {
       _stepper = new G4SimpleHeum(_rhs);
-    } else if ( stepper  == "G4HelixImplicitEuler" ) {
+    } else if ( g4stepperName_  == "G4HelixImplicitEuler" ) {
       _stepper = new G4HelixImplicitEuler(_rhs);
-    } else if ( stepper  == "G4HelixSimpleRunge" ) {
+    } else if ( g4stepperName_  == "G4HelixSimpleRunge" ) {
       _stepper = new G4HelixSimpleRunge(_rhs);
     } else {
       _stepper = new G4SimpleRunge(_rhs);
@@ -415,9 +438,6 @@ namespace mu2e {
   //
   void Mu2eWorld::constructStepLimiters(){
 
-    // Maximum step length, in mm.
-    double maxStep = _config.getDouble("bfield.maxStep", 20.);
-
     G4LogicalVolume* ds2Vacuum      = _helper->locateVolInfo("DS2Vacuum").logical;
     G4LogicalVolume* ds3Vacuum      = _helper->locateVolInfo("DS3Vacuum").logical;
     G4LogicalVolume* tracker        = _helper->locateVolInfo("TrackerMother").logical;
@@ -434,11 +454,11 @@ namespace mu2e {
     tsVacua.push_back( _helper->locateVolInfo("TS5Vacuum").logical );
 
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
-    //_stepLimits.push_back( G4UserLimits(maxStep) );
+    //_stepLimits.push_back( G4UserLimits(bfieldMaxStep_) );
     //G4UserLimits* stepLimit = &(_stepLimits.back());
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-    G4UserLimits* stepLimit = reg.add( G4UserLimits(maxStep) );
+    G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
     ds2Vacuum->SetUserLimits( stepLimit );
     ds3Vacuum->SetUserLimits( stepLimit );
 
@@ -528,7 +548,7 @@ namespace mu2e {
         new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), _config);
       SDman->AddNewDetector(vdSD);
 
-      if (_config.getBool("ttracker.ActiveWr_Wl_SD",false)) {
+      if (activeWr_Wl_SD_) {
         if (sdHelper_->enabled(StepInstanceName::trackerSWires)) {
           TrackerWireSD *ttwsSD = new TrackerWireSD(SensitiveDetectorName::TrackerSWires(),  _config);
           SDman->AddNewDetector(ttwsSD);

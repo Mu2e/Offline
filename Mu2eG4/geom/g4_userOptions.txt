@@ -86,6 +86,19 @@ bool g4.doCosmicKiller = false;
 double g4.cosmicPcut = 0.;
 double g4.yaboveDirtYmin = 0.;
 
+// current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
+// G4ClassicalRK4
+// G4ImplicitEuler
+// G4ExplicitEuler
+// G4SimpleRunge
+// G4SimpleHeum
+// G4HelixImplicitEuler
+// G4HelixSimpleRunge
+string g4.stepper = "G4ClassicalRK4";
+
+int    world.verbosityLevel = 0;
+bool   ttracker.ActiveWr_Wl_SD    = false;   //Active the Sensitive Detector for the wires and straw wall.
+
 //
 //
 // End notes:

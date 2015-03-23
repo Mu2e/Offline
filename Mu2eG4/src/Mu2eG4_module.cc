@@ -223,8 +223,8 @@ namespace mu2e {
     _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
     _tmvlevel(pSet.get<int>("debug.trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("debug.checkFieldMap",0)),
-    _visMacro(pSet.get<std::string>("visualization.macro","")),
-    _visGUIMacro(pSet.get<std::string>("visualization.GUIMacro","")),
+    _visMacro(pSet.get<std::string>("visualization.macro")),
+    _visGUIMacro(pSet.get<std::string>("visualization.GUIMacro")),
     _g4Macro(pSet.get<std::string>("g4Macro","")),
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
     _inputPhysVolumeMultiInfoLabel(pSet.get<string>("inputPhysVolumeMultiInfoLabel", "")),
@@ -356,7 +356,7 @@ namespace mu2e {
 
     // Create user actions and register them with G4.
 
-    WorldMaker<Mu2eWorld>* allMu2e    = new WorldMaker<Mu2eWorld>(std::unique_ptr<Mu2eWorld>(new Mu2eWorld(&_sensitiveDetectorHelper)));
+    auto* allMu2e = new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &_sensitiveDetectorHelper));
 
     _runManager->SetVerboseLevel(_rmvlevel);
 
@@ -783,6 +783,14 @@ namespace mu2e {
       "g4.physicsListName",
       "g4.useNewMuMinusAtomicCapture",
       "g4.decayMuonsWithSpin",
+
+      // Mu2eWorld
+      "world.verbosityLevel",
+      "ttracker.ActiveWr_Wl_SD",
+      "writeGDML",
+      "GDMLFileName",
+      "g4.stepper",
+      "bfield.maxStep",
 
       // old StackingAction
       "g4.doCosmicKiller",
