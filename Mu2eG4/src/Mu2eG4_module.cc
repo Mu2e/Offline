@@ -100,7 +100,6 @@ namespace mu2e {
 
     virtual void produce(art::Event& e) override;
 
-    virtual void beginJob() override;
     virtual void endJob() override;
 
     virtual void beginRun(art::Run &r) override;
@@ -203,7 +202,7 @@ namespace mu2e {
 
   Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     pset_(pSet),
-    _runManager(nullptr),
+    _runManager(std::make_unique<G4RunManager>()),
     _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
     _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
     _exportPDTEnd(pSet.get<bool>("debug.exportPDTEnd",false)),
@@ -242,7 +241,7 @@ namespace mu2e {
     _inputMCTrajectories(pSet.get<std::string>("inputMCTrajectories", "")),
     _diagnostics(),
     _pointTrajectoryMinSteps(pSet.get<int>("g4.pointTrajectoryMinSteps",5)),
-    _timer(nullptr),
+    _timer(std::make_unique<G4Timer>()),
     _realElapsed(0.),
     _systemElapsed(0.),
     _userElapsed(0.)
@@ -286,12 +285,11 @@ namespace mu2e {
 
   } // end G4:G4(fhicl::ParameterSet const& pSet);
 
-  // Create an instance of the run manager.
-  void Mu2eG4::beginJob(){
-    _runManager = unique_ptr<G4RunManager>(new G4RunManager);
-    _timer = unique_ptr<G4Timer>(new G4Timer);
-  }
-
+  // That should really be beginJob().  G4 does not care about run
+  // numbers, so we could use a hardcoded 1 for that.  The problem is
+  // that Mu2e GeometryService refuses to give information outside of
+  // an art run.  That makes sense for alignments and such, but
+  // necessitates workarounds for G4 geometry.
   void Mu2eG4::beginRun( art::Run &run){
 
     static int ncalls(0);
@@ -705,7 +703,6 @@ namespace mu2e {
     }
 
   }
-
 
   // Do the "begin run" parts of BeamOn.
   void Mu2eG4::BeamOnBeginRun( unsigned int runNumber, const char* macroFile, G4int n_select){
