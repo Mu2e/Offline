@@ -1,0 +1,5 @@
+           Release notes for Mu2e Offline software, v5_3_0
+
+1) March 23, 2015 kutschke
+   Upgrade to art v1_13_01 and geant4 v4_9_6_p04 plus related upgrades.
+   See setup.sh and the art release notes.
