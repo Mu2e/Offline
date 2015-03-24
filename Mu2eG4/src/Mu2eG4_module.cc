@@ -14,7 +14,6 @@
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "Mu2eG4/inc/addPointTrajectories.hh"
 #include "Mu2eG4/inc/exportG4PDT.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -46,7 +45,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
@@ -180,9 +178,6 @@ namespace mu2e {
     art::InputTag _inputSimParticles;
     art::InputTag _inputMCTrajectories;
 
-    // A parameter extracted from the geometry file at beginRun and used in produce.
-    int _pointTrajectoryMinSteps;
-
     // Do the G4 initialization that must be done only once per job, not once per run
     void initializeG4( GeometryService& geom, art::Run const& run );
 
@@ -237,7 +232,6 @@ namespace mu2e {
     _simParticleNumberOffset(pSet.get<unsigned>("simParticleNumberOffset", 0)),
     _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
     _inputMCTrajectories(pSet.get<std::string>("inputMCTrajectories", "")),
-    _pointTrajectoryMinSteps(pSet.get<int>("g4.pointTrajectoryMinSteps",5)),
     _timer(std::make_unique<G4Timer>()),
     _realElapsed(0.),
     _systemElapsed(0.),
@@ -267,7 +261,6 @@ namespace mu2e {
     // The timevd collection is special.
     produces<StepPointMCCollection>(_tvdOutputName.name());
 
-    produces<PointTrajectoryCollection>();
     produces<MCTrajectoryCollection>();
     produces<ExtMonFNALSimHitCollection>();
 
@@ -490,7 +483,6 @@ namespace mu2e {
     // Create empty data products.
     unique_ptr<SimParticleCollection>      simParticles(      new SimParticleCollection);
     unique_ptr<StepPointMCCollection>      tvdHits(           new StepPointMCCollection);
-    unique_ptr<PointTrajectoryCollection>  pointTrajectories( new PointTrajectoryCollection);
     unique_ptr<MCTrajectoryCollection>     mcTrajectories(    new MCTrajectoryCollection);
     unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);
     _sensitiveDetectorHelper.createProducts(event, spHelper);
@@ -518,7 +510,6 @@ namespace mu2e {
 
     // Populate the output data products.
     GeomHandle<WorldG4>  world;
-    addPointTrajectories( g4event, *pointTrajectories, spHelper, world->mu2eOriginInWorld(), _pointTrajectoryMinSteps);
 
     // Run self consistency checks if enabled.
     _trackingAction->endEvent(*simParticles);
@@ -544,7 +535,6 @@ namespace mu2e {
     event.put(std::move(g4stat));
     event.put(std::move(simParticles));
     event.put(std::move(tvdHits),          _tvdOutputName.name()          );
-    event.put(std::move(pointTrajectories));
     event.put(std::move(mcTrajectories));
     if(_extMonFNALPixelSD) {
       event.put(std::move(extMonFNALHits));
