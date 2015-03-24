@@ -31,7 +31,6 @@
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
-#include "Mu2eUtilities/inc/DiagnosticsG4.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
@@ -181,9 +180,6 @@ namespace mu2e {
     art::InputTag _inputSimParticles;
     art::InputTag _inputMCTrajectories;
 
-    // A class to make some standard histograms.
-    DiagnosticsG4 _diagnostics;
-
     // A parameter extracted from the geometry file at beginRun and used in produce.
     int _pointTrajectoryMinSteps;
 
@@ -241,7 +237,6 @@ namespace mu2e {
     _simParticleNumberOffset(pSet.get<unsigned>("simParticleNumberOffset", 0)),
     _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
     _inputMCTrajectories(pSet.get<std::string>("inputMCTrajectories", "")),
-    _diagnostics(),
     _pointTrajectoryMinSteps(pSet.get<int>("g4.pointTrajectoryMinSteps",5)),
     _timer(std::make_unique<G4Timer>()),
     _realElapsed(0.),
@@ -371,7 +366,7 @@ namespace mu2e {
 
     _runManager->SetUserInitialization(pL);
 
-    _genAction = new PrimaryGeneratorAction();
+    _genAction = new PrimaryGeneratorAction(pset_);
     _runManager->SetUserAction(_genAction);
 
     _steppingAction = new Mu2eG4SteppingAction(pset_, *steppingCuts_, *commonCuts_, mu2elimits_);
@@ -432,10 +427,6 @@ namespace mu2e {
 
     }
 #endif
-
-    // Book some diagnostic histograms.
-    art::ServiceHandle<art::TFileService> tfs;
-    _diagnostics.book("Outputs");
 
   } // end G4::initializeG4
 
@@ -540,42 +531,12 @@ namespace mu2e {
     if (  _trackingAction->overflowSimParticles() ) status = 10;
 
     unique_ptr<StatusG4> g4stat(new StatusG4( status,
-                                            _trackingAction->nG4Tracks(),
-                                            _trackingAction->overflowSimParticles(),
-                                            _steppingAction->nKilledStepLimit(),
-                                            cpuTime,
-                                            _timer->GetRealElapsed() )
-                              );
-
-    _diagnostics.fill( &*g4stat,
-                       &*simParticles,
-
-                       _sensitiveDetectorHelper.steps(StepInstanceName::tracker) ?
-                       &_sensitiveDetectorHelper.steps(StepInstanceName::tracker).ref() : nullptr,
-
-                       _sensitiveDetectorHelper.steps(StepInstanceName::calorimeter) ? 
-                       &_sensitiveDetectorHelper.steps(StepInstanceName::calorimeter).ref() : nullptr,
-
-                       _sensitiveDetectorHelper.steps(StepInstanceName::calorimeterRO) ?
-                       &_sensitiveDetectorHelper.steps(StepInstanceName::calorimeterRO).ref() : nullptr,
-
-                       _sensitiveDetectorHelper.steps(StepInstanceName::CRV) ?
-                       &_sensitiveDetectorHelper.steps(StepInstanceName::CRV).ref() : nullptr,
-
-                       _sensitiveDetectorHelper.steps(StepInstanceName::stoppingtarget) ?
-                       &_sensitiveDetectorHelper.steps(StepInstanceName::stoppingtarget).ref() : nullptr,
-
-                       _sensitiveDetectorHelper.steps(StepInstanceName::virtualdetector) ?
-                       &_sensitiveDetectorHelper.steps(StepInstanceName::virtualdetector).ref() : nullptr,
-
-                       _sensitiveDetectorHelper.steps(StepInstanceName::ExtMonUCITof) ?
-                       &_sensitiveDetectorHelper.steps(StepInstanceName::ExtMonUCITof).ref() : nullptr,
-
-                       &*pointTrajectories,
-                       &_physVolHelper.persistentInfo() );
-
-    _diagnostics.fillPA(_sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber) ?
-                        &_sensitiveDetectorHelper.steps(StepInstanceName::protonabsorber).ref() : nullptr );
+                                              _trackingAction->nG4Tracks(),
+                                              _trackingAction->overflowSimParticles(),
+                                              _steppingAction->nKilledStepLimit(),
+                                              cpuTime,
+                                              _timer->GetRealElapsed() )
+                                );
 
     _simParticlePrinter.print(std::cout, *simParticles);
 

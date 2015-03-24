@@ -41,7 +41,6 @@ physics : {
       g4run : {
          module_type          : Mu2eG4
          generatorModuleLabel : generate
-         doWriteLegacyPhysVolumeInfo : false
          simParticleNumberOffset : 0
          SDConfig : {
             enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
@@ -130,6 +129,7 @@ physics : {
 	    worldVerbosityLevel : 0
 	    printElements : false
 	    printMaterials : false
+	    fillDiagnosticHistograms: false
 	 }
 
 	 visualization: {

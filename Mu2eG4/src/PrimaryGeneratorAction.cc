@@ -23,6 +23,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
+#include "fhiclcpp/ParameterSet.h"
 
 // G4 Includes
 #include "G4Event.hh"
@@ -55,11 +56,22 @@ using CLHEP::HepLorentzVector;
 
 namespace mu2e {
 
-  PrimaryGeneratorAction::PrimaryGeneratorAction() {
-    art::ServiceHandle<art::TFileService> tfs;
-    _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total Multiplicity", 20, 0, 20);
+  PrimaryGeneratorAction::PrimaryGeneratorAction(bool fill)
+    : _totalMultiplicity(nullptr)
+  {
+    if(fill) {
+      art::ServiceHandle<art::TFileService> tfs;
+      _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total multiplicity of primary particles", 20, 0, 20);
+    }
   }
 
+  PrimaryGeneratorAction::PrimaryGeneratorAction()
+    : PrimaryGeneratorAction(true)
+  {}
+
+  PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset)
+    : PrimaryGeneratorAction(pset.get<bool>("debug.fillDiagnosticHistograms", false))
+  {}
 
   void PrimaryGeneratorAction::setEventData(const GenParticleCollection* gens,
                                             const HitHandles& hitInputs,
@@ -135,7 +147,7 @@ namespace mu2e {
     }
 
    // Fill multiplicity histogram.
-    _totalMultiplicity->Fill(parentMapping_->numPrimaries());
+    if(_totalMultiplicity) _totalMultiplicity->Fill(parentMapping_->numPrimaries());
   }
 
 
