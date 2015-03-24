@@ -22,7 +22,7 @@
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
-
+#include "MCDataProducts/inc/PDGCode.hh"
 
 namespace mu2e {
   namespace Mu2eG4Cuts {
@@ -356,7 +356,7 @@ namespace mu2e {
 
     //================================================================
     class VolumeCut: virtual public IMu2eG4Cut,
-                 public IOHelper
+                     public IOHelper
     {
     public:
       virtual bool steppingActionCut(const G4Step  *step);
@@ -382,6 +382,7 @@ namespace mu2e {
     {}
 
     void VolumeCut::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
+      IOHelper::finishConstruction(mu2eOriginInWorld);
       for(const auto& vol: volnames_) {
         std::cout<<"Adding G4 killer volume = "<<vol<<std::endl;
         killerVolumes_.insert(getPhysicalVolumeOrThrow(vol));
@@ -408,8 +409,52 @@ namespace mu2e {
     }
 
     //================================================================
+    class ParticleIdCut: virtual public IMu2eG4Cut,
+                         public IOHelper
+    {
+    public:
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
+      explicit ParticleIdCut(const fhicl::ParameterSet& pset, bool negate, const Mu2eG4ResourceLimits& lim);
+    private:
+      std::vector<int> pdgIds_;
+      bool negate_;
+      bool cut_impl(const G4Track* trk);
+    };
+
+    ParticleIdCut::ParticleIdCut(const fhicl::ParameterSet& pset, bool negate, const Mu2eG4ResourceLimits& lim)
+      : IOHelper(pset, lim)
+      , pdgIds_(pset.get<std::vector<int> >("pars"))
+      , negate_(negate)
+    {
+      std::sort(pdgIds_.begin(), pdgIds_.end());
+    }
+
+    bool ParticleIdCut::cut_impl(const G4Track* trk) {
+      const int id(trk->GetDefinition()->GetPDGEncoding());
+      bool found = std::binary_search(pdgIds_.begin(), pdgIds_.end(), id);
+      return negate_ ?  !found : found;
+    }
+
+    bool ParticleIdCut::steppingActionCut(const G4Step *step) {
+      const bool result = cut_impl(step->GetTrack());
+      if(result && output_) {
+        addHit(step, ProcessCode::mu2eKillerVolume);
+      }
+      return result;
+    }
+
+    bool ParticleIdCut::stackingActionCut(const G4Track *trk) {
+      const bool result = cut_impl(trk);
+      std::cout<<"ParticleIdCut::stackingActionCut(): result = "<<result<<" for pdgId = "<<trk->GetDefinition()->GetPDGEncoding()<<std::endl;
+
+      return cut_impl(trk);
+    }
+
+    //================================================================
     // FIXME: more cuts:
-    //    VolumeCut, PDGIdCut, PrimaryOnly, lowEk
+    //    PDGIdCut, PrimaryOnly, lowEk
     //     if ( _primaryOnly ){
     //       if ( trk->GetParentID() != 0 ) {
     //         return fKill;
@@ -465,6 +510,9 @@ namespace mu2e {
 
     if(cuttype == "inVolume") return make_unique<VolumeCut>(pset, false, lim);
     if(cuttype == "notInVolume") return make_unique<VolumeCut>(pset, true, lim);
+
+    if(cuttype == "pdgId") return make_unique<ParticleIdCut>(pset, false, lim);
+    if(cuttype == "notPdgId") return make_unique<ParticleIdCut>(pset, true, lim);
 
     if(cuttype == "constant") return make_unique<Constant>(pset, lim);
 
