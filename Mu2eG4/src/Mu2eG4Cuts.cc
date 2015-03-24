@@ -21,7 +21,7 @@
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-//#include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
+#include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 
 
 namespace mu2e {
@@ -355,6 +355,68 @@ namespace mu2e {
     }
 
     //================================================================
+    class VolumeCut: virtual public IMu2eG4Cut,
+                 public IOHelper
+    {
+    public:
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
+      explicit VolumeCut(const fhicl::ParameterSet& pset, bool negate, const Mu2eG4ResourceLimits& lim);
+      virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
+    private:
+      std::vector<std::string> volnames_;
+      bool negate_;
+
+      // cached pointers to physical volumes on the list
+      typedef std::set<const G4VPhysicalVolume*> KillerVolumesCache;
+      KillerVolumesCache killerVolumes_;
+
+      bool cut_impl(const G4Track* trk);
+    };
+
+    VolumeCut::VolumeCut(const fhicl::ParameterSet& pset, bool negate, const Mu2eG4ResourceLimits& lim)
+      : IOHelper(pset, lim)
+      , volnames_(pset.get<std::vector<std::string> >("pars"))
+      , negate_(negate)
+    {}
+
+    void VolumeCut::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
+      for(const auto& vol: volnames_) {
+        std::cout<<"Adding G4 killer volume = "<<vol<<std::endl;
+        killerVolumes_.insert(getPhysicalVolumeOrThrow(vol));
+      }
+    }
+
+    bool VolumeCut::cut_impl(const G4Track* trk) {
+      KillerVolumesCache::const_iterator p = killerVolumes_.find(trk->GetVolume());
+      bool result = ( p != killerVolumes_.end() );
+      if(negate_) result = !result;
+      return result;
+    }
+
+    bool VolumeCut::steppingActionCut(const G4Step *step) {
+      const bool result = cut_impl(step->GetTrack());
+      if(result && output_) {
+        addHit(step, ProcessCode::mu2eKillerVolume);
+      }
+      return result;
+    }
+
+    bool VolumeCut::stackingActionCut(const G4Track *trk) {
+      return cut_impl(trk);
+    }
+
+    //================================================================
+    // FIXME: more cuts:
+    //    VolumeCut, PDGIdCut, PrimaryOnly, lowEk
+    //     if ( _primaryOnly ){
+    //       if ( trk->GetParentID() != 0 ) {
+    //         return fKill;
+    //       }
+    //     }
+
+    //================================================================
     class Constant: virtual public IMu2eG4Cut,
                     public IOHelper
     {
@@ -370,7 +432,7 @@ namespace mu2e {
 
     Constant::Constant(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
       : IOHelper(pset, lim)
-      , value_{pset.get<double>("value")}
+      , value_{pset.get<bool>("value")}
     {}
 
     Constant::Constant(bool val, const Mu2eG4ResourceLimits& lim) : IOHelper(fhicl::ParameterSet(), lim), value_(val) {}
@@ -387,15 +449,6 @@ namespace mu2e {
     }
 
     //================================================================
-    // FIXME: more cuts:
-    //    VolumeCut, PDGIdCut, PrimaryOnly
-    //     if ( _primaryOnly ){
-    //       if ( trk->GetParentID() != 0 ) {
-    //         return fKill;
-    //       }
-    //     }
-
-    //================================================================
   } // end namespace Mu2eG4Cuts
 
   //================================================================
@@ -409,7 +462,11 @@ namespace mu2e {
     if(cuttype == "union") return make_unique<Union>(pset, lim);
     if(cuttype == "intersection") return make_unique<Intersection>(pset, lim);
     if(cuttype == "plane") return make_unique<Plane>(pset, lim);
-    if(cuttype == "const") return make_unique<Constant>(pset, lim);
+
+    if(cuttype == "inVolume") return make_unique<VolumeCut>(pset, false, lim);
+    if(cuttype == "notInVolume") return make_unique<VolumeCut>(pset, true, lim);
+
+    if(cuttype == "constant") return make_unique<Constant>(pset, lim);
 
     throw cet::exception("CONFIG")<< "mu2e::createMu2eG4Cuts(): can not parse pset = "<<pset.to_string()<<"\n";
   }

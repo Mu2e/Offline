@@ -15,7 +15,7 @@ source : {
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "histBeamPrimaryToTS3DS23.root" }
+   TFileService          : { fileName : "histBeamG4s1.root" }
    RandomNumberGenerator : { }
 
    user : {
@@ -78,13 +78,13 @@ physics : {
 		     { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, 6000 ] },
 		     { type: plane normal: [ -1, 0, 0 ] point : [ 200, 0, 0 ] },
 
-{}
-//tmp:		     // This union splits the output into two exclusive streams
-//tmp:		     { type: union pars:  [
-//tmp:			   { type: inVolume  pars: [TS3Vacuum] write: g4s1beam },
-//tmp:			   { type: constant  value: true       write: g4s1dsregion }
-//tmp:			]
-//tmp:		     }
+		     // This union splits the output of the above cuts 
+		     // into two exclusive streams
+		     { type: union pars:  [
+			   { type: inVolume  pars: [TS3Vacuum] write: g4s1beam },
+			   { type: constant  value: true       write: g4s1dsregion }
+			]
+		     }
 		  ]
 	       }
 	       ,
@@ -140,7 +140,7 @@ physics : {
 	 noDecay: []
 	 useNewMuMinusAtomicCapture: false
 	 minRangeCut: 0.01 // mm
-	 physicsListName: "Shielding_MU2E01"
+	 physicsListName:  "QGSP_BERT" // "Shielding_MU2E01"
 
 	 writeGDML : false
 	 GDMLFileName : "mu2e.gdml"
@@ -203,7 +203,7 @@ outputs: {
 
    fullOutput : {
       module_type : RootOutput
-      fileName    : "beam_g4s1_full.root"
+      fileName    : "dataBeamG4s1_full.root"
    }
 
    filteredOutput : {
@@ -216,7 +216,7 @@ outputs: {
          "keep *_g4filter_*_*",
          "keep *_compressPV_*_*"
       ]
-      fileName    : "dataBeamPrimaryToTS3DS23.root"
+      fileName    : "dataBeamG4s1.root"
    }
 
    truncatedEvtsOutput : {
@@ -230,7 +230,7 @@ outputs: {
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "truncatedBeamPrimaryToTS3DS23.root"
+      fileName    : "truncatedBeamG4s1.root"
    }
 
 }
