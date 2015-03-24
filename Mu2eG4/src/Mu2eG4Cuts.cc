@@ -15,6 +15,7 @@
 
 #include "G4Track.hh"
 #include "G4Step.hh"
+#include "G4VProcess.hh"
 
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
@@ -60,7 +61,7 @@ namespace mu2e {
       const Mu2eG4ResourceLimits *mu2elimits_;
       bool overflowWarningPrinted_; // in the current event
 
-      void addHit(const G4Step *aStep, ProcessCode endCode);
+      void addHit(const G4Step *aStep);
     };
 
     void IOHelper::declareProducts(art::EDProducer *parent) {
@@ -95,8 +96,18 @@ namespace mu2e {
       mu2eOrigin_ = mu2eOriginInWorld;
     }
 
-    void IOHelper::addHit(const G4Step *aStep, ProcessCode endCode) {
+    void IOHelper::addHit(const G4Step *aStep) {
       if(output_->size() < mu2elimits_->maxStepPointCollectionSize()) {
+
+        G4VProcess const* process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
+        if(!process) {
+          throw cet::exception("GEANT4")<<"ProcessDefinedStep: process not specified for particle "
+                                        << aStep->GetTrack()->GetParticleDefinition()->GetParticleName()
+                                        << " in file "<<__FILE__<<" line "<<__LINE__
+                                        <<" function "<<__func__<<"()\n";
+        }
+
+        ProcessCode endCode = ProcessCode::findByName(process->GetProcessName());
 
         // The point's coordinates are saved in the mu2e coordinate system.
         output_->
@@ -156,7 +167,7 @@ namespace mu2e {
         if(cut->steppingActionCut(step)) {
           result = true;
           if(output_) {
-            addHit(step, ProcessCode::mu2eKillerVolume);
+            addHit(step);
           }
           break;
         }
@@ -240,7 +251,7 @@ namespace mu2e {
         }
       }
       if(result && output_) {
-        addHit(step, ProcessCode::mu2eKillerVolume);
+        addHit(step);
       }
 
       return result;
@@ -339,7 +350,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector& pos = step->GetPostStepPoint()->GetPosition();
       const bool result = cut_impl(pos);
       if(result && output_) {
-        addHit(step, ProcessCode::mu2eKillerVolume);
+        addHit(step);
       }
       return result;
     }
@@ -393,7 +404,7 @@ namespace mu2e {
     bool VolumeCut::steppingActionCut(const G4Step *step) {
       const bool result = cut_impl(step->GetTrack());
       if(result && output_) {
-        addHit(step, ProcessCode::mu2eKillerVolume);
+        addHit(step);
       }
       return result;
     }
@@ -434,7 +445,7 @@ namespace mu2e {
     bool ParticleIdCut::steppingActionCut(const G4Step *step) {
       const bool result = cut_impl(step->GetTrack());
       if(result && output_) {
-        addHit(step, ProcessCode::mu2eKillerVolume);
+        addHit(step);
       }
       return result;
     }
@@ -469,7 +480,7 @@ namespace mu2e {
     bool KineticEnergy::steppingActionCut(const G4Step *step) {
       const bool result = cut_impl(step->GetTrack());
       if(result && output_) {
-        addHit(step, ProcessCode::mu2eKillerVolume);
+        addHit(step);
       }
       return result;
     }
@@ -502,7 +513,7 @@ namespace mu2e {
     bool PrimaryOnly::steppingActionCut(const G4Step *step) {
       const bool result = cut_impl(step->GetTrack());
       if(result && output_) {
-        addHit(step, ProcessCode::mu2eKillerVolume);
+        addHit(step);
       }
       return result;
     }
@@ -534,7 +545,7 @@ namespace mu2e {
 
     bool Constant::steppingActionCut(const G4Step *step) {
       if(output_) {
-        addHit(step, ProcessCode::mu2eKillerVolume);
+        addHit(step);
       }
       return value_;
     }
