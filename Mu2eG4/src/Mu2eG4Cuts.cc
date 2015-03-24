@@ -444,6 +444,41 @@ namespace mu2e {
     }
 
     //================================================================
+    class KineticEnergy: virtual public IMu2eG4Cut,
+                         public IOHelper
+    {
+    public:
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
+      explicit KineticEnergy(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
+    private:
+      double cut_;
+      bool cut_impl(const G4Track* trk);
+    };
+
+    KineticEnergy::KineticEnergy(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
+      : IOHelper(pset, lim)
+      , cut_(pset.get<double>("cut"))
+    {}
+
+    bool KineticEnergy::cut_impl(const G4Track* trk) {
+      return trk->GetKineticEnergy() < cut_;
+    }
+
+    bool KineticEnergy::steppingActionCut(const G4Step *step) {
+      const bool result = cut_impl(step->GetTrack());
+      if(result && output_) {
+        addHit(step, ProcessCode::mu2eKillerVolume);
+      }
+      return result;
+    }
+
+    bool KineticEnergy::stackingActionCut(const G4Track *trk) {
+      return cut_impl(trk);
+    }
+
+    //================================================================
     // FIXME: more cuts:
     //    PDGIdCut, PrimaryOnly, lowEk
     //     if ( _primaryOnly ){
@@ -504,6 +539,8 @@ namespace mu2e {
 
     if(cuttype == "pdgId") return make_unique<ParticleIdCut>(pset, false, lim);
     if(cuttype == "notPdgId") return make_unique<ParticleIdCut>(pset, true, lim);
+
+    if(cuttype == "kineticEnergy") return make_unique<KineticEnergy>(pset, lim);
 
     if(cuttype == "constant") return make_unique<Constant>(pset, lim);
 

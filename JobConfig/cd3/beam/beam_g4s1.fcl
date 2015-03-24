@@ -65,15 +65,16 @@ physics : {
 	    pars: [
                {
 		  type: intersection
-		  stopParticles: true  // the default
 
-		  // cut: { type : plane   pars: [...] }
 		  // cut: { type : union   pars: [ {...}, {...}] }
 		  // cut: { type : intersection   pars: [ {...}, {...}] }
 		  // cut: { type : inVolume pars: [ vol1, vol2 ] }
 		  // cut: { type : notInVolume pars: [ vol1, vol2 ] }
 
-		  // plane def:    par0*x + par1*y + par2*z > par3
+		  // cut: { type : plane   pars: [...] }
+		  //         plane def:    par0*x + par1*y + par2*z > par3
+
+		  // cut: { type: kineticEnergy cut : 0.5 }
 
 		  pars: [
 		     { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, 6000 ] },
@@ -93,7 +94,6 @@ physics : {
 		  type: plane
 		  normal: [ 0, 0, -1 ]
 		  point : [0, 0, -14000]
-		  stopParticles: true
 		  write: toBeamDump
 	       }
 
