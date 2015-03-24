@@ -35,7 +35,7 @@ namespace mu2e {
       _rTorus(0.), _rVac(0.)
     {
       // Reserve number of coils
-      for ( unsigned iTS = TSRegion::TS1 ; iTS <= TSRegion::TS5 ; iTS++ ) 
+      for ( unsigned iTS = TSRegion::TS1 ; iTS <= TSRegion::TS5 ; ++iTS ) 
         _coilMap[ (TSRegion)iTS ].reserve( getNCoils( (TSRegion)iTS ) );
     }
     
@@ -84,8 +84,33 @@ namespace mu2e {
       }
     };
 
+    // Coil Assemblies
+    class TSCARegionDetail {
+    public:
+      enum enum_type  { unknown, TS1, TS2, TS3u, TS3d, TS4, TS5 };
+      static std::string const& typeName() {
+        static std::string type("TSCARegion"); return type;
+      }
+      static std::map<enum_type,std::string> const& names() {
+        static std::map<enum_type,std::string> nam;
+        
+        if ( nam.empty() ) {
+          nam[unknown] = "unknown";
+          nam[TS1]     = "TS1";
+          nam[TS2]     = "TS2";
+          nam[TS3u]    = "TS3u";
+          nam[TS3d]    = "TS3d";
+          nam[TS4]     = "TS4";
+          nam[TS5]     = "TS5";
+        }
+
+        return nam;
+      }
+    };
+
     typedef EnumToStringSparse<TSRegionDetail> TSRegion;
     typedef EnumToStringSparse<TSRadialPartDetail> TSRadialPart;
+    typedef EnumToStringSparse<TSCARegionDetail> TSCARegion;
 
     // Cryo-stat dimensions
     double torusRadius() const { return _rTorus; }
@@ -111,6 +136,19 @@ namespace mu2e {
       return static_cast<T*>( _cryoMap.find(i)->second.find(j)->second.get() );        
     }
 
+    // The coils assemblies are approximated by a torus for now
+
+    const std::vector<double> & caRadii(TSCARegion::enum_type i) const { 
+      return _caRadiiMap.at(i);
+    }
+    // those only make sense for the toruses and cylinders
+    double innerCARadius(TSCARegion::enum_type i) const { 
+      return _caRadiiMap.at(i)[0]; 
+    }
+    double outerCARadius(TSCARegion::enum_type i) const { 
+      return _caRadiiMap.at(i)[1]; 
+    }
+
     // Coils
     std::string coil_material() const { return _coilMaterial; }
     unsigned getNCoils(TSRegion::enum_type i) const { return _nCoils.at(i); }
@@ -121,6 +159,13 @@ namespace mu2e {
     CollimatorTS3 const& getColl31() const { return _coll31; }
     CollimatorTS3 const& getColl32() const { return _coll32; }
     CollimatorTS5 const& getColl5()  const { return _coll5;  }
+
+    // Coil Assemblies
+    const std::string & caMaterial() const { return _caMaterial; }
+    template <class T = TSSection>
+    T* getTSCA(TSCARegion::enum_type i) const {
+      return static_cast<T*>(_caMap.at(i).get() );
+    }
 
     // Vacua
     template <class T = TSSection>
@@ -156,7 +201,7 @@ namespace mu2e {
     std::string _material;
     std::string _insideMaterial;
 
-    // - cryostat map
+    // cryostat map
     typedef std::map<TSRadialPart::enum_type,std::unique_ptr<TSSection>> map_unique_ptrs_TSSection;
     std::map<TSRegion::enum_type,map_unique_ptrs_TSSection> _cryoMap;
 
@@ -179,6 +224,16 @@ namespace mu2e {
 
     // Vacuum map
     std::map<TSRegion::enum_type,std::unique_ptr<TSSection>> _vacuumMap;
+
+    // TS Coil Assemblies (CA)
+
+    std::string _caMaterial;
+
+    // if a section is a torus or a cylinder the size is 2; 4 for cone; in out; upstream, downstream
+    std::map<TSCARegion::enum_type, std::vector<double>> _caRadiiMap;
+
+    // CA Coil Assemblies map
+    std::map<TSCARegion::enum_type, std::unique_ptr<TSSection>> _caMap;
 
     // Poly-lining map
     std::map<TSRegion::enum_type,std::unique_ptr<TorusSection>> _polyLiningMap;

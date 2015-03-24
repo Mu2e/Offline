@@ -68,6 +68,7 @@ namespace mu2e {
 
     constructCryostat   ( parent, c, *bl);
     constructCoils      ( parent, c, *bl);
+    constructCAs        ( parent, c, *bl);
     constructCollimators( parent, c, *bl);
     constructDegrader   ( _helper->locateVolInfo("TS5Vacuum"), c, *bl);
     constructPbarWindow ( _helper->locateVolInfo("TS3Vacuum"), c, *bl);
@@ -431,6 +432,52 @@ namespace mu2e {
       cout << __func__ << " Downstream TS5 endwall at: " << pos3 << endl;
     }
   } 
+
+  //__________________________________
+  //
+  // CONSTRUCT Coil Assemblies (CA) (Modules), a torus approximation for now
+  //__________________________________
+
+  void constructCAs( VolumeInfo const& parent, 
+                     SimpleConfig const& config,
+                     Beamline const& bl ) {
+
+    TransportSolenoid const & ts       (bl.getTS());
+    StraightSection   const * caStrsec (nullptr);
+    TorusSection      const * caTorsec (nullptr);
+
+    G4ThreeVector parentCenterInMu2e = parent.centerInMu2e();
+    G4Material* caMaterial  = findMaterialOrThrow(ts.caMaterial());
+
+    // Build TS2 CAs
+    std::cout << __func__ << " constructing TS2"  << std::endl;
+    caTorsec = ts.getTSCA<TorusSection>(TransportSolenoid::TSCARegion::TS2);
+    nestTorus("TS2CA",
+              caTorsec->getParameters(),
+              caMaterial,
+              caTorsec->getRotation(),
+              caTorsec->getGlobal()-parentCenterInMu2e,
+              parent,
+              0,
+              G4Color::Yellow(),
+	      "TSCryo"
+              );
+ 
+    // Build TS4 CAs
+    std::cout << __func__ << " constructing TS4"  << std::endl;
+    caTorsec = ts.getTSCA<TorusSection>(TransportSolenoid::TSCARegion::TS4);
+    nestTorus("TS4CA",
+              caTorsec->getParameters(),
+              caMaterial,
+              caTorsec->getRotation(),
+              caTorsec->getGlobal()-parentCenterInMu2e,
+              parent,
+              0,
+              G4Color::Yellow(),
+	      "TSCryo"
+              );
+ 
+  }
 
   //__________________________________
   //

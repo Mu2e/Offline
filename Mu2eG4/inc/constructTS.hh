@@ -20,6 +20,7 @@ namespace mu2e {
 
   void constructCryostat   ( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
   void constructCoils      ( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
+  void constructCAs        ( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
   void constructCollimators( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
   void constructDegrader   ( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
   void constructPbarWindow ( VolumeInfo const& p, SimpleConfig const& c, Beamline const& bl);
