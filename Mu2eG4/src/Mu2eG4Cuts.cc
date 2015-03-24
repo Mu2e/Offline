@@ -5,12 +5,12 @@
 #include <array>
 #include <vector>
 #include <algorithm>
-#include <stdexcept>
 
+#include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/EDProducer.h"
-
+#include "art/Utilities/InputTag.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "G4Track.hh"
@@ -39,15 +39,22 @@ namespace mu2e {
       virtual void put(art::Event& event) override;
 
     protected:
-      explicit IOHelper(const std::string& outputName, const Mu2eG4ResourceLimits& mu2elimits)
-        : outputName_(outputName)
+      explicit IOHelper(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& mu2elimits)
+        : outputName_(pset.get<string>("write", ""))
+        , preSimulatedHitTag_(pset.get<art::InputTag>("preSimulatedHits", art::InputTag()))
         , spHelper_()
         , mu2elimits_(&mu2elimits)
         , overflowWarningPrinted_(false)
-      {}
+      {
+        if((preSimulatedHitTag_ != art::InputTag()) && outputName_.empty()) {
+          throw cet::exception("CONFIG")<<"Mu2eG4 Cuts: preSimulatedHits = "<<preSimulatedHitTag_
+                                        <<" has no effect as no output is specified via 'write'\n";
+        }
+      }
 
       std::string outputName_;
       std::unique_ptr<StepPointMCCollection> output_;
+      art::InputTag preSimulatedHitTag_;
       CLHEP::Hep3Vector mu2eOrigin_;
       const SimParticleHelper *spHelper_;
       const Mu2eG4ResourceLimits *mu2elimits_;
@@ -70,7 +77,15 @@ namespace mu2e {
         std::cout<<"IOHelper: Creating output collection "<<outputName_
                  <<" ptr = "<<output_.get()
                  <<std::endl;
-        // FIXME: handle pre-generated hits
+
+        if(preSimulatedHitTag_ != art::InputTag()) {
+          const auto& inhits = evt.getValidHandle<StepPointMCCollection>(preSimulatedHitTag_);
+          output_->reserve(inhits->size());
+          for(const auto& hit: *inhits) {
+            output_->emplace_back(hit);
+          }
+        }
+
       }
     }
 
@@ -132,13 +147,13 @@ namespace mu2e {
     };
 
     Union::Union(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
-      : IOHelper(pset.get<string>("write", ""), lim)
-      {
-        PSVector pars = pset.get<PSVector>("pars");
-        for(const auto& p: pars) {
-          cuts_.emplace_back(createMu2eG4Cuts(p, lim));
-        }
+      : IOHelper(pset, lim)
+    {
+      PSVector pars = pset.get<PSVector>("pars");
+      for(const auto& p: pars) {
+        cuts_.emplace_back(createMu2eG4Cuts(p, lim));
       }
+    }
 
     bool Union::steppingActionCut(const G4Step *step) {
       bool result = false;
@@ -213,13 +228,13 @@ namespace mu2e {
     };
 
     Intersection::Intersection(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
-      : IOHelper(pset.get<string>("write", ""), lim)
-      {
-        PSVector pars = pset.get<PSVector>("pars");
-        for(const auto& p: pars) {
-          cuts_.emplace_back(createMu2eG4Cuts(p, lim));
-        }
+      : IOHelper(pset, lim)
+    {
+      PSVector pars = pset.get<PSVector>("pars");
+      for(const auto& p: pars) {
+        cuts_.emplace_back(createMu2eG4Cuts(p, lim));
       }
+    }
 
     bool Intersection::steppingActionCut(const G4Step *step) {
       bool result = true;
@@ -292,29 +307,31 @@ namespace mu2e {
     };
 
     Plane::Plane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
-      : IOHelper(pset.get<string>("write", ""), lim)
+      : IOHelper(pset, lim)
       , offset_()
-      {
-        // FIXME: use pset.get<array>() when it is available
-        vector<double> n{pset.get<vector<double> >("normal")};
-        if(n.size() != 3) {
-          throw std::runtime_error("SteppingCut::Plane(): normal should be a vector of 3 doubles. Error in pset = "+pset.to_string());
-        }
-        //std::copy(n.begin(), n.end(), &normal_[0]);
-        std::copy(n.begin(), n.end(), normal_.begin());
-
-        vector<double> x0{pset.get<vector<double> >("point")};
-        if(x0.size() != 3) {
-          throw std::runtime_error("SteppingCut::Plane(): point should be a vector of 3 doubles. Error in pset = "+pset.to_string());
-        }
-        // the cut:
-        //             (x-x0)*normal >= 0
-        // rewrite as
-        //
-        //              x*normal >= x0*normal =: offset
-
-        offset_ = std::inner_product(normal_.begin(), normal_.end(), x0.begin(), 0.);
+    {
+      // FIXME: use pset.get<array>() when it is available
+      vector<double> n{pset.get<vector<double> >("normal")};
+      if(n.size() != 3) {
+        throw std::runtime_error("SteppingCut::Plane(): normal should be a vector of 3 doubles. Error in pset = "+pset.to_string());
       }
+      //std::copy(n.begin(), n.end(), &normal_[0]);
+      std::copy(n.begin(), n.end(), normal_.begin());
+
+      vector<double> x0{pset.get<vector<double> >("point")};
+      if(x0.size() != 3) {
+        throw cet::exception("CONFIG")<<"SteppingCut::Plane(): normal should be a vector of 3 doubles. "
+                                      <<"Error in pset = "<<pset.to_string()<<"\n";
+
+      }
+      // the cut:
+      //             (x-x0)*normal >= 0
+      // rewrite as
+      //
+      //              x*normal >= x0*normal =: offset
+
+      offset_ = std::inner_product(normal_.begin(), normal_.end(), x0.begin(), 0.);
+    }
 
     bool Plane::cut_impl(const CLHEP::Hep3Vector& pos) {
       const bool result =
@@ -352,11 +369,11 @@ namespace mu2e {
     };
 
     Constant::Constant(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
-      : IOHelper(pset.get<string>("write", ""), lim)
+      : IOHelper(pset, lim)
       , value_{pset.get<double>("value")}
     {}
 
-    Constant::Constant(bool val, const Mu2eG4ResourceLimits& lim) : IOHelper(std::string(), lim), value_(val) {}
+    Constant::Constant(bool val, const Mu2eG4ResourceLimits& lim) : IOHelper(fhicl::ParameterSet(), lim), value_(val) {}
 
     bool Constant::steppingActionCut(const G4Step *step) {
       if(output_) {
@@ -394,7 +411,7 @@ namespace mu2e {
     if(cuttype == "plane") return make_unique<Plane>(pset, lim);
     if(cuttype == "const") return make_unique<Constant>(pset, lim);
 
-    throw std::runtime_error("mu2e::createMu2eG4Cuts(pset): can not parse pset = "+pset.to_string());
+    throw cet::exception("CONFIG")<< "mu2e::createMu2eG4Cuts(): can not parse pset = "<<pset.to_string()<<"\n";
   }
 
 } // end namespace mu2e
