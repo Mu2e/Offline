@@ -74,10 +74,6 @@ namespace mu2e {
       overflowWarningPrinted_ = false;
       if(!outputName_.empty()) {
         output_ = make_unique<StepPointMCCollection>();
-        std::cout<<"IOHelper: Creating output collection "<<outputName_
-                 <<" ptr = "<<output_.get()
-                 <<std::endl;
-
         if(preSimulatedHitTag_ != art::InputTag()) {
           const auto& inhits = evt.getValidHandle<StepPointMCCollection>(preSimulatedHitTag_);
           output_->reserve(inhits->size());
@@ -91,7 +87,6 @@ namespace mu2e {
 
     void IOHelper::put(art::Event& evt) {
       if(output_) {
-        std::cout<<"IOHelper: recording output collection "<<outputName_<<std::endl;
         evt.put(std::move(output_), outputName_);
       }
     }
@@ -384,7 +379,6 @@ namespace mu2e {
     void VolumeCut::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
       IOHelper::finishConstruction(mu2eOriginInWorld);
       for(const auto& vol: volnames_) {
-        std::cout<<"Adding G4 killer volume = "<<vol<<std::endl;
         killerVolumes_.insert(getPhysicalVolumeOrThrow(vol));
       }
     }
@@ -446,9 +440,6 @@ namespace mu2e {
     }
 
     bool ParticleIdCut::stackingActionCut(const G4Track *trk) {
-      const bool result = cut_impl(trk);
-      std::cout<<"ParticleIdCut::stackingActionCut(): result = "<<result<<" for pdgId = "<<trk->GetDefinition()->GetPDGEncoding()<<std::endl;
-
       return cut_impl(trk);
     }
 
