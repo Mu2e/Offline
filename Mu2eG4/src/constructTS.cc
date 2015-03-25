@@ -442,19 +442,22 @@ namespace mu2e {
                      SimpleConfig const& config,
                      Beamline const& bl ) {
 
+    const int  verbosityLevel = config.getInt("ts.cas.verbosityLevel", 0);
+
     TransportSolenoid const & ts       (bl.getTS());
     StraightSection   const * caStrsec (nullptr);
     TorusSection      const * caTorsec (nullptr);
+    ConeSection       const * caConsec (nullptr);
 
     G4ThreeVector parentCenterInMu2e = parent.centerInMu2e();
-    G4Material* caMaterial  = findMaterialOrThrow(ts.caMaterial());
 
     // Build TS2 CAs
-    std::cout << __func__ << " constructing TS2"  << std::endl;
+    verbosityLevel && std::cout << __func__ << " constructing TS2"  << std::endl;
     caTorsec = ts.getTSCA<TorusSection>(TransportSolenoid::TSCARegion::TS2);
+    // will generate those names like: its.name()+"CA"
     nestTorus("TS2CA",
               caTorsec->getParameters(),
-              caMaterial,
+              findMaterialOrThrow(caTorsec->getMaterial()),
               caTorsec->getRotation(),
               caTorsec->getGlobal()-parentCenterInMu2e,
               parent,
@@ -463,12 +466,40 @@ namespace mu2e {
 	      "TSCryo"
               );
  
+    // Build TS3u CAs
+    verbosityLevel && std::cout << __func__ << " constructing TS3u"  << std::endl;
+    caConsec = ts.getTSCA<ConeSection>(TransportSolenoid::TSCARegion::TS3u);
+    nestCons("TS3uCA",
+              caConsec->getParameters(),
+              findMaterialOrThrow(caConsec->getMaterial()),
+              caConsec->getRotation(),
+              caConsec->getGlobal()-parentCenterInMu2e,
+              parent,
+              0,
+              G4Color::Cyan(),
+	      "TSCryo"
+              );
+
+    // Build TS3d CAs
+    verbosityLevel && std::cout << __func__ << " constructing TS3d"  << std::endl;
+    caConsec = ts.getTSCA<ConeSection>(TransportSolenoid::TSCARegion::TS3d);
+    nestCons("TS3dCA",
+              caConsec->getParameters(),
+              findMaterialOrThrow(caConsec->getMaterial()),
+              caConsec->getRotation(),
+              caConsec->getGlobal()-parentCenterInMu2e,
+              parent,
+              0,
+              G4Color::Yellow(),
+	      "TSCryo"
+              );
+
     // Build TS4 CAs
-    std::cout << __func__ << " constructing TS4"  << std::endl;
+    verbosityLevel && std::cout << __func__ << " constructing TS4"  << std::endl;
     caTorsec = ts.getTSCA<TorusSection>(TransportSolenoid::TSCARegion::TS4);
     nestTorus("TS4CA",
               caTorsec->getParameters(),
-              caMaterial,
+              findMaterialOrThrow(caTorsec->getMaterial()),
               caTorsec->getRotation(),
               caTorsec->getGlobal()-parentCenterInMu2e,
               parent,

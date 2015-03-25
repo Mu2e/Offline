@@ -33,8 +33,8 @@ namespace mu2e {
       _phi0       ( phi0        ),
       _deltaPhi   ( deltaPhi    ),
       _originInMu2e( originInMu2e ),
-      _materialName( materialName ),
-      _rotation    ( rotation   )
+      _rotation    ( rotation     ),
+      _materialName( materialName )
     {}
 
     double torusRadius() const { return _torusRadius; }
@@ -60,8 +60,8 @@ namespace mu2e {
     double _deltaPhi   ; 
 
     CLHEP::Hep3Vector  _originInMu2e;
-    std::string        _materialName;
     CLHEP::HepRotation _rotation; // wrt to parent volume
+    std::string        _materialName;
 
   };
 

@@ -108,7 +108,29 @@ namespace mu2e {
                         ); 
 
   inline VolumeInfo nestCons ( std::string const& name,
-			       std::vector<double>& params,
+                        std::array<double,7> const& params,
+                        G4Material* material,
+                        G4RotationMatrix const* rot,
+                        G4ThreeVector const & offset,
+                        VolumeInfo const & parent,
+                        int copyNo,
+                        G4Colour const color,
+			std::string const& lookupToken
+                        ) {
+    return nestCons ( name,
+		      &params[0],
+		      material,
+		      rot,
+		      offset,
+		      parent,
+		      copyNo,
+		      color,
+		      lookupToken
+		      ); 
+  }
+
+  inline VolumeInfo nestCons ( std::string const& name,
+			       std::vector<double> const& params,
 			       G4Material* material,
 			       G4RotationMatrix const* rot,
 			       G4ThreeVector const & offset,

@@ -289,19 +289,33 @@ vector<double> ts5.coils.yRotAngle =
 // The coils assemblies (CA) are approximated by a torus and tubes/cones for now
 // torus tubes have 2 radii paramenters; cones 4
 
+int  ts.cas.verbosityLevel = 1;
+
 vector<double> ts2.cas.radii  = 
   {
-    470.50, 475.50
+    472.00, 492.00
+  };
+
+vector<double> ts3u.cas.radii  = 
+  {
+    472.00, 492.00, 
+    725.00, 790.00
+  };
+
+vector<double> ts3d.cas.radii  = 
+  {
+    725.00, 790.00,
+    472.00, 492.00
   };
 
 vector<double> ts4.cas.radii  = 
   {
-    463.20, 468.20
+    472.00, 492.00
   };
 
 vector<double> ts5.cas.rIn = 
   {
-    430.30, 412.10
+    472.00, 492.00
   };
 
 string ts.cas.materialName   = "G4_Al";

@@ -20,7 +20,7 @@ namespace mu2e {
   friend class BeamlineMaker;
 
   public:
-
+    // fixme: improve  _materialName initialization 
     TorusSection() : 
       _rTorus(0.),_rIn(0.),_rOut(0.),
       _phiBegin(0.),_deltaPhi(0.) 
@@ -31,24 +31,23 @@ namespace mu2e {
 
     TorusSection(double rTorus, double rIn, double rOut, double phi0, double dPhi, 
                  CLHEP::Hep3Vector origin, CLHEP::HepRotation rotation = CLHEP::HepRotation()) :
+      TSSection(origin, rotation),
       _rTorus(rTorus),_rIn(rIn),_rOut(rOut),
       _phiBegin(phi0),_deltaPhi(dPhi)
     {
       fillData();
-      _origin=origin; // _origin is derived data member; cannot be in initialization list
-      _rotation=rotation;
     }
     
     TorusSection(const Torus& torus) :
+      TSSection(torus.originInMu2e(),torus.rotation()),
       _rTorus(torus.torusRadius()),
       _rIn(torus.innerRadius()),
       _rOut(torus.outerRadius()),
       _phiBegin(torus.phi0()),
-      _deltaPhi(torus.deltaPhi())
+      _deltaPhi(torus.deltaPhi()),
+      _materialName(torus.materialName())
     {
       fillData();
-      _origin=torus.originInMu2e(); // _origin is derived data member; cannot be in initialization list
-      _rotation=torus.rotation();
     }
 
     ~TorusSection(){}

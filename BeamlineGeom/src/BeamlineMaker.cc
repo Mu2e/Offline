@@ -42,14 +42,14 @@ namespace mu2e {
 
   std::unique_ptr<Beamline> BeamlineMaker::make(const SimpleConfig& c) {
     std::unique_ptr<Beamline> res ( new Beamline() );
-    BuildBeamline     (c, res.get() );
-    BuildTSCryostat   (c, res.get() );
-    BuildTSCoils      (c, res.get() );
-    BuildTSCollimators(c, &res->_ts );
-    BuildTSVacua      (c, &res->_ts );
-    BuildTSCAs        (c,  res->_ts );
-    BuildTSPolyLining (c, &res->_ts );
-    BuildPbarWindow   (c, &res->_ts );
+    BuildBeamline     (c, res.get()  );
+    BuildTSCryostat   (c, res.get()  );
+    BuildTSCoils      (c, res.get()  );
+    BuildTSCollimators(c, &res->_ts  );
+    BuildTSVacua      (c, &res->_ts  );
+    BuildTSCAs        (c, *(res.get()) );
+    BuildTSPolyLining (c, &res->_ts  );
+    BuildPbarWindow   (c, &res->_ts  );
     return res;
   }
 
@@ -190,16 +190,31 @@ namespace mu2e {
   }
 
   // The coils assemblies (CA) are approximated by a torus and tubes for now
-  void BeamlineMaker::BuildTSCAs (const SimpleConfig& c, TransportSolenoid& ts ){
+  void BeamlineMaker::BuildTSCAs (const SimpleConfig& c, Beamline& bl) {
+
+    TransportSolenoid& ts = bl._ts;
+
+    const int  verbosityLevel = c.getInt("ts.cas.verbosityLevel", 0);
 
     typedef TransportSolenoid::TSCARegion::enum_type   tsCAReg_enum;
 
     // Loop over CA TS regions FIXME do all, not some
-    for ( unsigned iTS = tsCAReg_enum::TS2 ; iTS <= tsCAReg_enum::TS4 ; iTS+=3 ) {
+    for ( unsigned iTS = tsCAReg_enum::TS2 ; iTS <= tsCAReg_enum::TS4 ; ++iTS ) {
  
       auto its = static_cast<TransportSolenoid::TSCARegion>(iTS);
-      
+
+      // fixme: remove whan all ready
+      if ( its !=tsCAReg_enum::TS2 
+           && its!=tsCAReg_enum::TS4
+           && its!=tsCAReg_enum::TS3u 
+           && its!=tsCAReg_enum::TS3d 
+           ) continue;
+     
       std::vector<double> tmp_Radii;
+
+      verbosityLevel && std::cout << __func__ << " filling radii info for "  
+                                  << its.name()
+                                  << std::endl;
 
       std::string tsCAname = its.name();
       std::transform(tsCAname.begin(),tsCAname.end(),tsCAname.begin(),
@@ -223,22 +238,79 @@ namespace mu2e {
     // TS3 will "splice" TS2 & 3
 
     // CA map parameters - torus sections
-    for ( unsigned iTS = tsCAReg_enum::TS2 ; iTS <= tsCAReg_enum::TS4 ; iTS+=3 ) {
-      auto its = static_cast<tsCAReg_enum>(iTS);
+    for ( unsigned iTS = tsCAReg_enum::TS2 ; iTS <= tsCAReg_enum::TS4 ; ++iTS ) {
 
-      CLHEP::Hep3Vector originInMu2e = (its==tsCAReg_enum::TS2) ? 
-        CLHEP::Hep3Vector(  ts3.getHalfLength(), 0., -ts.torusRadius() ) :
-        CLHEP::Hep3Vector( -ts3.getHalfLength(), 0.,  ts.torusRadius() );
+      auto its = static_cast<TransportSolenoid::TSCARegion>(iTS);
+        
+      verbosityLevel && std::cout << __func__ << " loop begin for: "  
+                                  << its.name()
+                                  << std::endl;
 
-      double phi0 = (its==tsCAReg_enum::TS2) ? 1.5*CLHEP::pi : CLHEP::halfpi;
+      // fixme: remove whan all ready
+      if ( its==tsCAReg_enum::TS2 || its==tsCAReg_enum::TS4 ) {
 
-      const Torus torusSectionParams( ts.torusRadius(), 
-                                      ts.innerCARadius(its), 
-                                      ts.outerCARadius(its),
-                                      phi0, CLHEP::halfpi,
+        verbosityLevel && std::cout << __func__ << " making "  
+                                    << its.name()
+                                    << std::endl;
+
+        CLHEP::Hep3Vector originInMu2e = (its==tsCAReg_enum::TS2) ? 
+          CLHEP::Hep3Vector(  ts3.getHalfLength(), 0., -ts.torusRadius() ) :
+          CLHEP::Hep3Vector( -ts3.getHalfLength(), 0.,  ts.torusRadius() );
+
+        double phi0 = (its==tsCAReg_enum::TS2) ? 1.5*CLHEP::pi : CLHEP::halfpi;
+
+        verbosityLevel && std::cout << __func__ << " ts._caMaterial "  << ts._caMaterial << std::endl;
+
+        const Torus torusSectionParams( ts.torusRadius(), 
+                                        ts.innerCARadius(its), 
+                                        ts.outerCARadius(its),
+                                        phi0, CLHEP::halfpi,
+                                        originInMu2e,
+                                        CLHEP::HepRotation(CLHEP::HepRotationX(CLHEP::halfpi)),
+                                        ts._caMaterial);
+ 
+        verbosityLevel && std::cout << __func__ 
+                                    << " caTorsec->materialName() "
+                                    << torusSectionParams.materialName() << std::endl;
+
+        ts._caMap[its] = std::unique_ptr<TSSection>( new TorusSection ( torusSectionParams ) );
+
+      }
+
+      verbosityLevel && std::cout << __func__ << " made "  
+                                  << its.name()
+                                  << std::endl;
+
+      if ( its==tsCAReg_enum::TS3u ||  its==tsCAReg_enum::TS3d  ) {
+
+        verbosityLevel && std::cout << __func__ << " making "  
+                                    << its.name()
+                                    << std::endl;
+
+        double ts3HalfLength = bl.solenoidOffset() - ts.torusRadius();
+
+        verbosityLevel && std::cout << __func__ 
+                                    << " ts3HalfLength       " << ts3HalfLength
+                                    << " bl.solenoidOffset() " << bl.solenoidOffset()
+                                    << " ts.torusRadius()    " << ts.torusRadius()
+                                    << std::endl;
+
+        CLHEP::Hep3Vector originInMu2e = (its==tsCAReg_enum::TS3u) ? 
+          CLHEP::Hep3Vector( ts3HalfLength*0.5,0.0,0.0) :
+          CLHEP::Hep3Vector(-ts3HalfLength*0.5,0.0,0.0) ;
+
+        const Cone coneSectionParams( ts.caRadii(its)[0], ts.caRadii(its)[1],
+                                      ts.caRadii(its)[2], ts.caRadii(its)[3],
+                                      ts3HalfLength*0.5,
+                                      0.0, CLHEP::twopi,
                                       originInMu2e,
-                                      CLHEP::HepRotation(CLHEP::HepRotationX(CLHEP::halfpi)));
-      ts._caMap[its] = std::unique_ptr<TSSection>( new TorusSection ( torusSectionParams ) );
+                                      CLHEP::HepRotation(CLHEP::HepRotationY(CLHEP::halfpi)),
+                                      ts._caMaterial);
+      
+        ts._caMap[its] = std::unique_ptr<TSSection>( new ConeSection ( coneSectionParams ) );
+
+      }
+
     } 
 
   }

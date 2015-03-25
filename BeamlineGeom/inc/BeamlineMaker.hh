@@ -34,7 +34,7 @@ namespace mu2e {
     static void BuildTSCoils   (const SimpleConfig&, Beamline*);
     static void BuildTSCollimators(const SimpleConfig&, TransportSolenoid* );
     static void BuildTSVacua      (const SimpleConfig&, TransportSolenoid* );
-    static void BuildTSCAs        (const SimpleConfig&, TransportSolenoid& );
+    static void BuildTSCAs        (const SimpleConfig&, Beamline& );
     static void BuildTSPolyLining (const SimpleConfig&, TransportSolenoid* );
     static void BuildPbarWindow   (const SimpleConfig&, TransportSolenoid* );
   };
