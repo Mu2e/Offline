@@ -78,4 +78,22 @@ photonMixer: {
   }
 }
 
+#------------------------------------------------------------------------------
+# mixer module template - need to be careful with bgHitFiles
+#------------------------------------------------------------------------------
+mixerTemplate: {
+    module_type         : MixMCEvents
+    fileNames           : @nil                     # @local::bgHitFiles
+    readMode            : randomReplace
+    wrapFiles           : true
+    coverageFraction    : 1000000.
+    detail : {
+        mean                : -1
+        genModuleLabel      : @nil
+        g4ModuleLabel       : @nil
+        g4StatusTag         : ""
+        stepInstanceNames   : @local::stepInstanceNames
+        doPointTrajectories : false
+    }
+}
 END_PROLOG
