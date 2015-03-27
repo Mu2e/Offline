@@ -56,6 +56,7 @@ void THexagon::Paint(Option_t* Opt) {
   //  x[6] += 10.;
 
   pl.SetLineColor(fLineColor);
+  pl.SetLineWidth(fLineWidth);
   pl.SetFillColor(fFillColor);
   pl.SetFillStyle(fFillStyle);
 

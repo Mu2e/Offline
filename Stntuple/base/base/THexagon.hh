@@ -18,6 +18,7 @@ public:
   int    fLineColor;
   int    fFillColor;
   int    fFillStyle;
+  int    fLineWidth;
 //-----------------------------------------------------------------------------
 // methods
 //-----------------------------------------------------------------------------
@@ -34,8 +35,8 @@ public:
   void   SetSize(double HexSize) { fSize = HexSize; }
   void   SetPos (double X, double Y) { fX0 = X; fY0 = Y; }
 
-
   void  SetLineColor(int Color) { fLineColor = Color; }
+  void  SetLineWidth(int Width) { fLineWidth = Width; }
   void  SetFillColor(int Color) { fFillColor = Color; }
   void  SetFillStyle(int Style) { fFillStyle = Style; }
 
