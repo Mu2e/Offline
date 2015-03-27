@@ -88,6 +88,8 @@ protected:
 					// to display all the data in a given time window
   double              fTMin;
   double              fTMax;
+
+  int                 fDisplayStrawDigiMC;
 //-----------------------------------------------------------------------------
 //  functions
 //-----------------------------------------------------------------------------
@@ -110,6 +112,8 @@ public:
 
   const art::Event* Event() { return fEvent; }
 
+  int    DisplayStrawDigiMC() { return fDisplayStrawDigiMC; }
+
   int    MinStation() { return fMinStation; }
   int    MaxStation() { return fMaxStation; }
   int    TimePeak  () { return fTimePeak;   }
@@ -128,6 +132,10 @@ public:
 
   void SetClosestSubdetector(TSubdetector* det) { fClosestSubdetector = det; }
   void SetExtrapolator      (TExtrapolator*  x) { fExtrapolator       = x; }
+
+  void SetDisplayStrawDigiMC(int Display) {
+    fDisplayStrawDigiMC = Display;
+  }
 
   void SetStations(int IMin, int IMax);
   void SetTimePeak(int I);

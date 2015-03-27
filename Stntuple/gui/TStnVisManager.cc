@@ -333,7 +333,7 @@ Int_t TStnVisManager::OpenCalView() {
   fTitleNode->Draw();
 
   c->Modified();
-   c->Update();
+  c->Update();
   return 0;
 }
 

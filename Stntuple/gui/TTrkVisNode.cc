@@ -105,6 +105,7 @@ int TTrkVisNode::InitEvent() {
   const mu2e::StrawHitPosition      *hit_pos;
   const mu2e::StrawHitFlag          *hit_id_word;
   const mu2e::PtrStepPointMCVector  *mcptr;
+  const mu2e::StrawDigiMC           *hit_digi_mc;
 
   TEvdStrawHit                      *evd_straw_hit; 
   const CLHEP::Hep3Vector           *mid, *w; 
@@ -147,6 +148,7 @@ int TTrkVisNode::InitEvent() {
     hit         = &(*fStrawHitColl)    ->at(ihit);
     hit_pos     = &(*fStrawHitPosColl) ->at(ihit);
     hit_id_word = &(*fStrawHitFlagColl)->at(ihit);
+    hit_digi_mc = &(*fStrawDigiMCColl)->at(ihit);
 
     straw       = &tracker->getStraw(hit->strawIndex());
     display_hit = 1;
@@ -155,7 +157,7 @@ int TTrkVisNode::InitEvent() {
 //-----------------------------------------------------------------------------
 // deal with MC information - later
 //-----------------------------------------------------------------------------
-    mcptr = &(*fMcPtrColl)->at(ihit);
+    mcptr = &(*fMcPtrColl)->at(ihit); // this seems to be wrong
 	
     // Get the straw information:
 
@@ -219,13 +221,6 @@ int TTrkVisNode::InitEvent() {
     if (intime          ) mask |= TEvdStrawHit::kInTimeBit;
     if (isFromConversion) mask |= TEvdStrawHit::kConversionBit;
     
-    evd_straw_hit = new TEvdStrawHit(hit,
-				     hit_pos->pos().x(),
-				     hit_pos->pos().y(),
-				     hit_pos->pos().z(),
-				     w->x(),w->y(),
-				     sigw,sigr,
-				     mask,color);
     int ist, ip, il, is;
 
     ist = straw->id().getDevice();
@@ -233,15 +228,26 @@ int TTrkVisNode::InitEvent() {
     il  = straw->id().getLayer();
     is  = straw->id().getStraw();
       
-    evd_straw = fTracker->Station(ist)->Panel(ip)->Straw(il,is);
-      
+    evd_straw     = fTracker->Station(ist)->Panel(ip)->Straw(il,is);
 
-
+    evd_straw_hit = new TEvdStrawHit(hit,
+				     evd_straw,
+				     hit_digi_mc,
+				     hit_pos->pos().x(),
+				     hit_pos->pos().y(),
+				     hit_pos->pos().z(),
+				     w->x(),w->y(),
+				     sigw,sigr,
+				     mask,color);
 
     evd_straw->AddHit(evd_straw_hit);
 
     fListOfStrawHits->Add(evd_straw_hit);
   }
+//-----------------------------------------------------------------------------
+// hit MC truth unformation from StepPointMC's
+//-----------------------------------------------------------------------------
+
 //-----------------------------------------------------------------------------
 // now initialize tracks
 //-----------------------------------------------------------------------------
@@ -249,10 +255,10 @@ int TTrkVisNode::InitEvent() {
   const KalRep             *krep;  
   const mu2e::TrkStrawHit  *track_hit;
 
-  int ntrk = (*fKalRepPtrCollection)->size();
+  int ntrk = (*fKalRepPtrColl)->size();
   
   for (int i=0; i<ntrk; i++) {
-    krep = (*fKalRepPtrCollection)->at(i).get();
+    krep = (*fKalRepPtrColl)->at(i).get();
     trk  = new TEvdTrack(i,krep);
 //-----------------------------------------------------------------------------
 // add hits
@@ -317,6 +323,7 @@ void TTrkVisNode::PaintXY(Option_t* Option) {
       }
     }
   }
+
 //-----------------------------------------------------------------------------
 // now - tracks
 //-----------------------------------------------------------------------------
@@ -328,6 +335,17 @@ void TTrkVisNode::PaintXY(Option_t* Option) {
     evd_trk = (TEvdTrack*) fListOfTracks->At(i);
     evd_trk->Paint(Option);
   }
+
+//-----------------------------------------------------------------------------
+// seedfit, if requested - not implemented yet
+//-----------------------------------------------------------------------------
+//   TAnaDump::Instance()->printKalRep(0,"banner");
+
+//   ntrk = fListOfTracks->GetEntriesFast();
+//   for (int i=0; i<ntrk; i++ ) {
+//     evd_trk = (TEvdTrack*) fListOfTracks->At(i);
+//     evd_trk->Paint(Option);
+//   }
 
   gPad->Modified();
 }

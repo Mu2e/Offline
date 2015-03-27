@@ -298,10 +298,12 @@ void TCalVisNode::PaintCal(Option_t* Option) {
 
     for (int i=0; i<ncr; i++) {
       cr = EvdCrystal(i);
+      cr->SetLineWidth(0.1);
       cr->PaintCal(Option);
     }
 //-----------------------------------------------------------------------------
 // display only clusters with E > 5 MeV
+// crystals included into these clusters have thick red border
 //-----------------------------------------------------------------------------
     if (cl->Cluster()->energyDep() > fMinClusterEnergy) {
 
@@ -309,6 +311,7 @@ void TCalVisNode::PaintCal(Option_t* Option) {
       for (int i=0; i<ncc; i++) {
 	cr = cl->Crystal(i);
 	cr->SetLineColor(kRed);
+	cr->SetLineWidth(2);
 	cr->PaintCal(Option);
       }
       cl->PaintCal(Option);

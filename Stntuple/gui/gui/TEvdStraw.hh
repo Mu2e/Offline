@@ -32,6 +32,8 @@ protected:
 
   const mu2e::Straw* fStraw;
 
+  TObjArray*         fListOfStepPointMCs;
+
 public:
 //-----------------------------------------------------------------------------
 // constructors and destructor
@@ -48,6 +50,8 @@ public:
   TEvdStrawHit*   Hit(int I) { 
     return (TEvdStrawHit*) fListOfHits->UncheckedAt(I); 
   }
+
+  const mu2e::Straw*   GetStraw() { return fStraw; }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------

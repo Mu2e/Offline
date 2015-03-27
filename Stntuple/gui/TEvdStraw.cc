@@ -22,9 +22,12 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "TrackerGeom/inc/Straw.hh"
+#include "RecoDataProducts/inc/StrawDigi.hh"
+#include "MCDataProducts/inc/StrawHitMCTruth.hh"
 
 #include "Stntuple/gui/TEvdPanel.hh"
 #include "Stntuple/gui/TEvdStraw.hh"
+#include "Stntuple/gui/TEvdStrawHit.hh"
 #include "Stntuple/gui/TStnVisManager.hh"
 
 ClassImp(TEvdStraw)
@@ -72,8 +75,8 @@ TEvdStraw::~TEvdStraw() {
 void TEvdStraw::Paint(Option_t* option) {
   // paints one disk (.. or vane, in the past), i.e. section
 
-
-  const char* view = TVisManager::Instance()->GetCurrentView();
+  TVisManager* vm = TVisManager::Instance();
+  const char* view = vm->GetCurrentView();
 
   if      (strstr(view,"trkxy" ) != 0) PaintXY (option);
   else if (strstr(view,"trkrz" ) != 0) PaintRZ (option);
@@ -91,30 +94,34 @@ void TEvdStraw::PaintXY(Option_t* Option) {
 }
 
 
-
 //_____________________________________________________________________________
 void TEvdStraw::PaintRZ(Option_t* Option) {
   // draw straw
 
-  int color(0), style(0);
+  int    nhits, color(0), style(0);
 
-  int nhits = fListOfHits->GetEntriesFast();
+  TStnVisManager* vm = TStnVisManager::Instance();
+
+  nhits = fListOfHits->GetEntriesFast();
+//-----------------------------------------------------------------------------
+// the hit drift time is unknown, so just change the color of the straw circle
+//-----------------------------------------------------------------------------
+  fArc->SetLineColor(1);
+  fArc->SetLineWidth(1);
+  
   if (nhits > 0) {
-    color = kRed-9;
-    style = 3001;
-    fArc->SetLineColor(kRed-9);
+    color = kRed;
+    fArc->SetLineColor(kRed+3);
     fArc->SetLineWidth(2);
   }
-  else {
-    fArc->SetLineColor(1);
-    fArc->SetLineWidth(1);
-  }
-  
-
-//   fEllipse->SetFillColor(color);
-//   fEllipse->SetFillStyle(style);
 
   fArc->Paint(Option);
+
+  if (vm->DisplayStrawDigiMC()) {
+    for (int i=0; i<nhits; i++) {
+      Hit(i)->PaintRZ();
+    }
+  }
 }
 
 //_____________________________________________________________________________

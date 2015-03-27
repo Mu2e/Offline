@@ -11,6 +11,7 @@
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -21,6 +22,7 @@ namespace mu2e {
   class StrawHitPositionCollection;
   class StrawHitFlagCollection;
   class PtrStepPointMCVectorCollection;
+  class StrawDigiMCCollection;
   class CalTimePeakCollection;
   class CalTimePeak;
   class KalRepPtrCollection;
@@ -48,8 +50,8 @@ protected:
   const mu2e::StrawHitFlagCollection**         fStrawHitFlagColl; //
   const mu2e::CalTimePeakCollection**          fCalTimePeakColl;  //
   const mu2e::PtrStepPointMCVectorCollection** fMcPtrColl; 
-
-  const mu2e::KalRepPtrCollection**            fKalRepPtrCollection;
+  const mu2e::StrawDigiMCCollection**          fStrawDigiMCColl; 
+  const mu2e::KalRepPtrCollection**            fKalRepPtrColl;
 
   TStnTrackBlock*   fTrackBlock;
   Color_t           fTrackColor;
@@ -102,8 +104,8 @@ public:
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------
-  void  SetKalRepPtrCollection(const mu2e::KalRepPtrCollection** Coll) {
-    fKalRepPtrCollection = Coll;
+  void  SetKalRepPtrColl(const mu2e::KalRepPtrCollection** Coll) {
+    fKalRepPtrColl = Coll;
   }
 
   void  SetListOfTracks(TObjArray* List) { fListOfTracks = List; }
@@ -123,6 +125,10 @@ public:
 
   void SetMcPtrColl(const mu2e::PtrStepPointMCVectorCollection** Coll) { 
     fMcPtrColl = Coll;
+  }
+
+  void SetStrawDigiMCColl(const mu2e::StrawDigiMCCollection** Coll) { 
+    fStrawDigiMCColl = Coll;
   }
 
   void SetCalTimePeakColl(const mu2e::CalTimePeakCollection** Coll) { 

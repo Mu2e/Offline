@@ -5,6 +5,7 @@
 
 #include "Stntuple/base/TVisNode.hh"
 
+#include "Stntuple/gui/TStnFrame.hh"
 #include "Stntuple/gui/TTrkRZView.hh"
 #include "Stntuple/gui/TStnVisManager.hh"
 
@@ -100,6 +101,9 @@ void TTrkRZView::ExecuteEvent(Int_t event, Int_t px, Int_t py) {
 // view...
 //-----------------------------------------------------------------------------
   Axis_t x, y, x1, x2, y1, y2, dx, dy;
+
+  double     xx,yy;
+  //  int        px, py;
   
   double shift_scale = 0.02;
   double zoom_scale  = 0.05;
@@ -293,3 +297,20 @@ void    TTrkRZView::SetTimePeak(int I) {
   vm->SetTimePeak(I);
 }
 
+
+//-----------------------------------------------------------------------------
+char* TTrkRZView::GetObjectInfo(Int_t Px, Int_t Py) const {
+  // need to find the active frame:
+
+  double xx, yy;
+
+  static char info[200];
+
+  xx = gPad->AbsPixeltoX(Px);
+  yy = gPad->AbsPixeltoY(Py);
+  
+  sprintf(info,"Z=%9.3f R=%8.3f",xx,yy);
+
+  return info;
+  
+}

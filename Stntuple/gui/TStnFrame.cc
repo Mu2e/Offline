@@ -162,7 +162,7 @@ TStnFrame::TStnFrame(const char* Name,
 
   fCanvasLayout = new TGLayoutHints(kLHintsExpandX | kLHintsExpandY);
   TCanvas* c = fEmbeddedCanvas->GetCanvas();
-  c->ToggleEventStatus();   
+
 					// pad for the event display
   c->cd();
   TString name1(Name);
@@ -282,8 +282,8 @@ Bool_t TStnFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) {
 
   TCanvas* c;
   int message = GET_MSG(msg);
-  double     x,y;
-  int        px, py;
+//   double     x,y;
+//   int        px, py;
 
   TVisManager* vm = TVisManager::Instance();
 
@@ -368,16 +368,16 @@ Bool_t TStnFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) {
     }
   }
 
-  px = gPad->GetEventX();
-  py = gPad->GetEventY();
+//   px = gPad->GetEventX();
+//   py = gPad->GetEventY();
   
-  x = ((TPad*) gPad)->AbsPixeltoX(px);
-  y = ((TPad*) gPad)->AbsPixeltoY(py);
+//   x = ((TPad*) gPad)->AbsPixeltoX(px);
+//   y = ((TPad*) gPad)->AbsPixeltoY(py);
   
-  fStatusBar->SetText(Form("Z = %8.3f",x),0);
-  fStatusBar->SetText(Form("R = %8.3f",y),1);
-  fStatusBar->SetText("ccc",2);
-  fStatusBar->SetText("ddd",3);
+//   fStatusBar->SetText(Form("Z = %8.3f",x),0);
+//   fStatusBar->SetText(Form("R = %8.3f",y),1);
+//   fStatusBar->SetText("ccc",2);
+//   fStatusBar->SetText("ddd",3);
   
   return true;
 }

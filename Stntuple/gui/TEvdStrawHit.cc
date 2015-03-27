@@ -15,12 +15,16 @@
 #include "TBox.h"
 #include "TEllipse.h"
 #include "TObjArray.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 #include "art/Framework/Principal/Handle.h"
 
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
+#include "TrackerGeom/inc/Straw.hh"
+
+#include "Stntuple/gui/TEvdStraw.hh"
 #include "Stntuple/gui/TEvdStrawHit.hh"
 #include "Stntuple/gui/TStnVisManager.hh"
 
@@ -32,6 +36,8 @@ TEvdStrawHit::TEvdStrawHit() {
 
 //-----------------------------------------------------------------------------
 TEvdStrawHit::TEvdStrawHit(const mu2e::StrawHit* Hit,
+			   TEvdStraw*            Straw,
+			   const mu2e::StrawDigiMC* StrawDigiMC,
 			   double X, double Y, double Z, 
 			   double                Wx,
 			   double                Wy,
@@ -41,6 +47,8 @@ TEvdStrawHit::TEvdStrawHit(const mu2e::StrawHit* Hit,
 			   int                   Color): 
   TObject(),
   fHit(Hit),
+  fStrawDigiMC(StrawDigiMC),
+  fStraw(Straw),
   fPos(X,Y,Z),
   fDir(Wx,Wy)
  {
@@ -63,10 +71,17 @@ TEvdStrawHit::TEvdStrawHit(const mu2e::StrawHit* Hit,
   fLineR.SetY2(fPos.Y()+fDir.X()*fSigR);
   fLineR.SetLineColor(Color);
 
+  const CLHEP::Hep3Vector* smp = &fStraw->GetStraw()->getMidPoint();
+  double rdrift = fStrawDigiMC->driftDistance(mu2e::StrawDigi::zero);
+      
+  fArc = new TArc(smp->z(),smp->perp(),rdrift);
+  fArc->SetFillColor(kRed);
+  fArc->SetFillStyle(3001);
 }
 
 //-----------------------------------------------------------------------------
 TEvdStrawHit::~TEvdStrawHit() {
+  delete fArc;
 }
 
 //-----------------------------------------------------------------------------
@@ -96,6 +111,7 @@ void TEvdStrawHit::PaintXY(Option_t* Option) {
 
 //_____________________________________________________________________________
 void TEvdStrawHit::PaintRZ(Option_t* Option) {
+  fArc->Paint(Option);
 }
 
 //_____________________________________________________________________________

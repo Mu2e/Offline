@@ -12,14 +12,19 @@
 #include "TVector2.h"
 #include "TVector3.h"
 #include "TLine.h"
+#include "TEllipse.h"
 
 #ifndef __CINT__
 
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 
 #else
 namespace mu2e {
   class StrawHit;
+  class StrawDigiMC;
+  class PtrStepPointMCVector;
 };
 #endif
 
@@ -34,19 +39,23 @@ public:
   };
 
 protected:
+					// backward pointers to the reconstruction objects
 
-  const mu2e::StrawHit*  fHit;
-  TEvdStraw*             fStraw;
+  const mu2e::StrawHit*             fHit;
+  const mu2e::StrawDigiMC*          fStrawDigiMC;
+  const mu2e::PtrStepPointMCVector* fListOfStepPointMCs;
 
+  TEvdStraw*  fStraw;                 // pointer to the straw -  geometry
 
-  int        fMask;			// hit mask
-  int        fColor;
-  TVector3   fPos;			// position in 3D, Z=zwire
-  TVector2   fDir;                      // direction of the straw
-  double     fSigW;      		// error in the wire direction
-  double     fSigR;      		// error in radial direction
-  TLine      fLineW;			// paint on XY view
-  TLine      fLineR;
+  int         fMask;			// hit mask
+  int         fColor;
+  TVector3    fPos;			// position in 3D, Z=zwire
+  TVector2    fDir;                     // direction of the straw
+  double      fSigW;      		// error in the wire direction
+  double      fSigR;      		// error in radial direction
+  TLine       fLineW;			// paint on XY view
+  TLine       fLineR;
+  TArc*       fArc;
 
 public:
 //-----------------------------------------------------------------------------
@@ -54,20 +63,23 @@ public:
 //-----------------------------------------------------------------------------
   TEvdStrawHit();
 
-  TEvdStrawHit(const mu2e::StrawHit* Hit,
+  TEvdStrawHit(const mu2e::StrawHit*        Hit,
+	       TEvdStraw*                   Straw,
+	       const mu2e::StrawDigiMC*     StrawDigiMC,
 	       double X, double Y, double Z, 
-	       double                Wx,
-	       double                Wy,
-	       double                SigW,
-	       double                SigR,
-	       int                   Mask, 
-	       int                   Color);
+	       double                       Wx,
+	       double                       Wy,
+	       double                       SigW,
+	       double                       SigR,
+	       int                          Mask, 
+	       int                          Color);
 
   virtual ~TEvdStrawHit();
 //-----------------------------------------------------------------------------
 // accessors
 //-----------------------------------------------------------------------------
-  const mu2e::StrawHit*  StrawHit() { return fHit; }
+  const mu2e::StrawHit*        StrawHit()    { return fHit; }
+  const mu2e::StrawDigiMC*     StrawDigiMC() { return fStrawDigiMC; }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------
