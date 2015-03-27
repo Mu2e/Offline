@@ -24,7 +24,7 @@ namespace mu2e {
   // Create and place a G4Torus inside a logical volume.
   //
   VolumeInfo nestTorus ( string const& name,
-                         array<double,5> const halfDim,
+                         array<double,torusDim> const halfDim,
                          G4Material* material,
                          G4RotationMatrix const* rot,
                          G4ThreeVector const& offset,
@@ -63,7 +63,7 @@ namespace mu2e {
 
 
   VolumeInfo nestTorus ( string const & name,
-                         array<double,5> const halfDim,
+                         array<double,torusDim> const halfDim,
                          G4Material* material,
                          G4RotationMatrix const* rot,
                          G4ThreeVector const & offset,
@@ -101,7 +101,7 @@ namespace mu2e {
   }
 
   VolumeInfo nestTorus ( string const & name,
-                         array<double,5> const halfDim,
+                         array<double,torusDim> const halfDim,
                          G4Material* material,
                          G4RotationMatrix const* rot,
                          G4ThreeVector const & offset,

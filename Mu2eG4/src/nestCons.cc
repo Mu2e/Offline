@@ -28,7 +28,7 @@ namespace mu2e {
   // Create and place a G4Cons inside a logical volume.
   //
   VolumeInfo nestCons ( string const & name,
-                        double const params[7],
+                        double const params[consDim],
                         G4Material* material,
                         G4RotationMatrix const* rot,
                         G4ThreeVector const & offset,
@@ -69,7 +69,7 @@ namespace mu2e {
   }
 
   VolumeInfo nestCons ( string const & name,
-                        double const params[7],
+                        double const params[consDim],
                         G4Material* material,
                         G4RotationMatrix const* rot,
                         G4ThreeVector const & offset,
@@ -108,7 +108,7 @@ namespace mu2e {
   }
 
   VolumeInfo nestCons ( string const & name,
-                        double const params[7],
+                        double const params[consDim],
                         G4Material* material,
                         G4RotationMatrix const* rot,
                         G4ThreeVector const & offset,

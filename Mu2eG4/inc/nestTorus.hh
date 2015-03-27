@@ -26,8 +26,10 @@ class G4CSGSolid;
 
 namespace mu2e {
 
+  const unsigned long torusDim = 5;
+
   VolumeInfo nestTorus ( std::string const& name,
-                         std::array<double,5> const halfDim,
+                         std::array<double,torusDim> const halfDim,
                          G4Material* material,
                          G4RotationMatrix const* rot,
                          G4ThreeVector const& offset,
@@ -44,7 +46,7 @@ namespace mu2e {
   // Alternate argument list (and different behavior)
   // using  VolumeInfo object
   VolumeInfo nestTorus ( std::string const& name,
-                         std::array<double,5> const halfDim,
+                         std::array<double,torusDim> const halfDim,
                          G4Material* material,
                          G4RotationMatrix const* rot,
                          G4ThreeVector const& offset,
@@ -61,7 +63,7 @@ namespace mu2e {
   // Alternate argument list (and different behavior)
   // using  VolumeInfo object
   VolumeInfo nestTorus ( std::string const& name,
-                         std::array<double,5> const halfDim,
+                         std::array<double,torusDim> const halfDim,
                          G4Material* material,
                          G4RotationMatrix const* rot,
                          G4ThreeVector const& offset,
@@ -70,7 +72,6 @@ namespace mu2e {
                          G4Colour const color,
 			 std::string const& lookupToken = ""
                          );
-
 
 }
 

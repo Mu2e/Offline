@@ -198,18 +198,10 @@ namespace mu2e {
 
     typedef TransportSolenoid::TSCARegion::enum_type   tsCAReg_enum;
 
-    // Loop over CA TS regions FIXME do all, not some
-    for ( unsigned iTS = tsCAReg_enum::TS2 ; iTS <= tsCAReg_enum::TS4 ; ++iTS ) {
+    for ( unsigned iTS = tsCAReg_enum::TS1 ; iTS <= tsCAReg_enum::TS5 ; ++iTS ) {
  
       auto its = static_cast<TransportSolenoid::TSCARegion>(iTS);
 
-      // fixme: remove whan all ready
-      if ( its !=tsCAReg_enum::TS2 
-           && its!=tsCAReg_enum::TS4
-           && its!=tsCAReg_enum::TS3u 
-           && its!=tsCAReg_enum::TS3d 
-           ) continue;
-     
       std::vector<double> tmp_Radii;
 
       verbosityLevel && std::cout << __func__ << " filling radii info for "  
@@ -226,7 +218,7 @@ namespace mu2e {
 
     ts._caMaterial = c.getString("ts.cas.materialName");
 
-    // Typedefs for easier use
+    // getting info about stright sections
     typedef TransportSolenoid::TSRegion::enum_type     tsReg_enum;
     typedef TransportSolenoid::TSRadialPart::enum_type tsRad_enum;
 
@@ -234,11 +226,13 @@ namespace mu2e {
     const StraightSection & ts3 = *(ts.getTSCryo<StraightSection>(tsReg_enum::TS3,tsRad_enum::IN));
     const StraightSection & ts5 = *(ts.getTSCryo<StraightSection>(tsReg_enum::TS5,tsRad_enum::IN));
 
-    // TS1,5 will cones based on the coil radii and positions
-    // TS3 will "splice" TS2 & 3
+    // TS1,3,5 will be cones based on the coil radii and positions
+    // TS3 will "splice" TS2 & 4
+
+    verbosityLevel && std::cout << __func__ << " ts._caMaterial "  << ts._caMaterial << std::endl;
 
     // CA map parameters - torus sections
-    for ( unsigned iTS = tsCAReg_enum::TS2 ; iTS <= tsCAReg_enum::TS4 ; ++iTS ) {
+    for ( unsigned iTS = tsCAReg_enum::TS1 ; iTS <= tsCAReg_enum::TS5 ; ++iTS ) {
 
       auto its = static_cast<TransportSolenoid::TSCARegion>(iTS);
         
@@ -246,7 +240,50 @@ namespace mu2e {
                                   << its.name()
                                   << std::endl;
 
-      // fixme: remove whan all ready
+      if ( its==tsCAReg_enum::TS1 ) {
+
+        verbosityLevel && std::cout << __func__ << " making "  
+                                    << its.name()
+                                    << std::endl;
+
+        const Cone coneSectionParams( ts.caRadii(its)[0], ts.caRadii(its)[1],
+                                      ts.caRadii(its)[2], ts.caRadii(its)[3],
+                                      ts1.getHalfLength()-ts.endWallU1_halfLength(),
+                                      0.0, CLHEP::twopi,
+                                      ts1.getGlobal()+CLHEP::Hep3Vector(0.0,0.0,ts.endWallU1_halfLength()),
+                                      CLHEP::HepRotation(),
+                                      ts._caMaterial);
+
+        verbosityLevel && std::cout << __func__ << " caConsec.materialName() "
+                                    << coneSectionParams.materialName()
+                                    << std::endl;
+
+        ts._caMap[its] = std::unique_ptr<TSSection>( new ConeSection ( coneSectionParams ) );
+
+      }
+
+      if ( its==tsCAReg_enum::TS5 ) {
+
+        verbosityLevel && std::cout << __func__ << " making "  
+                                    << its.name()
+                                    << std::endl;
+
+        const Cone coneSectionParams( ts.caRadii(its)[0], ts.caRadii(its)[1],
+                                      ts.caRadii(its)[2], ts.caRadii(its)[3],
+                                      ts5.getHalfLength()-ts.endWallD_halfLength(),
+                                      0.0, CLHEP::twopi,
+                                      ts5.getGlobal()-CLHEP::Hep3Vector(0.0,0.0,ts.endWallD_halfLength()),
+                                      CLHEP::HepRotation(),
+                                      ts._caMaterial);
+
+        verbosityLevel && std::cout << __func__ << " caConsec.materialName() "
+                                    << coneSectionParams.materialName()
+                                    << std::endl;
+
+       ts._caMap[its] = std::unique_ptr<TSSection>( new ConeSection ( coneSectionParams ) );
+
+      }
+
       if ( its==tsCAReg_enum::TS2 || its==tsCAReg_enum::TS4 ) {
 
         verbosityLevel && std::cout << __func__ << " making "  
@@ -258,8 +295,6 @@ namespace mu2e {
           CLHEP::Hep3Vector( -ts3.getHalfLength(), 0.,  ts.torusRadius() );
 
         double phi0 = (its==tsCAReg_enum::TS2) ? 1.5*CLHEP::pi : CLHEP::halfpi;
-
-        verbosityLevel && std::cout << __func__ << " ts._caMaterial "  << ts._caMaterial << std::endl;
 
         const Torus torusSectionParams( ts.torusRadius(), 
                                         ts.innerCARadius(its), 
@@ -277,17 +312,13 @@ namespace mu2e {
 
       }
 
-      verbosityLevel && std::cout << __func__ << " made "  
-                                  << its.name()
-                                  << std::endl;
-
       if ( its==tsCAReg_enum::TS3u ||  its==tsCAReg_enum::TS3d  ) {
 
         verbosityLevel && std::cout << __func__ << " making "  
                                     << its.name()
                                     << std::endl;
 
-        double ts3HalfLength = bl.solenoidOffset() - ts.torusRadius();
+        double ts3HalfLength = ts3.getHalfLength();
 
         verbosityLevel && std::cout << __func__ 
                                     << " ts3HalfLength       " << ts3HalfLength
@@ -307,9 +338,17 @@ namespace mu2e {
                                       CLHEP::HepRotation(CLHEP::HepRotationY(CLHEP::halfpi)),
                                       ts._caMaterial);
       
+        verbosityLevel && std::cout << __func__ << " caConsec.materialName() "
+                                    << coneSectionParams.materialName()
+                                    << std::endl;
+
         ts._caMap[its] = std::unique_ptr<TSSection>( new ConeSection ( coneSectionParams ) );
 
       }
+
+      verbosityLevel && std::cout << __func__ << " made "  
+                                  << its.name()
+                                  << std::endl;
 
     } 
 

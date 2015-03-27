@@ -39,13 +39,12 @@ namespace mu2e {
     }
     
     TorusSection(const Torus& torus) :
-      TSSection(torus.originInMu2e(),torus.rotation()),
+      TSSection(torus.originInMu2e(), torus.rotation(), torus.materialName()),
       _rTorus(torus.torusRadius()),
       _rIn(torus.innerRadius()),
       _rOut(torus.outerRadius()),
       _phiBegin(torus.phi0()),
-      _deltaPhi(torus.deltaPhi()),
-      _materialName(torus.materialName())
+      _deltaPhi(torus.deltaPhi())
     {
       fillData();
     }
@@ -69,10 +68,6 @@ namespace mu2e {
     double rOut()        const {return _rOut;  }
     double phiStart()    const {return _phiBegin; }
     double deltaPhi()    const {return _deltaPhi; }
-
-    std::string getMaterial() const { return _materialName; }
-    void setMaterial( std::string material ) { _materialName = material; }
-
     const std::array<double,5>& getParameters() const { return _data; }
 
   private:
@@ -84,8 +79,6 @@ namespace mu2e {
 
     double _phiBegin;
     double _deltaPhi;
-
-    std::string _materialName;
 
     std::array<double,5> _data;
 

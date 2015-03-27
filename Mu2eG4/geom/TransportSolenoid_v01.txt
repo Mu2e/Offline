@@ -291,31 +291,38 @@ vector<double> ts5.coils.yRotAngle =
 
 int  ts.cas.verbosityLevel = 1;
 
+vector<double> ts1.cas.radii = 
+  {
+    445.00, 465.00,
+    485.00, 500.00
+  };
+
 vector<double> ts2.cas.radii  = 
   {
-    472.00, 492.00
+    485.00, 500.00
   };
 
 vector<double> ts3u.cas.radii  = 
   {
-    472.00, 492.00, 
-    725.00, 790.00
+    485.00, 500.00, 
+    770.00, 790.00
   };
 
 vector<double> ts3d.cas.radii  = 
   {
-    725.00, 790.00,
-    472.00, 492.00
+    770.00, 790.00,
+    485.00, 500.00
   };
 
 vector<double> ts4.cas.radii  = 
   {
-    472.00, 492.00
+    485.00, 500.00
   };
 
-vector<double> ts5.cas.rIn = 
+vector<double> ts5.cas.radii = 
   {
-    472.00, 492.00
+    485.00, 500.00,
+    430.00, 485.00
   };
 
 string ts.cas.materialName   = "G4_Al";

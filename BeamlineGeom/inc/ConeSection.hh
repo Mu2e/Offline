@@ -39,15 +39,14 @@ namespace mu2e {
     }
 
     ConeSection( const Cone& cone )  : 
-      TSSection(cone.originInMu2e(),  cone.rotation()),
+      TSSection(cone.originInMu2e(),  cone.rotation(), cone.materialName()),
       _rIn1  ( cone.innerRadius1() ),
       _rOut1 ( cone.outerRadius1() ),
       _rIn2  ( cone.innerRadius2() ),
       _rOut2 ( cone.outerRadius2() ),
       _halfZ ( cone.zHalfLength()  ), 
       _phi0  ( cone.phi0()         ),
-      _deltaPhi ( cone.deltaPhi()  ),
-      _materialName( cone.materialName() )
+      _deltaPhi ( cone.deltaPhi()  )
     {
       fillData();
     }
@@ -75,10 +74,6 @@ namespace mu2e {
     double getHalfLength() const { return _halfZ; }
     double phiStart()    const {return _phi0; }
     double deltaPhi()    const {return _deltaPhi; }
-
-    std::string getMaterial() const { return _materialName; }
-    void setMaterial( std::string material ) { _materialName = material; }
-
     const std::array<double,7>& getParameters() const { return _data; }
 
   private:
@@ -91,10 +86,6 @@ namespace mu2e {
     double _phi0;
     double _deltaPhi;
 
-    // fixme allow to set _phi0, _deltaPhi
-
-    std::string _materialName;
-
     std::array<double,7> _data;
 
     void fillData() {
@@ -106,10 +97,6 @@ namespace mu2e {
       _data[5] = _phi0;
       _data[6] = _deltaPhi;
     }
-
-    // // no copying (because it would do the wrong thing):
-    // ConeSection( ConeSection const & );
-    // void  operator = ( ConeSection const & );
 
   };
 

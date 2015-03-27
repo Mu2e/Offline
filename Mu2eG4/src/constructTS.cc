@@ -442,72 +442,57 @@ namespace mu2e {
                      SimpleConfig const& config,
                      Beamline const& bl ) {
 
+    typedef TransportSolenoid::TSCARegion::enum_type   tsCAReg_enum;
+
     const int  verbosityLevel = config.getInt("ts.cas.verbosityLevel", 0);
 
     TransportSolenoid const & ts       (bl.getTS());
-    StraightSection   const * caStrsec (nullptr);
     TorusSection      const * caTorsec (nullptr);
     ConeSection       const * caConsec (nullptr);
 
     G4ThreeVector parentCenterInMu2e = parent.centerInMu2e();
 
-    // Build TS2 CAs
-    verbosityLevel && std::cout << __func__ << " constructing TS2"  << std::endl;
-    caTorsec = ts.getTSCA<TorusSection>(TransportSolenoid::TSCARegion::TS2);
-    // will generate those names like: its.name()+"CA"
-    nestTorus("TS2CA",
-              caTorsec->getParameters(),
-              findMaterialOrThrow(caTorsec->getMaterial()),
-              caTorsec->getRotation(),
-              caTorsec->getGlobal()-parentCenterInMu2e,
-              parent,
-              0,
-              G4Color::Yellow(),
-	      "TSCryo"
-              );
- 
-    // Build TS3u CAs
-    verbosityLevel && std::cout << __func__ << " constructing TS3u"  << std::endl;
-    caConsec = ts.getTSCA<ConeSection>(TransportSolenoid::TSCARegion::TS3u);
-    nestCons("TS3uCA",
-              caConsec->getParameters(),
-              findMaterialOrThrow(caConsec->getMaterial()),
-              caConsec->getRotation(),
-              caConsec->getGlobal()-parentCenterInMu2e,
-              parent,
-              0,
-              G4Color::Cyan(),
-	      "TSCryo"
-              );
+    for ( unsigned iTS = tsCAReg_enum::TS1 ; iTS <= tsCAReg_enum::TS5 ; ++iTS ) {
 
-    // Build TS3d CAs
-    verbosityLevel && std::cout << __func__ << " constructing TS3d"  << std::endl;
-    caConsec = ts.getTSCA<ConeSection>(TransportSolenoid::TSCARegion::TS3d);
-    nestCons("TS3dCA",
-              caConsec->getParameters(),
-              findMaterialOrThrow(caConsec->getMaterial()),
-              caConsec->getRotation(),
-              caConsec->getGlobal()-parentCenterInMu2e,
-              parent,
-              0,
-              G4Color::Yellow(),
-	      "TSCryo"
-              );
+      auto its = static_cast<TransportSolenoid::TSCARegion>(iTS);
+      std::string const & caName  = its.name()+"CA";
+      verbosityLevel && std::cout << __func__ << " constructing " << caName << std::endl;
 
-    // Build TS4 CAs
-    verbosityLevel && std::cout << __func__ << " constructing TS4"  << std::endl;
-    caTorsec = ts.getTSCA<TorusSection>(TransportSolenoid::TSCARegion::TS4);
-    nestTorus("TS4CA",
-              caTorsec->getParameters(),
-              findMaterialOrThrow(caTorsec->getMaterial()),
-              caTorsec->getRotation(),
-              caTorsec->getGlobal()-parentCenterInMu2e,
-              parent,
-              0,
-              G4Color::Yellow(),
-	      "TSCryo"
-              );
- 
+      if ( its==tsCAReg_enum::TS2 || its==tsCAReg_enum::TS4 ) {
+        
+        // those sections are toruses
+        // fixme, make the base class TSSection more general to be used here instead the two
+        caTorsec = ts.getTSCA<TorusSection>(its);
+        nestTorus(caName,
+                  caTorsec->getParameters(),
+                  findMaterialOrThrow(caTorsec->getMaterial()),
+                  caTorsec->getRotation(),
+                  caTorsec->getGlobal()-parentCenterInMu2e,
+                  parent,
+                  0,
+                  G4Color::Yellow(),
+                  "TSCA"
+                  );
+
+      } else {
+
+        caConsec = ts.getTSCA<ConeSection>(its);
+        nestCons(caName,
+                 caConsec->getParameters(),
+                 findMaterialOrThrow(caConsec->getMaterial()),
+                 caConsec->getRotation(),
+                 caConsec->getGlobal()-parentCenterInMu2e,
+                 parent,
+                 0,
+                 G4Color::Yellow(),
+                 "TSCA"
+                 );
+
+        
+      }
+
+    }
+
   }
 
   //__________________________________

@@ -5,8 +5,7 @@
 // Abstract base class for TS sections
 //
 #include <memory>
-
-//#include "BeamlineGeom/inc/TSSection.hh"
+#include <string>
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -20,21 +19,25 @@ namespace mu2e {
     virtual ~TSSection(){}
 
     TSSection() :
-      _origin(CLHEP::Hep3Vector()), _rotation(CLHEP::HepRotation()) 
+      _origin(CLHEP::Hep3Vector()), _rotation(CLHEP::HepRotation()), _materialName("")
     {}
 
     explicit TSSection(CLHEP::Hep3Vector origin, 
-                       CLHEP::HepRotation rotation = CLHEP::HepRotation()) :
-      _origin(origin),  _rotation(rotation)
+                       CLHEP::HepRotation rotation = CLHEP::HepRotation(),
+                       std::string materialName="") :
+      _origin(origin),  _rotation(rotation),  _materialName(materialName)
     {}
 
-    virtual CLHEP::Hep3Vector  const & getGlobal()   const { return _origin; }
-    virtual CLHEP::HepRotation const * getRotation() const { return &_rotation; }
+    CLHEP::Hep3Vector  const & getGlobal()   const { return _origin; }
+    CLHEP::HepRotation const * getRotation() const { return &_rotation; }
+    std::string const & getMaterial() const { return _materialName; }
+    void setMaterial( std::string material ) { _materialName = material; }
 
   protected:
 
     CLHEP::Hep3Vector  _origin;
     CLHEP::HepRotation _rotation;
+    std::string _materialName;
 
   };
 

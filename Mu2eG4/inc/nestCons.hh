@@ -28,8 +28,10 @@ class G4CSGSolid;
 
 namespace mu2e {
 
+  const unsigned long consDim = 7;
+
   VolumeInfo nestCons ( std::string const& name,
-                        double const params[7],
+                        double const params[consDim],
                         G4Material* material,
                         G4RotationMatrix const* rot,
                         G4ThreeVector const & offset,
@@ -79,7 +81,7 @@ namespace mu2e {
   // Alternate argument list (and different behavior)
   // using VolumeInfo object for the parameters.
   VolumeInfo nestCons ( std::string const& name,
-                        double const params[7],
+                        double const params[consDim],
                         G4Material* material,
                         G4RotationMatrix const* rot,
                         G4ThreeVector const & offset,
@@ -97,7 +99,7 @@ namespace mu2e {
   // Alternate argument list (and different behavior)
   // using VolumeInfo object for the parameters.
   VolumeInfo nestCons ( std::string const& name,
-                        double const params[7],
+                        double const params[consDim],
                         G4Material* material,
                         G4RotationMatrix const* rot,
                         G4ThreeVector const & offset,
@@ -108,7 +110,7 @@ namespace mu2e {
                         ); 
 
   inline VolumeInfo nestCons ( std::string const& name,
-                        std::array<double,7> const& params,
+                        std::array<double,consDim> const& params,
                         G4Material* material,
                         G4RotationMatrix const* rot,
                         G4ThreeVector const & offset,
