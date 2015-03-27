@@ -22,8 +22,10 @@ class KalRep;
 
 namespace mu2e {
   class StrawHit;
+  class StrawHitPosition;
   class StrawHitMCTruth;
   class CaloCluster;
+  class CaloProtoCluster;
   class TrkToCaloExtrapol;
   class StepPointMC;
   class GenParticle;
@@ -71,8 +73,6 @@ public:
 
   void printEventHeader();
 
-  void printKalRep(const KalRep* Trk, const char* Opt = "", const char* Prefix = "");
-
   void printCaloCrystalHits (const char* ModuleLabel, 
 			     const char* ProductName = "", 
 			     const char* ProcessName = ""); 
@@ -83,17 +83,26 @@ public:
 
   void printDiskCalorimeter();
 
-  void printCaloCluster          (const mu2e::CaloCluster* Clu,
-				  const char* Opt = "");
+  void printCaloCluster          (const mu2e::CaloCluster* Cluster ,
+				  const char*              Opt = "");
   
   void printCaloClusterCollection (const char* ModuleLabel, 
 				   const char* ProductName,
 				   const char* ProcessName);
   
-  void printKalRepCollection(const char* ModuleLabel, 
+  void printCaloProtoCluster      (const mu2e::CaloProtoCluster* Clu     ,
+				   const char*                   Opt = "");
+  
+  void printCaloProtoClusterCollection (const char* ModuleLabel, 
+					const char* ProductName,
+					const char* ProcessName);
+  
+  void printKalRep(const KalRep* Krep, const char* Opt = "", const char* Prefix = "");
+
+  void printKalRepCollection(const char* ModuleLabel     , 
 			     const char* ProductName = "", 
 			     const char* ProcessName = "",
-			     int hitOpt = 0); 
+			     int         hitOpt      = 0); 
   
   void printTrkToCaloExtrapol           (const mu2e::TrkToCaloExtrapol*extrk,
 					 const char* Opt = "");
@@ -148,6 +157,12 @@ public:
   void printStepPointMCCollection (const char* ModuleLabel     , 
 				   const char* ProductName = "", 
 				   const char* ProcessName = "");
+
+  void printStrawHitPosition(const mu2e::StrawHitPosition* Pos, const char* Opt = "");
+
+  void printStrawHitPositionCollection (const char* ModuleLabel     , 
+					const char* ProductName = "", 
+					const char* ProcessName = "");
 
   void printTrackClusterMatch(const mu2e::TrackClusterMatch* TcMatch, const char* Option);
 

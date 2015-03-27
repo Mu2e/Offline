@@ -17,10 +17,13 @@
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloProtoCluster.hh"
+#include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 
 #include "MCDataProducts/inc/GenParticle.hh"
@@ -122,6 +125,258 @@ void* TAnaDump::FindObject(const char* Name) {
     o = h->Object();
   }
   return o;
+}
+
+//-----------------------------------------------------------------------------
+// print position of the cluster in the tracker system
+//-----------------------------------------------------------------------------
+void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
+  int row, col;
+  TString opt = Opt;
+
+  art::ServiceHandle<mu2e::GeometryService> geom;
+  mu2e::GeomHandle  <mu2e::Calorimeter>     cal;
+  Hep3Vector        gpos, tpos;
+
+  if ((opt == "") || (opt == "banner")) {
+    printf("-----------------------------------------------------------------------------------------------------\n");
+    printf("       Address  VaneID  Parent  NC       Time    Row   Col   Energy       X          Y        Z      \n");
+    printf("-----------------------------------------------------------------------------------------------------\n");
+  }
+ 
+  if ((opt == "") || (opt.Index("data") >= 0)) {
+    row = -1; // Cl->cogRow();
+    col = -1; // Cl->cogColumn();
+    
+    const mu2e::CaloCluster::CaloCrystalHitPtrVector caloClusterHits = Cl->caloCrystalHitsPtrVector();
+    int nh = caloClusterHits.size();
+
+    if ((row < 0) || (row > 9999)) row = -9999;
+    if ((col < 0) || (col > 9999)) col = -9999;
+//-----------------------------------------------------------------------------
+// transform cluster coordinates to the tracker coordiante system
+//-----------------------------------------------------------------------------
+    gpos = cal->fromSectionFrameFF(Cl->sectionId(),Cl->cog3Vector());
+    tpos = cal->toTrackerFrame(gpos);
+
+    printf("%16p %5i %7i %3i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f\n",
+	   Cl,
+	   Cl->sectionId(),
+	   -999, 
+	   nh,
+	   Cl->time(),
+	   row, col,
+	   Cl->energyDep(),
+	   tpos.x(),
+	   tpos.y(),
+	   tpos.z() 
+	   );
+  }
+  
+  if (opt.Index("hits") >= 0) {
+
+    Hep3Vector pos;
+    int  iz, ir;
+//-----------------------------------------------------------------------------
+// print individual crystals in local vane coordinate system
+//-----------------------------------------------------------------------------
+    const mu2e::CaloCluster::CaloCrystalHitPtrVector caloClusterHits = Cl->caloCrystalHitsPtrVector();
+    int nh = caloClusterHits.size();
+
+    for (int i=0; i<nh; i++) {
+      const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
+      int id = hit->id();
+      
+      pos = cal->crystalOriginInSection(id);
+
+      if(geom->hasElement<mu2e::VaneCalorimeter>() ){
+	mu2e::GeomHandle<mu2e::VaneCalorimeter> cgvane;
+	iz  = cgvane->nCrystalX();
+	ir  = cgvane->nCrystalY();
+      }
+      else {
+	iz = -1;
+	ir = -1;
+      }
+
+      printf("%6i     %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f %10.3f\n",
+	     id,
+	     hit->time(),
+	     iz,ir,
+	     hit->energyDep(),
+	     pos.x(),
+	     pos.y(),
+	     pos.z(),
+	     hit->energyDepTotal()
+	     );
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void TAnaDump::printCaloClusterCollection(const char* ModuleLabel, 
+					  const char* ProductName,
+					  const char* ProcessName) {
+
+  printf(">>>> ModuleLabel = %s\n",ModuleLabel);
+
+  //data about hits in the calorimeter crystals
+
+  art::Handle<mu2e::CaloClusterCollection> handle;
+  const mu2e::CaloClusterCollection* caloCluster;
+
+  if (ProductName[0] != 0) {
+    art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
+			    art::ProcessNameSelector(ProcessName)         && 
+			    art::ModuleLabelSelector(ModuleLabel)            );
+    fEvent->get(selector,handle);
+  }
+  else {
+    art::Selector  selector(art::ProcessNameSelector(ProcessName)         && 
+			    art::ModuleLabelSelector(ModuleLabel)            );
+    fEvent->get(selector,handle);
+  }
+//-----------------------------------------------------------------------------
+// make sure collection exists
+//-----------------------------------------------------------------------------
+  if (! handle.isValid()) {
+    printf("TAnaDump::printCaloClusterCollection: no CaloClusterCollection ");
+    printf("for module %s and ProductName=%s found, BAIL OUT\n",
+	   ModuleLabel,ProductName);
+    return;
+  }
+
+  caloCluster = handle.product();
+
+  int nhits = caloCluster->size();
+
+  const mu2e::CaloCluster* hit;
+
+
+  int banner_printed = 0;
+  for (int i=0; i<nhits; i++) {
+    hit = &caloCluster->at(i);
+    if (banner_printed == 0) {
+      printCaloCluster(hit, "banner");
+      banner_printed = 1;
+    }
+    printCaloCluster(hit,"data");
+  }
+ 
+}
+
+
+//-----------------------------------------------------------------------------
+void TAnaDump::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluster, const char* Opt) {
+
+  TString opt = Opt;
+
+  int section_id(-1), iz, ir;
+  Hep3Vector pos;
+
+  art::ServiceHandle<mu2e::GeometryService> geom;
+  mu2e::GeomHandle  <mu2e::Calorimeter>     cg;
+
+  if ((opt == "") || (opt == "banner")) {
+    printf("-----------------------------------------------------------------------------------------------------\n");
+    printf("       Address  SectionID  IsSplit  NC    Time    Energy      \n");
+    printf("-----------------------------------------------------------------------------------------------------\n");
+  }
+ 
+  const mu2e::CaloProtoCluster::CaloCrystalHitPtrVector caloClusterHits = Cluster->caloCrystalHitsPtrVector();
+  int nh = caloClusterHits.size();
+
+  if ((opt == "") || (opt.Index("data") >= 0)) {
+
+    printf("%16p  %3i %5i %5i %10.3f %10.3f\n",
+	   Cluster,
+	   section_id,
+	   nh,
+	   Cluster->isSplit(),
+	   Cluster->time(),
+	   Cluster->energyDep()
+	   ); 
+  }
+  
+  if (opt.Index("hits") >= 0) {
+//-----------------------------------------------------------------------------
+// print individual crystals in local vane coordinate system
+//-----------------------------------------------------------------------------
+    for (int i=0; i<nh; i++) {
+      const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
+      int id = hit->id();
+      
+      pos = cg->crystalOriginInSection(id);
+
+      if (geom->hasElement<mu2e::VaneCalorimeter>()) {
+	mu2e::GeomHandle<mu2e::VaneCalorimeter> cgvane;
+	iz  = cgvane->nCrystalX();
+	ir  = cgvane->nCrystalY();
+      }
+      else {
+	iz = -1;
+	ir = -1;
+      }
+      
+      printf("%6i     %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f %10.3f\n",
+	     id,
+	     hit->time(),
+	     iz,ir,
+	     hit->energyDep(),
+	     pos.x(),
+	     pos.y(),
+	     pos.z(),
+	     hit->energyDepTotal()
+	     );
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void TAnaDump::printCaloProtoClusterCollection(const char* ModuleLabel, 
+					       const char* ProductName,
+					       const char* ProcessName) {
+
+  art::Handle<mu2e::CaloProtoClusterCollection> handle;
+  const mu2e::CaloProtoClusterCollection       *coll;
+  const mu2e::CaloProtoCluster                 *cluster;
+
+  int banner_printed(0), nclusters;
+
+  if (ProductName[0] != 0) {
+    art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
+			    art::ProcessNameSelector(ProcessName)         && 
+			    art::ModuleLabelSelector(ModuleLabel)            );
+    fEvent->get(selector,handle);
+  }
+  else {
+    art::Selector  selector(art::ProcessNameSelector(ProcessName)         && 
+			    art::ModuleLabelSelector(ModuleLabel)            );
+    fEvent->get(selector,handle);
+  }
+//-----------------------------------------------------------------------------
+// make sure collection exists
+//-----------------------------------------------------------------------------
+  if (! handle.isValid()) {
+    printf("TAnaDump::printCaloProtoClusterCollection: no CaloProtoClusterCollection ");
+    printf("for module %s and ProductName=%s found, BAIL OUT\n",
+	   ModuleLabel,ProductName);
+    return;
+  }
+
+  coll      = handle.product();
+  nclusters = coll->size();
+
+  for (int i=0; i<nclusters; i++) {
+    cluster = &coll->at(i);
+    if (banner_printed == 0) {
+      printCaloProtoCluster(cluster, "banner");
+      banner_printed = 1;
+    }
+    printCaloProtoCluster(cluster,"data");
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -640,9 +895,6 @@ void TAnaDump::printDiskCalorimeter() {
 void TAnaDump::printCaloCrystalHits(const char* ModuleLabel, 
 				    const char* ProductName,
 				    const char* ProcessName) {
-  //    int row, col;
-
-  printf(">>>> ModuleLabel = %s\n",ModuleLabel);
 
   art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
 			  art::ProcessNameSelector(ProcessName)         && 
@@ -808,136 +1060,6 @@ void TAnaDump::printTrkToCaloExtrapolCollection(const char* ModuleLabel,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
-//-----------------------------------------------------------------------------
-void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
-  int row, col;
-  TString opt = Opt;
-
-  art::ServiceHandle<mu2e::GeometryService> geom;
-  mu2e::GeomHandle  <mu2e::Calorimeter>     cg;
-
-  if ((opt == "") || (opt == "banner")) {
-    printf("-----------------------------------------------------------------------------------------------------\n");
-    printf("       Address  VaneID  Parent  NC       Time    Row   Col   Energy       X          Y        Z      \n");
-    printf("-----------------------------------------------------------------------------------------------------\n");
-  }
- 
-  if ((opt == "") || (opt.Index("data") >= 0)) {
-    row = -1; // Cl->cogRow();
-    col = -1; // Cl->cogColumn();
-    
-    const mu2e::CaloCluster::CaloCrystalHitPtrVector caloClusterHits = Cl->caloCrystalHitsPtrVector();
-    int nh = caloClusterHits.size();
-
-    if ((row < 0) || (row > 9999)) row = -9999;
-    if ((col < 0) || (col > 9999)) col = -9999;
-    
-    printf("%16p %5i %7i %3i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f\n",
-	   Cl,
-	   Cl->sectionId(),
-	   -999, // Cl->daddy(),
-	   nh,
-	   Cl->time(),
-	   row, col,
-	   Cl->energyDep(),
-	   Cl->cog3Vector().x()+3904.,
-	   Cl->cog3Vector().y(),
-	   Cl->cog3Vector().z()-10200.);
-  }
-  
-  if (opt.Index("hits") >= 0) {
-
-    Hep3Vector pos;
-    int  iz, ir;
-//-----------------------------------------------------------------------------
-// print individual crystals in local vane coordinate system
-//-----------------------------------------------------------------------------
-    const mu2e::CaloCluster::CaloCrystalHitPtrVector caloClusterHits = Cl->caloCrystalHitsPtrVector();
-    int nh = caloClusterHits.size();
-
-    for (int i=0; i<nh; i++) {
-      const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
-      int id = hit->id();
-      
-      pos = cg->crystalOriginInSection(id);
-
-      if(geom->hasElement<mu2e::VaneCalorimeter>() ){
-	mu2e::GeomHandle<mu2e::VaneCalorimeter> cgvane;
-	iz  = cgvane->nCrystalX();
-	ir  = cgvane->nCrystalY();
-      }
-      else {
-	iz = -1;
-	ir = -1;
-      }
-
-      printf("%6i     %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f %10.3f\n",
-	     id,
-	     hit->time(),
-	     iz,ir,
-	     hit->energyDep(),
-	     pos.x(),
-	     pos.y(),
-	     pos.z(),
-	     hit->energyDepTotal()
-	     );
-    }
-  }
-}
-
-
-//-----------------------------------------------------------------------------
-void TAnaDump::printCaloClusterCollection(const char* ModuleLabel, 
-					  const char* ProductName,
-					  const char* ProcessName) {
-
-  printf(">>>> ModuleLabel = %s\n",ModuleLabel);
-
-  //data about hits in the calorimeter crystals
-
-  art::Handle<mu2e::CaloClusterCollection> handle;
-  const mu2e::CaloClusterCollection* caloCluster;
-
-  if (ProductName[0] != 0) {
-    art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
-			    art::ProcessNameSelector(ProcessName)         && 
-			    art::ModuleLabelSelector(ModuleLabel)            );
-    fEvent->get(selector,handle);
-  }
-  else {
-    art::Selector  selector(art::ProcessNameSelector(ProcessName)         && 
-			    art::ModuleLabelSelector(ModuleLabel)            );
-    fEvent->get(selector,handle);
-  }
-//-----------------------------------------------------------------------------
-// make sure collection exists
-//-----------------------------------------------------------------------------
-  if (! handle.isValid()) {
-    printf("TAnaDump::printCaloClusterCollection: no CaloClusterCollection ");
-    printf("for module %s and ProductName=%s found, BAIL OUT\n",
-	   ModuleLabel,ProductName);
-    return;
-  }
-
-  caloCluster = handle.product();
-
-  int nhits = caloCluster->size();
-
-  const mu2e::CaloCluster* hit;
-
-
-  int banner_printed = 0;
-  for (int i=0; i<nhits; i++) {
-    hit = &caloCluster->at(i);
-    if (banner_printed == 0) {
-      printCaloCluster(hit, "banner");
-      banner_printed = 1;
-    }
-    printCaloCluster(hit,"data");
-  }
- 
-}
 
 //-----------------------------------------------------------------------------
 void TAnaDump::printStrawHit(const mu2e::StrawHit* Hit, const mu2e::StepPointMC* Step, const char* Opt, int IHit, int Flags) {
@@ -1430,6 +1552,77 @@ void TAnaDump::printStrawHitMCTruthCollection(const char* ModuleLabel,
       banner_printed = 1;
     }
     printStrawHitMCTruth(hit,"data");
+  }
+ 
+}
+
+//-----------------------------------------------------------------------------
+void TAnaDump::printStrawHitPosition(const mu2e::StrawHitPosition* Hit, const char* Opt) {
+  TString opt = Opt;
+  
+  if ((opt == "") || (opt == "banner")) {
+    printf("---------------------------------------------------------------------------\n");
+    printf("  STIndex     X        Y        Z        Wdist     Pres     RRes      Flag \n");
+    printf("---------------------------------------------------------------------------\n");
+  }
+
+  int flag = *((int*) &Hit->flag());
+
+  double wres = Hit->posRes(mu2e::StrawHitPosition::phi);
+  if (wres > 999.) wres = 999.;
+
+  double rres = Hit->posRes(mu2e::StrawHitPosition::rho);
+  if (rres > 999.) rres = 999.;
+
+  if ((opt == "") || (opt == "data")) {
+    printf("   %6i %8.3f %8.3f %9.3f %8.3f  %7.2f  %7.2f  0x%08x\n",
+	   Hit->stereoHitIndex(),
+	   Hit->pos().x(),
+	   Hit->pos().y(),
+	   Hit->pos().z(),
+	   Hit->wireDist(),
+	   wres,
+	   rres,
+	   flag);
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+void TAnaDump::printStrawHitPositionCollection(const char* ModuleLabel, 
+					       const char* ProductName,
+					       const char* ProcessName) {
+
+  art::Handle<mu2e::StrawHitPositionCollection> spcHandle;
+  const mu2e::StrawHitPositionCollection*       spc;
+
+  if (ProductName[0] != 0) {
+    art::Selector  selector(art::ProductInstanceNameSelector(ProductName) &&
+			    art::ProcessNameSelector(ProcessName)         && 
+			    art::ModuleLabelSelector(ModuleLabel)            );
+    fEvent->get(selector, spcHandle);
+  }
+  else {
+    art::Selector  selector(art::ProcessNameSelector(ProcessName)         && 
+			    art::ModuleLabelSelector(ModuleLabel)            );
+    fEvent->get(selector, spcHandle);
+  }
+
+  spc = spcHandle.product();
+
+  int nhits = spc->size();
+
+  const mu2e::StrawHitPosition* pos;
+
+
+  int banner_printed = 0;
+  for (int i=0; i<nhits; i++) {
+    pos = &spc->at(i);
+    if (banner_printed == 0) {
+      printStrawHitPosition(pos, "banner");
+      banner_printed = 1;
+    }
+    printStrawHitPosition(pos,"data");
   }
  
 }
