@@ -42,7 +42,8 @@ StntupleMaker : {
 # by default, always run MergePatRec, which, in case only one track reconstruction
 # module is running upstream, simply copies its output
 #------------------------------------------------------------------------------
-    makeStrawHitModuleLabel : "makeSH"
+    makeStrawHitModuleLabel : makeSH
+    generatorModuleLabel    : generate
 
     trackBlockName          : [ "TrackBlock"   ]
     trkRecoModuleLabel      : [ "MergePatRec"  ]

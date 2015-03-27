@@ -75,6 +75,7 @@ public:
   void  SetFillStyle(int Style) { fHexagon.fFillStyle = Style; }
   void  SetFillColor(int Color) { fHexagon.fFillColor = Color; }
   void  SetLineColor(int Color) { fHexagon.fLineColor = Color; }
+  void  SetLineWidth(int Width) { fHexagon.fLineWidth = Width; }
 
   void   AddHit(const mu2e::CaloCrystalHit* CrystalHit);
 

@@ -334,10 +334,13 @@ namespace mu2e {
 // clustering needs to be fixed to define cluster coordinates in the local frame system
 // for now - transform back to the local coordinate system
 //-----------------------------------------------------------------------------
-	cogVaneFrame = cg->toSectionFrame(vane_id, cl->cog3Vector());
-       
-	cl_v         = cogVaneFrame.x();
-	cl_w         = cogVaneFrame.y();
+//	cogVaneFrame = cg->toSectionFrame(vane_id, cl->cog3Vector());
+//------------------------------------------------------------------------------
+// 2015-03-26: as of now, the cluster coordinates are defined in the local disk 
+//             coordinate system
+//-----------------------------------------------------------------------------
+	cl_v         = cl->cog3Vector().x(); // cogVaneFrame.x();
+	cl_w         = cl->cog3Vector().y(); // cogVaneFrame.y();
 	cl_energy    = cl->energyDep();
 //-----------------------------------------------------------------------------
 // V and W - coordinates in the disk system
@@ -365,7 +368,7 @@ namespace mu2e {
 	sigmaT = 0.5; 			// 0.5 ns
 	  
 	if (_diagLevel > 2){
-	  cout << " trk_v = "   << trk_v 
+	  printf("trk_v: %10.3f",trk_v);
 	       << ", cl_v = "   << cl_v 
 	       << ", sigmaV = " << sigmaV << endl 
 	       << ", trk_w = "  << trk_w 

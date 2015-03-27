@@ -139,9 +139,12 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
   Hep3Vector        gpos, tpos;
 
   if ((opt == "") || (opt == "banner")) {
-    printf("-----------------------------------------------------------------------------------------------------\n");
-    printf("       Address  VaneID  Parent  NC       Time    Row   Col   Energy       X          Y        Z      \n");
-    printf("-----------------------------------------------------------------------------------------------------\n");
+    printf("-----------------------------------------------------------------------------------------------");
+    printf("-------------------------------\n");
+    printf("       Address  VaneID  Parent  NC       Time    Row   Col   Energy  X(loc)     Y(loc)   Z(loc)");
+    printf("        X          Y          Z\n");
+    printf("-----------------------------------------------------------------------------------------------");
+    printf("-------------------------------\n");
   }
  
   if ((opt == "") || (opt.Index("data") >= 0)) {
@@ -159,7 +162,7 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
     gpos = cal->fromSectionFrameFF(Cl->sectionId(),Cl->cog3Vector());
     tpos = cal->toTrackerFrame(gpos);
 
-    printf("%16p %5i %7i %3i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f\n",
+    printf("%16p %5i %7i %3i  %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f %10.3f %10.3f %10.3f\n",
 	   Cl,
 	   Cl->sectionId(),
 	   -999, 
@@ -167,6 +170,9 @@ void TAnaDump::printCaloCluster(const mu2e::CaloCluster* Cl, const char* Opt) {
 	   Cl->time(),
 	   row, col,
 	   Cl->energyDep(),
+	   Cl->cog3Vector().x(),
+	   Cl->cog3Vector().y(),
+	   Cl->cog3Vector().z(),
 	   tpos.x(),
 	   tpos.y(),
 	   tpos.z() 
@@ -867,6 +873,7 @@ void TAnaDump::printDiskCalorimeter() {
   }
   else {
     printf(">>> ERROR: disk calorimeter not found.\n");
+    return;
   }
 
   int nd = cal->nDisk();
