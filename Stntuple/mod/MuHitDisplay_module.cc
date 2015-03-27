@@ -70,7 +70,7 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 
 #include "TrkBase/HelixParams.hh"
 #include "TrkBase/TrkHotList.hh"
@@ -135,10 +135,10 @@ namespace mu2e {
   class MuHitDisplay : public THistModule {
   private:
 //-----------------------------------------------------------------------------
-// Module labels 
+// Input parameters: Module labels 
 //-----------------------------------------------------------------------------
     std::string        moduleLabel_;	             // this module label
-    std::string        processName_;
+    std::string        _processName;
     std::string        generatorModuleLabel_; 
     std::string        fG4ModuleLabel;
     std::string        caloClusterModuleLabel_;
@@ -146,7 +146,7 @@ namespace mu2e {
     std::string        fCaloClusterAlgorithm;
     std::string        fCaloClusterSeeding;
     std::string        producerName_;
-    std::string        fStrawHitMaker;
+    std::string        fMakeStrawHitModuleLabel;
     std::string        fStrawHitPosMaker;
     std::string        fStrawHitFlagMaker;
     std::string        fTrkRecoModuleLabel;
@@ -171,41 +171,53 @@ namespace mu2e {
     // name for creating module label
     string             fDirectionAndParticle;
 
-    double             minEnergyDep_;
-    double             timeWindow_;
-    size_t             minHits_;
-					// Options to control the display
+    double              minEnergyDep_;
+    double              timeWindow_;
+
+    mu2e::StrawHitFlag         fGoodHitMask;
+    mu2e::StrawHitFlag         fBadHitMask;
+    size_t                     minHits_;
 
     bool               fDisplayBackgroundHits;
     bool               clickToAdvance_;
     bool               fPrintHits;
     int                fUseStereoHits;
-					// hit flag bits which should be ON and OFF
-    mu2e::StrawHitFlag         fGoodHitMask;
-    mu2e::StrawHitFlag         fBadHitMask;
 
+    fhicl::ParameterSet _vmConfig;
+//-----------------------------------------------------------------------------
+// end of input parameters
+//-----------------------------------------------------------------------------
+					// Options to control the display
+
+					// hit flag bits which should be ON and OFF
     TApplication*        fApplication;
     TCanvas*             fCanvas;
 
     const mu2e::Calorimeter*                    fCal;              //
 
+    const mu2e::GenParticleCollection*          fGenParticleColl;         // 
+
     const mu2e::StrawHitCollection*             fStrawHitColl;     // 
-    const mu2e::GenParticleCollection*          fGenpColl;         // 
     const mu2e::StrawHitPositionCollection*     fStrawHitPosColl;  //
     const mu2e::StrawHitFlagCollection*         fStrawHitFlagColl; //
+    const mu2e::StrawDigiMCCollection*         _strawDigiMCColl; //
+
     const mu2e::CaloCrystalHitCollection*       fListOfCrystalHits;//
     const mu2e::CaloClusterCollection*          fListOfClusters;   //
+
     const mu2e::PtrStepPointMCVectorCollection* hits_mcptr;        //
-    const mu2e::StepPointMCCollection*          fSteps;            //
+
+    const mu2e::StepPointMCCollection*          _stepPointMCColl;  //
+
     const mu2e::CalTimePeakCollection*          fCalTimePeakColl;  //
+
+    const mu2e::KalRepPtrCollection*            _kalRepPtrColl; 
 
     mu2e::SimParticlesWithHits*                 fSimParticlesWithHits; // 
 
-    int       fNClusters;
+    int                 fNClusters;
 					// 4 hypotheses: dem, uep, dmm, ump
-    int       fNTracks[4];
-
-    const mu2e::KalRepPtrCollection*  fKalRepPtrCollection; 
+    int                 fNTracks[4];
 
     TMarker*            fMarker;
 
@@ -245,13 +257,13 @@ namespace mu2e {
   MuHitDisplay::MuHitDisplay(fhicl::ParameterSet const& pset):
     THistModule(pset,"MuHitDisplay"),
     moduleLabel_              (pset.get<std::string>("module_label"                )),
-    processName_(pset.get<string>("processName","")),
+    _processName(pset.get<string>("processName","")),
     generatorModuleLabel_     (pset.get<std::string>("generatorModuleLabel"        )),
     fG4ModuleLabel            (pset.get<std::string>("g4ModuleLabel"               )),
     caloClusterModuleLabel_   (pset.get<std::string>("caloClusterModuleLabel")),
     producerName_             (""),
 
-    fStrawHitMaker            (pset.get<std::string>("strawHitMakerModuleLabel"    )),
+    fMakeStrawHitModuleLabel            (pset.get<std::string>("strawHitMakerModuleLabel"    )),
     fStrawHitPosMaker         (pset.get<std::string>("strawHitPosMakerModuleLabel" )),
     fStrawHitFlagMaker        (pset.get<std::string>("strawHitFlagMakerModuleLabel")),
 
@@ -268,13 +280,15 @@ namespace mu2e {
     trackerStepPoints_        (pset.get<std::string>("trackerStepPoints"           )),
     minEnergyDep_             (pset.get<double>     ("minEnergyDep"         ,0     )),
     timeWindow_               (pset.get<double>     ("timeWindow"           ,1.e6  )),
+    fGoodHitMask              (pset.get<std::vector<std::string> >("goodHitMask"   )),
+    fBadHitMask               (pset.get<std::vector<std::string> >("badHitMask"    )),
     minHits_                  (pset.get<unsigned>   ("minHits"                     )),
     fDisplayBackgroundHits    (pset.get<bool>       ("displayBackgroundHits",false )),
     clickToAdvance_           (pset.get<bool>       ("clickToAdvance"       ,false )),
     fPrintHits                (pset.get<bool>       ("printHits"            ,false )),
     fUseStereoHits            (pset.get<bool>       ("useStereoHits"        ,false )),
-    fGoodHitMask              (pset.get<std::vector<std::string> >("goodHitMask"   )),
-    fBadHitMask               (pset.get<std::vector<std::string> >("badHitMask"    ))
+
+    _vmConfig                 (pset.get<fhicl::ParameterSet>("visManager",fhicl::ParameterSet()))
   {
 
     fApplication          = 0;
@@ -286,6 +300,7 @@ namespace mu2e {
     fHeaderBlock          = new TStnHeaderBlock ();
 
     fVisManager           = TStnVisManager::Instance();
+
     fSimParticlesWithHits = NULL;
 
     fTrackID      = new TStnTrackID();
@@ -321,7 +336,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // define collection names to be used for initialization
 //-----------------------------------------------------------------------------
-
     const char* charDirectionAndParticle = fDirectionAndParticle.c_str();
 
 
@@ -334,12 +348,12 @@ namespace mu2e {
     fTrackBlock->AddCollName("mu2e::KalRepCollection"              ,fTrkRecoModuleLabel.data()  , charDirectionAndParticle);
     fTrackBlock->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol.data()           ,"");
     fTrackBlock->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()           ,"");
-    fTrackBlock->AddCollName("mu2e::StrawHitCollection"            ,fStrawHitMaker.data()         ,"");
-    fTrackBlock->AddCollName("mu2e::PtrStepPointMCVectorCollection",fStrawHitMaker.data()         ,"StrawHitMCPtr");
+    fTrackBlock->AddCollName("mu2e::StrawHitCollection"            ,fMakeStrawHitModuleLabel.data()         ,"");
+    fTrackBlock->AddCollName("mu2e::PtrStepPointMCVectorCollection",fMakeStrawHitModuleLabel.data()         ,"StrawHitMCPtr");
     fTrackBlock->AddCollName("mu2e::PIDProductCollection"          ,fPidModuleLabel.data()        ,"");
 
-    TAnaDump::Instance()->AddObject("MuHitDisplay::TrackBlock"  ,fTrackBlock  );
-    TAnaDump::Instance()->AddObject("MuHitDisplay::ClusterBlock",fClusterBlock);
+    TAnaDump::Instance()->AddObject("MuHitDisplay::TrackBlock"     ,fTrackBlock  );
+    TAnaDump::Instance()->AddObject("MuHitDisplay::ClusterBlock"   ,fClusterBlock);
   }
 
 //-----------------------------------------------------------------------------
@@ -363,7 +377,17 @@ namespace mu2e {
     TTrkVisNode                  *trk_node;
     TMcTruthVisNode              *mctr_node;
     const mu2e::DiskCalorimeter  *dc;
-    
+//-----------------------------------------------------------------------------
+// parse the configuration module parameters
+//-----------------------------------------------------------------------------
+    int debug_level = _vmConfig.get<int>   ("debugLevel");
+    fVisManager->SetDebugLevel(debug_level);
+
+    int display_straw_digi_mc = _vmConfig.get<int>("displayStrawDigiMC");
+    fVisManager->SetDisplayStrawDigiMC(display_straw_digi_mc);
+//-----------------------------------------------------------------------------
+// do the geometry
+//-----------------------------------------------------------------------------
     art::ServiceHandle<mu2e::GeometryService> geom;
 
     if (geom->hasElement<mu2e::DiskCalorimeter>()) {
@@ -396,17 +420,18 @@ namespace mu2e {
     trk_node->SetStrawHitPosColl    (&fStrawHitPosColl  );
     trk_node->SetStrawHitFlagColl   (&fStrawHitFlagColl );
     trk_node->SetCalTimePeakColl    (&fCalTimePeakColl  );
-    trk_node->SetKalRepPtrCollection(&fKalRepPtrCollection);
-    trk_node->SetMcPtrColl(&hits_mcptr);
+    trk_node->SetKalRepPtrColl      (&_kalRepPtrColl    );
+    trk_node->SetMcPtrColl          (&hits_mcptr);
+    trk_node->SetStrawDigiMCColl    (&_strawDigiMCColl);
     fVisManager->AddNode(trk_node);
 //-----------------------------------------------------------------------------
 // MC truth: StepPointMC's and something else - not entirely sure
 //-----------------------------------------------------------------------------
     mctr_node = new TMcTruthVisNode("McTruthVisNode");
     mctr_node->SetListOfHitsMcPtr(&hits_mcptr);
-    mctr_node->SetStepPointMCCollection(&fSteps);
+    mctr_node->SetStepPointMCCollection(&_stepPointMCColl);
     mctr_node->SetSimParticlesWithHits(&fSimParticlesWithHits);
-    mctr_node->SetGenpColl(&fGenpColl);
+    mctr_node->SetGenpColl(&fGenParticleColl);
     fVisManager->AddNode(mctr_node);
   }
 
@@ -421,7 +446,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     art::Handle<GenParticleCollection> gensHandle;
     Evt->getByLabel(generatorModuleLabel_,gensHandle);
-    if (gensHandle.isValid()) fGenpColl = gensHandle.product();
+    if (gensHandle.isValid()) fGenParticleColl = gensHandle.product();
     else {
       printf(">>> %s ERROR: GenParticleCollection by %s is missing. BAIL OUT\n",
 	     oname,generatorModuleLabel_.data());
@@ -429,32 +454,45 @@ namespace mu2e {
     }
 
     art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
-    Evt->getByLabel(fStrawHitMaker,"StrawHitMCPtr",mcptrHandle);
+    Evt->getByLabel(fMakeStrawHitModuleLabel,"StrawHitMCPtr",mcptrHandle);
     if(mcptrHandle.isValid()) hits_mcptr = mcptrHandle.product();
     else {
       printf(">>> %s ERROR:PtrStepPointMCVectorCollection  by %s is missing. BAIL OUT\n",
-	     oname,fStrawHitMaker.data());
+	     oname,fMakeStrawHitModuleLabel.data());
       return -1;
     }
 
     art::Handle<StepPointMCCollection> stepsHandle;
     art::Selector getTrackerSteps(art::ProductInstanceNameSelector(trackerStepPoints_) &&
-				  art::ProcessNameSelector(processName_) &&
+				  art::ProcessNameSelector(_processName) &&
 				  art::ModuleLabelSelector(fG4ModuleLabel)  );
     //Evt->getByLabel(fG4ModuleLabel,trackerStepPoints_,stepsHandle);
     Evt->get(getTrackerSteps, stepsHandle);
 
-    if (stepsHandle.isValid()) fSteps = stepsHandle.product();
-    else                       fSteps = NULL;
+    if (stepsHandle.isValid()) _stepPointMCColl = stepsHandle.product();
+    else                       _stepPointMCColl = NULL;
+
 //-----------------------------------------------------------------------------
 //  straw hit information
 //-----------------------------------------------------------------------------
     art::Handle<StrawHitCollection> shH;
-    Evt->getByLabel(fStrawHitMaker,shH);
+    Evt->getByLabel(fMakeStrawHitModuleLabel,shH);
     if (shH.isValid()) fStrawHitColl = shH.product();
     else {
       printf(">>> %s ERROR:StrawHitCollection by %s is missing. BAIL OUT\n",
-	     oname,fStrawHitMaker.data());
+	     oname,fMakeStrawHitModuleLabel.data());
+      return -1;
+    }
+    
+    art::Handle<StrawDigiMCCollection> handle;
+    art::Selector sel_straw_digi_mc(art::ProductInstanceNameSelector("StrawHitMC") &&
+				    art::ProcessNameSelector(_processName) &&
+				    art::ModuleLabelSelector(fMakeStrawHitModuleLabel));
+    Evt->get(sel_straw_digi_mc,handle);
+    if (handle.isValid()) _strawDigiMCColl = handle.product();
+    else {
+      printf(">>> ERROR un %s: mu2e::StrawDigiMCCollection by %s is missing. BAIL OUT\n",
+	     oname,fMakeStrawHitModuleLabel.data());
       return -1;
     }
     
@@ -529,14 +567,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // tracking data - downstream moving electrons
 //-----------------------------------------------------------------------------
-    art::Handle<KalRepPtrCollection> demHandle;
-    Evt->getByLabel(fTrkRecoModuleLabel.data(),charDirectionAndParticle, demHandle);
+    art::Handle<KalRepPtrCollection> krepHandle;
+    Evt->getByLabel(fTrkRecoModuleLabel.data(),charDirectionAndParticle, krepHandle);
 
-    fNTracks[0]          = 0;
-    fKalRepPtrCollection = NULL;
-    if (demHandle.isValid()) { 
-      fKalRepPtrCollection        = demHandle.product();
-      fNTracks[0] = fKalRepPtrCollection->size();
+    fNTracks[0]    = 0;
+    _kalRepPtrColl = NULL;
+    if (krepHandle.isValid()) { 
+      _kalRepPtrColl = krepHandle.product();
+      fNTracks[0]    = _kalRepPtrColl->size();
     }
     return 0;
   }
@@ -680,7 +718,7 @@ namespace mu2e {
 
     fSimParticlesWithHits = new SimParticlesWithHits( Evt,
 						      fG4ModuleLabel,
-						      fStrawHitMaker,
+						      fMakeStrawHitModuleLabel,
 						      trackerStepPoints_,
 						      minEnergyDep_,
 						      minHits_ );
@@ -741,9 +779,9 @@ namespace mu2e {
     arc->DrawArc(0.,0., envelope.outerRadius());
     arc->DrawArc(0.,0., envelope.innerRadius());
 
-    if (fSteps != NULL) {
+    if (_stepPointMCColl != NULL) {
 
-      SortedStepPoints sortedSteps(key,*fSteps);
+      SortedStepPoints sortedSteps(key,*_stepPointMCColl);
     
       const StepPointMC* midStep = & sortedSteps.middleByZ();
     
@@ -773,7 +811,7 @@ namespace mu2e {
 // The generated signal particle.
 //-----------------------------------------------------------------------------
 					// this is not necessarily correct (for mixed events) !
-      gen_signal = &fGenpColl->at(0);
+      gen_signal = &fGenParticleColl->at(0);
       pdg_id     = gen_signal->pdgId();
 					// ROOT returns charge in units of dbar-quark charge
  
@@ -782,9 +820,9 @@ namespace mu2e {
       tg   = new TrackTool(pdg_id, q,gen_signal->position(),gen_signal->momentum(),1.,Hep3Vector());
       tmid = new TrackTool(pdg_id, q,pos2  ,mom2 ,1.,Hep3Vector());
 
-      int npt = fSteps->size();
+      int npt = _stepPointMCColl->size();
       for (int ipt=0; ipt<npt; ++ipt){
-	StepPointMC const& step =  fSteps->at(ipt);
+	StepPointMC const& step =  _stepPointMCColl->at(ipt);
 	if ( step.totalEDep() > minEnergyDep_ ) {
 	  xStep.push_back( step.position().x() );
 	  yStep.push_back( step.position().y() );
@@ -829,7 +867,7 @@ namespace mu2e {
       printf(" I  alg ");
       TAnaDump::Instance()->printKalRep(0,"banner");
       for (int i=0; i<fNTracks[0]; i++ ) {
-	trk = fKalRepPtrCollection->at(i).get();
+	trk = _kalRepPtrColl->at(i).get();
 	printf(" %2i dem ",i);
 	TAnaDump::Instance()->printKalRep(trk,opt);
 //-----------------------------------------------------------------------------
@@ -863,22 +901,12 @@ namespace mu2e {
     
       for (int i=0; i<fNClusters; i++) {
 	cl = &fListOfClusters->at(i);
-	if (cl->isSplit() /*daddy()*/ == -1) {
-	  TAnaDump::Instance()->printCaloCluster(cl,opt);
+	TAnaDump::Instance()->printCaloCluster(cl,opt);
 //-----------------------------------------------------------------------------
 // event time defined by the first, most energetic cluster
+// no more division into split/non-split clusters
 //-----------------------------------------------------------------------------
-	  if (i == 0) {
-	    event_time = cl->time()+15.;
-	  }
-
-	  for (int j=i+1; j<fNClusters; j++) {
-	    clj = &fListOfClusters->at(j);
-	    if (clj->isSplit() /*daddy()*/ == i) {
-	      TAnaDump::Instance()->printCaloCluster(clj,opt);
-	    }
-	  }
-	}
+	if (i == 0) event_time = cl->time()+15.;
       }
 
       for (int i=0; i<fNClusters; i++) {
@@ -887,9 +915,7 @@ namespace mu2e {
 // display only clusters with E > 5 MeV
 //-----------------------------------------------------------------------------
 	if (cl->energyDep() > 5.) {
-	  // poor-man's translation
-	  //	  vane_id = cl->vaneId();
-	  xl      = cl->cog3Vector().x()+3904.1;
+	  xl      = cl->cog3Vector().x(); // +3904.;
 	  yl      = cl->cog3Vector().y();
 	  
 	  e = new TEllipse(xl,yl,50.*cl->energyDep()/100.);
@@ -917,7 +943,7 @@ namespace mu2e {
     const StrawHit*              hit; 
     const StrawHitPosition*      hitpos; 
     const StrawHitFlag*          hit_id_word; 
-    const CLHEP::Hep3Vector      /**mid,*/ *w; 
+    const CLHEP::Hep3Vector      *w; 
     const Straw*                 straw; 
     const PtrStepPointMCVector*  mcptr;
     CLHEP::Hep3Vector            vx0, vx1, vx2; 
@@ -945,7 +971,6 @@ namespace mu2e {
 	
 	// Get the straw information:
 	straw = &fTracker->getStraw( hit->strawIndex() );
-	//	mid   = &straw->getMidPoint();
 	w     = &straw->getDirection();
 
 	isFromConversion = false;
@@ -1054,7 +1079,7 @@ namespace mu2e {
     arrow->SetLineColor(kRed);
     arrow->DrawArrow( xf1, yf1, xf2, yf2, 0.01, ">");
 
-    if (fSteps != NULL) {
+    if (_stepPointMCColl != NULL) {
       double d0x  = tt->d0x();
       double d0y  = tt->d0y();
       double d0x2 =  tt->d0x() + arrowLength*tt->u0();
