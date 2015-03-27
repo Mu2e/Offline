@@ -15,7 +15,7 @@ source : {
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "histBeamG4s1.root" }
+   TFileService          : { fileName : "hist_beam_g4s1.root" }
    RandomNumberGenerator : { }
 
    user : {
@@ -91,7 +91,7 @@ physics : {
 		     // This union splits the output of the above cuts 
 		     // into two exclusive streams
 		     { type: union pars:  [
-			   { type: inVolume  pars: [TS3Vacuum] write: g4s1beam },
+			   { type: inVolume  pars: [TS3Vacuum] write: TS3Vacuum },
 			   { type: constant  value: true       write: g4s1dsregion }
 			]
 		     }
@@ -102,7 +102,7 @@ physics : {
 		  type: plane
 		  normal: [ 0, 0, -1 ]
 		  point : [0, 0, -14000]
-		  write: toBeamDump
+		  write: g4s1extmon
 	       }
 
 	       //// More cuts
@@ -168,11 +168,28 @@ physics : {
 
       }
 
-      compressPV : {
+      compressPVmuonBeam : {
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
          hitInputs : []
-         particleInputs : [ "g4filter:s0" ]
+	 // FIXME: remove 's0'
+         particleInputs : [ "muonBeamFilter:s0" ]
+      }
+
+      compressPVdsRegion : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+	 // FIXME: remove 's0'
+         particleInputs : [ "dsRegionFilter:s0" ]
+      }
+
+      compressPVextmon : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+	 // FIXME: remove 's0'
+         particleInputs : [ "extmonFilter:s0" ]
       }
 
       compressPVFull : {
@@ -184,28 +201,44 @@ physics : {
    }
 
    filters: {
-      g4filter: {
+      muonBeamFilter: {
          module_type: FilterG4Out
-         mainHitInputs : [ "g4run:TS3Vacuum", "g4run:TS5Vacuum", "g4run:DS2Vacuum", "g4run:DS3Vacuum", "g4run:CRV" ]
+         mainHitInputs : [ "g4run:TS3Vacuum" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1
          vetoDaughters: []
       }
+
+      dsRegionFilter: {
+         module_type: FilterG4Out
+         mainHitInputs : [ "g4run:g4s1dsregion" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
+         numSimParticleCollections : 1
+         vetoDaughters: []
+      }
+
+      extmonFilter: {
+         module_type: FilterG4Out
+         mainHitInputs : [ "g4run:g4s1extmon" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
+         numSimParticleCollections : 1
+         vetoDaughters: []
+      }
+
       g4status: {
          module_type: FilterStatusG4
          input: "g4run"
       }
    }
 
-   trigFilter : [generate, genCounter, g4run]
-   //trigFilter : [generate, genCounter, g4run, g4filter, compressPV ]
+   trigmubeam : [generate, genCounter, g4run, muonBeamFilter, compressPVmuonBeam]
+   trigdsregion : [generate, genCounter, g4run, dsRegionFilter, compressPVdsRegion]
+   trigextmon : [generate, genCounter, g4run, extmonFilter, compressPVextmon]
    g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
-   //trigger_paths  : [trigFilter, g4StatusFilter]
-   trigger_paths  : [trigFilter]
 
-   //e1 : [filteredOutput, filteredEvtsOutput, fullOutput]
-   //e1 : [filteredOutput, truncatedEvtsOutput]
-   e1 : [fullOutput]
+   trigger_paths  : [trigmubeam, trigdsregion, trigextmon, g4StatusFilter]
+
+   e1 : [fullOutput, truncatedEvtsOutput, mubeamout, dsout, extmonout]
    end_paths      : [e1]
 }
 
@@ -213,23 +246,49 @@ outputs: {
 
    fullOutput : {
       module_type : RootOutput
-      fileName    : "dataBeamG4s1_full.root"
+      fileName    : "data_beam_g4s1_full.art"
    }
 
-   filteredOutput : {
+   mubeamout : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: ["trigFilter"] }
+      SelectEvents: { SelectEvents: ["trigmubeam"] }
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
-         "keep *_g4filter_*_*",
-         "keep *_compressPV_*_*"
+         "keep *_muonBeamFilter_*_*",
+         "keep *_compressPVmuonBeam_*_*"
       ]
-      fileName    : "dataBeamG4s1.root"
+      fileName    : "data_g4s1_mubeam.art"
    }
 
-   truncatedEvtsOutput : {
+   dsout : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: ["trigdsregion"] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_dsRegionFilter_*_*",
+         "keep *_compressPVdsRegion_*_*"
+      ]
+      fileName    : "data_g4s1_dsregion.art"
+   }
+
+   extmonout : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: ["trigextmon"] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_extmonFilter_*_*",
+         "keep *_compressPVextmon_*_*"
+      ]
+      fileName    : "data_g4s1_extmon.art"
+   }
+
+  truncatedEvtsOutput : {
       module_type : RootOutput
       SelectEvents: { SelectEvents: ["g4StatusFilter"] }
       outputCommands:   [ "drop *_*_*_*",
@@ -240,7 +299,7 @@ outputs: {
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "truncatedBeamG4s1.root"
+      fileName    : "truncated_beam_g4s1.art"
    }
 
 }
