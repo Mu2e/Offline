@@ -54,6 +54,7 @@
 #include "G4Trd.hh"
 #include "G4IntersectionSolid.hh"
 #include "G4SubtractionSolid.hh"
+#include "G4LogicalVolume.hh"
 
 using namespace std;
 
@@ -491,6 +492,10 @@ namespace mu2e {
         
       }
 
+      G4Helper* _helper = &(*art::ServiceHandle<G4Helper>());
+      verbosityLevel && std::cout << __func__ << " " << caName << " Mass in kg: " 
+                                  << _helper->locateVolInfo(caName).logical->GetMass()/kg 
+                                  << std::endl;
     }
 
   }
