@@ -101,8 +101,9 @@ MuHitDisplay: {
     strawHitPosMakerModuleLabel  : CalPatRecMakeStrawHitPositions
     strawHitFlagMakerModuleLabel : CalPatRecFlagStrawHits
     
+    caloCrystalHitsMaker         : MakeCaloCrystalHits
     caloClusterModuleLabel       : MakeCaloCluster
-    trkRecoModuleLabel           : TrkPatRec
+    trkRecoModuleLabel           : MergePatRec
     trkExtrapol                  : TrkExtrapol
     trkCalMatch                  : CaloMatching
 
@@ -110,11 +111,6 @@ MuHitDisplay: {
     fitDirection                 : 0   # 0:downstream, 1:upstream
 
     pidModuleLabel               : ParticleID
-    #                                              label becomes AlgoCLOSESTSeededByENERGY
-
-    caloCrystalHitsMaker         : CaloCrystalHitsMaker
-#    caloClusterAlgorithm         : closest
-#    caloClusterSeeding           : energy
 	
     # if set to true, all hits will be displayed unconditionally
     # otherwise, display only hits with right flags
@@ -131,6 +127,13 @@ MuHitDisplay: {
     printHits                    : false
     timeWindow                   : 100000.
     #      timeWindow           : 50.
+#------------------------------------------------------------------------------
+# configuration of the underlying visualization manager 
+#------------------------------------------------------------------------------
+    visManager: {
+	debugLevel         : 0
+	displayStrawDigiMC : 1
+    }
 }
 
 END_PROLOG
