@@ -25,17 +25,21 @@ int StntupleInitMu2eGenpBlock(TStnDataBlock* block, AbsEvent* AnEvent, int mode)
 
   const mu2e::GenParticleCollection*     coll(0);
   const mu2e::GenParticle*               gp(0);
-  //  const art::Provenance*                 prov;
+  const art::Provenance*                 prov;
   const art::Handle<mu2e::GenParticleCollection>* handle;
 
   art::Selector  selector(art::ProductInstanceNameSelector(""));
 
   double px, py, pz, mass, energy;
   int    pdg_code;
-    //  TLorentzVector v;
+
+  char   gen_module_label[100], gen_description[100];
 
   TGenpBlock* genp_block = (TGenpBlock*) block;
   genp_block->Clear();
+
+  genp_block->GetModuleLabel("mu2e::GenParticleCollection",gen_module_label);
+  genp_block->GetDescription("mu2e::GenParticleCollection",gen_description );
 //-----------------------------------------------------------------------------
 // initialization from HEPG, loop over HEPG particles and fill the list
 // loop over the existing HEPG banks, add non-initialized interaction
@@ -51,12 +55,19 @@ int StntupleInitMu2eGenpBlock(TStnDataBlock* block, AbsEvent* AnEvent, int mode)
 
     if (handle->isValid()) {
       coll = handle->product();
-      //      prov = handle->provenance();
+      prov = handle->provenance();
 
-//       printf("moduleLabel = %-20s, producedClassname = %-30s, productInstanceName = %-20s\n",
-// 	     prov->moduleLabel().data(),
-// 	     prov->producedClassName().data(),
-// 	     prov->productInstanceName().data());
+      printf("moduleLabel = %-20s, producedClassname = %-30s, productInstanceName = %-20s\n",
+	     prov->moduleLabel().data(),
+	     prov->producedClassName().data(),
+	     prov->productInstanceName().data());
+
+      if (gen_module_label[0] != 0) {
+//-----------------------------------------------------------------------------
+// module label is defined, assume there is only one generator module to save
+//-----------------------------------------------------------------------------
+	if (strcmp(gen_module_label,prov->moduleLabel().data()) != 0) continue;
+      }
 
       for (std::vector<mu2e::GenParticle>::const_iterator ip = coll->begin();
 	   ip != coll->end(); ip++) {
