@@ -42,7 +42,7 @@ namespace mu2e {
 		     CLHEP::Hep3Vector trkpos,
 		     TrkStrawHit*      hit);
     
-    int                 fIndex;		// double index in the list
+    int                 fIndex;		// doublet index in the list
     int                 fStationId;
     int                 fPanelId;
     CLHEP::Hep3Vector   fShDir;

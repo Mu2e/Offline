@@ -130,8 +130,11 @@ namespace mu2e {
       TH1F* _hseeddoca[3];
       TH1F* _hseeddr  [2];
       TH1F* _hseeddfdz[2];
-      TH1F* _hNpointsSeed[2]; //
-      TH1F* _hkaldoca[2];
+      TH1F* _hNpointsSeed   [2]; //
+      TH1F* _hdoca          [4];
+      TH1F* _hkaldoca       [2];
+      TH1F* _hNpointsRescued[2];
+      TH1F* _hPhiResid      [2];
 //-----------------------------------------------------------------------------
 // histograms for doublets 0:all, 1:OS, 2:SS
 //-----------------------------------------------------------------------------
@@ -218,54 +221,21 @@ namespace mu2e {
     CalTimePeakCollection*   _tpeaks;   // cache of time peaks
     std::string              _iname;	// data instance name
 
-    PayloadSaver             _payloadSaver;
+    std::string             _iname_seed;// data instance name for the output 
+					 // of seed fit (used for diagnostics only)
 
     XYZPHackVector           _index;
     int                      _nindex;
 
     const TTracker*          _tracker;  // straw tracker geometry
     TFolder*                 _folder;
-					// MC tools
-    //    KalFitMC _kfitmc;
-//-----------------------------------------------------------------------------
-// strawhit tuple variables
-//-----------------------------------------------------------------------------
-    TTree*   _shdiag;
-    Int_t    _eventid;
-    //    threevec _shp;
-    Float_t  _edep;
-    Float_t  _time, _rho;
-    Int_t    _nmcsteps;
-    Int_t    _mcnunique,_mcnmax;
-    Int_t    _mcpdg,_mcgen,_mcproc;
-    //    threevec _mcshp, _mcop;
-    Float_t  _mcshlen;
-    Float_t  _mcedep,_mcemax;
-    Float_t  _pdist,_pperp,_pmom;
-    Float_t  _mctime;
-    Int_t    _esel,_rsel, _timesel,  _delta, _stereo, _isolated;
-    Int_t    _device, _sector, _layer, _straw;
-    Int_t    _ishpeak, _ntpeak, _nshtpeak;
-    //    Float_t  _shtpeak;
-    Float_t  _shpres, _shrres, _shchisq, _shdt, _shdist;
-    Float_t  _shmct0, _shmcmom, _shmctd;
-					// fit tuple variables
-    Int_t    _nadd,_ipeak;
-    //    Float_t  _hcx, _hcy, _hr, _hdfdz, _hfz0;
-    Float_t  _mccx, _mccy, _mcr, _mcdfdz, _mcfz0;
-    Int_t    _helixfail,_seedfail,_kalfail;
-    //    helixpar _hpar,_spar;
-    //    helixpar _hparerr,_sparerr;
-    Int_t    _snhits, _snactive, _sniter, _sndof, _snweediter;
-    Float_t  _schisq, _st0;
-    Int_t    _nchit;
-    Int_t    _npeak, _nmc;
-    Float_t  _tpeak;
-    int      _ntracks;
-//-----------------------------------------------------------------------------
-// hit filtering tuple variables
-//-----------------------------------------------------------------------------
-    std::vector<TrkHitFilter> _sfilt, _hfilt;
+// //-----------------------------------------------------------------------------
+// // strawhit tuple variables
+// //-----------------------------------------------------------------------------
+    int    _eventid;
+    int    _ntracks;
+    int    _ipeak;
+    int    _helixfail,_seedfail,_kalfail;
 //-----------------------------------------------------------------------------
 // diagnostics histograms
 //-----------------------------------------------------------------------------

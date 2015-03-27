@@ -90,7 +90,7 @@ CalPatRec            : {
     tmin                                        : 0.
     tmax                                        : 2000.  # ns
     minClusterEnergy                            : 60.    # MeV
-    minClusterSize                              : 0      # number of crystals
+    minClusterSize                              : 2      # number of crystals
     MaxHelixDoca                                : 60.    # in mm
     MaxAddDoca                                  : 7.     # in mm
     MaxAddChi                                   : 3.5    # normalized unit
@@ -116,7 +116,7 @@ CalPatRec            : {
 	minPointsTrkCandidate                   : 25
 # confirmed on 2015-02-07
 	chi2xyMax                               : 5    #default value is 300
-	chi2zphiMax                             : 6    #0.1 #default is 0.1, use 0.05 for debugging puposes
+	chi2zphiMax                             : 5    #0.1 #default is 0.1, use 0.05 for debugging puposes
 	dfdzErr                                 : 0.1
     }
     # Kalman fitter configuration for the seed fit
@@ -169,7 +169,7 @@ CalPatRec            : {
 	fieldCorrection				: true
 	maxhitchi                               : 3.5
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
-	scaleErrDoublet                         : 10.
+	scaleErrDoublet                         : 5.
 	iLoopUseDoublets                        : 8
 	minDriftDoublet                         : 0.4
 	deltaDriftDoublet                       : 0.3

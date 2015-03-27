@@ -23,7 +23,6 @@ namespace mu2e {
   private:
     const StrawHitPositionCollection* _shpos;
     const StrawHitFlagCollection*     _shfcol;
-
   public:
 
     HelixDefHack(TrkDef const& tdef);

@@ -203,10 +203,8 @@ namespace mu2e
   void KalFitHack::findDoublets (KalRep*                    krep, 
 				 std::vector<TrkStrawHit*> *hits, 
 				 DoubletCollection         *DCol){
-
-    //first step: create list of doublets
-   //    const TrkHotList* hot_list = krep->hotList();
-    mu2e::TrkStrawHit* hit;
+    mu2e::TrkStrawHit *hit;
+    const Straw       *straw;
 
     int               nhits, station, panel;
     int               oldStation(-1), oldPanel(-1), idlast(0);
@@ -218,8 +216,6 @@ namespace mu2e
 
     double            flen, ds, doca, rdrift, phiPanel;
     double            endTrk(0.0);//krep->endFoundRange();
-
-    const Straw       *straw;
 
     if (_debug > 1){
       printf("[KalFitHack::findDoublets]-------------------------------------------------\n");
@@ -317,14 +313,19 @@ namespace mu2e
     Doublet             *doublet;
     CLHEP::HepRotationZ rot;
 
-    if (_debug > 1){
-      printf("[KalFitHack::findDoublets] BEGIN iherr:%i \n", fAnnealingStep);
-      printf("-----------------------------------------------------------------------------------------------------------------------------------------\n");
-      printf("  i  shId ch pnl lay str      x        y         z      sinphi  tksphi    xtrk     ytrk      ztrk      xr      yr     zr      doca   rdr \n");
-      printf("-----------------------------------------------------------------------------------------------------------------------------------------\n");
+    int      ndoublets = DCol->size();
+
+    if (_debug >0) {
+      printf("[KalFitHack::findDoublets] iherr:%i: found %i multiplets\n", 
+	     fAnnealingStep,ndoublets);
+      printf("--------------------------------------------------------------");
+      printf("------------------------------------------------------------------------\n");
+      printf("  i  shId ch pnl lay str      x        y         z      sinphi");
+      printf("tksphi    xtrk     ytrk      ztrk      xr      yr     zr      doca   rdr\n");
+      printf("--------------------------------------------------------------");
+      printf("------------------------------------------------------------------------\n");
     }
 
-    int      ndoublets = DCol->size();
     for (int i=0; i<ndoublets; ++i){
       doublet   = &DCol->at(i);
       trkshsize = doublet->fNstrawHits;
@@ -371,21 +372,27 @@ namespace mu2e
 	tdir    = rot*tdir;
 
 	if (_debug > 1) {
-	  printf(" %2i %5i %2i %3i %3i %3i %9.3f %9.3f %9.3f  %6.3f  %6.3f %9.3f %8.3f %9.3f %8.3f %4.1f %9.3f %6.3f %5.3f\n",
+	  printf(" %2i %5i %2i %3i %3i %3i %9.3f %9.3f %9.3f  %6.3f  ",
 		 i, shId, doublet->fStationId, doublet->fPanelId, 
 		 straw->id().getLayer(),
 		 straw->id().getStraw(),
-		 straw->getMidPoint().x(), straw->getMidPoint().y(), straw->getMidPoint().z(),
-		 wdir.y(), 
+		 straw->getMidPoint().x(), 
+		 straw->getMidPoint().y(), 
+		 straw->getMidPoint().z(),
+		 wdir.y()
+		 );
+
+	  printf("%6.3f %9.3f %8.3f %9.3f %8.3f %4.1f %9.3f %6.3f %5.3f\n",
 		 tdir.x()/tdir.z(),
 		 trkpos.x(), trkpos.y(), trkpos.z(),
 		 wpos[j].x(), wpos[j].y(), wpos[j].z(),
 		 doca,
-		 rdrift);
+		 rdrift
+		 );
 	}
       }
     }
- } 
+  } 
 
 //--------------------------------------------------------------------------------
 // given a multiplet, resolve the ambiguity for hit: index0 and index1
@@ -399,7 +406,7 @@ namespace mu2e
     
     CLHEP::Hep3Vector wdir, wdir1, wdir2;
 
-    int               layer[2], ibest, inext;
+    int               /*layer[2],*/ ibest, inext;
     double            rdrift[2], phiPanel; 
     
     int               shId[2];
@@ -425,7 +432,7 @@ namespace mu2e
     for (int i=0; i<2; i++) {
       hit   [i] = doublet->fHit[index[i]];
       straw [i] = &hit[i]->straw();
-      layer [i] = straw[i]->id().getLayer();
+      //      layer [i] = straw[i]->id().getLayer();
       rdrift[i] = hit[i]->driftRadius();
       shId  [i] = straw[i]->index().asInt();
     }
@@ -647,7 +654,6 @@ namespace mu2e
 //---------------------------------------------------------------------------
 // loop over the doublets found and mark their ambiguities
 //---------------------------------------------------------------------------
-
   void KalFitHack::markMultiplets (DoubletCollection *DCol) {
 
     mu2e::TrkStrawHit *hit;
@@ -755,38 +761,9 @@ namespace mu2e
   }
 
 //--------------------------------------------------------------------------------
-// set hit drift sign
+// set hit drift sign - leave this one empty..
 //-----------------------------------------------------------------------------
   void KalFitHack::findAndMarkMultiplets(KalRep* krep, std::vector<TrkStrawHit*> *hits) {
-
-    //    DoubletCollection DCol;
-    mu2e::TrkStrawHit *hit;
-//-----------------------------------------------------------------------------
-// set external errors
-// reduce external errors for hits from doublets during first iterations
-//-----------------------------------------------------------------------------
-    int nhits = hits->size();
-    for (int i=0; i<nhits; ++i){
-      hit   = hits->at(i);
-      hit->setExtErr(_herr[fAnnealingStep]);
-    }
-
-    //    if (fUseDoublets == 0) return;
-    if ( (fAnnealingStep >= fILoopUseDoublets) || (fUseDoublets == 0) ) return;
-//-----------------------------------------------------------------------------
-// create list of doublets 
-//-----------------------------------------------------------------------------
-    findDoublets (krep, hits, &fListOfDoublets);
-
-    if (_debug >0) {
-      printf("[KalFitHack::findAndMarkMultiplets] found %lu multiplets\n",
-	     fListOfDoublets.size());
-    }
-//-----------------------------------------------------------------------------
-// resolve drift signs for hits in doublets. Choose the combination of drift 
-// signs for which the 2-hit segment slope is the closest to that of the track 
-//-----------------------------------------------------------------------------
-    if (fListOfDoublets.size() > 0) markMultiplets(&fListOfDoublets);
   }
 
 //-----------------------------------------------------------------------------
@@ -926,43 +903,52 @@ namespace mu2e
 	printf("[KalFitHack::addHits]  shId   A      sec      panel      res        hitRMS       drift      chi2  \n");
       }
 
-      for(unsigned iind=0;iind<indices.size(); ++iind){
+      double             hflt, mom, beta, tflt;
+      const TrkStrawHit* nearhit;
+      TrkStrawHit*       trkhit;
+	
+
+      for (unsigned iind=0;iind<indices.size(); ++iind) {
 	size_t istraw = indices[iind]._index;
 	const StrawHit& strawhit(straws->at(istraw));
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
-// estimate  initial flightlength
-	double hflt(0);
+					// estimate  initial flightlength
+	hflt = 0;
 	TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
 // find the bounding sites near this hit, and extrapolate to get the hit t0
 	std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef.fitdir().fitDirection()));
 	findBoundingHits(kres._hits,hflt,ilow,ihigh);
-	const TrkStrawHit* nearhit;
-	if(ihigh != kres._hits.end())
-	  nearhit = *ihigh;
-	else
-	  nearhit = *ilow;
+
+	if(ihigh != kres._hits.end()) nearhit = *ihigh;
+	else                          nearhit = *ilow;
+
 	TrkT0 hitt0 = nearhit->hitT0();
-	double mom = kres._krep->momentum(nearhit->fltLen()).mag();
-	double beta = kres._tdef.particle().beta(mom);
-	double tflt = (hflt-nearhit->fltLen())/(beta*CLHEP::c_light);
-// update the time in the TrkT0 object
+
+	mom  = kres._krep->momentum(nearhit->fltLen()).mag();
+	beta = kres._tdef.particle().beta(mom);
+	tflt = (hflt-nearhit->fltLen())/(beta*CLHEP::c_light);
+
+					// update the time in the TrkT0 object and create a new 
+					// hit object.  Assume we're at the last iteration over added error
 	hitt0._t0 += tflt;
-// create the hit object.  Assume we're at the last iteration over added error
-	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_herr.back(),_maxdriftpull);
+	trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_herr.back(),_maxdriftpull);
 	assert(trkhit != 0);
-// allow the hit to update its own ambiguity for now: eventually we should get the resolver to do this, FIXME!!!
+					// allow the hit to update its own ambiguity for now: 
+					// eventually we should get the resolver to do this, FIXME!!!
 	trkhit->setAmbigUpdate(true);
-// must be initialy active for KalRep to process correctly
+					// must be initialy active for KalRep to process correctly
 	trkhit->setActivity(true);
-// flag the added hit
+					// flag the added hit
 	trkhit->setUsability(3);
-// add the hit to the track and the fit
+					// add the hit to the track and the fit
 	kres._krep->addHot(trkhit);
 	kres._hits.push_back(trkhit);
-// create intersections for the material of this hit and add those to the track
+					// create intersections for the material of this hit 
+					// and add those to the track
 	DetIntersection wallinter;
-	if(trkhit->wallElem().reIntersect(reftraj,wallinter))
-	  kres._krep->addInter(wallinter);	
+	if (trkhit->wallElem().reIntersect(reftraj,wallinter)) {
+	  kres._krep->addInter(wallinter);
+	}
 	DetIntersection gasinter;
 	if(trkhit->gasElem().reIntersect(reftraj,gasinter))
 	  kres._krep->addInter(gasinter);
@@ -970,7 +956,7 @@ namespace mu2e
         double chi = fabs(trkhit->residual()/trkhit->hitRms());
 	activity = 1;
 // if it's outside limits, deactivate the HOT
-	if (chi > maxchi || !trkhit->physicalDrift(maxchi)) {
+	if (chi > maxchi || ! trkhit->physicalDrift(maxchi)) {
 	  trkhit->setActivity(false);
 	  activity = 0;
 	}
@@ -1045,7 +1031,7 @@ namespace mu2e
       printf("------------------------------------------------------------------------------------------\n");
     }
 
-    fAnnealingStep = IHErr;
+//     fAnnealingStep = IHErr;
 
 //-----------------------------------------------------------------------------------
 // 2015 -02 -17 G. Pezzullo: loop over the hits and assign a smaller external error 
@@ -1054,31 +1040,57 @@ namespace mu2e
     fAnnealingStep = IHErr;
     //    if ((fAnnealingStep < fILoopUseDoublets) && (fUseDoublets==1)) {
 //--------------------------------------------------------------------------------
-// 2015-02-19 G. Pezzu: re-search multiplets using updated fit results
+// 2015-02-19 G.Pezzu: re-search multiplets using updated fit results
+// 2015-03-25 P.Murat: *TODO* I don't think this call is needed, the one in the 
+//                     loop should be sufficient - check !
 //-----------------------------------------------------------------------------
-    findAndMarkMultiplets(kres._krep, &kres._hits);
+//    findAndMarkMultiplets(kres._krep, &kres._hits);
+
+
+
     if (_debug>0){
       printHits(kres,"fitIteration_001");
     }
       //   }
+
+    mu2e::TrkStrawHit *hit;
 
     kres._nt0iter = 0;
     kres._fit     = TrkErrCode::succeed;
 
     while (kres._fit.success() && changed && niter < maxIterations()) {
       changed = false;
+//-----------------------------------------------------------------------------
+// set external errors and start from the standard ambiguity resolution
+// if doublets are used, the doulet resolution overrides the results
+//-----------------------------------------------------------------------------
+      int nhits = kres._hits.size();
+      for (int i=0; i<nhits; ++i){
+	hit   = kres._hits.at(i);
+	hit->setExtErr(_herr[fAnnealingStep]);
+      }
+
       _ambigresolver[IHErr]->resolveTrk(kres);
-//--------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// reduce external errors for hits from doublets during first iterations
 //2015-02-17 G. Pezzu: fix the ambiguity of the doublets!
 //2015-02-19 G. Pezzu: re-search hit multiplets using updated fit results
-//--------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+      if (fUseDoublets && (fAnnealingStep >= fILoopUseDoublets)) {
+	//	findAndMarkMultiplets(kres._krep, &kres._hits);
+//-----------------------------------------------------------------------------
+// create list of doublets 
+//-----------------------------------------------------------------------------
+	findDoublets (kres._krep, &kres._hits, &fListOfDoublets);
+//-----------------------------------------------------------------------------
+// resolve drift signs for hits in doublets. Choose the combination of drift 
+// signs for which the 2-hit segment slope is the closest to that of the track 
+//-----------------------------------------------------------------------------
+	if (fListOfDoublets.size() > 0) markMultiplets(&fListOfDoublets);
+      }
 
-	findAndMarkMultiplets(kres._krep, &kres._hits);
-	if (_debug > 0) {
-	  printHits(kres,"fitIteration_002");
-	}
-
-//--------------------------------------------------------------------------------
+      if (_debug > 0) printHits(kres,"fitIteration_002");
+//-----------------------------------------------------------------------------
 // perform the track fit
 //-----------------------------------------------------------------------------
       kres._krep->resetFit();
@@ -1087,8 +1099,7 @@ namespace mu2e
       fit_success = kres._fit.success();
       if (! fit_success) break;
 //-----------------------------------------------------------------------------
-// if the fit succeeded, update track T0, and recalculate T0's of the individual 
-// hits
+// if the fit succeeded, update track T0, and recalculate T0's of the individual hits
 //-----------------------------------------------------------------------------
       if (_updatet0 ) {
 	// 2014-12-11: G.Pezzullo and P.Murat - temporary *FIXME*
@@ -1486,7 +1497,7 @@ namespace mu2e
     t0._t0 = TPeak->ClusterT0() + _dtoffset - path/vflt;
     
     //Set dummy error value
-    t0._t0err = .5;
+    t0._t0err = 1.;
   }
 
 
@@ -1572,7 +1583,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
       path      = TPeak->ClusterZ()/trkHel.sinDip();
       t0._t0    = TPeak->ClusterT0() + _dtoffset - path/vflt;
-      t0._t0err = .5;
+      t0._t0err = 1.;
       
       kres._krep->setT0(t0,flt0);
       updateHitTimes(kres);

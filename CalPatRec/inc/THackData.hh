@@ -19,6 +19,7 @@ public:
   double  fData[100];
   
   double  fDist[300];
+  double  fResid[500];
   double  fDz[300];
   //  TH1F *fHdist;
 

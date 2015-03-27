@@ -93,6 +93,7 @@ namespace mu2e {
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
     BField const& bField() const;
+
   protected:
     // configuration parameters
     int                         _debug;

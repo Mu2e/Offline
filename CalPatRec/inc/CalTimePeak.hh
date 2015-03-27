@@ -31,18 +31,18 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
-    const CaloCluster*    _cluster;	// not owned, just a pointer
-    int                   _cprIndex;    // CalPatRec track index or -1 (if track not found)
-    double                _x;
-    double                _y;
-    double                _z;		// wrt the tracker center
-    double                _tpeak;
+    const CaloCluster*    _cluster;	// cached, not owned
+    int                   _cprIndex;    // CalPatRec track index or -1, if no track
+    double                _x;           // cluster X coordinate in the detector system
+    double                _y;		// cluster Y coordinate in the detector system
+    double                _z;		// cluster Z coordinate in the detector system
+    double                _tpeak;       // cluster time ?
     std::vector<hitIndex> _index;       // selects subset of _shcol hits
-    double                _tmin;
-    double                _tmax;
+    double                _tmin;        // lower bound of the timing window
+    double                _tmax;        // upper bound of the timing window
 
-    const StrawHitCollection*      _shcol;
-    const StrawHitFlagCollection*  _shfcol;
+    const StrawHitCollection*      _shcol;  // cached pointer to the StrawHit collection
+    const StrawHitFlagCollection*  _shfcol; // cached pointer to the StrawHitFlag collection
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------

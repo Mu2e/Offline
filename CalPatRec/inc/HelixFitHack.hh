@@ -18,7 +18,6 @@
 
 // HelixFitHack objects
 #include "KalmanTests/inc/TrkDef.hh"
-
 // BaBar
 #include "TrkBase/TrkErrCode.hh"
 //CLHEP
@@ -39,34 +38,9 @@ namespace fhicl {
 class TH1F;
 class TFile;
 
-
-// //-----------------------------------------------------------------------------
-// // utility struct; value plus error
-// //-----------------------------------------------------------------------------
-//   struct VALERR {
-//     double _val;
-//     double _err;
-//   };
-
-//   struct FZ {
-//     VALERR _phi;
-//     double _z;
-//   };
-
-// //-----------------------------------------------------------------------------
-// // struct to hold AGE sums, contains weighted (s)ums of (c)osine and (s)in for 
-// // points on (c)ircumference, (o)utside the median radius, or (i)nside the median radius
-// //-----------------------------------------------------------------------------
-//   struct SUMS {
-//     double   _scc, _ssc, _sco, _sso, _sci, _ssi;
-//     unsigned _nc, _no, _ni;
-//     SUMS() : _scc(0.0),_ssc(0.0),_sco(0.0),_sso(0.0),_sci(0.0),_ssi(0.0){}
-//     void clear() { _scc = _ssc = _sco = _sso = _sci = _ssi = 0.0;
-//       _nc = _no = _ni = 0; }
-//   };
 namespace mu2e {
 //-----------------------------------------------------------------------------
-//
+// output struct
 //-----------------------------------------------------------------------------
   class HelixFitHack {
   public:
@@ -187,6 +161,7 @@ namespace mu2e {
 // functions
 //-----------------------------------------------------------------------------
   public:
+					// parameter set should be passed in on construction
 
     explicit HelixFitHack(fhicl::ParameterSet const&);
     virtual ~HelixFitHack();
@@ -210,7 +185,6 @@ namespace mu2e {
 
     // returns the index of the hit which provides the highest contribute to the chi2 
     void    doCleanUpWeightedCircleFit(::LsqSums4     &TrkSxy, 
-				       XYZPHackVector &Xyzp, 
 				       int            SeedIndex, 
 				       int            *IdVec,
 				       Hep3Vector     &HelCenter, 
@@ -222,7 +196,7 @@ namespace mu2e {
 
     //perfoms the weighted circle fit, update the helix parameters (HelicCenter, Radius) and 
     // fills the vector Weights which holds the calculated weights of the hits
-    void   doWeightedCircleFit (::LsqSums4 &TrkSxy, XYZPHackVector &Xyzp, int SeedIndex,int *IdVec,
+    void   doWeightedCircleFit (::LsqSums4 &TrkSxy, int SeedIndex,int *IdVec,
 				Hep3Vector &HelCenter, double &Radius, double *Weights,
 				int Print=0, TString Banner="");
         
@@ -236,78 +210,67 @@ namespace mu2e {
     TH1F* hDist() {return _hDist;}
 
     int   isHitUsed(int index);
-    					// main function: given a track definition, 
-					// find the helix parameters
-
-    bool findHelix     (HelixFitHackResult& myfit, const CalTimePeak* TimePeak);
-
-    bool findHelix     (XYZPHackVector& xyzp, HelixFitHackResult& myfit);
-    //    bool findXY        (XYZPHackVector& xyzp, HelixFitHackResult& myhel);
-    bool findXY_new    (XYZPHackVector& xyzp, HelixFitHackResult& myhel,
-			int seedIndex, int *indexVec);
-    bool findZ         (XYZPHackVector& xyzp, HelixFitHackResult& myhel, 
-			int seedIndex, int *indexVec);
-    void findDfDz      (XYZPHackVector& xyzp, HelixFitHackResult& myhel, 
-			int seedIndex, int *indexVec);
     
+    //    void printInfo(HelixFitHackResult& myhel);
 
-    bool   initCircle    (XYZPHackVector const& xyzp,HelixFitHackResult& myhel);
-    bool   initCircle_new(XYZPHackVector const& xyzp,HelixFitHackResult& myhel);
-
-    void   fillXYZP(HelixDefHack const& mytrk);
-
-    void   filterUsingPatternRecognition(XYZPHackVector& xyzp, HelixFitHackResult&  mytrk);
+    XYZPHackVector  fxyzp;
+    double          fPhiCorrected[1000];
     
-    void   findTrack(XYZPHackVector&      xyzp, 
-		     int                  seedIndex,
-		     double&              chi2,
-		     int&                 countGoodPoint,
-		     HelixFitHackResult&  mytrk, 
-		     int&                 mode,
-		     bool                 useDefaultDfDz=false,
-		     int                  useMPVdfdz = 0);
+					// allow passing in the struct by hand
 
-					// utility function to resolve phi wrapping    
+    bool findHelix      (HelixFitHackResult& Helix);
+    bool findHelix      (HelixFitHackResult& Helix, const CalTimePeak* TimePeak );
+    bool doLinearFitPhiZ(HelixFitHackResult& Helix, int SeedIndex, int *indexVec);
+    int  findDfDz       (HelixFitHackResult& Helix, int SeedIndex, int *indexVec);
+ 
+    void findTrack(int                  seedIndex,
+		   double&              chi2,
+		   int&                 countGoodPoint,
+		   HelixFitHackResult&  mytrk, 
+		   int&                 mode,
+		   bool                 useDefaultDfDz=false,
+		   int                  useMPVdfdz = 0);
+
+    void fillXYZP(HelixDefHack const& mytrk);
 
     static double deltaPhi(double phi1, double phi2);
 
+    void          doPatternRecognition(HelixFitHackResult& mytrk);
+
 // find the Absolute Geometric Error.  Returns the median radius as well.
 
-//     bool   findCenterAGE(XYZPHackVector const& xyzp, Hep3Vector&       center, double& rmed, double& age, bool useweights=false);
-//     void   findAGE      (XYZPHackVector const& xyzp, Hep3Vector const& center, double& rmed, double& age, bool useweights=false);
-//     void   fillSums     (XYZPHackVector const& xyzp, Hep3Vector const& center, double  rmed, SUMS&  sums, bool useweights=false);
+// utility function to resolve phi wrapping    
 
-//    void   filterXY(XYZPHackVector& xyzp      , Hep3Vector const& center, double rmed, bool& changed);
+//    static double deltaPhi(double phi1, double phi2);
 
-    void   filterDist(XYZPHackVector& xyzp);
+// find the Absolute Geometric Error.  Returns the median radius as well.
+    void filterDist();
+    void filterUsingPatternRecognition(HelixFitHackResult&  mytrk);
 //-----------------------------------------------------------------------------
 // diagnostics
 //-----------------------------------------------------------------------------
-//     void   plotXY(HelixDefHack const& mytrk, XYZPHackVector const& xyzp, HelixFitHackResult const& myhel) const;
-//     void   plotZ (HelixDefHack const& mytrk, XYZPHackVector const& xyzp, HelixFitHackResult const& myhel) const;
     void   plotXY  (int ISet);
     void   plotZPhi(int ISet);
-
     void   printInfo(HelixFitHackResult& myhel);
 
-					// 12-10-2013 Gianipez: new pattern recognition functions
-    void   rescueHitsBeforeSeed(XYZPHackVector& xyzp, HelixFitHackResult&  mytrk);
-
-    void   rescueHits(XYZPHackVector& xyzp, HelixFitHackResult&  mytrk,
-		    int seedIndex       , int *indexVec);
-
-    int    refineHelixParameters(XYZPHackVector& Xyzp, HelixFitHackResult& Trk,
-				 int seedIndex, int *indexVec, 
-				 int Print=0, TString Banner="");
+    int  refineHelixParameters(HelixFitHackResult& Trk,
+			       int seedIndex, int *indexVec, 
+			       int Print=0, TString Banner="");
     
-    void   resetTrackParamters();
+					// 12-10-2013 Gianipez: new pattern recognition functions
+    void rescueHitsBeforeSeed(HelixFitHackResult&  mytrk);
+
+    void rescueHits(HelixFitHackResult&  mytrk, int seedIndex       , 
+		    int *indexVec             , int UsePhiResiduals = 0);
+
+    
+    void resetTrackParamters();
 //-----------------------------------------------------------------------------
 // save intermediate results in diagnostics mode
 //-----------------------------------------------------------------------------
     void   saveResults(XYZPHackVector& Xyzp, HelixFitHackResult&  Helix, int Index); 
 
-    void   searchWorstHitWeightedCircleFit(XYZPHackVector &Xyzp, 
-					   int             SeedIndex,
+    void   searchWorstHitWeightedCircleFit(int             SeedIndex,
 					   int            *IdVec,
 					   Hep3Vector     &HelCenter, 
 					   double         &Radius, 
