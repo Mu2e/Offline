@@ -81,7 +81,8 @@ physics : {
 # calorimeter digitization and reconstruction
 #------------------------------------------------------------------------------
 	MakeCaloReadoutHits  : { @table::MakeCaloReadoutHits }
-	CaloCrystalHitsMaker : { @table::MakeCaloCrystalHitsNew }
+	MakeCaloCrystalHits  : { @table::MakeCaloCrystalHitsNew }
+	MakeCaloProtoCluster : { @table::MakeCaloProtoCluster }
 	MakeCaloCluster      : { @table::MakeCaloCluster }
 #------------------------------------------------------------------------------
 # CalPatRec modules
@@ -156,8 +157,8 @@ physics : {
 	       , detectorFilter 
 	       , protonTimeMap, muonTimeMap
 #
-	       , MakeCaloReadoutHits, CaloCrystalHitsMaker
-	       , MakeCaloCluster
+	       , MakeCaloReadoutHits, MakeCaloCrystalHits
+	       , MakeCaloProtoCluster, MakeCaloCluster
 #
 	       , makeSD, makeSH
 	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec

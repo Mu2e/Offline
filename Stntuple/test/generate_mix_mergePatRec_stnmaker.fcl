@@ -173,11 +173,20 @@ physics : {
             inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
             cutMomentumMin : 10. # MeV/c
         }
+#------------------------------------------------------------------------------
+# event display
+#------------------------------------------------------------------------------
+	MuHitDisplay: { @table::MuHitDisplay }
     }
 #------------------------------------------------------------------------------
 # paths
 # write out ntuple only, so don't need compression modules...
+# paths:
+# ------
 # p1 : main reconstruction path
+# p2 : MC-only path
+# p3 : reco-only
+#
 # MakeStereoHits also produces the StrawHitPosition collection
 #------------------------------------------------------------------------------
     p1 : [generate, g4run
@@ -200,7 +209,38 @@ physics : {
 #
 	  , InitStntuple, StntupleMaker, FillStntuple
 	 ]
+
+    mc : [generate, g4run
+	  #	  , FilterStepPointMomentum
+	  , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
+	  , protonTimeMap, muonTimeMap
 #
+	  , MakeCaloReadoutHits, CaloCrystalHitsMaker, MakeCaloCluster
+# 
+	  , makeSD, makeSH
+	 ]
+#
+    calpatrec : [
+		 #FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+#
+		 CalPatRecFSHP, CalPatRecMakeStereoHits 
+		 , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+		 , CalPatRec
+#
+		 , MergePatRec
+#	  
+#	  , TrkExtrapol, CaloMatching, ParticleID
+#
+#	  , InitStntuple, StntupleMaker, FillStntuple
+	 ]
+    trkpatrec : [
+		 FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+#
+		 , MergePatRec
+		 , TrkExtrapol, CaloMatching, ParticleID
+		 , MuHitDisplay
+	 ]
+
     trigger_paths  : [p1]
     #    out : [detectorOutput]
     out  : []
