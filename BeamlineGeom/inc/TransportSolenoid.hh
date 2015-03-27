@@ -88,7 +88,7 @@ namespace mu2e {
     // Coil Assemblies
     class TSCARegionDetail {
     public:
-      enum enum_type  { unknown, TS1, TS2, TS3u, TS3d, TS4, TS5 };
+      enum enum_type  { unknown, TS1, TS2, TS3u, TS3ud, TS3d, TS4, TS5 };
       static std::string const& typeName() {
         static std::string type("TSCARegion"); return type;
       }
@@ -100,6 +100,7 @@ namespace mu2e {
           nam[TS1]     = "TS1";
           nam[TS2]     = "TS2";
           nam[TS3u]    = "TS3u";
+          nam[TS3ud]    = "TS3ud";
           nam[TS3d]    = "TS3d";
           nam[TS4]     = "TS4";
           nam[TS5]     = "TS5";

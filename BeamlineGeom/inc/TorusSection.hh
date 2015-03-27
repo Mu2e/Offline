@@ -5,7 +5,8 @@
 // Class to represent the transport solenoid
 //
 #include <array>
-#include <memory>
+//#include <memory>
+#include <string>
 
 #include "GeomPrimitives/inc/Torus.hh"
 #include "BeamlineGeom/inc/TSSection.hh"
@@ -30,8 +31,10 @@ namespace mu2e {
 
 
     TorusSection(double rTorus, double rIn, double rOut, double phi0, double dPhi, 
-                 CLHEP::Hep3Vector origin, CLHEP::HepRotation rotation = CLHEP::HepRotation()) :
-      TSSection(origin, rotation),
+                 CLHEP::Hep3Vector const & origin, 
+                 CLHEP::HepRotation const & rotation = CLHEP::HepRotation(), 
+                 std::string const & materialName = ""):
+      TSSection(origin, rotation, materialName),
       _rTorus(rTorus),_rIn(rIn),_rOut(rOut),
       _phiBegin(phi0),_deltaPhi(dPhi)
     {
@@ -52,15 +55,18 @@ namespace mu2e {
     ~TorusSection(){}
 
     void set(double rTorus, double rIn, double rOut, double phi0, double dPhi, 
-             CLHEP::Hep3Vector origin, CLHEP::HepRotation rotation = CLHEP::HepRotation()) {
+             CLHEP::Hep3Vector  const & origin, 
+             CLHEP::HepRotation  const & rotation = CLHEP::HepRotation(),
+             std::string const & materialName = "") {
       _rTorus  =rTorus;
       _rIn     =rIn;
       _rOut    =rOut;
       _phiBegin=phi0;
       _deltaPhi=dPhi;
-      fillData();
       _origin=origin;
       _rotation=rotation;
+      _materialName=materialName;
+      fillData();
     }
 
     double torusRadius() const {return _rTorus;}

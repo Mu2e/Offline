@@ -450,6 +450,7 @@ namespace mu2e {
     TransportSolenoid const & ts       (bl.getTS());
     TorusSection      const * caTorsec (nullptr);
     ConeSection       const * caConsec (nullptr);
+    StraightSection   const * caStrsec (nullptr);
 
     G4ThreeVector parentCenterInMu2e = parent.centerInMu2e();
 
@@ -475,7 +476,11 @@ namespace mu2e {
                   "TSCA"
                   );
 
-      } else {
+      } else if ( its==tsCAReg_enum::TS1 
+                  || its==tsCAReg_enum::TS3u 
+                  || its==tsCAReg_enum::TS3d 
+                  || its==tsCAReg_enum::TS5
+                  ) {
 
         caConsec = ts.getTSCA<ConeSection>(its);
         nestCons(caName,
@@ -489,13 +494,29 @@ namespace mu2e {
                  "TSCA"
                  );
 
-        
+      } else {
+
+        caStrsec = ts.getTSCA<StraightSection>(its);
+        nestTubs(caName,
+                 TubsParams(caStrsec->rIn(),
+                            caStrsec->rOut(),
+                            caStrsec->getHalfLength()),
+                 findMaterialOrThrow(caStrsec->getMaterial()),
+                 caStrsec->getRotation(),
+                 caStrsec->getGlobal()-parentCenterInMu2e,
+                 parent,
+                 0,
+                 G4Color::Cyan(),
+                 "TSCA"
+                 );
+
       }
 
       G4Helper* _helper = &(*art::ServiceHandle<G4Helper>());
-      verbosityLevel && std::cout << __func__ << " " << caName << " Mass in kg: " 
-                                  << _helper->locateVolInfo(caName).logical->GetMass()/kg 
-                                  << std::endl;
+      verbosityLevel && caName!= "TS3udCA" 
+        && std::cout << __func__ << " " << caName << " Mass in kg: " 
+                     << _helper->locateVolInfo(caName).logical->GetMass()/kg 
+                     << std::endl;
     }
 
   }

@@ -4,7 +4,8 @@
 //
 // Class to represent the transport solenoid
 //
-#include <memory>
+//#include <memory>
+#include <string>
 
 #include "BeamlineGeom/inc/TSSection.hh"
 #include "GeomPrimitives/inc/Cone.hh"
@@ -30,8 +31,10 @@ namespace mu2e {
 
     ConeSection(double rIn1, double rOut1, double rIn2, double rOut2, double halfZ,
                 double phi0, double deltaPhi,
-                CLHEP::Hep3Vector origin, CLHEP::HepRotation rotation = CLHEP::HepRotation()) :
-      TSSection(origin, rotation),
+                CLHEP::Hep3Vector const & origin, 
+                CLHEP::HepRotation  const & rotation = CLHEP::HepRotation(),
+                std::string const & materialName = "") :
+      TSSection(origin, rotation, materialName),
       _rIn1(rIn1), _rOut1(rOut1),  _rIn2(rIn2), _rOut2(rOut2), _halfZ(halfZ),
       _phi0(phi0), _deltaPhi(deltaPhi)
     {      
@@ -55,7 +58,8 @@ namespace mu2e {
 
     void set(double rIn1, double rOut1, double rIn2, double rOut2, double halfZ, 
              double phi0, double deltaPhi,
-             CLHEP::Hep3Vector origin, CLHEP::HepRotation rotation=CLHEP::HepRotation() ) {
+             CLHEP::Hep3Vector const & origin, CLHEP::HepRotation const & rotation=CLHEP::HepRotation(),
+             std::string const & materialName = "" ) {
       _rIn1=rIn1;
       _rOut1=rOut1;
       _rIn2=rIn2;
@@ -65,6 +69,8 @@ namespace mu2e {
       _deltaPhi=deltaPhi;
       _origin=origin;
       _rotation=rotation;
+      _materialName=materialName;
+      fillData();
     }
 
     double rIn1()  const { return _rIn1; }
