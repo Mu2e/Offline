@@ -289,7 +289,7 @@ vector<double> ts5.coils.yRotAngle =
 // The coils assemblies (CA) are approximated by a torus and tubes/cones for now
 // torus tubes have 2 radii paramenters; cones 4
 
-int  ts.cas.verbosityLevel = 1;
+int  ts.cas.verbosityLevel = 0;
 
 vector<double> ts1.cas.radii = 
   {

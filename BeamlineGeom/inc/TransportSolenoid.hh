@@ -140,11 +140,6 @@ namespace mu2e {
     // The coils assemblies are approximated by a torus and cones for now
 
     const std::vector<double> & caRadii(TSCARegion::enum_type i) const { 
-      std::cout << __func__ << " getting radius for: " 
-                <<  static_cast<TransportSolenoid::TSCARegion>(i).name()
-                << " : "; 
-      std::cout << _caRadiiMap.at(i)[0];
-      std::cout << std::endl; 
       return _caRadiiMap.at(i);
     }
     // those only make sense for the toruses and cylinders
