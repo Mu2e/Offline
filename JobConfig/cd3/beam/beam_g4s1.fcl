@@ -68,7 +68,7 @@ physics : {
 		  // cut: { type : union   pars: [ {...}, {...}] }
 		  // cut: { type : intersection   pars: [ {...}, {...}] }
 		  // cut: { type : inVolume pars: [ vol1, vol2 ] }
-		  // cut: { type : notInVolume pars: [ vol1, vol2 ] }
+		  // cut: { colitype : notInVolume pars: [ vol1, vol2 ] }
 
 		  // cut: { type : plane   pars: [...] }
 		  //         plane def:    par0*x + par1*y + par2*z > par3
@@ -76,8 +76,17 @@ physics : {
 		  // cut: { type: kineticEnergy cut : 0.5 }
 
 		  pars: [
-		     { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, 6000 ] },
-		     { type: plane normal: [ -1, 0, 0 ] point : [ 200, 0, 0 ] },
+
+		     // Somewhere outside of the TS shielding.
+		     { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4200 ] },
+
+		     // The new coil assembly addition has the same length as TS3
+		     // Hide it from the first stage.
+		     // TS3 half length = 3904 - 2929 = 975, give it some margin
+		     { type: plane normal: [ -1, 0, 0 ] point : [ 1000., 0, 0 ] },
+
+		     // Make sure the muon beam reaches our TS3Vacuum stopping volume
+		     { type: notInVolume pars: [TS2Vacuum] },
 
 		     // This union splits the output of the above cuts 
 		     // into two exclusive streams
