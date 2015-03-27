@@ -325,7 +325,7 @@ namespace mu2e {
 					            // move peak to zero
 	dt      = trk_time-cl_time-_dtOffset;
 
-	if (cl->sectionId()  != vane_id         )            goto NEXT_CLUSTER;
+	if (cl->sectionId()  != vane_id         )           goto NEXT_CLUSTER;
 	if (cl->energyDep() < _minClusterEnergy)            goto NEXT_CLUSTER;
 	if (std::fabs(dt)   > _maxDeltaT       )            goto NEXT_CLUSTER;
 //-----------------------------------------------------------------------------
