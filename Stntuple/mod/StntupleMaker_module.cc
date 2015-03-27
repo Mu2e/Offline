@@ -76,8 +76,10 @@ protected:
   int              fMakeVirtualHits;
 //-----------------------------------------------------------------------------
 // module parameters
+// generator
 //-----------------------------------------------------------------------------
   std::string              fG4ModuleLabel;
+  std::string              fGeneratorModuleLabel;   // defines collection to save, default: "" (all)
   std::string              fMakeStrawHitModuleLabel;
 
   std::vector<std::string> fTrackBlockName;
@@ -141,8 +143,9 @@ StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet):
   , fMakeSimp           (PSet.get<int>         ("makeSimp"       ,        1       ))
   , fMakeVirtualHits    (PSet.get<int>         ("makeVirtualHits",        0       ))
   
-  , fG4ModuleLabel          (PSet.get<string>             ("g4ModuleLabel"          ))
-  , fMakeStrawHitModuleLabel(PSet.get<string>             ("makeStrawHitModuleLabel"))
+  , fG4ModuleLabel          (PSet.get<string>        ("g4ModuleLabel"          ))
+  , fGeneratorModuleLabel   (PSet.get<string>        ("generatorModuleLabel"   ))
+  , fMakeStrawHitModuleLabel(PSet.get<string>        ("makeStrawHitModuleLabel"))
   , fTrackBlockName         (PSet.get<vector<string>>("trackBlockName"         ))
   , fTrkRecoModuleLabel     (PSet.get<vector<string>>("trkRecoModuleLabel"     ))
   , fTrkExtrapolModuleLabel (PSet.get<vector<string>>("trkExtrapolModuleLabel" ))
@@ -355,6 +358,7 @@ void StntupleMaker::beginJob() {
 			     split_mode,
 			     compression_level);
 
+    genp_data->AddCollName("mu2e::GenParticleCollection",fGeneratorModuleLabel.data(),"");
     //    SetResolveLinksMethod("GenpBlock",StntupleInitMu2eClusterBlockLinks);
 
     if (genp_data) {
