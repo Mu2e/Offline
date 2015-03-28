@@ -293,43 +293,43 @@ int  ts.cas.verbosityLevel = 0;
 
 vector<double> ts1.cas.radii = 
   {
-    445.00, 465.00,
-    485.00, 500.00
+    445.00, 525.00,
+    485.00, 570.00
   };
 
 vector<double> ts2.cas.radii  = 
   {
-    485.00, 500.00
+    485.00, 570.00
   };
 
 vector<double> ts3u.cas.radii  = 
   {
-    485.00, 500.00, 
-    770.00, 790.00
+    485.00, 570.00, 
+    720.00, 800.00
   };
 
 double ts3ud.cas.halfLength  = 835.00;
 
 vector<double> ts3ud.cas.radii  = 
   {
-    650.00, 790.00
+    720.00, 800.00
   };
 
 vector<double> ts3d.cas.radii  = 
   {
-    770.00, 790.00,
-    485.00, 500.00
+    720.00, 800.00,
+    485.00, 570.00
   };
 
 vector<double> ts4.cas.radii  = 
   {
-    485.00, 500.00
+    485.00, 570.00
   };
 
 vector<double> ts5.cas.radii = 
   {
-    485.00, 500.00,
-    430.00, 485.00
+    485.00, 570.00,
+    430.00, 510.00
   };
 
 string ts.cas.materialName   = "G4_Al";
