@@ -368,15 +368,14 @@ namespace mu2e {
 	sigmaT = 0.5; 			// 0.5 ns
 	  
 	if (_diagLevel > 2){
-	  printf("trk_v: %10.3f",trk_v);
-	       << ", cl_v = "   << cl_v 
-	       << ", sigmaV = " << sigmaV << endl 
-	       << ", trk_w = "  << trk_w 
-	       << ", cl_w = "   << cl_w 
-	       << ", sigmaW = " << sigmaW << endl 
-	       << ", cl_time = "<< cl_time 
-	       << ", sigmaT = " << sigmaT 
-	       << endl;
+	  printf("trk_v  : %10.3f"  ,trk_v  );
+	  printf("cl_v   : %10.3f"  ,cl_v   );
+	  printf("sigmaV : %10.3f"  ,sigmaV );
+	  printf("trk_w  : %10.3f"  ,trk_w  );
+	  printf("cl_w   : %10.3f"  ,cl_w   );
+	  printf("sigmaW : %10.3f"  ,sigmaW );
+	  printf("cl_time: %10.3f"  ,cl_time);
+	  printf("sigmaT : %10.3f\n",sigmaT );
 	}
 					// need to handle energy part properly, later! 
 					// 2014-06-06 P.Murat: ad-hoc correction
