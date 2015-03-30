@@ -260,18 +260,13 @@ namespace mu2e {
     produces<SimParticleCollection>();
 
     // The main group of StepPointMCCollections.
-    vector<string> const& instanceNames = _sensitiveDetectorHelper.stepInstanceNamesToBeProduced();
-    for ( vector<string>::const_iterator i=instanceNames.begin();
-          i != instanceNames.end(); ++i){
-      produces<StepPointMCCollection>(*i);
-    }
+    _sensitiveDetectorHelper.declareProducts(this);
 
     // The timevd collection is special.
     produces<StepPointMCCollection>(_tvdOutputName.name());
 
     produces<PointTrajectoryCollection>();
     produces<MCTrajectoryCollection>();
-    produces<ExtMonFNALSimHitCollection>();
     produces<PhysicalVolumeInfoCollection,art::InRun>();
     produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
 
@@ -589,7 +584,7 @@ namespace mu2e {
     event.put(std::move(tvdHits),          _tvdOutputName.name()          );
     event.put(std::move(pointTrajectories));
     event.put(std::move(mcTrajectories));
-    if(_extMonFNALPixelSD) {
+    if(_sensitiveDetectorHelper.extMonPixelsEnabled()) {
       event.put(std::move(extMonFNALHits));
     }
     _sensitiveDetectorHelper.put(event);

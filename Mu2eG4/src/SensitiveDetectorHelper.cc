@@ -24,11 +24,14 @@
 // From Mu2e.
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "G4Helper/inc/G4Helper.hh"
 
 // From art and its tool chain.
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -63,6 +66,11 @@ namespace mu2e {
 
     typedef std::set<std::string> TODO;
     TODO todo(enabledSDs.begin(), enabledSDs.end());
+
+    if(enableAllSDs || (todo.find(SensitiveDetectorName::ExtMonFNAL()) != todo.end())) {
+      extMonPixelsEnabled_ = true;
+      todo.erase(SensitiveDetectorName::ExtMonFNAL());
+    }
 
     // Build list of StepInstances to look after.  See note 1.
     std::vector<StepInstanceName> const& preDefinedSD(StepInstanceName::allValues());
@@ -244,6 +252,15 @@ namespace mu2e {
     }
 
     return names;
+  }
+
+  void SensitiveDetectorHelper::declareProducts(art::EDProducer *parent) {
+    vector<string> const& instanceNames = stepInstanceNamesToBeProduced();
+    for(const auto& name: instanceNames) {
+      parent->produces<StepPointMCCollection>(name);
+    }
+    if(extMonPixelsEnabled_)
+      parent->produces<ExtMonFNALSimHitCollection>();
   }
 
   bool SensitiveDetectorHelper::enabled(StepInstanceName::enum_type instance) const{

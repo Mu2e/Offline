@@ -256,12 +256,7 @@ namespace mu2e {
     produces<StatusG4>();
     produces<SimParticleCollection>();
 
-    // The main group of StepPointMCCollections.
-    vector<string> const& instanceNames = _sensitiveDetectorHelper.stepInstanceNamesToBeProduced();
-    for ( vector<string>::const_iterator i=instanceNames.begin();
-          i != instanceNames.end(); ++i){
-      produces<StepPointMCCollection>(*i);
-    }
+    _sensitiveDetectorHelper.declareProducts(this);
 
     if(!timeVDtimes_.empty()) {
       produces<StepPointMCCollection>(_tvdOutputName.name());
@@ -270,8 +265,6 @@ namespace mu2e {
     if(trajectoryControl_.produce()) {
       produces<MCTrajectoryCollection>();
     }
-
-    produces<ExtMonFNALSimHitCollection>();
 
     stackingCuts_->declareProducts(this);
     steppingCuts_->declareProducts(this);
@@ -549,7 +542,7 @@ namespace mu2e {
     if(trajectoryControl_.produce()) {
       event.put(std::move(mcTrajectories));
     }
-    if(_extMonFNALPixelSD) {
+    if(_sensitiveDetectorHelper.extMonPixelsEnabled()) {
       event.put(std::move(extMonFNALHits));
     }
     _sensitiveDetectorHelper.put(event);
