@@ -148,8 +148,8 @@ namespace mu2e {
     , pset_(pset)
 
     , activeWr_Wl_SD_(true)
-    , writeGDML_(pset.get<bool>("writeGDML"))
-    , gdmlFileName_(pset.get<std::string>("GDMLFileName"))
+    , writeGDML_(pset.get<bool>("debug.writeGDML"))
+    , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
     , g4stepperName_(pset.get<std::string>("stepper"))
     , bfieldMaxStep_(pset.get<double>("bfieldMaxStep"))
   {

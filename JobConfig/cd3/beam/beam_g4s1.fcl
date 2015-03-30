@@ -194,6 +194,9 @@ physics : {
             printElements : false
             printMaterials : false
             fillDiagnosticHistograms: false
+
+            writeGDML : false
+            GDMLFileName : "mu2e.gdml"
          }
 
          visualization: {
@@ -206,9 +209,6 @@ physics : {
          useNewMuMinusAtomicCapture: false
          minRangeCut: 1. // mm
          physicsListName:  "Shielding_MU2E01"
-
-         writeGDML : false
-         GDMLFileName : "mu2e.gdml"
 
          // current G4 stepper choices in Mu2eWorld.cc are shown below
          // G4ClassicalRK4
