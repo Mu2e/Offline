@@ -74,7 +74,6 @@ physics : {
          simParticleNumberOffset : 0
          SDConfig : {
             enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
-            activeWr_Wl_SD : false
          }
 
          Mu2eG4StackingOnlyCut: {

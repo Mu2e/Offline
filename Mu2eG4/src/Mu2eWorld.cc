@@ -147,7 +147,7 @@ namespace mu2e {
     : sdHelper_(sdHelper)
     , pset_(pset)
 
-    , activeWr_Wl_SD_(pset.get<bool>("SDConfig.activeWr_Wl_SD"))
+    , activeWr_Wl_SD_(true)
     , writeGDML_(pset.get<bool>("writeGDML"))
     , gdmlFileName_(pset.get<std::string>("GDMLFileName"))
     , g4stepperName_(pset.get<std::string>("stepper"))
