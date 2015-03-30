@@ -384,9 +384,15 @@ namespace mu2e {
     CLHEP::Hep3Vector center = Helix._center;
     CLHEP::Hep3Vector pos_ref, pos;
 
+    //2015 - 03 -30 G. Pezzu changed the value of tollMax.
+    // using the initial value of dfdz we can set it more accuratelly:
+    // tollMax = half-helix-step = Pi / dfdz
+    double tollMin(100.), tollMax;//(800.);
+    tollMax = M_PI / Helix._dfdz;
+
     if (_debug >5){
-      printf("[HelixFitHack::findDfDz] x0 = %9.3f y0 = %9.3f radius = %9.3f dfdz = %9.6f straw-hits = %9.5f\n",
-	     center.x(), center.y(), Helix._radius, Helix._dfdz, (Helix._sxy.qn() - 1) );// -1 to remove the EMC cluster contribute
+      printf("[HelixFitHack::findDfDz] x0 = %9.3f y0 = %9.3f radius = %9.3f dfdz = %9.6f straw-hits = %9.5f dzPitch = %8.6f\n",
+	     center.x(), center.y(), Helix._radius, Helix._dfdz, (Helix._sxy.qn() - 1), tollMax);// -1 to remove the EMC cluster contribute
       //      printInfo(Helix);
     }
 
@@ -441,9 +447,7 @@ namespace mu2e {
       }
     }
 
-
-    double tollMin(100.), tollMax(800.);
-
+ 
     int i0(-1), first_point(1);
 
     //add the cluster phi
@@ -480,7 +484,7 @@ namespace mu2e {
 	  while (dphi < -M_PI) dphi += 2*M_PI;
 	                      //add 2 pi for taking into account the fact we are in the second loop
 	                      //FIX ME: what to do if we are in the third loop?
-	  if (  dz > tollMax  ) dphi += 2*M_PI;
+	  if (  dz > tollMax  ) dphi += 2*M_PI*int(dz/tollMax);
 
 	  _hDfDzRes->Fill(dphi/dz);
 	    
@@ -2659,6 +2663,149 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     }
   }
 
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+void HelixFitHack::plotXY(int ISet) {
+  //  TFolder* fol;
+
+//   fol = (TFolder*) gROOT->GetRootFolder()->FindObject("Mu2e/CalPatRec");
+
+//   if (fol == NULL) {
+//     printf(" fol is not defined, exit\n");
+//     return;
+//   }
+
+//   Ref* ref = (Ref*) fol->FindObject("Ref");
+//   mu2e::HelixFitHack* hfit = ref->fHelixFit;
+
+  std::vector<mu2e::XYZPHack>* xyzp;
+  HelixFitHackResult*          helx;
+
+  if ((ISet >=0 ) && (ISet < 6)) {
+    xyzp   = &_results[ISet]._xyzp;
+    helx   = &_results[ISet]._helix;
+  }
+  else {
+    printf("ISet = %i undefined, return\n",ISet);
+    return;
+  }
+
+  int nhits = xyzp->size();
+
+  printf("nhits = %10i\n",nhits);
+
+  mu2e::XYZPHack*    hit;
+  CLHEP::Hep3Vector* pos;
+
+  double x[1000], y[1000], z[1000];
+  int    flag[1000];
+
+  for (int i=0; i<nhits; i++) {
+    hit  = &xyzp->at(i);
+    pos  = &hit->_pos;
+
+    x[i] = hit->_pos.x();
+    y[i] = hit->_pos.y();
+    z[i] = hit->_pos.z();
+
+    flag[i] = *((int*) &hit->_flag);
+
+    printf("i: %3i ind: %5i x: %10.3f y: %10.3f z: %10.3f 0x%08x %5i\n",
+	   i,(int) hit->_ind,
+	   pos->x(),pos->y(),pos->z(),
+	   flag[i], 
+	   hit->isOutlier());
+  }
+
+  char name_xy[200];
+
+  TCanvas* c;
+  TMarker* m;
+  int      color;
+
+  sprintf(name_xy,"c_plot_hits_xy_%i",ISet);
+  c = (TCanvas*) gROOT->GetListOfCanvases()->FindObject(name_xy);
+  if (c) delete c;
+
+  c = new TCanvas(name_xy,"c_xy",1000,1000);
+  //  c->Divide(2,1);
+//-----------------------------------------------------------------------------
+// plot XY view
+//-----------------------------------------------------------------------------
+  c->cd(1);
+
+  TH2F* h2_xy = new TH2F("h2_xy",Form("XY View %i",ISet), 140,-700,700,140,-700,700);
+  h2_xy->SetStats(0);
+  h2_xy->Draw();
+
+
+  for (int i=0; i<nhits; i++) {
+    hit = &xyzp->at(i);
+    m   = new TMarker(x[i],y[i],2);
+
+    if (hit->isOutlier()) color = kBlack;
+    else                  color = kRed;
+
+    m->SetMarkerSize(0.7);
+    m->SetMarkerColor(color);
+    m->Draw();
+  }
+
+  if (helx->fitIsValid()) {
+//-----------------------------------------------------------------------------
+// draw unweighted  helix
+//-----------------------------------------------------------------------------
+    double x0, y0, r;
+
+    x0  = helx->_sxy.x0();
+    y0  = helx->_sxy.y0();
+    r   = helx->_sxy.radius();
+
+    TEllipse* e = new TEllipse(x0,y0,r);
+    e->SetFillStyle(0);
+    e->SetLineColor(2);
+    e->Draw();
+//-----------------------------------------------------------------------------
+// draw weighted  helix
+//-----------------------------------------------------------------------------
+    if (helx->weightedFitIsValid()) {
+      x0  = helx->_sxyw.x0();
+      y0  = helx->_sxyw.y0();
+      r   = helx->_sxyw.radius();
+    
+      e   = new TEllipse(x0,y0,r);
+      e->SetFillStyle(0);
+      e->SetLineColor(3);
+      e->Draw();
+    }
+  }
+
+//-----------------------------------------------------------------------------
+// plot YZ view
+//-----------------------------------------------------------------------------
+//   c->cd(2);
+
+//   TH2F* h2_yz = new TH2F("h2_yz",Form("YZ VIEW %i",ISet),1600,-1600,1600,140,-700,700);
+//   h2_yz->SetStats(0);
+//   h2_yz->Draw();
+
+//   for (int i=0; i<nhits; i++) {
+//     hit = &xyzp->at(i);
+//     m = new TMarker(z[i],y[i],2);
+
+//     if (hit->isOutlier()) color = kBlack;
+//     else                  color = kRed;
+
+//     m->SetMarkerColor(color);
+//     m->SetMarkerSize(0.7);
+//     m->Draw();
+//   }
+
+  helx->print("from HelixFitHack::plotXY");
+
+  printf("All Done\n");
+}
 //-----------------------------------------------------------------------------
 // this routine is supposed to be called interactively from the ROOT prompt
 // it has to retrieve a pointer to HelixFitHack called from CalPatRec
