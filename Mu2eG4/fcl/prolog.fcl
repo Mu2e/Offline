@@ -31,4 +31,74 @@ g4run : {
 	prefix              : "SimParticle: "
     }
 }
+#------------------------------------------------------------------------------
+# Configuration blocks for the Mu2eG4 module
+#------------------------------------------------------------------------------
+mu2eg4DefaultPhysics: {
+    PiENuPolicy : "PDG"
+    noDecay: []
+    useNewMuMinusAtomicCapture: false
+    minRangeCut: 0.010 // mm
+    physicsListName:  "Shielding_MU2E01"
+
+    // current G4 stepper choices in Mu2eWorld.cc are shown below
+    // G4ClassicalRK4
+    // G4ImplicitEuler
+    // G4ExplicitEuler
+    // G4SimpleRunge
+    // G4SimpleHeum
+    // G4HelixImplicitEuler
+    // G4HelixSimpleRunge
+    stepper : "G4ClassicalRK4"
+    bfieldMaxStep: 20. // mm
+}
+#----------------
+mu2eg4DefaultResourceLimits: {
+    maxStepsPerTrack : 100000
+    maxStepPointCollectionSize : 100000
+    maxSimParticleCollectionSize: 100000
+}
+#----------------
+mu2eg4NoVisualization: {
+    macro : ""
+    GUIMacro : ""
+}
+#----------------
+mu2eg4NoTrajectories: {
+    produce: false
+}
+#----------------
+mu2eg4DefaultTrajectories: {
+    defaultMinPointDistance : 500
+    mcTrajectoryMinSteps: 5
+    mcTrajectoryMomentumCut : 50 // MeV/c
+    saveTrajectoryMomentumCut : 50  // MeV/c
+
+    perVolumeMinDistance : {
+	PSVacuum : 15
+	TS1Vacuum : 15
+	TS2Vacuum : 15
+	TS3Vacuum : 15
+	TS4Vacuum : 15
+	TS5Vacuum : 15
+	DS2Vacuum : 15
+	DS3Vacuum : 15
+	TrackerMother: 15
+	CalorimeterMother: 15
+    }
+}
+#----------------
+mu2eg4DefaultDebug: {
+    stepLimitKillerVerbose: true
+    printPhysicsProcessSummary : false
+    PiENuPolicyVerbosity : 0
+    printTrackTiming: false
+    worldVerbosityLevel : 0
+    printElements : false
+    printMaterials : false
+    fillDiagnosticHistograms: false
+    writeGDML : false
+    GDMLFileName : "mu2e.gdml"
+}
+#----------------------------------------------------------------
 END_PROLOG

@@ -38,6 +38,7 @@
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
+#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
@@ -109,6 +110,7 @@ namespace mu2e {
     fhicl::ParameterSet pset_;
     Mu2eG4ResourceLimits mu2elimits_;
     Mu2eG4TrajectoryControl trajectoryControl_;
+    Mu2eG4MultiStageParameters multiStagePars_;
 
     typedef std::vector<art::InputTag> InputTags;
     typedef std::vector<std::string> Strings;
@@ -157,9 +159,6 @@ namespace mu2e {
     string _g4Macro;
 
     art::InputTag _generatorModuleLabel;
-    InputTags _genInputHitLabels;
-
-    string _inputPhysVolumeMultiInfoLabel;
 
     // Helps with indexology related to persisting info about G4 volumes.
     PhysicalVolumeHelper _physVolHelper;
@@ -176,10 +175,6 @@ namespace mu2e {
     // Instance name of the timeVD StepPointMC data product.
     const StepInstanceName _tvdOutputName;
     std::vector<double> timeVDtimes_;
-
-    unsigned _simParticleNumberOffset;
-    art::InputTag _inputSimParticles;
-    art::InputTag _inputMCTrajectories;
 
     // Do the G4 initialization that must be done only once per job, not once per run
     void initializeG4( GeometryService& geom, art::Run const& run );
@@ -199,6 +194,7 @@ namespace mu2e {
     pset_(pSet),
     mu2elimits_(pSet.get<fhicl::ParameterSet>("ResourceLimits")),
     trajectoryControl_(pSet.get<fhicl::ParameterSet>("TrajectoryControl")),
+    multiStagePars_(pSet.get<fhicl::ParameterSet>("MultiStageParameters")),
     _runManager(std::make_unique<G4RunManager>()),
     _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
     _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
@@ -225,7 +221,6 @@ namespace mu2e {
     _visGUIMacro(pSet.get<std::string>("visualization.GUIMacro")),
     _g4Macro(pSet.get<std::string>("g4Macro","")),
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
-    _inputPhysVolumeMultiInfoLabel(pSet.get<string>("inputPhysVolumeMultiInfoLabel", "")),
     _physVolHelper(),
     _processInfo(),
     _printPhysicsProcessSummary(pSet.get<bool>("printPhysicsProcessSummary",false)),
@@ -234,21 +229,12 @@ namespace mu2e {
     _extMonFNALPixelSD(),
     _tvdOutputName(StepInstanceName::timeVD),
     timeVDtimes_(pSet.get<std::vector<double> >("SDConfig.TimeVD.times")),
-    _simParticleNumberOffset(pSet.get<unsigned>("simParticleNumberOffset", 0)),
-    _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
-    _inputMCTrajectories(pSet.get<std::string>("inputMCTrajectories", "")),
     _timer(std::make_unique<G4Timer>()),
     _realElapsed(0.),
     _systemElapsed(0.),
     _userElapsed(0.)
   {
-
-    Strings genHitsStr(pSet.get<Strings>("genInputHits", Strings()));
-    for(const auto& s : genHitsStr) {
-      _genInputHitLabels.emplace_back(s);
-    }
-
-    if((_generatorModuleLabel == art::InputTag()) && _genInputHitLabels.empty()) {
+    if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
       throw cet::exception("CONFIG")
         << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
     }
@@ -344,7 +330,7 @@ namespace mu2e {
       mf::LogInfo logInfo("GEOM");
       logInfo << "Initializing Geant 4 for " << run.id()
               << " with verbosity " << _rmvlevel << endl;
-      logInfo << "Configured simParticleNumberOffset = "<< _simParticleNumberOffset << endl;
+      logInfo << "Configured simParticleNumberOffset = "<< multiStagePars_.simParticleNumberOffset() << endl;
     }
 
     // Create user actions and register them with G4.
@@ -429,16 +415,16 @@ namespace mu2e {
   void Mu2eG4::beginSubRun(art::SubRun& sr) {
     unique_ptr<PhysicalVolumeInfoMultiCollection> mvi(new PhysicalVolumeInfoMultiCollection());
 
-    if(!_inputPhysVolumeMultiInfoLabel.empty()) {
+    if(multiStagePars_.inputPhysVolumeMultiInfo()  != art::InputTag()) {
       // Copy over data from the previous simulation stages
       art::Handle<PhysicalVolumeInfoMultiCollection> ih;
-      sr.getByLabel(_inputPhysVolumeMultiInfoLabel, ih);
+      sr.getByLabel(multiStagePars_.inputPhysVolumeMultiInfo(), ih);
       mvi->reserve(1 + ih->size());
       mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
     }
 
     // Append info for the current stage
-    mvi->emplace_back(std::make_pair(_simParticleNumberOffset, _physVolHelper.persistentSingleStageInfo()));
+    mvi->emplace_back(std::make_pair(multiStagePars_.simParticleNumberOffset(), _physVolHelper.persistentSingleStageInfo()));
 
     sr.put(std::move(mvi));
   }
@@ -455,31 +441,31 @@ namespace mu2e {
 
     // input hits from the previous simulation stage
     HitHandles genInputHits;
-    for(const auto& i : _genInputHitLabels) {
+    for(const auto& i : multiStagePars_.genInputHits()) {
       genInputHits.emplace_back(event.getValidHandle<StepPointMCCollection>(i));
     }
 
     art::Handle<SimParticleCollection> inputSimHandle;
-    if(!(art::InputTag() == _inputSimParticles)) {
-      event.getByLabel(_inputSimParticles, inputSimHandle);
+    if(art::InputTag() != multiStagePars_.inputSimParticles()) {
+      event.getByLabel(multiStagePars_.inputSimParticles(), inputSimHandle);
       if(!inputSimHandle.isValid()) {
         throw cet::exception("CONFIG")
-          << "Error retrieving inputSimParticles for "<<_inputSimParticles<<"\n";
+          << "Error retrieving inputSimParticles for "<<multiStagePars_.inputSimParticles()<<"\n";
       }
     }
 
     art::Handle<MCTrajectoryCollection> inputMCTracjectoryHandle;
-    if(!(art::InputTag() == _inputMCTrajectories)) {
-      event.getByLabel(_inputMCTrajectories, inputMCTracjectoryHandle);
+    if(art::InputTag() != multiStagePars_.inputMCTrajectories()) {
+      event.getByLabel(multiStagePars_.inputMCTrajectories(), inputMCTracjectoryHandle);
       if(!inputMCTracjectoryHandle.isValid()) {
         throw cet::exception("CONFIG")
-          << "Error retrieving inputMCTrajectories for "<<_inputMCTrajectories<<"\n";
+          << "Error retrieving inputMCTrajectories for "<<multiStagePars_.inputMCTrajectories()<<"\n";
       }
     }
 
     // ProductID for the SimParticleCollection.
     art::ProductID simPartId(getProductID<SimParticleCollection>(event));
-    SimParticleHelper spHelper(_simParticleNumberOffset, simPartId, event);
+    SimParticleHelper spHelper(multiStagePars_.simParticleNumberOffset(), simPartId, event);
     SimParticlePrimaryHelper parentHelper(event, simPartId, gensHandle);
 
     // Create empty data products.

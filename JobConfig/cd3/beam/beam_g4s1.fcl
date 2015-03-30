@@ -3,6 +3,7 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
 
 # Give this job a name.
 process_name :  beamg4s1
@@ -41,7 +42,7 @@ physics : {
 
       g4s1mubeam: {
          module_type: StepPointMCDumper
-         hitsInputTag: "muonBeamFilter:TS3Vacuum"
+         hitsInputTag: "muonBeamFilter:TSVacuum"
          TimeOffsets :  { inputs : [] }
       }
 
@@ -69,11 +70,18 @@ physics : {
       }
 
       g4run : {
-         module_type          : Mu2eG4
-         generatorModuleLabel : generate
-         simParticleNumberOffset : 0
-         SDConfig : {
-            enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
+         module_type: Mu2eG4
+         physics: @local::mu2eg4DefaultPhysics
+         ResourceLimits: @local::mu2eg4DefaultResourceLimits
+	 TrajectoryControl: @local::mu2eg4NoTrajectories
+         debug: @local::mu2eg4DefaultDebug
+         visualization: @local::mu2eg4NoVisualization
+
+         generatorModuleLabel: generate
+         MultiStageParameters: {} // this is the first stage
+
+         SDConfig: {
+            enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
             TimeVD: { times: [] }
          }
 
@@ -82,8 +90,7 @@ physics : {
             type: pdgId pars: [ 12, -12, 14, -14, 16, -16]
          }
 
-         Mu2eG4SteppingOnlyCut: {
-         }
+         Mu2eG4SteppingOnlyCut: {}
 
          // Mu2eG4 cuts are evaluated in the listed order.
          // The first match wins.  For the "intersection"
@@ -92,23 +99,13 @@ physics : {
          Mu2eG4CommonCut: {
             type: union
             pars: [
+	       // FIXME: do we need to explicitly kill low energy electrons
+	       // like in the TDR config?
+	       // { type: intersection pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11 ] }] },
                {
                   type: intersection
-
-                  // cut: { type : union   pars: [ {...}, {...}] }
-                  // cut: { type : intersection   pars: [ {...}, {...}] }
-                  // cut: { type : inVolume pars: [ vol1, vol2 ] }
-                  // cut: { colitype : notInVolume pars: [ vol1, vol2 ] }
-
-                  // cut: { type : plane   pars: [...] }
-                  //         plane def:    par0*x + par1*y + par2*z > par3
-
-                  // cut: { type: kineticEnergy cut : 0.5 }
-
                   pars: [
-
-                     // The Z position of the west side of the west wall relief
-                     // per George's e-mail 2015-03-27
+                     // Plane on the west side, outside of the wall
                      { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4851 ] },
 
                      // The new coil assembly addition has the same length as TS3
@@ -124,7 +121,7 @@ physics : {
                      { type: union pars:  [
                            {  type: inVolume
                               pars: [TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, DS3Vacuum ]
-                              write: TS3Vacuum
+                              write: TSVacuum
                            },
                            {  type: constant
                               value: true
@@ -165,64 +162,6 @@ physics : {
                   ]
                }
             ]
-         }
-
-         TrajectoryControl: { produce: false
-            // defaultMinPointDistance : 999999 // 500
-            // mcTrajectoryMinSteps : 999999 // 5
-            // mcTrajectoryMomentumCut : 999999. // 50.
-            // saveTrajectoryMomentumCut : 999999. // 50.
-            // perVolumeMinDistance: {
-               //    /// FIXME: this should not be here, but cosmic config will have something like that
-               //    //    PSVacuum : 15
-               //    //    DS3Vacuum : 15
-               //    //    TrackerMother: 15
-               // }
-         }
-
-         ResourceLimits: {
-            maxStepsPerTrack : 100000
-            maxStepPointCollectionSize : 100000
-            maxSimParticleCollectionSize: 100000
-         }
-
-         debug: {
-            stepLimitKillerVerbose: true
-            printPhysicsProcessSummary : false
-            PiENuPolicyVerbosity : 0
-            printTrackTiming: false
-            worldVerbosityLevel : 0
-            printElements : false
-            printMaterials : false
-            fillDiagnosticHistograms: false
-
-            writeGDML : false
-            GDMLFileName : "mu2e.gdml"
-         }
-
-         visualization: {
-            macro : ""
-            GUIMacro : ""
-         }
-
-
-         physics : {
-            PiENuPolicy : "PDG"
-            noDecay: []
-            useNewMuMinusAtomicCapture: false
-            minRangeCut: 1. // mm
-            physicsListName:  "Shielding_MU2E01"
-
-            // current G4 stepper choices in Mu2eWorld.cc are shown below
-            // G4ClassicalRK4
-            // G4ImplicitEuler
-            // G4ExplicitEuler
-            // G4SimpleRunge
-            // G4SimpleHeum
-            // G4HelixImplicitEuler
-            // G4HelixSimpleRunge
-            stepper : "G4ClassicalRK4"
-            bfieldMaxStep: 20. // mm
          }
       }
 
@@ -266,7 +205,7 @@ physics : {
       muonBeamFilter: {
          module_type: FilterG4Out
          noInstanceName : true
-         mainHitInputs : [ "g4run:TS3Vacuum" ]
+         mainHitInputs : [ "g4run:TSVacuum" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1
          vetoDaughters: []
@@ -321,7 +260,7 @@ outputs: {
 
    fullOutput : {
       module_type : RootOutput
-      fileName    : "data_beam_g4s1_full.art"
+      fileName    : "data_g4s1_beam_full.art"
    }
 
    mubeamout : {
@@ -392,8 +331,8 @@ outputs: {
 
 }
 
-// Enable G4 graphics
-//physics.producers.g4run.visMacro : "JobConfig/TDR/vis_muonTransport.mac"
+// Larger range cut for the first stage
+physics.producers.g4run.physics.minRangeCut : 1. // mm
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.user.SeedService.baseSeed         :  0
