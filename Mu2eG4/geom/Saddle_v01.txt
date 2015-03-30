@@ -1,0 +1,78 @@
+// Original author David Norvil Brown, University of Louisville
+// Numbers based on Mu2e geometry 14 as of March 2015
+// See Mu2e docdb #4678 for more details on parameters
+
+// Sort boxes into "types"
+int Saddle.numberOfBoxTypes = 1; 
+
+// How many of each type box to make
+int Saddle.nBoxType1 = 4;  // PS Saddles.  Each "box" is a side plate
+
+// Number of vertices of each type of box
+int Saddle.nVertType1 = 8;
+
+
+// Vertices in u, v for each type of box.  Dimensions should be in mm.
+// All dimensions here are 10 mm less than nominal design dimensions,
+// but due to symmetry, these are implemented as 5 mm less at every vertex.
+// The T blocks have identical outlines
+double Saddle.outlineType1UVert1 = 800;
+double Saddle.outlineType1VVert1 = -640;
+double Saddle.outlineType1UVert2 = 800;
+double Saddle.outlineType1VVert2 = 160;
+double Saddle.outlineType1UVert3 = 680;
+double Saddle.outlineType1VVert3 = 0;
+double Saddle.outlineType1UVert4 = 520;
+double Saddle.outlineType1VVert4 = -240;
+double Saddle.outlineType1UVert5 = -520;
+double Saddle.outlineType1VVert5 = -240;
+double Saddle.outlineType1UVert6 = -680;
+double Saddle.outlineType1VVert6 = 0;
+double Saddle.outlineType1UVert7 = -800;
+double Saddle.outlineType1VVert7 = 160;
+double Saddle.outlineType1UVert8 = -800;
+double Saddle.outlineType1VVert8 = -640;
+
+
+
+// Lengths in w dimension for each type of box.  Dimensions should be in mm.
+// Note that lengths here are 10 mm shy of nominal.
+double Saddle.lengthType1 = 50;
+
+
+// Materials for each type of box.  Here, Concrete and Iron.
+string Saddle.materialType1   = "G4_Al";
+
+// The center of the piece in Mu2e Offline coordinates
+double Saddle.centerXType1Box1 = 3904; // 
+double Saddle.centerYType1Box1 = -1450;  // 
+double Saddle.centerZType1Box1 = -6500; 
+double Saddle.centerXType1Box2 = 3904; // 
+double Saddle.centerYType1Box2 = -1450;  // 
+double Saddle.centerZType1Box2 = -6250; 
+
+double Saddle.centerXType1Box3 = 3904; // PS Saddle east end
+double Saddle.centerYType1Box3 = -1450;  // 
+double Saddle.centerZType1Box3 = -4500; 
+double Saddle.centerXType1Box4 = 3904; // 
+double Saddle.centerYType1Box4 = -1450;  // 
+double Saddle.centerZType1Box4 = -4250; 
+
+
+// The orientation of the box.  See docdb xxxx for details.
+//string Saddle.orientationType1Box1 = "103";
+
+
+// Global stuff
+
+bool  Saddle.visible = true;
+bool  Saddle.solid   = false;
+
+int   Saddle.verbosityLevel = 1;
+
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
