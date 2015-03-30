@@ -205,8 +205,8 @@ physics : {
 	 PiENuPolicy : "PDG"
 	 noDecay: []
 	 useNewMuMinusAtomicCapture: false
-	 minRangeCut: 0.01 // mm
-	 physicsListName:  "QGSP_BERT" // "Shielding_MU2E01"
+	 minRangeCut: 1. // mm
+	 physicsListName:  "Shielding_MU2E01"
 
 	 writeGDML : false
 	 GDMLFileName : "mu2e.gdml"
