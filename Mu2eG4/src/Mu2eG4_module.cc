@@ -508,7 +508,6 @@ namespace mu2e {
 
     // Run G4 for this event and access the completed event.
     BeamOnDoOneEvent( event.id().event() );
-    G4Event const* g4event = _runManager->GetCurrentEvent();
 
     // Populate the output data products.
     GeomHandle<WorldG4>  world;
