@@ -173,6 +173,7 @@ namespace mu2e {
 
     // Instance name of the timeVD StepPointMC data product.
     const StepInstanceName _tvdOutputName;
+    std::vector<double> timeVDtimes_;
 
     unsigned _simParticleNumberOffset;
     art::InputTag _inputSimParticles;
@@ -229,6 +230,7 @@ namespace mu2e {
     _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
     _extMonFNALPixelSD(),
     _tvdOutputName(StepInstanceName::timeVD),
+    timeVDtimes_(pSet.get<std::vector<double> >("TimeVD.times")),
     _simParticleNumberOffset(pSet.get<unsigned>("simParticleNumberOffset", 0)),
     _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
     _inputMCTrajectories(pSet.get<std::string>("inputMCTrajectories", "")),
@@ -258,8 +260,9 @@ namespace mu2e {
       produces<StepPointMCCollection>(*i);
     }
 
-    // The timevd collection is special.
-    produces<StepPointMCCollection>(_tvdOutputName.name());
+    if(!timeVDtimes_.empty()) {
+      produces<StepPointMCCollection>(_tvdOutputName.name());
+    }
 
     produces<MCTrajectoryCollection>();
     produces<ExtMonFNALSimHitCollection>();
@@ -362,7 +365,7 @@ namespace mu2e {
     _genAction = new PrimaryGeneratorAction(pset_);
     _runManager->SetUserAction(_genAction);
 
-    _steppingAction = new Mu2eG4SteppingAction(pset_, *steppingCuts_, *commonCuts_, mu2elimits_);
+    _steppingAction = new Mu2eG4SteppingAction(pset_, timeVDtimes_, *steppingCuts_, *commonCuts_, mu2elimits_);
     _runManager->SetUserAction(_steppingAction);
 
     _stackingAction = new Mu2eG4StackingAction(pset_, *stackingCuts_, *commonCuts_);
@@ -534,8 +537,11 @@ namespace mu2e {
     // Add data products to the event.
     event.put(std::move(g4stat));
     event.put(std::move(simParticles));
-    event.put(std::move(tvdHits),          _tvdOutputName.name()          );
+    if(!timeVDtimes_.empty()) {
+      event.put(std::move(tvdHits), _tvdOutputName.name());
+    }
     event.put(std::move(mcTrajectories));
+
     if(_extMonFNALPixelSD) {
       event.put(std::move(extMonFNALHits));
     }

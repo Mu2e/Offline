@@ -40,7 +40,11 @@ namespace mu2e {
   {
 
   public:
-    Mu2eG4SteppingAction(const fhicl::ParameterSet& pset, IMu2eG4Cut &steppingCuts, IMu2eG4Cut& commonCuts, const Mu2eG4ResourceLimits& mu2elimits);
+    Mu2eG4SteppingAction(const fhicl::ParameterSet& pset,
+                         const std::vector<double>& timeVDtimes,
+                         IMu2eG4Cut &steppingCuts,
+                         IMu2eG4Cut& commonCuts,
+                         const Mu2eG4ResourceLimits& mu2elimits);
 
     void UserSteppingAction(const G4Step*);
 

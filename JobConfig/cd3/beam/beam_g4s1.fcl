@@ -222,6 +222,7 @@ physics : {
 	 stepper : "G4ClassicalRK4"
 	 bfieldMaxStep: 20. // mm
 
+	 TimeVD: { times: [] }
       }
 
       compressPVmuonBeam : {

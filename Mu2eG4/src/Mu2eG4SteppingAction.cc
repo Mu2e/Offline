@@ -27,6 +27,7 @@ using namespace std;
 namespace mu2e {
 
   Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset,
+                                             const std::vector<double>& timeVDtimes,
                                              IMu2eG4Cut& steppingCuts,
                                              IMu2eG4Cut& commonCuts,
                                              const Mu2eG4ResourceLimits& lim) :
@@ -42,7 +43,7 @@ namespace mu2e {
     stepLimitKillerVerbose_(pset.get<bool>("debug.stepLimitKillerVerbose")),
 
     // Things related to time virtual detector
-    tvd_time_(pset.get<vector<double> >("TimeVD", vector<double>())),
+    tvd_time_(timeVDtimes),
     tvd_collection_(nullptr),
     tvd_warning_printed_(false),
 
