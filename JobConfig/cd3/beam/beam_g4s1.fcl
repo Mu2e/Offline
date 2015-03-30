@@ -109,7 +109,7 @@ physics : {
 
 		     // The Z position of the west side of the west wall relief
 		     // per George's e-mail 2015-03-27
-		     { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4191 ] },
+		     { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4851 ] },
 
 		     // The new coil assembly addition has the same length as TS3
 		     // Hide it from the first stage.
