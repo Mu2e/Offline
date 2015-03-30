@@ -83,7 +83,7 @@ namespace {
     return config.getBool("g4.useNewMuMinusAtomicCapture", false);
   }
   bool getUseNewMuMinusAtomicCapture(const fhicl::ParameterSet& pset) {
-    return pset.get<bool>("useNewMuMinusAtomicCapture", false);
+    return pset.get<bool>("physics.useNewMuMinusAtomicCapture");
   }
 }
 

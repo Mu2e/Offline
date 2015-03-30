@@ -62,7 +62,7 @@ namespace mu2e{
     }
 
     std::string getPhysicsListName(const fhicl::ParameterSet& pset) {
-      return pset.get<std::string>("physicsListName");
+      return pset.get<std::string>("physics.physicsListName");
     }
   }
 

@@ -165,7 +165,7 @@ namespace mu2e{
       {}
 
       Control ( const fhicl::ParameterSet& pset)
-        : Control(pset.get<std::string>("PiENuPolicy"))
+        : Control(pset.get<std::string>("physics.PiENuPolicy"))
       {}
 
       // Branching fraction for pi -> e nu_e

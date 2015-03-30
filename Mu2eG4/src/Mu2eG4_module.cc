@@ -233,7 +233,7 @@ namespace mu2e {
     _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
     _extMonFNALPixelSD(),
     _tvdOutputName(StepInstanceName::timeVD),
-    timeVDtimes_(pSet.get<std::vector<double> >("TimeVD.times")),
+    timeVDtimes_(pSet.get<std::vector<double> >("SDConfig.TimeVD.times")),
     _simParticleNumberOffset(pSet.get<unsigned>("simParticleNumberOffset", 0)),
     _inputSimParticles(pSet.get<std::string>("inputSimParticles", "")),
     _inputMCTrajectories(pSet.get<std::string>("inputMCTrajectories", "")),

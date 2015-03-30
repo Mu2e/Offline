@@ -150,8 +150,8 @@ namespace mu2e {
     , activeWr_Wl_SD_(true)
     , writeGDML_(pset.get<bool>("debug.writeGDML"))
     , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
-    , g4stepperName_(pset.get<std::string>("stepper"))
-    , bfieldMaxStep_(pset.get<double>("bfieldMaxStep"))
+    , g4stepperName_(pset.get<std::string>("physics.stepper"))
+    , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep"))
   {
     _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
   }

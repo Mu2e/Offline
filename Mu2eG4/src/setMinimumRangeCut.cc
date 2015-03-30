@@ -38,7 +38,7 @@ namespace mu2e{
   }
 
   void setMinimumRangeCut(const fhicl::ParameterSet& pset){
-    setMinimumRangeCut(pset.get<double>("minRangeCut"));
+    setMinimumRangeCut(pset.get<double>("physics.minRangeCut"));
   }
 
 }  // end namespace mu2e

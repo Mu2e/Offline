@@ -81,7 +81,7 @@ namespace mu2e{
   }
 
   void switchDecayOff(const fhicl::ParameterSet& pset) {
-    std::vector<int> plist = pset.get<std::vector<int> >("noDecay");
+    std::vector<int> plist = pset.get<std::vector<int> >("physics.noDecay");
     switchDecayOff(plist);
   }
 
