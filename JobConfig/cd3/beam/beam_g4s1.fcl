@@ -74,155 +74,155 @@ physics : {
          simParticleNumberOffset : 0
          SDConfig : {
             enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
-	    activeWr_Wl_SD : false
+            activeWr_Wl_SD : false
          }
 
          Mu2eG4StackingOnlyCut: {
-	    // do not stack neutrinos. no point to re-check this in stepping.
-	    type: pdgId pars: [ 12, -12, 14, -14, 16, -16]
-	 }
+            // do not stack neutrinos. no point to re-check this in stepping.
+            type: pdgId pars: [ 12, -12, 14, -14, 16, -16]
+         }
 
          Mu2eG4SteppingOnlyCut: {
-	 }
+         }
 
-	 // Mu2eG4 cuts are evaluated in the listed order.
-	 // The first match wins.  For the "intersection"
-	 // type, the first false stops the evaluation.
-	 // For the "union" type the first true stops the evaluation.
+         // Mu2eG4 cuts are evaluated in the listed order.
+         // The first match wins.  For the "intersection"
+         // type, the first false stops the evaluation.
+         // For the "union" type the first true stops the evaluation.
          Mu2eG4CommonCut: {
-	    type: union
-	    pars: [
+            type: union
+            pars: [
                {
-		  type: intersection
+                  type: intersection
 
-		  // cut: { type : union   pars: [ {...}, {...}] }
-		  // cut: { type : intersection   pars: [ {...}, {...}] }
-		  // cut: { type : inVolume pars: [ vol1, vol2 ] }
-		  // cut: { colitype : notInVolume pars: [ vol1, vol2 ] }
+                  // cut: { type : union   pars: [ {...}, {...}] }
+                  // cut: { type : intersection   pars: [ {...}, {...}] }
+                  // cut: { type : inVolume pars: [ vol1, vol2 ] }
+                  // cut: { colitype : notInVolume pars: [ vol1, vol2 ] }
 
-		  // cut: { type : plane   pars: [...] }
-		  //         plane def:    par0*x + par1*y + par2*z > par3
+                  // cut: { type : plane   pars: [...] }
+                  //         plane def:    par0*x + par1*y + par2*z > par3
 
-		  // cut: { type: kineticEnergy cut : 0.5 }
+                  // cut: { type: kineticEnergy cut : 0.5 }
 
-		  pars: [
+                  pars: [
 
-		     // The Z position of the west side of the west wall relief
-		     // per George's e-mail 2015-03-27
-		     { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4851 ] },
+                     // The Z position of the west side of the west wall relief
+                     // per George's e-mail 2015-03-27
+                     { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4851 ] },
 
-		     // The new coil assembly addition has the same length as TS3
-		     // Hide it from the first stage.
-		     // TS3 half length = 3904 - 2929 = 975, give it some margin
-		     { type: plane normal: [ -1, 0, 0 ] point : [ 1000., 0, 0 ] },
+                     // The new coil assembly addition has the same length as TS3
+                     // Hide it from the first stage.
+                     // TS3 half length = 3904 - 2929 = 975, give it some margin
+                     { type: plane normal: [ -1, 0, 0 ] point : [ 1000., 0, 0 ] },
 
-		     // Make sure the muon beam reaches our TS3Vacuum stopping volume
-		     { type: notInVolume pars: [TS2Vacuum] },
+                     // Make sure the muon beam reaches our TS3Vacuum stopping volume
+                     { type: notInVolume pars: [TS2Vacuum] },
 
-		     // This union splits the output of the above cuts 
-		     // into two exclusive streams
-		     { type: union pars:  [
-			   {  type: inVolume
-			      pars: [TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, DS3Vacuum ]
-			      write: TS3Vacuum
-			   },
-			   {  type: constant
-			      value: true
-			      write: dsregion
-			   }
-			]
-		     }
-		  ]
-	       }
-	       ,
-               {
-		  type: intersection
-		  pars: [
-		     {
-			type: plane
-			// Beam dump core rotation 13.72 degrees
-			normal: [ -0.237177266249502805 , 0,  -0.971466388700305217 ]
-			// Dump core center: (661.90,  527.40, -19428.2)
-			// One meter to the back, along the rotated axis
-			point : [424.72, 527.40, -20399.67 ]
-		     },
-		     
-		     // Split the output of the "plane" cut above into two exclusive streams
-		     { type: union pars:  [
-			   {  type: inVolume 
-			      pars:
-			      [  collimator1Channel,
-				 HallAir,
-				 ExtMonFNALfilterMagnetAperture,
-				 ExtMonFNALfilterMagnetApertureMarginUp,
-				 ExtMonFNALfilterMagnetApertureMarginDn
-			      ]
-			      write: extmonbeam
-			   },
-			   { type: constant  value: true       write: extmonregion }
-			]
-		     }
-		  ]
+                     // This union splits the output of the above cuts
+                     // into two exclusive streams
+                     { type: union pars:  [
+                           {  type: inVolume
+                              pars: [TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, DS3Vacuum ]
+                              write: TS3Vacuum
+                           },
+                           {  type: constant
+                              value: true
+                              write: dsregion
+                           }
+                        ]
+                     }
+                  ]
                }
-	    ]
-	 }
+               ,
+               {
+                  type: intersection
+                  pars: [
+                     {
+                        type: plane
+                        // Beam dump core rotation 13.72 degrees
+                        normal: [ -0.237177266249502805 , 0,  -0.971466388700305217 ]
+                        // Dump core center: (661.90,  527.40, -19428.2)
+                        // One meter to the back, along the rotated axis
+                        point : [424.72, 527.40, -20399.67 ]
+                     },
 
-	 TrajectoryControl: { produce: false
-	    // defaultMinPointDistance : 999999 // 500
-	    // mcTrajectoryMinSteps : 999999 // 5
-	    // mcTrajectoryMomentumCut : 999999. // 50.
-	    // saveTrajectoryMomentumCut : 999999. // 50.
-	    // perVolumeMinDistance: {
-	    //    /// FIXME: this should not be here, but cosmic config will have something like that
-	    //    //    PSVacuum : 15
-	    //    //    DS3Vacuum : 15
-	    //    //    TrackerMother: 15
-	    // }
-	 }
-	 
-	 ResourceLimits: {
-	    maxStepsPerTrack : 100000
-	    maxStepPointCollectionSize : 100000
-	    maxSimParticleCollectionSize: 100000
-	 }
+                     // Split the output of the "plane" cut above into two exclusive streams
+                     { type: union pars:  [
+                           {  type: inVolume
+                              pars:
+                              [  collimator1Channel,
+                                 HallAir,
+                                 ExtMonFNALfilterMagnetAperture,
+                                 ExtMonFNALfilterMagnetApertureMarginUp,
+                                 ExtMonFNALfilterMagnetApertureMarginDn
+                              ]
+                              write: extmonbeam
+                           },
+                           { type: constant  value: true       write: extmonregion }
+                        ]
+                     }
+                  ]
+               }
+            ]
+         }
 
-	 debug: {
-	    stepLimitKillerVerbose: true
-	    printPhysicsProcessSummary : false
-	    PiENuPolicyVerbosity : 0
-	    printTrackTiming: false
-	    worldVerbosityLevel : 0
-	    printElements : false
-	    printMaterials : false
-	    fillDiagnosticHistograms: false
-	 }
+         TrajectoryControl: { produce: false
+            // defaultMinPointDistance : 999999 // 500
+            // mcTrajectoryMinSteps : 999999 // 5
+            // mcTrajectoryMomentumCut : 999999. // 50.
+            // saveTrajectoryMomentumCut : 999999. // 50.
+            // perVolumeMinDistance: {
+               //    /// FIXME: this should not be here, but cosmic config will have something like that
+               //    //    PSVacuum : 15
+               //    //    DS3Vacuum : 15
+               //    //    TrackerMother: 15
+               // }
+         }
 
-	 visualization: {
-	    macro : ""
-	    GUIMacro : ""
-	 }
+         ResourceLimits: {
+            maxStepsPerTrack : 100000
+            maxStepPointCollectionSize : 100000
+            maxSimParticleCollectionSize: 100000
+         }
 
-	 PiENuPolicy : "PDG"
-	 noDecay: []
-	 useNewMuMinusAtomicCapture: false
-	 minRangeCut: 1. // mm
-	 physicsListName:  "Shielding_MU2E01"
+         debug: {
+            stepLimitKillerVerbose: true
+            printPhysicsProcessSummary : false
+            PiENuPolicyVerbosity : 0
+            printTrackTiming: false
+            worldVerbosityLevel : 0
+            printElements : false
+            printMaterials : false
+            fillDiagnosticHistograms: false
+         }
 
-	 writeGDML : false
-	 GDMLFileName : "mu2e.gdml"
+         visualization: {
+            macro : ""
+            GUIMacro : ""
+         }
 
-	 // current G4 stepper choices in Mu2eWorld.cc are shown below
-	 // G4ClassicalRK4
-	 // G4ImplicitEuler
-	 // G4ExplicitEuler
-	 // G4SimpleRunge
-	 // G4SimpleHeum
-	 // G4HelixImplicitEuler
-	 // G4HelixSimpleRunge
-	 stepper : "G4ClassicalRK4"
-	 bfieldMaxStep: 20. // mm
+         PiENuPolicy : "PDG"
+         noDecay: []
+         useNewMuMinusAtomicCapture: false
+         minRangeCut: 1. // mm
+         physicsListName:  "Shielding_MU2E01"
 
-	 TimeVD: { times: [] }
+         writeGDML : false
+         GDMLFileName : "mu2e.gdml"
+
+         // current G4 stepper choices in Mu2eWorld.cc are shown below
+         // G4ClassicalRK4
+         // G4ImplicitEuler
+         // G4ExplicitEuler
+         // G4SimpleRunge
+         // G4SimpleHeum
+         // G4HelixImplicitEuler
+         // G4HelixSimpleRunge
+         stepper : "G4ClassicalRK4"
+         bfieldMaxStep: 20. // mm
+
+         TimeVD: { times: [] }
       }
 
       compressPVmuonBeam : {
@@ -264,7 +264,7 @@ physics : {
    filters: {
       muonBeamFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
+         noInstanceName : true
          mainHitInputs : [ "g4run:TS3Vacuum" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1
@@ -273,7 +273,7 @@ physics : {
 
       dsRegionFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
+         noInstanceName : true
          mainHitInputs : [ "g4run:dsregion" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1
@@ -282,7 +282,7 @@ physics : {
 
       extmonBeamFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
+         noInstanceName : true
          mainHitInputs : [ "g4run:extmonbeam" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1
@@ -291,7 +291,7 @@ physics : {
 
       extmonRegionFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
+         noInstanceName : true
          mainHitInputs : [ "g4run:extmonregion" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1
@@ -375,7 +375,7 @@ outputs: {
       fileName    : "data_g4s1_extmonregion.art"
    }
 
-  truncatedEvtsOutput : {
+   truncatedEvtsOutput : {
       module_type : RootOutput
       SelectEvents: { SelectEvents: ["g4StatusFilter"] }
       outputCommands:   [ "drop *_*_*_*",

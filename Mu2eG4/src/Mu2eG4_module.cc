@@ -38,7 +38,7 @@
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
 
@@ -67,7 +67,7 @@
 // Geant4 includes
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
 #include "G4VisExecutive.hh"
 #endif
 #include "G4Run.hh"
@@ -141,7 +141,7 @@ namespace mu2e {
 
     G4UIsession  *_session;
     G4UImanager  *_UI;
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
     std::unique_ptr<G4VisManager> _visManager;
 #endif
     int _rmvlevel;
@@ -214,7 +214,7 @@ namespace mu2e {
 
     _session(nullptr),
     _UI(nullptr),
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
     _visManager(nullptr),
 #endif
     // FIXME:  naming of pset parameters
@@ -241,7 +241,7 @@ namespace mu2e {
     _realElapsed(0.),
     _systemElapsed(0.),
     _userElapsed(0.)
-{
+  {
 
     Strings genHitsStr(pSet.get<Strings>("genInputHits", Strings()));
     for(const auto& s : genHitsStr) {
@@ -381,7 +381,7 @@ namespace mu2e {
     _runManager->SetUserAction(_trackingAction);
 
     // setting tracking/stepping verbosity level; tracking manager
-    // sets stepping verbosity level as well; 
+    // sets stepping verbosity level as well;
 
     G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
     G4TrackingManager* tm  = rmk->GetTrackingManager();
@@ -413,7 +413,7 @@ namespace mu2e {
                                        ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
 
 
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
@@ -563,9 +563,9 @@ namespace mu2e {
       // Prompt to continue and wait for reply.
       cout << "Enter a character to go to the next event" << endl;
       cout << "q quits, s enters G4 interactive session, g enters a GUI session (if available)"
-	   << endl;
+           << endl;
       cout << "Once in G4 interactive session to quit it type \"exit\" "
-	   << endl;
+           << endl;
 
       string userinput;
       cin >> userinput;
@@ -579,67 +579,67 @@ namespace mu2e {
           throw cet::exception("CONTROL")
             << "Early end of event loop requested inside G4, \n";
         } else if ( c == 's' || c == 'g' || c == 'v' ){
-	  // v is for backward compatibility
+          // v is for backward compatibility
           G4int argc=1;
           // Cast away const-ness; required by the G4 interface ...
           char* dummy = (char *)"dummy";
           char** argv = &dummy;
-          G4UIExecutive* UIE = ( c == 's' || c == 'v' ) ? 
-	    new G4UIExecutive(argc, argv,"tcsh") :
-	    new G4UIExecutive(argc, argv);
-	  
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
+          G4UIExecutive* UIE = ( c == 's' || c == 'v' ) ?
+            new G4UIExecutive(argc, argv,"tcsh") :
+            new G4UIExecutive(argc, argv);
 
-	  if (UIE->IsGUI()) {
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
 
-	    // we add a command here and initialize it
-	    // (/vis/sceneHandler has to exist prior to this)
-	    Mu2eVisCommandSceneHandlerDrawEvent* drEv = 
+          if (UIE->IsGUI()) {
+
+            // we add a command here and initialize it
+            // (/vis/sceneHandler has to exist prior to this)
+            Mu2eVisCommandSceneHandlerDrawEvent* drEv =
               new Mu2eVisCommandSceneHandlerDrawEvent();
-	    _visManager->RegisterMessenger(drEv); // assumes ownership;
-	    // drEv->SetVisManager(_visManager.get());  
-	    // vis manager pointer is static member of the drEv base
-	    // class so the above is not needed
+            _visManager->RegisterMessenger(drEv); // assumes ownership;
+            // drEv->SetVisManager(_visManager.get());
+            // vis manager pointer is static member of the drEv base
+            // class so the above is not needed
 
-	    if ( !_visGUIMacro.empty() ){
-	      G4String command("/control/execute ");
-	      ConfigFileLookupPolicy visPath;
-	      command += visPath(_visGUIMacro);
-	      _UI->ApplyCommand( command );
+            if ( !_visGUIMacro.empty() ){
+              G4String command("/control/execute ");
+              ConfigFileLookupPolicy visPath;
+              command += visPath(_visGUIMacro);
+              _UI->ApplyCommand( command );
 
-	      cout << "In GUI interactive session use the \"Draw Current Event\" "
-		   << "button in the Vis menu"
-		   << endl;
+              cout << "In GUI interactive session use the \"Draw Current Event\" "
+                   << "button in the Vis menu"
+                   << endl;
 
-	    } else {
-	      cout << __func__ << " WARNING: visGUIMacro empty, may need to be defined in fcl" << endl;
-	    }
+            } else {
+              cout << __func__ << " WARNING: visGUIMacro empty, may need to be defined in fcl" << endl;
+            }
 
-	  } // end UIE->IsGUI()
+          } // end UIE->IsGUI()
 #endif
-          UIE->SessionStart(); 
+          UIE->SessionStart();
           delete UIE;
 
-	  //If current scene is scene-0 and if scene-handler-0 has viewer-0 we
-	  //will select it if not current to deal with a case which may occur
-	  //e.g. in a simultaneous use of OGL & Qt
+          //If current scene is scene-0 and if scene-handler-0 has viewer-0 we
+          //will select it if not current to deal with a case which may occur
+          //e.g. in a simultaneous use of OGL & Qt
 
-	  // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
+          // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
 
-#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
-	  G4String viewerToLookFor("viewer-0");
-	  G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
-	  if (pViewer) {
-	    if (pViewer != _visManager->GetCurrentViewer()) {
-	      _visManager->SetCurrentViewer(pViewer);
-	    }
-	  }
-	  // G4VGraphicsSystem* gsys = _visManager->GetCurrentGraphicsSystem();
-	  // if (gsys) {
-	  //   cout << __func__ << " current GraphicsSystem Name " << gsys->GetName() <<  endl;
-	  // }
+#if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
+          G4String viewerToLookFor("viewer-0");
+          G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
+          if (pViewer) {
+            if (pViewer != _visManager->GetCurrentViewer()) {
+              _visManager->SetCurrentViewer(pViewer);
+            }
+          }
+          // G4VGraphicsSystem* gsys = _visManager->GetCurrentGraphicsSystem();
+          // if (gsys) {
+          //   cout << __func__ << " current GraphicsSystem Name " << gsys->GetName() <<  endl;
+          // }
 #endif
-	} // end c == 'q'
+        } // end c == 'q'
 
       } // end !userinput.empty()
 
@@ -684,7 +684,7 @@ namespace mu2e {
     _systemElapsed = 0.;
     _userElapsed   = 0.;
 
-    //numberOfEventsToBeProcessed should be the total number of events to be processed 
+    //numberOfEventsToBeProcessed should be the total number of events to be processed
     // or a large number and NOT 1 for G4 to work properly
 
     G4int numberOfEventsToBeProcessed = std::numeric_limits<int>::max(); // largest int for now
