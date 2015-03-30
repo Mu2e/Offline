@@ -21,6 +21,7 @@
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
+#include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 
 using namespace std;
 
@@ -30,6 +31,7 @@ namespace mu2e {
                                              const std::vector<double>& timeVDtimes,
                                              IMu2eG4Cut& steppingCuts,
                                              IMu2eG4Cut& commonCuts,
+                                             const Mu2eG4TrajectoryControl& trajectoryControl,
                                              const Mu2eG4ResourceLimits& lim) :
     pset_(pset),
 
@@ -47,7 +49,7 @@ namespace mu2e {
     tvd_collection_(nullptr),
     tvd_warning_printed_(false),
 
-    mcTrajectoryDefaultMinPointDistance_(pset.get<double>("TrajectoryControl.defaultMinPointDistance")),
+    trajectoryControl_(&trajectoryControl),
 
     // Default values for parameters that are optional in the run time configuration.
     _debugEventList(pset.get<std::vector<int> >("debug.eventList", std::vector<int>())),
@@ -94,14 +96,12 @@ namespace mu2e {
     // We have to wait until G4 geometry is constructed
     // to get phys volume pointers that are used in the
     // volume to cut value map.
-    std::cout<<"Mu2eG4SteppingAction: mcTrajectoryDefaultMinPointDistance = "<<mcTrajectoryDefaultMinPointDistance_<<std::endl;
-    const fhicl::ParameterSet& volumeCutsPS{pset_.get<fhicl::ParameterSet>("TrajectoryControl.perVolumeMinDistance")};
-    const std::vector<std::string> volnames{volumeCutsPS.get_keys()};
-    for(const auto& k: volnames) {
-      auto vol = getPhysicalVolumeOrThrow(k);
-      double cut = mcTrajectoryVolumePtDistances_[vol] = volumeCutsPS.get<double>(k);
+    std::cout<<"Mu2eG4SteppingAction: mcTrajectoryDefaultMinPointDistance = "<<trajectoryControl_->defaultMinPointDistance()<<std::endl;
+    for(const auto& spec: trajectoryControl_->perVolumeMinDistance()) {
+      auto vol = getPhysicalVolumeOrThrow(spec.first);
+      double cut = mcTrajectoryVolumePtDistances_[vol] = spec.second;
       std::cout<<"Mu2eG4SteppingAction: mcTrajectory distance cut = "
-               <<cut<<" for volume "<<k<<std::endl;
+               <<cut<<" for volume "<<spec.first<<std::endl;
     }
   }
 
@@ -310,7 +310,7 @@ namespace mu2e {
 
   double Mu2eG4SteppingAction::mcTrajectoryMinDistanceCut(const G4VPhysicalVolume* vol) const {
     const auto it = mcTrajectoryVolumePtDistances_.find(vol);
-    return (it != mcTrajectoryVolumePtDistances_.end()) ? it->second : mcTrajectoryDefaultMinPointDistance_;
+    return (it != mcTrajectoryVolumePtDistances_.end()) ? it->second : trajectoryControl_->defaultMinPointDistance();
   }
 
 } // end namespace mu2e

@@ -42,13 +42,19 @@ namespace mu2e {
   class SimParticleHelper;
   class SimParticlePrimaryHelper;
   class Mu2eG4ResourceLimits;
+  class Mu2eG4TrajectoryControl;
 
   class TrackingAction: public G4UserTrackingAction{
 
   public:
 
     TrackingAction( const SimpleConfig& config, IMu2eG4SteppingAction *);
-    TrackingAction(const fhicl::ParameterSet& pset, IMu2eG4SteppingAction *, const Mu2eG4ResourceLimits &lim);
+
+    TrackingAction(const fhicl::ParameterSet& pset,
+                   IMu2eG4SteppingAction *,
+                   const Mu2eG4TrajectoryControl& trajectoryControl,
+                   const Mu2eG4ResourceLimits &lim);
+
     virtual ~TrackingAction();
 
     // These methods are required by G4

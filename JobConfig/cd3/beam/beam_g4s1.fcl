@@ -167,17 +167,17 @@ physics : {
 	    ]
 	 }
 
-	 TrajectoryControl: {
-	    defaultMinPointDistance : 999999 // 500
-	    mcTrajectoryMinSteps : 999999 // 5
-	    mcTrajectoryMomentumCut : 999999. // 50.
-	    saveTrajectoryMomentumCut : 999999. // 50.
-	    perVolumeMinDistance: {
-	       /// FIXME: this should not be here, but cosmic config will have something like that
-	       //    PSVacuum : 15
-	       //    DS3Vacuum : 15
-	       //    TrackerMother: 15
-	    }
+	 TrajectoryControl: { produce: false
+	    // defaultMinPointDistance : 999999 // 500
+	    // mcTrajectoryMinSteps : 999999 // 5
+	    // mcTrajectoryMomentumCut : 999999. // 50.
+	    // saveTrajectoryMomentumCut : 999999. // 50.
+	    // perVolumeMinDistance: {
+	    //    /// FIXME: this should not be here, but cosmic config will have something like that
+	    //    //    PSVacuum : 15
+	    //    //    DS3Vacuum : 15
+	    //    //    TrackerMother: 15
+	    // }
 	 }
 	 
 	 ResourceLimits: {

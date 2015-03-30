@@ -37,6 +37,7 @@
 #include "SeedService/inc/SeedService.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
+#include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
@@ -107,6 +108,7 @@ namespace mu2e {
   private:
     fhicl::ParameterSet pset_;
     Mu2eG4ResourceLimits mu2elimits_;
+    Mu2eG4TrajectoryControl trajectoryControl_;
 
     typedef std::vector<art::InputTag> InputTags;
     typedef std::vector<std::string> Strings;
@@ -196,6 +198,7 @@ namespace mu2e {
   Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     pset_(pSet),
     mu2elimits_(pSet.get<fhicl::ParameterSet>("ResourceLimits")),
+    trajectoryControl_(pSet.get<fhicl::ParameterSet>("TrajectoryControl")),
     _runManager(std::make_unique<G4RunManager>()),
     _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
     _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
@@ -264,7 +267,10 @@ namespace mu2e {
       produces<StepPointMCCollection>(_tvdOutputName.name());
     }
 
-    produces<MCTrajectoryCollection>();
+    if(trajectoryControl_.produce()) {
+      produces<MCTrajectoryCollection>();
+    }
+
     produces<ExtMonFNALSimHitCollection>();
 
     stackingCuts_->declareProducts(this);
@@ -365,13 +371,13 @@ namespace mu2e {
     _genAction = new PrimaryGeneratorAction(pset_);
     _runManager->SetUserAction(_genAction);
 
-    _steppingAction = new Mu2eG4SteppingAction(pset_, timeVDtimes_, *steppingCuts_, *commonCuts_, mu2elimits_);
+    _steppingAction = new Mu2eG4SteppingAction(pset_, timeVDtimes_, *steppingCuts_, *commonCuts_, trajectoryControl_, mu2elimits_);
     _runManager->SetUserAction(_steppingAction);
 
     _stackingAction = new Mu2eG4StackingAction(pset_, *stackingCuts_, *commonCuts_);
     _runManager->SetUserAction(_stackingAction);
 
-    _trackingAction = new TrackingAction(pset_, _steppingAction, mu2elimits_);
+    _trackingAction = new TrackingAction(pset_, _steppingAction, trajectoryControl_, mu2elimits_);
     _runManager->SetUserAction(_trackingAction);
 
     // setting tracking/stepping verbosity level; tracking manager
@@ -540,8 +546,9 @@ namespace mu2e {
     if(!timeVDtimes_.empty()) {
       event.put(std::move(tvdHits), _tvdOutputName.name());
     }
-    event.put(std::move(mcTrajectories));
-
+    if(trajectoryControl_.produce()) {
+      event.put(std::move(mcTrajectories));
+    }
     if(_extMonFNALPixelSD) {
       event.put(std::move(extMonFNALHits));
     }

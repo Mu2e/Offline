@@ -34,6 +34,8 @@ namespace mu2e {
   // Forward declarations in mu2e namespace
   class SimParticleHelper;
   class PhysicsProcessInfo;
+  class Mu2eG4ResourceLimits;
+  class Mu2eG4TrajectoryControl;
 
   class Mu2eG4SteppingAction : public G4UserSteppingAction,
                                virtual public IMu2eG4SteppingAction
@@ -44,6 +46,7 @@ namespace mu2e {
                          const std::vector<double>& timeVDtimes,
                          IMu2eG4Cut &steppingCuts,
                          IMu2eG4Cut& commonCuts,
+                         const Mu2eG4TrajectoryControl& tc,
                          const Mu2eG4ResourceLimits& mu2elimits);
 
     void UserSteppingAction(const G4Step*);
@@ -98,7 +101,7 @@ namespace mu2e {
     bool tvd_warning_printed_;
 
     // MCTrajectory point filtering cuts
-    double mcTrajectoryDefaultMinPointDistance_;
+    const Mu2eG4TrajectoryControl* trajectoryControl_;
     typedef std::map<const G4VPhysicalVolume*, double> VolumeCutMap;
     VolumeCutMap mcTrajectoryVolumePtDistances_;
     // Store point and time at each G4Step; cleared at beginOfTrack time.
