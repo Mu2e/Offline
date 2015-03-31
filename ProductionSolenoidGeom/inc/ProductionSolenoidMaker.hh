@@ -54,6 +54,14 @@ namespace mu2e {
     double _psVacVesselHalfLength;
     std::string _psVacVesselMaterialName;
 
+    // Rings
+    std::string _psRingMaterialName;
+    double _psRingOR;
+    double _psRingIR;
+    double _psRingLength;
+    double _psRing1Mu2eOffsetZ;
+    double _psRing2Mu2eOffsetZ;
+
     // the superconducting Coils
 
     double _psCoilrIn;

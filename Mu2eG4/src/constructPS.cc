@@ -103,6 +103,21 @@ namespace mu2e {
 	       "PS"
                );
 
+    // Rings
+    Tube const & psRing1Params = *psgh.getRing1ParamsPtr();
+    Tube const & psRing2Params = *psgh.getRing2ParamsPtr();
+    G4Material* ringMaterial = findMaterialOrThrow(psRing1Params.materialName());
+    VolumeInfo psRing1Info = 
+      nestTubs("PSRing1", psRing1Params.getTubsParams(),
+	       ringMaterial, 0,
+	       psRing1Params.originInMu2e() - _hallOriginInMu2e,
+	       parent, 0, G4Colour::Blue(), "PS");
+    VolumeInfo psRing2Info = 
+      nestTubs("PSRing2", psRing2Params.getTubsParams(),
+	       ringMaterial, 0,
+	       psRing2Params.originInMu2e() - _hallOriginInMu2e,
+	       parent, 0, G4Colour::Blue(), "PS");
+
     // two endplates
 
     Tube const & psVacVesselEndPlateDParams = *psgh.getVacVesselEndPlateDParamsPtr();

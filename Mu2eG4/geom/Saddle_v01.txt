@@ -3,60 +3,111 @@
 // See Mu2e docdb #4678 for more details on parameters
 
 // Sort boxes into "types"
-int Saddle.numberOfBoxTypes = 1; 
+int Saddle.numberOfBoxTypes = 3; 
 
 // How many of each type box to make
 int Saddle.nBoxType1 = 4;  // PS Saddles.  Each "box" is a side plate
+int Saddle.nBoxType2 = 2;  // PS Saddles.  Each "box" here is a foot of saddle
+int Saddle.nBoxType3 = 4;  // PS Saddles.  Each "box" here is an end of saddle
 
 // Number of vertices of each type of box
-int Saddle.nVertType1 = 8;
-
+int Saddle.nVertType1 = 10;
+int Saddle.nVertType2 = 4;
+int Saddle.nVertType3 = 4;
 
 // Vertices in u, v for each type of box.  Dimensions should be in mm.
 // All dimensions here are 10 mm less than nominal design dimensions,
 // but due to symmetry, these are implemented as 5 mm less at every vertex.
 // The T blocks have identical outlines
-double Saddle.outlineType1UVert1 = 800;
-double Saddle.outlineType1VVert1 = -640;
-double Saddle.outlineType1UVert2 = 800;
-double Saddle.outlineType1VVert2 = 160;
-double Saddle.outlineType1UVert3 = 680;
-double Saddle.outlineType1VVert3 = 0;
-double Saddle.outlineType1UVert4 = 520;
-double Saddle.outlineType1VVert4 = -240;
-double Saddle.outlineType1UVert5 = -520;
-double Saddle.outlineType1VVert5 = -240;
-double Saddle.outlineType1UVert6 = -680;
-double Saddle.outlineType1VVert6 = 0;
-double Saddle.outlineType1UVert7 = -800;
-double Saddle.outlineType1VVert7 = 160;
-double Saddle.outlineType1UVert8 = -800;
-double Saddle.outlineType1VVert8 = -640;
+double Saddle.outlineType1UVert1 = 1264;
+double Saddle.outlineType1VVert1 = 0;
+double Saddle.outlineType1UVert2 = 1264;
+double Saddle.outlineType1VVert2 = 971;
+double Saddle.outlineType1UVert3 = 1164;
+double Saddle.outlineType1VVert3 = 971;
+double Saddle.outlineType1UVert4 = 1164;
+double Saddle.outlineType1VVert4 = 751;
+double Saddle.outlineType1UVert5 = 450;
+double Saddle.outlineType1VVert5 = 250;
+double Saddle.outlineType1UVert6 = -450;
+double Saddle.outlineType1VVert6 = 250;
+double Saddle.outlineType1UVert7 = -1164;
+double Saddle.outlineType1VVert7 = 751;
+double Saddle.outlineType1UVert8 = -1164;
+double Saddle.outlineType1VVert8 = 971;
+double Saddle.outlineType1UVert9 = -1264;
+double Saddle.outlineType1VVert9 = 971;
+double Saddle.outlineType1UVert10 = -1264;
+double Saddle.outlineType1VVert10 = 0;
+
+double Saddle.outlineType2UVert1 = 1264;
+double Saddle.outlineType2VVert1 = 0;
+double Saddle.outlineType2UVert2 = 1264;
+double Saddle.outlineType2VVert2 = 50;
+double Saddle.outlineType2UVert3 = -1264;
+double Saddle.outlineType2VVert3 = 50;
+double Saddle.outlineType2UVert4 = -1264;
+double Saddle.outlineType2VVert4 = 0;
+
+double Saddle.outlineType3UVert1 = 15;
+double Saddle.outlineType3VVert1 = 0;
+double Saddle.outlineType3UVert2 = 15;
+double Saddle.outlineType3VVert2 = 971;
+double Saddle.outlineType3UVert3 = -15;
+double Saddle.outlineType3VVert3 = 971;
+double Saddle.outlineType3UVert4 = -15;
+double Saddle.outlineType3VVert4 = 0;
 
 
 
 // Lengths in w dimension for each type of box.  Dimensions should be in mm.
-// Note that lengths here are 10 mm shy of nominal.
-double Saddle.lengthType1 = 50;
+double Saddle.lengthType1 = 30;
+double Saddle.lengthType2 = 700;
+double Saddle.lengthType3 = 440;
 
 
 // Materials for each type of box.  Here, Concrete and Iron.
-string Saddle.materialType1   = "G4_Al";
+string Saddle.materialType1   = "StainlessSteel";
+string Saddle.materialType2   = "StainlessSteel";
+string Saddle.materialType3   = "StainlessSteel";
 
 // The center of the piece in Mu2e Offline coordinates
-double Saddle.centerXType1Box1 = 3904; // 
-double Saddle.centerYType1Box1 = -1450;  // 
-double Saddle.centerZType1Box1 = -6500; 
+double Saddle.centerXType1Box1 = 3904; // PS Saddle sides west PS
+double Saddle.centerYType1Box1 = -1550;  // 
+double Saddle.centerZType1Box1 = -7378; 
 double Saddle.centerXType1Box2 = 3904; // 
-double Saddle.centerYType1Box2 = -1450;  // 
-double Saddle.centerZType1Box2 = -6250; 
+double Saddle.centerYType1Box2 = -1550;  // 
+double Saddle.centerZType1Box2 = -6908; 
 
-double Saddle.centerXType1Box3 = 3904; // PS Saddle east end
-double Saddle.centerYType1Box3 = -1450;  // 
-double Saddle.centerZType1Box3 = -4500; 
+double Saddle.centerXType1Box3 = 3904; // PS Saddle sides east PS
+double Saddle.centerYType1Box3 = -1550;  // 
+double Saddle.centerZType1Box3 = -4478; 
 double Saddle.centerXType1Box4 = 3904; // 
-double Saddle.centerYType1Box4 = -1450;  // 
-double Saddle.centerZType1Box4 = -4250; 
+double Saddle.centerYType1Box4 = -1550;  // 
+double Saddle.centerZType1Box4 = -4008; 
+
+
+double Saddle.centerXType2Box1 = 3904; // Saddle foot west 
+double Saddle.centerYType2Box1 = -1600;  // 
+double Saddle.centerZType2Box1 = -7143; 
+double Saddle.centerXType2Box2 = 3904; // Saddle foot east
+double Saddle.centerYType2Box2 = -1600;  // 
+double Saddle.centerZType2Box2 = -4243; 
+
+
+double Saddle.centerXType3Box1 = 5153; // PS Saddle end north west PS
+double Saddle.centerYType3Box1 = -1550;  // 
+double Saddle.centerZType3Box1 = -7143; 
+double Saddle.centerXType3Box2 = 2655; // south west PS
+double Saddle.centerYType3Box2 = -1550;  // 
+double Saddle.centerZType3Box2 = -7143; 
+
+double Saddle.centerXType3Box3 = 5153; // PS Saddle sides east PS
+double Saddle.centerYType3Box3 = -1550;  // 
+double Saddle.centerZType3Box3 = -4243; 
+double Saddle.centerXType3Box4 = 2655; // 
+double Saddle.centerYType3Box4 = -1550;  // 
+double Saddle.centerZType3Box4 = -4243; 
 
 
 // The orientation of the box.  See docdb xxxx for details.
