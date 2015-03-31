@@ -41,20 +41,15 @@ namespace mu2e {
 
     protected:
       explicit IOHelper(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& mu2elimits)
-        : outputName_(pset.get<string>("write", ""))
+        : steppingOutputName_(pset.get<string>("write", ""))
         , preSimulatedHitTag_(pset.get<art::InputTag>("preSimulatedHits", art::InputTag()))
         , spHelper_()
         , mu2elimits_(&mu2elimits)
         , overflowWarningPrinted_(false)
-      {
-        if((preSimulatedHitTag_ != art::InputTag()) && outputName_.empty()) {
-          throw cet::exception("CONFIG")<<"Mu2eG4 Cuts: preSimulatedHits = "<<preSimulatedHitTag_
-                                        <<" has no effect as no output is specified via 'write'\n";
-        }
-      }
+      {}
 
-      std::string outputName_;
-      std::unique_ptr<StepPointMCCollection> output_;
+      std::string steppingOutputName_;
+      std::unique_ptr<StepPointMCCollection> steppingOutput_;
       art::InputTag preSimulatedHitTag_;
       CLHEP::Hep3Vector mu2eOrigin_;
       const SimParticleHelper *spHelper_;
@@ -65,21 +60,21 @@ namespace mu2e {
     };
 
     void IOHelper::declareProducts(art::EDProducer *parent) {
-      if(!outputName_.empty()) {
-        parent->produces<StepPointMCCollection>(outputName_);
+      if(!steppingOutputName_.empty()) {
+        parent->produces<StepPointMCCollection>(steppingOutputName_);
       }
     }
 
     void IOHelper::beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) {
       spHelper_ = &spHelper;
       overflowWarningPrinted_ = false;
-      if(!outputName_.empty()) {
-        output_ = make_unique<StepPointMCCollection>();
+      if(!steppingOutputName_.empty()) {
+        steppingOutput_ = make_unique<StepPointMCCollection>();
         if(preSimulatedHitTag_ != art::InputTag()) {
           const auto& inhits = evt.getValidHandle<StepPointMCCollection>(preSimulatedHitTag_);
-          output_->reserve(inhits->size());
+          steppingOutput_->reserve(inhits->size());
           for(const auto& hit: *inhits) {
-            output_->emplace_back(hit);
+            steppingOutput_->emplace_back(hit);
           }
         }
 
@@ -87,8 +82,8 @@ namespace mu2e {
     }
 
     void IOHelper::put(art::Event& evt) {
-      if(output_) {
-        evt.put(std::move(output_), outputName_);
+      if(steppingOutput_) {
+        evt.put(std::move(steppingOutput_), steppingOutputName_);
       }
     }
 
@@ -97,7 +92,7 @@ namespace mu2e {
     }
 
     void IOHelper::addHit(const G4Step *aStep) {
-      if(output_->size() < mu2elimits_->maxStepPointCollectionSize()) {
+      if(steppingOutput_->size() < mu2elimits_->maxStepPointCollectionSize()) {
 
         G4VProcess const* process = aStep->GetPostStepPoint()->GetProcessDefinedStep();
         if(!process) {
@@ -110,7 +105,7 @@ namespace mu2e {
         ProcessCode endCode = ProcessCode::findByName(process->GetProcessName());
 
         // The point's coordinates are saved in the mu2e coordinate system.
-        output_->
+        steppingOutput_->
           push_back(StepPointMC(spHelper_->particlePtr(aStep->GetTrack()),
                                 aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(),
                                 aStep->GetTotalEnergyDeposit(),
@@ -126,8 +121,8 @@ namespace mu2e {
       else {
         if(!overflowWarningPrinted_) {
           overflowWarningPrinted_ = true;
-          mf::LogWarning("G4") << "Maximum number of entries reached in output collection "
-                               << outputName_ << ": " << output_->size() << endl;
+          mf::LogWarning("G4") << "Maximum number of entries reached in steppingOutput collection "
+                               << steppingOutputName_ << ": " << steppingOutput_->size() << endl;
         }
       }
     }
@@ -166,7 +161,7 @@ namespace mu2e {
       for(const auto& cut : cuts_) {
         if(cut->steppingActionCut(step)) {
           result = true;
-          if(output_) {
+          if(steppingOutput_) {
             addHit(step);
           }
           break;
@@ -250,7 +245,7 @@ namespace mu2e {
           break;
         }
       }
-      if(result && output_) {
+      if(result && steppingOutput_) {
         addHit(step);
       }
 
@@ -349,7 +344,7 @@ namespace mu2e {
     bool Plane::steppingActionCut(const G4Step *step) {
       const CLHEP::Hep3Vector& pos = step->GetPostStepPoint()->GetPosition();
       const bool result = cut_impl(pos);
-      if(result && output_) {
+      if(result && steppingOutput_) {
         addHit(step);
       }
       return result;
@@ -403,7 +398,7 @@ namespace mu2e {
 
     bool VolumeCut::steppingActionCut(const G4Step *step) {
       const bool result = cut_impl(step->GetTrack());
-      if(result && output_) {
+      if(result && steppingOutput_) {
         addHit(step);
       }
       return result;
@@ -444,7 +439,7 @@ namespace mu2e {
 
     bool ParticleIdCut::steppingActionCut(const G4Step *step) {
       const bool result = cut_impl(step->GetTrack());
-      if(result && output_) {
+      if(result && steppingOutput_) {
         addHit(step);
       }
       return result;
@@ -479,7 +474,7 @@ namespace mu2e {
 
     bool KineticEnergy::steppingActionCut(const G4Step *step) {
       const bool result = cut_impl(step->GetTrack());
-      if(result && output_) {
+      if(result && steppingOutput_) {
         addHit(step);
       }
       return result;
@@ -512,7 +507,7 @@ namespace mu2e {
 
     bool PrimaryOnly::steppingActionCut(const G4Step *step) {
       const bool result = cut_impl(step->GetTrack());
-      if(result && output_) {
+      if(result && steppingOutput_) {
         addHit(step);
       }
       return result;
@@ -544,7 +539,7 @@ namespace mu2e {
     Constant::Constant(bool val, const Mu2eG4ResourceLimits& lim) : IOHelper(fhicl::ParameterSet(), lim), value_(val) {}
 
     bool Constant::steppingActionCut(const G4Step *step) {
-      if(output_) {
+      if(steppingOutput_) {
         addHit(step);
       }
       return value_;
