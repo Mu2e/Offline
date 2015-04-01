@@ -99,9 +99,11 @@ physics : {
          Mu2eG4CommonCut: {
             type: union
             pars: [
-	       // FIXME: do we need to explicitly kill low energy electrons
-	       // like in the TDR config?
-	       // { type: intersection pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11 ] }] },
+	       {
+                  // 8% speed up from killing delta-electrons
+                  type: intersection
+                  pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11 ] }]
+               },
                {
                   type: intersection
                   pars: [
@@ -251,17 +253,12 @@ physics : {
    g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
    trigger_paths  : [trigmubeam, trigdsregion, trigextmonbeam, trigextmonregion, g4StatusFilter]
 
-   outputs: [fullOutput, truncatedEvtsOutput, mubeamout, dsout, extmonbeamout,extmonregionout]
+   outputs: [truncatedEvtsOutput, mubeamout, dsout, extmonbeamout,extmonregionout]
    an: [ genCountLogger, g4s1dsregion, g4s1mubeam, g4s1extmonbeam, g4s1extmonregion ]
    end_paths: [outputs, an]
 }
 
 outputs: {
-
-   fullOutput : {
-      module_type : RootOutput
-      fileName    : "data_g4s1_beam_full.art"
-   }
 
    mubeamout : {
       module_type : RootOutput
