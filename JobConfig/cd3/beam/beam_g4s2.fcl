@@ -1,0 +1,170 @@
+// Andrei Gaponenko, 2015
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+# Give this job a name.
+process_name :  beamg4s2
+
+source : {
+   module_type : RootInput
+}
+
+services : {
+
+   message               : @local::default_message
+   TFileService          : { fileName : "hist_beam_g4s2.root" }
+   RandomNumberGenerator : { }
+
+   user : {
+      GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+      ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+      GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+      G4Helper               : { }
+      SeedService            : @local::automaticSeeds
+   }
+}
+
+physics : {
+   analyzers: {
+      genCountLogger: {
+         module_type: GenEventCountReader
+      }
+
+      g4s2mubeam: {
+         module_type: StepPointMCDumper
+         hitsInputTag: "muonBeamFilter:DSVacuum"
+         TimeOffsets :  { inputs : [] }
+      }
+   }
+
+   producers: {
+      g4run : {
+         module_type: Mu2eG4
+         physics: @local::mu2eg4DefaultPhysics
+         ResourceLimits: @local::mu2eg4DefaultResourceLimits
+	 TrajectoryControl: @local::mu2eg4NoTrajectories
+         debug:  @local::mu2eg4DefaultDebug
+         visualization: @local::mu2eg4NoVisualization
+
+	 MultiStageParameters : {
+            simParticleNumberOffset: 100000  // safe b/c of g4.particlesSizeLimit in stage1
+            genInputHits: [ "muonBeamFilter:TSVacuum" ]
+            inputSimParticles: "muonBeamFilter"
+	    inputMCTrajectories: ""
+            inputPhysVolumeMultiInfo: "compressPVmuonBeam"
+	 }
+
+         SDConfig : {
+            enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
+            preSimulatedHits: ["muonBeamFilter:virtualdetector"]
+	    TimeVD: { times: [] }
+         }
+
+         Mu2eG4StackingOnlyCut: {
+	    // do not stack neutrinos. no point to re-check this in stepping.
+	    type: pdgId pars: [ 12, -12, 14, -14, 16, -16]
+	 }
+
+         Mu2eG4SteppingOnlyCut: {}
+
+         Mu2eG4CommonCut: {
+            type: union
+            pars: [
+	       {
+		  type: intersection
+		  pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11 ] }]
+	       }
+	       ,
+               {
+	          type: inVolume
+	          pars: [TS5Vacuum, DS2Vacuum, DS3Vacuum ]
+	          write: DSVacuum
+	       }
+            ]
+         }
+      }
+
+      compressPVmuonBeam : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "muonBeamFilter" ]
+      }
+
+      compressPVFull : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "g4run" ]
+      }
+   }
+
+   filters: {
+      muonBeamFilter: {
+         module_type: FilterG4Out
+	 noInstanceName : true
+         mainHitInputs : [ "g4run:DSVacuum" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
+         numSimParticleCollections : 1
+         vetoDaughters: []
+      }
+
+      g4status: {
+         module_type: FilterStatusG4
+         input: "g4run"
+      }
+   }
+
+   trigmubeam : [g4run, muonBeamFilter, compressPVmuonBeam]
+   g4StatusFilter : [g4run, "!g4status", compressPVFull ]
+   trigger_paths  : [trigmubeam, g4StatusFilter]
+
+   outputs: [truncatedEvtsOutput, mubeamout]
+   an: [ genCountLogger, g4s2mubeam ]
+   end_paths: [outputs, an]
+}
+
+outputs: {
+
+   fullOutput : {
+      module_type : RootOutput
+      fileName    : "data_beam_g4s2_full.art"
+   }
+
+   mubeamout : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: ["trigmubeam"] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_muonBeamFilter_*_beamg4s2",
+         "keep *_compressPVmuonBeam_*_beamg4s2"
+      ]
+      fileName    : "data_g4s2_mubeam.art"
+   }
+
+  truncatedEvtsOutput : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: ["g4StatusFilter"] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_g4run_*_*",
+         "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
+         "keep *_compressPVFull_*_*"
+      ]
+      fileName    : "truncated_beam_g4s2.art"
+   }
+
+}
+
+physics.producers.g4run.physics.minRangeCut : 1. // mm
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
