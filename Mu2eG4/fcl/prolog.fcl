@@ -69,6 +69,7 @@ mu2eg4NoTrajectories: {
 }
 #----------------
 mu2eg4DefaultTrajectories: {
+    produce: true
     defaultMinPointDistance : 500
     mcTrajectoryMinSteps: 5
     mcTrajectoryMomentumCut : 50 // MeV/c
@@ -100,5 +101,38 @@ mu2eg4DefaultDebug: {
     writeGDML : false
     GDMLFileName : "mu2e.gdml"
 }
+#----------------
+mu2eg4NoCut: {}
+#----------------
+mu2eg4CutNeutrinos: {
+    // ignore neutrinos
+    type: pdgId pars: [ 12, -12, 14, -14, 16, -16]
+}
+#----------------------------------------------------------------
+mu2eg4runDefaultSingleStage: {
+    module_type: Mu2eG4
+    physics: @local::mu2eg4DefaultPhysics
+    ResourceLimits: @local::mu2eg4DefaultResourceLimits
+    TrajectoryControl: @local::mu2eg4DefaultTrajectories
+
+    Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+    Mu2eG4SteppingOnlyCut: @local::mu2eg4NoCut
+    Mu2eG4CommonCut: @local::mu2eg4NoCut
+
+    generatorModuleLabel: generate
+    MultiStageParameters : {}
+
+    SDConfig : { TimeVD: { times: [] } }
+
+    debug:  @local::mu2eg4DefaultDebug
+    visualization: @local::mu2eg4NoVisualization
+
+    SimParticlePrinter : {
+	enabled             : false
+	primariesOnly       : false
+	prefix              : "SimParticle: "
+    }
+}
+
 #----------------------------------------------------------------
 END_PROLOG
