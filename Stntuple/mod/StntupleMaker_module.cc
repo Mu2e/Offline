@@ -317,6 +317,7 @@ void StntupleMaker::beginJob() {
 
 	track_data->AddCollName("mu2e::KalRepCollection"              ,fTrkRecoModuleLabel[i].data()     ,iname.data());
 	track_data->AddCollName("mu2e::StrawHitCollection"            ,fMakeStrawHitModuleLabel.data()   ,"");
+	track_data->AddCollName("mu2e::StrawDigiMCCollection"         ,fMakeStrawHitModuleLabel.data()   ,"StrawHitMC");
 	track_data->AddCollName("mu2e::PtrStepPointMCVectorCollection",fMakeStrawHitModuleLabel.data()   ,"StrawHitMCPtr");
 	track_data->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapolModuleLabel [i].data(),"");
 	track_data->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data()          ,"");

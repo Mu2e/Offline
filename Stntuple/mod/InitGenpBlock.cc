@@ -57,10 +57,10 @@ int StntupleInitMu2eGenpBlock(TStnDataBlock* block, AbsEvent* AnEvent, int mode)
       coll = handle->product();
       prov = handle->provenance();
 
-      printf("moduleLabel = %-20s, producedClassname = %-30s, productInstanceName = %-20s\n",
-	     prov->moduleLabel().data(),
-	     prov->producedClassName().data(),
-	     prov->productInstanceName().data());
+//       printf("moduleLabel = %-20s, producedClassname = %-30s, productInstanceName = %-20s\n",
+// 	     prov->moduleLabel().data(),
+// 	     prov->producedClassName().data(),
+// 	     prov->productInstanceName().data());
 
       if (gen_module_label[0] != 0) {
 //-----------------------------------------------------------------------------

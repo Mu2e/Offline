@@ -344,13 +344,14 @@ namespace mu2e {
 			       "");
     fClusterBlock->AddCollName("mu2e::TrackClusterLink",fTrkCalMatch.data(),"");
     
-    fTrackBlock->AddCollName("mu2e::CaloClusterCollection"         ,caloClusterModuleLabel_.data(),"");
-    fTrackBlock->AddCollName("mu2e::KalRepCollection"              ,fTrkRecoModuleLabel.data()  , charDirectionAndParticle);
-    fTrackBlock->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol.data()           ,"");
-    fTrackBlock->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()           ,"");
-    fTrackBlock->AddCollName("mu2e::StrawHitCollection"            ,fMakeStrawHitModuleLabel.data()         ,"");
-    fTrackBlock->AddCollName("mu2e::PtrStepPointMCVectorCollection",fMakeStrawHitModuleLabel.data()         ,"StrawHitMCPtr");
-    fTrackBlock->AddCollName("mu2e::PIDProductCollection"          ,fPidModuleLabel.data()        ,"");
+    fTrackBlock->AddCollName("mu2e::CaloClusterCollection"         ,caloClusterModuleLabel_.data() ,"");
+    fTrackBlock->AddCollName("mu2e::KalRepCollection"              ,fTrkRecoModuleLabel.data()     ,charDirectionAndParticle);
+    fTrackBlock->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapol.data()            ,"");
+    fTrackBlock->AddCollName("mu2e::TrackClusterLink"              ,fTrkCalMatch.data()            ,"");
+    fTrackBlock->AddCollName("mu2e::StrawHitCollection"            ,fMakeStrawHitModuleLabel.data(),"");
+    fTrackBlock->AddCollName("mu2e::StrawDigiMCCollection"         ,fMakeStrawHitModuleLabel.data(),"StrawHitMC");
+    fTrackBlock->AddCollName("mu2e::PtrStepPointMCVectorCollection",fMakeStrawHitModuleLabel.data(),"StrawHitMCPtr");
+    fTrackBlock->AddCollName("mu2e::PIDProductCollection"          ,fPidModuleLabel.data()         ,"");
 
     TAnaDump::Instance()->AddObject("MuHitDisplay::TrackBlock"     ,fTrackBlock  );
     TAnaDump::Instance()->AddObject("MuHitDisplay::ClusterBlock"   ,fClusterBlock);

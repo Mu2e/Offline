@@ -91,7 +91,9 @@ void TTrkRZView::ExecuteEvent(Int_t event, Int_t px, Int_t py) {
   //
 
   TStnVisManager* vm = TStnVisManager::Instance();
-
+  
+  if (vm->DebugLevel() > 0) printf(" >>>>>>  TTrkRZView::ExecuteEvent event = %i px:%4i py:%4i\n",
+				   event,px,py);
   TObject* o = vm->GetClosestObject();
   if (o && (o != this) && (vm->GetMinDist() < 5) ) {
     o->ExecuteEvent(event,px,py);
@@ -101,6 +103,7 @@ void TTrkRZView::ExecuteEvent(Int_t event, Int_t px, Int_t py) {
 // view...
 //-----------------------------------------------------------------------------
   Axis_t x, y, x1, x2, y1, y2, dx, dy;
+  Axis_t  x1new, x2new, y1new, y2new;
 
   double     xx,yy;
   //  int        px, py;
@@ -140,12 +143,32 @@ void TTrkRZView::ExecuteEvent(Int_t event, Int_t px, Int_t py) {
     gVirtualX->DrawBox(fPx1, fPy1, fPx2, fPy2, ebox_mode);
 
     break;
+  case kWheelUp:  /* 5 , zoom in*/
+    gPad->GetRange(x1,y1,x2,y2);
+    x1new = x1+(x2-x1)/2.*zoom_scale;
+    x2new = x2-(x2-x1)/2.*zoom_scale;
+    y1new = y1+(y2-y1)/2.*zoom_scale;
+    y2new = y2-(y2-y1)/2.*zoom_scale;
+
+    gPad->Range(x1new,y1new,x2new,y2new);
+    gPad->Modified();
+    gPad->Update();
+    break;
+  case kWheelDown:  /* 6 */
+    gPad->GetRange(x1,y1,x2,y2);
+    x1new = x1-(x2-x1)/2.*zoom_scale;
+    x2new = x2+(x2-x1)/2.*zoom_scale;
+    y1new = y1-(y2-y1)/2.*zoom_scale;
+    y2new = y2+(y2-y1)/2.*zoom_scale;
+
+    gPad->Range(x1new,y1new,x2new,y2new);
+    gPad->Modified();
+    gPad->Update();
+    break;
   case kKeyPress:
     if (vm->DebugLevel() > 0) printf(" TTrkRZView::ExecuteEvent kKeyPress: px=%3i py:%i\n",px,py);
 
     if (px == py) {
-      Axis_t  x1new, x2new, y1new, y2new;
-
       gPad->GetRange(x1,y1,x2,y2);
 
       if (char(px) == 'z') {            // zoom in
@@ -251,8 +274,6 @@ void TTrkRZView::ExecuteEvent(Int_t event, Int_t px, Int_t py) {
 
     break;
   default:
-    if (vm->DebugLevel() > 0) printf(" ----- event = %i px:%4i py:%4i\n",
-				     event,px,py);
     break;
   }
 

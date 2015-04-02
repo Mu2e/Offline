@@ -7,9 +7,9 @@
 #include "TFolder.h"
 #include "TLorentzVector.h"
 #include "TVector2.h"
-
-#include "Stntuple/obj/TStnTrackBlock.hh"
+					// Mu2e 
 #include "Stntuple/obj/TStnTrack.hh"
+#include "Stntuple/obj/TStnTrackBlock.hh"
 
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Handle.h"
@@ -34,12 +34,11 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 
-// Mu2e includes.
-
+#include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -47,6 +46,9 @@
 #include "RecoDataProducts/inc/PIDProductCollection.hh"
 
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"
+					          // BaBar 
+#include "TrajGeom/TrkLineTraj.hh"
+#include "TrkBase/TrkPoca.hh"
 
 
 namespace {
@@ -126,7 +128,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   double                    h1_fltlen, hn_fltlen, entlen, fitmom_err;
   TStnTrack*                track;
   TStnTrackBlock            *data;   
-  const mu2e::StepPointMC*  step;
+  //  const mu2e::StepPointMC*  step;
 
   static  ZMap_t            zmap;
 
@@ -134,7 +136,8 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 
   mu2e::AlgorithmIDCollection*             list_of_algs               (0);
   mu2e::KalRepPtrCollection*               list_of_kreps              (0);
-  mu2e::PtrStepPointMCVectorCollection*    list_of_mc_straw_hits      (0);
+  mu2e::PtrStepPointMCVectorCollection*    list_of_step_points_mc     (0);
+  const mu2e::StrawDigiMCCollection*       list_of_mc_straw_hits      (0);
   const mu2e::StrawHitCollection*          list_of_straw_hits         (0);
   const mu2e::TrkToCaloExtrapolCollection* list_of_extrapolated_tracks(0);
   const mu2e::PIDProductCollection*        list_of_pidp               (0);
@@ -144,6 +147,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   char   trex_module_label[100], trex_description[100];
   char   trcl_module_label[100], trcl_description[100];
   char   strh_module_label[100], strh_description[100];
+  char   sdmc_module_label[100], sdmc_description[100];
   char   stmc_module_label[100], stmc_description[100];
   char   calo_module_label[100], calo_description[100];
   char   pidp_module_label[100], pidp_description[100];
@@ -186,6 +190,9 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   data->GetModuleLabel("mu2e::PtrStepPointMCVectorCollection",stmc_module_label);
   data->GetDescription("mu2e::PtrStepPointMCVectorCollection",stmc_description );
 
+  data->GetModuleLabel("mu2e::StrawDigiMCCollection",sdmc_module_label);
+  data->GetDescription("mu2e::StrawDigiMCCollection",sdmc_description );
+
   data->GetModuleLabel("mu2e::CaloClusterCollection",calo_module_label);
   data->GetDescription("mu2e::CaloClusterCollection",calo_description );
 
@@ -216,7 +223,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     if (stmc_description[0] == 0) AnEvent->getByLabel(stmc_module_label,mcptrHandle);
     else                       AnEvent->getByLabel(stmc_module_label,stmc_description, mcptrHandle);
     if (mcptrHandle.isValid()) {
-      list_of_mc_straw_hits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
+      list_of_step_points_mc = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
     }
   }
 
@@ -232,6 +239,13 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     if (strh_description[0] == 0) AnEvent->getByLabel(strh_module_label,shHandle);
     else                          AnEvent->getByLabel(strh_module_label,strh_description,shHandle);
     if (shHandle.isValid()) list_of_straw_hits = shHandle.product();
+  }
+
+  art::Handle<mu2e::StrawDigiMCCollection> sdmcHandle;
+  if (sdmc_module_label[0] != 0) {
+    if (sdmc_description[0] == 0) AnEvent->getByLabel(sdmc_module_label,sdmcHandle);
+    else                          AnEvent->getByLabel(sdmc_module_label,sdmc_description,sdmcHandle);
+    if (sdmcHandle.isValid()) list_of_mc_straw_hits = sdmcHandle.product();
   }
 
   art::Handle<mu2e::TrkToCaloExtrapolCollection>  texHandle;
@@ -252,8 +266,6 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     AnEvent->getByLabel(pidp_module_label,pidp_description,pidpHandle);
     if (pidpHandle.isValid()) list_of_pidp = pidpHandle.product();
   }
-
-  //  const mu2e::Calorimeter* cal;
 
   art::ServiceHandle<mu2e::GeometryService> geom;
 
@@ -342,7 +354,6 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 // parameters used in Dave's selections
 //-----------------------------------------------------------------------------
     track->Momentum()->SetXYZM(px,py,pz,0.511);
-    track->fNActive   = krep->nActive();
     track->fChi2      = krep->chisq();
     track->fFitCons   = krep->chisqConsistency().consistency();
     track->fT0        = krep->t0().t0();
@@ -378,20 +389,24 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     
     track->fChi2C = -1.;   // unused
 
-    //      id_word = fTrackID->IDWord(TMu2eStnTrackID = TrackPassedSelectionC(track);
-    
     for (int j=0; j<40; j++) {
       track->fNHPerStation[j] = 0;
     }
     
     int     loc, ipart, nhits, n_straw_hits, found; // , pdg_code;
     int     id(-1),  npart(0), part_pdg_code[100], part_nh[100], part_id[100];
+    int     nwrong = 0;
+    double  mcdoca;
 
     const mu2e::StrawHit      *s_hit0;
     const mu2e::StrawHit      *s_hit; 
+    const mu2e::StrawDigiMC   *sdmc; 
     const mu2e::SimParticle   *sim(NULL); 
+    const mu2e::StepPointMC   *stmc[2];
+    const mu2e::Straw         *straw;
 
     n_straw_hits = list_of_straw_hits->size();
+
 
     if (n_straw_hits <= 0) {
       printf(">>> ERROR in StntupleInitMu2eTrackBlock: wrong hit collection used, NHITS = %i\n",
@@ -401,37 +416,51 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
       
       s_hit0 = &list_of_straw_hits->at(0);
 
-      for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
-
-	hit = (const mu2e::TrkStrawHit*) &(*it);
-
+      for (auto it=hot_list->begin(); it<hot_list->end(); it++) {
+	hit   = (const mu2e::TrkStrawHit*) &(*it);
+	straw = &hit->straw();
 	s_hit = &hit->strawHit();
-	loc = s_hit-s_hit0;
+	loc   = s_hit-s_hit0;
 	if ((loc >= 0) && (loc < n_straw_hits)) {
+	  sdmc = &list_of_mc_straw_hits->at(loc);
+	  stmc[0] = sdmc->stepPointMC(mu2e::StrawDigi::zero).get();
+	  stmc[1] = sdmc->stepPointMC(mu2e::StrawDigi::one ).get();
+	  if (stmc[0] != stmc[1]) printf(" InitTrackBlock: WARNING: different StepPointMCs correspond to different times\n");
 
-	  if (list_of_mc_straw_hits) {
-	    mu2e::PtrStepPointMCVector  const& mcptr(list_of_mc_straw_hits->at(loc));
-	    int nj = mcptr.size();
 //-----------------------------------------------------------------------------
-// 2013-06-16 P.Murat: this is a borrowed piece of code.
-// a loop below doesn't seem to be necessary as everything is defined by the first hit...
+// count number of active hits with R > 200 um and misassigned drift signs
 //-----------------------------------------------------------------------------
-	    for (int j=0; j<nj; j++) {
-	      step     = &(*mcptr.at(j));
-	      sim      = &(*step->simParticle());
-	      if (sim != NULL) {
-		id       = sim->id().asInt();
-		//		pdg_code = sim->pdgId();
+	  if (hit->isActive()) {
+	    if (hit->driftRadius() > 0.2) {
+	      const Hep3Vector* v1 = &straw->getMidPoint();
+	      HepPoint p1(v1->x(),v1->y(),v1->z());
+	      
+	      const Hep3Vector* v2 = &stmc[0]->position();
+	      HepPoint    p2(v2->x(),v2->y(),v2->z());
+	      
+	      TrkLineTraj trstraw(p1,straw->getDirection()  ,0.,0.);
+	      TrkLineTraj trstep (p2,stmc[0]->momentum().unit(),0.,0.);
+	      
+	      TrkPoca poca(trstep, 0., trstraw, 0.);
+	      
+	      mcdoca = poca.doca();
+//-----------------------------------------------------------------------------
+// if mcdoca and hit->_iamb have different signs, the hit drift direction 
+// has wrong sign
+//-----------------------------------------------------------------------------
+	      if (hit->ambig()*mcdoca < 0) {
+		nwrong += 1;
 	      }
-	      else {
-		printf(">>> ERROR in %s : sim is NULL, set PDG_CODE to -1\n",oname);
-		id       = -1;
-		//		pdg_code = -1;
-	      }
-	      break;
 	    }
 	  }
-	  
+
+	  sim = &(*stmc[0]->simParticle());
+	  if (sim != NULL) id = sim->id().asInt();
+	  else {
+	    printf(">>> ERROR in %s : sim is NULL, set PDG_CODE to -1\n",oname);
+	    id = -1;
+	  }
+
 	  found = 0;
 	  for (int ip=0; ip<npart; ip++) {
 	    if (id == part_id[ip]) {
@@ -452,8 +481,6 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 	  printf(">>> ERROR in StntupleInitMu2eTrackBlock: wrong hit collection used, loc = %i\n",loc);
 	}
 
-	mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
-	
 	const mu2e::StrawId& straw_id = straw->id();
 	
 	int ist = straw_id.getDevice();
@@ -462,12 +489,15 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 	
 	int sec = straw_id.getSector();
 	int lay = straw_id.getLayer ();
-	
 	int bit = zmap.fMap[ist][sec][lay];
 
 	track->fHitMask.SetBit(bit,1);
       }
     }
+//-----------------------------------------------------------------------------
+// defined bit-packed fNActive word
+//-----------------------------------------------------------------------------
+    track->fNActive   = krep->nActive() | (nwrong << 16);
 //-----------------------------------------------------------------------------
 // given track parameters, build the expected hit mask
 //-----------------------------------------------------------------------------
@@ -835,7 +865,9 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   return 0;
 }
 
-//_____________________________________________________________________________
+//-----------------------------------------------------------------------------
+// 2015-04-02: this routine is not finished yet
+//-----------------------------------------------------------------------------
 Int_t StntupleInitMu2eTrackBlockLinks(TStnDataBlock* Block, AbsEvent* AnEvent, int Mode) 
 {
   // Mu2e version, do nothing
@@ -855,7 +887,7 @@ Int_t StntupleInitMu2eTrackBlockLinks(TStnDataBlock* Block, AbsEvent* AnEvent, i
   if (Block->LinksInitialized()) return 0;
 
   TStnTrackBlock* tb = (TStnTrackBlock*) Block;
-  TStnEvent* ev      = tb->GetEvent();
+  //  TStnEvent* ev      = tb->GetEvent();
 
   tb->GetModuleLabel("mu2e::CaloClusterCollection",calo_module_label);
   tb->GetDescription("mu2e::CaloClusterCollection",calo_description );
