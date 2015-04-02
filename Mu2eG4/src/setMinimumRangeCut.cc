@@ -8,6 +8,7 @@
 
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -18,19 +19,26 @@
 
 namespace mu2e{
 
-  void setMinimumRangeCut( SimpleConfig const& config ){
+  void setMinimumRangeCut(double minRangeCut){
+    std::ostringstream out;
+    out << "/run/setCut " << minRangeCut << " mm ";
+    G4UImanager* UI = G4UImanager::GetUIpointer();
+    UI->ApplyCommand(out.str().c_str());
+    mf::LogInfo("GEOM")
+      << "Setting minRange cut to " << minRangeCut << " mm\n";
+  }
 
+  void setMinimumRangeCut( SimpleConfig const& config ){
     // If this parameter is absent, leave the default from G4 unchanged.
     std::string name("g4.minRangeCut");
     if ( config.hasName(name) ){
       double minRangeCut = config.getDouble(name);
-      std::ostringstream out;
-      out << "/run/setCut " << minRangeCut << " mm ";
-      G4UImanager* UI = G4UImanager::GetUIpointer();
-      UI->ApplyCommand(out.str().c_str());
-      mf::LogInfo("GEOM")
-        << "Setting minRange cut to " << minRangeCut << " mm\n";
+      setMinimumRangeCut(minRangeCut);
     }
+  }
+
+  void setMinimumRangeCut(const fhicl::ParameterSet& pset){
+    setMinimumRangeCut(pset.get<double>("physics.minRangeCut"));
   }
 
 }  // end namespace mu2e

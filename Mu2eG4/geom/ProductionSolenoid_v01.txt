@@ -38,6 +38,15 @@ string PS.VacVessel.materialName   = "G4_Al";
 string PS.insideMaterialName       = "DSVacuum";
 bool   PS.Vacuum.Sensitive         = false;
 
+// Information for Rings.  David Norvil Brown, March 2015
+double PS.ring.length = 439.8;
+double PS.ring.rIn = 1300.1;
+double PS.ring.rOut = 1350;
+double PS.ring.Z1 = -4243;
+double PS.ring.Z2 = -7143;
+string PS.ring.materialName = "StainlessSteel";
+
+
 // the three coils are done "together"
 // all have the same inner radius
 double PS.Coil.rIn                 =    850.;

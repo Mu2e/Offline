@@ -32,20 +32,29 @@
 #include <map>
 #include <string>
 
+namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
   // Forward declarations in mu2e namespace
   class SimpleConfig;
-  class SteppingAction;
+  class IMu2eG4SteppingAction;
   class SimParticleHelper;
   class SimParticlePrimaryHelper;
+  class Mu2eG4ResourceLimits;
+  class Mu2eG4TrajectoryControl;
 
   class TrackingAction: public G4UserTrackingAction{
 
   public:
 
-    TrackingAction( const SimpleConfig& config, SteppingAction *);
+    TrackingAction( const SimpleConfig& config, IMu2eG4SteppingAction *);
+
+    TrackingAction(const fhicl::ParameterSet& pset,
+                   IMu2eG4SteppingAction *,
+                   const Mu2eG4TrajectoryControl& trajectoryControl,
+                   const Mu2eG4ResourceLimits &lim);
+
     virtual ~TrackingAction();
 
     // These methods are required by G4
@@ -78,7 +87,7 @@ namespace mu2e {
     void endRun();
 
     // Accessors for status information.
-    int             nG4Tracks() const { return _currentSize;}
+    unsigned        nG4Tracks() const { return _currentSize;}
     bool overflowSimParticles() const { return _overflowSimParticles; }
 
   private:
@@ -108,15 +117,15 @@ namespace mu2e {
     MCTrajectoryCollection* _trajectories;
 
     // Limit maximum size of the steps collection
-    int _sizeLimit;
-    int _currentSize;
+    unsigned _sizeLimit;
+    unsigned _currentSize;
     bool _overflowSimParticles;
     double _mcTrajectoryMomentumCut;
     double _saveTrajectoryMomentumCut;
     int    _mcTrajectoryMinSteps;
 
     // Non-owning pointer to stepping action; lifetime of pointee is one run.
-    SteppingAction * _steppingAction;
+    IMu2eG4SteppingAction * _steppingAction;
 
     // Non-owning pointer to the information about physical processes;
     // lifetime of pointee is one run.

@@ -72,6 +72,21 @@ namespace mu2e {
                 _psVacVesselrOut,
                 _psVacVesselHalfLength));
 
+    CLHEP::Hep3Vector _psRing1Mu2eOffset(solenoidOffset,0,_psRing1Mu2eOffsetZ);
+    ps._psRing1Params = std::unique_ptr<Tube>
+      (new Tube(_psRingMaterialName,
+		_psRing1Mu2eOffset,
+		_psRingIR,
+		_psRingOR,
+		_psRingLength/2.0));
+
+    CLHEP::Hep3Vector _psRing2Mu2eOffset(solenoidOffset,0,_psRing2Mu2eOffsetZ);
+    ps._psRing2Params = std::unique_ptr<Tube>
+      (new Tube(_psRingMaterialName,
+		_psRing2Mu2eOffset,
+		_psRingIR,
+		_psRingOR,
+		_psRingLength/2.0));
 
     // two endplates
 
@@ -156,7 +171,13 @@ namespace mu2e {
     _psVacVesselEndPlateHalfThickness = _config.getDouble("PS.VacVessel.EndPlateHalfThickness");
     _psVacVesselMaterialName          = _config.getString("PS.VacVessel.materialName");
 
-    //
+    // Rings added by David Norvil Brown, March 2015
+    _psRingMaterialName = _config.getString("PS.ring.materialName");
+    _psRingOR = _config.getDouble("PS.ring.rOut");
+    _psRingIR = _config.getDouble("PS.ring.rIn");
+    _psRingLength = _config.getDouble("PS.ring.length");
+    _psRing1Mu2eOffsetZ = _config.getDouble("PS.ring.Z1");
+    _psRing2Mu2eOffsetZ = _config.getDouble("PS.ring.Z2");
 
 // the three coils are done "together"
 // all have the same inner radius

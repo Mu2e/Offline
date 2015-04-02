@@ -66,7 +66,7 @@ double pbarwedge.dz1 = 1.1;  // This makes total thickness changing
 bool   pbar.coll1In.build = true;      // pbar absorber at TS1 entrance
 double pbar.coll1In.halfLength = 0.125;
 double pbar.coll1In.rOut = 160.0;
-double pbar.coll1In.offset = -10.02;       // distance to the TS1 entrance on +z
+double pbar.coll1In.offset = -100.02;       // distance to the TS1 entrance on +z
 double pbar.coll1In.material1Name = "G4_Al";
 double pbar.coll1In.rOutRecord = 200.0;
 
@@ -293,43 +293,43 @@ int  ts.cas.verbosityLevel = 0;
 
 vector<double> ts1.cas.radii = 
   {
-    445.00, 465.00,
-    485.00, 500.00
+    445.00, 525.00,
+    485.00, 570.00
   };
 
 vector<double> ts2.cas.radii  = 
   {
-    485.00, 500.00
+    485.00, 570.00
   };
 
 vector<double> ts3u.cas.radii  = 
   {
-    485.00, 500.00, 
-    770.00, 790.00
+    485.00, 570.00, 
+    720.00, 800.00
   };
 
 double ts3ud.cas.halfLength  = 835.00;
 
 vector<double> ts3ud.cas.radii  = 
   {
-    650.00, 790.00
+    720.00, 800.00
   };
 
 vector<double> ts3d.cas.radii  = 
   {
-    770.00, 790.00,
-    485.00, 500.00
+    720.00, 800.00,
+    485.00, 570.00
   };
 
 vector<double> ts4.cas.radii  = 
   {
-    485.00, 500.00
+    485.00, 570.00
   };
 
 vector<double> ts5.cas.radii = 
   {
-    485.00, 500.00,
-    430.00, 485.00
+    485.00, 570.00,
+    430.00, 510.00
   };
 
 string ts.cas.materialName   = "G4_Al";

@@ -47,7 +47,7 @@ double         extMonFNAL.entranceOffsetY = 1250;
 // planes w.r.t dump core. Note that angleH is the same for all filter
 // elements, while angleV is different.  We specify angleV at the
 // filter entrance.
-double         extMonFNAL.angleH = 0.0303; //radians
+double         extMonFNAL.angleH = 0.0302; //radians
 double         extMonFNAL.entranceAngleV = 0.1653; //radians
 
 bool extMonFNAL.collimator1.alignmentHole.visible = true;

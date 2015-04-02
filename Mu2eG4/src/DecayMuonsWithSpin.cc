@@ -38,6 +38,10 @@
 
 #include "DecayMuonsWithSpin.hh"
 
+#include "ConfigTools/inc/SimpleConfig.hh"
+#include "fhiclcpp/ParameterSet.h"
+
+
 #include "G4ParticleDefinition.hh"
 #include "G4ProcessManager.hh"
 
@@ -224,4 +228,12 @@ void DecayMuonsWithSpin::ConstructProcess()
   }
 
 
+}
+
+bool getDecayMuonsWithSpin(const mu2e::SimpleConfig& config) {
+  return config.getBool( "g4.decayMuonsWithSpin", false);
+}
+
+bool getDecayMuonsWithSpin(const fhicl::ParameterSet& pset) {
+  return pset.get<bool>( "decayMuonsWithSpin", false);
 }

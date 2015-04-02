@@ -43,6 +43,7 @@
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
@@ -107,7 +108,7 @@ namespace mu2e{
     // A helper class to parse the configuration parameter.
     struct Control {
 
-      Control ( const SimpleConfig& config):
+      Control (const std::string& option):
         brENu(0.),
         brMuNu(1.),
         addENu(true){
@@ -115,9 +116,6 @@ namespace mu2e{
         // FIXME:  Get this from the global conditions service.
         double pdgBR = 1.23e-4;
 
-        string name("g4.PiENuPolicy");
-
-        string option = config.getString(name,"PDG");
         if ( option == "PDG" ){
           brENu = pdgBR;
           brMuNu = 1.-brENu;
@@ -137,14 +135,14 @@ namespace mu2e{
           // Not interpretable as a number.
           if ( !is ){
             throw cet::exception("G4")
-              << "customizeChargedPionDecay: could not parse the option value for " << name << ": \n"
-              << "    the option value was: " << option << "\n";
+              << "customizeChargedPionDecay: could not parse the option value = "
+              << option << "\n";
           }
 
           // Out of range.
           if ( b < 0. || b > 1. ){
             throw cet::exception("G4")
-              << "customizeChargedPionDecay: branching ratio specified by " << name << " is out of range: \n"
+              << "customizeChargedPionDecay: branching ratio is out of range: \n"
               << "    branching ratio was: " << b << " (" << option << " )\n";
           }
 
@@ -162,6 +160,14 @@ namespace mu2e{
         }
       }
 
+      Control ( const SimpleConfig& config)
+        : Control(config.getString("g4.PiENuPolicy","PDG"))
+      {}
+
+      Control ( const fhicl::ParameterSet& pset)
+        : Control(pset.get<std::string>("physics.PiENuPolicy"))
+      {}
+
       // Branching fraction for pi -> e nu_e
       double brENu;
 
@@ -173,13 +179,21 @@ namespace mu2e{
 
     }; // end class Control
 
+    int getPiENuPolicyVerbosity(const SimpleConfig& config) {
+      return config.getInt("g4.PiENuPolicyVerbosity",0);
+    }
+    int getPiENuPolicyVerbosity(const fhicl::ParameterSet& pset) {
+      return pset.get<int>("debug.PiENuPolicyVerbosity");
+    }
+
   } // end anonymous namespace
 
-  void customizeChargedPionDecay(const SimpleConfig& config) {
+  template<class Config>
+  void customizeChargedPionDecay(const Config& config) {
 
     // Figure out what we need to do.
     Control ctrl(config);
-    int verbosity = config.getInt("g4.PiENuPolicyVerbosity",0);
+    int verbosity = getPiENuPolicyVerbosity(config);
 
     // Nothing to do or to print out.
     if ( !ctrl.addENu && verbosity == 0 ) return;
@@ -243,5 +257,8 @@ namespace mu2e{
     }
 
   }
+
+  template void customizeChargedPionDecay(const SimpleConfig&);
+  template void customizeChargedPionDecay(const fhicl::ParameterSet&);
 
 } // end namespace mu2e

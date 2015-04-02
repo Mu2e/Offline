@@ -21,6 +21,8 @@ class G4Element;
 
 #include "G4String.hh"
 
+namespace fhicl { class ParameterSet; }
+
 namespace mu2e {
 
   // Return type of the isUnique() method.
@@ -38,12 +40,17 @@ namespace mu2e {
   public:
 
     ConstructMaterials();
+    explicit ConstructMaterials(const fhicl::ParameterSet& pset);
+
     ~ConstructMaterials();
 
     // Construct all of the materials.
     void construct();
 
   private:
+    bool mu2eStandardDetector_;
+    bool printElements_;
+    bool printMaterials_;
 
     // Construct materials specific to Mu2e.
     void constructMu2eMaterials();
@@ -58,4 +65,3 @@ namespace mu2e {
 
 } // end namespace mu2e
 #endif /* Mu2eG4_ConstructMaterials_hh */
-

@@ -462,6 +462,13 @@ namespace mu2e {
 
   }
 
+  std::vector<CLHEP::HepLorentzVector> const& SteppingAction::trajectory() {
+    return _trajectory;
+  }
+
+  void  SteppingAction::swapTrajectory(std::vector<CLHEP::HepLorentzVector>& trajectory) {
+    std::swap( trajectory, _trajectory);
+  }
 
   double SteppingAction::mcTrajectoryMinDistanceCut(const G4VPhysicalVolume* vol) const {
     const auto it = mcTrajectoryVolumePtDistances_.find(vol);

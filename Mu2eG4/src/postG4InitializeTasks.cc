@@ -10,17 +10,18 @@
 //
 
 #include "Mu2eG4/inc/postG4InitializeTasks.hh"
+
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "fhiclcpp/ParameterSet.h"
 
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
 #include "Mu2eG4/inc/toggleProcesses.hh"
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
 
-#include "Mu2eG4/inc/checkMSCmodel.hh"
-
 namespace mu2e{
 
-  void postG4InitializeTasks( SimpleConfig const& config ){
+  template<class Config>
+  void postG4InitializeTasks(const Config& config) {
 
     // G4 does not include pi+ -> e+ nu + cc. Fix that in one of several ways.
     customizeChargedPionDecay(config);
@@ -28,15 +29,11 @@ namespace mu2e{
     // Switch off the decay of some particles
     switchDecayOff(config);
 
-    // Add user processes
-    addUserProcesses(config);
-
     // If requested, change the minimum range cut.
     setMinimumRangeCut(config);
-
-    // If the ITracker is used, check the geant4 Multiple Scattering Model selected.
-    checkMSCmodel(config);
-
   }
+
+  template void postG4InitializeTasks(const SimpleConfig&);
+  template void postG4InitializeTasks(const fhicl::ParameterSet&);
 
 }  // end namespace mu2e

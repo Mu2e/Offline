@@ -9,6 +9,7 @@
 //
 // Original author KLG
 //
+// Added code for rings at saddle points
 
 #include <vector>
 
@@ -39,6 +40,9 @@ namespace mu2e {
     Tube const * getCoil2ParamsPtr() const { return _psCoil2Params.get(); }
     Tube const * getCoil3ParamsPtr() const { return _psCoil3Params.get(); }
 
+    Tube const * getRing1ParamsPtr() const { return _psRing1Params.get(); }
+    Tube const * getRing2ParamsPtr() const { return _psRing2Params.get(); }
+
     // The point on the PS axis at the end of the cryostat on the downstream (proton exit) side
     const CLHEP::Hep3Vector& psEndRefPoint() const { return _psEndRefPoint; }
 
@@ -62,6 +66,10 @@ namespace mu2e {
 
     std::unique_ptr<Tube> _psVacVesselEndPlateDParams;
     std::unique_ptr<Tube> _psVacVesselEndPlateUParams;
+
+    // The rings are tubes
+    std::unique_ptr<Tube> _psRing1Params;
+    std::unique_ptr<Tube> _psRing2Params;
 
     // CoilShell is a Polycone
     std::unique_ptr<Polycone> _psCoilShellParams;

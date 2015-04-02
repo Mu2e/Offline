@@ -400,8 +400,6 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
          << endl;
   }
 
-  bool ttrackerActiveWr_Wl_SD = _config.getBool("ttracker.ActiveWr_Wl_SD",false);
-
   // Sensitive detector object for the straw sense wires.
   G4VSensitiveDetector *senseWireSD = G4SDManager::GetSDMpointer()->
     FindSensitiveDetector(SensitiveDetectorName::TrackerSWires());
@@ -551,18 +549,16 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
                                          _doSurfaceCheck
                                          );
 
-      if (ttrackerActiveWr_Wl_SD) {
-        if (senseWireSD) {
-          wireVol.logical->SetSensitiveDetector(senseWireSD);
-          platingVol.logical->SetSensitiveDetector(senseWireSD);
-        }
+      if (senseWireSD) {
+        wireVol.logical->SetSensitiveDetector(senseWireSD);
+        platingVol.logical->SetSensitiveDetector(senseWireSD);
+      }
 
-        if (strawWallSD) {
-          wallVol.logical->SetSensitiveDetector(strawWallSD);
-          outerMetalVol.logical->SetSensitiveDetector(strawWallSD);
-          innerMetal1Vol.logical->SetSensitiveDetector(strawWallSD);
-          innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
-        }
+      if (strawWallSD) {
+        wallVol.logical->SetSensitiveDetector(strawWallSD);
+        outerMetalVol.logical->SetSensitiveDetector(strawWallSD);
+        innerMetal1Vol.logical->SetSensitiveDetector(strawWallSD);
+        innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
       }
 
       if ( _verbosityLevel > 1 ){

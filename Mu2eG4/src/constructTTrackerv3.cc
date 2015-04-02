@@ -173,9 +173,6 @@ namespace mu2e{
     bool ttrackerStrawVisible          = config.getBool("ttracker.strawVisible",false);
     bool ttrackerStrawSolid            = config.getBool("ttracker.strawSolid",true);
 
-    bool ttrackerActiveWr_Wl_SD        = config.getBool("ttracker.ActiveWr_Wl_SD",false);
-
-
     // will construct one panel=sector in its nominal position
     // in the new language the device is called a plane ( with two faces ) 
     // then stations have n=2 planes
@@ -411,21 +408,17 @@ namespace mu2e{
                                              );
 
         // Make gas of this straw a sensitive detector.
-
         G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
           FindSensitiveDetector(SensitiveDetectorName::TrackerGas());
         if(sd) strawGasInfo.logical->SetSensitiveDetector(sd);
 
-        if (ttrackerActiveWr_Wl_SD) {
-          G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
-            FindSensitiveDetector(SensitiveDetectorName::TrackerSWires());
-          if(sd) strawWireInfo.logical->SetSensitiveDetector(sd);
+        sd = G4SDManager::GetSDMpointer()->
+          FindSensitiveDetector(SensitiveDetectorName::TrackerSWires());
+        if(sd) strawWireInfo.logical->SetSensitiveDetector(sd);
 
-          sd = nullptr;
-          sd = G4SDManager::GetSDMpointer()->
-            FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
-          if (sd) strawWallInfo.logical->SetSensitiveDetector(sd);
-        }
+        sd = G4SDManager::GetSDMpointer()->
+          FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
+        if (sd) strawWallInfo.logical->SetSensitiveDetector(sd);
 
       }   // end loop over straws
     }     // end loop over layers

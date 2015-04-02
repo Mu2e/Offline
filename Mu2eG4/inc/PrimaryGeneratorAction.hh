@@ -28,6 +28,8 @@ class G4ParticleGun;
 class G4Event;
 class TH1D;
 
+namespace fhicl { class ParameterSet; }
+
 namespace mu2e {
 
   class SteppingAction;
@@ -39,6 +41,7 @@ namespace mu2e {
   public:
 
     PrimaryGeneratorAction();
+    explicit PrimaryGeneratorAction(const fhicl::ParameterSet& pset);
 
     // This is the interface specified by G4.
     void GeneratePrimaries(G4Event*);
@@ -49,6 +52,8 @@ namespace mu2e {
                       SimParticlePrimaryHelper *parentMapping);
 
   private:
+
+    explicit PrimaryGeneratorAction(bool fillHistograms);
 
     void fromEvent( G4Event* );
 

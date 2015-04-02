@@ -16,12 +16,10 @@
 
 namespace mu2e{
 
-  class SimpleConfig;
-
-  void customizeChargedPionDecay(const SimpleConfig& config);
+  // This only needs to be templated to share
+  // code for fhicl::ParameterSet and SimpleConfig cases.
+  template<class Config> void customizeChargedPionDecay(const Config& config);
 
 }  // end namespace mu2e
 
 #endif /* Mu2eG4_customizeChargedPionDecay_hh */
-
-

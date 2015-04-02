@@ -27,6 +27,7 @@
 
 // Forward references.
 namespace art   { class Event; }
+namespace art   { class EDProducer; }
 namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
@@ -44,6 +45,8 @@ namespace mu2e {
     // Register the sensitive detector with this class; to be called after G4 Initialize.
     void registerSensitiveDetectors();
 
+    void declareProducts(art::EDProducer *parent);
+
     // Create data  products and pre-fill with input hits if any; to be called at the start of each event.
     void createProducts(const art::Event& evt, const SimParticleHelper& spHelper);
 
@@ -54,9 +57,6 @@ namespace mu2e {
     // Put the data products into the event.
     void put( art::Event& event);
 
-    // Return all of the instances names of the data products to be produced.
-    std::vector<std::string> stepInstanceNamesToBeProduced() const;
-
     // Query the same info
     bool enabled(StepInstanceName::enum_type instance) const;
 
@@ -65,6 +65,8 @@ namespace mu2e {
 
     // create SDs for arbitrary logical volumes as requiested
     void instantiateLVSDs(const SimpleConfig& config);
+
+    bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
 
   private:
 
@@ -91,7 +93,6 @@ namespace mu2e {
       StepPointMCCollection    p;
       std::string              stepName;
       Mu2eSensitiveDetector *  sensitiveDetector;
-
     };
 
     // Enabled pre-defined StepPointMC collections, except the timevd.
@@ -105,6 +106,12 @@ namespace mu2e {
     // Existing hit collections that should be merged into the output
     typedef std::vector<art::InputTag> InputTags;
     InputTags preSimulatedHits_;
+
+    // Return all of the instances names of the data products to be produced.
+    std::vector<std::string> stepInstanceNamesToBeProduced() const;
+
+    // Separate handling as this detector does not produced StepPointMCs
+    bool extMonPixelsEnabled_;
   };
 
 

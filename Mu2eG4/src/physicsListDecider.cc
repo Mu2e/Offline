@@ -35,9 +35,9 @@
 // Mu2e includes
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/MinimalPhysicsList.hh"
-#include "Mu2eG4/inc/PhysicsList.hh"
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "fhiclcpp/ParameterSet.h"
 
 //tmp arrangement
 #include "Mu2eG4/inc/QGSP_BERT_HP_MU2E00.hh"
@@ -56,12 +56,23 @@
 using namespace std;
 
 namespace mu2e{
+  namespace {
+    std::string getPhysicsListName(const SimpleConfig& config) {
+      return config.getString("g4.physicsListName");
+    }
 
-  G4VUserPhysicsList* physicsListDecider ( const SimpleConfig& config ){
+    std::string getPhysicsListName(const fhicl::ParameterSet& pset) {
+      return pset.get<std::string>("physics.physicsListName");
+    }
+  }
+
+
+  template<class Config>
+  G4VUserPhysicsList* physicsListDecider (const Config& config){
 
     G4VUserPhysicsList* physicsList(0);
 
-    string name = config.getString("g4.physicsListName");
+    const string name = getPhysicsListName(config);
 
     // Two special cases
     if ( name  == "Minimal" ) {
@@ -85,7 +96,7 @@ namespace mu2e{
     }
 
     else if ( name == "QGSP_BERT_HP_MU2E00" ){
-      G4VModularPhysicsList* tmp = new QGSP_BERT_HP_MU2E00(config);
+      G4VModularPhysicsList* tmp = new TQGSP_BERT_HP_MU2E00<G4VModularPhysicsList,Config>(config);
       mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified";
       G4cout << "Warning: This Mu2e Physics List has not been certified" << G4endl;
       tmp->RegisterPhysics( new StepLimiterPhysConstructor() );
@@ -103,7 +114,7 @@ namespace mu2e{
     }
 
     else if ( name == "Shielding_MU2E01" ){
-      G4VModularPhysicsList* tmp = new Shielding_MU2E01(config);
+      G4VModularPhysicsList* tmp = new TShielding_MU2E01<G4VModularPhysicsList,Config>(config);
 #if G4VERSION>4099
       mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
       cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
@@ -113,7 +124,7 @@ namespace mu2e{
     }
 
     else if ( name == "Shielding_MU2E02" ){
-      G4VModularPhysicsList* tmp = new Shielding_MU2E02(config);
+      G4VModularPhysicsList* tmp = new TShielding_MU2E02<G4VModularPhysicsList,Config>(config);
 #if G4VERSION>4099
       mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
       cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
@@ -144,5 +155,7 @@ namespace mu2e{
 
   }
 
-} // end namespace mu2e
+  template G4VUserPhysicsList* physicsListDecider(const SimpleConfig& config);
+  template G4VUserPhysicsList* physicsListDecider(const fhicl::ParameterSet& pset);
 
+} // end namespace mu2e

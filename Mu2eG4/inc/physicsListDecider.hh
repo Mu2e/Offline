@@ -15,15 +15,13 @@ class G4VUserPhysicsList;
 
 namespace mu2e{
 
-  // Forward declarations within Mu2e namespace.
-  class SimpleConfig;
+  // This only needs to be templated to share
+  // code for fhicl::ParameterSet and SimpleConfig cases.
 
   // The returned pointer should be passed to G4, which will
   // take ownership of it.
-  G4VUserPhysicsList* physicsListDecider ( const SimpleConfig& config );
+  template<class Config> G4VUserPhysicsList* physicsListDecider (const Config& config);
 
 
 }  // end namespace mu2e
 #endif /* Mu2eG4_physicsListDecider_hh */
-
-

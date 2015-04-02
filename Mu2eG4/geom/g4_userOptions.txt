@@ -1,3 +1,7 @@
+// Write mu2e geometry into a GDML file
+bool   writeGDML        = false;
+string GDMLFileName     = "mu2e.gdml";
+//
 //-----------------------
 // Physics lists
 //-----------------------
@@ -6,48 +10,10 @@ double g4.minRangeCut     = 0.01;  // mm
 
 bool   g4.printPhysicsProcessSummary = false;
 
-//-----------------------
-// Surface checker
-//-----------------------
-
-// invoke volume overlap check where enabled (draws random numbers)
-bool g4.doSurfaceCheck = false;
-vector<string> g4.doSurfaceCheck.drop  = {};
-vector<string> g4.doSurfaceCheck.keep  = {};
-vector<string> g4.doSurfaceCheck.order = { "g4.doSurfaceCheck.drop",
-                                           "g4.doSurfaceCheck.keep" };
-
-// number of random points on the volume surface
-int  g4.nSurfaceCheckPointsPercmsq =   1;
-int  g4.minSurfaceCheckPoints      = 100; // per volume
-int  g4.maxSurfaceCheckPoints = 10000000; // per volume
-
-//-----------------------
-// Other options
-//-----------------------
-
-bool g4.isSolid   = false;
-vector<string> g4.isSolid.drop  = {};
-vector<string> g4.isSolid.keep  = {};
-vector<string> g4.isSolid.order = { "g4.isSolid.drop",
-                                    "g4.isSolid.keep" };
-
-bool g4.isVisible = true;
-vector<string> g4.isVisible.drop  = {};
-vector<string> g4.isVisible.keep  = {};
-vector<string> g4.isVisible.order = { "g4.isVisible.drop",
-                                      "g4.isVisible.keep" };
-
-bool g4.placePV   = true;
-vector<string> g4.placePV.drop  = {};
-vector<string> g4.placePV.keep  = {};
-vector<string> g4.placePV.order = { "g4.placePV.drop",
-                                    "g4.placePV.keep" };
-bool g4.forceAuxEdgeVisible = true;
-vector<string> g4.forceAuxEdgeVisible.drop  = {};
-vector<string> g4.forceAuxEdgeVisible.keep  = {};
-vector<string> g4.forceAuxEdgeVisible.order = { "g4.forceAuxEdgeVisible.drop",
-                                                "g4.forceAuxEdgeVisible.keep" };
+// Some G4 controls which does not allow it to consume all the memory
+// or to spend all the time tracking one bad particle
+int g4.steppingActionMaxSteps = 10000;
+int g4.stepsSizeLimit = 10000;
 
 // Uncomment to enable debug printout on a per event or per track basis.
 //vector<int> g4.steppingActionEventList = { 0, 1 };
@@ -61,20 +27,18 @@ vector<string> g4.forceAuxEdgeVisible.order = { "g4.forceAuxEdgeVisible.drop",
 
 // Some G4 controls which does not allow it to consume all the memory
 // or to spend all the time tracking one bad particle
-int g4.steppingActionMaxSteps = 10000;
-int g4.stepsSizeLimit = 10000;
-int g4.particlesSizeLimit = 10000;
+int g4.particlesSizeLimit = 100000;
 
 // Enable saving of trajectories for G4 graphics on a per track basis.
 // Only save trajectories for tracks with momentum above this cut.
 double g4.saveTrajectoryMomentumCut = 50.;
 
-// Control saving of PointTrajectory information - deprecated.
-int    g4.pointTrajectoryMinSteps    =  5;
-
 // Control saving of MCTrajectory information - replacement for PointTrajectory
 double g4.mcTrajectoryMomentumCut = 50.;
 int    g4.mcTrajectoryMinSteps    =  5;
+
+// Control saving of PointTrajectory information - deprecated.
+int    g4.pointTrajectoryMinSteps    =  5;
 
 // The last point is saved regardless of the cuts.
 double g4.mcTrajectoryDefaultMinPointDistance = 0.; // mm
@@ -110,16 +74,6 @@ double g4.eKineMin      = 0.0;    // Kinetic energy in MeV
 // This setting is used for special studies (stored muons)
 // bool g4.killPitchToLowToStore = false;
 
-// current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
-// G4ClassicalRK4
-// G4ImplicitEuler
-// G4ExplicitEuler
-// G4SimpleRunge
-// G4SimpleHeum
-// G4HelixImplicitEuler
-// G4HelixSimpleRunge
-string g4.stepper = "G4ClassicalRK4";
-
 // Enable the Mu2e written version of the decay of muonic atoms.
 bool g4.doMuMinusConversionAtRest = false;
 
@@ -136,12 +90,22 @@ bool g4.doCosmicKiller = false;
 double g4.cosmicPcut = 0.;
 double g4.yaboveDirtYmin = 0.;
 
+// current G4 stepper choices are shown below, extend Mu2eWorld.cc if more are needed
+// G4ClassicalRK4
+// G4ImplicitEuler
+// G4ExplicitEuler
+// G4SimpleRunge
+// G4SimpleHeum
+// G4HelixImplicitEuler
+// G4HelixSimpleRunge
+string g4.stepper = "G4ClassicalRK4";
+
 // Control printout of element and material lists.
 bool g4.printElements  = false;
 bool g4.printMaterials = false;
 
-// make detector volume structure visible where enabled
-bool g4.forceAuxEdgeVisible = true;
+int    world.verbosityLevel = 0;
+bool   ttracker.ActiveWr_Wl_SD    = false;   //Active the Sensitive Detector for the wires and straw wall.
 
 //
 //

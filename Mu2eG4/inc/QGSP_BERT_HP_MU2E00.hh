@@ -43,12 +43,12 @@
 #include "globals.hh"
 #include "CompileTimeConstraints.hh"
 
-template<class T>
+template<class T, class Config>
 class TQGSP_BERT_HP_MU2E00: public T
 {
 
 public:
-  explicit TQGSP_BERT_HP_MU2E00(mu2e::SimpleConfig const & config, G4int ver=1);
+  explicit TQGSP_BERT_HP_MU2E00(Config const & config, G4int ver=1);
   virtual ~TQGSP_BERT_HP_MU2E00();
   
 public:
@@ -59,7 +59,6 @@ private:
   enum {ok = CompileTimeConstraints::IsA<T, G4VModularPhysicsList>::ok };
 };
 #include "QGSP_BERT_HP_MU2E00.icc"
-typedef TQGSP_BERT_HP_MU2E00<G4VModularPhysicsList> QGSP_BERT_HP_MU2E00;
 
 // 2002 by J.P. Wellisch
 

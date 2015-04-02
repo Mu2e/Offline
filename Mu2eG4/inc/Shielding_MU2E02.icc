@@ -71,8 +71,8 @@
 
 #include "DecayMuonsWithSpin.hh"
 
-template<class T> TShielding_MU2E02<T>::TShielding_MU2E02(mu2e::SimpleConfig const & config,
-							  G4int verbose, G4String LEN_model ):  T()
+template<class T, class Config> TShielding_MU2E02<T,Config>::TShielding_MU2E02(Config const & config,
+                                                                               G4int verbose, G4String LEN_model ):  T()
 {
   // default cut value  (1.0mm) 
   // defaultCutValue = 1.0*CLHEP::mm;
@@ -160,16 +160,16 @@ G4cout << LEN_model << G4endl;
   // this->RegisterPhysics( new G4NeutronTrackingCut(verbose));
 
   // Muon Spin and Radiative decays plus pion muons with spin
-  if ( config.getBool( "g4.decayMuonsWithSpin", false) ) {
+  if ( getDecayMuonsWithSpin(config) ) {
     this->RegisterPhysics( new DecayMuonsWithSpin(verbose));
   }
 }
 
-template<class T> TShielding_MU2E02<T>::~TShielding_MU2E02()
+template<class T, class Config> TShielding_MU2E02<T, Config>::~TShielding_MU2E02()
 {
 }
 
-template<class T> void TShielding_MU2E02<T>::SetCuts()
+template<class T, class Config> void TShielding_MU2E02<T, Config>::SetCuts()
 {
   if (this->verboseLevel >1){
     G4cout << "Shielding_MU2E02::SetCuts:";

@@ -234,14 +234,22 @@ namespace mu2e {
       }
     }
     else {
-      // Assign arbitrary unique instance names to the output collections.
-      // We need to know how many outputs will be needed.
       const unsigned numSimPartOuts(pset.get<unsigned>("numSimParticleCollections"));
-      for(unsigned i = 0; i < numSimPartOuts; ++i) {
-        std::ostringstream os;
-        os<<"s"<<i;
-        simPartOutNames.insert(os.str());
-        produces<SimParticleCollection>(os.str());
+      // FIXME: noInstanceName should become the default
+      if((numSimPartOuts == 1) && pset.get<bool>("noInstanceName", false)) {
+        const std::string defaultInstance;
+        simPartOutNames.insert(defaultInstance);
+        produces<SimParticleCollection>(defaultInstance);
+      }
+      else {
+        // Assign arbitrary unique instance names to the output collections.
+        // We need to know how many outputs will be needed.
+        for(unsigned i = 0; i < numSimPartOuts; ++i) {
+          std::ostringstream os;
+          os<<"s"<<i;
+          simPartOutNames.insert(os.str());
+          produces<SimParticleCollection>(os.str());
+        }
       }
     }
 

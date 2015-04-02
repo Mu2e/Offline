@@ -79,6 +79,8 @@
 #include "ExternalShieldingGeom/inc/ExtShieldUpstreamMaker.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldDownstreamMaker.hh"
+#include "ExternalShieldingGeom/inc/Saddle.hh"
+#include "ExternalShieldingGeom/inc/SaddleMaker.hh"
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorber.hh"
 #include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorberMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
@@ -288,6 +290,7 @@ namespace mu2e {
     if(_config->getBool("hasExternalShielding",false)) {
       addDetector( ExtShieldUpstreamMaker::make(*_config)  );
       addDetector( ExtShieldDownstreamMaker::make(*_config));
+      addDetector( SaddleMaker::make(*_config));
     }
 
      if(_config->getBool("hasExternalNeutronShielding",false)) {

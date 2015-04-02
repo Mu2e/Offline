@@ -22,7 +22,6 @@ vector<double> world.mu2eOriginInWorld = { 0, 0, 0}; // mm
 string world.materialName = "G4_AIR";
 bool   world.box.isVisible   = true;
 bool   world.box.isSolid     = false;
-int    world.verbosityLevel = 0;
 
 string dirt.overburdenMaterialName = "MBOverburden";
 

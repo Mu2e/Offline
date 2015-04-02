@@ -31,4 +31,108 @@ g4run : {
 	prefix              : "SimParticle: "
     }
 }
+#------------------------------------------------------------------------------
+# Configuration blocks for the Mu2eG4 module
+#------------------------------------------------------------------------------
+mu2eg4DefaultPhysics: {
+    PiENuPolicy : "PDG"
+    noDecay: []
+    useNewMuMinusAtomicCapture: false
+    minRangeCut: 0.010 // mm
+    physicsListName:  "Shielding_MU2E01"
+
+    // current G4 stepper choices in Mu2eWorld.cc are shown below
+    // G4ClassicalRK4
+    // G4ImplicitEuler
+    // G4ExplicitEuler
+    // G4SimpleRunge
+    // G4SimpleHeum
+    // G4HelixImplicitEuler
+    // G4HelixSimpleRunge
+    stepper : "G4ClassicalRK4"
+    bfieldMaxStep: 20. // mm
+}
+#----------------
+mu2eg4DefaultResourceLimits: {
+    maxStepsPerTrack : 100000
+    maxStepPointCollectionSize : 100000
+    maxSimParticleCollectionSize: 100000
+}
+#----------------
+mu2eg4NoVisualization: {
+    macro : ""
+    GUIMacro : ""
+}
+#----------------
+mu2eg4NoTrajectories: {
+    produce: false
+}
+#----------------
+mu2eg4DefaultTrajectories: {
+    produce: true
+    defaultMinPointDistance : 500
+    mcTrajectoryMinSteps: 5
+    mcTrajectoryMomentumCut : 50 // MeV/c
+    saveTrajectoryMomentumCut : 50  // MeV/c
+
+    perVolumeMinDistance : {
+	PSVacuum : 15
+	TS1Vacuum : 15
+	TS2Vacuum : 15
+	TS3Vacuum : 15
+	TS4Vacuum : 15
+	TS5Vacuum : 15
+	DS2Vacuum : 15
+	DS3Vacuum : 15
+	TrackerMother: 15
+	CalorimeterMother: 15
+    }
+}
+#----------------
+mu2eg4DefaultDebug: {
+    stepLimitKillerVerbose: true
+    printPhysicsProcessSummary : false
+    PiENuPolicyVerbosity : 0
+    printTrackTiming: false
+    worldVerbosityLevel : 0
+    printElements : false
+    printMaterials : false
+    fillDiagnosticHistograms: false
+    writeGDML : false
+    GDMLFileName : "mu2e.gdml"
+}
+#----------------
+mu2eg4NoCut: {}
+#----------------
+mu2eg4CutNeutrinos: {
+    // ignore neutrinos
+    type: pdgId pars: [ 12, -12, 14, -14, 16, -16]
+}
+#----------------------------------------------------------------
+mu2eg4runDefaultSingleStage: {
+    module_type: Mu2eG4
+    physics: @local::mu2eg4DefaultPhysics
+    ResourceLimits: @local::mu2eg4DefaultResourceLimits
+    TrajectoryControl: @local::mu2eg4DefaultTrajectories
+
+    Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+    Mu2eG4SteppingOnlyCut: @local::mu2eg4NoCut
+    Mu2eG4CommonCut: @local::mu2eg4NoCut
+
+    generatorModuleLabel: generate
+    MultiStageParameters : {}
+
+    SDConfig : { TimeVD: { times: [] } }
+
+    debug:  @local::mu2eg4DefaultDebug
+    visualization: @local::mu2eg4NoVisualization
+
+    SimParticlePrinter : {
+	enabled             : false
+	primariesOnly       : false
+	prefix              : "SimParticle: "
+    }
+}
+
+#----------------------------------------------------------------
 END_PROLOG

@@ -29,6 +29,8 @@
 #include <vector>
 #include <map>
 
+#include "fhiclcpp/ParameterSet.h"
+
 // Forward references.
 class G4Material;
 class G4Mag_UsualEqRhs;
@@ -48,6 +50,7 @@ class G4UserLimits;
 #include "G4RotationMatrix.hh"
 #include "G4VisAttributes.hh"
 
+
 namespace mu2e {
 
   // Forward references within mu2e namespace.
@@ -57,7 +60,10 @@ namespace mu2e {
   class Mu2eWorld : public Mu2eUniverse {
   public:
 
-    explicit Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/) : sdHelper_(sdHelper) {}
+    explicit Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
+
+    Mu2eWorld(const fhicl::ParameterSet& pset,
+              SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
 
     // Construct everything.
     // The non-const return type is eventually required 
@@ -86,6 +92,19 @@ namespace mu2e {
     std::unique_ptr<FieldMgr> _dsGradient;
 
     SensitiveDetectorHelper *sdHelper_; // Non-owning
+
+    fhicl::ParameterSet pset_;
+
+    // Values of the following variables are taken from either
+    // ParameterSet or SimpleConfig, depending on the constructor
+    // called.
+
+    // _verbosityLevel in the base class, and
+    bool activeWr_Wl_SD_;
+    bool writeGDML_;
+    std::string gdmlFileName_;
+    std::string g4stepperName_;
+    double bfieldMaxStep_;
   };
 
 } // end namespace mu2e

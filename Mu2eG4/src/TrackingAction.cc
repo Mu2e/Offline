@@ -30,11 +30,13 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
-#include "Mu2eG4/inc/SteppingAction.hh"
+#include "Mu2eG4/inc/IMu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
+#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
+#include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
@@ -55,8 +57,29 @@ using namespace std;
 
 namespace mu2e {
 
+  TrackingAction::TrackingAction(const fhicl::ParameterSet& pset,
+                                 IMu2eG4SteppingAction * steppingAction,
+                                 const Mu2eG4TrajectoryControl& trajectoryControl,
+                                 const Mu2eG4ResourceLimits& lim):
+    _debugList(pset.get<std::vector<int> >("debug.trackingActionEventList", std::vector<int>())),
+    _physVolHelper(0),
+    _timer(),
+    _trajectories(nullptr),
+    _sizeLimit(lim.maxSimParticleCollectionSize()),
+    _currentSize(0),
+    _overflowSimParticles(false),
+    _mcTrajectoryMomentumCut(trajectoryControl.mcTrajectoryMomentumCut()),
+    _saveTrajectoryMomentumCut(trajectoryControl.saveTrajectoryMomentumCut()),
+    _mcTrajectoryMinSteps(trajectoryControl.mcTrajectoryMinSteps()),
+    _steppingAction(steppingAction),
+    _processInfo(0),
+    _printTrackTiming(pset.get<bool>("debug.printTrackTiming")),
+    _spHelper(),
+    _primaryHelper()
+  {}
+
   TrackingAction::TrackingAction( const SimpleConfig& config,
-                                  SteppingAction     * steppingAction ):
+                                  IMu2eG4SteppingAction     * steppingAction ):
     _debugList(),
     _physVolHelper(0),
     _timer(),

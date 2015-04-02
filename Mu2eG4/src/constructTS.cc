@@ -513,7 +513,7 @@ namespace mu2e {
       }
 
       G4Helper* _helper = &(*art::ServiceHandle<G4Helper>());
-      verbosityLevel && caName!= "TS3udCA" 
+      verbosityLevel 
         && std::cout << __func__ << " " << caName << " Mass in kg: " 
                      << _helper->locateVolInfo(caName).logical->GetMass()/kg 
                      << std::endl;

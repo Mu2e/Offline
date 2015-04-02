@@ -128,8 +128,6 @@ string ttracker.straw.wallInnerMetal2.material  = "G4_Au";
 double ttracker.straw.wirePlate.thickness       = 0.00025;
 string ttracker.straw.wirePlate.material        = "G4_Au";
 
-bool   ttracker.ActiveWr_Wl_SD    = false;   //Active the Sensitive Detector for the wires and straw wall.
-
 // Turn off 2 stations for TDR
 vector<int> ttracker.nonExistingDevices = { 14,15,28,29 };
 

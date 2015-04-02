@@ -48,12 +48,13 @@
 
 // Mu2e include
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "fhiclcpp/ParameterSet.h"
 
-template<class T>
+template<class T, class Config>
 class TShielding_MU2E02: public T
 {
 public:
-  TShielding_MU2E02(mu2e::SimpleConfig const & config, 
+  TShielding_MU2E02(Config const & config, 
 		    G4int verbose = 1 , G4String low_energy_neutron_model = "HP" );
   virtual ~TShielding_MU2E02();
   
@@ -65,6 +66,5 @@ private:
   enum {ok = CompileTimeConstraints::IsA<T, G4VModularPhysicsList>::ok };
 };
 #include "Shielding_MU2E02.icc"
-typedef TShielding_MU2E02<G4VModularPhysicsList> Shielding_MU2E02;
 
 #endif
