@@ -23,9 +23,9 @@ process_name : generateTrkPatRecStnmaker
 # define input module
 #------------------------------------------------------------------------------
 source : {  
-    module_type : EmptyEvent
-#    module_type : RootInput
-#    fileNames   : [ "INPUT_DATA_FILE" ]
+#    module_type : EmptyEvent
+    module_type : RootInput
+    fileNames   : [ "INPUT_DATA_FILE" ]
     maxEvents   : 100
 
     inputCommands : ['keep *_*_*_*'
@@ -38,7 +38,7 @@ source : {
 services : {
 
     message               : @local::default_message
-    TFileService          : { fileName : "calPatRec_stnmaker.hist" }
+    TFileService          : { fileName : "trkPatRec_stnmaker.hist" }
     RandomNumberGenerator : { }
 #    Timing                : { }   # this prints per-event summaries
 
@@ -82,7 +82,9 @@ physics : {
 #------------------------------------------------------------------------------
 	MakeCaloReadoutHits  : { @table::MakeCaloReadoutHits }
 	MakeCaloCrystalHits  : { @table::MakeCaloCrystalHitsNew }
-	MakeCaloProtoCluster : { @table::MakeCaloProtoCluster }
+	MakeCaloProtoCluster : { @table::MakeCaloProtoCluster 
+	    caloCrystalModuleLabel : CaloCrystalHitsMaker
+	}
 	MakeCaloCluster      : { @table::MakeCaloCluster }
 #------------------------------------------------------------------------------
 # CalPatRec modules
@@ -112,7 +114,7 @@ physics : {
 # Stntuple maker sequence
 #------------------------------------------------------------------------------
 	InitStntuple         : { @table::InitStntuple 
-	    histFileName   : "calPatRec_stnmaker.stn"
+	    histFileName   : "trkPatRec_stnmaker.stn"
 	}
 
 	StntupleMaker        : { @table::StntupleMaker
@@ -150,20 +152,20 @@ physics : {
 # paths
 #------------------------------------------------------------------------------
     detPath : [ 
-	       generate, g4run 
-	       , detectorFilter 
-	       , protonTimeMap, muonTimeMap
+#	       generate, g4run 
+#	       , detectorFilter 
+#	       , protonTimeMap, muonTimeMap
 #
-	       , MakeCaloReadoutHits, MakeCaloCrystalHits
+#	       , MakeCaloReadoutHits, MakeCaloCrystalHits
 	       , MakeCaloProtoCluster, MakeCaloCluster
 #
-	       , makeSD, makeSH
+#	       , makeSD, makeSH
 
-#	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
 
-	       , CalPatRecFSHP, CalPatRecMakeStereoHits 
-	       , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
-	       , CalPatRec
+#	       , CalPatRecFSHP, CalPatRecMakeStereoHits 
+#	       , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+#	       , CalPatRec
 
 	       , MergePatRec
 	       , TrkExtrapol, CaloMatching, ParticleID
@@ -187,6 +189,6 @@ outputs: {
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
-        fileName    : "calPatRec_stnmaker.art"
+        fileName    : "trkPatRec_stnmaker.art"
     }
 }

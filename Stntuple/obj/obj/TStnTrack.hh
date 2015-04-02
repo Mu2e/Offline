@@ -130,7 +130,7 @@ public:
   int                       fBestHyp[2];    // hypothesis with the best chi2/ndof
   int                       fIDWord;	    // now - for selection "C"
   
-  int                       fNActive;	    // total number of hits
+  int                       fNActive;	    // NWrong << 16 + NActive
   int                       fVaneID;	    // 
   int                       fDiskID;	    // 
   int                       fPdgCode;       // PDF code of the particle produced most hits
@@ -209,7 +209,8 @@ public:
   TBitset*        ExpectedHitMask() { return &fExpectedHitMask; }
   
   int    Number   () { return fNumber; }
-  int    NActive  () { return fNActive;}
+  int    NActive  () { return (fNActive      ) & 0xffff; }
+  int    NWrong   () { return (fNActive >> 16) & 0xffff; }
   int    NClusters();
   int    NMcStrawHits() { return fNMcStrawHits; }
   int    NGoodMcHits () { return fNGoodMcHits; }

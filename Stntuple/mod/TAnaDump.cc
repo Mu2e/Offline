@@ -489,7 +489,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     printf("---------------------------------------------------------------------------------");
     printf("-----------------------------------------------------\n");
     printf("%s",Prefix);
-    printf("  TrkID       Address    N  NA      P       pT     costh    T0      T0Err   Omega");
+    printf("  TrkID       Address    N  NA      P    sigma(p)    pT     costh    T0      T0Err   Omega");
     printf("      D0       Z0      Phi0   TanDip    Chi2    FCons\n");
     printf("---------------------------------------------------------------------------------");
     printf("-----------------------------------------------------\n");
@@ -521,6 +521,16 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     double omega  = Trk->helix(s).omega();
     double tandip = Trk->helix(s).tanDip();
 
+
+    CLHEP::Hep3Vector fitmom = Trk->momentum(s);
+    CLHEP::Hep3Vector momdir = fitmom.unit();
+    BbrVectorErr      momerr = Trk->momentumErr(s);
+    
+    HepVector momvec(3);
+    for (int i=0; i<3; i++) momvec[i] = momdir[i];
+    
+    double sigp = sqrt(momerr.covMatrix().similarity(momvec));
+  
     double fit_consistency = Trk->chisqConsistency().consistency();
     int q         = Trk->charge();
 
@@ -531,12 +541,12 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     double pt     = trk_mom.perp();
     double costh  = trk_mom.cosTheta();
 
-    printf("%5i %16p %3i %3i %8.3f %7.3f %8.4f %7.3f %7.4f",
+    printf("%5i %16p %3i %3i %8.3f %8.5f %7.3f %8.4f %7.3f %7.4f",
 	   -1,
 	   Trk,
 	   nhits,
 	   nact,
-	   q*mom,pt,costh,t0,t0err
+	   q*mom,sigp,pt,costh,t0,t0err
 	   );
 
     printf(" %8.5f %8.3f %8.3f %8.4f %7.4f",
@@ -566,9 +576,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     Hep3Vector pos;
     int i = 0;
 
-    for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
-      //	  const KalHit* kh = (*it).kalHit();
-
+    for (auto it=hot_list->begin(); it<hot_list->end(); it++) {
       // TrkStrawHit inherits from TrkHitOnTrk
 
       const mu2e::TrkStrawHit* hit = (const mu2e::TrkStrawHit*) &(*it);
@@ -599,7 +607,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
  	}
       }
 
-      double step_doca = -99.0;
+      double mcdoca = -99.0;
 
       if (step) {
 	const Hep3Vector* v1 = &straw->getMidPoint();
@@ -613,7 +621,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
 
 	TrkPoca poca(trstep, 0., trstraw, 0.);
     
-	step_doca = poca.doca();
+	mcdoca = poca.doca();
       }
 
       printf("%3i %5i %1i %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
@@ -651,7 +659,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
       else                   printf(" *%5.3f",hit->driftRadius());
 
       printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f\n",		 
-	     step_doca, 
+	     mcdoca, 
 	     hit->totalErr(),
 	     hit->hitErr(),
 	     hit->t0Err(),

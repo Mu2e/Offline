@@ -116,10 +116,7 @@ physics : {
 	}
 
 	StntupleMaker        : { @table::StntupleMaker
-#------------------------------------------------------------------------------
-# redefine for cosmics
-#------------------------------------------------------------------------------
-	    g4ModuleLabel : "g4run"
+	    g4ModuleLabel        : "g4run"
 	    #------------------------------------------------------------------------------
 	    #  3 track blocks, for the moment need to specify all other labels
 	    #------------------------------------------------------------------------------
@@ -161,6 +158,7 @@ physics : {
 	       , MakeCaloProtoCluster, MakeCaloCluster
 #
 	       , makeSD, makeSH
+
 	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
 
 #	       , CalPatRecFSHP, CalPatRecMakeStereoHits 

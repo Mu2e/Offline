@@ -81,10 +81,12 @@ physics : {
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	MakeCaloCluster                 : @local::MakeCaloCluster
+	MakeCaloProtoCluster            : { @table::MakeCaloProtoCluster }
+	MakeCaloCluster                 : { @table::MakeCaloCluster      }
 
 	CalPatRecFSHP                   : @local::CalPatRecFSHP
 	CalPatRecMakeStereoHits         : @local::CalPatRecMakeStereoHits
+	CalPatRecMakeStrawHitPositions  : @local::CalPatRecMakeStrawHitPositions
 	CalPatRecFlagStrawHits          : @local::CalPatRecFlagStrawHits
 	CalPatRecFlagBkgHits            : @local::CalPatRecFlagBkgHits
 	CalPatRec                       : { @table::CalPatRec
@@ -151,30 +153,96 @@ physics : {
 #------------------------------------------------------------------------------
 # paths (a sequence in FHICL terms)
 #------------------------------------------------------------------------------
-    detPath : [ 
-	       generate, g4run 
-	       , detectorFilter 
-#	       , compressPVDetector
-	       , protonTimeMap, muonTimeMap
+    mergePatRec : [ 
+		   generate, g4run 
+		   , detectorFilter 
+		   #	       , compressPVDetector
+		   , protonTimeMap, muonTimeMap
+		   #
+		   , MakeCaloReadoutHits, CaloCrystalHitsMaker
+		   , MakeCaloProtoCluster, MakeCaloCluster
+		   #
+		   , makeSD, makeSH
+		   , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+		   #
+		   , CalPatRecFSHP, CalPatRecMakeStereoHits 
+		   , CalPatRecMakeStrawHitPositions
+		   , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+		   , CalPatRec
+		   #
+		   , MergePatRec
+		   #
+		   , TrkExtrapol, CaloMatching, ParticleID
+		   #
+		   , InitStntuple, StntupleMaker, FillStntuple
+		  ]
 #
-	       , MakeCaloReadoutHits, CaloCrystalHitsMaker
-	       , MakeCaloCluster
+    calPatRec : [ 
+		 generate, g4run 
+		 , detectorFilter 
+		 #	       , compressPVDetector
+		 , protonTimeMap, muonTimeMap
+		 #
+		 , MakeCaloReadoutHits, CaloCrystalHitsMaker
+		 , MakeCaloProtoCluster, MakeCaloCluster
+		 #
+		 , makeSD, makeSH
+		 #		   , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+		 #
+		 , CalPatRecFSHP, CalPatRecMakeStereoHits 
+		 , CalPatRecMakeStrawHitPositions
+		 , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+		 , CalPatRec
+		 #
+		 , MergePatRec
+		 #
+		 , TrkExtrapol, CaloMatching, ParticleID
+		 #
+		 , InitStntuple, StntupleMaker, FillStntuple
+		]
 #
-	       , makeSD, makeSH
-	       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+    trkPatRec : [ 
+		 generate, g4run 
+		 , detectorFilter 
+		 #	       , compressPVDetector
+		 , protonTimeMap, muonTimeMap
+		 #
+		 , MakeCaloReadoutHits, CaloCrystalHitsMaker
+		 , MakeCaloProtoCluster, MakeCaloCluster
+		 #
+		 , makeSD, makeSH
+		 , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+		 #
+		 #		 , CalPatRecFSHP, CalPatRecMakeStereoHits 
+		 #               , CalPatRecMakeStrawHitPositions
+		 #		 , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+		 #		 , CalPatRec
+		 #
+		 , MergePatRec
+		 #
+		 , TrkExtrapol, CaloMatching, ParticleID
+		 #
+		 , InitStntuple, StntupleMaker, FillStntuple
+		]
 #
-	       , CalPatRecFSHP, CalPatRecMakeStereoHits 
-	       , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
-	       , CalPatRec
+    readMergePatRec : [ detectorFilter 
+		       , MakeCaloProtoCluster, MakeCaloCluster
+		       #
+		       , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+		       #
+		       , CalPatRecFSHP, CalPatRecMakeStereoHits
+		       , CalPatRecMakeStrawHitPositions
+		       , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+		       , CalPatRec
+		       #
+		       , MergePatRec
+		       #
+		       , TrkExtrapol, CaloMatching, ParticleID
+		       #
+		       , InitStntuple, StntupleMaker, FillStntuple
+		      ]
 #
-	       , MergePatRec
-#
-	       , TrkExtrapol, CaloMatching, ParticleID
-#
-	       , InitStntuple, StntupleMaker, FillStntuple
-	      ]
-#
-    trigger_paths  : [detPath]
+    trigger_paths  : [mergePatRec]
     
     out : [detectorOutput]
 #    out : []
