@@ -38,10 +38,10 @@ namespace mu2e {
   HitAmbigResolverHack::~HitAmbigResolverHack() {}
 
   void
-  HitAmbigResolverHack::resolveTrk(KalFitResult& kfit) const {
+  HitAmbigResolverHack::resolveTrk(KalFitResult& Kres) const {
 // loop over all the hits
-    TSHI ihit = kfit._hits.begin();
-    while(ihit != kfit._hits.end()){
+    TSHI ihit = Kres._hits.begin();
+    while(ihit != Kres._hits.end()){
       TrkStrawHit* hit = *ihit++;
 // don't allow the hit to auto-update its ambiguity
       hit->setAmbigUpdate(false);
@@ -52,13 +52,15 @@ namespace mu2e {
 	hit->setPenalty(_zeropenalty);
       }
       else {
+//-----------------------------------------------------------------------------
 // find the best trajectory we can local to these hits, but excluding their information ( if possible).
+//-----------------------------------------------------------------------------
 	std::vector<TrkStrawHit*> hits;
 	hits.push_back(hit);
-	const TrkDifTraj* traj = findTraj(hits,kfit._krep);
+	const TrkDifTraj* traj = findTraj(hits,Kres._krep);
 	// compute POCA to this traj
 	TrkPoca poca(*traj,hit->fltLen(),*hit->hitTraj(),hit->hitLen());
-	if(poca.status().success()){
+	if (poca.status().success()) {
 	  // set the ambiguity if allowed, based on the sign of DOCA
 	  int newamb = poca.doca() > 0 ? 1 : -1;
 	  hit->setAmbig(newamb);

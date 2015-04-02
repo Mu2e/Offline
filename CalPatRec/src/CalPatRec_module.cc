@@ -197,11 +197,11 @@ namespace mu2e {
     _hist._hchi2      = tfs->make<TH1F>("hchi2",
 				 "#chi^{2} distribution for track candidate; #chi^{2}",
 				 50000, 0., 5000.);
+
     _hist._hdistvsdz  = tfs->make<TH2F>("hdistvsdz",
-				  "Distance from prediction versus z-distance form the seed; Distance from prediction [mm]; z-distance from the seed [mm]",
+				  "Distance from prediction vs z-distance form the seed",
 				  1400, -3500., 3500.,
 				  500, 0, 500);
-
 
     _hist._hkdfdzmode  = tfs->make<TH1F>("hkdfdzmode",
 					 "index of the loop on dfdz modes when Kalman filter converged",20,0,20);
@@ -318,8 +318,11 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void CalPatRec::beginRun(art::Run& ){
-    mu2e::GeomHandle<mu2e::TTracker> handle;
-    _tracker = handle.get();
+    mu2e::GeomHandle<mu2e::TTracker> th;
+    _tracker = th.get();
+
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    _calorimeter = ch.get();
   }
 
 //-----------------------------------------------------------------------------
@@ -388,7 +391,8 @@ namespace mu2e {
 // event entry point
 //-----------------------------------------------------------------------------
   void CalPatRec::produce(art::Event& event ) {
-
+    const char* oname = "CalPatRec::produce";
+    char        message[200];
     bool                      findhelix (false), findseed (false), findkal (false);
     int                       nhits;
     int                       npeaks;
@@ -405,10 +409,8 @@ namespace mu2e {
     static StrawHitFlag       esel(StrawHitFlag::energysel), flag;
 
     _ntracks = 0;
-
-//reset the fit iteration counter
+					// reset the fit iteration counter
     _kfit.SetNIter(0);
-
 //     t1 = fStopwatch->RealTime();
 //     fStopwatch->Continue();
 					// event printout
@@ -416,10 +418,7 @@ namespace mu2e {
     _iev     = event.id().event();
 
     if ((_iev%_printfreq) == 0) cout<<"CalPatRec: event="<<_iev<<endl;
-
     //    _hist._cutflow->Fill(0.0);
-  
-
 					// create output
 
     _tpeaks = new CalTimePeakCollection;
@@ -435,7 +434,7 @@ namespace mu2e {
 
 					// find the data
     if (!findData(event)) {
-      printf("CalPatRec::produce ERROR: No straw hits found, RETURN\n");
+      printf("%s ERROR: No straw hits found, RETURN\n",oname); 
                                                             goto END;
     }
 
@@ -474,14 +473,6 @@ namespace mu2e {
       }
       _flags->push_back(flag);
     }
-//-----------------------------------------------------------------------------
-// find mc truth if we're making diagnostics
-//-----------------------------------------------------------------------------
-//     if (_diag > 0){
-//       if(!_kfitmc.findMCData(event)){
-//         throw cet::exception("RECO")<<"mu2e::CalPatRec: MC data missing or incomplete"<< endl;
-//       }
-//     }
 //-----------------------------------------------------------------------------
 // find the time peaks in the time spectrum of selected hits.  
 //-----------------------------------------------------------------------------
@@ -530,7 +521,7 @@ namespace mu2e {
 
 					// track fitting objects for this peak
 
-      HelixFitHackResult hfit_res(helixdef);
+      HelixFitHackResult hf_result(helixdef);
       KalFitResult       sf_result (seeddef);
       KalFitResult       kf_result  (kaldef);
 
@@ -540,11 +531,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // pattern recognition step - find initial approximation for Kalman fitter
 //-----------------------------------------------------------------------------
-      int rc = _hfit.findHelix(hfit_res,tp);
+      int rc = _hfit.findHelix(hf_result,tp);
 
       if (_debug > 0) {
 	printf("[CalPatRec::produce] helixFit status = %i\n", rc);
-	_hfit.printInfo(hfit_res);
+	_hfit.printInfo(hf_result);
       }
       
       if (rc) {
@@ -554,21 +545,7 @@ namespace mu2e {
 	findhelix = true;
 //-----------------------------------------------------------------------------
 // convert the result to standard helix parameters, and initialize the seed definition helix
-// 2014-11-02 gianipez added some diagnostic
 //-----------------------------------------------------------------------------
-	_hist._hdfdzmode->Fill(fHackData->TheoImode());
-	_hist._hradius->Fill(fHackData->TheoRadius());
-	_hist._hphi0->Fill(fHackData->TheoPhi0());
-	_hist._htanlambda->Fill(fHackData->TheoTanL());
-
-	_hist._hdfdz->Fill(fHackData->dfdz() );
-	_hist._h0mode->Fill(fHackData->mode0Points());
-	_hist._hdz->Fill(fHackData->shDz());
-	_hist._hNpoints->Fill(fHackData->goodPoints());
-	_hist._hchi2->Fill(fHackData->chi2());
-
-	_hist._hNpointsRescued[0]->Fill(fHackData->rescuedPoints()/double(fHackData->goodPoints()));
-
 	double dz, dist;
 	for (int i=0; i< fHackData->goodPoints(); ++i){
 	  dz   = fHackData->fDz[i];
@@ -578,13 +555,7 @@ namespace mu2e {
 
 	HepVector hpar;
 	HepVector hparerr;
-	_hfit.helixParams(hfit_res,hpar,hparerr);
-	
-	//2015-03-12 G. Pezzullo
-	// add offset on radius
-//  	double offset = 10.;
-//  	double r = 1./hpar[2]+offset;
-//  	hpar[2] = 1./r;
+	_hfit.helixParams(hf_result,hpar,hparerr);
 	
 	HepSymMatrix hcov = vT_times_v(hparerr);
 	HelixTraj helTraj(hpar,hcov);
@@ -629,10 +600,9 @@ namespace mu2e {
 	  }
 	  goodhits.push_back(_index[i]._ind);
 	}
-
-	const Tracker& tracker = getTrackerOrThrow();
-	//fill diag
-	//  Trajectory info
+//-----------------------------------------------------------------------------
+//  Trajectory info
+//-----------------------------------------------------------------------------
 	Hep3Vector tdir;
 	HepPoint   tpos;
 	double     doca;
@@ -640,7 +610,7 @@ namespace mu2e {
 
 	for (int i=0; i< _nindex; ++i){
 	  StrawHit const*   sh    = _index[i]._strawhit;
-	  Straw const&      straw = tracker.getStraw(sh->strawIndex());
+	  Straw const&      straw = _tracker->getStraw(sh->strawIndex());
 	  CLHEP::Hep3Vector wpos  = straw.getMidPoint();
 	  CLHEP::Hep3Vector wdir  = straw.getDirection();
 
@@ -653,21 +623,16 @@ namespace mu2e {
 	    
 	  doca      = wpoca.doca();
 
-	  if (_index[i].isOutlier()){
-	    _hist._hdoca[1]->Fill(doca);
-	  } else{
-	    _hist._hdoca[0]->Fill(doca);
-	  }
-	    
+	  if (_index[i].isOutlier()) _hist._hdoca[1]->Fill(doca);
+	  else                       _hist._hdoca[0]->Fill(doca);
 	}
-
 
 	if (_debug > 0) {
 	  printf("[CalPatRec::seeddef] goodhits = %lu over nIndex = %i\n", goodhits.size(), _nindex); 
 	}
-	
-	helixdef.setIndices(goodhits);
-	seeddef.setIndices(goodhits);
+					// helixdef doesn't seem to be used below...
+	//	helixdef.setIndices(goodhits);
+	seeddef.setIndices (goodhits);
 
 	if (_debug > 0) {
 	  int shIndeces = seeddef.strawHitIndices().size();
@@ -687,14 +652,15 @@ namespace mu2e {
 // 2014-11-24 gianipez added the following diagnnostic
 //--------------------------------------------------------------------------------
 	if (_debug > 0) {
-	  printf("[CalPatRec::produce] seedfit success = %i\n", sf_result._fit.success());
-	  _seedfit.printHits(sf_result,"CalPatRec::produce seedfit_002");
+	  sprintf(message,
+		  "CalPatRec::produce seedfit::makeTrack : fit_success = %i\n",
+		  sf_result._fit.success());
+	  _seedfit.printHits(sf_result,message);
 	}
 
 //--------------------------------------------------------------------------------
 // 2015-03-23 G. Pezzu: fill info about the doca
 //--------------------------------------------------------------------------------
-
 	if (sf_result._fit.success()) {
 	  findseed = true;
 //-----------------------------------------------------------------------------
@@ -712,13 +678,13 @@ namespace mu2e {
 	  int                      hit_index;
 	  const TrkHotList*        hot_list = sf_result._krep->hotList();
 
-	  //  Trajectory info
-	  Hep3Vector tdir;
-	  HepPoint   tpos;
-	  double     doca, rdrift;
-	  bool       found(false), active;
-	  int        npointsrescued(0), npointsdeactivated(0);
-	  int        banner_11_printed(0);
+					//  Trajectory info
+	  Hep3Vector               tdir;
+	  HepPoint                 tpos;
+	  double                   doca, rdrift, fltlen;
+	  bool                     found(false), active;
+	  int                      npointsrescued(0), npointsdeactivated(0);
+	  int                      banner_11_printed(0);
 	  
 	  sf_result._krep->traj().getInfo(0.0,tpos,tdir);
 
@@ -731,24 +697,20 @@ namespace mu2e {
 	    found  = false;
 	    active = false;
 
-	    // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
 	    HepPoint      wpt(wpos.x(),wpos.y(),wpos.z());
 	    TrkLineTraj   wtraj(wpt,wdir,-20,20);
-	    // estimate flightlength along track.  This assumes a constant BField!!!
-	    double fltlen = (wpos.z()-tpos.z())/tdir.z();
+					// estimate flightlength along track. This assumes a constant BField!!!
+	    fltlen = (wpos.z()-tpos.z())/tdir.z();
 	    TrkPoca   wpoca(sf_result._krep->traj(),fltlen,wtraj,0.0);
 	    
 	    doca      = wpoca.doca();
 	    hit_index = _index[i]._ind;
 
-	    //	    hitResid = -999.999;
-	    active   = false;
-
-	    for (TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
+	    for (auto it=hot_list->begin(); it<hot_list->end(); it++) {
 	      hit    = (const mu2e::TrkStrawHit*) &(*it);
 	      rdrift = hit->driftRadius();
 	      int shIndex = int(hit->index());
-	      if (hit_index == shIndex){
+	      if (hit_index == shIndex) {
 		found = true;
 		break;
 	      }
@@ -780,55 +742,45 @@ namespace mu2e {
 	      ++npointsrescued;
 	    }
 	  }
-
-
-	  // fill doca of the helix fit
+//-----------------------------------------------------------------------------
+// fill histograms: after the SEED fit, the DOCA is the distance to the wire
+//-----------------------------------------------------------------------------
 	  for (int i=0; i< _nindex; ++i){
 	    StrawHit const*   sh    = _index[i]._strawhit;
-	    Straw const&      straw = tracker.getStraw(sh->strawIndex());
+	    Straw const&      straw = _tracker->getStraw(sh->strawIndex());
 	    CLHEP::Hep3Vector wpos  = straw.getMidPoint();
 	    CLHEP::Hep3Vector wdir  = straw.getDirection();
 	    rdrift = -9990;
 	    found  = false;
 	    active = false;
 	    
-	    // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
-	    HepPoint      wpt(wpos.x(),wpos.y(),wpos.z());
-	    TrkLineTraj  wtraj(wpt,wdir,-20,20);
-	    // estimate flightlength along track.  This assumes a constant BField!!!
-	    double fltlen = (wpos.z()-tpos.z())/tdir.z();
-	    TrkPoca   wpoca(helTraj,fltlen,wtraj,0.0);
+	    HepPoint      wpt  (wpos.x(),wpos.y(),wpos.z());
+	    TrkLineTraj   wtraj(wpt,wdir,-20,20);
+	    fltlen = (wpos.z()-tpos.z())/tdir.z();
+	    TrkPoca       wpoca(helTraj,fltlen,wtraj,0.0);
 	    
-	    doca = wpoca.doca();
+	    doca   = wpoca.doca();
 	    
-	    if (_index[i].isOutlier()){
-	      _hist._hdoca[3]->Fill(doca);
-	    } else{
-	      _hist._hdoca[2]->Fill(doca);
-	    }
+	    if (_index[i].isOutlier()) _hist._hdoca[3]->Fill(doca);
+	    else                       _hist._hdoca[2]->Fill(doca);
 	  }
-	  //----------------------------------------------------------------------
 
 	  _hist._hNpointsSeed[1]->Fill(npointsrescued);
 
-	  for (TrkHotList::hot_iterator it=hot_list->begin(); 
-	      it<hot_list->end(); it++) {
-	    hit   = (const mu2e::TrkStrawHit*) &(*it);
+	  for (auto it=hot_list->begin(); it<hot_list->end(); it++) {
+	    hit = (const mu2e::TrkStrawHit*) &(*it);
 	    if (!hit->isActive()) 
 	      ++npointsdeactivated;
 	  }
 	  _hist._hNpointsSeed[0]->Fill(npointsdeactivated);
 //-----------------------------------------------------------------------------
-// at this point the full kalman fit starts, order hits in Z(straw) again
+// at this point the full kalman fit starts
 //-----------------------------------------------------------------------------
-//	  std::sort(goodhits.begin(),goodhits.end(),straw_zcomp());
-
 	  kaldef.setIndices(goodhits);
-
+	  if (_debug > 0) printf("CalPatRec::produce] calling _kfit.makeTrack\n");
+	  _kfit.setDecisionMode(0);
 	  _kfit.makeTrack(kf_result,tp, fUseDoublets);
-//-----------------------------------------------------------------------------
-// if successfull, try to add missing hits
-//-----------------------------------------------------------------------------
+
 	  if (_debug > 0) {
 	    printf("[CalPatRec::produce] kalfit status = %i\n", kf_result._fit.success());
 	    _kfit.printHits(kf_result,"CalPatRec::produce kalfit_001");
@@ -840,6 +792,8 @@ namespace mu2e {
 	    if (_addhits) {
 //-----------------------------------------------------------------------------
 // this is the default. First, add back the hits on this track
+// if successfull, try to add missing hits, at this point external errors were 
+// set to zero
 //-----------------------------------------------------------------------------
 	      _kfit.unweedHits(kf_result,_maxaddchi);
 	      if (_debug > 0) _kfit.printHits(kf_result,"CalPatRec::produce after unweedHits");
@@ -847,6 +801,8 @@ namespace mu2e {
 	      std::vector<hitIndex> misshits;
 	      findMissingHits(kf_result,misshits);
 	      if (misshits.size() > 0) {
+					// force decision 
+		_kfit.setDecisionMode(1);
 		_kfit.addHits(kf_result,_shcol,misshits, _maxaddchi /*was 15.0*/, tp);
 
 		if (_debug > 0) _kfit.printHits(kf_result,"CalPatRec::produce after addHits");
@@ -875,7 +831,7 @@ namespace mu2e {
 	    
 	    for (int i=0; i< _nindex; ++i){
 	      StrawHit const*     sh = _index[i]._strawhit;
-	      Straw const&     straw = tracker.getStraw(sh->strawIndex());
+	      Straw const&     straw = _tracker->getStraw(sh->strawIndex());
 	      CLHEP::Hep3Vector hpos = straw.getMidPoint();
 	      CLHEP::Hep3Vector hdir = straw.getDirection();
 	      found = false;
@@ -924,7 +880,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //  fill fit diagnostics histograms if requested
 //-----------------------------------------------------------------------------
-	if (_diag > 0) fillFitDiag(event,ipeak,hfit_res,sf_result,kf_result);
+	if (_diag > 0) fillFitDiag(event,ipeak,hf_result,sf_result,kf_result);
 //-----------------------------------------------------------------------------
 // save successful kalman fits in the event
 //-----------------------------------------------------------------------------
@@ -933,49 +889,6 @@ namespace mu2e {
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	tp->SetCprIndex(tracks->size());
-
-	
-//----------------------------------------------------------------------
-// 2014-11-02 gianipez added some diagnostic
-//----------------------------------------------------------------------
-	
-//	_hist._hkdfdzmode->Fill(fHackData->TheoImode());
-//	_hist._hkphi0->Fill(fHackData->TheoPhi0());
-//	_hist._hktanlambda->Fill(fHackData->TheoTanL());
-
-
-// 	Hep3Vector mom = krep->momentum(0);
-// 	double pt      = sqrt(mom.x()*mom.x() + mom.y()*mom.y());
-// 	double pz      = mom.z();
-// 	double tanL    = pt/pz;
-// 	double radius  = fabs(1./krep->helix(0).omega());//mom.mag()*10./3.;//convert MeV to mm
-// 	double kdfdz   = tanL/radius;
-	
-	//	_hist._hseeddfdz[0]->Fill(seeddfdz - kdfdz);
-	//	_hist._hkdfdz[0]->Fill(fHackData->dfdz() - kdfdz);
-	//	_hist._hkradius[0]->Fill(fHackData->TheoRadius() - radius);
-	//	_hist._hk0mode->Fill(fHackData->mode0Points());
-	
-	//	_hist._hseeddr[0]->Fill(seedRadius - radius);
-	//	_hist._hdrw  [0]->Fill(fHackData->fData[14]-radius);
-	//	_hist._hchi2w[0]->Fill(fHackData->fData[15]);
-	//	_hist._hchi2zphi[0]->Fill(fHackData->fData[13]);
-
-	//	_hist._hkdz->Fill(fHackData->shDz());
-	//	_hist._hkNpoints->Fill(fHackData->goodPoints());
-	//	_hist._hkchi2->Fill(fHackData->chi2());
-	
-// 	double dz, dist, dphi;
-// 	for (int i=0; i< fHackData->goodPoints(); ++i){
-// 	  dz   = fHackData->fDz[i];
-// 	  dist = fHackData->fDist[i]; 
-// 	  dphi = fHackData->fResid[i]; 
-// 	  _hist._hkdistvsdz[0]->Fill(dz, dist);
-// 	  _hist._hPhiResid[0]->Fill(dphi);
-// 	}
-
-
-
 //----------------------------------------------------------------------
 //  2015-01-17 G. Pezzu added the followinf diagnostic for tracks 
 // passing cut set "C", except for the timing cut!
@@ -1091,10 +1004,11 @@ namespace mu2e {
 
     int                 ncl, nsh;
     double              time, dt, tof, zstraw, cl_time, stime; 
-    double              xcl, ycl, zcl, dz_cl;
+    double              xcl, ycl, zcl/*, dz_cl*/;
     const CaloCluster*  cl;
     const StrawHit*     hit;
     const Straw*        straw;
+    Hep3Vector          gpos, tpos;
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
 //-----------------------------------------------------------------------------
@@ -1107,12 +1021,21 @@ namespace mu2e {
       if ( (cl->energyDep() > _minClusterEnergy) && 
 	   (int(cl->size()) > _minClusterSize) ) {
 	cl_time = cl->time();
-	xcl     = cl->cog3Vector().x()+3904.;
-	ycl     = cl->cog3Vector().y();
-	zcl     = cl->cog3Vector().z(); // cal->disk(cl->vaneId()).origin().z();
+//-----------------------------------------------------------------------------
+// convert cluster coordinates defined in the disk frame to the detector
+// coordinate system
+//-----------------------------------------------------------------------------
+	gpos = _calorimeter->fromSectionFrameFF(cl->sectionId(),cl->cog3Vector());
+	tpos = _calorimeter->toTrackerFrame(gpos);
 
-	dz_cl   = zcl-_tracker->z0();
-	CalTimePeak tpeak(cl,xcl,ycl,dz_cl);
+	xcl     = tpos.x();
+	ycl     = tpos.y();
+	zcl     = tpos.z();
+
+	//	dz_cl   = zcl; // -_tracker->z0();
+					// create time peak
+	CalTimePeak tpeak(cl,xcl,ycl,zcl);
+
 	tpeak._shcol  = _shcol;
 	tpeak._shfcol = _shfcol;
 	tpeak._tmin   = cl_time+_mindt;
@@ -1137,7 +1060,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // estimate time-of-flight and calculate residual between the predicted and the hit times
 //-----------------------------------------------------------------------------
-	    tof = (dz_cl-zstraw)/sin(_pitchAngle)/CLHEP::c_light;
+	    tof = (zcl-zstraw)/sin(_pitchAngle)/CLHEP::c_light;
 	    dt  = cl_time-(time+tof);
 
 	    if ((dt < _maxdt) && (dt >= _mindt)) {
@@ -1240,9 +1163,9 @@ namespace mu2e {
 
     kalfit._krep->pieceTraj().getInfo(0.0,tpos,tdir);
     unsigned nstrs = _shcol->size();
-    if (_debug>0){
+    if (_debug > 0) {
       printf("[CalPatRec::findMissingHits]      shId    sec     panel       doca   \n");
-      }
+    }
 
     for(unsigned istr=0; istr<nstrs;++istr){
 //----------------------------------------------------------------------//
@@ -1370,16 +1293,6 @@ namespace mu2e {
     KalRep*    krep = kf_result._krep;
 
     _ipeak = ipeak;
-    //    _nmc   = 0;
-
-//     if (ipeak >= 0) {
-//       CalTimePeak& tpeak = _tpeaks->at(ipeak);
-//       _tpeak   = tpeak._tpeak;
-//       for(std::vector<hitIndex>::const_iterator istr= tpeak._index.begin(); istr != tpeak._index.end(); ++istr){
-//       } 
-//     } else {
-//       _tpeak   = -1.0;
-//     }
 //-----------------------------------------------------------------------------
 // fit status 
 //-----------------------------------------------------------------------------
@@ -1461,11 +1374,15 @@ namespace mu2e {
     _hist._hkNpoints->Fill(fHackData->goodPoints());
     _hist._hkchi2->Fill(fHackData->chi2());
     
-    double dz, dist;
+    _hist._hNpointsRescued[0]->Fill(fHackData->rescuedPoints()/double(fHackData->goodPoints()));
+
+    double dz, dist, dphi;
     for (int i=0; i< fHackData->goodPoints(); ++i){
       dz   = fHackData->fDz[i];
       dist = fHackData->fDist[i]; 
+      dphi = fHackData->fResid[i]; 
       _hist._hkdistvsdz[0]->Fill(dz, dist);
+      _hist._hPhiResid[0]->Fill(dphi);
     }
 //-----------------------------------------------------------------------------
 // histograms for doublets
@@ -1504,19 +1421,19 @@ namespace mu2e {
 // some "doublets" may have 1 hit, some - more than two
 //-----------------------------------------------------------------------------
       double dsl_best(1.e6), dsl_next(1.e6);
-      int    ibest(-1), inext(-1);
+      //      int    ibest(-1)/*, inext(-1)*/;
       
       for (int is=0; is<4; is++) {
 	dsl = d->fTrkDxDz-d->fDxDz[is];
 	if (fabs(dsl) < fabs(dsl_best)) { 
 	  dsl_next = dsl_best;
-	  inext    = ibest;
+	  //	  inext    = ibest;
 	  dsl_best = dsl;
-	  ibest    = is;
+	  // ibest    = is;
 	}
 	else if (fabs(dsl) < fabs(dsl_next)) {
 	  dsl_next = dsl;
-	  inext    = is;
+	  //	  inext    = is;
 	}
       }
 					// all doublets
@@ -1588,6 +1505,8 @@ namespace mu2e {
       for (int i=0; i< fHackData->goodPoints(); ++i){
 	dz   = fHackData->fDz[i];
 	dist = fHackData->fDist[i]; 
+	dphi = fHackData->fResid[i]; 
+	_hist._hPhiResid[1]->Fill(dphi);
 	_hist._hkdistvsdz[1]->Fill(dz, dist);
       }
     }

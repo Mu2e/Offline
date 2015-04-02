@@ -90,6 +90,9 @@ namespace fhicl {
 
 namespace mu2e {
 
+  class Calorimeter;
+  class TTracker;
+
   class CalPatRec : public art::EDProducer {
   public:
     struct Hist_t {
@@ -227,7 +230,9 @@ namespace mu2e {
     XYZPHackVector           _index;
     int                      _nindex;
 
-    const TTracker*          _tracker;  // straw tracker geometry
+    const TTracker*          _tracker;     // straw tracker geometry
+    const Calorimeter*       _calorimeter; // cached pointer to the calorimeter geometry
+
     TFolder*                 _folder;
 // //-----------------------------------------------------------------------------
 // // strawhit tuple variables
