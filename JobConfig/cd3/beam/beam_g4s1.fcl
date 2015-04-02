@@ -5,6 +5,76 @@
 #include "standardServices.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
 
+BEGIN_PROLOG
+#----------------------------------------------------------------
+# Mu2eG4 cuts
+
+dsRegionCuts: {
+   type: intersection
+   pars: [
+      // Plane on the west side, outside of the wall
+      { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4851 ] },
+
+      // The new coil assembly addition has the same length as TS3
+      // Hide it from the first stage.
+      // TS3 half length = 3904 - 2929 = 975, give it some margin
+      { type: plane normal: [ -1, 0, 0 ] point : [ 1000., 0, 0 ] },
+
+      // Make sure the muon beam reaches our TS3Vacuum stopping volume
+      { type: notInVolume pars: [TS2Vacuum] },
+
+      // This union splits the output of the above cuts
+      // into two exclusive streams
+      { type: union pars:  [
+            {  type: inVolume
+               pars: [TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, DS3Vacuum ]
+               write: TSVacuum
+            },
+            {  type: constant
+               value: true
+               write: dsregion
+            }
+         ]
+      }
+   ]
+}
+
+extMonRegionCuts: {
+   type: intersection
+   pars: [
+      {
+         type: plane
+         // Beam dump core rotation 13.72 degrees
+         normal: [ -0.237177266249502805 , 0,  -0.971466388700305217 ]
+         // Dump core center: (661.90,  527.40, -19428.2)
+         // One meter to the back, along the rotated axis
+         point : [424.72, 527.40, -20399.67 ]
+      },
+
+      // Split the output of the "plane" cut above into two exclusive streams
+      { type: union pars:  [
+            {  type: inVolume
+               pars:
+               [  collimator1Channel,
+                  HallAir,
+                  ExtMonFNALfilterMagnetAperture,
+                  ExtMonFNALfilterMagnetApertureMarginUp,
+                  ExtMonFNALfilterMagnetApertureMarginDn
+               ]
+               write: extmonbeam
+            },
+            { type: constant  value: true       write: extmonregion }
+         ]
+      }
+   ]
+}
+
+#----------------------------------------------------------------
+
+
+END_PROLOG
+
+#================================================================
 # Give this job a name.
 process_name :  beamg4s1
 
@@ -85,10 +155,7 @@ physics : {
             TimeVD: { times: [] }
          }
 
-         Mu2eG4StackingOnlyCut: {
-            // do not stack neutrinos. no point to re-check this in stepping.
-            type: pdgId pars: [ 12, -12, 14, -14, 16, -16]
-         }
+         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
 
          Mu2eG4SteppingOnlyCut: {}
 
@@ -99,70 +166,9 @@ physics : {
          Mu2eG4CommonCut: {
             type: union
             pars: [
-	       {
-                  // 8% speed up from killing delta-electrons
-                  type: intersection
-                  pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11 ] }]
-               },
-               {
-                  type: intersection
-                  pars: [
-                     // Plane on the west side, outside of the wall
-                     { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4851 ] },
-
-                     // The new coil assembly addition has the same length as TS3
-                     // Hide it from the first stage.
-                     // TS3 half length = 3904 - 2929 = 975, give it some margin
-                     { type: plane normal: [ -1, 0, 0 ] point : [ 1000., 0, 0 ] },
-
-                     // Make sure the muon beam reaches our TS3Vacuum stopping volume
-                     { type: notInVolume pars: [TS2Vacuum] },
-
-                     // This union splits the output of the above cuts
-                     // into two exclusive streams
-                     { type: union pars:  [
-                           {  type: inVolume
-                              pars: [TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, DS3Vacuum ]
-                              write: TSVacuum
-                           },
-                           {  type: constant
-                              value: true
-                              write: dsregion
-                           }
-                        ]
-                     }
-                  ]
-               }
-               ,
-               {
-                  type: intersection
-                  pars: [
-                     {
-                        type: plane
-                        // Beam dump core rotation 13.72 degrees
-                        normal: [ -0.237177266249502805 , 0,  -0.971466388700305217 ]
-                        // Dump core center: (661.90,  527.40, -19428.2)
-                        // One meter to the back, along the rotated axis
-                        point : [424.72, 527.40, -20399.67 ]
-                     },
-
-                     // Split the output of the "plane" cut above into two exclusive streams
-                     { type: union pars:  [
-                           {  type: inVolume
-                              pars:
-                              [  collimator1Channel,
-                                 HallAir,
-                                 ExtMonFNALfilterMagnetAperture,
-                                 ExtMonFNALfilterMagnetApertureMarginUp,
-                                 ExtMonFNALfilterMagnetApertureMarginDn
-                              ]
-                              write: extmonbeam
-                           },
-                           { type: constant  value: true       write: extmonregion }
-                        ]
-                     }
-                  ]
-               }
+               @local::mu2eg4CutDeltaElectrons, // 8% speed up from killing electrons with Ek<1 MeV
+               @local::dsRegionCuts,
+               @local::extMonRegionCuts
             ]
          }
       }

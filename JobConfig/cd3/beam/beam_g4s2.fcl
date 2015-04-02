@@ -63,21 +63,16 @@ physics : {
 	    TimeVD: { times: [] }
          }
 
-         Mu2eG4StackingOnlyCut: {
-	    // do not stack neutrinos. no point to re-check this in stepping.
-	    type: pdgId pars: [ 12, -12, 14, -14, 16, -16]
-	 }
+         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
 
          Mu2eG4SteppingOnlyCut: {}
 
          Mu2eG4CommonCut: {
             type: union
             pars: [
-	       {
-		  type: intersection
-		  pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11 ] }]
-	       }
-	       ,
+
+               @local::mu2eg4CutDeltaElectrons,
+
                {
 	          type: inVolume
 	          pars: [TS5Vacuum, DS2Vacuum, DS3Vacuum ]

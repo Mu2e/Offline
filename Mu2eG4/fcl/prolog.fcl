@@ -108,6 +108,12 @@ mu2eg4CutNeutrinos: {
     // ignore neutrinos
     type: pdgId pars: [ 12, -12, 14, -14, 16, -16]
 }
+
+mu2eg4CutDeltaElectrons: {
+   type: intersection
+   pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11 ] }]
+}
+
 #----------------------------------------------------------------
 mu2eg4runDefaultSingleStage: {
     module_type: Mu2eG4
