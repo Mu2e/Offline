@@ -45,9 +45,9 @@ using namespace std;
 
 namespace mu2e {
 
-  // pset argument reserved for future use; see note 3.
-  SensitiveDetectorHelper::SensitiveDetectorHelper( fhicl::ParameterSet const& pset ):
-    stepInstances_(){
+  SensitiveDetectorHelper::SensitiveDetectorHelper( fhicl::ParameterSet const& pset )
+    : extMonPixelsEnabled_(false)
+  {
 
     // Backward compatible defaults
     bool enableAllSDs = true;
