@@ -73,7 +73,7 @@ CalPatRec            : {
 
     StrawHitCollectionLabel                     : makeSH
     StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
-    StrawHitPositionCollectionLabel             : CalPatRecMakeStereoHits
+    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions
     caloClusterModuleLabel                      : MakeCaloCluster
 
     useDoublets             : 1
@@ -143,7 +143,7 @@ CalPatRec            : {
 #------------------------------------------------------------------------------
 	scaleErrDoublet                         : 1.
 	iLoopUseDoublets                        : 0
-	minDriftDoublet                         : 0.4
+	minDriftDoublet                         : 0.3
 	deltaDriftDoublet                       : 0.3
 	sigmaSlope                              : 0.025
     }
@@ -170,8 +170,8 @@ CalPatRec            : {
 	maxhitchi                               : 3.5
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
 	scaleErrDoublet                         : 5.
-	iLoopUseDoublets                        : 8
-	minDriftDoublet                         : 0.4
+	iLoopUseDoublets                        : 9
+	minDriftDoublet                         : 0.3
 	deltaDriftDoublet                       : 0.3
 	sigmaSlope                              : 0.025
 	makeStrawHitModuleLabel                 : makeSH
