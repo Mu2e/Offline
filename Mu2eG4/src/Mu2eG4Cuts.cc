@@ -300,11 +300,13 @@ namespace mu2e {
       virtual bool stackingActionCut(const G4Track *trk);
 
       explicit Plane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
+
+    protected:
+      bool cut_impl(const CLHEP::Hep3Vector& pos);
+
     private:
       std::array<double,3> normal_;
       double offset_;
-
-      bool cut_impl(const CLHEP::Hep3Vector& pos);
     };
 
     Plane::Plane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
@@ -353,6 +355,37 @@ namespace mu2e {
     bool Plane::stackingActionCut(const G4Track *trk) {
       const CLHEP::Hep3Vector& pos = trk->GetPosition();
       return cut_impl(pos);
+    }
+
+    //================================================================
+
+    // This triggers on steps crossing the plane, not just on the
+    // post-step point being behind the plane.  Therefore it is a
+    // factor of two slower than Plane, but is sometimes useful
+    // for its "virtual detector"-like functionality.
+
+    class PostNotPrePlane: public Plane {
+      bool doNotCut_;
+    public:
+      PostNotPrePlane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
+        : Plane(pset, lim)
+        , doNotCut_(pset.get<bool>("doNotCut"))
+      {}
+
+      // the only method we need to override
+      virtual bool steppingActionCut(const G4Step  *step);
+    };
+
+    bool PostNotPrePlane::steppingActionCut(const G4Step *step) {
+      const bool result =
+        cut_impl(step->GetPostStepPoint()->GetPosition())
+        && !cut_impl(step->GetPreStepPoint()->GetPosition());
+
+      if(result && steppingOutput_) {
+        addHit(step);
+      }
+
+      return doNotCut_ ? false : result;
     }
 
     //================================================================
@@ -563,6 +596,7 @@ namespace mu2e {
     if(cuttype == "union") return make_unique<Union>(pset, lim);
     if(cuttype == "intersection") return make_unique<Intersection>(pset, lim);
     if(cuttype == "plane") return make_unique<Plane>(pset, lim);
+    if(cuttype == "postNotPrePlane") return make_unique<PostNotPrePlane>(pset, lim);
 
     if(cuttype == "inVolume") return make_unique<VolumeCut>(pset, false, lim);
     if(cuttype == "notInVolume") return make_unique<VolumeCut>(pset, true, lim);
