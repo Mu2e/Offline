@@ -425,8 +425,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 	  sdmc = &list_of_mc_straw_hits->at(loc);
 	  stmc[0] = sdmc->stepPointMC(mu2e::StrawDigi::zero).get();
 	  stmc[1] = sdmc->stepPointMC(mu2e::StrawDigi::one ).get();
-	  if (stmc[0] != stmc[1]) printf(" InitTrackBlock: WARNING: different StepPointMCs correspond to different times\n");
-
+	  //	  if (stmc[0] != stmc[1]) printf(" InitTrackBlock: WARNING: different StepPointMCs correspond to different times\n");
 //-----------------------------------------------------------------------------
 // count number of active hits with R > 200 um and misassigned drift signs
 //-----------------------------------------------------------------------------
