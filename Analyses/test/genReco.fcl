@@ -86,6 +86,7 @@ physics : {
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
+	MakeCaloProtoCluster : @local::MakeCaloProtoCluster
 	MakeCaloCluster      : @local::MakeCaloCluster
 	MakeStrawHitPositions: @local::MakeStrawHitPositions
 	CalPatRec            : @local::CalPatRec
@@ -117,7 +118,7 @@ physics : {
 	  , protonTimeMap, muonTimeMap 
 	  , makeSD, makeSH
 	  , CaloReadoutHitsMaker, CaloCrystalHitsMaker
-	  , MakeCaloCluster
+	  , MakeCaloProtoCluster, MakeCaloCluster
 # 
 	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec 
 #
