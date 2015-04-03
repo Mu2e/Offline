@@ -591,11 +591,16 @@ namespace mu2e
 	  }
 	  else {
 //-----------------------------------------------------------------------------
-// small drift radius : keep the external error large and set the ambiguity 
-// to zero to use the wire coordinate
+// small drift radius : unless forced, keep the external error large and set 
+// the ambiguity to zero to use the wire coordinate
 //-----------------------------------------------------------------------------
-	    hit[i]->setExtErr(rdrift[i]);
-	    hit[i]->setAmbig(0);
+	    if (fDecisionMode == 0) {
+	      hit[i]->setExtErr(rdrift[i]);
+	      hit[i]->setAmbig(0);
+	    }
+	    else {
+	      hit[i]->setAmbig(fSign[ibest][i]);
+	    }
 	  }
 	}
       }
@@ -627,15 +632,17 @@ namespace mu2e
 	    }
 	    else {
 //-----------------------------------------------------------------------------
-// small radius
+// small radius - add wire
 //-----------------------------------------------------------------------------
-	      hit[i]->setExtErr(2*rdrift[i]);
+	      hit[i]->setExtErr(rdrift[i]);
 	      hit[i]->setAmbig(0);
 	    }
 	  }
 	  else {
 //-----------------------------------------------------------------------------
-// the best chi2 is large - cant believe anything
+// the best chi2 is large - cant believe anything, need to treat hits as 
+// separate ones - this is to be implemented yet
+// a good example - one of the hits - on Dave's no-gaussial tail
 //-----------------------------------------------------------------------------
 	    if (fAnnealingStep < fILoopUseDoublets) {
 	      double err = fabs(rdrift[i]);
@@ -1063,15 +1070,16 @@ namespace mu2e
       }
  // sort hits by flightlength (or in Z, which is the same)
       std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef.fitdir().fitDirection()));
-
+//---------------------------------------------------------------------------
 // refit the track one more time with minimal external errors
+// 2015 - 02 - 27 Gianipez added the loop for including the external errors 
 //---------------------------------------------------------------------------
-//2015 - 02 - 27 Gianipez added the loop for including the external errors 
-//---------------------------------------------------------------------------
-      if (tpeak){
+      if (tpeak) {
 //------------------------------------------------------------------------------------------
 // 2015 - 03 - 09 Gainipez added the following line for forcing the fiITeration procedure
 // to use findAndUseDoublets
+// 2015-04-03 P.Murat: not sure I understand why there are different number of iterations 
+//                     in different cases - Giani?
 //------------------------------------------------------------------------------------------
 	for (size_t iherr=_hiterr.size()-2; iherr<_hiterr.size();++iherr) {
 	  fitIteration(kres, iherr, tpeak);
@@ -1084,25 +1092,28 @@ namespace mu2e
   }
 
 
-  void KalFitHack::fitTrack(KalFitResult& kres, CalTimePeak* TPeak) {
+//-----------------------------------------------------------------------------
 // loop over external hit errors, ambiguity assignment, t0 tolerance
 // 10-03-2013 giani changed this loop. now it loops on all the stations
 // and store the last fit that converges
+//-----------------------------------------------------------------------------
+  void KalFitHack::fitTrack(KalFitResult& KRes, CalTimePeak* TPeak) {
 
-    for (size_t iherr=0; iherr<_hiterr.size();++iherr) {
-      fitIteration(kres,iherr,TPeak);
+    int n = _hiterr.size();
+    for (int i=0; i<n; ++i) {
+      fitIteration(KRes,i,TPeak);
 
-      if (! kres._fit.success()) break; //commented by gianipez
+      if (! KRes._fit.success()) break; //commented by gianipez
      }
 
-    if(kres._krep != 0) kres._krep->addHistory(kres._fit,"KalFitHack");
+    if(KRes._krep != 0) KRes._krep->addHistory(KRes._fit,"KalFitHack");
   }
 
 //-----------------------------------------------------------------------------
 // one step of the track fit
+// update external hit errors.  This isn't strictly necessary on the 1st iteration.
 //-----------------------------------------------------------------------------
-  void KalFitHack::fitIteration(KalFitResult& KRes, size_t IHErr, CalTimePeak* TPeak) {
-    // update external hit errors.  This isn't strictly necessary on the 1st iteration.
+  void KalFitHack::fitIteration(KalFitResult& KRes, int IHErr, CalTimePeak* TPeak) {
 
     double       oldt0 = KRes._krep->t0()._t0;
     unsigned     niter(0);
@@ -1118,15 +1129,16 @@ namespace mu2e
 //-----------------------------------------------------------------------------------
 // 2015 -02 -17 G. Pezzullo: loop over the hits and assign a smaller external error 
 // for the doublets
+// 2015-04-03: IHErr = -1: special value, invoke last iteration
 //-----------------------------------------------------------------------------------
+    if (IHErr == -1) IHErr = _hiterr.size()-1;
+
     fAnnealingStep = IHErr;
 //--------------------------------------------------------------------------------
 // 2015-02-19 G.Pezzu: re-search multiplets using updated fit results
 // 2015-03-25 P.Murat: *TODO* I don't think this call is needed, the one in the 
 //                     loop should be sufficient - check !
 //-----------------------------------------------------------------------------
-//    if (_debug>0) printHits(KRes,"KalFitHack::fitIteration::001");
-
     mu2e::TrkStrawHit *hit;
 
     KRes._nt0iter = 0;
@@ -1175,12 +1187,15 @@ namespace mu2e
       }
       if (! fit_success) break;
 //-----------------------------------------------------------------------------
-// if the fit succeeded, update the track T0, and recalculate hit T0's 
+// if the fit succeeded, update the track T0, and recalculate the hit T0's 
 //-----------------------------------------------------------------------------
       if (_updatet0 ) {
 	// 2014-12-11: G.Pezzullo and P.Murat - temporary *FIXME*
-	if (TPeak != NULL)  updateCalT0(KRes,TPeak);
-	else                updateT0(KRes);
+// 	if (TPeak != NULL)  updateCalT0(KRes,TPeak);
+// 	else                updateT0(KRes);
+
+					// when iterating, don't look back at the cluster T0
+	updateT0(KRes);
 
 	changed |= fabs(KRes._krep->t0()._t0-oldt0) > _t0tol[IHErr];
 	oldt0    = KRes._krep->t0()._t0;

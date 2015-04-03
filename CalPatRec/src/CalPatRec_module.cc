@@ -524,10 +524,6 @@ namespace mu2e {
       HelixFitHackResult hf_result(helixdef);
       KalFitResult       sf_result (seeddef);
       KalFitResult       kf_result  (kaldef);
-
-					// initialize filters. These are used only for diagnostics
-//       _hfilt.clear();
-//       _sfilt.clear();
 //-----------------------------------------------------------------------------
 // pattern recognition step - find initial approximation for Kalman fitter
 //-----------------------------------------------------------------------------
@@ -630,8 +626,7 @@ namespace mu2e {
 	if (_debug > 0) {
 	  printf("[CalPatRec::seeddef] goodhits = %lu over nIndex = %i\n", goodhits.size(), _nindex); 
 	}
-					// helixdef doesn't seem to be used below...
-	//	helixdef.setIndices(goodhits);
+
 	seeddef.setIndices (goodhits);
 
 	if (_debug > 0) {
@@ -800,20 +795,21 @@ namespace mu2e {
 
 	      std::vector<hitIndex> misshits;
 	      findMissingHits(kf_result,misshits);
+					// force decision to be made
+	      _kfit.setDecisionMode(1);
 	      if (misshits.size() > 0) {
-					// force decision 
-		_kfit.setDecisionMode(1);
-		_kfit.addHits(kf_result,_shcol,misshits, _maxaddchi /*was 15.0*/, tp);
-
-		if (_debug > 0) _kfit.printHits(kf_result,"CalPatRec::produce after addHits");
+		_kfit.addHits(kf_result,_shcol,misshits, _maxaddchi, tp);
 	      }
+	      else {
+		_kfit.fitIteration(kf_result,-1,tp);
+	      }
+
+	      if (_debug > 0) _kfit.printHits(kf_result,"CalPatRec::produce after addHits");
 //-----------------------------------------------------------------------------
 // and weed hits again to insure that addHits doesn't add junk
 //-----------------------------------------------------------------------------
 	      _kfit.weedHits(kf_result);
 	    }
-	    _kfit.updateT0(kf_result);
-
 //-----------------------------------------------------------------------------
 // now evaluate the T0 ad its error using the straw hits
 //-----------------------------------------------------------------------------
@@ -822,7 +818,6 @@ namespace mu2e {
 	    if (_debug > 0) {
 	      _kfit.printHits(kf_result,"CalPatRec::produce : final, after weedHits");
 	    }
-
 
 //-----------------------------------------------------------------------------
 // done, fill debug histograms
@@ -852,11 +847,8 @@ namespace mu2e {
 		  break;
 		}
 	      }
-	      if (found){
-		_hist._hkaldoca[0]->Fill(doca);
-	      }else {
-		_hist._hkaldoca[1]->Fill(doca);
-	      }
+	      if (found) _hist._hkaldoca[0]->Fill(doca);
+	      else       _hist._hkaldoca[1]->Fill(doca);
 	    }
 	  }
 	}
@@ -889,61 +881,6 @@ namespace mu2e {
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	tp->SetCprIndex(tracks->size());
-//----------------------------------------------------------------------
-//  2015-01-17 G. Pezzu added the followinf diagnostic for tracks 
-// passing cut set "C", except for the timing cut!
-//----------------------------------------------------------------------
-
-// 	double  fMinFitCons      = 2.e-3;
-// 	double  fMinNActive      = 25;
-// 	double  fMaxT0Err        = 0.9;  		// in ns
-// 	double  fMaxFitMomErr    = 0.25;  		// in MeV
-// 	double  fMinTanDip       = tan(M_PI/6.);	// 0.5773
-// 	double  fMaxTanDip       = 1.0;  
-// 	double  fMinD1           = -80.;		// in mm
-// 	double  fMaxD1           = 105.;
-
-// 	double  minMom           = 100.;//MeV/c
-// 	BbrVectorErr      momerr = krep->momentumErr(0);
-
-// 	CLHEP::Hep3Vector momdir =  krep->momentum(0).unit();
-// 	HepVector momvec(3);
-// 	for (int i=0; i<3; i++) momvec[i] = momdir[i];
-	
-// 	double fitmom_err = sqrt(momerr.covMatrix().similarity(momvec));
-    
-// 	if ( (krep->chisqConsistency().consistency() > fMinFitCons  ) &&
-// 	     (krep->nActive()                        > fMinNActive  ) &&
-// 	     (krep->t0().t0Err()                     < fMaxT0Err    ) &&
-// 	     (fitmom_err                             < fMaxFitMomErr) &&
-// 	     (krep->helix(0).tanDip()                > fMinTanDip   ) &&
-// 	     (krep->helix(0).tanDip()                < fMaxTanDip   ) &&
-// 	     (krep->helix(0).d0()                    < fMaxD1       ) &&
-// 	     (krep->helix(0).d0()                    > fMinD1       ) &&
-// 	     (mom.mag()                              > minMom       )){
-	  
-// 	  _hist._hkradius[1]->Fill(fHackData->TheoRadius() - radius);
-// 	  _hist._hkdfdz[1]->Fill(fHackData->dfdz() - kdfdz);
-
-// 	  _hist._hseeddfdz[1]->Fill(seeddfdz - kdfdz);
-// 	  _hist._hseeddr[1]->Fill(seedRadius - radius);
-
-// 	  _hist._hdrw  [1]->Fill(fHackData->fData[14]-radius);
-// 	  _hist._hchi2w[1]->Fill(fHackData->fData[15]);
-
-// 	  _hist._hchi2zphi[1]->Fill(fHackData->fData[13]);
-
-// 	  _hist._hNpointsRescued[1]->Fill(fHackData->rescuedPoints()/double(fHackData->goodPoints()));
-	  
-// 	  for (int i=0; i< fHackData->goodPoints(); ++i){
-// 	    dz   = fHackData->fDz[i];
-// 	    dist = fHackData->fDist[i]; 
-// 	    dphi = fHackData->fResid[i]; 
-// 	    _hist._hPhiResid[1]->Fill(dphi);
-// 	    _hist._hkdistvsdz[1]->Fill(dz, dist);
-// 	  }
-// 	}
-
       } 
       else {
 //-----------------------------------------------------------------------------

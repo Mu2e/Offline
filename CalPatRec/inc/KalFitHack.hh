@@ -145,7 +145,7 @@ namespace mu2e {
 				const KalRep*                    Krep) const  ;
 
     bool fitable     (TrkDef const& tdef);
-    void fitIteration(KalFitResult& kres , size_t iiter, CalTimePeak* TPeak=NULL);
+    void fitIteration(KalFitResult& kres , int Iteration, CalTimePeak* TPeak=NULL);
     void fitTrack    (KalFitResult& kres , CalTimePeak* TPeak=NULL);
     void initCaloT0  (CalTimePeak*  TPeak, TrkDef const& tdef, TrkT0& t0);
     void initT0      (TrkDef const& tdef , TrkT0& t0);
