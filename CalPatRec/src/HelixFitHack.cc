@@ -373,11 +373,12 @@ namespace mu2e {
   int HelixFitHack::findDfDz(HelixFitHackResult& Helix, 
 			      int seedIndex, int *indexVec) {
     
-    double phi, phi_ref(-1e10), z, z_ref, dphi, dz;
+    double phi, phi_ref(-1e10), z, z_ref, dphi, dz, dzOverHelPitch;
     
     _hDfDzRes = new TH1F("hDfDzRes","dfdz residuals",
 		      20, _minDfDz, _maxDfDz);
-    
+    _hPhi0Res = new TH1F("hPhi0Res", "phi0 residuals",
+			 20, 0., 2.*M_PI);
     mu2e::GeomHandle<mu2e::TTracker> ttHandle;
     const mu2e::TTracker* tracker = ttHandle.get();
 
@@ -388,7 +389,11 @@ namespace mu2e {
     // using the initial value of dfdz we can set it more accuratelly:
     // tollMax = half-helix-step = Pi / dfdz
     double tollMin(100.), tollMax;//(800.);
-    tollMax = M_PI / Helix._dfdz;
+    tollMax = 2.*M_PI / Helix._dfdz;
+    
+    //avoid the use of the couple of points which have dz %(mod) HelPitch less than 0.8
+    // still the value need to be optimized, this is just out of lots of debugging
+    double dzOverHelPitchCut = 0.7;
 
     if (_debug >5){
       printf("[HelixFitHack::findDfDz] x0 = %9.3f y0 = %9.3f radius = %9.3f dfdz = %9.6f straw-hits = %9.5f dzPitch = %8.6f\n",
@@ -396,13 +401,13 @@ namespace mu2e {
       //      printInfo(Helix);
     }
 
-    int  np, ist, nstations;
+    int        np, ist, nstations;
 
     np        = fxyzp.size();
     nstations = tracker->nStations();
     
-    double phiVec[30], zVec[30];
-    int    nhits [30];
+    double    phiVec[30], zVec[30];
+    int       nhits [30];
 
     for (int i=0; i<nstations; i++) {
       phiVec[i] = 0;
@@ -418,11 +423,12 @@ namespace mu2e {
 	ist = fxyzp[i]._straw->id().getDevice()/2;
 	pos = fxyzp[i]._pos;
 	phi = CLHEP::Hep3Vector(pos - center).phi();
+	phi = TVector2::Phi_0_2pi(phi);
 	zVec  [ist] += pos.z();
 	if (nhits == 0) phiVec[ist] = phi;
 	else {
 	  while (phi-phiVec[ist] >  M_PI) phi -= 2*M_PI;
-	  while (phi-phiVec[ist] < -M_PI) phi += 2*M_PI;
+ 	  while (phi-phiVec[ist] < -M_PI) phi += 2*M_PI;
 
 	  phiVec[ist] = (phiVec[ist]*nhits[ist]+phi)/(nhits[ist]+1);
 	}
@@ -476,73 +482,147 @@ namespace mu2e {
 	z   = zVec  [j];
 	dz  = z - z_ref;
 
+	dzOverHelPitch = dz/tollMax - int(dz/tollMax);
+
 	if ( (phi_ref > -9999 ) && 
+	     (dzOverHelPitch < dzOverHelPitchCut ) &&
 	     //	     (  dz < tollMax  ) &&
 	     (  dz > tollMin  )){
 	  dphi    = phi - phi_ref;
-	  while (dphi >  M_PI) dphi -= 2*M_PI;
-	  while (dphi < -M_PI) dphi += 2*M_PI;
+ 	  while (dphi >  M_PI) dphi -= 2*M_PI;
+ 	  while (dphi < -M_PI) dphi += 2*M_PI;
 	                      //add 2 pi for taking into account the fact we are in the second loop
 	                      //FIX ME: what to do if we are in the third loop?
 	  if (  dz > tollMax  ) dphi += 2*M_PI*int(dz/tollMax);
 
-	  _hDfDzRes->Fill(dphi/dz);
-	    
+	  double dphidz = dphi/dz;
+	  if (dphidz < 0.) dphidz = (dphi+2.*M_PI)/dz;
+	  _hDfDzRes->Fill(dphidz);
+	  
+	  double tmpphi0 = phi_ref - dphidz*z_ref;
+	  tmpphi0        = TVector2::Phi_0_2pi(tmpphi0);
+
+	  _hPhi0Res->Fill(tmpphi0);
+	  
 	  if (_debug >5){
-	    printf("[HelixFitHack::findDfDz] z_ref = %9.3f z = %9.3f phi_ref = %9.5f phi = %9.5f dz = %9.5f df/dz = %9.5f\n",
-		   z_ref, z, phi_ref, phi, dz, dphi/dz);
+	    printf("[HelixFitHack::findDfDz] z_ref = %9.3f z = %9.3f phi_ref = %9.5f phi = %9.5f dz = %10.3f dz/HelPitch = %10.3f df/dz = %9.5f phi0 = %9.6f\n",
+		   z_ref, z, phi_ref, phi, dz, dz/tollMax, dphi/dz, tmpphi0);
 	  }
 	}
       }
 
       //now use the calorimeter cluster phi
-      dz = zCl - z_ref;
+      dz             = zCl - z_ref;
+      dzOverHelPitch = dz/tollMax - int(dz/tollMax);
+
       if ( (phi_ref > -9999 ) && 
-	     (  dz < tollMax  ) &&
-	     (  dz > tollMin  )){
+//	     (  dz < tollMax  ) &&
+	   (  dz > tollMin  )){
 	  dphi    = phiCl - phi_ref;
-	  while (dphi >  M_PI) dphi -= 2*M_PI;
-	  while (dphi < -M_PI) dphi += 2*M_PI;
+// 	  while (dphi >  M_PI) dphi -= 2*M_PI;
+// 	  while (dphi < -M_PI) dphi += 2*M_PI;
+	  dphi  = TVector2::Phi_0_2pi(dphi);
+
+	                      //add 2 pi for taking into account the fact we are in the second loop
+	                      //FIX ME: what to do if we are in the third loop?
+	  if (  dz > tollMax  ) dphi += 2*M_PI*int(dz/tollMax);
+
+	  double dphidz = dphi/dz;
+	  while (dphidz < 0.) {
+	    dphi   += 2.*M_PI;
+	    dphidz = dphi/dz;
+	  }
 	  
-	  _hDfDzRes->Fill(dphi/dz);
+	  double tmpphi0 = phi_ref - dphidz*z_ref;
+	  tmpphi0        = TVector2::Phi_0_2pi(tmpphi0);
+
+	  if (dzOverHelPitch < dzOverHelPitchCut ) {
+	    _hDfDzRes->Fill(dphidz);
+	    _hPhi0Res->Fill(tmpphi0);
+	  }
+
 	  if (_debug >5){
-	    printf("[HelixFitHack::findDfDz] z_ref = %9.3f z = %9.3f phi_ref = %9.5f phi = %9.5f dz = %9.5f df/dz = %9.5f\n",
-		   z_ref, zCl, phi_ref, phiCl, dz, dphi/dz);
+	    printf("[HelixFitHack::findDfDz] z_ref = %9.3f z = %9.3f phi_ref = %9.5f phi = %9.5f dz = %10.3f dz/HelPitch = %10.3f df/dz = %9.5f phi0 = %9.6f\n",
+		   z_ref, zCl, phi_ref, phiCl, dz, dz/tollMax, dphidz, tmpphi0);
 	  }
       }
       
     NEXT_POINT:;
     }
-    int maxBin  = _hDfDzRes->GetMaximumBin();
-    _hdfdz      = _hDfDzRes->GetBinCenter(maxBin);//_hDfDzRes->GetMean();
+    // 2015 - 04- 02 G. Pezzu changed the way the maximum is searched
+    // since sometimes 2pi ambig creates two peaks in the histogram
+    // we want to use the second, because it is the correct one
 
-    int nentries  = _hDfDzRes->GetEntries();
-    int overflows = _hDfDzRes->GetBinContent(0)  + _hDfDzRes->GetBinContent(_hDfDzRes->GetNbinsX()+1);
+    //   int      maxBin  = _hDfDzRes->GetMaximumBin();
+    double  maxContent = _hDfDzRes->GetMaximum() - 0.001;
+    int      maxBin    = _hDfDzRes->FindLastBinAbove(maxContent);//GetMaximumBin();
+    _hdfdz             = _hDfDzRes->GetBinCenter(maxBin);//_hDfDzRes->GetMean();
+    double dfdzmean    = _hDfDzRes->GetMean();
+    int    nentries    = _hDfDzRes->GetEntries();
+    int    overflows   = _hDfDzRes->GetBinContent(0)  + _hDfDzRes->GetBinContent(_hDfDzRes->GetNbinsX()+1);
 
+  
+//                                             //calculate the mean phi0
+//     for (int i=0; i<nstations; i++) {
+//       if (nhits[i] == 0) continue;
+
+//       phi_ref = phiVec[i];
+//       dz      =  zVec  [i];
+//       double phi = phi_ref - _hdfdz*dz;
+//       phi        = TVector2::Phi_0_2pi(phi);
+
+//       _hPhi0Res->Fill(phi);
+//     }
+//                                             //add the cluster contribute
+//     phi = phiCl - _hdfdz*zCl;
+//     phi = TVector2::Phi_0_2pi(phi);
+
+//     _hPhi0Res->Fill(phi);
+
+    // maxBin              = _hPhi0Res->GetMaximumBin();
+    maxContent          = _hPhi0Res->GetMaximum() - 0.001;
+    maxBin              = _hPhi0Res->FindLastBinAbove(maxContent);//GetMaximumBin();
+  
+    double mpvphi0      = _hPhi0Res->GetBinCenter(maxBin);//_hPhi0Res->GetMean();
+    double menaphi0     = _hPhi0Res->GetMean();
+    int    nentriesphi  = _hPhi0Res->GetEntries();
+    int    overflowsphi = _hPhi0Res->GetBinContent(0)  + _hPhi0Res->GetBinContent(_hPhi0Res->GetNbinsX()+1);
+    _hphi0 = mpvphi0;
     if (_debug >5){
       
-      printf("[HelixFitHack::findDfDz] nentries = %i mpvDfDz = %5.6f under: %5.0f over: %5.0f \n",
-	     nentries, _hdfdz,
+      printf("[HelixFitHack::findDfDz] nentries = %i mpvDfDz = %9.6f meanDphiDz = %9.6f under: %5.0f over: %5.0f \n",
+	     nentries, _hdfdz, dfdzmean, 
 	     _hDfDzRes->GetBinContent(0),_hDfDzRes->GetBinContent(_hDfDzRes->GetNbinsX()+1)
 	     );
       for (int i=0; i<_hDfDzRes->GetNbinsX(); i++) {
 	printf(" %5.0f",_hDfDzRes->GetBinContent(i+1));
       }
       printf("\n");
+
+      printf("[HelixFitHack::findPhi0] nentries = %i mpvPhi0 = %9.6f meanPhi0 = %9.6f under: %5.0f over: %5.0f \n",
+	     nentriesphi, mpvphi0,  menaphi0,
+	     _hPhi0Res->GetBinContent(0),_hPhi0Res->GetBinContent(_hPhi0Res->GetNbinsX()+1)
+	     );
+      for (int i=0; i<_hPhi0Res->GetNbinsX(); i++) {
+	printf(" %5.0f",_hPhi0Res->GetBinContent(i+1));
+      }
+      printf("\n");
     }
     delete     _hDfDzRes;
     _hDfDzRes = 0;
+    delete     _hPhi0Res;
+    _hPhi0Res = 0;
 //-----------------------------------------------------------------------------
 // Part 2: try to perform a more accurate estimate - straight line fit
 //-----------------------------------------------------------------------------
     double z0, phi0, dphidz, pred;
 
-    z0   = zVec  [i0];
-    phi0 = phiVec[i0];
+    z0   = 0.;//zVec  [i0];
+    phi0 = _hphi0;//phiVec[i0];
 
     dphidz = _hdfdz;
 
-    _hphi0 = phi0 + _hdfdz*z0;
+    //    _hphi0 = phi0 + _hdfdz*z0;
     _sdfdz = -1;
    
     if (_debug >5) {
@@ -575,11 +655,11 @@ namespace mu2e {
     dphi = dz*dphidz + phi0 - phiCl;
     while (dphi > M_PI){
       phiCl += 2*M_PI;
-      dphi = dz*dphidz + phi0 - phiCl;
+      dphi  -= 2*M_PI; // dz*dphidz + phi0 - phiCl;
     }
     while (dphi < -M_PI){
       phiCl -= 2*M_PI;
-      dphi = dz*dphidz + phi0 - phiCl;
+      dphi  += 2*M_PI; // = dz*dphidz + phi0 - phiCl;
     }
       
     double errCl = 2./30.;
@@ -649,8 +729,8 @@ namespace mu2e {
     if (_debug >5) {
       printf("[HelixFitHack::findDfDz] END: _hdfdz = %9.5f _hphi0 = %9.6f chi2 = %9.3f ", _hdfdz, 
 	     _hphi0, -1.);
-      printf(" FIT: srphi.dfdz() = %9.5f srphi.phi0() = %9.6f chi2 = %9.3f\n", srphi.dfdz(), 
-	     srphi.phi0(), srphi.chi2DofLine());
+      printf(" FIT: srphi.dfdz() = %9.5f srphi.phi0() = %9.6f chi2 = %9.3f qn = %6.0f\n", srphi.dfdz(), 
+	     srphi.phi0(), srphi.chi2DofLine(), srphi.qn());
     }
 
     if ( (nentries - overflows) == 0) _hdfdz = _mpDfDz;
@@ -1424,7 +1504,7 @@ namespace mu2e {
 //---------------------------------------------------------------------------------------
 // use the results of the helix search to seea if points along the track can be rescued
 //---------------------------------------------------------------------------------------
-    rescueHits(Helix, 0, _indicesTrkCandidate, 1);
+    rescueHits(Helix, 0, _indicesTrkCandidate);
 
     if (_debug != 0)  printInfo(Helix);
 
