@@ -565,13 +565,13 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
 
     printf("--------------------------------------------------------------------");
     printf("---------------------------------------------------------------");
-    printf("--------------------------------------------\n");
+    printf("------------------------------------------------------\n");
     printf(" ih  SInd U A     len         x        y        z      HitT    HitDt");
     printf(" Ch Pl  L  W     T0       Xs      Ys        Zs     resid sigres");
-    printf(" Rdrift   mcdoca  totErr hitErr  t0Err penErr extErr\n");
+    printf("    Rdrift   mcdoca totErr hitErr  t0Err penErr extErr\n");
     printf("--------------------------------------------------------------------");
     printf("---------------------------------------------------------------");
-    printf("--------------------------------------------\n");
+    printf("------------------------------------------------------\n");
 
     Hep3Vector pos;
     int i = 0;
@@ -654,12 +654,13 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
 	     res,
 	     sigres
 	     );
+      
+      if      (hit->ambig()       == 0) printf(" * %6.3f",hit->driftRadius());
+      else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
+      else                              printf(" ? %6.3f",hit->driftRadius()*hit->ambig());
 
-      if (hit->ambig() != 0) printf(" %6.3f",hit->ambig()*hit->driftRadius());
-      else                   printf(" *%5.3f",hit->driftRadius());
-
-      printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f\n",		 
-	     mcdoca, 
+      printf("  %7.3f",mcdoca);
+      printf(" %6.3f %6.3f %6.3f %6.3f %6.3f\n",		 
 	     hit->totalErr(),
 	     hit->hitErr(),
 	     hit->t0Err(),
