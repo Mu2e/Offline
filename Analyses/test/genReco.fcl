@@ -73,8 +73,8 @@ physics : {
         muonTimeMap          : @local::muonTimeMap
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
-	CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
+	MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
 #------------------------------------------------------------------------------
 #  default tracking
 #------------------------------------------------------------------------------
@@ -117,7 +117,7 @@ physics : {
     p1 : [generate, g4run
 	  , protonTimeMap, muonTimeMap 
 	  , makeSD, makeSH
-	  , CaloReadoutHitsMaker, CaloCrystalHitsMaker
+	  , MakeCaloReadoutHits, MakeCaloCrystalHits
 	  , MakeCaloProtoCluster, MakeCaloCluster
 # 
 	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec 
