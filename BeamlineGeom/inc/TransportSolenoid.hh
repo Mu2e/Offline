@@ -151,6 +151,18 @@ namespace mu2e {
       return _caRadiiMap.at(i)[1]; 
     }
 
+    // Rings  (David Norvil Brown, April 2015)
+    double rInRingSide() const { return _rInRingSide; }
+    double rOutRingSide() const { return _rOutRingSide; }
+    double thickRingSide() const { return _thickRingSide; }
+    double rInRing() const { return _rInRing; }
+    double rOutRing() const { return _rOutRing; }
+    double lengthRing() const { return _lengthRing; }
+    std::string RingMaterial() const { return _RingMaterial; }
+    std::vector<double> xRing() const { return _xRing; }
+    std::vector<double> yRing() const { return _yRing; }
+    std::vector<double> zRing() const { return _zRing; }
+
     // Coils
     std::string coil_material() const { return _coilMaterial; }
     unsigned getNCoils(TSRegion::enum_type i) const { return _nCoils.at(i); }
@@ -206,6 +218,14 @@ namespace mu2e {
     // cryostat map
     typedef std::map<TSRadialPart::enum_type,std::unique_ptr<TSSection>> map_unique_ptrs_TSSection;
     std::map<TSRegion::enum_type,map_unique_ptrs_TSSection> _cryoMap;
+
+    // Rings 
+    double _rInRingSide, _rOutRingSide, _thickRingSide;
+    double _rInRing, _rOutRing, _lengthRing;
+    std::string _RingMaterial;
+    std::vector<double> _xRing;
+    std::vector<double> _yRing;
+    std::vector<double> _zRing;
 
     // Coils
     std::string _coilMaterial;

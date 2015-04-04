@@ -65,6 +65,21 @@ namespace mu2e {
     ts._material = c.getString("ts.materialName");
     ts._insideMaterial = c.getString("ts.insideMaterialName");
 
+    // Parameters for rings (David Norvil Brown added April 1 2015)
+    ts._rInRingSide = c.getDouble("ts.rInRingSide");
+    ts._rOutRingSide = c.getDouble("ts.rOutRingSide");
+    ts._thickRingSide = c.getDouble("ts.thickRingSide");
+    ts._rInRing = c.getDouble("ts.rInRing");
+    ts._rOutRing = c.getDouble("ts.rOutRing");
+    ts._lengthRing = c.getDouble("ts.lengthRing");
+    ts._RingMaterial = c.getString("ts.RingMaterialType");
+
+    int nRing = c.getInt("ts.nRing");
+    c.getVectorDouble("ts.xRing", ts._xRing, nRing);
+    c.getVectorDouble("ts.yRing", ts._yRing, nRing);
+    c.getVectorDouble("ts.zRing", ts._zRing, nRing);
+
+
     // - end wall parameters
     ts._rIn_endWallU1 = c.getDouble("ts.tsUendWall1.rIn",c.getDouble("ts.ts1in.rOut") ); 
     ts._rIn_endWallU2 = c.getDouble("ts.tsUendWall2.rIn",0.); 

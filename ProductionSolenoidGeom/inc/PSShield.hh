@@ -8,6 +8,8 @@
 //
 // Original author Andrei Gaponenko
 //
+// Added proton beam inlet to HRS.  David N. Brown (Louisville), 
+// March 2015
 
 #include <ostream>
 #include <vector>
@@ -15,6 +17,7 @@
 #include <CLHEP/Geometry/Transform3D.h>
 
 #include "Mu2eInterfaces/inc/Detector.hh"
+#include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/Polycone.hh"
 
 #include "art/Persistency/Common/Wrapper.h"
@@ -54,6 +57,11 @@ namespace mu2e {
     const std::vector<Groove>& grooves() const { return grooves_; }
     unsigned nGrooves() const { return grooves_.size(); }
 
+    const Tube beamInlet() const { return beamInlet_; }
+    const double getBeamAngleY() const { return beamAngleY_; }
+    const double getBeamAngleX() const { return beamAngleX_; }
+    const CLHEP::Hep3Vector getBeamInletCenter() const { return beamInletCenter_; }
+
   private:
 
     PSShield();
@@ -66,6 +74,11 @@ namespace mu2e {
 
     std::vector<Polycone> shells_;
     std::vector<Groove> grooves_;
+    Tube beamInlet_;
+    double beamAngleY_;
+    double beamAngleX_;
+    CLHEP::Hep3Vector beamInletCenter_;
+
   };
 
   std::ostream& operator<<(std::ostream& os, const PSShield::Groove& groove);

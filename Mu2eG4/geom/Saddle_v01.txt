@@ -3,22 +3,44 @@
 // See Mu2e docdb #4678 for more details on parameters
 
 // Sort boxes into "types"
-int Saddle.numberOfBoxTypes = 3; 
+int Saddle.numberOfBoxTypes = 10; 
 
 // How many of each type box to make
 int Saddle.nBoxType1 = 4;  // PS Saddles.  Each "box" is a side plate
 int Saddle.nBoxType2 = 2;  // PS Saddles.  Each "box" here is a foot of saddle
 int Saddle.nBoxType3 = 4;  // PS Saddles.  Each "box" here is an end of saddle
 
+int Saddle.nBoxType4 = 2;  // PS Stand - I beams
+
+int Saddle.nBoxType5 = 12; // Sides of TS Saddles.  
+int Saddle.nBoxType6 = 6;  // feet of TS Saddles.
+
+int Saddle.nBoxType7 = 2; // PS Stand side I-beams
+
+int Saddle.nBoxType8 = 12; // TS Saddle - ends of saddles
+int Saddle.nBoxType9 = 12; // TS Stand box - sides
+int Saddle.nBoxType10 = 12; // TS Stand box - ends
+
+
 // Number of vertices of each type of box
-int Saddle.nVertType1 = 10;
-int Saddle.nVertType2 = 4;
-int Saddle.nVertType3 = 4;
+int Saddle.nVertType1 = 10; // PS Saddle sides
+int Saddle.nVertType2 = 4; // PS Saddle foot 
+int Saddle.nVertType3 = 4; // PS Saddle ends
+
+int Saddle.nVertType4 = 12; // PS Stand I-beam
+
+int Saddle.nVertType5 = 10; // TS Saddles side plates
+int Saddle.nVertType6 = 4; // TS Saddles footer plates
+
+int Saddle.nVertType7 = 12; // PS Stand side I-beam
+
+int Saddle.nVertType8 = 4;  // TS Saddle end plates
+int Saddle.nVertType9 = 4;  // TS Stand box sides
+int Saddle.nVertType10 = 4; // TS Stand box ends
+
 
 // Vertices in u, v for each type of box.  Dimensions should be in mm.
-// All dimensions here are 10 mm less than nominal design dimensions,
-// but due to symmetry, these are implemented as 5 mm less at every vertex.
-// The T blocks have identical outlines
+
 double Saddle.outlineType1UVert1 = 1264;
 double Saddle.outlineType1VVert1 = 0;
 double Saddle.outlineType1UVert2 = 1264;
@@ -58,18 +80,146 @@ double Saddle.outlineType3VVert3 = 971;
 double Saddle.outlineType3UVert4 = -15;
 double Saddle.outlineType3VVert4 = 0;
 
+// I-beam for PS stand
+double Saddle.outlineType4UVert1 = 350;
+double Saddle.outlineType4VVert1 = 0;
+double Saddle.outlineType4UVert2 = 350;
+double Saddle.outlineType4VVert2 = 30;
+double Saddle.outlineType4UVert3 = 30;
+double Saddle.outlineType4VVert3 = 30;
+double Saddle.outlineType4UVert4 = 30;
+double Saddle.outlineType4VVert4 = 680;
+double Saddle.outlineType4UVert5 = 350;
+double Saddle.outlineType4VVert5 = 680;
+double Saddle.outlineType4UVert6 = 350;
+double Saddle.outlineType4VVert6 = 710;
+double Saddle.outlineType4UVert7 = -350;
+double Saddle.outlineType4VVert7 = 710;
+double Saddle.outlineType4UVert8 = -350;
+double Saddle.outlineType4VVert8 = 680;
+double Saddle.outlineType4UVert9 = -30;
+double Saddle.outlineType4VVert9 = 680;
+double Saddle.outlineType4UVert10 = -30;
+double Saddle.outlineType4VVert10 = 30;
+double Saddle.outlineType4UVert11 = -350;
+double Saddle.outlineType4VVert11 = 30;
+double Saddle.outlineType4UVert12 = -350;
+double Saddle.outlineType4VVert12 = 0;
+
+//TS Saddle side plates
+double Saddle.outlineType5UVert1 = 1050;
+double Saddle.outlineType5VVert1 = 0;
+double Saddle.outlineType5UVert2 = 1050;
+double Saddle.outlineType5VVert2 = 995;
+double Saddle.outlineType5UVert3 = 925;
+double Saddle.outlineType5VVert3 = 995;
+double Saddle.outlineType5UVert4 = 925;
+double Saddle.outlineType5VVert4 = 845;
+double Saddle.outlineType5UVert5 = 350;
+double Saddle.outlineType5VVert5 = 500;
+double Saddle.outlineType5UVert6 = -350;
+double Saddle.outlineType5VVert6 = 500;
+double Saddle.outlineType5UVert7 = -925;
+double Saddle.outlineType5VVert7 = 845;
+double Saddle.outlineType5UVert8 = -925;
+double Saddle.outlineType5VVert8 = 995;
+double Saddle.outlineType5UVert9 = -1050;
+double Saddle.outlineType5VVert9 = 995;
+double Saddle.outlineType5UVert10 = -1050;
+double Saddle.outlineType5VVert10 = 0;
+
+// foot plates for TS Saddles
+double Saddle.outlineType6UVert1 = 1100;
+double Saddle.outlineType6VVert1 = 0;
+double Saddle.outlineType6UVert2 = 1100;
+double Saddle.outlineType6VVert2 = 50;
+double Saddle.outlineType6UVert3 = -1100;
+double Saddle.outlineType6VVert3 = 50;
+double Saddle.outlineType6UVert4 = -1100;
+double Saddle.outlineType6VVert4 = 0;
+
+// I-beam for PS stand sides
+double Saddle.outlineType7UVert1 = 350;
+double Saddle.outlineType7VVert1 = 0;
+double Saddle.outlineType7UVert2 = 350;
+double Saddle.outlineType7VVert2 = 30;
+double Saddle.outlineType7UVert3 = 30;
+double Saddle.outlineType7VVert3 = 30;
+double Saddle.outlineType7UVert4 = 30;
+double Saddle.outlineType7VVert4 = 680;
+double Saddle.outlineType7UVert5 = 350;
+double Saddle.outlineType7VVert5 = 680;
+double Saddle.outlineType7UVert6 = 350;
+double Saddle.outlineType7VVert6 = 710;
+double Saddle.outlineType7UVert7 = -350;
+double Saddle.outlineType7VVert7 = 710;
+double Saddle.outlineType7UVert8 = -350;
+double Saddle.outlineType7VVert8 = 680;
+double Saddle.outlineType7UVert9 = -30;
+double Saddle.outlineType7VVert9 = 680;
+double Saddle.outlineType7UVert10 = -30;
+double Saddle.outlineType7VVert10 = 30;
+double Saddle.outlineType7UVert11 = -350;
+double Saddle.outlineType7VVert11 = 30;
+double Saddle.outlineType7UVert12 = -350;
+double Saddle.outlineType7VVert12 = 0;
+
+// end plates of TS saddles
+double Saddle.outlineType8UVert1 = 15;
+double Saddle.outlineType8VVert1 = 0;
+double Saddle.outlineType8UVert2 = 15;
+double Saddle.outlineType8VVert2 = 995;
+double Saddle.outlineType8UVert3 = -15;
+double Saddle.outlineType8VVert3 = 995;
+double Saddle.outlineType8UVert4 = -15;
+double Saddle.outlineType8VVert4 = 0;
+
+// side plates of TS Stand boxes
+double Saddle.outlineType9UVert1 = 1100;
+double Saddle.outlineType9VVert1 = 0;
+double Saddle.outlineType9UVert2 = 1100;
+double Saddle.outlineType9VVert2 = 710;
+double Saddle.outlineType9UVert3 = -1100;
+double Saddle.outlineType9VVert3 = 710;
+double Saddle.outlineType9UVert4 = -1100;
+double Saddle.outlineType9VVert4 = 0;
+
+// end plates of TS Stand boxes
+double Saddle.outlineType10UVert1 = 25;
+double Saddle.outlineType10VVert1 = 0;
+double Saddle.outlineType10UVert2 = 25;
+double Saddle.outlineType10VVert2 = 710;
+double Saddle.outlineType10UVert3 = -25;
+double Saddle.outlineType10VVert3 = 710;
+double Saddle.outlineType10UVert4 = -25;
+double Saddle.outlineType10VVert4 = 0;
 
 
 // Lengths in w dimension for each type of box.  Dimensions should be in mm.
 double Saddle.lengthType1 = 30;
 double Saddle.lengthType2 = 700;
 double Saddle.lengthType3 = 440;
+double Saddle.lengthType4 = 2528;
+double Saddle.lengthType5 = 30;
+double Saddle.lengthType6 = 700;
+double Saddle.lengthType7 = 2150; // side I-beams for PS Stand
+double Saddle.lengthType8 = 339;
+double Saddle.lengthType9 = 50;
+double Saddle.lengthType10 = 499;
 
 
-// Materials for each type of box.  Here, Concrete and Iron.
+// Materials for each type of box.  
 string Saddle.materialType1   = "StainlessSteel";
 string Saddle.materialType2   = "StainlessSteel";
 string Saddle.materialType3   = "StainlessSteel";
+string Saddle.materialType4   = "StainlessSteel";
+string Saddle.materialType5   = "StainlessSteel";
+string Saddle.materialType6   = "StainlessSteel";
+string Saddle.materialType7   = "StainlessSteel";
+string Saddle.materialType8   = "StainlessSteel";
+string Saddle.materialType9   = "StainlessSteel";
+string Saddle.materialType10   = "StainlessSteel";
+
 
 // The center of the piece in Mu2e Offline coordinates
 double Saddle.centerXType1Box1 = 3904; // PS Saddle sides west PS
@@ -87,13 +237,12 @@ double Saddle.centerYType1Box4 = -1550;  //
 double Saddle.centerZType1Box4 = -4008; 
 
 
-double Saddle.centerXType2Box1 = 3904; // Saddle foot west 
+double Saddle.centerXType2Box1 = 3904; // PS Saddle foot west 
 double Saddle.centerYType2Box1 = -1600;  // 
 double Saddle.centerZType2Box1 = -7143; 
-double Saddle.centerXType2Box2 = 3904; // Saddle foot east
+double Saddle.centerXType2Box2 = 3904; // PS Saddle foot east
 double Saddle.centerYType2Box2 = -1600;  // 
 double Saddle.centerZType2Box2 = -4243; 
-
 
 double Saddle.centerXType3Box1 = 5153; // PS Saddle end north west PS
 double Saddle.centerYType3Box1 = -1550;  // 
@@ -102,16 +251,245 @@ double Saddle.centerXType3Box2 = 2655; // south west PS
 double Saddle.centerYType3Box2 = -1550;  // 
 double Saddle.centerZType3Box2 = -7143; 
 
-double Saddle.centerXType3Box3 = 5153; // PS Saddle sides east PS
+double Saddle.centerXType3Box3 = 5153; // PS Saddle end north east PS
 double Saddle.centerYType3Box3 = -1550;  // 
 double Saddle.centerZType3Box3 = -4243; 
-double Saddle.centerXType3Box4 = 2655; // 
+double Saddle.centerXType3Box4 = 2655; // south east PS
 double Saddle.centerYType3Box4 = -1550;  // 
 double Saddle.centerZType3Box4 = -4243; 
+
+double Saddle.centerXType4Box1 = 3904; // PS Stand I-beam west
+double Saddle.centerYType4Box1 = -2312;  // 
+double Saddle.centerZType4Box1 = -7143; 
+double Saddle.centerXType4Box2 = 3904; // PS Stand I-beam east
+double Saddle.centerYType4Box2 = -2312;  // 
+double Saddle.centerZType4Box2 = -4243; 
+double Saddle.centerXType7Box1 = 4818; // PS Stand I-beam north
+double Saddle.centerYType7Box1 = -2312;  // 
+double Saddle.centerZType7Box1 = -5693; 
+double Saddle.centerXType7Box2 = 2990; // PS Stand I-beam south
+double Saddle.centerYType7Box2 = -2312;  // 
+double Saddle.centerZType7Box2 = -5693; 
+
+double Saddle.centerXType5Box1 = 3904; // TS Saddle W side of NW saddle 
+double Saddle.centerYType5Box1 = -1550;  // 
+double Saddle.centerZType5Box1 = -3119; 
+double Saddle.centerXType5Box2 = 3904; // TS Saddle E side of NW saddle
+double Saddle.centerYType5Box2 = -1550;  // 
+double Saddle.centerZType5Box2 = -2749; 
+double Saddle.centerXType5Box3 = 955; // TS Saddle N side of NC saddle 
+double Saddle.centerYType5Box3 = -1550;  // 
+double Saddle.centerZType5Box3 = 0; 
+double Saddle.centerXType5Box4 = 585; // TS Saddle S side of NC saddle
+double Saddle.centerYType5Box4 = -1550;  // 
+double Saddle.centerZType5Box4 = 0; 
+double Saddle.centerXType5Box5 = 3175.5; // TS Saddle NW side of NBend saddle 
+double Saddle.centerYType5Box5 = -1550;  // 
+double Saddle.centerZType5Box5 = -990.1; 
+double Saddle.centerXType5Box6 = 2913.9; // TS Saddle SE side of NBend saddle
+double Saddle.centerYType5Box6 = -1550;  // 
+double Saddle.centerZType5Box6 = -728.5; 
+double Saddle.centerXType5Box7 = -3904; // TS Saddle E side of SE saddle 
+double Saddle.centerYType5Box7 = -1550;  // 
+double Saddle.centerZType5Box7 = 3119; 
+double Saddle.centerXType5Box8 = -3904; // TS Saddle W side of SE saddle
+double Saddle.centerYType5Box8 = -1550;  // 
+double Saddle.centerZType5Box8 = 2749; 
+double Saddle.centerXType5Box9 = -955; // TS Saddle S side of SC saddle 
+double Saddle.centerYType5Box9 = -1550;  // 
+double Saddle.centerZType5Box9 = 0; 
+double Saddle.centerXType5Box10 = -585; // TS Saddle N side of SC saddle
+double Saddle.centerYType5Box10 = -1550;  // 
+double Saddle.centerZType5Box10 = 0; 
+double Saddle.centerXType5Box11 = -3175.5; // TS Saddle SE side of SBend 
+double Saddle.centerYType5Box11 = -1550;  // 
+double Saddle.centerZType5Box11 = 990.1; 
+double Saddle.centerXType5Box12 = -2913.9; // TS Saddle NW side of SBend 
+double Saddle.centerYType5Box12 = -1550;  // 
+double Saddle.centerZType5Box12 = 728.5; 
+
+double Saddle.centerXType6Box1 = 3904; // TS Saddle foot NW
+double Saddle.centerYType6Box1 = -1600;  // 
+double Saddle.centerZType6Box1 = -2934; 
+double Saddle.centerXType6Box2 = 3044.7; // TS Saddle foot NC
+double Saddle.centerYType6Box2 = -1600;  // 
+double Saddle.centerZType6Box2 = -859.3; 
+double Saddle.centerXType6Box3 = 770; // TS Saddle foot NBend 
+double Saddle.centerYType6Box3 = -1600;  // 
+double Saddle.centerZType6Box3 = 0; 
+double Saddle.centerXType6Box4 = -3904; // TS Saddle foot SE
+double Saddle.centerYType6Box4 = -1600;  // 
+double Saddle.centerZType6Box4 = 2934; 
+double Saddle.centerXType6Box5 = -3044.7; // TS Saddle foot SC
+double Saddle.centerYType6Box5 = -1600;  // 
+double Saddle.centerZType6Box5 = 859.3; 
+double Saddle.centerXType6Box6 = -770; // TS Saddle foot SBend
+double Saddle.centerYType6Box6 = -1600;  // 
+double Saddle.centerZType6Box6 = 0; 
+
+
+double Saddle.centerXType8Box1 = 4939; // TS Saddle end N of NW
+double Saddle.centerYType8Box1 = -1550;  // 
+double Saddle.centerZType8Box1 = -2934; 
+double Saddle.centerXType8Box2 = 2869; // TS Saddle end N of NW
+double Saddle.centerYType8Box2 = -1550;  // 
+double Saddle.centerZType8Box2 = -2934; 
+double Saddle.centerXType8Box3 = 3776.6; // TS Saddle end NE of NBend
+double Saddle.centerYType8Box3 = -1550;  // 
+double Saddle.centerZType8Box3 = -127.4; 
+double Saddle.centerXType8Box4 = 2312.8; // TS Saddle end SW of NBend
+double Saddle.centerYType8Box4 = -1550;  // 
+double Saddle.centerZType8Box4 = -1591.2; 
+double Saddle.centerXType8Box5 = 770; // TS Saddle end W of NC 
+double Saddle.centerYType8Box5 = -1550;  // 
+double Saddle.centerZType8Box5 = -1035; 
+double Saddle.centerXType8Box6 = 770; // TS Saddle end E of NC 
+double Saddle.centerYType8Box6 = -1550;  // 
+double Saddle.centerZType8Box6 = 1035; 
+double Saddle.centerXType8Box7 = -4939; // TS Saddle end N of NW
+double Saddle.centerYType8Box7 = -1550;  // 
+double Saddle.centerZType8Box7 = 2934; 
+double Saddle.centerXType8Box8 = -2869; // TS Saddle end N of NW
+double Saddle.centerYType8Box8 = -1550;  // 
+double Saddle.centerZType8Box8 = 2934; 
+double Saddle.centerXType8Box9 = -3776.6; // TS Saddle end NE of NBend
+double Saddle.centerYType8Box9 = -1550;  // 
+double Saddle.centerZType8Box9 = 127.4; 
+double Saddle.centerXType8Box10 = -2312.8; // TS Saddle end SW of NBend
+double Saddle.centerYType8Box10 = -1550;  // 
+double Saddle.centerZType8Box10 = 1591.2; 
+double Saddle.centerXType8Box11 = -770; // TS Saddle end W of NC 
+double Saddle.centerYType8Box11 = -1550;  // 
+double Saddle.centerZType8Box11 = -1035; 
+double Saddle.centerXType8Box12 = -770; // TS Saddle end E of NC 
+double Saddle.centerYType8Box12 = -1550;  // 
+double Saddle.centerZType8Box12 = 1035; 
+
+// TS Stand box sides
+double Saddle.centerXType9Box1 = 3904; // TS Stand box side W of NW
+double Saddle.centerYType9Box1 = -2312;  // 
+double Saddle.centerZType9Box1 = -3209; 
+double Saddle.centerXType9Box2 = 3904; // TS Stand box side E of NW
+double Saddle.centerYType9Box2 = -2312;  // 
+double Saddle.centerZType9Box2 = -2659; 
+double Saddle.centerXType9Box3 = 3239.2; // TS Stand box side NE of NBend
+double Saddle.centerYType9Box3 = -2312;  // 
+double Saddle.centerZType9Box3 = -1053.8; 
+double Saddle.centerXType9Box4 = 2850.2; // TS Stand box side SW of NBend
+double Saddle.centerYType9Box4 = -2312;  // 
+double Saddle.centerZType9Box4 = -664.8; 
+double Saddle.centerXType9Box5 = 1045; // TS Stand box side W of NC 
+double Saddle.centerYType9Box5 = -2312;  // 
+double Saddle.centerZType9Box5 = 0; 
+double Saddle.centerXType9Box6 = 495; // TS Stand box side E of NC 
+double Saddle.centerYType9Box6 = -2312;  // 
+double Saddle.centerZType9Box6 = 0; 
+double Saddle.centerXType9Box7 = -3904; // TS Stand box side N of NW
+double Saddle.centerYType9Box7 = -2312;  // 
+double Saddle.centerZType9Box7 = 3209; 
+double Saddle.centerXType9Box8 = -3904; // TS Stand box side N of NW
+double Saddle.centerYType9Box8 = -2312;  // 
+double Saddle.centerZType9Box8 = 2659; 
+double Saddle.centerXType9Box9 = -3239.2; // TS Stand box side NE of NBend
+double Saddle.centerYType9Box9 = -2312;  // 
+double Saddle.centerZType9Box9 = 1053.8; 
+double Saddle.centerXType9Box10 = -2850.2; // TS Stand box side SW of NBend
+double Saddle.centerYType9Box10 = -2312;  // 
+double Saddle.centerZType9Box10 = 664.8; 
+double Saddle.centerXType9Box11 = -1045; // TS Stand box side W of NC 
+double Saddle.centerYType9Box11 = -2312;  // 
+double Saddle.centerZType9Box11 = 0; 
+double Saddle.centerXType9Box12 = -495; // TS Stand box side E of NC 
+double Saddle.centerYType9Box12 = -2312;  // 
+double Saddle.centerZType9Box12 = 0; 
+
+// TS Stand box ends
+double Saddle.centerXType10Box1 = 4979; // TS Stand box end N of NW
+double Saddle.centerYType10Box1 = -2312;  // 
+double Saddle.centerZType10Box1 = -2934; 
+double Saddle.centerXType10Box2 = 2829; // TS Stand box end N of NW
+double Saddle.centerYType10Box2 = -2312;  // 
+double Saddle.centerZType10Box2 = -2934; 
+double Saddle.centerXType10Box3 = 3805.2; // TS Stand box end NE of NBend
+double Saddle.centerYType10Box3 = -2312;  // 
+double Saddle.centerZType10Box3 = -98.8; 
+double Saddle.centerXType10Box4 = 2284.2; // TS Stand box end SW of NBend
+double Saddle.centerYType10Box4 = -2312;  // 
+double Saddle.centerZType10Box4 = -1619.8; 
+double Saddle.centerXType10Box5 = 770; // TS Stand box end W of NC 
+double Saddle.centerYType10Box5 = -2312;  // 
+double Saddle.centerZType10Box5 = -1075; 
+double Saddle.centerXType10Box6 = 770; // TS Stand box end E of NC 
+double Saddle.centerYType10Box6 = -2312;  // 
+double Saddle.centerZType10Box6 = 1075; 
+double Saddle.centerXType10Box7 = -4979; // TS Stand box end N of NW
+double Saddle.centerYType10Box7 = -2312;  // 
+double Saddle.centerZType10Box7 = 2934; 
+double Saddle.centerXType10Box8 = -2829; // TS Stand box end N of NW
+double Saddle.centerYType10Box8 = -2312;  // 
+double Saddle.centerZType10Box8 = 2934; 
+double Saddle.centerXType10Box9 = -3805.2; // TS Stand box end NE of NBend
+double Saddle.centerYType10Box9 = -2312;  // 
+double Saddle.centerZType10Box9 = 98.8; 
+double Saddle.centerXType10Box10 = -2284.2; // TS Stand box end SW of NBend
+double Saddle.centerYType10Box10 = -2312;  // 
+double Saddle.centerZType10Box10 = 1619.8; 
+double Saddle.centerXType10Box11 = -770; // TS Stand box end W of NC 
+double Saddle.centerYType10Box11 = -2312;  // 
+double Saddle.centerZType10Box11 = -1075; 
+double Saddle.centerXType10Box12 = -770; // TS Stand box end E of NC 
+double Saddle.centerYType10Box12 = -2312;  // 
+double Saddle.centerZType10Box12 = 1075; 
+
 
 
 // The orientation of the box.  See docdb xxxx for details.
 //string Saddle.orientationType1Box1 = "103";
+string Saddle.orientationType4Box1 = "010";
+string Saddle.orientationType4Box2 = "010";
+
+string Saddle.orientationType5Box3 = "010";
+string Saddle.orientationType5Box4 = "010";
+string Saddle.orientationType5Box5 = "040";
+string Saddle.orientationType5Box6 = "040";
+
+string Saddle.orientationType5Box9 = "010";
+string Saddle.orientationType5Box10 = "010";
+string Saddle.orientationType5Box11 = "040";
+string Saddle.orientationType5Box12 = "040";
+
+string Saddle.orientationType6Box2 = "040";
+string Saddle.orientationType6Box5 = "040";
+string Saddle.orientationType6Box3 = "010";
+string Saddle.orientationType6Box6 = "010";
+
+string Saddle.orientationType8Box3 = "040";
+string Saddle.orientationType8Box4 = "040";
+string Saddle.orientationType8Box5 = "010";
+string Saddle.orientationType8Box6 = "010";
+string Saddle.orientationType8Box9 = "040";
+string Saddle.orientationType8Box10 = "040";
+string Saddle.orientationType8Box11 = "010";
+string Saddle.orientationType8Box12 = "010";
+
+string Saddle.orientationType9Box3 = "040";
+string Saddle.orientationType9Box4 = "040";
+string Saddle.orientationType9Box5 = "010";
+string Saddle.orientationType9Box6 = "010";
+string Saddle.orientationType9Box9 = "040";
+string Saddle.orientationType9Box10 = "040";
+string Saddle.orientationType9Box11 = "010";
+string Saddle.orientationType9Box12 = "010";
+
+string Saddle.orientationType10Box3 = "040";
+string Saddle.orientationType10Box4 = "040";
+string Saddle.orientationType10Box5 = "010";
+string Saddle.orientationType10Box6 = "010";
+string Saddle.orientationType10Box9 = "040";
+string Saddle.orientationType10Box10 = "040";
+string Saddle.orientationType10Box11 = "010";
+string Saddle.orientationType10Box12 = "010";
+
 
 
 // Global stuff

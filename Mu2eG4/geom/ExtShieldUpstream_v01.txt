@@ -5,7 +5,7 @@
 //                                  - Added and relocated north cap block
 
 // Sort boxes into "types"
-int ExtShieldUpstream.numberOfBoxTypes = 9;
+int ExtShieldUpstream.numberOfBoxTypes = 10;
 
 // How many of each type box to make
 int ExtShieldUpstream.nBoxType1 = 10;  // Block label  BRP-152
@@ -17,7 +17,7 @@ int ExtShieldUpstream.nBoxType6 = 8;   // Block label  BRW-175
 int ExtShieldUpstream.nBoxType7 = 2;   // Block label  CRN-262
 int ExtShieldUpstream.nBoxType8 = 2;   // Block label  CRW-262
 int ExtShieldUpstream.nBoxType9 = 1;   // Poly Bead "box"
-
+int ExtShieldUpstream.nBoxType10 = 1;  // Protection Collimator
 
 // Dimensions in u, v, w for each type of box.  Dimensions should be in mm.
 // Dimensions should be reduced 10 mm from nominal in all directions
@@ -48,6 +48,9 @@ double ExtShieldUpstream.dimsWType8 = 967.9;
 double ExtShieldUpstream.dimsUType9 = 942;  // Poly bead "box"
 double ExtShieldUpstream.dimsVType9 = 903;
 double ExtShieldUpstream.dimsWType9 = 2612;
+double ExtShieldUpstream.dimsUType10 = 500;  // Protection Collimator
+double ExtShieldUpstream.dimsVType10 = 500;
+double ExtShieldUpstream.dimsWType10 = 1500;
 
 
 // "Tolerances" on the dimensions in u, v, and w for each type of box.
@@ -81,6 +84,9 @@ double ExtShieldUpstream.tolsWType8 = 5.0;
 double ExtShieldUpstream.tolsUType9 = 0.0; // Poly bead "box"
 double ExtShieldUpstream.tolsVType9 = 0.0;
 double ExtShieldUpstream.tolsWType9 = 0.0;
+double ExtShieldUpstream.tolsUType10 = 0.0; // Protection Collimator
+double ExtShieldUpstream.tolsVType10 = 0.0;
+double ExtShieldUpstream.tolsWType10 = 0.0;
 
 
 // Materials for each type of box.  Here, Barite and regular concrete.
@@ -93,6 +99,7 @@ string ExtShieldUpstream.materialType6   = "BARITE";
 string ExtShieldUpstream.materialType7   = "CONCRETE_MARS";
 string ExtShieldUpstream.materialType8   = "CONCRETE_MARS";
 string ExtShieldUpstream.materialType9   = "Half_Poly";
+string ExtShieldUpstream.materialType10   = "G4_Fe";
 
 
 // The center of the detector in Mu2e Offline coordinates
@@ -191,9 +198,13 @@ double ExtShieldUpstream.centerXType8Box2 = -2781.5;
 double ExtShieldUpstream.centerYType8Box2 = 3199;
 double ExtShieldUpstream.centerZType8Box2 = -3087;
 
-double ExtShieldUpstream.centerXType9Box1 = 1052;//1 Poly bead "box"
+double ExtShieldUpstream.centerXType9Box1 = 1652;//1 Poly bead "box"
 double ExtShieldUpstream.centerYType9Box1 = -1856;
 double ExtShieldUpstream.centerZType9Box1 = 61;
+
+double ExtShieldUpstream.centerXType10Box1 = 5261.4;//1 Protection Collimator
+double ExtShieldUpstream.centerYType10Box1 = 237.3;
+double ExtShieldUpstream.centerZType10Box1 = -600.5;
 
 
 
@@ -202,6 +213,8 @@ double ExtShieldUpstream.centerZType9Box1 = 61;
 string ExtShieldUpstream.orientationType1Box1 = "000";
 string ExtShieldUpstream.orientationType1Box9 = "010";
 string ExtShieldUpstream.orientationType1Box10 = "010";
+
+string ExtShieldUpstream.orientationType10Box1 = "550";
 
 // For the upstream, most are oriented with default orientation, so
 // don't need to specify all.

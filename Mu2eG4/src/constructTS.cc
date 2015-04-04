@@ -411,6 +411,75 @@ namespace mu2e {
       cout << __func__ << " TS5  rotation     : " << strsec->getRotation() << endl;
     }
 
+    // Build Rings (added April 1, 2015, David Norvil Brown)
+    double rirs = ts->rInRingSide();
+    double rors = ts->rOutRingSide();
+    double trs = ts->thickRingSide();
+    double rir = ts->rInRing();
+    double ror = ts->rOutRing();
+    double lr = ts->lengthRing();
+    G4Material* ringMaterial = findMaterialOrThrow(ts->RingMaterial());
+    std::vector<double> xr = ts->xRing();
+    std::vector<double> yr = ts->yRing();
+    std::vector<double> zr = ts->zRing();
+    
+    for ( unsigned int iRing = 0; iRing < xr.size(); iRing++ ) {
+      std::ostringstream leftName;
+      leftName << "leftSideRing" << iRing;
+      CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      double ringRotTheta = 0.0;
+      if ( iRing == 1 || iRing == 4 ) ringRotTheta = 45.0*CLHEP::degree;
+      if ( iRing == 2 || iRing == 3 ) ringRotTheta = 90.0*CLHEP::degree;
+      ringRotat->rotateY(ringRotTheta);
+      double lx = xr[iRing] + lr*sin(ringRotTheta)/2.0 + trs*sin(ringRotTheta)/2.0;
+      double ly = yr[iRing];
+      double lz = zr[iRing] - lr*cos(ringRotTheta)/2.0 - trs*cos(ringRotTheta)/2.0; 
+      nestTubs( leftName.str(),
+		TubsParams( rirs, rors, trs/2.0 ),
+		ringMaterial,
+                ringRotat,
+		CLHEP::Hep3Vector(lx,ly,lz)-_hallOriginInMu2e,
+		parent,
+		0,
+		G4Color::Blue(),
+		"TSCryo"
+		);
+
+      std::ostringstream centerName;
+      centerName << "centerRing" << iRing;
+
+      nestTubs( centerName.str(),
+		TubsParams( rir, ror, lr/2.0 ),
+		ringMaterial,
+                ringRotat,
+		CLHEP::Hep3Vector(xr[iRing],yr[iRing],zr[iRing])-_hallOriginInMu2e,
+		parent,
+		0,
+		G4Color::Blue(),
+		"TSCryo"
+		);
+
+
+      std::ostringstream rightName;
+      rightName << "rightSideRing" << iRing;
+
+      double rx = xr[iRing] - lr*sin(ringRotTheta)/2.0 - trs*sin(ringRotTheta)/2.0;
+      double ry = yr[iRing];
+      double rz = zr[iRing] + lr*cos(ringRotTheta)/2.0 + trs*cos(ringRotTheta)/2.0; 
+
+      nestTubs( rightName.str(),
+		TubsParams( rirs, rors, trs/2.0 ),
+		ringMaterial,
+                ringRotat,
+		CLHEP::Hep3Vector(rx,ry,rz)-_hallOriginInMu2e,
+		parent,
+		0,
+		G4Color::Blue(),
+		"TSCryo"
+		);
+
+    }
+
     // Build downstream end wall of TS5
     CLHEP::Hep3Vector pos3( strsec->getGlobal().x(), 
                             strsec->getGlobal().y(), 

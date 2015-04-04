@@ -86,6 +86,30 @@ namespace mu2e {
       std::cout<<*res.get()<<std::endl;
     }
 
+
+    //----------------------------------------------------------------
+    // Read in the proton beam inlet information.  This is a tube
+    // representing the beam pipe extended into HRS.
+    // Added by David Norvil Brown, Louisville, March 2015
+
+    std::string pipeMaterial = c.getString("PSShield.inlet.materialName");
+    double pipeIR = c.getDouble("PSShield.inlet.innerR")*CLHEP::mm;
+    double pipeOR = c.getDouble("PSShield.inlet.outerR")*CLHEP::mm;
+    double pipeLength = c.getDouble("PSShield.inlet.length")*CLHEP::mm;
+    double angle1 = c.getDouble("PSShield.inlet.angleY")*CLHEP::degree;
+    double angle2 = c.getDouble("PSShield.inlet.angleX")*CLHEP::degree;
+
+    res->beamAngleY_ = angle1;
+    res->beamAngleX_ = angle2;
+    res->beamInletCenter_ = c.getHep3Vector("PSShield.inlet.center");
+    CLHEP::HepRotation pipeRotat(CLHEP::HepRotation::IDENTITY);
+    pipeRotat.rotateY(angle1);
+    pipeRotat.rotateX(angle2);
+ 
+    res->beamInlet_ = Tube(pipeMaterial, shieldOriginInMu2e,
+			   pipeIR, pipeOR, pipeLength/2.0, 0, CLHEP::twopi,
+			   pipeRotat);
+
     return res;
   }
 

@@ -35,6 +35,19 @@ double ts.tsDendWall.halfLength = 15.;
 double ts.ts1.halfLength  = 537.5; 
 double ts.ts5.halfLength  = 625.;  
 
+double ts.rInRingSide = 848.6;
+double ts.rOutRingSide = 1050;
+double ts.thickRingSide = 30;
+double ts.rInRing = 1000;
+double ts.rOutRing = 1050;
+double ts.lengthRing = 400;
+string ts.RingMaterialType = "StainlessSteel";
+int ts.nRing = 6;
+vector<double> ts.xRing = {3904, 3044.7, 770, -770, -3044.7, -3904};
+vector<double> ts.yRing = {0, 0, 0, 0, 0, 0};
+vector<double> ts.zRing = {-2934, -859.3, 0, 0, 859.3, 2934};
+
+
 int  ts.cryo.verbosityLevel = 0.;
 bool ts.cryo.isVisible = true;
 bool ts.cryo.isSolid   = false;

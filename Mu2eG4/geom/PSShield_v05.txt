@@ -32,6 +32,17 @@ vector<double> PSShield.color4 = { 0., 0., 1};
 // Outer boundary
 vector<double> PSShield.r5 = { 750., 750., 750., 750., 750. };
 
+
+// Information for the proton beam pipe inlet.  David Norvil Brown, March 2015
+string PSShield.inlet.materialName = "G4_Al";
+double PSShield.inlet.innerR = 60.25;
+double PSShield.inlet.outerR = 63.5;
+double PSShield.inlet.length = 1800; // Keeps hitting vacuum
+double PSShield.inlet.angleY = -13.62;  // degrees
+double PSShield.inlet.angleX = 2.30;   // degrees
+//vector<double> PSShield.inlet.center = {4127.1, 39.0, -5250.0};
+vector<double> PSShield.inlet.center = {4424.4, 91., -4031.5};
+
 // Each groove is a cylinder of the given dimensions, with the center
 // at the given reference point and rotated by the given angles, which
 // is subtracted from the polycone above.

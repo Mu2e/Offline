@@ -21,6 +21,7 @@
 
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "Mu2eG4/inc/nestTubs.hh"
 
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
@@ -51,6 +52,32 @@ namespace mu2e {
     const bool isVisible           = geomOptions->isVisible          ( "PSShield" );
     const bool isSolid             = geomOptions->isSolid            ( "PSShield" );
 
+    // -----------------------------
+    // Put in beam pipe inlet.  David Norvil Brown, Louisville, March 2015
+
+    Tube const & pssInletParams = hrs->beamInlet(); 
+    G4Material* beampipeMaterial = findMaterialOrThrow(pssInletParams.materialName());
+    CLHEP::Hep3Vector place = hrs->getBeamInletCenter();
+    CLHEP::HepRotation * turn = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+    turn->rotateY(hrs->getBeamAngleY());
+    turn->rotateX(hrs->getBeamAngleX());
+
+    // Keeps overlapping with PSVacuum
+    //    VolumeInfo pssBeamInletInfo = 
+    //      nestTubs("PSSBeamInlet", pssInletParams.getTubsParams(),
+    //    	       beampipeMaterial, turn,  place-parent.centerInMu2e(),
+    //    	       parent, 0, G4Colour::Blue(), "PSShield");
+
+    // Now make the volume to subtract from HRS.
+    G4Tubs* beamPassTub = new G4Tubs( "beampipePassthrough",
+				      0.0, 
+				      pssInletParams.getTubsParams().data()[1]+2*CLHEP::mm,
+				      pssInletParams.getTubsParams().data()[2]+600.0*CLHEP::mm,
+				      0.0*CLHEP::degree,
+				      360.0*CLHEP::degree );
+
+
+    // ------------------------------------------------------------
     // place the polycone shells
     for(unsigned ishell=0; ishell < hrs->shells().size(); ++ishell) {
       std::ostringstream osnum;
@@ -70,7 +97,15 @@ namespace mu2e {
                      shell.originInMu2e() - parent.centerInMu2e(),
                      parent.centerInWorld);
 
-      pss.solid = psssolid;
+      G4SubtractionSolid* aSolid = 
+	new G4SubtractionSolid ( pss.name,
+				 psssolid,
+				 beamPassTub,
+				 turn,
+				 place-shell.originInMu2e());
+
+      // pss.solid = psssolid;
+      pss.solid = aSolid;
       pss.solid->SetName(pss.name);
 
       finishNesting(pss,
@@ -88,6 +123,7 @@ namespace mu2e {
                     doSurfaceCheck
                     );
     }
+
 
 //FIXME: *** the following piece of code needs to become
 //FIXME: *** a double loop over shells and grooves

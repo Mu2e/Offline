@@ -59,6 +59,16 @@ namespace mu2e {
     // Note:  the length of orient should always be 3, enforced in the
     // Maker functions.
     if ( orient == "000" ) return;  // Don't need to reorient
+    if ( orient == "550" ) {  // Special for proton beamline elements
+      aRotation.rotateY(-13.62*CLHEP::degree);
+      aRotation.rotateX(2.71*CLHEP::degree);
+      return;
+    }
+    if ( orient == "040" ) { // Special 45 degree turn around y
+      aRotation.rotateY(45.0*CLHEP::degree);
+      return;
+    }
+
     int uRotNum=0,vRotNum=0,wRotNum=0;
     for ( int iChar = 0; iChar < 3; iChar++ ) {
       // unpack the orientation number
@@ -72,13 +82,7 @@ namespace mu2e {
       if ( iChar == 1 ) vRotNum = genRotNum;
       if ( iChar == 2 ) wRotNum = genRotNum;
     }
-//     int wRotNum  = orient%4;
-//     orient  -= wRotNum;
-//     int vRotNum  = orient%16;
-//     orient  -= vRotNum;
-//     int uRotNum  = orient/16;
-//     vRotNum      = vRotNum/4;
-//    std::cout << "DNB:  uRotNum, vRotNum, wRotNum = " << uRotNum << ", " << vRotNum << ", " << wRotNum << std::endl;
+
     double phi   = (double)uRotNum*90*CLHEP::degree;
     double theta = (double)vRotNum*90.0*CLHEP::degree;
     double psi   = (double)wRotNum*90.0*CLHEP::degree;
