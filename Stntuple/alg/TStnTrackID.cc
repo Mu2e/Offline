@@ -83,7 +83,7 @@ int TStnTrackID::IDWord(TStnTrack* Track) {
   fcons      = Track->fFitCons;
   t0         = Track->fT0;
   t0_err     = Track->fT0Err;
-  nactive    = Track->fNActive;
+  nactive    = Track->NActive();
   tan_dip    = Track->fTanDip;
   fitmom_err = Track->fFitMomErr;
   d0         = Track->fD0;
