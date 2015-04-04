@@ -5,6 +5,7 @@
 
 #include "TDirectory.h"
 #include "TProfile.h"
+#include "TH1.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -21,6 +22,7 @@ namespace mu2e {
   //================================================================
   class CollectionSizeAnalyzer : public art::EDAnalyzer {
     TProfile *hStepPointSize_;
+    TH1D *hStepPointSum_;
     bool useModuleLabel_;
     bool useInstanceName_;
     bool useProcessName_;
@@ -39,7 +41,7 @@ namespace mu2e {
   {
     art::ServiceHandle<art::TFileService> tfs;
     hStepPointSize_ = tfs->make<TProfile>("stepPointsSize", "Average collection size", 1, 0., 1.);
-    std::cout<<"hStepPointSize initialized"<<std::endl;
+    hStepPointSum_ = tfs->make<TH1D>("stepPointsSum", "Sum of step point collection entries", 1, 0., 1.);
   }
 
   //================================================================
@@ -66,6 +68,7 @@ namespace mu2e {
       }
 
       hStepPointSize_->Fill(collName.str().c_str(), double(c->size()));
+      hStepPointSum_->Fill(collName.str().c_str(), double(c->size()));
     }
 
   } // analyze(event)
