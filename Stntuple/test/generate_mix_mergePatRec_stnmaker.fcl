@@ -69,7 +69,7 @@ physics : {
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
 	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+	MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
 #------------------------------------------------------------------------------
 #  default tracking
 #------------------------------------------------------------------------------
@@ -81,9 +81,11 @@ physics : {
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
+	MakeCaloProtoCluster            : @local::MakeCaloProtoCluster
 	MakeCaloCluster                 : @local::MakeCaloCluster
 
 	CalPatRecFSHP                   : @local::CalPatRecFSHP
+	CalPatRecMakeStrawHitPositions  : @local::CalPatRecMakeStrawHitPositions
 	CalPatRecMakeStereoHits         : @local::CalPatRecMakeStereoHits
 	CalPatRecFlagStrawHits          : @local::CalPatRecFlagStrawHits
 	CalPatRecFlagBkgHits            : @local::CalPatRecFlagBkgHits
@@ -168,11 +170,7 @@ physics : {
 # Reject events with no hits from signal-like tracks in the detectors.  
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
-	FilterStepPointMomentum: {
-            module_type    : FilterStepPointMomentum
-            inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
-            cutMomentumMin : 10. # MeV/c
-        }
+	detectorFilter:     @local::FilterStepPointMomentum
 #------------------------------------------------------------------------------
 # event display
 #------------------------------------------------------------------------------
@@ -189,50 +187,45 @@ physics : {
 #
 # MakeStereoHits also produces the StrawHitPosition collection
 #------------------------------------------------------------------------------
-    p1 : [generate, g4run
-  #	  , FilterStepPointMomentum
-	  , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
-	  , protonTimeMap, muonTimeMap
-#
-	  , MakeCaloReadoutHits, CaloCrystalHitsMaker, MakeCaloCluster
-# 
-	  , makeSD, makeSH
-	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-#
-	  , CalPatRecFSHP, CalPatRecMakeStereoHits 
-	  , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
-	  , CalPatRec
-#
-	  , MergePatRec
-#	  
-	  , TrkExtrapol, CaloMatching, ParticleID
-#
-	  , InitStntuple, StntupleMaker, FillStntuple
+    all : [generate, g4run
+	   , detectorFilter 
+	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
+	   , protonTimeMap, muonTimeMap
+	   #
+	   , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
+	   # 
+	   , makeSD, makeSH
+	   , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+	   #
+	   , CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
+	   , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+	   , CalPatRec
+	   #
+	   , MergePatRec
+	   #	  
+	   , TrkExtrapol, CaloMatching, ParticleID
+	   #
+	   , InitStntuple, StntupleMaker, FillStntuple
+	   #
+	   #	   , MuHitDisplay
 	 ]
 
+    display : [ MuHitDisplay ]
+
     mc : [generate, g4run
-	  #	  , FilterStepPointMomentum
 	  , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
 	  , protonTimeMap, muonTimeMap
 #
-	  , MakeCaloReadoutHits, CaloCrystalHitsMaker, MakeCaloCluster
-# 
+	  , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
 	  , makeSD, makeSH
 	 ]
 #
-    calpatrec : [
-		 #FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+    calpatrec : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
+		  , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+		  , CalPatRec
+		  , MergePatRec
+		 ]
 #
-		 CalPatRecFSHP, CalPatRecMakeStereoHits 
-		 , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
-		 , CalPatRec
-#
-		 , MergePatRec
-#	  
-#	  , TrkExtrapol, CaloMatching, ParticleID
-#
-#	  , InitStntuple, StntupleMaker, FillStntuple
-	 ]
     trkpatrec : [
 		 FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
 #
@@ -241,7 +234,7 @@ physics : {
 		 , MuHitDisplay
 	 ]
 
-    trigger_paths  : [p1]
+    trigger_paths  : [all]
     #    out : [detectorOutput]
     out  : []
     end_paths      : [out]
@@ -250,7 +243,7 @@ physics : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-        SelectEvents: { SelectEvents: [p1] }
+        SelectEvents: { SelectEvents: [all] }
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
 			   ]
