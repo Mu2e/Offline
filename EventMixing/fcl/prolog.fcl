@@ -83,7 +83,7 @@ photonMixer: {
 #------------------------------------------------------------------------------
 mixerTemplate: {
     module_type         : MixMCEvents
-    fileNames           : @nil                     # @local::bgHitFiles
+    fileNames           : @local::bgHitFiles
     readMode            : randomReplace
     wrapFiles           : true
     coverageFraction    : 1000000.
