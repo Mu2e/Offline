@@ -210,7 +210,28 @@ physics : {
 	   #	   , MuHitDisplay
 	 ]
 
-    display : [ MuHitDisplay ]
+    display : [ generate, g4run
+	   , detectorFilter 
+	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
+	   , protonTimeMap, muonTimeMap
+	   #
+	   , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
+	   # 
+	   , makeSD, makeSH
+	   , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+	   #
+	   , CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
+	   , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+	   , CalPatRec
+	   #
+	   , MergePatRec
+	   #	  
+	   , TrkExtrapol, CaloMatching, ParticleID
+	   #
+	   , InitStntuple, StntupleMaker, FillStntuple
+	   #
+		, MuHitDisplay
+	 ]
 
     mc : [generate, g4run
 	  , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
@@ -236,7 +257,7 @@ physics : {
 
     trigger_paths  : [all]
     #    out : [detectorOutput]
-    out  : []
+    out            : []
     end_paths      : [out]
 }
 
