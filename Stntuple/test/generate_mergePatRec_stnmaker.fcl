@@ -69,7 +69,7 @@ physics : {
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
 	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-	CaloCrystalHitsMaker : @local::MakeCaloCrystalHitsNew
+	MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
 #------------------------------------------------------------------------------
 #  default tracking
 #------------------------------------------------------------------------------
@@ -159,7 +159,7 @@ physics : {
 		   #	       , compressPVDetector
 		   , protonTimeMap, muonTimeMap
 		   #
-		   , MakeCaloReadoutHits, CaloCrystalHitsMaker
+		   , MakeCaloReadoutHits, MakeCaloCrystalHits
 		   , MakeCaloProtoCluster, MakeCaloCluster
 		   #
 		   , makeSD, makeSH
@@ -244,8 +244,8 @@ physics : {
 #
     trigger_paths  : [mergePatRec]
     
-    out : [detectorOutput]
-#    out : []
+#    out : [detectorOutput]
+    out : []
     an  : [genCountLogger, gpa]
 
     end_paths      : [out]
@@ -254,7 +254,7 @@ physics : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-        SelectEvents: { SelectEvents: [detPath] }
+        SelectEvents: { SelectEvents: [mergePatRec] }
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
