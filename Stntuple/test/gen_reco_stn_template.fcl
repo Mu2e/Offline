@@ -1,7 +1,4 @@
 # -*- mode: tcl -*-
-// 2014-06-02: run local, write output file
-//
-// Andrei Gaponenko, 2014
 #------------------------------------------------------------------------------
 # quick comments: reads signal MC and also background MC inputs with steppoints
 # so need to define input and 
@@ -11,9 +8,9 @@
 #include "standardServices.fcl"
 
 #include "Stntuple/fcl/prolog.fcl"
-#include "Stntuple/fcl/mixer_module_templates.fcl"
+#   #include "Stntuple/fcl/mixer_module_templates.fcl"
 
-process_name : DigiMixMergePatRecStnmaker
+#   process_name : GenMixRecoStn
 #------------------------------------------------------------------------------
 # input module definition
 #------------------------------------------------------------------------------
@@ -60,7 +57,7 @@ services.scheduler.wantSummary: true
 #------------------------------------------------------------------------------
 physics : {
     producers: {
-        generate             : { @table::StoppedParticleReactionGun }
+        generate             : { @table::StoppedMuonConversionGun }
 	g4run                : @local::g4run
 #------------------------------------------------------------------------------
 # hit makers
@@ -102,46 +99,6 @@ physics : {
     }
 
     filters: {
-#------------------------------------------------------------------------------
-# event mixing modules - all clones of the same module.
-# each clone takes certain collections from the input file and adds them to the event
-#------------------------------------------------------------------------------
-        flashMixer           : { @table::mixerTemplate 
-	    detail : { @table::mixerTemplate.detail
-		g4ModuleLabel    :  flashMixer 
-		genModuleLabel   :  flashMixer 
-	    }
-	}
-	ootMixer             : { @table::mixerTemplate 
-	    detail : { @table::mixerTemplate.detail
-		g4ModuleLabel    :  ootMixer 
-		genModuleLabel   :  ootMixer 
-	    }
-	}
-	dioMixer             : { @table::mixerTemplate 
-	    detail : { @table::mixerTemplate.detail
-		g4ModuleLabel    :  dioMixer 
-		genModuleLabel   :  dioMixer 
-	    }
-	}
-	neutronMixer         : { @table::mixerTemplate 
-	    detail : { @table::mixerTemplate.detail
-		g4ModuleLabel    :  neutronMixer 
-		genModuleLabel   :  neutronMixer 
-	    }
-	}
-	photonMixer          : { @table::mixerTemplate 
-	    detail : { @table::mixerTemplate.detail
-		g4ModuleLabel    :  photonMixer 
-		genModuleLabel   :  photonMixer 
-	    }
-	}
-	protonMixer          : { @table::mixerTemplate 
-	    detail : { @table::mixerTemplate.detail
-		g4ModuleLabel    :  protonMixer 
-		genModuleLabel   :  protonMixer 
-	    }
-	}
 #------------------------------------------------------------------------------
 # Stntuple maker sequence
 #------------------------------------------------------------------------------
@@ -190,7 +147,7 @@ physics : {
 #------------------------------------------------------------------------------
     all : [generate, g4run
 	   , detectorFilter 
-	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
+#	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
 	   , protonTimeMap, muonTimeMap
 	   #
 	   , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
@@ -213,7 +170,7 @@ physics : {
 
     display : [ generate, g4run
 	   , detectorFilter 
-	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
+#	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
 	   , protonTimeMap, muonTimeMap
 	   #
 	   , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
@@ -235,7 +192,7 @@ physics : {
 	 ]
 
     mc : [generate, g4run
-	  , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
+#	  , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
 	  , protonTimeMap, muonTimeMap
 #
 	  , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster

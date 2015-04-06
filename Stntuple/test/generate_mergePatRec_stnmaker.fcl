@@ -25,7 +25,7 @@ source : {
     module_type : EmptyEvent
 #    module_type : RootInput
 #    fileNames   : [ "INPUT_DATA_FILE" ]
-    maxEvents   : 100
+    maxEvents   : -1
 
     inputCommands : ['keep *_*_*_*'
 #                   , 'drop mu2eStrawDigis_*_*_*'

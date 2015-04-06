@@ -1,0 +1,48 @@
+# 
+
+BEGIN_PROLOG
+
+flashMixerResolved       : { @table::mixerTemplate
+    fileNames : @local::bgrHitFiles
+    detail    : { @table::mixerTemplate.detail
+	g4ModuleLabel    :  flashMixer 
+	genModuleLabel   :  flashMixer 
+    }
+}
+ootMixerResolved             : { @table::mixerTemplate 
+    fileNames : @local::bgrHitFiles
+    detail    : { @table::mixerTemplate.detail
+	g4ModuleLabel    :  ootMixer 
+	genModuleLabel   :  ootMixer 
+    }
+}
+dioMixerResolved             : { @table::mixerTemplate
+    fileNames : @local::bgrHitFiles
+    detail    : { @table::mixerTemplate.detail
+	g4ModuleLabel    :  dioMixer 
+	genModuleLabel   :  dioMixer 
+    }
+}
+neutronMixerResolved         : { @table::mixerTemplate
+    fileNames : @local::bgrHitFiles
+    detail    : { @table::mixerTemplate.detail
+	g4ModuleLabel    :  neutronMixer 
+	genModuleLabel   :  neutronMixer 
+    }
+}
+photonMixerResolved          : { @table::mixerTemplate
+    fileNames : @local::bgrHitFiles
+    detail    : { @table::mixerTemplate.detail
+	g4ModuleLabel    :  photonMixer 
+	genModuleLabel   :  photonMixer 
+    }
+}
+protonMixerResolved          : { @table::mixerTemplate 
+    fileNames : @local::bgrHitFiles
+    detail    : { @table::mixerTemplate.detail
+	g4ModuleLabel    :  protonMixer 
+	genModuleLabel   :  protonMixer 
+    }
+}
+
+END_PROLOG
