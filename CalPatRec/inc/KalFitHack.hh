@@ -63,7 +63,8 @@ namespace mu2e {
     double                      _maxdriftpull;
     std::vector<AmbigResolver*> _ambigresolver;
     bool                        _initt0;
-    bool                        _updatet0;
+    bool                        _updateT0;
+    int                         _updateT0Mode;    // 0: use cluster T0 1:update T0 assuming no cluster time
     double                      fMinHitDrift;
     double                      fRdriftMinusDocaTol;
     int                         fSign[4][2];

@@ -88,7 +88,8 @@ namespace mu2e
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
     // t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
-    _updatet0(pset.get<bool>("updateT0",true)),
+    _updateT0(pset.get<bool>("updateT0",true)),
+    _updateT0Mode(pset.get<int>("T0UpdateMode")),
     fMinHitDrift(pset.get<double>("HitMinDrift")),
     fRdriftMinusDocaTol(pset.get<double>("RdriftMinusDocaTol")),
     _daveMode(pset.get<int>("daveMode" ,0)),
@@ -1188,14 +1189,24 @@ namespace mu2e
       if (! fit_success) break;
 //-----------------------------------------------------------------------------
 // if the fit succeeded, update the track T0, and recalculate the hit T0's 
+// _updatet0 should be always true,
+// but may want to update it differently
 //-----------------------------------------------------------------------------
-      if (_updatet0 ) {
-	// 2014-12-11: G.Pezzullo and P.Murat - temporary *FIXME*
-// 	if (TPeak != NULL)  updateCalT0(KRes,TPeak);
-// 	else                updateT0(KRes);
-
-					// when iterating, don't look back at the cluster T0
-	updateT0(KRes);
+      if (_updateT0 ) {
+	if      (_updateT0Mode == 0) {
+//-----------------------------------------------------------------------------
+// update T0 mode = 0: when iterating, use cluster T0 if available
+//-----------------------------------------------------------------------------
+	  if (TPeak != NULL)  updateCalT0(KRes,TPeak);
+	  else                updateT0(KRes);
+	}
+	else if (_updateT0Mode == 1) {
+//-----------------------------------------------------------------------------
+// mode = 1: when iterating, don't look back at the cluster T0, 
+//           in this mode the cluster T0 is used only to seed the process
+//-----------------------------------------------------------------------------
+	  updateT0(KRes);
+	}
 
 	changed |= fabs(KRes._krep->t0()._t0-oldt0) > _t0tol[IHErr];
 	oldt0    = KRes._krep->t0()._t0;
