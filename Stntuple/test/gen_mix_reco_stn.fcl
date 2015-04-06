@@ -2,6 +2,10 @@
 #------------------------------------------------------------------------------
 # quick comments: reads signal MC and also background MC inputs with steppoints
 # so need to define input and 
+# example: 
+# --------
+# murat/scripts/submit_mu2e_job -c $PWD/murat/test/ce_mixp3_x1_reco_stn.fcl \
+#                               -n 600 -f 1:@bgrHitFiles:datasets/mixp3-x050-local
 #------------------------------------------------------------------------------
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
