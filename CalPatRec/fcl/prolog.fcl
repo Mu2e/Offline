@@ -115,8 +115,8 @@ CalPatRec            : {
 	markCandidateHits                       : 0
 	minPointsTrkCandidate                   : 25
 # confirmed on 2015-02-07
-	chi2xyMax                               : 5    #default value is 300
-	chi2zphiMax                             : 5    #0.1 #default is 0.1, use 0.05 for debugging puposes
+	chi2xyMax                               : 5.0    # default value is 300
+	chi2zphiMax                             : 5.0    # 0.1 #default is 0.1, use 0.05 for debugging puposes
 	dfdzErr                                 : 0.1
     }
     # Kalman fitter configuration for the seed fit

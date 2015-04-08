@@ -182,6 +182,8 @@ namespace mu2e
 	  break;
       }
     }
+
+    fMaxDoubletChi2 = 5.;
   }
 
 //-----------------------------------------------------------------------------
@@ -417,10 +419,76 @@ namespace mu2e
     }
   } 
 
+//---------------------------------------------------------------------------
+// resolve drift ambiguity for a single (non-doublet)  hit
+//---------------------------------------------------------------------------
+  void KalFitHack::resolveSingleHit(KalFitResult& Kres, mu2e::TrkStrawHit* Hit) {
+
+    double                     doca[2];
+    std::vector<TrkStrawHit*>  hits;
+
+    const Straw* straw = &Hit->straw();
+    
+    const CLHEP::Hep3Vector& wdir = straw->getDirection();
+    const CLHEP::Hep3Vector& wmid = straw->getMidPoint();
+//-----------------------------------------------------------------------------
+// calculate residuals for two hit positions corresponding to two different 
+// drift signs
+//-----------------------------------------------------------------------------
+    hits.push_back(Hit);
+    const TrkDifTraj* traj = findTraj(hits,Kres._krep);
+
+    double dmin = Hit->timeDiffDist()-Hit->timeDiffDistErr();
+    double dmax = Hit->timeDiffDist()+Hit->timeDiffDistErr();
+    TrkLineTraj wtraj(HepPoint(wmid.x(),wmid.y(),wmid.z()),wdir,dmin,dmax);
+
+    TrkPoca poca(*traj,Hit->fltLen(),wtraj,Hit->hitLen());
+    if (poca.status().success()) {
+//-----------------------------------------------------------------------------
+// doca(hit) = doca(wire)-_iamb*radius
+//-----------------------------------------------------------------------------
+      doca[0] = poca.doca()-Hit->driftRadius();
+      doca[1] = poca.doca()+Hit->driftRadius();
+
+      double err = _hiterr[fAnnealingStep];
+      double x0  = sqrt(doca[0]*doca[0]+err*err);
+      double x1  = sqrt(doca[1]*doca[1]+err*err);
+
+      int    ih;
+      if (x0 < x1) ih = 0;
+      else         ih = 1;
+      
+      if (fabs(doca[ih]/Hit->hitErr()) < 5.) {
+//-----------------------------------------------------------------------------
+// hit is close enough to the trajectory
+//-----------------------------------------------------------------------------
+	if (ih == 0) Hit->setAmbig( 1);
+	else         Hit->setAmbig(-1);
+      }
+      else {
+//-----------------------------------------------------------------------------
+// can't tell
+//-----------------------------------------------------------------------------
+	Hit->setExtErr(Hit->driftRadius());
+	Hit->setAmbig(0);
+      }
+    }
+    else {
+//-----------------------------------------------------------------------------
+// couldn't determine doca
+//-----------------------------------------------------------------------------
+      Hit->setExtErr(Hit->driftRadius());
+      Hit->setAmbig(0);
+    }
+
+    Hit->setAmbigUpdate(false);
+  }
+
+
 //--------------------------------------------------------------------------------
 // given a multiplet, resolve the ambiguity for hit: index0 and index1
 //--------------------------------------------------------------------------------
-  void KalFitHack::markDoublet(Doublet *doublet, int index0, int index1) {
+  void KalFitHack::markDoublet(KalFitResult& KRes, Doublet *doublet, int index0, int index1) {
     mu2e::TrkStrawHit *hit  [2];
     const mu2e::Straw *straw[2];
    
@@ -610,10 +678,17 @@ namespace mu2e
 // SS doublet
 //-----------------------------------------------------------------------------
 	if ((fDecisionMode == 0) && (fabs(rdrift[0]-rdrift[1]) < fDeltaDriftDoublet)) {
+	  if (chi2min < 1.) {
+//-----------------------------------------------------------------------------
+// the best chi2 is good enough to rely on it
+//-----------------------------------------------------------------------------
+	    hit[i]->setExtErr(ext_err/fScaleErrDoublet);
+	    hit[i]->setAmbig(fSign[ibest][i]);
+	  }
+	  else if (fAnnealingStep < fILoopUseDoublets) {
 //-----------------------------------------------------------------------------
 // SS doublet with close radii, scale of uncertainty is defined by the radius
 //-----------------------------------------------------------------------------
-	  if (fAnnealingStep < fILoopUseDoublets) {
 	    double err = fabs(rdrift[i]);
 	    hit[i]->setExtErr(err);
 	    hit[i]->setAmbig(0);
@@ -623,9 +698,9 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // SS doublet, the two radii are different or we're forced to make a decision
 //-----------------------------------------------------------------------------
-	  if (chi2min < 50) {
+	  if (chi2min < fMaxDoubletChi2) {
 //-----------------------------------------------------------------------------
-// if the best chi2 is good, the doublet drift signs are determined reliably
+// the best chi2 is good, the doublet drift signs are determined reliably
 //-----------------------------------------------------------------------------
 	    if (rdrift[i] > fMinDriftDoublet) {
 	      hit[i]->setExtErr(ext_err/fScaleErrDoublet);
@@ -633,7 +708,7 @@ namespace mu2e
 	    }
 	    else {
 //-----------------------------------------------------------------------------
-// small radius - add wire
+// small radius (rdrift[i] < fMinDriftDoublet) - use the wire position
 //-----------------------------------------------------------------------------
 	      hit[i]->setExtErr(rdrift[i]);
 	      hit[i]->setAmbig(0);
@@ -641,15 +716,13 @@ namespace mu2e
 	  }
 	  else {
 //-----------------------------------------------------------------------------
-// the best chi2 is large - cant believe anything, need to treat hits as 
+// the best double chi2 is large - cant believe anything, need to treat hits as 
 // separate ones - this is to be implemented yet
 // a good example - one of the hits - on Dave's no-gaussial tail
 //-----------------------------------------------------------------------------
-	    if (fAnnealingStep < fILoopUseDoublets) {
-	      double err = fabs(rdrift[i]);
-	      hit[i]->setExtErr(err);
-	      hit[i]->setAmbig(0);
-	    }
+	    hit[i]->setExtErr(rdrift[i]);
+	    hit[i]->setAmbig(0);
+	    //	    resolveSingleHit(KRes,hit[i]);
 	  }
 	}
       }
@@ -689,8 +762,6 @@ namespace mu2e
     const mu2e::Straw *straw;
     Doublet           *doublet;
 
-    double  doca[2];
-    
     int ndhits;
     int ndoublets  = DCol->size();
 
@@ -718,131 +789,89 @@ namespace mu2e
 // can be determined reliably 
 //-----------------------------------------------------------------------------
 	hit = doublet->fHit[0];
-	const Straw* straw = &hit->straw();
-	
-	const CLHEP::Hep3Vector& wdir = straw->getDirection();
-	const CLHEP::Hep3Vector& wmid = straw->getMidPoint();
 
-					// calculate residuals for two hit positions
-					// corresponding to two different drift signs
-					// *** later ***
-
-	std::vector<TrkStrawHit*> hits;
-	hits.push_back(hit);
-	const TrkDifTraj* traj = findTraj(hits,Kres._krep);
-
-	doca[0] = 1e6;
-	doca[1] = 1e6;
-
-	// hit->setAmbig(1);
-	
-	double dmin = hit->timeDiffDist()-hit->timeDiffDistErr();
-	double dmax = hit->timeDiffDist()+hit->timeDiffDistErr();
-	TrkLineTraj wtraj(HepPoint(wmid.x(),wmid.y(),wmid.z()),wdir,dmin,dmax);
-
-	TrkPoca poca(*traj,hit->fltLen(),wtraj,hit->hitLen());
-	if (poca.status().success()) {
-//-----------------------------------------------------------------------------
-// doca(hit) = doca(wire)-_iamb*radius
-//-----------------------------------------------------------------------------
-	  doca[0] = poca.doca()-hit->driftRadius();
-	  doca[1] = poca.doca()+hit->driftRadius();
-
-	  double err = _hiterr[fAnnealingStep];
-	  double x0  = sqrt(doca[0]*doca[0]+err*err);
-	  double x1  = sqrt(doca[1]*doca[1]+err*err);
-
-	  int    ih;
-	  if (x0 < x1) ih = 0;
-	  else         ih = 1;
-
-	  if (fabs(doca[ih]/hit->hitErr()) < 5.) {
-					// hit close enough to the trajectory
-	    if (ih == 0) hit->setAmbig( 1);
-	    else         hit->setAmbig(-1);
-	  }
-	  else {
-					// can't tell
-	    hit->setExtErr(hit->driftRadius());
-	    hit->setAmbig(0);
-	  }
-	}
-	else {
-	  hit->setExtErr(hit->driftRadius());
-	  hit->setAmbig(0);
-	}
-
-	hit->setAmbigUpdate(false);
+	resolveSingleHit(Kres,hit);
       }
       else if (ndhits == 2) {
 //-----------------------------------------------------------------------------
 // 2 hits in a panel - attempt to determine the drift signs
 //-----------------------------------------------------------------------------
-	markDoublet(doublet, 0, 1);
+	markDoublet(Kres,doublet,0,1);
       }
       else {
 //-----------------------------------------------------------------------------
 // more than 2 hits in a panel
 //-----------------------------------------------------------------------------
-	int      tmpLayerId, layer0, layer1;
+	int      tmpLayerId, layer0, layer1, jbest(-1), kbest(-1);
 	int      tmpId(-1), id0(-1), id1(-1);
-	int      nDoublets(0);
-	double   rdrift;
+	double   rdrift, chi2_d, chi2_best (1.e12);
+	Doublet  bd;
 
 	for (int j=0; j<ndhits; ++j) {
-	  hit     = doublet->fHit[j];
+	  for (int k=j+1; k<ndhits; ++k){
+	    // 2015-03-22 P.Murat	    if (layer1 == layer0)  continue;
+//-----------------------------------------------------------------------------
+// P.Murat: logic here looks questionalble, but let's first figure what it is exactly 
+// - use the first found OS doublet, w/o looking at the quality
+// - after it is found, resolve drift signs right away for all hits in the multiplet
+// - this could be dangerous, especially, in presence of the background 
+//-----------------------------------------------------------------------------
+	    markDoublet(Kres,doublet,j,k); 
+	    chi2_d = doublet->Chi2Best();
+	    if (chi2_d < chi2_best) {
+	      jbest     = j;
+	      kbest     = k;
+	      chi2_best = chi2_d;
+	      bd        = *doublet;
+	    }
+	  }
+	}
+
+	*doublet = bd;
+	if (chi2_best < fMaxDoubletChi2) {
+//-----------------------------------------------------------------------------
+// the "best" doublet is good enough, resolve drift signs for the rest hits
+//----------------------------------------------------------------------------- 
+	  hit     = doublet->fHit[jbest];
 	  straw   = &hit->straw();
 	  layer0  = straw->id().getLayer();
 	  id0     = straw->index().asInt();
-	 
-	  if (nDoublets  == 1)      goto NEXT_DOUBLET;
-	  
-	  for (int k=j+1; k<ndhits; ++k){
-	    hit     = doublet->fHit[k];
-	    straw   = &hit->straw();
-	    layer1  = straw->id().getLayer();
-	    id1     = straw->index().asInt();
 
-	    // 2015-03-22 P.Murat	    if (layer1 == layer0)  continue;
-	    if (nDoublets  == 1  ) continue;
-	                                                       //try to search for a doublet
-	    markDoublet(doublet, j, k);                        //request of both: doublet found and oppposite
-	    if ( doublet->fStrawAmbig[j] * doublet->fStrawAmbig[k] < 0) {        // ambiguity signs for the two straw hits
-	      nDoublets = 1;
+	  hit     = doublet->fHit[kbest];
+	  straw   = &hit->straw();
+	  layer1  = straw->id().getLayer();
+	  id1     = straw->index().asInt();
 
-	      //now adjust the ambiguity sign of the other strawhits
-	      for (int h=0; h<ndhits; ++h){
-		hit        = doublet->fHit[h];
-		straw      = &hit->straw();
-		tmpLayerId = straw->id().getLayer();
-		tmpId      = straw->index().asInt();
+	  for (int h=0; h<ndhits; ++h) {
+	    hit        = doublet->fHit[h];
+	    straw      = &hit->straw();
+	    tmpLayerId = straw->id().getLayer();
+	    tmpId      = straw->index().asInt();
 		
-		if ( (h == j) || (h == k)) continue;
-
-		if (tmpLayerId == layer0){
-		  if (tmpId != id0){
-		    doublet->fStrawAmbig[h] = -doublet->fStrawAmbig[j];
-		  }
-		}else if (tmpLayerId == layer1){
-		  if (tmpId != id1){
-		    doublet->fStrawAmbig[h] = -doublet->fStrawAmbig[k];
-		  }
-		}
-		
-		rdrift = hit->driftRadius();
-
-		if ( fabs(rdrift) < fDeltaDriftDoublet){
-		//set the hit ambiguity
-		  hit->setAmbig(doublet->fStrawAmbig[h]);
-		  hit->setAmbigUpdate(false);
-		}
-   
-	      }//end of the loop over the hits in the multiplet
+	    if ((h == jbest) || (h == kbest)) continue;
+//-----------------------------------------------------------------------------
+// the assumption here is that in case of a triplet two hits in the same layer 
+// can't have the same drift sign - which is not necessarily correct.
+// *stick to it for the time being*
+//-----------------------------------------------------------------------------
+	    if (tmpLayerId == layer0) {
+	      if (tmpId != id0) {
+		doublet->fStrawAmbig[h] = -doublet->fStrawAmbig[jbest];
+	      }
 	    }
-	    
-	  }
+	    else if (tmpLayerId == layer1) {
+	      if (tmpId != id1) {
+		doublet->fStrawAmbig[h] = -doublet->fStrawAmbig[kbest];
+	      }
+	    }
+		
+	    rdrift = hit->driftRadius();
 
-	NEXT_DOUBLET:;
+	    if ( fabs(rdrift) < fDeltaDriftDoublet){
+	      hit->setAmbig(doublet->fStrawAmbig[h]);
+	      hit->setAmbigUpdate(false);
+	    }
+	  }   
 	}
       }
     }
@@ -1271,20 +1300,14 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-//
+// '*' in front of the hit drift radius: the hit drift sign is not defined 
+//     and the drift ambiguity has been set to 0
+// '?': the drift sign determined by the resolver is different from the MC truth
 //-----------------------------------------------------------------------------
   void KalFitHack::printHits(KalFitResult& KRes, const char* Caller) {
     const KalRep* Trk  = KRes._krep;
-    //    double d0(-1.), om(-1.), /*r(-1.),*/ phi0(-1.) /* ,x0(-1.), y0(-1.), chi2N(-1.)*/;
 
     if (Trk != 0) {
-//       d0    = Trk->helix(0.).d0();
-//       om    = Trk->helix(0.).omega();
-//       //      r     = fabs(1./om);
-//       phi0  = Trk->helix(0.).phi0();
-      //      x0    =  -(1/om+d0)*sin(phi0);
-      //      y0    =   (1/om+d0)*cos(phi0);
-      //      chi2N = Trk->chisq()/(Trk->nDof());
 
       printf("[KalFitHack::printHits] BEGIN called from %s iherr:%i \n",Caller,fAnnealingStep);
       printf("---------------------------------------------------------------------------------");
@@ -1296,7 +1319,7 @@ namespace mu2e
       printf("-----------------------------------------------------\n");
 
       Hep3Vector trk_mom;
-      //      Trk->printAll();
+
       double h1_fltlen = Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
       trk_mom          = Trk->momentum(h1_fltlen);
       double mom       = trk_mom.mag();
@@ -1355,8 +1378,8 @@ namespace mu2e
     printf("----------------------------------------------------------------");
     printf("--------------------------------------------\n");
     printf(" ih  SInd U A     len         x        y        z      HitT    HitDt");
-    printf(" Ch Pl  L  W     T0       Xs      Ys        Zs     resid sigres");
-    printf(" Rdrift   mcdoca  totErr hitErr  t0Err penErr extErr\n");
+    printf(" Ch Pl  L  W     T0       Xs      Ys        Zs      resid  sigres");
+    printf("   Rdrift   mcdoca  totErr hitErr  t0Err penErr extErr\n");
     printf("--------------------------------------------------------------------");
     printf("----------------------------------------------------------------");
     printf("--------------------------------------------\n");
@@ -1399,7 +1422,7 @@ namespace mu2e
  	}
       }
 
-      double step_doca = -99.0;
+      double mcdoca = -99.0;
 
       if (step) {
 	const Hep3Vector* v1 = &straw->getMidPoint();
@@ -1413,7 +1436,7 @@ namespace mu2e
 
 	TrkPoca poca(trstep, 0., trstraw, 0.);
     
-	step_doca = poca.doca();
+	mcdoca = poca.doca();
       }
 
       ihit += 1;
@@ -1440,7 +1463,7 @@ namespace mu2e
       double res, sigres;
       hit->resid(res, sigres, true);
 
-      printf("%8.3f %8.3f %9.3f %7.3f %7.3f",
+      printf(" %8.3f %8.3f %9.3f %7.3f %7.3f",
 	     pos.x(),
 	     pos.y(),
 	     pos.z(),
@@ -1448,11 +1471,12 @@ namespace mu2e
 	     sigres
 	     );
 
-      if (hit->ambig() != 0) printf(" %6.3f",hit->ambig()*hit->driftRadius());
-      else                   printf(" *%5.3f",hit->driftRadius());
+      if      (hit->ambig()       == 0) printf(" * %6.3f",hit->driftRadius());
+      else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
+      else                              printf(" ? %6.3f",hit->driftRadius()*hit->ambig());
 
       printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f\n",		 
-	     step_doca, 
+	     mcdoca, 
 	     hit->totalErr(),
 	     hit->hitErr(),
 	     hit->t0Err(),
@@ -1496,7 +1520,7 @@ namespace mu2e
         if(iHot->resid(resid, residErr, true)){
           double value = fabs(resid/residErr);
           if (value > _maxhitchi && value > worst) {
-            worst = value;
+            worst    = value;
             worstHot = iHot;
           }
         }

@@ -3,6 +3,10 @@
 
 namespace mu2e {
   
+  Doublet::Doublet() {
+  }
+
+
   Doublet::Doublet(int index,
 		   int station, int panel, 
 		   CLHEP::Hep3Vector shdir, 

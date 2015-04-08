@@ -82,6 +82,7 @@ namespace mu2e {
     double                      fMinDriftDoublet;
     double                      fDeltaDriftDoublet;
     double                      fSigmaSlope;
+    double                      fMaxDoubletChi2;
     std::string                 fMakeStrawHitModuleLabel;
 		                
     bool                        _removefailed;
@@ -155,17 +156,19 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     virtual void makeTrack      (KalFitResult& kres, CalTimePeak* TPeak=NULL, int markDoubs=0);
     void         markMultiplets (KalFitResult& Kres, DoubletCollection *dcol);
-    void         markDoublet    (Doublet *doub, int index0, int index1);
+    void         markDoublet    (KalFitResult& Kres, Doublet *doub, int index0, int index1);
 //---------------------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following function for printing the hits included in the track
 //----------------------------------------------------------------------------------------------
-    void printHits(KalFitResult& kres, const char* Caller);
+    void printHits       (KalFitResult& kres, const char* Caller);
 
-    bool unweedHits    (KalFitResult& kres, double maxchi);
-    void updateCalT0   (KalFitResult& kres, CalTimePeak* TPeak);
-    void updateHitTimes(KalFitResult& kres);
-    bool updateT0      (KalFitResult& kres);
-    bool weedHits      (KalFitResult& kres);
+    void resolveSingleHit(KalFitResult& Kres, mu2e::TrkStrawHit* Hit);
+
+    bool unweedHits      (KalFitResult& kres, double maxchi);
+    void updateCalT0     (KalFitResult& kres, CalTimePeak* TPeak);
+    void updateHitTimes  (KalFitResult& kres);
+    bool updateT0        (KalFitResult& kres);
+    bool weedHits        (KalFitResult& kres);
 
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;

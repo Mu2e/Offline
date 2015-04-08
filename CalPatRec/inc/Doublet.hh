@@ -29,19 +29,6 @@ namespace mu2e {
 
   class Doublet{
   public:
-    Doublet(int index,
-	    int station, int panel, 
-	    CLHEP::Hep3Vector shdir, 
-	    CLHEP::Hep3Vector trkdir,
-	    CLHEP::Hep3Vector trkpos,
-	    TrkStrawHit*      hit);
-    
-    ~Doublet();
-    
-    void addStrawHit(CLHEP::Hep3Vector trkdir,
-		     CLHEP::Hep3Vector trkpos,
-		     TrkStrawHit*      hit);
-    
     int                 fIndex;		// doublet index in the list
     int                 fStationId;
     int                 fPanelId;
@@ -59,7 +46,26 @@ namespace mu2e {
     int                 fINext;		// next-to-best combination
     int                 fOs;		// 0:opposite sign, +/-2:same sign
     double              fMcDoca    [5]; // signed MC distance of closest approach
+//-----------------------------------------------------------------------------
+// constructors and such
+//-----------------------------------------------------------------------------
+    Doublet();
 
+    Doublet(int index,
+	    int station, int panel, 
+	    CLHEP::Hep3Vector shdir, 
+	    CLHEP::Hep3Vector trkdir,
+	    CLHEP::Hep3Vector trkpos,
+	    TrkStrawHit*      hit);
+    
+    ~Doublet();
+
+    double Chi2Best() { return fChi2[fIBest]; }
+    
+    void addStrawHit(CLHEP::Hep3Vector trkdir,
+		     CLHEP::Hep3Vector trkpos,
+		     TrkStrawHit*      hit);
+    
   };
   
   typedef std::vector<Doublet> DoubletCollection;
