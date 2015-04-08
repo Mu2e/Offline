@@ -199,6 +199,36 @@ physics : {
 	  , makeSD, makeSH
 	 ]
 #
+    reco      : [MakeCaloProtoCluster, MakeCaloCluster
+		 #
+		 , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+		 #
+		 , CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
+		 , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+		 , CalPatRec
+		 #
+		 , MergePatRec
+		 #	  
+		 , TrkExtrapol, CaloMatching, ParticleID
+		 #
+		 , InitStntuple, StntupleMaker, FillStntuple
+		 ]
+#
+    reco_display  : [MakeCaloProtoCluster, MakeCaloCluster
+		     #
+		     , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+		     #
+		     , CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
+		     , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
+		     , CalPatRec
+		     #
+		     , MergePatRec
+		     #	  
+		     , TrkExtrapol, CaloMatching, ParticleID
+		     #
+		     , MuHitDisplay
+		 ]
+#
     calpatrec : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
 		  , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
 		  , CalPatRec
