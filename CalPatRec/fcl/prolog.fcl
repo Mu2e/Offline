@@ -134,7 +134,7 @@ CalPatRec            : {
 	t0Tolerance				: [ 5.0, 5.0  ]
 	initT0					: true 
 	updateT0				: false
-	T0UpdateMode                            : 0       # doesnt matter for the seed fit
+	T0UpdateMode                            : 1       # doesnt matter for the seed fit
 	HitMinDrift 				: 0.2
 	DivergeFlt                              : 1000.   #  default: 1000.
 	RdriftMinusDocaTol                      : 1.
@@ -161,7 +161,7 @@ CalPatRec            : {
 	t0Tolerance				: [ 2.0, 1.0, 1.0, 1.0 , 0.5  , 0.5 , 0.2, 0.2, 0.1]
 	initT0					: true
 	updateT0				: true
-	T0UpdateMode                            : 0
+	T0UpdateMode                            : 1
 	HitAmbigPenalty 			: false
 	HitMinDrift 				: 0.2
 	DivergeFlt                              : 1000.
