@@ -56,7 +56,7 @@ namespace mu2e {
     // Put in beam pipe inlet.  David Norvil Brown, Louisville, March 2015
 
     Tube const & pssInletParams = hrs->beamInlet(); 
-    G4Material* beampipeMaterial = findMaterialOrThrow(pssInletParams.materialName());
+    //    G4Material* beampipeMaterial = findMaterialOrThrow(pssInletParams.materialName());
     CLHEP::Hep3Vector place = hrs->getBeamInletCenter();
     CLHEP::HepRotation * turn = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
     turn->rotateY(hrs->getBeamAngleY());
@@ -84,14 +84,13 @@ namespace mu2e {
       osnum << ishell + 1;
 
       const Polycone& shell = hrs->shells()[ishell];
-      G4VSolid *psssolid = reg.add(new G4Polycone("PSShieldPoly"+osnum.str(),
-                                                  0, 2*M_PI,
-                                                  shell.numZPlanes(),
-                                                  &shell.zPlanes()[0],
-                                                  &shell.rInner()[0],
-                                                  &shell.rOuter()[0]
-                                                  )
-                                   );
+      G4VSolid *psssolid = new G4Polycone("PSShieldPoly"+osnum.str(),
+                                          0, 2*M_PI,
+                                          shell.numZPlanes(),
+                                          &shell.zPlanes()[0],
+                                          &shell.rInner()[0],
+                                          &shell.rOuter()[0]
+                                          );
 
       VolumeInfo pss("PSShieldShell"+osnum.str(),
                      shell.originInMu2e() - parent.centerInMu2e(),
