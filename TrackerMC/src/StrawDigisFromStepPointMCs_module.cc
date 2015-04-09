@@ -552,14 +552,15 @@ namespace mu2e {
 
   void
   StrawDigisFromStepPointMCs::findThresholdCrossings(StrawWaveform const& swf, WFXList& xings){
-     // start when the electronics becomes enabled
+     // start when the electronics becomes enabled:
     WFX wfx(swf,_strawele->flashEnd());
     //randomize the threshold to account for electronics noise
     double threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
     // iterate sequentially over hitlets inside the sequence.  Note we fold
     // the flash blanking to AFTER the end of the microbunch
-    while(swf.crossesThreshold(threshold,wfx) && wfx._time < _mbtime+_strawele->flashStart() ){
-      // keep these in time-order
+    while( wfx._time < _mbtime+_strawele->flashStart() &&
+ 	swf.crossesThreshold(threshold,wfx) ){
+    // keep these in time-order
       auto iwfxl = xings.begin();
       while(iwfxl != xings.end() && iwfxl->_time < wfx._time)
 	++iwfxl;
@@ -568,7 +569,7 @@ namespace mu2e {
       wfx._time += _strawele->deadTime();
       if(wfx._time >_mbtime+_strawele->flashStart())
 	break;
-      // skip to the hitlet before the next time (at least 1!)
+      // skip to the next hitlet
       ++(wfx._ihitlet);
 // update threshold
       threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());

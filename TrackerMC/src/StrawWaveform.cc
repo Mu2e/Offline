@@ -27,7 +27,7 @@ namespace mu2e {
   bool StrawWaveform::crossesThreshold(double threshold,WFX& wfx) const {
     bool retval(false);
     // make sure we start past the input time
-    while(wfx._ihitlet->time()< wfx._time && wfx._ihitlet != _hseq.hitletList().end()){
+    while(wfx._ihitlet != _hseq.hitletList().end() && wfx._ihitlet->time()< wfx._time ){
       ++(wfx._ihitlet);
     }
 // loop till we're at the end or we go over threshold

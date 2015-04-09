@@ -204,7 +204,7 @@ namespace mu2e
 	const StrawHit& strawhit(straws->at(istraw));
 	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 // estimate  initial flightlength
-	double hflt;
+	double hflt(0.0);
 	TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
 // find the bounding sites near this hit, and extrapolate to get the hit t0
 	std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef.fitdir().fitDirection()));
