@@ -372,7 +372,7 @@ namespace mu2e {
         , doNotCut_(pset.get<bool>("doNotCut"))
       {}
 
-      // the only method we need to override
+      virtual bool stackingActionCut(const G4Track *trk) { return false; }
       virtual bool steppingActionCut(const G4Step  *step);
     };
 
