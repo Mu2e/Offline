@@ -26,7 +26,6 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eG4/inc/DetectorConstruction.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
 #include "Mu2eG4/inc/EventAction.hh"
 #include "Mu2eG4/inc/SteppingAction.hh"
