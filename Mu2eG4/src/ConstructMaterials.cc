@@ -279,10 +279,9 @@ namespace mu2e {
     }
 
     // Stainless Steel 316 http://en.wikipedia.org/wiki/Marine_grade_stainless
-    // Density as per Dave P
     mat = uniqueMaterialOrThrow( "StainlessSteel316");
     {
-      G4Material* StainlessSteel316 = new G4Material( mat.name, 7.87*CLHEP::g/CLHEP::cm3, 10);
+      G4Material* StainlessSteel316 = new G4Material( mat.name, 8.00*CLHEP::g/CLHEP::cm3, 10);
       StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.17    );
       StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.12    );
       StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_C"),  0.0008  );
@@ -296,10 +295,9 @@ namespace mu2e {
     }
 
     // Stainless Steel 316L http://en.wikipedia.org/wiki/Marine_grade_stainless 
-    // Density as per Dave P
     mat = uniqueMaterialOrThrow( "StainlessSteel316L");
     {
-      G4Material* StainlessSteel316L = new G4Material( mat.name, 7.83*CLHEP::g/CLHEP::cm3, 10);
+      G4Material* StainlessSteel316L = new G4Material( mat.name, 8.00*CLHEP::g/CLHEP::cm3, 10);
       StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.17    );
       StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.12    );
       StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_C"),  0.0003  );
