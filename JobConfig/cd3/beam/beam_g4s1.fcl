@@ -53,8 +53,10 @@ extMonRegionCuts: {
          type: plane
          normal: @local::beamDumpNormal
          // Dump core center: (661.90,  527.40, -19428.2)
-         // One meter to the back, along the rotated axis
-         point : [424.72, 527.40, -20399.67 ]
+	 // A plane 950 mm beyond the core center as measured along
+	 // the "beam" direction normal to the dump face.
+	 // DeltaZ = L/cos(13.72 degrees)
+         point: [ 661.90, 527.40, -20406.10 ]
       },
 
       // Split the output of the "plane" cut above into two exclusive streams
