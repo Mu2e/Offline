@@ -118,27 +118,23 @@ physics : {
       }
 
       g4s1dsregion: {
-         module_type: StepPointMCDumper
-         hitsInputTag: "dsRegionFilter:dsregion"
-         TimeOffsets :  { inputs : [] }
+         module_type: InFlightStepDumper
+         inputCollection: "dsRegionFilter:dsregion"
       }
 
       g4s1mubeam: {
-         module_type: StepPointMCDumper
-         hitsInputTag: "muonBeamFilter:mubeam"
-         TimeOffsets :  { inputs : [] }
+         module_type: InFlightStepDumper
+         inputCollection: "muonBeamFilter:mubeam"
       }
 
       g4s1extmonbeam: {
-         module_type: StepPointMCDumper
-         hitsInputTag: "extmonBeamFilter:extmonbeam"
-         TimeOffsets :  { inputs : [] }
+         module_type: InFlightStepDumper
+         inputCollection: "extmonBeamFilter:extmonbeam"
       }
 
       g4s1extmonregion: {
-         module_type: StepPointMCDumper
-         hitsInputTag: "extmonRegionFilter:extmonregion"
-         TimeOffsets :  { inputs : [] }
+         module_type: InFlightStepDumper
+         inputCollection: "extmonRegionFilter:extmonregion"
       }
    }
 
