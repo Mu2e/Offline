@@ -278,6 +278,40 @@ namespace mu2e {
       StainlessSteel->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.68);
     }
 
+    // Stainless Steel 316 http://en.wikipedia.org/wiki/Marine_grade_stainless
+    // Density as per Dave P
+    mat = uniqueMaterialOrThrow( "StainlessSteel316");
+    {
+      G4Material* StainlessSteel316 = new G4Material( mat.name, 7.87*CLHEP::g/CLHEP::cm3, 10);
+      StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.17    );
+      StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.12    );
+      StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_C"),  0.0008  );
+      StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.02    );
+      StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_Si"), 0.0075  );
+      StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_P"),  0.00045 );
+      StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_S"),  0.0003  );
+      StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_N"),  0.001   );
+      StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_Mo"), 0.025   );
+      StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.65495 );
+    }
+
+    // Stainless Steel 316L http://en.wikipedia.org/wiki/Marine_grade_stainless 
+    // Density as per Dave P
+    mat = uniqueMaterialOrThrow( "StainlessSteel316L");
+    {
+      G4Material* StainlessSteel316L = new G4Material( mat.name, 7.83*CLHEP::g/CLHEP::cm3, 10);
+      StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_Cr"), 0.17    );
+      StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_Ni"), 0.12    );
+      StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_C"),  0.0003  );
+      StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.02    );
+      StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_Si"), 0.0075   );
+      StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_P"),  0.00045 );
+      StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_S"),  0.0003  );
+      StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_N"),  0.001   );
+      StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_Mo"), 0.025   );
+      StainlessSteel316L->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.65545 );
+    }
+
     // Construction Aluminum
     //http://asm.matweb.com/search/SpecificMaterial.asp?bassnum=MA5083O
     //http://ppd-docdb.fnal.gov/cgi-bin/RetrieveFile?docid=1112;filename=MD-ENG-109.pdf;version=1
