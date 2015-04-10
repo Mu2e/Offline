@@ -32,16 +32,22 @@ namespace mu2e {
                                          ps.psEndRefPoint().y(),
                                          (zmin+zmax)/2);
 
-    return std::unique_ptr<PSVacuum>(new PSVacuum(
-                                                Tube(
-                                                     c.getString("PS.insideMaterialName"),
-                                                     originInMu2e,
-                                                     0.,
-                                                     ps.getVacVesselInnerParamsPtr()->innerRadius(),
-                                                     (zmax - zmin)/2
-                                                     )
-                                                )
-                                   );
+    std::unique_ptr<PSVacuum> psv(new PSVacuum(
+                                               Tube(
+                                                    c.getString("PS.vacuumMaterialName"),
+                                                    originInMu2e,
+                                                    0.,
+                                                    ps.getVacVesselInnerParamsPtr()->innerRadius(),
+                                                    (zmax - zmin)/2
+                                                    )
+                                               )
+                                  );
+
+
+    psv->_vacuumPressure   = c.getDouble("PS.vacuumPressure");
+    psv->_vacuumG4Material = c.getString("PS.vacuumG4Material");
+
+    return psv;
 
   }
 

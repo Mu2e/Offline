@@ -26,6 +26,7 @@
 #include "Mu2eG4/inc/ConstructMaterials.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
@@ -526,8 +527,7 @@ namespace mu2e {
     }
 
 
-    // Presume that the residual gas in the DS will be leakage from the straws,
-    // pumped down to 10^{-4} torr.
+    // Presume that the residual gas in the DS will be leakage from the straws.
     mat = uniqueMaterialOrThrow( "DSVacuum");
     {
 
@@ -552,6 +552,33 @@ namespace mu2e {
       }
 
     }
+
+    // Presume that the residual gas in the PS will be purged with Argon
+    mat = uniqueMaterialOrThrow( "PSVacuum");
+    {
+
+      const double oneTorr = CLHEP::atmosphere/760.;
+      GeomHandle<PSVacuum> ps;
+
+      G4Material* gas = findMaterialOrThrow(ps->vacuumG4Material());
+
+      G4double temperature = 300.00*CLHEP::kelvin;
+      G4double pressure    = oneTorr * ps->vacuumPressure();
+      G4double refTemp     = gas->GetTemperature();
+      G4double refPress    = gas->GetPressure();
+
+      G4double density = gas->GetDensity()*pressure*refTemp/(refPress*temperature);
+
+      G4Material* PSVacuum =
+	new G4Material(mat.name, density, gas->GetNumberOfElements(),
+		       kStateGas, temperature, pressure);
+
+      for (size_t i = 0 ; i < gas->GetNumberOfElements(); ++i) {
+	PSVacuum->AddElement(gas->GetElementVector()->at(i), gas->GetFractionVector()[i]);
+      }
+
+    }
+
 
 
     mat = uniqueMaterialOrThrow( "MBOverburden");

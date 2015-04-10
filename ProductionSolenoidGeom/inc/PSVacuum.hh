@@ -27,6 +27,10 @@ namespace mu2e {
 
     const Tube& vacuum() const { return vacuum_; }
 
+    // Properties of the vacuum inside the PS
+    double vacuumPressure()          const { return _vacuumPressure;     }
+    std::string vacuumG4Material() const { return _vacuumG4Material;   }
+
   private:
 
     friend class PSVacuumMaker;
@@ -43,6 +47,11 @@ namespace mu2e {
     // The real enclosure shape is shown in docdb-2066 It is
     // approximated here by a cylinder closed with a flat end plate.
     Tube vacuum_;
+
+    // Properties of the vacuum inside the PS.
+    double _vacuumPressure;
+    std::string _vacuumG4Material;
+
   };
 
 }
