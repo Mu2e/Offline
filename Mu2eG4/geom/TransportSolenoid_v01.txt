@@ -2,7 +2,8 @@
 double ts.rVac           =  250.; //
 double ts.rTorus         = 2929.; //
 string ts.materialName   = "StainlessSteel";
-string ts.insideMaterialName = "DSVacuum";
+string ts.downstreamVacuumMaterialName = "DSVacuum";
+string ts.upstreamVacuumMaterialName   = "PSVacuum";
 
 // Cryostat
 // - radii

@@ -63,7 +63,8 @@ namespace mu2e {
     ts._rTorus = c.getDouble("ts.rTorus",0.);
     ts._rVac   = c.getDouble("ts.rVac",0.); 
     ts._material = c.getString("ts.materialName");
-    ts._insideMaterial = c.getString("ts.insideMaterialName");
+    ts._downstreamVacuumMaterial = c.getString("ts.downstreamVacuumMaterialName");
+    ts._upstreamVacuumMaterial   = c.getString("ts.upstreamVacuumMaterialName");
 
     // Parameters for rings (David Norvil Brown added April 1 2015)
     ts._rInRingSide = c.getDouble("ts.rInRingSide");

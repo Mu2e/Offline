@@ -131,7 +131,9 @@ namespace mu2e {
     double endWallD_halfLength() const  { return _halfLength_endWallD;  }
 
     std::string material()       const { return _material; }
-    std::string insideMaterial() const { return _insideMaterial; }
+
+    std::string downstreamVacuumMaterial() const { return _downstreamVacuumMaterial; }
+    std::string upstreamVacuumMaterial()   const { return _upstreamVacuumMaterial; }
 
     template <class T = TSSection>
     T* getTSCryo(TSRegion::enum_type i,TSRadialPart::enum_type j) const {
@@ -213,7 +215,8 @@ namespace mu2e {
     double _halfLength_endWallD;  
 
     std::string _material;
-    std::string _insideMaterial;
+    std::string _downstreamVacuumMaterial;
+    std::string _upstreamVacuumMaterial;
 
     // cryostat map
     typedef std::map<TSRadialPart::enum_type,std::unique_ptr<TSSection>> map_unique_ptrs_TSSection;

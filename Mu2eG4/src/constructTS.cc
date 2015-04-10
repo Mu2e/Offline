@@ -99,7 +99,8 @@ namespace mu2e {
 
     // For how all pieces are made from one of two types of material,
     // vacuum or average coils + cryostat material.
-    G4Material* vacuumMaterial  = findMaterialOrThrow(ts->insideMaterial());
+    G4Material* downstreamVacuumMaterial  = findMaterialOrThrow(ts->downstreamVacuumMaterial());
+    G4Material* upstreamVacuumMaterial    = findMaterialOrThrow(ts->upstreamVacuumMaterial());
     G4Material* cryoMaterial    = findMaterialOrThrow(ts->material());
 
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
@@ -134,7 +135,7 @@ namespace mu2e {
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
                           strsec->getHalfLength() ),
-              vacuumMaterial,
+              upstreamVacuumMaterial,
               strsec->getRotation(),
               strsec->getGlobal()-_hallOriginInMu2e,
               parent,
@@ -210,7 +211,7 @@ namespace mu2e {
     torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS2);
     nestTorus("TS2Vacuum",
               torsec->getParameters(),
-              vacuumMaterial,
+              upstreamVacuumMaterial,
               torsec->getRotation(),
               torsec->getGlobal()-_hallOriginInMu2e,
               parent,
@@ -266,7 +267,7 @@ namespace mu2e {
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::IN );
     nestTubs( "TS3Vacuum",
               TubsParams( 0., ts->innerRadius(), strsec->getHalfLength() ),
-              vacuumMaterial,
+              downstreamVacuumMaterial,
               strsec->getRotation(),
               strsec->getGlobal()-_hallOriginInMu2e,
               parent,
@@ -311,7 +312,7 @@ namespace mu2e {
     torsec = ts->getTSVacuum<TorusSection>(TransportSolenoid::TSRegion::TS4);
     nestTorus("TS4Vacuum",
               torsec->getParameters(),
-              vacuumMaterial,
+              downstreamVacuumMaterial,
               torsec->getRotation(),
               torsec->getGlobal()-_hallOriginInMu2e,
               parent,
@@ -369,7 +370,7 @@ namespace mu2e {
 
     nestTubs( "TS5Vacuum",
               TubsParams( 0., ts->innerRadius(), strsec->getHalfLength() ),
-              vacuumMaterial,
+              downstreamVacuumMaterial,
               strsec->getRotation(),
               globalVac5Position-_hallOriginInMu2e,
               parent,
@@ -793,7 +794,7 @@ namespace mu2e {
                                         coll31.getLocal().z() + coll31.halfLength() + vdHalfLength );
     nestTubs( "Coll31OutRecord",
               coll31OutRecordParam,
-              findMaterialOrThrow(ts.insideMaterial()),
+              findMaterialOrThrow(ts.downstreamVacuumMaterial()),
               coll31Rot,
               coll31OutRecordTrans,
               _helper->locateVolInfo("TS3Vacuum"),
@@ -808,7 +809,7 @@ namespace mu2e {
                                        coll32.getLocal().z() - coll32.halfLength() - vdHalfLength );
     nestTubs( "Coll32InRecord",
               coll32InRecordParam,
-              findMaterialOrThrow(ts.insideMaterial()),
+              findMaterialOrThrow(ts.downstreamVacuumMaterial()),
               coll32Rot,
               coll32InRecordTrans,
               _helper->locateVolInfo("TS3Vacuum"),
@@ -1158,7 +1159,7 @@ namespace mu2e {
 
       nestTubs( "PbarAbsTS1InRecord",
                 pbarTS1InRecordParams,
-                findMaterialOrThrow(ts.insideMaterial()),
+                findMaterialOrThrow(ts.upstreamVacuumMaterial()),
                 0,
                 pbarTS1InRecordPos,
                 motherVolume,

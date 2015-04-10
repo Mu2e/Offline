@@ -35,8 +35,13 @@ double PS.VacVessel.WallThickness  = 20.;
 double PS.VacVessel.EndPlateHalfThickness = 40.;
 double PS.VacVessel.HalfLength     = 2250.;
 string PS.VacVessel.materialName   = "G4_Al";
-string PS.insideMaterialName       = "DSVacuum";
+string PS.vacuumMaterialName       = "PSVacuum";
 bool   PS.Vacuum.Sensitive         = false;
+
+// Properties of the G4Material PSVacuum.
+// This is a reduced density version of an existing gass.
+double PS.vacuumPressure      = 4.e-5;       // torr
+string PS.vacuumG4Material    = "G4_Ar";     // name of the G4Material for the existing gas.
 
 // Information for Rings.  David Norvil Brown, March 2015
 double PS.ring.length = 439.8;

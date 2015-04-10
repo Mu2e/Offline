@@ -75,7 +75,9 @@ namespace mu2e {
     double vdHalfLength = CLHEP::mm * vdg->getHalfLength();
 
     GeomHandle<DetectorSolenoid> ds;
-    G4Material* vacuumMaterial     = findMaterialOrThrow( ds->vacuumMaterial() );
+    TransportSolenoid const&  ts = beamg->getTS();
+    G4Material* downstreamVacuumMaterial = findMaterialOrThrow( ds->vacuumMaterial() );
+    G4Material* upstreamVacuumMaterial   = findMaterialOrThrow(  ts.upstreamVacuumMaterial() );
 
     TubsParams vdParams(0,rVac,vdHalfLength);
 
@@ -104,7 +106,7 @@ namespace mu2e {
         }
 
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                  vdParams, vacuumMaterial, 0,
+                                  vdParams, upstreamVacuumMaterial, 0,
                                   vdg->getLocal(vdId),
                                   parent,
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -128,7 +130,7 @@ namespace mu2e {
                << " at " << vdg->getGlobal(vdId) << endl;
         }
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                  vdParams, vacuumMaterial, 0,
+                                  vdParams, upstreamVacuumMaterial, 0,
                                   vdg->getLocal(vdId),
                                   parent,
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -152,7 +154,7 @@ namespace mu2e {
                << " at " << vdg->getGlobal(vdId) <<  " parent: " << parent.centerInMu2e() << endl;
         }
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                  vdParams, vacuumMaterial, 0,
+                                  vdParams, downstreamVacuumMaterial, 0,
                                   vdg->getLocal(vdId),
                                   parent,
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -187,7 +189,7 @@ namespace mu2e {
                                        coll5HalfLength - 2.*vdHalfLength);
 
       VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                vdParamsColl5OutSurf, vacuumMaterial, 0,
+                                vdParamsColl5OutSurf, downstreamVacuumMaterial, 0,
                                 vdg->getLocal(vdId),
                                 parent,
                                 vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -260,7 +262,7 @@ namespace mu2e {
          }
 
           VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                    vdParamsSTMUpstream, vacuumMaterial, 0,
+                                    vdParamsSTMUpstream, downstreamVacuumMaterial, 0,
                                     vdg->getLocal(vdId),
                                     parent,
                                     vdId,
@@ -350,7 +352,7 @@ namespace mu2e {
           }
 
           VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                    vdParamsTarget, vacuumMaterial, 0,
+                                    vdParamsTarget, downstreamVacuumMaterial, 0,
                                     vdg->getLocal(vdId),
                                     parent,
                                     vdId,
@@ -413,7 +415,7 @@ namespace mu2e {
         //        cout << "foo: TT_Mid: " << vdParamsTTracker << endl;
 
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                  vdParamsTTracker, vacuumMaterial, 0,
+                                  vdParamsTTracker, downstreamVacuumMaterial, 0,
                                   vdPos,
                                   parent,
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -456,7 +458,7 @@ namespace mu2e {
           //        cout << "foo: TT_MidInner: " << vdParamsTTrackerInner << endl;
 
           VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                    vdParamsTTrackerInner, vacuumMaterial, 0,
+                                    vdParamsTTrackerInner, downstreamVacuumMaterial, 0,
                                     vdLocalOffset,
                                     parent,
                                     vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -582,7 +584,7 @@ namespace mu2e {
           vdHollowInfo.centerInWorld  = vdHollowInfo.centerInParent + parent.centerInWorld;
 
           finishNesting(vdHollowInfo,
-                        vacuumMaterial,
+                        downstreamVacuumMaterial,
                         0,
                         vdLocalOffset,
                         parent.logical,
@@ -656,7 +658,7 @@ namespace mu2e {
               parent.centerInWorld;
 
             finishNesting(vdIntersectionInfo,
-                          vacuumMaterial,
+                          downstreamVacuumMaterial,
                           0,
                           vdLocalOffset,
                           parent.logical,
@@ -741,7 +743,7 @@ namespace mu2e {
           //          cout << "foo: TT_Front: " << vdParamsTTrackerFrontFull << endl;
           VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                        vdParamsTTrackerFrontFull,
-                                       vacuumMaterial,
+                                       downstreamVacuumMaterial,
                                        0,
                                        vdLocalOffset,
                                        parent,
@@ -788,7 +790,7 @@ namespace mu2e {
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParamsTTrackerBackFull,
-                                     vacuumMaterial,
+                                     downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
                                      parent,
@@ -837,7 +839,7 @@ namespace mu2e {
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParamsTTrackerOutSurf,
-                                     vacuumMaterial,
+                                     downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
                                      parent,
@@ -886,7 +888,7 @@ namespace mu2e {
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParamsTTrackerInSurf,
-                                     vacuumMaterial,
+                                     downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
                                      parent,
@@ -940,7 +942,7 @@ namespace mu2e {
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParamsITrackerInSurf,
-                                     vacuumMaterial,
+                                     downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
                                      parent,
@@ -983,7 +985,7 @@ namespace mu2e {
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParamsITrackerInSurf,
-                                     vacuumMaterial,
+                                     downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
                                      parent,
@@ -1026,7 +1028,7 @@ namespace mu2e {
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParamsITrackerInSurf,
-                                     vacuumMaterial,
+                                     downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
                                      parent,
@@ -1091,7 +1093,7 @@ namespace mu2e {
 
       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
                                   hlen,
-                                  vacuumMaterial,
+                                  downstreamVacuumMaterial,
                                   reg.add(dump->coreRotationInMu2e().inverse()),
                                   shieldingFaceCenterInMu2e + vdOffset - parent.centerInMu2e(),
                                   parent,
@@ -1125,7 +1127,7 @@ namespace mu2e {
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                      vdParams,
-                                     vacuumMaterial,
+                                     upstreamVacuumMaterial,
                                      0,
                                      vdCenterInParent,
                                      parent,
@@ -1156,7 +1158,7 @@ namespace mu2e {
 
                     VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                     vdParams,
-                                    vacuumMaterial,
+                                    downstreamVacuumMaterial,
                                     0,
                                     vdCenterInParent,
                                     parent,
@@ -1188,7 +1190,7 @@ namespace mu2e {
 
                     VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                     vdParams,
-                                    vacuumMaterial,
+                                    downstreamVacuumMaterial,
                                     0,
                                     vdCenterInParent,
                                     parent,
@@ -1233,7 +1235,7 @@ namespace mu2e {
 
       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
                                   hlen,
-                                  vacuumMaterial,
+                                  downstreamVacuumMaterial,
                                   0,
                                   centerInCore,
                                   parent,
@@ -1286,7 +1288,7 @@ namespace mu2e {
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
-                                   vacuumMaterial,
+                                   downstreamVacuumMaterial,
                                    0,
                                    vdg->getGlobal(vdId) - parentInMu2e, //position w.r.t. parent
                                    parent,
@@ -1354,7 +1356,7 @@ namespace mu2e {
           {
               VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdFront),
                                           dimVDFront,
-                                          vacuumMaterial,
+                                          downstreamVacuumMaterial,
                                           &cal.vane(iv).rotation(),
                                           posFront1,
                                           parent,
@@ -1370,7 +1372,7 @@ namespace mu2e {
 
               VolumeInfo vdInfo2 = nestBox(VirtualDetector::volumeName(vdIdFront),
                                           dimVDFront,
-                                          vacuumMaterial,
+                                          downstreamVacuumMaterial,
                                           &cal.vane(iv).rotation(),
                                           posFront2,
                                           parent,
@@ -1395,7 +1397,7 @@ namespace mu2e {
           {
               VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdEdge),
                                           dimVDEdge,
-                                          vacuumMaterial,
+                                          downstreamVacuumMaterial,
                                           &cal.vane(iv).rotation(),
                                           posEdge1,
                                           parent,
@@ -1411,7 +1413,7 @@ namespace mu2e {
 
               VolumeInfo vdInfo2 = nestBox(VirtualDetector::volumeName(vdIdEdge),
                                           dimVDEdge,
-                                          vacuumMaterial,
+                                          downstreamVacuumMaterial,
                                           &cal.vane(iv).rotation(),
                                           posEdge2,
                                           parent,
@@ -1435,7 +1437,7 @@ namespace mu2e {
           {
               VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdIdSurf),
                                           dimVDSurf,
-                                          vacuumMaterial,
+                                          downstreamVacuumMaterial,
                                           &cal.vane(iv).rotation(),
                                           posSurf1,
                                           parent,
@@ -1452,7 +1454,7 @@ namespace mu2e {
 
               VolumeInfo vdInfo2 = nestBox(VirtualDetector::volumeName(vdIdSurf),
                                           dimVDSurf,
-                                          vacuumMaterial,
+                                          downstreamVacuumMaterial,
                                           &cal.vane(iv).rotation(),
                                           posSurf2,
                                           parent,
@@ -1510,7 +1512,7 @@ namespace mu2e {
 
                VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdSurf),
                                             vdParamsFront,
-                                            vacuumMaterial,
+                                            downstreamVacuumMaterial,
                                             0,
                                             posFront,
                                             parent,
@@ -1525,7 +1527,7 @@ namespace mu2e {
 
                VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdSurf),
                                             vdParamsFront,
-                                            vacuumMaterial,
+                                            downstreamVacuumMaterial,
                                             0,
                                             posBack,
                                             parent,
@@ -1549,7 +1551,7 @@ namespace mu2e {
            {
                VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdEdge),
                                             vdParamsInner,
-                                            vacuumMaterial,
+                                            downstreamVacuumMaterial,
                                             0,
                                             posInner,
                                             parent,
@@ -1564,7 +1566,7 @@ namespace mu2e {
 
                VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdEdge),
                                             vdParamsOuter,
-                                            vacuumMaterial,
+                                            downstreamVacuumMaterial,
                                             0,
                                             posInner,
                                             parent,
@@ -1602,7 +1604,7 @@ namespace mu2e {
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
-                                   vacuumMaterial,
+                                   downstreamVacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
                                    parent,
@@ -1641,7 +1643,7 @@ namespace mu2e {
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
-                                   vacuumMaterial,
+                                   downstreamVacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
                                    parent,
@@ -1680,7 +1682,7 @@ namespace mu2e {
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
-                                   vacuumMaterial,
+                                   downstreamVacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
                                    parent,
@@ -1719,7 +1721,7 @@ namespace mu2e {
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
-                                   vacuumMaterial,
+                                   downstreamVacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
                                    parent,
@@ -1758,7 +1760,7 @@ namespace mu2e {
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
-                                   vacuumMaterial,
+                                   downstreamVacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
                                    parent,
@@ -1798,7 +1800,7 @@ namespace mu2e {
       if (pbarTS1InOffset < 0.0) {
                  vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
-                                   vacuumMaterial,
+                                   upstreamVacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
                                    parentPS,
@@ -1814,7 +1816,7 @@ namespace mu2e {
       else {
                  vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
-                                   vacuumMaterial,
+                                   downstreamVacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
                                    parentTS1,
@@ -1855,7 +1857,7 @@ namespace mu2e {
       if (pbarTS1InOffset < 0.0) {
                  vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
-                                   vacuumMaterial,
+                                   upstreamVacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
                                    parentPS,
@@ -1871,7 +1873,7 @@ namespace mu2e {
       else {
                  vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
                                    vdParams,
-                                   vacuumMaterial,
+                                   downstreamVacuumMaterial,
                                    0,
                                    vdg->getLocal(vdId), //local position w.r.t. parent
                                    parentTS1,
