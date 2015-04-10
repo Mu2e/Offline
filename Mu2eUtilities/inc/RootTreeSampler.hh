@@ -144,7 +144,7 @@ namespace mu2e {
                                         <<"\"\n";
       }
 
-      if(bb->GetNleaves() != nBranchLeaves) {
+      if(unsigned(bb->GetNleaves()) != nBranchLeaves) {
         throw cet::exception("BADINPUT")<<"RootTreeSampler: wrong number of leaves: expect "
                                         <<nBranchLeaves<<", but branch \""<<branchName
                                         <<"\", tree \""<<treeName
