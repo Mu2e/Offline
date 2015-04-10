@@ -27,7 +27,7 @@ dsRegionCuts: {
       // into two exclusive streams
       { type: union pars:  [
             {  type: inVolume
-               pars: [TS3Vacuum, TS4Vacuum, TS5Vacuum, DS2Vacuum, DS3Vacuum ]
+               pars: [TS3Vacuum]
                write: TSVacuum
             },
             {  type: constant
