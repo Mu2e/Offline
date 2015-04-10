@@ -366,18 +366,17 @@ namespace mu2e {
     }
 
     //================================================================
-
     // This triggers on steps crossing the plane, not just on the
     // post-step point being behind the plane.  Therefore it is a
     // factor of two slower than Plane, but is sometimes useful
     // for its "virtual detector"-like functionality.
 
-    class PostNotPrePlane: virtual public IMu2eG4Cut,
-                           public IOHelper,
-                           private PlaneHelper {
+    class ObserverPlane: virtual public IMu2eG4Cut,
+                         public IOHelper,
+                         private PlaneHelper {
       bool doNotCut_;
     public:
-      PostNotPrePlane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
+      ObserverPlane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
         : IOHelper(pset, lim)
         , PlaneHelper(pset)
         , doNotCut_(pset.get<bool>("doNotCut"))
@@ -387,7 +386,7 @@ namespace mu2e {
       virtual bool steppingActionCut(const G4Step  *step);
     };
 
-    bool PostNotPrePlane::steppingActionCut(const G4Step *step) {
+    bool ObserverPlane::steppingActionCut(const G4Step *step) {
       const bool result =
         cut_impl(step->GetPostStepPoint()->GetPosition())
         && !cut_impl(step->GetPreStepPoint()->GetPosition());
@@ -607,7 +606,7 @@ namespace mu2e {
     if(cuttype == "union") return make_unique<Union>(pset, lim);
     if(cuttype == "intersection") return make_unique<Intersection>(pset, lim);
     if(cuttype == "plane") return make_unique<Plane>(pset, lim);
-    if(cuttype == "postNotPrePlane") return make_unique<PostNotPrePlane>(pset, lim);
+    if(cuttype == "observerPlane") return make_unique<ObserverPlane>(pset, lim);
 
     if(cuttype == "inVolume") return make_unique<VolumeCut>(pset, false, lim);
     if(cuttype == "notInVolume") return make_unique<VolumeCut>(pset, true, lim);
