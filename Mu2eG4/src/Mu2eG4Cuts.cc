@@ -25,6 +25,9 @@
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
+
 namespace mu2e {
   namespace Mu2eG4Cuts {
     using namespace std;
@@ -493,6 +496,71 @@ namespace mu2e {
     }
 
     //================================================================
+    template<class AcceptedCharge>
+    class ParticleChargeCut: virtual public IMu2eG4Cut,
+                             public IOHelper
+    {
+    public:
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
+      ParticleChargeCut(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
+        : IOHelper(pset, lim)
+      {}
+
+    private:
+      GlobalConstantsHandle<ParticleDataTable> pdt_;
+      typedef std::map<int,bool> PIDCache;
+      PIDCache cache_;
+      bool cut_impl(const G4Track* trk);
+      AcceptedCharge cut_;
+    };
+
+    template<class AcceptedCharge>
+    bool ParticleChargeCut<AcceptedCharge>::cut_impl(const G4Track* trk) {
+      const int pdgId(trk->GetDefinition()->GetPDGEncoding());
+      const auto citer = cache_.find(pdgId);
+      if(citer == cache_.end()) {
+        ParticleDataTable::maybe_ref info = pdt_->particle(pdgId);
+        if(!info.isValid()) {
+          throw cet::exception("RUNTIME")<<"ParticleDataTable does onot have information for pdgId = "
+                                         << pdgId
+                                         << " in file "<<__FILE__<<" line "<<__LINE__
+                                         <<" function "<<__func__<<"()\n";
+        }
+        const double charge = info.ref().charge();
+        const bool result = cache_[pdgId] = cut_(charge);
+        return result;
+      }
+      else {
+        return citer->second;
+      }
+    }
+
+    template<class AcceptedCharge>
+    bool ParticleChargeCut<AcceptedCharge>::steppingActionCut(const G4Step *step) {
+      const bool result = cut_impl(step->GetTrack());
+      if(result && steppingOutput_) {
+        addHit(step);
+      }
+      return result;
+    }
+
+    template<class AcceptedCharge>
+    bool ParticleChargeCut<AcceptedCharge>::stackingActionCut(const G4Track *trk) {
+      return cut_impl(trk);
+    }
+
+    //----------------------------------------------------------------
+    struct AcceptCharged {
+      bool operator()(double c) { return std::abs(c) > 0.1; }
+    };
+
+    struct AcceptNeutral {
+      bool operator()(double c) { return !AcceptCharged()(c); }
+    };
+
+    //================================================================
     class KineticEnergy: virtual public IMu2eG4Cut,
                          public IOHelper
     {
@@ -613,6 +681,9 @@ namespace mu2e {
 
     if(cuttype == "pdgId") return make_unique<ParticleIdCut>(pset, false, lim);
     if(cuttype == "notPdgId") return make_unique<ParticleIdCut>(pset, true, lim);
+
+    if(cuttype == "isNeutral") return make_unique<ParticleChargeCut<AcceptNeutral> >(pset, lim);
+    if(cuttype == "isCharged") return make_unique<ParticleChargeCut<AcceptCharged> >(pset, lim);
 
     if(cuttype == "kineticEnergy") return make_unique<KineticEnergy>(pset, lim);
     if(cuttype == "primary") return make_unique<PrimaryOnly>(pset, lim);

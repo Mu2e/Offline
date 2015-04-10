@@ -51,7 +51,7 @@ physics : {
 
 	 MultiStageParameters : {
             simParticleNumberOffset: 100000  // safe b/c of g4.particlesSizeLimit in stage1
-            genInputHits: [ "muonBeamFilter:TSVacuum" ]
+            genInputHits: [ "muonBeamFilter:mubeam" ]
             inputSimParticles: "muonBeamFilter"
 	    inputMCTrajectories: ""
             inputPhysVolumeMultiInfo: "compressPVmuonBeam"

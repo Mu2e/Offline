@@ -26,10 +26,14 @@ dsRegionCuts: {
       // This union splits the output of the above cuts
       // into two exclusive streams
       { type: union pars:  [
-            {  type: inVolume
-               pars: [TS3Vacuum]
-               write: TSVacuum
-            },
+	    {
+	       type: intersection
+	       pars: [
+		  { type: inVolume pars: [TS3Vacuum] },
+		  { type: isCharged }
+	       ]
+	       write: mubeam
+	    },
             {  type: constant
                value: true
                write: dsregion
@@ -55,25 +59,30 @@ extMonRegionCuts: {
 
       // Split the output of the "plane" cut above into two exclusive streams
       { type: union pars:  [
-            {  type: inVolume
-               pars:
-               [  collimator1Channel,
-                  HallAir,
-                  ExtMonFNALfilterMagnetAperture,
-                  ExtMonFNALfilterMagnetApertureMarginUp,
-                  ExtMonFNALfilterMagnetApertureMarginDn
-               ]
+
+            {  type: intersection
+	       pars: [
+		  {
+		     type: inVolume
+		     pars:
+		     [  collimator1Channel,
+			HallAir,
+			ExtMonFNALfilterMagnetAperture,
+			ExtMonFNALfilterMagnetApertureMarginUp,
+			ExtMonFNALfilterMagnetApertureMarginDn
+		     ]
+		  },
+		  { type: isCharged }
+	       ]
                write: extmonbeam
             },
+
             { type: constant  value: true       write: extmonregion }
          ]
       }
    ]
 }
-
 #----------------------------------------------------------------
-
-
 END_PROLOG
 
 #================================================================
@@ -114,7 +123,7 @@ physics : {
 
       g4s1mubeam: {
          module_type: StepPointMCDumper
-         hitsInputTag: "muonBeamFilter:TSVacuum"
+         hitsInputTag: "muonBeamFilter:mubeam"
          TimeOffsets :  { inputs : [] }
       }
 
@@ -215,7 +224,7 @@ physics : {
       muonBeamFilter: {
          module_type: FilterG4Out
          noInstanceName : true
-         mainHitInputs : [ "g4run:TSVacuum" ]
+         mainHitInputs : [ "g4run:mubeam" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1
          vetoDaughters: []
