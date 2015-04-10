@@ -13,6 +13,9 @@
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "G4Helper/inc/G4Helper.hh"
+
+#include "G4LogicalVolume.hh"
 
 namespace mu2e {
 
@@ -26,9 +29,11 @@ namespace mu2e {
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
     const bool placePV             = true;
+    const int  verbosityLevel      = config.getInt("PSEnclosure.verbosityLevel",0);
 
     //----------------------------------------------------------------
-    nestTubs("PSEnclosureShell",
+    std::string sName = "PSEnclosureShell";
+    nestTubs(sName,
              pse->shell().getTubsParams(),
              findMaterialOrThrow(pse->shell().materialName()),
              0,
@@ -43,7 +48,16 @@ namespace mu2e {
              doSurfaceCheck
              );
 
-    const VolumeInfo endPlate = nestTubs("PSEnclosureEndPlate",
+
+    // get the mass of the Shell
+    G4Helper* _helper = &(*art::ServiceHandle<G4Helper>());
+    verbosityLevel 
+      && std::cout << __func__ << " " << sName << " Mass in kg: " 
+                   << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg 
+                   << std::endl;
+
+    sName = "PSEnclosureEndPlate";
+    const VolumeInfo endPlate = nestTubs(sName,
                                          pse->endPlate().getTubsParams(),
                                          findMaterialOrThrow(pse->endPlate().materialName()),
                                          0,
@@ -58,6 +72,11 @@ namespace mu2e {
                                          doSurfaceCheck
                                          );
 
+
+    verbosityLevel 
+      && std::cout << __func__ << " " << sName << " Mass in kg: " 
+                   << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg 
+                   << std::endl;
     //----------------------------------------------------------------
     // Install the windows
 
@@ -110,6 +129,11 @@ namespace mu2e {
                );
 
     }
+
+    verbosityLevel 
+      && std::cout << __func__ << " " << sName << " with windows Mass in kg: " 
+                   << _helper->locateVolInfo(sName).logical->GetMass()/CLHEP::kg 
+                   << std::endl;
 
     //----------------------------------------------------------------
   }
