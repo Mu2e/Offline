@@ -292,26 +292,17 @@ namespace mu2e {
     }
 
     //================================================================
-    class Plane: virtual public IMu2eG4Cut,
-                 public IOHelper
-    {
+    class PlaneHelper {
     public:
-      virtual bool steppingActionCut(const G4Step  *step);
-      virtual bool stackingActionCut(const G4Track *trk);
-
-      explicit Plane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
-
-    protected:
+      explicit PlaneHelper(const fhicl::ParameterSet& pset);
       bool cut_impl(const CLHEP::Hep3Vector& pos);
-
     private:
       std::array<double,3> normal_;
       double offset_;
     };
 
-    Plane::Plane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
-      : IOHelper(pset, lim)
-      , offset_()
+    PlaneHelper::PlaneHelper(const fhicl::ParameterSet& pset)
+      : offset_()
     {
       // FIXME: use pset.get<array>() when it is available
       vector<double> n{pset.get<vector<double> >("normal")};
@@ -336,12 +327,29 @@ namespace mu2e {
       offset_ = std::inner_product(normal_.begin(), normal_.end(), x0.begin(), 0.);
     }
 
-    bool Plane::cut_impl(const CLHEP::Hep3Vector& pos) {
+    bool PlaneHelper::cut_impl(const CLHEP::Hep3Vector& pos) {
       const bool result =
         (pos.x()*normal_[0] + pos.y()*normal_[1] + pos.z()*normal_[2] >= offset_);
 
       return result;
     }
+
+    //================================================================
+    class Plane: virtual public IMu2eG4Cut,
+                 public IOHelper,
+                 private PlaneHelper
+    {
+    public:
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
+      explicit Plane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
+    };
+
+    Plane::Plane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
+      : IOHelper(pset, lim)
+      , PlaneHelper(pset)
+    {}
 
     bool Plane::steppingActionCut(const G4Step *step) {
       const CLHEP::Hep3Vector& pos = step->GetPostStepPoint()->GetPosition();
@@ -364,11 +372,14 @@ namespace mu2e {
     // factor of two slower than Plane, but is sometimes useful
     // for its "virtual detector"-like functionality.
 
-    class PostNotPrePlane: public Plane {
+    class PostNotPrePlane: virtual public IMu2eG4Cut,
+                           public IOHelper,
+                           private PlaneHelper {
       bool doNotCut_;
     public:
       PostNotPrePlane(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
-        : Plane(pset, lim)
+        : IOHelper(pset, lim)
+        , PlaneHelper(pset)
         , doNotCut_(pset.get<bool>("doNotCut"))
       {}
 
