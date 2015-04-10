@@ -2,10 +2,10 @@
 
 double PSEnclosure.length = 900; // mm
 double PSEnclosure.shell.outerDiameter = 1930.4; // mm
-double PSEnclosure.shell.thickness = 19.05; // mm
+double PSEnclosure.shell.thickness = 16.7; // mm
 double PSEnclosure.endPlate.thickness = 19.05; // mm
 
-string PSEnclosure.shell.materialName  = "G4_Fe";
+string PSEnclosure.shell.materialName  = "StainlessSteel316";
 
 int  PSEnclosure.nWindows = 2;
 
