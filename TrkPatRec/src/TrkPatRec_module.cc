@@ -386,6 +386,8 @@ namespace mu2e
 	  kaldef.setHelix(*shelix);
 	  // filter the outliers
 	  filterOutliers(kaldef,seedfit._krep->traj(),_maxseeddoca,_sfilt);
+	  // 2015-04-12 P.Murat:
+	  _kfit.setDecisionMode(0);
 	  _kfit.makeTrack(kalfit);
 	  // if successfull, try to add missing hits
 	  if(kalfit._fit.success()){
@@ -396,6 +398,9 @@ namespace mu2e
 	      vector<hitIndex> misshits;
 	      findMissingHits(kalfit,misshits);
 	      if(misshits.size() > 0){
+		// 2015-04-12 P.Murat: the logic is incomplete, however to introduce the rest, 
+		// more interface changes are needed. For now - do what is easy
+		_kfit.setDecisionMode(1);
 		_kfit.addHits(kalfit,_shcol,misshits,_maxaddchi);
 	      }
 	    }
