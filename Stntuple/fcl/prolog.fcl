@@ -136,5 +136,13 @@ MuHitDisplay: {
 	displayStrawDigiMC : 1
     }
 }
+#------------------------------------------------------------------------------
+# event list contains 3 numbers per event : run, event, subrun
+# if the event list is empty, all events are passed through
+#------------------------------------------------------------------------------
+EventFilter: {
+    module_type                  : EventFilter
+    eventList                    : []  # [ run1, event1, subrun1, ...]
+}
 
 END_PROLOG

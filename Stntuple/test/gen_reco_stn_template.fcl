@@ -129,6 +129,7 @@ physics : {
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
 	detectorFilter:     @local::FilterStepPointMomentum
+	EventFilter   :     @local::EventFilter
 #------------------------------------------------------------------------------
 # event display
 #------------------------------------------------------------------------------
@@ -166,6 +167,8 @@ physics : {
 	   , InitStntuple, StntupleMaker, FillStntuple
 	   #
 	   #	   , MuHitDisplay
+#
+	  , EventFilter
 	 ]
 
     display : [ generate, g4run
@@ -192,11 +195,12 @@ physics : {
 	 ]
 
     mc : [generate, g4run
-#	  , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
 	  , protonTimeMap, muonTimeMap
 #
 	  , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
 	  , makeSD, makeSH
+#
+	  , EventFilter
 	 ]
 #
     reco      : [MakeCaloProtoCluster, MakeCaloCluster
