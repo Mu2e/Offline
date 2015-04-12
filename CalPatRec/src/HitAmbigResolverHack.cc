@@ -43,7 +43,8 @@ namespace mu2e {
     TSHI ihit = Kres._hits.begin();
     while(ihit != Kres._hits.end()){
       TrkStrawHit* hit = *ihit++;
-// don't allow the hit to auto-update its ambiguity
+// set external error and don't allow the hit to auto-update its ambiguity
+      hit->setExtErr(_exterr);
       hit->setAmbigUpdate(false);
 // get the drift radius
       double rdrift = hit->driftRadius();

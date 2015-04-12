@@ -35,7 +35,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // comparison functor for sorting by Z(wire)
 //-----------------------------------------------------------------------------
-  struct straw_zcomp : public std::binary_function<hitIndex,hitIndex,bool> {
+  struct straw_zcomp : public binary_function<hitIndex,hitIndex,bool> {
     bool operator()(hitIndex const& h1, hitIndex const& h2) { 
       
       mu2e::GeomHandle<mu2e::TTracker> handle;
@@ -55,19 +55,20 @@ namespace mu2e {
     _debug       (pset.get<int>        ("debugLevel")),
     _printfreq   (pset.get<int>        ("printFrequency")),
     _addhits     (pset.get<bool>       ("addhits")),
-    _shLabel     (pset.get<std::string>("StrawHitCollectionLabel"        )),
-    _shpLabel    (pset.get<std::string>("StrawHitPositionCollectionLabel")),
-    _shfLabel    (pset.get<std::string>("StrawHitFlagCollectionLabel"    )),    _ccmLabel    (pset.get<std::string>("caloClusterModuleLabel"         )),
+    _shLabel     (pset.get<string>("StrawHitCollectionLabel"        )),
+    _shpLabel    (pset.get<string>("StrawHitPositionCollectionLabel")),
+    _shfLabel    (pset.get<string>("StrawHitFlagCollectionLabel"    )),    
+    _ccmLabel    (pset.get<string>("caloClusterModuleLabel"         )),
 
-    _dtspecpar   (pset.get<std::string>("DeltaTSpectrumParams","nobackgroundnomarkovgoff")),
-    _tsel        (pset.get<std::vector<std::string> >("TimeSelectionBits")),
-    _hsel        (pset.get<std::vector<std::string> >("HelixFitSelectionBits")),
+    _dtspecpar   (pset.get<string>("DeltaTSpectrumParams","nobackgroundnomarkovgoff")),
+    _tsel        (pset.get<vector<string> >("TimeSelectionBits")),
+    _hsel        (pset.get<vector<string> >("HelixFitSelectionBits")),
     _addsel      (pset.get<vector<string> >("AddHitSelectionBits",vector<string>{} )),
-    _ksel        (pset.get<std::vector<std::string> >("KalmanFitSelectionBits")),
-    _bkgsel      (pset.get<std::vector<std::string> >("BackgroundSelectionBits")),
+    _ksel        (pset.get<vector<string> >("KalmanFitSelectionBits")),
+    _bkgsel      (pset.get<vector<string> >("BackgroundSelectionBits")),
     _addbkg      (pset.get<vector<string> >("AddHitBackgroundBits",vector<string>{})),
     _maxedep     (pset.get<double>("MaxStrawEDep",0.005)),
-    fUseDoublets (pset.get<int>("useDoublets")),
+    //    fUseDoublets (pset.get<int>("useDoublets")),
     _mindt       (pset.get<double>("DtMin",-70.0)),
     _maxdt       (pset.get<double>("DtMax", 20.0)),
     _maxdtmiss   (pset.get<double>("DtMaxMiss",55.0)),
@@ -252,11 +253,11 @@ namespace mu2e {
 					 200, -1, 1.);
 
     _hist._hkdistvsdz[0]  = tfs->make<TH2F>("hkdistvsdz0",
-				  "Distance from prediction versus z-distance form the seed in case also the kalman fit converged; z-distance from the seed [mm]; Distance from prediction [mm]",
+				  "Dist from prediction[mm] vs z-distance form the seed[mm], KalFit tracks",
 				  1400, -3500., 3500.,
 				  500, 0, 500);
     _hist._hkdistvsdz[1]  = tfs->make<TH2F>("hkdistvsdz1",
-				  "Distance from prediction versus z-distance form the seed in case also the kalman fit converged + cut set ''C'' and p>100 MeV/c; z-distance from the seed [mm]; Distance from prediction [mm]",
+				  "Dist(from prediction) mm versus z-dist from the seed, SetC, p>100 MeV/c",
 				  1400, -3500., 3500.,
 				  500, 0, 500);
 
@@ -410,7 +411,7 @@ namespace mu2e {
 
     _ntracks = 0;
 					// reset the fit iteration counter
-    _kfit.SetNIter(0);
+    _kfit.setNIter(0);
 //     t1 = fStopwatch->RealTime();
 //     fStopwatch->Continue();
 					// event printout
@@ -774,7 +775,7 @@ namespace mu2e {
 	  kaldef.setIndices(goodhits);
 	  if (_debug > 0) printf("CalPatRec::produce] calling _kfit.makeTrack\n");
 	  _kfit.setDecisionMode(0);
-	  _kfit.makeTrack(kf_result,tp, fUseDoublets);
+	  _kfit.makeTrack(kf_result,tp);
 
 	  if (_debug > 0) {
 	    printf("[CalPatRec::produce] kalfit status = %i\n", kf_result._fit.success());
@@ -906,12 +907,12 @@ namespace mu2e {
     if (findseed && !findkal){
       printf("[CalPatRec::produce] LOOK AT: findseed converged and findkal not! event = %i\n", _iev);
     }
-    _hist._hNfitIter->Fill(_kfit.NIter());
+    _hist._hNfitIter->Fill(_kfit.nIter());
 //-----------------------------------------------------------------------------
 // fill event-level histograms
 //-----------------------------------------------------------------------------
     if(_diag > 0) {
-      _hist._hNfitIter->Fill(_kfit.NIter());
+      _hist._hNfitIter->Fill(_kfit.nIter());
       _hist._ntracks->Fill(_ntracks);
     }
 //-----------------------------------------------------------------------------
@@ -1214,11 +1215,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // this routine is called only if a track has been found
 //-----------------------------------------------------------------------------
-  void CalPatRec::fillFitDiag (art::Event&               event    ,
-			       int                       ipeak    , 
-			       const HelixFitHackResult& hf_result,
-			       const KalFitResult&       sf_result, 
-			       const KalFitResult&       kf_result) {
+  void CalPatRec::fillFitDiag (art::Event&         event    ,
+			       int                 ipeak    , 
+			       HelixFitHackResult& hf_result,
+			       KalFitResult&       sf_result, 
+			       KalFitResult&       kf_result) {
     Hep3Vector tdir, seedMom;
     HepPoint   tpos;
     bool       found;
@@ -1329,7 +1330,7 @@ namespace mu2e {
     const TrkStrawHit* dhit [2];
     int                layer[2], nd, nd_tot(0), nd_os(0), nd_ss(0), ns;
     
-    std::vector<Doublet>* list_of_doublets = _kfit.listOfDoublets();
+    std::vector<Doublet>* list_of_doublets = &kf_result._listOfDoublets;
     nd = list_of_doublets->size();
 
     for (int i=0; i<nd; i++) {

@@ -30,7 +30,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "CalPatRec/inc/CalTimePeak.hh"
-#include "CalPatRec/inc/Doublet.hh"
+#include "KalmanTests/inc/Doublet.hh"
 
 //ROOT
 #include "TStopwatch.h"
@@ -61,6 +61,7 @@ namespace mu2e {
     unsigned                    _maxweed;
     std::vector<double>         _hiterr;
     double                      _maxdriftpull;
+    fhicl::ParameterSet*        _darPset;         // parameter set for doublet ambig resolver
     std::vector<AmbigResolver*> _ambigresolver;
     bool                        _initt0;
     bool                        _updateT0;
@@ -70,19 +71,18 @@ namespace mu2e {
     int                         fSign[4][2];
     int                         _daveMode;
     std::vector<double>         _t0tol;
-    std::vector<Doublet>        fListOfDoublets;
+    //    std::vector<Doublet>        fListOfDoublets;
     TStopwatch*                 fStopwatch;       // = new TStopwatch();
     double                      _t0errfac;       // fudge factor for the calculated t0 error
     double                      _mint0doca;      // minimum (?) doca for t0 hits
     double                      _t0nsig;	        // # of sigma to include when selecting hits for t0
     double                      _dtoffset;       // track - luster time offset, ns
     double                      fScaleErrDoublet;
-    int                         fUseDoublets;
-    int                         fILoopUseDoublets;
+    //    int                         fUseDoublets;
     double                      fMinDriftDoublet;
     double                      fDeltaDriftDoublet;
+    double                      _maxDoubletChi2;
     double                      fSigmaSlope;
-    double                      fMaxDoubletChi2;
     std::string                 fMakeStrawHitModuleLabel;
 		                
     bool                        _removefailed;
@@ -91,12 +91,10 @@ namespace mu2e {
     TrkFitDirection             _fdir;
     std::vector<int>            _ambigstrategy;
     mutable BField*             _bfield;
-    int                         fNIter;
+    int                         _nIter;
     const CalTimePeak*          fTimePeak;
-    int                         fAmbigVec     [40000];
-    int                         fAmbigVecSlope[40000];
-    int                         fAnnealingStep;
-    int                         fDecisionMode; // 0:decision is not forced; 1:decision has to be made
+    int                         _annealingStep;
+    int                         _decisionMode; // 0:decision is not forced; 1:decision has to be made
 
     const mu2e::PtrStepPointMCVectorCollection*  fListOfMCStrawHits;
 //-----------------------------------------------------------------------------
@@ -108,13 +106,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // accessors
 //-----------------------------------------------------------------------------
-    std::vector<Doublet>*  listOfDoublets() { return &fListOfDoublets; }
-    int                    NIter         () { return fNIter;           }
+    int  decisionMode() { return _decisionMode ; }
+    int  nIter       () { return _nIter        ; }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------
-    void setDecisionMode (int Mode) { fDecisionMode = Mode; }
-    void SetNIter        (int N   ) { fNIter        = N  ; }
+    void setDecisionMode (int Mode) { _decisionMode = Mode; }
+    void setNIter        (int N   ) { _nIter        = N  ; }
 
     void setStepPointMCVectorCollection(const mu2e::PtrStepPointMCVectorCollection* List) {
       fListOfMCStrawHits = List;
@@ -136,9 +134,9 @@ namespace mu2e {
 //----------------------------------------------------------------------    
 // 2015-02-17 G.Pezzullo: search doublets in a given timepeak
 //-----------------------------------------------------------------------------
-    void          findDoublets(KalFitResult& KRes, DoubletCollection *DCol);
+    void          findDoublets(KalFitResult& KRes);
 //-----------------------------------------------------------------------------------------
-// 2015-02-20: G.Pezzu added function for calculataing the slope of the lines
+// 2015-02-20: G.Pezzu added function for calculating the slope of the lines
 // tangent to two given circles
 //-----------------------------------------------------------------------------------------
     void findLines(Hep3Vector A[2], double rb[2], double *Slopes);
@@ -154,9 +152,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // main function: given a track definition, create a fit object from it
 //-----------------------------------------------------------------------------
-    virtual void makeTrack      (KalFitResult& kres, CalTimePeak* TPeak=NULL, int markDoubs=0);
-    void         markMultiplets (KalFitResult& Kres, DoubletCollection *dcol);
-    void         markDoublet    (KalFitResult& Kres, Doublet *doub, int index0, int index1);
+    virtual void makeTrack      (KalFitResult& kRes, CalTimePeak* TPeak=NULL);
+    void         markMultiplets (KalFitResult& KRes);
+    void         markDoublet    (KalFitResult& KRes, Doublet *doub, int index0, int index1);
 //---------------------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following function for printing the hits included in the track
 //----------------------------------------------------------------------------------------------

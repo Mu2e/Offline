@@ -39,7 +39,7 @@ namespace art {
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
-#include "CalPatRec/inc/Doublet.hh"
+#include "KalmanTests/inc/Doublet.hh"
 
 #include "TROOT.h"
 #include "TFolder.h"
@@ -220,7 +220,7 @@ namespace mu2e {
 					
     HelixFitHack             _hfit;	// robust helix fitter
     KalFitHack               _seedfit;  // Kalman filter config for the Seed fit ( fit using hit wires)
-    KalFitHack               _kfit;     // full-blown Kalman filter
+    KalFitHack               _kfit;     // full-blown src/Kalman filter
     CalTimePeakCollection*   _tpeaks;   // cache of time peaks
     std::string              _iname;	// data instance name
 
@@ -271,17 +271,18 @@ namespace mu2e {
 // 2015 - 02 - 16 Gianipez added the two following functions
 //----------------------------------------------------------------------
     void findDoublets     (KalRep* krep, DoubletCollection *dcol);//search doublets in a giventimepeak
-    void findLoopApex     (){}//search the straw hits closer to the apexes of the helix loops
+    void findLoopApex     (){}//search the straw hits src/closer to the apexes of the helix loops
 
     void findMissingHits  (KalFitResult& kalfit, std::vector<hitIndex>& indices);
     void createDiagnostics();
     void fillStrawDiag    ();
     void fillTimeDiag     ();
-    void fillFitDiag      (art::Event&               Event   ,
-			   int                       ipeak   , 
-			   HelixFitHackResult const& helixfit,
-			   KalFitResult       const& seedfit ,
-			   KalFitResult       const& kalfit  );
+    void fillFitDiag      (art::Event&       Event   ,
+			   int               ipeak   , 
+			   HelixFitHackResult&  helixfit,
+			   KalFitResult      & seedfit ,
+			   KalFitResult      & kalfit  );
   };
 }
 #endif
+
