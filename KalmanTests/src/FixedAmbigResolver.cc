@@ -27,6 +27,8 @@ namespace mu2e {
     TSHI ihit = kfit._hits.begin();
     while(ihit != kfit._hits.end()){
       TrkStrawHit* hit = *ihit++;
+// set external error and don't allow the hit to auto-update its ambiguity
+      hit->setExtErr     (AmbigResolver::_extErr);
       hit->setAmbigUpdate(false);
       if(_neutralize)hit->setAmbig(0);
     }

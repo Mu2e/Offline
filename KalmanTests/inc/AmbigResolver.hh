@@ -28,10 +28,16 @@ namespace mu2e {
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value.
       virtual void resolveTrk(KalFitResult& kfit) const = 0;
+
+    void    setExterr(double Err) { _extErr = Err; }
+    double  extErr   () { return _extErr; }
+
     protected:
 // find the local trajectory piece computed from the fit excluding a particular set of hits.
 // the hits are assumed to be contiguous
       const TrkSimpTraj* findTraj(std::vector<TrkStrawHit*> const& phits, const KalRep* krep) const;
+
+    double _extErr;
   };
 }
 

@@ -13,6 +13,7 @@
 #include "KalmanTests/inc/PocaAmbigResolver.hh"
 #include "KalmanTests/inc/HitAmbigResolver.hh"
 #include "KalmanTests/inc/FixedAmbigResolver.hh"
+#include "KalmanTests/inc/DoubletAmbigResolver.hh"
 #include "KalmanTests/inc/BaBarMu2eField.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -93,6 +94,8 @@ namespace mu2e
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
     _bfield(0)
   {
+    // 2015-04-12 P.Murat add doublet ambig resolver
+    _darPset = new fhicl::ParameterSet(pset.get<fhicl::ParameterSet>("DoubletAmbigResolver",fhicl::ParameterSet()));
 // set KalContext parameters
     _disttol = pset.get<double>("IterationTolerance",0.1);
     _intertol = pset.get<double>("IntersectionTolerance",100.0);
@@ -131,22 +134,51 @@ namespace mu2e
     if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
     if(_herr.size() != _t0tol.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
     // construct the ambiguity resolvers
-    for(size_t iambig=0;iambig<_ambigstrategy.size();++iambig){
-      switch (_ambigstrategy[iambig] ){
-	case fixedambig: default:
-	  _ambigresolver.push_back(new FixedAmbigResolver(pset));
-	  break;
-	case hitambig:
-	  _ambigresolver.push_back(new HitAmbigResolver(pset));
-	  break;
-	case panelambig:
-	  _ambigresolver.push_back(new PanelAmbigResolver(pset));
-	  break;
-	case pocaambig:
-	  _ambigresolver.push_back(new PocaAmbigResolver(pset));
-	  break;
+
+    AmbigResolver* ar;
+
+    _useDoublets = 0;
+
+    for(size_t i=0; i<_ambigstrategy.size(); ++i){
+      switch (_ambigstrategy[i]) {
+      case fixedambig: default:
+	ar = new FixedAmbigResolver(pset);
+	break;
+      case hitambig:
+	ar = new HitAmbigResolver(pset);
+	break;
+      case panelambig:
+	ar = new PanelAmbigResolver(pset);
+	break;
+      case pocaambig:
+	ar = new PocaAmbigResolver(pset);
+	break;
+      case doubletambig: // 4
+ 	ar = new DoubletAmbigResolver(*_darPset,i);
+	_useDoublets = 1;
+ 	break;
       }
+
+      ar->setExterr(_herr[i]);
+      _ambigresolver.push_back(ar);
     }
+
+//     for(size_t iambig=0;iambig<_ambigstrategy.size();++iambig){
+//       switch (_ambigstrategy[iambig] ){
+// 	case fixedambig: default:
+// 	  _ambigresolver.push_back(new FixedAmbigResolver(pset));
+// 	  break;
+// 	case hitambig:
+// 	  _ambigresolver.push_back(new HitAmbigResolver(pset));
+// 	  break;
+// 	case panelambig:
+// 	  _ambigresolver.push_back(new PanelAmbigResolver(pset));
+// 	  break;
+// 	case pocaambig:
+// 	  _ambigresolver.push_back(new PocaAmbigResolver(pset));
+// 	  break;
+//       }
+//     }
   }
 
   KalFit::~KalFit(){
@@ -272,6 +304,10 @@ namespace mu2e
     kres._nt0iter = 0;
     unsigned niter(0);
     bool changed(true);
+					// 2015-04-12 P.Murat
+    if (_useDoublets) {
+      kres._decisionMode = _decisionMode;
+    }
     kres._fit = TrkErrCode::succeed;
     while(kres._fit.success() && changed && niter < maxIterations()){
       changed = false;
@@ -411,6 +447,15 @@ namespace mu2e
       retval = true;
       bestHot->setActivity(true);
       bestHot->setUsability(4);
+
+      if (_useDoublets == 1) {
+      // 2015-04-12 P.Murat: mode doublets could be recovered, for now - a hack: 
+      // assume that unweedHits is called only once from TrkpatRec in the very end
+	kres._decisionMode = _decisionMode;
+	int last = _herr.size()-1;
+	_ambigresolver[last]->resolveTrk(kres);
+      }
+
       kres.fit();
       kres._krep->addHistory(kres._fit, "HitUnWeed");
       // Recursively iterate
