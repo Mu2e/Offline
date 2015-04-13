@@ -319,6 +319,9 @@ def buildJson(par,file):
     # if there is a generic json available at command line, include that
     #
     jd.update(par.genericJson)
+    print "DEBUG BUILD"
+    print jd
+    print par.genericJson
 
     # if json exists, use that, if not try jsonx,
     # if both exist, ignore jsonx
@@ -414,18 +417,6 @@ def buildJsonName(par,file,jp):
 
     # second field is username
     usern = dname.split(".")[1]
-    # check if it exists as a user on this system
-    try:
-        subprocess.check_call("getent passwd "+usern+ \
-                              " >& /dev/null",shell=True)
-    except subprocess.CalledProcessError as cpe:
-        file.state = file.state | file.BADFILENAME
-        if par.verbose>4:
-            print "ERROR getent check on "+usern+" failed"
-    else:
-        if par.verbose>4:
-            print "getent check on "+usern+" passed"
-
     if 'dh.owner' in jp:
         if jp['dh.owner'] != usern:
             file.state = file.state | file.BADFILENAME
@@ -730,21 +721,36 @@ def buildJsonOther(par, file, jp):
     #
     # enforce certain fields for MC
     #
+    print "DEBUG"
+    print jp
     ok = True
     if file_type == "mc":
         if jp.has_key('mc.generator_type'):
             if jp['mc.generator_type'] not in par.validGenerator:
                 ok = False
+                if par.verbose>4 :
+                    print "ERROR - "+jp['mc.generator_type']+\
+                        " not in "+str(par.validGenerator)
         else:
             ok = False
+            if par.verbose>4 :
+                print "ERROR - mc.generator_type is missing"
 
-        ok = ok & jp.has_key('mc.simulation_stage')
+        if not jp.has_key('mc.simulation_stage'):
+            ok = False
+            if par.verbose>4 :
+                print "ERROR - mc.simulation_stage is missing"
 
         if jp.has_key('mc.primary_particle'):
             if jp['mc.primary_particle'] not in par.validPrimary:
                 ok = False
+                if par.verbose>4 :
+                    print "ERROR - "+jp['mc.primary_particle']+\
+                        " not in "+str(par.validPrimary)
         else:
             ok = False
+            if par.verbose>4 :
+                print "ERROR - mc.primary_particle is missing"
             
     if not ok :
         file.state = file.state | file.MISSINGMCREQUIRE
