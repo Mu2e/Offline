@@ -319,9 +319,6 @@ def buildJson(par,file):
     # if there is a generic json available at command line, include that
     #
     jd.update(par.genericJson)
-    print "DEBUG BUILD"
-    print jd
-    print par.genericJson
 
     # if json exists, use that, if not try jsonx,
     # if both exist, ignore jsonx
@@ -721,8 +718,6 @@ def buildJsonOther(par, file, jp):
     #
     # enforce certain fields for MC
     #
-    print "DEBUG"
-    print jp
     ok = True
     if file_type == "mc":
         if jp.has_key('mc.generator_type'):
