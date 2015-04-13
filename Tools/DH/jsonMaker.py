@@ -59,6 +59,12 @@ must be setup.
       that they are in the same directory, whatever their names are
    -j FILE
        a json file fragment to add to the json for all files
+   -i PAR=VALUE
+       a json file entry to add to the json for all files, like
+        -i mc.primary_particle=neutron
+        -i mc.primary_particle="neutron"  
+        -i mc.simulation_stage=2 
+       Can be repeated.  Will supersede values given in -j
    -a FILE
        a text file with parent file sam names - usually would only
        be used if there was one file to be processed.
@@ -797,11 +803,12 @@ def printSummary1(files):
 ##############################################################
 def parseCommandOptions(par,files):
 
+    # the generic json file name, will be read below, if needed
     genericJsonFs = ""
 
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                 "hxcmep:v:j:d:a:t:f:r:l:s:",["help"])
+                 "hxcmep:v:j:i:d:a:t:f:r:l:s:",["help"])
     except getopt.GetoptError:
         printHelp
         sys.exit(2)
@@ -826,6 +833,14 @@ def parseCommandOptions(par,files):
             par.inFile = arg
         elif opt == "-j":
             genericJsonFs = arg
+        elif opt == "-i":
+            # can be repeated, so deal with it immediately
+            k = arg.split("=")[0]
+            v = arg.split("=")[1]
+            if v.isdigit():
+                par.genericJson[k] = int(v)
+            else:
+                par.genericJson[k] = v
         elif opt == "-d":
             par.jsonDir = arg
         elif opt == "-a":
@@ -895,6 +910,8 @@ def parseCommandOptions(par,files):
     if par.verbose > 1:
         printSummary1(files)
 
+    # read in the generic json, which applies to all files
+    # these values could potentially overwrite values supplied with -i
     if genericJsonFs != "":
         jt = {}
         fj = open(genericJsonFs,"r")
@@ -909,7 +926,10 @@ def parseCommandOptions(par,files):
             print json.dumps(jt,sort_keys=True, indent=4)
 
         # save it for when file json is created
-        par.genericJson = jt
+        for k in jt.keys():
+            # do not supersede values given at command line
+            if not par.genericJson.has_key(k):
+                par.genericJson[k] = jt[k]
 
     if par.parentTxt != "":
         lt = []
