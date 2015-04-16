@@ -120,6 +120,7 @@ physics : {
       collectionSizes: {
 	 module_type: CollectionSizeAnalyzer
          useModuleLabel: true useInstanceName: true useProcessName: false
+	 maxStepPointMultiplicity: 500
       }
    }
 

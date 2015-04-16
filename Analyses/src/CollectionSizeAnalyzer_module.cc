@@ -6,6 +6,7 @@
 #include "TDirectory.h"
 #include "TProfile.h"
 #include "TH1.h"
+#include "TH2.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -23,6 +24,7 @@ namespace mu2e {
   class CollectionSizeAnalyzer : public art::EDAnalyzer {
     TProfile *hStepPointSize_;
     TH1D *hStepPointSum_;
+    TH2D *hStepPointDist_;
     bool useModuleLabel_;
     bool useInstanceName_;
     bool useProcessName_;
@@ -40,8 +42,14 @@ namespace mu2e {
     , useProcessName_(pset.get<bool>("useProcessName"))
   {
     art::ServiceHandle<art::TFileService> tfs;
-    hStepPointSize_ = tfs->make<TProfile>("stepPointsSize", "Average collection size", 1, 0., 1.);
+    hStepPointSize_ = tfs->make<TProfile>("avgStepPointsSize", "Average collection size", 1, 0., 1.);
     hStepPointSum_ = tfs->make<TH1D>("stepPointsSum", "Sum of step point collection entries", 1, 0., 1.);
+
+    const unsigned maxStepPointMultiplicity = pset.get<unsigned>("maxStepPointMultiplicity");
+    hStepPointDist_ = tfs->make<TH2D>("stepPointsSizeDistribution", "Multiplicity vs collection name",
+                                      1, 0., 1.,
+                                      1+maxStepPointMultiplicity, -0.5, maxStepPointMultiplicity-0.5);
+    hStepPointDist_->SetOption("colz");
   }
 
   //================================================================
@@ -69,6 +77,7 @@ namespace mu2e {
 
       hStepPointSize_->Fill(collName.str().c_str(), double(c->size()));
       hStepPointSum_->Fill(collName.str().c_str(), double(c->size()));
+      hStepPointDist_->Fill(collName.str().c_str(), double(c->size()), 1.);
     }
 
   } // analyze(event)
