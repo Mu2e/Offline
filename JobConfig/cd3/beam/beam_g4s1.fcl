@@ -117,24 +117,9 @@ physics : {
          module_type: GenEventCountReader
       }
 
-      g4s1dsregion: {
-         module_type: InFlightStepDumper
-         inputCollection: "dsRegionFilter:dsregion"
-      }
-
-      g4s1mubeam: {
-         module_type: InFlightStepDumper
-         inputCollection: "muonBeamFilter:mubeam"
-      }
-
-      g4s1extmonbeam: {
-         module_type: InFlightStepDumper
-         inputCollection: "extmonBeamFilter:extmonbeam"
-      }
-
-      g4s1extmonregion: {
-         module_type: InFlightStepDumper
-         inputCollection: "extmonRegionFilter:extmonregion"
+      collectionSizes: {
+	 module_type: CollectionSizeAnalyzer
+         useModuleLabel: true useInstanceName: true useProcessName: false
       }
    }
 
@@ -269,7 +254,7 @@ physics : {
    trigger_paths  : [trigmubeam, trigdsregion, trigextmonbeam, trigextmonregion, g4StatusFilter]
 
    outputs: [truncatedEvtsOutput, mubeamout, dsout, extmonbeamout,extmonregionout]
-   an: [ genCountLogger, g4s1dsregion, g4s1mubeam, g4s1extmonbeam, g4s1extmonregion ]
+   an: [ genCountLogger, collectionSizes ]
    end_paths: [outputs, an]
 }
 
