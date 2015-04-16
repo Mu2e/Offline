@@ -128,6 +128,11 @@ namespace mu2e {
                doSurfaceCheck
                );
 
+
+      verbosityLevel
+        && std::cout << __func__ << " " << wname.str() << " center in Mu2e: "
+                     <<pse->windows()[i].originInMu2e()
+                     << std::endl;
     }
 
     verbosityLevel 
