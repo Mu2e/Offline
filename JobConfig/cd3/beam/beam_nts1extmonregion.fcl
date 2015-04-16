@@ -1,0 +1,27 @@
+// Andrei Gaponenko, 2015
+
+#include "minimalMessageService.fcl"
+#include "standardServices.fcl"
+
+process_name :  nts1extmonregion
+
+source : { module_type : RootInput }
+
+services : {
+   message               : @local::default_message
+   TFileService          : { fileName : "hist_nts1extmonregion.root" }
+}
+
+physics : {
+   analyzers: {
+      genCountLogger: { module_type: GenEventCountReader }
+
+      g4s1extmonregion: {
+         module_type: InFlightStepDumper
+         inputCollection: "extmonRegionFilter:extmonregion"
+      }
+   }
+
+   an: [ genCountLogger, g4s1extmonregion ]
+   end_paths: [an]
+}
