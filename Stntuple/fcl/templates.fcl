@@ -38,20 +38,20 @@ END_PROLOG
 #------------------------------------------------------------------------------
 source : { 
     module_type : EmptyEvent
-#    module_type : RootInput
-#    fileNames   : [ {INPUT_DATA_FILE} ]
-#    fileNames : ["/mu2e/data/tdr/beam/g4s4p5/tdr.beam.g4s4.conversion.1504a.15729672/good/00000/dsStopsToHitsConversion.root"]
-#    maxEvents   : 100
-
-#    inputCommands : ['keep *_*_*_*'
-#		     , 'drop *_muonTimeMap_*_*'
-#		     , 'drop *_protonTimeMap_*_*'
-#		     , 'drop mu2eStrawDigis_*_*_*'
-#		     , 'drop mu2eStrawHits_*_*_*'
-#		     , 'drop *_CaloReadoutHitsMaker_*_*'
-#		     , 'drop *_CaloCrystalHitsMaker_*_*'
-# Uncomment the above lines to reduce file size.
-#		     ]  
+    #    module_type : RootInput
+    #    fileNames   : [ {INPUT_DATA_FILE} ]
+    #    fileNames : ["/mu2e/data/tdr/beam/g4s4p5/tdr.beam.g4s4.conversion.1504a.15729672/good/00000/dsStopsToHitsConversion.root"]
+    #    maxEvents   : 100
+    
+    #    inputCommands : ['keep *_*_*_*'
+    #		     , 'drop *_muonTimeMap_*_*'
+    #		     , 'drop *_protonTimeMap_*_*'
+    #		     , 'drop mu2eStrawDigis_*_*_*'
+    #		     , 'drop mu2eStrawHits_*_*_*'
+    #		     , 'drop *_CaloReadoutHitsMaker_*_*'
+    #		     , 'drop *_CaloCrystalHitsMaker_*_*'
+    # Uncomment the above lines to reduce file size.
+    #		     ]  
 }
 #------------------------------------------------------------------------------
 # services section
@@ -128,13 +128,9 @@ physics : {
 	    histFileName : "mergePatRec_stnmaker.stn"
 	}
 	StntupleMaker        : { @table::StntupleMaker
-	    g4ModuleLabel            : "g4run"
 #------------------------------------------------------------------------------
-# just one track block "TrackBlock" with output of MergePatRec
-#------------------------------------------------------------------------------
-	    # trkRecoModuleLabel   : [ "MergePatRec" ]
-#------------------------------------------------------------------------------
-#  3 track blocks, for the moment need to specify all other labels
+# make 3 track blocks, for the moment need to specify all other labels
+# default (in prolog): just one track block "TrackBlock" with output of MergePatRec
 #------------------------------------------------------------------------------
 	    trackBlockName          : [ "TrackBlock" , "TrkPatRec" , "CalPatRec" ] 
 	    trkRecoModuleLabel      : [ "MergePatRec", "TrkPatRec" , "CalPatRec" ]
@@ -159,103 +155,33 @@ physics : {
     }
 #------------------------------------------------------------------------------
 # paths
-# write out ntuple only, so don't need compression modules...
-# paths:
 # ------
-# p1 : main reconstruction path
-# p2 : MC-only path
-# p3 : reco-only
-#
 # MakeStereoHits also produces the StrawHitPosition collection
-#------------------------------------------------------------------------------
-    all : [generate
 #	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
-	   , g4run, detectorFilter, protonTimeMap, muonTimeMap
-	   , makeSD, makeSH, MakeCaloReadoutHits, MakeCaloCrystalHits
-	   , MakeCaloProtoCluster, MakeCaloCluster
+#------------------------------------------------------------------------------
+    event_filter   : [ EventFilter ]
+    mc             : [ @sequence::generatorSeq, @sequence::hitmakerSeq,  @sequence::calrecoSeq, EventFilter ]
+    gen_hits       : [ @sequence::generatorSeq, @sequence::hitmakerSeq ]
 #
-	   , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-	   #
-	   , CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
-	   , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits , CalPatRec
-	   #
-	   , MergePatRec
-	   #	  
-	   , TrkExtrapol, CaloMatching, ParticleID
-	   #
-	   , InitStntuple, StntupleMaker, FillStntuple
-	   #
-	   #	   , MuHitDisplay
+    reco_allpatrec              : [ @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq, EventFilter ]
+    reco_trkpatrec              : [ @sequence::calrecoSeq, @sequence::trkpatrecSeq, @sequence::pidSeq, EventFilter ]
+    reco_calpatrec              : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, EventFilter ]
 #
-	  , EventFilter
-	 ]
-
-    all1 : [generate
-	    , g4run, detectorFilter, protonTimeMap, muonTimeMap
-	    , makeSD, makeSH, MakeCaloReadoutHits, MakeCaloCrystalHits
-	    , MakeCaloProtoCluster, MakeCaloCluster
-#
-	    , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-	    #
-	    , MergePatRec
-	    #	  
-	    , TrkExtrapol, CaloMatching, ParticleID
-	    #
-	    , InitStntuple, StntupleMaker, FillStntuple
-	 ]
-
-    display : [ generate, g4run
-		, detectorFilter 
-		#	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
-		, protonTimeMap, muonTimeMap
-		#
-		, MakeCaloReadoutHits, MakeCaloCrystalHits, makeSD, makeSH
-		, MakeCaloProtoCluster, MakeCaloCluster
-		# 
-		, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-		#
-		, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
-		, CalPatRecFlagStrawHits, CalPatRecFlagBkgHits , CalPatRec
-		#
-		, MergePatRec
-		#	  
-		, TrkExtrapol, CaloMatching, ParticleID
-		#
-		, InitStntuple, StntupleMaker, FillStntuple
-		#
-		, MuHitDisplay
-	 ]
-
-    gen       : [ generate, g4run, protonTimeMap, muonTimeMap ]
-
-    mc        : [ generate, g4run
-		  , protonTimeMap, muonTimeMap
-		  #
-		  , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
-		  , makeSD, makeSH
-		  #
-		  , EventFilter
-		 ]
-#
-    reco_allpatrec : [ @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq ]
-    reco_trkpatrec : [ @sequence::calrecoSeq, @sequence::trkpatrecSeq, @sequence::pidSeq ]
-    reco_calpatrec : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq ]
-#
-    allpatrec_reco_stnmaker : [ @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq ]
-    trkpatrec_reco_stnmaker : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq ]
-    calpatrec_reco_stnmaker : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq ]
+    allpatrec_reco_stnmaker     : [ @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
+    trkpatrec_reco_stnmaker     : [ @sequence::calrecoSeq, @sequence::trkpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
+    calpatrec_reco_stnmaker     : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
 #------------------------------------------------------------------------------
     gen_allpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
 				    @sequence::calrecoSeq, @sequence::allpatrecSeq,
-				    @sequence::pidSeq, @sequence::stnmakerSeq ]
+				    @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter]
 
     gen_trkpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
 				    @sequence::calrecoSeq, @sequence::trkpatrecSeq,
-				    @sequence::pidSeq, @sequence::stnmakerSeq ]
+				    @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
 
     gen_calpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
 				    @sequence::calrecoSeq, @sequence::calpatrecSeq, 
-				    @sequence::pidSeq, @sequence::stnmakerSeq ]
+				    @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
 #------------------------------------------------------------------------------
 # event display paths
 #------------------------------------------------------------------------------
@@ -285,7 +211,7 @@ outputs: {
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
 			   ]
-        fileName    : "generate_mix_mergePatRec_stnmaker.root"
+        fileName      : "generate_mix_mergePatRec_stnmaker.root"
     }
 }
 #------------------------------------------------------------------------------
