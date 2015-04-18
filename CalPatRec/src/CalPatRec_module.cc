@@ -774,7 +774,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	  kaldef.setIndices(goodhits);
 	  if (_debug > 0) printf("CalPatRec::produce] calling _kfit.makeTrack\n");
-	  _kfit.setDecisionMode(0);
+	  //	  _kfit.setDecisionMode(0);
 	  _kfit.makeTrack(kf_result,tp);
 
 	  if (_debug > 0) {
@@ -790,26 +790,36 @@ namespace mu2e {
 // this is the default. First, add back the hits on this track
 // if successfull, try to add missing hits, at this point external errors were 
 // set to zero
+// assume this is the last iteration
 //-----------------------------------------------------------------------------
+	      int final(1);
+	      int last_iteration = _kfit.maxIteration();
+
 	      _kfit.unweedHits(kf_result,_maxaddchi);
 	      if (_debug > 0) _kfit.printHits(kf_result,"CalPatRec::produce after unweedHits");
 
 	      std::vector<hitIndex> misshits;
 	      findMissingHits(kf_result,misshits);
-					// force decision to be made
-	      _kfit.setDecisionMode(1);
+
+					// force drift sign decision to be made
+	      //	      _kfit.setDecisionMode(1);
+//-----------------------------------------------------------------------------
+// if new hits have been added, add then and refit the track. 
+// Otherwise - just refit the track one last time
+// in both cases 
+//-----------------------------------------------------------------------------
 	      if (misshits.size() > 0) {
 		_kfit.addHits(kf_result,_shcol,misshits, _maxaddchi, tp);
 	      }
 	      else {
-		_kfit.fitIteration(kf_result,-1,tp);
+		_kfit.fitIteration(kf_result,-1,tp,final);
 	      }
 
 	      if (_debug > 0) _kfit.printHits(kf_result,"CalPatRec::produce after addHits");
 //-----------------------------------------------------------------------------
 // and weed hits again to insure that addHits doesn't add junk
 //-----------------------------------------------------------------------------
-	      _kfit.weedHits(kf_result);
+	      _kfit.weedHits(kf_result,last_iteration,final);
 	    }
 //-----------------------------------------------------------------------------
 // now evaluate the T0 ad its error using the straw hits
@@ -901,13 +911,14 @@ namespace mu2e {
     if (findseed  && (nhits_from_gen >= 20)) _hist._cutflow->Fill(3.0);
     if (findkal   && (nhits_from_gen >= 20)) _hist._cutflow->Fill(4.0);
 
-    if (findhelix && !findseed){
-      printf("[CalPatRec::produce] LOOK AT: findhelix converged and findseed not! event = %i\n", _iev);
+    if (_debug > 0) {
+      if (findhelix && !findseed){
+	printf("[CalPatRec::produce] LOOK AT: findhelix converged and findseed not! event = %i\n", _iev);
+      }
+      if (findseed && !findkal){
+	printf("[CalPatRec::produce] LOOK AT: findseed converged and findkal not! event = %i\n", _iev);
+      }
     }
-    if (findseed && !findkal){
-      printf("[CalPatRec::produce] LOOK AT: findseed converged and findkal not! event = %i\n", _iev);
-    }
-    _hist._hNfitIter->Fill(_kfit.nIter());
 //-----------------------------------------------------------------------------
 // fill event-level histograms
 //-----------------------------------------------------------------------------

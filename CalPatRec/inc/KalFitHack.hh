@@ -94,7 +94,6 @@ namespace mu2e {
     int                         _nIter;
     const CalTimePeak*          fTimePeak;
     int                         _annealingStep;
-    int                         _decisionMode; // 0:decision is not forced; 1:decision has to be made
 
     const mu2e::PtrStepPointMCVectorCollection*  fListOfMCStrawHits;
 //-----------------------------------------------------------------------------
@@ -106,18 +105,16 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // accessors
 //-----------------------------------------------------------------------------
-    int  decisionMode() { return _decisionMode ; }
-    int  nIter       () { return _nIter        ; }
+    int  nIter       () { return _nIter        ; } 
+    int  maxIteration() { return _hiterr.size()-1; }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------
-    void setDecisionMode (int Mode) { _decisionMode = Mode; }
     void setNIter        (int N   ) { _nIter        = N  ; }
 
     void setStepPointMCVectorCollection(const mu2e::PtrStepPointMCVectorCollection* List) {
       fListOfMCStrawHits = List;
     }
-
 //-----------------------------------------------------------------------------
 // add a set of hits to an existing fit
 //-----------------------------------------------------------------------------
@@ -131,21 +128,12 @@ namespace mu2e {
 			  double                                       flt0,
 			  std::vector<TrkStrawHit*>::reverse_iterator& ilow ,
 			  std::vector<TrkStrawHit*>::iterator&         ihigh);
-//----------------------------------------------------------------------    
-// 2015-02-17 G.Pezzullo: search doublets in a given timepeak
-//-----------------------------------------------------------------------------
-    void          findDoublets(KalFitResult& KRes);
-//-----------------------------------------------------------------------------------------
-// 2015-02-20: G.Pezzu added function for calculating the slope of the lines
-// tangent to two given circles
-//-----------------------------------------------------------------------------------------
-    void findLines(Hep3Vector A[2], double rb[2], double *Slopes);
 
-    const TrkSimpTraj* findTraj(std::vector<TrkStrawHit*> const& Hits, 
-				const KalRep*                    Krep) const  ;
+//     const TrkSimpTraj* findTraj(std::vector<TrkStrawHit*> const& Hits, 
+// 				const KalRep*                    Krep) const  ;
 
     bool fitable     (TrkDef const& tdef);
-    void fitIteration(KalFitResult& kres , int Iteration, CalTimePeak* TPeak=NULL);
+    void fitIteration(KalFitResult& kres , int Iteration, CalTimePeak* TPeak, int Final);
     void fitTrack    (KalFitResult& kres , CalTimePeak* TPeak=NULL);
     void initCaloT0  (CalTimePeak*  TPeak, TrkDef const& tdef, TrkT0& t0);
     void initT0      (TrkDef const& tdef , TrkT0& t0);
@@ -153,20 +141,16 @@ namespace mu2e {
 // main function: given a track definition, create a fit object from it
 //-----------------------------------------------------------------------------
     virtual void makeTrack      (KalFitResult& kRes, CalTimePeak* TPeak=NULL);
-    void         markMultiplets (KalFitResult& KRes);
-    void         markDoublet    (KalFitResult& KRes, Doublet *doub, int index0, int index1);
 //---------------------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following function for printing the hits included in the track
 //----------------------------------------------------------------------------------------------
     void printHits       (KalFitResult& kres, const char* Caller);
 
-    void resolveSingleHit(KalFitResult& Kres, mu2e::TrkStrawHit* Hit);
-
     bool unweedHits      (KalFitResult& kres, double maxchi);
     void updateCalT0     (KalFitResult& kres, CalTimePeak* TPeak);
     void updateHitTimes  (KalFitResult& kres);
     bool updateT0        (KalFitResult& kres);
-    bool weedHits        (KalFitResult& kres);
+    bool weedHits        (KalFitResult& kres, int Iteration, int Final);
 
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;

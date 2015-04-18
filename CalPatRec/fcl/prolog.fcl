@@ -5,7 +5,6 @@
 # CalPatRec uses its own instance of the hit flags
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
-
 #------------------------------------------------------------------------------
 # there seems to be a circular dependence between MakeStrawHitPositions and 
 # FlagStrawHits ... FlagBkgHits ?
@@ -149,6 +148,13 @@ CalPatRec            : {
 	deltaDriftDoublet                       : 0.3
 	sigmaSlope                              : 0.025
 #------------------------------------------------------------------------------
+# ambiguity resolver parameters
+#------------------------------------------------------------------------------
+	FixedAmbigResolver                      : {}
+	HitAmbigResolver                        : {}
+	PocaAmbigResolver                       : {}
+	PanelAmbigResolver                      : {}
+#------------------------------------------------------------------------------
 # provision for doublet ambiguity resolver - SeedFit is not using it, but 
 # initialization might require
 #------------------------------------------------------------------------------
@@ -185,7 +191,14 @@ CalPatRec            : {
 	ZeroDriftPenalty 			: 0.05
 	Neutralize 				: true
 #------------------------------------------------------------------------------
-# provision for doublet ambiguity resolver
+# ambiguity resolver parameters
+#------------------------------------------------------------------------------
+	FixedAmbigResolver                      : {}
+	HitAmbigResolver                        : {}
+	PocaAmbigResolver                       : {}
+	PanelAmbigResolver                      : {}
+#------------------------------------------------------------------------------
+# doublet-based ambiguity resolver parameters
 #------------------------------------------------------------------------------
 	DoubletAmbigResolver : {
 	    debugLevel                          : 0
