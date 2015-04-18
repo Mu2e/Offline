@@ -655,9 +655,19 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
 	     sigres
 	     );
       
-      if      (hit->ambig()       == 0) printf(" * %6.3f",hit->driftRadius());
-      else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
-      else                              printf(" ? %6.3f",hit->driftRadius()*hit->ambig());
+      if (hit->isActive()) {
+	if      (hit->ambig()       == 0) printf(" * %6.3f",hit->driftRadius());
+	else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
+	else                              printf(" ? %6.3f",hit->driftRadius()*hit->ambig());
+      }
+      else {
+//-----------------------------------------------------------------------------
+// do not analyze correctness of the drift sign determination for hits not 
+// marked as 'active'
+//-----------------------------------------------------------------------------
+	printf("   %6.3f",hit->driftRadius());
+      }
+	  
 
       printf("  %7.3f",mcdoca);
       printf(" %6.3f %6.3f %6.3f %6.3f %6.3f\n",		 
