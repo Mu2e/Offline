@@ -12,14 +12,14 @@
 namespace mu2e {
 
   class PocaAmbigResolver : public AmbigResolver {
-    public:
-// construct from parameter set
+  public:
+    // construct from parameter set
 #ifndef __GCCXML__
-      explicit PocaAmbigResolver(fhicl::ParameterSet const& pset);
+    explicit PocaAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter);
 #endif/*__GCCXML__*/
-      virtual ~PocaAmbigResolver();
-      virtual void resolveTrk(KalFitResult& kfit) const;
-    private:
+    virtual ~PocaAmbigResolver();
+    virtual void resolveTrk(KalFitResult& kfit, int Final) const;
+  private:
   };
 }
 #endif

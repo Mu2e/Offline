@@ -15,10 +15,10 @@ namespace mu2e {
     public:
 // construct from parameter set
 #ifndef __GCCXML__
-      explicit FixedAmbigResolver(fhicl::ParameterSet const& pset);
+    explicit FixedAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter);
 #endif/*__GCCXML__*/
       virtual ~FixedAmbigResolver();
-      virtual void resolveTrk(KalFitResult& kfit) const;
+    virtual void resolveTrk(KalFitResult& kfit, int Final) const;
     private:
       bool _neutralize; // if true, set the initial ambiguity to 0
   };

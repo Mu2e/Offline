@@ -75,7 +75,7 @@ namespace mu2e
     bool _updatet0;
     std::vector<double> _t0tol;
     bool fitable(TrkDef const& tdef);
-    bool weedHits(KalFitResult& kres);
+    bool weedHits(KalFitResult& kres, int Iteration, int Final);
     void initT0(TrkDef const& tdef, TrkT0& t0);
     bool updateT0(KalFitResult& kres);
     void fitTrack(KalFitResult& kres);
@@ -95,8 +95,11 @@ namespace mu2e
     int              _useDoublets;  // 2015-04-12 P.Murat: temp flag to mark changes
     int              _decisionMode; // 0:decision is not forced; 1:decision has to be made
     // helper functions
-
-    void fitIteration(KalFitResult& kres,size_t iiter);
+//-----------------------------------------------------------------------------
+// 'Final'=1: final iteration, may involve special decision making mode
+//        =0: do not force decision on the hit drift sign if not enough information
+//-----------------------------------------------------------------------------
+    void fitIteration(KalFitResult& kres,size_t iiter,int Final);
     void updateHitTimes(KalFitResult& kres);
     void findBoundingHits(std::vector<TrkStrawHit*>& hits, double flt0,
 	std::vector<TrkStrawHit*>::reverse_iterator& ilow,

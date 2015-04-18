@@ -22,14 +22,17 @@
 namespace mu2e {
   typedef std::vector<TrkStrawHit*>::iterator TSHI;
 
-  PocaAmbigResolver::PocaAmbigResolver(fhicl::ParameterSet const& pset) : AmbigResolver(pset)
+  PocaAmbigResolver::PocaAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter): 
+    AmbigResolver(pset,ExtErr,Iter)
   {}
-
+  
   PocaAmbigResolver::~PocaAmbigResolver() {}
-
+  
   void
-  PocaAmbigResolver::resolveTrk(KalFitResult& kfit) const {
-// loop over all the hits
+  PocaAmbigResolver::resolveTrk(KalFitResult& kfit, int Final) const {
+    // init hit external errors
+    initHitErrors(kfit);
+    // loop over all the hits
     TSHI ihit = kfit._hits.begin();
     while(ihit != kfit._hits.end()){
       TrkStrawHit* hit = *ihit++;

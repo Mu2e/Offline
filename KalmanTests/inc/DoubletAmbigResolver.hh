@@ -28,7 +28,6 @@ namespace mu2e {
       enum trajtype {reftraj=0};
 
   protected:
-    int    _iherr;
     int    _debugLevel;
 
     double _mindrift;                   // minimum drift to assign an ambiguity.  Below this, an ambiguity of '0' is defined
@@ -46,22 +45,21 @@ namespace mu2e {
     double _minDriftDoublet;
     double _deltaDriftDoublet;
 
-    double _decisionMode;
     int    _sign[4][2];
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------
   public:
 #ifndef __GCCXML__
-    explicit DoubletAmbigResolver(fhicl::ParameterSet const&, int Iherr);
+    explicit DoubletAmbigResolver(fhicl::ParameterSet const&, double ExtErr, int Iter);
 #endif/*__GCCXML__*/
     virtual ~DoubletAmbigResolver();
 
     void findLines       (Hep3Vector* Pos, double* R, double* Slopes) const ;
     void findDoublets    (KalFitResult& KRes) const ;
 
-    void markDoublet     (KalFitResult& KRes, Doublet *doublet, int index0, int index1) const;
-    void markMultiplets  (KalFitResult& Kres) const;
+    void markDoublet     (KalFitResult& KRes, Doublet *doublet, int index0, int index1, int Final) const;
+    void markMultiplets  (KalFitResult& Kres, int Final) const;
     void resolveSingleHit(KalFitResult& Kres, mu2e::TrkStrawHit* Hit) const ;
     
 					// resolve a track.  Depending on the configuration, this might
@@ -69,7 +67,7 @@ namespace mu2e {
 
     double penaltyError(double rdrift) const;
 					// update the hit state and the t0 value.
-    virtual void resolveTrk(KalFitResult& kfit) const;
+    virtual void resolveTrk(KalFitResult& KRes, int Final) const;
   };
 }
 #endif

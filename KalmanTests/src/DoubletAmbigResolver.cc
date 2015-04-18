@@ -20,26 +20,25 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  DoubletAmbigResolver::DoubletAmbigResolver(fhicl::ParameterSet const& pset,
-					     int                        Iherr) :
-    AmbigResolver(pset),
-    _debugLevel  (pset.get<int>   ("debugLevel"      ,0        )),
-    _mindrift    (pset.get<double>("HitMinDrift"     ,0.2      )),
-    _zeropenalty (pset.get<double>("ZeroDriftPenalty",0.2      )),
-    _penalty     (pset.get<bool>  ("HitAmbigPenalty" ,false    )),
-    _expnorm     (pset.get<double>("HitExpNorm"      ,0.03907  )),
-    _lambda      (pset.get<double>("HitLambda"       ,0.1254   )),
-    _offset      (pset.get<double>("HitOffset"       ,0.073    )),
-    _slope       (pset.get<double>("HitSlope"        ,-0.002374)),
+  DoubletAmbigResolver::DoubletAmbigResolver(fhicl::ParameterSet const& PSet,
+					     double                     ExtErr,
+					     int                        Iter  ) :
+    AmbigResolver(PSet,ExtErr,Iter),
+    _debugLevel  (PSet.get<int>   ("debugLevel"      ,0        )),
+    _mindrift    (PSet.get<double>("HitMinDrift"     ,0.2      )),
+    _zeropenalty (PSet.get<double>("ZeroDriftPenalty",0.2      )),
+    _penalty     (PSet.get<bool>  ("HitAmbigPenalty" ,false    )),
+    _expnorm     (PSet.get<double>("HitExpNorm"      ,0.03907  )),
+    _lambda      (PSet.get<double>("HitLambda"       ,0.1254   )),
+    _offset      (PSet.get<double>("HitOffset"       ,0.073    )),
+    _slope       (PSet.get<double>("HitSlope"        ,-0.002374)),
 
-    _sigmaSlope       (pset.get<double>("sigmaSlope")),
-    _maxDoubletChi2   (pset.get<double>("maxDoubletChi2",9.)),
-    _scaleErrDoublet  (pset.get<double>("scaleErrDoublet")),
-    _minDriftDoublet  (pset.get<double>("minDriftDoublet")),
-    _deltaDriftDoublet(pset.get<double>("deltaDriftDoublet"))
+    _sigmaSlope       (PSet.get<double>("sigmaSlope")),
+    _maxDoubletChi2   (PSet.get<double>("maxDoubletChi2",9.)),
+    _scaleErrDoublet  (PSet.get<double>("scaleErrDoublet")),
+    _minDriftDoublet  (PSet.get<double>("minDriftDoublet")),
+    _deltaDriftDoublet(PSet.get<double>("deltaDriftDoublet"))
   {
-    _iherr        = Iherr;
-    _decisionMode = 0;
 //-----------------------------------------------------------------------------
 // initialize sequence of drift signs
 //-----------------------------------------------------------------------------
@@ -82,9 +81,8 @@ namespace mu2e {
       printf("[KalFitHack::findDoublets]  i  shId  ch  panel  il   iw   driftR       doca\n");
       printf("[KalFitHack::findDoublets]-------------------------------------------------\n");
     }
-    
-    dcol = &KRes._listOfDoublets;
 
+    dcol = &KRes._listOfDoublets;
     dcol->clear();
     nhits = KRes._hits.size();
     
@@ -102,10 +100,6 @@ namespace mu2e {
       station   = straw->id().getDevice();
       panel     = straw->id().getSector();
       shId      = straw->index().asInt();
-//-----------------------------------------------------------------------------
-// set an external error
-//-----------------------------------------------------------------------------
-      hit->setExtErr(AmbigResolver::_extErr);
 //-----------------------------------------------------------------------------
 // track info 
 //-----------------------------------------------------------------------------
@@ -191,7 +185,7 @@ namespace mu2e {
     int      ndoublets = dcol->size();
 
     if (_debugLevel >0) {
-      printf("[KalFitHack::findDoublets] iherr:%i: found %i multiplets\n",_iherr,ndoublets);
+      printf("[KalFitHack::findDoublets] iherr:%i: found %i multiplets\n",AmbigResolver::_iter,ndoublets);
       printf("--------------------------------------------------------------");
       printf("------------------------------------------------------------------------\n");
       printf("  i  shId ch pnl lay str      x        y         z      sinphi");
@@ -374,7 +368,11 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
 // given a multiplet, resolve the ambiguity for hit: index0 and index1
 //--------------------------------------------------------------------------------
-  void DoubletAmbigResolver::markDoublet(KalFitResult& KRes, Doublet *doublet, int index0, int index1) const {
+  void DoubletAmbigResolver::markDoublet(KalFitResult& KRes, 
+					 Doublet*      doublet, 
+					 int           index0, 
+					 int           index1,
+					 int           Final ) const {
     mu2e::TrkStrawHit *hit  [2];
     const mu2e::Straw *straw[2];
    
@@ -397,7 +395,6 @@ namespace mu2e {
     HepRotationZ      rot;
 
     wdir = doublet->fShDir;
-
 //-----------------------------------------------------------------------------
 // create the array holding the indexes of the straw hit to use
 // within a multiplet
@@ -548,7 +545,7 @@ namespace mu2e {
 // small drift radius : unless forced, keep the external error large and set 
 // the ambiguity to zero to use the wire coordinate
 //-----------------------------------------------------------------------------
-	    if (KRes._decisionMode == 0) {
+	    if (Final == 0) {
 	      hit[i]->setExtErr(rdrift[i]);
 	      hit[i]->setAmbig(0);
 	    }
@@ -562,7 +559,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // SS doublet
 //-----------------------------------------------------------------------------
-	if ((KRes._decisionMode == 0) && (fabs(rdrift[0]-rdrift[1]) < _deltaDriftDoublet)) {
+	if ((Final == 0) && (fabs(rdrift[0]-rdrift[1]) < _deltaDriftDoublet)) {
 	  if ((chi2min < _maxDoubletChi2) && (chi2min/chi2next < 0.1)) {
 //-----------------------------------------------------------------------------
 // the best chi2 is good enough to rely on it
@@ -594,9 +591,14 @@ namespace mu2e {
 	    else {
 //-----------------------------------------------------------------------------
 // small radius (rdrift[i] < _minDriftDoublet) - use the wire position
+// 2015-04-15 P.Murat: for well-resolved doublets it may be possible to decide 
+//                     in all cases - need to check
 //-----------------------------------------------------------------------------
 	      hit[i]->setExtErr(rdrift[i]);
-	      hit[i]->setAmbig(0);
+	      //	      hit[i]->setExtErr(rdrift[i]);
+	      //	      hit[i]->setAmbig(0);
+	      hit[i]->setExtErr(AmbigResolver::_extErr);
+	      hit[i]->setAmbig (_sign[ibest][i]);
 	    }
 	  }
 	  else {
@@ -642,7 +644,7 @@ namespace mu2e {
 //---------------------------------------------------------------------------
 // loop over the doublets found and mark their ambiguities
 //---------------------------------------------------------------------------
-  void DoubletAmbigResolver::markMultiplets (KalFitResult& Kres) const {
+  void DoubletAmbigResolver::markMultiplets (KalFitResult& Kres, int Final) const {
 
     mu2e::TrkStrawHit    *hit;
     const mu2e::Straw    *straw;
@@ -654,7 +656,7 @@ namespace mu2e {
     ndoublets  = dcol->size();
 
     if (_debugLevel > 0) {
-      printf("[KalFitHack::markMultiplets] BEGIN iherr:%i\n",_iherr);
+      printf("[KalFitHack::markMultiplets] BEGIN iherr:%i\n",AmbigResolver::_iter);
       printf("----------------------------------------------------");
       printf("------------------------------------------------------------------------------");
       printf("------------------------------------------------------------------------------------------\n");
@@ -683,7 +685,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // 2 hits in a panel - attempt to determine the drift signs
 //-----------------------------------------------------------------------------
-	markDoublet(Kres,doublet,0,1);
+	markDoublet(Kres,doublet,0,1,Final);
       }
       else {
 //-----------------------------------------------------------------------------
@@ -703,7 +705,7 @@ namespace mu2e {
 // - after it is found, resolve drift signs right away for all hits in the multiplet
 // - this could be dangerous, especially, in presence of the background 
 //-----------------------------------------------------------------------------
-	    markDoublet(Kres,doublet,j,k); 
+	    markDoublet(Kres,doublet,j,k,Final); 
 	    chi2_d = doublet->Chi2Best();
 	    if (chi2_d < chi2_best) {
 	      jbest     = j;
@@ -767,12 +769,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // build list of doublets and resolve the drift signs
 //-----------------------------------------------------------------------------
-  void DoubletAmbigResolver::resolveTrk(KalFitResult& KRes) const {
+  void DoubletAmbigResolver::resolveTrk(KalFitResult& KRes, int Final) const {
 
+					// initialize external hit errors
+    initHitErrors(KRes);
     findDoublets (KRes);
 
-    if (KRes._listOfDoublets.size() > 0) markMultiplets(KRes);
-
+    if (KRes._listOfDoublets.size() > 0) markMultiplets(KRes,Final);
   }
 
 //-----------------------------------------------------------------------------

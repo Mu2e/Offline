@@ -22,20 +22,24 @@
 namespace mu2e {
   typedef std::vector<TrkStrawHit*>::iterator TSHI;
 
-  HitAmbigResolver::HitAmbigResolver(fhicl::ParameterSet const& pset) : AmbigResolver(pset),
-  _mindrift(pset.get<double>("HitMinDrift",0.2)),
-  _zeropenalty(pset.get<double>("ZeroDriftPenalty",0.2)),
-  _penalty(pset.get<bool>("HitAmbigPenalty",false)),
-  _expnorm(pset.get<double>("HitExpNorm",0.03907)),
-  _lambda(pset.get<double>("HitLambda",0.1254)),
-  _offset(pset.get<double>("HitOffset",0.073)),
-  _slope(pset.get<double>("HitSlope",-0.002374))
+  HitAmbigResolver::HitAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter) : 
+    AmbigResolver(pset,ExtErr,Iter),
+    _mindrift(pset.get<double>("HitMinDrift",0.2)),
+    _zeropenalty(pset.get<double>("ZeroDriftPenalty",0.2)),
+    _penalty(pset.get<bool>("HitAmbigPenalty",false)),
+    _expnorm(pset.get<double>("HitExpNorm",0.03907)),
+    _lambda(pset.get<double>("HitLambda",0.1254)),
+    _offset(pset.get<double>("HitOffset",0.073)),
+    _slope(pset.get<double>("HitSlope",-0.002374))
   {}
 
   HitAmbigResolver::~HitAmbigResolver() {}
 
   void
-  HitAmbigResolver::resolveTrk(KalFitResult& kfit) const {
+  HitAmbigResolver::resolveTrk(KalFitResult& kfit, int Final) const {
+
+    initHitErrors(kfit);
+
 // loop over all the hits
     TSHI ihit = kfit._hits.begin();
     while(ihit != kfit._hits.end()){
