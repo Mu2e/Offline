@@ -30,6 +30,11 @@ public:
     kD2Bit             = 0x1 <<  7      // 0x00000080
   };
 
+  enum { 
+    kNFreeInts         =  4,
+    kNFreeFloats       = 10
+  };
+
   struct Hist_t {
 					// tight object cuts
     TH1F*    fNActive     [5];
@@ -48,7 +53,8 @@ public:
 protected:
   Int_t      fUseMask;
   Int_t      fMinNActive;
-  Int_t      fInteger[5];		// for future
+  Int_t      fMaxNActive;
+  Int_t      fInteger[kNFreeInts];		// for future
 
   Float_t    fMinFitCons;		// 
   Float_t    fMinT0;
@@ -64,7 +70,7 @@ protected:
   Float_t    fMinD2;			// R2 - maximal track radius, asymmetric cut
   Float_t    fMaxD2;
 
-  Float_t    fFloat[10];	// spare words, added in V5
+  Float_t    fFloat[kNFreeFloats];	// spare words, added in V5
 
   void*      fEOR;		// ! end of record
 //-----------------------------------------------------------------------------
@@ -81,6 +87,7 @@ public:
   Float_t MinFitCons   () const { return fMinFitCons;   }
   Float_t MinT0        () const { return fMinT0;        }
   Int_t   MinNActive   () const { return fMinNActive;   }
+  Int_t   MaxNActive   () const { return fMaxNActive;   }
   Float_t MaxT0Err     () const { return fMaxT0Err;     }
   Float_t MaxFitMomErr () const { return fMaxFitMomErr; }
   Float_t MinTanDip    () const { return fMinTanDip;    }
@@ -91,6 +98,7 @@ public:
   void    SetMinFitCons  (Float_t FitCons) { fMinFitCons    = FitCons; }
   void    SetMinT0       (Float_t T0     ) { fMinT0         = T0;      }
   void    SetMinNActive  (Int_t   N      ) { fMinNActive    = N;       }
+  void    SetMaxNActive  (Int_t   N      ) { fMaxNActive    = N;       }
   void    SetMaxT0Err    (Float_t T0Err  ) { fMaxT0Err      = T0Err;   }
   void    SetMaxFitMomErr(Float_t MomErr ) { fMaxFitMomErr  = MomErr;  }
 

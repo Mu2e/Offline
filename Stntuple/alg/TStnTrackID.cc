@@ -50,6 +50,7 @@ TStnTrackID::TStnTrackID(const char* Name): TNamed(Name,Name) {
   fMinFitCons      = 2.e-3;
   fMinT0           = 700.;		// ns
   fMinNActive      = 25;
+  fMaxNActive      = 200;
   fMaxT0Err        = 0.9;  		// in ns
   fMaxFitMomErr    = 0.25;  		// in MeV
   fMinTanDip       = tan(M_PI/6.);	// 0.5773
@@ -61,8 +62,8 @@ TStnTrackID::TStnTrackID(const char* Name): TNamed(Name,Name) {
   fMaxD2           =  1.e6;
 				// initialize spare words to zero
 
-  for (int i=0; i< 5; i++) fInteger[i] = 0;
-  for (int i=0; i<10; i++) fFloat  [i] = 0;
+  for (int i=0; i< kNFreeInts  ; i++) fInteger[i] = 0;
+  for (int i=0; i< kNFreeFloats; i++) fFloat  [i] = 0;
 }
 
 
@@ -91,19 +92,20 @@ int TStnTrackID::IDWord(TStnTrack* Track) {
   two_over_omega = 0. ;			// 2/c0 - signed diameter
   rmax           = d0+two_over_omega;
 
-  if (fcons            < fMinFitCons        ) id_word |= kFitConsBit ;
-  if (t0               < fMinT0             ) id_word |= kT0Bit ;
-  if (t0_err           > fMaxT0Err          ) id_word |= kT0ErrBit ;
-  if (nactive          < fMinNActive        ) id_word |= kNActiveBit ;
-  if (fitmom_err       > fMaxFitMomErr      ) id_word |= kFitMomErrBit ;
-  if (tan_dip          < fMinTanDip         ) id_word |= kTanDipBit ;
-  if (tan_dip          > fMaxTanDip         ) id_word |= kTanDipBit ;
+  if (fcons            <  fMinFitCons  ) id_word |= kFitConsBit ;
+  if (t0               <  fMinT0       ) id_word |= kT0Bit ;
+  if (t0_err           >  fMaxT0Err    ) id_word |= kT0ErrBit ;
+  if (nactive          <  fMinNActive  ) id_word |= kNActiveBit ;
+  if (nactive          >= fMaxNActive  ) id_word |= kNActiveBit ;
+  if (fitmom_err       >  fMaxFitMomErr) id_word |= kFitMomErrBit ;
+  if (tan_dip          <  fMinTanDip   ) id_word |= kTanDipBit ;
+  if (tan_dip          >  fMaxTanDip   ) id_word |= kTanDipBit ;
 
-  if (d0               < fMinD1             ) id_word |= kD1Bit ;
-  if (d0               > fMaxD1             ) id_word |= kD1Bit ;
+  if (d0               <  fMinD1       ) id_word |= kD1Bit ;
+  if (d0               >  fMaxD1       ) id_word |= kD1Bit ;
 
-  if (rmax             < fMinD2             ) id_word |= kD2Bit ;
-  if (rmax             > fMaxD2             ) id_word |= kD2Bit ;
+  if (rmax             <  fMinD2       ) id_word |= kD2Bit ;
+  if (rmax             >  fMaxD2       ) id_word |= kD2Bit ;
 
   return  (id_word & fUseMask);
 }
@@ -313,7 +315,7 @@ void TStnTrackID::Print(const char* Opt) const {
   printf("-----------------------------------------------------\n");
   printf(" bit  0: fMinFitCons     = %12.4f\n",fMinFitCons   );
   printf(" bit  1: fMinT0          = %12.4f\n",fMinT0        );
-  printf(" bit  2: fMinNActive     = %12.i\n" ,fMinNActive   );
+  printf(" bit  2: fNMinActive     = %12i  fNMaxNActive = %12i\n",fMinNActive,fMaxNActive);
   printf(" bit  3: fMaxT0Err       = %12.4f\n",fMaxT0Err     );
   printf(" bit  4: fMaxFitMomErr   = %12.4f\n",fMaxFitMomErr );
   printf(" bit  5: fTanDip         = %12.4f < tan(dip)   < %12.4f\n",fMinTanDip,fMaxTanDip);
