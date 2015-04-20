@@ -6,43 +6,43 @@
 
 namespace mu2e {
 
-namespace TrkChargeReco {
+  namespace TrkChargeReco {
 
-typedef unsigned int * adcWaveform;
+    typedef unsigned int * adcWaveform;
 
-struct resultantPeakData
-{
-  
-  Float_t _peakTime; // time of peak relative to 140.0 ns interval
-  Float_t _peakHeight; // in units of bits
+    struct resultantPeakData
+    {
 
-  // Default constructor 
-  resultantPeakData() : _peakTime(0.0), _peakHeight(0.0){};
+      Float_t _peakTime; // time of peak relative to 140.0 ns interval
+      Float_t _peakHeight; // in units of bits
 
-  // True constructor
-  resultantPeakData(Float_t peakTime, Float_t peakHeight) : _peakTime(peakTime), _peakHeight(peakHeight){};
-};
+      // Default constructor 
+      resultantPeakData() : _peakTime(0.0), _peakHeight(0.0){};
 
-// This is object top which will be filled by the process method 
-typedef std::vector<resultantPeakData> resultantHitData;
+      // True constructor
+      resultantPeakData(Float_t peakTime, Float_t peakHeight) : _peakTime(peakTime), _peakHeight(peakHeight){};
+    };
 
-//  PeakFitBase
-//  Virtual class providing structure for SinglePeakFit, LXPeakFit, ComboPeakFit, etc. 
-class PeakFitBase {
-  public:
-    
-    // Fills result using adc waveform data
-    virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result) = 0;
+    // This is object top which will be filled by the process method 
+    typedef std::vector<resultantPeakData> resultantHitData;
 
-    // Destructor
-    virtual ~PeakFitBase(){}
+    //  PeakFitBase
+    //  Virtual class providing structure for SinglePeakFit, LXPeakFit, ComboPeakFit, etc. 
+    class PeakFitBase {
+      public:
 
-    // PeakFitBase normal constructor with ConfigStruct initilization parameters
-    PeakFitBase(const ConfigStruct &initParams) : _initParams(initParams){}
-  protected:
+	// Fills result using adc waveform data
+	virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result) = 0;
 
-    ConfigStruct _initParams; 
-};
-}
+	// Destructor
+	virtual ~PeakFitBase(){}
+
+	// PeakFitBase normal constructor with ConfigStruct initilization parameters
+	PeakFitBase(const ConfigStruct &initParams) : _initParams(initParams){}
+      protected:
+
+	ConfigStruct _initParams; 
+    };
+  }
 }
 #endif

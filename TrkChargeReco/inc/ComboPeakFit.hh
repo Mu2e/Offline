@@ -11,108 +11,108 @@
 
 namespace mu2e {
 
-namespace TrkChargeReco {
+  namespace TrkChargeReco {
 
-// Computes reconstructed energy by summing adc values and subtracting two presamples
-class SumADC : public PeakFitRootBase{
-	public:
-		SumADC(const ConfigStruct &initParams) : PeakFitRootBase(initParams){};
+    // Computes reconstructed energy by summing adc values and subtracting two presamples
+    class SumADC : public PeakFitRootBase{
+      public:
+	SumADC(const ConfigStruct &initParams) : PeakFitRootBase(initParams){};
 
-		virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
-};
+	virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
+    };
 
-class SinglePeakFit : public PeakFitRootBase{
-	public:
-		// SinglePeakFit normal constructor with ConfigStruct initilization parameters
-		SinglePeakFit(const ConfigStruct &initParams);
+    class SinglePeakFit : public PeakFitRootBase{
+      public:
+	// SinglePeakFit normal constructor with ConfigStruct initilization parameters
+	SinglePeakFit(const ConfigStruct &initParams);
 
-		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
-		virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
+	// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
+	virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
 
-	protected:
+      protected:
 
-		// Convert parameters from fit to resultantHitData object
-		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
-};
+	// Convert parameters from fit to resultantHitData object
+	void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
+    };
 
-class SinglePeakFloatingPedestalFit : public PeakFitRootBase{
-	public:
-		// SinglePeakFit normal constructor with ConfigStruct initilization parameters
-		SinglePeakFloatingPedestalFit(const ConfigStruct &initParams);
+    class SinglePeakFloatingPedestalFit : public PeakFitRootBase{
+      public:
+	// SinglePeakFit normal constructor with ConfigStruct initilization parameters
+	SinglePeakFloatingPedestalFit(const ConfigStruct &initParams);
 
-		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
-		virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
+	// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
+	virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
 
-	protected:
+      protected:
 
-		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
-};
+	void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
+    };
 
-class EXPeakFit : public PeakFitRootBase{
-	public:
+    class EXPeakFit : public PeakFitRootBase{
+      public:
 
-		// EXPeakFit normal constructor with ConfigStruct initilization parameters
-		EXPeakFit(const ConfigStruct &initParams);
+	// EXPeakFit normal constructor with ConfigStruct initilization parameters
+	EXPeakFit(const ConfigStruct &initParams);
 
-		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
-		virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
+	// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
+	virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
 
-	protected:
+      protected:
 
-		// Convert parameters from fit to resultantHitData object
-		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
-};
+	// Convert parameters from fit to resultantHitData object
+	void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
+    };
 
-class LXPeakFit : public PeakFitRootBase{
-	public:
-		LXPeakFit(const ConfigStruct &initParams);
+    class LXPeakFit : public PeakFitRootBase{
+      public:
+	LXPeakFit(const ConfigStruct &initParams);
 
-		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
-		virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
+	// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
+	virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
 
-	protected:
+      protected:
 
-		// Convert parameters from fit to resultantHitData object
-		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
-};
+	// Convert parameters from fit to resultantHitData object
+	void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
+    };
 
-class LXPeakFloatingPedestalFit : public PeakFitRootBase{
-	public:
-		LXPeakFloatingPedestalFit(const ConfigStruct &initParams);
+    class LXPeakFloatingPedestalFit : public PeakFitRootBase{
+      public:
+	LXPeakFloatingPedestalFit(const ConfigStruct &initParams);
 
-		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
-		virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
+	// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
+	virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
 
-	protected:
+      protected:
 
-		// Convert parameters from fit to resultantHitData object
-		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
-};
+	// Convert parameters from fit to resultantHitData object
+	void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
+    };
 
-class ELXPeakFit : public PeakFitRootBase{
-	public:
-		// ELXPeakFit normal constructor with ConfigStruct initilization parameters
-		ELXPeakFit(const ConfigStruct &initParams);
+    class ELXPeakFit : public PeakFitRootBase{
+      public:
+	// ELXPeakFit normal constructor with ConfigStruct initilization parameters
+	ELXPeakFit(const ConfigStruct &initParams);
 
-		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
-		virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
+	// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
+	virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result);
 
-	protected:
+      protected:
 
-		// Convert parameters from fit to resultantHitData object
-		void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
-};
+	// Convert parameters from fit to resultantHitData object
+	void fitParams2ResultantData(const Double_t *fitParameters, resultantHitData &result);
+    };
 
-class ComboPeakFit : public PeakFitRootBase{
-	public:
+    class ComboPeakFit : public PeakFitRootBase{
+      public:
 
-		// ComboPeakFit normal constructor with ConfigStruct initilization parameters
-		ComboPeakFit(const ConfigStruct &initParams) : PeakFitRootBase(initParams){};
-		
-		// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
-		virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result); 
+	// ComboPeakFit normal constructor with ConfigStruct initilization parameters
+	ComboPeakFit(const ConfigStruct &initParams) : PeakFitRootBase(initParams){};
 
-};
-}
+	// Fills result using adc waveform data using by fitting with the convolutionSinglePeakWithDynamicPedestal model
+	virtual void process(const adcWaveform adcData, const resultantHitData &initialGuess, resultantHitData &result); 
+
+    };
+  }
 }
 #endif
