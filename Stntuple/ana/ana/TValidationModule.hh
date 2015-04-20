@@ -333,7 +333,7 @@ public:
 //  functions
 //-----------------------------------------------------------------------------
 public:
-  TValidationModule(const char* name="TrackAna", const char* title="TrackAna");
+  TValidationModule(const char* name="Validation", const char* title="Validation");
   ~TValidationModule();
 //-----------------------------------------------------------------------------
 // accessors
