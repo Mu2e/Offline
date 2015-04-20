@@ -92,7 +92,7 @@ namespace mu2e
     TrkFitDirection _fdir;
     std::vector<int> _ambigstrategy;
     mutable BField* _bfield;
-    int              _useDoublets;  // 2015-04-12 P.Murat: temp flag to mark changes
+    bool             _resolveAfterWeeding;  // 2015-04-12 P.Murat: temp flag to mark changes
     int              _decisionMode; // 0:decision is not forced; 1:decision has to be made
     // helper functions
 //-----------------------------------------------------------------------------

@@ -137,7 +137,7 @@ namespace mu2e
 
     AmbigResolver* ar;
 
-    _useDoublets = 0;
+    _resolveAfterWeeding = false;
     int n = _ambigstrategy.size();
     for(int i=0; i<n; ++i) {
       switch (_ambigstrategy[i]) {
@@ -155,7 +155,7 @@ namespace mu2e
 	break;
       case doubletambig: // 4
  	ar = new DoubletAmbigResolver(*_darPset,_herr[i],i);
-	_useDoublets = 1;
+	_resolveAfterWeeding = true;
  	break;
       }
       _ambigresolver.push_back(ar);
@@ -408,9 +408,9 @@ namespace mu2e
       worstHot->setActivity(false);
       worstHot->setUsability(5); // positive usability allows hot to be re-enabled later
 
-      if (_useDoublets) {
+      if (_resolveAfterWeeding) {
 //-----------------------------------------------------------------------------
-// _useDoublets=0 makes changes in the logic fully reversible
+// _resolveAfterWeeding=0 makes changes in the logic fully reversible
 //-----------------------------------------------------------------------------
 	_ambigresolver[Iteration]->resolveTrk(kres,Final);
       }
@@ -454,8 +454,8 @@ namespace mu2e
       bestHot->setActivity(true);
       bestHot->setUsability(4);
 
-      if (_useDoublets == 1) {
-	// 2015-04-12 P.Murat: '_useDoublets' is here to make my changes fully reversible
+      if (_resolveAfterWeeding) {
+	// 2015-04-12 P.Murat: '_resolveAfterWeeding' is here to make my changes fully reversible
 	// I think, resolving ambiguities before each fit, makes a lot of sense
 	_ambigresolver[last]->resolveTrk(kres,final);
       }
