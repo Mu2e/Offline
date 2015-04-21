@@ -55,7 +55,7 @@ protected:
   double      fSigR;      		// error in radial direction
   TLine       fLineW;			// paint on XY view
   TLine       fLineR;
-  TArc*       fArc;
+  TEllipse    fEllipse;
 
 public:
 //-----------------------------------------------------------------------------

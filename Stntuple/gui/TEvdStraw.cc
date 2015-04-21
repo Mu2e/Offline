@@ -99,8 +99,19 @@ void TEvdStraw::PaintRZ(Option_t* Option) {
   // draw straw
 
   int    nhits, color(0), style(0);
+  double xstraw, ystraw, x1, x2, y1, y2;
 
   TStnVisManager* vm = TStnVisManager::Instance();
+
+//-----------------------------------------------------------------------------
+// do not even attempt to paint straws outside the visible range
+//-----------------------------------------------------------------------------
+  gPad->GetRange(x1,y1,x2,y2);
+
+  xstraw = fArc->GetX1();
+  ystraw = fArc->GetY1();
+
+  if ((xstraw < x1) || (xstraw > x2) || (ystraw < y1) || (ystraw > y2)) return;
 
   nhits = fListOfHits->GetEntriesFast();
 //-----------------------------------------------------------------------------
@@ -111,15 +122,16 @@ void TEvdStraw::PaintRZ(Option_t* Option) {
   
   if (nhits > 0) {
     color = kRed;
-    fArc->SetLineColor(kRed+3);
+    fArc->SetLineColor(kRed+1);
     fArc->SetLineWidth(2);
   }
 
+  fArc->SetFillStyle(0);
   fArc->Paint(Option);
 
   if (vm->DisplayStrawDigiMC()) {
     for (int i=0; i<nhits; i++) {
-      Hit(i)->PaintRZ();
+      Hit(i)->PaintRZ(Option);
     }
   }
 }
