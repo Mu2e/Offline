@@ -95,6 +95,9 @@ MuHitDisplay: {
     module_type                  : MuHitDisplay # the class name
     debugBits                    : { }          # need for TAnaModule
     interactiveMode              : 1
+
+    crvRecoPulsesModuleLabel     : CrvRecoPulses
+    showCRVOnly 		 : false
 	
     generatorModuleLabel         : generate
     g4ModuleLabel                : g4run
