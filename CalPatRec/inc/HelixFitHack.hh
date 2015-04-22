@@ -175,6 +175,9 @@ namespace mu2e {
     double calculateWeight     (Hep3Vector HitPos, Hep3Vector StrawDir, Hep3Vector HelCenter, double Radius,
 				int Print, TString Banner);
 
+    double calculatePhiWeight     (Hep3Vector HitPos, Hep3Vector StrawDir, Hep3Vector HelCenter, double Radius,
+				int Print, TString Banner);
+
     //calculates the residual along the radial direction of the helix-circle
     double calculateRadialDist (Hep3Vector HitPos, Hep3Vector HelCenter, double Radius);
 
