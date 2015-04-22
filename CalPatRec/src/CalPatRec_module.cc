@@ -115,6 +115,8 @@ namespace mu2e {
 					// set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
 
+    fNminMChits = 25;
+
     fHackData = new THackData("HackData","Hack Data");
     gROOT->GetRootFolder()->Add(fHackData);
 //-----------------------------------------------------------------------------
@@ -151,11 +153,11 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
 
     _hist._cutflow = tfs->make<TH1F>("cutflow","Cutflow",10,-0.5,9.5);
-    _hist._cutflow->GetXaxis()->SetBinLabel(1,"All Events");
-    _hist._cutflow->GetXaxis()->SetBinLabel(2,"Time Peak");
-    _hist._cutflow->GetXaxis()->SetBinLabel(3,"Helix Fit");
-    _hist._cutflow->GetXaxis()->SetBinLabel(4,"Seed Fit");
-    _hist._cutflow->GetXaxis()->SetBinLabel(5,"Kalman Fit");
+    _hist._cutflow->GetXaxis()->SetBinLabel(1,"nhits(CE) >= 25");
+    _hist._cutflow->GetXaxis()->SetBinLabel(2,"Time Peak");	 
+    _hist._cutflow->GetXaxis()->SetBinLabel(3,"Helix Fit");	 
+    _hist._cutflow->GetXaxis()->SetBinLabel(4,"Seed Fit");	 
+    _hist._cutflow->GetXaxis()->SetBinLabel(5,"Kalman Fit");     
 
     _hist._hTpeaks    = tfs->make<TH1F>("hTpeaks",
 				 "Time peaks per event",100,0,100);
@@ -458,7 +460,7 @@ namespace mu2e {
       if (gen_index >0 && sim_id == 1) ++nhits_from_gen;
     }
     
-    if (nhits_from_gen >= 20)  _hist._cutflow->Fill(0.0);
+    if (nhits_from_gen >= fNminMChits)  _hist._cutflow->Fill(0.0);
     
     _kfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
     _seedfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
@@ -483,7 +485,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     _hist._hTpeaks->Fill(_tpeaks->size());
 
-    if (_tpeaks->size()>0 && (nhits_from_gen >= 20)) _hist._cutflow->Fill(1.0);
+    if (_tpeaks->size()>0 && (nhits_from_gen >= fNminMChits)) _hist._cutflow->Fill(1.0);
 //-----------------------------------------------------------------------------
 // loop over found time peaks - for us, - "eligible" calorimeter clusters 
 //-----------------------------------------------------------------------------
@@ -907,16 +909,22 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics in the end
 //-----------------------------------------------------------------------------
-    if (findhelix && (nhits_from_gen >= 20)) _hist._cutflow->Fill(2.0);
-    if (findseed  && (nhits_from_gen >= 20)) _hist._cutflow->Fill(3.0);
-    if (findkal   && (nhits_from_gen >= 20)) _hist._cutflow->Fill(4.0);
+    if (findhelix && (nhits_from_gen >= fNminMChits)) _hist._cutflow->Fill(2.0);
+    if (findseed  && (nhits_from_gen >= fNminMChits)) _hist._cutflow->Fill(3.0);
+    if (findkal   && (nhits_from_gen >= fNminMChits)) _hist._cutflow->Fill(4.0);
 
     if (_debug > 0) {
-      if (findhelix && !findseed){
-	printf("[CalPatRec::produce] LOOK AT: findhelix converged and findseed not! event = %i\n", _iev);
-      }
-      if (findseed && !findkal){
-	printf("[CalPatRec::produce] LOOK AT: findseed converged and findkal not! event = %i\n", _iev);
+      if ((nhits_from_gen >= fNminMChits) && _tpeaks->size() > 0){
+	if (_tpeaks->at(0)._tmin > 400.){
+	  if (!findhelix){
+	    printf("[CalPatRec::produce] LOOK AT: more than 25 MC hits and findHelix not converged! event = %i\n", _iev);
+	  }if (findhelix && !findseed){
+	    printf("[CalPatRec::produce] LOOK AT: findhelix converged and findseed not! event = %i\n", _iev);
+	  }
+	  if (findseed && !findkal){
+	    printf("[CalPatRec::produce] LOOK AT: findseed converged and findkal not! event = %i\n", _iev);
+	  }
+	}
       }
     }
 //-----------------------------------------------------------------------------
