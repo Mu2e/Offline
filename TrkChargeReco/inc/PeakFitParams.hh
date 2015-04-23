@@ -1,5 +1,5 @@
-#ifndef PeakFitParams_hh
-#define PeakFitParams_hh
+#ifndef TrkChargeReco_PeakFitParams_hh
+#define TrkChargeReco_PeakFitParams_hh
 
 // Parameter structs used by functions in FitModel.hh
 #include "Rtypes.h"
@@ -14,7 +14,7 @@ namespace mu2e{
       Float_t _earlyCharge; // decaying charge from earlier hit, units of pC
       Float_t _pedestal; // units of ADC counts (??)
       Float_t _time; // primary peak threshold crossing time, units of nSec WRT beam crossing (??)
-      Float_t _scale;  // primary peak charge, normalized charge units (???)
+      Float_t _scale;  // primary peak charge in pC
       Float_t _width; // Additional width of primary peak, in units of nSec
       Float_t _lateShift; // 2nd (late) peak time WRT primary peak time, same units as _time
       Float_t _lateScale; // 2nd (late) peak scale, same units as scale
