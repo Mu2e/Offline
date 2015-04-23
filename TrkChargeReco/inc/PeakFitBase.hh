@@ -1,5 +1,5 @@
-#ifndef PeakFitBase_hh
-#define PeakFitBase_hh
+#ifndef TrkChargeReco_PeakFitBase_hh
+#define TrkChargeReco_PeakFitBase_hh
 
 #include "TMath.h"
 #include "TrkChargeReco/inc/ConfigStruct.hh"

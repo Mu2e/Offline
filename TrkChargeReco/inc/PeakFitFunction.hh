@@ -42,7 +42,7 @@ namespace mu2e {
       ~PeakFitFunction();
 // the actual fit function, taking the explicit parameters as input
       Float_t fitModel(Double_t time, PeakFitParams const& params) const;
-// the root version of same.  This calls down` to the above
+// the root version of same.  This calls down to the above
       Float_t fitModelRoot(Double_t* x, Double_t* p) const;
 // provide a TF1 using the fit function above
       const TF1* fitModelTF1() const { return _tf1; }
@@ -56,7 +56,7 @@ namespace mu2e {
 // general electronics parameters
       StrawElectronics const& _strawele;      
 // configuration difinig the fit function
-      FitConfig const& _fitConfig; // local cache of configuration, owned outside this class
+      FitConfig _fitConfig; // local cache of configuration
       TF1* _tf1; // root fitting object
 // Helper functions, used in the above
       void createTF1();
