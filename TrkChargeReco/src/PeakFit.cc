@@ -16,7 +16,8 @@ namespace mu2e {
       double sum = 0.0;
       for (auto iadc: adcData) { sum += _strawele.adcCurrent(iadc); }
       // convert this to pC
-      double charge = sum*1000.0*_strawele.adcPeriod();
+      static const double pcfactor(1.0e-3);
+      double charge = sum*_strawele.adcPeriod()*pcfactor;
       // reset
       fit = PeakFitParams();
       // set parameters
