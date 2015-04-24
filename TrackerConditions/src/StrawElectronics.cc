@@ -16,10 +16,11 @@
 
 using namespace std;
 namespace mu2e {
+  double StrawElectronics::_pC_per_uA_ns(1000.0); // unit conversion from pC/ns to microAmp.
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<double>("thresholddVdI",0.13),
-      pset.get<double>("adcdVdI",160.0) }, // mVolt/uAmps (transimpedance gain)
+    _dVdI{pset.get<double>("thresholddVdI",1.3e5),
+      pset.get<double>("adcdVdI",1.6e8) }, // mVolt/uAmps (transimpedance gain)
     _tau{pset.get<double>("thresholdFallTime",25.0),  // nsec
       pset.get<double>("adcShapingTime",25.0) }, // nsec
     _tdead(pset.get<double>("DeadTime",60.0)), // nsec dead after threshold crossing (electronics processing time)
@@ -44,15 +45,15 @@ namespace mu2e {
  {
     // calcluate normalization.  Formulas are different, first threshold
     _tband = 1.0/(TMath::TwoPi()*pset.get<double>("preampBandwidth",0.2)); //GHz
-    double nlambda = pset.get<double>("MaxNLambda",10.0); 
+    double nlambda = pset.get<double>("MaxNLambda",10.0);  // only model waveform out to this # of lifetimes
     double ratio = _tband/_tau[thresh];
     _voff =TMath::Erf(ratio/TMath::Sqrt2());
     _toff = _tband*ratio;
 // normalization includes unit conversion to microamps from charge in picoC and time in nsec
-    _norm[thresh] = 1000.0*_dVdI[thresh]*exp(-0.5*(ratio*ratio))*_tau[adc];
+    _norm[thresh] = _dVdI[thresh]*exp(-0.5*(ratio*ratio))*_tau[thresh]/_pC_per_uA_ns;
     _tmax[thresh] = _toff + _tband*TMath::ErfInverse(exp(-0.5*ratio*ratio));
     
-    _norm[adc] = 1000.0*_dVdI[adc]/_tau[adc];
+    _norm[adc] = _dVdI[adc]/(_tau[adc]*_pC_per_uA_ns);
     _tmax[adc] = _tau[adc];
 
     for(int ipath=0;ipath<2;++ipath){

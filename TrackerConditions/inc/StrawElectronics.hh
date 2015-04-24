@@ -77,6 +77,7 @@ namespace mu2e {
       double currentToVoltage(path ipath) const { return _dVdI[ipath]; }
       double normalization(path ipath) const { return _norm[ipath]; }
       double maxLinearResponse(path ipath,double charge=1.0) const { return _linmax[ipath]*charge; }
+      static double _pC_per_uA_ns; // unit conversion from pC/ns to microAmp
     private:
     // generic waveform parameters
       double _dVdI[2]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
