@@ -176,10 +176,10 @@ namespace mu2e {
 	XTalk const& xtalk, 
 	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
 	PtrStepPointMCVectorCollection* mcptrs );
-    void fillDigis(WFXList const& xings,StrawWaveform const& wf, StrawIndex index,
+    void fillDigis(WFXList const& xings,const StrawWaveform wf[2] , StrawIndex index,
 	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
 	PtrStepPointMCVectorCollection* mcptrs );
-    void createDigi(WFXP const& xpair, StrawWaveform const& primarywf, StrawIndex index, StrawDigiCollection* digis);
+    void createDigi(WFXP const& xpair, const StrawWaveform wf[2], StrawIndex index, StrawDigiCollection* digis);
     void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
 // diagnostic functions
     void waveformDiag(StrawWaveform const& wf,WFXList const& xings);
@@ -371,10 +371,8 @@ namespace mu2e {
     }
     // convert the crossing points into digis, and add them to the event data
     if(xings.size() > 0){
-      // Use the primary end of this straw to define the ADC waveform
-      StrawEnd primaryend = primaryEnd(hsp.strawIndex());
       // fill digis from these crossings
-      fillDigis(xings,waveforms[primaryend._end],xtalk._dest,digis,mcdigis,mcptrs);
+      fillDigis(xings,waveforms,xtalk._dest,digis,mcdigis,mcptrs);
       // diagnostics
     }
     if(_diagLevel > 0)waveformDiag(waveforms[primaryend._end],xings);
@@ -577,7 +575,7 @@ namespace mu2e {
   }
 
   void
-  StrawDigisFromStepPointMCs::fillDigis(WFXList const& xings, StrawWaveform const& primarywf,
+  StrawDigisFromStepPointMCs::fillDigis(WFXList const& xings, const StrawWaveform wf[2],
       StrawIndex index,
       StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis,
       PtrStepPointMCVectorCollection* mcptrs ){
@@ -595,27 +593,29 @@ namespace mu2e {
       } 
       ++iwfxl;
       // create a digi from this pair or singleton
-      createDigi(xpair,primarywf,index,digis);
+      createDigi(xpair,wf,index,digis);
       // fill associated MC truth matching.  Only count the same step once
       set<art::Ptr<StepPointMC> > xmcsp;
       double wetime[2] ={-100.,-100.};
       CLHEP::HepLorentzVector cpos[2];
       art::Ptr<StepPointMC> stepMC[2];
       double ptime(-1000.0);
+      StrawEnd primaryend = primaryEnd(index);
+ 
       for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
 	xmcsp.insert((*ixp)->_ihitlet->stepPointMC());
 	// index according to the primary end
-	size_t iend = (*ixp)->_ihitlet->strawEnd() == primarywf.strawEnd() ? 0 : 1;
+	size_t iend = (*ixp)->_ihitlet->strawEnd() == primaryend ? 0 : 1;
 	wetime[iend] = (*ixp)->_ihitlet->time();
 	cpos[iend] = (*ixp)->_ihitlet->clusterPosition();
 	stepMC[iend] = (*ixp)->_ihitlet->stepPointMC();
-	if((*ixp)->_ihitlet->strawEnd() == primaryEnd(index))
+	if((*ixp)->_ihitlet->strawEnd() == primaryend)
 	  ptime = (*ixp)->_ihitlet->time();
       }
      // pickup all StepPointMCs associated with hitlets from the primary waveform inside the time window of the ADC digitizations (after the threshold)
       set<art::Ptr<StepPointMC> > spmcs;
       if(ptime > 0.0){
-	for(auto ih=primarywf.hitlets().hitletList().begin();ih!= primarywf.hitlets().hitletList().end();++ih){
+	for(auto ih=wf[primaryend._end].hitlets().hitletList().begin();ih!= wf[primaryend._end].hitlets().hitletList().end();++ih){
 	  if(ih->time() >= ptime && ih->time() < ptime + 
 	  ( _strawele->nADCSamples()-_strawele->nADCPreSamples())*_strawele->adcPeriod())
 	    spmcs.insert(ih->stepPointMC());
@@ -636,39 +636,41 @@ namespace mu2e {
     }
   }
 
-  void StrawDigisFromStepPointMCs::createDigi(WFXP const& xpair, StrawWaveform const& primarywf,
+  void StrawDigisFromStepPointMCs::createDigi(WFXP const& xpair, const StrawWaveform waveform[2],
       StrawIndex index, StrawDigiCollection* digis){
     // storage for MC match can be more than 1 StepPointMCs
     set<art::Ptr<StepPointMC>> mcmatch;
     // initialize the float variables that we later digitize
     array<double,2> xtimes = {2*_mbtime,2*_mbtime}; // overflow signals missing information
-    vector<double> wf(_strawele->nADCSamples(),0.0);
+    StrawEnd primaryend = primaryEnd(index);
     // smear (coherently) both times for the TDC clock jitter
     double dt = _gaussian.shoot(0.0,_strawele->clockJitter());
     // loop over the associated crossings
     for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
       WFX const& wfx = **iwfx;
-      // primary end times is index 0, other end is index 1
-      size_t index(1);
-      if(wfx._ihitlet->strawEnd() == primarywf.hitlets().strawEnd()){
-	index = 0;
-	// get the sample times from the electroincs
-	vector<double> adctimes;
-	_strawele->adcTimes(wfx._time,adctimes);
-	// sample the waveform at the primary end at these times
-	primarywf.sampleWaveform(StrawElectronics::adc,adctimes,wf);
-	// randomize waveform voltage values for electronics noise
-	for(auto iwf=wf.begin();iwf!=wf.end();++iwf)
-	  *iwf += _gaussian.shoot(0.0,_strawele->thresholdNoise());
-      }
+      size_t index = wfx._ihitlet->strawEnd() == primaryend ? 0 : 1;
       // record the crossing time for this end, including clock jitter  These already include noise effects
       xtimes[index] = wfx._time+dt;
       // record MC match if it isn't already recorded
       mcmatch.insert(wfx._ihitlet->stepPointMC());
     }
+//  sums voltages from both waveforms for ADC
+    vector<double> wf[2];
+    // get the sample times from the electroincs
+    vector<double> adctimes;
+    _strawele->adcTimes(xpair[0]->_time,adctimes);
+    // sample the waveform from both ends at these times
+    for(size_t iend=0;iend<2;++iend){
+      waveform[iend].sampleWaveform(StrawElectronics::adc,adctimes,wf[iend]);
+    }
+    // add ends and add noise
+    vector<double> wfsum; wfsum.reserve(adctimes.size());
+    for(unsigned isamp=0;isamp<adctimes.size();++isamp){
+      wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_gaussian.shoot(0.0,_strawele->thresholdNoise()));
+    }
     // digitize
     StrawDigi::ADCWaveform adc;
-    _strawele->digitizeWaveform(wf,adc);
+    _strawele->digitizeWaveform(wfsum,adc);
     StrawDigi::TDCValues tdc;
     _strawele->digitizeTimes(xtimes,tdc);
     // create the digi from this

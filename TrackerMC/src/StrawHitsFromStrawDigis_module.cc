@@ -156,10 +156,9 @@ namespace mu2e {
 	// per-channel version of this FIXME!!!
 	TrkChargeReco::PeakFitParams params;
 	pfit.process(adc,params);
-	// double the energy, since we only digitize 1 end of the straw.  This is no longer true FIXME!!
 	// use time division to correct for attenuation FIXME!!
 	// the gain should come from a straw-dependent database FIXME!!
-	double energy = 2.0*_strawphys->ionizationEnergy(params._scale/_strawphys->strawGain(2.0,0.0));
+	double energy = _strawphys->ionizationEnergy(params._scale/_strawphys->strawGain(2.0,0.0));
 	// crate the straw hit and append it to the list
 	StrawHit newhit(digi.strawIndex(),time,dt,energy);
 	strawHits->push_back(newhit);
