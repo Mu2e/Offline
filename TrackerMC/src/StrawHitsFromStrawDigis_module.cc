@@ -26,6 +26,8 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
+// helpers
+#include "TrkChargeReco/inc/PeakFit.hh"
 //CLHEP
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
@@ -99,6 +101,9 @@ namespace mu2e {
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _mbtime = accPar->deBuncherPeriod;
 
+    // create the peak fit
+    TrkChargeReco::PeakFit pfit(*_strawele);
+
     // find the digis
     art::Handle<mu2e::StrawDigiCollection> strawdigisH; 
     const StrawDigiCollection* strawdigis(0);
@@ -145,25 +150,16 @@ namespace mu2e {
       } else
 	makehit = false;
       if(makehit){
-// to get the charge we should fit the whole waveform: for now, just integrage  minus the baseline
-// FIXME!!
-	static const double pcfactor(1.0e-3);
+// fit the ADC waveform to get the charge integral
 	StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
 	// note: pedestal is being subtracting inside strawele, in the real experiment we will need
 	// per-channel version of this FIXME!!!
-	double baseline(0.0);
-	for(unsigned ibase=0;ibase<_nbase;++ibase){
-	  baseline += _strawele->adcCurrent(adc[ibase]);
-	}
-	baseline /= double(_nbase);	
-	double charge(0.0);
-	for(size_t iadc=_nbase;iadc<adc.size();++iadc){
-	  charge += (_strawele->adcCurrent(adc[iadc])-baseline)*_strawele->adcPeriod()*pcfactor;
-	}
-	// double the energy, since we only digitize 1 end of the straw.
+	TrkChargeReco::PeakFitParams params;
+	pfit.process(adc,params);
+	// double the energy, since we only digitize 1 end of the straw.  This is no longer true FIXME!!
 	// use time division to correct for attenuation FIXME!!
 	// the gain should come from a straw-dependent database FIXME!!
-	double energy = 2.0*_strawphys->ionizationEnergy(charge/_strawphys->strawGain(2.0,0.0));
+	double energy = 2.0*_strawphys->ionizationEnergy(params._scale/_strawphys->strawGain(2.0,0.0));
 	// crate the straw hit and append it to the list
 	StrawHit newhit(digi.strawIndex(),time,dt,energy);
 	strawHits->push_back(newhit);

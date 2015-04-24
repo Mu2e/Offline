@@ -24,7 +24,8 @@ mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'mu2e_MCDataProducts',
                                   'mu2e_RecoDataProducts',
                                   'mu2e_GeneralUtilities',
-                                  'CLHEP'
+				  'mu2e_TrkChargeReco',
+				  'CLHEP'
                                 ] )
 
 helper.make_plugins( [ mainlib,
@@ -37,6 +38,7 @@ helper.make_plugins( [ mainlib,
                        'mu2e_MCDataProducts',
                        'mu2e_RecoDataProducts',
                        'mu2e_GeneralUtilities',
+		       'mu2e_TrkChargeReco',
                        'CLHEP'
                      ] )
 
