@@ -553,7 +553,7 @@ namespace mu2e {
      // start when the electronics becomes enabled:
     WFX wfx(swf,_strawele->flashEnd());
     //randomize the threshold to account for electronics noise
-    double threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
+    double threshold = _gaussian.shoot(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
     // iterate sequentially over hitlets inside the sequence.  Note we fold
     // the flash blanking to AFTER the end of the microbunch
     while( wfx._time < _mbtime+_strawele->flashStart() &&
@@ -570,7 +570,7 @@ namespace mu2e {
       // skip to the next hitlet
       ++(wfx._ihitlet);
 // update threshold
-      threshold = _gaussian.shoot(_strawele->threshold(),_strawele->thresholdNoise());
+      threshold = _gaussian.shoot(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
     }
   }
 
@@ -666,7 +666,7 @@ namespace mu2e {
     // add ends and add noise
     vector<double> wfsum; wfsum.reserve(adctimes.size());
     for(unsigned isamp=0;isamp<adctimes.size();++isamp){
-      wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_gaussian.shoot(0.0,_strawele->thresholdNoise()));
+      wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_gaussian.shoot(0.0,_strawele->analogNoise(StrawElectronics::adc)));
     }
     // digitize
     StrawDigi::ADCWaveform adc;

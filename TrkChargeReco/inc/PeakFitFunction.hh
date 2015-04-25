@@ -45,7 +45,7 @@ namespace mu2e {
 // the root version of same.  This calls down to the above
       Float_t fitModelRoot(Double_t* x, Double_t* p) const;
 // provide a TF1 using the fit function above
-      const TF1* fitModelTF1() const { return _tf1; }
+      TF1* fitModelTF1() const { return _tf1; }
 // Method for creating a TF1 using the fit function.  This OVERWRITES the state of the TF1
       void resetTF1(TF1& rootPeakFitFunction) const;
       private:

@@ -28,7 +28,8 @@ namespace mu2e {
     _vsat(pset.get<double>("SaturationVoltage",800.0)), // mVolt
     _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
     _vthresh(pset.get<double>("DiscriminatorThreshold",20.0)), //mVolt, post amplification
-    _vthreshnoise(pset.get<double>("DiscriminatorThresholdNoise",3.0)), //mVolt
+    _analognoise{pset.get<double>("thresholdAnalogNoise",3.0), //mVolt
+      pset.get<double>("adcAnalogNoise",10.0)},
     _ADCLSB(pset.get<double>("ADCLSB",1.0)), //mVolt
     _maxADC(pset.get<int>("maxADC",1023)),
     _ADCped(pset.get<unsigned>("ADCPedestal",64)),

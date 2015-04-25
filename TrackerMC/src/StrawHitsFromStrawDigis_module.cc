@@ -28,6 +28,8 @@
 #include "TrackerConditions/inc/StrawPhysics.hh"
 // helpers
 #include "TrkChargeReco/inc/PeakFit.hh"
+#include "TrkChargeReco/inc/PeakFitRoot.hh"
+#include "TrkChargeReco/inc/PeakFitFunction.hh"
 //CLHEP
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
@@ -102,7 +104,14 @@ namespace mu2e {
     _mbtime = accPar->deBuncherPeriod;
 
     // create the peak fit
-    TrkChargeReco::PeakFit pfit(*_strawele);
+//    TrkChargeReco::PeakFit pfit(*_strawele);
+// kludge test of PeakFitRoot  parameters should come from pset	FIXME!!!
+// `
+    TrkChargeReco::FitConfig myconfig;
+    myconfig.setOption(TrkChargeReco::FitConfig::floatWidth);
+    myconfig.setOption(TrkChargeReco::FitConfig::floatPedestal);
+    myconfig.setOption(TrkChargeReco::FitConfig::truncateADC);
+    TrkChargeReco::PeakFitRoot pfit(*_strawele,myconfig);
 
     // find the digis
     art::Handle<mu2e::StrawDigiCollection> strawdigisH; 

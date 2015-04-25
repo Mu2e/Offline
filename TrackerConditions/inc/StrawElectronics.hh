@@ -70,7 +70,7 @@ namespace mu2e {
       double fallTime(path ipath) const { return _tau[ipath]; }
       double dispersion(double dlen) const { return _disp*dlen; } // dispersion width is linear in propagation length
       double threshold() const { return _vthresh; }
-      double thresholdNoise() const { return _vthreshnoise; }
+      double analogNoise(path ipath) const { return _analognoise[ipath]; }
       double deadTime() const { return _tdead; }
       double clockStart() const { return _clockStart; }
       double clockJitter() const { return _clockJitter; }
@@ -94,7 +94,7 @@ namespace mu2e {
       double _vmax, _vsat, _vdiff; // saturation parameters.  _vmax is maximum output, _vsat is where saturation starts
       double _disp; // dispersion in ns/mm;
       double _vthresh; // threshold voltage for electronics discriminator (mVolt)
-      double _vthreshnoise; // threshold voltage noise width (mVolt)
+      double _analognoise[2]; // threshold voltage noise width (mVolt)
 // add some noise parameter: FIXME!!!
       double _ADCLSB; // least-significant bit of ADC (mVolts)
       unsigned short _maxADC; // maximum ADC value

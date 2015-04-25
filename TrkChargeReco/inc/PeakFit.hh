@@ -23,7 +23,7 @@ namespace mu2e {
 
 	// PeakFit normal constructor with ConfigStruct initilization parameters
 	PeakFit(StrawElectronics const& strawele);
-      private:
+      protected:
 	StrawElectronics const& _strawele;
     };
   }
