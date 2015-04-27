@@ -1,4 +1,3 @@
-
 // class to resolve hit ambiguities by panel, assuming a reasonable track
 // fit as input
 //
