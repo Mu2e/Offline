@@ -6,6 +6,8 @@
 #include "TrkChargeReco/inc/PeakFit.hh"
 #include "TrkChargeReco/inc/PeakFitFunction.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
+#include <string>
+
 class TGraphErrors;
 // base class for controlling the peak fit.
 namespace mu2e {
@@ -25,11 +27,13 @@ namespace mu2e {
 	virtual ~PeakFitRoot(){}
 
 	// PeakFitRoot normal constructor with ConfigStruct initilization parameters
-	PeakFitRoot(StrawElectronics const& strawele, FitConfig const& config);
+	PeakFitRoot(StrawElectronics const& strawele, FitConfig const& config,std::string fitoptions="QNEX0S");
       	// Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT
 	void adcWaveform2TGraphErrors(StrawElectronics::ADCWaveform const& adcData, TGraphErrors &fitData) const;
       private:
 	PeakFitFunction _peakfit;
+	FitConfig _config;
+	std::string _fitoptions;
     };
   }
 }

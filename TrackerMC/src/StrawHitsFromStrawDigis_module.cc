@@ -31,6 +31,14 @@
 #include "TrkChargeReco/inc/PeakFitRoot.hh"
 #include "TrkChargeReco/inc/PeakFitFunction.hh"
 //CLHEP
+// root 
+#include "TMath.h"
+#include "TFile.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TGraph.h"
+#include "TMarker.h"
+#include "TTree.h"
 // data
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -58,9 +66,18 @@ namespace mu2e {
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
     double _maxdt; // maximum time difference between end times
     bool _singledigi; // turn single-end digitizations into hits
+    bool _truncateADC; // model ADC truncation
+    bool _floatPedestal; // float pedestal in fit
+    bool _floatWidth; // _float width in fit
+    bool _earlyPeak, _latePeak, _findPeaks; // additional peak finding
 // Diagnostics level.
-    int _printLevel, _diagLevel;
-
+    int _printLevel, _diagLevel, _debugLevel;
+// Diagnostics
+    TTree* _shdiag;
+    Int_t _shdevice, _shsector, _shlayer, _shstraw, _shqstat;
+    Float_t _shq, _shqt, _shqchi2;
+ // fit option
+   std::string _peakFitOption; // option flag for root fit
     // Limit on number of events for which there will be full printout.
     int _maxFullPrint;
 
@@ -75,17 +92,36 @@ namespace mu2e {
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
     _maxdt(pset.get<double>("MaxTimeDifference",8.0)), // nsec
     _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
+    _truncateADC(pset.get<bool>("TruncateADC",true)), 
+    _floatPedestal(pset.get<bool>("FloatPedestal",false)), 
+    _floatWidth(pset.get<bool>("FloatWidth",false)), 
+    _earlyPeak(pset.get<bool>("EarlyPeak",false)),
+    _latePeak(pset.get<bool>("LatePeak",false)),
+    _findPeaks(pset.get<bool>("FindPeaks",false)),
     _printLevel(pset.get<int>("printLevel",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
+    _debugLevel(pset.get<int>("debugLevel",0)),
+    _peakFitOption(pset.get<std::string>("PeakFitOption","QNS")),
     _strawDigis(pset.get<string>("StrawDigis","makeSD"))
-    {
-      produces<StrawHitCollection>();
-      produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
-      produces<StrawDigiMCCollection>("StrawHitMC");
-      if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis constructor " << endl;
-    }
+  {
+    produces<StrawHitCollection>();
+    produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
+    produces<StrawDigiMCCollection>("StrawHitMC");
+    if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis constructor " << endl;
+  }
 
   void StrawHitsFromStrawDigis::beginJob(){
+    if(_diagLevel > 0){
+      art::ServiceHandle<art::TFileService> tfs;
+      _shdiag =tfs->make<TTree>("swdiag","StrawHit diagnostics");
+      _shdiag->Branch("device",&_shdevice,"device/I");
+      _shdiag->Branch("sector",&_shsector,"sector/I");
+      _shdiag->Branch("layer",&_shlayer,"layer/I");
+      _shdiag->Branch("straw",&_shstraw,"straw/I");
+      _shdiag->Branch("charge",&_shq,"charge/I");
+      _shdiag->Branch("qstat",&_shqstat,"qstat/I");
+      _shdiag->Branch("qchi2",&_shqchi2,"qchi2/F");
+    }
   }
 
   void StrawHitsFromStrawDigis::beginRun( art::Run& run ){
@@ -105,13 +141,15 @@ namespace mu2e {
 
     // create the peak fit
 //    TrkChargeReco::PeakFit pfit(*_strawele);
-// kludge test of PeakFitRoot  parameters should come from pset	FIXME!!!
-// `
     TrkChargeReco::FitConfig myconfig;
-    myconfig.setOption(TrkChargeReco::FitConfig::floatWidth);
-    myconfig.setOption(TrkChargeReco::FitConfig::floatPedestal);
-    myconfig.setOption(TrkChargeReco::FitConfig::truncateADC);
-    TrkChargeReco::PeakFitRoot pfit(*_strawele,myconfig);
+    myconfig._debug = _debugLevel;
+    if(_floatWidth)myconfig.setOption(TrkChargeReco::FitConfig::floatWidth);
+    if(_floatPedestal)myconfig.setOption(TrkChargeReco::FitConfig::floatPedestal);
+    if(_truncateADC)myconfig.setOption(TrkChargeReco::FitConfig::truncateADC);
+    if(_earlyPeak)myconfig.setOption(TrkChargeReco::FitConfig::earlyPeak);
+    if(_latePeak)myconfig.setOption(TrkChargeReco::FitConfig::latePeak);
+    if(_findPeaks)myconfig.setOption(TrkChargeReco::FitConfig::findPeaks);
+    TrkChargeReco::PeakFitRoot pfit(*_strawele,myconfig,_peakFitOption);
 
     // find the digis
     art::Handle<mu2e::StrawDigiCollection> strawdigisH; 
@@ -165,9 +203,14 @@ namespace mu2e {
 	// per-channel version of this FIXME!!!
 	TrkChargeReco::PeakFitParams params;
 	pfit.process(adc,params);
+	if(_debugLevel > 0){
+	  cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
+	  << " Fit charge = " << params._charge << " Fit time = " << params._time << endl;
+
+	}
 	// use time division to correct for attenuation FIXME!!
 	// the gain should come from a straw-dependent database FIXME!!
-	double energy = _strawphys->ionizationEnergy(params._scale/_strawphys->strawGain(2.0,0.0));
+	double energy = _strawphys->ionizationEnergy(params._charge/_strawphys->strawGain(2.0,0.0));
 	// crate the straw hit and append it to the list
 	StrawHit newhit(digi.strawIndex(),time,dt,energy);
 	strawHits->push_back(newhit);
