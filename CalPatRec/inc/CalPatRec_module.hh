@@ -97,47 +97,49 @@ namespace mu2e {
   public:
     struct Hist_t {
       TH1F* _cutflow;	     // diagnostic flow
-      TH1F* _hTpeaks;	     // number of time-peaks found per event
-      TH1F* _hNfitIter;	     // number of call to kalman addHits
-			     //     TH1F* _hTfit[2];     //time spent on kalman filter per event
-			     //     TH1F* _hTtot;     //total time spent per event
-      TH1F* _hdfdzmode;	     // distribution of the loop index where the findTrack search converged
-      TH1F* _hradius;        // radius of the helix used by findTrack
-      TH1F* _hphi0;          // phi0 of the helix used by findTrack
-      TH1F* _htanlambda;     // tanLambda (tangent of the pitch angle) of the helix
-      TH1F* _hdfdz;          // dfdz of the theretical helix. dfdz = tanLambda/radius
-      TH1F* _hdist;
-      TH1F* _hdz;
-      TH1F* _hNpoints;
-      TH1F* _hchi2;
-      TH2F* _hdistvsdz;
+      TH1F* _Tpeaks;	     // number of time-peaks found per event
+      TH1F* _NfitIter;	     // number of call to kalman addHits
+	     		     //     TH1F* _hTfit[2];     //time spent on kalman filter per event
+	     		     //     TH1F* _hTtot;     //total time spent per event
+      TH1F* _dfdzmode;	     // distribution of the loop index where the findTrack search converged
+      TH1F* _radius;        // radius of the helix used by findTrack
+      TH1F* _phi0;          // phi0 of the helix used by findTrack
+      TH1F* _tanlambda;     // tanLambda (tangent of the pitch angle) of the helix
+      TH1F* _dfdz;          // dfdz of the theretical helix. dfdz = tanLambda/radius
+      TH1F* _dist;
+      TH1F* _dz;
+      TH1F* _Npoints;
+      TH1F* _chi2;
+      TH2F* _distvsdz;
+      TH1F* _dphidz[3];
+
+      TH1F* _kdfdzmode;     // distribution of the loop index where the findTrack search converged
+      TH1F* _kradius[2];    // radius of the helix used by findTrack
+      TH1F* _kphi0;         // phi0 of the helix used by findTrack
+      TH1F* _ktanlambda;    // tanLambda (tangent of the pitch angle) of the theretical helix
+      TH1F* _kdfdz[2];      // dfdz of the theretical helix. dfdz = tanLambda/radius
+      TH1F* _0mode;
+      TH1F* _k0mode;
+      TH1F* _kdist;
+      TH1F* _kdz;
+      TH1F* _kNpoints;
+      TH1F* _kchi2;
+      TH2F* _kdistvsdz[2];
+      TH1F* _kdphidz[3];
+
+      TH1F* _drw  [2];
+      TH1F* _chi2w[2];
       
-      TH1F* _hkdfdzmode;     // distribution of the loop index where the findTrack search converged
-      TH1F* _hkradius[2];    // radius of the helix used by findTrack
-      TH1F* _hkphi0;         // phi0 of the helix used by findTrack
-      TH1F* _hktanlambda;    // tanLambda (tangent of the pitch angle) of the theretical helix
-      TH1F* _hkdfdz[2];      // dfdz of the theretical helix. dfdz = tanLambda/radius
-      TH1F* _h0mode;
-      TH1F* _hk0mode;
-      TH1F* _hkdist;
-      TH1F* _hkdz;
-      TH1F* _hkNpoints;
-      TH1F* _hkchi2;
-      TH2F* _hkdistvsdz[2];
+      TH1F* _chi2zphi[2];
       
-      TH1F* _hdrw  [2];
-      TH1F* _hchi2w[2];
-      
-      TH1F* _hchi2zphi[2];
-      
-      TH1F* _hseeddoca[3];
-      TH1F* _hseeddr  [2];
-      TH1F* _hseeddfdz[2];
-      TH1F* _hNpointsSeed   [2]; //
-      TH1F* _hdoca          [4];
-      TH1F* _hkaldoca       [2];
-      TH1F* _hNpointsRescued[2];
-      TH1F* _hPhiResid      [2];
+      TH1F* _seeddoca[3];
+      TH1F* _seeddr  [2];
+      TH1F* _seeddfdz[2];
+      TH1F* _NpointsSeed   [2]; //
+      TH1F* _doca          [4];
+      TH1F* _kaldoca       [2];
+      TH1F* _NpointsRescued[2];
+      TH1F* _PhiResid      [2];
 //-----------------------------------------------------------------------------
 // histograms for doublets 0:all, 1:OS, 2:SS
 //-----------------------------------------------------------------------------
@@ -247,6 +249,9 @@ namespace mu2e {
     Hist_t     _hist;
 
     THackData* fHackData;
+
+    int        fNminMChits;
+    int        fQualityTrack;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
