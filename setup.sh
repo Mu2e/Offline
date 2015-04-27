@@ -50,18 +50,24 @@ if [ "${build}" == "debug" ];then
     # echo "use scons --mu2elevel=debug to create debug libraries"
 fi
 
+# This is the string to be used with the ups setup command for
+# products that need qualifiers.  Note it includes the '+' character
+# and is therefore different from the value shown in
+# SETUP_<productname> environment vars, or by the "ups active" command.
+export MU2E_UPS_QUALIFIERS=+e7:+${build}
+
 # Setup the framework and its dependent products
-setup -B art v1_13_01 -q+e7:+${build}
+setup -B art v1_13_01 -q${MU2E_UPS_QUALIFIERS}
 
 # The interface to SAM - conflicts with ifdhc from the grid runtime environment
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
 # Geant4 and its cross-section files.
-setup -B geant4 v4_9_6_p04a -q+e7:+${build}
+setup -B geant4 v4_9_6_p04a -q${MU2E_UPS_QUALIFIERS}
 
 # Other libraries we need.
-setup -B heppdt v3_04_01c -q+e7:+${build}
-setup -B splines v1_06_00 -q+e7:+${build}
+setup -B heppdt v3_04_01c -q${MU2E_UPS_QUALIFIERS}
+setup -B splines v1_06_00 -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_3_4
