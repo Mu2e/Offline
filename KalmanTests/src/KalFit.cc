@@ -92,6 +92,7 @@ namespace mu2e
     _removefailed(pset.get<bool>("RemoveFailedFits",true)),
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
+    _resolveAfterWeeding(pset.get<bool>("ResolveAfterWeeding",false)),
     _bfield(0)
   {
     // 2015-04-12 P.Murat add doublet ambig resolver
@@ -137,7 +138,6 @@ namespace mu2e
 
     AmbigResolver* ar;
 
-    _resolveAfterWeeding = false;
     int n = _ambigstrategy.size();
     for(int i=0; i<n; ++i) {
       switch (_ambigstrategy[i]) {
@@ -155,7 +155,6 @@ namespace mu2e
 	break;
       case doubletambig: // 4
  	ar = new DoubletAmbigResolver(*_darPset,_herr[i],i);
-	_resolveAfterWeeding = true;
  	break;
       }
       _ambigresolver.push_back(ar);
