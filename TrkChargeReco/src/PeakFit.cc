@@ -16,14 +16,19 @@ namespace mu2e {
       double sum = 0.0;
       for (auto iadc: adcData) { sum += _strawele.adcCurrent(iadc); }
       // convert this to pC
-      double charge = sum*1000.0*_strawele.adcPeriod();
+      double charge = sum*_strawele.adcPeriod()*StrawElectronics::_pC_per_uA_ns;
       // reset
       fit = PeakFitParams();
       // set parameters
+      fit._earlyCharge = adcData[0]-_strawele.ADCPedestal(); // this is a crude value, should compute something FIXME!!!
       fit._pedestal = _strawele.ADCPedestal();
-      fit._scale = charge;
+      fit._time = 30.0; // this is a crude value, should compute mean or something FIXME!!!
+      fit._charge = charge;
+      fit._width = 7.0; // this is a crude value, should compute something FIXME!!!
+      fit._lateShift = 50.0; // this is a crude value, should compute something FIXME!!!
+      fit._lateCharge = 0.5*charge; // this is a crude value, should compute something FIXME!!!
       // set which parameters were free
-      fit.freeParam(PeakFitParams::scale);
+      fit.freeParam(PeakFitParams::charge);
     }
   }
 }

@@ -7,6 +7,7 @@
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include <functional>
 #include "Rtypes.h"
+#include "Math/ParamFunctor.h"
 
 class TF1;
 // Contains functions to be used for fitting by the PeakFit class
@@ -17,14 +18,16 @@ namespace mu2e {
 
 // define the specific fit configuration among all options
     struct FitConfig {
-      enum fitOption : unsigned int {earlyPeak=0,latePeak,floatPedestal,floatWidth,truncateADC,nOptions};
+      enum fitOption : size_t {earlyPeak=0,latePeak,floatPedestal,floatWidth,truncateADC,findPeaks,nOptions};
       // pack option fields into individual bits
       unsigned _options;
+      int _debug; // debug level
+      unsigned _maxnit; // maximum # of iterations
       // decode and encode functions
       bool hasOption(fitOption option) const { return (_options & (option<<1)) != 0; }
       void setOption(fitOption option) { _options |= (option<<1); }
       // default constructor zeros the options
-      FitConfig() : _options(0) {}
+      FitConfig() : _options(0), _debug(0), _maxnit(1) {}
       // construct from a vector of options
       FitConfig(std::vector<fitOption> const& options) : FitConfig() {
 	for(auto iopt : options){
@@ -33,7 +36,7 @@ namespace mu2e {
       }
     };
 
-    class PeakFitFunction {
+    class PeakFitFunction : public ROOT::Math::ParamFunctor {
 
       public:
 
@@ -41,18 +44,20 @@ namespace mu2e {
       PeakFitFunction(StrawElectronics const& strawele, FitConfig const& fitConfig); //
       ~PeakFitFunction();
 // the actual fit function, taking the explicit parameters as input
-      Float_t fitModel(Double_t time, PeakFitParams const& params) const;
+      Double_t fitModel(Double_t time, PeakFitParams const& params) const;
 // the root version of same.  This calls down to the above
-      Float_t fitModelRoot(Double_t* x, Double_t* p) const;
+      Double_t fitModelRoot(Double_t* x, Double_t* p) const;
 // provide a TF1 using the fit function above
-      const TF1* fitModelTF1() const { return _tf1; }
+      TF1* fitModelTF1() const { return _tf1; }
 // Method for creating a TF1 using the fit function.  This OVERWRITES the state of the TF1
       void resetTF1(TF1& rootPeakFitFunction) const;
+// override root base class function
+      Double_t operator()(Double_t* x, Double_t* p);
       private:
 // provide the explicit function for this model
-      typedef std::function<Float_t(Double_t,PeakFitParams const&)> FitFunction;
+      typedef std::function<Double_t(Double_t,PeakFitParams const&)> FitFunction;
 // provide the (c-style) function needed by root fits using TF1
-      typedef std::function<Float_t(Double_t *,Double_t *)> FitFunctionRoot;
+      typedef std::function<Double_t(Double_t *,Double_t *)> FitFunctionRoot;
 // general electronics parameters
       StrawElectronics const& _strawele;      
 // configuration difinig the fit function
