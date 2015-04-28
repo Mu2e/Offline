@@ -1,11 +1,8 @@
-//
-// Class to perform BaBar Kalman fit
-//
+///////////////////////////////////////////////////////////////////////////////
 // $Id: KalFitHack.cc,v 1.4 2014/04/08 04:25:46 murat Exp $
 // $Author: murat $ 
 // $Date: 2014/04/08 04:25:46 $
-//
-
+///////////////////////////////////////////////////////////////////////////////
 // framework
 #include "fhiclcpp/ParameterSet.h"
 // the following has to come before other BaBar includes
@@ -15,8 +12,8 @@
 #include "KalmanTests/inc/PanelAmbigResolver.hh"
 #include "KalmanTests/inc/PocaAmbigResolver.hh"
 #include "KalmanTests/inc/HitAmbigResolver.hh"
-#include "CalPatRec/inc/HitAmbigResolverHack.hh"
 #include "KalmanTests/inc/FixedAmbigResolver.hh"
+#include "KalmanTests/inc/DoubletAmbigResolver.hh"
 #include "KalmanTests/inc/BaBarMu2eField.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -99,10 +96,10 @@ namespace mu2e
     _t0nsig(pset.get<double>("t0window",2.5)),
     _dtoffset(pset.get<double>("dtOffset")),
     fScaleErrDoublet(pset.get<double>("scaleErrDoublet")),
-    fUseDoublets(0),
-    fILoopUseDoublets(pset.get<int>("iLoopUseDoublets")),
+    //    fUseDoublets(0),
     fMinDriftDoublet  (pset.get<double>("minDriftDoublet")),
     fDeltaDriftDoublet(pset.get<double>("deltaDriftDoublet")),
+    _maxDoubletChi2   (pset.get<double>("maxDoubletChi2",9.)),
     fSigmaSlope       (pset.get<double>("sigmaSlope")),
     fMakeStrawHitModuleLabel(pset.get<std::string>("makeStrawHitModuleLabel")),
     //
@@ -110,9 +107,11 @@ namespace mu2e
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
     _bfield(0),
-    fNIter(0)
+    _nIter(0)
   {
     //    fStopwatch = new TStopwatch();
+    _darPset = new fhicl::ParameterSet(pset.get<fhicl::ParameterSet>("DoubletAmbigResolver",fhicl::ParameterSet()));
+
 // set KalContext parameters
     _disttol = pset.get<double>("IterationTolerance",0.1);
     _intertol = pset.get<double>("IntersectionTolerance",100.0);
@@ -158,835 +157,133 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // make sure we have at least one entry for additional errors
 //-----------------------------------------------------------------------------
-    if(_hiterr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFitHack: no hit errors specified" << endl;
-    if(_hiterr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFitHack: inconsistent ambiguity resolution" << endl;
-    if(_hiterr.size() != _t0tol.size()) throw cet::exception("RECO")<<"mu2e::KalFitHack: inconsistent ambiguity resolution" << endl;
-    // construct the ambiguity resolvers
-    for(size_t iambig=0;iambig<_ambigstrategy.size();++iambig){
-      switch (_ambigstrategy[iambig] ){
-	case kFixedAmbig: default:
-	  _ambigresolver.push_back(new FixedAmbigResolver(pset));
-	  break;
-	case kHitAmbig:
-	  _ambigresolver.push_back(new HitAmbigResolver(pset));
-	  break;
-	case kPanelAmbig:
-	  _ambigresolver.push_back(new PanelAmbigResolver(pset));
-	  break;
-	case kPocaAmbig:
-	  _ambigresolver.push_back(new PocaAmbigResolver(pset));
-	  break;
-      case kDoubletAmbig: // 4
-	  //	  _ambigresolver.push_back(new PocaAmbigResolver(pset));
-	  _ambigresolver.push_back(new HitAmbigResolverHack(pset,_hiterr[iambig]));
-	  break;
-      }
+    if (_hiterr.size() <= 0) {
+      throw cet::exception("RECO") 
+	<< "mu2e::KalFitHack: no hit errors specified" << endl;
     }
 
-    fMaxDoubletChi2 = 5.;
+    if(_hiterr.size() != _ambigstrategy.size()) {
+      throw cet::exception("RECO") 
+	<< "mu2e::KalFitHack: inconsistent ambiguity resolution" << endl;
+    }
+
+    if(_hiterr.size() != _t0tol.size()) {
+      throw cet::exception("RECO") 
+	<<"mu2e::KalFitHack: inconsistent ambiguity resolution" << endl;
+    }
+					// construct the ambiguity resolvers
+    AmbigResolver* ar;
+    double         err;
+    int n = _ambigstrategy.size();
+    for(int i=0; i<n; ++i) {
+      err = _hiterr[i];
+      switch (_ambigstrategy[i]) {
+      case kFixedAmbig: default:
+	ar = new FixedAmbigResolver(pset,err,i);
+	break;
+      case kHitAmbig:
+	ar = new HitAmbigResolver(pset,err,i);
+	break;
+      case kPanelAmbig:
+	ar = new PanelAmbigResolver(pset,err,i);
+	break;
+      case kPocaAmbig:
+	ar = new PocaAmbigResolver(pset,err,i);
+	break;
+      case kDoubletAmbig: // 4
+	ar = new DoubletAmbigResolver(*_darPset,err,i);
+	break;
+      }
+      _ambigresolver.push_back(ar);
+    }
   }
 
 //-----------------------------------------------------------------------------
   KalFitHack::~KalFitHack(){
-    for(size_t iambig=0;iambig<_ambigresolver.size();++iambig){
-      delete _ambigresolver[iambig];
+    for(size_t i=0; i<_ambigresolver.size(); ++i){
+      delete _ambigresolver[i];
     }
+
     delete _bfield;
+    delete _darPset;
 
     //    delete fStopwatch;
-  }
-
-
-// //-----------------------------------------------------------------------------
-//   KalFitHack::TrkHitData_t* KalFitHack::findHitData(const TrkStrawHit* Hit) {
-//     KalFitHack::TrkHitData_t* hit_data(NULL);
-
-//     for (auto hd = fListOfTrkHitData.begin(); hd != fListOfTrkHitData.end(); hd++) {
-//       if (hd->fHit == Hit) {
-// 	hit_data = &(*hd);
-// 	break;
-//       }
-//     }
-//     return hit_data;
-//   }
-
-//-----------------------------------------------------------------------------
-// first step: create list of doublets
-//-----------------------------------------------------------------------------
-  void KalFitHack::findDoublets (KalFitResult&              KRes, 
-				 //				 KalRep*                    Krep, 
-				 //                              std::vector<TrkStrawHit*> *Hits, 
-				 DoubletCollection         *DCol){
-    mu2e::TrkStrawHit *hit;
-    const Straw       *straw;
-
-    int               nhits, station, panel;
-    int               oldStation(-1), oldPanel(-1), idlast(0);
-    int               trkshsize, shId, layer, istraw;
-    
-    CLHEP::Hep3Vector wdir, pos, posPanel, wpos[10], tmppos;    
-    CLHEP::Hep3Vector tdir, trkpos;
-    HepPoint          tpos;
-
-    double            flen, ds, doca, rdrift, phiPanel;
-    double            endTrk(0.0);//Krep->endFoundRange();
-
-    if (_debug > 1){
-      printf("[KalFitHack::findDoublets]-------------------------------------------------\n");
-      printf("[KalFitHack::findDoublets]  i  shId  ch  panel  il   iw   driftR       doca\n");
-      printf("[KalFitHack::findDoublets]-------------------------------------------------\n");
-    }
-    
-    DCol->clear();
-    //    fListOfTrkHitData.clear();
-    nhits = KRes._hits.size();
-    
-    int multipletIndex(0);
-    for (int i=0; i<nhits; ++i) {
-//-----------------------------------------------------------------------------
-// use active hits only
-//-----------------------------------------------------------------------------
-      hit       = KRes._hits.at(i);
-      //      idoublet  = -1;
-      //      if (hit->isActive() == 0)                             goto END_OF_LOOP;
-      straw     = &hit ->straw();
-      wdir      = straw->getDirection();
-      pos       = straw->getMidPoint();
-      station   = straw->id().getDevice();
-      panel     = straw->id().getSector();
-      shId      = straw->index().asInt();
-//-----------------------------------------------------------------------------
-// track info 
-//-----------------------------------------------------------------------------
-      HelixTraj trkHel(KRes._krep->helix(endTrk).params(),KRes._krep->helix(endTrk).covariance());
-      flen   = trkHel.zFlight(pos.z());
-      KRes._krep->traj().getInfo(flen, tpos, tdir);
-//-----------------------------------------------------------------------------
-// try to extrapolate helix a bit more accurately
-//-----------------------------------------------------------------------------
-      ds = (pos.z()-tpos.z())/tdir.z();
-      KRes._krep->traj().getInfo(flen+ds, tpos, tdir);
-      trkpos.set(tpos.x(), tpos.y(), tpos.z());
-
-      //calculate distance of closest approach - from midwire to track
-      HepPoint p1(pos.x(),pos.y(),pos.z());
-      HepPoint p2(trkpos.x() ,trkpos.y() ,trkpos.z());
-      
-      TrkLineTraj trstraw(p1, wdir, 0., 0.);
-      TrkLineTraj trtrk  (p2, tdir, 0., 0.);
-//-----------------------------------------------------------------------------
-// distance of closest approach calculated from the track to the hit,
-// track trajectory is the first parameter
-//-----------------------------------------------------------------------------
-      TrkPoca poca  (trtrk,0.,trstraw,0.);
-      doca   = poca.doca();
-					// get the drift radius
-      rdrift  =  hit->driftRadius();
-
-      if (_debug > 1) {
-	layer  = straw->id().getLayer();
-	istraw = straw->id().getStraw();
-	printf("[KalFitHack::findDoublets] %2i  %5i %3i  %4i  %3i %3i %8.3f %8.3f\n",
-	       i, shId, station, panel, layer, istraw, rdrift, doca);
-      }
-//-----------------------------------------------------------------------------
-// do not use straw hits with small drift radii
-//-----------------------------------------------------------------------------
-//      if (rdrift < fMinHitDrift)                           goto END_OF_LOOP;
-
-      if (station != oldStation) { 
-//-----------------------------------------------------------------------------
-// new chamber : create new doublet candidate
-//-----------------------------------------------------------------------------
-	DCol->push_back(Doublet(multipletIndex, station, panel, wdir, tdir, trkpos, hit));
-	oldStation = station;
-	oldPanel   = panel;
-	//	idoublet   = idlast;
-	++idlast;
-	++multipletIndex;
-      } 
-      else {
-	if (panel == oldPanel) {
-//-----------------------------------------------------------------------------
-// same chamber, same panel : add one more hit to the last doublet
-//-----------------------------------------------------------------------------
-	  DCol->at(idlast-1).addStrawHit(tdir, trkpos, hit);
-	  //	  idoublet = idlast-1;
-	}
-	else {
-//-----------------------------------------------------------------------------
-// same chamber, different panel : new doublet candidate
-//-----------------------------------------------------------------------------
-	  DCol->push_back(Doublet(multipletIndex, station, panel, wdir, tdir, trkpos, hit));
-	  oldStation = station;
-	  oldPanel   = panel;
-	  //	  idoublet   = idlast;
-	  ++idlast;
-	  ++multipletIndex;
-	}
-      }
-      // END_OF_LOOP:; 
-//-----------------------------------------------------------------------------
-// in the very end of the loop, for each hit store association with the doublet
-//-----------------------------------------------------------------------------
-//      fListOfTrkHitData.push_back(TrkHitData_t(hit,idoublet));
-    }
-
-//-----------------------------------------------------------------------------
-// list of doublets is formed, the rest of this routine - diagnostics only
-//-----------------------------------------------------------------------------
-    Doublet             *doublet;
-    CLHEP::HepRotationZ rot;
-
-    int      ndoublets = DCol->size();
-
-    if (_debug >0) {
-      printf("[KalFitHack::findDoublets] iherr:%i: found %i multiplets\n", 
-	     fAnnealingStep,ndoublets);
-      printf("--------------------------------------------------------------");
-      printf("------------------------------------------------------------------------\n");
-      printf("  i  shId ch pnl lay str      x        y         z      sinphi");
-      printf("tksphi    xtrk     ytrk      ztrk      xr      yr     zr      doca   rdr\n");
-      printf("--------------------------------------------------------------");
-      printf("------------------------------------------------------------------------\n");
-    }
-
-    for (int i=0; i<ndoublets; ++i){
-      doublet   = &DCol->at(i);
-      trkshsize = doublet->fNstrawHits;
-//-----------------------------------------------------------------------------
-// assume wires are perpendicular to the radial direction to the panel
-// this is already ambiguos
-// use atan2 to get the right quadrant
-//-----------------------------------------------------------------------------
-      posPanel = doublet->fHit[0]->straw().getMidPoint();
-      phiPanel = atan2(posPanel.y(),posPanel.x());
-      rot.set(-phiPanel);
-      posPanel = rot*posPanel;
-      
-      for (int j=0; j<trkshsize; ++j) {
-	hit   = doublet->fHit[j];
-	straw = &hit->straw();
-	shId  = straw->index().asInt();
-//-----------------------------------------------------------------------------
-// mid-wire position and the wire direction
-//-----------------------------------------------------------------------------
-	wpos[j] = straw->getMidPoint();
-	wdir    = doublet->fShDir;
-//-----------------------------------------------------------------------------
-// track position and direction
-//-----------------------------------------------------------------------------
-	trkpos  = doublet->fTrkPos[j];
-	tdir    = doublet->fTrkDir[j];
-
-	HepPoint p1(wpos[j].x(),wpos[j].y(),wpos[j].z());
-	HepPoint p2(trkpos.x() ,trkpos.y() ,trkpos.z());
-	
-	TrkLineTraj trstraw(p1, wdir, 0., 0.);
-	TrkLineTraj trtrk  (p2, tdir, 0., 0.);
-	TrkPoca     poca   (trstraw, 0.,trtrk   , 0.);
-	doca   = poca.doca();
-	rdrift = hit->driftRadius();
-//-----------------------------------------------------------------------------
-// rotate into a coordinate system with X axis pointing towards the panel and 
-// Y axis pointing in the wire direction
-// current channel numbering scheme allows for that
-//-----------------------------------------------------------------------------
-	wpos[j] = rot*wpos[j];
-	trkpos  = rot*trkpos;
-	tdir    = rot*tdir;
-
-	if (_debug > 1) {
-	  printf(" %2i %5i %2i %3i %3i %3i %9.3f %9.3f %9.3f  %6.3f  ",
-		 i, shId, doublet->fStationId, doublet->fPanelId, 
-		 straw->id().getLayer(),
-		 straw->id().getStraw(),
-		 straw->getMidPoint().x(), 
-		 straw->getMidPoint().y(), 
-		 straw->getMidPoint().z(),
-		 wdir.y()
-		 );
-
-	  printf("%6.3f %9.3f %8.3f %9.3f %8.3f %4.1f %9.3f %6.3f %5.3f\n",
-		 tdir.x()/tdir.z(),
-		 trkpos.x(), trkpos.y(), trkpos.z(),
-		 wpos[j].x(), wpos[j].y(), wpos[j].z(),
-		 doca,
-		 rdrift
-		 );
-	}
-      }
-    }
-  } 
-
-//---------------------------------------------------------------------------
-// resolve drift ambiguity for a single (non-doublet)  hit
-//---------------------------------------------------------------------------
-  void KalFitHack::resolveSingleHit(KalFitResult& Kres, mu2e::TrkStrawHit* Hit) {
-
-    double                     doca[2];
-    std::vector<TrkStrawHit*>  hits;
-
-    const Straw* straw = &Hit->straw();
-    
-    const CLHEP::Hep3Vector& wdir = straw->getDirection();
-    const CLHEP::Hep3Vector& wmid = straw->getMidPoint();
-//-----------------------------------------------------------------------------
-// calculate residuals for two hit positions corresponding to two different 
-// drift signs
-//-----------------------------------------------------------------------------
-    hits.push_back(Hit);
-    const TrkDifTraj* traj = findTraj(hits,Kres._krep);
-
-    double dmin = Hit->timeDiffDist()-Hit->timeDiffDistErr();
-    double dmax = Hit->timeDiffDist()+Hit->timeDiffDistErr();
-    TrkLineTraj wtraj(HepPoint(wmid.x(),wmid.y(),wmid.z()),wdir,dmin,dmax);
-
-    TrkPoca poca(*traj,Hit->fltLen(),wtraj,Hit->hitLen());
-    if (poca.status().success()) {
-//-----------------------------------------------------------------------------
-// doca(hit) = doca(wire)-_iamb*radius
-//-----------------------------------------------------------------------------
-      doca[0] = poca.doca()-Hit->driftRadius();
-      doca[1] = poca.doca()+Hit->driftRadius();
-
-      double err = _hiterr[fAnnealingStep];
-      double x0  = sqrt(doca[0]*doca[0]+err*err);
-      double x1  = sqrt(doca[1]*doca[1]+err*err);
-
-      int    ih;
-      if (x0 < x1) ih = 0;
-      else         ih = 1;
-      
-      if (fabs(doca[ih]/Hit->hitErr()) < 5.) {
-//-----------------------------------------------------------------------------
-// hit is close enough to the trajectory
-//-----------------------------------------------------------------------------
-	if (ih == 0) Hit->setAmbig( 1);
-	else         Hit->setAmbig(-1);
-      }
-      else {
-//-----------------------------------------------------------------------------
-// can't tell
-//-----------------------------------------------------------------------------
-	Hit->setExtErr(Hit->driftRadius());
-	Hit->setAmbig(0);
-      }
-    }
-    else {
-//-----------------------------------------------------------------------------
-// couldn't determine doca
-//-----------------------------------------------------------------------------
-      Hit->setExtErr(Hit->driftRadius());
-      Hit->setAmbig(0);
-    }
-
-    Hit->setAmbigUpdate(false);
-  }
-
-
-//--------------------------------------------------------------------------------
-// given a multiplet, resolve the ambiguity for hit: index0 and index1
-//--------------------------------------------------------------------------------
-  void KalFitHack::markDoublet(KalFitResult& KRes, Doublet *doublet, int index0, int index1) {
-    mu2e::TrkStrawHit *hit  [2];
-    const mu2e::Straw *straw[2];
-   
-    CLHEP::Hep3Vector spos[2], sposr[2], sdir[2], sdirr[2], wpos[10], posPanel;    
-    CLHEP::Hep3Vector tpos[2], tposr[2], tdir[2], tdirr[2];
-    
-    CLHEP::Hep3Vector wdir, wdir1, wdir2;
-
-    int               /*layer[2],*/ ibest, inext;
-    double            rdrift[2], phiPanel; 
-    
-    int               shId[2];
-    double            trkslope, lineSlopes[4], dxdz[2], chi2[4], doca[4][2];
-    double            xdr, dsl, xdsl, sig, chi2min, chi2next;
-
-    double            sflt[2], tflt[2];
-    HepPoint          spi[2] , tpi[2], hpos[2];
-    Hep3Vector        sdi[2] , tdi[2], u[2];
-    TrkPoca           poca[2];
-    HepRotationZ      rot;
-
-    wdir = doublet->fShDir;
-
-//-----------------------------------------------------------------------------
-// create the array holding the indexes of the straw hit to use
-// within a multiplet
-//-----------------------------------------------------------------------------
-    int               index[2] = {index0, index1};
-//-----------------------------------------------------------------------------
-// by construction, both hits are in the same panel
-//-----------------------------------------------------------------------------
-    for (int i=0; i<2; i++) {
-      hit   [i] = doublet->fHit[index[i]];
-      straw [i] = &hit[i]->straw();
-      //      layer [i] = straw[i]->id().getLayer();
-      rdrift[i] = hit[i]->driftRadius();
-      shId  [i] = straw[i]->index().asInt();
-    }
-//-----------------------------------------------------------------------------
-// skip doublets with both hits in the same layer
-//-----------------------------------------------------------------------------
-// 2015-03-22 P.Murat   if (layer[0] == layer[1])                    continue ;
-    for (int i=0; i<2; i++) {
-      spos [i] = straw[i]->getMidPoint();
-      phiPanel = std::atan2(spos[i].y(),spos[i].x());
-      rot.set(-phiPanel);
-      
-      sposr[i] = rot*spos[i];
-
-      sdir [i] = straw[i]->getDirection();
-      sdirr[i] = rot*sdir[i];
-      
-      tpos [i] = doublet->fTrkPos[index[i]];
-      tposr[i] = rot*tpos[i];
-      
-      tdir [i] = doublet->fTrkDir[index[i]];
-      tdirr[i] = rot*tdir[i];
-      
-      dxdz [i] = tdirr[i].x()/tdirr[i].z();
-    }
-//-----------------------------------------------------------------------------
-// choose the best combination of the drift signs - the one corresponding 
-// to the slope closest to that of the track
-// also use the dist of closest approach information
-//
-// 1. coordinate term
-//-----------------------------------------------------------------------------
-    for (int is=0; is<4; is++) {
-      chi2[is] = 0;
-    }
-
-    for (int ih=0; ih<2; ih++) {
-      
-      HepPoint    p1(sposr[ih].x(),sposr[ih].y(),sposr[ih].z());
-      HepPoint    p2(tposr[ih].x(),tposr[ih].y(),tposr[ih].z());
-      
-      TrkLineTraj st   (p1,sdirr[ih],0.,0.);
-      TrkLineTraj tt   (p2,tdirr[ih],0.,0.);
-      
-      poca[ih] = TrkPoca(st,0.,tt,0.);
-      
-      sflt[ih] = poca[ih].flt1();
-      tflt[ih] = poca[ih].flt2();
-      
-      st.getInfo(sflt[ih],spi[ih],sdi[ih]);
-      tt.getInfo(tflt[ih],tpi[ih],tdi[ih]);
-      
-      u[ih]    = sdi[ih].cross(tdi[ih]).unit();  // direction towards the center
-      
-      for (int is=0; is<4; is++) {
-//-----------------------------------------------------------------------------
-// hit position, given a drift sign
-//-----------------------------------------------------------------------------
-	hpos[ih]     = spi[ih]+u[ih]*rdrift[ih]*fSign[is][ih];
-	doca[is][ih] = (hpos[ih]-tpi[ih]).mag();
-	sig          = sqrt(rdrift[ih]*rdrift[ih] +0.1*0.1); // 2.5; // 1.; // hit[ih]->hitRms();
-	xdr          = doca[is][ih]/sig;
-	chi2[is]    += xdr*xdr;
-      }
-    }
-//-----------------------------------------------------------------------------
-// 2. add slope term to chi2
-//    for the track dx/dz use average of the two dx/dz slopes 
-//    calculated in the two layers corresponding to the doublet hits
-//-----------------------------------------------------------------------------
-    trkslope  = (dxdz[0]+dxdz[1])/2.;
-    findLines(sposr,rdrift,lineSlopes);
-      
-    for (int is=0; is<4; is++) {
-      dsl       = fabs(trkslope-lineSlopes[is]);
-      xdsl      = dsl/fSigmaSlope;
-      chi2[is] += xdsl*xdsl;
-    }
-//-----------------------------------------------------------------------------
-// now find the best solution
-//-----------------------------------------------------------------------------
-    ibest    = -1;
-    inext    = -1;
-    chi2min  = 1.e12;
-    chi2next = 1.e12;
-    
-    for (int is=0; is<4; is++) {
-      if (chi2[is] < chi2min) {
-	inext    = ibest;
-	chi2next = chi2min;
-	ibest    = is;
-	chi2min  = chi2[is];
-      }
-      else if (chi2[is] < chi2next) {
-	inext    = is;
-	chi2next = chi2[is];
-      }
-    }
-//-----------------------------------------------------------------------------
-// set best solutions
-//-----------------------------------------------------------------------------
-    int    os      = fSign[ibest][0]+fSign[ibest][1];
-    double ext_err = _hiterr[fAnnealingStep];
-    
-    doublet->fOs      = os;
-    doublet->fIBest   = ibest;
-    doublet->fINext   = inext;
-    doublet->fTrkDxDz = trkslope;
-    for (int is=0; is<4; is++) {
-      doublet->fDxDz[is] = lineSlopes[is];
-      doublet->fChi2[is] = chi2[is];
-    }
-    
-    for (int i=0; i<2; i++) {
-      hit[i]->setAmbigUpdate(false);
-//-----------------------------------------------------------------------------
-// update the straw hit info inside the doublet, however don't rush 
-// to resolve the hit sign ambiguities, do it only when completely sure
-// this code is executed after the standard HitAmbigResolver, so when not sure, 
-// do nothing and default to HitAmbigResolver
-//-----------------------------------------------------------------------------
-      doublet->fStrawAmbig[index[i]] = fSign[ibest][i];
-      if (os == 0) {
-	if (fabs(rdrift[0]+rdrift[1]) > 0.8) {
-//-----------------------------------------------------------------------------
-// OS doublet reliably resolved, reduce the error
-//-----------------------------------------------------------------------------
-	  if (rdrift[i] > fMinDriftDoublet) {
-//-----------------------------------------------------------------------------
-// the hit drift radius is large - reduce the external error
-//-----------------------------------------------------------------------------
-	    hit[i]->setExtErr(ext_err/fScaleErrDoublet);
-	    hit[i]->setAmbig(fSign[ibest][i]);
-	  }
-	  else {
-//-----------------------------------------------------------------------------
-// small drift radius : unless forced, keep the external error large and set 
-// the ambiguity to zero to use the wire coordinate
-//-----------------------------------------------------------------------------
-	    if (fDecisionMode == 0) {
-	      hit[i]->setExtErr(rdrift[i]);
-	      hit[i]->setAmbig(0);
-	    }
-	    else {
-	      hit[i]->setAmbig(fSign[ibest][i]);
-	    }
-	  }
-	}
-      }
-      else {
-//-----------------------------------------------------------------------------
-// SS doublet
-//-----------------------------------------------------------------------------
-	if ((fDecisionMode == 0) && (fabs(rdrift[0]-rdrift[1]) < fDeltaDriftDoublet)) {
-	  if (chi2min < 1.) {
-//-----------------------------------------------------------------------------
-// the best chi2 is good enough to rely on it
-//-----------------------------------------------------------------------------
-	    hit[i]->setExtErr(ext_err/fScaleErrDoublet);
-	    hit[i]->setAmbig(fSign[ibest][i]);
-	  }
-	  else if (fAnnealingStep < fILoopUseDoublets) {
-//-----------------------------------------------------------------------------
-// SS doublet with close radii, scale of uncertainty is defined by the radius
-//-----------------------------------------------------------------------------
-	    double err = fabs(rdrift[i]);
-	    hit[i]->setExtErr(err);
-	    hit[i]->setAmbig(0);
-	  }
-	}
-	else {
-//-----------------------------------------------------------------------------
-// SS doublet, the two radii are different or we're forced to make a decision
-//-----------------------------------------------------------------------------
-	  if (chi2min < fMaxDoubletChi2) {
-//-----------------------------------------------------------------------------
-// the best chi2 is good, the doublet drift signs are determined reliably
-//-----------------------------------------------------------------------------
-	    if (rdrift[i] > fMinDriftDoublet) {
-	      hit[i]->setExtErr(ext_err/fScaleErrDoublet);
-	      hit[i]->setAmbig(fSign[ibest][i]);
-	    }
-	    else {
-//-----------------------------------------------------------------------------
-// small radius (rdrift[i] < fMinDriftDoublet) - use the wire position
-//-----------------------------------------------------------------------------
-	      hit[i]->setExtErr(rdrift[i]);
-	      hit[i]->setAmbig(0);
-	    }
-	  }
-	  else {
-//-----------------------------------------------------------------------------
-// the best double chi2 is large - cant believe anything, need to treat hits as 
-// separate ones - this is to be implemented yet
-// a good example - one of the hits - on Dave's no-gaussial tail
-//-----------------------------------------------------------------------------
-	    hit[i]->setExtErr(rdrift[i]);
-	    hit[i]->setAmbig(0);
-	    //	    resolveSingleHit(KRes,hit[i]);
-	  }
-	}
-      }
-    }
-    
-    if (_debug > 0) {
-      for (int i=0; i<2; i++) {
-	printf(" %2i %5i %2i %3i %2i %2i %8.3f %8.3f %9.3f %6.3f",
-	       i, shId[i], doublet->fStationId, doublet->fPanelId, 
-	       straw[i]->id().getLayer(),
-	       straw[i]->id().getStraw(),
-	       spos[i].x(), spos[i].y(), spos[i].z(),
-	       wdir.y()
-	       );
-	printf(" %6.3f %8.3f %8.3f %9.3f %8.3f %9.3f %6.3f %6.3f",
-	       trkslope,
-	       tpos[i].x(),tpos[i].y(),tpos[i].z(),
-	       sposr[i].x(),tposr[i].x(),doca[ibest][i],rdrift[i]
-	       ); 
-	printf(" %2i %6.3f %6.3f %8.2e %6.3f %6.3f %8.2e %6.3f %6.3f %8.2e %6.3f %6.3f %8.2e\n",
-	       fSign[ibest][i],
-	       lineSlopes[0], doca[0][i], chi2[0], 
-	       lineSlopes[1], doca[1][i], chi2[1], 
-	       lineSlopes[2], doca[2][i], chi2[2], 
-	       lineSlopes[3], doca[3][i], chi2[3]
-	       );
-      }
-    }
-  }
-
-//---------------------------------------------------------------------------
-// loop over the doublets found and mark their ambiguities
-//---------------------------------------------------------------------------
-  void KalFitHack::markMultiplets (KalFitResult& Kres, DoubletCollection *DCol) {
-
-    mu2e::TrkStrawHit *hit;
-    const mu2e::Straw *straw;
-    Doublet           *doublet;
-
-    int ndhits;
-    int ndoublets  = DCol->size();
-
-    if (_debug > 0) {
-      printf("[KalFitHack::markMultiplets] BEGIN iherr:%i , ILoopUseDoublets:%2i\n", 
-	     fAnnealingStep,fILoopUseDoublets);
-      printf("----------------------------------------------------");
-      printf("------------------------------------------------------------------------------");
-      printf("------------------------------------------------------------------------------------------\n");
-      printf("  i  shId ch pnl il is      x       y        z      ");
-      printf("  cth   trkth    xtrk     ytrk     ztrk       xr      xtrkr   doca    rdr am  ");
-      printf(" s++  doca++   chi2++   s+-  doca+-   chi2+-   s--  doca--   chi2--   s-+  doca-+   chi2-+\n");
-      printf("----------------------------------------------------");
-      printf("------------------------------------------------------------------------------");
-      printf("------------------------------------------------------------------------------------------\n");
-    }    
-
-    for (int i=0; i<ndoublets; ++i) {
-      doublet = &DCol->at(i);
-      ndhits  = doublet->fNstrawHits;
-      
-      if (ndhits == 1) {
-//-----------------------------------------------------------------------------
-// a single hit in the plane - keep its external error large, unless the drift sign 
-// can be determined reliably 
-//-----------------------------------------------------------------------------
-	hit = doublet->fHit[0];
-
-	resolveSingleHit(Kres,hit);
-      }
-      else if (ndhits == 2) {
-//-----------------------------------------------------------------------------
-// 2 hits in a panel - attempt to determine the drift signs
-//-----------------------------------------------------------------------------
-	markDoublet(Kres,doublet,0,1);
-      }
-      else {
-//-----------------------------------------------------------------------------
-// more than 2 hits in a panel
-//-----------------------------------------------------------------------------
-	int      tmpLayerId, layer0, layer1, jbest(-1), kbest(-1);
-	int      tmpId(-1), id0(-1), id1(-1);
-	double   rdrift, chi2_d, chi2_best (1.e12);
-	Doublet  bd;
-
-	for (int j=0; j<ndhits; ++j) {
-	  for (int k=j+1; k<ndhits; ++k){
-	    // 2015-03-22 P.Murat	    if (layer1 == layer0)  continue;
-//-----------------------------------------------------------------------------
-// P.Murat: logic here looks questionalble, but let's first figure what it is exactly 
-// - use the first found OS doublet, w/o looking at the quality
-// - after it is found, resolve drift signs right away for all hits in the multiplet
-// - this could be dangerous, especially, in presence of the background 
-//-----------------------------------------------------------------------------
-	    markDoublet(Kres,doublet,j,k); 
-	    chi2_d = doublet->Chi2Best();
-	    if (chi2_d < chi2_best) {
-	      jbest     = j;
-	      kbest     = k;
-	      chi2_best = chi2_d;
-	      bd        = *doublet;
-	    }
-	  }
-	}
-
-	*doublet = bd;
-	if (chi2_best < fMaxDoubletChi2) {
-//-----------------------------------------------------------------------------
-// the "best" doublet is good enough, resolve drift signs for the rest hits
-//----------------------------------------------------------------------------- 
-	  hit     = doublet->fHit[jbest];
-	  straw   = &hit->straw();
-	  layer0  = straw->id().getLayer();
-	  id0     = straw->index().asInt();
-
-	  hit     = doublet->fHit[kbest];
-	  straw   = &hit->straw();
-	  layer1  = straw->id().getLayer();
-	  id1     = straw->index().asInt();
-
-	  for (int h=0; h<ndhits; ++h) {
-	    hit        = doublet->fHit[h];
-	    straw      = &hit->straw();
-	    tmpLayerId = straw->id().getLayer();
-	    tmpId      = straw->index().asInt();
-		
-	    if ((h == jbest) || (h == kbest)) continue;
-//-----------------------------------------------------------------------------
-// the assumption here is that in case of a triplet two hits in the same layer 
-// can't have the same drift sign - which is not necessarily correct.
-// *stick to it for the time being*
-//-----------------------------------------------------------------------------
-	    if (tmpLayerId == layer0) {
-	      if (tmpId != id0) {
-		doublet->fStrawAmbig[h] = -doublet->fStrawAmbig[jbest];
-	      }
-	    }
-	    else if (tmpLayerId == layer1) {
-	      if (tmpId != id1) {
-		doublet->fStrawAmbig[h] = -doublet->fStrawAmbig[kbest];
-	      }
-	    }
-		
-	    rdrift = hit->driftRadius();
-
-	    if ( fabs(rdrift) < fDeltaDriftDoublet){
-	      hit->setAmbig(doublet->fStrawAmbig[h]);
-	      hit->setAmbigUpdate(false);
-	    }
-	  }   
-	}
-      }
-    }
-  }
-
-//-----------------------------------------------------------------------------
-// 2015-02-25 P.Murat: new resolver
-// assume that coordinates are rotated into the coordinate system where Y axis 
-// is pointed along the wire by a rotation along the Z axis
-// sign ordering convention:    ++, +-, --, -+ is defined by KalFitHack::fSign
-//-----------------------------------------------------------------------------
-  void KalFitHack::findLines(Hep3Vector* Pos, double* R, double* Slopes) {
-//-----------------------------------------------------------------------------
-    double            nx[4], ny[4], dx, dy; //, ux, uy;
-    double            alpha, dr, dr2, lx, ly;
-    //    int               invert[4];
-
-    dx  = Pos[1].z()-Pos[0].z();
-    dy  = Pos[1].x()-Pos[0].x();
-    dr2 = dx*dx+dy*dy;
-    dr  = sqrt(dr2);
-
-    lx  = dx/dr;
-    ly  = dy/dr;
-
-    for (int i=0; i<4; i++) {
-      alpha = (R[1]*fSign[i][1]-R[0]*fSign[i][0])/dr;
-      nx[i] = fSign[i][0]*(-ly*alpha+lx*sqrt(1-alpha*alpha));
-      ny[i] = fSign[i][0]*( lx*alpha+ly*sqrt(1-alpha*alpha));
-
-//       invert[i] =  1;
-//       if (nx[i]*dx+ny[i]*dy < 0) {
-// 	   nx[i]     = -nx[i];
-// 	   ny[i]     = -ny[i];
-// 	   invert[i] = -1;
-//       }
-      
-      Slopes[i] = ny[i]/nx[i];
-    }
   }
 
 //------------------------------------------------------------------------------------------
 // called once per event from CalPatRec_module::produce
 //-----------------------------------------------------------------------------
-  void KalFitHack::makeTrack(KalFitResult& kres, CalTimePeak* TPeak, int USE_DOUBLETS) {
+  void KalFitHack::makeTrack(KalFitResult& kres, CalTimePeak* TPeak) {
 
     kres._fit = TrkErrCode(TrkErrCode::fail);
 
 					// test if fitable
-    if (fitable(kres._tdef)) {
-					// first, find t0
-      TrkT0 t0;
-      bool caloInitCond(false);
-      if (TPeak->Cluster() != NULL) {
-	caloInitCond = true;
-      }
+    if (! fitable(kres._tdef)) return;
+//-----------------------------------------------------------------------------
+// first, find t0
+//-----------------------------------------------------------------------------
+    TrkT0 t0;
+    bool caloInitCond(false);
+    if (TPeak->Cluster() != NULL) {
+      caloInitCond = true;
+    }
 
-      if (_initt0) {
-	if (!caloInitCond) {
-	  initT0(kres._tdef, t0);
-	} 
-	else {
-	  initCaloT0(TPeak, kres._tdef, t0);
-	}
-      }
+    if (_initt0) {
+      if (!caloInitCond) {
+	initT0(kres._tdef, t0);
+      } 
       else {
-	t0 = kres._tdef.t0();
+	initCaloT0(TPeak, kres._tdef, t0);
       }
-					// knowing t0, create the hits
-      makeHits(kres, t0);
+    }
+    else {
+      t0 = kres._tdef.t0();
+    }
+//-----------------------------------------------------------------------------
+// knowing t0, create the hits
+//-----------------------------------------------------------------------------
+    makeHits(kres, t0);
 //-----------------------------------------------------------------------------
 // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
 // This will go away when we cleanup the BaBar hit storage, FIXME!!!
 //-----------------------------------------------------------------------------
-      TrkHotListFull* hotlist = new TrkHotListFull();
-      for(std::vector<TrkStrawHit*>::iterator ihit=kres._hits.begin();ihit!=kres._hits.end();ihit++){
-        TrkStrawHit* trkhit = *ihit;
-	hotlist->append(trkhit);
-      }
+    TrkHotListFull* hotlist = new TrkHotListFull();
+    for(std::vector<TrkStrawHit*>::iterator ihit=kres._hits.begin();ihit!=kres._hits.end();ihit++){
+      TrkStrawHit* trkhit = *ihit;
+      hotlist->append(trkhit);
+    }
 //-----------------------------------------------------------------------------
 // Find the wall and gas material description objects for these hits
 //-----------------------------------------------------------------------------
-      if (_matcorr) makeMaterials(kres);
+    if (_matcorr) makeMaterials(kres);
 // create Kalman rep
-      kres._krep = new KalRep(kres._tdef.helix(), hotlist, kres._detinter, *this, kres._tdef.particle());
-      assert(kres._krep != 0);
+    kres._krep = new KalRep(kres._tdef.helix(), hotlist, kres._detinter, *this, kres._tdef.particle());
+    assert(kres._krep != 0);
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
-      double flt0 = kres._tdef.helix().zFlight(0.0);
-      kres._krep->setT0(t0,flt0);
-
-      if (_debug>0){
-	printHits(kres,"makeTrack_001");
-      }
+    double flt0 = kres._tdef.helix().zFlight(0.0);
+    kres._krep->setT0(t0,flt0);
+    
+    if (_debug>0){
+      printHits(kres,"makeTrack_001");
+    }
 //-----------------------------------------------------------------------------
 // now fit
 // 10-07-2013 giani added the following line. It updates the hit times
 //            following changes in the t0 value 
 //-----------------------------------------------------------------------------
-      if(caloInitCond) updateHitTimes(kres);
-
-      fUseDoublets = USE_DOUBLETS;
-      fListOfDoublets.clear();
+    if(caloInitCond) updateHitTimes(kres);
 //-----------------------------------------------------------------------------
 // 09 - 26 - 2013 giani 
 // include the calorimeter information when it is avaiable
 //-----------------------------------------------------------------------------
-      if ((_daveMode == 0) && caloInitCond) {
-	fitTrack(kres, TPeak);
-      } 
-      else {
-	fitTrack(kres);
-      }
-
-      if (_removefailed) kres.removeFailed();
+    if ((_daveMode == 0) && caloInitCond) {
+      fitTrack(kres,TPeak);
+    } 
+    else {
+      fitTrack(kres,NULL);
     }
+    
+    if (_removefailed) kres.removeFailed();
   }
 
 //-----------------------------------------------------------------------------
@@ -996,10 +293,12 @@ namespace mu2e
 			   const StrawHitCollection*  straws , 
 			   std::vector<hitIndex>      indices, 
 			   double                     maxchi ,
-			   CalTimePeak*               tpeak   ) {
+			   CalTimePeak*               TPeak   ) {
 
 					// there must be a valid Kalman fit to add hits to
-    int activity(0);
+    int  activity(0);
+    int  final(1);
+
     if(kres._krep != 0 && kres._fit.success()){
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
       const Tracker& tracker = getTrackerOrThrow();
@@ -1102,20 +401,20 @@ namespace mu2e
       std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef.fitdir().fitDirection()));
 //---------------------------------------------------------------------------
 // refit the track one more time with minimal external errors
-// 2015 - 02 - 27 Gianipez added the loop for including the external errors 
 //---------------------------------------------------------------------------
-      if (tpeak) {
+      if ((_daveMode == 0) && TPeak) {
 //------------------------------------------------------------------------------------------
 // 2015 - 03 - 09 Gainipez added the following line for forcing the fiITeration procedure
 // to use findAndUseDoublets
+// 2015 - 02 - 27 Gianipez added the loop for including the external errors 
 // 2015-04-03 P.Murat: not sure I understand why there are different number of iterations 
 //                     in different cases - Giani?
+// 2015-04-10        : perform one iteration, -1 means 'use the smallest external error defined'
 //------------------------------------------------------------------------------------------
-	for (size_t iherr=_hiterr.size()-2; iherr<_hiterr.size();++iherr) {
-	  fitIteration(kres, iherr, tpeak);
-	}
-      }else{
-	fitIteration(kres,_hiterr.size()-1);
+	fitIteration(kres, -1, TPeak,final);
+      }
+      else {
+	fitIteration(kres,-1,NULL,final);
       }
       kres._krep->addHistory(kres._fit,"AddHits");
     }
@@ -1126,12 +425,14 @@ namespace mu2e
 // loop over external hit errors, ambiguity assignment, t0 tolerance
 // 10-03-2013 giani changed this loop. now it loops on all the stations
 // and store the last fit that converges
+// assume this is not a final call
 //-----------------------------------------------------------------------------
   void KalFitHack::fitTrack(KalFitResult& KRes, CalTimePeak* TPeak) {
+    int not_final(0);
 
     int n = _hiterr.size();
     for (int i=0; i<n; ++i) {
-      fitIteration(KRes,i,TPeak);
+      fitIteration(KRes,i,TPeak,not_final);
 
       if (! KRes._fit.success()) break; //commented by gianipez
      }
@@ -1143,17 +444,18 @@ namespace mu2e
 // one step of the track fit
 // update external hit errors.  This isn't strictly necessary on the 1st iteration.
 //-----------------------------------------------------------------------------
-  void KalFitHack::fitIteration(KalFitResult& KRes, int IHErr, CalTimePeak* TPeak) {
+  void KalFitHack::fitIteration(KalFitResult& KRes, int Iteration, CalTimePeak* TPeak, int Final) {
 
     double       oldt0 = KRes._krep->t0()._t0;
     unsigned     niter(0);
     bool         changed(true);
     bool         fit_success;
+    //    double       extError;
     char         msg[100];
 
     if (_debug >0) {
       printf("------------------------------------------------------------------------------------------\n");
-      printf("[KalFitHack::fitIteration] BEGIN IHErr:%i \n", int(IHErr));
+      printf("[KalFitHack::fitIteration] BEGIN Iteration:%i \n", Iteration);
       printf("------------------------------------------------------------------------------------------\n");
     }
 //-----------------------------------------------------------------------------------
@@ -1161,16 +463,14 @@ namespace mu2e
 // for the doublets
 // 2015-04-03: IHErr = -1: special value, invoke last iteration
 //-----------------------------------------------------------------------------------
-    if (IHErr == -1) IHErr = _hiterr.size()-1;
+    if (Iteration == -1) Iteration = _hiterr.size()-1;
 
-    fAnnealingStep = IHErr;
+    _annealingStep     = Iteration;
 //--------------------------------------------------------------------------------
 // 2015-02-19 G.Pezzu: re-search multiplets using updated fit results
 // 2015-03-25 P.Murat: *TODO* I don't think this call is needed, the one in the 
 //                     loop should be sufficient - check !
 //-----------------------------------------------------------------------------
-    mu2e::TrkStrawHit *hit;
-
     KRes._nt0iter = 0;
     KRes._fit     = TrkErrCode::succeed;
 
@@ -1179,29 +479,13 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // set external errors and start from the standard ambiguity resolution
 // if doublets are used, the doulet resolution overrides the results
-//-----------------------------------------------------------------------------
-      int nhits = KRes._hits.size();
-      for (int i=0; i<nhits; ++i){
-	hit   = KRes._hits.at(i);
-	hit->setExtErr(_hiterr[fAnnealingStep]);
-      }
-
-      _ambigresolver[IHErr]->resolveTrk(KRes);
-//-----------------------------------------------------------------------------
 // reduce external errors for hits from doublets during first iterations
-//-----------------------------------------------------------------------------
-      if (fUseDoublets && (fAnnealingStep < fILoopUseDoublets)) {
-//-----------------------------------------------------------------------------
 // create list of doublets 
-//-----------------------------------------------------------------------------
-//	findDoublets (KRes._krep, &KRes._hits, &fListOfDoublets);
-	findDoublets (KRes, &fListOfDoublets);
-//-----------------------------------------------------------------------------
 // resolve drift signs for hits in doublets. Choose the combination of drift 
 // signs for which the 2-hit segment slope is the closest to that of the track 
+// ** all this becomes hiden inside the ambiguity resolver** FIXME
 //-----------------------------------------------------------------------------
-	if (fListOfDoublets.size() > 0) markMultiplets(KRes,&fListOfDoublets);
-      }
+      _ambigresolver[_annealingStep]->resolveTrk(KRes,Final);
 //-----------------------------------------------------------------------------
 // perform the track fit
 //-----------------------------------------------------------------------------
@@ -1212,40 +496,37 @@ namespace mu2e
 
       if (_debug > 0) {
 	sprintf(msg,"KalFitHack::fitIteration::002 IHErr = %2i niter = %2i success = %i",
-		fAnnealingStep,niter,fit_success);
+		_annealingStep,niter,fit_success);
 	printHits(KRes,msg);
       }
+
       if (! fit_success) break;
 //-----------------------------------------------------------------------------
 // if the fit succeeded, update the track T0, and recalculate the hit T0's 
-// _updatet0 should be always true,
-// but may want to update it differently
 //-----------------------------------------------------------------------------
-      if (_updateT0 ) {
-	if      (_updateT0Mode == 0) {
+      if      (_updateT0Mode == 0) {
 //-----------------------------------------------------------------------------
-// update T0 mode = 0: when iterating, use cluster T0 if available
+// update T0 mode = 0: when iterating, use the cluster T0 if available
 //-----------------------------------------------------------------------------
-	  if (TPeak != NULL)  updateCalT0(KRes,TPeak);
-	  else                updateT0(KRes);
-	}
-	else if (_updateT0Mode == 1) {
+	if (TPeak != NULL)  updateCalT0(KRes,TPeak);
+	else                updateT0   (KRes);
+      }
+      else if (_updateT0Mode == 1) {
 //-----------------------------------------------------------------------------
 // mode = 1: when iterating, don't look back at the cluster T0, 
 //           in this mode the cluster T0 is used only to seed the process
 //-----------------------------------------------------------------------------
-	  updateT0(KRes);
-	}
-
-	changed |= fabs(KRes._krep->t0()._t0-oldt0) > _t0tol[IHErr];
-	oldt0    = KRes._krep->t0()._t0;
+	updateT0(KRes);
       }
+
+      changed |= fabs(KRes._krep->t0()._t0-oldt0) > _t0tol[_annealingStep];
+      oldt0    = KRes._krep->t0()._t0;
 //-----------------------------------------------------------------------------
 // drop outliers. weedHits() calls KalRep::fit(), so the fit success code may change
 //-----------------------------------------------------------------------------
       if(_weedhits){
 	KRes._nweediter = 0;
-	changed        |= weedHits(KRes);
+	changed        |= weedHits(KRes,Iteration,Final);
 	fit_success     = KRes._fit.success();
       }
       niter++;
@@ -1255,7 +536,7 @@ namespace mu2e
 // 2015-02-17 G. Pezzu: ::resolveTrk() updates drift signs of ALL hits, 
 // so fix the ambiguity of the doublets after that
 //-----------------------------------------------------------------------------
-    fNIter += niter;
+    _nIter += niter;
 
     KRes._ninter = KRes._krep->intersections();
   }
@@ -1309,7 +590,7 @@ namespace mu2e
 
     if (Trk != 0) {
 
-      printf("[KalFitHack::printHits] BEGIN called from %s iherr:%i \n",Caller,fAnnealingStep);
+      printf("[KalFitHack::printHits] BEGIN called from %s iherr:%i \n",Caller,_annealingStep);
       printf("---------------------------------------------------------------------------------");
       printf("-----------------------------------------------------\n");
       //      printf("%s",Prefix);
@@ -1507,7 +788,7 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-  bool KalFitHack::weedHits(KalFitResult& KRes) {
+  bool KalFitHack::weedHits(KalFitResult& KRes, int Iteration, int Final) {
     // Loop over HoTs and find HoT with largest contribution to chi2.  If this value
     // is greater than some cut value, deactivate that HoT and reFit
     bool retval(false);
@@ -1530,12 +811,15 @@ namespace mu2e
       retval = true;
       worstHot->setActivity(false);
       worstHot->setUsability(5); // positive usability allows hot to be re-enabled later
+
+      _ambigresolver[Iteration]->resolveTrk(KRes,Final);
+
       KRes.fit();
       KRes._krep->addHistory(KRes._fit, "HitWeed");
       // Recursively iterate
       KRes._nweediter++;
       if (KRes._fit.success() && KRes._nweediter < _maxweed ) {
-        retval |= weedHits(KRes);
+        retval |= weedHits(KRes,Iteration,Final);
       }
     }
     return retval;
@@ -1543,11 +827,16 @@ namespace mu2e
   
 
 //-----------------------------------------------------------------------------
+// assume that this is a call during the last iteration
+//-----------------------------------------------------------------------------
   bool KalFitHack::unweedHits(KalFitResult& KRes, double maxchi) {
     // Loop over inactive HoTs and find the one with the smallest contribution to chi2.  If this value
     // is less than some cut value, reactivate that HoT and reFit
-    bool retval(false);
-    double best = 1.e12;
+    bool       retval(false);
+    int  const final (1);
+    double     best = 1.e12;
+    int        last_iteration = _hiterr.size()-1;
+
     TrkStrawHit* bestHot = 0;
     for (std::vector<TrkStrawHit*>::iterator iter = KRes._hits.begin(); iter != KRes._hits.end(); ++iter){
       TrkStrawHit* iHot = *iter;
@@ -1557,21 +846,24 @@ namespace mu2e
           double chival = fabs(resid/residErr);
   // test both for a good chisquared and for the drift radius to be physical
           if (chival < maxchi && iHot->physicalDrift(maxchi) && chival < best) {
-            best = chival;
+            best    = chival;
             bestHot = iHot;
           }
         }
       }
     }
-    if(0 != bestHot){
+    if (0 != bestHot) {
       retval = true;
       bestHot->setActivity(true);
       bestHot->setUsability(4);
 //-----------------------------------------------------------------------------
 // update drift signs before the fit again - more doublets could've been recovered
+// one more place for the ambiguity resolver to be called from
+// also - from addHits
+// here we call fitter not invoking the fitIteration
 //-----------------------------------------------------------------------------
-      findDoublets (KRes, &fListOfDoublets);
-      if (fListOfDoublets.size() > 0) markMultiplets(KRes,&fListOfDoublets);
+//      KRes._decisionMode = _decisionMode;
+      _ambigresolver[last_iteration]->resolveTrk(KRes,final);
 
       KRes.fit();
       KRes._krep->addHistory(KRes._fit, "HitUnWeed");
@@ -1871,47 +1163,47 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // stolen from AmbigResolver class - 
 //-----------------------------------------------------------------------------
-  const TrkSimpTraj* KalFitHack::findTraj(std::vector<TrkStrawHit*> const& Hits, 
-					  const KalRep*                    Krep) const {
+//   const TrkSimpTraj* KalFitHack::findTraj(std::vector<TrkStrawHit*> const& Hits, 
+// 					  const KalRep*                    Krep) const {
     
-    typedef std::vector<KalSite*>::const_iterator KSI;
+//     typedef std::vector<KalSite*>::const_iterator KSI;
 
-    const TrkSimpTraj* retval(0);
-// if the fit is valid, use the full fit result.  Otherwise, use the reference traj
-    if(!Krep->fitValid()){
-      double locdist;
-      retval = Krep->referenceTraj()->localTrajectory(Hits[0]->fltLen(),locdist);
-    } else {
-// find the range of these hits in the KalRep site vector
-      std::vector<KalSite*> const& sites = Krep->siteList();
-      KSI first = sites.end();
-      KSI last  = sites.begin();
-      for(auto ihit = Hits.begin();ihit != Hits.end();++ihit){
-	if((*ihit)->isActive()){
-	  const KalHit* hitsite = Krep->findHotSite(*ihit);
-	  // find the index to this site
-	  KSI ifnd = std::find(sites.begin(),sites.end(),hitsite);
-	  if(ifnd != sites.end()) {
-	    if(ifnd < first){
-	      first = ifnd;
-	    }
-	    if(ifnd > last){
-	      last = ifnd;
-	    }
-	  }
-	}
-      }
-// create a trajectory from the fit which excludes this set of hits
-      static TrkSimpTraj* straj = Krep->seed()->clone();
-      if(Krep->smoothedTraj(first,last,straj)){
-	retval = straj;
-      } else {
-	double locdist;
-	retval = Krep->referenceTraj()->localTrajectory(Hits[0]->fltLen(),locdist);
-      }
-    }
-    return retval;
-  }
+//     const TrkSimpTraj* retval(0);
+// // if the fit is valid, use the full fit result.  Otherwise, use the reference traj
+//     if(!Krep->fitValid()){
+//       double locdist;
+//       retval = Krep->referenceTraj()->localTrajectory(Hits[0]->fltLen(),locdist);
+//     } else {
+// // find the range of these hits in the KalRep site vector
+//       std::vector<KalSite*> const& sites = Krep->siteList();
+//       KSI first = sites.end();
+//       KSI last  = sites.begin();
+//       for(auto ihit = Hits.begin();ihit != Hits.end();++ihit){
+// 	if((*ihit)->isActive()){
+// 	  const KalHit* hitsite = Krep->findHotSite(*ihit);
+// 	  // find the index to this site
+// 	  KSI ifnd = std::find(sites.begin(),sites.end(),hitsite);
+// 	  if(ifnd != sites.end()) {
+// 	    if(ifnd < first){
+// 	      first = ifnd;
+// 	    }
+// 	    if(ifnd > last){
+// 	      last = ifnd;
+// 	    }
+// 	  }
+// 	}
+//       }
+// // create a trajectory from the fit which excludes this set of hits
+//       static TrkSimpTraj* straj = Krep->seed()->clone();
+//       if(Krep->smoothedTraj(first,last,straj)){
+// 	retval = straj;
+//       } else {
+// 	double locdist;
+// 	retval = Krep->referenceTraj()->localTrajectory(Hits[0]->fltLen(),locdist);
+//       }
+//     }
+//     return retval;
+//   }
 
 } // namespace
 

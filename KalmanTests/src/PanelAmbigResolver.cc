@@ -46,7 +46,8 @@ namespace mu2e {
   typedef std::vector<TrkStrawHit*>::const_iterator TSHCI;
   typedef std::vector<KalSite*>::const_iterator KSI;
 
-  PanelAmbigResolver::PanelAmbigResolver(fhicl::ParameterSet const& pset) : AmbigResolver(pset),
+  PanelAmbigResolver::PanelAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter): 
+    AmbigResolver(pset,ExtErr,Iter),
     _minsep(pset.get<double>("minChisqSep",6.0)),
     _inactivepenalty(pset.get<double>("inactivePenalty",16.0)),
     _penaltyres(pset.get<double>("PenaltyResolution",0.5))
@@ -65,13 +66,16 @@ namespace mu2e {
   PanelAmbigResolver::~PanelAmbigResolver() {}
 
   void 
-  PanelAmbigResolver::resolveTrk(KalFitResult& kfit) const {
+  PanelAmbigResolver::resolveTrk(KalFitResult& kfit, int Final) const {
+// initialize hit external errors
+    initHitErrors(kfit);
 // sort by panel
     std::sort(kfit._hits.begin(),kfit._hits.end(),panelcomp());
 // collect hits in the same panel
     TSHI ihit = kfit._hits.begin();
     while(ihit != kfit._hits.end()){ 
       SectorId pid = (*ihit)->straw().id().getSectorId();
+      (*ihit)->setExtErr(AmbigResolver::_extErr);
       TSHI jhit = ihit;
       std::vector<TrkStrawHit*> phits;
       while(jhit != kfit._hits.end() && (*jhit)->straw().id().getSectorId() == pid){

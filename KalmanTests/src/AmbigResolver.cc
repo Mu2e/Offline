@@ -10,6 +10,7 @@
 #include "KalmanTrack/KalRep.hh"
 #include "KalmanTrack/KalSite.hh"
 #include "KalmanTrack/KalHit.hh"
+#include "KalmanTests/inc/KalFitResult.hh"
 #include "TrkBase/TrkPoca.hh"
 #include "difAlgebra/DifPoint.hh"
 #include "difAlgebra/DifVector.hh"
@@ -22,11 +23,25 @@ namespace mu2e {
   typedef std::vector<TrkStrawHit*>::const_iterator TSHCI;
   typedef std::vector<KalSite*>::const_iterator KSI;
 
-  AmbigResolver::AmbigResolver(fhicl::ParameterSet const& pset) 
-  {}
+  AmbigResolver::AmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter) {
+    _extErr = ExtErr;
+    _iter   = Iter;
+  }
 
   AmbigResolver::~AmbigResolver() {}
 
+//-----------------------------------------------------------------------------
+// in the beginning of iteration set external hit errors to a constant
+//-----------------------------------------------------------------------------
+  void AmbigResolver::initHitErrors(KalFitResult& KRes) const {
+    TrkStrawHit *hit;
+    
+    int nhits = KRes._hits.size();
+    for (int i=0; i<nhits; ++i) {
+      hit = KRes._hits.at(i);
+      hit->setExtErr(_extErr);
+    }
+  }
 
   const TrkSimpTraj*
   AmbigResolver::findTraj(std::vector<TrkStrawHit*> const& phits, const KalRep* krep) const {

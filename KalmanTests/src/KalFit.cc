@@ -13,6 +13,7 @@
 #include "KalmanTests/inc/PocaAmbigResolver.hh"
 #include "KalmanTests/inc/HitAmbigResolver.hh"
 #include "KalmanTests/inc/FixedAmbigResolver.hh"
+#include "KalmanTests/inc/DoubletAmbigResolver.hh"
 #include "KalmanTests/inc/BaBarMu2eField.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
@@ -93,6 +94,8 @@ namespace mu2e
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
     _bfield(0)
   {
+    // 2015-04-12 P.Murat add doublet ambig resolver
+    _darPset = new fhicl::ParameterSet(pset.get<fhicl::ParameterSet>("DoubletAmbigResolver",fhicl::ParameterSet()));
 // set KalContext parameters
     _disttol = pset.get<double>("IterationTolerance",0.1);
     _intertol = pset.get<double>("IntersectionTolerance",100.0);
@@ -123,29 +126,39 @@ namespace mu2e
     _bintconfig._divPathMin = pset.get<double>("BFieldIntDivMin",50.0); // 50 mm
     _bintconfig._divStepCeiling = pset.get<double>("BFieldIntDivMax",500.0); // 500 mm
     // field integral errors
-    double perr = pset.get<double>("BendCorrErrFrac",0.0); // fractional accuracy of trajectory
-    double berr = pset.get<double>("BFieldMapErr",0.0); // mapping and interpolation error
+    //    double perr = pset.get<double>("BendCorrErrFrac",0.0); // fractional accuracy of trajectory
+    //    double berr = pset.get<double>("BFieldMapErr",0.0); // mapping and interpolation error
 //    KalBend::setErrors(perr,berr);
     // make sure we have at least one entry for additional errors
     if(_herr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFit: no hit errors specified" << endl;
     if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
     if(_herr.size() != _t0tol.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
     // construct the ambiguity resolvers
-    for(size_t iambig=0;iambig<_ambigstrategy.size();++iambig){
-      switch (_ambigstrategy[iambig] ){
-	case fixedambig: default:
-	  _ambigresolver.push_back(new FixedAmbigResolver(pset));
-	  break;
-	case hitambig:
-	  _ambigresolver.push_back(new HitAmbigResolver(pset));
-	  break;
-	case panelambig:
-	  _ambigresolver.push_back(new PanelAmbigResolver(pset));
-	  break;
-	case pocaambig:
-	  _ambigresolver.push_back(new PocaAmbigResolver(pset));
-	  break;
+
+    AmbigResolver* ar;
+
+    _resolveAfterWeeding = false;
+    int n = _ambigstrategy.size();
+    for(int i=0; i<n; ++i) {
+      switch (_ambigstrategy[i]) {
+      case fixedambig: default:
+	ar = new FixedAmbigResolver(pset,_herr[i],i);
+	break;
+      case hitambig:
+	ar = new HitAmbigResolver(pset,_herr[i],i);
+	break;
+      case panelambig:
+	ar = new PanelAmbigResolver(pset,_herr[i],i);
+	break;
+      case pocaambig:
+	ar = new PocaAmbigResolver(pset,_herr[i],i);
+	break;
+      case doubletambig: // 4
+ 	ar = new DoubletAmbigResolver(*_darPset,_herr[i],i);
+	_resolveAfterWeeding = true;
+ 	break;
       }
+      _ambigresolver.push_back(ar);
     }
   }
 
@@ -156,6 +169,10 @@ namespace mu2e
     delete _bfield;
   }
 
+//-----------------------------------------------------------------------------
+// the assumption, so far, is that this is not a final call, otherwise need 
+// to pass a 'finalIteration' flag here - change the call signature?
+//-----------------------------------------------------------------------------
   void KalFit::makeTrack(KalFitResult& kres) {
     kres._fit = TrkErrCode(TrkErrCode::fail);
 // test if fitable
@@ -248,46 +265,61 @@ namespace mu2e
 	trkhit->setAmbigUpdate(false);
       }
 // refit the last iteration of the track
-      fitIteration(kres,_herr.size()-1);
+      fitIteration(kres,_herr.size()-1,1);
       kres._krep->addHistory(kres._fit,"AddHits");
     }
   }
 
-  void KalFit::fitTrack(KalFitResult& kres){
+//-----------------------------------------------------------------------------
+// the assumption is that this is not a final call, 
+// otherwise, rather than making assumptions, need to pass the 'finalIteration' 
+// flag as a call parameter 
+//-----------------------------------------------------------------------------
+  void KalFit::fitTrack(KalFitResult& kres) {
     // loop over external hit errors, ambiguity assignment, t0 toleratnce
-    for(size_t iherr=0;iherr < _herr.size(); ++iherr){
-      fitIteration(kres,iherr);
+    int notFinal(0); 
+    for(size_t iherr=0;iherr < _herr.size(); ++iherr) {
+      fitIteration(kres,iherr,notFinal);
       if(! kres._fit.success())break;
     }
     if(kres._krep != 0) kres._krep->addHistory(kres._fit,"KalFit");
   }
 
-  void KalFit::fitIteration(KalFitResult& kres, size_t iherr){
+//-----------------------------------------------------------------------------
+// Final = 1: force resolving the hit drift signs 
+//       = 0: avoid resolving the drift directions if not sure
+//-----------------------------------------------------------------------------
+  void KalFit::fitIteration(KalFitResult& kres, size_t Iteration, int Final) {
     // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
     for(std::vector<TrkStrawHit*>::iterator itsh = kres._hits.begin(); itsh != kres._hits.end(); ++itsh){
-      (*itsh)->setExtErr(_herr[iherr]);
+      (*itsh)->setExtErr(_herr[Iteration]);
     }
     // update t0, and propagate it to the hits
     double oldt0 = kres._krep->t0()._t0;
     kres._nt0iter = 0;
     unsigned niter(0);
     bool changed(true);
+
     kres._fit = TrkErrCode::succeed;
     while(kres._fit.success() && changed && niter < maxIterations()){
       changed = false;
-      _ambigresolver[iherr]->resolveTrk(kres);
+//-----------------------------------------------------------------------------
+// convention: resolve drift signs before the fit with respect to the trajectory 
+// determined at the previous iteration
+//-----------------------------------------------------------------------------
+      _ambigresolver[Iteration]->resolveTrk(kres,Final);
       kres._krep->resetFit();
       kres.fit();
       if(! kres._fit.success())break;
       if(_updatet0){
 	updateT0(kres);
-	changed |= fabs(kres._krep->t0()._t0-oldt0) > _t0tol[iherr];
+	changed |= fabs(kres._krep->t0()._t0-oldt0) > _t0tol[Iteration];
 	oldt0 = kres._krep->t0()._t0;
       }
-      // drop outlyers
+      // drop outliers
       if(_weedhits){
 	kres._nweediter = 0;
-	changed |= weedHits(kres);
+	changed |= weedHits(kres,Iteration,Final);
       }
       niter++;
     }
@@ -352,7 +384,7 @@ namespace mu2e
   }
 
   bool
-  KalFit::weedHits(KalFitResult& kres) {
+  KalFit::weedHits(KalFitResult& kres, int Iteration, int Final) {
     // Loop over HoTs and find HoT with largest contribution to chi2.  If this value
     // is greater than some cut value, deactivate that HoT and reFit
     bool retval(false);
@@ -375,12 +407,19 @@ namespace mu2e
       retval = true;
       worstHot->setActivity(false);
       worstHot->setUsability(5); // positive usability allows hot to be re-enabled later
+
+      if (_resolveAfterWeeding) {
+//-----------------------------------------------------------------------------
+// _resolveAfterWeeding=0 makes changes in the logic fully reversible
+//-----------------------------------------------------------------------------
+	_ambigresolver[Iteration]->resolveTrk(kres,Final);
+      }
       kres.fit();
       kres._krep->addHistory(kres._fit, "HitWeed");
       // Recursively iterate
       kres._nweediter++;
       if (kres._fit.success() && kres._nweediter < _maxweed ) {
-        retval |= weedHits(kres);
+        retval |= weedHits(kres,Iteration,Final);
       }
     }
     return retval;
@@ -390,8 +429,11 @@ namespace mu2e
   KalFit::unweedHits(KalFitResult& kres, double maxchi) {
     // Loop over inactive HoTs and find the one with the smallest contribution to chi2.  If this value
     // is less than some cut value, reactivate that HoT and reFit
-    bool retval(false);
-    double best = 1.e12;
+    int const final(1);
+    bool      retval(false);
+    double    best = 1.e12;
+    int       last = _herr.size()-1;
+
     TrkStrawHit* bestHot = 0;
     for (std::vector<TrkStrawHit*>::iterator iter = kres._hits.begin(); iter != kres._hits.end(); ++iter){
       TrkStrawHit* iHot = *iter;
@@ -411,6 +453,13 @@ namespace mu2e
       retval = true;
       bestHot->setActivity(true);
       bestHot->setUsability(4);
+
+      if (_resolveAfterWeeding) {
+	// 2015-04-12 P.Murat: '_resolveAfterWeeding' is here to make my changes fully reversible
+	// I think, resolving ambiguities before each fit, makes a lot of sense
+	_ambigresolver[last]->resolveTrk(kres,final);
+      }
+
       kres.fit();
       kres._krep->addHistory(kres._fit, "HitUnWeed");
       // Recursively iterate

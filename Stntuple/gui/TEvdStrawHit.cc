@@ -50,7 +50,8 @@ TEvdStrawHit::TEvdStrawHit(const mu2e::StrawHit* Hit,
   fStrawDigiMC(StrawDigiMC),
   fStraw(Straw),
   fPos(X,Y,Z),
-  fDir(Wx,Wy)
+  fDir(Wx,Wy),
+  fEllipse()
  {
   fSigW  = SigW;
   fSigR  = SigR;
@@ -71,17 +72,20 @@ TEvdStrawHit::TEvdStrawHit(const mu2e::StrawHit* Hit,
   fLineR.SetY2(fPos.Y()+fDir.X()*fSigR);
   fLineR.SetLineColor(Color);
 
-  const CLHEP::Hep3Vector* smp = &fStraw->GetStraw()->getMidPoint();
+  const CLHEP::Hep3Vector* mid_point = &fStraw->GetStraw()->getMidPoint();
   double rdrift = fStrawDigiMC->driftDistance(mu2e::StrawDigi::zero);
       
-  fArc = new TArc(smp->z(),smp->perp(),rdrift);
-  fArc->SetFillColor(kRed);
-  fArc->SetFillStyle(3001);
+  fEllipse.SetX1(mid_point->z());
+  fEllipse.SetY1(mid_point->perp());
+  fEllipse.SetR1(rdrift);
+  fEllipse.SetR2(rdrift);
+  fEllipse.SetFillStyle(3003);
+  fEllipse.SetFillColor(kBlue+2);
+  fEllipse.SetLineColor(kBlue+2);
 }
 
 //-----------------------------------------------------------------------------
 TEvdStrawHit::~TEvdStrawHit() {
-  delete fArc;
 }
 
 //-----------------------------------------------------------------------------
@@ -111,7 +115,9 @@ void TEvdStrawHit::PaintXY(Option_t* Option) {
 
 //_____________________________________________________________________________
 void TEvdStrawHit::PaintRZ(Option_t* Option) {
-  fArc->Paint(Option);
+  fEllipse.SetFillColor(kBlue+2);
+  fEllipse.SetFillStyle(3001);
+  fEllipse.Paint(Option);
 }
 
 //_____________________________________________________________________________

@@ -20,7 +20,7 @@ source :
 
 services :
 {
-  messageService : @local::default_message
+  message : @local::default_message
   TFileService : { fileName : "TracksFromStepPoints.root" }
   RandomNumberGenerator: { }
   user :

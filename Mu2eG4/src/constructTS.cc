@@ -89,6 +89,8 @@ namespace mu2e {
     StraightSection   const * strsec (nullptr);
     TorusSection      const * torsec (nullptr);
 
+    G4Helper * const _helper = &(*art::ServiceHandle<G4Helper>());
+
     const int  verbosityLevel      = config.getInt ("ts.cryo.verbosityLevel", 0     );
     const bool polyLiningUp        = config.getBool("ts.polyliner.Up.build"   , false );
     const bool polyLiningDown      = config.getBool("ts.polyliner.Down.build" , false );
@@ -112,7 +114,8 @@ namespace mu2e {
                            strsec->getGlobal().y(), 
                            strsec->getGlobal().z()-strsec->getHalfLength()+ts->endWallU1_halfLength() );
 
-    nestTubs( "TS1UpstreamEndwall",
+    std::string tssName  = "TS1UpstreamEndwall";
+    nestTubs( tssName,
               TubsParams( ts->endWallU1_rIn(),
                           ts->endWallU1_rOut(),
                           ts->endWallU1_halfLength() ),
@@ -125,6 +128,10 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
     if ( verbosityLevel ) {
       cout << __func__ << " Upstream TS1 endwall at: " << pos << endl;
     }
@@ -145,7 +152,8 @@ namespace mu2e {
               );
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::IN);
-    nestTubs( "TS1InnerCryoShell",
+    tssName = "TS1InnerCryoShell";
+    nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
                           strsec->getHalfLength() ),
@@ -157,16 +165,22 @@ namespace mu2e {
               G4Color::Red(),
 	      "TSCryo"
               );
+
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
     
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS1(in)  OffsetInMu2e  : " << strsec->getGlobal()   << endl;
       cout << __func__ << " TS1(in)  Extent        :[ " << strsec->getGlobal().z() - strsec->getHalfLength() <<","  
            << strsec->getGlobal().z() + strsec->getHalfLength() << "]" << endl;
       cout << __func__ << " TS1(in)  rotation      : " << strsec->getRotation() << endl;
-    }
+     }
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT );
-    nestTubs( "TS1OuterCryoShell",
+    tssName =  "TS1OuterCryoShell";
+    nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
                           strsec->getHalfLength() ),
@@ -179,6 +193,11 @@ namespace mu2e {
 	      "TSCryo"
               );
     
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
+
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS1(out) OffsetInMu2e  : " << strsec->getGlobal()   << endl;
       cout << __func__ << " TS1(out) rotation      : " << strsec->getRotation() << endl;
@@ -189,7 +208,8 @@ namespace mu2e {
                             strsec->getGlobal().y(), 
                             strsec->getGlobal().z()+strsec->getHalfLength()+ts->endWallU2_halfLength() );
   
-    nestTubs( "TS1DownstreamEndwall",
+    tssName = "TS1DownstreamEndwall";
+    nestTubs( tssName,
               TubsParams( ts->endWallU2_rIn(),
                           ts->endWallU2_rOut(),
                           ts->endWallU2_halfLength() ),
@@ -202,9 +222,15 @@ namespace mu2e {
 	      "TSCryo"
               );
               
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
+
     if ( verbosityLevel ) {
       cout << __func__ << " Downstream TS1 endwall at: " << pos2 << endl;
-      cout << __func__ << " Downstream TS1 extent   [: " << pos2.z()-ts->endWallU2_halfLength() << "," << pos2.z() +ts->endWallU2_halfLength() << "]" << endl;
+      cout << __func__ << " Downstream TS1 extent   [: " << pos2.z()-ts->endWallU2_halfLength() 
+           << "," << pos2.z() +ts->endWallU2_halfLength() << "]" << endl;
     }
 
     // Build TS2
@@ -238,7 +264,8 @@ namespace mu2e {
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS2,TransportSolenoid::TSRadialPart::IN );
     std::array<double,5> ts2Cryo1Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
 
-    nestTorus("TS2InnerCryoShell",
+    tssName = "TS2InnerCryoShell";
+    nestTorus(tssName,
               ts2Cryo1Params,
               cryoMaterial,
               torsec->getRotation(),
@@ -249,10 +276,16 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
+
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS2,TransportSolenoid::TSRadialPart::OUT );
     std::array<double,5> ts2Cryo2Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
 
-    nestTorus("TS2OuterCryoShell",
+    tssName = "TS2OuterCryoShell";
+    nestTorus(tssName,
               ts2Cryo2Params,
               cryoMaterial,
               torsec->getRotation(),
@@ -262,6 +295,11 @@ namespace mu2e {
               G4Color::Red(),
 	      "TSCryo"
               );
+
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
 
     // Build TS3
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::IN );
@@ -276,7 +314,8 @@ namespace mu2e {
 	      "TSCryo"
               );
 
-    nestTubs( "TS3InnerCryoShell",
+    tssName = "TS3InnerCryoShell";
+    nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
                           strsec->getHalfLength() ),
@@ -289,8 +328,15 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
+
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::OUT );
-    nestTubs( "TS3OuterCryoShell",
+
+    tssName = "TS3OuterCryoShell";
+    nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
                           strsec->getHalfLength() ),
@@ -302,10 +348,15 @@ namespace mu2e {
               G4Color::Red(),
 	      "TSCryo"
               );
+
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS3  OffsetInMu2e : " << strsec->getGlobal()   << endl;
-      cout << __func__ << " TS3  rotatio      : " << strsec->getRotation() << endl;
+      cout << __func__ << " TS3  rotation     : " << strsec->getRotation() << endl;
     }
 
     // Build TS4
@@ -338,7 +389,8 @@ namespace mu2e {
 
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::IN );
     std::array<double,5> ts4Cryo1Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
-    nestTorus("TS4InnerCryoShell",
+    tssName = "TS4InnerCryoShell";
+    nestTorus(tssName,
               ts4Cryo1Params,
               cryoMaterial,
               torsec->getRotation(),
@@ -349,10 +401,15 @@ namespace mu2e {
 	      "TSCryo"
               );
 
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
+
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::OUT );
     std::array<double,5> ts4Cryo2Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
-
-    nestTorus("TS4OuterCryoShell",
+    tssName = "TS4OuterCryoShell";
+    nestTorus(tssName,
               ts4Cryo2Params,
               cryoMaterial,
               torsec->getRotation(),
@@ -362,6 +419,12 @@ namespace mu2e {
               G4Color::Red(),
 	      "TSCryo"
               );
+
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
+
     // Build TS5.
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::IN );    
     CLHEP::Hep3Vector globalVac5Position = CLHEP::Hep3Vector(strsec->getGlobal().x(),
@@ -379,7 +442,8 @@ namespace mu2e {
 	      "TSCryo"
               );
 
-    nestTubs( "TS5InnerCryoShell",
+    tssName = "TS5InnerCryoShell";
+    nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
                           strsec->getHalfLength() ),
@@ -392,8 +456,14 @@ namespace mu2e {
 	      "TSCryo"
               );
 
-    strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::OUT );  
-    nestTubs( "TS5OuterCryoShell",
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
+
+    strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::OUT );
+    tssName = "TS5OuterCryoShell";
+    nestTubs( tssName,
               TubsParams( strsec->rIn(),
                           strsec->rOut(),
                           strsec->getHalfLength() ),
@@ -406,7 +476,11 @@ namespace mu2e {
 	      "TSCryo"
               );
 
-    
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
+   
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS5  OffsetInMu2e : " << strsec->getGlobal()   << endl;
       cout << __func__ << " TS5  rotation     : " << strsec->getRotation() << endl;
@@ -486,7 +560,8 @@ namespace mu2e {
                             strsec->getGlobal().y(), 
                             strsec->getGlobal().z()+strsec->getHalfLength()-ts->endWallD_halfLength() );
   
-    nestTubs( "TS5DownstreamEndwall",
+    tssName = "TS5DownstreamEndwall";
+    nestTubs( tssName,
               TubsParams( ts->endWallD_rIn(),
                           ts->endWallD_rOut(),
                           ts->endWallD_halfLength() ),
@@ -498,6 +573,11 @@ namespace mu2e {
               G4Color::Red(),
 	      "TSCryo"
               );
+
+    verbosityLevel &&
+      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+                << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
+                << std::endl;
 
     if ( verbosityLevel ) {
       cout << __func__ << " Downstream TS5 endwall at: " << pos3 << endl;

@@ -208,61 +208,62 @@ public:
   TBitset*        HitMask        () { return &fHitMask; }
   TBitset*        ExpectedHitMask() { return &fExpectedHitMask; }
   
-  int    Number   () { return fNumber; }
-  int    NActive  () { return (fNActive      ) & 0xffff; }
-  int    NWrong   () { return (fNActive >> 16) & 0xffff; }
+  int    Number   () const { return fNumber; }
+  int    NActive  () const { return (fNActive      ) & 0xffff; }
+  int    NWrong   () const { return (fNActive >> 16) & 0xffff; }
   int    NClusters();
-  int    NMcStrawHits() { return fNMcStrawHits; }
-  int    NGoodMcHits () { return fNGoodMcHits; }
+  int    NMcStrawHits() const { return fNMcStrawHits; }
+  int    NGoodMcHits () const { return fNGoodMcHits; }
 
-  int    AlgorithmID() { return fAlgorithmID; }
-  int    BestAlg    () { return fAlgorithmID & 0xffff; }
-  int    AlgMask    () { return (fAlgorithmID >> 16) & 0xffff; }
+  int    AlgorithmID() const { return fAlgorithmID; }
+  int    BestAlg    () const { return fAlgorithmID & 0xffff; }
+  int    AlgMask    () const { return (fAlgorithmID >> 16) & 0xffff; }
 
-  float  T0       () { return fT0;    }
-  float  T0Err    () { return fT0Err; }
-  float  FitCons  () { return fFitCons; }
-  float  FitMomErr() { return fFitMomErr; }
-  float  TanDip   () { return fTanDip; }
+  float  T0       () const { return fT0;    }
+  float  T0Err    () const { return fT0Err; }
+  float  FitCons  () const { return fFitCons; }
+  float  FitMomErr() const { return fFitMomErr; }
+  float  TanDip   () const { return fTanDip; }
 
-  float  D0       () { return fD0; }
-  float  Z0       () { return fZ0; }
-  float  Dt       () { return fDt; }
-  float  Ep       () { return fEp; }
-  float  Dy       () { return fDy; }
-  float  Dz       () { return fDz; }
-  float  Chi2Dof  () { return fChi2/(fNActive-5+1.e-12) ; }
-  float  ClusterE () { return fClusterE;    }
+  float  D0       () const { return fD0; }
+  float  Z0       () const { return fZ0; }
+  float  Dt       () const { return fDt; }
+  float  Ep       () const { return fEp; }
+  float  Dy       () const { return fDy; }
+  float  Dz       () const { return fDz; }
+  float  Chi2Dof  () const { return fChi2/(NActive()-5+1.e-12) ; }
+  float  ClusterE () const { return fClusterE;    }
 
-  float  EleLogLHCal() { return fEleLogLHCal; }
-  float  MuoLogLHCal() { return fMuoLogLHCal; }
-  float  LogLHRCal  () { return fEleLogLHCal-fMuoLogLHCal; }
+  float  EleLogLHCal() const { return fEleLogLHCal; }
+  float  MuoLogLHCal() const { return fMuoLogLHCal; }
+  float  LogLHRCal  () const { return fEleLogLHCal-fMuoLogLHCal; }
 
-  float  RSlope   () { return fRSlope;    }
-  float  RSlopeErr() { return fRSlopeErr; }
-  float  XSlope   () { return fRSlope/fRSlopeErr; }
+  float  RSlope   () const { return fRSlope;    }
+  float  RSlopeErr() const { return fRSlopeErr; }
+  float  XSlope   () const { return fRSlope/fRSlopeErr; }
 
 					// track-only likelihood based on timing residuals
 
-  float  EleLogLHDeDx() { return fEleLogLHDeDx; }
-  float  MuoLogLHDeDx() { return fMuoLogLHDeDx; }
-  float  LogLHRDeDx  () { return fEleLogLHDeDx-fMuoLogLHDeDx; }
-  float  LogLHRXs    () { return fLogLHRXs; }
+  float  EleLogLHDeDx() const { return fEleLogLHDeDx; }
+  float  MuoLogLHDeDx() const { return fMuoLogLHDeDx; }
+  float  LogLHRDeDx  () const { return fEleLogLHDeDx-fMuoLogLHDeDx; }
+  float  LogLHRXs    () const { return fLogLHRXs; }
 
-  float  LogLHRTrk   () { return LogLHRXs()+LogLHRDeDx(); }
+  float  LogLHRTrk   () const { return LogLHRXs()+LogLHRDeDx(); }
 
-  TStnCluster*   Cluster() { return fCluster; }
+  TStnCluster*   Cluster() const { return fCluster; }
 
-  float  P () { return fP; }
-  float  Pt() { return fPt; }
-  Int_t  GetMomentum  (TLorentzVector* Momentum);
+  float  P () const { return fP; }
+  float  Pt() const { return fPt; }
+  Int_t  GetMomentum  (TLorentzVector* Momentum) ;
   
   KalRep*   GetKalRep() { return fKalRep[0]; }
   
-  float  Phi0 () { return fFloat[0];}
-  
-  void   SetNumber(int I ) { fNumber = I; }
-
+  float  Phi0 () const { return fFloat[0];}
+//-----------------------------------------------------------------------------
+// setters
+//-----------------------------------------------------------------------------
+  void   SetNumber      (int I ) { fNumber      = I ; }
   void   SetAlgorithmID (int ID) { fAlgorithmID = ID; }
 //-----------------------------------------------------------------------------
 // overloaded methods of TObject

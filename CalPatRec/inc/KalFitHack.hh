@@ -30,7 +30,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "CalPatRec/inc/CalTimePeak.hh"
-#include "CalPatRec/inc/Doublet.hh"
+#include "KalmanTests/inc/Doublet.hh"
 
 //ROOT
 #include "TStopwatch.h"
@@ -61,6 +61,7 @@ namespace mu2e {
     unsigned                    _maxweed;
     std::vector<double>         _hiterr;
     double                      _maxdriftpull;
+    fhicl::ParameterSet*        _darPset;         // parameter set for doublet ambig resolver
     std::vector<AmbigResolver*> _ambigresolver;
     bool                        _initt0;
     bool                        _updateT0;
@@ -70,19 +71,18 @@ namespace mu2e {
     int                         fSign[4][2];
     int                         _daveMode;
     std::vector<double>         _t0tol;
-    std::vector<Doublet>        fListOfDoublets;
+    //    std::vector<Doublet>        fListOfDoublets;
     TStopwatch*                 fStopwatch;       // = new TStopwatch();
     double                      _t0errfac;       // fudge factor for the calculated t0 error
     double                      _mint0doca;      // minimum (?) doca for t0 hits
     double                      _t0nsig;	        // # of sigma to include when selecting hits for t0
     double                      _dtoffset;       // track - luster time offset, ns
     double                      fScaleErrDoublet;
-    int                         fUseDoublets;
-    int                         fILoopUseDoublets;
+    //    int                         fUseDoublets;
     double                      fMinDriftDoublet;
     double                      fDeltaDriftDoublet;
+    double                      _maxDoubletChi2;
     double                      fSigmaSlope;
-    double                      fMaxDoubletChi2;
     std::string                 fMakeStrawHitModuleLabel;
 		                
     bool                        _removefailed;
@@ -91,12 +91,9 @@ namespace mu2e {
     TrkFitDirection             _fdir;
     std::vector<int>            _ambigstrategy;
     mutable BField*             _bfield;
-    int                         fNIter;
+    int                         _nIter;
     const CalTimePeak*          fTimePeak;
-    int                         fAmbigVec     [40000];
-    int                         fAmbigVecSlope[40000];
-    int                         fAnnealingStep;
-    int                         fDecisionMode; // 0:decision is not forced; 1:decision has to be made
+    int                         _annealingStep;
 
     const mu2e::PtrStepPointMCVectorCollection*  fListOfMCStrawHits;
 //-----------------------------------------------------------------------------
@@ -108,18 +105,16 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // accessors
 //-----------------------------------------------------------------------------
-    std::vector<Doublet>*  listOfDoublets() { return &fListOfDoublets; }
-    int                    NIter         () { return fNIter;           }
+    int  nIter       () { return _nIter        ; } 
+    int  maxIteration() { return _hiterr.size()-1; }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------
-    void setDecisionMode (int Mode) { fDecisionMode = Mode; }
-    void SetNIter        (int N   ) { fNIter        = N  ; }
+    void setNIter        (int N   ) { _nIter        = N  ; }
 
     void setStepPointMCVectorCollection(const mu2e::PtrStepPointMCVectorCollection* List) {
       fListOfMCStrawHits = List;
     }
-
 //-----------------------------------------------------------------------------
 // add a set of hits to an existing fit
 //-----------------------------------------------------------------------------
@@ -133,42 +128,29 @@ namespace mu2e {
 			  double                                       flt0,
 			  std::vector<TrkStrawHit*>::reverse_iterator& ilow ,
 			  std::vector<TrkStrawHit*>::iterator&         ihigh);
-//----------------------------------------------------------------------    
-// 2015-02-17 G.Pezzullo: search doublets in a given timepeak
-//-----------------------------------------------------------------------------
-    void          findDoublets(KalFitResult& KRes, DoubletCollection *DCol);
-//-----------------------------------------------------------------------------------------
-// 2015-02-20: G.Pezzu added function for calculataing the slope of the lines
-// tangent to two given circles
-//-----------------------------------------------------------------------------------------
-    void findLines(Hep3Vector A[2], double rb[2], double *Slopes);
 
-    const TrkSimpTraj* findTraj(std::vector<TrkStrawHit*> const& Hits, 
-				const KalRep*                    Krep) const  ;
+//     const TrkSimpTraj* findTraj(std::vector<TrkStrawHit*> const& Hits, 
+// 				const KalRep*                    Krep) const  ;
 
     bool fitable     (TrkDef const& tdef);
-    void fitIteration(KalFitResult& kres , int Iteration, CalTimePeak* TPeak=NULL);
+    void fitIteration(KalFitResult& kres , int Iteration, CalTimePeak* TPeak, int Final);
     void fitTrack    (KalFitResult& kres , CalTimePeak* TPeak=NULL);
     void initCaloT0  (CalTimePeak*  TPeak, TrkDef const& tdef, TrkT0& t0);
     void initT0      (TrkDef const& tdef , TrkT0& t0);
 //-----------------------------------------------------------------------------
 // main function: given a track definition, create a fit object from it
 //-----------------------------------------------------------------------------
-    virtual void makeTrack      (KalFitResult& kres, CalTimePeak* TPeak=NULL, int markDoubs=0);
-    void         markMultiplets (KalFitResult& Kres, DoubletCollection *dcol);
-    void         markDoublet    (KalFitResult& Kres, Doublet *doub, int index0, int index1);
+    virtual void makeTrack      (KalFitResult& kRes, CalTimePeak* TPeak=NULL);
 //---------------------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following function for printing the hits included in the track
 //----------------------------------------------------------------------------------------------
     void printHits       (KalFitResult& kres, const char* Caller);
 
-    void resolveSingleHit(KalFitResult& Kres, mu2e::TrkStrawHit* Hit);
-
     bool unweedHits      (KalFitResult& kres, double maxchi);
     void updateCalT0     (KalFitResult& kres, CalTimePeak* TPeak);
     void updateHitTimes  (KalFitResult& kres);
     bool updateT0        (KalFitResult& kres);
-    bool weedHits        (KalFitResult& kres);
+    bool weedHits        (KalFitResult& kres, int Iteration, int Final);
 
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;

@@ -1,13 +1,35 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
-# quick comments: reads signal MC and also background MC inputs with steppoints
-# so need to define input and 
+# defines templates
 #------------------------------------------------------------------------------
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
 #include "Stntuple/fcl/prolog.fcl"
+BEGIN_PROLOG
+
+  generatorSeq : [ generate, g4run, detectorFilter, protonTimeMap, muonTimeMap ]
+
+  hitmakerSeq  : [ MakeCaloReadoutHits, MakeCaloCrystalHits, makeSD, makeSH ]
+
+  calrecoSeq   : [ MakeCaloProtoCluster, MakeCaloCluster ]
+
+  trkpatrecSeq : [ FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, MergePatRec ]
+
+  calpatrecSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits, 
+		   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits , CalPatRec, MergePatRec]
+
+  allpatrecSeq : [ FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec,
+		   CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits, 
+		   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits , CalPatRec, MergePatRec ]
+
+  pidSeq       : [ TrkExtrapol, CaloMatching, ParticleID ]
+
+  stnmakerSeq  : [ InitStntuple, StntupleMaker, FillStntuple ]
+
+END_PROLOG
+
 #   #include "Stntuple/fcl/mixer_module_templates.fcl"
 
 #   process_name : GenMixRecoStn
@@ -129,6 +151,7 @@ physics : {
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
 	detectorFilter:     @local::FilterStepPointMomentum
+	EventFilter   :     @local::EventFilter
 #------------------------------------------------------------------------------
 # event display
 #------------------------------------------------------------------------------
@@ -145,19 +168,16 @@ physics : {
 #
 # MakeStereoHits also produces the StrawHitPosition collection
 #------------------------------------------------------------------------------
-    all : [generate, g4run
-	   , detectorFilter 
+    all : [generate
 #	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
-	   , protonTimeMap, muonTimeMap
-	   #
-	   , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
-	   # 
-	   , makeSD, makeSH
+	   , g4run, detectorFilter, protonTimeMap, muonTimeMap
+	   , makeSD, makeSH, MakeCaloReadoutHits, MakeCaloCrystalHits
+	   , MakeCaloProtoCluster, MakeCaloCluster
+#
 	   , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
 	   #
 	   , CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
-	   , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
-	   , CalPatRec
+	   , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits , CalPatRec
 	   #
 	   , MergePatRec
 	   #	  
@@ -166,83 +186,92 @@ physics : {
 	   , InitStntuple, StntupleMaker, FillStntuple
 	   #
 	   #	   , MuHitDisplay
+#
+	  , EventFilter
+	 ]
+
+    all1 : [generate
+	    , g4run, detectorFilter, protonTimeMap, muonTimeMap
+	    , makeSD, makeSH, MakeCaloReadoutHits, MakeCaloCrystalHits
+	    , MakeCaloProtoCluster, MakeCaloCluster
+#
+	    , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+	    #
+	    , MergePatRec
+	    #	  
+	    , TrkExtrapol, CaloMatching, ParticleID
+	    #
+	    , InitStntuple, StntupleMaker, FillStntuple
 	 ]
 
     display : [ generate, g4run
-	   , detectorFilter 
-#	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
-	   , protonTimeMap, muonTimeMap
-	   #
-	   , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
-	   # 
-	   , makeSD, makeSH
-	   , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-	   #
-	   , CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
-	   , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
-	   , CalPatRec
-	   #
-	   , MergePatRec
-	   #	  
-	   , TrkExtrapol, CaloMatching, ParticleID
-	   #
-	   , InitStntuple, StntupleMaker, FillStntuple
-	   #
+		, detectorFilter 
+		#	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
+		, protonTimeMap, muonTimeMap
+		#
+		, MakeCaloReadoutHits, MakeCaloCrystalHits, makeSD, makeSH
+		, MakeCaloProtoCluster, MakeCaloCluster
+		# 
+		, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
+		#
+		, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
+		, CalPatRecFlagStrawHits, CalPatRecFlagBkgHits , CalPatRec
+		#
+		, MergePatRec
+		#	  
+		, TrkExtrapol, CaloMatching, ParticleID
+		#
+		, InitStntuple, StntupleMaker, FillStntuple
+		#
 		, MuHitDisplay
 	 ]
 
-    mc : [generate, g4run
-#	  , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
-	  , protonTimeMap, muonTimeMap
-#
-	  , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
-	  , makeSD, makeSH
-	 ]
-#
-    reco      : [MakeCaloProtoCluster, MakeCaloCluster
-		 #
-		 , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-		 #
-		 , CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
-		 , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
-		 , CalPatRec
-		 #
-		 , MergePatRec
-		 #	  
-		 , TrkExtrapol, CaloMatching, ParticleID
-		 #
-		 , InitStntuple, StntupleMaker, FillStntuple
-		 ]
-#
-    reco_display  : [MakeCaloProtoCluster, MakeCaloCluster
-		     #
-		     , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-		     #
-		     , CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
-		     , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
-		     , CalPatRec
-		     #
-		     , MergePatRec
-		     #	  
-		     , TrkExtrapol, CaloMatching, ParticleID
-		     #
-		     , MuHitDisplay
-		 ]
-#
-    calpatrec : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits 
-		  , CalPatRecFlagStrawHits, CalPatRecFlagBkgHits 
-		  , CalPatRec
-		  , MergePatRec
-		 ]
-#
-    trkpatrec : [
-		 FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-#
-		 , MergePatRec
-		 , TrkExtrapol, CaloMatching, ParticleID
-		 , MuHitDisplay
-	 ]
+    gen       : [ generate, g4run, protonTimeMap, muonTimeMap ]
 
+    mc        : [ generate, g4run
+		  , protonTimeMap, muonTimeMap
+		  #
+		  , MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster
+		  , makeSD, makeSH
+		  #
+		  , EventFilter
+		 ]
+#
+    reco_allpatrec : [ @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq ]
+    reco_trkpatrec : [ @sequence::calrecoSeq, @sequence::trkpatrecSeq, @sequence::pidSeq ]
+    reco_calpatrec : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq ]
+#
+    allpatrec_reco_stnmaker : [ @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq ]
+    trkpatrec_reco_stnmaker : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq ]
+    calpatrec_reco_stnmaker : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq ]
+#------------------------------------------------------------------------------
+    gen_allpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
+				    @sequence::calrecoSeq, @sequence::allpatrecSeq,
+				    @sequence::pidSeq, @sequence::stnmakerSeq ]
+
+    gen_trkpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
+				    @sequence::calrecoSeq, @sequence::trkpatrecSeq,
+				    @sequence::pidSeq, @sequence::stnmakerSeq ]
+
+    gen_calpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
+				    @sequence::calrecoSeq, @sequence::calpatrecSeq, 
+				    @sequence::pidSeq, @sequence::stnmakerSeq ]
+#------------------------------------------------------------------------------
+# event display paths
+#------------------------------------------------------------------------------
+    allpatrec_reco_display      : [ @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
+    calpatrec_reco_display      : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
+    trkpatrec_reco_display      : [ @sequence::calrecoSeq, @sequence::trkpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
+#
+    gen_allpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
+				    @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
+
+    gen_calpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
+				    @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
+
+    gen_trkpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
+				    @sequence::calrecoSeq, @sequence::trkpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
+#------------------------------------------------------------------------------
     trigger_paths  : [all]
     #    out : [detectorOutput]
     out            : []

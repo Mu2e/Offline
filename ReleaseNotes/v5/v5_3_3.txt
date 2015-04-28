@@ -1,3 +1,11 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_3_3
+
+Two types of contributions, all undocumented here.
+
+1)
+Updates needed for the CD3c simulation campaign, mostly in scripts.
+In the end none of the discussed geometry changes were made.
+
+2)
+Continued work on analysis such as Stnutple, CRV event display
+

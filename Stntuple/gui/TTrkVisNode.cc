@@ -215,7 +215,7 @@ int TTrkVisNode::InitEvent() {
     }
     else          color = kBlack;
 //-----------------------------------------------------------------------------
-// add pointer to the hit to the straw 
+// add a pointer to the hit to the straw 
 //-----------------------------------------------------------------------------
     int mask = 0;
     if (intime          ) mask |= TEvdStrawHit::kInTimeBit;

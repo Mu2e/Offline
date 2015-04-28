@@ -834,8 +834,29 @@ void TStnTrack::Clear(Option_t* Opt) {
 }
 
 //_____________________________________________________________________________
-void TStnTrack::Print(Option_t* opt) const {
-  printf("TStnTrack::Print <WARNING> Not implemented yet\n");
+void TStnTrack::Print(Option_t* Option) const {
+
+  TString opt(Option);
+
+  opt.ToLower();
+					// "non-const *this" for printing purposes
+  TStnTrack* t = (TStnTrack*) this;
+
+  if ((opt == "") || (opt.Index("banner") >= 0)) {
+//-----------------------------------------------------------------------------
+// print banner
+//-----------------------------------------------------------------------------
+    printf("---------------------------------------------------------------------------------------------\n");
+    printf(" i  na nw   id_word      p      momerr     T0    T0Err       D0    TanDip  chi2/dof    fcon  \n");
+    printf("---------------------------------------------------------------------------------------------\n");
+  }
+
+  if ((opt == "") || (opt.Index("data") >= 0)) {
+    printf("%2i %3i %2i 0x%08x %8.3f %7.3f  %8.3f %6.3f  %8.3f %7.4f  %8.3f %8.3e \n",
+	   fNumber,t->NActive(),t->NWrong(), t->fIDWord,
+	   fP*fCharge, fFitMomErr, fT0, fT0Err, fD0, fTanDip, 
+	   t->Chi2Dof(),t->FitCons());
+  }
 }
 
 // } // end namespace

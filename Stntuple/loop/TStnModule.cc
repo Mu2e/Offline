@@ -75,6 +75,8 @@ TStnModule::TStnModule(const char* name, const char* title):TNamed(name,title)
 
   fListOfL3TrigNames = new TObjArray();
   fListOfL3Triggers  = new TObjArray();
+
+  for (int i=0; i<kNDebugBits; i++) fDebugBit[i] = 0;
 }
 
 //_____________________________________________________________________________

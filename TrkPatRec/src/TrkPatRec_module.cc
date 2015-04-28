@@ -396,6 +396,7 @@ namespace mu2e
 	      vector<hitIndex> misshits;
 	      findMissingHits(kalfit,misshits);
 	      if(misshits.size() > 0){
+		// 2015-04-12 P.Murat: assume this is a call corresponding to final=1
 		_kfit.addHits(kalfit,_shcol,misshits,_maxaddchi);
 	      }
 	    }

@@ -62,25 +62,25 @@ namespace mu2e {
     public:
 // construct from parameter set
 #ifndef __GCCXML__
-      explicit PanelAmbigResolver(fhicl::ParameterSet const&);
+    explicit PanelAmbigResolver(fhicl::ParameterSet const&, double ExtErr, int Iter);
 #endif/*__GCCXML__*/
-      virtual ~PanelAmbigResolver();
+    virtual ~PanelAmbigResolver();
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value.
-      virtual void resolveTrk(KalFitResult& kfit) const;
-    private:
+    virtual void resolveTrk(KalFitResult& kfit, int Final) const;
+  private:
 // resolve the ambiguity on a single panel
-      void resolvePanel(TSHV& phits, KalFitResult& kfit) const;
+    void resolvePanel(TSHV& phits, KalFitResult& kfit) const;
 // fill information about a given panel's track and hits
-      bool fillPanelInfo(TSHV const& phits, const KalRep* krep, PanelInfo& pinfo) const;
+    bool fillPanelInfo(TSHV const& phits, const KalRep* krep, PanelInfo& pinfo) const;
 // compute the panel result for a given ambiguity/activity state and the ionput t0
-      void fillResult(PanelInfo const& pinfo,TrkT0 const& t0, PanelResult& result) const;
+    void fillResult(PanelInfo const& pinfo,TrkT0 const& t0, PanelResult& result) const;
 // parameters
-      double _minsep; // minimum chisquared separation between best solution and the rest to consider a panel resolved
-      double _inactivepenalty; // chisquared penalty for an inactive hit
-      double _penaltyres; // resolution term to add to hits if ambiguity/activity can't be resolved
-      double _nullerr2; // additional error (squared) for hits with null ambiguity
-      TSHSSV _allowed; // allowed states of a TrkStrawHit
+    double _minsep; // minimum chisquared separation between best solution and the rest to consider a panel resolved
+    double _inactivepenalty; // chisquared penalty for an inactive hit
+    double _penaltyres; // resolution term to add to hits if ambiguity/activity can't be resolved
+    double _nullerr2; // additional error (squared) for hits with null ambiguity
+    TSHSSV _allowed; // allowed states of a TrkStrawHit
   };
 }
 

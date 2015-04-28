@@ -15,20 +15,26 @@
 namespace mu2e {
   typedef std::vector<TrkStrawHit*>::iterator TSHI;
 
-  FixedAmbigResolver::FixedAmbigResolver(fhicl::ParameterSet const& pset) : AmbigResolver(pset), 
-     _neutralize(pset.get<bool>("Neutralize",true))
+  FixedAmbigResolver::FixedAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter) : 
+    AmbigResolver(pset,ExtErr,Iter), 
+    _neutralize(pset.get<bool>("Neutralize",true))
  {}
 
   FixedAmbigResolver::~FixedAmbigResolver() {}
 
   void
-  FixedAmbigResolver::resolveTrk(KalFitResult& kfit) const {
+  FixedAmbigResolver::resolveTrk(KalFitResult& kfit, int Final) const {
+
+					// init hit errors
+    initHitErrors(kfit);
+
 // loop over all the hits
     TSHI ihit = kfit._hits.begin();
     while(ihit != kfit._hits.end()){
       TrkStrawHit* hit = *ihit++;
+      // set external error and don't allow the hit to auto-update its ambiguity
       hit->setAmbigUpdate(false);
-      if(_neutralize)hit->setAmbig(0);
+      if(_neutralize) hit->setAmbig(0);
     }
   }
 }

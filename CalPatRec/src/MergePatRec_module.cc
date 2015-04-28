@@ -169,13 +169,15 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // if > 50% of all hits are common, consider cpr and tpr to be the same
 // choose the one which has better fit consistency
+// 2015-04-13 P.Murat: leave the one with more hits
 //-----------------------------------------------------------------------------
 	//	if (fabs (cpr_mom.mag()-tpr_mom.mag()) < 5.) {
 	if (natc > (nac+nat)/4.) {
 
 	  mask = mask | (1 << AlgorithmID::CalPatRecBit);
 
-	  if (tfcons > cfcons) {
+	  //	  if (tfcons > cfcons) {
+	  if (nat > nac) {
 	    trackPtrs->push_back(tpr);
 	    best    = AlgorithmID::TrkPatRecBit; 
 	  }

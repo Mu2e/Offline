@@ -41,7 +41,7 @@ namespace mu2e
   {
   public:
 // define different ambiguity resolution strategies
-    enum ambigStrategy {fixedambig=0,pocaambig,hitambig,panelambig};
+    enum ambigStrategy {fixedambig=0,pocaambig=1,hitambig=2,panelambig=3,doubletambig=4};
 // parameter set should be passed in on construction
 #ifndef __GCCXML__
     explicit KalFit(fhicl::ParameterSet const&);
@@ -57,6 +57,10 @@ namespace mu2e
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
     BField const& bField() const;
+
+    int  decisionMode() { return _decisionMode ; }
+    void setDecisionMode (int Mode) { _decisionMode = Mode; }
+
   protected:
     // configuration parameters
     int _debug;
@@ -65,12 +69,13 @@ namespace mu2e
     unsigned _maxweed;
     std::vector<double> _herr;
     double _maxdriftpull;
+    fhicl::ParameterSet*        _darPset;         // 2015-04-12 P.Murat: parameter set for doublet ambig resolver
     std::vector<AmbigResolver*> _ambigresolver;
     bool _initt0;
     bool _updatet0;
     std::vector<double> _t0tol;
     bool fitable(TrkDef const& tdef);
-    bool weedHits(KalFitResult& kres);
+    bool weedHits(KalFitResult& kres, int Iteration, int Final);
     void initT0(TrkDef const& tdef, TrkT0& t0);
     bool updateT0(KalFitResult& kres);
     void fitTrack(KalFitResult& kres);
@@ -87,9 +92,14 @@ namespace mu2e
     TrkFitDirection _fdir;
     std::vector<int> _ambigstrategy;
     mutable BField* _bfield;
+    bool             _resolveAfterWeeding;  // 2015-04-12 P.Murat: temp flag to mark changes
+    int              _decisionMode; // 0:decision is not forced; 1:decision has to be made
     // helper functions
-
-    void fitIteration(KalFitResult& kres,size_t iiter);
+//-----------------------------------------------------------------------------
+// 'Final'=1: final iteration, may involve special decision making mode
+//        =0: do not force decision on the hit drift sign if not enough information
+//-----------------------------------------------------------------------------
+    void fitIteration(KalFitResult& kres,size_t iiter,int Final);
     void updateHitTimes(KalFitResult& kres);
     void findBoundingHits(std::vector<TrkStrawHit*>& hits, double flt0,
 	std::vector<TrkStrawHit*>::reverse_iterator& ilow,

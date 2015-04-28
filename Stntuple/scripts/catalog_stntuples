@@ -10,6 +10,8 @@
 # examples:
 # ---------
 # cdfopr/scripts/catalog_stntuples -h diskpool -d jbmmgh -b ewk/wtaunu -p jbmm
+#
+# if pattern is not defined, it is assumed to coinside with the dataset name
 #------------------------------------------------------------------------------
 require 'find'
 require 'fileutils'
@@ -55,7 +57,9 @@ $diskpool       = nil;
 
 #----------------------------- process the parsed options
 opts.each do |opt, arg|
-  if    (opt == "--dataset"       ) ; $dataset        = arg 
+  if    (opt == "--dataset"       ) then
+     $dataset        = arg 
+     if ($pattern == "") ; then $pattern = arg ; end
   elsif (opt == "--Directory"     ) ; $directory      = arg 
   elsif (opt == "--help"          ) ; usage()    
   elsif (opt == "--host"          ) ; $host           = arg 

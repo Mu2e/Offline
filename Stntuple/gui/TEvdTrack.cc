@@ -190,6 +190,7 @@ void TEvdTrack::PaintRZ(Option_t* Option) {
 // duplicate
 // panels 0 and 1 are at different Z
 //-----------------------------------------------------------------------------
+    double flip;
     for (int ich=0; ich<2; ich++) {
       const mu2e::Sector* panel = &dev->getSector(ich);
       nl = panel->nLayers();
@@ -205,10 +206,12 @@ void TEvdTrack::PaintRZ(Option_t* Option) {
       if (zwire[0] > zwire[1]) {
 	zt[1] = zwire[1];
 	zt[2] = zwire[0];
+	flip  = 1.;
       }
       else {
 	zt[1] = zwire[0];
 	zt[2] = zwire[1];
+	flip  = -1.;
       }
 					// z-step between the layers, want two more points
       zt[0] = zt[1]-3.;
@@ -233,10 +236,11 @@ void TEvdTrack::PaintRZ(Option_t* Option) {
 	  const mu2e::Sector* pp = &dev->getSector(2*ipp+ich);
 	  s = &pp->getLayer(0).getStraw(0);
 	  const Hep3Vector* wd = &s->getDirection();
-	  double r = tpos.x()*wd->y()-tpos.y()*wd->x();
+	  double r = (tpos.x()*wd->y()-tpos.y()*wd->x()); // *flip;
 	  if (r > rt[ipoint]) rt[ipoint] = r;
 	}
       }
+      pline.SetLineWidth(2);
       pline.PaintPolyLine(4,zt,rt);
     }
   }
