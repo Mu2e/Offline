@@ -119,6 +119,8 @@ namespace mu2e {
     // need to fix the normalization FIXME!!!
     Float_t PeakFitFunction::convolvedSinglePeak(const Double_t time, const Double_t sigma) const
     {
+      static const double norm = _strawele.currentToVoltage(StrawElectronics::adc)/
+	StrawElectronics::_pC_per_uA_ns;
       Float_t returnValue = 0.0;
 
       if (sigma <= 0.0)
@@ -130,7 +132,7 @@ namespace mu2e {
 	const Float_t a = std::max((time + sigma) / _strawele.fallTime(StrawElectronics::adc),0.0);
 	// Assuming that shaping time is pggositive and thus b is negative (if t - sigma is)
 	const Float_t b = std::max((time - sigma) / _strawele.fallTime(StrawElectronics::adc),0.0);
-	returnValue =  (-exp(-a)*(1+a) + exp(-b)*(1+b)) / (2.0 * sigma);
+	returnValue =  norm*(-exp(-a)*(1+a) + exp(-b)*(1+b)) / (2.0 * sigma);
 	// this value doesn't have the correct absolute normalization, FIXME!!!!
       }
       return returnValue;

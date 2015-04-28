@@ -10,7 +10,9 @@ namespace mu2e{
   namespace TrkChargeReco{
 
     struct PeakFitParams {
-      enum paramIndex : size_t {earlyCharge=0,pedestal,time,charge,width,lateShift,lateCharge,nParams};
+// CINT can't handle C++14 enum types FIXME!!!
+//      enum paramIndex : size_t {earlyCharge=1,pedestal,time,charge,width,lateShift,lateCharge,nParams};
+      enum paramIndex  {earlyCharge=0,pedestal,time,charge,width,lateShift,lateCharge,nParams};
       // explicit data members
       Float_t _earlyCharge; // decaying charge from earlier hit, units of pC
       Float_t _pedestal; // units of ADC counts (??)
@@ -52,10 +54,10 @@ namespace mu2e{
 	array[lateCharge]=_lateCharge;
       }
       // access fixed/free
-      bool isFree(paramIndex param) const { return (_free & (param<<1)) != 0; }
+      bool isFree(paramIndex param) const { return (_free & (1<<param)) != 0; }
       bool isFixed(paramIndex param) const { return !isFree(param);}
-      void fixParam(paramIndex param) { _free &= (~(param<<1)); } 
-      void freeParam(paramIndex param) { _free |= (param<<1); } 
+      void fixParam(paramIndex param) { _free &= (~(1<<param)); } 
+      void freeParam(paramIndex param) { _free |= (1<<param); } 
       // name the parameters
       static std::vector<std::string> _pnames;
       static std::string const& parameterName(paramIndex pindex) { return _pnames[pindex]; }
