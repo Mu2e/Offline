@@ -213,7 +213,7 @@ namespace mu2e {
       } else
 	makehit = false;
       if(makehit){
-// fit the ADC waveform to get the charge integral
+// fit the ADC waveform to get the charge
 	StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
 	// note: pedestal is being subtracting inside strawele, in the real experiment we will need
 	// per-channel version of this FIXME!!!
@@ -237,6 +237,7 @@ namespace mu2e {
 	if(mcdigis != 0){
 	  mchits->push_back((*mcdigis)[isd]);
 	}
+// diagnostics
 	if(_diagLevel > 1){
 	  const Straw& straw = tracker.getStraw( newhit.strawIndex() );
 	  _shid = SHID( straw.id() );

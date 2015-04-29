@@ -41,7 +41,7 @@ namespace mu2e{
       _charge(array[charge]),
       _width(array[width]),
       _lateShift(array[lateShift]),
-      _lateCharge(array[lateCharge]),
+      _lateCharge(array[lateCharge]),_free(0),
       _chi2(chi2), _ndf(ndf), _status(status) {}
 // convert to array for root fit
       void fillArray(Double_t array[] ) const {
