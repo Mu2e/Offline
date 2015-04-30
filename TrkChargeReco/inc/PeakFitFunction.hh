@@ -24,8 +24,8 @@ namespace mu2e {
       int _debug; // debug level
       unsigned _maxnit; // maximum # of iterations
       // decode and encode functions
-      bool hasOption(fitOption option) const { return (_options & (option<<1)) != 0; }
-      void setOption(fitOption option) { _options |= (option<<1); }
+      bool hasOption(fitOption option) const { return (_options & (1<<option)) != 0; }
+      void setOption(fitOption option) { _options |= (1<<option); }
       // default constructor zeros the options
       FitConfig() : _options(0), _debug(0), _maxnit(1) {}
       // construct from a vector of options

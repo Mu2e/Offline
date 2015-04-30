@@ -30,7 +30,9 @@
 #include "TrkChargeReco/inc/PeakFit.hh"
 #include "TrkChargeReco/inc/PeakFitRoot.hh"
 #include "TrkChargeReco/inc/PeakFitFunction.hh"
+#include "TrackerMC/inc/SHInfo.hh"
 //CLHEP
+#include "CLHEP/Vector/ThreeVector.h"
 // root 
 #include "TMath.h"
 #include "TFile.h"
@@ -46,14 +48,14 @@
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 
 using namespace std;
+using namespace CLHEP;
 namespace mu2e {
 
   class StrawHitsFromStrawDigis : public art::EDProducer {
 
   public:
     explicit StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset);
-    // Accept compiler written d'tor.
-
+    virtual ~StrawHitsFromStrawDigis(); 
     virtual void beginJob();
     virtual void beginRun( art::Run& run );
     virtual void produce( art::Event& e);
@@ -66,25 +68,28 @@ namespace mu2e {
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
     double _maxdt; // maximum time difference between end times
     bool _singledigi; // turn single-end digitizations into hits
+    bool _sumADC;
     bool _truncateADC; // model ADC truncation
     bool _floatPedestal; // float pedestal in fit
     bool _floatWidth; // _float width in fit
     bool _earlyPeak, _latePeak, _findPeaks; // additional peak finding
 // Diagnostics level.
     int _printLevel, _diagLevel, _debugLevel;
-// Diagnostics
-    TTree* _shdiag;
-    Int_t _shdevice, _shsector, _shlayer, _shstraw, _shqstat;
-    Float_t _shq, _shqt, _shqchi2;
  // fit option
-   std::string _peakFitOption; // option flag for root fit
-    // Limit on number of events for which there will be full printout.
-    int _maxFullPrint;
-
+    string _peakFitOption; // option flag for root fit
+    unsigned _maxFitIter; //
     // Name of the StrawDigi collection
-    std::string _strawDigis;
+    string _strawDigis;
     ConditionsHandle<StrawElectronics> _strawele; // models of straw response to stimuli
     ConditionsHandle<StrawPhysics> _strawphys; // models of straw response to stimuli
+    TrkChargeReco::PeakFit *_pfit; // peak fitter
+// Diagnostics
+    TTree* _shdiag;
+    SHID _shid; // strawhit ID
+    TrkChargeReco::PeakFitParams _peakfit; // result from peak fit
+    Float_t _edep, _time, _dt;
+    SHMCInfo _shmcinfo; // mc truth info (if available)
+    void fillDiagMC(Straw const& straw, StrawDigiMC const& mcdigi);
   };
 
   StrawHitsFromStrawDigis::StrawHitsFromStrawDigis(fhicl::ParameterSet const& pset) :
@@ -92,6 +97,7 @@ namespace mu2e {
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
     _maxdt(pset.get<double>("MaxTimeDifference",8.0)), // nsec
     _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
+    _sumADC(pset.get<bool>("SumADC",true)), 
     _truncateADC(pset.get<bool>("TruncateADC",true)), 
     _floatPedestal(pset.get<bool>("FloatPedestal",false)), 
     _floatWidth(pset.get<bool>("FloatWidth",false)), 
@@ -101,8 +107,10 @@ namespace mu2e {
     _printLevel(pset.get<int>("printLevel",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _debugLevel(pset.get<int>("debugLevel",0)),
-    _peakFitOption(pset.get<std::string>("PeakFitOption","QNS")),
-    _strawDigis(pset.get<string>("StrawDigis","makeSD"))
+    _peakFitOption(pset.get<string>("PeakFitOption","QNS")),
+    _maxFitIter(pset.get<unsigned>("MaxFitIterations",1)),
+    _strawDigis(pset.get<string>("StrawDigis","makeSD")),
+    _pfit(0)
   {
     produces<StrawHitCollection>();
     produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
@@ -110,21 +118,40 @@ namespace mu2e {
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis constructor " << endl;
   }
 
+  StrawHitsFromStrawDigis::~StrawHitsFromStrawDigis() { delete _pfit; }
+
   void StrawHitsFromStrawDigis::beginJob(){
-    if(_diagLevel > 0){
+    if(_diagLevel > 1){
       art::ServiceHandle<art::TFileService> tfs;
-      _shdiag =tfs->make<TTree>("swdiag","StrawHit diagnostics");
-      _shdiag->Branch("device",&_shdevice,"device/I");
-      _shdiag->Branch("sector",&_shsector,"sector/I");
-      _shdiag->Branch("layer",&_shlayer,"layer/I");
-      _shdiag->Branch("straw",&_shstraw,"straw/I");
-      _shdiag->Branch("charge",&_shq,"charge/I");
-      _shdiag->Branch("qstat",&_shqstat,"qstat/I");
-      _shdiag->Branch("qchi2",&_shqchi2,"qchi2/F");
+      _shdiag =tfs->make<TTree>("shdiag","StrawHit diagnostics");
+      _shdiag->Branch("shid",&_shid); // strawhit ID
+      _shdiag->Branch("peakfit",&_peakfit); // ADC waveform fit information
+      _shdiag->Branch("edep",&_edep,"edep/F"); // reconstructed deposited energy
+      _shdiag->Branch("time",&_time,"time/F"); // reconstructed deposited energy
+      _shdiag->Branch("dt",&_dt,"dt/F"); // reconstructed deposited energy
+      _shdiag->Branch("mcinfo",&_shmcinfo); // MC truth info
     }
   }
 
   void StrawHitsFromStrawDigis::beginRun( art::Run& run ){
+// create and configure the ADC waveform charge extraction fit
+    TrkChargeReco::FitConfig myconfig;
+    myconfig._debug = _debugLevel;
+    myconfig._maxnit = _maxFitIter;
+    if(_floatWidth)myconfig.setOption(TrkChargeReco::FitConfig::floatWidth);
+    if(_floatPedestal)myconfig.setOption(TrkChargeReco::FitConfig::floatPedestal);
+    if(_truncateADC)myconfig.setOption(TrkChargeReco::FitConfig::truncateADC);
+    if(_earlyPeak)myconfig.setOption(TrkChargeReco::FitConfig::earlyPeak);
+    if(_latePeak)myconfig.setOption(TrkChargeReco::FitConfig::latePeak);
+    if(_findPeaks)myconfig.setOption(TrkChargeReco::FitConfig::findPeaks);
+    _strawele = ConditionsHandle<StrawElectronics>("ignored");
+    if(_sumADC)
+      _pfit = new TrkChargeReco::PeakFit(*_strawele);
+    else
+      _pfit = new TrkChargeReco::PeakFitRoot(*_strawele,myconfig,_peakFitOption);
+
+    if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis beginRun " << endl;
+
   }
 
   void StrawHitsFromStrawDigis::produce(art::Event& event) {
@@ -138,18 +165,7 @@ namespace mu2e {
     unique_ptr<StrawDigiMCCollection> mchits(new StrawDigiMCCollection);
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     _mbtime = accPar->deBuncherPeriod;
-
-    // create the peak fit
-//    TrkChargeReco::PeakFit pfit(*_strawele);
-    TrkChargeReco::FitConfig myconfig;
-    myconfig._debug = _debugLevel;
-    if(_floatWidth)myconfig.setOption(TrkChargeReco::FitConfig::floatWidth);
-    if(_floatPedestal)myconfig.setOption(TrkChargeReco::FitConfig::floatPedestal);
-    if(_truncateADC)myconfig.setOption(TrkChargeReco::FitConfig::truncateADC);
-    if(_earlyPeak)myconfig.setOption(TrkChargeReco::FitConfig::earlyPeak);
-    if(_latePeak)myconfig.setOption(TrkChargeReco::FitConfig::latePeak);
-    if(_findPeaks)myconfig.setOption(TrkChargeReco::FitConfig::findPeaks);
-    TrkChargeReco::PeakFitRoot pfit(*_strawele,myconfig,_peakFitOption);
+    const Tracker& tracker = getTrackerOrThrow();
 
     // find the digis
     art::Handle<mu2e::StrawDigiCollection> strawdigisH; 
@@ -197,12 +213,12 @@ namespace mu2e {
       } else
 	makehit = false;
       if(makehit){
-// fit the ADC waveform to get the charge integral
+// fit the ADC waveform to get the charge
 	StrawDigi::ADCWaveform const& adc = digi.adcWaveform();
 	// note: pedestal is being subtracting inside strawele, in the real experiment we will need
 	// per-channel version of this FIXME!!!
 	TrkChargeReco::PeakFitParams params;
-	pfit.process(adc,params);
+	_pfit->process(adc,params);
 	if(_debugLevel > 0){
 	  cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
 	  << " Fit charge = " << params._charge << " Fit time = " << params._time << endl;
@@ -221,12 +237,56 @@ namespace mu2e {
 	if(mcdigis != 0){
 	  mchits->push_back((*mcdigis)[isd]);
 	}
+// diagnostics
+	if(_diagLevel > 1){
+	  const Straw& straw = tracker.getStraw( newhit.strawIndex() );
+	  _shid = SHID( straw.id() );
+	  _peakfit = params;
+	  _edep = newhit.energyDep();
+	  _time = newhit.time();
+	  _dt = newhit.dt();
+	  if(mcdigis != 0) fillDiagMC( straw, (*mcdigis)[isd]);
+	  _shdiag->Fill();
+	}
       }
     }
 // put objects into event
-    event.put(std::move(strawHits));
-    if(mcptrdigis != 0)event.put(std::move(mcptrHits),"StrawHitMCPtr");
+    event.put(move(strawHits));
+    if(mcptrdigis != 0)event.put(move(mcptrHits),"StrawHitMCPtr");
     if(mchits != 0)event.put(move(mchits),"StrawHitMC");
+  }
+
+  void StrawHitsFromStrawDigis::fillDiagMC(Straw const& straw,
+    StrawDigiMC const& mcdigi) {
+    _shmcinfo._energy = mcdigi.energySum();
+    _shmcinfo._trigenergy = mcdigi.triggerEnergySum();
+// sum the energy from the explicit trigger particle, and find it's releationship 
+    StrawDigi::TDCChannel itdc = StrawDigi::zero;
+    if(!mcdigi.hasTDC(itdc)) itdc = StrawDigi::one;
+    art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+    art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+    _shmcinfo._xtalk = straw.index() != spmcp->strawIndex();
+    _shmcinfo._threshenergy = 0.0;
+    for(auto imcs = mcdigi.stepPointMCs().begin(); imcs!= mcdigi.stepPointMCs().end(); ++ imcs){
+    // if the simParticle for this step is the same as the one which fired the discrim, add the energy
+      if( (*imcs)->simParticle() == spp )
+	_shmcinfo._threshenergy += (*imcs)->eDep();
+    }
+    _shmcinfo._pdg = spp->pdgId();
+    _shmcinfo._proc = spp->creationCode();
+    if(spp->genParticle().isNonnull())
+      _shmcinfo._gen = spp->genParticle()->generatorId().id();
+    else
+      _shmcinfo._gen=-1;
+    Hep3Vector mcsep = spmcp->position()-straw.getMidPoint();
+    Hep3Vector dir = spmcp->momentum().unit();
+    _shmcinfo._mom = spmcp->momentum().mag();
+    Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
+    double dperp = mcperp.dot(mcsep);
+    _shmcinfo._dperp = fabs(dperp);
+    _shmcinfo._ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
+    _shmcinfo._len = mcsep.dot(straw.getDirection());
+
   }
 }
 using mu2e::StrawHitsFromStrawDigis;

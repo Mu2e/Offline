@@ -49,6 +49,15 @@ namespace mu2e {
       fitresult->Chi2(),
       fitresult->Ndf(),
       fitresult->Status());
+    // set fix/free
+    for(size_t ipar=0;ipar < _peakfit.fitModelTF1()->GetNpar();++ipar){
+      Double_t parmin, parmax;
+      _peakfit.fitModelTF1()->GetParLimits(ipar,parmin,parmax);
+      if(parmin == parmax)
+	fit.fixParam((TrkChargeReco::PeakFitParams::paramIndex)ipar);
+      else
+	fit.freeParam((TrkChargeReco::PeakFitParams::paramIndex)ipar);
+    }
   }
 
   void PeakFitRoot::adcWaveform2TGraphErrors(StrawElectronics::ADCWaveform const& adcData, TGraphErrors &fitData) const{
