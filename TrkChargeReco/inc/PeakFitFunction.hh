@@ -53,6 +53,15 @@ namespace mu2e {
       void resetTF1(TF1& rootPeakFitFunction) const;
 // override root base class function
       Double_t operator()(Double_t* x, Double_t* p);
+// Model for early peak approximated as exponential decay
+      Float_t earlyPeak(const Double_t t,const Double_t charge) const;
+      // Model for a unconvolved single peak
+      // Shaping power set to 1
+      Float_t unConvolvedSinglePeak(const Double_t t) const;
+      // Convolution of single peak with uniform distribution
+      Float_t convolvedSinglePeak(const Double_t t, const Double_t sigma) const;
+      // Returns the truncated response in ADC units
+      void truncateResponse(Float_t& currentFunctionValue) const;
       private:
 // provide the explicit function for this model
       typedef std::function<Double_t(Double_t,PeakFitParams const&)> FitFunction;
@@ -65,16 +74,6 @@ namespace mu2e {
       TF1* _tf1; // root fitting object
 // Helper functions, used in the above
       void createTF1();
-      // Model for early peak approximated as exponential decay
-      Float_t earlyPeak(const Double_t t,const Double_t charge) const;
-      // Model for a unconvolved single peak
-      // Shaping power set to 1
-      Float_t unConvolvedSinglePeak(const Double_t t) const;
-      // Convolution of single peak with uniform distribution
-      Float_t convolvedSinglePeak(const Double_t t, const Double_t sigma) const;
-      // Returns the truncated response in ADC units
-      void truncateResponse(Float_t& currentFunctionValue) const;
-
 
     }; // PeakFitFunction class
   } //TrkChargeReco namespace

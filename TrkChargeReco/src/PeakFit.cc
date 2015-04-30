@@ -26,7 +26,7 @@ namespace mu2e {
       fit._charge = charge;
       fit._width = 7.0; // this is a crude value, should compute something FIXME!!!
       fit._lateShift = 50.0; // this is a crude value, should compute something FIXME!!!
-      fit._lateCharge = 0.5*charge; // this is a crude value, should compute something FIXME!!!
+      fit._lateCharge = 0.0; //0.5*charge; this is a crude value, should compute something FIXME!!!
       // set which parameters were free
       fit.freeParam(PeakFitParams::charge);
     }

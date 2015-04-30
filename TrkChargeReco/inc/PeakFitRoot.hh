@@ -30,7 +30,7 @@ namespace mu2e {
 	PeakFitRoot(StrawElectronics const& strawele, FitConfig const& config,std::string fitoptions="QNEX0S");
       	// Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT
 	void adcWaveform2TGraphErrors(StrawElectronics::ADCWaveform const& adcData, TGraphErrors &fitData) const;
-      private:
+      protected:
 	PeakFitFunction _peakfit;
 	FitConfig _config;
 	std::string _fitoptions;

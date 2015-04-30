@@ -30,6 +30,7 @@
 #include "TrkChargeReco/inc/PeakFit.hh"
 #include "TrkChargeReco/inc/PeakFitRoot.hh"
 #include "TrkChargeReco/inc/PeakFitFunction.hh"
+#include "TrkChargeReco/inc/ComboPeakFitRoot.hh"
 #include "TrackerMC/inc/SHInfo.hh"
 //CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
@@ -99,8 +100,8 @@ namespace mu2e {
     _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
     _sumADC(pset.get<bool>("SumADC",true)), 
     _truncateADC(pset.get<bool>("TruncateADC",true)), 
-    _floatPedestal(pset.get<bool>("FloatPedestal",false)), 
-    _floatWidth(pset.get<bool>("FloatWidth",false)), 
+    _floatPedestal(pset.get<bool>("FloatPedestal",true)), 
+    _floatWidth(pset.get<bool>("FloatWidth",true)), 
     _earlyPeak(pset.get<bool>("EarlyPeak",false)),
     _latePeak(pset.get<bool>("LatePeak",false)),
     _findPeaks(pset.get<bool>("FindPeaks",false)),
@@ -148,7 +149,8 @@ namespace mu2e {
     if(_sumADC)
       _pfit = new TrkChargeReco::PeakFit(*_strawele);
     else
-      _pfit = new TrkChargeReco::PeakFitRoot(*_strawele,myconfig,_peakFitOption);
+	  _pfit = new TrkChargeReco::ComboPeakFitRoot(*_strawele,myconfig,_peakFitOption);	
+      //_pfit = new TrkChargeReco::PeakFitRoot(*_strawele,myconfig,_peakFitOption);
 
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis beginRun " << endl;
 
