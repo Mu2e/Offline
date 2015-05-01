@@ -98,17 +98,17 @@ namespace mu2e {
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
     _maxdt(pset.get<double>("MaxTimeDifference",8.0)), // nsec
     _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
-    _sumADC(pset.get<bool>("SumADC",true)), 
+    _sumADC(pset.get<bool>("SumADC",false)), 
     _truncateADC(pset.get<bool>("TruncateADC",true)), 
     _floatPedestal(pset.get<bool>("FloatPedestal",true)), 
     _floatWidth(pset.get<bool>("FloatWidth",true)), 
     _earlyPeak(pset.get<bool>("EarlyPeak",false)),
     _latePeak(pset.get<bool>("LatePeak",false)),
-    _findPeaks(pset.get<bool>("FindPeaks",false)),
+    _findPeaks(pset.get<bool>("FindPeaks",true)),
     _printLevel(pset.get<int>("printLevel",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _debugLevel(pset.get<int>("debugLevel",0)),
-    _peakFitOption(pset.get<string>("PeakFitOption","QNS")),
+    _peakFitOption(pset.get<string>("PeakFitOption","QNSEX0B")),
     _maxFitIter(pset.get<unsigned>("MaxFitIterations",1)),
     _strawDigis(pset.get<string>("StrawDigis","makeSD")),
     _pfit(0)
@@ -148,12 +148,14 @@ namespace mu2e {
     _strawele = ConditionsHandle<StrawElectronics>("ignored");
     if(_sumADC)
       _pfit = new TrkChargeReco::PeakFit(*_strawele);
-    else
-	  _pfit = new TrkChargeReco::ComboPeakFitRoot(*_strawele,myconfig,_peakFitOption);	
-      //_pfit = new TrkChargeReco::PeakFitRoot(*_strawele,myconfig,_peakFitOption);
+    else {
+      if(_findPeaks)
+	_pfit = new TrkChargeReco::ComboPeakFitRoot(*_strawele,myconfig,_peakFitOption);
+      else
+	_pfit = new TrkChargeReco::PeakFitRoot(*_strawele,myconfig,_peakFitOption);
+    }
 
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis beginRun " << endl;
-
   }
 
   void StrawHitsFromStrawDigis::produce(art::Event& event) {
@@ -224,7 +226,6 @@ namespace mu2e {
 	if(_debugLevel > 0){
 	  cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
 	  << " Fit charge = " << params._charge << " Fit time = " << params._time << endl;
-
 	}
 	// use time division to correct for attenuation FIXME!!
 	// the gain should come from a straw-dependent database FIXME!!
@@ -269,11 +270,14 @@ namespace mu2e {
     art::Ptr<SimParticle> const& spp = spmcp->simParticle();
     _shmcinfo._xtalk = straw.index() != spmcp->strawIndex();
     _shmcinfo._threshenergy = 0.0;
+    std::set<art::Ptr<SimParticle> > spptrs; // set of unique particles contributing to this hit
     for(auto imcs = mcdigi.stepPointMCs().begin(); imcs!= mcdigi.stepPointMCs().end(); ++ imcs){
     // if the simParticle for this step is the same as the one which fired the discrim, add the energy
       if( (*imcs)->simParticle() == spp )
 	_shmcinfo._threshenergy += (*imcs)->eDep();
+      spptrs.insert((*imcs)->simParticle()); 
     }
+    _shmcinfo._nmcpart = spptrs.size();
     _shmcinfo._pdg = spp->pdgId();
     _shmcinfo._proc = spp->creationCode();
     if(spp->genParticle().isNonnull())

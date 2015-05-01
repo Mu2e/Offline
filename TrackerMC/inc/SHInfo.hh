@@ -15,7 +15,7 @@ namespace mu2e {
 
   struct SHMCInfo {
     Float_t _energy,_trigenergy, _threshenergy;
-    Int_t _pdg, _proc, _gen;
+    Int_t _pdg, _proc, _gen, _nmcpart;
     Float_t _mom, _dperp, _len;
     Int_t _ambig;
     Bool_t _xtalk;

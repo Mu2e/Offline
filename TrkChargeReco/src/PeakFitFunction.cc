@@ -68,12 +68,8 @@ namespace mu2e {
      // decide which parameters are fixed and which are free, and initialize the dormant parameters
       //
       //  No early peak: fix the early charge to 0
-      if(!_fitConfig.hasOption(FitConfig::earlyPeak)){
+      if(!_fitConfig.hasOption(FitConfig::earlyPeak))
 	_tf1->FixParameter(PeakFitParams::earlyCharge,0.0);
-      } else {
-	_tf1->SetParError(PeakFitParams::earlyCharge,0.1);
-	_tf1->SetParLimits(PeakFitParams::earlyCharge,0.0001,1.0);
-      }
       //no floating pedestal: fix the value to what strawelectronics says
       if(!_fitConfig.hasOption(FitConfig::floatPedestal))
 	_tf1->FixParameter(PeakFitParams::pedestal,_strawele.ADCPedestal());
@@ -86,10 +82,22 @@ namespace mu2e {
 	_tf1->FixParameter(PeakFitParams::lateCharge,0.0);
       }
       // time and charge (of the main peak) are ALWAYS left as free parameters
+      // set parameter errors and limits
       _tf1->SetParError(PeakFitParams::charge,0.01);
       _tf1->SetParError(PeakFitParams::time,5.0);
-      _tf1->SetParLimits(PeakFitParams::charge,0.001,1.0);
+      _tf1->SetParError(PeakFitParams::earlyCharge,0.1);
+      _tf1->SetParLimits(PeakFitParams::charge,0.0,10.0);
       _tf1->SetParLimits(PeakFitParams::time,0.0,80.0);
+      _tf1->SetParLimits(PeakFitParams::earlyCharge,0.0,1.0);
+      _tf1->SetParLimits(PeakFitParams::lateShift,20.0,70.0);
+      _tf1->SetParLimits(PeakFitParams::lateCharge,0.0,10.0);
+// limit the width to be > 0
+      _tf1->SetParLimits(PeakFitParams::width,0.0,30.0);
+// limit the pedestal to +- 5 sigma noise
+      double pednoise =_strawele.analogNoise(StrawElectronics::adc)/_strawele.adcLSB();
+      double pedmin = std::max(0.0,_strawele.ADCPedestal()-5.0*pednoise);
+      double pedmax = _strawele.ADCPedestal()+5.0*pednoise;
+      _tf1->SetParLimits(PeakFitParams::pedestal,pedmin,pedmax);
     }
 
     // model charge draining from an earlier hit.  Only the exponential portion should remain
