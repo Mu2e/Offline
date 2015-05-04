@@ -25,6 +25,8 @@
 
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
+#include "KalmanTests/inc/KalFitResult.hh"
+#include "KalmanTests/inc/Doublet.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 
@@ -124,7 +126,8 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   static int initialized(0);
   
   int                       ntrk, ev_number, rn_number;
-  const KalRep              *krep;  
+  const KalRep              *krep;
+  mu2e::KalFitResult        *kf_result;
   double                    h1_fltlen, hn_fltlen, entlen, fitmom_err;
   TStnTrack*                track;
   TStnTrackBlock            *data;   
@@ -141,6 +144,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   const mu2e::StrawHitCollection*          list_of_straw_hits         (0);
   const mu2e::TrkToCaloExtrapolCollection* list_of_extrapolated_tracks(0);
   const mu2e::PIDProductCollection*        list_of_pidp               (0);
+  mu2e::KalFitResultCollection*            list_of_kfres              (0);
 
   char   algs_module_label[100], algs_description[100];
   char   krep_module_label[100], krep_description[100];
@@ -267,6 +271,13 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     if (pidpHandle.isValid()) list_of_pidp = pidpHandle.product();
   }
 
+  art::Handle<mu2e::KalFitResultCollection> tkr_h;
+   if (krep_module_label[0] != 0) {
+    if (krep_description[0] == 0) AnEvent->getByLabel(krep_module_label,tkr_h);
+    else                          AnEvent->getByLabel(krep_module_label,krep_description, tkr_h);
+    list_of_kfres = (mu2e::KalFitResultCollection*) tkr_h.product();
+  }
+
   art::ServiceHandle<mu2e::GeometryService> geom;
 
   const mu2e::AlgorithmID*  alg_id;
@@ -284,6 +295,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   for (int itrk=0; itrk<ntrk; itrk++) {
     track          = data->NewTrack();
     krep           = list_of_kreps->at(itrk).get();
+    kf_result      = &list_of_kfres->at(itrk);
 //-----------------------------------------------------------------------------
 // track-only-based particle ID, initialization ahs already happened in the constructor
 //-----------------------------------------------------------------------------
@@ -393,7 +405,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
       track->fNHPerStation[j] = 0;
     }
     
-    int     loc, ipart, nhits, n_straw_hits, found; // , pdg_code;
+    int     loc, ipart, nhits, n_straw_hits, found, ntrkhits(0), nhitsnoambig(0); // , pdg_code;
     int     id(-1),  npart(0), part_pdg_code[100], part_nh[100], part_id[100];
     int     nwrong = 0;
     double  mcdoca;
@@ -417,6 +429,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
       s_hit0 = &list_of_straw_hits->at(0);
 
       for (auto it=hot_list->begin(); it<hot_list->end(); it++) {
+	++ntrkhits;
 	hit   = (const mu2e::TrkStrawHit*) &(*it);
 	straw = &hit->straw();
 	s_hit = &hit->strawHit();
@@ -449,6 +462,9 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 //-----------------------------------------------------------------------------
 	      if (hit->ambig()*mcdoca < 0) {
 		nwrong += 1;
+	      }
+	      if (hit->ambig()       == 0){
+		++nhitsnoambig;
 	      }
 	    }
 	  }
@@ -493,10 +509,50 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 	track->fHitMask.SetBit(bit,1);
       }
     }
+
+//-----------------------------------------------------------------------------
+// number of total hits associated with the track
+//-----------------------------------------------------------------------------
+    track->fNHits     = ntrkhits;
+
 //-----------------------------------------------------------------------------
 // defined bit-packed fNActive word
 //-----------------------------------------------------------------------------
     track->fNActive   = krep->nActive() | (nwrong << 16);
+    
+
+    
+    double             dsl;
+    mu2e::Doublet*           d;
+    const mu2e::TrkStrawHit* dhit [2];
+    int                layer[2], nd, nd_tot(0), nd_os(0), nd_ss(0), ns;
+    
+    std::vector<mu2e::Doublet>* list_of_doublets = &kf_result->_listOfDoublets;
+    nd = list_of_doublets->size();
+
+    for (int i=0; i<nd; i++) {
+      d  = &list_of_doublets->at(i);
+      ns = d->fNstrawHits;
+					
+      if (ns > 1) { 
+	nd_tot += 1;
+	if (d->fOs == 0) nd_os += 1;
+	else             nd_ss += 1;
+      }
+
+      if (ns != 2)                                          continue;
+
+      for (int i=0; i<2; i++) {
+	dhit  [i] = d->fHit[i];
+	layer [i] = dhit[i]->straw().id().getLayer();
+      }
+      
+    }
+
+    track->fNDoublets = nd_os | (nd_ss << 8) | (nhitsnoambig << 16);
+
+
+
 //-----------------------------------------------------------------------------
 // given track parameters, build the expected hit mask
 //-----------------------------------------------------------------------------
