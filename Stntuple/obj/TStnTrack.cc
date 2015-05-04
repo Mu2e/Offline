@@ -682,8 +682,8 @@ void TStnTrack::Streamer(TBuffer& R__b) {
     else if (R__v == 6) ReadV6(R__b);
     else {
 //-----------------------------------------------------------------------------
-// current version: v8 
-// I/O for V7 is exactly the same
+// current version: v9 
+// I/O for V7,v8 is exactly the same
 //-----------------------------------------------------------------------------
       fMomentum.Streamer(R__b);
       fHitMask.Streamer(R__b);
