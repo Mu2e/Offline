@@ -15,14 +15,14 @@ vector<string> crs.sectorNames = {
                        "T2",  //10
                        "T3",  //11
                        "T4",  //12
-                       "D1",  //13
-                       "D2",  //14
-                       "D3",  //15
-                       "D4",  //16
-                       "U",   //17
-                       "C1",  //18
-                       "C2",  //19
-                       "C3"   //20
+                       "D",   //13
+                       "U",   //14
+                       "C1",  //15
+                       "C2",  //16
+                       "C3",  //17
+                       "D2",  //18
+                       "D3",  //19
+                       "D4"   //20
                       };
 
 double          crs.scintillatorBarLengthR1      =  4500; //0
@@ -38,14 +38,14 @@ double          crs.scintillatorBarLengthT1      =  6600; //9
 double          crs.scintillatorBarLengthT2      =  5600; //10
 double          crs.scintillatorBarLengthT3      =  5600; //11
 double          crs.scintillatorBarLengthT4      =  5600; //12
-double          crs.scintillatorBarLengthD1      =  5600; //13
-double          crs.scintillatorBarLengthD2      =  2300; //14
-double          crs.scintillatorBarLengthD3      =  2300; //15
-double          crs.scintillatorBarLengthD4      =  5600; //16
-double          crs.scintillatorBarLengthU       =  6600; //17
-double          crs.scintillatorBarLengthC1      =   900; //18
-double          crs.scintillatorBarLengthC2      =   900; //19
-double          crs.scintillatorBarLengthC3      =   900; //20
+double          crs.scintillatorBarLengthD       =  5600; //13
+double          crs.scintillatorBarLengthU       =  6600; //14
+double          crs.scintillatorBarLengthC1      =   900; //15
+double          crs.scintillatorBarLengthC2      =   900; //16
+double          crs.scintillatorBarLengthC3      =   900; //17
+double          crs.scintillatorBarLengthD2      =  2300; //18
+double          crs.scintillatorBarLengthD3      =  2300; //19
+double          crs.scintillatorBarLengthD4      =  5600; //20
 
 double          crs.scintillatorBarThickness     =  20;
 double          crs.scintillatorBarWidth         =  49.5;
@@ -68,14 +68,14 @@ int             crs.nModulesT1                   =   6;  //9
 int             crs.nModulesT2                   =  15;  //10
 int             crs.nModulesT3                   =   1;  //11
 int             crs.nModulesT4                   =   4;  //12
-int             crs.nModulesD1                   =   3;  //13
-int             crs.nModulesD2                   =   1;  //14
-int             crs.nModulesD3                   =   1;  //15
-int             crs.nModulesD4                   =   2;  //16
-int             crs.nModulesU                    =   3;  //17
-int             crs.nModulesC1                   =   1;  //18
-int             crs.nModulesC2                   =   1;  //19
-int             crs.nModulesC3                   =   1;  //20
+int             crs.nModulesD                    =   3;  //13
+int             crs.nModulesU                    =   3;  //14
+int             crs.nModulesC1                   =   1;  //15
+int             crs.nModulesC2                   =   1;  //16
+int             crs.nModulesC3                   =   1;  //17
+int             crs.nModulesD2                   =   1;  //18
+int             crs.nModulesD3                   =   1;  //19
+int             crs.nModulesD4                   =   2;  //20
 
 int             crs.nCountersPerModuleR1         =   16;  //0 //at one layer
 int             crs.nCountersPerModuleR2         =   16;  //1
@@ -90,14 +90,14 @@ int             crs.nCountersPerModuleT1         =   16;  //9
 int             crs.nCountersPerModuleT2         =   16;  //10
 int             crs.nCountersPerModuleT3         =   8;   //11
 int             crs.nCountersPerModuleT4         =   16;  //12
-int             crs.nCountersPerModuleD1         =   16;  //13
-int             crs.nCountersPerModuleD2         =   16;  //14
-int             crs.nCountersPerModuleD3         =   16;  //15
-int             crs.nCountersPerModuleD4         =   16;  //16
-int             crs.nCountersPerModuleU          =   16;  //17
-int             crs.nCountersPerModuleC1         =   16;  //18
-int             crs.nCountersPerModuleC2         =   16;  //19
-int             crs.nCountersPerModuleC3         =   16;  //20
+int             crs.nCountersPerModuleD          =   16;  //13
+int             crs.nCountersPerModuleU          =   16;  //14
+int             crs.nCountersPerModuleC1         =   16;  //15
+int             crs.nCountersPerModuleC2         =   16;  //16
+int             crs.nCountersPerModuleC3         =   16;  //17
+int             crs.nCountersPerModuleD2         =   16;  //18
+int             crs.nCountersPerModuleD3         =   16;  //19
+int             crs.nCountersPerModuleD4         =   16;  //20
 
 vector<double>  crs.firstCounterR1        =  {-6429.4,    212.8,  -2146.85}; //0 //in mu2e coordinates
 vector<double>  crs.firstCounterR2        =  {-6429.4,   2012.8,  12595.15}; //1
@@ -112,14 +112,14 @@ vector<double>  crs.firstCounterT1        =  {-3404.0,   2600.6,  -2146.85}; //9
 vector<double>  crs.firstCounterT2        =  {-3904.0,   2600.6,   2764.15}; //10
 vector<double>  crs.firstCounterT3        =  {-3904.0,   2600.6,  15052.15}; //11
 vector<double>  crs.firstCounterT4        =  {-3904.0,   2600.6,  15463.15}; //12
-vector<double>  crs.firstCounterD1        =  {-3904.0,   2710.75, 18771.0};  //13
-vector<double>  crs.firstCounterD2        =  {-5554.0,    253.75, 18771.0};  //14
-vector<double>  crs.firstCounterD3        =  {-2254.0,    253.75, 18771.0};  //15
-vector<double>  crs.firstCounterD4        =  {-3904.0,   -565.25, 18771.0};  //16
-vector<double>  crs.firstCounterU         =  {-3404.0,   2710.75, -2296.8};  //17
-vector<double>  crs.firstCounterC1        =  {-6557.6,   1098.4,  12509.3};  //18
-vector<double>  crs.firstCounterC2        =  {-6557.6,   1098.4,  13355.5};  //19
-vector<double>  crs.firstCounterC3        =  {-6557.6,   1663.0,  12932.4};  //20
+vector<double>  crs.firstCounterD         =  {-3904.0,   2710.75, 18771.0};  //13
+vector<double>  crs.firstCounterU         =  {-3404.0,   2710.75, -2296.8};  //14
+vector<double>  crs.firstCounterC1        =  {-6557.6,   1098.4,  12509.3};  //15
+vector<double>  crs.firstCounterC2        =  {-6557.6,   1098.4,  13355.5};  //16
+vector<double>  crs.firstCounterC3        =  {-6557.6,   1663.0,  12932.4};  //17
+vector<double>  crs.firstCounterD2        =  {-5554.0,    253.75, 18771.0};  //18
+vector<double>  crs.firstCounterD3        =  {-2254.0,    253.75, 18771.0};  //19
+vector<double>  crs.firstCounterD4        =  {-3904.0,   -565.25, 18771.0};  //20
 
 string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";
@@ -141,14 +141,14 @@ vector<double>  crs.layerDirectionT1  =  {0, 1, 0};  //9
 vector<double>  crs.layerDirectionT2  =  {0, 1, 0};  //10
 vector<double>  crs.layerDirectionT3  =  {0, 1, 0};  //11
 vector<double>  crs.layerDirectionT4  =  {0, 1, 0};  //12
-vector<double>  crs.layerDirectionD1  =  {0, 0, 1};  //13
-vector<double>  crs.layerDirectionD2  =  {0, 0, 1};  //14
-vector<double>  crs.layerDirectionD3  =  {0, 0, 1};  //15
-vector<double>  crs.layerDirectionD4  =  {0, 0, 1};  //16
-vector<double>  crs.layerDirectionU   =  {0, 0, -1}; //17
-vector<double>  crs.layerDirectionC1  =  {0, 0, -1}; //18
-vector<double>  crs.layerDirectionC2  =  {0, 0, 1};  //19
-vector<double>  crs.layerDirectionC3  =  {0, -1, 0}; //20
+vector<double>  crs.layerDirectionD   =  {0, 0, 1};  //13
+vector<double>  crs.layerDirectionU   =  {0, 0, -1}; //14
+vector<double>  crs.layerDirectionC1  =  {0, 0, -1}; //15
+vector<double>  crs.layerDirectionC2  =  {0, 0, 1};  //16
+vector<double>  crs.layerDirectionC3  =  {0, -1, 0}; //17
+vector<double>  crs.layerDirectionD2  =  {0, 0, 1};  //18
+vector<double>  crs.layerDirectionD3  =  {0, 0, 1};  //19
+vector<double>  crs.layerDirectionD4  =  {0, 0, 1};  //20
 
 vector<double>  crs.offsetDirectionR1  =  {0, 0, -1}; //0
 vector<double>  crs.offsetDirectionR2  =  {0, 0, -1}; //1
@@ -163,14 +163,14 @@ vector<double>  crs.offsetDirectionT1  =  {0, 0, -1}; //9
 vector<double>  crs.offsetDirectionT2  =  {0, 0, -1}; //10
 vector<double>  crs.offsetDirectionT3  =  {0, 0, -1}; //11
 vector<double>  crs.offsetDirectionT4  =  {0, 0, -1}; //12
-vector<double>  crs.offsetDirectionD1  =  {0, -1, 0}; //13
-vector<double>  crs.offsetDirectionD2  =  {0, -1, 0}; //14
-vector<double>  crs.offsetDirectionD3  =  {0, -1, 0}; //15
-vector<double>  crs.offsetDirectionD4  =  {0, -1, 0}; //16
-vector<double>  crs.offsetDirectionU   =  {0, -1, 0}; //17
-vector<double>  crs.offsetDirectionC1  =  {-1, 0, 0}; //18
-vector<double>  crs.offsetDirectionC2  =  {-1, 0, 0}; //19
-vector<double>  crs.offsetDirectionC3  =  {-1, 0, 0}; //20
+vector<double>  crs.offsetDirectionD   =  {0, -1, 0}; //13
+vector<double>  crs.offsetDirectionU   =  {0, -1, 0}; //14
+vector<double>  crs.offsetDirectionC1  =  {-1, 0, 0}; //15
+vector<double>  crs.offsetDirectionC2  =  {-1, 0, 0}; //16
+vector<double>  crs.offsetDirectionC3  =  {-1, 0, 0}; //17
+vector<double>  crs.offsetDirectionD2  =  {0, -1, 0}; //18
+vector<double>  crs.offsetDirectionD3  =  {0, -1, 0}; //19
+vector<double>  crs.offsetDirectionD4  =  {0, -1, 0}; //20
 
 vector<double>  crs.gapDirectionR1  =  {0, 0, 1};  //0
 vector<double>  crs.gapDirectionR2  =  {0, 0, 1};  //1
@@ -185,12 +185,12 @@ vector<double>  crs.gapDirectionT1  =  {0, 0, 1};  //9
 vector<double>  crs.gapDirectionT2  =  {0, 0, 1};  //10
 vector<double>  crs.gapDirectionT3  =  {0, 0, 1};  //11
 vector<double>  crs.gapDirectionT4  =  {0, 0, 1};  //12
-vector<double>  crs.gapDirectionD1  =  {0, -1, 0}; //13
-vector<double>  crs.gapDirectionD2  =  {0, -1, 0}; //14
-vector<double>  crs.gapDirectionD3  =  {0, -1, 0}; //15
-vector<double>  crs.gapDirectionD4  =  {0, -1, 0}; //16
-vector<double>  crs.gapDirectionU   =  {0, -1, 0}; //17
-vector<double>  crs.gapDirectionC1  =  {-1, 0, 0}; //18
-vector<double>  crs.gapDirectionC2  =  {-1, 0, 0}; //19
-vector<double>  crs.gapDirectionC3  =  {-1, 0, 0}; //20
+vector<double>  crs.gapDirectionD   =  {0, -1, 0}; //13
+vector<double>  crs.gapDirectionU   =  {0, -1, 0}; //14
+vector<double>  crs.gapDirectionC1  =  {-1, 0, 0}; //15
+vector<double>  crs.gapDirectionC2  =  {-1, 0, 0}; //16
+vector<double>  crs.gapDirectionC3  =  {-1, 0, 0}; //17
+vector<double>  crs.gapDirectionD2  =  {0, -1, 0}; //18
+vector<double>  crs.gapDirectionD3  =  {0, -1, 0}; //19
+vector<double>  crs.gapDirectionD4  =  {0, -1, 0}; //20
 
