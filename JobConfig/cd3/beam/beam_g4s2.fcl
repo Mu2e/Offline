@@ -15,7 +15,7 @@ source : {
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "hist_beam_g4s2.root" }
+   TFileService          : { fileName : "nts.owner.cd3-beam-g4s2.version.sequencer.root" }
    RandomNumberGenerator : { }
 
    user : {
@@ -124,11 +124,6 @@ physics : {
 
 outputs: {
 
-   fullOutput : {
-      module_type : RootOutput
-      fileName    : "data_beam_g4s2_full.art"
-   }
-
    mubeamout : {
       module_type : RootOutput
       SelectEvents: { SelectEvents: ["trigmubeam"] }
@@ -139,7 +134,7 @@ outputs: {
          "keep *_muonBeamFilter_*_beamg4s2",
          "keep *_compressPVmuonBeam_*_beamg4s2"
       ]
-      fileName    : "data_g4s2_mubeam.art"
+      fileName    : "sim.owner.cd3-beam-g4s2-mubeam.version.sequencer.art"
    }
 
   truncatedEvtsOutput : {
@@ -153,7 +148,7 @@ outputs: {
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "truncated_beam_g4s2.art"
+      fileName    : "sim.owner.cd3-beam-g4s2-truncated.version.sequencer.art"
    }
 
 }
