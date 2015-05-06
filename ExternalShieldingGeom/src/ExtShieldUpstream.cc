@@ -8,9 +8,8 @@ namespace mu2e {
 
   std::ostream& operator<<(std::ostream& os, const ExtShieldUpstream& ens) {
     os<<"ExtShieldUpstream("
-      <<"material0="<<ens.getMaterialNames()[0]
-//       <<", end vertices="<<ens.externalShieldOutline()
-      <<", orientation0="<<ens.getOrientations()[0]
+      << "Contains " << ens.getMaterialNames().size()
+      <<" boxes "
       <<" )";
     return os;
   }

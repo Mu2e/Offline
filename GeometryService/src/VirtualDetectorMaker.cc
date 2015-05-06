@@ -586,7 +586,6 @@ namespace mu2e {
 				       c.getDouble("ExtShieldDownstream.detecHoleY")*CLHEP::mm, 
 				       c.getDouble("ExtShieldDownstream.detecHoleZ")*CLHEP::mm);
 	double holeHalfLength = c.getDouble("ExtShieldDownstream.detecHoleHalflength")*CLHEP::mm;
-	std::cout << "DNBII:  holeLocation: " << holeLocation << std::endl;
 
 
         GeomHandle<DetectorSolenoid> ds;
