@@ -1,5 +1,5 @@
 // Write mu2e geometry into a GDML file
-bool   writeGDML        = true;
+bool   writeGDML        = false;
 string GDMLFileName     = "mu2e.gdml";
 //
 //-----------------------
