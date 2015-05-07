@@ -37,10 +37,34 @@ namespace mu2e {
       return returnValue;
     }
 
-     Double_t PeakFitFunction::operator()(Double_t* x, Double_t* p) {
-        return fitModelRoot(x,p); 
-     }
- 
+    void
+    PeakFitFunction::resetTF1(TF1& tf1) {
+      (*_tf1) = tf1;
+    }
+
+    void
+    PeakFitFunction::resetTF1(PeakFitParamsLimits const& params) {
+      // pack parameters into an array for root
+      Double_t array[PeakFitParams::nParams];
+      params.fillArray(array);
+      // pack parameters into an array for root
+	// initialize the parameters of the tf1
+      _tf1->SetParameters(array);
+      for(unsigned ipar=0;ipar< PeakFitParams::nParams;++ipar){
+	PeakFitParams::paramIndex ip = static_cast<PeakFitParams::paramIndex>(ipar);
+	if(params.isFree(ip)){
+	  _tf1->ReleaseParameter(ipar);
+	} else {
+	  _tf1->FixParameter(ipar,_tf1->GetParameter(ipar));
+	}
+	// always update the lim51Gits
+	_tf1->SetParLimits(ipar,params._parmin[ipar], params._parmax[ipar]);
+      }
+    }
+
+    Double_t PeakFitFunction::operator()(Double_t* x, Double_t* p) {
+      return fitModelRoot(x,p); 
+    }
 
     // the root version of same.  This calls down to the above
     Double_t PeakFitFunction::fitModelRoot(Double_t* x, Double_t* p) const {

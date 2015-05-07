@@ -12,7 +12,7 @@ namespace mu2e{
     struct PeakFitParams {
 // CINT can't handle C++14 enum types FIXME!!!
 //      enum paramIndex : size_t {earlyCharge=1,pedestal,time,charge,width,lateShift,lateCharge,nParams};
-      enum paramIndex  {earlyCharge=0,pedestal,time,charge,width,lateShift,lateCharge,nParams};
+      enum  paramIndex : unsigned {earlyCharge=0,pedestal,time,charge,width,lateShift,lateCharge,nParams};
       // explicit data members
       Float_t _earlyCharge; // decaying charge from earlier hit, units of pC
       Float_t _pedestal; // units of ADC counts (??)
@@ -62,6 +62,12 @@ namespace mu2e{
       static std::vector<std::string> _pnames;
       static std::string const& parameterName(paramIndex pindex) { return _pnames[pindex]; }
     };
+
+// add a substruct that includes parameter limit information
+    struct PeakFitParamsLimits : public PeakFitParams {
+      Double_t _parmin[nParams], _parmax[nParams];
+    };
+
   }  // TrkChargeReco namespace
 }// mu2e namespace
 #endif

@@ -50,7 +50,9 @@ namespace mu2e {
 // provide a TF1 using the fit function above
       TF1* fitModelTF1() const { return _tf1; }
 // Method for creating a TF1 using the fit function.  This OVERWRITES the state of the TF1
-      void resetTF1(TF1& rootPeakFitFunction) const;
+      void resetTF1(TF1& rootPeakFitFunction);
+// overwrite the TF1 based on a PeakFitParams object
+      void resetTF1(PeakFitParamsLimits const& params);
 // override root base class function
       Double_t operator()(Double_t* x, Double_t* p);
 // Model for early peak approximated as exponential decay

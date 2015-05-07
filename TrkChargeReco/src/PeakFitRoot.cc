@@ -50,7 +50,7 @@ namespace mu2e {
       fitresult->Ndf(),
       fitresult->Status());
     // set fix/free
-    for(size_t ipar=0;ipar < _peakfit.fitModelTF1()->GetNpar();++ipar){
+    for(int ipar=0;ipar < _peakfit.fitModelTF1()->GetNpar();++ipar){
       Double_t parmin, parmax;
       _peakfit.fitModelTF1()->GetParLimits(ipar,parmin,parmax);
       if(parmin == parmax)
