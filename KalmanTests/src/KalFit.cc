@@ -73,7 +73,7 @@ namespace mu2e
     TrkFitDirection::FitDirection _fdir;
   };
 // construct from a parameter set  
-  KalFit::KalFit(fhicl::ParameterSet const& pset) :
+  KalFit::KalFit(fhicl::ParameterSet const& pset, KalDiag* kdiag) :
 // KalFit parameters
     _debug(pset.get<int>("debugLevel",0)),
     _weedhits(pset.get<bool>("weedhits",true)),
@@ -93,7 +93,8 @@ namespace mu2e
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
     _resolveAfterWeeding(pset.get<bool>("ResolveAfterWeeding",false)),
-    _bfield(0)
+    _bfield(0),
+    _kdiag(kdiag)
   {
 // set KalContext parameters
     _disttol = pset.get<double>("IterationTolerance",0.1);
@@ -152,7 +153,7 @@ namespace mu2e
 	ar = new HitAmbigResolver(hitPset,_herr[i],i);
 	break;
       case panelambig:
-	ar = new PanelAmbigResolver(panelPset,_herr[i],i);
+	ar = new PanelAmbig::PanelAmbigResolver(panelPset,_herr[i],i,_kdiag);
 	break;
       case pocaambig:
 	ar = new PocaAmbigResolver(pocaPset,_herr[i],i);
@@ -204,6 +205,8 @@ namespace mu2e
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
       double flt0 = kres._tdef.helix().zFlight(0.0);
       kres._krep->setT0(t0,flt0);
+// initialize history list
+      kres._krep->addHistory(TrkErrCode(),"Creation");
 // now fit
       fitTrack(kres);
       if(_removefailed)kres.removeFailed();

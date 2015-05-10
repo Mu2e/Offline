@@ -38,4 +38,10 @@
     <class name="std::vector<mu2e::TrkStrawHitInfoMC>" />
     <class name="mu2e::TrkStrawHitInfo_old" />
     <class name="std::vector<mu2e::TrkStrawHitInfo_old>" />
+    <class name="mu2e::PanelResult" />
+    <class name="std::vector<mu2e::PanelResult>" />
+    <class name="mu2e::TSHUInfo" />
+    <class name="std::vector<mu2e::TSHUInfo>" />
+    <class name="mu2e::TSHMCUInfo" />
+    <class name="std::vector<mu2e::TSHMCUInfo>" />
 </lcgdict>

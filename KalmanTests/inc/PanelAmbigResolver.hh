@@ -6,83 +6,69 @@
 // $Author: gandr $ 
 // $Date: 2014/08/01 18:56:10 $
 //
-#ifndef PanelAmbigResolver_HH
-#define PanelAmbigResolver_HH
+#ifndef mu2e_PanelAmbig_PanelAmbigResolver_HH
+#define mu2e_PanelAmbig_PanelAmbigResolver_HH
 #include "BaBar/BaBar.hh"
-#include "KalmanTests/inc/TrkStrawHitState.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
+#include "KalmanTests/inc/PanelAmbigStructs.hh"
+#include "KalmanTests/inc/KalDiag.hh"
 #include "TrackerGeom/inc/LayerId.hh"
-#include "CLHEP/Matrix/SymMatrix.h"
-#include "CLHEP/Matrix/Vector.h"
-#include "CLHEP/Vector/ThreeVector.h"
 #ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
 #endif/*__GCCXML__*/
 #include <cstddef>
 #include <vector>
+// Root
+#include "Rtypes.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TTree.h"
 
 class KalRep;
 class TrkT0;
 
 namespace mu2e {
-
-// class to store the 1-d projection of a hit.
-// this direction (u) is perpendicular to the wire and to the track as it hits the panel
-  struct TSHUInfo {
-    // construct from a TrkStrawHit, the U direction and the U origin in mu2e coordinates
-    TSHUInfo(const TrkStrawHit* tsh,CLHEP::Hep3Vector const& udir, CLHEP::Hep3Vector const& uorigin);
-    const TrkStrawHit* _tsh; // reference the straw hit, to allow consistency checking
-    double _upos; // hit position in u relative to the first 
-    double _uwt; // cache of the hit weight = 1/error^2
-  };
-
-// struct to hold hit and other information for a single panel.
-// It also holds the result of the optimization
-  struct PanelInfo {
-    PanelInfo() : _utpos(0.0), _utwt(0.0) {}
-// information from the track fit, excluding the hits from panel, projected into this panel's measurement direction
-    double _utpos;
-    double _utwt; // weight = 1/error^2
-// information from all the hits
-    std::vector<TSHUInfo> _uinfo;
-  };
-
-// struct to hold the result of optimizing the panel parameters.
-  struct PanelResult {
-    PanelResult(TrkStrawHitStateVector const& state) : _state(state),
-    _chisq(0.0), _status(-1) {}
-    TrkStrawHitStateVector _state; // ambiguity/activity state of each hit in this panel
-    double _chisq; // chisquared of this state, including all penalties
-    CLHEP::HepVector _delta; // change in parameters at optimum; U is parameter 0, deltaT is parameter 1
-    CLHEP::HepSymMatrix _dcov; // covariance of parameter changes
-    int _status; // status of matrix inversion
-  };
-
-  class PanelAmbigResolver : public AmbigResolver {
-    public:
-// construct from parameter set
+  namespace PanelAmbig {
+    class PanelAmbigResolver : public AmbigResolver {
+      public:
+	// construct from parameter set
 #ifndef __GCCXML__
-    explicit PanelAmbigResolver(fhicl::ParameterSet const&, double ExtErr, int Iter);
+	explicit PanelAmbigResolver(fhicl::ParameterSet const&, double ExtErr, int Iter,KalDiag* kdiag=0);
 #endif/*__GCCXML__*/
-    virtual ~PanelAmbigResolver();
-// resolve a track.  Depending on the configuration, this might
-// update the hit state and the t0 value.
-    virtual void resolveTrk(KalFitResult& kfit, int Final) const;
-  private:
-// resolve the ambiguity on a single panel
-    void resolvePanel(TSHV& phits, KalFitResult& kfit) const;
-// fill information about a given panel's track and hits
-    bool fillPanelInfo(TSHV const& phits, const KalRep* krep, PanelInfo& pinfo) const;
-// compute the panel result for a given ambiguity/activity state and the ionput t0
-    void fillResult(PanelInfo const& pinfo,TrkT0 const& t0, PanelResult& result) const;
-// parameters
-    double _minsep; // minimum chisquared separation between best solution and the rest to consider a panel resolved
-    double _inactivepenalty; // chisquared penalty for an inactive hit
-    double _penaltyres; // resolution term to add to hits if ambiguity/activity can't be resolved
-    double _nullerr2; // additional error (squared) for hits with null ambiguity
-    TSHSSV _allowed; // allowed states of a TrkStrawHit
-  };
-}
+	virtual ~PanelAmbigResolver();
+	// resolve a track.  Depending on the configuration, this might
+	// update the hit state and the t0 value.
+	virtual void resolveTrk(KalFitResult& kfit, int Final) const;
+      private:
+	// resolve the ambiguity on a single panel
+	void resolvePanel(TSHV& phits, KalFitResult& kfit) const;
+	// fill information about a given panel's track and hits
+	bool fillPanelInfo(TSHV const& phits, const KalRep* krep, PanelInfo& pinfo) const;
+	// compute the panel result for a given ambiguity/activity state and the ionput t0
+	void fillResult(PanelInfo const& pinfo,TrkT0 const& t0, PanelResult& result) const;
+	// parameters
+	double _minsep; // minimum chisquared separation between best solution and the rest to consider a panel resolved
+	double _inactivepenalty; // chisquared penalty for an inactive hit
+	double _penaltyres; // resolution term to add to hits if ambiguity/activity can't be resolved
+	double _nullerr2; // additional error (squared) for hits with null ambiguity
+	HSV _allowed; // allowed states of a TrkStrawHit
+	int _diag; // diagnostic level`
+	// TTree variables, mutable so they don't change const
+	mutable TTree *_padiag, *_pudiag; // diagnostic TTree
+	mutable Int_t _nuhits, _nrhits; // # hits in this panel
+	mutable Int_t _nactive; // # active hits in this panel
+	mutable Int_t _nres; // # of results for this panel (combinatorics)
+	mutable Float_t _tupos; // u track position
+	mutable Float_t _tuerr; // u track position
+	mutable TSHUIV _uinfo; // u position of hits in panel
+	mutable Float_t _mctupos;
+	mutable TSHMCUIV _mcuinfo; // NC u position of hits in panel
+	mutable PRV _results;
+	mutable KalDiag* _kdiag; // optional diagnostics
+
+    };
+  } // PanelAmbig namespace
+} // mu2e namespace
 
 #endif
 
