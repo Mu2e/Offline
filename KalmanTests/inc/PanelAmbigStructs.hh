@@ -24,7 +24,7 @@ namespace mu2e {
 // class to describe the ambiguity and activity state of a single TrkStrawHit
     class HitState {
       public:
-	enum TSHState : signed char {negambig=-1,noambig,posambig,inactive,ignore,nstates};
+	enum TSHState {negambig=-1,noambig,posambig,inactive,ignore,nstates};
 	// set state explicitly.  
 	HitState(TSHState state=ignore) : _state(state){}
 	// set state from an existing strawhit
@@ -75,35 +75,7 @@ namespace mu2e {
 
     typedef std::vector<PanelState> PSV;
 
-    // class to define a set of allowed panel states and allow iterating through them
-    // This also interacts with the hits themselves
-    class PanelStateIterator {
-      public:
-	PanelStateIterator() = default;
-	// construct from a vector of TrkStrawHits and the list of allowed hit states.
-	PanelStateIterator(TSHV const& tshv, HSV const& hsv);
-	// copy constructor
-	PanelStateIterator(PanelStateIterator const& other) = default;
-	PanelStateIterator& operator =(PanelStateIterator const& other) = default;
-	// current state
-	PanelState current() { return *_current; }
-	// total # of states
-	size_t nStates() const { return _allowedPS.size(); }
-	// operate on the current state
-	bool increment() { ++_current; return _current != _allowedPS.end(); }
-	void reset() { _current = _allowedPS.begin(); }
-	// return the sum of all penalties for the states of each TrkStrawHit
-	static unsigned ipow(unsigned base, unsigned exp);
-      private:
-	// helper functions;
-	bool increment(HSV& hsv);
-	bool increment(HitState& hs);
-	void reset(HitState& hs);
-	PSV::iterator _current; // current panel state
-	PSV _allowedPS; // all allowed states for this panel
-	HSV _allowedHS; // allowed hit states
-    };
-    // class to store the 1-d projection of a hit.
+   // class to store the 1-d projection of a hit.
     // this direction (u) is perpendicular to the wire and to the track as it hits the panel
     struct TSHUInfo {
       // construct from a TrkStrawHit, the U direction and the U origin in mu2e coordinates
