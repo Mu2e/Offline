@@ -13,3 +13,7 @@ Still under construction
     ExternalNeutronShieldingGeom package and mentions thereof in Mu2e code.
 
 3.  David Norvil Brown (Louisville), 6 May 2015.  Add DS saddles. 
+
+4.  David Norvil Brown (Louisville), 12 May 2015.  Change protonabsorber 
+    material entirely to HDPE.
+

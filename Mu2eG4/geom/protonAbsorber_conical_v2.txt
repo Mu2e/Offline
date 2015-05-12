@@ -35,7 +35,8 @@ double protonabsorber.outerPAInnerRadius1 = 709.6;
 double protonabsorber.outerPAHalfLength = 2074.5;
 double protonabsorber.outerPAThickness = 20.0;
 double protonabsorber.outerPAZCenter = 6264.5;
-string protonabsorber.outerPAMaterialName = "Polyethylene092B050d095";
+//string protonabsorber.outerPAMaterialName = "Polyethylene092B050d095";
+string protonabsorber.outerPAMaterialName = "Polyethylene096";
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
