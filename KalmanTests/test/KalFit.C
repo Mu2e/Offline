@@ -95,7 +95,7 @@ void KalFit::Cuts() {
     t0cuts[ic] = TCut(cutstring);
     snprintf(cutstring,100,"fit.momerr<%4.3f",maxmomerr[ic]);
     momcuts[ic] = TCut(cutstring);
-    snprintf(cutstring,100,"fitcon>%5.4f",minfitcon[ic]);
+    snprintf(cutstring,100,"fit.con>%5.4f",minfitcon[ic]);
     fitcuts[ic] = TCut(cutstring);
   }
   char ctext[80];
@@ -355,12 +355,12 @@ void KalFit::T2d(){
   TProfile* rt2dp = new TProfile("rt2dp","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* tt2dp = new TProfile("tt2dp","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* tt2dp2 = new TProfile("tt2dp2","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55,"s");
-  _tdiag->Project("tt2d","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
-  _tdiag->Project("rt2d","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
-  _tdiag->Project("tt2dp","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
-  _tdiag->Project("rt2dp","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
-  _tdiag->Project("tt2dp2","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
-  _tdiag->Project("rt2dp2","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("tt2d","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("rt2d","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("tt2dp","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("rt2dp","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("tt2dp2","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("rt2dp2","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
 
   TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
   t2dcan->Divide(2,2);
@@ -474,7 +474,7 @@ void KalFit::AccPlots() {
   _tdiag->Project("nmc","mc.ngood");
   _tdiag->Project("mcmom","mcent.mom",tnhits);
   
-  _tdiag->Project("fitcon","log10(fitcon)",reco+tnhits+tmom);
+  _tdiag->Project("fit.con","log10(fit.con)",reco+tnhits+tmom);
   _tdiag->Project("momerr","fit.momerr",reco+tnhits+tmom);
   _tdiag->Project("t0err","t0err",reco+tnhits+tmom);
   _tdiag->Project("na","nactive",reco+tnhits+tmom);
@@ -1108,10 +1108,10 @@ void KalFit::Con() {
 //  fcon1->SetStats(0);
 //  fcon2->SetStats(0);
 
-  _tdiag->Project("con1","fitcon",mcsel+"fit.status==1");
-  _tdiag->Project("con2","fitcon",mcsel+"fit.status==2");
-  _tdiag->Project("lcon1","log10(fitcon)",mcsel+"fit.status==1");
-  _tdiag->Project("lcon2","log10(fitcon)",mcsel+"fit.status==2");
+  _tdiag->Project("con1","fit.con",mcsel+"fit.status==1");
+  _tdiag->Project("con2","fit.con",mcsel+"fit.status==2");
+  _tdiag->Project("lcon1","log10(fit.con)",mcsel+"fit.status==1");
+  _tdiag->Project("lcon2","log10(fit.con)",mcsel+"fit.status==2");
 
   TCanvas* fcan = new TCanvas("fcan","fit consistency",500,800);
   fcan->Clear();
@@ -1491,8 +1491,8 @@ void KalFit::MomTails(int iwt) {
   _tdiag->Project("cnact","nactive",core*weight);
   _tdiag->Project("tnact","nactive",tail*weight);
 
-  _tdiag->Project("cfitcon","log10(fitcon)",core*weight);
-  _tdiag->Project("tfitcon","log10(fitcon)",tail*weight);
+  _tdiag->Project("cfitcon","log10(fit.con)",core*weight);
+  _tdiag->Project("tfitcon","log10(fit.con)",tail*weight);
 
   _tdiag->Project("cmomerr","fit.momerr",core*weight);
   _tdiag->Project("tmomerr","fit.momerr",tail*weight);

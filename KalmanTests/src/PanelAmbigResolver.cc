@@ -6,6 +6,7 @@
 // $Date: 2012/08/31 22:39:00 $
 //
 #include "KalmanTests/inc/PanelAmbigResolver.hh"
+#include "KalmanTests/inc/PanelStateIterator.hh"
 #include "KalmanTests/inc/KalFitResult.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "BaBar/BaBar.hh"
@@ -36,61 +37,17 @@ namespace mu2e {
       bool operator()(PanelResult const& a, PanelResult const& b) { return a._chisq < b._chisq; }
     };
 
-    TSHUInfo::TSHUInfo(const TrkStrawHit* tsh,CLHEP::Hep3Vector const& udir, HepPoint const& uorigin): _tsh(tsh) {
-      // find wire position at POCA	
-      HepPoint wpos = tsh->hitTraj()->position(tsh->hitLen());
-      CLHEP::Hep3Vector wposv(wpos.x(),wpos.y(),wpos.z());
-      // translate WRT origin and project
-      CLHEP::Hep3Vector dstraw = wpos-uorigin;
-      _upos = udir.dot(dstraw);
-      _wcpos = udir.dot(wposv);
-      // note that the t0 component of the error scales coherently between the hits, so here we use only the intrinsic error
-      _uerr = tsh->hitErr();
-      _uwt = 1.0/(_uerr*_uerr);
-      _dr = tsh->driftRadius();
-      _dv = tsh->driftVelocity();
-      _ambig = tsh->ambig();
-      _active = tsh->isActive();
-    }
-
     typedef TSHV::iterator TSHI;
     typedef TSHV::const_iterator TSHCI;
     typedef std::vector<KalSite*>::const_iterator KSI;
 
-    // class to define a set of allowed panel states and allow iterating through them
-    // This also interacts with the hits themselves
-    class PanelStateIterator {
-      public:
-	PanelStateIterator() = default;
-	// construct from a vector of TrkStrawHits and the list of allowed hit states.
-	PanelStateIterator(TSHV const& tshv, HSV const& hsv);
-	// copy constructor
-	PanelStateIterator(PanelStateIterator const& other) = default;
-	PanelStateIterator& operator =(PanelStateIterator const& other) = default;
-	// current state
-	PanelState current() { return *_current; }
-	// total # of states
-	size_t nStates() const { return _allowedPS.size(); }
-	// operate on the current state
-	bool increment() { ++_current; return _current != _allowedPS.end(); }
-	void reset() { _current = _allowedPS.begin(); }
-	// return the sum of all penalties for the states of each TrkStrawHit
-	static unsigned ipow(unsigned base, unsigned exp);
-      private:
-	// helper functions;
-	bool increment(HSV& hsv);
-	bool increment(HitState& hs);
-	void reset(HitState& hs);
-	PSV::iterator _current; // current panel state
-	PSV _allowedPS; // all allowed states for this panel
-	HSV _allowedHS; // allowed hit states
-    };
- 
+
     PanelAmbigResolver::PanelAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter,KalDiag* kdiag): 
       AmbigResolver(pset,ExtErr,Iter),
       _minsep(pset.get<double>("minChisqSep",6.0)),
       _inactivepenalty(pset.get<double>("inactivePenalty",16.0)),
       _penaltyres(pset.get<double>("PenaltyResolution",0.5)),
+      _addtrkpos(pset.get<bool>("AddTrackPositionConstraint",true)),
       _diag(pset.get<int>("DiagLevel",0)),
       _kdiag(kdiag)
     {
@@ -179,7 +136,7 @@ namespace mu2e {
 	size_t ires(1);
 	while (ires < results.size() && results[ires]._chisq - results[0]._chisq < _minsep){
 	  for(size_t ihit=0;ihit<nhits;++ihit){
-	    if(results[ires]._state._hstate[ihit] != results[0]._state._hstate[ihit]){
+	    if(results[ires]._state.hitState(ihit) != results[0]._state.hitState(ihit)){
 	      phits[ihit]->setPenalty(_penaltyres);
 	    }
 	  }
@@ -190,7 +147,7 @@ namespace mu2e {
 	_nuhits = _nrhits = pinfo._uinfo.size();
 	_nactive = 0;
 	for(auto ishi : pinfo._uinfo) {
-	  if(ishi._tsh->isActive())++_nactive;
+	  if(ishi._active)++_nactive;
 	}
 	_nres = results.size();
 	_results = results;
@@ -203,18 +160,18 @@ namespace mu2e {
 	  // fill MC truth for these hits and track
 	  _mcuinfo.clear();
 	  // use 1st hit for MC information
-	  StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(pinfo._uinfo[0]._tsh->index());
+	  StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(pinfo._uinfo[0]._index);
 	  StrawDigi::TDCChannel itdc = StrawDigi::zero;
 	  if(!mcdigi.hasTDC(StrawDigi::zero))
 	    itdc = StrawDigi::one;
 	  CLHEP::Hep3Vector const& mctpos = mcdigi.stepPointMC(itdc)->position();
 	  CLHEP::Hep3Vector udir(pinfo._udir._x, pinfo._udir._y, pinfo._udir._z);
-	  _mctupos = udir.dot(mctpos)-_tupos;		
+	  _mctupos = udir.dot(mctpos);		
 	  for(auto ishi : pinfo._uinfo) {
 	    TSHMCUInfo mcinfo;
-	    TrkStrawHitInfoMC const& tshmc = _kdiag->_tshinfomc[ishi._tsh->index()];
+	    TrkStrawHitInfoMC const& tshmc = _kdiag->_tshinfomc[ishi._index];
 	    mcinfo._ambig = tshmc._ambig;
-	    mcinfo._upos = tshmc._dist*tshmc._ambig;
+	    mcinfo._dr = tshmc._dist;
 	    _mcuinfo.push_back(mcinfo);
 	  }
 	}
@@ -243,12 +200,13 @@ namespace mu2e {
 	  DifVector delta = DifVector(wposv) - tpos;
 	  // compute the U direction (along the measurement, perp to the track and wire
 	  // The sign is chosen to give positive and negative ambiguity per BaBar convention
-	  DifVector dudir = cross(DifVector(wdir),tdir);
+	  DifVector dudir = cross(DifVector(wdir),tdir).normalize();
 	  CLHEP::Hep3Vector udir(dudir.x.number(),dudir.y.number(),dudir.z.number());
 	  // compute the track constraint on u, and it's error.  The dif algebra part propagates the error
 	  DifNumber trku = dudir.dot(delta);
 	  pinfo._udir = udir;
-	  pinfo._tupos = trku.number();
+	  Hep3Vector tposv(tpos.x.number(),tpos.y.number(),tpos.z.number());
+	  pinfo._tupos = udir.dot(tposv);
 	  pinfo._tuerr = trku.error();
 	  pinfo._tuwt = 1.0/(pinfo._tuerr*pinfo._tuerr);
 	  // now, project the hits onto u, WRT the projected track position. 
@@ -271,7 +229,7 @@ namespace mu2e {
       double vvwsum(0.0);
       double uvwsum(0.0);
       double chi2penalty(0.0);
-      // loop over the straw hit info and state in parallel, and accumulate the sums
+      // loop over the straw hit info and accumulate the sums used to compute chisquared
       size_t ntsh = pinfo._uinfo.size();
       // consistency check
       if(ntsh != result._state._nhits) 
@@ -279,20 +237,23 @@ namespace mu2e {
       unsigned nused(0);
       for(size_t itsh=0;itsh<ntsh;++itsh){
 	// only accumulate if the state is active
-	HitState const& tshs = result._state._hstate[itsh];
+	HitState const& tshs = result._state.hitState(itsh);
 	TSHUInfo const& tshui = pinfo._uinfo[itsh];
-	if(tshs.state() != HitState::inactive && tshs.state() != HitState::ignore){
+	if(tshs.active()){
 	  ++nused;
+  // compare this state to the original, record any differences
+	  if(tshs != HitState(tshui._ambig, tshui._active))
+	    result._statechange |= (1 << itsh);	    
 	  double w = tshui._uwt;
 	  double r = tshui._dr;
 	  double v = tshui._dv;
 	  // sign for ambiguity
-	  if(tshs.state() == HitState::negambig){
+	  if(tshs._state == HitState::negambig){
 	    r *= -1;
 	    v *= -1;
-	  } else if(tshs.state() == HitState::noambig){
+	  } else if(tshs._state == HitState::noambig){
 	    r = 0;
-	    w = 1.0/(1.0/w + _nullerr2);
+	    w = 1.0/(1.0/w + _nullerr2); // increase the error on 0 ambiguity hits
 	  }
 	  double u = tshui._upos + r;
 	  wsum += w;
@@ -301,16 +262,17 @@ namespace mu2e {
 	  uuwsum += u*u*w;
 	  vvwsum += v*v*w;
 	  uvwsum += u*v*w;
-	} else
+	} else if(tshs._state == HitState::inactive) // penalize inactive hits
 	  chi2penalty += _inactivepenalty;
       }
       if(nused > 0){
-	// add track consistency information; position and t0
+	// propogate t0 uncertainty.  This is a constraint centered at the
+	// current value of t0, unit derivative
 	double t0wt = 1.0/(t0._t0err*t0._t0err);
 	vvwsum += t0wt; // t0 has unit derrivative
-	// track position is like a hit, but with r=v=0
+	// optionally add track position constraint if there are multiple hits.  It is like a hit, but with r=v=0
 	// NB, since the track position is defined to be 0, it adds only to the weight
-	wsum += pinfo._tuwt;
+	if(_addtrkpos || nused == 1)wsum += pinfo._tuwt;
 	// now compute the scalar, vector, and tensor terms for the 2nd-order chisquared expansion
 	double alpha = uuwsum;
 	CLHEP::HepVector beta(2);
@@ -348,69 +310,5 @@ namespace mu2e {
       }
     }
 
-    PanelStateIterator::PanelStateIterator(TSHV const& tshv,HSV const& allowedHS) : _allowedHS(allowedHS) {
-      // Define the 1st valid sate.  if no hit states are allowed, all hits are fixed (ignored)
-      HSV hsv;
-      for(auto tsh : tshv) {
-	if(_allowedHS.size() > 0){
-	  // hits whose current state isn't allowed will be held frozen (ignored)
-	  HitState tshs(tsh);
-	  HSV::const_iterator ish = std::find(_allowedHS.begin(),_allowedHS.end(),tshs);
-	  if(ish == _allowedHS.end())
-	    hsv.push_back(HitState(HitState::ignore));
-	  else
-	    hsv.push_back(_allowedHS[0]);
-	} else
-	  hsv.push_back(HitState(HitState::ignore));
-      }
-      _allowedPS.push_back(hsv);
-      // loop over all possible states and record them
-      while(increment(hsv)) {
-	_allowedPS.push_back(PanelState(hsv));
-      }
-      // set current to the 1st allowed state
-      reset();
-    }
-
-    bool PanelStateIterator::increment(HSV& hsv) {
-      bool retval(false); // default is failure
-      HSV::iterator ihs = hsv.begin();
-      do {
-	if(increment(*ihs)){
-	  retval = true;
-	  break;
-	} else {
-	  // we're at the end of allowed states for this hit; reset it and try incrementing the next
-	  reset(*ihs);
-	  ++ihs;
-	}
-      } while(ihs != hsv.end());
-      return retval;
-    }
-
-    bool PanelStateIterator::increment(HitState& hs) {
-      bool retval(false);
-      static HitState ignore(HitState::ignore);
-      if(hs != ignore) {
-	// find iterator to this state in the allowed states
-	HSV::const_iterator ihs = std::find(_allowedHS.begin(), _allowedHS.end(),hs);
-	// try incrementing: if successful, update the hit state, and we're done
-	if(ihs != _allowedHS.end()) ++ihs;
-	if(ihs != _allowedHS.end()){
-	  // success: update state
-	  hs = *ihs;
-	  retval = true;
-	}
-      }
-      return retval;
-    }
-
-    void PanelStateIterator::reset(HitState& hs) {
-      static HitState ignore(HitState::ignore);
-      if(hs != ignore && _allowedHS.size() > 0) {
-	hs = _allowedHS[0];
-      }
-    }
-
-} // PanelAmbig namespace
+  } // PanelAmbig namespace
 } // mu2e namespace

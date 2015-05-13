@@ -17,6 +17,19 @@ namespace mu2e
 {
   namespace PanelAmbig {
 
+    HitState::HitState(int ambig, bool active) {
+      if(!active)
+	_state = inactive;
+      else {
+	if(ambig > 0)
+	  _state = posambig;
+	else if(ambig < 0)
+	  _state = negambig;
+	else
+	  _state = noambig;
+      }
+    }
+
     HitState::HitState(TrkStrawHit* tsh) : _state(ignore){
       if(tsh->isActive()){
 	if(tsh->ambig() < 0)
@@ -52,14 +65,49 @@ namespace mu2e
       }
     }
 
-    PanelState::PanelState() : _nhits(0)  {
-      for(size_t ihit=0;ihit<MAXNHITS; ++ihit)
-	_hstate[ihit] = HitState(HitState::ignore);
-    }
-
     void PanelState::setHitStates(TSHV& tshv) const {
       for(size_t ihit=0;ihit<tshv.size(); ++ihit)
-	_hstate[ihit].setHitState(tshv[ihit]);
+	hitState(ihit).setHitState(tshv[ihit]);
+    }
+
+    PanelResult::PanelResult(PanelState const& state) : _state(state),
+    _chisq(-1.0), _status(-1), _hpat(null), _statechange(0) {
+// classify the state.  If any hits are opposite, it's opposite.  Otherwise if at least 2
+// are on the same side, they are same.  Otherwise it is null
+      for(size_t ihit=0;ihit<_state._nhits;++ihit){
+	if(_state.hitState(ihit).active()){
+	  for(size_t jhit=ihit+1;jhit<_state._nhits;++jhit){
+	    if(_state.hitState(jhit).active()) {
+	      int hprod = static_cast<int>(_state.hitState(ihit)._state) * 
+		static_cast<int>(_state.hitState(jhit)._state);
+	      if(hprod < 0){
+		_hpat = opposite;
+		break;
+	      } else if(hprod > 0)
+		_hpat = same;
+	    }
+	  }
+	  if(_hpat == opposite)break;// double break
+	}
+      }
+    }
+
+    TSHUInfo::TSHUInfo(const TrkStrawHit* tsh,CLHEP::Hep3Vector const& udir, HepPoint const& uorigin) {
+      // find wire position at POCA	
+      HepPoint wpos = tsh->hitTraj()->position(tsh->hitLen());
+      CLHEP::Hep3Vector wposv(wpos.x(),wpos.y(),wpos.z());
+      // translate WRT origin and project
+      CLHEP::Hep3Vector dstraw = wpos-uorigin;
+      _upos = udir.dot(dstraw);
+      _wcpos = udir.dot(wposv);
+      // note that the t0 component of the error scales coherently between the hits, so here we use only the intrinsic error
+      _uerr = tsh->hitErr();
+      _uwt = 1.0/(_uerr*_uerr);
+      _dr = tsh->driftRadius();
+      _dv = tsh->driftVelocity();
+      _ambig = tsh->ambig();
+      _active = tsh->isActive();
+      _index = tsh->index();
     }
 
   } // PanelAmbig namespace

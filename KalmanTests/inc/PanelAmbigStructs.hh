@@ -21,56 +21,83 @@ class HepPoint;
 namespace mu2e {
   class TrkStrawHit;
   namespace PanelAmbig {
-// class to describe the ambiguity and activity state of a single TrkStrawHit
-    class HitState {
-      public:
-	enum TSHState {negambig=-1,noambig,posambig,inactive,ignore,nstates};
-	// set state explicitly.  
-	HitState(TSHState state=ignore) : _state(state){}
-	// set state from an existing strawhit
-	HitState(TrkStrawHit* tsh);
-	// return the state as an integer
-	TSHState state() const { return _state; }
-	// total number of states
-	static unsigned nStates() { return nstates; }
-	void setState(TSHState state) { _state = state; }
-	// set TrkStrawHit tot his state
-	void setHitState(TrkStrawHit* tsh) const;
-	// comparators
-	bool operator == (HitState const& other) const { return _state == other._state; }
-	bool operator != (HitState const& other) const { return !operator==(other); }
-	bool operator < (HitState const& other ) const { return _state < other._state; }
-      private:
-	TSHState _state;
+// struct to describe the ambiguity and activity state of a single TrkStrawHit
+    struct HitState {
+      enum TSHState {negambig=-1,noambig,posambig,inactive,ignore,nstates};
+      // set state explicitly.  
+      HitState(TSHState state=ignore) : _state(state){}
+      HitState(int ambig, bool active);
+      // set state from an existing strawhit
+      HitState(TrkStrawHit* tsh);
+      // total number of states
+      static unsigned nStates() { return nstates; }
+      // set TrkStrawHit to this state
+      void setHitState(TrkStrawHit* tsh) const;
+      // test if 
+      bool active() const { return _state != inactive && _state != ignore; }
+      // comparators
+      bool operator == (HitState const& other) const { return _state == other._state; }
+      bool operator != (HitState const& other) const { return !operator==(other); }
+      bool operator < (HitState const& other ) const { return _state < other._state; }
+      TSHState _state;
     };
     typedef std::vector<TrkStrawHit*> TSHV;
     typedef std::vector<HitState> HSV;
 
-    // compact dscription of the state of an entire panel
+    // class for root to hold Hit States per panel.  Genreflex can't
+    // handle unions, arrays, ...
+  #define MAXNHITS 6
+    struct PanelHitState {
+      HitState _hit0, _hit1, _hit2, _hit3, _hit4, _hit5;
+      HitState& hitState(size_t ish) {
+	static HitState ignore(HitState::ignore);
+	assert(ish <= MAXNHITS);
+	switch(ish) {
+	  case 0:
+	    return _hit0;
+	  case 1:
+	    return _hit1;
+	  case 2:
+	    return _hit2;
+	  case 3:
+	    return _hit3;
+	  case 4:
+	    return _hit4;
+	  case 5:
+	    return _hit5;
+	  default:
+	    return ignore;
+	}
+	return ignore;
+      }
+      HitState const& hitState(size_t ish) const {
+	PanelHitState* ncthis = const_cast<PanelHitState*>(this);
+	return ncthis->hitState(ish);
+      }
+    };
+
+    // compact description of the state of an entire panel
     struct PanelState {
-#define MAXNHITS 4
-      HitState _hstate[MAXNHITS];
-      size_t _nhits;
-      PanelState();
+      PanelHitState _pstate;
+      unsigned _nhits;
+      PanelState() : _nhits(0) {}
       // construct from a vector of states
       PanelState(HSV const& hsv) : _nhits(hsv.size()) {
 	assert(hsv.size() <=MAXNHITS);
 	for(size_t ish=0;ish < hsv.size(); ++ish)
-	  _hstate[ish] = hsv[ish];
+	  _pstate.hitState(ish) = hsv[ish];
       }
       // construct from a vector of hits.  This assumes all hits are from the same panel!!!
       PanelState(TSHV const& tshv) : _nhits(tshv.size()) {
 	assert(tshv.size() <=MAXNHITS);
 	for(size_t ish=0;ish < tshv.size(); ++ish)
-	  _hstate[ish] = HitState(tshv[ish]);
+	  _pstate.hitState(ish) = HitState(tshv[ish]);
       }
       // set the state of the referenced TrkStrawHits.
       void setHitStates(TSHV& hits) const;
-
       // accessors
-      HitState const& state(size_t ish) const {
-	return _hstate[4];
-      }
+      HitState& hitState(size_t ish) { return _pstate.hitState(ish); }
+      HitState const& hitState(size_t ish) const { return _pstate.hitState(ish); }
     };
 
     typedef std::vector<PanelState> PSV;
@@ -80,23 +107,24 @@ namespace mu2e {
     struct TSHUInfo {
       // construct from a TrkStrawHit, the U direction and the U origin in mu2e coordinates
       TSHUInfo(const TrkStrawHit* tsh,CLHEP::Hep3Vector const& udir, HepPoint const& uorigin);
-      TSHUInfo() : _tsh(0), _upos(0.0), _wcpos(0.0), _uerr(-1.0), _uwt(0.0), _dr(0.0), _dv(0.0), _ambig(0), _active(-1) {}
-      const TrkStrawHit* _tsh; // reference the straw hit, to allow consistency checking
+      TSHUInfo() : _upos(0.0), _wcpos(0.0), _uerr(-1.0), _uwt(0.0), _dr(0.0), _dv(0.0), _ambig(0), _active(-1) {}
       Float_t _upos; // hit position in u relative to the projected track position
-      Float_t _wcpos; // wire center WRT track 
+      Float_t _wcpos; // wire center position in detector coordinate
       Float_t _uerr; // hit error projected in u direction 
       Float_t _uwt; // cache of the hit weight = 1/error^2
       Float_t _dr; // drift radius
       Float_t _dv; // drift velocity
       Int_t _ambig; // TrkStrawHit nominal ambiguity
       Int_t _active; // TrkStrawHit nominal activity
+      UInt_t _index; // index into TSH array
     };
     typedef std::vector<TSHUInfo> TSHUIV;
 
     // MC truth hit U projection information, for diagnostics
     struct TSHMCUInfo {
-      Float_t _upos;
+      Float_t _dr; // true drift radius
       Int_t _ambig;
+      TSHMCUInfo() : _dr(-1000.0),_ambig(-10) {}
     };
     typedef std::vector<TSHMCUInfo> TSHMCUIV;
 
@@ -115,14 +143,18 @@ namespace mu2e {
 
     // struct to hold the result of optimizing the panel parameters.
     struct PanelResult {
-      PanelResult(PanelState const& state) : _state(state),
-      _chisq(-1.0), _status(-1) {}
-      PanelResult() : _chisq(-1.0), _status(-1) {}
+    // classify the hit patterns in terms of having hits on the same or opposite sides
+    // null is when
+      enum HitPattern{null=0,same,opposite};
+      PanelResult(PanelState const& state);
+      PanelResult() : _chisq(-1.0), _status(-1), _hpat(null) , _statechange(0) {}
       PanelState _state; // ambiguity/activity state of each hit in this panel
       Float_t _chisq; // chisquared of this state, including all penalties
       CLHEP::HepVector _delta; // change in parameters at optimum; U is parameter 0, deltaT is parameter 1
       CLHEP::HepSymMatrix _dcov; // covariance of parameter changes
       Int_t _status; // status of matrix inversion
+      HitPattern _hpat;
+      UInt_t _statechange; // bit pattern of hit state changes
     };
 
     typedef std::vector<PanelResult> PRV;
