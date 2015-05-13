@@ -26,3 +26,13 @@ samDatasets() {
   $MU2E_BASE_RELEASE/Tools/DH/samDatasets.sh "$@"
 }
 export samDatasets
+
+samToPnfs() {
+  $MU2E_BASE_RELEASE/Tools/DH/samToPnfs.sh "$@"
+}
+export samToPnfs
+
+samNoChildren() {
+  $MU2E_BASE_RELEASE/Tools/DH/samNoChildren.sh "$@"
+}
+export samNoChildren

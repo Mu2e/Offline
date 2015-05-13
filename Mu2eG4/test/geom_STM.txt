@@ -15,7 +15,6 @@ bool hasHall            = true;
 bool hasTarget          = true;
 bool hasProtonAbsorber  = true;
 bool hasInternalNeutronAbsorber = true;
-bool hasExternalNeutronShielding = true;
 bool hasVaneCalorimeter = false;
 bool hasDiskCalorimeter = true;
 bool hasHybridCalorimeter = false;
@@ -244,24 +243,6 @@ string piondeg.materialName = "G4_Be";
 bool   piondeg.visible = true;
 bool   piondeg.solid = true;
 
-
-
-// Neutron shielding - TS region
-#include "Mu2eG4/geom/ExtNeutShieldUpstream1a_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldUpstream1b_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldUpstream2_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldUpstreamTop_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldUpstreamBottom_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldCavexRight_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldCavexRightb_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldCavexLeft_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldCavexRoof_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldLAbove_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldLCeiling_v01.txt"
-
-// Neuton shielding - DS region
-#include "Mu2eG4/geom/ExtNeutShieldCryoBoxes_v01.txt"
-#include "Mu2eG4/geom/ExtNeutShieldCendBoxes_v01.txt"
 
 // Virtual detectors
 double vd.halfLength     = 0.01; //mm

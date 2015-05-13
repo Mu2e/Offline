@@ -8,7 +8,7 @@
 ################################
 usage() {
 echo "
-   samRm [OPTIONS] [-f FILE]  [-s FILEOFNAMES] -[-d DATASET]
+   samRm [OPTIONS] [-f FILE]  [-s FILEOFNAMES] [-d DATASET]
       -n interpret file lists, but don't actually do the delete
       -h print help
   
@@ -124,6 +124,7 @@ export SAM_EXPERIMENT=mu2e
 [ -z "$SETUP_SAM_WEB_CLIENT" ] && setup sam_web_client 
 
 TMP=/tmp/${USER}_samrm_$$
+touch $TMP
 
 # for file names provided with -f
 [ "$FILEOPT" != "" ] && echo $FILEOPT | tr "," "\n" >> $TMP
@@ -138,6 +139,14 @@ then
 fi
 
 N=`cat $TMP | wc -l`
+
+if [ $N -le 0 ]; then
+  echo Exiting - No files found 
+  usage
+  rm -f $TMP
+  exit 1
+fi
+
 echo "Will delete $N files in sam and enstore, examples:"
 cat $TMP | head -5
 

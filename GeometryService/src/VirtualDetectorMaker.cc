@@ -35,8 +35,6 @@
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
-//#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
-
 //#include "G4Helper/inc/G4Helper.hh"
 //#include "G4Helper/inc/VolumeInfo.hh"
 
@@ -338,7 +336,6 @@ namespace mu2e {
       // VD DSNeutronShieldExit is at the downstream part of the
       // aperture in the neutron shielding outside of the IFB/VPSP
       if ( c.getBool("vd.DSNeutronShieldExit.build", false ) ) {
-//         GeomHandle<ExtNeutShieldCendBoxes> enscendb;
 
 //         const std::vector<CLHEP::Hep3Vector>& ENSCBcentersOfBoxes = enscendb->centersOfBoxes();
 
@@ -566,7 +563,6 @@ namespace mu2e {
         //const double mstmCanHalfLength         = c.getDouble("mstm.can.halfLength");
         //const double mstmCrystalHalfLength     = c.getDouble("mstm.crystal.halfLength");
 
-//         GeomHandle<ExtNeutShieldCendBoxes> enscendb;
 
 //         const std::vector<CLHEP::Hep3Vector>& ENSCBcentersOfBoxes = enscendb->centersOfBoxes();
 
@@ -586,7 +582,6 @@ namespace mu2e {
 				       c.getDouble("ExtShieldDownstream.detecHoleY")*CLHEP::mm, 
 				       c.getDouble("ExtShieldDownstream.detecHoleZ")*CLHEP::mm);
 	double holeHalfLength = c.getDouble("ExtShieldDownstream.detecHoleHalflength")*CLHEP::mm;
-	std::cout << "DNBII:  holeLocation: " << holeLocation << std::endl;
 
 
         GeomHandle<DetectorSolenoid> ds;

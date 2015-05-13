@@ -98,7 +98,7 @@ source : {
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "hist_beam_g4s1.root" }
+   TFileService          : { fileName : "nts.owner.cd3-beam-g4s1.version.sequencer.root" }
    RandomNumberGenerator : { }
 
    user : {
@@ -270,7 +270,7 @@ outputs: {
          "keep *_muonBeamFilter_*_*",
          "keep *_compressPVmuonBeam_*_*"
       ]
-      fileName    : "data_g4s1_mubeam.art"
+      fileName    : "sim.owner.cd3-beam-g4s1-mubeam.version.sequencer.art"
    }
 
    dsout : {
@@ -283,7 +283,7 @@ outputs: {
          "keep *_dsRegionFilter_*_*",
          "keep *_compressPVdsRegion_*_*"
       ]
-      fileName    : "data_g4s1_dsregion.art"
+      fileName    : "sim.owner.cd3-beam-g4s1-dsregion.version.sequencer.art"
    }
 
    extmonbeamout : {
@@ -296,7 +296,7 @@ outputs: {
          "keep *_extmonBeamFilter_*_*",
          "keep *_compressPVextmonBeam_*_*"
       ]
-      fileName    : "data_g4s1_extmonbeam.art"
+      fileName    : "sim.owner.cd3-beam-g4s1-extmonbeam.version.sequencer.art"
    }
 
    extmonregionout : {
@@ -309,7 +309,7 @@ outputs: {
          "keep *_extmonRegionFilter_*_*",
          "keep *_compressPVextmonRegion_*_*"
       ]
-      fileName    : "data_g4s1_extmonregion.art"
+      fileName    : "sim.owner.cd3-beam-g4s1-extmonregion.version.sequencer.art"
    }
 
    truncatedEvtsOutput : {
@@ -323,7 +323,7 @@ outputs: {
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "truncated_beam_g4s1.art"
+      fileName    : "sim.owner.cd3-beam-g4s1-truncated.version.sequencer.art"
    }
 
 }

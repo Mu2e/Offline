@@ -96,24 +96,18 @@ namespace mu2e {
       lengthOfType.push_back(c.getDouble(bLengthVarName.str())*CLHEP::mm/2.0);
 
       // Get the tolerances for this type box - du,dv,dw
-      std::ostringstream btolsUVarName;
-      btolsUVarName << tolsBaseName << "UType" << iType;
-      std::ostringstream btolsVVarName;
-      btolsVVarName << tolsBaseName << "VType" << iType;
-      std::ostringstream btolsWVarName;
-      btolsWVarName << tolsBaseName << "WType" << iType;
-      double du = c.getDouble(btolsUVarName.str());
-      double dv = c.getDouble(btolsVVarName.str());
-      double dw = c.getDouble(btolsWVarName.str());
-      if ( du >10.0 ||dv > 10.0 || dw> 10.0 || du < -20.0 ||dv < -20.0 || dw < -20.0 ) {
-        // Throw if tolerances out of tolerance.
-        throw cet::exception("GEOM")
-          << "Tolerance on ExternalShielding Downstream outside limits. "
-          << "\nTolerances mustbe between -20 and 10 mm.";
-      } 
-      tempDoubleVec.push_back(du*CLHEP::mm/2.0);
-      tempDoubleVec.push_back(dv*CLHEP::mm/2.0);
-      tempDoubleVec.push_back(dw*CLHEP::mm/2.0);
+      std::ostringstream btolsVarName;
+      btolsVarName << tolsBaseName << "Type" << iType;
+      c.getVectorDouble(btolsVarName.str(),tempDoubleVec,3);
+      for ( int itmp = 0; itmp < 3; itmp++ ) {
+	if ( tempDoubleVec[itmp] > 10.0 || tempDoubleVec[itmp] < -20.0 ) {
+	  // Throw if tolerances out of tolerance.
+	  throw cet::exception("GEOM")
+	    << "Tolerance on ExternalShielding Downstream outside limits. "
+	    << "\nTolerances mustbe between -20 and 10 mm.";
+	} 
+	tempDoubleVec[itmp] *= (CLHEP::mm/2.0);
+      }
       tolsOfType.push_back(tempDoubleVec);
       tempDoubleVec.clear();  // So it can be re-used
 
@@ -178,18 +172,10 @@ namespace mu2e {
 
 	// Location of the center of the box in Mu2e coords
 	// Use our now-familiar trick for variable names
-	std::ostringstream bCentXVarName;
-	bCentXVarName << centerBaseName << "XType" << it+1 << "Box" << iboxt+1;
-	std::ostringstream bCentYVarName;
-	bCentYVarName << centerBaseName << "YType" << it+1 << "Box" << iboxt+1;
-	std::ostringstream bCentZVarName;
-	bCentZVarName << centerBaseName << "ZType" << it+1 << "Box" << iboxt+1;
-	CLHEP::Hep3Vector boxCenter(c.getDouble(bCentXVarName.str())
-			   *CLHEP::mm,
-				    c.getDouble(bCentYVarName.str())
-			   *CLHEP::mm,
-				    c.getDouble(bCentZVarName.str())
-			   *CLHEP::mm);
+	std::ostringstream bCentVarName;
+	bCentVarName << centerBaseName << "Type" << it+1 << "Box" << iboxt+1;
+	CLHEP::Hep3Vector boxCenter = c.getHep3Vector(bCentVarName.str());
+	boxCenter *= CLHEP::mm;
 	sites.push_back(boxCenter);			   
     
 	std::ostringstream bOrientVarName;

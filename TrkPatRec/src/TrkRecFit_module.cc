@@ -364,7 +364,7 @@ namespace mu2e
     static TrkDef dummydef;
     static HelixDef dummyhdef;
     static HelixFitResult dummyhfit(dummyhdef);
-    static KalFitResult dummykfit(dummydef);
+    static KalFitResult dummykfit(&dummydef);
     // loop over the accepted time peaks
     if(_tpeaks.size()>0)_cutflow->Fill(1.0);
     if(_diag>1 && _icepeak >=0)_ccutflow->Fill(3.0);
@@ -441,8 +441,8 @@ namespace mu2e
       seeddef.setT0(t0);
       TrkDef kaldef(seeddef);
       HelixFitResult helixfit(seeddef);
-      KalFitResult seedfit(seeddef);
-      KalFitResult kalfit(kaldef);
+      KalFitResult seedfit(&seeddef);
+      KalFitResult kalfit(&kaldef);
       // initialize filters.  These are used only for diagnostics
       _hfilt.clear();
       _sfilt.clear();
@@ -1033,7 +1033,7 @@ namespace mu2e
     _hdfdz = helixfit._dfdz; _hfz0 = helixfit._fz0;
     // seed fit information
     if(seedfit._fit.success()){
-      _snhits = seedfit._tdef.strawHitIndices().size();
+      _snhits = seedfit._tdef->strawHitIndices().size();
       _snactive = seedfit._krep->nActive();
       _sniter = seedfit._krep->iterations();
       _sndof = seedfit._krep->nDof();

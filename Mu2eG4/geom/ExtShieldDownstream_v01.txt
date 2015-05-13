@@ -4,7 +4,7 @@
 // See Mu2e docdb #4678 for more details on parameters
 
 // Sort boxes into "types"
-int ExtShieldDownstream.numberOfBoxTypes = 17; 
+int ExtShieldDownstream.numberOfBoxTypes = 16; 
 
 // How many of each type box to make
 int ExtShieldDownstream.nBoxType1 = 20;  // Regular concrete wall T blocks
@@ -20,10 +20,10 @@ int ExtShieldDownstream.nBoxType10 = 1;  // Concrete roof filler block
 int ExtShieldDownstream.nBoxType11 = 7;  // Concrete endcap wall T blocks
 int ExtShieldDownstream.nBoxType12 = 2;  // Concrete special endcap wall Ts
 int ExtShieldDownstream.nBoxType13 = 2;  // Concrete endcap rectangular back wall endcap fillers
-int ExtShieldDownstream.nBoxType14 = 1;  // Concrete endcap floor
-int ExtShieldDownstream.nBoxType15 = 1;  // Corner triangle between up and downstream
-int ExtShieldDownstream.nBoxType16 = 1;  // endcap concrete roof L (end of ds)
-int ExtShieldDownstream.nBoxType17 = 1;  // PS Shielding extrusion
+//int ExtShieldDownstream.nBoxType14 = 1;  // Concrete endcap floor
+int ExtShieldDownstream.nBoxType14 = 1;  // Corner triangle between up and downstream
+int ExtShieldDownstream.nBoxType15 = 1;  // endcap concrete roof L (end of ds)
+int ExtShieldDownstream.nBoxType16 = 1;  // PS Shielding extrusion
 
 
 // Number of vertices of each type of box
@@ -40,9 +40,10 @@ int ExtShieldDownstream.nVertType10 = 6;
 int ExtShieldDownstream.nVertType11 = 8;
 int ExtShieldDownstream.nVertType12 = 8;
 int ExtShieldDownstream.nVertType13 = 4;
-int ExtShieldDownstream.nVertType14 = 4;
-int ExtShieldDownstream.nVertType15 = 3;
-int ExtShieldDownstream.nVertType16 = 6;
+//int ExtShieldDownstream.nVertType14 = 4; //endcap floor removed
+int ExtShieldDownstream.nVertType14 = 3;
+int ExtShieldDownstream.nVertType15 = 6;
+int ExtShieldDownstream.nVertType16 = 8; // PS Shield Extrusion
 
 // Vertices in u, v for each type of box.  Dimensions should be in mm.
 // All dimensions here are 10 mm less than nominal design dimensions,
@@ -246,37 +247,55 @@ double ExtShieldDownstream.outlineType13VVert3 = 223.6;
 double ExtShieldDownstream.outlineType13UVert4 = -455.8;
 double ExtShieldDownstream.outlineType13VVert4 = -223.6;
 
-// Rectangular floor of the endcap region
-double ExtShieldDownstream.outlineType14UVert1 = 2458.8;
-double ExtShieldDownstream.outlineType14VVert1 = -223.6;
-double ExtShieldDownstream.outlineType14UVert2 = 2458.8;
-double ExtShieldDownstream.outlineType14VVert2 = 223.6;
-double ExtShieldDownstream.outlineType14UVert3 = -2458.8;
-double ExtShieldDownstream.outlineType14VVert3 = 223.6;
-double ExtShieldDownstream.outlineType14UVert4 = -2458.8;
-double ExtShieldDownstream.outlineType14VVert4 = -223.6;
+// // Rectangular floor of the endcap region
+// double ExtShieldDownstream.outlineType14UVert1 = 2458.8;
+// double ExtShieldDownstream.outlineType14VVert1 = -223.6;
+// double ExtShieldDownstream.outlineType14UVert2 = 2458.8;
+// double ExtShieldDownstream.outlineType14VVert2 = 223.6;
+// double ExtShieldDownstream.outlineType14UVert3 = -2458.8;
+// double ExtShieldDownstream.outlineType14VVert3 = 223.6;
+// double ExtShieldDownstream.outlineType14UVert4 = -2458.8;
+// double ExtShieldDownstream.outlineType14VVert4 = -223.6;
 
 // Triangular column at north corner between upstream and downstream
-double ExtShieldDownstream.outlineType15UVert1 = -590.6;
-double ExtShieldDownstream.outlineType15VVert1 = -5;
-double ExtShieldDownstream.outlineType15UVert2 = -5;
-double ExtShieldDownstream.outlineType15VVert2 = -5;
-double ExtShieldDownstream.outlineType15UVert3 = -5;
-double ExtShieldDownstream.outlineType15VVert3 = -909.4;
+double ExtShieldDownstream.outlineType14UVert1 = -590.6;
+double ExtShieldDownstream.outlineType14VVert1 = -5;
+double ExtShieldDownstream.outlineType14UVert2 = -5;
+double ExtShieldDownstream.outlineType14VVert2 = -5;
+double ExtShieldDownstream.outlineType14UVert3 = -5;
+double ExtShieldDownstream.outlineType14VVert3 = -909.4;
 
 // The L blocks are similar, but cut out two vertices
-double ExtShieldDownstream.outlineType16UVert1 = 682.6;
-double ExtShieldDownstream.outlineType16VVert1 = -452.2;
-double ExtShieldDownstream.outlineType16UVert2 = 682.6;
-double ExtShieldDownstream.outlineType16VVert2 = -5;
-double ExtShieldDownstream.outlineType16UVert3 = 225.4;
-double ExtShieldDownstream.outlineType16VVert3 = -5;
-double ExtShieldDownstream.outlineType16UVert4 = 225.4;
-double ExtShieldDownstream.outlineType16VVert4 = 452.2;
-double ExtShieldDownstream.outlineType16UVert5 = -682.6;
-double ExtShieldDownstream.outlineType16VVert5 = 452.2;
-double ExtShieldDownstream.outlineType16UVert6 = -682.6;
-double ExtShieldDownstream.outlineType16VVert6 = -452.2;
+double ExtShieldDownstream.outlineType15UVert1 = 682.6;
+double ExtShieldDownstream.outlineType15VVert1 = -452.2;
+double ExtShieldDownstream.outlineType15UVert2 = 682.6;
+double ExtShieldDownstream.outlineType15VVert2 = -5;
+double ExtShieldDownstream.outlineType15UVert3 = 225.4;
+double ExtShieldDownstream.outlineType15VVert3 = -5;
+double ExtShieldDownstream.outlineType15UVert4 = 225.4;
+double ExtShieldDownstream.outlineType15VVert4 = 452.2;
+double ExtShieldDownstream.outlineType15UVert5 = -682.6;
+double ExtShieldDownstream.outlineType15VVert5 = 452.2;
+double ExtShieldDownstream.outlineType15UVert6 = -682.6;
+double ExtShieldDownstream.outlineType15VVert6 = -452.2;
+
+// The PS External Shielding, an extrusion with penetration.  Added by S. Boi.
+double ExtShieldDownstream.outlineType16UVert1 = 1500;   
+double ExtShieldDownstream.outlineType16VVert1 = -2312; 
+double ExtShieldDownstream.outlineType16UVert2 = 1500; 
+double ExtShieldDownstream.outlineType16VVert2 = 1532; 
+double ExtShieldDownstream.outlineType16UVert3 = -1500; 
+double ExtShieldDownstream.outlineType16VVert3 = 1532; 
+double ExtShieldDownstream.outlineType16UVert4 = -1500; 
+double ExtShieldDownstream.outlineType16VVert4 = -2312; 
+double ExtShieldDownstream.outlineType16UVert5 = -2050; 
+double ExtShieldDownstream.outlineType16VVert5 = -2312; 
+double ExtShieldDownstream.outlineType16UVert6 = -2050; 
+double ExtShieldDownstream.outlineType16VVert6 = 2082; 
+double ExtShieldDownstream.outlineType16UVert7 = 2050; 
+double ExtShieldDownstream.outlineType16VVert7 = 2082; 
+double ExtShieldDownstream.outlineType16UVert8 = 2050; 
+double ExtShieldDownstream.outlineType16VVert8 = -2312;
 
 
 // Lengths in w dimension for each type of box.  Dimensions should be in mm.
@@ -294,66 +313,34 @@ double ExtShieldDownstream.lengthType10 = 4918;
 double ExtShieldDownstream.lengthType11 = 3073.4;
 double ExtShieldDownstream.lengthType12 = 3530.6;
 double ExtShieldDownstream.lengthType13 = 3073.4;
-double ExtShieldDownstream.lengthType14 = 2784.0;
-double ExtShieldDownstream.lengthType15 = 3851.0;
-double ExtShieldDownstream.lengthType16 = 4918.0;
+//double ExtShieldDownstream.lengthType14 = 2784.0; // endcap floor removed
+double ExtShieldDownstream.lengthType14 = 3851.0;
+double ExtShieldDownstream.lengthType15 = 4918.0;
+double ExtShieldDownstream.lengthType16 = 5250;
 
 
 // "Tolerances" on the dimensions in u, v, and w for each type of box.
 // Tolerance here means the amount the size is changed from nominal, in mm.
 // MAXIMUM VALUE IS 10.0 mm.  Tolerances above that value will cause program
 // to terminate.
-double ExtShieldDownstream.tolsUType1 = 5.0; // Wall
-double ExtShieldDownstream.tolsVType1 = 5.0;
-double ExtShieldDownstream.tolsWType1 = 9.5;
-double ExtShieldDownstream.tolsUType2 = 5.0; // Wall
-double ExtShieldDownstream.tolsVType2 = 9.5;
-double ExtShieldDownstream.tolsWType2 = 5.0;
-double ExtShieldDownstream.tolsUType3 = 5.0; // Wall
-double ExtShieldDownstream.tolsVType3 = 5.0;
-double ExtShieldDownstream.tolsWType3 = 9.5;
-double ExtShieldDownstream.tolsUType4 = 5.0; // Roof
-double ExtShieldDownstream.tolsVType4 = 9.5;
-double ExtShieldDownstream.tolsWType4 = 5.0;
-double ExtShieldDownstream.tolsUType5 = 5.0; // Wall
-double ExtShieldDownstream.tolsVType5 = 5.0;
-double ExtShieldDownstream.tolsWType5 = 9.5;
-double ExtShieldDownstream.tolsUType6 = 5.0; // Wall
-double ExtShieldDownstream.tolsVType6 = 5.0;
-double ExtShieldDownstream.tolsWType6 = 9.5;
-double ExtShieldDownstream.tolsUType7 = 5.0; // Wall
-double ExtShieldDownstream.tolsVType7 = 5.0;
-double ExtShieldDownstream.tolsWType7 = 9.5;
-double ExtShieldDownstream.tolsUType8 = 5.0; // Roof
-double ExtShieldDownstream.tolsVType8 = 9.5;
-double ExtShieldDownstream.tolsWType8 = 5.0;
-double ExtShieldDownstream.tolsUType9 = 5.0; // Roof
-double ExtShieldDownstream.tolsVType9 = 9.5;
-double ExtShieldDownstream.tolsWType9 = 5.0;
-double ExtShieldDownstream.tolsUType10 = 5.0; // Roof
-double ExtShieldDownstream.tolsVType10 = 9.5;
-double ExtShieldDownstream.tolsWType10 = 5.0;
-double ExtShieldDownstream.tolsUType11 = 5.0; // endcap Wall
-double ExtShieldDownstream.tolsVType11 = 5.0;
-double ExtShieldDownstream.tolsWType11 = 9.5;
-double ExtShieldDownstream.tolsUType12 = 5.0; // endcap Wall
-double ExtShieldDownstream.tolsVType12 = 5.0;
-double ExtShieldDownstream.tolsWType12 = 9.5;
-double ExtShieldDownstream.tolsUType13 = 5.0; // endcap Wall
-double ExtShieldDownstream.tolsVType13 = 5.0;
-double ExtShieldDownstream.tolsWType13 = 9.5;
-double ExtShieldDownstream.tolsUType14 = 0.0; // endcap Floor
-double ExtShieldDownstream.tolsVType14 = 0.0;
-double ExtShieldDownstream.tolsWType14 = 0.0;
-double ExtShieldDownstream.tolsUType15 = 5.0; // Wall triangle
-double ExtShieldDownstream.tolsVType15 = 5.0;
-double ExtShieldDownstream.tolsWType15 = 9.5;
-double ExtShieldDownstream.tolsUType16 = 5.0; // Roof
-double ExtShieldDownstream.tolsVType16 = 9.5;
-double ExtShieldDownstream.tolsWType16 = 5.0;
-double ExtShieldDownstream.tolsUType17 = 0.0; // PS Shielding extrusion
-double ExtShieldDownstream.tolsVType17 = 0.0;
-double ExtShieldDownstream.tolsWType17 = 0.0;
+vector<double> ExtShieldDownstream.tolsType1 = {5,5,9.5}; //Wall
+vector<double> ExtShieldDownstream.tolsType2 = {5,9.5,5}; //Roof
+vector<double> ExtShieldDownstream.tolsType3 = {5,5,9.5}; //Wall
+vector<double> ExtShieldDownstream.tolsType4 = {5,9.5,5}; //Roof
+vector<double> ExtShieldDownstream.tolsType5 = {5,5,9.5}; //Wall
+vector<double> ExtShieldDownstream.tolsType6 = {5,5,9.5}; //Wall
+vector<double> ExtShieldDownstream.tolsType7 = {5,5,9.5}; //Wall
+vector<double> ExtShieldDownstream.tolsType8 = {5,9.5,5}; //Roof
+vector<double> ExtShieldDownstream.tolsType9 = {5,9.5,5}; //Roof
+vector<double> ExtShieldDownstream.tolsType10 = {5,9.5,5}; //Roof
+vector<double> ExtShieldDownstream.tolsType11 = {5,5,9.5}; // endcap Wall
+vector<double> ExtShieldDownstream.tolsType12 = {5,5,9.5}; // endcap Wall
+vector<double> ExtShieldDownstream.tolsType13 = {5,5,9.5}; // endcap Wall
+//vector<double> ExtShieldDownstream.tolsType14 = {0,0,0}; // endcap Floor
+vector<double> ExtShieldDownstream.tolsType14 = {5,5,9.5}; // Wall triangle
+vector<double> ExtShieldDownstream.tolsType15 = {5,9.5,5}; // Roof
+vector<double> ExtShieldDownstream.tolsType16 = {0,0,0};  // PS Shield Extrusn
+
 
 // Materials for each type of box.  Here, Concrete and Iron.
 string ExtShieldDownstream.materialType1   = "CONCRETE_MARS";
@@ -369,281 +356,143 @@ string ExtShieldDownstream.materialType10   = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType11   = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType12   = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType13   = "CONCRETE_MARS";
-string ExtShieldDownstream.materialType14   = "CONCRETE_MARS";
-string ExtShieldDownstream.materialType15   = "BARITE";
-string ExtShieldDownstream.materialType16   = "CONCRETE_MARS";
+//string ExtShieldDownstream.materialType14   = "CONCRETE_MARS";// ec floor
+string ExtShieldDownstream.materialType14   = "BARITE";
+string ExtShieldDownstream.materialType15   = "CONCRETE_MARS";
+string ExtShieldDownstream.materialType16  = "CONCRETE_MARS";
 
 
-// The center of the detector in Mu2e Offline coordinates
-double ExtShieldDownstream.centerXType1Box1 = -1897.4; // 20 reg concr wall Ts
-double ExtShieldDownstream.centerYType1Box1 = -381.4;  // Start with 10 north
-double ExtShieldDownstream.centerZType1Box1 = 15056.8; // This is downstream 
-double ExtShieldDownstream.centerXType1Box2 = -1897.4; // region.
-double ExtShieldDownstream.centerYType1Box2 = -381.4;  
-double ExtShieldDownstream.centerZType1Box2 = 14135.2;
-double ExtShieldDownstream.centerXType1Box3 = -1897.4; 
-double ExtShieldDownstream.centerYType1Box3 = -381.4;  
-double ExtShieldDownstream.centerZType1Box3 = 13213.6;
-double ExtShieldDownstream.centerXType1Box4 = -1897.4; 
-double ExtShieldDownstream.centerYType1Box4 = -381.4;  
-double ExtShieldDownstream.centerZType1Box4 = 12292;
-double ExtShieldDownstream.centerXType1Box5 = -1897.4; 
-double ExtShieldDownstream.centerYType1Box5 = -381.4;  
-double ExtShieldDownstream.centerZType1Box5 = 11370.4;
-double ExtShieldDownstream.centerXType1Box6 = -1897.4; 
-double ExtShieldDownstream.centerYType1Box6 = -381.4;  
-double ExtShieldDownstream.centerZType1Box6 = 10448.8;
-double ExtShieldDownstream.centerXType1Box7 = -1897.4; 
-double ExtShieldDownstream.centerYType1Box7 = -381.4;  
-double ExtShieldDownstream.centerZType1Box7 = 9527.2;
-double ExtShieldDownstream.centerXType1Box8 = -1897.4; 
-double ExtShieldDownstream.centerYType1Box8 = -381.4;  
-double ExtShieldDownstream.centerZType1Box8 = 8605.6;
-double ExtShieldDownstream.centerXType1Box9 = -1897.4; 
-double ExtShieldDownstream.centerYType1Box9 = -381.4;  
-double ExtShieldDownstream.centerZType1Box9 = 7684;
-double ExtShieldDownstream.centerXType1Box10 = -1897.4; 
-double ExtShieldDownstream.centerYType1Box10 = -381.4;  
-double ExtShieldDownstream.centerZType1Box10 = 6762.4;
+// The center of each shield block in Mu2e Offline coordinates
+//Start with 20 regular concrete wall T-blocks.  10 on north side then 10 south
+vector<double> ExtShieldDownstream.centerType1Box1 = {-1897.4,-381.4,15056.8};
+vector<double> ExtShieldDownstream.centerType1Box2 = {-1897.4,-381.4,14135.2};
+vector<double> ExtShieldDownstream.centerType1Box3 = {-1897.4,-381.4,13213.6};
+vector<double> ExtShieldDownstream.centerType1Box4 = {-1897.4,-381.4,12292.0};
+vector<double> ExtShieldDownstream.centerType1Box5 = {-1897.4,-381.4,11370.4};
+vector<double> ExtShieldDownstream.centerType1Box6 = {-1897.4,-381.4,10448.8};
+vector<double> ExtShieldDownstream.centerType1Box7 = {-1897.4,-381.4, 9527.2};
+vector<double> ExtShieldDownstream.centerType1Box8 = {-1897.4,-381.4, 8605.6};
+vector<double> ExtShieldDownstream.centerType1Box9 = {-1897.4,-381.4, 7684.0};
+vector<double> ExtShieldDownstream.centerType1Box10 ={-1897.4,-381.4, 6762.4};
+// Now south wall
+vector<double> ExtShieldDownstream.centerType1Box11 ={-5910.6,-381.4,15056.8};
+vector<double> ExtShieldDownstream.centerType1Box12 ={-5910.6,-381.4,14135.2};
+vector<double> ExtShieldDownstream.centerType1Box13 ={-5910.6,-381.4,13213.6};
+vector<double> ExtShieldDownstream.centerType1Box14 ={-5910.6,-381.4,12292.0};
+vector<double> ExtShieldDownstream.centerType1Box15 ={-5910.6,-381.4,11370.4};
+vector<double> ExtShieldDownstream.centerType1Box16 ={-5910.6,-381.4,10448.8};
+vector<double> ExtShieldDownstream.centerType1Box17 ={-5910.6,-381.4, 9527.2};
+vector<double> ExtShieldDownstream.centerType1Box18 ={-5910.6,-381.4, 8605.6};
+vector<double> ExtShieldDownstream.centerType1Box19 ={-5910.6,-381.4, 7684.0};
+vector<double> ExtShieldDownstream.centerType1Box20 ={-5910.6,-381.4, 6762.4};
 
-double ExtShieldDownstream.centerXType1Box11 = -5910.6; // Now 10 on south
-double ExtShieldDownstream.centerYType1Box11 = -381.4;  
-double ExtShieldDownstream.centerZType1Box11 = 15056.8;
-double ExtShieldDownstream.centerXType1Box12 = -5910.6; 
-double ExtShieldDownstream.centerYType1Box12 = -381.4;  
-double ExtShieldDownstream.centerZType1Box12 = 14135.2;
-double ExtShieldDownstream.centerXType1Box13 = -5910.6; 
-double ExtShieldDownstream.centerYType1Box13 = -381.4;  
-double ExtShieldDownstream.centerZType1Box13 = 13213.6;
-double ExtShieldDownstream.centerXType1Box14 = -5910.6; 
-double ExtShieldDownstream.centerYType1Box14 = -381.4;  
-double ExtShieldDownstream.centerZType1Box14 = 12292;
-double ExtShieldDownstream.centerXType1Box15 = -5910.6; 
-double ExtShieldDownstream.centerYType1Box15 = -381.4;  
-double ExtShieldDownstream.centerZType1Box15 = 11370.4;
-double ExtShieldDownstream.centerXType1Box16 = -5910.6; 
-double ExtShieldDownstream.centerYType1Box16 = -381.4;  
-double ExtShieldDownstream.centerZType1Box16 = 10448.8;
-double ExtShieldDownstream.centerXType1Box17 = -5910.6; 
-double ExtShieldDownstream.centerYType1Box17 = -381.4;  
-double ExtShieldDownstream.centerZType1Box17 = 9527.2;
-double ExtShieldDownstream.centerXType1Box18 = -5910.6; 
-double ExtShieldDownstream.centerYType1Box18 = -381.4;  
-double ExtShieldDownstream.centerZType1Box18 = 8605.6;
-double ExtShieldDownstream.centerXType1Box19 = -5910.6; 
-double ExtShieldDownstream.centerYType1Box19 = -381.4;  
-double ExtShieldDownstream.centerZType1Box19 = 7684;
-double ExtShieldDownstream.centerXType1Box20 = -5910.6; 
-double ExtShieldDownstream.centerYType1Box20 = -381.4;  
-double ExtShieldDownstream.centerZType1Box20 = 6762.4;
+// Now 10 regular concrete roof T-blocks for downstream.  Note that they are
+// longer than wall blocks
+vector<double> ExtShieldDownstream.centerType2Box1 = {-3904.0,2006.1,14135.2};
+vector<double> ExtShieldDownstream.centerType2Box2 = {-3904.0,2006.1,13213.6};
+vector<double> ExtShieldDownstream.centerType2Box3 = {-3904.0,2006.1,12292.0};
+vector<double> ExtShieldDownstream.centerType2Box4 = {-3904.0,2006.1,11370.4};
+vector<double> ExtShieldDownstream.centerType2Box5 = {-3904.0,2006.1,10448.8};
+vector<double> ExtShieldDownstream.centerType2Box6 = {-3904.0,2006.1, 9527.2};
+vector<double> ExtShieldDownstream.centerType2Box7 = {-3904.0,2006.1, 8605.6};
+vector<double> ExtShieldDownstream.centerType2Box8 = {-3904.0,2006.1, 7684.0};
+vector<double> ExtShieldDownstream.centerType2Box9 = {-3904.0,2006.1, 6762.4};
+vector<double> ExtShieldDownstream.centerType2Box10 ={-3904.0,2006.1, 5840.8};
+// And two more for the endcap roof...
+vector<double> ExtShieldDownstream.centerType2Box11 ={-3904.0,2006.1,15978.4};
+vector<double> ExtShieldDownstream.centerType2Box12 ={-3904.0,2006.1,16900.0};
 
-double ExtShieldDownstream.centerXType2Box1 = -3904; //10 reg concrete roof Ts
-double ExtShieldDownstream.centerYType2Box1 = 2006.1;// Note they are longer
-double ExtShieldDownstream.centerZType2Box1 = 14135.2;// than wall blocks
-double ExtShieldDownstream.centerXType2Box2 = -3904; 
-double ExtShieldDownstream.centerYType2Box2 = 2006.1;
-double ExtShieldDownstream.centerZType2Box2 = 13213.6;
-double ExtShieldDownstream.centerXType2Box3 = -3904; 
-double ExtShieldDownstream.centerYType2Box3 = 2006.1;
-double ExtShieldDownstream.centerZType2Box3 = 12292;
-double ExtShieldDownstream.centerXType2Box4 = -3904; 
-double ExtShieldDownstream.centerYType2Box4 = 2006.1;
-double ExtShieldDownstream.centerZType2Box4 = 11370.4;
-double ExtShieldDownstream.centerXType2Box5 = -3904; 
-double ExtShieldDownstream.centerYType2Box5 = 2006.1;
-double ExtShieldDownstream.centerZType2Box5 = 10448.8;
-double ExtShieldDownstream.centerXType2Box6 = -3904; 
-double ExtShieldDownstream.centerYType2Box6 = 2006.1; 
-double ExtShieldDownstream.centerZType2Box6 = 9527.2;
-double ExtShieldDownstream.centerXType2Box7 = -3904; 
-double ExtShieldDownstream.centerYType2Box7 = 2006.1; 
-double ExtShieldDownstream.centerZType2Box7 = 8605.6;
-double ExtShieldDownstream.centerXType2Box8 = -3904; 
-double ExtShieldDownstream.centerYType2Box8 = 2006.1;  
-double ExtShieldDownstream.centerZType2Box8 = 7684;
-double ExtShieldDownstream.centerXType2Box9 = -3904; 
-double ExtShieldDownstream.centerYType2Box9 = 2006.1;  
-double ExtShieldDownstream.centerZType2Box9 = 6762.4;
-double ExtShieldDownstream.centerXType2Box10 = -3904;
-double ExtShieldDownstream.centerYType2Box10 = 2006.1;
-double ExtShieldDownstream.centerZType2Box10 = 5840.8;   
-double ExtShieldDownstream.centerXType2Box11 = -3904;  // And 2 more for the
-double ExtShieldDownstream.centerYType2Box11 = 2006.1; // endcap roof
-double ExtShieldDownstream.centerZType2Box11 = 15978.4;   
-double ExtShieldDownstream.centerXType2Box12 = -3904;
-double ExtShieldDownstream.centerYType2Box12 = 2006.1;
-double ExtShieldDownstream.centerZType2Box12 = 16900;   
+// Now the Barite wall T-blocks.  The first four are in the stopping target
+// region (2 north wall, 2 south).  The next five are in the Upstream region
+// on the south side.  The last seven are on the Upstream west side.
+vector<double> ExtShieldDownstream.centerType3Box1 = {-1897.4,-381.4, 5840.8};
+vector<double> ExtShieldDownstream.centerType3Box2 = {-1897.4,-381.4, 4919.2};
+vector<double> ExtShieldDownstream.centerType3Box3 = {-5910.6,-381.4, 5840.8};
+vector<double> ExtShieldDownstream.centerType3Box4 = {-5910.6,-381.4, 4919.2};
+// Upstream south side
+vector<double> ExtShieldDownstream.centerType3Box5 = {-5910.6,-381.4, 2142.4};
+vector<double> ExtShieldDownstream.centerType3Box6 = {-5910.6,-381.4, 1220.8};
+vector<double> ExtShieldDownstream.centerType3Box7 = {-5910.6,-381.4,  299.2};
+vector<double> ExtShieldDownstream.centerType3Box8 = {-5910.6,-381.4, -622.4};
+vector<double> ExtShieldDownstream.centerType3Box9 = {-5910.6,-381.4,-1544.0};
+// Upstream west side (7 blocks)
+vector<double> ExtShieldDownstream.centerType3Box10 ={ -597.0,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box11 ={-1518.6,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box12 ={-2440.2,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box13 ={-3361.8,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box14 ={-4283.4,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box15 ={-5205.0,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box16 ={ -597.0,-381.4, 2235};
 
-double ExtShieldDownstream.centerXType3Box1 = -1897.4; // Barite wall T blocks
-double ExtShieldDownstream.centerYType3Box1 = -381.4;  // first four in stopping
-double ExtShieldDownstream.centerZType3Box1 = 5840.8;// target region
-double ExtShieldDownstream.centerXType3Box2 = -1897.4; // 2 north wall 2 south
-double ExtShieldDownstream.centerYType3Box2 = -381.4;  
-double ExtShieldDownstream.centerZType3Box2 = 4919.2;
-double ExtShieldDownstream.centerXType3Box3 = -5910.6; 
-double ExtShieldDownstream.centerYType3Box3 = -381.4;  
-double ExtShieldDownstream.centerZType3Box3 = 5840.8;
-double ExtShieldDownstream.centerXType3Box4 = -5910.6; 
-double ExtShieldDownstream.centerYType3Box4 = -381.4;  
-double ExtShieldDownstream.centerZType3Box4 = 4919.2;
-double ExtShieldDownstream.centerXType3Box5 = -5910.6; // Barite wall T blocks
-double ExtShieldDownstream.centerYType3Box5 = -381.4;  // now 5 blocks in Up-
-double ExtShieldDownstream.centerZType3Box5 = 2142.4;// stream region on
-double ExtShieldDownstream.centerXType3Box6 = -5910.6; // south side
-double ExtShieldDownstream.centerYType3Box6 = -381.4;  
-double ExtShieldDownstream.centerZType3Box6 = 1220.8;
-double ExtShieldDownstream.centerXType3Box7 = -5910.6; 
-double ExtShieldDownstream.centerYType3Box7 = -381.4;  
-double ExtShieldDownstream.centerZType3Box7 = 299.2;
-double ExtShieldDownstream.centerXType3Box8 = -5910.6; 
-double ExtShieldDownstream.centerYType3Box8 = -381.4;  
-double ExtShieldDownstream.centerZType3Box8 = -622.4;
-double ExtShieldDownstream.centerXType3Box9 = -5910.6; 
-double ExtShieldDownstream.centerYType3Box9 = -381.4;  
-double ExtShieldDownstream.centerZType3Box9 = -1544;
-double ExtShieldDownstream.centerXType3Box10 = -597; // Barite wall T blocks
-double ExtShieldDownstream.centerYType3Box10 = -381.4; // 6 blocks in Upstream
-double ExtShieldDownstream.centerZType3Box10 = -1778;// west side
-double ExtShieldDownstream.centerXType3Box11 = -1518.6; 
-double ExtShieldDownstream.centerYType3Box11 = -381.4;  
-double ExtShieldDownstream.centerZType3Box11 = -1778;
-double ExtShieldDownstream.centerXType3Box12 = -2440.2; 
-double ExtShieldDownstream.centerYType3Box12 = -381.4;  
-double ExtShieldDownstream.centerZType3Box12 = -1778;
-double ExtShieldDownstream.centerXType3Box13 = -3361.8; 
-double ExtShieldDownstream.centerYType3Box13 = -381.4;  
-double ExtShieldDownstream.centerZType3Box13 = -1778;
-double ExtShieldDownstream.centerXType3Box14 = -4283.4; 
-double ExtShieldDownstream.centerYType3Box14 = -381.4;  
-double ExtShieldDownstream.centerZType3Box14 = -1778;
-double ExtShieldDownstream.centerXType3Box15 = -5205; 
-double ExtShieldDownstream.centerYType3Box15 = -381.4;  
-double ExtShieldDownstream.centerZType3Box15 = -1778;
-double ExtShieldDownstream.centerXType3Box16 = -597; 
-double ExtShieldDownstream.centerYType3Box16 = -381.4;  
-double ExtShieldDownstream.centerZType3Box16 = 2235;
+// And now for the Barite Roof T-blocks. First two by stopping target.  Others
+// upstream.
+vector<double> ExtShieldDownstream.centerType4Box1 = {-3904,2006.1, 4919.2};
+vector<double> ExtShieldDownstream.centerType4Box2 = {-3904,2006.1, 3997.6};
+vector<double> ExtShieldDownstream.centerType4Box3 = { -592,2006.1,  228.6};
+vector<double> ExtShieldDownstream.centerType4Box4 = {-1513.6,2006.1,228.6};
+vector<double> ExtShieldDownstream.centerType4Box5 = {-2435.2,2006.1,228.6};
+vector<double> ExtShieldDownstream.centerType4Box6 = {-3356.8,2006.1,228.6};
+vector<double> ExtShieldDownstream.centerType4Box7 = {-4278.4,2006.1,228.6};
+vector<double> ExtShieldDownstream.centerType4Box8 = {-5200.0,2006.1,228.6};
 
-
-double ExtShieldDownstream.centerXType4Box1 = -3904; // Barite roof T blocks
-double ExtShieldDownstream.centerYType4Box1 = 2006.1;// First 2 near stopping
-double ExtShieldDownstream.centerZType4Box1 = 4919.2;// target
-double ExtShieldDownstream.centerXType4Box2 = -3904; 
-double ExtShieldDownstream.centerYType4Box2 = 2006.1;
-double ExtShieldDownstream.centerZType4Box2 = 3997.6;
-double ExtShieldDownstream.centerXType4Box3 = -592;//-634.8;  Barite roof T blocks
-double ExtShieldDownstream.centerYType4Box3 = 2006.1; // 6 blocks in Upstream
-double ExtShieldDownstream.centerZType4Box3 = 228.6;// west side
-double ExtShieldDownstream.centerXType4Box4 = -1513.6;//-1549.3; 
-double ExtShieldDownstream.centerYType4Box4 = 2006.1;  
-double ExtShieldDownstream.centerZType4Box4 = 228.6;
-double ExtShieldDownstream.centerXType4Box5 = -2435.2;//-2463.8; 
-double ExtShieldDownstream.centerYType4Box5 = 2006.1;  
-double ExtShieldDownstream.centerZType4Box5 = 228.6;
-double ExtShieldDownstream.centerXType4Box6 = -3356.8;//-3385.4; 
-double ExtShieldDownstream.centerYType4Box6 = 2006.1;  
-double ExtShieldDownstream.centerZType4Box6 = 228.6;
-double ExtShieldDownstream.centerXType4Box7 = -4278.4;//-4292.8; 
-double ExtShieldDownstream.centerYType4Box7 = 2006.1;  
-double ExtShieldDownstream.centerZType4Box7 = 228.6;
-double ExtShieldDownstream.centerXType4Box8 = -5200;//-5207.3; 
-double ExtShieldDownstream.centerYType4Box8 = 2006.1;  
-double ExtShieldDownstream.centerZType4Box8 = 228.6;
 
 // Barite wall L-blocks
-double ExtShieldDownstream.centerXType5Box1 = 324.6; // This one NW corner 
-double ExtShieldDownstream.centerYType5Box1 = -381.4;  
-double ExtShieldDownstream.centerZType5Box1 = -1778;
-double ExtShieldDownstream.centerXType5Box2 = 324.6; // This one NE corner 
-double ExtShieldDownstream.centerYType5Box2 = -381.4;  
-double ExtShieldDownstream.centerZType5Box2 = 2235;
-double ExtShieldDownstream.centerXType5Box3 = -5910.6; // This one SE corner 
-double ExtShieldDownstream.centerYType5Box3 = -381.4;  
-double ExtShieldDownstream.centerZType5Box3 = 3064;
-double ExtShieldDownstream.centerXType5Box4 = -1518.6; // This one East side
-double ExtShieldDownstream.centerYType5Box4 = -381.4;  
-double ExtShieldDownstream.centerZType5Box4 = 2235;
+// Box 1:  NW corner, Box 2:  NE corner, Box 3:  SE corner, Box 4: East side 
+vector<double> ExtShieldDownstream.centerType5Box1 = {  324.6,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType5Box2 = {  324.6,-381.4, 2235};
+vector<double> ExtShieldDownstream.centerType5Box3 = {-5910.6,-381.4, 3064};
+vector<double> ExtShieldDownstream.centerType5Box4 = {-1518.6,-381.4, 2235};
 
 // South Wall Concrete filler block
-double ExtShieldDownstream.centerXType6Box1 = -5910.6; 
-double ExtShieldDownstream.centerYType6Box1 = -381.4;  
-double ExtShieldDownstream.centerZType6Box1 = 3997.6;
+vector<double> ExtShieldDownstream.centerType6Box1 = {-5910.6,-381.4, 3997.6};
 
 // North Wall Concrete filler block
-double ExtShieldDownstream.centerXType7Box1 = -1897.4; 
-double ExtShieldDownstream.centerYType7Box1 = -381.4;  
-double ExtShieldDownstream.centerZType7Box1 = 3997.6;
+vector<double> ExtShieldDownstream.centerType7Box1 = {-1897.4,-381.4, 3997.6};
 
-double ExtShieldDownstream.centerXType8Box1 = -3904; // Downstream roof L
-double ExtShieldDownstream.centerYType8Box1 = 2006.1;  // concrete
-double ExtShieldDownstream.centerZType8Box1 = 15056.8.;  
-//286.8
-double ExtShieldDownstream.centerXType9Box1 = 329.6; // Barite roof L blocks
-double ExtShieldDownstream.centerYType9Box1 = 2006.1; //in Upstream
-double ExtShieldDownstream.centerZType9Box1 = 228.6;
-double ExtShieldDownstream.centerXType9Box2 = -6122.4;//-6128.9; 
-double ExtShieldDownstream.centerYType9Box2 = 2006.1;  
-double ExtShieldDownstream.centerZType9Box2 = 228.6;
+// Down stream roof - end of DS, just before endcap - concrete L-block
+vector<double> ExtShieldDownstream.centerType8Box1 = {-3904,2006.1,15056.8};
+
+//Barite roof L-blocks on ends of upstream roof
+vector<double> ExtShieldDownstream.centerType9Box1 = {  329.6,2006.1,228.6};
+vector<double> ExtShieldDownstream.centerType9Box2 = {-6122.4,2006.1,228.6};
+
 
 // roof Concrete filler block
-double ExtShieldDownstream.centerXType10Box1 = -3904; 
-double ExtShieldDownstream.centerYType10Box1 = 2006.1;  
-double ExtShieldDownstream.centerZType10Box1 = 3076;
+vector<double> ExtShieldDownstream.centerType10Box1 = {-3904,2006.1,3076};
 
-// end cap wall T blocks
-double ExtShieldDownstream.centerXType11Box1 = -1897.4; // 7 reg concr wall Ts
-double ExtShieldDownstream.centerYType11Box1 = 1.6;  // in endcap region
-double ExtShieldDownstream.centerZType11Box1 = 16929.2;  
-double ExtShieldDownstream.centerXType11Box2 = -1897.4; 
-double ExtShieldDownstream.centerYType11Box2 = 1.6;  
-double ExtShieldDownstream.centerZType11Box2 = 17850.8;
-double ExtShieldDownstream.centerXType11Box3 = -2588.6; 
-double ExtShieldDownstream.centerYType11Box3 = 1.6;  
-double ExtShieldDownstream.centerZType11Box3 = 18084.8;
-double ExtShieldDownstream.centerXType11Box4 = -3971; 
-double ExtShieldDownstream.centerYType11Box4 = 1.6;  
-double ExtShieldDownstream.centerZType11Box4 = 18084.8;
-double ExtShieldDownstream.centerXType11Box5 = -5353.4; 
-double ExtShieldDownstream.centerYType11Box5 = 1.6;  
-double ExtShieldDownstream.centerZType11Box5 = 18084.8;
-double ExtShieldDownstream.centerXType11Box6 = -5910.6; 
-double ExtShieldDownstream.centerYType11Box6 = 1.6;  
-double ExtShieldDownstream.centerZType11Box6 = 17850.8;
-double ExtShieldDownstream.centerXType11Box7 = -5910.6; 
-double ExtShieldDownstream.centerYType11Box7 = 1.6;  
-double ExtShieldDownstream.centerZType11Box7 = 16929.2;
+// end cap wall T blocks.  7 concrete T blocks wrapping around endcap region.
+vector<double> ExtShieldDownstream.centerType11Box1 = {-1897.4,1.6,16929.2};
+vector<double> ExtShieldDownstream.centerType11Box2 = {-1897.4,1.6,17850.8};
+vector<double> ExtShieldDownstream.centerType11Box3 = {-2588.6,1.6,18084.8};
+vector<double> ExtShieldDownstream.centerType11Box4 = {-3971.0,1.6,18084.8};
+vector<double> ExtShieldDownstream.centerType11Box5 = {-5353.4,1.6,18084.8};
+vector<double> ExtShieldDownstream.centerType11Box6 = {-5910.6,1.6,17850.8};
+vector<double> ExtShieldDownstream.centerType11Box7 = {-5910.6,1.6,16929.2};
 
-// Special "interface" end cap wall T blocks
-double ExtShieldDownstream.centerXType12Box1 = -1897.4; // North wall
-double ExtShieldDownstream.centerYType12Box1 = 230.2; // moved down 10 mm  
-double ExtShieldDownstream.centerZType12Box1 = 15978.4;  
-double ExtShieldDownstream.centerXType12Box2 = -5910.6; // South wall
-double ExtShieldDownstream.centerYType12Box2 = 230.2;  
-double ExtShieldDownstream.centerZType12Box2 = 15978.4;
+// Special "interface" end cap wall T blocks.  Box 1 - north, Box 2 - south
+vector<double> ExtShieldDownstream.centerType12Box1 = {-1897.4,230.2,15978.4};
+vector<double> ExtShieldDownstream.centerType12Box2 = {-5910.6,230.2,15978.4};
 
-double ExtShieldDownstream.centerXType13Box1 = -3278.8; // Regular concrete
-double ExtShieldDownstream.centerYType13Box1 = 1.6;  // rectangular fillers
-double ExtShieldDownstream.centerZType13Box1 = 17856.2; // endcap east wall
-double ExtShieldDownstream.centerXType13Box2 = -4661.2; 
-double ExtShieldDownstream.centerYType13Box2 = 1.6; // moved down 10 mm 
-double ExtShieldDownstream.centerZType13Box2 = 17856.2;
+// Rectangular blocks made from regular concrete.  Provide "fillers" for spaces
+// between T-blocks in the endcap
+vector<double> ExtShieldDownstream.centerType13Box1 = {-3278.8,1.6,17856.2};
+vector<double> ExtShieldDownstream.centerType13Box2 = {-4661.2,1.6,17856.2};
 
-// Regular concrete floor of endcap
-double ExtShieldDownstream.centerXType14Box1 = -3904; 
-double ExtShieldDownstream.centerYType14Box1 = -1767.7;// moved down 12 mm  
-double ExtShieldDownstream.centerZType14Box1 = 17169.2;
+//// Regular concrete floor of endcap
+//vector<double> ExtShieldDownstream.centerType14Box1 = {-3904,-1767.7,17169.2};
 
 // Barite corner triangle column between up and downstream on north
-double ExtShieldDownstream.centerXType15Box1 = -1749; 
-double ExtShieldDownstream.centerYType15Box1 = -381.4;  
-double ExtShieldDownstream.centerZType15Box1 = 2697.2;
+vector<double> ExtShieldDownstream.centerType14Box1 = {-1749,-381.4, 2697.2};
 
 // Regular concrete L for the end of the endcap roof
-double ExtShieldDownstream.centerXType16Box1 = -3904;
-double ExtShieldDownstream.centerYType16Box1 = 2006.1;
-double ExtShieldDownstream.centerZType16Box1 = 17821.6;   
+vector<double> ExtShieldDownstream.centerType15Box1 = {-3904,2006.1,17821.6};
 
+// PS Shielding extrusion position
+vector<double> ExtShieldDownstream.centerType16Box1 = {3904,0.0,-5804.0};
 
-// The orientation of the box.  See docdb xxxx for details.
+//
+// The orientation of the box.  See Mu2e docdb 4678 for details.
+//
 string ExtShieldDownstream.orientationType1Box1 = "103";
 string ExtShieldDownstream.orientationType1Box2 = "101";
 string ExtShieldDownstream.orientationType1Box3 = "103";
@@ -732,9 +581,9 @@ string ExtShieldDownstream.orientationType12Box2 = "103";
 string ExtShieldDownstream.orientationType13Box1 = "100";
 string ExtShieldDownstream.orientationType13Box2 = "100";
 
-string ExtShieldDownstream.orientationType15Box1 = "100";
+string ExtShieldDownstream.orientationType14Box1 = "100";
 
-string ExtShieldDownstream.orientationType16Box1 = "032";
+string ExtShieldDownstream.orientationType15Box1 = "032";
 
 
 // Notch information
@@ -807,7 +656,6 @@ double ExtShieldDownstream.notchDimVType11Box5Notch2 = 457.2;
 double ExtShieldDownstream.notchDimWType11Box5Notch2 = 3087.6;
 
 
-
 int ExtShieldDownstream.nNotchesType12Box1 = 2;
 double ExtShieldDownstream.notchCenterUType12Box1Notch1 = 0;
 double ExtShieldDownstream.notchCenterVType12Box1Notch1 = 228.6;
@@ -836,14 +684,24 @@ double ExtShieldDownstream.notchDimUType12Box2Notch2 = 918;
 double ExtShieldDownstream.notchDimVType12Box2Notch2 = 458;
 double ExtShieldDownstream.notchDimWType12Box2Notch2 = 472.0;
 
-// Notch in the floor of the endcap
-int ExtShieldDownstream.nNotchesType14Box1 = 1;
-double ExtShieldDownstream.notchCenterUType14Box1Notch1 = 0;
-double ExtShieldDownstream.notchCenterVType14Box1Notch1 = 0;
-double ExtShieldDownstream.notchCenterWType14Box1Notch1 = -457;
-double ExtShieldDownstream.notchDimUType14Box1Notch1 = 3099;
-double ExtShieldDownstream.notchDimVType14Box1Notch1 = 460;
-double ExtShieldDownstream.notchDimWType14Box1Notch1 = 1880.0;
+// // Notch in the floor of the endcap
+// int ExtShieldDownstream.nNotchesType14Box1 = 1;
+// double ExtShieldDownstream.notchCenterUType14Box1Notch1 = 0;
+// double ExtShieldDownstream.notchCenterVType14Box1Notch1 = 0;
+// double ExtShieldDownstream.notchCenterWType14Box1Notch1 = -457;
+// double ExtShieldDownstream.notchDimUType14Box1Notch1 = 3099;
+// double ExtShieldDownstream.notchDimVType14Box1Notch1 = 460;
+// double ExtShieldDownstream.notchDimWType14Box1Notch1 = 1880.0;
+
+// PS Shielding extrusion notch
+int ExtShieldDownstream.nNotchesType16Box1 = 1;
+double ExtShieldDownstream.notchCenterUType16Box1Notch1 = -1775;
+double ExtShieldDownstream.notchCenterVType16Box1Notch1 = 1277.9;
+double ExtShieldDownstream.notchCenterWType16Box1Notch1 = 2118.11;
+double ExtShieldDownstream.notchDimUType16Box1Notch1 = 560;
+double ExtShieldDownstream.notchDimVType16Box1Notch1 = 508;
+double ExtShieldDownstream.notchDimWType16Box1Notch1 = 1011.78;
+
 
 
 // Hole information 
@@ -870,43 +728,6 @@ double ExtShieldDownstream.detecHoleY = -249.0;
 double ExtShieldDownstream.detecHoleZ = 18007.0;
 double ExtShieldDownstream.detecHoleHalflength = 458.0;
 double ExtShieldDownstream.detecHoleRadius = 76.2;
-
-
-
-// The PS External Shielding, an extrusion with penetration.  Added by S. Boi.
-int ExtShieldDownstream.nVertType17 = 8;
-double ExtShieldDownstream.outlineType17UVert1 = 1500;   
-double ExtShieldDownstream.outlineType17VVert1 = -2312; 
-double ExtShieldDownstream.outlineType17UVert2 = 1500; 
-double ExtShieldDownstream.outlineType17VVert2 = 1532; 
-double ExtShieldDownstream.outlineType17UVert3 = -1500; 
-double ExtShieldDownstream.outlineType17VVert3 = 1532; 
-double ExtShieldDownstream.outlineType17UVert4 = -1500; 
-double ExtShieldDownstream.outlineType17VVert4 = -2312; 
-double ExtShieldDownstream.outlineType17UVert5 = -2050; 
-double ExtShieldDownstream.outlineType17VVert5 = -2312; 
-double ExtShieldDownstream.outlineType17UVert6 = -2050; 
-double ExtShieldDownstream.outlineType17VVert6 = 2082; 
-double ExtShieldDownstream.outlineType17UVert7 = 2050; 
-double ExtShieldDownstream.outlineType17VVert7 = 2082; 
-double ExtShieldDownstream.outlineType17UVert8 = 2050; 
-double ExtShieldDownstream.outlineType17VVert8 = -2312;
-double ExtShieldDownstream.lengthType17 = 5250;
-string ExtShieldDownstream.materialType17  = "CONCRETE_MARS";
-
-// PS Shielding extrusion notch
-int ExtShieldDownstream.nNotchesType17Box1 = 1;
-double ExtShieldDownstream.notchCenterUType17Box1Notch1 = -1775;
-double ExtShieldDownstream.notchCenterVType17Box1Notch1 = 1277.9;
-double ExtShieldDownstream.notchCenterWType17Box1Notch1 = 2118.11;
-double ExtShieldDownstream.notchDimUType17Box1Notch1 = 560;
-double ExtShieldDownstream.notchDimVType17Box1Notch1 = 508;
-double ExtShieldDownstream.notchDimWType17Box1Notch1 = 1011.78;
-
-// PS Shielding extrusion position
-double ExtShieldDownstream.centerXType17Box1 = 3904; //3904
-double ExtShieldDownstream.centerYType17Box1 = 0;    //0
-double ExtShieldDownstream.centerZType17Box1 = -5804;//-5804
 
 
 // This tells emacs to view this file in c++ mode.

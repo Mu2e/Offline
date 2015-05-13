@@ -57,39 +57,30 @@ namespace mu2e {
       nBoxesOfType.push_back(c.getInt(bTypeNumberVarName.str()));
 
       // Get the dimensions for this type box - u,v,w are the self-coordinates
-      std::ostringstream bdimsUVarName;
-      bdimsUVarName << dimsBaseName << "UType" << iType;
-      std::ostringstream bdimsVVarName;
-      bdimsVVarName << dimsBaseName << "VType" << iType;
-      std::ostringstream bdimsWVarName;
-      bdimsWVarName << dimsBaseName << "WType" << iType;
+      // DNB - change code in April 2015 to input vectors of doubles rather
+      // than three separate doubles for things that are stored as vectors
+      std::ostringstream bdimsVarName;
+      bdimsVarName << dimsBaseName << "Type" << iType;
       // Divide dimensions by 2.0 because G4 boxes are created in terms of 
       // half-lengths.
-      tempDoubleVec.push_back(c.getDouble(bdimsUVarName.str())*CLHEP::mm/2.0);
-      tempDoubleVec.push_back(c.getDouble(bdimsVVarName.str())*CLHEP::mm/2.0);
-      tempDoubleVec.push_back(c.getDouble(bdimsWVarName.str())*CLHEP::mm/2.0);
+      c.getVectorDouble(bdimsVarName.str(),tempDoubleVec,3);
+      for ( int itmp = 0; itmp < 3; itmp++ ) tempDoubleVec[itmp]*=(CLHEP::mm/2.0);
       dimsOfType.push_back(tempDoubleVec);
       tempDoubleVec.clear();  // So it can be re-used
 
       // Get the tolerances for this type box - du,dv,dw
-      std::ostringstream btolsUVarName;
-      btolsUVarName << tolsBaseName << "UType" << iType;
-      std::ostringstream btolsVVarName;
-      btolsVVarName << tolsBaseName << "VType" << iType;
-      std::ostringstream btolsWVarName;
-      btolsWVarName << tolsBaseName << "WType" << iType;
-      double du = c.getDouble(btolsUVarName.str());
-      double dv = c.getDouble(btolsVVarName.str());
-      double dw = c.getDouble(btolsWVarName.str());
-      if ( du > 10.0 || dv > 10.0 || dw > 10.0 || du < -20.0 || dv < -20.0 || dw < -20.0 ) {
-	// Throw if tolerances out of tolerance.
-	throw cet::exception("GEOM")
-	  << "Tolerance on ExternalShielding Upstream outside limits. "
-	  << "\nTolerances must be between -20 and 10 mm.";
+      std::ostringstream btolsVarName;
+      btolsVarName << tolsBaseName << "Type" << iType;
+      c.getVectorDouble(btolsVarName.str(),tempDoubleVec,3);
+      for ( int itmp = 0; itmp < 3; itmp++ ) {
+	if ( tempDoubleVec[itmp] > 10.0 || tempDoubleVec[itmp] < -20.0 ) {
+	  // Throw if tolerances out of tolerance.
+	  throw cet::exception("GEOM")
+	    << "Tolerance on ExternalShielding Upstream outside limits. "
+	    << "\nTolerances must be between -20 and 10 mm.";
+	}
+	tempDoubleVec[itmp]*= ( CLHEP::mm/2.0 );
       }
-      tempDoubleVec.push_back(du*CLHEP::mm/2.0);
-      tempDoubleVec.push_back(dv*CLHEP::mm/2.0);
-      tempDoubleVec.push_back(dw*CLHEP::mm/2.0);
       tolsOfType.push_back(tempDoubleVec);
       tempDoubleVec.clear();  // So it can be re-used
 
@@ -97,8 +88,8 @@ namespace mu2e {
       std::ostringstream bmatVarName;
       bmatVarName << materialBaseName << iType;
       materialOfType.push_back( c.getString(bmatVarName.str()));
-
     }
+
 
     // Get total number of boxes from info collected above
     int nBoxesTot = 0;
@@ -128,18 +119,10 @@ namespace mu2e {
 
 	// Location of the center of the box in Mu2e coords
 	// Use our now-familiar trick for variable names
-	std::ostringstream bCentXVarName;
-	bCentXVarName << centerBaseName << "XType" << it+1 << "Box" << iboxt+1;
-	std::ostringstream bCentYVarName;
-	bCentYVarName << centerBaseName << "YType" << it+1 << "Box" << iboxt+1;
-	std::ostringstream bCentZVarName;
-	bCentZVarName << centerBaseName << "ZType" << it+1 << "Box" << iboxt+1;
-	CLHEP::Hep3Vector boxCenter(c.getDouble(bCentXVarName.str())
-			   *CLHEP::mm,
-				    c.getDouble(bCentYVarName.str())
-			   *CLHEP::mm,
-				    c.getDouble(bCentZVarName.str())
-			   *CLHEP::mm);
+	std::ostringstream bCentVarName;
+	bCentVarName << centerBaseName << "Type" << it+1 << "Box" << iboxt+1;
+	CLHEP::Hep3Vector boxCenter = c.getHep3Vector(bCentVarName.str());
+	boxCenter *= CLHEP::mm;
 	sites.push_back(boxCenter);			   
     
 	std::ostringstream bOrientVarName;

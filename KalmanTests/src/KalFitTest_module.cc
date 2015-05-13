@@ -126,7 +126,7 @@ namespace mu2e
     cet::map_vector_key trkid(1);
     if(_kdiag.trkFromMC(trkid,tdef)){
       // use this to create a track
-      KalFitResult kdef(tdef);
+      KalFitResult kdef(&tdef);
       _kfit.makeTrack(kdef);
       //  diagnostics
       if(_diag > 0){

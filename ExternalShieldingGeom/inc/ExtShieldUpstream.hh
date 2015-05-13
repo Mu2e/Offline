@@ -10,13 +10,13 @@
 // The Upstream external shielding is described in WBS 5.4.  The
 // geometry is described here for the TS Upstream portion of the shielding.
 // The PS external shield is described for the Offline in the
-// ProductionSolenoidGeom package.  Details can be found in docdb #xxxx.
+// ProductionSolenoidGeom package.  Details can be found in docdb #4999
 // Found in this class:
 // TSu Shield
 // West Wall Shield
 // Upstream cap
 // poly shield (a very ad hoc version in the initial implementation)
-
+// Protection Collimator
 
 #include <vector>
 #include <ostream>
@@ -39,7 +39,8 @@ namespace mu2e {
   public:
 
     // The upstream shielding can be built entirely from boxes of concrete
-
+    // This C++ code only assumes the box shape.  Dimensions, locations,
+    // and materials are specified in geometry text files.
 
     const std::vector<std::vector<double> >& getBoxDimensions() const { return _extShieldBoxDims; }
     const std::vector<std::vector<double> >& getBoxTolerances() const { return _extShieldBoxTols; }

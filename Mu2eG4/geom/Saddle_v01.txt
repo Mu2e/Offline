@@ -3,7 +3,7 @@
 // See Mu2e docdb #4678 for more details on parameters
 
 // Sort boxes into "types"
-int Saddle.numberOfBoxTypes = 10; 
+int Saddle.numberOfBoxTypes = 13;// remove rails for now 
 
 // How many of each type box to make
 int Saddle.nBoxType1 = 4;  // PS Saddles.  Each "box" is a side plate
@@ -21,6 +21,12 @@ int Saddle.nBoxType8 = 12; // TS Saddle - ends of saddles
 int Saddle.nBoxType9 = 12; // TS Stand box - sides
 int Saddle.nBoxType10 = 12; // TS Stand box - ends
 
+int Saddle.nBoxType11 = 4; // DS Saddle - side plates of saddles
+int Saddle.nBoxType12 = 2; // DS Saddle - feet of saddles
+int Saddle.nBoxType13 = 4; // DS Saddle - ends of saddles
+
+int Saddle.nBoxType14 = 2; // Rail platforms in DS cryostat
+int Saddle.nBoxType15 = 2; // Rails
 
 // Number of vertices of each type of box
 int Saddle.nVertType1 = 10; // PS Saddle sides
@@ -38,9 +44,17 @@ int Saddle.nVertType8 = 4;  // TS Saddle end plates
 int Saddle.nVertType9 = 4;  // TS Stand box sides
 int Saddle.nVertType10 = 4; // TS Stand box ends
 
+int Saddle.nVertType11 = 10; // DS Saddle side plates
+int Saddle.nVertType12 =  4; // DS Saddle foot plates
+int Saddle.nVertType13 =  4; // DS Saddle end plates
 
+int Saddle.nVertType14 = 5; // rail platforms in DS cryo
+int Saddle.nVertType15 = 14; // rail
+
+//
 // Vertices in u, v for each type of box.  Dimensions should be in mm.
-
+//
+// PS Saddle sides
 double Saddle.outlineType1UVert1 = 1264;
 double Saddle.outlineType1VVert1 = 0;
 double Saddle.outlineType1UVert2 = 1264;
@@ -62,6 +76,7 @@ double Saddle.outlineType1VVert9 = 971;
 double Saddle.outlineType1UVert10 = -1264;
 double Saddle.outlineType1VVert10 = 0;
 
+// PS Saddle foot
 double Saddle.outlineType2UVert1 = 1264;
 double Saddle.outlineType2VVert1 = 0;
 double Saddle.outlineType2UVert2 = 1264;
@@ -70,7 +85,7 @@ double Saddle.outlineType2UVert3 = -1264;
 double Saddle.outlineType2VVert3 = 50;
 double Saddle.outlineType2UVert4 = -1264;
 double Saddle.outlineType2VVert4 = 0;
-
+// PS Saddle end
 double Saddle.outlineType3UVert1 = 15;
 double Saddle.outlineType3VVert1 = 0;
 double Saddle.outlineType3UVert2 = 15;
@@ -194,6 +209,90 @@ double Saddle.outlineType10VVert3 = 710;
 double Saddle.outlineType10UVert4 = -25;
 double Saddle.outlineType10VVert4 = 0;
 
+// Side plates of DS Saddles
+double Saddle.outlineType11UVert1 = 1264;
+double Saddle.outlineType11VVert1 = 0;
+double Saddle.outlineType11UVert2 = 1264;
+double Saddle.outlineType11VVert2 = 921;
+double Saddle.outlineType11UVert3 = 1189;
+double Saddle.outlineType11VVert3 = 921;
+double Saddle.outlineType11UVert4 = 1089;
+double Saddle.outlineType11VVert4 = 701;
+double Saddle.outlineType11UVert5 = 450;
+double Saddle.outlineType11VVert5 = 220;
+double Saddle.outlineType11UVert6 = -450;
+double Saddle.outlineType11VVert6 = 220;
+double Saddle.outlineType11UVert7 = -1089;
+double Saddle.outlineType11VVert7 = 701;
+double Saddle.outlineType11UVert8 = -1189;
+double Saddle.outlineType11VVert8 = 921;
+double Saddle.outlineType11UVert9 = -1264;
+double Saddle.outlineType11VVert9 = 921;
+double Saddle.outlineType11UVert10 = -1264;
+double Saddle.outlineType11VVert10 = 0;
+
+// DS saddle foot plate
+double Saddle.outlineType12UVert1 = 1264;
+double Saddle.outlineType12VVert1 = 0;
+double Saddle.outlineType12UVert2 = 1264;
+double Saddle.outlineType12VVert2 = 50;
+double Saddle.outlineType12UVert3 = -1264;
+double Saddle.outlineType12VVert3 = 50;
+double Saddle.outlineType12UVert4 = -1264;
+double Saddle.outlineType12VVert4 = 0;
+
+// DS saddle end plate
+double Saddle.outlineType13UVert1 = 15;
+double Saddle.outlineType13VVert1 = 0;
+double Saddle.outlineType13UVert2 = 15;
+double Saddle.outlineType13VVert2 = 921;
+double Saddle.outlineType13UVert3 = -15;
+double Saddle.outlineType13VVert3 = 921;
+double Saddle.outlineType13UVert4 = -15;
+double Saddle.outlineType13VVert4 = 0;
+
+// DS cryo rail platform
+double Saddle.outlineType14UVert1 = 470;
+double Saddle.outlineType14VVert1 = 0;
+double Saddle.outlineType14UVert2 = 470;
+double Saddle.outlineType14VVert2 = -75.5;
+double Saddle.outlineType14UVert3 = 500;
+double Saddle.outlineType14VVert3 = -58;
+double Saddle.outlineType14UVert4 = 530;
+double Saddle.outlineType14VVert4 = -38.9;
+double Saddle.outlineType14UVert5 = 530;
+double Saddle.outlineType14VVert5 = 0;
+
+// DS cryo rails
+double Saddle.outlineType15UVert1 = 473;
+double Saddle.outlineType15VVert1 = 0.1;
+double Saddle.outlineType15UVert2 = 527;
+double Saddle.outlineType15VVert2 = 0.1;
+double Saddle.outlineType15UVert3 = 527;
+double Saddle.outlineType15VVert3 = 12;
+double Saddle.outlineType15UVert4 = 518;
+double Saddle.outlineType15VVert4 = 20;
+double Saddle.outlineType15UVert5 = 518;
+double Saddle.outlineType15VVert5 = 28;
+double Saddle.outlineType15UVert6 = 527;
+double Saddle.outlineType15VVert6 = 36;
+double Saddle.outlineType15UVert7 = 527;
+double Saddle.outlineType15VVert7 = 40;
+double Saddle.outlineType15UVert8 = 523;
+double Saddle.outlineType15VVert8 = 44;
+double Saddle.outlineType15UVert9 = 477;
+double Saddle.outlineType15VVert9 = 44;
+double Saddle.outlineType15UVert10 = 473;
+double Saddle.outlineType15VVert10 = 40;
+double Saddle.outlineType15UVert11 = 473;
+double Saddle.outlineType15VVert11 = 36;
+double Saddle.outlineType15UVert12 = 482;
+double Saddle.outlineType15VVert12 = 28;
+double Saddle.outlineType15UVert13 = 482;
+double Saddle.outlineType15VVert13 = 20;
+double Saddle.outlineType15UVert14 = 473;
+double Saddle.outlineType15VVert14 = 12;
+
 
 // Lengths in w dimension for each type of box.  Dimensions should be in mm.
 double Saddle.lengthType1 = 30;
@@ -206,7 +305,11 @@ double Saddle.lengthType7 = 2150; // side I-beams for PS Stand
 double Saddle.lengthType8 = 339;
 double Saddle.lengthType9 = 50;
 double Saddle.lengthType10 = 499;
-
+double Saddle.lengthType11 = 30; // DS saddle side plate
+double Saddle.lengthType12 = 700;// DS saddle foot plate
+double Saddle.lengthType13 = 440;// DS saddle end plate
+double Saddle.lengthType14 = 9830; // DS cryo rail length
+double Saddle.lengthType15 = 9830; // DS cryo rail length
 
 // Materials for each type of box.  
 string Saddle.materialType1   = "StainlessSteel";
@@ -219,6 +322,11 @@ string Saddle.materialType7   = "StainlessSteel";
 string Saddle.materialType8   = "StainlessSteel";
 string Saddle.materialType9   = "StainlessSteel";
 string Saddle.materialType10   = "StainlessSteel";
+string Saddle.materialType11   = "StainlessSteel";
+string Saddle.materialType12   = "StainlessSteel";
+string Saddle.materialType13   = "StainlessSteel";
+string Saddle.materialType14   = "StainlessSteel";
+string Saddle.materialType15   = "StainlessSteel";
 
 
 // The center of the piece in Mu2e Offline coordinates
@@ -441,6 +549,58 @@ double Saddle.centerXType10Box12 = -770; // TS Stand box end E of NC
 double Saddle.centerYType10Box12 = -2312;  // 
 double Saddle.centerZType10Box12 = 1075; 
 
+// DS Saddle side plates
+double Saddle.centerXType11Box1 = -3904;
+double Saddle.centerYType11Box1 = -1550;
+double Saddle.centerZType11Box1 = 3804;
+double Saddle.centerXType11Box2 = -3904;
+double Saddle.centerYType11Box2 = -1550;
+double Saddle.centerZType11Box2 = 4274;
+double Saddle.centerXType11Box3 = -3904;
+double Saddle.centerYType11Box3 = -1550;
+double Saddle.centerZType11Box3 = 13104;
+double Saddle.centerXType11Box4 = -3904;
+double Saddle.centerYType11Box4 = -1550;
+double Saddle.centerZType11Box4 = 13574;
+
+// DS Saddle foot plates
+double Saddle.centerXType12Box1 = -3904;
+double Saddle.centerYType12Box1 = -1600;
+double Saddle.centerZType12Box1 = 4039;
+double Saddle.centerXType12Box2 = -3904;
+double Saddle.centerYType12Box2 = -1600;
+double Saddle.centerZType12Box2 = 13339;
+
+// DS Saddle end plates
+double Saddle.centerXType13Box1 = -5153; // north west end plate DS
+double Saddle.centerYType13Box1 = -1550;  // 
+double Saddle.centerZType13Box1 =  4039; 
+double Saddle.centerXType13Box2 = -2655; // south west end plate DS
+double Saddle.centerYType13Box2 = -1550;  // 
+double Saddle.centerZType13Box2 =  4039; 
+
+double Saddle.centerXType13Box3 = -5153; // DS Saddle end south east DS
+double Saddle.centerYType13Box3 = -1550;  // 
+double Saddle.centerZType13Box3 = 13339; 
+double Saddle.centerXType13Box4 = -2655; // north east DS
+double Saddle.centerYType13Box4 = -1550;  // 
+double Saddle.centerZType13Box4 = 13339; 
+
+// DS rail platform in cryo
+double Saddle.centerXType14Box1 = -3904;  // North rail
+double Saddle.centerYType14Box1 = -750; 
+double Saddle.centerZType14Box1 = 9016;
+double Saddle.centerXType14Box2 = -3904;  // North rail
+double Saddle.centerYType14Box2 = -750; 
+double Saddle.centerZType14Box2 = 9016;
+
+//DS rail in cryo
+double Saddle.centerXType15Box1 = -3904;  // North rail
+double Saddle.centerYType15Box1 = -750; 
+double Saddle.centerZType15Box1 = 9016;
+double Saddle.centerXType15Box2 = -3904;  // North rail
+double Saddle.centerYType15Box2 = -750; 
+double Saddle.centerZType15Box2 = 9016;
 
 
 // The orientation of the box.  See docdb xxxx for details.
@@ -490,7 +650,8 @@ string Saddle.orientationType10Box10 = "040";
 string Saddle.orientationType10Box11 = "010";
 string Saddle.orientationType10Box12 = "010";
 
-
+string Saddle.orientationType14Box2 = "020";
+string Saddle.orientationType15Box2 = "020";
 
 // Global stuff
 
