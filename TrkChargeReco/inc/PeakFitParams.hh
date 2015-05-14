@@ -12,7 +12,7 @@ namespace mu2e{
     struct PeakFitParams {
 // CINT can't handle C++14 enum types FIXME!!!
 //      enum paramIndex : size_t {earlyCharge=1,pedestal,time,charge,width,lateShift,lateCharge,nParams};
-      enum  paramIndex : unsigned {earlyCharge=0,pedestal,time,charge,width,lateShift,lateCharge,nParams};
+      enum  paramIndex {earlyCharge=0,pedestal,time,charge,width,lateShift,lateCharge,nParams};
       // explicit data members
       Float_t _earlyCharge; // decaying charge from earlier hit, units of pC
       Float_t _pedestal; // units of ADC counts (??)

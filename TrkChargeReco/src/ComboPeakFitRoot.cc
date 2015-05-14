@@ -21,7 +21,7 @@ namespace mu2e {
     // convert waveform to a TGraph
     TGraphErrors fitData;
     adcWaveform2TGraphErrors(adcData,fitData);
-	resultantHitData initialGuess;
+	peakResultVector initialGuess;
 	findPeaks(fitData, initialGuess, 3.0);
 	addEarlyPeak(fitData, initialGuess);
 
@@ -31,11 +31,14 @@ namespace mu2e {
     _peakfit.fitModelTF1()->SetParameters(parray);
 
 	int locPrimaryPeak = 0;
+	_peakfit.fitModelTF1()->ReleaseParameter(PeakFitParams::width);
+	_peakfit.fitModelTF1()->SetParameter(PeakFitParams::width,12.0);
 	
 	if (hasEarlyCharge(initialGuess)) 
 	{
 		_peakfit.fitModelTF1()->ReleaseParameter(PeakFitParams::earlyCharge);
 		_peakfit.fitModelTF1()->SetParameter(PeakFitParams::earlyCharge, initialGuess[0]._peakHeight - (double) _strawele.ADCPedestal()); // Are units correct???
+		++locPrimaryPeak;
 	}
 	// If there should be a floating pedestal
 	if(_config.hasOption(FitConfig::floatPedestal))
@@ -45,8 +48,8 @@ namespace mu2e {
 	}
 	if (hasLateCharge(initialGuess))
 	{
-		// Make sure that width is defaulted to being a free parameter
-		_peakfit.fitModelTF1()->FixParameter(PeakFitParams::width, _peakfit.fitModelTF1()->GetParameter(PeakFitParams::width));
+		// Make sure that width is defaulted to being a free parameteri
+		_peakfit.fitModelTF1()->FixParameter(PeakFitParams::width, 0.0);
         _peakfit.fitModelTF1()->ReleaseParameter(PeakFitParams::lateCharge);
         _peakfit.fitModelTF1()->SetParameter(PeakFitParams::lateCharge, initialGuess[locPrimaryPeak+1]._peakHeight - _strawele.ADCPedestal()); // Are units correct???
 		_peakfit.fitModelTF1()->SetParameter(PeakFitParams::lateShift, initialGuess[locPrimaryPeak+1]._peakTime); // Is this shifted correctly
@@ -78,22 +81,36 @@ namespace mu2e {
       fitresult->Status());
   }
 
-	bool ComboPeakFitRoot::hasEarlyCharge(const resultantHitData &initialGuess) const 
+	bool ComboPeakFitRoot::hasEarlyCharge(const peakResultVector &initialGuess) const 
 	{
 		// Is this stable??
-		return initialGuess[0]._peakTime < (_strawele.nADCSamples()*_strawele.adcPeriod());
+		return initialGuess[0]._peakTime < (_strawele.nADCPreSamples()*_strawele.adcPeriod());
 	}
 
-	bool ComboPeakFitRoot::hasLateCharge(const resultantHitData &initialGuess) const
+	bool ComboPeakFitRoot::hasLateCharge(const peakResultVector &initialGuess) const
 	{
 		// If there are more than 2 peaks or there is more than 1 peak but no early extra peak return true
 		int nPeaks = 0; // number of peaks excluding those which appear in the presample data
 		for (auto peak : initialGuess)
 		{
-			if (peak._peakTime >= (_strawele.nADCSamples()*_strawele.adcPeriod())) ++nPeaks;
+			if (peak._peakTime >= (_strawele.nADCPreSamples()*_strawele.adcPeriod())) ++nPeaks;
 		}
 		return nPeaks>1; 
 	}
+
+
+	// Currently the location of late charge is computed using the locLateCharge variable above
+	// This is not good design and should be replaced by a function like this
+/**	int ComboPeakFitRoot::locLateCharge(const peakResultVector initialGuess) const
+	{
+		int numEarlyCharge = 0;
+		while(hasEarlyCharge(initialGuess))
+		{
+			initialGuess.erase(initialGuess.begin());
+			++numEarlyCharge;
+		}
+		return numEarlyCharge+1;
+	}**/
 
 	// TODO : adcErrors needs to be gotten from strawele
 	bool ComboPeakFitRoot::hasFloatingPedestal(StrawElectronics::ADCWaveform const& adcData) const
@@ -104,7 +121,7 @@ namespace mu2e {
 
 	//TODO: Convert _initParams._numSamplesPerHit to corresponding element of strawele
 
-    void ComboPeakFitRoot::addEarlyPeak(const TGraphErrors &gr, resultantHitData &initialGuess) const
+    void ComboPeakFitRoot::addEarlyPeak(const TGraphErrors &gr, peakResultVector &initialGuess) const
     {
       //This maybe could be done using linear algebra vectors
       //instead of arrays
@@ -127,12 +144,12 @@ namespace mu2e {
       const Float_t newAdcPeak = TMath::MaxElement(numSamplesPerHit, subtractedValues);
       const Float_t newTPeak = TMath::LocMax(numSamplesPerHit, subtractedValues);
 
-      resultantPeakData newPeakData(newTPeak, newAdcPeak);
+      peakResult newPeakData(newTPeak, newAdcPeak);
       initialGuess.push_back(newPeakData);
     }
 
     // Performs explicit peak search on adc waveform data  
-    void ComboPeakFitRoot::findPeaks(const TGraphErrors &gr, resultantHitData &initialGuess, const double sigma) const
+    void ComboPeakFitRoot::findPeaks(const TGraphErrors &gr, peakResultVector &initialGuess, const double sigma) const
     {
       int ientry = 0; // Start time at 0
       const double *measurementTimes = gr.GetX();
@@ -169,7 +186,7 @@ namespace mu2e {
             ++jentry;
           }
         }
-        resultantPeakData peakData(tMax, adcMax - _strawele.ADCPedestal());
+        peakResult peakData(tMax, adcMax - _strawele.ADCPedestal());
         initialGuess.push_back(peakData);
         ++ientry;
       }
