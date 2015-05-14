@@ -113,10 +113,6 @@ namespace mu2e {
 	}**/
 
 	// TODO : adcErrors needs to be gotten from strawele
-	bool ComboPeakFitRoot::hasFloatingPedestal(StrawElectronics::ADCWaveform const& adcData) const
-	{
-		return (adcData[0] + adcData[1])*0.5 > 4.0 / TMath::Sqrt2() * _strawele.analogNoise(StrawElectronics::adc)/_strawele.adcLSB();
-	}
 
 
 	//TODO: Convert _initParams._numSamplesPerHit to corresponding element of strawele
