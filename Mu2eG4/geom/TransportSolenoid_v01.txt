@@ -63,11 +63,12 @@ bool   ts.polyliner.isVisible      = true;
 bool   ts.polyliner.isSolid        = true;
 
 // Pbar Absorber
+// Pbar absorber at TS3 center, disk always built, wedge optional plus
 bool   pbar.isVisible = true;
 bool   pbar.isSolid   = false;
 int    pbar.verbosityLevel = 0;
-double pbar.halfLength = 100.0e-3; // 0.06,0.1, 
-string pbar.Type       = "wedge"; // default is "disk"
+double pbar.halfLength = 100.0e-3; // 0.06->0.1
+string pbar.Type       = "wedge"; // "disk"
 string pbar.materialName = "G4_KAPTON";
 
 double pbarwedge.y0  = -10.;
@@ -77,14 +78,16 @@ double pbarwedge.dz1 = 1.1;  // This makes total thickness changing
                              // from 0.2 mm to 1.3 mm over the 
                              // height of window
 
-bool   pbar.coll1In.build = true;      // pbar absorber at TS1 entrance
+// Pbar absorber in front of TS1 entrance
+bool   pbar.coll1In.build = true;
 double pbar.coll1In.halfLength = 0.125;
 double pbar.coll1In.rOut = 160.0;
 double pbar.coll1In.offset = -100.02;       // distance to the TS1 entrance on +z
 double pbar.coll1In.material1Name = "G4_Al";
 double pbar.coll1In.rOutRecord = 200.0;
 
-bool   pbar.coll1Out.build = true;     // pbar absorber inside TS1 collimator near end
+// Collar pbar absorber in TS1 collimator near end
+bool   pbar.coll1Out.build = true;
 string pbar.coll1Out.material1Name = "G4_C";
 double pbar.coll1Out.halfLength = 100.0;
 double pbar.coll1Out.rIn = 120.0;
@@ -92,16 +95,8 @@ double pbar.coll1Out.z = -3154.0;
 double pbar.coll1Out.phiBegin = 200.0;
 double pbar.coll1Out.phiDelta = 140.0;
 
-bool   pbar.TS2.build = false;          // pbar absorber in TS2
-vector<double> pbar.TS2.origin = {975.0, 0.0, 2929.0};
-double pbar.TS2.theta = 85.0; // deg, w.r.t z axis
-double pbar.TS2.halfLength = 0.5; // pbar absorber half length at TS2
-double pbar.TS2.rIn  = 100.0;
-double pbar.TS2.rOut = 240.0;
-double pbar.TS2.phiBegin = 210.0;
-double pbar.TS2.phiDelta = 120.0;
-
-bool   pbar.coll31In.build = false;     // pbar absorber at TS3 coll31 entrance
+// A test piece pbar absorber in front of TS3 collimator 1
+bool   pbar.coll31In.build = false;
 double pbar.coll31In.halfLength = 0.001;
 double pbar.coll31In.offset = 1.0;      // distance to the TS3 coll31 entrance plane
 
