@@ -49,32 +49,6 @@
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShieldingMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream1a.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream1aMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream1b.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream1bMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream2.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstream2Maker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstreamTop.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstreamTopMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstreamBottom.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldUpstreamBottomMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRight.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRightMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexLeft.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexLeftMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRoof.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRoofMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRightb.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCavexRightbMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldLAbove.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldLAboveMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldLCeiling.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldLCeilingMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCryoBoxes.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCryoBoxesMaker.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
-#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxesMaker.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldUpstream.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldUpstreamMaker.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
@@ -291,22 +265,6 @@ namespace mu2e {
       addDetector( ExtShieldUpstreamMaker::make(*_config)  );
       addDetector( ExtShieldDownstreamMaker::make(*_config));
       addDetector( SaddleMaker::make(*_config));
-    }
-
-     if(_config->getBool("hasExternalNeutronShielding",false)) {
-       addDetector( ExtNeutShieldUpstream1aMaker::make(*_config)     );
-       addDetector( ExtNeutShieldUpstream1bMaker::make(*_config)     );
-       addDetector( ExtNeutShieldUpstream2Maker::make(*_config)      );
-       addDetector( ExtNeutShieldUpstreamTopMaker::make(*_config)    );
-       addDetector( ExtNeutShieldUpstreamBottomMaker::make(*_config) );
-       addDetector( ExtNeutShieldCavexRightMaker::make(*_config)     );
-       addDetector( ExtNeutShieldCavexRightbMaker::make(*_config)    );
-       addDetector( ExtNeutShieldCavexLeftMaker::make(*_config)      );
-       addDetector( ExtNeutShieldCavexRoofMaker::make(*_config)      );
-       addDetector( ExtNeutShieldLAboveMaker::make(*_config)         );
-       addDetector( ExtNeutShieldLCeilingMaker::make(*_config)       );
-       addDetector( ExtNeutShieldCryoBoxesMaker::make(*_config)      );
-       addDetector( ExtNeutShieldCendBoxesMaker::make(*_config, beamline.solenoidOffset() )      );
     }
 
 

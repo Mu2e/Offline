@@ -1270,17 +1270,6 @@ namespace mu2e {
       // a work-around that is currently meant to be a temporary solution.
       // David Norvil Brown, December 2014.
 
-//       GeomHandle<ExtNeutShieldCendBoxes> enscendb;
-
-//       const std::vector<std::string>& ENSCBMaterialNames = enscendb->materialNames();
-
-//       size_t nBox = ENSCBMaterialNames.size();
-//       size_t ib;
-//       for(ib = 0; ib < nBox; ++ib) {
-//         if ( enscendb->hasHole(ib) ) break;
-//       }
- 
-//       int hID = enscendb->holeIndex(ib);
 
       double shieldHoleRadius = _config.getDouble("ExtShieldDownstream.detecHoleRadius")*CLHEP::mm;
 

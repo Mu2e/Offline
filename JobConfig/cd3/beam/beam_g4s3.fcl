@@ -11,7 +11,7 @@ source : { module_type : RootInput }
 services : {
 
    message               : @local::default_message
-   TFileService          : { fileName : "hist_beam_g4s3.root" }
+   TFileService          : { fileName : "nts.owner.cd3-beam-g4s3.version.sequencer.root" }
    RandomNumberGenerator : { }
 
    user : {
@@ -194,7 +194,7 @@ outputs: {
          "keep *_mothersFilter_*_*",
          "keep *_compressPVMothers_*_*"
       ]
-      fileName    : "data_g4s3_mothers.art"
+      fileName    : "sim.owner.cd3-beam-g4s3-mothers.version.sequencer.art"
    }
 
    muonStopOutput : {
@@ -209,7 +209,7 @@ outputs: {
          "keep *_stopFilter_*_*",
          "keep *_compressPVStop_*_*"
       ]
-      fileName    : "data_g4s3_stops.art"
+      fileName    : "sim.owner.cd3-beam-g4s3-stops.version.sequencer.art"
    }
 
    truncatedEvtsOutput : {
@@ -223,7 +223,7 @@ outputs: {
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_*_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "truncated_beam_g4s3.art"
+      fileName    : "sim.owner.cd3-beam-g4s3-truncated.version.sequencer.art"
    }
 }
 

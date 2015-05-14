@@ -91,9 +91,9 @@ namespace mu2e
     TrkParticle _tpart;
     TrkFitDirection _fdir;
     std::vector<int> _ambigstrategy;
-    mutable BField* _bfield;
     bool             _resolveAfterWeeding;  // 2015-04-12 P.Murat: temp flag to mark changes
     int              _decisionMode; // 0:decision is not forced; 1:decision has to be made
+    mutable BField* _bfield;
     // helper functions
 //-----------------------------------------------------------------------------
 // 'Final'=1: final iteration, may involve special decision making mode

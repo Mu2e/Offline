@@ -1282,46 +1282,6 @@ namespace mu2e {
               );
     }
 
-    if (is_pbarTS2) {
-      double rTorus = config.getDouble("ts.rTorus", 2929.0);
-
-      vector<double> pbarTS2Origin;
-      config.getVectorDouble("pbar.TS2.origin", pbarTS2Origin, vector<double>() );
-      CLHEP::Hep3Vector originTS2(pbarTS2Origin[0], pbarTS2Origin[1], pbarTS2Origin[2]); 
-
-      double theta = config.getDouble("pbar.TS2.theta", 85.0);   
-      CLHEP::Hep3Vector pbarTS2Pos(sin(theta*CLHEP::degree), -cos(theta*CLHEP::degree), 0.0);
-      pbarTS2Pos *= rTorus;
-      //cout << "pbarTS2 pos " << pbarTS2Pos << endl;
-
-      double pbarTS2HalfLength = config.getDouble("pbar.TS2.halfLength", 0.5);
-      double pbarTS2rIn        = config.getDouble("pbar.TS2.rIn",        100.0);
-      double pbarTS2rOut       = config.getDouble("pbar.TS2.rOut",       240.0);
-      double pbarTS2phiBegin   = config.getDouble("pbar.TS2.phiBegin",   210.0);
-      double pbarTS2phiDelta   = config.getDouble("pbar.TS2.phiDelta",   120.0);
-      double pbarTS2Params[5]  = { pbarTS2rIn, pbarTS2rOut, pbarTS2HalfLength,
-                                   pbarTS2phiBegin*CLHEP::degree, pbarTS2phiDelta*CLHEP::degree };
-
-      std::cout << "pbarTS2 params: halfLength " << pbarTS2HalfLength << " rIn " << pbarTS2rIn << " rOut " << pbarTS2rOut
-           << " phiBegin " << pbarTS2phiBegin << " dPhi " << pbarTS2phiDelta << std::endl;
-    
-      AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-      G4RotationMatrix* pbarTS2Rot = reg.add(G4RotationMatrix());
-      pbarTS2Rot->rotateX( -90.0*CLHEP::degree );
-      pbarTS2Rot->rotateY( (90.0-theta)*CLHEP::degree );
-
-      nestTubs( "PbarAbsTS2",
-                pbarTS2Params,
-                pbarMaterial,
-                pbarTS2Rot,
-                pbarTS2Pos,
-                _helper->locateVolInfo("TS2Vacuum"),
-                0,
-                G4Color::Yellow(),
-		"PbarAbs"
-              );
-    }
-
     if (is_pbarTS31) {
       CollimatorTS3 const& coll31 = ts.getColl31();
 

@@ -38,21 +38,6 @@ bool calorimeter.absorberBoxVisible           = false;
 // 
 bool crs.vetoVisible = false;
 
-bool ExtNeutShieldCavexRight.visible = false;
-bool ExtNeutShieldCavexRightb.visible = false;
-bool ExtNeutShieldLCeiling.visible = false;
-bool ExtNeutShieldUpstreamBottom.visible = false;
-//bool ExtNeutShieldCendBoxes.holeVisible = false;
-//bool ExtNeutShieldCendBoxes.visible = false;
-bool ExtNeutShieldCavexLeft.visible = false;
-bool ExtNeutShieldUpstreamTop.visible = false;
-bool ExtNeutShieldUpstream1a.visible = false;
-bool ExtNeutShieldUpstream2.visible = false;
-bool ExtNeutShieldCryoBoxes.visible = false;
-bool ExtNeutShieldUpstream1b.visible = false;
-bool ExtNeutShieldLAbove.visible = false;
-bool ExtNeutShieldCavexRoof.visible = false;
-
 
 bool extMonFNAL.collimator1.alignmentHole.visible = false;
 bool extMonFNAL.collimator1.alignmentPlug.visible = false;

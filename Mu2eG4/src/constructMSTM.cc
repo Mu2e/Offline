@@ -12,7 +12,6 @@
 // Mu2e includes.
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
-//#include "ExternalNeutronShieldingGeom/inc/ExtNeutShieldCendBoxes.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"

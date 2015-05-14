@@ -19,6 +19,7 @@ using namespace CLHEP;
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrackSummaryRecoMap.hh"
 #include "KalmanTests/inc/TrkStrawHitInfo.hh"
+#include "KalmanTests/inc/KalFitResult.hh"
 
 template class art::Ptr<KalRep>;
 template class art::Wrapper<mu2e::KalRepCollection>;
@@ -26,6 +27,8 @@ template class art::Wrapper<mu2e::KalRepPtrCollection>;
 template class std::vector<mu2e::TrkStrawHitInfo>;
 template class std::vector<mu2e::TrkStrawHitInfoMC>;
 template class std::vector<mu2e::TrkStrawHitInfo_old>;
+
+template class art::Wrapper<mu2e::KalFitResultCollection>;
 
 template class std::pair<art::Ptr<art::Ptr<KalRep> >, art::Ptr<mu2e::TrackSummary> >;
 template class std::pair<art::Ptr<mu2e::TrackSummary>, art::Ptr<art::Ptr<KalRep> > >;

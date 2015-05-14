@@ -101,31 +101,30 @@ namespace mu2e {
       TH1F* _NfitIter;	     // number of call to kalman addHits
 	     		     //     TH1F* _hTfit[2];     //time spent on kalman filter per event
 	     		     //     TH1F* _hTtot;     //total time spent per event
-      TH1F* _dfdzmode;	     // distribution of the loop index where the findTrack search converged
+      //      TH1F* _dfdzmode;	     // distribution of the loop index where the findTrack search converged
       TH1F* _radius;        // radius of the helix used by findTrack
       TH1F* _phi0;          // phi0 of the helix used by findTrack
       TH1F* _tanlambda;     // tanLambda (tangent of the pitch angle) of the helix
       TH1F* _dfdz;          // dfdz of the theretical helix. dfdz = tanLambda/radius
-      TH1F* _dist;
-      TH1F* _dz;
-      TH1F* _Npoints;
-      TH1F* _chi2;
+      //      TH1F* _dist;
+      //      TH1F* _dz;
+      //      TH1F* _Npoints;
+      //      TH1F* _chi2;
       TH2F* _distvsdz;
-      TH1F* _dphidz[3];
+      TH1F* _dphidz[4];
+      TH1F* _dphi0 [4];
+      TH1F* _dr[2];
 
-      TH1F* _kdfdzmode;     // distribution of the loop index where the findTrack search converged
       TH1F* _kradius[2];    // radius of the helix used by findTrack
-      TH1F* _kphi0;         // phi0 of the helix used by findTrack
-      TH1F* _ktanlambda;    // tanLambda (tangent of the pitch angle) of the theretical helix
-      TH1F* _kdfdz[2];      // dfdz of the theretical helix. dfdz = tanLambda/radius
-      TH1F* _0mode;
-      TH1F* _k0mode;
-      TH1F* _kdist;
+
+      //      TH1F* _kdist;
       TH1F* _kdz;
       TH1F* _kNpoints;
       TH1F* _kchi2;
       TH2F* _kdistvsdz[2];
-      TH1F* _kdphidz[3];
+      TH1F* _kdphidz[4];
+      TH1F* _kdphi0[4];
+      TH1F* _kdr[2];
 
       TH1F* _drw  [2];
       TH1F* _chi2w[2];
@@ -139,7 +138,7 @@ namespace mu2e {
       TH1F* _doca          [4];
       TH1F* _kaldoca       [2];
       TH1F* _NpointsRescued[2];
-      TH1F* _PhiResid      [2];
+      TH1F* _PhiResid      [3];
 //-----------------------------------------------------------------------------
 // histograms for doublets 0:all, 1:OS, 2:SS
 //-----------------------------------------------------------------------------

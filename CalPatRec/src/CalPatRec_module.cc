@@ -28,6 +28,8 @@
 #include <boost/accumulators/statistics/moment.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "TVector2.h"
+
 using namespace std; 
 using namespace boost::accumulators;
 
@@ -110,6 +112,8 @@ namespace mu2e {
     produces<StrawHitFlagCollection>(_iname);
     produces<CalTimePeakCollection> (_iname);
 
+    produces<KalFitResultCollection>(_iname);
+
     //    produces<KalRepPayloadCollection>();
 
 					// set # bins for time spectrum plot
@@ -167,81 +171,76 @@ namespace mu2e {
     _hist._NfitIter  = tfs->make<TH1F>("hNfitIter",
 				       "Numebr of fit iteration on kalman::fiIteration",
 				       100,0,100);
-     
-    //   _hist._Tfit[0]   = tfs->make<TH1F>("hTfit0",
-    // 				 "Time per event spent on kalman maketrack",200,0,10);
-    //     _hist._Tfit[1]   = tfs->make<TH1F>("hTfit1",
-    // 				 "Time per event spent on Kalman addHits",200,0,10);
 
-    //     _hist._Ttot      = tfs->make<TH1F>("hTtot",
-    // 				 "Total time per event",200,0,10);
-    
-    _hist._dfdzmode  = tfs->make<TH1F>("hdfdzmode",
-				       "index of the loop on dfdz modes",20,0,20);
-    _hist._radius    = tfs->make<TH1F>("hradius",
-				       "radius of the theretical helix",
-				       1000,0.,700.);
-    _hist._phi0      = tfs->make<TH1F>("hphi0",
-				       "#phi_{0} of the theretical helix",
-				       1000,-10.,10.);
-    _hist._tanlambda = tfs->make<TH1F>("htanlambda",
-				       "#tan(#lambda) of the theretical helix",
-				       600,0.,6.);
+    _hist._dphi0 [0]     = tfs->make<TH1F>("hdphi0_0",
+					   "#phi_{0}_{hel} - #phi_{0}_{trk} [rad]",
+					   1000,-10.,10.);
+
+    _hist._dphi0 [1]     = tfs->make<TH1F>("hdphi0_1",
+					   "#phi_{0}_{hel} - #phi_{0}_{trk} [rad]",
+					   1000,-1.,1.);
+
+    _hist._dphi0 [2]     = tfs->make<TH1F>("hdphi0_2",
+					   "#phi_{0}_{hel} - #phi_{0}_{trk} [rad]",
+					   1000,-1.,1.);
+
+    _hist._dphi0 [3]     = tfs->make<TH1F>("hdphi0_3",
+					   "#phi_{0}_{hel} - #phi_{0}_{trk} [rad]",
+					   1000,-1.,1.);
     
     _hist._dphidz[0] = tfs->make<TH1F>("hdphidz0","dfdz from calculateDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
-				       10000,-0.01,0.01);
+				       500,-0.01,0.01);
 
     _hist._dphidz[1] = tfs->make<TH1F>("hdphidz1","dfdz from findDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
 				       1000,-0.001,0.001);
+    
     _hist._dphidz[2] = tfs->make<TH1F>("hdphidz2","dfdz from doLinearFitDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
 				       1000,-0.001,0.001);
-    _hist._kdphidz[0] = tfs->make<TH1F>("hkdphidz0","dfdz from calculateDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
-					1000,-0.001,0.001);
     
-    _hist._kdphidz[1] = tfs->make<TH1F>("hkdphidz1","dfdz from findDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
-					1000,-0.001,0.001);
-    _hist._kdphidz[2] = tfs->make<TH1F>("hkdphidz2","dfdz from doLinearFitDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
-					1000,-0.001,0.001);
-    
-    _hist._0mode     = tfs->make<TH1F>("h0mode",
-				       "point rescued with dfdz recalculation",
-				       20,0,20);
-    _hist._dist      = tfs->make<TH1F>("hdist",
-				       "distance between strahit points in the timepeak and the prediction; dist [mm]",
-				       1000, 0.,1e3);
-    _hist._dz        = tfs->make<TH1F>("hdz",
-				       "distance along z between the two strahits used for the pattern-reco; dz [mm]",
-				       200, 600.,600.);
-    _hist._Npoints   = tfs->make<TH1F>("hNpoints",
-				       "Number of points belong to the predictedtrajectory; N-points [#]",
-				       100, 0., 100.);
-    _hist._chi2      = tfs->make<TH1F>("hchi2",
-				       "#chi^{2} distribution for track candidate; #chi^{2}",
-				       50000, 0., 5000.);
+    _hist._dphidz[3] = tfs->make<TH1F>("hdphidz3","dfdz from doLinearFitDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+				       1000,-0.001,0.001);
 
+    _hist._kdphidz[0] = tfs->make<TH1F>("hkdphidz0","dfdz from calculateDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+					500,-0.01,0.01);
+    
+    _hist._kdphidz[1] = tfs->make<TH1F>("hkdphidz1",
+					"dfdz from findDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+					1000,-0.001,0.001);
+
+    _hist._kdphidz[2] = tfs->make<TH1F>("hkdphidz2",
+					"dfdz from doLinearFitDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+					1000,-0.001,0.001);
+    
+    _hist._kdphidz[3] = tfs->make<TH1F>("hkdphidz3",
+					"dfdz from doLinearFitDfDz(); (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
+					1000,-0.001,0.001);
+        
     _hist._distvsdz  = tfs->make<TH2F>("hdistvsdz",
 				       "Distance from prediction vs z-distance form the seed",
 				       1400, -3500., 3500.,
 				       500, 0, 500);
 
-    _hist._kdfdzmode  = tfs->make<TH1F>("hkdfdzmode",
-					"index of the loop on dfdz modes when Kalman filter converged",20,0,20);
     _hist._kradius[0]    = tfs->make<TH1F>("hkradius0",
 					   "radius of the theretical helix when Kalman filter converged",
 					   2000,-100.,100.);
     _hist._kradius[1]    = tfs->make<TH1F>("hkradius1",
 					   "radius of the theretical helix when Kalman filter converged + cut set ''C'' and p>100 MeV/c",
 					   2000,-100.,100.);
-    _hist._kphi0      = tfs->make<TH1F>("hkphi0",
-					"#phi_{0} of the theretical helix when Kalman filter converged",
-					1000,-10.,10.);
-    _hist._ktanlambda = tfs->make<TH1F>("hktanlambda",
-					"#tan(#lambda) of the theretical helix when Kalman filter converged",
-					600,0.,6.);
-    _hist._kdfdz[0]      = tfs->make<TH1F>("hkdfdz0","dfdz from pattern recognition when Kalman filter converged; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
-					   1000,-0.001,0.001);
-    _hist._kdfdz[1]      = tfs->make<TH1F>("hkdfdz1","dfdz from pattern recognition when Kalman filter converged + cut set ''C'' and p>100 MeV/c; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
-					   1000,-0.001,0.001);
+    _hist._kdphi0 [0]    = tfs->make<TH1F>("hkdphi0_0",
+					   "#phi_{0}_{hel} - #phi_{0}_{trk} [rad] when Kalman filter converged",
+					   1000,-10.,10.);
+
+    _hist._kdphi0 [1]    = tfs->make<TH1F>("hkdphi0_1",
+					   "#phi_{0}_{hel} - #phi_{0}_{trk} [rad] when Kalman filter converged",
+					   1000,-10.,10.);
+    
+    _hist._kdphi0 [2]    = tfs->make<TH1F>("hkdphi0_2",
+					   "#phi_{0}_{hel} - #phi_{0}_{trk} [rad] when Kalman filter converged",
+					   1000,-10.,10.);
+
+    _hist._kdphi0 [3]    = tfs->make<TH1F>("hkdphi0_3",
+					   "#phi_{0}_{hel} - #phi_{0}_{trk} [rad] when Kalman filter converged",
+					   1000,-10.,10.);
 
     _hist._seeddfdz[0]      = tfs->make<TH1F>("hseeddfdz0",
 					      "dfdz from seedFit when Kalman filter converged; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
@@ -249,10 +248,6 @@ namespace mu2e {
     _hist._seeddfdz[1]      = tfs->make<TH1F>("hseeddfdz1",
 					      "dfdz from seedFit when Kalman filter converged + cut set ''C'' and p>100 MeV/c; (d#phi/dz)_{hel} - (d#phi/dz)_{trk} [rad/mm]",
 					      1000,-0.001,0.001);
-    _hist._k0mode  = tfs->make<TH1F>("hk0mode", "point rescued with dfdz recalculation", 20,0,20);
-    _hist._kdist      = tfs->make<TH1F>("hkdist",
-					"distance between strahit points in the timepeak and the prediction; dist [mm]",
-					1000, 0.,1e3);
     _hist._kdz        = tfs->make<TH1F>("hkdz",
 					"distance along z between the two strahits used for the pattern-reco; dz [mm]",
 					1200, -600.,600.);
@@ -260,16 +255,19 @@ namespace mu2e {
 					"Number of points belong to the predictedtrajectory; N-points [#]",
 					100, 0., 100.);
 
-    _hist._kchi2      = tfs->make<TH1F>("hkchi2",
-					"#chi^{2} distribution for track candidates with converged KF; #chi^{2}",
-					50000, 0., 5000.);
+//     _hist._kchi2      = tfs->make<TH1F>("hkchi2",
+// 					"#chi^{2} distribution for track candidates with converged KF; #chi^{2}",
+// 					50000, 0., 5000.);
 
     _hist._PhiResid[0]= tfs->make<TH1F>("hPhiResid0",
-					"#phi residual 0; #phi_{straw} - #phi_{fit} [rad]",
+					"#phi residual 0; #phi_{straw} - #phi_{pat-rec} [rad]",
 					200, -1, 1.);
 
     _hist._PhiResid[1]= tfs->make<TH1F>("hPhiResid1",
-					"#phi residual 1; #phi_{straw} - #phi_{fit} [rad]",
+					"#phi residual when track passes cut set C and p > 100 MeV/c; #phi_{straw} - #phi_{pat-rec} [rad]",
+					200, -1, 1.);
+    _hist._PhiResid[2]= tfs->make<TH1F>("hPhiResid2",
+					"#phi residual 1; #phi_{straw} - #phi_{kal-fit} [rad]",
 					200, -1, 1.);
 
     _hist._kdistvsdz[0]  = tfs->make<TH2F>("hkdistvsdz0",
@@ -331,7 +329,7 @@ namespace mu2e {
     _hist._kaldoca    [1]   = tfs->make<TH1F>("hkaldoca_1","doca kalfit non active hits; doca [mm]", 1000, -20., 20);
 
     _hist._NpointsRescued [0]  = tfs->make<TH1F>("hnprescued_0","fraction of points rescued [0]; np_{rescued}/np_{tot}", 100, 0., 1);
-    _hist._NpointsRescued [1]  = tfs->make<TH1F>("hnprescued_1","fraction of points rescued [1]; np_{rescued}/np_{tot}", 100, 0., 1);
+    _hist._NpointsRescued [1]  = tfs->make<TH1F>("hnprescued_1","fraction of points rescued [1] for cut set C track and p>100 MeV/c; np_{rescued}/np_{tot}", 100, 0., 1);
 
     _hist._ntracks           = tfs->make<TH1F>("ntracks","N(reconstructed tracks)", 10, 0, 10);
     _eventid = 0;
@@ -425,7 +423,7 @@ namespace mu2e {
     static HelixDefHack       dummyhdef;
 
     static HelixFitHackResult dummyhfit(dummyhdef);
-    static KalFitResult       dummykfit(dummydef);
+    static KalFitResult       dummykfit(&dummydef);
 
     static StrawHitFlag       esel(StrawHitFlag::energysel), flag;
 
@@ -452,6 +450,8 @@ namespace mu2e {
     unique_ptr<StrawHitFlagCollection> flags (_flags);
 
     art::ProductID kalRepsID(getProductID<KalRepCollection>(event,_iname));
+
+    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
 
 					// find the data
     if (!findData(event)) {
@@ -543,8 +543,8 @@ namespace mu2e {
 					// track fitting objects for this peak
 
       HelixFitHackResult hf_result(helixdef);
-      KalFitResult       sf_result (seeddef);
-      KalFitResult       kf_result  (kaldef);
+      KalFitResult       sf_result (&seeddef);
+      KalFitResult       kf_result  (&kaldef);
 //-----------------------------------------------------------------------------
 // pattern recognition step - find initial approximation for Kalman fitter
 //-----------------------------------------------------------------------------
@@ -636,6 +636,7 @@ namespace mu2e {
 	  TrkLineTraj  wtraj(wpt,wdir,-20,20);
 	  // estimate flightlength along track.  This assumes a constant BField!!!
 	  double fltlen = (wpos.z()-tpos.z())/tdir.z();
+ 
 	  TrkPoca   wpoca(helTraj,fltlen,wtraj,0.0);
 	    
 	  doca      = wpoca.doca();
@@ -750,10 +751,10 @@ namespace mu2e {
 	    }
 	    
 	    _hist._seeddoca[2]->Fill(doca);
-
-	      if (active) _hist._seeddoca[0]->Fill(doca);
-	      else        _hist._seeddoca[1]->Fill(doca);
-
+	    
+	    if (found) _hist._seeddoca[0]->Fill(doca);
+	    else        _hist._seeddoca[1]->Fill(doca);
+	    
 	    if (!found && active){
 	      ++npointsrescued;
 	    }
@@ -911,7 +912,8 @@ namespace mu2e {
 	tracks->push_back(krep);
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
-	tp->SetCprIndex(tracks->size());
+	tp->SetCprIndex(tracks->size());	
+	kfresults->push_back(kf_result);
       } 
       else {
 //-----------------------------------------------------------------------------
@@ -963,10 +965,11 @@ namespace mu2e {
   END:;
     //    art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     //    _payloadSaver.put(*tracks, tracksID, event);
-    event.put(std::move(tracks),   _iname);
-    event.put(std::move(trackPtrs),_iname);
-    event.put(std::move(flags ),   _iname);
-    event.put(std::move(tpeaks),   _iname);
+    event.put(std::move(tracks)   ,   _iname);
+    event.put(std::move(trackPtrs),   _iname);
+    event.put(std::move(flags )   ,   _iname);
+    event.put(std::move(tpeaks)   ,   _iname);
+    event.put(std::move(kfresults),   _iname);
   }
 
 //-----------------------------------------------------------------------------
@@ -1322,9 +1325,6 @@ namespace mu2e {
 //----------------------------------------------------------------------
 // 2014-11-02 gianipez added some diagnostic
 //----------------------------------------------------------------------
-    _hist._kdfdzmode ->Fill(fHackData->TheoImode());
-    _hist._kphi0     ->Fill(fHackData->TheoPhi0());
-    _hist._ktanlambda->Fill(fHackData->TheoTanL());
 
     Hep3Vector mom = krep->momentum(0);
     double pt      = sqrt(mom.x()*mom.x() + mom.y()*mom.y());
@@ -1332,10 +1332,93 @@ namespace mu2e {
     double tanL    = pt/pz;
     double radius  = fabs(1./krep->helix(0).omega());//mom.mag()*10./3.;//convert MeV to mm
     double kdfdz   = tanL/radius;
-	
-    _hist._kdfdz  [0]->Fill(fHackData->dfdz() - kdfdz);
-    _hist._kradius[0]->Fill(fHackData->TheoRadius() - radius);
-    _hist._k0mode    ->Fill(fHackData->mode0Points());
+
+    TrkDifTraj const &traj = krep->traj();
+
+    double    trkPhi, hitPhi, dphi;
+    HepPoint  trkPos;
+    double    tmpFltz0;
+    double    dz = 1e10;
+
+    for(TrkHotList::hot_iterator it=hotl->begin();it<hotl->end(); it++) {
+      hit   = (const mu2e::TrkStrawHit*) &(*it);
+      if (!hit->isActive())            continue;
+      fltlen = hit->fltLen();
+      trkPos = traj.position(fltlen);
+      
+      if ( fabs(trkPos.z()) < dz ){
+	tmpFltz0 = fltlen;
+	dz       =  fabs(trkPos.z());
+      }
+    }
+      
+    HelixTraj trkHel(krep->helix(tmpFltz0).params(),krep->helix(tmpFltz0).covariance());
+    trkHel.getInfo(tmpFltz0, tpos,tdir);
+
+    double   fltz0 = tmpFltz0 - traj.position(tmpFltz0).z()/tdir.z();
+   
+    double d0      = krep->helix(fltz0).d0();
+    double phiC    = krep->helix(fltz0).phi0();
+    double x0      = -(radius + d0)*std::sin(phiC);
+    double y0      =  (radius + d0)*std::cos(phiC);
+  
+    HepPoint   trkPosz0 = traj.position(fltz0);
+    CLHEP::Hep3Vector trkHelPosZ0 (trkPosz0.x(), trkPosz0.y(), trkPosz0.z());
+    CLHEP::Hep3Vector trkHelCenter(x0, y0, 0.);
+    
+    double kphi0   = CLHEP::Hep3Vector(trkHelPosZ0-trkHelCenter).phi() - trkPosz0.z()*kdfdz;
+      
+    while (kphi0 >  M_PI) kphi0 -= 2*M_PI;
+    while (kphi0 < -M_PI) kphi0 += 2*M_PI;
+      
+    double ptrPhi0[4], dPhi0[4];
+    ptrPhi0[0] = (fHackData->fData[22]);
+    ptrPhi0[1] = (fHackData->fData[23]);
+    ptrPhi0[2] = (fHackData->fData[24]);
+    ptrPhi0[3] = (fHackData->phi0());
+    
+    for (int i=0; i<4; ++i){
+      while (ptrPhi0[i] >  M_PI) ptrPhi0[i] -= 2*M_PI;
+      while (ptrPhi0[i] < -M_PI) ptrPhi0[i] += 2*M_PI;
+      dPhi0[i] = (ptrPhi0[i]) - (kphi0);
+    }
+
+    
+    //--------------------------------------------------------------------------------
+    // calculate the phi residual of the straw hit position using the track result
+    //--------------------------------------------------------------------------------
+  
+    for(TrkHotList::hot_iterator it=hotl->begin();it<hotl->end(); it++) {
+      hit   = (const mu2e::TrkStrawHit*) &(*it);
+      if (!hit->isActive())            continue;
+
+      //calculate the hit phi
+      hit_index = hit->index();
+      StrawHit const*       sh    = &(hit->strawHit());
+      Straw const&          straw = _tracker->getStraw(sh->strawIndex());
+      StrawHitPosition const& shp = _shpcol->at(hit_index);
+      CLHEP::Hep3Vector    hitPos = shp.pos();
+      hitPhi = CLHEP::Hep3Vector(hitPos - trkHelCenter).phi();
+      while (hitPhi >  M_PI) hitPhi  -= 2*M_PI;
+      while (hitPhi < -M_PI) hitPhi  += 2*M_PI;
+      
+      //calculate the track phi at a given z
+      fltlen = hit->fltLen();
+      trkPos = traj.position(fltlen);
+      CLHEP::Hep3Vector trkHelPos (trkPos.x(), trkPos.y(), trkPos.z());
+    
+      trkPhi  = CLHEP::Hep3Vector(trkHelPos-trkHelCenter).phi();
+      while (trkPhi >  M_PI) trkPhi  -= 2*M_PI;
+      while (trkPhi < -M_PI) trkPhi  += 2*M_PI;
+     
+      dphi = hitPhi - trkPhi;
+      _hist._PhiResid [2]->Fill(dphi);
+    }
+
+
+
+    _hist._kradius[0]->Fill(fHackData->fData[20] - radius);
+    //    _hist._k0mode    ->Fill(fHackData->mode0Points());
 //------------------------------------------------------------------------------------------
 //take info from the seed fit for filling diagnostic histograms
 //------------------------------------------------------------------------------------------
@@ -1354,15 +1437,22 @@ namespace mu2e {
     
     _hist._kdz     ->Fill(fHackData->shDz());
     _hist._kNpoints->Fill(fHackData->goodPoints());
-    _hist._kchi2   ->Fill(fHackData->chi2());
+    //    _hist._kchi2   ->Fill(fHackData->chi2());
     
     _hist._NpointsRescued[0]->Fill(fHackData->rescuedPoints()/double(fHackData->goodPoints()));
 
     _hist._dphidz[0]->Fill(fHackData->fData[17]- kdfdz);
     _hist._dphidz[1]->Fill(fHackData->fData[18]- kdfdz);
     _hist._dphidz[2]->Fill(fHackData->fData[19]- kdfdz);
+    _hist._dphidz[3]->Fill(fHackData->dfdz()   - kdfdz);
+
     
-    double dz, dist, dphi;
+    _hist._dphi0[0]->Fill(dPhi0[0]);
+    _hist._dphi0[1]->Fill(dPhi0[1]);
+    _hist._dphi0[2]->Fill(dPhi0[2]);
+    _hist._dphi0[3]->Fill(dPhi0[3]);
+
+    double dist;
     for (int i=0; i< fHackData->goodPoints(); ++i){
       dz   = fHackData->fDz[i];
       dist = fHackData->fDist[i]; 
@@ -1482,8 +1572,7 @@ namespace mu2e {
 
       fQualityTrack = 1;
 
-      _hist._kradius [1]->Fill(fHackData->TheoRadius() - radius);
-      _hist._kdfdz   [1]->Fill(fHackData->dfdz() - kdfdz);
+      _hist._kradius [1]->Fill(fHackData->fData[20] - radius);
       _hist._seeddfdz[1]->Fill(seeddfdz - kdfdz);
       _hist._seeddr  [1]->Fill(seedRadius - radius);
       _hist._drw     [1]->Fill(fHackData->fData[14]-radius);
@@ -1493,7 +1582,15 @@ namespace mu2e {
       _hist._kdphidz [0]->Fill(fHackData->fData[17]- kdfdz);
       _hist._kdphidz [1]->Fill(fHackData->fData[18]- kdfdz);
       _hist._kdphidz [2]->Fill(fHackData->fData[19]- kdfdz);
+      _hist._kdphidz [3]->Fill(fHackData->dfdz()   - kdfdz);
       
+      _hist._kdphi0[0]->Fill(dPhi0[0]);
+      _hist._kdphi0[1]->Fill(dPhi0[1]);
+      _hist._kdphi0[2]->Fill(dPhi0[2]);
+      _hist._kdphi0[3]->Fill(dPhi0[3]);
+
+ 
+      _hist._NpointsRescued[1]->Fill(fHackData->rescuedPoints()/double(fHackData->goodPoints()));
       for (int i=0; i< fHackData->goodPoints(); ++i){
 	dz   = fHackData->fDz[i];
 	dist = fHackData->fDist[i]; 

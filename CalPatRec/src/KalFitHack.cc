@@ -218,7 +218,7 @@ namespace mu2e
     kres._fit = TrkErrCode(TrkErrCode::fail);
 
 					// test if fitable
-    if (! fitable(kres._tdef)) return;
+    if (! fitable(*kres._tdef)) return;
 //-----------------------------------------------------------------------------
 // first, find t0
 //-----------------------------------------------------------------------------
@@ -230,14 +230,14 @@ namespace mu2e
 
     if (_initt0) {
       if (!caloInitCond) {
-	initT0(kres._tdef, t0);
+	initT0(*kres._tdef, t0);
       } 
       else {
-	initCaloT0(TPeak, kres._tdef, t0);
+	initCaloT0(TPeak, *kres._tdef, t0);
       }
     }
     else {
-      t0 = kres._tdef.t0();
+      t0 = kres._tdef->t0();
     }
 //-----------------------------------------------------------------------------
 // knowing t0, create the hits
@@ -257,10 +257,10 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     if (_matcorr) makeMaterials(kres);
 // create Kalman rep
-    kres._krep = new KalRep(kres._tdef.helix(), hotlist, kres._detinter, *this, kres._tdef.particle());
+    kres._krep = new KalRep(kres._tdef->helix(), hotlist, kres._detinter, *this, kres._tdef->particle());
     assert(kres._krep != 0);
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
-    double flt0 = kres._tdef.helix().zFlight(0.0);
+    double flt0 = kres._tdef->helix().zFlight(0.0);
     kres._krep->setT0(t0,flt0);
     
     if (_debug>0){
@@ -326,7 +326,7 @@ namespace mu2e
 	hflt = 0;
 	TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
 // find the bounding sites near this hit, and extrapolate to get the hit t0
-	std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef.fitdir().fitDirection()));
+	std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef->fitdir().fitDirection()));
 	findBoundingHits(kres._hits,hflt,ilow,ihigh);
 
 	if(ihigh != kres._hits.end()) nearhit = *ihigh;
@@ -335,7 +335,7 @@ namespace mu2e
 	TrkT0 hitt0 = nearhit->hitT0();
 
 	mom  = kres._krep->momentum(nearhit->fltLen()).mag();
-	beta = kres._tdef.particle().beta(mom);
+	beta = kres._tdef->particle().beta(mom);
 	tflt = (hflt-nearhit->fltLen())/(beta*CLHEP::c_light);
 
 					// update the time in the TrkT0 object and create a new 
@@ -398,7 +398,7 @@ namespace mu2e
 	trkhit->setAmbigUpdate(false);
       }
  // sort hits by flightlength (or in Z, which is the same)
-      std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef.fitdir().fitDirection()));
+      std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef->fitdir().fitDirection()));
 //---------------------------------------------------------------------------
 // refit the track one more time with minimal external errors
 //---------------------------------------------------------------------------
@@ -550,7 +550,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
   void KalFitHack::makeHits(KalFitResult& KRes, TrkT0 const& t0) {
     const Tracker& tracker = getTrackerOrThrow();
-    TrkDef const& tdef = KRes._tdef;
+    TrkDef const& tdef = *KRes._tdef;
 // compute the propagaion velocity
     double flt0 = tdef.helix().zFlight(0.0);
     double mom = TrkMomCalculator::vecMom(tdef.helix(),bField(),flt0).mag();
@@ -770,7 +770,7 @@ namespace mu2e
 
 //-----------------------------------------------------------------------------
   void KalFitHack::makeMaterials(KalFitResult& KRes) {
-    TrkDef const& tdef = KRes._tdef;
+    TrkDef const& tdef = *KRes._tdef;
     for(std::vector<TrkStrawHit*>::iterator ihit=KRes._hits.begin();ihit!=KRes._hits.end();ihit++){
       TrkStrawHit* trkhit = *ihit;
       // create wall and gas intersection objects from each straw hit (active or not)
@@ -998,7 +998,7 @@ namespace mu2e
 // compute the particle velocity
 //-----------------------------------------------------------------------------
       mom  = TrkMomCalculator::vecMom(trkHel,bField(),t0flt).mag();
-      vflt = KRes._tdef.particle().beta(mom)*CLHEP::c_light;
+      vflt = KRes._tdef->particle().beta(mom)*CLHEP::c_light;
 //-----------------------------------------------------------------------------
 // path length of the particle from the middle of the Tracker to the  calorimeter
 // set dummy error value
@@ -1105,7 +1105,7 @@ namespace mu2e
   // compute the time the track came closest to the wire for each hit, starting from t0 and working out.
   // this function allows for momentum change along the track.
   // find the bounding hits on either side of this
-    std::sort(KRes._hits.begin(),KRes._hits.end(),fltlencomp(KRes._tdef.fitdir().fitDirection()));
+    std::sort(KRes._hits.begin(),KRes._hits.end(),fltlencomp(KRes._tdef->fitdir().fitDirection()));
     std::vector<TrkStrawHit*>::iterator ihigh;
     std::vector<TrkStrawHit*>::reverse_iterator ilow;
     findBoundingHits(KRes._hits,KRes._krep->flt0(),ilow,ihigh);
@@ -1117,7 +1117,7 @@ namespace mu2e
 // particle momentum at this point, using the full fit
       double mom = KRes._krep->momentum(hit->fltLen()).mag();
 // relativistic velocity from that
-      double beta = KRes._tdef.particle().beta(mom);
+      double beta = KRes._tdef->particle().beta(mom);
 // particle transit time to this hit from the reference
       double tflt = (hit->fltLen()-hflt)/(beta*CLHEP::c_light);
 // update the time in the TrkT0 object
@@ -1137,7 +1137,7 @@ namespace mu2e
     for(std::vector<TrkStrawHit*>::reverse_iterator ihit= ilow;ihit != KRes._hits.rend(); ++ihit){
       TrkStrawHit* hit = *ihit;
       double mom = KRes._krep->momentum(hit->fltLen()).mag();
-      double beta = KRes._tdef.particle().beta(mom);
+      double beta = KRes._tdef->particle().beta(mom);
       double tflt = (hit->fltLen()-hflt)/(beta*CLHEP::c_light);
       hitt0._t0 += tflt;
       (*ihit)->updateHitT0(hitt0);

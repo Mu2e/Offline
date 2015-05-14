@@ -43,8 +43,6 @@ physics :
     MakeStereoHits : @local::MakeStereoHits
     FlagStrawHits  : @local::FlagStrawHits
     FlagBkgHits    : @local::FlagBkgHits
-    CaloReadoutHitsMaker : @local::CaloReadoutHitsMaker
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
     TPR: @local::TrkPatRecDownstreameMinus
   }
 
@@ -58,7 +56,7 @@ physics :
   }
 
   p1 : [generate , g4run, makeSH, FSHPreStereo,
-        MakeStereoHits, FlagStrawHits, FlagBkgHits, CaloReadoutHitsMaker, CaloCrystalHitsMaker, TPR]
+        MakeStereoHits, FlagStrawHits, FlagBkgHits, TPR]
   e1 : [eventdisplay]
 
   trigger_paths  : [p1]

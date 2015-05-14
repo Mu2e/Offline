@@ -35,8 +35,8 @@ public:
   int    Seed2Index()   { return fData[3];   }
   double TheoImode ()   { return fData[4];   }
   double TheoRadius()   { return fData[5];   }
-  double TheoPhi0  ()   { return fData[6];   }
-  double TheoTanL  ()   { return fData[7];   }
+  double phi0      ()   { return fData[6];   }
+  double tanL      ()   { return fData[7];   }
   double dfdz      ()   { return fData[8];   } 
   int    mode0Points(   ){ return fData[9];  } 
   double shDz      ()   { return fData[10];  } 

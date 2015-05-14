@@ -14,6 +14,7 @@ import traceback
 import time
 import hashlib
 from string import maketrans
+import tempfile
 
 ##############################################################
 # print the help
@@ -41,24 +42,30 @@ must be setup.
    -v LEVEL
        verbose level, 0 to 10, default=1
    -x 
-       perform write/copy of files.  Default is to evaluate, not execute.
+       perform write/copy of files.  Default is to evaluate the
+       upload parameters, but not not write or move anything.
    -c
        copy the data file to the upload area after processing
+       Will move the json file too, unless overidden by an explicit -d.
    -m
        mv the data file to the upload area after processing. 
        Useful if the data file is already in
        /pnfs/mu2e/scratch where the FTS is.
+       Will move the json file too, unless overidden by an explicit -d.
    -e
        just rename the data file where it is
    -s FILE
-       FILE contains a list of input files to operate on
+       FILE contains a list of input files to operate on.
    -p METHOD
-      METHOD="file" pair a json file with a data file based on the 
-      fact that the if the file is foo, the json is foo.bar.
-      METHOD="dir" pair a json and a data file based on the fact 
-      that they are in the same directory, whatever their names are
+      How to match a input json file to a data file
+      METHOD="none" for no json input file for each data file (default)
+      METHOD="file" pair an input json file with a data file based on the 
+      fact that if the file is foo, the json is foo.json.
+      METHOD="dir" pair a json file and a data file based on the fact that 
+      they are in the same directory, whatever their names are.
    -j FILE
-       a json file fragment to add to the json for all files
+       a json file fragment to add to the json for all files,
+       typically used to supply MC parameters.
    -i PAR=VALUE
        a json file entry to add to the json for all files, like
         -i mc.primary_particle=neutron
@@ -67,27 +74,42 @@ must be setup.
        Can be repeated.  Will supersede values given in -j
    -a FILE
        a text file with parent file sam names - usually would only
-       be used if there was one file to be processed.
+       be used if there was one data file to be processed.
    -t TAG
-       a text tag to prepend to the sequencer field of the output
-       fil ename
+       text to prepend to the sequencer field of the output filename.
+       This can be useful for non-art datasets which have different
+       components uploaded at different times with different jsonMaker 
+       commands, but intended to be in the same dataset, such as a series
+       of backup tarballs from different stages of processing.
    -d DIR
        directory to write the json files in.  Default is ".".
-       if DIR="same" then write the json in the same directory as the 
-       the data file. if DIR="fts" then write it to the FTS directory. 
+       If DIR="same" then write the json in the same directory as the 
+       the data file. If DIR="fts" then write it to the FTS directory. 
+       If -m or -c is set, then -d "fts" is implied unless overidden by 
+       an explicit -d.
    -f FILE_FAMILY
        the file_family for these files - required
    -r NAME
        this will trigger renaming the data files by the pattern in NAME
        example: -r mcs.batman.beam-2014.fcl-100..art
-       the blank sequencer ".." will be replaced by a sequence number 
+       The blank sequencer ".." will be replaced by a sequence number 
        like ".0001." or first run and subrun for art files.
    -l DIR
-       write a log file of the data file name and json file name
+       write a file of the data file name and json file name
        followed by the fts directory where they should go, suitable
        for driving a "ifdh cp -f" command to move all files in one lock.
-       This file will be named for the dataset.
+       This file will be named for the dataset plus "command" 
+        plus a time string.
+   -g 
+       the command file will be written (implies -l) and then
+       when all files are evaluated and json files written, execute
+       the command file with "ifdh cp -f commandfile". Useful
+       to use one lock file to execute all ifdh commands.
+       Nullifies -c and -m.
 
+  Requires python 2.7 or greater for subprocess.check_output and 
+     2.6 or greater for json module.
+  version 2.0
     """
 
 ##############################################################
@@ -97,17 +119,19 @@ must be setup.
 class Parms:
     def __init__(self):
         self.execute = False
+        self.executeF = False
         self.verbose = int(1)
         self.inFile = ""
         self.genericJson = {}
         self.jsonDir = ""
         self.parentTxt = ""
         self.seqTag = ""
-        self.logDir = ""
+        self.comDir = ""
         self.copy = False
         self.move = False
+        self.groupCp = False
         self.inPlace = False
-        self.pair = "file"
+        self.pair = "none"
         self.reName = ""
         self.file_family = ""
         self.fts = "/pnfs/mu2e/scratch/fts"
@@ -121,7 +145,8 @@ class Parms:
         self.validGenerator = ["beam","stopped_particle","cosmic","mix"]
         self.validPrimary = ["proton","electron","muon","photon",
                              "neutron","mix"]
-        self.resExeOk = checkRES(self)
+        self.resExeOk = False
+        self.ifdhOk = False
         self.fileCount = 0
 
 ##############################################################
@@ -174,11 +199,11 @@ class UploadFile:
     nerr = nerr + 1
 
     def __init__(self):
-        self.baseDir = ""
-        self.baseName = ""
-        self.dataFileName = ""
-        self.jsonFileName = ""
-        self.jsoxFileName = ""
+        self.baseDir = ""       # dirname of data file
+        self.baseName = ""      # basename of data file
+        self.dataFileName = ""  # full filespec of data file
+        self.jsonFileName = ""  # full filespec
+        self.jsoxFileName = ""  # full filespec
         self.dataFile = False
         self.jsonFile = False
         self.jsoxFile = False
@@ -208,7 +233,7 @@ class UploadFile:
 # in UploadFile file and put it in the list at the right place
 ##############################################################
 
-def insertFile(par,files,fn):
+def insertFile(par,files,fnr):
 
     # work with the full path name.  This achieves two things
     # 1) assures the dh.source_file is the full path
@@ -216,10 +241,10 @@ def insertFile(par,files,fn):
     # 2) makes the file specs in the log file portable
 
     if par.verbose >4 :
-        print 'Including '+fn
+        print 'Including '+fnr
 
-    if(fn[0] != "/"):
-        fn = os.getcwd()+"/"+fn
+    cmd = "/bin/readlink -f "+fnr
+    fn = ( subprocess.check_output(cmd,shell=True) ).strip()
 
     # separate out basename and extension
     base = os.path.basename(fn)
@@ -235,6 +260,10 @@ def insertFile(par,files,fn):
         n = -(len(ext)+1)
         base = base[0:n]
         ext = base.split(".")[-1]
+        if par.pair == "none":
+            print "ERROR - json or jsox files on input, but no pairing specified"
+            printHelp
+            sys.exit(2)
 
     if par.verbose > 8:
         print "insertFile: fn="+fn+"\n"\
@@ -243,7 +272,7 @@ def insertFile(par,files,fn):
     # check if it exists
     ex = os.path.exists(fn)
     if par.verbose > 8:
-        print fn+" exsits = " + "%s"%(ex)
+        print fn+" exists = " + "%s"%(ex)
                 
     for fnt in files:
 
@@ -255,8 +284,12 @@ def insertFile(par,files,fn):
             #print "comparing: "+dir+" and "+fnt.baseDir
             if dir == fnt.baseDir:
                 match = True
-        else:
+        elif par.pair == "file":
             if base == fnt.baseName:
+                match = True
+        else:
+            # allow a match if the file is the same - detects duplicates
+            if dir == fnt.baseDir and base == fnt.baseName:
                 match = True
 
         if match :
@@ -400,6 +433,9 @@ def buildJsonName(par,file,jp):
         if par.verbose>4:
             print "ERROR filename has wrong number of dot fields, ",\
             dname.count(".")
+        # if not enough dot fields, can't continue to parse
+        if dname.count(".") < 5 :
+            return 1
 
     if 'file_name' in jp:
         # file name in json was wrong, that shouldn"t happen
@@ -476,13 +512,51 @@ def checkRES(par):
     check = subprocess.check_output(cmd,shell=True)
 
     if check.strip() != "OK":
-        if par.verbose > 3 :
-            print "ERROR could not find RunEventSubRun module"
+        print "ERROR could not find RunEventSubRun module"
         return False
     else:
         if par.verbose > 3 :
             print "RunEventSubRun module check is OK"
         return True
+
+    
+##############################################################
+# check if it is possible to run the run/event/subrun module
+##############################################################
+
+def checkIfdh(par):
+
+    cmd = 'if [ -n "`which ifdh 2> /dev/null`" ]; then echo OK; fi'
+    check = subprocess.check_output(cmd,shell=True)
+
+    if check.strip() != "OK":
+        print "WARNING - could not find ifdh"
+        return False
+    else:
+        if par.verbose > 3 :
+            print "ifdh check is OK"
+
+    #cmd = 'if  grd-proxy-info > /dev/null 2>&1 ; then echo OK; fi'
+    #check = subprocess.check_output(cmd,shell=True)
+    #
+    #if check.strip() != "OK":
+    #    print "WARNING - failed grid-proxy-info check"
+    #    return False
+    #else:
+    #    if par.verbose > 3 :
+    #        print "ifdh check is OK"
+    #
+    #cmd = 'if "" ; then echo OK; fi'
+    #check = subprocess.check_output(cmd,shell=True)
+    #
+    #if check.strip() != "OK":
+    #    print "WARNING - failed grid-proxy-info check"
+    #    return False
+    #else:
+    #    if par.verbose > 3 :
+    #        print "ifdh check is OK"
+
+    return True
 
     
 ##############################################################
@@ -516,6 +590,7 @@ def buildJsonRES(par, file, jp):
     cmd = "mu2e "
     cmd = cmd+ "-c "+par.res_fcl+" "
     cmd = cmd+ "-s "+file.dataFileName
+    cmd = cmd+ " 2>&1 "
 
     if par.verbose > 4 :
         print "Running run/event grabber on "+file.dataFileName
@@ -534,15 +609,13 @@ def buildJsonRES(par, file, jp):
         #print sys.exc_info()[2].print_exc()
         err = True
 
-    if err :
-        if par.verbose> 0 :
-            print "ERROR: RES exe failed to execute"
-        file.state = file.state | file.RESFAILED
-        return 1
-
     if par.verbose > 9 or err:
         print "output of RES call:"
         print res
+
+    if err :
+        file.state = file.state | file.RESFAILED
+        return 1
 
     # these strings mark the printed results
     sp0 = res.find("start RunEventSubRun::endJob summary") + 37
@@ -808,7 +881,7 @@ def parseCommandOptions(par,files):
 
     try:
         opts, args = getopt.getopt(sys.argv[1:],
-                 "hxcmep:v:j:i:d:a:t:f:r:l:s:",["help"])
+                 "hxXcmgep:v:j:i:d:a:t:f:r:l:s:o:",["help"])
     except getopt.GetoptError:
         printHelp
         sys.exit(2)
@@ -819,10 +892,23 @@ def parseCommandOptions(par,files):
             sys.exit(0)
         elif opt == "-x":
             par.execute = True
+        elif opt == "-X":
+            par.executeF = True
         elif opt == "-c":
             par.copy = True
+            # unless overruled by -d, move json too
+            if par.jsonDir == "":
+                par.jsonDir = "fts"
         elif opt == "-m":
             par.move = True
+            # unless overruled by -d, move json too
+            if par.jsonDir == "":
+                par.jsonDir = "fts"
+        elif opt == "-g":
+            par.groupCp = True
+            # unless overruled by -l, create command file in .
+            if par.comDir == "":
+                par.comDir = "."
         elif opt == "-e":
             par.inPlace = True
         elif opt == "-v":
@@ -852,15 +938,20 @@ def parseCommandOptions(par,files):
         elif opt == "-r":
             par.reName = arg
         elif opt == "-l":
-            par.logDir = arg
+            par.comDir = arg
+        elif opt == "-o":
+            # undocumented option for testing
+            par.fts = arg
 
     if par.verbose >4:
         print  'Parsed command parameters:'
         print  ' -v ',par.verbose,' (verbose)'
         print  ' -x ',par.execute,' (execute upload)'
+        print  ' -X ',par.executeF,' (execute upload, ignore checks)'
         print  ' -s ',par.inFile,' (file with list of input files)'
         print  ' -c ',par.copy,' (copy output files to FTS)'
         print  ' -m ',par.move,' (move output files to FTS)'
+        print  ' -g ',par.groupCp,' (run ifdh -f at the end)'
         print  ' -e ',par.inPlace,' (rename data file in place)'
         print  ' -p ',par.pair,' (pairing method)'
         print  ' -j ',genericJsonFs,' (generic json file)'
@@ -869,21 +960,20 @@ def parseCommandOptions(par,files):
         print  ' -t ',par.seqTag,' (txt to prepend to sequencer field)'
         print  ' -f ',par.file_family,' (file_family)'
         print  ' -r ',par.reName,' (rename files)'
-        print  ' -l ',par.logDir,' (log of renamed files)'
+        print  ' -l ',par.comDir,' (log of renamed files)'
 
     if par.file_family == "":
         print "ERROR - file_family is required"
         sys.exit(2)
 
-    if par.pair not in ["file","dir"]:
+    if par.pair not in ["file","dir","none"]:
         print "ERROR - pairing method must be 'file' or 'dir'"
         sys.exit(2)
 
-    if par.copy or par.move:
-        if not os.path.exists(par.fts):
-            print "ERROR - copy requested, but "+par.fts+ \
-                  " is not available"
-            sys.exit(2)
+    if par.groupCp and par.jsonDir == "":
+        print "ERROR - when using -g to do a grouped ifdh, you must use -d "
+        print "to specify a directory to temporarily hold the json files"
+        sys.exit(2)
 
     # after get opts, the only args left are
     # those without flags, which should be filespecs
@@ -954,7 +1044,9 @@ def parseCommandOptions(par,files):
             else:
                 par.genericJson['parents'] = lt
         
-    
+    par.resExeOk = checkRES(par)
+    par.ifdhOk = checkIfdh(par)
+
 
 
 ##############################################################
@@ -1011,9 +1103,9 @@ def writeJson(par,files):
     # write the log file of the old and new SAM name, if requested
     #
 
-    writeLog =  par.logDir != "" and len(files) > 0 and par.execute
+    writeLog =  par.comDir != "" and len(files) > 0 and par.execute
     if writeLog:
-        lfn = par.logDir + "/" + files[0].json['dh.dataset']+".log." \
+        lfn = par.comDir + "/" + files[0].json['dh.dataset']+".command." \
               +str(time.time()).split(".")[0]
         try:
             lfs = open(lfn,"w")
@@ -1038,12 +1130,12 @@ def writeJson(par,files):
         #
         odir = par.fts+"/"+par.file_family+"/"+hdir
         newfn = odir+"/"+file.baseName
-        if par.copy or par.move:
+        if (par.copy or par.move) and not par.groupCp:
 
             if par.copy:
                 cmd = "ifdh cp "+file.dataFileName+" "+newfn
             else:
-                cmd = "mv "+file.dataFileName+" "+newfn
+                cmd = "ifdh mv "+file.dataFileName+" "+newfn
 
             if par.execute:
                 if par.verbose>4:
@@ -1088,18 +1180,15 @@ def writeJson(par,files):
         # write the move in the log if requested
         #
         if writeLog:
-                # we know the json file is now in the
-                # json output dir and newfnj points to it
-                # write the idfh command
             lfs.write(file.dataFileName+" "+newfn+"\n")
 
         #
         # create json output file in tmp area
         #
-        fnj = "/tmp/jsonMaker_"+"{0:d}".format(os.getpid())
-        with open(fnj,'w') as outfile:
-            json.dump(file.json,outfile,indent=4)
-            outfile.write("\n")
+        outfile = tempfile.NamedTemporaryFile(delete=False)
+        fnj = outfile.name
+        json.dump(file.json,outfile,indent=4)
+        outfile.write("\n")
         outfile.close()
 
         #
@@ -1144,7 +1233,6 @@ def writeJson(par,files):
             if par.verbose>4:
                 print "Would execute: "+cmd
 
-
         #
         # write the move in the log if requested
         #
@@ -1158,10 +1246,23 @@ def writeJson(par,files):
                           +file.baseName+".json"+"\n")
 
 
-
-
     if writeLog:
         lfs.close()
+
+    # execute an ifdh cp command on the command file, if requested
+    if par.groupCp and par.execute:
+        res = ""
+        cmd = "ifdh cp -f "+lfn
+        if par.verbose>5: 
+            print "in group copy, com="+cmd
+        try:
+            res = subprocess.check_output(cmd,shell=True)
+        except:
+            print "ERROR: failed to execute:"
+            print com
+            print traceback.print_exc()
+            err = True
+
 
     return 0
 
@@ -1180,6 +1281,13 @@ if __name__ == "__main__":
     # interpret the command line
     # and create the list of files
     parseCommandOptions(par,files);
+
+    # check for res and ifdh
+    if par.execute:
+        if not par.resExeOk:
+            print "WARNING - mu2e exe not found - will fail to operate on art files!"
+        if not par.ifdhOk:
+            print "WARNING - ifdh or grid proxy not found - data movement may fail"
 
     # for each file, read the json files
     # determine if all required metadata is available

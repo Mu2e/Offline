@@ -7,6 +7,8 @@
 //
 // Contact person Pavel Murat
 //
+// v9 : use of of the ints to store NHits
+//-----------------------------------------------------------------------------
 #ifndef murat_inc_TStnTrack_hh
 #define murat_inc_TStnTrack_hh
 
@@ -79,7 +81,10 @@ class TStnTrack : public TObject {
     kNFreeIntsV7   =  7,
     kNFreeFloatsV7 =  5,
 
-    kNFreeInts     =  7,
+    kNFreeIntsv8   =  7,
+    kNFreeFloatsV8 =  4,
+
+    kNFreeInts     =  5,
     kNFreeFloats   =  4
   };
 
@@ -138,6 +143,11 @@ public:
   int                       fPartID;        // MC particle ID (number in the list)
   int                       fNMcStrawHits;  // Nhits by associated particle in the straw tracker
   int                       fAlgorithmID;   // bit-packed : (alg_mask << 16 ) | best
+  int                       fNHits;         // undefined before V9: total number of hits associated with the track
+  int                       fNDoublets;     // undefined before V9: 
+                                            //  number of opposite sign doublets
+                                            //  opposite signs << 4
+                                            //  number of hits with no ambiguity resolved << 16
   int                       fInt[kNFreeInts];     // provision for future expension
   
   float                     fChi2;
@@ -209,8 +219,14 @@ public:
   TBitset*        ExpectedHitMask() { return &fExpectedHitMask; }
   
   int    Number   () const { return fNumber; }
+  int    NHits    () const { return fNHits;  }
   int    NActive  () const { return (fNActive      ) & 0xffff; }
   int    NWrong   () const { return (fNActive >> 16) & 0xffff; }
+
+  int    NOSDoublets  () const { return (fNDoublets      ) & 0xff; }
+  int    NSSDoublets  () const { return (fNDoublets >> 8 ) & 0xff; }
+  int    NHitsNoAmbig () const { return (fNDoublets >> 16) & 0xff; }
+  
   int    NClusters();
   int    NMcStrawHits() const { return fNMcStrawHits; }
   int    NGoodMcHits () const { return fNGoodMcHits; }
@@ -278,7 +294,7 @@ public:
   void ReadV5(TBuffer& R__b);
   void ReadV6(TBuffer& R__b);
 
-  ClassDef(TStnTrack,8)
+  ClassDef(TStnTrack,9)
 
 };
 

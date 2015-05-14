@@ -24,8 +24,8 @@ namespace mu2e {
 
   HitAmbigResolver::HitAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter) : 
     AmbigResolver(pset,ExtErr,Iter),
-    _mindrift(pset.get<double>("HitMinDrift",0.2)),
-    _zeropenalty(pset.get<double>("ZeroDriftPenalty",0.2)),
+    _mindrift(pset.get<double>("HitMinDrift",0.1)),
+    _zeropenalty(pset.get<double>("ZeroDriftPenalty",0.05)),
     _penalty(pset.get<bool>("HitAmbigPenalty",false)),
     _expnorm(pset.get<double>("HitExpNorm",0.03907)),
     _lambda(pset.get<double>("HitLambda",0.1254)),

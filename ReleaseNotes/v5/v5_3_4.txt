@@ -2,3 +2,24 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_3_4
 
+5) May 14, 2015 - youzy
+   Add comments for pbar absorbers, remove a test piece of pbar absorber in TS2
+   modified:
+     Mu2eG4/geom/TransportSolenoid_v01.txt
+     Mu2eG4/src/constructTS.cc
+
+1.  David Norvil Brown (Louisville), 6 May 2015.  Code cleanup in several files in
+    ExternalShieldingGeom package to remove some old debugging couts and to enable
+    reading in several parameters as vectors instead of one value at a time.
+    The latter will shrink the text description files and hopefully make them
+    more readable.  Also removed the floor of the downstream endcap shielding per
+    request from the CRV.
+
+2.  David Norvil Brown (Louisville), 6 May 2015.  Complete removal of old 
+    ExternalNeutronShieldingGeom package and mentions thereof in Mu2e code.
+
+3.  David Norvil Brown (Louisville), 6 May 2015.  Add DS saddles. 
+
+4.  David Norvil Brown (Louisville), 12 May 2015.  Change protonabsorber 
+    material entirely to HDPE.
+

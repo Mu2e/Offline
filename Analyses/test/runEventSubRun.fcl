@@ -8,7 +8,8 @@ process_name : runEventSubrun
 
 services : {
 #  message : @local::default_message
-  message : @local::mf_production
+#  message : @local::mf_production
+  message : @local::mf_errorsOnly
 }
 
 physics :{
