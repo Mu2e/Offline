@@ -98,13 +98,13 @@ namespace mu2e {
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
     _maxdt(pset.get<double>("MaxTimeDifference",8.0)), // nsec
     _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
-    _sumADC(pset.get<bool>("SumADC",false)), 
+    _sumADC(pset.get<bool>("SumADC",true)), 
     _truncateADC(pset.get<bool>("TruncateADC",true)), 
     _floatPedestal(pset.get<bool>("FloatPedestal",true)), 
     _floatWidth(pset.get<bool>("FloatWidth",true)), 
     _earlyPeak(pset.get<bool>("EarlyPeak",false)),
     _latePeak(pset.get<bool>("LatePeak",false)),
-    _findPeaks(pset.get<bool>("FindPeaks",true)),
+    _findPeaks(pset.get<bool>("FindPeaks",false)),
     _printLevel(pset.get<int>("printLevel",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _debugLevel(pset.get<int>("debugLevel",0)),
