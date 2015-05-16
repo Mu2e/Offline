@@ -210,8 +210,8 @@ namespace mu2e {
     if ( !_config.getBool("isDumbbell",false) ){
       double Ravr = ds->rIn1();
 
-      if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {
-        Ravr = _config.getDouble("intneutronabs.rIn1");
+      if ( _config.getBool("hasTSdA",false) ) {
+        Ravr = _config.getDouble("TSdA.rFactorForVDs");
       }
 
       bool opaflag = false;
@@ -301,8 +301,8 @@ namespace mu2e {
     if ( !_config.getBool("isDumbbell",false) ){
       double Ravr = ds->rIn1();
 
-      if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {
-        Ravr = _config.getDouble("intneutronabs.rIn1");
+      if ( _config.getBool("hasTSdA",false) ) {
+        Ravr = _config.getDouble("TSdA.rFactorForVDs");
       }
 
       bool opaflag = false;

@@ -218,6 +218,75 @@ namespace mu2e {
 	      "DSSupport"
               );
 
+
+
+    // Build DS Rings.  Added by David Norvil Brown, May 2015
+    double rirs = ds->rInRingSide();
+    double rors = ds->rOutRingSide();
+    double trs = ds->thickRingSide();
+    double rir = ds->rInRing();
+    double ror = ds->rOutRing();
+    double lr = ds->lengthRing();
+    G4Material* ringMaterial = findMaterialOrThrow(ds->RingMaterial());
+    std::vector<double> xr = ds->xRing();
+    std::vector<double> yr = ds->yRing();
+    std::vector<double> zr = ds->zRing();
+    
+    for ( unsigned int iRing = 0; iRing < xr.size(); iRing++ ) {
+      std::ostringstream leftName;
+      leftName << "DSleftSideRing" << iRing;
+      CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      double lx = xr[iRing];
+      double ly = yr[iRing];
+      double lz = zr[iRing] - lr/2.0 - trs/2.0;
+
+      nestTubs( leftName.str(),
+		TubsParams( rirs, rors, trs/2.0 ),
+		ringMaterial,
+                ringRotat,
+		CLHEP::Hep3Vector(lx,ly,lz)-_hallOriginInMu2e,
+		parent,
+		0,
+		G4Color::Blue(),
+		"DSRing"
+		);
+
+      std::ostringstream centerName;
+      centerName << "DScenterRing" << iRing;
+
+      nestTubs( centerName.str(),
+		TubsParams( rir, ror, lr/2.0 ),
+		ringMaterial,
+                ringRotat,
+		CLHEP::Hep3Vector(xr[iRing],yr[iRing],zr[iRing]) 
+		- _hallOriginInMu2e,
+		parent,
+		0,
+		G4Color::Blue(),
+		"DSRing"
+		);
+
+      std::ostringstream rightName;
+      rightName << "DSrightSideRing" << iRing;
+
+      double rx = xr[iRing];
+      double ry = yr[iRing];
+      double rz = zr[iRing] + lr/2.0 + trs/2.0; 
+
+      nestTubs( rightName.str(),
+		TubsParams( rirs, rors, trs/2.0 ),
+		ringMaterial,
+                ringRotat,
+		CLHEP::Hep3Vector(rx,ry,rz)-_hallOriginInMu2e,
+		parent,
+		0,
+		G4Color::Blue(),
+		"DSRing"
+		);
+
+    } // finished inserting Rings
+
+
     // DS vacuum volumes
     G4Material* vacuumMaterial = findMaterialOrThrow( ds->vacuumMaterial() );
     TubsParams ds1VacParams    ( ts5out->rOut(), ds->rIn1(), ds->vac_halfLengthDs1()   );

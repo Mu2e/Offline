@@ -42,7 +42,7 @@
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
 #include "Mu2eG4/inc/constructExternalShielding.hh"
-#include "Mu2eG4/inc/constructInternalNeutronAbsorber.hh"
+#include "Mu2eG4/inc/constructTSdA.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
 #include "Mu2eG4/inc/constructVisualizationRegions.hh"
@@ -214,8 +214,8 @@ namespace mu2e {
       constructExternalShielding(hallInfo, _config);
     }
 
-    if ( _config.getBool("hasInternalNeutronAbsorber",false) ) {
-      constructInternalNeutronAbsorber(_config);
+    if ( _config.getBool("hasTSdA",false) ) {
+      constructTSdA(_config);
     }
 
     if ( _config.getBool("hasMBS",false) ) {

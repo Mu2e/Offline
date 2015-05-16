@@ -11,8 +11,6 @@
 
 bool crs.vetoVisible         = false;
 bool protonabsorber.visible  = false;
-bool intneutronabs.visible   = false;
-bool extneutronabs.visible   = false;
 bool mbs.visible             = false;
 bool vd.visible              = false;
 
