@@ -90,8 +90,6 @@ bool hall.formalBoxVisible        = false;
 // 
 // bool mbs.visible = false;
 // 
-bool intneutronabs.visible      = false;
-bool extneutronabs.visible      = false;
 // 
 
 bool PSEnclosure.vacuum.visible = false;
