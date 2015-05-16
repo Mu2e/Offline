@@ -1,0 +1,32 @@
+// TS downstream (neutron) Absorber 
+// based on what was originally called Internal Neutron Absorber 
+// (document draft dated 2010-07-16)
+// This version by David Norvil Brown, May 2015
+
+// This is a workaround for Virtual Detector, which reads directly from
+// this (outdated) parameter.
+
+double TSdA.rFactorForVDs        = 650.; // Just for virtual detector build
+
+double tsda.r4		 = 447; // outer radius, inner radius is TS5
+double tsda.halfLength4  = 25.0;
+double tsda.z0           = 5871.;
+string tsda.materialName = "Polyethylene096";
+
+int    tsda.verbosityLevel = 0;
+bool   tsda.visible      = true;
+bool   tsda.solid        = false;
+
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

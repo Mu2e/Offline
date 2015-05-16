@@ -76,6 +76,28 @@ bool   dsSupport.solid       = false;
 bool   dsVacuum.visible      = true;
 bool   dsVacuum.solid        = false;
 
+// Rings added by David Norvil Brown (May 2015)
+double ds.rInRingSide = 1329;
+double ds.rOutRingSide = 1450;
+double ds.thickRingSide = 30;
+double ds.rInRing = 1420;
+double ds.rOutRing = 1450;
+double ds.lengthRing = 374;
+string ds.RingMaterialType = "StainlessSteel";
+vector<double> ds.xRing = {-3904, -3904};
+vector<double> ds.yRing = {0, 0};
+vector<double> ds.zRing = {4039, 13339};
+
+// Rails added by David Norvil Brown (May 2015)
+vector<double> ds.outlineU = {470, 510, 530, 470};
+vector<double> ds.outlineV = {-780, -780, -740, -740};
+double ds.lengthRail       = 400;
+string ds.RailMaterialType = "StainlessSteel";
+vector<double> ds.xRail = { -3904, -3904 };
+vector<double> ds.yRail = { 0, 0 };
+vector<double> ds.zRail = { 4400, 4400 };
+
+
 // Vacuum volumes inside DS
 string ds.vacuumMaterialName = "DSVacuum";
 double ds.vacuumPressure     = 1.e-4;      // torr
