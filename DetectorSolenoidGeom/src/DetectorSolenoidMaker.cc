@@ -58,6 +58,27 @@ namespace mu2e {
     ds->_support_rOut         = c.getDouble("dsSupport.rOut"); 
     ds->_support_halfLength   = c.getDouble("dsSupport.halfLength"); 
 
+    // Rings (David Norvil Brown, May 2015)
+    ds->_rInRingSide = c.getDouble("ds.rInRingSide");
+    ds->_rOutRingSide = c.getDouble("ds.rOutRingSide");
+    ds->_thickRingSide = c.getDouble("ds.thickRingSide");
+    ds->_rInRing = c.getDouble("ds.rInRing");
+    ds->_rOutRing = c.getDouble("ds.rOutRing");
+    ds->_lengthRing = c.getDouble("ds.lengthRing");
+    ds->_RingMaterial = c.getString("ds.RingMaterialType");
+    c.getVectorDouble("ds.xRing", ds->_xRing, 2);
+    c.getVectorDouble("ds.yRing", ds->_yRing, 2);
+    c.getVectorDouble("ds.zRing", ds->_zRing, 2);
+
+    // Rails
+    c.getVectorDouble("ds.outlineU",ds->_uOutlineRail, 4);
+    c.getVectorDouble("ds.outlineV",ds->_vOutlineRail, 4);
+    ds->_lengthRail = c.getDouble("ds.lengthRail");
+    ds->_RailMaterial = c.getString("ds.RailMaterialType");
+    c.getVectorDouble("ds.xRail", ds->_xRail, 2);
+    c.getVectorDouble("ds.yRail", ds->_yRail, 2);
+    c.getVectorDouble("ds.zRail", ds->_zRail, 2);
+
     // Vacuum volumes
     ds->_vacuumMaterialName = c.getString("ds.vacuumMaterialName");
     ds->_vacuumPressure     = c.getDouble("ds.vacuumPressure");

@@ -66,6 +66,28 @@ namespace mu2e {
     double support_rOut() const { return _support_rOut; }
     double support_halfLength() const { return _support_halfLength; }
 
+    // Support rings - matched to saddles (David Norvil Brown, May 2015)
+    double rInRingSide() const { return _rInRingSide; }
+    double rOutRingSide() const { return _rOutRingSide; }
+    double thickRingSide() const { return _thickRingSide; }
+    double rInRing() const { return _rInRing; }
+    double rOutRing() const { return _rOutRing; }
+    double lengthRing() const { return _lengthRing; }
+    std::string RingMaterial() const { return _RingMaterial; }
+    std::vector<double> xRing() const { return _xRing; }
+    std::vector<double> yRing() const { return _yRing; }
+    std::vector<double> zRing() const { return _zRing; }
+
+    // Rails for DS elements to ride on within cryostat
+    std::vector<double>  uOutlineRail() const { return _uOutlineRail; }
+    std::vector<double>  vOutlineRail() const { return _vOutlineRail; }
+    double lengthRail() const { return _lengthRail; }
+    std::string RailMaterial() const { return _RailMaterial; }
+    std::vector<double> xRail() const { return _xRail; }
+    std::vector<double> yRail() const { return _yRail; }
+    std::vector<double> zRail() const { return _zRail; }
+    
+
     // Vacuum volumes inside DS
     //
     // The subdivision of the DS vacuum volume is not physical,
@@ -121,6 +143,23 @@ namespace mu2e {
     double      _support_rIn; 
     double      _support_rOut; 
     double      _support_halfLength; 
+
+    // Rings 
+    double _rInRingSide, _rOutRingSide, _thickRingSide;
+    double _rInRing, _rOutRing, _lengthRing;
+    std::string         _RingMaterial;
+    std::vector<double> _xRing;
+    std::vector<double> _yRing;
+    std::vector<double> _zRing;
+
+    // Rails
+    double                             _lengthRail;
+    std::vector<double>                _uOutlineRail;
+    std::vector<double>                _vOutlineRail;
+    std::string                        _RailMaterial;
+    std::vector<double>                _xRail;
+    std::vector<double>                _yRail;
+    std::vector<double>                _zRail;
 
     // Vacuum volumes inside DS
     double _vacuumPressure;

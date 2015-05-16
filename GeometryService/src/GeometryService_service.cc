@@ -55,8 +55,8 @@
 #include "ExternalShieldingGeom/inc/ExtShieldDownstreamMaker.hh"
 #include "ExternalShieldingGeom/inc/Saddle.hh"
 #include "ExternalShieldingGeom/inc/SaddleMaker.hh"
-#include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorber.hh"
-#include "InternalNeutronAbsorberGeom/inc/InternalNeutronAbsorberMaker.hh"
+#include "BeamlineGeom/inc/TSdA.hh"
+#include "BeamlineGeom/inc/TSdAMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TTrackerGeom/inc/TTrackerMaker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -257,8 +257,8 @@ namespace mu2e {
       addDetector( crs.getCosmicRayShieldPtr() );
     }
 
-    if(_config->getBool("hasInternalNeutronAbsorber",false)){
-      addDetector( InternalNeutronAbsorberMaker::make(*_config,ds) );
+    if(_config->getBool("hasTSdA",false)){
+      addDetector( TSdAMaker::make(*_config,ds) );
     }
 
     if(_config->getBool("hasExternalShielding",false)) {
