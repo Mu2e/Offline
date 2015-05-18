@@ -184,6 +184,33 @@ Double_t crystalball (Double_t *x, Double_t *par) {
   }
 }
 
+
+// The following is from Alexx Perloff, JetMetaAnalysis
+double fnc_dscb(double*xx,double*pp) {
+  double x   = xx[0];
+  // gaussian core
+  double N   = pp[0];//norm
+  double mu  = pp[1];//mean
+  double sig = pp[2];//variance
+  // transition parameters
+  double a1  = pp[3];
+  double p1  = pp[4];
+  double a2  = pp[5];
+  double p2  = pp[6];
+
+  double u   = (x-mu)/sig;
+  double A1  = TMath::Power(p1/TMath::Abs(a1),p1)*TMath::Exp(-a1*a1/2);
+  double A2  = TMath::Power(p2/TMath::Abs(a2),p2)*TMath::Exp(-a2*a2/2);
+  double B1  = p1/TMath::Abs(a1) - TMath::Abs(a1);
+  double B2  = p2/TMath::Abs(a2) - TMath::Abs(a2);
+
+  double result(N);
+  if      (u<-a1) result *= A1*TMath::Power(B1-u,-p1);
+  else if (u<a2)  result *= TMath::Exp(-u*u/2);
+  else            result *= A2*TMath::Power(B2+u,-p2);
+  return result;
+}
+
 void KalFit::Hit () {
   TCut goodhit = reco+ncuts[icut]+momcuts[icut];
   TCut active = "_active";
@@ -703,6 +730,15 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
   cball->SetParName(5,"tailfrac");
   cball->SetParName(6,"taillambda");
 
+  TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,2.5,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+
   TH1F* momres[4];
   TF1*  fitmomres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
@@ -738,10 +774,15 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
     cball->SetParLimits(5,0.001,0.4);
     cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
 
+    dscb->SetParameters(3*integral,momres[ires]->GetMean()+0.07,0.3*momres[ires]->GetRMS(),1.0,4.0,1.0,5.0);
+
     momres[ires]->SetMinimum(0.5);
-    momres[ires]->Fit("cball","LRQ");
-    momres[ires]->Fit("cball","LRM");
-    fitmomres[ires] = new TF1(*cball);
+//    momres[ires]->Fit("cball","LRQ");
+//    momres[ires]->Fit("cball","LRM");
+    momres[ires]->Fit("dscb","LRQ");
+    momres[ires]->Fit("dscb","LRM");
+//    fitmomres[ires] = new TF1(*cball);
+    fitmomres[ires] = new TF1(*dscb);
     fitmomres[ires]->SetName(fitname);
     gDirectory->Append(fitmomres[ires]);
 
