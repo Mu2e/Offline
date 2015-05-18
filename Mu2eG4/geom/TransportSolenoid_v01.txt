@@ -314,19 +314,25 @@ vector<double> ts2.cas.radii  =
 vector<double> ts3u.cas.radii  = 
   {
     485.00, 570.00, 
-    720.00, 800.00
+    630.00, 710.00
   };
 
 double ts3ud.cas.halfLength  = 835.00;
+double ts3udgap.cas.halfLength  = 27.00;
 
-vector<double> ts3ud.cas.radii  = 
+vector<double> ts3uu.cas.radii  = 
   {
-    720.00, 800.00
+    630.00, 710.00
+  };
+
+vector<double> ts3dd.cas.radii  = 
+  {
+    630.00, 710.00
   };
 
 vector<double> ts3d.cas.radii  = 
   {
-    720.00, 800.00,
+    630.00, 710.00,
     485.00, 570.00
   };
 

@@ -243,6 +243,9 @@ namespace mu2e {
     ts._caMaterial = c.getString("ts.cas.materialName");
     double ts3HalfLength = ts3.getHalfLength();
     double ts3udHalfLength = c.getDouble("ts3ud.cas.halfLength");
+    double ts3udgapHalfLength = c.getDouble("ts3udgap.cas.halfLength");
+    double ts3uuHalfLength = 0.5*(ts3udHalfLength - ts3udgapHalfLength);
+    double ts3ddHalfLength = ts3uuHalfLength;
 
     // TS1,3,5 will be cones based on the coil radii and positions
     // TS3 will "splice" TS2 & 4
@@ -330,16 +333,18 @@ namespace mu2e {
 
       }
 
-      if ( its==tsCAReg_enum::TS3ud  ) {
+      if ( its==tsCAReg_enum::TS3uu  ) {
 
         verbosityLevel && std::cout << __func__ << " making "  
                                     << its.name()
                                     << std::endl;
 
+	const CLHEP::Hep3Vector ts3uupos( ts3uuHalfLength + ts3udgapHalfLength, 0., 0 );
+
         const Tube straightSectionParams (ts.innerCARadius(its), 
                                           ts.outerCARadius(its),
-                                          ts3udHalfLength,
-                                          CLHEP::Hep3Vector(),
+                                          ts3uuHalfLength,
+                                          ts3uupos,
                                           CLHEP::HepRotation(CLHEP::HepRotationY((CLHEP::halfpi))),
                                           0.0, CLHEP::twopi,
                                           ts._caMaterial);
@@ -351,6 +356,31 @@ namespace mu2e {
         ts._caMap[its] = std::unique_ptr<TSSection>( new StraightSection ( straightSectionParams ) );
 
       }
+
+
+      if ( its==tsCAReg_enum::TS3dd  ) {
+
+        verbosityLevel && std::cout << __func__ << " making "
+                                    << its.name()
+                                    << std::endl;
+
+	const CLHEP::Hep3Vector ts3ddpos( -ts3ddHalfLength - ts3udgapHalfLength, 0., 0 );
+        const Tube straightSectionParams (ts.innerCARadius(its),
+                                          ts.outerCARadius(its),
+                                          ts3ddHalfLength,
+                                          ts3ddpos,
+                                          CLHEP::HepRotation(CLHEP::HepRotationY((CLHEP::halfpi))),
+                                          0.0, CLHEP::twopi,
+                                          ts._caMaterial);
+
+        verbosityLevel && std::cout << __func__ << " straightSectionParams.materialName() "
+                                    << straightSectionParams.materialName()
+                                    << std::endl;
+
+        ts._caMap[its] = std::unique_ptr<TSSection>( new StraightSection ( straightSectionParams ) );
+
+      }
+
 
       if ( its==tsCAReg_enum::TS3u ||  its==tsCAReg_enum::TS3d  ) {
 
