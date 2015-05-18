@@ -23,3 +23,10 @@ Still under construction
 4.  David Norvil Brown (Louisville), 12 May 2015.  Change protonabsorber 
     material entirely to HDPE.
 
+5.  David Norvil Brown (Louisville), 15,18 May 2015:  Change name of 
+    InternalNeutronAbsorber4 to TSdA.  Make it HDPE.  Move it into 
+    BeamlineGeom package.
+    Remove all traces of InternalNeutronAbsorber package.  
+    Add an external shielding piece to fill a gap at the DS endcap shielding
+    interface.  Add rings to DS, put in basics of code for DS rails.
+    
