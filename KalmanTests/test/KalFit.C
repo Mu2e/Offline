@@ -1009,33 +1009,34 @@ void KalFit::Ambig(int acut) {
   char dtitle[100];
   snprintf(dtitle,100,"%4.0f Active hits",ntotal);
   drleg->AddEntry(rda,dtitle,"l");
-  snprintf(dtitle,100,"%4.4f Inactive good hits",ninact/ntotal);
-  drleg->AddEntry(rdi,dtitle,"l");
   snprintf(dtitle,100,"%4.4f Delta-ray hits",ndelta/ntotal);
   drleg->AddEntry(rdd,dtitle,"l");
+  snprintf(dtitle,100,"%4.4f Inactive good hits",ninact/ntotal);
+  drleg->AddEntry(rdi,dtitle,"l");
   snprintf(dtitle,100,"%4.4f Background hits",nbkg/ntotal);
   drleg->AddEntry(rdf,dtitle,"l");
   drleg->Draw();
 
   ambigcan->cd(2);
 
-  TF1* ex = new TF1("ex","[0]*exp(-x/[1])/[1]+[2]*x+[3]",4);
-  ex->SetParameters(0.0,0.1,-0.01,0.04);
-  ex->SetParName(0,"ExpNorm");
-  ex->SetParName(1,"Lambda");
-  ex->SetParName(2,"Slope");
-  ex->SetParName(3,"Intercept");
-  rdbr->SetMaximum(1.1);
-  rdbr->SetMinimum(0.0);
-  rdbr->Fit(ex,"L");
+//  TF1* ex = new TF1("ex","[0]*exp(-x/[1])/[1]+[2]*x+[3]",4);
+//  ex->SetParameters(0.0,0.1,-0.01,0.04);
+//  ex->SetParName(0,"ExpNorm");
+//  ex->SetParName(1,"Lambda");
+//  ex->SetParName(2,"Slope");
+//  ex->SetParName(3,"Intercept");
+//  rdbr->SetMaximum(1.1);
+//  rdbr->SetMinimum(0.0);
+//  rdbr->Fit(ex,"L");
+  rdgr->Draw();
   rdnr->Draw("same");
-  rdgr->Draw("same");
+  rdbr->Draw("same");
 
-  TLegend* leg = new TLegend(0.16,0.35,0.625,0.6);
+  TLegend* leg = new TLegend(0.4,0.35,0.9,0.6);
   char title[80];
   snprintf(title,80,"Correct ambiguity %4.3f",nright/ntotal);
   leg->AddEntry(rdgr,title,"l");
-  snprintf(title,80,"0 ambiguity %4.3f",nneutral/ntotal);
+  snprintf(title,80,"Null ambiguity %4.3f",nneutral/ntotal);
   leg->AddEntry(rdnr,title,"l");
   snprintf(title,80,"Incorrect ambiguity %4.3f",nwrong/ntotal);
   leg->AddEntry(rdbr,title,"l");
