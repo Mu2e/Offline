@@ -95,7 +95,7 @@ void KalFit::Cuts() {
     t0cuts[ic] = TCut(cutstring);
     snprintf(cutstring,100,"fit.momerr<%4.3f",maxmomerr[ic]);
     momcuts[ic] = TCut(cutstring);
-    snprintf(cutstring,100,"fit.con>%5.4f",minfitcon[ic]);
+    snprintf(cutstring,100,"fitcon>%5.4f",minfitcon[ic]);
     fitcuts[ic] = TCut(cutstring);
   }
   char ctext[80];
@@ -182,6 +182,33 @@ Double_t crystalball (Double_t *x, Double_t *par) {
     double B = par[3]/fabs(par[4]) - fabs(par[4]);
     return par[0]*A*pow(B-dx/fabs(par[2]), -1.*par[3]);
   }
+}
+
+
+// The following is from Alexx Perloff, JetMetaAnalysis
+double fnc_dscb(double*xx,double*pp) {
+  double x   = xx[0];
+  // gaussian core
+  double N   = pp[0];//norm
+  double mu  = pp[1];//mean
+  double sig = pp[2];//variance
+  // transition parameters
+  double a1  = pp[3];
+  double p1  = pp[4];
+  double a2  = pp[5];
+  double p2  = pp[6];
+
+  double u   = (x-mu)/sig;
+  double A1  = TMath::Power(p1/TMath::Abs(a1),p1)*TMath::Exp(-a1*a1/2);
+  double A2  = TMath::Power(p2/TMath::Abs(a2),p2)*TMath::Exp(-a2*a2/2);
+  double B1  = p1/TMath::Abs(a1) - TMath::Abs(a1);
+  double B2  = p2/TMath::Abs(a2) - TMath::Abs(a2);
+
+  double result(N);
+  if      (u<-a1) result *= A1*TMath::Power(B1-u,-p1);
+  else if (u<a2)  result *= TMath::Exp(-u*u/2);
+  else            result *= A2*TMath::Power(B2+u,-p2);
+  return result;
 }
 
 void KalFit::Hit () {
@@ -355,12 +382,12 @@ void KalFit::T2d(){
   TProfile* rt2dp = new TProfile("rt2dp","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* tt2dp = new TProfile("tt2dp","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* tt2dp2 = new TProfile("tt2dp2","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55,"s");
-  _tdiag->Project("tt2d","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
-  _tdiag->Project("rt2d","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
-  _tdiag->Project("tt2dp","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
-  _tdiag->Project("rt2dp","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
-  _tdiag->Project("tt2dp2","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
-  _tdiag->Project("rt2dp2","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("tt2d","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("rt2d","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("tt2dp","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("rt2dp","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("tt2dp2","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("rt2dp2","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
 
   TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
   t2dcan->Divide(2,2);
@@ -474,7 +501,7 @@ void KalFit::AccPlots() {
   _tdiag->Project("nmc","mc.ngood");
   _tdiag->Project("mcmom","mcent.mom",tnhits);
   
-  _tdiag->Project("fit.con","log10(fit.con)",reco+tnhits+tmom);
+  _tdiag->Project("fitcon","log10(fitcon)",reco+tnhits+tmom);
   _tdiag->Project("momerr","fit.momerr",reco+tnhits+tmom);
   _tdiag->Project("t0err","t0err",reco+tnhits+tmom);
   _tdiag->Project("na","nactive",reco+tnhits+tmom);
@@ -703,6 +730,15 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
   cball->SetParName(5,"tailfrac");
   cball->SetParName(6,"taillambda");
 
+  TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,2.5,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+
   TH1F* momres[4];
   TF1*  fitmomres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
@@ -738,10 +774,15 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
     cball->SetParLimits(5,0.001,0.4);
     cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
 
+    dscb->SetParameters(3*integral,momres[ires]->GetMean()+0.07,0.3*momres[ires]->GetRMS(),1.0,4.0,1.0,5.0);
+
     momres[ires]->SetMinimum(0.5);
-    momres[ires]->Fit("cball","LRQ");
-    momres[ires]->Fit("cball","LRM");
-    fitmomres[ires] = new TF1(*cball);
+//    momres[ires]->Fit("cball","LRQ");
+//    momres[ires]->Fit("cball","LRM");
+    momres[ires]->Fit("dscb","LRQ");
+    momres[ires]->Fit("dscb","LRM");
+//    fitmomres[ires] = new TF1(*cball);
+    fitmomres[ires] = new TF1(*dscb);
     fitmomres[ires]->SetName(fitname);
     gDirectory->Append(fitmomres[ires]);
 
@@ -1108,10 +1149,10 @@ void KalFit::Con() {
 //  fcon1->SetStats(0);
 //  fcon2->SetStats(0);
 
-  _tdiag->Project("con1","fit.con",mcsel+"fit.status==1");
-  _tdiag->Project("con2","fit.con",mcsel+"fit.status==2");
-  _tdiag->Project("lcon1","log10(fit.con)",mcsel+"fit.status==1");
-  _tdiag->Project("lcon2","log10(fit.con)",mcsel+"fit.status==2");
+  _tdiag->Project("con1","fitcon",mcsel+"fit.status==1");
+  _tdiag->Project("con2","fitcon",mcsel+"fit.status==2");
+  _tdiag->Project("lcon1","log10(fitcon)",mcsel+"fit.status==1");
+  _tdiag->Project("lcon2","log10(fitcon)",mcsel+"fit.status==2");
 
   TCanvas* fcan = new TCanvas("fcan","fit consistency",500,800);
   fcan->Clear();
@@ -1491,8 +1532,8 @@ void KalFit::MomTails(int iwt) {
   _tdiag->Project("cnact","nactive",core*weight);
   _tdiag->Project("tnact","nactive",tail*weight);
 
-  _tdiag->Project("cfitcon","log10(fit.con)",core*weight);
-  _tdiag->Project("tfitcon","log10(fit.con)",tail*weight);
+  _tdiag->Project("cfitcon","log10(fitcon)",core*weight);
+  _tdiag->Project("tfitcon","log10(fitcon)",tail*weight);
 
   _tdiag->Project("cmomerr","fit.momerr",core*weight);
   _tdiag->Project("tmomerr","fit.momerr",tail*weight);
