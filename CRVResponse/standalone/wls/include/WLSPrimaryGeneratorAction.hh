@@ -4,6 +4,7 @@
 #include "globals.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4PhysicsOrderedFreeVector.hh"
+#include "G4MaterialPropertyVector.hh"
 #include "G4ThreeVector.hh"
 
 class G4ParticleGun;
@@ -13,28 +14,32 @@ class WLSPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
 
-    WLSPrimaryGeneratorAction(int mode);
+    WLSPrimaryGeneratorAction(int mode, int numberOfPhotons=-1, int simType=-1, int startBin=-1, bool verbose=false);
     ~WLSPrimaryGeneratorAction();
 
-    void GeneratePrimaries(G4Event*);
     void BuildEmissionSpectrum();
-    G4ThreeVector GetOptPhotonStartPoint();
-    void SetOptPhotonPolar();
-    void SetOptPhotonEnergy(int spectrum);
-    void SetBins(int binx, int biny, int binz);
+    bool SetNextBins();
+    int  GeneratePhotonsInScintillator(G4Event *anEvent, int generatedPhotons);
+    int  GenerateCerenkovPhotonsInFiber(G4Event *anEvent, int generatedPhotons);
+    void GeneratePrimaries(G4Event*);
 
   private:
 
-    CLHEP::HepRandomEngine*           _randomEngine;
+    CLHEP::HepRandomEngine*    _randomEngine;
     G4ParticleGun*             _particleGun;
 
-    int                        _mode;
+    int                        _mode, _numberOfPhotons, _simType, _currentBin;
+    bool                       _verbose;
     G4PhysicsOrderedFreeVector _emissionIntegral[2];
+    G4MaterialPropertyVector*  _rindexFiber;
+    double                     _cerenkovEnergyMinScintillator, _cerenkovEnergyMaxScintillator;
+    double                     _cerenkovEnergyMinFiber, _cerenkovEnergyMaxFiber;
+    double                     _maxRIndexScintillator, _maxRIndexFiber;
     double                     _yieldRatio;
-    double                     _cerenkovEnergyMin, _cerenkovEnergyMax;
     bool                       _first;
-    int                        _binx, _biny, _binz;
-    bool                       _hasBins;
+
+    double                     _minBinX, _minBinY, _minBinZ, _minBinBeta, _minBinTheta, _minBinPhi, _minBinR;
+    double                     _maxBinX, _maxBinY, _maxBinZ, _maxBinBeta, _maxBinTheta, _maxBinPhi, _maxBinR;
 };
 
 #endif

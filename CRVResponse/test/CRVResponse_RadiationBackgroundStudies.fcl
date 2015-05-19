@@ -32,7 +32,7 @@ physics :
       module_type               : CrvPhotonArrivalsGenerator
       g4ModuleLabels            : ["*"]
       processNames              : ["*"]
-      lookupTableFileName       : "/mu2e/data/outstage/ehrlich/CRVLookupTables/CRVLookupTable.root"
+      lookupTableFileName       : "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable"
       scintillationYield        : 850.0    //850.0 photons per MeV
       scintillatorDecayTimeFast : 3.0      //3.0 ns
       scintillatorDecayTimeSlow : 10.0     //10.0 ns
@@ -88,7 +88,9 @@ physics :
     }
   }
 
-  an : [protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]
+#  an : [protonTimeMap, muonTimeMap, CrvPhotonArrivals]        //1 event (1 cosmic ray muon) takes about 20ms.
+  an : [protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]  //1 event (1 cosmic ray muon) takes about 4s.
+                                                                                                                       //The CrvSiPMResponse is the most time consuming module.
 #  out: [Output]
 #  end_paths: [an, out]
   end_paths: [an]

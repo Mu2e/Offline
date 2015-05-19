@@ -77,6 +77,10 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
     std::vector<double> GetXBins() {return _xbins;}
     std::vector<double> GetYBins() {return _ybins;}
     std::vector<double> GetZBins() {return _zbins;}
+    std::vector<double> GetBetaBins()  {return _betabins;}
+    std::vector<double> GetThetaBins() {return _thetabins;}
+    std::vector<double> GetPhiBins()   {return _phibins;}
+    std::vector<double> GetRBins()     {return _rbins;}
 
   private:
 
@@ -110,6 +114,7 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
     double _scintillatorHalfLength;
 
     std::vector<double> _xbins, _ybins, _zbins;
+    std::vector<double> _betabins, _thetabins, _phibins, _rbins;
 
     void UpdateGeometryParameters();
 };

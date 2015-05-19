@@ -68,7 +68,43 @@ WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
 
   for(int i=0; i<17; i++) _xbins.push_back(xbinsTmp[i]*mm); //16 bins
   for(int i=0; i<36; i++) _ybins.push_back(ybinsTmp[i]*mm); //35 bins
-  for(int i=0; i<121; i++) _zbins.push_back(-3300.0*mm+i*6600.0*mm/120.0); //100 bins
+/*
+  //74 bins
+  for(int i=0; i<6; i++)   // -3300 ... -3250
+  {
+    _zbins.push_back(-3300.0*mm+10.0*mm*i);
+  }
+  for(int i=6; i<70; i++)   // -3150 ... 3150
+  {
+    _zbins.push_back(-3150.0*mm+100.0*mm*(i-6));
+  }
+  for(int i=70; i<76; i++)   // 3250 ... 3300
+  {
+    _zbins.push_back(3250.0*mm+10.0*mm*(i-70));
+  }
+*/
+
+  //84 bins
+  for(int i=0; i<6; i++)   // -3300 ... -3250
+  {
+    _zbins.push_back(-3300.0*mm+10.0*mm*i);
+  }
+  for(int i=6; i<12; i++)   // -3225 ... -3100
+  {
+    _zbins.push_back(-3250.0*mm+25.0*mm*(i-5));
+  }
+  for(int i=12; i<73; i++)   // -3000 ... 3000
+  {
+    _zbins.push_back(-3100.0*mm+100.0*mm*(i-11));
+  }
+  for(int i=73; i<79; i++)   // 3100 ... 3225
+  {
+    _zbins.push_back(3075.0*mm+25.0*mm*(i-72));
+  }
+  for(int i=79; i<85; i++)   // 3250 ... 3300
+  {
+    _zbins.push_back(3240.0*mm+10.0*mm*(i-78));
+  }
 
 #else
 #pragma message("Uses the test beam geometry setup.")
@@ -94,6 +130,15 @@ WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
   for(int i=0; i<61; i++) _zbins.push_back(-400.0*mm+i*800.0*mm/60.0); //60 bins
 
 #endif
+
+  for(int i=0; i<5; i++)  _betabins.push_back(0.62+0.38*i/4.0); //4 bins
+
+  _thetabins.push_back(0);
+  for(int i=0; i<10; i++) _thetabins.push_back(CLHEP::pi/20.0+CLHEP::pi*i/10.0); //11 bins total
+  _thetabins.push_back(CLHEP::pi);
+
+  for(int i=0; i<7; i++)  _phibins.push_back(-CLHEP::pi+i*CLHEP::pi/3.0); //6 bins
+  for(int i=0; i<5; i++)  _rbins.push_back(_fiberRadius*i/4.0); //4 bins
 
   UpdateGeometryParameters();
 }
