@@ -72,6 +72,7 @@
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 #include "MCDataProducts/inc/SimParticleTrackerHitSummaryCollection.hh"
 #include "MCDataProducts/inc/SimParticleTrackerHitSummaryAssns.hh"
+#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
@@ -201,3 +202,6 @@ template class art::Assns<mu2e::SimParticle,mu2e::SimParticleTrackerHitSummary,v
 template class art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void>;
 template class art::Wrapper<art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void> >;
 template class art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::SimParticleTrackerHitSummary,void> >;
+
+template class art::Wrapper<mu2e::ProtonBunchIntensity>;
+

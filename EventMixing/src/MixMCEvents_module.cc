@@ -84,7 +84,7 @@
 // 8) Todo:
 //    When art v1_0_0 is available
 //     - add extra argument to the mixOp for StatusG4.
-//     - Get scale factor from the event.
+//     - Get scale factor from the event (Done: DNB, 20 May 2015)
 //
 
 // Mu2e includes
@@ -95,6 +95,7 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "Mu2eUtilities/inc/PoissonHistogramBinning.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -190,7 +191,9 @@ private:
   // Module labels of the producer that made the GenParticles and that which
   std::string genModuleLabel_;
   std::string g4ModuleLabel_;
-
+  // label of the proton bunch intensity object
+  std::string pbiLabel_;
+  const ProtonBunchIntensity* pbi_;
   // Input tag for the status block.
   art::InputTag g4StatusTag_;
 
@@ -200,6 +203,8 @@ private:
 
   // Enable/disable mixing of the PointTrajectoryCollections.
   bool doPointTrajectories_;
+  // use proton bunch intensities or not
+  bool usePBI_;
 
   // Only one of the following is meaningful in any instance of this class
   // If mean_ >0 then the poisson distribution is valid; else n0_ is valid.
@@ -384,9 +389,11 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   mean_(params_.get<double>("mean")),
   genModuleLabel_(params_.get<string>("genModuleLabel")),
   g4ModuleLabel_ (params_.get<string>("g4ModuleLabel")),
+  pbiLabel_ (params_.get<string>("ProtonBunchIntensityLabel")),
   g4StatusTag_   (params_.get<string>("g4StatusTag")),
   stepInstances_(chooseStepInstances(params_)),
   doPointTrajectories_(params_.get<bool>("doPointTrajectories",true)),
+  usePBI_(params_.get<bool>("useProtonBunchIntensity",false)),
   poisson_(nullptr),
   n0_(0),
 
@@ -450,9 +457,18 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
 // Initialize state for each event,
 void
 mu2e::MixMCEventsDetail::
-startEvent(const art::Event&) {
+startEvent(const art::Event& event) {
   summary_.reset(new mu2e::MixingSummary());
   stepCollectionCount_ = -1;
+  pbi_ = 0;
+  // find the proton intensity for this event
+  if(usePBI_){
+    art::Handle<mu2e::ProtonBunchIntensity> pbiH; 
+    if(event.getByLabel(pbiLabel_,pbiH))
+      pbi_ = pbiH.product();
+    if(pbi_ == 0)
+      throw cet::exception("SIM")<<"mu2e::MixMCEvents: No ProtonBunchIntensity with label " <<  pbiLabel_ << endl;
+  }
 }
 
 size_t
@@ -462,7 +478,15 @@ nSecondaries() {
   // If the mean is positive, draw random variates from a Poisson distribution with that mean.
   // If the mean is negative, draw the same number of mix-in events on every call; that number
   // is just the absolute value of the mean, truncated to the nearest integer.
-  actual_ = ( mean_ > 0 ) ? poisson_->fire(): n0_;
+  if(mean_ > 0){
+    double bmean = mean_;
+    if(pbi_ != 0)
+    // if we're scaling by the bunch intensity, multiply that through.  Note that the units of the
+    // ProtonBunchIntensity object is # of protons hitting the target for this microbunch.
+      bmean *= pbi_->intensity();
+    actual_ = poisson_->fire(bmean);
+  } else 
+    actual_ = n0_;
 
   hNEvents_->Fill(actual_);
 
