@@ -243,7 +243,7 @@ namespace mu2e {
 	  ++nused;
   // compare this state to the original, record any differences
 	  if(tshs != HitState(tshui._ambig, tshui._active))
-	    result._statechange |= (1 << itsh);	    
+	    result._statechange |= (itsh << 1);	    
 	  double w = tshui._uwt;
 	  double r = tshui._dr;
 	  double v = tshui._dv;
