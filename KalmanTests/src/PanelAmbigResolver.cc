@@ -47,6 +47,7 @@ namespace mu2e {
       _minsep(pset.get<double>("minChisqSep",6.0)),
       _inactivepenalty(pset.get<double>("inactivePenalty",16.0)),
       _penaltyres(pset.get<double>("PenaltyResolution",0.5)),
+      _trkpenaltyres(pset.get<double>("TrackPenaltyResolution",0.2)),
       _addtrkpos(pset.get<bool>("AddTrackPositionConstraint",true)),
       _diag(pset.get<int>("DiagLevel",0)),
       _kdiag(kdiag)
@@ -208,7 +209,8 @@ namespace mu2e {
 	  Hep3Vector tposv(tpos.x.number(),tpos.y.number(),tpos.z.number());
 	  pinfo._tupos = udir.dot(tposv);
 	  pinfo._tuerr = trku.error();
-	  pinfo._tuwt = 1.0/(pinfo._tuerr*pinfo._tuerr);
+	  // degrade the track information
+	  pinfo._tuwt = 1.0/(pinfo._tuerr*pinfo._tuerr + _trkpenaltyres*_trkpenaltyres);
 	  // now, project the hits onto u, WRT the projected track position. 
 	  for(TSHCI ihit = phits.begin();ihit != phits.end();++ihit){
 	    pinfo._uinfo.push_back(TSHUInfo(*ihit,udir,tpos.hepPoint()));
