@@ -38,6 +38,8 @@ WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName
     _crvPhotonArrivals = std::unique_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals(_randFlat));
     _crvPhotonArrivals->LoadLookupTable(lookupFileName);
   }
+
+  Reset();
 }
 
 WLSSteppingAction::~WLSSteppingAction()
@@ -141,6 +143,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       }
 //      Test(theStep, PDGcode);
     }
+
   }
 }
 
@@ -160,7 +163,12 @@ void WLSSteppingAction::Reset()
   for(int SiPM=0; SiPM<4; SiPM++)
   {
     _arrivalTimes[i][SiPM].clear();
-    if(i==0) _fiberEmissions[SiPM].clear();
+    _arrivalTimes[i][SiPM].reserve(10000);
+    if(i==0) 
+    {
+     _fiberEmissions[SiPM].clear();
+     _fiberEmissions[SiPM].reserve(10000);
+    }
   }
 
   _wlsTracks.clear();

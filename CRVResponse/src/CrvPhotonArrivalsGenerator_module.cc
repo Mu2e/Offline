@@ -37,6 +37,7 @@
 
 #include <TMath.h>
 
+
 namespace mu2e 
 {
   class CrvPhotonArrivalsGenerator : public art::EDProducer 

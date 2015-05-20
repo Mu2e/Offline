@@ -611,7 +611,6 @@ void DataInterface::fillGeometry()
   if( geom->hasElement<mu2e::CosmicRayShield>() ) 
   {
     mu2e::GeomHandle<mu2e::CosmicRayShield> CosmicRayShieldGeomHandle;
-
     std::vector<mu2e::CRSScintillatorShield> const& shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
     for(std::vector<mu2e::CRSScintillatorShield>::const_iterator ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
     {

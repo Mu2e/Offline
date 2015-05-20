@@ -14,7 +14,7 @@ class WLSEventAction : public G4UserEventAction
 {
   public:
 
-    WLSEventAction(int mode, int id=0);  //id is only needed for mode -1
+    WLSEventAction(int mode, int numberOfPhotons=-1, int simType=-1, int minBin=-1, bool verbose=false);  //numberOfPhotons, simType, minBin, verbose is only needed for mode -1
     ~WLSEventAction();
 
   public:
@@ -23,14 +23,8 @@ class WLSEventAction : public G4UserEventAction
     void     EndOfEventAction(const G4Event*);
 
     static WLSEventAction* Instance()                      {return _fgInstance;}
-    void                   SetOptPhotonStart(G4ThreeVector start) {_start=start;}
-    void                   SetGeneratedOptPhotons(int n)          {_generatedPhotons=n;}
-    
-    G4ThreeVector          GetHistBinCenter(int binx, int biny, int binz); 
-    double                 GetHistBinWidthX(int binx); 
-    double                 GetHistBinWidthY(int biny); 
-    double                 GetHistBinWidthZ(int binz); 
-    void                   doStoreConstants(bool storeConstants) {_storeConstants = storeConstants;}
+    void                   SetGeneratedOptPhotons(int n)   {_generatedPhotons=n;}
+    void                   SetStartZ(double startZ)        {_startZ=startZ;}
 
   private:
 
@@ -40,11 +34,11 @@ class WLSEventAction : public G4UserEventAction
     TH3D*                   _histSurvivalProb[4][4];
     TH3D*                   _histTimeDifference[4][4];
     TH3D*                   _histFiberEmissions[4][4];
-    G4ThreeVector           _start;
     int                     _generatedPhotons;
-    int                     _mode;
-    TFile*                  _fileLookupTable;
+    int                     _mode, _numberOfPhotons, _simType, _minBin;
+    bool                    _verbose;
     bool                    _storeConstants;
+    double                  _startZ;
 
     void                    Draw(const G4Event* evt) const;
 

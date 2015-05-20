@@ -14,27 +14,144 @@
 #include "WLSRunAction.hh"
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
+//#include "WLSStackingAction.hh"
 
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
-/*
-to create an entry in the look-up table:
-./wls -1 binX binY binZ ID   
-(bins run from 1 to the maximum number of bins in binX/Y/Z)
+#include <fstream>
+#include <iostream>
+#include <ostream>
+#include <sstream>
 
-to run the standalone program using the look-up table:
-./wls 0 /mu2e/data/outstage/ehrlich/CRVLookupTables/CRVLookupTable.root 
-
-*/
-
-int main(int argc,char** argv) 
+bool findArgs(int argc, char** argv, const char* c)
 {
-  if(argc<2) return(-1);
-  int mode=atoi(argv[1]);
-  if(mode!=0 && mode!=-1) return(-1);
-  if(mode==-1 && argc!=6) return(-1);
-  if(mode==0 && argc!=3) return(-1);
+  for(int i=1; i<argc; i++)
+  {
+    if(strcmp(argv[i],c)==0) return true;
+  }
+  return false; 
+}
+
+bool findArgs(int argc, char** argv, const char* c, std::string &value)
+{
+  for(int i=1; i<argc; i++)
+  {
+    if(strcmp(argv[i],c)==0)
+    {
+      if(i+1<argc)
+      {
+        if(argv[i+1][0]!='-')
+        {
+          value=argv[i+1];
+          return true;
+        } 
+      }
+      std::cout<<"The argument "<<c<<" requires a value"<<std::endl;
+      return false; 
+    }
+  }
+  return false; 
+}
+bool findArgs(int argc, char** argv, const char* c, int &value)
+{
+  for(int i=1; i<argc; i++)
+  {
+    if(strcmp(argv[i],c)==0)
+    {
+      if(i+1<argc)
+      {
+        if(argv[i+1][0]!='-')
+        {
+          value=atoi(argv[i+1]);
+          return true;
+        } 
+      }
+      std::cout<<"The argument "<<c<<" requires a value"<<std::endl;
+      return false; 
+    }
+  }
+  return false; 
+}
+
+int main(int argc, char** argv) 
+{
+  int mode=-2;
+  int simType=-1;
+  int minBin=0;
+  int maxBin=-1;
+  int n=1000;
+  std::string lookupFilename="";
+
+  bool verbose = findArgs(argc, argv, "-v");
+
+  if(findArgs(argc, argv, "-h"))
+  {
+    std::cout<<"Usage ./wls [OPTION]"<<std::endl;
+    std::cout<<std::endl;
+    std::cout<<"Available options:"<<std::endl;
+    std::cout<<"-v           Verbose"<<std::endl;
+    std::cout<<"-h           Help"<<std::endl;
+    std::cout<<"-c           Create lookup table"<<std::endl;
+    std::cout<<"-s           Run a simulation"<<std::endl;
+    std::cout<<std::endl;
+    std::cout<<"Options for creating the lookup table:"<<std::endl;
+    std::cout<<"-t simtype   Simulation type:"<<std::endl;
+    std::cout<<"             0  scintillation in scintillator"<<std::endl;
+    std::cout<<"             1  cerenkov in scintillator"<<std::endl;
+    std::cout<<"             2  cerenkov in fiber 0"<<std::endl;
+    std::cout<<"             3  cerenkov in fiber 1"<<std::endl;
+    std::cout<<"-m minbin    Minimum bin in lookup table (default is 0)."<<std::endl;
+    std::cout<<"-M maxbin    Maximum bin in lookup table (default is"<<std::endl;
+    std::cout<<"             the maximum number of bins for this simulation type)."<<std::endl;
+    std::cout<<"-n photons   Number of photons to simulate for each bin (default 1000)."<<std::endl;
+    std::cout<<std::endl;
+    std::cout<<"Options for running the simulation:"<<std::endl;
+    std::cout<<"-f filename  File with lookup table used for running a simulation"<<std::endl;
+    std::cout<<"-n events    Number of events to simulate (default 1000)."<<std::endl;
+    std::cout<<std::endl;
+    return 0;
+  }
+
+  if(findArgs(argc, argv, "-c")) mode=-1;
+  if(findArgs(argc, argv, "-s")) mode=0;
+  if(findArgs(argc, argv, "-c") && findArgs(argc, argv, "-s"))
+  {
+    std::cout<<"-s and -c cannot be used at the same time."<<std::endl;
+    std::cout<<"Use -h for help."<<std::endl;
+    return -1;
+  }
+  if(mode==-2)
+  {
+    std::cout<<"Specify either -s and -c."<<std::endl;
+    std::cout<<"Use -h for help."<<std::endl;
+    return -1;
+  }
+
+  if(mode==-1)
+  {
+    if(!findArgs(argc, argv, "-t", simType))
+    {
+      std::cout<<"Simulation type needs to be specified"<<std::endl;
+      std::cout<<"Use -h for help"<<std::endl;
+      return -1;
+    }
+    findArgs(argc, argv, "-m", minBin);
+    findArgs(argc, argv, "-M", maxBin);
+    findArgs(argc, argv, "-n", n);
+  }
+
+  if(mode==0)
+  {
+    if(!findArgs(argc, argv, "-f", lookupFilename))
+    {
+      std::cout<<"Filename for lookup table needs to be specified"<<std::endl;
+      std::cout<<"Use -h for help"<<std::endl;
+      return -1;
+    }
+    findArgs(argc, argv, "-n", n);
+  }
+
 
   G4String physName = "QGSP_BERT_EMV";
 //  G4String physName = "QGSP_BERT_HP";  //for neutrons
@@ -49,30 +166,16 @@ int main(int argc,char** argv)
   runManager->SetUserInitialization(detector);
   runManager->SetUserInitialization(new WLSPhysicsList(physName));
 
-  WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode);
+  WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose);   //n,simType,minBin not needed in mode 0
   WLSRunAction* runAction = new WLSRunAction();
-
-  WLSEventAction* eventAction;     
-  if(mode==0) eventAction = new WLSEventAction(mode);     
-  else eventAction = new WLSEventAction(mode, atoi(argv[5])); //argv[5] is the ID to distinguish
-                                                              //generated lookup table files 
-                                                              //in mode -1 (not needed in mode 0)
-
-  if(mode==-1)
-  {
-    int binx=atoi(argv[2]);
-    int biny=atoi(argv[3]);
-    int binz=atoi(argv[4]);
-    generator->SetBins(binx,biny,binz);
-  }
+  WLSEventAction* eventAction = new WLSEventAction(mode, n, simType, minBin, verbose); 
+  WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename);  //filename not needed in mode -1
 
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);
   runManager->SetUserAction(eventAction);
-
-  if(mode==-1) runManager->SetUserAction( new WLSSteppingAction(mode) );
-  else runManager->SetUserAction( new WLSSteppingAction(mode, argv[2]) );  //argv[2] is lookup table file name.
-                                                                           //not needed for mode -1
+  runManager->SetUserAction(steppingAction);
+//  runManager->SetUserAction(new WLSStackingAction);
 
 #if 0 
   G4VisManager *visManager = new G4VisExecutive();
@@ -94,19 +197,65 @@ int main(int argc,char** argv)
   runManager->Initialize();
   if(mode==-1)
   {
-    int binx=atoi(argv[2]);
-    int biny=atoi(argv[3]);
-    int binz=atoi(argv[4]);
+    const std::vector<double> &xBins     = WLSDetectorConstruction::Instance()->GetXBins();
+    const std::vector<double> &yBins     = WLSDetectorConstruction::Instance()->GetYBins();
+    const std::vector<double> &zBins     = WLSDetectorConstruction::Instance()->GetZBins();
+    const std::vector<double> &betaBins  = WLSDetectorConstruction::Instance()->GetBetaBins();
+    const std::vector<double> &thetaBins = WLSDetectorConstruction::Instance()->GetThetaBins();
+    const std::vector<double> &phiBins   = WLSDetectorConstruction::Instance()->GetPhiBins();
+    const std::vector<double> &rBins     = WLSDetectorConstruction::Instance()->GetRBins();
 
-    int numberOfEvents=2; //one event for scintillation, and one for cerenkov
-    if(binx==1 && biny==1 && binz==1) WLSEventAction::Instance()->doStoreConstants(true);
-    if(binx==1 && biny==1) numberOfEvents=4; //two additional event for Cerenkov in the fibers
+    int nXBins=xBins.size()-1;   //e.g. 3 bins need 4 entries in the vector (for 3 bin boundaries)
+    int nYBins=yBins.size()-1;
+    int nZBins=zBins.size()-1;
+    int nBetaBins=betaBins.size()-1;
+    int nThetaBins=thetaBins.size()-1;
+    int nPhiBins=phiBins.size()-1;
+    int nRBins=rBins.size()-1;
 
-    runManager->BeamOn(numberOfEvents);
+    int nBins=0;
+    switch(simType)
+    {
+      case 0: //scintillation in scintillator
+      case 1: //Cerenkov in scintillator
+              nBins=nZBins*nYBins*nXBins;
+              break;
+      case 2: //Cerenkov in fiber 0
+      case 3: //Cerenkov in fiber 1
+              nBins=nZBins*nRBins*nPhiBins*nThetaBins*nBetaBins;
+              break;
+    }
+
+    if(maxBin==-1 || maxBin>=nBins) maxBin=nBins-1;
+
+    int numberOfEvents=maxBin-minBin+1;
+    if(numberOfEvents>0)
+    {
+      std::cout<<std::endl<<std::endl;
+      std::cout<<"About to simulate "<<numberOfEvents<<" bins from "<<minBin<<" to "<<maxBin<<"."<<std::endl;
+      runManager->BeamOn(numberOfEvents);
+      std::cout<<std::endl<<std::endl;
+    }
+    else
+    {
+
+      std::cout<<std::endl<<std::endl;
+      std::cout<<"Exceeded the maximum number of bins. no simulation done."<<std::endl;
+      std::cout<<std::endl<<std::endl;
+
+      std::stringstream filename;
+      filename<<"LookupTable_"<<simType<<"_";
+      filename.fill('0');
+      filename.width(6);
+      filename<<minBin;
+      std::remove(filename.str().c_str());
+      std::ofstream lookupfile(filename.str(),std::ios::binary|std::ios::app);  //create an empty file to avoid anomalies in the script
+      lookupfile.close();
+    }
   }
   else if(mode==0)
   {
-    runManager->BeamOn(1000);
+    runManager->BeamOn(n);
   }
 #endif
 

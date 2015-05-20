@@ -26,6 +26,7 @@ mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'mu2e_MCDataProducts',
                                   'mu2e_RecoDataProducts',
                                   'CLHEP',
+                                  'boost_serialization',
                                   rootlibs],
                                 [],
                                 ['-I ../inc']
@@ -44,6 +45,7 @@ helper.make_plugins( [ mainlib,
                        'mu2e_KalmanTests',
                        'mu2e_DataProducts',
                        'CLHEP',
+                       'boost_serialization',
                        rootlibs
                        ] )
 
