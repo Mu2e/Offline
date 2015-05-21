@@ -191,6 +191,8 @@
  <class name="mu2e::CrvRecoPulsesCollection" />
  <class name="art::Wrapper<mu2e::CrvRecoPulsesCollection>" />
 
+ <class name="mu2e::CrvCoincidenceCheckResult::CoincidenceCombination" />
+ <class name="std::vector<mu2e::CrvCoincidenceCheckResult::CoincidenceCombination>" />
  <class name="mu2e::CrvCoincidenceCheckResult" />
  <class name="art::Wrapper<mu2e::CrvCoincidenceCheckResult>" />
 

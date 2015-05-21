@@ -42,6 +42,7 @@ namespace mu2e
     void endJob();
 
     private:
+    bool        _storeCoincidenceCombinations;
     std::string _crvRecoPulsesModuleLabel;
     double      _PEthreshold;
     double      _maxDistance;
@@ -51,12 +52,16 @@ namespace mu2e
 
     struct coincidenceStruct
     {
-      double pos;
-      std::vector<double> time;
+      double                  pos;
+      CRSScintillatorBarIndex counter;
+      std::vector<double>     time;
+      std::vector<int>        PEs;
+      std::vector<int>        SiPMs;
     };
   };
 
   SimpleCrvCoincidenceCheck::SimpleCrvCoincidenceCheck(fhicl::ParameterSet const& pset) :
+    _storeCoincidenceCombinations(pset.get<bool>("storeCoincidenceCombinations")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _PEthreshold(pset.get<double>("PEthreshold")),
     _maxDistance(pset.get<double>("maxDistance")),
@@ -97,7 +102,9 @@ namespace mu2e
       for(int SiPM=0; SiPM<2; SiPM++)
       {
         coincidenceStruct c;
+        c.counter=barIndex;
         int coincidenceGroup = 0;
+//FIXME: DO NOT HARDCODE THIS
         switch (moduleNumber)
         {
           case 0: 
@@ -136,23 +143,24 @@ namespace mu2e
                   break;
         };
 //std::cout<<"coincidence group: "<<coincidenceGroup<<std::endl;
-        const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector1 = crvRecoPulses.GetRecoPulses(SiPM);
-        for(unsigned int i = 0; i<pulseVector1.size(); i++) 
+
+        for(; SiPM<4; SiPM+=2)  //the reco pulse times of both SiPMs on the same side are put into the same c to avoid that 
+                                //pulses from the same counter can be used to satisfy the coincidence condition
         {
-          const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector1[i];
-          if(pulse._PEs>=_PEthreshold && 
-             pulse._leadingEdge>=_timeWindowStart && 
-             pulse._leadingEdge<=_timeWindowEnd) c.time.push_back(pulse._leadingEdge);
-//std::cout<<"PEs: "<<pulseVector1[i]._PEs<<"   LE: "<<pulseVector1[i]._leadingEdge<<"   pos: "<<c.pos<<std::endl;
-        }
-        const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector2 = crvRecoPulses.GetRecoPulses(SiPM+2);
-        for(unsigned int i = 0; i<pulseVector2.size(); i++) 
-        {
-          const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector2[i];
-          if(pulse._PEs>=_PEthreshold && 
-             pulse._leadingEdge>=_timeWindowStart && 
-             pulse._leadingEdge<=_timeWindowEnd) c.time.push_back(pulse._leadingEdge);
-//std::cout<<"PEs: "<<pulseVector2[i]._PEs<<"   LE: "<<pulseVector2[i]._leadingEdge<<"   pos: "<<c.pos<<std::endl;
+          const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector = crvRecoPulses.GetRecoPulses(SiPM);
+          for(unsigned int i = 0; i<pulseVector.size(); i++) 
+          {
+            const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
+            if(pulse._PEs>=_PEthreshold && 
+               pulse._leadingEdge>=_timeWindowStart && 
+               pulse._leadingEdge<=_timeWindowEnd)
+               {
+                 c.time.push_back(pulse._leadingEdge);
+                 c.PEs.push_back(pulse._PEs);
+                 c.SiPMs.push_back(SiPM);
+               }
+//std::cout<<"PEs: "<<pulseVector[i]._PEs<<"   LE: "<<pulseVector[i]._leadingEdge<<"   pos: "<<c.pos<<std::endl;
+          }
         }
         if(c.time.size()>0) coincidenceMap[coincidenceGroup].push_back(c);
       }
@@ -161,14 +169,14 @@ namespace mu2e
 //std::cout<<"comparing all reco hits ..."<<std::endl;
     bool foundCoincidence=false;
     std::map<int, std::vector<coincidenceStruct> >::const_iterator iterC;
-    for(iterC = coincidenceMap.begin(); iterC!=coincidenceMap.end() && foundCoincidence==false; iterC++)
+    for(iterC = coincidenceMap.begin(); iterC!=coincidenceMap.end() && (!foundCoincidence || _storeCoincidenceCombinations); iterC++)
     {
       const std::vector<coincidenceStruct> &vectorC = iterC->second;
       unsigned int n=vectorC.size();
 //std::cout<<"coincidence map #"<<iterC->first<<": "<<n<<" entries"<<std::endl;
-      for(unsigned int i1=0; i1<n && foundCoincidence==false; i1++) 
-      for(unsigned int i2=i1+1; i2<n && foundCoincidence==false; i2++) 
-      for(unsigned int i3=i2+1; i3<n && foundCoincidence==false; i3++)
+      for(unsigned int i1=0; i1<n && (!foundCoincidence || _storeCoincidenceCombinations); i1++) 
+      for(unsigned int i2=i1+1; i2<n && (!foundCoincidence || _storeCoincidenceCombinations); i2++) 
+      for(unsigned int i3=i2+1; i3<n && (!foundCoincidence || _storeCoincidenceCombinations); i3++)
       {
         double pos[3]={vectorC[i1].pos,vectorC[i2].pos,vectorC[i3].pos};
         double posMin = *std::min_element(pos,pos+3);
@@ -178,14 +186,32 @@ namespace mu2e
         const std::vector<double> &vectorTime1 = vectorC[i1].time;
         const std::vector<double> &vectorTime2 = vectorC[i2].time;
         const std::vector<double> &vectorTime3 = vectorC[i3].time;
-        for(unsigned int j1=0; j1<vectorTime1.size() && foundCoincidence==false; j1++)
-        for(unsigned int j2=0; j2<vectorTime2.size() && foundCoincidence==false; j2++)
-        for(unsigned int j3=0; j3<vectorTime3.size() && foundCoincidence==false; j3++)
+        for(unsigned int j1=0; j1<vectorTime1.size() && (!foundCoincidence || _storeCoincidenceCombinations); j1++)
+        for(unsigned int j2=0; j2<vectorTime2.size() && (!foundCoincidence || _storeCoincidenceCombinations); j2++)
+        for(unsigned int j3=0; j3<vectorTime3.size() && (!foundCoincidence || _storeCoincidenceCombinations); j3++)
         {
           double time[3]={vectorTime1[j1],vectorTime2[j2],vectorTime3[j3]};
           double timeMin = *std::min_element(time,time+3);
           double timeMax = *std::max_element(time,time+3);
-          if(timeMax-timeMin<_maxTimeDifference) foundCoincidence=true;
+          if(timeMax-timeMin<_maxTimeDifference) 
+          {
+            foundCoincidence=true;
+            if(_storeCoincidenceCombinations)
+            {
+              CrvCoincidenceCheckResult::CoincidenceCombination combination;
+              for(int k=0; k<3; k++) combination._time[k] = time[k];
+              combination._PEs[0] = vectorC[i1].PEs[j1];
+              combination._PEs[1] = vectorC[i2].PEs[j2];
+              combination._PEs[2] = vectorC[i3].PEs[j3];
+              combination._counters[0] = vectorC[i1].counter;
+              combination._counters[1] = vectorC[i2].counter;
+              combination._counters[2] = vectorC[i3].counter;
+              combination._SiPMs[0] = vectorC[i1].SiPMs[j1];
+              combination._SiPMs[1] = vectorC[i2].SiPMs[j2];
+              combination._SiPMs[2] = vectorC[i3].SiPMs[j3];
+              crvCoincidenceCheckResult->GetCoincidenceCombinations().push_back(combination);
+            }
+          }
         }
       } 
     }

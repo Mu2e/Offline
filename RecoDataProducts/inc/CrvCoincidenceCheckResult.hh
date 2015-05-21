@@ -8,12 +8,25 @@
 // Contact person Ralf Ehrlich
 //
 
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+
+#include <vector>
 
 namespace mu2e 
 {
   class CrvCoincidenceCheckResult
   {
     public:
+
+    struct CoincidenceCombination
+    {
+      double                        _time[3];
+      int                           _PEs[3];
+      mu2e::CRSScintillatorBarIndex _counters[3];
+      int                           _SiPMs[3];
+      CoincidenceCombination() {}
+    };
+
 
     CrvCoincidenceCheckResult() {}
 
@@ -27,9 +40,20 @@ namespace mu2e
       return _coincidence;
     }
 
+    const std::vector<CoincidenceCombination> &GetCoincidenceCombinations() const
+    {
+      return _coincidenceCombinations;
+    }
+
+    std::vector<CoincidenceCombination> &GetCoincidenceCombinations()
+    {
+      return _coincidenceCombinations;
+    }
+
     private:
 
-    bool   _coincidence;
+    bool                                _coincidence;
+    std::vector<CoincidenceCombination> _coincidenceCombinations;
   };
 }
 

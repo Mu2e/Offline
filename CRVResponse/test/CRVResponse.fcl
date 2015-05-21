@@ -79,6 +79,7 @@ physics :
     CrvCoincidence:
     {
       module_type               : SimpleCrvCoincidenceCheck
+      storeCoincidenceCombinations : true
       crvRecoPulsesModuleLabel  : "CrvRecoPulses"
       PEthreshold               : 14
       maxDistance               : 200      //mm
