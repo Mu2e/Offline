@@ -205,6 +205,7 @@ private:
   bool doPointTrajectories_;
   // use proton bunch intensities or not
   bool usePBI_;
+  int printLevel_; // level of diagnostic printout
 
   // Only one of the following is meaningful in any instance of this class
   // If mean_ >0 then the poisson distribution is valid; else n0_ is valid.
@@ -394,6 +395,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   stepInstances_(chooseStepInstances(params_)),
   doPointTrajectories_(params_.get<bool>("doPointTrajectories",true)),
   usePBI_(params_.get<bool>("useProtonBunchIntensity",false)),
+  printLevel_(params_.get<int>("PrintLevel",0)),
   poisson_(nullptr),
   n0_(0),
 
@@ -485,6 +487,8 @@ nSecondaries() {
     // ProtonBunchIntensity object is # of protons hitting the target for this microbunch.
       bmean *= pbi_->intensity();
     actual_ = poisson_->fire(bmean);
+    if(printLevel_ > 1)
+      std::cout << "Mixer " << genModuleLabel_  << " Mixing " << actual_ << " events, from mean " << bmean << std::endl;
   } else 
     actual_ = n0_;
 
