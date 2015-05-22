@@ -219,6 +219,7 @@ namespace mu2e
 std::cout<<"run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
 std::cout<<(foundCoincidence?"Coincidence satisfied":"No coincidence found")<<std::endl;
     event.put(std::move(crvCoincidenceCheckResult));
+
   } // end produce
 
 } // end namespace mu2e
