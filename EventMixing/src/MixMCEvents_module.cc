@@ -187,6 +187,7 @@ private:
 
   // The number of mix-in events to choose on each event.
   double mean_;
+  double histFactor_; // used in histogramming only
 
   // Module labels of the producer that made the GenParticles and that which
   std::string genModuleLabel_;
@@ -388,6 +389,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   // Run-time configurable parameters
   params_(pSet.get<fhicl::ParameterSet>("detail")),
   mean_(params_.get<double>("mean")),
+  histFactor_(params_.get<double>("histogramFactor",1.0)),
   genModuleLabel_(params_.get<string>("genModuleLabel")),
   g4ModuleLabel_ (params_.get<string>("g4ModuleLabel")),
   pbiLabel_ (params_.get<string>("ProtonBunchIntensityLabel")),
@@ -451,7 +453,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   }
 
   art::ServiceHandle<art::TFileService> tfs;
-  PoissonHistogramBinning binning(mean_);
+  PoissonHistogramBinning binning(mean_*histFactor_,20.0); // include far tails in histograms
   hNEvents_ = tfs->make<TH1F>( "hNEvents", "Number of Mixed in Events", binning.nbins(), binning.xlow(), binning.xhigh() );
 
 } // end mu2e::MixMCEventsDetail::MixMCEventsDetail
