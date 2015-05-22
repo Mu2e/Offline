@@ -27,6 +27,11 @@ namespace mu2e
       CoincidenceCombination() {}
     };
 
+    struct DeadTimeWindow
+    {
+      double _startTime, _endTime;
+      DeadTimeWindow(double start, double end) : _startTime(start), _endTime(end) {}
+    };
 
     CrvCoincidenceCheckResult() {}
 
@@ -49,6 +54,8 @@ namespace mu2e
     {
       return _coincidenceCombinations;
     }
+
+    std::vector<DeadTimeWindow> GetDeadTimeWindows(double leadingTime, double trailingTime) const;
 
     private:
 
