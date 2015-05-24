@@ -18,7 +18,6 @@
 #include "CLHEP/Random/RandFlat.h"
 // data products produced by this module
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
-#include "MCDataProducts/inc/EventWeight.hh"
 #include <iostream>
 
 namespace mu2e {
@@ -29,7 +28,7 @@ namespace mu2e {
       virtual void produce(art::Event& event);
     private:
       ProtonIntensityModel _model;
-      double _nmedian; // median number of protons/microbunch hitting the target
+      double _nmean; // mean number of protons/microbunch hitting the target
       double _width; // fractional full width of the flat distribution
       int _printLevel; // level of diagnostic printout
       double _flimits[2]; // cache of the limits for the flat distribution
@@ -40,21 +39,20 @@ namespace mu2e {
 
   ProtonBunchIntensitySimulator::ProtonBunchIntensitySimulator(const fhicl::ParameterSet& pset) :
     _model(static_cast<ProtonIntensityModel>(pset.get<int>("IntensityModel",flat))),
-    _nmedian(pset.get<double>("MedianNumberOfProtonsPerMicrobunch")),
+    _nmean(pset.get<double>("MeanNumberOfProtonsPerMicrobunch")),
     _width(pset.get<double>("FullRelativeWidth",0.5)),
     _printLevel(pset.get<int>("PrintLevel",0)),
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
     _randflat(_engine)
   {
   // setup limits
-    _flimits[0] = _nmedian*(1.0 - 0.5*_width);
-    _flimits[1] = _nmedian*(1.0 + 0.5*_width);
+    _flimits[0] = _nmean*(1.0 - 0.5*_width);
+    _flimits[1] = _nmean*(1.0 + 0.5*_width);
   // setup random generator
     produces<mu2e::ProtonBunchIntensity>();
-    produces<mu2e::EventWeight>();
     if(_printLevel > 0){
       if(_model == constant)
-	std::cout << "Generating proton bunches of constant intensity = " << _nmedian << std::endl;
+	std::cout << "Generating proton bunches of constant intensity = " << _nmean << std::endl;
       else if(_model == flat)
 	std::cout << "Generating proton bunches with flat intensity between " << _flimits[0] 
 	<< " and " << _flimits[1] << std::endl;
@@ -68,7 +66,7 @@ namespace mu2e {
     double fintensity;
     switch(_model) {
       case constant : default:
-	fintensity = _nmedian;
+	fintensity = _nmean;
 	break;
       case flat:
 	fintensity = _randflat.fire(_flimits[0],_flimits[1]);
@@ -77,17 +75,11 @@ namespace mu2e {
     // convert to nearest ingeger
     unsigned intensity = static_cast<unsigned>(rint(fintensity));
     // create proton intensity object and put it into the event
-    std::unique_ptr<mu2e::ProtonBunchIntensity> pbi ( new ProtonBunchIntensity(intensity) );
-    // downstream modules need to weight any process that depends on the proton bunch intensity, even
-    // if they are only generating 1/event (like conversion electrons), as the probability of producing
-    // that one event scales with proton intensity
-    double weight = fintensity/_nmedian;
-    std::unique_ptr<mu2e::EventWeight> evtwt ( new EventWeight(weight) );
+    std::unique_ptr<mu2e::ProtonBunchIntensity> pbi ( new ProtonBunchIntensity(intensity, _nmean) );
     if(_printLevel > 1){
-      std::cout << "Generating " << pbi->intensity() << " protons in this microbunch, with event weight "
-      << evtwt->weight() << std::endl;
+      std::cout << "Generating " << pbi->intensity() << " protons in this microbunch, from a mean of " 
+      << pbi->meanIntensity() << std::endl;
     }
-    event.put(std::move(evtwt));
     event.put(std::move(pbi));
   }
 }

@@ -2,6 +2,35 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_3_4
 
+7) May 23, 2015 - brownd
+    Introduced new functionality to model fluctuations in the primary proton
+    microbunch intensity.  There are 3 components:
+      -ProtonBunchIntensitySimulator_module generates a single event object of type
+      ProtonBunchIntensity, which records the # of protons for this particular
+      microbunch, and the mean value of the distributrion from which this
+      value was sampled.  Currently only 2 models are supported; a constant
+      value of intensity, and a flat distribtion chacterized by a mean value
+      and a width.
+      -ProtonBunchIntensitySummarizer_module reads all the
+      ProtonBunchIntensity objects in the event, makes sure they are
+      consistent, and then summarizes them into an EventWeight object.  This
+      object MUST be used as weight for any downstream analysis which depends
+      on stopped muons (i.e. conversion electrons, DIO, ...) to get correct
+      results.
+      -2 Modifications to MixMCEvents.  The first is for when MixMCEvents is
+      used to simulate mixing many individual events from several primary process
+      background frames into the primary event, so that the the number of individual process
+      background frame events mixed into the primary event scales with the
+      number of protons.  This mode is used when running mixing inline with
+      signals (very inefficient), or when creating pre-mixed complete
+      background frame events.  This change requires interpreting the mean value
+      given to this module configuration as the probability of producing a
+      non-empty event from this process per incident proton.  The other change
+      is for when MixMCEvents is used to mix the single pre-mixed background
+      frame event into the primary event.  In that mode, each individual mixer
+      module instance for each process will find the ProtonBunchIntensity
+      object in the 2ndary event, and copy that into the primary event.  These
+      are the ProtonBunchIntensity objects
 6) May 19, 2015 - ehrlich
    Updated the code in CRVResponse (bug fixes, faster simulation, better simulation of the
    Cerenkov photons). New lookupt tables are now in

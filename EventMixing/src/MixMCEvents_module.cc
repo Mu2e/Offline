@@ -179,6 +179,10 @@ public:
   mixStatusG4( std::vector< mu2e::StatusG4 const *> const &in,
                mu2e::StatusG4&                            out,
                art::PtrRemapper const& );
+  bool
+  mixProtonBunchIntensity( std::vector< mu2e::ProtonBunchIntensity const *> const &in,
+               mu2e::ProtonBunchIntensity&                            out,
+               art::PtrRemapper const& );
 
 private:
 
@@ -192,11 +196,11 @@ private:
   // Module labels of the producer that made the GenParticles and that which
   std::string genModuleLabel_;
   std::string g4ModuleLabel_;
-  // label of the proton bunch intensity object
-  std::string pbiLabel_;
   const ProtonBunchIntensity* pbi_;
   // Input tag for the status block.
   art::InputTag g4StatusTag_;
+  // Input tag for the proton bunch intensity
+  art::InputTag pbiTag_;
 
   // The instance names of the StepPointMCCollections to be mixed in.
   // Default is to mix all such collections.
@@ -205,7 +209,7 @@ private:
   // Enable/disable mixing of the PointTrajectoryCollections.
   bool doPointTrajectories_;
   // use proton bunch intensities or not
-  bool usePBI_;
+  bool usePBI_, writePBI_;
   int printLevel_; // level of diagnostic printout
 
   // Only one of the following is meaningful in any instance of this class
@@ -392,11 +396,11 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   histFactor_(params_.get<double>("histogramFactor",1.0)),
   genModuleLabel_(params_.get<string>("genModuleLabel")),
   g4ModuleLabel_ (params_.get<string>("g4ModuleLabel")),
-  pbiLabel_ (params_.get<string>("ProtonBunchIntensityLabel")),
   g4StatusTag_   (params_.get<string>("g4StatusTag")),
   stepInstances_(chooseStepInstances(params_)),
   doPointTrajectories_(params_.get<bool>("doPointTrajectories",true)),
   usePBI_(params_.get<bool>("useProtonBunchIntensity",false)),
+  writePBI_(params_.get<bool>("writeProtonBunchIntensity",false)),
   printLevel_(params_.get<int>("PrintLevel",0)),
   poisson_(nullptr),
   n0_(0),
@@ -408,10 +412,12 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   actual_(0),
   genOffsets_(),
   simOffsets_(),
-  summary_(nullptr){
+  summary_(nullptr)
+  {
 
   // Declare new products produced directly by this class.
   helper.produces<mu2e::MixingSummary>();
+  // ProtonBunchIntensity is copied from sub-event, so not a direc product
 
   // Register MixOp operations; the callbacks are called in the order they were registered.
   helper.declareMixOp
@@ -443,6 +449,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
         &MixMCEventsDetail::mixStatusG4, *this );
   }
 
+
   if ( mean_ > 0 ) {
     art::RandomNumberGenerator::base_engine_t& engine = art::ServiceHandle<art::RandomNumberGenerator>()->getEngine();
     int dummy(0);
@@ -455,6 +462,18 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   art::ServiceHandle<art::TFileService> tfs;
   PoissonHistogramBinning binning(mean_*histFactor_,20.0); // include far tails in histograms
   hNEvents_ = tfs->make<TH1F>( "hNEvents", "Number of Mixed in Events", binning.nbins(), binning.xlow(), binning.xhigh() );
+// if simulating proton bunch intensity fluctuations, setup to fetch the object
+  if(usePBI_ || writePBI_ ){
+    pbiTag_ = params_.get<string>("ProtonBunchIntensityTag");
+  }
+  if(writePBI_)  {
+  // When art v1_0_0 becomes available, add the extra argument so that the mixop must return false.
+    if(pbiTag_ != art::InputTag()) {
+      helper.declareMixOp
+	( pbiTag_,
+	  &MixMCEventsDetail::mixProtonBunchIntensity, *this );
+    }
+  }
 
 } // end mu2e::MixMCEventsDetail::MixMCEventsDetail
 
@@ -468,10 +487,10 @@ startEvent(const art::Event& event) {
   // find the proton intensity for this event
   if(usePBI_){
     art::Handle<mu2e::ProtonBunchIntensity> pbiH; 
-    if(event.getByLabel(pbiLabel_,pbiH))
+    if(event.getByLabel(pbiTag_,pbiH))
       pbi_ = pbiH.product();
     if(pbi_ == 0)
-      throw cet::exception("SIM")<<"mu2e::MixMCEvents: No ProtonBunchIntensity with label " <<  pbiLabel_ << endl;
+      throw cet::exception("SIM")<<"mu2e::MixMCEvents: No ProtonBunchIntensity with label " <<  pbiTag_ << endl;
   }
 }
 
@@ -732,6 +751,31 @@ mixStatusG4( std::vector< mu2e::StatusG4 const *> const &in,
   return false;
 
 } // end mu2e::MixMCEventsDetail::mixStatusG4
+
+// This does not follow the usual pattern, see note 7.
+bool
+mu2e::MixMCEventsDetail::
+mixProtonBunchIntensity( std::vector< mu2e::ProtonBunchIntensity const *> const &in,
+             mu2e::ProtonBunchIntensity&                          pbi,
+             art::PtrRemapper const& ){
+// reset the output
+  pbi = ProtonBunchIntensity();
+// loop over the intputs
+  typedef std::vector< mu2e::ProtonBunchIntensity const *>::const_iterator Iter;
+  if(printLevel_ > 0)
+    std::cout << "mixProtonBunchIntensity found " << in.size() << " ProtonBunchIntensity objects" << std::endl;
+
+  // There are no Ptrs to update, just add the input to the output.
+  for ( Iter i=in.begin(), e=in.end(); i !=e; ++i ){
+    if(printLevel_ > 1)
+      std::cout << "ProtonBunchIntensity object has " << (*i)->intensity() << " protons, from mean " << (*i)->meanIntensity() << std::endl;
+    pbi.add(**i);
+  }
+
+  // Add the output object to the event
+  return true;
+
+} // end mu2e::MixMCEventsDetail::mixProtonBunchIntensity
 
 // Parse the stepInstances parameter.
 std::vector<mu2e::StepInstanceName>

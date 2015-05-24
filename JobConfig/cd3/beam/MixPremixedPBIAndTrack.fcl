@@ -1,0 +1,136 @@
+#
+#  This script mixes primary events with pre-mixed background frames produced including proton bunch intensity variations.
+#  It also reconstructs tracks, and performs a standard track analysis, correctly including the event weight.
+#  Only single-frame mixing is physically meaningful, as combining background frames will implicitly change the proton
+#  intensity distribution.
+#  Downstream analysis modules must weight by the event weight produced by ProtonBunchIntensitySimulator to get physically
+#  meaningful results, as the probability of producing the primary event is (in general) proportional to the proton intensity.
+#  David Brown, 20 May 2015
+#
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+BEGIN_PROLOG
+mixerTemplate: {
+   module_type         : MixMCEvents
+   fileNames           : @local::bgHitFiles
+   readMode            : sequential
+   wrapFiles           : true
+   coverageFraction    : 1000000.
+   detail : {
+      mean                : -1
+      genModuleLabel      : @nil
+      g4ModuleLabel       : @nil
+      g4StatusTag         : ""
+      stepInstanceNames   : @local::stepInstanceNames
+      doPointTrajectories : false
+      useProtonBunchIntensity : false
+      writeProtonBunchIntensity : true
+      ProtonBunchIntensityTag : protonBunchIntensity
+   }
+}
+END_PROLOG
+
+process_name : MixPremixedPBIAndTrack
+
+source :
+{
+  module_type : RootInput
+}
+
+services :
+{
+  message : @local::default_message
+  TFileService : { fileName : "MixPremixedPBIAndTrack.root" }
+  RandomNumberGenerator: { }
+  user :
+  {
+    GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    SeedService: @local::automaticSeeds
+  }
+}
+
+physics :
+{
+  producers :
+  {
+    protonBunchSummarizer: { module_type : ProtonBunchIntensitySummarizer }
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+    makeSD: @local::makeSD
+    makeSH: @local::makeSHfromSD
+    FSHPreStereo: @local::FSHPreStereo
+    MakeStereoHits: @local::MakeStereoHits
+    FlagStrawHits: @local::FlagStrawHits
+    FlagBkgHits: @local::FlagBkgHits
+    TPRDownstreameMinus : @local::TrkPatRecDownstreameMinus
+  }
+
+   filters: {
+      flashMixer   : @local::mixerTemplate
+      ootMixer     : @local::mixerTemplate
+      dioMixer     : @local::mixerTemplate
+      neutronMixer : @local::mixerTemplate
+      photonMixer  : @local::mixerTemplate
+      protonMixer  : @local::mixerTemplate
+  }
+ 
+   analyzers: {
+# count generated events
+      genCountLogger: { module_type: GenEventCountReader }
+# read Kalman fit DownstreameMinus tracks
+      RKFDownstreameMinus: {
+         module_type: ReadKalFits
+         fitterModuleLabel: TPRDownstreameMinus
+	 KalDiag : { 
+	  MCPtrLabel : "makeSH"
+	  MCStepsLabel : "detectorFilter"
+	  SimParticleLabel : "detectorFilter"
+	  SimParticleInstance : "s0"
+	  StrawHitMCLabel : "makeSH"
+	  TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+
+	  # track-level diagnostics.  For detailed (hit-level) diagnostics use diagLevel : 2
+	  diagLevel : 1
+	}
+      }
+   }
+# trigger path, including mixing and track reconstruction
+  p1 : [
+    dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer, protonBunchSummarizer,
+    protonTimeMap, muonTimeMap, makeSD, makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, 
+    TPRDownstreameMinus ]
+
+# end path, including standard track analysis
+  e1 : [RKFDownstreameMinus]
+  
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+}
+
+# Setup 6 standard beam-induced background frame mixers
+
+physics.filters.flashMixer.detail.genModuleLabel   :  flashMixer
+physics.filters.ootMixer.detail.genModuleLabel     :  ootMixer
+physics.filters.dioMixer.detail.genModuleLabel     :  dioMixer
+physics.filters.neutronMixer.detail.genModuleLabel :  neutronMixer
+physics.filters.photonMixer.detail.genModuleLabel  :  photonMixer
+physics.filters.protonMixer.detail.genModuleLabel  :  protonMixer
+
+physics.filters.flashMixer.detail.g4ModuleLabel   :  flashMixer
+physics.filters.ootMixer.detail.g4ModuleLabel     :  ootMixer
+physics.filters.dioMixer.detail.g4ModuleLabel     :  dioMixer
+physics.filters.neutronMixer.detail.g4ModuleLabel :  neutronMixer
+physics.filters.photonMixer.detail.g4ModuleLabel  :  photonMixer
+physics.filters.protonMixer.detail.g4ModuleLabel  :  protonMixer
+
+# Weight track analysis by the proton intensity
+physics.analyzers.RKFDownstreameMinus.eventWeightModules : [ protonBunchSummarizer  ]
+
+# specify the time offset maps when building straw digis
+physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ] 
+
+
