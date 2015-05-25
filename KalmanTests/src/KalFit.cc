@@ -73,11 +73,11 @@ namespace mu2e
     TrkFitDirection::FitDirection _fdir;
   };
 // construct from a parameter set  
-  KalFit::KalFit(fhicl::ParameterSet const& pset) :
+  KalFit::KalFit(fhicl::ParameterSet const& pset, KalDiag* kdiag) :
 // KalFit parameters
     _debug(pset.get<int>("debugLevel",0)),
     _weedhits(pset.get<bool>("weedhits",true)),
-    _maxhitchi(pset.get<double>("maxhitchi",4.0)),
+    _maxhitchi(pset.get<double>("maxhitchi",3.5)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
     _herr(pset.get< vector<double> >("hiterr")),
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
@@ -92,10 +92,10 @@ namespace mu2e
     _removefailed(pset.get<bool>("RemoveFailedFits",true)),
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
-    _bfield(0)
+    _resolveAfterWeeding(pset.get<bool>("ResolveAfterWeeding",false)),
+    _bfield(0),
+    _kdiag(kdiag)
   {
-    // 2015-04-12 P.Murat add doublet ambig resolver
-    _darPset = new fhicl::ParameterSet(pset.get<fhicl::ParameterSet>("DoubletAmbigResolver",fhicl::ParameterSet()));
 // set KalContext parameters
     _disttol = pset.get<double>("IterationTolerance",0.1);
     _intertol = pset.get<double>("IntersectionTolerance",100.0);
@@ -106,7 +106,7 @@ namespace mu2e
     _smearfactor = pset.get<double>("SeedSmear",1.0e6);
     _sitethresh = pset.get<double>("SiteMomThreshold",0.2);
     _momthresh = pset.get<double>("MomThreshold",10.0);
-    _mingap = pset.get<double>("mingap",0.1);
+    _mingap = pset.get<double>("mingap",1.0);
     _minfltlen = pset.get<double>("MinFltLen",0.1);
     _minmom = pset.get<double>("MinMom",10.0);
     _fltepsilon = pset.get<double>("FltEpsilon",0.001);
@@ -136,26 +136,30 @@ namespace mu2e
     // construct the ambiguity resolvers
 
     AmbigResolver* ar;
+    // Search for explicit resolver parameter sets
+    fhicl::ParameterSet const& fixedPset = pset.get<fhicl::ParameterSet>("FixedAmbigResolver",fhicl::ParameterSet());
+    fhicl::ParameterSet const& hitPset = pset.get<fhicl::ParameterSet>("HitAmbigResolver",fhicl::ParameterSet());
+    fhicl::ParameterSet const& panelPset = pset.get<fhicl::ParameterSet>("PanelAmbigResolver",fhicl::ParameterSet());
+    fhicl::ParameterSet const& pocaPset = pset.get<fhicl::ParameterSet>("POCAAmbigResolver",fhicl::ParameterSet());
+    fhicl::ParameterSet const& doubletPset = pset.get<fhicl::ParameterSet>("DoubletAmbigResolver",fhicl::ParameterSet());
 
-    _resolveAfterWeeding = false;
     int n = _ambigstrategy.size();
     for(int i=0; i<n; ++i) {
       switch (_ambigstrategy[i]) {
       case fixedambig: default:
-	ar = new FixedAmbigResolver(pset,_herr[i],i);
+	ar = new FixedAmbigResolver(fixedPset,_herr[i],i);
 	break;
       case hitambig:
-	ar = new HitAmbigResolver(pset,_herr[i],i);
+	ar = new HitAmbigResolver(hitPset,_herr[i],i);
 	break;
       case panelambig:
-	ar = new PanelAmbigResolver(pset,_herr[i],i);
+	ar = new PanelAmbig::PanelAmbigResolver(panelPset,_herr[i],i,_kdiag);
 	break;
       case pocaambig:
-	ar = new PocaAmbigResolver(pset,_herr[i],i);
+	ar = new PocaAmbigResolver(pocaPset,_herr[i],i);
 	break;
       case doubletambig: // 4
- 	ar = new DoubletAmbigResolver(*_darPset,_herr[i],i);
-	_resolveAfterWeeding = true;
+ 	ar = new DoubletAmbigResolver(doubletPset,_herr[i],i);
  	break;
       }
       _ambigresolver.push_back(ar);
@@ -201,6 +205,8 @@ namespace mu2e
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
       double flt0 = kres._tdef->helix().zFlight(0.0);
       kres._krep->setT0(t0,flt0);
+// initialize history list
+      kres._krep->addHistory(TrkErrCode(),"Creation");
 // now fit
       fitTrack(kres);
       if(_removefailed)kres.removeFailed();

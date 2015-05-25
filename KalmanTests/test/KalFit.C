@@ -45,7 +45,7 @@ class KalFit {
   void T2d();
   void Trk();
   void AccPlots();
-  void Acc(double norm=-1);
+  void Acc(size_t trkqcut=1);
   void Res(unsigned mincut=0,unsigned maxcut=3);
   void Res2(int ires);
   void Ambig(int acut=0);
@@ -67,7 +67,7 @@ KalFit::KalFit(TTree* trkdiag) : _tdiag(trkdiag), tdlow(0.57735027),
   momlow(103.75),
   momhigh(105.0),
   minnhits(15),
-  icut(1),
+  icut(2),
   rmomloose("fit.mom>100.0"),
   donecuts(false)
 {
@@ -627,7 +627,7 @@ void KalFit::AccPlots() {
 
 } 
 
-void KalFit::Acc(double norm) {
+void KalFit::Acc(size_t qsel) {
   unsigned nbins(8);
   double bmax = nbins-0.5;
   TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
@@ -667,13 +667,13 @@ void KalFit::Acc(double norm) {
   _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch+cosmic+rmom);
 
   double all = acc->GetBinContent(1);
-  if(norm < 0)norm=all;
-  double prev = all;
+  double norm = all;
+  double prev = norm;
   for(ibin=1;ibin<=nbins;ibin++){
     racc->SetBinContent(ibin,acc->GetBinContent(ibin)/prev);
     prev = acc->GetBinContent(ibin);
   }
-  cout << "Found " << all << "Entries." << endl;
+  cout << "Found " << norm << "Entries." << endl;
   racc->SetMaximum(1.1);
   acc->Scale(1.0/norm);
   acc->SetMaximum(1.1*all/norm);
@@ -885,11 +885,14 @@ void KalFit::Res2(int ires) {
 
 void KalFit::Ambig(int acut) {
   gStyle->SetOptStat(1111);
-
+  
+  TCut ghit("tshmc._rel==0");
+  TCut delta("tshmc._rel>0");
+  TCut bkg("tshmc._rel<0");
   TCut gambig("tshmc._ambig==_ambig");
   TCut bambig("tshmc._ambig!=_ambig&&_ambig!=0");
-  TCut nambig("_ambig==0");
-  TCut active("_active>0");
+  TCut nambig("tsh._ambig==0");
+  TCut active("tsh._active>0");
 // apply requested cuts
 
   TCut goodtrk = (reco+goodfit[acut]+mcsel);
@@ -900,34 +903,50 @@ void KalFit::Ambig(int acut) {
   TH1F* rdn = new TH1F("rdn","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
   TH1F* rdb = new TH1F("rdb","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
   TH1F* rda = new TH1F("rda","Drift radius;true radius (mm)",100,0.0,2.7);
+  TH1F* rdd = new TH1F("rdd","Drift radius;true radius (mm)",100,0.0,2.7);
+  TH1F* rdf = new TH1F("rdf","Drift radius;true radius (mm)",100,0.0,2.7);
   TH1F* rdi = new TH1F("rdi","Drift radius;true radius (mm)",100,0.0,2.7);
   rdg->SetLineColor(kGreen);
   rdn->SetLineColor(kBlue);
   rdb->SetLineColor(kRed);
   rda->SetLineColor(kBlack);
   rdi->SetLineColor(kCyan);
+  rdd->SetLineColor(kOrange);
+  rdf->SetLineColor(kYellow);
   rdg->SetStats(0);
   rdn->SetStats(0);
 //  rdb->SetStats(0);
   rdi->SetStats(0);
   rda->SetStats(0);
+  rdd->SetStats(0);
+  rdf->SetStats(0);
   rdg->Sumw2();
   rdn->Sumw2();
   rdb->Sumw2();
   rda->Sumw2();
+  rdd->Sumw2();
+  rdf->Sumw2();
 
-  _tdiag->Project("rdg","tshmc._dist",goodtrk+active+gambig);
-  _tdiag->Project("rdn","tshmc._dist",goodtrk+active+nambig);
-  _tdiag->Project("rdb","tshmc._dist",goodtrk+active+bambig);
+  _tdiag->Project("rdg","tshmc._dist",goodtrk+active+gambig+ghit);
+  _tdiag->Project("rdn","tshmc._dist",goodtrk+active+nambig+ghit);
+  _tdiag->Project("rdb","tshmc._dist",goodtrk+active+bambig+ghit);
   _tdiag->Project("rda","tshmc._dist",goodtrk+active);
-  _tdiag->Project("rdi","tshmc._dist",goodtrk+!active);
+  _tdiag->Project("rdi","tshmc._dist",goodtrk+ghit+(!active));
+  _tdiag->Project("rdd","tshmc._dist",goodtrk+active+delta);
+  _tdiag->Project("rdf","tshmc._dist",goodtrk+active+bkg);
   Double_t ntotal = rda->GetEntries();
   Double_t nright = rdg->GetEntries();
   Double_t nneutral = rdn->GetEntries();
   Double_t nwrong = rdb->GetEntries();
-  rdg->Divide(rda);  
-  rdn->Divide(rda);
-  rdb->Divide(rda);
+  Double_t ndelta = rdd->GetEntries();
+  Double_t nbkg = rdf->GetEntries();
+  Double_t ninact = rdi->GetEntries();
+  TH1F* rdgr = new TH1F(*rdg);
+  TH1F* rdnr = new TH1F(*rdn);
+  TH1F* rdbr = new TH1F(*rdb);
+  rdgr->Divide(rda);  
+  rdnr->Divide(rda);
+  rdbr->Divide(rda);
 
 //  TH1F* frdg = new TH1F("frdg","True Drift radius, failed fits;radius (mm);N hits",100,-0.05,2.55);
 //  TH1F* frdb = new TH1F("frdb","True Drift radius, failed fits;radius (mm);N hits",100,-0.05,2.55);
@@ -984,36 +1003,43 @@ void KalFit::Ambig(int acut) {
   ambigcan->cd(1);
   rda->Draw();
   rdi->Draw("same");
-  TLegend* drleg = new TLegend(0.15,0.35,0.55,0.5);
+  rdd->Draw("same");
+  rdf->Draw("same");
+  TLegend* drleg = new TLegend(0.15,0.15,0.55,0.5);
   char dtitle[100];
-  snprintf(dtitle,100,"%4.0f Active hits",rda->GetEntries());
+  snprintf(dtitle,100,"%4.0f Active hits",ntotal);
   drleg->AddEntry(rda,dtitle,"l");
-  snprintf(dtitle,100,"%4.0f Inactive hits",rdi->GetEntries());
+  snprintf(dtitle,100,"%4.4f Delta-ray hits",ndelta/ntotal);
+  drleg->AddEntry(rdd,dtitle,"l");
+  snprintf(dtitle,100,"%4.4f Inactive good hits",ninact/ntotal);
   drleg->AddEntry(rdi,dtitle,"l");
+  snprintf(dtitle,100,"%4.4f Background hits",nbkg/ntotal);
+  drleg->AddEntry(rdf,dtitle,"l");
   drleg->Draw();
 
   ambigcan->cd(2);
 
-  TF1* ex = new TF1("ex","[0]*exp(-x/[1])/[1]+[2]*x+[3]",4);
-  ex->SetParameters(0.0,0.1,-0.01,0.04);
-  ex->SetParName(0,"ExpNorm");
-  ex->SetParName(1,"Lambda");
-  ex->SetParName(2,"Slope");
-  ex->SetParName(3,"Intercept");
-  rdb->SetMaximum(1.1);
-  rdb->SetMinimum(0.0);
-  rdb->Fit(ex,"L");
-  rdn->Draw("same");
-  rdg->Draw("same");
+//  TF1* ex = new TF1("ex","[0]*exp(-x/[1])/[1]+[2]*x+[3]",4);
+//  ex->SetParameters(0.0,0.1,-0.01,0.04);
+//  ex->SetParName(0,"ExpNorm");
+//  ex->SetParName(1,"Lambda");
+//  ex->SetParName(2,"Slope");
+//  ex->SetParName(3,"Intercept");
+//  rdbr->SetMaximum(1.1);
+//  rdbr->SetMinimum(0.0);
+//  rdbr->Fit(ex,"L");
+  rdgr->Draw();
+  rdnr->Draw("same");
+  rdbr->Draw("same");
 
-  TLegend* leg = new TLegend(0.16,0.35,0.625,0.6);
+  TLegend* leg = new TLegend(0.4,0.35,0.9,0.6);
   char title[80];
   snprintf(title,80,"Correct ambiguity %4.3f",nright/ntotal);
-  leg->AddEntry(rdg,title,"l");
-  snprintf(title,80,"0 ambiguity %4.3f",nneutral/ntotal);
-  leg->AddEntry(rdn,title,"l");
+  leg->AddEntry(rdgr,title,"l");
+  snprintf(title,80,"Null ambiguity %4.3f",nneutral/ntotal);
+  leg->AddEntry(rdnr,title,"l");
   snprintf(title,80,"Incorrect ambiguity %4.3f",nwrong/ntotal);
-  leg->AddEntry(rdb,title,"l");
+  leg->AddEntry(rdbr,title,"l");
   leg->Draw();
 
   ambigcan->cd(3);

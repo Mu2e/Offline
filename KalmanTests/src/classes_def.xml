@@ -38,8 +38,15 @@
     <class name="std::vector<mu2e::TrkStrawHitInfoMC>" />
     <class name="mu2e::TrkStrawHitInfo_old" />
     <class name="std::vector<mu2e::TrkStrawHitInfo_old>" />
-
     <class name="mu2e::KalFitResultCollection" persistent="false" />
     <class name="art::Wrapper<mu2e::KalFitResultCollection>"/>
-
+    <class name="mu2e::PanelAmbig::PanelResult" />
+    <class name="mu2e::PanelAmbig::PanelState" />
+    <class name="mu2e::PanelAmbig::HitState" />
+    <class name="mu2e::PanelAmbig::PanelHitState" />
+    <class name="std::vector<mu2e::PanelAmbig::PanelResult>" />
+    <class name="mu2e::PanelAmbig::TSHUInfo" />
+    <class name="std::vector<mu2e::PanelAmbig::TSHUInfo>" />
+    <class name="mu2e::PanelAmbig::TSHMCUInfo" />
+    <class name="std::vector<mu2e::PanelAmbig::TSHMCUInfo>" />
 </lcgdict>

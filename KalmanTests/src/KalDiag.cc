@@ -33,8 +33,6 @@
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "BaBar/BaBar.hh"
-#include "KalmanTests/inc/TrkDef.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/KalDiag.hh"
 #include "TrkBase/TrkHelixUtils.hh"
 #include "TrkBase/TrkHotList.hh"
@@ -209,8 +207,8 @@ namespace mu2e
     CLHEP::Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
     double zent = entpos.z();
     // we don't know which way the fit is going: try both, and pick the one with the smallest flightlength
-    double firsthitfltlen = krep->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-    double lasthitfltlen = krep->lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+    double firsthitfltlen = krep->lowFitRange(); 
+    double lasthitfltlen = krep->hiFitRange();
     double entlen = min(firsthitfltlen,lasthitfltlen);
     TrkHelixUtils::findZFltlen(krep->traj(),zent,entlen,0.1);
     // compute the tracker entrance fit information
@@ -314,7 +312,7 @@ namespace mu2e
     sort(sct.begin(),sct.end(),spcountcomp());
   }
   
-  void KalDiag::fillHitInfo(const KalRep* krep, std::vector<TrkStrawHitInfo>& tshinfos ){ 
+  void KalDiag::fillHitInfo(const KalRep* krep, std::vector<TrkStrawHitInfo>& tshinfos ) const { 
     tshinfos.clear();
  // loop over hits
     const TrkHotList* hots = krep->hotList();
@@ -389,7 +387,7 @@ namespace mu2e
   }
 
   void KalDiag::fillHitInfoMC(art::Ptr<SimParticle> const& pspp, const KalRep* krep, 
-     std::vector<TrkStrawHitInfoMC>& tshinfomcs) {
+     std::vector<TrkStrawHitInfoMC>& tshinfomcs) const {
     tshinfomcs.clear();
  // loop over hits
     const TrkHotList* hots = krep->hotList();

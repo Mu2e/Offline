@@ -90,6 +90,8 @@ namespace mu2e
       void endJob();
     private:
       unsigned _iev;
+  // diagnostics
+      KalDiag* _kdiag;
       // configuration parameters
       int _diag,_debug;
       int _printfreq;
@@ -156,8 +158,6 @@ namespace mu2e
       TMVA::Reader *_peakMVA; // MVA for peak cleaning
       TimePeakMVA _pmva; // input variables to TMVA for peak cleaning
 
-      // MC tools
-      KalDiag* _kdiag;
       // strawhit tuple variables
       TTree *_shdiag;
       Int_t _eventid;
@@ -207,6 +207,7 @@ namespace mu2e
   };
 
   TrkPatRec::TrkPatRec(fhicl::ParameterSet const& pset) :
+    _kdiag(new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag"))),
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
@@ -243,11 +244,10 @@ namespace mu2e
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
-    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
+    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet()),_kdiag),
     _hfit(pset.get<fhicl::ParameterSet>("HelixFit",fhicl::ParameterSet())),
-    _payloadSaver(pset),
-    _kdiag(0)
-  {
+    _payloadSaver(pset)
+    {
     // tag the data product instance by the direction and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();
     produces<KalRepCollection>(_iname);
@@ -260,8 +260,6 @@ namespace mu2e
     ConfigFileLookupPolicy configFile;
     std::string weights = pset.get<std::string>("PeakMVAWeights","TrkPatRec/test/TimePeak.weights.xml");
     _PMVAWeights = configFile(weights);
-    if(_diag>0)
-      _kdiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag"));
   }
 
   TrkPatRec::~TrkPatRec(){}

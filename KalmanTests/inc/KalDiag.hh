@@ -31,7 +31,7 @@
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/TrkInfo.hh"
 #include "KalmanTests/inc/TrkStrawHitInfo.hh"
-#include "KalmanTests/inc/KalFit.hh"
+#include "KalmanTrack/KalRep.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 
@@ -93,8 +93,8 @@ namespace mu2e
     void fillTrkInfoMCStep(MCStepItr const& imcs, TrkInfoMCStep& trkinfomcstep) const;
     void fillTrkInfoMCStep(art::Ptr<SimParticle> const& spp, TrkInfoMCStep& trkinfomcstep) const; 
 // hit information
-    void fillHitInfo(const KalRep* krep, std::vector<TrkStrawHitInfo>& hitinfos);
-    void fillHitInfoMC(art::Ptr<SimParticle> const& primary,const KalRep* krep,std::vector<TrkStrawHitInfoMC>& tshinfomc);
+    void fillHitInfo(const KalRep* krep, std::vector<TrkStrawHitInfo>& hitinfos) const;
+    void fillHitInfoMC(art::Ptr<SimParticle> const& primary,const KalRep* krep,std::vector<TrkStrawHitInfoMC>& tshinfomc) const;
 // relationship information
     static relation relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj);
     static relation relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2);

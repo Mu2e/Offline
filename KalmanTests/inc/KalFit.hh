@@ -31,6 +31,8 @@
 #include "KalmanTrack/KalRep.hh"
 #include "BField/BField.hh"
 #include "TrkBase/TrkParticle.hh"
+// diagnostics
+#include "KalmanTests/inc/KalDiag.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // C++
@@ -44,7 +46,7 @@ namespace mu2e
     enum ambigStrategy {fixedambig=0,pocaambig=1,hitambig=2,panelambig=3,doubletambig=4};
 // parameter set should be passed in on construction
 #ifndef __GCCXML__
-    explicit KalFit(fhicl::ParameterSet const&);
+    explicit KalFit(fhicl::ParameterSet const&,KalDiag * kdiag=0);
 #endif/*__GCCXML__*/
 
     virtual ~KalFit();
@@ -94,6 +96,7 @@ namespace mu2e
     bool             _resolveAfterWeeding;  // 2015-04-12 P.Murat: temp flag to mark changes
     int              _decisionMode; // 0:decision is not forced; 1:decision has to be made
     mutable BField* _bfield;
+    KalDiag* _kdiag; //optional diagnostics
     // helper functions
 //-----------------------------------------------------------------------------
 // 'Final'=1: final iteration, may involve special decision making mode

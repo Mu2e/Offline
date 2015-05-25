@@ -185,7 +185,7 @@ namespace mu2e
 	ar = new HitAmbigResolver(pset,err,i);
 	break;
       case kPanelAmbig:
-	ar = new PanelAmbigResolver(pset,err,i);
+	ar = new PanelAmbig::PanelAmbigResolver(pset,err,i);
 	break;
       case kPocaAmbig:
 	ar = new PocaAmbigResolver(pset,err,i);
