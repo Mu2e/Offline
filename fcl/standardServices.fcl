@@ -2,6 +2,8 @@
 # This file defines some standard configurations for services
 #
 
+#include "BtrkHelper/fcl/prolog.fcl"
+
 BEGIN_PROLOG
 
 automaticSeeds : {
