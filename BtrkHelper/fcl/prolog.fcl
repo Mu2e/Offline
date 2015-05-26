@@ -1,0 +1,17 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+
+ BtrkHelperDefault : {
+
+#  Location of dictionary files for the material model.
+   dictionaries : {
+     elements  : "BaBar/MatEnv/ElementsList.data"
+     isotopes  : "BaBar/MatEnv/IsotopesList.data"
+     materials : "BaBar/MatEnv/MaterialsList.data"
+   }
+ }
+
+END_PROLOG
