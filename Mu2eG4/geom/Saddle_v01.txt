@@ -3,7 +3,7 @@
 // See Mu2e docdb #4678 for more details on parameters
 
 // Sort boxes into "types"
-int Saddle.numberOfBoxTypes = 18;
+int Saddle.numberOfBoxTypes = 22;
 
 // How many of each type box to make
 int Saddle.nBoxType1 = 4;  // PS Saddles.  Each "box" is a side plate
@@ -32,6 +32,11 @@ int Saddle.nBoxType16 = 4; // DS Support long east west ends
 int Saddle.nBoxType17 = 8; // DS Support short sides
 int Saddle.nBoxType18 = 8; // DS Support short top bottom
 
+int Saddle.nBoxType19 = 2; // DS EM Saddle - side plates of saddles
+int Saddle.nBoxType20 = 1; // DS EM Saddle - feet of saddles
+int Saddle.nBoxType21 = 2; // DS EM Saddle - ends of saddles
+int Saddle.nBoxType22 = 8; // DS support top bott cross plates
+
 // ***
 // Number of vertices of each type of box
 // ***
@@ -54,13 +59,18 @@ int Saddle.nVertType11 = 10; // DS Saddle side plates
 int Saddle.nVertType12 =  4; // DS Saddle foot plates
 int Saddle.nVertType13 =  4; // DS Saddle end plates
 
-int Saddle.nVertType14 = 4; // DS support long sides
-int Saddle.nVertType15 = 4; // DS support long top bottom
-int Saddle.nVertType16 = 4; // DS support long east west ends
+int Saddle.nVertType14 = 4; // DS stand long sides
+int Saddle.nVertType15 = 4; // DS stand long top bottom
+int Saddle.nVertType16 = 4; // DS stand long east west ends
 
-int Saddle.nVertType17 = 4; // DS support short sides
-int Saddle.nVertType18 = 4; // DS support short top bottom
+int Saddle.nVertType17 = 4; // DS stand short sides
+int Saddle.nVertType18 = 4; // DS stand short top bottom
 
+int Saddle.nVertType19 = 10;// DS EM saddle long sides
+int Saddle.nVertType20 = 4; // DS EM saddle long top bottom
+int Saddle.nVertType21 = 4; // DS EM saddle long east west ends
+
+int Saddle.nVertType22 = 4; // DS stand top bott cross plates
 
 
 //
@@ -247,9 +257,9 @@ double Saddle.outlineType11VVert10 = 0;
 double Saddle.outlineType12UVert1 = 1264;
 double Saddle.outlineType12VVert1 = 0;
 double Saddle.outlineType12UVert2 = 1264;
-double Saddle.outlineType12VVert2 = 50;
+double Saddle.outlineType12VVert2 = 88;
 double Saddle.outlineType12UVert3 = -1264;
-double Saddle.outlineType12VVert3 = 50;
+double Saddle.outlineType12VVert3 = 88;
 double Saddle.outlineType12UVert4 = -1264;
 double Saddle.outlineType12VVert4 = 0;
 
@@ -263,7 +273,7 @@ double Saddle.outlineType13VVert3 = 776;
 double Saddle.outlineType13UVert4 = -15;
 double Saddle.outlineType13VVert4 = 0;
 
-// DS support long sides
+// DS stand long sides
 double Saddle.outlineType14UVert1 = 10;
 double Saddle.outlineType14VVert1 = 0;
 double Saddle.outlineType14UVert2 = 10;
@@ -273,7 +283,7 @@ double Saddle.outlineType14VVert3 = 623;
 double Saddle.outlineType14UVert4 = -10;
 double Saddle.outlineType14VVert4 = 0;
 
-// DS support long top bottom
+// DS stand long top bottom
 double Saddle.outlineType15UVert1 = 180;
 double Saddle.outlineType15VVert1 = 0;
 double Saddle.outlineType15UVert2 = 180;
@@ -283,7 +293,7 @@ double Saddle.outlineType15VVert3 = 20;
 double Saddle.outlineType15UVert4 = -180;
 double Saddle.outlineType15VVert4 = 0;
 
-// DS support long east west ends
+// DS stand long east west ends
 double Saddle.outlineType16UVert1 = 180;
 double Saddle.outlineType16VVert1 = 0;
 double Saddle.outlineType16UVert2 = 180;
@@ -293,7 +303,7 @@ double Saddle.outlineType16VVert3 = 583;
 double Saddle.outlineType16UVert4 = -180;
 double Saddle.outlineType16VVert4 = 0;
 
-// DS support short sides
+// DS stand short sides
 double Saddle.outlineType17UVert1 = 714;
 double Saddle.outlineType17VVert1 = 0;
 double Saddle.outlineType17UVert2 = 714;
@@ -303,7 +313,7 @@ double Saddle.outlineType17VVert3 = 623;
 double Saddle.outlineType17UVert4 = -714;
 double Saddle.outlineType17VVert4 = 0;
 
-// DS support short top bottom
+// DS stand short top bottom
 double Saddle.outlineType18UVert1 = 714;
 double Saddle.outlineType18VVert1 = 0;
 double Saddle.outlineType18UVert2 = 714;
@@ -312,6 +322,59 @@ double Saddle.outlineType18UVert3 = -714;
 double Saddle.outlineType18VVert3 = 20;
 double Saddle.outlineType18UVert4 = -714;
 double Saddle.outlineType18VVert4 = 0;
+
+// Side plates of DS EM Saddles
+double Saddle.outlineType19UVert1 = 1264;
+double Saddle.outlineType19VVert1 = 0;
+double Saddle.outlineType19UVert2 = 1264;
+double Saddle.outlineType19VVert2 = 1550;
+double Saddle.outlineType19UVert3 = 1189;
+double Saddle.outlineType19VVert3 = 1550;
+double Saddle.outlineType19UVert4 = 1089;
+double Saddle.outlineType19VVert4 = 901;
+double Saddle.outlineType19UVert5 = 450;
+double Saddle.outlineType19VVert5 = 500;
+double Saddle.outlineType19UVert6 = -450;
+double Saddle.outlineType19VVert6 = 500;
+double Saddle.outlineType19UVert7 = -1089;
+double Saddle.outlineType19VVert7 = 901;
+double Saddle.outlineType19UVert8 = -1189;
+double Saddle.outlineType19VVert8 = 1550;
+double Saddle.outlineType19UVert9 = -1264;
+double Saddle.outlineType19VVert9 = 1550;
+double Saddle.outlineType19UVert10 = -1264;
+double Saddle.outlineType19VVert10 = 0;
+
+// DS saddle foot plate
+double Saddle.outlineType20UVert1 = 1264;
+double Saddle.outlineType20VVert1 = 0;
+double Saddle.outlineType20UVert2 = 1264;
+double Saddle.outlineType20VVert2 = 80;
+double Saddle.outlineType20UVert3 = -1264;
+double Saddle.outlineType20VVert3 = 80;
+double Saddle.outlineType20UVert4 = -1264;
+double Saddle.outlineType20VVert4 = 0;
+
+// DS saddle end plate
+double Saddle.outlineType21UVert1 = 15;
+double Saddle.outlineType21VVert1 = 0;
+double Saddle.outlineType21UVert2 = 15;
+double Saddle.outlineType21VVert2 = 1550;
+double Saddle.outlineType21UVert3 = -15;
+double Saddle.outlineType21VVert3 = 1550;
+double Saddle.outlineType21UVert4 = -15;
+double Saddle.outlineType21VVert4 = 0;
+
+// DS stand top bott cross plates
+double Saddle.outlineType22UVert1 = 1264;
+double Saddle.outlineType22VVert1 = 0;
+double Saddle.outlineType22UVert2 = 1264;
+double Saddle.outlineType22VVert2 = 20;
+double Saddle.outlineType22UVert3 = -1264;
+double Saddle.outlineType22VVert3 = 20;
+double Saddle.outlineType22UVert4 = -1264;
+double Saddle.outlineType22VVert4 = 0;
+
 
 
 // Lengths in w dimension for each type of box.  Dimensions should be in mm.
@@ -328,11 +391,15 @@ double Saddle.lengthType10 = 499;
 double Saddle.lengthType11 = 30; // DS saddle side plate
 double Saddle.lengthType12 = 700;// DS saddle foot plate
 double Saddle.lengthType13 = 440;// DS saddle end plate
-double Saddle.lengthType14 = 11922; // DS support long sides
-double Saddle.lengthType15 = 11922; // DS support long top bottom
-double Saddle.lengthType16 = 20; // DS support long east west ends
-double Saddle.lengthType17 = 20; // DS support short east west sides
-double Saddle.lengthType18 = 360; // DS support short top bottom
+double Saddle.lengthType14 = 11922; // DS stand long sides
+double Saddle.lengthType15 = 11922; // DS stand long top bottom
+double Saddle.lengthType16 = 20; // DS stand long east west ends
+double Saddle.lengthType17 = 20; // DS stand short east west sides
+double Saddle.lengthType18 = 360; // DS stand short top bottom
+double Saddle.lengthType19 = 30; // DS EM saddle side plate
+double Saddle.lengthType20 = 700;// DS EM saddle foot plate
+double Saddle.lengthType21 = 440;// DS EM saddle end plate
+double Saddle.lengthType22 = 700;// DS stand top bott cross plates
 
 // Materials for each type of box.  
 string Saddle.materialType1   = "StainlessSteel";
@@ -353,6 +420,10 @@ string Saddle.materialType15   = "StainlessSteel";
 string Saddle.materialType16   = "StainlessSteel";
 string Saddle.materialType17   = "StainlessSteel";
 string Saddle.materialType18   = "StainlessSteel";
+string Saddle.materialType19   = "StainlessSteel";
+string Saddle.materialType20   = "StainlessSteel";
+string Saddle.materialType21   = "StainlessSteel";
+string Saddle.materialType22   = "StainlessSteel";
 
 
 // The position of the piece in Mu2e Offline coordinates
@@ -591,11 +662,12 @@ double Saddle.centerZType11Box4 = 13574;
 
 // DS Saddle foot plates
 double Saddle.centerXType12Box1 = -3904;
-double Saddle.centerYType12Box1 = -1600;
+double Saddle.centerYType12Box1 = -1638;
 double Saddle.centerZType12Box1 = 4039;
 double Saddle.centerXType12Box2 = -3904;
-double Saddle.centerYType12Box2 = -1600;
+double Saddle.centerYType12Box2 = -1638;
 double Saddle.centerZType12Box2 = 13339;
+
 
 // DS Saddle end plates
 double Saddle.centerXType13Box1 = -5153; // north west end plate DS
@@ -604,7 +676,6 @@ double Saddle.centerZType13Box1 =  4039;
 double Saddle.centerXType13Box2 = -2655; // south west end plate DS
 double Saddle.centerYType13Box2 = -1550;  // 
 double Saddle.centerZType13Box2 =  4039; 
-
 double Saddle.centerXType13Box3 = -5153; // DS Saddle end south east DS
 double Saddle.centerYType13Box3 = -1550;  // 
 double Saddle.centerZType13Box3 = 13339; 
@@ -612,100 +683,146 @@ double Saddle.centerXType13Box4 = -2655; // north east DS
 double Saddle.centerYType13Box4 = -1550;  // 
 double Saddle.centerZType13Box4 = 13339; 
 
-// DS support long sides
+// DS stand long sides
 double Saddle.centerXType14Box1 = -2800; // north side  
-double Saddle.centerYType14Box1 = -2272; 
+double Saddle.centerYType14Box1 = -2282; 
 double Saddle.centerZType14Box1 = 9665;
 double Saddle.centerXType14Box2 = -3180; // north central side
-double Saddle.centerYType14Box2 = -2272; 
+double Saddle.centerYType14Box2 = -2282; 
 double Saddle.centerZType14Box2 = 9665;
 double Saddle.centerXType14Box3 = -4628; // south central side
-double Saddle.centerYType14Box3 = -2272; 
+double Saddle.centerYType14Box3 = -2282; 
 double Saddle.centerZType14Box3 = 9665;
 double Saddle.centerXType14Box4 = -5008; // south side
-double Saddle.centerYType14Box4 = -2272; 
+double Saddle.centerYType14Box4 = -2282; 
 double Saddle.centerZType14Box4 = 9665;
 
-//DS support long top bottom
+//DS stand long top bottom
 double Saddle.centerXType15Box1 = -2990; // north top  
-double Saddle.centerYType15Box1 = -1669; 
+double Saddle.centerYType15Box1 = -1679; 
 double Saddle.centerZType15Box1 = 9665;
 double Saddle.centerXType15Box2 = -2990; // north bottom
-double Saddle.centerYType15Box2 = -2272; 
+double Saddle.centerYType15Box2 = -2282; 
 double Saddle.centerZType15Box2 = 9665;
 double Saddle.centerXType15Box3 = -4818; // south top
-double Saddle.centerYType15Box3 = -1669; 
+double Saddle.centerYType15Box3 = -1679; 
 double Saddle.centerZType15Box3 = 9665;
 double Saddle.centerXType15Box4 = -4818; // south bottom
-double Saddle.centerYType15Box4 = -2272; 
+double Saddle.centerYType15Box4 = -2282; 
 double Saddle.centerZType15Box4 = 9665;
 
-// DS support long east west ends
+// DS stand long east west ends
 double Saddle.centerXType16Box1 = -2990; // north west
-double Saddle.centerYType16Box1 = -2252; 
+double Saddle.centerYType16Box1 = -2262; 
 double Saddle.centerZType16Box1 = 3714;
 double Saddle.centerXType16Box2 = -2990; // north east  
-double Saddle.centerYType16Box2 = -2252; 
+double Saddle.centerYType16Box2 = -2262; 
 double Saddle.centerZType16Box2 = 15616;
 double Saddle.centerXType16Box3 = -4818; // south west  
-double Saddle.centerYType16Box3 = -2252; 
+double Saddle.centerYType16Box3 = -2262; 
 double Saddle.centerZType16Box3 = 3714;
 double Saddle.centerXType16Box4 = -4818;  
-double Saddle.centerYType16Box4 = -2252; 
+double Saddle.centerYType16Box4 = -2262; 
 double Saddle.centerZType16Box4 = 15616;
 
-// DS support short east west sides
+// DS stand short east west sides
 double Saddle.centerXType17Box1 = -3904; 
-double Saddle.centerYType17Box1 = -2272; 
+double Saddle.centerYType17Box1 = -2282; 
 double Saddle.centerZType17Box1 = 3849;
 double Saddle.centerXType17Box2 = -3904; 
-double Saddle.centerYType17Box2 = -2272; 
+double Saddle.centerYType17Box2 = -2282; 
 double Saddle.centerZType17Box2 = 4229;
 double Saddle.centerXType17Box3 = -3904; 
-double Saddle.centerYType17Box3 = -2272; 
+double Saddle.centerYType17Box3 = -2282; 
 double Saddle.centerZType17Box3 = 8499;
 double Saddle.centerXType17Box4 = -3904;  
-double Saddle.centerYType17Box4 = -2272; 
+double Saddle.centerYType17Box4 = -2282; 
 double Saddle.centerZType17Box4 = 8879;
 double Saddle.centerXType17Box5 = -3904; 
-double Saddle.centerYType17Box5 = -2272; 
+double Saddle.centerYType17Box5 = -2282; 
 double Saddle.centerZType17Box5 = 13149;
 double Saddle.centerXType17Box6 = -3904; 
-double Saddle.centerYType17Box6 = -2272; 
+double Saddle.centerYType17Box6 = -2282; 
 double Saddle.centerZType17Box6 = 13529;
 double Saddle.centerXType17Box7 = -3904; 
-double Saddle.centerYType17Box7 = -2272; 
+double Saddle.centerYType17Box7 = -2282; 
 double Saddle.centerZType17Box7 = 15100.8;
 double Saddle.centerXType17Box8 = -3904;  
-double Saddle.centerYType17Box8 = -2272; 
+double Saddle.centerYType17Box8 = -2282; 
 double Saddle.centerZType17Box8 = 15480.8;
 
-// DS support short top bottom
+// DS stand short top bottom
 double Saddle.centerXType18Box1 = -3904; 
-double Saddle.centerYType18Box1 = -1669; 
+double Saddle.centerYType18Box1 = -1679; 
 double Saddle.centerZType18Box1 = 4039;
 double Saddle.centerXType18Box2 = -3904; 
-double Saddle.centerYType18Box2 = -2252; 
+double Saddle.centerYType18Box2 = -2262; 
 double Saddle.centerZType18Box2 = 4039;
 double Saddle.centerXType18Box3 = -3904; 
-double Saddle.centerYType18Box3 = -1669; 
+double Saddle.centerYType18Box3 = -1679; 
 double Saddle.centerZType18Box3 = 8689;
 double Saddle.centerXType18Box4 = -3904;  
-double Saddle.centerYType18Box4 = -2252; 
+double Saddle.centerYType18Box4 = -2262; 
 double Saddle.centerZType18Box4 = 8689;
 double Saddle.centerXType18Box5 = -3904; 
-double Saddle.centerYType18Box5 = -1669; 
+double Saddle.centerYType18Box5 = -1679; 
 double Saddle.centerZType18Box5 = 13339;
 double Saddle.centerXType18Box6 = -3904; 
-double Saddle.centerYType18Box6 = -2252; 
+double Saddle.centerYType18Box6 = -2262; 
 double Saddle.centerZType18Box6 = 13339;
 double Saddle.centerXType18Box7 = -3904; 
-double Saddle.centerYType18Box7 = -1669; 
+double Saddle.centerYType18Box7 = -1679; 
 double Saddle.centerZType18Box7 = 15290.8;
 double Saddle.centerXType18Box8 = -3904;  
-double Saddle.centerYType18Box8 = -2252; 
+double Saddle.centerYType18Box8 = -2262; 
 double Saddle.centerZType18Box8 = 15290.8;
 
+// DS EM Saddle side plates
+double Saddle.centerXType19Box1 = -3904;
+double Saddle.centerYType19Box1 = -1550;
+double Saddle.centerZType19Box1 = 15055.8;
+double Saddle.centerXType19Box2 = -3904;
+double Saddle.centerYType19Box2 = -1550;
+double Saddle.centerZType19Box2 = 15525.8;
+
+// DS EM Saddle foot plates
+double Saddle.centerXType20Box1 = -3904;
+double Saddle.centerYType20Box1 = -1630;
+double Saddle.centerZType20Box1 = 15290.8;
+
+// DS EM Saddle end plates
+double Saddle.centerXType21Box1 = -5153; // north west end plate DS
+double Saddle.centerYType21Box1 = -1550;  // 
+double Saddle.centerZType21Box1 =  15290.8; 
+double Saddle.centerXType21Box2 = -2655; // south west end plate DS
+double Saddle.centerYType21Box2 = -1550;  // 
+double Saddle.centerZType21Box2 =  15290.8; 
+
+// DS stand top bottom cross plates
+double Saddle.centerXType22Box1 = -3904;
+double Saddle.centerYType22Box1 = -1658;
+double Saddle.centerZType22Box1 = 4039;
+double Saddle.centerXType22Box2 = -3904;
+double Saddle.centerYType22Box2 = -1658;
+double Saddle.centerZType22Box2 = 13339;
+double Saddle.centerXType22Box3 = -3904;
+double Saddle.centerYType22Box3 = -1658;
+double Saddle.centerZType22Box3 = 8689;
+double Saddle.centerXType22Box4 = -3904;
+double Saddle.centerYType22Box4 = -1658;
+double Saddle.centerZType22Box4 = 15290.8;
+double Saddle.centerXType22Box5 = -3904;
+double Saddle.centerYType22Box5 = -2310;
+double Saddle.centerZType22Box5 = 4039;
+double Saddle.centerXType22Box6 = -3904;
+double Saddle.centerYType22Box6 = -2310;
+double Saddle.centerZType22Box6 = 13339;
+double Saddle.centerXType22Box7 = -3904;
+double Saddle.centerYType22Box7 = -2310;
+double Saddle.centerZType22Box7 = 8689;
+double Saddle.centerXType22Box8 = -3904;
+double Saddle.centerYType22Box8 = -2310;
+double Saddle.centerZType22Box8 = 15290.8;
 
 
 // The orientation of the box.  See docdb xxxx for details.

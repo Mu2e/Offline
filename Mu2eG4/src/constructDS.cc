@@ -23,6 +23,7 @@
 #include "Mu2eG4/inc/constructDS.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestPolycone.hh"
+#include "Mu2eG4/inc/nestExtrudedSolid.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 
@@ -30,12 +31,14 @@
 #include "G4ThreeVector.hh"
 #include "G4Material.hh"
 #include "G4Color.hh"
+#include "G4ExtrudedSolid.hh"
 #include "G4Polycone.hh"
 #include "G4Tubs.hh"
 #include "G4SubtractionSolid.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/TwoVector.h"
 
 using namespace std;
 
@@ -399,6 +402,60 @@ namespace mu2e {
                 );
 
     }
+
+    // Add rails in DS2Vacuum
+
+    std::vector<CLHEP::Hep2Vector> railOutline;
+    std::vector<double> uRailOutline = ds->uOutlineRail();
+    std::vector<double> vRailOutline = ds->vOutlineRail();
+
+
+    const bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
+    const bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
+    const bool placePV             = true;
+    CLHEP::HepRotation* nRailRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+    CLHEP::HepRotation* sRailRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+    sRailRotat->rotateY(180.0*CLHEP::degree);
+
+    VolumeInfo RailN2 = nestExtrudedSolid
+                     ( "NorthRailDS2", ds->lengthRail2()/2.0*CLHEP::mm,
+		       uRailOutline, vRailOutline, 
+		       findMaterialOrThrow(ds->RailMaterial()),
+		       nRailRotat, ds->n2RailCenter(),
+		       ds2VacInfo.logical, 0, _config.getBool("ds.visible"),
+		       G4Colour::Blue(), _config.getBool("ds.solid"),
+		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
+
+    VolumeInfo RailS2 = nestExtrudedSolid
+                     ( "SouthRailDS2", ds->lengthRail2()/2.0*CLHEP::mm,
+		       uRailOutline, vRailOutline, 
+		       findMaterialOrThrow(ds->RailMaterial()),
+		       sRailRotat, ds->s2RailCenter(),
+		       ds2VacInfo.logical, 0, _config.getBool("ds.visible"),
+		       G4Colour::Blue(), _config.getBool("ds.solid"),
+		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
+
+    // And now in DS3Vacuum
+
+
+
+     VolumeInfo RailN3 = nestExtrudedSolid
+                      ( "NorthRailDS3", ds->lengthRail3()/2.0*CLHEP::mm,
+ 		       uRailOutline, vRailOutline, 
+ 		       findMaterialOrThrow(ds->RailMaterial()),
+ 		       nRailRotat, ds->n3RailCenter(),
+ 		       dsShieldParent, 0, _config.getBool("ds.visible"),
+ 		       G4Colour::Blue(), _config.getBool("ds.solid"),
+ 		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
+
+     VolumeInfo RailS3 = nestExtrudedSolid
+                      ( "SouthRailDS3", ds->lengthRail3()/2.0*CLHEP::mm,
+ 		       uRailOutline, vRailOutline, 
+ 		       findMaterialOrThrow(ds->RailMaterial()),
+ 		       sRailRotat, ds->s3RailCenter(),
+ 		       dsShieldParent, 0, _config.getBool("ds.visible"),
+ 		       G4Colour::Blue(), _config.getBool("ds.solid"),
+ 		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
     
     bool addPionDegrader  = _config.getBool("piondegrader.build",false);
     double piondegXoffset        = _config.getDouble("piondeg.xoffset");

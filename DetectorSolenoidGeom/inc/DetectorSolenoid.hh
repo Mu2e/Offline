@@ -81,11 +81,14 @@ namespace mu2e {
     // Rails for DS elements to ride on within cryostat
     std::vector<double>  uOutlineRail() const { return _uOutlineRail; }
     std::vector<double>  vOutlineRail() const { return _vOutlineRail; }
-    double lengthRail() const { return _lengthRail; }
     std::string RailMaterial() const { return _RailMaterial; }
-    std::vector<double> xRail() const { return _xRail; }
-    std::vector<double> yRail() const { return _yRail; }
-    std::vector<double> zRail() const { return _zRail; }
+    // 2 below refers to part of rail in DS2Vacuum, 3 to DS3Vacuum
+    double lengthRail2() const { return _lengthRail2; }
+    double lengthRail3() const { return _lengthRail3; }
+    CLHEP::Hep3Vector n2RailCenter() const { return _n2RailCenter; }
+    CLHEP::Hep3Vector s2RailCenter() const { return _s2RailCenter; }
+    CLHEP::Hep3Vector n3RailCenter() const { return _n3RailCenter; }
+    CLHEP::Hep3Vector s3RailCenter() const { return _s3RailCenter; }
     
 
     // Vacuum volumes inside DS
@@ -153,13 +156,16 @@ namespace mu2e {
     std::vector<double> _zRing;
 
     // Rails
-    double                             _lengthRail;
     std::vector<double>                _uOutlineRail;
     std::vector<double>                _vOutlineRail;
     std::string                        _RailMaterial;
-    std::vector<double>                _xRail;
-    std::vector<double>                _yRail;
-    std::vector<double>                _zRail;
+    double                             _lengthRail2;
+    double                             _lengthRail3;
+    CLHEP::Hep3Vector                  _n2RailCenter;
+    CLHEP::Hep3Vector                  _s2RailCenter;
+    CLHEP::Hep3Vector                  _n3RailCenter;
+    CLHEP::Hep3Vector                  _s3RailCenter;
+
 
     // Vacuum volumes inside DS
     double _vacuumPressure;

@@ -71,13 +71,16 @@ namespace mu2e {
     c.getVectorDouble("ds.zRing", ds->_zRing, 2);
 
     // Rails
-    c.getVectorDouble("ds.outlineU",ds->_uOutlineRail, 4);
-    c.getVectorDouble("ds.outlineV",ds->_vOutlineRail, 4);
-    ds->_lengthRail = c.getDouble("ds.lengthRail");
+    int nPtRail = c.getInt("ds.nPtRail");
+    c.getVectorDouble("ds.outlineU",ds->_uOutlineRail, nPtRail);
+    c.getVectorDouble("ds.outlineV",ds->_vOutlineRail, nPtRail);
+    ds->_lengthRail2 = c.getDouble("ds.lengthRail2");
+    ds->_lengthRail3 = c.getDouble("ds.lengthRail3");
     ds->_RailMaterial = c.getString("ds.RailMaterialType");
-    c.getVectorDouble("ds.xRail", ds->_xRail, 2);
-    c.getVectorDouble("ds.yRail", ds->_yRail, 2);
-    c.getVectorDouble("ds.zRail", ds->_zRail, 2);
+    ds->_n2RailCenter = c.getHep3Vector("ds.n2RailCenter");
+    ds->_s2RailCenter = c.getHep3Vector("ds.s2RailCenter");
+    ds->_n3RailCenter = c.getHep3Vector("ds.n3RailCenter");
+    ds->_s3RailCenter = c.getHep3Vector("ds.s3RailCenter");
 
     // Vacuum volumes
     ds->_vacuumMaterialName = c.getString("ds.vacuumMaterialName");

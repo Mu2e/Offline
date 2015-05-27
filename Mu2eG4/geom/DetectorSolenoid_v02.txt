@@ -64,7 +64,7 @@ double dsSupport.rOut         = 1111.;
 double dsSupport.halfLength   = 5275.;// [10575.4-2*12.7]*0.5
 
 // Flags
-int    ds.verbosityLevel     = 0;
+int    ds.verbosityLevel     = 1;
 bool   ds.visible            = true;
 bool   ds.solid              = false;
 bool   dsCoil.visible        = true;
@@ -89,13 +89,19 @@ vector<double> ds.yRing = {0, 0};
 vector<double> ds.zRing = {4039, 13339};
 
 // Rails added by David Norvil Brown (May 2015)
-vector<double> ds.outlineU = {470, 510, 530, 470};
-vector<double> ds.outlineV = {-780, -780, -740, -740};
-double ds.lengthRail       = 400;
+// First define the outline of the rail assembly for extruding.
+int ds.nPtRail = 19;
+vector<double> ds.outlineU = {470,    470, 500,   530, 530, 527, 527, 518, 518, 527, 527, 523, 477, 473, 473, 482, 482, 473, 473};
+vector<double> ds.outlineV = {-750,-825.4,-807.4,-788,-750,-750,-738,-730,-722,-714,-710,-706,-706,-710,-714,-722,-730,-738,-750};
+double ds.lengthRail2       = 4160;
+double ds.lengthRail3       = 5500;
 string ds.RailMaterialType = "StainlessSteel";
-vector<double> ds.xRail = { -3904, -3904 };
-vector<double> ds.yRail = { 0, 0 };
-vector<double> ds.zRail = { 4400, 4400 };
+// The following center points are each relative to the center of the 
+// corresponding dsVacuum area (DS2Vacuum, DS3Vacuum) n= north, s=south
+vector<double> ds.n2RailCenter = { 0, 0, 0 };
+vector<double> ds.s2RailCenter = { 0, 0, 0 };
+vector<double> ds.n3RailCenter = { 0, 0, 11090 };
+vector<double> ds.s3RailCenter = { 0, 0, 11090 };
 
 
 // Vacuum volumes inside DS
