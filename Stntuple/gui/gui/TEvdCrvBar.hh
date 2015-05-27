@@ -10,12 +10,15 @@
 #include "Rtypes.h" // (?)  - Gtypes is obsolete and contains nothing
 #include "TClonesArray.h"
 #include "TBox.h"
+#include "TVector3.h"
+
 
 #include "Stntuple/base/TVisNode.hh"
 
 #ifndef __CINT__
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 //#include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
 //#include "RecoDataProducts/inc/CrvRecoPulses.hh"
 
@@ -26,8 +29,9 @@
 namespace mu2e 
 {
 	class CRSScintillatorBar;
+	class CRSScintillatorBarIndex;
 	class CrvRecoPulses;
-        struct CrvRecoPulses::CrvSingleRecoPulse;
+    struct CrvRecoPulses::CrvSingleRecoPulse;
 };
 #endif
 
@@ -51,10 +55,11 @@ public:
 	//std::vector<int>		PE(int SiPM)	const	{ return sipmPulses[SiPM]._PEs; }
 	//int					maxPE(int SiPM);
 
-	double		X0()	const	{ return fBox->GetBBoxCenter().GetX(); } //X Center of box?
-	double		Y0()	const	{ return fBox->GetBBoxCenter().GetY(); } //Y Center of box?
-	const TBox*	Box()	const	{ return fBox; }
-	int			Bar()	const	{ return barIndex; }
+	double		X0()	const	{ return xDispLoc; } //X Center of box?
+	double		Y0()	const	{ return yDispLoc; } //Y Center of box?
+	TBox*	Box()	const	{ return fBox; }
+	mu2e::CRSScintillatorBarIndex	Bar()	const	{ return barIndex; }
+	const mu2e::CrvRecoPulses::CrvSingleRecoPulse* lastPulseInWindow(int SiPM, float threshold, float timeLow, float timeHigh);
 
 	//const mu2e::CRSScintillatorBar Bar() const { return fBar; }
 	//-----------------------------------------------------------------------------
@@ -82,15 +87,24 @@ public:
 	// Overloaded methods of TObject
 	//-----------------------------------------------------------------------------
 	virtual void   Clear(const char* Opt = "");
-	virtual void   Print(const char* Opt = "") const; // **MENU**
+	virtual void   Print(const char* Opt = "");  // **MENU**
 
 protected:
-	//const mu2e::CRSScintillatorBar	fBar;
+	//const mu2e::CRSScintillatorBar& fBar;
 	
-	int barIndex; //Index of the bar
+	mu2e::CRSScintillatorBarIndex barIndex; //Index of the bar
+	int fSectionID; //Section to which the bar belongs
 	//int fNHits[4]; // Number of pulses for each SiPM
-  std::vector<const mu2e::CrvRecoPulses::CrvSingleRecoPulse*> sipmPulses[4];	//Vector of pulses for each SiPM  // Read as a vector of pointers to constant objects
-	
+	std::vector<const mu2e::CrvRecoPulses::CrvSingleRecoPulse*> sipmPulses[4];	//Vector of pulses for each SiPM  // Read as a vector of pointers to constant objects
+	const mu2e::CrvRecoPulses::CrvSingleRecoPulse* lastPulse[4];
+
+	double xDispLoc;
+	double yDispLoc;
+
+
+	float fthreshold;
+	float ftimeLow;
+	float ftimeHigh;
 	
 	// display in XY view
 	TBox*					fBox;

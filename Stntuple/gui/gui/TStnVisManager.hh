@@ -4,6 +4,11 @@
 #include "TObjArray.h"
 #include "Stntuple/base/TVisManager.hh"
 
+#include "TGDoubleSlider.h"
+#include "TGButton.h"
+#include "TGTextEntry.h"
+#include "TGTextBuffer.h"
+
 #ifndef __CINT__
 
 #include "art/Framework/Principal/Event.h"
@@ -55,18 +60,31 @@ public:
 		M_HELP_ABOUT
 	};
 
+	enum WidgetIdentities{
+		TIMESLIDER_ID = 10,
+		TIMELOW_DISP = 11,
+		TIMEHIGH_DISP = 12,
+		UPDATER_BTN = 13
+	};
+
 	//-----------------------------------------------------------------------------
 	//  data members
 	//-----------------------------------------------------------------------------
 protected:
 	TGMainFrame*        fMain;
 	TGMenuBar           *fMenuBar;	  // !
-	TGPopupMenu         *fMenuSubdetectors; // !
+	TGPopupMenu         *fMenu; // !
 	TGPopupMenu         *fMenuHelp;	  // !
 
 	TGLayoutHints       *fMenuBarLayout;	  // !
 	TGLayoutHints       *fMenuBarItemLayout; // !
 	TGLayoutHints       *fMenuBarHelpLayout; // !
+
+	TGTextButton *trkrBtnXY, *trkrBtnRZ, *calBtn, *crvBtn, *updaterBtn;
+	TGDoubleHSlider *timeWindowSlider;
+	TGTextBuffer *timeWindowLowBuff, *timeWindowHighBuff;
+	TGTextEntry *timeWindowLowDisp, *timeWindowHighDisp;
+
 
 	// vis. manager also holds a list of
 	// objects to be displayed: has to be
@@ -78,8 +96,9 @@ protected:
 	TTrkXYView*         fTrkXYView;
 	TTrkRZView*         fTrkRZView;
 	TCalView*           fCalView[4];	// to provide for the now obsolete 
-	// vane-based geometry
-	TCrvView*			  fCrvView[6];
+										// vane-based geometry
+	TCrvView*			fCrvView[6];
+	//TCrvView*			fCrvView[10]	// extra views for new detector subdivisions
 
 	TExtrapolator*      fExtrapolator;
 
@@ -94,18 +113,23 @@ protected:
 	double              fTMax;
 
 	int                 fDisplayStrawDigiMC;
+
 	//-----------------------------------------------------------------------------
 	//  functions
 	//-----------------------------------------------------------------------------
 public:
 
-	TStnVisManager(const char* name = "TStnVisManager",
-		const char* title = "TStnVisManager");
+	TStnVisManager(const char* name = "TStnVisManager",	const char* title = "TStnVisManager");
 
 	virtual ~TStnVisManager();
 
 	static TStnVisManager* Instance();
 	// ****** accessors
+
+	//Interface Handlers
+	void HandleButtons();
+	void HandleSlider();
+	void HandleText(); //char * text);
 
 	TSubdetector*  GetClosestSubdetector() { return fClosestSubdetector; }
 	TExtrapolator* GetExtrapolator() { return fExtrapolator; }
@@ -143,6 +167,8 @@ public:
 
 	void SetStations(int IMin, int IMax);
 	void SetTimePeak(int I);
+
+	void UpdateViews();
 
 	virtual TCanvas*  NewCanvas(const char* Name,
 		const char* Title,

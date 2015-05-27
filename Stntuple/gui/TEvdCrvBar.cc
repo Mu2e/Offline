@@ -12,6 +12,7 @@
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "RecoDataProducts/inc/CrvRecoPulses.hh"
 
 ClassImp(TEvdCrvBar)
@@ -22,11 +23,17 @@ TEvdCrvBar::TEvdCrvBar(const mu2e::CRSScintillatorBar& Bar, int SectionID) : TOb
 	//fBar = Bar;
 	const CLHEP::Hep3Vector *pos;
 	pos = &Bar.getPosition();
-	barIndex = Bar.index().asInt();
+	barIndex = Bar.index();
 	double halfWidth = Bar.getHalfWidth();
 	double halfThickness = Bar.getHalfThickness();
+	fSectionID = SectionID;
+
+	//set some defaults which will be updated later
+	fthreshold = 10;
+	ftimeLow = 400;
+	ftimeHigh = 1695;
 	
-	switch (SectionID)
+	switch (fSectionID)
 	{
 	case 0:
 		//Right
@@ -35,7 +42,8 @@ TEvdCrvBar::TEvdCrvBar(const mu2e::CRSScintillatorBar& Bar, int SectionID) : TOb
 		sipm[1] = new TBox(pos->z() - halfWidth, pos->x() + halfThickness, pos->z(), pos->x());
 		sipm[2] = new TBox(pos->z() + halfWidth, pos->x() - halfThickness, pos->z(), pos->x());
 		sipm[3] = new TBox(pos->z() + halfWidth, pos->x() + halfThickness, pos->z(), pos->x());
-
+		xDispLoc = pos->z();
+		yDispLoc = pos->x();
 		break;
 	case 1:
 		//Left
@@ -44,6 +52,8 @@ TEvdCrvBar::TEvdCrvBar(const mu2e::CRSScintillatorBar& Bar, int SectionID) : TOb
 		sipm[1] = new TBox(pos->z() - halfWidth, pos->x() + halfThickness, pos->z(), pos->x());
 		sipm[2] = new TBox(pos->z() + halfWidth, pos->x() - halfThickness, pos->z(), pos->x());
 		sipm[3] = new TBox(pos->z() + halfWidth, pos->x() + halfThickness, pos->z(), pos->x());
+		xDispLoc = pos->z();
+		yDispLoc = pos->x();
 		break;
 	case 2:
 		//Top DS
@@ -52,22 +62,51 @@ TEvdCrvBar::TEvdCrvBar(const mu2e::CRSScintillatorBar& Bar, int SectionID) : TOb
 		sipm[1] = new TBox(pos->z() - halfWidth, pos->y() + halfThickness, pos->z(), pos->y());
 		sipm[2] = new TBox(pos->z() + halfWidth, pos->y() - halfThickness, pos->z(), pos->y());
 		sipm[3] = new TBox(pos->z() + halfWidth, pos->y() + halfThickness, pos->z(), pos->y());
+		xDispLoc = pos->z();
+		yDispLoc = pos->y();
 		break;
 	case 3:
 		//Downstream
-		fBox = new TBox(pos->y() - halfWidth, pos->z() - halfThickness, pos->y() + halfWidth, pos->z() + halfThickness);
-		sipm[0] = new TBox(pos->y() - halfWidth, pos->z() - halfThickness, pos->y(), pos->z());
-		sipm[1] = new TBox(pos->y() - halfWidth, pos->z() + halfThickness, pos->y() , pos->z());
-		sipm[2] = new TBox(pos->y() + halfWidth, pos->z() - halfThickness, pos->y(), pos->z());
-		sipm[3] = new TBox(pos->y() + halfWidth, pos->z() + halfThickness, pos->y(), pos->z());
+		if (Bar.id().getShieldNumber() == 18)
+		{//	Apply Offset in Z for overlapping sections
+			fBox = new TBox(pos->y() - halfWidth, (pos->z() + 60) - halfThickness, pos->y() + halfWidth, (pos->z() + 60) + halfThickness);
+			sipm[0] = new TBox(pos->y() - halfWidth, (pos->z() + 60) - halfThickness, pos->y(), (pos->z() + 60));
+			sipm[1] = new TBox(pos->y() - halfWidth, (pos->z() + 60) + halfThickness, pos->y(), (pos->z() + 60));
+			sipm[2] = new TBox(pos->y() + halfWidth, (pos->z() + 60) - halfThickness, pos->y(), (pos->z() + 60));
+			sipm[3] = new TBox(pos->y() + halfWidth, (pos->z() + 60) + halfThickness, pos->y(), (pos->z() + 60));
+			xDispLoc = pos->y();
+			yDispLoc = pos->z()+60;
+		}
+		else if (Bar.id().getShieldNumber() == 19)
+		{// Apply Offset in Z for overlapping sections
+			fBox = new TBox(pos->y() - halfWidth, (pos->z() - 60) - halfThickness, pos->y() + halfWidth, (pos->z() - 60) + halfThickness);
+			sipm[0] = new TBox(pos->y() - halfWidth, (pos->z() - 60) - halfThickness, pos->y(), (pos->z() - 60));
+			sipm[1] = new TBox(pos->y() - halfWidth, (pos->z() - 60) + halfThickness, pos->y(), (pos->z() - 60));
+			sipm[2] = new TBox(pos->y() + halfWidth, (pos->z() - 60) - halfThickness, pos->y(), (pos->z() - 60));
+			sipm[3] = new TBox(pos->y() + halfWidth, (pos->z() - 60) + halfThickness, pos->y(), (pos->z() - 60));
+			xDispLoc = pos->y();
+			yDispLoc = pos->z()-60;
+		}
+		else
+		{
+			fBox = new TBox(pos->y() - halfWidth, pos->z() - halfThickness, pos->y() + halfWidth, pos->z() + halfThickness);
+			sipm[0] = new TBox(pos->y() - halfWidth, pos->z() - halfThickness, pos->y(), pos->z());
+			sipm[1] = new TBox(pos->y() - halfWidth, pos->z() + halfThickness, pos->y(), pos->z());
+			sipm[2] = new TBox(pos->y() + halfWidth, pos->z() - halfThickness, pos->y(), pos->z());
+			sipm[3] = new TBox(pos->y() + halfWidth, pos->z() + halfThickness, pos->y(), pos->z());
+			xDispLoc = pos->y();
+			yDispLoc = pos->z();
+		}
 		break;
 	case 4:
 		//Upstream
 		fBox = new TBox(pos->y() - halfWidth, pos->z() - halfThickness, pos->y() + halfWidth, pos->z() + halfThickness);
-		sipm[0] = new TBox(pos->y() - halfWidth, pos->z() - halfThickness, pos->y(), pos->z());
-		sipm[1] = new TBox(pos->y() - halfWidth, pos->z() + halfThickness, pos->y(), pos->z());
-		sipm[2] = new TBox(pos->y() + halfWidth, pos->z() - halfThickness, pos->y(), pos->z());
-		sipm[3] = new TBox(pos->y() + halfWidth, pos->z() + halfThickness, pos->y(), pos->z());
+		sipm[0] = new TBox(pos->y() - halfWidth, pos->z() - halfThickness, pos->y(), pos->z() + halfThickness);
+		sipm[1] = new TBox(0, 0, 0, 0); //Not drawn, single end readout
+		sipm[2] = new TBox(pos->y() + halfWidth, pos->z() - halfThickness, pos->y(), pos->z() + halfThickness);
+		sipm[3] = new TBox(0, 0, 0, 0); //Not drawn, single end readout
+		xDispLoc = pos->y();
+		yDispLoc = pos->z();
 		break;
 	case 5://Cryo
 	case 6://Cryo
@@ -80,6 +119,8 @@ TEvdCrvBar::TEvdCrvBar(const mu2e::CRSScintillatorBar& Bar, int SectionID) : TOb
 		sipm[1] = new TBox(0,0,0,0); //Not drawn, single end readout
 		sipm[2] = new TBox(pos->z() + halfWidth, pos->y() - halfThickness, pos->z(), pos->y() + halfThickness);
 		sipm[3] = new TBox(0,0,0,0); //Not drawn, single end readout
+		xDispLoc = pos->z();
+		yDispLoc = pos->y();
 		break;
 	}
 
@@ -110,13 +151,25 @@ void TEvdCrvBar::PaintXY(Option_t* Option) {
 
 //-----------------------------------------------------------------------------
 void TEvdCrvBar::PaintCrv(Option_t* Option) {
-	
-	sipm[0]->Paint(); //Draw SiPMs
-	sipm[1]->Paint();
-	sipm[2]->Paint();
-	sipm[3]->Paint();
+	//mu2e::GeomHandle< mu2e::CosmicRayShield > CRS;
+	//const mu2e::CRSScintillatorBar bar = CRS->getBar(barIndex);
+	//const CLHEP::Hep3Vector *pos;
+	//pos = &bar.getPosition();
 
-	fBox->Paint("L"); //Draw CrvBar with outline
+	//double x1, x2, y1, y2;
+	//
+	//gPad->GetRange(x1, y1, x2, y2);
+
+	////Draw bars only within the visible range of the window
+	//if ((pos->x() > x1) && (pos->x() < x2) && (pos->y() > y1) && (pos->y() > y2))
+	//{
+		sipm[0]->Paint(); //Draw SiPMs
+		sipm[1]->Paint();
+		sipm[2]->Paint();
+		sipm[3]->Paint();
+
+		fBox->Paint("L"); //Draw CrvBar with outline
+	//}
 }
 
 
@@ -174,29 +227,52 @@ void TEvdCrvBar::Clear(Option_t* Opt) {
 	//fEnergy = 0.;
 }
 
+const mu2e::CrvRecoPulses::CrvSingleRecoPulse* TEvdCrvBar::lastPulseInWindow(int SiPM, float threshold, float timeLow, float timeHigh)
+{
+	fthreshold = threshold;
+	ftimeLow = timeLow;
+	ftimeHigh = timeHigh;
+	
+	const mu2e::CrvRecoPulses::CrvSingleRecoPulse* tempPulse = 0; //Create a pointer to a 'null' pulse
+
+	for (unsigned int i = 0; i < sipmPulses[SiPM].size(); i++)
+	{
+		// !!!!! THIS ASSUMES THE PULSES ARE ORGANIZED BY TIME !!!!!
+		//					And they are...
+
+		//Skip until we get to a pulse in the time window
+		if (sipmPulses[SiPM][i]->_leadingEdge < timeLow || sipmPulses[SiPM][i]->_PEs < threshold)
+			continue;
+		//if the pulse occurs beyond the time window then break and return the previous pulse, if not then set the buffer (lastpulse)
+		if (sipmPulses[SiPM][i]->_leadingEdge > timeHigh)
+			break;
+
+		tempPulse = sipmPulses[SiPM][i];		
+	}
+
+	return tempPulse;
+}
+
 
 //_____________________________________________________________________________
-void TEvdCrvBar::Print(Option_t* Opt) const {
+void TEvdCrvBar::Print(Option_t* Opt) {
+	const mu2e::CrvRecoPulses::CrvSingleRecoPulse* tempPulse = 0;
 
-	//TObjHandle*                  h;
-	//const mu2e::CaloCrystalHit*  hit;
+	printf("----------------------------------------------------------------\n");
+	printf("Bar	SiPM	Section	Time	PEs	\n");
+	printf("----------------------------------------------------------------\n");
+	
+	for (int SiPM = 0; SiPM < 4; SiPM++)
+	{
+		if (fSectionID == 4 && (SiPM == 1 || SiPM == 3)) // Or if it is Top TS, but I will need to figure out how to determine this
+			continue;
 
-	//printf(" X0 = %10.3f Y0 = %10.3f  E = %10.3f  njits = %5i\n",
-	//	X0(), Y0(), fEnergy, fNHits);
+		tempPulse = lastPulseInWindow(SiPM, fthreshold, ftimeLow, ftimeHigh);
+		if (tempPulse)
+		{
+			printf("thresh %f , tL %f , tH %f , %p \n", fthreshold, ftimeLow, ftimeHigh, tempPulse);
+			printf("%i	%i	%i	%f	%i \n", barIndex.asInt(), SiPM, fSectionID, tempPulse->_leadingEdge, tempPulse->_PEs);
+		}
+	}
 
-	//printf("----------------------------------------------------------------\n");
-	//printf("CrystalID      Time   Energy    EnergyTot  NRoids               \n");
-	//printf("----------------------------------------------------------------\n");
-	//for (int i = 0; i<fNHits; i++) {
-
-	//	h = (TObjHandle*) fListOfHits->At(i);
-	//	hit = (const mu2e::CaloCrystalHit*) h->Object();
-
-	//	printf("%7i  %10.3f %10.3f %10.3f %5i\n",
-	//		hit->id(),
-	//		hit->time(),
-	//		hit->energyDep(),
-	//		hit->energyDepTotal(),
-	//		hit->numberOfROIdsUsed());
-	//}
 }

@@ -18,8 +18,8 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
-//#include "RecoDataProducts/inc/CrvRecoPulses.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
 #else
 
@@ -30,9 +30,10 @@ namespace mu2e
 	class CRSScintillatorLayer;
 	class CRSScintillatorModule;
 	class CRSScintillatorShield;
-        class CrvRecoPulsesCollection;
-        class CrvRecoPulses;
-        struct CrvRecoPulses::CrvSingleRecoPulse;
+	class CrvRecoPulsesCollection;
+	class CRSScintillatorBarIndex;
+	class CrvRecoPulses;
+	struct CrvRecoPulses::CrvSingleRecoPulse;
 };
 
 #endif
@@ -61,17 +62,15 @@ public:
 	//-----------------------------------------------------------------------------
 	void	SetRecoPulsesCollection(mu2e::CrvRecoPulsesCollection** List) { fCrvRecoPulsesCollection = List; }
 
-	//void	SetPickMode(Int_t Mode) { fPickMode = Mode; }
-	//void	SetDisplayHits(Int_t Mode) { fDisplayHits = Mode; }
-
 	//void	SetMinPulseHeight(float PulseHeight) { fMinPulseHeight = PulseHeight; }
 	void	SetMinPulsePEs(float minPulsePEs){ fMinPulsePEs = minPulsePEs; }
-        void	SetTimeWindow(float timeLow, float timeHigh);
+	void	SetTimeWindow(float timeLow, float timeHigh);
 
 	//-----------------------------------------------------------------------------
 	// Overloaded methods of TVisNode
 	//-----------------------------------------------------------------------------
 	virtual int		InitEvent();
+	void			UpdateEvent();
 	virtual void	PaintXY(Option_t* option = "");
 	virtual void	PaintCrv(Option_t* option = "");
 	virtual void	PaintRZ(Option_t* option = "");
@@ -94,14 +93,12 @@ protected:
 	
 	TObjArray*		fListOfEvdCrvBars;
 
-	//const mu2e::CrvRecoPulses*		fCrvRecoPulses;
-
-	//Int_t		fDisplayHits;
-	//Int_t		fPickMode;
 	//double	fMinPulseHeight;
 	float		fMinPulsePEs;
 	float		ftimeLow;
 	float		ftimeHigh;
+
+	Int_t colorPalette[1000];
 
 	int getCRVSection(int shieldNumber);
 

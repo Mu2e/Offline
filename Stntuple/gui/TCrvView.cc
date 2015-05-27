@@ -96,7 +96,9 @@ Int_t TCrvView::DistancetoPrimitive(Int_t px, Int_t py)
 	//     vm->SetClosestDetElement(TDetectorElement::GetClosest(),
 	// 			     TDetectorElement::GetMinDist());
 	//  }
-
+	
+	
+	// (vm->GetMinDist() > 5)
 	if (vm->GetMinDist() > 5) vm->SetClosestObject(this, 0);
 	//-----------------------------------------------------------------------------
 	// prepare output
@@ -239,9 +241,10 @@ void TCrvView::SetMinPulsePEs(float MinPEs)
 		{
 			TCrvVisNode* cvn = (TCrvVisNode*) node;
 			cvn->SetMinPulsePEs(MinPEs);
-			cvn->InitEvent();
+			cvn->UpdateEvent();
 		}
 	}
+	vm->UpdateViews();
 }
 
 //_____________________________________________________________________________
@@ -258,8 +261,11 @@ void TCrvView::SetTimeWindow(float lowWindow, float highWindow)
 		if (node->InheritsFrom("TCrvVisNode"))
 		{
 			TCrvVisNode* cvn = (TCrvVisNode*) node;
-			cvn->SetTimeWindow(lowWindow, highWindow);
-			cvn->InitEvent();
+			if (cvn->SectionID() == fSectionToDisplay)
+			{
+				cvn->SetTimeWindow(lowWindow, highWindow);
+				cvn->UpdateEvent();
+			}
 		}
 	}
 }

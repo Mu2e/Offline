@@ -4,6 +4,9 @@
 #include "Stntuple/gui/TEvdMainFrame.hh"
 #include "Stntuple/gui/TStnVisManager.hh"
 #include "TGButton.h"
+#include "TGSlider.h"
+#include "TGTextEntry.h"
+#include "TGDoubleSlider.h"
 
 ClassImp(TEvdMainFrame)
 
@@ -11,12 +14,16 @@ ClassImp(TEvdMainFrame)
 //_____________________________________________________________________________
 TEvdMainFrame::TEvdMainFrame() :
 TGMainFrame(gClient->GetRoot(), 100, 200, kMainFrame)
-{}
+{
+	vm = TStnVisManager::Instance();
+}
 
 //_____________________________________________________________________________
 TEvdMainFrame::TEvdMainFrame(const TGWindow* p, UInt_t w, UInt_t h, Int_t options) :
 TGMainFrame(gClient->GetRoot(), w, h, options)
-{}
+{
+	vm = TStnVisManager::Instance();
+}
 
 
 
@@ -24,8 +31,7 @@ TGMainFrame(gClient->GetRoot(), w, h, options)
 //_____________________________________________________________________________
 Bool_t TEvdMainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) {
 	// Handle menu items.
-
-	TStnVisManager* vm = TStnVisManager::Instance();
+	vm = TStnVisManager::Instance();
 
 	int message = GET_MSG(msg);
 
@@ -38,7 +44,7 @@ Bool_t TEvdMainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) {
 				//-----------------------------------------------------------------------------
 				//  SUBDETECTOR menu
 				//-----------------------------------------------------------------------------
-			case TStnVisManager::M_TRACKER_XY:
+			/*case TStnVisManager::M_TRACKER_XY:
 				vm->OpenTrkXYView();
 				break;
 
@@ -52,7 +58,7 @@ Bool_t TEvdMainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) {
 
 			case TStnVisManager::M_CRV_XY:
 				vm->OpenCrvView();
-				break;
+				break;*/
 
 			case TStnVisManager::M_EXIT:
 				vm->CloseWindow();
@@ -76,32 +82,4 @@ Bool_t TEvdMainFrame::ProcessMessage(Long_t msg, Long_t parm1, Long_t parm2) {
 		}
 	}
 	return true;
-}
-
-//_____________________________________________________________________________
-void TEvdMainFrame::HandleButtons()
-{
-	// Handle different buttons.
-
-	TGButton *btn = (TGButton *) gTQSender;
-	int id = btn->WidgetId();
-
-	printf("Detected button %i clicked, handling...\n", id);
-
-	switch (id)
-	{
-	
-	case 1:
-		TStnVisManager::Instance()->OpenTrkXYView();
-		break;
-	case 2:
-		TStnVisManager::Instance()->OpenCalView();
-		break;
-	case 3:
-		TStnVisManager::Instance()->OpenCrvView();
-		break;
-	default:
-		printf("Unknown button clicked\n");
-		break;
-	}
 }
