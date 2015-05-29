@@ -1,20 +1,11 @@
 #include "BtrkHelper/inc/ParticleInfo.hh"
 #include "MCDataProducts/inc/PDGCode.hh"
 
-#include <iostream>
-using namespace std;
-
 mu2e::ParticleInfo::ParticleInfo():pdt_(){
 }
 
 HepPDT::ParticleData const*
 mu2e::ParticleInfo::getParticle( TrkParticle::type id ) const{
-
-  cerr << "Mark 0 entering getParticle ..... "
-       << id << " | "
-       << TrkParticle::e_minus << " "
-       << endl;
-
 
   // First, check the local cache.
   auto q = table_.find(id);
@@ -81,8 +72,6 @@ mu2e::ParticleInfo::getParticle( TrkParticle::type id ) const{
     }
 
   }
-
-  cerr << "Mark 4: " <<  p << endl;
 
   table_[id] = p;
 
