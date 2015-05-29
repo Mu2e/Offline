@@ -2,6 +2,57 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_3_4
 
+8) May 29, 2015 - kutschke
+   Updated the BaBar code so that it no longer needs to include headers
+   from Offline or link to libraries in Offline.  The changes are in two parts, described below.
+
+   I have NOT updated setup.sh to require the newly committed BaBar code.  The new Mu2e code
+   does will not be included in a running job unless you add the new service to your fcl file.
+
+   To test drive the new code:
+     1) Update the Babar code to version 621.
+     2) Configure the BtrkHelper service in your job.
+   If you do one but not the other you will get an error.
+
+   In the BaBar code:
+     a) Define two new pure virtual interface classes
+          BaBar/include/FileFinderInterface.hh
+          BaBar/include/ParticleInfoInterface.hh
+        Mu2e code will define subclasses that derive from these interfaces
+        and will instantiate a copy of each.
+     b) Define a singleton-like class that holds a non-owning pointer to
+        the concrete instances provided by the Mu2e code.
+           BaBar/include/ExternalInfo.hh
+           BaBar/src/ExternalInfo.cc
+        This singleton returns access to the concrete classes via reference
+        or pointer to the base class.  So no BaBar code depends on the
+        concrete clases, only on the interfaces.
+     c) The following classes now get information via ExternalInfo rather
+        than by using mu2e::GlobalConstantsHandle or ConfigFileLookupPolicy
+           MatEnv/src/MatElmDictionary.cc
+           MatEnv/src/MatIsoDictionary.cc
+           MatEnv/src/MatMtrDictionary.cc
+     d) The three *Dictionary.cc files used to have the names of the files
+        that they read hard coded.  They are not fcl parameters of the
+        new Mu2e service described next - see item c), below.
+   In the Mu2e code:
+     a) Define concrete subclasses of the two interfaces:
+         BtrkHelper/inc/FileFinder.hh
+         BtrkHelper/inc/ParticleInfo.hh
+         BtrkHelper/src/FileFinder.cc
+         BtrkHelper/src/ParticleInfo.cc
+     b) Define an new service that owns instances of the concrete
+        classes named in a)
+          BtrkHelper/inc/BtrkHelper.hh
+          BtrkHelper/src/BtrkHelper_service.cc
+     c) Define a prolog with the correct default configuration of the
+        new service:
+           BtrkHelper/fcl/prolog.fcl
+        The definitions of the BaBar material model Dictionary files are in here.
+     d) Include the new prolog in standardProducers.
+          fcl/standardServices.fcl
+
+
 7) May 23, 2015 - brownd
     Introduced new functionality to model fluctuations in the primary proton
     microbunch intensity.  There are 3 components:
@@ -34,7 +85,7 @@ Still under construction
 6) May 19, 2015 - ehrlich
    Updated the code in CRVResponse (bug fixes, faster simulation, better simulation of the
    Cerenkov photons). New lookupt tables are now in
-   /mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable  
+   /mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable
 
 
 5) May 14, 2015 - youzy
@@ -50,21 +101,21 @@ Still under construction
     more readable.  Also removed the floor of the downstream endcap shielding per
     request from the CRV.
 
-2.  David Norvil Brown (Louisville), 6 May 2015.  Complete removal of old 
+2.  David Norvil Brown (Louisville), 6 May 2015.  Complete removal of old
     ExternalNeutronShieldingGeom package and mentions thereof in Mu2e code.
 
-3.  David Norvil Brown (Louisville), 6 May 2015.  Add DS saddles. 
+3.  David Norvil Brown (Louisville), 6 May 2015.  Add DS saddles.
 
-4.  David Norvil Brown (Louisville), 12 May 2015.  Change protonabsorber 
+4.  David Norvil Brown (Louisville), 12 May 2015.  Change protonabsorber
     material entirely to HDPE.
 
-5.  David Norvil Brown (Louisville), 15,18 May 2015:  Change name of 
-    InternalNeutronAbsorber4 to TSdA.  Make it HDPE.  Move it into 
+5.  David Norvil Brown (Louisville), 15,18 May 2015:  Change name of
+    InternalNeutronAbsorber4 to TSdA.  Make it HDPE.  Move it into
     BeamlineGeom package.
-    Remove all traces of InternalNeutronAbsorber package.  
+    Remove all traces of InternalNeutronAbsorber package.
     Add an external shielding piece to fill a gap at the DS endcap shielding
     interface.  Add rings to DS, put in basics of code for DS rails.
-    
+
 6.  David Norvil Brown (Louisville), 26 May 2015:  Add DS Stand and saddle
     under calorimeter region.  Add plates on DS stand.  Add rails in DS.
 
