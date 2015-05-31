@@ -12,6 +12,8 @@ class G4Event;
 
 class WLSPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
+    WLSPrimaryGeneratorAction();
+
   public:
 
     WLSPrimaryGeneratorAction(int mode, int numberOfPhotons=-1, int simType=-1, int startBin=-1, bool verbose=false);

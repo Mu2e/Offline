@@ -142,12 +142,11 @@ namespace mu2e
          case 17: if(SiPM==0) {coincidenceGroup = 11; c.pos=CRSbar.getPosition().x();}
                   break;
         };
-//std::cout<<"coincidence group: "<<coincidenceGroup<<std::endl;
 
-        for(; SiPM<4; SiPM+=2)  //the reco pulse times of both SiPMs on the same side are put into the same c to avoid that 
-                                //pulses from the same counter can be used to satisfy the coincidence condition
+        for(int SiPMtmp=SiPM; SiPMtmp<4; SiPMtmp+=2)  //the reco pulse times of both SiPMs on the same side are put into the same c to avoid that 
+                                                      //pulses from the same counter can be used to satisfy the coincidence condition
         {
-          const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector = crvRecoPulses.GetRecoPulses(SiPM);
+          const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector = crvRecoPulses.GetRecoPulses(SiPMtmp);
           for(unsigned int i = 0; i<pulseVector.size(); i++) 
           {
             const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
@@ -157,9 +156,10 @@ namespace mu2e
                {
                  c.time.push_back(pulse._leadingEdge);
                  c.PEs.push_back(pulse._PEs);
-                 c.SiPMs.push_back(SiPM);
+                 c.SiPMs.push_back(SiPMtmp);
+//std::cout<<"coincidence group: "<<coincidenceGroup<<"  SiPM: "<<SiPMtmp<<std::endl;
+//std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<pulse._leadingEdge<<"   pos: "<<c.pos<<std::endl;
                }
-//std::cout<<"PEs: "<<pulseVector[i]._PEs<<"   LE: "<<pulseVector[i]._leadingEdge<<"   pos: "<<c.pos<<std::endl;
           }
         }
         if(c.time.size()>0) coincidenceMap[coincidenceGroup].push_back(c);

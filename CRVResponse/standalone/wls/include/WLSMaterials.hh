@@ -28,6 +28,7 @@ class WLSMaterials
     G4NistManager*     nistMan;
 
     G4Material*        Air;
+    G4Material*        PVC;
 
     G4Material*        PMMA;
     G4Material*        Pethylene;

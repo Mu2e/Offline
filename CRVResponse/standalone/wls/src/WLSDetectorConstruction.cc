@@ -33,7 +33,7 @@
 
 WLSDetectorConstruction* WLSDetectorConstruction::_fgInstance = NULL;
 
-WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
+WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption) : physiWorld(NULL)
 {
   _fgInstance = this;
 
@@ -47,11 +47,6 @@ WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
   extrusionPolish = 1.;
   extrusionReflectivity = 0.95;
 
-#ifndef testbeam
-#pragma message("Uses the real geometry setup.")
-#pragma message("Compile with -Dtestbeam to use the test beam geometry setup.")
- 
-  _barLength        = 660.*cm;
   _barWidth         = 5.*cm;
   _barThickness     = 2.*cm;
   _fiberSeparation  = 2.*cm;
@@ -68,74 +63,64 @@ WLSDetectorConstruction::WLSDetectorConstruction() : physiWorld(NULL)
 
   for(int i=0; i<17; i++) _xbins.push_back(xbinsTmp[i]*mm); //16 bins
   for(int i=0; i<36; i++) _ybins.push_back(ybinsTmp[i]*mm); //35 bins
-/*
-  //74 bins
-  for(int i=0; i<6; i++)   // -3300 ... -3250
-  {
-    _zbins.push_back(-3300.0*mm+10.0*mm*i);
-  }
-  for(int i=6; i<70; i++)   // -3150 ... 3150
-  {
-    _zbins.push_back(-3150.0*mm+100.0*mm*(i-6));
-  }
-  for(int i=70; i<76; i++)   // 3250 ... 3300
-  {
-    _zbins.push_back(3250.0*mm+10.0*mm*(i-70));
-  }
-*/
 
-  //84 bins
-  for(int i=0; i<6; i++)   // -3300 ... -3250
+  switch(lengthOption)
   {
-    _zbins.push_back(-3300.0*mm+10.0*mm*i);
+    case 0: _barLength        = 660.*cm;
+            //90 bins
+            for(int i=0; i<6; i++)   _zbins.push_back(-3300.0*mm+10.0*mm*i);       // -3300 ... -3250
+            for(int i=6; i<16; i++)  _zbins.push_back(-3250.0*mm+25.0*mm*(i-5));   // -3225 ... -3000
+            for(int i=16; i<75; i++) _zbins.push_back(-3000.0*mm+100.0*mm*(i-15)); // -2900 ...  2900
+            for(int i=75; i<85; i++) _zbins.push_back(2975.0*mm+25.0*mm*(i-74));   //  3000 ...  3225
+            for(int i=85; i<91; i++) _zbins.push_back(3240.0*mm+10.0*mm*(i-84));   //  3250 ...  3300
+            break;
+    case 1: _barLength        = 560.*cm;
+            //80 bins
+            for(int i=0; i<6; i++)   _zbins.push_back(-2800.0*mm+10.0*mm*i);       // -2800 ... -2750
+            for(int i=6; i<16; i++)  _zbins.push_back(-2750.0*mm+25.0*mm*(i-5));   // -2725 ... -2500
+            for(int i=16; i<65; i++) _zbins.push_back(-2500.0*mm+100.0*mm*(i-15)); // -2400 ...  2400
+            for(int i=65; i<75; i++) _zbins.push_back(2475.0*mm+25.0*mm*(i-64));   //  2500 ...  2725
+            for(int i=75; i<81; i++) _zbins.push_back(2740.0*mm+10.0*mm*(i-74));   //  2750 ...  2800
+            break;
+    case 2: _barLength        = 450.*cm;
+            //69 bins
+            for(int i=0; i<6; i++)   _zbins.push_back(-2250.0*mm+10.0*mm*i);       // -2250 ... -2200
+            for(int i=6; i<16; i++)  _zbins.push_back(-2200.0*mm+25.0*mm*(i-5));   // -2175 ... -1950
+            for(int i=16; i<54; i++) _zbins.push_back(-1950.0*mm+100.0*mm*(i-15)); // -1850 ...  1850
+            for(int i=54; i<64; i++) _zbins.push_back(1925.0*mm+25.0*mm*(i-53));   //  1950 ...  2175
+            for(int i=64; i<70; i++) _zbins.push_back(2190.0*mm+10.0*mm*(i-63));   //  2200 ...  2250
+            break;
+    case 3: _barLength        = 300.*cm;  //test beam
+            //54 bins
+            for(int i=0; i<6; i++)   _zbins.push_back(-1500.0*mm+10.0*mm*i);       // -1500 ... -1450
+            for(int i=6; i<16; i++)  _zbins.push_back(-1450.0*mm+25.0*mm*(i-5));   // -1425 ... -1200
+            for(int i=16; i<39; i++) _zbins.push_back(-1200.0*mm+100.0*mm*(i-15)); // -1100 ...  1100
+            for(int i=39; i<49; i++) _zbins.push_back(1175.0*mm+25.0*mm*(i-38));   //  1200 ...  1425
+            for(int i=49; i<55; i++) _zbins.push_back(1440.0*mm+10.0*mm*(i-48));   //  1450 ...  1500
+            break;
+    case 4: _barLength        = 230.*cm;
+            //47 bins
+            for(int i=0; i<6; i++)   _zbins.push_back(-1150.0*mm+10.0*mm*i);       // -1150 ... -1100
+            for(int i=6; i<16; i++)  _zbins.push_back(-1100.0*mm+25.0*mm*(i-5));   // -1075 ...  -850
+            for(int i=16; i<32; i++) _zbins.push_back(-850.0*mm+100.0*mm*(i-15));  //  -750 ...   750
+            for(int i=32; i<42; i++) _zbins.push_back(825.0*mm+25.0*mm*(i-31));    //   850 ...  1075
+            for(int i=42; i<48; i++) _zbins.push_back(1090.0*mm+10.0*mm*(i-41));   //  1100 ...  1150
+            break;
+    case 5: _barLength        = 90.*cm;
+            //33 bins
+            for(int i=0; i<6; i++)   _zbins.push_back(-450.0*mm+10.0*mm*i);        //  -450 ...  -400
+            for(int i=6; i<16; i++)  _zbins.push_back(-400.0*mm+25.0*mm*(i-5));    //  -375 ...  -150
+            for(int i=16; i<18; i++) _zbins.push_back(-150.0*mm+100.0*mm*(i-15));  //   -50 ...    50
+            for(int i=18; i<28; i++) _zbins.push_back(125.0*mm+25.0*mm*(i-17));    //   150 ...   375
+            for(int i=28; i<34; i++) _zbins.push_back(390.0*mm+10.0*mm*(i-27));    //   400 ...   450
+            break;
   }
-  for(int i=6; i<12; i++)   // -3225 ... -3100
-  {
-    _zbins.push_back(-3250.0*mm+25.0*mm*(i-5));
-  }
-  for(int i=12; i<73; i++)   // -3000 ... 3000
-  {
-    _zbins.push_back(-3100.0*mm+100.0*mm*(i-11));
-  }
-  for(int i=73; i<79; i++)   // 3100 ... 3225
-  {
-    _zbins.push_back(3075.0*mm+25.0*mm*(i-72));
-  }
-  for(int i=79; i<85; i++)   // 3250 ... 3300
-  {
-    _zbins.push_back(3240.0*mm+10.0*mm*(i-78));
-  }
-
-#else
-#pragma message("Uses the test beam geometry setup.")
-
-  _barLength        = 80.*cm;
-  _barWidth         = 4.*cm;
-  _barThickness     = 2.*cm;
-  _fiberSeparation  = 2.6*cm;
-  _holeRadius       = 1.30*mm;
-  _coatingThickness = 0.25*mm;
-  _fiberRadius      = 0.50*mm - 0.015*mm - 0.015*mm;
-  _clad1Radius      = 0.50*mm - 0.015*mm;
-  _clad2Radius      = 0.50*mm;
-  _sipmLength       = 1.*mm;
-  _sipmRadius       = 0.5*mm;
-
-
-  double xbinsTmp[17] = {-10.0, -7.5, -5.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 5.0, 7.5, 10.0};
-  double ybinsTmp[36] = {-20.0, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -9.0, -7.0, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 7.0, 9.0, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.0};
-
-  for(int i=0; i<17; i++) _xbins.push_back(xbinsTmp[i]*mm); //16 bins
-  for(int i=0; i<36; i++) _ybins.push_back(ybinsTmp[i]*mm); //35 bins
-  for(int i=0; i<61; i++) _zbins.push_back(-400.0*mm+i*800.0*mm/60.0); //60 bins
-
-#endif
 
   for(int i=0; i<5; i++)  _betabins.push_back(0.62+0.38*i/4.0); //4 bins
 
-  _thetabins.push_back(0);
-  for(int i=0; i<10; i++) _thetabins.push_back(CLHEP::pi/20.0+CLHEP::pi*i/10.0); //11 bins total
-  _thetabins.push_back(CLHEP::pi);
+  _thetabins.push_back(0);                                                        //0
+  for(int i=0; i<10; i++) _thetabins.push_back(CLHEP::pi/20.0+CLHEP::pi*i/10.0);  //1/20*pi ... 19/20*pi
+  _thetabins.push_back(CLHEP::pi);                                                //pi    --> 11 bins
 
   for(int i=0; i<7; i++)  _phibins.push_back(-CLHEP::pi+i*CLHEP::pi/3.0); //6 bins
   for(int i=0; i<5; i++)  _rbins.push_back(_fiberRadius*i/4.0); //4 bins
@@ -165,7 +150,8 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                        new G4Box("World", _worldSizeX, _worldSizeY, _worldSizeZ);
 
   logicWorld = new G4LogicalVolume(solidWorld,
-                                   FindMaterial("G4_AIR"),
+//                                   FindMaterial("G4_AIR"),
+                                   FindMaterial("G4_POLYVINYL_CHLORIDE"),   //so that all photons at the front/back sides get absorbed
                                    "World");
 
   physiWorld = new G4PVPlacement(0,

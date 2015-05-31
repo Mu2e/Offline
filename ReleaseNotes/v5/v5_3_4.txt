@@ -2,6 +2,13 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_3_4
 
+10) May 30, 2015 - ehrlich
+    Updated CRVResponse code
+    -bug fixes
+    -Parameter settings are now in CRVResponse/test/prolog.fcl
+    -PE yield was adjusted to agree with the TDR requirement
+    -SiPM response parameters adjusted to SiPM specs
+
 9) May 29, 2015 - kutschke
    Update to item 8.
    Took BtrkHelper out of the build by renaming BtrkHelper/src/SConscript to

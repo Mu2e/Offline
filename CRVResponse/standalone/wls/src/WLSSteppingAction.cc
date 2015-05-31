@@ -176,7 +176,7 @@ void WLSSteppingAction::Reset()
 
 void WLSSteppingAction::Test(const G4Step *theStep, int PDGcode)
 {
-  std::cout<<"Visible Energy Deposition (G4): "<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDeposition(theStep)<<"   PDGcode: "<<PDGcode<<std::endl;
+  std::cout<<"Original/Visible Energy Deposition (G4): "<<theStep->GetTotalEnergyDeposit()<<"/"<<G4LossTableManager::Instance()->EmSaturation()->VisibleEnergyDeposition(theStep)<<"   PDGcode: "<<PDGcode<<std::endl;
 
   G4Material* Polystyrene = G4Material::GetMaterial("Polystyrene",true);
   double BirksConstant = Polystyrene->GetIonisation()->GetBirksConstant();

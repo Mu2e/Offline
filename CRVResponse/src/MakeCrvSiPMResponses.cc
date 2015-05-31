@@ -137,7 +137,7 @@ void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
   double timeWindow = _timeEnd - _timeStart;
   for(int cellid=0; cellid<_numberPixels; cellid++)
   {
-    int numberThermalCharges = _randPoissonQ.fire(_probabilities._constThermalProb * _timeEnd);
+    int numberThermalCharges = _randPoissonQ.fire(_probabilities._constThermalProb * timeWindow);
     for(int i=0; i<numberThermalCharges; i++)
     {
       double time = _timeStart + timeWindow * _randFlat.fire();
@@ -201,7 +201,7 @@ int main()
   probabilities._constTrapType1Prob = 0.06;   //trap_prob*trap_type1_pron=0.2*0.3
   probabilities._constTrapType0Lifetime = 5;
   probabilities._constTrapType1Lifetime = 50;
-  probabilities._constThermalProb = 6.25e-7; //1MHz at SiPM --> 1e-3/(#pixel*t[ns])  //exp(-E_th/T)=1.6e-6
+  probabilities._constThermalProb = 6.25e-7; //ns^1     1MHz at SiPM --> 1MHz/#pixel=625Hz at Pixel --> 625s^-1 = 6.25-7ns^-1   //exp(-E_th/T)=1.6e-6
   probabilities._constPhotonProduction = 0.1; //0.4;
   MakeCrvSiPMResponses sim;
   sim.SetSiPMConstants(1600, 2.5, 1695, 0.08, probabilities);

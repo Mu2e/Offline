@@ -12,6 +12,8 @@ class TFile;
 
 class WLSEventAction : public G4UserEventAction
 {
+    WLSEventAction();
+
   public:
 
     WLSEventAction(int mode, int numberOfPhotons=-1, int simType=-1, int minBin=-1, bool verbose=false);  //numberOfPhotons, simType, minBin, verbose is only needed for mode -1
@@ -31,6 +33,7 @@ class WLSEventAction : public G4UserEventAction
     static WLSEventAction*  _fgInstance;  
     TH1D*                   _histP[2][4];
     TH1D*                   _histT[2][4];
+    TH1D*                   _histPE[4];
     TH3D*                   _histSurvivalProb[4][4];
     TH3D*                   _histTimeDifference[4][4];
     TH3D*                   _histFiberEmissions[4][4];

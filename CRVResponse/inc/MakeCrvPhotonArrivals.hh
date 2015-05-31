@@ -110,7 +110,7 @@ struct LookupBinDefinitions
     notFound=true;
     return(-1);
   }
-  unsigned int findScintillatorBin(double x, double y, double z)
+  int findScintillatorBin(double x, double y, double z)
   {
     bool notFound=false;
     unsigned int xBin=findBin(xBins,x,notFound);
@@ -122,7 +122,7 @@ struct LookupBinDefinitions
     unsigned int nZBins = zBins.size()-1;
     return(zBin + yBin*nZBins + xBin*nYBins*nZBins);
   }
-  unsigned int findFiberBin(double beta, double theta, double phi, double r, double z)
+  int findFiberBin(double beta, double theta, double phi, double r, double z)
   {
     bool notFound=false;
     unsigned int betaBin=findBin(betaBins,beta,notFound);
@@ -140,49 +140,28 @@ struct LookupBinDefinitions
   }
 };
 
-/*
-struct LookupBin
-{
-  static const int nTimeDelays=150;
-  static const int nFiberEmissions=10;
-
-  float arrivalProbability[4];
-  float timeDelays[4][nFiberEmissions][nTimeDelays];
-  void Write(const std::string &filename)
-  {
-    std::ofstream lookupfile(filename,std::ios::binary|std::ios::app);
-    lookupfile.write(reinterpret_cast<char*>(arrivalProbability),sizeof(float)*4);
-    lookupfile.write(reinterpret_cast<char*>(timeDelays),sizeof(float)*4*nFiberEmissions*nTimeDelays);
-    lookupfile.close();
-  }
-  void Read(std::ifstream &lookupfile)
-  {
-    lookupfile.read(reinterpret_cast<char*>(arrivalProbability),sizeof(float)*4);
-    lookupfile.read(reinterpret_cast<char*>(timeDelays),sizeof(float)*4*nFiberEmissions*nTimeDelays);
-  }
-};
-*/
 struct LookupBin
 {
   static const int nTimeDelays=150;
   static const int nFiberEmissions=15;
+  static const unsigned short probabilityScale=10000;  //still within unsigned short (2 bytes)
 
   float arrivalProbability[4];
-  float timeDelays[4][nTimeDelays];
-  float fiberEmissions[4][nFiberEmissions];
+  unsigned short timeDelays[4][nTimeDelays];
+  unsigned short fiberEmissions[4][nFiberEmissions];
   void Write(const std::string &filename)
   {
     std::ofstream lookupfile(filename,std::ios::binary|std::ios::app);
     lookupfile.write(reinterpret_cast<char*>(arrivalProbability),sizeof(float)*4);
-    lookupfile.write(reinterpret_cast<char*>(timeDelays),sizeof(float)*4*nTimeDelays);
-    lookupfile.write(reinterpret_cast<char*>(fiberEmissions),sizeof(float)*4*nFiberEmissions);
+    lookupfile.write(reinterpret_cast<char*>(timeDelays),sizeof(unsigned short)*4*nTimeDelays);
+    lookupfile.write(reinterpret_cast<char*>(fiberEmissions),sizeof(unsigned short)*4*nFiberEmissions);
     lookupfile.close();
   }
   void Read(std::ifstream &lookupfile)
   {
     lookupfile.read(reinterpret_cast<char*>(arrivalProbability),sizeof(float)*4);
-    lookupfile.read(reinterpret_cast<char*>(timeDelays),sizeof(float)*4*nTimeDelays);
-    lookupfile.read(reinterpret_cast<char*>(fiberEmissions),sizeof(float)*4*nFiberEmissions);
+    lookupfile.read(reinterpret_cast<char*>(timeDelays),sizeof(unsigned short)*4*nTimeDelays);
+    lookupfile.read(reinterpret_cast<char*>(fiberEmissions),sizeof(unsigned short)*4*nFiberEmissions);
   }
 };
 
@@ -232,10 +211,13 @@ class MakeCrvPhotonArrivals
     double GetRandomTime(const LookupBin &theBin, int SiPM);
     int    GetRandomFiberEmissions(const LookupBin &theBin, int SiPM);
     double GetAverageNumberOfCerenkovPhotons(double beta, double charge, double rindex, double cerenkovEnergyInterval);
-    void   AdjustPosition(CLHEP::Hep3Vector &p);
+    void   AdjustPosition(CLHEP::Hep3Vector &p, int SiPM);
     double VisibleEnergyDeposition(int PDGcode, double stepLength,
                                    double energyDepositedTotal,
                                    double energyDepositedNonIonizing);
+
+    public:
+    void   DrawHistograms();
 };
 
 #endif

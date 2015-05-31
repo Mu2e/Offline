@@ -8,9 +8,6 @@
 #include "G4VProcess.hh"
 
 
-//This class is only used for testing purpose.
-//Don't use for productioon!!!
-//It can be used to disable/enable one or more of the produced "photon types".
 
 class WLSStackingAction : public G4UserStackingAction
 {
@@ -18,7 +15,10 @@ class WLSStackingAction : public G4UserStackingAction
 
   virtual G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* track)
   {
-    if(track->GetCreatorProcess()!=NULL)
+//These sections are used for testing purposes to remove certain types of photons.
+//Don't use for production!
+/*
+    if(track->GetCreatorProcess()!=NULL && track->GetOriginTouchable()!=NULL)
     {
       if(track->GetCreatorProcess()->GetProcessName()=="Scintillation")
       {
@@ -33,6 +33,16 @@ class WLSStackingAction : public G4UserStackingAction
         return(G4ClassificationOfNewTrack::fKill);
       }
     }
+*/
+
+    if(track->GetOriginTouchable()!=NULL)
+    {
+      if(track->GetOriginTouchable()->GetVolume()->GetName()=="World")
+      {
+        return(G4ClassificationOfNewTrack::fKill);
+      }
+    }
+
     return(G4UserStackingAction::ClassifyNewTrack(track));
   }
 };

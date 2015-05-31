@@ -8,6 +8,7 @@
 void MakeCrvPhotonArrivals::LoadLookupTable(const std::string &filename)
 {
   std::ifstream lookupfile(filename,std::ios::binary);
+  if(!lookupfile.good()) throw std::logic_error("Could not open lookup table file."+filename);
 
   _LC.Read(lookupfile);
   _LBD.Read(lookupfile);
@@ -21,7 +22,7 @@ void MakeCrvPhotonArrivals::LoadLookupTable(const std::string &filename)
   _bins[2].resize(nFiberBins);
   _bins[3].resize(nFiberBins);
 
-  std::cout<<"Reading CRV lookup tables ... ";
+  std::cout<<"Reading CRV lookup tables "<<filename<<" ... "<<std::flush;
   for(unsigned int i=0; i<nScintillatorBins; i++) _bins[0][i].Read(lookupfile);
   for(unsigned int i=0; i<nScintillatorBins; i++) _bins[1][i].Read(lookupfile);
   for(unsigned int i=0; i<nFiberBins; i++) _bins[2][i].Read(lookupfile);
@@ -53,7 +54,8 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
   double energy = VisibleEnergyDeposition(PDGcode, stepLength, energyDepositedTotal, energyDepositedNonIonizing);
 
   double precision=0.1; //mm
-  double energyPortion=energy*precision/stepLength;
+  int    steps=static_cast<int>(stepLength/precision);
+  double energyPortion=energy/steps;
   for(double distance=precision/2.0; distance<stepLength; distance+=precision)
   {
     CLHEP::Hep3Vector p = stepStart + distanceVector*distance/stepLength;  //start position of photons
@@ -61,44 +63,42 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
 
     bool isInScintillator = IsInsideScintillator(p);
     int fiber = IsInsideFiber(p,r);
-    double nPhotonsScintillation=0;
-    double nPhotonsCerenkov=0;
+    int binNumber;
+    if(fiber==-1) binNumber=_LBD.findScintillatorBin(p.x(),p.y(),p.z());
+    else binNumber=_LBD.findFiberBin(beta,theta,phi,r,p.z());
+    if(binNumber==-1) break;  //if the particular bin wasn't found
 
+    int nPhotonsScintillation=0;
+    int nPhotonsCerenkov=0;
     if(isInScintillator)
     {
-      nPhotonsScintillation = _scintillationYield*energyPortion;
-      nPhotonsCerenkov = GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexScintillator, _LC.cerenkovEnergyIntervalScintillator)*precision;
+      nPhotonsScintillation = static_cast<int>(_scintillationYield*energyPortion+0.5);
+      nPhotonsCerenkov = static_cast<int>(GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexScintillator, _LC.cerenkovEnergyIntervalScintillator)*precision+0.5);
     } 
     if(fiber>0) //this implies not in scintillator
     {
-      nPhotonsCerenkov = GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexFiber, _LC.cerenkovEnergyIntervalFiber)*precision;
+      nPhotonsCerenkov = static_cast<int>(GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexFiber, _LC.cerenkovEnergyIntervalFiber)*precision+0.5);
     } 
-    double nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
+    int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
 
-    for(int SiPM=0; SiPM<4; SiPM++)
+    //loop over all photons created at this point
+    for(int i=0; i<nPhotons; i++)
     {
-      if(SiPM%2==1) AdjustPosition(p); //side 1
-
-      //find bin of the appropriate table
-      int binNumber;
-      if(fiber==-1) binNumber=_LBD.findScintillatorBin(p.x(),p.y(),p.z());
-      else binNumber=_LBD.findFiberBin(beta,theta,phi,r,p.z());
-      if(binNumber==-1) break;  //if the particular bin wasn't found
-
-      //loop over all photons created at this point
-      for(double i=0; i<nPhotons; i++)
+      int table = -1;
+      if(isInScintillator)
       {
-        int table = -1;
-        if(isInScintillator)
-        {
-          if(i<=nPhotonsScintillation) table=0;  //scintillation in scintillator
-          else table=1;                          //cerenkov in scintillator
-        }
-        if(fiber!=-1) table = fiber+2;  //cerenkov in fiber
-        if(table==-1) break;  //this can't actually happen
+        if(i<nPhotonsScintillation) table=0;  //scintillation in scintillator
+        else table=1;                         //cerenkov in scintillator
+      }
+      if(fiber!=-1) table = fiber+2;  //cerenkov in fiber
+      if(table==-1) break;  //this can't actually happen
 
-        const LookupBin &theBin = _bins[table][binNumber];
+      //get the right bin
+      const LookupBin &theBin = _bins[table][binNumber]; //TODO: can be optimized that one doesn't have to access the array for every photon
 
+      //loop over all SiPMs
+      for(int SiPM=0; SiPM<4; SiPM++)
+      {
         //photon arrival probability at SiPM
         double probability = theBin.arrivalProbability[SiPM];
         if(_randFlat.fire()<=probability)  //a photon arrives at the SiPM --> calculate arrival time
@@ -108,7 +108,7 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
 
           //add straigt line travel time
           double zSiPM=(SiPM%2==0?-_LC.halfLength:_LC.halfLength);
-          double straightLineTravelTime=abs(p.z()-zSiPM)/_LC.speedOfLightFiber;
+          double straightLineTravelTime=fabs(p.z()-zSiPM)/_LC.speedOfLightFiber;
           arrivalTime+=straightLineTravelTime;
 
           //add fiber decay times depending on the number of emissions
@@ -130,18 +130,18 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
           _arrivalTimes[SiPM].push_back(arrivalTime);
 
         }// if a photon was created
-      }//loop over all photons at this point
-    }//loop over all SiPMs
+      }//loop over all SiPMs
+    }//loop over all photons at this point
   }//loop over all points along the track
 }
 
 bool MakeCrvPhotonArrivals::IsInsideScintillator(const CLHEP::Hep3Vector &p)
 {
-  if(abs(p.x())>=_LC.halfThickness) return false;
-  if(abs(p.y())>=_LC.halfWidth) return false;
-  if(abs(p.z())>=_LC.halfLength) return false;
+  if(fabs(p.x())>=_LC.halfThickness) return false;
+  if(fabs(p.y())>=_LC.halfWidth) return false;
+  if(fabs(p.z())>=_LC.halfLength) return false;
 
-  CLHEP::Hep2Vector p2D(abs(p.x()), abs(p.y()));
+  CLHEP::Hep2Vector p2D(fabs(p.x()), fabs(p.y()));
   CLHEP::Hep2Vector fiberHole2D(0.0, _LC.fiberSeparation/2.0);
   double distance=(p2D-fiberHole2D).mag();
   if(distance<_LC.holeRadius) return false;
@@ -163,7 +163,7 @@ int MakeCrvPhotonArrivals::IsInsideFiber(const CLHEP::Hep3Vector &p, double &r)
 
 double MakeCrvPhotonArrivals::GetRandomTime(const LookupBin &theBin, int SiPM)
 {
-  double rand=_randFlat.fire();
+  double rand=_randFlat.fire()*LookupBin::probabilityScale;
   double sumProb=0;
   int timeDelay=0;
   for(; timeDelay<LookupBin::nTimeDelays; timeDelay++)
@@ -177,7 +177,7 @@ double MakeCrvPhotonArrivals::GetRandomTime(const LookupBin &theBin, int SiPM)
 
 int MakeCrvPhotonArrivals::GetRandomFiberEmissions(const LookupBin &theBin, int SiPM)
 {
-  double rand=_randFlat.fire();
+  double rand=_randFlat.fire()*LookupBin::probabilityScale;
   double sumProb=0;
   int emissions=0;
   for(; emissions<LookupBin::nFiberEmissions; emissions++)
@@ -192,14 +192,16 @@ int MakeCrvPhotonArrivals::GetRandomFiberEmissions(const LookupBin &theBin, int 
 //we have several CRV bars with different lengths
 //in order to avoid different lookup tables, an adjusted position for side 1 is used for shorter CRV bars
 //(moving it closer to the SiPM for side 1) 
-void MakeCrvPhotonArrivals::AdjustPosition(CLHEP::Hep3Vector &p) 
+//NOT USED ANYMORE. WE USE DIFFERENT LOOKUP TABLES FOR DIFFERENT LENGTHS
+void MakeCrvPhotonArrivals::AdjustPosition(CLHEP::Hep3Vector &p, int SiPM) 
 {
   if(isnan(_actualHalfLength)) return; //no adjustment
   if(_actualHalfLength>_LC.halfLength) 
     throw std::logic_error("Actual bar half length is larger than the half length of the lookup table.");
 
   double difference = _LC.halfLength - _actualHalfLength;
-  p.setZ(p.z()+difference);
+  if(SiPM%2==0) p.setZ(p.z()-difference);
+  else p.setZ(p.z()+difference);
 }
 
 int MakeCrvPhotonArrivals::GetNumberOfPhotons(int SiPM)
@@ -264,7 +266,7 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
     evis = eloss + nloss;
   }
 
-//  std::cout<<"Visible Energy Deposition (manual): "<<evis<<"   PDGcode: "<<PDGcode<<std::endl;
+//  std::cout<<"Original/Visible Energy Deposition (manual): "<<energyDepositedTotal<<"/"<<evis<<"   PDGcode: "<<PDGcode<<std::endl;
   return evis;
 }
 

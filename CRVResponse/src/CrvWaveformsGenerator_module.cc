@@ -59,11 +59,11 @@ namespace mu2e
   CrvWaveformsGenerator::CrvWaveformsGenerator(fhicl::ParameterSet const& pset) :
     _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
-    _binWidth(pset.get<double>("binWidth",12.5)),                   //12.5 ns (digitizer sampling rate)
+    _binWidth(pset.get<double>("binWidth")),                   //12.5 ns (digitizer sampling rate)
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
   {
-    double singlePEWaveformBinWidth(pset.get<double>("singlePEWaveformBinWidth",1.0));    //1.0 ns
-    int nBins(pset.get<int>("singlePEWaveformBins",200));          //200
+    double singlePEWaveformBinWidth(pset.get<double>("singlePEWaveformBinWidth"));    //1.0 ns
+    int nBins(pset.get<int>("singlePEWaveformBins"));          //200
     ConfigFileLookupPolicy configFile;
     _singlePEWaveformFileName = configFile(_singlePEWaveformFileName);
     _makeCrvWaveforms = boost::shared_ptr<MakeCrvWaveforms>(new MakeCrvWaveforms());

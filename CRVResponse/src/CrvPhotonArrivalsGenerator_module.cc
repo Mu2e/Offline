@@ -53,9 +53,10 @@ namespace mu2e
     private:
     std::vector<std::string> _g4ModuleLabels;
     std::vector<std::string> _processNames;
-    std::string              _lookupTableFileName;
 
-    boost::shared_ptr<MakeCrvPhotonArrivals> _makeCrvPhotonArrivals;
+    std::vector<std::string>                                    _lookupTableFileNames;
+    std::vector<double>                                         _lookupTableCounterLengths;
+    std::map<double, boost::shared_ptr<MakeCrvPhotonArrivals> > _makeCrvPhotonArrivals;
 
     double      _scintillationYield;
     double      _scintillatorDecayTimeFast;
@@ -75,25 +76,30 @@ namespace mu2e
   CrvPhotonArrivalsGenerator::CrvPhotonArrivalsGenerator(fhicl::ParameterSet const& pset) :
     _g4ModuleLabels(pset.get<std::vector<std::string> >("g4ModuleLabels")),
     _processNames(pset.get<std::vector<std::string> >("processNames")),
-    _lookupTableFileName(pset.get<std::string>("lookupTableFileName")),
-    _scintillationYield(pset.get<double>("scintillationYield",850.0)),    //850.0 photons per MeV
-    _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast",3.0)),  //3.0 ns
-    _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow",10.0)), //10.0 ns
-    _fiberDecayTime(pset.get<double>("fiberDecayTime",7.4)),     //7.4 ns
-    _startTime(pset.get<double>("startTime",0)),                 //0.0 ns
+    _lookupTableFileNames(pset.get<std::vector<std::string> >("lookupTableFileNames")),
+    _lookupTableCounterLengths(pset.get<std::vector<double> >("lookupTableCounterLengths")),
+    _scintillationYield(pset.get<double>("scintillationYield")),    //850.0 photons per MeV
+    _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast")), //3.0 ns
+    _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow")), //10.0 ns
+    _fiberDecayTime(pset.get<double>("fiberDecayTime")),     //7.4 ns
+    _startTime(pset.get<double>("startTime")),               //0.0 ns
     _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet())),
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
   {
-    if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("mismatch between specified selectors (g4ModuleLabels/processNames");
+    if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
 
-//    ConfigFileLookupPolicy configFile;
-//    _lookupTableFileName = configFile(_lookupTableFileName);
-    _makeCrvPhotonArrivals = boost::shared_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals(_randFlat));
-    _makeCrvPhotonArrivals->LoadLookupTable(_lookupTableFileName.c_str());
-    _makeCrvPhotonArrivals->SetScintillationYield(_scintillationYield);
-    _makeCrvPhotonArrivals->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
-    _makeCrvPhotonArrivals->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
-    _makeCrvPhotonArrivals->SetFiberDecayTime(_fiberDecayTime);
+    if(_lookupTableFileNames.size()!=_lookupTableCounterLengths.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (lookupTableFileNames/lookupTableCounterLengths)");
+    for(unsigned int i=0; i<_lookupTableFileNames.size(); i++)
+    {
+      double counterLength = _lookupTableCounterLengths[i];
+      _makeCrvPhotonArrivals.emplace(counterLength, boost::shared_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals(_randFlat)));
+      std::map<double, boost::shared_ptr<MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
+      iterCPA->second->LoadLookupTable(_lookupTableFileNames[i].c_str());
+      iterCPA->second->SetScintillationYield(_scintillationYield);
+      iterCPA->second->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
+      iterCPA->second->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
+      iterCPA->second->SetFiberDecayTime(_fiberDecayTime);
+    }
     produces<CrvPhotonArrivalsCollection>();
   }
 
@@ -201,18 +207,23 @@ namespace mu2e
           const CLHEP::Hep3Vector &p1Local = CRSbar.toLocal(p1);
           const CLHEP::Hep3Vector &p2Local = CRSbar.toLocal(p2);
 
-          _makeCrvPhotonArrivals->SetActualHalfLength(CRSbar.getHalfLength());
-          _makeCrvPhotonArrivals->MakePhotons(p1Local, p2Local, t1, t2,  
-                                  PDGcode, beta, charge,
-                                  energyDepositedTotal,
-                                  energyDepositedNonIonizing);
-
-          CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
-          for(int SiPM=0; SiPM<4; SiPM++)
+          double counterLength = CRSbar.getHalfLength()*2.0;
+          std::map<double, boost::shared_ptr<MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
+          if(iterCPA!=_makeCrvPhotonArrivals.end())
           {
-            const std::vector<double> &times=_makeCrvPhotonArrivals->GetArrivalTimes(SiPM);
-            crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
+            iterCPA->second->MakePhotons(p1Local, p2Local, t1, t2,  
+                                        PDGcode, beta, charge,
+                                        energyDepositedTotal,
+                                        energyDepositedNonIonizing);
+
+            CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
+            for(int SiPM=0; SiPM<4; SiPM++)
+            {
+              const std::vector<double> &times=iterCPA->second->GetArrivalTimes(SiPM);
+              crvPhotons.GetPhotonArrivalTimes(SiPM).insert(crvPhotons.GetPhotonArrivalTimes(SiPM).end(),times.begin(),times.end());
+            }
           }
+          else std::cout<<"ERROR: Did not find the matching lookuptable file for the CRV counter with the length "<<counterLength<<"."<<std::endl;
 
         } //loop over StepPointMCs in the StepPointMC collection
       } //loop over all StepPointMC collections

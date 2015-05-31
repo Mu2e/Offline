@@ -1,5 +1,6 @@
 #include "minimalMessageService.fcl"
 #include "standardServices.fcl"
+#include "CRVResponse/test/prolog.fcl"
 
 process_name : CRVResponse
 
@@ -27,66 +28,11 @@ physics :
     protonTimeMap: { module_type : GenerateProtonTimes }
     muonTimeMap: { module_type : GenerateMuonLife }
 
-    CrvPhotonArrivals:
-    {
-      module_type               : CrvPhotonArrivalsGenerator
-      g4ModuleLabels            : ["g4filter"]
-      processNames              : ["cosmics2"]
-      lookupTableFileName       : "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable"
-      scintillationYield        : 850.0    //850.0 photons per MeV
-      scintillatorDecayTimeFast : 3.0      //3.0 ns
-      scintillatorDecayTimeSlow : 10.0     //10.0 ns
-      fiberDecayTime            : 7.4      //7.4 ns
-      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-      startTime                 : 400.0    //0.0 ns
-    }
-    CrvSiPMResponses:
-    {
-      module_type                  : CrvSiPMResponsesGenerator
-      crvPhotonArrivalsModuleLabel : "CrvPhotonArrivals"
-      numberPixels                 : 1600
-      bias                         : 2.5        //V
-      scaleFactor                  : 0.08
-      minCharge                    : 3.0        //PEs
-      blindTime                    : 500.0      //ns
-      GeigerProbCoef               : 2.0
-      GeigerProbVoltScale          : 3.0
-      TrapType0Prob                : 0.14       //trap_prob*trap_type0_prob=0.2*0.7
-      TrapType1Prob                : 0.06       //trap_prob*trap_type1_prob=0.2*0.3
-      TrapType0Lifetime            : 5.0        //ns
-      TrapType1Lifetime            : 50.0       //ns
-      ThermalProb                  : 6.25e-7    //1MHz at SiPM --> 1e-3/(#pixel*t[ns]  //exp(-E_th/T)=1.6e-6
-      PhotonProduction             : 0.1        //0.4
-    }
-    CrvWaveforms:
-    {
-      module_type                  : CrvWaveformsGenerator
-      crvSiPMResponsesModuleLabel  : "CrvSiPMResponses"
-      singlePEWaveformFileName     : "CRVResponse/test/singlePEWaveform.txt"
-      singlePEWaveformBinWidth     : 1.0    //1.0 ns
-      singlePEWaveformBins         : 200
-      binWidth                     : 12.5   //12.5 ns (digitizer sampling rate)
-    }
-    CrvRecoPulses:
-    {
-      module_type               : CrvRecoPulsesFinder
-      crvWaveformsModuleLabel   : "CrvWaveforms"
-      param0                    : 3.2      //3.2
-      param1                    : 33.6     //33.6
-      pulseThreshold            : 0.015    //15mV
-      leadingEdgeThreshold      : 0.2      //20% of the maximum bin
-    }
-    CrvCoincidence:
-    {
-      module_type               : SimpleCrvCoincidenceCheck
-      storeCoincidenceCombinations : true
-      crvRecoPulsesModuleLabel  : "CrvRecoPulses"
-      PEthreshold               : 14
-      maxDistance               : 200      //mm
-      maxTimeDifference         : 5        //ns
-      timeWindowStart           : 550      //ns
-      timeWindowEnd             : 1695     //ns
-    }
+    CrvPhotonArrivals: @local::CrvPhotonArrivals
+    CrvSiPMResponses : @local::CrvSiPMResponses
+    CrvWaveforms     : @local::CrvWaveforms
+    CrvRecoPulses    : @local::CrvRecoPulses
+    CrvCoincidence   : @local::CrvCoincidence
   }
 
 #  an : [protonTimeMap, muonTimeMap, CrvPhotonArrivals]        //1 event (1 cosmic ray muon) takes about 20ms.

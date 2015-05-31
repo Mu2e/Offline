@@ -55,10 +55,10 @@ namespace mu2e
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
-    _param0(pset.get<double>("param0",3.2)),
-    _param1(pset.get<double>("param1",33.6)),
-    _pulseThreshold(pset.get<double>("pulseThreshold",0.015)),
-    _leadingEdgeThreshold(pset.get<double>("leadingEdgeThreshold",0.2))
+    _param0(pset.get<double>("param0")),   //3.2  should be 0?
+    _param1(pset.get<double>("param1")),   //33.6
+    _pulseThreshold(pset.get<double>("pulseThreshold")),  //0.015
+    _leadingEdgeThreshold(pset.get<double>("leadingEdgeThreshold"))   //0.2
   {
     produces<CrvRecoPulsesCollection>();
     _makeCrvRecoPulses = boost::shared_ptr<MakeCrvRecoPulses>(new MakeCrvRecoPulses(_pulseThreshold, _leadingEdgeThreshold, _param0, _param1));

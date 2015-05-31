@@ -18,9 +18,11 @@ class G4Material;
 
 class WLSDetectorConstruction : public G4VUserDetectorConstruction
 {
+    WLSDetectorConstruction();
+
   public:
 
-    WLSDetectorConstruction();
+    WLSDetectorConstruction(int lengthOption);
     ~WLSDetectorConstruction();
 
     G4VPhysicalVolume* Construct();

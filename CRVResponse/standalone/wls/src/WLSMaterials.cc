@@ -68,6 +68,12 @@ void WLSMaterials::CreateMaterials()
   Air = nistMan->FindOrBuildMaterial("G4_AIR");
 
   //--------------------------------------------------
+  // PVC
+  //--------------------------------------------------
+
+  PVC = nistMan->FindOrBuildMaterial("G4_POLYVINYL_CHLORIDE");
+
+  //--------------------------------------------------
   // WLSfiber PMMA
   //--------------------------------------------------
 
@@ -209,6 +215,22 @@ void WLSMaterials::CreateMaterials()
   MPT->AddProperty("RINDEX", PhotonEnergy, RefractiveIndex, nEntries);
 
   Air->SetMaterialPropertiesTable(MPT);
+
+  //--------------------------------------------------
+  // PVC
+  //--------------------------------------------------
+
+  G4double RefractiveIndexPVC[nEntries] =
+  { 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60,   //This value is used to prevent any internal reflection inside of the scintillator.
+    1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60,   //The actual value for PVC is 1.53, but the cover material is not mode of PVC, but some unknown material.
+    1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60,
+    1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60,
+    1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60};
+
+  G4MaterialPropertiesTable* MPTPVC = new G4MaterialPropertiesTable();
+  MPTPVC->AddProperty("RINDEX", PhotonEnergy, RefractiveIndexPVC, nEntries);
+
+  PVC->SetMaterialPropertiesTable(MPTPVC);
 
   //--------------------------------------------------
   //  PMMA for WLSfibers
@@ -358,7 +380,7 @@ for(int i=0; i<nEntries; i++) AbsPS[i]*=5.0;
   MPTPolystyrene->AddProperty("ABSLENGTH",PhotonEnergy,AbsPS,nEntries);
   MPTPolystyrene->AddProperty("FASTCOMPONENT",PhotonEnergy, ScintilFast,nEntries);
   MPTPolystyrene->AddProperty("SLOWCOMPONENT",PhotonEnergy, ScintilSlow,nEntries);
-  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",850./MeV);
+  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",1600./MeV);
   MPTPolystyrene->AddConstProperty("RESOLUTIONSCALE",1.0);
   MPTPolystyrene->AddConstProperty("FASTTIMECONSTANT", 3.*ns);
   MPTPolystyrene->AddConstProperty("SLOWTIMECONSTANT", 10.*ns);

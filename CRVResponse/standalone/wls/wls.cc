@@ -14,10 +14,13 @@
 #include "WLSRunAction.hh"
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
-//#include "WLSStackingAction.hh"
+#include "WLSStackingAction.hh"
 
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
+
+#include "CLHEP/Random/Randomize.h"
+#include "MakeCrvPhotonArrivals.hh"
 
 #include <fstream>
 #include <iostream>
@@ -74,6 +77,16 @@ bool findArgs(int argc, char** argv, const char* c, int &value)
   return false; 
 }
 
+void DrawHistograms(const std::string &lookupFilename)
+{
+  std::unique_ptr<MakeCrvPhotonArrivals> crvPhotonArrivals;
+  CLHEP::HepJamesRandom  engine(0);
+  CLHEP::RandFlat randFlat(engine);
+  crvPhotonArrivals = std::unique_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals(randFlat));
+  crvPhotonArrivals->LoadLookupTable(lookupFilename);
+  crvPhotonArrivals->DrawHistograms();
+}
+
 int main(int argc, char** argv) 
 {
   int mode=-2;
@@ -81,6 +94,7 @@ int main(int argc, char** argv)
   int minBin=0;
   int maxBin=-1;
   int n=1000;
+  int lengthOption=-1;
   std::string lookupFilename="";
 
   bool verbose = findArgs(argc, argv, "-v");
@@ -94,22 +108,52 @@ int main(int argc, char** argv)
     std::cout<<"-h           Help"<<std::endl;
     std::cout<<"-c           Create lookup table"<<std::endl;
     std::cout<<"-s           Run a simulation"<<std::endl;
+    std::cout<<"-d           Draw histograms of lookup table"<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for creating the lookup table:"<<std::endl;
-    std::cout<<"-t simtype   Simulation type:"<<std::endl;
-    std::cout<<"             0  scintillation in scintillator"<<std::endl;
-    std::cout<<"             1  cerenkov in scintillator"<<std::endl;
-    std::cout<<"             2  cerenkov in fiber 0"<<std::endl;
-    std::cout<<"             3  cerenkov in fiber 1"<<std::endl;
-    std::cout<<"-m minbin    Minimum bin in lookup table (default is 0)."<<std::endl;
-    std::cout<<"-M maxbin    Maximum bin in lookup table (default is"<<std::endl;
-    std::cout<<"             the maximum number of bins for this simulation type)."<<std::endl;
-    std::cout<<"-n photons   Number of photons to simulate for each bin (default 1000)."<<std::endl;
+    std::cout<<"-t simtype        Simulation type:"<<std::endl;
+    std::cout<<"                  0  scintillation in scintillator"<<std::endl;
+    std::cout<<"                  1  cerenkov in scintillator"<<std::endl;
+    std::cout<<"                  2  cerenkov in fiber 0"<<std::endl;
+    std::cout<<"                  3  cerenkov in fiber 1"<<std::endl;
+    std::cout<<"-l length option  Length of the scintillator counter:"<<std::endl;
+    std::cout<<"                  0  6600 mm"<<std::endl;
+    std::cout<<"                  1  5600 mm"<<std::endl;
+    std::cout<<"                  2  4500 mm"<<std::endl;
+    std::cout<<"                  3  3000 mm"<<std::endl;
+    std::cout<<"                  4  2300 mm"<<std::endl;
+    std::cout<<"                  5   900 mm"<<std::endl;
+    std::cout<<"-m minbin         Minimum bin in lookup table (default is 0)."<<std::endl;
+    std::cout<<"-M maxbin         Maximum bin in lookup table (default is"<<std::endl;
+    std::cout<<"                  the maximum number of bins for this simulation type)."<<std::endl;
+    std::cout<<"-n photons        Number of photons to simulate for each bin (default 1000)."<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for running the simulation:"<<std::endl;
     std::cout<<"-f filename  File with lookup table used for running a simulation"<<std::endl;
+    std::cout<<"-l length option  Length of the scintillator counter:"<<std::endl;
+    std::cout<<"                  0  6600 mm"<<std::endl;
+    std::cout<<"                  1  5600 mm"<<std::endl;
+    std::cout<<"                  2  4500 mm"<<std::endl;
+    std::cout<<"                  3  3000 mm"<<std::endl;
+    std::cout<<"                  4  2300 mm"<<std::endl;
+    std::cout<<"                  5   900 mm"<<std::endl;
     std::cout<<"-n events    Number of events to simulate (default 1000)."<<std::endl;
     std::cout<<std::endl;
+    std::cout<<"Options for drawing histograms of the lookup table:"<<std::endl;
+    std::cout<<"-f filename  File with lookup table used for running a simulation"<<std::endl;
+    std::cout<<std::endl;
+    return 0;
+  }
+
+  if(findArgs(argc, argv, "-d"))
+  {
+    if(!findArgs(argc, argv, "-f", lookupFilename))
+    {
+      std::cout<<"Filename for lookup table needs to be specified"<<std::endl;
+      std::cout<<"Use -h for help"<<std::endl;
+      return -1;
+    }
+    DrawHistograms(lookupFilename);
     return 0;
   }
 
@@ -152,6 +196,22 @@ int main(int argc, char** argv)
     findArgs(argc, argv, "-n", n);
   }
 
+  if(!findArgs(argc, argv, "-l", lengthOption))
+  {
+    std::cout<<"Option for scintillator counter length needs to be specified"<<std::endl;
+    std::cout<<"Use -h for help"<<std::endl;
+    return -1;
+  }
+  else
+  {
+    if(lengthOption<0 || lengthOption>6)
+    {
+      std::cout<<"Option for scintillator counter length needs to between 0 and 5"<<std::endl;
+      std::cout<<"Use -h for help"<<std::endl;
+      return -1;
+    }
+  }
+
 
   G4String physName = "QGSP_BERT_EMV";
 //  G4String physName = "QGSP_BERT_HP";  //for neutrons
@@ -161,9 +221,8 @@ int main(int argc, char** argv)
   CLHEP::HepRandom::setTheSeed(seed);
 
   G4RunManager *runManager = new G4RunManager;
-  WLSDetectorConstruction* detector = new WLSDetectorConstruction();
 
-  runManager->SetUserInitialization(detector);
+  runManager->SetUserInitialization(new WLSDetectorConstruction(lengthOption));
   runManager->SetUserInitialization(new WLSPhysicsList(physName));
 
   WLSPrimaryGeneratorAction *generator = new WLSPrimaryGeneratorAction(mode, n, simType, minBin, verbose);   //n,simType,minBin not needed in mode 0
@@ -175,7 +234,7 @@ int main(int argc, char** argv)
   runManager->SetUserAction(runAction);
   runManager->SetUserAction(eventAction);
   runManager->SetUserAction(steppingAction);
-//  runManager->SetUserAction(new WLSStackingAction);
+  runManager->SetUserAction(new WLSStackingAction);
 
 #if 0 
   G4VisManager *visManager = new G4VisExecutive();

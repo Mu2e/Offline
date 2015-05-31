@@ -66,23 +66,23 @@ namespace mu2e
 
   CrvSiPMResponsesGenerator::CrvSiPMResponsesGenerator(fhicl::ParameterSet const& pset) :
     _crvPhotonArrivalsModuleLabel(pset.get<std::string>("crvPhotonArrivalsModuleLabel")),
-    _numberPixels(pset.get<int>("numberPixels",1600)),
-    _bias(pset.get<double>("bias",2.5)),                //V
-    _scaleFactor(pset.get<double>("scaleFactor",0.08)), //based on a time step of 1.0ns
-    _minCharge(pset.get<double>("minCharge",3.0)),      //in units of PE
-    _blindTime(pset.get<double>("blindTime",500)),      //ns
+    _numberPixels(pset.get<int>("numberPixels")),   //1600
+    _bias(pset.get<double>("bias")),                //2.5V
+    _scaleFactor(pset.get<double>("scaleFactor")),  //0.08 (based on a time step of 1.0ns)
+    _minCharge(pset.get<double>("minCharge")),      //3.0PE
+    _blindTime(pset.get<double>("blindTime")),      //500ns
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
     produces<CrvSiPMResponsesCollection>();
-    _probabilities._constGeigerProbCoef = pset.get<double>("GeigerProbCoef",2.0);
-    _probabilities._constGeigerProbVoltScale = pset.get<double>("GeigerProbVoltScale",3.0);
-    _probabilities._constTrapType0Prob = pset.get<double>("TrapType0Prob",0.14);  //trap_prob*trap_type0_prob=0.2*0.7
-    _probabilities._constTrapType1Prob = pset.get<double>("TrapType1Prob",0.06);  //trap_prob*trap_type1_prob=0.2*0.3
-    _probabilities._constTrapType0Lifetime = pset.get<double>("TrapType0Lifetime",5.0);   //ns
-    _probabilities._constTrapType1Lifetime = pset.get<double>("TrapType1Lifetime",50.0);  //ns
-    _probabilities._constThermalProb = pset.get<double>("ThermalProb",6.25e-7); //1MHz at SiPM --> 1e-3/(#pixel*t[ns]  //exp(-E_th/T)=1.6e-6
-    _probabilities._constPhotonProduction = pset.get<double>("PhotonProduction",0.1);  //0.4
+    _probabilities._constGeigerProbCoef = pset.get<double>("GeigerProbCoef");  //2.0
+    _probabilities._constGeigerProbVoltScale = pset.get<double>("GeigerProbVoltScale");  //3.0
+    _probabilities._constTrapType0Prob = pset.get<double>("TrapType0Prob");  //trap_prob*trap_type0_prob=0.2*0.7=0.14
+    _probabilities._constTrapType1Prob = pset.get<double>("TrapType1Prob");  //trap_prob*trap_type1_prob=0.2*0.3=0.06
+    _probabilities._constTrapType0Lifetime = pset.get<double>("TrapType0Lifetime");   //5.0ns
+    _probabilities._constTrapType1Lifetime = pset.get<double>("TrapType1Lifetime");  //50.0ns
+    _probabilities._constThermalProb = pset.get<double>("ThermalProb"); //6.25e-7ns^1     1MHz at SiPM --> 1MHz/#pixel=625Hz at Pixel --> 625 s^-1 = 6.25e-7 ns^-1   //exp(-E_th/T)=1.6e-6
+    _probabilities._constPhotonProduction = pset.get<double>("PhotonProduction");  //0.1  //0.4
   }
 
   void CrvSiPMResponsesGenerator::beginJob()

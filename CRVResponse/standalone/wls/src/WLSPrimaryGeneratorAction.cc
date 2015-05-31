@@ -395,20 +395,20 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   if(_mode==0)
   {
+//    double beamsize=2.0*mm;
     double beamsize=1.0*mm;
-    double x0 = -1.5*cm;
-#ifndef testbeam
-#pragma message("Uses the real geometry setup.")
-#pragma message("Compile with -Dtestbeam to use the test beam geometry setup.")
-    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,1.0*cm,beamsize);
-    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,200.0*cm,beamsize);
-#else
-#pragma message("Uses the test beam geometry setup.")
-    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,1.3*cm,beamsize);
-    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,20.0*cm,beamsize);
-#endif
-//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);
-//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,1.8*cm,beamsize); 
+    double x0 = -1.0*cm;
+    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);    //center
+
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-149.0*cm,beamsize);  //1cm from left side
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-140.0*cm,beamsize);  //10cm from left side
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-125.0*cm,beamsize);  //25cm from left side
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-50.0*cm,beamsize);  //100cm from left side
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);  //150cm from left side (center)
+
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-260.0*cm,beamsize);  //20cm from left side of 5.6m counter
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-275.0*cm,beamsize);  //5cm from left side of 5.6m counter
+    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-279.0*cm,beamsize);  //1cm from left side of 5.6m counter
   
     _particleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
     _particleGun->GeneratePrimaryVertex(anEvent);

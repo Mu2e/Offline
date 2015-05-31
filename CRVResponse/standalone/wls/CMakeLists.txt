@@ -40,7 +40,8 @@ file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc
                   ${PROJECT_SOURCE_DIR}/../../src/MakeCrvPhotonArrivals.cc
                   ${PROJECT_SOURCE_DIR}/../../src/MakeCrvSiPMResponses.cc
                   ${PROJECT_SOURCE_DIR}/../../src/MakeCrvWaveforms.cc
-                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvRecoPulses.cc)
+                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvRecoPulses.cc
+                  ${PROJECT_SOURCE_DIR}/../../src/DrawLookupTableHistograms.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh
                   ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvPhotonArrivals.hh
                   ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvSiPMResponses.hh
