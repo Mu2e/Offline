@@ -122,31 +122,32 @@ namespace mu2e
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
-        std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &responsesOneSiPM = crvSiPMResponses.GetSiPMResponses(SiPM);
-
-        std::vector<double> photonArrivalTimesAdjusted;
+        std::vector<SiPMresponse> SiPMresponseVector;
         if(crvPhotons!=crvPhotonArrivalsCollection->end())
         {
           const std::vector<double> &photonArrivalTimes = crvPhotons->second.GetPhotonArrivalTimes(SiPM);
-          std::vector<double>::const_iterator timeIter;
-          for(timeIter=photonArrivalTimes.begin(); timeIter!=photonArrivalTimes.end(); timeIter++)
-          {
-            double time = *timeIter;
-	    time = fmod(time,_microBunchPeriod);  //"ghost hits" are not used / "splitting of hits" is acceptable, 
-                                                  //since we are blind outside the window
-            if(time>_blindTime) photonArrivalTimesAdjusted.push_back(time);
-          }
+          _makeCrvSiPMResponses->Simulate(photonArrivalTimes, SiPMresponseVector);
+        }
+        else
+        {
+          const std::vector<double> empty;
+          _makeCrvSiPMResponses->Simulate(empty, SiPMresponseVector);
         }
 
-        std::vector<SiPMresponse> SiPMresponseVector;
-        _makeCrvSiPMResponses->Simulate(photonArrivalTimesAdjusted, SiPMresponseVector);
+        std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &responsesOneSiPM = crvSiPMResponses.GetSiPMResponses(SiPM);
 
         double totalCharge=0;
         std::vector<SiPMresponse>::const_iterator responseIter;
         for(responseIter=SiPMresponseVector.begin(); responseIter!=SiPMresponseVector.end(); responseIter++)
         {
-          responsesOneSiPM.emplace_back(responseIter->_time, responseIter->_charge);
+          double time=responseIter->_time;
+          if(responseIter->_time>_microBunchPeriod)
+          {
+            time = fmod(time, _microBunchPeriod);
+          }
+          responsesOneSiPM.emplace_back(time, responseIter->_charge);
           totalCharge+=responseIter->_charge;
+//std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<responseIter->_time<<std::endl;
         }
         if(totalCharge>=_minCharge) minChargeReached=true;
       }

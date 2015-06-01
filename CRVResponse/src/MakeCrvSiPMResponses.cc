@@ -129,6 +129,7 @@ void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
   std::vector<double>::const_iterator iter;
   for(iter=photons.begin(); iter!=photons.end(); iter++)
   {
+    if(*iter<_timeStart) continue;
     int cellid = _randFlat.fireInt(_numberPixels);
     _scheduledCharges.emplace(cellid, *iter);  //constructs ScheduledCharge(cellid, *iter)
   }

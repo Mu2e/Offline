@@ -143,6 +143,8 @@ namespace mu2e
                   break;
         };
 
+        if(coincidenceGroup==0) continue;
+
         for(int SiPMtmp=SiPM; SiPMtmp<4; SiPMtmp+=2)  //the reco pulse times of both SiPMs on the same side are put into the same c to avoid that 
                                                       //pulses from the same counter can be used to satisfy the coincidence condition
         {
@@ -157,7 +159,7 @@ namespace mu2e
                  c.time.push_back(pulse._leadingEdge);
                  c.PEs.push_back(pulse._PEs);
                  c.SiPMs.push_back(SiPMtmp);
-//std::cout<<"coincidence group: "<<coincidenceGroup<<"  SiPM: "<<SiPMtmp<<std::endl;
+//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"  SiPM: "<<SiPMtmp<<std::endl;
 //std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<pulse._leadingEdge<<"   pos: "<<c.pos<<std::endl;
                }
           }
@@ -210,14 +212,21 @@ namespace mu2e
               combination._SiPMs[1] = vectorC[i2].SiPMs[j2];
               combination._SiPMs[2] = vectorC[i3].SiPMs[j3];
               crvCoincidenceCheckResult->GetCoincidenceCombinations().push_back(combination);
+              std::cout<<"Coincidence times/counters/SiPMs/PEs: "<<std::endl;
+              for(int k=0; k<3; k++)
+              {
+                std::cout<<"   "<<time[k]<<" / "<<combination._counters[k]<<" / "<<combination._SiPMs[k]<<" / "<<combination._PEs[k]<<std::endl;
+              }
             }
           }
         }
       } 
     }
     crvCoincidenceCheckResult->SetCoincidence(foundCoincidence);
-std::cout<<"run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
-std::cout<<(foundCoincidence?"Coincidence satisfied":"No coincidence found")<<std::endl;
+
+    std::cout<<"run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
+    std::cout<<(foundCoincidence?"Coincidence satisfied":"No coincidence found")<<std::endl;
+
     event.put(std::move(crvCoincidenceCheckResult));
 
   } // end produce

@@ -27,14 +27,26 @@ BEGIN_PROLOG
       scaleFactor                  : 0.08
       minCharge                    : 3.0        //PEs
       blindTime                    : 500.0      //ns
-      GeigerProbCoef               : 1.0
-      GeigerProbVoltScale          : 5.5
+
+      GeigerProbCoef               : 1.0        // = pc
+      GeigerProbVoltScale          : 5.5        // = vs
+                                                //Geiger probability at over voltage v = 2.4V (bias voltage): 
+                                                //0.35 = 1 - exp(-pow(v,pc)/vs)
+                                                //Geiger probability at over voltage v = 1.0V: 
+                                                //0.17 = 1 - exp(-pow(v,pc)/vs)
+
       TrapType0Prob                : 0.14       //trap_prob*trap_type0_prob=0.2*0.7
       TrapType1Prob                : 0.06       //trap_prob*trap_type1_prob=0.2*0.3
       TrapType0Lifetime            : 5.0        //ns
       TrapType1Lifetime            : 50.0       //ns
+
       ThermalProb                  : 6.31e-7    //ns^1     1MHz at SiPM --> 1MHz/#pixel=631Hz at Pixel --> 631 s^-1 = 6.31e-7 ns^-1   //exp(-E_th/T)=1.6e-6
-      PhotonProduction             : 0.4        //cross talk
+
+      PhotonProduction             : 0.4        //cross talk:
+                                                //total probability:                     tp = 0.4
+                                                //probability with every charge release: p 
+                                                //probability to release a charge:       r = 0.35 (Geiger probability)
+                                                //tp = p*r + (p*r)^2 + (p*r)^3 + ... = (p*r)/(1-p*r)  --> p = tp/(tp*r+r) = 0.82  ==> should photonproduction be changed to 0.82?
     }
     CrvWaveforms:
     {
@@ -63,7 +75,7 @@ BEGIN_PROLOG
       maxDistance                  : 200      //mm
       maxTimeDifference            : 5        //ns
       timeWindowStart              : 550      //ns
-      timeWindowEnd                : 1695     //ns
+      timeWindowEnd                : 1705     //1695ns
     }
 
 END_PROLOG
