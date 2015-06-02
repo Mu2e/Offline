@@ -36,9 +36,9 @@ double MakeCrvSiPMResponses::GenerateAvalanche(Pixel &pixel, int cellid)
 
   if(_randFlat.fire() < GeigerProb)
   {
-    int trapsType0 = _randPoissonQ.fire(_probabilities._constTrapType0Prob * v);
-    int trapsType1 = _randPoissonQ.fire(_probabilities._constTrapType1Prob * v);
-    int photons    = _randPoissonQ.fire(_probabilities._constPhotonProduction * v);
+    int trapsType0 = _randPoissonQ.fire(_probabilities._constTrapType0Prob/_bias * v);
+    int trapsType1 = _randPoissonQ.fire(_probabilities._constTrapType1Prob/_bias * v);
+    int photons    = _randPoissonQ.fire(_probabilities._constPhotonProduction/_bias * v);
   
     double trap0Lifetime = _probabilities._constTrapType0Lifetime;
     double trap1Lifetime = _probabilities._constTrapType1Lifetime;

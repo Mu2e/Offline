@@ -10,6 +10,8 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -39,6 +41,7 @@ namespace mu2e
     explicit SimpleCrvCoincidenceCheck(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
     void beginJob();
+    void beginRun(art::Run &run);
     void endJob();
 
     private:
@@ -49,6 +52,7 @@ namespace mu2e
     double      _maxTimeDifference;
     double      _timeWindowStart;
     double      _timeWindowEnd;
+    double      _microBunchPeriod;
 
     struct coincidenceStruct
     {
@@ -79,6 +83,13 @@ namespace mu2e
   void SimpleCrvCoincidenceCheck::endJob()
   {
   }
+
+  void SimpleCrvCoincidenceCheck::beginRun(art::Run &run)
+  {
+    mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
+    _microBunchPeriod = accPar->deBuncherPeriod;
+  }
+
 
   void SimpleCrvCoincidenceCheck::produce(art::Event& event) 
   {
@@ -152,15 +163,27 @@ namespace mu2e
           for(unsigned int i = 0; i<pulseVector.size(); i++) 
           {
             const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
+            double time=pulse._leadingEdge;
             if(pulse._PEs>=_PEthreshold && 
-               pulse._leadingEdge>=_timeWindowStart && 
-               pulse._leadingEdge<=_timeWindowEnd)
+               time>=_timeWindowStart && 
+               time<=_timeWindowEnd)
                {
-                 c.time.push_back(pulse._leadingEdge);
+                 c.time.push_back(time);
                  c.PEs.push_back(pulse._PEs);
                  c.SiPMs.push_back(SiPMtmp);
 //std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"  SiPM: "<<SiPMtmp<<std::endl;
-//std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<pulse._leadingEdge<<"   pos: "<<c.pos<<std::endl;
+//std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<"   pos: "<<c.pos<<std::endl;
+               }
+            time+=_microBunchPeriod;
+            if(pulse._PEs>=_PEthreshold && 
+               time>=_timeWindowStart && 
+               time<=_timeWindowEnd)
+               {
+                 c.time.push_back(time);
+                 c.PEs.push_back(pulse._PEs);
+                 c.SiPMs.push_back(SiPMtmp);
+//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"  SiPM: "<<SiPMtmp<<std::endl;
+//std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<"   pos: "<<c.pos<<std::endl;
                }
           }
         }
