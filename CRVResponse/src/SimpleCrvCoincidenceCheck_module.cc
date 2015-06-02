@@ -46,6 +46,7 @@ namespace mu2e
 
     private:
     bool        _storeCoincidenceCombinations;
+    bool        _checkLayers;
     std::string _crvRecoPulsesModuleLabel;
     double      _PEthreshold;
     double      _maxDistance;
@@ -58,6 +59,7 @@ namespace mu2e
     {
       double                  pos;
       CRSScintillatorBarIndex counter;
+      int                     layer;
       std::vector<double>     time;
       std::vector<int>        PEs;
       std::vector<int>        SiPMs;
@@ -66,6 +68,7 @@ namespace mu2e
 
   SimpleCrvCoincidenceCheck::SimpleCrvCoincidenceCheck(fhicl::ParameterSet const& pset) :
     _storeCoincidenceCombinations(pset.get<bool>("storeCoincidenceCombinations")),
+    _checkLayers(pset.get<bool>("checkLayers")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _PEthreshold(pset.get<double>("PEthreshold")),
     _maxDistance(pset.get<double>("maxDistance")),
@@ -108,12 +111,14 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = iter->first;
       const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
       int   moduleNumber=CRSbar.id().getShieldNumber();
+      int   layerNumber=CRSbar.id().getLayerNumber();
 
       const CrvRecoPulses &crvRecoPulses = iter->second;
       for(int SiPM=0; SiPM<2; SiPM++)
       {
         coincidenceStruct c;
         c.counter=barIndex;
+        c.layer=layerNumber;
         int coincidenceGroup = 0;
 //FIXME: DO NOT HARDCODE THIS
         switch (moduleNumber)
@@ -171,7 +176,7 @@ namespace mu2e
                  c.time.push_back(time);
                  c.PEs.push_back(pulse._PEs);
                  c.SiPMs.push_back(SiPMtmp);
-//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"  SiPM: "<<SiPMtmp<<std::endl;
+//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"  layer: "<<layerNumber<<"  SiPM: "<<SiPMtmp<<std::endl;
 //std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<"   pos: "<<c.pos<<std::endl;
                }
             time+=_microBunchPeriod;
@@ -182,7 +187,7 @@ namespace mu2e
                  c.time.push_back(time);
                  c.PEs.push_back(pulse._PEs);
                  c.SiPMs.push_back(SiPMtmp);
-//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"  SiPM: "<<SiPMtmp<<std::endl;
+//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"  layer: "<<layerNumber<<"  SiPM: "<<SiPMtmp<<std::endl;
 //std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<"   pos: "<<c.pos<<std::endl;
                }
           }
@@ -203,6 +208,12 @@ namespace mu2e
       for(unsigned int i2=i1+1; i2<n && (!foundCoincidence || _storeCoincidenceCombinations); i2++) 
       for(unsigned int i3=i2+1; i3<n && (!foundCoincidence || _storeCoincidenceCombinations); i3++)
       {
+        if(_checkLayers)
+        {
+          int layers[3]={vectorC[i1].layer,vectorC[i2].layer,vectorC[i3].layer};
+          if(layers[0]==layers[1] || layers[0]==layers[2] || layers[1]==layers[2]) continue;
+        }
+
         double pos[3]={vectorC[i1].pos,vectorC[i2].pos,vectorC[i3].pos};
         double posMin = *std::min_element(pos,pos+3);
         double posMax = *std::max_element(pos,pos+3);

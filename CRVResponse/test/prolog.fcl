@@ -70,6 +70,7 @@ BEGIN_PROLOG
     {
       module_type                  : SimpleCrvCoincidenceCheck
       storeCoincidenceCombinations : true
+      checkLayers                  : true
       crvRecoPulsesModuleLabel     : "CrvRecoPulses"
       PEthreshold                  : 14
       maxDistance                  : 200      //mm
