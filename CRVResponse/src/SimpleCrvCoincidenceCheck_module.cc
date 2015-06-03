@@ -54,6 +54,8 @@ namespace mu2e
     double      _timeWindowStart;
     double      _timeWindowEnd;
     double      _microBunchPeriod;
+    double      _totalTime;
+    double      _totalDeadTime;
 
     struct coincidenceStruct
     {
@@ -77,6 +79,8 @@ namespace mu2e
     _timeWindowEnd(pset.get<double>("timeWindowEnd"))
   {
     produces<CrvCoincidenceCheckResult>();
+    _totalTime=0;
+    _totalDeadTime=0;
   }
 
   void SimpleCrvCoincidenceCheck::beginJob()
@@ -260,6 +264,20 @@ namespace mu2e
 
     std::cout<<"run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
     std::cout<<(foundCoincidence?"Coincidence satisfied":"No coincidence found")<<std::endl;
+
+    std::vector<CrvCoincidenceCheckResult::DeadTimeWindow> deadTimeWindows;
+    deadTimeWindows = crvCoincidenceCheckResult->GetDeadTimeWindows(25,125);  //TODO: Don't hardcode these numbers
+
+    double deadTime = 0;
+    for(unsigned int i=0; i < deadTimeWindows.size(); i++)
+    {
+      deadTime = deadTimeWindows[i]._endTime - deadTimeWindows[i]._startTime;
+      std::cout << "   Found Dead time: " << deadTime << " (" << deadTimeWindows[i]._startTime << " ... " << deadTimeWindows[i]._endTime << ")" << std::endl;
+      _totalDeadTime += deadTime;
+    }
+    _totalTime += _microBunchPeriod;
+    double fractionDeadTime = _totalDeadTime / _totalTime;
+    std::cout << "Dead time so far: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%" << std::endl;
 
     event.put(std::move(crvCoincidenceCheckResult));
 
