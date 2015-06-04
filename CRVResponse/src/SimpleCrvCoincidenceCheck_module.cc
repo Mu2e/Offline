@@ -180,7 +180,7 @@ namespace mu2e
                  c.time.push_back(time);
                  c.PEs.push_back(pulse._PEs);
                  c.SiPMs.push_back(SiPMtmp);
-//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"  layer: "<<layerNumber<<"  SiPM: "<<SiPMtmp<<std::endl;
+//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"   module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  SiPM: "<<SiPMtmp<<std::endl;
 //std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<"   pos: "<<c.pos<<std::endl;
                }
             time+=_microBunchPeriod;
@@ -191,7 +191,7 @@ namespace mu2e
                  c.time.push_back(time);
                  c.PEs.push_back(pulse._PEs);
                  c.SiPMs.push_back(SiPMtmp);
-//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"  layer: "<<layerNumber<<"  SiPM: "<<SiPMtmp<<std::endl;
+//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"   module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  SiPM: "<<SiPMtmp<<std::endl;
 //std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<"   pos: "<<c.pos<<std::endl;
                }
           }
