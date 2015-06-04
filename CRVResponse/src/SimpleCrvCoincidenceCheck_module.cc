@@ -61,7 +61,7 @@ namespace mu2e
     {
       double                  pos;
       CRSScintillatorBarIndex counter;
-      int                     layer;
+      int                     layer, moduleType;
       std::vector<double>     time;
       std::vector<int>        PEs;
       std::vector<int>        SiPMs;
@@ -130,36 +130,54 @@ namespace mu2e
           case 0: 
           case 3: 
           case 4: 
-          case 5: if(SiPM==0) {coincidenceGroup = 1; c.pos=CRSbar.getPosition().z();}
+          case 5: c.moduleType=1;  //CRV-R
+                  if(SiPM==0) {coincidenceGroup = 1; c.pos=CRSbar.getPosition().z();}
                   if(SiPM==1) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
                   break;
-          case 1: if(SiPM==1) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
+          case 1: c.moduleType=1;  //CRV-R
+                  if(SiPM==1) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
                   break;
-          case 2: if(SiPM==0) {coincidenceGroup = 1; c.pos=CRSbar.getPosition().z();}
+          case 2: c.moduleType=1;  //CRV-R
+                  if(SiPM==0) {coincidenceGroup = 1; c.pos=CRSbar.getPosition().z();}
                   if(SiPM==1) {coincidenceGroup = 3; c.pos=CRSbar.getPosition().z();}
                   break;
           case 6: 
           case 7: 
-          case 8: if(SiPM==0) {coincidenceGroup = 4; c.pos=CRSbar.getPosition().z();}
+          case 8: c.moduleType=2;  //CRV-L
+                  if(SiPM==0) {coincidenceGroup = 4; c.pos=CRSbar.getPosition().z();}
                   if(SiPM==1) {coincidenceGroup = 5; c.pos=CRSbar.getPosition().z();}
                   break;
-          case 9: if(SiPM==0) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
+          case 9: c.moduleType=3;  //CRV-T
+                  if(SiPM==0) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
                   break;
          case 10: 
          case 11: 
-         case 12: if(SiPM==0) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
+         case 12: c.moduleType=3;  //CRV-T
+                  if(SiPM==0) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
                   if(SiPM==1) {coincidenceGroup = 5; c.pos=CRSbar.getPosition().z();}
                   break;
-         case 13: if(SiPM==0) {coincidenceGroup = 6; c.pos=CRSbar.getPosition().y();}
+         case 13: 
+         case 20: c.moduleType=4;  //CRV-D
+                  if(SiPM==0) {coincidenceGroup = 6; c.pos=CRSbar.getPosition().y();}
                   if(SiPM==1) {coincidenceGroup = 7; c.pos=CRSbar.getPosition().y();}
                   break;
-         case 14: if(SiPM==0) {coincidenceGroup = 8; c.pos=CRSbar.getPosition().y();}
+         case 14: c.moduleType=5;  //CRV-U
+                  if(SiPM==0) {coincidenceGroup = 8; c.pos=CRSbar.getPosition().y();}
                   break;
-         case 15: if(SiPM==0) {coincidenceGroup = 9; c.pos=CRSbar.getPosition().x();}
+         case 15: c.moduleType=6;  //CRV-C1
+                  if(SiPM==0) {coincidenceGroup = 9; c.pos=CRSbar.getPosition().x();}
                   break;
-         case 16: if(SiPM==0) {coincidenceGroup = 10; c.pos=CRSbar.getPosition().x();}
+         case 16: c.moduleType=7;  //CRV-C2
+                  if(SiPM==0) {coincidenceGroup = 10; c.pos=CRSbar.getPosition().x();}
                   break;
-         case 17: if(SiPM==0) {coincidenceGroup = 11; c.pos=CRSbar.getPosition().x();}
+         case 17: c.moduleType=8;  //CRV-C3
+                  if(SiPM==0) {coincidenceGroup = 11; c.pos=CRSbar.getPosition().x();}
+                  break;
+         case 18: c.moduleType=4;  //CRV-D
+                  if(SiPM==0) {coincidenceGroup = 6; c.pos=CRSbar.getPosition().y();}
+                  break;
+         case 19: c.moduleType=4;  //CRV-D
+                  if(SiPM==1) {coincidenceGroup = 7; c.pos=CRSbar.getPosition().y();}
                   break;
         };
 
@@ -215,7 +233,10 @@ namespace mu2e
         if(_checkLayers)
         {
           int layers[3]={vectorC[i1].layer,vectorC[i2].layer,vectorC[i3].layer};
-          if(layers[0]==layers[1] || layers[0]==layers[2] || layers[1]==layers[2]) continue;
+          int moduleTypes[3]={vectorC[i1].moduleType,vectorC[i2].moduleType,vectorC[i3].moduleType};
+          if(layers[0]==layers[1] && moduleTypes[0]==moduleTypes[1]) continue;
+          if(layers[0]==layers[2] && moduleTypes[0]==moduleTypes[2]) continue;
+          if(layers[1]==layers[2] && moduleTypes[1]==moduleTypes[2]) continue;
         }
 
         double pos[3]={vectorC[i1].pos,vectorC[i2].pos,vectorC[i3].pos};
