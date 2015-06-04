@@ -72,9 +72,9 @@ BEGIN_PROLOG
       storeCoincidenceCombinations : true
       checkLayers                  : true
       crvRecoPulsesModuleLabel     : "CrvRecoPulses"
-      PEthreshold                  : 10 //14
+      PEthreshold                  : 14
       maxDistance                  : 200      //mm
-      maxTimeDifference            : 15 //5        //ns
+      maxTimeDifference            : 5        //ns
       timeWindowStart              : 550      //ns
       timeWindowEnd                : 1750     //1695ns  //if timeWindowEnd > microbunch period (1695), then the time window loops back to the begining (0)
     }
