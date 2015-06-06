@@ -11,7 +11,7 @@ BEGIN_PROLOG
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable_2300",
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 1600.0   //850.0 photons per MeV
+      scintillationYield        : 2500.0   //2500.0 photons per MeV
       scintillatorDecayTimeFast : 3.0      //3.0 ns
       scintillatorDecayTimeSlow : 10.0     //10.0 ns
       fiberDecayTime            : 7.4      //7.4 ns
@@ -30,6 +30,7 @@ BEGIN_PROLOG
 
       GeigerProbCoef               : 1.0        // = pc
       GeigerProbVoltScale          : 5.5        // = vs
+                                                //from the SiPM specs:
                                                 //Geiger probability at over voltage v = 2.4V (bias voltage): 
                                                 //0.35 = 1 - exp(-pow(v,pc)/vs)
                                                 //Geiger probability at over voltage v = 1.0V: 
@@ -40,13 +41,14 @@ BEGIN_PROLOG
       TrapType0Lifetime            : 5.0        //ns
       TrapType1Lifetime            : 50.0       //ns
 
-      ThermalProb                  : 6.31e-7    //ns^1     1MHz at SiPM --> 1MHz/#pixel=631Hz at Pixel --> 631 s^-1 = 6.31e-7 ns^-1   //exp(-E_th/T)=1.6e-6
+      ThermalProb                  : 6.31e-7    //ns^1     1MHz at SiPM --> 1MHz/#pixel=631Hz at Pixel --> 631 s^-1 = 6.31e-7 ns^-1 
 
-      PhotonProduction             : 0.4        //cross talk:
+      PhotonProduction             : 0.4        //cross talk (from the SiPM specs): 0.4
+                                                //should the PhotonProduction probability be 0.82 ???
                                                 //total probability:                     tp = 0.4
-                                                //probability with every charge release: p 
+                                                //probability with every charge release: p = ?
                                                 //probability to release a charge:       r = 0.35 (Geiger probability)
-                                                //tp = p*r + (p*r)^2 + (p*r)^3 + ... = (p*r)/(1-p*r)  --> p = tp/(tp*r+r) = 0.82  ==> should photonproduction be changed to 0.82?
+                                                //tp = p*r + (p*r)^2 + (p*r)^3 + ... = (p*r)/(1-p*r)  --> p = tp/(tp*r+r) = 0.82
     }
     CrvWaveforms:
     {

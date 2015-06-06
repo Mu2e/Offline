@@ -148,15 +148,13 @@ namespace mu2e
         std::vector<SiPMresponse>::const_iterator responseIter;
         for(responseIter=SiPMresponseVector.begin(); responseIter!=SiPMresponseVector.end(); responseIter++)
         {
-          double time=fmod(responseIter->_time,_microBunchPeriod);
-          double charge=responseIter->_charge;
-          if(time>_blindTime)
-          {
-            totalCharge+=charge;
-            responsesOneSiPM.emplace_back(time, charge);
+          //time in SiPMresponseVector is between blindTime and microBunchPeriod
+          //no additional time wrapping and check for blind time is required
+          const double &time=responseIter->_time;
+          const double &charge=responseIter->_charge;
+          totalCharge+=charge;
+          responsesOneSiPM.emplace_back(time, charge);
 //std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<time<<std::endl;
-          }
-          else continue;
 
           //make ghost hits - see doc-db 3425 page 9
           double deltaT=100;  //TODO: Is the additional time window Ok?
