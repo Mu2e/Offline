@@ -17,6 +17,7 @@ double cosmicDYB.dx     = 0;
 double cosmicDYB.dy     = 5000;
 double cosmicDYB.dz     = 5000;
 double cosmicDYB.y0     = 0;
+double cosmicDYB.constTime = 800;
 
 string cosmicDYB.refPointChoice  = "Customized";
 bool   cosmicDYB.vertical        = true;

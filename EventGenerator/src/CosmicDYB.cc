@@ -105,6 +105,7 @@ namespace mu2e {
   ,_tmin( 0.0 )
   ,_tmax( 0.0 )
   ,_dt  ( 0.0 )
+  ,_constTime( config.getDouble("cosmicDYB.constTime", NAN) )
 
     // Random number distributions; getEngine comes from the base class.
   ,_randFlat( getEngine() )
@@ -254,7 +255,22 @@ namespace mu2e {
     hrndg2(_workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax,
            dim_sum,E,cosTh,par,_vertical);
 
-    // rate is per cm^2. The constants are 2*CLHEP::pi times the area
+    // dim_sum (as returned from the Daya Bay code) is
+    // - for horizontal planes: the integral of I(theta,E)*cos(theta)*sin(theta)*dtheta*dE from E0 to E1 and 0 to pi/2 
+    // - for vertical planes: the integral of I(theta,E)*sin(theta)^2*dtheta*dE from E0 to E1 and 0 to pi/2 
+    // dim_sum has the unit s^-1 * cm^-2
+    // I(theta,E) is the intensity from the modified Gaisser formula
+    //
+    // the rate is 
+    // - for horizontal planes: 2*pi*area*integral
+    // - for vertical planes: 2*area*integral
+    //
+    // the area is 
+    // - for horizontal planes: 4*_dx*_dz
+    // - for vertical planes: 2*_dx*_dy or 2*_dz*_dy (half the value, since only half of the azimuth angles are considered)
+    //                                               (only tracks from one direction through the plane are considered)
+    // the unit is in mm^2 (needs to be multiplied by 0.01 to get it to cm^2 [like in dim_sum])
+    // 
     double tRate = dim_sum*M_PI*0.08*_dx*_dz;
     if(!_vertical && _directionChoice!=ALL) tRate = dim_sum*M_PI*0.04*_dx*_dz;
     if(_vertical && _dx!=0) tRate = dim_sum*0.08*_dx*_dy;
@@ -420,7 +436,8 @@ namespace mu2e {
 	cout << "position at origin = " << posInMu2eCoordinates << endl;
       }
 
-      double time = _tmin + _dt*_randFlat.fire();
+      double time = _constTime;
+      if(std::isnan(time)) time = _tmin + _dt*_randFlat.fire();
 
       // Pick a random charge.
       // implement a rough charge asymmetry

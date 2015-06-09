@@ -119,7 +119,7 @@ physics :
 
          SDConfig : 
          {
-            enableSD: [ tracker, calorimeter, calorimeterRO, CRV ]  // activate just the explicitly listed SDs
+            enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]  // activate just the explicitly listed SDs
             preSimulatedHits: ["cosmicFilter:CRV"]
 	    TimeVD: { times: [] }
          }
@@ -169,8 +169,8 @@ physics :
       {
          module_type: FilterG4Out
 	 noInstanceName : true
-         mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO", "g4run:CRV"]
-         extraHitInputs : []
+         mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO", "g4run:CRV" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
          mcTrajectoryInputs : [ "g4run" ]
          numSimParticleCollections : 1
          vetoDaughters: []

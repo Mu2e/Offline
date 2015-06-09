@@ -82,10 +82,12 @@ mu2eg4DefaultTrajectories: {
 	TS3Vacuum : 15
 	TS4Vacuum : 15
 	TS5Vacuum : 15
+	DS1Vacuum : 15
 	DS2Vacuum : 15
 	DS3Vacuum : 15
 	TrackerMother: 15
 	CalorimeterMother: 15
+        StoppingTargetMother: 15
     }
 }
 #----------------
