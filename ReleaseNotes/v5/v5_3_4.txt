@@ -2,6 +2,14 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_3_4
 
+12) June 9, 2015 - brownd
+    -Added the ability to change KalFit hit weeding per iteration, and
+    propagated this to prolog.fcl
+    -Updated parameters for panel ambiguity resolution
+    -Added explicit configurations for doublet and panel-based configurations
+    -Made panel-based ambiguity resolution the default for TPRDownstreameMinus
+    and other species-specific fits
+
 11) June 8, 2015 - kutschke
     Edited setup.sh to require version 619 of the BaBar code.
     This brings in the new header files needed to build for BtrkHelper
