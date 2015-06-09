@@ -76,8 +76,8 @@ namespace mu2e
   KalFit::KalFit(fhicl::ParameterSet const& pset, KalDiag* kdiag) :
 // KalFit parameters
     _debug(pset.get<int>("debugLevel",0)),
-//    _weedhits(pset.get<vector<bool> >("weedhits")),
-    _weedhits(pset.get<bool >("weedhits",true)),
+    _weedhits(pset.get<vector<bool> >("weedhits")),
+//    _weedhits(pset.get<bool >("weedhits",true)),
     _maxhitchi(pset.get<double>("maxhitchi",3.5)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
     _herr(pset.get< vector<double> >("hiterr")),
@@ -134,7 +134,7 @@ namespace mu2e
     if(_herr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFit: no hit errors specified" << endl;
     if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
     if(_herr.size() != _t0tol.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
-//    if(_herr.size() != _weedhits.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
+    if(_herr.size() != _weedhits.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
     // construct the ambiguity resolvers
 
     AmbigResolver* ar;
@@ -325,8 +325,8 @@ namespace mu2e
 	oldt0 = kres._krep->t0()._t0;
       }
       // drop outliers
-//      if(_weedhits[Iteration]){
-      if(_weedhits){
+      if(_weedhits[Iteration]){
+//      if(_weedhits){
 	kres._nweediter = 0;
 	changed |= weedHits(kres,Iteration,Final);
       }

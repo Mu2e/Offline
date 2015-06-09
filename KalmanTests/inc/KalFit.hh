@@ -66,8 +66,8 @@ namespace mu2e
   protected:
     // configuration parameters
     int _debug;
-//    std::vector<bool> _weedhits;
-    bool _weedhits;
+    std::vector<bool> _weedhits;
+//    bool _weedhits;
     double _maxhitchi;
     unsigned _maxweed;
     std::vector<double> _herr;
