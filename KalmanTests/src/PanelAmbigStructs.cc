@@ -30,7 +30,7 @@ namespace mu2e
       }
     }
 
-    HitState::HitState(TrkStrawHit* tsh) : _state(ignore){
+    HitState::HitState(const TrkStrawHit* tsh)  {
       if(tsh->isActive()){
 	if(tsh->ambig() < 0)
 	  _state = negambig;
@@ -45,7 +45,7 @@ namespace mu2e
     void HitState::setHitState(TrkStrawHit* tsh) const {
       if(tsh != 0){
 	switch (_state) {
-	  case ignore : default:
+	  default:
 	    break;
 	  case noambig:
 	    tsh->setActivity(true);
@@ -61,6 +61,7 @@ namespace mu2e
 	    break;
 	  case inactive:
 	    tsh->setActivity(false);
+	    break;
 	}
       }
     }
@@ -75,24 +76,20 @@ namespace mu2e
 // classify the state.  If any hits are opposite, it's opposite.  Otherwise if at least 2
 // are on the same side, they are same.  Otherwise it is null
       for(size_t ihit=0;ihit<_state._nhits;++ihit){
-	if(_state.hitState(ihit).active()){
-	  for(size_t jhit=ihit+1;jhit<_state._nhits;++jhit){
-	    if(_state.hitState(jhit).active()) {
-	      int hprod = static_cast<int>(_state.hitState(ihit)._state) * 
-		static_cast<int>(_state.hitState(jhit)._state);
-	      if(hprod < 0){
-		_hpat = opposite;
-		break;
-	      } else if(hprod > 0)
-		_hpat = same;
-	    }
-	  }
-	  if(_hpat == opposite)break;// double break
+	for(size_t jhit=ihit+1;jhit<_state._nhits;++jhit){
+	  int hprod = static_cast<int>(_state.hitState(ihit)._state) * 
+	    static_cast<int>(_state.hitState(jhit)._state);
+	    if(hprod < 0){
+	      _hpat = opposite;
+	      break;
+	    } else if(hprod > 0)
+	      _hpat = same;
 	}
+	if(_hpat == opposite)break;// double break
       }
     }
 
-    TSHUInfo::TSHUInfo(const TrkStrawHit* tsh,CLHEP::Hep3Vector const& udir, HepPoint const& uorigin) {
+    TSHUInfo::TSHUInfo(const TrkStrawHit* tsh,CLHEP::Hep3Vector const& udir, HepPoint const& uorigin) : _use(free), _hstate(tsh) {
       // find wire position at POCA	
       HepPoint wpos = tsh->hitTraj()->position(tsh->hitLen());
       CLHEP::Hep3Vector wposv(wpos.x(),wpos.y(),wpos.z());

@@ -44,19 +44,21 @@ namespace mu2e {
 
     PanelAmbigResolver::PanelAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter,KalDiag* kdiag): 
       AmbigResolver(pset,ExtErr,Iter),
-      _minsep(pset.get<double>("minChisqSep",6.0)),
+      _minsep(pset.get<double>("minChisqSep",4.0)),
       _inactivepenalty(pset.get<double>("inactivePenalty",16.0)),
-      _penaltyres(pset.get<double>("PenaltyResolution",0.5)),
-      _trkpenaltyres(pset.get<double>("TrackPenaltyResolution",0.2)),
+      _penaltyres(pset.get<double>("PenaltyResolution",0.25)),
+      _trkpenaltyres(pset.get<double>("TrackPenaltyResolution",0.5)),
       _addtrkpos(pset.get<bool>("AddTrackPositionConstraint",true)),
+      _maxhitu(pset.get<double>("MaximumHitU",8.0)),
+      _fixunallowed(pset.get<bool>("FixUnallowedHitStates",true)),
       _diag(pset.get<int>("DiagLevel",0)),
       _kdiag(kdiag)
     {
-      double nullerr = pset.get<double>("NullAmbigPenalty",0.05);
+      double nullerr = pset.get<double>("NullAmbigPenalty",0.0);
       _nullerr2 = nullerr*nullerr;
       std::vector<int> allowed = pset.get< std::vector<int> >("AllowedHitStates");
       for(std::vector<int>::iterator ial = allowed.begin();ial != allowed.end();++ial){
-	if(*ial >= HitState::negambig && *ial < HitState::ignore){
+	if(*ial >= HitState::negambig && *ial <= HitState::inactive){
 	  _allowed.push_back(HitState(static_cast<HitState::TSHState>(*ial)));
 	} else
 	  throw cet::exception("RECO")<<"mu2e::PanelAmbigResolver: illegal state" << std::endl;
@@ -91,9 +93,9 @@ namespace mu2e {
       // initialize hit external errors
       initHitErrors(kfit);
       // optionally setup MC truth
-      if(_diag > 0 && _kdiag != 0){
-	_kdiag->kalDiag(kfit._krep,false);
-      }
+//      if(_diag > 0 && _kdiag != 0){
+//	_kdiag->kalDiag(kfit._krep,false);
+//      }
       // sort by panel
       std::sort(kfit._hits.begin(),kfit._hits.end(),panelcomp());
       // collect hits in the same panel
@@ -117,7 +119,7 @@ namespace mu2e {
       PanelInfo pinfo;
       fillPanelInfo(phits,kfit._krep,pinfo);
       // loop over all ambiguity/activity states for this panel
-      PanelStateIterator psi(phits,_allowed);
+      PanelStateIterator psi(pinfo._uinfo,_allowed);
       PRV results;
       do {
 	// for each state, fill the result of the 1-dimensional optimization
@@ -160,17 +162,22 @@ namespace mu2e {
 	if(_kdiag != 0){
 	  // fill MC truth for these hits and track
 	  _mcuinfo.clear();
-	  // use 1st hit for MC information
-	  StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(pinfo._uinfo[0]._index);
+	  // use 1st hit for MC track information.  I should take the most common match from all hits, FIXME!
+	  StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(phits[0]->index());
 	  StrawDigi::TDCChannel itdc = StrawDigi::zero;
 	  if(!mcdigi.hasTDC(StrawDigi::zero))
 	    itdc = StrawDigi::one;
-	  CLHEP::Hep3Vector const& mctpos = mcdigi.stepPointMC(itdc)->position();
+	  art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+	  art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+
+	  CLHEP::Hep3Vector const& mctpos = spmcp->position();
 	  CLHEP::Hep3Vector udir(pinfo._udir._x, pinfo._udir._y, pinfo._udir._z);
-	  _mctupos = udir.dot(mctpos);		
-	  for(auto ishi : pinfo._uinfo) {
+	  _mctupos = udir.dot(mctpos);
+	  // loop over the individual hits and get the MC truth from KalDiag
+	  for(auto tsh : phits){
+	    TrkStrawHitInfoMC tshmc;
+	    _kdiag->fillHitInfoMC(spp,_kdiag->mcData()._mcdigis->at(tsh->index()),tsh->straw(),tshmc);
 	    TSHMCUInfo mcinfo;
-	    TrkStrawHitInfoMC const& tshmc = _kdiag->_tshinfomc[ishi._index];
 	    mcinfo._ambig = tshmc._ambig;
 	    mcinfo._dr = tshmc._dist;
 	    _mcuinfo.push_back(mcinfo);
@@ -213,7 +220,19 @@ namespace mu2e {
 	  pinfo._tuwt = 1.0/(pinfo._tuerr*pinfo._tuerr + _trkpenaltyres*_trkpenaltyres);
 	  // now, project the hits onto u, WRT the projected track position. 
 	  for(TSHCI ihit = phits.begin();ihit != phits.end();++ihit){
-	    pinfo._uinfo.push_back(TSHUInfo(*ihit,udir,tpos.hepPoint()));
+	    TSHUInfo uinfo(*ihit,udir,tpos.hepPoint());
+	    // mask off hits with wire u values outside the limits, and (optionally) those whose
+	    // initial state isn't allowed
+	    if(fabs(uinfo._upos) > _maxhitu)
+	      uinfo._use = TSHUInfo::unused;
+	    if(_fixunallowed){
+	      auto ifnd = std::find(_allowed.begin(),_allowed.end(),uinfo._hstate);
+	      if(ifnd == _allowed.end())
+		uinfo._use = TSHUInfo::fixed;
+	    }
+	    if(uinfo._use == TSHUInfo::free)++pinfo._nfree;
+	    if(uinfo._use != TSHUInfo::unused)++pinfo._nused;
+	    pinfo._uinfo.push_back(uinfo);
 	  }
 	}
       } else {
@@ -236,45 +255,47 @@ namespace mu2e {
       // consistency check
       if(ntsh != result._state._nhits) 
 	throw cet::exception("RECO")<<"mu2e::PanelAmbigResolver: inconsistent hits" << std::endl;
-      unsigned nused(0);
       for(size_t itsh=0;itsh<ntsh;++itsh){
-	// only accumulate if the state is active
 	HitState const& tshs = result._state.hitState(itsh);
 	TSHUInfo const& tshui = pinfo._uinfo[itsh];
-	if(tshs.active()){
-	  ++nused;
-  // compare this state to the original, record any differences
-	  if(tshs != HitState(tshui._ambig, tshui._active))
-	    result._statechange |= (itsh << 1);	    
-	  double w = tshui._uwt;
-	  double r = tshui._dr;
-	  double v = tshui._dv;
-	  // sign for ambiguity
-	  if(tshs._state == HitState::negambig){
-	    r *= -1;
-	    v *= -1;
-	  } else if(tshs._state == HitState::noambig){
-	    r = 0;
-	    w = 1.0/(1.0/w + _nullerr2); // increase the error on 0 ambiguity hits
-	  }
-	  double u = tshui._upos + r;
-	  wsum += w;
-	  uwsum += u*w;
-	  vwsum += v*w;
-	  uuwsum += u*u*w;
-	  vvwsum += v*v*w;
-	  uvwsum += u*v*w;
-	} else if(tshs._state == HitState::inactive) // penalize inactive hits
-	  chi2penalty += _inactivepenalty;
+	// compute chisquared for selected hits
+	if(tshui._use == TSHUInfo::free || tshui._use == TSHUInfo::fixed){
+	  // compare this state to the original, record any differences
+	  if(tshs != tshui._hstate)
+	    result._statechange |= (itsh << 1);
+	  // compute u 
+	  if(tshs._state != HitState::inactive){
+	    double w = tshui._uwt;
+	    double r = tshui._dr;
+	    double v = tshui._dv;
+	    // sign for ambiguity
+	    if(tshs._state == HitState::negambig){
+	      r *= -1;
+	      v *= -1;
+	    } else if(tshs._state == HitState::noambig){
+	      r = 0.; // inactive hits don't depend on time
+	      v = 0.;
+	      w = 1.0/(1.0/w + _nullerr2); // increase the error on 0 ambiguity hits
+	    }
+	    double u = tshui._upos + r;
+	    wsum += w;
+	    uwsum += u*w;
+	    vwsum += v*w;
+	    uuwsum += u*u*w;
+	    vvwsum += v*v*w;
+	    uvwsum += u*v*w;
+	  } else // penalize inactive hits
+	    chi2penalty += _inactivepenalty;
+	}
       }
-      if(nused > 0){
+      if(pinfo._nused > 0){
 	// propogate t0 uncertainty.  This is a constraint centered at the
 	// current value of t0, unit derivative
 	double t0wt = 1.0/(t0._t0err*t0._t0err);
 	vvwsum += t0wt; // t0 has unit derrivative
 	// optionally add track position constraint if there are multiple hits.  It is like a hit, but with r=v=0
 	// NB, since the track position is defined to be 0, it adds only to the weight
-	if(_addtrkpos || nused == 1)wsum += pinfo._tuwt;
+	if(_addtrkpos || pinfo._nused == 1)wsum += pinfo._tuwt;
 	// now compute the scalar, vector, and tensor terms for the 2nd-order chisquared expansion
 	double alpha = uuwsum;
 	CLHEP::HepVector beta(2);
@@ -308,6 +329,7 @@ namespace mu2e {
 	  //  addPatternPenalty();
 	}
       } else {
+      // if there are no active hits, flag the status
 	result._status = -100;
       }
     }

@@ -9,20 +9,17 @@
 namespace mu2e {
   namespace PanelAmbig {
     
-    PanelStateIterator::PanelStateIterator(TSHV const& tshv,HSV const& allowedHS) : _allowedHS(allowedHS) {
-      // Define the 1st valid sate.  if no hit states are allowed, all hits are fixed (ignored)
+    PanelStateIterator::PanelStateIterator(TSHUIV const& uinfo, HSV const& allowed) : _uinfo(uinfo), _allowedHS(allowed) {
       HSV hsv;
-      for(auto tsh : tshv) {
-	if(_allowedHS.size() > 0){
-	  // hits whose current state isn't allowed will be held frozen (ignored)
-	  HitState tshs(tsh);
-	  HSV::const_iterator ish = std::find(_allowedHS.begin(),_allowedHS.end(),tshs);
-	  if(ish == _allowedHS.end())
-	    hsv.push_back(HitState(HitState::ignore));
-	  else
-	    hsv.push_back(_allowedHS[0]);
-	} else
-	  hsv.push_back(HitState(HitState::ignore));
+      // Define the first panel state.
+      // loop over the hits in this panel
+      for(auto tshui : _uinfo) {
+	if(tshui._use == TSHUInfo::free)
+	// free hits are initialized to the first allowed state
+	  hsv.push_back(_allowedHS[0]);
+	else
+	// fixed or unused hits are kept at the initial state
+	  hsv.push_back(tshui._hstate);
       }
       _allowedPS.push_back(hsv);
       // loop over all possible states and record them
@@ -35,42 +32,40 @@ namespace mu2e {
 
     bool PanelStateIterator::increment(HSV& hsv) {
       bool retval(false); // default is failure
-      HSV::iterator ihs = hsv.begin();
+      size_t ihit=0;
       do {
-	if(increment(*ihs)){
-	  retval = true;
-	  break;
-	} else {
+	if(_uinfo[ihit]._use == TSHUInfo::free){
+	  HitState& hs = hsv[ihit];
+	  if(increment(hs)){
+	    retval = true;
+	    break;
+	  } else {
 	  // we're at the end of allowed states for this hit; reset it and try incrementing the next
-	  reset(*ihs);
-	  ++ihs;
-	}
-      } while(ihs != hsv.end());
+	    reset(hs);
+	    ++ihit;
+	  }
+	} else
+	  ++ihit; // skip hits not free to change
+      } while(ihit < hsv.size());
       return retval;
     }
 
     bool PanelStateIterator::increment(HitState& hs) {
       bool retval(false);
-      static HitState ignore(HitState::ignore);
-      if(hs != ignore) {
-	// find iterator to this state in the allowed states
-	HSV::const_iterator ihs = std::find(_allowedHS.begin(), _allowedHS.end(),hs);
-	// try incrementing: if successful, update the hit state, and we're done
-	if(ihs != _allowedHS.end()) ++ihs;
-	if(ihs != _allowedHS.end()){
-	  // success: update state
-	  hs = *ihs;
-	  retval = true;
-	}
+      // find iterator to this state in the allowed states
+      HSV::const_iterator ihs = std::find(_allowedHS.begin(), _allowedHS.end(),hs);
+      // try incrementing: if successful, update the hit state, and we're done
+      if(ihs != _allowedHS.end()) ++ihs;
+      if(ihs != _allowedHS.end()){
+	// success: update state
+	hs = *ihs;
+	retval = true;
       }
       return retval;
     }
 
     void PanelStateIterator::reset(HitState& hs) {
-      static HitState ignore(HitState::ignore);
-      if(hs != ignore && _allowedHS.size() > 0) {
-	hs = _allowedHS[0];
-      }
+      hs = _allowedHS[0];
     }
 
   } // PanelAmbig namespace

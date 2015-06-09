@@ -94,7 +94,10 @@ namespace mu2e
     void fillTrkInfoMCStep(art::Ptr<SimParticle> const& spp, TrkInfoMCStep& trkinfomcstep) const; 
 // hit information
     void fillHitInfo(const KalRep* krep, std::vector<TrkStrawHitInfo>& hitinfos) const;
+    void fillHitInfo(const TrkStrawHit* tsh,TrkStrawHitInfo& tshinfo) const;
     void fillHitInfoMC(art::Ptr<SimParticle> const& primary,const KalRep* krep,std::vector<TrkStrawHitInfoMC>& tshinfomc) const;
+    void fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& mcdigi,Straw const& straw, 
+    TrkStrawHitInfoMC& tshinfomc) const;
 // relationship information
     static relation relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj);
     static relation relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2);
@@ -116,9 +119,6 @@ namespace mu2e
 // helper functions
     static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
     void fillTrkInfoMCStep(CLHEP::Hep3Vector const& mom, CLHEP::Hep3Vector const& pos, double charge, TrkInfoMCStep& einfo) const;
-    void fillHitInfo(const TrkStrawHit* tsh,TrkStrawHitInfo& tshinfo) const;
-    void fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& mcdigi,Straw const& straw, 
-    TrkStrawHitInfoMC& tshinfomc) const;
     void countDoubles(const KalRep* krep, int& ndouble, int& ndactive) const;
     void fillTrkQual(TrkInfo& trkinfo) const;
     const helixpar& MCHelix(TRACKERPOS tpos) const;

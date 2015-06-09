@@ -54,11 +54,14 @@ namespace mu2e {
 	double _nullerr2; // additional error (squared) for hits with null ambiguity
 	bool _addtrkpos; // add constraint associated with the track position to the chisquared
 	HSV _allowed; // allowed states of a TrkStrawHit
+	double _maxhitu; // maximum u value allowed for a hit
+	bool _fixunallowed; // fix the state of any hit whose initial state isn't allowed
 	int _diag; // diagnostic level`
 	// TTree variables, mutable so they don't change const
 	mutable TTree *_padiag, *_pudiag; // diagnostic TTree
 	mutable Int_t _nuhits, _nrhits; // # hits in this panel
 	mutable Int_t _nactive; // # active hits in this panel
+	mutable Int_t _nused; // # hits used to compute chisquared
 	mutable Int_t _nres; // # of results for this panel (combinatorics)
 	mutable Float_t _tupos; // u track position
 	mutable Float_t _tuerr; // u track position
@@ -67,7 +70,6 @@ namespace mu2e {
 	mutable TSHMCUIV _mcuinfo; // NC u position of hits in panel
 	mutable PRV _results;
 	mutable KalDiag* _kdiag; // optional diagnostics
-
     };
   } // PanelAmbig namespace
 } // mu2e namespace

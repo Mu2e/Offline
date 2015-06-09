@@ -13,7 +13,7 @@ namespace mu2e {
       public:
 	PanelStateIterator() = default;
 	// construct from a vector of TrkStrawHits and the list of allowed hit states.
-	PanelStateIterator(TSHV const& tshv, HSV const& hsv);
+	PanelStateIterator(TSHUIV const& uinfo, HSV const& allowed);
 	// copy constructor
 	PanelStateIterator(PanelStateIterator const& other) = default;
 	PanelStateIterator& operator =(PanelStateIterator const& other) = default;
@@ -30,6 +30,7 @@ namespace mu2e {
 	bool increment(HitState& hs);
 	void reset(HitState& hs);
 	PSV::iterator _current; // current panel state
+	TSHUIV _uinfo; // information about the panel hits
 	PSV _allowedPS; // all allowed states for this panel
 	HSV _allowedHS; // allowed hit states
     };
@@ -37,4 +38,3 @@ namespace mu2e {
   } // PanelAmbig namespace
 } // mu2e namespace
 #endif
-
