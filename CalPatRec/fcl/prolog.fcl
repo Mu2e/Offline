@@ -124,7 +124,7 @@ CalPatRec            : {
 	makeStrawHitModuleLabel                 : makeSH
 	debugLevel                              : 0
 	minnstraws                              : 10
-	weedhits                                : true   # default:true
+	weedhits                                : [ true, true]   # default:true
 	maxiter                                 : 3
 	materialCorrection                      : false
 	seedsmear       			: 10000
@@ -175,7 +175,7 @@ CalPatRec            : {
 #------------------------------------------------------------------------------
     KalFitHack : {
 	debugLevel                              : 0
-	weedhits                                : true
+	weedhits                                : [ true, true, true, true, true, true, true, true, true ]
 	materialCorrection                      : true
 	mingap					: 1.0
 	ambiguityStrategy    			: [ 4  , 4  , 4  , 4   , 4    , 4   , 4  , 4  , 4  ]
