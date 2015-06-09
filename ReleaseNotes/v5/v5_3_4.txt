@@ -2,6 +2,16 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_3_4
 
+11) June 8, 2015 - kutschke
+    Edited setup.sh to require version 619 of the BaBar code.
+    This brings in the new header files needed to build for BtrkHelper
+    but it does not change any behaviour of the BaBar code.
+
+    Also restore BtrkHelper to the build by restoring the SConscript file.
+      setup.sh
+      BtrkHelper/src/SConscript
+
+
 10) May 30, 2015 - ehrlich
     Updated CRVResponse code
     -bug fixes

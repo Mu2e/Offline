@@ -45,12 +45,12 @@ Based on Paul Rubinov's C# code
   class MakeCrvSiPMResponses
   {
     int    _numberPixels;
-    double _bias;           //in V above breakdown
-    double _timeStart;      //in ns
-    double _timeEnd;        //in ns
-    double _scaleFactor;    //based on a time step of 1.0ns
+    double _bias;             //in V above breakdown
+    double _blindTime;        //in ns
+    double _microBunchPeriod; //in ns
+    double _scaleFactor;      //based on a time step of 1.0ns
 
-    double _time;           //in ns
+    double _time;             //in ns
 
     public:
     struct ProbabilitiesStruct
@@ -84,7 +84,7 @@ Based on Paul Rubinov's C# code
                          _randFlat(randFlat), _randPoissonQ(randPoissonQ) {}
 
     void SetSiPMConstants(double numberPixels, double bias, 
-                          double timeStart, double timeEnd, double scaleFactor, 
+                          double blindTime, double microBunchPeriod, double scaleFactor, 
                           ProbabilitiesStruct probabilities);
     void Simulate(const std::vector<double> &photons, 
                   std::vector<SiPMresponse> &SiPMresponseVector);

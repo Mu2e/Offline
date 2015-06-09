@@ -12,6 +12,8 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -41,6 +43,7 @@ namespace mu2e
     explicit CrvRecoPulsesFinder(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
     void beginJob();
+    void beginRun(art::Run &run);
     void endJob();
 
     private:
@@ -51,6 +54,7 @@ namespace mu2e
     double      _param1;
     double      _pulseThreshold;
     double      _leadingEdgeThreshold;
+    double      _microBunchPeriod;
   };
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
@@ -70,6 +74,12 @@ namespace mu2e
 
   void CrvRecoPulsesFinder::endJob()
   {
+  }
+
+  void CrvRecoPulsesFinder::beginRun(art::Run &run)
+  {
+    mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
+    _microBunchPeriod = accPar->deBuncherPeriod;
   }
 
   void CrvRecoPulsesFinder::produce(art::Event& event) 
@@ -96,8 +106,11 @@ namespace mu2e
         unsigned int n = _makeCrvRecoPulses->GetNPulses();
         for(unsigned int i=0; i<n; i++)
         {
+          double time=_makeCrvRecoPulses->GetLeadingEdge(i);
+          if(time<0) continue;
+          if(time>_microBunchPeriod) continue;
           crvRecoPulses.GetRecoPulses(SiPM).emplace_back(_makeCrvRecoPulses->GetPEs(i),
-                                                         _makeCrvRecoPulses->GetLeadingEdge(i),
+                                                         time,
                                                          _makeCrvRecoPulses->GetPulseHeight(i));
         }
       }

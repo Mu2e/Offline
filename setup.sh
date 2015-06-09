@@ -81,7 +81,7 @@ source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
 
 # Check out the BaBar code.
 # First build the symlink directory.  Then checkout the code.
-babarversion=618
+babarversion=619
 if [  -f "./BaBar/makeInclude.sh" ]; then
   source ./BaBar/makeInclude.sh
   if [ ! -f "BaBar/BaBar/include/BaBar.hh" ]; then

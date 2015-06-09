@@ -10,6 +10,8 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -39,21 +41,27 @@ namespace mu2e
     explicit SimpleCrvCoincidenceCheck(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
     void beginJob();
+    void beginRun(art::Run &run);
     void endJob();
 
     private:
     bool        _storeCoincidenceCombinations;
+    bool        _checkLayers;
     std::string _crvRecoPulsesModuleLabel;
     double      _PEthreshold;
     double      _maxDistance;
     double      _maxTimeDifference;
     double      _timeWindowStart;
     double      _timeWindowEnd;
+    double      _microBunchPeriod;
+    double      _totalTime;
+    double      _totalDeadTime;
 
     struct coincidenceStruct
     {
       double                  pos;
       CRSScintillatorBarIndex counter;
+      int                     layer, moduleType;
       std::vector<double>     time;
       std::vector<int>        PEs;
       std::vector<int>        SiPMs;
@@ -62,6 +70,7 @@ namespace mu2e
 
   SimpleCrvCoincidenceCheck::SimpleCrvCoincidenceCheck(fhicl::ParameterSet const& pset) :
     _storeCoincidenceCombinations(pset.get<bool>("storeCoincidenceCombinations")),
+    _checkLayers(pset.get<bool>("checkLayers")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _PEthreshold(pset.get<double>("PEthreshold")),
     _maxDistance(pset.get<double>("maxDistance")),
@@ -70,6 +79,8 @@ namespace mu2e
     _timeWindowEnd(pset.get<double>("timeWindowEnd"))
   {
     produces<CrvCoincidenceCheckResult>();
+    _totalTime=0;
+    _totalDeadTime=0;
   }
 
   void SimpleCrvCoincidenceCheck::beginJob()
@@ -79,6 +90,13 @@ namespace mu2e
   void SimpleCrvCoincidenceCheck::endJob()
   {
   }
+
+  void SimpleCrvCoincidenceCheck::beginRun(art::Run &run)
+  {
+    mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
+    _microBunchPeriod = accPar->deBuncherPeriod;
+  }
+
 
   void SimpleCrvCoincidenceCheck::produce(art::Event& event) 
   {
@@ -97,12 +115,14 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = iter->first;
       const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
       int   moduleNumber=CRSbar.id().getShieldNumber();
+      int   layerNumber=CRSbar.id().getLayerNumber();
 
       const CrvRecoPulses &crvRecoPulses = iter->second;
       for(int SiPM=0; SiPM<2; SiPM++)
       {
         coincidenceStruct c;
         c.counter=barIndex;
+        c.layer=layerNumber;
         int coincidenceGroup = 0;
 //FIXME: DO NOT HARDCODE THIS
         switch (moduleNumber)
@@ -110,36 +130,54 @@ namespace mu2e
           case 0: 
           case 3: 
           case 4: 
-          case 5: if(SiPM==0) {coincidenceGroup = 1; c.pos=CRSbar.getPosition().z();}
+          case 5: c.moduleType=1;  //CRV-R
+                  if(SiPM==0) {coincidenceGroup = 1; c.pos=CRSbar.getPosition().z();}
                   if(SiPM==1) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
                   break;
-          case 1: if(SiPM==1) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
+          case 1: c.moduleType=1;  //CRV-R
+                  if(SiPM==1) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
                   break;
-          case 2: if(SiPM==0) {coincidenceGroup = 1; c.pos=CRSbar.getPosition().z();}
+          case 2: c.moduleType=1;  //CRV-R
+                  if(SiPM==0) {coincidenceGroup = 1; c.pos=CRSbar.getPosition().z();}
                   if(SiPM==1) {coincidenceGroup = 3; c.pos=CRSbar.getPosition().z();}
                   break;
           case 6: 
           case 7: 
-          case 8: if(SiPM==0) {coincidenceGroup = 4; c.pos=CRSbar.getPosition().z();}
+          case 8: c.moduleType=2;  //CRV-L
+                  if(SiPM==0) {coincidenceGroup = 4; c.pos=CRSbar.getPosition().z();}
                   if(SiPM==1) {coincidenceGroup = 5; c.pos=CRSbar.getPosition().z();}
                   break;
-          case 9: if(SiPM==0) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
+          case 9: c.moduleType=3;  //CRV-T
+                  if(SiPM==0) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
                   break;
          case 10: 
          case 11: 
-         case 12: if(SiPM==0) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
+         case 12: c.moduleType=3;  //CRV-T
+                  if(SiPM==0) {coincidenceGroup = 2; c.pos=CRSbar.getPosition().z();}
                   if(SiPM==1) {coincidenceGroup = 5; c.pos=CRSbar.getPosition().z();}
                   break;
-         case 13: if(SiPM==0) {coincidenceGroup = 6; c.pos=CRSbar.getPosition().y();}
+         case 13: 
+         case 20: c.moduleType=4;  //CRV-D
+                  if(SiPM==0) {coincidenceGroup = 6; c.pos=CRSbar.getPosition().y();}
                   if(SiPM==1) {coincidenceGroup = 7; c.pos=CRSbar.getPosition().y();}
                   break;
-         case 14: if(SiPM==0) {coincidenceGroup = 8; c.pos=CRSbar.getPosition().y();}
+         case 14: c.moduleType=5;  //CRV-U
+                  if(SiPM==0) {coincidenceGroup = 8; c.pos=CRSbar.getPosition().y();}
                   break;
-         case 15: if(SiPM==0) {coincidenceGroup = 9; c.pos=CRSbar.getPosition().x();}
+         case 15: c.moduleType=6;  //CRV-C1
+                  if(SiPM==0) {coincidenceGroup = 9; c.pos=CRSbar.getPosition().x();}
                   break;
-         case 16: if(SiPM==0) {coincidenceGroup = 10; c.pos=CRSbar.getPosition().x();}
+         case 16: c.moduleType=7;  //CRV-C2
+                  if(SiPM==0) {coincidenceGroup = 10; c.pos=CRSbar.getPosition().x();}
                   break;
-         case 17: if(SiPM==0) {coincidenceGroup = 11; c.pos=CRSbar.getPosition().x();}
+         case 17: c.moduleType=8;  //CRV-C3
+                  if(SiPM==0) {coincidenceGroup = 11; c.pos=CRSbar.getPosition().x();}
+                  break;
+         case 18: c.moduleType=4;  //CRV-D
+                  if(SiPM==0) {coincidenceGroup = 6; c.pos=CRSbar.getPosition().y();}
+                  break;
+         case 19: c.moduleType=4;  //CRV-D
+                  if(SiPM==1) {coincidenceGroup = 7; c.pos=CRSbar.getPosition().y();}
                   break;
         };
 
@@ -152,15 +190,27 @@ namespace mu2e
           for(unsigned int i = 0; i<pulseVector.size(); i++) 
           {
             const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
+            double time=pulse._leadingEdge;
             if(pulse._PEs>=_PEthreshold && 
-               pulse._leadingEdge>=_timeWindowStart && 
-               pulse._leadingEdge<=_timeWindowEnd)
+               time>=_timeWindowStart && 
+               time<=_timeWindowEnd)
                {
-                 c.time.push_back(pulse._leadingEdge);
+                 c.time.push_back(time);
                  c.PEs.push_back(pulse._PEs);
                  c.SiPMs.push_back(SiPMtmp);
-//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"  SiPM: "<<SiPMtmp<<std::endl;
-//std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<pulse._leadingEdge<<"   pos: "<<c.pos<<std::endl;
+//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"   module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  SiPM: "<<SiPMtmp<<std::endl;
+//std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<"   pos: "<<c.pos<<std::endl;
+               }
+            time+=_microBunchPeriod;
+            if(pulse._PEs>=_PEthreshold && 
+               time>=_timeWindowStart && 
+               time<=_timeWindowEnd)
+               {
+                 c.time.push_back(time);
+                 c.PEs.push_back(pulse._PEs);
+                 c.SiPMs.push_back(SiPMtmp);
+//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"   module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  SiPM: "<<SiPMtmp<<std::endl;
+//std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<"   pos: "<<c.pos<<std::endl;
                }
           }
         }
@@ -180,6 +230,15 @@ namespace mu2e
       for(unsigned int i2=i1+1; i2<n && (!foundCoincidence || _storeCoincidenceCombinations); i2++) 
       for(unsigned int i3=i2+1; i3<n && (!foundCoincidence || _storeCoincidenceCombinations); i3++)
       {
+        if(_checkLayers)
+        {
+          int layers[3]={vectorC[i1].layer,vectorC[i2].layer,vectorC[i3].layer};
+          int moduleTypes[3]={vectorC[i1].moduleType,vectorC[i2].moduleType,vectorC[i3].moduleType};
+          if(layers[0]==layers[1] && moduleTypes[0]==moduleTypes[1]) continue;
+          if(layers[0]==layers[2] && moduleTypes[0]==moduleTypes[2]) continue;
+          if(layers[1]==layers[2] && moduleTypes[1]==moduleTypes[2]) continue;
+        }
+
         double pos[3]={vectorC[i1].pos,vectorC[i2].pos,vectorC[i3].pos};
         double posMin = *std::min_element(pos,pos+3);
         double posMax = *std::max_element(pos,pos+3);
@@ -226,6 +285,20 @@ namespace mu2e
 
     std::cout<<"run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
     std::cout<<(foundCoincidence?"Coincidence satisfied":"No coincidence found")<<std::endl;
+
+    std::vector<CrvCoincidenceCheckResult::DeadTimeWindow> deadTimeWindows;
+    deadTimeWindows = crvCoincidenceCheckResult->GetDeadTimeWindows(25,125);  //TODO: Don't hardcode these numbers
+
+    double deadTime = 0;
+    for(unsigned int i=0; i < deadTimeWindows.size(); i++)
+    {
+      deadTime = deadTimeWindows[i]._endTime - deadTimeWindows[i]._startTime;
+      std::cout << "   Found Dead time: " << deadTime << " (" << deadTimeWindows[i]._startTime << " ... " << deadTimeWindows[i]._endTime << ")" << std::endl;
+      _totalDeadTime += deadTime;
+    }
+    _totalTime += _microBunchPeriod;
+    double fractionDeadTime = _totalDeadTime / _totalTime;
+    std::cout << "Dead time so far: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%" << std::endl;
 
     event.put(std::move(crvCoincidenceCheckResult));
 

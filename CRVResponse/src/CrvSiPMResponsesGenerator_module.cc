@@ -54,7 +54,7 @@ namespace mu2e
     double      _bias;
     double      _scaleFactor;
     double      _minCharge;
-    double      _blindTime;             //time during which the SiPM is blind
+    double      _blindTime;             //time window during which the SiPM is blind
     double      _microBunchPeriod;
     MakeCrvSiPMResponses::ProbabilitiesStruct _probabilities;
 
@@ -122,17 +122,25 @@ namespace mu2e
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
-        std::vector<SiPMresponse> SiPMresponseVector;
+        std::vector<double> photonArrivalTimesAdjusted;
         if(crvPhotons!=crvPhotonArrivalsCollection->end())
         {
           const std::vector<double> &photonArrivalTimes = crvPhotons->second.GetPhotonArrivalTimes(SiPM);
-          _makeCrvSiPMResponses->Simulate(photonArrivalTimes, SiPMresponseVector);
+          std::vector<double>::const_iterator timeIter;
+          for(timeIter=photonArrivalTimes.begin(); timeIter!=photonArrivalTimes.end(); timeIter++)
+          {
+            double time = *timeIter;
+            time = fmod(time,_microBunchPeriod); 
+            if(time>_blindTime)
+            {
+              photonArrivalTimesAdjusted.push_back(time);
+//std::cout<<"Photon arrivals   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"      "<<time<<std::endl;
+            }
+          }
         }
-        else
-        {
-          const std::vector<double> empty;
-          _makeCrvSiPMResponses->Simulate(empty, SiPMresponseVector);
-        }
+
+        std::vector<SiPMresponse> SiPMresponseVector;
+        _makeCrvSiPMResponses->Simulate(photonArrivalTimesAdjusted, SiPMresponseVector);
 
         std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &responsesOneSiPM = crvSiPMResponses.GetSiPMResponses(SiPM);
 
@@ -140,14 +148,28 @@ namespace mu2e
         std::vector<SiPMresponse>::const_iterator responseIter;
         for(responseIter=SiPMresponseVector.begin(); responseIter!=SiPMresponseVector.end(); responseIter++)
         {
-          double time=responseIter->_time;
-          if(responseIter->_time>_microBunchPeriod)
+          //time in SiPMresponseVector is between blindTime and microBunchPeriod
+          //no additional time wrapping and check for blind time is required
+          const double &time=responseIter->_time;
+          const double &charge=responseIter->_charge;
+          totalCharge+=charge;
+          responsesOneSiPM.emplace_back(time, charge);
+//std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<time<<std::endl;
+
+          //make ghost hits - see doc-db 3425 page 9
+          double deltaT=100;  //TODO: Is the additional time window Ok?
+          double wrappedTimePrevPeriod=time-_microBunchPeriod;
+          double wrappedTimeNextPeriod=time+_microBunchPeriod;
+          if(wrappedTimePrevPeriod>-deltaT)
           {
-            time = fmod(time, _microBunchPeriod);
+            responsesOneSiPM.emplace_back(wrappedTimePrevPeriod, charge);
+//std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<wrappedTimePrevPeriod<<"  prev period"<<std::endl;
           }
-          responsesOneSiPM.emplace_back(time, responseIter->_charge);
-          totalCharge+=responseIter->_charge;
-//std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<responseIter->_time<<std::endl;
+          if(wrappedTimeNextPeriod<_microBunchPeriod+deltaT)
+          {
+            responsesOneSiPM.emplace_back(wrappedTimeNextPeriod, charge);
+//std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<wrappedTimeNextPeriod<<"  next period"<<std::endl;
+          }
         }
         if(totalCharge>=_minCharge) minChargeReached=true;
       }

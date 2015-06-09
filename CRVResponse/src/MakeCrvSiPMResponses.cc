@@ -11,7 +11,7 @@ Based on Paul Rubinov's C# code
 
 
 //to get standalone version: compile with
-//g++ src/MakeCrvSiPMResponses.cc -std=c++11 -Iinc -I$CLHEP_INCLUDE_DIR -L$CLHEP_LIB_DIR -lCLHEP -DSiPMResponseStandalone
+//g++ MakeCrvSiPMResponses.cc -std=c++11 -I../inc -I$CLHEP_INCLUDE_DIR -L$CLHEP_LIB_DIR -lCLHEP -DSiPMResponseStandalone
 
     // the idea here is that a pixel goes through the phases,
     // these next steps happen inside the cell itself:
@@ -36,9 +36,9 @@ double MakeCrvSiPMResponses::GenerateAvalanche(Pixel &pixel, int cellid)
 
   if(_randFlat.fire() < GeigerProb)
   {
-    int trapsType0 = _randPoissonQ.fire(_probabilities._constTrapType0Prob * v);
-    int trapsType1 = _randPoissonQ.fire(_probabilities._constTrapType1Prob * v);
-    int photons    = _randPoissonQ.fire(_probabilities._constPhotonProduction * v);
+    int trapsType0 = _randPoissonQ.fire(_probabilities._constTrapType0Prob/_bias * v);
+    int trapsType1 = _randPoissonQ.fire(_probabilities._constTrapType1Prob/_bias * v);
+    int photons    = _randPoissonQ.fire(_probabilities._constPhotonProduction/_bias * v);
   
     double trap0Lifetime = _probabilities._constTrapType0Lifetime;
     double trap1Lifetime = _probabilities._constTrapType1Lifetime;
@@ -94,13 +94,13 @@ void MakeCrvSiPMResponses::RechargeCell(Pixel &pixel)
 }
 
 void MakeCrvSiPMResponses::SetSiPMConstants(double numberPixels, double bias,  
-                                            double timeStart, double timeEnd, double scaleFactor, 
+                                            double blindTime, double microBunchPeriod, double scaleFactor, 
                                             ProbabilitiesStruct probabilities)
 {
   _numberPixels = numberPixels;
   _bias = bias;
-  _timeStart = timeStart;
-  _timeEnd = timeEnd;
+  _blindTime = blindTime;
+  _microBunchPeriod = microBunchPeriod;
   _scaleFactor = scaleFactor;
   _probabilities = probabilities;
 }
@@ -125,23 +125,22 @@ void MakeCrvSiPMResponses::SetSiPMConstants(double numberPixels, double bias,
 void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
 {
 //schedule charges caused by the CRV counter photons
-//no check whether time<_timeStart, since this should be done in the calling method
+//no check whether time>=_blindTime && time<_mircoBunchPeriod, since this should be done in the calling method
   std::vector<double>::const_iterator iter;
   for(iter=photons.begin(); iter!=photons.end(); iter++)
   {
-    if(*iter<_timeStart) continue;
     int cellid = _randFlat.fireInt(_numberPixels);
     _scheduledCharges.emplace(cellid, *iter);  //constructs ScheduledCharge(cellid, *iter)
   }
 
 //schedule random thermal charges
-  double timeWindow = _timeEnd - _timeStart;
+  double timeWindow = _microBunchPeriod - _blindTime;
   for(int cellid=0; cellid<_numberPixels; cellid++)
   {
     int numberThermalCharges = _randPoissonQ.fire(_probabilities._constThermalProb * timeWindow);
     for(int i=0; i<numberThermalCharges; i++)
     {
-      double time = _timeStart + timeWindow * _randFlat.fire();
+      double time = _blindTime + timeWindow * _randFlat.fire();
       _scheduledCharges.emplace(cellid, time); //constructs ScheduledCharge(cellid, time)
     }
   }
@@ -161,9 +160,12 @@ void MakeCrvSiPMResponses::Simulate(const std::vector<double> &photons,
 
     int cellid = currentCharge->_cellid;
     _time = currentCharge->_time;
-    if(_time>_timeEnd) break;  //current time is outside the time window
-
     _scheduledCharges.erase(currentCharge);
+
+    double wrappedTime=fmod(_time,_microBunchPeriod);
+    if(wrappedTime<_blindTime) continue;  //Current time is inside the blind time.
+                                          //This may happen for charges which were added later (after pulses, cross talk of after pulses).
+                                          //TODO: Do the voltages of all pixels need to be reset after a blind Time?
 
     //find pixel with cellid, create if it doesn't exist
     std::map<int,Pixel>::iterator p = _pixels.find(cellid);
@@ -174,7 +176,8 @@ void MakeCrvSiPMResponses::Simulate(const std::vector<double> &photons,
     RechargeCell(pixel);
     double output = GenerateAvalanche(pixel, cellid); //in units of PEs*biasVoltage
 
-    if(output>0) SiPMresponseVector.emplace_back(_time, output/_bias); //output/bias is the charge is in units of PEs
+    if(output>0) SiPMresponseVector.emplace_back(wrappedTime, output/_bias); //output/bias is the charge is in units of PEs
+                                                                             //output time is between blindTime and microBunchPeriod
   } //while(1)
 }
 
@@ -196,16 +199,20 @@ int main()
   std::vector<SiPMresponse> SiPMresponseVector;
 
   MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
-  probabilities._constGeigerProbCoef = 2;
-  probabilities._constGeigerProbVoltScale = 3;
+  probabilities._constGeigerProbCoef = 1.0;
+  probabilities._constGeigerProbVoltScale = 5.5;
   probabilities._constTrapType0Prob = 0.14;   //trap_prob*trap_type0_prob=0.2*0.7
   probabilities._constTrapType1Prob = 0.06;   //trap_prob*trap_type1_pron=0.2*0.3
   probabilities._constTrapType0Lifetime = 5;
   probabilities._constTrapType1Lifetime = 50;
-  probabilities._constThermalProb = 6.25e-7; //ns^1     1MHz at SiPM --> 1MHz/#pixel=625Hz at Pixel --> 625s^-1 = 6.25-7ns^-1   //exp(-E_th/T)=1.6e-6
-  probabilities._constPhotonProduction = 0.1; //0.4;
-  MakeCrvSiPMResponses sim;
-  sim.SetSiPMConstants(1600, 2.5, 1695, 0.08, probabilities);
+  probabilities._constThermalProb = 6.31e-7; //ns^1     1MHz at SiPM --> 1MHz/#pixel=631Hz at Pixel --> 631s^-1 = 6.31-7ns^-1 
+  probabilities._constPhotonProduction = 0.4;
+
+  CLHEP::HepJamesRandom engine(1);
+  CLHEP::RandFlat randFlat(engine);
+  CLHEP::RandPoissonQ randPoissonQ(engine);
+  MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
+  sim.SetSiPMConstants(1584, 2.4, 0.0, 1695, 0.08, probabilities);
   sim.Simulate(photonTimes, SiPMresponseVector);
 
   for(unsigned int i=0; i<SiPMresponseVector.size(); i++)

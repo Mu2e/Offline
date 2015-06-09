@@ -380,7 +380,7 @@ for(int i=0; i<nEntries; i++) AbsPS[i]*=5.0;
   MPTPolystyrene->AddProperty("ABSLENGTH",PhotonEnergy,AbsPS,nEntries);
   MPTPolystyrene->AddProperty("FASTCOMPONENT",PhotonEnergy, ScintilFast,nEntries);
   MPTPolystyrene->AddProperty("SLOWCOMPONENT",PhotonEnergy, ScintilSlow,nEntries);
-  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",1600./MeV);
+  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",2500./MeV);
   MPTPolystyrene->AddConstProperty("RESOLUTIONSCALE",1.0);
   MPTPolystyrene->AddConstProperty("FASTTIMECONSTANT", 3.*ns);
   MPTPolystyrene->AddConstProperty("SLOWTIMECONSTANT", 10.*ns);
