@@ -1,0 +1,29 @@
+//
+// Run-time test config for CosmicDYB
+//
+// Original author Yury Kolomensky
+
+bool conversionGun.do = false;
+bool cosmicDYB.do = true;
+bool picapture.do = false;
+bool ejectedProtonGun.do = false;
+bool decayinorbitGun.do = false;
+bool piEplusNuGun.do = false;
+
+double cosmicDYB.mean =  -1.1; 
+double cosmicDYB.muEMin = 0.5e3;
+double cosmicDYB.muEMax = 1000e3;
+double cosmicDYB.dx     = 0;
+double cosmicDYB.dy     = 2000;
+double cosmicDYB.dz     = 2000;
+
+string cosmicDYB.refPointChoice  = "Customized";
+bool   cosmicDYB.vertical        = true;
+string cosmicDYB.directionChoice = "Positive_x";
+vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-1389.4,1098.3,12932.4};  //x: 2514.6+(-3904.0)=-1389.4
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
