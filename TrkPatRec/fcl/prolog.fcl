@@ -63,9 +63,10 @@ TrkPatRec :
         {
 	    materialCorrection                  : true
 	    fieldCorrection			: true
-	    hiterr 				: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
-	    ambiguityStrategy   		: [ 0  , 0  , 2  , 2   , 2    , 2   , 2  , 2  , 2  ]
-	    t0Tolerance				: [ 2.0, 1.0, 1.0, 1.0 , 0.5  , 0.5 , 0.2, 0.2, 0.1]
+	    ResolveAfterWeeding			: true
+            hiterr                              : [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
+	    ambiguityStrategy                   : [ 0  , 0  , 2  , 2   , 2    , 2   , 2  , 2  , 2  ]
+	    t0Tolerance                         : [ 2.0, 1.0, 1.0, 1.0 , 0.5  , 0.5 , 0.2, 0.2, 0.1]
 	    weedhits				: [ true, true, true, true, true, true, true, true, true]
 #------------------------------------------------------------------------------
 # ambiguity resolver parameters
@@ -76,7 +77,15 @@ TrkPatRec :
 	    }
 	    PocaAmbigResolver                   : {}
 	    PanelAmbigResolver                  : {
-	      AllowedHitStates : [ 1, 2 ]
+	      DiagLevel				: 0
+	      AddTrackPositionConstraint	: true
+	      AllowedHitStates			: [ -1, 0, 1, 2 ] # try all ambiguity and activity states
+	      minChisqSep			: 4.0
+	      inactivePenalty			: 16.0
+	      PenaltyResolution			: 0.25
+	      TrackPenaltyResolution		: 0.5
+	      NullAmbigPenalty			: 0.0
+	      MaximumHitU			: 8.0
 	    }
 #------------------------------------------------------------------------------
 # provision for doublet ambiguity resolver
@@ -106,58 +115,66 @@ TrkPatRec :
 	}
 
 } # end TrkPatRec
+# specific choices for ambiguity resolution: doublet-based, or panel-based
+TrkPatRecDoublets : @local::TrkPatRec
+TrkPatRecDoublets.KalFit.ambiguityStrategy	: [ 0  , 0  , 4, 4, 4, 4, 4, 4 , 4 ]
+#
+TrkPatRecPanel : @local::TrkPatRec
+TrkPatRecPanel.KalFit.ambiguityStrategy   	: [ 0, 0, 2, 2, 2, 3, 3, 3, 3]
+TrkPatRecPanel.KalFit.weedhits			: [ true, true, true, true, true, false, false, false, false]
 # variants of TrkPatRec for specific particle species and directions. These constitute the 'standard' fits
 # in future we need names instead of values for the particle type
-TrkPatRecDownstreameMinus : @local::TrkPatRec
+# for now, use panel ambiguity resolution
+TrkPatRecDownstreameMinus : @local::TrkPatRecPanel
 TrkPatRecDownstreameMinus.fitparticle : 11
 TrkPatRecDownstreameMinus.fitdirection : 0 
 
-TrkPatRecUpstreameMinus : @local::TrkPatRec
+TrkPatRecUpstreameMinus : @local::TrkPatRecPanel
 TrkPatRecUpstreameMinus.fitparticle : 11
 TrkPatRecUpstreameMinus.fitdirection : 1
 
-TrkPatRecDownstreamePlus : @local::TrkPatRec
+TrkPatRecDownstreamePlus : @local::TrkPatRecPanel
 TrkPatRecDownstreamePlus.fitparticle : -11
 TrkPatRecDownstreamePlus.fitdirection : 0
 
-TrkPatRecUpstreamePlus : @local::TrkPatRec
+TrkPatRecUpstreamePlus : @local::TrkPatRecPanel
 TrkPatRecUpstreamePlus.fitparticle : -11
 TrkPatRecUpstreamePlus.fitdirection : 1
 
-TrkPatRecDownstreammuMinus : @local::TrkPatRec
+TrkPatRecDownstreammuMinus : @local::TrkPatRecPanel
 TrkPatRecDownstreammuMinus.fitparticle : 13
 TrkPatRecDownstreammuMinus.fitdirection : 0
 
-TrkPatRecUpstreammuMinus : @local::TrkPatRec
+TrkPatRecUpstreammuMinus : @local::TrkPatRecPanel
 TrkPatRecUpstreammuMinus.fitparticle : 13
 TrkPatRecUpstreammuMinus.fitdirection : 1
 
-TrkPatRecDownstreammuPlus : @local::TrkPatRec
+TrkPatRecDownstreammuPlus : @local::TrkPatRecPanel
 TrkPatRecDownstreammuPlus.fitparticle : -13
 TrkPatRecDownstreammuPlus.fitdirection : 0
 
-TrkPatRecUpstreammuPlus : @local::TrkPatRec
+TrkPatRecUpstreammuPlus : @local::TrkPatRecPanel
 TrkPatRecUpstreammuPlus.fitparticle : -13
 TrkPatRecUpstreammuPlus.fitdirection : 1
 
-TrkPatRecDownstreampPlus : @local::TrkPatRec
+TrkPatRecDownstreampPlus : @local::TrkPatRecPanel
 TrkPatRecDownstreampPlus.fitparticle : 2212
 TrkPatRecDownstreampPlus.fitdirection : 0
 
-TrkPatRecUpstreampiPlus : @local::TrkPatRec 
+TrkPatRecUpstreampiPlus : @local::TrkPatRecPanel 
 TrkPatRecUpstreampiPlus.fitparticle : 211
 TrkPatRecUpstreampiPlus.fitdirection : 1
  
-TrkPatRecDownstreampiPlus : @local::TrkPatRec 
+TrkPatRecDownstreampiPlus : @local::TrkPatRecPanel 
 TrkPatRecDownstreampiPlus.fitparticle : 211
 TrkPatRecDownstreampiPlus.fitdirection : 0
 
 
-TrkPatRecDownstreampiMinus : @local::TrkPatRec 
+TrkPatRecDownstreampiMinus : @local::TrkPatRecPanel 
 TrkPatRecDownstreampiMinus.fitparticle : -211
 TrkPatRecDownstreampiMinus.fitdirection : 0
 
-TrkPatRecUpstreampiMinus : @local::TrkPatRec 
+TrkPatRecUpstreampiMinus : @local::TrkPatRecPanel 
 TrkPatRecUpstreampiMinus.fitparticle : -211
 TrkPatRecUpstreampiMinus.fitdirection : 1
 
