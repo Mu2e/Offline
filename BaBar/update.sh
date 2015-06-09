@@ -24,5 +24,5 @@ fi
 for PKG in BField BaBar BbrGeom CLHEP DetectorModel KalmanTrack MatEnv ProbTools TrajGeom TrkBase difAlgebra Dch
 do
   echo "Checking for updates in $PKG"
-  svn update ${revision} "BaBar/$PKG"
+  svn update -r ${revision} "BaBar/$PKG"
 done
