@@ -657,14 +657,14 @@ void KalFit::Acc(size_t qsel) {
   
   ibin = 0;
   const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
-  _tdiag->Project("acc",binnames[ibin++]);
-  _tdiag->Project("+acc",binnames[ibin++],mcsel);
-  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco);
-  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality);
-  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate);
-  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch);
-  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch+cosmic);
-  _tdiag->Project("+acc",binnames[ibin++],mcsel+reco+quality+livegate+rpitch+cosmic+rmom);
+  _tdiag->Project("acc",binnames[ibin++],"evtwt");
+  _tdiag->Project("+acc",binnames[ibin++],"evtwt"*mcsel);
+  _tdiag->Project("+acc",binnames[ibin++],"evtwt"*(mcsel+reco));
+  _tdiag->Project("+acc",binnames[ibin++],"evtwt"*(mcsel+reco+quality));
+  _tdiag->Project("+acc",binnames[ibin++],"evtwt"*(mcsel+reco+quality+livegate));
+  _tdiag->Project("+acc",binnames[ibin++],"evtwt"*(mcsel+reco+quality+livegate+rpitch));
+  _tdiag->Project("+acc",binnames[ibin++],"evtwt"*(mcsel+reco+quality+livegate+rpitch+cosmic));
+  _tdiag->Project("+acc",binnames[ibin++],"evtwt"*(mcsel+reco+quality+livegate+rpitch+cosmic+rmom));
 
   double all = acc->GetBinContent(1);
   double norm = all;
@@ -742,7 +742,7 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
   TH1F* momres[4];
   TF1*  fitmomres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
-  _tdiag->Project("effnorm","mcent.mom",mcsel);
+  _tdiag->Project("effnorm","mcent.mom","evtwt"*mcsel);
  
   TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
   rcan->Clear();
@@ -763,11 +763,12 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
     snprintf(mname,50,"momres%i",ires);
     snprintf(fitname,50,"fitmomres%i",ires);
     momres[ires] = new TH1F(mname,"momentum resolution at start of tracker;MeV/c",251,-4,4);
+    momres[ires]->Sumw2();
 //  momres[ires]->SetStats(0);
 //    quality = goodfit[ires];
     quality = goodfit[ires];
     TCut final = reco+quality+rpitch+cosmic+livegate+rmomloose;
-    _tdiag->Project(mname,"fit.mom-mcent.mom",final);
+    _tdiag->Project(mname,"fit.mom-mcent.mom","evtwt"*final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     cout << "Integral = " << integral << " mean = " << momres[ires]->GetMean() << " rms = " << momres[ires]->GetRMS() << endl;
     cball->SetParameters(3*integral,momres[ires]->GetMean()+0.07,0.3*momres[ires]->GetRMS(),3.0,1.0,0.02,0.2);
