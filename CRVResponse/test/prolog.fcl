@@ -11,7 +11,7 @@ BEGIN_PROLOG
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable_2300",
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 2500.0   //2500.0 photons per MeV
+      scintillationYield        : 2300.0   //2300.0 photons per MeV
       scintillatorDecayTimeFast : 3.0      //3.0 ns
       scintillatorDecayTimeSlow : 10.0     //10.0 ns
       fiberDecayTime            : 7.4      //7.4 ns

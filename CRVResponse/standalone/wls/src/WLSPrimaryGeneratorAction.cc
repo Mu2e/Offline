@@ -402,6 +402,7 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-149.0*cm,beamsize);  //1cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-140.0*cm,beamsize);  //10cm from left side
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-130.0*cm,beamsize);  //30cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-125.0*cm,beamsize);  //25cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-50.0*cm,beamsize);  //100cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);  //150cm from left side (center)
