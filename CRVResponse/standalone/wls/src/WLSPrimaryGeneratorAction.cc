@@ -402,12 +402,12 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-149.0*cm,beamsize);  //1cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-140.0*cm,beamsize);  //10cm from left side
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-130.0*cm,beamsize);  //30cm from left side
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-125.0*cm,beamsize);  //25cm from left side
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-130.0*cm,beamsize);  //20cm from left side
+    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-125.0*cm,beamsize);  //25cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-50.0*cm,beamsize);  //100cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);  //150cm from left side (center)
 
-    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-255.0*cm,beamsize);  //25cm from left side of 5.6m counter
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-255.0*cm,beamsize);  //25cm from left side of 5.6m counter
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-260.0*cm,beamsize);  //20cm from left side of 5.6m counter
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-265.0*cm,beamsize);  //15cm from left side of 5.6m counter
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-275.0*cm,beamsize);  //5cm from left side of 5.6m counter

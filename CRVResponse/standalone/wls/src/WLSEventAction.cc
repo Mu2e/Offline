@@ -284,7 +284,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
   probabilities._constTrapType0Prob = 0;  
   probabilities._constTrapType1Prob = 0;
   probabilities._constThermalProb = 0; 
-  probabilities._constPhotonProduction = 0.82; 
+  probabilities._constPhotonProduction = 0; 
 */
 
   static CLHEP::HepJamesRandom engine(1);
