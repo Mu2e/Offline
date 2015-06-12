@@ -280,6 +280,13 @@ void WLSEventAction::Draw(const G4Event* evt) const
   probabilities._constThermalProb = 6.31e-7; 
   probabilities._constPhotonProduction = 0.4; 
 
+/*
+  probabilities._constTrapType0Prob = 0;  
+  probabilities._constTrapType1Prob = 0;
+  probabilities._constThermalProb = 0; 
+  probabilities._constPhotonProduction = 0.82; 
+*/
+
   static CLHEP::HepJamesRandom engine(1);
   static CLHEP::RandFlat randFlat(engine);
   static CLHEP::RandPoissonQ randPoissonQ(engine);
@@ -591,6 +598,17 @@ void WLSEventAction::Draw(const G4Event* evt) const
     _histT[1][SiPM]->Draw("same");
   }      
   c2.SaveAs("ArrivalTimes.C");
+
+  TCanvas c3("PEs","PEs",1000,1000);
+  c3.Divide(2,2);
+  for(int SiPM=0; SiPM<4; SiPM++)
+  {
+    c3.cd(SiPM+1);
+    gPad->SetLogy();
+    _histPE[SiPM]->SetAxisRange(0,100);
+    _histPE[SiPM]->Draw();
+  }      
+  c3.SaveAs("PEs.C");
 
   for(int SiPM=0; SiPM<4; SiPM++)
   {

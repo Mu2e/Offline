@@ -99,6 +99,7 @@ namespace mu2e {
     DirectionChoice _directionChoice;
     CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
     bool _vertical;
+    bool _dontProjectToSurface;
 
     // Checks whether the distance of closest approach to the detector axis is larger than the cutoff value
     bool filterGeneratedMuons(CLHEP::Hep3Vector const &posInMu2eCoordinates);

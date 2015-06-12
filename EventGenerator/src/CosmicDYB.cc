@@ -126,6 +126,7 @@ namespace mu2e {
     _dx=config.getDouble("cosmicDYB.dx",5000);
     _dz=config.getDouble("cosmicDYB.dz",5000);
     _y0=config.getDouble("cosmicDYB.y0",0);
+    _dontProjectToSurface=config.getBool("cosmicDYB.dontProjectToSurface",false);
 
     // Sanity check.
     if ( std::abs(_mean) > 99999. ) {
@@ -426,11 +427,15 @@ namespace mu2e {
       CLHEP::Hep3Vector refposInMu2eCoordinates=pos + _cosmicReferencePointInMu2e;
 
 // move this to a position just above the ground
-      double ymax = env->ymax();
-      CLHEP::Hep3Vector momdir= mom.vect().unit();
-      double scale = (ymax-refposInMu2eCoordinates.y())/momdir.y();
-      CLHEP::Hep3Vector shift = scale*momdir;
-      CLHEP::Hep3Vector posInMu2eCoordinates = refposInMu2eCoordinates + shift;
+      CLHEP::Hep3Vector posInMu2eCoordinates = refposInMu2eCoordinates;
+      if(!_dontProjectToSurface)
+      {
+        double ymax = env->ymax();
+        CLHEP::Hep3Vector momdir= mom.vect().unit();
+        double scale = (ymax-refposInMu2eCoordinates.y())/momdir.y();
+        CLHEP::Hep3Vector shift = scale*momdir;
+        posInMu2eCoordinates += shift;
+      }
       if(_verbose > 1){
 	cout << "position in reference plane = " << refposInMu2eCoordinates << endl;
 	cout << "position at origin = " << posInMu2eCoordinates << endl;

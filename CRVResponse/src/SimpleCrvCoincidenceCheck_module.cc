@@ -191,6 +191,8 @@ namespace mu2e
           {
             const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
             double time=pulse._leadingEdge;
+//std::cout<<"coincidence group: "<<coincidenceGroup<<"   barIndex: "<<barIndex<<"   module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  SiPM: "<<SiPMtmp<<std::endl;
+//std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<"   pos: "<<c.pos<<std::endl;
             if(pulse._PEs>=_PEthreshold && 
                time>=_timeWindowStart && 
                time<=_timeWindowEnd)
@@ -271,10 +273,10 @@ namespace mu2e
               combination._SiPMs[1] = vectorC[i2].SiPMs[j2];
               combination._SiPMs[2] = vectorC[i3].SiPMs[j3];
               crvCoincidenceCheckResult->GetCoincidenceCombinations().push_back(combination);
-              std::cout<<"Coincidence times/counters/SiPMs/PEs: "<<std::endl;
+//              std::cout<<"Coincidence times/counters/SiPMs/PEs: "<<std::endl;
               for(int k=0; k<3; k++)
               {
-                std::cout<<"   "<<time[k]<<" / "<<combination._counters[k]<<" / "<<combination._SiPMs[k]<<" / "<<combination._PEs[k]<<std::endl;
+//                std::cout<<"   "<<time[k]<<" / "<<combination._counters[k]<<" / "<<combination._SiPMs[k]<<" / "<<combination._PEs[k]<<std::endl;
               }
             }
           }
