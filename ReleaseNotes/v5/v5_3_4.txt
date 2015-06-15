@@ -162,4 +162,7 @@ Still under construction
 6.  David Norvil Brown (Louisville), 26 May 2015:  Add DS Stand and saddle
     under calorimeter region.  Add plates on DS stand.  Add rails in DS.
 
+7.  David Norvil Brown (Louisville), 15 June 2015:  Move Stopping Target 
+    monitor downstream by 10 meters.  Add Shielding roof support block
+    and notch existing roof blocks.
 
