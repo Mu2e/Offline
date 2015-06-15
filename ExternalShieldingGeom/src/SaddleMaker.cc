@@ -78,13 +78,18 @@ namespace mu2e {
       // Loop over all the vertices
       std::vector<std::vector<double> > outlineThisType;
       outlineThisType.reserve(nVert);
-      for ( int iVert = 1; iVert <= nVert; iVert++ ) {
-	std::ostringstream bOutlineUVarName;
-	bOutlineUVarName << outlineBaseName << "Type" << iType << "UVert" << iVert;
-	std::ostringstream bOutlineVVarName;
-	bOutlineVVarName << outlineBaseName << "Type" << iType << "VVert" << iVert;
-	tempDoubleVec.push_back(c.getDouble(bOutlineUVarName.str())*CLHEP::mm);
-	tempDoubleVec.push_back(c.getDouble(bOutlineVVarName.str())*CLHEP::mm);
+      std::ostringstream bOutlineUVarName;
+      bOutlineUVarName << outlineBaseName << "Type" << iType << "UVerts";
+      std::ostringstream bOutlineVVarName;
+      bOutlineVVarName << outlineBaseName << "Type" << iType << "VVerts";
+      std::vector<double> uVerts;
+      std::vector<double> vVerts;
+      c.getVectorDouble(bOutlineUVarName.str(),uVerts,nVert);
+      c.getVectorDouble(bOutlineVVarName.str(),vVerts,nVert);
+      // Now loop and make points for the vertices
+      for ( int iVert = 0; iVert < nVert; iVert++ ) {
+	tempDoubleVec.push_back(uVerts[iVert]*CLHEP::mm);
+	tempDoubleVec.push_back(vVerts[iVert]*CLHEP::mm);
 	outlineThisType.push_back(tempDoubleVec);
 	tempDoubleVec.clear();  // So it can be re-used
       }
@@ -178,18 +183,10 @@ namespace mu2e {
 
 	// Location of the center of the box in Mu2e coords
 	// Use our now-familiar trick for variable names
-	std::ostringstream bCentXVarName;
-	bCentXVarName << centerBaseName << "XType" << it+1 << "Box" << iboxt+1;
-	std::ostringstream bCentYVarName;
-	bCentYVarName << centerBaseName << "YType" << it+1 << "Box" << iboxt+1;
-	std::ostringstream bCentZVarName;
-	bCentZVarName << centerBaseName << "ZType" << it+1 << "Box" << iboxt+1;
-	CLHEP::Hep3Vector boxCenter(c.getDouble(bCentXVarName.str())
-			   *CLHEP::mm,
-				    c.getDouble(bCentYVarName.str())
-			   *CLHEP::mm,
-				    c.getDouble(bCentZVarName.str())
-			   *CLHEP::mm);
+	std::ostringstream bCentVarName;
+	bCentVarName << centerBaseName << "Type" << it+1 << "Box" << iboxt+1;
+	CLHEP::Hep3Vector boxCenter = c.getHep3Vector(bCentVarName.str());
+	boxCenter *= CLHEP::mm;
 	sites.push_back(boxCenter);			   
     
 	std::ostringstream bOrientVarName;

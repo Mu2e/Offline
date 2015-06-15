@@ -78,13 +78,17 @@ namespace mu2e {
       // Loop over all the vertices
       std::vector<std::vector<double> > outlineThisType;
       outlineThisType.reserve(nVert);
-      for ( int iVert = 1; iVert <= nVert; iVert++ ) {
-	std::ostringstream bOutlineUVarName;
-	bOutlineUVarName << outlineBaseName << "Type" << iType << "UVert" << iVert;
-	std::ostringstream bOutlineVVarName;
-	bOutlineVVarName << outlineBaseName << "Type" << iType << "VVert" << iVert;
-	tempDoubleVec.push_back(c.getDouble(bOutlineUVarName.str())*CLHEP::mm);
-	tempDoubleVec.push_back(c.getDouble(bOutlineVVarName.str())*CLHEP::mm);
+      std::ostringstream bOutlineUVarName;
+      bOutlineUVarName << outlineBaseName << "Type" << iType << "UVerts";
+      std::ostringstream bOutlineVVarName;
+      bOutlineVVarName << outlineBaseName << "Type" << iType << "VVerts";
+      std::vector<double> uVerts;
+      std::vector<double> vVerts;
+      c.getVectorDouble(bOutlineUVarName.str(),uVerts,nVert);
+      c.getVectorDouble(bOutlineVVarName.str(),vVerts,nVert);
+      for ( int iVert = 0; iVert < nVert; iVert++ ) {
+	tempDoubleVec.push_back(uVerts[iVert]*CLHEP::mm);
+	tempDoubleVec.push_back(vVerts[iVert]*CLHEP::mm);
 	outlineThisType.push_back(tempDoubleVec);
 	tempDoubleVec.clear();  // So it can be re-used
       }

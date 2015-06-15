@@ -39,7 +39,9 @@ bool   mstm.visible = true;
 bool   mstm.solid   = false;
 
 // All dimensions in mm
-double mstm.refz0InMu2e  = 19965.0 ; //this is the z position of the upstream edge of the MSTM mother volume
+//double mstm.refz0InMu2e  = 19965.0 ; //this is the z position of the upstream edge of the MSTM mother volume
+// Moving the MSTM out of the way for now.
+double mstm.refz0InMu2e  = 29965.0 ; //this is the z position of the upstream edge of the MSTM mother volume
 
 string mstm.wallUpStr.material   = "G4_CONCRETE";
 double mstm.wallUpStr.UpStrSpace =  50.0; // z=5cm space between this and the start of the MSTM mother volume

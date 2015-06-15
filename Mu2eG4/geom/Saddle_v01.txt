@@ -77,303 +77,110 @@ int Saddle.nVertType22 = 4; // DS stand top bott cross plates
 // Vertices in u, v for each type of box.  Dimensions should be in mm.
 //
 // PS Saddle sides
-double Saddle.outlineType1UVert1 = 1264;
-double Saddle.outlineType1VVert1 = 0;
-double Saddle.outlineType1UVert2 = 1264;
-double Saddle.outlineType1VVert2 = 971;
-double Saddle.outlineType1UVert3 = 1164;
-double Saddle.outlineType1VVert3 = 971;
-double Saddle.outlineType1UVert4 = 1164;
-double Saddle.outlineType1VVert4 = 751;
-double Saddle.outlineType1UVert5 = 450;
-double Saddle.outlineType1VVert5 = 250;
-double Saddle.outlineType1UVert6 = -450;
-double Saddle.outlineType1VVert6 = 250;
-double Saddle.outlineType1UVert7 = -1164;
-double Saddle.outlineType1VVert7 = 751;
-double Saddle.outlineType1UVert8 = -1164;
-double Saddle.outlineType1VVert8 = 971;
-double Saddle.outlineType1UVert9 = -1264;
-double Saddle.outlineType1VVert9 = 971;
-double Saddle.outlineType1UVert10 = -1264;
-double Saddle.outlineType1VVert10 = 0;
+vector<double> Saddle.outlineType1UVerts = {1264,1264,1164,1164,450,-450,-1164,-1164,-1264,-1264};
+vector<double> Saddle.outlineType1VVerts = {0,971,971,751,250,250,751,971,971,0};
+
 
 // PS Saddle foot
-double Saddle.outlineType2UVert1 = 1264;
-double Saddle.outlineType2VVert1 = 0;
-double Saddle.outlineType2UVert2 = 1264;
-double Saddle.outlineType2VVert2 = 50;
-double Saddle.outlineType2UVert3 = -1264;
-double Saddle.outlineType2VVert3 = 50;
-double Saddle.outlineType2UVert4 = -1264;
-double Saddle.outlineType2VVert4 = 0;
+vector<double> Saddle.outlineType2UVerts = {1264,1264,-1264,-1264};
+vector<double> Saddle.outlineType2VVerts = {0,50,50,0};
 // PS Saddle end
-double Saddle.outlineType3UVert1 = 15;
-double Saddle.outlineType3VVert1 = 0;
-double Saddle.outlineType3UVert2 = 15;
-double Saddle.outlineType3VVert2 = 971;
-double Saddle.outlineType3UVert3 = -15;
-double Saddle.outlineType3VVert3 = 971;
-double Saddle.outlineType3UVert4 = -15;
-double Saddle.outlineType3VVert4 = 0;
+vector<double> Saddle.outlineType3UVerts = {15,15,-15,-15};
+vector<double> Saddle.outlineType3VVerts = {0,971,971,0};
+
 
 // I-beam for PS stand
-double Saddle.outlineType4UVert1 = 350;
-double Saddle.outlineType4VVert1 = 0;
-double Saddle.outlineType4UVert2 = 350;
-double Saddle.outlineType4VVert2 = 30;
-double Saddle.outlineType4UVert3 = 30;
-double Saddle.outlineType4VVert3 = 30;
-double Saddle.outlineType4UVert4 = 30;
-double Saddle.outlineType4VVert4 = 680;
-double Saddle.outlineType4UVert5 = 350;
-double Saddle.outlineType4VVert5 = 680;
-double Saddle.outlineType4UVert6 = 350;
-double Saddle.outlineType4VVert6 = 710;
-double Saddle.outlineType4UVert7 = -350;
-double Saddle.outlineType4VVert7 = 710;
-double Saddle.outlineType4UVert8 = -350;
-double Saddle.outlineType4VVert8 = 680;
-double Saddle.outlineType4UVert9 = -30;
-double Saddle.outlineType4VVert9 = 680;
-double Saddle.outlineType4UVert10 = -30;
-double Saddle.outlineType4VVert10 = 30;
-double Saddle.outlineType4UVert11 = -350;
-double Saddle.outlineType4VVert11 = 30;
-double Saddle.outlineType4UVert12 = -350;
-double Saddle.outlineType4VVert12 = 0;
+vector<double> Saddle.outlineType4UVerts = {350,350,30,30,350,350,-350,-350,-30,-30,-350,-350};
+vector<double> Saddle.outlineType4VVerts = {0,30,30,680,680,710,710,680,680,30,30,0};
+
 
 //TS Saddle side plates
-double Saddle.outlineType5UVert1 = 1050;
-double Saddle.outlineType5VVert1 = 0;
-double Saddle.outlineType5UVert2 = 1050;
-double Saddle.outlineType5VVert2 = 995;
-double Saddle.outlineType5UVert3 = 925;
-double Saddle.outlineType5VVert3 = 995;
-double Saddle.outlineType5UVert4 = 925;
-double Saddle.outlineType5VVert4 = 845;
-double Saddle.outlineType5UVert5 = 350;
-double Saddle.outlineType5VVert5 = 500;
-double Saddle.outlineType5UVert6 = -350;
-double Saddle.outlineType5VVert6 = 500;
-double Saddle.outlineType5UVert7 = -925;
-double Saddle.outlineType5VVert7 = 845;
-double Saddle.outlineType5UVert8 = -925;
-double Saddle.outlineType5VVert8 = 995;
-double Saddle.outlineType5UVert9 = -1050;
-double Saddle.outlineType5VVert9 = 995;
-double Saddle.outlineType5UVert10 = -1050;
-double Saddle.outlineType5VVert10 = 0;
+vector<double> Saddle.outlineType5UVerts = {1050,1050,925,925,350,-350,-925,-925,-1050,-1050};
+vector<double> Saddle.outlineType5VVerts = {0,995,995,845,500,500,845,995,995,0};
+
 
 // foot plates for TS Saddles
-double Saddle.outlineType6UVert1 = 1100;
-double Saddle.outlineType6VVert1 = 0;
-double Saddle.outlineType6UVert2 = 1100;
-double Saddle.outlineType6VVert2 = 50;
-double Saddle.outlineType6UVert3 = -1100;
-double Saddle.outlineType6VVert3 = 50;
-double Saddle.outlineType6UVert4 = -1100;
-double Saddle.outlineType6VVert4 = 0;
+vector<double> Saddle.outlineType6UVerts = {1100,1100,-1100,-1100};
+vector<double> Saddle.outlineType6VVerts = {0,50,50,0};
+
 
 // I-beam for PS stand sides
-double Saddle.outlineType7UVert1 = 350;
-double Saddle.outlineType7VVert1 = 0;
-double Saddle.outlineType7UVert2 = 350;
-double Saddle.outlineType7VVert2 = 30;
-double Saddle.outlineType7UVert3 = 30;
-double Saddle.outlineType7VVert3 = 30;
-double Saddle.outlineType7UVert4 = 30;
-double Saddle.outlineType7VVert4 = 680;
-double Saddle.outlineType7UVert5 = 350;
-double Saddle.outlineType7VVert5 = 680;
-double Saddle.outlineType7UVert6 = 350;
-double Saddle.outlineType7VVert6 = 710;
-double Saddle.outlineType7UVert7 = -350;
-double Saddle.outlineType7VVert7 = 710;
-double Saddle.outlineType7UVert8 = -350;
-double Saddle.outlineType7VVert8 = 680;
-double Saddle.outlineType7UVert9 = -30;
-double Saddle.outlineType7VVert9 = 680;
-double Saddle.outlineType7UVert10 = -30;
-double Saddle.outlineType7VVert10 = 30;
-double Saddle.outlineType7UVert11 = -350;
-double Saddle.outlineType7VVert11 = 30;
-double Saddle.outlineType7UVert12 = -350;
-double Saddle.outlineType7VVert12 = 0;
+vector<double> Saddle.outlineType7UVerts = {350,350,30,30,350,350,-350,-350,-30,-30,-350,-350};
+vector<double> Saddle.outlineType7VVerts = {0,30,30,680,680,710,710,680,680,30,30,0};
+
 
 // end plates of TS saddles
-double Saddle.outlineType8UVert1 = 15;
-double Saddle.outlineType8VVert1 = 0;
-double Saddle.outlineType8UVert2 = 15;
-double Saddle.outlineType8VVert2 = 995;
-double Saddle.outlineType8UVert3 = -15;
-double Saddle.outlineType8VVert3 = 995;
-double Saddle.outlineType8UVert4 = -15;
-double Saddle.outlineType8VVert4 = 0;
+vector<double> Saddle.outlineType8UVerts = {15,15,-15,-15};
+vector<double> Saddle.outlineType8VVerts = {0,995,995,0};
+
 
 // side plates of TS Stand boxes
-double Saddle.outlineType9UVert1 = 1100;
-double Saddle.outlineType9VVert1 = 0;
-double Saddle.outlineType9UVert2 = 1100;
-double Saddle.outlineType9VVert2 = 710;
-double Saddle.outlineType9UVert3 = -1100;
-double Saddle.outlineType9VVert3 = 710;
-double Saddle.outlineType9UVert4 = -1100;
-double Saddle.outlineType9VVert4 = 0;
+vector<double> Saddle.outlineType9UVerts = {1100,1100,-1100,-1100};
+vector<double> Saddle.outlineType9VVerts = {0,710,710,0};
 
 // end plates of TS Stand boxes
-double Saddle.outlineType10UVert1 = 25;
-double Saddle.outlineType10VVert1 = 0;
-double Saddle.outlineType10UVert2 = 25;
-double Saddle.outlineType10VVert2 = 710;
-double Saddle.outlineType10UVert3 = -25;
-double Saddle.outlineType10VVert3 = 710;
-double Saddle.outlineType10UVert4 = -25;
-double Saddle.outlineType10VVert4 = 0;
+vector<double> Saddle.outlineType10UVerts = {25,25,-25,-25};
+vector<double> Saddle.outlineType10VVerts = {0,710,710,0};
+
 
 // Side plates of DS Saddles
-double Saddle.outlineType11UVert1 = 1264;
-double Saddle.outlineType11VVert1 = 0;
-double Saddle.outlineType11UVert2 = 1264;
-double Saddle.outlineType11VVert2 = 776;
-double Saddle.outlineType11UVert3 = 1189;
-double Saddle.outlineType11VVert3 = 776;
-double Saddle.outlineType11UVert4 = 1089;
-double Saddle.outlineType11VVert4 = 701;
-double Saddle.outlineType11UVert5 = 450;
-double Saddle.outlineType11VVert5 = 220;
-double Saddle.outlineType11UVert6 = -450;
-double Saddle.outlineType11VVert6 = 220;
-double Saddle.outlineType11UVert7 = -1089;
-double Saddle.outlineType11VVert7 = 701;
-double Saddle.outlineType11UVert8 = -1189;
-double Saddle.outlineType11VVert8 = 776;
-double Saddle.outlineType11UVert9 = -1264;
-double Saddle.outlineType11VVert9 = 776;
-double Saddle.outlineType11UVert10 = -1264;
-double Saddle.outlineType11VVert10 = 0;
+vector<double> Saddle.outlineType11UVerts = {1264,1264,1189,1089,450,-450,-1089,-1189,-1264,-1264};
+vector<double> Saddle.outlineType11VVerts = {0,776,776,701,220,220,701,776,776,0};
+
 
 // DS saddle foot plate
-double Saddle.outlineType12UVert1 = 1264;
-double Saddle.outlineType12VVert1 = 0;
-double Saddle.outlineType12UVert2 = 1264;
-double Saddle.outlineType12VVert2 = 88;
-double Saddle.outlineType12UVert3 = -1264;
-double Saddle.outlineType12VVert3 = 88;
-double Saddle.outlineType12UVert4 = -1264;
-double Saddle.outlineType12VVert4 = 0;
+vector<double> Saddle.outlineType12UVerts = {1264,1264,-1264,-1264};
+vector<double> Saddle.outlineType12VVerts = {0,88,88,0};
+
 
 // DS saddle end plate
-double Saddle.outlineType13UVert1 = 15;
-double Saddle.outlineType13VVert1 = 0;
-double Saddle.outlineType13UVert2 = 15;
-double Saddle.outlineType13VVert2 = 776;
-double Saddle.outlineType13UVert3 = -15;
-double Saddle.outlineType13VVert3 = 776;
-double Saddle.outlineType13UVert4 = -15;
-double Saddle.outlineType13VVert4 = 0;
+vector<double> Saddle.outlineType13UVerts = {15,15,-15,-15};
+vector<double> Saddle.outlineType13VVerts = {0,776,776,0};
 
 // DS stand long sides
-double Saddle.outlineType14UVert1 = 10;
-double Saddle.outlineType14VVert1 = 0;
-double Saddle.outlineType14UVert2 = 10;
-double Saddle.outlineType14VVert2 = 623;
-double Saddle.outlineType14UVert3 = -10;
-double Saddle.outlineType14VVert3 = 623;
-double Saddle.outlineType14UVert4 = -10;
-double Saddle.outlineType14VVert4 = 0;
+vector<double> Saddle.outlineType14UVerts = {10,10,-10,-10};
+vector<double> Saddle.outlineType14VVerts = {0,623,623,0};
+
 
 // DS stand long top bottom
-double Saddle.outlineType15UVert1 = 180;
-double Saddle.outlineType15VVert1 = 0;
-double Saddle.outlineType15UVert2 = 180;
-double Saddle.outlineType15VVert2 = 20;
-double Saddle.outlineType15UVert3 = -180;
-double Saddle.outlineType15VVert3 = 20;
-double Saddle.outlineType15UVert4 = -180;
-double Saddle.outlineType15VVert4 = 0;
+vector<double> Saddle.outlineType15UVerts = {180,180,-180,-180};
+vector<double> Saddle.outlineType15VVerts = {0,20,20,0};
+
 
 // DS stand long east west ends
-double Saddle.outlineType16UVert1 = 180;
-double Saddle.outlineType16VVert1 = 0;
-double Saddle.outlineType16UVert2 = 180;
-double Saddle.outlineType16VVert2 = 583;
-double Saddle.outlineType16UVert3 = -180;
-double Saddle.outlineType16VVert3 = 583;
-double Saddle.outlineType16UVert4 = -180;
-double Saddle.outlineType16VVert4 = 0;
+vector<double> Saddle.outlineType16UVerts = {180,180,-180,-180};
+vector<double> Saddle.outlineType16VVerts = {0,583,583,0};
+
 
 // DS stand short sides
-double Saddle.outlineType17UVert1 = 714;
-double Saddle.outlineType17VVert1 = 0;
-double Saddle.outlineType17UVert2 = 714;
-double Saddle.outlineType17VVert2 = 623;
-double Saddle.outlineType17UVert3 = -714;
-double Saddle.outlineType17VVert3 = 623;
-double Saddle.outlineType17UVert4 = -714;
-double Saddle.outlineType17VVert4 = 0;
+vector<double> Saddle.outlineType17UVerts = {714,714,-714,-714};
+vector<double> Saddle.outlineType17VVerts = {0,623,623,0};
+
 
 // DS stand short top bottom
-double Saddle.outlineType18UVert1 = 714;
-double Saddle.outlineType18VVert1 = 0;
-double Saddle.outlineType18UVert2 = 714;
-double Saddle.outlineType18VVert2 = 20;
-double Saddle.outlineType18UVert3 = -714;
-double Saddle.outlineType18VVert3 = 20;
-double Saddle.outlineType18UVert4 = -714;
-double Saddle.outlineType18VVert4 = 0;
+vector<double> Saddle.outlineType18UVerts = {714,714,-714,-714};
+vector<double> Saddle.outlineType18VVerts = {0,20,20,0};
+
 
 // Side plates of DS EM Saddles
-double Saddle.outlineType19UVert1 = 1264;
-double Saddle.outlineType19VVert1 = 0;
-double Saddle.outlineType19UVert2 = 1264;
-double Saddle.outlineType19VVert2 = 1550;
-double Saddle.outlineType19UVert3 = 1189;
-double Saddle.outlineType19VVert3 = 1550;
-double Saddle.outlineType19UVert4 = 1089;
-double Saddle.outlineType19VVert4 = 901;
-double Saddle.outlineType19UVert5 = 450;
-double Saddle.outlineType19VVert5 = 500;
-double Saddle.outlineType19UVert6 = -450;
-double Saddle.outlineType19VVert6 = 500;
-double Saddle.outlineType19UVert7 = -1089;
-double Saddle.outlineType19VVert7 = 901;
-double Saddle.outlineType19UVert8 = -1189;
-double Saddle.outlineType19VVert8 = 1550;
-double Saddle.outlineType19UVert9 = -1264;
-double Saddle.outlineType19VVert9 = 1550;
-double Saddle.outlineType19UVert10 = -1264;
-double Saddle.outlineType19VVert10 = 0;
+vector<double> Saddle.outlineType19UVerts = {1264,1264,1189,1089,450,-450,-1089,-1189,-1264,-1264};
+vector<double> Saddle.outlineType19VVerts = {0,1550,1550,901,500,500,901,1550,1550,0};
+
 
 // DS saddle foot plate
-double Saddle.outlineType20UVert1 = 1264;
-double Saddle.outlineType20VVert1 = 0;
-double Saddle.outlineType20UVert2 = 1264;
-double Saddle.outlineType20VVert2 = 80;
-double Saddle.outlineType20UVert3 = -1264;
-double Saddle.outlineType20VVert3 = 80;
-double Saddle.outlineType20UVert4 = -1264;
-double Saddle.outlineType20VVert4 = 0;
+vector<double> Saddle.outlineType20UVerts = {1264,1264,-1264,-1264};
+vector<double> Saddle.outlineType20VVerts = {0,80,80,0};
+
 
 // DS saddle end plate
-double Saddle.outlineType21UVert1 = 15;
-double Saddle.outlineType21VVert1 = 0;
-double Saddle.outlineType21UVert2 = 15;
-double Saddle.outlineType21VVert2 = 1550;
-double Saddle.outlineType21UVert3 = -15;
-double Saddle.outlineType21VVert3 = 1550;
-double Saddle.outlineType21UVert4 = -15;
-double Saddle.outlineType21VVert4 = 0;
+vector<double> Saddle.outlineType21UVerts = {15,15,-15,-15};
+vector<double> Saddle.outlineType21VVerts = {0,1550,1550,0};
 
 // DS stand top bott cross plates
-double Saddle.outlineType22UVert1 = 1264;
-double Saddle.outlineType22VVert1 = 0;
-double Saddle.outlineType22UVert2 = 1264;
-double Saddle.outlineType22VVert2 = 20;
-double Saddle.outlineType22UVert3 = -1264;
-double Saddle.outlineType22VVert3 = 20;
-double Saddle.outlineType22UVert4 = -1264;
-double Saddle.outlineType22VVert4 = 0;
+vector<double> Saddle.outlineType22UVerts = {1264,1264,-1264,-1264};
+vector<double> Saddle.outlineType22VVerts = {0,20,20,0};
+
+
 
 
 
@@ -427,402 +234,126 @@ string Saddle.materialType22   = "StainlessSteel";
 
 
 // The position of the piece in Mu2e Offline coordinates
-double Saddle.centerXType1Box1 = 3904; // PS Saddle sides west PS
-double Saddle.centerYType1Box1 = -1550;  // 
-double Saddle.centerZType1Box1 = -7378; 
-double Saddle.centerXType1Box2 = 3904; // 
-double Saddle.centerYType1Box2 = -1550;  // 
-double Saddle.centerZType1Box2 = -6908; 
 
-double Saddle.centerXType1Box3 = 3904; // PS Saddle sides east PS
-double Saddle.centerYType1Box3 = -1550;  // 
-double Saddle.centerZType1Box3 = -4478; 
-double Saddle.centerXType1Box4 = 3904; // 
-double Saddle.centerYType1Box4 = -1550;  // 
-double Saddle.centerZType1Box4 = -4008; 
-
-
-double Saddle.centerXType2Box1 = 3904; // PS Saddle foot west 
-double Saddle.centerYType2Box1 = -1600;  // 
-double Saddle.centerZType2Box1 = -7143; 
-double Saddle.centerXType2Box2 = 3904; // PS Saddle foot east
-double Saddle.centerYType2Box2 = -1600;  // 
-double Saddle.centerZType2Box2 = -4243; 
-
-double Saddle.centerXType3Box1 = 5153; // PS Saddle end north west PS
-double Saddle.centerYType3Box1 = -1550;  // 
-double Saddle.centerZType3Box1 = -7143; 
-double Saddle.centerXType3Box2 = 2655; // south west PS
-double Saddle.centerYType3Box2 = -1550;  // 
-double Saddle.centerZType3Box2 = -7143; 
-
-double Saddle.centerXType3Box3 = 5153; // PS Saddle end north east PS
-double Saddle.centerYType3Box3 = -1550;  // 
-double Saddle.centerZType3Box3 = -4243; 
-double Saddle.centerXType3Box4 = 2655; // south east PS
-double Saddle.centerYType3Box4 = -1550;  // 
-double Saddle.centerZType3Box4 = -4243; 
-
-double Saddle.centerXType4Box1 = 3904; // PS Stand I-beam west
-double Saddle.centerYType4Box1 = -2312;  // 
-double Saddle.centerZType4Box1 = -7143; 
-double Saddle.centerXType4Box2 = 3904; // PS Stand I-beam east
-double Saddle.centerYType4Box2 = -2312;  // 
-double Saddle.centerZType4Box2 = -4243; 
-double Saddle.centerXType7Box1 = 4818; // PS Stand I-beam north
-double Saddle.centerYType7Box1 = -2312;  // 
-double Saddle.centerZType7Box1 = -5693; 
-double Saddle.centerXType7Box2 = 2990; // PS Stand I-beam south
-double Saddle.centerYType7Box2 = -2312;  // 
-double Saddle.centerZType7Box2 = -5693; 
-
-double Saddle.centerXType5Box1 = 3904; // TS Saddle W side of NW saddle 
-double Saddle.centerYType5Box1 = -1550;  // 
-double Saddle.centerZType5Box1 = -3119; 
-double Saddle.centerXType5Box2 = 3904; // TS Saddle E side of NW saddle
-double Saddle.centerYType5Box2 = -1550;  // 
-double Saddle.centerZType5Box2 = -2749; 
-double Saddle.centerXType5Box3 = 955; // TS Saddle N side of NC saddle 
-double Saddle.centerYType5Box3 = -1550;  // 
-double Saddle.centerZType5Box3 = 0; 
-double Saddle.centerXType5Box4 = 585; // TS Saddle S side of NC saddle
-double Saddle.centerYType5Box4 = -1550;  // 
-double Saddle.centerZType5Box4 = 0; 
-double Saddle.centerXType5Box5 = 3175.5; // TS Saddle NW side of NBend saddle 
-double Saddle.centerYType5Box5 = -1550;  // 
-double Saddle.centerZType5Box5 = -990.1; 
-double Saddle.centerXType5Box6 = 2913.9; // TS Saddle SE side of NBend saddle
-double Saddle.centerYType5Box6 = -1550;  // 
-double Saddle.centerZType5Box6 = -728.5; 
-double Saddle.centerXType5Box7 = -3904; // TS Saddle E side of SE saddle 
-double Saddle.centerYType5Box7 = -1550;  // 
-double Saddle.centerZType5Box7 = 3119; 
-double Saddle.centerXType5Box8 = -3904; // TS Saddle W side of SE saddle
-double Saddle.centerYType5Box8 = -1550;  // 
-double Saddle.centerZType5Box8 = 2749; 
-double Saddle.centerXType5Box9 = -955; // TS Saddle S side of SC saddle 
-double Saddle.centerYType5Box9 = -1550;  // 
-double Saddle.centerZType5Box9 = 0; 
-double Saddle.centerXType5Box10 = -585; // TS Saddle N side of SC saddle
-double Saddle.centerYType5Box10 = -1550;  // 
-double Saddle.centerZType5Box10 = 0; 
-double Saddle.centerXType5Box11 = -3175.5; // TS Saddle SE side of SBend 
-double Saddle.centerYType5Box11 = -1550;  // 
-double Saddle.centerZType5Box11 = 990.1; 
-double Saddle.centerXType5Box12 = -2913.9; // TS Saddle NW side of SBend 
-double Saddle.centerYType5Box12 = -1550;  // 
-double Saddle.centerZType5Box12 = 728.5; 
-
-double Saddle.centerXType6Box1 = 3904; // TS Saddle foot NW
-double Saddle.centerYType6Box1 = -1600;  // 
-double Saddle.centerZType6Box1 = -2934; 
-double Saddle.centerXType6Box2 = 3044.7; // TS Saddle foot NC
-double Saddle.centerYType6Box2 = -1600;  // 
-double Saddle.centerZType6Box2 = -859.3; 
-double Saddle.centerXType6Box3 = 770; // TS Saddle foot NBend 
-double Saddle.centerYType6Box3 = -1600;  // 
-double Saddle.centerZType6Box3 = 0; 
-double Saddle.centerXType6Box4 = -3904; // TS Saddle foot SE
-double Saddle.centerYType6Box4 = -1600;  // 
-double Saddle.centerZType6Box4 = 2934; 
-double Saddle.centerXType6Box5 = -3044.7; // TS Saddle foot SC
-double Saddle.centerYType6Box5 = -1600;  // 
-double Saddle.centerZType6Box5 = 859.3; 
-double Saddle.centerXType6Box6 = -770; // TS Saddle foot SBend
-double Saddle.centerYType6Box6 = -1600;  // 
-double Saddle.centerZType6Box6 = 0; 
-
-
-double Saddle.centerXType8Box1 = 4939; // TS Saddle end N of NW
-double Saddle.centerYType8Box1 = -1550;  // 
-double Saddle.centerZType8Box1 = -2934; 
-double Saddle.centerXType8Box2 = 2869; // TS Saddle end N of NW
-double Saddle.centerYType8Box2 = -1550;  // 
-double Saddle.centerZType8Box2 = -2934; 
-double Saddle.centerXType8Box3 = 3776.6; // TS Saddle end NE of NBend
-double Saddle.centerYType8Box3 = -1550;  // 
-double Saddle.centerZType8Box3 = -127.4; 
-double Saddle.centerXType8Box4 = 2312.8; // TS Saddle end SW of NBend
-double Saddle.centerYType8Box4 = -1550;  // 
-double Saddle.centerZType8Box4 = -1591.2; 
-double Saddle.centerXType8Box5 = 770; // TS Saddle end W of NC 
-double Saddle.centerYType8Box5 = -1550;  // 
-double Saddle.centerZType8Box5 = -1035; 
-double Saddle.centerXType8Box6 = 770; // TS Saddle end E of NC 
-double Saddle.centerYType8Box6 = -1550;  // 
-double Saddle.centerZType8Box6 = 1035; 
-double Saddle.centerXType8Box7 = -4939; // TS Saddle end N of NW
-double Saddle.centerYType8Box7 = -1550;  // 
-double Saddle.centerZType8Box7 = 2934; 
-double Saddle.centerXType8Box8 = -2869; // TS Saddle end N of NW
-double Saddle.centerYType8Box8 = -1550;  // 
-double Saddle.centerZType8Box8 = 2934; 
-double Saddle.centerXType8Box9 = -3776.6; // TS Saddle end NE of NBend
-double Saddle.centerYType8Box9 = -1550;  // 
-double Saddle.centerZType8Box9 = 127.4; 
-double Saddle.centerXType8Box10 = -2312.8; // TS Saddle end SW of NBend
-double Saddle.centerYType8Box10 = -1550;  // 
-double Saddle.centerZType8Box10 = 1591.2; 
-double Saddle.centerXType8Box11 = -770; // TS Saddle end W of NC 
-double Saddle.centerYType8Box11 = -1550;  // 
-double Saddle.centerZType8Box11 = -1035; 
-double Saddle.centerXType8Box12 = -770; // TS Saddle end E of NC 
-double Saddle.centerYType8Box12 = -1550;  // 
-double Saddle.centerZType8Box12 = 1035; 
-
-// TS Stand box sides
-double Saddle.centerXType9Box1 = 3904; // TS Stand box side W of NW
-double Saddle.centerYType9Box1 = -2312;  // 
-double Saddle.centerZType9Box1 = -3209; 
-double Saddle.centerXType9Box2 = 3904; // TS Stand box side E of NW
-double Saddle.centerYType9Box2 = -2312;  // 
-double Saddle.centerZType9Box2 = -2659; 
-double Saddle.centerXType9Box3 = 3239.2; // TS Stand box side NE of NBend
-double Saddle.centerYType9Box3 = -2312;  // 
-double Saddle.centerZType9Box3 = -1053.8; 
-double Saddle.centerXType9Box4 = 2850.2; // TS Stand box side SW of NBend
-double Saddle.centerYType9Box4 = -2312;  // 
-double Saddle.centerZType9Box4 = -664.8; 
-double Saddle.centerXType9Box5 = 1045; // TS Stand box side W of NC 
-double Saddle.centerYType9Box5 = -2312;  // 
-double Saddle.centerZType9Box5 = 0; 
-double Saddle.centerXType9Box6 = 495; // TS Stand box side E of NC 
-double Saddle.centerYType9Box6 = -2312;  // 
-double Saddle.centerZType9Box6 = 0; 
-double Saddle.centerXType9Box7 = -3904; // TS Stand box side N of NW
-double Saddle.centerYType9Box7 = -2312;  // 
-double Saddle.centerZType9Box7 = 3209; 
-double Saddle.centerXType9Box8 = -3904; // TS Stand box side N of NW
-double Saddle.centerYType9Box8 = -2312;  // 
-double Saddle.centerZType9Box8 = 2659; 
-double Saddle.centerXType9Box9 = -3239.2; // TS Stand box side NE of NBend
-double Saddle.centerYType9Box9 = -2312;  // 
-double Saddle.centerZType9Box9 = 1053.8; 
-double Saddle.centerXType9Box10 = -2850.2; // TS Stand box side SW of NBend
-double Saddle.centerYType9Box10 = -2312;  // 
-double Saddle.centerZType9Box10 = 664.8; 
-double Saddle.centerXType9Box11 = -1045; // TS Stand box side W of NC 
-double Saddle.centerYType9Box11 = -2312;  // 
-double Saddle.centerZType9Box11 = 0; 
-double Saddle.centerXType9Box12 = -495; // TS Stand box side E of NC 
-double Saddle.centerYType9Box12 = -2312;  // 
-double Saddle.centerZType9Box12 = 0; 
-
-// TS Stand box ends
-double Saddle.centerXType10Box1 = 4979; // TS Stand box end N of NW
-double Saddle.centerYType10Box1 = -2312;  // 
-double Saddle.centerZType10Box1 = -2934; 
-double Saddle.centerXType10Box2 = 2829; // TS Stand box end N of NW
-double Saddle.centerYType10Box2 = -2312;  // 
-double Saddle.centerZType10Box2 = -2934; 
-double Saddle.centerXType10Box3 = 3805.2; // TS Stand box end NE of NBend
-double Saddle.centerYType10Box3 = -2312;  // 
-double Saddle.centerZType10Box3 = -98.8; 
-double Saddle.centerXType10Box4 = 2284.2; // TS Stand box end SW of NBend
-double Saddle.centerYType10Box4 = -2312;  // 
-double Saddle.centerZType10Box4 = -1619.8; 
-double Saddle.centerXType10Box5 = 770; // TS Stand box end W of NC 
-double Saddle.centerYType10Box5 = -2312;  // 
-double Saddle.centerZType10Box5 = -1075; 
-double Saddle.centerXType10Box6 = 770; // TS Stand box end E of NC 
-double Saddle.centerYType10Box6 = -2312;  // 
-double Saddle.centerZType10Box6 = 1075; 
-double Saddle.centerXType10Box7 = -4979; // TS Stand box end N of NW
-double Saddle.centerYType10Box7 = -2312;  // 
-double Saddle.centerZType10Box7 = 2934; 
-double Saddle.centerXType10Box8 = -2829; // TS Stand box end N of NW
-double Saddle.centerYType10Box8 = -2312;  // 
-double Saddle.centerZType10Box8 = 2934; 
-double Saddle.centerXType10Box9 = -3805.2; // TS Stand box end NE of NBend
-double Saddle.centerYType10Box9 = -2312;  // 
-double Saddle.centerZType10Box9 = 98.8; 
-double Saddle.centerXType10Box10 = -2284.2; // TS Stand box end SW of NBend
-double Saddle.centerYType10Box10 = -2312;  // 
-double Saddle.centerZType10Box10 = 1619.8; 
-double Saddle.centerXType10Box11 = -770; // TS Stand box end W of NC 
-double Saddle.centerYType10Box11 = -2312;  // 
-double Saddle.centerZType10Box11 = -1075; 
-double Saddle.centerXType10Box12 = -770; // TS Stand box end E of NC 
-double Saddle.centerYType10Box12 = -2312;  // 
-double Saddle.centerZType10Box12 = 1075; 
-
-// DS Saddle side plates
-double Saddle.centerXType11Box1 = -3904;
-double Saddle.centerYType11Box1 = -1550;
-double Saddle.centerZType11Box1 = 3804;
-double Saddle.centerXType11Box2 = -3904;
-double Saddle.centerYType11Box2 = -1550;
-double Saddle.centerZType11Box2 = 4274;
-double Saddle.centerXType11Box3 = -3904;
-double Saddle.centerYType11Box3 = -1550;
-double Saddle.centerZType11Box3 = 13104;
-double Saddle.centerXType11Box4 = -3904;
-double Saddle.centerYType11Box4 = -1550;
-double Saddle.centerZType11Box4 = 13574;
-
-// DS Saddle foot plates
-double Saddle.centerXType12Box1 = -3904;
-double Saddle.centerYType12Box1 = -1638;
-double Saddle.centerZType12Box1 = 4039;
-double Saddle.centerXType12Box2 = -3904;
-double Saddle.centerYType12Box2 = -1638;
-double Saddle.centerZType12Box2 = 13339;
-
-
-// DS Saddle end plates
-double Saddle.centerXType13Box1 = -5153; // north west end plate DS
-double Saddle.centerYType13Box1 = -1550;  // 
-double Saddle.centerZType13Box1 =  4039; 
-double Saddle.centerXType13Box2 = -2655; // south west end plate DS
-double Saddle.centerYType13Box2 = -1550;  // 
-double Saddle.centerZType13Box2 =  4039; 
-double Saddle.centerXType13Box3 = -5153; // DS Saddle end south east DS
-double Saddle.centerYType13Box3 = -1550;  // 
-double Saddle.centerZType13Box3 = 13339; 
-double Saddle.centerXType13Box4 = -2655; // north east DS
-double Saddle.centerYType13Box4 = -1550;  // 
-double Saddle.centerZType13Box4 = 13339; 
-
-// DS stand long sides
-double Saddle.centerXType14Box1 = -2800; // north side  
-double Saddle.centerYType14Box1 = -2282; 
-double Saddle.centerZType14Box1 = 9665;
-double Saddle.centerXType14Box2 = -3180; // north central side
-double Saddle.centerYType14Box2 = -2282; 
-double Saddle.centerZType14Box2 = 9665;
-double Saddle.centerXType14Box3 = -4628; // south central side
-double Saddle.centerYType14Box3 = -2282; 
-double Saddle.centerZType14Box3 = 9665;
-double Saddle.centerXType14Box4 = -5008; // south side
-double Saddle.centerYType14Box4 = -2282; 
-double Saddle.centerZType14Box4 = 9665;
-
-//DS stand long top bottom
-double Saddle.centerXType15Box1 = -2990; // north top  
-double Saddle.centerYType15Box1 = -1679; 
-double Saddle.centerZType15Box1 = 9665;
-double Saddle.centerXType15Box2 = -2990; // north bottom
-double Saddle.centerYType15Box2 = -2282; 
-double Saddle.centerZType15Box2 = 9665;
-double Saddle.centerXType15Box3 = -4818; // south top
-double Saddle.centerYType15Box3 = -1679; 
-double Saddle.centerZType15Box3 = 9665;
-double Saddle.centerXType15Box4 = -4818; // south bottom
-double Saddle.centerYType15Box4 = -2282; 
-double Saddle.centerZType15Box4 = 9665;
-
-// DS stand long east west ends
-double Saddle.centerXType16Box1 = -2990; // north west
-double Saddle.centerYType16Box1 = -2262; 
-double Saddle.centerZType16Box1 = 3714;
-double Saddle.centerXType16Box2 = -2990; // north east  
-double Saddle.centerYType16Box2 = -2262; 
-double Saddle.centerZType16Box2 = 15616;
-double Saddle.centerXType16Box3 = -4818; // south west  
-double Saddle.centerYType16Box3 = -2262; 
-double Saddle.centerZType16Box3 = 3714;
-double Saddle.centerXType16Box4 = -4818;  
-double Saddle.centerYType16Box4 = -2262; 
-double Saddle.centerZType16Box4 = 15616;
-
-// DS stand short east west sides
-double Saddle.centerXType17Box1 = -3904; 
-double Saddle.centerYType17Box1 = -2282; 
-double Saddle.centerZType17Box1 = 3849;
-double Saddle.centerXType17Box2 = -3904; 
-double Saddle.centerYType17Box2 = -2282; 
-double Saddle.centerZType17Box2 = 4229;
-double Saddle.centerXType17Box3 = -3904; 
-double Saddle.centerYType17Box3 = -2282; 
-double Saddle.centerZType17Box3 = 8499;
-double Saddle.centerXType17Box4 = -3904;  
-double Saddle.centerYType17Box4 = -2282; 
-double Saddle.centerZType17Box4 = 8879;
-double Saddle.centerXType17Box5 = -3904; 
-double Saddle.centerYType17Box5 = -2282; 
-double Saddle.centerZType17Box5 = 13149;
-double Saddle.centerXType17Box6 = -3904; 
-double Saddle.centerYType17Box6 = -2282; 
-double Saddle.centerZType17Box6 = 13529;
-double Saddle.centerXType17Box7 = -3904; 
-double Saddle.centerYType17Box7 = -2282; 
-double Saddle.centerZType17Box7 = 15100.8;
-double Saddle.centerXType17Box8 = -3904;  
-double Saddle.centerYType17Box8 = -2282; 
-double Saddle.centerZType17Box8 = 15480.8;
-
-// DS stand short top bottom
-double Saddle.centerXType18Box1 = -3904; 
-double Saddle.centerYType18Box1 = -1679; 
-double Saddle.centerZType18Box1 = 4039;
-double Saddle.centerXType18Box2 = -3904; 
-double Saddle.centerYType18Box2 = -2262; 
-double Saddle.centerZType18Box2 = 4039;
-double Saddle.centerXType18Box3 = -3904; 
-double Saddle.centerYType18Box3 = -1679; 
-double Saddle.centerZType18Box3 = 8689;
-double Saddle.centerXType18Box4 = -3904;  
-double Saddle.centerYType18Box4 = -2262; 
-double Saddle.centerZType18Box4 = 8689;
-double Saddle.centerXType18Box5 = -3904; 
-double Saddle.centerYType18Box5 = -1679; 
-double Saddle.centerZType18Box5 = 13339;
-double Saddle.centerXType18Box6 = -3904; 
-double Saddle.centerYType18Box6 = -2262; 
-double Saddle.centerZType18Box6 = 13339;
-double Saddle.centerXType18Box7 = -3904; 
-double Saddle.centerYType18Box7 = -1679; 
-double Saddle.centerZType18Box7 = 15290.8;
-double Saddle.centerXType18Box8 = -3904;  
-double Saddle.centerYType18Box8 = -2262; 
-double Saddle.centerZType18Box8 = 15290.8;
-
-// DS EM Saddle side plates
-double Saddle.centerXType19Box1 = -3904;
-double Saddle.centerYType19Box1 = -1550;
-double Saddle.centerZType19Box1 = 15055.8;
-double Saddle.centerXType19Box2 = -3904;
-double Saddle.centerYType19Box2 = -1550;
-double Saddle.centerZType19Box2 = 15525.8;
-
-// DS EM Saddle foot plates
-double Saddle.centerXType20Box1 = -3904;
-double Saddle.centerYType20Box1 = -1630;
-double Saddle.centerZType20Box1 = 15290.8;
-
-// DS EM Saddle end plates
-double Saddle.centerXType21Box1 = -5153; // north west end plate DS
-double Saddle.centerYType21Box1 = -1550;  // 
-double Saddle.centerZType21Box1 =  15290.8; 
-double Saddle.centerXType21Box2 = -2655; // south west end plate DS
-double Saddle.centerYType21Box2 = -1550;  // 
-double Saddle.centerZType21Box2 =  15290.8; 
-
-// DS stand top bottom cross plates
-double Saddle.centerXType22Box1 = -3904;
-double Saddle.centerYType22Box1 = -1658;
-double Saddle.centerZType22Box1 = 4039;
-double Saddle.centerXType22Box2 = -3904;
-double Saddle.centerYType22Box2 = -1658;
-double Saddle.centerZType22Box2 = 13339;
-double Saddle.centerXType22Box3 = -3904;
-double Saddle.centerYType22Box3 = -1658;
-double Saddle.centerZType22Box3 = 8689;
-double Saddle.centerXType22Box4 = -3904;
-double Saddle.centerYType22Box4 = -1658;
-double Saddle.centerZType22Box4 = 15290.8;
-double Saddle.centerXType22Box5 = -3904;
-double Saddle.centerYType22Box5 = -2310;
-double Saddle.centerZType22Box5 = 4039;
-double Saddle.centerXType22Box6 = -3904;
-double Saddle.centerYType22Box6 = -2310;
-double Saddle.centerZType22Box6 = 13339;
-double Saddle.centerXType22Box7 = -3904;
-double Saddle.centerYType22Box7 = -2310;
-double Saddle.centerZType22Box7 = 8689;
-double Saddle.centerXType22Box8 = -3904;
-double Saddle.centerYType22Box8 = -2310;
-double Saddle.centerZType22Box8 = 15290.8;
+vector<double> Saddle.centerType1Box1 = {3904,-1550,-7378}; // PS Saddle sides west PS  //  
+vector<double> Saddle.centerType1Box2 = {3904,-1550,-6908}; //   //  
+vector<double> Saddle.centerType1Box3 = {3904,-1550,-4478}; // PS Saddle sides east PS  //  
+vector<double> Saddle.centerType1Box4 = {3904,-1550,-4008}; //   //  
+vector<double> Saddle.centerType2Box1 = {3904,-1600,-7143}; // PS Saddle foot west   //  
+vector<double> Saddle.centerType2Box2 = {3904,-1600,-4243}; // PS Saddle foot east  //  
+vector<double> Saddle.centerType3Box1 = {5153,-1550,-7143}; // PS Saddle end north west PS  //  
+vector<double> Saddle.centerType3Box2 = {2655,-1550,-7143}; // south west PS  //  
+vector<double> Saddle.centerType3Box3 = {5153,-1550,-4243}; // PS Saddle end north east PS  //  
+vector<double> Saddle.centerType3Box4 = {2655,-1550,-4243}; // south east PS  //  
+vector<double> Saddle.centerType4Box1 = {3904,-2312,-7143}; // PS Stand I-beam west  //  
+vector<double> Saddle.centerType4Box2 = {3904,-2312,-4243}; // PS Stand I-beam east  //  
+vector<double> Saddle.centerType7Box1 = {4818,-2312,-5693}; // PS Stand I-beam north  //  
+vector<double> Saddle.centerType7Box2 = {2990,-2312,-5693}; // PS Stand I-beam south  //  
+vector<double> Saddle.centerType5Box1 = {3904,-1550,-3119}; // TS Saddle W side of NW saddle   //  
+vector<double> Saddle.centerType5Box2 = {3904,-1550,-2749}; // TS Saddle E side of NW saddle  //  
+vector<double> Saddle.centerType5Box3 = {955,-1550,0}; // TS Saddle N side of NC saddle   //  
+vector<double> Saddle.centerType5Box4 = {585,-1550,0}; // TS Saddle S side of NC saddle  //  
+vector<double> Saddle.centerType5Box5 = {3175.5,-1550,-990.1}; // TS Saddle NW side of NBend saddle   //  
+vector<double> Saddle.centerType5Box6 = {2913.9,-1550,-728.5}; // TS Saddle SE side of NBend saddle  //  
+vector<double> Saddle.centerType5Box7 = {-3904,-1550,3119}; // TS Saddle E side of SE saddle   //  
+vector<double> Saddle.centerType5Box8 = {-3904,-1550,2749}; // TS Saddle W side of SE saddle  //  
+vector<double> Saddle.centerType5Box9 = {-955,-1550,0}; // TS Saddle S side of SC saddle   //  
+vector<double> Saddle.centerType5Box10 = {-585,-1550,0}; // TS Saddle N side of SC saddle  //  
+vector<double> Saddle.centerType5Box11 = {-3175.5,-1550,990.1}; // TS Saddle SE side of SBend   //  
+vector<double> Saddle.centerType5Box12 = {-2913.9,-1550,728.5}; // TS Saddle NW side of SBend   //  
+vector<double> Saddle.centerType6Box1 = {3904,-1600,-2934}; // TS Saddle foot NW  //  
+vector<double> Saddle.centerType6Box2 = {3044.7,-1600,-859.3}; // TS Saddle foot NC  //  
+vector<double> Saddle.centerType6Box3 = {770,-1600,0}; // TS Saddle foot NBend   //  
+vector<double> Saddle.centerType6Box4 = {-3904,-1600,2934}; // TS Saddle foot SE  //  
+vector<double> Saddle.centerType6Box5 = {-3044.7,-1600,859.3}; // TS Saddle foot SC  //  
+vector<double> Saddle.centerType6Box6 = {-770,-1600,0}; // TS Saddle foot SBend  //  
+vector<double> Saddle.centerType8Box1 = {4939,-1550,-2934}; // TS Saddle end N of NW  //  
+vector<double> Saddle.centerType8Box2 = {2869,-1550,-2934}; // TS Saddle end N of NW  //  
+vector<double> Saddle.centerType8Box3 = {3776.6,-1550,-127.4}; // TS Saddle end NE of NBend  //  
+vector<double> Saddle.centerType8Box4 = {2312.8,-1550,-1591.2}; // TS Saddle end SW of NBend  //  
+vector<double> Saddle.centerType8Box5 = {770,-1550,-1035}; // TS Saddle end W of NC   //  
+vector<double> Saddle.centerType8Box6 = {770,-1550,1035}; // TS Saddle end E of NC   //  
+vector<double> Saddle.centerType8Box7 = {-4939,-1550,2934}; // TS Saddle end N of NW  //  
+vector<double> Saddle.centerType8Box8 = {-2869,-1550,2934}; // TS Saddle end N of NW  //  
+vector<double> Saddle.centerType8Box9 = {-3776.6,-1550,127.4}; // TS Saddle end NE of NBend  //  
+vector<double> Saddle.centerType8Box10 = {-2312.8,-1550,1591.2}; // TS Saddle end SW of NBend  //  
+vector<double> Saddle.centerType8Box11 = {-770,-1550,-1035}; // TS Saddle end W of NC   //  
+vector<double> Saddle.centerType8Box12 = {-770,-1550,1035}; // TS Saddle end E of NC   //  
+vector<double> Saddle.centerType9Box1 = {3904,-2312,-3209}; // TS Stand box side W of NW  //  
+vector<double> Saddle.centerType9Box2 = {3904,-2312,-2659}; // TS Stand box side E of NW  //  
+vector<double> Saddle.centerType9Box3 = {3239.2,-2312,-1053.8}; // TS Stand box side NE of NBend  //  
+vector<double> Saddle.centerType9Box4 = {2850.2,-2312,-664.8}; // TS Stand box side SW of NBend  //  
+vector<double> Saddle.centerType9Box5 = {1045,-2312,0}; // TS Stand box side W of NC   //  
+vector<double> Saddle.centerType9Box6 = {495,-2312,0}; // TS Stand box side E of NC   //  
+vector<double> Saddle.centerType9Box7 = {-3904,-2312,3209}; // TS Stand box side N of NW  //  
+vector<double> Saddle.centerType9Box8 = {-3904,-2312,2659}; // TS Stand box side N of NW  //  
+vector<double> Saddle.centerType9Box9 = {-3239.2,-2312,1053.8}; // TS Stand box side NE of NBend  //  
+vector<double> Saddle.centerType9Box10 = {-2850.2,-2312,664.8}; // TS Stand box side SW of NBend  //  
+vector<double> Saddle.centerType9Box11 = {-1045,-2312,0}; // TS Stand box side W of NC   //  
+vector<double> Saddle.centerType9Box12 = {-495,-2312,0}; // TS Stand box side E of NC   //  
+vector<double> Saddle.centerType10Box1 = {4979,-2312,-2934}; // TS Stand box end N of NW  //  
+vector<double> Saddle.centerType10Box2 = {2829,-2312,-2934}; // TS Stand box end N of NW  //  
+vector<double> Saddle.centerType10Box3 = {3805.2,-2312,-98.8}; // TS Stand box end NE of NBend  //  
+vector<double> Saddle.centerType10Box4 = {2284.2,-2312,-1619.8}; // TS Stand box end SW of NBend  //  
+vector<double> Saddle.centerType10Box5 = {770,-2312,-1075}; // TS Stand box end W of NC   //  
+vector<double> Saddle.centerType10Box6 = {770,-2312,1075}; // TS Stand box end E of NC   //  
+vector<double> Saddle.centerType10Box7 = {-4979,-2312,2934}; // TS Stand box end N of NW  //  
+vector<double> Saddle.centerType10Box8 = {-2829,-2312,2934}; // TS Stand box end N of NW  //  
+vector<double> Saddle.centerType10Box9 = {-3805.2,-2312,98.8}; // TS Stand box end NE of NBend  //  
+vector<double> Saddle.centerType10Box10 = {-2284.2,-2312,1619.8}; // TS Stand box end SW of NBend  //  
+vector<double> Saddle.centerType10Box11 = {-770,-2312,-1075}; // TS Stand box end W of NC   //  
+vector<double> Saddle.centerType10Box12 = {-770,-2312,1075}; // TS Stand box end E of NC   //  
+vector<double> Saddle.centerType11Box1 = {-3904,-1550,3804};
+vector<double> Saddle.centerType11Box2 = {-3904,-1550,4274};
+vector<double> Saddle.centerType11Box3 = {-3904,-1550,13104};
+vector<double> Saddle.centerType11Box4 = {-3904,-1550,13574};
+vector<double> Saddle.centerType12Box1 = {-3904,-1638,4039};
+vector<double> Saddle.centerType12Box2 = {-3904,-1638,13339};
+vector<double> Saddle.centerType13Box1 = {-5153,-1550, 4039}; // north west end plate DS  //  
+vector<double> Saddle.centerType13Box2 = {-2655,-1550, 4039}; // south west end plate DS  //  
+vector<double> Saddle.centerType13Box3 = {-5153,-1550,13339}; // DS Saddle end south east DS  //  
+vector<double> Saddle.centerType13Box4 = {-2655,-1550,13339}; // north east DS  //  
+vector<double> Saddle.centerType14Box1 = {-2800,-2282,9665}; // north side   
+vector<double> Saddle.centerType14Box2 = {-3180,-2282,9665}; // north central side 
+vector<double> Saddle.centerType14Box3 = {-4628,-2282,9665}; // south central side 
+vector<double> Saddle.centerType14Box4 = {-5008,-2282,9665}; // south side 
+vector<double> Saddle.centerType15Box1 = {-2990,-1679,9665}; // north top   
+vector<double> Saddle.centerType15Box2 = {-2990,-2282,9665}; // north bottom 
+vector<double> Saddle.centerType15Box3 = {-4818,-1679,9665}; // south top 
+vector<double> Saddle.centerType15Box4 = {-4818,-2282,9665}; // south bottom 
+vector<double> Saddle.centerType16Box1 = {-2990,-2262,3714}; // north west 
+vector<double> Saddle.centerType16Box2 = {-2990,-2262,15616}; // north east   
+vector<double> Saddle.centerType16Box3 = {-4818,-2262,3714}; // south west   
+vector<double> Saddle.centerType16Box4 = {-4818,-2262,15616};   
+vector<double> Saddle.centerType17Box1 = {-3904,-2282,3849};  
+vector<double> Saddle.centerType17Box2 = {-3904,-2282,4229};  
+vector<double> Saddle.centerType17Box3 = {-3904,-2282,8499};  
+vector<double> Saddle.centerType17Box4 = {-3904,-2282,8879};   
+vector<double> Saddle.centerType17Box5 = {-3904,-2282,13149};  
+vector<double> Saddle.centerType17Box6 = {-3904,-2282,13529};  
+vector<double> Saddle.centerType17Box7 = {-3904,-2282,15100.8};  
+vector<double> Saddle.centerType17Box8 = {-3904,-2282,15480.8};   
+vector<double> Saddle.centerType18Box1 = {-3904,-1679,4039};  
+vector<double> Saddle.centerType18Box2 = {-3904,-2262,4039};  
+vector<double> Saddle.centerType18Box3 = {-3904,-1679,8689};  
+vector<double> Saddle.centerType18Box4 = {-3904,-2262,8689};   
+vector<double> Saddle.centerType18Box5 = {-3904,-1679,13339};  
+vector<double> Saddle.centerType18Box6 = {-3904,-2262,13339};  
+vector<double> Saddle.centerType18Box7 = {-3904,-1679,15290.8};  
+vector<double> Saddle.centerType18Box8 = {-3904,-2262,15290.8};   
+vector<double> Saddle.centerType19Box1 = {-3904,-1550,15055.8};
+vector<double> Saddle.centerType19Box2 = {-3904,-1550,15525.8};
+vector<double> Saddle.centerType20Box1 = {-3904,-1630,15290.8};
+vector<double> Saddle.centerType21Box1 = {-5153,-1550, 15290.8}; // north west end plate DS  //  
+vector<double> Saddle.centerType21Box2 = {-2655,-1550, 15290.8}; // south west end plate DS  //  
+vector<double> Saddle.centerType22Box1 = {-3904,-1658,4039};
+vector<double> Saddle.centerType22Box2 = {-3904,-1658,13339};
+vector<double> Saddle.centerType22Box3 = {-3904,-1658,8689};
+vector<double> Saddle.centerType22Box4 = {-3904,-1658,15290.8};
+vector<double> Saddle.centerType22Box5 = {-3904,-2310,4039};
+vector<double> Saddle.centerType22Box6 = {-3904,-2310,13339};
+vector<double> Saddle.centerType22Box7 = {-3904,-2310,8689};
+vector<double> Saddle.centerType22Box8 = {-3904,-2310,15290.8};
 
 
 // The orientation of the box.  See docdb xxxx for details.
