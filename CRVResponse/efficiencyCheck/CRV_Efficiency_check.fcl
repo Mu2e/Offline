@@ -1,0 +1,112 @@
+#include "minimalMessageService.fcl"
+#include "standardServices.fcl"
+#include "CRVResponse/test/prolog.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+process_name : CRVEfficiency
+
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : @nil
+}
+
+services :
+{
+  message               : @local::default_message
+  TFileService          : { fileName : "hist.root" }
+  RandomNumberGenerator : { }
+
+  user :
+  {
+    GeometryService        : { inputFile      : "CRVResponse/efficiencyCheck/geom.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper               : { }
+    SeedService            : @local::automaticSeeds
+  }
+}
+
+physics :
+{
+  producers:
+  {
+    generate: 
+    {
+       module_type          : EventGenerator
+       inputfile            : "CRVResponse/efficiencyCheck/genconfig.txt"
+    }
+
+    g4run : 
+    {
+       module_type: Mu2eG4
+       physics: @local::mu2eg4DefaultPhysics
+       ResourceLimits: @local::mu2eg4DefaultResourceLimits
+       TrajectoryControl: @local::mu2eg4DefaultTrajectories 
+       debug: @local::mu2eg4DefaultDebug
+       visualization: @local::mu2eg4NoVisualization
+
+       generatorModuleLabel: generate
+       MultiStageParameters: {} // this is the first stage
+
+       SDConfig: 
+       {
+            enableSD: [ CRV ] 
+            sensitiveVolumes: []
+            TimeVD: { times: [] }
+       }
+
+       Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+
+       Mu2eG4SteppingOnlyCut: {}
+
+       Mu2eG4CommonCut: 
+       {
+         type: union
+         pars:
+         [
+            {
+              type  : plane 
+              normal: [  0, -1, 0 ] 
+              point : [ 0, 2590, 0 ] 
+            },
+            { 
+              type: inVolume
+              pars: [ worldDirtBottom, worldDirtNW, worldDirtSW, worldDirtSE, worldDirtNE ]
+            }
+         ]
+       }
+    }
+
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+
+    CrvPhotonArrivals: @local::CrvPhotonArrivals
+    CrvSiPMResponses : @local::CrvSiPMResponses
+    CrvWaveforms     : @local::CrvWaveforms
+    CrvRecoPulses    : @local::CrvRecoPulses
+    CrvCoincidence   : @local::CrvCoincidence
+  }
+
+  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]  
+  trigger_paths  : [trig]
+
+  out: [Output]
+  end_paths: [out]
+}
+
+physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
+physics.producers.CrvPhotonArrivals.processNames   : ["*"]
+
+outputs: 
+{
+    Output : 
+    {
+        module_type : RootOutput
+        fileName    : "data_crv.root"
+    }
+}
+
+services.user.SeedService.baseSeed         :  773651
+services.user.SeedService.maxUniqueEngines :  20
+
