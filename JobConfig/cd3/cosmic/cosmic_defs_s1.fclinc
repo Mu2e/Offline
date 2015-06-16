@@ -16,18 +16,9 @@ BEGIN_PROLOG
 
 crvStage1End: 
 {
-   type: intersection
-   pars: 
-   [
-      { type: inVolume pars: [ TrackerMother, CalorimeterMother ] },
-
-      // puts the output into the stream with the name "crvStage1" which is used in the cosmicFilter below
-      { 
-        type:  constant
-        value: true
-        write: crvStage1
-      }
-   ]
+   type: inVolume
+   pars: [ TrackerMother, CalorimeterMother ]
+   write: crvStage1
 }
 
 crvOuterBox: 
