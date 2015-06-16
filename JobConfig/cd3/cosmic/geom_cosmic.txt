@@ -5,6 +5,8 @@ double world.minimalMargin.xmax = 500000;
 double world.minimalMargin.zmin = 500000;
 double world.minimalMargin.zmax = 500000;
 
+string dirt.beamline.berm.material = "G4_AIR";
+
 //
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

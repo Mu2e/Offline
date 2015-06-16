@@ -9,6 +9,7 @@ class TH1D;
 class TH2D;
 class TH3D;
 class TFile;
+class TNtuple;
 
 class WLSEventAction : public G4UserEventAction
 {
@@ -37,6 +38,7 @@ class WLSEventAction : public G4UserEventAction
     TH3D*                   _histSurvivalProb[4][4];
     TH3D*                   _histTimeDifference[4][4];
     TH3D*                   _histFiberEmissions[4][4];
+    TNtuple*                _ntuple;
     int                     _generatedPhotons;
     int                     _mode, _numberOfPhotons, _simType, _minBin;
     bool                    _verbose;

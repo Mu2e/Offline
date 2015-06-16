@@ -95,6 +95,8 @@ WLSEventAction::WLSEventAction(int mode, int numberOfPhotons, int simType, int m
     _PEsVsPulseHeight = new TH2D("PEsVsPulseHeight","PEsVsPulseHeight", 200,0,0.5, 100,0,100);
     _PEsVsPulseHeight->SetYTitle("PEs");
     _PEsVsPulseHeight->SetXTitle("PulseHeight [mV]");
+
+    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:integral:pulseHeight");
   }
 }
 
@@ -113,6 +115,9 @@ WLSEventAction::~WLSEventAction()
   
     delete _photonsVsIntegral;
     delete _photonsVsPulseHeight;
+
+    _ntuple->SaveAs("CRVNtuple.root");
+    delete _ntuple;
   }
 
 }
@@ -481,16 +486,20 @@ void WLSEventAction::Draw(const G4Event* evt) const
     if(makeRecoPulses.GetNPulses()==1)
     {
       int photons = photonTimes.size();
-      std::cout<<"Photons/integral: "<<photons/makeRecoPulses.GetIntegral(0)<<"         ";
-      std::cout<<"Photons/maxBin: "<<photons/makeRecoPulses.GetPulseHeight(0)<<std::endl;
-      _photonsVsIntegral->Fill(makeRecoPulses.GetIntegral(0),photons);
-      _photonsVsPulseHeight->Fill(makeRecoPulses.GetPulseHeight(0),photons);
+      double integral = makeRecoPulses.GetIntegral(0);
+      double pulseHeight = makeRecoPulses.GetPulseHeight(0);
+      std::cout<<"Photons/integral: "<<photons/integral<<"         ";
+      std::cout<<"Photons/maxBin: "<<photons/pulseHeight<<std::endl;
+      _photonsVsIntegral->Fill(integral,photons);
+      _photonsVsPulseHeight->Fill(pulseHeight,photons);
       double PEs=0;
       for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++) PEs+=siPMcharges[SiPM][j];
-      std::cout<<"PEs/integral: "<<PEs/makeRecoPulses.GetIntegral(0)<<"         ";
-      std::cout<<"PEs/maxBin: "<<PEs/makeRecoPulses.GetPulseHeight(0)<<std::endl;
-      _PEsVsIntegral->Fill(makeRecoPulses.GetIntegral(0),PEs);
-      _PEsVsPulseHeight->Fill(makeRecoPulses.GetPulseHeight(0),PEs);
+      std::cout<<"PEs/integral: "<<PEs/integral<<"         ";
+      std::cout<<"PEs/maxBin: "<<PEs/pulseHeight<<std::endl;
+      _PEsVsIntegral->Fill(integral,PEs);
+      _PEsVsPulseHeight->Fill(pulseHeight,PEs);
+
+      _ntuple->Fill(SiPM,photons,PEs,integral,pulseHeight);
     }
 
     TGaxis *axis = new TGaxis(170.0,0,170.0,histMax,0,histMax/scale,10,"+L");
