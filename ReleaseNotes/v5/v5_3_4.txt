@@ -164,5 +164,7 @@ Still under construction
 
 7.  David Norvil Brown (Louisville), 15 June 2015:  Move Stopping Target 
     monitor downstream by 10 meters.  Add Shielding roof support block
-    and notch existing roof blocks.
+    and notch existing roof blocks.  After consultation with CRV and MSTM
+    groups, make MSTM not build by default until later time when a more
+    realistic design exists.
 

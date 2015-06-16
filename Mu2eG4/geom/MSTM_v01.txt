@@ -9,23 +9,23 @@
 
 
 // build VD inside DS Neutron Shielding
-bool vd.DSNeutronShieldExit.build = true;
+bool vd.DSNeutronShieldExit.build = false;
 int  vd.verbosityLevel = 2;
 
 // build virtual detectors throughout the MSTM area
-bool   vd.MSTMWallUpStr.build  = true;
+bool   vd.MSTMWallUpStr.build  = false;
 double vd.MSTMWallUpStr.r      = 100.0; // r=10cm 
 
-bool vd.MSTMColl1DnStr.build   = true;
+bool vd.MSTMColl1DnStr.build   = false;
 double vd.MSTMColl1DnStr.r     = 100.0; // r=10cm 
 
-bool vd.MSTMShutterDnStr.build = true;
+bool vd.MSTMShutterDnStr.build = false;
 double vd.MSTMShutterDnStr.r   = 100.0; // r=10cm 
 
-bool vd.MSTMColl2DnStr.build   = true;
+bool vd.MSTMColl2DnStr.build   = false;
 double vd.MSTMColl2DnStr.r     = 100.0; // r=10cm 
 
-bool vd.MSTMColl3DnStr.build   = true;
+bool vd.MSTMColl3DnStr.build   = false;
 double vd.MSTMColl3DnStr.r     = 70.0; // r=7cm 
 
 
@@ -33,7 +33,7 @@ double vd.MSTMColl3DnStr.r     = 70.0; // r=7cm
 // MSTM walls, collimators, pipes, magnet, absorber, and detector
 // z-positions are skipped and taken from the dss in the code
 
-bool   mstm.build  = true;
+bool   mstm.build  = false;
 int    mstm.verbosityLevel = 1;
 bool   mstm.visible = true;
 bool   mstm.solid   = false;
