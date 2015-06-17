@@ -21,7 +21,7 @@ double cosmicDYB.constTime = 800;
 string cosmicDYB.refPointChoice  = "Customized";
 bool   cosmicDYB.vertical        = true;
 string cosmicDYB.directionChoice = "Positive_x";
-vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-1389.4,1098.3,12932.4};  //x: 2514.6+(-3904.0)=-1389.4
+vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-6418.6,1098.3,12932.4};  //x: -3904.0-2514.6=-6418.6
 
 //
 // This tells emacs to view this file in c++ mode.
