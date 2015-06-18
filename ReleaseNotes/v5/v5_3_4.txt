@@ -1,5 +1,3 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_3_4
 
 13) June 11, 2015 - ehrlich
@@ -162,7 +160,7 @@ Still under construction
 6.  David Norvil Brown (Louisville), 26 May 2015:  Add DS Stand and saddle
     under calorimeter region.  Add plates on DS stand.  Add rails in DS.
 
-7.  David Norvil Brown (Louisville), 15 June 2015:  Move Stopping Target 
+7.  David Norvil Brown (Louisville), 15 June 2015:  Move Stopping Target
     monitor downstream by 10 meters.  Add Shielding roof support block
     and notch existing roof blocks.  After consultation with CRV and MSTM
     groups, make MSTM not build by default until later time when a more
