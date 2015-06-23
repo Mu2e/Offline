@@ -34,6 +34,8 @@ AddOption('--mu2egs',
 # Extract information from the shell environment.
 art_inc       = os.environ['ART_INC']
 art_lib       = os.environ['ART_LIB']
+btrk_inc      = os.environ['BTRK_INC']
+btrk_lib      = os.environ['BTRK_LIB']
 base          = os.environ['MU2E_BASE_RELEASE']
 boost_lib     = os.environ['BOOST_LIB']
 boost_inc     = os.environ['BOOST_INC']
@@ -70,10 +72,10 @@ else:
     isSatelliteRelease        = 0
 
 # The link libraries needed when building the BaBar code.
-babarlibs = [ 'mu2e_BaBar_KalmanTrack',     'mu2e_BaBar_DetectorModel',      'mu2e_BaBar_TrkBase',    'mu2e_BaBar_BField',
-              'mu2e_BaBar_TrajGeom',        'mu2e_BaBar_BbrGeom',            'mu2e_BaBar_difAlgebra', 'mu2e_BaBar_ProbTools',
-              'mu2e_BaBar_BaBar',           'mu2e_BaBar_CLHEP_src_Geometry', 'mu2e_BaBar_MatEnv',
-              'mu2e_BaBar_Dch_DchGeomBase', 'mu2e_BaBar_Dch_DchGeom' ]
+babarlibs = [ 'btrk_KalmanTrack',     'btrk_DetectorModel',      'btrk_TrkBase',    'btrk_BField',
+              'btrk_TrajGeom',        'btrk_BbrGeom',            'btrk_difAlgebra', 'btrk_ProbTools',
+              'btrk_BaBar',           'btrk_CLHEP_src_Geometry', 'btrk_MatEnv',
+              'btrk_Dch_DchGeomBase', 'btrk_Dch_DchGeom' ]
 
 # Define scons-local environment - it will be exported later.
 osenv = {}
@@ -85,8 +87,10 @@ for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',  'ROOTSYS'
 
 env = Environment( CPPPATH=[ cpppath_frag,
                              base,
-                             base+'/BaBar/include',
+                             base+'//include',
                              art_inc,
+                             btrk_inc+'/btrk/include', # Fixme: only need for transitoion to btrk product
+                             btrk_inc,
                              mesfac_inc,
                              fhicl_inc,
                              sqlite_inc,
@@ -102,6 +106,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                    LIBPATH=[ libpath_frag,
                              base+'/lib',
                              art_lib,
+                             btrk_lib,
                              mesfac_lib,
                              fhicl_lib,
                              sqlite_lib,
