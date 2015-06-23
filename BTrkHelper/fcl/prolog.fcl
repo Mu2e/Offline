@@ -4,7 +4,7 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 
- BtrkHelperDefault : {
+ BTrkHelperDefault : {
 
 #  Location of dictionary files for the material model.
    dictionaries : {

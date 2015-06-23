@@ -1,5 +1,5 @@
-#ifndef BtrkHelper_BtrkHelper_hh
-#define BtrkHelper_BtrkHelper_hh
+#ifndef BTrkHelper_BTrkHelper_hh
+#define BTrkHelper_BTrkHelper_hh
 
 //
 // The btrk code needs some information and tools that are supplied externally.
@@ -8,8 +8,8 @@
 // Original author Rob Kutschke
 //
 
-#include "BtrkHelper/inc/FileFinder.hh"
-#include "BtrkHelper/inc/ParticleInfo.hh"
+#include "BTrkHelper/inc/FileFinder.hh"
+#include "BTrkHelper/inc/ParticleInfo.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
@@ -21,10 +21,10 @@
 
 namespace mu2e {
 
-  class BtrkHelper {
+  class BTrkHelper {
 
 public:
-    BtrkHelper(const fhicl::ParameterSet&, art::ActivityRegistry&);
+    BTrkHelper(const fhicl::ParameterSet&, art::ActivityRegistry&);
 
     // Functions registered for callbacks.
     void beginRun   ( art::Run    const &run    );
@@ -42,5 +42,5 @@ private:
 
 }
 
-DECLARE_ART_SERVICE(mu2e::BtrkHelper, LEGACY)
-#endif /* BtrkHelper_BtrkHelper_hh */
+DECLARE_ART_SERVICE(mu2e::BTrkHelper, LEGACY)
+#endif /* BTrkHelper_BTrkHelper_hh */

@@ -68,11 +68,10 @@ setup -B geant4 v4_9_6_p04a -q${MU2E_UPS_QUALIFIERS}
 # Other libraries we need.
 setup -B heppdt v3_04_01c -q${MU2E_UPS_QUALIFIERS}
 setup -B splines v1_06_00 -q${MU2E_UPS_QUALIFIERS}
-setup -B btrk    v1_00_02 -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk    v1_00_03 -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_3_4
-
 
 # Search path for fcl files
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
