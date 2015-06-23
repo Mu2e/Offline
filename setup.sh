@@ -68,7 +68,7 @@ setup -B geant4 v4_9_6_p04a -q${MU2E_UPS_QUALIFIERS}
 # Other libraries we need.
 setup -B heppdt v3_04_01c -q${MU2E_UPS_QUALIFIERS}
 setup -B splines v1_06_00 -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk    v1_00_03 -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk    v1_00_04 -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_3_4
