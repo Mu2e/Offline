@@ -8,9 +8,9 @@ BEGIN_PROLOG
 
 #  Location of dictionary files for the material model.
    dictionaries : {
-     elements  : "BaBar/MatEnv/ElementsList.data"
-     isotopes  : "BaBar/MatEnv/IsotopesList.data"
-     materials : "BaBar/MatEnv/MaterialsList.data"
+     elements  : "BtrkHelper/data/ElementsList.data"
+     isotopes  : "BtrkHelper/data/IsotopesList.data"
+     materials : "BtrkHelper/data/MaterialsList.data"
    }
  }
 
