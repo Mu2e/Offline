@@ -1,12 +1,12 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
-# this example shows how to configure a job to 
+# this example shows how to configure a job to
 #
-# - generate conversion electron events 
+# - generate conversion electron events
 # - run simulation+reconstruction chain
 # - run particle ID
-# 
-# local submission: 
+#
+# local submission:
 #
 #  mu2e -c Analyses/test/genReco.fcl -n 1000 >| results/2014-12-19-Analyses_test_genReco.log &
 #------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ process_name : GenReco
 #------------------------------------------------------------------------------
 # define input module
 #------------------------------------------------------------------------------
-source : { 
+source : {
     module_type : EmptyEvent
 }
 #------------------------------------------------------------------------------
@@ -53,6 +53,7 @@ services : {
         ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
         GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
         G4Helper               : { }
+        BtrkHelper             : @local::BtrkHelperDefault
         SeedService            : { @table::automaticSeeds
 	    baseSeed             :  0
 	    maxUniqueEngines     :  20
@@ -102,7 +103,7 @@ physics : {
     filters: {
 #------------------------------------------------------------------------------
 # Andrej's filter
-# Reject events with no hits from signal-like tracks in the detectors.  
+# Reject events with no hits from signal-like tracks in the detectors.
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
 	FilterStepPointMomentum: {
@@ -112,15 +113,15 @@ physics : {
         }
     }
 #------------------------------------------------------------------------------
-# paths: 
+# paths:
 #------------------------------------------------------------------------------
     p1 : [generate, g4run
-	  , protonTimeMap, muonTimeMap 
+	  , protonTimeMap, muonTimeMap
 	  , makeSD, makeSH
 	  , MakeCaloReadoutHits, MakeCaloCrystalHits
 	  , MakeCaloProtoCluster, MakeCaloCluster
-# 
-	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec 
+#
+	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
 #
 	  , TrkExtrapol, CaloMatching, ParticleID
 	 ]
@@ -140,7 +141,7 @@ physics : {
 
 # print per event timing for ::event entry points
 # services.Timing: { }
-# print 
+# print
 services.scheduler.wantSummary: true
 
 # Apply the time offsets at the digitization stage
