@@ -1,4 +1,4 @@
-#include "BtrkHelper/inc/FileFinder.hh"
+#include "BTrkHelper/inc/FileFinder.hh"
 
 mu2e::FileFinder::FileFinder( fhicl::ParameterSet const& pset ):
   policy_(),

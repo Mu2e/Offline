@@ -1,5 +1,5 @@
-#ifndef BtrkHelper_FileFinder_hh
-#define BtrkHelper_FileFinder_hh
+#ifndef BTrkHelper_FileFinder_hh
+#define BTrkHelper_FileFinder_hh
 
 #include "BaBar/FileFinderInterface.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"

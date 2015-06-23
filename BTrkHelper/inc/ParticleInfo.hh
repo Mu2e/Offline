@@ -1,5 +1,5 @@
-#ifndef BtrkHelper_ParticleInfo_hh
-#define BtrkHelper_ParticleInfo_hh
+#ifndef BTrkHelper_ParticleInfo_hh
+#define BTrkHelper_ParticleInfo_hh
 
 //
 // Supply information about particles to the btrk code.
