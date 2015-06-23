@@ -7,7 +7,7 @@
 
 #include "BtrkHelper/inc/BtrkHelper.hh"
 
-#include "BaBar/BaBar/src/ExternalInfo.cc"
+#include "BaBar/BaBar/include/ExternalInfo.hh"
 
 mu2e::BtrkHelper::BtrkHelper(fhicl::ParameterSet const& pset,
                              art::ActivityRegistry&     registry):
