@@ -68,6 +68,7 @@ setup -B geant4 v4_9_6_p04a -q${MU2E_UPS_QUALIFIERS}
 # Other libraries we need.
 setup -B heppdt v3_04_01c -q${MU2E_UPS_QUALIFIERS}
 setup -B splines v1_06_00 -q${MU2E_UPS_QUALIFIERS}
+setup -B btrk    v1_00_02 -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_3_4
@@ -78,24 +79,6 @@ export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
 
 # Tell the framework to look in the local area to find modules.
 source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
-
-# Check out the BaBar code.
-# First build the symlink directory.  Then checkout the code.
-babarversion=619
-if [  -f "./BaBar/makeInclude.sh" ]; then
-  source ./BaBar/makeInclude.sh
-  if [ ! -f "BaBar/BaBar/include/BaBar.hh" ]; then
-   echo "Checking out the BaBar Kalman Filter code."
-   ./BaBar/checkout.sh "-r ${babarversion}"
-  else
-    # Skip check during grid jobs or else they will DOS attack the svn repository.
-    if [ -z "${PROCESS}" ] || [ "${PROCESS}" == 0 ]; then
-      ./BaBar/checkVersion.sh ${babarversion}
-    else
-      echo "Grid job with PROCESS != 0 detected. Skipping version check of BaBar code."
-    fi
-  fi
-fi
 
 #
 if [ "${MU2E_BASE_RELEASE}" != `/bin/pwd` ]; then
