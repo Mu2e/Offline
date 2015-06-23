@@ -17,7 +17,7 @@ helper=mu2e_helper();
 
 mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'mu2e_GeneralUtilities',
-                                  'mu2e_BaBar_BaBar',
+                                  'btrk_BaBar',
                                   'fhiclcpp',
                                 ] )
 
