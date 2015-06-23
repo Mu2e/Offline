@@ -2,7 +2,7 @@
 # This file defines some standard configurations for services
 #
 
-#include "BtrkHelper/fcl/prolog.fcl"
+#include "BTrkHelper/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
