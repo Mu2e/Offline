@@ -1,0 +1,197 @@
+#
+#  This is a complete list of elements for entry in the Conditions DB
+#  
+#  Do not remove the following line it's a tag !
+#Elements_list
+Hydrogen       H     1    1.007940   2  
+99.985e-2  1.51e-4      Hydrogen1   Hydrogen2
+Helium         He    2    4.002602   2  
+1.38e-6    99.99986e-2  Helium3     Helium4
+Lithium        Li    3    6.941000   2  
+7.5e-2     92.5e-2      Lithium6    Lithium7
+Beryllium      Be    4    9.012182   1  
+100.0e-2   Beryllium9
+Boron          B     5   10.811000   2  
+19.9e-2    80.1e-2      Boron10     Boron11
+Carbon         C     6   12.011000   2  
+98.9e-2    1.1e-2       Carbon12    Carbon13 
+Nitrogen       N     7   14.006740   2  
+99.634e-2  3.67e-3      Nitrogen14  Nitrogen15
+Oxygen         O     8   15.999400   3  
+99.762e-2  3.8e-4   2.0e-3    Oxygen16   Oxygen17  Oxygen18 
+Fluorine       F     9   18.998403   1  
+100.0e-2   Fluorine19
+Neon           Ne   10   20.179700   3  
+90.51e-2   2.7e-3   9.22e-2   Neon20     Neon21    Neon22 
+Sodium         Na   11   22.989768   1  
+100.0e-2   Sodium23
+Magnesium      Mg   12   24.305000   3  
+78.99e-2   10.0e-2  11.01e-2  Magnesium24  Magnesium25  Magnesium26 
+Aluminum       Al   13   26.981539   1  
+100.0e-2   Aluminum27
+Silicon        Si   14   28.085500   3  
+92.23e-2   4.67e-2  3.1e-2    Silicon28    Silicon29    Silicon30
+Phosphorus     P    15   30.973762   1  
+100.0e-2   Phosphorus31
+Sulfur         S    16   32.066000   4  
+95.03e-2   7.5e-3   4.22e-2   2.0e-4   Sulfur32  Sulfur33  Sulfur34  Sulfur36
+Chlorine       Cl   17   35.452700   2  
+75.77e-2   24.23e-2     Chlorine35  Chlorine37 
+Argon          Ar   18   39.948000   3  
+3.37e-3    6.3e-4   99.6e-2   Argon36  Argon38  Argon40
+Potasium       K    19   39.098300   3  
+93.2581e-2   1.17e-4   6.7302e-2  Potasium39  Potasium40  Potasium41  
+Calcium        Ca   20   40.078000   6  
+96.941e-2  6.47e-3  1.35e-3  2.087e-2  4.3e-5  1.87e-3  Calcium40  Calcium42  Calcium43  Calcium44  Calcium46  Calcium48
+Scandium       Sc   21   44.955910   1  
+100.0e-2   Scandium45
+Titanium       Ti   22   47.880000   5  
+8.0e-2     7.3e-2  73.8e-2  5.5e-2  5.4e-2  Titanium46 Titanium47 Titanium48 Titanium49  Titanium50 
+Vanadium       V    23   50.941500   2  
+2.5e-3     99.75e-2  Vanadium50  Vanadium51
+Chromium       Cr   24   51.996100   4  
+4.35e-2    83.79e-2  9.5e-2  2.37e-2  Chromium50  Chromium52  Chromium53  Chromium54
+Manganese      Mn   25   54.938050   1  
+100.0e-2   Manganese55
+Iron           Fe   26   55.847000   4  
+5.8e-2     91.72e-2  2.2e-2  2.8e-3  Iron54  Iron56  Iron57  Iron58
+Cobalt         Co   27   58.933200   1  
+100.0e-2   Cobalt59
+Nickel         Ni   28   58.693400   5  
+68.27e-2   26.1e-2  1.13e-2  3.59e-2  9.1e-3  Nickel58  Nickel60  Nickel61  Nickel62  Nickel64
+Copper         Cu   29   63.546000   2  
+69.17e-2   30.83e-2  Copper63  Copper65 
+Zinc           Zn   30   65.390000   5  
+48.6e-2    27.9e-2  4.1e-2  18.8e-2  6.0e-3  Zinc64  Zinc66  Zinc67  Zinc68  Zinc70 
+Gallium        Ga   31   69.723000   2  
+60.1e-2    39.9e-2  Gallium69  Gallium71 
+Germanium      Ge   32   72.610000   5  
+20.5e-2    27.4e-2  7.8e-2  36.6e-2  7.8e-2  Germanium70 Germanium72  Germanium73  Germanium74  Germanium76 
+Arsenic        As   33   74.921590   1  
+100.0e-2   Arsenic75 
+Selenium       Se   34   78.960000   6  
+9.0e-3     9.0e-2  7.6e-2  23.7e-2  49.8e-2  9.2e-2  Selenium74  Selenium76  Selenium77  Selenium78  Selenium80  Selenium82
+Bromine        Br   35   79.904000   2  
+50.69e-2   49.315e-2  Bromine79  Bromine81
+Krypton        Kr   36   83.800000   6  
+3.5e-3     2.25e-2  11.6e-2  11.5e-2  57.0e-2  17.3e-2  Krypton78  Krypton80  Krypton82  Krypton83  Krypton84  Krypton86
+Rubidium       Rb   37   85.467800   2  
+72.17e-2   27.85e-2  Rubidium85  Rubidium87 
+Strontium      Sr   38   87.620000   4  
+5.6e-3     9.86e-2  7.0e-2  82.58e-2  Strontium84  Strontium86  Strontium87 Strontium88 
+Yttrium        Y    39   88.905850   1  
+100.0e-2   Yttrium89 
+Zirconium      Zr   40   91.224000   5  
+51.45e-2   11.22e-2  17.15e-2  17.38e-2  2.8e-2  Zirconium90  Zirconium91  Zirconium92  Zirconium94  Zirconium96 
+Niobium        Nb   41   92.906380   1  
+100.0e-2   Niobium93 
+Molybdenum     Mo   42   95.940000   7  
+14.84e-2   9.25e-2  15.92e-2  16.68e-2  9.55e-2  24.13e-2  9.63e-2  Molybdenum92  Molybdenum94  Molybdenum95  Molybdenum96  Molybdenum97  Molybdenum98  Molybdenum100 
+Technetium     Tc   43   97.907200   0  
+Ruthenium      Ru   44  101.070000   7  
+5.52e-2    1.89e-2  12.7e-2  12.6e-2  17.0e-2  31.6e-2  18.7e-2  Ruthenium96  Ruthenium98  Ruthenium99  Ruthenium100  Ruthenium101  Ruthenium102  Ruthenium104 
+Rhodium        Rh   45  102.905500   1  
+100.0e-2   Rhodium103 
+Palladium      Pd   46  106.420000   6  
+1.02e-2    11.14e-2  22.33e-2  27.33e-2  26.7e-2  11.8e-2  Palladium102  Palladium104  Palladium105  Palladium106  Palladium108  Palladium110 
+Silver         Ag   47  107.868200   2  
+51.839e-2  48.17e-2  Silver107  Silver109 
+Cadmium        Cd   48  112.411000   8  
+1.25e-2    8.9e-3  12.49e-2  12.81e-2  24.13e-2  12.22e-2  28.73e-2  7.5e-2  Cadmium106  Cadmium108  Cadmium110  Cadmium111  Cadmium112  Cadmium113  Cadmium114  Cadmium116 
+Indium         In   49  114.818000   2  
+4.3e-2     95.7e-2  Indium113  Indium115
+Tin            Sn   50  118.710000  10  
+9.7e-3    6.5e-3  3.6e-3  14.53e-2  7.69e-2  24.22e-2  8.58e-2  32.59e-2  4.63e-2  5.79e-2  Tin112  Tin114  Tin115  Tin116  Tin117  Tin118  Tin119  Tin120  Tin122  Tin124 
+Antimony       Sb   51  121.757000   2  
+57.4e-2    42.8e-2  Antimony121  Antimony123 
+Tellurium      Te   52  127.600000   8  
+9.6e-4     2.6e-2  9.08e-3  4.817e-2  7.14e-2  18.95e-2  31.69e-2  33.8e-2  Tellurium120  Tellurium122  Tellurium123  Tellurium124  Tellurium125  Tellurium126  Tellurium128  Tellurium130 
+Iodine         I    53  126.904470   1  
+100.0e-2   Iodine127 
+Xenon          Xe   54  131.290000   9  
+1.0e-3     9.0e-4  1.91e-2  26.4e-2  4.1e-2  21.2e-2  26.9e-2  10.4e-2  8.9e-2  Xenon124  Xenon126  Xenon128  Xenon129  Xenon130  Xenon131  Xenon132  Xenon134  Xenon136
+Cesium         Cs   55  132.905430   1  
+100.0e-2   Cesium133 
+Barium         Ba   56  137.327000   7  
+1.06e-3    1.0e-3  2.42e-2  6.592e-2  7.854e-2  11.23e-2  71.7e-2  Barium130  Barium132  Barium134  Barium135  Barium136  Barium137  Barium138 
+Lanthanum      La   57  138.905500   2  
+8.9e-4     99.91e-2  Lanthanum138  Lanthanum139  
+Cerium         Ce   58  140.115000   4  
+1.9e-3     2.5e-3  88.48e-2  11.08e-2  Cerium136  Cerium138  Cerium140  Cerium142 
+Praseodymium   Pr   59  140.907650   1  
+100.0e-2  Praseodymium141 
+Neodymium      Nd   60  144.240000   7  
+27.13e-2   12.19e-2  23.8e-2  8.31e-2  17.2e-2  5.76e-2  5.64e-2  Neodymium142  Neodymium143  Neodymium144  Neodymium145  Neodymium146  Neodymium148  Neodymium150 
+Promethium     Pm   61  144.912700   0
+Samarium       Sm   62  150.360000   7  
+3.1e-2     15.0e-2  11.3e-2  13.8e-2  7.4e-2  26.7e-2  22.7e-2  Samarium144  Samarium147  Samarium148  Samarium149  Samarium150  Samarium152  Samarium154
+Europium       Eu   63  151.965000   2  
+47.9e-2    52.3e-2  Europium151  Europium153 
+Gadolinium     Gd   64  157.250000   7  
+2.0e-3     2.18e-2  14.81e-2  20.47e-2  15.65e-2  24.84e-2  21.8e-2  Gadolinium152  Gadolinium154  Gadolinium155  Gadolinium156  Gadolinium157  Gadolinium158  Gadolinium160 
+Terbium        Tb   65  158.925340   1  
+100.0e-2  Terbium159 
+Dysprosium     Dy   66  162.500000   7  
+6.0e-4     1.0e-3  2.35e-2  18.9e-2  25.5e-2  24.9e-2  28.2e-2  Dysprosium156  Dysprosium158  Dysprosium160  Dysprosium161  Dysprosium162  Dysprosium163  Dysprosium164  
+Holmium        Ho   67  164.930320   1  
+100.0e-2  Holmium165 
+Erbium         Er   68  167.260000   6  
+1.4e-3     1.61e-2  33.6e-2  22.95e-2  26.8e-2  14.9e-2  Erbium162  Erbium164  Erbium166  Erbium167  Erbium168  Erbium170 
+Thulium        Tm   69  168.934210   1  
+100.0e-2  Thulium169 
+Ytterbium      Yb   70  173.040000   7  
+1.3e-3     3.05e-2  14.3e-2  21.9e-2  16.12e-2  31.8e-2  12.7e-2  Ytterbium168  Ytterbium170  Ytterbium171  Ytterbium172  Ytterbium173  Ytterbium174  Ytterbium176
+Lutetium       Lu   71  174.967000   2  
+97.41e-2   2.59e-2  Lutetium175  Lutetium176 
+Hafnium        Hf   72  178.490000   6  
+1.62e-3    5.206e-2  18.606e-2  27.297e-2  13.629e-2  35.1e-2  Hafnium174  Hafnium176  Hafnium177  Hafnium178  Hafnium179  Hafnium180 
+Tantalum       Ta   73  180.947900   2  
+1.2e-4     99.988e-2  Tantalum180  Tantalum181 
+Tungsten      W    74  183.840000   5  
+1.3e-3     26.3e-2  14.3e-2  30.67e-2  28.6e-2  Tungsten180  Tungsten182  Tungsten183  Tungsten184  Tungsten186
+Rhenium        Re   75  186.207000   2  
+37.4e-2    62.6e-2  Rhenium185  Rhenium187 
+Osmium         Os   76  190.230000   7  
+2.0e-4     1.58e-2  1.6e-2  13.3e-2  16.1e-2  26.4e-2  41.0e-2  Osmium184  Osmium186  Osmium187  Osmium188  Osmium189  Osmium190  Osmium192 
+Iridium        Ir   77  192.220000   2  
+37.3e-2  62.7e-2  Iridium191  Iridium193 
+Platinum       Pt   78  195.080000   5  
+7.9e-3     32.9e-2  33.9e-2  25.3e-2  7.2e-2  Platinum192  Platinum194  Platinum195  Platinum196  Platinum198
+Gold           Au   79  196.966540   1  
+100.0e-2   Gold197 
+Mercury        Hg   80  200.590000   7  
+1.4e-3  10.02e-2  16.84e-2  23.13e-2  13.22e-2  29.8e-2  6.85e-2  Mercury196  Mercury198  Mercury199  Mercury200  Mercury201  Mercury202  Mercury204 
+Thallium       Tl   81  204.383300   2  
+29.524e-2  70.477e-2  Thallium203  Thallium205 
+Lead           Pb   82  207.200000   4  
+1.4e-2  24.1e-2  22.1e-2  52.4e-2  Lead204  Lead206  Lead207  Lead208 
+Bismuth        Bi   83  208.980370   1  
+100.0e-2   Bismuth209 
+Polonium       Po   84  208.982400   0 
+Astatine       At   85  209.987100   0 
+Radon          Rn   86  222.017600   0 
+Francium       Fr   87  223.019700   0 
+Radium         Ra   88  226.025400   0 
+Actinium       Ac   89  227.027800   0
+Thorium        Th   90  232.038100   1  
+100.0e-2   Thorium232 
+Protactinium   Pa   91  231.035880   0
+Uranium        U    92  238.028900   3  
+5.5e-5     7.2e-3  99.275e-2  Uranium234  Uranium235  Uranium238
+Neptunium      Np   93  237.048200   0 
+Plutonium      Pu   94  244.064200   0 
+Americium      Am   95  243.061400   0 
+Curium         Cm   96  247.070300   0 
+Berkelium      Bk   97  251.070300   0 
+Californium    Cf   98  251.079600   0 
+Einsteinium    Es   99  252.083000   0 
+Fermium        Fm  100  257.095100   0 
+Mendelevium    Md  101  258.098400   0 
+Nobelium       No  102  259.101100   0 
+Lawrencium     Lr  103  262.109800   0
+Rutherfordium  Rf  104  261.108900   0
+Hahnium        Ha  105  262.114400   0
+Seaborgium     Sg  106  263.118600   0 
+Nielsbohrium   Ns  107  262.121300   0
+Hassium        Hs  108  265.130600   0
+Meitnerium     Mt  109  266.137800   0
