@@ -16,7 +16,7 @@ Import('mu2e_helper')
 helper=mu2e_helper();
 
 mainlib = helper.make_mainlib ( [ 'mu2e_DataProducts',
-                                  'btrk_ProbTools',
+                                  'BTrk_ProbTools',
                                   'art_Framework_Core',
                                   'art_Utilities',
                                   'art_Framework_Services_Registry',
