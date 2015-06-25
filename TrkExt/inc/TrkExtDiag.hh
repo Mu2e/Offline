@@ -31,8 +31,8 @@
 
 #include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
-#include "KalmanTrack/KalRep.hh"
-#include "TrkBase/TrkHotList.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/TrkBase/TrkHotList.hh"
 #include "TTree.h"
 #include "Rtypes.h"
 #include "BFieldGeom/inc/BFieldManager.hh"

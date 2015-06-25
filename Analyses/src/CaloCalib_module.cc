@@ -66,8 +66,8 @@
 #include "KalmanTests/inc/KalFitMC.hh"
 
 // BaBar Kalman filter includes
-#include "KalmanTrack/KalRep.hh"
-#include "TrkBase/HelixTraj.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
 
 
 #include <cmath>

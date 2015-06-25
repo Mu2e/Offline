@@ -24,8 +24,8 @@
 #include "KalmanTests/inc/KalRepCollection.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
-#include "KalmanTrack/KalRep.hh"
-#include "TrkBase/HelixTraj.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
 
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"

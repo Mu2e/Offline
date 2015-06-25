@@ -17,7 +17,7 @@
 // be needed until the BaBar code is modified.
 // using namespace CLHEP:
 
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "art/Persistency/Common/Ptr.h"
 #include <vector>
 

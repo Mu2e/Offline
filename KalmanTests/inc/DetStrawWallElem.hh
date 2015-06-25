@@ -8,7 +8,7 @@
 #ifndef DetStrawWallElem_hh
 #define DetStrawWallElem_hh
 
-#include "DetectorModel/DetElem.hh"
+#include "BTrk/DetectorModel/DetElem.hh"
 #include <string>
 
 namespace mu2e {

@@ -15,7 +15,7 @@
 
 #include <string>
 #include <vector>
-#include "TrkBase/TrkParticle.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
 
 namespace mu2e {
 

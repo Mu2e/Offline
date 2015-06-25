@@ -26,7 +26,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
-#include "BaBar/Constants.hh"
+#include "BTrk/BaBar/Constants.hh"
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
@@ -36,13 +36,13 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 
-#include "TrkBase/HelixParams.hh"
-#include "TrkBase/TrkRep.hh"
-#include "TrkBase/HelixTraj.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/TrkRep.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
 
 //CLHEP includes
 #include "CLHEP/Vector/TwoVector.h"
-#include "CLHEP/Geometry/HepPoint.h"
+#include "BTrk/BbrGeom/HepPoint.h"
 
 
 // Other includes.

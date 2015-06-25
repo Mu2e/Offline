@@ -60,7 +60,7 @@
 #include <vector>
 #include <functional>
 #include "cetlib/pow.h"
-#include "BaBar/BaBar/include/Constants.hh"
+#include "BTrk/BaBar/Constants.hh"
 
 
 using namespace std;

@@ -26,14 +26,14 @@
 #include "TObjArray.h"
 
 
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 
 #include "art/Framework/Principal/Handle.h"
 
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 
-#include "TrkBase/HelixParams.hh"
-#include "TrkBase/HelixTraj.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
 
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"

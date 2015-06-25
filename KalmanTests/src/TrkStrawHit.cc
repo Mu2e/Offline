@@ -7,13 +7,13 @@
 //
 // Original author David Brown, LBNL
 //
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "TrkBase/TrkErrCode.hh"
-#include "TrkBase/TrkPoca.hh"
-#include "TrkBase/TrkDifTraj.hh"
-#include "TrkBase/TrkDetElemId.hh"
-#include "TrkBase/TrkRep.hh"
+#include "BTrk/TrkBase/TrkErrCode.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/TrkBase/TrkDifTraj.hh"
+#include "BTrk/TrkBase/TrkDetElemId.hh"
+#include "BTrk/TrkBase/TrkRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"

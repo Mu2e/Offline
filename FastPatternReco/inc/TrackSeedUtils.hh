@@ -15,7 +15,7 @@
 #include "RecoDataProducts/inc/TrackSeed.hh"
 
 // BaBar
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 //#include "KalmanTests/inc/TrkDef.hh"
 
 //using namespace std;

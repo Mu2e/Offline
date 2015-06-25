@@ -29,7 +29,7 @@ namespace mu2e {
       double z0() const { return z0_; }
       double tanDip() const { return tanDip_; }
 
-      // Picked from BaBar/TrkBase/include/HelixParams.hh
+      // Picked from BTrk/BaBar/BTrk/TrkBase/include/HelixParams.hh
       enum ParIndex {d0Index=0, phi0Index, omegaIndex, z0Index, tanDipIndex, NHLXPRM};
       const CLHEP::HepSymMatrix& covariance() const { return covariance_; }
       double parErr(ParIndex i);

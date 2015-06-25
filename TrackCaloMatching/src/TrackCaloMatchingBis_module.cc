@@ -34,14 +34,14 @@
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
 
-#include "TrkBase/HelixParams.hh"
-#include "TrkBase/TrkRep.hh"
-#include "TrkBase/HelixTraj.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/TrkRep.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
 
 
 //CLHEP includes
 #include "CLHEP/Vector/TwoVector.h"
-#include "CLHEP/Geometry/HepPoint.h"
+#include "BTrk/BbrGeom/HepPoint.h"
 
 // Other includes.
 #include "cetlib/exception.h"

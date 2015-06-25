@@ -6,7 +6,7 @@
 // struct for hit diagnostics
 #ifndef StrawHitInfo_hh
 #define StrawHitInfo_hh
-//#include "BaBar/BaBar.hh"
+//#include "BTrk/BaBar/BaBar.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Rtypes.h"
 

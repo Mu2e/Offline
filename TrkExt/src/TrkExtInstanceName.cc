@@ -25,7 +25,7 @@
 
 #include "TrkExt/inc/TrkExtInstanceName.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
-#include "TrkBase/TrkParticle.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
 
 
 using namespace std;

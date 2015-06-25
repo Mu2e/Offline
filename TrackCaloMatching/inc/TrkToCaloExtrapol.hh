@@ -18,19 +18,19 @@
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Matrix/Matrix.h"
-#include "CLHEP/Geometry/HepPoint.h"
+#include "BTrk/BbrGeom/HepPoint.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
-#include "BaBar/BbrGeom/include/BbrLorentzVectorErr.hh"
+#include "BTrk/BbrGeom/BbrLorentzVectorErr.hh"
 
 //tracker includes
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 
-#include "KalmanTrack/KalHit.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
 
-#include "BaBar/BaBar.hh"
-#include "TrkBase/HelixParams.hh"
-#include "TrkBase/HelixTraj.hh"
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 

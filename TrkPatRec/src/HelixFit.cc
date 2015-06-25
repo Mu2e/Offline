@@ -7,7 +7,7 @@
 //
 //
 // the following has to come before other BaBar includes
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "TrkPatRec/inc/HelixFit.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
@@ -41,7 +41,7 @@
 // C++
 #include <vector>
 #include <string>
-
+using namespace CLHEP;
 namespace mu2e 
 {
 // statics

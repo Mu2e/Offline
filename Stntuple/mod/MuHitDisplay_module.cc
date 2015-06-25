@@ -73,11 +73,11 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 
-#include "TrkBase/HelixParams.hh"
-#include "TrkBase/TrkHotList.hh"
-#include "KalmanTrack/KalHit.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/TrkHotList.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
-#include "TrkBase/TrkParticle.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
 
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"

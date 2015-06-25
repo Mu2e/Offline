@@ -9,10 +9,10 @@
 #include "KalmanTests/inc/PocaAmbigResolver.hh"
 #include "KalmanTests/inc/KalFitResult.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTrack/KalRep.hh"
-#include "KalmanTrack/KalSite.hh"
-#include "KalmanTrack/KalHit.hh"
-#include "TrkBase/TrkPoca.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalSite.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
 #include <vector>
 #include <algorithm>
 #include <functional>

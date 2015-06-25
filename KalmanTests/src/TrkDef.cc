@@ -7,9 +7,9 @@
 //
 // Original author David Brown, LBNL
 //
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/TrkDef.hh"
-
+using namespace CLHEP;
 namespace mu2e 
 {
     // dummy variables

@@ -8,7 +8,7 @@
 //
 #ifndef mu2e_PanelAmbig_PanelAmbigResolver_HH
 #define mu2e_PanelAmbig_PanelAmbigResolver_HH
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
 #include "KalmanTests/inc/PanelAmbigStructs.hh"
 #include "KalmanTests/inc/KalDiag.hh"

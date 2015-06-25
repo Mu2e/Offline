@@ -7,7 +7,7 @@
 
 using namespace CLHEP;
 #include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 
 #include <string>
 #include <vector>

@@ -11,7 +11,7 @@
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
 
-#include "BaBar/ParticleInfoInterface.hh"
+#include "BTrk/BaBar/ParticleInfoInterface.hh"
 
 #include "HepPDT/ParticleData.hh"
 

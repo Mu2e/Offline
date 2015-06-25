@@ -16,14 +16,14 @@
 
 //For track fit
 // BaBar
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 //#include "KalmanTests/inc/TrkStrawHit.hh"
 //#include "KalmanTests/inc/KalFit.hh"
 //#include "KalmanTests/inc/KalFitMC.hh"
 //#include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/HelixFit.hh"
-//#include "TrkBase/TrkPoca.hh"
+//#include "BTrk/TrkBase/TrkPoca.hh"
 //#include "TrkPatRec/src/TrkPatRec_module.cc"
 
 

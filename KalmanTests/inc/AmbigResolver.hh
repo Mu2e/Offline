@@ -7,7 +7,7 @@
 //
 #ifndef AmbigResolver_HH
 #define AmbigResolver_HH
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
 #endif/*__GCCXML__*/

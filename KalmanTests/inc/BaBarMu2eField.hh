@@ -5,8 +5,8 @@
 #ifndef BaBarMu2eField_HH
 #define BaBarMu2eField_HH
 
-#include "BaBar/BaBar.hh"
-#include "BField/BField.hh"
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/BField/BField.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 

@@ -19,10 +19,10 @@
 #include "SeedService/inc/SeedService.hh"
 
 // BaBar
-#include "BaBar/BaBar.hh"
-#include "MatEnv/RecoMatFactory.hh"
-#include "MatEnv/MatDBInfo.hh"
-#include "DetectorModel/DetMaterial.hh"
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/MatEnv/RecoMatFactory.hh"
+#include "BTrk/MatEnv/MatDBInfo.hh"
+#include "BTrk/DetectorModel/DetMaterial.hh"
 
 // Mu2e
 /*

@@ -5,7 +5,7 @@
 //
 
 // Mu2e includes
-#include "BaBar/Constants.hh"
+#include "BTrk/BaBar/Constants.hh"
 #include "CaloCluster/inc/CaloClusterMoments.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"

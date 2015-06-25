@@ -30,8 +30,8 @@
 #include "TNtuple.h"
 
 // BaBar includes
-#include "BaBar/BaBar.hh"
-#include "TrkBase/TrkParticle.hh"
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
 
 // mu2e tracking
 #include "KalmanTests/inc/TrkFitDirection.hh"

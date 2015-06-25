@@ -9,7 +9,7 @@
 // struct for outlier search tuple
 #ifndef TrkHitFilter_hh
 #define TrkHitFilter_hh
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Rtypes.h"
 

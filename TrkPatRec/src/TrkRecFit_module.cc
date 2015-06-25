@@ -37,8 +37,8 @@
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 // BaBar
-#include "BaBar/BaBar.hh"
-#include "TrkBase/TrkPoca.hh"
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
 // Mu2e
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"

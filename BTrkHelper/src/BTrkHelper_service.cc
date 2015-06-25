@@ -7,7 +7,7 @@
 
 #include "BTrkHelper/inc/BTrkHelper.hh"
 
-#include "BaBar/BaBar/include/ExternalInfo.hh"
+#include "BTrk/BaBar/ExternalInfo.hh"
 
 mu2e::BTrkHelper::BTrkHelper(fhicl::ParameterSet const& pset,
                              art::ActivityRegistry&     registry):

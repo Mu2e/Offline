@@ -25,8 +25,8 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
-#include "BaBar/BaBar.hh"
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/TrkStrawHitInfo.hh"

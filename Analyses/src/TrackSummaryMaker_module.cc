@@ -15,9 +15,9 @@
 #include "art/Framework/Principal/Handle.h"
 
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
-#include "KalmanTrack/KalRep.hh"
-#include "KalmanTrack/KalHit.hh"
-#include "TrkBase/TrkHelixUtils.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
+#include "BTrk/TrkBase/TrkHelixUtils.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"

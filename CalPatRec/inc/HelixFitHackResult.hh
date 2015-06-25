@@ -4,7 +4,7 @@
 
 #include "CalPatRec/inc/LsqSums4.hh"
 #include "CalPatRec/inc/HelixDefHack.hh"
-#include "TrkBase/TrkErrCode.hh"
+#include "BTrk/TrkBase/TrkErrCode.hh"
 
 namespace mu2e {
 //-----------------------------------------------------------------------------

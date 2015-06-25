@@ -8,8 +8,8 @@
 #ifndef DetStrawHitType_hh
 #define DetStrawHitType_hh
 
-#include "DetectorModel/DetType.hh"
-#include "MatEnv/MatDBInfo.hh"
+#include "BTrk/DetectorModel/DetType.hh"
+#include "BTrk/MatEnv/MatDBInfo.hh"
 
 namespace mu2e {
 class DetStrawHitType : public DetType {

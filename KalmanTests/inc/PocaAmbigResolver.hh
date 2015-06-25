@@ -6,7 +6,7 @@
 //
 #ifndef PocaAmbigResolver_HH
 #define PocaAmbigResolver_HH
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
 
 namespace mu2e {

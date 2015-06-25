@@ -8,13 +8,13 @@
 #ifndef KalFitResult_HH
 #define KalFitResult_HH
 
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 // KalFit objects
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/TrkDef.hh"
-#include "KalmanTrack/KalRep.hh"
-#include "TrkBase/TrkParticle.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
 #include "KalmanTests/inc/Doublet.hh"
 
 // C++

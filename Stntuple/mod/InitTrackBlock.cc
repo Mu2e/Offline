@@ -49,8 +49,8 @@
 
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"
 					          // BaBar 
-#include "TrajGeom/TrkLineTraj.hh"
-#include "TrkBase/TrkPoca.hh"
+#include "BTrk/BbrGeom/TrkLineTraj.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
 
 
 namespace {

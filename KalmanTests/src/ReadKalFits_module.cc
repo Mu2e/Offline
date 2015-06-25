@@ -27,9 +27,9 @@
 using namespace CLHEP;
 
 // BaBar includes
-#include "BaBar/BaBar.hh"
-#include "KalmanTrack/KalRep.hh"
-#include "TrkBase/TrkParticle.hh"
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
 // mu2e tracking
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/KalDiag.hh"

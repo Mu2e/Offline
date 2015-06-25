@@ -1,6 +1,6 @@
 //
 // BaBar includes
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/BaBarMu2eField.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"

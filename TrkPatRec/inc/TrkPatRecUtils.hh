@@ -23,9 +23,9 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
 // BaBar
-#include "TrkBase/HelixTraj.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
-#include "TrkBase/TrkPoca.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
 // C++
 #include <vector>
 

@@ -6,7 +6,7 @@
 // framework
 #include "fhiclcpp/ParameterSet.h"
 // the following has to come before other BaBar includes
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "CalPatRec/inc/KalFitHack.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/PanelAmbigResolver.hh"
@@ -30,19 +30,19 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
-#include "KalmanTrack/KalHit.hh"
-#include "TrkBase/HelixTraj.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
 //09 - 26 - 2013 gianipez added the following include file
-#include "TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
 //----------------------------------------
-#include "TrkBase/TrkHelixUtils.hh"
-#include "TrkBase/TrkHotListFull.hh"
-#include "TrkBase/TrkMomCalculator.hh"
-#include "TrkBase/TrkPoca.hh"
-#include "BaBar/ErrLog.hh"
-#include "BField/BFieldFixed.hh"
-#include "DetectorModel/DetIntersection.hh"
-#include "DetectorModel/DetMaterial.hh"
+#include "BTrk/TrkBase/TrkHelixUtils.hh"
+#include "BTrk/TrkBase/TrkHotListFull.hh"
+#include "BTrk/TrkBase/TrkMomCalculator.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/BaBar/ErrLog.hh"
+#include "BTrk/BField/BFieldFixed.hh"
+#include "BTrk/DetectorModel/DetIntersection.hh"
+#include "BTrk/DetectorModel/DetMaterial.hh"
 // boost
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>

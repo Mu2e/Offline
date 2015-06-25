@@ -20,7 +20,7 @@
 // HelixFit objects
 #include "KalmanTests/inc/TrkDef.hh"
 // BaBar
-#include "TrkBase/TrkErrCode.hh"
+#include "BTrk/TrkBase/TrkErrCode.hh"
 //CLHEP
 //#include "CLHEP/Matrix/Vector.h"
 //root
@@ -138,10 +138,10 @@ namespace mu2e
     void plotXY(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const;
     void plotZ(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const;
 // find the Absolute Geometric Error.  Returns the median radius as well.
-    bool findCenterAGE(XYZPVector const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights=false);
-    void findAGE(XYZPVector const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights=false);
-    void fillSums(XYZPVector const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums,bool useweights=false);
-    void filterXY(XYZPVector& xyzp, Hep3Vector const& center,double rmed,bool& changed);
+    bool findCenterAGE(XYZPVector const& xyzp,CLHEP::Hep3Vector& center, double& rmed, double& age,bool useweights=false);
+    void findAGE(XYZPVector const& xyzp, CLHEP::Hep3Vector const& center,double& rmed, double& age,bool useweights=false);
+    void fillSums(XYZPVector const& xyzp, CLHEP::Hep3Vector const& center,double rmed,SUMS& sums,bool useweights=false);
+    void filterXY(XYZPVector& xyzp, CLHEP::Hep3Vector const& center,double rmed,bool& changed);
     void filterDist(XYZPVector& xyzp);
 // configuration parameters
     int _diag,_debug;

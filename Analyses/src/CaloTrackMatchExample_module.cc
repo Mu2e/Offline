@@ -21,7 +21,7 @@
 #include "KalmanTests/inc/KalRepCollection.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 
 

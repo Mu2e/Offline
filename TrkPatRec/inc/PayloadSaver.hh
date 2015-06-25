@@ -12,7 +12,7 @@
 //
 
 // Cannot use forward declaration because of typedef.
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
 
 // Forward declarations

@@ -13,10 +13,10 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
 // BaBar
-#include "BaBar/BaBar.hh"
-#include "TrkBase/HelixTraj.hh"
-#include "TrkBase/TrkParticle.hh"
-#include "TrkBase/TrkT0.hh"
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
+#include "BTrk/TrkBase/TrkT0.hh"
 // CLHEP
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
@@ -40,7 +40,7 @@ namespace mu2e
     TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
       const HelixTraj& helix, TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
     TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
-      const HepVector& parvec, const HepSymMatrix& covar,
+      const CLHEP::HepVector& parvec, const CLHEP::HepSymMatrix& covar,
       TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
     TrkDef(const StrawHitCollection* strawcollection, const std::vector<hitIndex>& strawhits,
       TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
@@ -56,8 +56,8 @@ namespace mu2e
     const StrawHitCollection* strawHitCollection() const { return _straws; }
     const std::vector<hitIndex>& strawHitIndices() const { return _indices;}
     const HelixTraj& helix() const { return _h0; }
-    const HepSymMatrix &helixCovMatr() const { return _h0.parameters()->covariance(); }
-    const HepSymMatrix &covMatr() const { return _dcov; }
+    const CLHEP::HepSymMatrix &helixCovMatr() const { return _h0.parameters()->covariance(); }
+    const CLHEP::HepSymMatrix &covMatr() const { return _dcov; }
     TrkParticle const& particle() const { return _tpart; }
     TrkFitDirection const& fitdir() const { return _fdir; }
     void setHelix(HelixTraj const& helix) { _h0 = helix; }
@@ -80,8 +80,8 @@ namespace mu2e
     TrkFitDirection _fdir;
     TrkT0 _t0; // optional initial t0
     // dummy variables
-    static HepVector _dpar;
-    static HepSymMatrix _dcov;
+    static CLHEP::HepVector _dpar;
+    static CLHEP::HepSymMatrix _dcov;
     static TrkParticle _eminus;
     static TrkFitDirection _downstream;
   };

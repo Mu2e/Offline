@@ -32,7 +32,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
-#include "TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
 
 using namespace std;

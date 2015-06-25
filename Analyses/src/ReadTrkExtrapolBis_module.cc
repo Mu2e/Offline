@@ -23,7 +23,7 @@
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Matrix/Matrix.h"
-#include "CLHEP/Geometry/HepPoint.h"
+#include "BTrk/BbrGeom/HepPoint.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
@@ -34,12 +34,12 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 //tracker includes
-#include "BaBar/BaBar.hh"
-#include "BaBar/Constants.hh"
-#include "TrkBase/TrkRep.hh"
-#include "TrkBase/HelixParams.hh"
-#include "TrkBase/HelixTraj.hh"
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/BaBar/Constants.hh"
+#include "BTrk/TrkBase/TrkRep.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"

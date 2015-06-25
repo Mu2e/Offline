@@ -7,7 +7,7 @@
 //
 
 // the following has to come before other BaBar includes
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/KalFit.hh"
 #include "KalmanTests/inc/PanelAmbigResolver.hh"
 #include "KalmanTests/inc/PocaAmbigResolver.hh"
@@ -30,17 +30,17 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
-#include "KalmanTrack/KalHit.hh"
-#include "KalmanTrack/KalBend.hh"
-#include "TrkBase/HelixTraj.hh"
-#include "TrkBase/TrkHelixUtils.hh"
-#include "TrkBase/TrkHotListFull.hh"
-#include "TrkBase/TrkMomCalculator.hh"
-#include "TrkBase/TrkPoca.hh"
-#include "BaBar/ErrLog.hh"
-#include "BField/BFieldFixed.hh"
-#include "DetectorModel/DetIntersection.hh"
-#include "DetectorModel/DetMaterial.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
+#include "BTrk/KalmanTrack/KalBend.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
+#include "BTrk/TrkBase/TrkHelixUtils.hh"
+#include "BTrk/TrkBase/TrkHotListFull.hh"
+#include "BTrk/TrkBase/TrkMomCalculator.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/BaBar/ErrLog.hh"
+#include "BTrk/BField/BFieldFixed.hh"
+#include "BTrk/DetectorModel/DetIntersection.hh"
+#include "BTrk/DetectorModel/DetMaterial.hh"
 // boost
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>

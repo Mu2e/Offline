@@ -7,7 +7,7 @@
 #ifndef DoubletAmbigResolver_HH
 #define DoubletAmbigResolver_HH
 
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
 
 #ifndef __GCCXML__

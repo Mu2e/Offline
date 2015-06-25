@@ -15,7 +15,7 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 
 #include "KalmanTests/inc/TrkDef.hh"
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 // C++
 #include <vector>
 

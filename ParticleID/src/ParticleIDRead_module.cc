@@ -28,7 +28,7 @@
 #include "RecoDataProducts/inc/PIDProduct.hh"
 #include "RecoDataProducts/inc/PIDProductCollection.hh"
 
-#include "TrkBase/TrkParticle.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
 // mu2e tracking
 #include "KalmanTests/inc/TrkFitDirection.hh"
 

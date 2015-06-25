@@ -20,17 +20,17 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 // KalFit objects
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/KalFitResult.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
-#include "KalmanTrack/KalContext.hh"
-#include "KalmanTrack/KalRep.hh"
-#include "BField/BField.hh"
-#include "TrkBase/TrkParticle.hh"
+#include "BTrk/KalmanTrack/KalContext.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/BField/BField.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
 // diagnostics
 #include "KalmanTests/inc/KalDiag.hh"
 //CLHEP

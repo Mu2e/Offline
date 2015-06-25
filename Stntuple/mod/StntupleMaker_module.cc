@@ -45,7 +45,7 @@
 #include "Stntuple/mod/StntupleUtilities.hh"
 
 #include "KalmanTests/inc/TrkFitDirection.hh"
-#include "TrkBase/TrkParticle.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
 
 #include "Stntuple/alg/TStntuple.hh"
 #include "Stntuple/mod/StntupleGlobals.hh"

@@ -12,7 +12,7 @@
 //
 // the following has to come before other BaBar includes
 ///////////////////////////////////////////////////////////////////////////////
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "CalPatRec/inc/HelixFitHack.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"

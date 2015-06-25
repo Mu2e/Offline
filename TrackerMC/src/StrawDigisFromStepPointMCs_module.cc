@@ -32,7 +32,7 @@
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/ParticleDataTable.hh"
-#include "BaBar/include/BField/BField.hh"
+#include "BTrk/BField/BField.hh"
 // utiliities
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"

@@ -15,10 +15,10 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 
 #include "KalmanTests/inc/TrkDef.hh"
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
 
 // C++
 #include <vector>

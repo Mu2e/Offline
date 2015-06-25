@@ -8,12 +8,12 @@
 #include "KalmanTests/inc/DetStrawWallElem.hh"
 #include "KalmanTests/inc/DetStrawHitType.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "MatEnv/MatDBInfo.hh"
-#include "TrkBase/TrkDifTraj.hh"
-#include "TrkBase/TrkPoca.hh"
-#include "DetectorModel/DetIntersection.hh"
-#include "TrkBase/TrkErrCode.hh"
-#include "TrkBase/TrkDifTraj.hh"
+#include "BTrk/MatEnv/MatDBInfo.hh"
+#include "BTrk/TrkBase/TrkDifTraj.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/DetectorModel/DetIntersection.hh"
+#include "BTrk/TrkBase/TrkErrCode.hh"
+#include "BTrk/TrkBase/TrkDifTraj.hh"
 #include <assert.h>
 
 namespace mu2e {
@@ -57,7 +57,7 @@ namespace mu2e {
       // hit, as that causes confusion
       DetElem::reIntersect(traj,dinter);
       dinter.pathlen = pflt + 0.01*_strawhit->straw().getRadius();
-      Hep3Vector tdir = traj->direction(dinter.pathlen);
+      CLHEP::Hep3Vector tdir = traj->direction(dinter.pathlen);
       double dpath = _strawhit->wallPath(pdist,tdir);
       dinter.pathrange[0] = dinter.pathlen-dpath;
       dinter.pathrange[1] = dinter.pathlen+dpath;

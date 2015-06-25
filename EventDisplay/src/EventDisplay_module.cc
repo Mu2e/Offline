@@ -27,7 +27,7 @@
 
 #ifdef BABARINSTALLED
 using namespace CLHEP;
-#include "TrkBase/TrkHotList.hh"
+#include "BTrk/TrkBase/TrkHotList.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
 #endif
 

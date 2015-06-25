@@ -41,10 +41,10 @@ using namespace CLHEP;
 #include "TNtuple.h"
 
 #include "KalmanTests/inc/KalRepCollection.hh"
-#include "TrkBase/TrkHotList.hh"
-#include "TrkBase/TrkHitOnTrk.hh"
-#include "TrkBase/TrkParticle.hh"
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/TrkBase/TrkHotList.hh"
+#include "BTrk/TrkBase/TrkHitOnTrk.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -779,7 +779,7 @@ namespace mu2e {
     *covstop  = covstop_;
     *timestart = tstart_;
     *timestop = tstop_;
-    //see TrkMomCalculator::calcCurvAllCovs at BaBar/TrkBase/src/TrkMomCalculator.cc 
+    //see TrkMomCalculator::calcCurvAllCovs at BTrk/BaBar/BTrk/TrkBase/src/TrkMomCalculator.cc 
     return;
   }
 

@@ -41,18 +41,18 @@
 
 //CLHEP includes
 #include "CLHEP/Vector/TwoVector.h"
-#include "CLHEP/Geometry/HepPoint.h"
+#include "BTrk/BbrGeom/HepPoint.h"
 
 
 // calorimeter, tracker  and data
-#include "BaBar/Constants.hh"
+#include "BTrk/BaBar/Constants.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
-#include "TrkBase/HelixParams.hh"
-#include "TrkBase/TrkRep.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/TrkRep.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 
 

@@ -17,7 +17,7 @@
 // be needed until the BaBar code is modified.
 // using namespace CLHEP:
 
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "GeneralUtilities/inc/OwningPointerCollection.hh"
 
 namespace mu2e {

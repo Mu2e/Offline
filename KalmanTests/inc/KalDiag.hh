@@ -26,12 +26,12 @@
 // MC info
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // BaBar
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/TrkDef.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "KalmanTests/inc/TrkInfo.hh"
 #include "KalmanTests/inc/TrkStrawHitInfo.hh"
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 

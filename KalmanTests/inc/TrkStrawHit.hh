@@ -13,12 +13,12 @@
 #include "KalmanTests/inc/DetStrawGasElem.hh"
 #include "KalmanTests/inc/DetStrawWallElem.hh"
 #include "KalmanTests/inc/DetStrawHitType.hh"
-#include "TrajGeom/TrkLineTraj.hh"
-#include "TrkBase/TrkEnums.hh"
-#include "TrkBase/TrkHitOnTrk.hh"
-#include "TrkBase/TrkDetElemId.hh"
-#include "TrkBase/TrkT0.hh"
-#include "MatEnv/MatDBInfo.hh"
+#include "BTrk/BbrGeom/TrkLineTraj.hh"
+#include "BTrk/TrkBase/TrkEnums.hh"
+#include "BTrk/TrkBase/TrkHitOnTrk.hh"
+#include "BTrk/TrkBase/TrkDetElemId.hh"
+#include "BTrk/TrkBase/TrkT0.hh"
+#include "BTrk/MatEnv/MatDBInfo.hh"
 // Mu2e
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -73,8 +73,8 @@ namespace mu2e
     TrkT0 const& hitT0() const { return _hitt0;}
     void updateHitT0(TrkT0 const& t0) { _hitt0 = t0; }
     double signalTime() const { return _stime; } // time for signal to reach the end of the wire
-    double wallPath(double pdist,Hep3Vector const& tdir) const; // track pathlength through one wall of the straw
-    double gasPath(double pdist,Hep3Vector const& tdir) const; // track pathlength through 1/2 the gas of the straw
+    double wallPath(double pdist,CLHEP::Hep3Vector const& tdir) const; // track pathlength through one wall of the straw
+    double gasPath(double pdist,CLHEP::Hep3Vector const& tdir) const; // track pathlength through 1/2 the gas of the straw
 // external hit error (mm); the intrinsic error comes from the t2d calibration object
     double extErr() const { return _exterr; }
 // error to penalize mis-assigned ambiguity

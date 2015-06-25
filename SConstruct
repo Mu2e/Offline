@@ -73,9 +73,8 @@ else:
 
 # The link libraries needed when building the BaBar code.
 babarlibs = [ 'BTrk_KalmanTrack',     'BTrk_DetectorModel',      'BTrk_TrkBase',    'BTrk_BField',
-              'BTrk_TrajGeom',        'BTrk_BbrGeom',            'BTrk_difAlgebra', 'BTrk_ProbTools',
-              'BTrk_BaBar',           'BTrk_CLHEP_src_Geometry', 'BTrk_MatEnv',
-              'BTrk_Dch_DchGeomBase', 'BTrk_Dch_DchGeom' ]
+              'BTrk_BbrGeom',         'BTrk_difAlgebra', 'BTrk_ProbTools',
+              'BTrk_BaBar',           'BTrk_MatEnv' ]
 
 # Define scons-local environment - it will be exported later.
 osenv = {}
@@ -89,7 +88,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              base,
                              base+'//include',
                              art_inc,
-                             btrk_inc+'/BTrk/include', # Fixme: only need for transition to early versions of the BTrk product
+                             btrk_inc,
                              btrk_inc,
                              mesfac_inc,
                              fhicl_inc,

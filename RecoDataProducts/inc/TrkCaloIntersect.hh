@@ -14,7 +14,7 @@
 
 
 //tracker includes
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 
 

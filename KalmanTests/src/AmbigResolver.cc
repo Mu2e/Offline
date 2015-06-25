@@ -7,13 +7,13 @@
 //
 #include "KalmanTests/inc/AmbigResolver.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTrack/KalRep.hh"
-#include "KalmanTrack/KalSite.hh"
-#include "KalmanTrack/KalHit.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalSite.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
 #include "KalmanTests/inc/KalFitResult.hh"
-#include "TrkBase/TrkPoca.hh"
-#include "difAlgebra/DifPoint.hh"
-#include "difAlgebra/DifVector.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/difAlgebra/DifPoint.hh"
+#include "BTrk/difAlgebra/DifVector.hh"
 #include <vector>
 #include <algorithm>
 #include <functional>

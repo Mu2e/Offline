@@ -7,7 +7,7 @@
 //
 
 // the following has to come before other BaBar includes
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/KalFitResult.hh"
 namespace mu2e 
 {

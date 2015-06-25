@@ -31,11 +31,11 @@
 // Need this for the BaBar headers.
 using namespace CLHEP;
 // BaBar includes
-#include "BaBar/BaBar.hh"
-#include "KalmanTrack/KalRep.hh"
-#include "KalmanTrack/KalHit.hh"
-#include "TrkBase/TrkParticle.hh"
-#include "TrkBase/TrkHelixUtils.hh"
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
+#include "BTrk/TrkBase/TrkHelixUtils.hh"
 // mu2e tracking
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/KalDiag.hh"

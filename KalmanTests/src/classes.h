@@ -14,7 +14,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 using namespace CLHEP;
-#include "KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
 #include "KalmanTests/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrackSummaryRecoMap.hh"

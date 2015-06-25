@@ -8,11 +8,11 @@
 #include "KalmanTests/inc/DetStrawGasElem.hh"
 #include "KalmanTests/inc/DetStrawHitType.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "TrkBase/TrkDifTraj.hh"
-#include "TrkBase/TrkPoca.hh"
-#include "TrkBase/TrkErrCode.hh"
-#include "DetectorModel/DetIntersection.hh"
-#include "MatEnv/MatDBInfo.hh"
+#include "BTrk/TrkBase/TrkDifTraj.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/TrkBase/TrkErrCode.hh"
+#include "BTrk/DetectorModel/DetIntersection.hh"
+#include "BTrk/MatEnv/MatDBInfo.hh"
 #include <assert.h>
 #include <iostream>
 
@@ -59,7 +59,7 @@ namespace mu2e {
       // call the base class function
       DetElem::reIntersect(traj,dinter);
       dinter.pathlen = pflt - 0.01*_strawhit->straw().getRadius();
-      Hep3Vector tdir = traj->direction(dinter.pathlen);
+      CLHEP::Hep3Vector tdir = traj->direction(dinter.pathlen);
       double dpath = _strawhit->gasPath(pdist,tdir);
 
       dinter.pathrange[0] = dinter.pathlen-dpath;

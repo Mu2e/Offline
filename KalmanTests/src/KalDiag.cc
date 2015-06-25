@@ -32,14 +32,14 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/KalDiag.hh"
-#include "TrkBase/TrkHelixUtils.hh"
-#include "TrkBase/TrkHotList.hh"
-#include "TrkBase/TrkPoca.hh"
-#include "TrkBase/TrkMomCalculator.hh"
-#include "BField/BFieldFixed.hh"
-#include "KalmanTrack/KalHit.hh"
+#include "BTrk/TrkBase/TrkHelixUtils.hh"
+#include "BTrk/TrkBase/TrkHotList.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/TrkBase/TrkMomCalculator.hh"
+#include "BTrk/BField/BFieldFixed.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 

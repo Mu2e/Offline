@@ -19,7 +19,7 @@
 // HelixFitHack objects
 #include "KalmanTests/inc/TrkDef.hh"
 // BaBar
-#include "TrkBase/TrkErrCode.hh"
+#include "BTrk/TrkBase/TrkErrCode.hh"
 //CLHEP
 //root
 #include "TString.h"

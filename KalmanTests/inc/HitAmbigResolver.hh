@@ -8,7 +8,7 @@
 //
 #ifndef HitAmbigResolver_HH
 #define HitAmbigResolver_HH
-#include "BaBar/BaBar.hh"
+#include "BTrk/BaBar/BaBar.hh"
 #include "KalmanTests/inc/AmbigResolver.hh"
 #ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
