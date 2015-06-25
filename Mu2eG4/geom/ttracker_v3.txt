@@ -47,10 +47,10 @@
 string ttrackerSupport.model = "detailedv0";
 
 // Mother to hold all straws and supports.
-double ttracker.mother.rIn         =   380.; // mm
-double ttracker.mother.rOut        =   840.; // mm
-double ttracker.mother.halfLength  =  1635.; // mm
-double ttracker.mother.z0          = 10175.; // mm
+double ttracker.mother.rIn         =   379.9; // mm
+double ttracker.mother.rOut        =   840.1; // mm
+double ttracker.mother.halfLength  =  1635.1; // mm
+double ttracker.mother.z0          = 10175.;  // mm
 
 // Adjust spacings and rotations within the TTracker to match Mu2e-doc-888-v5
 double ttracker.deviceHalfSeparation        =    23.5;
