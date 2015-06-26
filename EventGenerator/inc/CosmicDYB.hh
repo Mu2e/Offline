@@ -39,15 +39,6 @@ namespace mu2e {
 
   private:
 
-    // Histograms
-    TH1D* _cosmicMultiplicityH;
-    TH1D* _cosmicMomH;
-    TH1D* _cosmicChargeH;
-    TH1D* _cosmicCosThetaH;
-    TH2D* _cosmicCosThetaVsEH;
-
-    // configurable parameters
-
     // Mean multiplicity. If negative, use -_mean as a fixed number
     double _mean;
     double _muEMin;   // min and max values of muon energy (MeV)
@@ -64,13 +55,6 @@ namespace mu2e {
     // Dimensions of the 2d working space for hrndg2.
     long _ne;
     long _nth;
-
-    // Do we make the histograms.
-    bool _doHistograms;
-    // verbose output
-    int _verbose;
-
-    // end of configurable parameters
 
     // Time range (in ns) over which to generate events.
     double _tmin;
@@ -90,19 +74,21 @@ namespace mu2e {
     std::vector<double> _workingSpace;
 
     // Checks whether the production plane is within the world volume.
-    bool _checkedProductionPlane;
+    bool _createdProductionPlane;
     void checkCosmicRayProductionPlane(double margin, std::string name);
+
+    int _verbose;
 
     enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO, CUSTOMIZED};
     enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z};
-    RefPointChoice _choice;
-    DirectionChoice _directionChoice;
+    RefPointChoice    _choice;
+    DirectionChoice   _directionChoice;
     CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
     bool _vertical;
     bool _dontProjectToSurface;
 
-    // Checks whether the distance of closest approach to the detector axis is larger than the cutoff value
-    bool filterGeneratedMuons(CLHEP::Hep3Vector const &posInMu2eCoordinates);
+    // Checks whether the starting point of the generated muon is inside the world volume after it has been projected to the surface
+    bool checkGeneratedMuons(CLHEP::Hep3Vector const &pos);
   };  // CosmicDYB
 
 }  // namespace mu2e
