@@ -23,7 +23,6 @@
 
 // From Mu2e.
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
