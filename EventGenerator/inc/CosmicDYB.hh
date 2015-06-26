@@ -73,9 +73,8 @@ namespace mu2e {
     // Working space for hrndg2 ( working space will be on the heap).
     std::vector<double> _workingSpace;
 
-    // Checks whether the production plane is within the world volume.
+    // production will be created only once.
     bool _createdProductionPlane;
-    void checkCosmicRayProductionPlane(double margin, std::string name);
 
     int _verbose;
 
@@ -86,9 +85,6 @@ namespace mu2e {
     CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
     bool _vertical;
     bool _dontProjectToSurface;
-
-    // Checks whether the starting point of the generated muon is inside the world volume after it has been projected to the surface
-    bool checkGeneratedMuons(CLHEP::Hep3Vector const &pos);
   };  // CosmicDYB
 
 }  // namespace mu2e

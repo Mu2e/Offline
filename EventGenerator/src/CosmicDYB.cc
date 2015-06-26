@@ -218,6 +218,7 @@ namespace mu2e {
   void CosmicDYB::generate( GenParticleCollection& genParts )
   {
     GeomHandle<Mu2eEnvelope> env;
+    GeomHandle<WorldG4>  worldGeom;
 
     if(!_createdProductionPlane)
     {
@@ -235,45 +236,26 @@ namespace mu2e {
         case CALO:       _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(), _y0, detsys->getOrigin().z() + 2500.);
                          // distance from tracker to calo center is hardcoded, FIXME!!!!!
                          break;
-        case CUSTOMIZED: break;
+        case CUSTOMIZED: break;  //already set above
         default:         throw cet::exception("Configuration")<< "Should never occur: unknown CosmicDYB.refPointChoice\n";
                          break;
       }
 
+      const Hep3Vector halfLengths(_dx,_dy,_dz);
+
       std::cout<<"center of production plane in Mu2e coordinated = "<<_cosmicReferencePointInMu2e<<std::endl;
+      std::cout<<"production plane half lengths = "<<halfLengths<<std::endl;
+      std::cout<<"Mu2e Origin in the the GEANT world = "<<worldGeom->mu2eOriginInWorld()<<std::endl;
+      std::cout<<"GEANT world half lengths = ("
+               <<worldGeom->halfLengths()[0]<<", "
+               <<worldGeom->halfLengths()[1]<<", "
+               <<worldGeom->halfLengths()[2]<<")"<<std::endl;
 
-      GeomHandle<WorldG4>  worldGeom;
-      Hep3Vector const& mu2eOrigin = worldGeom->mu2eOriginInWorld();
-      std::vector<double> const& halfLengths = worldGeom->halfLengths();
-
-      double marginXMin = halfLengths[0] + (_cosmicReferencePointInMu2e.x()-_dx + mu2eOrigin.x());
-      double marginYMin = halfLengths[1] + (_cosmicReferencePointInMu2e.y()-_dy + mu2eOrigin.y());
-      double marginZMin = halfLengths[2] + (_cosmicReferencePointInMu2e.z()-_dz + mu2eOrigin.z());
-      double marginXMax = halfLengths[0] - (_cosmicReferencePointInMu2e.x()+_dx + mu2eOrigin.x());
-      double marginYMax = halfLengths[1] - (_cosmicReferencePointInMu2e.y()+_dy + mu2eOrigin.y());
-      double marginZMax = halfLengths[2] - (_cosmicReferencePointInMu2e.z()+_dz + mu2eOrigin.z());
-      double marginYMinSurface = halfLengths[1] + (env->ymax() + mu2eOrigin.y());
-      double marginYMaxSurface = halfLengths[1] - (env->ymax() + mu2eOrigin.y());
-
-      if(_verbose>0) std::cout<<std::endl<<"distances between the edges of the cosmic ray production plane and the borders of the world volume:"<<std::endl
-                   <<"in negative x direction: "<<marginXMin<<std::endl
-                   <<"in positive x direction: "<<marginXMax<<std::endl
-                   <<"in negative y direction: "<<marginYMin<<std::endl
-                   <<"in positive y direction: "<<marginYMax<<std::endl
-                   <<"in negative z direction: "<<marginZMin<<std::endl
-                   <<"in positive z direction: "<<marginZMax<<std::endl<<std::endl;
-      if(_verbose>0) std::cout<<std::endl<<"distances between the surface where the generated particles are projected to and the borders of the world volume:"<<std::endl
-                   <<"in negative y direction: "<<marginYMinSurface<<std::endl
-                   <<"in positive y direction: "<<marginYMaxSurface<<std::endl;
-
-      checkCosmicRayProductionPlane(marginXMin, "world.margin.xmin");
-      checkCosmicRayProductionPlane(marginXMax, "world.margin.xmax");
-      checkCosmicRayProductionPlane(marginYMin, "world.margin.top");
-      checkCosmicRayProductionPlane(marginYMax, "world.margin.bottom");
-      checkCosmicRayProductionPlane(marginZMin, "world.margin.zmin");
-      checkCosmicRayProductionPlane(marginZMax, "world.margin.zmax");
-      checkCosmicRayProductionPlane(marginYMinSurface, "world.margin.top");
-      checkCosmicRayProductionPlane(marginYMaxSurface, "world.margin.bottom");
+      if(!worldGeom->inWorld(_cosmicReferencePointInMu2e+halfLengths) || 
+         !worldGeom->inWorld(_cosmicReferencePointInMu2e-halfLengths))
+      {
+        throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! Increase the world margins or change production plane\n";
+      }
     }
 
     // Choose the number of muons to generate this event.
@@ -323,7 +305,25 @@ namespace mu2e {
         CLHEP::Hep3Vector momdir= mom.vect().unit();
         double scale = (ymax-pos.y())/momdir.y();
         CLHEP::Hep3Vector shift = scale*momdir;
-        pos += shift;
+        CLHEP::Hep3Vector posTmp = pos + shift;
+
+        if(!worldGeom->inWorld(posTmp))
+        {
+          std::cout<<"This muon track would have started at "<<posTmp<<" which is outside of the GEANT world volume."<<std::endl;
+          int signX = (momdir.x()>0?-1:1);
+          int signZ = (momdir.z()>0?-1:1);
+          double xmax = signX*worldGeom->halfLengths()[0] - worldGeom->mu2eOriginInWorld().x();
+          double zmax = signZ*worldGeom->halfLengths()[2] - worldGeom->mu2eOriginInWorld().z();
+          double scaleX = (xmax-pos.x())/momdir.x();
+          double scaleZ = (zmax-pos.z())/momdir.z();
+          if(scaleX>scaleZ) shift = scaleX*momdir;  //scales are always negative
+          else shift = scaleZ*momdir;
+          posTmp = pos + shift;
+          std::cout<<"The starting point will be adjusted to "<<posTmp<<"."<<std::endl;
+          std::cout<<"The starting energy of "<<E<<" MeV will not be adjusted."<<std::endl;
+        }
+
+        pos = posTmp;
       }
       if(_verbose>1) std::cout << "starting position on surface = " << pos << std::endl;
 
@@ -343,33 +343,9 @@ namespace mu2e {
       PDGCode::type pid = (_randFlat.fire() > asym/(1+asym) ) ? PDGCode::mu_minus : PDGCode::mu_plus;
 
       // Add the cosmic to  the list.
-      if(checkGeneratedMuons(pos)) genParts.push_back(GenParticle(pid, GenId::cosmicDYB, pos, mom, time));
+      genParts.push_back(GenParticle(pid, GenId::cosmicDYB, pos, mom, time));
 
     }
   }
 
-  void CosmicDYB::checkCosmicRayProductionPlane(double margin, std::string name)
-  {
-    if(margin<0) throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! Increase "<<name<<" by at least "<<-margin<<"\n";
-  }
-
-  bool CosmicDYB::checkGeneratedMuons(CLHEP::Hep3Vector const &posInMu2e)
-  {
-    GeomHandle<WorldG4>  worldGeom;
-    Hep3Vector const& mu2eOrigin = worldGeom->mu2eOriginInWorld();
-    std::vector<double> const& halfLengths = worldGeom->halfLengths();
-    Hep3Vector posInWorld = posInMu2e+mu2eOrigin;
-
-    static const double margin(10.0); // 10mm margin
-    if(halfLengths[0] - fabs(posInWorld.x()) < margin ||
-       halfLengths[1] - fabs(posInWorld.y()) < margin ||
-       halfLengths[2] - fabs(posInWorld.z()) < margin) 
-    {
-      std::cout<<"This muon track would have started at "<<posInMu2e<<" which is outside of the GEANT world volume."<<std::endl
-               <<"This muon will not be generated."<<std::endl;
-      return false;
-    }
-
-    return true;
-  }
 }
