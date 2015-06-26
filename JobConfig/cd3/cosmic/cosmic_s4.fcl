@@ -49,7 +49,7 @@ outputs:
     Output : 
     {
         module_type : RootOutput
-        fileName    : "data_cosmic_s4.art"
+        fileName    : "sim.owner.cd3-cosmic-g4s4-general.version.sequencer.art"
     }
 }
 

@@ -15,7 +15,7 @@ source :
 services : 
 {
    message               : @local::default_message
-   TFileService          : { fileName : "hist_cosmic_s3.root" }
+   TFileService          : { fileName : "nts.owner.cd3-cosmic-g4s3-general.version.sequencer.root" }
    RandomNumberGenerator : { }
 
    user : 
@@ -81,7 +81,7 @@ outputs:
         module_type : RootOutput
         SelectEvents: { SelectEvents: ["trigFilter"] }
         outputCommands:   [ "keep *_*_*_*" ]
-        fileName    : "data_cosmic_s3.art"
+        fileName    : "sim.owner.cd3-cosmic-g4s3-general.version.sequencer.art"
     }
 }
 

@@ -74,7 +74,7 @@ source :
 services : 
 {
    message               : @local::default_message
-   TFileService          : { fileName : "hist_cosmic_s2.root" }
+   TFileService          : { fileName : "nts.owner.cd3-cosmic-g4s2-general.version.sequencer.root" }
    RandomNumberGenerator : { }
 
    user : 
@@ -207,10 +207,10 @@ outputs:
          "keep *_cosmicFilter_*_cosmics2",
          "keep *_compressPV_*_cosmics2"
       ]
-      fileName    : "data_cosmic_s2.art"
+      fileName    : "sim.owner.cd3-cosmic-g4s2-general.version.sequencer.art"
    }
 
-  truncatedEvtsOutput : 
+   truncatedEvtsOutput : 
    {
       module_type : RootOutput
       SelectEvents: { SelectEvents: ["g4StatusFilter"] }
@@ -224,7 +224,7 @@ outputs:
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "truncated_cosmic_s2.art"
+      fileName    : "sim.owner.cd3-cosmic-g4s2-truncated-general.version.sequencer.art"
    }
 
 }
