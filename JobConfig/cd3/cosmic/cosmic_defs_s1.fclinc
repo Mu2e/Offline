@@ -173,7 +173,6 @@ physics :
          SDConfig: 
          {
             enableSD: [ CRV ]  // activate just the explicitly listed SDs  //for the StepPoints which will be stored
-            sensitiveVolumes: [ TrackerMother, CalorimeterMother ]  //for the StepPoints which will be checked in the momentum filter, but not stored
             TimeVD: { times: [] }
          }
 
@@ -222,7 +221,7 @@ physics :
       stepPointMomentumFilter: 
       {
         module_type: FilterStepPointMomentum
-        inputs : [ "g4run:TrackerMother", "g4run:CalorimeterMother" ]
+        inputs : [ "g4run:crvStage1" ]
         cutMomentumMin: 45. // MeV/c to accommodate muons decaying into electrons with a momentum of 80 MeV/c
       }
 
