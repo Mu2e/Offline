@@ -141,8 +141,9 @@ physics :
          useModuleLabel: true 
          useInstanceName: true 
          useProcessName: false
-	 maxStepPointMultiplicity: 500
       }
+
+      statusG4: { module_type: StatusG4Analyzer input: g4run }
    }
 
    producers: 
@@ -248,7 +249,7 @@ physics :
    trigger_paths  : [trigFilter, g4StatusFilter]
 
    outputs: [truncatedEvtsOutput, filteredOutput]
-   an: [ genCountLogger, collectionSizes ]
+   an: [ genCountLogger, collectionSizes, statusG4 ]
    end_paths: [outputs, an]
 }
 
