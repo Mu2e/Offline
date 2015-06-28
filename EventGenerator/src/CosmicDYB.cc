@@ -298,25 +298,26 @@ namespace mu2e {
       CLHEP::Hep3Vector pos = delta + _cosmicReferencePointInMu2e;
       if(_verbose>1) std::cout << "position on production plane = " << pos << std::endl;
 
-// move this to a position just above the ground
+// project pos to the surface
       if(!_dontProjectToSurface)
       {
         double ymax = env->ymax();
         CLHEP::Hep3Vector momdir= mom.vect().unit();
-        double scale = (ymax-pos.y())/momdir.y();
-        CLHEP::Hep3Vector shift = scale*momdir;
+        double scaleY = (fabs(momdir.y())>1.0e-50 ? (ymax-pos.y())/momdir.y() : NAN);
+        CLHEP::Hep3Vector shift = scaleY*momdir;
         CLHEP::Hep3Vector posTmp = pos + shift;
 
-        if(!worldGeom->inWorld(posTmp))
+// check if the projected pos is inside the world volume
+        if(!worldGeom->inWorld(posTmp) || isnan(scaleY))
         {
           std::cout<<"This muon track would have started at "<<posTmp<<" which is outside of the GEANT world volume."<<std::endl;
           int signX = (momdir.x()>0?-1:1);
           int signZ = (momdir.z()>0?-1:1);
           double xmax = signX*worldGeom->halfLengths()[0] - worldGeom->mu2eOriginInWorld().x();
           double zmax = signZ*worldGeom->halfLengths()[2] - worldGeom->mu2eOriginInWorld().z();
-          double scaleX = (xmax-pos.x())/momdir.x();
-          double scaleZ = (zmax-pos.z())/momdir.z();
-          if(scaleX>scaleZ) shift = scaleX*momdir;  //scales are always negative
+          double scaleX = (fabs(momdir.x())>1.0e-50 ? (xmax-pos.x())/momdir.x() : NAN);
+          double scaleZ = (fabs(momdir.z())>1.0e-50 ? (zmax-pos.z())/momdir.z() : NAN);
+          if((scaleX>scaleZ || isnan(scaleZ)) && !isnan(scaleX)) shift = scaleX*momdir;  //scales are always negative
           else shift = scaleZ*momdir;
           posTmp = pos + shift;
           std::cout<<"The starting point will be adjusted to "<<posTmp<<"."<<std::endl;
