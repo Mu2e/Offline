@@ -1,4 +1,8 @@
-// Andrei Gaponenko, 2015
+// This file contains the common part of job configuration for stage 2
+// cosmic ray simulations.  It is included by top level files
+// (like cosmic_s2_target1.fcl), which define output file names.
+// 
+// Ralf Ehrlich and Andrei Gaponenko, 2015
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -74,7 +78,7 @@ source :
 services : 
 {
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.cd3-cosmic-g4s2-general.version.sequencer.root" }
+   TFileService          : { }
    RandomNumberGenerator : { }
 
    user : 
@@ -207,7 +211,6 @@ outputs:
          "keep *_cosmicFilter_*_cosmics2",
          "keep *_compressPV_*_cosmics2"
       ]
-      fileName    : "sim.owner.cd3-cosmic-g4s2-general.version.sequencer.art"
    }
 
    truncatedEvtsOutput : 
@@ -224,7 +227,6 @@ outputs:
          "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "sim.owner.cd3-cosmic-g4s2-truncated-general.version.sequencer.art"
    }
 
 }
@@ -235,3 +237,7 @@ physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20
+
+// We guarantee that our subruns are atomic. The following line is to not run out of memory.
+services.scheduler.fileMode: MERGE
+

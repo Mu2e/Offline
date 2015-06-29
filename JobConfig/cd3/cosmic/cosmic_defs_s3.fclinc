@@ -1,4 +1,8 @@
-// Ralf Ehrlich, 2014
+// This file contains the common part of job configuration for stage 3
+// cosmic ray simulations.  It is included by top level files
+// (like cosmic_s3_target1.fcl), which define output file names.
+// 
+// Ralf Ehrlich, 2015
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -15,7 +19,7 @@ source :
 services : 
 {
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.cd3-cosmic-g4s3-general.version.sequencer.root" }
+   TFileService          : { }
    RandomNumberGenerator : { }
 
    user : 
@@ -66,10 +70,10 @@ physics :
         }
     }
 
-    trigFilter : [protonTimeMap, muonTimeMap, makeSD, makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, MakeCaloReadoutHits, CaloCrystalHitsMaker, TrkPatRec, TrkPatRecFilter]
+    trigFilter: [protonTimeMap, muonTimeMap, makeSD, makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, MakeCaloReadoutHits, CaloCrystalHitsMaker, TrkPatRec, TrkPatRecFilter]
     trigger_paths  : [trigFilter]
 
-    an: [genCountLogger]
+    an:  [genCountLogger]
     out: [filteredOutput]
     end_paths      : [an, out]
 }
@@ -81,7 +85,6 @@ outputs:
         module_type : RootOutput
         SelectEvents: { SelectEvents: ["trigFilter"] }
         outputCommands:   [ "keep *_*_*_*" ]
-        fileName    : "sim.owner.cd3-cosmic-g4s3-general.version.sequencer.art"
     }
 }
 

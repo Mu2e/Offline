@@ -1,0 +1,3 @@
+#include "JobConfig/cd3/cosmic/cosmic_defs_s4.fclinc"
+
+outputs.Output.fileName      : "sim.owner.cd3-cosmic-g4s4-target2.version.sequencer.art"
