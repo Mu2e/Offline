@@ -1,6 +1,6 @@
-// Pass perfect events, fails events with StatusG4 > 0.  This allows
-// to e.g. select events with trapped particles (by negating the
-// filter) to study them.
+// Pass events with StatusG4 <= maxAcceptedStatus.
+// See MCDataProducts/inc/StatusG4.hh for the meaning of different status values.
+// By default maxAcceptedStatus=0 and only perfect events are passed.
 //
 // Andrei Gaponenko, 2013
 
@@ -22,6 +22,7 @@ namespace mu2e {
   //================================================================
   class FilterStatusG4 : public art::EDFilter {
     art::InputTag input_;
+    int maxAcceptedStatus_;
     typedef std::map<int,int> StatMap;
     StatMap stats_;
   public:
@@ -33,13 +34,14 @@ namespace mu2e {
   //================================================================
   FilterStatusG4::FilterStatusG4(const fhicl::ParameterSet& pset)
     : input_(pset.get<std::string>("input"))
+    , maxAcceptedStatus_(pset.get<int>("maxAcceptedStatus", 0))
   {}
 
   //================================================================
   bool FilterStatusG4::filter(art::Event& event) {
     auto ih = event.getValidHandle<StatusG4>(input_);
     ++stats_[ih->status()];
-    return (ih->status() == 0);
+    return (ih->status() <= maxAcceptedStatus_);
   }
 
   //================================================================
