@@ -111,9 +111,15 @@ physics : {
          module_type: FilterStatusG4
          input: "g4run"
       }
+
+      g4consistent: {
+         module_type: FilterStatusG4
+         input: "g4run"
+	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
    }
 
-   trigmubeam : [g4run, muonBeamFilter, compressPVmuonBeam]
+   trigmubeam : [g4run, g4consistent, muonBeamFilter, compressPVmuonBeam]
    g4StatusFilter : [g4run, "!g4status", compressPVFull ]
    trigger_paths  : [trigmubeam, g4StatusFilter]
 

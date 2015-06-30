@@ -242,9 +242,15 @@ physics :
          module_type: FilterStatusG4
          input: "g4run"
       }
+
+      g4consistent: {
+         module_type: FilterStatusG4
+         input: "g4run"
+	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
    }
 
-   trigFilter     : [generate, genCounter, g4run, stepPointMomentumFilter, cosmicFilter, compressPV]
+   trigFilter     : [generate, genCounter, g4run, g4consistent, stepPointMomentumFilter, cosmicFilter, compressPV]
    g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
    trigger_paths  : [trigFilter, g4StatusFilter]
 

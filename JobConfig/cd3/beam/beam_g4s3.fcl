@@ -145,6 +145,12 @@ physics : {
          module_type: FilterStatusG4
          input: "g4run"
       }
+
+      g4consistent: {
+         module_type: FilterStatusG4
+         input: "g4run"
+	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
    }
 
    //================================================================
@@ -173,7 +179,7 @@ physics : {
       mothersFilter, compressPVMothers
    ]
 
-   muonStopFilter :  [g4run, stoppedMuonFinder, outOfTargetMuonFinder, stopFilter, compressPVStop]
+   muonStopFilter :  [g4run, g4consistent, stoppedMuonFinder, outOfTargetMuonFinder, stopFilter, compressPVStop]
    g4StatusFilter :  [g4run, "!g4status", compressPVFull ]
    trigger_paths  : [motherFilter, muonStopFilter, g4StatusFilter]
 
