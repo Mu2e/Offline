@@ -70,14 +70,14 @@ namespace mu2e {
 
     // Mean multiplicity. If negative, use -_mean as a fixed number
   , _mean      ( config.getDouble("cosmicDYB.mean") )
-  , _muEMin    ( config.getDouble("cosmicDYB.muEMin") )   //in GeV
-  , _muEMax    ( config.getDouble("cosmicDYB.muEMax") )   //in GeV
+  , _muEMin    ( config.getDouble("cosmicDYB.muEMin") )   //in MeV
+  , _muEMax    ( config.getDouble("cosmicDYB.muEMax") )   //in MeV
   , _muCosThMin( config.getDouble("cosmicDYB.muCosThMin") )
   , _muCosThMax( config.getDouble("cosmicDYB.muCosThMax") )
 
     // Dimensions of the 2d working space for hrndg2.
-  , _ne ( config.getInt("cosmicDYB.nBinsE", _default_ne) )
-  , _nth( config.getInt("cosmicDYB.nBinsTheta",_default_nth) )
+  , _ne ( config.getInt("cosmicDYB.nBinsE") )
+  , _nth( config.getInt("cosmicDYB.nBinsTheta") )
 
     // Time range (in ns) over which to generate events.
   ,_tmin( 0.0 )
@@ -146,8 +146,8 @@ namespace mu2e {
     _workingSpace.resize(_ne*_nth);
 
     log << "cosmicDYB.mean = " << _mean << "\n"
-        << "cosmicDYB.muEMin = " << _muEMin <<" GeV, "
-        << "cosmicDYB.muEMax = " << _muEMax << " GeV\n"
+        << "cosmicDYB.muEMin = " << _muEMin <<" MeV, "
+        << "cosmicDYB.muEMax = " << _muEMax << " MeV\n"
         << "cosmicDYB.muCosThMin = " << _muCosThMin << ", "
         << "cosmicDYB.muCosThMax = " << _muCosThMax << "\n"
         << "working space dimenions (" << _ne << "," << _nth << ")" << "\n"
@@ -301,33 +301,52 @@ namespace mu2e {
 // project pos to the surface
       if(!_dontProjectToSurface)
       {
+        //surface
         double ymax = env->ymax();
-        CLHEP::Hep3Vector momdir= mom.vect().unit();
-        double scaleY = (fabs(momdir.y())>1.0e-50 ? (ymax-pos.y())/momdir.y() : NAN);
-        CLHEP::Hep3Vector shift = scaleY*momdir;
-        CLHEP::Hep3Vector posTmp = pos + shift;
 
-// check if the projected pos is inside the world volume
-        if(!worldGeom->inWorld(posTmp) || isnan(scaleY))
+        //find the world borders in x and z direction on the side in which the track needs to be projected
+        //need the positive x (or z) side if the x (or z) momentum is negative
+        CLHEP::Hep3Vector momdir= mom.vect().unit();
+        int signX = (momdir.x()>0?-1:1);
+        int signZ = (momdir.z()>0?-1:1);
+        double margin=1.0;  //to make sure that the starting point is indeed inside the world (taking rounding issues into consideration)
+        double xmax = signX*(worldGeom->halfLengths()[0]-margin) - worldGeom->mu2eOriginInWorld().x();
+        double zmax = signZ*(worldGeom->halfLengths()[2]-margin) - worldGeom->mu2eOriginInWorld().z();
+
+        double scale;
+        if( fabs((ymax-pos.y())/(xmax-pos.x())*momdir.x()) < fabs(momdir.y()) &&
+            fabs((ymax-pos.y())/(zmax-pos.z())*momdir.z()) < fabs(momdir.y()))
         {
-          std::cout<<"This muon track would have started at "<<posTmp<<" which is outside of the GEANT world volume."<<std::endl;
-          int signX = (momdir.x()>0?-1:1);
-          int signZ = (momdir.z()>0?-1:1);
-          double xmax = signX*worldGeom->halfLengths()[0] - worldGeom->mu2eOriginInWorld().x();
-          double zmax = signZ*worldGeom->halfLengths()[2] - worldGeom->mu2eOriginInWorld().z();
-          double scaleX = (fabs(momdir.x())>1.0e-50 ? (xmax-pos.x())/momdir.x() : NAN);
-          double scaleZ = (fabs(momdir.z())>1.0e-50 ? (zmax-pos.z())/momdir.z() : NAN);
-          if((scaleX>scaleZ || isnan(scaleZ)) && !isnan(scaleX)) shift = scaleX*momdir;  //scales are always negative
-          else shift = scaleZ*momdir;
-          posTmp = pos + shift;
-          std::cout<<"The starting point will be adjusted to "<<posTmp<<"."<<std::endl;
-          std::cout<<"The starting energy of "<<E<<" MeV will not be adjusted."<<std::endl;
+          //the track will not be projected outside of the x or z world border
+          scale = (ymax-pos.y())/momdir.y();
+        }
+        else
+        {
+          //the track would have been projected outside of the x or z world border
+          //so we can't project it all the way to the surface
+          std::cout<<"This muon track would have started at "<<pos+(ymax-pos.y())/momdir.y()*momdir<<" which is outside of the GEANT world volume."<<std::endl;
+
+          if( fabs((xmax-pos.x())/(ymax-pos.y())*momdir.y()) < fabs(momdir.x()) &&
+              fabs((xmax-pos.x())/(zmax-pos.z())*momdir.z()) < fabs(momdir.x()))
+          {
+            //the track will be projected to the x world border
+            scale = (xmax-pos.x())/momdir.x();
+          }
+          else
+          {
+            //the track will be projected to the z world border
+            scale = (zmax-pos.z())/momdir.z();
+          }
+          std::cout<<"The starting point will be adjusted to "<<pos+scale*momdir<<"."<<std::endl;
+          std::cout<<"The starting time and the starting energy of "<<E<<" MeV will not be adjusted."<<std::endl;
         }
 
-        pos = posTmp;
+        pos += scale*momdir;
       }
-      if(_verbose>1) std::cout << "starting position on surface = " << pos << std::endl;
 
+      if(_verbose>1) std::cout << "starting position = " << pos << std::endl;
+
+      // pick a random starting time, unless a constant time was set
       double time = _constTime;
       if(std::isnan(time)) time = _tmin + _dt*_randFlat.fire();
 
@@ -343,7 +362,7 @@ namespace mu2e {
 
       PDGCode::type pid = (_randFlat.fire() > asym/(1+asym) ) ? PDGCode::mu_minus : PDGCode::mu_plus;
 
-      // Add the cosmic to  the list.
+      // Add the muon to the list.
       genParts.push_back(GenParticle(pid, GenId::cosmicDYB, pos, mom, time));
 
     }

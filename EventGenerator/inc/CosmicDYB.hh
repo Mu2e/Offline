@@ -66,10 +66,6 @@ namespace mu2e {
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
 
-    // Default dimensions
-    static const long _default_ne = 4000;
-    static const long _default_nth = 100;
-
     // Working space for hrndg2 ( working space will be on the heap).
     std::vector<double> _workingSpace;
 
