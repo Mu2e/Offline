@@ -88,7 +88,7 @@ void TGenParticle::Print(Option_t* Opt) const {
     printf("      py       pz       e        vx       vy        vz       t\n");
   }
 
-  TDatabasePDG* db = TDatabasePDG::Instance();
+  //  TDatabasePDG* db = TDatabasePDG::Instance();
 
   TParticlePDG* pdg = ((TParticle*)this)->GetPDG();
 
@@ -96,13 +96,13 @@ void TGenParticle::Print(Option_t* Opt) const {
     printf("%4i",Number());
     if (pdg) printf(" %-19s",pdg->GetName());
     else          printf(" %-19s","*** unknown ***");
-    printf("%7i",GetPdgCode());
-    printf("%6i",GetStatusCode());
+    printf("%7i"   ,GetPdgCode());
+    printf("%6i"   ,GetStatusCode());
     printf("  ");
-    printf("%5i",GetMother(0));
-    printf("%5i",GetMother(1));
-    printf("%5i",GetDaughter(0));
-    printf("%5i",GetDaughter(1));
+    printf("%5i"   ,GetMother(0));
+    printf("%5i"   ,GetMother(1));
+    printf("%5i"   ,GetDaughter(0));
+    printf("%5i"   ,GetDaughter(1));
     printf("%11.3f",Px());
     printf("%11.3f",Py());
     printf("%11.3f",Pz());

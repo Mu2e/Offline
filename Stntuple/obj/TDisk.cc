@@ -210,7 +210,7 @@ void TDisk::GetPosition(int I, TVector2* Pos) {
 int TDisk::IsInside(THexIndex* Index, double* Fraction) {
 
   int       inside, nvin(0), nbelow(0), nabove(0);
-  double    x0, y0, r, x, y, phi, s, s0, s1, r0, dr, adr;
+  double    x0, y0, r, x, y, phi, s, s0, /*s1,*/ r0, dr, adr;
   double    fr, step;
 					// crystal center position
   step = fHexSize+2*fDeadSpace;
@@ -263,7 +263,7 @@ int TDisk::IsInside(THexIndex* Index, double* Fraction) {
       if (adr > fHexSize/2) adr = fHexSize/2.;
 
       s   = fHexSize*fHexSize*sqrt(3)/2;
-      s1  = (2*fHexSize-adr)*adr/sqrt(3.);
+      //      s1  = (2*fHexSize-adr)*adr/sqrt(3.);
       s0  = (3*fHexSize-2*adr)*(fHexSize-2*adr)/4/sqrt(3);
 
       if (dr <= 0) {
@@ -281,7 +281,7 @@ int TDisk::IsInside(THexIndex* Index, double* Fraction) {
       if (adr > fHexSize/2) adr = fHexSize/2.;
 
       s   = fHexSize*fHexSize*sqrt(3)/2;
-      s1  = (2*fHexSize-adr)*adr/sqrt(3.);
+      //      s1  = (2*fHexSize-adr)*adr/sqrt(3.);
       s0  = (3*fHexSize-2*adr)*(fHexSize-2*adr)/4/sqrt(3);
       if (dr > 0) {
 	fr = 1-s0/s;

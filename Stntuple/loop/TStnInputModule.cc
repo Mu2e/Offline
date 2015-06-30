@@ -58,7 +58,7 @@ int TStnInputModule::InitChain(const char* FileName, const char* TreeName)
   if ( TString(FileName).Index(":")<0 && (dir = gSystem->OpenDirectory(FileName))) {
     TString dirName = filename;
     const char* fn;
-    while (fn = gSystem->GetDirEntry(dir)) {
+    while ((fn = gSystem->GetDirEntry(dir))) {
       if ((strcmp(fn,".") != 0) && (strcmp(fn,"..") != 0)) {
 	filename = dirName + TString("/") + TString(fn);
 	fChain->AddFile(filename.Data(),TChain::kBigNumber);

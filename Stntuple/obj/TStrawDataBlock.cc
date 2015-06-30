@@ -9,7 +9,7 @@ ClassImp(TStrawDataBlock)
 //-----------------------------------------------------------------------------
   void TStrawDataBlock::Streamer(TBuffer &R__b) {
   if(R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion();
+    //    Version_t R__v = R__b.ReadVersion();
     R__b >> fNHits;
     fListOfHits->Streamer(R__b);
   }

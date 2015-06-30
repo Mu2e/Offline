@@ -29,9 +29,8 @@ echo  "  printf(\"differences with ${tag}_$minor_tag: $ndiff bytes\n\");"    >> 
 echo  "}"                                                                    >> $file
 echo  ""
 echo  "void stntuple_get_version(char*& Version, char*& Text) {"             >> $file
-echo  "  static char* ver     = \"${tag}_${minor_tag}\";"                    >> $file
 echo  "  static char  txt[200];"                                             >> $file
-echo  "  Version = ver;"                                                     >> $file
+echo  "  strcpy(Version,\"${tag}_${minor_tag}\");"                           >> $file
 echo  "  strcpy(txt,\"stnmaker.exe ${tag}_${minor_tag} \");"                 >> $file
 echo  "  strcat(txt,\"built on `date` by $USER@`hostname`\");"               >> $file
 echo  "  strcat(txt,\" using CDFSOFT release: $release \");"                 >> $file

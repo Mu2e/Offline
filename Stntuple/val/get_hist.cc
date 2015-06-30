@@ -16,7 +16,7 @@
 TH1F* get_hist(TString FName, TString ModuleName, TString HistName)
 {
 
-  TFile   *file;
+  TFile   *file(NULL);
   TFolder *fol;
   TH1F    *h; 
 

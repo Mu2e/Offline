@@ -9,17 +9,19 @@
 
 ClassImp(TStnTrackID)
 
-//______________________________________________________________________________
+//-----------------------------------------------------------------------------
+// everything is commented out to avoid compilation warnings
+//-----------------------------------------------------------------------------
 void TStnTrackID::Streamer(TBuffer &R__b) {
 // //  // Stream an object of class TStnTrackID.
 // //
-  UInt_t R__s, R__c;
+//  UInt_t R__s, R__c;
 // //
 // //  int nwi = ((Int_t*  )&fMinFitCons)-&fUseMask;
 // //  int nwf = ((Float_t*)&fEOR       )-&fMinFitCons  ;
 // //
   if (R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion(&R__s, &R__c); 
+//       Version_t R__v = R__b.ReadVersion(&R__s, &R__c); 
 // //    TNamed::Streamer(R__b);
 // //    R__b.ReadFastArray(&fUseMask   ,nwi);
 // //    R__b.ReadFastArray(&fMinFitCons,nwf);
@@ -29,7 +31,7 @@ void TStnTrackID::Streamer(TBuffer &R__b) {
 //-----------------------------------------------------------------------------
 //  write section
 //-----------------------------------------------------------------------------
-    R__c = R__b.WriteVersion(TStnTrackID::IsA(), kTRUE);
+//    R__c = R__b.WriteVersion(TStnTrackID::IsA(), kTRUE);
 // //    TNamed::Streamer(R__b);
 // //    R__b.WriteFastArray(&fUseMask   ,nwi);
 // //    R__b.WriteFastArray(&fMinFitCons,nwf);

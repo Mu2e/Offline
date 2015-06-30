@@ -122,11 +122,11 @@ void TEvdStraw::PaintRZ(Option_t* Option) {
   
   if (nhits > 0) {
     color = kRed;
-    fArc->SetLineColor(kRed+1);
+    fArc->SetLineColor(color+1);
     fArc->SetLineWidth(2);
   }
 
-  fArc->SetFillStyle(0);
+  fArc->SetFillStyle(style);
   fArc->Paint(Option);
 
   if (vm->DisplayStrawDigiMC()) {

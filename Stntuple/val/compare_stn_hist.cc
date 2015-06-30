@@ -429,7 +429,7 @@ Double_t  calc_result(TObjArray* Array, Double_t MinProb, TFolder* Results) {
 // first pass
 //-----------------------------------------------------------------------------
   double res = MinProb;
-  double prob;
+  double prob (-1.);
 
   while ((o = it.Next())) {
 
@@ -506,6 +506,7 @@ void compare_stn_hist(const char* Filename1,
 
   TBrowser* b = new TBrowser;
 
+  if (b == NULL) printf("compare_stn_hist ERROR: coudn't open the TBrowser window\n");
 } 
 
 
@@ -542,21 +543,22 @@ void compare_prod_hist(const char* Filename1,
 
   TBrowser* b = new TBrowser;
 
+  if (b == NULL) printf("compare_stn_hist ERROR: coudn't open the TBrowser window\n");
 } 
 
 
 //_____________________________________________________________________________
 int compare_files(const char* Filename1, 
 		  const char* Filename2, 
-		  Double_t    MinProb,
-		  Int_t       flag ) 
-{
+		  Double_t    MinProb  ,
+		  Int_t       flag     ) {
 
-  TFolder*     fol1;
-  TFolder*     fol2;
+  TFolder*        fol1;
+  TFolder*        fol2;
   TDirectory*     dir1;
   TDirectory*     dir2;
   TFolder*        res_folder;
+  int             rc(0);
 
   TObjArray*   results = new TObjArray(10);
   results->SetName("HistComparison");
@@ -584,6 +586,12 @@ int compare_files(const char* Filename1,
 
   TBrowser* b = new TBrowser;
 
+  if (b == NULL) {
+    printf("compare_stn_hist ERROR: coudn't open the TBrowser window\n");
+    rc = -1;
+  }
+
+  return rc;
 } 
 
 
@@ -689,7 +697,7 @@ void merge_stn_hist(const char* List, const char* OutputFile)
   FILE* file = gSystem->OpenPipe(Form("ls %s",List),"r");
 
   TFile      *output_file;
-  TFolder    *fol1, *fol2;
+  TFolder    *fol1(NULL), *fol2(NULL);
 
   int first = 1;
 
@@ -723,11 +731,11 @@ int write_directories(TDirectory* Dir1, TDirectory* Dir2) {
   // traverse subdirectories in Dir1 and for each subdirectory create 
   // the same in Dir2
 
-  TObject     *o1, *o2;
-  TH1         *h1, *h2; 
+  TObject     *o1 /*, *o2*/;
+  //  TH1         *h1, *h2; 
   TDirectory  *d1, *d2;
-  TObjArray   *a1, *a2;
-  TKey        *key;
+  //  TObjArray   *a1, *a2;
+  //  TKey        *key;
   const char  *name, *class_name; 
 //-----------------------------------------------------------------------------
 //  loop over the objects stored in Dir1 and for each object find its vis-a-vis
@@ -737,7 +745,7 @@ int write_directories(TDirectory* Dir1, TDirectory* Dir2) {
 
   Dir2->cd();
 
-  while (o1 = it.Next()) {
+  while ((o1 = it.Next())) {
     name = o1->GetName();
     class_name = o1->ClassName();
 
@@ -766,9 +774,9 @@ int create_directories(TDirectory* Dir1, TDirectory* Dir2) {
   // the same in Dir2
 
   TObject     *o1, *o2;
-  TH1         *h1, *h2; 
+  //  TH1         *h1, *h2; 
   TDirectory  *d1, *d2;
-  TObjArray   *a1, *a2;
+  //  TObjArray   *a1, *a2;
   TKey        *key;
   const char  *name, *class_name; 
 //-----------------------------------------------------------------------------
@@ -815,7 +823,7 @@ int add_directories(TDirectory* Dir1, TDirectory* Dir2) {
   TH1         *h1, *h2; 
   TDirectory  *d1, *d2;
   TObjArray   *a1, *a2;
-  TKey        *key;
+  //  TKey        *key;
   const char  *name, *class_name;
 //-----------------------------------------------------------------------------
 //  loop over the objects stored in Fol1 and for each object find 
@@ -871,8 +879,8 @@ void merge_prod_hist(const char* List, const char* OutputFile)
   FILE* file = gSystem->OpenPipe(Form("ls %s",List),"r");
 
   TFile       *output_file, *input_file;
-  TDirectory  *dir1, *dir2;
-  TDirectory  *output_dir;
+  //  TDirectory  *dir1, *dir2;
+  //  TDirectory  *output_dir;
 
   int first = 1;
 
@@ -912,19 +920,20 @@ void merge_prod_hist(const char* List, const char* OutputFile)
 
 
 //_____________________________________________________________________________
-int write_web_page(const char* wfile, int flag)
-{
+int write_web_page(const char* wfile, int flag) {
 
   TString wdir(wfile);
   int nfile = strlen(wfile);
   int nbase = strlen(gSystem->BaseName(wfile));
   wdir.Remove(nfile-nbase,nbase);
 
-  TFolder* fol = (TFolder*) 
-    gROOT->GetRootFolder()->FindObject("STNTUPLE_RESULTS");
+  TFolder* fol;
+
+  fol = (TFolder*) gROOT->GetRootFolder()->FindObject("STNTUPLE_RESULTS");
+
   if(fol==NULL) {
     printf("Could not find directory STNTUPLE_RESULTS\n");
-    return 1;
+    return -1;
   }
 
   TObjArray arr;
@@ -944,7 +953,7 @@ int write_web_page(const char* wfile, int flag)
       arr.RemoveLast();
       TIter it(((TFolder*)o)->GetListOfFolders());
       TObject* o1;
-      while (o1=it.Next()) {
+      while ((o1=it.Next())) {
         arr.AddLast(o1);
       }
     } else if(!o->InheritsFrom("THistComp")) {
@@ -1030,5 +1039,7 @@ int write_web_page(const char* wfile, int flag)
   fclose(pfile);
   ccc->Close();
   delete ccc;
+
+  return 0;
 }
 

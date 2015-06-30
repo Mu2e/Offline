@@ -24,7 +24,7 @@ TModule::TModule(fhicl::ParameterSet const& PSet, const char* Name):
 {
 
   int    n, index;
-  static char* dummy = "";
+  static char* dummy[100];
 
   fFile   = 0;
   fFolder = new TFolder(GetName(),GetName());
@@ -34,7 +34,7 @@ TModule::TModule(fhicl::ParameterSet const& PSet, const char* Name):
   fFclDebugBits    = PSet.get<fhicl::ParameterSet>("debugBits"                );
   fInteractiveMode = PSet.get<int>                ("interactiveMode",        0);
 
-  fAnaRint         = TAnaRint::Instance(0,&dummy);
+  fAnaRint         = TAnaRint::Instance(0,dummy);
   fDump            = TAnaDump::Instance();
 
   const char* key;

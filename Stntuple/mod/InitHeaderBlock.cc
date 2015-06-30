@@ -18,14 +18,14 @@ Int_t StntupleInitMu2eHeaderBlock(TStnDataBlock* block, AbsEvent* AnEvent, int m
   // Run II version, section number is defined
 
   static TFolder*         fol              = NULL;
-  static TNamed*          processName      = NULL;
+  //  static TNamed*          processName      = NULL;
 
   if (! fol) {
 //-----------------------------------------------------------------------------
 //  initialize local static variables
 //-----------------------------------------------------------------------------
     fol     = (TFolder*) gROOT->GetRootFolder()->FindObject("Stntuple");
-    processName      = (TNamed*) fol->FindObject("ProcessName");
+    //    processName      = (TNamed*) fol->FindObject("ProcessName");
   }
 
   TStnHeaderBlock* header = (TStnHeaderBlock*) block;

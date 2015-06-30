@@ -70,9 +70,9 @@ int TDuplicateFilterModule::Event(int ientry) {
 
   TStnHeaderBlock* header = GetHeaderBlock();
 
-  int rn = header->RunNumber    ();
+  //  int rn = header->RunNumber    ();
   int ev = header->EventNumber  ();
-  int rs = header->SectionNumber();
+  //  int rs = header->SectionNumber();
 
 				// current run record is already set
 

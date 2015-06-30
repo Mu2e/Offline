@@ -122,7 +122,7 @@ Int_t TEvdCrystal::DistancetoPrimitiveRZ(Int_t px, Int_t py) {
 void TEvdCrystal::AddHit(const mu2e::CaloCrystalHit* CrystalHit) {
   fEnergy  += CrystalHit->energyDep();
   TObjHandle* h = new ((*fListOfHits)[fNHits]) TObjHandle((void*) CrystalHit);
-  fNHits++;
+  if (h != NULL) fNHits++;
 }
 
 

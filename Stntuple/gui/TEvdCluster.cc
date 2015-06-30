@@ -38,7 +38,7 @@ TEvdCluster::TEvdCluster(const mu2e::CaloCluster* Cl): TObject() {
   const int module_color[2] = {kRed, kMagenta};
 
   double xl, yl, rtrk, rcal;
-  int    color;
+  int    color(0);
 
   fCluster  = Cl;
 

@@ -83,7 +83,7 @@ int TTxtCatalogServer::AddFiles(TChain*     Chain  ,
     TObjArrayIter it(list_of_files);
     TChainElement* found;
 
-    while (found = (TChainElement*) it.Next()) {
+    while ((found = (TChainElement*) it.Next())) {
       if (strcmp(fn,found->GetTitle()) == 0) break;
     }
     
@@ -170,7 +170,7 @@ int TTxtCatalogServer::InitChain(TChain*     Chain,
 
     TString prefix;
     TIter itt(&files);
-    while (ostr = (TObjString*) itt.Next()) {
+    while ((ostr = (TObjString*) itt.Next())) {
       line = (char*) ostr->String().Data();
       sscanf(line,"%s %s %f %s %s %i %i %i %i %i", 
 	     fs,fn,&size,date,time,&nev,&lorun,&loevt,&hirun,&hievt);
@@ -180,7 +180,7 @@ int TTxtCatalogServer::InitChain(TChain*     Chain,
       TObjArray* list_of_files = Chain->GetListOfFiles();
       TObjArrayIter it(list_of_files);
       TChainElement* found;
-      while (found = (TChainElement*) it.Next()) {
+      while ((found = (TChainElement*) it.Next())) {
 	if (strcmp(fn,found->GetTitle()) == 0) break;
       }
       if (! found)
@@ -199,7 +199,7 @@ int TTxtCatalogServer::InitChain(TChain*     Chain,
     char*    fs = strtok(list_of_fs,", ");
     do {
       AddFiles(Chain,Book,Dataset,fs,Run1,Run2);
-    } while (fs = strtok(0,", "));
+    } while ((fs = strtok(0,", ")));
 
     delete [] list_of_fs;
   }
@@ -218,7 +218,7 @@ int TTxtCatalogServer::InitChain(TChain*     Chain,
     do {
       sprintf(remote_file,"root://%s/%s/%s",remote_server,remote_dir,file);
       Chain->AddFile(remote_file,TChain::kBigNumber);
-    } while (file = strtok(0,", "));
+    } while ((file = strtok(0,", ")));
 
     delete [] list_of_files;
   }
@@ -406,7 +406,7 @@ int TTxtCatalogServer::InitDataset(TStnDataset*     Dataset,
   }
   gSystem->ClosePipe(pipe);
 
-  int n_files = files.GetEntriesFast();
+  //  int n_files = files.GetEntriesFast();
 //-----------------------------------------------------------------------------
 // loop again over the fileset definition lines and parse the information
 // only the files corresponding to the requested filesets are stored. 
@@ -553,7 +553,7 @@ int TTxtCatalogServer::InitDataset(TStnDataset*     Dataset,
 // files cataloged in DFC are read through general DCACHE pool (cdfdca)
 //-----------------------------------------------------------------------------
 	if ((s_file == "") || (s_file == fn)) {
-	  const char* path = 0;
+	  //	  const char* path = 0;
 	  GetDCacheFileName("cdfdca.fnal.gov",pnfs_path,0,fn,full_name);
 	  if(lorun<=rmax && hirun>=rmin) {
 	    Dataset->AddFile(full_name,fs,size,nev,loevt,lorun,hievt,hirun,status);
@@ -571,7 +571,7 @@ int TTxtCatalogServer::InitDataset(TStnDataset*     Dataset,
       TString prefix;
 
       TIter itt(&files);
-      while (ostr = (TObjString*) itt.Next()) {
+      while ((ostr = (TObjString*) itt.Next())) {
 	line = (char*) ostr->String().Data();
 	
 	sscanf(line,"%s %s %f %s %s %i %i %i %i %i", 

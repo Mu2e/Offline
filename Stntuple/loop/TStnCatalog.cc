@@ -97,7 +97,7 @@ void TStnCatalog::SetPrintLevel(Int_t Level) {
   fPrintLevel = Level;
   TStnCatalogServer* server;
   TIter it(fListOfCatalogServers);
-  while (server = (TStnCatalogServer*) it.Next()) {
+  while ((server = (TStnCatalogServer*) it.Next())) {
     server->SetPrintLevel(Level);
   }
   return;
@@ -284,7 +284,7 @@ TStnCatalogServer* TStnCatalog::GetCatalogServer(const char* Book   ,
   TStnCatalogServer* server;
   TIter it(fListOfCatalogServers);
 
-  while (server = (TStnCatalogServer*) it.Next()) {
+  while ((server = (TStnCatalogServer*) it.Next())) {
     if ((strcmp(Book,"file") == 0) || (strcmp(Book,"dir") == 0))
       break;
     if (server->FindDataset(Book,Dataset) != 0)

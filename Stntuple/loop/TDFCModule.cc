@@ -59,8 +59,11 @@ TDFCModule::TDFCModule(const char* name, const char* title):
 //_____________________________________________________________________________
 TDFCModule::~TDFCModule()
 {
-  for (int i=0; i<fRunRecord.size(); i++)
+  int nr = fRunRecord.size();
+  for (int i=0; i<nr; i++) {
     delete fRunRecord[i];
+  }
+
   delete fNewFile;
   delete fOutputDir;
 }
@@ -95,7 +98,8 @@ int TDFCModule::BeginRun() {
 //---------------------------------------------------------------------------
   int  iRun  = GetHeaderBlock()->RunNumber();
   bool found = false;
-  for (int i=0; i<fRunRecord.size(); i++) {
+  int nr = fRunRecord.size();
+  for (int i=0; i<nr; i++) {
     if (fRunRecord[i]->fNumber == iRun) {
       // Okay this is our run
       fCurrentRunRecord = fRunRecord[i];
@@ -341,13 +345,13 @@ int TDFCModule::GetDfcCommand(TString& Cmd) {
 //_____________________________________________________________________________
 void TDFCModule::ExecCommands() {
 
-  int i1, i2;
+  int i1/*, i2*/;
   
   TString move, dfc;
 
   if (fExecCommands) {
     i1  = (fExecCommands   ) % 10 ;
-    i2  = (fExecCommands/10) % 10 ;
+    //    i2  = (fExecCommands/10) % 10 ;
     
     if (i1 == 1) {
       GetMvCommand(move);
@@ -424,13 +428,13 @@ void TDFCModule::PrintCatalog(const char* Opt) {
 //      
   }
 
+  int nr     = fRunRecord.size();
   if (PrintLevel() % 10 == 2) {
 //-----------------------------------------------------------------------------
 //  print run-level catalog
 //-----------------------------------------------------------------------------
     int offset = fDatasetID.Length()+21+11+21+5;
-
-    for (int i=0; i<fRunRecord.size(); i++) {
+    for (int i=0; i<nr; i++) {
       RunRecord_t *r = fRunRecord[i];
       for (int i=0; i<offset; i++) printf(" ");
       printf(" %6i %7i %9i %7i %9i\n",
@@ -450,13 +454,13 @@ void TDFCModule::PrintCatalog(const char* Opt) {
 //-----------------------------------------------------------------------------
     printf("<getfileinfo>\n");
     printf("name           : %-s\n",fFileName.Data());
-    printf("size           : %i \n",fFile->GetSize());
+    printf("size           : %lld \n",fFile->GetSize());
     printf("First run/event: %6i / %7i \n", fMinRunNumber,fMinEventNumber);
     printf("Last  run/event: %6i / %7i \n", fMaxRunNumber,fMaxEventNumber);
     printf("events         : %6i \n",fNEvents);
     printf("runsections    : ");
 
-    for (int i=0; i<fRunRecord.size(); i++) {
+    for (int i=0; i<nr; i++) {
       RunRecord_t *r = fRunRecord[i];
       //      printf("run number: %i\n",r->fNumber);
       int ns = r->fListOfRunSections.size();

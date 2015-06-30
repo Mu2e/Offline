@@ -142,7 +142,7 @@ void TEvdTrack::PaintRZ(Option_t* Option) {
   CLHEP::Hep3Vector tdir;
   HepPoint          tpos;
   TPolyLine         pline;
-  int               np, nl, nst;
+  int               /*np,*/ nl, nst;
 
   mu2e::GeomHandle<mu2e::TTracker> handle;
 
@@ -184,16 +184,19 @@ void TEvdTrack::PaintRZ(Option_t* Option) {
 
   for (int ist=0; ist<nst; ist++) {
     const mu2e::Device* dev = &tracker->getDevice(ist);
-    np = dev->nSectors();
+    //    np = dev->nSectors();
 //-----------------------------------------------------------------------------
 // 3 panels in the same plane have the same Z and do not overlap - no need to 
 // duplicate
 // panels 0 and 1 are at different Z
 //-----------------------------------------------------------------------------
-    double flip;
+//    double flip;
     for (int ich=0; ich<2; ich++) {
       const mu2e::Sector* panel = &dev->getSector(ich);
-      nl = panel->nLayers();
+      nl       = panel->nLayers();
+					// deal with the compiler warnings
+      zwire[0] = -1.e6;
+      zwire[1] = -1.e6;
 
       for (int il=0; il<nl; il++) {
 //-----------------------------------------------------------------------------
@@ -206,12 +209,12 @@ void TEvdTrack::PaintRZ(Option_t* Option) {
       if (zwire[0] > zwire[1]) {
 	zt[1] = zwire[1];
 	zt[2] = zwire[0];
-	flip  = 1.;
+	//	flip  = 1.;
       }
       else {
 	zt[1] = zwire[0];
 	zt[2] = zwire[1];
-	flip  = -1.;
+	//	flip  = -1.;
       }
 					// z-step between the layers, want two more points
       zt[0] = zt[1]-3.;

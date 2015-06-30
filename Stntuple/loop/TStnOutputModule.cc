@@ -73,7 +73,7 @@ int TStnOutputModule::OpenNewFile(const char* Filename)
     const char*       branch_name;
     Int_t             basket_size, comp_level;
 
-    while (node = (TStnNode*) it.Next()) {
+    while ((node = (TStnNode*) it.Next())) {
       branch_name  = node->GetName();
       input_branch = node->GetBranch();
       class_name   = node->GetDataBlock()->ClassName();

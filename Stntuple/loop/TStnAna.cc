@@ -217,35 +217,38 @@ TStnAna::~TStnAna()
 
 
 //_____________________________________________________________________________
-Int_t TStnAna::SetSplit(Int_t ind, Int_t tot)
-{
-  if(TStnInputModule* inp = GetInputModule()){
+Int_t TStnAna::SetSplit(Int_t ind, Int_t tot) {
+  int rc(0);
+  if(TStnInputModule* inp = GetInputModule()) {
     inp->SetSplit(ind,tot);
-  } else {
+  } 
+  else {
     Error("TStnAna","Could not find input module");
+    rc = -1;
   }
+  return rc;
 }
 
 //_____________________________________________________________________________
-Int_t TStnAna::AddDataset(TStnDataset* d)
-{
-  if(TStnInputModule* inp = GetInputModule()){
+Int_t TStnAna::AddDataset(TStnDataset* d) {
+  int rc(0);
+  if(TStnInputModule* inp = GetInputModule()) {
     inp->AddDataset(d);
-  } else {
+  } 
+  else {
     Error("TStnAna","Could not find input module");
+    rc = -1;
   }
+  return rc;
 }
 
 //_____________________________________________________________________________
-Int_t TStnAna::SetOutputFile(const char* filename)
-{
-  if (! filename)
-    return -1;
+Int_t TStnAna::SetOutputFile(const char* filename) {
+  if (! filename) return -1;
 
   fOutputFile = new TFile(filename,"RECREATE");
 
-  if (! fOutputFile->IsOpen())
-    return -2;
+  if (! fOutputFile->IsOpen()) return -2;
 
   return 0;
 }
@@ -801,7 +804,7 @@ int TStnAna::BeginJob()
     int ndropped = drop_list->GetEntriesFast();
     int nkept    = keep_list->GetEntriesFast();
 
-    while (node = (TStnNode*) itt.Next()) {
+    while ((node = (TStnNode*) itt.Next())) {
       branch_name = node->GetName();
 
       // If the keep list has an element we drop everything and only
@@ -1281,7 +1284,7 @@ int  TStnAna::SaveFolder(TFolder* Folder, TDirectory* Dir) {
   // do not write TStnModule's - for each TStnModule save contents of its
   // fFolder
 
-  TFolder*     fol;
+  //  TFolder*     fol;
   TDirectory*  dir;
   TObject*     o;
 //-----------------------------------------------------------------------------
@@ -1365,7 +1368,7 @@ void TStnAna::PrintStat(Int_t nevents, const char* BranchName)
   BranchStat* stat  = new BranchStat[nbranches+1];
 
   int ibb = 0;
-  while (branch = (TBranch*) it.Next()) {
+  while ((branch = (TBranch*) it.Next())) {
     if ( (strcmp(BranchName,""               ) == 0) || 
 	 (strcmp(BranchName,branch->GetName()) == 0)    ) {
 
@@ -1562,8 +1565,8 @@ int TStnAna::MergeHistograms(const char* List, const char* OutputFile) {
   char  cmd[200];
 
   //TFile*          f;
-  TFile*          output_file;
-  TFolder         *fol1, *fol2;
+  TFile*          output_file(NULL);
+  TFolder         *fol1(NULL), *fol2(NULL);
 
   int first = 1;
 

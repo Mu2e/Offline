@@ -103,12 +103,12 @@ int TTrkVisNode::InitEvent() {
 
   const mu2e::StrawHit              *hit;
   const mu2e::StrawHitPosition      *hit_pos;
-  const mu2e::StrawHitFlag          *hit_id_word;
+  //  const mu2e::StrawHitFlag          *hit_id_word;
   const mu2e::PtrStepPointMCVector  *mcptr;
   const mu2e::StrawDigiMC           *hit_digi_mc;
 
   TEvdStrawHit                      *evd_straw_hit; 
-  const CLHEP::Hep3Vector           *mid, *w; 
+  const CLHEP::Hep3Vector           /**mid,*/ *w; 
   const mu2e::Straw                 *straw; 
 
   int                               n_straw_hits, display_hit, color, nl, ns; // , ipeak, ihit;
@@ -147,7 +147,7 @@ int TTrkVisNode::InitEvent() {
 
     hit         = &(*fStrawHitColl)    ->at(ihit);
     hit_pos     = &(*fStrawHitPosColl) ->at(ihit);
-    hit_id_word = &(*fStrawHitFlagColl)->at(ihit);
+    //    hit_id_word = &(*fStrawHitFlagColl)->at(ihit);
     hit_digi_mc = &(*fStrawDigiMCColl)->at(ihit);
 
     straw       = &tracker->getStraw(hit->strawIndex());
@@ -161,7 +161,7 @@ int TTrkVisNode::InitEvent() {
 	
     // Get the straw information:
 
-    mid   = &straw->getMidPoint();
+    //    mid   = &straw->getMidPoint();
     w     = &straw->getDirection();
 
     isFromConversion = false;

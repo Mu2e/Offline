@@ -61,7 +61,7 @@ Int_t TStnUtils::ReadTable(const char* InputFile ,
 	}
 	column->Append(x,1);
 	ind++;
-      } while (token = strtok (0,Delimitors));
+      } while ((token = strtok (0,Delimitors)));
 
       line++;
     }
@@ -105,7 +105,7 @@ Int_t TStnUtils::ReadArrayI(const char* InputFile ,
 
 	x[0] = atoi(token);
 	Array->Append(x,1);
-      } while (token = strtok (0,Delimitors));
+      } while ((token = strtok (0,Delimitors)));
     }
     else {
 				// skip line
@@ -148,7 +148,7 @@ Int_t TStnUtils::ReadArrayF(const char* InputFile ,
 
 	x[0] = atof(token);
 	Array->Append(x,1);
-      } while (token = strtok (0,Delimitors));
+      } while ((token = strtok (0,Delimitors)));
     }
     else {
 				// skip line

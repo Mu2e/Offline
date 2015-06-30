@@ -79,9 +79,9 @@ TSimpBlock::NewParticle(Int_t ID, Int_t ParentID, Int_t PdgCode,
 void TSimpBlock::Print(const char* Opt) const {
   // opt: /c : comment lines only, useful for printing the hard interaction only
 
-  int banner_printed(0), i1, i2, comments_only(0);
+  int banner_printed(0), i1, i2 /*, comments_only(0)*/;
 
-  if (strstr(Opt,"/c") != 0) comments_only = 1;
+  //  if (strstr(Opt,"/c") != 0) comments_only = 1;
 
   TSimpBlock* simp = (TSimpBlock*) this;
 

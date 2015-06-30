@@ -72,7 +72,7 @@ void THexagon::Paint(Option_t* Opt) {
 int THexagon::Test(double HexSize, double RIn, double ROut) {
   const int nk = 11;
 
-  int ind[nk] = {585,583,703,582,704,705,584,829,830,72,469};
+  //  int ind[nk] = {585,583,703,582,704,705,584,829,830,72,469};
 
   printf("THexagon::Test needs to be reimplemented. BAIL OUT\n");
 

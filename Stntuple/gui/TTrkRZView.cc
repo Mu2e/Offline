@@ -103,9 +103,9 @@ void TTrkRZView::ExecuteEvent(Int_t event, Int_t px, Int_t py) {
 // view...
 //-----------------------------------------------------------------------------
   Axis_t x, y, x1, x2, y1, y2, dx, dy;
-  Axis_t  x1new, x2new, y1new, y2new;
+  Axis_t  x1new(0), x2new(0), y1new(0), y2new(0);
 
-  double     xx,yy;
+  //  double     xx,yy;
   //  int        px, py;
   
   double shift_scale = 0.02;

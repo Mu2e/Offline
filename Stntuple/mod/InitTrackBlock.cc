@@ -139,7 +139,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 
   mu2e::AlgorithmIDCollection*             list_of_algs               (0);
   mu2e::KalRepPtrCollection*               list_of_kreps              (0);
-  mu2e::PtrStepPointMCVectorCollection*    list_of_step_points_mc     (0);
+  //  mu2e::PtrStepPointMCVectorCollection*    list_of_step_points_mc     (0);
   const mu2e::StrawDigiMCCollection*       list_of_mc_straw_hits      (0);
   const mu2e::StrawHitCollection*          list_of_straw_hits         (0);
   const mu2e::TrkToCaloExtrapolCollection* list_of_extrapolated_tracks(0);
@@ -226,9 +226,9 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
   if (stmc_module_label[0] != 0) {
     if (stmc_description[0] == 0) AnEvent->getByLabel(stmc_module_label,mcptrHandle);
     else                       AnEvent->getByLabel(stmc_module_label,stmc_description, mcptrHandle);
-    if (mcptrHandle.isValid()) {
-      list_of_step_points_mc = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
-    }
+//     if (mcptrHandle.isValid()) {
+//       list_of_step_points_mc = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
+//     }
   }
 
 //   art::Handle<mu2e::CaloClusterCollection> calo_cluster_handle;
@@ -396,7 +396,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 
     track->fP0 = sqrt(px0*px0+py0*py0+pz0*pz0);
 //-----------------------------------------------------------------------------
-    const mu2e::TrkStrawHit  *hit, *closest_hit;
+    const mu2e::TrkStrawHit  *hit, *closest_hit(NULL);
     const TrkHotList*        hot_list = krep->hotList();
     
     track->fChi2C = -1.;   // unused
@@ -522,10 +522,10 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
     
 
     
-    double             dsl;
+    //    double             dsl;
     mu2e::Doublet*           d;
-    const mu2e::TrkStrawHit* dhit [2];
-    int                layer[2], nd, nd_tot(0), nd_os(0), nd_ss(0), ns;
+    //    const mu2e::TrkStrawHit* dhit [2];
+    int                /*layer[2],*/ nd, nd_tot(0), nd_os(0), nd_ss(0), ns;
     
     std::vector<mu2e::Doublet>* list_of_doublets = &kf_result->_listOfDoublets;
     nd = list_of_doublets->size();
@@ -543,8 +543,8 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
       if (ns != 2)                                          continue;
 
       for (int i=0; i<2; i++) {
-	dhit  [i] = d->fHit[i];
-	layer [i] = dhit[i]->straw().id().getLayer();
+	//	dhit  [i] = d->fHit[i];
+	//	layer [i] = dhit[i]->straw().id().getLayer();
       }
       
     }
@@ -556,7 +556,7 @@ Int_t StntupleInitMu2eTrackBlock  (TStnDataBlock* Block, AbsEvent* AnEvent, Int_
 //-----------------------------------------------------------------------------
 // given track parameters, build the expected hit mask
 //-----------------------------------------------------------------------------
-    double z, closest_z, dz, zw, dz_min, s;
+    double z, closest_z(-1.e6), dz, zw, dz_min, s;
     int    station, offset;
     int    nz(88);
 
@@ -930,7 +930,7 @@ Int_t StntupleInitMu2eTrackBlockLinks(TStnDataBlock* Block, AbsEvent* AnEvent, i
   int    ev_number, rn_number;
   char   calo_module_label[100], calo_description[100];
 
-  const mu2e::CaloClusterCollection*  list_of_clusters(0);
+  //  const mu2e::CaloClusterCollection*  list_of_clusters(0);
 
   ev_number = AnEvent->event();
   rn_number = AnEvent->run();
@@ -952,15 +952,15 @@ Int_t StntupleInitMu2eTrackBlockLinks(TStnDataBlock* Block, AbsEvent* AnEvent, i
     if (calo_description[0] == 0) AnEvent->getByLabel(calo_module_label,cch);
     else                          AnEvent->getByLabel(calo_module_label,calo_description,cch);
 
-    if (cch.isValid()) list_of_clusters = cch.product();
+    //    if (cch.isValid()) list_of_clusters = cch.product();
   }
 //-----------------------------------------------------------------------------
 // TStnTrackBlock is already initialized
 //-----------------------------------------------------------------------------
-  TStnTrack* trk;
+//  TStnTrack* trk;
   int ntrk = tb->NTracks();
   for (int i=0; i<ntrk; i++) {
-    trk = tb->Track(i);
+    //    trk = tb->Track(i);
     // ### TO BE COMPLETED
   }
 //-----------------------------------------------------------------------------

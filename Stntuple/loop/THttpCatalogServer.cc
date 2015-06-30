@@ -144,7 +144,8 @@ int THttpCatalogServer::AddFiles(TChain*     Chain  ,
 				 Int_t       Run2   ) 
 {
   char     buf[1000], fs[200], fn[200];
-  char     size[50], date[50], time[50];
+  char     date[50] , ctime[50];
+  float    size;
   int      nevents,  lorun, loevt, hirun, hievt, within_the_range;
   TString  cmd, s_file;
 //-----------------------------------------------------------------------------
@@ -183,7 +184,7 @@ int THttpCatalogServer::AddFiles(TChain*     Chain  ,
       TObjArrayIter it(list_of_files);
       TChainElement* found;
 
-      while (found = (TChainElement*) it.Next()) {
+      while ((found = (TChainElement*) it.Next())) {
 	if (strcmp(fn,found->GetTitle()) == 0) break;
       }
     
@@ -402,14 +403,14 @@ int THttpCatalogServer::InitDataset(TStnDataset*     Dataset,
 {
   FILE*        pipe;
   int          time, lorun, hirun, rmin, rmax, nev, loevt, hievt, status;
-  int          n_filesets, mc_flag, add_file;
+  int          n_filesets, mc_flag/*, add_file*/;
   float        size;
   char         buf[10000], date[1000], ctime[2000], fn[2000], fs[1000], fstemp[1000];
   char         full_name[200], directory[200], server[200], pnfs_path[1000];
   const char   *line, *book, *dset, *dir;
   TObjArray    *list_of_filesets;
   TObjString   *ostr;
-  TStnFileset  *fileset, *fset;
+  TStnFileset  *fileset/*, *fset*/;
   TString      cmd;
   TString      s_file;
 //-----------------------------------------------------------------------------
@@ -487,7 +488,7 @@ int THttpCatalogServer::InitDataset(TStnDataset*     Dataset,
   InitListOfFilesets(Dataset,Fileset,File,MinRun,MaxRun,&filesets,&files);
 
   n_filesets  = filesets.GetEntries();
-  int n_files = files.GetEntriesFast();
+  //  int n_files = files.GetEntriesFast();
 //-----------------------------------------------------------------------------
 // loop again over the fileset definition lines and parse the information
 // only the files corresponding to the requested filesets are stored. 
@@ -591,7 +592,7 @@ int THttpCatalogServer::InitDataset(TStnDataset*     Dataset,
 	const char* str = 
 	  ((TObjString*)fAAAFilesHtml.At(ifile))->String().Data();
 	sscanf(str,"%s %s %f %s %s %i %i %i %i %i %s",
-	       fstemp,fn,&size,&date,&time,&nev,
+	       fstemp,fn,&size,date,ctime,&nev,
 	       &lorun,&loevt,&hirun,&hievt,pnfs_path);
 	if(strstr(fs,fstemp)!=0) {
 	  if (fPrintLevel > 20)
@@ -602,7 +603,7 @@ int THttpCatalogServer::InitDataset(TStnDataset*     Dataset,
 	  else                                                   status =  0;
 
 	  if ((s_file == "") || (s_file == fn)) {
-	    const char* path = 0;
+	    //	    const char* path = 0;
 	    GetDCacheFileName("cdfdca.fnal.gov",pnfs_path,0,fn,full_name);
 	    if(lorun<=rmax && hirun>=rmin) {
 	      Dataset->AddFile(full_name,fs,size,nev,loevt,lorun,hievt,hirun,status);
@@ -700,7 +701,7 @@ int THttpCatalogServer::InitDataset(TStnDataset*     Dataset,
 // files cataloged in DFC are read through general DCACHE pool (cdfdca)
 //-----------------------------------------------------------------------------
 	    if ((s_file == "") || (s_file == fn)) {
-	      const char* path = 0;
+	      //	      const char* path = 0;
 	      if(fCafName=="cnaf") { 
 		sprintf(full_name,"%s/%s",strstr(pnfs_path,":")+1,fn);
 	      } else { // "fnal" and default
@@ -756,7 +757,7 @@ int THttpCatalogServer::InitDataset(TStnDataset*     Dataset,
       TString prefix;
 
       TIter itt(&files);
-      while (ostr = (TObjString*) itt.Next()) {
+      while ((ostr = (TObjString*) itt.Next())) {
 	line = (char*) ostr->String().Data();
 	
 	sscanf(line,"%s %s %f %s %s %i %i %i %i %i", 
@@ -824,9 +825,9 @@ Int_t THttpCatalogServer::GetNEvents(const char* Book,
 				     const char* File) 
 {
   FILE*        pipe;
-  int          time, lorun, hirun, rmin, rmax, nev, loevt, hievt, status;
-  int          n_filesets, mc_flag;
-  Int_t        nlines, nevents;
+  int          /*time,*/ lorun, hirun, /*rmin, rmax,*/ nev, loevt, hievt/*, status*/;
+  //  int          n_filesets/*, mc_flag*/;
+  Int_t        /*nlines,*/ nevents;
 
   float        size;
   char         buf[10000], date[1000], ctime[2000], fn[2000], fs[1000];
@@ -852,7 +853,7 @@ Int_t THttpCatalogServer::GetNEvents(const char* Book,
 
     sscanf(buf,"%s %s %f %s %s %i %i %i %i %i", 
 	   fs,fn,&size,date,ctime,&nev,&lorun,&loevt,&hirun,&hievt);
-    nevents == nev;
+    nevents = nev;
 
   NEXT_LINE:;
   }

@@ -45,7 +45,7 @@
 //-----------------------------------------------------------------------------
 int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode) {
 
-  const char*               oname = {"MuratInitClusterBlock"};
+  //  const char*               oname = {"MuratInitClusterBlock"};
   
 //   int                           station, ntrk;
 //   KalRep                        *krep;  
@@ -90,7 +90,7 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
 
   art::ServiceHandle<mu2e::GeometryService> geom;
 
-  const mu2e::Calorimeter* cal;
+  const mu2e::Calorimeter* cal(NULL);
 
   if      (geom->hasElement<mu2e::Calorimeter>() ) {
     mu2e::GeomHandle<mu2e::Calorimeter> cc;
@@ -112,7 +112,7 @@ int  StntupleInitMu2eClusterBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode)
   int                           id, ncl;
 
   double                        sume, sume2, sumy, sumx, sumy2, sumx2, sumxy, qn;
-  double                        e, e1, e2, emean, e2mean;
+  double                        e, e1(-1.), e2, emean, e2mean;
   
   ncl = list_of_clusters->size();
   for (int i=0; i<ncl; i++) {

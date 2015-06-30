@@ -11,7 +11,7 @@ void TCalHitData::Streamer(TBuffer &R__b) {
   int nwf = 2;
   
   if(R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion();
+    //    Version_t R__v = R__b.ReadVersion();
     R__b.ReadFastArray(&fID  ,nwi);
     R__b.ReadFastArray(&fTime,nwf);
   }
