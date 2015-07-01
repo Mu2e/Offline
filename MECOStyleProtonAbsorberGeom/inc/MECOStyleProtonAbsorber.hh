@@ -34,7 +34,8 @@ namespace mu2e {
         unknown = -1,
         pabs1 = 0,
         pabs2 = 1,
-        opabs = 2 }; 
+	opabs1 = 2,
+	opabs2 = 3}; 
       explicit ProtonAbsorberId (enum_type id):
         _id(id)
       {}
@@ -110,7 +111,7 @@ namespace mu2e {
     double _oPAzcenter;
     double _oPAhalflength;
     double _oPAthickness;
-    bool _oPAflag;
+    bool _oPA1flag, _oPA2flag;
 
     // support structure for inner PA
     bool _buildSupports;

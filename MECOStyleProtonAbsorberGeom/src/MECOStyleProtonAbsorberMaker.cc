@@ -79,6 +79,16 @@ namespace mu2e {
       distFromTargetEnd = 0;
     }
 
+    double oPAin0               = _config.getDouble("protonabsorber.outerPAInnerRadius0", 436.0); 
+    double oPAin1               = _config.getDouble("protonabsorber.outerPAInnerRadius1", 720.0); 
+    double oPAhl                = _config.getDouble("protonabsorber.outerPAHalfLength", 2250.0); 
+    double oPAthick             = _config.getDouble("protonabsorber.outerPAThickness", 10.0); 
+    double oPAzcenter           = _config.getDouble("protonabsorber.outerPAZCenter", 6250.0); 
+    std::string oPAmaterialName = _config.getString("protonabsorber.outerPAMaterialName", "Polyethylene092");
+    double oPAout0 = oPAin0 + oPAthick;
+    double oPAout1 = oPAin1 + oPAthick;
+    double ds23split = _ds->vac_zLocDs23Split();
+    
     // TS and DS geometry for locating the center of Proton Absorber
     double solenoidOffset = _config.getDouble("mu2e.solenoidOffset");
 
@@ -111,6 +121,8 @@ namespace mu2e {
  
     bool pabs1 = true;
     bool pabs2 = true;
+    bool opa1 = _config.getBool("protonabsorber.outerPA", false);
+    bool opa2 = true;
 
     // if pabs starts from DS3 region
     if (distFromTargetEnd > targetEndToDS2End) {
@@ -128,12 +140,17 @@ namespace mu2e {
       return;
     }
 
-
+    // if opa2 is short enough to locate at DS2 region only
+    if (oPAzcenter + oPAhl< ds23split) {
+      std::cerr <<"MECOStyleProtonAbsorberMaker: opa2 turned off." << std::endl;
+      opa2 = false;
+    }
+    
     //////////////
     // Half length
     //////////////
 
-    double pabs1halflen = 0, pabs2halflen = 0;
+    double pabs1halflen = 0, pabs2halflen = 0, pabs3halflen = 0, pabs4halflen = 0;
     if (pabs1) {
       pabs1halflen = (targetEndToDS2End - distFromTargetEnd)*0.5;
       if (pabs1halflen > pabsZHalfLen ) pabs1halflen = pabsZHalfLen;
@@ -142,6 +159,13 @@ namespace mu2e {
       pabs2halflen = pabsZHalfLen - pabs1halflen;
     }
 
+    pabs3halflen = oPAhl;
+    if (opa2) {
+      pabs3halflen = oPAhl - (oPAzcenter + oPAhl - ds23split)*0.5;
+      pabs4halflen = (oPAzcenter + oPAhl - ds23split)*0.5;
+    }
+
+    
     /////////
     // Offset
     /////////
@@ -160,6 +184,14 @@ namespace mu2e {
       }
     }
 
+
+    double pabs3ZOffset = oPAzcenter;
+    double pabs4ZOffset = 0;
+    if (opa2) {
+      pabs3ZOffset = pabs3ZOffset  - pabs4halflen;
+      pabs4ZOffset = ds23split + pabs4halflen;
+    }
+    
     /////////
     // Radius
     /////////
@@ -179,7 +211,24 @@ namespace mu2e {
       pabs2rIn0  = pabs2rOut0 - thick;
       pabs2rIn1  = pabs2rOut1 - thick;
     }
+    
+    double pabs3rIn0 = oPAin0, pabs3rIn1 = oPAin1, pabs3rOut0 = oPAout0, pabs3rOut1 = oPAout1;
+    double pabs4rIn0 = 0, pabs4rIn1 = 0, pabs4rOut0 = 0, pabs4rOut1 = 0;
 
+    if (opa2) {
+
+      // pabs3rOut1 = pabs3halflen/(oPAhl - pabs4halflen)*oPAout1;
+      // pabs3rIn1  = pabs3rOut1 - thick;
+
+      pabs3rOut1 = oPAout0 + (oPAout1 - oPAout0)*pabs3halflen/oPAhl;
+      pabs3rIn1  = pabs3rOut1 - thick;
+
+      pabs4rOut0 = pabs3rOut1;
+      pabs4rIn0  = pabs4rOut0 - thick;
+      pabs4rOut1 = oPAout1;
+      pabs4rIn1  = pabs4rOut1 - thick; 
+    }
+    
     /////////
     // Build
     /////////
@@ -188,9 +237,13 @@ namespace mu2e {
 
     CLHEP::Hep3Vector pabs1Offset(-1.*solenoidOffset, 0.0, pabs1ZOffset);
     CLHEP::Hep3Vector pabs2Offset(-1.*solenoidOffset, 0.0, pabs2ZOffset);
+    CLHEP::Hep3Vector pabs3Offset(-1.*solenoidOffset, 0.0, pabs3ZOffset);
+    CLHEP::Hep3Vector pabs4Offset(-1.*solenoidOffset, 0.0, pabs4ZOffset);
 
     _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 0, pabs1Offset, pabs1rOut0, pabs1rIn0, pabs1rOut1, pabs1rIn1, pabs1halflen, materialName));
     _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 1, pabs2Offset, pabs2rOut0, pabs2rIn0, pabs2rOut1, pabs2rIn1, pabs2halflen, materialName));
+    _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 2, pabs3Offset, pabs3rOut0, pabs3rIn0, pabs3rOut1, pabs3rIn1, pabs3halflen, oPAmaterialName));
+    _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 3, pabs4Offset, pabs4rOut0, pabs4rIn0, pabs4rOut1, pabs4rIn1, pabs4halflen, oPAmaterialName));
 
     // global variables
     (_pabs->_pabs1flag) = pabs1;
@@ -200,34 +253,13 @@ namespace mu2e {
     (_pabs->_distfromtargetend) = distFromTargetEnd;
     (_pabs->_halflength) = pabsZHalfLen;
     (_pabs->_thickness) = thick;
-
-
-    ///////////
-    // Outer PA
-    ///////////
-
-    if ( _config.getBool("protonabsorber.outerPA", false) ) {
-      double oPAin0               = _config.getDouble("protonabsorber.outerPAInnerRadius0", 436.0); 
-      double oPAin1               = _config.getDouble("protonabsorber.outerPAInnerRadius1", 720.0); 
-      double oPAhl                = _config.getDouble("protonabsorber.outerPAHalfLength", 2250.0); 
-      double oPAthick             = _config.getDouble("protonabsorber.outerPAThickness", 10.0); 
-      double oPAzcenter           = _config.getDouble("protonabsorber.outerPAZCenter", 6250.0); 
-      std::string oPAmaterialName = _config.getString("protonabsorber.outerPAMaterialName", "Polyethylene092");
-      double oPAout0 = oPAin0 + oPAthick;
-      double oPAout1 = oPAin1 + oPAthick;
-
-      CLHEP::Hep3Vector oPAOffset (-1.*solenoidOffset, 0.0, oPAzcenter);
-      _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 2, oPAOffset, oPAout0, oPAin0, oPAout1, oPAin1, oPAhl, oPAmaterialName));
-      
-      (_pabs->_oPAmaterialName) = oPAmaterialName;
-      (_pabs->_oPAzcenter) = oPAzcenter;
-      (_pabs->_oPAhalflength) = oPAhl;
-      (_pabs->_oPAthickness) = oPAthick;
-      (_pabs->_oPAflag) = true;
-    }
-    else {
-      (_pabs->_oPAflag) = false;
-    }
+    // glaboal variable for OPA
+    (_pabs->_oPA1flag) = opa1;
+    (_pabs->_oPA2flag) = opa2;
+    (_pabs->_oPAmaterialName) = oPAmaterialName;
+    (_pabs->_oPAzcenter) = oPAzcenter;
+    (_pabs->_oPAhalflength) = oPAhl;
+    (_pabs->_oPAthickness) = oPAthick;
 
     ////////////////////////
     // Support Wires for IPA
@@ -246,8 +278,6 @@ namespace mu2e {
 
     const double ipazstart = targetEnd + distFromTargetEnd;
     const double opazstart = _pabs->_oPAzcenter - _pabs->_oPAhalflength;
-    const double oPAin0    = _config.getDouble("protonabsorber.outerPAInnerRadius0", 436.0); 
-    const double oPAin1    = _config.getDouble("protonabsorber.outerPAInnerRadius1", 720.0); 
 
     for ( std::size_t iS(0); iS < _pabs->_ipaSupport->nSets() ; iS++ ) {
       std::vector<Tube> wireVector;
@@ -299,7 +329,7 @@ namespace mu2e {
     std::cout<<" pabs1 is " << ( (_pabs->isAvailable(0)) ? "valid" : "invalid" ) << ", " ;
     std::cout<<" pabs2 is " << ( (_pabs->isAvailable(1)) ? "valid" : "invalid" ) << std::endl ;
 
-    if (_pabs->_oPAflag) {
+    if (_pabs->_oPA1flag) {
       std::cout<<" oPAlen (full length) : " << _pabs->_oPAhalflength*2. << std::endl;
       std::cout<<" oPA extent in Mu2e : " << _pabs->_oPAzcenter - _pabs->_oPAhalflength << ", " 
                                           << _pabs->_oPAzcenter << ", " 

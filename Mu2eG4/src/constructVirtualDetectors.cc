@@ -218,7 +218,7 @@ namespace mu2e {
       double opaz0, opaz1, opari0, opari1;
       if ( _config.getBool("hasProtonAbsorber", true) ) {
         GeomHandle<MECOStyleProtonAbsorber> pageom;
-        if ( pageom->isAvailable(ProtonAbsorberId::opabs) ) {
+        if ( pageom->isAvailable(ProtonAbsorberId::opabs1) ) {
           opaflag = true;
           MECOStyleProtonAbsorberPart opa = pageom->part(2);
           opaz0 = opa.center().z()-opa.halfLength();
@@ -309,7 +309,7 @@ namespace mu2e {
       double opaz0, opaz1, opari0, opari1;
       if ( _config.getBool("hasProtonAbsorber", true) ) {
         GeomHandle<MECOStyleProtonAbsorber> pageom;
-        if ( pageom->isAvailable(ProtonAbsorberId::opabs) ) {
+        if ( pageom->isAvailable(ProtonAbsorberId::opabs1) ) {
           opaflag = true;
           MECOStyleProtonAbsorberPart opa = pageom->part(2);
           opaz0 = opa.center().z()-opa.halfLength();

@@ -28,7 +28,8 @@ namespace mu2e {
     _oPAzcenter(0),
     _oPAhalflength(0),
     _oPAthickness(0),
-    _oPAflag(false)
+    _oPA1flag(false),
+    _oPA2flag(false)
   {}
 
 
@@ -40,8 +41,10 @@ namespace mu2e {
       case ProtonAbsorberId::pabs2 :
         return _pabs2flag;
         break;
-      case ProtonAbsorberId::opabs :
-        return _oPAflag;
+      case ProtonAbsorberId::opabs1 :
+        return _oPA1flag;
+      case ProtonAbsorberId::opabs2 :
+        return _oPA2flag;
       default:
         return false;
     }

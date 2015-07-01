@@ -124,7 +124,7 @@ string ts.coll1.material2Name = "G4_Cu";
 
 double ts.coll3.halfLength       = 400.0;
 double ts.coll3.hole             = 50.0;
-string ts.coll3.materialName     = "G4_POLYETHYLENE";
+string ts.coll3.materialName     = "G4_Cu";
 double ts.coll3.rotationAngle    = 0.0;
 double ts.coll3.holeRadius       = 150.0;
 double ts.coll3.holeHalfHeight   = 100.0;

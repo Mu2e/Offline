@@ -307,14 +307,16 @@ namespace mu2e {
           theZ - ds->vac_halfLengthDs2() << ", " << theZ + ds->vac_halfLengthDs2() << endl;
       }
 
-      double pabs1ZOffset = 0, pabs2ZOffset = 0, pabs3ZOffset = 0;
+      double pabs1ZOffset = 0, pabs2ZOffset = 0, pabs3ZOffset = 0, pabs4ZOffset = 0;
       if (pabs->isAvailable(0)) pabs1ZOffset = CLHEP::mm * pabs->part(0).center().z() - ds2zcenter;
       if (pabs->isAvailable(1)) pabs2ZOffset = CLHEP::mm * pabs->part(1).center().z() - ds3zcenter;
       if (pabs->isAvailable(2)) pabs3ZOffset = CLHEP::mm * pabs->part(2).center().z() - ds2zcenter;
+      if (pabs->isAvailable(3)) pabs4ZOffset = CLHEP::mm * pabs->part(3).center().z() - ds3zcenter;
 
       G4ThreeVector pabs1Offset(0.0, 0.0, pabs1ZOffset);
       G4ThreeVector pabs2Offset(0.0, 0.0, pabs2ZOffset);
       G4ThreeVector pabs3Offset(0.0, 0.0, pabs3ZOffset);
+      G4ThreeVector pabs4Offset(0.0, 0.0, pabs4ZOffset);
 
       bool pabsIsVisible = _config.getBool("protonabsorber.visible",true);
       bool pabsIsSolid   = _config.getBool("protonabsorber.solid",true);
@@ -486,8 +488,58 @@ namespace mu2e {
   
       }
       else {
-        if ( verbosityLevel > 0 ) cout << __func__ << " outer protonabs disabled" << endl;
+        if ( verbosityLevel > 0 ) cout << __func__ << " outer protonabs1 disabled" << endl;
       }
+
+      
+      if (pabs->isAvailable(3)) {
+        double pabs4rIn0  = pabs->part(3).innerRadiusAtStart();
+        double pabs4rOut0 = pabs->part(3).outerRadiusAtStart();
+        double pabs4rIn1  = pabs->part(3).innerRadiusAtEnd();
+        double pabs4rOut1 = pabs->part(3).outerRadiusAtEnd();
+        double pabs4len   = pabs->part(3).halfLength() * 2.;
+        G4Material* pabs4Material = materialFinder.get("protonabsorber.outerPAMaterialName");
+  
+        double pabs4Param[7] = { pabs4rIn0, pabs4rOut0, pabs4rIn1, pabs4rOut1, pabs4len*0.5,
+                                 0.0, 360.0*CLHEP::degree };
+  
+        VolumeInfo protonabs4Info = nestCons( "protonabs4",
+                                              pabs4Param,
+                                              pabs4Material,
+                                              0,
+                                              pabs4Offset,
+                                              parent2Info,
+                                              0,
+                                              pabsIsVisible,
+                                              G4Color::Yellow(),
+                                              pabsIsSolid,
+                                              forceAuxEdgeVisible,
+                                              placePV,
+                                              doSurfaceCheck
+                                              );
+        if(paSD) protonabs4Info.logical->SetSensitiveDetector (paSD);
+  
+        if ( verbosityLevel > 0) {
+          double pzhl   = static_cast<G4Cons*>(protonabs4Info.solid)->GetZHalfLength();
+          double pabs4Z = protonabs4Info.centerInMu2e()[CLHEP::Hep3Vector::Z];
+          cout << __func__ << " " << protonabs4Info.name << " Z offset in Mu2e    : " <<
+            pabs4Z << endl;
+          cout << __func__ << " " << protonabs4Info.name << " Z extent in Mu2e    : " <<
+            pabs4Z - pzhl  << ", " <<  pabs4Z + pzhl  << endl;
+	  
+          // we also check how the offsets are handled	  
+          cout << __func__ << " " << protonabs4Info.name << " local input offset in G4                  : " <<
+            pabs4Offset << endl;
+          cout << __func__ << " " << protonabs4Info.name << " local GetTranslation()       offset in G4 : " <<
+            protonabs4Info.physical->GetTranslation() << endl; // const &
+        }
+  
+      }
+      else {
+        if ( verbosityLevel > 0 ) cout << __func__ << " outer protonabs2 disabled" << endl;
+      }
+
+
       
       if ( pabs->buildSupports() ) {
 

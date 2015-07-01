@@ -12,7 +12,7 @@ string protonabsorber.materialName = "Polyethylene096";
 double protonabsorber.OutRadius1   =  380.0;
 double protonabsorber.OutRadius0   =  335.2;
 double protonabsorber.thickness    =    0.5;
-int    protonabsorber.verbosityLevel = 0;
+int    protonabsorber.verbosityLevel = 2;
 bool   protonabsorber.visible      = true;
 bool   protonabsorber.solid        = true;
 
@@ -30,11 +30,11 @@ string protonabsorber.ipa.wireMaterial  = "G4_W";
 // Outer part
 bool   protonabsorber.isShorterCone = true;
 bool   protonabsorber.outerPA = true;
-double protonabsorber.outerPAInnerRadius0 = 448.2;
-double protonabsorber.outerPAInnerRadius1 = 709.6;
-double protonabsorber.outerPAHalfLength = 2074.5;
+double protonabsorber.outerPAInnerRadius0 = 452.4;
+double protonabsorber.outerPAInnerRadius1 = 721.74;
+double protonabsorber.outerPAHalfLength = 2137.5;
 double protonabsorber.outerPAThickness = 20.0;
-double protonabsorber.outerPAZCenter = 6264.5;
+double protonabsorber.outerPAZCenter = 6392.5;
 //string protonabsorber.outerPAMaterialName = "Polyethylene092B050d095";
 string protonabsorber.outerPAMaterialName = "Polyethylene096";
 
