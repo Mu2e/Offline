@@ -70,16 +70,16 @@ namespace mu2e {
     if( vdg->nDet()<=0 ) return;
 
     GeomHandle<Beamline> beamg;
-    double rVac         = CLHEP::mm * beamg->getTS().innerRadius();
-
-    double vdHalfLength = CLHEP::mm * vdg->getHalfLength();
 
     GeomHandle<DetectorSolenoid> ds;
     TransportSolenoid const&  ts = beamg->getTS();
     G4Material* downstreamVacuumMaterial = findMaterialOrThrow( ds->vacuumMaterial() );
     G4Material* upstreamVacuumMaterial   = findMaterialOrThrow(  ts.upstreamVacuumMaterial() );
 
-    TubsParams vdParams(0,rVac,vdHalfLength);
+    double rCol = ts.getColl51().rOut();
+    double vdHalfLength = CLHEP::mm * vdg->getHalfLength();
+    
+    TubsParams vdParams(0,rCol,vdHalfLength);
 
     // Virtual Detectors Coll1_In, COll1_Out are placed inside TS1
 
@@ -181,8 +181,8 @@ namespace mu2e {
 
       VolumeInfo const & parent = _helper->locateVolInfo("TS5Vacuum");
 
-      double coll5OuterRadius    = beamg->getTS().getColl5().rOut();
-      double coll5HalfLength     = beamg->getTS().getColl5().halfLength();
+      double coll5OuterRadius    = beamg->getTS().getColl51().rOut();
+      double coll5HalfLength     = beamg->getTS().getColl51().halfLength();
 
       TubsParams  vdParamsColl5OutSurf(coll5OuterRadius - 2.*vdHalfLength,
                                        coll5OuterRadius,

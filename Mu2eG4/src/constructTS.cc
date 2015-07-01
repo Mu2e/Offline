@@ -739,10 +739,12 @@ namespace mu2e {
     TSSection const * ts3in = ts.getTSCryo(TransportSolenoid::TSRegion::TS3, TransportSolenoid::TSRadialPart::IN);
     TSSection const * ts5in = ts.getTSCryo(TransportSolenoid::TSRegion::TS5, TransportSolenoid::TSRadialPart::IN);
 
-    CollimatorTS1 const& coll1  = ts.getColl1() ;
-    CollimatorTS3 const& coll31 = ts.getColl31();
-    CollimatorTS3 const& coll32 = ts.getColl32();
-    CollimatorTS5 const& coll5  = ts.getColl5() ;
+    CollimatorTS1 const& coll1   = ts.getColl1() ;
+    CollimatorTS3 const& coll31  = ts.getColl31();
+    CollimatorTS3 const& coll32  = ts.getColl32();
+    CollimatorTS5 const& coll51  = ts.getColl51() ;
+    CollimatorTS5 const& coll52  = ts.getColl52();
+    CollimatorTS5 const& coll53  = ts.getColl53();
 
     // Get VDs
     GeomHandle<VirtualDetector> vdg;
@@ -909,14 +911,14 @@ namespace mu2e {
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " TS5  OffsetInMu2e  : " << ts5in->getGlobal()   << endl;
-      cout << __func__ << " Coll5 local offset : " << coll5.getLocal()             << endl;
+      cout << __func__ << " Coll5 local offset : " << coll51.getLocal()    << endl;
       cout << __func__ << " TS5  Rotation      : " << ts5in->getRotation() << endl;
     }
 
     CLHEP::Hep3Vector coll5OffsetInMu2e = ts5in->getGlobal() + 
       ( ( ts5in->getRotation() != 0x0 ) ?
-        *(ts5in->getRotation()) * coll5.getLocal() : 
-        coll5.getLocal() );
+        *(ts5in->getRotation()) * coll51.getLocal() : 
+        coll51.getLocal() );
 
     if ( verbosityLevel > 0) {
       cout << __func__ << "  coll5OffsetInMu2e    : "    << coll5OffsetInMu2e << endl;
@@ -924,23 +926,49 @@ namespace mu2e {
     }
 
     // the most outer part (with Virtual Detectors on the outer surfaces of the Coll5)
+    TubsParams coll5Param1 ( coll51.rIn(),  coll51.rOut() - 2.*vdHalfLength, coll51.halfLength()-2.*vdHalfLength);
+    nestTubs( "Coll51",
+              coll5Param1,
+              findMaterialOrThrow( coll51.material() ),
+              0,
+              coll51.getLocal(),
+              _helper->locateVolInfo("TS5Vacuum"),
+              0,
+              G4Color::Blue(),
+	      "TSColl"
+              );
 
-    Tube coll5Param(coll5.material(),
-                    coll5OffsetInMu2e,
-                    coll5.rIn(),
-                    coll5.rOut() - 2.*vdHalfLength,
-                    coll5.halfLength() - 2.*vdHalfLength);
 
-    VolumeInfo coll5Info = nestTubs( "Coll5",
-                                     coll5Param.getTubsParams(),
-                                     findMaterialOrThrow(coll5Param.materialName()),
-                                     0,
-                                     coll5.getLocal(),
-                                     _helper->locateVolInfo("TS5Vacuum"),
-                                     0,
-                                     G4Color::Blue(),
-				     "TSColl"
-                                     );
+    TubsParams coll5Param2 ( coll52.rIn(),  coll52.rOut(), coll52.halfLength()-2.*vdHalfLength);
+    nestTubs( "Coll52",
+              coll5Param2,
+              findMaterialOrThrow( coll52.material() ),
+              0,
+              coll52.getLocal(),
+              _helper->locateVolInfo("TS5Vacuum"),
+              0,
+              G4Color::Blue(),
+	      "TSColl"
+              );
+    
+    TubsParams coll5Param3 ( coll53.rIn(),  coll53.rOut(), coll53.halfLength()-2.*vdHalfLength);
+    
+    // Build Coll53 flange outsie the TS5Vacuum
+    G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
+    StraightSection   const * strsec (nullptr);
+    strsec = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS5);
+    nestTubs( "Coll53",
+              coll5Param3,
+              findMaterialOrThrow( coll53.material() ),
+	      0,
+              strsec->getGlobal()-_hallOriginInMu2e+coll53.getLocal(),
+              parent,
+              0,
+              G4Color::Blue(),
+	      "TSColl"
+              );
+
+    
     
   }
   
@@ -970,7 +998,7 @@ namespace mu2e {
     config.getVectorDouble("muondegrader.DZT", degraderDZT, vector<double>() );
     config.getVectorDouble("muondegrader.Phi", degraderPhi, vector<double>() );
 
-    CollimatorTS5 const& coll5 = bl.getTS().getColl5();
+    CollimatorTS5 const& coll5 = bl.getTS().getColl51();
 
     if( degraderR.size()!=degraderDZB.size() || degraderR.size()!=degraderDZT.size() ||
         degraderR.size()!=degraderPhi.size() ) {

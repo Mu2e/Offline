@@ -176,7 +176,9 @@ namespace mu2e {
     CollimatorTS1 const& getColl1()  const { return _coll1;  }
     CollimatorTS3 const& getColl31() const { return _coll31; }
     CollimatorTS3 const& getColl32() const { return _coll32; }
-    CollimatorTS5 const& getColl5()  const { return _coll5;  }
+    CollimatorTS5 const& getColl51()  const { return _coll51;  }
+    CollimatorTS5 const& getColl52()  const { return _coll52;  }
+    CollimatorTS5 const& getColl53()  const { return _coll53;  }
 
     // Coil Assemblies
     const std::string & caMaterial() const { return _caMaterial; }
@@ -247,7 +249,9 @@ namespace mu2e {
     CollimatorTS1 _coll1;
     CollimatorTS3 _coll31;
     CollimatorTS3 _coll32;
-    CollimatorTS5 _coll5;
+    CollimatorTS5 _coll51;
+    CollimatorTS5 _coll52;
+    CollimatorTS5 _coll53;
 
     // Vacuum map
     std::map<TSRegion::enum_type,std::unique_ptr<TSSection>> _vacuumMap;

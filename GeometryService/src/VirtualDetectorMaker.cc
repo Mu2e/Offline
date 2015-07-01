@@ -108,13 +108,13 @@ namespace mu2e {
       // VD Coll5_In, Coll5_Out are at the front and back of collimator
       // 5, which is placed inside TS5.
 
-      double coll5HL = bg->getTS().getColl5().halfLength();
+      double coll5HL = bg->getTS().getColl51().halfLength();
 
       const HepRotation *ts5rot = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS5,
                                                         TransportSolenoid::TSRadialPart::IN)->getRotation();
       Hep3Vector   ts5pos = bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS5,
                                                         TransportSolenoid::TSRadialPart::IN)->getGlobal();
-      Hep3Vector coll5pos = bg->getTS().getColl5().getLocal();
+      Hep3Vector coll5pos = bg->getTS().getColl51().getLocal();
 
 
       Hep3Vector deltaZ5(0,0,coll5HL-vdHL);

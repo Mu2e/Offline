@@ -131,9 +131,15 @@ double ts.coll3.holeHalfHeight   = 100.0;
 double ts.coll3.holeDisplacement = 90.0;
 
 double ts.coll5.halfLength    = 500.0;
-double ts.coll5.innerRadius   = 128.0; 
-double ts.coll5.outerRadius   = 240.0; 
-string ts.coll5.materialName = "G4_POLYETHYLENE";
+double ts.coll5.Radius1       = 128.0; 
+double ts.coll5.Radius2       = 240.0; 
+double ts.coll5.Radius3       = 248.0; 
+string ts.coll5.material1Name = "G4_POLYETHYLENE";
+string ts.coll5.material2Name = "StainlessSteel";
+
+double ts.coll.Flange.halfLength = 10.0;
+double ts.coll.Flange.Radius1 = 270.0;
+double ts.coll.Flange.Radius2 = 290.0;
 
 // Muon degrader
 bool muondegrader.isVisible = true;

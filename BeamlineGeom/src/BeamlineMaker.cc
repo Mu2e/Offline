@@ -470,17 +470,23 @@ namespace mu2e {
     double coll3HalfLength = c.getDouble("ts.coll3.halfLength");
     double coll5HalfLength = c.getDouble("ts.coll5.halfLength");
     double coll3Hole       = c.getDouble("ts.coll3.hole");
-
+    double collFlangeHalfLength = c.getDouble("ts.coll.Flange.halfLength");
+    
     CollimatorTS1 & coll1  = ts->_coll1 ;
     CollimatorTS3 & coll31 = ts->_coll31;
     CollimatorTS3 & coll32 = ts->_coll32;
-    CollimatorTS5 & coll5  = ts->_coll5 ;
+    CollimatorTS5 & coll51 = ts->_coll51;
+    CollimatorTS5 & coll52 = ts->_coll52;
+    CollimatorTS5 & coll53 = ts->_coll53;
 
     coll1 .set(coll1HalfLength,CLHEP::Hep3Vector(0.,0.,c.getDouble("ts.coll1.sOffset" ,0.)));
     coll31.set(coll3HalfLength,CLHEP::Hep3Vector(0.,0.,c.getDouble("ts.coll31.sOffset",0.)-coll3HalfLength-coll3Hole/2));
     coll32.set(coll3HalfLength,CLHEP::Hep3Vector(0.,0.,c.getDouble("ts.coll32.sOffset",0.)+coll3HalfLength+coll3Hole/2));
-    coll5 .set(coll5HalfLength,CLHEP::Hep3Vector(0.,0.,c.getDouble("ts.coll5.sOffset" ,0.)));
+    coll51.set(coll5HalfLength,CLHEP::Hep3Vector(0.,0.,c.getDouble("ts.coll5.sOffset" ,0.)));
+    coll52.set(c.getDouble("ts.ts5.halfLength"),CLHEP::Hep3Vector(0.,0.,0.));
+    coll53.set(collFlangeHalfLength,CLHEP::Hep3Vector(0.,0., c.getDouble("ts.ts5.halfLength") - collFlangeHalfLength - 2*c.getDouble("ts.tsDendWall.halfLength")));
 
+    
     // TS1
     coll1._rIn1      = c.getDouble("ts.coll1.innerRadius1",0.);
     coll1._rIn2      = c.getDouble("ts.coll1.innerRadius2",0.);
@@ -497,10 +503,20 @@ namespace mu2e {
     coll32._material         = coll31._material          = c.getString("ts.coll3.materialName");
 
     // TS5
-    coll5._rIn         = c.getDouble("ts.coll5.innerRadius");
-    coll5._rOut        = c.getDouble("ts.coll5.outerRadius");
-    coll5._material    = c.getString("ts.coll5.materialName");
+    // TS5
+    coll51._rIn         = c.getDouble("ts.coll5.Radius1",0.);
+    coll51._rOut        = c.getDouble("ts.coll5.Radius2",0.);
 
+    coll52._rIn         = c.getDouble("ts.coll5.Radius2",0.);
+    coll52._rOut        = c.getDouble("ts.coll5.Radius3",0.);
+
+    coll53._rIn         = c.getDouble("ts.coll.Flange.Radius1",0.);
+    coll53._rOut        = c.getDouble("ts.coll.Flange.Radius2",0.);
+
+    coll51._material    = c.getString("ts.coll5.material1Name");
+    coll52._material    = c.getString("ts.coll5.material2Name");
+    coll53._material    = c.getString("ts.coll5.material2Name");
+    
   }
 
   void BeamlineMaker::BuildTSVacua(const SimpleConfig& c, TransportSolenoid* ts ) {
