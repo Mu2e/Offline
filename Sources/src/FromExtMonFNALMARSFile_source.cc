@@ -256,7 +256,7 @@ namespace mu2e {
 
     if(!seenSRIDs_.insert(art::SubRunID(runNumber_, currentSubRunNumber_)).second) {
       ++runNumber_;
-      const bool inserted = seenSRIDs_.insert(art::SubRunID(runNumber_, currentSubRunNumber_)).second;
+      const bool inserted [[gnu::unused]]= seenSRIDs_.insert(art::SubRunID(runNumber_, currentSubRunNumber_)).second;
       assert(inserted);
     }
 
