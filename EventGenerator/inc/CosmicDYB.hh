@@ -39,6 +39,16 @@ namespace mu2e {
 
   private:
 
+    int   _verbose;
+    bool  _doHistograms;
+    TH2D *_hStartXZ;
+    TH1D *_hStartY;
+    TH1D *_hStartPlane;
+    TH1D *_hStartE;
+
+    // Muon mass
+    double _mMu;
+
     // Mean multiplicity. If negative, use -_mean as a fixed number
     double _mean;
     double _muEMin;   // min and max values of muon energy (MeV)
@@ -72,8 +82,6 @@ namespace mu2e {
     // production will be created only once.
     bool _createdProductionPlane;
 
-    int _verbose;
-
     enum RefPointChoice {UNDEFINED, TRACKER, EXTMONFNAL, CALO, CUSTOMIZED};
     enum DirectionChoice {ALL, POSITIVE_X, NEGATIVE_X, POSITIVE_Z, NEGATIVE_Z};
     RefPointChoice    _choice;
@@ -81,6 +89,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
     bool _vertical;
     bool _dontProjectToSurface;
+
   };  // CosmicDYB
 
 }  // namespace mu2e

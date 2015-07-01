@@ -1,7 +1,8 @@
 //
-// Run-time test config for CosmicDYB
+// Configuration for CosmicDYB
+// (target1 simulation [TS entrance])
 //
-// Original author Yury Kolomensky
+// Ralf Ehrlich, 2015
 
 bool conversionGun.do = false;
 bool cosmicDYB.do = true;
@@ -15,12 +16,11 @@ double cosmicDYB.muEMin = 0.5e3;
 double cosmicDYB.muEMax = 5000e3;
 double cosmicDYB.muCosThMin = 0.0;
 double cosmicDYB.muCosThMax = 1.0;
-int    cosmicDYB.nBinsE = 10000;
+int    cosmicDYB.nBinsE = 20000;
 int    cosmicDYB.nBinsTheta = 100;
 double cosmicDYB.dx     = 0;
 double cosmicDYB.dy     = 5000;
 double cosmicDYB.dz     = 5000;
-double cosmicDYB.y0     = 0;
 double cosmicDYB.constTime = 800;
 
 string cosmicDYB.refPointChoice  = "Customized";

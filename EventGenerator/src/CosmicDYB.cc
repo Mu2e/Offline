@@ -25,6 +25,8 @@
 
 // Framework includes.
 #include "art/Framework/Principal/Run.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -32,6 +34,9 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/DAQParams.hh"
+#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "ConditionsService/inc/PhysicsParams.hh"
+#include "ConditionsService/inc/ParticleDataTable.hh"
 #include "EventGenerator/inc/CosmicDYB.hh"
 #include "EventGenerator/inc/hrndg2.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -46,6 +51,9 @@
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
+// ROOT includes
+#include "TH1D.h"
+#include "TH2D.h"
 
 // From CLHEP
 #include "CLHEP/Random/RandFlat.h"
@@ -59,14 +67,20 @@ using CLHEP::HepLorentzVector;
 using CLHEP::RandFlat;
 using CLHEP::GeV;
 
-namespace mu2e {
-
-  // Mass of the muon, in MeV.
-  // Once we have the HepPDT package installed, get the mass from there.
-  static const double mMu = 105.6584;
+namespace mu2e 
+{
 
   CosmicDYB::CosmicDYB( art::Run& run, const SimpleConfig& config )
   : GeneratorBase()
+
+  , _verbose( config.getInt("cosmicDYB.verbose", 0) )
+  , _doHistograms( config.getBool("cosmicDYB.doHistograms", true) )
+  , _hStartXZ(NULL)
+  , _hStartY(NULL)
+  , _hStartPlane(NULL)
+  , _hStartE(NULL)
+
+  , _mMu(0) //muon mass
 
     // Mean multiplicity. If negative, use -_mean as a fixed number
   , _mean      ( config.getDouble("cosmicDYB.mean") )
@@ -74,6 +88,11 @@ namespace mu2e {
   , _muEMax    ( config.getDouble("cosmicDYB.muEMax") )   //in MeV
   , _muCosThMin( config.getDouble("cosmicDYB.muCosThMin") )
   , _muCosThMax( config.getDouble("cosmicDYB.muCosThMax") )
+
+  , _dx(config.getDouble("cosmicDYB.dx"))
+  , _dy(0)
+  , _dz(config.getDouble("cosmicDYB.dz"))
+  , _y0(0)
 
     // Dimensions of the 2d working space for hrndg2.
   , _ne ( config.getInt("cosmicDYB.nBinsE") )
@@ -93,18 +112,18 @@ namespace mu2e {
   , _workingSpace( )
   , _createdProductionPlane(false)
 
-  , _verbose( config.getInt("cosmicDYB.verbose", 0) )
   , _choice(UNDEFINED)
   , _directionChoice(ALL)
+  , _cosmicReferencePointInMu2e()
   , _vertical(false)
-
+  , _dontProjectToSurface(config.getBool("cosmicDYB.dontProjectToSurface",false))
   {
     mf::LogInfo log("COSMIC");
 
-    _dx=config.getDouble("cosmicDYB.dx",5000);
-    _dz=config.getDouble("cosmicDYB.dz",5000);
-    _y0=config.getDouble("cosmicDYB.y0",0);
-    _dontProjectToSurface=config.getBool("cosmicDYB.dontProjectToSurface",false);
+    //pick up particle mass
+    GlobalConstantsHandle<ParticleDataTable> pdt;
+    const HepPDT::ParticleData& mu_data = pdt->particle(PDGCode::mu_minus).ref();
+    _mMu = mu_data.mass().value();
 
     //set _choice to desired cosmic ray generator coordinates
     const std::string refPointChoice = config.getString("cosmicDYB.refPointChoice");
@@ -137,10 +156,11 @@ namespace mu2e {
       if(_choice!=CUSTOMIZED) throw cet::exception("Configuration")<<"Vertical production planes require cosmicDYB.refPointChoice: Customized\n";
       if(_directionChoice==ALL) throw cet::exception("Configuration")<<"Vertical production planes require a cosmicDYB.directionChoice other than All e.g. Positive_z or Negative_x\n";
       if(_dx!=0 && _dz!=0) throw cet::exception("Configuration")<<"Vertical production planes must have either cosmicDYB.dx:0 or cosmicDYB.dz:0 \n";
+      if(_dx==0 && _dz==0) throw cet::exception("Configuration")<<"Vertical production planes cannot have both cosmicDYB.dx:0 and cosmicDYB.dz:0 \n";
       _dy=config.getDouble("cosmicDYB.dy");
     }
-    else _dy=0;
 
+    if(_choice!=CUSTOMIZED) _y0=config.getDouble("cosmicDYB.y0");
 
     // Allocate hrndg2 working space on the heap.
     _workingSpace.resize(_ne*_nth);
@@ -183,7 +203,9 @@ namespace mu2e {
     _muEMin /= GeV;
     _muEMax /= GeV;
 
-    double dim_sum,E,cosTh;
+    double dim_sum=0;
+    double E=0;
+    double cosTh=0;
     hrndg2(_workingSpace,_ne,_muEMin,_muEMax,_nth,_muCosThMin,_muCosThMax, dim_sum,E,cosTh,par,_vertical);  //energy is in GeV
 
     // dim_sum (as returned from the Daya Bay code) is
@@ -211,6 +233,15 @@ namespace mu2e {
     if(_directionChoice!=ALL)
     log << "NOTE: The rate above takes into account that only half of the azimuth angles are considered.\n";
 
+    if(_doHistograms)
+    {
+      art::ServiceHandle<art::TFileService> tfs;
+      art::TFileDirectory tfdir = tfs->mkdir("CosmicDYB");
+      _hStartXZ    = tfdir.make<TH2D>( "StartXZ", "StartXZ", 500, -6.0e5, 6.0e5, 500, -6.0e5, 6.0e5 );
+      _hStartY     = tfdir.make<TH1D>( "StartY",  "StartY", 2500, -5.0e3, 2.0e4 );
+      _hStartPlane = tfdir.make<TH1D>( "StartPlane", "StartPlane", 5, 0, 5);
+      _hStartE     = tfdir.make<TH1D>( "StartE",  "StartE",  500, _muEMin, _muEMax );
+    }
   }  // CosmicDYB()
 
   CosmicDYB::~CosmicDYB() { }
@@ -270,8 +301,8 @@ namespace mu2e {
       // energy is in GeV, convert to MeV
       E *= GeV;
 
-      double p = safeSqrt(E*E-mMu*mMu);
-      if(E<=mMu) E = mMu;
+      double p = safeSqrt(E*E-_mMu*_mMu);
+      if(E<=_mMu) E = _mMu;
 
       // Cosine and sin of polar angle wrt y axis.
       double cy = cosTh;
@@ -298,50 +329,55 @@ namespace mu2e {
       CLHEP::Hep3Vector pos = delta + _cosmicReferencePointInMu2e;
       if(_verbose>1) std::cout << "position on production plane = " << pos << std::endl;
 
-// project pos to the surface
+// project start position (pos) to the surface
       if(!_dontProjectToSurface)
       {
-        //surface
-        double ymax = env->ymax();
+        std::array<double,3> surfaces;
 
-        //find the world borders in x and z direction on the side in which the track needs to be projected
+        //surface in y (above the dirt)
+        surfaces[1] = env->ymax();
+
+        //surfaces in x and z (world borders in x and z direction on the side in which the track needs to be projected)
         //need the positive x (or z) side if the x (or z) momentum is negative
         CLHEP::Hep3Vector momdir= mom.vect().unit();
-        int signX = (momdir.x()>0?-1:1);
-        int signZ = (momdir.z()>0?-1:1);
-        double margin=1.0;  //to make sure that the starting point is indeed inside the world (taking rounding issues into consideration)
-        double xmax = signX*(worldGeom->halfLengths()[0]-margin) - worldGeom->mu2eOriginInWorld().x();
-        double zmax = signZ*(worldGeom->halfLengths()[2]-margin) - worldGeom->mu2eOriginInWorld().z();
+        surfaces[0] = (momdir.x()>0?-worldGeom->halfLengths()[0]:worldGeom->halfLengths()[0]) - worldGeom->mu2eOriginInWorld().x();
+        surfaces[2] = (momdir.z()>0?-worldGeom->halfLengths()[2]:worldGeom->halfLengths()[2]) - worldGeom->mu2eOriginInWorld().z();
 
-        double scale;
-        if( fabs((ymax-pos.y())/(xmax-pos.x())*momdir.x()) < fabs(momdir.y()) &&
-            fabs((ymax-pos.y())/(zmax-pos.z())*momdir.z()) < fabs(momdir.y()))
-        {
-          //the track will not be projected outside of the x or z world border
-          scale = (ymax-pos.y())/momdir.y();
-        }
-        else
-        {
-          //the track would have been projected outside of the x or z world border
-          //so we can't project it all the way to the surface
-          std::cout<<"This muon track would have started at "<<pos+(ymax-pos.y())/momdir.y()*momdir<<" which is outside of the GEANT world volume."<<std::endl;
+        //find out which surface is hit first
+        //for all coordinates i:
+        //x_i(plane) = x_i(surface) + t * v_i   where v_i can be substituded by the momentum component
+        //and therefore v_i / (x_i(plane) - x_i(surface)) = 1 / t
+        //this means, the larger the fraction v_i / (x_i(plane)-x_i(surface)), the larger is 1/t, and the faster the surface i is hit
+        //find which coordinate i has the largest fraction
+        std::array<double,3> fractions;
+        for(int i=0; i<3; i++) fractions[i]=momdir[i]/(pos[i]-surfaces[i]);
 
-          if( fabs((xmax-pos.x())/(ymax-pos.y())*momdir.y()) < fabs(momdir.x()) &&
-              fabs((xmax-pos.x())/(zmax-pos.z())*momdir.z()) < fabs(momdir.x()))
-          {
-            //the track will be projected to the x world border
-            scale = (xmax-pos.x())/momdir.x();
-          }
-          else
-          {
-            //the track will be projected to the z world border
-            scale = (zmax-pos.z())/momdir.z();
-          }
-          std::cout<<"The starting point will be adjusted to "<<pos+scale*momdir<<"."<<std::endl;
-          std::cout<<"The starting time and the starting energy of "<<E<<" MeV will not be adjusted."<<std::endl;
-        }
+        int coord = std::distance(fractions.begin(), std::max_element(fractions.begin(), fractions.end())); //coordinate of largest fraction
+        double scale = (surfaces[coord]-pos[coord])/momdir[coord];
 
+        //start position projected to one of the surfaces
         pos += scale*momdir;
+
+        //due to rounding issues, the starting point may have been projected slighlty outside of the world volume
+        //need to adjust for this by simply setting this coordinate to the right value
+        pos[coord]=surfaces[coord];
+
+        if(_doHistograms)
+        {
+          switch(coord)
+          {
+            case 0: _hStartPlane->Fill((momdir.x()>0?"-X":"+X"),1); break;
+            case 1: _hStartPlane->Fill((momdir.y()>0?"-Y":"+Y"),1); break;
+            case 2: _hStartPlane->Fill((momdir.z()>0?"-Z":"+Z"),1); break;
+          }
+        }
+      }
+
+      if(_doHistograms)
+      {
+        _hStartXZ->Fill(pos.x(), pos.z());
+        _hStartY->Fill(pos.y());
+        _hStartE->Fill(E);
       }
 
       if(_verbose>1) std::cout << "starting position = " << pos << std::endl;
