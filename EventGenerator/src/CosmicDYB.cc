@@ -237,10 +237,10 @@ namespace mu2e
     {
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir("CosmicDYB");
-      _hStartXZ    = tfdir.make<TH2D>( "StartXZ", "StartXZ", 500, -6.0e5, 6.0e5, 500, -6.0e5, 6.0e5 );
-      _hStartY     = tfdir.make<TH1D>( "StartY",  "StartY", 2500, -5.0e3, 2.0e4 );
-      _hStartPlane = tfdir.make<TH1D>( "StartPlane", "StartPlane", 5, 0, 5);
-      _hStartE     = tfdir.make<TH1D>( "StartE",  "StartE",  500, _muEMin, _muEMax );
+      _hStartXZ    = tfdir.make<TH2D>( "StartXZ",    "StartXZ",     500, -6.0e5,  6.0e5, 500, -6.0e5, 6.0e5 );
+      _hStartY     = tfdir.make<TH1D>( "StartY",     "StartY",     2000, -5.0e3, 15.0e3 );
+      _hStartPlane = tfdir.make<TH1D>( "StartPlane", "StartPlane",    5,  0,      5);
+      _hStartE     = tfdir.make<TH1D>( "StartE",     "StartE",      500,  0,      _muEMax*GeV );
     }
   }  // CosmicDYB()
 
