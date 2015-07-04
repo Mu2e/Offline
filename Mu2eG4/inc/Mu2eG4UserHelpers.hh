@@ -19,7 +19,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 // Framework includes
-#include "art/Utilities/CPUTimer.h"
+#include "cetlib/cpu_timer.h"
 
 // G4 includes
 #include "globals.hh"
@@ -45,7 +45,7 @@ namespace mu2e {
     // Debug printout.
     void printTrackInfo(G4Track const* const trk, std::string const& text,
                         map_type const& transientMap,
-                        art::CPUTimer const& timer,
+                        cet::cpu_timer const& timer,
                         CLHEP::Hep3Vector const& mu2eOrigin,
                         bool isEnd=false, bool printTimers=true);
 

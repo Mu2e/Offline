@@ -212,7 +212,7 @@ namespace mu2e {
 
     void printTrackInfo(G4Track const* const trk, std::string const& text,
                         map_type const& transientMap,
-                        art::CPUTimer const& timer,
+                        cet::cpu_timer const& timer,
                         CLHEP::Hep3Vector const& mu2eOrigin,
                         bool isEnd, bool printTimers) {
 

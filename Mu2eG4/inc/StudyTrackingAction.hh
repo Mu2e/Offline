@@ -25,7 +25,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Persistency/Provenance/ProductID.h"
-#include "art/Utilities/CPUTimer.h"
+#include "cetlib/cpu_timer.h"
 
 #include <map>
 #include <string>
@@ -90,7 +90,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _mu2eOrigin;
 
     // Event timer.
-    art::CPUTimer _timer;
+    cet::cpu_timer _timer;
 
     // Information about SimParticles is collected in this map
     // during the operation of G4.  This is not persistent.
