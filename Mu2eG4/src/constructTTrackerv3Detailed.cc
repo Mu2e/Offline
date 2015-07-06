@@ -91,9 +91,6 @@ namespace {
     bool                    visible;
   };
 
-  void addSupports(){
-  }
-
   void addSectors( int idev,
                    VolumeInfo const& devInfo,
                    VolumeInfo& sec0Info,
