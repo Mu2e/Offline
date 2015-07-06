@@ -444,7 +444,7 @@ int findlowhist(float d){
       gmMinuit->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
     }
     gmMinuit->FixParameter(0);
-    int result=gmMinuit->Migrad();
+    gmMinuit->Migrad();
     bool converged = gmMinuit->fCstatu.Contains("CONVERGED");
     if (!converged) 
       {
