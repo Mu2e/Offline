@@ -13,6 +13,7 @@
 #include <vector>
 #include <iostream>
 #include <iomanip>
+#include <limits>
 
 using namespace std;
 using namespace xercesc;
@@ -111,7 +112,8 @@ namespace mu2e
           DOMNode* childNode = children->item( ix ) ;
           DOMNamedNodeMap* attrs = childNode->getAttributes();
           int inorm=0;
-          double vmin,vmax;
+          double vmin=std::numeric_limits<double>::max();
+	  double vmax=0.;
           for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia ){
             DOMNode* attr = attrs->item(ia);
             char* attValue = XMLString::transcode(attr->getNodeValue());
@@ -171,15 +173,12 @@ namespace mu2e
     for(XMLSize_t i=0;i<xpathRes->getSnapshotLength();i++) {
       xpathRes->snapshotItem(i);
       DOMNode* nNeuron = xpathRes->getNodeValue();
-      DOMElement* eNeuron = dynamic_cast<DOMElement* >(nNeuron);
 
       DOMNode* parentNode = nNeuron->getParentNode();
       DOMElement* parentElement = dynamic_cast<DOMElement* >(parentNode);
 
       char* layerIndex = XMLString::transcode(parentElement->getAttribute(ATT_INDEX));
       int ilayer = atoi(layerIndex);
-
-      DOMNodeList* children = eNeuron->getChildNodes() ;
 
       vector<double> wv;
       if(ilayer<iLastLyr){
