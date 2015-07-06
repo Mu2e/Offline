@@ -1200,7 +1200,6 @@ namespace mu2e {
 
     bool is_pbarTS1In  = config.getBool("pbar.coll1In.build", true);
     bool is_pbarTS1Out = config.getBool("pbar.coll1Out.build", true);
-    bool is_pbarTS2    = config.getBool("pbar.TS2.build", true);
     bool is_pbarTS31   = config.getBool("pbar.coll31In.build", false);
 
     if (is_pbarTS1In) {
