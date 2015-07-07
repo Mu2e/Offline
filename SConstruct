@@ -28,7 +28,7 @@ AddOption('--mu2egs',
           nargs=1,
           action='store',
           metavar='DIR',
-          default='OGL',
+          default='ogl',
           help='Select graphics system')
 
 # Extract information from the shell environment.
@@ -137,8 +137,8 @@ if not level in known_levels:
     print '   The value must be one of the known levels: '  + str(known_levels)
     raise Exception('foo')
 
-graphicssys = GetOption('mu2egs')
-known_gs = ['OGL', 'Qt', 'NOOGL' ]
+graphicssys = GetOption('mu2egs').lower()
+known_gs = ['ogl', 'qt', 'noogl' ]
 if not graphicssys in known_gs:
     print 'Unrecognized value for --mu2egs ' + graphicssys
     print '   The value must be one of the known systems: ' + str(known_gs)
@@ -150,17 +150,16 @@ if not graphicssys in known_gs:
 gsoptfilename='.gsopt'
 if os.path.exists(gsoptfilename):
     qtf = open(gsoptfilename,'r')
-    rgs = qtf.readline(100)
-    rgs.strip()
+    rgs = qtf.readline(100).strip().lower()
     if graphicssys!=rgs:
         print 'Inconsitent build; the previous --mu2egs was: ' \
             + str(rgs) + ' current one is ' + graphicssys
         print 'inspect (remove?) file: ' +  gsoptfilename + ' or verify option --mu2egs'
         raise Exception('gs')
 else:
-    if graphicssys == 'Qt' or graphicssys == 'NOOGL':
+    if graphicssys == 'qt' or graphicssys == 'noogl':
         qtf = open(gsoptfilename,'w')
-        qtf.write(graphicssys)
+        qtf.write(graphicssys+'\n')
 
 env.Append( MU2EOPTS = [level, graphicssys] );
 
