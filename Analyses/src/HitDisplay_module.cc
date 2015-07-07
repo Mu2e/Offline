@@ -331,7 +331,7 @@ namespace mu2e {
 
     const char oname[] = "HitDisplay::printCaloCluster";
 
-    int row, col, ir, iz;
+    int     ir, iz;
     TString opt = Opt;
 
     art::ServiceHandle<GeometryService> geom;
@@ -474,7 +474,7 @@ namespace mu2e {
     const GenParticle* gen;
  
     TObjArray      list_of_ellipses;
-    int            n_displayed_hits, color, intime;
+    int            n_displayed_hits, color(-1), intime;
     size_t         nmc; 
 
     const int module_color[2] = {kRed, kMagenta};
@@ -484,7 +484,7 @@ namespace mu2e {
     const KalRep*       trk;
     const CaloCluster*  cl;
     //    int             vane_id;
-    double xl, yl,      event_time;
+    double xl, yl,      event_time(-9999.);
     TString             opt; 
 
     printf("[%s] RUN: %10i EVENT: %10i\n",name,Evt.run(),Evt.event());
@@ -601,7 +601,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     double plotLimits(850.);
     fCanvas->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
-      
+    
     t.SetText(-800.,900.,Form("[%s] RUN: %10i EVENT: %10i NTRACKS: %4i NCLUSTERS: %4i",
 			      name, Evt.run(),Evt.event(),fNTracks[0],fNClusters));
     t.SetTextSize(0.02);
@@ -628,7 +628,7 @@ namespace mu2e {
       nv = dc->nDisk();
     }
     //mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
-    double rmin, rmax, x1,y1,x2,y2;
+    double rmin, rmax, x1(-1.),y1(-1.),x2(-1.),y2(-1.);
     if( geom->hasElement<mu2e::VaneCalorimeter>() ){
       mu2e::GeomHandle<mu2e::VaneCalorimeter> vc;
       for (int iv=0; iv<nv; iv++) {

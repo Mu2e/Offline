@@ -150,7 +150,7 @@ namespace mu2e {
     const TrkHotList         *tlist, *clist;
     int                       nat, nac, natc;
     const mu2e::TrkStrawHit  *hitt, *hitc;
-    double                    tfcons, cfcons;
+    //    double                    tfcons, cfcons;
 
     for (int i1=0; i1<ntpr; i1++) {
       //      tpr     = (KalRep*) list_of_kreps_tpr->get(i1);
@@ -161,7 +161,7 @@ namespace mu2e {
       tlist   = tpr->hotList();
       nat     = tpr->nActive();
       natc    = 0;
-      tfcons  = tpr->chisqConsistency().consistency();
+      //      tfcons  = tpr->chisqConsistency().consistency();
 
       for (int i2=0; i2<ncpr; i2++) {
 	cpr     = list_of_kreps_cpr->at(i2);
@@ -169,7 +169,7 @@ namespace mu2e {
 	cpr_mom = cpr->momentum();
 	clist   = cpr->hotList();
 	nac     = cpr->nActive();
-	cfcons  = cpr->chisqConsistency().consistency();
+	//	cfcons  = cpr->chisqConsistency().consistency();
 //-----------------------------------------------------------------------------
 // primitive check if this is the same track - require delta(p) less than 5 MeV/c
 // ultimately - check the number of common hits

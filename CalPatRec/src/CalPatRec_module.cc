@@ -1337,7 +1337,7 @@ namespace mu2e {
 
     double    trkPhi, hitPhi, dphi;
     HepPoint  trkPos;
-    double    tmpFltz0;
+    double    tmpFltz0(-9999.);
     double    dz = 1e10;
 
     for(TrkHotList::hot_iterator it=hotl->begin();it<hotl->end(); it++) {

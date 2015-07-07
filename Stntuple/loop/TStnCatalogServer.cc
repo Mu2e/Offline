@@ -96,7 +96,7 @@ const char* TStnCatalogServer::GetDCacheDoor(const char* HeadNode) {
   } ;
 
   int         port; 
-  const char* door;
+  const char* door(0);
 
   if (strcmp(HeadNode,"cdfdca.fnal.gov") == 0) {
     port = gSystem->GetPid() % cdfdca_nports;
@@ -244,7 +244,7 @@ int TStnCatalogServer::InitChain(TChain*     Chain,
 
     TString prefix;
     TIter itt(&files);
-    while (ostr = (TObjString*) itt.Next()) {
+    while ( (ostr = (TObjString*) itt.Next()) ) {
       line = (char*) ostr->String().Data();
       sscanf(line,"%s %s %f %s %s %i %i %i %i %i", 
 	     fs,fn,&size,date,time,&nev,&lorun,&loevt,&hirun,&hievt);
@@ -254,7 +254,7 @@ int TStnCatalogServer::InitChain(TChain*     Chain,
       TObjArray* list_of_files = Chain->GetListOfFiles();
       TObjArrayIter it(list_of_files);
       TChainElement* found;
-      while (found = (TChainElement*) it.Next()) {
+      while ( (found = (TChainElement*) it.Next()) ){
 	if (strcmp(fn,found->GetTitle()) == 0) break;
       }
       if (! found)
@@ -273,28 +273,9 @@ int TStnCatalogServer::InitChain(TChain*     Chain,
     char*    fs = strtok(list_of_fs,", ");
     do {
       AddFiles(Chain,Book,Dataset,fs,Run1,Run2);
-    } while (fs = strtok(0,", "));
+    } while ( (fs = strtok(0,", ")) );
 
     delete [] list_of_fs;
-  }
-  else {
-//-----------------------------------------------------------------------------
-// one or several file names, separators: " ," (space and comma)
-// assume that all the files belong to the same Book, Dataset and Fileset
-// for each file define server and remote directory and add file to the chain
-//-----------------------------------------------------------------------------
-    GetRemoteServer(Book,Dataset,Fileset,remote_server,remote_dir);
-
-    char*    list_of_files = new char[strlen(File)+1];
-    strcpy(list_of_files,File);
-
-    char*    file = strtok(list_of_files,", ");
-    do {
-      sprintf(remote_file,"root://%s/%s/%s",remote_server,remote_dir,file);
-      Chain->AddFile(remote_file,TChain::kBigNumber);
-    } while (file = strtok(0,", "));
-
-    delete [] list_of_files;
   }
 //-----------------------------------------------------------------------------
 // in principle can foresee check for the dublicates... 
@@ -478,7 +459,7 @@ int TStnCatalogServer::InitDataset(TStnDataset*     Dataset,
   }
   gSystem->ClosePipe(pipe);
 
-  int n_files = files.GetEntriesFast();
+  //  int n_files = files.GetEntriesFast();
 //-----------------------------------------------------------------------------
 // loop again over the fileset definition lines and parse the information
 // only the files corresponding to the requested filesets are stored. 
@@ -661,7 +642,7 @@ int TStnCatalogServer::InitDataset(TStnDataset*     Dataset,
 	} else {
 	  printf("TStnCatalogServer: Error reading query\n");
 	}
-
+	
 	if (fPrintLevel > 5 || !queryOk || nTries>0)
 	  printf("After %s ntry %1i  files expected %i read %i\n",
 		 s2.Data(),nTries,filesExpected,filesRead);

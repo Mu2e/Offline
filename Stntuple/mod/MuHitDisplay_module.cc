@@ -839,7 +839,7 @@ namespace mu2e {
     TGraph*             graph(0);
 
     TrackTool           *tt(0), *tg(0), *tmid(0);
-    const GenParticle*  gen_signal;
+    const GenParticle*  gen_signal(0);
     int                 pdg_id, ndisks, rc;
 
     TObjArray           list_of_ellipses;

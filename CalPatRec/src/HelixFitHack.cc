@@ -601,7 +601,7 @@ namespace mu2e {
     double mpvphi0      = _hPhi0Res->GetBinCenter(maxBin);//_hPhi0Res->GetMean();
     double menaphi0     = _hPhi0Res->GetMean();
     int    nentriesphi  = _hPhi0Res->GetEntries();
-    int    overflowsphi = _hPhi0Res->GetBinContent(0)  + _hPhi0Res->GetBinContent(_hPhi0Res->GetNbinsX()+1);
+    //    int    overflowsphi = _hPhi0Res->GetBinContent(0)  + _hPhi0Res->GetBinContent(_hPhi0Res->GetNbinsX()+1);
     _hphi0 = mpvphi0;
     if (_debug >5){
       
@@ -1987,7 +1987,7 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 				int UsePhiResiduals) {
     TString banner = "rescueHits";
     double      wt, e2, x, y, r;
-    double      phiwt;
+    double      phiwt(-9999.);
 
     Hep3Vector  hitPos, strawDir, helCenter;
 
@@ -2851,7 +2851,7 @@ void HelixFitHack::plotXY(int ISet) {
   mu2e::XYZPHack*    hit;
   CLHEP::Hep3Vector* pos;
 
-  double x[1000], y[1000], z[1000];
+  double x[1000], y[1000];//, z[1000];
   int    flag[1000];
 
   for (int i=0; i<nhits; i++) {
@@ -2860,7 +2860,7 @@ void HelixFitHack::plotXY(int ISet) {
 
     x[i] = hit->_pos.x();
     y[i] = hit->_pos.y();
-    z[i] = hit->_pos.z();
+    //    z[i] = hit->_pos.z();
 
     flag[i] = *((int*) &hit->_flag);
 
