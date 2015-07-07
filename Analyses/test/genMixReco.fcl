@@ -50,6 +50,7 @@ services : {
         ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
         GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
         G4Helper               : { }
+        BTrkHelper             : @local::BTrkHelperDefault
         SeedService            : @local::automaticSeeds
     }
 }
@@ -180,4 +181,3 @@ services.scheduler.wantSummary: true
 # Apply the time offsets at the digitization stage
 physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-
