@@ -49,7 +49,7 @@ namespace mu2e {
             Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 	    CaloReadoutUtilities readoutUtil;
 	    
-	    for (unsigned int i=0;i<_cluster->size();++i) 
+	    for ( int i=0;i<_cluster->size();++i) 
 	    {	 
 
 		//run only over the first readout, since the other are duplicating the StepPointMc in the crystal

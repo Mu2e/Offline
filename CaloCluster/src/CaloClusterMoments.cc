@@ -27,7 +27,7 @@ namespace mu2e {
 	   double sxi(0),sxi2(0),syi(0),syi2(0),sxyi(0),szi(0),szi2(0),swi(0);
 
        	   auto const& main     = _caloCluster.caloCrystalHitsPtrVector();
-           double clusterEnergy = _caloCluster.energyDep();
+	   //           double clusterEnergy = _caloCluster.energyDep();
 	   	   
 	   
 	   //calculate first and second moments in one pass
