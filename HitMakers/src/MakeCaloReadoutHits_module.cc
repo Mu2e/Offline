@@ -332,7 +332,7 @@ namespace mu2e {
     ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
     
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
-    double timeGap    = cal.caloGeomInfo().timeGap();
+    //    double timeGap    = cal.caloGeomInfo().timeGap();
     double addEdep    = cal.caloGeomInfo().electronEdep();
     double cryhalflength = cal.caloGeomInfo().crystalHalfLength();
     
