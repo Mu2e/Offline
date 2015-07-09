@@ -403,6 +403,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // by construction, both hits are in the same panel
 //-----------------------------------------------------------------------------
+    doublet->fHitIndex[0] = index0;
+    doublet->fHitIndex[1] = index1;
+
     for (int i=0; i<2; i++) {
       hit   [i] = doublet->fHit[index[i]];
       straw [i] = &hit[i]->straw();
@@ -721,6 +724,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // the "best" doublet is good enough, resolve drift signs for the rest hits
 //----------------------------------------------------------------------------- 
+	  doublet->fHitIndex[0] = jbest;
+	  doublet->fHitIndex[1] = kbest;
+
 	  hit     = doublet->fHit[jbest];
 	  straw   = &hit->straw();
 	  layer0  = straw->id().getLayer();
