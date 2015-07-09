@@ -1,0 +1,35 @@
+           Release notes for Mu2e Offline software, v5_4_1
+
+6) July 9, 2015 - kutschke
+   Add -Werror to the compiler flags.
+   Any compiler warning will now be promoted to an error and stop compilation.
+
+5) July 9, 2015 - kutschke
+   Use the new feature of SConstruct (4) to add
+     -fvar-tracking-assignments-toggle
+   to the dictionary maker for MCDataProducts and RecoDataProducts.
+   When compiling the _dict.cpp files for these data packages, the
+   compiler exhausts memory and falls back to a mode that produces less
+   complete symbol information for debuggers - this occurs in both profile
+   and debug builds. The addition of this flag tells the compile not to
+   try the producing the full information and to immediately fall back to
+   the less complete mode.  This saves 30 seconds or so in each build.
+
+4) July 9, 2015 - kutschke
+   Modify SConstruct to allow an optional argument to
+      helper.make_dict_and_map
+   This allows the user to pass additional options to the compilation
+   step of the _dict.cc file.
+
+3) July 9, 2015 - kutschke
+   Add configuration for BTrkHelper to all .fcl files that
+   run any module using TrkPatRec or CalPatRec. Hope we
+   found them all.
+
+2) July 9, 2015 - kutschke, murat
+   Over the past few days fix all remaining compiler warnings.
+
+1) July 7, 2015 - genser
+   with Andrei, enabled lowercase values of the --mu2egs parameter
+     SConstruct
+     Mu2eG4/src/SConscript
