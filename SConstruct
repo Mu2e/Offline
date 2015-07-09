@@ -170,6 +170,7 @@ env.MergeFlags('-rdynamic')
 env.MergeFlags('-Wall')
 env.MergeFlags('-Wno-unused-local-typedefs')
 env.MergeFlags('-g')
+env.MergeFlags('-Werror')
 if level == 'prof':
     env.MergeFlags('-O3')
     env.MergeFlags('-fno-omit-frame-pointer')
