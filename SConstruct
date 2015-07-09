@@ -326,7 +326,7 @@ class mu2e_helper:
 #
 #   Make the dictionary and map plugins.
 #
-    def make_dict_and_map( self, userlibs ):
+    def make_dict_and_map( self, userlibs, pf_dict=[] ):
         if os.path.exists('classes.h'):
             if os.path.exists('classes_def.xml'):
                 env.DictionarySource([ self.dict_tmp_name(),
@@ -334,7 +334,8 @@ class mu2e_helper:
                                      [ 'classes.h', 'classes_def.xml'] )
                 env.SharedLibrary( self.prefixed_dict_libname(),
                                    self.dict_tmp_name(),
-                                   LIBS=[ userlibs ]
+                                   LIBS=[ userlibs ],
+                                   parse_flags=pf_dict
                                    )
                 env.SharedLibrary( self.prefixed_map_libname(),
                                    self.map_tmp_name()

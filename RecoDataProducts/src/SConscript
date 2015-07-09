@@ -28,7 +28,8 @@ helper.make_plugins( [ mainlib,
                      ] )
 
 helper.make_dict_and_map( [ mainlib,
-                          ] )
+                          ],
+                          [ '-fvar-tracking-assignments-toggle'] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
