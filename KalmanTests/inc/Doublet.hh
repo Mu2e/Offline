@@ -38,7 +38,7 @@ namespace mu2e {
     CLHEP::Hep3Vector   fTrkDir    [5];
     CLHEP::Hep3Vector   fTrkPos    [5];
     mu2e::TrkStrawHit*  fHit       [5];
-    int                 fHitIndex  [2]; // indices of the used paid of hits 
+    int                 fHitIndex  [2]; // indices of the used pair of hits 
     double              fTrkDxDz;	// track dx/dz in the local panel frame
     double              fDxDz      [4];	// 4 combinations
     double              fChi2      [4];	// 4 combinations
