@@ -145,7 +145,7 @@ namespace mu2e {
     KalFitResult              tkr, ckr;
 
     Hep3Vector                cpr_mom, tpr_mom;
-    short                     best, mask;
+    short                     best(-1),  mask;
     AlgorithmID               alg_id;
     const TrkHotList         *tlist, *clist;
     int                       nat, nac, natc;

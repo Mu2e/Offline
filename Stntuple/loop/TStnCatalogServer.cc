@@ -209,7 +209,7 @@ int TStnCatalogServer::InitChain(TChain*     Chain,
   int        lorun, hirun, nev, loevt, hievt;
   float      size;
   char       buf[1000], fn[100], fs[100], date[100], time[100];
-  char       remote_server[200], remote_dir[200], remote_file[200];
+  //  char       remote_server[200], remote_dir[200], remote_file[200];
   char*      line;
   TObjArray  list_of_filesets;
   TString    cmd;
@@ -623,7 +623,7 @@ int TStnCatalogServer::InitDataset(TStnDataset*     Dataset,
 // files cataloged in DFC are read through general DCACHE pool (cdfdca)
 //-----------------------------------------------------------------------------
 	    if ((s_file == "") || (s_file == fn)) {
-	      const char* path = 0;
+	      //	      const char* path = 0;
 	      GetDCacheFileName("cdfdca.fnal.gov",pnfs_path,0,fn,full_name);
 	      if(lorun<=rmax && hirun>=rmin) {
 		Dataset->AddFile(full_name,fs,size,nev,loevt,lorun,hievt,hirun,status);
@@ -670,7 +670,7 @@ int TStnCatalogServer::InitDataset(TStnDataset*     Dataset,
       TString prefix;
 
       TIter itt(&files);
-      while (ostr = (TObjString*) itt.Next()) {
+      while ((ostr = (TObjString*) itt.Next())) {
 	line = (char*) ostr->String().Data();
 	
 	sscanf(line,"%s %s %f %s %s %i %i %i %i %i", 
