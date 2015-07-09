@@ -1,0 +1,147 @@
+#!/bin/bash
+#
+# A script to query and manipulate Mu2e Offline build options.
+# Andrei Gaponenko, 2015
+
+if [[ $(basename $0) != buildopts ]]; then
+    echo "ERROR: The buildopts script should be executed, not sourced" >&2
+    return 1
+fi
+
+
+#================================================================
+# known keywords
+kkw=(build graphics)
+# a list of allowed values, the first one is the default
+opts_build() {
+    echo prof debug
+}
+# a list of allowed values, the first one is the defaultg
+opts_graphics() {
+    echo ogl qt noogl
+}
+
+#================================================================
+# the --help option overrides everything else on the command line
+help=0
+for arg in "${@}"; do
+    case "$arg" in
+        ( -h | --help ) help=1 ;;
+    esac
+done
+
+if [[ $help == 1 ]]; then
+    cat <<EOF
+Usage:
+
+  $0                     prints the current config
+
+  $0 --<option>          prints the current value for the option
+
+  $0 --<option>=<value>  sets the new value
+
+  $0 --<option>=default  resets the option
+
+  $0 --reset             resets all options
+
+  $0 --help               prints this message
+
+The recognized options are:
+
+EOF
+    for opt in "${kkw[@]}"; do
+        echo "    --$opt, allowed values are: "$(opts_$opt)
+        echo ""
+    done
+
+cat <<EOF
+The first value on each list of option values is the default.
+EOF
+    exit 0
+fi
+
+#================================================================
+optdb=$(dirname $0)/.buildopts
+
+## mu2e_getopt <keyword> <default_value>
+mu2e_getopt() {
+    keyword="$1"
+    default="$2"
+    ##echo "# verbose: querying $keyword, default is $default" >&2
+    val=$(awk -F= '/^'$keyword'/{print $2}' $optdb 2>/dev/null)
+    if [[ x$val == x ]]; then val="$default";fi
+    echo $val
+}
+
+# synopsis: mu2e_setopt <keyword> <new_value>
+mu2e_setopt() {
+    keyword="$1"
+    value="$2"
+    ##echo "# verbose: setting $keyword to $value" >&2
+    grep -v ^"$keyword" $optdb > $optdb.$$ 2>/dev/null
+    echo "$keyword=$value" >> $optdb.$$
+    /bin/mv -f $optdb.$$ $optdb
+}
+
+# synopsis: mu2e_resetopt <keyword>
+mu2e_resetopt() {
+    keyword="$1"
+    ##echo "# verbose: resetting $keyword" >&2
+    grep -v ^"$keyword" $optdb > $optdb.$$ 2>/dev/null
+    /bin/mv -f $optdb.$$ $optdb
+}
+
+noargs=1
+while [[ x"$1" != x  ]]; do
+    noargs=0
+    matched=0
+    for kw in "${kkw[@]}"; do
+        if [[ "$1" =~  --${kw}.* ]]; then
+            if [[ "$1" == --$kw ]]; then
+                matched=1
+                mu2e_getopt $kw $(opts_$kw)
+            else
+                if [[ "$1" =~ --$kw=(.*) ]]; then
+                    matched=1
+                    val="${BASH_REMATCH[1]}"
+                    if [[ $val == default ]]; then
+                        mu2e_resetopt $kw
+                    else
+                        allowed=0
+                        for opt in $(opts_$kw); do
+                            #echo "# verbose: kw = $kw testing allowed val = $opt" >&2
+                            if [[ $opt == $val ]]; then
+                                allowed=1
+                            fi
+                        done
+                        if [[ $allowed = 0 ]]; then
+                            echo "ERROR: the value of '$val' is not allowed for the --$kw option" >&2
+                            exit 1
+                        fi
+                        mu2e_setopt $kw "$val"
+                    fi
+                fi
+            fi
+        fi
+    done
+
+    if [[ $matched == 0 ]]; then
+        if [[ $1 == --reset ]]; then
+            /bin/rm -f $optdb
+        else
+            echo "ERROR: unrecognized option $1.  Try $0 --help" >&2
+            exit 1
+        fi
+    fi
+
+    shift
+done
+
+#================================================================
+if [[ $noargs == 1 ]]; then
+    #echo "# The current settings are:"
+    for i in "${kkw[@]}"; do
+        echo "$i=$(mu2e_getopt $i $(opts_$i) )"
+        #echo "$i  ${!i[0]}"
+    done
+fi
