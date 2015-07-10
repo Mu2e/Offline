@@ -10,7 +10,7 @@
 #include <Stntuple/mod/InitStntupleDataBlocks.hh>
 #include <Stntuple/mod/StntupleUtilities.hh>
 
-void stntuple_get_version(char*& ver, char*& test);
+void stntuple_get_version(char* ver, char* test);
 
 //_____________________________________________________________________________
 Int_t StntupleInitMu2eHeaderBlock(TStnDataBlock* block, AbsEvent* AnEvent, int mode) 
@@ -40,7 +40,7 @@ Int_t StntupleInitMu2eHeaderBlock(TStnDataBlock* block, AbsEvent* AnEvent, int m
 //-----------------------------------------------------------------------------
 //  instantaneous luminosity
 //-----------------------------------------------------------------------------
-  char  *ver, *text;
+  char  ver[200], text[200];
   stntuple_get_version(ver,text);
   header->fStnVersion = ver;
 
