@@ -126,62 +126,67 @@ int TCalVisNode::InitEvent() {
 //-----------------------------------------------------------------------------
   Clear();
   
-  nhits = (*fListOfCrystalHits)->size();
-  for (int i=0; i<nhits; i++) {
-    hit = &(*fListOfCrystalHits)->at(i);
+  if (*fListOfCrystalHits != NULL) {
+    nhits = (*fListOfCrystalHits)->size();
+    for (int i=0; i<nhits; i++) {
+      hit = &(*fListOfCrystalHits)->at(i);
 					// in short, the crystal number
-    id  = hit->id()-fFirst;
-    if ((id >= 0) && (id < fNCrystals)) {
+      id  = hit->id()-fFirst;
+      if ((id >= 0) && (id < fNCrystals)) {
 //-----------------------------------------------------------------------------
 // hit on a given disk
 //-----------------------------------------------------------------------------
-      if (hit->energyDep() > fMinCrystalEnergy) {
-	evd_cr = EvdCrystal(id);
-
-	evd_cr->AddHit(hit);
-	evd_cr->SetFillColor(kYellow-7); 
-	evd_cr->SetFillStyle(1024);
+	if (hit->energyDep() > fMinCrystalEnergy) {
+	  evd_cr = EvdCrystal(id);
+	  
+	  evd_cr->AddHit(hit);
+	  evd_cr->SetFillColor(kYellow-7); 
+	  evd_cr->SetFillStyle(1024);
+	}
       }
     }
   }
 //-----------------------------------------------------------------------------
 // clusters
 //-----------------------------------------------------------------------------
-  ncl = (*fListOfClusters)->size();
+  if (*fListOfClusters != NULL) {
 
-  for (int i=0; i<ncl; i++) {
-    cl = &(*fListOfClusters)->at(i);
-    if (cl->sectionId() == fSectionID) {
-      evd_cl = NewEvdCluster(cl);
+    ncl = (*fListOfClusters)->size();
+
+    for (int i=0; i<ncl; i++) {
+      cl = &(*fListOfClusters)->at(i);
+      if (cl->sectionId() == fSectionID) {
+	evd_cl = NewEvdCluster(cl);
 //-----------------------------------------------------------------------------
 // set colors of the crystals
 //-----------------------------------------------------------------------------
-      const mu2e::CaloCluster::CaloCrystalHitPtrVector caloClusterHits = cl->caloCrystalHitsPtrVector();
-      int nh = caloClusterHits.size();
+	const mu2e::CaloCluster::CaloCrystalHitPtrVector caloClusterHits = cl->caloCrystalHitsPtrVector();
+	int nh = caloClusterHits.size();
 
-      for (int i=0; i<nh; i++) {
-	const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
-	int id = hit->id();
+	for (int i=0; i<nh; i++) {
+	  const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
+	  int id = hit->id();
 
-	loc = LocalCrystalID(id);
+	  loc = LocalCrystalID(id);
 //-----------------------------------------------------------------------------
 // find a crystal with a given ID, display it in red
 //-----------------------------------------------------------------------------
-	evd_cr = (TEvdCrystal*) fListOfEvdCrystals->At(loc);
+	  evd_cr = (TEvdCrystal*) fListOfEvdCrystals->At(loc);
 
-	evd_cl->AddCrystal(evd_cr);
+	  evd_cl->AddCrystal(evd_cr);
 //-----------------------------------------------------------------------------
 // displayed color of the crystal is define by the max hit energy
 //-----------------------------------------------------------------------------
-	energy = hit->energyDep();
+	  energy = hit->energyDep();
 
-	if (energy > fMinCrystalEnergy) {
-	  if      (energy > 100.) evd_cr->SetFillColor(kRed+ 2);
-	  else if (energy >  10.) evd_cr->SetFillColor(kRed   ); 
-	  else if (energy >   1.) evd_cr->SetFillColor(kRed- 9); 
-	  else                    evd_cr->SetFillColor(kRed-10); 
-
-	  evd_cr->SetFillStyle(1024);
+	  if (energy > fMinCrystalEnergy) {
+	    if      (energy > 100.) evd_cr->SetFillColor(kRed+ 2);
+	    else if (energy >  10.) evd_cr->SetFillColor(kRed   ); 
+	    else if (energy >   1.) evd_cr->SetFillColor(kRed- 9); 
+	    else                    evd_cr->SetFillColor(kRed-10); 
+	    
+	    evd_cr->SetFillStyle(1024);
+	  }
 	}
       }
     }
