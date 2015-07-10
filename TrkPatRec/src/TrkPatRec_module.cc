@@ -254,6 +254,9 @@ namespace mu2e
     produces<KalRepPtrCollection>(_iname);
     produces<KalRepPayloadCollection>();
     produces<StrawHitFlagCollection>(_iname);
+
+    produces<KalFitResultCollection>(_iname);
+
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     // location-independent files
@@ -313,6 +316,7 @@ namespace mu2e
     // copy in the existing flags
     _flags = new StrawHitFlagCollection(*_shfcol);
     unique_ptr<StrawHitFlagCollection> flags(_flags );
+    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
     // find mc truth if we're making diagnostics
     if(_diag > 0 && !_kdiag->findMCData(event)){
       throw cet::exception("RECO")<<"mu2e::TrkPatRec: MC data missing or incomplete"<< endl;
@@ -430,6 +434,7 @@ namespace mu2e
 	tracks->push_back( kalfit.stealTrack() );
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
+	kfresults->push_back(kalfit);
       } else
 	kalfit.deleteTrack();
       // cleanup the seed fit
@@ -447,6 +452,7 @@ namespace mu2e
     event.put(move(tracks),_iname);
     event.put(move(trackPtrs),_iname);
     event.put(move(flags),_iname);
+    event.put(move(kfresults),_iname);
   }
 
   void TrkPatRec::endJob(){
