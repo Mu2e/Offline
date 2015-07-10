@@ -14,6 +14,17 @@ if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
     exit 1
 fi
 
+if [[ ${#@} -ne 0 ]]; then
+    cat >&2 <<EOF
+ERROR: the setup.sh script does not accept arguments. Use
+
+    $(dirname ${BASH_SOURCE})/buildopts
+
+to query and define build configuraton.
+EOF
+    return 1
+fi
+
 if [ "${MU2E}" = '' ];then
     echo "The environment variable MU2E is not set."
     echo "You must setup the local Mu2e environment before sourcing this script."
@@ -43,7 +54,11 @@ echo "Base release directory is: " $MU2E_BASE_RELEASE
 export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE/:$MU2E_DATA_PATH/
 echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 
-build=${1:-prof}
+# Export a description of the configuration that we set up so that the
+# build system can check consistency between setup and build configs.
+export MU2E_SETUP_BUILDOPTS="$($MU2E_BASE_RELEASE/buildopts)"
+
+build=$($MU2E_BASE_RELEASE/buildopts --build)
 if [ "${build}" == "debug" ];then
     # echo "debug option selected; setting up gdb"
     setup gdb v7_8
@@ -85,4 +100,3 @@ fi
 
 # A hack that we hope can go away soon.
 export G4LIBDIR=$G4LIB/$G4SYSTEM
-
