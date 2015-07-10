@@ -6,37 +6,31 @@
 #
 import os, re, string
 import sys
+import subprocess
 
 # Check that the release-specific setup has been run.
 if not os.environ.has_key('MU2E_BASE_RELEASE'):
     sys.exit('You must setup a Mu2e base release before running scons.\nExiting.')
 
-# Tell scons about a new command line option that controls the selection of compiler and linker flags.
-AddOption('--mu2elevel',
-          dest='mu2elevel',
-          type='string',
-          nargs=1,
-          action='store',
-          metavar='DIR',
-          default='prof',
-          help='Select debug build')
+base = os.environ['MU2E_BASE_RELEASE']
 
-# Tell scons about a new command line option that controls the selection of graphics
-AddOption('--mu2egs',
-          dest='mu2egs',
-          type='string',
-          nargs=1,
-          action='store',
-          metavar='DIR',
-          default='ogl',
-          help='Select graphics system')
+bopt = base + '/buildopts'
+
+# Make sure that setup.sh was sourced after the last
+# re-configuration with buildopts
+envopts = os.environ['MU2E_SETUP_BUILDOPTS'].strip()
+fsopts  = subprocess.check_output([bopt]).strip()
+if envopts != fsopts:
+    sys.exit("ERROR: Inconsistent build options.\n"
+             +"Please source setup.sh after setting new options with buildopts.\n"
+             +"Exiting.")
+    pass
 
 # Extract information from the shell environment.
 art_inc       = os.environ['ART_INC']
 art_lib       = os.environ['ART_LIB']
 btrk_inc      = os.environ['BTRK_INC']
 btrk_lib      = os.environ['BTRK_LIB']
-base          = os.environ['MU2E_BASE_RELEASE']
 boost_lib     = os.environ['BOOST_LIB']
 boost_inc     = os.environ['BOOST_INC']
 clhep_inc     = os.environ['CLHEP_INC']
@@ -130,14 +124,14 @@ env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
 # Get the flag that controls compiler options. Check that it is legal.
 # There is probably a way to tell AddOption to do this test internally.
-level = GetOption('mu2elevel')
+level = subprocess.check_output([bopt, '--build']).strip()
 known_levels = ['prof', 'debug' ]
 if not level in known_levels:
     print 'Unrecognized value for --mu2elevel ' + level
     print '   The value must be one of the known levels: '  + str(known_levels)
     raise Exception('foo')
 
-graphicssys = GetOption('mu2egs').lower()
+graphicssys = subprocess.check_output([bopt, '--graphics']).strip()
 known_gs = ['ogl', 'qt', 'noogl' ]
 if not graphicssys in known_gs:
     print 'Unrecognized value for --mu2egs ' + graphicssys
