@@ -182,13 +182,12 @@ namespace mu2e {
     StrawHitFlag     _tsel, _hsel, _addsel, _ksel;
     StrawHitFlag     _bkgsel, _addbkg;
     double           _maxedep;
-    int              fUseDoublets;
     double           _mindt;
     double           _maxdt;
     double           _maxdtmiss;
+    int              _final;         // 1: make final ambig resolution decision
     double           _fbf;
 					// time spectrum parameters
-    //    bool             _findtpeak;
     unsigned         _maxnpeak;
     int              _minnhits;
     double           _tmin;
@@ -222,6 +221,10 @@ namespace mu2e {
     HelixFitHack             _hfit;	// robust helix fitter
     KalFitHack               _seedfit;  // Kalman filter config for the Seed fit ( fit using hit wires)
     KalFitHack               _kfit;     // full-blown src/Kalman filter
+
+    KalFitResult*            _sfresult; // seed fit result
+    KalFitResult*            _kfresult; // full fit result
+
     CalTimePeakCollection*   _tpeaks;   // cache of time peaks
     std::string              _iname;	// data instance name
 
@@ -230,27 +233,25 @@ namespace mu2e {
 
     XYZPHackVector           _index;
     int                      _nindex;
+    int                      _nrescued;    // by the seed fit
 
     const TTracker*          _tracker;     // straw tracker geometry
     const Calorimeter*       _calorimeter; // cached pointer to the calorimeter geometry
 
     TFolder*                 _folder;
-// //-----------------------------------------------------------------------------
-// // strawhit tuple variables
-// //-----------------------------------------------------------------------------
-    int    _eventid;
-    int    _ntracks;
-    int    _ipeak;
-    int    _helixfail,_seedfail,_kalfail;
+    int                      _eventid;
+    int                      _ntracks;
 //-----------------------------------------------------------------------------
 // diagnostics histograms
 //-----------------------------------------------------------------------------
-    Hist_t     _hist;
+    Hist_t                   _hist;
 
-    THackData* fHackData;
+    THackData*               fHackData;
 
-    int        fNminMChits;
-    int        fQualityTrack;
+    int                      fNminMChits;
+    int                      fQualityTrack;
+
+    HelixTraj*               _helTraj;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -270,7 +271,6 @@ namespace mu2e {
     void findTimePeaks    (CalTimePeakCollection* TimePeakColl);
     void createTimePeak   (CalTimePeakCollection* TimePeakColl);
     void filterOutliers   (TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
-
 //----------------------------------------------------------------------
 // 2015 - 02 - 16 Gianipez added the two following functions
 //----------------------------------------------------------------------
@@ -286,6 +286,11 @@ namespace mu2e {
 			   HelixFitHackResult&  helixfit,
 			   KalFitResult      & seedfit ,
 			   KalFitResult      & kalfit  );
+
+    void fillSeedFitHistograms(KalFitResult& SFResult);
+
+    void init             (KalFitResult*&  KRes, TrkDef* TDef);
+
   };
 }
 #endif

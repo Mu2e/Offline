@@ -9,7 +9,7 @@ BEGIN_PROLOG
 # there seems to be a circular dependence between MakeStrawHitPositions and 
 # FlagStrawHits ... FlagBkgHits ?
 # MakeStrawHitPositions stores the hit flag in StrawHitPosition object
-# StrawHitFlagCollection is required
+# for that, an existing StrawHitFlagCollection is required
 #
 # in its turn, the FlagStrawHits module flags if the corresponding hit 
 # position 'stereo' and also sets radial selection flag
@@ -82,11 +82,15 @@ CalPatRec            : {
     debugLevel                                  : 0
     printFrequency                              : 100
     addhits                                     : true
+    final                                       : 1
     fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
     fitdirection                                : 0      # 0:downstream, 1:upstream
     MinNHits                                    : 15
     DtMin                                       : -70.
-    DtMax                                       : 40.    # default is 20 ns. use 40 for debugging
+    MaxStrawEDep                                : 0.005  # max integrated pulse for electron
+    DtMax                                       : 20.    # default is 20 ns. use 40 for debugging
+    MaxDtMiss                                   : 55.
+    
     tmin                                        : 0.
     tmax                                        : 2000.  # ns
     minClusterEnergy                            : 60.    # MeV
@@ -168,6 +172,7 @@ CalPatRec            : {
             sigmaSlope                          : -1.e6
 	    minDriftDoublet                     : -1.e6
 	    deltaDriftDoublet                   : -1.e6
+	    excludeBothHits                     : 1
 	}
     }
 #------------------------------------------------------------------------------
@@ -206,10 +211,12 @@ CalPatRec            : {
 	    HitMinDrift				: 0.2
 	    ZeroDriftPenalty 			: 0.05
 	    scaleErrDoublet                     : 5.   # external error scale factor
-	    maxDoubletChi2                      : 9.   # 3 times 3 degrees of freedom, not quite rigorous mathematically 
+#	    maxDoubletChi2                      : 9.   # 3 times 3 degrees of freedom, not quite rigorous mathematically 
+	    maxDoubletChi2                      : 10.  # to account for 1+4+4, not quite rigorous mathematically 
             sigmaSlope                          : 0.025
 	    minDriftDoublet                     : 0.3
 	    deltaDriftDoublet                   : 0.3
+	    excludeBothHits                     : 1
 	}
 	fieldCorrection				: true
 	maxhitchi                               : 3.5

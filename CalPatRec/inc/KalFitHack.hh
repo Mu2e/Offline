@@ -56,7 +56,8 @@ namespace mu2e {
   protected:
     // configuration parameters
     int                         _debug;
-    bool                        _weedhits;
+    //    bool                        _weedhits;
+    vector<bool>                _weedhits;
     double                      _maxhitchi;
     unsigned                    _maxweed;
     std::vector<double>         _hiterr;
@@ -122,6 +123,7 @@ namespace mu2e {
 			 const StrawHitCollection* straws , 
 			 std::vector<hitIndex>     indices, 
 			 double                    maxchi ,
+			 int                       Final  ,
 			 CalTimePeak*              TPeak=NULL );
 
     void findBoundingHits(std::vector<TrkStrawHit*>&                   hits, 

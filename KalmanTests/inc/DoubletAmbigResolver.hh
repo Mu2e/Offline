@@ -44,6 +44,7 @@ namespace mu2e {
     double _scaleErrDoublet;
     double _minDriftDoublet;
     double _deltaDriftDoublet;
+    int    _excludeBothHits;            // when calculating residuals to choose the drift signs 
 
     int    _sign[4][2];
 //-----------------------------------------------------------------------------
@@ -60,7 +61,7 @@ namespace mu2e {
 
     void markDoublet     (KalFitResult& KRes, Doublet *doublet, int index0, int index1, int Final) const;
     void markMultiplets  (KalFitResult& Kres, int Final) const;
-    void resolveSingleHit(KalFitResult& Kres, mu2e::TrkStrawHit* Hit) const ;
+    void resolveSingleHit(KalFitResult& Kres, mu2e::TrkStrawHit* Hit, int Final) const ;
     
 					// resolve a track.  Depending on the configuration, this might
 					// penalty function depends on the drift radius
