@@ -71,6 +71,11 @@ fi
 # SETUP_<productname> environment vars, or by the "ups active" command.
 export MU2E_UPS_QUALIFIERS=+e7:+${build}
 
+MU2E_G4_GRAPHICS_QUALIFIER=''
+if [[ $($MU2E_BASE_RELEASE/buildopts --graphics) == qt ]]; then
+    MU2E_G4_GRAPHICS_QUALIFIER=':+qt'
+fi
+
 # Setup the framework and its dependent products
 setup -B art v1_15_00 -q${MU2E_UPS_QUALIFIERS}
 
@@ -78,7 +83,7 @@ setup -B art v1_15_00 -q${MU2E_UPS_QUALIFIERS}
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
 # Geant4 and its cross-section files.
-setup -B geant4 v4_9_6_p04a -q${MU2E_UPS_QUALIFIERS}
+setup -B geant4 v4_9_6_p04a -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
 
 # Other libraries we need.
 setup -B heppdt v3_04_01c -q${MU2E_UPS_QUALIFIERS}
