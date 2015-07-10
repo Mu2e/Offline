@@ -32,6 +32,7 @@ namespace mu2e {
   class SimParticle;
   class CalTimePeak;
   class TrackClusterMatch;
+  class TrkStrawHit;
 }
 
 class TAnaDump : public TObject {
@@ -42,6 +43,8 @@ protected:
 
   TObjArray* fListOfObjects;
   TString    fFlagBgrHitsModuleLabel;
+
+  double     fTmp[100];  // for testing
 
 private:
 
@@ -70,6 +73,7 @@ public:
   void*  FindObject(const char* Name);
 
   void SetEvent(art::Event& Evt) { fEvent = &Evt; }
+  void SetFlagBgrHitsModuleLabel(const char* Label) { fFlagBgrHitsModuleLabel = Label; }
 
   void printEventHeader();
 
@@ -176,6 +180,8 @@ public:
 			      
 					// refit track dropping hits away > NSig sigma (0.1)
   void  refitTrack(void* Trk, double NSig);
+
+  void  Test_000(const KalRep* Krep, mu2e::TrkStrawHit* Hit);
 
  //   void printVaneCalorimeter(VaneCalorimeter* Cal);
 

@@ -481,7 +481,7 @@ void TAnaDump::printEventHeader() {
 }
 
 //-----------------------------------------------------------------------------
-void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefix) {
+void TAnaDump::printKalRep(const KalRep* Krep, const char* Opt, const char* Prefix) {
 
   TString opt = Opt;
   
@@ -496,54 +496,54 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
   }
  
   if ((opt == "") || (opt.Index("data") >= 0)) {
-    double chi2   = Trk->chisq();
+    double chi2   = Krep->chisq();
 
     int    nhits(0);
 
-    const TrkHotList* hots = Trk->hotList();
+    const TrkHotList* hots = Krep->hotList();
     for (TrkHotList::hot_iterator ihot=hots->begin(); ihot != hots->end(); ++ihot) {
       nhits++;
     }
 
-    int    nact   = Trk->nActive();
-    double t0     = Trk->t0().t0();
-    double t0err  = Trk->t0().t0Err();
+    int    nact   = Krep->nActive();
+    double t0     = Krep->t0().t0();
+    double t0err  = Krep->t0().t0Err();
 //-----------------------------------------------------------------------------
 // in all cases define momentum at lowest Z - ideally, at the tracker entrance
 //-----------------------------------------------------------------------------
-    double s1     = Trk->firstHit()->kalHit()->hitOnTrack()->fltLen();
-    double s2     = Trk->lastHit ()->kalHit()->hitOnTrack()->fltLen();
+    double s1     = Krep->firstHit()->kalHit()->hitOnTrack()->fltLen();
+    double s2     = Krep->lastHit ()->kalHit()->hitOnTrack()->fltLen();
     double s      = std::min(s1,s2);
 
-    double d0     = Trk->helix(s).d0();
-    double z0     = Trk->helix(s).z0();
-    double phi0   = Trk->helix(s).phi0();
-    double omega  = Trk->helix(s).omega();
-    double tandip = Trk->helix(s).tanDip();
+    double d0     = Krep->helix(s).d0();
+    double z0     = Krep->helix(s).z0();
+    double phi0   = Krep->helix(s).phi0();
+    double omega  = Krep->helix(s).omega();
+    double tandip = Krep->helix(s).tanDip();
 
 
-    CLHEP::Hep3Vector fitmom = Trk->momentum(s);
+    CLHEP::Hep3Vector fitmom = Krep->momentum(s);
     CLHEP::Hep3Vector momdir = fitmom.unit();
-    BbrVectorErr      momerr = Trk->momentumErr(s);
+    BbrVectorErr      momerr = Krep->momentumErr(s);
     
     HepVector momvec(3);
     for (int i=0; i<3; i++) momvec[i] = momdir[i];
     
     double sigp = sqrt(momerr.covMatrix().similarity(momvec));
   
-    double fit_consistency = Trk->chisqConsistency().consistency();
-    int q         = Trk->charge();
+    double fit_consistency = Krep->chisqConsistency().consistency();
+    int q         = Krep->charge();
 
     Hep3Vector trk_mom;
 
-    trk_mom       = Trk->momentum(s);
+    trk_mom       = Krep->momentum(s);
     double mom    = trk_mom.mag();
     double pt     = trk_mom.perp();
     double costh  = trk_mom.cosTheta();
 
     printf("%5i %16p %3i %3i %8.3f %8.5f %7.3f %8.4f %7.3f %7.4f",
 	   -1,
-	   Trk,
+	   Krep,
 	   nhits,
 	   nact,
 	   q*mom,sigp,pt,costh,t0,t0err
@@ -561,7 +561,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
   //-----------------------------------------------------------------------------
 // print detailed information about the track hits
 //-----------------------------------------------------------------------------
-    const TrkHotList* hot_list = Trk->hotList();
+    const TrkHotList* hot_list = Krep->hotList();
 
     printf("--------------------------------------------------------------------");
     printf("---------------------------------------------------------------");
@@ -579,7 +579,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
     for (auto it=hot_list->begin(); it<hot_list->end(); it++) {
       // TrkStrawHit inherits from TrkHitOnTrk
 
-      const mu2e::TrkStrawHit* hit = (const mu2e::TrkStrawHit*) &(*it);
+      mu2e::TrkStrawHit* hit = (mu2e::TrkStrawHit*) &(*it);
 
       const mu2e::StrawHit* sh = &hit->strawHit();
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
@@ -587,7 +587,7 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
       hit->hitPosition(pos);
 
       double    len  = hit->fltLen();
-      HepPoint  plen = Trk->position(len);
+      HepPoint  plen = Krep->position(len);
 //-----------------------------------------------------------------------------
 // find MC truth DOCA in a given straw
 // start from finding the right vector of StepPointMC's
@@ -670,13 +670,21 @@ void TAnaDump::printKalRep(const KalRep* Trk, const char* Opt, const char* Prefi
 	  
 
       printf("  %7.3f",mcdoca);
-      printf(" %6.3f %6.3f %6.3f %6.3f %6.3f\n",		 
+      printf(" %6.3f %6.3f %6.3f %6.3f %6.3f",		 
 	     hit->totalErr(),
 	     hit->hitErr(),
 	     hit->t0Err(),
 	     hit->penaltyErr(),
 	     hit->extErr()
 	     );
+//-----------------------------------------------------------------------------
+// test: calculated residual in fTmp[0]
+//-----------------------------------------------------------------------------
+      Test_000(Krep,hit);
+
+      printf(" %7.3f",fTmp[0]);
+
+      printf("\n");
     }
   }
 }
@@ -1745,4 +1753,97 @@ void TAnaDump::refitTrack(void* Trk, double NSig) {
   trk->fit();
 
   printKalRep(trk, "hits");
+}
+
+
+//-----------------------------------------------------------------------------
+// emulate calculation of the unbiased residual
+//-----------------------------------------------------------------------------
+void TAnaDump::Test_000(const KalRep* Krep, mu2e::TrkStrawHit* Hit) {
+
+//  apparently, Hit has (had ?) once to be on the track ?
+
+  double             s, slen, rdrift, sflt, tflt, doca/*, sig , xdr*/;
+  const mu2e::Straw *straw;
+  int                sign /*, shId, layer*/;
+  HepPoint           spi , tpi , hpos;
+ 
+  CLHEP::Hep3Vector  spos, sdir;
+  TrkSimpTraj  *ptraj(NULL);
+
+  fTmp[0] = -1;
+  fTmp[1] = -1;
+
+  KalRep* krep = Krep->clone();
+
+  straw  = &Hit->straw();
+  //  layer  = straw->id().getLayer();
+  rdrift = Hit->driftRadius();
+  //  shId   = straw->index().asInt();
+  
+  //  const KalHit* khit = krep->findHotSite(Hit);
+
+  s      = Hit->fltLen();
+
+  //  int active = Hit->isActive();
+
+//   if (active) krep->deactivateHot(Hit);
+
+//   krep->resetFit();
+//   krep->fit();
+// 					// local track trajectory
+//   ptraj = krep->localTrajectory(s,slen);
+
+  std::vector<KalSite*>::const_iterator itt;
+  int found = 0;
+  for (auto /* std::vector<KalSite*>::const_iterator */ it=krep->siteList().begin();
+       it!= krep->siteList().end(); it++) {
+    const KalHit* kalhit = (*it)->kalHit();
+    if (kalhit && (kalhit->hitOnTrack() == Hit)) {
+      itt   = it;
+      found = 1;
+      break;
+    }
+  }
+      
+  if (found == 0) {
+    ptraj = (TrkSimpTraj  *) krep->localTrajectory(s,slen);
+  }
+  else {
+    krep->smoothedTraj(itt,itt,ptraj);
+  }
+
+  spos = straw->getMidPoint();
+  sdir = straw->getDirection();
+					// convert Hep3Vector into HepPoint
+
+  HepPoint    p1(spos.x(),spos.y(),spos.z());
+
+					// wire as a trajectory
+  TrkLineTraj st(p1,sdir,0.,0.);
+
+  TrkPoca poca = TrkPoca(st,0.,*ptraj,0);
+
+  Hep3Vector        sdi , tdi, u;
+
+  sflt = poca.flt1();
+  tflt = poca.flt2();
+
+  st.getInfo(sflt,spi,sdi);
+  ptraj->getInfo(tflt,tpi,tdi);
+      
+  u    = sdi.cross(tdi).unit();  // direction towards the center
+
+  sign     = Hit->ambig();
+  hpos     = spi+u*rdrift*sign;
+					// hit residal is positive when its residual vector 
+					// points inside
+  doca     = (tpi-hpos).dot(u);
+  //  sig      = sqrt(rdrift*rdrift +0.1*0.1); // 2.5; // 1.; // hit[ih]->hitRms();
+  //  xdr      = doca/sig;
+
+  fTmp[0]  = doca;
+
+  //  if (active) krep->activateHot(Hit);
+
 }

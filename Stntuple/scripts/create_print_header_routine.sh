@@ -28,7 +28,7 @@ echo  "  printf(\"and working directory $2 \n\");"                           >> 
 echo  "  printf(\"differences with ${tag}_$minor_tag: $ndiff bytes\n\");"    >> $file
 echo  "}"                                                                    >> $file
 echo  ""
-echo  "void stntuple_get_version(char*& Version, char*& Text) {"             >> $file
+echo  "void stntuple_get_version(char* Version, char* Text) {"               >> $file
 echo  "  static char  txt[200];"                                             >> $file
 echo  "  strcpy(Version,\"${tag}_${minor_tag}\");"                           >> $file
 echo  "  strcpy(txt,\"stnmaker.exe ${tag}_${minor_tag} \");"                 >> $file

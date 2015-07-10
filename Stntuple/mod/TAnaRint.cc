@@ -28,6 +28,7 @@ TAnaRint* TAnaRint::Instance(int argc, char** argv) {
 
 				// for the sake of simplicity assume that the 
 				// number of parameters is less than 100
+  //  char* argvv[100];
   char* argvv[100];
   int   argcc;
 
@@ -37,15 +38,17 @@ TAnaRint* TAnaRint::Instance(int argc, char** argv) {
     //    TCdfRoot::Instance();
 				// loop over the parameters and filter out
 				// all the .tcl files and also -p flag
-    argvv[0]  = argv[0];
-    argcc     = 1;
-    for (int i=1; i<argc; i++) {
-      if (strcmp(argv[i],"-p") == 0) {
-      }
-      else if (strstr(argv[i],".tcl") != 0) {
-      }
-      else {
-	argvv[argcc++] = argv[i];
+    argcc = 0;
+    if (argc > 0) {
+      argvv[0]  = argv[0];
+      for (int i=1; i<argc; i++) {
+	if (strcmp(argv[i],"-p") == 0) {
+	}
+	else if (strstr(argv[i],".tcl") != 0) {
+	}
+	else {
+	  argvv[argcc++] = argv[i];
+	}
       }
     }
 
