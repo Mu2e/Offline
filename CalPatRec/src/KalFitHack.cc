@@ -78,7 +78,7 @@ namespace mu2e
   KalFitHack::KalFitHack(fhicl::ParameterSet const& pset) :
 // KalFitHack parameters
     _debug(pset.get<int>("debugLevel",0)),
-    _weedhits(pset.get<bool>("weedhits")),
+    _weedhits(pset.get<vector<bool>>("weedhits")),
     _maxhitchi(pset.get<double>("maxhitchi",4.0)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
     _hiterr(pset.get< vector<double> >("hiterr")),
@@ -170,6 +170,11 @@ namespace mu2e
     if(_hiterr.size() != _t0tol.size()) {
       throw cet::exception("RECO") 
 	<<"mu2e::KalFitHack: inconsistent ambiguity resolution" << endl;
+    }
+
+    if(_hiterr.size() != _weedhits.size()) {
+      throw cet::exception("RECO") 
+	<<"mu2e::KalFitHack: inconsistent _weedhits size" << endl;
     }
 					// construct the ambiguity resolvers
     AmbigResolver* ar;
@@ -293,11 +298,11 @@ namespace mu2e
 			   const StrawHitCollection*  straws , 
 			   std::vector<hitIndex>      indices, 
 			   double                     maxchi ,
-			   CalTimePeak*               TPeak   ) {
+			   int                        Final  ,
+			   CalTimePeak*               TPeak  ) {
 
 					// there must be a valid Kalman fit to add hits to
     int  activity(0);
-    int  final(1);
 
     if(kres._krep != 0 && kres._fit.success()){
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -395,7 +400,7 @@ namespace mu2e
 		 chi);
 	}
 // now that we've got the residual, turn off auto-ambiguity resolution
-	trkhit->setAmbigUpdate(false);
+//	trkhit->setAmbigUpdate(false);
       }
  // sort hits by flightlength (or in Z, which is the same)
       std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef->fitdir().fitDirection()));
@@ -411,10 +416,10 @@ namespace mu2e
 //                     in different cases - Giani?
 // 2015-04-10        : perform one iteration, -1 means 'use the smallest external error defined'
 //------------------------------------------------------------------------------------------
-	fitIteration(kres, -1, TPeak,final);
+	fitIteration(kres, -1, TPeak,Final);
       }
       else {
-	fitIteration(kres,-1,NULL,final);
+	fitIteration(kres,-1,NULL,Final);
       }
       kres._krep->addHistory(kres._fit,"AddHits");
     }
@@ -524,7 +529,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // drop outliers. weedHits() calls KalRep::fit(), so the fit success code may change
 //-----------------------------------------------------------------------------
-      if(_weedhits){
+      if(_weedhits[Iteration]) {
 	KRes._nweediter = 0;
 	changed        |= weedHits(KRes,Iteration,Final);
 	fit_success     = KRes._fit.success();
@@ -1159,51 +1164,6 @@ namespace mu2e
     while(ilow != hits.rend() && (*ilow)->fltLen() > flt0 )++ilow;
     while(ihigh != hits.end() && (*ihigh)->fltLen() < flt0 )++ihigh;
   }
-
-//-----------------------------------------------------------------------------
-// stolen from AmbigResolver class - 
-//-----------------------------------------------------------------------------
-//   const TrkSimpTraj* KalFitHack::findTraj(std::vector<TrkStrawHit*> const& Hits, 
-// 					  const KalRep*                    Krep) const {
-    
-//     typedef std::vector<KalSite*>::const_iterator KSI;
-
-//     const TrkSimpTraj* retval(0);
-// // if the fit is valid, use the full fit result.  Otherwise, use the reference traj
-//     if(!Krep->fitValid()){
-//       double locdist;
-//       retval = Krep->referenceTraj()->localTrajectory(Hits[0]->fltLen(),locdist);
-//     } else {
-// // find the range of these hits in the KalRep site vector
-//       std::vector<KalSite*> const& sites = Krep->siteList();
-//       KSI first = sites.end();
-//       KSI last  = sites.begin();
-//       for(auto ihit = Hits.begin();ihit != Hits.end();++ihit){
-// 	if((*ihit)->isActive()){
-// 	  const KalHit* hitsite = Krep->findHotSite(*ihit);
-// 	  // find the index to this site
-// 	  KSI ifnd = std::find(sites.begin(),sites.end(),hitsite);
-// 	  if(ifnd != sites.end()) {
-// 	    if(ifnd < first){
-// 	      first = ifnd;
-// 	    }
-// 	    if(ifnd > last){
-// 	      last = ifnd;
-// 	    }
-// 	  }
-// 	}
-//       }
-// // create a trajectory from the fit which excludes this set of hits
-//       static TrkSimpTraj* straj = Krep->seed()->clone();
-//       if(Krep->smoothedTraj(first,last,straj)){
-// 	retval = straj;
-//       } else {
-// 	double locdist;
-// 	retval = Krep->referenceTraj()->localTrajectory(Hits[0]->fltLen(),locdist);
-//       }
-//     }
-//     return retval;
-//   }
 
 } // namespace
 

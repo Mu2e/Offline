@@ -27,7 +27,9 @@ namespace mu2e
 
 // must initialize with a TrkDef
     KalFitResult(TrkDef const* tdef) : _tdef(tdef) ,_krep(0), _fit(TrkErrCode::fail), _nt0iter(0), _nweediter(0), _nunweediter(0), _ninter(0) {}
-    ~KalFitResult() {}
+    ~KalFitResult() {
+      if (_krep != 0) delete _krep;
+    }
 
     void    removeFailed() { if(_fit.failure())deleteTrack(); }
     void    fit() { if(_fit.success()) _fit = _krep->fit(); }
