@@ -11,14 +11,14 @@ fi
 
 #================================================================
 # known keywords
-kkw=(build graphics)
+kkw=(build g4vis)
 # a list of allowed values, the first one is the default
 opts_build() {
     echo prof debug
 }
 # a list of allowed values, the first one is the defaultg
-opts_graphics() {
-    echo ogl qt noogl
+opts_g4vis() {
+    echo ogl qt none
 }
 
 #================================================================

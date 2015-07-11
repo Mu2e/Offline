@@ -72,7 +72,7 @@ fi
 export MU2E_UPS_QUALIFIERS=+e7:+${build}
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
-if [[ $($MU2E_BASE_RELEASE/buildopts --graphics) == qt ]]; then
+if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
     MU2E_G4_GRAPHICS_QUALIFIER=':+qt'
 fi
 

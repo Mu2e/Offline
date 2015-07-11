@@ -51,7 +51,7 @@ mu2eopts = env['MU2EOPTS'];
 if mu2eopts[1] == 'qt':
     G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL',
                       '-DG4UI_USE_QT',          '-DG4VIS_USE_OPENGLQT' ]
-elif  mu2eopts[1] == 'noogl':
+elif  mu2eopts[1] == 'none':
     G4GS_CPPFLAGS = []
 else:
     G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
@@ -159,7 +159,7 @@ G4GLOBALIBS = [
               'libG4zlib'
               ]
 
-if mu2eopts[1] != 'noogl':
+if mu2eopts[1] != 'none':
     G4GLOBALIBS.append('libG4OpenGL')
 
 if g4_version < '4095':

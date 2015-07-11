@@ -131,8 +131,8 @@ if not level in known_levels:
     print '   The value must be one of the known levels: '  + str(known_levels)
     raise Exception('foo')
 
-graphicssys = subprocess.check_output([bopt, '--graphics']).strip()
-known_gs = ['ogl', 'qt', 'noogl' ]
+graphicssys = subprocess.check_output([bopt, '--g4vis']).strip()
+known_gs = ['ogl', 'qt', 'none' ]
 if not graphicssys in known_gs:
     print 'Unrecognized value for --mu2egs ' + graphicssys
     print '   The value must be one of the known systems: ' + str(known_gs)
@@ -151,7 +151,7 @@ if os.path.exists(gsoptfilename):
         print 'inspect (remove?) file: ' +  gsoptfilename + ' or verify option --mu2egs'
         raise Exception('gs')
 else:
-    if graphicssys == 'qt' or graphicssys == 'noogl':
+    if graphicssys == 'qt' or graphicssys == 'none':
         qtf = open(gsoptfilename,'w')
         qtf.write(graphicssys+'\n')
 
