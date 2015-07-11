@@ -31,3 +31,4 @@ EventDisplay/src/EventDisplayDict.cc
 EventDisplay/src/EventDisplayDict.h
 EMFCAnalysis
 .tup
+.buildopts
