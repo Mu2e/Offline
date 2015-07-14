@@ -39,6 +39,7 @@
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
+#include "RecoDataProducts/inc/AvikPIDProductCollection.hh"
 #include "RecoDataProducts/inc/PIDProductCollection.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
@@ -92,6 +93,8 @@ template class art::Ptr<mu2e::TrkCaloMatch>;
 template class std::vector<mu2e::TrkCaloMatch>;
 template class art::Ptr<mu2e::PIDProduct>;
 template class std::vector<mu2e::PIDProduct>;
+template class art::Ptr<mu2e::AvikPIDProduct>;
+template class std::vector<mu2e::AvikPIDProduct>;
 template class std::vector<std::pair<unsigned int, unsigned int> >;
 template class std::vector<mu2e::CrvCoincidenceCheckResult::CoincidenceCombination>;
 template class std::vector<mu2e::CrvRecoPulses::CrvSingleRecoPulse>;
@@ -122,6 +125,7 @@ template class art::Wrapper<mu2e::TrackerHitByID>;
 template class art::Wrapper<mu2e::TrackSeedCollection>;
 template class art::Wrapper<mu2e::TrkExtTrajCollection>;
 template class art::Wrapper<mu2e::PIDProductCollection>;
+template class art::Wrapper<mu2e::AvikPIDProductCollection>;
 template class art::Wrapper<std::vector <mu2e::CrvCoincidenceCheckResult::CoincidenceCombination> >;
 template class art::Wrapper<std::vector <mu2e::CrvRecoPulses::CrvSingleRecoPulse> >;
 template class art::Wrapper<mu2e::CrvRecoPulsesCollection>;

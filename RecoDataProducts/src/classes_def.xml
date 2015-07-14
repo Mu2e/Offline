@@ -72,6 +72,8 @@
  <class name="mu2e::TrkCaloMatchCollection" />
  <class name="mu2e::PIDProduct" />
  <class name="mu2e::PIDProductCollection" />
+ <class name="mu2e::AvikPIDProduct" />
+ <class name="mu2e::AvikPIDProductCollection" />
 
  <class name="art::Ptr<mu2e::CaloHit>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloHit> >"/>
@@ -106,7 +108,10 @@
  <class name="art::Ptr<mu2e::TrkCaloMatch>" />
  <class name="std::vector<mu2e::TrkCaloMatch>" />
  <class name="art::Ptr<mu2e::PIDProduct>" />
- <class name="std::vector<mu2e::PIDProduct>" />
+ <class name="art::Ptr<mu2e::AvikPIDProduct>" />
+
+<!--  see if we need 2nd declaration of the same thing <class name="std::vector<mu2e::PIDProduct>" /> -->
+
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
 
  <class name="art::Wrapper<mu2e::StrawHitCollection>"/>
@@ -132,6 +137,7 @@
  <class name="art::Wrapper<mu2e::TrackSeedCollection>"/>
  <class name="art::Wrapper<mu2e::TrkExtTrajCollection>" />
  <class name="art::Wrapper<mu2e::PIDProductCollection>" />
+ <class name="art::Wrapper<mu2e::AvikPIDProductCollection>" />
 
  <class name="mu2e::ExtMonFNALRawHit" />
  <class name="std::vector<mu2e::ExtMonFNALRawHit>" />

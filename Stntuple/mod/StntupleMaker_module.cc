@@ -68,11 +68,12 @@ protected:
 					// switches for individual branches
   int              fMakeCalData;
   int              fMakeClusters;
+  int              fMakeGenp;
+  int              fMakePid;
+  int              fMakeSimp;
   int              fMakeStrawData;
   int              fMakeTracks;
   int              fMakeTrigger;
-  int              fMakeGenp;
-  int              fMakeSimp;
   int              fMakeVirtualHits;
 //-----------------------------------------------------------------------------
 // module parameters
@@ -133,15 +134,16 @@ public:
 //------------------------------------------------------------------------------
 StntupleMaker::StntupleMaker(fhicl::ParameterSet const& PSet): 
   StntupleModule        (PSet,"StntupleMaker")
-  , fProcessName        (PSet.get<string> ("processName"    ,"PROD"          ))
-  , fMakeCalData        (PSet.get<int>         ("makeCalData"    ,        0       ))
-  , fMakeClusters       (PSet.get<int>         ("makeClusters"   ,        1       ))
+  , fProcessName        (PSet.get<string>      ("processName"    ))
+  , fMakeCalData        (PSet.get<int>         ("makeCalData"    ))
+  , fMakeClusters       (PSet.get<int>         ("makeClusters"   ))
+  , fMakeGenp           (PSet.get<int>         ("makeGenp"       ))
+  , fMakePid            (PSet.get<int>         ("makePid"        ))
+  , fMakeSimp           (PSet.get<int>         ("makeSimp"       ))
   , fMakeStrawData      (PSet.get<int>         ("makeStrawData"  ))
   , fMakeTracks         (PSet.get<int>         ("makeTracks"     ))
-  , fMakeTrigger        (PSet.get<int>         ("makeTrigger"    ,        0       ))
-  , fMakeGenp           (PSet.get<int>         ("makeGenp"       ,        1       ))
-  , fMakeSimp           (PSet.get<int>         ("makeSimp"       ,        1       ))
-  , fMakeVirtualHits    (PSet.get<int>         ("makeVirtualHits",        0       ))
+  , fMakeTrigger        (PSet.get<int>         ("makeTrigger"    ))
+  , fMakeVirtualHits    (PSet.get<int>         ("makeVirtualHits"))
   
   , fG4ModuleLabel          (PSet.get<string>        ("g4ModuleLabel"          ))
   , fGeneratorModuleLabel   (PSet.get<string>        ("generatorModuleLabel"   ))
@@ -344,6 +346,25 @@ void StntupleMaker::beginJob() {
 
     if (cluster_data) {
       cluster_data->AddCollName("mu2e::CaloClusterCollection",fCaloClusterMaker.data(),"");
+    }
+  }
+//-----------------------------------------------------------------------------
+// PID
+//-----------------------------------------------------------------------------
+  if (fMakePid) {
+    TStnDataBlock* pid_data;
+
+    pid_data = AddDataBlock("PidBlock",
+			    "TStnPidBlock",
+			    StntupleInitMu2ePidBlock,
+			    buffer_size,
+			    split_mode,
+			    compression_level);
+
+    SetResolveLinksMethod("PidBlock",StntupleInitMu2ePidBlockLinks);
+
+    if (pid_data) {
+      pid_data->AddCollName("mu2e::AvikPIDProductCollection",fPidModuleLabel[0].data(),"");
     }
   }
 //-----------------------------------------------------------------------------

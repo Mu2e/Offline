@@ -15,4 +15,18 @@ ParticleID : {
     doDisplay         : false
 }
 
+
+AvikPID : {
+    module_type             : AvikPID
+    trkPatRecDemModuleLabel : TrkPatRecDem
+    trkPatRecDmmModuleLabel : TrkPatRecDmm
+    EleDedxTemplateFile     : "ParticleID/test/electrontemplates_v427.dedx"
+    MuoDedxTemplateFile     : "ParticleID/test/muontemplates_v427.dedx"
+#    fitparticle             : 11
+#    fitdirection            : 0
+    verbosity               : 0
+    diagLevel               : 0 
+    debugLevel              : 0
+}
+
 END_PROLOG

@@ -558,7 +558,7 @@ void TAnaDump::printKalRep(const KalRep* Krep, const char* Opt, const char* Pref
   }
 
   if (opt.Index("hits") >= 0) {
-  //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // print detailed information about the track hits
 //-----------------------------------------------------------------------------
     const TrkHotList* hot_list = Krep->hotList();
