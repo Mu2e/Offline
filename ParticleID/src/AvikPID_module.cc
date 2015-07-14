@@ -641,7 +641,7 @@ namespace mu2e {
 			      double&         Slope   , 
 			      double&         SlopeErr) {
     
-    double dl, dr, fltSum(0), resSum(0), fltMean, resMean, fltVar, resVar, fltRes, fltDev, resDev, rCoeff;
+    double dl, dr, fltSum(0), resSum(0), fltMean, resMean, fltVar(0), resVar(0), fltRes(0), fltDev, resDev, rCoeff;
 
     int n = Fltlen.size();
 
