@@ -97,7 +97,7 @@ physics :
 
 physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotonArrivals.processNames   : ["*"]
-physics.producers.CrvCoincidence.verboseLevel      : 4
+physics.producers.CrvCoincidence.verboseLevel      : 5
 
 outputs: 
 {

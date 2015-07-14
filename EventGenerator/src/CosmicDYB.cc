@@ -157,6 +157,8 @@ namespace mu2e
       if(_directionChoice==ALL) throw cet::exception("Configuration")<<"Vertical production planes require a cosmicDYB.directionChoice other than All e.g. Positive_z or Negative_x\n";
       if(_dx!=0 && _dz!=0) throw cet::exception("Configuration")<<"Vertical production planes must have either cosmicDYB.dx:0 or cosmicDYB.dz:0 \n";
       if(_dx==0 && _dz==0) throw cet::exception("Configuration")<<"Vertical production planes cannot have both cosmicDYB.dx:0 and cosmicDYB.dz:0 \n";
+      if((_directionChoice==POSITIVE_X || _directionChoice==NEGATIVE_X) && _dx!=0) throw cet::exception("Configuration")<<"Orientation of the production plane doesn't match cosmicDYB.directionChoice\n";
+      if((_directionChoice==POSITIVE_Z || _directionChoice==NEGATIVE_Z) && _dz!=0) throw cet::exception("Configuration")<<"Orientation of the production plane doesn't match cosmicDYB.directionChoice\n";
       _dy=config.getDouble("cosmicDYB.dy");
     }
 
@@ -241,6 +243,8 @@ namespace mu2e
       _hStartY     = tfdir.make<TH1D>( "StartY",     "StartY",     2000, -5.0e3, 15.0e3 );
       _hStartPlane = tfdir.make<TH1D>( "StartPlane", "StartPlane",    5,  0,      5);
       _hStartE     = tfdir.make<TH1D>( "StartE",     "StartE",      500,  0,      _muEMax*GeV );
+      _hStartTheta = tfdir.make<TH1D>( "StartTheta", "StartTheta",  100, -M_PI,   M_PI);
+      _hStartPhi   = tfdir.make<TH1D>( "StartPhi",   "StartPhi",    100, -M_PI,   M_PI);
     }
   }  // CosmicDYB()
 
@@ -309,6 +313,8 @@ namespace mu2e
       double sy = safeSqrt(1. - cosTh*cosTh);
 
       double phi = 2.*M_PI*_randFlat.fire();
+      if(_vertical && _dz==0) phi = acos(1-2*_randFlat.fire());             //0...pi
+      if(_vertical && _dx==0) phi = acos(1-2*_randFlat.fire()) - M_PI/2.0;  //-pi/2...pi/2
 
       CLHEP::HepLorentzVector mom(p*sy*cos(phi), -p*cy, p*sy*sin(phi), E);
 
@@ -378,6 +384,8 @@ namespace mu2e
         _hStartXZ->Fill(pos.x(), pos.z());
         _hStartY->Fill(pos.y());
         _hStartE->Fill(E);
+        _hStartTheta->Fill(acos(mom.vect().unit().y()));
+        _hStartPhi->Fill(atan2(mom.vect().z(),mom.vect().x()));
       }
 
       if(_verbose>1) std::cout << "starting position = " << pos << std::endl;

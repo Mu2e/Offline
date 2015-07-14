@@ -45,6 +45,8 @@ namespace mu2e {
     TH1D *_hStartY;
     TH1D *_hStartPlane;
     TH1D *_hStartE;
+    TH1D *_hStartTheta;
+    TH1D *_hStartPhi;
 
     // Muon mass
     double _mMu;
