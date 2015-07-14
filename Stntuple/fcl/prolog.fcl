@@ -25,11 +25,13 @@ StntupleMaker : {
 # define which branches to make
 #------------------------------------------------------------------------------    
     makeCalData         : 0
-    makeStrawData       : 0
-    makeTracks          : 1
     makeClusters        : 1
     makeGenp            : 1
+    makePid             : 1
     makeSimp            : 1
+    makeStrawData       : 0
+    makeTracks          : 1
+    makeTrigger         : 0
     makeVirtualHits     : 1
 	    
     TimeOffsets          : { inputs : [ "protonTimeMap", "muonTimeMap" ] }    
