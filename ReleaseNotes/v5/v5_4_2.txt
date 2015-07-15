@@ -2,6 +2,15 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_4_2
 
+3) July 15, 2015 gandr
+
+   Added support for correlated particles in RootTreeSampler and
+   implemented new module InFlightParticleSampler.  Related changes to
+   other generator modules that re-sample stopped muons.
+
+   Moved common data structures from individual modules into
+   GeneralUtilities.
+
 2) July 11, 2015 gandr
     Changed the way to set up and build non-default configurations:
        - setup.sh will not accept any options
