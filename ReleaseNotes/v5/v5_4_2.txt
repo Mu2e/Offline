@@ -1,6 +1,11 @@
-Still under construction
 
            Release notes for Mu2e Offline software, v5_4_2
+
+4) July 15, 2015 ehrlich
+    - Notes added by kutschke
+    In the CRV event generator, fixed a bug in the CRV code
+    that affected the azimuthal direction of tracks when
+    the production plane is vertical.
 
 3) July 15, 2015 gandr
 
