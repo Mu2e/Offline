@@ -24,22 +24,9 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"
+#include "GeneralUtilities/inc/RSNTIO.hh"
 
 namespace mu2e {
-
-  //================================================================
-  namespace {
-    struct InputStop {
-      float x;
-      float y;
-      float z;
-      float t;
-
-      InputStop() : x(), y(), z(), t() {}
-
-      static unsigned numBranchLeaves() { return sizeof(InputStop)/sizeof(float); }
-    };
-  }
 
   //================================================================
   class StoppedMuonConversionGun : public art::EDProducer {
@@ -53,7 +40,7 @@ namespace mu2e {
     double           phimax_;
     RandomUnitSphere randomUnitSphere_;
 
-    RootTreeSampler<InputStop> stops_;
+    RootTreeSampler<IO::StoppedParticleF> stops_;
 
     static double electronMass() {
       return GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::e_minus).ref().mass().value();
@@ -83,7 +70,7 @@ namespace mu2e {
 
   //================================================================
   void StoppedMuonConversionGun::produce(art::Event& event) {
-    const InputStop& stop = stops_.fire();
+    const auto& stop = stops_.fire();
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
     const CLHEP::Hep3Vector p3 = randomUnitSphere_.fire(conversionMomentum_);

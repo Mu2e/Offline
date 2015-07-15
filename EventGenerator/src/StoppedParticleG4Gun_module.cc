@@ -38,22 +38,9 @@
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"
+#include "GeneralUtilities/inc/RSNTIO.hh"
 
 namespace mu2e {
-
-  //================================================================
-  namespace {
-    struct InputStop {
-      float x;
-      float y;
-      float z;
-      float t;
-
-      InputStop() : x(), y(), z(), t() {}
-
-      static unsigned numBranchLeaves() { return sizeof(InputStop)/sizeof(float); }
-    };
-  } // namespace {}
 
   //================================================================
   class StoppedParticleG4Gun : public art::EDProducer {
@@ -61,7 +48,7 @@ namespace mu2e {
     double mass_;
     int verbosityLevel_;
 
-    RootTreeSampler<InputStop> stops_;
+    RootTreeSampler<IO::StoppedParticleF> stops_;
 
   public:
     explicit StoppedParticleG4Gun(const fhicl::ParameterSet& pset);
@@ -96,7 +83,7 @@ namespace mu2e {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
-    const InputStop& stop = stops_.fire();
+    const auto& stop = stops_.fire();
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
     CLHEP::HepLorentzVector fourmom(CLHEP::Hep3Vector(), mass_);
 

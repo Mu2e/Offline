@@ -9,6 +9,40 @@
 namespace mu2e {
   namespace IO {
 
+    //================================================================
+    struct StoppedParticleF {
+      float x;
+      float y;
+      float z;
+      float t;
+
+      StoppedParticleF() : x(), y(), z(), t() {}
+
+      static const char *branchDescription() {
+        return "x/F:y/F:z/F:time/F";
+      }
+
+      static unsigned numBranchLeaves() { return 4; }
+    };
+
+    //================================================================
+    struct StoppedParticleTauNormF {
+      float x;
+      float y;
+      float z;
+      float t;
+      float tauNormalized;
+
+      StoppedParticleTauNormF() : x(), y(), z(), t(), tauNormalized() {}
+
+      static const char *branchDescription() {
+        return "x/F:y/F:z/F:time/F:tauNormalized/F";
+      }
+
+      static unsigned numBranchLeaves() { return 5; }
+    };
+
+    //================================================================
     struct InFlightParticleD {
       double x;
       double y;

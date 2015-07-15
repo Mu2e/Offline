@@ -40,22 +40,9 @@
 #include "Mu2eUtilities/inc/BinnedSpectrum.hh"
 #include "Mu2eUtilities/inc/Table.hh"
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"
+#include "GeneralUtilities/inc/RSNTIO.hh"
 
 namespace mu2e {
-
-  //================================================================
-  namespace {
-    struct InputStop {
-      float x;
-      float y;
-      float z;
-      float t;
-
-      InputStop() : x(), y(), z(), t() {}
-
-      static unsigned numBranchLeaves() { return sizeof(InputStop)/sizeof(float); }
-    };
-  } // namespace {}
 
   //================================================================
   class StntupleParticleGun : public art::EDProducer {
@@ -86,7 +73,7 @@ namespace mu2e {
 
     CLHEP::RandPoissonQ   randPoissonQ_;
 
-    RootTreeSampler<InputStop> stops_;
+    RootTreeSampler<IO::StoppedParticleF> stops_;
 
     TH1F   *hEnergy_;
 
@@ -211,7 +198,7 @@ namespace mu2e {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
     for (int i=0; i<n; ++i) {
-      const InputStop& stop = stops_.fire();
+      const auto& stop = stops_.fire();
 
       const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 

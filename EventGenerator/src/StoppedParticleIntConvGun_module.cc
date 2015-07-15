@@ -41,6 +41,7 @@
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 #include "SeedService/inc/SeedService.hh"
+#include "GeneralUtilities/inc/RSNTIO.hh"
 
 // ROOT includes
 #include "TTree.h"
@@ -48,21 +49,6 @@
 #include "TH1F.h"
 
 namespace mu2e {
-
-  //================================================================
-  namespace {
-    struct InputStop {
-      float x;
-      float y;
-      float z;
-      float t;
-      float tauNormalized;
-
-      InputStop() : x(), y(), z(), t() , tauNormalized() {}
-
-      static unsigned numBranchLeaves() { return sizeof(InputStop)/sizeof(float); }
-    };
-  } // namespace {}
 
   //================================================================
   class StoppedParticleIntConvGun : public art::EDProducer {
@@ -81,7 +67,7 @@ namespace mu2e {
     CLHEP::RandGeneral randSpectrum_;
     RandomUnitSphere randomUnitSphere_;
 
-    RootTreeSampler<InputStop> stops_;
+    RootTreeSampler<IO::StoppedParticleTauNormF> stops_;
 
     bool doHistograms_;
 
@@ -165,7 +151,7 @@ namespace mu2e {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
-    const InputStop& stop = stops_.fire();
+    const auto& stop = stops_.fire();
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
