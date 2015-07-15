@@ -59,6 +59,8 @@ namespace mu2e {
       float tauNormalized;
 
       InputStop() : x(), y(), z(), t() , tauNormalized() {}
+
+      static unsigned numBranchLeaves() { return sizeof(InputStop)/sizeof(float); }
     };
   } // namespace {}
 
@@ -104,7 +106,7 @@ namespace mu2e {
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randomUnitSphere_(eng_)
-    , stops_(eng_, pset.get<fhicl::ParameterSet>("pionStops"), sizeof(InputStop)/sizeof(float))
+    , stops_(eng_, pset.get<fhicl::ParameterSet>("pionStops"))
     , doHistograms_( pset.get<bool>("doHistograms",true) )
   {
     produces<mu2e::GenParticleCollection>();

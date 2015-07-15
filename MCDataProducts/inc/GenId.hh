@@ -42,8 +42,8 @@ namespace mu2e {
       ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
       extMonFNALGun, fromStepPointMCs, stoppedMuonGun, PiCaptureCombined,
       MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun,
-      fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun, 
-      CaloCalib,lastEnum
+      fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun,
+      CaloCalib, InFlightParticleSampler, lastEnum
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
@@ -57,7 +57,7 @@ namespace mu2e {
       "extMonFNALGun", "fromStepPointMCs", "stoppedMuonGun", "PiCaptureCombined", \
       "MARS", "StoppedParticleReactionGun","bremElectronGun", "muonicXRayGun", \
       "fromSimParticleStartPoint", "fromSimParticleCompact", "StoppedParticleG4Gun", \
-      "CaloCalib"
+      "CaloCalib", "InFlightParticleSampler"
 
   public:
 

@@ -36,6 +36,8 @@ namespace mu2e {
       float t;
 
       InputStop() : x(), y(), z(), t() {}
+
+      static unsigned numBranchLeaves() { return sizeof(InputStop)/sizeof(float); }
     };
   }
 
@@ -74,7 +76,7 @@ namespace mu2e {
     , phimin_          (pset.get<double>("phimin",  0. ))
     , phimax_          (pset.get<double>("phimax", CLHEP::twopi ))
     , randomUnitSphere_(eng_,czmin_,czmax_,phimin_,phimax_)
-    , stops_           (eng_, pset.get<fhicl::ParameterSet>("muonStops"), sizeof(InputStop)/sizeof(float))
+    , stops_           (eng_, pset.get<fhicl::ParameterSet>("muonStops"))
   {
     produces<mu2e::GenParticleCollection>();
   }

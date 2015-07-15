@@ -24,6 +24,8 @@ namespace mu2e {
       static const char *branchDescription() {
         return "x/D:y/D:z/D:time/D:px/D:py/D:pz/D:pdgId/I";
       }
+
+      static unsigned numBranchLeaves() { return 8; }
     };
 
     //================================================================

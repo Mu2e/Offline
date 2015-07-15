@@ -50,6 +50,8 @@ namespace mu2e {
       float t;
 
       InputStop() : x(), y(), z(), t() {}
+
+      static unsigned numBranchLeaves() { return sizeof(InputStop)/sizeof(float); }
     };
   } // namespace {}
 
@@ -72,7 +74,7 @@ namespace mu2e {
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , stops_(createEngine(art::ServiceHandle<SeedService>()->getSeed()),
-             pset.get<fhicl::ParameterSet>("muonStops"), sizeof(InputStop)/sizeof(float))
+             pset.get<fhicl::ParameterSet>("muonStops"))
   {
     produces<mu2e::GenParticleCollection>();
 
