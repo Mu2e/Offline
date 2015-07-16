@@ -55,7 +55,9 @@ int  StntupleInitMu2ePidBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode) {
     avik                   = &list_of_pid->at(i);
     pid->fAvikPid          = avik;
     pid->fTrackNumber      = avik->trkID();
-
+//-----------------------------------------------------------------------------
+// dedx and Vadim's drds and dx/ds
+//-----------------------------------------------------------------------------
     pid->fLogDedxProbEle   = avik->logDedxProbEle();
     pid->fLogDedxProbMuo   = avik->logDedxProbMuo();
 
@@ -63,22 +65,33 @@ int  StntupleInitMu2ePidBlock(TStnDataBlock* Block, AbsEvent* Evt, int Mode) {
     pid->fDrdsVadimEleErr  = avik->drdsVadimEleErr();
     pid->fDrdsVadimMuo     = avik->drdsVadimMuo();
     pid->fDrdsVadimMuoErr  = avik->drdsVadimMuoErr();
-    
+//-----------------------------------------------------------------------------
+// Avik: 'sum' is the Sum(dr^2), sq2 is the Sum(wr), where wr is the 'weighed residual'
+// see ParticleID/src/AvikPID_module.cc for the definition
+//-----------------------------------------------------------------------------
     pid->fNMatched         = avik->nMatched();
     pid->fNMatchedAll      = avik->nMatchedAll();
     pid->fSumAvikEle       = avik->sumAvikEle();
     pid->fSumAvikMuo       = avik->sumAvikMuo();
     pid->fSq2AvikEle       = avik->sq2AvikEle();
     pid->fSq2AvikMuo       = avik->sq2AvikMuo();
-
+//-----------------------------------------------------------------------------
+// Avik: weighted sum of doublet residuals (drds(d)-drds(trk))
+//-----------------------------------------------------------------------------
     pid->fNUsedOsEle       = avik->nUsedOsEle();
     pid->fNUsedOsMuo       = avik->nUsedOsMuo();
-
+    pid->fSumAvikOsEle     = avik->sumAvikOsEle();
+    pid->fSumAvikOsMuo     = avik->sumAvikOsMuo();
+//-----------------------------------------------------------------------------
+// these are not defined, should not be better than all hits
+//-----------------------------------------------------------------------------
     pid->fDrdsOsEle        = avik->drdsOsEle();
     pid->fDrdsOsEleErr     = avik->drdsOsEleErr();
     pid->fDrdsOsMuo        = avik->drdsOsMuo();
     pid->fDrdsOsMuoErr     = avik->drdsOsMuoErr();
-
+//-----------------------------------------------------------------------------
+// dr/ds fit using SS doublets - useless
+//-----------------------------------------------------------------------------
     pid->fNUsedSsEle       = avik->nUsedSsEle();
     pid->fNUsedSsMuo       = avik->nUsedSsMuo();
 
