@@ -790,6 +790,9 @@ namespace mu2e {
   }
 
 //------------------------------------------------------------------------------
+// calculate sums over the local doublet residuals
+// residuals are weighted, as Avik is trying to de-weight the tails
+//-----------------------------------------------------------------------------
   void AvikPID::calculateOsSums(const vector<Doublet>* ele_LOD, 
 				const vector<Doublet>* muo_LOD) 
   {
