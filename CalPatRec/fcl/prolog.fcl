@@ -128,14 +128,14 @@ CalPatRec            : {
 	makeStrawHitModuleLabel                 : makeSH
 	debugLevel                              : 0
 	minnstraws                              : 10
-	weedhits                                : [ true, true]   # default:true
 	maxiter                                 : 3
 	materialCorrection                      : false
 	seedsmear       			: 10000
 	maxhitchi                               : 5.0
-	hiterr                                  : [ 5.0, 1.44 ]
-	ambiguityStrategy       		: [ 0  , 0    ]
-	t0Tolerance				: [ 5.0, 5.0  ]
+	hiterr                                  : [ 5.0 , 1.44 ]
+	ambiguityStrategy       		: [ 0   , 0    ]
+	t0Tolerance				: [ 5.0 , 5.0  ]
+	weedhits                                : [ true, true ]   # default:true
 	initT0					: true 
 	updateT0				: false
 	T0UpdateMode                            : 1       # doesnt matter for the seed fit
@@ -180,12 +180,12 @@ CalPatRec            : {
 #------------------------------------------------------------------------------
     KalFitHack : {
 	debugLevel                              : 0
-	weedhits                                : [ true, true, true, true, true, true, true, true, true ]
 	materialCorrection                      : true
 	mingap					: 1.0
-	ambiguityStrategy    			: [ 4  , 4  , 4  , 4   , 4    , 4   , 4  , 4  , 4  ]
-	hiterr 					: [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
-	t0Tolerance				: [ 2.0, 1.0, 1.0, 1.0 , 0.5  , 0.5 , 0.2, 0.2, 0.1]
+	ambiguityStrategy    			: [ 4   , 4   , 4   , 4   , 4    , 4   , 4   , 4   , 4    ]
+	hiterr 					: [ 5.0 , 1.5 , 0.5 , 0.25, 0.125, 0.05, 0.0 , 0.0 , 0.0  ]
+	t0Tolerance				: [ 2.0 , 1.0 , 1.0 , 1.0 , 0.5  , 0.5 , 0.2 , 0.2 , 0.1  ]
+	weedhits                                : [ true, true, true, true, true , true, true, true, true ]
 	initT0					: true
 	updateT0				: true
 	T0UpdateMode                            : 1
