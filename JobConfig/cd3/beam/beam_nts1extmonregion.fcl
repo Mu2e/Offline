@@ -8,8 +8,8 @@ process_name :  nts1extmonregion
 source : { module_type : RootInput }
 
 services : {
-   message               : @local::default_message
-   TFileService          : { fileName : "hist_nts1extmonregion.root" }
+   message: @local::default_message
+   TFileService: { fileName: "nts.owner.cd3-beam-nts1-extmonregion.version.sequencer.root" }
 }
 
 physics : {
