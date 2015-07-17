@@ -138,23 +138,6 @@ if not graphicssys in known_gs:
     print '   The value must be one of the known systems: ' + str(known_gs)
     raise Exception('gs')
 
-# the following may not be needed as the compiler rebuilds it all, but
-# we may still want to "latch" to qt
-
-gsoptfilename='.gsopt'
-if os.path.exists(gsoptfilename):
-    qtf = open(gsoptfilename,'r')
-    rgs = qtf.readline(100).strip().lower()
-    if graphicssys!=rgs:
-        print 'Inconsitent build; the previous --mu2egs was: ' \
-            + str(rgs) + ' current one is ' + graphicssys
-        print 'inspect (remove?) file: ' +  gsoptfilename + ' or verify option --mu2egs'
-        raise Exception('gs')
-else:
-    if graphicssys == 'qt' or graphicssys == 'none':
-        qtf = open(gsoptfilename,'w')
-        qtf.write(graphicssys+'\n')
-
 env.Append( MU2EOPTS = [level, graphicssys] );
 
 # Set compile and link flags.
