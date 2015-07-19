@@ -35,43 +35,31 @@ namespace mu2e {
 
     G4bool CaloCrystalSD::ProcessHits(G4Step* aStep,G4TouchableHistory*)
     {
-
-	// Calculate energy deposition in the crystal
 	G4double edep = aStep->GetTotalEnergyDeposit();
 	if( edep<=0 ) return false;
 
-	_currentSize += 1;
 
-	if( _sizeLimit>0 && _currentSize>_sizeLimit ) {
-	  if( (_currentSize - _sizeLimit)==1 ) {
-            mf::LogWarning("G4") << "Maximum number of particles reached in " 
-                        	 << SensitiveDetectorName
-                        	 << ": "
-                        	 << _currentSize << std::endl;
-	  }
-	  return false;
+	_currentSize += 1;
+	if( _sizeLimit>0 && _currentSize>_sizeLimit && (_currentSize - _sizeLimit)==1) 
+	{
+            mf::LogWarning("G4") << "Maximum number of particles reached in " << SensitiveDetectorName<< ": "<< _currentSize <<std::endl;
+            return false;
 	}
 
-	const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
-
-	// Get crystal ID
-	G4int copyNo = touchableHandle->GetCopyNumber(0);
 
 	ProcessCode endCode(_processInfo->findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
-	// Originally the hit position was saved in local crystal frame.
-	// Not it is saved in Mu2e frame, hence the following code is
-	// commented out.
-	// Calculate enerdy deposition position along the crystal
-	 G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
-	 G4ThreeVector posWorld = aStep->GetPreStepPoint()->GetPosition();
-	 G4ThreeVector posLocal = toLocal.TransformPoint(posWorld);
+	const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
+
+	G4int copyNo = touchableHandle->GetCopyNumber(1);  // Make sure to get the right copy number level here
+
+	G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
+	G4ThreeVector posWorld           = aStep->GetPreStepPoint()->GetPosition();
+	G4ThreeVector posLocal           = toLocal.TransformPoint(posWorld);
 
 
-         //for diagnosis only, uncomment next two lines
-	 //if (_currentSize < 2)
-	 //  for (int i=0;i<8;++i) std::cout<<"Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "<<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(posWorld)<<std::endl;
-         
+	//for diagnosis purposes only when playing with the geometry, uncomment next two line
+	//for (int i=0;i<8;++i) std::cout<<"Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "<<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(posWorld)<<std::endl;
 
 	_collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                         		   copyNo,

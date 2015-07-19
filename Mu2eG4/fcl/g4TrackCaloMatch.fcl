@@ -8,7 +8,7 @@ process_name: TrackCaloMatchProd
 
 source: { 
   module_type: EmptyEvent
-  maxEvents : 100
+  maxEvents : 1000
  }
 
 services : {
@@ -21,9 +21,9 @@ services : {
         ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
         GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
         SeedService            : @local::automaticSeeds
-        BTrkHelper             : @local::BTrkHelperDefault
         G4Helper               : { }
-        //Timing               : { } 
+        //Timing               : { }
+	BTrkHelper : @local::BTrkHelperDefault  
    }
 }
 
@@ -113,6 +113,7 @@ physics: {
   	    fitterModuleLabel       : TPRDownstreameMinus
 	    fitparticle             : 11
 	    fitdirection            : 0 
+	    trkCaloMatchModuleLabel : TrkCaloMatcher
 	    g4ModuleLabel           : g4run
 	    virtualDetectorName     : virtualdetector	    
 	}

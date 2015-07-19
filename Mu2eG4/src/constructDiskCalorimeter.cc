@@ -164,12 +164,11 @@ namespace mu2e {
 
 
     //--------------------------------------
-    // Building blocks for a crystal
+    // Define and build crystal units
     //
-
-    //
-    // define required solids
-    double offsetAngle = (crystalnEdges==4) ? CLHEP::pi/4.0 : 0;  //need to add an offset to the phi angle to _squares_ to have them rotated properly
+    
+    // -- define required solids, need to add an offset to the phi angle to _squares_ to have them rotated properly    
+    double offsetAngle = (crystalnEdges==4) ? CLHEP::pi/4.0 : 0; 
 
     G4double crystalWrapZplanes[2] = {0,wrapDepth};
     G4double crystalWrapRinner[2]  = {0,0};
@@ -189,28 +188,46 @@ namespace mu2e {
 
     G4Box *crystalRO = new G4Box("CrystalRO",ROHalfTrans,ROHalfTrans,ROHalfThickness);
 
+    
 
-
-    //
-    // define required logical volumes
-
-    G4LogicalVolume *CrystalLog  = new G4LogicalVolume(crystal,   crysMaterial, "CrystalLog");
-    G4LogicalVolume *ROLog       = new G4LogicalVolume(crystalRO, readMaterial, "CrystalROLog" );    
+    // -- define required logical volumes
+    G4LogicalVolume *CrystalLog  = new G4LogicalVolume(crystal,     crysMaterial, "CrystalLog");
+    G4LogicalVolume *ROLog       = new G4LogicalVolume(crystalRO,   readMaterial, "CrystalROLog" );    
     
     G4VisAttributes* crys_visAtt = new G4VisAttributes(isCrystalVisible, G4Color::Green());
     crys_visAtt->SetForceSolid(isCrystalSolid);
     crys_visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
 
     CrystalLog->SetVisAttributes(crys_visAtt);    
-    ROLog->SetVisAttributes(G4VisAttributes::Invisible);
-    //ROLog->SetVisAttributes(G4Color::Cyan());
+    //ROLog->SetVisAttributes(G4VisAttributes::Invisible);
+    ROLog->SetVisAttributes(G4Color::Cyan());
    
-    //-- Sensitive detector
+    
+    
+    
+    // --build the crystal unit
+    G4LogicalVolume *WrapLog     = new G4LogicalVolume(crystalWrap, wrapMaterial, "WrapLog");  
+    //WrapLog->SetVisAttributes(G4VisAttributes::Invisible);
+    WrapLog->SetVisAttributes(G4Color::Magenta());
+
+    pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,ZPoscrystal),CrystalLog,"CrysPV",WrapLog,false,0,false);
+    doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
+    for (unsigned int iro=0;iro < XposRO.size();++iro)
+    {
+        pv = new G4PVPlacement(0,G4ThreeVector(XposRO[iro],YposRO[iro],ZPosR0),ROLog,"CrysROPV",WrapLog,true,iro,false);
+        doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+    }
+
+
+
+    // --add sensitive detector    
     G4VSensitiveDetector* ccSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloCrystal());
     G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
     
     CrystalLog->SetSensitiveDetector(ccSD);
     ROLog->SetSensitiveDetector(crSD);
+
 
 
 
@@ -241,7 +258,7 @@ namespace mu2e {
 
     if ( verbosityLevel > 0) 
     {
-	double zhl         = static_cast<G4Tubs*>(calorimeterInfo.solid)->GetZHalfLength();
+        double zhl         = static_cast<G4Tubs*>(calorimeterInfo.solid)->GetZHalfLength();
 	CLHEP::Hep3Vector const & CalorimeterOffsetInMu2e = calorimeterInfo.centerInMu2e();
 	double CalorimeterOffsetInMu2eZ = CalorimeterOffsetInMu2e[CLHEP::Hep3Vector::Z];
 	cout << __func__ << " Calorimeter mother center in Mu2e   : " << CalorimeterOffsetInMu2e << endl;
@@ -271,70 +288,54 @@ namespace mu2e {
 
     for (unsigned int idisk=0;idisk<nDisks;++idisk)
     {
-	ostringstream discname0;      discname0<<"DiskCalorimeter_" <<idisk;
-	ostringstream discname1;      discname1<<"DiskCase_" <<idisk;
+	  ostringstream discname0;      discname0<<"DiskCalorimeter_" <<idisk;
+	  ostringstream discname1;      discname1<<"DiskCase_" <<idisk;
 
-	double radiusIn       = cal.disk(idisk).innerRadius()-caseThickness;
-	double radiusOut      = cal.disk(idisk).outerRadius()+caseThickness;
-	double diskpar0[5]    = {radiusIn,radiusOut, diskDepth/2.0, 0., CLHEP::twopi};
-	double diskpar1[5]    = {radiusIn,radiusOut, caseDepth/2.0, 0., CLHEP::twopi};
+	  double radiusIn       = cal.disk(idisk).innerRadius()-caseThickness;
+	  double radiusOut      = cal.disk(idisk).outerRadius()+caseThickness;
+	  double diskpar0[5]    = {radiusIn,radiusOut, diskDepth/2.0, 0., CLHEP::twopi};
+	  double diskpar1[5]    = {radiusIn,radiusOut, caseDepth/2.0, 0., CLHEP::twopi};
 
-	//origin gives the position of the center of the disk, irrespective of the coordinate origin set in the calo description
-	G4ThreeVector posDisk = cal.disk(idisk).origin() - posCaloMother;
+	  
+	  //origin gives the position of the center of the disk, irrespective of the coordinate origin set in the calo description
+	  G4ThreeVector posDisk = cal.disk(idisk).origin() - posCaloMother;
 
-	diskBoxInfo[idisk] =  nestTubs(discname0.str(),
-                        	       diskpar0,fillMaterial,&cal.disk(idisk).rotation(),posDisk,
-                        	       calorimeterInfo,
-                        	       idisk,
-                        	       isDiskCaseVisible,G4Colour::Green(),isDiskCaseSolid,forceAuxEdgeVisible,
-                        	       true,doSurfaceCheck );
+	  diskBoxInfo[idisk] =  nestTubs(discname0.str(),
+                        		 diskpar0,fillMaterial,&cal.disk(idisk).rotation(),posDisk,
+                        		 calorimeterInfo,
+                        		 idisk,
+                        		 isDiskCaseVisible,G4Colour::Green(),isDiskCaseSolid,forceAuxEdgeVisible,
+                        		 true,doSurfaceCheck );
 
-	diskCaseInfo[idisk] = nestTubs(discname1.str(),
-                        	       diskpar1,diskMaterial,0,G4ThreeVector(0.0,0.0,ZposCase),
-                        	       diskBoxInfo[idisk],
-                        	       nTotCrystal,
-                        	       isDiskCaseVisible,G4Colour::Red(),isDiskCaseSolid,forceAuxEdgeVisible,
-                        	       true,doSurfaceCheck );
-			      
-	if ( verbosityLevel > 0) 
-	{
-	    cout << __func__ << " CalorimeterDisk center in Mu2e    : " << diskBoxInfo[idisk].centerInMu2e() << endl;
-	    cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << diskBoxInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - diskDepth/2.0 << ", " << diskBoxInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + diskDepth/2.0 << endl;
-	    cout << __func__ << " CalorimeterCase center in Mu2e    : " << diskCaseInfo[idisk].centerInMu2e() << endl;
-	    cout << __func__ << " CalorimeterCase Z extent in Mu2e  : " << diskCaseInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - caseDepth/2.0 << ", " << diskCaseInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + caseDepth/2.0 << endl;
-	}
+	  diskCaseInfo[idisk] = nestTubs(discname1.str(),
+                        		 diskpar1,diskMaterial,0,G4ThreeVector(0.0,0.0,ZposCase),
+                        		 diskBoxInfo[idisk],
+                        		 nTotCrystal,
+                        		 isDiskCaseVisible,G4Colour::Red(),isDiskCaseSolid,forceAuxEdgeVisible,
+                        		 true,doSurfaceCheck );
 
-
-	// fill it with crystals
-	for(int ic=0; ic <cal.disk(idisk).nCrystals(); ++ic)
-	{
-	      G4int id       = nTotCrystal+ic;
-	      G4int roidBase = cal.ROBaseByCrystal(id);
-
-              //position of crystal unit in the disk (same as crystal for x,y, but different for z)
-              CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPosition();
-              double x = unitPosition.x();
-              double y = unitPosition.y();
-              double z = -wrapDepth/2.0; 	      
+	  if ( verbosityLevel > 0) 
+	  {
+	      cout << __func__ << " CalorimeterDisk center in Mu2e    : " << diskBoxInfo[idisk].centerInMu2e() << endl;
+	      cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << diskBoxInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - diskDepth/2.0 << ", " << diskBoxInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + diskDepth/2.0 << endl;
+	      cout << __func__ << " CalorimeterCase center in Mu2e    : " << diskCaseInfo[idisk].centerInMu2e() << endl;
+	      cout << __func__ << " CalorimeterCase Z extent in Mu2e  : " << diskCaseInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - caseDepth/2.0 << ", " << diskCaseInfo[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + caseDepth/2.0 << endl;
+	  }
 
 
-	      G4LogicalVolume *thisWrapLog = new G4LogicalVolume(crystalWrap, wrapMaterial, "WrapLog");
-	      thisWrapLog->SetVisAttributes(G4VisAttributes::Invisible);
-	      pv = new G4PVPlacement(0,G4ThreeVector(x,y,z),thisWrapLog,"CrysWrapPV",diskCaseInfo[idisk].logical,false,id,false);
-              doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+	  // fill this disk with crystal units defined above
+	  for(int ic=0; ic <cal.disk(idisk).nCrystals(); ++ic)
+	  {	      
+        	CLHEP::Hep3Vector unitPosition = cal.disk(idisk).crystal(ic).localPosition();
+        	double x = unitPosition.x();
+        	double y = unitPosition.y();
+        	double z = -wrapDepth/2.0; 	      
 
-              pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,ZPoscrystal),CrystalLog,"CrysPV",thisWrapLog,false,id,false);
-              doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-
-              // add the readout
-	      for (unsigned int iro=0;iro < XposRO.size();++iro)
-	      {
-		 pv = new G4PVPlacement(0,G4ThreeVector(XposRO[iro],YposRO[iro],ZPosR0),ROLog,"CrysROPV_0",thisWrapLog,true,roidBase+iro,false);
-		 doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
-	      }
-
+		G4int id = nTotCrystal+ic;
+		pv       = new G4PVPlacement(0,G4ThreeVector(x,y,z),WrapLog,"CrysWrapPV",diskCaseInfo[idisk].logical,false,id,false);
+        	doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 	   }
-   
+
            nTotCrystal += cal.disk(idisk).nCrystals();
      }
 
@@ -346,21 +347,21 @@ namespace mu2e {
      //
      if (nPipes>0 && pipeRadius > 0.001) 
      {
-	for (unsigned int idisk=0;idisk<nDisks;++idisk)
-	{
-	   VolumeInfo caloPipe[nPipes];	
-	   for (int ipipe=0;ipipe<nPipes;++ipipe)
-	   {
-	      ostringstream pipename;  pipename<<"CaloPipe" <<idisk<<"_"<<ipipe;
-              std::array<double,5> pipeParam { {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0., CLHEP::twopi } };
+	  for (unsigned int idisk=0;idisk<nDisks;++idisk)
+	  {
+	       VolumeInfo caloPipe[nPipes];	
+	       for (int ipipe=0;ipipe<nPipes;++ipipe)
+	       {
+		    ostringstream pipename;  pipename<<"CaloPipe" <<idisk<<"_"<<ipipe;
+        	    std::array<double,5> pipeParam { {pipeRadius-pipeThickness, pipeRadius, pipeTorRadius[ipipe], 0., CLHEP::twopi } };
 
-	      caloPipe[ipipe] = nestTorus(pipename.str(),
-                                	  pipeParam,pipeMaterial,0,G4ThreeVector(0.0,0.0,ZposPipe),
-                                	  diskBoxInfo[idisk],1000*ipipe,
-                                	  isDiskPipeVisible,G4Color::Cyan(),isDiskPipeSolid,forceAuxEdgeVisible,
-                                	  true,doSurfaceCheck);
-	   }				   
-        }
+		    caloPipe[ipipe] = nestTorus(pipename.str(),
+                                		pipeParam,pipeMaterial,0,G4ThreeVector(0.0,0.0,ZposPipe),
+                                		diskBoxInfo[idisk],1000*ipipe,
+                                		isDiskPipeVisible,G4Color::Cyan(),isDiskPipeSolid,forceAuxEdgeVisible,
+                                		true,doSurfaceCheck);
+	       }				   
+          }
      }
 
 
