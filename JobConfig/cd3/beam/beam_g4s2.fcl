@@ -32,12 +32,6 @@ physics : {
       genCountLogger: {
          module_type: GenEventCountReader
       }
-
-      g4s2mubeam: {
-         module_type: StepPointMCDumper
-         hitsInputTag: "muonBeamFilter:DSVacuum"
-         TimeOffsets :  { inputs : [] }
-      }
    }
 
    producers: {
@@ -124,7 +118,7 @@ physics : {
    trigger_paths  : [trigmubeam, g4StatusFilter]
 
    outputs: [truncatedEvtsOutput, mubeamout]
-   an: [ genCountLogger, g4s2mubeam ]
+   an: [ genCountLogger ]
    end_paths: [outputs, an]
 }
 
