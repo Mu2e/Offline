@@ -87,10 +87,8 @@ class VaneCalorimeter: public BaseCalorimeter{
           double _absorberHalfThickness;
           bool   _isVaneTilted;
 
-
-
    };
 
 }
 
-#endif /* CalorimeterGeom_VaneCalorimeter_hh */
+#endif

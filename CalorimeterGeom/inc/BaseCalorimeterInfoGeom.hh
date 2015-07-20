@@ -5,10 +5,10 @@
 // $Author: echenard $
 // $Date: 2014/08/01 21:49:38 $
 //
-// Contains data for the BaseCalorimeter class
-// Should go away in the future when there will be the condition database
+// Contains data for the BaseCalorimeter class, much of it will be moved into the calibration 
+// in the future
 //
-// Might consider to have a class for the calibration system and pipes later 
+// Might consider to have a class for the calibration system and pipes later (or might not...)
 //
 // Original author B. Echenard
 //
@@ -31,6 +31,7 @@ namespace mu2e {
            virtual ~BaseCalorimeterInfoGeom() {}
 
            void crystalNedges(int value)           {_crystalNumEdges = value;}
+           void crystalShift(bool value)           {_crystalShift = value;}
            void nROPerCrystal(int value)           {_nROPerCrystal = value;}
            void crystalHalfLength(double value)    {_crystalHalfLength = value;}
            void crystalHalfTrans(double value)     {_crystalHalfTrans = value;}
@@ -45,6 +46,7 @@ namespace mu2e {
            void enveloppeZ1(double value)          {_enveloppeZ1 = value;} 
 
            int    crystalNedges()       const      {return _crystalNumEdges;}
+           bool   crystalShift()        const      {return _crystalShift;}
            int    nROPerCrystal()       const      {return _nROPerCrystal;}
            double crystalHalfLength()   const      {return _crystalHalfLength;}
            double crystalHalfTrans()    const      {return _crystalHalfTrans;}
@@ -58,9 +60,6 @@ namespace mu2e {
            double enveloppeZ0()         const      {return _enveloppeZ0;}
            double enveloppeZ1()         const      {return _enveloppeZ1;}
            
-	   
-	   
-	   
 	   
 	   
 	   void nonUniformity(double value)        {_nonUniformity = value;}
@@ -100,6 +99,7 @@ namespace mu2e {
        private:
 
           int    _crystalNumEdges;
+          bool   _crystalShift;
           int    _nROPerCrystal;
 	  double _crystalHalfTrans;
 	  double _crystalHalfLength;
@@ -136,4 +136,4 @@ namespace mu2e {
 
 }    
 
-#endif /* CalorimeterGeom_BaseCalorimeterInfoGeom_hh*/
+#endif 

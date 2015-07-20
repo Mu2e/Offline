@@ -20,26 +20,33 @@
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/HexMapper.hh"
 #include "CalorimeterGeom/inc/SquareMapper.hh"
+#include "CalorimeterGeom/inc/SquareShiftMapper.hh"
 
 
 
 namespace mu2e {
 
       Disk::Disk(int diskId, double rin, double rout, CLHEP::Hep3Vector const& size, 
-                 double cellSize, int crystalNedges, double crystalHalfLength, 
-		 CLHEP::Hep3Vector const& diskOriginToCrystalOrigin) : 
-        
-	CaloSection(diskId,size,crystalHalfLength,diskOriginToCrystalOrigin),
-	_radiusIn(rin),
-	_radiusOut(rout),
-	_cellSize(cellSize),
-	_mapToCrystal(),_crystalToMap()
+                 double cellSize, int crystalNedges, bool shiftCrystal, double crystalHalfLength, 
+		 CLHEP::Hep3Vector const& diskOriginToCrystalOrigin) :         
+	 CaloSection(diskId,size,diskOriginToCrystalOrigin),
+	 _radiusIn(rin),
+	 _radiusOut(rout),
+	 _cellSize(cellSize),
+	 _mapToCrystal(),
+	 _crystalToMap()
       { 
-	  if (crystalNedges==4) _crystalMap = std::unique_ptr<CrystalMapper>(new SquareMapper());
-	  else                  _crystalMap = std::unique_ptr<CrystalMapper>(new HexMapper());  
+	   if (crystalNedges==6) _crystalMap = std::shared_ptr<CrystalMapper>(new HexMapper());  
+	   else
+	   {
+	      if (shiftCrystal) _crystalMap = std::shared_ptr<CrystalMapper>(new SquareShiftMapper());
+	      else              _crystalMap = std::shared_ptr<CrystalMapper>(new SquareMapper());
+	   }    
 
-	  fillCrystals(diskOriginToCrystalOrigin); //See note in DiskCalorimeterMaker
+	   fillCrystals(diskOriginToCrystalOrigin); //See note in DiskCalorimeterMaker
       }
+      
+
 
      
       // take the crystals from the CrystalMap, and keep only those who are in the annulus
@@ -50,7 +57,6 @@ namespace mu2e {
           int nCrystal(0);
  	  for (int i=0;i<_crystalMap->nCrystalMax(nRingsMax);++i)
 	  {
-
 	      CLHEP::Hep2Vector xy = _cellSize*_crystalMap->xyFromIndex(i);
               CLHEP::Hep3Vector pos(xy.x(),xy.y(),0);
               pos += crystalOriginInDisk; 
@@ -65,11 +71,12 @@ namespace mu2e {
 	  }
       }
 
+
       bool Disk::isInsideDisk(double x, double y) const
       {    	 
 	 
-          for (int i=1;i<_crystalMap->nApex();++i) {  
-
+          for (int i=1;i<_crystalMap->nApex();++i)
+	  {  
               CLHEP::Hep2Vector p1(x + _cellSize*_crystalMap->apexX(i-1), y + _cellSize*_crystalMap->apexY(i-1));
               CLHEP::Hep2Vector p2(x + _cellSize*_crystalMap->apexX(i),   y + _cellSize*_crystalMap->apexY(i));
 
@@ -82,8 +89,7 @@ namespace mu2e {
       }
 
       double Disk::calcDistToSide(CLHEP::Hep2Vector& P1, CLHEP::Hep2Vector& P0) const
-      {
-	  
+      {	  
 	  CLHEP::Hep2Vector v = P1-P0;
        
 	  double t = -1.0*P0*v/(v*v);
@@ -98,7 +104,8 @@ namespace mu2e {
       int Disk::idxFromPosition(double x, double y) const 
       {
            int mapIdx = _crystalMap->indexFromXY(x/_cellSize,y/_cellSize);
-           return _mapToCrystal.at(mapIdx);
+           if (mapIdx > int(_mapToCrystal.size()) ) return -1;
+	   return _mapToCrystal.at(mapIdx);
       }
 
 
@@ -146,6 +153,8 @@ namespace mu2e {
 
       void Disk::print() const 
       {        
+	CaloSection::print();
+	std::cout<<std::endl;
 	std::cout<<"Number of crystals = "<<_crystalList.size()<<std::endl;
 	std::cout<<"Radius In / Out "<<_radiusIn<<" / "<<_radiusOut<<std::endl;
       }

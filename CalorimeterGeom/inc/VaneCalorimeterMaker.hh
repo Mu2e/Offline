@@ -53,6 +53,6 @@ namespace mu2e{
        int _verbosityLevel;
    };
 
-} //namespace mu2e
+} 
 
-#endif /* CalorimeterGeom_VaneCalorimeterMaker_hh */
+#endif 

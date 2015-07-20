@@ -28,10 +28,10 @@ namespace mu2e {
 
    bool DiskCalorimeter::isInsideSection(int idisk, CLHEP::Hep3Vector const& pos) const 
    {   
-	
 	CLHEP::Hep3Vector posInSection = toSectionFrameFF(idisk, pos);
 	double posZ = posInSection.z();
 	double zlim = 2*_caloGeomInfo.crystalHalfLength()+1e-6;
+
 
 	if ( posZ < -1e-6 || posZ > zlim )                                          return false;
 	if ( disk(idisk).idxFromPosition(posInSection.x(),posInSection.y()) == -1)  return false;	
@@ -44,7 +44,6 @@ namespace mu2e {
 
     std::vector<int> DiskCalorimeter::neighborsByLevel(int crystalId, int level)  const
     {
-
 	int iv = _fullCrystalList.at(crystalId)->sectionId();
 
 	int offset(0);

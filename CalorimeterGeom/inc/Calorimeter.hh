@@ -26,7 +26,6 @@ namespace mu2e {
     
     class Calorimeter: virtual public Detector{
 
-
 	public:
 
 	  enum CaloType {disk,vane};
@@ -66,26 +65,26 @@ namespace mu2e {
 	  
 
 	  //calo sections
-	  virtual unsigned int          nSection()                 const = 0;
-	  virtual CaloSection const&    section(int i)             const = 0;
+	  virtual unsigned int             nSection()                 const = 0;
+	  virtual CaloSection const&       section(int i)             const = 0;
 
 
 	  //crystal / readout section
-	  virtual unsigned int          nRO()                      const = 0;
-	  virtual unsigned int          nCrystal()                 const = 0;
-          virtual Crystal  const&       crystal(int i)             const = 0;
+	  virtual unsigned int             nRO()                      const = 0;
+	  virtual unsigned int             nCrystal()                 const = 0;
+          virtual Crystal  const&          crystal(int i)             const = 0;
 
-	  virtual          int          crystalByRO(int roid)      const = 0;
-	  virtual          int          ROBaseByCrystal(int id)    const = 0;
-
+	  virtual          int             crystalByRO(int roid)      const = 0;
+	  virtual          int             ROBaseByCrystal(int id)    const = 0;
 
 	  // neighbors, indexing 
-          virtual std::vector<int>  const& neighbors(int crystalId)            const = 0;	  
-          virtual std::vector<int>  const& nextNeighbors(int crystalId)        const = 0;	  
-          virtual std::vector<int>  neighborsByLevel(int crystalId, int level) const = 0;	  
+          virtual std::vector<int> const&  neighbors(int crystalId)                   const = 0;	  
+          virtual std::vector<int> const&  nextNeighbors(int crystalId)               const = 0;	  
+          virtual std::vector<int>         neighborsByLevel(int crystalId, int level) const = 0;	  
 
 
     };
 
 }
-#endif /* CalorimeterGeom_Calorimeter_hh */
+
+#endif 

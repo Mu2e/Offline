@@ -9,8 +9,6 @@
 //
 // Original author B Echenard 
 //
-// CrystalZ0 = front position of crystal along length
-// CrystalZ1 = back  position of crystal along length
 
 // C++ includes
 #include <vector>
@@ -30,16 +28,19 @@ namespace mu2e {
 
        public:
 
-	   CaloSection(int id, CLHEP::Hep3Vector const& size, double crystalHalfLength, CLHEP::Hep3Vector const& originToCrystalOrigin) : 
+	   CaloSection(int id, CLHEP::Hep3Vector const& size, CLHEP::Hep3Vector const& originToCrystalOrigin) : 
 	     _crystalList(), 
 	     _id(id), 
 	     _size(size),
 	     _origin(CLHEP::Hep3Vector(0,0,0)), 
 	     _originLocal(CLHEP::Hep3Vector(0,0,0)),
 	     _rotation(CLHEP::HepRotation::IDENTITY),
+	     _inverseRotation(CLHEP::HepRotation::IDENTITY),
 	     _originToCrystalOrigin(originToCrystalOrigin), 
 	     _zDownInTracker(0),
-	     _zUpInTracker(0)
+	     _zUpInTracker(0),
+	     _rInTracker(0),
+	     _rOutTracker(0)
 	   {}
 
 
@@ -68,7 +69,7 @@ namespace mu2e {
            void setRotation(        const CLHEP::HepRotation& rot)  {_rotation = rot; _inverseRotation = rot.inverse();}
 
            void setBoundsInTracker(CLHEP::Hep3Vector  const& trackerOffset, double z0, double z1, double r0, double r1);
-           void print();
+           void print() const;
 
 
 
@@ -89,12 +90,8 @@ namespace mu2e {
 	   double               _zUpInTracker;
 	   double               _rInTracker;
 	   double               _rOutTracker;
-
-
-
-
    };
 
 }
 
-#endif /* CalorimeterGeom_CaloSection_hh */
+#endif

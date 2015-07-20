@@ -30,17 +30,17 @@ namespace mu2e {
                  double cellSize, double crystalHalfLength, 
 		 CLHEP::Hep3Vector const& vaneOriginToCrystalOrigin) : 
 		 
-        CaloSection(vaneId,size,crystalHalfLength,vaneOriginToCrystalOrigin),
+        CaloSection(vaneId,size,vaneOriginToCrystalOrigin),
 	_rMin(rMin),
 	_nCrystalX(nCrystalX),
 	_nCrystalY(nCrystalY), 
 	_cellSize(cellSize)
-      {
-          fillCrystals(vaneOriginToCrystalOrigin); //see note in VaneCalorimeterMaker
+       {
+           fillCrystals(vaneOriginToCrystalOrigin); //see note in VaneCalorimeterMaker
 
- 	  _xActiveHalf = nCrystalX*cellSize+1e-6;   
-	  _yActiveHalf = nCrystalY*cellSize+1e-6;   
-     }
+ 	   _xActiveHalf = nCrystalX*cellSize+1e-6;   
+	   _yActiveHalf = nCrystalY*cellSize+1e-6;   
+      }
 
      
       void Vane::fillCrystals(CLHEP::Hep3Vector const& crystalOriginInVane)

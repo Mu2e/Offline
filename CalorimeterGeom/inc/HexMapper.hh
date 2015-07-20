@@ -38,10 +38,10 @@ namespace mu2e {
 
 	    HexMapper();
 
-            int               nCrystalMax(int maxRing)        {return 1 + 3*maxRing*(maxRing-1);}
-            int               nApex()                   const {return _apexX.size();}
-            double            apexX(int i)              const {return _apexX.at(i);}
-            double            apexY(int i)              const {return _apexY.at(i);}
+            int               nCrystalMax(int maxRing)                    {return 1 + 3*maxRing*(maxRing-1);}
+            int               nApex()                               const {return _apexX.size();}
+            double            apexX(int i)                          const {return _apexX.at(i);}
+            double            apexY(int i)                          const {return _apexY.at(i);}
 
 
 	    CLHEP::Hep2Vector xyFromIndex(int thisIndex)            const;

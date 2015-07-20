@@ -38,10 +38,10 @@ namespace mu2e {
 
 	    SquareMapper();
 
-            int               nCrystalMax(int maxRing)        {return (2*maxRing+1)*(2*maxRing+1);}
-            int               nApex()                   const {return _apexX.size();}
-            double            apexX(int i)              const {return _apexX.at(i);}
-            double            apexY(int i)              const {return _apexY.at(i);}
+            int               nCrystalMax(int maxRing)              {return (2*maxRing+1)*(2*maxRing+1);}
+            int               nApex()                         const {return _apexX.size();}
+            double            apexX(int i)                    const {return _apexX.at(i);}
+            double            apexY(int i)                    const {return _apexY.at(i);}
 
 	    CLHEP::Hep2Vector xyFromIndex(int thisIndex)      const;
             int               indexFromXY(double x, double y) const;
@@ -59,8 +59,8 @@ namespace mu2e {
 	    std::vector<double>  _apexX;
 	    std::vector<double>  _apexY;
     };
-
 }
+
 
 #endif
 

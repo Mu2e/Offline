@@ -14,6 +14,7 @@
 //         readout_id = crystal_id*nRoPerCrystal ... crystal_id*nRoPerCrystal + nRoPerCrystal-1		 
 
 
+
 //C++ includes
 #include <vector>
 #include <memory>
@@ -27,6 +28,8 @@
 
 //CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
+
+
 
 
 namespace mu2e {
@@ -66,9 +69,9 @@ namespace mu2e {
 	    virtual CLHEP::Hep3Vector fromSectionFrameFF(int sectionId, CLHEP::Hep3Vector const& pos) const ;
 	    virtual CLHEP::Hep3Vector fromTrackerFrame(  CLHEP::Hep3Vector const& pos)                const ;
             
-	    virtual CLHEP::Hep3Vector crystalAxis(int crystalId)                                    const ;
-	    virtual CLHEP::Hep3Vector crystalOrigin(int crystalId)                                  const;
-	    virtual CLHEP::Hep3Vector crystalOriginInSection(int crystalId)                         const;
+	    virtual CLHEP::Hep3Vector crystalAxis(int crystalId)                                      const ;
+	    virtual CLHEP::Hep3Vector crystalOrigin(int crystalId)                                    const;
+	    virtual CLHEP::Hep3Vector crystalOriginInSection(int crystalId)                           const;
 
 
 
@@ -114,4 +117,4 @@ namespace mu2e {
 
 }    
 
-#endif /* CalorimeterGeom_BaseCalorimeter_hh */
+#endif 

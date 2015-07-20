@@ -50,6 +50,6 @@ namespace mu2e{
 
     };
 
-} //namespace mu2e
+}
 
-#endif /* CalorimeterGeom_DiskCalorimeterMaker_hh */
+#endif 

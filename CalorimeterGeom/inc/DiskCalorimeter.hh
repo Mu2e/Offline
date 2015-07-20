@@ -77,4 +77,4 @@ namespace mu2e {
 
 }    
 
-#endif /* CalorimeterGeom_DiskCalorimeter_hh */
+#endif 

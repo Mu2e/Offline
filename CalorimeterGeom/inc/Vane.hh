@@ -68,4 +68,4 @@ namespace mu2e {
     };
 }
 
-#endif /* CalorimeterGeom_Vane_hh */
+#endif 

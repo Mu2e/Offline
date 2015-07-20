@@ -30,7 +30,7 @@ namespace mu2e {
        public:
 
 	   Disk(int id, double rin, double rout, CLHEP::Hep3Vector const& size,
-	        double cellSize, int crystalNedges, double crystalHalfLength, 
+	        double cellSize, int crystalNedges, bool shiftCrystal, double crystalHalfLength, 
 		CLHEP::Hep3Vector const& diskOriginToCrystalOrigin); 
 	   
 	   
@@ -54,7 +54,7 @@ namespace mu2e {
 	   double                          _radiusIn;
 	   double                          _radiusOut;
 	   double                          _cellSize;	 
-       	   std::unique_ptr<CrystalMapper>  _crystalMap;
+       	   std::shared_ptr<CrystalMapper>  _crystalMap;
 
            std::vector<int>                _mapToCrystal;
 	   std::vector<int>                _crystalToMap;
@@ -62,4 +62,4 @@ namespace mu2e {
     };
 }
 
-#endif /* CalorimeterGeom_Disk_hh */
+#endif 
