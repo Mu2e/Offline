@@ -32,12 +32,6 @@ physics : {
       genCountLogger: {
          module_type: GenEventCountReader
       }
-
-      g4s2mubeam: {
-         module_type: StepPointMCDumper
-         hitsInputTag: "muonBeamFilter:DSVacuum"
-         TimeOffsets :  { inputs : [] }
-      }
    }
 
    producers: {
@@ -58,7 +52,7 @@ physics : {
 	 }
 
          SDConfig : {
-            enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
+            enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
             preSimulatedHits: ["muonBeamFilter:virtualdetector"]
 	    TimeVD: { times: [] }
          }
@@ -75,7 +69,7 @@ physics : {
 
                {
 	          type: inVolume
-	          pars: [TS5Vacuum, DS2Vacuum, DS3Vacuum ]
+	          pars: [TS5Vacuum, DS1Vacuum, DS2Vacuum, DS3Vacuum ]
 	          write: DSVacuum
 	       }
             ]
@@ -87,6 +81,13 @@ physics : {
          volumesInput : "g4run"
          hitInputs : []
          particleInputs : [ "muonBeamFilter" ]
+      }
+
+      compressPVCRV : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "crvFilter" ]
       }
 
       compressPVFull : {
@@ -107,6 +108,15 @@ physics : {
          vetoDaughters: []
       }
 
+      crvFilter: {
+         module_type: FilterG4Out
+	 noInstanceName : true
+         mainHitInputs : [ "g4run:CRV" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
+         numSimParticleCollections : 1
+         vetoDaughters: []
+      }
+
       g4status: {
          module_type: FilterStatusG4
          input: "g4run"
@@ -120,11 +130,12 @@ physics : {
    }
 
    trigmubeam : [g4run, g4consistent, muonBeamFilter, compressPVmuonBeam]
+   trigcrv : [g4run, g4consistent, crvFilter, compressPVCRV]
    g4StatusFilter : [g4run, "!g4status", compressPVFull ]
-   trigger_paths  : [trigmubeam, g4StatusFilter]
+   trigger_paths  : [trigmubeam, trigcrv, g4StatusFilter]
 
-   outputs: [truncatedEvtsOutput, mubeamout]
-   an: [ genCountLogger, g4s2mubeam ]
+   outputs: [truncatedEvtsOutput, mubeamout, crvout]
+   an: [ genCountLogger ]
    end_paths: [outputs, an]
 }
 
@@ -141,6 +152,19 @@ outputs: {
          "keep *_compressPVmuonBeam_*_beamg4s2"
       ]
       fileName    : "sim.owner.cd3-beam-g4s2-mubeam.version.sequencer.art"
+   }
+
+   crvout : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: ["trigcrv"] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_crvFilter_*_beamg4s2",
+         "keep *_compressPVCRV_*_beamg4s2"
+      ]
+      fileName    : "sim.owner.cd3-beam-g4s2-crv.version.sequencer.art"
    }
 
   truncatedEvtsOutput : {
