@@ -352,12 +352,7 @@ namespace mu2e {
       art::Handle<CaloHitMCTruthCollection> caloHitMCTruthHandle;
       event.getByLabel(_caloReadoutModuleLabel, caloHitMCTruthHandle);
       CaloHitMCTruthCollection const& caloHitsMCTruth(*caloHitMCTruthHandle);
-      
-      //Get stepPointMC for crystal readout hits
-      art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
-      event.getByLabel(_caloReadoutModuleLabel,_caloHitMCCrystalPtrLabel,mcptrHandle);
-      PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
-      
+            
       //Get simParticles and stepPointMC summary for crystal readout hits
       art::Handle<CaloHitSimPartMCCollection> caloHitSimMCHandle;
       event.getByLabel(_caloReadoutModuleLabel, caloHitSimMCHandle);
@@ -384,7 +379,7 @@ namespace mu2e {
 
       
       //Utility to match  cloHits with MCtruth, simParticles and StepPoints
-      CaloHitMCNavigator caloHitNavigator(caloHits, caloHitsMCTruth, *hits_mcptr, caloHitSimPartMC);
+      CaloHitMCNavigator caloHitNavigator(caloHits, caloHitsMCTruth, caloHitSimPartMC);
 
 
       const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
@@ -432,10 +427,20 @@ namespace mu2e {
        {	   
 	   CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
 	   CLHEP::Hep3Vector crystalPos = cal.crystalOrigin(hit.id());
-           
-           CaloHit const& caloHit         = *(hit.readouts().at(0));
+           CaloHit const& caloHit       = *(hit.readouts().at(0));
+
+
 	   CaloHitSimPartMC const& hitSim = caloHitNavigator.sim(caloHit);
            int nPartInside                = hitSim.simParticles().size();
+
+
+	   _hcryE->Fill(hit.energyDep());
+	   _hcryT->Fill(hit.time());
+	   _hcryX->Fill(crystalPos.x());
+	   _hcryY->Fill(crystalPos.y());
+	   _hcryZ->Fill(crystalPos.z());
+
+
 
 	   _cryEtot             += hit.energyDep();
 	   _cryTime[_nHits]      = hit.time();
@@ -449,17 +454,11 @@ namespace mu2e {
            _crySimIdx[_nHits]    = _nSim;   	              
            _crySimLen[_nHits]    = nPartInside;
 
-	   _hcryE->Fill(hit.energyDep());
-	   _hcryT->Fill(hit.time());
-	   _hcryX->Fill(crystalPos.x());
-	   _hcryY->Fill(crystalPos.y());
-	   _hcryZ->Fill(crystalPos.z());
-
+	   
 	   for (int ip=0; ip<nPartInside;++ip) 
 	   { 
 	   
 	     art::Ptr<SimParticle> const& mother = hitSim.simParticles().at(ip);	   		
-             art::Ptr<StepPointMC> const& mchit  = hitSim.stepPoints().at(ip);
  	     
 	     art::Ptr<SimParticle> grandMother = mother;
              while (grandMother->hasParent()) grandMother = grandMother->parent();
@@ -467,16 +466,16 @@ namespace mu2e {
              
 	     _motId[_nSim]      = mother->id().asInt();
 	     _motPdgId[_nSim]   = mother->pdgId();
-	     _motmom[_nSim]     = mchit->momentum().mag();
+	     _motmom[_nSim]     = hitSim.momentum().at(ip);
 	     _motcrCode[_nSim]  = mother->creationCode();
 	     _motStartX[_nSim]  = mother->startPosition().x()+ 3904.;
 	     _motStartY[_nSim]  = mother->startPosition().y();
 	     _motStartZ[_nSim]  = mother->startPosition().z() - 10200;
 	     _motStartT[_nSim]  = mother->startGlobalTime();
-	     _motPosX[_nSim]    = mchit->position().x() + 3904.;  //value used to shift in tracker coordinate system
-	     _motPosY[_nSim]    = mchit->position().y();
-	     _motPosZ[_nSim]    = mchit->position().z() - 10200;  //value used to shift in tracker coordinate system
-	     _motTime[_nSim]    = mchit->time();
+	     _motPosX[_nSim]    = hitSim.position().at(ip).x() + 3904.;  //value used to shift in tracker coordinate system
+	     _motPosY[_nSim]    = hitSim.position().at(ip).y();
+	     _motPosZ[_nSim]    = hitSim.position().at(ip).z() - 10200;  //value used to shift in tracker coordinate system
+	     _motTime[_nSim]    = hitSim.time().at(ip);
 	     _motEdep[_nSim]    = hitSim.eDep().at(ip);
 
 	     _motGenIdx[_nSim]  = -1;	     
@@ -499,8 +498,6 @@ namespace mu2e {
 
 	  CaloContentMC clutil(caloHitNavigator,*clusterIt);
 	  std::vector<art::Ptr<SimParticle> > const& sim1 = clutil.simPart();
-	  std::vector<art::Ptr<StepPointMC> > const& step = clutil.stepPoints();
-	  std::vector<double>                 const& edep = clutil.edepTot();
 
 	  std::vector<int> _list;
 	  for (int i=0;i<clusterIt->size();++i) 
@@ -540,12 +537,12 @@ namespace mu2e {
 	     _clusimId[_nCluSim]     = sim1[ip]->id().asInt();
              _clusimPdgId[_nCluSim]  = sim1[ip]->pdgId();
              _clusimGenIdx[_nCluSim] = genIdx;
-             _clusimMom[_nCluSim]    = step[ip]->momentum().mag();
- 	     _clusimPosX[_nCluSim]   = step[ip]->position().x() + 3904.;  //value used to shift in tracker coordinate system
-	     _clusimPosY[_nCluSim]   = step[ip]->position().y();
-	     _clusimPosZ[_nCluSim]   = step[ip]->position().z() - 10200;  //value used to shift in tracker coordinate system
-	     _clusimTime[_nCluSim]   = step[ip]->time();
-	     _clusimEdep[_nCluSim]   = edep[ip];
+             _clusimMom[_nCluSim]    = clutil.momentum().at(ip);
+ 	     _clusimPosX[_nCluSim]   = clutil.position().at(ip).x() + 3904.;  //value used to shift in tracker coordinate system
+	     _clusimPosY[_nCluSim]   = clutil.position().at(ip).y();
+	     _clusimPosZ[_nCluSim]   = clutil.position().at(ip).z() - 10200;  //value used to shift in tracker coordinate system
+	     _clusimTime[_nCluSim]   = clutil.time().at(ip);
+	     _clusimEdep[_nCluSim]   = clutil.edepTot().at(ip);
 
    	     ++_nCluSim;
 	  }

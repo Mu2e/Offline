@@ -2,7 +2,8 @@
 #define MCDataProducts_CaloHitSimPartMC_hh
 
 //
-// Record information about SimParticles and StepPointMC generating hits in the calorimeter
+// Record information about SimParticles and StepPonintMC generating hits in the calorimeter. 
+// The posiiton refers to the SimParticle's position when it enters the crystal
 //
 // Original author Bertrand Echenard
 //
@@ -11,8 +12,8 @@
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 
-
-// c++ includes
+//other include
+#include "CLHEP/Vector/ThreeVector.h"
 #include <iostream>
 #include <vector>
 
@@ -21,36 +22,33 @@
 
 namespace mu2e {
 
+
    class CaloHitSimPartMC {
 
        public:
 
-	  CaloHitSimPartMC(): _simPart(),_step(),_edep() {}
+	  CaloHitSimPartMC(): _simPart(),_edep(),_time(),_mom(),_position() {}
 
-	  CaloHitSimPartMC(std::vector<art::Ptr<SimParticle> > const& simPart, 
-                	   std::vector<art::Ptr<StepPointMC> > const& step, 
-			   std::vector<double> edep) : 
-			   _simPart(simPart),_step(step),_edep(edep) {}
-
-	  // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
 
 	  std::vector<art::Ptr<SimParticle> > const& simParticles() const   {return _simPart;}
-	  std::vector<art::Ptr<StepPointMC> > const& stepPoints() const     {return _step;}
 	  std::vector<double>                 const& eDep() const           {return _edep;}
-
+	  std::vector<double>                 const& time() const           {return _time;}
+	  std::vector<double>                 const& momentum() const       {return _mom;}
+	  std::vector<CLHEP::Hep3Vector>      const& position() const       {return _position;}
 	  
-	  void add(art::Ptr<SimParticle> const& simPtr, art::Ptr<StepPointMC> const& stepPtr, double edep);
+	  void add(art::Ptr<SimParticle> const& simPtr, double edep, double time, double momentum, CLHEP::Hep3Vector const& position );
 	  void print(std::ostream& ost = std::cout) const;
 
 
        private:
 
 	    std::vector<art::Ptr<SimParticle> >  _simPart;
-	    std::vector<art::Ptr<StepPointMC> >  _step;
 	    std::vector<double>                  _edep;
+	    std::vector<double>                  _time;
+	    std::vector<double>                  _mom;
+	    std::vector<CLHEP::Hep3Vector>       _position;
    };
-
 
 } 
 
-#endif /* MCDataProducts_CaloHitSimPartMC_hh */
+#endif

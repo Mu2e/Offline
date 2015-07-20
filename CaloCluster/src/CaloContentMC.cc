@@ -1,7 +1,7 @@
 //
-// Utility to study the MC content of a calo cluster
+// Utility to study the MC content of a calo cluster. Browser over SimParticles of each crystal, and keep only distinct 
+// entries, updating the total energy, time and position
 // 
-// If the CaloHitSimPartMC information is not available, recompute it
 // 
 // Original author B. Echenard
 //
@@ -9,10 +9,9 @@
 // Mu2e includes
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "CaloCluster/inc/CaloContentMC.hh"
 
-#include "HitMakers/inc/CaloReadoutUtilities.hh"
-#include "HitMakers/inc/CaloHitSimUtil.hh"
+#include "CaloCluster/inc/CaloContentMC.hh"
+#include "HitMakers/inc/CaloCrystalMCUtil.hh"
 
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -24,6 +23,7 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
+#include "CLHEP/Vector/ThreeVector.h"
 
 // C++ includes
 #include <map>
@@ -35,7 +35,7 @@ namespace mu2e {
 
 
        CaloContentMC::CaloContentMC(CaloHitMCNavigator const& navi, CaloCluster const& cluster) : 
-	_navi(&navi), _cluster(&cluster), _simStep(), _simBaseSet(), _simPart(), _simBase(), _steps(), _edep()
+	_navi(&navi), _cluster(&cluster), _simUtilMap(), _simBase(), _simPart(), _edep(), _time(), _mom(), _pos()
        {	   
            fillCluster();
        }
@@ -47,74 +47,68 @@ namespace mu2e {
        {
        
             Calorimeter const & cal = *(GeomHandle<Calorimeter>());
-	    CaloReadoutUtilities readoutUtil;
+	    std::set<SimParticlePtr > simBaseSet;
 	    
-	    for ( int i=0;i<_cluster->size();++i) 
+	    
+	    for (int i=0;i<_cluster->size();++i) 
 	    {	 
 
 		//run only over the first readout, since the other are duplicating the StepPointMc in the crystal
-		CaloCrystalHit const& hit = *(_cluster->caloCrystalHitsPtrVector().at(i));
-	        CaloHit const& caloHit = *(hit.readouts().at(0));
+		CaloCrystalHit const& hit      = *(_cluster->caloCrystalHitsPtrVector().at(i));
+	        CaloHit const& caloHit         = *(hit.readouts().at(0));
                 CaloHitSimPartMC const& hitSim = _navi->sim(caloHit);
 
-		//if the CaloHitSimPartMC is empty, then recalculate it on the fly
-		if (hitSim.simParticles().size()) 
-		{
-		    fillMaps(hitSim);
-		}
-		else 
-		{
-	            CaloHitSimPartMC hitSimNew;
-                    PtrStepPointMCVector const& mcptr = _navi->ptrs(caloHit);
-	            readoutUtil.fillSimMother(cal,mcptr,hitSimNew);
-		    fillMaps(hitSimNew);
-		}
-	           
+ 	        fillMaps(hitSim,simBaseSet);	           
 	    }
 
 
-
-            for (SimStepMap::const_iterator it=_simStep.begin();it!=_simStep.end();++it)
+            for (auto const& it: _simUtilMap)
             {
-	       _simPart.push_back(it->first);
-	       _steps.push_back(it->second.step());
-	       _edep.push_back(it->second.edepTot());
+	       _simPart.push_back(it.first);
+	       _edep.push_back(it.second.edepTot());
+	       _time.push_back(it.second.time());
+	       _mom.push_back(it.second.momentum());
+	       _pos.push_back(it.second.position());
 	    }         
 
-	    for (std::set<SimParticlePtr >::const_iterator it=_simBaseSet.begin();it!=_simBaseSet.end();++it)
+
+	    for (std::set<SimParticlePtr >::const_iterator it=simBaseSet.begin();it!=simBaseSet.end();++it)
 	       _simBase.push_back(*it);
 
 
        }
 
 
-       void CaloContentMC::fillMaps(CaloHitSimPartMC const& hitSim)
+       void CaloContentMC::fillMaps(CaloHitSimPartMC const& hitSim, std::set<SimParticlePtr >& simBaseSet)
        {
 
-	    std::vector<SimParticlePtr > const& sim  = hitSim.simParticles();
-	    std::vector<StepPointMCPtr > const& step = hitSim.stepPoints();
-            std::vector<double>          const& edep = hitSim.eDep();
+	    std::vector<SimParticlePtr >    const& sim  = hitSim.simParticles();
+            std::vector<double>             const& edep = hitSim.eDep();
+            std::vector<double>             const& time = hitSim.time();
+            std::vector<double>             const& mom  = hitSim.momentum();
+            std::vector<CLHEP::Hep3Vector>  const& pos  = hitSim.position();
 
 	    for (unsigned int i=0;i<sim.size();++i)
-	    {	      
-		
-        	SimStepMap::iterator mfind = _simStep.find(sim[i]);            
-        	if (mfind != _simStep.end()) mfind->second.update(step[i],edep[i]); 
-        	else _simStep.insert(std::pair<SimParticlePtr, CaloHitSimUtil>(sim[i],CaloHitSimUtil(step[i],edep[i])) );
+	    {	      		        	
+		SimUtilMap::iterator mfind = _simUtilMap.find(sim[i]);            
+        	if (mfind != _simUtilMap.end()) mfind->second.update(edep[i],time[i],mom[i],pos[i]); 
+        	else _simUtilMap.insert(std::pair<SimParticlePtr, CaloClusterMCUtil>(sim[i],CaloClusterMCUtil(edep[i],time[i],mom[i],pos[i])) );
 
 		SimParticlePtr mother = sim[i];
         	while ( mother->hasParent() ) mother = mother->parent();
-  		_simBaseSet.insert(mother);                
+  		simBaseSet.insert(mother);                
             }
        }
 
 
+
+
+
        bool CaloContentMC::hasConversion() 
        {
-	     for (std::set<SimParticlePtr >::const_iterator it=_simBaseSet.begin();it!=_simBaseSet.end();++it)
+	     for (auto const& sim:_simBase)
 	     {	   
-		 SimParticlePtr const& simpartPtr = *it;
-		 if (simpartPtr->genParticle() && simpartPtr->genParticle()->generatorId()==GenId::conversionGun) return true;
+		 if (sim->genParticle() && sim->genParticle()->generatorId()==GenId::conversionGun) return true;
 	     }
 	     return false;
        }	   

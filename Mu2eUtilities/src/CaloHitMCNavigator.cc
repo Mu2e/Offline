@@ -14,11 +14,9 @@ namespace mu2e {
 
   CaloHitMCNavigator::CaloHitMCNavigator( CaloHitCollection const&               hits,
                                           CaloHitMCTruthCollection const&        truth,
-                                          PtrStepPointMCVectorCollection const&  ptrs,
                                           CaloHitSimPartMCCollection const&      sims ):
     _hits(&hits),
     _truth(&truth),
-    _ptrs(&ptrs),
     _sims(&sims)
    {}
 

@@ -44,7 +44,7 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "HitMakers/inc/CaloReadoutUtilities.hh"
+#include "HitMakers/inc/CaloCrystalMCUtil.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -343,7 +343,7 @@ namespace mu2e {
     fillMapById( hitmapCrystal, crystalStepsHandles);
     fillMapById( hitmapRO, readoutStepsHandles);
     
-    CaloReadoutUtilities readoutUtil;
+    CaloCrystalMCUtil readoutUtil;
     
     
     // First step, we loop over the StepPoints of each crystal and create a Hit for each stepPoint.

@@ -23,7 +23,6 @@ namespace mu2e {
 
 	   CaloHitMCNavigator( CaloHitCollection const&               hits,
                                CaloHitMCTruthCollection const&        truth,
-                               PtrStepPointMCVectorCollection const&  ptrs,
                                CaloHitSimPartMCCollection const&      sims);
 
 	   // Accept compiler supplied d'tor, copy c'tor and assignment operator.
@@ -32,19 +31,16 @@ namespace mu2e {
 	   // Access the underlying collections.
 	   CaloHitCollection              const& hits()   const {return *_hits;}
 	   CaloHitMCTruthCollection       const& truths() const {return *_truth;}
-	   PtrStepPointMCVectorCollection const& ptrs()   const {return *_ptrs;}
 	   CaloHitSimPartMCCollection     const& sims()   const {return *_sims;}
 
 
 	   // Find index in the correpsonding vector
 	   size_t index(CaloHit const& hit) const                {return &hit-&_hits->at(0);}
 	   size_t index(CaloHitMCTruth const& truth) const       {return &truth-&_truth->at(0);}
-	   size_t index(PtrStepPointMCVector const& ptrv) const  {return &ptrv-&_ptrs->at(0);}
 	   size_t index(CaloHitSimPartMC const& sim) const       {return &sim-&_sims->at(0);}
 
 	   template <class T>  CaloHit              const& hit(T const& element) const   {return _hits->at(index(element));}
 	   template <class T>  CaloHitMCTruth       const& truth(T const& element) const {return _truth->at(index(element));}
-	   template <class T>  PtrStepPointMCVector const& ptrs(T const& element) const  {return _ptrs->at(index(element));}
 	   template <class T>  CaloHitSimPartMC     const& sim(T const& element)  const  {return _sims->at(index(element));}
 
 
@@ -53,12 +49,11 @@ namespace mu2e {
 
 	   CaloHitCollection const*              _hits;
 	   CaloHitMCTruthCollection const*       _truth;
-	   PtrStepPointMCVectorCollection const* _ptrs;
 	   CaloHitSimPartMCCollection const*     _sims;
 
        };
 
-} // namespace mu2e
+}
 
-#endif /* Mu2eUtilities_CaloHitMCNavigator_hh */
+#endif
 

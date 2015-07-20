@@ -277,10 +277,6 @@ namespace mu2e {
       event.getByLabel(_caloReadoutModuleLabel, caloHitMCTruthHandle);
       CaloHitMCTruthCollection const& caloHitsMCTruth(*caloHitMCTruthHandle);
       
-      //Get stepPointMC for crystal readout hits
-      art::Handle<PtrStepPointMCVectorCollection> mcptrHandle;
-      event.getByLabel(_caloReadoutModuleLabel,_caloHitMCCrystalPtrLabel,mcptrHandle);
-      PtrStepPointMCVectorCollection const* hits_mcptr = mcptrHandle.product();
       
       //Get simParticles and stepPointMC summary for crystal readout hits
       art::Handle<CaloHitSimPartMCCollection> caloHitSimMCHandle;
@@ -294,16 +290,13 @@ namespace mu2e {
 
    
       //Utility to match  cloHits with MCtruth, simParticles and StepPoints
-      CaloHitMCNavigator caloHitNavigator(caloHits, caloHitsMCTruth, *hits_mcptr, caloHitSimPartMC);
+      CaloHitMCNavigator caloHitNavigator(caloHits, caloHitsMCTruth, caloHitSimPartMC);
 
    
 
       const double CrDensity = 4.9e-6;  // in kg/mm3 to be consistent with volume units!
       const double CrMass    = CrDensity*cal.caloGeomInfo().crystalVolume();
 	   
-
-
-      double _timeOffset(0);
 
 
 
@@ -333,22 +326,25 @@ namespace mu2e {
        //--------------------------  Do calorimeter hits --------------------------------
       
        _nHits = _nSim = 0;
-
+       
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
        {	   
-	   CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
-	   CLHEP::Hep3Vector crystalPos = cal.crystalOrigin(hit.id());
-           
+	   CaloCrystalHit const& hit      = caloCrystalHits.at(ic);
+	   CLHEP::Hep3Vector crystalPos   = cal.crystalOrigin(hit.id());           
            CaloHit const& caloHit         = *(hit.readouts().at(0));
+
+
 	   CaloHitSimPartMC const& hitSim = caloHitNavigator.sim(caloHit);
            int nPartInside                = hitSim.simParticles().size();
 
+
+
 	   _cryTime[_nHits]      = hit.time();
 	   _cryEdep[_nHits]      = hit.energyDep();
-	   _cryDose[_nHits]      = hit.energyDep() / CrMass / 1.6e-13; //dose in Gy = J / kg, 1 MeV = 1.6e-13 J
-	   _cryPosX[_nHits]      = crystalPos.x()+ 3904;
+	   _cryDose[_nHits]      = hit.energyDep() / CrMass / (CLHEP::joule/CLHEP::kg); //dose
+	   _cryPosX[_nHits]      = crystalPos.x();
 	   _cryPosY[_nHits]      = crystalPos.y();
-	   _cryPosZ[_nHits]      = crystalPos.z()-10200;
+	   _cryPosZ[_nHits]      = crystalPos.z();
 	   _cryId[_nHits]        = hit.id();
 	   _crySectionId[_nHits] = cal.crystal(hit.id()).sectionId();
            _crySimIdx[_nHits]    = _nSim;   	              
@@ -358,9 +354,6 @@ namespace mu2e {
 	   { 
 	   
 	     art::Ptr<SimParticle> const& mother = hitSim.simParticles().at(ip);	   		
-             art::Ptr<StepPointMC> const& mchit  = hitSim.stepPoints().at(ip);
-	    
-	     if (fabs( _timeOffset) < 1e-6) _timeOffset = hit.time()-mchit->time();
  	     
 	     art::Ptr<SimParticle> grandMother = mother;
              while (grandMother->hasParent()) grandMother = grandMother->parent();
@@ -368,26 +361,22 @@ namespace mu2e {
              
 	     _motId[_nSim]      = mother->id().asInt();
 	     _motPdgId[_nSim]   = mother->pdgId();
-	     _motmom[_nSim]     = mchit->momentum().mag();
+	     _motmom[_nSim]     = hitSim.momentum().at(ip);
 	     _motcrCode[_nSim]  = mother->creationCode();
 	     _motStartX[_nSim]  = mother->startPosition().x()+ 3904.;
 	     _motStartY[_nSim]  = mother->startPosition().y();
 	     _motStartZ[_nSim]  = mother->startPosition().z() - 10200;
 	     _motStartT[_nSim]  = mother->startGlobalTime();
-	     _motPosX[_nSim]    = mchit->position().x() + 3904.;  //value used to shift in tracker coordinate system
-	     _motPosY[_nSim]    = mchit->position().y();
-	     _motPosZ[_nSim]    = mchit->position().z() - 10200;  //value used to shift in tracker coordinate system
-	     _motTime[_nSim]    = mchit->time()+_timeOffset;
+	     _motPosX[_nSim]    = hitSim.position().at(ip).x() + 3904.;  //value used to shift in tracker coordinate system
+	     _motPosY[_nSim]    = hitSim.position().at(ip).y();
+	     _motPosZ[_nSim]    = hitSim.position().at(ip).z() - 10200;  //value used to shift in tracker coordinate system
+	     _motTime[_nSim]    = hitSim.time().at(ip);
 	     _motEdep[_nSim]    = hitSim.eDep().at(ip);
 
 	     _motGenIdx[_nSim]  = -1;	     
 	     if (generated) _motGenIdx[_nSim] = generated - &(genParticles.at(0));
 	     ++_nSim;
 	   
-             CLHEP::Hep3Vector hitPositionInCrystal = cal.toCrystalFrame(hit.id(),mchit->position());
-             _hviewxy->Fill(hitPositionInCrystal.x(),hitPositionInCrystal.y()); 
-             _hviewxz->Fill(hitPositionInCrystal.z(),hitPositionInCrystal.x()); 
-	     
 	   }
 	   	   
            ++_nHits;
