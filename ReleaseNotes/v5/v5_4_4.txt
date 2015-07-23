@@ -7,3 +7,18 @@ Still under construction
    - cleaned disk geometry - using a single logical volume for the crystals
    - Updated data product CaloHitSimPartMC to remove the dependance of
      StepPointMC, so they can be dropped from the data file
+
+
+2)  David Norvil Brown (Louisville).  23 July 2015
+    Modification to ExternalShieldingGeom/src/ExtShieldDownstreamMaker.cc
+    by UofL student Kyle Steffen to read notch information from
+    vector<double> instead of multiple doubles.  Makes ExtShieldDownstream
+    geometry text file smaller and more readable.
+    Modifications to Mu2eG4/geom/ExtShieldDownstream_v01.txt by DNB to take
+    advantage of Kyle's mods and also to make external shielding more
+    consistent with TeamCenter version - particularly barite vs. concrete
+    near the Stopping Target.
+    Added comments to Mu2eBuildingGeom/src/Mu2eBuildingMaker.cc and
+    Mu2eG4/geom/mu2eBuilding.txt to indicate mu2eBuilding is deprecated
+    and superceded by mu2eHall.  Will remove altogether in near future
+    release.

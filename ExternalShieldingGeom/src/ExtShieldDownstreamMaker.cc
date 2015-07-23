@@ -208,6 +208,7 @@ namespace mu2e {
 	nHoles.push_back(nHinput);
 	nNotches.push_back(nNinput);
 
+
 	if ( nHinput > 0 ) { 
 	  holeID.push_back(holeIdx);  // Keeps track of where in the list of 
 	  // holes this block's holes begin
@@ -215,20 +216,14 @@ namespace mu2e {
 	    holeIdx++; // Keep track of number of holes total
 	    // Location of the center of the hole in block coords
 	    // Use our now-familiar trick for variable names
-	    std::ostringstream hCentUVarName;
-	    hCentUVarName << hCentBaseName << "UType" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
-	    std::ostringstream hCentVVarName;
-	    hCentVVarName << hCentBaseName << "VType" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
-	    std::ostringstream hCentWVarName;
-	    hCentWVarName << hCentBaseName << "WType" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
+	    std::ostringstream hCentVarName;
+	    hCentVarName << hCentBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
 	    //	  std::cout << "DNB** About to read hole center for type " << it+1 << ", Box " << iboxt+1 << std::endl;
 	    
-	    CLHEP::Hep3Vector holeCenter(c.getDouble(hCentUVarName.str())
-					 *CLHEP::mm,
-					 c.getDouble(hCentVVarName.str())
-					 *CLHEP::mm,
-					 c.getDouble(hCentWVarName.str())
-					 *CLHEP::mm);
+	    CLHEP::Hep3Vector holeCenter = c.getHep3Vector(hCentVarName.str());
+	    holeCenter *= CLHEP::mm;
+
+
 	    holeLoc.push_back(holeCenter);			   
 
 	    // Get the hole radius 
@@ -265,34 +260,20 @@ namespace mu2e {
 
 	    // Location of the center of the notch in block coords
 	    // Use our now-familiar trick for variable names
-	    std::ostringstream nCentUVarName;
-	    nCentUVarName << nCentBaseName << "UType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
-	    std::ostringstream nCentVVarName;
-	    nCentVVarName << nCentBaseName << "VType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
-	    std::ostringstream nCentWVarName;
-	    nCentWVarName << nCentBaseName << "WType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
-
-	    CLHEP::Hep3Vector notchCenter(c.getDouble(nCentUVarName.str())
-					  *CLHEP::mm,
-					  c.getDouble(nCentVVarName.str())
-					  *CLHEP::mm,
-					  c.getDouble(nCentWVarName.str())
-					  *CLHEP::mm);
+	    std::ostringstream nCentVarName;
+	    nCentVarName << nCentBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
+	    
+	    CLHEP::Hep3Vector notchCenter = c.getHep3Vector(nCentVarName.str());
+	    notchCenter *= CLHEP::mm;
 	    notchLoc.push_back(notchCenter);			   
 
 	    // And now get the dimensions of the box that defines the notch
-	    std::ostringstream nDimUVarName;
-	    nDimUVarName << nDimBaseName << "UType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
-	    std::ostringstream nDimVVarName;
-	    nDimVVarName << nDimBaseName << "VType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
-	    std::ostringstream nDimWVarName;
-	    nDimWVarName << nDimBaseName << "WType" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
-
+	    std::ostringstream nDimVarName;
+	    nDimVarName << nDimBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Notch" << iNotch+1;
+	    
 	    std::vector<double> tempDubs;
-	    tempDubs.push_back(c.getDouble(nDimUVarName.str())*CLHEP::mm/2.0);
-	    tempDubs.push_back(c.getDouble(nDimVVarName.str())*CLHEP::mm/2.0);
-	    tempDubs.push_back(c.getDouble(nDimWVarName.str())*CLHEP::mm/2.0);
-
+	    c.getVectorDouble(nDimVarName.str(),tempDubs,3);
+	    for ( int idummy = 0; idummy < 3; idummy++) tempDubs[idummy] *= CLHEP::mm/2.0;
 	    notchDim.push_back(tempDubs);			   
 	  } // End of loop over notches for this block
 	} else {

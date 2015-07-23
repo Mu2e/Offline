@@ -1,5 +1,7 @@
 // The top surface of the world dirt is at the grade level.
 // Define it with respect to the experimental hall:
+// *** NOTE:  mu2eBuilding IS NOW DEPRECATED AND WILL BE REMOVED ALTOGETHER
+// IN AN UPCOMING RELEASE.  SEE mu2eHall FOR CURRENT INFO ON GEOMETRY ***
 double hall.floorTopDepthBelowGrade = 7620; // docdb-472v12 p12: (746'-0'' - 721'-0'')
 
 // Positions of the hall walls

@@ -4,7 +4,9 @@
 // $Id: Mu2eBuildingMaker.cc,v 1.17 2013/09/27 17:19:39 knoepfel Exp $
 // $Author: knoepfel $
 // $Date: 2013/09/27 17:19:39 $
-//
+// 
+// *** NOTE:  mu2eBuilding IS NOW DEPRECATED AND WILL BE REMOVED FROM AN
+// UPCOMING RELEASE.  REFER TO mu2eHall FOR CORRECT CURRENT GEOMETRY ***
 // Original author: Andrei Gaponenko
 
 // Mu2e include files
