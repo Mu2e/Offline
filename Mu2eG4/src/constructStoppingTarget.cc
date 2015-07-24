@@ -55,7 +55,7 @@ namespace mu2e {
     const bool doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false);
     const bool placePV              = true;
 
-    int verbosity(config.getInt("productionTarget.verbosity",0));
+    int verbosity(config.getInt("stoppingTarget.verbosity",0));
 
     if ( verbosity > 1 ) std::cout << "In constructStoppingTarget" << std::endl;
     // Master geometry for the Target assembly
@@ -137,12 +137,12 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
-        if (!config.getBool("targetPS.visible",true)) {
+        if (!config.getBool("stoppingTarget.visible",true)) {
           foilInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Magenta()));
           visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-          visAtt->SetForceSolid(config.getBool("targetPS.solid",true));
+          visAtt->SetForceSolid(config.getBool("stoppingTarget.solid",true));
           foilInfo.logical->SetVisAttributes(visAtt);
         }
       }// target foils
@@ -247,12 +247,12 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
-        if (!config.getBool("targetPS.visible",true)) {
+        if (!config.getBool("stoppingTarget.visible",true)) {
           supportStructureInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Blue()));
           visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-          visAtt->SetForceSolid(config.getBool("targetPS.solid",true));
+          visAtt->SetForceSolid(config.getBool("stoppingTarget.solid",true));
           supportStructureInfo.logical->SetVisAttributes(visAtt);
         }
       }// target foils support structures
