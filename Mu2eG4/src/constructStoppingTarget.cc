@@ -17,9 +17,6 @@
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
 
-//boost includes
-#include <boost/lexical_cast.hpp>
-
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
@@ -58,9 +55,9 @@ namespace mu2e {
     const bool doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false);
     const bool placePV              = true;
 
-    int verbosity(config.getInt("target.verbosity",0));
+    int verbosity(config.getInt("productionTarget.verbosity",0));
 
-    if ( verbosity > 1 ) std::cout<<"In constructStoppingTarget"<<std::endl;
+    if ( verbosity > 1 ) std::cout << "In constructStoppingTarget" << std::endl;
     // Master geometry for the Target assembly
     GeomHandle<StoppingTarget> target;
 
@@ -88,15 +85,21 @@ namespace mu2e {
                                      );
 
     // now create the individual target foils
+
     G4VPhysicalVolume* pv;
 
-    for (int itf=0; itf<target->nFoils(); itf++) {
+    for (int itf=0; itf<target->nFoils(); ++itf) {
 
         TargetFoil foil=target->foil(itf);
 
         VolumeInfo foilInfo;
         G4Material* foilMaterial = findMaterialOrThrow(foil.material());
-        foilInfo.name = "Foil";
+
+        std::ostringstream os;
+        os << std::setfill('0') << std::setw(2) << itf;
+        foilInfo.name = "Foil_" + os.str();
+
+        if ( verbosity > - 1 )  std::cout << __func__ << " " << foilInfo.name << std::endl;
 
         foilInfo.solid = new G4Tubs(foilInfo.name
                                     ,foil.rIn()
@@ -116,32 +119,35 @@ namespace mu2e {
         G4RotationMatrix* rot = 0; //... will have to wait
 
         G4ThreeVector foilOffset(foil.centerInMu2e() - targetInfo.centerInMu2e());
-        if ( verbosity > 1 ) cout<<"foil "<<itf<<" centerInMu2e="<<foil.centerInMu2e()<<", offset="<<foilOffset<<endl;
+        if ( verbosity > 1 ) std::cout << "foil " 
+                                  << itf
+                                  << " centerInMu2e=" 
+                                  << foil.centerInMu2e()
+                                  << ", offset="<< foilOffset<< std::endl;
 
         // G4 manages the lifetime of this object.
         pv = new G4PVPlacement( rot,
-                           foilOffset,
-                           foilInfo.logical,
-//                           ("TargetFoil_" + boost::lexical_cast<std::string>(itf)).c_str(), // problems with Analyses/StoppingTarget00_module.cc. This module detects the stops and writes out the coordinates to muonPointFile. Module requires stopping target volumes to have the name "TargetFoil_". So numbering is currently possible here.
-                           "TargetFoil_",
-                           targetInfo.logical,
-                           0,
-                           itf,
-                           false);
+                                foilOffset,
+                                foilInfo.logical,
+                                "Target"+foilInfo.name,
+                                targetInfo.logical,
+                                0,
+                                itf,
+                                false);
 
         doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
-        if (!config.getBool("target.visible",true)) {
+        if (!config.getBool("targetPS.visible",true)) {
           foilInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Magenta()));
           visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-          visAtt->SetForceSolid(config.getBool("target.solid",true));
+          visAtt->SetForceSolid(config.getBool("targetPS.solid",true));
           foilInfo.logical->SetVisAttributes(visAtt);
         }
       }// target foils
 
-    for (int itf=0; itf<target->nSupportStructures(); itf++) {
+    for (int itf=0; itf<target->nSupportStructures(); ++itf) {
 	TargetFoilSupportStructure supportStructure=target->supportStructure(itf);
         //TargetFoil foil=target->foil(itf);
 
@@ -149,7 +155,13 @@ namespace mu2e {
         VolumeInfo supportStructureInfo;
 
         G4Material* supportStructureMaterial = findMaterialOrThrow(supportStructure.material());
-        supportStructureInfo.name = "FoilSupportStructure";
+
+        std::ostringstream os;
+        os << std::setfill('0') << std::setw(2) << itf;
+        supportStructureInfo.name = "FoilSupportStructure_" + os.str();
+
+        if ( verbosity > - 1 )  std::cout << __func__ << " " << supportStructureInfo.name 
+                                          << std::endl;
 
         supportStructureInfo.solid = new G4Tubs(supportStructureInfo.name
                                     ,0
@@ -165,43 +177,82 @@ namespace mu2e {
                                                 );
         if(stSD) supportStructureInfo.logical->SetSensitiveDetector(stSD);
 
-	if ( verbosity > 1 ) std::cout << "supportStructure.support_id() = " << supportStructure.support_id() << "    target->nSupportStructures() = " << target->nSupportStructures() << "     target->nFoils() = " << target->nFoils() << "     supportStructure.length() = " << supportStructure.length() << std::endl;
+	if ( verbosity > 1 ) std::cout << "supportStructure.support_id() = "
+                                       << supportStructure.support_id() 
+                                       << "    target->nSupportStructures() = " 
+                                       << target->nSupportStructures() 
+                                       << "     target->nFoils() = " 
+                                       << target->nFoils() 
+                                       << "     supportStructure.length() = " 
+                                       << supportStructure.length() 
+                                       << std::endl;
 
-        // rotation matrices to rotate the orientation of the supporting wires. First rotate into xy-plane by 90deg rotation around y-axis, then rotate within xy-plane by appropiate rotation around z-axis
+        // rotation matrices to rotate the orientation of the
+        // supporting wires. First rotate into xy-plane by 90deg
+        // rotation around y-axis, then rotate within xy-plane by
+        // appropiate rotation around z-axis
+
         CLHEP::HepRotationY secRy(-M_PI/2.);
-        CLHEP::HepRotationZ secRz( -supportStructure.support_id() * 360.*CLHEP::deg / (target->nSupportStructures()/target->nFoils()) - 90.*CLHEP::deg - supportStructure.angleOffset()*CLHEP::deg);
+        CLHEP::HepRotationZ secRz( -supportStructure.support_id() * 360.*CLHEP::deg / 
+                                   (target->nSupportStructures()/target->nFoils()) 
+                                   - 90.*CLHEP::deg - supportStructure.angleOffset()*CLHEP::deg);
         G4RotationMatrix* supportStructure_rotMatrix = reg.add(G4RotationMatrix(secRy*secRz));
 
-	if ( verbosity > 1 ) std::cout << "supportStructure_rotMatrix = " << *supportStructure_rotMatrix << std::endl;
+	if ( verbosity > 1 ) std::cout << "supportStructure_rotMatrix = " 
+                                       << *supportStructure_rotMatrix << std::endl;
 
         // vector where to place to support tube
-        G4ThreeVector supportStructureOffset(supportStructure.centerInMu2e() - targetInfo.centerInMu2e()); // first find target center
+        // first find target center
+        G4ThreeVector supportStructureOffset(supportStructure.centerInMu2e() - targetInfo.centerInMu2e()); 
 
-        if ( verbosity > 1 ) cout<<"FoilSupportStructure "<<itf<<" centerInMu2e="<<supportStructure.centerInMu2e()<<", offset="<<supportStructureOffset<<endl;
+        if ( verbosity > 1 ) std::cout << supportStructureInfo.name << " "
+                                  << itf 
+                                  << " centerInMu2e="
+                                  << supportStructure.centerInMu2e()
+                                  << ", offset=" 
+                                  << supportStructureOffset
+                                  << std::endl;
 
-        G4ThreeVector vector_supportStructure_Orientation( (supportStructure.length()/2.+supportStructure.foil_outer_radius()) * std::cos(supportStructure.support_id() * 360.*CLHEP::deg / (target->nSupportStructures()/target->nFoils()) + 90.*CLHEP::deg + supportStructure.angleOffset()*CLHEP::deg), (supportStructure.length()/2.+supportStructure.foil_outer_radius()) * std::sin(supportStructure.support_id() * 360.*CLHEP::deg / (target->nSupportStructures()/target->nFoils()) + 90.*CLHEP::deg + supportStructure.angleOffset()*CLHEP::deg), 0);
-	if ( verbosity > 1 ) std::cout << "vector_supportStructure_Orientation = " << vector_supportStructure_Orientation << std::endl;
+        if ( verbosity > 1 ) std::cout << __func__ << " "
+                                       << supportStructureInfo.name
+                                       <<  std::endl;
+
+        G4ThreeVector 
+          vector_supportStructure_Orientation( (supportStructure.length()/2.+supportStructure.foil_outer_radius()) * 
+                                               std::cos(supportStructure.support_id() * 360.*CLHEP::deg / 
+                                                        (target->nSupportStructures()/target->nFoils()) + 
+                                                        90.*CLHEP::deg + 
+                                                        supportStructure.angleOffset()*CLHEP::deg), 
+                                               (supportStructure.length()/2.+supportStructure.foil_outer_radius()) * 
+                                               std::sin(supportStructure.support_id() * 360.*CLHEP::deg / 
+                                                        (target->nSupportStructures()/target->nFoils()) + 
+                                                        90.*CLHEP::deg + supportStructure.angleOffset()*CLHEP::deg), 0);
+        
+	if ( verbosity > 1 ) std::cout << "vector_supportStructure_Orientation = " 
+                                       << vector_supportStructure_Orientation << std::endl;
 
 	supportStructureOffset += vector_supportStructure_Orientation; // second add vector to support wire tube center
-	if ( verbosity > 1 ) std::cout << "supportStructureOffset += vector_supportStructure_Orientation = " << supportStructureOffset << std::endl;
+
+	if ( verbosity > 1 ) std::cout << "supportStructureOffset += vector_supportStructure_Orientation = " 
+                                       << supportStructureOffset << std::endl;
 
         pv = new G4PVPlacement( supportStructure_rotMatrix,
-                           supportStructureOffset,
-                           supportStructureInfo.logical,
-                           ("TargetSupportStructure_" + boost::lexical_cast<std::string>(itf)).c_str(),
-                           targetInfo.logical,
-                           0,
-                           itf,
-                           false);
+                                supportStructureOffset,
+                                supportStructureInfo.logical,
+                                supportStructureInfo.name,
+                                targetInfo.logical,
+                                0,
+                                itf,
+                                false);
 
         doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
-        if (!config.getBool("target.visible",true)) {
+        if (!config.getBool("targetPS.visible",true)) {
           supportStructureInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Blue()));
           visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-          visAtt->SetForceSolid(config.getBool("target.solid",true));
+          visAtt->SetForceSolid(config.getBool("targetPS.solid",true));
           supportStructureInfo.logical->SetVisAttributes(visAtt);
         }
       }// target foils support structures
