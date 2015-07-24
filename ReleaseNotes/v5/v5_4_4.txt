@@ -2,11 +2,23 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_4_4
 
-1) July 20, echenard
+3) July 24, 2015 genser
 
-   - cleaned disk geometry - using a single logical volume for the crystals
-   - Updated data product CaloHitSimPartMC to remove the dependance of
-     StepPointMC, so they can be dropped from the data file
+    Disambiguated Foil_ TargetFoil_ and FoilSupportStructure logical volume
+    names by basically doing: 
+    std::ostringstream os; os << std::setfill('0') << std::setw(2) << itf;
+    foilInfo.name = "Foil_" + os.str();
+    similarly for the physical ones; updated config parameter names using the current ones
+
+      Mu2eG4/src/constructStoppingTarget.cc      - the core of the changes, also broken the very long lines
+      Analyses/src/BkgRates_module.cc            - changed the handling of TargetFoil_
+      Analyses/src/CEL_module.cc                 
+      Analyses/src/RPC_module.cc                 
+      Analyses/src/ReadStoppedPis_module.cc      
+      Analyses/src/ReadVirtualDetector_module.cc 
+      Analyses/src/StoppingTarget00_module.cc     
+      Mu2eG4/geom/ProductionTargetInPS.txt       - added productionTarget.verbosity in comments
+      Mu2eG4/test/transportOnlyGeom.txt          - removed obsolete config parameter names
 
 
 2)  David Norvil Brown (Louisville).  23 July 2015
@@ -22,3 +34,11 @@ Still under construction
     Mu2eG4/geom/mu2eBuilding.txt to indicate mu2eBuilding is deprecated
     and superceded by mu2eHall.  Will remove altogether in near future
     release.
+
+1) July 20, echenard
+
+   - cleaned disk geometry - using a single logical volume for the crystals
+   - Updated data product CaloHitSimPartMC to remove the dependance of
+     StepPointMC, so they can be dropped from the data file
+
+
