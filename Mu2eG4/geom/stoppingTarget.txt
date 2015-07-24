@@ -5,6 +5,8 @@ double dummyStoppingTarget.halfLength =   400.;
 double dummyStoppingTarget.z0         =  5900.;
 string dummyStoppingTarget.material   = "WAGVacuum";
 
+// int   stoppingTarget.verbosity = 2;
+
 //
 // Describe targets.
 //
