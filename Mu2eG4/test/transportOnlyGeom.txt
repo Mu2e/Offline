@@ -113,9 +113,7 @@ bool protonabsorber.visible     = false;
 
 bool piondeg.visible = false;
 
-bool target.visible = false;
-
-bool PS.visible             = false;
+bool PS.visible                 = false;
 bool targetPS.visible           = false;
 bool supWheel_trgtPS.visible    = false;
 bool clamp_supWheel.visible     = false;
