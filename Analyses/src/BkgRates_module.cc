@@ -737,7 +737,7 @@ namespace mu2e {
       if (!(sim->fromGenerator())) continue;
 
       if (skipPDG.find(sim->pdgId()) != skipPDG.end()) {
-        if ( volInfo.name() == "TargetFoil_" ) {
+        if ( volInfo.name().compare(0,11,"TargetFoil_") == 0 ) {
         generatedStopped = true;
 
         }
@@ -756,7 +756,7 @@ namespace mu2e {
         tgtntpArray[idx++] = sim->pdgId();
         tgtntpArray[idx++] = trackId.asInt();
         tgtntpArray[idx++] = sim->endVolumeIndex();
-        tgtntpArray[idx++] = (volInfo.name() == "TargetFoil_");
+        tgtntpArray[idx++] = (volInfo.name().compare(0,11,"TargetFoil_") == 0 );
         
         _tgtNtup->Fill(tgtntpArray);
 

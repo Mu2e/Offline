@@ -368,7 +368,7 @@ namespace mu2e {
     if( physVolumes.isValid() ) {
 
       for ( size_t i=0; i<physVolumes->size(); ++i ) {
-        if( (*physVolumes)[i].name() == "TargetFoil_" ) {
+        if( (*physVolumes)[i].name().compare(0,11,"TargetFoil_") == 0 ) {
           vid_stop[i] = (*physVolumes)[i].copyNo();
           cout << "ReadVirtualDetector: register stopping target volume " << i << " = "
                << (*physVolumes)[i].name() << " " << (*physVolumes)[i].copyNo() << endl;

@@ -288,8 +288,8 @@ namespace mu2e {
         //      cout << " volumename = " << startVol.name() << endl;
         //
         // check three things:  (1) the mother is the original photon, (2) you're an e+ or e-, and (3) the photon converts in the foil
-        if ( sim.parentId().asInt() == 1 && startVol.name() == "TargetFoil_" ){
-          //    if ( sim.parentId() == 1 && startVol.name() == "ToyDSCoil" ){
+        if ( sim.parentId().asInt() == 1 && startVol.name().compare(0,11,"TargetFoil_") == 0 ){
+
           if (sim.pdgId() == PDGCode::e_minus) {
             bool electronHitTracker = false;
             bool electronAccepted = false;

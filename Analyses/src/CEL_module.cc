@@ -274,7 +274,9 @@ void CEL::analyze(const art::Event& event ) {
       }
       //
       // check you're the original electron and you were born in the foil
-      if ( !sim.hasParent() && startVol.name() == "TargetFoil_" && sim.pdgId() == PDGCode::e_minus){
+      if ( !sim.hasParent() 
+           && startVol.name().compare(0,11,"TargetFoil_") == 0 
+           && sim.pdgId() == PDGCode::e_minus){
         bool electronHitTracker = false;
         bool electronAccepted = false;
         //bool hitEnoughStraws = false;

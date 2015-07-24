@@ -190,7 +190,7 @@ namespace mu2e {
     ++_startVols[&startVol];
 
     int stopFoilId(-1);
-    if ( endVol.name() == "TargetFoil_" ){
+    if ( endVol.name().compare(0,11,"TargetFoil_") == 0 ) {
       stopFoilId = endVol.copyNo();
       _hStopFoil->Fill(stopFoilId);
     }

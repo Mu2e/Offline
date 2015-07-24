@@ -325,7 +325,7 @@ outputSimInfo ( std::ostream & os, const art::Event& event,
         // Check that this primary is a pi minus that stopped in target:
         if (   ( sim.pdgId() != PDGCode::pi_minus )
             || ( sim.stoppingCode() != ProcessCode::CHIPSNuclearCaptureAtRest )
-            || ( volumes->at(sim.endVolumeIndex()).name() != "TargetFoil_" )) { 
+            || ( volumes->at(sim.endVolumeIndex()).name().compare(0,11,"TargetFoil_") != 0 )) { 
           primary_is_as_expected = false;
         }     
         if ( primary_is_as_expected ) {
