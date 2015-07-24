@@ -11,6 +11,7 @@
 
 // Nominal target position in the Mu2e coordinate system: at PS center in XY, at the given Z:
 double productionTarget.zNominal = -6164.5;
+// int    productionTarget.verbosity = 2;
 
 // Optional shift of production target from the nominal
 //vector<double> productionTarget.offset = { 0., 0., 0.};
@@ -21,8 +22,8 @@ double targetPS_rOut              =      3.15; // mm
 double targetPS_rotX              =      0.;   // degree. Active rotation.
 double targetPS_rotY              =     14.00; // degree.
 string targetPS_materialName      = "G4_W";
-bool   targetPS.isVisible           = true;
-bool   targetPS.isSolid             = false;
+bool   targetPS.isVisible         = true;
+bool   targetPS.isSolid           = false;
 
 bool   targetPS.hasVD.backward = false;
 bool   targetPS.hasVD.forward  = false;
