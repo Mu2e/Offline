@@ -150,6 +150,11 @@ namespace mu2e {
       _add_proper_time(pset.get<bool>("addProperTime",false))
     {
 
+      write_ntvd    = pset.get<bool>("writeNTVD",true); 
+      write_nttvd   = pset.get<bool>("writeNTTVD",true);
+      write_ntpart  = pset.get<bool>("writeNTPART",true);
+      write_ntpart1 = pset.get<bool>("writeNTPART1",true);
+       
       Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
       if( pdg_ids.size()>0 ) {
         cout << "ReadVirtualDetector: save following particle types in the ntuple: ";
@@ -210,6 +215,11 @@ namespace mu2e {
     float *nt; // Need this buffer to fill TTree ntvd
     NtPartData ntp; // Buffer to fill particles ntuple
 
+    bool write_ntvd;
+    bool write_nttvd;
+    bool write_ntpart;
+    bool write_ntpart1;
+    
     // Pointers to the physical volumes we are interested in
     // -- stopping target
     map<int,int> vid_stop;
@@ -256,17 +266,22 @@ namespace mu2e {
 
     art::ServiceHandle<art::TFileService> tfs;
 
+    if (write_ntvd){
     _ntvd = tfs->make<TNtuple>( "ntvd", "Virtual Detectors ntuple",
                                 "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
                                 "xl:yl:zl:pxl:pyl:pzl:gtime:"
                                 "g4bl_weight:g4bl_time:run:ke:subrun:code");
+    }
 
+    if (write_nttvd){
     _nttvd = tfs->make<TNtuple>( "nttvd", "Time Virtual Detectors ntuple",
                                  "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
                                  "gtime:code:g4bl_weight:g4bl_time:run:ke:subrun");
+    }
 
     // Have to use TTree here, because one cannot use more than 100 variables in TNtuple
 
+    if (write_ntpart){
     _ntpart = tfs->make<TTree>("ntpart", "Particles ntuple");
     /*
       _ntpart->Branch("all",nt,
@@ -357,6 +372,7 @@ namespace mu2e {
     _ntpart->Branch("pztvd",       ntp.pztvd,      "pztvd[ntvd]/F");
     _ntpart->Branch("ptvd",        ntp.ptvd,       "ptvd[ntvd]/F");
     _ntpart->Branch("codetvd",     ntp.codetvd,    "codetvd[ntvd]/I");
+    }
 
   }
 
@@ -479,7 +495,9 @@ namespace mu2e {
       nt[21] = sqrt(mom.mag2()+mass*mass)-mass;
       nt[22] = event.id().subRun();
       nt[23] =  sim.creationCode();
-      _ntvd->Fill(nt);
+      if (write_ntvd){
+         _ntvd->Fill(nt);
+      }
 	}
       }
       
@@ -558,8 +576,9 @@ namespace mu2e {
       nt[15] = event.id().run();
       nt[16] = sqrt(mom.mag2()+mass*mass)-mass;
       nt[17] = event.id().subRun();
-
-      _nttvd->Fill(nt);
+      if (write_nttvd){
+         _nttvd->Fill(nt);
+      }
 
       if ( _nAnalyzed < _maxPrint){
         cout << "TVD hit: "
@@ -828,7 +847,9 @@ namespace mu2e {
         // Keep only those particles, which die late enough
         if( _timeCut>0.1 && ntp.tstop<_timeCut ) continue;
 
-        _ntpart->Fill();
+        if (write_ntpart){
+           _ntpart->Fill();
+        }
 
       }
     }
