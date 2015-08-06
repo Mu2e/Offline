@@ -17,7 +17,7 @@
 // C++ includes
 #include <string>
 #include <iosfwd>
-#include <map>
+#include <set>
 
 // Includes from Mu2e
 #include "Mu2eInterfaces/inc/Detector.hh"

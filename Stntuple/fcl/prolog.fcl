@@ -27,7 +27,7 @@ StntupleMaker : {
     makeCalData         : 0
     makeClusters        : 1
     makeGenp            : 1
-    makePid             : 1
+    makePid             : 0
     makeSimp            : 1
     makeStrawData       : 0
     makeTracks          : 1
