@@ -240,7 +240,7 @@ physics.producers.ParticleID.fitterModuleLabel       : TrkRecFit
 
 physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel  : MakeStereoHits
 physics.filters.MuHitDisplay.strawHitFlagMakerModuleLabel : FlagBkgHits
-physics.filters.MuHitDisplay.trkPatRecModuleLabel         : TrkRecFit
+physics.filters.MuHitDisplay.trkRecoModuleLabel           : TrkRecFit
 
 services.scheduler.defaultExceptions : false
 services.user.SeedService.policy           :  autoIncrement

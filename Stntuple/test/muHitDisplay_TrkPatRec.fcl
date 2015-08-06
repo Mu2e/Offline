@@ -235,7 +235,7 @@ physics.producers.ParticleID.fitterModuleLabel       : TrkPatRec
 
 physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel  : MakeStereoHits
 physics.filters.MuHitDisplay.strawHitFlagMakerModuleLabel : FlagBkgHits
-physics.filters.MuHitDisplay.trkPatRecModuleLabel         : TrkPatRec
+physics.filters.MuHitDisplay.trkRecoModuleLabel           : TrkPatRec
 
 services.scheduler.defaultExceptions : false
 services.user.SeedService.policy           :  autoIncrement
