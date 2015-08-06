@@ -58,7 +58,7 @@ physics :
 #     
       IntensityModel : 1
       MeanNumberOfProtonsPerMicrobunch : 3.1e7
-      FullRelativeWidth : 0.5
+      FullRelativeWidth : 1.0
     }
   }
 
