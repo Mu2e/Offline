@@ -93,11 +93,12 @@ void MakeCrvSiPMResponses::RechargeCell(Pixel &pixel)
   }
 }
 
-void MakeCrvSiPMResponses::SetSiPMConstants(double numberPixels, double bias,  
+void MakeCrvSiPMResponses::SetSiPMConstants(int numberPixels, int numberPixelsAtFiber, double bias,  
                                             double blindTime, double microBunchPeriod, double scaleFactor, 
                                             ProbabilitiesStruct probabilities)
 {
   _numberPixels = numberPixels;
+  _numberPixelsAtFiber = numberPixelsAtFiber;
   _bias = bias;
   _blindTime = blindTime;
   _microBunchPeriod = microBunchPeriod;
@@ -129,7 +130,7 @@ void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
   std::vector<double>::const_iterator iter;
   for(iter=photons.begin(); iter!=photons.end(); iter++)
   {
-    int cellid = _randFlat.fireInt(_numberPixels);
+    int cellid = _randFlat.fireInt(_numberPixelsAtFiber);
     _scheduledCharges.emplace(cellid, *iter);  //constructs ScheduledCharge(cellid, *iter)
   }
 
@@ -212,7 +213,7 @@ int main()
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
   MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(1584, 2.4, 0.0, 1695, 0.08, probabilities);
+  sim.SetSiPMConstants(1584, 1244, 2.4, 0.0, 1695, 0.08, probabilities);
   sim.Simulate(photonTimes, SiPMresponseVector);
 
   for(unsigned int i=0; i<SiPMresponseVector.size(); i++)

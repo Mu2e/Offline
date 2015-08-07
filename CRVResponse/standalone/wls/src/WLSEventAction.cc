@@ -136,7 +136,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     G4Material *fiber = G4Material::GetMaterial("PMMA",true); //fiber
     G4MaterialPropertiesTable* fiberPropertiesTable = fiber->GetMaterialPropertiesTable();
     G4MaterialPropertyVector *rindexFiber = fiberPropertiesTable->GetProperty("RINDEX");
-    double speedOfLightFiber = CLHEP::c_light/(*rindexFiber)[0];  //we assume that a constant rindex for all energies
+    double speedOfLightFiber = CLHEP::c_light/(*rindexFiber)[0];  //we assume a constant rindex for all energies
 
     WLSDetectorConstruction *detector = WLSDetectorConstruction::Instance();
 
@@ -296,7 +296,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
   static CLHEP::RandFlat randFlat(engine);
   static CLHEP::RandPoissonQ randPoissonQ(engine);
   MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(1584, 2.4, 0, 1695, 0.08, probabilities);
+  sim.SetSiPMConstants(1584, 1244, 2.4, 0, 1695, 0.08, probabilities);
 
   MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
   double binWidth = 12.5; //ns

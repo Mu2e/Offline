@@ -34,7 +34,6 @@ class WLSMaterials
     G4Material*        Pethylene;
     G4Material*        FPethylene;
     G4Material*        Polystyrene;
-    G4Material*        Silicone;
     G4Material*        Coating;
 
 };

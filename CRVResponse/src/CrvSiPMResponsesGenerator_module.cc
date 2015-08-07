@@ -51,6 +51,7 @@ namespace mu2e
     private:
     std::string _crvPhotonArrivalsModuleLabel;
     int         _numberPixels;
+    int         _numberPixelsAtFiber;
     double      _bias;
     double      _scaleFactor;
     double      _minCharge;
@@ -67,6 +68,7 @@ namespace mu2e
   CrvSiPMResponsesGenerator::CrvSiPMResponsesGenerator(fhicl::ParameterSet const& pset) :
     _crvPhotonArrivalsModuleLabel(pset.get<std::string>("crvPhotonArrivalsModuleLabel")),
     _numberPixels(pset.get<int>("numberPixels")),   //1600
+    _numberPixelsAtFiber(pset.get<int>("numberPixelsAtFiber")),   //1257
     _bias(pset.get<double>("bias")),                //2.5V
     _scaleFactor(pset.get<double>("scaleFactor")),  //0.08 (based on a time step of 1.0ns)
     _minCharge(pset.get<double>("minCharge")),      //3.0PE
@@ -94,7 +96,7 @@ namespace mu2e
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
     _makeCrvSiPMResponses = boost::shared_ptr<MakeCrvSiPMResponses>(new MakeCrvSiPMResponses(_randFlat, _randPoissonQ));
-    _makeCrvSiPMResponses->SetSiPMConstants(_numberPixels, _bias, _blindTime, _microBunchPeriod, 
+    _makeCrvSiPMResponses->SetSiPMConstants(_numberPixels, _numberPixelsAtFiber, _bias, _blindTime, _microBunchPeriod, 
                                             _scaleFactor, _probabilities);
   }
 

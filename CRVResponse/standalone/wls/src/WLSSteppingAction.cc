@@ -13,6 +13,8 @@
 #include "G4ProcessManager.hh"
 #include "G4OpBoundaryProcess.hh"
 #include "G4RunManager.hh"
+#include "G4Material.hh"
+#include "G4MaterialPropertiesTable.hh"
 
 #include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"
@@ -123,10 +125,21 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
     if(first)
     {
       first=false;
-      _crvPhotonArrivals->SetScintillationYield(_scintillationYield);
-      _crvPhotonArrivals->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
-      _crvPhotonArrivals->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
-      _crvPhotonArrivals->SetFiberDecayTime(_fiberDecayTime);
+
+      G4Material* scintillator = G4Material::GetMaterial("Polystyrene",true);
+      G4MaterialPropertiesTable* scintillatorPropertiesTable = scintillator->GetMaterialPropertiesTable();
+      double scintillationYield = scintillatorPropertiesTable->GetConstProperty("SCINTILLATIONYIELD");
+      double scintillatorDecayTimeFast = scintillatorPropertiesTable->GetConstProperty("FASTTIMECONSTANT");
+      double scintillatorDecayTimeSlow = scintillatorPropertiesTable->GetConstProperty("SLOWTIMECONSTANT");
+
+      G4Material* fiber = G4Material::GetMaterial("PMMA",true);
+      G4MaterialPropertiesTable* fiberPropertiesTable = fiber->GetMaterialPropertiesTable();
+      double fiberDecayTime = fiberPropertiesTable->GetConstProperty("WLSTIMECONSTANT");
+
+      _crvPhotonArrivals->SetScintillationYield(scintillationYield);
+      _crvPhotonArrivals->SetScintillatorDecayTimeFast(scintillatorDecayTimeFast);
+      _crvPhotonArrivals->SetScintillatorDecayTimeSlow(scintillatorDecayTimeSlow);
+      _crvPhotonArrivals->SetFiberDecayTime(fiberDecayTime);
     }
 
     if(PDGcode!=0)  //ignore optical photons

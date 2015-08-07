@@ -23,6 +23,7 @@ BEGIN_PROLOG
       module_type                  : CrvSiPMResponsesGenerator
       crvPhotonArrivalsModuleLabel : "CrvPhotonArrivals"
       numberPixels                 : 1584
+      numberPixelsAtFiber          : 1244
       bias                         : 2.4        //V
       scaleFactor                  : 0.08
       minCharge                    : 3.0        //PEs
@@ -41,14 +42,12 @@ BEGIN_PROLOG
       TrapType0Lifetime            : 5.0        //ns
       TrapType1Lifetime            : 50.0       //ns
 
-      ThermalProb                  : 6.31e-7    //ns^1     1MHz at SiPM --> 1MHz/#pixel=631Hz at Pixel --> 631 s^-1 = 6.31e-7 ns^-1 
+      ThermalProb                  : 6.31e-7    //ns^-1     1MHz at SiPM --> 1MHz/#pixel=631Hz at Pixel --> 631 s^-1 = 6.31e-7 ns^-1 
 
-      PhotonProduction             : 0.4        //cross talk (from the SiPM specs): 0.4
-                                                //should the PhotonProduction probability be 0.82 ???
-                                                //total probability:                     tp = 0.4
-                                                //probability with every charge release: p = ?
-                                                //probability to release a charge:       r = 0.35 (Geiger probability)
-                                                //tp = p*r + (p*r)^2 + (p*r)^3 + ... = (p*r)/(1-p*r)  --> p = tp/(tp*r+r) = 0.82
+      PhotonProduction             : 0.4        // = p (photon probability with every charge release)
+                                                //total cross talk probability cp:
+                                                //use probability to release a charge r = 0.35 (Geiger probability)
+                                                //cp = p*r + (p*r)^2 + (p*r)^3 + ... = 0.16 
     }
     CrvWaveforms:
     {

@@ -36,19 +36,6 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
 
     void UpdateGeometry();
  
-    // Set Material Commands for World and WLSfiber
-    void SetWorldMaterial         (G4String);
-    void SetWLSFiberMaterial      (G4String);
-    void SetCoupleMaterial        (G4String);
-
-    G4double GetSurfaceRoughness();
-    // Set the Roughness in between each layer
-    void SetSurfaceRoughness      (G4double);
-    // Set the reflectivity of the mirror
-    void SetPhotonDetReflectivity (G4double);
-    // Set the polish of the mirror
-    void SetPhotonDetPolish       (G4double);
-
     void SetBarLength             (double barLength) {_barLength=barLength;}
     void SetBarWidth              (double barWidth) {_barWidth=barWidth;}
     void SetBarThickness          (double barThickness) {_barThickness=barThickness;}
@@ -74,7 +61,7 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
     double GetSipmRadius()       {return _sipmRadius;}
  
     G4Material*         FindMaterial(G4String);
-    G4VPhysicalVolume*  GetScintillatorVolume() {return physiScintillator;}
+    G4VPhysicalVolume*  GetScintillatorVolume() {return _physiScintillator;}
 
     std::vector<double> GetXBins() {return _xbins;}
     std::vector<double> GetYBins() {return _ybins;}
@@ -88,21 +75,27 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
 
     static WLSDetectorConstruction*  _fgInstance;  
 
-    WLSMaterials* materials;
+    int  _lengthOption;
+    bool _checkOverlaps;
 
-    G4LogicalVolume   *logicWorld, *logicHole;
-    G4VPhysicalVolume *physiWorld, *physiHole1, *physiHole2;
-    G4VPhysicalVolume *physiScintillator;
+    WLSMaterials* _materials;
+
+    G4VPhysicalVolume *_physiWorld;
+    G4VPhysicalVolume *_physiScintillator;
  
-    double           _worldSizeX;
-    double           _worldSizeY;
-    double           _worldSizeZ;
+    double _worldSizeX;
+    double _worldSizeY;
+    double _worldSizeZ;
 
-    G4double mppcPolish;
-    G4double mppcReflectivity;
-    G4double extrusionPolish;
-    G4double extrusionReflectivity;
-    G4double surfaceRoughness;
+    double _mppcPolish;
+    double _mppcReflectivity;
+    double _mirrorPolish;
+    double _mirrorReflectivity;
+    double _extrusionPolish;
+    double _extrusionReflectivity;
+    double _manifoldPolish;
+    double _manifoldReflectivity;
+    double _surfaceRoughness;
 
     double _barLength, _barWidth, _barThickness;
     double _fiberSeparation;

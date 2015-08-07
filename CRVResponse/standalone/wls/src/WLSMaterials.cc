@@ -17,7 +17,6 @@ WLSMaterials::~WLSMaterials()
   delete    Pethylene;
   delete    FPethylene;
   delete    Polystyrene;
-  delete    Silicone;
 }
 
 WLSMaterials* WLSMaterials::instance = NULL;
@@ -135,21 +134,6 @@ void WLSMaterials::CreateMaterials()
   natoms.clear();
 
   //--------------------------------------------------
-  // Silicone (Template for Optical Grease)
-  //--------------------------------------------------
-
-  elements.push_back("C");     natoms.push_back(2);
-  elements.push_back("H");     natoms.push_back(6);
-  
-  density = 1.060*g/cm3;
-
-  Silicone = nistMan->
-          ConstructNewMaterial("Silicone", elements, natoms, density);
-
-  elements.clear();
-  natoms.clear();
-
-  //--------------------------------------------------
   // Aluminium
   //--------------------------------------------------
 
@@ -217,22 +201,6 @@ void WLSMaterials::CreateMaterials()
   Air->SetMaterialPropertiesTable(MPT);
 
   //--------------------------------------------------
-  // PVC
-  //--------------------------------------------------
-
-  G4double RefractiveIndexPVC[nEntries] =
-  { 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60,   //This value is used to prevent any internal reflection inside of the scintillator.
-    1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60,   //The actual value for PVC is 1.53, but the cover material is not mode of PVC, but some unknown material.
-    1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60,
-    1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60,
-    1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60, 1.60};
-
-  G4MaterialPropertiesTable* MPTPVC = new G4MaterialPropertiesTable();
-  MPTPVC->AddProperty("RINDEX", PhotonEnergy, RefractiveIndexPVC, nEntries);
-
-  PVC->SetMaterialPropertiesTable(MPTPVC);
-
-  //--------------------------------------------------
   //  PMMA for WLSfibers
   //--------------------------------------------------
 
@@ -244,32 +212,18 @@ void WLSMaterials::CreateMaterials()
     1.59, 1.59, 1.59, 1.59, 1.59, 1.59, 1.59, 1.59, 1.59, 1.59};
 
   G4double AbsWLSfiber[nEntries] =
-  {9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,
-   9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,
-   9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,9.00*m,1.10*m,
-   1.10*m,1.10*m,1.10*m,1.10*m,1.10*m,1.10*m, 1.*mm, 1.*mm, 1.*mm, 1.*mm,
-   1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm};
-/*
-  {5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,
-   5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,
-   5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,5.40*m,1.10*m,
-   1.10*m,1.10*m,1.10*m,1.10*m,1.10*m,1.10*m, 1.*mm, 1.*mm, 1.*mm, 1.*mm,
-   1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm};
-*/
-/*
-  {3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,
-   3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,
-   3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,3.50*m,1.10*m,
-   1.10*m,1.10*m,1.10*m,1.10*m,1.10*m,1.10*m, 1.*mm, 1.*mm, 1.*mm, 1.*mm,
+  {24.0*m, 7.0*m, 7.0*m,20.0*m,25.0*m,25.0*m,22.0*m,21.5*m,21.0*m,19.0*m,
+   16.0*m,12.0*m,10.5*m, 9.5*m, 6.5*m, 4.5*m, 3.0*m, 2.0*m, 1.0*m, 1.*mm,
+    1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm,
+    1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm,
     1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm, 1.*mm};
-*/
 
   G4double EmissionFib[nEntries] =
-  {0.05, 0.10, 0.30, 0.50, 0.75, 1.00, 1.50, 1.85, 2.30, 2.75,
-   3.25, 3.80, 4.50, 5.20, 6.00, 7.00, 8.50, 9.50, 11.1, 12.4,
-   12.9, 13.0, 12.8, 12.3, 11.1, 11.0, 12.0, 11.0, 17.0, 16.9,
-   15.0, 9.00, 2.50, 1.00, 0.05, 0.00, 0.00, 0.00, 0.00, 0.00,
-   0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00};
+  { 0.00, 0.50, 0.75, 0.75, 0.75, 1.00, 1.50, 2.00, 3.00, 4.00,
+    5.00, 6.00, 7.50,10.50,13.00,15.00,14.00,13.00,13.50,16.50,
+   18.50,16.00,10.50, 3.50, 1.50, 0.50, 0.00, 0.00, 0.00, 0.00, 
+    0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00,
+    0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00};
 
   // Add entries into properties table
   G4MaterialPropertiesTable* MPTWLSfiber = new G4MaterialPropertiesTable();
@@ -325,24 +279,6 @@ void WLSMaterials::CreateMaterials()
   FPethylene->SetMaterialPropertiesTable(MPTClad2);
 
   //--------------------------------------------------
-  // Silicone
-  //--------------------------------------------------
-
-   G4double RefractiveIndexSilicone[nEntries] =
-   { 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46,
-     1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46,
-     1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46,
-     1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46,
-     1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46, 1.46};
-
-  // Add entries into properties table
-  G4MaterialPropertiesTable* MPTSilicone = new G4MaterialPropertiesTable();
-  MPTSilicone->AddProperty("RINDEX",PhotonEnergy,RefractiveIndexSilicone,nEntries);
-  MPTSilicone->AddProperty("ABSLENGTH",PhotonEnergy,AbsClad,nEntries);
-
-  Silicone->SetMaterialPropertiesTable(MPTSilicone);
-
-  //--------------------------------------------------
   //  Polystyrene
   //--------------------------------------------------
 
@@ -354,12 +290,11 @@ void WLSMaterials::CreateMaterials()
     1.59, 1.59, 1.59, 1.59, 1.59, 1.59, 1.59, 1.59, 1.59, 1.59};
 
   G4double AbsPS[nEntries] =
-  {10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,
-   10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,
-   10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,
-   10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,
-   10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm,10.*cm};
-for(int i=0; i<nEntries; i++) AbsPS[i]*=5.0;
+  {50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,
+   50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,
+   50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,
+   50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,
+   50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm,50.*cm};
 
   G4double ScintilFast[nEntries] =
   {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,

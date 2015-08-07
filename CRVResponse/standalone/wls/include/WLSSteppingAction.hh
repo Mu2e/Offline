@@ -24,10 +24,6 @@ class WLSSteppingAction : public G4UserSteppingAction
     void                      Reset();
     const std::vector<double> &GetArrivalTimes(int i, int SiPM);
     const std::vector<int>    &GetFiberEmissions(int SiPM);
-    void                      SetScintillationYield(double scintillationYield) {_scintillationYield=scintillationYield;}
-    void                      SetScintillatorDecayTimeFast(double decayTime) {_scintillatorDecayTimeFast=decayTime;}
-    void                      SetScintillatorDecayTimeSlow(double decayTime) {_scintillatorDecayTimeSlow=decayTime;}
-    void                      SetFiberDecayTime(double decayTime) {_fiberDecayTime=decayTime;}
 
   private:
 
@@ -35,9 +31,6 @@ class WLSSteppingAction : public G4UserSteppingAction
     static WLSSteppingAction *_fgInstance;  
     std::vector<double>       _arrivalTimes[2][4];
     std::vector<int>          _fiberEmissions[4];
-    double                    _scintillationYield;
-    double                    _scintillatorDecayTimeFast, _scintillatorDecayTimeSlow; 
-    double                    _fiberDecayTime;
     int                       _mode;
 
     std::map<int,int>         _wlsTracks;
