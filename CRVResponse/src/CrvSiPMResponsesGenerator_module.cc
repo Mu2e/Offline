@@ -67,8 +67,8 @@ namespace mu2e
 
   CrvSiPMResponsesGenerator::CrvSiPMResponsesGenerator(fhicl::ParameterSet const& pset) :
     _crvPhotonArrivalsModuleLabel(pset.get<std::string>("crvPhotonArrivalsModuleLabel")),
-    _numberPixels(pset.get<int>("numberPixels")),   //1600
-    _numberPixelsAtFiber(pset.get<int>("numberPixelsAtFiber")),   //1257
+    _numberPixels(pset.get<int>("numberPixels")),   //1584
+    _numberPixelsAtFiber(pset.get<int>("numberPixelsAtFiber")),   //615
     _bias(pset.get<double>("bias")),                //2.5V
     _scaleFactor(pset.get<double>("scaleFactor")),  //0.08 (based on a time step of 1.0ns)
     _minCharge(pset.get<double>("minCharge")),      //3.0PE

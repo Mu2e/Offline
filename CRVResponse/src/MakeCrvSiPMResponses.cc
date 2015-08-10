@@ -213,7 +213,7 @@ int main()
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
   MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(1584, 1244, 2.4, 0.0, 1695, 0.08, probabilities);
+  sim.SetSiPMConstants(1584, 615, 2.4, 0.0, 1695, 0.08, probabilities);
   sim.Simulate(photonTimes, SiPMresponseVector);
 
   for(unsigned int i=0; i<SiPMresponseVector.size(); i++)

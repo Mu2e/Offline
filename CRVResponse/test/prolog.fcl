@@ -23,7 +23,7 @@ BEGIN_PROLOG
       module_type                  : CrvSiPMResponsesGenerator
       crvPhotonArrivalsModuleLabel : "CrvPhotonArrivals"
       numberPixels                 : 1584
-      numberPixelsAtFiber          : 1244
+      numberPixelsAtFiber          : 615
       bias                         : 2.4        //V
       scaleFactor                  : 0.08
       minCharge                    : 3.0        //PEs

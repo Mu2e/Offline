@@ -296,7 +296,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
   static CLHEP::RandFlat randFlat(engine);
   static CLHEP::RandPoissonQ randPoissonQ(engine);
   MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(1584, 1244, 2.4, 0, 1695, 0.08, probabilities);
+  sim.SetSiPMConstants(1584, 615, 2.4, 0, 1695, 0.08, probabilities);
 
   MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
   double binWidth = 12.5; //ns
