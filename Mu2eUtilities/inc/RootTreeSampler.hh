@@ -106,7 +106,7 @@ namespace mu2e {
       bool hasMoreRecords() {
         while(currentEntry_ < numTreeEntries_) {
           if(parent_->randFlat_.fire() < recordUseFraction_) {
-            mrb_->GetEntry(currentEntry_);
+            mrb_->GetEntry(currentEntry_++);
             ++numUsedNtupleEntries_;
             return hasMore_ = true;
           }
