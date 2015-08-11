@@ -115,9 +115,11 @@ physics : {
          particleOffsetThreshold: 200000
          verbosityLevel: 1
       }
+
       outOfTargetMuonDaughters: {
          module_type: SimParticleDaughterSelector
          particleInput: "outOfTargetMuonFinder"
+         // We do re-simulate EMCascade for out of target stops
          processes: [ "DIO", "NuclearCapture", "EMCascade" ]
       }
 
@@ -155,17 +157,6 @@ physics : {
 
    //================================================================
    analyzers: {
-      stoppedMuonDumper: {
-         module_type: StoppedParticlesDumper
-         inputCollection: "stoppedMuonFinder"
-         writeProperTime : false
-      }
-      outOfTargetDumper: {
-         module_type: StoppedParticlesDumper
-         inputCollection: "outOfTargetMuonFinder"
-         writeProperTime : false
-      }
-
       genCountLogger: {
          module_type: GenEventCountReader
       }
@@ -184,9 +175,8 @@ physics : {
    trigger_paths  : [motherFilter, muonStopFilter, g4StatusFilter]
 
    out : [mothersOutput, muonStopOutput, truncatedEvtsOutput]
-   stops : [stoppedMuonDumper, outOfTargetDumper]
    gcl : [genCountLogger]
-   end_paths      : [out, stops, gcl]
+   end_paths      : [out, gcl]
 }
 
 outputs: {
