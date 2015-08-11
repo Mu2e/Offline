@@ -293,7 +293,7 @@ services.message.destinations.log.categories.ArtReport.reportEvery : 1
 services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
 
-physics.producers.g4run.physics.minRangeCut : 1. // mm
+physics.producers.g4run.physics.minRangeCut : 0.010 // mm
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.user.SeedService.baseSeed         :  0
