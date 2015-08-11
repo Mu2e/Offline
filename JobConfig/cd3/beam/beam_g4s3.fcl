@@ -31,22 +31,22 @@ physics : {
          module_type: Mu2eG4
          physics: @local::mu2eg4DefaultPhysics
          ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	 TrajectoryControl: @local::mu2eg4NoTrajectories
+         TrajectoryControl: @local::mu2eg4NoTrajectories
          debug:  @local::mu2eg4DefaultDebug
          visualization: @local::mu2eg4NoVisualization
 
-	 MultiStageParameters : {
+         MultiStageParameters : {
             simParticleNumberOffset: 200000  // safe b/c of g4.particlesSizeLimit in stage1
             genInputHits:  [ "muonBeamFilter:DSVacuum" ]
             inputSimParticles: "muonBeamFilter"
-	    inputMCTrajectories: ""
+            inputMCTrajectories: ""
             inputPhysVolumeMultiInfo: "compressPVmuonBeam"
-	 }
+         }
 
          SDConfig : {
             enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
             preSimulatedHits: ["muonBeamFilter:virtualdetector"]
-	    TimeVD: { times: [] }
+            TimeVD: { times: [] }
          }
 
          Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
@@ -54,10 +54,10 @@ physics : {
          Mu2eG4SteppingOnlyCut: {}
 
          Mu2eG4CommonCut: {
-	    type: inVolume
-	    pars: [TrackerMother, CalorimeterMother]
-	    write: DetectorMother
-	 }
+            type: inVolume
+            pars: [TrackerMother, CalorimeterMother]
+            write: DetectorMother
+         }
 
          SimParticlePrinter : {
             enabled : false
@@ -119,7 +119,7 @@ physics : {
          // EMCascade should not be vetoed because we do not re-simulate it
          processes: [ "DIO", "NuclearCapture" ]
       }
-      
+
       outOfTargetMuonFinder : {
          module_type : StoppedParticlesFinder
          particleInput : "g4run"
@@ -143,25 +143,25 @@ physics : {
    filters: {
       mothersFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
+         noInstanceName : true
          mainHitInputs: [ "g4run:DetectorMother" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
          numSimParticleCollections: 1
-         vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ] 
+         vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ]
       }
 
       crvFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
+         noInstanceName : true
          mainHitInputs: [ "g4run:CRV" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
          numSimParticleCollections: 1
-         vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ] 
+         vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ]
       }
 
       tgtStopFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
+         noInstanceName : true
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
          mainSPPtrInputs: [ "stoppedMuonFinder" ]
@@ -170,7 +170,7 @@ physics : {
 
       ootStopFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
+         noInstanceName : true
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
          mainSPPtrInputs: [ "outOfTargetMuonFinder" ]
@@ -185,7 +185,7 @@ physics : {
       g4consistent: {
          module_type: FilterStatusG4
          input: "g4run"
-	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+         maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
       }
    }
 
@@ -199,13 +199,13 @@ physics : {
 
    //================================================================
    motherFilter: [ g4run,
-      stoppedMuonFinder, stoppedMuonDaughters, 
+      stoppedMuonFinder, stoppedMuonDaughters,
       outOfTargetMuonFinder, outOfTargetMuonDaughters,
       mothersFilter, compressPVMothers
    ]
 
    trigCRV: [ g4run,
-      stoppedMuonFinder, stoppedMuonDaughters, 
+      stoppedMuonFinder, stoppedMuonDaughters,
       outOfTargetMuonFinder, outOfTargetMuonDaughters,
       crvFilter, compressPVCRV
    ]
