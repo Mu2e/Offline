@@ -44,7 +44,7 @@ physics : {
 	 }
 
          SDConfig : {
-            enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
+            enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
             preSimulatedHits: ["muonBeamFilter:virtualdetector"]
 	    TimeVD: { times: [] }
          }
@@ -71,6 +71,13 @@ physics : {
          volumesInput : "g4run"
          hitInputs : []
          particleInputs : [ "mothersFilter" ]
+      }
+
+      compressPVCRV: {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "crvFilter" ]
       }
 
       compressPVTGTStops: {
@@ -143,6 +150,15 @@ physics : {
          vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ] 
       }
 
+      crvFilter: {
+         module_type: FilterG4Out
+	 noInstanceName : true
+         mainHitInputs: [ "g4run:CRV" ]
+         extraHitInputs: [ "g4run:virtualdetector" ]
+         numSimParticleCollections: 1
+         vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ] 
+      }
+
       tgtStopFilter: {
          module_type: FilterG4Out
 	 noInstanceName : true
@@ -187,12 +203,19 @@ physics : {
       outOfTargetMuonFinder, outOfTargetMuonDaughters,
       mothersFilter, compressPVMothers
    ]
+
+   trigCRV: [ g4run,
+      stoppedMuonFinder, stoppedMuonDaughters, 
+      outOfTargetMuonFinder, outOfTargetMuonDaughters,
+      crvFilter, compressPVCRV
+   ]
+
    tgtFilter :  [g4run, g4consistent, stoppedMuonFinder, tgtStopFilter, compressPVTGTStops]
    ootFilter :  [g4run, g4consistent, outOfTargetMuonFinder, ootStopFilter, compressPVOOTStops]
    g4StatusFilter :  [g4run, "!g4status", compressPVFull ]
-   trigger_paths  : [motherFilter, tgtFilter, ootFilter, g4StatusFilter]
+   trigger_paths  : [motherFilter, trigCRV, tgtFilter, ootFilter, g4StatusFilter]
 
-   out : [mothersOutput, tgtStopOutput, ootStopOutput, truncatedEvtsOutput]
+   out : [mothersOutput, crvOutput, tgtStopOutput, ootStopOutput, truncatedEvtsOutput]
    gcl : [genCountLogger]
    end_paths      : [out, gcl]
 }
@@ -209,6 +232,19 @@ outputs: {
          "keep *_compressPVMothers_*_*"
       ]
       fileName    : "sim.owner.cd3-beam-g4s3-mothers.version.sequencer.art"
+   }
+
+   crvOutput : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: [trigCRV] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_crvFilter_*_*",
+         "keep *_compressPVCRV_*_*"
+      ]
+      fileName    : "sim.owner.cd3-beam-g4s3-crv.version.sequencer.art"
    }
 
    tgtStopOutput : {
