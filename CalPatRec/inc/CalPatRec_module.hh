@@ -16,16 +16,25 @@ namespace art {
 #endif
 
 // data
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CaloHit.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
+
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
+
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
@@ -50,6 +59,10 @@ namespace art {
 // Mu2e
 #include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
 #include "TrkPatRec/inc/PayloadSaver.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
+#include "CaloCluster/inc/CaloContentMC.hh"
+
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 
@@ -96,7 +109,8 @@ namespace mu2e {
   class CalPatRec : public art::EDProducer {
   public:
     struct Hist_t {
-      TH1F* _cutflow;	     // diagnostic flow
+      TH1F* _cutflow[2];	     // diagnostic flow
+      TH1F* _dt[2];          // distribution in Dt = t_calo-cluster - t_straw-hit
       TH1F* _Tpeaks;	     // number of time-peaks found per event
       TH1F* _NfitIter;	     // number of call to kalman addHits
 	     		     //     TH1F* _hTfit[2];     //time spent on kalman filter per event
@@ -176,12 +190,15 @@ namespace mu2e {
     std::string  _shpLabel;
     std::string  _shfLabel;
     std::string  _ccmLabel; // caloClusterModuleLabel
+    std::string  _crmLabel;
+    std::string  _chmccpLabel;
 
     std::string  _dtspecpar;
 
     StrawHitFlag     _tsel, _hsel, _addsel, _ksel;
     StrawHitFlag     _bkgsel, _addbkg;
     double           _maxedep;
+    int              fUseDoublets;
     double           _mindt;
     double           _maxdt;
     double           _maxdtmiss;
@@ -215,6 +232,12 @@ namespace mu2e {
     const CaloClusterCollection*          _ccCollection;
     const StepPointMCCollection*          _stepcol;
     const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
+
+    const CaloHitCollection*              _chcol;
+    const CaloHitMCTruthCollection*       _chmccol;
+    const PtrStepPointMCVectorCollection* _listOfMCCrystals;
+    const CaloHitSimPartMCCollection*     _chsmccol;
+    CaloHitMCNavigator*                   _caloHitNavigator;
 
     StrawHitFlagCollection*               _flags;    // flags are not const - for a reason ?
 					
@@ -250,6 +273,13 @@ namespace mu2e {
 
     int                      fNminMChits;
     int                      fQualityTrack;
+    int                      fCaloClusterFromCE;
+    int                      fNCaloEnergyCut, fNCaloSizeCut, fNHitsTimePeakCut, fNTimeWindow;
+    int                      fSHSel[3], fSHBkg[3];
+    bool                     _clCE;
+
+    double                   _mbtime;               // period of 1 microbunch
+    SimParticleTimeOffset*   fgTimeOffsets;
 
     HelixTraj*               _helTraj;
 //-----------------------------------------------------------------------------
