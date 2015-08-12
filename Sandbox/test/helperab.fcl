@@ -1,0 +1,23 @@
+# Run HelperA and HelperB in one job.
+# Test violation of ODR.
+#
+
+
+process_name : helperAB
+
+source : {
+  module_type : EmptyEvent
+  maxEvents   : 1
+}
+
+physics : {
+
+  analyzers : {
+    hA : { module_type : HelperA   }
+    hB : { module_type : HelperB   }
+  }
+
+  e1 : [ hA, hB  ]
+  end_paths      : [e1]
+
+}
