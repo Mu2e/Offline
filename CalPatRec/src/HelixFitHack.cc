@@ -694,6 +694,9 @@ namespace mu2e {
 	     0, zCl, dz, phiCl, phiCl, srphi.dfdz(), dphi, xdphi, dphidz);
     }
     
+    //2015-07-06 Gianipez added the following line for avoiding infinite loops
+    if ( i0 < 0 ) goto NEXT_STEP;
+
     for (int i=i0; i<nstations; i++) {
       if (nhits[i] > 0) {
 	z    = zVec[i];
@@ -736,6 +739,8 @@ namespace mu2e {
 	
       }
     }
+
+  NEXT_STEP:;
 
     if (srphi.qn() >= 3.){
      
@@ -1082,7 +1087,8 @@ namespace mu2e {
 	deltaPhi = phi_corrected[i] - phi;
 	
 	printf("[HelixFitHack::doLinearFitPhiZ] %08x %2i %6i %12.5f %12.5f %12.5f\n",
-	       *((int*) &fxyzp[i]._flag), idVec[i] < 0 ? 0 : idVec[i], fxyzp[i]._strawhit->strawIndex().asInt(),  z, phi_corrected[i], deltaPhi);
+	       *((int*) &fxyzp[i]._flag), idVec[i] < 0 ? 0 : idVec[i], 
+	       fxyzp[i]._strawhit->strawIndex().asInt(),  z, phi_corrected[i], deltaPhi);
       }
 
     }
@@ -1568,6 +1574,15 @@ namespace mu2e {
     // 2014-11-09 gianipez changed the cleanup process. now it is faster and cleaner
     if (_debug != 0) printf("[HelixFitHack::doPatternRecognition]: calling filterUsingPatternRecognition\n");
 
+                                  //update hack data with last results
+    THackData* hack;
+    hack = (THackData*) gROOT->GetRootFolder()->FindObject("HackData");
+    hack->fData[14] = Helix._radius;
+    hack->fData[15] = Helix._sxy.chi2DofCircle();
+    hack->fData[6]  = Helix._fz0;
+    hack->fData[7]  = Helix._dfdz*Helix._radius;
+    hack->fData[8]  = Helix._dfdz;
+
     filterUsingPatternRecognition(Helix);
 
   PATTERN_RECOGNITION_END:;
@@ -1601,6 +1616,10 @@ namespace mu2e {
 
     double e2     = ew*ew*sinth2+rs*rs*costh*costh;
     double wt     = 1./e2;
+
+                                                    //scale the weight for having chi2/ndof distribution peaking at 1
+    wt /= 1.57;
+
 
     if (Print > 0) {
       double dr = calculateRadialDist( HitPos, HelCenter, Radius);
@@ -1967,12 +1986,12 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	IndexVec[i] = idVec[i];
       }
     }
-    if (SeedIndex ==0){
-      THackData* hack;
-      hack = (THackData*) gROOT->GetRootFolder()->FindObject("HackData");
-      hack->fData[14] = Trk._rw ;
-      hack->fData[15] = Trk._chi2w ;
-    }
+   //  if (SeedIndex ==0){
+//       THackData* hack;
+//       hack = (THackData*) gROOT->GetRootFolder()->FindObject("HackData");
+//       hack->fData[14] = Trk._rw ;
+//       hack->fData[15] = Trk._chi2w ;
+//     }
     
     return success;
   }
@@ -2305,7 +2324,12 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     name += "-loop";
     
     int i_last = SeedIndex;
-    
+      
+    //define two paramters used for storing the index
+    //of the straw hit closest to z=0
+    int     i_z0(-1);
+    double  dz_z0(1e10);
+  
     for (int i=SeedIndex+1; i<np; i++) {
       name =  banner;
       name += "-loop";
@@ -2389,6 +2413,11 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	}
 					            // index of the last good point
 	i_last = i; 
+
+	if (fabs(shPos.z()) < dz_z0){
+	  dz_z0 = fabs(shPos.z());
+	  i_z0  = i;
+	}
 
 	//2015-01-27 G. Pezzu and P. Murat
 	phi0   = CLHEP::Hep3Vector(shPos - p0).phi();
@@ -2505,11 +2534,19 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     //declare a temporary variable for storing info about the dfdz
     //values out of the method 'calculateDfDz(...)'
     double dfdzRes[3] = {-1., -1., -1.,};
+    double dphi0Res[3]  = {-9999., -9999., -9999.,};
+    double radiusRes[2] = {-1., -1.};
+
+    shPos        = fxyzp[i_z0]._pos;
+    phi0         = CLHEP::Hep3Vector(shPos - p0).phi();
+    
     if (UseMPVDfDz == 0){
       dfdzRes[0] = dfdz;
     }
     
-
+    dphi0Res [0] = phi0 - shPos.z()*dfdz;
+    radiusRes[0] = sxy.radius();
+  
     name = banner;
     name += "-results";
    
@@ -2544,6 +2581,9 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 					// update the Chi2 value
       Chi2 = sxy.chi2DofCircle();
       CountGoodPoints = 0;
+                                      //store information for hackdata
+      radiusRes[1] = tmp2HelFitRes._radius;
+
       for (int i=SeedIndex; i<np; ++i){
 	if ( markIndexList[i] > 0) ++CountGoodPoints;
       }
@@ -2554,7 +2594,8 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     if (rs ==1 ){
       tmp2HelFitRes._dfdz = _hdfdz;
                                          //fill diag vector
-      dfdzRes[1] = _hdfdz;
+      dfdzRes[1]  = _hdfdz;
+      dphi0Res[1] = _hphi0;
     }
     tmp2HelFitRes._fz0    = _hphi0;
 
@@ -2568,6 +2609,7 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       srphi.init(tmp2HelFitRes._srphi);
                                          //fill diag vector
       dfdzRes[2] = tmp2HelFitRes._dfdz;
+      dphi0Res[2] = tmp2HelFitRes._fz0;
 
       CountGoodPoints = 0;
       for (int i=SeedIndex; i<np; ++i){
@@ -2683,9 +2725,9 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	}
 	hack->fData[4]  = loopId;
 	hack->fData[5]  = _radius;
-	hack->fData[6]  = phi0_end;
-	hack->fData[7]  = dfdz_end*_radius;
-	hack->fData[8]  = dfdz_end;
+// 	hack->fData[6]  = phi0_end;
+// 	hack->fData[7]  = dfdz_end*_radius;
+// 	hack->fData[8]  = dfdz_end;
 	hack->fData[9]  = rescuedPoints;
 
 	double dz = p1.z() - p2.z();
@@ -2698,6 +2740,14 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	hack->fData[17] = dfdzRes[0];
 	hack->fData[18] = dfdzRes[1];
 	hack->fData[19] = dfdzRes[2];
+
+	hack->fData[22] = dphi0Res[0];
+	hack->fData[23] = dphi0Res[1];
+	hack->fData[24] = dphi0Res[2];
+
+
+	hack->fData[20] = radiusRes[0];
+	hack->fData[21] = radiusRes[1];
 
 	int j=0;
 	for (int i=SeedIndex; i<np; ++i){
