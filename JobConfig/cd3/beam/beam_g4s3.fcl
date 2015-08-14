@@ -198,13 +198,13 @@ physics : {
 
 
    //================================================================
-   motherFilter: [ g4run,
+   motherFilter: [ g4run, g4consistent,
       stoppedMuonFinder, stoppedMuonDaughters,
       outOfTargetMuonFinder, outOfTargetMuonDaughters,
       mothersFilter, compressPVMothers
    ]
 
-   trigCRV: [ g4run,
+   trigCRV: [ g4run, g4consistent,
       stoppedMuonFinder, stoppedMuonDaughters,
       outOfTargetMuonFinder, outOfTargetMuonDaughters,
       crvFilter, compressPVCRV
