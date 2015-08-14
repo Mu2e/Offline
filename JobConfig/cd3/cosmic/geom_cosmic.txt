@@ -1,5 +1,9 @@
 #include "JobConfig/cd3/geom_baseline.txt"
 
+// Cosmis s1 samples for CD3 were generated with the TDR target geometry.
+// Keep using it for the subsequent stages.
+#include "Mu2eG4/geom/stoppingTarget_TDR.txt" // 17 foil tapered muon stopping target used for the TDR simulations
+
 double world.minimalMargin.xmin = 500000;
 double world.minimalMargin.xmax = 500000;
 double world.minimalMargin.zmin = 500000;
