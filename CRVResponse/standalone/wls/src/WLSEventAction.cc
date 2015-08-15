@@ -614,7 +614,6 @@ void WLSEventAction::Draw(const G4Event* evt) const
   {
     c3.cd(SiPM+1);
     gPad->SetLogy();
-    _histPE[SiPM]->SetAxisRange(0,100);
     _histPE[SiPM]->Draw();
   }      
   c3.SaveAs("PEs.C");

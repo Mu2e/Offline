@@ -79,6 +79,10 @@ namespace mu2e
       return *_allCRSScintillatorBars.at(index.asInt());
     }
 
+    //sector names are e.g. R1 (for only the R1 sector), or R (for all R sectors)
+    std::vector<double> getSectorHalfLengths(const std::string &sectorName) const;
+    CLHEP::Hep3Vector getSectorPosition(const std::string &sectorName) const;
+
     private:
 
     std::vector<CRSScintillatorShield>                _scintillatorShields;    //Every "shield" holds a vector of modules.
@@ -87,6 +91,8 @@ namespace mu2e
                                                                                //to CRV bars.
     std::vector<std::shared_ptr<CRSScintillatorBar> > _allCRSScintillatorBars; //This vector holds pointers to all CRV bars,
                                                                                //(the same objects used in all layers).
+
+    void getMinMaxPoints(const std::string &sectorName, std::vector<double> &minPoint, std::vector<double> &maxPoint) const;
   };
 
 }
