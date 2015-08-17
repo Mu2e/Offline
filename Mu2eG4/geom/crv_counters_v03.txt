@@ -15,7 +15,7 @@ vector<string> crs.sectorNames = {
                        "T2",  //10
                        "T3",  //11
                        "T4",  //12
-                       "D",   //13
+                       "D1",  //13  was previously called "D"
                        "U",   //14
                        "C1",  //15
                        "C2",  //16
@@ -38,7 +38,7 @@ double          crs.scintillatorBarLengthT1      =  6600; //9
 double          crs.scintillatorBarLengthT2      =  5600; //10
 double          crs.scintillatorBarLengthT3      =  5600; //11
 double          crs.scintillatorBarLengthT4      =  5600; //12
-double          crs.scintillatorBarLengthD       =  5600; //13
+double          crs.scintillatorBarLengthD1      =  5600; //13
 double          crs.scintillatorBarLengthU       =  6600; //14
 double          crs.scintillatorBarLengthC1      =   900; //15
 double          crs.scintillatorBarLengthC2      =   900; //16
@@ -68,7 +68,7 @@ int             crs.nModulesT1                   =   6;  //9
 int             crs.nModulesT2                   =  15;  //10
 int             crs.nModulesT3                   =   1;  //11
 int             crs.nModulesT4                   =   4;  //12
-int             crs.nModulesD                    =   3;  //13
+int             crs.nModulesD1                   =   3;  //13
 int             crs.nModulesU                    =   3;  //14
 int             crs.nModulesC1                   =   1;  //15
 int             crs.nModulesC2                   =   1;  //16
@@ -90,7 +90,7 @@ int             crs.nCountersPerModuleT1         =   16;  //9
 int             crs.nCountersPerModuleT2         =   16;  //10
 int             crs.nCountersPerModuleT3         =   8;   //11
 int             crs.nCountersPerModuleT4         =   16;  //12
-int             crs.nCountersPerModuleD          =   16;  //13
+int             crs.nCountersPerModuleD1         =   16;  //13
 int             crs.nCountersPerModuleU          =   16;  //14
 int             crs.nCountersPerModuleC1         =   16;  //15
 int             crs.nCountersPerModuleC2         =   16;  //16
@@ -112,7 +112,7 @@ vector<double>  crs.firstCounterT1        =  {-3404.0,   2600.6,  -2146.85}; //9
 vector<double>  crs.firstCounterT2        =  {-3904.0,   2600.6,   2764.15}; //10
 vector<double>  crs.firstCounterT3        =  {-3904.0,   2600.6,  15052.15}; //11
 vector<double>  crs.firstCounterT4        =  {-3904.0,   2600.6,  15463.15}; //12
-vector<double>  crs.firstCounterD         =  {-3904.0,   2710.75, 18771.0};  //13
+vector<double>  crs.firstCounterD1        =  {-3904.0,   2710.75, 18771.0};  //13
 vector<double>  crs.firstCounterU         =  {-3404.0,   2710.75, -2296.8};  //14
 vector<double>  crs.firstCounterC1        =  {-6557.6,   1098.4,  12509.3};  //15
 vector<double>  crs.firstCounterC2        =  {-6557.6,   1098.4,  13355.5};  //16
@@ -141,7 +141,7 @@ vector<double>  crs.layerDirectionT1  =  {0, 1, 0};  //9
 vector<double>  crs.layerDirectionT2  =  {0, 1, 0};  //10
 vector<double>  crs.layerDirectionT3  =  {0, 1, 0};  //11
 vector<double>  crs.layerDirectionT4  =  {0, 1, 0};  //12
-vector<double>  crs.layerDirectionD   =  {0, 0, 1};  //13
+vector<double>  crs.layerDirectionD1  =  {0, 0, 1};  //13
 vector<double>  crs.layerDirectionU   =  {0, 0, -1}; //14
 vector<double>  crs.layerDirectionC1  =  {0, 0, -1}; //15
 vector<double>  crs.layerDirectionC2  =  {0, 0, 1};  //16
@@ -163,7 +163,7 @@ vector<double>  crs.offsetDirectionT1  =  {0, 0, -1}; //9
 vector<double>  crs.offsetDirectionT2  =  {0, 0, -1}; //10
 vector<double>  crs.offsetDirectionT3  =  {0, 0, -1}; //11
 vector<double>  crs.offsetDirectionT4  =  {0, 0, -1}; //12
-vector<double>  crs.offsetDirectionD   =  {0, -1, 0}; //13
+vector<double>  crs.offsetDirectionD1  =  {0, -1, 0}; //13
 vector<double>  crs.offsetDirectionU   =  {0, -1, 0}; //14
 vector<double>  crs.offsetDirectionC1  =  {-1, 0, 0}; //15
 vector<double>  crs.offsetDirectionC2  =  {-1, 0, 0}; //16
@@ -185,7 +185,7 @@ vector<double>  crs.gapDirectionT1  =  {0, 0, 1};  //9
 vector<double>  crs.gapDirectionT2  =  {0, 0, 1};  //10
 vector<double>  crs.gapDirectionT3  =  {0, 0, 1};  //11
 vector<double>  crs.gapDirectionT4  =  {0, 0, 1};  //12
-vector<double>  crs.gapDirectionD   =  {0, -1, 0}; //13
+vector<double>  crs.gapDirectionD1  =  {0, -1, 0}; //13
 vector<double>  crs.gapDirectionU   =  {0, -1, 0}; //14
 vector<double>  crs.gapDirectionC1  =  {-1, 0, 0}; //15
 vector<double>  crs.gapDirectionC2  =  {-1, 0, 0}; //16
