@@ -9,7 +9,7 @@ pixelDigitization : {
     inputModuleLabel : "g4run"
     inputInstanceName : ""
 
-    geomModuleLabel : "geom"
+    geomModuleLabel : ""
 
     // global time corresponding to the starting edge of time bin 0
     t0 : 0

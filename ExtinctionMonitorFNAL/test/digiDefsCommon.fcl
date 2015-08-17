@@ -14,6 +14,7 @@ services : {
     RandomNumberGenerator : {}
 
     user : {
+        GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }
         ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
         GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
         SeedService       : @local::automaticSeeds
@@ -40,19 +41,19 @@ physics : {
             module_type: EMFRawHitsValidator
             inputModuleLabel : "pixelDigitization"
             inputInstanceName : ""
-            geomModuleLabel : "geom"
+            geomModuleLabel : ""
             geomInstanceName : ""
         }
         emfSimHits: {
             module_type: EMFDetHistSimHits
             inputModuleLabel  : "g4run"
-            geomModuleLabel  : "geom"
+            geomModuleLabel  : ""
         }
         emfRawHits: {
             module_type: EMFDetHistRawHits
             inputModuleLabel  : "pixelDigitization"
             inputInstanceName : ""
-            geomModuleLabel : "geom"
+            geomModuleLabel : ""
         }
     }
 
