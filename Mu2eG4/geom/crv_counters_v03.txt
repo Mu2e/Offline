@@ -194,3 +194,11 @@ vector<double>  crs.gapDirectionD2  =  {0, -1, 0}; //18
 vector<double>  crs.gapDirectionD3  =  {0, -1, 0}; //19
 vector<double>  crs.gapDirectionD4  =  {0, -1, 0}; //20
 
+// virtual detectors
+bool vd.crv.build = false;
+vector<double>  crs.vdDirectionR  =  {1, 0, 0};
+vector<double>  crs.vdDirectionL  =  {-1, 0, 0};
+vector<double>  crs.vdDirectionT  =  {0, 1, 0};
+vector<double>  crs.vdDirectionD  =  {0, 0, 1};
+vector<double>  crs.vdDirectionU  =  {0, 0, -1};
+

@@ -1,3 +1,11 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_4_5
+
+1) August 17, 2015 ehrlich
+   Added virtual detectors next to the CRV planes of CRV-R,L,T,D,U
+     GeometryService/src/VirtualDetectorMaker.cc
+     MCDataProducts/inc/VirtualDetectorId.hh
+     Mu2eG4/geom/crv_counters_v03.txt
+     Mu2eG4/src/constructVirtualDetectors.cc
+

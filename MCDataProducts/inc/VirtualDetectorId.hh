@@ -81,6 +81,7 @@ namespace mu2e {
       STMUpstream,                  // 85:  I'm not sure who named this STM, because it's not in the MSTM area (FIXME)
       MSTM_WallUpStr, MSTM_Coll1DnStr, MSTM_ShutterDnStr, MSTM_Coll2DnStr, MSTM_Coll3DnStr,  // 86, 87, 88, 89, 90:  All inside MSTM area
       PSPbarIn, PSPbarOut, // 91, 92: Front and back of the new pbar window in the PS 
+      CRV_R, CRV_L, CRV_T, CRV_D, CRV_U, // 93, 94, 95, 96, 97: virtual detectors next to the major CRV sectors 
       lastEnum
     };
 
@@ -122,7 +123,8 @@ namespace mu2e {
       "PSTargetSurf", \
       "PT_Front", "PT_Back","STMUpstream", \
       "MSTM_WallUpStr", "MSTM_Coll1DnStr", "MSTM_ShutterDnStr", "MSTM_Coll2DnStr", "MSTM_Coll3DnStr", \
-      "PSPbarIn", "PSPbarOut"
+      "PSPbarIn", "PSPbarOut",  \
+      "CRV_R", "CRV_L", "CRV_T", "CRV_D", "CRV_U"
 
   public:
 

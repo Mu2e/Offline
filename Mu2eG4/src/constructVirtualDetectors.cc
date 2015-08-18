@@ -17,6 +17,7 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
@@ -1887,6 +1888,49 @@ namespace mu2e {
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       vdInfo.logical->SetSensitiveDetector(vdSD);
+    }
+
+    GeomHandle<CosmicRayShield> CRS;
+    for(int vdId=VirtualDetectorId::CRV_R; vdId<=VirtualDetectorId::CRV_U; vdId++)
+    {
+
+      if(vdg->exist(vdId)) 
+      {
+        std::string vdName;
+        vdName = VirtualDetector::volumeName(vdId).back();
+        std::vector<double> halfLengths = CRS->getSectorHalfLengths(vdName);
+        const CLHEP::Hep3Vector vdDirection = _config.getHep3Vector("crs.vdDirection"+vdName);
+        for(int i=0; i<3; i++) {if(vdDirection[i]!=0) halfLengths[i]=vdg->getHalfLength();}
+
+        VolumeInfo const &parent = _helper->locateVolInfo("HallAir");
+        G4Material* hallAirMaterial = parent.logical->GetMaterial();
+
+        if(verbosityLevel >= 0) 
+        {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << " at " << vdg->getGlobal(vdId) << endl;
+          cout << __func__ << "    VD half lengths: (" << halfLengths[0]<<","<<halfLengths[1]<<","<<halfLengths[2]<<")" << endl;
+          cout << __func__ << "    VD rel. position: " << vdg->getLocal(vdId) << endl;
+        }
+
+        VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                    halfLengths,
+                                    hallAirMaterial,
+                                    0,
+                                    vdg->getLocal(vdId),
+                                    parent,
+                                    vdId,
+                                    vdIsVisible,
+                                    G4Color::Red(),
+                                    vdIsSolid,
+                                    forceAuxEdgeVisible,
+                                    placePV,
+                                    false
+                                    );
+
+        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+        vdInfo.logical->SetSensitiveDetector(vdSD);
+      }
     }
    
   } // constructVirtualDetectors()
