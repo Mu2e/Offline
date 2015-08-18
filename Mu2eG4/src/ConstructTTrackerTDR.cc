@@ -151,7 +151,8 @@ mu2e::ConstructTTrackerTDR::constructMother(){
                           _config.getBool("_ttracker.envelopeSolid",true),
                           _forceAuxEdgeVisible,
                           place,
-                          _doSurfaceCheck
+                          true
+                          //                          _doSurfaceCheck
                           );
 
   if ( _verbosityLevel > 0) {
@@ -203,32 +204,38 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
   }
 
-  for ( auto const& stave : sup.staveBody() ){
+
+  // contructing the support beams
+
+  //  const PlacedTubs& beam0 = sup.beamBody()[0];
+
+  for ( auto const& sbeam : sup.beamBody() ) {
 
     if ( _verbosityLevel > 0 ) {
-      cout << "Stave Position: "
-           << stave.name()               << " "
-           << stave.position()           << " "
+      cout << "Support Beam Position: "
+           << sbeam.name()               << " "
+           << sbeam.position()           << " "
            << _motherInfo.centerInWorld  << " "
-           << stave.position()-_motherInfo.centerInWorld
+           << sbeam.position()-_motherInfo.centerInWorld << " "
+           << sbeam.tubsParams()
            << endl;
     }
 
-    nestTubs( stave.name(),
-              stave.tubsParams(),
-              findMaterialOrThrow(stave.materialName()),
-              &stave.rotation(),
-              stave.position()-_motherInfo.centerInWorld,
+    nestTubs( sbeam.name(),
+              sbeam.tubsParams(),
+              findMaterialOrThrow(sbeam.materialName()),
+              0x0,
+              sbeam.position()-_motherInfo.centerInWorld,
               _motherInfo,
               0,
               _config.getBool("ttracker.envelopeVisible",false),
-              G4Colour::Yellow(),
+              G4Colour::Cyan(),
               _config.getBool("ttracker.envelopeSolid",true),
               _forceAuxEdgeVisible,
               place,
-              _doSurfaceCheck
+              true
+              // _doSurfaceCheck
               );
-
 
   }
 

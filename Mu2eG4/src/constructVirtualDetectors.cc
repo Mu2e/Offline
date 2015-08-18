@@ -390,14 +390,14 @@ namespace mu2e {
         double irvd = ttracker.mother().tubsParams().innerRadius();
 
         if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) {
-          auto const& staves =  ttracker.getSupportStructure().staveBody();
-          if ( staves.empty() ){
+          auto const& beams =  ttracker.getSupportStructure().beamBody();
+          if ( beams.empty() ){
             throw cet::exception("GEOM")
               << "Cannot create virtual detector " << VirtualDetectorId(vdId).name()
-              << " unless staves are defined\n";
+              << " unless support beams are defined\n";
 
           }
-          orvd = staves.at(0).tubsParams().innerRadius();
+          orvd = beams.at(0).tubsParams().innerRadius();
         }
 
 

@@ -26,6 +26,7 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <unordered_map>
 
 using cet::square;
 using cet::diff_of_squares;
@@ -177,11 +178,23 @@ namespace mu2e {
       config.getVectorInt( "ttrackerSupport.midRing.slot", _midRingSlot );
       _midRingHalfLength       = config.getDouble(    "ttrackerSupport.midRing.halfLength" );
 
+      // support beams; 
+      // fixme use vectors to contain them all (e.g. vector<SupportBeamParams>)
 
-      _nStaves                 = config.getInt   ( "ttrackerSupport.stave.nstaves"       );
-      _stavePhi0               = config.getDouble( "ttrackerSupport.stave.phi0"          );
-      _stavePhiWidth           = config.getDouble( "ttrackerSupport.stave.phiWidth"      );
-      _staveMaterial           = config.getString( "ttrackerSupport.stave.material"      );
+      config.getVectorDouble( "ttrackerSupport.beam0.phiRange", _beam0_phiRange );
+      _beam0_innerRadius     = config.getDouble( "ttrackerSupport.beam0.innerRadius" );
+      _beam0_outerRadius     = config.getDouble( "ttrackerSupport.beam0.outerRadius" );
+      _beam0_material        = config.getString( "ttrackerSupport.beam0.material" );
+
+      config.getVectorDouble( "ttrackerSupport.beam1.phiRange", _beam1_phiRange );
+      config.getVectorDouble( "ttrackerSupport.beam1.phiSpans", _beam1_phiSpans );
+      config.getVectorDouble( "ttrackerSupport.beam1.servicePhiSpans", _beam1_servicePhiSpans );
+      _beam1_innerRadius = config.getDouble( "ttrackerSupport.beam1.innerRadius" );
+      _beam1_midRadius1  = config.getDouble( "ttrackerSupport.beam1.midRadius1" );
+      _beam1_midRadius2  = config.getDouble( "ttrackerSupport.beam1.midRadius2" );
+      _beam1_outerRadius = config.getDouble( "ttrackerSupport.beam1.outerRadius" );
+      _beam1_material    = config.getString( "ttrackerSupport.beam1.material" );
+      config.getVectorString( "ttrackerSupport.beam1.serviceMaterials", _beam1_serviceMaterials );
 
       _innerRingInnerRadius    = config.getDouble( "ttrackerSupport.innerRing.innerRadius" );
       _innerRingOuterRadius    = config.getDouble( "ttrackerSupport.innerRing.outerRadius" );
@@ -1375,27 +1388,126 @@ namespace mu2e {
           << "TTrackerMaker::makeSupportStructure expected and even number of devices. Saw " << _numDevices << " devices.\n";
       }
 
-      // From upsgream end of most upstream station to the downstream end of the most downstream station.
+      // From upstream end of most upstream station to the downstream end of the most downstream station.
       // Including all materials.
       double overallLength = (_numDevices/2-1)*_deviceSpacing + 2.*_deviceHalfSeparation + 2.* _innerRingHalfLength;
 
-      // Staves touch the big ring at the upstream end; they end flush with the downstream edge of the most downstream station.
+      // we make support beams here (they used to be called staves)
+
+      // Staves touch the big ring at the upstream end; they end flush
+      // with the downstream edge of the most downstream station.
+
       double z1 = -(_endRingZOffset-_endRingHalfLength);
       double z2 = overallLength/2.;
       double zoff = (z1+z2)/2.;
       double zHalf = ( z2-z1)/2.;
 
-      double dphi       = 360*CLHEP::degree/_nStaves;
-      double phi0       = _stavePhi0*CLHEP::degree;
+      // hold the beamTubsParams in a map
+
+      std::unordered_map<std::string,TubsParams> supportBeamParams;
+
+      // the top beam is different
+
+      size_t ibeam(0);
+
+      std::ostringstream bos("TTrackerSupportBeam_",std::ios_base::ate); // to write at the end
+      bos << std::setfill('0') << std::setw(2) << ibeam;
+
+      supportBeamParams.insert(std::make_pair<std::string,
+                               TubsParams>(bos.str(),
+                                           TubsParams(_beam0_innerRadius, 
+                                                      _beam0_outerRadius, 
+                                                      zHalf,
+                                                      _beam0_phiRange[0]*CLHEP::degree, 
+                                                      (_beam0_phiRange[1]- _beam0_phiRange[0])*CLHEP::degree)));
+
+      sup._beamBody.push_back( PlacedTubs( bos.str(), 
+                                           supportBeamParams.at(bos.str()), // to make sure it exists 
+                                           CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff), 
+                                           _beam0_material) );
+
+      // make the first support beam, the other one is a mirror reflection?
+      // we could use a map to contain them
+
+      const size_t nssbeams = 3;
+
+      ibeam = 1;
+
       double pad        = 2.*_virtualDetectorHalfLength;
-      TubsParams staveTubsParams( _outerRingOuterRadius+pad, _endRingOuterRadius, zHalf, 0., _stavePhiWidth*CLHEP::degree);
-      for ( int i=0; i<_nStaves; ++i ){
-        double phi = phi0 + i*dphi;
-        CLHEP::HepRotationZ rot(phi);
-        ostringstream os;
-        os << "TTrackerStave_" << i;
-        sup._staveBody.push_back( PlacedTubs ( os.str(), staveTubsParams, CLHEP::Hep3Vector(_xCenter,0., _zCenter+zoff), rot, _staveMaterial) );
+      if ( _verbosityLevel > 0 ) {
+        cout << __func__ << " _outerRingOuterRadius+pad, _beam1_innerRadius "  
+             <<   _outerRingOuterRadius+pad << ", " << _beam1_innerRadius
+             << endl;
       }
+
+      double phi00 = _beam1_phiRange[0] -_beam1_phiSpans[0]; // effectively 180;
+
+      for (size_t ssbeam = 0; ssbeam != nssbeams; ++ssbeam) {
+
+        bos.str("TTrackerSupportBeam_");
+        bos << std::setw(1) << ibeam << ssbeam;
+
+        if ( _verbosityLevel > 0 ) {
+          cout << __func__ << " bos.str() " <<  bos.str() << endl;
+        }
+
+        double phi0     = phi00 + _beam1_phiSpans[ssbeam];
+        double deltaPhi = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
+        double outerRadius = (ssbeam != 1) ? _beam1_outerRadius : _beam1_midRadius1;
+
+        supportBeamParams.insert(std::make_pair<std::string,
+                                 TubsParams>(bos.str(),
+                                             TubsParams(_beam1_innerRadius, 
+                                                        outerRadius,
+                                                        zHalf,
+                                                        phi0*CLHEP::degree, 
+                                                        deltaPhi*CLHEP::degree)));
+      
+        sup._beamBody.push_back( PlacedTubs( bos.str(), 
+                                             supportBeamParams.at(bos.str()),
+                                             CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff), 
+                                             _beam1_material) );
+
+      }
+
+      // phi0 can be negative, deltaPhi must not
+
+      ibeam = 2;
+
+      phi00 = 180.0 - _beam1_phiRange[0] + _beam1_phiSpans[0]; // effectively 0;
+
+      for (size_t ssbeam = 0; ssbeam != nssbeams; ++ssbeam) {
+
+        bos.str("TTrackerSupportBeam_");
+        bos << std::setw(1) << ibeam << ssbeam;
+
+        if ( _verbosityLevel > 0 ) {
+          cout << __func__ << " bos.str() " <<  bos.str() << endl;
+        }
+
+        double phi0     = phi00 - _beam1_phiSpans[ssbeam];
+        double deltaPhi = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
+        phi0-=deltaPhi;
+        double outerRadius = (ssbeam != 1) ? _beam1_outerRadius : _beam1_midRadius1;
+
+        supportBeamParams.insert(std::make_pair<std::string,
+                                 TubsParams>(bos.str(),
+                                             TubsParams(_beam1_innerRadius, 
+                                                        outerRadius,
+                                                        zHalf,
+                                                        phi0*CLHEP::degree, 
+                                                        deltaPhi*CLHEP::degree)));
+      
+        sup._beamBody.push_back( PlacedTubs( bos.str(), 
+                                             supportBeamParams.at(bos.str()),
+                                             CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff), 
+                                             _beam1_material) );
+
+      }
+
+      // subdivide the services into a number of groups of same lengts for a given phi span
+
+
     }
 
     // Positions from here onward are in the coordinates of the device envelope.
@@ -1462,7 +1574,7 @@ namespace mu2e {
     TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength);
 
     for ( size_t i=0; i< _midRingSlot.size(); ++i){
-      ostringstream name;
+      std::ostringstream name;
       int station = _midRingSlot.at(i);
       int idev1 = station*2+1;
       int idev2 = idev1+1;

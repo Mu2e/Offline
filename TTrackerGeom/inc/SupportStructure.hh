@@ -51,6 +51,8 @@ namespace mu2e {
     std::vector<PlacedTubs> const& staveBody()    const { return _staveBody;     }
     std::vector<PlacedTubs> const& staveService() const { return _staveServices; }
 
+    std::vector<PlacedTubs> const& beamBody()   const { return _beamBody;     }
+
     void print ( std::ostream& ost ) const;
 
   private:
@@ -82,6 +84,8 @@ namespace mu2e {
     // Each stave is represented by a body plus an average material to represent the
     // services that are present in the cut-out.
     std::vector<PlacedTubs> _staveBody;
+
+    std::vector<PlacedTubs> _beamBody;
 
     // Not yet implemented:
     std::vector<PlacedTubs> _staveServices;
