@@ -207,7 +207,7 @@ int main()
   probabilities._constTrapType0Lifetime = 5;
   probabilities._constTrapType1Lifetime = 50;
   probabilities._constThermalProb = 6.31e-7; //ns^1     1MHz at SiPM --> 1MHz/#pixel=631Hz at Pixel --> 631s^-1 = 6.31-7ns^-1 
-  probabilities._constPhotonProduction = 0.4;
+  probabilities._constPhotonProduction = 0.136;
 
   CLHEP::HepJamesRandom engine(1);
   CLHEP::RandFlat randFlat(engine);

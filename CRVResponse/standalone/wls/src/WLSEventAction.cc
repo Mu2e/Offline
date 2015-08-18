@@ -283,7 +283,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
   probabilities._constTrapType0Lifetime = 5;
   probabilities._constTrapType1Lifetime = 50;
   probabilities._constThermalProb = 6.31e-7; 
-  probabilities._constPhotonProduction = 0.4; 
+  probabilities._constPhotonProduction = 0.136; 
 
 /*
   probabilities._constTrapType0Prob = 0;  

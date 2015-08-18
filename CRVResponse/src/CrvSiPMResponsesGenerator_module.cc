@@ -84,7 +84,7 @@ namespace mu2e
     _probabilities._constTrapType0Lifetime = pset.get<double>("TrapType0Lifetime");   //5.0ns
     _probabilities._constTrapType1Lifetime = pset.get<double>("TrapType1Lifetime");  //50.0ns
     _probabilities._constThermalProb = pset.get<double>("ThermalProb"); //6.25e-7ns^1     1MHz at SiPM --> 1MHz/#pixel=625Hz at Pixel --> 625 s^-1 = 6.25e-7 ns^-1   //exp(-E_th/T)=1.6e-6
-    _probabilities._constPhotonProduction = pset.get<double>("PhotonProduction");  //0.1  //0.4
+    _probabilities._constPhotonProduction = pset.get<double>("PhotonProduction");  //0.136
   }
 
   void CrvSiPMResponsesGenerator::beginJob()

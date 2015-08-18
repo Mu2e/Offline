@@ -44,10 +44,10 @@ BEGIN_PROLOG
 
       ThermalProb                  : 6.31e-7    //ns^-1     1MHz at SiPM --> 1MHz/#pixel=631Hz at Pixel --> 631 s^-1 = 6.31e-7 ns^-1 
 
-      PhotonProduction             : 0.4        // = p (photon probability with every charge release)
+      PhotonProduction             : 0.136      // = p (photon probability with every charge release)
                                                 //total cross talk probability cp:
                                                 //use probability to release a charge r = 0.35 (Geiger probability)
-                                                //cp = p*r + (p*r)^2 + (p*r)^3 + ... = 0.16 
+                                                //cp = p*r + (p*r)^2 + (p*r)^3 + ... = 0.05
     }
     CrvWaveforms:
     {
