@@ -38,8 +38,14 @@ namespace mu2e {
     if (point.x() < _xmin || point.x() > _xmax) {
       return false;
     }
-    if (fabs(point.y()) < _ymin || fabs(point.y()) > _ymax) {
-      return false;
+    if(_flipy) {
+      if (fabs(point.y()) < _ymin || fabs(point.y()) > _ymax) {
+	return false;
+      }
+    } else {
+	if (point.y() < _ymin || point.y() > _ymax) {
+	  return false;
+	}
     }
     if (point.z() < _zmin || point.z() > _zmax) {
       return false;
@@ -185,7 +191,8 @@ namespace mu2e {
   bool BFMap::interpolateTriLinear(const CLHEP::Hep3Vector & p, CLHEP::Hep3Vector & result) const {
 
     double px = p.x();
-    double py = std::abs(p.y());
+    double py = p.y();
+    if(_flipy) py = std::abs(p.y());
     double pz = p.z();
 
     // Indicies into each dimension;
@@ -255,7 +262,7 @@ namespace mu2e {
       c[7].z()*(1.0-fx)*(1.0-fy)*(1.0-fz);
 
     // Need the signed value of p.y() here - the variable py will not do.
-    if ( p.y() < 0 ) by = -by;
+    if ( _flipy && p.y() < 0 ) by = -by;
 
     result = CLHEP::Hep3Vector( bx, by, bz);
 
@@ -270,10 +277,10 @@ namespace mu2e {
 
     static const bool dflag = false;
 
-    // Allow y-symmetry (grid is only defined for y > 0);
+    // Allow y-symmetry if grid is only defined for y > 0;
     int sign(1);
     CLHEP::Hep3Vector point(testpoint.x(), testpoint.y(), testpoint.z());
-    if (testpoint.y() < 0 ) {
+    if ( _flipy && testpoint.y() < 0 ) {
       sign = -1;
       double y = -testpoint.y();
       point.setY(y);
@@ -402,7 +409,7 @@ namespace mu2e {
     }
 
     // Reassign y sign
-    if (sign == -1){
+    if (_flipy && sign == -1){
       result.setY(-result.y());
     }
     return true;
@@ -411,10 +418,10 @@ namespace mu2e {
   bool BFMap::getNeighborPointBF (const CLHEP::Hep3Vector & testpoint, 
       CLHEP::Hep3Vector neighborPoints[3], CLHEP::Hep3Vector neighborBF[3][3][3]) const {
 
-    // Allow y-symmetry (grid is only defined for y > 0);
+    // Allow y-symmetry if grid is only defined for y > 0;
     int sign(1);
     CLHEP::Hep3Vector point(testpoint.x(), testpoint.y(), testpoint.z());
-    if (testpoint.y() < 0 ) {
+    if ( _flipy && testpoint.y() < 0 ) {
       sign = -1;
       double y = -testpoint.y();
       point.setY(y);
@@ -476,7 +483,7 @@ namespace mu2e {
           }
           neighborBF[i][j][k] = _field(xindex, yindex, zindex);
           // Reassign y sign
-          if (sign == -1){ 
+          if (_flipy && sign == -1){ 
             neighborBF[i][j][k].setY(-neighborBF[i][j][k].y());
           }
         }
