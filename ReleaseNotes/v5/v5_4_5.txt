@@ -9,3 +9,13 @@ Still under construction
      Mu2eG4/geom/crv_counters_v03.txt
      Mu2eG4/src/constructVirtualDetectors.cc
 
+2) August 20, 2015 dnbrow01   (Louisville)
+   Added an accessor function getWallExtentz to the Mu2eHall class.
+   Will help retrieve the z-positions of the surfaces of walls of the
+   building, particularly useful to folks positioning geometry elements
+   so they don't have to hardcode numbers themselves.  Requested by
+   A. Palladino.
+   modified:   Mu2eHallGeom/inc/Mu2eHall.hh
+   added:      Mu2eHallGeom/src/Mu2eHall.cc
+
+
