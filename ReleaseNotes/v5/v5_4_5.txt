@@ -19,3 +19,6 @@ Still under construction
    added:      Mu2eHallGeom/src/Mu2eHall.cc
 
 
+3) August 20, 2015 oksuzian
+   Changed the vacuum seal window (IFB_EndWindow) in IFB end plug from Air to Fe.
+   Enabled the virtual detector in the hole of endcap concrete
