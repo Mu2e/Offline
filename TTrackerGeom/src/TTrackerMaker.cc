@@ -188,7 +188,8 @@ namespace mu2e {
 
       config.getVectorDouble( "ttrackerSupport.beam1.phiRange", _beam1_phiRange );
       config.getVectorDouble( "ttrackerSupport.beam1.phiSpans", _beam1_phiSpans );
-      config.getVectorDouble( "ttrackerSupport.beam1.servicePhiSpans", _beam1_servicePhiSpans );
+      config.getVectorDouble( "ttrackerSupport.beam1.servicePhi0s", _beam1_servicePhi0s );
+      config.getVectorDouble( "ttrackerSupport.beam1.servicePhiEnds", _beam1_servicePhiEnds );
       _beam1_innerRadius = config.getDouble( "ttrackerSupport.beam1.innerRadius" );
       _beam1_midRadius1  = config.getDouble( "ttrackerSupport.beam1.midRadius1" );
       _beam1_midRadius2  = config.getDouble( "ttrackerSupport.beam1.midRadius2" );
@@ -351,6 +352,14 @@ namespace mu2e {
     // Make an empty TTracker.
     _tt = unique_ptr<TTracker>(new TTracker());
 
+    // Stations
+    // Construct the stations and their internals based on devices internals
+    if ( _numDevices%2 != 0 ) {
+      throw cet::exception("GEOM")  << "_numDevices = " << _numDevices
+                                    << ": Current TTracker geometry assumes even number of devices  \n";
+    }
+    _numStations = _numDevices/2;
+
     makeMother();
 
     computeLayerSpacingAndShift();
@@ -399,13 +408,6 @@ namespace mu2e {
     identifyNeighbourStraws();
     identifyDirectionalNeighbourStraws();
 
-   // Stations
-   // Construct the stations and their internals based on devices internals
-   if ( _numDevices%2 != 0 ) {
-         throw cet::exception("GEOM")  << "_numDevices = " << _numDevices
-         << ": Current TTracker geometry assumes even number of devices  \n";
-   }
-   _numStations = _numDevices/2;
     _tt->_stations.reserve(_numStations);
     // Construct the devices and their internals.
     for ( int istation=0; istation<_numStations; ++istation ){
@@ -1405,6 +1407,7 @@ namespace mu2e {
       // hold the beamTubsParams in a map
 
       std::unordered_map<std::string,TubsParams> supportBeamParams;
+      std::unordered_map<std::string,TubsParams> supportServiceParams;
 
       // the top beam is different
 
@@ -1427,18 +1430,10 @@ namespace mu2e {
                                            _beam0_material) );
 
       // make the first support beam, the other one is a mirror reflection?
-      // we could use a map to contain them
 
-      const size_t nssbeams = 3;
+      const size_t nssbeams = _beam1_phiSpans.size() - 1;
 
       ibeam = 1;
-
-      double pad        = 2.*_virtualDetectorHalfLength;
-      if ( _verbosityLevel > 0 ) {
-        cout << __func__ << " _outerRingOuterRadius+pad, _beam1_innerRadius "  
-             <<   _outerRingOuterRadius+pad << ", " << _beam1_innerRadius
-             << endl;
-      }
 
       double phi00 = _beam1_phiRange[0] -_beam1_phiSpans[0]; // effectively 180;
 
@@ -1470,6 +1465,76 @@ namespace mu2e {
 
       }
 
+      // services
+
+      // subdivide the services into a number of groups of same lengts for a given phi span
+
+      // adjust the lengts and place all tubes touching the last station
+      // adjust the covered arc accordingly
+
+      size_t nsServices =  _beam1_servicePhi0s.size();
+
+      if ( ( nsServices !=  _beam1_servicePhiEnds.size() )
+           || ( _beam1_serviceMaterials.size() !=  _beam1_servicePhiEnds.size() ) ) {
+        throw cet::exception("GEOM")
+          << __func__ << "the number of all the beam service paramters has to be the same"
+          << endl;
+      }
+
+      for (size_t sservice = 0; sservice!=nsServices; ++sservice) {
+
+        bos.str("TTrackerSupportService_");
+        bos << std::setw(1) << ibeam << sservice << "_";
+
+        std::string boss =  bos.str();
+
+        if ( _verbosityLevel > 0 ) {
+          cout << __func__ << " bos.str() " <<  bos.str() << endl;
+        }
+
+        for ( int ssservice = 0; ssservice!=_numStations; ++ssservice) {
+
+          bos.str(boss);
+          bos << std::setw(2) << ssservice;
+        
+          if ( _verbosityLevel > 0 ) {
+            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+          }
+
+          double sHLength = zHalf*(_numStations-ssservice)/_numStations;
+          double sOffset  = zoff + zHalf - sHLength;
+
+          if ( _verbosityLevel > 0 ) {
+            cout << __func__ << " sHLength, sOffset " 
+                 << sHLength << ", " << sOffset << endl;
+          }
+
+          double deltaPhi0 = _beam1_servicePhiEnds[sservice] - _beam1_servicePhi0s[sservice];
+          double deltaPhi  = deltaPhi0/_numStations;
+          double phi0      = phi00 + _beam1_servicePhi0s[sservice] + deltaPhi*ssservice;
+
+          if ( _verbosityLevel > 0 ) {
+            cout << __func__ << " deltaPhi0, phi0, deltaPhi " 
+                 << deltaPhi0 << ", " << phi0 << ", " << deltaPhi << endl;
+          }
+
+          supportServiceParams.insert(std::make_pair<std::string,
+                                      TubsParams>(bos.str(),
+                                                  TubsParams(_beam1_midRadius1, 
+                                                             _beam1_midRadius2,
+                                                             sHLength,
+                                                             phi0*CLHEP::degree, 
+                                                             deltaPhi*CLHEP::degree)));
+ 
+          sup._beamServices.push_back(PlacedTubs( bos.str(),
+                                                  supportServiceParams.at(bos.str()),
+                                                  CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset), 
+                                                  _beam1_serviceMaterials[sservice]));
+
+        }
+
+      }
+
       // phi0 can be negative, deltaPhi must not
 
       ibeam = 2;
@@ -1487,7 +1552,7 @@ namespace mu2e {
 
         double phi0     = phi00 - _beam1_phiSpans[ssbeam];
         double deltaPhi = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
-        phi0-=deltaPhi;
+        phi0 -= deltaPhi;
         double outerRadius = (ssbeam != 1) ? _beam1_outerRadius : _beam1_midRadius1;
 
         supportBeamParams.insert(std::make_pair<std::string,
@@ -1505,7 +1570,62 @@ namespace mu2e {
 
       }
 
-      // subdivide the services into a number of groups of same lengts for a given phi span
+      for (size_t sservice = 0; sservice!=nsServices; ++sservice) {
+
+        bos.str("TTrackerSupportService_");
+        bos << std::setw(1) << ibeam << sservice << "_";
+
+        std::string boss =  bos.str();
+
+        if ( _verbosityLevel > 0 ) {
+          cout << __func__ << " bos.str() " <<  bos.str() << endl;
+        }
+
+        for ( int ssservice = 0; ssservice!=_numStations; ++ssservice) {
+
+          bos.str(boss);
+          bos << std::setw(2) << ssservice;
+        
+          if ( _verbosityLevel > 0 ) {
+            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+          }
+
+          double sHLength = zHalf*(_numStations-ssservice)/_numStations;
+          double sOffset  = zoff + zHalf - sHLength;
+
+          if ( _verbosityLevel > 0 ) {
+            cout << __func__ << " sHLength, sOffset " 
+                 << sHLength << ", " << sOffset << endl;
+          }
+
+          // the span of this service section
+          double deltaPhi0 = _beam1_servicePhiEnds[sservice] - _beam1_servicePhi0s[sservice];
+          // the span of one "sub" service of this section
+          double deltaPhi  = deltaPhi0/_numStations;
+          // the starting position of the "sub" service
+          double phi0      = phi00 - _beam1_servicePhi0s[sservice] - deltaPhi*(1+ssservice);
+
+          if ( _verbosityLevel > 0 ) {
+            cout << __func__ << " deltaPhi0, phi0, deltaPhi " 
+                 << deltaPhi0 << ", " << phi0 << ", " << deltaPhi << endl;
+          }
+
+          supportServiceParams.insert(std::make_pair<std::string,
+                                      TubsParams>(bos.str(),
+                                                  TubsParams(_beam1_midRadius1, 
+                                                             _beam1_midRadius2,
+                                                             sHLength,
+                                                             phi0*CLHEP::degree, 
+                                                             deltaPhi*CLHEP::degree)));
+ 
+          sup._beamServices.push_back(PlacedTubs( bos.str(),
+                                                  supportServiceParams.at(bos.str()),
+                                                  CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset), 
+                                                  _beam1_serviceMaterials[sservice]));
+
+        }
+
+      }
 
 
     }

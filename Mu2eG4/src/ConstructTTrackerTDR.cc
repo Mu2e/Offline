@@ -207,8 +207,6 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
   // contructing the support beams
 
-  //  const PlacedTubs& beam0 = sup.beamBody()[0];
-
   for ( auto const& sbeam : sup.beamBody() ) {
 
     if ( _verbosityLevel > 0 ) {
@@ -238,6 +236,39 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
               );
 
   }
+
+  // here construct the supportServices
+
+  for ( auto const& sbeam : sup.beamServices() ) {
+
+    if ( _verbosityLevel > 0 ) {
+      cout << "Support Beam Service Position: "
+           << sbeam.name()               << " "
+           << sbeam.position()           << " "
+           << _motherInfo.centerInWorld  << " "
+           << sbeam.position()-_motherInfo.centerInWorld << " "
+           << sbeam.tubsParams()
+           << endl;
+    }
+
+    nestTubs( sbeam.name(),
+              sbeam.tubsParams(),
+              findMaterialOrThrow(sbeam.materialName()),
+              0x0,
+              sbeam.position()-_motherInfo.centerInWorld,
+              _motherInfo,
+              0,
+              _config.getBool("ttracker.envelopeVisible",false),
+              G4Colour::Yellow(),
+              _config.getBool("ttracker.envelopeSolid",true),
+              _forceAuxEdgeVisible,
+              place,
+              true
+              // _doSurfaceCheck
+              );
+
+  }
+
 
 } // end constructMainSupports
 
