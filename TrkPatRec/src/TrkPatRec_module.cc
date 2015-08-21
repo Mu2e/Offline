@@ -318,15 +318,18 @@ namespace mu2e
     unique_ptr<StrawHitFlagCollection> flags(_flags );
     unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
     // find mc truth if we're making diagnostics
-    if(_diag > 0 && !_kdiag->findMCData(event)){
-      throw cet::exception("RECO")<<"mu2e::TrkPatRec: MC data missing or incomplete"<< endl;
+    if(_diag > 0 ){
+      bool goodmc = _kdiag->findMCData(event);
+      if(!goodmc)
+	throw cet::exception("RECO")<<"mu2e::TrkPatRec: MC data missing or incomplete"<< endl;
+// fill primary particle MC truth information
+      _kdiag->kalDiag(0,false);
     }
     if(_diag > 1){
       fillStrawDiag();
       if(_nchit>14)_ccutflow->Fill(1.0);
       if(_nchit>14&&_ctime>_tmin)_ccutflow->Fill(2.0);
     }
-
     // find the time peaks in the time spectrum of selected hits.  Otherwise, take all
     // selected hits as a peak
     _tpeaks.clear();
@@ -335,10 +338,6 @@ namespace mu2e
       findTimePeaks();
     } else {
       createTimePeak();
-    }
-    if(_diag>0){
-// fill primary particle MC truth information
-      _kdiag->kalDiag(0,false);
     }
     // fill diagnostics if requested
     if(_diag > 2 && _nchit>0 && _ctime > _tmin)fillTimeDiag();
@@ -518,7 +517,7 @@ namespace mu2e
     // sort the peaks so that the largest comes first
     sort(_tpeaks.begin(),_tpeaks.end(),greater<TrkTimePeak>());
     // if requested, fill diagnostics
-    if(_diag>1 && _kdiag->mcData()._mcsteps != 0){
+    if(_diag>1 && _kdiag->mcData()._mcdigis != 0){
       for(size_t ip=0;ip<_tpeaks.size();++ip){
 	TrkTimePeak const& tp = _tpeaks[ip];
 	fillPeakDiag(ip,tp);
