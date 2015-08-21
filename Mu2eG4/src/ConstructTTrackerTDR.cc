@@ -151,8 +151,7 @@ mu2e::ConstructTTrackerTDR::constructMother(){
                           _config.getBool("_ttracker.envelopeSolid",true),
                           _forceAuxEdgeVisible,
                           place,
-                          true
-                          //                          _doSurfaceCheck
+                          _doSurfaceCheck
                           );
 
   if ( _verbosityLevel > 0) {
@@ -231,8 +230,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
               _config.getBool("ttracker.envelopeSolid",true),
               _forceAuxEdgeVisible,
               place,
-              true
-              // _doSurfaceCheck
+              _doSurfaceCheck
               );
 
   }
@@ -265,12 +263,11 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
               ttSSE,
               0,
               _config.getBool("ttracker.envelopeVisible",false),
-              G4Colour::Yellow(),
+              ( sbeam.name().find("_c") != string::npos ) ? G4Colour::Yellow() : G4Colour::Green(),
               _config.getBool("ttracker.envelopeSolid",true),
               _forceAuxEdgeVisible,
               place,
-              true
-              // _doSurfaceCheck
+              _doSurfaceCheck
               );
 
   }

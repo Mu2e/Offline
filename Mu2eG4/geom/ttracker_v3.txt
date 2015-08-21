@@ -112,7 +112,9 @@ double ttrackerSupport.beam1.midRadius1    =  820;
 double ttrackerSupport.beam1.midRadius2    =  840;
 double ttrackerSupport.beam1.outerRadius   =  850.;
 string ttrackerSupport.beam1.material      = "G4_Al";
-vector<string> ttrackerSupport.beam1.serviceMaterials = {"G4_Cu", "G4_Cu", "StrawGas","G4_Cu"} ;
+vector<string> ttrackerSupport.beam1.serviceMaterials       = {"G4_Cu", "G4_Cu", "StrawGas","G4_Cu"} ;
+vector<double> ttrackerSupport.beam1.serviceCovRelThickness = {.1, .1, .1, .1} ;
+vector<string> ttrackerSupport.beam1.serviceMaterialsCov = {"G4_POLYETHYLENE", "G4_POLYETHYLENE", "G4_Cu","G4_SILICON_DIOXIDE"};
 
 double ttrackerSupport.innerRing.innerRadius  = 700.;
 double ttrackerSupport.innerRing.outerRadius  = 710.;

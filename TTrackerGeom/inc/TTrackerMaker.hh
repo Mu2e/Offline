@@ -242,6 +242,8 @@ namespace mu2e {
     double _beam1_outerRadius;
     std::string _beam1_material;
     std::vector<std::string> _beam1_serviceMaterials;
+    std::vector<double> _beam1_serviceCovRelThickness;
+    std::vector<std::string> _beam1_serviceMaterialsCov;
 
     std::vector<int>  _nonExistingDevices;
 

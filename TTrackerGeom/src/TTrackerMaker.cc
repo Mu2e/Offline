@@ -196,6 +196,8 @@ namespace mu2e {
       _beam1_outerRadius = config.getDouble( "ttrackerSupport.beam1.outerRadius" );
       _beam1_material    = config.getString( "ttrackerSupport.beam1.material" );
       config.getVectorString( "ttrackerSupport.beam1.serviceMaterials", _beam1_serviceMaterials );
+      config.getVectorDouble( "ttrackerSupport.beam1.serviceCovRelThickness", _beam1_serviceCovRelThickness );
+      config.getVectorString( "ttrackerSupport.beam1.serviceMaterialsCov", _beam1_serviceMaterialsCov );
 
       _innerRingInnerRadius    = config.getDouble( "ttrackerSupport.innerRing.innerRadius" );
       _innerRingOuterRadius    = config.getDouble( "ttrackerSupport.innerRing.outerRadius" );
@@ -1480,16 +1482,14 @@ namespace mu2e {
 
         double phi0     = phi00 + _beam1_phiSpans[ssbeam];
         double deltaPhi = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
-        double outerRadius = _beam1_midRadius2;
-
         supportBeamParams.insert(std::make_pair<std::string,
                                  TubsParams>(bos.str(),
                                              TubsParams(_beam1_midRadius1, 
-                                                        outerRadius,
+                                                        _beam1_midRadius2,
                                                         zHalf,
                                                         phi0*CLHEP::degree, 
                                                         deltaPhi*CLHEP::degree)));
-      
+
         sup._beamBody.push_back( PlacedTubs( bos.str(), 
                                              supportBeamParams.at(bos.str()),
                                              CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff), 
@@ -1514,8 +1514,6 @@ namespace mu2e {
       }
 
       // need to create an envelope for the services
-      // add a layer of glass and plastic 
-
       for (size_t sservice = 0; sservice!=nsServices; ++sservice) {
 
         bos.str("TTrackerSupportService_");
@@ -1553,10 +1551,23 @@ namespace mu2e {
                  << deltaPhi0 << ", " << phi0 << ", " << deltaPhi << endl;
           }
 
+          // approximate the service by the main part an a top cover/envelope with different materials
+
+          if ( _beam1_serviceCovRelThickness[sservice] > 1. 
+               || _beam1_serviceCovRelThickness[sservice] < 0. ) {
+            throw cet::exception("GEOM")
+              << __func__ << " beam1_serviceCovRelThickness out of 0...1 range " 
+              << _beam1_serviceCovRelThickness[sservice]
+              << endl;
+          }
+
+          double cRadius = _beam1_midRadius2 +
+            _beam1_serviceCovRelThickness[sservice] * ( _beam1_midRadius1 - _beam1_midRadius2 );
+
           supportServiceParams.insert(std::make_pair<std::string,
                                       TubsParams>(bos.str(),
                                                   TubsParams(_beam1_midRadius1, 
-                                                             _beam1_midRadius2,
+                                                             cRadius,
                                                              sHLength,
                                                              phi0*CLHEP::degree, 
                                                              deltaPhi*CLHEP::degree)));
@@ -1565,6 +1576,25 @@ namespace mu2e {
                                                   supportServiceParams.at(bos.str()),
                                                   CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset), 
                                                   _beam1_serviceMaterials[sservice]));
+
+          if (_beam1_serviceCovRelThickness[sservice]>0.) {
+
+            bos << std::setw(1) << "_c";
+
+            supportServiceParams.insert(std::make_pair<std::string,
+                                        TubsParams>(bos.str(),
+                                                    TubsParams(cRadius, 
+                                                               _beam1_midRadius2,
+                                                               sHLength,
+                                                               phi0*CLHEP::degree, 
+                                                               deltaPhi*CLHEP::degree)));
+ 
+            sup._beamServices.push_back(PlacedTubs( bos.str(),
+                                                    supportServiceParams.at(bos.str()),
+                                                    CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset), 
+                                                    _beam1_serviceMaterialsCov[sservice]));
+
+          }
 
         }
 
@@ -1619,12 +1649,11 @@ namespace mu2e {
 
         double deltaPhi    = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
         double phi0        = phi00 - _beam1_phiSpans[ssbeam] - deltaPhi;
-        double outerRadius = _beam1_midRadius2;
 
         supportBeamParams.insert(std::make_pair<std::string,
                                  TubsParams>(bos.str(),
                                              TubsParams(_beam1_midRadius1, 
-                                                        outerRadius,
+                                                        _beam1_midRadius2,
                                                         zHalf,
                                                         phi0*CLHEP::degree, 
                                                         deltaPhi*CLHEP::degree)));
@@ -1676,10 +1705,23 @@ namespace mu2e {
                  << deltaPhi0 << ", " << phi0 << ", " << deltaPhi << endl;
           }
 
+          // approximate the service by the main part an a top cover/envelope with different materials
+
+          if ( _beam1_serviceCovRelThickness[sservice] > 1. 
+               || _beam1_serviceCovRelThickness[sservice] < 0. ) {
+            throw cet::exception("GEOM")
+              << __func__ << " beam1_serviceCovRelThickness out of 0...1 range " 
+              << _beam1_serviceCovRelThickness[sservice]
+              << endl;
+          }
+
+          double cRadius = _beam1_midRadius2 +
+            _beam1_serviceCovRelThickness[sservice] * ( _beam1_midRadius1 - _beam1_midRadius2 );
+
           supportServiceParams.insert(std::make_pair<std::string,
                                       TubsParams>(bos.str(),
                                                   TubsParams(_beam1_midRadius1, 
-                                                             _beam1_midRadius2,
+                                                             cRadius,
                                                              sHLength,
                                                              phi0*CLHEP::degree, 
                                                              deltaPhi*CLHEP::degree)));
@@ -1689,10 +1731,28 @@ namespace mu2e {
                                                   CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset), 
                                                   _beam1_serviceMaterials[sservice]));
 
+          if (_beam1_serviceCovRelThickness[sservice]>0.) {
+
+            bos << std::setw(1) << "_c";
+
+            supportServiceParams.insert(std::make_pair<std::string,
+                                        TubsParams>(bos.str(),
+                                                    TubsParams(cRadius, 
+                                                               _beam1_midRadius2,
+                                                               sHLength,
+                                                               phi0*CLHEP::degree, 
+                                                               deltaPhi*CLHEP::degree)));
+ 
+            sup._beamServices.push_back(PlacedTubs( bos.str(),
+                                                    supportServiceParams.at(bos.str()),
+                                                    CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset), 
+                                                    _beam1_serviceMaterialsCov[sservice]));
+
+          }
+
         }
 
       }
-
 
     }
 
