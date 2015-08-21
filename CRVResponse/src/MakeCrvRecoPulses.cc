@@ -66,7 +66,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
                                 //this can happen e.g. if the voltage drops below the pulse threshold
                                 //right after the maximum
 
-      double PEs = static_cast<int>(integral*_param1+_param0+0.5);  //the 0.5 is used to properly round the doubles
+      int PEs = static_cast<int>(integral*_param1+_param0+0.5);  //the 0.5 is used to properly round the doubles
       double leadingEdge = T1;
 
       TF1 f("","landau");
@@ -115,7 +115,7 @@ unsigned int MakeCrvRecoPulses::GetNPulses()
   return _PEs.size();
 }
 
-double MakeCrvRecoPulses::GetPEs(int pulse)
+int MakeCrvRecoPulses::GetPEs(int pulse)
 {
   int n = _PEs.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");

@@ -285,29 +285,33 @@ namespace {
 
       }
 
-      for ( auto const& stave : sup.staveBody() ){
+      for ( auto const& sbeam : sup.beamBody() ) {
 
-        cout << "Stave Position: "
-             << stave.position() << " "
-             << motherInfo.centerInWorld << " "
-             << stave.position()-motherInfo.centerInWorld
-             << endl;
+        if ( verbosityLevel > 0 ) {
+          cout << "Support Beam Position: "
+               << sbeam.name()               << " "
+               << sbeam.position()           << " "
+               << motherInfo.centerInWorld  << " "
+               << sbeam.position()-motherInfo.centerInWorld << " "
+               << sbeam.tubsParams()
+               << endl;
+        }
 
-        nestTubs( stave.name(),
-                  stave.tubsParams(),
-                  findMaterialOrThrow(stave.materialName()),
-                  &stave.rotation(),
-                  stave.position()-motherInfo.centerInWorld,
+        nestTubs( sbeam.name(),
+                  sbeam.tubsParams(),
+                  findMaterialOrThrow(sbeam.materialName()),
+                  0x0,
+                  sbeam.position()-motherInfo.centerInWorld,
                   motherInfo,
                   0,
                   config.getBool("ttracker.envelopeVisible",false),
-                  G4Colour::Yellow(),
+                  G4Colour::Cyan(),
                   config.getBool("ttracker.envelopeSolid",true),
                   forceAuxEdgeVisible,
                   place,
-                  doSurfaceCheck
+                  true
+                  // _doSurfaceCheck
                   );
-
 
       }
 

@@ -48,8 +48,8 @@ namespace mu2e {
 
     // Accessors for outer support structure.
     std::vector<PlacedTubs> const& stiffRings()   const { return _stiffRings;    }
-    std::vector<PlacedTubs> const& staveBody()    const { return _staveBody;     }
-    std::vector<PlacedTubs> const& staveService() const { return _staveServices; }
+    std::vector<PlacedTubs> const& beamBody()   const { return _beamBody;     }
+    std::vector<PlacedTubs> const& beamServices() const { return _beamServices; }
 
     void print ( std::ostream& ost ) const;
 
@@ -79,12 +79,13 @@ namespace mu2e {
     // Rings
     std::vector<PlacedTubs> _stiffRings;
 
-    // Each stave is represented by a body plus an average material to represent the
+    // Each stave=beam is represented by a body plus an average material to represent the
     // services that are present in the cut-out.
-    std::vector<PlacedTubs> _staveBody;
+
+    std::vector<PlacedTubs> _beamBody;
 
     // Not yet implemented:
-    std::vector<PlacedTubs> _staveServices;
+    std::vector<PlacedTubs> _beamServices;
 
   };
 
