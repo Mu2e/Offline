@@ -5,6 +5,17 @@ Still under construction
 4) August 21, 2015 genser
     Initial implementation of support beams and services replacing support staves
 
+     Mu2eG4/geom/ttracker_cd3.txt              |   32 ++-
+     Mu2eG4/geom/ttracker_v3.txt               |   35 ++-
+     Mu2eG4/src/ConstructTTrackerTDR.cc        |   65 ++++-
+     Mu2eG4/src/constructDiskCalorimeter.cc    |   17 +- make crystal visibility conditional
+     Mu2eG4/src/constructTTrackerv3Detailed.cc |   34 ++-
+     Mu2eG4/src/constructVirtualDetectors.cc   |    8 +- 
+     TTrackerGeom/inc/SupportStructure.hh      |   11 +-
+     TTrackerGeom/inc/TTrackerMaker.hh         |   18 ++
+     TTrackerGeom/src/SupportStructure.cc      |   16 +-
+     TTrackerGeom/src/TTrackerMaker.cc         |  408 +++++++++++++++++++++++++++--
+
 3) August 20, 2015 oksuzian
    Changed the vacuum seal window (IFB_EndWindow) in IFB end plug from Air to Fe.
    Enabled the virtual detector in the hole of endcap concrete
