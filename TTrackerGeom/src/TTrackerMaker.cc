@@ -1465,6 +1465,38 @@ namespace mu2e {
 
       }
 
+      // a service envelope
+
+      {
+
+        size_t ssbeam = 1;
+
+        bos.str("TTrackerSupportServiceEnvelope_");
+        bos << std::setw(1) << ibeam << ssbeam;
+
+        if ( _verbosityLevel > 0 ) {
+          cout << __func__ << " bos.str() " <<  bos.str() << endl;
+        }
+
+        double phi0     = phi00 + _beam1_phiSpans[ssbeam];
+        double deltaPhi = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
+        double outerRadius = _beam1_midRadius2;
+
+        supportBeamParams.insert(std::make_pair<std::string,
+                                 TubsParams>(bos.str(),
+                                             TubsParams(_beam1_midRadius1, 
+                                                        outerRadius,
+                                                        zHalf,
+                                                        phi0*CLHEP::degree, 
+                                                        deltaPhi*CLHEP::degree)));
+      
+        sup._beamBody.push_back( PlacedTubs( bos.str(), 
+                                             supportBeamParams.at(bos.str()),
+                                             CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff), 
+                                             _envelopeMaterial) );
+
+      }
+
       // services
 
       // subdivide the services into a number of groups of same lengts for a given phi span
@@ -1480,6 +1512,9 @@ namespace mu2e {
           << __func__ << "the number of all the beam service paramters has to be the same"
           << endl;
       }
+
+      // need to create an envelope for the services
+      // add a layer of glass and plastic 
 
       for (size_t sservice = 0; sservice!=nsServices; ++sservice) {
 
@@ -1550,9 +1585,8 @@ namespace mu2e {
           cout << __func__ << " bos.str() " <<  bos.str() << endl;
         }
 
-        double phi0     = phi00 - _beam1_phiSpans[ssbeam];
-        double deltaPhi = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
-        phi0 -= deltaPhi;
+        double deltaPhi    = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
+        double phi0        = phi00 - _beam1_phiSpans[ssbeam] - deltaPhi;
         double outerRadius = (ssbeam != 1) ? _beam1_outerRadius : _beam1_midRadius1;
 
         supportBeamParams.insert(std::make_pair<std::string,
@@ -1567,6 +1601,38 @@ namespace mu2e {
                                              supportBeamParams.at(bos.str()),
                                              CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff), 
                                              _beam1_material) );
+
+      }
+
+      // a service envelope tbd
+
+      {
+
+        size_t ssbeam = 1;
+
+        bos.str("TTrackerSupportServiceEnvelope_");
+        bos << std::setw(1) << ibeam << ssbeam;
+
+        if ( _verbosityLevel > 0 ) {
+          cout << __func__ << " bos.str() " <<  bos.str() << endl;
+        }
+
+        double deltaPhi    = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
+        double phi0        = phi00 - _beam1_phiSpans[ssbeam] - deltaPhi;
+        double outerRadius = _beam1_midRadius2;
+
+        supportBeamParams.insert(std::make_pair<std::string,
+                                 TubsParams>(bos.str(),
+                                             TubsParams(_beam1_midRadius1, 
+                                                        outerRadius,
+                                                        zHalf,
+                                                        phi0*CLHEP::degree, 
+                                                        deltaPhi*CLHEP::degree)));
+      
+        sup._beamBody.push_back( PlacedTubs( bos.str(), 
+                                             supportBeamParams.at(bos.str()),
+                                             CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff), 
+                                             _envelopeMaterial) );
 
       }
 

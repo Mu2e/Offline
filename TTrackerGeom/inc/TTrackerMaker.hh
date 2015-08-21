@@ -234,7 +234,8 @@ namespace mu2e {
 
     std::vector<double> _beam1_phiRange;
     std::vector<double> _beam1_phiSpans;
-    std::vector<double> _beam1_servicePhiSpans;
+    std::vector<double> _beam1_servicePhi0s;
+    std::vector<double> _beam1_servicePhiEnds;
     double _beam1_innerRadius;
     double _beam1_midRadius1;
     double _beam1_midRadius2;

@@ -90,11 +90,6 @@ string ttrackerSupport.endRing.material    = "G4_Al";
 vector<int> ttrackerSupport.midRing.slot  = { 19, 20 };
 double ttrackerSupport.midRing.halfLength = 10.;
 
-int    ttrackerSupport.stave.nstaves       =   3;
-double ttrackerSupport.stave.phi0          = -75.; // -90+phiWidth/2. will put stave 0 at the top.
-double ttrackerSupport.stave.phiWidth      =  30.;
-string ttrackerSupport.stave.material      = "G4_Al";
-
 // steves are called beams now
 // in doc-db 888.v7 the one at the top is different one from the ones
 // on the sides
@@ -105,8 +100,8 @@ double ttrackerSupport.beam0.outerRadius   =  830.;
 string ttrackerSupport.beam0.material      = "G4_Al";
 
 // for the services, we shall try to subdivide each of the sections
-// into a cylindrical section with the length adjusted to the middle of the section
-//
+// into a cylindrical section with the length adjusted to the middle
+// of the section
 
 vector<double> ttrackerSupport.beam1.phiRange = { 180.4, 221.7 };
 vector<double> ttrackerSupport.beam1.phiSpans = { 0.4, 14.1, 34.8, 41.7 };//deltas from 0

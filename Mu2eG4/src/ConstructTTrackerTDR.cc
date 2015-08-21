@@ -239,14 +239,20 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
   // here construct the supportServices
 
+  VolumeInfo& ttSSE1 = _helper.locateVolInfo("TTrackerSupportServiceEnvelope_11");
+  VolumeInfo& ttSSE2 = _helper.locateVolInfo("TTrackerSupportServiceEnvelope_21");
+
   for ( auto const& sbeam : sup.beamServices() ) {
+
+    // we need to place the services in the right envelope
+    VolumeInfo& ttSSE = ( sbeam.name().find("Service_1") != string::npos ) ? ttSSE1 : ttSSE2;
 
     if ( _verbosityLevel > 0 ) {
       cout << "Support Beam Service Position: "
            << sbeam.name()               << " "
            << sbeam.position()           << " "
            << _motherInfo.centerInWorld  << " "
-           << sbeam.position()-_motherInfo.centerInWorld << " "
+           << sbeam.position()-ttSSE.centerInWorld << " "
            << sbeam.tubsParams()
            << endl;
     }
@@ -255,8 +261,8 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
               sbeam.tubsParams(),
               findMaterialOrThrow(sbeam.materialName()),
               0x0,
-              sbeam.position()-_motherInfo.centerInWorld,
-              _motherInfo,
+              sbeam.position()-ttSSE.centerInWorld,
+              ttSSE,
               0,
               _config.getBool("ttracker.envelopeVisible",false),
               G4Colour::Yellow(),
@@ -327,7 +333,7 @@ mu2e::ConstructTTrackerTDR::constructStations(){
     // We need a new logical volume for each device envelope - because the sectors
     // may be placed differently.  We need a distinct name for each logical volume.
     ostringstream os;
-    os << "_" << idev;
+    os << "_"  << std::setfill('0') << std::setw(2) << idev;
 
     VolumeInfo devInfo = nestTubs( trackerEnvelopeName + os.str(),
                                    deviceEnvelopeParams,
