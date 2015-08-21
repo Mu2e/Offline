@@ -72,7 +72,6 @@ BEGIN_PROLOG
       module_type                  : SimpleCrvCoincidenceCheck
       verboseLevel                 : 1
       coincidenceGroupsFile        : "CRVResponse/test/coincidenceGroups.txt"
-      storeCoincidenceCombinations : true
       checkLayers                  : true
       crvRecoPulsesModuleLabel     : "CrvRecoPulses"
       PEthreshold                  : 14
