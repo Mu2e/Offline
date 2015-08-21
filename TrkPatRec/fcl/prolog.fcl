@@ -108,10 +108,9 @@ TrkPatRec :
 	    MCPtrLabel          : makeSH
 	    MCStepsLabel        : g4run
 	    SimParticleLabel    : g4run
-	    SimParticleInstance : tracker
+	    SimParticleInstance : "" 
 	    StrawHitMCLabel     : makeSD
 	    TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	    FillMCInfo          : false
 	}
 
 } # end TrkPatRec
