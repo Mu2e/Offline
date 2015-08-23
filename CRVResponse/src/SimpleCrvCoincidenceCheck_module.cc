@@ -274,14 +274,14 @@ namespace mu2e
       } 
     }
 
+    _totalEvents++;
+    if(crvCoincidenceCheckResult->CoincidenceFound()) _totalEventsCoincidence++;
+
     if(_verboseLevel>0)
     {
       _moduleLabel = *this->currentContext()->moduleLabel();
       std::cout<<_moduleLabel<<"   run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
       std::cout<<(crvCoincidenceCheckResult->CoincidenceFound()?"Coincidence satisfied":"No coincidence found")<<std::endl;
-
-      _totalEvents++;
-      if(crvCoincidenceCheckResult->CoincidenceFound()) _totalEventsCoincidence++;
 
       std::vector<CrvCoincidenceCheckResult::DeadTimeWindow> deadTimeWindows;
       deadTimeWindows = crvCoincidenceCheckResult->GetDeadTimeWindows(25,125);  //TODO: Don't hardcode these numbers
