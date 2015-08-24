@@ -363,7 +363,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
              << " Material " 
              << ttSSE.logical->GetMaterial()->GetName()
              << " Final Mass in kg: " 
-             << serviceVI.logical->GetMass(true)/CLHEP::kg
+             << ttSSE.logical->GetMass(true)/CLHEP::kg
              << endl;
       }
    
