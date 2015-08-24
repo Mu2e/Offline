@@ -238,6 +238,7 @@ namespace mu2e {
     std::vector<double> _beam1_servicePhiEnds;
     double _beam1_innerRadius;
     double _beam1_midRadius1;
+    std::vector<double> _beam1_serviceOuterRadii;
     double _beam1_midRadius2;
     double _beam1_outerRadius;
     std::string _beam1_material;

@@ -195,6 +195,7 @@ namespace mu2e {
       _beam1_midRadius2  = config.getDouble( "ttrackerSupport.beam1.midRadius2" );
       _beam1_outerRadius = config.getDouble( "ttrackerSupport.beam1.outerRadius" );
       _beam1_material    = config.getString( "ttrackerSupport.beam1.material" );
+      config.getVectorDouble( "ttrackerSupport.beam1.serviceOuterRadii", _beam1_serviceOuterRadii );
       config.getVectorString( "ttrackerSupport.beam1.serviceMaterials", _beam1_serviceMaterials );
       config.getVectorDouble( "ttrackerSupport.beam1.serviceCovRelThickness", _beam1_serviceCovRelThickness );
       config.getVectorString( "ttrackerSupport.beam1.serviceMaterialsCov", _beam1_serviceMaterialsCov );
@@ -1418,7 +1419,7 @@ namespace mu2e {
       std::ostringstream bos("TTrackerSupportBeam_",std::ios_base::ate); // to write at the end
       bos << std::setfill('0') << std::setw(2) << ibeam;
 
-      supportBeamParams.insert(std::make_pair<std::string,
+      supportBeamParams.insert(std::pair<std::string,
                                TubsParams>(bos.str(),
                                            TubsParams(_beam0_innerRadius, 
                                                       _beam0_outerRadius, 
@@ -1438,7 +1439,7 @@ namespace mu2e {
 
       if ( nsServices !=  _beam1_servicePhiEnds.size() 
            || nsServices != _beam1_serviceMaterials.size() 
-           || nsServices != _beam1_servicePhiEnds.size()  
+           || nsServices != _beam1_serviceOuterRadii.size()  
            || nsServices != _beam1_serviceCovRelThickness.size()
            || nsServices != _beam1_serviceMaterialsCov.size() ) {
         throw cet::exception("GEOM")
@@ -1472,7 +1473,7 @@ namespace mu2e {
             ? _beam1_outerRadius 
             : _beam1_midRadius1; // the service section is different
 
-          supportBeamParams.insert(std::make_pair<std::string,
+          supportBeamParams.insert(std::pair<std::string,
                                    TubsParams>(bos.str(),
                                                TubsParams(_beam1_innerRadius, 
                                                           outerRadius,
@@ -1505,7 +1506,7 @@ namespace mu2e {
             ? phi00 + _beam1_phiSpans[ssbeam]
             : phi00 - _beam1_phiSpans[ssbeam] - deltaPhi;
 
-          supportBeamParams.insert(std::make_pair<std::string,
+          supportBeamParams.insert(std::pair<std::string,
                                    TubsParams>(bos.str(),
                                                TubsParams(_beam1_midRadius1, 
                                                           _beam1_midRadius2,
@@ -1528,6 +1529,18 @@ namespace mu2e {
         // adjust the covered arc accordingly
 
         for (size_t sservice = 0; sservice!=nsServices; ++sservice) {
+
+          // the span of this service section
+          double deltaPhi0 = _beam1_servicePhiEnds[sservice] - _beam1_servicePhi0s[sservice];
+
+          bos.str("TTrackerSupportServiceSectionEnvelope_");
+          bos << std::setw(1) << ibeam << sservice;
+
+          if ( _verbosityLevel > 0 ) {
+            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+          }
+
+          std::string boses =  bos.str();
 
           bos.str("TTrackerSupportService_");
           bos << std::setw(1) << ibeam << sservice << "_";
@@ -1555,8 +1568,6 @@ namespace mu2e {
                    << sHLength << ", " << sOffset << endl;
             }
 
-            // the span of this service section
-            double deltaPhi0 = _beam1_servicePhiEnds[sservice] - _beam1_servicePhi0s[sservice];
             // the span of one "sub" service of this section
             double deltaPhi  = deltaPhi0/_numStations;
             // the starting position of the "sub" service
@@ -1579,10 +1590,35 @@ namespace mu2e {
                 << endl;
             }
 
-            double cRadius = _beam1_midRadius2 +
-              _beam1_serviceCovRelThickness[sservice] * ( _beam1_midRadius1 - _beam1_midRadius2 );
+            double cRadius = _beam1_serviceOuterRadii[sservice] +
+              _beam1_serviceCovRelThickness[sservice] * 
+              ( _beam1_midRadius1 - _beam1_serviceOuterRadii[sservice] );
 
-            supportServiceParams.insert(std::make_pair<std::string,
+            // an envelope for this service section
+
+            if ( ssservice == 0) {
+
+              double phi0      = (ibeam == 1)
+                ? phi00 + _beam1_servicePhi0s[sservice]
+                : phi00 - _beam1_servicePhi0s[sservice] - deltaPhi0;
+
+              supportServiceParams.insert(std::pair<std::string,
+                                          TubsParams>(boses,
+                                                      TubsParams(_beam1_midRadius1, 
+                                                                 _beam1_serviceOuterRadii[sservice],
+                                                                 sHLength,
+                                                                 phi0*CLHEP::degree, 
+                                                                 deltaPhi0*CLHEP::degree)));
+
+              sup._beamServices.push_back(PlacedTubs( boses,
+                                                      supportServiceParams.at(boses),
+                                                      CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset), 
+                                                       _envelopeMaterial));
+              
+
+            }
+
+            supportServiceParams.insert(std::pair<std::string,
                                         TubsParams>(bos.str(),
                                                     TubsParams(_beam1_midRadius1, 
                                                                cRadius,
@@ -1599,10 +1635,10 @@ namespace mu2e {
 
               bos << std::setw(1) << "_c";
 
-              supportServiceParams.insert(std::make_pair<std::string,
+              supportServiceParams.insert(std::pair<std::string,
                                           TubsParams>(bos.str(),
                                                       TubsParams(cRadius, 
-                                                                 _beam1_midRadius2,
+                                                                  _beam1_serviceOuterRadii[sservice],
                                                                  sHLength,
                                                                  phi0*CLHEP::degree, 
                                                                  deltaPhi*CLHEP::degree)));

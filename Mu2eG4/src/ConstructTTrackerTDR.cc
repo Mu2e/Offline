@@ -241,50 +241,134 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
   // here construct the supportServices
 
+  VolumeInfo serviceVI;
   VolumeInfo& ttSSE1 = _helper.locateVolInfo("TTrackerSupportServiceEnvelope_11");
   VolumeInfo& ttSSE2 = _helper.locateVolInfo("TTrackerSupportServiceEnvelope_21");
 
+  // each subsection has en envelope; creating them first
+
   for ( auto const& sbeam : sup.beamServices() ) {
 
-    // we need to place the services in the right envelope
-    VolumeInfo& ttSSE = ( sbeam.name().find("Service_1") != string::npos ) ? ttSSE1 : ttSSE2;
+    // placing the services in the right envelope
+    VolumeInfo& ttSSE = ( sbeam.name().find("eSectionEnvelope_1") != string::npos ) ? ttSSE1 : ttSSE2;
 
-    VolumeInfo serviceVI;
+    if ( sbeam.name().find("TTrackerSupportServiceSectionEnvelope_") != string::npos ) {
 
-    if ( _verbosityLevel > 0 ) {
-      cout << __func__ 
-           << " Support Beam Service Position: "
-           << sbeam.name()               << " "
-           << sbeam.position()           << " "
-           << _motherInfo.centerInWorld  << " "
-           << sbeam.position()-ttSSE.centerInWorld << " "
-           << sbeam.tubsParams();
-    }
+      if ( _verbosityLevel > 0 ) {
+        cout << __func__ 
+             << " Support Beam Service eSection Envelope Position: "
+             << sbeam.name()               << " "
+             << sbeam.position()           << " "
+             << _motherInfo.centerInWorld  << " "
+             << sbeam.position()-ttSSE.centerInWorld << " "
+             << sbeam.tubsParams();
+      }
 
-    serviceVI = 
-      nestTubs( sbeam.name(),
-                sbeam.tubsParams(),
-                findMaterialOrThrow(sbeam.materialName()),
-                0x0,
-                sbeam.position()-ttSSE.centerInWorld,
-                ttSSE,
-                0,
-                _config.getBool("ttracker.envelopeVisible",false),
-                ( sbeam.name().find("_c") != string::npos ) ? G4Colour::Yellow() : G4Colour::Green(),
-                _config.getBool("ttracker.envelopeSolid",true),
-                _forceAuxEdgeVisible,
-                place,
-                _doSurfaceCheck || ttrackerSupportSurfaceCheck
-                );
+      serviceVI = 
+        nestTubs( sbeam.name(),
+                  sbeam.tubsParams(),
+                  findMaterialOrThrow(sbeam.materialName()),
+                  0x0,
+                  sbeam.position()-ttSSE.centerInWorld,
+                  ttSSE,
+                  0,
+                  _config.getBool("ttracker.envelopeVisible",false),
+                  G4Colour::White(),
+                  _config.getBool("ttracker.envelopeSolid",true),
+                  _forceAuxEdgeVisible,
+                  place,
+                  _doSurfaceCheck || ttrackerSupportSurfaceCheck
+                  );
 
-    if ( _verbosityLevel > 0 ) {
-      cout << " Material " 
-           << serviceVI.logical->GetMaterial()->GetName()
-           << " Mass in kg: " 
-           << serviceVI.logical->GetMass()/CLHEP::kg
-           << endl;
-    }
+      if ( _verbosityLevel > 0 ) {
+        cout << " Material " 
+             << serviceVI.logical->GetMaterial()->GetName()
+             << " Mass in kg: " 
+             << serviceVI.logical->GetMass()/CLHEP::kg
+             << endl;
+      }
    
+    }
+
+  }
+ 
+  // now placing services in their envelopes
+
+  for ( auto const& sbeam : sup.beamServices() ) {
+
+    // placing the services in the right envelope
+
+    std::string stf = "TTrackerSupportService_";
+
+    size_t stfp = sbeam.name().find(stf);
+
+    if ( stfp != string::npos ) {
+
+      std::string sse = "TTrackerSupportServiceSectionEnvelope_" + sbeam.name().substr(stfp+stf.size(),2);
+
+      VolumeInfo& ttSSE =  _helper.locateVolInfo(sse);
+
+      if ( _verbosityLevel > 0 ) {
+        cout << __func__ 
+             << " Support Beam Service Position: "
+             << sbeam.name()               << " "
+             << sse                        << " "
+             << sbeam.position()           << " "
+             << ttSSE.centerInWorld  << " "
+             << sbeam.position()-ttSSE.centerInWorld << " "
+             << sbeam.tubsParams()
+             << endl;
+      }
+
+      serviceVI = 
+        nestTubs( sbeam.name(),
+                  sbeam.tubsParams(),
+                  findMaterialOrThrow(sbeam.materialName()),
+                  0x0,
+                  sbeam.position()-ttSSE.centerInWorld,
+                  ttSSE,
+                  0,
+                  _config.getBool("ttracker.envelopeVisible",false),
+                  ( sbeam.name().find("_c") != string::npos ) ? G4Colour::Yellow() : G4Colour::Green(),
+                  _config.getBool("ttracker.envelopeSolid",true),
+                  _forceAuxEdgeVisible,
+                  place,
+                  _doSurfaceCheck || ttrackerSupportSurfaceCheck
+                  );
+
+      if ( _verbosityLevel > 0 ) {
+        cout << " Material " 
+             << serviceVI.logical->GetMaterial()->GetName()
+             << " Mass in kg: " 
+             << serviceVI.logical->GetMass()/CLHEP::kg
+             << endl;
+      }
+   
+    }
+
+  }
+
+  // print the final mass per Service Section envelope
+  
+  if ( _verbosityLevel > 0 ) {
+    for ( auto const& sbeam : sup.beamServices() ) {
+      // prinitnt the final mass per Service Section envelope
+      if ( sbeam.name().find("TTrackerSupportServiceSectionEnvelope_") != string::npos ) {
+
+        VolumeInfo& ttSSE =  _helper.locateVolInfo(sbeam.name());
+
+        cout << __func__ 
+             << " Support Beam Service Section Envelope: "
+             << sbeam.name()               << " "
+             << " Material " 
+             << ttSSE.logical->GetMaterial()->GetName()
+             << " Final Mass in kg: " 
+             << serviceVI.logical->GetMass(true)/CLHEP::kg
+             << endl;
+      }
+   
+    }
+
   }
 
 
