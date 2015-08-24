@@ -276,10 +276,10 @@ namespace mu2e
 
     _totalEvents++;
     if(crvCoincidenceCheckResult->CoincidenceFound()) _totalEventsCoincidence++;
+    _moduleLabel = *this->currentContext()->moduleLabel();
 
     if(_verboseLevel>0)
     {
-      _moduleLabel = *this->currentContext()->moduleLabel();
       std::cout<<_moduleLabel<<"   run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
       std::cout<<(crvCoincidenceCheckResult->CoincidenceFound()?"Coincidence satisfied":"No coincidence found")<<std::endl;
 
