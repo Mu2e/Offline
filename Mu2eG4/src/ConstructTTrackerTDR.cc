@@ -175,6 +175,9 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
   SupportStructure const& sup = _ttracker.getSupportStructure();
 
+  // _doSurfaceCheck(_config.getBool("g4.doSurfaceCheck",false))
+  bool ttrackerSupportSurfaceCheck = _config.getBool("ttrackerSupport.doSurfaceCheck",false);
+
   for ( auto const& ring : sup.stiffRings() ){
 
     if ( _verbosityLevel > 0 ) {
@@ -198,7 +201,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
                                 _config.getBool("ttracker.envelopeSolid",true),
                                 _forceAuxEdgeVisible,
                                 place,
-                                _doSurfaceCheck
+                                _doSurfaceCheck || ttrackerSupportSurfaceCheck
                                 );
 
   }
@@ -209,13 +212,14 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
   for ( auto const& sbeam : sup.beamBody() ) {
 
     if ( _verbosityLevel > 0 ) {
-      cout << "Support Beam Position: "
-           << sbeam.name()               << " "
-           << sbeam.position()           << " "
-           << _motherInfo.centerInWorld  << " "
-           << sbeam.position()-_motherInfo.centerInWorld << " "
-           << sbeam.tubsParams()
-           << endl;
+      cout  << __func__ 
+            << "Support Beam Position: "
+            << sbeam.name()               << " "
+            << sbeam.position()           << " "
+            << _motherInfo.centerInWorld  << " "
+            << sbeam.position()-_motherInfo.centerInWorld << " "
+            << sbeam.tubsParams()
+            << endl;
     }
 
     nestTubs( sbeam.name(),
@@ -230,7 +234,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
               _config.getBool("ttracker.envelopeSolid",true),
               _forceAuxEdgeVisible,
               place,
-              _doSurfaceCheck
+              _doSurfaceCheck || ttrackerSupportSurfaceCheck
               );
 
   }
@@ -245,31 +249,42 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
     // we need to place the services in the right envelope
     VolumeInfo& ttSSE = ( sbeam.name().find("Service_1") != string::npos ) ? ttSSE1 : ttSSE2;
 
+    VolumeInfo serviceVI;
+
     if ( _verbosityLevel > 0 ) {
-      cout << "Support Beam Service Position: "
+      cout << __func__ 
+           << " Support Beam Service Position: "
            << sbeam.name()               << " "
            << sbeam.position()           << " "
            << _motherInfo.centerInWorld  << " "
            << sbeam.position()-ttSSE.centerInWorld << " "
-           << sbeam.tubsParams()
-           << endl;
+           << sbeam.tubsParams();
     }
 
-    nestTubs( sbeam.name(),
-              sbeam.tubsParams(),
-              findMaterialOrThrow(sbeam.materialName()),
-              0x0,
-              sbeam.position()-ttSSE.centerInWorld,
-              ttSSE,
-              0,
-              _config.getBool("ttracker.envelopeVisible",false),
-              ( sbeam.name().find("_c") != string::npos ) ? G4Colour::Yellow() : G4Colour::Green(),
-              _config.getBool("ttracker.envelopeSolid",true),
-              _forceAuxEdgeVisible,
-              place,
-              _doSurfaceCheck
-              );
+    serviceVI = 
+      nestTubs( sbeam.name(),
+                sbeam.tubsParams(),
+                findMaterialOrThrow(sbeam.materialName()),
+                0x0,
+                sbeam.position()-ttSSE.centerInWorld,
+                ttSSE,
+                0,
+                _config.getBool("ttracker.envelopeVisible",false),
+                ( sbeam.name().find("_c") != string::npos ) ? G4Colour::Yellow() : G4Colour::Green(),
+                _config.getBool("ttracker.envelopeSolid",true),
+                _forceAuxEdgeVisible,
+                place,
+                _doSurfaceCheck || ttrackerSupportSurfaceCheck
+                );
 
+    if ( _verbosityLevel > 0 ) {
+      cout << " Material " 
+           << serviceVI.logical->GetMaterial()->GetName()
+           << " Mass in kg: " 
+           << serviceVI.logical->GetMass()/CLHEP::kg
+           << endl;
+    }
+   
   }
 
 
