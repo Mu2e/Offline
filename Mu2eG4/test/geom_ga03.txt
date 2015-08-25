@@ -1,5 +1,5 @@
 //
-//
+// Geometry file to test the GA03 maps.
 //
 
 #include "Mu2eG4/test/geom_01.txt"
