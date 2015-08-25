@@ -1,0 +1,20 @@
+// Start with particles hitting the detector mother volumes and
+// write out StepPoints in the detectors.
+//
+// Beam flash particles.
+//
+// Andrei Gaponenko, 2015
+
+#include "JobConfig/cd3/beam/prolog.fcl"
+
+process_name: beamg4s4flash
+
+source: { module_type : RootInput }
+services: { @table::mu2e.services.cd3simServices }
+physics: { @table::mu2e.physics.g4s4Flash }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+services.TFileService.fileName: "nts.owner.cd3-beam-g4s4-flash.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.cd3-beam-g4s4-detflash.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.cd3-beam-g4s4-crvflash.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.cd3-beam-g4s4-flash-truncated.version.sequencer.art"
