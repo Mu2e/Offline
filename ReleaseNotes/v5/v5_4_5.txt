@@ -1,5 +1,3 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_4_5
 
 5) August 24, 2015 genser
@@ -14,16 +12,16 @@ Still under construction
 4) August 21, 2015 genser
     Initial implementation of support beams and services replacing support staves
 
-     Mu2eG4/geom/ttracker_cd3.txt              
-     Mu2eG4/geom/ttracker_v3.txt               
-     Mu2eG4/src/ConstructTTrackerTDR.cc        
+     Mu2eG4/geom/ttracker_cd3.txt
+     Mu2eG4/geom/ttracker_v3.txt
+     Mu2eG4/src/ConstructTTrackerTDR.cc
      Mu2eG4/src/constructDiskCalorimeter.cc    makd crystal visibility conditional
-     Mu2eG4/src/constructTTrackerv3Detailed.cc 
-     Mu2eG4/src/constructVirtualDetectors.cc   
-     TTrackerGeom/inc/SupportStructure.hh      
-     TTrackerGeom/inc/TTrackerMaker.hh         
-     TTrackerGeom/src/SupportStructure.cc      
-     TTrackerGeom/src/TTrackerMaker.cc         
+     Mu2eG4/src/constructTTrackerv3Detailed.cc
+     Mu2eG4/src/constructVirtualDetectors.cc
+     TTrackerGeom/inc/SupportStructure.hh
+     TTrackerGeom/inc/TTrackerMaker.hh
+     TTrackerGeom/src/SupportStructure.cc
+     TTrackerGeom/src/TTrackerMaker.cc
 
 3) August 20, 2015 oksuzian
    Changed the vacuum seal window (IFB_EndWindow) in IFB end plug from Air to Fe.
@@ -44,4 +42,3 @@ Still under construction
      MCDataProducts/inc/VirtualDetectorId.hh
      Mu2eG4/geom/crv_counters_v03.txt
      Mu2eG4/src/constructVirtualDetectors.cc
-
