@@ -1,0 +1,29 @@
+// Start with particles hitting the detector mother volumes and
+// write out StepPoints in the detectors.
+//
+// Decay and capture products from out of target muon stops.
+//
+// Andrei Gaponenko, 2015
+
+#include "JobConfig/cd3/beam/prolog.fcl"
+
+process_name: beamg4s4proton
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.cd3simServices }
+physics: { @table::mu2e.physics.g4s4Muons }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+physics.producers.generate: {
+    module_type: StoppedParticleG4Gun
+    verbosityLevel : 1
+    pdgId: 13 // mu-
+    muonStops : @local::mu2e.ootMuonStops
+}
+
+services.TFileService.fileName: "nts.owner.cd3-beam-g4s4-proton.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.cd3-beam-g4s4-detproton.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.cd3-beam-g4s4-crvproton.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.cd3-beam-g4s4-proton-truncated.version.sequencer.art"
+
+//test: physics.producers.generate.muonStops.inputFiles: ["mergedMuonStops/nts.mu2e.cd3-beam-nts3-ootstops.0506a_0728a_0814a.001002_00000000.root"]
