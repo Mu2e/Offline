@@ -112,7 +112,7 @@ double ttrackerSupport.beam1.outerRadius   =  850.;
 vector<double> ttrackerSupport.beam1.servicePhi0s      = { 14.10, 17.64, 21.18, 30.48, 31.35 };
 vector<double> ttrackerSupport.beam1.servicePhiEnds    = { 16.28, 21.18, 30.17, 30.63, 34.80 };
 vector<double> ttrackerSupport.beam1.serviceOuterRadii = { 840., 840., 840., 840., 840. }; 
-/ should be >= midRadius1 <= midRadius2
+// should be >= midRadius1 <= midRadius2
 vector<string> ttrackerSupport.beam1.serviceMaterials  = {"G4_Cu", "G4_Cu", "StrawGas", "G4_SILICON_DIOXIDE", "G4_Cu"} ;
 vector<double> ttrackerSupport.beam1.serviceCovRelThickness = {.1, .1, .1, .1, .1} ; // fractions of service layers as "covers"
 vector<string> ttrackerSupport.beam1.serviceMaterialsCov = 
