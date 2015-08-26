@@ -2,8 +2,6 @@
 // Geometry description of the TTracker, based on Mu2e-doc-888-v7
 //   All lengths are given in mm.
 //   All angles are given in degrees.
-// FIXME:
-// 1) The services section of the staves is not yet described and for now is left as solid Al.
 //
 
 // basic parameters
@@ -73,14 +71,14 @@ double ttracker.supportHalfThickness        =	2.5;
 // Define the parameters of the support structure.
 double ttrackerSupport.endRing.outerRadius =  840.;
 double ttrackerSupport.endRing.innerRadius =  700.;
-double ttrackerSupport.endRing.halfLength  =   50.;
+double ttrackerSupport.endRing.halfLength  =   25.;
 double ttrackerSupport.endRing.zOffset     = 1610.;
 string ttrackerSupport.endRing.material    = "G4_Al";
 
 // midRing =? support rings at the back of the tracker between (mid) the last
 // stations.  Note that the 1/2 rings which connect to the rail system are not
 // currently modeled
-vector<int> ttrackerSupport.midRing.slot  = { 17, 18 };
+vector<int> ttrackerSupport.midRing.slot  = { 4, 14 };
 double ttrackerSupport.midRing.halfLength = 10.;
 
 // steves are called beams now
@@ -111,7 +109,7 @@ vector<double> ttrackerSupport.beam1.serviceCovRelThickness = {.1, .1, .1, .1, .
 vector<string> ttrackerSupport.beam1.serviceMaterialsCov = 
   { "G4_POLYETHYLENE", "G4_POLYETHYLENE", "StainlessSteel316", "G4_POLYETHYLENE", "G4_POLYETHYLENE" };
 
-// innerRing =? composite manifold of plastic, SS and Al
+// innerRing =? composite manifold of plastic and Al
 double ttrackerSupport.innerRing.innerRadius  = 700.;
 double ttrackerSupport.innerRing.outerRadius  = 712.7;
 double ttrackerSupport.innerRing.halfLength   =  23.8;
