@@ -456,10 +456,9 @@ namespace mu2e {
     
     mat = uniqueMaterialOrThrow( "TrackerManifold"); // materials and proportions defined in doc888v7
     {
-      G4Material* TrackerManifold = new G4Material( mat.name, 2.66*CLHEP::g/CLHEP::cm3, 3);
-      TrackerManifold->AddMaterial(findMaterialOrThrow("G4_POLYVINYL_CHLORIDE"), 0.261);
-      TrackerManifold->AddMaterial(findMaterialOrThrow("StainlessSteel316"), 0.401);
-      TrackerManifold->AddMaterial(findMaterialOrThrow("G4_Al"), 0.338);
+      G4Material* TrackerManifold = new G4Material( mat.name, 1.95*CLHEP::g/CLHEP::cm3, 2);
+      TrackerManifold->AddMaterial(findMaterialOrThrow("G4_POLYVINYL_CHLORIDE"), 0.355);
+      TrackerManifold->AddMaterial(findMaterialOrThrow("G4_Al"), 0.645);
     }
   
     mat = uniqueMaterialOrThrow( "StrawWall"); // materials and proportions defined in doc888v7
