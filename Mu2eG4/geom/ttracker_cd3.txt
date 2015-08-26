@@ -68,16 +68,14 @@ string ttracker.mat.manifold  = "G4_Al";
 string ttracker.mat.support   = "G4_Al";
 double ttracker.supportHalfThickness        =	2.5;
 
-// Define the parameters of the support structure.
+// endRing =? stiffener ring at the upstream end of the tracker
 double ttrackerSupport.endRing.outerRadius =  840.;
 double ttrackerSupport.endRing.innerRadius =  700.;
 double ttrackerSupport.endRing.halfLength  =   25.;
 double ttrackerSupport.endRing.zOffset     = 1610.;
 string ttrackerSupport.endRing.material    = "G4_Al";
 
-// midRing =? support rings at the back of the tracker between (mid) the last
-// stations.  Note that the 1/2 rings which connect to the rail system are not
-// currently modeled
+// midRing =? support rings which connect to the rail system 
 vector<int> ttrackerSupport.midRing.slot  = { 4, 14 };
 double ttrackerSupport.midRing.halfLength = 10.;
 
