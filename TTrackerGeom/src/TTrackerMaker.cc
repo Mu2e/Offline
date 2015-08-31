@@ -1391,21 +1391,26 @@ namespace mu2e {
       LayerId layerId = straw->id().getLayerId();
       int layerNumber = layerId.getLayer();
       bool layerStaggeredToInside = (layerNumber == 0);
+
       // In all cases, layer 0 is staggered to the inside,
       // layer 1 is staggered to the outside.  We will now check this:
+      // FIXME the above is probably not true
       // TODO -- Do the check
+
       LayerId otherLayerId ( layerId.getSectorId(), 1-layerNumber );
 
       int nStrawLayer = _tt->getLayer(layerId)._nStraws;
 
+      // since the logic relies on the index and the straw number 
+
       int strawNumberWithinLayer = straw->id().getStraw();
       int incrementedStrawNumber =
-        ( strawNumberWithinLayer + 1 < nStrawLayer )
-        ? strawNumberWithinLayer + 1
+        ( strawNumberWithinLayer + 2 < 2*nStrawLayer )
+        ? strawNumberWithinLayer + 2
         : StrawIndex::NO_STRAW;
       int decrementedStrawNumber =
-        ( strawNumberWithinLayer - 1 >=  0)
-        ? strawNumberWithinLayer - 1
+        ( strawNumberWithinLayer - 2 >=  0)
+        ? strawNumberWithinLayer - 2
         : StrawIndex::NO_STRAW;
 
       straw->_nextOuterL = ttStrawIndex (layerId, incrementedStrawNumber);
@@ -1418,13 +1423,34 @@ namespace mu2e {
         straw->_nextInnerP = ttStrawIndex(otherLayerId, strawNumberWithinLayer);
       }
 
-#ifdef CHECK_STRAW_NAVIGATION_ASSIGNMENTS_BY_PRINTING
-      cout << "Straw " << straw->id() << ":\n"
-           << "_nextOuterL: "   << straw->_nextOuterL.asInt()
-           << "  _nextInnerL: " << straw->_nextInnerL.asInt()
-           << "\n_nextOuterP: " << straw->_nextOuterP.asInt()
-           << "  _nextInnerP: " << straw->_nextInnerP.asInt() << "\n";
-#endif
+      if ( _verbosityLevel>2 ) {
+
+        cout << "Straw " << straw->id() << ": " << straw->id().getStraw() << endl;
+
+        cout << " _nextOuterL: "   << setw(5) << straw->_nextOuterL.asInt() << " : "; 
+        if ( straw->_nextOuterL.asInt()!=StrawIndex::NO_STRAW ) {
+          cout << _tt->getStraw(straw->_nextOuterL).id();
+        }
+        cout << endl;
+        
+        cout << " _nextInnerL: " << setw(5) << straw->_nextInnerL.asInt() << " : "; 
+        if ( straw->_nextInnerL.asInt()!=StrawIndex::NO_STRAW ) {
+          cout << _tt->getStraw(straw->_nextInnerL).id();
+        }
+        cout << endl;
+
+        cout << " _nextOuterP: " << setw(5) << straw->_nextOuterP.asInt() << " : " ;
+        if ( straw->_nextOuterP.asInt()!=StrawIndex::NO_STRAW ) {
+          cout << _tt->getStraw(straw->_nextOuterP).id();
+        }
+        cout << endl;
+
+        cout << " _nextInnerP: " << setw(5) << straw->_nextInnerP.asInt() << " : " ;
+        if ( straw->_nextInnerP.asInt()!=StrawIndex::NO_STRAW ) {
+          cout << _tt->getStraw(straw->_nextInnerP).id();
+        }
+        cout << endl;
+      }
 
       // TODO -- Insert logic to check that the radius of the purported
       // next straw differs by the right amount and sign, in each of these
