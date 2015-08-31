@@ -105,14 +105,14 @@ namespace mu2e {
       hclock_ = tfdir.make<TH1D>("clock", "Tracklet clock", 100, -20.5, 79.5);
 
       hPosBegin_ = tfdir.make<TH2D>("posBegin", "Tracklet start position",
-                                    400, -extmon.sensor().halfSize()[0], +extmon.sensor().halfSize()[0],
-                                    400, -extmon.sensor().halfSize()[1], +extmon.sensor().halfSize()[1]
+                                    400, -extmon.plane(4).halfSize()[0], +extmon.plane(4).halfSize()[0],
+                                    400, -extmon.plane(4).halfSize()[1], +extmon.plane(4).halfSize()[1]
                                     );
       hPosBegin_->SetOption("colz");
 
       hPosEnd_ = tfdir.make<TH2D>("posEnd", "Tracklet end position",
-                                  400, -extmon.sensor().halfSize()[0], +extmon.sensor().halfSize()[0],
-                                  400, -extmon.sensor().halfSize()[1], +extmon.sensor().halfSize()[1]
+                                  400, -extmon.plane(4).halfSize()[0], +extmon.plane(4).halfSize()[0],
+                                  400, -extmon.plane(4).halfSize()[1], +extmon.plane(4).halfSize()[1]
                                   );
       hPosEnd_->SetOption("colz");
 
@@ -290,7 +290,12 @@ namespace mu2e {
       bool acceptSingleParticleEvent(const art::Event& event);
 
       //----------------------------------------------------------------
-      Tracklets formTracklets(const ExtMonFNALSensorStack& stack,
+      void formTrackletsWithPlanes(const ExtMonFNALPlaneStack& stack, Tracklets& res,
+			      const unsigned plane1, const unsigned plane2,
+                              const art::Handle<ExtMonFNALRecoClusterCollection>& clusters);
+
+      Tracklets formTracklets(const ExtMonFNALPlaneStack& stack,
+
                               const art::Handle<ExtMonFNALRecoClusterCollection>& clusters);
 
       void findTracks(art::Event& event,
@@ -299,7 +304,7 @@ namespace mu2e {
 
       void addPlaneClusters(Tracklets* seeds,
                             const art::Handle<ExtMonFNALRecoClusterCollection>& coll,
-                            const ExtMonFNALSensorStack& stack,
+                            const ExtMonFNALPlaneStack& stack,
                             unsigned stackPlane,
                             unsigned anchorPlane1,
                             unsigned anchorPlane2
@@ -458,23 +463,17 @@ namespace mu2e {
     }
 
     //================================================================
-    Tracklets EMFPatRecFromTracklets::formTracklets(const ExtMonFNALSensorStack& stack,
+    void EMFPatRecFromTracklets::formTrackletsWithPlanes(const ExtMonFNALPlaneStack& stack, Tracklets& res,
+						    const unsigned plane1, const unsigned plane2,
                                                     const art::Handle<ExtMonFNALRecoClusterCollection>& coll)
     {
-      Tracklets res;
-
-      // Start with pair combinations of clusters on the outside stack planes
-      const unsigned plane1 = stack.planeNumberOffset() + 0;
-      const unsigned plane2 = stack.planeNumberOffset() + stack.nplanes() - 1;
-      AGDEBUG("plane1 = "<<plane1<<", plane2 = "<<plane2);
+      const double dz = stack.plane_zoffset().back() - stack.plane_zoffset().front();
+      const double dxmax = std::abs(dz * slopexmax_);
+      const double dymax = std::abs(dz * slopeymax_);
 
       typedef ExtMonFNALRecoClusterCollection::PlaneClusters PC;
       const PC pc1 = coll->clusters(plane1);
       const PC pc2 = coll->clusters(plane2);
-
-      const double dz = stack.sensor_zoffset().back() - stack.sensor_zoffset().front();
-      const double dxmax = std::abs(dz * slopexmax_);
-      const double dymax = std::abs(dz * slopeymax_);
 
       for(unsigned i1 = 0; i1 < pc1.size(); ++i1) {
         art::Ptr<ExtMonFNALRecoCluster> c1(coll, coll->globalIndex(plane1, i1));
@@ -501,8 +500,31 @@ namespace mu2e {
 
               res.insert(res.begin(), tmp.begin(), tmp.end());
             }
-        }
+         }
       }
+
+
+    }
+
+    //================================================================
+    Tracklets EMFPatRecFromTracklets::formTracklets(const ExtMonFNALPlaneStack& stack,
+                                                    const art::Handle<ExtMonFNALRecoClusterCollection>& coll)
+    {
+      Tracklets res;
+
+      // find tracklets starting with pair combinations of clusters on the even stack planes
+      const unsigned plane1 = stack.planeNumberOffset() + 0;
+      const unsigned plane2 = stack.planeNumberOffset() + stack.nplanes() - 2;
+      AGDEBUG("plane1 = "<<plane1<<", plane2 = "<<plane2);
+
+      formTrackletsWithPlanes(stack,res,plane1,plane2,coll);
+ 
+     // add tracklets starting with pair combinations of clusters on the odd stack planes
+      const unsigned plane3 = stack.planeNumberOffset() + 1;
+      const unsigned plane4 = stack.planeNumberOffset() + stack.nplanes() - 1;
+      AGDEBUG("plane3 = "<<plane3<<", plane4 = "<<plane4);
+
+      formTrackletsWithPlanes(stack,res,plane3,plane4,coll);
 
       return res;
     }
@@ -510,21 +532,21 @@ namespace mu2e {
     //================================================================
     void EMFPatRecFromTracklets::addPlaneClusters(Tracklets* seeds,
                                                   const art::Handle<ExtMonFNALRecoClusterCollection>& coll,
-                                                  const ExtMonFNALSensorStack& stack,
+                                                  const ExtMonFNALPlaneStack& stack,
                                                   unsigned stackPlane,
                                                   unsigned anchorPlane1,
                                                   unsigned anchorPlane2
                                                   )
     {
-      const double planeZ = stack.sensor_zoffset()[stackPlane];
+      const double planeZ = stack.plane_zoffset()[stackPlane];
       AGDEBUG("Here: stackPlane="<<stackPlane<<", planeZ = "<<planeZ<<", seeds->size() = "<<seeds->size()
               <<", anchorPlane1 = "<<anchorPlane1<<", anchorPlane2 = "<<anchorPlane2);
 
-      const double dxtol1 =  alignmentToleranceX_ + stackScatterAngleTolerance_ * std::abs(planeZ - stack.sensor_zoffset()[anchorPlane1]);
-      const double dxtol2 =  alignmentToleranceX_ + stackScatterAngleTolerance_ * std::abs(planeZ - stack.sensor_zoffset()[anchorPlane2]);
+      const double dxtol1 =  alignmentToleranceX_ + stackScatterAngleTolerance_ * std::abs(planeZ - stack.plane_zoffset()[anchorPlane1]);
+      const double dxtol2 =  alignmentToleranceX_ + stackScatterAngleTolerance_ * std::abs(planeZ - stack.plane_zoffset()[anchorPlane2]);
 
-      const double dytol1 =  alignmentToleranceY_ + stackScatterAngleTolerance_ * std::abs(planeZ - stack.sensor_zoffset()[anchorPlane1]);
-      const double dytol2 =  alignmentToleranceY_ + stackScatterAngleTolerance_ * std::abs(planeZ - stack.sensor_zoffset()[anchorPlane2]);
+      const double dytol1 =  alignmentToleranceY_ + stackScatterAngleTolerance_ * std::abs(planeZ - stack.plane_zoffset()[anchorPlane1]);
+      const double dytol2 =  alignmentToleranceY_ + stackScatterAngleTolerance_ * std::abs(planeZ - stack.plane_zoffset()[anchorPlane2]);
       AGDEBUG("dxtol1 ="<<dxtol1<<", dxtol2 ="<<dxtol2<<", dytol1 = "<<dytol1<<", dytol2 = "<<dytol2);
 
       for(Tracklets::iterator i = seeds->begin(); i != seeds->end(); ) {
@@ -572,7 +594,7 @@ namespace mu2e {
 
         AGDEBUG("compatibleClusters.size() = "<<compatibleClusters.size());
         if(compatibleClusters.empty()) {
-          // We don't allow missing space points.  Kill the seed
+          // Must be at least one match.  Kill the seed
           seeds->erase(i++);
         }
         else {

@@ -41,7 +41,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensor.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModule.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/PixelNeighbors.hh"
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/PixelHitLookup.hh"
@@ -128,7 +128,7 @@ namespace mu2e {
   {
     const ExtMonFNALRawHitCollection& hits(*hitsHandle);
 
-    PixelNeighbors pn(extmon_->sensor(), extmon_->chip());
+    PixelNeighbors pn(extmon_->module(), extmon_->chip());
     std::set<std::size_t> used;
 
     PixelHitLookup pixmap(hits);

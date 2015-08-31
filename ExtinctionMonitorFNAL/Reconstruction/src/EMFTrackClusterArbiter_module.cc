@@ -216,8 +216,7 @@ namespace mu2e {
       // filter the tracks
       if(!tsp.summaries().empty()) {
         while(tsp.summaries().back().numSharedClusters > cutMaxSharedClustersOnTrack_) {
-          const unsigned numErased = remainingTracks.erase(tsp.summaries().back().track);
-          assert(numErased);
+          assert(remainingTracks.erase(tsp.summaries().back().track));
           tsp = TrkSummaryProvider(remainingTracks.begin(), remainingTracks.end());
         }
       }

@@ -10,7 +10,7 @@
 
 #include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensorStack.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlaneStack.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPixelChip.hh"
 
 namespace mu2e {
@@ -32,10 +32,10 @@ namespace mu2e {
       // it's better to add up rad lengths instead of adding up
       // displacement squares.
 
-      double current_z = extmon.sensorCenterInExtMon(extmon.nplanes()-1).z();
+      double current_z = extmon.planeCenterInExtMon(extmon.nplanes()-1).z();
       scatterSigma2_[extmon.nplanes()-1] = 0;
       for(int i= extmon.nplanes()-2; i>=0; --i) {
-        const double new_z = extmon.sensorCenterInExtMon(i).z();
+        const double new_z = extmon.planeCenterInExtMon(i).z();
         const double dz = new_z - current_z;
         current_z = new_z;
         const double segmentScatter2 = std::pow(thetaScatterOnePlane * dz, 2);

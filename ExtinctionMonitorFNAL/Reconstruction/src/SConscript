@@ -19,8 +19,8 @@ my_libs=['mu2e_ExtinctionMonitorFNAL_Geometry',
          'mu2e_DataProducts',
          'CLHEP']
 
-#FIXME: do not build in this directory:# mainlib = helper.make_mainlib ( my_libs )
-#FIXME: do not build in this directory:# helper.make_plugins( [ mainlib, my_libs ] )
+mainlib = helper.make_mainlib ( my_libs )
+helper.make_plugins( [ mainlib, my_libs ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
