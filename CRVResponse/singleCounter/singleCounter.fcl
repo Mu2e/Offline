@@ -100,7 +100,8 @@ physics :
   trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses]  
   trigger_paths  : [trig]
 
-  out: [CrvTest, Output]
+#  out: [CrvTest, Output]
+  out: [CrvTest]
   end_paths: [out]
 }
 
