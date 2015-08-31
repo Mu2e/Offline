@@ -315,7 +315,7 @@ void WLSMaterials::CreateMaterials()
   MPTPolystyrene->AddProperty("ABSLENGTH",PhotonEnergy,AbsPS,nEntries);
   MPTPolystyrene->AddProperty("FASTCOMPONENT",PhotonEnergy, ScintilFast,nEntries);
   MPTPolystyrene->AddProperty("SLOWCOMPONENT",PhotonEnergy, ScintilSlow,nEntries);
-  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",2300./MeV);
+  MPTPolystyrene->AddConstProperty("SCINTILLATIONYIELD",1750./MeV);
   MPTPolystyrene->AddConstProperty("RESOLUTIONSCALE",1.0);
   MPTPolystyrene->AddConstProperty("FASTTIMECONSTANT", 3.*ns);
   MPTPolystyrene->AddConstProperty("SLOWTIMECONSTANT", 10.*ns);

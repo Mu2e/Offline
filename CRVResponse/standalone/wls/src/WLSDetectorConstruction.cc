@@ -47,7 +47,7 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
   _mppcReflectivity = 0.;
 
   _mirrorPolish = 1.;
-  _mirrorReflectivity = 0.95;
+  _mirrorReflectivity = 0.50;
 
   _extrusionPolish = 1.;
   _extrusionReflectivity = 0.95;
