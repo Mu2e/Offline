@@ -1291,10 +1291,10 @@ namespace mu2e {
         cout << __func__ << " Analyzed straw: " << i->id() << '\t' << i->index() << endl;
       }
 
-      // add the "same layer" n-1 neighbours straw (if exist) 
+      // add the "same layer" n-2 neighbours straw (if exist) 
       // in the new model straw numbers increase by 2 in a given layer
 
-      if ( i->id().getStraw() ) {
+      if ( i->id().getStraw() > 1 ) {
         const StrawId nsId(lId, (i->id().getStraw()) - 2 );
         i->_nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
@@ -1304,13 +1304,13 @@ namespace mu2e {
         i->_nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
-      // add the "same layer" n+1 neighbours straw (if exist)
+      // add the "same layer" n+2 neighbours straw (if exist)
       // in the new model straw numbers increase by 2 in a given layer
 
-      // is there anything which uses the straw number to look up the position in the container?
+      // is there anything which uses the straw number to look up the position in a container?
       // looks like it is done in many places
 
-      if ( i->id().getStraw() < (nStrawLayer-1) ) {
+      if ( i->id().getStraw() < (2*nStrawLayer-2) ) {
         const StrawId nsId(lId, (i->id().getStraw()) + 2 );
         i->_nearestById.push_back( nsId );
         if ( _verbosityLevel>2 ) {
@@ -1323,7 +1323,6 @@ namespace mu2e {
       // add the "opposite layer" n neighbours straw (if more than 1 layer)
 
       if (_layersPerSector == 2) {
-        const StrawId nsId( i->id().getSectorId(), (layer+1)%2, (i->id().getStraw()) );
 
         // throw exception if the two layer of the same sector have different
         // number of straws
@@ -1333,37 +1332,49 @@ namespace mu2e {
             << "per layer in the same sector. \n";
         }
 
-        i->_nearestById.push_back( nsId );
-        if ( _verbosityLevel>2 ) {
-          const Straw& temp = _tt->getStraw( nsId );
-          cout << __func__ << " Neighbour opposite straw: " << temp.id() << '\t' << temp.index() << endl;
-        }
-        i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
-
-        // add the "opposite layer" n+-1 neighbours straw (if exist)
-
-        // TODO -- CORRECT A LOGIC ERROR (or check this reasoning is amiss):
-        //
-        // The block below adds straw n +/- 1 in the opposite layer.  But
-        // when n is 0 and layer is 1 (or when n is nStrawLayer-1 and layer
-        // is zero) it is supposed to add straw 1 of layer 0 (or straw
-        // nStrawLayer-2 of layer 1).  The computation is in fact correct,
-        // but the check will cause the insertioin to be skipped.  Thus
-        // one neighbor of each of two straws in the panel will be omitted.
-
-        if ( i->id().getStraw() > 0 && i->id().getStraw() < nStrawLayer-1 ) {
-          const StrawId nsId( i->id().getSectorId(), (layer+1)%2,
-                              (i->id().getStraw()) + (layer?1:-1));
+        if (layer==0 && i->id().getStraw()<2*nStrawLayer) {
+          const StrawId nsId( i->id().getSectorId(), 1 , i->id().getStraw() + 1 );
           i->_nearestById.push_back( nsId );
-          if ( _verbosityLevel>2 ) {
-            const Straw& temp = _tt->getStraw( nsId );
-            cout << __func__ << " Neighbour opposite +- 1 straw: " << temp.id() << '\t' << temp.index() << endl;
-          }
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+          if ( _verbosityLevel>2 ) {
+            cout << __func__ << " Neighbour opposite up straw: " 
+                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+          }
+        }
+
+        if (layer==1 && i->id().getStraw()<2*nStrawLayer-1) {
+          const StrawId nsId( i->id().getSectorId(), 0 , i->id().getStraw() + 1 );
+          i->_nearestById.push_back( nsId );
+          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+          if ( _verbosityLevel>2 ) {
+            cout << __func__ << " Neighbour opposite up straw: " 
+                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+          }
+        }
+
+        if (layer==0 && i->id().getStraw()>0) {
+          const StrawId nsId( i->id().getSectorId(), 1 , i->id().getStraw() - 1 );
+          i->_nearestById.push_back( nsId );
+          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+          if ( _verbosityLevel>2 ) {
+            cout << __func__ << " Neighbour opposite down straw: " 
+                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+          }
+        }
+
+        if (layer==1 && i->id().getStraw()>0) { // layer 1 straw 1 is ok
+          const StrawId nsId( i->id().getSectorId(), 0 , i->id().getStraw() - 1 );
+          i->_nearestById.push_back( nsId );
+          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+          if ( _verbosityLevel>2 ) {
+            cout << __func__ << " Neighbour opposite down straw: " 
+                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+          }
         }
 
       }
     }
+
   } // identifyNeighborStraws
 
   // Identify the neighbour straws in inner/outer same-layer or zig-zag order
@@ -1450,6 +1461,17 @@ namespace mu2e {
           cout << _tt->getStraw(straw->_nextInnerP).id();
         }
         cout << endl;
+
+        // now print _nearestById & _nearestByIndex
+
+        for (auto const& s : straw->nearestNeighboursByIndex()) {
+          cout << s << endl;
+        }
+
+        for (auto const& s : straw->nearestNeighboursById()) {
+          cout << s << endl;
+        }
+
       }
 
       // TODO -- Insert logic to check that the radius of the purported
