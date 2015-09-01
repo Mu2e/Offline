@@ -1498,7 +1498,7 @@ namespace mu2e {
     // Positions for the next few objects in Mu2e coordinates.
     TubsParams endRingTubs( _endRingInnerRadius, _endRingOuterRadius, _endRingHalfLength);
 
-    TubsParams midRingTubs ( _endRingInnerRadius, _endRingOuterRadius, _midRingHalfLength);
+    //    TubsParams midRingTubs ( _endRingInnerRadius, _endRingOuterRadius, _midRingHalfLength);
     sup._stiffRings.push_back(PlacedTubs ( "TTrackerEndRingUpstream",   endRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter-_endRingZOffset), _endRingMaterial ));
 
     {
@@ -1833,7 +1833,8 @@ namespace mu2e {
   void TTrackerMaker::makeThinSupportRings(){
     SupportStructure& sup  = _tt->_supportStructure;
 
-    TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength);
+    TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength, 
+                              CLHEP::pi, CLHEP::pi); // half rings, on the bottom part
 
     for ( size_t i=0; i< _midRingSlot.size(); ++i){
       std::ostringstream name;

@@ -175,7 +175,6 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
   SupportStructure const& sup = _ttracker.getSupportStructure();
 
-  // _doSurfaceCheck(_config.getBool("g4.doSurfaceCheck",false))
   bool ttrackerSupportSurfaceCheck = _config.getBool("ttrackerSupport.doSurfaceCheck",false);
 
   for ( auto const& ring : sup.stiffRings() ){
