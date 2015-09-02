@@ -69,6 +69,7 @@ namespace mu2e {
 
     const StrawId& id() const { return _id;}
     StrawIndex index() const { return _index;}
+    int detailIndex() const { return _detailIndex;}
 
     const StrawDetail& getDetail() const { return *_detail;}
 

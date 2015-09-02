@@ -322,7 +322,7 @@ namespace mu2e {
 
     // Create tracker ntuple.
     _ntup = tfs->make<TNtuple>( "ntup", "Hit ntuple",
-                                "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz");
+                                "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz:straw");
 
     // Create a TGraph;
     // - Syntax to set name and title is weird; that's just root.
@@ -763,6 +763,7 @@ namespace mu2e {
       nt[17] = mom.mag();
       nt[18] = hit.stepLength();
       nt[19] = s/straw.getHalfLength();
+      nt[20] = straw.id().getStraw();
 
       _ntup->Fill(nt);
 

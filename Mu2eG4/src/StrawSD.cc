@@ -314,6 +314,10 @@ namespace mu2e {
           ", diff magnitude "   << scientific << diffMag << fixed <<
           endl;
 
+        // FIXME the above test needs an update for the new secor implementation
+        // throw cet::exception("GEOM")
+        //   << "Inconsistent Straw Positions" << endl;
+
       }
     }
 

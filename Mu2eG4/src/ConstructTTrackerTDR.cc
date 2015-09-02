@@ -175,7 +175,6 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
   SupportStructure const& sup = _ttracker.getSupportStructure();
 
-  // _doSurfaceCheck(_config.getBool("g4.doSurfaceCheck",false))
   bool ttrackerSupportSurfaceCheck = _config.getBool("ttrackerSupport.doSurfaceCheck",false);
 
   for ( auto const& ring : sup.stiffRings() ){
@@ -559,6 +558,29 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
       Straw const&       straw(**j);
       StrawDetail const& detail(straw.getDetail());
 
+      if (_verbosityLevel>2) {
+        cout << __func__ << " constructing straw "
+             << straw.id().getStraw()
+             << " id: "
+             << straw.id()
+             << " with detailIndex of: "
+             << straw.detailIndex()
+             << endl;
+      }
+
+      if ( _verbosityLevel > 1 ){
+        cout << "Detail for: " << straw.id() << " " << detail.Id()            << endl;
+        cout << "           outerTubsParams: " << detail.getOuterTubsParams() << detail.gasMaterialName()             << endl;
+        cout << "           wallMother:      " << detail.wallMother()         << detail.wallMotherMaterialName()      << endl;
+        cout << "           wallOuterMetal:  " << detail.wallOuterMetal()     << detail.wallOuterMetalMaterialName()  << endl;
+        cout << "           wallCore         " << detail.wallCore()           << detail.wallCoreMaterialName()        << endl;
+        cout << "           wallInnerMetal1: " << detail.wallInnerMetal1()    << detail.wallInnerMetal1MaterialName() << endl;
+        cout << "           wallInnerMetal2: " << detail.wallInnerMetal2()    << detail.wallInnerMetal2MaterialName() << endl;
+        cout << "           wireMother:      " << detail.wireMother()         << detail.wireMotherMaterialName()      << endl;
+        cout << "           wirePlate:       " << detail.wirePlate()          << detail.wirePlateMaterialName()       << endl;
+        cout << "           wireCore:        " << detail.wireCore()           << detail.wireCoreMaterialName()        << endl;
+      }
+
       // To make graphical debugging less busy, create only a subset of the straws.
       if ( partialStraws ){
         if ( straw.id().getStraw()%8 != 0 && straw.id().getStraw() !=47 ) continue;
@@ -699,19 +721,6 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
         outerMetalVol.logical->SetSensitiveDetector(strawWallSD);
         innerMetal1Vol.logical->SetSensitiveDetector(strawWallSD);
         innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
-      }
-
-      if ( _verbosityLevel > 1 ){
-        cout << "Detail for: " << straw.id() << " " << detail.Id()            << endl;
-        cout << "           outerTubsParams: " << detail.getOuterTubsParams() << detail.gasMaterialName()             << endl;
-        cout << "           wallMother:      " << detail.wallMother()         << detail.wallMotherMaterialName()      << endl;
-        cout << "           wallOuterMetal:  " << detail.wallOuterMetal()     << detail.wallOuterMetalMaterialName()  << endl;
-        cout << "           wallCore         " << detail.wallCore()           << detail.wallCoreMaterialName()        << endl;
-        cout << "           wallInnerMetal1: " << detail.wallInnerMetal1()    << detail.wallInnerMetal1MaterialName() << endl;
-        cout << "           wallInnerMetal2: " << detail.wallInnerMetal2()    << detail.wallInnerMetal2MaterialName() << endl;
-        cout << "           wireMother:      " << detail.wireMother()         << detail.wireMotherMaterialName()      << endl;
-        cout << "           wirePlate:       " << detail.wirePlate()          << detail.wirePlateMaterialName()       << endl;
-        cout << "           wireCore:        " << detail.wireCore()           << detail.wireCoreMaterialName()        << endl;
       }
 
     } // end loop over straws within a layer

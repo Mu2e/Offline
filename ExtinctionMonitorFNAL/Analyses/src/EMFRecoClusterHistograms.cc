@@ -70,11 +70,11 @@ namespace mu2e {
     // Bin cluster position histograms according to pixel size
     const unsigned nx = extmon.module().nxChips() * extmon.chip().nColumns();
     const double   lx = nx * extmon.chip().xPitch();
-    const unsigned ny = extmon.module().nyChips() * extmon.chip().nRows();
-    const double   ly = ny * extmon.chip().yPitch();
-
+ 
     clusterPosition_.resize(nplanes);
     for(unsigned plane=0; plane < nplanes; ++plane) {
+      const unsigned ny = extmon.plane(plane).nModules()*extmon.module().nyChips() * extmon.chip().nRows();
+      const double   ly = ny * extmon.chip().yPitch();
       std::ostringstream osname;
       osname<<"clusterPosition"<<plane;
       std::ostringstream ostitle;

@@ -23,7 +23,7 @@ namespace mu2e {
     LinearRegression::LinearRegression(const ExtMon *extmon, const ClusterOnTrackPrecisionTool& clTool)
       : extmon_(extmon)
       , clTool_(clTool)
-      , zStart_(extmon->up().sensor_zoffset().back())
+      , zStart_(extmon->up().plane_zoffset().back())
     {}
 
     //================================================================

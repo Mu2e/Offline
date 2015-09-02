@@ -134,15 +134,15 @@ namespace mu2e {
         extrapolateToMagnet(pp);
         res = extrapolateThroughMagnet(pp);
         if(res) {
-          const ExtMonFNALSensorStack& stack = tgtDN ? extmon_->dn() : extmon_->up();
+          const ExtMonFNALPlaneStack& stack = tgtDN ? extmon_->dn() : extmon_->up();
           const unsigned stackPlane = tgtDN ? plane : plane - extmon_->dn().nplanes();
-          extrapolateStraightLine(stack.sensor_zoffset()[stackPlane], pp);
+          extrapolateStraightLine(stack.plane_zoffset()[stackPlane], pp);
         }
       }
       else { // stay in the same stack - just do straight line extrapolation
-        const ExtMonFNALSensorStack& stack = tgtDN ? extmon_->dn() : extmon_->up();
+        const ExtMonFNALPlaneStack& stack = tgtDN ? extmon_->dn() : extmon_->up();
         const unsigned stackPlane = tgtDN ? plane : plane - extmon_->dn().nplanes();
-        extrapolateStraightLine(stack.sensor_zoffset()[stackPlane], pp);
+        extrapolateStraightLine(stack.plane_zoffset()[stackPlane], pp);
       }
       return res;
     }

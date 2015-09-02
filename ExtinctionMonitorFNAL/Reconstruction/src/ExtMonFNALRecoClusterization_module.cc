@@ -131,14 +131,14 @@ namespace mu2e {
   struct CmpPixelX {
     bool operator()(const art::Ptr<ExtMonFNALRawHit>& a, const art::Ptr<ExtMonFNALRawHit>& b) {
       return (a->pixelId().chip().chipCol() < b->pixelId().chip().chipCol()) ||
-        (a->pixelId().chip().chipCol() == b->pixelId().chip().chipCol())&&(a->pixelId().col() < b->pixelId().col());
+        (a->pixelId().chip().chipCol() == b->pixelId().chip().chipCol() && a->pixelId().col() < b->pixelId().col());
     }
   };
 
   struct CmpPixelY {
     bool operator()(const art::Ptr<ExtMonFNALRawHit>& a, const art::Ptr<ExtMonFNALRawHit>& b) {
       return (a->pixelId().chip().chipRow() < b->pixelId().chip().chipRow()) ||
-        (a->pixelId().chip().chipRow() == b->pixelId().chip().chipRow())&&(a->pixelId().row() < b->pixelId().row());
+        (a->pixelId().chip().chipRow() == b->pixelId().chip().chipRow() && a->pixelId().row() < b->pixelId().row());
     }
   };
 
@@ -170,10 +170,10 @@ namespace mu2e {
       const double weight = 1.; // could weight by a function of ToT
       sumw     += weight;
       sumClock += weight * (*i)->clock();
-      sumPos   += weight * extmon_->pixelPositionInSensorStack((*i)->pixelId());
+      sumPos   += weight * extmon_->pixelPositionInPlaneStack((*i)->pixelId());
     }
 
-    unsigned int plane = raw->hits().front()->pixelId().chip().sensor().plane();
+    unsigned int plane = raw->hits().front()->pixelId().chip().module().plane();
     return ExtMonFNALRecoCluster(raw, plane, sumPos/sumw, xWidth, yWidth, int(sumClock/sumw));
   }
 
