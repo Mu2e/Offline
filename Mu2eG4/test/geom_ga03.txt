@@ -1,0 +1,15 @@
+//
+// Geometry file to test the GA03 maps.
+//
+
+#include "Mu2eG4/test/geom_01.txt"
+
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/GA03/DSMap.header",
+  "BFieldMaps/Mau9/Mu2e_PSMap.header",
+  "BFieldMaps/Mau9/Mu2e_TSuMap.header",
+  "BFieldMaps/GA03/TSdMap.header",
+  "BFieldMaps/Mau9/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau9/ProtonDumpAreaMap.header",
+  "BFieldMaps/Mau9/DSExtension.header"
+};

@@ -45,7 +45,7 @@ class KalFit {
   void T2d();
   void Trk();
   void AccPlots();
-  void Acc(size_t trkqcut=1);
+  void Acc(int ngen=-1);
   void Res(unsigned mincut=0,unsigned maxcut=3);
   void Res2(int ires);
   void Ambig(int acut=0);
@@ -627,7 +627,7 @@ void KalFit::AccPlots() {
 
 } 
 
-void KalFit::Acc(size_t qsel) {
+void KalFit::Acc(int ngen) {
   unsigned nbins(8);
   double bmax = nbins-0.5;
   TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
@@ -667,7 +667,9 @@ void KalFit::Acc(size_t qsel) {
   _tdiag->Project("+acc",binnames[ibin++],"evtwt"*(mcsel+reco+quality+livegate+rpitch+cosmic+rmom));
 
   double all = acc->GetBinContent(1);
-  double norm = all;
+  double norm = ngen;
+  if(ngen < 0)
+    norm = all;
   double prev = norm;
   for(ibin=1;ibin<=nbins;ibin++){
     racc->SetBinContent(ibin,acc->GetBinContent(ibin)/prev);
@@ -675,8 +677,8 @@ void KalFit::Acc(size_t qsel) {
   }
   cout << "Found " << norm << "Entries." << endl;
   racc->SetMaximum(1.1);
-  acc->Scale(1.0/norm);
-  acc->SetMaximum(1.1*all/norm);
+  acc->Scale(1.0/(float)norm);
+  acc->SetMaximum(1.1);
   acc->SetStats(0);
   racc->SetStats(0);
   acc->GetXaxis()->SetLabelSize(0.06);
@@ -775,7 +777,7 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
     cball->SetParLimits(5,0.001,0.4);
     cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
 
-    dscb->SetParameters(3*integral,momres[ires]->GetMean()+0.07,0.3*momres[ires]->GetRMS(),1.0,4.0,1.0,5.0);
+    dscb->SetParameters(3*integral,momres[ires]->GetMean()+0.07,0.3*momres[ires]->GetRMS(),0.9,3.5,1.5,6.0);
 
     momres[ires]->SetMinimum(0.5);
 //    momres[ires]->Fit("cball","LRQ");

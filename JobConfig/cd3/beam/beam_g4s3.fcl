@@ -31,22 +31,22 @@ physics : {
          module_type: Mu2eG4
          physics: @local::mu2eg4DefaultPhysics
          ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	 TrajectoryControl: @local::mu2eg4NoTrajectories
+         TrajectoryControl: @local::mu2eg4NoTrajectories
          debug:  @local::mu2eg4DefaultDebug
          visualization: @local::mu2eg4NoVisualization
 
-	 MultiStageParameters : {
+         MultiStageParameters : {
             simParticleNumberOffset: 200000  // safe b/c of g4.particlesSizeLimit in stage1
             genInputHits:  [ "muonBeamFilter:DSVacuum" ]
             inputSimParticles: "muonBeamFilter"
-	    inputMCTrajectories: ""
+            inputMCTrajectories: ""
             inputPhysVolumeMultiInfo: "compressPVmuonBeam"
-	 }
+         }
 
          SDConfig : {
-            enableSD : [ virtualdetector ] // activate just the explicitly listed SDs
+            enableSD : [ virtualdetector, CRV ] // activate just the explicitly listed SDs
             preSimulatedHits: ["muonBeamFilter:virtualdetector"]
-	    TimeVD: { times: [] }
+            TimeVD: { times: [] }
          }
 
          Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
@@ -54,10 +54,10 @@ physics : {
          Mu2eG4SteppingOnlyCut: {}
 
          Mu2eG4CommonCut: {
-	    type: inVolume
-	    pars: [TrackerMother, CalorimeterMother]
-	    write: DetectorMother
-	 }
+            type: inVolume
+            pars: [TrackerMother, CalorimeterMother]
+            write: DetectorMother
+         }
 
          SimParticlePrinter : {
             enabled : false
@@ -73,11 +73,25 @@ physics : {
          particleInputs : [ "mothersFilter" ]
       }
 
-      compressPVStop: {
+      compressPVCRV: {
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
          hitInputs : []
-         particleInputs : [ "stopFilter" ]
+         particleInputs : [ "crvFilter" ]
+      }
+
+      compressPVTGTStops: {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "tgtStopFilter" ]
+      }
+
+      compressPVOOTStops: {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "ootStopFilter" ]
       }
 
       compressPVFull : {
@@ -105,7 +119,7 @@ physics : {
          // EMCascade should not be vetoed because we do not re-simulate it
          processes: [ "DIO", "NuclearCapture" ]
       }
-      
+
       outOfTargetMuonFinder : {
          module_type : StoppedParticlesFinder
          particleInput : "g4run"
@@ -115,9 +129,11 @@ physics : {
          particleOffsetThreshold: 200000
          verbosityLevel: 1
       }
+
       outOfTargetMuonDaughters: {
          module_type: SimParticleDaughterSelector
          particleInput: "outOfTargetMuonFinder"
+         // We do re-simulate EMCascade for out of target stops
          processes: [ "DIO", "NuclearCapture", "EMCascade" ]
       }
 
@@ -127,20 +143,40 @@ physics : {
    filters: {
       mothersFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
+         noInstanceName : true
          mainHitInputs: [ "g4run:DetectorMother" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
          numSimParticleCollections: 1
-         vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ] 
+         vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ]
       }
-      stopFilter: {
+
+      crvFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
+         noInstanceName : true
+         mainHitInputs: [ "g4run:CRV" ]
+         extraHitInputs: [ "g4run:virtualdetector" ]
+         numSimParticleCollections: 1
+         vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ]
+      }
+
+      tgtStopFilter: {
+         module_type: FilterG4Out
+         noInstanceName : true
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
-         mainSPPtrInputs: [ "stoppedMuonFinder", "outOfTargetMuonFinder" ]
+         mainSPPtrInputs: [ "stoppedMuonFinder" ]
          numSimParticleCollections: 1
       }
+
+      ootStopFilter: {
+         module_type: FilterG4Out
+         noInstanceName : true
+         mainHitInputs: []
+         extraHitInputs: [ "g4run:virtualdetector" ]
+         mainSPPtrInputs: [ "outOfTargetMuonFinder" ]
+         numSimParticleCollections: 1
+      }
+
       g4status: {
          module_type: FilterStatusG4
          input: "g4run"
@@ -149,23 +185,12 @@ physics : {
       g4consistent: {
          module_type: FilterStatusG4
          input: "g4run"
-	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+         maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
       }
    }
 
    //================================================================
    analyzers: {
-      stoppedMuonDumper: {
-         module_type: StoppedParticlesDumper
-         inputCollection: "stoppedMuonFinder"
-         writeProperTime : false
-      }
-      outOfTargetDumper: {
-         module_type: StoppedParticlesDumper
-         inputCollection: "outOfTargetMuonFinder"
-         writeProperTime : false
-      }
-
       genCountLogger: {
          module_type: GenEventCountReader
       }
@@ -173,20 +198,26 @@ physics : {
 
 
    //================================================================
-   motherFilter: [ g4run,
-      stoppedMuonFinder, stoppedMuonDaughters, 
+   motherFilter: [ g4run, g4consistent,
+      stoppedMuonFinder, stoppedMuonDaughters,
       outOfTargetMuonFinder, outOfTargetMuonDaughters,
       mothersFilter, compressPVMothers
    ]
 
-   muonStopFilter :  [g4run, g4consistent, stoppedMuonFinder, outOfTargetMuonFinder, stopFilter, compressPVStop]
-   g4StatusFilter :  [g4run, "!g4status", compressPVFull ]
-   trigger_paths  : [motherFilter, muonStopFilter, g4StatusFilter]
+   trigCRV: [ g4run, g4consistent,
+      stoppedMuonFinder, stoppedMuonDaughters,
+      outOfTargetMuonFinder, outOfTargetMuonDaughters,
+      crvFilter, compressPVCRV
+   ]
 
-   out : [mothersOutput, muonStopOutput, truncatedEvtsOutput]
-   stops : [stoppedMuonDumper, outOfTargetDumper]
+   tgtFilter :  [g4run, g4consistent, stoppedMuonFinder, tgtStopFilter, compressPVTGTStops]
+   ootFilter :  [g4run, g4consistent, outOfTargetMuonFinder, ootStopFilter, compressPVOOTStops]
+   g4StatusFilter :  [g4run, "!g4status", compressPVFull ]
+   trigger_paths  : [motherFilter, trigCRV, tgtFilter, ootFilter, g4StatusFilter]
+
+   out : [mothersOutput, crvOutput, tgtStopOutput, ootStopOutput, truncatedEvtsOutput]
    gcl : [genCountLogger]
-   end_paths      : [out, stops, gcl]
+   end_paths      : [out, gcl]
 }
 
 outputs: {
@@ -203,19 +234,43 @@ outputs: {
       fileName    : "sim.owner.cd3-beam-g4s3-mothers.version.sequencer.art"
    }
 
-   muonStopOutput : {
+   crvOutput : {
       module_type : RootOutput
-      SelectEvents: { SelectEvents: [muonStopFilter] }
+      SelectEvents: { SelectEvents: [trigCRV] }
       outputCommands:   [ "drop *_*_*_*",
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
-         "keep *_stoppedMuonFinder_*_*",
-         "keep *_outOfTargetMuonFinder_*_*",
-         "keep *_stopFilter_*_*",
-         "keep *_compressPVStop_*_*"
+         "keep *_crvFilter_*_*",
+         "keep *_compressPVCRV_*_*"
       ]
-      fileName    : "sim.owner.cd3-beam-g4s3-stops.version.sequencer.art"
+      fileName    : "sim.owner.cd3-beam-g4s3-crv.version.sequencer.art"
+   }
+
+   tgtStopOutput : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: [tgtFilter] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_tgtStopFilter_*_*",
+         "keep *_compressPVTGTStops_*_*"
+      ]
+      fileName    : "sim.owner.cd3-beam-g4s3-tgtstops.version.sequencer.art"
+   }
+
+   ootStopOutput : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: [ootFilter] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_ootStopFilter_*_*",
+         "keep *_compressPVOOTStops_*_*"
+      ]
+      fileName    : "sim.owner.cd3-beam-g4s3-ootstops.version.sequencer.art"
    }
 
    truncatedEvtsOutput : {
@@ -238,7 +293,7 @@ services.message.destinations.log.categories.ArtReport.reportEvery : 1
 services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
 
-physics.producers.g4run.physics.minRangeCut : 1. // mm
+physics.producers.g4run.physics.minRangeCut : 0.010 // mm
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.user.SeedService.baseSeed         :  0

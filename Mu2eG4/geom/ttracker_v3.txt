@@ -48,7 +48,7 @@ string ttrackerSupport.model = "detailedv0";
 
 // Mother to hold all straws and supports.
 double ttracker.mother.rIn         =   379.9; // mm
-double ttracker.mother.rOut        =   840.1; // mm
+double ttracker.mother.rOut        =   850.1; // mm
 double ttracker.mother.halfLength  =  1635.1; // mm
 double ttracker.mother.z0          = 10175.;  // mm
 
@@ -64,6 +64,10 @@ int    ttracker.strawsPerManifold           =    1; //  1,10
 int    ttracker.manifoldsPerEnd             =   48; // 50, 5
 double ttracker.strawGap                    =     1.25;
 int    ttracker.numDevices                  = 44;
+
+// going from 44 to 20 does the spacing increase?
+// or is it ok to remove four more devices? i.e. 12,13, 30, 31?
+
 int    ttracker.rotationPattern             =    2;
 double ttracker.oddStationRotation          = 60.0;
 
@@ -86,10 +90,34 @@ string ttrackerSupport.endRing.material    = "G4_Al";
 vector<int> ttrackerSupport.midRing.slot  = { 19, 20 };
 double ttrackerSupport.midRing.halfLength = 10.;
 
-int    ttrackerSupport.stave.nstaves       =   3;
-double ttrackerSupport.stave.phi0          = -75.; // -90+phiWidth/2. will put stave 0 at the top.
-double ttrackerSupport.stave.phiWidth      =  30.;
-string ttrackerSupport.stave.material      = "G4_Al";
+// steves are called beams now
+// in doc-db 888.v7 the one at the top is different one from the ones
+// on the sides
+
+vector<double> ttrackerSupport.beam0.phiRange = { 81.4, 98.7 };
+double ttrackerSupport.beam0.innerRadius   =  810.;
+double ttrackerSupport.beam0.outerRadius   =  830.;
+string ttrackerSupport.beam0.material      = "G4_Al";
+
+// see fig 8, page 7 in doc-db 888.v7 
+
+vector<double> ttrackerSupport.beam1.phiRange = { 180.4, 221.7 };
+vector<double> ttrackerSupport.beam1.phiSpans = { 0.4, 14.1, 34.8, 41.7 }; //deltas from 0
+string ttrackerSupport.beam1.material      = "G4_Al";
+double ttrackerSupport.beam1.innerRadius   =  810.;
+double ttrackerSupport.beam1.midRadius1    =  820.;
+double ttrackerSupport.beam1.midRadius2    =  840.;
+double ttrackerSupport.beam1.outerRadius   =  850.;
+// services and their starting, ending phi positions and materials
+vector<double> ttrackerSupport.beam1.servicePhi0s      = { 14.10, 17.64, 21.18, 30.48, 31.35 };
+vector<double> ttrackerSupport.beam1.servicePhiEnds    = { 16.28, 21.18, 30.17, 30.63, 34.80 };
+vector<double> ttrackerSupport.beam1.serviceOuterRadii = { 840., 840., 840., 840., 840. }; 
+// should be >= midRadius1 <= midRadius2
+vector<string> ttrackerSupport.beam1.serviceMaterials  = {"G4_Cu", "G4_Cu", "StrawGas", "G4_SILICON_DIOXIDE", "G4_Cu"} ;
+vector<double> ttrackerSupport.beam1.serviceCovRelThickness = {.1, .1, .1, .1, .1} ; // fractions of service layers as "covers"
+vector<string> ttrackerSupport.beam1.serviceMaterialsCov = 
+  { "G4_POLYETHYLENE", "G4_POLYETHYLENE", "StainlessSteel316", "G4_POLYETHYLENE", "G4_POLYETHYLENE" };
+
 
 double ttrackerSupport.innerRing.innerRadius  = 700.;
 double ttrackerSupport.innerRing.outerRadius  = 710.;

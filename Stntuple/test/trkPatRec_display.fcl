@@ -155,5 +155,5 @@ physics.producers.ParticleID.fitterModuleLabel                  : TrkPatRec
 
 physics.filters.MuHitDisplay.strawHitMakerModuleLabel           : makeSH
 physics.filters.MuHitDisplay.strawHitPosMakerModuleLabel        : MakeStereoHits
-physics.filters.MuHitDisplay.trkPatRecModuleLabel               : TrkPatRec
+physics.filters.MuHitDisplay.trkRecoModuleLabel                 : TrkPatRec
 physics.filters.MuHitDisplay.useStereoHits                      : true

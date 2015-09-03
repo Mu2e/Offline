@@ -16,7 +16,7 @@ string         stoppingTarget.fillMaterial    = "DSVacuum";
 
 // All dimensions in mm
 double stoppingTarget.z0InMu2e       = 5871;    // 12000 - 6129
-double stoppingTarget.deltaZ         = 50.0;
+double stoppingTarget.deltaZ         = 24.242424;
 bool   stoppingTarget.visible        = true;
 bool   stoppingTarget.solid          = false;
 int    stoppingTarget.verbosity      =     0;
@@ -24,10 +24,13 @@ int    stoppingTarget.verbosity      =     0;
 // all radii must be specified, i.e., nFoils is determined from the size
 // of the radii vector.
 vector<double> stoppingTarget.radii  =
-    {  83.00,  81.89,  80.79,  79.68,  78.58,
-       77.47,  76.36,  75.26,  74.15,  73.04,
-       71.94,  70.83,  69.73,  68.62,  67.51,
-       66.41,  65.30 };
+    { 75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00,  75.00,
+      75.00,  75.00,  75.00,  75.00 };
 
 // last material given will be repeated up to number radii.size()
 //  vector<string> stoppingTarget.materials = 
@@ -40,12 +43,15 @@ vector<double> stoppingTarget.zVars  =
     { 0., 0., 0., 0., 0.,
       0., 0., 0., 0., 0.,
       0., 0., 0., 0., 0.,
-      0., 0. };
+      0., 0., 0., 0., 0.,
+      0., 0., 0., 0., 0.,
+      0., 0., 0., 0., 0.,
+      0., 0., 0., 0. };
 
 // x: relative to beam axis
 // last will be repeated...
 vector<double> stoppingTarget.xVars  =
-    { 0.};
+    { 0. };
 
 // y: relative to beam axis
 // last will be repeated...
@@ -54,15 +60,15 @@ vector<double> stoppingTarget.yVars  =
 
 // last thickness given will be repeated up to number radii.size()
 vector<double> stoppingTarget.halfThicknesses  =
-    {0.1};
+    { 0.05 };
 
 // last x directional cosine given will be repeated up to number radii.size()
 vector<double> stoppingTarget.xCos  =
-    { 0.};
+    { 0. };
 
 // last y directional cosine given will be repeated up to number radii.size()
 vector<double> stoppingTarget.yCos  =
-    { 0.};
+    { 0. };
 
 // stopping foil target supporting structure
 bool   stoppingTarget.foilTarget_supportStructure = true;

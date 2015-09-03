@@ -11,11 +11,27 @@ BEGIN_PROLOG
 #
 # - for grid submission, set muonStops.inputFiles to @nil and use --fclinput 
 #------------------------------------------------------------------------------
+# "muonStops" is a TDR config, deprecated for CD3:
 muonStops : {
     #		inputFiles            : @nil // use --fclinput for grid submission
     inputFiles            : [ "ExampleDataFiles/StoppedMuons/mustops.1025a_1426a_1504a.15318715.root" ]
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
+    branchName            : "stops"
+    verbosityLevel        : 1
+}
+# CD3 stopped muon configs.
+mu2e.tgtMuonStops: {
+    inputFiles            : @nil // never change the @nil here
+    averageNumRecordsToUse: 500000
+    treeName              : "stoppedMuonDumper/stops"
+    branchName            : "stops"
+    verbosityLevel        : 1
+}
+mu2e.ootMuonStops: {
+    inputFiles            : @nil // never change the @nil here
+    averageNumRecordsToUse: 500000
+    treeName              : "outOfTargetDumper/stops"
     branchName            : "stops"
     verbosityLevel        : 1
 }

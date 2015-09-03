@@ -1,6 +1,29 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_4_4
+
+9) August 14, 2015 kutschke
+   (Actutally done on August 11).
+   Added code in the sandbox to illustrate a link/load problem
+   if in-module-file helper functions are just in the mu2e namespace
+   with no additional scope control ( unnamed namespace or inside
+   the module class)
+    - Sandbox/src/Helper*_module.cc
+    - Sandbox/test/helper*.fcl
+
+8) August 14, 2015 kutschke
+   Following discussions with Bob B I removed the obsolete file
+    Mu2eG4/test/geom_STM.txt
+   This would have required maintenance to deal with items 6 and 7.
+
+7) August 14, 2015 gandr
+   Switched to the 34 foil stoppign target geometry for most jobs
+   while keeping the TDR target for the ongoing cosmic simulations.
+
+6) August 13, 2015 roehrken
+   added geometry files for the muon stopping target:
+
+   Mu2eG4/geom/stoppingTarget_TDR.txt           17 foil tapered target as has been used for the TDR simulation campaign
+
+   Mu2eG4/geom/stoppingTarget_CD3C_34foils.txt  34 foil untapered target as will be used for the CDC3 simulation campaign
 
 5) July 31, 2015 kutschke
    BFieldTest/test/BFieldTest.fcl

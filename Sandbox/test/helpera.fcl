@@ -1,0 +1,21 @@
+# Run HelperA in isolation
+#
+
+
+process_name : helperA
+
+source : {
+  module_type : EmptyEvent
+  maxEvents   : 1
+}
+
+physics : {
+
+  analyzers : {
+    hA : { module_type : HelperA   }
+  }
+
+  e1 : [ hA  ]
+  end_paths      : [e1]
+
+}

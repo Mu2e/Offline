@@ -3,6 +3,60 @@
 #include "CRVResponse/test/prolog.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
 
+BEGIN_PROLOG
+
+outsideCrvCut: 
+{
+   type: union  //cut all tracks leaving to the side of the CRV
+   pars: 
+   [
+      // +x plane
+      { 
+        type  : plane 
+        normal: [  1, 0, 0 ] 
+        point : [ -1104, 0, 0 ] 
+      },
+      // -x plane
+      { 
+        type  : plane 
+        normal: [ -1, 0, 0 ] 
+        point : [ -6704, 0, 0 ] 
+      }
+   ]
+}
+belowCrvCut:
+{
+   type: intersection
+   pars:
+   [
+      { 
+        type  : plane            //cut all tracks exiting below the CRV
+                                 //since the "plane check" is inside an interect, the next check will be done for all tracks exiting below the CRV
+        normal: [ 0, -1, 0 ] 
+        point : [ 0, 2590, 0 ]
+      },
+      {
+        type: union              //the union (in combination with the "constant" below) makes sure that this will always return true
+                                 //so that all tracks exiting below the CRV will be cut
+                                 //however, it also makes sure that the pdgId test will be performed for all tracks exiting below the CRV
+        pars:
+        [
+          {
+            type : pdgId         //if the track which exits below the CRV is a muon, then it will be written to the "belowCRV"
+            pars : [ 13, -13 ] 
+            write: belowCrv
+          },
+          {
+            type : constant
+            value: true
+          }
+        ]
+      }
+   ]
+}
+END_PROLOG
+
+
 process_name : CRVEfficiency
 
 source :
@@ -65,15 +119,8 @@ physics :
          type: union
          pars:
          [
-            {
-              type  : plane 
-              normal: [  0, -1, 0 ] 
-              point : [ 0, 2590, 0 ] 
-            },
-            { 
-              type: inVolume
-              pars: [ worldDirtBottom, worldDirtNW, worldDirtSW, worldDirtSE, worldDirtNE ]
-            }
+            @local::outsideCrvCut,
+            @local::belowCrvCut
          ]
        }
     }
@@ -85,28 +132,430 @@ physics :
     CrvSiPMResponses : @local::CrvSiPMResponses
     CrvWaveforms     : @local::CrvWaveforms
     CrvRecoPulses    : @local::CrvRecoPulses
-    CrvCoincidence   : @local::CrvCoincidence
+
+    CrvCoincidencePE6T5LC  : @local::CrvCoincidence
+    CrvCoincidencePE8T5LC  : @local::CrvCoincidence
+    CrvCoincidencePE10T5LC  : @local::CrvCoincidence
+    CrvCoincidencePE12T5LC  : @local::CrvCoincidence
+    CrvCoincidencePE14T5LC  : @local::CrvCoincidence
+    CrvCoincidencePE6T10LC  : @local::CrvCoincidence
+    CrvCoincidencePE8T10LC  : @local::CrvCoincidence
+    CrvCoincidencePE10T10LC  : @local::CrvCoincidence
+    CrvCoincidencePE12T10LC  : @local::CrvCoincidence
+    CrvCoincidencePE14T10LC  : @local::CrvCoincidence
+    CrvCoincidencePE6T15LC  : @local::CrvCoincidence
+    CrvCoincidencePE8T15LC  : @local::CrvCoincidence
+    CrvCoincidencePE10T15LC  : @local::CrvCoincidence
+    CrvCoincidencePE12T15LC  : @local::CrvCoincidence
+    CrvCoincidencePE14T15LC  : @local::CrvCoincidence
+    CrvCoincidencePE6T20LC  : @local::CrvCoincidence
+    CrvCoincidencePE8T20LC  : @local::CrvCoincidence
+    CrvCoincidencePE10T20LC  : @local::CrvCoincidence
+    CrvCoincidencePE12T20LC  : @local::CrvCoincidence
+    CrvCoincidencePE14T20LC  : @local::CrvCoincidence
+    CrvCoincidencePE6T25LC  : @local::CrvCoincidence
+    CrvCoincidencePE8T25LC  : @local::CrvCoincidence
+    CrvCoincidencePE10T25LC  : @local::CrvCoincidence
+    CrvCoincidencePE12T25LC  : @local::CrvCoincidence
+    CrvCoincidencePE14T25LC  : @local::CrvCoincidence
+    CrvCoincidencePE6T5NLC  : @local::CrvCoincidence
+    CrvCoincidencePE8T5NLC  : @local::CrvCoincidence
+    CrvCoincidencePE10T5NLC  : @local::CrvCoincidence
+    CrvCoincidencePE12T5NLC  : @local::CrvCoincidence
+    CrvCoincidencePE14T5NLC  : @local::CrvCoincidence
+    CrvCoincidencePE6T10NLC  : @local::CrvCoincidence
+    CrvCoincidencePE8T10NLC  : @local::CrvCoincidence
+    CrvCoincidencePE10T10NLC  : @local::CrvCoincidence
+    CrvCoincidencePE12T10NLC  : @local::CrvCoincidence
+    CrvCoincidencePE14T10NLC  : @local::CrvCoincidence
+    CrvCoincidencePE6T15NLC  : @local::CrvCoincidence
+    CrvCoincidencePE8T15NLC  : @local::CrvCoincidence
+    CrvCoincidencePE10T15NLC  : @local::CrvCoincidence
+    CrvCoincidencePE12T15NLC  : @local::CrvCoincidence
+    CrvCoincidencePE14T15NLC  : @local::CrvCoincidence
+    CrvCoincidencePE6T20NLC  : @local::CrvCoincidence
+    CrvCoincidencePE8T20NLC  : @local::CrvCoincidence
+    CrvCoincidencePE10T20NLC  : @local::CrvCoincidence
+    CrvCoincidencePE12T20NLC  : @local::CrvCoincidence
+    CrvCoincidencePE14T20NLC  : @local::CrvCoincidence
+    CrvCoincidencePE6T25NLC  : @local::CrvCoincidence
+    CrvCoincidencePE8T25NLC  : @local::CrvCoincidence
+    CrvCoincidencePE10T25NLC  : @local::CrvCoincidence
+    CrvCoincidencePE12T25NLC  : @local::CrvCoincidence
+    CrvCoincidencePE14T25NLC  : @local::CrvCoincidence
   }
 
-  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]  
+  filters: 
+  {
+    belowCrvFilter: 
+    {
+      module_type: FilterStepPointMomentum
+      inputs : [ "g4run:belowCrv" ]
+      cutMomentumMin: 0. // momentum is irrelevant, the only requirement is that the muon exits below the CRV counter
+    }
+  }
+
+
+  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, belowCrvFilter,
+          CrvCoincidencePE6T5LC,
+          CrvCoincidencePE8T5LC,
+          CrvCoincidencePE10T5LC,
+          CrvCoincidencePE12T5LC,
+          CrvCoincidencePE14T5LC,
+          CrvCoincidencePE6T10LC,
+          CrvCoincidencePE8T10LC,
+          CrvCoincidencePE10T10LC,
+          CrvCoincidencePE12T10LC,
+          CrvCoincidencePE14T10LC,
+          CrvCoincidencePE6T15LC,
+          CrvCoincidencePE8T15LC,
+          CrvCoincidencePE10T15LC,
+          CrvCoincidencePE12T15LC,
+          CrvCoincidencePE14T15LC,
+          CrvCoincidencePE6T20LC,
+          CrvCoincidencePE8T20LC,
+          CrvCoincidencePE10T20LC,
+          CrvCoincidencePE12T20LC,
+          CrvCoincidencePE14T20LC,
+          CrvCoincidencePE6T25LC,
+          CrvCoincidencePE8T25LC,
+          CrvCoincidencePE10T25LC,
+          CrvCoincidencePE12T25LC,
+          CrvCoincidencePE14T25LC,
+          CrvCoincidencePE6T5NLC,
+          CrvCoincidencePE8T5NLC,
+          CrvCoincidencePE10T5NLC,
+          CrvCoincidencePE12T5NLC,
+          CrvCoincidencePE14T5NLC,
+          CrvCoincidencePE6T10NLC,
+          CrvCoincidencePE8T10NLC,
+          CrvCoincidencePE10T10NLC,
+          CrvCoincidencePE12T10NLC,
+          CrvCoincidencePE14T10NLC,
+          CrvCoincidencePE6T15NLC,
+          CrvCoincidencePE8T15NLC,
+          CrvCoincidencePE10T15NLC,
+          CrvCoincidencePE12T15NLC,
+          CrvCoincidencePE14T15NLC,
+          CrvCoincidencePE6T20NLC,
+          CrvCoincidencePE8T20NLC,
+          CrvCoincidencePE10T20NLC,
+          CrvCoincidencePE12T20NLC,
+          CrvCoincidencePE14T20NLC,
+          CrvCoincidencePE6T25NLC,
+          CrvCoincidencePE8T25NLC,
+          CrvCoincidencePE10T25NLC,
+          CrvCoincidencePE12T25NLC,
+          CrvCoincidencePE14T25NLC
+         ]  
+
   trigger_paths  : [trig]
 
-  out: [Output]
-  end_paths: [out]
+  end_paths: []
 }
 
 physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotonArrivals.processNames   : ["*"]
-physics.producers.CrvCoincidence.verboseLevel      : 5
 
-outputs: 
-{
-    Output : 
-    {
-        module_type : RootOutput
-        fileName    : "data_crv.root"
-    }
-}
+physics.producers.CrvCoincidencePE6T5LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE6T5LC.checkLayers       : true
+physics.producers.CrvCoincidencePE6T5LC.PEthreshold       : 6
+physics.producers.CrvCoincidencePE6T5LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE6T5LC.maxTimeDifference : 5
+
+physics.producers.CrvCoincidencePE8T5LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE8T5LC.checkLayers       : true
+physics.producers.CrvCoincidencePE8T5LC.PEthreshold       : 8
+physics.producers.CrvCoincidencePE8T5LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE8T5LC.maxTimeDifference : 5
+
+physics.producers.CrvCoincidencePE10T5LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE10T5LC.checkLayers       : true
+physics.producers.CrvCoincidencePE10T5LC.PEthreshold       : 10
+physics.producers.CrvCoincidencePE10T5LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE10T5LC.maxTimeDifference : 5
+
+physics.producers.CrvCoincidencePE12T5LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE12T5LC.checkLayers       : true
+physics.producers.CrvCoincidencePE12T5LC.PEthreshold       : 12
+physics.producers.CrvCoincidencePE12T5LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE12T5LC.maxTimeDifference : 5
+
+physics.producers.CrvCoincidencePE14T5LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE14T5LC.checkLayers       : true
+physics.producers.CrvCoincidencePE14T5LC.PEthreshold       : 14
+physics.producers.CrvCoincidencePE14T5LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE14T5LC.maxTimeDifference : 5
+
+physics.producers.CrvCoincidencePE6T10LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE6T10LC.checkLayers       : true
+physics.producers.CrvCoincidencePE6T10LC.PEthreshold       : 6
+physics.producers.CrvCoincidencePE6T10LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE6T10LC.maxTimeDifference : 10
+
+physics.producers.CrvCoincidencePE8T10LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE8T10LC.checkLayers       : true
+physics.producers.CrvCoincidencePE8T10LC.PEthreshold       : 8
+physics.producers.CrvCoincidencePE8T10LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE8T10LC.maxTimeDifference : 10
+
+physics.producers.CrvCoincidencePE10T10LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE10T10LC.checkLayers       : true
+physics.producers.CrvCoincidencePE10T10LC.PEthreshold       : 10
+physics.producers.CrvCoincidencePE10T10LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE10T10LC.maxTimeDifference : 10
+
+physics.producers.CrvCoincidencePE12T10LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE12T10LC.checkLayers       : true
+physics.producers.CrvCoincidencePE12T10LC.PEthreshold       : 12
+physics.producers.CrvCoincidencePE12T10LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE12T10LC.maxTimeDifference : 10
+
+physics.producers.CrvCoincidencePE14T10LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE14T10LC.checkLayers       : true
+physics.producers.CrvCoincidencePE14T10LC.PEthreshold       : 14
+physics.producers.CrvCoincidencePE14T10LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE14T10LC.maxTimeDifference : 10
+
+physics.producers.CrvCoincidencePE6T15LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE6T15LC.checkLayers       : true
+physics.producers.CrvCoincidencePE6T15LC.PEthreshold       : 6
+physics.producers.CrvCoincidencePE6T15LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE6T15LC.maxTimeDifference : 15
+
+physics.producers.CrvCoincidencePE8T15LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE8T15LC.checkLayers       : true
+physics.producers.CrvCoincidencePE8T15LC.PEthreshold       : 8
+physics.producers.CrvCoincidencePE8T15LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE8T15LC.maxTimeDifference : 15
+
+physics.producers.CrvCoincidencePE10T15LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE10T15LC.checkLayers       : true
+physics.producers.CrvCoincidencePE10T15LC.PEthreshold       : 10
+physics.producers.CrvCoincidencePE10T15LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE10T15LC.maxTimeDifference : 15
+
+physics.producers.CrvCoincidencePE12T15LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE12T15LC.checkLayers       : true
+physics.producers.CrvCoincidencePE12T15LC.PEthreshold       : 12
+physics.producers.CrvCoincidencePE12T15LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE12T15LC.maxTimeDifference : 15
+
+physics.producers.CrvCoincidencePE14T15LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE14T15LC.checkLayers       : true
+physics.producers.CrvCoincidencePE14T15LC.PEthreshold       : 14
+physics.producers.CrvCoincidencePE14T15LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE14T15LC.maxTimeDifference : 15
+
+physics.producers.CrvCoincidencePE6T20LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE6T20LC.checkLayers       : true
+physics.producers.CrvCoincidencePE6T20LC.PEthreshold       : 6
+physics.producers.CrvCoincidencePE6T20LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE6T20LC.maxTimeDifference : 20
+
+physics.producers.CrvCoincidencePE8T20LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE8T20LC.checkLayers       : true
+physics.producers.CrvCoincidencePE8T20LC.PEthreshold       : 8
+physics.producers.CrvCoincidencePE8T20LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE8T20LC.maxTimeDifference : 20
+
+physics.producers.CrvCoincidencePE10T20LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE10T20LC.checkLayers       : true
+physics.producers.CrvCoincidencePE10T20LC.PEthreshold       : 10
+physics.producers.CrvCoincidencePE10T20LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE10T20LC.maxTimeDifference : 20
+
+physics.producers.CrvCoincidencePE12T20LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE12T20LC.checkLayers       : true
+physics.producers.CrvCoincidencePE12T20LC.PEthreshold       : 12
+physics.producers.CrvCoincidencePE12T20LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE12T20LC.maxTimeDifference : 20
+
+physics.producers.CrvCoincidencePE14T20LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE14T20LC.checkLayers       : true
+physics.producers.CrvCoincidencePE14T20LC.PEthreshold       : 14
+physics.producers.CrvCoincidencePE14T20LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE14T20LC.maxTimeDifference : 20
+
+physics.producers.CrvCoincidencePE6T25LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE6T25LC.checkLayers       : true
+physics.producers.CrvCoincidencePE6T25LC.PEthreshold       : 6
+physics.producers.CrvCoincidencePE6T25LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE6T25LC.maxTimeDifference : 25
+
+physics.producers.CrvCoincidencePE8T25LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE8T25LC.checkLayers       : true
+physics.producers.CrvCoincidencePE8T25LC.PEthreshold       : 8
+physics.producers.CrvCoincidencePE8T25LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE8T25LC.maxTimeDifference : 25
+
+physics.producers.CrvCoincidencePE10T25LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE10T25LC.checkLayers       : true
+physics.producers.CrvCoincidencePE10T25LC.PEthreshold       : 10
+physics.producers.CrvCoincidencePE10T25LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE10T25LC.maxTimeDifference : 25
+
+physics.producers.CrvCoincidencePE12T25LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE12T25LC.checkLayers       : true
+physics.producers.CrvCoincidencePE12T25LC.PEthreshold       : 12
+physics.producers.CrvCoincidencePE12T25LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE12T25LC.maxTimeDifference : 25
+
+physics.producers.CrvCoincidencePE14T25LC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE14T25LC.checkLayers       : true
+physics.producers.CrvCoincidencePE14T25LC.PEthreshold       : 14
+physics.producers.CrvCoincidencePE14T25LC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE14T25LC.maxTimeDifference : 25
+
+physics.producers.CrvCoincidencePE6T5NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE6T5NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE6T5NLC.PEthreshold       : 6
+physics.producers.CrvCoincidencePE6T5NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE6T5NLC.maxTimeDifference : 5
+
+physics.producers.CrvCoincidencePE8T5NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE8T5NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE8T5NLC.PEthreshold       : 8
+physics.producers.CrvCoincidencePE8T5NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE8T5NLC.maxTimeDifference : 5
+
+physics.producers.CrvCoincidencePE10T5NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE10T5NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE10T5NLC.PEthreshold       : 10
+physics.producers.CrvCoincidencePE10T5NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE10T5NLC.maxTimeDifference : 5
+
+physics.producers.CrvCoincidencePE12T5NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE12T5NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE12T5NLC.PEthreshold       : 12
+physics.producers.CrvCoincidencePE12T5NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE12T5NLC.maxTimeDifference : 5
+
+physics.producers.CrvCoincidencePE14T5NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE14T5NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE14T5NLC.PEthreshold       : 14
+physics.producers.CrvCoincidencePE14T5NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE14T5NLC.maxTimeDifference : 5
+
+physics.producers.CrvCoincidencePE6T10NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE6T10NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE6T10NLC.PEthreshold       : 6
+physics.producers.CrvCoincidencePE6T10NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE6T10NLC.maxTimeDifference : 10
+
+physics.producers.CrvCoincidencePE8T10NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE8T10NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE8T10NLC.PEthreshold       : 8
+physics.producers.CrvCoincidencePE8T10NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE8T10NLC.maxTimeDifference : 10
+
+physics.producers.CrvCoincidencePE10T10NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE10T10NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE10T10NLC.PEthreshold       : 10
+physics.producers.CrvCoincidencePE10T10NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE10T10NLC.maxTimeDifference : 10
+
+physics.producers.CrvCoincidencePE12T10NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE12T10NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE12T10NLC.PEthreshold       : 12
+physics.producers.CrvCoincidencePE12T10NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE12T10NLC.maxTimeDifference : 10
+
+physics.producers.CrvCoincidencePE14T10NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE14T10NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE14T10NLC.PEthreshold       : 14
+physics.producers.CrvCoincidencePE14T10NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE14T10NLC.maxTimeDifference : 10
+
+physics.producers.CrvCoincidencePE6T15NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE6T15NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE6T15NLC.PEthreshold       : 6
+physics.producers.CrvCoincidencePE6T15NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE6T15NLC.maxTimeDifference : 15
+
+physics.producers.CrvCoincidencePE8T15NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE8T15NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE8T15NLC.PEthreshold       : 8
+physics.producers.CrvCoincidencePE8T15NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE8T15NLC.maxTimeDifference : 15
+
+physics.producers.CrvCoincidencePE10T15NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE10T15NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE10T15NLC.PEthreshold       : 10
+physics.producers.CrvCoincidencePE10T15NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE10T15NLC.maxTimeDifference : 15
+
+physics.producers.CrvCoincidencePE12T15NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE12T15NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE12T15NLC.PEthreshold       : 12
+physics.producers.CrvCoincidencePE12T15NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE12T15NLC.maxTimeDifference : 15
+
+physics.producers.CrvCoincidencePE14T15NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE14T15NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE14T15NLC.PEthreshold       : 14
+physics.producers.CrvCoincidencePE14T15NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE14T15NLC.maxTimeDifference : 15
+
+physics.producers.CrvCoincidencePE6T20NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE6T20NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE6T20NLC.PEthreshold       : 6
+physics.producers.CrvCoincidencePE6T20NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE6T20NLC.maxTimeDifference : 20
+
+physics.producers.CrvCoincidencePE8T20NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE8T20NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE8T20NLC.PEthreshold       : 8
+physics.producers.CrvCoincidencePE8T20NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE8T20NLC.maxTimeDifference : 20
+
+physics.producers.CrvCoincidencePE10T20NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE10T20NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE10T20NLC.PEthreshold       : 10
+physics.producers.CrvCoincidencePE10T20NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE10T20NLC.maxTimeDifference : 20
+
+physics.producers.CrvCoincidencePE12T20NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE12T20NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE12T20NLC.PEthreshold       : 12
+physics.producers.CrvCoincidencePE12T20NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE12T20NLC.maxTimeDifference : 20
+
+physics.producers.CrvCoincidencePE14T20NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE14T20NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE14T20NLC.PEthreshold       : 14
+physics.producers.CrvCoincidencePE14T20NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE14T20NLC.maxTimeDifference : 20
+
+physics.producers.CrvCoincidencePE6T25NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE6T25NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE6T25NLC.PEthreshold       : 6
+physics.producers.CrvCoincidencePE6T25NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE6T25NLC.maxTimeDifference : 25
+
+physics.producers.CrvCoincidencePE8T25NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE8T25NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE8T25NLC.PEthreshold       : 8
+physics.producers.CrvCoincidencePE8T25NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE8T25NLC.maxTimeDifference : 25
+
+physics.producers.CrvCoincidencePE10T25NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE10T25NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE10T25NLC.PEthreshold       : 10
+physics.producers.CrvCoincidencePE10T25NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE10T25NLC.maxTimeDifference : 25
+
+physics.producers.CrvCoincidencePE12T25NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE12T25NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE12T25NLC.PEthreshold       : 12
+physics.producers.CrvCoincidencePE12T25NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE12T25NLC.maxTimeDifference : 25
+
+physics.producers.CrvCoincidencePE14T25NLC.verboseLevel      : 0
+physics.producers.CrvCoincidencePE14T25NLC.checkLayers       : false
+physics.producers.CrvCoincidencePE14T25NLC.PEthreshold       : 14
+physics.producers.CrvCoincidencePE14T25NLC.maxDistance       : 1000000
+physics.producers.CrvCoincidencePE14T25NLC.maxTimeDifference : 25
 
 services.user.SeedService.baseSeed         :  773651
 services.user.SeedService.maxUniqueEngines :  20

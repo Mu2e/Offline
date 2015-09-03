@@ -1,6 +1,14 @@
-// Write stopped particles into an ntuple.
+// Write into an ntuple information about time, position, and
+// (optionally) proper time of SimParticle end points.  There are two
+// ways to specify the set of particles to process:
 //
-// Andrei Gaponenko, 2013
+// 1) dumpSimParticleLeaves=false (default), inputCollection is a
+//    SimParticlePtrCollection that explicitly lists what to dump.
+//
+// 2) dumpSimParticleLeaves=true, inputCollection is a SimParticle
+//    collection.  The leaves of the SimParticle tree will be dumped.
+//
+// Andrei Gaponenko, 2013, 2015
 
 #include <string>
 #include <algorithm>
@@ -69,6 +77,7 @@ namespace mu2e {
     void beginJob() override;
     void analyze(const art::Event& evt) override;
   private:
+    bool dumpSimParticleLeaves_;
     art::InputTag input_;
     bool writeProperTime_;
     VS hitColls_;
@@ -77,11 +86,15 @@ namespace mu2e {
 
     TTree *nt_;
     StopInfo data_;
+
+    bool is_leave(const SimParticle& p);
+    void process(const art::Ptr<SimParticle>& p, const VspMC& spMCcolls);
   };
 
   //================================================================
   StoppedParticlesDumper::StoppedParticlesDumper(const fhicl::ParameterSet& pset) :
     art::EDAnalyzer(pset),
+    dumpSimParticleLeaves_(pset.get<bool>("dumpSimParticleLeaves", false)),
     input_(pset.get<std::string>("inputCollection")),
     writeProperTime_(pset.get<bool>("writeProperTime")),
     hitColls_( writeProperTime_ ? pset.get<VS>("hitCollections") : VS() ),
@@ -115,13 +128,35 @@ namespace mu2e {
       spMCColls.push_back( *spColl );
     }
 
-    auto ih = event.getValidHandle<SimParticlePtrCollection>(input_);
-    for(const auto& p : *ih) {
-      const float tau = writeProperTime_ ? SimParticleGetTau::calculate(p,spMCColls,decayOffCodes_) : -1;
-      data_ = StopInfo( p, spMCColls, tau);
-      nt_->Fill();
+
+    if(dumpSimParticleLeaves_) {
+      auto ih = event.getValidHandle<SimParticleCollection>(input_);
+      for(const auto& p : *ih) {
+        if(is_leave(p.second)) {
+          art::Ptr<SimParticle> pp(ih, p.first.asUint());
+          process(pp, spMCColls);
+        }
+      }
+    }
+    else {
+      auto ih = event.getValidHandle<SimParticlePtrCollection>(input_);
+      for(const auto& p : *ih) {
+        process(p, spMCColls);
+      }
     }
 
+  }
+
+  //================================================================
+  void StoppedParticlesDumper::process(const art::Ptr<SimParticle>& p, const VspMC& spMCColls) {
+    const float tau = writeProperTime_ ? SimParticleGetTau::calculate(p,spMCColls,decayOffCodes_) : -1;
+    data_ = StopInfo(p, spMCColls, tau);
+    nt_->Fill();
+  }
+
+  //================================================================
+  bool StoppedParticlesDumper::is_leave(const SimParticle& p) {
+    return p.daughters().empty();
   }
 
   //================================================================

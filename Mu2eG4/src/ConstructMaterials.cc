@@ -454,6 +454,21 @@ namespace mu2e {
       StrawGasArCF4->AddElement( getElementOrThrow("F") , 4);
     }
     
+    mat = uniqueMaterialOrThrow( "TrackerManifold"); // materials and proportions defined in doc888v7
+    {
+      G4Material* TrackerManifold = new G4Material( mat.name, 1.95*CLHEP::g/CLHEP::cm3, 2);
+      TrackerManifold->AddMaterial(findMaterialOrThrow("G4_POLYVINYL_CHLORIDE"), 0.355);
+      TrackerManifold->AddMaterial(findMaterialOrThrow("G4_Al"), 0.645);
+    }
+  
+    mat = uniqueMaterialOrThrow( "StrawWall"); // materials and proportions defined in doc888v7
+    {
+      G4Material* StrawWall = new G4Material( mat.name, 1.43*CLHEP::g/CLHEP::cm3, 3);
+      StrawWall->AddMaterial(findMaterialOrThrow("G4_MYLAR"), 0.97);
+      StrawWall->AddMaterial(findMaterialOrThrow("G4_Au"), 0.018);
+      StrawWall->AddMaterial(findMaterialOrThrow("G4_Al"), 0.012);
+    }
+
     mat = uniqueMaterialOrThrow( "StrawGas");
     {
       G4double density;

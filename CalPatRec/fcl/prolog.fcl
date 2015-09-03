@@ -70,9 +70,13 @@ CalPatRecFlagBkgHits : {
 CalPatRec            : {
     module_type                                 : CalPatRec
 
+    TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+
     StrawHitCollectionLabel                     : makeSH
     StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
     StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions
+    caloReadoutModuleLabel                      : MakeCaloReadoutHits
+    calorimeterHitMCCrystalPtr                  : CaloHitMCCrystalPtr
     caloClusterModuleLabel                      : MakeCaloCluster
 #------------------------------------------------------------------------------
 #  now this is defined by the ambig resolver choice 

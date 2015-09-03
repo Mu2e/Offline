@@ -37,7 +37,7 @@ namespace mu2e {
                 double outerRadius,
                 double zHalfLength,
                 double phi0   = 0.,
-                double phiMax = CLHEP::twopi):
+                double phiMax = CLHEP::twopi): // spanning angle
       data_()
     {
       data_[0] = innerRadius;

@@ -9,7 +9,7 @@ class MakeCrvRecoPulses
   MakeCrvRecoPulses(double pulseThreshold, double leadingEdgeThreshold, double param0, double param1);
   void         SetWaveform(const std::vector<double> &waveform, double startTime, double binWidth);
   unsigned int GetNPulses();
-  double       GetPEs(int pulse);
+  int          GetPEs(int pulse);
   double       GetLeadingEdge(int pulse);
   double       GetPulseHeight(int pulse);
   double       GetIntegral(int pulse);

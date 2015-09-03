@@ -51,6 +51,7 @@ namespace mu2e
     private:
     std::string _crvPhotonArrivalsModuleLabel;
     int         _numberPixels;
+    int         _numberPixelsAtFiber;
     double      _bias;
     double      _scaleFactor;
     double      _minCharge;
@@ -66,7 +67,8 @@ namespace mu2e
 
   CrvSiPMResponsesGenerator::CrvSiPMResponsesGenerator(fhicl::ParameterSet const& pset) :
     _crvPhotonArrivalsModuleLabel(pset.get<std::string>("crvPhotonArrivalsModuleLabel")),
-    _numberPixels(pset.get<int>("numberPixels")),   //1600
+    _numberPixels(pset.get<int>("numberPixels")),   //1584
+    _numberPixelsAtFiber(pset.get<int>("numberPixelsAtFiber")),   //615
     _bias(pset.get<double>("bias")),                //2.5V
     _scaleFactor(pset.get<double>("scaleFactor")),  //0.08 (based on a time step of 1.0ns)
     _minCharge(pset.get<double>("minCharge")),      //3.0PE
@@ -82,7 +84,7 @@ namespace mu2e
     _probabilities._constTrapType0Lifetime = pset.get<double>("TrapType0Lifetime");   //5.0ns
     _probabilities._constTrapType1Lifetime = pset.get<double>("TrapType1Lifetime");  //50.0ns
     _probabilities._constThermalProb = pset.get<double>("ThermalProb"); //6.25e-7ns^1     1MHz at SiPM --> 1MHz/#pixel=625Hz at Pixel --> 625 s^-1 = 6.25e-7 ns^-1   //exp(-E_th/T)=1.6e-6
-    _probabilities._constPhotonProduction = pset.get<double>("PhotonProduction");  //0.1  //0.4
+    _probabilities._constPhotonProduction = pset.get<double>("PhotonProduction");  //0.136
   }
 
   void CrvSiPMResponsesGenerator::beginJob()
@@ -94,7 +96,7 @@ namespace mu2e
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
     _makeCrvSiPMResponses = boost::shared_ptr<MakeCrvSiPMResponses>(new MakeCrvSiPMResponses(_randFlat, _randPoissonQ));
-    _makeCrvSiPMResponses->SetSiPMConstants(_numberPixels, _bias, _blindTime, _microBunchPeriod, 
+    _makeCrvSiPMResponses->SetSiPMConstants(_numberPixels, _numberPixelsAtFiber, _bias, _blindTime, _microBunchPeriod, 
                                             _scaleFactor, _probabilities);
   }
 

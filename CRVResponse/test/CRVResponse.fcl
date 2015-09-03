@@ -38,7 +38,7 @@ physics :
 #  an : [protonTimeMap, muonTimeMap, CrvPhotonArrivals]        //1 event (1 cosmic ray muon) takes about 20ms.
   an : [protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]  //1 event (1 cosmic ray muon) takes about 4s.
                                                                                                                        //The CrvSiPMResponse is the most time consuming module.
-#  out: [Output]
+  out: [Output]
 #  end_paths: [an, out]
   end_paths: [an]
 }

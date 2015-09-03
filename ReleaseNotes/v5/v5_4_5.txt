@@ -1,0 +1,44 @@
+           Release notes for Mu2e Offline software, v5_4_5
+
+5) August 24, 2015 genser
+    Added beam1.serviceOuterRadii and TTrackerSupportServiceSectionEnvelopes
+
+     Mu2eG4/geom/ttracker_cd3.txt
+     Mu2eG4/geom/ttracker_v3.txt
+     Mu2eG4/src/ConstructTTrackerTDR.cc
+     TTrackerGeom/inc/TTrackerMaker.hh
+     TTrackerGeom/src/TTrackerMaker.cc
+
+4) August 21, 2015 genser
+    Initial implementation of support beams and services replacing support staves
+
+     Mu2eG4/geom/ttracker_cd3.txt
+     Mu2eG4/geom/ttracker_v3.txt
+     Mu2eG4/src/ConstructTTrackerTDR.cc
+     Mu2eG4/src/constructDiskCalorimeter.cc    makd crystal visibility conditional
+     Mu2eG4/src/constructTTrackerv3Detailed.cc
+     Mu2eG4/src/constructVirtualDetectors.cc
+     TTrackerGeom/inc/SupportStructure.hh
+     TTrackerGeom/inc/TTrackerMaker.hh
+     TTrackerGeom/src/SupportStructure.cc
+     TTrackerGeom/src/TTrackerMaker.cc
+
+3) August 20, 2015 oksuzian
+   Changed the vacuum seal window (IFB_EndWindow) in IFB end plug from Air to Fe.
+   Enabled the virtual detector in the hole of endcap concrete
+
+2) August 20, 2015 dnbrow01   (Louisville)
+   Added an accessor function getWallExtentz to the Mu2eHall class.
+   Will help retrieve the z-positions of the surfaces of walls of the
+   building, particularly useful to folks positioning geometry elements
+   so they don't have to hardcode numbers themselves.  Requested by
+   A. Palladino.
+   modified:   Mu2eHallGeom/inc/Mu2eHall.hh
+   added:      Mu2eHallGeom/src/Mu2eHall.cc
+
+1) August 17, 2015 ehrlich
+   Added virtual detectors next to the CRV planes of CRV-R,L,T,D,U
+     GeometryService/src/VirtualDetectorMaker.cc
+     MCDataProducts/inc/VirtualDetectorId.hh
+     Mu2eG4/geom/crv_counters_v03.txt
+     Mu2eG4/src/constructVirtualDetectors.cc

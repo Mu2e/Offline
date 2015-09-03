@@ -4,15 +4,15 @@
 BEGIN_PROLOG
 // Default gun: in-time protons
 defaultGunPars : {
-    coneAngle : 0.005
-    pdgId     : 2212 // 2212 is p+, -13 is mu+
-    reference : "detector"
-    offset   : [ 0, 0, +650 ]
-    halfSize : [ 30, 30, 0 ]
-    tmin     : 0
-    tmax     : 150
-    histDirName : "ExtMonFNALGun"
-    multiplicity : nil
+   coneAngle : 0.005
+   pdgId     : 2212 // 2212 is p+, -13 is mu+
+   reference : "detector"
+   offset   : [ 0, 0, +650 ]
+   halfSize : [ 30, 30, 0 ]
+   tmin     : 0
+   tmax     : 150
+   histDirName : "ExtMonFNALGun"
+   multiplicity : nil
 }
 END_PROLOG
 
@@ -23,66 +23,91 @@ END_PROLOG
 
 
 source : {
-    module_type : EmptyEvent
-    maxEvents : 10
+   module_type : EmptyEvent
+   maxEvents : 10
 }
 
 services : {
-    message : @local::default_message
+   message : @local::default_message
 
-    scheduler: { defaultExceptions : false }
-    TFileService : {}
-    RandomNumberGenerator : {}
+   scheduler: { defaultExceptions : false }
+   TFileService : {}
+   RandomNumberGenerator : {}
 
-    user : {
-        GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_detectorTest.txt" }
-        ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-        GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-        SeedService       : @local::automaticSeeds
-        G4Helper : { }
-    }
+   user : {
+      GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }
+      ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+      GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+      SeedService       : @local::automaticSeeds
+      G4Helper : { }
+   }
 }
 
 physics : {
-    producers : {
-        generate : {
-            module_type : ExtMonFNALGun
-            guns : [ @local::defaultGunPars ]
-        }
+   producers : {
+      generate : {
+         module_type : ExtMonFNALGun
+         guns : [ @local::defaultGunPars ]
+      }
 
-        g4run : @local::g4run
-        geom : { module_type : GeometryRecorder }
-    }
-    analyzers: {
-        vdprint: {
-            module_type: EMFCPrint
-            inputModuleLabel  : "g4run"
-            inputInstanceName : "virtualdetector"
-        }
-        emfprintsim: {
-            module_type: EMFDetPrintSim
-            inputModuleLabel  : "g4run"
-            inputInstanceName : ""
-        }
-        emfSimHits: {
-            module_type: EMFDetHistSimHits
-            inputModuleLabel  : "g4run"
-            geomModuleLabel  : ""
-        }
-    }
+      g4run : {
+         module_type: Mu2eG4
+         physics: @local::mu2eg4DefaultPhysics
+         ResourceLimits: @local::mu2eg4DefaultResourceLimits
+	 TrajectoryControl: @local::mu2eg4NoTrajectories
+         debug: @local::mu2eg4DefaultDebug
+         visualization: @local::mu2eg4NoVisualization
 
-    tprint : [ generate, g4run ]
-    gm  : [ geom ]
+         generatorModuleLabel: generate
+         MultiStageParameters: {} // this is the first stage
 
-    //eprint: [ vdprint, emfprintsim, emfSimHits ]
-    eprint: [ emfSimHits ]
-    out : [ FullOutput ]
+         SDConfig: {
+            enableSD: [ ExtMonFNAL, virtualdetector ] // activate just the explicitly listed SDs
+            TimeVD: { times: [] }
+         }
 
-    trigger_paths  : [ gm, tprint ]
-    end_paths : [ out, eprint ]
+         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+         Mu2eG4SteppingOnlyCut: {}
+         Mu2eG4CommonCut: {}
+      }
+
+      //      geom : { module_type : GeometryRecorder }
+   }
+   analyzers: {
+      //        vdprint: {
+	 //            module_type: EMFCPrint
+	 //            inputModuleLabel  : "g4run"
+	 //            inputInstanceName : "virtualdetector"
+	 //        }
+      emfprintsim: {
+         module_type: EMFDetPrintSim
+         inputModuleLabel  : "g4run"
+         inputInstanceName : ""
+      }
+      emfSimHits: {
+         module_type: EMFDetHistSimHits
+         inputModuleLabel  : "g4run"
+         geomModuleLabel  : ""
+      }
+   }
+
+   tprint : [ generate, g4run ]
+   //    gm  : [ geom ]
+
+   //eprint: [ vdprint, emfprintsim, emfSimHits ]
+   eprint: [ emfSimHits, emfprintsim ]
+   out : [ FullOutput ]
+
+   trigger_paths: [ tprint ]
+   end_paths: [ out, eprint ]
 }
 
-outputs: { FullOutput : { module_type : RootOutput } }
+outputs: {
+   FullOutput: { module_type: RootOutput }
+   dump: { module_type: DataProductDump }
+}
+
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
 
 //----------------------------------------------------------------
 services.user.SeedService.baseSeed         :  0

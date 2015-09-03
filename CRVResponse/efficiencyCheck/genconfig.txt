@@ -17,9 +17,9 @@ double cosmicDYB.muCosThMin = 0.0;
 double cosmicDYB.muCosThMax = 1.0;
 int    cosmicDYB.nBinsE = 20000;
 int    cosmicDYB.nBinsTheta = 100;
-double cosmicDYB.dx     = 0;
+double cosmicDYB.dx     = 2800.0;
 double cosmicDYB.dy     = 0;
-double cosmicDYB.dz     = 819;
+double cosmicDYB.dz     = 819.0;
 double cosmicDYB.y0     = 2702.35;
 double cosmicDYB.constTime = 800;
 

@@ -199,16 +199,19 @@ namespace mu2e {
     crys_visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
 
     CrystalLog->SetVisAttributes(crys_visAtt);    
-    //ROLog->SetVisAttributes(G4VisAttributes::Invisible);
-    ROLog->SetVisAttributes(G4Color::Cyan());
-   
-    
-    
+    if (isCrystalVisible) {
+      ROLog->SetVisAttributes(G4Color::Cyan());
+    } else {
+      ROLog->SetVisAttributes(G4VisAttributes::Invisible);
+    }
     
     // --build the crystal unit
     G4LogicalVolume *WrapLog     = new G4LogicalVolume(crystalWrap, wrapMaterial, "WrapLog");  
-    //WrapLog->SetVisAttributes(G4VisAttributes::Invisible);
-    WrapLog->SetVisAttributes(G4Color::Magenta());
+    if (isCrystalVisible) {
+      WrapLog->SetVisAttributes(G4Color::Magenta());
+    } else {
+      WrapLog->SetVisAttributes(G4VisAttributes::Invisible);
+    }
 
     pv = new G4PVPlacement(0,G4ThreeVector(0.0,0.0,ZPoscrystal),CrystalLog,"CrysPV",WrapLog,false,0,false);
     doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);

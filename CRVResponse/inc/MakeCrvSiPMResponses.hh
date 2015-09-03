@@ -45,6 +45,7 @@ Based on Paul Rubinov's C# code
   class MakeCrvSiPMResponses
   {
     int    _numberPixels;
+    int    _numberPixelsAtFiber;
     double _bias;             //in V above breakdown
     double _blindTime;        //in ns
     double _microBunchPeriod; //in ns
@@ -83,7 +84,7 @@ Based on Paul Rubinov's C# code
     MakeCrvSiPMResponses(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ) :
                          _randFlat(randFlat), _randPoissonQ(randPoissonQ) {}
 
-    void SetSiPMConstants(double numberPixels, double bias, 
+    void SetSiPMConstants(int numberPixels, int numberPixelsAtFiber, double bias, 
                           double blindTime, double microBunchPeriod, double scaleFactor, 
                           ProbabilitiesStruct probabilities);
     void Simulate(const std::vector<double> &photons, 

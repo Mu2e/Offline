@@ -47,7 +47,7 @@ double ifb.endplug.rIn        = 50.;
 double ifb.endplug.rOut       = 550.;
 double ifb.endplug.halfLength = 50.;
 
-string ifb.endwindow.material   = "G4_AIR";
+string ifb.endwindow.material   = "G4_Fe";
 
 double ifb.endwindow.z          = 3182.;
 double ifb.endwindow.rIn        = 0.;

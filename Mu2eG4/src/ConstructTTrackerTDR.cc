@@ -175,6 +175,8 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
   SupportStructure const& sup = _ttracker.getSupportStructure();
 
+  bool ttrackerSupportSurfaceCheck = _config.getBool("ttrackerSupport.doSurfaceCheck",false);
+
   for ( auto const& ring : sup.stiffRings() ){
 
     if ( _verbosityLevel > 0 ) {
@@ -198,39 +200,176 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
                                 _config.getBool("ttracker.envelopeSolid",true),
                                 _forceAuxEdgeVisible,
                                 place,
-                                _doSurfaceCheck
+                                _doSurfaceCheck || ttrackerSupportSurfaceCheck
                                 );
 
   }
 
-  for ( auto const& stave : sup.staveBody() ){
+
+  // contructing the support beams
+
+  for ( auto const& sbeam : sup.beamBody() ) {
 
     if ( _verbosityLevel > 0 ) {
-      cout << "Stave Position: "
-           << stave.name()               << " "
-           << stave.position()           << " "
-           << _motherInfo.centerInWorld  << " "
-           << stave.position()-_motherInfo.centerInWorld
-           << endl;
+      cout  << __func__ 
+            << "Support Beam Position: "
+            << sbeam.name()               << " "
+            << sbeam.position()           << " "
+            << _motherInfo.centerInWorld  << " "
+            << sbeam.position()-_motherInfo.centerInWorld << " "
+            << sbeam.tubsParams()
+            << endl;
     }
 
-    nestTubs( stave.name(),
-              stave.tubsParams(),
-              findMaterialOrThrow(stave.materialName()),
-              &stave.rotation(),
-              stave.position()-_motherInfo.centerInWorld,
+    nestTubs( sbeam.name(),
+              sbeam.tubsParams(),
+              findMaterialOrThrow(sbeam.materialName()),
+              0x0,
+              sbeam.position()-_motherInfo.centerInWorld,
               _motherInfo,
               0,
               _config.getBool("ttracker.envelopeVisible",false),
-              G4Colour::Yellow(),
+              G4Colour::Cyan(),
               _config.getBool("ttracker.envelopeSolid",true),
               _forceAuxEdgeVisible,
               place,
-              _doSurfaceCheck
+              _doSurfaceCheck || ttrackerSupportSurfaceCheck
               );
 
+  }
+
+  // here construct the supportServices
+
+  VolumeInfo serviceVI;
+  VolumeInfo& ttSSE1 = _helper.locateVolInfo("TTrackerSupportServiceEnvelope_11");
+  VolumeInfo& ttSSE2 = _helper.locateVolInfo("TTrackerSupportServiceEnvelope_21");
+
+  // each subsection has en envelope; creating them first
+
+  for ( auto const& sbeam : sup.beamServices() ) {
+
+    // placing the services in the right envelope
+    VolumeInfo& ttSSE = ( sbeam.name().find("eSectionEnvelope_1") != string::npos ) ? ttSSE1 : ttSSE2;
+
+    if ( sbeam.name().find("TTrackerSupportServiceSectionEnvelope_") != string::npos ) {
+
+      if ( _verbosityLevel > 0 ) {
+        cout << __func__ 
+             << " Support Beam Service eSection Envelope Position: "
+             << sbeam.name()               << " "
+             << sbeam.position()           << " "
+             << _motherInfo.centerInWorld  << " "
+             << sbeam.position()-ttSSE.centerInWorld << " "
+             << sbeam.tubsParams();
+      }
+
+      serviceVI = 
+        nestTubs( sbeam.name(),
+                  sbeam.tubsParams(),
+                  findMaterialOrThrow(sbeam.materialName()),
+                  0x0,
+                  sbeam.position()-ttSSE.centerInWorld,
+                  ttSSE,
+                  0,
+                  _config.getBool("ttracker.envelopeVisible",false),
+                  G4Colour::White(),
+                  _config.getBool("ttracker.envelopeSolid",true),
+                  _forceAuxEdgeVisible,
+                  place,
+                  _doSurfaceCheck || ttrackerSupportSurfaceCheck
+                  );
+
+      if ( _verbosityLevel > 0 ) {
+        cout << " Material " 
+             << serviceVI.logical->GetMaterial()->GetName()
+             << " Mass in kg: " 
+             << serviceVI.logical->GetMass()/CLHEP::kg
+             << endl;
+      }
+   
+    }
 
   }
+ 
+  // now placing services in their envelopes
+
+  for ( auto const& sbeam : sup.beamServices() ) {
+
+    // placing the services in the right envelope
+
+    std::string stf = "TTrackerSupportService_";
+
+    size_t stfp = sbeam.name().find(stf);
+
+    if ( stfp != string::npos ) {
+
+      std::string sse = "TTrackerSupportServiceSectionEnvelope_" + sbeam.name().substr(stfp+stf.size(),2);
+
+      VolumeInfo& ttSSE =  _helper.locateVolInfo(sse);
+
+      if ( _verbosityLevel > 0 ) {
+        cout << __func__ 
+             << " Support Beam Service Position: "
+             << sbeam.name()               << " "
+             << sse                        << " "
+             << sbeam.position()           << " "
+             << ttSSE.centerInWorld  << " "
+             << sbeam.position()-ttSSE.centerInWorld << " "
+             << sbeam.tubsParams()
+             << endl;
+      }
+
+      serviceVI = 
+        nestTubs( sbeam.name(),
+                  sbeam.tubsParams(),
+                  findMaterialOrThrow(sbeam.materialName()),
+                  0x0,
+                  sbeam.position()-ttSSE.centerInWorld,
+                  ttSSE,
+                  0,
+                  _config.getBool("ttracker.envelopeVisible",false),
+                  ( sbeam.name().find("_c") != string::npos ) ? G4Colour::Yellow() : G4Colour::Green(),
+                  _config.getBool("ttracker.envelopeSolid",true),
+                  _forceAuxEdgeVisible,
+                  place,
+                  _doSurfaceCheck || ttrackerSupportSurfaceCheck
+                  );
+
+      if ( _verbosityLevel > 0 ) {
+        cout << " Material " 
+             << serviceVI.logical->GetMaterial()->GetName()
+             << " Mass in kg: " 
+             << serviceVI.logical->GetMass()/CLHEP::kg
+             << endl;
+      }
+   
+    }
+
+  }
+
+  // print the final mass per Service Section envelope
+  
+  if ( _verbosityLevel > 0 ) {
+    for ( auto const& sbeam : sup.beamServices() ) {
+      // prinitnt the final mass per Service Section envelope
+      if ( sbeam.name().find("TTrackerSupportServiceSectionEnvelope_") != string::npos ) {
+
+        VolumeInfo& ttSSE =  _helper.locateVolInfo(sbeam.name());
+
+        cout << __func__ 
+             << " Support Beam Service Section Envelope: "
+             << sbeam.name()               << " "
+             << " Material " 
+             << ttSSE.logical->GetMaterial()->GetName()
+             << " Final Mass in kg: " 
+             << ttSSE.logical->GetMass(true)/CLHEP::kg
+             << endl;
+      }
+   
+    }
+
+  }
+
 
 } // end constructMainSupports
 
@@ -289,7 +428,7 @@ mu2e::ConstructTTrackerTDR::constructStations(){
     // We need a new logical volume for each device envelope - because the sectors
     // may be placed differently.  We need a distinct name for each logical volume.
     ostringstream os;
-    os << "_" << idev;
+    os << "_"  << std::setfill('0') << std::setw(2) << idev;
 
     VolumeInfo devInfo = nestTubs( trackerEnvelopeName + os.str(),
                                    deviceEnvelopeParams,
@@ -418,6 +557,29 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
 
       Straw const&       straw(**j);
       StrawDetail const& detail(straw.getDetail());
+
+      if (_verbosityLevel>2) {
+        cout << __func__ << " constructing straw "
+             << straw.id().getStraw()
+             << " id: "
+             << straw.id()
+             << " with detailIndex of: "
+             << straw.detailIndex()
+             << endl;
+      }
+
+      if ( _verbosityLevel > 1 ){
+        cout << "Detail for: " << straw.id() << " " << detail.Id()            << endl;
+        cout << "           outerTubsParams: " << detail.getOuterTubsParams() << detail.gasMaterialName()             << endl;
+        cout << "           wallMother:      " << detail.wallMother()         << detail.wallMotherMaterialName()      << endl;
+        cout << "           wallOuterMetal:  " << detail.wallOuterMetal()     << detail.wallOuterMetalMaterialName()  << endl;
+        cout << "           wallCore         " << detail.wallCore()           << detail.wallCoreMaterialName()        << endl;
+        cout << "           wallInnerMetal1: " << detail.wallInnerMetal1()    << detail.wallInnerMetal1MaterialName() << endl;
+        cout << "           wallInnerMetal2: " << detail.wallInnerMetal2()    << detail.wallInnerMetal2MaterialName() << endl;
+        cout << "           wireMother:      " << detail.wireMother()         << detail.wireMotherMaterialName()      << endl;
+        cout << "           wirePlate:       " << detail.wirePlate()          << detail.wirePlateMaterialName()       << endl;
+        cout << "           wireCore:        " << detail.wireCore()           << detail.wireCoreMaterialName()        << endl;
+      }
 
       // To make graphical debugging less busy, create only a subset of the straws.
       if ( partialStraws ){
@@ -559,19 +721,6 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
         outerMetalVol.logical->SetSensitiveDetector(strawWallSD);
         innerMetal1Vol.logical->SetSensitiveDetector(strawWallSD);
         innerMetal2Vol.logical->SetSensitiveDetector(strawWallSD);
-      }
-
-      if ( _verbosityLevel > 1 ){
-        cout << "Detail for: " << straw.id() << " " << detail.Id()            << endl;
-        cout << "           outerTubsParams: " << detail.getOuterTubsParams() << detail.gasMaterialName()             << endl;
-        cout << "           wallMother:      " << detail.wallMother()         << detail.wallMotherMaterialName()      << endl;
-        cout << "           wallOuterMetal:  " << detail.wallOuterMetal()     << detail.wallOuterMetalMaterialName()  << endl;
-        cout << "           wallCore         " << detail.wallCore()           << detail.wallCoreMaterialName()        << endl;
-        cout << "           wallInnerMetal1: " << detail.wallInnerMetal1()    << detail.wallInnerMetal1MaterialName() << endl;
-        cout << "           wallInnerMetal2: " << detail.wallInnerMetal2()    << detail.wallInnerMetal2MaterialName() << endl;
-        cout << "           wireMother:      " << detail.wireMother()         << detail.wireMotherMaterialName()      << endl;
-        cout << "           wirePlate:       " << detail.wirePlate()          << detail.wirePlateMaterialName()       << endl;
-        cout << "           wireCore:        " << detail.wireCore()           << detail.wireCoreMaterialName()        << endl;
       }
 
     } // end loop over straws within a layer

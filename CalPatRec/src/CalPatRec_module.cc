@@ -15,6 +15,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // conditions
+#include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -62,6 +63,8 @@ namespace mu2e {
     _shpLabel    (pset.get<string>("StrawHitPositionCollectionLabel")),
     _shfLabel    (pset.get<string>("StrawHitFlagCollectionLabel"    )),    
     _ccmLabel    (pset.get<string>("caloClusterModuleLabel"         )),
+    _crmLabel    (pset.get<string>("caloReadoutModuleLabel"         )),
+    _chmccpLabel (pset.get<string>("calorimeterHitMCCrystalPtr"     )),
 
     _dtspecpar   (pset.get<string>("DeltaTSpectrumParams","nobackgroundnomarkovgoff")),
     _tsel        (pset.get<vector<string> >("TimeSelectionBits")),
@@ -141,6 +144,13 @@ namespace mu2e {
       _folder->Add(_ref);
     }
 
+    fNCaloEnergyCut   = 0;
+    fNCaloSizeCut     = 0;
+    fNHitsTimePeakCut = 0;
+    fNTimeWindow      = 0;
+
+    fgTimeOffsets     = new SimParticleTimeOffset(pset.get<fhicl::ParameterSet>("TimeOffsets"));
+
     _helTraj = 0;
   }
 
@@ -162,13 +172,30 @@ namespace mu2e {
 
     art::ServiceHandle<art::TFileService> tfs;
 
-    _hist._cutflow = tfs->make<TH1F>("cutflow","Cutflow",10,-0.5,9.5);
-    _hist._cutflow->GetXaxis()->SetBinLabel(1,"nhits(CE) >= 25");
-    _hist._cutflow->GetXaxis()->SetBinLabel(2,"Time Peak");	 
-    _hist._cutflow->GetXaxis()->SetBinLabel(3,"Helix Fit");	 
-    _hist._cutflow->GetXaxis()->SetBinLabel(4,"Seed Fit");	 
-    _hist._cutflow->GetXaxis()->SetBinLabel(5,"Kalman Fit");     
-    _hist._cutflow->GetXaxis()->SetBinLabel(6,"Cut set C & p>100MeV/c");     
+    _hist._cutflow[0] = tfs->make<TH1F>("cutflow0","Cutflow",10,-0.5,9.5);
+    _hist._cutflow[0]->GetXaxis()->SetBinLabel(1,"nhits(CE) >= 25");
+    _hist._cutflow[0]->GetXaxis()->SetBinLabel(2,"Time Peak");	 
+    _hist._cutflow[0]->GetXaxis()->SetBinLabel(3,"Helix Fit");	 
+    _hist._cutflow[0]->GetXaxis()->SetBinLabel(4,"Seed Fit");	 
+    _hist._cutflow[0]->GetXaxis()->SetBinLabel(5,"Kalman Fit");     
+    _hist._cutflow[0]->GetXaxis()->SetBinLabel(6,"Cut set C & p>100MeV/c");     
+
+    _hist._cutflow[1] = tfs->make<TH1F>("cutflow1","Cutflow",12,-0.5,11.5);
+    _hist._cutflow[1]->GetXaxis()->SetBinLabel(1, "Nhits(CE) >= 25 && p_{MC} > 100 MeV/c && SH-time >500 ns");
+    _hist._cutflow[1]->GetXaxis()->SetBinLabel(2, Form("E_{calo} > %4.3f", _minClusterEnergy));	 
+    _hist._cutflow[1]->GetXaxis()->SetBinLabel(3, Form("Size calo-cluster > %i", _minClusterSize  ));
+    _hist._cutflow[1]->GetXaxis()->SetBinLabel(4, "Time window ");	 
+    _hist._cutflow[1]->GetXaxis()->SetBinLabel(9, "SH time sel");     
+    _hist._cutflow[1]->GetXaxis()->SetBinLabel(5, "SH radius sel");     
+    _hist._cutflow[1]->GetXaxis()->SetBinLabel(6, "SH energy sel");     
+    _hist._cutflow[1]->GetXaxis()->SetBinLabel(7, "SH Delta ray sel");     
+    _hist._cutflow[1]->GetXaxis()->SetBinLabel(8, "SH isolation sel");     
+    _hist._cutflow[1]->GetXaxis()->SetBinLabel(10, "Helix search");     
+   
+    _hist._dt[0]     = tfs->make<TH1F>("hdt0",
+				       "Distribution in time residual between calo-cluster and straw hits; #Delta t = t_{calo} - #left( t_{straw} - <t_{drift}> + <tof>#right) [ns]", 400, -200, 200);
+    _hist._dt[1]     = tfs->make<TH1F>("hdt1",
+				       "Distribution in time residual between calo-cluster and straw hits for CE; #Delta t = t_{calo} - #left( t_{straw} - <t_{drift}> + <tof>#right) [ns]", 400, -200, 200);
 
     _hist._Tpeaks    = tfs->make<TH1F>("hTpeaks",
 				       "Time peaks per event",100,0,100);
@@ -403,6 +430,50 @@ namespace mu2e {
     else {
       _listOfMCStrawHits = NULL;
     }
+
+//------------------------------------------------------------------------------------------
+// Utility to match  cloHits with MCtruth, simParticles and StepPoints
+//------------------------------------------------------------------------------------------
+
+    //Get calorimeter readout hits (2 readout / crystal as of today)
+    art::Handle<CaloHitCollection> caloHitsHandle;
+    if (evt.getByLabel(_crmLabel, caloHitsHandle)){
+      _chcol = caloHitsHandle.product();
+    }else{
+      _chcol = 0;
+    }
+    
+    //Get calorimeter readout hits MC level - energy/time/type
+    art::Handle<CaloHitMCTruthCollection> caloHitMCTruthHandle;
+    if (evt.getByLabel(_crmLabel, caloHitMCTruthHandle)){
+      _chmccol = caloHitMCTruthHandle.product();
+    }else {
+      _chmccol = 0;
+    }
+    
+    //Get stepPointMC for crystal readout hits
+    art::Handle<PtrStepPointMCVectorCollection> mccaloptrHandle;
+    if (evt.getByLabel(_crmLabel,_chmccpLabel,mccaloptrHandle)){
+      _listOfMCCrystals = mccaloptrHandle.product();
+    }else {
+      _listOfMCCrystals = 0;
+    }
+    
+    //Get simParticles and stepPointMC summary for crystal readout hits
+    art::Handle<CaloHitSimPartMCCollection> caloHitSimMCHandle;
+    if (evt.getByLabel(_crmLabel, caloHitSimMCHandle)){
+      _chsmccol = caloHitSimMCHandle.product();
+    }else {
+      _chsmccol = 0;
+    }
+
+    if ((_chcol != 0) && (_chmccol != 0) && (_listOfMCCrystals != 0) && (_chsmccol != 0)){
+      //      _caloHitNavigator = new CaloHitMCNavigator(*_chcol, *_chmccol, *_listOfMCCrystals, *_chsmccol);
+      _caloHitNavigator = new CaloHitMCNavigator(*_chcol, *_chmccol, *_chsmccol);
+    }else {
+      _caloHitNavigator = 0;
+    }
+
 //-----------------------------------------------------------------------------
 // done
 //-----------------------------------------------------------------------------
@@ -431,7 +502,21 @@ namespace mu2e {
 
     static StrawHitFlag       esel(StrawHitFlag::energysel), flag;
 
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    _mbtime = accPar->deBuncherPeriod;
+    fgTimeOffsets->updateMap(event);
+
     _ntracks = 0;
+
+    fNCaloEnergyCut   = 0;
+    fNCaloSizeCut     = 0;
+    fNHitsTimePeakCut = 0;
+    fNTimeWindow      = 0;
+
+    for (int i=0; i<3; ++i){
+      fSHSel[i] = 0;
+      fSHBkg[i] = 0;
+    }
 					// reset the fit iteration counter
     _kfit.setNIter(0);
 //     t1 = fStopwatch->RealTime();
@@ -457,6 +542,9 @@ namespace mu2e {
 
     unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
 
+    double pEntrance(.0), step_time(-9999.);
+    double time_threshold(500.);
+
 					// find the data
     if (!findData(event)) {
       printf("%s ERROR: No straw hits found, RETURN\n",oname); 
@@ -480,10 +568,20 @@ namespace mu2e {
 	
 	sim_id        = simptr->id().asInt();
       }
-      if (gen_index >0 && sim_id == 1) ++nhits_from_gen;
+      if (gen_index >0 && sim_id == 1) {
+	step_time = fgTimeOffsets->timeWithOffsetsApplied(*Step);
+	step_time = fmod(step_time,_mbtime);
+	if (step_time > time_threshold) {
+	  ++nhits_from_gen;
+	  if (Step->momentum().mag() > pEntrance) {
+	    pEntrance = Step->momentum().mag();
+	  }
+	}
+      }
     }
+    if (pEntrance < 100. ) nhits_from_gen = 0;
     
-    if (nhits_from_gen >= fNminMChits)  _hist._cutflow->Fill(0.0);
+    if (nhits_from_gen >= fNminMChits)  _hist._cutflow[0]->Fill(0.0);
     
     _kfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
     _seedfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
@@ -508,14 +606,50 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     _hist._Tpeaks->Fill(_tpeaks->size());
 
-    if (_tpeaks->size()>0 && (nhits_from_gen >= fNminMChits)) _hist._cutflow->Fill(1.0);
+    if (nhits_from_gen >= fNminMChits) {
+      _hist._cutflow[1]->Fill(.0);
+      if (fNCaloEnergyCut>0){
+	_hist._cutflow[1]->Fill(1.0);
+	if (fNCaloSizeCut>0){
+	  _hist._cutflow[1]->Fill(2.0);
+	  if (fNTimeWindow>0){
+	    _hist._cutflow[1]->Fill(3.0);
+	   //  if (fNHitsTimePeakCut>0){
+	    // 	      _hist._cutflow[1]->Fill(4.0);
+// 	    }
+	  //   if (fSHSel[0] > 0){
+// 	      _hist._cutflow[1]->Fill(4.0);
+	    if (fSHSel[1] > 0){
+	      _hist._cutflow[1]->Fill(4.0);
+	      if (fSHSel[2] > 0){
+		_hist._cutflow[1]->Fill(5.0);
+		if (fSHBkg[0] > 0){
+		  _hist._cutflow[1]->Fill(6.0);
+		  if (fSHBkg[1] > 0){
+		    _hist._cutflow[1]->Fill(7.0);
+		    if (fSHSel[0] > 0){
+		      _hist._cutflow[1]->Fill(8.0);
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+      if (_tpeaks->size()>0 ) _hist._cutflow[0]->Fill(1.0);
+    }
 //-----------------------------------------------------------------------------
 // loop over found time peaks - for us, - "eligible" calorimeter clusters 
 //-----------------------------------------------------------------------------
     npeaks = _tpeaks->size();
- 
+    _clCE  = false;
+
     for (int ipeak=0; ipeak<npeaks; ipeak++) {
       CalTimePeak* tp = &_tpeaks->at(ipeak);
+   
+      CaloContentMC clutil(*_caloHitNavigator, *tp->Cluster());
+      _clCE    = clutil.hasConversion();
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
@@ -536,6 +670,8 @@ namespace mu2e {
 // create track definitions for the helix fit from this initial information 
 //-----------------------------------------------------------------------------
       HelixDefHack helixdef(_shcol,_shpcol,_flags,tp->_index,_tpart,_fdir);
+
+  					// set some identifiers
       helixdef.setEventId  (_eventid);
       helixdef.setTrackId  (ipeak   );
 					// copy this for the other fits
@@ -564,7 +700,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // pattern recognition succeeded, the seed fit starts
 //-----------------------------------------------------------------------------
-	findhelix = true;
+	if (_clCE) findhelix = true;
 //-----------------------------------------------------------------------------
 // convert the result to standard helix parameters, and initialize the seed definition helix
 //-----------------------------------------------------------------------------
@@ -631,6 +767,36 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //  Trajectory info
 //-----------------------------------------------------------------------------
+	Hep3Vector tdir;
+	HepPoint   tpos;
+	double     doca;
+	_helTraj->getInfo(0.0,tpos,tdir);
+
+	for (int i=0; i< _nindex; ++i){
+	  StrawHit const*   sh    = _index[i]._strawhit;
+	  Straw const&      straw = _tracker->getStraw(sh->strawIndex());
+	  CLHEP::Hep3Vector wpos  = straw.getMidPoint();
+	  CLHEP::Hep3Vector wdir  = straw.getDirection();
+
+	  // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
+	  HepPoint      wpt  (wpos.x(),wpos.y(),wpos.z());
+	  TrkLineTraj   wtraj(wpt,wdir,-20,20);
+
+	  // estimate flightlength along track.  This assumes a constant BField!!!
+	  double fltlen = (wpos.z()-tpos.z())/tdir.z();
+ 
+	  TrkPoca   wpoca(*_helTraj,fltlen,wtraj,0.0);
+	    
+	  doca      = wpoca.doca();
+
+	  if (_index[i].isOutlier()) _hist._doca[1]->Fill(doca);
+	  else                       _hist._doca[0]->Fill(doca);
+	}
+
+	if (_debug > 0) {
+	  printf("[CalPatRec::seeddef] goodhits = %lu over nIndex = %i\n", goodhits.size(), _nindex); 
+	}
+
 	if (_debug > 0) {
 	  printf("[CalPatRec::seeddef] goodhits = %lu over nIndex = %i\n", goodhits.size(), _nindex); 
 	  int shIndices = seeddef.strawHitIndices().size();
@@ -659,7 +825,7 @@ namespace mu2e {
 // 2015-03-23 G. Pezzu: fill info about the doca
 //--------------------------------------------------------------------------------
 	if (_sfresult->_fit.success()) {
-	  findseed = true;
+	  if (_clCE)  findseed = true;
 //-----------------------------------------------------------------------------
 // use helix parameters by the seed fit to initialize the full Kalman fit 
 //-----------------------------------------------------------------------------
@@ -741,7 +907,7 @@ namespace mu2e {
 	    
 	    _hist._seeddoca[2]->Fill(doca);
 
-	    if (active) _hist._seeddoca[0]->Fill(doca);
+	    if (found)  _hist._seeddoca[0]->Fill(doca);
 	    else        _hist._seeddoca[1]->Fill(doca);
 
 	    if (!found && active){
@@ -764,7 +930,7 @@ namespace mu2e {
 	  }
 
 	  if (_kfresult->_fit.success()) {
-	    findkal = true;
+	  if (_clCE)  findkal = true;
 	    
 	    if (_addhits) {
 //-----------------------------------------------------------------------------
@@ -885,12 +1051,15 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics in the end
 //-----------------------------------------------------------------------------
-    if (findhelix && (nhits_from_gen >= fNminMChits)) _hist._cutflow->Fill(2.0);
-    if (findseed  && (nhits_from_gen >= fNminMChits)) _hist._cutflow->Fill(3.0);
+    if (findhelix && (nhits_from_gen >= fNminMChits)) {
+      _hist._cutflow[0]->Fill(2.0);
+      _hist._cutflow[1]->Fill(9.0);
+    }
+    if (findseed  && (nhits_from_gen >= fNminMChits)) _hist._cutflow[0]->Fill(3.0);
     if (findkal   && (nhits_from_gen >= fNminMChits)) {
-      _hist._cutflow->Fill(4.0);
+      _hist._cutflow[0]->Fill(4.0);
       if (fQualityTrack > 0) {
-	_hist._cutflow->Fill(5.0);
+	_hist._cutflow[0]->Fill(5.0);
       }
     }
 
@@ -948,6 +1117,14 @@ namespace mu2e {
     const StrawHit*     hit;
     const Straw*        straw;
     Hep3Vector          gpos, tpos;
+    
+    StrawHitFlag        energyFlag(StrawHitFlag::energysel);
+    StrawHitFlag        timeFlag  (StrawHitFlag::timesel);
+    StrawHitFlag        radiusFlag(StrawHitFlag::radsel);
+    StrawHitFlag        deltaRayFlag(StrawHitFlag::delta);
+    StrawHitFlag        isolatedFlag(StrawHitFlag::isolated);
+
+
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
 //-----------------------------------------------------------------------------
@@ -957,41 +1134,66 @@ namespace mu2e {
     for (int ic=0; ic<ncl; ic++) {
       cl      = &_ccCollection->at(ic);
 
-      if ( (cl->energyDep() > _minClusterEnergy) && 
-	   (int(cl->size()) > _minClusterSize) ) {
-	cl_time = cl->time();
+      CaloContentMC clutil(*_caloHitNavigator, *cl);
+      _clCE    = clutil.hasConversion();
+
+      if ( cl->energyDep() > _minClusterEnergy) {
+	if (_clCE){
+	  ++fNCaloEnergyCut;
+	}
+
+	if ( (int(cl->size()) > _minClusterSize) ) {
+
+	  if (_clCE){
+	    ++fNCaloSizeCut;
+	  }
+	  
+	  cl_time = cl->time();
 //-----------------------------------------------------------------------------
 // convert cluster coordinates defined in the disk frame to the detector
 // coordinate system
 //-----------------------------------------------------------------------------
-	gpos = _calorimeter->fromSectionFrameFF(cl->sectionId(),cl->cog3Vector());
-	tpos = _calorimeter->toTrackerFrame(gpos);
+	  gpos = _calorimeter->fromSectionFrameFF(cl->sectionId(),cl->cog3Vector());
+	  tpos = _calorimeter->toTrackerFrame(gpos);
 
-	xcl     = tpos.x();
-	ycl     = tpos.y();
-	zcl     = tpos.z();
-
-	//	dz_cl   = zcl; // -_tracker->z0();
-					// create time peak
-	CalTimePeak tpeak(cl,xcl,ycl,zcl);
-
-	tpeak._shcol  = _shcol;
-	tpeak._shfcol = _shfcol;
-	tpeak._tmin   = cl_time+_mindt;
-	tpeak._tmax   = cl_time+_maxdt;
+	  xcl     = tpos.x();
+	  ycl     = tpos.y();
+	  zcl     = tpos.z();
+	  
+	  //	dz_cl   = zcl; // -_tracker->z0();
+	  // create time peak
+	  CalTimePeak tpeak(cl,xcl,ycl,zcl);
+	  
+	  tpeak._shcol  = _shcol;
+	  tpeak._shfcol = _shfcol;
+	  tpeak._tmin   = cl_time+_mindt;
+	  tpeak._tmax   = cl_time+_maxdt;
 //-----------------------------------------------------------------------------
 // record hits in time with each peak, and accept them if they have a minimum # of hits
 //-----------------------------------------------------------------------------
-	stime = 0;
-	mu2e::StrawHitFlag flag;
+	  stime = 0;
+	  mu2e::StrawHitFlag flag;
+	  int   nhitsTimeWindow(0), nhitsHasTime(0),
+	    nhitsHasEnergy(0), nhitsHasRadius(0),
+	    nhitsNoDelta(0), nhitsNoIsolated(0);
+	  double meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity
+	  int    gen_index, sim_id, vol_id;
+	  for(int istr=0; istr<nsh;++istr) {
+	    flag = _flags->at(istr);
 
-	for(int istr=0; istr<nsh;++istr) {
-	  flag = _flags->at(istr);
-	  int hit_has_all_properties = flag.hasAllProperties(_hsel);
-	  int bgr_hit                = flag.hasAnyProperty(_bkgsel);
+	    
+	    int hit_has_all_properties = flag.hasAllProperties(_hsel);
+	    int bgr_hit                = flag.hasAnyProperty(_bkgsel);
+	    
+	    int hit_has_energy         = flag.hasAllProperties(energyFlag);
+	    int hit_has_time           = flag.hasAllProperties(timeFlag);
+	    int hit_has_radius         = flag.hasAllProperties(radiusFlag);
+	       			       
+	    int deltaRay_hit           = flag.hasAnyProperty(deltaRayFlag);
+	    int isolated_hit           = flag.hasAnyProperty(isolatedFlag);
 
-	  //	  if (_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)) {
-	  if (hit_has_all_properties && !bgr_hit) {
+	    //	  if (_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)) {
+
 	    hit    = &_shcol->at(istr);
 	    time   = hit->time();
 	    straw  = &_tracker->getStraw(hit->strawIndex());
@@ -1000,17 +1202,98 @@ namespace mu2e {
 // estimate time-of-flight and calculate residual between the predicted and the hit times
 //-----------------------------------------------------------------------------
 	    tof = (zcl-zstraw)/sin(_pitchAngle)/CLHEP::c_light;
-	    dt  = cl_time-(time+tof);
+	    dt  = cl_time-(time+tof-meanDriftTime);
+	    
+	    //fill some diag histograms
+	    if (_clCE){
+	      //is the straw hit from CE?
+	      const mu2e::StepPointMC* step(0);
+	      int nstraws = _listOfMCStrawHits->size();
+	      for (int i=0; i<nstraws; i++) {
+		mu2e::PtrStepPointMCVector  const& mcptr(_listOfMCStrawHits->at(i));
+		step = &(*mcptr.at(0));
+		vol_id = step->volumeId();
+		if (vol_id == straw->index().asInt()) {
+		  // step found - use the first one in the straw
+		  break;
+		}
+	      }
+	    
+	      gen_index = -1;
+	      if (step) {
+		art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle(); 
+	      
+		if (simptr->fromGenerator()) gen_index = simptr->genParticle()->generatorId().id();
+		else                         gen_index = -1;
+	      
+		sim_id        = simptr->id().asInt();
+	      }
+	    
+	    
+	      if (gen_index >0 && sim_id == 1) {
+		//hit from CE
+		if ((dt < -70.) && (step->momentum().z()>0.) && (step->momentum().mag()>80.)){
+		  if (_debug > 0) {
+		    printf("Event : %10i dt = %5.3f\n",
+			   _eventid, dt);
+		  }
+		}
+		if ( (step->momentum().mag()>80.)&& (step->momentum().z()>0.) ) _hist._dt[1]->Fill(dt);
+	      }
+
+	      if (hit_has_all_properties && !bgr_hit) {
+		_hist._dt[0]->Fill(dt);
+	      }
+	    }
 
 	    if ((dt < _maxdt) && (dt >= _mindt)) {
-	      tpeak._index.push_back(istr);
-	      stime += time;
+	      if (_clCE){
+		++nhitsTimeWindow;
+		
+		if ( hit_has_time ){
+		  ++nhitsHasTime;
+		}
+		if ( hit_has_radius ){
+		  ++nhitsHasRadius;
+		}
+		if ( hit_has_energy ){
+		  ++nhitsHasEnergy;
+		}
+		if ( !deltaRay_hit){
+		  ++nhitsNoDelta;
+		}
+		if ( !isolated_hit ){
+		  ++nhitsNoIsolated;
+		}
+	      }
+
+
+	      if (hit_has_all_properties && !bgr_hit) {
+		tpeak._index.push_back(istr);
+		stime += time;
+	      }
 	    }
 	  }
-	}
+	  
+	  tpeak._tpeak = stime/(tpeak.NHits()+1.e-12);
+	  
+	  if ( _clCE) {
+	    if (nhitsTimeWindow>_minnhits) ++fNTimeWindow;
+	    if (nhitsHasTime   >_minnhits) fSHSel[0] = 1;
+	    if (nhitsHasRadius >_minnhits) fSHSel[1] = 1;
+	    if (nhitsHasEnergy >_minnhits) fSHSel[2] = 1;
+	    if (nhitsNoDelta   >_minnhits) fSHBkg[0] = 1;
+	    if (nhitsNoIsolated>_minnhits) fSHBkg[1] = 1;
+	  }
 
-	tpeak._tpeak = stime/(tpeak.NHits()+1.e-12);
-	if (tpeak.NHits() > _minnhits) TimePeakColl->push_back(tpeak);
+	  if (tpeak.NHits() > _minnhits) {
+	   if (_clCE){
+	     ++fNHitsTimePeakCut;
+	   }
+	   
+	   TimePeakColl->push_back(tpeak);
+	  }
+	}
       }
     }
   }

@@ -16,6 +16,7 @@
 #include "GeometryService/inc/VirtualDetectorMaker.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
@@ -801,6 +802,41 @@ namespace mu2e {
             cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarOut) << endl;
             cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarOut) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarOut) <<endl;
          }
+      }
+
+      if(c.getBool("vd.crv.build", false)) 
+      {
+        GeomHandle<CosmicRayShield> CRS;
+        GeomHandle<Mu2eEnvelope> env;
+        const CLHEP::Hep3Vector hallFormalCenterInMu2e(
+                                                       (env->xmax() + env->xmin())/2.,
+                                                       (env->ymax() + env->ymin())/2.,
+                                                       (env->zmax() + env->zmin())/2.
+                                                       );
+
+        for(int vdId=VirtualDetectorId::CRV_R; vdId<=VirtualDetectorId::CRV_U; vdId++)
+        {
+          std::string vdName;
+          vdName = VirtualDetector::volumeName(vdId).back();
+          const std::vector<double> crvHalfLengths = CRS->getSectorHalfLengths(vdName);
+          const CLHEP::Hep3Vector vdDirection = c.getHep3Vector("crs.vdDirection"+vdName);
+
+          CLHEP::Hep3Vector vdPosInHall = CRS->getSectorPosition(vdName) - hallFormalCenterInMu2e;
+          for(int i=0; i<3; i++) vdPosInHall[i] += vdDirection[i]*crvHalfLengths[i] + vdDirection[i]*vd->_halfLength;
+
+          vd->addVirtualDetector(vdId, //ID
+                                 hallFormalCenterInMu2e,  //reference position
+                                 0x0,                     //rotation
+                                 vdPosInHall);            //placement w.r.t. reference
+           
+           
+          int static const verbosityLevel = 1;
+          if(verbosityLevel > 0) 
+          {
+            cout << " Constructing " << VirtualDetector::volumeName(vdId) << endl;
+            cout << "               at local=" << vd->getLocal(vdId) << " global="<< vd->getGlobal(vdId) <<endl;
+          }
+        }
       }
 
     } // if(hasVirtualDetector)

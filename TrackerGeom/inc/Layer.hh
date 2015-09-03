@@ -53,7 +53,7 @@ namespace mu2e {
     const CLHEP::Hep3Vector getDelta()  const {return _delta;}
 
     const Straw& getStraw( int n ) const {
-      return *_straws.at(n);
+      return *_straws.at(n/2); // new model requires division by 2
     }
 
     const Straw& getStraw( const StrawId& id ) const {

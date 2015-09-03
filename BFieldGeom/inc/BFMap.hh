@@ -128,6 +128,9 @@ namespace mu2e {
     // If all grid points are valid then _isDefined is not needed.
     bool  _allDefined;
 
+    // Flag to flip Y component for maps that assume XZ-plane symmetry.
+    bool _flipy=true;
+
     // GMC, G4BL or possible future types.
     BFMapType _type;
 

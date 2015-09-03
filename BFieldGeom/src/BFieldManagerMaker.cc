@@ -209,7 +209,8 @@ namespace mu2e {
                           std::vector<double>& X0,
                           std::vector<int>&    dim,
                           std::vector<double>& dX,
-                          CLHEP::Hep3Vector&   offset ){
+                          CLHEP::Hep3Vector&   offset,
+			  bool& extendYFound ){
 
       // The offset parameter is not present in files earlier than Mau7.
       // The value set here is the correct value for all G4BL format files earlier than Mau7.
@@ -245,11 +246,21 @@ namespace mu2e {
                             "\\s+([eE\\d\\-\\+\\.]+)\\s+([eE\\d\\-\\+\\.]+)\\s+([eE\\d\\-\\+\\.]+)"
                             ".*$");
 
+      // Regex to parse the string that contains the command for map extension.
+      boost::regex reExtendY("^\\s*extendY\\s+flip=By"
+                            ".*$");
+
+      // Regex to parse the string that contains possible additional command for map extension.
+      boost::regex reExtend("^\\s*extend.*$");
+
       // Search for the two lines of interest and, if present, extract their information.
       string cbuf;
       boost::cmatch matches;
       bool gridFound(false);
       bool offsetFound(false);
+      extendYFound = false;
+      bool extendFound(false);
+      bool extendError(false);
       int nread=100;           // Safety - don't read more than 100 lines
       while( (!in.eof()) && (--nread>0) ) {
         getline(in,cbuf);
@@ -261,6 +272,13 @@ namespace mu2e {
           offsetFound = true;
           fillOffset( matches, offset );
         }
+        if( boost::regex_match(cbuf.c_str(),matches,reExtendY) ) {
+          extendYFound = true;
+        }
+        if( boost::regex_match(cbuf.c_str(),matches,reExtend) ) {
+          if( !extendYFound || extendFound ) extendError = true;
+          extendFound = true;
+        }
       }
       in.pop();
       fin.close();
@@ -271,6 +289,15 @@ namespace mu2e {
           << "Could not find param string in magnetic firld map. "
           << "Filename: " << path
           << ", found " << matches.size() << " items."
+          << "\n";
+      }
+
+      // The extend command must be correct and unique
+      if( extendError ) {
+        throw cet::exception("GEOM")
+          << "Do not know how to extend magnetic field map. "
+          << "Filename: " << path
+          << ". Only a command extendY flip=By can be managed."
           << "\n";
       }
 
@@ -330,7 +357,8 @@ namespace mu2e {
     vector<int>    dim;
     vector<double> dX;
     CLHEP::Hep3Vector G4BL_offset;
-    parseG4BLHeader(resolvedFileName, X0, dim, dX, G4BL_offset);
+    bool extendYFound;
+    parseG4BLHeader(resolvedFileName, X0, dim, dX, G4BL_offset, extendYFound);
 
     // Create an empty map.
     BFInterpolationStyle meco(BFInterpolationStyle::meco);
@@ -343,7 +371,7 @@ namespace mu2e {
                                     scaleFactor,
                                     interpStyle
                                     );
-
+    dsmap._flipy = extendYFound;
     // Fill the map from the disk file.
     if (resolvedFileName.find(".header") != string::npos ) {
       readG4BLBinary(resolvedFileName, dsmap);
@@ -351,6 +379,7 @@ namespace mu2e {
       readG4BLMap(resolvedFileName, dsmap, G4BL_offset);
     }
   }
+  
 
   //
   // Read one magnetic field map file in MECO GMC format.

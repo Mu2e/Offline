@@ -66,6 +66,7 @@ namespace mu2e {
       return dirtSolids_.find( str )->second;
     }
  
+    double getWallExtentz( const std::string& , const int  ) const;
 
     //----------------------------------------------------------------
   private:

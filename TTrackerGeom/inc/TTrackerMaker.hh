@@ -227,6 +227,25 @@ namespace mu2e {
     double      _stavePhiWidth;
     std::string _staveMaterial;
 
+    std::vector<double> _beam0_phiRange;
+    double _beam0_innerRadius;
+    double _beam0_outerRadius;
+    std::string _beam0_material;
+
+    std::vector<double> _beam1_phiRange;
+    std::vector<double> _beam1_phiSpans;
+    std::vector<double> _beam1_servicePhi0s;
+    std::vector<double> _beam1_servicePhiEnds;
+    double _beam1_innerRadius;
+    double _beam1_midRadius1;
+    std::vector<double> _beam1_serviceOuterRadii;
+    double _beam1_midRadius2;
+    double _beam1_outerRadius;
+    std::string _beam1_material;
+    std::vector<std::string> _beam1_serviceMaterials;
+    std::vector<double> _beam1_serviceCovRelThickness;
+    std::vector<std::string> _beam1_serviceMaterialsCov;
+
     std::vector<int>  _nonExistingDevices;
 
   };

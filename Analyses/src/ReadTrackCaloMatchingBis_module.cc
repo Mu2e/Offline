@@ -189,7 +189,7 @@ namespace mu2e {
        _Ntup->Branch("cluCogX",   &_cluCogX ,   "cluCogX[nCluster]/F");	
        _Ntup->Branch("cluCogY",   &_cluCogY ,   "cluCogY[nCluster]/F");	
        _Ntup->Branch("cluCogZ",   &_cluCogZ ,   "cluCogZ[nCluster]/F");	
-       _Ntup->Branch("cluE9",     &_cluE1 ,     "cluE1[nCluster]/F");	
+       _Ntup->Branch("cluE1",     &_cluE1 ,     "cluE1[nCluster]/F");	
        _Ntup->Branch("cluE9",     &_cluE1 ,     "cluE9[nCluster]/F");	
        _Ntup->Branch("cluE25",    &_cluE25 ,    "cluE25[nCluster]/F");	
        _Ntup->Branch("clu2Mom",   &_clu2Mom ,   "clu2Mom[nCluster]/F");	

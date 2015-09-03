@@ -63,6 +63,7 @@ namespace mu2e {
     Float_t pz;
     Float_t p;
     Int_t code;
+    Int_t creation_code;
 
     Bool_t isstop;
     Float_t tstop;
@@ -140,7 +141,7 @@ namespace mu2e {
       _simParticleColl(pset.get<string>("simParticleColl","s0")),
       _nAnalyzed(0),
       _maxPrint(pset.get<int>("maxPrint",0)),
-      _ntvd(0), _nttvd(0), _ntpart(0), _ntpart1(0),
+      _ntvd(0), _nttvd(0), _ntpart(0), _ntpart1(0), _ntvdext(0),
       _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
       _vd_required(pset.get<int>("requireVD",0)),
@@ -149,6 +150,12 @@ namespace mu2e {
       _save_all_pdg(pset.get<bool>("saveAllPDG",false)),
       _add_proper_time(pset.get<bool>("addProperTime",false))
     {
+
+      write_ntvd    = pset.get<bool>("writeNTVD",true); 
+      write_nttvd   = pset.get<bool>("writeNTTVD",true);
+      write_ntpart  = pset.get<bool>("writeNTPART",true);
+      write_ntpart1 = pset.get<bool>("writeNTPART1",true);
+      write_ntvdext = pset.get<bool>("writeNTVDEXT",false); 
 
       Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
       if( pdg_ids.size()>0 ) {
@@ -180,7 +187,8 @@ namespace mu2e {
         cout << endl;
       }
 
-      nt = new float[1000];
+      nt    = new float[1000];
+      ntext = new float[1000];
 
     }
 
@@ -206,9 +214,17 @@ namespace mu2e {
     TNtuple* _nttvd;
     TTree* _ntpart;
     TTree* _ntpart1;
+    TNtuple* _ntvdext;
 
     float *nt; // Need this buffer to fill TTree ntvd
+    float *ntext; // Need this buffer to fill TTree ntvdext
     NtPartData ntp; // Buffer to fill particles ntuple
+
+    bool write_ntvd;
+    bool write_nttvd;
+    bool write_ntpart;
+    bool write_ntpart1;
+    bool write_ntvdext;
 
     // Pointers to the physical volumes we are interested in
     // -- stopping target
@@ -256,17 +272,31 @@ namespace mu2e {
 
     art::ServiceHandle<art::TFileService> tfs;
 
+    if (write_ntvd){
     _ntvd = tfs->make<TNtuple>( "ntvd", "Virtual Detectors ntuple",
                                 "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
                                 "xl:yl:zl:pxl:pyl:pzl:gtime:"
                                 "g4bl_weight:g4bl_time:run:ke:subrun:code");
+    }
 
+    if (write_ntvdext){
+    _ntvdext = tfs->make<TNtuple>( "ntvdext", "Virtual Detectors ntuple (extended)",
+                                   "run:subrun:evt:trk:vdid:pdg:time:gtime:ke:"
+                                   "x:y:z:px:py:pz:"
+                                   "xl:yl:zl:pxl:pyl:pzl:"
+                                   "code:creation_code:parent_pdg:"
+                                   "originx:originy:originz");
+    }
+
+    if (write_nttvd){
     _nttvd = tfs->make<TNtuple>( "nttvd", "Time Virtual Detectors ntuple",
                                  "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
                                  "gtime:code:g4bl_weight:g4bl_time:run:ke:subrun");
+    }
 
     // Have to use TTree here, because one cannot use more than 100 variables in TNtuple
 
+    if (write_ntpart){
     _ntpart = tfs->make<TTree>("ntpart", "Particles ntuple");
     /*
       _ntpart->Branch("all",nt,
@@ -357,6 +387,7 @@ namespace mu2e {
     _ntpart->Branch("pztvd",       ntp.pztvd,      "pztvd[ntvd]/F");
     _ntpart->Branch("ptvd",        ntp.ptvd,       "ptvd[ntvd]/F");
     _ntpart->Branch("codetvd",     ntp.codetvd,    "codetvd[ntvd]/I");
+    }
 
   }
 
@@ -369,6 +400,7 @@ namespace mu2e {
 
       for ( size_t i=0; i<physVolumes->size(); ++i ) {
         if( (*physVolumes)[i].name().compare(0,11,"TargetFoil_") == 0 ) {
+
           vid_stop[i] = (*physVolumes)[i].copyNo();
           cout << "ReadVirtualDetector: register stopping target volume " << i << " = "
                << (*physVolumes)[i].name() << " " << (*physVolumes)[i].copyNo() << endl;
@@ -454,33 +486,120 @@ namespace mu2e {
           SimParticle const& sim = simParticles->at(trackId);
           pdgId = sim.pdgId();
       	  mass = pdt->particle(pdgId).ref().mass();
-  
-      // Fill the ntuple.
-      nt[0]  = event.id().event();
-      nt[1]  = trackId.asInt();
-      nt[2]  = hit.volumeId();
-      nt[3]  = pdgId;
-      nt[4]  = hit.time();
-      nt[5]  = pos.x();
-      nt[6]  = pos.y();
-      nt[7]  = pos.z();
-      nt[8]  = mom.x();
-      nt[9]  = mom.y();
-      nt[10] = mom.z();
-      nt[11] = lpos.x();
-      nt[12] = lpos.y();
-      nt[13] = lpos.z();
-      nt[14] = lmom.x();
-      nt[15] = lmom.y();
-      nt[16] = lmom.z();
-      nt[17] = hit.properTime();
-      nt[20] = event.id().run();
-  // compute kinetic energy: this is what Geant cuts on
-      nt[21] = sqrt(mom.mag2()+mass*mass)-mass;
-      nt[22] = event.id().subRun();
-      nt[23] =  sim.creationCode();
-      _ntvd->Fill(nt);
-	}
+
+          // Fill the ntuple.
+          nt[0]  = event.id().event();
+          nt[1]  = trackId.asInt();
+          nt[2]  = hit.volumeId();
+          nt[3]  = pdgId;
+          nt[4]  = hit.time();
+          nt[5]  = pos.x();
+          nt[6]  = pos.y();
+          nt[7]  = pos.z();
+          nt[8]  = mom.x();
+          nt[9]  = mom.y();
+          nt[10] = mom.z();
+          nt[11] = lpos.x();
+          nt[12] = lpos.y();
+          nt[13] = lpos.z();
+          nt[14] = lmom.x();
+          nt[15] = lmom.y();
+          nt[16] = lmom.z();
+          nt[17] = hit.properTime();
+          nt[20] = event.id().run();
+          // compute kinetic energy: this is what Geant cuts on
+          nt[21] = sqrt(mom.mag2()+mass*mass)-mass;
+          nt[22] = event.id().subRun();
+          nt[23] =  sim.creationCode();
+          if (write_ntvd){
+             _ntvd->Fill(nt);
+          }
+
+          // //print provenance
+          // cout<<"Event:"<<event.id().event();
+          // //loop back through all parents until we find one that wasn't a mu2ePrimary
+          // SimParticle const* sim_parent = &sim;
+          // cout<<"\tPDG="<<sim_parent->pdgId()<<" Creation code:"<<sim_parent->creationCode()<<" Origin:"<<sim_parent->startPosition()<<endl;
+          // while( sim_parent && sim_parent->hasParent() ) { //&& sim_parent->creationCode()==56
+          //   sim_parent = simParticles->getOrNull(sim_parent->parentId());
+          //   if( sim_parent && sim_parent->endDefined() ) {
+          //       //when creation code is 56, the parent is actually the same particle.
+          //       //so it's real parent would be the grandparent in this hierarchy
+          //       SimParticle const* sim_grandparent = simParticles->getOrNull(sim_parent->parentId());
+          //       cout<<"       "<<"PDG="<<sim_parent->pdgId();
+          //       if (sim_grandparent) cout<<" ParentPDG:"<< sim_grandparent->pdgId();
+          //       cout<<" Creation code:"<<sim_parent->creationCode()<<" Origin:"<<sim_parent->startPosition()<<endl;
+          //   } else {
+          //     cout<<"       "<<"Has parent, but not defined."<<endl;  
+          //   }
+          // }//end while
+
+
+          //get the additional information for the extended VD ntuple
+          int parent_pdg = 0;
+          CLHEP::Hep3Vector origin(0.0,0.0,0.0);
+          int this_creation_code = sim.creationCode();
+          if (sim.isPrimary()){ //creation code 56=mu2ePrimary, means it was the first particle of this stage
+            //loop back through all parents until we find one that wasn't a mu2ePrimary
+            SimParticle const* sim_parent = &sim;
+            while( sim_parent && sim_parent->hasParent() ) {
+              sim_parent = simParticles->getOrNull(sim_parent->parentId());
+              if( sim_parent && sim_parent->endDefined() ) {
+                if (!sim_parent->isPrimary()){
+                  //when creation code is 56, the parent is actually the same particle.
+                  //so it's real parent would be the grandparent in this hierarchy
+                  SimParticle const* sim_grandparent = simParticles->getOrNull(sim_parent->parentId());
+                  if (sim_grandparent && sim_grandparent->endDefined()) parent_pdg = sim_grandparent->pdgId();
+                  //else throw cet::exception("ReadVirtualDetector")<< " (Grand)parent not defined. \n";
+                  
+                  origin = sim_parent->startPosition();
+                  this_creation_code = sim_parent->creationCode();
+                  break;//we're just looking for the first one that's not a primary
+                }
+              }
+            }//end while
+          } else {
+            SimParticle const* sim_parent = simParticles->getOrNull(sim.parentId());
+            if( sim_parent && sim_parent->endDefined() ){
+              parent_pdg = sim_parent->pdgId();
+            }
+            origin = sim.startPosition();
+            this_creation_code = sim.creationCode();
+          }
+          // Fill the extended ntuple.
+          ntext[0]  = event.id().run(); 
+          ntext[1]  = event.id().subRun(); 
+          ntext[2]  = event.id().event(); 
+          ntext[3]  = trackId.asInt();
+          ntext[4]  = hit.volumeId(); 
+          ntext[5]  = pdgId;     
+          ntext[6]  = hit.time();
+          ntext[7]  = hit.properTime();
+          ntext[8]  = sqrt(mom.mag2()+mass*mass)-mass; // compute kinetic energy: this is what Geant cuts on
+          ntext[9]  = pos.x();
+          ntext[10] = pos.y();
+          ntext[11] = pos.z();
+          ntext[12] = mom.x();
+          ntext[13] = mom.y();
+          ntext[14] = mom.z(); 
+          ntext[15] = lpos.x();
+          ntext[16] = lpos.y();
+          ntext[17] = lpos.z(); 
+          ntext[18] = lmom.x();
+          ntext[19] = lmom.y();
+          ntext[20] = lmom.z();
+          ntext[21] = sim.creationCode();//geant4 creation code (might be mu2ePrimary i.e. not physics)
+          ntext[22] = this_creation_code;//This is supposed to be only physics creation codes, so trace back to parent when mu2ePrimary
+          ntext[23] = parent_pdg;
+          ntext[24] = origin.x();
+          ntext[25] = origin.y();
+          ntext[26] = origin.z();
+          if (write_ntvdext){
+            _ntvdext->Fill(ntext);
+          }
+
+
+	      }
       }
       
       if ( _nAnalyzed < _maxPrint){
@@ -558,8 +677,9 @@ namespace mu2e {
       nt[15] = event.id().run();
       nt[16] = sqrt(mom.mag2()+mass*mass)-mass;
       nt[17] = event.id().subRun();
-
-      _nttvd->Fill(nt);
+      if (write_nttvd){
+         _nttvd->Fill(nt);
+      }
 
       if ( _nAnalyzed < _maxPrint){
         cout << "TVD hit: "
@@ -595,17 +715,17 @@ namespace mu2e {
         ntp.trk = sim.id().asInt();      // track_id
         ntp.pdg = sim.pdgId();           // PDG id
 
-	// Calculate parent proper time
-	double gtime_parent = 0.0;
-	if( _add_proper_time ) {
-	  SimParticle const* sim_parent = &sim;
-	  while( sim_parent && sim_parent->hasParent() ) {
-	    sim_parent = simParticles->getOrNull(sim_parent->parentId());
-	    if( sim_parent && sim_parent->pdgId()==ntp.pdg && sim.endDefined() ) {
-	      gtime_parent += sim_parent->endProperTime();
-	    }
-	  }
-	}
+	      // Calculate parent proper time
+	      double gtime_parent = 0.0;
+	      if( _add_proper_time ) {
+	        SimParticle const* sim_parent = &sim;
+	        while( sim_parent && sim_parent->hasParent() ) {
+	          sim_parent = simParticles->getOrNull(sim_parent->parentId());
+	          if( sim_parent && sim_parent->pdgId()==ntp.pdg && sim.endDefined() ) {
+	            gtime_parent += sim_parent->endProperTime();
+	          }
+	        }
+	      }
 
         // Save SimParticle other info
         ntp.time = sim.startGlobalTime(); // start time
@@ -828,7 +948,9 @@ namespace mu2e {
         // Keep only those particles, which die late enough
         if( _timeCut>0.1 && ntp.tstop<_timeCut ) continue;
 
-        _ntpart->Fill();
+        if (write_ntpart){
+           _ntpart->Fill();
+        }
 
       }
     }

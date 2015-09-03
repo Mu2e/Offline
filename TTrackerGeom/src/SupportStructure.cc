@@ -29,8 +29,8 @@ namespace mu2e {
     _cuUpstream(),
     _cuDownstream(),
     _stiffRings(),
-    _staveBody(),
-    _staveServices(){
+    _beamBody(),
+    _beamServices(){
   }
 
   void SupportStructure::print ( std::ostream& ost ) const{
@@ -44,17 +44,17 @@ namespace mu2e {
     }
 
 
-    for ( size_t i=0; i<_staveBody.size(); ++i ){
-      ost << "\nStave body: "
+    for ( size_t i=0; i<_beamBody.size(); ++i ){
+      ost << "\nBeam body: "
           << i << "    "
-          << _staveBody[i]
+          << _beamBody[i]
           << std::endl;
     }
 
-    for ( size_t i=0; i<_staveServices.size(); ++i ){
-      ost << "\nStave services: "
+    for ( size_t i=0; i<_beamServices.size(); ++i ){
+      ost << "\nBeam services: "
           << i << "    "
-          << _staveServices[i]
+          << _beamServices[i]
           << std::endl;
     }
 
