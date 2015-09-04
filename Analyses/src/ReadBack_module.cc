@@ -684,9 +684,40 @@ namespace mu2e {
       // The simulated particle that made this hit.
       int trackId = hit.simParticle().key();
 
-      // Debug info
-
       StrawDetail const& strawDetail = straw.getDetail();
+      //      double tolerance = 10000.*std::numeric_limits<double>::epsilon();
+      double tolerance = 0.01;// looking for gross errors only
+
+      double normPointMag = point.mag()/strawDetail.innerRadius();
+      double normS = s/straw.getHalfLength();
+
+      if ( _diagLevel > 1 ){
+        cout << __func__ 
+             << " normalized reference point - 1 : "
+             << scientific
+             << normPointMag - 1.
+             << " normalized wire z of reference point - 1 : "
+             << std::abs(normS) -1.
+             << fixed
+             << endl;
+      }
+
+      if ( ( normPointMag - 1. > tolerance ) || 
+           ( std::abs(normS) - 1. > tolerance ) ) {
+        throw cet::exception("GEOM") << __func__ 
+                                     << " Hit " << pos 
+                                     << " ouside the straw " << straw.id()
+                                     << " inconsistent ttracker geometry file? "
+                                     << "; radial difference: "
+                                     << point.mag()/strawDetail.innerRadius() - 1.
+                                     << ", longitudinal difference: "
+                                     << std::abs(s)/straw.getHalfLength() - 1.
+                                     << "; tolerance : "
+                                     << tolerance
+                                     << endl;
+      }
+
+      // Debug info
 
       //       // remove this for production, intended for transportOnly.py
       //       if (pca.dca()>strawDetail.innerRadius() || abs(point.mag()- strawDetail.innerRadius())>1.e-6 ) {
@@ -730,8 +761,8 @@ namespace mu2e {
       _hTime->Fill(hit.time());
       _hHitNeighbours->Fill(nNeighbours);
       _hCheckPointRadius->Fill(point.mag());
-      _hCheckPointRadiusW->Fill(point.mag()/strawDetail.innerRadius());
-      _hCheckPointWireZ->Fill(s/straw.getHalfLength());
+      _hCheckPointRadiusW->Fill(normPointMag);
+      _hCheckPointWireZ->Fill(normS);
 
       _hxHit->Fill(pos.x());
       _hyHit->Fill(pos.y());
@@ -762,7 +793,7 @@ namespace mu2e {
       nt[16] = hit.eDep()/keV;
       nt[17] = mom.mag();
       nt[18] = hit.stepLength();
-      nt[19] = s/straw.getHalfLength();
+      nt[19] = normS;
       nt[20] = straw.id().getStraw();
 
       _ntup->Fill(nt);
