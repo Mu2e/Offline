@@ -568,7 +568,7 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
              << endl;
       }
 
-      if ( _verbosityLevel > 1 ){
+      if ( _verbosityLevel > 2 ){
         cout << "Detail for: " << straw.id() << " " << detail.Id()            << endl;
         cout << "           outerTubsParams: " << detail.getOuterTubsParams() << detail.gasMaterialName()             << endl;
         cout << "           wallMother:      " << detail.wallMother()         << detail.wallMotherMaterialName()      << endl;

@@ -1575,7 +1575,7 @@ namespace mu2e {
           bos << std::setw(1) << ibeam << ssbeam;
 
           if ( _verbosityLevel > 0 ) {
-            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+            cout << __func__ << " making " <<  bos.str() << endl;
           }
 
           double deltaPhi = _beam1_phiSpans[ssbeam+1] - _beam1_phiSpans[ssbeam];
@@ -1612,7 +1612,7 @@ namespace mu2e {
           bos << std::setw(1) << ibeam << ssbeam;
 
           if ( _verbosityLevel > 0 ) {
-            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+            cout << __func__ << " making " <<  bos.str() << endl;
           }
 
           double deltaPhi = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
@@ -1651,7 +1651,7 @@ namespace mu2e {
           bos << std::setw(1) << ibeam << sservice;
 
           if ( _verbosityLevel > 0 ) {
-            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+            cout << __func__ << " making " <<  bos.str() << endl;
           }
 
           std::string boses =  bos.str();
@@ -1662,7 +1662,7 @@ namespace mu2e {
           std::string boss =  bos.str();
 
           if ( _verbosityLevel > 0 ) {
-            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+            cout << __func__ << " making " <<  boss << endl;
           }
 
           for ( int ssservice = 0; ssservice!=_numStations; ++ssservice) {
@@ -1671,7 +1671,7 @@ namespace mu2e {
             bos << std::setw(2) << ssservice;
         
             if ( _verbosityLevel > 0 ) {
-              cout << __func__ << " bos.str() " <<  bos.str() << endl;
+              cout << __func__ << " making " <<  bos.str() << endl;
             }
 
             double sHLength = zHalf*(_numStations-ssservice)/_numStations;
