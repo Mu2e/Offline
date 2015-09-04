@@ -1,8 +1,9 @@
-# Test the BarService
 #
-# $Id: bartest.fcl,v 1.2 2012/07/24 23:13:13 kutschke Exp $
-# $Author: kutschke $
-# $Id: bartest.fcl,v 1.2 2012/07/24 23:13:13 kutschke Exp $
+# Illustrate the ordering between the FooService and the BarService
+#
+# If the pokeFoo parameter of BarService is true, at every call
+# to beginRun the the FooService is called before the BarService.
+# If it is false then the BarService is called first.
 #
 
 #include "minimalMessageService.fcl"
@@ -10,8 +11,7 @@
 process_name : BarTest
 
 source : {
-  module_type : RootInput
-  fileNames   : [ "/grid/fermiapp/mu2e/DataFiles/ExampleDataFiles/Workbook/conversionOnly_01_data.root" ]
+  module_type : EmptyEvent
   maxEvents   : 5
 }
 
@@ -26,12 +26,9 @@ services : {
 
 physics : {
 
-  analyzers : {
-    barTest : { module_type : BarTest   }
-  }
+  analyzers : { barTest : { module_type : BarTest   } }
 
-  e1 : [ barTest  ]
-
-  end_paths      : [e1]
+  e1        : [ barTest  ]
+  end_paths : [e1]
 
 }
