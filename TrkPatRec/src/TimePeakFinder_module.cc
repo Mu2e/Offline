@@ -148,7 +148,7 @@ namespace mu2e {
     _maxdt(pset.get<double>("DtMax",30.0)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
-    _minnhits(pset.get<unsigned>("MinNHits",0)),
+    _minnhits(pset.get<unsigned>("MinNHits",10)),
     _cleanpeaks(pset.get<bool>("CleanTimePeaks",true)),
     _minpeakmva(pset.get<double>("MinTimePeakMVA",0.5)),
     _maxpeakdt(pset.get<double>("MaxTimePeakDeltat",25.0)),

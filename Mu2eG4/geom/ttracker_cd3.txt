@@ -11,14 +11,14 @@ string ttrackerSupport.model = "detailedv0";
 int TTrackerVersion   = 3;
 int    ttracker.verbosityLevel     =    0;
 // Mother to hold all straws and supports.
-double ttracker.mother.rIn         =	379.9; // mm
+double ttracker.mother.rIn         =	376.9; // mm
 double ttracker.mother.rOut        =	850.1; // mm
 double ttracker.mother.halfLength  =   1635.1; // mm
 double ttracker.mother.z0          =  10175.0;  // mm
 
 // overall geometry
 string ttracker.mat.vacuum             = "DSVacuum";
-double ttracker.envelopeInnerRadius  =   380.0;
+double ttracker.envelopeInnerRadius  =   377.0;
 double ttracker.z0                   = 10200.0;
 
 // basic geometry numbers

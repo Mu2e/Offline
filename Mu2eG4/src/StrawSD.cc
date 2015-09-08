@@ -14,6 +14,9 @@
 //
 
 #include <cstdio>
+#include <limits>
+#include <cmath>
+
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -163,7 +166,7 @@ namespace mu2e {
         setw(4) << touchableHandle->GetCopyNumber(3) <<
         setw(4) << touchableHandle->GetCopyNumber(4) << endl;
 
-      cout << __func__ << " PV Name Mother Name" <<
+      cout << __func__ << " PV Name Mother Name " <<
         touchableHandle->GetVolume(0)->GetName() << " " <<
         touchableHandle->GetVolume(1)->GetName() << " " <<
         touchableHandle->GetVolume(2)->GetName() << " " <<
@@ -218,6 +221,7 @@ namespace mu2e {
     ProcessCode endCode(_processInfo->
                         findAndCount(Mu2eG4UserHelpers::findStepStoppingProcessName(aStep)));
 
+
     _collection->push_back( StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                                         sdcn,
                                         edep,
@@ -230,67 +234,39 @@ namespace mu2e {
                                         endCode
                                         ));
 
-    if (_verbosityLevel>2) {
+    if (_verbosityLevel>3) {
+
+      // checking if the Geant4 and Geometry Service straw positions agree
 
       art::ServiceHandle<GeometryService> geom;
       GeomHandle<TTracker> ttracker;
-      Straw const& straw = ttracker->getStraw( StrawIndex(sdcn) );
+      const Straw&  straw = ttracker->getStraw( StrawIndex(sdcn) );
 
-      const Device& device = ttracker->getDevice(straw.id().getDevice());
-      const Sector& sector = device.getSector(straw.id().getSector());
+      // will compare straw.getMidPoint() with the straw position according to Geant4
 
-      // Note this construction though
+      G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
+      G4AffineTransform        toWorld = toLocal.Inverse();
 
-      G4ThreeVector mid(straw.getMidPoint().y() - sector.boxOffset().y(),
-                        straw.getMidPoint().z() - sector.boxOffset().z(),
-                        straw.getMidPoint().x() - sector.boxOffset().x());
+      // get the position of the straw in the world and tracker coordinates
 
-      // this mid is used in the placement
+      G4ThreeVector strawInWorld   = toWorld.TransformPoint(G4ThreeVector());
+      G4ThreeVector strawInTracker = strawInWorld - detectorOrigin;
 
-      G4ThreeVector stro;
-      G4ThreeVector seco;
-      G4ThreeVector devo;
-
-      G4RotationMatrix cumrot; //it is 1
-
-      const size_t idepth = 4;
-      const size_t strd = 1;
-      const size_t secd = 2;
-      const size_t devd = 3;
-
-      // one needs to reconstruct the position of the middle of the
-      // straw starting from the device position and rotation
-      // the rotations are applied to the "next" object
-      // and are cumulative
-
-      for (size_t dd=idepth-1; dd>=1; --dd) {
-        cout << __func__ << " det depth name copy#: " << dd << " " <<
-          touchableHandle->GetVolume(dd)->GetName() << " " <<
-          touchableHandle->GetVolume(dd)->GetCopyNo() << endl;
-
-        // translation
-        G4ThreeVector obtr = touchableHandle->GetVolume(dd)->GetTranslation();
-        const G4RotationMatrix* obrot = touchableHandle->GetVolume(dd+1)->GetRotation();
-
-        if (obrot) cumrot *= obrot->inverse();
-        G4ThreeVector obor = cumrot*obtr;
-
-        if (dd>=strd) stro += obor;
-        if (dd>=secd) seco += obor;
-        if (dd>=devd) devo += obor;
-        cout << __func__ << " det transl, rot: "         << obtr << ", "  << cumrot << endl;
-        cout << __func__ << " det transl, origin, cum: " << obtr << ", "  << obor << ", " << stro << endl;
-      }
-      G4double diffMag = (straw.getMidPoint() - stro).mag();
+      G4double diffMag = (straw.getMidPoint() - strawInTracker).mag();
       const G4double tolerance = 1.e-10;
-      if (diffMag>tolerance) {
 
-        cout << __func__ << " straw info: event track sector device straw: " <<
+      if ( _verbosityLevel>4 || diffMag>tolerance) {
+
+        const Device& device = ttracker->getDevice(straw.id().getDevice());
+        const Sector& sector = device.getSector(straw.id().getSector());
+
+        cout << __func__ << " straw info: event track sector device straw id: " <<
           setw(4) << en << " " <<
           setw(4) << ti << " " <<
           setw(4) << straw.id().getSector() << " " <<
           setw(4) << straw.id().getDevice() << " " <<
-          setw(6) << sdcn << endl;
+          setw(6) << sdcn << " " <<
+          straw.id() << endl;
 
         cout << __func__ << " straw pos     "
              << en << " "
@@ -299,7 +275,6 @@ namespace mu2e {
           ", straw.MidPoint "   << straw.getMidPoint() <<
           ", sector.boxOffset " << sector.boxOffset() <<
           ", device.origin "    << device.origin() <<
-          " mid: "              << mid <<
           ", sector.boxRzAngle " << sector.boxRzAngle()/M_PI*180. <<
           ", device.rotation "  << device.rotation() <<
           endl;
@@ -308,12 +283,14 @@ namespace mu2e {
              << en << " "
              << ti << " "       <<
           " sdcn: "             << sdcn <<
-          ", straw.MidPoint "   << stro <<
-          ", sector.boxOffset " << seco <<
-          ", device.origin "    << devo <<
-          ", diff magnitude "   << scientific << diffMag << fixed <<
+          ", straw.MidPoint "   << strawInTracker <<
+          ", diff magnitude "   << scientific << diffMag  << fixed <<
           endl;
 
+        if (diffMag>tolerance) {
+          throw cet::exception("GEOM")
+            << "Inconsistent Straw Positions; incorrect ttracker Geant4 construction?" << endl;
+        }
       }
     }
 

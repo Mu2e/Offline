@@ -677,7 +677,7 @@ void KalFit::Acc(int ngen) {
   }
   cout << "Found " << norm << "Entries." << endl;
   racc->SetMaximum(1.1);
-  acc->Scale(1.0/norm);
+  acc->Scale(1.0/(float)norm);
   acc->SetMaximum(1.1);
   acc->SetStats(0);
   racc->SetStats(0);
@@ -777,7 +777,7 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
     cball->SetParLimits(5,0.001,0.4);
     cball->SetParLimits(6,0.1,momres[ires]->GetRMS());
 
-    dscb->SetParameters(3*integral,momres[ires]->GetMean()+0.07,0.3*momres[ires]->GetRMS(),1.0,4.0,1.0,5.0);
+    dscb->SetParameters(3*integral,momres[ires]->GetMean()+0.07,0.3*momres[ires]->GetRMS(),0.9,3.5,1.5,6.0);
 
     momres[ires]->SetMinimum(0.5);
 //    momres[ires]->Fit("cball","LRQ");

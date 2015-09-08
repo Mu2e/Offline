@@ -2,6 +2,30 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_4_6
 
+4) September 7, 2015 genser
+
+   rewrote straw positioning test in StrawSD.cc; 
+   activated when ttracker.verbosityLevel>3
+   added hit/straw position consistency test to 
+   ReadBack_module.cc using pset param: SHPositionTolerance
+
+3) September 3, 2015 kutschke
+   Add Mu2eG4/test/geom_ga04.txt to test the G404 field maps.
+
+2) September 1, 2015 genser
+
+   Renumbered tracker straws according to the note 888v7
+   Improved the algorithms defining neighboring straws
+   Reduced the thin tracker stiffening rings to the bottom half
+
+     Analyses/src/ReadBack_module.cc
+     GeomPrimitives/inc/TubsParams.hh
+     Mu2eG4/src/ConstructTTrackerTDR.cc
+     Mu2eG4/src/StrawSD.cc
+     TTrackerGeom/src/TTrackerMaker.cc
+     TrackerGeom/inc/Layer.hh
+     TrackerGeom/inc/Straw.hh
+
 
 1) August 25, 2015 kutschke
    Mu2eG4/test/geom_ga03.txt

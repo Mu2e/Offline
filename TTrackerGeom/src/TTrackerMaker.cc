@@ -46,7 +46,6 @@ namespace mu2e {
 
     if (_verbosityLevel>2) {
 
-
       int idev = -1;
       int isec = -1;
       int ilay = -1;
@@ -77,7 +76,11 @@ namespace mu2e {
         cout << __func__ << " Straw "
              << fixed << setw(6) << istr 
              << " secfloor " << setw(6) << isecf << " "
-             << straw.id() 
+             << straw.id()
+             << " mid point " << straw.getMidPoint()
+             << " r " << sqrt(straw.getMidPoint()[0]*straw.getMidPoint()[0]+
+                              straw.getMidPoint()[1]*straw.getMidPoint()[1])
+             << " direction " << straw.getDirection()
              << " sector rotation: " << cang
              << " origin " << sector.boxOffset()
              << " device rotation: " << dang
@@ -527,9 +530,15 @@ namespace mu2e {
 
       Layer const & layer = sector.getLayer(ilay);
       //      cout << "Debugging looking at the layer   : " << layer.id() << endl;
-      for (int ns = 0; ns!=layer.nStraws()-1; ++ns) {
+      for (int ns = 0; ns<(layer.nStraws()*2-2); ns+=2) {
+
+        if (_verbosityLevel>2) {
+          cout << __func__ << " Checking spacig"
+               << " for layer " << layer.id() << " straw " << layer.getStraw(ns).id()  << endl;
+        }
+
         double layerDeltaMag =
-          (layer.getStraw(ns+1).getMidPoint() - layer.getStraw(ns).getMidPoint()).mag();
+          (layer.getStraw(ns+2).getMidPoint() - layer.getStraw(ns).getMidPoint()).mag();
         if ( abs(layerDeltaMag-strawSpacing)> tolerance ) {
           cout << "Layer straw spacing is (mm)   : " << layerDeltaMag
                << " for layer " << layer.id() << " straw " << layer.getStraw(ns).id()  << endl;
@@ -546,12 +555,21 @@ namespace mu2e {
 
     if (_layersPerSector>1) {
 
+      // we should do this using iterators
+
       Layer const & layer0 = sector.getLayer(0);
       Layer const & layer1 = sector.getLayer(1);
 
-      for (int ns = 0; ns!=layer0.nStraws(); ++ns) {
+      for (int ns = 0; ns<layer0.nStraws()*2; ns+=2) {
         double xLayerDeltaMag =
           (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns).getMidPoint()).mag();
+
+        if (_verbosityLevel>2) {
+          cout << __func__ << " Checking spacig"
+               << " for layer " << layer0.id() << " straw " << layer0.getStraw(ns).id()
+               << " and for layer " << layer1.id() << " straw " << layer1.getStraw(ns).id()  << endl;
+        }
+
         if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
           cout << "xLayer straw spacing is (mm)   : "
                << xLayerDeltaMag
@@ -567,14 +585,19 @@ namespace mu2e {
         }
       }
 
-      for (int ns = 1; ns!=layer0.nStraws(); ++ns) {
+      for (int ns = 1; ns<layer0.nStraws()*2; ns+=2) {
         double xLayerDeltaMag =
-          (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns-1).getMidPoint()).mag();
+          (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns-2).getMidPoint()).mag();
+        if (_verbosityLevel>2) {
+          cout << __func__ << " Checking spacig"
+               << " for layer " << layer0.id() << " straw " << layer0.getStraw(ns).id()
+               << " and for layer " << layer1.id() << " straw " << layer1.getStraw(ns-2).id()  << endl;
+        }
         if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
           cout << "xLayer straw spacing is (mm)   : "
                << xLayerDeltaMag
                << " for straws: "
-               << layer0.getStraw(ns).id() << ", " << layer1.getStraw(ns-1).id()
+               << layer0.getStraw(ns).id() << ", " << layer1.getStraw(ns-2).id()
                << endl;
           cout << "It should be                   : "
                << strawSpacing << " diff: "
@@ -630,7 +653,11 @@ namespace mu2e {
     CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
 
     // Straw number within the layer; does not reset to zero at each manifold.
-    int _istraw(-1);
+    // we number the straws starting from the most inner one across the two layers in the sector/panel
+    // it will be 0 for layer0 and 1 for layer1
+    int _istraw(ilay-2);
+
+    // we increase the number by 2, not 1
 
     // Add all of the straws
     for ( int iman=0; iman<_manifoldsPerEnd; ++iman ){
@@ -642,7 +669,7 @@ namespace mu2e {
 
       // Add all of the straws connected to this manifold.
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
-        ++_istraw;
+        _istraw +=2;
 
         // layers with fewer straws would complicate StrawSD, constructTTrackerv, TTrackerMaker
 
@@ -667,8 +694,8 @@ namespace mu2e {
         allStraws.push_back( Straw( StrawId( layId, _istraw),
                                     index,
                                     offset,
-                                    &_tt->_strawDetails.at(iman),
-                                    iman,
+                                    &_tt->_strawDetails.at(iman*2+ilay%2),
+                                    iman*2+ilay%2,
                                     unit
                                     )
                              );
@@ -915,10 +942,15 @@ namespace mu2e {
   // Assumes all devices and all sectors are the same.
   // The straw length depends only on the manifold number.
   // See Mu2e-doc-??? for the algorithm.
+
   void TTrackerMaker::computeStrawHalfLengths(){
 
+    // we use resize as we will set specific straw parameters using a priori known straw numbers
+
     _strawHalfLengths.clear();
+    _strawHalfLengths.resize(_manifoldsPerEnd*2);
     _strawActiveHalfLengths.clear();
+    _strawActiveHalfLengths.resize(_manifoldsPerEnd*2);
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
       double xA =
@@ -935,12 +967,18 @@ namespace mu2e {
 
       double yA = sqrt( diff_of_squares(_innerSupportRadius, xA) );
       double yB = yA + _manifoldYOffset;
-      _strawHalfLengths.push_back(yB);
+
+      // this needs to be inserted at a specific position
+
+      _strawHalfLengths[i*2]=yB;
 
       // This variable is only used if SupportModel==simple.
       double activeHLen=sqrt( diff_of_squares(_innerSupportRadius,xA+2.5))-_passivationMargin;
       activeHLen = std::max( activeHLen, 1.0);
-      _strawActiveHalfLengths.push_back(activeHLen);
+
+      // this needs to be an insert at a specific position
+
+      _strawActiveHalfLengths[i*2]=activeHLen;
 
     }
 
@@ -953,21 +991,22 @@ namespace mu2e {
     if ( _supportModel == SupportModel::simple ){
       _tt->_strawDetails.reserve(_manifoldsPerEnd);
     } else{
-      // This will be extended in recomputeStrawLengths - reserve enough space for the extention.
-      _tt->_strawDetails.reserve(_manifoldsPerEnd*_layersPerSector);
+      // This will be extended in recomputeHalfLengths - reserve enough space for the extention.
+      // as we need to insert sparsly will resize now
+      _tt->_strawDetails.resize(_manifoldsPerEnd*_layersPerSector);
     }
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
-      _tt->_strawDetails.push_back
-        ( StrawDetail
-          ( i,
-            _strawMaterials,
-            _strawOuterRadius,
-            _strawWallThickness,
-            _strawHalfLengths.at(i),
-            _strawActiveHalfLengths.at(i),
-            _wireRadius
-            )
+      // inserting at a specific place 
+      _tt->_strawDetails[i*2]=
+        StrawDetail
+        ( i*2,
+          _strawMaterials,
+          _strawOuterRadius,
+          _strawWallThickness,
+          _strawHalfLengths.at(i*2),
+          _strawActiveHalfLengths.at(i*2),
+          _wireRadius
           );
     }
 
@@ -1055,6 +1094,8 @@ namespace mu2e {
 
     computeStrawHalfLengths();
 
+    // we do not use the trapezoid any more; but it is a good check while renumbering the straws
+
     // the box is a trapezoid ;
 
     // note that G4 has it own coordinate convention for each solid
@@ -1089,8 +1130,10 @@ namespace mu2e {
     // the code below looks at the slope "seen" from the longest set of straws
     for (int i=1; i!=_manifoldsPerEnd; ++i) {
 
+      // _strawHalfLengths has changed its indexing
+
       double ttg = ( _manifoldHalfLengths.at(0) + _layerHalfShift )*double(i) /
-        ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i) ) ;
+        ( _strawHalfLengths.at(0) - _strawHalfLengths.at(i*2) ) ;
 
       if (maxtg < ttg ) {
         maxtg = ttg;
@@ -1231,37 +1274,55 @@ namespace mu2e {
           << "The code works with no more than 2 layers per sector. \n";
       }
 
+      if (_verbosityLevel>2) {
+        cout << __func__ << " "
+             << i->id() << ", index "
+             << i->index()
+             << " Straw " << i->id().getStraw()
+             << endl;
+      }
+
       LayerId lId = i->id().getLayerId();
       int layer = lId.getLayer();
       int nStrawLayer = _tt->getLayer(lId)._nStraws;
 
-      //  cout << lId << " has " << nStrawLayer << " straws" << endl;
-      //  cout << "Analyzed straw: " << i->id() << '\t' << i->index() << endl;
+      if ( _verbosityLevel>2 ) {
+        cout << __func__ << " layer " << lId << " has " << nStrawLayer << " straws" << endl;
+        cout << __func__ << " Analyzed straw: " << i->id() << '\t' << i->index() << endl;
+      }
 
-      // add the "same layer" n-1 neighbours straw (if exist)
+      // add the "same layer" n-2 neighbours straw (if exist) 
+      // in the new model straw numbers increase by 2 in a given layer
 
-      if ( i->id().getStraw() ) {
-        const StrawId nsId(lId, (i->id().getStraw())-1 );
+      if ( i->id().getStraw() > 1 ) {
+        const StrawId nsId(lId, (i->id().getStraw()) - 2 );
         i->_nearestById.push_back( nsId );
-        // Straw temp = _tt->getStraw( nsId );
-        // cout << "Neighbour left straw: " << temp.id() << '\t' << temp.index() << endl;
+        if ( _verbosityLevel>2 ) {
+          const Straw& temp = _tt->getStraw( nsId );
+          cout << __func__ << " Neighbour left straw: " << temp.id() << '\t' << temp.index() << endl;
+        }
         i->_nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
-      // add the "same layer" n+1 neighbours straw (if exist)
+      // add the "same layer" n+2 neighbours straw (if exist)
+      // in the new model straw numbers increase by 2 in a given layer
 
-      if ( i->id().getStraw() < (nStrawLayer-1) ) {
-        const StrawId nsId(lId, (i->id().getStraw())+ 1 );
+      // is there anything which uses the straw number to look up the position in a container?
+      // looks like it is done in many places
+
+      if ( i->id().getStraw() < (2*nStrawLayer-2) ) {
+        const StrawId nsId(lId, (i->id().getStraw()) + 2 );
         i->_nearestById.push_back( nsId );
-        // Straw temp = _tt->getStraw( nsId );
-        // cout << "Neighbour right straw: " << temp.id() << '\t' << temp.index() << endl;
+        if ( _verbosityLevel>2 ) {
+          const Straw& temp = _tt->getStraw( nsId );// is this correct for the new model? <------------
+          cout << __func__ << " Neighbour right straw: " << temp.id() << '\t' << temp.index() << endl;
+        }
         i->_nearestByIndex.push_back( _tt->getStraw(nsId).index() );
       }
 
       // add the "opposite layer" n neighbours straw (if more than 1 layer)
 
       if (_layersPerSector == 2) {
-        const StrawId nsId( i->id().getSectorId(), (layer+1)%2, (i->id().getStraw()) );
 
         // throw exception if the two layer of the same sector have different
         // number of straws
@@ -1271,33 +1332,49 @@ namespace mu2e {
             << "per layer in the same sector. \n";
         }
 
-        i->_nearestById.push_back( nsId );
-        // Straw temp = _tt->getStraw( nsId );
-        // cout << "Neighbour opposite straw: " << temp.id() << '\t' << temp.index() << endl;
-        i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
-
-        // add the "opposite layer" n+-1 neighbours straw (if exist)
-
-        // TODO -- CORRECT A LOGIC ERROR (or check this reasoning is amiss):
-        //
-        // The block below adds straw n +/- 1 in the opposite layer.  But
-        // when n is 0 and layer is 1 (or when n is nStrawLayer-1 and layer
-        // is zero) it is supposed to add straw 1 of layer 0 (or straw
-        // nStrawLayer-2 of layer 1).  The computation is in fact correct,
-        // but the check will cause the insertioin to be skipped.  Thus
-        // one neighbor of each of two straws in the panel will be omitted.
-
-        if ( i->id().getStraw() > 0 && i->id().getStraw() < nStrawLayer-1 ) {
-          const StrawId nsId( i->id().getSectorId(), (layer+1)%2,
-                              (i->id().getStraw()) + (layer?1:-1));
+        if (layer==0 && i->id().getStraw()<2*nStrawLayer) {
+          const StrawId nsId( i->id().getSectorId(), 1 , i->id().getStraw() + 1 );
           i->_nearestById.push_back( nsId );
-          // Straw temp = _tt->getStraw( nsId );
-          // cout << "Neighbour opposite +- 1 straw: " << temp.id() << '\t' << temp.index() << endl;
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+          if ( _verbosityLevel>2 ) {
+            cout << __func__ << " Neighbour opposite up straw: " 
+                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+          }
+        }
+
+        if (layer==1 && i->id().getStraw()<2*nStrawLayer-1) {
+          const StrawId nsId( i->id().getSectorId(), 0 , i->id().getStraw() + 1 );
+          i->_nearestById.push_back( nsId );
+          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+          if ( _verbosityLevel>2 ) {
+            cout << __func__ << " Neighbour opposite up straw: " 
+                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+          }
+        }
+
+        if (layer==0 && i->id().getStraw()>0) {
+          const StrawId nsId( i->id().getSectorId(), 1 , i->id().getStraw() - 1 );
+          i->_nearestById.push_back( nsId );
+          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+          if ( _verbosityLevel>2 ) {
+            cout << __func__ << " Neighbour opposite down straw: " 
+                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+          }
+        }
+
+        if (layer==1 && i->id().getStraw()>0) { // layer 1 straw 1 is ok
+          const StrawId nsId( i->id().getSectorId(), 0 , i->id().getStraw() - 1 );
+          i->_nearestById.push_back( nsId );
+          i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
+          if ( _verbosityLevel>2 ) {
+            cout << __func__ << " Neighbour opposite down straw: " 
+                 << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
+          }
         }
 
       }
     }
+
   } // identifyNeighborStraws
 
   // Identify the neighbour straws in inner/outer same-layer or zig-zag order
@@ -1325,21 +1402,26 @@ namespace mu2e {
       LayerId layerId = straw->id().getLayerId();
       int layerNumber = layerId.getLayer();
       bool layerStaggeredToInside = (layerNumber == 0);
+
       // In all cases, layer 0 is staggered to the inside,
       // layer 1 is staggered to the outside.  We will now check this:
+      // FIXME the above is probably not true
       // TODO -- Do the check
+
       LayerId otherLayerId ( layerId.getSectorId(), 1-layerNumber );
 
       int nStrawLayer = _tt->getLayer(layerId)._nStraws;
 
+      // since the logic relies on the index and the straw number 
+
       int strawNumberWithinLayer = straw->id().getStraw();
       int incrementedStrawNumber =
-        ( strawNumberWithinLayer + 1 < nStrawLayer )
-        ? strawNumberWithinLayer + 1
+        ( strawNumberWithinLayer + 2 < 2*nStrawLayer )
+        ? strawNumberWithinLayer + 2
         : StrawIndex::NO_STRAW;
       int decrementedStrawNumber =
-        ( strawNumberWithinLayer - 1 >=  0)
-        ? strawNumberWithinLayer - 1
+        ( strawNumberWithinLayer - 2 >=  0)
+        ? strawNumberWithinLayer - 2
         : StrawIndex::NO_STRAW;
 
       straw->_nextOuterL = ttStrawIndex (layerId, incrementedStrawNumber);
@@ -1352,13 +1434,45 @@ namespace mu2e {
         straw->_nextInnerP = ttStrawIndex(otherLayerId, strawNumberWithinLayer);
       }
 
-#ifdef CHECK_STRAW_NAVIGATION_ASSIGNMENTS_BY_PRINTING
-      cout << "Straw " << straw->id() << ":\n"
-           << "_nextOuterL: "   << straw->_nextOuterL.asInt()
-           << "  _nextInnerL: " << straw->_nextInnerL.asInt()
-           << "\n_nextOuterP: " << straw->_nextOuterP.asInt()
-           << "  _nextInnerP: " << straw->_nextInnerP.asInt() << "\n";
-#endif
+      if ( _verbosityLevel>2 ) {
+
+        cout << "Straw " << straw->id() << ": " << straw->id().getStraw() << endl;
+
+        cout << " _nextOuterL: "   << setw(5) << straw->_nextOuterL.asInt() << " : "; 
+        if ( straw->_nextOuterL.asInt()!=StrawIndex::NO_STRAW ) {
+          cout << _tt->getStraw(straw->_nextOuterL).id();
+        }
+        cout << endl;
+        
+        cout << " _nextInnerL: " << setw(5) << straw->_nextInnerL.asInt() << " : "; 
+        if ( straw->_nextInnerL.asInt()!=StrawIndex::NO_STRAW ) {
+          cout << _tt->getStraw(straw->_nextInnerL).id();
+        }
+        cout << endl;
+
+        cout << " _nextOuterP: " << setw(5) << straw->_nextOuterP.asInt() << " : " ;
+        if ( straw->_nextOuterP.asInt()!=StrawIndex::NO_STRAW ) {
+          cout << _tt->getStraw(straw->_nextOuterP).id();
+        }
+        cout << endl;
+
+        cout << " _nextInnerP: " << setw(5) << straw->_nextInnerP.asInt() << " : " ;
+        if ( straw->_nextInnerP.asInt()!=StrawIndex::NO_STRAW ) {
+          cout << _tt->getStraw(straw->_nextInnerP).id();
+        }
+        cout << endl;
+
+        // now print _nearestById & _nearestByIndex
+
+        for (auto const& s : straw->nearestNeighboursByIndex()) {
+          cout << s << endl;
+        }
+
+        for (auto const& s : straw->nearestNeighboursById()) {
+          cout << s << endl;
+        }
+
+      }
 
       // TODO -- Insert logic to check that the radius of the purported
       // next straw differs by the right amount and sign, in each of these
@@ -1384,7 +1498,7 @@ namespace mu2e {
     // Positions for the next few objects in Mu2e coordinates.
     TubsParams endRingTubs( _endRingInnerRadius, _endRingOuterRadius, _endRingHalfLength);
 
-    TubsParams midRingTubs ( _endRingInnerRadius, _endRingOuterRadius, _midRingHalfLength);
+    //    TubsParams midRingTubs ( _endRingInnerRadius, _endRingOuterRadius, _midRingHalfLength);
     sup._stiffRings.push_back(PlacedTubs ( "TTrackerEndRingUpstream",   endRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter-_endRingZOffset), _endRingMaterial ));
 
     {
@@ -1461,7 +1575,7 @@ namespace mu2e {
           bos << std::setw(1) << ibeam << ssbeam;
 
           if ( _verbosityLevel > 0 ) {
-            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+            cout << __func__ << " making " <<  bos.str() << endl;
           }
 
           double deltaPhi = _beam1_phiSpans[ssbeam+1] - _beam1_phiSpans[ssbeam];
@@ -1498,7 +1612,7 @@ namespace mu2e {
           bos << std::setw(1) << ibeam << ssbeam;
 
           if ( _verbosityLevel > 0 ) {
-            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+            cout << __func__ << " making " <<  bos.str() << endl;
           }
 
           double deltaPhi = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
@@ -1537,7 +1651,7 @@ namespace mu2e {
           bos << std::setw(1) << ibeam << sservice;
 
           if ( _verbosityLevel > 0 ) {
-            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+            cout << __func__ << " making " <<  bos.str() << endl;
           }
 
           std::string boses =  bos.str();
@@ -1548,7 +1662,7 @@ namespace mu2e {
           std::string boss =  bos.str();
 
           if ( _verbosityLevel > 0 ) {
-            cout << __func__ << " bos.str() " <<  bos.str() << endl;
+            cout << __func__ << " making " <<  boss << endl;
           }
 
           for ( int ssservice = 0; ssservice!=_numStations; ++ssservice) {
@@ -1557,7 +1671,7 @@ namespace mu2e {
             bos << std::setw(2) << ssservice;
         
             if ( _verbosityLevel > 0 ) {
-              cout << __func__ << " bos.str() " <<  bos.str() << endl;
+              cout << __func__ << " making " <<  bos.str() << endl;
             }
 
             double sHLength = zHalf*(_numStations-ssservice)/_numStations;
@@ -1719,7 +1833,8 @@ namespace mu2e {
   void TTrackerMaker::makeThinSupportRings(){
     SupportStructure& sup  = _tt->_supportStructure;
 
-    TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength);
+    TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength, 
+                              CLHEP::pi, CLHEP::pi); // half rings, on the bottom part
 
     for ( size_t i=0; i< _midRingSlot.size(); ++i){
       std::ostringstream name;
@@ -1836,16 +1951,33 @@ namespace mu2e {
 
     deque<Straw>& allStraws              = _tt->_allStraws;
     std::vector<StrawDetail>& allDetails = _tt->_strawDetails;
-    size_t originalSize                  = allDetails.size();
+    //    size_t originalSize                  = allDetails.size();
+
+    if (_verbosityLevel>2) {
+      cout << __func__ << " Initial allDetails size "
+           <<  allDetails.size() 
+           << endl;
+    }
 
     // Step 1: Check that the pattern of _detailIndex is as expected.
     int nBad(0);
     for ( deque<Straw>::const_iterator i=allStraws.begin();
           i != allStraws.end(); ++i ){
       Straw const & straw(*i);
+
+      if (_verbosityLevel>2) {
+        cout << __func__ << " checking straw "
+             << straw._id.getStraw()
+             << " id: "
+             << straw.id()
+             << " has detailIndex of: "
+             << straw._detailIndex
+             << endl;
+      }
+
       if ( straw._detailIndex != straw._id.getStraw() ){
         ++nBad;
-        cout << "Unexecpted value of detailIndex. Straw "
+        cout << "Unexpected value of detailIndex. Straw "
              << straw.id()
              << " has detailIndex of: "
              << straw._detailIndex
@@ -1876,10 +2008,27 @@ namespace mu2e {
     for ( size_t ilay=0; ilay<lays.size(); ++ilay){
       Layer& lay(lays.at(ilay));
 
+      // straws in layer are layed out contiguously, only their numbers increase by 2
       for (int ist=0; ist<lay.nStraws(); ++ist ){
         int idx             = lay._indices.at(ist).asInt();
         Straw& straw        = allStraws.at(idx);
-        StrawDetail& detail = allDetails.at(straw._detailIndex);
+
+        if (_verbosityLevel>2) {
+          cout << __func__ << " recomputing: ist, idx "
+               << ist << ", " 
+               << idx
+               << " Straw " << straw._id.getStraw() 
+               << " id: "
+               << straw._id
+               << " detail index "
+               << straw._detailIndex
+               << endl;
+        }
+
+        StrawDetail& detail = ( ilay == 0 ) 
+          ? allDetails.at(straw._detailIndex)
+          : allDetails.at(straw._detailIndex-1);
+
         double r0 = straw.getMidPoint().perp();
         double r1 = r0 - _strawOuterRadius;
         double r2 = r0 + _strawOuterRadius;
@@ -1903,7 +2052,7 @@ namespace mu2e {
 
         if ( r3 < rmin ){
           ++nShort;
-          cout << "Straw is too short to reach the inner edge of thesupport.\n"
+          cout << "Straw is too short to reach the inner edge of the support.\n"
                << "Straw; " << straw.id()
                << " Radius at inner corner: " << r3 << " mm\n"
                << "Radius at inner edge of the support ring: " << rmin
@@ -1917,13 +2066,52 @@ namespace mu2e {
           StrawDetail newDetail       = detail;
           newDetail._halfLength       = hlen;
           newDetail._activeHalfLength = activeHalfLen;
-          newDetail._id               = allDetails.size();
 
-          // Enough space has been reserved so that push_back does not invalidate iterators.
-          allDetails.push_back(newDetail);
-          straw._detail      = &allDetails.back();
-          straw._detailIndex = newDetail._id;
+          // we need to use/set the detail index
+
+          newDetail._id               = straw._detailIndex;
+
+          allDetails[straw._id.getStraw()] = newDetail;
+          straw._detail      = &allDetails.at(straw._id.getStraw());
+          // straw._detailIndex = newDetail._id; // not needed in the new model
+
         }
+
+        if (_verbosityLevel>2) {
+          cout << __func__ << " after recomputing: ist, idx "
+               << ist << ", " 
+               << idx
+               << " Straw " << straw._id.getStraw() 
+               << " id: "
+               << straw._id
+               << endl;
+        }
+
+        const StrawDetail& theDetail = straw.getDetail();
+
+        if ( _verbosityLevel > 2 ){
+
+          cout << "Detail for: " << straw.id() << " " << theDetail.Id()            << endl;
+          cout << "           outerTubsParams: " << theDetail.getOuterTubsParams() 
+               << theDetail.gasMaterialName()             << endl;
+          cout << "           wallMother:      " << theDetail.wallMother()         
+               << theDetail.wallMotherMaterialName()      << endl;
+          cout << "           wallOuterMetal:  " << theDetail.wallOuterMetal()     
+               << theDetail.wallOuterMetalMaterialName()  << endl;
+          cout << "           wallCore         " << theDetail.wallCore()           
+               << theDetail.wallCoreMaterialName()        << endl;
+          cout << "           wallInnerMetal1: " << theDetail.wallInnerMetal1()    
+               << theDetail.wallInnerMetal1MaterialName() << endl;
+          cout << "           wallInnerMetal2: " << theDetail.wallInnerMetal2()    
+               << theDetail.wallInnerMetal2MaterialName() << endl;
+          cout << "           wireMother:      " << theDetail.wireMother()         
+               << theDetail.wireMotherMaterialName()      << endl;
+          cout << "           wirePlate:       " << theDetail.wirePlate()          
+               << theDetail.wirePlateMaterialName()       << endl;
+          cout << "           wireCore:        " << theDetail.wireCore()           
+               << theDetail.wireCoreMaterialName()        << endl;
+        }
+
       }
     }
     if ( nShort > 0 ){
@@ -1950,7 +2138,17 @@ namespace mu2e {
       if ( straw.id().getLayer()    ==            0  ) continue;
 
       // Get the new detail object for this straw.
-      int idx = straw.id().getLayer()*originalSize + straw.id().getStraw();
+      int idx = straw.id().getStraw();
+
+      if (_verbosityLevel>2) {
+        cout << __func__ << " about to reset "
+             << " Straw " << straw._id.getStraw() 
+             << " id: "
+             << straw._id << " using detail: "
+             << idx
+             << endl;
+      }
+
       StrawDetail const& detail = allDetails.at(idx);
 
       // Update the info about the detail object.

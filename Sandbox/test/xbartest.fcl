@@ -1,8 +1,5 @@
-# Example 5.
-#
-# $Id: xbartest.fcl,v 1.2 2012/07/24 23:13:13 kutschke Exp $
-# $Author: kutschke $
-# $Id: xbartest.fcl,v 1.2 2012/07/24 23:13:13 kutschke Exp $
+# At beginRun time the order of calls to FooService and BarService
+# does not depend on the value of the pokeFoo parameter.
 #
 
 #include "minimalMessageService.fcl"
@@ -10,8 +7,7 @@
 process_name : XBarTest
 
 source : {
-  module_type : RootInput
-  fileNames   : [ "/grid/fermiapp/mu2e/DataFiles/ExampleDataFiles/Workbook/conversionOnly_01_data.root" ]
+  module_type : EmptyEvent
   maxEvents   : 5
 }
 
@@ -26,12 +22,9 @@ services : {
 
 physics : {
 
-  analyzers : {
-    xbarTest : { module_type : XBarTest   }
-  }
+  analyzers : { xbarTest : { module_type : XBarTest   } }
 
-  e1 : [ xbarTest  ]
-
-  end_paths      : [e1]
+  e1        : [ xbarTest  ]
+  end_paths : [e1]
 
 }

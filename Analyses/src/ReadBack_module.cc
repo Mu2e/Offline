@@ -105,6 +105,9 @@ namespace mu2e {
     // Limit the size of the TGraph.
     int _xyHitsMax;
 
+    // by how much the straw gas and hit positions can differ
+    double _strawHitPositionTolerance;
+
     // End: run time parameters
 
     // Number of events analyzed.
@@ -190,6 +193,8 @@ namespace mu2e {
     _minimumEnergy(pset.get<double>("minimumEnergy")),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _xyHitsMax(pset.get<int>("xyHitsMax",10000)),
+    _strawHitPositionTolerance(pset.get<double>("SHPositionTolerance",0.01)), 
+    // looking for gross errors only
 
     // Histograms
     _nAnalyzed(0),
@@ -322,7 +327,7 @@ namespace mu2e {
 
     // Create tracker ntuple.
     _ntup = tfs->make<TNtuple>( "ntup", "Hit ntuple",
-                                "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz");
+                                "evt:trk:sid:hx:hy:hz:wx:wy:wz:dca:time:dev:sec:lay:pdgId:genId:edep:p:step:hwz:straw");
 
     // Create a TGraph;
     // - Syntax to set name and title is weird; that's just root.
@@ -684,9 +689,38 @@ namespace mu2e {
       // The simulated particle that made this hit.
       int trackId = hit.simParticle().key();
 
-      // Debug info
-
       StrawDetail const& strawDetail = straw.getDetail();
+
+      double normPointMag = point.mag()/strawDetail.innerRadius();
+      double normS = s/straw.getHalfLength();
+
+      if ( _diagLevel > 1 ){
+        cout << __func__ 
+             << " normalized reference point - 1 : "
+             << scientific
+             << normPointMag - 1.
+             << " normalized wire z of reference point - 1 : "
+             << std::abs(normS) -1.
+             << fixed
+             << endl;
+      }
+
+      if ( ( normPointMag - 1. > _strawHitPositionTolerance ) || 
+           ( std::abs(normS) - 1. > _strawHitPositionTolerance ) ) {
+        throw cet::exception("GEOM") << __func__ 
+                                     << " Hit " << pos 
+                                     << " ouside the straw " << straw.id()
+                                     << " inconsistent ttracker geometry file? "
+                                     << "; radial difference: "
+                                     << point.mag()/strawDetail.innerRadius() - 1.
+                                     << ", longitudinal difference: "
+                                     << std::abs(s)/straw.getHalfLength() - 1.
+                                     << "; tolerance : "
+                                     << _strawHitPositionTolerance
+                                     << endl;
+      }
+
+      // Debug info
 
       //       // remove this for production, intended for transportOnly.py
       //       if (pca.dca()>strawDetail.innerRadius() || abs(point.mag()- strawDetail.innerRadius())>1.e-6 ) {
@@ -730,8 +764,8 @@ namespace mu2e {
       _hTime->Fill(hit.time());
       _hHitNeighbours->Fill(nNeighbours);
       _hCheckPointRadius->Fill(point.mag());
-      _hCheckPointRadiusW->Fill(point.mag()/strawDetail.innerRadius());
-      _hCheckPointWireZ->Fill(s/straw.getHalfLength());
+      _hCheckPointRadiusW->Fill(normPointMag);
+      _hCheckPointWireZ->Fill(normS);
 
       _hxHit->Fill(pos.x());
       _hyHit->Fill(pos.y());
@@ -762,7 +796,8 @@ namespace mu2e {
       nt[16] = hit.eDep()/keV;
       nt[17] = mom.mag();
       nt[18] = hit.stepLength();
-      nt[19] = s/straw.getHalfLength();
+      nt[19] = normS;
+      nt[20] = straw.id().getStraw();
 
       _ntup->Fill(nt);
 
