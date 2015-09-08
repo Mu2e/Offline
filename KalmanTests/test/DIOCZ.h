@@ -1,5 +1,7 @@
 // the following approximation is from Czarnecki etal, 'Muon decay in orbit:spectrum of high-energy electrons',
 // for E>85 MeV
+#include "RTypes.h"
+#include "math.h"
 Double_t DIOCZ(Double_t *x, Double_t *par) {
   double ee = x[0];
   double norm = par[0];
