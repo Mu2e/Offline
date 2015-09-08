@@ -71,10 +71,10 @@ namespace mu2e {
 
   } // end EMFSimHitHistograms::book()
   
-  void EMFSimHitHistograms::fill(const ExtMonFNALSimHitCollection& coll) {
-    //ExtMonFNALModuleIdConverter con(8);
+  void EMFSimHitHistograms::fill(const ExtMonFNAL::ExtMon& extmon, const ExtMonFNALSimHitCollection& coll) {
+    ExtMonFNALModuleIdConverter con(extmon);
     for(ExtMonFNALSimHitCollection::const_iterator i = coll.begin(); i != coll.end(); ++i) {
-      //moduleHits_->Fill(con.denseModuleNumber(i->moduleId()).number());
+      moduleHits_->Fill(con.denseModuleNumber(i->moduleId()).number());
       hitTimes_->Fill(i->startTime(), i->moduleId().plane());
       energyDeposit_->Fill(i->ionizingEnergyDeposit());
       if(hitPosition_[i->moduleId()] != NULL)

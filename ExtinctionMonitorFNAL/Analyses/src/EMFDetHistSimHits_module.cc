@@ -70,9 +70,10 @@ namespace mu2e {
 
     //================================================================
     void EMFDetHistSimHits::analyze(const art::Event& event) {
+      GeomHandle<ExtMonFNAL::ExtMon> extmon;
       art::Handle<ExtMonFNALSimHitCollection> ih;
       event.getByLabel(_inModuleLabel, _inInstanceName, ih);
-      ch_.fill(*ih);
+      ch_.fill(*extmon, *ih);
     }
 
     //================================================================
