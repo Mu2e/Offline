@@ -11,17 +11,21 @@ namespace mu2e {
   
   CLHEP::Hep3Vector ExtMonFNALPlane::planeCoordinates(const ExtMonFNALPixelId& id) const
   {
-    // Assume no gaps between chips
-    double chipx0 = (id.chip().chipCol() - 1.)*80*250*CLHEP::micrometer;
-    double chipy0 = (id.chip().chipRow() - 1.)*336*50*CLHEP::micrometer;
 
-    // checking for module rotation; DOWN is 180 degrees rotated from UP, so coordinates are flipped
-    const int rot = this->module_rotation()[(id.chip().module().number())] == 0 ? 1 : -1;
+    CLHEP::Hep2Vector pixelCordinatesInModule = this->module().moduleCoordinates(id);
+ 
+   // checking for module rotation; DOWN is 180 degrees rotated from UP, so coordinates are flipped
+    const int rotz = this->module_rotation()[(id.chip().module().number())] == 0 ? 1 : -1;
 
-    // Add 0.5 to get pixel center in the 0-based numbering convention
-    const double xModule = (chipx0 + 250*CLHEP::micrometer*(id.col() + 0.5)) * rot;
-    const double yModule = (chipy0 + 50*CLHEP::micrometer*(id.row() + 0.5)) * rot;
-    const double zModule = (this->module_zoffset()[(id.chip().module().number())] * ((this->module().sensorHalfSize()[2])*2 + this->module().chipHalfSize()[2]));
+    // check for module rotation about y
+    const int roty = this->module_zoffset()[(id.chip().module().number())] > 0 ? 1 : -1;
+
+    const double xModule = this->module_xoffset()[(id.chip().module().number())] + pixelCordinatesInModule.x()*rotz*roty;
+    const double yModule = this->module_yoffset()[(id.chip().module().number())] + pixelCordinatesInModule.y()*rotz;
+    // zModule in the geometry file is +1 or -1, representing position on the front or back of the plane.  It is not
+    // the actual offset, unlike xModule and yModule. Here we convert it to actual coordinates.
+    const double zModule = this->module_zoffset()[(id.chip().module().number())] 
+	* (this->module().sensorHalfSize()[2] + 2*this->module().chipHalfSize()[2] + this->halfSize()[2]);
 
     return CLHEP::Hep3Vector(xModule, yModule, zModule);
   }

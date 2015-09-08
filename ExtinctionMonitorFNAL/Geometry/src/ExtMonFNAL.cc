@@ -56,12 +56,11 @@ namespace mu2e {
       const ExtMonFNALPlaneStack& stack = downStack ? dn_ : up_;
       const unsigned stackPlane = downStack ? globalPlane : globalPlane - dn_.nplanes();
 
-      // Position of pixel in the module
-      CLHEP::Hep2Vector sxy = module_.moduleCoordinates(id);
+      // Position of pixel in the plane
+      CLHEP::Hep3Vector sxy = stack.planes()[stackPlane].planeCoordinates(id);
 
       // Position of the pixel in the stack
-      Hep3Vector stackPos = stack.planeOffsetInStack(stackPlane)
-        + Hep3Vector(sxy.x(), sxy.y(), 0);
+      Hep3Vector stackPos = stack.planeOffsetInStack(stackPlane) + sxy;
 
       return stackPos;
     }
