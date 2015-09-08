@@ -105,6 +105,9 @@ namespace mu2e {
     // Limit the size of the TGraph.
     int _xyHitsMax;
 
+    // by how much the straw gas and hit positions can differ
+    double _strawHitPositionTolerance;
+
     // End: run time parameters
 
     // Number of events analyzed.
@@ -190,6 +193,8 @@ namespace mu2e {
     _minimumEnergy(pset.get<double>("minimumEnergy")),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _xyHitsMax(pset.get<int>("xyHitsMax",10000)),
+    _strawHitPositionTolerance(pset.get<double>("SHPositionTolerance",0.01)), 
+    // looking for gross errors only
 
     // Histograms
     _nAnalyzed(0),
@@ -685,8 +690,6 @@ namespace mu2e {
       int trackId = hit.simParticle().key();
 
       StrawDetail const& strawDetail = straw.getDetail();
-      //      double tolerance = 10000.*std::numeric_limits<double>::epsilon();
-      double tolerance = 0.01;// looking for gross errors only
 
       double normPointMag = point.mag()/strawDetail.innerRadius();
       double normS = s/straw.getHalfLength();
@@ -702,8 +705,8 @@ namespace mu2e {
              << endl;
       }
 
-      if ( ( normPointMag - 1. > tolerance ) || 
-           ( std::abs(normS) - 1. > tolerance ) ) {
+      if ( ( normPointMag - 1. > _strawHitPositionTolerance ) || 
+           ( std::abs(normS) - 1. > _strawHitPositionTolerance ) ) {
         throw cet::exception("GEOM") << __func__ 
                                      << " Hit " << pos 
                                      << " ouside the straw " << straw.id()
@@ -713,7 +716,7 @@ namespace mu2e {
                                      << ", longitudinal difference: "
                                      << std::abs(s)/straw.getHalfLength() - 1.
                                      << "; tolerance : "
-                                     << tolerance
+                                     << _strawHitPositionTolerance
                                      << endl;
       }
 
