@@ -1,0 +1,174 @@
+// This job starts with protons on target and writes stopped muons
+// into a framework format output file. Run 
+// JobConfig/cd3/beam/beam_nts3tgtstops.fcl on the output to get an ntuple.
+//
+// Andrei Gaponenko, 2015
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+#----------------------------------------------------------------
+# Mu2eG4 cuts
+killLowEnergyStuff: {
+   type: intersection
+   pars: [
+      // those particles can't make muons
+      { type: kineticEnergy cut: 100. },
+      { type: pdgId pars: [ 22, -11, 11, 2212, 2112 ] }
+   ]
+}
+#
+killInSideVolumes: {
+   type: inVolume
+   pars: [ HallAir, DS3Vacuum ]
+}
+#----------------------------------------------------------------
+END_PROLOG
+
+#================================================================
+# Give this job a name.
+process_name :  stoppedMuonsSingleStage
+
+source : {
+   module_type : EmptyEvent
+   maxEvents : @nil
+}
+
+services : {
+
+   message               : @local::default_message
+   TFileService          : { fileName : "nts.owner.stoppedMuonsSingleStage.version.sequencer.root" }
+   RandomNumberGenerator : { }
+
+   user : {
+      GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+      ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+      GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+      G4Helper               : { }
+      SeedService            : @local::automaticSeeds
+   }
+}
+
+physics : {
+   analyzers: {
+      genCountLogger: {
+         module_type: GenEventCountReader
+      }
+   }
+
+   producers: {
+      generate: {
+         module_type          : EventGenerator
+         inputfile            : "JobConfig/TDR/genconfig_PrimaryProtons.txt"
+      }
+
+      genCounter: {
+         module_type: GenEventCounter
+      }
+
+      g4run : {
+         module_type: Mu2eG4
+         physics: @local::mu2eg4DefaultPhysics
+         ResourceLimits: @local::mu2eg4DefaultResourceLimits
+	 TrajectoryControl: @local::mu2eg4NoTrajectories
+         debug: @local::mu2eg4DefaultDebug
+         visualization: @local::mu2eg4NoVisualization
+
+         generatorModuleLabel: generate
+         MultiStageParameters: {} // this is the first stage
+
+         SDConfig: {
+            enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
+            TimeVD: { times: [] }
+         }
+
+         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+
+         Mu2eG4SteppingOnlyCut: {}
+
+         // Mu2eG4 cuts are evaluated in the listed order.
+         // The first match wins.  For the "intersection"
+         // type, the first false stops the evaluation.
+         // For the "union" type the first true stops the evaluation.
+         Mu2eG4CommonCut: {
+            type: union
+            pars: [
+               @local::killLowEnergyStuff,
+               @local::killInSideVolumes
+            ]
+         }
+      }
+
+      compressPVTGTStops: {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "tgtStopFilter" ]
+      }
+
+      //----------------------------------------------------------------
+      stoppedMuonFinder : {
+         module_type : StoppedParticlesFinder
+         particleInput : "g4run"
+         // multiple matches, we'll get the one from the current process, which is what we want
+         physVolInfoInput : "g4run"
+         stoppingMaterial : "StoppingTarget_Al"
+         particleTypes : [ 13 ] // mu-
+         particleOffsetThreshold: 0
+         verbosityLevel: 1
+      }
+   }
+
+   filters: {
+      tgtStopFilter: {
+         module_type: FilterG4Out
+         noInstanceName : true
+         mainHitInputs: []
+         extraHitInputs: [ "g4run:virtualdetector" ]
+         mainSPPtrInputs: [ "stoppedMuonFinder" ]
+         numSimParticleCollections: 1
+      }
+
+      g4consistent: {
+         module_type: FilterStatusG4
+         input: "g4run"
+	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
+   }
+
+   tgtFilter :  [generate, genCounter, g4run, g4consistent, stoppedMuonFinder, tgtStopFilter, compressPVTGTStops]
+   trigger_paths  : [tgtFilter]
+
+   out : [tgtStopOutput]
+   gcl: [genCountLogger]
+   end_paths: [out, gcl]
+}
+
+outputs: {
+   tgtStopOutput : {
+      module_type : RootOutput
+      SelectEvents: { SelectEvents: [tgtFilter] }
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_tgtStopFilter_*_*",
+         "keep *_compressPVTGTStops_*_*"
+      ]
+      fileName    : "sim.owner.stoppedMuonsSingleStage.version.sequencer.art"
+   }
+}
+// Not too coarse - we care about stopped muon positions.
+physics.producers.g4run.physics.minRangeCut : 0.010 // mm
+
+// Limit the amount of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20
