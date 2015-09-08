@@ -1,1 +1,2 @@
 A file to use to test some git commands.
+A new line for a new test.
