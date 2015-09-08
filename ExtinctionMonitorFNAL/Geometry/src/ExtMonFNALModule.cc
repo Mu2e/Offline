@@ -18,27 +18,31 @@ namespace mu2e {
                                                 double xSensor,
                                                 double ySensor) const
   {
-    // We assume there are 2x1 chips per module
-    const unsigned icx = xSensor < 0 ? 0 : 1;
-    const unsigned icy = 0;
-    ExtMonFNALChipId cid(mid, icx, icy);
+    ExtMonFNALPixelId res; // default constructed - invalid hit
 
-    // Assume no gaps between chips
-    const double chipx0 = (icx - 1.)*chip_.nColumns()*chip_.xPitch();
-    const double chipy0 = (icy - 1.)*chip_.nRows()*chip_.yPitch();    
+    const double chipXPitch = chip_.nColumns()*chip_.xPitch();
+    const double chipYPitch = chip_.nRows()*chip_.yPitch();
 
-    
-    // enum Rotation {UP, DOWN};
-    // const int rot = mid.rot() == UP ? 1 : -1;
+    const int icx = std::floor(xSensor/chipXPitch + nxChips()/2.);
+    const int icy = std::floor(ySensor/chipYPitch + nyChips()/2.);
 
-    // Zero based pixel column and row numbers for the offline identifier
-    const int ix = std::floor((xSensor - chipx0)/chip_.xPitch());
-    const int iy = std::floor((ySensor - chipy0)/chip_.yPitch());
+    if((0 <= icx)&&(unsigned(icx) < nxChips())&&(0 <= icy)&&(unsigned(icy) < nyChips())) {
 
-    ExtMonFNALPixelId res =
-      (0 <= ix)&&(unsigned(ix) < chip_.nColumns())&&(0 <= iy)&&(unsigned(iy) < chip_.nRows()) ?
-      ExtMonFNALPixelId(cid, ix, iy) :
-      ExtMonFNALPixelId();
+        ExtMonFNALChipId cid(mid, icx, icy);
+
+        // Assume no gaps between chips
+        // x0 and y0 are the coordinates of the bottom left chip corner in the module frame
+        const double chipx0 = (icx - nxChips()/2.)*chip_.nColumns()*chip_.xPitch();
+        const double chipy0 = (icy - nyChips()/2.)*chip_.nRows()*chip_.yPitch();    
+
+        // Zero based pixel column and row numbers for the offline identifier
+        const int ix = std::floor((xSensor - chipx0)/chip_.xPitch());
+        const int iy = std::floor((ySensor - chipy0)/chip_.yPitch());
+
+        res = (0 <= ix)&&(unsigned(ix) < chip_.nColumns())&&(0 <= iy)&&(unsigned(iy) < chip_.nRows()) ?
+           ExtMonFNALPixelId(cid, ix, iy) :
+           ExtMonFNALPixelId();
+    }
 
     return res;
   }
@@ -47,8 +51,8 @@ namespace mu2e {
   CLHEP::Hep2Vector ExtMonFNALModule::moduleCoordinates(const ExtMonFNALPixelId& id) const
   {
     // Assume no gaps between chips
-    double chipx0 = (id.chip().chipCol() - 1.)*chip_.nColumns()*chip_.xPitch();
-    double chipy0 = (id.chip().chipRow() - 1.)*chip_.nRows()*chip_.yPitch();
+    double chipx0 = (id.chip().chipCol() - nxChips()/2.)*chip_.nColumns()*chip_.xPitch();
+    double chipy0 = (id.chip().chipRow() - nyChips()/2.)*chip_.nRows()*chip_.yPitch();
 
     // Add 0.5 to get pixel center in the 0-based numbering convention
     const double xModule = chipx0 + chip_.xPitch()*(id.col() + 0.5);

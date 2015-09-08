@@ -261,11 +261,13 @@ namespace mu2e {
         G4ThreeVector soffset = {stack.planes()[iplane].module_xoffset()[imodule] + offset[0], 
                                  stack.planes()[iplane].module_yoffset()[imodule] + offset[1], 
                                  stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2]*2 + stack.planes()[iplane].halfSize()[2]+ module.sensorHalfSize()[2]) + offset[2]};
-
-        
+       
         AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-        G4RotationMatrix* zRot = reg.add(new G4RotationMatrix);
-        zRot->rotateZ(stack.planes()[iplane].module_rotation()[imodule]);
+        G4RotationMatrix* mRot = reg.add(new G4RotationMatrix);
+        mRot->rotateZ(stack.planes()[iplane].module_rotation()[imodule]);
+	if( stack.planes()[iplane].module_zoffset()[imodule] < 0.0 ) {
+        	mRot->rotateY(180*CLHEP::degree);
+	}
         
         GeomHandle<ExtMonFNAL::ExtMon> extmon;
         ExtMonFNALModuleIdConverter con(*extmon);
@@ -274,7 +276,7 @@ namespace mu2e {
         VolumeInfo vsensor = nestBox(osm.str(),
                                      module.sensorHalfSize(),
                                      findMaterialOrThrow("G4_Si"),
-                                     zRot,
+                                     mRot,
                                      soffset,
                                      mother,
                                      copyno,

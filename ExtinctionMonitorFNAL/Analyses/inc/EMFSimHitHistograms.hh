@@ -38,7 +38,7 @@ namespace mu2e {
     // Book histograms in the specified TFileDirectory.
     void book(const ExtMonFNAL::ExtMon& extmon, art::TFileDirectory& tfdir);
 
-    void fill(const ExtMonFNALSimHitCollection& clusters);
+    void fill(const ExtMonFNAL::ExtMon& extmon, const ExtMonFNALSimHitCollection& clusters);
 
   private:
     TH2D *hitTimes_;
