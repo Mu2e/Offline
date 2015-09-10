@@ -212,11 +212,11 @@ namespace mu2e {
       if(hTracksPerClusterIn_) {
         fillTracksPerCluster(hTracksPerClusterIn_, clustersh, tsp.ctm());
       }
-
       // filter the tracks
       if(!tsp.summaries().empty()) {
         while(tsp.summaries().back().numSharedClusters > cutMaxSharedClustersOnTrack_) {
-          assert(remainingTracks.erase(tsp.summaries().back().track));
+          const auto status [[gnu::unused]] = remainingTracks.erase(tsp.summaries().back().track);
+          assert(status);
           tsp = TrkSummaryProvider(remainingTracks.begin(), remainingTracks.end());
         }
       }
