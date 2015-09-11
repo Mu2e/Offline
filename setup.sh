@@ -59,11 +59,6 @@ echo "MU2E_SEARCH_PATH:   "  $MU2E_SEARCH_PATH
 export MU2E_SETUP_BUILDOPTS="$($MU2E_BASE_RELEASE/buildopts)"
 
 build=$($MU2E_BASE_RELEASE/buildopts --build)
-if [ "${build}" == "debug" ];then
-    # echo "debug option selected; setting up gdb"
-    setup gdb v7_8
-    # echo "use scons --mu2elevel=debug to create debug libraries"
-fi
 
 # This is the string to be used with the ups setup command for
 # products that need qualifiers.  Note it includes the '+' character
@@ -91,6 +86,8 @@ setup -B BTrk   v1_00_08  -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
 setup -B scons v2_3_4
+# The debugger
+setup gdb v7_9
 
 # Search path for fcl files
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
