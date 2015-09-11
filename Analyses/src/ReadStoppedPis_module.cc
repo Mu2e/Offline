@@ -21,7 +21,6 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "TDirectory.h"
 #include "TGraph.h"
 #include "TH1F.h"

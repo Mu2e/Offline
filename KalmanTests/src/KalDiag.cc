@@ -27,7 +27,6 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 // Utilities
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"

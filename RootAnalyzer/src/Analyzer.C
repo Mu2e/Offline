@@ -31,7 +31,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Persistency/Common/Wrapper.h"
 
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"

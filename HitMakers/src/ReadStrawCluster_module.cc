@@ -52,7 +52,6 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/LineSegmentPCA.hh"
 #include "HitMakers/inc/StrawClusterUtilities.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"

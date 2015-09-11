@@ -22,7 +22,6 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "Mu2eUtilities/inc/LinePointPCA.hh"
 #include "TFile.h"
 #include "TTree.h"
 #include "Mu2eUtilities/inc/ConvElecUtilities.hh"
