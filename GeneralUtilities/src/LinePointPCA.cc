@@ -9,7 +9,7 @@
 // Original author Rob Kutschke
 //
 
-#include "Mu2eUtilities/inc/LinePointPCA.hh"
+#include "GeneralUtilities/inc/LinePointPCA.hh"
 
 using namespace std;
 

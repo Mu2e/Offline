@@ -42,7 +42,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
+#include "GeneralUtilities/inc/LineSegmentPCA.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"

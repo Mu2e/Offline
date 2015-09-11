@@ -2,6 +2,12 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_4_6
 
+5) September 11, 2015 gandr
+
+   Moved LinePointPCA.hh, LineSegmentPCA.hh, TwoLinePCA.hh from
+   Mu2eUtilities to GeneralUtilities: their dependencies allow that,
+   and a data product class depends on a PCA utility.
+
 4) September 7, 2015 genser
 
    rewrote straw positioning test in StrawSD.cc; 

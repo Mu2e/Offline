@@ -30,7 +30,7 @@
 #include "MCDataProducts/inc/StepPointMCStrawHit.hh"
 #include "HitMakers/inc/formStepPointMCStrawHit.hh"
 #include "TrackerConditions/inc/DeadStrawList.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "GeneralUtilities/inc/TwoLinePCA.hh"
 
 // art includes.
 #include "art/Persistency/Common/Ptr.h"

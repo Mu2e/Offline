@@ -6,7 +6,7 @@
 // Original author Hans Wenzel
 //
 //=======================================================================
-#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
+#include "GeneralUtilities/inc/LineSegmentPCA.hh"
 using namespace std;
 
 namespace mu2e {

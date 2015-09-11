@@ -31,8 +31,8 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "Mu2eUtilities/inc/LinePointPCA.hh"
+#include "GeneralUtilities/inc/TwoLinePCA.hh"
+#include "GeneralUtilities/inc/LinePointPCA.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // G4 includes

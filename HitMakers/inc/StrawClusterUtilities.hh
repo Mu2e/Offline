@@ -19,7 +19,7 @@
 // Mu2e includes:
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
-#include "Mu2eUtilities/inc/LineSegmentPCA.hh"
+#include "GeneralUtilities/inc/LineSegmentPCA.hh"
 #include "TrackerGeom/inc/DeviceId.hh"
 #include "TrackerGeom/inc/SectorId.hh"
 

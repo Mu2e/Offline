@@ -34,7 +34,7 @@
 #include "ConditionsService/inc/ParticleDataTable.hh"
 #include "BTrk/BField/BField.hh"
 // utiliities
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "GeneralUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrackerConditions/inc/DeadStrawList.hh"
 // data

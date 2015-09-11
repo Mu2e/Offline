@@ -27,7 +27,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
-#include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "GeneralUtilities/inc/TwoLinePCA.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "TDirectory.h"
