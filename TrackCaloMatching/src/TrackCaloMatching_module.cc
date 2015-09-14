@@ -23,7 +23,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"

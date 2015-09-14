@@ -34,7 +34,7 @@ using namespace CLHEP;
 // This is fragile and needs to be last until CLHEP is
 // properly qualified and included in the BaBar classes.
 #include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 using namespace std;
 

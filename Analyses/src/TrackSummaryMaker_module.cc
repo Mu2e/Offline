@@ -14,7 +14,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
@@ -26,7 +26,7 @@
 
 #include "Mu2eUtilities/inc/toHepPoint.hh"
 #include "RecoDataProducts/inc/TrackSummary.hh"
-#include "KalmanTests/inc/TrackSummaryRecoMap.hh"
+#include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 
 namespace mu2e {
 

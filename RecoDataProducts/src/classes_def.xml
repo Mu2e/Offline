@@ -202,4 +202,17 @@
  <class name="mu2e::CrvCoincidenceCheckResult" />
  <class name="art::Wrapper<mu2e::CrvCoincidenceCheckResult>" />
 
+ <class name="mu2e::KalRepPtr"/>
+ <class name="mu2e::KalRepPtrCollection" persistent="false"/>
+ <class name="art::Wrapper<mu2e::KalRepPtrCollection>"/>
+
+ <class name="std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::TrackSummary> >" />
+ <class name="std::pair<art::Ptr<mu2e::TrackSummary>,art::Ptr<mu2e::KalRepPtr> >" />
+ <class name="std::vector<std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::TrackSummary> > >" />
+ <class name="std::vector<std::pair<art::Ptr<mu2e::TrackSummary>,art::Ptr<mu2e::KalRepPtr> > >" />
+ <class name="art::Assns<mu2e::KalRepPtr,mu2e::TrackSummary,void>" persistent="false"  />
+ <class name="art::Assns<mu2e::TrackSummary,mu2e::KalRepPtr,void>" persistent="false"  />
+ <class name="art::Wrapper<art::Assns<mu2e::KalRepPtr,mu2e::TrackSummary,void> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::TrackSummary,mu2e::KalRepPtr,void> >" />
+
 </lcgdict>

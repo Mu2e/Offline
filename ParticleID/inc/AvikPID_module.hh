@@ -28,7 +28,7 @@
 #include "TDirectory.h"
 #include "TROOT.h"
 
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "BTrk/TrkBase/TrkHotList.hh"
 #include "BTrk/TrkBase/TrkHitOnTrk.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"

@@ -28,7 +28,7 @@
 #include "CLHEP/Matrix/SymMatrix.h"
 
 #include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"

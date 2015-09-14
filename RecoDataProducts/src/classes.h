@@ -27,6 +27,8 @@
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
 #include "RecoDataProducts/inc/KalRepExtensionPayloadCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"
 #include "RecoDataProducts/inc/SubEventCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
@@ -100,6 +102,8 @@ template class std::vector<mu2e::CrvCoincidenceCheckResult::CoincidenceCombinati
 template class std::vector<mu2e::CrvRecoPulses::CrvSingleRecoPulse>;
 template class std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvRecoPulses>;
 template class std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvRecoPulses>;
+template class art::Ptr<KalRep>;
+template class std::vector<art::Ptr<KalRep> >;
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
 template class art::Wrapper<mu2e::StereoHitCollection>;
@@ -114,7 +118,14 @@ template class art::Wrapper<mu2e::TrkCaloIntersectCollection>;
 template class art::Wrapper<mu2e::TrkCaloMatchCollection>;
 template class art::Wrapper<mu2e::KalRepPayloadCollection>;
 template class art::Wrapper<mu2e::KalRepExtensionPayloadCollection>;
+template class art::Wrapper<mu2e::KalRepPtrCollection>;
 
+template class std::pair<art::Ptr<art::Ptr<KalRep> >, art::Ptr<mu2e::TrackSummary> >;
+template class std::pair<art::Ptr<mu2e::TrackSummary>, art::Ptr<art::Ptr<KalRep> > >;
+template class art::Assns<art::Ptr<KalRep>, mu2e::TrackSummary>;
+template class art::Assns<mu2e::TrackSummary, art::Ptr<KalRep> >;
+template class art::Wrapper<art::Assns<art::Ptr<KalRep>, mu2e::TrackSummary> >;
+template class art::Wrapper<art::Assns<mu2e::TrackSummary, art::Ptr<KalRep> > >;
 
 template class art::Wrapper<mu2e::ExtMonUCITofHitCollection>;
 template class art::Wrapper<mu2e::SubEventCollection>;

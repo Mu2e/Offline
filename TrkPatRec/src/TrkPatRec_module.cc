@@ -34,7 +34,7 @@
 #include "KalmanTests/inc/KalFit.hh"
 #include "KalmanTests/inc/KalDiag.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "TrkPatRec/inc/HelixFit.hh"

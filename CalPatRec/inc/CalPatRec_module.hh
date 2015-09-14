@@ -44,7 +44,7 @@ namespace art {
 #include "BTrk/TrkBase/TrkPoca.hh"
 // #include "KalmanTests/inc/KalFitMC.hh"
 #include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"

@@ -32,7 +32,7 @@
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 // C++ includes
 #include <vector>

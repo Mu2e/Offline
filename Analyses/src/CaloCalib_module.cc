@@ -61,7 +61,7 @@
 
 // Mu2e includes.
 #include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 

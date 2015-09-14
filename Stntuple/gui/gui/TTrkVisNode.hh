@@ -8,7 +8,7 @@
 // this clause is necessary
 //-----------------------------------------------------------------------------
 #ifndef __CINT__
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"

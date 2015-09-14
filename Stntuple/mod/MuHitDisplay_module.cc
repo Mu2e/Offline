@@ -88,7 +88,7 @@
 #include "RecoDataProducts/inc/CrvRecoPulses.hh"
 
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 #include "CalPatRec/inc/CalTimePeak.hh"
 

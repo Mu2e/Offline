@@ -22,7 +22,7 @@
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 
 // #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"

@@ -19,7 +19,7 @@
 
 //tracker includes
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersect.hh"
 

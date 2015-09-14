@@ -8,7 +8,7 @@
 #include "art/Persistency/Common/Assns.h"
 
 #include "RecoDataProducts/inc/TrackSummary.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 namespace mu2e {
   typedef art::Assns<KalRepPtr,TrackSummary> TrackSummaryRecoMap;

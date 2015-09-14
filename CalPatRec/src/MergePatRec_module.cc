@@ -20,7 +20,7 @@
 #include "TFolder.h"
 
 #include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 #include "KalmanTests/inc/KalFitResult.hh"
 

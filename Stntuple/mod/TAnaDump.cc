@@ -39,7 +39,7 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 
 #include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"

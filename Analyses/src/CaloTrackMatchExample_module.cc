@@ -22,7 +22,7 @@
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"

@@ -16,7 +16,7 @@
 #include "RecoDataProducts/inc/StrawDigi.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "KalmanTests/inc/TrackSummaryRecoMap.hh"
+#include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "KalmanTests/inc/TrkStrawHit.hh"
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"

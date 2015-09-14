@@ -27,7 +27,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "BTrk/BaBar/Constants.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"

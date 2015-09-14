@@ -48,7 +48,7 @@
 #include "BTrk/BaBar/Constants.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "KalmanTests/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "KalmanTests/inc/KalFitMC.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
