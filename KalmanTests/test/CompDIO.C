@@ -6,7 +6,14 @@
 #include "TCanvas.h"
 double emue(104.973);
 
-void CompDIO()
+Double_t  DIORatio(Double_t *x, Double_t *par) {
+  double diocz = DIOCZ(x,par);
+  double diosc = DIOSC(x,par);
+  return diosc/diocz;
+}
+
+
+void CompDIO(double minrate=1e-20)
 {
   double lowend(102.0);
   TF1* diocz = new TF1("_diocz",DIOCZ,lowend,emue,1);
@@ -24,9 +31,11 @@ void CompDIO()
   double par[1]; par[0] = 1.0;
   double max = 1.2*DIOCZ(x,par);
   diospec->SetMaximum(max);
-  diospec->SetMinimum(1.0e-18);
+  diospec->SetMinimum(minrate);
   diospec->SetStats(0);
-  TCanvas* diocan = new TCanvas("diocan","diocan",800,800);
+  TCanvas* diocan = new TCanvas("diocan","diocan",800,1200);
+  diocan->Divide(1,2);
+  diocan->cd(1);
   gPad->SetLogy();
   diospec->Draw();
   diocz->Draw("same");
@@ -35,5 +44,16 @@ void CompDIO()
   leg->AddEntry(diocz,"DIO 2011","L");
   leg->AddEntry(diosc,"DIO 2015","L");
   leg->Draw();
+
+  TF1* ratio = new TF1("ratio",DIORatio,lowend,emue,1);
+  ratio->SetParameter(0,1.0);
+  ratio->SetLineColor(kBlack);
+  TH1F* hratio = new TH1F("hratio","Ratio of 2015 prediction to 2011 prediction; Electron Energy (MeV)",100,lowend,emue);
+  hratio->SetStats(0);
+  hratio->SetMinimum(0.5);
+  hratio->SetMaximum(1.0);
+  diocan->cd(2);
+  hratio->Draw();
+  ratio->Draw("same");
 }
 

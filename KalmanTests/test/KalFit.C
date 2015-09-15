@@ -55,6 +55,7 @@ class KalFit {
   void Drift();
   void NHits();
   void Nactive();
+  void TrkQualRes();
   void Mom();
   void Rad();
   void MomTails(int iwt=-1);
@@ -95,7 +96,7 @@ void KalFit::Cuts() {
     t0cuts[ic] = TCut(cutstring);
     snprintf(cutstring,100,"fit.momerr<%4.3f",maxmomerr[ic]);
     momcuts[ic] = TCut(cutstring);
-    snprintf(cutstring,100,"fitcon>%5.4f",minfitcon[ic]);
+    snprintf(cutstring,100,"fit.con>%5.4f",minfitcon[ic]);
     fitcuts[ic] = TCut(cutstring);
   }
   char ctext[80];
@@ -382,12 +383,12 @@ void KalFit::T2d(){
   TProfile* rt2dp = new TProfile("rt2dp","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* tt2dp = new TProfile("tt2dp","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* tt2dp2 = new TProfile("tt2dp2","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55,"s");
-  _tdiag->Project("tt2d","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
-  _tdiag->Project("rt2d","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
-  _tdiag->Project("tt2dp","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
-  _tdiag->Project("rt2dp","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
-  _tdiag->Project("tt2dp2","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
-  _tdiag->Project("rt2dp2","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fitcon>1e-2");
+  _tdiag->Project("tt2d","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("rt2d","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("tt2dp","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("rt2dp","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("tt2dp2","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("rt2dp2","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
 
   TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
   t2dcan->Divide(2,2);
@@ -501,7 +502,7 @@ void KalFit::AccPlots() {
   _tdiag->Project("nmc","mc.ngood");
   _tdiag->Project("mcmom","mcent.mom",tnhits);
   
-  _tdiag->Project("fitcon","log10(fitcon)",reco+tnhits+tmom);
+  _tdiag->Project("fitcon","log10(fit.con)",reco+tnhits+tmom);
   _tdiag->Project("momerr","fit.momerr",reco+tnhits+tmom);
   _tdiag->Project("t0err","t0err",reco+tnhits+tmom);
   _tdiag->Project("na","nactive",reco+tnhits+tmom);
@@ -1178,10 +1179,10 @@ void KalFit::Con() {
 //  fcon1->SetStats(0);
 //  fcon2->SetStats(0);
 
-  _tdiag->Project("con1","fitcon",mcsel+"fit.status==1");
-  _tdiag->Project("con2","fitcon",mcsel+"fit.status==2");
-  _tdiag->Project("lcon1","log10(fitcon)",mcsel+"fit.status==1");
-  _tdiag->Project("lcon2","log10(fitcon)",mcsel+"fit.status==2");
+  _tdiag->Project("con1","fit.con",mcsel+"fit.status==1");
+  _tdiag->Project("con2","fit.con",mcsel+"fit.status==2");
+  _tdiag->Project("lcon1","log10(fit.con)",mcsel+"fit.status==1");
+  _tdiag->Project("lcon2","log10(fit.con)",mcsel+"fit.status==2");
 
   TCanvas* fcan = new TCanvas("fcan","fit consistency",500,800);
   fcan->Clear();
@@ -1339,61 +1340,136 @@ void KalFit::Nactive() {
 
 }
 
+void KalFit::TrkQualRes() {
+  TH1F* goodf = new TH1F("goodf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
+  TH1F* badf = new TH1F("badf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
+  goodf->SetLineColor(kGreen);
+  goodf->SetLineWidth(2);
+  goodf->SetFillColor(kGreen);
+  goodf->SetFillStyle(3004);
+  badf->SetLineColor(kMagenta);
+  badf->SetFillColor(kMagenta);
+  badf->SetLineWidth(2);
+  badf->SetFillStyle(3005);
+  goodf->SetStats(0);
+  badf->SetStats(0);
+  _tdiag->Project("goodf","fit.mom-mcent.mom",reco+rpitch+"trkqual>0.4");
+  _tdiag->Project("badf","fit.mom-mcent.mom",reco+rpitch+"trkqual<0.4");
+  badf->Scale(goodf->GetEntries()/badf->GetEntries());
+  TCanvas* tqcan = new TCanvas("tqcan","TrkQual",1000,800);
+  goodf->Draw();
+  badf->Draw("same");
+
+  double gmax = goodf->GetMaximum();
+  int gbin1 = goodf->FindFirstBinAbove(0.5*gmax);
+  int gbin2 = goodf->FindLastBinAbove(0.5*gmax);
+  double gfwhm = goodf->GetBinCenter(gbin2) - goodf->GetBinCenter(gbin1);
+
+  double bmax = badf->GetMaximum();
+  int bbin1 = badf->FindFirstBinAbove(0.5*bmax);
+  int bbin2 = badf->FindLastBinAbove(0.5*bmax);
+  double bfwhm = badf->GetBinCenter(bbin2) - badf->GetBinCenter(bbin1);
+
+  char ltitle[40];
+
+  TLegend* leg = new TLegend(0.55,0.6,0.9,0.9);
+  snprintf(ltitle,40,"TrkQual<0.4, FWHM =%3.0f KeV/c",1000.0*gfwhm);
+  leg->AddEntry(goodf,ltitle,"F");
+  snprintf(ltitle,40,"TrkQual>0.4, FWHM =%3.0f KeV/c",1000.0*bfwhm);
+  leg->AddEntry(badf,ltitle,"F");
+  leg->Draw();
+}
+
 void KalFit::Mom() {
-  TH1F* cemomtp = new TH1F("cemomtp","Conversion Electron Momentum;p (MeV/c)",200,97,107);
-  TH1F* cemomte = new TH1F("cemomte","Conversion Electron Momentum;p (MeV/c)",200,97,107);
-  TH1F* cemomr = new TH1F("cemomr","Conversion Electron Momentum;p (MeV/c)",200,97,107);
+  TH1F* cemomtp = new TH1F("cemomtp","Conversion Electron Momentum;p (MeV/c)",200,98,106);
+  TH1F* cemomte = new TH1F("cemomte","Conversion Electron Momentum;p (MeV/c)",200,98,106);
+  TH1F* cemomr = new TH1F("cemomr","Conversion Electron Momentum;p (MeV/c)",200,98,106);
   cemomtp->SetStats(0);
   cemomtp->SetLineColor(kGreen);
   cemomtp->SetFillColor(kGreen);
   cemomte->SetStats(0);
-  cemomte->SetLineColor(kBlack);
+  cemomte->SetLineColor(kBlue);
   cemomte->SetFillColor(kBlue);
+  cemomte->SetFillStyle(3005);
+  cemomte->SetLineWidth(2.0);
   cemomr->SetStats(0);
   cemomr->SetLineColor(kRed);
-  _tdiag->Project("cemomtp","mcent.mom",quality);
+  cemomr->SetFillColor(kRed);
+  cemomr->SetFillStyle(3004);
+  cemomr->SetLineWidth(2.0);
+  _tdiag->Project("cemomtp","mcgen.mom",quality);
   _tdiag->Project("cemomte","mcent.mom",quality);
   _tdiag->Project("cemomr","fit.mom",quality);
-  TCanvas* cemcan = new TCanvas("cemcan","Conversion Momentum",800,600);
+  TCanvas* cemcan = new TCanvas("cemcan","Conversion Momentum",1000,800);
   cemcan->Divide(1,1);
   cemcan->cd(1);
-  cemomte->Draw();
-//  cemomtp->Draw("same");
+//  cemomte->Draw();
 //  cemomr->Draw("same");
 
-  
-  double thalfmax = cemomte->GetMaximum()/2.0;
-  int bin1 = cemomte->FindFirstBinAbove(thalfmax);
-  int bin2 = cemomte->FindLastBinAbove(thalfmax);
+  double tmax = cemomte->GetMaximum();
+  int bin1 = cemomte->FindFirstBinAbove(0.5*tmax);
+  int bin2 = cemomte->FindLastBinAbove(0.5*tmax);
   double tfwhm = cemomte->GetBinCenter(bin2) - cemomte->GetBinCenter(bin1);
-  TArrow* tfwhma = new TArrow(cemomte->GetBinCenter(bin1),thalfmax,
-  cemomte->GetBinCenter(bin2),thalfmax,0.02,"<|>");
+  TArrow* tfwhma = new TArrow(cemomte->GetBinCenter(bin1),0.5*tmax,
+  cemomte->GetBinCenter(bin2),0.5*tmax,0.02,"<|>");
   tfwhma->SetLineWidth(2);
-  tfwhma->SetLineColor(kBlack);
-  tfwhma->SetFillColor(kBlack);
-  cemomte->Fit("gaus","","same",cemomte->GetBinCenter(bin1),cemomte->GetBinCenter(bin2));
+  tfwhma->SetLineColor(kBlue);
+  tfwhma->SetFillColor(kBlue);
+  bin1 = cemomte->FindFirstBinAbove(0.9*tmax);
+  bin2 = cemomte->FindLastBinAbove(0.9*tmax);
+  cemomte->SetMaximum(1.2*tmax);
+  cemomte->Fit("gaus","0","same",cemomte->GetBinCenter(bin1),cemomte->GetBinCenter(bin2));
+  cemomte->Draw();
   tfwhma->Draw();
 
-  double rhalfmax = cemomr->GetMaximum()/2.0;
-  bin1 = cemomr->FindFirstBinAbove(rhalfmax);
-  bin2 = cemomr->FindLastBinAbove(rhalfmax);
+
+  double rmax = cemomr->GetMaximum();
+  bin1 = cemomr->FindFirstBinAbove(0.5*rmax);
+  bin2 = cemomr->FindLastBinAbove(0.5*rmax);
   double rfwhm = cemomr->GetBinCenter(bin2) - cemomr->GetBinCenter(bin1);
-  TArrow* rfwhma = new TArrow(cemomr->GetBinCenter(bin1),rhalfmax,
-  cemomr->GetBinCenter(bin2),rhalfmax,0.02,"<|>");
+  TArrow* rfwhma = new TArrow(cemomr->GetBinCenter(bin1),0.5*rmax,
+  cemomr->GetBinCenter(bin2),0.5*rmax,0.02,"<|>");
   rfwhma->SetLineWidth(2);
   rfwhma->SetLineColor(kRed);
   rfwhma->SetFillColor(kRed);
-  cemomr->Fit("gaus","","same",cemomr->GetBinCenter(bin1),cemomr->GetBinCenter(bin2));
+  bin1 = cemomr->FindFirstBinAbove(0.9*rmax);
+  bin2 = cemomr->FindLastBinAbove(0.9*rmax);
+  cemomr->Fit("gaus","0","same",cemomr->GetBinCenter(bin1),cemomr->GetBinCenter(bin2));
+  cemomr->Draw("same");
   rfwhma->Draw();
 
+  cemomtp->Draw("same");
+  double emax = cemomtp->GetBinCenter(cemomtp->GetMaximumBin());
+  double tmean = cemomte->GetFunction("gaus")->GetParameter(1);
+  double tshift = tmean - emax;
+  cout << "True shift = " << tshift << endl;
+ 
+  TArrow* tfsa = new TArrow(tmean,tmax,emax,tmax,0.02,"<-|");
+  tfsa->SetLineColor(kBlue);
+  tfsa->SetLineWidth(2);
+  tfsa->SetFillColor(kBlue);
+  tfsa->Draw();
+
+  double rmean = cemomr->GetFunction("gaus")->GetParameter(1);
+  double rshift = rmean - emax;
+  cout << "Reco shift = " << rshift << endl;
+  TArrow* rfsa = new TArrow(rmean,rmax,emax,rmax,0.02,"<-|");
+  rfsa->SetLineColor(kRed);
+  rfsa->SetLineWidth(2);
+  rfsa->SetFillColor(kRed);
+  rfsa->Draw();
+  
   TLegend* cemleg = new TLegend(0.1,0.6,0.6,0.9);
-  cemleg->AddEntry(cemomtp,"MC at Production","F");
+  cemleg->AddEntry(cemomtp,"CE Momentum at Production","F");
   char line[50];
-  snprintf(line,50,"MC at Tracker, FWHM = %3.1f KeV/c",1000.0*tfwhm);
-  cemleg->AddEntry(cemomte,line,"FL");
-  snprintf(line,50,"Reconstructed, FWHM = %3.1f KeV/c",1000.0*rfwhm);
-  cemleg->AddEntry(cemomr,line,"L");
-  cemleg->Draw();
+  cemleg->AddEntry(cemomte,"True CE Momentum at Tracker Entrance","F");
+  snprintf(line,50,"Shift = %2.0f KeV/c, FWHM = %3.0f KeV/c",1000.0*tshift, 1000.0*tfwhm);
+
+  cemleg->AddEntry(tfsa,line,"L");
+  cemleg->AddEntry(cemomr,"Reconstructed CE Momentum","F");
+  snprintf(line,50,"Shift = %2.0f KeV/c, FWHM = %3.0f KeV/c",1000.0*rshift, 1000.0*rfwhm);
+  cemleg->AddEntry(rfsa,line,"L");
+cemleg->Draw();
 }
 
 void KalFit::Rad() {
@@ -1561,8 +1637,8 @@ void KalFit::MomTails(int iwt) {
   _tdiag->Project("cnact","nactive",core*weight);
   _tdiag->Project("tnact","nactive",tail*weight);
 
-  _tdiag->Project("cfitcon","log10(fitcon)",core*weight);
-  _tdiag->Project("tfitcon","log10(fitcon)",tail*weight);
+  _tdiag->Project("cfitcon","log10(fit.con)",core*weight);
+  _tdiag->Project("tfitcon","log10(fit.con)",tail*weight);
 
   _tdiag->Project("cmomerr","fit.momerr",core*weight);
   _tdiag->Project("tmomerr","fit.momerr",tail*weight);

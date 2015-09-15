@@ -16,29 +16,9 @@
 #include <iostream>
 #include <math.h>
 #include <vector>
+#include "KalmanTests/test/DIOCZ.h"
 
 using namespace std;
-
-// the following approximation is from Czarnecki etal, 'Muon decay in orbit:spectrum of high-energy electrons',
-// for E>85 MeV
-Double_t DIOCZ(Double_t *x, Double_t *par) {
-  double ee = x[0];
-  double norm = par[0];
-  static const double mal(25133);
-  //    double mmu(105.654);
-  static const double emu(105.194);
-//  static const double emue(104.973);
-  //    double me(0.511);
-  static const double a5(8.6434e-17);
-  static const double a6(1.16874e-17);
-  static const double a7(-1.87828e-19);
-  static const double a8(9.16327e-20);
-  double delta = emu - ee - ee*ee/(2*mal);
-  if(delta>0.0)
-    return norm*(a5*pow(delta,5) + a6*pow(delta,6) + a7*pow(delta,7) + a8*pow(delta,8));
-  else
-    return 0.0;
-}
 
 Double_t DIOCZ_R(Double_t *x, Double_t *par) {
   double norm = par[0];
@@ -359,7 +339,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
 //    inttext->AddLine();
 //    snprintf(itext,50,"%4.2f MeV/c < P < %4.2f MeV/c",momlow,momhigh);
 //    inttext->AddText(itext);
-    snprintf(itext,50,"#int CE = %3.2f #pm %2.2f",cint,cint_err);
+    snprintf(itext,50,"#Sigma CE = %3.2f #pm %2.2f",cint,cint_err);
     l = inttext->AddText(itext);
     l->SetTextColor(kRed);
 
@@ -369,7 +349,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     l = inttext->AddText(itext);
     l->SetTextColor(kRed);
 
-    snprintf(itext,50,"#int DIO = %3.3f #pm %2.3f",dint,dint_err);
+    snprintf(itext,50,"#Sigma DIO = %3.3f #pm %2.3f",dint,dint_err);
     l = inttext->AddText(itext);
 //    l->SetTextColor(kBlue);
 //    snprintf(itext,50,"#int RPC+AP+Cosmic = %2.2f",fint);
@@ -441,8 +421,8 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV/c",_nbins,dmlow,dmhi);
   TH1F* evtwt = new TH1F("evtwt","True DIO momentum;MeV/c",_nbins,dmlow,dmhi);
   //  evtwt->Sumw2();
-  if(dio)dio->Project("diogen","mcmom");
-  if(dio)dio->Project("evtwt","mcmom","evtwt");
+  if(dio)dio->Project("diogen","mcgen.mom");
+  if(dio)dio->Project("evtwt","mcgen.mom","evtwt");
   evtwt->Scale(dioscale);
   evtwt->SetLineColor(kBlue);
   diogen->SetLineColor(kRed);
@@ -566,9 +546,9 @@ void mu2e::fitReco(unsigned icut) {
   amom->Sumw2();
   amomd->Sumw2();
 //  char fmomcut[80];
-//  snprintf(fmomcut,80,"fit.mom>%5.3f",mcmom);
-  if(dio)dio->Project("amom","mcmom",final[icut]+TCut("fit.mom>mcmom-4.0"));
-  if(dio)dio->Project("amomd","mcmom");
+//  snprintf(fmomcut,80,"fit.mom>%5.3f",mcgen.mom);
+  if(dio)dio->Project("amom","mcgen.mom",final[icut]+TCut("fit.mom>mcgen.mom-4.0"));
+  if(dio)dio->Project("amomd","mcgen.mom");
   amom->Divide(amomd);
   amom->SetMinimum(0.08);
   amom->SetMaximum(0.18);
@@ -587,7 +567,7 @@ void mu2e::fitReco(unsigned icut) {
 // set parameters according to cutset 'C'
   _momres = new TH1F("momres","Reco Momentum Resolution;P_{RECO}-P_{Conversion} (MeV/c)",_nbins,-5,1.0);
 //  _momres->Sumw2();
-  con->Project("momres","fit.mom-mcmom",final[icut]);
+  con->Project("momres","fit.mom-mcgen.mom",final[icut]);
 //  _momres->Scale(conscale);
   TCanvas* fcan = new TCanvas("fcan","Fits",1000,800);
   fcan->Clear();

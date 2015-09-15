@@ -1,4 +1,4 @@
-#include "RTypes.h"
+#include "Rtypes.h"
 #include "TMath.h"
 #include "math.h"
 Double_t DIOSC(Double_t *x, Double_t *par) {
