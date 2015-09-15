@@ -20,6 +20,15 @@ muonStops : {
     branchName            : "stops"
     verbosityLevel        : 1
 }
+
+# Files containing the positions and times of stopped muons:
+#   tdr - 17 target configuration
+#   cd3 - 34 target configuration
+#   no suffix: default, which may be time dependent.
+mu2e.mergedMuonStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+mu2e.mergedMuonStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-tgtstops.0506a_0728a_0825a.001002_00000000.root" ]
+mu2e.mergedMuonStops     : @local::mergedMuonStops_cd3
+
 # CD3 stopped muon configs.
 mu2e.tgtMuonStops: {
     inputFiles            : @nil // never change the @nil here
