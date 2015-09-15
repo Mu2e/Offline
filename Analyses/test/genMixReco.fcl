@@ -29,10 +29,6 @@
 #include "CalPatRec/fcl/prolog.fcl"
 #include "ParticleID/fcl/prolog.fcl"
 
-BEGIN_PROLOG
-  muStops      : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
-END_PROLOG
-
 process_name : GenReco
 
 source : { 
@@ -79,7 +75,7 @@ physics : {
 # use --fclinput=@muStops:datasets/mustops for grid submission 
 # [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ] 
 #------------------------------------------------------------------------------
-		inputFiles            : @local::muStops
+		inputFiles            : @local::mergedMuonStops
 		averageNumRecordsToUse: 500000
 		treeName              : "stoppedMuonDumper/stops"
 		branchName            : "stops"

@@ -16,7 +16,7 @@
 #include "standardServices.fcl"
 
 # BEGIN_PROLOG
-#   muStops      : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+#   muStops      : @local::mergedMuonStops
 # END_PROLOG
 
 process_name : GenReco
