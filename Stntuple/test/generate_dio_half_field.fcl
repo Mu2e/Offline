@@ -20,4 +20,4 @@ physics.producers.generate.physics: {
 
 services.user.GeometryService.inputFile   : "murat/test/geom_tdr_half_field.txt"
 
-physics.producers.generate.muonStops.inputFiles : ["mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root"] 
+physics.producers.generate.muonStops.inputFiles : @local::mergedMuonStops

@@ -47,7 +47,7 @@ physics : {
 	    muonStops : {
 #		inputFiles            : @nil // use --fclinput for grid submission
 #		inputFiles            : [ "mergedMuonStops/mustops.1009a_1025a_1316a.14278088.root" ]
-		inputFiles            : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+		inputFiles            : @local::mergedMuonStops
 		averageNumRecordsToUse: 500000
 		treeName              : "stoppedMuonDumper/stops"
 		branchName            : "stops"
