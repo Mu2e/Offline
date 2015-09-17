@@ -25,6 +25,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/GenId.hh"
 #include "MCDataProducts/inc/VirtualDetectorId.hh"
 // Utilities
 // tracker
@@ -801,6 +802,26 @@ namespace mu2e
       }
     }
     return retval;
+  }
+
+  unsigned KalDiag::countCEHits() const {
+    unsigned ncehits = 0;
+    unsigned nstrs = mcData()._mcdigis->size();
+    for(unsigned istr=0; istr<nstrs;++istr){
+      StrawDigiMC const& mcdigi = mcData()._mcdigis->at(istr);
+      StrawDigi::TDCChannel itdc = StrawDigi::zero;
+      if(!mcdigi.hasTDC(StrawDigi::zero)) itdc = StrawDigi::one;
+      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+      Int_t mcpdg = spp->pdgId();
+      Int_t mcproc = spp->creationCode();
+      Int_t mcgen = spp->genParticle()->generatorId().id();
+      bool conversion = (mcpdg == 11 && mcgen == 2 && mcproc == GenId::conversionGun && spmcp->momentum().mag()>90.0);
+      if(conversion){
+	++ncehits;
+      }
+    }
+    return ncehits;
   }
 
 }
