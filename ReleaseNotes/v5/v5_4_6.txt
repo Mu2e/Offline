@@ -2,6 +2,10 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_4_6
 
+7) September 18, 2015 ehrlich
+
+   Added new CRV coincidence module.
+
 6) September 14, 2015 gandr
 
    Move KalRepPtrCollection.hh and TrackSummaryRecoMap from

@@ -44,6 +44,9 @@ int crs.sectorTypeD2  = 4;  //18
 int crs.sectorTypeD3  = 4;  //19
 int crs.sectorTypeD4  = 4;  //20
 
+
+// side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
+
 bool crs.sipmsAtSide0R1  = true;  //0
 bool crs.sipmsAtSide0R2  = false; //1  //R counters above the cry hole (no SiPMs on lower side))
 bool crs.sipmsAtSide0R3  = true;  //2  //R counters below cryo hole
@@ -65,6 +68,8 @@ bool crs.sipmsAtSide0C3  = true;  //17
 bool crs.sipmsAtSide0D2  = true;  //18
 bool crs.sipmsAtSide0D3  = false; //19
 bool crs.sipmsAtSide0D4  = true;  //20
+
+// side 1 is the positive side of the counter, i.e. the +x side of a CRV-T counter, or the +y side of a CRV-R counter
 
 bool crs.sipmsAtSide1R1  = true;  //0
 bool crs.sipmsAtSide1R2  = true;  //1  //R counters above the cry hole (no SiPMs on lower side))
