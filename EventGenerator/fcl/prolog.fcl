@@ -58,7 +58,7 @@ StoppedMuonConversionGun: {
     czmin          : -1.0
     czmax          :  1.0
     muonStops      : @local::muonStops
-    verbosityLevel : 1
+    // Also phimin and phimax defaulting to [0,2pi]
 }
 
 StoppedParticleReactionGun: {
