@@ -33,7 +33,7 @@ physics : {
             module_type: StoppedParticleReactionGun
 	    verbosityLevel : 1
             physics: @nil
-            muonStops : @local::muonStops
+            muonStops : @local::mu2e.tgtMuonStops
         }
 
         genCounter: {
