@@ -69,7 +69,7 @@ BEGIN_PROLOG
       pulseThreshold            : 0.015    //15mV
       leadingEdgeThreshold      : 0.2      //20% of the maximum bin
     }
-    CrvCoincidence:
+    SimpleCrvCoincidence:
     {
       module_type                  : SimpleCrvCoincidenceCheck
       verboseLevel                 : 1
@@ -81,6 +81,21 @@ BEGIN_PROLOG
       maxTimeDifference            : 5        //ns
       timeWindowStart              : 550      //ns
       timeWindowEnd                : 1750     //1695ns  //if timeWindowEnd > microbunch period (1695), then the time window loops back to the begining (0)
+    }
+    CrvCoincidence:
+    {
+      module_type                   : CrvCoincidenceCheck
+      verboseLevel                  : 1
+      coincidencePropertiesFile     : "CRVResponse/test/coincidenceProperties.txt"
+      crvRecoPulsesModuleLabel      : "CrvRecoPulses"
+      PEthreshold                   : 10
+      adjacentCounterTimeDifference : 5      //ns
+      maxTimeDifference             : 10     //ns
+      maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
+      maxSlopeDifference            : 2.0    //
+      acceptThreeAdjacentCounters   : true   //use hits in three adjacent counters in one layer to form a coincidence
+      timeWindowStart               : 550    //ns
+      timeWindowEnd                 : 1750   //1695ns  //if timeWindowEnd > microbunch period (1695), then the time window loops back to the begining (0)
     }
 
 END_PROLOG

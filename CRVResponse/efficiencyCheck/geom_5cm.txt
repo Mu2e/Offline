@@ -1,22 +1,16 @@
 #include "Mu2eG4/geom/geom_common.txt"
 
-double world.minimalMargin.xmin = 500000;
-double world.minimalMargin.xmax = 500000;
-double world.minimalMargin.zmin = 500000;
-double world.minimalMargin.zmax = 500000;
-
-
 // replace the CRV counter setup:
 
 int   crs.nSectors = 1;
 int   crs.nLayers  = 4;
 
-vector<string> crs.sectorNames = {"Test"};
+vector<string>  crs.sectorNames = {"Test"};
 
 double          crs.scintillatorBarLengthTest    =  5600;
 
-double          crs.scintillatorBarThickness     =  20;
-double          crs.scintillatorBarWidth         =  49.5;
+double          crs.scintillatorBarThickness     =  20.0; //mm   //is actually only 19.8mm, while the lookup tables have 20.0mm
+double          crs.scintillatorBarWidth         =  50.0; //mm   //current Offline has 49.5mm, while the lookup tables have 50.0mm
 double          crs.layerOffset                  =  10;   //mm
 double          crs.gapLarge                     =   2;   //mm
 double          crs.gapSmall                     =   1;   //mm
@@ -25,7 +19,7 @@ vector<double>  crs.gapBetweenLayers             =   {9.525, 12.7, 9.525}; //mm
 
 int             crs.nModulesTest                 =   30;
 int             crs.nCountersPerModuleTest       =   16;
-vector<double>  crs.firstCounterTest             =  {-3904.0, 2600.6, 0}; // next modules start at z=819, 1638, ..., 23751
+vector<double>  crs.firstCounterTest             =  {-3904.0, 2600.6, 0}; // next modules start at z=827, 1654, ..., 23983
 
 string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";

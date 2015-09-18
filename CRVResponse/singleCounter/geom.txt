@@ -1,11 +1,5 @@
 #include "Mu2eG4/geom/geom_common.txt"
 
-double world.minimalMargin.xmin = 500000;
-double world.minimalMargin.xmax = 500000;
-double world.minimalMargin.zmin = 500000;
-double world.minimalMargin.zmax = 500000;
-
-
 // replace the CRV counter setup:
 
 int   crs.nSectors = 1;
@@ -16,8 +10,8 @@ vector<string> crs.sectorNames = {"Test"};
 double          crs.scintillatorBarLengthTest    =  5600;
 // double          crs.scintillatorBarLengthTest    =  3000;
 
-double          crs.scintillatorBarThickness     =  20;
-double          crs.scintillatorBarWidth         =  49.5;
+double          crs.scintillatorBarThickness     =  20.0; //mm   //is actually only 19.8mm, while the lookup tables have 20.0mm
+double          crs.scintillatorBarWidth         =  50.0; //mm   //current Offline has 49.5mm, while the lookup tables have 50.0mm
 double          crs.layerOffset                  =   0;   //mm
 double          crs.gapLarge                     =   0;   //mm
 double          crs.gapSmall                     =   0;   //mm
