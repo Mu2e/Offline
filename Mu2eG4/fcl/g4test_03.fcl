@@ -45,8 +45,8 @@ physics : {
 
   producers: {
 
-    # Generate the event
-    generate: @local::generate
+    # Generate the event; see below for specification of the stopped muon input file
+    generate: @local::StoppedMuonConversionGun
 
     # Run G4 and add its output to the event.
     g4run : @local::g4run
@@ -70,6 +70,11 @@ physics : {
 
   analyzers: {
 
+    readGens: {
+      module_type : GenParticlesAnalyzer
+      inputs      : "generate"
+    }
+
     checkhits: {
       module_type            : ReadBack
       generatorModuleLabel   : generate
@@ -87,10 +92,11 @@ physics : {
       maxFullPrint     : 100
     }
 
+
   }
 
   p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
-  e1 : [checkhits, readStrawHits, outfile]
+  e1 : [readGens, checkhits, readStrawHits, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
