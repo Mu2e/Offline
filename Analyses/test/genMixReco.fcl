@@ -187,8 +187,8 @@ outputs: {
 #------------------------------------------------------------------------------
 # 1. only for interactive submission
 #------------------------------------------------------------------------------
-services.user.SeedService.baseSeed             :  0
-services.user.SeedService.maxUniqueEngines     :  20
+services.SeedService.baseSeed             :  0
+services.SeedService.maxUniqueEngines     :  20
 
 # print per event timing for ::event entry points
 # services.Timing: { }
