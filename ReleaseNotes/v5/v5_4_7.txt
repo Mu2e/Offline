@@ -29,3 +29,4 @@ Still under construction
     Mu2eG4/fcl/g4test_01.fcl
     Mu2eG4/fcl/g4test_02.fcl
     Mu2eG4/fcl/g4test_03.fcl
+    Analyses/test/genMixReco.fcl
