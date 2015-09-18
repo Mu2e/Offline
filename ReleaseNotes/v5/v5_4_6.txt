@@ -1,10 +1,18 @@
            Release notes for Mu2e Offline software, v5_4_6
 
+12) Sept 18, 2015, kutschke
+    Analyses/test/genReco.fcl
+    Analyses/test/genMixReco.fcl
+     - Added an instance of ReadKalFits to look at the output
+       of TrkPatRec and make diagnostic ntuples.
+    Removed the obsolete user block in the services section.
+
 11) Sept 18, 2015, kutschke
     Switched to use the StopMuonConversionGun.
       Mu2eG4/fcl/g4test_01.fcl
       Mu2eG4/fcl/g4test_02.fcl
       Mu2eG4/fcl/g4test_03.fcl
+    Removed the obsolete user block in the services section.
 
 10) Sept 18, 2015, kutschke
     Identified hard coded paths to the stopped muon files.  Replaced with the
