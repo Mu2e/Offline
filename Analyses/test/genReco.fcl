@@ -48,16 +48,15 @@ services : {
     TFileService          : { fileName : "genReco.hist" }
     RandomNumberGenerator : { }
 
-    user : {
-        GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
-        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-        G4Helper               : { }
-        BTrkHelper             : @local::BTrkHelperDefault
-        SeedService            : { @table::automaticSeeds
-	    baseSeed             :  0
-	    maxUniqueEngines     :  20
-	}
+    # Mu2e services
+    GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+    G4Helper               : { }
+    BTrkHelper             : @local::BTrkHelperDefault
+    SeedService            : { @table::automaticSeeds
+       baseSeed            :  0
+       maxUniqueEngines    :  20
     }
 }
 #------------------------------------------------------------------------------
@@ -113,8 +112,30 @@ physics : {
         }
     }
 #------------------------------------------------------------------------------
+# analyzers:
+#------------------------------------------------------------------------------
+    analyzers: {
+
+#     Read the TrkPatRec output and make diagnostic ntuples.
+      RKFDownstreameMinus: {
+         module_type: ReadKalFits
+         fitterModuleLabel: TrkPatRec
+         KalDiag : {
+          MCPtrLabel : "makeSH"
+          MCStepsLabel : "g4run"
+          SimParticleLabel : "g4run"
+          SimParticleInstance : ""
+          StrawHitMCLabel : "makeSH"
+          TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+        }
+      }
+
+    }
+#------------------------------------------------------------------------------
 # paths:
 #------------------------------------------------------------------------------
+    e1 : [ RKFDownstreameMinus ]
+
     p1 : [generate, g4run
 	  , protonTimeMap, muonTimeMap
 	  , makeSD, makeSH
@@ -131,7 +152,7 @@ physics : {
 # to disable writing out the DST file, replace [detectorOutput] with []
     out : [detectorOutput]
 #    out : []
-    end_paths      : [out]
+    end_paths      : [e1, out]
 }
 #------------------------------------------------------------------------------
 # redefinitions
