@@ -1,0 +1,31 @@
+Still under construction
+
+           Release notes for Mu2e Offline software, v5_4_7
+
+3) Sep 18, 2015 kutschke
+   Stntuple/test/generate_dio_template.fcl
+      There was on other fcl file that used @local::muonStops.  Now changed
+      to  @local::mu2e.tgtMuonStops.
+
+2) Sep 18, 2015 kutschke
+   EventGenerator/fcl/prolog.fcl
+     StopMuonConversionGun and StoppedParticleReactionGun were still using
+     @local::muonStops.  Switched to @local::mu2e.tgtMuonStops."
+   This meant that they were still getting the tdr era stopped muon file,
+   not the cd3 version.
+
+1) Sep 18, 2015 kutschke
+   When I removed the user block from services, I forgot to update:
+
+     services.user.SeedService.baseSeed         :  0
+     services.user.SeedService.maxUniqueEngines :  20
+
+   to
+
+     services.SeedService.baseSeed         :  0
+     services.SeedService.maxUniqueEngines :  20
+
+  This is fixed in:
+    Mu2eG4/fcl/g4test_01.fcl
+    Mu2eG4/fcl/g4test_02.fcl
+    Mu2eG4/fcl/g4test_03.fcl
