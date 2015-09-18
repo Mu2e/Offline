@@ -31,21 +31,18 @@ services : {
   TFileService          : { fileName : "g4test_03.root" }
   RandomNumberGenerator : { }
 
-  user : {
-    GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-    G4Helper               : { }
-    SeedService            : @local::automaticSeeds
-  }
-
+  GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+  G4Helper               : { }
+  SeedService            : @local::automaticSeeds
 }
 
 physics : {
 
   producers: {
 
-    # Generate the event; see below for specification of the stopped muon input file
+    # Generate the event.
     generate: @local::StoppedMuonConversionGun
 
     # Run G4 and add its output to the event.
