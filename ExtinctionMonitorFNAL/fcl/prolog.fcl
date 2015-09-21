@@ -78,6 +78,7 @@ EMFPatRecFromTracklets : {
     thetaScatterOnePlane : 0.0002
 
     cutMinTrackProb : 1.e-3
+    maxMissedHits : 1
 }
 
 EMFPatRecFromTrackletsTruthMaking : {
