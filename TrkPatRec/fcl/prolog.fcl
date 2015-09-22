@@ -32,6 +32,7 @@ FlagBkgHits : {
 # 
 TimePeakFinder : {
   module_type               : TimePeakFinder
+  StrawDigiMCLabel	    : "makeSH"
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
   HitBackgroundBits	    : ["DeltaRay","Isolated"]
 }
