@@ -61,7 +61,6 @@ namespace mu2e
       virtual void beginJob();
       virtual void beginRun(art::Run&);
       virtual void produce(art::Event& event ); 
-      void endJob();
     private:
       unsigned _iev;
       // configuration parameters
@@ -74,7 +73,6 @@ namespace mu2e
       std::string _shpLabel;
       std::string _tpkfLabel;
       // outlier cuts
-      double _maxhelixdoca;
       TrkParticle _tpart; // particle type being searched for
       TrkFitDirection _fdir;  // fit direction in search
       // cache of event objects
@@ -85,7 +83,6 @@ namespace mu2e
       HelixFit _hfit;
       // cache of time peaks
       std::vector<TrkTimePeak> _tpeaks;
-      std::string _iname; // data instance name
       //
       // helper functions
       bool findData(const art::Event& e);
@@ -99,15 +96,11 @@ namespace mu2e
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _tpkfLabel(pset.get<string>("TrackerHitTimeClusterCollection","TimePeakFinder")),
-    _maxhelixdoca(pset.get<double>("MaxHelixDoca",40.0)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _hfit(pset.get<fhicl::ParameterSet>("HelixFit",fhicl::ParameterSet()))
   {
      produces<TrackSeedCollection>();
-//   // tag the data product instance by the direction and particle type found by this fitter
-    _iname = _fdir.name() + _tpart.name();
-//    produces<StrawHitFlagCollection>(_iname);
   }
 
   RobustHelixFinder::~RobustHelixFinder(){}
@@ -127,11 +120,9 @@ namespace mu2e
     unique_ptr<TrackSeedCollection> outseeds(new TrackSeedCollection);
     // event printout
     _iev=event.id().event();
-    if((_iev%_printfreq)==0)cout<<"RobustHelixFinder: event="<<_iev<<endl;
     // find the data
     if(!findData(event)){
-      cout << "RobustHelixFinder: No straw hits found, event="<<_iev << endl;
-      return;
+      throw cet::exception("RECO")<<"mu2e::RobustHelixFinder: data missing or incomplete"<< endl;
     }
     loadTimePeaks(_tpeaks,_tccol);
 
@@ -158,19 +149,20 @@ namespace mu2e
 	HepSymMatrix hcov = vT_times_v(hparerr);
 	seeddef.setHelix(HelixTraj(hpar,hcov));
 	// Filter outliers using this helix
-	if (_debug>0) {std::cout <<"RobustHelixFinder::produce - helix params " << hpar << "and errors " << hparerr << endl;}
+	if (_debug>1) {std::cout <<"RobustHelixFinder::produce - helix params " << hpar << "and errors " << hparerr << endl;}
 	//fill seed information
 	TrackSeed tmpseed;
 	fillTrackSeed(tmpseed, seeddef, _tclusthitH, ipeak, _strawhitsH);
         outseeds->push_back(tmpseed);
       }
     }
-    event.put(std::move(outseeds));
-  }
 
-  void RobustHelixFinder::endJob(){
-    // does this cause the file to close?
-    //art::ServiceHandle<art::TFileService> tfs;
+    if (_debug>0 && (_iev%_printfreq)==0) {
+            std::cout<<"event "<<_iev<<" tot N hit "<<_shcol->size()<<" N tracks seed found "<<outseeds->size()
+                            <<" N time peaks "<<_tccol->size()<<std::endl;
+    }
+
+    event.put(std::move(outseeds));
   }
 
   // find the input data objects 

@@ -2,7 +2,19 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
+#include "TrkPatRec/fcl/Particle.fcl"
+#include "TrkPatRec/fcl/PanelAmbigResolver.fcl"
+#
+
 BEGIN_PROLOG
+
+# this should go in a general file FIXME!!
+FitDir : {
+  downstream : 0
+  upstream : 1
+}
+
+# configure precursor modules to track finding and fitting
 
 FSHPreStereo  : {
   module_type : FlagStrawHits
@@ -17,164 +29,221 @@ FlagBkgHits : {
   module_type : FlagBkgHits
 }
 
-# pattern reconition protype
-TrkPatRec :
-{
-        module_type                             : TrkPatRec
-	includeCaloInfo				: 0
-# Kalman fit configuration for the helix seed fit
-        SeedFit :
-        {
-	    maxiter                             : 3
-	    materialCorrection                  : false
-	    seedsmear       			: 10000
-	    maxhitchi                           : 5.0
-	    hiterr                              : [ 5.0, 1.44 ]
-	    ambiguityStrategy       		: [ 0  , 0    ]
-	    t0Tolerance				: [ 5.0, 5.0  ]
-	    weedhits				: [ true, true ]
-	    initT0				: true 
-	    updateT0				: false
-#------------------------------------------------------------------------------
-# ambiguity resolver parameters
-#------------------------------------------------------------------------------
-	    FixedAmbigResolver                  : {}
-	    HitAmbigResolver                    : {}
-	    PocaAmbigResolver                   : {}
-	    PanelAmbigResolver                  : {}
-#------------------------------------------------------------------------------
-# provision for doublet ambiguity resolver - SeedFit is not using it, but 
-# initialization might require
-#------------------------------------------------------------------------------
-	    DoubletAmbigResolver : {
-		debugLevel                      : 0
-		HitAmbigPenalty 		: false
-		HitMinDrift			: -1.e6
-		ZeroDriftPenalty 		: -1.e6
-		scaleErrDoublet                 : -1.e6
-		maxDoubletChi2                  : -1.e6
-		sigmaSlope                      : -1.e6
-		minDriftDoublet                 : -1.e6
-		deltaDriftDoublet               : -1.e6
-		excludeBothHits                 : 1
-	    }
-        }
-# Kalman fit configuration for the final track fit
-        KalFit :
-        {
-	    materialCorrection                  : true
-	    fieldCorrection			: true
-	    ResolveAfterWeeding			: true
-            hiterr                              : [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
-	    ambiguityStrategy                   : [ 0  , 0  , 2  , 2   , 2    , 2   , 2  , 2  , 2  ]
-	    t0Tolerance                         : [ 2.0, 1.0, 1.0, 1.0 , 0.5  , 0.5 , 0.2, 0.2, 0.1]
-	    weedhits				: [ true, true, true, true, true, true, true, true, true]
-#------------------------------------------------------------------------------
-# ambiguity resolver parameters
-#------------------------------------------------------------------------------
-	    FixedAmbigResolver                  : {}
-	    HitAmbigResolver                    : {}
-	    PocaAmbigResolver                   : {}
-	    PanelAmbigResolver                  : {
-	      DiagLevel				: 0
-	      AddTrackPositionConstraint	: true
-	      AllowedHitStates			: [ -1, 0, 1, 2 ] # try all ambiguity and activity states
-	      minChisqSep			: 4.0
-	      inactivePenalty			: 16.0
-	      PenaltyResolution			: 0.25
-	      TrackPenaltyResolution		: 0.5
-	      NullAmbigPenalty			: 0.0
-	      MaximumHitU			: 8.0
-	    }
-#------------------------------------------------------------------------------
-# provision for doublet ambiguity resolver
-#------------------------------------------------------------------------------
-	    DoubletAmbigResolver : {
-		debugLevel                      : 0
-		HitAmbigPenalty                 : false
-		HitMinDrift                     : 0.2
-		ZeroDriftPenalty                : 0.05  
-		scaleErrDoublet                 : 5.    # external error scale factor
-		maxDoubletChi2                  : 9.    # 3 times 3 degrees of freedom, not quite rigorous mathematically 
-		sigmaSlope                      : 0.025 # sigma(delta dx/dz)
-		minDriftDoublet                 : 0.3   # 300 um
-		deltaDriftDoublet               : 0.3   # 300 um
-		excludeBothHits                 : 1
-	    }
-	}
-# MC Time offsets for diagnostics configuration can be done generically
-	KalDiag : 
-	{
-	    MCPtrLabel          : makeSH
-	    MCStepsLabel        : g4run
-	    SimParticleLabel    : g4run
-	    SimParticleInstance : "" 
-	    StrawHitMCLabel     : makeSD
-	    TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	}
+# 
+TimePeakFinder : {
+  module_type               : TimePeakFinder
+  StrawDigiMCLabel	    : "makeSH"
+  HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
+  HitBackgroundBits	    : ["DeltaRay","Isolated"]
+}
+# we need both positive and negative helicity helices.  For simplicity, we use upstream and downstream electrons
+PosHelixFinder : {
+  module_type		: RobustHelixFinder
+  fitparticle		: @local::Particle.eminus
+  fitdirection		: @local::FitDir.downstream
+}
 
-} # end TrkPatRec
-# specific choices for ambiguity resolution: doublet-based, or panel-based
-TrkPatRecDoublets : @local::TrkPatRec
-TrkPatRecDoublets.KalFit.ambiguityStrategy	: [ 0  , 0  , 4, 4, 4, 4, 4, 4 , 4 ]
+NegHelixFinder : {
+  module_type		: RobustHelixFinder
+  fitparticle		: @local::Particle.eminus
+  fitdirection		: @local::FitDir.upstream
+}
+
+# pattern recognition internals
+# Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
+KalSeedFit : {
+  maxiter                         : 3
+  fieldCorrection	      	  : false
+  materialCorrection              : false
+  seedsmear       		  : 10000
+  maxhitchi                       : 5.0
+  # interate the fit twice: once at the physical size of the straw, once at its RMS
+  hiterr                          : [ 5.0, 1.44 ]
+  ambiguityStrategy       	  : [ 0  , 0    ]
+  t0Tolerance			  : [ 5.0, 5.0  ]
+  weedhits			  : [ true, true ]
+  initT0			  : true 
+  updateT0			  : false
+  debugLevel                      : 0
+}
+
+# Kalman fit configuration for the final track fit.  This also runs the simulated annealing
+KalFinalFit : {
+  materialCorrection          : true
+  fieldCorrection	      : true
+  ResolveAfterWeeding	      : true
+  hiterr                      : [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
+  t0Tolerance                 : [ 2.0, 1.0, 1.0, 1.0 , 0.5  , 0.5 , 0.2, 0.2, 0.1]
+# specific choices for ambiguity resolution
+  weedhits		      : @local::PanelAmbig.Weed
+  PanelAmbigResolver          : @local::PanelAmbig.Resolver
+  ambiguityStrategy           : @local::PanelAmbig.Strategy
+}
+
+# Separate pat rec fit.  This, plus supporting modules for finding seeds,
+# is the current recommended way of producing tracks
+TrkRecFit : {
+  module_type                 : TrkRecFit
+  SeedFit		      : @local::KalSeedFit
+  KalFit		      : @local::KalFinalFit
+}
+
+# dedicated configurations for reconstructing specific particles
+#  First, downstream electrons
+TrkRecFitDownstreameMinus			      : @local::TrkRecFit
+TrkRecFitDownstreameMinus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitDownstreameMinus.fitparticle		      : @local::Particle.eminus
+TrkRecFitDownstreameMinus.fitdirection		      : @local::FitDir.downstream 
+# upstream electrons
+TrkRecFitUpstreameMinus				      : @local::TrkRecFit
+TrkRecFitUpstreameMinus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitUpstreameMinus.fitparticle		      : @local::Particle.eminus
+TrkRecFitUpstreameMinus.fitdirection		      : @local::FitDir.upstream 
+#  downstream positrons
+TrkRecFitDownstreamePlus			      : @local::TrkRecFit
+TrkRecFitDownstreamePlus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitDownstreamePlus.fitparticle		      : @local::Particle.eplus
+TrkRecFitDownstreamePlus.fitdirection		      : @local::FitDir.downstream 
+# upstream positrons
+TrkRecFitUpstreamePlus				      : @local::TrkRecFit
+TrkRecFitUpstreamePlus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitUpstreamePlus.fitparticle		      : @local::Particle.eplus
+TrkRecFitUpstreamePlus.fitdirection		      : @local::FitDir.upstream 
+# downstream mu minus
+TrkRecFitDownstreammuMinus			      : @local::TrkRecFit
+TrkRecFitDownstreammuMinus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitDownstreammuMinus.fitparticle		      : @local::Particle.muminus
+TrkRecFitDownstreammuMinus.fitdirection		      : @local::FitDir.downstream 
+# upstream mu minus
+TrkRecFitUpstreammuMinus			      : @local::TrkRecFit
+TrkRecFitUpstreammuMinus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitUpstreammuMinus.fitparticle		      : @local::Particle.muminus
+TrkRecFitUpstreammuMinus.fitdirection		      : @local::FitDir.upstream 
+# downstream mu plus
+TrkRecFitDownstreammuPlus			      : @local::TrkRecFit
+TrkRecFitDownstreammuPlus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitDownstreammuPlus.fitparticle		      : @local::Particle.muplus
+TrkRecFitDownstreammuPlus.fitdirection		      : @local::FitDir.downstream 
+# upstream mu plus
+TrkRecFitUpstreammuPlus				      : @local::TrkRecFit
+TrkRecFitUpstreammuPlus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitUpstreammuPlus.fitparticle		      : @local::Particle.muplus
+TrkRecFitUpstreammuPlus.fitdirection		      : @local::FitDir.upstream 
+# downstream pi minus
+TrkRecFitDownstreampiMinus			      : @local::TrkRecFit
+TrkRecFitDownstreampiMinus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitDownstreampiMinus.fitparticle		      : @local::Particle.piminus
+TrkRecFitDownstreampiMinus.fitdirection		      : @local::FitDir.downstream 
+# upstream pi minus
+TrkRecFitUpstreampiMinus			      : @local::TrkRecFit
+TrkRecFitUpstreampiMinus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitUpstreampiMinus.fitparticle		      : @local::Particle.piminus
+TrkRecFitUpstreampiMinus.fitdirection		      : @local::FitDir.upstream 
+# downstream pi plus
+TrkRecFitDownstreampiPlus			      : @local::TrkRecFit
+TrkRecFitDownstreampiPlus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitDownstreampiPlus.fitparticle		      : @local::Particle.piplus
+TrkRecFitDownstreampiPlus.fitdirection		      : @local::FitDir.downstream 
+# upstream pi plus
+TrkRecFitUpstreampiPlus				      : @local::TrkRecFit
+TrkRecFitUpstreampiPlus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitUpstreampiPlus.fitparticle		      : @local::Particle.piplus
+TrkRecFitUpstreampiPlus.fitdirection		      : @local::FitDir.upstream
 #
-TrkPatRecPanel : @local::TrkPatRec
-TrkPatRecPanel.KalFit.ambiguityStrategy   	: [ 0, 0, 2, 2, 2, 3, 3, 3, 3]
-TrkPatRecPanel.KalFit.weedhits			: [ true, true, true, true, true, false, false, false, false]
-# variants of TrkPatRec for specific particle species and directions. These constitute the 'standard' fits
-# in future we need names instead of values for the particle type
-# for now, use panel ambiguity resolution
-TrkPatRecDownstreameMinus : @local::TrkPatRecPanel
-TrkPatRecDownstreameMinus.fitparticle : 11
-TrkPatRecDownstreameMinus.fitdirection : 0 
+# Declare a table with all the modules needed for track reconstruction
+Tracking : {
+  producers : {
+    makeSD	    : @local::makeSD
+    makeSH	    : @local::makeSHfromSD
+    FSHPreStereo    : @local::FSHPreStereo
+    MakeStereoHits  : @local::MakeStereoHits
+    FlagStrawHits   : @local::FlagStrawHits
+    FlagBkgHits	    : @local::FlagBkgHits
+    TimePeakFinder  : @local::TimePeakFinder
+    PosHelixFinder  : @local::PosHelixFinder
+    NegHelixFinder  : @local::NegHelixFinder
+# now all the different track finders based on these inputs
+    TRFDownstreameMinus	  : @local::TrkRecFitDownstreameMinus
+    TRFUpstreameMinus	  : @local::TrkRecFitUpstreameMinus
+    TRFDownstreamePlus	  : @local::TrkRecFitDownstreamePlus
+    TRFUpstreamePlus	  : @local::TrkRecFitUpstreamePlus
+    TRFDownstreammuMinus  : @local::TrkRecFitDownstreammuMinus
+    TRFUpstreammuMinus	  : @local::TrkRecFitUpstreammuMinus
+    TRFDownstreammuPlus	  : @local::TrkRecFitDownstreammuPlus
+    TRFUpstreammuPlus	  : @local::TrkRecFitUpstreammuPlus
+    TRFDownstreampiMinus  : @local::TrkRecFitDownstreampiMinus
+    TRFUpstreampiMinus	  : @local::TrkRecFitUpstreampiMinus
+    TRFDownstreampiPlus	  : @local::TrkRecFitDownstreampiPlus
+    TRFUpstreampiPlus	  : @local::TrkRecFitUpstreampiPlus
+  }
+# production sequence to prepare for tracking
+  PrepareHits : [ makeSD, makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
+}
+# production sequences for specific paricles
+Tracking.TPRDownstreameMinus : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFDownstreameMinus ]
 
-TrkPatRecUpstreameMinus : @local::TrkPatRecPanel
-TrkPatRecUpstreameMinus.fitparticle : 11
-TrkPatRecUpstreameMinus.fitdirection : 1
+# Monolithic pattern reconition module configuration protype
+# NB: TrkPatRec is DEPRECATED and will not be supported in future
+# Please used TrkRecFit for all CD3 applications and beyond
+TrkPatRec : {
+  module_type                 : TrkPatRec
+  includeCaloInfo	      : 0
+  SeedFit		      : @local::KalSeedFit
+  KalFit		      : @local::KalFinalFit
+}
 
-TrkPatRecDownstreamePlus : @local::TrkPatRecPanel
-TrkPatRecDownstreamePlus.fitparticle : -11
-TrkPatRecDownstreamePlus.fitdirection : 0
+# variants of TrkPatRec for specific particle species and directions.
+#  THESE ARE DEPRECATED, PLEASE USE THE TRKRECFIT SPLIT VERSION TABLES INSTEAD!!!!!
+TrkPatRecDownstreameMinus : @local::TrkPatRec
+TrkPatRecDownstreameMinus.fitparticle : @local::Particle.eminus
+TrkPatRecDownstreameMinus.fitdirection : @local::FitDir.downstream 
 
-TrkPatRecUpstreamePlus : @local::TrkPatRecPanel
-TrkPatRecUpstreamePlus.fitparticle : -11
-TrkPatRecUpstreamePlus.fitdirection : 1
+TrkPatRecUpstreameMinus : @local::TrkPatRec
+TrkPatRecUpstreameMinus.fitparticle : @local::Particle.eminus
+TrkPatRecUpstreameMinus.fitdirection : @local::FitDir.upstream
 
-TrkPatRecDownstreammuMinus : @local::TrkPatRecPanel
-TrkPatRecDownstreammuMinus.fitparticle : 13
-TrkPatRecDownstreammuMinus.fitdirection : 0
+TrkPatRecDownstreamePlus : @local::TrkPatRec
+TrkPatRecDownstreamePlus.fitparticle : @local::Particle.eplus
+TrkPatRecDownstreamePlus.fitdirection : @local::FitDir.downstream
 
-TrkPatRecUpstreammuMinus : @local::TrkPatRecPanel
-TrkPatRecUpstreammuMinus.fitparticle : 13
-TrkPatRecUpstreammuMinus.fitdirection : 1
+TrkPatRecUpstreamePlus : @local::TrkPatRec
+TrkPatRecUpstreamePlus.fitparticle : @local::Particle.eplus
+TrkPatRecUpstreamePlus.fitdirection : @local::FitDir.upstream
 
-TrkPatRecDownstreammuPlus : @local::TrkPatRecPanel
-TrkPatRecDownstreammuPlus.fitparticle : -13
-TrkPatRecDownstreammuPlus.fitdirection : 0
+TrkPatRecDownstreammuMinus : @local::TrkPatRec
+TrkPatRecDownstreammuMinus.fitparticle : @local::Particle.muminus
+TrkPatRecDownstreammuMinus.fitdirection : @local::FitDir.downstream
 
-TrkPatRecUpstreammuPlus : @local::TrkPatRecPanel
-TrkPatRecUpstreammuPlus.fitparticle : -13
-TrkPatRecUpstreammuPlus.fitdirection : 1
+TrkPatRecUpstreammuMinus : @local::TrkPatRec
+TrkPatRecUpstreammuMinus.fitparticle : @local::Particle.muminus
+TrkPatRecUpstreammuMinus.fitdirection : @local::FitDir.upstream
 
-TrkPatRecDownstreampPlus : @local::TrkPatRecPanel
-TrkPatRecDownstreampPlus.fitparticle : 2212
-TrkPatRecDownstreampPlus.fitdirection : 0
+TrkPatRecDownstreammuPlus : @local::TrkPatRec
+TrkPatRecDownstreammuPlus.fitparticle : @local::Particle.muplus
+TrkPatRecDownstreammuPlus.fitdirection : @local::FitDir.downstream
 
-TrkPatRecUpstreampiPlus : @local::TrkPatRecPanel 
-TrkPatRecUpstreampiPlus.fitparticle : 211
-TrkPatRecUpstreampiPlus.fitdirection : 1
+TrkPatRecUpstreammuPlus : @local::TrkPatRec
+TrkPatRecUpstreammuPlus.fitparticle : @local::Particle.muplus
+TrkPatRecUpstreammuPlus.fitdirection : @local::FitDir.upstream
+
+TrkPatRecDownstreampPlus : @local::TrkPatRec
+TrkPatRecDownstreampPlus.fitparticle : @local::Particle.proton
+TrkPatRecDownstreampPlus.fitdirection : @local::FitDir.downstream
+
+TrkPatRecUpstreampiPlus : @local::TrkPatRec 
+TrkPatRecUpstreampiPlus.fitparticle : @local::Particle.piplus
+TrkPatRecUpstreampiPlus.fitdirection : @local::FitDir.upstream
  
-TrkPatRecDownstreampiPlus : @local::TrkPatRecPanel 
-TrkPatRecDownstreampiPlus.fitparticle : 211
-TrkPatRecDownstreampiPlus.fitdirection : 0
+TrkPatRecDownstreampiPlus : @local::TrkPatRec 
+TrkPatRecDownstreampiPlus.fitparticle : @local::Particle.piplus
+TrkPatRecDownstreampiPlus.fitdirection : @local::FitDir.downstream
 
+TrkPatRecDownstreampiMinus : @local::TrkPatRec 
+TrkPatRecDownstreampiMinus.fitparticle : @local::Particle.piminus
+TrkPatRecDownstreampiMinus.fitdirection : @local::FitDir.downstream
 
-TrkPatRecDownstreampiMinus : @local::TrkPatRecPanel 
-TrkPatRecDownstreampiMinus.fitparticle : -211
-TrkPatRecDownstreampiMinus.fitdirection : 0
-
-TrkPatRecUpstreampiMinus : @local::TrkPatRecPanel 
-TrkPatRecUpstreampiMinus.fitparticle : -211
-TrkPatRecUpstreampiMinus.fitdirection : 1
+TrkPatRecUpstreampiMinus : @local::TrkPatRec 
+TrkPatRecUpstreampiMinus.fitparticle : @local::Particle.piminus
+TrkPatRecUpstreampiMinus.fitdirection : @local::FitDir.upstream
 
 END_PROLOG
