@@ -147,7 +147,7 @@ namespace mu2e {
     _runid = event.run();
     _subrunid = event.subRun();
     if(!_kdiag.findMCData(event)){
-      throw cet::exception("RECO")<<"mu2e::KalDiag: MC data missing or incoplete" << std::endl;
+      throw cet::exception("RECO")<<"mu2e::KalDiag: MC data missing or incomplete" << std::endl;
     }
     // Get handle to calorimeter hit collection.
     art::Handle<KalRepCollection> trksHandle;

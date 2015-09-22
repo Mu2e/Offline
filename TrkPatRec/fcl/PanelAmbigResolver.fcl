@@ -1,0 +1,45 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# Configurations needed for panel-based L-R tracker hit ambiguity resolution 
+#------------------------------------------------------------------------------
+#include "TrkPatRec/fcl/AmbigResolver.fcl"
+BEGIN_PROLOG
+
+# parameter configuration for the panel-based resolver
+PanelAmbig  : {
+  Resolver : {
+    DiagLevel			: 0
+    AddTrackPositionConstraint	: true
+# try all ambiguity states, including inactive
+    AllowedHitStates		: [ @local::AmbigState.negambig,
+				    @local::AmbigState.noambig,
+				    @local::AmbigState.posambig,
+				    @local::AmbigState.inactive ]
+    minChisqSep			: 4.0
+    inactivePenalty		: 16.0
+    PenaltyResolution		: 0.25
+    TrackPenaltyResolution	: 0.5
+    NullAmbigPenalty		: 0.0
+    MaximumHitU			: 8.0
+  }
+
+# KalFit resolver sequence using the panel resolver
+
+  Strategy : [ 
+    @local::AmbigResolver.fixed,
+    @local::AmbigResolver.fixed,
+    @local::AmbigResolver.hit,
+    @local::AmbigResolver.hit,
+    @local::AmbigResolver.hit,
+    @local::AmbigResolver.panel,
+    @local::AmbigResolver.panel,
+    @local::AmbigResolver.panel,
+    @local::AmbigResolver.panel
+  ]
+
+# Hit weeding is incompatible with panel ambiguity resolving when that's configured to activate/deactive hits
+  Weed : [ true, true, true, true, true, false, false, false, false] 
+}
+
+END_PROLOG
+

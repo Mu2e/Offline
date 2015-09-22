@@ -77,8 +77,8 @@ namespace mu2e {
     std::string _shpLabel;
     std::string _shfLabel;
     std::string _mcdigislabel;
-    StrawHitFlag _tsel, _hsel;
-    StrawHitFlag _tbkg, _hbkg;
+    StrawHitFlag _tsel;
+    StrawHitFlag _tbkg;
     double _maxdt;
     // time spectrum parameters
     bool _findtpeak;
@@ -142,9 +142,7 @@ namespace mu2e {
     _shfLabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
     _mcdigislabel(pset.get<string>("StrawDigiMCLabel")),
     _tsel(pset.get<std::vector<std::string> >("TimeSelectionBits")),
-    _hsel(pset.get<std::vector<std::string> >("HelixFitSelectionBits")),
     _tbkg(pset.get<vector<string> >("TimeBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
-    _hbkg(pset.get<vector<string> >("HelixFitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _maxdt(pset.get<double>("DtMax",30.0)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
@@ -178,7 +176,6 @@ namespace mu2e {
 
   void TimePeakFinder::beginJob(){
 
-    std::cout<<"Time peak finder jos!"<<std::endl;
     initializeReaders();
     // create diagnostics if requested 
     if(_diag > 0)createDiagnostics();
@@ -188,10 +185,10 @@ namespace mu2e {
   void TimePeakFinder::produce(art::Event & event ) {
 
     _iev=event.id().event();
-    if((_iev%_printfreq)==0)cout<<"TimePeakFinder: event="<<_iev<<endl;
+    if((_debug > 0 && _iev%_printfreq)==0)cout<<"TimePeakFinder: event="<<_iev<<endl;
     // find the data
     if(!findData(event)){
-      cout << "TimePeakFinder: No straw hits found, event="<<_iev << endl;
+      throw cet::exception("RECO")<<"mu2e::TimePeakFinder: data missing or incomplete"<< endl;
       return;
     }
     // copy in the existing flags
@@ -305,7 +302,7 @@ namespace mu2e {
        if(yp > _ymin){
      // associate all hits in the time window with this peak
          for(size_t istr=0; istr<nstrs;++istr){
-           if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
+           if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
              double time = _shcol->at(istr).time();
              if(fabs(time-xp) < _maxdt){
                tpeak._trkptrs.push_back(istr);
@@ -344,7 +341,7 @@ namespace mu2e {
  // create a time peak from the full subset of selected hits
        TrkTimePeak tpeak(mtime,(double)nstrs);
        for(unsigned istr=0; istr<nstrs;++istr){
-         if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
+         if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
            tpeak._trkptrs.push_back(istr);
          }
        }
@@ -633,7 +630,7 @@ namespace mu2e {
       if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
 	tdtsp->Fill(time);
       }
-      if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
+      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
 	ltsp->Fill(time);
 	if(proton)
 	  ptsp->Fill(time);

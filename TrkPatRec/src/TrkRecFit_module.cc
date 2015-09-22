@@ -91,10 +91,9 @@ namespace mu2e
       string _shLabel;
       string _shpLabel;
       string _shfLabel;
-      string _tpkfLabel;
-      string _ptrnRecLabel; // Label to the Pattern Recognition module.
-      StrawHitFlag _tsel, _hsel, _addsel;
-      StrawHitFlag _tbkg, _hbkg, _addbkg;
+      string _seedFinderLabel; // Label to the Pattern Recognition module.
+      StrawHitFlag _addsel;
+      StrawHitFlag _addbkg;
       double _maxdtmiss;
       // outlier cuts
       double _maxseeddoca,_maxhelixdoca,_maxadddoca, _maxaddchi;
@@ -109,10 +108,6 @@ namespace mu2e
       const TrackSeedCollection * _tscol;
       // Kalman fitters.  Seed fit has a special configuration
       KalFit _seedfit, _kfit;
-      // robust helix fitter
-      HelixFit _hfit;
-      // cache of time peaks
-      vector<TrkTimePeak> _tpeaks;
       string _iname; // data instance name
       //
       PayloadSaver _payloadSaver;
@@ -135,7 +130,7 @@ namespace mu2e
       Int_t _snhits, _snactive, _sniter, _sndof, _snweediter;
       Float_t _schisq, _st0;
       Int_t _nchit;
-      Int_t _npeak, _nmc;
+      Int_t _npeak;
       Float_t _peakmax, _tpeak;
       // hit filtering tuple variables
       vector<TrkHitFilter> _sfilt, _hfilt;
@@ -145,7 +140,7 @@ namespace mu2e
   };
 
   TrkRecFit::TrkRecFit(fhicl::ParameterSet const& pset) :
-    _kdiag(new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()))),
+    _kdiag(0),
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
@@ -153,13 +148,8 @@ namespace mu2e
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shfLabel(pset.get<string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
-    _tpkfLabel(pset.get<string>("TrackerHitTimeClusterCollection","TimePeakFinder")),
-    _ptrnRecLabel(pset.get<string>("PatternRecoModuleLabel","RobustHelixFinder")),
-    _tsel(pset.get<vector<string> >("TimeSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"} )),
-    _hsel(pset.get<vector<string> >("HelixFitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"} )),
+    _seedFinderLabel(pset.get<string>("SeedCollectionLabel","RobustHelixFinder")),
     _addsel(pset.get<vector<string> >("AddHitSelectionBits",vector<string>{} )),
-    _tbkg(pset.get<vector<string> >("TimeBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
-    _hbkg(pset.get<vector<string> >("HelixFitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _addbkg(pset.get<vector<string> >("AddHitBackgroundBits",vector<string>{})),
     _maxdtmiss(pset.get<double>("DtMaxMiss",40.0)),
     _maxseeddoca(pset.get<double>("MaxSeedDoca",10.0)),
@@ -170,10 +160,11 @@ namespace mu2e
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet()),_kdiag),
-    _hfit(pset.get<fhicl::ParameterSet>("HelixFit",fhicl::ParameterSet())),
     _payloadSaver(pset)
   {
-    // tag the data product instance by the direction and particle type found by this fitter
+    if(_diag > 0)
+      _kdiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()));
+// tag the data product instance by the direction and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();
     produces<KalRepCollection>(_iname);
     produces<KalRepPtrCollection>(_iname);
@@ -224,7 +215,7 @@ namespace mu2e
     art::ProductID kalRepsID(getProductID<KalRepCollection>(event,_iname));
     // event printout
     _iev=event.id().event();
-    if((_iev%_printfreq)==0)cout<<"TrkRecFit: event="<<_iev<<endl;
+    if(_debug > 0 && (_iev%_printfreq)==0)cout<<"TrkRecFit: event="<<_iev<<endl;
     // find the data
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::TrkRecFit: data missing or incomplete"<< endl;
@@ -242,10 +233,8 @@ namespace mu2e
 
     // find the time peaks in the time spectrum of selected hits.  Otherwise, take all
     // selected hits as a peak
-    _tpeaks.clear();
     _icepeak = -1;
 
-    loadTimePeaks(_tpeaks,_tccol);
     if(_diag>0){
 // fill primary particle MC truth information
       _kdiag->kalDiag(0,false);
@@ -256,16 +245,9 @@ namespace mu2e
     static HelixFitResult dummyhfit(dummyhdef);
     static KalFitResult dummykfit(&dummydef);
     // loop over the accepted time peaks
-    if(_tpeaks.size()>0)_cutflow->Fill(1.0);
+    if(_tscol->size()>0)_cutflow->Fill(1.0);
     if(_diag>1 && _icepeak >=0)_ccutflow->Fill(3.0);
     bool findhelix(false), findseed(false), findkal(false);
-
-    if (_debug>0 || (_iev%_printfreq)==0) {
-            std::cout<<"----------------------------------------------------------------------------------"<<std::endl;
-            std::cout<<"event "<<_iev<<" tot N hit "<<_shcol->size()<<" N tracks seed found "<<_tscol->size()
-                            <<" N time peaks "<<_tccol->size()<<std::endl;
-            std::cout<<"----------------------------------------------------------------------------------"<<std::endl;
-    }
 
     for (size_t iTrackSeed=0; iTrackSeed<_tscol->size(); ++iTrackSeed) {
       TrackSeed const& iTrkSeed(_tscol->at(iTrackSeed));
@@ -280,10 +262,9 @@ namespace mu2e
         goodhits.push_back( mu2e::hitIndex(loopPoints_it->_index,loopPoints_it->_ambig) );
       }
 
-      //this function doesn't seem to be working, FIXME!!!
       HelixTraj recoseed(TrkParams(HelixTraj::NHLXPRM));
       HelixVal2HelixTraj(iTrkSeed._fullTrkSeed,recoseed);
-      if(_debug>0) {
+      if(_debug>1) {
               std::cout<<"Seed parameters:"<<std::endl<<iTrkSeed;
               std::cout<<"Converted into HelixTraj:"<<std::endl;
               recoseed.printAll(std::cout);
@@ -370,7 +351,7 @@ namespace mu2e
     if(findseed)_cutflow->Fill(3.0);
     if(findkal)_cutflow->Fill(4.0);
     // add a dummy entry in case there are no peaks
-    if(_diag > 0 && _tpeaks.size() == 0)
+    if(_diag > 0 && _tscol->size() > 0)
       fillFitDiag(-1,dummyhfit,dummykfit,dummykfit);
     // put the tracks into the event
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
@@ -402,12 +383,10 @@ namespace mu2e
     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
     if(evt.getByLabel(_shfLabel,shflagH))
       _shfcol = shflagH.product();
-    if (evt.getByLabel(_tpkfLabel,_tclusthitH))
-      _tccol = _tclusthitH.product();
-    if (evt.getByLabel(_ptrnRecLabel,_trksSeedH))
+    if (evt.getByLabel(_seedFinderLabel,_trksSeedH))
       _tscol = _trksSeedH.product();
 // don't require stereo hits: they are only used for diagnostics
-    return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0 && _tscol != 0;
+    return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tscol != 0;
   }
 
   void TrkRecFit::filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,vector<TrkHitFilter>& thfvec){
@@ -531,7 +510,6 @@ namespace mu2e
     trkdiag->Branch("nchit",&_nchit,"nchit/I");
     trkdiag->Branch("npeak",&_npeak,"npeak/I");
     trkdiag->Branch("tpeak",&_tpeak,"tpeak/F");
-    trkdiag->Branch("nmc",&_nmc,"nmc/I");
     trkdiag->Branch("seedfilt",&_sfilt);
     trkdiag->Branch("helixfilt",&_hfilt);
   }
@@ -542,32 +520,14 @@ namespace mu2e
     static const double pi(M_PI);
     static const double twopi(2*pi);
     static const double halfpi(0.5*pi);
-    // initialize some variables
+    // Peak information for this seed
     _ipeak = ipeak;
-    _nmc = 0;
     if(ipeak >= 0){
-      const TrkTimePeak& tpeak = _tpeaks[ipeak];
+      TrackerHitTimeCluster const*  tclust = _tscol->at(ipeak)._relatedTimeCluster.get();
       // time peak information
-      _peakmax = tpeak._peakmax;
-      _tpeak = tpeak._tpeak;
-      _npeak = tpeak._trkptrs.size();
-      for(vector<hitIndex>::const_iterator istr= tpeak._trkptrs.begin(); istr != tpeak._trkptrs.end(); ++istr){
-        // summarize the MC truth for this strawhit
-        if(_kdiag->mcData()._mcsteps != 0) {
-          StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(istr->_index);
-          // use TDC channel 0 to define the MC match
-          StrawDigi::TDCChannel itdc = StrawDigi::zero;
-          if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
-          art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
-          art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-          int gid(-1);
-          if(spp->genParticle().isNonnull())
-            gid = spp->genParticle()->generatorId().id();
-          bool conversion = (spp->pdgId() == 11 && gid == 2 && spmcp->momentum().mag()>90.0);
-          if(conversion)
-            ++_nmc;
-        }
-      }
+      _peakmax = tclust->_peakmax;
+      _tpeak = tclust->_meanTime;
+      _npeak = tclust->_selectedTrackerHits.size();
     } else {
       _peakmax = -1.0;
       _tpeak = -1.0;
@@ -580,7 +540,6 @@ namespace mu2e
     // helix information
     HepVector hpar;
     HepVector hparerr;
-    _hfit.helixParams(helixfit,hpar,hparerr);
     _hpar = helixpar(hpar);
     _hparerr = helixpar(hparerr);
     _hcx = helixfit._center.x(); _hcy = helixfit._center.y(); _hr = helixfit._radius;

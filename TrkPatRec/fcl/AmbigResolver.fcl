@@ -1,0 +1,24 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# Parameters for L-R tracker hit ambiguity resolution 
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+# codes for the different track hit left-right ambiguity resolvers
+AmbigResolver : {
+  fixed	  : 0 # Fixed resolver for initialization and special tests
+  poca	  : 1 # Original BaBar code embedded resolver (historical only, don't use !!!)
+  hit	  : 2 # Individual hit based resolver
+  panel	  : 3 # resolve all hits in a panel coherently, including activation/deactivation
+  doublet : 4 # resolve hits in pairs
+}
+
+# allowed states for hit ambiguity, used by some algorithms
+AmbigState : {
+  negambig	: -1 # negative ambiguity, signed by track angular momentum around the wire  
+  noambig	: 0
+  posambig	: 1
+  inactive	: 2 # not strictly an ambiguity state, but used in ambiguity resolvers.
+}
+
+END_PROLOG
+

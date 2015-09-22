@@ -1,0 +1,27 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+
+# Note that KalDiag must be configured differently depending on whether you are
+# reading data generated inline, or are reading data output through DetectorFilter
+KalDiag : {
+  MCPtrLabel	      : makeSH
+  StrawHitMCLabel     : makeSH
+  TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+}
+# If running KalDiag directly on G4 use KalDiagDirect
+KalDiagDirect			  : @local::KalDiag
+KalDiagDirect.MCStepsLabel        : g4run
+KalDiagDirect.SimParticleLabel    : g4run
+KalDiagDirect.SimParticleInstance : "" 
+# Production samples use DetectorFilter, which requires the following setup
+KalDiagDetectorFilter			  : @local::KalDiag
+KalDiagDetectorFilter.MCStepsLabel        : detectorFilter
+KalDiagDetectorFilter.SimParticleLabel    : detectorFilter
+# TDR samples gave an instance name to the sim particle collection, CD3 and beyond won't
+KalDiagDetectorFilterTDR : @local::KalDiagDetectorFilter
+KalDiagDetectorFilterTDR.SimParticleInstance : "s0"
+
+END_PROLOG
