@@ -158,10 +158,8 @@ namespace mu2e
     }
 
     if (_debug>0 && (_iev%_printfreq)==0) {
-            std::cout<<"----------------------------------------------------------------------------------"<<std::endl;
             std::cout<<"event "<<_iev<<" tot N hit "<<_shcol->size()<<" N tracks seed found "<<outseeds->size()
                             <<" N time peaks "<<_tccol->size()<<std::endl;
-            std::cout<<"----------------------------------------------------------------------------------"<<std::endl;
     }
 
     event.put(std::move(outseeds));

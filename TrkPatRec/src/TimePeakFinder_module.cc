@@ -77,8 +77,8 @@ namespace mu2e {
     std::string _shpLabel;
     std::string _shfLabel;
     std::string _mcdigislabel;
-    StrawHitFlag _tsel;
-    StrawHitFlag _tbkg;
+    StrawHitFlag _hsel;
+    StrawHitFlag _hbkg;
     double _maxdt;
     // time spectrum parameters
     bool _findtpeak;
@@ -141,8 +141,8 @@ namespace mu2e {
     _shpLabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shfLabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
     _mcdigislabel(pset.get<string>("StrawDigiMCLabel")),
-    _tsel(pset.get<std::vector<std::string> >("TimeSelectionBits")),
-    _tbkg(pset.get<vector<string> >("TimeBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
+    _hsel(pset.get<std::vector<std::string> >("HitSelectionBits")),
+    _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _maxdt(pset.get<double>("DtMax",30.0)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
     _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
@@ -185,7 +185,7 @@ namespace mu2e {
   void TimePeakFinder::produce(art::Event & event ) {
 
     _iev=event.id().event();
-    if((_debug > 0 && _iev%_printfreq)==0)cout<<"TimePeakFinder: event="<<_iev<<endl;
+    if(_debug > 0 && (_iev%_printfreq)==0)cout<<"TimePeakFinder: event="<<_iev<<endl;
     // find the data
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::TimePeakFinder: data missing or incomplete"<< endl;
@@ -240,7 +240,7 @@ namespace mu2e {
     }
 
     int iPeak(0);
-    if (_debug>0) {
+    if (_debug>1) {
       std::cout<<"n Peaks "<<thcc->size()<<std::endl;
       for (TrackerHitTimeClusterCollection::iterator tpeak_it=thcc->begin(); tpeak_it!=thcc->end(); ++tpeak_it ) {
 	std::cout<<"iPeak "<<std::endl;
@@ -286,7 +286,7 @@ namespace mu2e {
      // loop over straws hits and fill time spectrum plot for tight hits
      unsigned nstrs = _shcol->size();
      for(unsigned istr=0; istr<nstrs;++istr){
-       if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
+       if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
          double time = _shcol->at(istr).time();
          timespec.Fill(time);
        }
@@ -302,7 +302,7 @@ namespace mu2e {
        if(yp > _ymin){
      // associate all hits in the time window with this peak
          for(size_t istr=0; istr<nstrs;++istr){
-           if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
+           if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
              double time = _shcol->at(istr).time();
              if(fabs(time-xp) < _maxdt){
                tpeak._trkptrs.push_back(istr);
@@ -330,7 +330,7 @@ namespace mu2e {
      accumulator_set<double, stats<tag::median(with_p_square_quantile) > > tacc;
      unsigned nstrs = _shcol->size();
      for(unsigned istr=0; istr<nstrs;++istr){
-       if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
+       if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
          double time = _shcol->at(istr).time();
          tacc(time);
        }
@@ -341,7 +341,7 @@ namespace mu2e {
  // create a time peak from the full subset of selected hits
        TrkTimePeak tpeak(mtime,(double)nstrs);
        for(unsigned istr=0; istr<nstrs;++istr){
-         if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
+         if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
            tpeak._trkptrs.push_back(istr);
          }
        }
@@ -624,13 +624,13 @@ namespace mu2e {
       }
       // fill plots
       rtsp->Fill(time);
-      if(_flags->at(istr).hasAllProperties(_tsel)){
+      if(_flags->at(istr).hasAllProperties(_hsel)){
 	ttsp->Fill(time);
       }
-      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
+      if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
 	tdtsp->Fill(time);
       }
-      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_tbkg)){
+      if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
 	ltsp->Fill(time);
 	if(proton)
 	  ptsp->Fill(time);

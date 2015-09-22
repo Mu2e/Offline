@@ -244,7 +244,7 @@ namespace mu2e
     _bkgfcol = bkgfcol.get();
     // event printout
     _iev=event.id().event();
-    if((_iev%_printfreq)==0)cout<<"FlagBkgHits: event="<<_iev<<endl;
+    if(_debug > 0 && (_iev%_printfreq)==0)cout<<"FlagBkgHits: event="<<_iev<<endl;
     // find the data
     if(!findData(event)){
       throw cet::exception("RECO")<< "Missing input collection" << endl;
