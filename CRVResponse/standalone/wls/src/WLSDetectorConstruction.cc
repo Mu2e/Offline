@@ -60,6 +60,12 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
   _barWidth         = 5.*cm;
   _barThickness     = 2.*cm;
   _fiberSeparation  = 2.*cm;
+#ifdef sixcm
+#pragma message("USING 6 CM WIDE COUNTERS!")
+  _barWidth         = 5.931*cm;
+  _barThickness     = 1.93*cm;
+  _fiberSeparation  = 2.836*cm;
+#endif
   _holeRadius       = 1.30*mm;
   _coatingThickness = 0.25*mm;
   _fiberRadius      = 0.70*mm - 0.021*mm - 0.021*mm;
@@ -69,7 +75,12 @@ WLSDetectorConstruction::WLSDetectorConstruction(int lengthOption)
   _sipmRadius       = 0.70*mm;
 
   double xbinsTmp[17] = {-10.0, -7.5, -5.0, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 5.0, 7.5, 10.0};
+#ifndef sixcm
   double ybinsTmp[36] = {-25.0, -20.0, -15.0, -12.5, -12.0, -11.5, -11.0, -10.5, -10.0, -9.5, -9.0, -8.5, -8.0, -7.5, -6.5, -5.0, -3.0, -1.0, 1.0, 3.0, 5.0, 6.5, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0, 10.5, 11.0, 11.5, 12.0, 12.5, 15.0, 20.0, 25.0};
+#else
+  double ybinsTmp[36] = {-30.0, -25.0, -20.0, -18.0, -16.0, -15.5, -15.0, -14.5, -14.18, -13.5, -13.0, -12.5, -12.0, -11.5, 9.5, -7.5, -4.5, -1.5, 1.5, 4.5, 7.5, 9.5, 11.5, 12.0, 12.5, 13.0, 13.5, 14.18, 14.5, 15.0, 15.5, 16.0, 18.0, 20.0, 25.0, 30.0};
+#endif
+
 
   for(int i=0; i<17; i++) _xbins.push_back(xbinsTmp[i]*mm); //16 bins
   for(int i=0; i<36; i++) _ybins.push_back(ybinsTmp[i]*mm); //35 bins

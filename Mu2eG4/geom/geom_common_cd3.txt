@@ -1,11 +1,5 @@
 //
-// Main geometry file for Mu2e.
-//
-// $Id: geom_01.txt,v 1.242 2014/09/11 14:26:10 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/11 14:26:10 $
-//
-// Original author Rob Kutschke
+// Top level geometry file first used in stage 3 of the CD3c simulation campagin.
 //
 // Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
 
@@ -23,7 +17,7 @@ bool hasBFieldManager   = true;
 bool hasBeamline        = true;
 bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now;
 bool hasCosmicRayShield = true;
-bool hasMBS             = true; // note the two subcomponents, see mbs section below; 
+bool hasMBS             = true; // note the two subcomponents, see mbs section below;
                                 // no MBS implies no downstream hole in Cosmic Ray Passive Shield
                                 // Magnetic field may be affected as well
 
@@ -65,8 +59,8 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
 // Proton Absorber
 #include "Mu2eG4/geom/protonAbsorber_conical_v2.txt"
-//#include "Mu2eG4/geom/protonAbsorber_conical.txt" // MECO-style PA 
-//#include "Mu2eG4/geom/protonAbsorber_helical.txt" // Helical PA 
+//#include "Mu2eG4/geom/protonAbsorber_conical.txt" // MECO-style PA
+//#include "Mu2eG4/geom/protonAbsorber_helical.txt" // Helical PA
 
 #include "Mu2eG4/geom/ProductionTargetInPS.txt"
 #include "Mu2eG4/geom/protonBeamDump_v02.txt"

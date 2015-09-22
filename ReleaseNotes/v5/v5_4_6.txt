@@ -1,6 +1,102 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_4_6
+
+12) Sept 18, 2015, kutschke
+    Analyses/test/genReco.fcl
+    Analyses/test/genMixReco.fcl
+     - Added an instance of ReadKalFits to look at the output
+       of TrkPatRec and make diagnostic ntuples.
+    Removed the obsolete user block in the services section.
+
+11) Sept 18, 2015, kutschke
+    Switched to use the StopMuonConversionGun.
+      Mu2eG4/fcl/g4test_01.fcl
+      Mu2eG4/fcl/g4test_02.fcl
+      Mu2eG4/fcl/g4test_03.fcl
+    Removed the obsolete user block in the services section.
+
+10) Sept 18, 2015, kutschke
+    Identified hard coded paths to the stopped muon files.  Replaced with the
+    fcl prolog variable.
+       Analyses/test/genMixReco.fcl
+       Analyses/test/genReco.fcl
+       Analyses/test/readTrackCluster.fcl
+       Stntuple/test/conversion_mergePatRec_stnmaker.fcl
+       Stntuple/test/defsDigiMix_mergePatRec_stnmaker.fcl
+       Stntuple/test/dio_stnmaker.fcl
+       Stntuple/test/egun_stnmaker.fcl
+       Stntuple/test/egun_trkpatrec_stnmaker.fcl
+       Stntuple/test/generate_dio_half_field.fcl
+       Stntuple/test/generate_trkpatrec_stnmaker_template.fcl
+       Stntuple/test/mgun_stnmaker.fcl modified:
+       Stntuple/test/mix_dio_half_field_reco_stn.fcl
+       Stntuple/test/muHitDisplay_TrkPatRec.fcl
+       Stntuple/test/muHitDisplay_TrkRecFit.fcl
+
+9) Sept 18, 2015, kutschke
+   EventGenerator/fcl/prolog.fcl
+     In the tdr era, the stopped muon file had to be staged in from bluearc.  It now
+     lives in cvmfs so there is no need to stage it; this directory is the value of
+     the env variable MU2E_DATA_PATH.
+
+     Added fcl prolog definitions for the MU2E_DATA_PATH versions of the tdr and cd3
+     stopped muon files, for both in-target (tgt) and out-of-target (oot) stops.
+     Also defined a default which is set to cd3.
+
+     Modified configurations that previously had the stopped muon file set to @nil to
+     use the fcl prolog variable defined above.
+
+8) Sept 18, 2015, kutschke
+   Reorganized the top level geometry files so that there is an organized structure
+   to identify files designed to work on current era event-data and files designed
+   to work on TDR era event data with modern code.  In order to maintain backwards
+   compatibility an extra level of indirection has been introduced.  The other
+   complication is the need to maintain compatibility with both G4_module.cc
+   and Mu2eG4_module.cc - the difference is that the former looks for it's G4 options
+   in the geometry file while the later finds its G4 options in the fcl file.
+
+   - For jobs running Mu2eG4M_module, the top level geometry file remains:
+        Mu2eG4/geom/geom_common.txt
+
+     However this no longer contains real content.  Instead it includes
+     the a named geometry file that represents the latest and greatest
+     geometry.
+
+   - For jobs running G4_module, the top level geometry file remains:
+        Mu2eG4/test/geom_01.txt
+
+     which simply includes two files
+        Mu2eG4/geom/geom_common.txt
+        Mu2eG4/geom/g4_userOptions.txt
+
+     In this way both G4_module and Mu2eG4_module see the same geometry but
+     get their other configuration differently.
+
+   - The actual latest and greatest geometry is now in:
+        Mu2eG4/geom/geom_common_cd3.txt
+     This is included in geom_common.txt
+     This file was previously called
+        Mu2eG4/geom/geom_cd3.txt
+
+   - There is a new file
+        Mu2eG4/geom/geom_common_tdr.txt
+     which contains the former content of
+        Mu2eG4/geom/geom_common.txt
+
+     It can be used to do modern tracker analysis on TDR era files.
+     It will soon be updated to support Cal analysis on TDR era files.
+
+   - There is a new file:
+         Mu2eG4/test/geom_tdr.txt
+     This is the analog of geom_01.txt but it includes
+         Mu2eG4/geom/geom_common_tdr.txt
+     instead of the cd3 geometry.  It can be used with G4_module.cc
+
+   - Because geom_common.txt and geom_01.txt are still usable as is, this should
+     not affect any downstream code.
+
+7) September 18, 2015 ehrlich
+
+   Added new CRV coincidence module.
 
 6) September 14, 2015 gandr
 
@@ -16,9 +112,9 @@ Still under construction
 
 4) September 7, 2015 genser
 
-   rewrote straw positioning test in StrawSD.cc; 
+   rewrote straw positioning test in StrawSD.cc;
    activated when ttracker.verbosityLevel>3
-   added hit/straw position consistency test to 
+   added hit/straw position consistency test to
    ReadBack_module.cc using pset param: SHPositionTolerance
 
 3) September 3, 2015 kutschke

@@ -4,32 +4,37 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
-# "muon stop" vertex files by Andrei. 
-# - to use interactively, create a symbolic link: 
-#
-#      ln -s /mu2e/data/tdr/beam/g4s3p5/mergedMuonStops  
-#
-# - for grid submission, set muonStops.inputFiles to @nil and use --fclinput 
-#------------------------------------------------------------------------------
 # "muonStops" is a TDR config, deprecated for CD3:
 muonStops : {
-    #		inputFiles            : @nil // use --fclinput for grid submission
-    inputFiles            : [ "ExampleDataFiles/StoppedMuons/mustops.1025a_1426a_1504a.15318715.root" ]
+    inputFiles            : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
     verbosityLevel        : 1
 }
+
+# Files containing the positions and times of stopped muons in target (tgt) and out of target (oot).
+#   tdr - 17 target configuration
+#   cd3 - 34 target configuration
+#   no suffix: default, which will be time dependent.
+merged_tgtStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+merged_tgtStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-tgtstops.0506a_0728a_0825a.001002_00000000.root" ]
+merged_tgtStops     : @local::merged_tgtStops_cd3
+
+merged_ootStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+merged_ootStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-ootstops.0506a_0728a_0825a.001002_00000000.root" ]
+merged_ootStops     : @local::merged_ootStops_cd3
+
 # CD3 stopped muon configs.
 mu2e.tgtMuonStops: {
-    inputFiles            : @nil // never change the @nil here
+    inputFiles            : @local::merged_tgtStops
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
     verbosityLevel        : 1
 }
 mu2e.ootMuonStops: {
-    inputFiles            : @nil // never change the @nil here
+    inputFiles            : @local::merged_ootStops_cd3
     averageNumRecordsToUse: 500000
     treeName              : "outOfTargetDumper/stops"
     branchName            : "stops"
@@ -48,15 +53,15 @@ StoppedMuonConversionGun: {
     module_type    : StoppedMuonConversionGun
     czmin          : -1.0
     czmax          :  1.0
-    muonStops      : @local::muonStops
-    verbosityLevel : 1
+    muonStops      : @local::mu2e.tgtMuonStops
+    // Also phimin and phimax defaulting to [0,2pi]
 }
 
 StoppedParticleReactionGun: {
     module_type    : StoppedParticleReactionGun
     czmin          : -1.0
     czmax          :  1.0
-    muonStops      : @local::muonStops
+    muonStops      : @local::mu2e.tgtMuonStops
     verbosityLevel : 1
     physics        : {
 	pdgId            : 11

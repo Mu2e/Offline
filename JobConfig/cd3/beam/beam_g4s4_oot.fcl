@@ -7,7 +7,7 @@
 
 #include "JobConfig/cd3/beam/prolog.fcl"
 
-process_name: beamg4s4proton
+process_name: beamg4s4oot
 
 source: { module_type : EmptyEvent }
 services: { @table::mu2e.services.cd3simServices }

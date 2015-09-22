@@ -235,8 +235,7 @@ namespace mu2e {
     }
     else {
       const unsigned numSimPartOuts(pset.get<unsigned>("numSimParticleCollections"));
-      // FIXME: noInstanceName should become the default
-      if((numSimPartOuts == 1) && pset.get<bool>("noInstanceName", false)) {
+      if((numSimPartOuts == 1) && pset.get<bool>("noInstanceName", true)) {
         const std::string defaultInstance;
         simPartOutNames.insert(defaultInstance);
         produces<SimParticleCollection>(defaultInstance);
