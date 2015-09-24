@@ -255,7 +255,7 @@ namespace mu2e
     produces<KalRepPayloadCollection>();
     produces<StrawHitFlagCollection>(_iname);
 
-    produces<KalFitResultCollection>(_iname);
+    //    produces<KalFitResultCollection>(_iname);
 
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
@@ -316,7 +316,7 @@ namespace mu2e
     // copy in the existing flags
     _flags = new StrawHitFlagCollection(*_shfcol);
     unique_ptr<StrawHitFlagCollection> flags(_flags );
-    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
+    //    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
     // find mc truth if we're making diagnostics
     if(_diag > 0 ){
       bool goodmc = _kdiag->findMCData(event);
@@ -430,10 +430,10 @@ namespace mu2e
 	  }
 	}
 	// save successful kalman fits in the event
+	//	kfresults->push_back(kalfit);
 	tracks->push_back( kalfit.stealTrack() );
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
-	kfresults->push_back(kalfit);
       } else
 	kalfit.deleteTrack();
       // cleanup the seed fit
@@ -451,7 +451,7 @@ namespace mu2e
     event.put(move(tracks),_iname);
     event.put(move(trackPtrs),_iname);
     event.put(move(flags),_iname);
-    event.put(move(kfresults),_iname);
+    //    event.put(move(kfresults),_iname);
   }
 
   void TrkPatRec::endJob(){

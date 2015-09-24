@@ -166,7 +166,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // time diag histograms (inherited)
 //-----------------------------------------------------------------------------
-      TH1F *ctsp, *rtsp, *ttsp, *ltsp, *tdtsp;
+      TH1F*  _nhits[2];
+      TH1F   *ctsp, *rtsp, *ttsp, *ltsp, *tdtsp;
     };
 
     Ref*    _ref;
@@ -179,8 +180,8 @@ namespace mu2e {
 
     unsigned     _iev;
 					// configuration parameters
-    int          _diag; 
-    int          _debug;
+    int          _diagLevel; 
+    int          _debugLevel;
     int          _printfreq;
     bool         _addhits; 
 //-----------------------------------------------------------------------------
@@ -308,7 +309,7 @@ namespace mu2e {
     void findLoopApex     (){}//search the straw hits src/closer to the apexes of the helix loops
 
     void findMissingHits  (KalFitResult& kalfit, std::vector<hitIndex>& indices);
-    void createDiagnostics();
+    void bookHistograms   ();
     void fillStrawDiag    ();
     void fillTimeDiag     ();
     void fillFitDiag      (art::Event&       Event   ,

@@ -23,9 +23,31 @@ class KalRep;
 
 namespace mu2e {
 
+  class Straw;
+
   class DoubletAmbigResolver : public AmbigResolver {
     public:
       enum trajtype {reftraj=0};
+
+    struct Data_t {
+      int               index[2];
+      int               ibest;
+      int               inext;
+      
+      double            chi2min;
+      double            chi2next;
+
+      const mu2e::Straw *straw[2];
+      double            rdrift[2];
+      double            doca[4][2];
+      double            chi2[4];
+      double            trkslope;
+      double            lineSlopes[4];
+      CLHEP::Hep3Vector spos [2];
+      CLHEP::Hep3Vector sposr[2];
+      CLHEP::Hep3Vector tpos [2];
+      CLHEP::Hep3Vector tposr[2];
+    };
 
   protected:
     int    _debugLevel;
@@ -55,11 +77,14 @@ namespace mu2e {
     explicit DoubletAmbigResolver(fhicl::ParameterSet const&, double ExtErr, int Iter);
 #endif/*__GCCXML__*/
     virtual ~DoubletAmbigResolver();
+    
+    int calculateDoubletParameters(const KalRep* KRep, Doublet* HitDoublet, Data_t* R) const ;
 
     void findLines       (Hep3Vector* Pos, double* R, double* Slopes) const ;
-    void findDoublets    (KalFitResult& KRes) const ;
-
-    void markDoublet     (KalFitResult& KRes, Doublet *doublet, int index0, int index1, int Final) const;
+      
+    void findDoublets    (const KalRep* KRep, vector<Doublet>* DCol) const ;
+      
+    void markDoublet     (KalFitResult& KRes, Doublet *HitDoublet, int Index0, int Index1, int Final) const;
     void markMultiplets  (KalFitResult& Kres, int Final) const;
     void resolveSingleHit(KalFitResult& Kres, mu2e::TrkStrawHit* Hit, int Final) const ;
     

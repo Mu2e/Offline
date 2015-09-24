@@ -16,7 +16,8 @@ namespace mu2e {
   AvikPIDProduct::AvikPIDProduct() {}
 
   AvikPIDProduct::AvikPIDProduct(const AvikPIDProduct & p) {
-    _trkID            = p._trkID;
+    _eleTrkID         = p._eleTrkID;
+    _muoTrkID         = p._muoTrkID;
     _logDedxProbEle   = p._logDedxProbEle;
     _logDedxProbMuo   = p._logDedxProbMuo;
     _drdsVadimEle     = p._drdsVadimEle;
@@ -33,21 +34,24 @@ namespace mu2e {
     _drdsOsEleErr     = p._drdsOsEleErr ;
     _drdsOsMuo        = p._drdsOsMuo    ;
     _drdsOsMuoErr     = p._drdsOsMuoErr ;
-    _nUsedSsEle       = p._nUsedSsEle;
-    _nUsedSsMuo       = p._nUsedSsMuo;
+    _nUsedSsEleH      = p._nUsedSsEleH;
+    _nUsedSsMuoH      = p._nUsedSsMuoH;
     _drdsSsEle        = p._drdsSsEle    ;
     _drdsSsEleErr     = p._drdsSsEleErr ;
     _drdsSsMuo        = p._drdsSsMuo    ;
     _drdsSsMuoErr     = p._drdsSsMuoErr ;
-    _nUsedOsEle       = p._nUsedOsEle;
-    _nUsedOsMuo       = p._nUsedOsMuo;
+    _nUsedOsEleH      = p._nUsedOsEleH;
+    _nUsedOsMuoH      = p._nUsedOsMuoH;
     _sumAvikOsEle     = p._sumAvikOsEle ;
     _sumAvikOsMuo     = p._sumAvikOsMuo ;
+    _nUsedOsEleD      = p._nUsedOsEleD;
+    _nUsedOsMuoD      = p._nUsedOsMuoD;
   }
 
   // operator overloading
   AvikPIDProduct& AvikPIDProduct::operator= (const AvikPIDProduct & p) {
-    _trkID            = p._trkID;
+    _eleTrkID         = p._eleTrkID;
+    _muoTrkID         = p._muoTrkID;
     _logDedxProbEle   = p._logDedxProbEle;
     _logDedxProbMuo   = p._logDedxProbMuo;
     _drdsVadimEle     = p._drdsVadimEle;
@@ -64,23 +68,26 @@ namespace mu2e {
     _drdsOsEleErr     = p._drdsOsEleErr ;
     _drdsOsMuo        = p._drdsOsMuo    ;
     _drdsOsMuoErr     = p._drdsOsMuoErr ;
-    _nUsedSsEle       = p._nUsedSsEle;
-    _nUsedSsMuo       = p._nUsedSsMuo;
+    _nUsedSsEleH      = p._nUsedSsEleH;
+    _nUsedSsMuoH      = p._nUsedSsMuoH;
     _drdsSsEle        = p._drdsSsEle    ;
     _drdsSsEleErr     = p._drdsSsEleErr ;
     _drdsSsMuo        = p._drdsSsMuo    ;
     _drdsSsMuoErr     = p._drdsSsMuoErr ;
-    _nUsedOsEle       = p._nUsedOsEle;
-    _nUsedOsMuo       = p._nUsedOsMuo;
+    _nUsedOsEleH      = p._nUsedOsEleH;
+    _nUsedOsMuoH      = p._nUsedOsMuoH;
     _sumAvikOsEle     = p._sumAvikOsEle ;
     _sumAvikOsMuo     = p._sumAvikOsMuo ;
+    _nUsedOsEleD      = p._nUsedOsEleD;
+    _nUsedOsMuoD      = p._nUsedOsMuoD;
 
     return (*this);
   }
 
 
   void AvikPIDProduct::clear () {
-    _trkID            = -1;
+    _eleTrkID         = -1;
+    _muoTrkID         = -1;
     _logDedxProbEle   = -1.;
     _logDedxProbMuo   = -1.;
     _drdsVadimEle     = -1.;
@@ -97,19 +104,21 @@ namespace mu2e {
     _drdsOsEleErr     = -1.;
     _drdsOsMuo        = -1.;
     _drdsOsMuoErr     = -1.;
-    _nUsedSsEle       = -1;
-    _nUsedSsMuo       = -1;
+    _nUsedSsEleH       = -1;
+    _nUsedSsMuoH       = -1;
     _drdsSsEle        = -1.;
     _drdsSsEleErr     = -1.;
     _drdsSsMuo        = -1.;
     _drdsSsMuoErr     = -1.;
-    _nUsedOsEle       = -1;
-    _nUsedOsMuo       = -1;
-    _sumAvikOsEle     = -1.;
-    _sumAvikOsMuo     = -1.;
+    _nUsedOsEleH       = -1;
+    _nUsedOsMuoH       = -1;
+    _sumAvikOsEle     = 1.e6;
+    _sumAvikOsMuo     = 1.e6;
+    _nUsedOsEleD       = -1;
+    _nUsedOsMuoD       = -1;
   }
 
-  void  AvikPIDProduct::init(int     TrkID,
+  void  AvikPIDProduct::init(int     EleTrkID        , int   MuoTrkID        ,
 			     float   LogDedxProbEle  , float LogDedxProbMuo  , 
 			     float   DrdsVadimEle    , float DrdsVadimEleErr ,
 			     float   DrdsVadimMuo    , float DrdsVadimMuoErr ,
@@ -118,14 +127,15 @@ namespace mu2e {
 			     float   Sq2AvikEle      , float Sq2AvikMuo      ,
 			     float   DrdsOsEle       , float DrdsOsEleErr    ,
 			     float   DrdsOsMuo       , float DrdsOsMuoErr    ,
-			     int     NUsedSsEle      , int   NUsedSsMuo      ,    
+			     int     NUsedSsEleH     , int   NUsedSsMuoH     ,    
 			     float   DrdsSsEle       , float DrdsSsEleErr    ,
 			     float   DrdsSsMuo       , float DrdsSsMuoErr    ,
-			     int     NUsedOsEle      , int   NUsedOsMuo      ,    
-			     float   SumAvikOsEle    , float SumAvikOsMuo
-			     )
+			     int     NUsedOsEleH     , int   NUsedOsMuoH     ,    
+			     float   SumAvikOsEle    , float SumAvikOsMuo    ,
+			     int     NUsedOsEleD     , int   NUsedOsMuoD     )
   {
-    _trkID            = TrkID          ;
+    _eleTrkID         = EleTrkID       ;
+    _muoTrkID         = MuoTrkID       ;
     _logDedxProbEle   = LogDedxProbEle ;
     _logDedxProbMuo   = LogDedxProbMuo ;
     _drdsVadimEle     = DrdsVadimEle   ;
@@ -142,16 +152,18 @@ namespace mu2e {
     _drdsOsEleErr     = DrdsOsEleErr   ;
     _drdsOsMuo        = DrdsOsMuo      ;
     _drdsOsMuoErr     = DrdsOsMuoErr   ;
-    _nUsedSsEle       = NUsedSsEle     ;
-    _nUsedSsMuo       = NUsedSsMuo     ;
+    _nUsedSsEleH      = NUsedSsEleH    ;
+    _nUsedSsMuoH      = NUsedSsMuoH    ;
     _drdsSsEle        = DrdsSsEle      ;
     _drdsSsEleErr     = DrdsSsEleErr   ;
     _drdsSsMuo        = DrdsSsMuo      ;
     _drdsSsMuoErr     = DrdsSsMuoErr   ;
-    _nUsedOsEle       = NUsedOsEle;
-    _nUsedOsMuo       = NUsedOsMuo;
+    _nUsedOsEleH      = NUsedOsEleH;
+    _nUsedOsMuoH      = NUsedOsMuoH;
     _sumAvikOsEle     = SumAvikOsEle ;
     _sumAvikOsMuo     = SumAvikOsMuo ;
+    _nUsedOsEleD      = NUsedOsEleD;
+    _nUsedOsMuoD      = NUsedOsMuoD;
   }
 
 

@@ -37,13 +37,16 @@ public:
 //-----------------------------------------------------------------------------
 // integers
 //-----------------------------------------------------------------------------
-  int                       fTrackNumber;     // track number
+  int                       fEleTrkNumber;     // track number
+  int                       fMuoTrkNumber;     // track number
   int                       fNMatched;
   int                       fNMatchedAll;
-  int                       fNUsedOsEle;      // for fSumAvikOsEle
-  int                       fNUsedOsMuo;
-  int                       fNUsedSsEle;      // for fDrdsSsEle
-  int                       fNUsedSsMuo;
+  int                       fNUsedOsEleH;      // for fDrdsSsEle
+  int                       fNUsedOsMuoH;
+  int                       fNUsedOsEleD;      // for fSumAvikOsEle
+  int                       fNUsedOsMuoD;
+  int                       fNUsedSsEleH;      // for fDrdsSsEle
+  int                       fNUsedSsMuoH;
   int                       fInt[kNFreeInts];
 //-----------------------------------------------------------------------------
 // floats
@@ -87,7 +90,8 @@ public:
 //-----------------------------------------------------------------------------
 // accessors
 //-----------------------------------------------------------------------------
-  int     TrackNumber() { return fTrackNumber; }
+  int     EleTrkNumber()    { return fEleTrkNumber; }
+  int     MuoTrkNumber()    { return fMuoTrkNumber; }
 
   float   DrdsVadimEle   () { return fDrdsVadimEle;    }
   float   DrdsVadimEleErr() { return fDrdsVadimEleErr; }

@@ -22,12 +22,12 @@ StntupleMaker : {
     module_name         : StntupleMaker
     processName         : undefined
 #------------------------------------------------------------------------------
-# define which branches to make
+# define which branches to fill by default
 #------------------------------------------------------------------------------    
     makeCalData         : 0
     makeClusters        : 1
     makeGenp            : 1
-    makePid             : 0
+    makePid             : 1
     makeSimp            : 1
     makeStrawData       : 0
     makeTracks          : 1
@@ -51,20 +51,11 @@ StntupleMaker : {
     trkRecoModuleLabel      : [ "MergePatRec"  ]
     fitParticle             : [             11 ] # 11:electron  , 13:muon etc
     fitDirection            : [              0 ] #  0:downstream,  1:upstream
-    trkExtrapolModuleLabel  : [ "TrkExtrapol"  ]
-    trkCaloMatchModuleLabel : [ "CaloMatching" ]
-    pidModuleLabel          : [ "ParticleID"   ]
-#------------------------------------------------------------------------------
-# in case of more than one track block, keep name of the first block the same
-#------------------------------------------------------------------------------
-#    trkRecoModuleLabel      : [ "TrkPatRec"   , "CalPatRec"      ]
-#    trackBlockName          : [ "TrackBlock"  , "CalPatRecBlock" ] 
-#    fitParticle             : [             11,               11 ]
-#    fitDirection            : [              0,                0 ]
-#    trkExtrapolModuleLabel  : [ "TrkExtrapol" ,               "" ]
-#    trkCaloMatchModuleLabel : [ "CaloMatching",               "" ]
-#    makeStrawHitModuleLabel : [ "makeSH"      ,         "makeSH" ]
-#    pidModuleLabel          : [ "ParticleID"  ,               "" ]
+#    trkExtrapolModuleLabel  : [ "TrkExtrapol"  ]
+    trkExtrapolModuleLabel  : [ "TrackCaloIntersection"  ]
+    trkCaloMatchModuleLabel : [ "CaloMatching"           ]
+#    pidModuleLabel          : [ "ParticleID"   ]
+    pidModuleLabel          : [ "AvikPID"                ]
 
     trkExtrapol          : TrkExtrapol
     trkCalMatch          : CaloMatching
@@ -79,7 +70,21 @@ StntupleMaker : {
 	# bit51:1
     }
 }
-	
+
+StntupleMaker3 : { @table::StntupleMaker
+#------------------------------------------------------------------------------
+# make 3 track blocks, for the moment need to specify all other labels
+# default (in prolog): just one track block "TrackBlock" with output of MergePatRec
+#------------------------------------------------------------------------------
+    trackBlockName          : [ "TrackBlock"           , "TrkPatRec" , "CalPatRec" ] 
+    trkRecoModuleLabel      : [ "MergePatRec"          , "TrkPatRec" , "CalPatRec" ]
+    trkExtrapolModuleLabel  : [ "TrackCaloIntersection",          "" ,          "" ]
+    trkCaloMatchModuleLabel : [                      "",          "" ,          "" ]
+    pidModuleLabel          : [                      "",          "" ,          "" ]
+    fitParticle             : [                      11,           11,          11 ]
+    fitDirection            : [                       0,            0,           0 ]
+}
+
 FillStntuple : { 
     module_type       : FillStntuple
     module_name       : FillStntuple

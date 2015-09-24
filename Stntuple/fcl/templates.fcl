@@ -2,48 +2,71 @@
 #------------------------------------------------------------------------------
 # defines templates
 #------------------------------------------------------------------------------
+BEGIN_PROLOG
+#------------------------------------------------------------------------------
+# definitions of sequences do not require elements to be defined
+#------------------------------------------------------------------------------
+  generatorSeq  : [ generate, g4run, detectorFilter, protonTimeMap, muonTimeMap ]
+
+  hitMakerSeq   : [ MakeCaloReadoutHits, MakeCaloCrystalHits, makeSD, makeSH ]
+
+# MC generator and hit makers
+  genHitsSeq    : [ @sequence::generatorSeq, @sequence::hitMakerSeq ]
+
+# calorimeter cluster reconstruction
+  calRecoSeq    : [ MakeCaloProtoCluster, MakeCaloCluster ]
+
+# hit pre-making for TrkPatRec; FSHPreStereo is needed to flag straw hits
+  tprMakeHitSeq : [ FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
+
+# CalPatRec
+  cprMakeHitSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+		    CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
+
+  trkPatRecSeq  : [ @sequence::tprMakeHitSeq, TrkPatRec, MergePatRec ]
+
+  calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
+
+  allPatRecSeq  : [ @sequence::tprMakeHitSeq, TrkPatRec, @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
+
+  vadimPidSeq   : [ TrkExtrapol, CaloMatching, ParticleID ]
+
+# event for the downstream particles, avikPID requires running both electron and muon track reconstruction 
+
+# hit making - just once, but two modules
+
+  trkPatRecDemDmmSeq  : [ @sequence::tprMakeHitSeq, TrkPatRecDem, TrkPatRecDmm, MergePatRecDem, MergePatRecDmm ]
+
+  calPatRecDemDmmSeq  : [ @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, MergePatRecDem, MergePatRecDmm ]
+
+  allPatRecDemDmmSeq  : [ @sequence::tprMakeHitSeq, TrkPatRecDem, TrkPatRecDmm, 
+			  @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, 
+			  MergePatRecDem, MergePatRecDmm ]
+
+# AvikPID on input takes MergePatRecDem and MergePatRecDmm
+  avikPidSeq    : [ TrkExtrapolDem, TrkExtrapolDmm, CaloMatchingDem, CaloMatchingDmm, AvikPID ]
+
+  stnmakerSeq   : [ InitStntuple, StntupleMaker, FillStntuple ]
+
+  pidSeq        : [ @sequence::avikPidSeq ]
+END_PROLOG
+
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
-
 #include "Stntuple/fcl/prolog.fcl"
-BEGIN_PROLOG
 
-  generatorSeq : [ generate, g4run, detectorFilter, protonTimeMap, muonTimeMap ]
-
-  hitmakerSeq  : [ MakeCaloReadoutHits, MakeCaloCrystalHits, makeSD, makeSH ]
-
-  calrecoSeq   : [ MakeCaloProtoCluster, MakeCaloCluster ]
-
-  trkpatrecSeq : [ FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec, MergePatRec ]
-
-  calpatrecSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits, 
-		   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits , CalPatRec, MergePatRec]
-
-  allpatrecSeq : [ FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec,
-		   CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits, 
-		   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits , CalPatRec, MergePatRec ]
-
-  pidSeq       : [ TrkExtrapol, CaloMatching, ParticleID ]
-
-  stnmakerSeq  : [ InitStntuple, StntupleMaker, FillStntuple ]
-
-END_PROLOG
-
-#   #include "Stntuple/fcl/mixer_module_templates.fcl"
-
-#   process_name : GenMixRecoStn
 #------------------------------------------------------------------------------
 # input module definition
 #------------------------------------------------------------------------------
 source : { 
-    module_type : EmptyEvent
-    #    module_type : RootInput
+    # module_type : EmptyEvent
+        module_type : RootInput
     #    fileNames   : [ {INPUT_DATA_FILE} ]
     #    fileNames : ["/mu2e/data/tdr/beam/g4s4p5/tdr.beam.g4s4.conversion.1504a.15729672/good/00000/dsStopsToHitsConversion.root"]
     #    maxEvents   : 100
     
-    #    inputCommands : ['keep *_*_*_*'
+    inputCommands : ['keep *_*_*_*'
     #		     , 'drop *_muonTimeMap_*_*'
     #		     , 'drop *_protonTimeMap_*_*'
     #		     , 'drop mu2eStrawDigis_*_*_*'
@@ -51,16 +74,16 @@ source : {
     #		     , 'drop *_CaloReadoutHitsMaker_*_*'
     #		     , 'drop *_CaloCrystalHitsMaker_*_*'
     # Uncomment the above lines to reduce file size.
-    #		     ]  
+		    ]  
 }
 #------------------------------------------------------------------------------
 # services section
 #------------------------------------------------------------------------------
 services : {
     message               : @local::default_message
-    TFileService          : { fileName : "generate_mix_mergePatRec_stnmaker.hist" }
+    TFileService          : { fileName : "Stntuple_fcl_templates_fcl.hist" }
     RandomNumberGenerator : { }
-    #   Timing                : { }
+    #   Timing                : { }fcl/
 
     user : {
         GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
@@ -98,7 +121,9 @@ physics : {
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : @local::TrkPatRecDownstreameMinus
+	TrkPatRec            : { @table::TrkPatRecDownstreameMinus  }
+	TrkPatRecDem         : { @table::TrkPatRecDownstreameMinus  }
+	TrkPatRecDmm         : { @table::TrkPatRecDownstreammuMinus }
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
@@ -111,48 +136,81 @@ physics : {
 	CalPatRecFlagStrawHits          : @local::CalPatRecFlagStrawHits
 	CalPatRecFlagBkgHits            : @local::CalPatRecFlagBkgHits
 	CalPatRec                       : { @table::CalPatRec }
+	CalPatRecDem                    : { @table::CalPatRecDem }
+	CalPatRecDmm                    : { @table::CalPatRecDmm }
 
 	MergePatRec                     : @local::MergePatRec
+	MergePatRecDem                  : @local::MergePatRecDem
+	MergePatRecDmm                  : @local::MergePatRecDmm
 #------------------------------------------------------------------------------
 # higher-level reconstruction
+# ParticleID, AvikPID - tracker-only particle ID
+# TrackCaloMatching doesn't explicitly know anything about the particle mass, 
+# it is just using the extrapolation results 
 #------------------------------------------------------------------------------
+	TrkExtrapol          : { @table::TrackCaloIntersection  
+	    fitterModuleLabel : MergePatRec 
+	}
+	TrkExtrapolDem       : { @table::TrackCaloIntersection
+	    fitparticle       : 11
+	    fitterModuleLabel : MergePatRecDem 
+	}
+	TrkExtrapolDmm       : { @table::TrackCaloIntersection
+	    fitparticle       : 13
+	    fitterModuleLabel : MergePatRecDmm 
+	}
+
 	CaloMatching         : { @table::TrackCaloMatching fitterModuleLabel : MergePatRec }
-	TrkExtrapol          : { @table::TrkExtrapol       fitterModuleLabel : MergePatRec }
+
+	CaloMatchingDem      : { @table::TrackCaloMatching 
+	    fitparticle                  : 11
+	    fitdirection                 : 0
+	    fitterModuleLabel            : MergePatRecDem
+	    trkToCaloExtrapolModuleLabel : TrkExtrapolDem
+	}
+
+	CaloMatchingDmm      : { @table::TrackCaloMatching 
+	    fitparticle                  : 13
+	    fitdirection                 : 0
+	    fitterModuleLabel            : MergePatRecDmm 
+	    trkToCaloExtrapolModuleLabel : TrkExtrapolDmm
+	}
+
 	ParticleID           : { @table::ParticleID        fitterModuleLabel : MergePatRec }
+
+	AvikPID              : { @table::AvikPID           
+	    trkPatRecDemModuleLabel : MergePatRecDem 
+	    trkPatRecDmmModuleLabel : MergePatRecDmm 
+	}
     }
 
     filters: {
 #------------------------------------------------------------------------------
 # Stntuple maker sequence
+# store DEM, but 
 #------------------------------------------------------------------------------
-	InitStntuple         : { @table::InitStntuple 
-	    histFileName : "mergePatRec_stnmaker.stn"
+	InitStntuple   : @local::InitStntuple 
+	StntupleMaker  : { @table::StntupleMaker
+	    trackBlockName          : [ "TrackBlock"     , "TrackBlockDmm"   ] 
+	    trkRecoModuleLabel      : [ "MergePatRecDem" , "MergePatRecDmm"  ]
+	    trkExtrapolModuleLabel  : [ "TrkExtrapolDem" , "TrkExtrapolDmm"  ]
+	    trkCaloMatchModuleLabel : [ "CaloMatchingDem", "CaloMatchingDmm" ]
+	    pidModuleLabel          : [         "AvikPID",         "AvikPID" ]
+	    fitParticle             : [                11,                13 ]
+	    fitDirection            : [                 0,                 0 ]
 	}
-	StntupleMaker        : { @table::StntupleMaker
-#------------------------------------------------------------------------------
-# make 3 track blocks, for the moment need to specify all other labels
-# default (in prolog): just one track block "TrackBlock" with output of MergePatRec
-#------------------------------------------------------------------------------
-	    trackBlockName          : [ "TrackBlock" , "TrkPatRec" , "CalPatRec" ] 
-	    trkRecoModuleLabel      : [ "MergePatRec", "TrkPatRec" , "CalPatRec" ]
-	    trkExtrapolModuleLabel  : [ "TrkExtrapol",          "" ,          "" ]
-	    trkCaloMatchModuleLabel : [            "",          "" ,          "" ]
-	    pidModuleLabel          : [            "",          "" ,          "" ]
-	    fitParticle             : [            11,           11,          11 ]
-	    fitDirection            : [             0,            0,           0 ]
-	}
-	FillStntuple         : @local::FillStntuple
+	FillStntuple   : @local::FillStntuple
 #------------------------------------------------------------------------------
 # Andrej's filter
 # Reject events with no hits from signal-like tracks in the detectors.  
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
-	detectorFilter:     @local::FilterStepPointMomentum
-	EventFilter   :     @local::EventFilter
+	detectorFilter : @local::FilterStepPointMomentum
+	EventFilter    : @local::EventFilter
 #------------------------------------------------------------------------------
 # event display
 #------------------------------------------------------------------------------
-	MuHitDisplay: { @table::MuHitDisplay }
+	MuHitDisplay   : { @table::MuHitDisplay }
     }
 #------------------------------------------------------------------------------
 # paths
@@ -161,45 +219,56 @@ physics : {
 #	   , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
 #------------------------------------------------------------------------------
     event_filter   : [ EventFilter ]
-    mc             : [ @sequence::generatorSeq, @sequence::hitmakerSeq,  @sequence::calrecoSeq, EventFilter ]
-    gen_hits       : [ @sequence::generatorSeq, @sequence::hitmakerSeq ]
+    mc             : [ @sequence::generatorSeq, @sequence::hitMakerSeq,  @sequence::calRecoSeq, EventFilter ]
+    gen_hits       : [ @sequence::generatorSeq, @sequence::hitMakerSeq ]
 #
-    reco_allpatrec              : [ @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq, EventFilter ]
-    reco_trkpatrec              : [ @sequence::calrecoSeq, @sequence::trkpatrecSeq, @sequence::pidSeq, EventFilter ]
-    reco_calpatrec              : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, EventFilter ]
+    reco_allpatrec              : [ @sequence::calRecoSeq, @sequence::allPatRecSeq, @sequence::vadimPidSeq, EventFilter ]
+    reco_trkpatrec              : [ @sequence::calRecoSeq, @sequence::trkPatRecSeq, @sequence::vadimPidSeq, EventFilter ]
+    reco_calpatrec              : [ @sequence::calRecoSeq, @sequence::calPatRecSeq, @sequence::vadimPidSeq, EventFilter ]
 #
-    allpatrec_reco_stnmaker     : [ @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
-    trkpatrec_reco_stnmaker     : [ @sequence::calrecoSeq, @sequence::trkpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
-    calpatrec_reco_stnmaker     : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
+    allpatrec_reco_stnmaker     : [ @sequence::calRecoSeq, @sequence::allPatRecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
+    trkpatrec_reco_stnmaker     : [ @sequence::calRecoSeq, @sequence::trkPatRecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
+    calpatrec_reco_stnmaker     : [ @sequence::calRecoSeq, @sequence::calPatRecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
 #------------------------------------------------------------------------------
-    gen_allpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
-				    @sequence::calrecoSeq, @sequence::allpatrecSeq,
-				    @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter]
+    gen_allpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
+				    @sequence::calRecoSeq, @sequence::allPatRecSeq,
+				    @sequence::vadimPidSeq, @sequence::stnmakerSeq, EventFilter]
 
-    gen_trkpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
-				    @sequence::calrecoSeq, @sequence::trkpatrecSeq,
-				    @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
+    gen_trkpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
+				    @sequence::calRecoSeq, @sequence::trkPatRecSeq,
+				    @sequence::vadimPidSeq, @sequence::stnmakerSeq, EventFilter ]
 
-    gen_calpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
-				    @sequence::calrecoSeq, @sequence::calpatrecSeq, 
-				    @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
+    gen_calpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
+				    @sequence::calRecoSeq, @sequence::calPatRecSeq, 
+				    @sequence::vadimPidSeq, @sequence::stnmakerSeq, EventFilter ]
+
+# AvikPID requires both electron and muon reconstruction sequences
+
+    gen_allpatrec_dem_dmm_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
+					    @sequence::calRecoSeq, @sequence::allPatRecDemDmmSeq,
+					    @sequence::avikPidSeq, @sequence::stnmakerSeq, EventFilter ]
 #------------------------------------------------------------------------------
 # event display paths
 #------------------------------------------------------------------------------
-    allpatrec_reco_display      : [ @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
-    calpatrec_reco_display      : [ @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
-    trkpatrec_reco_display      : [ @sequence::calrecoSeq, @sequence::trkpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
+    allpatrec_reco_display      : [ @sequence::calRecoSeq, @sequence::allPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]
+    calpatrec_reco_display      : [ @sequence::calRecoSeq, @sequence::calPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]
+    trkpatrec_reco_display      : [ @sequence::calRecoSeq, @sequence::trkPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]
 #
-    gen_allpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
-				    @sequence::calrecoSeq, @sequence::allpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
+    gen_allpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
+				    @sequence::calRecoSeq, @sequence::allPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]
 
-    gen_calpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
-				    @sequence::calrecoSeq, @sequence::calpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
+    gen_calpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
+				    @sequence::calRecoSeq, @sequence::calPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]
 
-    gen_trkpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitmakerSeq,
-				    @sequence::calrecoSeq, @sequence::trkpatrecSeq, @sequence::pidSeq, MuHitDisplay ]
+    gen_trkpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
+				    @sequence::calRecoSeq, @sequence::trkPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]
+
+    gen_allpatrec_dem_dmm_reco_display : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
+					    @sequence::calRecoSeq, @sequence::allPatRecDemDmmSeq,
+					    @sequence::avikPidSeq, MuHitDisplay ]
+
 #------------------------------------------------------------------------------
-    trigger_paths  : [all]
+    trigger_paths  : [ ]
     #    out : [detectorOutput]
     out            : []
     end_paths      : [out]
@@ -208,11 +277,11 @@ physics : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-        SelectEvents: { SelectEvents: [all] }
+        SelectEvents: { SelectEvents: [] }
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
 			   ]
-        fileName      : "generate_mix_mergePatRec_stnmaker.root"
+#        fileName      : "generate_mix_mergePatRec_stnmaker.root"
     }
 }
 #------------------------------------------------------------------------------

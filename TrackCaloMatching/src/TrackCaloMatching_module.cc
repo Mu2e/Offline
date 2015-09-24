@@ -6,6 +6,7 @@
 // Original author G. Pezzullo
 //
 // 2014-06-03 P.Murat: will no longer work with the vanes-based geometry
+// 2015-09-17 P.Murat: use Bertran's extrapolator
 ///////////////////////////////////////////////////////////////////////////////
 
 // Framework includes.
@@ -26,7 +27,7 @@
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "KalmanTests/inc/TrkFitDirection.hh"
 
-#include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
+#include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
 
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
@@ -78,7 +79,7 @@ namespace mu2e {
     TrkFitDirection _fdir;
     std::string     _iname;
 					// Diagnostic level
-    int             _diagLevel;
+    int             _debugLevel;
 
     double          _minClusterEnergy;  //
     double          _maxDeltaT;		// time preselection for track-cluster matching 
@@ -104,15 +105,15 @@ namespace mu2e {
 
     explicit TrackCaloMatching(fhicl::ParameterSet const& pset):
       _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
-      _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
-      _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-      _diagLevel             (pset.get<int>   ("diagLevel"     ,0)),
+      _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
+      _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+      _debugLevel             (pset.get<int>   ("debugLevel"     )),
       _minClusterEnergy      (pset.get<double>("minClusterEnergy")),  // 10 MeV
       _maxDeltaT             (pset.get<double>("maxDeltaT"       )),  // 50 ns
       _meanInteractionDepth  (pset.get<double>("meanInteractionDepth")),  // 50 mm
       _dtOffset              (pset.get<double>("dtOffset"        )),  // 1. ns
       _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
-      _trkToCaloExtrapolModuleLabel(pset.get<std::string>("trkToCaloExtrapolModuleLabel", "TrkExtrapol")),
+      _trkToCaloExtrapolModuleLabel(pset.get<std::string>("trkToCaloExtrapolModuleLabel", "TrackCaloIntersection")),
       _firstEvent(true)
     {
 //-----------------------------------------------------------------------------
@@ -146,7 +147,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void TrackCaloMatching::beginJob() {
 
-    printf("---- TrackCalomatching::beginJob constants used: \n"    );
+    printf("---- TrackCaloMatching::beginJob constants used: \n"    );
     printf("  minClusterEnergy     : %10.3f\n",_minClusterEnergy    );
     printf("  maxDeltaT            : %10.3f\n",_maxDeltaT           );
     printf("  meanInteractionDepth : %10.3f\n",_meanInteractionDepth);
@@ -183,15 +184,21 @@ namespace mu2e {
     double                     chi2_max(1.e12);
 
     int                        iex, icl, ltrk;
-    TrackClusterMatch::Data_t  tcm_data[100][4];
+    int const                  ndisks(2);
 
-    const TrkToCaloExtrapol    *extrk;
+    TrackClusterMatch::Data_t tcm_data[100][ndisks];
+
+    //    const TrkToCaloExtrapol    *extrk;
+    const TrkCaloIntersect     *extrk;
     const KalRep               *krep;
     const CaloCluster          *cl;
 
     CLHEP::Hep3Vector           tmpV, cogVaneFrame, tmpPosVaneFrame;
     CLHEP::Hep3Vector           mom, pos; 
     HepPoint                    point;
+
+    const KalRep               *kkrep[100];
+    int                        nkkrep(0);
 //-----------------------------------------------------------------------------
 // Get handle to calorimeter
 //-----------------------------------------------------------------------------
@@ -207,11 +214,15 @@ namespace mu2e {
     evt.getByLabel(_caloClusterModuleLabel, caloClusters );
     nclusters = caloClusters->size();
 
-    art::Handle<TrkToCaloExtrapolCollection>  trjExtrapols;
+//     art::Handle<TrkToCaloExtrapolCollection>  trjExtrapols;
+//     evt.getByLabel(_trkToCaloExtrapolModuleLabel, trjExtrapols);
+//     nex = trjExtrapols->size();
+
+    art::Handle<TrkCaloIntersectCollection>  trjExtrapols;
     evt.getByLabel(_trkToCaloExtrapolModuleLabel, trjExtrapols);
     nex = trjExtrapols->size();
 
-    if (_diagLevel > 2) {
+    if (_debugLevel > 2) {
       printf(" %s: Event Number : %8i ntracks: %2i nclusters: %4i nex: %2i\n",
 	     oname,evt.event(), ntracks, nclusters, nex);
     }
@@ -224,7 +235,7 @@ namespace mu2e {
     if (ntracks == 0)                                         goto END;
 
     for (int it=0; it<ntracks; it++) {
-      for (int iv=0; iv<4; iv++) {
+      for (int iv=0; iv<ndisks; iv++) {
 	tcm_data[it][iv].chi2 = chi2_max+1;
 	tcm_data[it][iv].iex  = -1;
 	tcm_data[it][iv].icl  = -1;
@@ -237,7 +248,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     for (int jex=0; jex<nex; jex++) {
 
-      if(_diagLevel > 2) {
+      if(_debugLevel > 2) {
 	printf(" %s : jex = %5i\n", oname, jex);
       }
     
@@ -245,8 +256,20 @@ namespace mu2e {
       krep  = extrk->trk().get();
 //-----------------------------------------------------------------------------
 // track index, important: store one, the best, intersection per track per vane
+// the absolute ltrk number doesn't really matter
 //-----------------------------------------------------------------------------
-      ltrk  = extrk->trackNumber();
+      ltrk = nkkrep;
+      for (int ik=0; ik<nkkrep; ik++) {
+	if (krep == kkrep[ik]) {
+	  ltrk = ik;
+	}
+      }
+      if (ltrk == nkkrep) {
+	kkrep[nkkrep] = krep;
+	nkkrep       += 1;
+      }
+      //      ltrk  = extrk->trackNumber();
+
       if (ltrk > 100) {
 	printf(">>> ERROR in %s: more than 100 tracks, ltrk = %i, skip the rest\n",
 	       oname,ltrk);
@@ -280,7 +303,7 @@ namespace mu2e {
       mom      = krep->momentum(sint);
       trk_mom  = mom.mag();
 
-      if(_diagLevel > 2){
+      if(_debugLevel > 2){
 	cout<<"vane_id = "<<vane_id<<endl;
 	cout<<"trk_mom = "<<trk_mom<<" [MeV]" << endl;
       }
@@ -293,7 +316,7 @@ namespace mu2e {
 
       fromTrkToMu2eFrame(point, tmpPosVaneFrame);
 
-      if (_diagLevel > 2){
+      if (_debugLevel > 2){
 	cout<<"Mu2e general frame: tmpPosVaneFrame = "<< tmpPosVaneFrame <<  " [mm]" << endl;
       }
 
@@ -301,7 +324,7 @@ namespace mu2e {
       trk_v   = tmpV.x();
       trk_w   = tmpV.y();
 
-      if(_diagLevel > 2){
+      if(_debugLevel > 2){
 	cout << "tmpPosVaneFrame = "<< tmpV << " [mm]" << endl;
       }
 //-----------------------------------------------------------------------------
@@ -367,15 +390,15 @@ namespace mu2e {
 	sigmaW = 8. ; 			//  8 mm
 	sigmaT = 0.5; 			// 0.5 ns
 	  
-	if (_diagLevel > 2){
-	  printf("trk_v  : %10.3f"  ,trk_v  );
-	  printf("cl_v   : %10.3f"  ,cl_v   );
-	  printf("sigmaV : %10.3f"  ,sigmaV );
-	  printf("trk_w  : %10.3f"  ,trk_w  );
-	  printf("cl_w   : %10.3f"  ,cl_w   );
-	  printf("sigmaW : %10.3f"  ,sigmaW );
-	  printf("cl_time: %10.3f"  ,cl_time);
-	  printf("sigmaT : %10.3f\n",sigmaT );
+	if (_debugLevel > 2){
+	  printf("trk_v  : %9.3f "  ,trk_v  );
+	  printf("cl_v   : %9.3f "  ,cl_v   );
+	  printf("sigmaV : %9.3f "  ,sigmaV );
+	  printf("trk_w  : %9.3f "  ,trk_w  );
+	  printf("cl_w   : %9.3f "  ,cl_w   );
+	  printf("sigmaW : %9.3f "  ,sigmaW );
+	  printf("cl_time: %9.3f "  ,cl_time);
+	  printf("sigmaT : %9.3f\n",sigmaT );
 	}
 					// need to handle energy part properly, later! 
 					// 2014-06-06 P.Murat: ad-hoc correction
@@ -420,12 +443,12 @@ namespace mu2e {
     //    TrackClusterMatch tcm;
 
     for (int it=0; it<ntracks; it++) {
-      for (int iv=0; iv<4; iv++) {
+      for (int iv=0; iv<ndisks; iv++) {
 	if (tcm_data[it][iv].chi2 < chi2_max) {
 	  iex = tcm_data[it][iv].iex;
 	  icl = tcm_data[it][iv].icl;
 
-	  art::Ptr<TrkToCaloExtrapol> artPtrTex    (trjExtrapols,iex);
+	  art::Ptr<TrkCaloIntersect>  artPtrTex    (trjExtrapols,iex);
 	  art::Ptr<CaloCluster>       artPtrCluster(caloClusters,icl);
 	  TrackClusterMatch           tcm(artPtrTex,artPtrCluster,&tcm_data[it][iv]);
 	  tcmcoll->push_back(tcm);

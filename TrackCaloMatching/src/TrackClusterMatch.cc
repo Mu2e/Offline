@@ -22,9 +22,7 @@ namespace mu2e {
   TrackClusterMatch::TrackClusterMatch() {
   }
 
-  TrackClusterMatch::TrackClusterMatch(TrkToCaloExtrapolPtr& Tex, CaloClusterPtr& Cluster, Data_t* Data) 
-//     _textrapol(Tex),
-//     _cluster  (Cluster)
+  TrackClusterMatch::TrackClusterMatch(TrkCaloIntersectPtr& Tex, CaloClusterPtr& Cluster, Data_t* Data) 
   {
     _icl       = Data->icl;
     _iex       = Data->iex;

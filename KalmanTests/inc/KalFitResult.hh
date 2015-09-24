@@ -27,9 +27,12 @@ namespace mu2e
 
 // must initialize with a TrkDef
     KalFitResult(TrkDef const* tdef) : _tdef(tdef) ,_krep(0), _fit(TrkErrCode::fail), _nt0iter(0), _nweediter(0), _nunweediter(0), _ninter(0) {}
-    ~KalFitResult() {
-      if (_krep != 0) delete _krep;
-    }
+//-----------------------------------------------------------------------------
+// KalFitResult doesn't own any pointers, '_krep' is handled in the pattern 
+// recognition modules, so, in principle, no need to delete it here
+// otherwise, a deletion of the list of KalFitResults (a data product) resutls in a crash
+//-----------------------------------------------------------------------------
+    ~KalFitResult() {}
 
     void    removeFailed() { if(_fit.failure())deleteTrack(); }
     void    fit() { if(_fit.success()) _fit = _krep->fit(); }

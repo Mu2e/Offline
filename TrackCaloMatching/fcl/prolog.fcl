@@ -4,6 +4,20 @@
 # track extrapolation to the calorimeter
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
+TrackCaloIntersection : {
+    module_type                  : TrackCaloIntersection
+    fitterModuleLabel            : TrkPatRec
+    fitparticle                  : 11               # electron
+    fitdirection                 : 0                # downstream
+    pathStep                     : 20.              # mm
+    tolerance                    :  1.              # mm
+    checkExit                    : true
+    outputNtup                   : false
+    diagLevel                    : 0
+}
+#------------------------------------------------------------------------------
+# TrkExtrapol is the deprecated version
+#------------------------------------------------------------------------------
 TrkExtrapol : {
     module_type                  : TrkExtrapol
     fitterModuleLabel            : TrkPatRec
@@ -71,7 +85,7 @@ CaloMatching : {
     fitterModuleLabel            : TrkPatRec
     trkToCaloExtrapolModuleLabel : TrkExtrapol
     caloClusterModuleLabel       : MakeCaloCluster
-    fitparticle                  : 0
+    fitparticle                  : 11
     fitdirection                 : 0
     diagLevel                    : 0
     outPutNtup                   : 0
@@ -88,8 +102,6 @@ CaloMatchingDownstreampiMinus.fitterModuleLabel            : TrackPatRecDownstre
 CaloMatchingDownstreampiMinus.fitparticle                  : -211
 CaloMatchingDownstreampiMinus.fitdirection                 : 0
 CaloMatchingDownstreampiMinus.trkToCaloExtrapolModuleLabel : TrkExtrapolDownstreampiMinus
-
-
 
 CaloMatchingDownstreammuPlus :@local::CaloMatching 
 CaloMatchingDownstreammuPlus.fitterModuleLabel            : TrackPatRecDownstreammuPlus
@@ -182,10 +194,10 @@ CaloMatchingUpstreampMinus.fitparticle                  : -2212
 CaloMatchingUpstreampMinus.fitdirection                 : 1
 CaloMatchingUpstreampMinus.trkToCaloExtrapolModuleLabel : TrkExtrapolUpstreampMinus
 #------------------------------------------------------------------------------
-# new inplementation of the matching module
+# deprecated implementation of the matching module
 #------------------------------------------------------------------------------
-TrackCaloMatching : {
-    module_type                  : TrackCaloMatching
+TrackCaloMatchingOld : {
+    module_type                  : TrackCaloMatchingOld
     diagLevel                    : 0
     minClusterEnergy             : 10.             # MeV
     maxDeltaT                    : 20.             # ns
@@ -198,6 +210,31 @@ TrackCaloMatching : {
     dtOffset                     : @local::TrackCaloMatchingDtOffset             # ns
     fitterModuleLabel            : TrkPatRec
     trkToCaloExtrapolModuleLabel : TrkExtrapol
+    caloClusterModuleLabel       : MakeCaloCluster
+    outPutNtup                   : 0
+    caloClusterAlgorithm         : closest
+    caloClusterSeeding           : energy
+}
+
+#------------------------------------------------------------------------------
+# new version of TrackCalomatching: use TrackCaloIntersection
+#------------------------------------------------------------------------------
+TrackCaloMatching : {
+    module_type                  : TrackCaloMatching
+    debugLevel                   : 0
+    minClusterEnergy             : 10.             # MeV
+    maxDeltaT                    : 20.             # ns
+#------------------------------------------------------------------------------
+# not a guess any more, but the number by Alex
+# 2014-08-08: set dtOffset to 1.4 to avoid DT corrections in other places
+# 2015-02-07: dtOffset set in fcl/standardProducers.fcl to 1.2 ns
+#------------------------------------------------------------------------------
+    meanInteractionDepth         : 59.             # mm
+    dtOffset                     : @local::TrackCaloMatchingDtOffset             # ns
+    fitterModuleLabel            : TrkPatRec
+    fitparticle                  : 11
+    fitdirection                 : 0
+    trkToCaloExtrapolModuleLabel : TrackCaloIntersection                         # TrkExtrapol
     caloClusterModuleLabel       : MakeCaloCluster
     outPutNtup                   : 0
     caloClusterAlgorithm         : closest

@@ -49,7 +49,12 @@
 #include "ParticleID/inc/PIDUtilities.hh"
 #include "RecoDataProducts/inc/AvikPIDProductCollection.hh"
 
+
+
 namespace mu2e {
+
+  class DoubletAmbigResolver;
+
   class AvikPID : public art::EDProducer {
 
   private:
@@ -65,6 +70,9 @@ namespace mu2e {
 
     int    _processed_events;
     int    _evtid;
+
+    int    _ele_trkid;
+    int    _muo_trkid;
 
     string _trkPatRecDemModuleLabel;
     string _trkPatRecDmmModuleLabel;
@@ -115,8 +123,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // same-sign slopes
 //-----------------------------------------------------------------------------
-    int    _ele_nusedSs;
-    int    _muo_nusedSs;
+    int    _ele_nusedSsH;  // Nhits used to calculate the SS slopes
+    int    _muo_nusedSsH;
     double _drdsSsEle;
     double _drdsSsEleErr;
     double _drdsSsMuo;
@@ -125,24 +133,40 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Avik doesn't calculate OS slopes! ...
 //-----------------------------------------------------------------------------
-    double _drdsOsEle;
-    double _drdsOsEleErr;
-    double _drdsOsMuo;
-    double _drdsOsMuoErr;
-    double _logRatioOs;
+    double   _drdsOsEle;
+    double   _drdsOsEleErr;
+    double   _drdsOsMuo;
+    double   _drdsOsMuoErr;
+    int      _ele_nusedOsH;		// Nhits used to calculate the OS slopes
+    int      _muo_nusedOsH;
+    double   _logRatioOs;
 
-    double _ele_resSumOs;
-    double _muo_resSumOs;
-    int    _ele_nusedOs;
-    int    _muo_nusedOs;
+    double   _ele_resSumOs;		// d(dxdz)^alpha sums 
+    double   _muo_resSumOs;
+    int      _ele_nusedOsD;		// Ndoublets used to calculate the sums
+    int      _muo_nusedOsD;
+//-----------------------------------------------------------------------------
+// power coefficients
+//-----------------------------------------------------------------------------
+    double   _pow1;
+    double   _pow2;
+    double   _bound;
 
-    TTree *       _pidtree;
+    double   _maxDeltaDxDzOs;
+
+    TMinuit*               _minuit;
+
+    fhicl::ParameterSet    _darPset;         // parameter set for doublet ambig resolver
+    DoubletAmbigResolver*  _dar;
+
+    TTree*                 _pidtree;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
   public:
     explicit AvikPID(fhicl::ParameterSet const& pset);
-    virtual ~AvikPID() { }
+    virtual ~AvikPID();
+
     void beginJob();
     void beginRun(art::Run &run);
     void beginSubRun(art::SubRun & lblock );
@@ -153,14 +177,11 @@ namespace mu2e {
     static  void myfcn(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t);
     static  int  findlowhist(float d);
 
-    bool calculateVadimSlope(std::vector<double> vresd, 
-			     std::vector<double> vflt,
-			     std::vector<double> evresd,
-			     std::vector<double> evflt,  
-			     double              *slope, 
-			     double              *eslope);
+    bool calculateVadimSlope(const KalRep* KRep, double *Slope, double *Eslope);
 
-    double calculateDedxProb(std::vector<double>gaspaths, std::vector<double>edeps, TH1D** templates);
+    double calculateDedxProb(std::vector<double>* GasPaths , 
+			     std::vector<double>* EDeps    , 
+			     TH1D**               Templates);
 
     void   doubletMaker(const KalRep* ele_Trk, const KalRep* muo_Trk);
 
@@ -175,11 +196,19 @@ namespace mu2e {
 			   vector<double>&        Fltlen        , 
 			   vector<double>&        Resid         );
 
-    void   calculateSsSums(const vector<Doublet>* ele_LOD, const vector<Doublet>* muo_LOD);
+    int    AddOsMultiplets(const vector<Doublet>* ListOfDoublets,
+			   vector<double>&        Fltlen        , 
+			   vector<double>&        Resid         );
 
-    void   calculateOsSums(const vector<Doublet>* ele_LOD, const vector<Doublet>* muo_LOD);
+    void   calculateSsSums(const vector<Doublet>* ListOfDoublets, double& Drds, double& DrdsErr, int& NUsed);
 
-    double weightedResidual(double R);
+    void   calculateOsSums(const vector<Doublet>* ListOfDoublets,
+			   double& Drds, double& DrdsErr, int& NUsedHits,
+			   double& Sum , int& NUsedDoublets);
+
+    double weightedResidual     (double Dr);
+
+    double weightedSlopeResidual(double Dr);
 
     // Save directory from beginJob so that we can go there in endJob. 
     //    TDirectory* _directory;

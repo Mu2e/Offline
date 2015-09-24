@@ -30,6 +30,10 @@
     <class name="std::vector<mu2e::TrackClusterMatch>"  />
     <class name="art::Wrapper<mu2e::TrackClusterMatchCollection>" />
 
+    <class name="mu2e::TrackClusterMatchOld" />
+    <class name="std::vector<mu2e::TrackClusterMatchOld>"  />
+    <class name="art::Wrapper<mu2e::TrackClusterMatchOldCollection>" />
+
     <class name="mu2e::TrkToCaloExtrapolCollection" />
 
     <class name="std::vector<art::Ptr<mu2e::TrkToCaloExtrapol> >" />

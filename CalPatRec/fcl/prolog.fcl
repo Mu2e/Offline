@@ -234,14 +234,43 @@ CalPatRec            : {
     }
 }
 
+CalPatRecDem : { @table::CalPatRec
+    fitparticle  : 11
+    fitdirection : 0
+}
+
+CalPatRecDmm : { @table::CalPatRec
+    fitparticle  : 13
+    fitdirection : 0
+}
+
+#------------------------------------------------------------------------------
+# default configuration: DEM
+#------------------------------------------------------------------------------
 MergePatRec : {
     module_type                  : MergePatRec
     diagLevel                    : 0
     debugLevel                   : 0
-    trkPatReclabel               : TrkPatRec
-    calPatReclabel               : CalPatRec
+    trkPatRecModuleLabel         : TrkPatRec
+    calPatRecModuleLabel         : CalPatRec
     fitparticle                  : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
     fitdirection                 : 0      # 0:downstream, 1:upstream
+}
+
+# TrkPatRecDownstreameMinus and TrkPatRecDownstreammuMinus are defined in TrkPatRec/fcl/prolog.fcl
+# both are using the panel ambiguity resolver
+MergePatRecDem : { @table::MergePatRec 
+    trkPatRecModuleLabel : TrkPatRecDem
+    calPatRecModuleLabel : CalPatRecDem
+    fitparticle          : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
+    fitdirection         : 0      # 0:downstream, 1:upstream
+}
+
+MergePatRecDmm : { @table::MergePatRec 
+    trkPatRecModuleLabel : TrkPatRecDmm
+    calPatRecModuleLabel : CalPatRecDmm
+    fitparticle          : 13     # 11:electron, -11:positron, 13:mu-, -13: mu+
+    fitdirection         : 0      # 0:downstream, 1:upstream
 }
 
 END_PROLOG

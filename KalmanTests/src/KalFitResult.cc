@@ -11,7 +11,7 @@
 #include "KalmanTests/inc/KalFitResult.hh"
 namespace mu2e 
 {
-// convert speed of light in mm/nsec
+
   void KalFitResult::deleteTrack() {
     if(_krep != 0){
       _hits.clear(); delete _krep; _krep = 0; 

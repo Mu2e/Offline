@@ -16,20 +16,20 @@ ClassImp(TStnPid)
 void TStnPid::Streamer(TBuffer& R__b) {
   int nwi, nwf;
 
-  nwi = (int*  ) &fInt   - &fTrackNumber    + kNFreeInts;
+  nwi = (int*  ) &fInt   - &fEleTrkNumber   + kNFreeInts;
   nwf = (float*) &fFloat - &fLogDedxProbEle + kNFreeFloats ;
 
   if (R__b.IsReading()) {
     //    Version_t R__v = R__b.ReadVersion(); 
     R__b.ReadVersion(); 
 					// current version: V1
-    R__b.ReadFastArray(&fTrackNumber   ,nwi);
+    R__b.ReadFastArray(&fEleTrkNumber  ,nwi);
     R__b.ReadFastArray(&fLogDedxProbEle,nwf);
   }
   else {
     R__b.WriteVersion(TStnPid::IsA());
 
-    R__b.WriteFastArray(&fTrackNumber   ,nwi);
+    R__b.WriteFastArray(&fEleTrkNumber  ,nwi);
     R__b.WriteFastArray(&fLogDedxProbEle,nwf);
   }
 }
@@ -38,7 +38,7 @@ void TStnPid::Streamer(TBuffer& R__b) {
 TStnPid::TStnPid(Int_t Number) {
   // 'Number' can be -1 ...
   
-  fTrackNumber = Number;
+  fEleTrkNumber = Number;
 }
 
 //_____________________________________________________________________________

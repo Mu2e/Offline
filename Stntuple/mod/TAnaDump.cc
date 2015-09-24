@@ -42,6 +42,7 @@
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
+#include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
 
 #include "CalPatRec/inc/CalTimePeak.hh"
@@ -53,6 +54,9 @@
 //BaBar includes
 #include "BTrk/BbrGeom/TrkLineTraj.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
 
 ClassImp(TAnaDump)
 
@@ -1675,14 +1679,14 @@ void TAnaDump::printTrackClusterMatch(const mu2e::TrackClusterMatch* Tcm, const 
 
   if ((opt == "") || (opt == "data")) {
 
-    const mu2e::CaloCluster*       cl  = Tcm->caloCluster();
-    const mu2e::TrkToCaloExtrapol* tex = Tcm->textrapol  ();
+    const mu2e::CaloCluster*      cl  = Tcm->caloCluster();
+    const mu2e::TrkCaloIntersect* tex = Tcm->textrapol  ();
 
     int disk     = cl->sectionId();
     double chi2  = Tcm->chi2();
 
     printf("%5i %16p  %16p  %10.3f\n",
-	   disk,cl,tex,chi2);
+	   disk,  cl,  tex,  chi2);
   }
 }
 

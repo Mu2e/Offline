@@ -89,27 +89,28 @@ Int_t StntupleInitMu2eVirtualDataBlock(TStnDataBlock* Block, AbsEvent* AnEvent, 
 
     hit = data->NewHit();
 
-    vdIndex = step->volumeId();
-    time    = fgTimeOffsets->timeWithOffsetsApplied(*step);
+    vdIndex   = step->volumeId();
+    time      = fgTimeOffsets->timeWithOffsetsApplied(*step);
 
-    pdg_id  = sim->pdgId();
-    info    = pdt->particle(pdg_id);    
+    pdg_id    = sim->pdgId();
+    info      = pdt->particle(pdg_id);    
     
-    mass = info.ref().mass();
-
+    mass      = info.ref().mass();
     energy    = sqrt(step->momentum().mag2() + std::pow(mass, 2));
     energyKin = energy - mass;
 
     gen_index = sim->genParticle()->generatorId().id();
           
-    mc_mom        = step->momentum().mag();
-    mc_momX       = step->momentum().x();
-    mc_momY       = step->momentum().y();
-    mc_momZ       = step->momentum().z();
-
-    mc_posX       = step->position().x()+3904.;
-    mc_posY       = step->position().y();
-    mc_posZ       = step->position().z()-10200;
+    mc_mom    = step->momentum().mag();
+    mc_momX   = step->momentum().x();
+    mc_momY   = step->momentum().y();
+    mc_momZ   = step->momentum().z();
+//-----------------------------------------------------------------------------
+// poor-man global-to-detector (tracker) coordinate system transformation
+//-----------------------------------------------------------------------------
+    mc_posX   = step->position().x()+3904.;
+    mc_posY   = step->position().y();
+    mc_posZ   = step->position().z()-10200;
 
     hit->Set(vdIndex, time, mass, energyKin, energy, 
 	     pdg_id, gen_index, 

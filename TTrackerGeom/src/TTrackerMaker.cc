@@ -299,6 +299,23 @@ namespace mu2e {
 	_sectorBaseRotations.push_back(  180.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
 	_sectorBaseRotations.push_back(  300.*CLHEP::degree);
+      } else if(_rotationPattern==4){
+//-----------------------------------------------------------------------------
+// Mu2e-2 studies: 2 faces within one plane have parallel straws within 
+//                 each 120 deg sector
+//-----------------------------------------------------------------------------
+	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
+	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  120.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  120.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  240.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  240.*CLHEP::degree);
+	_sectorBaseRotations.push_back(   60.*CLHEP::degree);
+	_sectorBaseRotations.push_back(   60.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  210.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  210.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
+	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
       } else {
 	throw cet::exception("GEOM")
 	  << "Unrecognized rotation pattern in TTrackerMaker. \n";

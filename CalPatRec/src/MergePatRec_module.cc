@@ -22,7 +22,7 @@
 #include "KalmanTests/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
-#include "KalmanTests/inc/KalFitResult.hh"
+// #include "KalmanTests/inc/KalFitResult.hh"
 
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"
 //CLHEP
@@ -58,31 +58,33 @@ namespace mu2e {
   private:
     unsigned         _iev;
 					// configuration parameters
-    int              _diag, _debug;
+    int              _diag;
+    int              _debugLevel;
     int              _printfreq;
     bool             _addhits; 
     TrkParticle      _tpart;	        // particle type being searched for
     TrkFitDirection  _fdir;		// fit direction in search
 					// event object labels
-    std::string      _trkPatRecLabel;
-    std::string      _calPatRecLabel;
-    std::string      _iname;	// data instance name
+    std::string      _trkPatRecModuleLabel;
+    std::string      _calPatRecModuleLabel;
+
+    std::string      _iname;	        // data instance name
   };
   
   MergePatRec::MergePatRec(fhicl::ParameterSet const& pset) :
-    _diag          (pset.get<int>("diagLevel",0)),
-    _debug         (pset.get<int>("debugLevel",0)),
-    _tpart         ((TrkParticle::type)(pset.get<int>("fitparticle"))),
-    _fdir          ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-    _trkPatRecLabel(pset.get<std::string>("trkPatReclabel","TrkPatRec")),
-    _calPatRecLabel(pset.get<std::string>("calPatReclabel","CalPatRec"))
+    _diag                (pset.get<int>("diagLevel",0)),
+    _debugLevel          (pset.get<int>("debugLevel",0)),
+    _tpart               ((TrkParticle::type)(pset.get<int>("fitparticle"))),
+    _fdir                ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+    _trkPatRecModuleLabel(pset.get<std::string>("trkPatRecModuleLabel","TrkPatRec")),
+    _calPatRecModuleLabel(pset.get<std::string>("calPatRecModuleLabel","CalPatRec"))
   {
     // tag the data product instance by the direction and particle type found by this module
     _iname = _fdir.name() + _tpart.name();
 
-    produces<AlgorithmIDCollection>(_iname);
-    produces<KalRepPtrCollection>  (_iname);
-    produces<KalFitResultCollection>  (_iname);
+    produces<AlgorithmIDCollection>  (_iname);
+    produces<KalRepPtrCollection>    (_iname);
+    //    produces<KalFitResultCollection> (_iname);
     
   }
 
@@ -103,20 +105,20 @@ namespace mu2e {
     int         tpr_flag[max_ntrk], cpr_flag[max_ntrk], ntpr(0), ncpr(0);
 
     art::Handle<mu2e::KalRepPtrCollection>    tpr_h, cpr_h;
-    art::Handle<mu2e::KalFitResultCollection> tkr_h, ckr_h;
+    //    art::Handle<mu2e::KalFitResultCollection> tkr_h, ckr_h;
 
     mu2e::KalRepPtrCollection  *list_of_kreps_tpr(0), *list_of_kreps_cpr(0);
-    mu2e::KalFitResultCollection *list_of_kfres_tpr(0), *list_of_kfres_cpr(0);
+    //    mu2e::KalFitResultCollection *list_of_kfres_tpr(0), *list_of_kfres_cpr(0);
 
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection   );
-    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
+    //    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
 
-    AnEvent.getByLabel(_trkPatRecLabel,_iname,tpr_h);
-    AnEvent.getByLabel(_calPatRecLabel,_iname,cpr_h);
+    AnEvent.getByLabel(_trkPatRecModuleLabel,_iname,tpr_h);
+    AnEvent.getByLabel(_calPatRecModuleLabel,_iname,cpr_h);
     
-    AnEvent.getByLabel(_trkPatRecLabel,_iname,tkr_h);
-    AnEvent.getByLabel(_calPatRecLabel,_iname,ckr_h);
+//     AnEvent.getByLabel(_trkPatRecModuleLabel,_iname,tkr_h);
+//     AnEvent.getByLabel(_calPatRecModuleLabel,_iname,ckr_h);
 
     if (tpr_h.isValid()) { 
       list_of_kreps_tpr = (mu2e::KalRepPtrCollection*) &(*tpr_h);
@@ -128,21 +130,21 @@ namespace mu2e {
       ncpr              = list_of_kreps_cpr->size();
     }
 
-    if (tkr_h.isValid()) { 
-      list_of_kfres_tpr = (mu2e::KalFitResultCollection*) &(*tkr_h);
-    }
+//     if (tkr_h.isValid()) { 
+//       list_of_kfres_tpr = (mu2e::KalFitResultCollection*) &(*tkr_h);
+//     }
 
-    if (ckr_h.isValid()) {
-      list_of_kfres_cpr = (mu2e::KalFitResultCollection*) &(*ckr_h);
-    }
+//     if (ckr_h.isValid()) {
+//       list_of_kfres_cpr = (mu2e::KalFitResultCollection*) &(*ckr_h);
+//     }
 
     for (int i=0; i<max_ntrk; i++) {
       tpr_flag[i] = 1;
       cpr_flag[i] = 1;
     }
 
-    art::Ptr<KalRep>          tpr, cpr;
-    KalFitResult              tkr, ckr;
+    art::Ptr<KalRep>          *tpr, *cpr;
+    //    KalFitResult              *tkr, *ckr;
 
     Hep3Vector                cpr_mom, tpr_mom;
     short                     best(-1),  mask;
@@ -154,21 +156,21 @@ namespace mu2e {
 
     for (int i1=0; i1<ntpr; i1++) {
       //      tpr     = (KalRep*) list_of_kreps_tpr->get(i1);
-      tpr     = list_of_kreps_tpr->at(i1);
-      tkr     = list_of_kfres_tpr->at(i1);
-      tpr_mom = tpr->momentum();
+      tpr     = &list_of_kreps_tpr->at(i1);
+      //      tkr     = &list_of_kfres_tpr->at(i1);
+      tpr_mom = (*tpr)->momentum();
       mask    = 1 << AlgorithmID::TrkPatRecBit;
-      tlist   = tpr->hotList();
-      nat     = tpr->nActive();
+      tlist   = (*tpr)->hotList();
+      nat     = (*tpr)->nActive();
       natc    = 0;
       //      tfcons  = tpr->chisqConsistency().consistency();
 
       for (int i2=0; i2<ncpr; i2++) {
-	cpr     = list_of_kreps_cpr->at(i2);
-	ckr     = list_of_kfres_cpr->at(i2);
-	cpr_mom = cpr->momentum();
-	clist   = cpr->hotList();
-	nac     = cpr->nActive();
+	cpr     = &list_of_kreps_cpr->at(i2);
+	//	ckr     = &list_of_kfres_cpr->at(i2);
+	cpr_mom = (*cpr)->momentum();
+	clist   = (*cpr)->hotList();
+	nac     = (*cpr)->nActive();
 	//	cfcons  = cpr->chisqConsistency().consistency();
 //-----------------------------------------------------------------------------
 // primitive check if this is the same track - require delta(p) less than 5 MeV/c
@@ -199,15 +201,22 @@ namespace mu2e {
 	  mask = mask | (1 << AlgorithmID::CalPatRecBit);
 
 	  //	  if (tfcons > cfcons) {
+	  double end_trk;
 	  if (nat > nac) {
-	    kfresults->push_back(tkr);
-	    trackPtrs->push_back(tpr);
+	    //	    kfresults->push_back(*tkr);
+	    trackPtrs->push_back(*tpr);
 	    best    = AlgorithmID::TrkPatRecBit; 
+	    end_trk = (*tpr)->endFoundRange();
 	  }
 	  else {	
-	    kfresults->push_back(ckr);
-	    trackPtrs->push_back(cpr);
+	    //	    kfresults->push_back(*ckr);
+	    trackPtrs->push_back(*cpr);
 	    best    = AlgorithmID::CalPatRecBit;
+	    end_trk = (*cpr)->endFoundRange();
+	  }
+
+	  if (_debugLevel > 0) {
+	    printf("MergePatRec debug: end_trk = %10.5f\n",end_trk);
 	  }
 
 	  tpr_flag[i1] = 0;
@@ -217,8 +226,8 @@ namespace mu2e {
       }
 
       if (tpr_flag[i1] == 1) {
-	kfresults->push_back(tkr);
-	trackPtrs->push_back(tpr);
+	//	kfresults->push_back(*tkr);
+	trackPtrs->push_back(*tpr);
 	best = AlgorithmID::TrkPatRecBit;
       }
 
@@ -230,11 +239,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     for (int i=0; i<ncpr; i++) {
       if (cpr_flag[i] == 1) {
-	cpr = list_of_kreps_cpr->at(i);
-	ckr = list_of_kfres_cpr->at(i);
+	cpr = &list_of_kreps_cpr->at(i);
+	//	ckr = &list_of_kfres_cpr->at(i);
 
-	trackPtrs->push_back(cpr);
-	kfresults->push_back(ckr);
+	trackPtrs->push_back(*cpr);
+	//	kfresults->push_back(*ckr);
 
 	best = AlgorithmID::CalPatRecBit;
 	mask = 1 << AlgorithmID::CalPatRecBit;
@@ -246,9 +255,13 @@ namespace mu2e {
 
     AnEvent.put(std::move(trackPtrs),_iname);
     AnEvent.put(std::move(algs     ),_iname);
-    AnEvent.put(std::move(kfresults),_iname);
+    //    AnEvent.put(std::move(kfresults),_iname);
   }
 
+
+//-----------------------------------------------------------------------------
+// end job : 
+//-----------------------------------------------------------------------------
   void MergePatRec::endJob() {
   }
   

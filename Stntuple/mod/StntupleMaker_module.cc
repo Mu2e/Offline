@@ -321,8 +321,10 @@ void StntupleMaker::beginJob() {
 	track_data->AddCollName("mu2e::StrawHitCollection"            ,fMakeStrawHitModuleLabel.data()   ,"");
 	track_data->AddCollName("mu2e::StrawDigiMCCollection"         ,fMakeStrawHitModuleLabel.data()   ,"StrawHitMC");
 	track_data->AddCollName("mu2e::PtrStepPointMCVectorCollection",fMakeStrawHitModuleLabel.data()   ,"StrawHitMCPtr");
-	track_data->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapolModuleLabel [i].data(),"");
+	//	track_data->AddCollName("mu2e::TrkToCaloExtrapolCollection"   ,fTrkExtrapolModuleLabel [i].data(),"");
+	track_data->AddCollName("mu2e::TrkCaloIntersectCollection"    ,fTrkExtrapolModuleLabel [i].data(),"");
 	track_data->AddCollName("mu2e::CaloClusterCollection"         ,fCaloClusterMaker.data()          ,"");
+	//	track_data->AddCollName("mu2e::TrackClusterMatchOldCollection"   ,fTrkCaloMatchModuleLabel[i].data(),"");
 	track_data->AddCollName("mu2e::TrackClusterMatchCollection"   ,fTrkCaloMatchModuleLabel[i].data(),"");
 	track_data->AddCollName("mu2e::PIDProductCollection"          ,fPidModuleLabel[i].data()         ,"");
 	track_data->AddCollName("mu2e::StepPointMCCollection"         ,fG4ModuleLabel.data()             ,"");

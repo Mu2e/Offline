@@ -1,21 +1,17 @@
 ///////////////////////////////////////////////////////////////////////////////
-//  $Id: 
-//  $Author: 
-//  $Date: 
-//
 // cloned from Vadim's code
 //
 // 2015-07-10 P.Murat: default condiguration is stored in ParticleID/fcl/prolog.fcl
 //
 // assume that both electron and muon track reconstruction have been attempted,
 // so expect two track collections on input
+// need calculation od dEdX prob to be symmetric over the electron and muon hypotheses
 ///////////////////////////////////////////////////////////////////////////////
-
-// using namespace std;
 
 #include "ParticleID/inc/AvikPID_module.hh"
 #include "TGraphErrors.h"
 #include "KalmanTests/inc/KalFitResult.hh"
+#include "KalmanTests/inc/DoubletAmbigResolver.hh"
 
 namespace mu2e {
 
@@ -69,7 +65,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   AvikPID::AvikPID(fhicl::ParameterSet const& pset):
     _debugLevel(pset.get<int>("debugLevel")),
-    _verbosity (pset.get<int>("verbosity" )),
     _diagLevel (pset.get<int>("diagLevel" )),
 
     _trkPatRecDemModuleLabel(pset.get<string>("trkPatRecDemModuleLabel")),
@@ -77,6 +72,9 @@ namespace mu2e {
 
     _eleDedxTemplateFile(pset.get<std::string>("EleDedxTemplateFile")),
     _muoDedxTemplateFile(pset.get<std::string>("MuoDedxTemplateFile")),
+
+    _darPset            (pset.get<fhicl::ParameterSet>("DoubletAmbigResolver")),
+
     _pidtree(0)
   {
     _processed_events = -1;
@@ -110,11 +108,31 @@ namespace mu2e {
     _templatesnbins   = _heletemp[0]->GetNbinsX();
     _templateslastbin = _heletemp[0]->GetBinLowEdge(_templatesnbins)+_heletemp[0]->GetBinWidth(1);
     _templatesbinsize = _heletemp[0]->GetBinWidth(1);
+//-----------------------------------------------------------------------------
+// Avik function parameters for dRdz slope residuals
+//-----------------------------------------------------------------------------
+    _pow1    = 1.5;
+    _bound   = 0.0625;
+    _pow2    = 0.25;
+
+    _maxDeltaDxDzOs = 0.5;
+
+    _minuit  = NULL;
+
+    _dar     = new DoubletAmbigResolver(_darPset,0,0);
+
   }
 
 
 //-----------------------------------------------------------------------------
-  void AvikPID::beginJob(){
+  AvikPID::~AvikPID() {
+    if (_minuit) delete _minuit;
+    delete _dar;
+  }
+
+
+//-----------------------------------------------------------------------------
+  void AvikPID::beginJob() {
 
     // histograms
 
@@ -132,36 +150,26 @@ namespace mu2e {
       _pidtree->Branch("logDedxProbEle" , &_logDedxProbEle   , "logDedxProbEle/D");
       _pidtree->Branch("logDedxProbMuo" , &_logDedxProbMuo   , "logDedxProbMuo/D");
     }
+
+    _minuit = new TMinuit(2); 
+
   }
 
 //-----------------------------------------------------------------------------
   void AvikPID::beginRun(art::Run & run){
-    if (_verbosity>=2) cout << "AvikPID: From beginRun: " << run.id().run() << endl;
+    if (_debugLevel >= 2) cout << "AvikPID: From beginRun: " << run.id().run() << endl;
 
 
   }
 
 //-----------------------------------------------------------------------------
   void AvikPID::beginSubRun(art::SubRun & lblock ) {
-    if (_verbosity>=2) cout << "AvikPID: From beginSubRun. " << endl;
+    if (_debugLevel>=2) cout << "AvikPID: From beginSubRun. " << endl;
   }
 
 //-----------------------------------------------------------------------------
   void AvikPID::endJob(){
-    if (_verbosity>=2) cout << "AvikPID: From endJob. " << endl;
-  }
-
-//-----------------------------------------------------------------------------
-// Avik's weighted residual
-//-----------------------------------------------------------------------------
-  double AvikPID::weightedResidual(double R) {
-    double wr(1.e10);
-
-    double ar = fabs(R);
-    if (ar < 0.2) wr = pow(ar, 1.7);
-    else          wr = pow(0.2,1.3)*pow(ar,0.4);
-
-    return wr;
+    if (_debugLevel>=2) cout << "AvikPID: From endJob. " << endl;
   }
 
 //-----------------------------------------------------------------------------
@@ -175,34 +183,37 @@ namespace mu2e {
 //-----------------------------------------------
 // ELECTRONS:
 //-----------------------------------------------
-    int ele_nhits =0;  // total number of hits
-
-    int ele_ncount=0;  // number of special events (i.e. events in doublets (or triplets etc))
+    int ele_nhits  = 0;  // total number of hits
+    int ele_ncount = 0;  // number of hits in doublets/triplets etc
     
-    for(TrkHotList::hot_iterator it=ele_hot_list->begin(); it<ele_hot_list->end(); it++) ele_nhits+=1;
+    for (TrkHotList::hot_iterator it=ele_hot_list->begin(); it<ele_hot_list->end(); it++) ele_nhits+=1;
     
     int   ele_iamb0 = 0;
-    float ele_resall[ele_nhits];
-    int   ele_resgood[ele_nhits];
-    float ele_res[ele_nhits];
-    int   ele_secall[ele_nhits];
-    int   ele_devall[ele_nhits];
-    int   ele_layall[ele_nhits];
-    int   ele_Nall[ele_nhits];
-    int   ele_strawall[ele_nhits];
-    int   ele_straw[ele_nhits];
-    int   ele_iamball[ele_nhits];
-    int   ele_nmatchall[ele_nhits] = {0};   //number of matches for each hit
-    int   ele_nnlet[6] = {ele_nhits};    //array giving number of singlets, doublets, triplets, ...
 
-    float h1_fltlen = ele_Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-    float hn_fltlen = ele_Trk->lastHit ()->kalHit()->hitOnTrack()->fltLen() - 10;
-    float entlen = std::min(h1_fltlen,hn_fltlen);
-    BbrVectorErr momerr = ele_Trk->momentumErr(entlen);
-    CLHEP::Hep3Vector fitmom = ele_Trk->momentum(entlen);
-    CLHEP::Hep3Vector momdir = fitmom.unit();
-    HepVector momvec(3);
-    for (int i=0; i<3; i++) momvec[i] = momdir[i];
+    float ele_resall   [ele_nhits];
+    int   ele_resgood  [ele_nhits];
+    float ele_res      [ele_nhits];
+    int   ele_secall   [ele_nhits];
+    int   ele_devall   [ele_nhits];
+    int   ele_layall   [ele_nhits];
+    int   ele_Nall     [ele_nhits];
+    int   ele_strawall [ele_nhits];
+    int   ele_straw    [ele_nhits];
+    int   ele_iamball  [ele_nhits];
+    int   ele_nmatchall[ele_nhits] = {0};   // number of matches for each hit
+
+    int   ele_nnlet[6] = {ele_nhits};       // array giving number of singlets, doublets, triplets, ...
+
+//     float h1_fltlen = ele_Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+//     float hn_fltlen = ele_Trk->lastHit ()->kalHit()->hitOnTrack()->fltLen() - 10;
+//     float entlen = std::min(h1_fltlen,hn_fltlen);
+
+//    BbrVectorErr momerr = ele_Trk->momentumErr(entlen);
+//     CLHEP::Hep3Vector fitmom = ele_Trk->momentum(entlen);
+//     CLHEP::Hep3Vector momdir = fitmom.unit();
+
+//     HepVector momvec(3);
+//     for (int i=0; i<3; i++) momvec[i] = momdir[i];
 
     int k = 0;
     Hep3Vector pos;
@@ -276,27 +287,11 @@ namespace mu2e {
 	}      
       }    
     }
-
-
-    /*    printf("ELECTRONS \n");
-	  for(int i=0; i<ele_ncount; i++) {
-	  printf( "res is:  %4.3f %s %i %s %i \n", ele_res[i], "  straw is: ", ele_straw[i], " and match num is: ", ele_nmatch[i]);
-	  }
-	  
-	  for(int i=0; i<4; i++) {
-	  printf( "number of %i%s %i \n", i+1, "-lets is: ", ele_nnlet[i]);
-	  }
-	  
-	  printf("ncount is: %i \n", ele_ncount);
-	  printf("nhits is: %i \n", ele_nhits);
-	  printf("iamb0 is: %i \n \n", ele_iamb0); */
-    
-    //---------------------------------------------------------
-    
-    //MUONS:
-    
-    int muo_nhits=0;  //total number of hits
-    int muo_ncount=0;  //number of special events (i.e. events in doublets (or triplets etc))
+//-----------------------------------------------------------------------------
+// MUONS:
+//-----------------------------------------------------------------------------
+    int muo_nhits  = 0; // total number of hits
+    int muo_ncount = 0; // number of special hits (i.e. events in doublets or triplets etc)
     
     for(TrkHotList::hot_iterator it=muo_hot_list->begin(); it<muo_hot_list->end(); it++) muo_nhits+=1;
     
@@ -322,17 +317,16 @@ namespace mu2e {
       
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
       
-      muo_secall[k]=straw->id().getSector();
-      muo_devall[k]=straw->id().getDevice();
-      muo_layall[k]=straw->id().getLayer();
-      muo_Nall[k]=straw->id().getStraw();
+      muo_secall[k]  = straw->id().getSector();
+      muo_devall[k]  = straw->id().getDevice();
+      muo_layall[k]  = straw->id().getLayer();
+      muo_Nall[k]    = straw->id().getStraw();
       muo_strawall[k]= straw->index().asInt();
-      muo_iamball[k]= hit->ambig();
+      muo_iamball[k] = hit->ambig();
       hit->hitPosition(pos);
       muo_resgood[k] = hit->resid(hitres,hiterr,1);
-      muo_resall[k]=hitres;
-      
-      k += 1;
+      muo_resall [k] = hitres;
+      k             += 1;
     }
     
     for(int i=0; i<muo_nhits; i++) {  //loop goes through each hit in the track
@@ -382,29 +376,23 @@ namespace mu2e {
 	}    
       }
     }
+//-----------------------------------------------------------------------------
+// ANALYSIS:
+//----------------------------------------------------------------------------- 
+    float res_ele    [ele_ncount]; 
+    float res_muo    [muo_ncount];
+    float res_ele_sq [ele_ncount]; 
+    float res_muo_sq [muo_ncount];
 
-    //-----------------------------------------------------
-    //ANALYSIS:
-    
-    float res_ele   [ele_ncount]; 
-    float res_muo   [muo_ncount];
-    float res_ele_sq[ele_ncount]; 
-    float res_muo_sq[muo_ncount];
-    float resall_ele[ele_nhits] = {0}; 
-    float resall_muo[muo_nhits] = {0};
+    float resall_ele [ele_nhits] = {0}; 
+    float resall_muo [muo_nhits] = {0};
     float res_ele_sq2[ele_nhits] = {0}; 
     float res_muo_sq2[muo_nhits] = {0};
-    float res_ele_sum = 0;
-    float res_muo_sum = 0;
+
+    float res_ele_sum  = 0;
+    float res_muo_sum  = 0;
     float res_ele_sum2 = 0;
     float res_muo_sum2 = 0;
-    float ratio = 1.0;
-    float ratio2 = 1.0;
-    float logratio;
-    float logratio2;    
-    float logratio3;
-    float matchhits = 0.0;
-    float matchhits_all = 0.0;
 
     for(int i=0; i<ele_ncount; i++) {
       res_ele   [i]=0.0;
@@ -480,13 +468,15 @@ namespace mu2e {
       }
     }
     
+    float matchhits = 0.0;
+    float matchhits_all = 0.0;
+
     for(int i=0; i<ele_ncount; i++) {
       if (res_ele[i]!=0) matchhits+=1.0;
 
       res_ele_sq[i] = weightedResidual(res_ele[i]);
       res_ele_sum  += res_ele_sq[i]; 
     }
-    
     
     for(int i=0; i<muo_ncount; i++) {
       res_muo_sq[i] = weightedResidual(res_muo[i]);
@@ -514,61 +504,66 @@ namespace mu2e {
     _nMatched    = matchhits;
     _nMatchedAll = matchhits_all;
 
-    if ((res_ele_sum!=0) && (res_muo_sum!=0)) {
-      ratio = (res_muo_sum)/(res_ele_sum);
-    }
-    if ((res_ele_sum2!=0) && (res_muo_sum2!=0)) {
-      ratio2 = (res_muo_sum2)/(res_ele_sum2);
-    }
+    float ratio, ratio2;
+    float logratio, logratio2, logratio3;
+
+    if ((_sumAvikEle != 0) && (_sumAvikMuo != 0)) ratio = _sumAvikMuo/_sumAvikEle;
+    else                                          ratio = 1.;
+
+    if ((_sq2AvikEle != 0) && (_sq2AvikMuo != 0)) ratio2 = _sq2AvikMuo/_sq2AvikEle;
+    else                                          ratio2 = 1.;
     
     logratio  = log(ratio);
     logratio2 = log(ratio2);   
     logratio3 = (matchhits/matchhits_all)*log(ratio) + log(ratio2);
 
-
-    /* printf("ANALYSIS \n");
+    /* 
+       printf("ANALYSIS \n");
        
-    for(int i=0; i<ele_ncount; i++) {
-    printf( "res_ele is:  %4.4f %s %4.4f \n", res_ele[i], "  res_ele_sq is: ", res_ele_sq[i]);
-    }
+       for(int i=0; i<ele_ncount; i++) {
+       printf( "res_ele is:  %4.4f %s %4.4f \n", res_ele[i], "  res_ele_sq is: ", res_ele_sq[i]);
+       }
     
-    for(int i=0; i<muo_ncount; i++) {
-    printf( "res_muo is:  %4.4f %s %4.4f \n", res_muo[i], "  res_muo_sq is: ", res_muo_sq[i]);
-    }
+       for(int i=0; i<muo_ncount; i++) {
+       printf( "res_muo is:  %4.4f %s %4.4f \n", res_muo[i], "  res_muo_sq is: ", res_muo_sq[i]);
+       }
     */
+
     printf( "res_ele_sum is:  %4.4f %s %4.4f \n", res_ele_sum, "  res_muo_sum is: ", res_muo_sum);
     printf( "res_ele_sum2 is:  %4.4f %s %4.4f \n", res_ele_sum2, "  res_muo_sum2 is: ", res_muo_sum2);
     printf("logratio is: %8.4f \n", logratio);
     printf("logratio2 is: %8.4f \n", logratio2);
     printf("logratio3 is: %8.4f \n", logratio3);
+
     /*    
-    printf("t0true is: %8.4f \n", t0true);
-    printf("ele_t0 is: %8.4f \n", ele_t0);
-    printf("t0est is %8.4f \n", t0est);
-    printf("muo_t0 is: %8.4f \n", muo_t0);*/
+	  printf("t0true is: %8.4f \n", t0true);
+	  printf("ele_t0 is: %8.4f \n", ele_t0);
+	  printf("t0est is %8.4f \n", t0est);
+	  printf("muo_t0 is: %8.4f \n", muo_t0);
+    */
   }
 
 //-----------------------------------------------------------------------------
-  double AvikPID::calculateDedxProb(std::vector<double> gaspaths , 
-				    std::vector<double> edeps    , 
-				    TH1D**              templates) {
+  double AvikPID::calculateDedxProb(std::vector<double>* GasPaths , 
+				    std::vector<double>* EDeps    , 
+				    TH1D**               Templates) {
 
     static const double _minpath = 0.5;
     static const double _maxpath = 10.;
 
     double thisprob = 1;
 
-    for (unsigned int ipath = 0; ipath < gaspaths.size(); ipath++){
-      double thispath = gaspaths.at(ipath);
-      double thisedep = edeps.at(ipath);      
+    for (unsigned int ipath = 0; ipath < GasPaths->size(); ipath++){
+      double thispath = GasPaths->at(ipath);
+      double thisedep = EDeps->at(ipath);      
 
       double tmpprob = 0;
       if (thispath > _minpath && thispath<=_maxpath){
 	  int lowhist = findlowhist(thispath);
 
 	  PIDUtilities util;
-	  TH1D* hinterp = util.th1dmorph(templates[lowhist],
-					 templates[lowhist+1],
+	  TH1D* hinterp = util.th1dmorph(Templates[lowhist],
+					 Templates[lowhist+1],
 					 _pathbounds[lowhist],
 					 _pathbounds[lowhist+1],
 					 thispath,1,0);
@@ -590,43 +585,72 @@ namespace mu2e {
     return thisprob;
   }
   
-
 //-----------------------------------------------------------------------------
-  bool AvikPID::calculateVadimSlope(std::vector<double>  vresd , 
-				    std::vector<double>  vflt  , 
-				    std::vector<double>  evresd, 
-				    std::vector<double>  evflt ,  
-				    double               *slope, 
-				    double               *eslope) {
+// the straight line fit should be done explicitly
+//-----------------------------------------------------------------------------
+  bool AvikPID::calculateVadimSlope(const KalRep  *KRep  ,
+				    double        *Slope , 
+				    double        *Eslope) {
 
-    error = new TGraphErrors(vresd.size(),vflt.data(),vresd.data(),evflt.data(),evresd.data());
+    std::vector<double> res, flt, eres, eflt;
+    mu2e::TrkStrawHit*  hit;
+    double              resid, residerr, aresd, normflt, normresd;
+    const TrkHotList*   hotList;
 
-    TMinuit *gmMinuit = new TMinuit(2); 
-    gmMinuit->SetPrintLevel(-1);
-    gmMinuit->SetFCN(myfcn);
+    hotList  = KRep->hotList();
+
+    for (TrkHotList::hot_iterator ihot=hotList->begin(); ihot != hotList->end(); ++ihot) {
+      hit = (mu2e::TrkStrawHit*) &(*ihot);
+      if (hit->isActive()) {
+//-----------------------------------------------------------------------------
+// 'unbiased' residual, signed with the radius - if the drift radius is greater than 
+// the track-to-wire distance, the residual is positive (need to double check the sign!)
+// use active hits only
+//-----------------------------------------------------------------------------
+	hit->resid(resid,residerr,true);
+
+	aresd    = (hit->poca()->doca()>0?resid:-resid);
+	normflt  = hit->fltLen() -  KRep->flt0();
+	normresd = aresd/residerr;
+	
+	res.push_back(normresd);
+	flt.push_back(normflt);
+	eres.push_back(1.);
+	eflt.push_back(0.1);
+      }
+    }
+
+    error = new TGraphErrors(res.size(),flt.data(),res.data(),eflt.data(),eres.data());
+
+    _minuit->SetPrintLevel(-1);
+    _minuit->SetFCN(myfcn);
+
     const int dim(2);
-    const char par_name[dim][20]={"offset","slope"};
-    static Double_t step[dim] = {0.001,0.001};
-    Double_t sfpar[dim]={0.0,0.005};
-    Double_t errsfpar[dim]={0.0,0.0};
+    const char      par_name[dim][20]= {"offset","slope"};
+    static Double_t step    [dim]    = {0.001,0.001};
+    Double_t        sfpar   [dim]    = {0.0,0.005};
+    Double_t        errsfpar[dim]    = {0.0,0.0};
+
     int ierflg = 0;
     for (int ii = 0; ii<dim; ii++) {    
-      gmMinuit->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
+      _minuit->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
     }
-    gmMinuit->FixParameter(0);
-    gmMinuit->Migrad();
-    bool converged = gmMinuit->fCstatu.Contains("CONVERGED");
+
+    _minuit->FixParameter(0);
+    _minuit->Migrad();
+
+    bool converged = _minuit->fCstatu.Contains("CONVERGED");
     if (!converged) 
       {
         cout <<"-----------TOF Linear fit did not converge---------------------------" <<endl;
         return converged;
       }
     for (int i = 0;i<dim;i++) {
-      gmMinuit->GetParameter(i,sfpar[i],errsfpar[i]);
+      _minuit->GetParameter(i,sfpar[i],errsfpar[i]);
     } 
 
-    *slope = sfpar[1];
-    *eslope = errsfpar[1];
+    *Slope  = sfpar[1];
+    *Eslope = errsfpar[1];
 
     delete error;
   
@@ -634,47 +658,8 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// calculate parameters of the straight line fit
-//-----------------------------------------------------------------------------
-  int AvikPID::CalculateSlope(vector<double>& Fltlen  , 
-			      vector<double>& Resid   , 
-			      double&         Slope   , 
-			      double&         SlopeErr) {
-    
-    double dl, dr, fltSum(0), resSum(0), fltMean, resMean, fltVar(0), resVar(0), fltRes(0), fltDev, resDev, rCoeff;
-
-    int n = Fltlen.size();
-
-    for (int i=0; i<n; i++) {
-      fltSum += Fltlen[i];
-      resSum += Resid[i];
-    }
-    
-    fltMean = fltSum/n;
-    resMean = resSum/n;
-    
-    for (int i=0; i<n; i++) {
-      dl      = Fltlen[i] - fltMean;
-      dr      = Resid [i] - resMean;
-      fltVar += dl*dl;
-      resVar += dr*dr;
-      fltRes += dl*dr;
-    }
-    
-    fltDev = sqrt(fltVar/n);              // sigxx
-    resDev = sqrt(resVar/n);              // sigyy
-    rCoeff = fltRes/sqrt(fltVar*resVar);  // 
-
-    Slope    = rCoeff*resDev/fltDev;
-    SlopeErr = 0.1/sqrt(fltVar);
-
-    return 0;
-  }
-
-
-//-----------------------------------------------------------------------------
   int AvikPID::AddHits(const Doublet* Multiplet, vector<double>& Fltlen, vector<double>& Resid) {
-    //    int nhits = Multiplet->fNstrawHits;
+    //    int nhits = Multiplet->fNStrawHits;
     int ihit;
     double res, flt, reserr;
 
@@ -691,53 +676,97 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
+// doublet ambiguity resolver best combinations: 0:(++) 1:(+-) 2:(--) 3:(-+)
+// so 0 and 2 correspond to the SS doublet, 1 and 3 - to the OS doublet
+// see KalmanTests/src/DoubletAmbigResolver.cc for details
+// use SS doublets, require the best slope to be close to that of the track
+//-----------------------------------------------------------------------------
   int AvikPID::AddSsMultiplets(const vector<Doublet>* ListOfDoublets,
 			       vector<double>&        Fltlen        , 
 			       vector<double>&        Resid         ) {
 
-    const mu2e::Doublet  *multiplet, *mj;
-    int ndblts    = ListOfDoublets->size();
-    int best, bestj;
-    double   trkdxdzj, bestdxdzj, dxdzresidj;
+    const mu2e::Doublet  *multiplet;
+    double               dxdzresid;
+
+    int ndblts = ListOfDoublets->size();
       
     for (int i=0; i<ndblts; i++) {
-      multiplet       = &ListOfDoublets->at(i);
-      int sid    = multiplet->fStationId/2;
-      int nhits       = multiplet->fNstrawHits;
+      multiplet = &ListOfDoublets->at(i);
+      int nhits = multiplet->fNStrawHits;
+      if ((nhits > 1) && multiplet->isSameSign()) {
+	dxdzresid = multiplet->bestDxDzRes(); 
+//-----------------------------------------------------------------------------
+// always require the local doublet slope to be close to that of the track
+//-----------------------------------------------------------------------------
+	if (fabs(dxdzresid) < .1) {
+	    AddHits(multiplet,Fltlen,Resid);
+	}
+      }
+    }
+
+    return 0;
+  }
+
+
+//-----------------------------------------------------------------------------
+// doublet ambiguity resolver best combinations: 0:(++) 1:(+-) 2:(--) 3:(-+)
+// so 0 and 2 correspond to the SS doublet, 1 and 3 - to the OS doublet
+// see KalmanTests/src/DoubletAmbigResolver.cc for details
+//-----------------------------------------------------------------------------
+  int AvikPID::AddOsMultiplets(const vector<Doublet>* ListOfDoublets,
+			       vector<double>&        Fltlen        , 
+			       vector<double>&        Resid         ) {
+
+    const mu2e::Doublet  *multiplet, *mj;
+    int                  best, bestj, sid, sidj;
+    double               trkdxdz, bestdxdz, dxdzresid, trkdxdzj, bestdxdzj, dxdzresidj;
+
+    int      ndblts = ListOfDoublets->size();
+      
+    for (int i=0; i<ndblts; i++) {
+      multiplet = &ListOfDoublets->at(i);
+      sid       = multiplet->fStationId/2;
+      int nhits = multiplet->fNStrawHits;
       if (nhits > 1) {
-	best         = multiplet->fIBest;
-	double trkdxdz   = multiplet->fTrkDxDz;
-	double bestdxdz  = multiplet->fDxDz[best];
-	double dxdzresid = fabs(trkdxdz - bestdxdz);
-				// always require the local doublet slope to be close to that of the track
+	best      = multiplet->fIBest;
+	trkdxdz   = multiplet->fTrkDxDz;
+	bestdxdz  = multiplet->fDxDz[best];
+	dxdzresid = fabs(trkdxdz - bestdxdz);
+//-----------------------------------------------------------------------------
+// always require the local doublet slope to be close to that of the track
+//-----------------------------------------------------------------------------
 	if (dxdzresid < .1) {
 	  if ((best == 1) || (best == 3)) {
-	    // OS doublet
+//-----------------------------------------------------------------------------
+// OS doublet
+//-----------------------------------------------------------------------------
 	    AddHits(multiplet,Fltlen,Resid);
 	  }
 	  else {
 //-----------------------------------------------------------------------------
-// SS doublet: check if there is a OS doublet in the same station and add this 
-// double only if the OS one exists
+// SS multiplet 
+// check if there is a OS doublet in the same station and add this SS doublet 
+// only if the OS one exists - in hope that the OS one would keep coordinates 
+// in place
 //-----------------------------------------------------------------------------
 	    for (int j=0; j<ndblts; j++) {
-	      mj            = &ListOfDoublets->at(j);
-	      int sidj      = mj->fStationId/2;
+	      mj   = &ListOfDoublets->at(j);
+	      sidj = mj->fStationId/2;
 	      if (sid == sidj) {
-		int nhj     = mj->fNstrawHits;
+		int nhj = mj->fNStrawHits;
 		if (nhj > 1) {
 //-----------------------------------------------------------------------------
-// to begin with, don't use single hit multiplets
-// however, in principle they could be used
+// don't use single hit multiplets. However, in principle they could be used
 //-----------------------------------------------------------------------------
 		  bestj      = mj->fIBest;
 		  trkdxdzj   = mj->fTrkDxDz;
 		  bestdxdzj  = mj->fDxDz[bestj];
 		  dxdzresidj = fabs(trkdxdzj - bestdxdzj);
-		
-		// always require the local doublet slope to be close to that of the track
-	      
+//-----------------------------------------------------------------------------
+// always require the local doublet slope to be close to that of the track
+//-----------------------------------------------------------------------------
 		  if ((dxdzresidj < .1) && ((bestj == 1) || (bestj == 3))) {
+		    // best multiplet is SS
 		    AddHits(multiplet,Fltlen,Resid);
 		    break;
 		  }
@@ -753,171 +782,141 @@ namespace mu2e {
   }
 
 
-//--------------------------------------------------------------------------------
-  void AvikPID::calculateSsSums(const vector<Doublet>* ele_LOD, 
-				const vector<Doublet>* muo_LOD) {
+//-----------------------------------------------------------------------------
+// calculate parameters of the straight line fit
+//-----------------------------------------------------------------------------
+  int AvikPID::CalculateSlope(vector<double>& Fltlen, vector<double>& Res, double& Slope, double& Err) {
     
-    //    const mu2e::Doublet  *multiplet, *mj;
-    int ele_used      = 0;
-    int muo_used      = 0;
-    vector<double> ele_fltLen;
-    vector<double> muo_fltLen;
-    vector<double> ele_resid;
-    vector<double> muo_resid;
+    double dl, dr, fltSum(0), resSum(0), fltMean, resMean, fltVar(0), resVar(0), fltRes(0), fltDev, resDev, rCoeff;
 
-    _logRatioSs = 0.;
+    int n = Fltlen.size();
 
-    AddSsMultiplets(ele_LOD,ele_fltLen,ele_resid);
-    AddSsMultiplets(muo_LOD,muo_fltLen,muo_resid);
+    if (n > 1) {
+      for (int i=0; i<n; i++) {
+	fltSum += Fltlen[i];
+	resSum += Res[i];
+      }
+    
+      fltMean = fltSum/n;
+      resMean = resSum/n;
+    
+      for (int i=0; i<n; i++) {
+	dl      = Fltlen[i] - fltMean;
+	dr      = Res   [i] - resMean;
+	fltVar += dl*dl;
+	resVar += dr*dr;
+	fltRes += dl*dr;
+      }
+    
+      fltDev = sqrt(fltVar/n);              // sigxx
+      resDev = sqrt(resVar/n);              // sigyy
+      rCoeff = fltRes/sqrt(fltVar*resVar);  // 
 
-    ele_used = ele_fltLen.size();
-    muo_used = muo_fltLen.size();
+      Slope  = rCoeff*resDev/fltDev;
+      Err    = 0.1/sqrt(fltVar);
+    }
+    else {
+//-----------------------------------------------------------------------------
+// degenerate case
+//-----------------------------------------------------------------------------
+      Slope = 1.e6;
+      Err   = 1.e6;
+    }
+    return 0;
+  }
 
-    if ((ele_used > 1) && (muo_used > 1)) {
+//--------------------------------------------------------------------------------
+  void AvikPID::calculateSsSums(const vector<Doublet>* ListOfDoublets, double&  Drds, double& DrdsErr, int& NUsed) {
+    
+    vector<double> fltLen, resid;
 
-      CalculateSlope(ele_fltLen,ele_resid,_drdsSsEle,_drdsSsEleErr);
-      CalculateSlope(muo_fltLen,muo_resid,_drdsSsMuo,_drdsSsMuoErr);
+    AddSsMultiplets(ListOfDoublets,fltLen,resid);
 
-      _logRatioSs = log(fabs(_drdsSsMuo/_drdsSsEle));
-    }	 
+    NUsed = fltLen.size();
 
-    // printf("ele_resSlope: %10.4e  muo_resSlope: %10.4e \n", ele_slope, muo_slope);
-    // printf("ele_used: %3i  muo_used: %3i \n", ele_used, muo_used);
-    // printf("logratio: %6.4f \n", ssLogratio);
-
-    _ele_nusedSs = ele_used;
-    _muo_nusedSs = muo_used;
+    CalculateSlope(fltLen,resid,Drds,DrdsErr);
   }
 
 //------------------------------------------------------------------------------
 // calculate sums over the local doublet residuals
 // residuals are weighted, as Avik is trying to de-weight the tails
 //-----------------------------------------------------------------------------
-  void AvikPID::calculateOsSums(const vector<Doublet>* ele_LOD, 
-				const vector<Doublet>* muo_LOD) 
-  {
+  void AvikPID::calculateOsSums(const vector<Doublet>* ListOfDoublets, 
+				double& Drds, double& DrdsErr, int& NUsedHits, 
+				double& Sum , int& NUsedDoublets) {
+
+    vector<double> fltLen;
+    vector<double> resid;
     const Doublet* multiplet;
+//-----------------------------------------------------------------------------
+// calculate slopes using OS doublets
+//-----------------------------------------------------------------------------
+    AddOsMultiplets(ListOfDoublets,fltLen,resid);
+    CalculateSlope(fltLen,resid,Drds,DrdsErr);
+    NUsedHits = fltLen.size();
 
-    _ele_nusedOs  = 0;
-    _muo_nusedOs  = 0;
-    _ele_resSumOs = 0.;
-    _muo_resSumOs = 0.;
 
-    int ele_nnlets    = ele_LOD->size();
-    int muo_nnlets    = muo_LOD->size();
-    int ele_ndblts    = 0.;
-    int muo_ndblts    = 0.;
+    NUsedDoublets = 0;
+    Sum           = 0.;
 
-    if ((ele_nnlets != muo_nnlets) || (ele_nnlets == 0)) {
-      printf("We have problems! BE CAREFUL...ele_ndblts: %i %s %i \n", ele_ndblts, "  muo_ndblts: ", muo_ndblts);
-    }
+    int nnlets    = ListOfDoublets->size();
+    int ndblts    = 0.;
 
-    double pow1  = 1.5;
-    double bound = 0.0625;
-    double pow2  = 0.25;
-
-    for (int i=0; i<ele_nnlets; i++) {
-      multiplet       = &ele_LOD->at(i);
-      int nhits       = multiplet->fNstrawHits;
-      //      ele_dbltsize[i] = nhits;
+    for (int i=0; i<nnlets; i++) {
+      multiplet    = &ListOfDoublets->at(i);
+      int nhits    = multiplet->fNStrawHits;
       if (nhits >= 2) {
-	int best    = multiplet->fIBest;
-	//	ele_best[i] = best;
-	ele_ndblts += 1;
-	if ((best == 1) || (best == 3)) {
-	  double trkdxdz   = multiplet->fTrkDxDz;
-	  double bestdxdz  = multiplet->fDxDz[best];
-	  double dxdzresid = trkdxdz - bestdxdz;
-	  if (dxdzresid < 0.5) {
-	    //	    fHist4.fele_resids->Fill(dxdzresid);
-	    double residsq = 0;
-	    if (abs(dxdzresid) < bound) residsq = (1/pow(bound, pow1))*pow(abs(dxdzresid), pow1);
-	    else residsq = (1/pow(bound, pow1))*pow(bound, (pow1 - pow2))*pow(abs(dxdzresid), pow2);
-	    //	  printf("ele_resid: %6.4f %s %6.4f \n", dxdzresid, "   ele_residsq: ", residsq);	  
-	    _ele_resSumOs += residsq;
-	    _ele_nusedOs  += 1.0;
+	ndblts += 1;
+	if (! multiplet->isSameSign()) {
+	  double ddxdz    = multiplet->bestDxDzRes();
+	  if (fabs(ddxdz) < _maxDeltaDxDzOs) {
+// 	    double residsq = 0;
+// 	    if (abs(dxdzresid) < _bound) residsq = (1/pow(_bound, _pow1))*pow(abs(dxdzresid), _pow1);
+// 	    else residsq   = (1/pow(_bound, _pow1))*pow(_bound, (_pow1 - _pow2))*pow(abs(dxdzresid), _pow2);
+	    double dr2     = weightedSlopeResidual(ddxdz);
+	    Sum           += dr2;
+	    NUsedDoublets += 1.;
 	  }
 	}
       }
     }
-
-    for (int i=0; i<muo_nnlets; i++) {
-      multiplet       = &muo_LOD->at(i);
-      int nhits       = multiplet->fNstrawHits;
-      //      muo_dbltsize[i] = nhits;
-      if (nhits >= 2) {
-	int best    = multiplet->fIBest;
-	//	muo_best[i] = best;
-	muo_ndblts += 1;
-	if ((best == 1) || (best == 3)) {
-	  double trkdxdz   = multiplet->fTrkDxDz;
-	  double bestdxdz  = multiplet->fDxDz[best];
-	  double dxdzresid = trkdxdz - bestdxdz;
-	  if (dxdzresid < 0.5) {
-	    // fHist4.fmuo_resids->Fill(dxdzresid);
-	    double residsq = 0;
-	    if (abs(dxdzresid) < bound) residsq = (1/pow(bound, pow1))*pow(abs(dxdzresid), pow1);
-	    else residsq = (1/pow(bound, pow1))*pow(bound, (pow1 - pow2))*pow(abs(dxdzresid), pow2);
-	    //	  printf("muo_resid: %6.4f %s %6.4f \n", dxdzresid, "   muo_residsq: ", residsq);	  
-	    _muo_resSumOs += residsq;
-	    _muo_nusedOs   += 1.0;
-	  }
-	}
-      }
-    }
-
-    _logRatioOs = 1.e16;
-
-    if (_muo_resSumOs != 0.) {
-      _logRatioOs = log(_muo_resSumOs/_ele_resSumOs*_ele_nusedOs/_muo_nusedOs);
-    }
-
-    // printf("ele_resSum: %7.4f %s %7.4f \n", ele_resSum, "   muo_resSum: ", muo_resSum);
-    // printf("ele_used: %6.0f %s %6.0f \n", ele_used, "   muo_used: ", muo_used);
-    // printf("logratio: %6.4f \n", osLogratio);
-
   }
-
-
 
 //-----------------------------------------------------------------------------
   void AvikPID::produce(art::Event& event) {
 
     art::Handle<mu2e::KalRepPtrCollection> eleHandle, muoHandle;
     
-    double         resid, residerr, aresd, normflt, normresd, firsthitfltlen, lasthitfltlen, entlen;
+    vector<Doublet>       ele_listOfDoublets, muo_listOfDoublets;
 
-    int n_ele_trk, n_muo_trk;
+    double         firsthitfltlen, lasthitfltlen, entlen;
+    double         path, eprob, muprob;
 
-    vector<double> vresd , vresd_muo;
-    vector<double> vflt  , vflt_muo;
-    vector<double> evflt , mvflt;
-    vector<double> evresd, mvresd;
+    int const      max_ntrk(100);
+    int            n_ele_trk, n_muo_trk, ele_unique[max_ntrk], muo_unique[max_ntrk];
+    int            found, ele_nhits, muo_nhits, ncommon, n_ele_doublets, n_muo_doublets;
 
-    vector<double> gaspaths;
-    vector<double> edeps;
+    const mu2e::StrawHit               *esh, *msh;
+    mu2e::Doublet                      *d;
+    mu2e::DoubletAmbigResolver::Data_t r;
+
+    vector<double>         gaspaths;
+    vector<double>         edeps;
     
-    const KalRep           *ele_Trk, *muo_Trk;
-    const KalFitResult     *ele_kfres, *muo_kfres;
-    const vector<Doublet>  *ele_listOfDoublets;
-    const vector<Doublet>  *muo_listOfDoublets;
-    
-    const TrkHotList       *hots;
-    mu2e::TrkStrawHit      *hit;
+    const KalRep            *ele_Trk, *muo_Trk;
+
+    const TrkHotList        *ele_hots, *muo_hots;
+    const mu2e::TrkStrawHit *hit, *ehit, *mhit;
       
-    art::Handle<mu2e::KalFitResultCollection> eleKfresHandle;
-    art::Handle<mu2e::KalFitResultCollection> muoKfresHandle;
-    
-    double eprob, muprob;
-
     _evtid = event.id().event();
+
     ++_processed_events;
     
     if (_processed_events%100 == 0) {
-      if (_verbosity>=1) cout << "AvikPID: processing " << _processed_events << "-th event at evtid=" << _evtid << endl;
+      if (_debugLevel >= 1) cout << "AvikPID: processing " << _processed_events << "-th event at evtid=" << _evtid << endl;
     }
     
-    if (_verbosity>=2) cout << "AvikPID: processing " << _processed_events << "-th event at evtid=" << _evtid << endl;
+    if (_debugLevel >= 2) cout << "AvikPID: processing " << _processed_events << "-th event at evtid=" << _evtid << endl;
     
     unique_ptr<AvikPIDProductCollection> pids(new AvikPIDProductCollection );
     
@@ -945,140 +944,239 @@ namespace mu2e {
 
     n_ele_trk = _listOfEleTracks->size();
     n_muo_trk = _listOfMuoTracks->size();
-//-----------------------------------------------------------------------------
-// get KalFitResult's with lists of doublets
-//-----------------------------------------------------------------------------
-    event.get(ele_selector,eleKfresHandle);
-    event.get(muo_selector,muoKfresHandle);
 
-    if (! eleKfresHandle.isValid()) {
-      printf("TAnaDump::printKalFitResultCollection: no KalFitResultCollection for module, BAIL OUT\n");
-      goto END;
-    }
-    
-    if (! muoKfresHandle.isValid()) {
-      printf("TAnaDump::printKalFitResultCollection: no KalFitResultCollection for module, BAIL OUT\n");
-      goto END;
+    if (_debugLevel > 0) {
+      printf("Event: %8i : n_ele_trk: %2i n_muo_trk: %2i\n",_evtid,n_ele_trk,n_muo_trk);
     }
 //-----------------------------------------------------------------------------
 // proceed further
 //-----------------------------------------------------------------------------
-    if ((n_ele_trk != n_muo_trk) || (n_ele_trk == 0)) {
-      printf("We are in trouble! BAIL OUT...n_ele_trk: %i %s %i \n", n_ele_trk, "  n_muo_trk: ", n_muo_trk);
+    for (int i=0; i<max_ntrk; i++) {
+      ele_unique[i] = 1;
+      muo_unique[i] = 1;
+    }
+
+    if ((n_ele_trk > max_ntrk/2) || (n_muo_trk > max_ntrk/2)) {
+      printf("Event: %8i : n_ele_trk: %2i n_muo_trk: %2i. BAIL OUT\n",
+	     _evtid,n_ele_trk,n_muo_trk);
       goto END;
     }
 
     for (int i=0; i<n_ele_trk; i++) {
-      _trkid             = i;
-
-      ele_Trk            = _listOfEleTracks->at(i).get();
-      muo_Trk            = _listOfMuoTracks->at(i).get();
-      ele_kfres          = &eleKfresHandle->at(i);
-      muo_kfres          = &muoKfresHandle->at(i);
-      ele_listOfDoublets = &ele_kfres->_listOfDoublets;
-      muo_listOfDoublets = &muo_kfres->_listOfDoublets;
-
+      _ele_trkid     = i;
+      ele_Trk        = _listOfEleTracks->at(i).get();
+      ele_hots       = ele_Trk->hotList();
+      ele_nhits      = ele_Trk->nActive();
+//-----------------------------------------------------------------------------
+// electron track hit doublets
+//-----------------------------------------------------------------------------
+      _dar->findDoublets(ele_Trk,&ele_listOfDoublets);
+      n_ele_doublets = ele_listOfDoublets.size();
+      for (int id=0; id<n_ele_doublets; id++) {
+	d = &ele_listOfDoublets.at(id);
+	r.index[0] = 0;
+	r.index[1] = d->fNStrawHits-1;
+	_dar->calculateDoubletParameters(ele_Trk,d,&r);
+      }
+//-----------------------------------------------------------------------------
+// dE/dX for the electron track hits
+// calculate dE/dX, clear vectors, start forming a list of hits from the electron track
+//-----------------------------------------------------------------------------
       firsthitfltlen = ele_Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
       lasthitfltlen  = ele_Trk->lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
       entlen         = std::min(firsthitfltlen,lasthitfltlen);
       _trkmom        = ele_Trk->momentum(entlen).mag();
-//-----------------------------------------------------------------------------
-// calculate De/Dx for the electron track
-//-----------------------------------------------------------------------------
-      hots = ele_Trk->hotList();
-      for (TrkHotList::hot_iterator ihot=hots->begin(); ihot != hots->end(); ++ihot) {
+
+      gaspaths.clear();
+      edeps.clear();
+
+      for (TrkHotList::hot_iterator ihot=ele_hots->begin(); ihot != ele_hots->end(); ++ihot) {
 	hit = (mu2e::TrkStrawHit*) &(*ihot);
 	if (hit->isActive()) {
 //-----------------------------------------------------------------------------
-// 'unbiased' residual, signed with the radius - if the drift radius is greater than 
-// the track-to-wire distance, the residual is positive (need to double check the sign!)
-// use active hits only
+// hit charges: '2.*' here because KalmanFit reports half-path through gas.
 //-----------------------------------------------------------------------------
-	  hit->resid(resid,residerr,true);
-
-	  aresd    = (hit->poca()->doca()>0?resid:-resid);
-	  normflt  = hit->fltLen() -  ele_Trk->flt0();
-	  normresd = aresd/residerr;
-	  
-	  vresd.push_back(normresd);
-	  vflt.push_back(normflt);
-	  evresd.push_back(1.);
-	  evflt.push_back(0.1);
-	  
-	  // 2. * here because KalmanFit reports half the path through gas.
-	  
-	  gaspaths.push_back(2. * hit->gasPath(hit->driftRadius(),hit->trkTraj()->direction( hit->fltLen() )));
-	  
+	  path = 2.*hit->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
+	  gaspaths.push_back(path);
 	  edeps.push_back(hit->strawHit().energyDep());
 	}
       }
-      
-      calculateVadimSlope(vresd,vflt,evresd,evflt,&_drdsVadimEle,&_drdsVadimEleErr);
 //-----------------------------------------------------------------------------
-// calculate De/Dx for the electron track
+// calculate ddR/ds slope for the electron tracks
 //-----------------------------------------------------------------------------
-      hots = muo_Trk->hotList();
-      for (TrkHotList::hot_iterator ihot=hots->begin(); ihot != hots->end(); ++ihot) {
-	mu2e::TrkStrawHit* hit = (mu2e::TrkStrawHit*) &(*ihot);
-	if (hit->isActive()) {
-//-----------------------------------------------------------------------------
-// 'unbiased' residual, signed with the radius - if the drift radius is greater than 
-// the track-to-wire distance, the residual is positive (need to double check the sign!)
-// use active hits only
-//-----------------------------------------------------------------------------
-	  hit->resid(resid,residerr,true);
+      calculateVadimSlope(ele_Trk,&_drdsVadimEle,&_drdsVadimEleErr);
 
-	  aresd    = (hit->poca()->doca()>0?resid:-resid);
-	  normflt  = hit->fltLen() -  ele_Trk->flt0();
-	  normresd = aresd/residerr;
-	  
-	  vresd_muo.push_back(normresd);
-	  vflt_muo.push_back(normflt);
-	  mvresd.push_back(1.);
-	  mvflt.push_back(0.1);
+      calculateOsSums(&ele_listOfDoublets,_drdsOsEle,_drdsOsEleErr,_ele_nusedOsH,_ele_resSumOs,_ele_nusedOsD);
+      calculateSsSums(&ele_listOfDoublets,_drdsSsEle,_drdsSsEleErr,_ele_nusedSsH);
+//-----------------------------------------------------------------------------
+// loop over muon tracks
+//-----------------------------------------------------------------------------
+      for (int j=0; j<n_muo_trk; j++) {
+	_muo_trkid     = j;
+	muo_Trk        = _listOfMuoTracks->at(j).get();
+	muo_hots       = muo_Trk->hotList();
+	muo_nhits      = muo_Trk->nActive();
+//-----------------------------------------------------------------------------
+// check if muon and electron tracks are the same track - use 50% of active hits 
+// of the same hits criterion
+//-----------------------------------------------------------------------------
+	ncommon = 0;
+	for(TrkHotList::hot_iterator ite=ele_hots->begin(); ite<ele_hots->end(); ite++) {
+	  ehit = (const mu2e::TrkStrawHit*) &(*ite);
+	  if (ehit->isActive()) {
+	    for(TrkHotList::hot_iterator itm=muo_hots->begin(); itm<muo_hots->end(); itm++) {
+	      mhit = (const mu2e::TrkStrawHit*) &(*itm);
+	      if (mhit->isActive()) {
+		if (&ehit->strawHit() == &mhit->strawHit()) {
+		  ncommon += 1;
+		  break;
+		}
+	      }
+	    }
+	  }
 	}
-      }
-      
-      calculateVadimSlope(vresd_muo,vflt_muo,mvresd,mvflt,&_drdsVadimMuo,&_drdsVadimMuoErr);
 
-      eprob  = calculateDedxProb(gaspaths, edeps, _heletemp);
-      muprob = calculateDedxProb(gaspaths, edeps, _hmuotemp);
+	if (ncommon > (ele_nhits+muo_nhits)/4.) {
+//-----------------------------------------------------------------------------
+// consider the two tracks to be the same  
+// 2. look at the muon track hits and add active muon track hits not present 
+//    in the electron track list
+//-----------------------------------------------------------------------------
+	  ele_unique[i] = 0;
+	  muo_unique[j] = 0;
+//-----------------------------------------------------------------------------
+// list of muon doublets 
+//-----------------------------------------------------------------------------
+	  _dar->findDoublets(muo_Trk,&muo_listOfDoublets);
+	  n_muo_doublets = muo_listOfDoublets.size();
+	  for (int id=0; id<n_muo_doublets; id++) {
+	    d = &muo_listOfDoublets.at(id);
+	    r.index[0] = 0;
+	    r.index[1] = d->fNStrawHits-1;
+	    _dar->calculateDoubletParameters(muo_Trk,d,&r);
+	  }
+
+	  for (TrkHotList::hot_iterator ihot=muo_hots->begin(); ihot != muo_hots->end(); ++ihot) {
+	    hit = (mu2e::TrkStrawHit*) &(*ihot);
+	    if (hit->isActive()) {
+	      msh = &hit->strawHit();
+//-----------------------------------------------------------------------------
+// check if 'hit' is unique for the muon track
+//-----------------------------------------------------------------------------
+	      found = 0;
+	      for (TrkHotList::hot_iterator ehot=ele_hots->begin(); ehot != ele_hots->end(); ++ehot) {
+		ehit = (mu2e::TrkStrawHit*) &(*ehot);
+		if (ehit->isActive()) {
+		  esh  = &ehit->strawHit();
+		  if (esh == msh) {
+		    found = 1;
+		    break;
+		  }
+		}
+	      }
+
+	      if (found == 0) {
+//-----------------------------------------------------------------------------
+// straw hit present in the list of active muon track hits, but not in the list
+// of active electron track hits, add it to the list of hits used in de/dx calculation
+//-----------------------------------------------------------------------------
+		path = 2.*hit->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
+		gaspaths.push_back(path);
+		edeps.push_back(hit->strawHit().energyDep());
+	      }
+	    }
+	  }
       
-      _logDedxProbEle = log(eprob);
-      _logDedxProbMuo = log(muprob);
+	  eprob  = calculateDedxProb(&gaspaths, &edeps, _heletemp);
+	  muprob = calculateDedxProb(&gaspaths, &edeps, _hmuotemp);
+      
+	  _logDedxProbEle = log(eprob );
+	  _logDedxProbMuo = log(muprob);
+//-----------------------------------------------------------------------------
+// calculate Vadim's ddR/ds slopes and SS and OS ddR/ds slopes for the muon tracks
+// also: OS sums of slope residuals
+//-----------------------------------------------------------------------------
+	  calculateVadimSlope(muo_Trk,&_drdsVadimMuo,&_drdsVadimMuoErr);
+	  calculateSsSums(&muo_listOfDoublets,_drdsSsMuo,_drdsSsMuoErr,_muo_nusedSsH);
+	  calculateOsSums(&muo_listOfDoublets,_drdsOsMuo,_drdsOsMuoErr,_muo_nusedOsH,_muo_resSumOs,_muo_nusedOsD);
 //-----------------------------------------------------------------------------
 // calculate Avik's sums
 //-----------------------------------------------------------------------------
-      doubletMaker(ele_Trk,muo_Trk);
-      //      calculateAvikSums();
+	  doubletMaker(ele_Trk,muo_Trk);
 //-----------------------------------------------------------------------------
-// calculate OS slopes
+// calculate OS slopes - these make sense only when both - electron and muon - 
+// versions of he track are present
 //-----------------------------------------------------------------------------
-      calculateOsSums(ele_listOfDoublets,muo_listOfDoublets);
+	  _pid.init(_ele_trkid     , _muo_trkid       ,
+		    _logDedxProbEle, _logDedxProbMuo  ,
+		    _drdsVadimEle  , _drdsVadimEleErr ,
+		    _drdsVadimMuo  , _drdsVadimMuoErr ,
+		    _nMatched      , _nMatchedAll     ,
+		    _sumAvikEle    , _sumAvikMuo      ,
+		    _sq2AvikEle    , _sq2AvikMuo      ,
+		    _drdsOsEle     , _drdsOsEleErr    ,
+		    _drdsOsMuo     , _drdsOsMuoErr    ,
+		    _ele_nusedOsH  , _muo_nusedOsH    ,
+		    _drdsSsEle     , _drdsSsEleErr    ,
+		    _drdsSsMuo     , _drdsSsMuoErr    ,
+		    _ele_nusedSsH  , _muo_nusedSsH    ,
+		    _ele_resSumOs  , _muo_resSumOs    ,
+		    _ele_nusedOsD  , _muo_nusedOsD    );
+	  
+	  pids->push_back(_pid);
+	  break;
+	}
+	else {
 //-----------------------------------------------------------------------------
-// calculate SS slopes
+// electron and muon tracks are different, proceed with the next muon track
 //-----------------------------------------------------------------------------
-      calculateSsSums(ele_listOfDoublets,muo_listOfDoublets);
+	}
+      }
 //-----------------------------------------------------------------------------
-// form PID object : FIXME
+// if electron track is unique, still can use the energy depositions to calculate 
+// dE/dx probability under muon hypothesis
 //-----------------------------------------------------------------------------
-      _pid.init(_trkid,
-		_logDedxProbEle, _logDedxProbMuo  ,
-		_drdsVadimEle  , _drdsVadimEleErr ,
-		_drdsVadimMuo  , _drdsVadimMuoErr ,
-		_nMatched      , _nMatchedAll     ,
-		_sumAvikEle    , _sumAvikMuo      ,
-		_sq2AvikEle    , _sq2AvikMuo      ,
-		_drdsOsEle     , _drdsOsEleErr    ,
-		_drdsOsMuo     , _drdsOsMuoErr    ,
-		_ele_nusedSs   , _muo_nusedSs     ,
-		_drdsSsEle     , _drdsSsEleErr    ,
-		_drdsSsMuo     , _drdsSsMuoErr    ,
-		_ele_nusedOs   , _muo_nusedOs     ,
-		_ele_resSumOs  , _muo_resSumOs
-		);
+      if (ele_unique[i] == 1) {
+	_muo_trkid       = -1;
+	_drdsVadimMuo    =  1.e6;
+	_drdsVadimMuoErr =  1.e6;
+	_sumAvikMuo      = -1;
+	_sq2AvikMuo      = -1;
+	_drdsOsMuo       =  1.e6;
+	_drdsOsMuoErr    =  1.e6;
+	_muo_nusedSsH    = -1;
+	_drdsSsMuo       =  1.e6;
+	_drdsSsMuoErr    =  1.e6;
+	_muo_nusedOsH    = -1;
+	_muo_resSumOs    =  1.e6;
+	_muo_nusedOsD    = -1;
+	_nMatched        = -1;
+	_nMatchedAll     = -1;
 
-      pids->push_back(_pid);
+	eprob  = calculateDedxProb(&gaspaths, &edeps, _heletemp);
+	muprob = calculateDedxProb(&gaspaths, &edeps, _hmuotemp);
+      
+	_logDedxProbEle = log(eprob );
+	_logDedxProbMuo = log(muprob);
+
+	_pid.init(_ele_trkid     , _muo_trkid       ,
+		  _logDedxProbEle, _logDedxProbMuo  ,
+		  _drdsVadimEle  , _drdsVadimEleErr ,
+		  _drdsVadimMuo  , _drdsVadimMuoErr ,
+		  _nMatched      , _nMatchedAll     ,
+		  _sumAvikEle    , _sumAvikMuo      ,
+		  _sq2AvikEle    , _sq2AvikMuo      ,
+		  _drdsOsEle     , _drdsOsEleErr    ,
+		  _drdsOsMuo     , _drdsOsMuoErr    ,
+		  _ele_nusedSsH  , _muo_nusedSsH    ,
+		  _drdsSsEle     , _drdsSsEleErr    ,
+		  _drdsSsMuo     , _drdsSsMuoErr    ,
+		  _ele_nusedOsH  , _muo_nusedOsH    ,
+		  _ele_resSumOs  , _muo_resSumOs    ,
+		  _ele_nusedOsD  , _muo_nusedOsD    );
+	  
+	pids->push_back(_pid);
+      }
 //-----------------------------------------------------------------------------
 // fill ntuple
 //-----------------------------------------------------------------------------
@@ -1087,9 +1185,132 @@ namespace mu2e {
       }
     }
 
-  END: ;
+//-----------------------------------------------------------------------------
+// finally: loop over muon tracks one more time and store PID records for unique ones
+//-----------------------------------------------------------------------------
+    for (int j=0; j<n_muo_trk; j++) {
+      if (muo_unique[j] == 1) {
+	_muo_trkid     = j;
+	muo_Trk        = _listOfMuoTracks->at(j).get();
+	muo_hots       = muo_Trk->hotList();
+	muo_nhits      = muo_Trk->nActive();
+//-----------------------------------------------------------------------------
+// lists of doublets need to be recreated even when they existed - their 
+// presence depends on ambiguity resolvers used by the reconstruction modules
+//-----------------------------------------------------------------------------
+	_dar->findDoublets(muo_Trk,&muo_listOfDoublets);
+	n_muo_doublets = muo_listOfDoublets.size();
+	for (int id=0; id<n_muo_doublets; id++) {
+	  d = &muo_listOfDoublets.at(id);
+	  r.index[0] = 0;
+	  r.index[1] = d->fNStrawHits-1;
+	  _dar->calculateDoubletParameters(muo_Trk,d,&r);
+	}
+//-----------------------------------------------------------------------------
+// dE/dX for the muoon track hits
+// calculate dE/dX, clear vectors, start forming a list of hits from the electron track
+//-----------------------------------------------------------------------------
+	firsthitfltlen = muo_Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+	lasthitfltlen  = muo_Trk->lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+	entlen         = std::min(firsthitfltlen,lasthitfltlen);
+	_trkmom        = muo_Trk->momentum(entlen).mag();
+	
+	gaspaths.clear();
+	edeps.clear();
+
+	for (TrkHotList::hot_iterator ihot=muo_hots->begin(); ihot != muo_hots->end(); ++ihot) {
+	  hit = (mu2e::TrkStrawHit*) &(*ihot);
+	  if (hit->isActive()) {
+//-----------------------------------------------------------------------------
+// hit charges: '2.*' here because KalmanFit reports half-path through gas.
+//-----------------------------------------------------------------------------
+	    path = 2.*hit->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
+	    gaspaths.push_back(path);
+	    edeps.push_back(hit->strawHit().energyDep());
+	  }
+	}
+
+	eprob  = calculateDedxProb(&gaspaths, &edeps, _heletemp);
+	muprob = calculateDedxProb(&gaspaths, &edeps, _hmuotemp);
+	
+	_logDedxProbEle = log(eprob );
+	_logDedxProbMuo = log(muprob);
+
+//-----------------------------------------------------------------------------
+// calculate Vadim's ddR/ds slopes and SS slopes for the muon track 
+//-----------------------------------------------------------------------------
+	calculateVadimSlope(muo_Trk,&_drdsVadimMuo,&_drdsVadimMuoErr);
+	calculateSsSums(&muo_listOfDoublets,_drdsSsMuo,_drdsSsMuoErr,_muo_nusedSsH);
+	calculateOsSums(&muo_listOfDoublets,_drdsOsMuo,_drdsOsMuoErr,_muo_nusedOsH,_muo_resSumOs,_muo_nusedOsD);
+
+	_ele_trkid       = -1;
+	_drdsVadimEle    =  1.e6;
+	_drdsVadimEleErr =  1.e6;
+	_sumAvikEle      = -1;
+	_sq2AvikEle      = -1;
+	_drdsOsEle       =  1.e6;
+	_drdsOsEleErr    =  1.e6;
+	_ele_nusedSsH    = -1;
+	_drdsSsEle       =  1.e6;
+	_drdsSsEleErr    =  1.e6;
+	_ele_nusedOsH    = -1;
+	_ele_resSumOs    = -1;
+	_ele_nusedOsD    = -1;
+	_nMatched        = -1;
+	_nMatchedAll     = -1;
+
+	_pid.init(_ele_trkid     , _muo_trkid       ,
+		  _logDedxProbEle, _logDedxProbMuo  ,
+		  _drdsVadimEle  , _drdsVadimEleErr ,
+		  _drdsVadimMuo  , _drdsVadimMuoErr ,
+		  _nMatched      , _nMatchedAll     ,
+		  _sumAvikEle    , _sumAvikMuo      ,
+		  _sq2AvikEle    , _sq2AvikMuo      ,
+		  _drdsOsEle     , _drdsOsEleErr    ,
+		  _drdsOsMuo     , _drdsOsMuoErr    ,
+		  _ele_nusedSsH  , _muo_nusedSsH    ,
+		  _drdsSsEle     , _drdsSsEleErr    ,
+		  _drdsSsMuo     , _drdsSsMuoErr    ,
+		  _ele_nusedOsH  , _muo_nusedOsH    ,
+		  _ele_resSumOs  , _muo_resSumOs    ,
+		  _ele_nusedOsD  , _muo_nusedOsD    );
+	  
+	pids->push_back(_pid);
+      }
+    }
+//-----------------------------------------------------------------------------
+// end of the routine
+//-----------------------------------------------------------------------------
+  END:;
     event.put(std::move(pids));
   }
+
+//-----------------------------------------------------------------------------
+// Avik's weighted residual
+//-----------------------------------------------------------------------------
+  double AvikPID::weightedResidual(double R) {
+    double wr(1.e10);
+
+    double ar = fabs(R);
+    if (ar < 0.2) wr = pow(ar, 1.7);
+    else          wr = pow(0.2,1.3)*pow(ar,0.4);
+
+    return wr;
+  }
+
+//-----------------------------------------------------------------------------
+  double AvikPID::weightedSlopeResidual(double DDrDz) {
+
+    double res(0), ar;
+
+    ar = fabs(DDrDz);
+
+    if (ar < _bound) res = (1/pow(_bound, _pow1))*pow(ar, _pow1);
+    else             res = (1/pow(_bound, _pow1))*pow(_bound, (_pow1 -_pow2))*pow(ar, _pow2);
+
+    return res;
+  }
+
 
 } // end namespace mu2e
 

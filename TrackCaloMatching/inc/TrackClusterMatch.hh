@@ -5,13 +5,13 @@
 #include <ostream>
 
 #include "art/Persistency/Common/Ptr.h"
-#include "TrackCaloMatching/inc/TrkToCaloExtrapol.hh"
+#include "RecoDataProducts/inc/TrkCaloIntersect.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
 namespace mu2e {
 
-  typedef art::Ptr<TrkToCaloExtrapol> TrkToCaloExtrapolPtr ;
-  typedef art::Ptr<CaloCluster      > CaloClusterPtr ;
+  typedef art::Ptr<TrkCaloIntersect> TrkCaloIntersectPtr ;
+  typedef art::Ptr<CaloCluster     > CaloClusterPtr ;
 
   class TrackClusterMatch {
   public:
@@ -42,7 +42,7 @@ namespace mu2e {
   protected:
     int                   _icl;		// cluster index
     int                   _iex;		// extrapolated track index
-    TrkToCaloExtrapolPtr  _textrapol; 
+    TrkCaloIntersectPtr   _textrapol; 
     CaloClusterPtr        _cluster; 
     double                _xtrk;	// track coordinates
     double                _ytrk;
@@ -65,12 +65,12 @@ namespace mu2e {
 
   public:
     TrackClusterMatch();
-    TrackClusterMatch(TrkToCaloExtrapolPtr& Textrapol, CaloClusterPtr & Cluster, Data_t* Data);
+    TrackClusterMatch(TrkCaloIntersectPtr& Textrapol, CaloClusterPtr & Cluster, Data_t* Data);
     ~TrackClusterMatch();
 
     int                       icl        () const { return _icl; }
     int                       iex        () const { return _iex; }
-    const TrkToCaloExtrapol*  textrapol  () const { return _textrapol.get(); }
+    const TrkCaloIntersect*   textrapol  () const { return _textrapol.get(); }
     const CaloCluster*        caloCluster() const { return _cluster.get(); }
     double                    xtrk       () const { return _xtrk; }
     double                    ytrk       () const { return _ytrk; }

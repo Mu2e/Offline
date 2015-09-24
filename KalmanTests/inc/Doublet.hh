@@ -29,15 +29,17 @@ namespace mu2e {
 
   class Doublet{
   public:
+    enum { kMaxHits = 5 } ;
+
     int                 fIndex;		// doublet index in the list
     int                 fStationId;
     int                 fPanelId;
     CLHEP::Hep3Vector   fShDir;
-    int                 fNstrawHits;
-    int                 fStrawAmbig[5];
-    CLHEP::Hep3Vector   fTrkDir    [5];
-    CLHEP::Hep3Vector   fTrkPos    [5];
-    mu2e::TrkStrawHit*  fHit       [5];
+    int                 fNStrawHits;
+    int                 fStrawAmbig[kMaxHits];
+    CLHEP::Hep3Vector   fTrkDir    [kMaxHits];
+    CLHEP::Hep3Vector   fTrkPos    [kMaxHits];
+    mu2e::TrkStrawHit*  fHit       [kMaxHits];
     int                 fHitIndex  [2]; // indices of the used pair of hits 
     double              fTrkDxDz;	// track dx/dz in the local panel frame
     double              fDxDz      [4];	// 4 combinations
@@ -45,7 +47,7 @@ namespace mu2e {
     int                 fIBest;		// best combination
     int                 fINext;		// next-to-best combination
     int                 fOs;		// 0:opposite sign, +/-2:same sign
-    double              fMcDoca    [5]; // signed MC distance of closest approach
+    double              fMcDoca    [kMaxHits]; // signed MC distance of closest approach
 //-----------------------------------------------------------------------------
 // constructors and such
 //-----------------------------------------------------------------------------
@@ -60,11 +62,17 @@ namespace mu2e {
     
     ~Doublet();
 
-    double Chi2Best() { return fChi2[fIBest]; }
+    double Chi2Best() const { return fChi2[fIBest]; }
     
     void addStrawHit(CLHEP::Hep3Vector trkdir,
 		     CLHEP::Hep3Vector trkpos,
 		     TrkStrawHit*      hit);
+
+    int    isSameSign() const { return (fIBest == 0) || (fIBest == 2) ; }
+
+    double bestDxDz   () const { return fDxDz[fIBest];         }
+    double trkDxDz    () const { return fTrkDxDz;              }
+    double bestDxDzRes() const { return fTrkDxDz-fDxDz[fIBest];}
     
   };
   

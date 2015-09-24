@@ -16,7 +16,8 @@ namespace mu2e {
   class AvikPIDProduct {
 
   private:
-    int    _trkID;			// track ID
+    int    _eleTrkID;			// electron track ID
+    int    _muoTrkID;			// muon     track ID
 					// dE/dX
     float  _logDedxProbEle;
     float  _logDedxProbMuo;
@@ -42,20 +43,23 @@ namespace mu2e {
     float  _drdsOsMuo;
     float  _drdsOsMuoErr;
 
-    int    _nUsedOsEle;
-    int    _nUsedOsMuo;
+    int    _nUsedOsEleH;
+    int    _nUsedOsMuoH;
 
     float  _sumAvikOsEle;
     float  _sumAvikOsMuo;
 
-    int    _nUsedSsEle;
-    int    _nUsedSsMuo;
+    int    _nUsedOsEleD;
+    int    _nUsedOsMuoD;
 
     float  _drdsSsEle;
     float  _drdsSsEleErr;
 
     float  _drdsSsMuo;
     float  _drdsSsMuoErr;
+
+    int    _nUsedSsEleH;
+    int    _nUsedSsMuoH;
 
   public:
 
@@ -66,7 +70,7 @@ namespace mu2e {
 
     void   clear() ;
 
-    void   init(int     TrkID,
+    void   init(int     EleTrkID        , int   MuoTrkID        ,
 		float   LogDedxProbEle  , float LogDedxProbMuo  , 
 		float   DrdsVadimEle    , float DrdsVadimEleErr ,
 		float   DrdsVadimMuo    , float DrdsVadimMuoErr ,
@@ -75,14 +79,17 @@ namespace mu2e {
 		float   Sq2AvikEle      , float Sq2AvikMuo      ,
 		float   DrdsOsEle       , float DrdsOsEleErr    ,
 		float   DrdsOsMuo       , float DrdsOsMuoErr    ,
-		int     NUsedSsEle      , int   NUsedSsMuo      ,    
+		int     NUsedSsEleH     , int   NUsedSsMuoH     ,    
 		float   DrdsSsEle       , float DrdsSsEleErr    ,
 		float   DrdsSsMuo       , float DrdsSsMuoErr    ,
-		int     NUsedOsEle      , int   NUsedOsMuo      ,    
-		float   SumAvikOsEle    , float SumAvikOsMuo
-		);
+		int     NUsedOsEleH     , int   NUsedOsMuoH     ,    
+		float   SumAvikOsEle    , float SumAvikOsMuo    ,
+		int     NUsedOsEleD     , int   NUsedOsMuoD	);
+  int                       fNUsedOsEleH;      // for fDrdsSsEle
+  int                       fNUsedOsMuoH;
 
-    int    trkID          () const { return _trkID; }
+    int    eleTrkID       () const { return _eleTrkID; }
+    int    muoTrkID       () const { return _muoTrkID; }
 
     float  logDedxProbEle () const { return _logDedxProbEle ; }
     float  logDedxProbMuo () const { return _logDedxProbMuo ; }
@@ -104,18 +111,22 @@ namespace mu2e {
     float  drdsOsMuo      () const { return _drdsOsMuo ; }
     float  drdsOsMuoErr   () const { return _drdsOsMuoErr ; }
 
-    int    nUsedSsEle     () const { return _nUsedSsEle; }
-    int    nUsedSsMuo     () const { return _nUsedSsMuo; }
+    int    nUsedSsEleH    () const { return _nUsedSsEleH; }
+    int    nUsedSsMuoH    () const { return _nUsedSsMuoH; }
+
     float  drdsSsEle      () const { return _drdsSsEle ; }
     float  drdsSsEleErr   () const { return _drdsSsEleErr ; }
     float  drdsSsMuo      () const { return _drdsSsMuo ; }
     float  drdsSsMuoErr   () const { return _drdsSsMuoErr ; }
 
-    int    nUsedOsEle     () const { return _nUsedOsEle; }
-    int    nUsedOsMuo     () const { return _nUsedOsMuo; }
+    int    nUsedOsEleH    () const { return _nUsedOsEleH; }
+    int    nUsedOsMuoH    () const { return _nUsedOsMuoH; }
+
     float  sumAvikOsEle   () const { return _sumAvikOsEle; }
     float  sumAvikOsMuo   () const { return _sumAvikOsMuo; }
 
+    int    nUsedOsEleD    () const { return _nUsedOsEleD; }
+    int    nUsedOsMuoD    () const { return _nUsedOsMuoD; }
   };
 
 
