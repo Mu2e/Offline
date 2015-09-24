@@ -190,6 +190,16 @@ TrkPatRec : {
   includeCaloInfo	      : 0
   SeedFit		      : @local::KalSeedFit
   KalFit		      : @local::KalFinalFit
+# MC Time offsets for diagnostics configuration can be done generically
+   KalDiag : {
+       MCPtrLabel          : makeSH
+       MCStepsLabel        : g4run
+       SimParticleLabel    : g4run
+       SimParticleInstance : tracker
+       StrawHitMCLabel     : makeSD
+       TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+       FillMCInfo          : false
+   }
 }
 
 # variants of TrkPatRec for specific particle species and directions.
