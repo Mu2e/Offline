@@ -1,7 +1,8 @@
-// $Id: CalPatRec_module.cc,v 1.15 2014/09/19 20:49:45 murat Exp $
-// $Author: murat $ 
-// $Date: 2014/09/19 20:49:45 $
-//
+///////////////////////////////////////////////////////////////////////////////
+// Calorimeter-driven track finding
+// P.Murat, G.Pezzullo
+// try to order routines alphabetically
+///////////////////////////////////////////////////////////////////////////////
 #include "fhiclcpp/ParameterSet.h"
 
 #include "CalPatRec/inc/CalPatRec_module.hh"
@@ -55,8 +56,8 @@ namespace mu2e {
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
   CalPatRec::CalPatRec(fhicl::ParameterSet const& pset) :
-    _diag        (pset.get<int>        ("diagLevel")),
-    _debug       (pset.get<int>        ("debugLevel")),
+    _diagLevel   (pset.get<int>        ("diagLevel")),
+    _debugLevel  (pset.get<int>        ("debugLevel")),
     _printfreq   (pset.get<int>        ("printFrequency")),
     _addhits     (pset.get<bool>       ("addhits")),
     _shLabel     (pset.get<string>("StrawHitCollectionLabel"        )),
@@ -116,7 +117,7 @@ namespace mu2e {
     produces<StrawHitFlagCollection>(_iname);
     produces<CalTimePeakCollection> (_iname);
 
-    produces<KalFitResultCollection>(_iname);
+    //    produces<KalFitResultCollection>(_iname);
 
     //    produces<KalRepPayloadCollection>();
 
@@ -165,11 +166,25 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void CalPatRec::beginJob(){
-    // create diagnostics ntuple if requested
-    if(_diag > 0)createDiagnostics();
-    // create a histogram of throughput: this is 
-    // a basic diagnostic that should ALWAYS be on
 
+    if(_diagLevel > 0) bookHistograms();
+
+    _eventid = 0;
+  }
+
+//-----------------------------------------------------------------------------
+  void CalPatRec::beginRun(art::Run& ){
+    mu2e::GeomHandle<mu2e::TTracker> th;
+    _tracker = th.get();
+
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    _calorimeter = ch.get();
+  }
+
+//-----------------------------------------------------------------------------
+//
+//-----------------------------------------------------------------------------
+  void CalPatRec::bookHistograms() {
     art::ServiceHandle<art::TFileService> tfs;
 
     _hist._cutflow[0] = tfs->make<TH1F>("cutflow0","Cutflow",10,-0.5,9.5);
@@ -302,11 +317,11 @@ namespace mu2e {
 					200, -1, 1.);
 
     _hist._kdistvsdz[0]  = tfs->make<TH2F>("hkdistvsdz0",
-					   "Distance from prediction versus z-distance form the seed in case also the kalman fit converged; z-distance from the seed [mm]; Distance from prediction [mm]",
+					   "Dist from prediction[mm] versus z-dist form the seed[mm], kalman fit converged",
 					   1400, -3500., 3500.,
 					   500, 0, 500);
     _hist._kdistvsdz[1]  = tfs->make<TH2F>("hkdistvsdz1",
-					   "Distance from prediction versus z-distance form the seed in case also the kalman fit converged + cut set ''C'' and p>100 MeV/c; z-distance from the seed [mm]; Distance from prediction [mm]",
+					   "Dist from prediction[mm] versus z-dist form the seed[mm], kalman fit converged + setC + and p>100",
 					   1400, -3500., 3500.,
 					   500, 0, 500);
 
@@ -363,16 +378,6 @@ namespace mu2e {
     _hist._NpointsRescued [1]  = tfs->make<TH1F>("hnprescued_1","fraction of points rescued [1]; np_{rescued}/np_{tot}", 100, 0., 1);
 
     _hist._ntracks           = tfs->make<TH1F>("ntracks","N(reconstructed tracks)", 10, 0, 10);
-    _eventid = 0;
-  }
-
-//-----------------------------------------------------------------------------
-  void CalPatRec::beginRun(art::Run& ){
-    mu2e::GeomHandle<mu2e::TTracker> th;
-    _tracker = th.get();
-
-    mu2e::GeomHandle<mu2e::Calorimeter> ch;
-    _calorimeter = ch.get();
   }
 
 //-----------------------------------------------------------------------------
@@ -480,7 +485,6 @@ namespace mu2e {
     return (_shcol != 0) && (_shfcol != 0) && (_shpcol != 0) && (_ccCollection != 0);
   }
 
-
 //-----------------------------------------------------------------------------
 // event entry point
 //-----------------------------------------------------------------------------
@@ -540,7 +544,7 @@ namespace mu2e {
 
     art::ProductID kalRepsID(getProductID<KalRepCollection>(event,_iname));
 
-    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
+    //    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
 
     double pEntrance(.0), step_time(-9999.);
     double time_threshold(500.);
@@ -581,7 +585,9 @@ namespace mu2e {
     }
     if (pEntrance < 100. ) nhits_from_gen = 0;
     
-    if (nhits_from_gen >= fNminMChits)  _hist._cutflow[0]->Fill(0.0);
+    if (_diagLevel > 0) {
+      if (nhits_from_gen >= fNminMChits)  _hist._cutflow[0]->Fill(0.0);
+    }
     
     _kfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
     _seedfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
@@ -604,31 +610,33 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics
 //-----------------------------------------------------------------------------
-    _hist._Tpeaks->Fill(_tpeaks->size());
+    if (_diagLevel > 0) { 
+      fillTimeDiag();
 
-    if (nhits_from_gen >= fNminMChits) {
-      _hist._cutflow[1]->Fill(.0);
-      if (fNCaloEnergyCut>0){
-	_hist._cutflow[1]->Fill(1.0);
-	if (fNCaloSizeCut>0){
-	  _hist._cutflow[1]->Fill(2.0);
-	  if (fNTimeWindow>0){
-	    _hist._cutflow[1]->Fill(3.0);
+      if (nhits_from_gen >= fNminMChits) {
+	_hist._cutflow[1]->Fill(.0);
+	if (fNCaloEnergyCut>0){
+	  _hist._cutflow[1]->Fill(1.0);
+	  if (fNCaloSizeCut>0){
+	    _hist._cutflow[1]->Fill(2.0);
+	    if (fNTimeWindow>0){
+	      _hist._cutflow[1]->Fill(3.0);
 	   //  if (fNHitsTimePeakCut>0){
 	    // 	      _hist._cutflow[1]->Fill(4.0);
 // 	    }
 	  //   if (fSHSel[0] > 0){
 // 	      _hist._cutflow[1]->Fill(4.0);
-	    if (fSHSel[1] > 0){
-	      _hist._cutflow[1]->Fill(4.0);
-	      if (fSHSel[2] > 0){
-		_hist._cutflow[1]->Fill(5.0);
-		if (fSHBkg[0] > 0){
-		  _hist._cutflow[1]->Fill(6.0);
-		  if (fSHBkg[1] > 0){
-		    _hist._cutflow[1]->Fill(7.0);
-		    if (fSHSel[0] > 0){
-		      _hist._cutflow[1]->Fill(8.0);
+	      if (fSHSel[1] > 0){
+		_hist._cutflow[1]->Fill(4.0);
+		if (fSHSel[2] > 0){
+		  _hist._cutflow[1]->Fill(5.0);
+		  if (fSHBkg[0] > 0){
+		    _hist._cutflow[1]->Fill(6.0);
+		    if (fSHBkg[1] > 0){
+		      _hist._cutflow[1]->Fill(7.0);
+		      if (fSHSel[0] > 0){
+			_hist._cutflow[1]->Fill(8.0);
+		      }
 		    }
 		  }
 		}
@@ -636,8 +644,8 @@ namespace mu2e {
 	    }
 	  }
 	}
+	if (_tpeaks->size()>0 ) _hist._cutflow[0]->Fill(1.0);
       }
-      if (_tpeaks->size()>0 ) _hist._cutflow[0]->Fill(1.0);
     }
 //-----------------------------------------------------------------------------
 // loop over found time peaks - for us, - "eligible" calorimeter clusters 
@@ -653,11 +661,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
-      if (_debug > 0) {
+      if (_debugLevel > 0) {
 	const StrawHit*     hit;
 	int nhits = tp->NHits();
 	printf(" peak # ipeak = %2i; nhits = %5i\n",ipeak,nhits);
-	if (_debug > 1) {
+	if (_debugLevel > 1) {
 	  for (int ih=0; ih<nhits; ih++) {
 	    hitIndex ind = tp->_index[ih];
 	    hit = &_shcol->at(ind._index);
@@ -690,8 +698,8 @@ namespace mu2e {
 // pattern recognition step - find initial approximation for Kalman fitter
 //-----------------------------------------------------------------------------
       int rc = _hfit.findHelix(hf_result,tp);
-
-      if (_debug > 0) {
+      
+      if (_debugLevel > 0) {
 	printf("[CalPatRec::produce] helixFit status = %i\n", rc);
 	_hfit.printInfo(hf_result);
       }
@@ -704,11 +712,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // convert the result to standard helix parameters, and initialize the seed definition helix
 //-----------------------------------------------------------------------------
-	double dz, dist;
-	for (int i=0; i< fHackData->goodPoints(); ++i){
-	  dz   = fHackData->fDz[i];
-	  dist = fHackData->fDist[i]; 
-	  _hist._distvsdz->Fill(dz, dist);
+	if (_diagLevel > 0) {
+	  double dz, dist;
+	  for (int i=0; i< fHackData->goodPoints(); ++i){
+	    dz   = fHackData->fDz[i];
+	    dist = fHackData->fDist[i]; 
+	    _hist._distvsdz->Fill(dz, dist);
+	  }
 	}
 
 	HepVector hpar;
@@ -744,14 +754,14 @@ namespace mu2e {
 	const mu2e::StrawHit*  hit;
 	const mu2e::Straw*     straw;
 
-	if (_debug > 0) {
+	if (_debugLevel > 0) {
 	  printf("[CalPatRec::printGoodHits]   Index   Straw    status       X         Y         Z         Zw\n");
 	}
 
 	for (int i=0; i< _nindex; ++i){
 	  if (_index[i].isOutlier()) continue;
 
-	  if (_debug > 0) {
+	  if (_debugLevel > 0) {
 	    shPos = _index[i]._pos;
 	    loc   = _index[i]._ind;
 	    hit   = &_shcol->at(loc);
@@ -767,37 +777,35 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //  Trajectory info
 //-----------------------------------------------------------------------------
-	Hep3Vector tdir;
-	HepPoint   tpos;
-	double     doca;
-	_helTraj->getInfo(0.0,tpos,tdir);
-
-	for (int i=0; i< _nindex; ++i){
-	  StrawHit const*   sh    = _index[i]._strawhit;
-	  Straw const&      straw = _tracker->getStraw(sh->strawIndex());
-	  CLHEP::Hep3Vector wpos  = straw.getMidPoint();
-	  CLHEP::Hep3Vector wdir  = straw.getDirection();
-
-	  // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
-	  HepPoint      wpt  (wpos.x(),wpos.y(),wpos.z());
-	  TrkLineTraj   wtraj(wpt,wdir,-20,20);
-
-	  // estimate flightlength along track.  This assumes a constant BField!!!
-	  double fltlen = (wpos.z()-tpos.z())/tdir.z();
- 
-	  TrkPoca   wpoca(*_helTraj,fltlen,wtraj,0.0);
+	if (_diagLevel > 0) {
+	  Hep3Vector tdir;
+	  HepPoint   tpos;
+	  double     doca;
+	  _helTraj->getInfo(0.0,tpos,tdir);
+	  
+	  for (int i=0; i< _nindex; ++i){
+	    StrawHit const*   sh    = _index[i]._strawhit;
+	    Straw const&      straw = _tracker->getStraw(sh->strawIndex());
+	    CLHEP::Hep3Vector wpos  = straw.getMidPoint();
+	    CLHEP::Hep3Vector wdir  = straw.getDirection();
 	    
-	  doca      = wpoca.doca();
-
-	  if (_index[i].isOutlier()) _hist._doca[1]->Fill(doca);
-	  else                       _hist._doca[0]->Fill(doca);
+	    // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
+	    HepPoint      wpt  (wpos.x(),wpos.y(),wpos.z());
+	    TrkLineTraj   wtraj(wpt,wdir,-20,20);
+	    
+	    // estimate flightlength along track.  This assumes a constant BField!!!
+	    double fltlen = (wpos.z()-tpos.z())/tdir.z();
+	    
+	    TrkPoca   wpoca(*_helTraj,fltlen,wtraj,0.0);
+	    
+	    doca      = wpoca.doca();
+	    
+	    if (_index[i].isOutlier()) _hist._doca[1]->Fill(doca);
+	    else                       _hist._doca[0]->Fill(doca);
+	  }
 	}
 
-	if (_debug > 0) {
-	  printf("[CalPatRec::seeddef] goodhits = %lu over nIndex = %i\n", goodhits.size(), _nindex); 
-	}
-
-	if (_debug > 0) {
+	if (_debugLevel > 0) {
 	  printf("[CalPatRec::seeddef] goodhits = %lu over nIndex = %i\n", goodhits.size(), _nindex); 
 	  int shIndices = seeddef.strawHitIndices().size();
 	  int nSh       = seeddef.strawHitCollection()->size();
@@ -815,7 +823,7 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
 // 2014-11-24 gianipez added the following diagnnostic
 //--------------------------------------------------------------------------------
-	if (_debug > 0) {
+	if (_debugLevel > 0) {
 	  sprintf(message,
 		  "CalPatRec::produce seedfit::makeTrack : fit_success = %i\n",
 		  _sfresult->_fit.success());
@@ -893,7 +901,7 @@ namespace mu2e {
 	      goodhits.push_back(hit_index);
 	    }
 	    
-	    if (_debug > 0) {
+	    if (_debugLevel > 0) {
 	      if (banner_11_printed == 0) { 
 		banner_11_printed = 1;
 		printf("[CalPatRec::produce] -------------------------------------\n");
@@ -904,27 +912,30 @@ namespace mu2e {
 	      printf("[CalPatRec::produce]  %2i  %1i  %5i  %10.3f  %10.3f \n", 
 		     i, active? 1:0, straw->index().asInt(), rdrift, doca );
 	    }
-	    
-	    _hist._seeddoca[2]->Fill(doca);
+	
+	    if (_diagLevel > 0) {
+	      _hist._seeddoca[2]->Fill(doca);
 
-	    if (found)  _hist._seeddoca[0]->Fill(doca);
-	    else        _hist._seeddoca[1]->Fill(doca);
+	      if (found)  _hist._seeddoca[0]->Fill(doca);
+	      else        _hist._seeddoca[1]->Fill(doca);
 
-	    if (!found && active){
-	      ++_nrescued;
+	      if (active) _hist._seeddoca[0]->Fill(doca);
+	      else        _hist._seeddoca[1]->Fill(doca);
 	    }
+	     
+	    if (!found && active) ++_nrescued;
 	  }
 
-	  fillSeedFitHistograms(*_sfresult);
+	  if (_diagLevel > 0) fillSeedFitHistograms(*_sfresult);
 //-----------------------------------------------------------------------------
 // at this point the full kalman fit starts
 //-----------------------------------------------------------------------------
 	  kaldef.setIndices(goodhits);
-	  if (_debug > 0) printf("CalPatRec::produce] calling _kfit.makeTrack\n");
+	  if (_debugLevel > 0) printf("CalPatRec::produce] calling _kfit.makeTrack\n");
 
 	  _kfit.makeTrack(*_kfresult,tp);
 
-	  if (_debug > 0) {
+	  if (_debugLevel > 0) {
 	    printf("[CalPatRec::produce] kalfit status = %i\n", _kfresult->_fit.success());
 	    _kfit.printHits(*_kfresult,"CalPatRec::produce kalfit_001");
 	  }
@@ -942,7 +953,7 @@ namespace mu2e {
 	      int last_iteration = _kfit.maxIteration();
 
 	      _kfit.unweedHits(*_kfresult,_maxaddchi);
-	      if (_debug > 0) _kfit.printHits(*_kfresult,"CalPatRec::produce after unweedHits");
+	      if (_debugLevel > 0) _kfit.printHits(*_kfresult,"CalPatRec::produce after unweedHits");
 
 	      std::vector<hitIndex> misshits;
 	      findMissingHits(*_kfresult,misshits);
@@ -958,7 +969,7 @@ namespace mu2e {
 		_kfit.fitIteration(*_kfresult,-1,tp,_final);
 	      }
 
-	      if (_debug > 0) _kfit.printHits(*_kfresult,"CalPatRec::produce after addHits");
+	      if (_debugLevel > 0) _kfit.printHits(*_kfresult,"CalPatRec::produce after addHits");
 //-----------------------------------------------------------------------------
 // and weed hits again to insure that addHits doesn't add junk
 //-----------------------------------------------------------------------------
@@ -969,10 +980,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	    _kfit.updateT0(*_kfresult);
 
-	    if (_debug > 0) {
+	    if (_debugLevel > 0) {
 	      _kfit.printHits(*_kfresult,"CalPatRec::produce : final, after weedHits");
 	    }
-
 //-----------------------------------------------------------------------------
 // done, fill debug histograms
 //-----------------------------------------------------------------------------
@@ -993,7 +1003,7 @@ namespace mu2e {
 	    
 	      doca = hitpoca.doca();
 	      for(TrkHotList::hot_iterator it=hot_l->begin(); it<hot_l->end(); it++) {
-		hit   = (const mu2e::TrkStrawHit*) &(*it);
+		hit = (const mu2e::TrkStrawHit*) &(*it);
 		if (!hit->isActive()) continue;
 		hit_index = hit->index();
 		if (int(_index[i]._ind) == hit_index){
@@ -1001,8 +1011,11 @@ namespace mu2e {
 		  break;
 		}
 	      }
-	      if (found) _hist._kaldoca[0]->Fill(doca);
-	      else       _hist._kaldoca[1]->Fill(doca);
+
+	      if (_diagLevel > 0) {
+		if (found) _hist._kaldoca[0]->Fill(doca);
+		else       _hist._kaldoca[1]->Fill(doca);
+	      }
 	    }
 	  }
 	}
@@ -1026,28 +1039,32 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //  fill fit diagnostics histograms if requested
 //-----------------------------------------------------------------------------
-	fillFitDiag(event,ipeak,hf_result,*_sfresult,*_kfresult);
+	if (_diagLevel > 0) fillFitDiag(event,ipeak,hf_result,*_sfresult,*_kfresult);
 //-----------------------------------------------------------------------------
-// save successful kalman fits in the event
+// save successful kalman fits in the event.
+// start from _kfresult, as stealTrack clears the hit pointers
+// _kfresult doesn't own anything
 //-----------------------------------------------------------------------------
+//	kfresults->push_back(*_kfresult);
+
 	krep = _kfresult->stealTrack();
 	tracks->push_back(krep);
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	tp->SetCprIndex(tracks->size());	
-	kfresults->push_back(*_kfresult);
-      } 
-//       else {
-// //-----------------------------------------------------------------------------
-// // fit failed, just delete the track
-// //-----------------------------------------------------------------------------
-// 	_kfresult->deleteTrack();
-//       }
+      }
+      else {
+//-----------------------------------------------------------------------------
+// fit failed, just delete the track
+//-----------------------------------------------------------------------------
+	_kfresult->deleteTrack();
+      }
 //-----------------------------------------------------------------------------
 // cleanup the seed fit
 //-----------------------------------------------------------------------------
 //       _sfresult->deleteTrack();
     }
+
 //-----------------------------------------------------------------------------
 // diagnostics in the end
 //-----------------------------------------------------------------------------
@@ -1055,15 +1072,18 @@ namespace mu2e {
       _hist._cutflow[0]->Fill(2.0);
       _hist._cutflow[1]->Fill(9.0);
     }
+
     if (findseed  && (nhits_from_gen >= fNminMChits)) _hist._cutflow[0]->Fill(3.0);
     if (findkal   && (nhits_from_gen >= fNminMChits)) {
       _hist._cutflow[0]->Fill(4.0);
       if (fQualityTrack > 0) {
 	_hist._cutflow[0]->Fill(5.0);
       }
+      _hist._NfitIter->Fill(_kfit.nIter());
+      _hist._ntracks->Fill(_ntracks);
     }
 
-    if (_debug > 0) {
+    if (_debugLevel > 0) {
       if ((nhits_from_gen >= fNminMChits) && _tpeaks->size() > 0){
 	if (_tpeaks->at(0)._tmin > 400.){
 	  if (!findhelix){
@@ -1078,23 +1098,14 @@ namespace mu2e {
       }
     }
 //-----------------------------------------------------------------------------
-// fill event-level histograms
-//-----------------------------------------------------------------------------
-    if(_diag > 0) {
-      _hist._NfitIter->Fill(_kfit.nIter());
-      _hist._ntracks->Fill(_ntracks);
-    }
-//-----------------------------------------------------------------------------
-// put tracks into the event
+// put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
   END:;
-    //    art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
-    //    _payloadSaver.put(*tracks, tracksID, event);
-    event.put(std::move(tracks)   ,   _iname);
-    event.put(std::move(trackPtrs),   _iname);
-    event.put(std::move(flags )   ,   _iname);
-    event.put(std::move(tpeaks)   ,   _iname);
-    event.put(std::move(kfresults),   _iname);
+    event.put(std::move(tracks)   ,_iname);
+    event.put(std::move(trackPtrs),_iname);
+    event.put(std::move(flags )   ,_iname);
+    event.put(std::move(tpeaks)   ,_iname);
+    //    event.put(std::move(kfresults),_iname);
   }
 
 //-----------------------------------------------------------------------------
@@ -1233,7 +1244,7 @@ namespace mu2e {
 	      if (gen_index >0 && sim_id == 1) {
 		//hit from CE
 		if ((dt < -70.) && (step->momentum().z()>0.) && (step->momentum().mag()>80.)){
-		  if (_debug > 0) {
+		  if (_debugLevel > 0) {
 		    printf("Event : %10i dt = %5.3f\n",
 			   _eventid, dt);
 		  }
@@ -1362,7 +1373,7 @@ namespace mu2e {
 	goodhits.push_back(indices[ihit]);
       }
       // optional diagnostics
-      if(_diag > 0){
+      if(_diagLevel > 0){
 	// summarize the MC truth for this strawhit
 	TrkHitFilter thfilter;
 	HepPoint tpos =  traj.position(hitpoca.flt1());
@@ -1387,7 +1398,7 @@ namespace mu2e {
 
     kalfit._krep->pieceTraj().getInfo(0.0,tpos,tdir);
     unsigned nstrs = _shcol->size();
-    if (_debug > 0) {
+    if (_debugLevel > 0) {
       printf("[CalPatRec::findMissingHits]      shId    sec     panel       doca   \n");
     }
 
@@ -1419,7 +1430,7 @@ namespace mu2e {
 	  double fltlen = (hpos.z()-tpos.z())/tdir.z();
 	  TrkPoca hitpoca(kalfit._krep->pieceTraj(),fltlen,htraj,0.0);
 	  
-	  if (_debug>0){
+	  if (_debugLevel > 0) {
 	    printf("[CalPatRec::findMissingHits] %8i  %6i  %8i  %10.3f \n",
 		   straw.index().asInt(),
 		   straw.id().getDevice(),
@@ -1440,14 +1451,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void CalPatRec::createDiagnostics() {
-    art::ServiceHandle<art::TFileService> tfs;
-
-  }
-
-//-----------------------------------------------------------------------------
-//
-//-----------------------------------------------------------------------------
   void CalPatRec::fillStrawDiag() {
 
   }
@@ -1455,47 +1458,30 @@ namespace mu2e {
   void CalPatRec::fillTimeDiag() {
     art::ServiceHandle<art::TFileService> tfs;
 
-    char rsname[100];
-    char csname[100];
-    char tsname[100];
-    char lsname[100];
-    char tdsname[100];
-    snprintf(rsname,100,"rawtspectrum%i",_iev);
-    snprintf(csname,100,"convtspectrum%i",_iev);
-    snprintf(tsname,100,"tighttspectrum%i",_iev);
-    snprintf(lsname,100,"loosetspectrum%i",_iev);
-    snprintf(tdsname,100,"tightnodeltatspectrum%i",_iev);
-    _hist.ttsp = tfs->make<TH1F>(tsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    _hist.ttsp->SetLineColor(kCyan);
-    _hist.ltsp = tfs->make<TH1F>(lsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    _hist.ltsp->SetLineColor(kGreen);
-    _hist.rtsp = tfs->make<TH1F>(rsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    _hist.rtsp->SetLineColor(kBlue);
-    _hist.ctsp = tfs->make<TH1F>(csname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    _hist.ctsp->SetLineColor(kRed);
-    _hist.tdtsp = tfs->make<TH1F>(tdsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    _hist.tdtsp->SetLineColor(kOrange);
+    bool conversion(false);
+    StrawHitFlag  flag;
 
-    unsigned nstrs = _shcol->size();
-    for(unsigned istr=0; istr<nstrs;++istr){
-      double time = _shcol->at(istr).time();
-      bool conversion(false);
+    int nhits = _shcol->size();
+
+    _hist._nhits[0]->Fill(nhits);
+    _hist._nhits[1]->Fill(nhits);
+
+    for (int i=0; i<nhits; i++) {
+      double time = _shcol->at(i).time();
 
       _hist.rtsp->Fill(time);
-      if(_flags->at(istr).hasAllProperties(_tsel)){
-	_hist.ttsp->Fill(time);
-      }
-      if(_flags->at(istr).hasAllProperties(_tsel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
-	_hist.tdtsp->Fill(time);
-      }
-      if(_flags->at(istr).hasAllProperties(_ksel) && !_flags->at(istr).hasAnyProperty(_bkgsel)){
-	_hist.ltsp->Fill(time);
-      }
-      if(conversion){
-	_hist.ctsp->Fill(time);
-      }
+
+      flag = _flags->at(i);
+
+      if (flag.hasAllProperties(_tsel)) _hist.ttsp->Fill(time);
+
+      if (flag.hasAllProperties(_tsel) && ! flag.hasAnyProperty(_bkgsel)) _hist.tdtsp->Fill(time);
+      if (flag.hasAllProperties(_ksel) && ! flag.hasAnyProperty(_bkgsel)) _hist.ltsp->Fill(time);
+
+      if (conversion) _hist.ctsp->Fill(time);
     }
 
+    _hist._Tpeaks->Fill(_tpeaks->size());
   }
 
 //-----------------------------------------------------------------------------
@@ -1599,6 +1585,7 @@ namespace mu2e {
 	  break;
 	}
       }
+
       if (found) _hist._kaldoca[0]->Fill(doca);
       else       _hist._kaldoca[1]->Fill(doca);
     }
@@ -1757,7 +1744,7 @@ namespace mu2e {
 
     for (int i=0; i<nd; i++) {
       d  = &list_of_doublets->at(i);
-      ns = d->fNstrawHits;
+      ns = d->fNStrawHits;
 					
       _hist._ndstraws[0]->Fill(ns);
       if (d->fOs == 0) _hist._ndstraws[1]->Fill(ns);
