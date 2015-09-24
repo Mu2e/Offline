@@ -193,7 +193,7 @@ physics : {
 	}
 
 	TrackSummaryMaker:    { @table::TrackSummaryMaker
-	    trackInput : "MergePatRec_DownstreameMinus"
+	    trackInput : "MergePatRecDem:DownstreameMinus"
 	}
     }
 
@@ -251,7 +251,7 @@ physics : {
 			   @sequence::calRecoSeq, 
 			   @sequence::allPatRecDemDmmSeq,
 			   @sequence::avikPidSeq
-#			   , TrackSummaryMaker
+			   , TrackSummaryMaker
 			  ]
 
     trigger_paths  : [gen_allpatrec_reco]
