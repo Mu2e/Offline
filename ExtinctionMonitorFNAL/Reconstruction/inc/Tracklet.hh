@@ -17,24 +17,24 @@ namespace mu2e {
     //================================================================
     struct Tracklet {
 
-      art::Ptr<ExtMonFNALRecoCluster> firstCluster;
-      art::Ptr<ExtMonFNALRecoCluster> lastCluster;
+      art::Ptr<ExtMonFNALRecoCluster> firstSeedCluster;
+      art::Ptr<ExtMonFNALRecoCluster> secondSeedCluster;
 
-      std::vector<art::Ptr<ExtMonFNALRecoCluster> > middleClusters;
+      std::vector<art::Ptr<ExtMonFNALRecoCluster> > addedClusters;
 
       Tracklet(const art::Ptr<ExtMonFNALRecoCluster>& fc,
                const art::Ptr<ExtMonFNALRecoCluster>& lc)
-        : firstCluster(fc)
-        , lastCluster(lc)
+        : firstSeedCluster(fc)
+        , secondSeedCluster(lc)
       {}
     };
 
     typedef std::list<Tracklet> Tracklets;
 
     inline std::ostream& operator<<(std::ostream& os, const Tracklet& tl) {
-      return os<<"Tracklet(fc="<<tl.firstCluster
-               <<", lc="<<tl.lastCluster
-               <<", nmiddle="<<tl.middleClusters.size()
+      return os<<"Tracklet(fc="<<tl.firstSeedCluster
+               <<", lc="<<tl.secondSeedCluster
+               <<", nmiddle="<<tl.addedClusters.size()
                <<" )";
     }
 

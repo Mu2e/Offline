@@ -7,7 +7,7 @@ outputs.FullOutput.fileName    : "dataRecoNominal.root"
 services.TFileService.fileName : "histRecoNominal.root"
 
 singleParticleMode : false
-geomModuleLabel : "geom"
+geomModuleLabel : ""
 rawHitsModuleLabel : "pixelDigitization" // "pixHitFilter" or "pixelDigitization"
 simParticleModuleLabel : "g4run" // "pixHitFilter" or "g4run"
 
@@ -19,10 +19,20 @@ physics.producers.EMFPatRecFromTracklets.singleParticleMode : @local::singlePart
 
 physics.analyzers.emfRecoClusters.geomModuleLabel : @local::geomModuleLabel
 physics.analyzers.emfPatRec.geomModuleLabel : @local::geomModuleLabel
-physics.analyzers.EMFPatRecFromTrackletsAnalysis.geomModuleLabel : @local::geomModuleLabel
-physics.analyzers.EMFPatRecFromTrackletsAnalysis.particleModuleLabel : @local::simParticleModuleLabel
-physics.analyzers.EMFPatRecFromTrackletsAnalysis.singleParticleMode : @local::singleParticleMode
-physics.analyzers.EMFPatRecFromTrackletsAnalysis.singleParticleClusterModuleLabel : pixelRecoClusterization
+
+physics.analyzers.emfPatRecAnalysis.geomModuleLabel : @local::geomModuleLabel
+physics.analyzers.emfPatRecAnalysis.particleModuleLabel : @local::simParticleModuleLabel
+physics.analyzers.emfPatRecAnalysis.singleParticleMode : @local::singleParticleMode
+physics.analyzers.emfPatRecAnalysis.singleParticleClusterModuleLabel : pixelRecoClusterization
+
+physics.analyzers.emfPatArbAnalysis.geomModuleLabel : @local::geomModuleLabel
+physics.analyzers.emfPatArbAnalysis.particleModuleLabel : @local::simParticleModuleLabel
+physics.analyzers.emfPatArbAnalysis.singleParticleMode : @local::singleParticleMode
+physics.analyzers.emfPatArbAnalysis.singleParticleClusterModuleLabel : pixelRecoClusterization
+
+
+physics.producers.EMFPatRecFromTracklets.clusterClockTolerance: 1
+
 
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:

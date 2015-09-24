@@ -74,16 +74,16 @@ namespace mu2e {
     ExtMonFNALTrkParam LinearRegression::estimatePars(const Tracklet& up, const Tracklet& dn) {
       LinearRegressionData eqs;
 
-      addCluster(&eqs, *up.lastCluster);
-      addCluster(&eqs, *up.firstCluster);
-      for(unsigned i=0; i<up.middleClusters.size(); ++i) {
-        addCluster(&eqs, *up.middleClusters[i]);
+      addCluster(&eqs, *up.secondSeedCluster);
+      addCluster(&eqs, *up.firstSeedCluster);
+      for(unsigned i=0; i<up.addedClusters.size(); ++i) {
+        addCluster(&eqs, *up.addedClusters[i]);
       }
 
-      addCluster(&eqs, *dn.lastCluster);
-      addCluster(&eqs, *dn.firstCluster);
-      for(unsigned i=0; i<dn.middleClusters.size(); ++i) {
-        addCluster(&eqs, *dn.middleClusters[i]);
+      addCluster(&eqs, *dn.secondSeedCluster);
+      addCluster(&eqs, *dn.firstSeedCluster);
+      for(unsigned i=0; i<dn.addedClusters.size(); ++i) {
+        addCluster(&eqs, *dn.addedClusters[i]);
       }
 
       // Solve the equations

@@ -122,11 +122,11 @@ namespace mu2e {
     } // end HistTracklet::book()
 
     void HistTracklet::fill(const Tracklet& tl) {
-      hclock_->Fill(0.5*(tl.firstCluster->clock() + tl.lastCluster->clock()));
-      hPosBegin_->Fill(tl.firstCluster->position().x(), tl.firstCluster->position().y());
-      hPosEnd_->Fill(tl.lastCluster->position().x(), tl.lastCluster->position().y());
+      hclock_->Fill(0.5*(tl.firstSeedCluster->clock() + tl.secondSeedCluster->clock()));
+      hPosBegin_->Fill(tl.firstSeedCluster->position().x(), tl.firstSeedCluster->position().y());
+      hPosEnd_->Fill(tl.secondSeedCluster->position().x(), tl.secondSeedCluster->position().y());
 
-      const CLHEP::Hep3Vector dir(tl.lastCluster->position() - tl.firstCluster->position());
+      const CLHEP::Hep3Vector dir(tl.secondSeedCluster->position() - tl.firstSeedCluster->position());
       hSlopes_->Fill(dir.x()/dir.z(), dir.y()/dir.z());
 
     } // end HistTracklet::fill()
@@ -178,11 +178,11 @@ namespace mu2e {
 
     void HistTrkMatch::fill(const Tracklet& up, const Tracklet& dn) {
 
-      hclockMatch_->Fill(0.5*(up.firstCluster->clock() + up.lastCluster->clock()),
-                         0.5*(dn.firstCluster->clock() + dn.lastCluster->clock()));
+      hclockMatch_->Fill(0.5*(up.firstSeedCluster->clock() + up.secondSeedCluster->clock()),
+                         0.5*(dn.firstSeedCluster->clock() + dn.secondSeedCluster->clock()));
 
-      const CLHEP::Hep3Vector diru(up.lastCluster->position() - up.firstCluster->position());
-      const CLHEP::Hep3Vector dird(dn.lastCluster->position() - dn.firstCluster->position());
+      const CLHEP::Hep3Vector diru(up.secondSeedCluster->position() - up.firstSeedCluster->position());
+      const CLHEP::Hep3Vector dird(dn.secondSeedCluster->position() - dn.firstSeedCluster->position());
       hslopexMatch_->Fill(dird.x()/dird.z() - diru.x()/diru.z());
     } // end HistTrkMatch::fill()
 
@@ -219,6 +219,8 @@ namespace mu2e {
         , alignmentToleranceY_(pset.get<double>("alignmentToleranceY"))
         , thetaScatterOnePlane_(pset.get<double>("thetaScatterOnePlane"))
         , cutMinTrackProb_(pset.get<double>("cutMinTrackProb"))
+
+        , maxMissedHits_(pset.get<unsigned>("maxMissedHits"))
 
         , hTrackletMultiplicity_()
         , hTrackletMatchSlopeX_()
@@ -270,6 +272,8 @@ namespace mu2e {
       double thetaScatterOnePlane_;
       double cutMinTrackProb_;
 
+      unsigned maxMissedHits_;
+
       //----------------------------------------------------------------
       HistTracklet htup_;
       HistTracklet htdn_;
@@ -290,25 +294,21 @@ namespace mu2e {
       bool acceptSingleParticleEvent(const art::Event& event);
 
       //----------------------------------------------------------------
-      void formTrackletsWithPlanes(const ExtMonFNALPlaneStack& stack, Tracklets& res,
-			      const unsigned plane1, const unsigned plane2,
-                              const art::Handle<ExtMonFNALRecoClusterCollection>& clusters);
-
-      Tracklets formTracklets(const ExtMonFNALPlaneStack& stack,
-
-                              const art::Handle<ExtMonFNALRecoClusterCollection>& clusters);
-
       void findTracks(art::Event& event,
                       ExtMonFNALTrkFitCollection *tracks,
                       const art::Handle<ExtMonFNALRecoClusterCollection>& clusters);
 
-      void addPlaneClusters(Tracklets* seeds,
-                            const art::Handle<ExtMonFNALRecoClusterCollection>& coll,
-                            const ExtMonFNALPlaneStack& stack,
-                            unsigned stackPlane,
-                            unsigned anchorPlane1,
-                            unsigned anchorPlane2
-                            );
+      Tracklets formTracklets(const ExtMonFNALPlaneStack& stack,
+                              const art::Handle<ExtMonFNALRecoClusterCollection>& clusters);
+
+      // finds all clusters in stackPlane that are compatible with a straigth line track going through c1 and c2
+      std::vector<unsigned> findCompatibleClusterIndices(
+							 const ExtMonFNALRecoCluster& c1, 
+							 const ExtMonFNALRecoCluster& c2,
+							 const art::Handle<ExtMonFNALRecoClusterCollection>& coll,
+							 const ExtMonFNALPlaneStack& stack,
+							 unsigned stackPlane
+							 );
 
       Tracklet createTracklet(const Tracklet& orig, const art::Ptr<ExtMonFNALRecoCluster>& cl);
 
@@ -316,6 +316,7 @@ namespace mu2e {
 
       double slopex(const Tracklet& tl);
 
+      bool inTime(const ExtMonFNALRecoCluster& c1, const ExtMonFNALRecoCluster& c2);
       bool inTime(const Tracklet& tl, const ExtMonFNALRecoCluster& cl);
       bool inTime(const Tracklet& tl1, const Tracklet& tl2);
 
@@ -463,81 +464,145 @@ namespace mu2e {
     }
 
     //================================================================
-    void EMFPatRecFromTracklets::formTrackletsWithPlanes(const ExtMonFNALPlaneStack& stack, Tracklets& res,
-						    const unsigned plane1, const unsigned plane2,
-                                                    const art::Handle<ExtMonFNALRecoClusterCollection>& coll)
-    {
-      const double dz = stack.plane_zoffset().back() - stack.plane_zoffset().front();
-      const double dxmax = std::abs(dz * slopexmax_);
-      const double dymax = std::abs(dz * slopeymax_);
-
-      typedef ExtMonFNALRecoClusterCollection::PlaneClusters PC;
-      const PC pc1 = coll->clusters(plane1);
-      const PC pc2 = coll->clusters(plane2);
-
-      for(unsigned i1 = 0; i1 < pc1.size(); ++i1) {
-        art::Ptr<ExtMonFNALRecoCluster> c1(coll, coll->globalIndex(plane1, i1));
-
-        for(unsigned i2 = 0; i2 < pc2.size(); ++i2) {
-          art::Ptr<ExtMonFNALRecoCluster> c2(coll, coll->globalIndex(plane2, i2));
-
-          hClockDiffTrackletSeedClusters_->Fill(c2->clock() - c1->clock());
-
-          if( (std::abs(c1->clock() - c2->clock()) <= clusterClockTolerance_) &&
-              (std::abs(c1->position().x() - c2->position().x()) < dxmax) &&
-              (std::abs(c1->position().y() - c2->position().y()) < dymax) )
-            {
-              // filter out or add candidates using information from middle planes
-              Tracklets tmp;
-              tmp.insert(tmp.begin(), Tracklet(c1,c2));
-              for(unsigned stackPlane=0; stackPlane < stack.nplanes(); ++stackPlane) {
-                if(stackPlane == plane1 - stack.planeNumberOffset()) continue;
-                if(stackPlane == plane2 - stack.planeNumberOffset()) continue;
-                addPlaneClusters(&tmp, coll, stack, stackPlane,
-                                 plane1 -stack.planeNumberOffset(),
-                                 plane2 - stack.planeNumberOffset());
-              }
-
-              res.insert(res.begin(), tmp.begin(), tmp.end());
-            }
-         }
-      }
-
-
-    }
-
-    //================================================================
     Tracklets EMFPatRecFromTracklets::formTracklets(const ExtMonFNALPlaneStack& stack,
                                                     const art::Handle<ExtMonFNALRecoClusterCollection>& coll)
     {
       Tracklets res;
+      const double dz = stack.plane_zoffset().back() - stack.plane_zoffset().front();
+      const double dxmax = std::abs(dz * slopexmax_);
+      const double dymax = std::abs(dz * slopeymax_);
+      typedef ExtMonFNALRecoClusterCollection::PlaneClusters PC;
+      // each vector is nplanes long and contains cluster indexes or -1u
+      // This is the list of cluster combinations found using previous seed planes
+      std::list< std::vector<unsigned> > foundCombinations;
+      for(unsigned seedPlane=0; seedPlane <= maxMissedHits_; ++seedPlane) {
+        unsigned backPlane = stack.nplanes() - maxMissedHits_  + seedPlane - 1;
+	const unsigned plane1 = stack.planeNumberOffset() + seedPlane;
+        const unsigned plane2 = stack.planeNumberOffset() + backPlane;
 
-      // find tracklets starting with pair combinations of clusters on the even stack planes
-      const unsigned plane1 = stack.planeNumberOffset() + 0;
-      const unsigned plane2 = stack.planeNumberOffset() + stack.nplanes() - 2;
-      AGDEBUG("plane1 = "<<plane1<<", plane2 = "<<plane2);
 
-      formTrackletsWithPlanes(stack,res,plane1,plane2,coll);
- 
-     // add tracklets starting with pair combinations of clusters on the odd stack planes
-      const unsigned plane3 = stack.planeNumberOffset() + 1;
-      const unsigned plane4 = stack.planeNumberOffset() + stack.nplanes() - 1;
-      AGDEBUG("plane3 = "<<plane3<<", plane4 = "<<plane4);
+	// This vector is used to simplify loooping over the non-seed planes
+	std::vector< unsigned > additionalPlanes ( stack.nplanes() -2, 0 );
+	for(unsigned count = 0, stackPlane=0; stackPlane < stack.nplanes(); ++stackPlane) {
+          if( stackPlane == seedPlane ) continue;
+          if( stackPlane == backPlane ) continue;
+	  additionalPlanes[count] = stackPlane; ++count;
+	}
 
-      formTrackletsWithPlanes(stack,res,plane3,plane4,coll);
+        const PC pc1 = coll->clusters(plane1);
+        const PC pc2 = coll->clusters(plane2);
+
+        // This will hold the list of cluster combinations found using this seed plane
+	std::list< std::vector<unsigned> > newCombinations;
+
+        // find seed pairs
+        for(unsigned i1 = 0; i1 < pc1.size(); ++i1) {
+          art::Ptr<ExtMonFNALRecoCluster> c1(coll, coll->globalIndex(plane1, i1));
+          for(unsigned i2 = 0; i2 < pc2.size(); ++i2) {
+            art::Ptr<ExtMonFNALRecoCluster> c2(coll, coll->globalIndex(plane2, i2));
+
+            hClockDiffTrackletSeedClusters_->Fill(c2->clock() - c1->clock());
+
+            if( (std::abs(c1->clock() - c2->clock()) <= clusterClockTolerance_) &&
+		(std::abs(c1->position().x() - c2->position().x()) < dxmax) &&
+		(std::abs(c1->position().y() - c2->position().y()) < dymax) )
+              {
+
+              // This will hold the list of cluster combinations found using this seed pair
+	      std::list< std::vector<unsigned> > newSeedCombinations;
+	
+	      for(unsigned p=0; p < stack.nplanes() - 2; ++p) {
+	        unsigned stackPlane = additionalPlanes[p];
+	        std::vector<unsigned> clusters = findCompatibleClusterIndices(*c1, *c2, coll, stack, stackPlane);
+
+                // This will hold the list of extra cluster combinations found using this plane
+	        std::list< std::vector<unsigned> > newPlaneCombinations;
+
+	        for( unsigned i = 0; i < clusters.size(); i++ ) {
+
+	          // check if this combination was found using an earlier seed plane
+	          bool notfound = true;
+	          for(auto comb = foundCombinations.begin(); comb != foundCombinations.end(); ++comb ) {
+	            if( (*comb)[seedPlane] == i1 &&
+	        	(*comb)[backPlane] == i2 &&
+	        	(*comb)[stackPlane] == i )
+	              {
+	        	notfound = false; break;
+	              }
+	          }
+
+	          if( notfound ) {
+	            if( newSeedCombinations.size() == 0 ) {
+		    // This is the first new combination using this seed pair
+	        	std::vector<unsigned> planes( stack.nplanes(), -1u );
+	        	planes[seedPlane] = i1;
+	        	planes[backPlane] = i2;
+	        	newSeedCombinations.push_back(planes);
+		    }
+		    for(auto comb = newSeedCombinations.begin(); comb != newSeedCombinations.end(); ++comb ) {
+		    // Form all possible coombinations of this plane's hits with those of earlier planes
+		    //  the 1st one can be included into the existing combinations will go into copies of them 
+	              if( i == 0 ) {
+	        	(*comb)[stackPlane] = i;
+	              } else {
+	        	std::vector<unsigned> planes( *comb );
+	        	planes[stackPlane] = i;
+	        	newPlaneCombinations.push_back(planes);
+	              }
+	            }
+
+	          } // if combination found
+	        } // additional plane clusters
+
+                newSeedCombinations.splice( newSeedCombinations.begin(), newPlaneCombinations );
+
+	      } // additional planes
+
+	      newCombinations.splice( newCombinations.begin(), newSeedCombinations );
+
+	    } // if seed ok
+          } // back plane clusters
+        } // seed plane clusters
+
+	// create new tracklets
+	for(auto comb = newCombinations.begin(); comb != newCombinations.end(); ++comb ) {
+	  // this piece of code can be replaced with an appropriate Tracklet constructor
+	  std::vector<art::Ptr<ExtMonFNALRecoCluster> > additionalClusters;
+          art::Ptr<ExtMonFNALRecoCluster> c1(coll, coll->globalIndex(plane1, (*comb)[seedPlane]));
+          art::Ptr<ExtMonFNALRecoCluster> c2(coll, coll->globalIndex(plane2, (*comb)[backPlane]));
+	  for(unsigned p=0; p < stack.nplanes() - 2; ++p) {
+	    unsigned stackPlane = additionalPlanes[p];
+	    if( (*comb)[stackPlane] == -1u ) continue;
+	    unsigned globalPlane = stack.planeNumberOffset() + stackPlane;
+	    additionalClusters.push_back(art::Ptr<ExtMonFNALRecoCluster>(coll, coll->globalIndex(globalPlane, (*comb)[stackPlane])));
+	  }
+	  if( additionalClusters.size() >= stack.nplanes() - maxMissedHits_  - 2 ) {
+	    Tracklet track(c1,c2);
+	    for( unsigned ic = 0; ic < additionalClusters.size(); ic++ ) {
+	      modifyInPlace(&track, additionalClusters[ic]);
+	    }
+	    res.push_back( track );
+	  }
+	} // new combinations
+
+	foundCombinations.splice( foundCombinations.begin(), newCombinations );
+
+      } // seed plane
 
       return res;
     }
 
     //================================================================
-    void EMFPatRecFromTracklets::addPlaneClusters(Tracklets* seeds,
-                                                  const art::Handle<ExtMonFNALRecoClusterCollection>& coll,
-                                                  const ExtMonFNALPlaneStack& stack,
-                                                  unsigned stackPlane,
-                                                  unsigned anchorPlane1,
-                                                  unsigned anchorPlane2
-                                                  )
+    std::vector<unsigned> EMFPatRecFromTracklets::findCompatibleClusterIndices(const ExtMonFNALRecoCluster& c1,
+									       const ExtMonFNALRecoCluster& c2,
+									       const art::Handle<ExtMonFNALRecoClusterCollection>& coll,
+									       const ExtMonFNALPlaneStack& stack,
+									       unsigned stackPlane
+									       )
     {
+      const unsigned anchorPlane1 = c1.plane();
+      const unsigned anchorPlane2 = c2.plane();
+
       const double planeZ = stack.plane_zoffset()[stackPlane];
       AGDEBUG("Here: stackPlane="<<stackPlane<<", planeZ = "<<planeZ<<", seeds->size() = "<<seeds->size()
               <<", anchorPlane1 = "<<anchorPlane1<<", anchorPlane2 = "<<anchorPlane2);
@@ -549,68 +614,45 @@ namespace mu2e {
       const double dytol2 =  alignmentToleranceY_ + stackScatterAngleTolerance_ * std::abs(planeZ - stack.plane_zoffset()[anchorPlane2]);
       AGDEBUG("dxtol1 ="<<dxtol1<<", dxtol2 ="<<dxtol2<<", dytol1 = "<<dytol1<<", dytol2 = "<<dytol2);
 
-      for(Tracklets::iterator i = seeds->begin(); i != seeds->end(); ) {
+      std::vector<unsigned> res;
 
-        const CLHEP::Hep3Vector& pos1 = i->firstCluster->position();
-        const CLHEP::Hep3Vector& pos2 = i->lastCluster->position();
-        AGDEBUG("pos1 = "<<pos1<<", pos2 = "<<pos2);
+      const CLHEP::Hep3Vector& pos1 = c1.position();
+      const CLHEP::Hep3Vector& pos2 = c2.position();
+      AGDEBUG("pos1 = "<<pos1<<", pos2 = "<<pos2);
 
-        const double z1(pos1.z()), z2(pos2.z());
-        const double dz(z2-z1);
+      const double z1(pos1.z()), z2(pos2.z());
+      const double dz(z2-z1);
 
-        const CLHEP::Hep3Vector interpolated = pos2 * (planeZ - z1)/dz + pos1 * (z2 - planeZ)/dz;
+      const CLHEP::Hep3Vector interpolated = pos2 * (planeZ - z1)/dz + pos1 * (z2 - planeZ)/dz;
 
-        const double dxmax1 = dxtol1 + 0.5*i->firstCluster->xWidth()*extmon_->chip().xPitch();
-        const double dxmax2 = dxtol2 + 0.5*i->lastCluster->xWidth()*extmon_->chip().xPitch();
-        // satisfy both constraints
-        const double dxmax(std::min(dxmax1, dxmax2));
+      const double dxmax1 = dxtol1 + 0.5*c1.xWidth()*extmon_->chip().xPitch();
+      const double dxmax2 = dxtol2 + 0.5*c2.xWidth()*extmon_->chip().xPitch();
+      // satisfy both constraints
+      const double dxmax(std::min(dxmax1, dxmax2));
 
-        const double dymax1 = dytol1 + 0.5*i->firstCluster->yWidth()*extmon_->chip().yPitch();
-        const double dymax2 = dytol2 + 0.5*i->lastCluster->yWidth()*extmon_->chip().yPitch();
-        // satisfy both constraints
-        const double dymax(std::min(dymax1, dymax2));
-        AGDEBUG("dxmax="<<dxmax<<", dymax="<<dymax<<", interpolated="<<interpolated);
+      const double dymax1 = dytol1 + 0.5*c1.yWidth()*extmon_->chip().yPitch();
+      const double dymax2 = dytol2 + 0.5*c2.yWidth()*extmon_->chip().yPitch();
+      // satisfy both constraints
+      const double dymax(std::min(dymax1, dymax2));
+      AGDEBUG("dxmax="<<dxmax<<", dymax="<<dymax<<", interpolated="<<interpolated);
 
-        // find all clusters compatible with seed i
-        std::vector<art::Ptr<ExtMonFNALRecoCluster> > compatibleClusters;
-        const unsigned int globalPlane = stackPlane + stack.planeNumberOffset();
-        const ExtMonFNALRecoClusterCollection::PlaneClusters& clusters = coll->clusters(globalPlane);
-        for(unsigned ic=0; ic<clusters.size(); ++ic) {
-          const ExtMonFNALRecoCluster& cl = clusters[ic];
-          if(inTime(*i, cl)) {
-            const double dx = interpolated.x() - cl.position().x();
-            const double dy = interpolated.y() - cl.position().y();
+      // find all clusters compatible with seed i
+      const unsigned int globalPlane = stackPlane + stack.planeNumberOffset();
+      const ExtMonFNALRecoClusterCollection::PlaneClusters& clusters = coll->clusters(globalPlane);
+      for(unsigned ic=0; ic<clusters.size(); ++ic) {
+	const ExtMonFNALRecoCluster& cl = clusters[ic];
+	if(inTime(c1, cl) || inTime(c2, cl)) {
+	  const double dx = interpolated.x() - cl.position().x();
+	  const double dy = interpolated.y() - cl.position().y();
 
-            hClusterAddXY_[globalPlane]->Fill(dx/dxmax, dy/dymax);
-            hClusterAddXXMax_[globalPlane]->Fill(dxmax, dx);
-            hClusterAddYYMax_[globalPlane]->Fill(dymax, dy);
+	  hClusterAddXY_[globalPlane]->Fill(dx/dxmax, dy/dymax);
+	  hClusterAddXXMax_[globalPlane]->Fill(dxmax, dx);
+	  hClusterAddYYMax_[globalPlane]->Fill(dymax, dy);
 
-            if((std::abs(dx) < dxmax) && (std::abs(dy) < dymax) ) {
-              compatibleClusters.push_back(art::Ptr<ExtMonFNALRecoCluster>(coll, coll->globalIndex(globalPlane, ic)));
-            }
-
-          }
-        }
-
-        AGDEBUG("compatibleClusters.size() = "<<compatibleClusters.size());
-        if(compatibleClusters.empty()) {
-          // Must be at least one match.  Kill the seed
-          seeds->erase(i++);
-        }
-        else {
-          // loop for the case numCompatibleClusters > 1
-          for(unsigned count = 1; count < compatibleClusters.size(); ++count) {
-            // insert BEFORE the current point
-            seeds->insert(i, createTracklet(*i, compatibleClusters[count]));
-          }
-          // One of the clusters can be added to the current seed
-          // in place
-          modifyInPlace(&*i, compatibleClusters[0]);
-
-          ++i;
-        } // One or more clusters added
-
-      } // for(tracklets)
+	  if((std::abs(dx) < dxmax) && (std::abs(dy) < dymax) ) { res.push_back(ic); }
+	}
+      }
+      return res;
     }
 
     //================================================================
@@ -622,19 +664,26 @@ namespace mu2e {
 
     //================================================================
     void EMFPatRecFromTracklets::modifyInPlace(Tracklet *inout, const art::Ptr<ExtMonFNALRecoCluster>& cl) {
-      inout->middleClusters.push_back(cl);
+      inout->addedClusters.push_back(cl);
     }
 
     //================================================================
     double EMFPatRecFromTracklets::slopex(const Tracklet& tl) {
-      const CLHEP::Hep3Vector dir(tl.lastCluster->position() - tl.firstCluster->position());
+      const CLHEP::Hep3Vector dir(tl.secondSeedCluster->position() - tl.firstSeedCluster->position());
       return dir.x()/dir.z();
     }
 
     //================================================================
+    bool EMFPatRecFromTracklets::inTime(const ExtMonFNALRecoCluster& c1, const ExtMonFNALRecoCluster& c2) {
+      const int dt = c1.clock() - c2.clock();
+      hClockDiffClusterTracklet_->Fill(dt);
+      return (std::abs(dt) <= clusterClockTolerance_);
+    }
+
+    //================================================================
     bool EMFPatRecFromTracklets::inTime(const Tracklet& tl, const ExtMonFNALRecoCluster& cl) {
-      const int dtFirst = cl.clock() - tl.firstCluster->clock();
-      const int dtLast  = cl.clock() - tl.lastCluster->clock();
+      const int dtFirst = cl.clock() - tl.firstSeedCluster->clock();
+      const int dtLast  = cl.clock() - tl.secondSeedCluster->clock();
 
       hClockDiffClusterTracklet_->Fill(dtFirst);
       hClockDiffClusterTracklet_->Fill(dtLast);
@@ -646,7 +695,7 @@ namespace mu2e {
 
     //================================================================
     bool EMFPatRecFromTracklets::inTime(const Tracklet& tl1, const Tracklet& tl2) {
-      return inTime(tl1, *tl2.firstCluster) && inTime(tl1, *tl2.lastCluster);
+      return inTime(tl1, *tl2.firstSeedCluster) && inTime(tl1, *tl2.secondSeedCluster);
     }
 
     //================================================================
@@ -659,11 +708,11 @@ namespace mu2e {
     //================================================================
     void EMFPatRecFromTracklets::
     addToClusters(std::vector<art::Ptr<ExtMonFNALRecoCluster> > *clusters, const Tracklet& tl) {
-      clusters->push_back(tl.firstCluster);
-      for(unsigned i=0; i<tl.middleClusters.size(); ++i) {
-        clusters->push_back(tl.middleClusters[i]);
+      clusters->push_back(tl.firstSeedCluster);
+      for(unsigned i=0; i<tl.addedClusters.size(); ++i) {
+        clusters->push_back(tl.addedClusters[i]);
       }
-      clusters->push_back(tl.lastCluster);
+      clusters->push_back(tl.secondSeedCluster);
     }
 
     //================================================================
