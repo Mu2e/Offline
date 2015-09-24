@@ -553,15 +553,20 @@ namespace mu2e {
 
 	          } // if combination found
 	        } // additional plane clusters
-		if( newPlaneCombinations.size() > 0 ) newSeedCombinations.splice( newSeedCombinations.begin(), newPlaneCombinations );
+
+                newSeedCombinations.splice( newSeedCombinations.begin(), newPlaneCombinations );
+
 	      } // additional planes
-	      if( newSeedCombinations.size() > 0 ) newCombinations.splice( newCombinations.begin(), newSeedCombinations );
+
+	      newCombinations.splice( newCombinations.begin(), newSeedCombinations );
+
 	    } // if seed ok
           } // back plane clusters
         } // seed plane clusters
 
 	// create new tracklets
 	for(auto comb = newCombinations.begin(); comb != newCombinations.end(); ++comb ) {
+	  // this piece of code can be replaced with an appropriate Tracklet constructor
 	  std::vector<art::Ptr<ExtMonFNALRecoCluster> > additionalClusters;
           art::Ptr<ExtMonFNALRecoCluster> c1(coll, coll->globalIndex(plane1, (*comb)[seedPlane]));
           art::Ptr<ExtMonFNALRecoCluster> c2(coll, coll->globalIndex(plane2, (*comb)[backPlane]));
