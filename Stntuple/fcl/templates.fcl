@@ -39,6 +39,9 @@ BEGIN_PROLOG
 
   calPatRecDemDmmSeq  : [ @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, MergePatRecDem, MergePatRecDmm ]
 
+  allPatRecDemSeq     : [ @sequence::tprMakeHitSeq, TrkPatRecDem, @sequence::cprMakeHitSeq, CalPatRecDem, MergePatRecDem ]
+  allPatRecDmmSeq     : [ @sequence::tprMakeHitSeq, TrkPatRecDmm, @sequence::cprMakeHitSeq, CalPatRecDmm, MergePatRecDmm ]
+
   allPatRecDemDmmSeq  : [ @sequence::tprMakeHitSeq, TrkPatRecDem, TrkPatRecDmm, 
 			  @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, 
 			  MergePatRecDem, MergePatRecDmm ]
@@ -160,7 +163,9 @@ physics : {
 	    fitterModuleLabel : MergePatRecDmm 
 	}
 
-	CaloMatching         : { @table::TrackCaloMatching fitterModuleLabel : MergePatRec }
+	CaloMatching         : { @table::TrackCaloMatching 
+	    fitterModuleLabel : MergePatRec 
+	}
 
 	CaloMatchingDem      : { @table::TrackCaloMatching 
 	    fitparticle                  : 11
