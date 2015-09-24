@@ -43,7 +43,7 @@ using namespace CLHEP;
 
 // This is fragile and needs to be last until CLHEP is
 // properly qualified and included in the BaBar classes.
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 using namespace std;
 
@@ -150,9 +150,9 @@ namespace mu2e {
       throw cet::exception("RECO")<<"mu2e::KalDiag: MC data missing or incomplete" << std::endl;
     }
     // Get handle to calorimeter hit collection.
-    art::Handle<KalRepCollection> trksHandle;
+    art::Handle<KalRepPtrCollection> trksHandle;
     event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
-    KalRepCollection const& trks = *trksHandle;
+    KalRepPtrCollection const& trks = *trksHandle;
 
     art::Handle<G4BeamlineInfoCollection> g4beamlineData;
     event.getByLabel(_generatorModuleLabel, g4beamlineData);
@@ -181,7 +181,7 @@ namespace mu2e {
 
     for ( size_t i=0; i< trks.size(); ++i ){
       _trkid = i;
-      KalRep const* krep = trks.get(i);
+      KalRep const* krep = trks.at(i).get();
       if ( !krep ) continue;
 
      _kdiag.kalDiag(krep);
