@@ -1,0 +1,9 @@
+# -*- mode: tcl -*-
+BEGIN_PROLOG
+
+TrackSummaryMaker: {
+    module_type: TrackSummaryMaker
+    trackInput : "TrkPatRec:DownstreameMinus"
+}
+
+END_PROLOG
