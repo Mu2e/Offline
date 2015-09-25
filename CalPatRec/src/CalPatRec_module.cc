@@ -698,7 +698,6 @@ namespace mu2e {
 // pattern recognition step - find initial approximation for Kalman fitter
 //-----------------------------------------------------------------------------
       int rc = _hfit.findHelix(hf_result,tp);
-      
       if (_debugLevel > 0) {
 	printf("[CalPatRec::produce] helixFit status = %i\n", rc);
 	_hfit.printInfo(hf_result);
