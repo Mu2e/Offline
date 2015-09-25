@@ -42,15 +42,12 @@ dsRegionCuts: {
    ]
 }
 
-// Beam dump core rotation 13.72 degrees
-beamDumpNormal: [ -0.237177266249502805 , 0,  -0.971466388700305217 ]
-
 extMonRegionCuts: {
    type: intersection
    pars: [
       {
          type: plane
-         normal: @local::beamDumpNormal
+         normal: @local::mu2eg4BeamDumpNormal
          // Dump core center: (661.90,  527.40, -19428.2)
 	 // A plane 950 mm beyond the core center as measured along
 	 // the "beam" direction normal to the dump face.

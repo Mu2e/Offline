@@ -34,6 +34,10 @@ g4run : {
 #------------------------------------------------------------------------------
 # Configuration blocks for the Mu2eG4 module
 #------------------------------------------------------------------------------
+
+# Beam dump core rotation 13.72 degrees
+mu2eg4BeamDumpNormal: [ -0.237177266249502805 , 0,  -0.971466388700305217 ]
+
 mu2eg4DefaultPhysics: {
     PiENuPolicy : "PDG"
     noDecay: []
