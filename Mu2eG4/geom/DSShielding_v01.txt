@@ -47,12 +47,12 @@ double ifb.endplug.rIn        = 50.;
 double ifb.endplug.rOut       = 550.;
 double ifb.endplug.halfLength = 50.;
 
-string ifb.endwindow.material   = "G4_Fe";
+string ifb.endwindow.material   = "G4_MYLAR";
 
-double ifb.endwindow.z          = 3182.;
+double ifb.endwindow.z          = 3207.;
 double ifb.endwindow.rIn        = 0.;
 double ifb.endwindow.rOut       = 50.;
-double ifb.endwindow.halfLength = 0.55;
+double ifb.endwindow.halfLength = 25.0;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

@@ -4,13 +4,13 @@
 // See Mu2e docdb #4678 for more details on parameters
 
 // Sort boxes into "types"
-int ExtShieldDownstream.numberOfBoxTypes = 21; 
+int ExtShieldDownstream.numberOfBoxTypes = 23; 
 
 // How many of each type box to make
 int ExtShieldDownstream.nBoxType1 = 20;  // Regular concrete wall T blocks
 int ExtShieldDownstream.nBoxType2 = 12;  // Regular concrete roof T blocks
-int ExtShieldDownstream.nBoxType3 = 17;  // Barite concrete wall T blocks
-int ExtShieldDownstream.nBoxType4 = 8;  // Barite concrete roof T blocks
+int ExtShieldDownstream.nBoxType3 = 13;  // Barite concrete wall T blocks
+int ExtShieldDownstream.nBoxType4 = 6;  // Barite concrete roof T blocks
 int ExtShieldDownstream.nBoxType5 = 1;  // Barite concrete wall L blocks
 int ExtShieldDownstream.nBoxType6 = 1;  // South wall concrete "filler" block
 int ExtShieldDownstream.nBoxType7 = 1;  // North wall concrete "filler" block
@@ -28,7 +28,8 @@ int ExtShieldDownstream.nBoxType18 = 1;  // filler in endcap roof interface
 int ExtShieldDownstream.nBoxType19 = 1;  // Block to hold up upstream Barite roof blocks
 int ExtShieldDownstream.nBoxType20 = 2; // little blocks to fill in for part of endcap floor that 'wraps' in front of interfact blocks.
 int ExtShieldDownstream.nBoxType21 = 1;  // NE corner block at interface to upstream
-
+int ExtShieldDownstream.nBoxType22 = 4;  // Barite concrete wall T blocks around stopping target
+int ExtShieldDownstream.nBoxType23 = 2;  // Barite concrete roof T blocks around stopping target
 
 // Number of vertices of each type of box
 int ExtShieldDownstream.nVertType1 = 8;
@@ -52,7 +53,8 @@ int ExtShieldDownstream.nVertType18 = 4; // filler in endcap roof interface
 int ExtShieldDownstream.nVertType19 = 4; // ceiling support upstream
 int ExtShieldDownstream.nVertType20 = 4; // floor filler endcap wall intfc
 int ExtShieldDownstream.nVertType21 = 6; // NE corner near TSu
-
+int ExtShieldDownstream.nVertType22 = 8;
+int ExtShieldDownstream.nVertType23 = 8;
 
 // Vertices in u, v for each type of box.  Dimensions should be in mm.
 // All dimensions here are 10 mm less than nominal design dimensions,
@@ -155,6 +157,13 @@ vector<double> ExtShieldDownstream.outlineType20VVerts = {0,440.2,440.2,0};
 vector<double> ExtShieldDownstream.outlineType21UVerts = {680.8,680.8,223.6,223.6,-842.2,-842.2};
 vector<double> ExtShieldDownstream.outlineType21VVerts = {-452.2,-5,-5,452.2,452.2,-452.2};
 
+// T blocks around the stopping target wall
+vector<double> ExtShieldDownstream.outlineType22UVerts = {680.8,680.8,223.6,223.6,-223.6,-223.6,-680.8,-680.8};
+vector<double> ExtShieldDownstream.outlineType22VVerts = {-452.2,-5,-5,452.2,452.2,-5,-5,-452.2};
+
+// T blocks around the stopping target roof
+vector<double> ExtShieldDownstream.outlineType23UVerts = {680.8,680.8,223.6,223.6,-223.6,-223.6,-680.8,-680.8};
+vector<double> ExtShieldDownstream.outlineType23VVerts = {-452.2,-5,-5,452.2,452.2,-5,-5,-452.2};
 
 
 // Lengths in w dimension for each type of box.  Dimensions should be in mm.
@@ -180,6 +189,8 @@ double ExtShieldDownstream.lengthType18 = 447.2; // filler at endcap roof int
 double ExtShieldDownstream.lengthType19 = 919; // Roof support
 double ExtShieldDownstream.lengthType20 = 446.2; // filler blocks bottom
 double ExtShieldDownstream.lengthType21 = 3851.0; 
+double ExtShieldDownstream.lengthType22 = 3851;
+double ExtShieldDownstream.lengthType23 = 4918;
 
 // "Tolerances" on the dimensions in u, v, and w for each type of box.
 // Tolerance here means the amount the size is changed from nominal, in mm.
@@ -206,6 +217,8 @@ vector<double> ExtShieldDownstream.tolsType18 = {0,0,0}; // Roof filler EC
 vector<double> ExtShieldDownstream.tolsType19 = {0,0,0}; // Roof support
 vector<double> ExtShieldDownstream.tolsType20 = {0,0,0}; // Roof support
 vector<double> ExtShieldDownstream.tolsType21 = {5,5,9.5}; // NE corner wall
+vector<double> ExtShieldDownstream.tolsType22 = {5,5,9.5}; //Wall
+vector<double> ExtShieldDownstream.tolsType23 = {5,9.5,5}; //Roof
 
 // Materials for each type of box.  Here, Concrete and Iron.
 string ExtShieldDownstream.materialType1   = "CONCRETE_MARS";
@@ -217,18 +230,20 @@ string ExtShieldDownstream.materialType6   = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType7   = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType8   = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType9   = "BARITE";
-string ExtShieldDownstream.materialType10   = "CONCRETE_MARS";
-string ExtShieldDownstream.materialType11   = "CONCRETE_MARS";
-string ExtShieldDownstream.materialType12   = "CONCRETE_MARS";
-string ExtShieldDownstream.materialType13   = "CONCRETE_MARS";
-string ExtShieldDownstream.materialType14   = "CONCRETE_MARS";// ec floor
-string ExtShieldDownstream.materialType15   = "BARITE";
-string ExtShieldDownstream.materialType16   = "CONCRETE_MARS";
+string ExtShieldDownstream.materialType10  = "CONCRETE_MARS";
+string ExtShieldDownstream.materialType11  = "CONCRETE_MARS";
+string ExtShieldDownstream.materialType12  = "CONCRETE_MARS";
+string ExtShieldDownstream.materialType13  = "CONCRETE_MARS";
+string ExtShieldDownstream.materialType14  = "CONCRETE_MARS";// ec floor
+string ExtShieldDownstream.materialType15  = "BARITE";
+string ExtShieldDownstream.materialType16  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType17  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType18  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType19  = "CONCRETE_MARS";
 string ExtShieldDownstream.materialType20  = "CONCRETE_MARS";
-string ExtShieldDownstream.materialType21   = "BARITE";
+string ExtShieldDownstream.materialType21  = "BARITE";
+string ExtShieldDownstream.materialType22  = "BARITE";
+string ExtShieldDownstream.materialType23  = "BARITE";
 
 
 // The position of each shield block in Mu2e Offline coordinates
@@ -271,42 +286,33 @@ vector<double> ExtShieldDownstream.centerType2Box10 ={-3904.0,2006.1, 3997.6};
 vector<double> ExtShieldDownstream.centerType2Box11 ={-3904.0,2006.1,15978.4};
 vector<double> ExtShieldDownstream.centerType2Box12 ={-3904.0,2006.1,16900.0};
 
-// Now the Barite wall T-blocks.  The first four are in the stopping target
-// region (2 north wall, 2 south).  The next five are in the Upstream region
-// on the south side.  The last seven are on the Upstream west side.
-vector<double> ExtShieldDownstream.centerType3Box1 = {-1897.4,-381.4, 5461.8};
-vector<double> ExtShieldDownstream.centerType3Box2 = {-1897.4,-381.4, 6375.4};
-vector<double> ExtShieldDownstream.centerType3Box3 = {-5910.6,-381.4, 5003.8};
-vector<double> ExtShieldDownstream.centerType3Box4 = {-5910.6,-381.4, 5918.2};
+// Now the Barite wall T-blocks.
 // Upstream south side
-vector<double> ExtShieldDownstream.centerType3Box5 = {-5910.6,-381.4, 2142.4};
-vector<double> ExtShieldDownstream.centerType3Box6 = {-5910.6,-381.4, 1220.8};
-vector<double> ExtShieldDownstream.centerType3Box7 = {-5910.6,-381.4,  299.2};
-vector<double> ExtShieldDownstream.centerType3Box8 = {-5910.6,-381.4, -622.4};
-vector<double> ExtShieldDownstream.centerType3Box9 = {-5910.6,-381.4,-1544.0};
+vector<double> ExtShieldDownstream.centerType3Box1 = {-5910.6,-381.4, 2142.4};
+vector<double> ExtShieldDownstream.centerType3Box2 = {-5910.6,-381.4, 1220.8};
+vector<double> ExtShieldDownstream.centerType3Box3 = {-5910.6,-381.4,  299.2};
+vector<double> ExtShieldDownstream.centerType3Box4 = {-5910.6,-381.4, -622.4};
+vector<double> ExtShieldDownstream.centerType3Box5 = {-5910.6,-381.4,-1544.0};
 // Upstream west side (6 blocks)
-vector<double> ExtShieldDownstream.centerType3Box10 ={ -597.0,-381.4,-1778};
-vector<double> ExtShieldDownstream.centerType3Box11 ={-1518.6,-381.4,-1778};
-vector<double> ExtShieldDownstream.centerType3Box12 ={-2440.2,-381.4,-1778};
-vector<double> ExtShieldDownstream.centerType3Box13 ={-3361.8,-381.4,-1778};
-vector<double> ExtShieldDownstream.centerType3Box14 ={-4283.4,-381.4,-1778};
-vector<double> ExtShieldDownstream.centerType3Box15 ={-5205.0,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box6 ={ -597.0,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box7 ={-1518.6,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box8 ={-2440.2,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box9 ={-3361.8,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box10 ={-4283.4,-381.4,-1778};
+vector<double> ExtShieldDownstream.centerType3Box11 ={-5205.0,-381.4,-1778};
 // Upstream east side (1 block)
-vector<double> ExtShieldDownstream.centerType3Box16 ={-1211.6,-381.4, 2235};
+vector<double> ExtShieldDownstream.centerType3Box12 ={-1211.6,-381.4, 2235};
 // And one more on the south side due to improved model (1 block)
-vector<double> ExtShieldDownstream.centerType3Box17 = {-5910.6,-381.4,3056.8};
+vector<double> ExtShieldDownstream.centerType3Box13 = {-5910.6,-381.4,3056.8};
 
 
-// And now for the Barite Roof T-blocks. First two by stopping target.  Others
-// upstream.
-vector<double> ExtShieldDownstream.centerType4Box1 = {-3904.0,2006.1, 4919.2};
-vector<double> ExtShieldDownstream.centerType4Box2 = {-3904,2006.1, 5840.8};
-vector<double> ExtShieldDownstream.centerType4Box3 = { -592,2006.1,  228.6};
-vector<double> ExtShieldDownstream.centerType4Box4 = {-1513.6,2006.1,228.6};
-vector<double> ExtShieldDownstream.centerType4Box5 = {-2435.2,2006.1,228.6};
-vector<double> ExtShieldDownstream.centerType4Box6 = {-3356.8,2006.1,228.6};
-vector<double> ExtShieldDownstream.centerType4Box7 = {-4278.4,2006.1,228.6};
-vector<double> ExtShieldDownstream.centerType4Box8 = {-5200.0,2006.1,228.6};
+// And now for the Barite Roof T-blocks
+vector<double> ExtShieldDownstream.centerType4Box1 = { -592,2006.1,  228.6};
+vector<double> ExtShieldDownstream.centerType4Box2 = {-1513.6,2006.1,228.6};
+vector<double> ExtShieldDownstream.centerType4Box3 = {-2435.2,2006.1,228.6};
+vector<double> ExtShieldDownstream.centerType4Box4 = {-3356.8,2006.1,228.6};
+vector<double> ExtShieldDownstream.centerType4Box5 = {-4278.4,2006.1,228.6};
+vector<double> ExtShieldDownstream.centerType4Box6 = {-5200.0,2006.1,228.6};
 
 
 // Barite wall L-blocks
@@ -377,6 +383,17 @@ vector<double> ExtShieldDownstream.centerType20Box2 = {-3904,-1983,15548.6};
 // corner block in NE corner near TSu
 vector<double> ExtShieldDownstream.centerType21Box1 = {-297.2,-381.4,2235.0};
 
+//  The first four are in the stopping target. region (2 north wall, 2 south)
+vector<double> ExtShieldDownstream.centerType22Box1 = {-1897.4,-381.4, 5461.8};
+vector<double> ExtShieldDownstream.centerType22Box2 = {-1897.4,-381.4, 6375.4};
+vector<double> ExtShieldDownstream.centerType22Box3 = {-5910.6,-381.4, 5003.8};
+vector<double> ExtShieldDownstream.centerType22Box4 = {-5910.6,-381.4, 5918.2};
+
+// And now for the Barite Roof T-blocks. First two by stopping target.  Others
+// upstream.
+vector<double> ExtShieldDownstream.centerType23Box1 = {-3904.0,2006.1, 4919.2};
+vector<double> ExtShieldDownstream.centerType23Box2 = {-3904,2006.1, 5840.8};
+
 //
 // The orientation of the box.  See Mu2e docdb 4678 for details.
 //
@@ -418,30 +435,24 @@ string ExtShieldDownstream.orientationType2Box11 = "012";
 string ExtShieldDownstream.orientationType2Box12 = "010";
 
 // Barite wall T blocks
-string ExtShieldDownstream.orientationType3Box1 = "101";
-string ExtShieldDownstream.orientationType3Box2 = "103";
+string ExtShieldDownstream.orientationType3Box1 = "103";
+string ExtShieldDownstream.orientationType3Box2 = "101";
 string ExtShieldDownstream.orientationType3Box3 = "103";
 string ExtShieldDownstream.orientationType3Box4 = "101";
 string ExtShieldDownstream.orientationType3Box5 = "103";
-string ExtShieldDownstream.orientationType3Box6 = "101";
-string ExtShieldDownstream.orientationType3Box7 = "103";
-string ExtShieldDownstream.orientationType3Box8 = "101";
-string ExtShieldDownstream.orientationType3Box9 = "103";
+string ExtShieldDownstream.orientationType3Box6 = "300";
+string ExtShieldDownstream.orientationType3Box7 = "100";
+string ExtShieldDownstream.orientationType3Box8 = "300";
+string ExtShieldDownstream.orientationType3Box9 = "100";
 string ExtShieldDownstream.orientationType3Box10 = "300";
 string ExtShieldDownstream.orientationType3Box11 = "100";
-string ExtShieldDownstream.orientationType3Box12 = "300";
-string ExtShieldDownstream.orientationType3Box13 = "100";
-string ExtShieldDownstream.orientationType3Box14 = "300";
-string ExtShieldDownstream.orientationType3Box15 = "100";
-string ExtShieldDownstream.orientationType3Box16 = "100";
-string ExtShieldDownstream.orientationType3Box17 = "101";
+string ExtShieldDownstream.orientationType3Box12 = "100";
+string ExtShieldDownstream.orientationType3Box13 = "101";
 
 // Barite roof T blocks
-string ExtShieldDownstream.orientationType4Box1 = "012";
-string ExtShieldDownstream.orientationType4Box2 = "010";
+string ExtShieldDownstream.orientationType4Box2 = "002";
 string ExtShieldDownstream.orientationType4Box4 = "002";
 string ExtShieldDownstream.orientationType4Box6 = "002";
-string ExtShieldDownstream.orientationType4Box8 = "002";
 
 // 
 string ExtShieldDownstream.orientationType5Box1 = "302";
@@ -484,6 +495,14 @@ string ExtShieldDownstream.orientationType20Box2 = "020";
 
 string ExtShieldDownstream.orientationType21Box1 = "102";
 
+string ExtShieldDownstream.orientationType22Box1 = "101";
+string ExtShieldDownstream.orientationType22Box2 = "103";
+string ExtShieldDownstream.orientationType22Box3 = "103";
+string ExtShieldDownstream.orientationType22Box4 = "101";
+
+string ExtShieldDownstream.orientationType23Box1 = "012";
+string ExtShieldDownstream.orientationType23Box2 = "010";
+
 
 // Notch information
 int ExtShieldDownstream.nNotchesType1Box13 = 2;
@@ -509,26 +528,25 @@ vector<double> ExtShieldDownstream.notchCenterType1Box15Notch2 = {-653,-76.2,167
 vector<double> ExtShieldDownstream.notchDimType1Box15Notch2 = {69.4,152.6,510.0};
 
 // Notches for roof support beam
-int ExtShieldDownstream.nNotchesType4Box8 = 1;
-vector<double> ExtShieldDownstream.notchCenterType4Box8Notch1 = {0,228.6,1998.3};
-vector<double> ExtShieldDownstream.notchDimType4Box8Notch1 = {1370.5,460.5,924.0};
+int ExtShieldDownstream.nNotchesType4Box2 = 1;
+vector<double> ExtShieldDownstream.notchCenterType4Box2Notch1 = {0,228.6,1998.3};
+vector<double> ExtShieldDownstream.notchDimType4Box2Notch1 = {1370.5,460.5,924.0};
 
-int ExtShieldDownstream.nNotchesType4Box6 = 1;
-vector<double> ExtShieldDownstream.notchCenterType4Box6Notch1 = {0,228.6,1998.3};
-vector<double> ExtShieldDownstream.notchDimType4Box6Notch1 = {1370.5,460.5,924.0};
+int ExtShieldDownstream.nNotchesType4Box3 = 1;
+vector<double> ExtShieldDownstream.notchCenterType4Box3Notch1 = {0,-228.6,1998.3};
+vector<double> ExtShieldDownstream.notchDimType4Box3Notch1 = {1370.5,460.5,924.0};
 
 int ExtShieldDownstream.nNotchesType4Box4 = 1;
 vector<double> ExtShieldDownstream.notchCenterType4Box4Notch1 = {0,228.6,1998.3};
 vector<double> ExtShieldDownstream.notchDimType4Box4Notch1 = {1370.5,460.5,924.0};
 
-int ExtShieldDownstream.nNotchesType4Box7 = 1;
-vector<double> ExtShieldDownstream.notchCenterType4Box7Notch1 = {0,-228.6,1998.3};
-vector<double> ExtShieldDownstream.notchDimType4Box7Notch1 = {1370.5,460.5,924.0};
-
 int ExtShieldDownstream.nNotchesType4Box5 = 1;
 vector<double> ExtShieldDownstream.notchCenterType4Box5Notch1 = {0,-228.6,1998.3};
 vector<double> ExtShieldDownstream.notchDimType4Box5Notch1 = {1370.5,460.5,924.0};
 
+int ExtShieldDownstream.nNotchesType4Box6 = 1;
+vector<double> ExtShieldDownstream.notchCenterType4Box6Notch1 = {0,228.6,1998.3};
+vector<double> ExtShieldDownstream.notchDimType4Box6Notch1 = {1370.5,460.5,924.0};
 
 int ExtShieldDownstream.nNotchesType9Box2 = 1;
 vector<double> ExtShieldDownstream.notchCenterType9Box2Notch1 = {0,-228.6,1998.3};

@@ -8,6 +8,7 @@
 //
 
 #include "Mu2eG4/test/geom_01.txt"
+#include "Mu2eG4/test/geom_private.txt"
 
 bool crs.vetoVisible         = false;
 bool protonabsorber.visible  = false;
