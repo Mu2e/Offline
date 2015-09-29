@@ -2,10 +2,35 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_4_7
 
-4) Sep 19, 2015 oksuzian
+
+
+6) Sep 29, 2015 dnbrow01
+   modified:
+   Mu2eG4/geom/ExtShieldDownstream_v01.txt
+   Mu2eG4/geom/geom_common_cd3.txt
+   added:
+   Mu2eG4/geom/ExtShieldDownstream_cd3.txt
+   Mu2eG4/geom/ExtShieldUpstream_cd3.txt
+   Mu2eG4/geom/Saddle_cd3.txt
+
+   Froze the cd3c version of the external shielding geometry configurations.
+   These files now pointed to by geom_common_cd3.txt
+   In the "working" version of ExtShieldDownstream_v01.txt, added two
+   stainless steel blocks from Dave Hedin's shielding studies, per
+   request from Yuri Oksuzian
+
+5) Sep 29, 2015 oksuzian
    Replaced iron vacuum seal with 5 cm Mylar plug
    Added 1%, 3%, 5% borated concrete
    Seperated T-blocks around the stopping target from other type of blocks. Will allow to set different concrete materials in upstream and around the stopping target.
+
+
+4) Sep 28, 2015 dnbrow01
+   ExternalShieldingGeom/src/ExtShieldDownstreamMaker.cc
+   Mu2eG4/src/constructExternalShielding.cc
+      Undergraduate Dustin Cox (Louisville) removed some spurious debugging
+      messages left in code from development.  Checking in changes for him.
+
 
 3) Sep 18, 2015 kutschke
    Stntuple/test/generate_dio_template.fcl

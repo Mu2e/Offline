@@ -202,7 +202,7 @@ namespace mu2e {
 
 	std::ostringstream bNNotchesVarName;
 	bNNotchesVarName << nNotchesBaseName << "Type" << it+1 << "Box" << iboxt+1;
-	//	std::cout << "DNB** About to get numbers for holes/notches for type " << it+1 << ", Box " << iboxt+1  << std::endl;
+
 	int nHinput = c.getInt(bNHolesVarName.str(),0);
 	int nNinput = c.getInt(bNNotchesVarName.str(),0);
 	nHoles.push_back(nHinput);
@@ -218,7 +218,7 @@ namespace mu2e {
 	    // Use our now-familiar trick for variable names
 	    std::ostringstream hCentVarName;
 	    hCentVarName << hCentBaseName << "Type" << it+1 << "Box" << iboxt+1 << "Hole" << iHole+1;
-	    //	  std::cout << "DNB** About to read hole center for type " << it+1 << ", Box " << iboxt+1 << std::endl;
+
 	    
 	    CLHEP::Hep3Vector holeCenter = c.getHep3Vector(hCentVarName.str());
 	    holeCenter *= CLHEP::mm;

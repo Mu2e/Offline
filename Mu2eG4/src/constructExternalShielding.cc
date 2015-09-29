@@ -86,7 +86,7 @@ namespace mu2e {
     double phi   = (double)uRotNum*90*CLHEP::degree;
     double theta = (double)vRotNum*90.0*CLHEP::degree;
     double psi   = (double)wRotNum*90.0*CLHEP::degree;
-    //    std::cout << "DNB:  phi, theta, psi = " << phi << ", " << theta << ", " << psi << std::endl;  
+
     if ( wRotNum != 0 ) aRotation.rotateZ(-psi);
     // Now have to accommodate the change of axes based on Z rotation
     // If 90 rot in Z, rotation around y becomes rot around neg x
@@ -188,7 +188,7 @@ namespace mu2e {
 	// Make the needed rotation by parsing orientation
         CLHEP::HepRotation* itsRotat= new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	std::string orientInit = orients[i];
-	//	std::cout << "DNB:  orientInit is: " << orientInit << std::endl;
+
 	getRotationFromOrientation(*itsRotat, orientInit);
 
 	// Build each box here
@@ -263,7 +263,7 @@ namespace mu2e {
 
 	// Make the needed rotation by parsing orientation
 	std::string orientDSInit = orientsDS[i];
-	//	std::cout << "DNB:  orientDSInit is: " << orientDSInit << std::endl;
+
 	CLHEP::HepRotation* itsDSRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	getRotationFromOrientation( *itsDSRotat, orientDSInit );
 
@@ -303,7 +303,7 @@ namespace mu2e {
 	  for ( int jHole = 0; jHole < nHolesDS[i]; jHole++ ) {
 	    // Now make the window (AKA "Hole")
 	    name << "h" << jHole+1;
-	    std::cout << __func__ << " making " << name.str() << std::endl;
+	    //	    std::cout << __func__ << " making " << name.str() << std::endl;
 
 	    int thisHID = hID + jHole; // get pointer for right hole
 
@@ -325,9 +325,6 @@ namespace mu2e {
 	    CLHEP::HepRotation* windRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	    getRotationFromOrientation( *windRotat, holeOrientsDS[hID] );
 
-	    //	std::cout << "DNB** Making extShieldVol" << std::endl;
-
-	    //	  std::cout << "DNB** About to make SubtractionSolid" << std::endl;
 
 	    if ( 0 == aSolid ) { 
 	      aSolid = new G4SubtractionSolid( extShieldVol.name,
@@ -362,7 +359,7 @@ namespace mu2e {
 	    // Now make the notch 
 	    name << "n" << jNotch+1;
 
-	    std::cout << __func__ << " making " << name.str() << std::endl;
+	    ///	    std::cout << __func__ << " making " << name.str() << std::endl;
 
 
 	    // Get dimensions of this box
@@ -378,7 +375,6 @@ namespace mu2e {
 
 	    CLHEP::HepRotation* notchRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 
-	    //	  std::cout << "DNB** About to make SubtractionSolid" << std::endl;
 
 	    if ( 0 == aSolid ) { 
 	      aSolid = new G4SubtractionSolid( extShieldVol.name,
@@ -398,8 +394,6 @@ namespace mu2e {
 	  } // End of loop over notches
 
 	  extShieldVol.solid = aSolid;
-
-	  //	  std::cout << "DNB** About to finish nesting" << std::endl;
 
 	  finishNesting(extShieldVol,
 			findMaterialOrThrow(matsDS[i]),
@@ -501,7 +495,7 @@ namespace mu2e {
 
 	// Make the needed rotation by parsing orientation
 	std::string orientSAInit = orientsSA[i];
-	//	std::cout << "DNB:  orientSAInit is: " << orientSAInit << std::endl;
+
 	CLHEP::HepRotation* itsSARotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	getRotationFromOrientation( *itsSARotat, orientSAInit );
 
@@ -541,7 +535,7 @@ namespace mu2e {
 	  for ( int jHole = 0; jHole < nHolesSA[i]; jHole++ ) {
 	    // Now make the window (AKA "Hole")
 	    name << "h" << jHole+1;
-	    std::cout << __func__ << " making " << name.str() << std::endl;
+	    //	    std::cout << __func__ << " making " << name.str() << std::endl;
 
 	    int thisHID = hID + jHole; // get pointer for right hole
 
@@ -563,9 +557,6 @@ namespace mu2e {
 	    CLHEP::HepRotation* windRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	    getRotationFromOrientation( *windRotat, holeOrientsSA[hID] );
 
-	    //	std::cout << "DNB** Making extShieldVol" << std::endl;
-
-	    //	  std::cout << "DNB** About to make SubtractionSolid" << std::endl;
 
 	    if ( 0 == aSolid ) { 
 	      aSolid = new G4SubtractionSolid( extShieldVol.name,
@@ -600,7 +591,7 @@ namespace mu2e {
 	    // Now make the notch 
 	    name << "n" << jNotch+1;
 
-	    std::cout << __func__ << " making " << name.str() << std::endl;
+	    //	    std::cout << __func__ << " making " << name.str() << std::endl;
 
 
 	    // Get dimensions of this box
@@ -616,7 +607,6 @@ namespace mu2e {
 
 	    CLHEP::HepRotation* notchRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 
-	    //	  std::cout << "DNB** About to make SubtractionSolid" << std::endl;
 
 	    if ( 0 == aSolid ) { 
 	      aSolid = new G4SubtractionSolid( extShieldVol.name,
@@ -636,8 +626,6 @@ namespace mu2e {
 	  } // End of loop over notches
 
 	  extShieldVol.solid = aSolid;
-
-	  //	  std::cout << "DNB** About to finish nesting" << std::endl;
 
 	  finishNesting(extShieldVol,
 			findMaterialOrThrow(matsSA[i]),
