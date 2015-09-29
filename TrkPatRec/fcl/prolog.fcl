@@ -176,15 +176,32 @@ Tracking : {
     TRFDownstreampiPlus	  : @local::TrkRecFitDownstreampiPlus
     TRFUpstreampiPlus	  : @local::TrkRecFitUpstreampiPlus
   }
-# production sequence to prepare for tracking
-  PrepareHits : [ makeSD, makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
+# simulation sequence to create digis.  Currently just one module, but that might change
+  DigiSim : [ makeSD ]
+# production sequence to prepare hits for tracking
+  PrepareHits : [ makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
 }
-# production sequences for specific paricles
-Tracking.TPRDownstreameMinus : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFDownstreameMinus ]
+# production sequences for tracking specific paricles; first electrons
+Tracking.TPRDownstreameMinus  : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFDownstreameMinus ]
+Tracking.TPRUpstreameMinus    : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFUpstreameMinus ]
+Tracking.TPRDownstreamePlus   : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFDownstreamePlus ]
+Tracking.TPRUpstreamePlus     : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFUpstreamePlus ]
+#muons
+Tracking.TPRDownstreammuMinus  : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFDownstreammuMinus ]
+Tracking.TPRUpstreammuMinus    : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFUpstreammuMinus ]
+Tracking.TPRDownstreammuPlus   : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFDownstreammuPlus ]
+Tracking.TPRUpstreammuPlus     : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFUpstreammuPlus ]
+#pions
+Tracking.TPRDownstreampiMinus  : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFDownstreampiMinus ]
+Tracking.TPRUpstreampiMinus    : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFUpstreampiMinus ]
+Tracking.TPRDownstreampiPlus   : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFDownstreampiPlus ]
+Tracking.TPRUpstreampiPlus     : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFUpstreampiPlus ]
 
+##########################################################################################################################
 # Monolithic pattern reconition module configuration protype
 # NB: TrkPatRec is DEPRECATED and will not be supported in future
 # Please used TrkRecFit for all CD3 applications and beyond
+# ########################################################################################################################
 TrkPatRec : {
   module_type                 : TrkPatRec
   includeCaloInfo	      : 0
