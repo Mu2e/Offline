@@ -1,0 +1,82 @@
+// Ivan Logashenko, 2015
+//
+// This is an example of how to read output of second stage
+// of CD3 simulation and save data to virtual detectors ntuples
+//
+
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+# Give this job a name.
+process_name : readStage2
+
+source : { 
+  module_type : RootInput 
+  #maxEvents : 1000
+}
+
+services : {
+
+    message               : @local::default_message
+    TFileService          : { fileName : "vdntuple.root" }
+    RandomNumberGenerator : { }
+
+    user : {
+        GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+        G4Helper               : { }
+        SeedService            : @local::automaticSeeds
+    }
+}
+
+physics : {
+
+   analyzers: {
+
+      # Look at the hits from virtualdetectors
+      readvd: {
+            module_type      : ReadVirtualDetector
+
+	    // List of virtual detectors to save in ntuple
+      	    saveVD           : [1,2,5]
+	    // Save only those particles in the main ntuple (ntpart), which 
+            // cross the required VD. If not specified, save all particles.
+	    requireVD        : 5
+            // Save only listed types of particles in the main ntuple
+      	    savePDG          : [ 11, -11 ]
+	    // Save only those particles in the ntuple, which survive until timeCut (ns)
+	    timeCut          : 0
+	    // Save only particles with p>minMomentum (MeV/c) in the main ntuple
+	    minMomentum	     : 90
+            // Drop listed types of particles in the time vd ntuple
+      	    tvdDropPDG       : [ 2112 ]
+
+      	    maxPrint         : 10
+
+	    // Source of data. Using standard Art tags.
+	    simParticleColl  : "muonBeamFilter"
+	    vdStepPoints     : "muonBeamFilter:virtualdetector"
+
+      }
+
+      genCountLogger: {
+            module_type: GenEventCountReader
+      }
+
+   }
+
+    e1 : [genCountLogger]
+    an: [readvd]
+    end_paths      : [an,e1]
+}
+
+outputs: {
+
+}
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20

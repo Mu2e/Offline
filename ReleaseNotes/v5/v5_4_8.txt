@@ -1,3 +1,16 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_4_8
+
+1) Oct 12, 2015 logash
+   modified:   Analyses/src/ReadVirtualDetector_module.cc
+   new 	   :   Analyses/test/vd_readStage2.fcl
+
+   Several changes in ReadVirtualDetector module:
+   - configuration variables, which describe input collection, are now 
+     tags, which support the complex names (e.g. "g2run:DSVolume"). Before
+     they were just the name of the collection.
+   - added new configuration variable, "minMomentum", which allows to save
+     only high energy particles in the ntuple. Default is -1 (no cut).
+   - added example Analyses/test/vd_readStage2.fcl, which shows how to 
+     read VD data from CD3 stage 2 simulation with this module

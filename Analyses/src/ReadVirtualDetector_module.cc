@@ -28,6 +28,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
+#include "art/Utilities/InputTag.h"
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -129,86 +130,22 @@ namespace mu2e {
   } NtPartData;
 
   class ReadVirtualDetector : public art::EDAnalyzer {
-  public:
 
     typedef vector<int> Vint;
     typedef SimParticleCollection::key_type key_type;
 
-    explicit ReadVirtualDetector(fhicl::ParameterSet const& pset) :
-      art::EDAnalyzer(pset),
-      _vdStepPoints(pset.get<string>("vdStepPoints","virtualdetector")),
-      _tvdStepPoints(pset.get<string>("tvdStepPoints","timeVD")),
-      _simParticleColl(pset.get<string>("simParticleColl","s0")),
-      _nAnalyzed(0),
-      _maxPrint(pset.get<int>("maxPrint",0)),
-      _ntvd(0), _nttvd(0), _ntpart(0), _ntpart1(0), _ntvdext(0),
-      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
-      _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
-      _vd_required(pset.get<int>("requireVD",0)),
-      _timeCut(pset.get<double>("timeCut",0.0)),
-      _stopped_only(pset.get<bool>("saveStopped",false)),
-      _save_all_pdg(pset.get<bool>("saveAllPDG",false)),
-      _add_proper_time(pset.get<bool>("addProperTime",false))
-    {
-
-      write_ntvd    = pset.get<bool>("writeNTVD",true); 
-      write_nttvd   = pset.get<bool>("writeNTTVD",true);
-      write_ntpart  = pset.get<bool>("writeNTPART",true);
-      write_ntpart1 = pset.get<bool>("writeNTPART1",true);
-      write_ntvdext = pset.get<bool>("writeNTVDEXT",false); 
-
-      Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
-      if( pdg_ids.size()>0 ) {
-        cout << "ReadVirtualDetector: save following particle types in the ntuple: ";
-        for( size_t i=0; i<pdg_ids.size(); ++i ) {
-          pdg_save.insert(pdg_ids[i]);
-          cout << pdg_ids[i] << ", ";
-        }
-        cout << endl;
-      }
-
-      Vint const & tvd_drop_ids = pset.get<Vint>("tvdDropPDG", Vint());
-      if( tvd_drop_ids.size()>0 ) {
-        cout << "ReadVirtualDetector: drop following particle types from time VD ntuple: ";
-        for( size_t i=0; i<tvd_drop_ids.size(); ++i ) {
-          tvd_drop_pdg.insert(tvd_drop_ids[i]);
-          cout << tvd_drop_ids[i] << ", ";
-        }
-        cout << endl;
-      }
-
-      Vint const & vd_ids = pset.get<Vint>("saveVD", Vint());
-      if( vd_ids.size()>0 ) {
-        cout << "ReadVirtualDetector: save data from the following virtual detectors: ";
-        for( size_t i=0; i<vd_ids.size(); ++i ) {
-          vd_save.insert(vd_ids[i]);
-          cout << vd_ids[i] << ", ";
-        }
-        cout << endl;
-      }
-
-      nt    = new float[1000];
-      ntext = new float[1000];
-
-    }
-
-    virtual ~ReadVirtualDetector() { }
-
-    virtual void beginJob();
-    virtual void beginRun(art::Run const&);
-
-    void analyze(const art::Event& e);
-
-  private:
-
     // Name of the VD and TVD StepPoint collections
-    std::string  _vdStepPoints;
-    std::string _tvdStepPoints;
-    std::string _simParticleColl;
+
+    art::InputTag _vdInputTag;
+    art::InputTag _tvdInputTag;
+    art::InputTag _simpInputTag;
+    art::InputTag _generatorInputTag;
+    art::InputTag _physInputTag;
 
     // Control printed output.
     int _nAnalyzed;
     int _maxPrint;
+    int _debugout;
 
     TNtuple* _ntvd;
     TNtuple* _nttvd;
@@ -239,9 +176,6 @@ namespace mu2e {
     // List of virtual detectors to be saved
     set<int> vd_save;
 
-    // Label of the generator.
-    std::string _generatorModuleLabel;
-
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
 
@@ -253,6 +187,9 @@ namespace mu2e {
     // after this time (in ns)
     double _timeCut;
 
+    // Save in the particles ntuple only particle with momentum larger than this
+    double _minMomentum;
+
     // Save only stopped particles in the particles ntuple
     bool _stopped_only;
 
@@ -262,8 +199,87 @@ namespace mu2e {
     // Should we add together proper time for the whole decay chain
     bool _add_proper_time;
 
+  public:
+
+    explicit ReadVirtualDetector(fhicl::ParameterSet const& pset);
+    virtual ~ReadVirtualDetector() { }
+
+    virtual void beginJob();
+    virtual void beginRun(art::Run const&);
+
+    void analyze(const art::Event& e);
+
   };
 
+  ReadVirtualDetector::ReadVirtualDetector(fhicl::ParameterSet const& pset) :
+    art::EDAnalyzer(pset),
+    _nAnalyzed(0),
+    _maxPrint(pset.get<int>("maxPrint",0)),
+    _debugout(pset.get<int>("debugOutput",0)),
+    _ntvd(0), _nttvd(0), _ntpart(0), _ntpart1(0), _ntvdext(0),
+    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")), // obsolete, let for back cmpartibility
+    _vd_required(pset.get<int>("requireVD",0)),
+    _timeCut(pset.get<double>("timeCut",0.0)),
+    _minMomentum(pset.get<double>("minMomentum",-1.0)),
+    _stopped_only(pset.get<bool>("saveStopped",false)),
+    _save_all_pdg(pset.get<bool>("saveAllPDG",false)),
+    _add_proper_time(pset.get<bool>("addProperTime",false))
+  {
+    _vdInputTag = pset.get<std::string>("vdStepPoints","virtualdetector");
+    _tvdInputTag = pset.get<string>("tvdStepPoints","timeVD");
+    _simpInputTag = pset.get<string>("simParticleColl","");
+    _generatorInputTag = pset.get<std::string>("generatorModuleLabel", "generate");
+    _physInputTag = pset.get<std::string>("physicsVolumeColl", "g4run");
+
+    write_ntvd    = pset.get<bool>("writeNTVD",true); 
+    write_nttvd   = pset.get<bool>("writeNTTVD",true);
+    write_ntpart  = pset.get<bool>("writeNTPART",true);
+    write_ntpart1 = pset.get<bool>("writeNTPART1",true);
+    write_ntvdext = pset.get<bool>("writeNTVDEXT",false); 
+    
+    if( _debugout>0 ) cout << "ReadVirtualDetector: fill ntuples "
+			   << " NTVD=" << write_ntvd
+			   << " NTTVD=" << write_nttvd
+			   << " NTPART=" << write_ntpart
+			   << " NTPART1=" << write_ntpart1
+			   << " NTVDEXT=" << write_ntvdext
+			   << endl;
+    
+    Vint const & pdg_ids = pset.get<Vint>("savePDG", Vint());
+    if( pdg_ids.size()>0 ) {
+      cout << "ReadVirtualDetector: save following particle types in the ntuple: ";
+      for( size_t i=0; i<pdg_ids.size(); ++i ) {
+	pdg_save.insert(pdg_ids[i]);
+	cout << pdg_ids[i] << ", ";
+      }
+      cout << endl;
+    }
+    
+    Vint const & tvd_drop_ids = pset.get<Vint>("tvdDropPDG", Vint());
+    if( tvd_drop_ids.size()>0 ) {
+      cout << "ReadVirtualDetector: drop following particle types from time VD ntuple: ";
+      for( size_t i=0; i<tvd_drop_ids.size(); ++i ) {
+	tvd_drop_pdg.insert(tvd_drop_ids[i]);
+	cout << tvd_drop_ids[i] << ", ";
+      }
+      cout << endl;
+    }
+    
+    Vint const & vd_ids = pset.get<Vint>("saveVD", Vint());
+    if( vd_ids.size()>0 ) {
+      cout << "ReadVirtualDetector: save data from the following virtual detectors: ";
+      for( size_t i=0; i<vd_ids.size(); ++i ) {
+	vd_save.insert(vd_ids[i]);
+	cout << vd_ids[i] << ", ";
+      }
+      cout << endl;
+    }
+    
+    nt    = new float[1000];
+    ntext = new float[1000];
+    
+  }
+  
   void ReadVirtualDetector::beginJob(){
 
     vid_stop.clear();
@@ -395,7 +411,7 @@ namespace mu2e {
 
     // Get pointers to the physical volumes we are interested
     art::Handle<PhysicalVolumeInfoCollection> physVolumes;
-    run.getByLabel(_g4ModuleLabel, physVolumes);
+    run.getByLabel(_physInputTag, physVolumes);
     if( physVolumes.isValid() ) {
 
       for ( size_t i=0; i<physVolumes->size(); ++i ) {
@@ -426,20 +442,40 @@ namespace mu2e {
 
     // Ask the event to give us a "handle" to the requested hits.
     art::Handle<StepPointMCCollection> hits;
-    event.getByLabel(_g4ModuleLabel,_vdStepPoints,hits);
+    event.getByLabel(_vdInputTag,hits);
+    if( _debugout>0 ) {
+      cout << "ReadVirtualDetector: hits collection is " << hits.isValid();
+      if( hits.isValid() ) cout << " size=" << hits->size();
+      cout << endl;
+    }
 
     art::Handle<StepPointMCCollection> thits;
-    event.getByLabel(_g4ModuleLabel,_tvdStepPoints,thits);
+    event.getByLabel(_tvdInputTag,thits);
+    if( _debugout>0 ) {
+      cout << "ReadVirtualDetector: thits collection is " << thits.isValid();
+      if( thits.isValid() ) cout << " size=" << thits->size();
+      cout << endl;
+    }
 
     art::Handle<SimParticleCollection> simParticles;
-    event.getByLabel(_g4ModuleLabel, _simParticleColl, simParticles);
+    event.getByLabel(_simpInputTag, simParticles);
     bool haveSimPart = simParticles.isValid();
     if ( haveSimPart ) haveSimPart = !(simParticles->empty());
+    if( _debugout>0 ) {
+      cout << "ReadVirtualDetector: simpart collection is " << simParticles.isValid();
+      if( simParticles.isValid() ) cout << " size=" << simParticles->size();
+      cout << endl;
+    }
 
     art::Handle<G4BeamlineInfoCollection> g4beamlineData;
-    event.getByLabel(_generatorModuleLabel, g4beamlineData);
+    event.getByLabel(_generatorInputTag, g4beamlineData);
     bool haveG4BL = g4beamlineData.isValid();
     if ( haveG4BL ) haveG4BL = (g4beamlineData->size()==1);
+    if( _debugout>0 ) {
+      cout << "ReadVirtualDetector: beamline collection is " << g4beamlineData.isValid();
+      if( g4beamlineData.isValid() ) cout << " size=" << g4beamlineData->size();
+      cout << endl;
+    }
 
     // Fill virtual detectors ntuple
 
@@ -740,6 +776,9 @@ namespace mu2e {
         ntp.pz = mom_start.z();
         ntp.p = mom_start.mag();
         ntp.code = sim.creationCode();
+
+	// Apply momentum cut
+	if( ntp.p<_minMomentum ) continue;
 
         // Check id of the volume there particle dies
         if( sim.endDefined() ) {
