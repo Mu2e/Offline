@@ -48,7 +48,7 @@ namespace mu2e
     int         _verboseLevel;
     std::string _crvRecoPulsesModuleLabel;
     int         _PEthreshold;
-    double      _adjacentCounterTimeDifference;
+    double      _adjacentPulseTimeDifference;
     double      _maxTimeDifference;
     double      _maxSlope;
     double      _maxSlopeDifference;
@@ -98,7 +98,7 @@ namespace mu2e
     _verboseLevel(pset.get<int>("verboseLevel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _PEthreshold(pset.get<int>("PEthreshold")),
-    _adjacentCounterTimeDifference(pset.get<double>("adjacentCounterTimeDifference")),
+    _adjacentPulseTimeDifference(pset.get<double>("adjacentPulseTimeDifference")),
     _maxTimeDifference(pset.get<double>("maxTimeDifference")),
     _maxSlope(pset.get<double>("maxSlope")),
     _maxSlopeDifference(pset.get<double>("maxSlopeDifference")),
@@ -226,7 +226,7 @@ namespace mu2e
           if(_verboseLevel>4)
           {
             std::cout<<"sector: "<<sectorNumber<<"  module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  bar: "<<barNumber<<"  SiPM: "<<SiPM<<"      ";
-            std::cout<<"  PEs: "<<PEs<<"   LE: "<<time<<std::endl;
+            std::cout<<"  PEs: "<<PEs<<"   LE: "<<time<<"   x: "<<x<<"   y: "<<y<<std::endl;
           }
 
           //check whether this reco pulses is within the time window
@@ -238,7 +238,7 @@ namespace mu2e
             if(_verboseLevel==4)
             {
               std::cout<<"sectorType: "<<sectorType<<"   layer: "<<layerNumber<<"   counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";
-              std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<std::endl;
+              std::cout<<"  PEs: "<<PEs<<"   LE: "<<time<<"   x: "<<x<<"   y: "<<y<<std::endl;
             }
           }
 
@@ -251,7 +251,7 @@ namespace mu2e
             if(_verboseLevel==4)
             {
               std::cout<<"sectorType: "<<sectorType<<"   layer: "<<layerNumber<<"   counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";
-              std::cout<<"  PEs: "<<pulse._PEs<<"   LE: "<<time<<std::endl;
+              std::cout<<"  PEs: "<<PEs<<"   LE: "<<time<<"   x: "<<x<<"   y: "<<y<<std::endl;
             }
           }
         }
@@ -283,8 +283,8 @@ namespace mu2e
           for(iterHitAdjacent=crvHitsOfSectorType.begin(); iterHitAdjacent!=crvHitsOfSectorType.end(); iterHitAdjacent++)
           {
             if(iterHitAdjacent->_layer==layer && 
-               abs(iterHitAdjacent->_counter-counter)==1 &&
-               fabs(iterHitAdjacent->_time-time)<=_adjacentCounterTimeDifference &&
+               abs(iterHitAdjacent->_counter-counter)<=1 &&
+               fabs(iterHitAdjacent->_time-time)<=_adjacentPulseTimeDifference &&
                iterHitAdjacent->_PEs<=PEs) //another hit at an adjacent counter within a certain window 
                                            //with the same number of PEs or less
             {
@@ -313,6 +313,8 @@ namespace mu2e
         for(layer2Iter=layer2Hits.begin(); layer2Iter!=layer2Hits.end(); layer2Iter++)
         for(layer3Iter=layer3Hits.begin(); layer3Iter!=layer3Hits.end(); layer3Iter++)
         {
+          if(fabs(layer1Iter->_time-layer2Iter->_time)>_maxTimeDifference) break;  //no need to check any triplets containing the current pair of layer1 and layer2
+
           double times[3]={layer1Iter->_time,layer2Iter->_time,layer3Iter->_time};
           double timeMin = *std::min_element(times,times+3);
           double timeMax = *std::max_element(times,times+3);
@@ -326,8 +328,10 @@ namespace mu2e
           for(int d=0; d<2; d++)
           {
             slope[d]=(x[d+1]-x[d])/(y[d+1]-y[d]);
-            if(slope[d]>_maxSlope) coincidenceFound=false;   //not more than maxSlope allowed for coincidence;
+            if(fabs(slope[d])>_maxSlope) coincidenceFound=false;   //not more than maxSlope allowed for coincidence;
           }
+
+          if(fabs(slope[0])>_maxSlope) break;  //no need to check any triplets containing the current pair of layer1 and layer2
 
           if(fabs(slope[0]-slope[1])>_maxSlopeDifference) coincidenceFound=false;   //slope most not change more than 2mm over 1mm (which is a little bit more than 1 counter per layer)
 

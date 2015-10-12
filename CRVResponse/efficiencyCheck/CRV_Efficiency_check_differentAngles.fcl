@@ -73,7 +73,7 @@ services :
 
   user :
   {
-    GeometryService        : { inputFile      : "CRVResponse/efficiencyCheck/geom_5cm.txt" }
+    GeometryService        : { inputFile      : "CRVResponse/efficiencyCheck/geom_5cm_differentAngles.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
     G4Helper               : { }
@@ -137,180 +137,180 @@ physics :
     CrvCoincidencePE8S5SD15AT  : @local::CrvCoincidence
     CrvCoincidencePE8S6SD15AT  : @local::CrvCoincidence
     CrvCoincidencePE8S7SD15AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S8SD15AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S9SD15AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S10SD15AT : @local::CrvCoincidence
+    CrvCoincidencePE8S1SD15AT  : @local::CrvCoincidence
+    CrvCoincidencePE8S2SD15AT  : @local::CrvCoincidence
+    CrvCoincidencePE8S3SD15AT : @local::CrvCoincidence
     CrvCoincidencePE8S4SD20AT  : @local::CrvCoincidence
     CrvCoincidencePE8S5SD20AT  : @local::CrvCoincidence
     CrvCoincidencePE8S6SD20AT  : @local::CrvCoincidence
     CrvCoincidencePE8S7SD20AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S8SD20AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S9SD20AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S10SD20AT : @local::CrvCoincidence
+    CrvCoincidencePE8S1SD20AT  : @local::CrvCoincidence
+    CrvCoincidencePE8S2SD20AT  : @local::CrvCoincidence
+    CrvCoincidencePE8S3SD20AT : @local::CrvCoincidence
     CrvCoincidencePE8S4SD25AT  : @local::CrvCoincidence
     CrvCoincidencePE8S5SD25AT  : @local::CrvCoincidence
     CrvCoincidencePE8S6SD25AT  : @local::CrvCoincidence
     CrvCoincidencePE8S7SD25AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S8SD25AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S9SD25AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S10SD25AT : @local::CrvCoincidence
+    CrvCoincidencePE8S1SD25AT  : @local::CrvCoincidence
+    CrvCoincidencePE8S2SD25AT  : @local::CrvCoincidence
+    CrvCoincidencePE8S3SD25AT : @local::CrvCoincidence
     CrvCoincidencePE8S4SD30AT  : @local::CrvCoincidence
     CrvCoincidencePE8S5SD30AT  : @local::CrvCoincidence
     CrvCoincidencePE8S6SD30AT  : @local::CrvCoincidence
     CrvCoincidencePE8S7SD30AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S8SD30AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S9SD30AT  : @local::CrvCoincidence
-    CrvCoincidencePE8S10SD30AT : @local::CrvCoincidence
+    CrvCoincidencePE8S1SD30AT  : @local::CrvCoincidence
+    CrvCoincidencePE8S2SD30AT  : @local::CrvCoincidence
+    CrvCoincidencePE8S3SD30AT : @local::CrvCoincidence
 
 
     CrvCoincidencePE10S4SD15AT  : @local::CrvCoincidence
     CrvCoincidencePE10S5SD15AT  : @local::CrvCoincidence
     CrvCoincidencePE10S6SD15AT  : @local::CrvCoincidence
     CrvCoincidencePE10S7SD15AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S8SD15AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S9SD15AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S10SD15AT : @local::CrvCoincidence
+    CrvCoincidencePE10S1SD15AT  : @local::CrvCoincidence
+    CrvCoincidencePE10S2SD15AT  : @local::CrvCoincidence
+    CrvCoincidencePE10S3SD15AT : @local::CrvCoincidence
     CrvCoincidencePE10S4SD20AT  : @local::CrvCoincidence
     CrvCoincidencePE10S5SD20AT  : @local::CrvCoincidence
     CrvCoincidencePE10S6SD20AT  : @local::CrvCoincidence
     CrvCoincidencePE10S7SD20AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S8SD20AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S9SD20AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S10SD20AT : @local::CrvCoincidence
+    CrvCoincidencePE10S1SD20AT  : @local::CrvCoincidence
+    CrvCoincidencePE10S2SD20AT  : @local::CrvCoincidence
+    CrvCoincidencePE10S3SD20AT : @local::CrvCoincidence
     CrvCoincidencePE10S4SD25AT  : @local::CrvCoincidence
     CrvCoincidencePE10S5SD25AT  : @local::CrvCoincidence
     CrvCoincidencePE10S6SD25AT  : @local::CrvCoincidence
     CrvCoincidencePE10S7SD25AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S8SD25AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S9SD25AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S10SD25AT : @local::CrvCoincidence
+    CrvCoincidencePE10S1SD25AT  : @local::CrvCoincidence
+    CrvCoincidencePE10S2SD25AT  : @local::CrvCoincidence
+    CrvCoincidencePE10S3SD25AT : @local::CrvCoincidence
     CrvCoincidencePE10S4SD30AT  : @local::CrvCoincidence
     CrvCoincidencePE10S5SD30AT  : @local::CrvCoincidence
     CrvCoincidencePE10S6SD30AT  : @local::CrvCoincidence
     CrvCoincidencePE10S7SD30AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S8SD30AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S9SD30AT  : @local::CrvCoincidence
-    CrvCoincidencePE10S10SD30AT : @local::CrvCoincidence
+    CrvCoincidencePE10S1SD30AT  : @local::CrvCoincidence
+    CrvCoincidencePE10S2SD30AT  : @local::CrvCoincidence
+    CrvCoincidencePE10S3SD30AT : @local::CrvCoincidence
 
 
     CrvCoincidencePE12S4SD15AT  : @local::CrvCoincidence
     CrvCoincidencePE12S5SD15AT  : @local::CrvCoincidence
     CrvCoincidencePE12S6SD15AT  : @local::CrvCoincidence
     CrvCoincidencePE12S7SD15AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S8SD15AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S9SD15AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S10SD15AT : @local::CrvCoincidence
+    CrvCoincidencePE12S1SD15AT  : @local::CrvCoincidence
+    CrvCoincidencePE12S2SD15AT  : @local::CrvCoincidence
+    CrvCoincidencePE12S3SD15AT : @local::CrvCoincidence
     CrvCoincidencePE12S4SD20AT  : @local::CrvCoincidence
     CrvCoincidencePE12S5SD20AT  : @local::CrvCoincidence
     CrvCoincidencePE12S6SD20AT  : @local::CrvCoincidence
     CrvCoincidencePE12S7SD20AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S8SD20AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S9SD20AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S10SD20AT : @local::CrvCoincidence
+    CrvCoincidencePE12S1SD20AT  : @local::CrvCoincidence
+    CrvCoincidencePE12S2SD20AT  : @local::CrvCoincidence
+    CrvCoincidencePE12S3SD20AT : @local::CrvCoincidence
     CrvCoincidencePE12S4SD25AT  : @local::CrvCoincidence
     CrvCoincidencePE12S5SD25AT  : @local::CrvCoincidence
     CrvCoincidencePE12S6SD25AT  : @local::CrvCoincidence
     CrvCoincidencePE12S7SD25AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S8SD25AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S9SD25AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S10SD25AT : @local::CrvCoincidence
+    CrvCoincidencePE12S1SD25AT  : @local::CrvCoincidence
+    CrvCoincidencePE12S2SD25AT  : @local::CrvCoincidence
+    CrvCoincidencePE12S3SD25AT : @local::CrvCoincidence
     CrvCoincidencePE12S4SD30AT  : @local::CrvCoincidence
     CrvCoincidencePE12S5SD30AT  : @local::CrvCoincidence
     CrvCoincidencePE12S6SD30AT  : @local::CrvCoincidence
     CrvCoincidencePE12S7SD30AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S8SD30AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S9SD30AT  : @local::CrvCoincidence
-    CrvCoincidencePE12S10SD30AT : @local::CrvCoincidence
+    CrvCoincidencePE12S1SD30AT  : @local::CrvCoincidence
+    CrvCoincidencePE12S2SD30AT  : @local::CrvCoincidence
+    CrvCoincidencePE12S3SD30AT : @local::CrvCoincidence
 
 
     CrvCoincidencePE8S4SD15AF  : @local::CrvCoincidence
     CrvCoincidencePE8S5SD15AF  : @local::CrvCoincidence
     CrvCoincidencePE8S6SD15AF  : @local::CrvCoincidence
     CrvCoincidencePE8S7SD15AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S8SD15AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S9SD15AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S10SD15AF : @local::CrvCoincidence
+    CrvCoincidencePE8S1SD15AF  : @local::CrvCoincidence
+    CrvCoincidencePE8S2SD15AF  : @local::CrvCoincidence
+    CrvCoincidencePE8S3SD15AF : @local::CrvCoincidence
     CrvCoincidencePE8S4SD20AF  : @local::CrvCoincidence
     CrvCoincidencePE8S5SD20AF  : @local::CrvCoincidence
     CrvCoincidencePE8S6SD20AF  : @local::CrvCoincidence
     CrvCoincidencePE8S7SD20AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S8SD20AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S9SD20AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S10SD20AF : @local::CrvCoincidence
+    CrvCoincidencePE8S1SD20AF  : @local::CrvCoincidence
+    CrvCoincidencePE8S2SD20AF  : @local::CrvCoincidence
+    CrvCoincidencePE8S3SD20AF : @local::CrvCoincidence
     CrvCoincidencePE8S4SD25AF  : @local::CrvCoincidence
     CrvCoincidencePE8S5SD25AF  : @local::CrvCoincidence
     CrvCoincidencePE8S6SD25AF  : @local::CrvCoincidence
     CrvCoincidencePE8S7SD25AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S8SD25AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S9SD25AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S10SD25AF : @local::CrvCoincidence
+    CrvCoincidencePE8S1SD25AF  : @local::CrvCoincidence
+    CrvCoincidencePE8S2SD25AF  : @local::CrvCoincidence
+    CrvCoincidencePE8S3SD25AF : @local::CrvCoincidence
     CrvCoincidencePE8S4SD30AF  : @local::CrvCoincidence
     CrvCoincidencePE8S5SD30AF  : @local::CrvCoincidence
     CrvCoincidencePE8S6SD30AF  : @local::CrvCoincidence
     CrvCoincidencePE8S7SD30AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S8SD30AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S9SD30AF  : @local::CrvCoincidence
-    CrvCoincidencePE8S10SD30AF : @local::CrvCoincidence
+    CrvCoincidencePE8S1SD30AF  : @local::CrvCoincidence
+    CrvCoincidencePE8S2SD30AF  : @local::CrvCoincidence
+    CrvCoincidencePE8S3SD30AF : @local::CrvCoincidence
 
 
     CrvCoincidencePE10S4SD15AF  : @local::CrvCoincidence
     CrvCoincidencePE10S5SD15AF  : @local::CrvCoincidence
     CrvCoincidencePE10S6SD15AF  : @local::CrvCoincidence
     CrvCoincidencePE10S7SD15AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S8SD15AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S9SD15AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S10SD15AF : @local::CrvCoincidence
+    CrvCoincidencePE10S1SD15AF  : @local::CrvCoincidence
+    CrvCoincidencePE10S2SD15AF  : @local::CrvCoincidence
+    CrvCoincidencePE10S3SD15AF : @local::CrvCoincidence
     CrvCoincidencePE10S4SD20AF  : @local::CrvCoincidence
     CrvCoincidencePE10S5SD20AF  : @local::CrvCoincidence
     CrvCoincidencePE10S6SD20AF  : @local::CrvCoincidence
     CrvCoincidencePE10S7SD20AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S8SD20AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S9SD20AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S10SD20AF : @local::CrvCoincidence
+    CrvCoincidencePE10S1SD20AF  : @local::CrvCoincidence
+    CrvCoincidencePE10S2SD20AF  : @local::CrvCoincidence
+    CrvCoincidencePE10S3SD20AF : @local::CrvCoincidence
     CrvCoincidencePE10S4SD25AF  : @local::CrvCoincidence
     CrvCoincidencePE10S5SD25AF  : @local::CrvCoincidence
     CrvCoincidencePE10S6SD25AF  : @local::CrvCoincidence
     CrvCoincidencePE10S7SD25AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S8SD25AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S9SD25AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S10SD25AF : @local::CrvCoincidence
+    CrvCoincidencePE10S1SD25AF  : @local::CrvCoincidence
+    CrvCoincidencePE10S2SD25AF  : @local::CrvCoincidence
+    CrvCoincidencePE10S3SD25AF : @local::CrvCoincidence
     CrvCoincidencePE10S4SD30AF  : @local::CrvCoincidence
     CrvCoincidencePE10S5SD30AF  : @local::CrvCoincidence
     CrvCoincidencePE10S6SD30AF  : @local::CrvCoincidence
     CrvCoincidencePE10S7SD30AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S8SD30AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S9SD30AF  : @local::CrvCoincidence
-    CrvCoincidencePE10S10SD30AF : @local::CrvCoincidence
+    CrvCoincidencePE10S1SD30AF  : @local::CrvCoincidence
+    CrvCoincidencePE10S2SD30AF  : @local::CrvCoincidence
+    CrvCoincidencePE10S3SD30AF : @local::CrvCoincidence
 
 
     CrvCoincidencePE12S4SD15AF  : @local::CrvCoincidence
     CrvCoincidencePE12S5SD15AF  : @local::CrvCoincidence
     CrvCoincidencePE12S6SD15AF  : @local::CrvCoincidence
     CrvCoincidencePE12S7SD15AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S8SD15AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S9SD15AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S10SD15AF : @local::CrvCoincidence
+    CrvCoincidencePE12S1SD15AF  : @local::CrvCoincidence
+    CrvCoincidencePE12S2SD15AF  : @local::CrvCoincidence
+    CrvCoincidencePE12S3SD15AF : @local::CrvCoincidence
     CrvCoincidencePE12S4SD20AF  : @local::CrvCoincidence
     CrvCoincidencePE12S5SD20AF  : @local::CrvCoincidence
     CrvCoincidencePE12S6SD20AF  : @local::CrvCoincidence
     CrvCoincidencePE12S7SD20AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S8SD20AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S9SD20AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S10SD20AF : @local::CrvCoincidence
+    CrvCoincidencePE12S1SD20AF  : @local::CrvCoincidence
+    CrvCoincidencePE12S2SD20AF  : @local::CrvCoincidence
+    CrvCoincidencePE12S3SD20AF : @local::CrvCoincidence
     CrvCoincidencePE12S4SD25AF  : @local::CrvCoincidence
     CrvCoincidencePE12S5SD25AF  : @local::CrvCoincidence
     CrvCoincidencePE12S6SD25AF  : @local::CrvCoincidence
     CrvCoincidencePE12S7SD25AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S8SD25AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S9SD25AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S10SD25AF : @local::CrvCoincidence
+    CrvCoincidencePE12S1SD25AF  : @local::CrvCoincidence
+    CrvCoincidencePE12S2SD25AF  : @local::CrvCoincidence
+    CrvCoincidencePE12S3SD25AF : @local::CrvCoincidence
     CrvCoincidencePE12S4SD30AF  : @local::CrvCoincidence
     CrvCoincidencePE12S5SD30AF  : @local::CrvCoincidence
     CrvCoincidencePE12S6SD30AF  : @local::CrvCoincidence
     CrvCoincidencePE12S7SD30AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S8SD30AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S9SD30AF  : @local::CrvCoincidence
-    CrvCoincidencePE12S10SD30AF : @local::CrvCoincidence
+    CrvCoincidencePE12S1SD30AF  : @local::CrvCoincidence
+    CrvCoincidencePE12S2SD30AF  : @local::CrvCoincidence
+    CrvCoincidencePE12S3SD30AF : @local::CrvCoincidence
 
 
   }
@@ -331,180 +331,180 @@ physics :
           CrvCoincidencePE8S5SD15AT,
           CrvCoincidencePE8S6SD15AT,
           CrvCoincidencePE8S7SD15AT,
-          CrvCoincidencePE8S8SD15AT,
-          CrvCoincidencePE8S9SD15AT,
-          CrvCoincidencePE8S10SD15AT,
+          CrvCoincidencePE8S1SD15AT,
+          CrvCoincidencePE8S2SD15AT,
+          CrvCoincidencePE8S3SD15AT,
           CrvCoincidencePE8S4SD20AT,
           CrvCoincidencePE8S5SD20AT,
           CrvCoincidencePE8S6SD20AT,
           CrvCoincidencePE8S7SD20AT,
-          CrvCoincidencePE8S8SD20AT,
-          CrvCoincidencePE8S9SD20AT,
-          CrvCoincidencePE8S10SD20AT,
+          CrvCoincidencePE8S1SD20AT,
+          CrvCoincidencePE8S2SD20AT,
+          CrvCoincidencePE8S3SD20AT,
           CrvCoincidencePE8S4SD25AT,
           CrvCoincidencePE8S5SD25AT,
           CrvCoincidencePE8S6SD25AT,
           CrvCoincidencePE8S7SD25AT,
-          CrvCoincidencePE8S8SD25AT,
-          CrvCoincidencePE8S9SD25AT,
-          CrvCoincidencePE8S10SD25AT,
+          CrvCoincidencePE8S1SD25AT,
+          CrvCoincidencePE8S2SD25AT,
+          CrvCoincidencePE8S3SD25AT,
           CrvCoincidencePE8S4SD30AT,
           CrvCoincidencePE8S5SD30AT,
           CrvCoincidencePE8S6SD30AT,
           CrvCoincidencePE8S7SD30AT,
-          CrvCoincidencePE8S8SD30AT,
-          CrvCoincidencePE8S9SD30AT,
-          CrvCoincidencePE8S10SD30AT,
+          CrvCoincidencePE8S1SD30AT,
+          CrvCoincidencePE8S2SD30AT,
+          CrvCoincidencePE8S3SD30AT,
 
 
           CrvCoincidencePE10S4SD15AT,
           CrvCoincidencePE10S5SD15AT,
           CrvCoincidencePE10S6SD15AT,
           CrvCoincidencePE10S7SD15AT,
-          CrvCoincidencePE10S8SD15AT,
-          CrvCoincidencePE10S9SD15AT,
-          CrvCoincidencePE10S10SD15AT,
+          CrvCoincidencePE10S1SD15AT,
+          CrvCoincidencePE10S2SD15AT,
+          CrvCoincidencePE10S3SD15AT,
           CrvCoincidencePE10S4SD20AT,
           CrvCoincidencePE10S5SD20AT,
           CrvCoincidencePE10S6SD20AT,
           CrvCoincidencePE10S7SD20AT,
-          CrvCoincidencePE10S8SD20AT,
-          CrvCoincidencePE10S9SD20AT,
-          CrvCoincidencePE10S10SD20AT,
+          CrvCoincidencePE10S1SD20AT,
+          CrvCoincidencePE10S2SD20AT,
+          CrvCoincidencePE10S3SD20AT,
           CrvCoincidencePE10S4SD25AT,
           CrvCoincidencePE10S5SD25AT,
           CrvCoincidencePE10S6SD25AT,
           CrvCoincidencePE10S7SD25AT,
-          CrvCoincidencePE10S8SD25AT,
-          CrvCoincidencePE10S9SD25AT,
-          CrvCoincidencePE10S10SD25AT,
+          CrvCoincidencePE10S1SD25AT,
+          CrvCoincidencePE10S2SD25AT,
+          CrvCoincidencePE10S3SD25AT,
           CrvCoincidencePE10S4SD30AT,
           CrvCoincidencePE10S5SD30AT,
           CrvCoincidencePE10S6SD30AT,
           CrvCoincidencePE10S7SD30AT,
-          CrvCoincidencePE10S8SD30AT,
-          CrvCoincidencePE10S9SD30AT,
-          CrvCoincidencePE10S10SD30AT,
+          CrvCoincidencePE10S1SD30AT,
+          CrvCoincidencePE10S2SD30AT,
+          CrvCoincidencePE10S3SD30AT,
 
 
           CrvCoincidencePE12S4SD15AT,
           CrvCoincidencePE12S5SD15AT,
           CrvCoincidencePE12S6SD15AT,
           CrvCoincidencePE12S7SD15AT,
-          CrvCoincidencePE12S8SD15AT,
-          CrvCoincidencePE12S9SD15AT,
-          CrvCoincidencePE12S10SD15AT,
+          CrvCoincidencePE12S1SD15AT,
+          CrvCoincidencePE12S2SD15AT,
+          CrvCoincidencePE12S3SD15AT,
           CrvCoincidencePE12S4SD20AT,
           CrvCoincidencePE12S5SD20AT,
           CrvCoincidencePE12S6SD20AT,
           CrvCoincidencePE12S7SD20AT,
-          CrvCoincidencePE12S8SD20AT,
-          CrvCoincidencePE12S9SD20AT,
-          CrvCoincidencePE12S10SD20AT,
+          CrvCoincidencePE12S1SD20AT,
+          CrvCoincidencePE12S2SD20AT,
+          CrvCoincidencePE12S3SD20AT,
           CrvCoincidencePE12S4SD25AT,
           CrvCoincidencePE12S5SD25AT,
           CrvCoincidencePE12S6SD25AT,
           CrvCoincidencePE12S7SD25AT,
-          CrvCoincidencePE12S8SD25AT,
-          CrvCoincidencePE12S9SD25AT,
-          CrvCoincidencePE12S10SD25AT,
+          CrvCoincidencePE12S1SD25AT,
+          CrvCoincidencePE12S2SD25AT,
+          CrvCoincidencePE12S3SD25AT,
           CrvCoincidencePE12S4SD30AT,
           CrvCoincidencePE12S5SD30AT,
           CrvCoincidencePE12S6SD30AT,
           CrvCoincidencePE12S7SD30AT,
-          CrvCoincidencePE12S8SD30AT,
-          CrvCoincidencePE12S9SD30AT,
-          CrvCoincidencePE12S10SD30AT,
+          CrvCoincidencePE12S1SD30AT,
+          CrvCoincidencePE12S2SD30AT,
+          CrvCoincidencePE12S3SD30AT,
 
 
           CrvCoincidencePE8S4SD15AF,
           CrvCoincidencePE8S5SD15AF,
           CrvCoincidencePE8S6SD15AF,
           CrvCoincidencePE8S7SD15AF,
-          CrvCoincidencePE8S8SD15AF,
-          CrvCoincidencePE8S9SD15AF,
-          CrvCoincidencePE8S10SD15AF,
+          CrvCoincidencePE8S1SD15AF,
+          CrvCoincidencePE8S2SD15AF,
+          CrvCoincidencePE8S3SD15AF,
           CrvCoincidencePE8S4SD20AF,
           CrvCoincidencePE8S5SD20AF,
           CrvCoincidencePE8S6SD20AF,
           CrvCoincidencePE8S7SD20AF,
-          CrvCoincidencePE8S8SD20AF,
-          CrvCoincidencePE8S9SD20AF,
-          CrvCoincidencePE8S10SD20AF,
+          CrvCoincidencePE8S1SD20AF,
+          CrvCoincidencePE8S2SD20AF,
+          CrvCoincidencePE8S3SD20AF,
           CrvCoincidencePE8S4SD25AF,
           CrvCoincidencePE8S5SD25AF,
           CrvCoincidencePE8S6SD25AF,
           CrvCoincidencePE8S7SD25AF,
-          CrvCoincidencePE8S8SD25AF,
-          CrvCoincidencePE8S9SD25AF,
-          CrvCoincidencePE8S10SD25AF,
+          CrvCoincidencePE8S1SD25AF,
+          CrvCoincidencePE8S2SD25AF,
+          CrvCoincidencePE8S3SD25AF,
           CrvCoincidencePE8S4SD30AF,
           CrvCoincidencePE8S5SD30AF,
           CrvCoincidencePE8S6SD30AF,
           CrvCoincidencePE8S7SD30AF,
-          CrvCoincidencePE8S8SD30AF,
-          CrvCoincidencePE8S9SD30AF,
-          CrvCoincidencePE8S10SD30AF,
+          CrvCoincidencePE8S1SD30AF,
+          CrvCoincidencePE8S2SD30AF,
+          CrvCoincidencePE8S3SD30AF,
 
 
           CrvCoincidencePE10S4SD15AF,
           CrvCoincidencePE10S5SD15AF,
           CrvCoincidencePE10S6SD15AF,
           CrvCoincidencePE10S7SD15AF,
-          CrvCoincidencePE10S8SD15AF,
-          CrvCoincidencePE10S9SD15AF,
-          CrvCoincidencePE10S10SD15AF,
+          CrvCoincidencePE10S1SD15AF,
+          CrvCoincidencePE10S2SD15AF,
+          CrvCoincidencePE10S3SD15AF,
           CrvCoincidencePE10S4SD20AF,
           CrvCoincidencePE10S5SD20AF,
           CrvCoincidencePE10S6SD20AF,
           CrvCoincidencePE10S7SD20AF,
-          CrvCoincidencePE10S8SD20AF,
-          CrvCoincidencePE10S9SD20AF,
-          CrvCoincidencePE10S10SD20AF,
+          CrvCoincidencePE10S1SD20AF,
+          CrvCoincidencePE10S2SD20AF,
+          CrvCoincidencePE10S3SD20AF,
           CrvCoincidencePE10S4SD25AF,
           CrvCoincidencePE10S5SD25AF,
           CrvCoincidencePE10S6SD25AF,
           CrvCoincidencePE10S7SD25AF,
-          CrvCoincidencePE10S8SD25AF,
-          CrvCoincidencePE10S9SD25AF,
-          CrvCoincidencePE10S10SD25AF,
+          CrvCoincidencePE10S1SD25AF,
+          CrvCoincidencePE10S2SD25AF,
+          CrvCoincidencePE10S3SD25AF,
           CrvCoincidencePE10S4SD30AF,
           CrvCoincidencePE10S5SD30AF,
           CrvCoincidencePE10S6SD30AF,
           CrvCoincidencePE10S7SD30AF,
-          CrvCoincidencePE10S8SD30AF,
-          CrvCoincidencePE10S9SD30AF,
-          CrvCoincidencePE10S10SD30AF,
+          CrvCoincidencePE10S1SD30AF,
+          CrvCoincidencePE10S2SD30AF,
+          CrvCoincidencePE10S3SD30AF,
 
 
           CrvCoincidencePE12S4SD15AF,
           CrvCoincidencePE12S5SD15AF,
           CrvCoincidencePE12S6SD15AF,
           CrvCoincidencePE12S7SD15AF,
-          CrvCoincidencePE12S8SD15AF,
-          CrvCoincidencePE12S9SD15AF,
-          CrvCoincidencePE12S10SD15AF,
+          CrvCoincidencePE12S1SD15AF,
+          CrvCoincidencePE12S2SD15AF,
+          CrvCoincidencePE12S3SD15AF,
           CrvCoincidencePE12S4SD20AF,
           CrvCoincidencePE12S5SD20AF,
           CrvCoincidencePE12S6SD20AF,
           CrvCoincidencePE12S7SD20AF,
-          CrvCoincidencePE12S8SD20AF,
-          CrvCoincidencePE12S9SD20AF,
-          CrvCoincidencePE12S10SD20AF,
+          CrvCoincidencePE12S1SD20AF,
+          CrvCoincidencePE12S2SD20AF,
+          CrvCoincidencePE12S3SD20AF,
           CrvCoincidencePE12S4SD25AF,
           CrvCoincidencePE12S5SD25AF,
           CrvCoincidencePE12S6SD25AF,
           CrvCoincidencePE12S7SD25AF,
-          CrvCoincidencePE12S8SD25AF,
-          CrvCoincidencePE12S9SD25AF,
-          CrvCoincidencePE12S10SD25AF,
+          CrvCoincidencePE12S1SD25AF,
+          CrvCoincidencePE12S2SD25AF,
+          CrvCoincidencePE12S3SD25AF,
           CrvCoincidencePE12S4SD30AF,
           CrvCoincidencePE12S5SD30AF,
           CrvCoincidencePE12S6SD30AF,
           CrvCoincidencePE12S7SD30AF,
-          CrvCoincidencePE12S8SD30AF,
-          CrvCoincidencePE12S9SD30AF,
-          CrvCoincidencePE12S10SD30AF
+          CrvCoincidencePE12S1SD30AF,
+          CrvCoincidencePE12S2SD30AF,
+          CrvCoincidencePE12S3SD30AF
          ]  
 
   trigger_paths  : [trig]
@@ -547,26 +547,26 @@ physics.producers.CrvCoincidencePE8S7SD15AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE8S7SD15AT.maxSlopeDifference            : 1.5
 physics.producers.CrvCoincidencePE8S7SD15AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S8SD15AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S8SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S8SD15AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S8SD15AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE8S8SD15AT.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE8S8SD15AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S1SD15AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S1SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S1SD15AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S1SD15AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE8S1SD15AT.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE8S1SD15AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S9SD15AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S9SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S9SD15AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S9SD15AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE8S9SD15AT.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE8S9SD15AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S2SD15AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S2SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S2SD15AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S2SD15AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE8S2SD15AT.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE8S2SD15AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S10SD15AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S10SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S10SD15AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S10SD15AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE8S10SD15AT.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE8S10SD15AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S3SD15AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S3SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S3SD15AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S3SD15AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE8S3SD15AT.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE8S3SD15AT.acceptThreeAdjacentCounters   : true
 
 
 physics.producers.CrvCoincidencePE8S4SD20AT.verboseLevel                  : 0
@@ -597,26 +597,26 @@ physics.producers.CrvCoincidencePE8S7SD20AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE8S7SD20AT.maxSlopeDifference            : 2.0
 physics.producers.CrvCoincidencePE8S7SD20AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S8SD20AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S8SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S8SD20AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S8SD20AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE8S8SD20AT.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE8S8SD20AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S1SD20AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S1SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S1SD20AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S1SD20AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE8S1SD20AT.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE8S1SD20AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S9SD20AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S9SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S9SD20AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S9SD20AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE8S9SD20AT.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE8S9SD20AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S2SD20AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S2SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S2SD20AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S2SD20AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE8S2SD20AT.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE8S2SD20AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S10SD20AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S10SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S10SD20AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S10SD20AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE8S10SD20AT.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE8S10SD20AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S3SD20AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S3SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S3SD20AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S3SD20AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE8S3SD20AT.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE8S3SD20AT.acceptThreeAdjacentCounters   : true
 
 
 physics.producers.CrvCoincidencePE8S4SD25AT.verboseLevel                  : 0
@@ -647,26 +647,26 @@ physics.producers.CrvCoincidencePE8S7SD25AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE8S7SD25AT.maxSlopeDifference            : 2.5
 physics.producers.CrvCoincidencePE8S7SD25AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S8SD25AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S8SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S8SD25AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S8SD25AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE8S8SD25AT.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE8S8SD25AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S1SD25AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S1SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S1SD25AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S1SD25AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE8S1SD25AT.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE8S1SD25AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S9SD25AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S9SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S9SD25AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S9SD25AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE8S9SD25AT.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE8S9SD25AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S2SD25AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S2SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S2SD25AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S2SD25AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE8S2SD25AT.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE8S2SD25AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S10SD25AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S10SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S10SD25AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S10SD25AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE8S10SD25AT.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE8S10SD25AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S3SD25AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S3SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S3SD25AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S3SD25AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE8S3SD25AT.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE8S3SD25AT.acceptThreeAdjacentCounters   : true
 
 
 physics.producers.CrvCoincidencePE8S4SD30AT.verboseLevel                  : 0
@@ -697,26 +697,26 @@ physics.producers.CrvCoincidencePE8S7SD30AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE8S7SD30AT.maxSlopeDifference            : 3.0
 physics.producers.CrvCoincidencePE8S7SD30AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S8SD30AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S8SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S8SD30AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S8SD30AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE8S8SD30AT.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE8S8SD30AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S1SD30AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S1SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S1SD30AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S1SD30AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE8S1SD30AT.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE8S1SD30AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S9SD30AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S9SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S9SD30AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S9SD30AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE8S9SD30AT.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE8S9SD30AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S2SD30AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S2SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S2SD30AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S2SD30AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE8S2SD30AT.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE8S2SD30AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE8S10SD30AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S10SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S10SD30AT.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S10SD30AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE8S10SD30AT.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE8S10SD30AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE8S3SD30AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S3SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S3SD30AT.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S3SD30AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE8S3SD30AT.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE8S3SD30AT.acceptThreeAdjacentCounters   : true
 
 
 
@@ -749,26 +749,26 @@ physics.producers.CrvCoincidencePE10S7SD15AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE10S7SD15AT.maxSlopeDifference            : 1.5
 physics.producers.CrvCoincidencePE10S7SD15AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S8SD15AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S8SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S8SD15AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S8SD15AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE10S8SD15AT.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE10S8SD15AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S1SD15AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S1SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S1SD15AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S1SD15AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE10S1SD15AT.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE10S1SD15AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S9SD15AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S9SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S9SD15AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S9SD15AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE10S9SD15AT.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE10S9SD15AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S2SD15AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S2SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S2SD15AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S2SD15AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE10S2SD15AT.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE10S2SD15AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S10SD15AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S10SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S10SD15AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S10SD15AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE10S10SD15AT.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE10S10SD15AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S3SD15AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S3SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S3SD15AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S3SD15AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE10S3SD15AT.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE10S3SD15AT.acceptThreeAdjacentCounters   : true
 
 
 physics.producers.CrvCoincidencePE10S4SD20AT.verboseLevel                  : 0
@@ -799,26 +799,26 @@ physics.producers.CrvCoincidencePE10S7SD20AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE10S7SD20AT.maxSlopeDifference            : 2.0
 physics.producers.CrvCoincidencePE10S7SD20AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S8SD20AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S8SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S8SD20AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S8SD20AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE10S8SD20AT.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE10S8SD20AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S1SD20AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S1SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S1SD20AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S1SD20AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE10S1SD20AT.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE10S1SD20AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S9SD20AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S9SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S9SD20AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S9SD20AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE10S9SD20AT.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE10S9SD20AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S2SD20AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S2SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S2SD20AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S2SD20AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE10S2SD20AT.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE10S2SD20AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S10SD20AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S10SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S10SD20AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S10SD20AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE10S10SD20AT.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE10S10SD20AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S3SD20AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S3SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S3SD20AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S3SD20AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE10S3SD20AT.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE10S3SD20AT.acceptThreeAdjacentCounters   : true
 
 
 physics.producers.CrvCoincidencePE10S4SD25AT.verboseLevel                  : 0
@@ -849,26 +849,26 @@ physics.producers.CrvCoincidencePE10S7SD25AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE10S7SD25AT.maxSlopeDifference            : 2.5
 physics.producers.CrvCoincidencePE10S7SD25AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S8SD25AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S8SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S8SD25AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S8SD25AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE10S8SD25AT.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE10S8SD25AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S1SD25AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S1SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S1SD25AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S1SD25AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE10S1SD25AT.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE10S1SD25AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S9SD25AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S9SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S9SD25AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S9SD25AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE10S9SD25AT.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE10S9SD25AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S2SD25AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S2SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S2SD25AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S2SD25AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE10S2SD25AT.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE10S2SD25AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S10SD25AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S10SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S10SD25AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S10SD25AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE10S10SD25AT.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE10S10SD25AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S3SD25AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S3SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S3SD25AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S3SD25AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE10S3SD25AT.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE10S3SD25AT.acceptThreeAdjacentCounters   : true
 
 
 physics.producers.CrvCoincidencePE10S4SD30AT.verboseLevel                  : 0
@@ -899,26 +899,26 @@ physics.producers.CrvCoincidencePE10S7SD30AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE10S7SD30AT.maxSlopeDifference            : 3.0
 physics.producers.CrvCoincidencePE10S7SD30AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S8SD30AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S8SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S8SD30AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S8SD30AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE10S8SD30AT.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE10S8SD30AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S1SD30AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S1SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S1SD30AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S1SD30AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE10S1SD30AT.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE10S1SD30AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S9SD30AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S9SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S9SD30AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S9SD30AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE10S9SD30AT.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE10S9SD30AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S2SD30AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S2SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S2SD30AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S2SD30AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE10S2SD30AT.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE10S2SD30AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE10S10SD30AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S10SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S10SD30AT.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S10SD30AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE10S10SD30AT.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE10S10SD30AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE10S3SD30AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S3SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S3SD30AT.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S3SD30AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE10S3SD30AT.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE10S3SD30AT.acceptThreeAdjacentCounters   : true
 
 
 
@@ -950,26 +950,26 @@ physics.producers.CrvCoincidencePE12S7SD15AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE12S7SD15AT.maxSlopeDifference            : 1.5
 physics.producers.CrvCoincidencePE12S7SD15AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S8SD15AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S8SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S8SD15AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S8SD15AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE12S8SD15AT.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE12S8SD15AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S1SD15AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S1SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S1SD15AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S1SD15AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE12S1SD15AT.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE12S1SD15AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S9SD15AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S9SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S9SD15AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S9SD15AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE12S9SD15AT.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE12S9SD15AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S2SD15AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S2SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S2SD15AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S2SD15AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE12S2SD15AT.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE12S2SD15AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S10SD15AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S10SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S10SD15AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S10SD15AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE12S10SD15AT.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE12S10SD15AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S3SD15AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S3SD15AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S3SD15AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S3SD15AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE12S3SD15AT.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE12S3SD15AT.acceptThreeAdjacentCounters   : true
 
 
 physics.producers.CrvCoincidencePE12S4SD20AT.verboseLevel                  : 0
@@ -1000,26 +1000,26 @@ physics.producers.CrvCoincidencePE12S7SD20AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE12S7SD20AT.maxSlopeDifference            : 2.0
 physics.producers.CrvCoincidencePE12S7SD20AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S8SD20AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S8SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S8SD20AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S8SD20AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE12S8SD20AT.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE12S8SD20AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S1SD20AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S1SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S1SD20AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S1SD20AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE12S1SD20AT.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE12S1SD20AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S9SD20AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S9SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S9SD20AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S9SD20AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE12S9SD20AT.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE12S9SD20AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S2SD20AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S2SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S2SD20AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S2SD20AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE12S2SD20AT.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE12S2SD20AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S10SD20AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S10SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S10SD20AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S10SD20AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE12S10SD20AT.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE12S10SD20AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S3SD20AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S3SD20AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S3SD20AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S3SD20AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE12S3SD20AT.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE12S3SD20AT.acceptThreeAdjacentCounters   : true
 
 
 physics.producers.CrvCoincidencePE12S4SD25AT.verboseLevel                  : 0
@@ -1050,26 +1050,26 @@ physics.producers.CrvCoincidencePE12S7SD25AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE12S7SD25AT.maxSlopeDifference            : 2.5
 physics.producers.CrvCoincidencePE12S7SD25AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S8SD25AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S8SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S8SD25AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S8SD25AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE12S8SD25AT.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE12S8SD25AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S1SD25AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S1SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S1SD25AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S1SD25AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE12S1SD25AT.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE12S1SD25AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S9SD25AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S9SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S9SD25AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S9SD25AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE12S9SD25AT.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE12S9SD25AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S2SD25AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S2SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S2SD25AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S2SD25AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE12S2SD25AT.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE12S2SD25AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S10SD25AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S10SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S10SD25AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S10SD25AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE12S10SD25AT.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE12S10SD25AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S3SD25AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S3SD25AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S3SD25AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S3SD25AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE12S3SD25AT.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE12S3SD25AT.acceptThreeAdjacentCounters   : true
 
 
 physics.producers.CrvCoincidencePE12S4SD30AT.verboseLevel                  : 0
@@ -1100,26 +1100,26 @@ physics.producers.CrvCoincidencePE12S7SD30AT.maxSlope                      : 7
 physics.producers.CrvCoincidencePE12S7SD30AT.maxSlopeDifference            : 3.0
 physics.producers.CrvCoincidencePE12S7SD30AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S8SD30AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S8SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S8SD30AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S8SD30AT.maxSlope                      : 8
-physics.producers.CrvCoincidencePE12S8SD30AT.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE12S8SD30AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S1SD30AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S1SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S1SD30AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S1SD30AT.maxSlope                      : 1
+physics.producers.CrvCoincidencePE12S1SD30AT.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE12S1SD30AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S9SD30AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S9SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S9SD30AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S9SD30AT.maxSlope                      : 9
-physics.producers.CrvCoincidencePE12S9SD30AT.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE12S9SD30AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S2SD30AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S2SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S2SD30AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S2SD30AT.maxSlope                      : 2
+physics.producers.CrvCoincidencePE12S2SD30AT.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE12S2SD30AT.acceptThreeAdjacentCounters   : true
 
-physics.producers.CrvCoincidencePE12S10SD30AT.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S10SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S10SD30AT.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S10SD30AT.maxSlope                      : 10
-physics.producers.CrvCoincidencePE12S10SD30AT.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE12S10SD30AT.acceptThreeAdjacentCounters   : true
+physics.producers.CrvCoincidencePE12S3SD30AT.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S3SD30AT.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S3SD30AT.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S3SD30AT.maxSlope                      : 3
+physics.producers.CrvCoincidencePE12S3SD30AT.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE12S3SD30AT.acceptThreeAdjacentCounters   : true
 
 
 
@@ -1157,26 +1157,26 @@ physics.producers.CrvCoincidencePE8S7SD15AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE8S7SD15AF.maxSlopeDifference            : 1.5
 physics.producers.CrvCoincidencePE8S7SD15AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S8SD15AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S8SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S8SD15AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S8SD15AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE8S8SD15AF.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE8S8SD15AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S1SD15AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S1SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S1SD15AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S1SD15AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE8S1SD15AF.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE8S1SD15AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S9SD15AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S9SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S9SD15AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S9SD15AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE8S9SD15AF.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE8S9SD15AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S2SD15AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S2SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S2SD15AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S2SD15AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE8S2SD15AF.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE8S2SD15AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S10SD15AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S10SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S10SD15AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S10SD15AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE8S10SD15AF.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE8S10SD15AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S3SD15AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S3SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S3SD15AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S3SD15AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE8S3SD15AF.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE8S3SD15AF.acceptThreeAdjacentCounters   : false
 
 
 physics.producers.CrvCoincidencePE8S4SD20AF.verboseLevel                  : 0
@@ -1207,26 +1207,26 @@ physics.producers.CrvCoincidencePE8S7SD20AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE8S7SD20AF.maxSlopeDifference            : 2.0
 physics.producers.CrvCoincidencePE8S7SD20AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S8SD20AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S8SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S8SD20AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S8SD20AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE8S8SD20AF.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE8S8SD20AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S1SD20AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S1SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S1SD20AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S1SD20AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE8S1SD20AF.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE8S1SD20AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S9SD20AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S9SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S9SD20AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S9SD20AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE8S9SD20AF.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE8S9SD20AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S2SD20AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S2SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S2SD20AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S2SD20AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE8S2SD20AF.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE8S2SD20AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S10SD20AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S10SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S10SD20AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S10SD20AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE8S10SD20AF.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE8S10SD20AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S3SD20AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S3SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S3SD20AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S3SD20AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE8S3SD20AF.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE8S3SD20AF.acceptThreeAdjacentCounters   : false
 
 
 physics.producers.CrvCoincidencePE8S4SD25AF.verboseLevel                  : 0
@@ -1257,26 +1257,26 @@ physics.producers.CrvCoincidencePE8S7SD25AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE8S7SD25AF.maxSlopeDifference            : 2.5
 physics.producers.CrvCoincidencePE8S7SD25AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S8SD25AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S8SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S8SD25AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S8SD25AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE8S8SD25AF.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE8S8SD25AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S1SD25AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S1SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S1SD25AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S1SD25AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE8S1SD25AF.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE8S1SD25AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S9SD25AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S9SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S9SD25AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S9SD25AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE8S9SD25AF.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE8S9SD25AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S2SD25AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S2SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S2SD25AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S2SD25AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE8S2SD25AF.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE8S2SD25AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S10SD25AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S10SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S10SD25AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S10SD25AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE8S10SD25AF.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE8S10SD25AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S3SD25AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S3SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S3SD25AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S3SD25AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE8S3SD25AF.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE8S3SD25AF.acceptThreeAdjacentCounters   : false
 
 
 physics.producers.CrvCoincidencePE8S4SD30AF.verboseLevel                  : 0
@@ -1307,26 +1307,26 @@ physics.producers.CrvCoincidencePE8S7SD30AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE8S7SD30AF.maxSlopeDifference            : 3.0
 physics.producers.CrvCoincidencePE8S7SD30AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S8SD30AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S8SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S8SD30AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S8SD30AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE8S8SD30AF.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE8S8SD30AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S1SD30AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S1SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S1SD30AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S1SD30AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE8S1SD30AF.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE8S1SD30AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S9SD30AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S9SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S9SD30AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S9SD30AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE8S9SD30AF.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE8S9SD30AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S2SD30AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S2SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S2SD30AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S2SD30AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE8S2SD30AF.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE8S2SD30AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE8S10SD30AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE8S10SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE8S10SD30AF.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8S10SD30AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE8S10SD30AF.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE8S10SD30AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE8S3SD30AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE8S3SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE8S3SD30AF.PEthreshold                   : 8
+physics.producers.CrvCoincidencePE8S3SD30AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE8S3SD30AF.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE8S3SD30AF.acceptThreeAdjacentCounters   : false
 
 
 
@@ -1359,26 +1359,26 @@ physics.producers.CrvCoincidencePE10S7SD15AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE10S7SD15AF.maxSlopeDifference            : 1.5
 physics.producers.CrvCoincidencePE10S7SD15AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S8SD15AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S8SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S8SD15AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S8SD15AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE10S8SD15AF.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE10S8SD15AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S1SD15AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S1SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S1SD15AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S1SD15AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE10S1SD15AF.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE10S1SD15AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S9SD15AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S9SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S9SD15AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S9SD15AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE10S9SD15AF.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE10S9SD15AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S2SD15AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S2SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S2SD15AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S2SD15AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE10S2SD15AF.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE10S2SD15AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S10SD15AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S10SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S10SD15AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S10SD15AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE10S10SD15AF.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE10S10SD15AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S3SD15AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S3SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S3SD15AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S3SD15AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE10S3SD15AF.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE10S3SD15AF.acceptThreeAdjacentCounters   : false
 
 
 physics.producers.CrvCoincidencePE10S4SD20AF.verboseLevel                  : 0
@@ -1409,26 +1409,26 @@ physics.producers.CrvCoincidencePE10S7SD20AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE10S7SD20AF.maxSlopeDifference            : 2.0
 physics.producers.CrvCoincidencePE10S7SD20AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S8SD20AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S8SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S8SD20AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S8SD20AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE10S8SD20AF.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE10S8SD20AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S1SD20AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S1SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S1SD20AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S1SD20AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE10S1SD20AF.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE10S1SD20AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S9SD20AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S9SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S9SD20AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S9SD20AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE10S9SD20AF.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE10S9SD20AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S2SD20AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S2SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S2SD20AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S2SD20AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE10S2SD20AF.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE10S2SD20AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S10SD20AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S10SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S10SD20AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S10SD20AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE10S10SD20AF.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE10S10SD20AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S3SD20AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S3SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S3SD20AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S3SD20AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE10S3SD20AF.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE10S3SD20AF.acceptThreeAdjacentCounters   : false
 
 
 physics.producers.CrvCoincidencePE10S4SD25AF.verboseLevel                  : 0
@@ -1459,26 +1459,26 @@ physics.producers.CrvCoincidencePE10S7SD25AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE10S7SD25AF.maxSlopeDifference            : 2.5
 physics.producers.CrvCoincidencePE10S7SD25AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S8SD25AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S8SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S8SD25AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S8SD25AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE10S8SD25AF.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE10S8SD25AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S1SD25AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S1SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S1SD25AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S1SD25AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE10S1SD25AF.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE10S1SD25AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S9SD25AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S9SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S9SD25AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S9SD25AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE10S9SD25AF.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE10S9SD25AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S2SD25AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S2SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S2SD25AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S2SD25AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE10S2SD25AF.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE10S2SD25AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S10SD25AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S10SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S10SD25AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S10SD25AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE10S10SD25AF.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE10S10SD25AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S3SD25AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S3SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S3SD25AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S3SD25AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE10S3SD25AF.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE10S3SD25AF.acceptThreeAdjacentCounters   : false
 
 
 physics.producers.CrvCoincidencePE10S4SD30AF.verboseLevel                  : 0
@@ -1509,26 +1509,26 @@ physics.producers.CrvCoincidencePE10S7SD30AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE10S7SD30AF.maxSlopeDifference            : 3.0
 physics.producers.CrvCoincidencePE10S7SD30AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S8SD30AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S8SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S8SD30AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S8SD30AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE10S8SD30AF.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE10S8SD30AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S1SD30AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S1SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S1SD30AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S1SD30AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE10S1SD30AF.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE10S1SD30AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S9SD30AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S9SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S9SD30AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S9SD30AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE10S9SD30AF.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE10S9SD30AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S2SD30AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S2SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S2SD30AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S2SD30AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE10S2SD30AF.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE10S2SD30AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE10S10SD30AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE10S10SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE10S10SD30AF.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10S10SD30AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE10S10SD30AF.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE10S10SD30AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE10S3SD30AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE10S3SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE10S3SD30AF.PEthreshold                   : 10
+physics.producers.CrvCoincidencePE10S3SD30AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE10S3SD30AF.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE10S3SD30AF.acceptThreeAdjacentCounters   : false
 
 
 
@@ -1560,26 +1560,26 @@ physics.producers.CrvCoincidencePE12S7SD15AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE12S7SD15AF.maxSlopeDifference            : 1.5
 physics.producers.CrvCoincidencePE12S7SD15AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S8SD15AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S8SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S8SD15AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S8SD15AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE12S8SD15AF.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE12S8SD15AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S1SD15AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S1SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S1SD15AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S1SD15AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE12S1SD15AF.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE12S1SD15AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S9SD15AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S9SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S9SD15AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S9SD15AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE12S9SD15AF.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE12S9SD15AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S2SD15AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S2SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S2SD15AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S2SD15AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE12S2SD15AF.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE12S2SD15AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S10SD15AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S10SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S10SD15AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S10SD15AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE12S10SD15AF.maxSlopeDifference            : 1.5
-physics.producers.CrvCoincidencePE12S10SD15AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S3SD15AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S3SD15AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S3SD15AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S3SD15AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE12S3SD15AF.maxSlopeDifference            : 1.5
+physics.producers.CrvCoincidencePE12S3SD15AF.acceptThreeAdjacentCounters   : false
 
 
 physics.producers.CrvCoincidencePE12S4SD20AF.verboseLevel                  : 0
@@ -1610,26 +1610,26 @@ physics.producers.CrvCoincidencePE12S7SD20AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE12S7SD20AF.maxSlopeDifference            : 2.0
 physics.producers.CrvCoincidencePE12S7SD20AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S8SD20AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S8SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S8SD20AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S8SD20AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE12S8SD20AF.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE12S8SD20AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S1SD20AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S1SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S1SD20AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S1SD20AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE12S1SD20AF.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE12S1SD20AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S9SD20AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S9SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S9SD20AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S9SD20AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE12S9SD20AF.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE12S9SD20AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S2SD20AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S2SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S2SD20AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S2SD20AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE12S2SD20AF.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE12S2SD20AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S10SD20AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S10SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S10SD20AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S10SD20AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE12S10SD20AF.maxSlopeDifference            : 2.0
-physics.producers.CrvCoincidencePE12S10SD20AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S3SD20AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S3SD20AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S3SD20AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S3SD20AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE12S3SD20AF.maxSlopeDifference            : 2.0
+physics.producers.CrvCoincidencePE12S3SD20AF.acceptThreeAdjacentCounters   : false
 
 
 physics.producers.CrvCoincidencePE12S4SD25AF.verboseLevel                  : 0
@@ -1660,26 +1660,26 @@ physics.producers.CrvCoincidencePE12S7SD25AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE12S7SD25AF.maxSlopeDifference            : 2.5
 physics.producers.CrvCoincidencePE12S7SD25AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S8SD25AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S8SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S8SD25AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S8SD25AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE12S8SD25AF.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE12S8SD25AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S1SD25AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S1SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S1SD25AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S1SD25AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE12S1SD25AF.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE12S1SD25AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S9SD25AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S9SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S9SD25AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S9SD25AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE12S9SD25AF.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE12S9SD25AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S2SD25AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S2SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S2SD25AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S2SD25AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE12S2SD25AF.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE12S2SD25AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S10SD25AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S10SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S10SD25AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S10SD25AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE12S10SD25AF.maxSlopeDifference            : 2.5
-physics.producers.CrvCoincidencePE12S10SD25AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S3SD25AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S3SD25AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S3SD25AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S3SD25AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE12S3SD25AF.maxSlopeDifference            : 2.5
+physics.producers.CrvCoincidencePE12S3SD25AF.acceptThreeAdjacentCounters   : false
 
 
 physics.producers.CrvCoincidencePE12S4SD30AF.verboseLevel                  : 0
@@ -1710,26 +1710,26 @@ physics.producers.CrvCoincidencePE12S7SD30AF.maxSlope                      : 7
 physics.producers.CrvCoincidencePE12S7SD30AF.maxSlopeDifference            : 3.0
 physics.producers.CrvCoincidencePE12S7SD30AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S8SD30AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S8SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S8SD30AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S8SD30AF.maxSlope                      : 8
-physics.producers.CrvCoincidencePE12S8SD30AF.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE12S8SD30AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S1SD30AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S1SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S1SD30AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S1SD30AF.maxSlope                      : 1
+physics.producers.CrvCoincidencePE12S1SD30AF.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE12S1SD30AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S9SD30AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S9SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S9SD30AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S9SD30AF.maxSlope                      : 9
-physics.producers.CrvCoincidencePE12S9SD30AF.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE12S9SD30AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S2SD30AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S2SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S2SD30AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S2SD30AF.maxSlope                      : 2
+physics.producers.CrvCoincidencePE12S2SD30AF.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE12S2SD30AF.acceptThreeAdjacentCounters   : false
 
-physics.producers.CrvCoincidencePE12S10SD30AF.verboseLevel                  : 0
-physics.producers.CrvCoincidencePE12S10SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
-physics.producers.CrvCoincidencePE12S10SD30AF.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12S10SD30AF.maxSlope                      : 10
-physics.producers.CrvCoincidencePE12S10SD30AF.maxSlopeDifference            : 3.0
-physics.producers.CrvCoincidencePE12S10SD30AF.acceptThreeAdjacentCounters   : false
+physics.producers.CrvCoincidencePE12S3SD30AF.verboseLevel                  : 0
+physics.producers.CrvCoincidencePE12S3SD30AF.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_5cm_bothSides.txt"
+physics.producers.CrvCoincidencePE12S3SD30AF.PEthreshold                   : 12
+physics.producers.CrvCoincidencePE12S3SD30AF.maxSlope                      : 3
+physics.producers.CrvCoincidencePE12S3SD30AF.maxSlopeDifference            : 3.0
+physics.producers.CrvCoincidencePE12S3SD30AF.acceptThreeAdjacentCounters   : false
 
 
 physics.producers.CrvSiPMResponses.ThermalProb          : 0

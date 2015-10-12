@@ -89,7 +89,7 @@ BEGIN_PROLOG
       coincidencePropertiesFile     : "CRVResponse/test/coincidenceProperties.txt"
       crvRecoPulsesModuleLabel      : "CrvRecoPulses"
       PEthreshold                   : 10
-      adjacentCounterTimeDifference : 5      //ns
+      adjacentPulseTimeDifference   : 5      //ns
       maxTimeDifference             : 10     //ns
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
