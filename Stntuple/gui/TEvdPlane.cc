@@ -21,48 +21,52 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
-#include "Stntuple/gui/TEvdPlane.hh"
 #include "Stntuple/gui/TEvdStation.hh"
+#include "Stntuple/gui/TEvdPlane.hh"
+#include "Stntuple/gui/TEvdFace.hh"
 #include "Stntuple/gui/TStnVisManager.hh"
 
 
-ClassImp(TEvdStation)
+ClassImp(TEvdPlane)
 
 //_____________________________________________________________________________
-TEvdStation::TEvdStation(): TObject() {
-  fListOfPlanes = NULL;
+TEvdPlane::TEvdPlane(): TObject() {
+  fID          = -1;
+  fListOfFaces = NULL;
+  fNFaces      = 0;
 }
 
 //_____________________________________________________________________________
-TEvdStation::TEvdStation(int ID, const mu2e::Station* Station): TObject() {
+TEvdPlane::TEvdPlane(int ID, const mu2e::Plane* Plane, TEvdStation* Station): TObject() {
 
-  int         id;
-  TEvdPlane*  evd_plane;
+  int        id;
+  TEvdFace*  evd_face;
 
   fID      = ID;
   fStation = Station;
-  fNPlanes = Station->nPlanes();
+  fPlane   = Plane;
+  fNFaces  = Plane->nFaces();
 
-  fListOfPlanes = new TObjArray(fNPlanes);
+  fListOfFaces = new TObjArray(fNFaces);
 
-  for (int i=0; i<fNPlanes; i++) {
-    const mu2e::Plane* plane = &fStation->getPlanes().at(i);
+  for (int i=0; i<fNFaces; i++) {
+    const mu2e::Face* face = &fPlane->getFaces().at(i);
 
-    id        = fNPlanes*Station->id()+i;
-    evd_plane = new TEvdPlane(id,plane,this);
+    id       = -1; // fNFaces*Plane->id()+i;
+    evd_face = new TEvdFace(id,face,this);
 
-    fListOfPlanes->Add(evd_plane);
+    fListOfFaces->Add(evd_face);
   }
 }
 
 //_____________________________________________________________________________
-TEvdStation::~TEvdStation() {
-  fListOfPlanes->Delete();
-  delete fListOfPlanes;
+TEvdPlane::~TEvdPlane() {
+  fListOfFaces->Delete();
+  delete fListOfFaces;
 }
 
 //-----------------------------------------------------------------------------
-void TEvdStation::Paint(Option_t* option) {
+void TEvdPlane::Paint(Option_t* option) {
   // paints one disk (.. or vane, in the past), i.e. section
 
 				// parse option list
@@ -81,22 +85,22 @@ void TEvdStation::Paint(Option_t* option) {
 
 
 //_____________________________________________________________________________
-void TEvdStation::PaintXY(Option_t* Option) {
+void TEvdPlane::PaintXY(Option_t* Option) {
 }
 
 
 
 //_____________________________________________________________________________
-void TEvdStation::PaintRZ(Option_t* option) {
+void TEvdPlane::PaintRZ(Option_t* option) {
 }
 
 //_____________________________________________________________________________
-Int_t TEvdStation::DistancetoPrimitive(Int_t px, Int_t py) {
+Int_t TEvdPlane::DistancetoPrimitive(Int_t px, Int_t py) {
   return 9999;
 }
 
 //_____________________________________________________________________________
-Int_t TEvdStation::DistancetoPrimitiveXY(Int_t px, Int_t py) {
+Int_t TEvdPlane::DistancetoPrimitiveXY(Int_t px, Int_t py) {
 
   Int_t dist = 9999;
 
@@ -111,7 +115,7 @@ Int_t TEvdStation::DistancetoPrimitiveXY(Int_t px, Int_t py) {
 }
 
 //_____________________________________________________________________________
-Int_t TEvdStation::DistancetoPrimitiveRZ(Int_t px, Int_t py) {
+Int_t TEvdPlane::DistancetoPrimitiveRZ(Int_t px, Int_t py) {
   return 9999;
 }
 

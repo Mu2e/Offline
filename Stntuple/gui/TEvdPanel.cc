@@ -25,40 +25,62 @@
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrackerGeom/inc/Sector.hh"
 
+#include "Stntuple/gui/TEvdFace.hh"
 #include "Stntuple/gui/TEvdPanel.hh"
 #include "Stntuple/gui/TEvdStraw.hh"
 #include "Stntuple/gui/TStnVisManager.hh"
 
+#include "TTrackerGeom/inc/Panel.hh"
+#include "TTrackerGeom/inc/ZLayer.hh"
 
 ClassImp(TEvdPanel)
+
+namespace {
+  static int fgLocalDebug = 0;
+};
 
 //_____________________________________________________________________________
 TEvdPanel::TEvdPanel(): TObject() {
 }
 
 //_____________________________________________________________________________
-TEvdPanel::TEvdPanel(int ID, const mu2e::Sector* Sector, TEvdStation* Station): TObject() {
+TEvdPanel::TEvdPanel(int ID, const mu2e::Panel* Panel, TEvdFace* Face): TObject() {
 
   TEvdStraw* evd_straw;
 
   fID      = ID;
-  fNLayers = Sector->nLayers();
-  fSector   = Sector;
+  fNLayers = Panel->nZLayers();
+  fPanel   = Panel;
 					// assume that the number of straws is the same
   int id, id0;
 
   id0 = fID*fNLayers*2;
   for (int il=0; il<fNLayers; il++) {
-    const mu2e::Layer* layer = &fSector->getLayer(il);
+    const mu2e::ZLayer* layer = &fPanel->getZLayer(il);
 
-    fNStraws[il] = layer->nStraws();
+    fNStraws     [il] = layer->nStraws();
     fListOfStraws[il] = new TObjArray(fNStraws[il]);
+  }
+
+  for (int il=0; il<fNLayers; il++) {
+    const mu2e::ZLayer* layer = &fPanel->getZLayer(il);
 
     for (int is=0; is<fNStraws[il]; is++) {
-      const mu2e::Straw* straw = &layer->getStraw(is);
+      const mu2e::Straw* straw = layer->getStrawptr(is);
       id        = straw->index().asInt();
+
+      int ill   = straw->id().getLayer();
+      int iss   = straw->id().getStraw();
+      int ipp   = straw->id().getSector();
+      int ist   = straw->id().getDevice();
+
+      if (fgLocalDebug != 0) {
+	printf(" station, panel, layer, straw, z : %3i %3i %3i %3i %10.3f\n",
+	       ist, ipp, ill, iss, straw->getMidPoint().z());
+      }
+
       evd_straw = new TEvdStraw(id,straw,this);
-      fListOfStraws[il]->Add(evd_straw);
+      fListOfStraws[ill]->Add(evd_straw);
     }
     id0 +=fNStraws[il];
   }

@@ -26,7 +26,9 @@
 #include "Stntuple/gui/TEvdStrawHit.hh"
 #include "Stntuple/gui/TEvdTrkStrawHit.hh"
 #include "Stntuple/gui/TEvdStation.hh"
+#include "Stntuple/gui/TEvdFace.hh"
 #include "Stntuple/gui/TEvdPanel.hh"
+#include "Stntuple/gui/TEvdPlane.hh"
 #include "Stntuple/gui/TEvdStrawTracker.hh"
 #include "Stntuple/gui/TStnVisManager.hh"
 
@@ -119,17 +121,32 @@ int TTrkVisNode::InitEvent() {
 //-----------------------------------------------------------------------------
 // first, clear the cached hit information from the previous event
 //-----------------------------------------------------------------------------
-  int nst = fTracker->NStations();
+  TEvdStation*   station;
+  TEvdPlane*     plane;
+  TEvdPanel*     panel;
+  TEvdFace*      face;
+
+  int            nst, nplanes, nfaces, npanels, isec; 
+
+  nst = tracker->nStations();
   for (int ist=0; ist<nst; ist++) {
-    TEvdStation* station = fTracker->Station(ist);
-    int np = station->NPanels();
-    for (int ip=0; ip<np; ip++) {
-      TEvdPanel* panel = station->Panel(ip);
-      nl = panel->NLayers();
-      for (int il=0; il<nl; il++) {
-	ns = panel->NStraws(il);
-	for (int is=0; is<ns; is++) {
-	  panel->Straw(il,is)->Clear();
+    station = fTracker->Station(ist);
+    nplanes = station->NPlanes();
+    for (int iplane=0; iplane<nplanes; iplane++) {
+      plane = station->Plane(iplane);
+      nfaces = plane->NFaces();
+      for (int ifc=0; ifc<nfaces; ifc++) {
+	face    = plane->Face(ifc);
+	npanels = face->NPanels();
+	for (int ipanel=0; ipanel<npanels; ipanel++) {
+	  panel = face->Panel(ipanel);
+	  nl    = panel->NLayers();
+	  for (int il=0; il<nl; il++) {
+	    ns = panel->NStraws(il);
+	    for (int is=0; is<ns; is++) {
+	      panel->Straw(il,is)->Clear();
+	    }
+	  }
 	}
       }
     }
@@ -221,14 +238,27 @@ int TTrkVisNode::InitEvent() {
     if (intime          ) mask |= TEvdStrawHit::kInTimeBit;
     if (isFromConversion) mask |= TEvdStrawHit::kConversionBit;
     
-    int ist, ip, il, is;
+    int ist, ipl, ifc, ipn, il, is;
 
-    ist = straw->id().getDevice();
-    ip  = straw->id().getSector();
-    il  = straw->id().getLayer();
-    is  = straw->id().getStraw();
+    int idd = straw->id().getDevice();	// really it is a plane number in a throughout enumeration
+
+    ist = idd / 2 ; // straw->id().getDevice();
+    ipl = idd % 2 ; // straw->id().getSector();
+
+    isec = straw->id().getSector();
+
+    ifc  = isec%2;
+    ipn  = isec/2;
+
+    il   = straw->id().getLayer();
+    is   = straw->id().getStraw();
+
+    // from now on, the straw number in a layer is is' = is/2
       
-    evd_straw     = fTracker->Station(ist)->Panel(ip)->Straw(il,is);
+//     ifc = -1; //## FIXME
+//     ipn = -1;
+
+    evd_straw     = fTracker->Station(ist)->Plane(ipl)->Face(ifc)->Panel(ipn)->Straw(il,is/2);
 
     evd_straw_hit = new TEvdStrawHit(hit,
 				     evd_straw,

@@ -22,6 +22,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "Stntuple/gui/TEvdStraw.hh"
+#include "Stntuple/gui/TEvdPlane.hh"
+#include "Stntuple/gui/TEvdFace.hh"
 #include "Stntuple/gui/TEvdPanel.hh"
 #include "Stntuple/gui/TEvdStation.hh"
 #include "Stntuple/gui/TEvdStrawTracker.hh"
@@ -33,12 +35,14 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
+
 ClassImp(TEvdStrawTracker)
 
 //_____________________________________________________________________________
 TEvdStrawTracker::TEvdStrawTracker(const mu2e::TTracker* Tracker): TObject() {
 
-  TEvdStation* s;
+  const mu2e::Station* station;
+  TEvdStation*         s;
 
   fTracker = Tracker;
 
@@ -46,14 +50,13 @@ TEvdStrawTracker::TEvdStrawTracker(const mu2e::TTracker* Tracker): TObject() {
     printf(">>> TEvdStrawTracker::TEvdStrawTracker ERROR: Tracker = NULL\n");
   }
 
-  fNStations      = fTracker->nDevices();
+  fNStations      = fTracker->nStations();
   fListOfStations = new TObjArray(fNStations);
 
   for (int i=0; i<fNStations; i++) {
+    station = &fTracker->getStations().at(i);
 
-    const mu2e::Device* device = &fTracker->getDevice(i);
-
-    s = new TEvdStation(i,device);
+    s = new TEvdStation(i,station);
     fListOfStations->Add(s);
   }
 }
@@ -93,26 +96,36 @@ void TEvdStrawTracker::PaintXY(Option_t* Option) {
 //_____________________________________________________________________________
 void TEvdStrawTracker::PaintRZ(Option_t* option) {
   // draw tracker
+
   TEvdStation*   station;
+  TEvdPlane*     plane;
+  TEvdFace*      face;
   TEvdPanel*     panel;
   TEvdStraw*     straw;
 
-  int npanels, nlayers, nstraws;
+  int            nplanes, nfaces, npanels, nlayers, nstraws;
 
-  for (int i=0; i<fNStations; i++) {
-    station = Station(i);
-    npanels = station->NPanels();
-    for (int j=0; j<npanels; j++) {
-      panel = station->Panel(j);
-      nlayers = panel->NLayers();
-      for (int il=0; il<nlayers; il++) {
-	nstraws = panel->NStraws(il);
-	for (int is=0; is<nstraws; is++) {
-	  straw  = panel->Straw(il,is);
-	  straw->PaintRZ();
+  for (int ist=0; ist<fNStations; ist++) {
+    station = Station(ist);
+    nplanes = station->NPlanes();
+    for (int ipl=0; ipl<nplanes; ipl++) {
+      plane  = station->Plane(ipl);
+      nfaces = plane->NFaces();
+      for (int ifc=0; ifc<nfaces; ifc++) {
+	face    = plane->Face(ifc);
+	npanels = face->NPanels();
+	for (int ipanel=0; ipanel<npanels; ipanel++) {
+	  panel   = face->Panel(ipanel);
+	  nlayers = panel->NLayers();
+	  for (int il=0; il<nlayers; il++) {
+	    nstraws = panel->NStraws(il);
+	    for (int is=0; is<nstraws; is++) {
+	      straw  = panel->Straw(il,is);
+	      straw->PaintRZ();
+	    }
+	  }
 	}
       }
-      
     }
   }
 }

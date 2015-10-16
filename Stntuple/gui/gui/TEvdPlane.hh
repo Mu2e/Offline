@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // vis node displays one wedge
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef TEvdStation_hh
-#define TEvdStation_hh
+#ifndef TEvdPlane_hh
+#define TEvdPlane_hh
 
 #include "Gtypes.h"
 #include "TClonesArray.h"
@@ -10,44 +10,37 @@
 #include "TPad.h"
 #include "TArc.h"
 
-#ifndef __CINT__
-#include "TTrackerGeom/inc/Station.hh"
-#else
 namespace mu2e {
-  class   Station;
+  class Plane;
 };
-#endif
 
 class TEvdStation;
-class TEvdPlane;
+class TEvdFace;
 
-class TEvdStation: public TObject {
+class TEvdPlane: public TObject {
 public:
   
 protected:
-  int                   fID;
-  int                   fNPlanes;
-  TObjArray*            fListOfPlanes;
+  int                 fID;
+  int                 fNFaces;
+  TObjArray*          fListOfFaces;
 
-  const mu2e::Station*  fStation;  // backward pointer
+  TEvdStation*        fStation; 		// backward pointers
+  const mu2e::Plane*  fPlane;
 
 public:
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------
-  TEvdStation();
-  TEvdStation(int ID, const mu2e::Station* Station); 
+  TEvdPlane();
+  TEvdPlane(int Number, const mu2e::Plane* Sector, TEvdStation* Station); 
 
-  virtual ~TEvdStation();
+  virtual ~TEvdPlane();
 //-----------------------------------------------------------------------------
 // accessors
 //-----------------------------------------------------------------------------
-  int          NPlanes     () { return fNPlanes;      }
-  TObjArray*   ListOfPlanes() { return fListOfPlanes; }
-
-  TEvdPlane* Plane  (int I) { 
-    return (TEvdPlane*) fListOfPlanes->UncheckedAt(I); 
-  }
+  int       NFaces     () { return fNFaces;  }
+  TEvdFace* Face  (int I) { return (TEvdFace*) fListOfFaces->UncheckedAt(I); }
 //-----------------------------------------------------------------------------
 // modifiers
 //-----------------------------------------------------------------------------
@@ -66,7 +59,7 @@ public:
 
   //  virtual void   Print(const char* Opt = "") const ; // **MENU**
 
-  ClassDef(TEvdStation,0)
+  ClassDef(TEvdPlane,0)
 };
 
 

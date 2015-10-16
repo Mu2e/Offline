@@ -11,37 +11,37 @@
 #include "TArc.h"
 
 namespace mu2e {
-  class Sector;
+  class Panel;
 };
 
-class TEvdStation;
+class TEvdFace;
 class TEvdStraw;
 
 class TEvdPanel: public TObject {
 public:
   
 protected:
-  int        fID;
-  int        fNLayers;
-  int        fNStraws[2];
-  TObjArray* fListOfStraws[2];
+  int                fID;
+  int                fNLayers;
+  int                fNStraws[2];
+  TObjArray*         fListOfStraws[2];
 
-  TEvdStation*         fStation; 		// backward pointer
-  const mu2e::Sector*  fSector;
+  TEvdFace*          fFace; 		// backward pointer
+  const mu2e::Panel* fPanel;
 
 public:
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------
   TEvdPanel();
-  TEvdPanel(int Number, const mu2e::Sector* Sector, TEvdStation* Station); 
+  TEvdPanel(int Number, const mu2e::Panel* Panel, TEvdFace* Face); 
 
   virtual ~TEvdPanel();
 //-----------------------------------------------------------------------------
 // accessors
 //-----------------------------------------------------------------------------
-  int          NLayers     () { return fNLayers;  }
-  int          NStraws     (int I) { return fNStraws[I];  }
+  int          NLayers          () { return fNLayers;    }
+  int          NStraws     (int I) { return fNStraws[I]; }
 
   TEvdStraw* Straw  (int Layer, int I) { 
     return (TEvdStraw*) fListOfStraws[Layer]->UncheckedAt(I); 
