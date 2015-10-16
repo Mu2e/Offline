@@ -380,17 +380,20 @@ namespace mu2e {
 	double hitTimeUnfolded = _toff.timeWithOffsetsApplied(h);
 	double hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
+	// 2015-09-30 P.Murat: given that hits are 'point-like' things, need only the first if
 
 	if (hitTime > _blindTime) {
 	  cr_hits.push_back(ROHit(*i,h.eDep(),edep_corr,ROHit::crystal,hitTime));
 	}
 
-	if (hitTime < _mbbuffer) {
-	  if (hitTime+_mbtime > _blindTime) {
-	    cr_hits.push_back(ROHit(*i,h.eDep(),edep_corr,ROHit::crystal,hitTime + _mbtime));
-	  }
-	}
-	
+// 	if (hitTime < _mbbuffer) {
+// 	  if (hitTime+_mbtime > _blindTime) {
+// 	    cr_hits.push_back(ROHit(*i,h.eDep(),edep_corr,ROHit::crystal,hitTime + _mbtime));
+// 	  }
+// 	}
+
+// for _mbtime=1695, _mbbuffer=100, and _blindTime=300 the next two if's together are always false 
+// no need to comment anything out
 	if (hitTime > (_mbtime-_mbbuffer)) {
 	  if (hitTime-_mbtime > _blindTime) {
 	    cr_hits.push_back(ROHit(*i,h.eDep(),edep_corr,ROHit::crystal,hitTime - _mbtime));
@@ -428,12 +431,14 @@ namespace mu2e {
 	      ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime));
 	    }
 
-	    if (hitTime < _mbbuffer) {
-	      if (hitTime+_mbtime > _blindTime) {
-		ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
-	      }
-	    }
+// 	    if (hitTime < _mbbuffer) {
+// 	      if (hitTime+_mbtime > _blindTime) {
+// 		ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime + _mbtime));
+// 	      }
+// 	    }
 
+// for _mbtime=1695, _mbbuffer=100, and _blindTime=300 the next two if's together are always false 
+// no need to comment anything out
 	    if (hitTime > (_mbtime-_mbbuffer)) {
 	      if (hitTime-_mbtime > _blindTime) {
 		ro_hits.push_back(ROHit(*i,0.,0.,ROHit::readout,hitTime - _mbtime));
