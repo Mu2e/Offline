@@ -121,17 +121,19 @@ class MakeCaloProtoCluster : public art::EDProducer {
 
 	 // Check that calorimeter geometry description exists
 	 art::ServiceHandle<GeometryService> geom;
-	 if( !(geom->hasElement<Calorimeter>()) ) return;
+	 //	 if( !(geom->hasElement<Calorimeter>()) ) return;
 
 	 //Get handles to calorimeter crystal hits
 	 art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
 	 event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-	 if ( !caloCrystalHitsHandle.isValid()) return;
 
 	 //Create a new CaloCluster collection and fill it
 	 std::unique_ptr<CaloProtoClusterCollection> caloProtoClustersMain(new CaloProtoClusterCollection);
 	 std::unique_ptr<CaloProtoClusterCollection> caloProtoClustersSplit(new CaloProtoClusterCollection);
-	 MakeCaloProtoClusters(*caloProtoClustersMain,*caloProtoClustersSplit,caloCrystalHitsHandle);
+
+	 if ( caloCrystalHitsHandle.isValid()) { 
+	   MakeCaloProtoClusters(*caloProtoClustersMain,*caloProtoClustersSplit,caloCrystalHitsHandle);
+	 }
 
 	 event.put(std::move(caloProtoClustersMain),  _producerNameMain);
 	 event.put(std::move(caloProtoClustersSplit), _producerNameSplit);
