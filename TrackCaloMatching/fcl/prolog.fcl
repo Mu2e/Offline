@@ -194,29 +194,6 @@ CaloMatchingUpstreampMinus.fitparticle                  : -2212
 CaloMatchingUpstreampMinus.fitdirection                 : 1
 CaloMatchingUpstreampMinus.trkToCaloExtrapolModuleLabel : TrkExtrapolUpstreampMinus
 #------------------------------------------------------------------------------
-# deprecated implementation of the matching module
-#------------------------------------------------------------------------------
-TrackCaloMatchingOld : {
-    module_type                  : TrackCaloMatchingOld
-    diagLevel                    : 0
-    minClusterEnergy             : 10.             # MeV
-    maxDeltaT                    : 20.             # ns
-#------------------------------------------------------------------------------
-# not a guess any more, but the number by Alex
-# 2014-08-08: set dtOffset to 1.4 to avoid DT corrections in other places
-# 2015-02-07: dtOffset set in fcl/standardProducers.fcl to 1.2 ns
-#------------------------------------------------------------------------------
-    meanInteractionDepth         : 59.             # mm
-    dtOffset                     : @local::TrackCaloMatchingDtOffset             # ns
-    fitterModuleLabel            : TrkPatRec
-    trkToCaloExtrapolModuleLabel : TrkExtrapol
-    caloClusterModuleLabel       : MakeCaloCluster
-    outPutNtup                   : 0
-    caloClusterAlgorithm         : closest
-    caloClusterSeeding           : energy
-}
-
-#------------------------------------------------------------------------------
 # new version of TrackCalomatching: use TrackCaloIntersection
 #------------------------------------------------------------------------------
 TrackCaloMatching : {
