@@ -166,7 +166,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // time diag histograms (inherited)
 //-----------------------------------------------------------------------------
-      TH1F*  _nhits[2];
+      TH1F*  _nhits[2];         // same distribution with different limits
       TH1F   *ctsp, *rtsp, *ttsp, *ltsp, *tdtsp;
     };
 

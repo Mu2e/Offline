@@ -377,7 +377,15 @@ namespace mu2e {
     _hist._NpointsRescued [0]  = tfs->make<TH1F>("hnprescued_0","fraction of points rescued [0]; np_{rescued}/np_{tot}", 100, 0., 1);
     _hist._NpointsRescued [1]  = tfs->make<TH1F>("hnprescued_1","fraction of points rescued [1]; np_{rescued}/np_{tot}", 100, 0., 1);
 
-    _hist._ntracks           = tfs->make<TH1F>("ntracks","N(reconstructed tracks)", 10, 0, 10);
+    _hist._ntracks           = tfs->make<TH1F>("ntracks","N(reconstructed tracks)", 10, 0,   10);
+    _hist._nhits[0]          = tfs->make<TH1F>("nhits_0","N(straw hits)[0]"       , 500,0,  500);
+    _hist._nhits[1]          = tfs->make<TH1F>("nhits_1","N(straw hits)[1]"       , 500,0,10000);
+
+    _hist.rtsp               = tfs->make<TH1F>("rtsp" ,"rtsp"      , 200,0,2000);
+    _hist.ttsp               = tfs->make<TH1F>("ttsp" ,"ttsp"      , 200,0,2000);
+    _hist.tdtsp              = tfs->make<TH1F>("tdtsp","tdtsp"     , 200,0,2000);
+    _hist.ltsp               = tfs->make<TH1F>("ltsp" ,"ltsp"      , 200,0,2000);
+    _hist.ctsp               = tfs->make<TH1F>("ctsp" ,"ctsp"      , 200,0,2000);
   }
 
 //-----------------------------------------------------------------------------
@@ -595,7 +603,7 @@ namespace mu2e {
 // all needed pieces of data have been found, 
 // tighten the energy cut and copy flags, clear 
 //-----------------------------------------------------------------------------
-    nhits = _shcol->size();
+//    nhits = _shcol->size();
     for (int i=0; i<nhits; i++) {
       flag = _shfcol->at(i);
       if (_shcol->at(i).energyDep() > _maxedep && flag.hasAllProperties(esel)) {
