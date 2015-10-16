@@ -4,13 +4,8 @@
 # make STNTUPLE in one go, without creating an intermediate file
 # use TrkPatRec-only
 #------------------------------------------------------------------------------
-# $Id: egun_trkpatrec_stnmaker.fcl,v 1.1 2014/09/04 18:57:02 murat Exp $
-# $Author: murat $
-# $Date: 2014/09/04 18:57:02 $
-
 //test: // This must be commented out for grid production.
 BEGIN_PROLOG
-#  muStops    : @local::mergedMuonStops
 #  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
 #  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00000/data_mixBG.root"]
 END_PROLOG

@@ -6,13 +6,8 @@
 # -----------------
 # pdgCode 
 #------------------------------------------------------------------------------
-# $Id: egun_stnmaker.fcl,v 1.2 2014/08/27 19:59:09 murat Exp $
-# $Author: murat $
-# $Date: 2014/08/27 19:59:09 $
-
 //test: // This must be commented out for grid production.
 BEGIN_PROLOG
-#  muStops    : @local::mergedMuonStops
 #  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
 #  bgHitFiles : [ "/mu2e/data/tdr/beam/mixp3-test/tdr.beam.mix.bgonly-test.1516a.15405463/good/00000/data_mixBG.root"]
   pdgCode   : 11

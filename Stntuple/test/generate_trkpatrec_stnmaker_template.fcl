@@ -69,16 +69,17 @@ physics : {
 		elow             : 148.953 
 		ehi              : 148.963 
 	    }
-	    muonStops            : {
-#------------------------------------------------------------------------------
-# use --fclinput=@muStops:datasets/mustops for grid submission 
-#------------------------------------------------------------------------------
-		inputFiles            : @local::mergedMuonStops
-		averageNumRecordsToUse: 500000
-		treeName              : "stoppedMuonDumper/stops"
-		branchName            : "stops"
-		verbosityLevel        : 1
-	    }
+	    muonStops            : { @table::mu2e.tgtMuonStops }
+#	    muonStops : {
+# #------------------------------------------------------------------------------
+# # use --fclinput=@muStops:datasets/mustops for grid submission 
+# #------------------------------------------------------------------------------
+# 		inputFiles            : @local::mergedMuonStops
+# 		averageNumRecordsToUse: 500000
+# 		treeName              : "stoppedMuonDumper/stops"
+# 		branchName            : "stops"
+# 		verbosityLevel        : 1
+# 	    }
 	}
 	
 	g4run                : @local::g4run

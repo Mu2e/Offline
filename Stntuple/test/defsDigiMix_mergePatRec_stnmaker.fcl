@@ -44,15 +44,7 @@ physics : {
 	    czmin          : -0.6
 	    czmax          :  0.8
 	    verbosityLevel : 1
-	    muonStops : {
-#		inputFiles            : @nil // use --fclinput for grid submission
-#		inputFiles            : [ "mergedMuonStops/mustops.1009a_1025a_1316a.14278088.root" ]
-		inputFiles            : @local::mergedMuonStops
-		averageNumRecordsToUse: 500000
-		treeName              : "stoppedMuonDumper/stops"
-		branchName            : "stops"
-		verbosityLevel        : 1
-	    }
+	    muonStops      : { @table::tgtMuonStops }
         }
 
         g4run : {

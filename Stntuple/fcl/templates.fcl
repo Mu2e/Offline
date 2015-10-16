@@ -29,8 +29,6 @@ BEGIN_PROLOG
 
   allPatRecSeq  : [ @sequence::tprMakeHitSeq, TrkPatRec, @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
 
-  vadimPidSeq   : [ TrkExtrapol, CaloMatching, ParticleID ]
-
 # event for the downstream particles, avikPID requires running both electron and muon track reconstruction 
 
 # hit making - just once, but two modules
@@ -47,11 +45,13 @@ BEGIN_PROLOG
 			  MergePatRecDem, MergePatRecDmm ]
 
 # AvikPID on input takes MergePatRecDem and MergePatRecDmm
+  vadimPidSeq   : [ TrkExtrapol, CaloMatching, ParticleID ]
+
   avikPidSeq    : [ TrkExtrapolDem, TrkExtrapolDmm, CaloMatchingDem, CaloMatchingDmm, AvikPID ]
 
-  stnmakerSeq   : [ InitStntuple, StntupleMaker, FillStntuple ]
-
   pidSeq        : [ @sequence::avikPidSeq ]
+
+  stnmakerSeq   : [ InitStntuple, StntupleMaker, FillStntuple ]
 END_PROLOG
 
 #include "minimalMessageService.fcl"
@@ -164,13 +164,15 @@ physics : {
 	}
 
 	CaloMatching         : { @table::TrackCaloMatching 
-	    fitterModuleLabel : MergePatRec 
+	    fitterModuleLabel            : MergePatRec 
+	    trkToCaloExtrapolModuleLabel : TrkExtrapol
 	}
 
 	CaloMatchingDem      : { @table::TrackCaloMatching 
 	    fitparticle                  : 11
 	    fitdirection                 : 0
-	    fitterModuleLabel            : MergePatRecDem
+	    fitterModuleLabel            : MergePatRecDem	    
+
 	    trkToCaloExtrapolModuleLabel : TrkExtrapolDem
 	}
 
@@ -227,31 +229,31 @@ physics : {
     mc             : [ @sequence::generatorSeq, @sequence::hitMakerSeq,  @sequence::calRecoSeq, EventFilter ]
     gen_hits       : [ @sequence::generatorSeq, @sequence::hitMakerSeq ]
 #
-    reco_allpatrec              : [ @sequence::calRecoSeq, @sequence::allPatRecSeq, @sequence::vadimPidSeq, EventFilter ]
-    reco_trkpatrec              : [ @sequence::calRecoSeq, @sequence::trkPatRecSeq, @sequence::vadimPidSeq, EventFilter ]
-    reco_calpatrec              : [ @sequence::calRecoSeq, @sequence::calPatRecSeq, @sequence::vadimPidSeq, EventFilter ]
+    allpatrec_reco              : [ @sequence::calRecoSeq, @sequence::allPatRecSeq ]
+    trkpatrec_reco              : [ @sequence::calRecoSeq, @sequence::trkPatRecSeq ]
+    calpatrec_reco              : [ @sequence::calRecoSeq, @sequence::calPatRecSeq ]
 #
     allpatrec_reco_stnmaker     : [ @sequence::calRecoSeq, @sequence::allPatRecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
     trkpatrec_reco_stnmaker     : [ @sequence::calRecoSeq, @sequence::trkPatRecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
     calpatrec_reco_stnmaker     : [ @sequence::calRecoSeq, @sequence::calPatRecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
 #------------------------------------------------------------------------------
-    gen_allpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
-				    @sequence::calRecoSeq, @sequence::allPatRecSeq,
-				    @sequence::vadimPidSeq, @sequence::stnmakerSeq, EventFilter]
+    gen_allpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq ,
+				    @sequence::calRecoSeq  , @sequence::allPatRecSeq,
+				    @sequence::vadimPidSeq , @sequence::stnmakerSeq , EventFilter]
 
-    gen_trkpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
-				    @sequence::calRecoSeq, @sequence::trkPatRecSeq,
-				    @sequence::vadimPidSeq, @sequence::stnmakerSeq, EventFilter ]
+    gen_trkpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq ,
+				    @sequence::calRecoSeq  , @sequence::trkPatRecSeq,
+				    @sequence::vadimPidSeq , @sequence::stnmakerSeq , EventFilter ]
 
-    gen_calpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
-				    @sequence::calRecoSeq, @sequence::calPatRecSeq, 
-				    @sequence::vadimPidSeq, @sequence::stnmakerSeq, EventFilter ]
+    gen_calpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq ,
+				    @sequence::calRecoSeq  , @sequence::calPatRecSeq, 
+				    @sequence::vadimPidSeq , @sequence::stnmakerSeq , EventFilter ]
 
 # AvikPID requires both electron and muon reconstruction sequences
 
-    gen_allpatrec_dem_dmm_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
-					    @sequence::calRecoSeq, @sequence::allPatRecDemDmmSeq,
-					    @sequence::avikPidSeq, @sequence::stnmakerSeq, EventFilter ]
+    gen_allpatrec_dem_dmm_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq       ,
+					    @sequence::calRecoSeq  , @sequence::allPatRecDemDmmSeq,
+					    @sequence::avikPidSeq  , @sequence::stnmakerSeq       , EventFilter ]
 #------------------------------------------------------------------------------
 # event display paths
 #------------------------------------------------------------------------------
@@ -259,8 +261,8 @@ physics : {
     calpatrec_reco_display      : [ @sequence::calRecoSeq, @sequence::calPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]
     trkpatrec_reco_display      : [ @sequence::calRecoSeq, @sequence::trkPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]
 #
-    gen_allpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
-				    @sequence::calRecoSeq, @sequence::allPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]
+    gen_allpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitMakerSeq ,
+				    @sequence::calRecoSeq  , @sequence::allPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]
 
     gen_calpatrec_reco_display  : [ @sequence::generatorSeq, @sequence::hitMakerSeq,
 				    @sequence::calRecoSeq, @sequence::calPatRecSeq, @sequence::vadimPidSeq, MuHitDisplay ]

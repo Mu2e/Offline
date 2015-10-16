@@ -81,7 +81,7 @@ physics : {
 #		elow               : 95.
 #		ehi              : 105.
 	    }
-	    muonStops            : {
+	    muonStops            : { @table::mu2e.tgtMuonStops }
 #------------------------------------------------------------------------------
 # use --fclinput=@muStops:datasets/mustops for grid submission 
 # @local::mergedMuonStops
