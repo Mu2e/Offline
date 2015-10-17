@@ -70,9 +70,10 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
 #include "Mu2eG4/geom/ttracker_v3.txt"
 
-// Crystal calorimeter
-//#include "Mu2eG4/geom/calorimeter_LYSO.txt"
-#include "Mu2eG4/geom/calorimeter_BaF2.txt"
+// Crystal calorimeter : TDR used HEX crystals
+// #include "Mu2eG4/geom/calorimeter_LYSO.txt"
+// #include "Mu2eG4/geom/calorimeter_BaF2.txt"
+#include "Mu2eG4/geom/calorimeter_BaF2_tdr.txt"
 
 //CRV counters
 #include "Mu2eG4/geom/crv_counters_v03.txt"
