@@ -1,0 +1,63 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# generate 105 MeV/c electrons
+# make STNTUPLE in one go, without creating an intermediate file
+# meanBackground: 2*<N>, as he background files have been generated 
+#                        for 0.5*<expected background level>
+#------------------------------------------------------------------------------
+# $Id: egun_mixp3_x1_stnmaker.fcl,v 1.3 2014/08/27 19:57:16 murat Exp $
+# $Author: murat $
+# $Date: 2014/08/27 19:57:16 $
+
+BEGIN_PROLOG
+  pdgCode        : 11
+  meanBackground : -2
+#------------------------------------------------------------------------------
+# note 1: background files below correspond to the TDR geometry 
+# note 2: MixP3 files are about 9.3 GBytes large
+# mixp3-x050 files are ~ 2.3 GBytes (250 events per file)
+# for grid jobs       : --fclinput=1:@bgHitFiles:datasets/mixp3-x050-dcache
+# for local debug jobs: --fclinput=1:@bgHitFiles:datasets/mixp3-x050-local
+#------------------------------------------------------------------------------
+# bgHitFiles : [ "/pnfs/mu2e/scratch/tdr/beam/mixp3-x050/tdr.beam.mix.bgx050.1716a.16417890/good/00000/data_mixBG.root"]
+# bgHitFiles : [ "/mu2e/users/murat/datasets/mixp3-x050/tdr.beam.mix.bgx050.1716a.16417890/good/00000/data_mixBG.root"]
+# bgHitFiles : [ "/pnfs/mu2e/scratch/tdr/beam/mixp3/tdr.beam.mix.bg.1516a.15409268/good/00000/data_mixBG.root"]
+END_PROLOG
+
+#include "Stntuple/fcl/templates.fcl"
+
+process_name : EgunMixP3X1Stnmaker
+
+source       : { module_type : EmptyEvent }
+
+physics.producers.generate : { @table::StoppedParticleReactionGun 
+    physics : {
+	pdgId            : @local::pdgCode
+	elow             : 105.0010
+ 	ehi              : 105.0015
+ 	spectrumVariable : "totalEnergy"
+ 	spectrumShape    : "flat"
+    }
+}
+
+physics.filters.flashMixer.detail.mean   : @local::meanBackground
+physics.filters.ootMixer.detail.mean     : @local::meanBackground
+physics.filters.dioMixer.detail.mean     : @local::meanBackground
+physics.filters.neutronMixer.detail.mean : @local::meanBackground
+physics.filters.photonMixer.detail.mean  : @local::meanBackground
+physics.filters.protonMixer.detail.mean  : @local::meanBackground
+
+physics.trigger_paths : [ genmix_allpatrec_dem_dmm_reco_stnmaker ]
+physics.end_paths     : [ out ]
+
+services.user.GeometryService.inputFile   : "Mu2eG4/test/geom_tdr.txt"
+services.TFileService.fileName            : "egun_mixp3_x1_stnmaker.hist"
+physics.filters.InitStntuple.histFileName : "egun_mixp3_x1_stnmaker.stn"
+#------------------------------------------------------------------------------
+# uncomment to write the DST out
+#------------------------------------------------------------------------------
+# physics.out : [detectorOutput]
+# outputs.detectorOutput.fileName           : "egun_mixp3_x1_stnmaker.root"
+#------------------------------------------------------------------------------
+# everything below is appended by murat/scripts/submit_mu2e_job
+#------------------------------------------------------------------------------
