@@ -4,9 +4,13 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
-# definitions of sequences do not require elements to be defined
+# declarations of sequences do not require the sequence elements to be defined
 #------------------------------------------------------------------------------
   generatorSeq  : [ generate, g4run, detectorFilter, protonTimeMap, muonTimeMap ]
+
+  genMixSeq     : [ generate, g4run, detectorFilter
+		    , dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer
+		    , protonTimeMap, muonTimeMap ]
 
   hitMakerSeq   : [ MakeCaloReadoutHits, MakeCaloCrystalHits, makeSD, makeSH ]
 
@@ -52,6 +56,7 @@ BEGIN_PROLOG
   pidSeq        : [ @sequence::avikPidSeq ]
 
   stnmakerSeq   : [ InitStntuple, StntupleMaker, FillStntuple ]
+
 END_PROLOG
 
 #include "minimalMessageService.fcl"
@@ -193,6 +198,52 @@ physics : {
 
     filters: {
 #------------------------------------------------------------------------------
+# event mixing modules - all clones of the same module.
+# each clone takes certain collections from the input file and adds them to the event
+#------------------------------------------------------------------------------
+        flashMixer           : { @table::mixerTemplate
+	    fileNames : @local::bgHitFiles
+	    detail : { @table::mixerTemplate.detail
+		g4ModuleLabel    :  flashMixer 
+		genModuleLabel   :  flashMixer 
+	    }
+	}
+	ootMixer             : { @table::mixerTemplate
+	    fileNames : @local::bgHitFiles
+	    detail : { @table::mixerTemplate.detail
+		g4ModuleLabel    :  ootMixer 
+		genModuleLabel   :  ootMixer 
+	    }
+	}
+	dioMixer             : { @table::mixerTemplate
+	    fileNames : @local::bgHitFiles
+	    detail : { @table::mixerTemplate.detail
+		g4ModuleLabel    :  dioMixer 
+		genModuleLabel   :  dioMixer 
+	    }
+	}
+	neutronMixer         : { @table::mixerTemplate
+	    fileNames : @local::bgHitFiles
+	    detail : { @table::mixerTemplate.detail
+		g4ModuleLabel    :  neutronMixer 
+		genModuleLabel   :  neutronMixer 
+	    }
+	}
+	photonMixer          : { @table::mixerTemplate
+	    fileNames : @local::bgHitFiles
+	    detail : { @table::mixerTemplate.detail
+		g4ModuleLabel    :  photonMixer 
+		genModuleLabel   :  photonMixer 
+	    }
+	}
+	protonMixer          : { @table::mixerTemplate
+	    fileNames : @local::bgHitFiles
+	    detail : { @table::mixerTemplate.detail
+		g4ModuleLabel    :  protonMixer 
+		genModuleLabel   :  protonMixer 
+	    }
+	}
+#------------------------------------------------------------------------------
 # Stntuple maker sequence
 # store DEM, but 
 #------------------------------------------------------------------------------
@@ -237,9 +288,13 @@ physics : {
     trkpatrec_reco_stnmaker     : [ @sequence::calRecoSeq, @sequence::trkPatRecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
     calpatrec_reco_stnmaker     : [ @sequence::calRecoSeq, @sequence::calPatRecSeq, @sequence::pidSeq, @sequence::stnmakerSeq, EventFilter ]
 #------------------------------------------------------------------------------
-    gen_allpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq ,
-				    @sequence::calRecoSeq  , @sequence::allPatRecSeq,
-				    @sequence::vadimPidSeq , @sequence::stnmakerSeq , EventFilter]
+    gen_allpatrec_reco_stnmaker    : [ @sequence::generatorSeq, @sequence::hitMakerSeq ,
+				       @sequence::calRecoSeq  , @sequence::allPatRecSeq,
+				       @sequence::vadimPidSeq , @sequence::stnmakerSeq , EventFilter]
+
+    genmix_allpatrec_reco_stnmaker : [ @sequence::genMixSeq   , @sequence::hitMakerSeq ,
+				       @sequence::calRecoSeq  , @sequence::allPatRecSeq,
+				       @sequence::vadimPidSeq , @sequence::stnmakerSeq , EventFilter]
 
     gen_trkpatrec_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq ,
 				    @sequence::calRecoSeq  , @sequence::trkPatRecSeq,
@@ -254,6 +309,10 @@ physics : {
     gen_allpatrec_dem_dmm_reco_stnmaker : [ @sequence::generatorSeq, @sequence::hitMakerSeq       ,
 					    @sequence::calRecoSeq  , @sequence::allPatRecDemDmmSeq,
 					    @sequence::avikPidSeq  , @sequence::stnmakerSeq       , EventFilter ]
+
+    genmix_allpatrec_dem_dmm_reco_stnmaker : [ @sequence::genMixSeq , @sequence::hitMakerSeq       ,
+					       @sequence::calRecoSeq, @sequence::allPatRecDemDmmSeq,
+					       @sequence::avikPidSeq, @sequence::stnmakerSeq       , EventFilter ]
 #------------------------------------------------------------------------------
 # event display paths
 #------------------------------------------------------------------------------
