@@ -184,7 +184,10 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         std::cout<<"SiPM: "<<SiPM<<std::endl;
+        std::streamsize origPrecision = std::cout.precision();
+        std::cout.precision (10);
         std::cout<<"Probability: "<<bin.arrivalProbability[SiPM]<<std::endl;
+        std::cout.precision(origPrecision);
         std::cout<<"Time Difference Probabilities: ";
         for(size_t i=0; i<LookupBin::nTimeDelays; i++) std::cout<<i<<"/"<<bin.timeDelays[SiPM][i]<<" ";
         std::cout<<std::endl;
@@ -223,7 +226,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       cerenkovEnergyMin = rindexFiber->GetMinLowEdgeEnergy();
       cerenkovEnergyMax = rindexFiber->GetMaxLowEdgeEnergy();
       LC.cerenkovEnergyIntervalFiber = cerenkovEnergyMax - cerenkovEnergyMin;
-      LC.ratioFastSlow             = scintillatorPropertiesTable->GetConstProperty("YIELDRATIO");
+      LC.ratioFastSlow             = scintillatorPropertiesTable->GetConstProperty("YIELDRATIO");  //will not be used later
       LC.scintillatorDensity       = scintillator->GetDensity();
       LC.scintillatorBirksConstant = scintillator->GetIonisation()->GetBirksConstant();
       LC.fiberSeparation = detector->GetFiberSeparation(),
@@ -310,7 +313,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
   std::vector<double> waveform[4], waveform2[4];
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
+//    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);  //from lookup tables
+    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);  //from full GEANT
 
     std::vector<SiPMresponse> SiPMresponseVector;
     sim.Simulate(photonTimes, SiPMresponseVector);

@@ -50,6 +50,7 @@ namespace mu2e
 
     private:
     std::string _crvPhotonArrivalsModuleLabel;
+    double      _deadSiPMProbability;
     int         _numberPixels;
     int         _numberPixelsAtFiber;
     double      _bias;
@@ -67,6 +68,7 @@ namespace mu2e
 
   CrvSiPMResponsesGenerator::CrvSiPMResponsesGenerator(fhicl::ParameterSet const& pset) :
     _crvPhotonArrivalsModuleLabel(pset.get<std::string>("crvPhotonArrivalsModuleLabel")),
+    _deadSiPMProbability(pset.get<double>("deadSiPMProbability")),   //0.01
     _numberPixels(pset.get<int>("numberPixels")),   //1584
     _numberPixelsAtFiber(pset.get<int>("numberPixelsAtFiber")),   //615
     _bias(pset.get<double>("bias")),                //2.5V
@@ -124,6 +126,8 @@ namespace mu2e
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
+        if(_randFlat.fire() < _deadSiPMProbability) continue;  //assume that this random SiPM is dead
+
         std::vector<double> photonArrivalTimesAdjusted;
         if(crvPhotons!=crvPhotonArrivalsCollection->end())
         {

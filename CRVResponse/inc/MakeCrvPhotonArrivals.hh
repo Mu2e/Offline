@@ -185,6 +185,7 @@ class MakeCrvPhotonArrivals
     int                       GetNumberOfPhotons(int SiPM);
     const std::vector<double> &GetArrivalTimes(int SiPM);
     void                      SetScintillationYield(double scintillationYield) {_scintillationYield=scintillationYield;}
+    void                      SetScintillatorRatioFastSlow(double ratio) {_scintillatorRatioFastSlow=ratio;}
     void                      SetScintillatorDecayTimeFast(double decayTime) {_scintillatorDecayTimeFast=decayTime;}
     void                      SetScintillatorDecayTimeSlow(double decayTime) {_scintillatorDecayTimeSlow=decayTime;}
     void                      SetFiberDecayTime(double decayTime) {_fiberDecayTime=decayTime;}
@@ -195,7 +196,9 @@ class MakeCrvPhotonArrivals
 
     std::vector<double>       _arrivalTimes[4];
     double                    _scintillationYield;
-    double                    _scintillatorDecayTimeFast, _scintillatorDecayTimeSlow; 
+    double                    _scintillatorRatioFastSlow;
+    double                    _scintillatorDecayTimeFast; 
+    double                    _scintillatorDecayTimeSlow; 
     double                    _fiberDecayTime;
 
     double                    _actualHalfLength;

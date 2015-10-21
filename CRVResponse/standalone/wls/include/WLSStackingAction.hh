@@ -35,6 +35,7 @@ class WLSStackingAction : public G4UserStackingAction
     }
 */
 
+//This section can be left for production
     if(track->GetOriginTouchable()!=NULL)
     {
       if(track->GetOriginTouchable()->GetVolume()->GetName()=="World")

@@ -118,7 +118,8 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
           //add scintillation decay time
           if(table==0)  //for scintillation in scintillator
           {
-            if(_randFlat.fire()<=_LC.ratioFastSlow)
+//            if(_randFlat.fire()<=_LC.ratioFastSlow)   //use user variable, instead of lookup value
+            if(_randFlat.fire()<=_scintillatorRatioFastSlow)
               arrivalTime+=-_scintillatorDecayTimeFast*log(_randFlat.fire());
             else
               arrivalTime+=-_scintillatorDecayTimeSlow*log(_randFlat.fire());
@@ -214,6 +215,7 @@ const std::vector<double> &MakeCrvPhotonArrivals::GetArrivalTimes(int SiPM)
   return _arrivalTimes[SiPM];
 }
 
+//average number of cerenkov photons per millimeter
 double MakeCrvPhotonArrivals::GetAverageNumberOfCerenkovPhotons(double beta, double charge, double rindex, double cerenkovEnergyInterval) 
 { 
   const double Rfact = 369.81/(CLHEP::eV * CLHEP::cm); //from G4Cerenkov::GetAverageNumberOfPhotons() 

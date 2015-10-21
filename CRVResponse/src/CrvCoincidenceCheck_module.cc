@@ -380,12 +380,18 @@ namespace mu2e
       std::cout<<(crvCoincidenceCheckResult->CoincidenceFound()?"Coincidence satisfied":"No coincidence found")<<std::endl;
 
       std::vector<CrvCoincidenceCheckResult::DeadTimeWindow> deadTimeWindows;
-      deadTimeWindows = crvCoincidenceCheckResult->GetDeadTimeWindows(25,125);  //TODO: Don't hardcode these numbers
+      deadTimeWindows = crvCoincidenceCheckResult->GetDeadTimeWindows(0,150);  //TODO: Don't hardcode these numbers
 
       double deadTime = 0;
       for(unsigned int i=0; i < deadTimeWindows.size(); i++)
       {
-        deadTime = deadTimeWindows[i]._endTime - deadTimeWindows[i]._startTime;
+        double t1 = deadTimeWindows[i]._startTime;
+        double t2 = deadTimeWindows[i]._endTime;
+        if(t1<_timeWindowStart) t1=_timeWindowStart;
+        if(t2<_timeWindowStart) continue;
+        if(t1>_timeWindowEnd)   continue;
+        if(t2>_timeWindowEnd)   t2=_timeWindowEnd;
+        deadTime = t2 - t1;
         std::cout << "   Found Dead time: " << deadTime << " (" << deadTimeWindows[i]._startTime << " ... " << deadTimeWindows[i]._endTime << ")" << std::endl;
         _totalDeadTime += deadTime;
         if(_verboseLevel>1)
@@ -397,7 +403,7 @@ namespace mu2e
           }
         }
       }
-      _totalTime += _microBunchPeriod;
+      _totalTime += _timeWindowEnd - _timeWindowStart;
       double fractionDeadTime = _totalDeadTime / _totalTime;
       std::cout << "Dead time so far: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%" << std::endl;
     }

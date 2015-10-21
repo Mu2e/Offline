@@ -59,6 +59,7 @@ namespace mu2e
     std::map<double, boost::shared_ptr<MakeCrvPhotonArrivals> > _makeCrvPhotonArrivals;
 
     double      _scintillationYield;
+    double      _scintillatorRatioFastSlow;
     double      _scintillatorDecayTimeFast;
     double      _scintillatorDecayTimeSlow;
     double      _fiberDecayTime;
@@ -78,9 +79,10 @@ namespace mu2e
     _processNames(pset.get<std::vector<std::string> >("processNames")),
     _lookupTableFileNames(pset.get<std::vector<std::string> >("lookupTableFileNames")),
     _lookupTableCounterLengths(pset.get<std::vector<double> >("lookupTableCounterLengths")),
-    _scintillationYield(pset.get<double>("scintillationYield")),    //1750.0 photons per MeV
-    _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast")), //3.0 ns
-    _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow")), //10.0 ns
+    _scintillationYield(pset.get<double>("scintillationYield")),    //2000.0 photons per MeV
+    _scintillatorRatioFastSlow(pset.get<double>("scintillatorRatioFastSlow")), //1.0
+    _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast")), //10.0 ns, includes WLS components in the scintillator
+    _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow")), //100.0 ns, unknown, not used
     _fiberDecayTime(pset.get<double>("fiberDecayTime")),     //7.4 ns
     _startTime(pset.get<double>("startTime")),               //0.0 ns
     _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet())),
@@ -96,6 +98,7 @@ namespace mu2e
       std::map<double, boost::shared_ptr<MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
       iterCPA->second->LoadLookupTable(_lookupTableFileNames[i].c_str());
       iterCPA->second->SetScintillationYield(_scintillationYield);
+      iterCPA->second->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);
       iterCPA->second->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
       iterCPA->second->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
       iterCPA->second->SetFiberDecayTime(_fiberDecayTime);

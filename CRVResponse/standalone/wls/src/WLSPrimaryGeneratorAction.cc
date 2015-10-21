@@ -49,10 +49,10 @@ WLSPrimaryGeneratorAction::WLSPrimaryGeneratorAction(int mode, int numberOfPhoto
   }
   if(_mode==0)
   {
-    G4ParticleDefinition* particle = particleTable->FindParticle("proton");
+//    G4ParticleDefinition* particle = particleTable->FindParticle("proton");
 //    G4ParticleDefinition* particle = particleTable->FindParticle("neutron");
 //    G4ParticleDefinition* particle = particleTable->FindParticle("gamma");
-//    G4ParticleDefinition* particle = particleTable->FindParticle("mu-");
+    G4ParticleDefinition* particle = particleTable->FindParticle("mu-");
     _particleGun->SetParticleDefinition(particle);
     _particleGun->SetParticleMomentumDirection(G4ThreeVector(1., 0., 0.));
 //    _particleGun->SetParticleMomentumDirection(G4ThreeVector(1.0, -0.9, -5.0));
@@ -152,9 +152,9 @@ bool WLSPrimaryGeneratorAction::SetNextBins()
               _maxBinZ=zBins[zbin+1];
               if(_verbose)
               {
-                std::cout<<"X: "<<_minBinX<<" ... "<<_maxBinX<<std::endl;
-                std::cout<<"Y: "<<_minBinY<<" ... "<<_maxBinY<<std::endl;
-                std::cout<<"Z: "<<_minBinZ<<" ... "<<_maxBinZ<<std::endl;
+                std::cout<<"X: "<<_minBinX<<" ... "<<_maxBinX<<"    bin# "<<xbin<<"/"<<nXBins<<std::endl;
+                std::cout<<"Y: "<<_minBinY<<" ... "<<_maxBinY<<"    bin# "<<ybin<<"/"<<nYBins<<std::endl;
+                std::cout<<"Z: "<<_minBinZ<<" ... "<<_maxBinZ<<"    bin# "<<zbin<<"/"<<nZBins<<std::endl;
               }
             }
             break;
@@ -396,17 +396,20 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   if(_mode==0)
   {
 //    double beamsize=2.0*mm;
-    double beamsize=1.0*mm;
+//    double beamsize=1.0*mm;
+    double beamsize=0.0*mm;
     double x0 = -1.0*cm;
-    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);    //center
+//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);    //center
+    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,-1.0*cm,beamsize);    //at fiber 0
 
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-149.0*cm,beamsize);  //1cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-140.0*cm,beamsize);  //10cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-130.0*cm,beamsize);  //20cm from left side
-    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-125.0*cm,beamsize);  //25cm from left side
+//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-125.0*cm,beamsize);  //25cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-50.0*cm,beamsize);  //100cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);  //150cm from left side (center)
 
+    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-180.0*cm,beamsize);  //100cm from left side of 5.6m counter
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-255.0*cm,beamsize);  //25cm from left side of 5.6m counter
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-260.0*cm,beamsize);  //20cm from left side of 5.6m counter
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-265.0*cm,beamsize);  //15cm from left side of 5.6m counter

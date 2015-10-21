@@ -70,7 +70,6 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
   if(theStatus==Detection)
   {
      G4VPhysicalVolume* thePostPV = theStep->GetPostStepPoint()->GetPhysicalVolume();
-     G4String thePostPVname = " ";
      if(thePostPV)
      {
          if(thePostPV->GetName()=="PhotonDet")
