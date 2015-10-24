@@ -61,15 +61,16 @@ class VaneCalorimeter: public BaseCalorimeter{
 		  
 	
 	  //geometry components / print
-          virtual bool              isInsideCalorimeter(CLHEP::Hep3Vector const& pos)              const;        
-          virtual bool              isInsideSection(int iSection, CLHEP::Hep3Vector const& pos)    const;
-	  virtual void              print()                                                        const;
+          virtual bool              isInsideCalorimeter(CLHEP::Hep3Vector const& pos)                      const;        
+          virtual bool              isInsideSection(int iSection, CLHEP::Hep3Vector const& pos)            const;
+	  virtual bool              isContainedSection(CLHEP::Hep3Vector const&, CLHEP::Hep3Vector const&) const;
+	  virtual void              print()                                                                const;
 
 
 
 	  //crystal id and neighbors component
-	  virtual int               crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)            const;
-          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)                      const; 
+	  virtual int               crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)                   const;
+          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)                             const; 
 
 
           

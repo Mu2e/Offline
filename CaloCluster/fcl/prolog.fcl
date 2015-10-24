@@ -12,6 +12,7 @@ BEGIN_PROLOG
 	  EminSeed               : 10
 	  ExpandCut              : 0.9
 	  EnoiseCut              : 0.9
+	  timeCut                : 500
 	  deltaTimePlus          : 10
 	  deltaTimeMinus         : 10
 	  diagLevel              : 0

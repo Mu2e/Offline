@@ -39,6 +39,16 @@ namespace mu2e {
 	return true;
     }
         
+    
+    bool DiskCalorimeter::isContainedSection(CLHEP::Hep3Vector const& start,CLHEP::Hep3Vector const& stop) const 
+    {   
+	//for (unsigned int idisk=0;idisk<_nSections;++idisk) 
+	//   if (isInsideSection(idisk,start) && isInsideSection(idisk,stop)) return true;
+	//return false;
+
+	//this is a more efficient way of doing this in the case of two disks
+	return abs(stop.z()-start.z()) < (*_sections.at(0)).size().z();
+    }
 	 
 
 

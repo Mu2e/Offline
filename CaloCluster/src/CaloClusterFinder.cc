@@ -12,9 +12,7 @@
 
 // C++ includes
 #include <iostream>
-#include <queue>
-#include <list>
-#include <unordered_map>
+#include <vector>
 #include <algorithm>
 
 

@@ -1,3 +1,29 @@
+//
+// The clustering is performed in several stages, using the folowing data structures:
+//  - bidimensional array that have a list of energy deposits for each crystal id (prefilter low energy deposits to speed up things)
+//  - bidimensional array of the same size filled with 1 or 0 to indicate whether a crystal has been assigned to a cluster (0) or not (1)
+//  - list of seeds: the most energetic unassigned hit for each crystal
+
+// The clustering proceeds in three steps: form energetic proto-clusters, look at split-offs and form final clusters. The first two steps are done by MakeCaloProtoCluster
+// and produce proto-clsuters. The last step is done by MakeCaloCluster, and procudes a cluster
+
+// 1. Energetic proto-clusters (clusters above some threshold energy)
+//    - start from the most energetic seed (over some threshold)
+//    - form a proto-cluster by adding all simply connected cluster to the seed (simply connected = any two hits in a cluster can be joined 
+//      by a continuous path of clusters in the crystal)
+//    - flag the correpsonding hits as assigned, and update the seed list
+//
+// 2. Split-offs: some clusters might have low-energy split-offs, and we need to find them
+//    - filter the remaining unassigned hits to retain only those compatible with the time of the main clusters (there are a lot of background low energy deposits
+//      incompatible with any clsuter, we don't want them)
+//    - update the seed lists and form all remaining clusters as before
+//
+// 3. Cluster formation
+//    - merge proto-clusters and split-offs to form clusters ifg they are "close" enough
+//
+// Original author: B. Echenard
+
+
 
 // C++ includes.
 #include <iostream>
@@ -64,6 +90,7 @@ class MakeCaloProtoCluster : public art::EDProducer {
              _EminSeed(pset.get<double>("EminSeed")),
              _EnoiseCut(pset.get<double>("EnoiseCut")),
              _ExpandCut(pset.get<double>("ExpandCut")),
+             _timeCut(pset.get<double>("timeCut")),
              _deltaTimePlus(pset.get<double>("deltaTimePlus")),
              _deltaTimeMinus(pset.get<double>("deltaTimeMinus")),
              _messageCategory("CLUSTER")
@@ -89,6 +116,7 @@ class MakeCaloProtoCluster : public art::EDProducer {
              double      _EminSeed;
              double      _EnoiseCut;
              double      _ExpandCut;
+             double      _timeCut;
              double      _deltaTimePlus;
              double      _deltaTimeMinus;
 
@@ -121,19 +149,17 @@ class MakeCaloProtoCluster : public art::EDProducer {
 
 	 // Check that calorimeter geometry description exists
 	 art::ServiceHandle<GeometryService> geom;
-	 //	 if( !(geom->hasElement<Calorimeter>()) ) return;
+	 if( !(geom->hasElement<Calorimeter>()) ) return;
 
 	 //Get handles to calorimeter crystal hits
 	 art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
 	 event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
+	 if ( !caloCrystalHitsHandle.isValid()) return;
 
 	 //Create a new CaloCluster collection and fill it
 	 std::unique_ptr<CaloProtoClusterCollection> caloProtoClustersMain(new CaloProtoClusterCollection);
 	 std::unique_ptr<CaloProtoClusterCollection> caloProtoClustersSplit(new CaloProtoClusterCollection);
-
-	 if ( caloCrystalHitsHandle.isValid()) { 
-	   MakeCaloProtoClusters(*caloProtoClustersMain,*caloProtoClustersSplit,caloCrystalHitsHandle);
-	 }
+	 MakeCaloProtoClusters(*caloProtoClustersMain,*caloProtoClustersSplit,caloCrystalHitsHandle);
 
 	 event.put(std::move(caloProtoClustersMain),  _producerNameMain);
 	 event.put(std::move(caloProtoClustersSplit), _producerNameSplit);
@@ -144,6 +170,7 @@ class MakeCaloProtoCluster : public art::EDProducer {
 
 
 
+     //----------------------------------------------------------------------------------------------------------
      void MakeCaloProtoCluster::MakeCaloProtoClusters(CaloProtoClusterCollection& caloProtoClustersMain, 
                                                       CaloProtoClusterCollection& caloProtoClustersSplit,
                                 	              art::Handle<CaloCrystalHitCollection> const& caloCrystalHitsHandle)
@@ -168,6 +195,7 @@ class MakeCaloProtoCluster : public art::EDProducer {
 	    for (auto const& hit : caloCrystalHits)
 	    {
 	       if (hit.energyDep() < _EnoiseCut) continue;
+	       if (hit.time()      < _timeCut)   continue;
 	       caloIdHitMap[hit.id()].push_back(&hit);     
 	       seedList.add(hit);     
 	    }   
@@ -235,16 +263,15 @@ class MakeCaloProtoCluster : public art::EDProducer {
 		  if (_diagLevel ) std::cout<<(*il)->id()<<" "; 
 		}
 
-		CaloProtoCluster caloprotoCluster(seed_time,totalEnergy,caloCrystalHitPtrVector,isSplit);	      
-		caloProtoClustersMain.push_back(caloprotoCluster);
+		caloProtoClustersMain.push_back(CaloProtoCluster(seed_time,totalEnergy,caloCrystalHitPtrVector,isSplit));
 
 		if (_diagLevel) std::cout<<" with energy="<<totalEnergy<<" and time="<<seed_time<<std::endl;;
 	    }
+	    
 
 
 	    for (unsigned int i=0;i<splitClusterList.size();++i)
 	    {
-
 		if (_diagLevel) std::cout<<"This split-off cluster contains "<<splitClusterList[i].size()<<" crystals, id= ";
 
 		CaloCrystalList& thisList   = splitClusterList[i];
@@ -264,11 +291,13 @@ class MakeCaloProtoCluster : public art::EDProducer {
 	          if (_diagLevel ) std::cout<<(*il)->id()<<" "; 
 		}
 
-	        CaloProtoCluster caloprotoCluster(seed_time,totalEnergy,caloCrystalHitPtrVector,isSplit);	      
-		caloProtoClustersSplit.push_back(caloprotoCluster);
+		caloProtoClustersSplit.push_back(CaloProtoCluster(seed_time,totalEnergy,caloCrystalHitPtrVector,isSplit));
 
 		if (_diagLevel) std::cout<<" with energy="<<totalEnergy<<" and time="<<seed_time<<std::endl;;
 	    }
+
+	    std::sort(caloProtoClustersMain.begin(), caloProtoClustersMain.end(),[](CaloProtoCluster const& a, CaloProtoCluster const& b) {return a.time() < b.time();});
+	    std::sort(caloProtoClustersSplit.begin(), caloProtoClustersSplit.end(),[](CaloProtoCluster const& a, CaloProtoCluster const& b) {return a.time() < b.time();});
 
      }
 
@@ -276,6 +305,7 @@ class MakeCaloProtoCluster : public art::EDProducer {
 
 
 
+     //----------------------------------------------------------------------------------------------------------
      void MakeCaloProtoCluster::filterByTime(CaloCrystalVec& vec, std::vector<double>& clusterTime)
      {
 
@@ -298,6 +328,7 @@ class MakeCaloProtoCluster : public art::EDProducer {
      }
 
     
+     //----------------------------------------------------------------------------------------------------------
      void MakeCaloProtoCluster::dump(std::vector<CaloCrystalVec>& caloIdHitMap)
      {
 

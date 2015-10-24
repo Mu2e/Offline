@@ -33,29 +33,26 @@ namespace mu2e {
 	     
 	     
 	     CaloClusterAssociator(Calorimeter const& cal): _cal(cal),_associatedMainId(), _associatedSplitId() {};              
-
 	     ~CaloClusterAssociator(){};
 	     	     
-
 
              void      associateSplitOff(CaloProtoClusterCollection const& mainClusterColl, 
 	                                 CaloProtoClusterCollection const& splitClusterColl, 
 	                                 double deltaTimePlus, double deltaTimeMinus,double maxDist);
-             void      associateMain(CaloProtoClusterCollection const& clusterColl, 
-				     double deltaTimePlus, double deltaTimeMinus, double maxDist);  
+             void      associateMain(CaloProtoClusterCollection const& clusterColl, double deltaTime, double maxDist);  
 					 
 	     double    closestDistance(CaloCrystalHitPtrVector const& cluster, CaloCrystalHitPtrVector const& cluster2);
 
-             unsigned  associatedMainId(unsigned int i)    const {return _associatedMainId.find(i)->second;}
-             unsigned  associatedSplitId(unsigned int i)   const {return _associatedSplitId.find(i)->second;}
+             unsigned  associatedMainId(unsigned int i)  const {return _associatedMainId.find(i)->second;}
+             unsigned  associatedSplitId(unsigned int i) const {return _associatedSplitId.find(i)->second;}
 	     
 
 	 private:
              
-	     Calorimeter const&                   _cal;
+	     Calorimeter const& _cal;
 	     
-	     std::map<unsigned int,int>  _associatedMainId;
-	     std::map<unsigned int,int>  _associatedSplitId;
+	     std::unordered_map<unsigned int,int>  _associatedMainId;
+	     std::unordered_map<unsigned int,int>  _associatedSplitId;
 	     
     };
 

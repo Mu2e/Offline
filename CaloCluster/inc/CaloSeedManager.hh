@@ -11,8 +11,8 @@
 
 
 // C++ includes
-#include <unordered_map>
-#include <map>
+#include <vector>
+#include <list>
 
 
 namespace mu2e {
@@ -40,13 +40,12 @@ namespace mu2e {
              void checkSeedbyId(int iId, CaloCrystalVec const& hits);
              void dumpSeed();
 	
-	
+		
 	     
 	 private:
  	     
 	     std::vector<CaloCrystalHit const*> _seedMap;
-	     SeedType _seedMode;
-
+	     SeedType                           _seedMode;
   
     };
 

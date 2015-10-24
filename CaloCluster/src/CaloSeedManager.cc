@@ -21,6 +21,7 @@
 namespace mu2e {
 
 
+       //----------------------------------------------------------------------------------------------------------
        void CaloSeedManager::add(CaloCrystalHit const& i) 
        { 
 	    int id = i.id();
@@ -34,6 +35,7 @@ namespace mu2e {
        }   
 
 
+       //----------------------------------------------------------------------------------------------------------
        CaloCrystalHit const* CaloSeedManager::seed()
        { 
 	    if (_seedMap.empty()) return nullptr;
@@ -51,6 +53,7 @@ namespace mu2e {
        }
 	 	 
 
+       //----------------------------------------------------------------------------------------------------------
        void CaloSeedManager::checkSeedbyList(CaloCrystalList const& crystalsInCluster, std::vector<CaloCrystalVec> const& idHitMap )
        {        
 
@@ -62,6 +65,7 @@ namespace mu2e {
        }
 
        
+       //----------------------------------------------------------------------------------------------------------
        void CaloSeedManager::checkSeedbyId(int iId, CaloCrystalVec const& hits)
        {
                 
@@ -78,10 +82,9 @@ namespace mu2e {
            
            _seedMap[iId] = newSeed;       
        }         
-
-      
-       	 
-    
+             	 
+   
+       //----------------------------------------------------------------------------------------------------------
        void CaloSeedManager::dumpSeed()
        {         
 	   std::cout<<"Seeds list"<<std::endl;

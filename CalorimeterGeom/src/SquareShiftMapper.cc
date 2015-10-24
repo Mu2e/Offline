@@ -133,6 +133,8 @@ namespace mu2e {
 	 int l =          nPos*_step[nSeg]._l;
 	 int k = -nRing + nPos*_step[nSeg]._k;
 
+	 
+	 //pre-calculae this 
 	 for (int i=0;i<nSeg;++i)
 	 {
 	    l += _step[i]._l*nRing;

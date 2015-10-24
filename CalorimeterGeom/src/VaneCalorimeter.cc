@@ -40,6 +40,12 @@ namespace mu2e {
 	return true;
     }
   
+    bool VaneCalorimeter::isContainedSection(CLHEP::Hep3Vector const& start, CLHEP::Hep3Vector const& stop) const 
+    {   
+	for (unsigned int ivane=0;ivane<_nSections;++ivane) 
+	   if (isInsideSection(ivane,start) && isInsideSection(ivane,stop)) return true;
+	return false;
+    }
 
    
     int VaneCalorimeter::crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const 

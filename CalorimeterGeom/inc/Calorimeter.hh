@@ -42,25 +42,26 @@ namespace mu2e {
 
 	  
 	  // coordinate position and transformation - origin refers to the Mu2e frame
-	  virtual CLHEP::Hep3Vector const& origin()                                                           const = 0; 	  
+	  virtual CLHEP::Hep3Vector const& origin()                                                               const = 0; 	  
 	  
-	  virtual CLHEP::Hep3Vector        toCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos)        const = 0;
-	  virtual CLHEP::Hep3Vector        toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos)        const = 0;
-	  virtual CLHEP::Hep3Vector        toSectionFrameFF(int sectionId, CLHEP::Hep3Vector const& pos)      const = 0;
-	  virtual CLHEP::Hep3Vector        toTrackerFrame(CLHEP::Hep3Vector const& pos)                       const = 0;
+	  virtual CLHEP::Hep3Vector        toCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos)            const = 0;
+	  virtual CLHEP::Hep3Vector        toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos)            const = 0;
+	  virtual CLHEP::Hep3Vector        toSectionFrameFF(int sectionId, CLHEP::Hep3Vector const& pos)          const = 0;
+	  virtual CLHEP::Hep3Vector        toTrackerFrame(CLHEP::Hep3Vector const& pos)                           const = 0;
 	  
-	  virtual CLHEP::Hep3Vector        fromCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos)      const = 0;
-	  virtual CLHEP::Hep3Vector        fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos)      const = 0;
-	  virtual CLHEP::Hep3Vector        fromSectionFrameFF(int sectionId, CLHEP::Hep3Vector const& pos)    const = 0;
-	  virtual CLHEP::Hep3Vector        fromTrackerFrame(CLHEP::Hep3Vector const& pos)                     const = 0;
+	  virtual CLHEP::Hep3Vector        fromCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos)          const = 0;
+	  virtual CLHEP::Hep3Vector        fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos)          const = 0;
+	  virtual CLHEP::Hep3Vector        fromSectionFrameFF(int sectionId, CLHEP::Hep3Vector const& pos)        const = 0;
+	  virtual CLHEP::Hep3Vector        fromTrackerFrame(CLHEP::Hep3Vector const& pos)                         const = 0;
           
-	  virtual CLHEP::Hep3Vector        crystalOrigin(int crystalId)                                       const = 0;	  
-	  virtual CLHEP::Hep3Vector        crystalOriginInSection(int crystalId)                              const = 0;
-	  virtual int                      crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)               const = 0;
+	  virtual CLHEP::Hep3Vector        crystalOrigin(int crystalId)                                           const = 0;	  
+	  virtual CLHEP::Hep3Vector        crystalOriginInSection(int crystalId)                                  const = 0;
+	  virtual int                      crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)                   const = 0;
 
-	  virtual bool                     isInsideCalorimeter(CLHEP::Hep3Vector const& pos)                  const = 0;
-	  virtual bool                     isInsideSection(int iSection, CLHEP::Hep3Vector const& pos)        const = 0;
-	  virtual void                     print()                                                            const = 0;
+	  virtual bool                     isInsideCalorimeter(CLHEP::Hep3Vector const& pos)                      const = 0;
+	  virtual bool                     isInsideSection(int iSection, CLHEP::Hep3Vector const& pos)            const = 0;
+	  virtual bool                     isContainedSection(CLHEP::Hep3Vector const&, CLHEP::Hep3Vector const&) const = 0;
+	  virtual void                     print()                                                                const = 0;
 
 	  
 
