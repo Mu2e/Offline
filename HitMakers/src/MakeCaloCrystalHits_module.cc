@@ -326,6 +326,8 @@ namespace mu2e {
     }
 
 
+    //sort hits by time, important for clustering
+    std::sort(caloCrystalHits.begin(),caloCrystalHits.end(),[](CaloCrystalHit const& a, CaloCrystalHit const& b) {return a.time() < b.time();});	    
 
 
     //Each CaloCrystalHit has the sum of the signal APD, must rescale for the total ebergy

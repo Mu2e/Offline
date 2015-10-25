@@ -1,6 +1,9 @@
 //
-// Utility class to associate proto-clusters together, separated into 
-// two medium energy clusters or a cluster and a split-off (might want to treat them differently)
+// Utility class to associate proto-clusters together  
+//  - low energy clusters (split-off) are associated to a single high energy cluster
+//  - several high-energy clusters canbe associated together. Currently, all clusters 
+//    that are linked together are regrouped into one cluster (i.e. A is linked to B, 
+//    and B to C, then ABC are grouped together)
 // 
 // Original author B. Echenard
 //
@@ -60,38 +63,59 @@ namespace mu2e {
        } 
  
 
-
-
-       //----------------------------------------------------------------------------------------------------------
+       //------------------------------------------------------------------------------------------------------------------------
+       //if you want to turn-off chain linking (see note above), uncomment line 1 and comment after line 2
        void CaloClusterAssociator::associateMain(CaloProtoClusterCollection const& clusterColl, double deltaTime, double maxDist)  
        { 
           
+	  std::vector<int>                isAssociatedTo(clusterColl.size(),-1);
+	  std::vector<std::vector<int> >  associatedId(clusterColl.size());
+	  
 	  _associatedMainId.clear();
-
+		 
           for (unsigned int i=0;i<clusterColl.size(); ++i)
-	  {	   	     
-	      double minDist(1e6);
-	      int jmin(-1);
-
+	  {	   	     	       
+	      _associatedMainId[i].clear();
 	      CaloCrystalHitPtrVector const& FirstHitsPtr = clusterColl[i].caloCrystalHitsPtrVector();	     
-
+	      
 	      for (unsigned int j=i+1;j<clusterColl.size();++j)
 	      {
-		 if (clusterColl[j].time() - clusterColl[i].time() > deltaTime) break;
+		   if (isAssociatedTo[j] > -1) continue;
+		   if (clusterColl[j].time() - clusterColl[i].time() > deltaTime) break;
 		 
-		 CaloCrystalHitPtrVector const& SecondHitsPtr = clusterColl[j].caloCrystalHitsPtrVector();	     
-
-		 double dist = closestDistance(FirstHitsPtr,SecondHitsPtr);
-		 if (dist < minDist) {minDist=dist; jmin=j;} 
+		   CaloCrystalHitPtrVector const& SecondHitsPtr = clusterColl[j].caloCrystalHitsPtrVector();	     
+		   double dist = closestDistance(FirstHitsPtr,SecondHitsPtr);
+		   if (dist > maxDist) continue;
+		 
+		   isAssociatedTo[j] = i;
+		   associatedId[i].push_back(j);
+		   //_associatedMainId[i].push_back(j); //line 1
 	      }	  
-              
-	      _associatedMainId[i] = jmin;
 	  }
+	  	  
+	  //line 2
+	  for (unsigned int i=0;i<associatedId.size();++i)
+	  {	       
+	       std::set<int> neighbors;
+	       std::queue<int> list;
+	       for (int id : associatedId[i]){neighbors.insert(id); list.push(id);}
+	       
+	       while (!list.empty())
+	       {
+	            int nextId = list.front();
+		    for (int id : associatedId[nextId]) {neighbors.insert(id); list.push(id);}
+	            associatedId[nextId].clear();  
+		    list.pop();	       
+	       }
+	       for (int id : neighbors) _associatedMainId[i].push_back(id);
+	  }
+
 	    	    
        } 
+
  
-
-
+ 
+ 
  
        //----------------------------------------------------------------------------------------------------------
        double CaloClusterAssociator::closestDistance(CaloCrystalHitPtrVector const& cluster, CaloCrystalHitPtrVector const& cluster2)

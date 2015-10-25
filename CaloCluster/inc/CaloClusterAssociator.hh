@@ -32,7 +32,7 @@ namespace mu2e {
 
 	     
 	     
-	     CaloClusterAssociator(Calorimeter const& cal): _cal(cal),_associatedMainId(), _associatedSplitId() {};              
+	     CaloClusterAssociator(Calorimeter const& cal): _cal(cal), _associatedSplitId(), _associatedMainId() {};              
 	     ~CaloClusterAssociator(){};
 	     	     
 
@@ -43,16 +43,16 @@ namespace mu2e {
 					 
 	     double    closestDistance(CaloCrystalHitPtrVector const& cluster, CaloCrystalHitPtrVector const& cluster2);
 
-             unsigned  associatedMainId(unsigned int i)  const {return _associatedMainId.find(i)->second;}
-             unsigned  associatedSplitId(unsigned int i) const {return _associatedSplitId.find(i)->second;}
+             std::vector<unsigned int> const& associatedMainId(unsigned int i)  const {return _associatedMainId.find(i)->second;}
+             unsigned                         associatedSplitId(unsigned int i) const {return _associatedSplitId.find(i)->second;}
 	     
 
 	 private:
              
 	     Calorimeter const& _cal;
 	     
-	     std::unordered_map<unsigned int,int>  _associatedMainId;
-	     std::unordered_map<unsigned int,int>  _associatedSplitId;
+	     std::unordered_map<unsigned int, unsigned int>               _associatedSplitId;
+	     std::unordered_map<unsigned int,std::vector<unsigned int> >  _associatedMainId;
 	     
     };
 

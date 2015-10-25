@@ -30,7 +30,7 @@ namespace mu2e {
 	     typedef std::vector<CaloCrystalHit const*>  CaloCrystalVec;
 
 
-	     CaloClusterFinder(Calorimeter const& cal, CaloCrystalHit const& crystalSeed, double deltaTimePlus, double deltaTimeMinus, double ExpandCut);              
+	     CaloClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed, double deltaTimePlus, double deltaTimeMinus, double ExpandCut);              
 	     ~CaloClusterFinder(){};
 	     
 	     
@@ -38,7 +38,6 @@ namespace mu2e {
 	     CaloCrystalList const& inspected()    const {return _inspected;}
 	     
              void formCluster(std::vector<CaloCrystalVec>& idHitVec);
-
 
 	 private:
              

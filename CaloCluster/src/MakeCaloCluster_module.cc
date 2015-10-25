@@ -49,6 +49,7 @@
 // Other includes.
 #include "cetlib/exception.h"
 
+#include "TH1D.h"
 
 
 
@@ -72,7 +73,8 @@ class MakeCaloCluster : public art::EDProducer {
              _maxDistMain(pset.get<double>("maxDistMain")),                
              _cogTypeName(pset.get<std::string>("cogTypeName")),
 	     _cogType(CaloClusterMoments::Linear),                
-             _messageCategory("CLUSTER")
+             _messageCategory("CLUSTER"),
+	     _hE(0)
              {
                  produces<CaloClusterCollection>();
              }
@@ -92,11 +94,12 @@ class MakeCaloCluster : public art::EDProducer {
              double             _deltaTimeMinus;
              double             _maxDistSplit;
              double             _maxDistMain;
-             std::string        _cogTypeName;
-	     
+             std::string        _cogTypeName;	     
 	     CaloClusterMoments::cogtype _cogType;
-
              const std::string  _messageCategory;
+            
+	     TH1F *_hE;
+
 
              void makeCaloClusters(CaloClusterCollection& caloClusters, 
                                    CaloProtoClusterCollection const& caloClustersMain, 
@@ -113,6 +116,9 @@ class MakeCaloCluster : public art::EDProducer {
      {
          if (_cogTypeName.compare("Linear")) _cogType = CaloClusterMoments::Linear;	 
          if (_cogTypeName.compare("Logarithm")) _cogType = CaloClusterMoments::Logarithm;	 
+
+         art::ServiceHandle<art::TFileService> tfs;
+         _hE  = tfs->make<TH1F>("clusterEnergy","Cluster energy",150,0,150.);
      }
 
 
@@ -157,9 +163,7 @@ class MakeCaloCluster : public art::EDProducer {
 	    CaloProtoClusterCollection caloProtoClustersTemp;
 
             CaloClusterAssociator associator(cal);
-
             associator.associateSplitOff(caloClustersMain, caloClustersSplit, _deltaTimePlus, _deltaTimeMinus,_maxDistSplit);
-
 
 
             // associate split-off to main cluster
@@ -175,7 +179,7 @@ class MakeCaloCluster : public art::EDProducer {
 
 
 		  //look at the main cluster
-		  if (_diagLevel) std::cout<<"Associated main cluster with id= ";
+		  if (_diagLevel) std::cout<<"Associated main cluster "<<imain <<" at time "<<seed_time<<" with id= ";
 
 		  for (auto il = main.begin(); il !=main.end(); ++il)
 		  {
@@ -185,20 +189,20 @@ class MakeCaloCluster : public art::EDProducer {
 		  }
 
 
-        	  //adding split-off here
-		  if (_diagLevel) std::cout<<"with split-off with id= ";
-
+        	  //adding split-off here		  
 		  for (unsigned int isplit=0;isplit<caloClustersSplit.size();++isplit)
 		  {		    
 		      if (associator.associatedSplitId(isplit) != imain) continue;
                       isSplit = true;
-
+                      
+		      if (_diagLevel) std::cout<<"with split-off with id= ";
 		      auto const& split = caloClustersSplit.at(isplit).caloCrystalHitsPtrVector();
 		      for (auto il = split.begin(); il !=split.end(); ++il)
 		      {
 			  totalEnergy += (*il)->energyDep();
 			  caloCrystalHitPtrVector.push_back(*il);
 			  if (_diagLevel ) std::cout<<(*il)->id()<<" "; 
+			  //if (_diagLevel ) std::cout<<(*il)->id()<<" "<<cal.crystalOrigin((*il)->id()); 
 		      }
         	  }
 	          if (_diagLevel) std::cout<<std::endl;
@@ -209,7 +213,7 @@ class MakeCaloCluster : public art::EDProducer {
 
 
 	      
-	      
+
 	      // combine main clusters together (split-off included in main clusters at this point)
 	      associator.associateMain(caloProtoClustersTemp, _deltaTimePlus, _maxDistMain);
 	      
@@ -225,12 +229,10 @@ class MakeCaloCluster : public art::EDProducer {
 		    bool   isSplit                 = caloProtoClustersTemp.at(iproto).isSplit();
 		    double totalEnergy             = caloProtoClustersTemp.at(iproto).energyDep();
 
-		    int iassoc = associator.associatedMainId(iproto);
-
-                    if (_diagLevel) std::cout<<"The associated main cluster for id="<<iproto<<"  is "<<iassoc<<std::endl;
-		    if (iassoc >-1) 
+		    for (int iassoc : associator.associatedMainId(iproto))
 		    {
-		        flagProto[iassoc] = 1;
+		        if (_diagLevel) std::cout<<"Associated to main cluster id="<<iproto<<"   main split="<<iassoc<<std::endl;
+			flagProto[iassoc] = 1;
 		        totalEnergy += caloProtoClustersTemp.at(iassoc).energyDep();
 		        isSplit += caloProtoClustersTemp.at(iassoc).isSplit();
                         caloCrystalHitPtrVector.insert(caloCrystalHitPtrVector.end(), 
@@ -250,7 +252,7 @@ class MakeCaloCluster : public art::EDProducer {
 		    {
 		        std::cout<<"Making a new cluster with id= ";
 		        for (auto il = caloCrystalHitPtrVector.begin(); il !=caloCrystalHitPtrVector.end(); ++il) std::cout<<(*il)->id()<<" "; 
-		        std::cout<<std::endl;
+		        
                     }
 
 		    CaloCluster caloCluster(seed_section,seed_time,totalEnergy,caloCrystalHitPtrVector,isSplit);	      
@@ -267,7 +269,9 @@ class MakeCaloCluster : public art::EDProducer {
 		    caloClusters.push_back(caloCluster);
 
 		    if (_diagLevel) std::cout<<" (size="<<caloCluster.size()<<") with energy="<<totalEnergy<<" and time="<<seed_time
-		                             <<"  and cog= "<<cogCalculator.cog()<<std::endl;
+		                             <<"  and cog= "<<cogCalculator.cog()<<std::endl; 
+					     
+                    _hE->Fill(totalEnergy);
 	      }
 
 

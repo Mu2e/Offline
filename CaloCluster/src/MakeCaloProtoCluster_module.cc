@@ -5,7 +5,7 @@
 //  - list of seeds: the most energetic unassigned hit for each crystal
 
 // The clustering proceeds in three steps: form energetic proto-clusters, look at split-offs and form final clusters. The first two steps are done by MakeCaloProtoCluster
-// and produce proto-clsuters. The last step is done by MakeCaloCluster, and procudes a cluster
+// and produce proto-clusters. The last step is done by MakeCaloCluster, and procudes a cluster
 
 // 1. Energetic proto-clusters (clusters above some threshold energy)
 //    - start from the most energetic seed (over some threshold)
@@ -20,6 +20,9 @@
 //
 // 3. Cluster formation
 //    - merge proto-clusters and split-offs to form clusters ifg they are "close" enough
+//
+// Note: one can try to filter the hits first, before producing energetic proto-clusters (use two iterators on the time ordered crystal list). 
+//       The performance difference is very small compared to this implementation, but more obscure, so for clarity, I kept this one
 //
 // Original author: B. Echenard
 
@@ -197,7 +200,7 @@ class MakeCaloProtoCluster : public art::EDProducer {
 	       if (hit.energyDep() < _EnoiseCut) continue;
 	       if (hit.time()      < _timeCut)   continue;
 	       caloIdHitMap[hit.id()].push_back(&hit);     
-	       seedList.add(hit);     
+	       seedList.add(&hit);     
 	    }   
 
 
@@ -207,7 +210,7 @@ class MakeCaloProtoCluster : public art::EDProducer {
 	    {
 	       if (crystalSeed->energyDep() < _EminSeed) break;
 
-	       CaloClusterFinder finder(cal,*crystalSeed,_deltaTimePlus,_deltaTimeMinus, _ExpandCut);
+	       CaloClusterFinder finder(cal,crystalSeed,_deltaTimePlus,_deltaTimeMinus, _ExpandCut);
 	       finder.formCluster(caloIdHitMap);	 
 
 	       CaloCrystalList crystalsInCluster = finder.clusterList();
@@ -215,7 +218,6 @@ class MakeCaloProtoCluster : public art::EDProducer {
                clusterTime.push_back(crystalSeed->time());
 
 	       seedList.checkSeedbyList(finder.inspected(),caloIdHitMap);
-
 	    }  
 
             
@@ -224,14 +226,13 @@ class MakeCaloProtoCluster : public art::EDProducer {
 	    {
 	       filterByTime(caloIdHitMap[i], clusterTime);
 	       seedList.checkSeedbyId(i,caloIdHitMap[i]);
-	     }
-
+            }
 
 
 	    //produce split-offs clusters
 	    while(CaloCrystalHit const* crystalSeed = seedList.seed())
 	    {
-	       CaloClusterFinder finder(cal,*crystalSeed,_deltaTimePlus,_deltaTimeMinus, _ExpandCut);
+	       CaloClusterFinder finder(cal,crystalSeed,_deltaTimePlus,_deltaTimeMinus, _ExpandCut);
 	       
 	       finder.formCluster(caloIdHitMap);	 	    
 	       splitClusterList.push_back(finder.clusterList());
@@ -296,7 +297,7 @@ class MakeCaloProtoCluster : public art::EDProducer {
 		if (_diagLevel) std::cout<<" with energy="<<totalEnergy<<" and time="<<seed_time<<std::endl;;
 	    }
 
-	    std::sort(caloProtoClustersMain.begin(), caloProtoClustersMain.end(),[](CaloProtoCluster const& a, CaloProtoCluster const& b) {return a.time() < b.time();});
+	    std::sort(caloProtoClustersMain.begin(),  caloProtoClustersMain.end(), [](CaloProtoCluster const& a, CaloProtoCluster const& b) {return a.time() < b.time();});
 	    std::sort(caloProtoClustersSplit.begin(), caloProtoClustersSplit.end(),[](CaloProtoCluster const& a, CaloProtoCluster const& b) {return a.time() < b.time();});
 
      }
@@ -333,7 +334,10 @@ class MakeCaloProtoCluster : public art::EDProducer {
      {
 
        for (unsigned int i=0; i<caloIdHitMap.size(); ++i)
-	 for (auto j :  caloIdHitMap[i]) std::cout<<i<<" "<<j->id()<<" "<<j->energyDep()<<" "<<j->time()<<std::endl;
+       {
+	   if (caloIdHitMap[i].size()>0) std::cout<<"ProtoCluster crystal "<<i<<" has size "<<caloIdHitMap[i].size()<<std::endl;
+	   for (auto j :  caloIdHitMap[i]) std::cout<<i<<" "<<j->id()<<" "<<j->energyDep()<<" "<<j->time()<<std::endl;
+       }
      }
 
 
@@ -343,3 +347,48 @@ class MakeCaloProtoCluster : public art::EDProducer {
 
 using mu2e::MakeCaloProtoCluster;
 DEFINE_ART_MODULE(MakeCaloProtoCluster);
+
+
+
+/*
+
+// Just on case 
+// This is a snippet of code to include only the hits compatible with the time of potential seeds in the map. 
+// The gain in performance is small, and I find it obscures the code, so I left the old version
+
+	    
+            //fast forward iterator until first crystal in time
+	    std::vector<CaloCrystalHit>::const_iterator allCrystal = caloCrystalHits.begin();
+            while (allCrystal->time() < _timeCut && allCrystal != caloCrystalHits.end()) ++allCrystal;
+	    if (allCrystal == caloCrystalHits.end()) return;
+
+            
+            //fast forward iterator until first high energy crystal
+	    std::vector<CaloCrystalHit>::const_iterator highCrystal = allCrystal;
+	    while (highCrystal->energyDep() < _EminSeed && highCrystal != caloCrystalHits.end()) ++highCrystal;
+	    if (highCrystal == caloCrystalHits.end() ) return;
+
+
+	    double maxTime = highCrystal->time() + _deltaTimePlus;
+	    double minTime = highCrystal->time() - _deltaTimeMinus;
+	    
+	    while( allCrystal != caloCrystalHits.end() )
+	    {
+		if (allCrystal->time() > maxTime && highCrystal != caloCrystalHits.end())
+		{
+		     do ++highCrystal; while ( highCrystal != caloCrystalHits.end() && highCrystal->energyDep() < _EminSeed);
+                     if (highCrystal == caloCrystalHits.end()) --highCrystal;
+		     maxTime = highCrystal->time() + _deltaTimePlus;
+		     minTime = highCrystal->time() - _deltaTimeMinus;		     
+		     continue;
+		}
+	        
+		if (allCrystal->energyDep() > _EnoiseCut && allCrystal->time() > minTime )
+		{
+		    CaloCrystalHit const* hit = &(*allCrystal);
+		    caloIdHitMap[hit->id()].push_back(hit);     
+		    seedList.add(hit);			 
+		} 
+		++allCrystal;
+	    }
+*/

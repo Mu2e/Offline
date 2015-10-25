@@ -22,15 +22,15 @@ namespace mu2e {
 
 
        //----------------------------------------------------------------------------------------------------------
-       void CaloSeedManager::add(CaloCrystalHit const& i) 
+       void CaloSeedManager::add(CaloCrystalHit const* i) 
        { 
-	    int id = i.id();
+	    int id = i->id();
 
-	    if (_seedMap[id]==0) _seedMap[id] = &i; 
+	    if (_seedMap[id]==0) _seedMap[id] = i; 
 	    else
 	    {
-	      if (_seedMode==SeedType::Energy &&  (i.energyDep() > _seedMap[id]->energyDep() )) _seedMap[id] = &i;
-	      if (_seedMode==SeedType::Time   &&  (i.time()      < _seedMap[id]->time()      )) _seedMap[id] = &i;
+	      if (_seedMode==SeedType::Energy &&  (i->energyDep() > _seedMap[id]->energyDep() )) _seedMap[id] = i;
+	      if (_seedMode==SeedType::Time   &&  (i->time()      < _seedMap[id]->time()      )) _seedMap[id] = i;
 	    }  
        }   
 

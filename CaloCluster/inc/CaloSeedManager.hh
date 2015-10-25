@@ -35,7 +35,7 @@ namespace mu2e {
 
 	     CaloCrystalHit const* seed();
 
-	     void add(CaloCrystalHit const&);
+	     void add(CaloCrystalHit const*);
 	     void checkSeedbyList(CaloCrystalList const& crystalsInCluster, std::vector<CaloCrystalVec> const& idHitMap);
              void checkSeedbyId(int iId, CaloCrystalVec const& hits);
              void dumpSeed();
