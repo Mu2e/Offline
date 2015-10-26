@@ -10,7 +10,10 @@
 
 class TFile;
 class TH3D;
-class MakeCrvPhotonArrivals;
+namespace mu2eCrv
+{
+  class MakeCrvPhotonArrivals;
+}
 
 class WLSSteppingAction : public G4UserSteppingAction
 {
@@ -27,7 +30,7 @@ class WLSSteppingAction : public G4UserSteppingAction
 
   private:
 
-    std::unique_ptr<MakeCrvPhotonArrivals> _crvPhotonArrivals;
+    std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals> _crvPhotonArrivals;
     static WLSSteppingAction *_fgInstance;  
     std::vector<double>       _arrivalTimes[2][4];
     std::vector<int>          _fiberEmissions[4];

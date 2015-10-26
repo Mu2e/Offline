@@ -5,11 +5,17 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
+
+namespace mu2eCrv
+{
 
 void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double binWidth, unsigned int nBins) 
 {
   _singlePEbinWidth = binWidth;
   std::ifstream f(filename.c_str());
+  if(!f.good()) throw std::logic_error("Could not open single PE waveform file. "+filename);
+
   double currentTime=0, currentVoltage=0;
   double previousTime=NAN, previousVoltage=NAN;
   unsigned int bin=0;
@@ -42,7 +48,7 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
 void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times, 
                                     const std::vector<double> &charges, 
                                     std::vector<double> &waveform,
-                                    double startTime, double binWidth) 
+                                    double startTime, double binWidth, double timeShift) 
 {
   waveform.clear();
 
@@ -52,14 +58,15 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
   std::vector<double>::const_iterator iterCharge=charges.begin();
   for(; iterTime!=times.end() && iterCharge!=charges.end(); iterTime++, iterCharge++)
   {
-    double time=*iterTime;
+    double time=*iterTime + timeShift;  //the time when the charge happened, the time shift is due to the FEB time uncertainty
     double charge=*iterCharge;
-    unsigned int waveformIndex=ceil((time-startTime)/binWidth);  //first available time index
-    double digiTime = waveformIndex*binWidth + startTime;  //the time of this time index
+    unsigned int waveformIndex = (time>startTime ? ceil((time-startTime)/binWidth) : 0);  //first waveform bin for this particular charge
+    double digiTime = waveformIndex*binWidth + startTime;  //the time of this waveform bin
 
     for(; ; waveformIndex++, digiTime+=binWidth)
     {
       double singlePEtime = digiTime - time;
+      if(singlePEtime<0) continue;
       unsigned int singlePEwaveformIndex=static_cast<unsigned int>(singlePEtime/_singlePEbinWidth + 0.5);
       if(singlePEwaveformIndex>=_waveformSinglePE.size()) break; 
 
@@ -69,3 +76,4 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
   }
 }
 
+}

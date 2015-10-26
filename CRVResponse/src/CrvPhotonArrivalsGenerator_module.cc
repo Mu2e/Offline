@@ -54,9 +54,9 @@ namespace mu2e
     std::vector<std::string> _g4ModuleLabels;
     std::vector<std::string> _processNames;
 
-    std::vector<std::string>                                    _lookupTableFileNames;
-    std::vector<double>                                         _lookupTableCounterLengths;
-    std::map<double, boost::shared_ptr<MakeCrvPhotonArrivals> > _makeCrvPhotonArrivals;
+    std::vector<std::string>                                             _lookupTableFileNames;
+    std::vector<double>                                                  _lookupTableCounterLengths;
+    std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> > _makeCrvPhotonArrivals;
 
     double      _scintillationYield;
     double      _scintillatorRatioFastSlow;
@@ -94,8 +94,8 @@ namespace mu2e
     for(unsigned int i=0; i<_lookupTableFileNames.size(); i++)
     {
       double counterLength = _lookupTableCounterLengths[i];
-      _makeCrvPhotonArrivals.emplace(counterLength, boost::shared_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals(_randFlat)));
-      std::map<double, boost::shared_ptr<MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
+      _makeCrvPhotonArrivals.emplace(counterLength, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat)));
+      std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
       iterCPA->second->LoadLookupTable(_lookupTableFileNames[i].c_str());
       iterCPA->second->SetScintillationYield(_scintillationYield);
       iterCPA->second->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);
@@ -211,7 +211,7 @@ namespace mu2e
           const CLHEP::Hep3Vector &p2Local = CRSbar.toLocal(p2);
 
           double counterLength = CRSbar.getHalfLength()*2.0;
-          std::map<double, boost::shared_ptr<MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
+          std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
           if(iterCPA!=_makeCrvPhotonArrivals.end())
           {
             iterCPA->second->MakePhotons(p1Local, p2Local, t1, t2,  

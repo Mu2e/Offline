@@ -72,7 +72,6 @@ namespace mu2e {
     double _tmin;
     double _tmax;
     double _dt;
-    double _constTime;
 
     // Random number distributions.
     CLHEP::RandFlat     _randFlat;

@@ -28,6 +28,9 @@ Based on Paul Rubinov's C# code
     //     9) compute the recharge current
     //     10) increase the OV by the step charge Q
 
+namespace mu2eCrv
+{
+
 double MakeCrvSiPMResponses::GenerateAvalanche(Pixel &pixel, int cellid)
 {
   double v = pixel._v;
@@ -182,6 +185,7 @@ void MakeCrvSiPMResponses::Simulate(const std::vector<double> &photons,
   } //while(1)
 }
 
+}
 
 //sample program
 
@@ -197,9 +201,9 @@ int main()
   photonTimes.push_back(23);
   photonTimes.push_back(56);
   photonTimes.push_back(12);
-  std::vector<SiPMresponse> SiPMresponseVector;
+  std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
 
-  MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
+  mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
   probabilities._constGeigerProbCoef = 1.0;
   probabilities._constGeigerProbVoltScale = 5.5;
   probabilities._constTrapType0Prob = 0.14;   //trap_prob*trap_type0_prob=0.2*0.7
@@ -212,7 +216,7 @@ int main()
   CLHEP::HepJamesRandom engine(1);
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
-  MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
+  mu2eCrv::MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
   sim.SetSiPMConstants(1584, 615, 2.4, 0.0, 1695, 0.08, probabilities);
   sim.Simulate(photonTimes, SiPMresponseVector);
 
@@ -221,4 +225,5 @@ int main()
 
   return 0;
 }
+
 #endif

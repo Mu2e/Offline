@@ -37,7 +37,7 @@ WLSSteppingAction::WLSSteppingAction(int mode, const std::string &lookupFileName
 
   if(_mode==0)
   {
-    _crvPhotonArrivals = std::unique_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals(_randFlat));
+    _crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(_randFlat));
     _crvPhotonArrivals->LoadLookupTable(lookupFileName);
   }
 

@@ -1,4 +1,10 @@
+#ifndef MakeCrvRecoPulses_h
+#define MakeCrvRecoPulses_h
+
 #include <vector>
+
+namespace mu2eCrv
+{
 
 class MakeCrvRecoPulses
 {
@@ -30,3 +36,6 @@ class MakeCrvRecoPulses
   std::vector<double> _integrals, _landauParams0, _landauParams1, _landauParams2, _T1s, _T2s;
 };
 
+}
+
+#endif

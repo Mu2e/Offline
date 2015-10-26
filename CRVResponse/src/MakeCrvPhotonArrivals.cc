@@ -5,6 +5,130 @@
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 #include "CLHEP/Vector/TwoVector.h"
 
+namespace mu2eCrv
+{
+void LookupConstants::Write(const std::string &filename)
+{
+  std::ofstream lookupfile(filename,std::ios::binary|std::ios::app);
+  lookupfile.write(reinterpret_cast<char*>(this),sizeof(LookupConstants));
+  lookupfile.close();
+}
+void LookupConstants::Read(std::ifstream &lookupfile)
+{
+  lookupfile.read(reinterpret_cast<char*>(this),sizeof(LookupConstants));
+}
+
+void LookupBinDefinitions::WriteVector(std::vector<double> &v, std::ofstream &o)
+{
+  size_t n=v.size();
+  o.write(reinterpret_cast<char*>(&n),sizeof(size_t));
+  o.write(reinterpret_cast<char*>(v.data()),sizeof(double)*v.size());
+}
+void LookupBinDefinitions::ReadVector(std::vector<double> &v, std::ifstream &i)
+{
+  size_t n;
+  i.read(reinterpret_cast<char*>(&n),sizeof(size_t));
+  double d[n];
+  i.read(reinterpret_cast<char*>(d),sizeof(double)*n);
+  v.assign(d,d+n);
+}
+void LookupBinDefinitions::Write(const std::string &filename)
+{
+  std::ofstream lookupfile(filename,std::ios::binary|std::ios::app);
+  WriteVector(xBins,lookupfile);
+  WriteVector(yBins,lookupfile);
+  WriteVector(zBins,lookupfile);
+  WriteVector(betaBins,lookupfile);
+  WriteVector(thetaBins,lookupfile);
+  WriteVector(phiBins,lookupfile);
+  WriteVector(rBins,lookupfile);
+  lookupfile.close();
+}
+void LookupBinDefinitions::Read(std::ifstream &lookupfile)
+{
+  ReadVector(xBins,lookupfile);
+  ReadVector(yBins,lookupfile);
+  ReadVector(zBins,lookupfile);
+  ReadVector(betaBins,lookupfile);
+  ReadVector(thetaBins,lookupfile);
+  ReadVector(phiBins,lookupfile);
+  ReadVector(rBins,lookupfile);
+}
+
+unsigned int LookupBinDefinitions::getNScintillatorBins()
+{
+  unsigned int nXBins = xBins.size()-1;
+  unsigned int nYBins = yBins.size()-1;
+  unsigned int nZBins = zBins.size()-1;
+  return nXBins*nYBins*nZBins;
+}
+unsigned int LookupBinDefinitions::getNFiberBins()
+{
+  unsigned int nBetaBins = betaBins.size()-1;
+  unsigned int nThetaBins = thetaBins.size()-1;
+  unsigned int nPhiBins = phiBins.size()-1;
+  unsigned int nRBins = rBins.size()-1;
+  unsigned int nZBins = zBins.size()-1;
+  return nBetaBins*nThetaBins*nPhiBins*nRBins*nZBins;
+}
+
+unsigned int LookupBinDefinitions::findBin(const std::vector<double> &v, const double &x, bool &notFound)
+{
+  for(unsigned int i=1; i<v.size(); i++)
+  {
+    if(v[i]>=x)
+    {
+      if(v[i-1]<=x) return(i-1);
+    }
+  }
+  notFound=true;
+  return(-1);
+}
+int LookupBinDefinitions::findScintillatorBin(double x, double y, double z)
+{
+  bool notFound=false;
+  unsigned int xBin=findBin(xBins,x,notFound);
+  unsigned int yBin=findBin(yBins,y,notFound);
+  unsigned int zBin=findBin(zBins,z,notFound);
+  if(notFound) return(-1);
+
+  unsigned int nYBins = yBins.size()-1;
+  unsigned int nZBins = zBins.size()-1;
+  return(zBin + yBin*nZBins + xBin*nYBins*nZBins);
+}
+int LookupBinDefinitions::findFiberBin(double beta, double theta, double phi, double r, double z)
+{
+  bool notFound=false;
+  unsigned int betaBin=findBin(betaBins,beta,notFound);
+  unsigned int thetaBin=findBin(thetaBins,theta,notFound);
+  unsigned int phiBin=findBin(phiBins,phi,notFound);
+  unsigned int rBin=findBin(rBins,r,notFound);
+  unsigned int zBin=findBin(zBins,z,notFound);
+  if(notFound) return(-1);
+
+  unsigned int nThetaBins = thetaBins.size()-1;
+  unsigned int nPhiBins = phiBins.size()-1;
+  unsigned int nRBins = rBins.size()-1;
+  unsigned int nZBins = zBins.size()-1;
+  return(zBin + rBin*nZBins + phiBin*nRBins*nZBins + thetaBin*nPhiBins*nRBins*nZBins + betaBin*nThetaBins*nPhiBins*nRBins*nZBins);
+}
+
+
+void LookupBin::Write(const std::string &filename)
+{
+  std::ofstream lookupfile(filename,std::ios::binary|std::ios::app);
+  lookupfile.write(reinterpret_cast<char*>(arrivalProbability),sizeof(float)*4);
+  lookupfile.write(reinterpret_cast<char*>(timeDelays),sizeof(unsigned short)*4*nTimeDelays);
+  lookupfile.write(reinterpret_cast<char*>(fiberEmissions),sizeof(unsigned short)*4*nFiberEmissions);
+  lookupfile.close();
+}
+void LookupBin::Read(std::ifstream &lookupfile)
+{
+  lookupfile.read(reinterpret_cast<char*>(arrivalProbability),sizeof(float)*4);
+  lookupfile.read(reinterpret_cast<char*>(timeDelays),sizeof(unsigned short)*4*nTimeDelays);
+  lookupfile.read(reinterpret_cast<char*>(fiberEmissions),sizeof(unsigned short)*4*nFiberEmissions);
+}
+
 void MakeCrvPhotonArrivals::LoadLookupTable(const std::string &filename)
 {
   std::ifstream lookupfile(filename,std::ios::binary);
@@ -272,3 +396,4 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
   return evis;
 }
 
+} //namespace mu2e

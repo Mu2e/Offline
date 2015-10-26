@@ -5,6 +5,9 @@
 #include <TGraph.h>
 #include <TMath.h>
 
+namespace mu2eCrv
+{
+
 MakeCrvRecoPulses::MakeCrvRecoPulses(double pulseThreshold,       //in V
                                      double leadingEdgeThreshold, //in percent
                                      double param0, 
@@ -178,3 +181,4 @@ double MakeCrvRecoPulses::GetT2(int pulse)
   return _T2s[pulse];
 }
 
+}

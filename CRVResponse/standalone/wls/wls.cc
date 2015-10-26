@@ -79,10 +79,10 @@ bool findArgs(int argc, char** argv, const char* c, int &value)
 
 void DrawHistograms(const std::string &lookupFilename)
 {
-  std::unique_ptr<MakeCrvPhotonArrivals> crvPhotonArrivals;
+  std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals> crvPhotonArrivals;
   CLHEP::HepJamesRandom  engine(0);
   CLHEP::RandFlat randFlat(engine);
-  crvPhotonArrivals = std::unique_ptr<MakeCrvPhotonArrivals>(new MakeCrvPhotonArrivals(randFlat));
+  crvPhotonArrivals = std::unique_ptr<mu2eCrv::MakeCrvPhotonArrivals>(new mu2eCrv::MakeCrvPhotonArrivals(randFlat));
   crvPhotonArrivals->LoadLookupTable(lookupFilename);
   crvPhotonArrivals->DrawHistograms();
 }

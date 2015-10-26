@@ -58,9 +58,9 @@ namespace mu2e
     double      _minCharge;
     double      _blindTime;             //time window during which the SiPM is blind
     double      _microBunchPeriod;
-    MakeCrvSiPMResponses::ProbabilitiesStruct _probabilities;
+    mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct _probabilities;
 
-    boost::shared_ptr<MakeCrvSiPMResponses> _makeCrvSiPMResponses;
+    boost::shared_ptr<mu2eCrv::MakeCrvSiPMResponses> _makeCrvSiPMResponses;
 
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
@@ -97,7 +97,7 @@ namespace mu2e
   {
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
-    _makeCrvSiPMResponses = boost::shared_ptr<MakeCrvSiPMResponses>(new MakeCrvSiPMResponses(_randFlat, _randPoissonQ));
+    _makeCrvSiPMResponses = boost::shared_ptr<mu2eCrv::MakeCrvSiPMResponses>(new mu2eCrv::MakeCrvSiPMResponses(_randFlat, _randPoissonQ));
     _makeCrvSiPMResponses->SetSiPMConstants(_numberPixels, _numberPixelsAtFiber, _bias, _blindTime, _microBunchPeriod, 
                                             _scaleFactor, _probabilities);
   }
@@ -145,13 +145,13 @@ namespace mu2e
           }
         }
 
-        std::vector<SiPMresponse> SiPMresponseVector;
+        std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
         _makeCrvSiPMResponses->Simulate(photonArrivalTimesAdjusted, SiPMresponseVector);
 
         std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &responsesOneSiPM = crvSiPMResponses.GetSiPMResponses(SiPM);
 
         double totalCharge=0;
-        std::vector<SiPMresponse>::const_iterator responseIter;
+        std::vector<mu2eCrv::SiPMresponse>::const_iterator responseIter;
         for(responseIter=SiPMresponseVector.begin(); responseIter!=SiPMresponseVector.end(); responseIter++)
         {
           //time in SiPMresponseVector is between blindTime and microBunchPeriod

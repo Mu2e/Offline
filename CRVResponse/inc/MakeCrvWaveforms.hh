@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 
+namespace mu2eCrv
+{
+
 class MakeCrvWaveforms
 {
   public:
@@ -16,11 +19,13 @@ class MakeCrvWaveforms
     void MakeWaveform(const std::vector<double> &times, 
                       const std::vector<double> &charges, 
                       std::vector<double> &waveform,
-                      double startTime, double binWidth);
+                      double startTime, double binWidth, double timeShift);
 
   private:
     std::vector<double> _waveformSinglePE;
     double _singlePEbinWidth;
 };
+
+}
 
 #endif

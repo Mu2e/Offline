@@ -12,6 +12,9 @@ Based on Paul Rubinov's C# code
 #include <vector>
 #include "CLHEP/Random/Randomize.h"
 
+namespace mu2eCrv
+{
+
   struct Pixel
   {
     double _v;
@@ -90,5 +93,7 @@ Based on Paul Rubinov's C# code
     void Simulate(const std::vector<double> &photons, 
                   std::vector<SiPMresponse> &SiPMresponseVector);
   };
+
+}
 
 #endif

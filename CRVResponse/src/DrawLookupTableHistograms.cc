@@ -6,6 +6,9 @@
 #include <vector>
 #include <iostream>
 
+namespace mu2eCrv
+{
+
 void MakeCrvPhotonArrivals::DrawHistograms()
 {
   TCanvas c1("ArrivalProbabilities1","");
@@ -51,4 +54,6 @@ void MakeCrvPhotonArrivals::DrawHistograms()
 
   c2.SaveAs("ArrivalProbability2.C");
 }
+
+} //namespace mu2e
 

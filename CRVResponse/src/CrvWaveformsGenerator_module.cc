@@ -49,24 +49,28 @@ namespace mu2e
     std::string _crvSiPMResponsesModuleLabel;
     std::string _singlePEWaveformFileName;
 
-    boost::shared_ptr<MakeCrvWaveforms> _makeCrvWaveforms;
+    boost::shared_ptr<mu2eCrv::MakeCrvWaveforms> _makeCrvWaveforms;
 
     double                              _binWidth;
+    double                              _FEBtimeSpread;
 
     CLHEP::RandFlat                     _randFlat;
+    CLHEP::RandGaussQ                   _randGaussQ;
   };
 
   CrvWaveformsGenerator::CrvWaveformsGenerator(fhicl::ParameterSet const& pset) :
     _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
     _binWidth(pset.get<double>("binWidth")),                   //12.5 ns (digitizer sampling rate)
-    _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
+    _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
+    _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
     double singlePEWaveformBinWidth(pset.get<double>("singlePEWaveformBinWidth"));    //1.0 ns
     int nBins(pset.get<int>("singlePEWaveformBins"));          //200
     ConfigFileLookupPolicy configFile;
     _singlePEWaveformFileName = configFile(_singlePEWaveformFileName);
-    _makeCrvWaveforms = boost::shared_ptr<MakeCrvWaveforms>(new MakeCrvWaveforms());
+    _makeCrvWaveforms = boost::shared_ptr<mu2eCrv::MakeCrvWaveforms>(new mu2eCrv::MakeCrvWaveforms());
     _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformBinWidth, nBins);
     produces<CrvWaveformsCollection>();
   }
@@ -86,14 +90,19 @@ namespace mu2e
     art::Handle<CrvSiPMResponsesCollection> crvSiPMResponsesCollection;
     event.getByLabel(_crvSiPMResponsesModuleLabel,"",crvSiPMResponsesCollection);
 
+    double samplingPointShift = _randFlat.fire()*_binWidth;
+
     for(CrvSiPMResponsesCollection::const_iterator iter=crvSiPMResponsesCollection->begin(); 
         iter!=crvSiPMResponsesCollection->end(); iter++)
     {
       const CRSScintillatorBarIndex &barIndex = iter->first;
       const CrvSiPMResponses &siPMResponses = iter->second;
 
-      double startTime = siPMResponses.GetFirstSiPMResponseTime();
-      startTime-=_randFlat.fire()*_binWidth;
+      double firstSiPMResponseTime = siPMResponses.GetFirstSiPMResponseTime();
+      int    startTime = floor(firstSiPMResponseTime / _binWidth) * _binWidth;  //start time of the waveform in multiples of the bin width (12.5ns)
+      startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
+      double timeShiftFEB0 =_randGaussQ.fire(0, _FEBtimeSpread);
+      double timeShiftFEB1 =_randGaussQ.fire(0, _FEBtimeSpread);
 
       CrvWaveforms &crvWaveforms = (*crvWaveformsCollection)[barIndex];
       crvWaveforms.SetBinWidth(_binWidth);
@@ -106,8 +115,10 @@ namespace mu2e
           times.push_back(timesAndCharges[i]._time);
           charges.push_back(timesAndCharges[i]._charge);
         }
+        double timeShift=(SiPM%2==0 ? timeShiftFEB0 : timeShiftFEB1);
+
         std::vector<double> &waveform = crvWaveforms.GetWaveform(SiPM);
-        _makeCrvWaveforms->MakeWaveform(times, charges, waveform, startTime, _binWidth);
+        _makeCrvWaveforms->MakeWaveform(times, charges, waveform, startTime, _binWidth, timeShift);
         crvWaveforms.SetStartTime(SiPM,startTime);
       }
     }

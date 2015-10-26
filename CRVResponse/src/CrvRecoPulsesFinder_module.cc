@@ -47,7 +47,7 @@ namespace mu2e
     void endJob();
 
     private:
-    boost::shared_ptr<MakeCrvRecoPulses> _makeCrvRecoPulses;
+    boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses> _makeCrvRecoPulses;
 
     std::string _crvWaveformsModuleLabel;
     double      _param0;
@@ -65,7 +65,7 @@ namespace mu2e
     _leadingEdgeThreshold(pset.get<double>("leadingEdgeThreshold"))   //0.2
   {
     produces<CrvRecoPulsesCollection>();
-    _makeCrvRecoPulses = boost::shared_ptr<MakeCrvRecoPulses>(new MakeCrvRecoPulses(_pulseThreshold, _leadingEdgeThreshold, _param0, _param1));
+    _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_pulseThreshold, _leadingEdgeThreshold, _param0, _param1));
   }
 
   void CrvRecoPulsesFinder::beginJob()

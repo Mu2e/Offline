@@ -99,10 +99,9 @@ namespace mu2e
   , _nth( config.getInt("cosmicDYB.nBinsTheta") )
 
     // Time range (in ns) over which to generate events.
-  ,_tmin( 0.0 )
-  ,_tmax( 0.0 )
+  ,_tmin( config.getDouble("cosmicDYB.tMin", NAN) )
+  ,_tmax( config.getDouble("cosmicDYB.tMax", NAN) )
   ,_dt  ( 0.0 )
-  ,_constTime( config.getDouble("cosmicDYB.constTime", NAN) )
 
     // Random number distributions; getEngine comes from the base class.
   ,_randFlat( getEngine() )
@@ -190,8 +189,8 @@ namespace mu2e
     double offset = 100.;
 
     // Start and end times for generation.
-    _tmin = (daqPar->t0 > offset)? daqPar->t0-offset : 0.;
-    _tmax = accPar->deBuncherPeriod;
+    if(isnan(_tmin)) _tmin = (daqPar->t0 > offset)? daqPar->t0-offset : 0.;
+    if(isnan(_tmax)) _tmax = accPar->deBuncherPeriod;
     _dt   = _tmax - _tmin;
 
 
@@ -391,8 +390,7 @@ namespace mu2e
       if(_verbose>1) std::cout << "starting position = " << pos << std::endl;
 
       // pick a random starting time, unless a constant time was set
-      double time = _constTime;
-      if(std::isnan(time)) time = _tmin + _dt*_randFlat.fire();
+      double time = _tmin + _dt*_randFlat.fire();
 
       // Pick a random charge.
       // implement a rough charge asymmetry

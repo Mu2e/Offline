@@ -56,9 +56,10 @@ BEGIN_PROLOG
       module_type                  : CrvWaveformsGenerator
       crvSiPMResponsesModuleLabel  : "CrvSiPMResponses"
       singlePEWaveformFileName     : "CRVResponse/test/singlePEWaveform.txt"
-      singlePEWaveformBinWidth     : 1.0    //1.0 ns
+      singlePEWaveformBinWidth     : 0.5    //0.5 ns
       singlePEWaveformBins         : 200
       binWidth                     : 12.5   //12.5 ns (digitizer sampling rate)
+      FEBtimeSpread                : 2.0    //2.0 ns
     }
     CrvRecoPulses:
     {

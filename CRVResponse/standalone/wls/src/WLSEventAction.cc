@@ -140,7 +140,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 
     WLSDetectorConstruction *detector = WLSDetectorConstruction::Instance();
 
-    LookupBin bin;
+    mu2eCrv::LookupBin bin;
 
     for(int SiPM=0; SiPM<4; SiPM++)
     {
@@ -149,33 +149,33 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       float zSiPM=(SiPM%2==0?-detector->GetScintillatorHalfLength():detector->GetScintillatorHalfLength());
       float straightLineTravelTime=fabs(_startZ-zSiPM)/speedOfLightFiber;
       const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);
-      int histTimeDifference[LookupBin::nTimeDelays]={0}; //in ns
+      int histTimeDifference[mu2eCrv::LookupBin::nTimeDelays]={0}; //in ns
       for(size_t i=0; i<arrivalTimes.size(); i++)
       {
         int timeDifference=static_cast<int>(arrivalTimes[i]-straightLineTravelTime+0.5);  //rounded to full ns  //the fiber decay time has been set to 0 for mode==-1
         if(timeDifference<0) timeDifference=0;
-        if(timeDifference>LookupBin::nTimeDelays-1) timeDifference=LookupBin::nTimeDelays-1;
+        if(timeDifference>mu2eCrv::LookupBin::nTimeDelays-1) timeDifference=mu2eCrv::LookupBin::nTimeDelays-1;
         histTimeDifference[timeDifference]++;
       }
-      for(size_t i=0; i<LookupBin::nTimeDelays; i++)
+      for(size_t i=0; i<mu2eCrv::LookupBin::nTimeDelays; i++)
       {
         float p=static_cast<float>(histTimeDifference[i])/static_cast<float>(arrivalTimes.size());
-        bin.timeDelays[SiPM][i]=static_cast<unsigned short>(LookupBin::probabilityScale*p+0.5);
+        bin.timeDelays[SiPM][i]=static_cast<unsigned short>(mu2eCrv::LookupBin::probabilityScale*p+0.5);
       }
 
-      int histEmissions[LookupBin::nFiberEmissions]={0};
+      int histEmissions[mu2eCrv::LookupBin::nFiberEmissions]={0};
       const std::vector<int> &fiberEmissions = WLSSteppingAction::Instance()->GetFiberEmissions(SiPM);
       for(size_t i=0; i<fiberEmissions.size(); i++)
       {
         int nEmissions=fiberEmissions[i];
         if(nEmissions<0) nEmissions=0;
-        if(nEmissions>LookupBin::nFiberEmissions-1) nEmissions=LookupBin::nFiberEmissions-1;
+        if(nEmissions>mu2eCrv::LookupBin::nFiberEmissions-1) nEmissions=mu2eCrv::LookupBin::nFiberEmissions-1;
         histEmissions[nEmissions]++;
       }
-      for(size_t i=0; i<LookupBin::nFiberEmissions; i++)
+      for(size_t i=0; i<mu2eCrv::LookupBin::nFiberEmissions; i++)
       {
         float p=static_cast<float>(histEmissions[i])/static_cast<float>(fiberEmissions.size());
-        bin.fiberEmissions[SiPM][i]=static_cast<unsigned short>(LookupBin::probabilityScale*p+0.5);
+        bin.fiberEmissions[SiPM][i]=static_cast<unsigned short>(mu2eCrv::LookupBin::probabilityScale*p+0.5);
       }
     }
 
@@ -189,10 +189,10 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
         std::cout<<"Probability: "<<bin.arrivalProbability[SiPM]<<std::endl;
         std::cout.precision(origPrecision);
         std::cout<<"Time Difference Probabilities: ";
-        for(size_t i=0; i<LookupBin::nTimeDelays; i++) std::cout<<i<<"/"<<bin.timeDelays[SiPM][i]<<" ";
+        for(size_t i=0; i<mu2eCrv::LookupBin::nTimeDelays; i++) std::cout<<i<<"/"<<bin.timeDelays[SiPM][i]<<" ";
         std::cout<<std::endl;
         std::cout<<"Fiber Emissions Probabilities: ";
-        for(size_t i=0; i<LookupBin::nFiberEmissions; i++) std::cout<<i<<"/"<<bin.fiberEmissions[SiPM][i]<<" ";
+        for(size_t i=0; i<mu2eCrv::LookupBin::nFiberEmissions; i++) std::cout<<i<<"/"<<bin.fiberEmissions[SiPM][i]<<" ";
         std::cout<<std::endl;
       }
       std::cout<<std::endl<<std::endl;
@@ -213,7 +213,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       G4MaterialPropertiesTable *scintillatorPropertiesTable = scintillator->GetMaterialPropertiesTable();
       G4MaterialPropertyVector *rindexScintillator = scintillatorPropertiesTable->GetProperty("RINDEX");
 
-      LookupConstants LC;
+      mu2eCrv::LookupConstants LC;
       LC.halfThickness      = detector->GetScintillatorHalfThickness(),
       LC.halfWidth          = detector->GetScintillatorHalfWidth(), 
       LC.halfLength         = detector->GetScintillatorHalfLength(),
@@ -234,7 +234,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       LC.fiberRadius     = detector->GetClad2Radius();
       LC.Write(filename.str());
 
-      LookupBinDefinitions LBD;
+      mu2eCrv::LookupBinDefinitions LBD;
       LBD.xBins     = WLSDetectorConstruction::Instance()->GetXBins();
       LBD.yBins     = WLSDetectorConstruction::Instance()->GetYBins();
       LBD.zBins     = WLSDetectorConstruction::Instance()->GetZBins();
@@ -278,7 +278,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 
 void WLSEventAction::Draw(const G4Event* evt) const
 {
-  MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
+  mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
   probabilities._constGeigerProbCoef = 1;
   probabilities._constGeigerProbVoltScale = 5.5;
   probabilities._constTrapType0Prob = 0.14;  
@@ -298,10 +298,10 @@ void WLSEventAction::Draw(const G4Event* evt) const
   static CLHEP::HepJamesRandom engine(1);
   static CLHEP::RandFlat randFlat(engine);
   static CLHEP::RandPoissonQ randPoissonQ(engine);
-  MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
+  mu2eCrv::MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
   sim.SetSiPMConstants(1584, 615, 2.4, 0, 1695, 0.08, probabilities);
 
-  MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
+  mu2eCrv::MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
   double binWidth = 12.5; //ns
   double binWidth2 = 1.0; //ns
   gStyle->SetOptStat(0);
@@ -316,7 +316,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
 //    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);  //from lookup tables
     const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);  //from full GEANT
 
-    std::vector<SiPMresponse> SiPMresponseVector;
+    std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
     sim.Simulate(photonTimes, SiPMresponseVector);
     for(unsigned int i=0; i<SiPMresponseVector.size(); i++)
     {
@@ -324,8 +324,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
       siPMcharges[SiPM].push_back(SiPMresponseVector[i]._charge);
     }
 
-    makeCrvWaveform.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform[SiPM], startTime, binWidth);
-    makeCrvWaveform2.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform2[SiPM], startTime, binWidth2);
+    makeCrvWaveform.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform[SiPM], startTime, binWidth, 0);
+    makeCrvWaveform2.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform2[SiPM], startTime, binWidth2, 0);
   }
 
   std::ostringstream s1;
@@ -441,7 +441,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
     }
 
 //Landau fit
-    MakeCrvRecoPulses makeRecoPulses(0.015,0.2, 1.8,49.6);
+    mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.015,0.2, 1.8,49.6);
     makeRecoPulses.SetWaveform(waveform[SiPM], startTime, binWidth);
     unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
