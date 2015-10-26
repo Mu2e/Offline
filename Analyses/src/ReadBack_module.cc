@@ -1,10 +1,6 @@
 //
 // An EDAnalyzer module that reads back the hits created by G4 and makes histograms.
 //
-// $Id: ReadBack_module.cc,v 1.28 2014/09/03 15:50:00 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/03 15:50:00 $
-//
 // Original author Rob Kutschke
 //
 
@@ -74,6 +70,9 @@ namespace mu2e {
 
     // Diagnostics printout level
     int _diagLevel;
+
+    // Input tag of the generated particles.
+    art::InputTag _gensTag;
 
     // Module label of the g4 module that made the hits.
     std::string _g4ModuleLabel;
@@ -183,6 +182,7 @@ namespace mu2e {
 
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
+    _gensTag(pset.get<string>("gensTag","generate")),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
@@ -193,7 +193,7 @@ namespace mu2e {
     _minimumEnergy(pset.get<double>("minimumEnergy")),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
     _xyHitsMax(pset.get<int>("xyHitsMax",10000)),
-    _strawHitPositionTolerance(pset.get<double>("SHPositionTolerance",0.01)), 
+    _strawHitPositionTolerance(pset.get<double>("SHPositionTolerance",0.01)),
     // looking for gross errors only
 
     // Histograms
@@ -380,7 +380,7 @@ namespace mu2e {
 
     doStoppingTarget(event);
 
-    if( geom->hasElement<CosmicRayShield>() ) 
+    if( geom->hasElement<CosmicRayShield>() )
     {
       doCRV(event);
     }
@@ -617,6 +617,9 @@ namespace mu2e {
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
 
+    // Get a ValidHandle to the generated particles.
+    auto gens = event.getValidHandle<GenParticleCollection>(_gensTag);
+
     // Ask the event to give us a "handle" to the requested hits.
     art::Handle<StepPointMCCollection> hits;
     event.getByLabel(_g4ModuleLabel,_trackerStepPoints,hits);
@@ -652,6 +655,17 @@ namespace mu2e {
       throw cet::exception("RANGE")
         << "Way too many hits in this event.  Something is really wrong."
         << hits->size();
+    }
+
+    if ( _nAnalyzed < _maxFullPrint ){
+      int ngen(0);
+      for ( auto const& gen : *gens ){
+        cout << "Readback Gen: "
+             << event.id().event() << " "
+             << ngen++ << " "
+             << gen
+             << endl;
+      }
     }
 
     // ntuple buffer.
@@ -695,7 +709,7 @@ namespace mu2e {
       double normS = s/straw.getHalfLength();
 
       if ( _diagLevel > 1 ){
-        cout << __func__ 
+        cout << __func__
              << " normalized reference point - 1 : "
              << scientific
              << normPointMag - 1.
@@ -705,10 +719,10 @@ namespace mu2e {
              << endl;
       }
 
-      if ( ( normPointMag - 1. > _strawHitPositionTolerance ) || 
+      if ( ( normPointMag - 1. > _strawHitPositionTolerance ) ||
            ( std::abs(normS) - 1. > _strawHitPositionTolerance ) ) {
-        throw cet::exception("GEOM") << __func__ 
-                                     << " Hit " << pos 
+        throw cet::exception("GEOM") << __func__
+                                     << " Hit " << pos
                                      << " ouside the straw " << straw.id()
                                      << " inconsistent ttracker geometry file? "
                                      << "; radial difference: "
