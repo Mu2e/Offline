@@ -19,8 +19,8 @@
 #include "TString.h"
 
 //-----------------------------------------------------------------------------
-TModule::TModule(fhicl::ParameterSet const& PSet, const char* Name): 
-  TNamed(Name,Name) 
+TModule::TModule(fhicl::ParameterSet const& PSet, const char* Name):
+  TNamed(Name,Name)
 {
 
   int    n, index;
@@ -38,19 +38,19 @@ TModule::TModule(fhicl::ParameterSet const& PSet, const char* Name):
   fDump            = TAnaDump::Instance();
 
   const char* key;
-					// a flag is an integer!
-  n = fFclDebugBits.get_keys().size();
+                                        // a flag is an integer!
+  n = fFclDebugBits.get_names().size();
   for (int i=0; i<n; i++) {
-    key                = fFclDebugBits.get_keys().at(i).data();
+    key                = fFclDebugBits.get_names().at(i).data();
     sscanf(key,"bit%i" ,&index );
 
     fDebugBit[index]  = fFclDebugBits.get<int>(key);
-    
+
     printf("... TModule: bit=%3i is set to %i \n",index,fDebugBit[index]);
   }
 
 };
-   
+
 //-----------------------------------------------------------------------------
 TModule::~TModule() {
   if (fFile) {
@@ -76,7 +76,7 @@ bool TModule::filter  (art::Event& Evt) {
     fDump->SetEvent(Evt);
     fAnaRint->SetInteractiveMode(fInteractiveMode);
     fAnaRint->Rint()->Run(true);
-					// provision for switching the interactive mode OFF
+                                        // provision for switching the interactive mode OFF
 
     fAnaRint->GetInteractiveMode(fInteractiveMode);
   }
@@ -90,15 +90,15 @@ void TModule::endJob  () {
 //_____________________________________________________________________________
   void     TModule::AddHistogram(TObject* hist, const char* FolderName) {
     TFolder* fol = (TFolder*) fFolder->FindObject(FolderName);
-    fol->Add(hist); 
+    fol->Add(hist);
   }
 
 //_____________________________________________________________________________
   void TModule::HBook1F(TH1F*& Hist, const char* Name, const char* Title,
-			   Int_t Nx, Double_t XMin, Double_t XMax,
-			   const char* FolderName)
+                           Int_t Nx, Double_t XMin, Double_t XMax,
+                           const char* FolderName)
   {
-    // book 2D histogram, add it to the module's list of histograms and 
+    // book 2D histogram, add it to the module's list of histograms and
     // return pointer to it to the user
 
     Hist = new TH1F(Name,Title,Nx,XMin,XMax);
@@ -107,26 +107,26 @@ void TModule::endJob  () {
 
 //_____________________________________________________________________________
   void TModule::HBook2F(TH2F*& Hist, const char* Name, const char* Title,
-			   Int_t Nx, Double_t XMin, Double_t XMax,
-			   Int_t Ny, Double_t YMin, Double_t YMax,
-			   const char* FolderName)
+                           Int_t Nx, Double_t XMin, Double_t XMax,
+                           Int_t Ny, Double_t YMin, Double_t YMax,
+                           const char* FolderName)
   {
-    // book 2D histogram, add it to the module's list of histograms and 
+    // book 2D histogram, add it to the module's list of histograms and
     // return pointer to it to the user
-  
+
     Hist = new TH2F(Name,Title,Nx,XMin,XMax,Ny,YMin,YMax);
     AddHistogram(Hist,FolderName);
   }
 
 //_____________________________________________________________________________
   void TModule::HProf(TProfile*& Hist, const char* Name, const char* Title,
-			 Int_t Nx, Double_t XMin, Double_t XMax,
-			 Double_t YMin, Double_t YMax,
-			 const char* FolderName)
+                         Int_t Nx, Double_t XMin, Double_t XMax,
+                         Double_t YMin, Double_t YMax,
+                         const char* FolderName)
   {
-    // book 2D histogram, add it to the module's list of histograms and 
+    // book 2D histogram, add it to the module's list of histograms and
     // return pointer to it to the user
-    
+
     Hist = new TProfile(Name,Title,Nx,XMin,XMax,YMin,YMax);
     AddHistogram(Hist,FolderName);
   }
@@ -147,15 +147,15 @@ void TModule::endJob  () {
     Dir->cd();
     dir = Dir->mkdir(Folder->GetName(),Folder->GetName());
     dir->cd();
-    
+
     TIter  it(Folder->GetListOfFolders());
     while ((o = it.Next())) {
       if (strcmp(o->ClassName(),"TFolder") == 0) {
-	SaveFolder((TFolder*) o, dir);
+        SaveFolder((TFolder*) o, dir);
       }
       else if (! o->InheritsFrom("TStnModule")) {
-	o->Write();
-	//      gDirectory->GetListOfKeys()->Print();
+        o->Write();
+        //      gDirectory->GetListOfKeys()->Print();
       }
     }
 

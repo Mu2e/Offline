@@ -31,7 +31,7 @@ void
 mu2e::ParameterSetFromFile::printKeys( std::ostream& out ) const
 {
 
-  std::vector<std::string> const& keys = _pSet.get_keys();
+  std::vector<std::string> const& keys = _pSet.get_names();
   out << "\nParameter set read from file: " << _fileName << std::endl;
   out << "Number of keys: " << keys.size() << std::endl;
   for ( std::vector<std::string>::const_iterator i=keys.begin();

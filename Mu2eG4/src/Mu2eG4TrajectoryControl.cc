@@ -14,7 +14,7 @@ namespace mu2e {
   {
     if(produce_) {
       const fhicl::ParameterSet& volumeCutsPS{pset.get<fhicl::ParameterSet>("perVolumeMinDistance")};
-      const std::vector<std::string> volnames{volumeCutsPS.get_keys()};
+      const std::vector<std::string> volnames{volumeCutsPS.get_names()};
       for(const auto& k: volnames) {
         perVolumeMinDistance_[k] = volumeCutsPS.get<double>(k);
       }

@@ -118,7 +118,7 @@ namespace mu2e {
       : art::EDAnalyzer(pset)
     {
 
-      std::vector<std::string> pskeys = pset.get_pset_keys();
+      std::vector<std::string> pskeys = pset.get_pset_names();
 
       if ( pskeys.empty() ){
         throw cet::exception("BFIELDTEST")
