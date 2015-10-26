@@ -1,0 +1,30 @@
+           Additional release notes for Mu2e Offline software, v5_5_0
+
+These notes were added after v5_5_0 was tagged - so they only appear in tags
+v5_5_1 and later.
+
+
+2) Oct 25, 2015 kutschke
+   CalPatRec/src/CalPatRec_module.cc
+     This is a correction to item 4 from v5_5_0.
+       - I did remove an unused reference.
+       - But there was no deprecated parameter set behaviour
+     The other change is that I removed all of the lines associated with
+     a data product for which there was a produces call but no put call.
+     To see the differences:
+
+   git diff -w -b 998407d712442e1fe3709020dd8a548a0c739e37 CalPatRec/src/CalPatRec_module.cc
+
+1) Oct 25, 2015 kutschke
+
+   One of the new features in this version of art is that it will be an error if a
+   producer module to fails to call put on a data product for which there is a produces
+   call.  We believe that there are few, if any, legitmate use cases for this behaviour
+   and the majority of cases that it occurs are indeed errors.
+
+   See the release notes for art v1_17_00
+      https://cdcvs.fnal.gov/redmine/projects/art/wiki/Release_Notes_11700
+
+   If you have this behaviour in your code, you will need to fix it.
+
+
