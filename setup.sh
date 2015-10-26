@@ -1,12 +1,7 @@
-#
-# $Id: setup.sh,v 1.70 2014/08/22 17:45:41 brownd Exp $
-# $Author: brownd $
-# $Date: 2014/08/22 17:45:41 $
-#
-# Original author Rob Kutschke
-#
 # Setup the environment to build or use a full release of the Mu2e software.
 # This checks that you have already established the Mu2e environment.
+#
+# Original author Rob Kutschke
 #
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
@@ -64,7 +59,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # products that need qualifiers.  Note it includes the '+' character
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
-export MU2E_UPS_QUALIFIERS=+e7:+${build}
+export MU2E_UPS_QUALIFIERS=+e9:+${build}
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -72,20 +67,21 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
 fi
 
 # Setup the framework and its dependent products
-setup -B art v1_15_00 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v1_17_02 -q${MU2E_UPS_QUALIFIERS}
 
 # The interface to SAM - conflicts with ifdhc from the grid runtime environment
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
 # Geant4 and its cross-section files.
-setup -B geant4 v4_9_6_p04a -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+setup -B geant4 v4_9_6_p04c -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
 
 # Other libraries we need.
-setup -B heppdt v3_04_01c -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_00_08  -q${MU2E_UPS_QUALIFIERS}
+setup -B heppdt v3_04_01d -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_00_09  -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
-setup -B scons v2_3_4
+setup -B scons v2_4_0
+
 # The debugger
 setup gdb v7_9
 
@@ -99,6 +95,3 @@ source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
 if [ "${MU2E_BASE_RELEASE}" != `/bin/pwd` ]; then
   source ${MU2E_BASE_RELEASE}/bin/addlocal.sh
 fi
-
-# A hack that we hope can go away soon.
-export G4LIBDIR=$G4LIB/$G4SYSTEM
