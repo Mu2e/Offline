@@ -3,10 +3,6 @@
 
   A plug_in for running a variety of event generators.
 
-  $Id: EventGenerator_module.cc,v 1.22 2014/02/13 16:04:38 rhbob Exp $
-  $Author: rhbob $
-  $Date: 2014/02/13 16:04:38 $
-
   Original author Rob Kutschke
 
   Eventually this will support a variety of event generators, controllable
@@ -105,13 +101,20 @@ namespace mu2e {
     // Print final config file after all replacements.
     bool _printConfig;
 
-    bool doFromG4BLFile;
+    // The code will only call produces for G4BeamlineInfoCollection
+    // when that product will actually be produced.
+    bool _produceG4blInfo;
 
     // A collection of all of the generators that we will run.
     typedef  boost::shared_ptr<GeneratorBase> GeneratorBasePtr;
     std::vector<GeneratorBasePtr> _generators;
 
+    // Check for a valid configuration
     void checkConfig( const SimpleConfig&  config);
+
+    // Check to see if any of the code that will fill the G4BeamlineInfoCollection
+    // are present in the configuration.
+    bool checkForG4blFile();
 
   };
 
@@ -121,16 +124,31 @@ namespace mu2e {
     _messageOnReplacement( pSet.get<bool>       ("messageOnReplacement",  false)),
     _messageOnDefault(     pSet.get<bool>       ("messageOnDefault",      false)),
     _configStatsVerbosity( pSet.get<int>        ("configStatsVerbosity",  0)),
-    _printConfig(          pSet.get<bool>       ("printConfig",           false)){
+    _printConfig(          pSet.get<bool>       ("printConfig",           false)),
+    _produceG4blInfo(checkForG4blFile()){
 
     produces<GenParticleCollection>();
-    produces<G4BeamlineInfoCollection>();
+    if ( _produceG4blInfo  ){
+      produces<G4BeamlineInfoCollection>();
+    }
 
     // A common random engine for the generators to use.
     createEngine( art::ServiceHandle<SeedService>()->getSeed() );
   }
 
-  // At beginRun time, update any derived geometry information.
+  // Only some of the event generators produce G4BeamlineInfo.
+  // Check to see if any are selected.
+  bool EventGenerator::checkForG4blFile(){
+    SimpleConfig config(_configfile, true, false, false );
+
+    // At the present time the only code that produces G4BeamlineInfo
+    // is the FromG4BLFile option.
+    return config.getBool( "fromG4BLFile.do", false );
+  }
+
+  // Run these at beginRun time in case any of them depend on geoemtry
+  // information that may change with conditions information.
+  // Otherwise this information could be computed in the c'tor.
   void EventGenerator::beginRun( art::Run &run){
 
     static int ncalls(0);
@@ -168,7 +186,7 @@ namespace mu2e {
     bool doDIO                  = config.getBool( "decayinorbitGun.do",  false );
     bool doPiEplusNu            = config.getBool( "piEplusNuGun.do",     false );
     bool doPrimaryProtonGun     = config.getBool( "primaryProtonGun.do", false );
-         doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
+    bool doFromG4BLFile         = config.getBool( "fromG4BLFile.do",     false );
     bool doNuclearCapture       = config.getBool( "nuclearCaptureGun.do",false );
     bool doExtMonFNALGun        = config.getBool( "extMonFNALGun.do",    false );
     bool doStoppedMuonGun       = config.getBool( "stoppedMuonGun.do",   false );
@@ -225,8 +243,8 @@ namespace mu2e {
 
     // Put the generated particles into the event.
     evt.put(std::move(genParticles));
-    if (doFromG4BLFile) {
-            evt.put(std::move(g4beamlineData));
+    if (_produceG4blInfo) {
+      evt.put(std::move(g4beamlineData));
     }
 
   }
