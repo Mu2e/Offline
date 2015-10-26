@@ -1,4 +1,60 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_5_0
+
+5)  Oct 25, 2015 kutschke
+    Analyses/src/DataProductDump_module.cc
+
+    The detail class inside Analyses/src/DataProductDump_module.cc is now
+    required to perform parameter set validation. As it happens the
+    detail function does not use it’s parameter set so validation is trivial;
+    all that I had to do was the create an empty struct named Config in
+    the appropriate namespace.
+
+    This requirement follows from the fact that this module is an
+    instantiation of a module template and the template does parameter set
+    validation; with the present implementation of parameter set
+    validation, once the choice is made that the module will do parameter
+    set validation, the requirement flows through to the detail function.
+
+4) Oct 25, 2015 kutschke
+   Both changes 2) and 3)
+    CalPatRec/src/CalPatRec_module.cc
+
+3) Oct 25, 2015 kutschke
+  The art team has decided to deprecate two member functions
+  of fhicl::ParameterSet.  The member functions get_keys() and
+  get_pset_keys() have been replaced by new functions named
+  get_names() and get_pset_names(), respectively.  The reason for
+  the change was to synchronize the code with the documentation.  At a
+  later date get_keys() and get_pset_keys() will reappear but with
+  a somewhat different functionality.  The replacement functions now
+  exist and the old functions have been marked as deprecated.
+  Deprecation produces warnings that we promote to errors with -Werror.
+
+  I changed all instances of the old functions to the new ones:
+     BFieldTest/src/BFieldTest_module.cc
+     GeneralUtilities/src/ParameterSetFromFile.cc
+     Mu2eG4/src/Mu2eG4TrajectoryControl.cc
+     Stntuple/mod/TModule.cc
+
+
+2) Oct 25, 2015 kutschke
+   Previously the compiler warned about unused variables.  It now
+   also warns about unused references. We promote all warnings to
+   errors using the -Werror compiler flag.  To fix thisI removed
+   all unused references that were flagged by the compiler.
+      Analyses/src/CaloExample_module.cc
+      Analyses/src/ReadTrackCaloMatchingBis_module.cc
+      CaloCluster/src/CaloContentMC.cc
+      Mu2eG4/src/Mu2eG4SteppingAction.cc
+      Mu2eG4/src/Mu2eG4_module.cc
+      Mu2eG4/src/constructMBS.cc
+      Mu2eG4/src/constructPSShield.cc
+      Mu2eG4/src/constructTargetPS.cc
+
+
+1) Oct 25, 2015 kutschke
+   setup.sh
+     - Update the art v1_17_02
+     - Remove the G4LIBDIR hack that has not been needed for a while.
+     - Remove the cvs versioning comments.
 
