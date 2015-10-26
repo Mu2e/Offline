@@ -115,7 +115,7 @@ MakeCaloReadoutHits : {
 CaloCrystalHitsMaker : {
     module_type          			: MakeCaloCrystalHits
     g4ModuleLabel        			: g4run
-    caloReadoutModuleLabel                      : MakeCaloReadoutHits
+    caloReadoutModuleLabel                      : CaloReadoutHitsMaker
     diagLevel            			: 0
     caloChargeProductionEffects                 : false
     caloROnoiseEffect    			: false
