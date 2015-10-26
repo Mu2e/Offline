@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 #
-#
-# $Id: SConscript,v 1.41 2013/12/16 21:56:10 genser Exp $
-# $Author: genser $
-# $Date: 2013/12/16 21:56:10 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -24,7 +19,7 @@ helper=mu2e_helper()
 
 g4inc    = os.environ['G4INCLUDE'] + '/Geant4'
 g4futureinc = '../inc'
-g4libdir = os.environ['G4LIBDIR']
+g4libdir = os.environ['G4LIB']
 g4_version = os.environ['GEANT4_VERSION']
 g4_version=g4_version.replace('_','')
 if g4_version[2] == '9':
