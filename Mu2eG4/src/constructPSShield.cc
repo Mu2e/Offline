@@ -39,8 +39,6 @@ namespace mu2e {
     GeomHandle<PSShield> hrs;
     GeomHandle<ProductionSolenoid> ps;
 
-    AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "PSShield", "PSShield" );
 
@@ -55,7 +53,7 @@ namespace mu2e {
     // -----------------------------
     // Put in beam pipe inlet.  David Norvil Brown, Louisville, March 2015
 
-    Tube const & pssInletParams = hrs->beamInlet(); 
+    Tube const & pssInletParams = hrs->beamInlet();
     //    G4Material* beampipeMaterial = findMaterialOrThrow(pssInletParams.materialName());
     CLHEP::Hep3Vector place = hrs->getBeamInletCenter();
     CLHEP::HepRotation * turn = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
@@ -63,18 +61,18 @@ namespace mu2e {
     turn->rotateX(hrs->getBeamAngleX());
 
     // Keeps overlapping with PSVacuum
-    //    VolumeInfo pssBeamInletInfo = 
+    //    VolumeInfo pssBeamInletInfo =
     //      nestTubs("PSSBeamInlet", pssInletParams.getTubsParams(),
-    //    	       beampipeMaterial, turn,  place-parent.centerInMu2e(),
-    //    	       parent, 0, G4Colour::Blue(), "PSShield");
+    //                 beampipeMaterial, turn,  place-parent.centerInMu2e(),
+    //                 parent, 0, G4Colour::Blue(), "PSShield");
 
     // Now make the volume to subtract from HRS.
     G4Tubs* beamPassTub = new G4Tubs( "beampipePassthrough",
-				      0.0, 
-				      pssInletParams.getTubsParams().data()[1]+2*CLHEP::mm,
-				      pssInletParams.getTubsParams().data()[2]+600.0*CLHEP::mm,
-				      0.0*CLHEP::degree,
-				      360.0*CLHEP::degree );
+                                      0.0,
+                                      pssInletParams.getTubsParams().data()[1]+2*CLHEP::mm,
+                                      pssInletParams.getTubsParams().data()[2]+600.0*CLHEP::mm,
+                                      0.0*CLHEP::degree,
+                                      360.0*CLHEP::degree );
 
 
     // ------------------------------------------------------------
@@ -96,12 +94,12 @@ namespace mu2e {
                      shell.originInMu2e() - parent.centerInMu2e(),
                      parent.centerInWorld);
 
-      G4SubtractionSolid* aSolid = 
-	new G4SubtractionSolid ( pss.name,
-				 psssolid,
-				 beamPassTub,
-				 turn,
-				 place-shell.originInMu2e());
+      G4SubtractionSolid* aSolid =
+        new G4SubtractionSolid ( pss.name,
+                                 psssolid,
+                                 beamPassTub,
+                                 turn,
+                                 place-shell.originInMu2e());
 
       // pss.solid = psssolid;
       pss.solid = aSolid;
@@ -113,10 +111,10 @@ namespace mu2e {
                     pss.centerInParent,
                     parent.logical,
                     0,
-		    isVisible,
+                    isVisible,
                     //G4Colour(0xFF/double(0xFF), 0x99/double(0xFF), 0),
                     G4Colour(config.getHep3Vector("PSShield.color"+osnum.str())),
-		    isSolid,
+                    isSolid,
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck

@@ -321,8 +321,6 @@ namespace mu2e {
 
   void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
-    SimpleConfig const& config = geom.config();
-
     geom.addWorldG4(*GeomHandle<Mu2eHall>());
 
     if ( _rmvlevel > 0 ) {

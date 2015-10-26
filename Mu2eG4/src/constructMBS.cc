@@ -89,7 +89,6 @@ namespace mu2e {
 
      // mother volumes
     VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
-    VolumeInfo const & hallInfo =                _helper->locateVolInfo("HallAir");
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " z-extent of DS3Vacuum portion in DS in Mu2e  : " <<
@@ -149,10 +148,10 @@ namespace mu2e {
                                     pBSTSParams.getTubsParams(),
                                     findMaterialOrThrow(pBSTSParams.materialName()),
                                     0,
-				    BSTSOffset,
-				    //G4ThreeVector(0,0,0),
-				    //detSolDownstreamVacInfo,
-				    MBSMotherInfo,
+                                    BSTSOffset,
+                                    //G4ThreeVector(0,0,0),
+                                    //detSolDownstreamVacInfo,
+                                    MBSMotherInfo,
                                     0,
                                     MBSisVisible,
                                     G4Colour::Gray(),
@@ -316,9 +315,9 @@ namespace mu2e {
     }
 
     // SPBSR
-    // This one is placed directly into DS3Vacuum; 
+    // This one is placed directly into DS3Vacuum;
     // Note that its radius is lager than theone of BSTS
-    
+
     CLHEP::Hep3Vector SPBSROffsetInMu2e = pSPBSRParams.originInMu2e();
 
     if ( verbosityLevel > 0) {

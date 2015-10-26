@@ -47,19 +47,12 @@ using namespace std;
 namespace mu2e {
 
   void constructTargetPS(VolumeInfo const & parent, SimpleConfig const & _config) {
-    
-    ProductionSolenoid const & psgh = *(GeomHandle<ProductionSolenoid>());
-
-    //Tube const & psVacVesselInnerParams     = *psgh.getVacVesselInnerParamsPtr();
-    //Tube const & psVacVesselOuterParams     = *psgh.getVacVesselOuterParamsPtr();
-
-    // Extract some information from the config file.
 
     int verbosityLevel                  = _config.getInt("PS.verbosityLevel");
-                                                
+
     //G4Material* psVacVesselMaterial = findMaterialOrThrow(psVacVesselInnerParams.materialName());
 
-    verbosityLevel >0 && 
+    verbosityLevel >0 &&
       cout << __func__ << " verbosityLevel                   : " << verbosityLevel  << endl;
 
     //bool psVacuumSensitive = _config.getBool("PS.Vacuum.Sensitive", false);
@@ -79,15 +72,15 @@ namespace mu2e {
 
     TubsParams prodTargetMotherParams( 0., _clamp_supWheel_rOut, envHalfLength);
     VolumeInfo prodTargetMotherInfo   = nestTubs( "ProductionTargetMother",
-						  prodTargetMotherParams,
-						  parent.logical->GetMaterial(),
-						  0,
-						  tgt->position() - parent.centerInMu2e(),
-						  parent,
-						  0,
-						  G4Colour::Blue(),
-						  "PS"
-						  );
+                                                  prodTargetMotherParams,
+                                                  parent.logical->GetMaterial(),
+                                                  0,
+                                                  tgt->position() - parent.centerInMu2e(),
+                                                  parent,
+                                                  0,
+                                                  G4Colour::Blue(),
+                                                  "PS"
+                                                  );
 
     double const _supWheel_trgtPS_rIn         = _config.getDouble("supWheel_trgtPS_rIn");
     double const _supWheel_trgtPS_rOut        = _config.getDouble("supWheel_trgtPS_rOut");
@@ -100,13 +93,13 @@ namespace mu2e {
 
     TubsParams suppWheelParams( _supWheel_trgtPS_rIn, _supWheel_trgtPS_rOut, _supWheel_trgtPS_halfLength);
     VolumeInfo suppWheelInfo   = nestTubs( "ProductionTargetSupportWheel",
-					   suppWheelParams,
-					   _suppWheelMaterial,
-					   0,
-					   _loclCenter,
-					   prodTargetMotherInfo,
-					   0,
-					   G4Colour::Gray()
+                                           suppWheelParams,
+                                           _suppWheelMaterial,
+                                           0,
+                                           _loclCenter,
+                                           prodTargetMotherInfo,
+                                           0,
+                                           G4Colour::Gray()
                                            );
 
     double const _clamp_supWheel_rIn         = _config.getDouble("clamp_supWheel_rIn");
@@ -117,14 +110,14 @@ namespace mu2e {
 
     TubsParams clampSpWheelParams( _clamp_supWheel_rIn, _clamp_supWheel_rOut, _clamp_supWheel_halfLength);
     VolumeInfo clampSpWheelInfoR   = nestTubs( "ClampSupportWheel_R",
-					       clampSpWheelParams,
-					       _clampSpWheelMaterial,
-					       0,
-					       _clampPosR,
-					       prodTargetMotherInfo,
-					       0,
-					       G4Colour::Gray()
-					       );
+                                               clampSpWheelParams,
+                                               _clampSpWheelMaterial,
+                                               0,
+                                               _clampPosR,
+                                               prodTargetMotherInfo,
+                                               0,
+                                               G4Colour::Gray()
+                                               );
 
     //    G4ThreeVector _clampPosL(0.0,0.0,-(_supWheel_trgtPS_halfLength+_clamp_supWheel_halfLength));
     //
@@ -157,27 +150,27 @@ namespace mu2e {
 
     Polycone const & pHubRgtParams = *tgt->getHubsRgtPtr();
     VolumeInfo prodTargetHubRgtInfo  = nestPolycone("ProductionTargetHubRgt",
-						    pHubRgtParams.getPolyconsParams(),
-						    findMaterialOrThrow(pHubRgtParams.materialName()),
-						    &tgt->productionTargetRotation(),
-						    pHubRgtParams.originInMu2e(),
-						    prodTargetMotherInfo,
-						    0,
-						    G4Colour::Magenta(),
-						    "ProductionTarget"
-						    );
+                                                    pHubRgtParams.getPolyconsParams(),
+                                                    findMaterialOrThrow(pHubRgtParams.materialName()),
+                                                    &tgt->productionTargetRotation(),
+                                                    pHubRgtParams.originInMu2e(),
+                                                    prodTargetMotherInfo,
+                                                    0,
+                                                    G4Colour::Magenta(),
+                                                    "ProductionTarget"
+                                                    );
 
     Polycone const & pHubLftParams = *tgt->getHubsLftPtr();
     VolumeInfo prodTargetHubLftInfo  = nestPolycone("ProductionTargetHubLft",
-						    pHubLftParams.getPolyconsParams(),
-						    findMaterialOrThrow(pHubLftParams.materialName()),
-						    &tgt->productionTargetRotation(),
-						    pHubLftParams.originInMu2e(),
-						    prodTargetMotherInfo,
-						    0,
-						    G4Colour::Magenta(),
-						    "ProductionTarget"
-						    );
+                                                    pHubLftParams.getPolyconsParams(),
+                                                    findMaterialOrThrow(pHubLftParams.materialName()),
+                                                    &tgt->productionTargetRotation(),
+                                                    pHubLftParams.originInMu2e(),
+                                                    prodTargetMotherInfo,
+                                                    0,
+                                                    G4Colour::Magenta(),
+                                                    "ProductionTarget"
+                                                    );
 
     CLHEP::Hep3Vector zax(0,0,1);
     double spokeRad = 0.5*_config.getDouble("targetPS_Spoke_diameter");
@@ -190,7 +183,7 @@ namespace mu2e {
     std::map<double,CLHEP::Hep3Vector> const & anchoringPntsRgt = tgt->anchoringPntsRgt();
 
     int iSpk(0);
-    
+
     // Create variable to avoid multiple look-up
     const bool prodTargetVisible   = geomOptions->isVisible( "ProductionTarget" );
     const bool prodTargetSolid     = geomOptions->isSolid  ( "ProductionTarget" );
@@ -225,19 +218,19 @@ namespace mu2e {
       iSpokeName<<"ProductionTargetSpokeRgt_"<<iSpk;
 
       VolumeInfo iSpokeInfo   = nestTubs( iSpokeName.str(),
-					  iSpokeParams,
-					  spokeMaterial,
-					  new CLHEP::HepRotation(tmpRotAxis,rotAngle),
-					  tmpMidPnt,
-					  prodTargetMotherInfo,
-					  0,
-					  prodTargetVisible,
-					  G4Colour::Gray(),
-					  prodTargetSolid,
-					  forceAuxEdgeVisible,
-					  placePV,
-					  doSurfaceCheck
-					  );
+                                          iSpokeParams,
+                                          spokeMaterial,
+                                          new CLHEP::HepRotation(tmpRotAxis,rotAngle),
+                                          tmpMidPnt,
+                                          prodTargetMotherInfo,
+                                          0,
+                                          prodTargetVisible,
+                                          G4Colour::Gray(),
+                                          prodTargetSolid,
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
       ++iSpk;
     }
 
@@ -272,19 +265,19 @@ namespace mu2e {
       iSpokeName<<"ProductionTargetSpokeLft_"<<iSpk;
 
       VolumeInfo iSpokeInfo   = nestTubs( iSpokeName.str(),
-					  iSpokeParams,
-					  spokeMaterial,
-					  new CLHEP::HepRotation(tmpRotAxis,rotAngle),
-					  tmpMidPnt,
-					  prodTargetMotherInfo,
-					  0,
-					  prodTargetVisible,
-					  G4Colour::Gray(),
-					  prodTargetSolid,
-					  forceAuxEdgeVisible,
-					  placePV,
-					  doSurfaceCheck
-					  );
+                                          iSpokeParams,
+                                          spokeMaterial,
+                                          new CLHEP::HepRotation(tmpRotAxis,rotAngle),
+                                          tmpMidPnt,
+                                          prodTargetMotherInfo,
+                                          0,
+                                          prodTargetVisible,
+                                          G4Colour::Gray(),
+                                          prodTargetSolid,
+                                          forceAuxEdgeVisible,
+                                          placePV,
+                                          doSurfaceCheck
+                                          );
       ++iSpk;
     }
 

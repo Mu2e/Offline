@@ -183,8 +183,7 @@ namespace mu2e {
       if ( !_debugTrackList.inList(id) ) return;
     }
 
-    // Position and momentum at the the pre point.
-    G4ThreeVector const& pos = prept->GetPosition();
+    // Momentum at the the pre point.
     G4ThreeVector const& mom = prept->GetMomentum();
 
     // On the last step on a track the post step point does not have an
