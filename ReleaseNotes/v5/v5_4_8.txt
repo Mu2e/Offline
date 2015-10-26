@@ -1,6 +1,26 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_4_8
+
+3) Oct 25, 2015 kutschke
+   HitMakers/fcl/prolog.fcl
+    - I am not 100% sure that this is the right way to fix the problem ....
+    - The immediate problem was that in Mu2eG4/fcl/g4test_03.fcl
+      the module label CaloCrystalHitsMaker produced no output because it
+      could not find it's inputs.  The problem was that the definition
+         caloReadoutModuleLabel : MakeCaloReadoutHits
+
+      should have been:
+         caloReadoutModuleLabel : "CaloReadoutHitsMaker"
+
+    - So I fixed it.  I scanned about 10 other fcl files and this change
+      was needed for all of them.
+    - The change makes no difference to Analyses/test/genReco.fcl
+      which uses a different crystal hit maker.
+    - So the stuff I know how to test works but I don't know about the stuff
+      I do not know how to test.
+
+2) Oct 25, 2015 kutschke
+   Analyses/src/ReadBack_module.cc
+     - Add printout for GenParticles
 
 1) Oct 12, 2015 logash
    modified:   Analyses/src/ReadVirtualDetector_module.cc
