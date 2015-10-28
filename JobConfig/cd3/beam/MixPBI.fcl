@@ -12,12 +12,13 @@ BEGIN_PROLOG
 stepInstanceNames   : [ "tracker", "virtualdetector", "calorimeter", "calorimeterRO" ]
 mixerTemplate: {
    module_type         : MixMCEvents
+   fileNames           : @nil
    readMode            : randomLimReplace
    wrapFiles           : true
    coverageFraction    : 1000000.
    detail : {
       mean                : @nil
-      histogramFactor	  : 3.9e7
+      histogramFactor     : 3.9e7
       genModuleLabel      : generate
       g4ModuleLabel       : detectorFilter
       g4StatusTag         : g4run
@@ -36,58 +37,60 @@ source : { module_type : EmptyEvent maxEvents :  @nil }
 
 services :
 {
-  message : @local::default_message
-  TFileService : { fileName : "MixPBI.root" }
-  RandomNumberGenerator: { }
-  user :
-  {
-    SeedService: @local::automaticSeeds
-  }
+   message : @local::default_message
+   TFileService : { fileName : "MixPBI.root" }
+   RandomNumberGenerator: { }
+   user :
+   {
+      SeedService: @local::automaticSeeds
+   }
 }
 
 physics :
 {
-  producers :
-  {
-    genCounter: { module_type: GenEventCounter }
-    protonBunchIntensity : {
-      module_type : ProtonBunchIntensitySimulator
-#
-# the following numbers represent the current understanding of the primary proton beam
-# intensity and its fluctuations, having a flat distribution
-#     
-      IntensityModel : 1
-      MeanNumberOfProtonsPerMicrobunch : 3.9e7
-      FullRelativeWidth : 1.0
-    }
-  }
+   producers :
+   {
+      genCounter: { module_type: GenEventCounter }
+      protonBunchIntensity : {
+         module_type : ProtonBunchIntensitySimulator
+         #
+         # the following numbers represent the current understanding of the primary proton beam
+         # intensity and its fluctuations, having a flat distribution
+         #
+         IntensityModel : 1
+         MeanNumberOfProtonsPerMicrobunch : 3.9e7
+         FullRelativeWidth : 1.0
+      }
+   }
 
    filters: {
-      flashMixer   : @local::mixerTemplate
-      ootMixer     : @local::mixerTemplate
-      dioMixer     : @local::mixerTemplate
-      neutronMixer : @local::mixerTemplate
-      photonMixer  : @local::mixerTemplate
-      protonMixer  : @local::mixerTemplate
-  }
- 
+      flashMixer    : @local::mixerTemplate
+      ootMixer      : @local::mixerTemplate
+      neutronMixer  : @local::mixerTemplate
+      dioMixer      : @local::mixerTemplate
+      photonMixer   : @local::mixerTemplate
+      protonMixer   : @local::mixerTemplate
+      deuteronMixer : @local::mixerTemplate
+   }
+
    analyzers: {
       genCountLogger: { module_type: GenEventCountReader }
-  }
-# trigger path
-  p1 : [ genCounter, protonBunchIntensity,
-    dioMixer, protonMixer, neutronMixer, photonMixer, ootMixer, flashMixer ]
-  e1 : [genCountLogger, fullOutput]
-  
-  trigger_paths  : [p1]
-  end_paths      : [e1]
+   }
+   # trigger path
+   p1 : [ genCounter, protonBunchIntensity,
+      flashMixer, ootMixer, neutronMixer, dioMixer, photonMixer, protonMixer, deuteronMixer
+   ]
+   e1 : [genCountLogger, fullOutput]
+
+   trigger_paths  : [p1]
+   end_paths      : [e1]
 }
 
 outputs: {
-    fullOutput : {
-        module_type : RootOutput
-        fileName    : "data_MixPBI.art"
-    }
+   fullOutput : {
+      module_type : RootOutput
+      fileName    : "data_MixPBI.art"
+   }
 }
 
 # Set mean values for the number of events to mix for each process.
@@ -100,4 +103,3 @@ physics.filters.dioMixer.detail.mean      :  1.03E-05
 physics.filters.photonMixer.detail.mean   :  9.95E-06
 physics.filters.protonMixer.detail.mean   :  8.36E-07
 physics.filters.deuteronMixer.detail.mean :  1.58E-07
-
