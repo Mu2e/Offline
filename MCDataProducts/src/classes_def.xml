@@ -37,6 +37,8 @@
  <class name="mu2e::StrawDigiMCCollection"/>
  <class name="mu2e::G4BeamlineInfo"/>
  <class name="mu2e::G4BeamlineInfoCollection"/>
+ <class name="mu2e::CaloShowerStepMC"/>
+ <class name="mu2e::CaloShowerStepMCCollection"/>
  <class name="mu2e::CaloHitMCTruth"/>
  <class name="mu2e::CaloHitMCTruthCollection"/>
  <class name="mu2e::CaloCrystalOnlyHit"/>
@@ -83,6 +85,7 @@
  <class name="art::Wrapper<mu2e::StrawDigiMCCollection>"/>
  <class name="art::Wrapper<mu2e::G4BeamlineInfo>"/>
  <class name="art::Wrapper<mu2e::G4BeamlineInfoCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloShowerStepMCCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
  <class name="art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitSimPartMCCollection>"/>
