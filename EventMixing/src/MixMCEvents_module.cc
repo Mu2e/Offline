@@ -421,11 +421,11 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
 
   // Register MixOp operations; the callbacks are called in the order they were registered.
   helper.declareMixOp
-    ( art::InputTag(genModuleLabel_,""),
+    ( art::InputTag(genModuleLabel_),
       &MixMCEventsDetail::mixGenParticles, *this );
 
   helper.declareMixOp
-    ( art::InputTag(g4ModuleLabel_,"s0"),
+    ( art::InputTag(g4ModuleLabel_),
       &MixMCEventsDetail::mixSimParticles, *this );
 
   // Declare MixOps for all StepPointMCCollections.
@@ -438,7 +438,7 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
 
   if ( doPointTrajectories_ ){
     helper.declareMixOp
-      ( art::InputTag(g4ModuleLabel_,""),
+      ( art::InputTag(g4ModuleLabel_),
         &MixMCEventsDetail::mixPointTrajectories, *this );
   }
 
