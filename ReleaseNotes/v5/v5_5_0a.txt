@@ -1,11 +1,8 @@
            Additional release notes for Mu2e Offline software, v5_5_0
 
-These notes were added after v5_5_0 was tagged - so they only appear in tags
-v5_5_1 and later.
-
-3) Oct 27, 2015 echenard
-   - Improved performance of CaloCluster algorithms
-   - improved treatment of split-offs
+These are an addition to the release notes for v5_5_0.  They were added
+after v5_5_0 was tagged - so they only appear in tags v5_5_1 and later.
+Release notes for v5_5_1 should go into v5_5_1.txt
 
 2) Oct 25, 2015 kutschke
    CalPatRec/src/CalPatRec_module.cc
