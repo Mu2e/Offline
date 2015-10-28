@@ -442,11 +442,13 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
         &MixMCEventsDetail::mixPointTrajectories, *this );
   }
 
-  // When art v1_0_0 becomes available, add the extra argument so that the mixop must return false.
+  const bool doNotWrite{false};
   if(g4StatusTag_ != art::InputTag()) {
     helper.declareMixOp
       ( g4StatusTag_,
-        &MixMCEventsDetail::mixStatusG4, *this );
+        &MixMCEventsDetail::mixStatusG4,
+        *this,
+        doNotWrite);
   }
 
 
@@ -470,8 +472,8 @@ MixMCEventsDetail(fhicl::ParameterSet const &pSet,
   // When art v1_0_0 becomes available, add the extra argument so that the mixop must return false.
     if(pbiTag_ != art::InputTag()) {
       helper.declareMixOp
-	( pbiTag_,
-	  &MixMCEventsDetail::mixProtonBunchIntensity, *this );
+        ( pbiTag_,
+          &MixMCEventsDetail::mixProtonBunchIntensity, *this );
     }
   }
 
@@ -486,7 +488,7 @@ startEvent(const art::Event& event) {
   pbi_ = 0;
   // find the proton intensity for this event
   if(usePBI_){
-    art::Handle<mu2e::ProtonBunchIntensity> pbiH; 
+    art::Handle<mu2e::ProtonBunchIntensity> pbiH;
     if(event.getByLabel(pbiTag_,pbiH))
       pbi_ = pbiH.product();
     if(pbi_ == 0)
@@ -510,7 +512,7 @@ nSecondaries() {
     actual_ = poisson_->fire(bmean);
     if(printLevel_ > 1)
       std::cout << "Mixer " << genModuleLabel_  << " Mixing " << actual_ << " events, from mean " << bmean << std::endl;
-  } else 
+  } else
     actual_ = n0_;
 
   hNEvents_->Fill(actual_);
