@@ -38,7 +38,7 @@ source : { module_type : EmptyEvent maxEvents :  @nil }
 services :
 {
    message : @local::default_message
-   TFileService : { fileName : "MixPBI.root" }
+   TFileService : { fileName : "nts.owner.cd3-detmix.version.sequencer.root" }
    RandomNumberGenerator: { }
    user :
    {
@@ -89,7 +89,7 @@ physics :
 outputs: {
    fullOutput : {
       module_type : RootOutput
-      fileName    : "data_MixPBI.art"
+      fileName    : "sim.owner.cd3-detmix.version.sequencer.art"
    }
 }
 
