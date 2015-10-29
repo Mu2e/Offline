@@ -12,7 +12,10 @@ END_PROLOG
 # Give this job a name.
 process_name : beamflt4detflash
 
-source : { module_type : RootInput }
+source : {
+   module_type : RootInput
+   readParameterSets: false
+}
 
 services : {
     TFileService          : { fileName : "nts.owner.cd3-beam-flt4detflash.version.sequencer.root" }
