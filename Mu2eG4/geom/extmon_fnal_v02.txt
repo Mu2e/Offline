@@ -218,7 +218,7 @@ vector<double> extMonFNAL.dn.module_rotation = { 0., 0., 180. };
 // The following two values are 'false' until the extMonFNAL vds can
 // be reconciled with the new building/dirt geometries. (knoepfel)
 bool   extMonFNAL.filter.vd.enabled = false; 
-bool   extMonFNAL.detector.vd.enabled = false;
+bool   extMonFNAL.detector.vd.enabled = true;
 double extMonFNAL.detector.vd.halfdx = 100; // transverse size
 double extMonFNAL.detector.vd.halfdy = 100; // transverse size
 
