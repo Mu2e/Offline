@@ -1,0 +1,163 @@
+// Andrei Gaponenko, 2013
+// Jake Colston & Joseph Brock, 2015 (edit for cd3)
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+
+// Energy cuts on electron, positron, photon, and neutron.
+CutEPPhN : {
+    type : intersection
+    pars : [ { type: kineticEnergy cut: 100.0 },
+             { type: pdgId pars: [ 11, -11, 22, 2112 ] } ]
+}
+
+END_PROLOG
+
+# Give this job a name.
+process_name : pionsg4s3
+
+source : { module_type : RootInput }
+
+services : {
+
+    message               : @local::default_message
+    TFileService          : { fileName : "nts.owner.cd3-pions-g4s3.version.sequencer.art" }
+    RandomNumberGenerator : { }
+
+    user : {
+        GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt"    }
+        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+        G4Helper               : { }
+        SeedService            : @local::automaticSeeds
+    }
+}
+
+physics : {
+
+    //================================================================
+    producers : {
+
+        g4run : {
+            module_type       : Mu2eG4
+            physics           : @local::mu2eg4DefaultPhysics
+            ResourceLimits    : @local::mu2eg4DefaultResourceLimits
+            TrajectoryControl : @local::mu2eg4NoTrajectories
+            debug             : @local::mu2eg4DefaultDebug
+            visualization     : @local::mu2eg4NoVisualization
+
+            MultiStageParameters : {
+                simParticleNumberOffset  : 200000
+                genInputHits             : [ "g4filter:vacuuas2" ]
+                inputSimParticles        : "g4filter"
+                inputMCTrajectories      : ""
+                inputPhysVolumeMultiInfo : "compressPV"
+            }
+            doWriteLegacyPhysVolumeInfo : false
+
+            SDConfig : {
+                enableSD         : [ virtualdetector ] // activate just the explicitly listed SDs
+                preSimulatedHits : [ "g4filter:virtualdetector" ]
+                TimeVD           : { times:[] }
+            }
+
+            // Mu2eG4 cuts are evaluated in the listed order.
+            // The first match wins.  For the "intersection"
+            // type, the first false stops the evaluation.
+            Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
+            Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
+            Mu2eG4CommonCut : {
+                type : union
+                pars : [
+                    @local::CutEPPhN,
+                    { type: inVolume pars: [ HallAir ] }
+                ]
+            }
+
+            SimParticlePrinter: {
+                enabled       : false
+                primariesOnly : false
+                prefix        : "SimParticle : "
+            }
+        }
+
+        compressPVStop: {
+            module_type    : CompressPhysicalVolumes
+            volumesInput   : "g4run"
+            hitInputs      : []
+            particleInputs : [ "stopFilter" ]
+        }
+
+        //----------------------------------------------------------------
+        stoppedPionFinder: {
+            module_type      : StoppedParticlesFinder
+            particleInput    : "g4run"
+            // multiple matches, we'll get the one from the current process, which is what we want
+            physVolInfoInput : "g4run"
+            stoppingMaterial : "StoppingTarget_Al"
+            particleTypes    : [ -211 ] // pi-
+        }
+    } // producers
+
+    //================================================================
+    filters: {
+        stopFilter: {
+            module_type               : FilterG4Out
+            noInstanceName            : true
+            mainHitInputs             : []
+            extraHitInputs            : [ "g4run:virtualdetector", "g4filter:vacuuas2" ]
+            mainSPPtrInputs           : [ "stoppedPionFinder" ]
+            numSimParticleCollections : 1
+            vetoDaughters             : [ "stoppedPionFinder" ]
+        }
+    }
+
+    //================================================================
+    analyzers: {
+        stoppedPionDumper : {
+            module_type      : StoppedParticlesDumper
+            inputCollection  : "stoppedPionFinder"
+            writeProperTime  : true
+            decayOffPDGCodes : [ -211, 211 ]
+            hitCollections   : [ "g4filter:vacuuas1", "g4filter:vacuuas2" ]
+        }
+        genCountLogger : {
+            module_type : GenEventCountReader
+        }
+    }
+
+    //================================================================
+    pionStopFilter : [ g4run, stoppedPionFinder, stopFilter, compressPVStop ]
+    trigger_paths  : [ pionStopFilter ]
+
+    out       : [ pionStopOutput ]
+    stops     : [ stoppedPionDumper, genCountLogger ]
+    end_paths : [ out, stops ]
+}
+
+outputs: {
+    pionStopOutput : {
+        module_type    : RootOutput
+        SelectEvents   : { SelectEvents : [pionStopFilter] }
+        outputCommands : [ "drop *_*_*_*",
+                           "keep mu2e::GenParticles_*_*_*",
+                           "keep mu2e::GenEventCount_*_*_*",
+                           "keep mu2e::StatusG4_*_*_*",
+                           "keep *_stoppedPionFinder_*_*",
+                           "keep *_g4filter_*_*",
+                           "keep *_stopFilter_*_*",
+                           "keep *_compressPVStop_*_*" ]
+        fileName       : "data_pions_g4s3.art"
+    }
+}
+
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+physics.producers.g4run.physics.noDecay     : [ 211, -211 ]
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.user.SeedService.baseSeed          : 0
+services.user.SeedService.maxUniqueEngines  : 20
