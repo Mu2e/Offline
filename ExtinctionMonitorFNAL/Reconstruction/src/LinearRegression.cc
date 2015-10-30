@@ -14,7 +14,6 @@
 #include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALSensorStack.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {
