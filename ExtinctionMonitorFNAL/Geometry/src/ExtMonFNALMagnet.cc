@@ -14,11 +14,15 @@ mu2e::ExtMonFNALMagnet::ExtMonFNALMagnet()
 {}
 
 //================================================================
+namespace {
+  // 1/c_light in units that give rTrack in millimeters
+  // for input momentum in MeV/c in trackBendRadius()
+  static const double c_light_inv = 3335.64095198;
+}
+
 double mu2e::ExtMonFNALMagnet::trackBendRadius(double momentum) const {
   // In the bend plane: compute the gyroradius
-  // The constant factor is 1/c_light scaled such as
-  // to get rTrack in millimeters
-  const double rTrack = 3335.64095198 * (momentum/CLHEP::GeV) / (bfield_.mag()/CLHEP::tesla);
+  const double rTrack = c_light_inv * (momentum/CLHEP::GeV) / (bfield_.mag()/CLHEP::tesla);
   return rTrack;
 }
 

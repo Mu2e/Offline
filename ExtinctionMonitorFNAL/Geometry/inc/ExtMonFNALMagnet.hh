@@ -49,6 +49,7 @@ namespace mu2e {
     // derived:
     double trackBendRadius(double momentum) const;
     double trackBendHalfAngle(double momentum) const;
+    double trackPinvFromRinv(double rinv) const { return trackBendRadius(rinv); }
 
     double nominalBendHalfAngle() const { return trackBendHalfAngle(nominalMomentum()); }
 
