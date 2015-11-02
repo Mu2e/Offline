@@ -49,11 +49,11 @@ physics : {
         }
         emfPatRec: {
             module_type: EMFDetHistPatRec
-            patRecModuleLabel  : "EMFPatRecFromTracklets"
+            patRecInTag  : "EMFPatRecFromTracklets"
         }
         emfPatArb: {
             module_type: EMFDetHistPatRec
-            patRecModuleLabel  : "EMFTrackClusterArbiter"
+            patRecInTag  : "EMFTrackClusterArbiter"
 	    geomModuleLabel: ""
         }
         emfPatRecAnalysis: @local::PatRecAnalysis

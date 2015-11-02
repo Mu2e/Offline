@@ -5,7 +5,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <set>
+#include <cmath>
+#include <algorithm>
 
 #include "CLHEP/GenericFunctions/CumulativeChiSquare.hh"
 
@@ -14,6 +15,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "art/Utilities/InputTag.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALTrkParam.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitQuality.hh"
@@ -39,17 +41,22 @@ namespace mu2e {
 
     //================================================================
     class EMFDetHistPatRec : public art::EDAnalyzer {
-      std::string patRecModuleLabel_;
-      std::string patRecInstanceName_;
+      art::InputTag patRecInTag_;
       std::string geomModuleLabel_; // emtpy to take info from Run
       std::string geomInstanceName_;
 
       const ExtMon *extmon_;
 
       //----------------
+      const double maxMomentum_; // for histogramming
+
       TH1D *hMultiplicity_;
       TH1D *hChi2_;
       TH1D *hProb_;
+      TH1D *hMomentum_;
+      TH1D *hpxpz_;
+      TH1D *hpypz_;
+      TH1D *hAngle_;
 
       //      std::vector<TH2D*> hResiduals;
 
@@ -62,16 +69,21 @@ namespace mu2e {
     //================================================================
     EMFDetHistPatRec::EMFDetHistPatRec(const fhicl::ParameterSet& pset)
       : art::EDAnalyzer(pset)
-      , patRecModuleLabel_(pset.get<std::string>("patRecModuleLabel"))
-      , patRecInstanceName_(pset.get<std::string>("patRecInstanceName", ""))
+      , patRecInTag_(pset.get<std::string>("patRecInTag"))
       , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
       , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
 
       , extmon_()
 
+      , maxMomentum_(8000.) /* MeV/c */
+
       , hMultiplicity_()
       , hChi2_()
       , hProb_()
+      , hMomentum_()
+      , hpxpz_()
+      , hpypz_()
+      , hAngle_()
     {}
 
     //================================================================
@@ -100,25 +112,45 @@ namespace mu2e {
 
         hProb_ = tfs->make<TH1D>("prob", "PatRec prob(chi2,ndf)", 500, 0., 1.);
         hProb_->StatOverflows();
+
+        hMomentum_ = tfs->make<TH1D>("momentum", "Reco track momentum", 160, 0., maxMomentum_);
+        hMomentum_->GetXaxis()->SetTitle("p, MeV/c");
+
+        hpxpz_ = tfs->make<TH1D>("pxpz", "px/pz", 200, -0.05, 0.05);
+        hpxpz_->GetXaxis()->SetTitle("px/pz");
+
+        hpypz_ = tfs->make<TH1D>("pypz", "py/pz", 200, -0.05, 0.05);
+        hpypz_->GetXaxis()->SetTitle("py/pz");
+
+        hAngle_ = tfs->make<TH1D>("angle", "Track angle w.r.t. the axis", 100, 0, 0.025);
+        hAngle_->GetXaxis()->SetTitle("theta, rad");
       }
     }
 
     //================================================================
     void EMFDetHistPatRec::analyze(const art::Event& event) {
 
-      art::Handle<ExtMonFNALTrkFitCollection> tracksh;
-      event.getByLabel(patRecModuleLabel_, patRecInstanceName_, tracksh);
-      const ExtMonFNALTrkFitCollection& tracks(*tracksh);
+      auto tracksh = event.getValidHandle<ExtMonFNALTrkFitCollection>(patRecInTag_);
 
-      hMultiplicity_->Fill(tracks.size());
+      hMultiplicity_->Fill(tracksh->size());
 
-      for(unsigned i=0; i<tracks.size(); ++i) {
+      for(const auto& track: *tracksh) {
+        hChi2_->Fill(track.quality().chi2());
 
-        hChi2_->Fill(tracks[i].quality().chi2());
-
-        Genfun::CumulativeChiSquare pf(tracks[i].quality().ndf());
-        const double prob = 1. - pf(tracks[i].quality().chi2());
+        Genfun::CumulativeChiSquare pf(track.quality().ndf());
+        const double prob = 1. - pf(track.quality().chi2());
         hProb_->Fill(prob);
+
+        const double pinv = extmon_->spectrometerMagnet().trackPinvFromRinv(track.pars().rinv());
+        hMomentum_->Fill( (pinv > 1./maxMomentum_) ? 1./pinv : 1./maxMomentum_);
+
+        hpxpz_->Fill(track.pars().slopex());
+        hpypz_->Fill(track.pars().slopey());
+
+        const double perp =
+          std::sqrt(std::pow(track.pars().slopex(), 2) + std::pow(track.pars().slopey(), 2));
+        const double theta = std::atan(perp);
+        hAngle_->Fill(theta);
 
       } // for(i)
 
