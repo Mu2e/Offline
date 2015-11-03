@@ -1,8 +1,14 @@
-#
 #  Mix individual process single-event background frames into a single pre-mixed frame,
 #  including the effects of primary proton bunch intensity variations.
 #
+#  "detmix": this config is for mixing hits in the main detectors
+#            (tracker and calorimeter), as opposed to mixing CRV or
+#            ExtMon hits.
+#
+#  "full": This file should be used with unfiltered beam flash events.
+#
 #  Dave Brown (LBNL), 20 May 2015
+#  Andrei Gaponenko,   3 Nov 2015
 #
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -38,7 +44,7 @@ source : { module_type : EmptyEvent maxEvents :  @nil }
 services :
 {
    message : @local::default_message
-   TFileService : { fileName : "nts.owner.cd3-detmix.version.sequencer.root" }
+   TFileService : { fileName : "nts.owner.cd3-detmix-full.version.sequencer.root" }
    RandomNumberGenerator: { }
    user :
    {
@@ -89,14 +95,14 @@ physics :
 outputs: {
    fullOutput : {
       module_type : RootOutput
-      fileName    : "sim.owner.cd3-detmix.version.sequencer.art"
+      fileName    : "sim.owner.cd3-detmix-full.version.sequencer.art"
    }
 }
 
 # Set mean values for the number of events to mix for each process.
 # These are relative to a single proton on target.
 # See docdb-6273
-physics.filters.flashMixer.detail.mean    :  5.59E-05
+physics.filters.flashMixer.detail.mean    :  2.02E-03
 physics.filters.ootMixer.detail.mean      :  4.91E-05
 physics.filters.neutronMixer.detail.mean  :  2.52E-05
 physics.filters.dioMixer.detail.mean      :  1.03E-05
