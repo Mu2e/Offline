@@ -1,10 +1,6 @@
 //
 // Construct and return CosmicRayShield
 //
-// $Id: CosmicRayShieldMaker.cc,v 1.32 2014/02/19 18:55:52 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/02/19 18:55:52 $
-//
 // Original author KLG based on Rob Kutschke's ...Maker classes
 //
 // Notes
@@ -22,7 +18,7 @@
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
- 
+
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -36,12 +32,11 @@
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 
-#include "GeometryService/inc/GeomHandle.hh"
 #include "MBSGeom/inc/MBS.hh"
 
 using namespace std;
 
-namespace mu2e 
+namespace mu2e
 {
 
   // Constructor that gets information from the config file instead of
@@ -71,7 +66,7 @@ namespace mu2e
     _gapDirection.resize(_nSectors);
     _layerDirection.resize(_nSectors);
 
-    for(int i=0; i<_nSectors; i++) 
+    for(int i=0; i<_nSectors; i++)
     {
       _counterLength[i]      = config.getDouble("crs.scintillatorBarLength"+_crvSectorNames[i]);
       _nModules[i]           = config.getInt("crs.nModules"+_crvSectorNames[i]);
@@ -88,7 +83,7 @@ namespace mu2e
     _gapLarge               = config.getDouble("crs.gapLarge");
     _gapSmall               = config.getDouble("crs.gapSmall");
     _gapBetweenModules      = config.getDouble("crs.gapBetweenModules");
-    
+
     config.getVectorDouble("crs.gapBetweenLayers",_gapBetweenLayers,3);
 
     _scintillatorBarMaterialName  = config.getString("crs.scintillatorBarMaterialName");
@@ -96,10 +91,10 @@ namespace mu2e
   }
 
 //VTNC = Vector to next counter
-  void CosmicRayShieldMaker::makeSingleSector(const std::vector<double> &counterHalfLengths, 
+  void CosmicRayShieldMaker::makeSingleSector(const std::vector<double> &counterHalfLengths,
                                               const int isector,
-                                              const std::string &name, 
-                                              const CLHEP::Hep3Vector &firstCounter, 
+                                              const std::string &name,
+                                              const CLHEP::Hep3Vector &firstCounter,
                                               const CLHEP::Hep3Vector *layerOffsets,
                                               const CLHEP::Hep3Vector &VTNCSmallGap,
                                               const CLHEP::Hep3Vector &VTNCLargeGap,
@@ -108,12 +103,12 @@ namespace mu2e
                                               int nModules, int nCounters)
   {
     std::shared_ptr<CRSScintillatorBarDetail> barDetails(new CRSScintillatorBarDetail(_scintillatorBarMaterialName, counterHalfLengths, localToWorld));
-    
+
     _crs->_scintillatorShields.push_back(CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails));
     CRSScintillatorShield &shield = _crs->_scintillatorShields.back();
     shield._absorberMaterialName = _absorberMaterialName;
     int thicknessDirection = localToWorld[0];
-  
+
     for(int imodule=0; imodule<nModules; imodule++)
     {
       shield._modules.push_back(CRSScintillatorModule(CRSScintillatorModuleId(isector,imodule)));
@@ -131,13 +126,13 @@ namespace mu2e
           int smallGapsPerModule = nCounters/2;
           counterPosition += imodule * (largeGapsPerModule * VTNCLargeGap + smallGapsPerModule * VTNCSmallGap);
           counterPosition += imodule * VTNCBetweenModules;
-          int largeGaps=icounter/2; 
+          int largeGaps=icounter/2;
           int smallGaps=(icounter+1)/2;
           counterPosition += largeGaps * VTNCLargeGap + smallGaps * VTNCSmallGap;
 
           CRSScintillatorBarIndex index(_crs->_allCRSScintillatorBars.size());
-          std::shared_ptr<CRSScintillatorBar> counter(new CRSScintillatorBar(index, 
-                                                          CRSScintillatorBarId(isector,imodule,ilayer,icounter), 
+          std::shared_ptr<CRSScintillatorBar> counter(new CRSScintillatorBar(index,
+                                                          CRSScintillatorBarId(isector,imodule,ilayer,icounter),
                                                           counterPosition, barDetails));
           _crs->_allCRSScintillatorBars.push_back(counter);
           layer._bars.push_back(counter);
@@ -151,7 +146,7 @@ namespace mu2e
         layerStart += imodule * VTNCBetweenModules;
 
         CLHEP::Hep3Vector layerEnd = layerStart;
-        int largeGaps=nCounters/2-1; 
+        int largeGaps=nCounters/2-1;
         int smallGaps=nCounters/2;
         layerEnd += largeGaps * VTNCLargeGap + smallGaps * VTNCSmallGap;
 
@@ -176,7 +171,7 @@ namespace mu2e
     } //modules
   }
 
-  void CosmicRayShieldMaker::makeCRVSectors() 
+  void CosmicRayShieldMaker::makeCRVSectors()
   {
     //We need to reserve space in allCRSScintillatorBars vector so that the addresses of the entries
     //won't change if an entry is added. This is necessary, so that we can have pointers to these entries
