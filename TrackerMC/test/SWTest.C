@@ -5,6 +5,7 @@
 #include "TCanvas.h"
 #include "TTree.h"
 #include "TProfile.h"
+#include "TFitResult.h"
 
 
 void SWTest(TTree* sw){
@@ -14,7 +15,7 @@ void SWTest(TTree* sw){
   sw->Project("vmo","vmax","nxing>0&&(mce<100 || npart>1)");
   vstack->Add(vmo);
   TH1F* vmce = new TH1F("vmce","Vmax (x20 gain);Vmax (mV)",100,0,1001);
-  vmce->SetFillColor(kRed);
+  vmce->SetLineColor(kRed);
   sw->Project("vmce","vmax","nxing>0&&(mce>100 && npart==1)");
   vstack->Add(vmce);
   TH1F* npart = new TH1F("npart","N particles",5,-0.5,4.5);
@@ -37,20 +38,30 @@ void SWTest(TTree* sw){
   nclusvs->SetStats(0);
 //  sw->Project("nclus","nhitlet","npAart==1&&nstep==1");
   sw->Project("nclusvs","nhitlet:slen","npart==1&&nstep==1");
+  TH1F* tvmax = new TH1F("tvmax","Time of maximum voltage;ns",100,0,50);
+  sw->Project("tvmax","tvmax-tmin","nxing>0");
+
+  TH2F* vvsdist = new TH2F("vvsdist","Voltage vs Drift Distance",50,0,2.51,50,0,400);
+  sw->Project("vvsdist","vmax:xddist","nxing>0");
 
   TCanvas* swcan = new TCanvas("swcan","swcan",1200,800);
   swcan->Divide(2,2);
   swcan->cd(1);
   vstack->Draw();
   TLegend * vleg = new TLegend(0.5,0.7,0.9,0.9);
-  vleg->AddEntry(vmce,"CE only in straw","F");
+  vmce->SetStats(1);
+  TFitResultPtr gfit = vmce->Fit("gaus","s","same",20,180);
+  char label[100];
+  snprintf(label,100,"CE only in straw, mean =%4.1f",gfit->Parameter(1));
+  vleg->AddEntry(vmce,label,"F");
   vleg->AddEntry(vmo,"#delta-ray and/or CE in straw","F");
-  vmce->Fit("gaus","","same",20,180);
   vleg->Draw();
   swcan->cd(2);
-  npart->Draw();
+//  npart->Draw();
+  vvsdist->Draw();
   swcan->cd(3);
-  nclusvs->Draw("box");
+//  nclusvs->Draw("box");
+  tvmax->Draw();
   swcan->cd(4);
   estack->Draw();
   TLegend * eleg = new TLegend(0.5,0.7,0.9,0.9);

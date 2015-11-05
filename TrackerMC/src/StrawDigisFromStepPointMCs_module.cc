@@ -58,6 +58,7 @@
 #include "TTree.h"
 #// C++
 #include <map>
+#include <algorithm>
 using namespace std;
 
 namespace mu2e {
@@ -140,19 +141,19 @@ namespace mu2e {
     TTree* _swdiag;
     Int_t _sdevice, _ssector, _slayer, _sstraw;
     Int_t _nhitlet,_ihitlet;
-    Float_t _hqsum, _vmax, _sesum;
+    Float_t _hqsum, _vmax, _tvmax, _sesum;
     Int_t _wmcpdg, _wmcproc, _nxing;
     Float_t _mce, _slen, _sedep;
     Int_t _nsteppoint;
     Int_t _npart;
-    Float_t _tmin, _tmax, _txing;
+    Float_t _tmin, _tmax, _txing, _xddist, _xwdist;
     Bool_t _wfxtalk;
     TTree* _sddiag;
     Int_t _sddevice, _sdsector, _sdlayer, _sdstraw;
     Int_t _nend, _nstep;
     Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1, _vstart0, _vstart1, _vcross0, _vcross1;
     Float_t _mctime, _mcenergy, _mctrigenergy, _mcthreshenergy;
-    Int_t _mcthreshpdg, _mcthreshproc;
+    Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
     Float_t _mcdca;
     Int_t _dmcpdg, _dmcproc, _dmcgen;
     Float_t _dmcmom;
@@ -238,6 +239,7 @@ namespace mu2e {
       _swdiag->Branch("ihitlet",&_ihitlet,"ihitlet/I");
       _swdiag->Branch("hqsum",&_hqsum,"hqsum/F");
       _swdiag->Branch("vmax",&_vmax,"vmax/F");
+      _swdiag->Branch("tvmax",&_tvmax,"tvmax/F");
       _swdiag->Branch("mcpdg",&_wmcpdg,"mcpdg/I");
       _swdiag->Branch("mcproc",&_wmcproc,"mcproc/I");
       _swdiag->Branch("mce",&_mce,"mce/F");
@@ -250,8 +252,10 @@ namespace mu2e {
       _swdiag->Branch("tmin",&_tmin,"tmin/F");
       _swdiag->Branch("tmax",&_tmax,"tmax/F");
       _swdiag->Branch("txing",&_txing,"txing/F");
+      _swdiag->Branch("xddist",&_xddist,"xddist/F");
+      _swdiag->Branch("xwdist",&_xwdist,"xwdist/F");
       _swdiag->Branch("xtalk",&_wfxtalk,"xtalk/B");
-
+      
       if(_diagLevel > 1){
 	_sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
 	_sddiag->Branch("device",&_sddevice,"device/I");
@@ -283,6 +287,7 @@ namespace mu2e {
 	_sddiag->Branch("mcthreshenergy",&_mcthreshenergy,"mcthreshenergy/F");
 	_sddiag->Branch("mcthreshpdg",&_mcthreshpdg,"mcthreshpdg/I");
 	_sddiag->Branch("mcthreshproc",&_mcthreshproc,"mcthreshproc/I");
+	_sddiag->Branch("mcnstep",&_mcnstep,"mcnstep/I");
 	_sddiag->Branch("mcdca",&_mcdca,"mcdca/F");
 	_sddiag->Branch("mcpdg",&_dmcpdg,"mcpdg/I");
 	_sddiag->Branch("mcproc",&_dmcproc,"mcproc/I");
@@ -716,6 +721,7 @@ namespace mu2e {
     set<art::Ptr<SimParticle> > parts;
     _nxing = xings.size();
     _txing = _mbtime+_mbbuffer;
+    _xddist = _xwdist = -1.0;
     if(_nxing > 0){
       for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
 	_txing = min(_txing,static_cast<float_t>(ixing->_time));
@@ -726,11 +732,13 @@ namespace mu2e {
 	    if(ih == xings.front()._ihitlet)break;
 	    ++_ihitlet;
 	  }
+	  _xddist = ixing->_ihitlet->driftDistance();
+	  _xwdist = ixing->_ihitlet->wireDistance();
 	}
       }
     }
     _hqsum = 0.0;
-    _vmax = 0.0;
+    _vmax = _tvmax = 0.0;
     _wmcpdg=0;
     _wmcproc=0;
     for(auto ihitl=hitlets.begin();ihitl!=hitlets.end();++ihitl){
@@ -738,9 +746,11 @@ namespace mu2e {
 	steps.insert(ihitl->stepPointMC());
 	parts.insert(ihitl->stepPointMC()->simParticle());
 	_hqsum += ihitl->charge();
-	double vout = wf.sampleWaveform(_diagpath,ihitl->time()+_strawele->maxResponseTime(_diagpath));
+	double htime = ihitl->time()+_strawele->maxResponseTime(_diagpath);
+	double vout = wf.sampleWaveform(_diagpath,htime);
 	if(vout > _vmax){
 	  _vmax = vout;
+	  _tvmax = htime; 
 	  _wmcpdg = ihitl->stepPointMC()->simParticle()->pdgId();
 	  _wmcproc = ihitl->stepPointMC()->simParticle()->creationCode();
 	  _mce = ihitl->stepPointMC()->simParticle()->startMomentum().e();
@@ -758,44 +768,49 @@ namespace mu2e {
     _tmax = hitlets.rbegin()->time();
     _wfxtalk = !wf.xtalk().self();
     _swdiag->Fill();
-    static unsigned nhist(0);
-    bool histhis = _noxhist && _nxing==0;
-    histhis |= _xtalkhist && _wfxtalk;
-    histhis |= (!_xtalkhist) && (!_noxhist);
-    if(_diagLevel > 2 && nhist < _maxhist &&
-    _nxing >= _minnxinghist && histhis){
-      ++nhist;
-      // histogram the waveforms
-      const double tstep(0.1); // 0.1 ns
-      const double nfall(5.0); // 5 lambda past last fall time
-      double tstart = hitlets.begin()->time()-tstep;
-      double tfall = _strawele->fallTime(_diagpath);
-      double tend = hitlets.rbegin()->time() + nfall*tfall;
-      vector<double> times, volts;
-      double t = tstart;
-      while(t<tend){
-	times.push_back(t);
-	t += tstep;
-      }
-      wf.sampleWaveform(_diagpath,times,volts);
-      art::ServiceHandle<art::TFileService> tfs;
-      char name[60];
-      char title[100];
-      snprintf(name,60,"SWF%i_%i",wf.hitlets().strawIndex().asInt(),nhist);
-      snprintf(title,100,"Electronic output for straw %i event %i;time (nSec);mVolts",wf.hitlets().strawIndex().asInt(),nhist);
-      TH1F* wfh = tfs->make<TH1F>(name,title,volts.size(),times.front(),times.back());
-      for(size_t ibin=0;ibin<times.size();++ibin)
-	wfh->SetBinContent(ibin+1,volts[ibin]);
-      TList* flist = wfh->GetListOfFunctions();
-      for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
-	if(ixing->_ihitlet->strawEnd() == wf.strawEnd()){
-	  TMarker* smark = new TMarker(ixing->_time,ixing->_vcross,8);
-	  smark->SetMarkerColor(kGreen);
-	  smark->SetMarkerSize(2);
-	  flist->Add(smark);
+    if(_diagLevel > 2) {
+      // histogram individual waveforms
+      static unsigned nhist(0);// maximum number of histograms per job!
+      bool histthis = _noxhist && _nxing==0;
+      histthis |= _xtalkhist && _wfxtalk;
+      histthis |= (!_xtalkhist) && (!_noxhist);
+      histthis &=  _nxing >= _minnxinghist;
+  // histogram the waveforms
+      if(nhist < _maxhist && histthis ) {
+	static const double tstep(0.1); // 0.1 ns
+	static const double nfall(5.0); // 5 lambda past last fall time
+	double tstart = hitlets.begin()->time()-tstep;
+	double tfall = _strawele->fallTime(_diagpath);
+	double tend = hitlets.rbegin()->time() + nfall*tfall;
+	vector<double> times, volts;
+	times.reserve(size_t(rint(tend-tstart)/tstep));
+	volts.reserve(size_t(rint(tend-tstart)/tstep));
+	double t = tstart;
+	while(t<tend){
+	  times.push_back(t);
+	  t += tstep;
 	}
-      } 
-      _waveforms.push_back(wfh);
+	wf.sampleWaveform(_diagpath,times,volts);
+	++nhist;
+	art::ServiceHandle<art::TFileService> tfs;
+	char name[60];
+	char title[100];
+	snprintf(name,60,"SWF%i_%i",wf.hitlets().strawIndex().asInt(),nhist);
+	snprintf(title,100,"Electronic output for straw %i event %i;time (nSec);mVolts",wf.hitlets().strawIndex().asInt(),nhist);
+	TH1F* wfh = tfs->make<TH1F>(name,title,volts.size(),times.front(),times.back());
+	for(size_t ibin=0;ibin<times.size();++ibin)
+	  wfh->SetBinContent(ibin+1,volts[ibin]);
+	TList* flist = wfh->GetListOfFunctions();
+	for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
+	  if(ixing->_ihitlet->strawEnd() == wf.strawEnd()){
+	    TMarker* smark = new TMarker(ixing->_time,ixing->_vcross,8);
+	    smark->SetMarkerColor(kGreen);
+	    smark->SetMarkerSize(2);
+	    flist->Add(smark);
+	  }
+	} 
+	_waveforms.push_back(wfh);
+      }
     }
   }
 
@@ -849,7 +864,7 @@ namespace mu2e {
     _dmcpdg = _dmcproc = _dmcgen = 0;
     _dmcmom = -1.0;
     _mctime = _mcenergy = _mctrigenergy = _mcthreshenergy = _mcdca = -1000.0;
-    _mcthreshpdg = _mcthreshproc = 0;
+    _mcthreshpdg = _mcthreshproc = _mcnstep = 0;
     art::Ptr<StepPointMC> const& spmc = xpair[0]->_ihitlet->stepPointMC();
     if(!spmc.isNull()){
       _mctime = _toff.timeWithOffsetsApplied(*spmc);
@@ -869,6 +884,7 @@ namespace mu2e {
     _mctrigenergy = mcdigi.triggerEnergySum();
 // sum the energy from the explicit trigger particle, and find it's releationship 
     _mcthreshenergy = 0.0;
+    _mcnstep = mcdigi.stepPointMCs().size();
     art::Ptr<StepPointMC> threshpart = mcdigi.stepPointMC(StrawDigi::zero);
     if(threshpart.isNull()) threshpart = mcdigi.stepPointMC(StrawDigi::one);
     for(auto imcs = mcdigi.stepPointMCs().begin(); imcs!= mcdigi.stepPointMCs().end(); ++ imcs){
