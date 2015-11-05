@@ -9,7 +9,6 @@
 // Original author David Brown, LBNL
 //
 #include "TrackerConditions/inc/StrawPhysics.hh"
-#include "cetlib/exception.h"
 #include <math.h>
 #include <algorithm>
 
