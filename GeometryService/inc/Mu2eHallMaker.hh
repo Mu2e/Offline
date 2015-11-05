@@ -1,6 +1,8 @@
 #ifndef GeometryService_Mu2eHallMaker_hh_HH
 #define GeometryService_Mu2eHallMaker_hh_HH
 
+#include "CLHEP/Vector/TwoVector.h"
+
 #include <memory>
 
 namespace mu2e {
