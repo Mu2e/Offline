@@ -1,11 +1,6 @@
 //
 // Construct and return a TTracker.
 //
-//
-// $Id: TTrackerMaker.cc,v 1.57 2014/04/11 04:40:46 genser Exp $
-// $Author: genser $
-// $Date: 2014/04/11 04:40:46 $
-//
 // Original author Rob Kutschke
 //
 // Significant change mf 5/30/11:
@@ -18,7 +13,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "TTrackerGeom/inc/TTrackerMaker.hh"
+#include "GeometryService/inc/TTrackerMaker.hh"
 #include "TrackerGeom/inc/Sector.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "cetlib/pow.h"
@@ -72,9 +67,9 @@ namespace mu2e {
         double sroz = (sector.boxOffset() - device.origin()).z();
 
         size_t isecf = nStrawsPerSector*csec + nStrawsPerDevice*cdev;
- 
+
         cout << __func__ << " Straw "
-             << fixed << setw(6) << istr 
+             << fixed << setw(6) << istr
              << " secfloor " << setw(6) << isecf << " "
              << straw.id()
              << " mid point " << straw.getMidPoint()
@@ -86,8 +81,8 @@ namespace mu2e {
              << " device rotation: " << dang
              << " origin " << device.origin()
              << " sec rel origin z " << sroz
-	     << " straw exists " << _tt->strawExists(StrawIndex(istr))
-	     << " device exists " << device.exists();
+             << " straw exists " << _tt->strawExists(StrawIndex(istr))
+             << " device exists " << device.exists();
 
         if (isec>csec && idev==cdev) cout << " <--S";
         if (iang>cang && idev==cdev) cout << " <--A";
@@ -143,10 +138,10 @@ namespace mu2e {
     config.getVectorInt("ttracker.nonExistingDevices", _nonExistingDevices,  vector<int>() );
 
     _verbosityLevel > 0 && _nonExistingDevices.size()>0 &&
-      cout << __func__ << " inactive devices : f/l   " 
-	   << _nonExistingDevices.front() << " / "
-	   << _nonExistingDevices.back()
-	   << endl;
+      cout << __func__ << " inactive devices : f/l   "
+           << _nonExistingDevices.front() << " / "
+           << _nonExistingDevices.back()
+           << endl;
 
     // station
     // TODO Maybe -- These might eventually want to be config parameter driven
@@ -181,7 +176,7 @@ namespace mu2e {
       config.getVectorInt( "ttrackerSupport.midRing.slot", _midRingSlot );
       _midRingHalfLength       = config.getDouble(    "ttrackerSupport.midRing.halfLength" );
 
-      // support beams; 
+      // support beams;
       // fixme use vectors to contain them all (e.g. vector<SupportBeamParams>)
 
       config.getVectorDouble( "ttrackerSupport.beam0.phiRange", _beam0_phiRange );
@@ -246,83 +241,83 @@ namespace mu2e {
     if (_sectorsPerDevice == 6 ){
   // the Z pattern here is forced by the 'alternating sector id' convention
   // that permeates the rest of the code.
-	_sectorZSide.push_back(-1.);
-	_sectorZSide.push_back(+1.);
-	_sectorZSide.push_back(-1.);
-	_sectorZSide.push_back(+1.);
-	_sectorZSide.push_back(-1.);
-	_sectorZSide.push_back(+1.);
+        _sectorZSide.push_back(-1.);
+        _sectorZSide.push_back(+1.);
+        _sectorZSide.push_back(-1.);
+        _sectorZSide.push_back(+1.);
+        _sectorZSide.push_back(-1.);
+        _sectorZSide.push_back(+1.);
       if(_rotationPattern == 1){
 // cdr geometry, taken from DOC 888, also alternatives 1 and 3 from doc 2799
-	// faces overlap by 60 degrees
+        // faces overlap by 60 degrees
 // Implicitly define the rotations for the even and odd (sequentially) sectors.
-	_sectorBaseRotations.push_back(	 45.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 105.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 165.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 225.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 285.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 345.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  75.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  15.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 195.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 135.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 315.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 255.*CLHEP::degree);
-		
+        _sectorBaseRotations.push_back(  45.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 105.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 165.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 225.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 285.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 345.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  75.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  15.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 195.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 135.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 315.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 255.*CLHEP::degree);
+
       } else if(_rotationPattern==2){
-      	// alternative 2 from DOC 2799
-	// faces overlap by 60 degrees
-	_sectorBaseRotations.push_back(  45.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  75.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 165.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 195.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 285.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 315.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 105.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  15.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 225.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 135.*CLHEP::degree);
-	_sectorBaseRotations.push_back( 345.*CLHEP::degree);
-     	_sectorBaseRotations.push_back( 255.*CLHEP::degree);
+        // alternative 2 from DOC 2799
+        // faces overlap by 60 degrees
+        _sectorBaseRotations.push_back(  45.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  75.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 165.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 195.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 285.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 315.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 105.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  15.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 225.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 135.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 345.*CLHEP::degree);
+        _sectorBaseRotations.push_back( 255.*CLHEP::degree);
 
       } else if(_rotationPattern==3){
       // faces overlap by 60 degrees, second device 'flipped'
-	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  90.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  120.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  210.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  240.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  330.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  30.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  60.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  150.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  180.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  300.*CLHEP::degree);
+        _sectorBaseRotations.push_back(   0.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  90.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  120.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  210.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  240.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  330.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  30.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  60.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  150.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  180.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  270.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  300.*CLHEP::degree);
       } else if(_rotationPattern==4){
 //-----------------------------------------------------------------------------
-// Mu2e-2 studies: 2 faces within one plane have parallel straws within 
+// Mu2e-2 studies: 2 faces within one plane have parallel straws within
 //                 each 120 deg sector
 //-----------------------------------------------------------------------------
-	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
-	_sectorBaseRotations.push_back(   0.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  120.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  120.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  240.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  240.*CLHEP::degree);
-	_sectorBaseRotations.push_back(   60.*CLHEP::degree);
-	_sectorBaseRotations.push_back(   60.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  210.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  210.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
-	_sectorBaseRotations.push_back(  270.*CLHEP::degree);
+        _sectorBaseRotations.push_back(   0.*CLHEP::degree);
+        _sectorBaseRotations.push_back(   0.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  120.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  120.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  240.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  240.*CLHEP::degree);
+        _sectorBaseRotations.push_back(   60.*CLHEP::degree);
+        _sectorBaseRotations.push_back(   60.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  210.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  210.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  270.*CLHEP::degree);
+        _sectorBaseRotations.push_back(  270.*CLHEP::degree);
       } else {
-	throw cet::exception("GEOM")
-	  << "Unrecognized rotation pattern in TTrackerMaker. \n";
+        throw cet::exception("GEOM")
+          << "Unrecognized rotation pattern in TTrackerMaker. \n";
       }
     } else {
       throw cet::exception("GEOM")
-	<< "Unrecognized rotation pattern in TTrackerMaker. \n";
+        << "Unrecognized rotation pattern in TTrackerMaker. \n";
     }
 
     // Parts of the algorithm require that the Aseet style tracker is built
@@ -502,13 +497,13 @@ namespace mu2e {
 
     double devDeltaZ = chooseDeviceSpacing(idev);
     CLHEP::Hep3Vector origin( 0., 0., _z0+devDeltaZ);
-    
+
     // device rotation is no longer used.
     double phi = 0.0;
     _tt->_devices.push_back(Device(devId, origin, phi));
     Device& dev = _tt->_devices.back();
-    dev._exists = ( find ( _nonExistingDevices.begin(), _nonExistingDevices.end(), idev) == 
-		      _nonExistingDevices.end() );
+    dev._exists = ( find ( _nonExistingDevices.begin(), _nonExistingDevices.end(), idev) ==
+                      _nonExistingDevices.end() );
 
     dev._sectors.reserve(_sectorsPerDevice);
 
@@ -706,7 +701,7 @@ namespace mu2e {
 
         StrawIndex index(allStraws.size());
 
-	_tt->_strawExists[index.asInt()] = device.exists();
+        _tt->_strawExists[index.asInt()] = device.exists();
 
         allStraws.push_back( Straw( StrawId( layId, _istraw),
                                     index,
@@ -923,7 +918,7 @@ namespace mu2e {
     if (phi < 0) phi += 2*M_PI;  // phi is now in range [0,2 pi)
     if ( (phi < 0) || (phi >= 2*M_PI) ) {
 //       throw cet::exception("GEOM")
-//	std::cout
+//      std::cout
 //         << "makePanel: An ill-understood phi - "
 //         << dir.phi() << phi-2*M_PI << std::endl;
     }
@@ -1014,7 +1009,7 @@ namespace mu2e {
     }
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
-      // inserting at a specific place 
+      // inserting at a specific place
       _tt->_strawDetails[i*2]=
         StrawDetail
         ( i*2,
@@ -1308,7 +1303,7 @@ namespace mu2e {
         cout << __func__ << " Analyzed straw: " << i->id() << '\t' << i->index() << endl;
       }
 
-      // add the "same layer" n-2 neighbours straw (if exist) 
+      // add the "same layer" n-2 neighbours straw (if exist)
       // in the new model straw numbers increase by 2 in a given layer
 
       if ( i->id().getStraw() > 1 ) {
@@ -1354,7 +1349,7 @@ namespace mu2e {
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite up straw: " 
+            cout << __func__ << " Neighbour opposite up straw: "
                  << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
           }
         }
@@ -1364,7 +1359,7 @@ namespace mu2e {
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite up straw: " 
+            cout << __func__ << " Neighbour opposite up straw: "
                  << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
           }
         }
@@ -1374,7 +1369,7 @@ namespace mu2e {
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite down straw: " 
+            cout << __func__ << " Neighbour opposite down straw: "
                  << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
           }
         }
@@ -1384,7 +1379,7 @@ namespace mu2e {
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
-            cout << __func__ << " Neighbour opposite down straw: " 
+            cout << __func__ << " Neighbour opposite down straw: "
                  << i->_nearestById.back() << '\t' <<  i->_nearestByIndex.back() << endl;
           }
         }
@@ -1429,7 +1424,7 @@ namespace mu2e {
 
       int nStrawLayer = _tt->getLayer(layerId)._nStraws;
 
-      // since the logic relies on the index and the straw number 
+      // since the logic relies on the index and the straw number
 
       int strawNumberWithinLayer = straw->id().getStraw();
       int incrementedStrawNumber =
@@ -1455,13 +1450,13 @@ namespace mu2e {
 
         cout << "Straw " << straw->id() << ": " << straw->id().getStraw() << endl;
 
-        cout << " _nextOuterL: "   << setw(5) << straw->_nextOuterL.asInt() << " : "; 
+        cout << " _nextOuterL: "   << setw(5) << straw->_nextOuterL.asInt() << " : ";
         if ( straw->_nextOuterL.asInt()!=StrawIndex::NO_STRAW ) {
           cout << _tt->getStraw(straw->_nextOuterL).id();
         }
         cout << endl;
-        
-        cout << " _nextInnerL: " << setw(5) << straw->_nextInnerL.asInt() << " : "; 
+
+        cout << " _nextInnerL: " << setw(5) << straw->_nextInnerL.asInt() << " : ";
         if ( straw->_nextInnerL.asInt()!=StrawIndex::NO_STRAW ) {
           cout << _tt->getStraw(straw->_nextInnerL).id();
         }
@@ -1552,25 +1547,25 @@ namespace mu2e {
 
       supportBeamParams.insert(std::pair<std::string,
                                TubsParams>(bos.str(),
-                                           TubsParams(_beam0_innerRadius, 
-                                                      _beam0_outerRadius, 
+                                           TubsParams(_beam0_innerRadius,
+                                                      _beam0_outerRadius,
                                                       zHalf,
-                                                      _beam0_phiRange[0]*CLHEP::degree, 
+                                                      _beam0_phiRange[0]*CLHEP::degree,
                                                       (_beam0_phiRange[1]- _beam0_phiRange[0])*CLHEP::degree)));
 
-      sup._beamBody.push_back( PlacedTubs( bos.str(), 
-                                           supportBeamParams.at(bos.str()), // to make sure it exists 
-                                           CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff), 
+      sup._beamBody.push_back( PlacedTubs( bos.str(),
+                                           supportBeamParams.at(bos.str()), // to make sure it exists
+                                           CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff),
                                            _beam0_material) );
 
-      // make the first support beam (1) , the other one (2) is a mirror reflection 
+      // make the first support beam (1) , the other one (2) is a mirror reflection
       // phi0 can be negative, deltaPhi must not
 
       size_t nsServices =  _beam1_servicePhi0s.size();
 
-      if ( nsServices !=  _beam1_servicePhiEnds.size() 
-           || nsServices != _beam1_serviceMaterials.size() 
-           || nsServices != _beam1_serviceOuterRadii.size()  
+      if ( nsServices !=  _beam1_servicePhiEnds.size()
+           || nsServices != _beam1_serviceMaterials.size()
+           || nsServices != _beam1_serviceOuterRadii.size()
            || nsServices != _beam1_serviceCovRelThickness.size()
            || nsServices != _beam1_serviceMaterialsCov.size() ) {
         throw cet::exception("GEOM")
@@ -1582,7 +1577,7 @@ namespace mu2e {
 
       for (size_t ibeam = 1; ibeam!=3; ++ibeam) {
 
-        double phi00 = (ibeam == 1) 
+        double phi00 = (ibeam == 1)
           ? _beam1_phiRange[0] -_beam1_phiSpans[0]
           : 180.0 - _beam1_phiRange[0] + _beam1_phiSpans[0]; // effectively 180 or 0;
 
@@ -1596,25 +1591,25 @@ namespace mu2e {
           }
 
           double deltaPhi = _beam1_phiSpans[ssbeam+1] - _beam1_phiSpans[ssbeam];
-          double phi0     = (ibeam == 1) 
+          double phi0     = (ibeam == 1)
             ? phi00 + _beam1_phiSpans[ssbeam]
             : phi00 - _beam1_phiSpans[ssbeam] - deltaPhi;
 
-          double outerRadius = (ssbeam != 1) 
-            ? _beam1_outerRadius 
+          double outerRadius = (ssbeam != 1)
+            ? _beam1_outerRadius
             : _beam1_midRadius1; // the service section is different
 
           supportBeamParams.insert(std::pair<std::string,
                                    TubsParams>(bos.str(),
-                                               TubsParams(_beam1_innerRadius, 
+                                               TubsParams(_beam1_innerRadius,
                                                           outerRadius,
                                                           zHalf,
-                                                          phi0*CLHEP::degree, 
+                                                          phi0*CLHEP::degree,
                                                           deltaPhi*CLHEP::degree)));
-      
-          sup._beamBody.push_back(PlacedTubs( bos.str(), 
+
+          sup._beamBody.push_back(PlacedTubs( bos.str(),
                                               supportBeamParams.at(bos.str()),
-                                              CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff), 
+                                              CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff),
                                               _beam1_material) );
 
         }
@@ -1633,21 +1628,21 @@ namespace mu2e {
           }
 
           double deltaPhi = _beam1_phiSpans[ssbeam+1]-_beam1_phiSpans[ssbeam];
-          double phi0     =  (ibeam == 1) 
+          double phi0     =  (ibeam == 1)
             ? phi00 + _beam1_phiSpans[ssbeam]
             : phi00 - _beam1_phiSpans[ssbeam] - deltaPhi;
 
           supportBeamParams.insert(std::pair<std::string,
                                    TubsParams>(bos.str(),
-                                               TubsParams(_beam1_midRadius1, 
+                                               TubsParams(_beam1_midRadius1,
                                                           _beam1_midRadius2,
                                                           zHalf,
-                                                          phi0*CLHEP::degree, 
+                                                          phi0*CLHEP::degree,
                                                           deltaPhi*CLHEP::degree)));
 
-          sup._beamBody.push_back( PlacedTubs( bos.str(), 
+          sup._beamBody.push_back( PlacedTubs( bos.str(),
                                                supportBeamParams.at(bos.str()),
-                                               CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff), 
+                                               CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff),
                                                _envelopeMaterial) );
 
         }
@@ -1686,7 +1681,7 @@ namespace mu2e {
 
             bos.str(boss);
             bos << std::setw(2) << ssservice;
-        
+
             if ( _verbosityLevel > 0 ) {
               cout << __func__ << " making " <<  bos.str() << endl;
             }
@@ -1695,7 +1690,7 @@ namespace mu2e {
             double sOffset  = zoff + zHalf - sHLength;
 
             if ( _verbosityLevel > 0 ) {
-              cout << __func__ << " sHLength, sOffset " 
+              cout << __func__ << " sHLength, sOffset "
                    << sHLength << ", " << sOffset << endl;
             }
 
@@ -1707,22 +1702,22 @@ namespace mu2e {
               : phi00 - _beam1_servicePhi0s[sservice] - deltaPhi*(1+ssservice);
 
             if ( _verbosityLevel > 0 ) {
-              cout << __func__ << " deltaPhi0, phi0, deltaPhi " 
+              cout << __func__ << " deltaPhi0, phi0, deltaPhi "
                    << deltaPhi0 << ", " << phi0 << ", " << deltaPhi << endl;
             }
 
             // approximate the service by the main part an a top cover/envelope with different materials
 
-            if ( _beam1_serviceCovRelThickness[sservice] > 1. 
+            if ( _beam1_serviceCovRelThickness[sservice] > 1.
                  || _beam1_serviceCovRelThickness[sservice] < 0. ) {
               throw cet::exception("GEOM")
-                << __func__ << " beam1_serviceCovRelThickness out of 0...1 range " 
+                << __func__ << " beam1_serviceCovRelThickness out of 0...1 range "
                 << _beam1_serviceCovRelThickness[sservice]
                 << endl;
             }
 
             double cRadius = _beam1_serviceOuterRadii[sservice] +
-              _beam1_serviceCovRelThickness[sservice] * 
+              _beam1_serviceCovRelThickness[sservice] *
               ( _beam1_midRadius1 - _beam1_serviceOuterRadii[sservice] );
 
             // an envelope for this service section
@@ -1735,31 +1730,31 @@ namespace mu2e {
 
               supportServiceParams.insert(std::pair<std::string,
                                           TubsParams>(boses,
-                                                      TubsParams(_beam1_midRadius1, 
+                                                      TubsParams(_beam1_midRadius1,
                                                                  _beam1_serviceOuterRadii[sservice],
                                                                  sHLength,
-                                                                 phi0*CLHEP::degree, 
+                                                                 phi0*CLHEP::degree,
                                                                  deltaPhi0*CLHEP::degree)));
 
               sup._beamServices.push_back(PlacedTubs( boses,
                                                       supportServiceParams.at(boses),
-                                                      CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset), 
+                                                      CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset),
                                                        _envelopeMaterial));
-              
+
 
             }
 
             supportServiceParams.insert(std::pair<std::string,
                                         TubsParams>(bos.str(),
-                                                    TubsParams(_beam1_midRadius1, 
+                                                    TubsParams(_beam1_midRadius1,
                                                                cRadius,
                                                                sHLength,
-                                                               phi0*CLHEP::degree, 
+                                                               phi0*CLHEP::degree,
                                                                deltaPhi*CLHEP::degree)));
- 
+
             sup._beamServices.push_back(PlacedTubs( bos.str(),
                                                     supportServiceParams.at(bos.str()),
-                                                    CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset), 
+                                                    CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset),
                                                     _beam1_serviceMaterials[sservice]));
 
             if (_beam1_serviceCovRelThickness[sservice]>0.) {
@@ -1768,15 +1763,15 @@ namespace mu2e {
 
               supportServiceParams.insert(std::pair<std::string,
                                           TubsParams>(bos.str(),
-                                                      TubsParams(cRadius, 
+                                                      TubsParams(cRadius,
                                                                   _beam1_serviceOuterRadii[sservice],
                                                                  sHLength,
-                                                                 phi0*CLHEP::degree, 
+                                                                 phi0*CLHEP::degree,
                                                                  deltaPhi*CLHEP::degree)));
- 
+
               sup._beamServices.push_back(PlacedTubs( bos.str(),
                                                       supportServiceParams.at(bos.str()),
-                                                      CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset), 
+                                                      CLHEP::Hep3Vector(_xCenter, 0., _zCenter+sOffset),
                                                       _beam1_serviceMaterialsCov[sservice]));
 
             }
@@ -1850,7 +1845,7 @@ namespace mu2e {
   void TTrackerMaker::makeThinSupportRings(){
     SupportStructure& sup  = _tt->_supportStructure;
 
-    TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength, 
+    TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength,
                               CLHEP::pi, CLHEP::pi); // half rings, on the bottom part
 
     for ( size_t i=0; i< _midRingSlot.size(); ++i){
@@ -1972,7 +1967,7 @@ namespace mu2e {
 
     if (_verbosityLevel>2) {
       cout << __func__ << " Initial allDetails size "
-           <<  allDetails.size() 
+           <<  allDetails.size()
            << endl;
     }
 
@@ -2032,9 +2027,9 @@ namespace mu2e {
 
         if (_verbosityLevel>2) {
           cout << __func__ << " recomputing: ist, idx "
-               << ist << ", " 
+               << ist << ", "
                << idx
-               << " Straw " << straw._id.getStraw() 
+               << " Straw " << straw._id.getStraw()
                << " id: "
                << straw._id
                << " detail index "
@@ -2042,7 +2037,7 @@ namespace mu2e {
                << endl;
         }
 
-        StrawDetail& detail = ( ilay == 0 ) 
+        StrawDetail& detail = ( ilay == 0 )
           ? allDetails.at(straw._detailIndex)
           : allDetails.at(straw._detailIndex-1);
 
@@ -2096,9 +2091,9 @@ namespace mu2e {
 
         if (_verbosityLevel>2) {
           cout << __func__ << " after recomputing: ist, idx "
-               << ist << ", " 
+               << ist << ", "
                << idx
-               << " Straw " << straw._id.getStraw() 
+               << " Straw " << straw._id.getStraw()
                << " id: "
                << straw._id
                << endl;
@@ -2109,23 +2104,23 @@ namespace mu2e {
         if ( _verbosityLevel > 2 ){
 
           cout << "Detail for: " << straw.id() << " " << theDetail.Id()            << endl;
-          cout << "           outerTubsParams: " << theDetail.getOuterTubsParams() 
+          cout << "           outerTubsParams: " << theDetail.getOuterTubsParams()
                << theDetail.gasMaterialName()             << endl;
-          cout << "           wallMother:      " << theDetail.wallMother()         
+          cout << "           wallMother:      " << theDetail.wallMother()
                << theDetail.wallMotherMaterialName()      << endl;
-          cout << "           wallOuterMetal:  " << theDetail.wallOuterMetal()     
+          cout << "           wallOuterMetal:  " << theDetail.wallOuterMetal()
                << theDetail.wallOuterMetalMaterialName()  << endl;
-          cout << "           wallCore         " << theDetail.wallCore()           
+          cout << "           wallCore         " << theDetail.wallCore()
                << theDetail.wallCoreMaterialName()        << endl;
-          cout << "           wallInnerMetal1: " << theDetail.wallInnerMetal1()    
+          cout << "           wallInnerMetal1: " << theDetail.wallInnerMetal1()
                << theDetail.wallInnerMetal1MaterialName() << endl;
-          cout << "           wallInnerMetal2: " << theDetail.wallInnerMetal2()    
+          cout << "           wallInnerMetal2: " << theDetail.wallInnerMetal2()
                << theDetail.wallInnerMetal2MaterialName() << endl;
-          cout << "           wireMother:      " << theDetail.wireMother()         
+          cout << "           wireMother:      " << theDetail.wireMother()
                << theDetail.wireMotherMaterialName()      << endl;
-          cout << "           wirePlate:       " << theDetail.wirePlate()          
+          cout << "           wirePlate:       " << theDetail.wirePlate()
                << theDetail.wirePlateMaterialName()       << endl;
-          cout << "           wireCore:        " << theDetail.wireCore()           
+          cout << "           wireCore:        " << theDetail.wireCore()
                << theDetail.wireCoreMaterialName()        << endl;
         }
 
@@ -2159,7 +2154,7 @@ namespace mu2e {
 
       if (_verbosityLevel>2) {
         cout << __func__ << " about to reset "
-             << " Straw " << straw._id.getStraw() 
+             << " Straw " << straw._id.getStraw()
              << " id: "
              << straw._id << " using detail: "
              << idx

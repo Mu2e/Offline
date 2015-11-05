@@ -1,11 +1,11 @@
-#ifndef BEAMLINEGEOM_TSDAMAKER_HH
-#define BEAMLINEGEOM_TSDAMAKER_HH
+#ifndef GeometryService_TsdAMaker_hh
+#define GeometryService_TsdAMaker_hh
 
 #include <memory>
 
 namespace mu2e  { class SimpleConfig; }
 namespace mu2e  { class TSdA; }
-namespace mu2e  { class DetectorSolenoid; } 
+namespace mu2e  { class DetectorSolenoid; }
 
 namespace mu2e {
   class TSdAMaker {
@@ -14,4 +14,4 @@ namespace mu2e {
   };
 }
 
-#endif/*BEAMLINEGEOM_TSDAMAKER_HH*/
+#endif/* GeometryService_TsdAMaker_hh */

@@ -2,8 +2,8 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/StraightSection.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "GeometryService/inc/DetectorSolenoidMaker.hh"
 
 // Framework includes
 #include "cetlib/exception.h"
@@ -46,17 +46,17 @@ namespace mu2e {
     ds->_shield_rOut2              = c.getDouble("dsShield.rOut.out");
 
     // DS solenoid coils
-    ds->_coil_materialName = c.getString("dsCoil.materialName"); 
-    ds->_coil_rIn          = c.getDouble("dsCoil.rIn"); 
-    c.getVectorDouble("dsCoil.rOut"     , ds->_coil_rOut     , ds->nCoils() ); 
-    c.getVectorDouble("dsCoil.zLength"  , ds->_coil_zLength  , ds->nCoils() ); 
-    c.getVectorDouble("dsCoil.zPosition", ds->_coil_zPosition, ds->nCoils() ); 
+    ds->_coil_materialName = c.getString("dsCoil.materialName");
+    ds->_coil_rIn          = c.getDouble("dsCoil.rIn");
+    c.getVectorDouble("dsCoil.rOut"     , ds->_coil_rOut     , ds->nCoils() );
+    c.getVectorDouble("dsCoil.zLength"  , ds->_coil_zLength  , ds->nCoils() );
+    c.getVectorDouble("dsCoil.zPosition", ds->_coil_zPosition, ds->nCoils() );
 
     // DS coil support system
-    ds->_support_materialName = c.getString("dsSupport.materialName"); 
-    ds->_support_rIn          = c.getDouble("dsSupport.rIn"); 
-    ds->_support_rOut         = c.getDouble("dsSupport.rOut"); 
-    ds->_support_halfLength   = c.getDouble("dsSupport.halfLength"); 
+    ds->_support_materialName = c.getString("dsSupport.materialName");
+    ds->_support_rIn          = c.getDouble("dsSupport.rIn");
+    ds->_support_rOut         = c.getDouble("dsSupport.rOut");
+    ds->_support_halfLength   = c.getDouble("dsSupport.halfLength");
 
     // Rings (David Norvil Brown, May 2015)
     ds->_rInRingSide = c.getDouble("ds.rInRingSide");
@@ -90,16 +90,16 @@ namespace mu2e {
 
     StraightSection const * ts5 = bl.getTS().getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::IN );
 
-    ds->_locationDs23Split  =  bl.getTS().torusRadius() 
-      + 2.*ts5->getHalfLength() 
+    ds->_locationDs23Split  =  bl.getTS().torusRadius()
+      + 2.*ts5->getHalfLength()
       + 2.*ds->vac_halfLengthDs2();
 
     // Position is computed on the fly, relative to the TS torus
     // radius, and the lengths of TS5 and the vacuum volumes
     // specified0; assumption is made that the front frace is flush
     // with the edge of the DS
-    double dsPosZ      = bl.getTS().torusRadius() 
-      + 2.*ts5->getHalfLength() 
+    double dsPosZ      = bl.getTS().torusRadius()
+      + 2.*ts5->getHalfLength()
       - 2.*ds->vac_halfLengthDs1()
       - 2.*ds->frontHalfLength()
       + ds->halfLength();

@@ -1,11 +1,7 @@
-#ifndef TTrackerGeom_TTrackerMaker_hh
-#define TTrackerGeom_TTrackerMaker_hh
+#ifndef GeometryService_TTrackerMaker_hh
+#define GeometryService_TTrackerMaker_hh
 //
 // Construct and return a TTracker.
-//
-// $Id: TTrackerMaker.hh,v 1.25 2014/04/11 04:40:37 genser Exp $
-// $Author: genser $
-// $Date: 2014/04/11 04:40:37 $
 //
 // Original author Rob Kutschke
 //
@@ -14,7 +10,7 @@
 #include <string>
 #include <vector>
 
-//#include "TTrackerGeom/inc/TLayerInfo.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
 
 #include "TrackerGeom/inc/Device.hh"
 #include "TrackerGeom/inc/Layer.hh"
@@ -107,7 +103,7 @@ namespace mu2e {
     int    _strawsPerManifold;           // Number of straws connected to each manifold.
     int    _rotationPattern;             // Pattern of rotations from device to device.
     int    _spacingPattern;              // Pattern of spacing from device to device.
-    double _oddStationRotation;		  // rotation of odd stations relative to even
+    double _oddStationRotation;           // rotation of odd stations relative to even
     double _zCenter;                     // z position of the center of the tracker, in the Mu2e coord system.
     double _xCenter;                     // x position of the center of the tracker, in the Mu2e coord system.
     double _envelopeInnerRadius;         // Inner radius of inside of innermost straw.
@@ -252,4 +248,4 @@ namespace mu2e {
 
 }  //namespace mu2e
 
-#endif /* TTrackerGeom_TTrackerMaker_hh */
+#endif /* GeometryService_TTrackerMaker_hh */

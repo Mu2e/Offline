@@ -3,7 +3,7 @@
 #include "ConfigTools/inc/checkForStale.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "BeamlineGeom/inc/TSdA.hh"
-#include "BeamlineGeom/inc/TSdAMaker.hh"
+#include "GeometryService/inc/TSdAMaker.hh"
 
 // C++ includes
 #include <algorithm>
@@ -23,7 +23,7 @@ namespace mu2e {
     checkForStale( "intneutronabs", c );
 
     std::unique_ptr<TSdA> tsda ( new TSdA() );
-    
+
     tsda->_r4          = c.getDouble("tsda.r4");
 
     tsda->_halfLength4 = c.getDouble("tsda.halfLength4");
@@ -31,7 +31,7 @@ namespace mu2e {
     tsda->_position    = CLHEP::Hep3Vector( ds.position().x(),0,c.getDouble("tsda.z0"));
 
     tsda->_mat4        = c.getString("tsda.materialName");
-    
+
     return tsda;
 
   } // make()

@@ -25,12 +25,15 @@
 // Mu2e include files
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/DetectorSolenoidMaker.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/src/DetectorSystemMaker.hh"
+#include "GeometryService/inc/Mu2eHallMaker.hh"
+#include "GeometryService/inc/TSdAMaker.hh"
+#include "GeometryService/inc/TTrackerMaker.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/WorldG4Maker.hh"
+#include "GeometryService/src/DetectorSystemMaker.hh"
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
-#include "Mu2eHallGeom/inc/Mu2eHallMaker.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ProductionTargetGeom/inc/ProductionTargetMaker.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
@@ -46,7 +49,6 @@
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "StoppingTargetGeom/inc/StoppingTargetMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoidMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShieldingMaker.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldUpstream.hh"
@@ -56,9 +58,7 @@
 #include "ExternalShieldingGeom/inc/Saddle.hh"
 #include "ExternalShieldingGeom/inc/SaddleMaker.hh"
 #include "BeamlineGeom/inc/TSdA.hh"
-#include "BeamlineGeom/inc/TSdAMaker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "TTrackerGeom/inc/TTrackerMaker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -121,19 +121,19 @@ namespace mu2e {
       _detectors[typeid(DET).name()] = ptr;
   }
 
-  template <typename DETALIAS, typename DET> 
+  template <typename DETALIAS, typename DET>
   void GeometryService::addDetectorAliasToBaseClass(std::unique_ptr<DET> d)
   {
 
-	std::string OriginalName = typeid(DET).name();
-	DetMap::iterator it(_detectors.find(OriginalName));
+        std::string OriginalName = typeid(DET).name();
+        DetMap::iterator it(_detectors.find(OriginalName));
 
-	if(it==_detectors.end())
+        if(it==_detectors.end())
           throw cet::exception("GEOM")
             << "Can not alias an inexistant detector, detector " << OriginalName << "\n";
 
-	std::string detectorName= typeid(DETALIAS).name() ;
-	_detectors[detectorName] = it->second;
+        std::string detectorName= typeid(DETALIAS).name() ;
+        _detectors[detectorName] = it->second;
   }
 
   void

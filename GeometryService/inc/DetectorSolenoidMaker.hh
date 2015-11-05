@@ -1,5 +1,5 @@
-#ifndef DETECTORSOLENOIDMAKER_HH
-#define DETECTORSOLENOIDMAKER_HH
+#ifndef GeometryService_DetectorSolenoidMaker_hh
+#define GeometryService_DetectorSolenoidMaker_hh
 
 #include <memory>
 
@@ -14,4 +14,4 @@ namespace mu2e {
   };
 }
 
-#endif/*DETECTORSOLENOIDMAKER_HH*/
+#endif/* GeometryService_DetectorSolenoidMaker_hh */
