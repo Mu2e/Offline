@@ -1,0 +1,16 @@
+#include "Mu2eG4/test/geom_01.txt"
+
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/GA05/DSMap.header",
+  "BFieldMaps/GA05/PSMap.header",
+  "BFieldMaps/GA05/TSuMap.header",
+  "BFieldMaps/GA05/TSdMap.header",
+  "BFieldMaps/Mau9/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau9/ProtonDumpAreaMap.header",
+  "BFieldMaps/Mau9/DSExtension.header"
+};
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
