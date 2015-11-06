@@ -340,7 +340,7 @@ namespace mu2e {
     auto* allMu2e = new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &_sensitiveDetectorHelper),
                                               std::make_unique<ConstructMaterials>(pset_));
 
-    preG4InitializeTasks(pset_);
+    preG4InitializeTasks(pset_.get<fhicl::ParameterSet>("physics"));
  
     _runManager->SetVerboseLevel(_rmvlevel);
 

@@ -27,9 +27,6 @@ namespace mu2e{
 
   void setBirksConstant(const fhicl::ParameterSet& pset) {
 
-    // FIXME: one should really use physics.BirksConsts but will keep
-    // BirksConsts for the G4_module sake for now
-
     // in principle we could do it without this map and set values direcly from pset
     std::map<std::string,double> birksConstsMap;
 
