@@ -115,6 +115,9 @@ services.SeedService.maxUniqueEngines :  20
 
 # physics.producers.g4run.SDConfig.enableAllSDs : true
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
+#physics.producers.g4run.BirksConsts : { G4_POLYSTYRENE : 0.08 } // {string : mm/MeV }
+
+
 
 // Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel : 0
