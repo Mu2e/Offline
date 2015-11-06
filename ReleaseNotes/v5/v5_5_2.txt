@@ -2,7 +2,11 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_5_2
 
-3) Nov 5, 2015 kutschke
+4) Nov 6, 2015 kutschke
+   Mu2eG4/test/geom_ga05.txt
+     - new file that uses the ga05 field maps
+
+3) Nov 6, 2015 kutschke
    Add an example to the Sandbox to show that art produces misleading
    framing of exceptions.
 
