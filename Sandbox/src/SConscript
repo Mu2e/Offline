@@ -25,7 +25,7 @@ helper.make_plugins( [ mainlib,
                        'art_Framework_IO_Sources',
                        'mu2e_RecoDataProducts',
                        'mu2e_GeneralUtilities',
-                       'mu2e_ConfigTools',
+                       'cetlib',
                      ] )
 
 helper.make_dict_and_map( [ mainlib,

@@ -14,8 +14,6 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
-#include <string>
-
 namespace mu2e {
 
   class Bug01Service {
@@ -24,10 +22,6 @@ namespace mu2e {
     ~Bug01Service();
 
     void preBeginRun( art::Run const &run);
-
-  private:
-
-    std::string fileName_;
 
   };
 
