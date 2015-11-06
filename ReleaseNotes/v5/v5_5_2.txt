@@ -1,0 +1,20 @@
+Still under construction
+
+           Release notes for Mu2e Offline software, v5_5_2
+
+2) Nov 5, 2015 kutschke
+   This was done to break linkage loops.
+
+   Moved 4 geometry Maker functions to GeometryService
+      GeometryService/src/DetectorSolenoidMaker.cc
+      GeometryService/src/Mu2eHallMaker.cc
+      GeometryService/src/TSdAMaker.cc
+      GeometryService/src/TTrackerMaker.cc
+   Also moved the corresponding .hh files to GeometryService/inc
+   and updated all #include directives.
+
+1) Nov 5, 2015 kutschke
+   Remove unneeded headers and remove old cvs comments
+      ConditionsService/src/TrackerCalibrations.cc
+      CosmicRayShieldGeom/src/CosmicRayShieldMaker.cc
+      MECOStyleProtonAbsorberGeom/src/MECOStyleProtonAbsorberMaker.cc
