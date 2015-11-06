@@ -19,9 +19,8 @@ stepInstanceNames   : [ "tracker", "virtualdetector", "calorimeter", "calorimete
 mixerTemplate: {
    module_type         : MixMCEvents
    fileNames           : @nil
-   readMode            : randomLimReplace
+   readMode            : randomNoReplace
    wrapFiles           : true
-   coverageFraction    : 1000000.
    detail : {
       mean                : @nil
       histogramFactor     : 3.9e7
