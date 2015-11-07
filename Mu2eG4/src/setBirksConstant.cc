@@ -42,7 +42,7 @@ namespace mu2e{
       mf::LogInfo("GEOM")
         << "setting Birks constant for " <<  mat << " to " << birksConstsMap[mat] << " mm/MeV";
       G4Material *gmat = findMaterialOrThrow( mat );
-      gmat->GetIonisation()->SetBirksConstant(birksConstsMap[mat]*mm/MeV);
+      gmat->GetIonisation()->SetBirksConstant(birksConstsMap[mat]*CLHEP::mm/CLHEP::MeV);
     }
 
   }
