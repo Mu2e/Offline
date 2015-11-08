@@ -21,7 +21,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorberMaker.hh"
+#include "GeometryService/inc/MECOStyleProtonAbsorberMaker.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"

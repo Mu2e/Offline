@@ -33,7 +33,7 @@
 
 // Includes from Mu2e
 #include "BFieldGeom/inc/BFInterpolationStyle.hh"
-#include "BFieldGeom/inc/BFieldManagerMaker.hh"
+#include "GeometryService/inc/BFieldManagerMaker.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BFieldGeom/inc/DiskRecord.hh"
@@ -210,7 +210,7 @@ namespace mu2e {
                           std::vector<int>&    dim,
                           std::vector<double>& dX,
                           CLHEP::Hep3Vector&   offset,
-			  bool& extendYFound ){
+                          bool& extendYFound ){
 
       // The offset parameter is not present in files earlier than Mau7.
       // The value set here is the correct value for all G4BL format files earlier than Mau7.
@@ -379,7 +379,7 @@ namespace mu2e {
       readG4BLMap(resolvedFileName, dsmap, G4BL_offset);
     }
   }
-  
+
 
   //
   // Read one magnetic field map file in MECO GMC format.
@@ -679,7 +679,7 @@ namespace mu2e {
     }
 
     // Mu2e binary field map files used to store an array of grid point coordinates.
-    // This is not done any more.  Here we figure out whether we are dealing with the 
+    // This is not done any more.  Here we figure out whether we are dealing with the
     // old or the new format.
 
     bool grid_coordinates_stored = false;
