@@ -151,7 +151,7 @@ outputs: {
                            "keep *_g4filter_*_*",
                            "keep *_stopFilter_*_*",
                            "keep *_compressPVStop_*_*" ]
-        fileName       : "data_pions_g4s3.art"
+        fileName       : "sim.owner.cd3-pions-g4s3.version.sequencer.art"
     }
 }
 
