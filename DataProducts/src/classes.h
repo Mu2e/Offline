@@ -10,7 +10,6 @@
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include "DataProducts/inc/StrawIndex.hh"
-#include "DataProducts/inc/FilterEfficiency.hh"
 #include "DataProducts/inc/ExtMonFNALModuleId.hh"
 #include "DataProducts/inc/ExtMonFNALChipId.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
@@ -36,7 +35,6 @@
 
 template class std::vector<CLHEP::Hep2Vector>;
 template class std::vector<cet::map_vector_key>;
-template class art::Wrapper<mu2e::FilterEfficiency>;
 template class art::Wrapper<mu2e::CRSScintillatorBarIndex>;
 
 template class boost::array<double,5>; // used in TubsParams
