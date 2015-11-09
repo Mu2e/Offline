@@ -107,7 +107,7 @@ physics : {
             module_type               : FilterG4Out
             noInstanceName            : true
             mainHitInputs             : [ "g4run:vacuuas2" ]
-            extraHitInputs            : [ "g4run:virtualdetector" ]
+            extraHitInputs            : [ "g4run:virtualdetector", "g4filter:vacuuas1:pionsg4s1" ]
             numSimParticleCollections : 1
             vetoDaughters             : []
         }
@@ -129,7 +129,7 @@ outputs: {
                            "keep mu2e::GenParticles_*_*_*",
                            "keep mu2e::GenEventCount_*_*_*",
                            "keep mu2e::StatusG4_*_*_*",
-                           "keep *_g4filter_*_*",
+                           "keep *_g4filter_*_pionsg4s2",
                            "keep *_compressPV_*_pionsg4s2" ]
         fileName       : "sim.owner.cd3-pions-g4s2.version.sequencer.art"
     }
