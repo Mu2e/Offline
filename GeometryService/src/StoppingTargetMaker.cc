@@ -1,10 +1,5 @@
 //
-// Construct and return an Target.
-//
-//
-// $Id: StoppingTargetMaker.cc,v 1.6 2013/10/14 23:57:32 roehrken Exp $
-// $Author: roehrken $
-// $Date: 2013/10/14 23:57:32 $
+// Construct and return a Target.
 //
 // Original author Peter Shanahan
 //
@@ -20,7 +15,7 @@
 // Mu2e includes
 #include "ConditionsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/PhysicsParams.hh"
-#include "StoppingTargetGeom/inc/StoppingTargetMaker.hh"
+#include "GeometryService/inc/StoppingTargetMaker.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/RotationY.h"
@@ -102,14 +97,14 @@ namespace mu2e {
     if ( !overrideMaterial.empty() ) {
       _materials.assign( _rOut.size(), overrideMaterial );
       cerr << endl
-           << " WARNING: Stopping target material ( " 
-           << GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial() 
-           << " ) overridden with: " << overrideMaterial << "\n" 
+           << " WARNING: Stopping target material ( "
+           << GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial()
+           << " ) overridden with: " << overrideMaterial << "\n"
            << endl
            << "     You are specifying a stopping target material\n"
            << "     that may not match what was chosen in your global\n"
-           << "     constants file!  Do not do this unless you know\n" 
-           << "     what you are doing!\n"  
+           << "     constants file!  Do not do this unless you know\n"
+           << "     what you are doing!\n"
            << endl;
     }
 
@@ -178,43 +173,43 @@ namespace mu2e {
                                            _materials[i],
                                            _detSysOrigin
                                            )
-		      );
+                      );
       // create the TargetFoilSupportStructure
       if (_foilTarget_supportStructure) {
-	      for ( int j=0; j<_foilTarget_supportStructure_number; ++j){
+              for ( int j=0; j<_foilTarget_supportStructure_number; ++j){
 
 
-		      double supportStructure_xPosition, supportStructure_yPosition, supportStructure_zPosition; // variables to account deviation of supporting structure center from foil center
+                      double supportStructure_xPosition, supportStructure_yPosition, supportStructure_zPosition; // variables to account deviation of supporting structure center from foil center
 
-		      supportStructure_xPosition = _xVars[i] + _detSysOrigin.x(); // x position is identical with x position of the foil
-		      supportStructure_yPosition = _yVars[i] + _detSysOrigin.y(); // y position is identical with y position of the foil
-		      supportStructure_zPosition = z; // z position is identical with z position of the foil
+                      supportStructure_xPosition = _xVars[i] + _detSysOrigin.x(); // x position is identical with x position of the foil
+                      supportStructure_yPosition = _yVars[i] + _detSysOrigin.y(); // y position is identical with y position of the foil
+                      supportStructure_zPosition = z; // z position is identical with z position of the foil
 
-		      CLHEP::Hep3Vector supportStructure_foilCenterInMu2e(supportStructure_xPosition, supportStructure_yPosition, supportStructure_zPosition);
+                      CLHEP::Hep3Vector supportStructure_foilCenterInMu2e(supportStructure_xPosition, supportStructure_yPosition, supportStructure_zPosition);
 
-		      // calculate support structure length
-		      double temp_foilTarget_supportStructure_length=0;
+                      // calculate support structure length
+                      double temp_foilTarget_supportStructure_length=0;
 
-		      if ( ((ProtonAbsorberOuter_diameter - 2*_rOut[i])/2.) > 0 ) {
-			      temp_foilTarget_supportStructure_length = ((ProtonAbsorberOuter_diameter - 2*_rOut[i])/2.);
-			      temp_foilTarget_supportStructure_length -= 1; // remove 1mm to avoid overlap problems with mother volume
-		      } else {
-			      temp_foilTarget_supportStructure_length=0;
-		      }
-		      // cout << "foil  " << i << "  support structure " << j << "  temp_foilTarget_supportStructure_length = " << temp_foilTarget_supportStructure_length << endl;
+                      if ( ((ProtonAbsorberOuter_diameter - 2*_rOut[i])/2.) > 0 ) {
+                              temp_foilTarget_supportStructure_length = ((ProtonAbsorberOuter_diameter - 2*_rOut[i])/2.);
+                              temp_foilTarget_supportStructure_length -= 1; // remove 1mm to avoid overlap problems with mother volume
+                      } else {
+                              temp_foilTarget_supportStructure_length=0;
+                      }
+                      // cout << "foil  " << i << "  support structure " << j << "  temp_foilTarget_supportStructure_length = " << temp_foilTarget_supportStructure_length << endl;
 
-		      _targ->_supportStructures.push_back( TargetFoilSupportStructure( j, i,
-					      supportStructure_foilCenterInMu2e,
-					      CLHEP::Hep3Vector(_xCos[i],_yCos[i],zCos),
-					      _foilTarget_supportStructure_radius,
-					      temp_foilTarget_supportStructure_length,
-					      _foilTarget_supportStructure_angleOffset,
-					      _rOut[i], // outer radius of the foil the wire connects to
-					      _foilTarget_supportStructure_fillMaterial,
-					      _detSysOrigin
-					      )
-				      );
-	      }
+                      _targ->_supportStructures.push_back( TargetFoilSupportStructure( j, i,
+                                              supportStructure_foilCenterInMu2e,
+                                              CLHEP::Hep3Vector(_xCos[i],_yCos[i],zCos),
+                                              _foilTarget_supportStructure_radius,
+                                              temp_foilTarget_supportStructure_length,
+                                              _foilTarget_supportStructure_angleOffset,
+                                              _rOut[i], // outer radius of the foil the wire connects to
+                                              _foilTarget_supportStructure_fillMaterial,
+                                              _detSysOrigin
+                                              )
+                                      );
+              }
       }
     }// foil i
 

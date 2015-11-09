@@ -1,12 +1,7 @@
-#ifndef StoppingTargetGeom_StoppingTargetMaker_hh
-#define StoppingTargetGeom_StoppingTargetMaker_hh
+#ifndef GeometryService_StoppingTargetMaker_hh
+#define GeometryService_StoppingTargetMaker_hh
 //
 // Construct and return an Target.
-//
-//
-// $Id: StoppingTargetMaker.hh,v 1.2 2013/10/14 23:57:32 roehrken Exp $
-// $Author: roehrken $
-// $Date: 2013/10/14 23:57:32 $
 //
 // Original author Peter Shanahan
 //
@@ -77,4 +72,4 @@ private:
 
 }  //namespace mu2e
 
-#endif /* StoppingTargetGeom_StoppingTargetMaker_hh */
+#endif /* GeometryService_StoppingTargetMaker_hh */

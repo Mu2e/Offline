@@ -47,7 +47,7 @@
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDumpMaker.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "StoppingTargetGeom/inc/StoppingTargetMaker.hh"
+#include "GeometryService/inc/StoppingTargetMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShieldingMaker.hh"
