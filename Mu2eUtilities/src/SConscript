@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 #
-#
-# $Id: SConscript,v 1.16 2014/06/02 16:34:49 mwang Exp $
-# $Author: mwang $
-# $Date: 2014/06/02 16:34:49 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -19,6 +14,7 @@ XERCESC_LIBS = [ 'xerces-c' ]
 
 mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'art_Framework_Services_Optional_TFileService_service',
+                                  'mu2e_GlobalConstantsService_GlobalConstantsService_service',
                                   'mu2e_ConfigTools',
                                   'mu2e_GeneralUtilities',
                                   'mu2e_MCDataProducts',

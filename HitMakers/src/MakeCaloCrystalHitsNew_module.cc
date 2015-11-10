@@ -35,7 +35,7 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/sort_functors.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"

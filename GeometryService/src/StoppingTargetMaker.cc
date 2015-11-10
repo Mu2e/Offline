@@ -13,8 +13,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/PhysicsParams.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "GeometryService/inc/StoppingTargetMaker.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "CLHEP/Vector/Rotation.h"

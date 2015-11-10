@@ -1,3 +1,29 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_5_3
+
+4) Nov 10, 2015 kutschke
+   Identified all packages that #include any file from
+   the new GlobalConstantsService directory.  Added the new
+   service to the link list for these pacakges.
+
+3) Nov 10, 2015 kutschke
+   In the full code base, updated all #include directives that
+   include one of the header files moved in items 1 or 2.
+
+2) Nov 10, 2015 kutschke
+   - Created a new top level directory GlobalConstantsService
+   - Moved everything related to GlobalConstantsService from
+     the ConditionsService directory to the GlobalConstantsService
+     directory.
+   There are two reasons for this; ConditionsService was getting big
+   and this organization makes dependencies clearer.
+
+1) Nov 10, 2015 kutschke
+   Move two classes from MCDataProducts to DataProducts.
+    - VirtualDetectorId
+    - PDGCode
+   These two classes are used in the Geometry and GlobalConstants
+   packages.  I prefer that those packages depend on a low level
+   pacakge, ie DataProducts, and not on a higher level package such
+   as MCDataProducts.

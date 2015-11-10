@@ -20,7 +20,7 @@
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/VisibleGenElTrack.hh"
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TFile.h"
 #include "TNtuple.h"

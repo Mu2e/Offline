@@ -25,8 +25,8 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "SeedService/inc/SeedService.hh"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"

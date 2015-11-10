@@ -23,7 +23,7 @@
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/MassCache.hh"
+#include "GlobalConstantsService/inc/MassCache.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "SeedService/inc/SeedService.hh"
 

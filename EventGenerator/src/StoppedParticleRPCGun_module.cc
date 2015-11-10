@@ -29,8 +29,8 @@
 // Mu2e includes
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "SeedService/inc/SeedService.hh"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/EventWeight.hh"

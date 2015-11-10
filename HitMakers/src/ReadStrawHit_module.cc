@@ -49,7 +49,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 
-#include "ConditionsService/inc/MassCache.hh"
+#include "GlobalConstantsService/inc/MassCache.hh"
 #include "SeedService/inc/SeedService.hh"
 #include "MCDataProducts/inc/StepPointMCStrawHit.hh"
 #include "HitMakers/inc/formStepPointMCStrawHit.hh"

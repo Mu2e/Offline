@@ -20,7 +20,7 @@
 #include "Mu2eG4/inc/SteppingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 

@@ -18,7 +18,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
 namespace mu2e {

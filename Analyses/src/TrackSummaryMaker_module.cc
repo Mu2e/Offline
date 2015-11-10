@@ -22,7 +22,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 
 #include "Mu2eUtilities/inc/toHepPoint.hh"
 #include "RecoDataProducts/inc/TrackSummary.hh"

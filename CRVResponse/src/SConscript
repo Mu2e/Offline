@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 #
-#
-# $Id: SConscript,v 1.1 2014/10/06 19:44:53 ehrlich Exp $
-# $Author: ehrlich $
-# $Date: 2014/10/06 19:44:53 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -21,6 +16,7 @@ mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'art_Framework_Services_Optional_TFileService_service',
                                   'mu2e_GeometryService',
                                   'mu2e_ConditionsService',
+                                  'mu2e_GlobalConstantsService_GlobalConstantsService_service',
                                   'mu2e_Mu2eUtilities',
                                   'mu2e_GeneralUtilities',
                                   'mu2e_MCDataProducts',
@@ -37,6 +33,7 @@ helper.make_plugins( [ mainlib,
                        'art_Framework_Services_Optional_TFileService_service',
                        'mu2e_GeometryService',
                        'mu2e_ConditionsService',
+                       'mu2e_GlobalConstantsService_GlobalConstantsService_service',
                        'mu2e_Mu2eUtilities',
                        'mu2e_GeneralUtilities',
                        'mu2e_CaloCluster',

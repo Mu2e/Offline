@@ -41,7 +41,7 @@
 //
 
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "fhiclcpp/ParameterSet.h"
 

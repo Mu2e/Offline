@@ -94,7 +94,7 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "Mu2eUtilities/inc/PoissonHistogramBinning.hh"
 #include "SeedService/inc/SeedService.hh"

@@ -16,7 +16,7 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 #include "CLHEP/Random/RandFlat.h"

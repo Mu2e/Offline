@@ -29,7 +29,7 @@
 #include "Mu2eG4/inc/StackingAction.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "cetlib/exception.h"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 
 // G4 includes
 #include "G4PhysicalVolumeStore.hh"

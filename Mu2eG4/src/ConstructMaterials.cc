@@ -29,8 +29,8 @@
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/PhysicsParams.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/PhysicalConstants.h"

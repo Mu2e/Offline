@@ -13,7 +13,7 @@
 // Mu2e includes.
 
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/MassCache.hh"
+#include "GlobalConstantsService/inc/MassCache.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "DataProducts/inc/StrawIndex.hh"
 #include "MCDataProducts/inc/StepPointMCStrawHit.hh"

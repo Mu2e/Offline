@@ -2,10 +2,6 @@
 #
 # Script to build the files found in this directory.
 #
-# $ Id: SConscript,v 1.7 2012/08/24 20:19:31 gandr Exp $
-# $ Author: gandr $
-# $ Date: 2012/08/24 20:19:31 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -17,6 +13,7 @@ helper=mu2e_helper();
 
 mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'mu2e_GeneralUtilities',
+                                  'mu2e_GlobalConstantsService_GlobalConstantsService_service',
                                   'BTrk_BaBar',
                                   'fhiclcpp',
                                 ] )

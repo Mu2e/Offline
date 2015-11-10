@@ -1,7 +1,7 @@
 #include "ExtinctionMonitorFNAL/Utilities/inc/getCharge.hh"
 
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

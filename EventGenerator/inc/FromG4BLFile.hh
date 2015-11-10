@@ -16,7 +16,7 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 
 // External includes

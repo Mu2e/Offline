@@ -16,7 +16,7 @@
 #include "GeneralUtilities/inc/RootNameTitleHelper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "TF1.h"
 #include "TFile.h"
 #include "TH1F.h"

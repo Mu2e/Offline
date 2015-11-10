@@ -2,10 +2,6 @@
 #
 # Script to build the files found in this directory.
 #
-# $ Id: SConscript,v 1.7 2012/08/24 20:19:31 gandr Exp $
-# $ Author: gandr $
-# $ Date: 2012/08/24 20:19:31 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -20,6 +16,7 @@ mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'art_Framework_Services_Optional_TFileService_service',
                                   'mu2e_GeometryService',
                                   'mu2e_ConditionsService_ConditionsService_service',
+                                  'mu2e_GlobalConstantsService_GlobalConstantsService_service',
                                   'mu2e_SeedService_SeedService_service',
                                   'mu2e_MCDataProducts',
                                   'mu2e_RecoDataProducts',
@@ -34,6 +31,7 @@ helper.make_plugins( [ mainlib,
                        'art_Framework_Services_Optional_TFileService_service',
                        'mu2e_GeometryService',
                        'mu2e_ConditionsService_ConditionsService_service',
+                       'mu2e_GlobalConstantsService_GlobalConstantsService_service',
                        'mu2e_SeedService_SeedService_service',
                        'mu2e_MCDataProducts',
                        'mu2e_RecoDataProducts',

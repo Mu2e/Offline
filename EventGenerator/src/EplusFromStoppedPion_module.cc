@@ -21,8 +21,8 @@
 //
 
 // Mu2e includes.
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GeneralUtilities/inc/TwoBodyKinematics.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
