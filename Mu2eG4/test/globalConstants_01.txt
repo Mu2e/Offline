@@ -6,8 +6,8 @@
 int    physicsParams.verbosityLevel = 1;
 
 // Primary particle data table and the auxillary table.
-string particleDataTable.filename          = "ConditionsService/data/particle.tbl";
-string particleDataTable.auxillaryFilename = "ConditionsService/data/mass_width_2008.mc";
+string particleDataTable.filename          = "GlobalConstantsService/data/particle.tbl";
+string particleDataTable.auxillaryFilename = "GlobalConstantsService/data/mass_width_2008.mc";
 
 // Physical constants
 double physicsParams.invFineStructureConstant = 137.0359991; // PDG value (2010 CODATA)
@@ -75,11 +75,11 @@ double physicsParams.Sb.czarneckiCoefficient = 3.57e-15;
 double physicsParams.Au.czarneckiCoefficient = 4.69e-15;
 
 // - Poly. 5-8 approximation
-vector<double> physicsParams.Al.czarneckiCoefficients = 
+vector<double> physicsParams.Al.czarneckiCoefficients =
   {
     8.64340e-17, 1.16874e-17, -1.87828e-19, 9.16327e-20
   };
-vector<double> physicsParams.Ti.czarneckiCoefficients = 
+vector<double> physicsParams.Ti.czarneckiCoefficients =
   {
     4.44278e-16, 9.06648e-17, -4.26245e-18, 8.19300e-19
   };
@@ -89,15 +89,15 @@ vector<double> physicsParams.Ti.czarneckiCoefficients =
 //   given atomic number.  The coefficients below are pol3 constants
 //   that interpolate the D, E, and F values for an arbitrary atomic
 //   number.  See Bernstein docdb-387-v12 for details.
-vector<double> physicsParams.shankerDcoefficients = 
+vector<double> physicsParams.shankerDcoefficients =
   {
     -1.98475, 0.388249, -2.5289e-2, 7.218161e-4
   };
-vector<double> physicsParams.shankerEcoefficients = 
+vector<double> physicsParams.shankerEcoefficients =
   {
     -3.69662, 0.736126, -5.19805e-2, 1.76407e-3
   };
-vector<double> physicsParams.shankerFcoefficients = 
+vector<double> physicsParams.shankerFcoefficients =
   {
     -6.7013, 1.9329, -0.165584, 5.41126e-3
   };
