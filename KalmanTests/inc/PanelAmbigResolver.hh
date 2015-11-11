@@ -12,7 +12,7 @@
 #include "KalmanTests/inc/AmbigResolver.hh"
 #include "KalmanTests/inc/PanelAmbigStructs.hh"
 #include "KalmanTests/inc/KalDiag.hh"
-#include "TrackerGeom/inc/LayerId.hh"
+#include "DataProducts/inc/LayerId.hh"
 #ifndef __GCCXML__
 #include "fhiclcpp/ParameterSet.h"
 #endif/*__GCCXML__*/

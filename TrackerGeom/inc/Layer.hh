@@ -11,7 +11,7 @@
 //
 
 #include "CLHEP/Vector/ThreeVector.h"
-#include "TrackerGeom/inc/LayerId.hh"
+#include "DataProducts/inc/LayerId.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include <algorithm>
 #include <deque>

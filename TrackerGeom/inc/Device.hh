@@ -14,7 +14,7 @@
 #include <vector>
 
 // Mu2e includes
-#include "TrackerGeom/inc/DeviceId.hh"
+#include "DataProducts/inc/DeviceId.hh"
 #include "TrackerGeom/inc/Sector.hh"
 
 // CLHEP includes

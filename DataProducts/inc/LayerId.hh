@@ -15,7 +15,7 @@
 
 #include <ostream>
 
-#include "TrackerGeom/inc/SectorId.hh"
+#include "DataProducts/inc/SectorId.hh"
 
 namespace mu2e {
   class LayerId;

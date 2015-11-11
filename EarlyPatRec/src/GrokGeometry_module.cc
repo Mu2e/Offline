@@ -38,7 +38,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/StrawId.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TTrackerGeom/inc/Station.hh"

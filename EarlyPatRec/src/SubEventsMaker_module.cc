@@ -40,7 +40,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "TrackerGeom/inc/StrawId.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/SubEvent.hh"
 #include "RecoDataProducts/inc/SubEventCollection.hh"

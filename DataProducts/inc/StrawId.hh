@@ -12,7 +12,7 @@
 // Original author Rob Kutschke
 //
 #include <ostream>
-#include "TrackerGeom/inc/LayerId.hh"
+#include "DataProducts/inc/LayerId.hh"
 
 namespace mu2e {
 

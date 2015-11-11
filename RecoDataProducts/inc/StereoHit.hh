@@ -18,7 +18,7 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "TrackerGeom/inc/SectorId.hh"
+#include "DataProducts/inc/SectorId.hh"
 
 namespace mu2e {
   class StereoHit {

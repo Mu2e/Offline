@@ -21,7 +21,7 @@
 #include "TTrackerGeom/inc/SupportStructure.hh"
 
 #include "TrackerGeom/inc/Device.hh"
-#include "TrackerGeom/inc/SectorId.hh"
+#include "DataProducts/inc/SectorId.hh"
 #include "TrackerGeom/inc/StrawDetail.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"

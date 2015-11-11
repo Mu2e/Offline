@@ -14,7 +14,7 @@
 //
 
 #include <ostream>
-#include "TrackerGeom/inc/DeviceId.hh"
+#include "DataProducts/inc/DeviceId.hh"
 
 namespace mu2e {
 
