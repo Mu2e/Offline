@@ -3,17 +3,13 @@
 //
 // Class to describe derived information from a StrawHit, in particular pos().
 //
-// $Id: StrawHitPosition.hh,v 1.5 2013/08/09 22:09:41 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/08/09 22:09:41 $
-//
 // Original author David Brown
 //
 // Mu2e includes
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "ConditionsService/inc/TrackerCalibrationStructs.hh"
+#include "ConditionsBase/inc/TrackerCalibrationStructs.hh"
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
