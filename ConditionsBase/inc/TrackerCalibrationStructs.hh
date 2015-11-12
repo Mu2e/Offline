@@ -3,10 +3,6 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrationStructs.hh,v 1.1 2013/04/04 14:36:53 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/04/04 14:36:53 $
-//
 // Original author David Brown
 //
 
