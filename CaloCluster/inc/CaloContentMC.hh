@@ -46,7 +46,7 @@ namespace mu2e {
 
 
 	       double                   edepTot()  const {return _edepTot;}
-	       double                   time()     const {return _edepTot;}
+	       double                   time()     const {return _time;}
 	       double                   momentum() const {return _mom;}
 	       CLHEP::Hep3Vector const& position() const {return _pos;}
 

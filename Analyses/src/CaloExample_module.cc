@@ -9,9 +9,12 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
+
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/unknownPDGIdName.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -38,6 +41,7 @@
 #include "DataProducts/inc/VirtualDetectorId.hh"
 
 #include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -133,6 +137,7 @@ namespace mu2e {
        std::string _instanceName;
        TrkParticle _tpart;
        TrkFitDirection _fdir;
+       SimParticleTimeOffset _toff;  // time offset smearing
 
 
        TH1F *_hcryE,*_hcryT,*_hcryX,*_hcryY,*_hcryZ;
@@ -161,7 +166,7 @@ namespace mu2e {
        int   _clusimId[16384],_clusimPdgId[16384],_clusimGenIdx[16384];
        float _clusimMom[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimTime[16384],_clusimEdep[16384];
 
-       int   _nVd,_vdId[16384],_vdPdgId[16384];
+       int   _nVd,_vdId[16384],_vdPdgId[16384],_vdenIdx[16384];
        float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMom[16384];
 
        int   _nTrkOk,_nTrk,_trkOk[8192],_trkstat[8192],_trknHit[8192];
@@ -190,6 +195,7 @@ namespace mu2e {
     _trkPatRecModuleLabel(pset.get<string>("trkPatRecModuleLabel")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _Ntup(0)
 
   {
@@ -212,8 +218,8 @@ namespace mu2e {
        _Ntup->Branch("genId",        &_genPdgId,     "genId[nGen]/I");
        _Ntup->Branch("genCrCode",    &_genCrCode,    "genCrCode[nGen]/I");
        _Ntup->Branch("genMomX",      &_genmomX,      "genMomX[nGen]/F");
-       _Ntup->Branch("genMomY",      &_genmomY,      "genMomX[nGen]/F");
-       _Ntup->Branch("genMomZ",      &_genmomZ,      "genMomX[nGen]/F");
+       _Ntup->Branch("genMomY",      &_genmomY,      "genMomY[nGen]/F");
+       _Ntup->Branch("genMomZ",      &_genmomZ,      "genMomZ[nGen]/F");
        _Ntup->Branch("genStartX",    &_genStartX,    "genStartX[nGen]/F");
        _Ntup->Branch("genStartY",    &_genStartY,    "genStartY[nGen]/F");
        _Ntup->Branch("genStartZ",    &_genStartZ,    "genStartZ[nGen]/F");
@@ -278,6 +284,7 @@ namespace mu2e {
        _Ntup->Branch("vdPosY",   &_vdPosY ,  "vdPosY[nVd]/F");
        _Ntup->Branch("vdPosZ",   &_vdPosZ ,  "vdPosZ[nVd]/F");
        _Ntup->Branch("vdTime",   &_vdTime ,  "vdTime[nVd]/F");
+       _Ntup->Branch("vdGenIdx", &_vdenIdx , "vdGenIdx[nVd]/I");
 
        _Ntup->Branch("nTrkOk",       &_nTrkOk ,      "nTrkOk/I");
        _Ntup->Branch("nTrk",         &_nTrk ,        "nTrk/I");
@@ -327,6 +334,9 @@ namespace mu2e {
       ++_nProcess;
       if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CaloExample =  "<<_nProcess << " with instance name " << _instanceName <<std::endl;
 
+      ConditionsHandle<AcceleratorParams> accPar("ignored");
+      double _mbtime = accPar->deBuncherPeriod;
+      _toff.updateMap(event);
 
       //Get handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
@@ -402,7 +412,7 @@ namespace mu2e {
            GenParticle const* gen = &genParticles[i];
            _genPdgId[i]   = gen->pdgId();
            _genCrCode[i]  = gen->generatorId().id();
-           _genmomX[i]    = gen->momentum().vect().x() + 3904;
+           _genmomX[i]    = gen->momentum().vect().x();
            _genmomY[i]    = gen->momentum().vect().y();
            _genmomZ[i]    = gen->momentum().vect().z();
            _genStartX[i]  = gen->position().x();
@@ -472,7 +482,7 @@ namespace mu2e {
              _motPosZ[_nSim]    = hitSim.position().at(ip).z() - 10200;  //value used to shift in tracker coordinate system
              _motTime[_nSim]    = hitSim.time().at(ip);
              _motEdep[_nSim]    = hitSim.eDep().at(ip);
-
+	     
              _motGenIdx[_nSim]  = -1;
              if (generated) _motGenIdx[_nSim] = generated - &(genParticles.at(0));
              ++_nSim;
@@ -538,7 +548,7 @@ namespace mu2e {
              _clusimPosZ[_nCluSim]   = clutil.position().at(ip).z() - 10200;  //value used to shift in tracker coordinate system
              _clusimTime[_nCluSim]   = clutil.time().at(ip);
              _clusimEdep[_nCluSim]   = clutil.edepTot().at(ip);
-
+	     
              ++_nCluSim;
           }
 
@@ -550,21 +560,25 @@ namespace mu2e {
        //--------------------------  Do virtual detectors --------------------------------
        //73/74/77/78 front back inner outer edges disk 0
        //75/76/79/80 front back inner outer edges disk 1
+       _nVd = 0;
        if (vdhits.isValid())
          {
            for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter)
              {
                const StepPointMC& hit = *iter;
-
                if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
+
+               double hitTimeUnfolded = _toff.timeWithOffsetsApplied(hit);
+   	       double hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
                _vdId[_nVd]    = hit.volumeId();
                _vdPdgId[_nVd] = hit.simParticle()->pdgId();
-               _vdTime[_nVd]  = hit.time();
+               _vdTime[_nVd]  = hitTime;//hit.time();
                _vdPosX[_nVd]  = hit.position().x()+ 3904;
                _vdPosY[_nVd]  = hit.position().y();
                _vdPosZ[_nVd]  = hit.position().z()-10200;
                _vdMom[_nVd]   = hit.momentum().mag();
+               _vdenIdx[_nVd] = hit.simParticle()->generatorIndex();
                ++_nVd;
              }
          }

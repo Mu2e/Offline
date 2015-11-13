@@ -234,7 +234,7 @@ class MakeCaloCluster : public art::EDProducer {
 		        if (_diagLevel) std::cout<<"Associated to main cluster id="<<iproto<<"   main split="<<iassoc<<std::endl;
 			flagProto[iassoc] = 1;
 		        totalEnergy += caloProtoClustersTemp.at(iassoc).energyDep();
-		        isSplit += caloProtoClustersTemp.at(iassoc).isSplit();
+		        isSplit = true;
                         caloCrystalHitPtrVector.insert(caloCrystalHitPtrVector.end(), 
 		                                       caloProtoClustersTemp.at(iassoc).caloCrystalHitsPtrVector().begin(), 
 		                                       caloProtoClustersTemp.at(iassoc).caloCrystalHitsPtrVector().end());

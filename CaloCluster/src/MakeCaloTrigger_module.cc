@@ -4,6 +4,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <unordered_map>
 #include <memory>
 
 
@@ -32,7 +33,8 @@
 #include "CaloCluster/inc/CaloClusterAssociator.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "CaloCluster/inc/CaloClusterMoments.hh"
 
 // Other includes.
 #include "cetlib/exception.h"
@@ -48,19 +50,15 @@ namespace mu2e {
 
 
 
+	     
+
 class MakeCaloTrigger : public art::EDProducer {
 
 
      public:
 
-             typedef std::vector<CaloCrystalHit const*>  CaloCrystalVec;
-             typedef std::list<CaloCrystalHit const*>    CaloCrystalList;
-
-
              explicit MakeCaloTrigger(fhicl::ParameterSet const& pset) :
-             _diagLevel(pset.get<int>("diagLevel",0)),
              _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
-             _producerNameMain(pset.get<std::string>("mainClusterCollName")),
              _EminSeed(pset.get<double>("EminSeed")),
              _EnoiseCut(pset.get<double>("EnoiseCut")),
              _ExpandCut(pset.get<double>("ExpandCut")),
@@ -68,10 +66,12 @@ class MakeCaloTrigger : public art::EDProducer {
              _deltaTimePlus(pset.get<double>("deltaTimePlus")),
              _deltaTimeMinus(pset.get<double>("deltaTimeMinus")),
              _maxDistClu(pset.get<double>("maxDistClu")),
-             _messageCategory("CLUSTER"),
+             _associatorFancy(pset.get<bool>("associatorFancy")),
+             _messageCategory("CaloTrigger"),
+             _diagLevel(pset.get<int>("diagLevel",0)),
 	     _hE(0)
              {
-                     produces<CaloProtoClusterCollection>(_producerNameMain);
+                     produces<CaloClusterCollection>();
              }
 
 
@@ -82,11 +82,13 @@ class MakeCaloTrigger : public art::EDProducer {
 
 
      private:
-
-             int         _diagLevel;
+             
+             typedef std::unordered_map<unsigned int,std::vector<unsigned int> >  AssoMap;
+             typedef std::vector<CaloCrystalHit const*>                           CaloCrystalVec;
+             typedef std::list<CaloCrystalHit const*>                             CaloCrystalList;
+	     
+             
              std::string _caloCrystalModuleLabel;
-             std::string _producerNameMain;
-
              double      _EminSeed;
              double      _EnoiseCut;
              double      _ExpandCut;
@@ -94,30 +96,40 @@ class MakeCaloTrigger : public art::EDProducer {
              double      _deltaTimePlus;
              double      _deltaTimeMinus;
              double      _maxDistClu;
+	     bool        _associatorFancy;
 
              const std::string _messageCategory;
+	     int         _diagLevel;
              TH1F *_hE;
 
 
-             void MakeCaloTriggers(CaloProtoClusterCollection& caloProtoClustersMain, 
+             void MakeCaloTriggers(CaloClusterCollection& caloClusters, 
                                    art::Handle<CaloCrystalHitCollection> const& caloCrystalHitsHandle);
 
+             void associateFast(Calorimeter const& cal, AssoMap& associatedMainId, 
+                                std::vector<CaloCrystalList> const& clusterColl, double deltaTime, double maxDist);  
+
+             void associateFancy(Calorimeter const& cal, AssoMap& associatedMainId, 
+                                 std::vector<CaloCrystalList> const& clusterColl, double deltaTime, double maxDist);  
+
+             double closestDistance(Calorimeter const& cal, CaloCrystalList const& cluster, CaloCrystalList const& cluster2);
 
 
      };
 
 
 
-     void MakeCaloTrigger::beginJob(){
-      art::ServiceHandle<art::TFileService> tfs;
-      _hE  = tfs->make<TH1F>("cluEner","Cluster energy",150,0,150.);
-
+     void MakeCaloTrigger::beginJob()
+     {
+        art::ServiceHandle<art::TFileService> tfs;
+        _hE  = tfs->make<TH1F>("cluEner","Cluster energy",150,0,150.);
      }
 
 
 
 
-     void MakeCaloTrigger::produce(art::Event& event) {
+     void MakeCaloTrigger::produce(art::Event& event)
+     {
 
 	 // Check that calorimeter geometry description exists
 	 art::ServiceHandle<GeometryService> geom;
@@ -129,19 +141,18 @@ class MakeCaloTrigger : public art::EDProducer {
 	 if ( !caloCrystalHitsHandle.isValid()) return;
 
 	 //Create a new CaloCluster collection and fill it
-	 std::unique_ptr<CaloProtoClusterCollection> caloProtoClustersMain(new CaloProtoClusterCollection);
-	 MakeCaloTriggers(*caloProtoClustersMain,caloCrystalHitsHandle);
+	 std::unique_ptr<CaloClusterCollection> caloClusters(new CaloClusterCollection);
+	 MakeCaloTriggers(*caloClusters,caloCrystalHitsHandle);
 
-	 event.put(std::move(caloProtoClustersMain), _producerNameMain);
-
+	 event.put(std::move(caloClusters));
      }
 
 
 
 
 
-     void MakeCaloTrigger::MakeCaloTriggers(CaloProtoClusterCollection& caloProtoClustersMain, 
-                                            art::Handle<CaloCrystalHitCollection> const& caloCrystalHitsHandle)
+     void MakeCaloTrigger::MakeCaloTriggers(CaloClusterCollection& caloClusters, 
+                                             art::Handle<CaloCrystalHitCollection> const& caloCrystalHitsHandle)
      {
 
 
@@ -149,6 +160,8 @@ class MakeCaloTrigger : public art::EDProducer {
             Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
             if (caloCrystalHits.empty()) return;
+            CaloCrystalHit const* caloCrystalHitBase = &caloCrystalHits.front();
+
 
 	    //declare and fill the hash map crystal_id -> list of CaloHits
             std::vector<CaloCrystalList>    mainClusterList;           
@@ -178,46 +191,181 @@ class MakeCaloTrigger : public art::EDProducer {
 	    }  
 
             std::sort(mainClusterList.begin(),mainClusterList.end(),[](CaloCrystalList const& a, CaloCrystalList const& b){return (*a.begin())->time() < (*b.begin())->time();});
-
 	    
 	    
-	    std::vector<double> clusterEnergy(mainClusterList.size(),0.0);
-	    std::vector<int>    nCry(mainClusterList.size(),0);
-	    std::vector<int>    associated(mainClusterList.size(),-1);
 
-	    double enerMax(0);
-	    for (unsigned int i=0;i<mainClusterList.size(); ++i)
-	    {	   	     		
-		if (associated[i]>-1) continue;
-		
-		for (auto const& il : mainClusterList[i]){clusterEnergy[i] += il->energyDep(); nCry[i]++;}	     
 
-		CaloCrystalHit const* hitFirst = *(mainClusterList[i].begin());
-		for (unsigned int j=i+1;j<mainClusterList.size();++j)
-		{
-		    if (associated[j]>-1) continue;
-		    
-		    CaloCrystalHit const* hitSecond = *(mainClusterList[j].begin());	     
-	            if (hitSecond->time()  -  hitFirst->time() > _deltaTimePlus)  break;
+	    AssoMap associatedMainId;
+	    if (_associatorFancy ) associateFancy(cal,associatedMainId,mainClusterList ,_deltaTimePlus,_maxDistClu);
+	    else                   associateFast(cal,associatedMainId,mainClusterList ,_deltaTimePlus,_maxDistClu);
 
-		    CLHEP::Hep3Vector crystalPos1 = cal.crystalOrigin(hitFirst->id());
-		    CLHEP::Hep3Vector crystalPos2 = cal.crystalOrigin(hitSecond->id());
-        	    double dist = (crystalPos1-crystalPos2).mag();
 
-		    if (dist > _maxDistClu) continue;
 
-		    associated[j]=i;		   
-		    for (auto const& il : mainClusterList[j]){clusterEnergy[i] += il->energyDep(); nCry[i]++;}
-		}	  
-	        if (clusterEnergy[i] > enerMax) enerMax = clusterEnergy[i];
+
+	    std::vector<int> flagProto(mainClusterList.size(),0);
+	    for (unsigned int iclu=0; iclu<mainClusterList.size(); ++iclu)
+	    { 
+
+		 if (flagProto[iclu]) continue;		  		  
+
+		 bool isSplit(false);
+		 double totalEnergy = 0;
+		 std::vector<art::Ptr<CaloCrystalHit>> caloCrystalHitPtrVector;
+
+
+		 CaloCrystalList list = mainClusterList[iclu];
+		 for (auto const& il : list)
+		 {
+		     totalEnergy += il->energyDep();
+		     size_t idx = (il - caloCrystalHitBase);
+		     caloCrystalHitPtrVector.push_back( art::Ptr<CaloCrystalHit>(caloCrystalHitsHandle,idx) );
+		 }
+
+
+		 for (int iassoc : associatedMainId[iclu])
+		 {
+		     flagProto[iassoc] = 1;
+                     
+		     isSplit = true;
+		     CaloCrystalList listAssoc = mainClusterList[iassoc];
+		     for (auto const& il : listAssoc)
+		     {
+			 totalEnergy += il->energyDep();
+			 size_t idx = (il - caloCrystalHitBase);
+			 caloCrystalHitPtrVector.push_back( art::Ptr<CaloCrystalHit>(caloCrystalHitsHandle,idx) );
+		     }
+		 }
+
+		 std::sort(caloCrystalHitPtrVector.begin(),caloCrystalHitPtrVector.end(),
+			   [] (art::Ptr<CaloCrystalHit> const& lhs, art::Ptr<CaloCrystalHit> const& rhs) 
+			       {return lhs->energyDep() > rhs->energyDep();} );
+
+		 auto const& seed   = **caloCrystalHitPtrVector.begin();
+		 double seed_time   = seed.time();
+		 int seed_section   = cal.crystal(seed.id()).sectionId();
+
+		 CaloCluster caloCluster(seed_section, seed_time, totalEnergy, caloCrystalHitPtrVector, isSplit);	      
+  	         
+		 CaloClusterMoments cogCalculator(cal,caloCluster, seed_section);
+		 cogCalculator.calculate(CaloClusterMoments::Linear);
+                 caloCluster.cog3Vector(cogCalculator.cog());
+		 
+		 caloClusters.push_back(caloCluster);
+
+
+		 _hE->Fill(totalEnergy);
 	    }
-	    
-	    
-	    _hE->Fill(enerMax);
-
  
      }
 
+
+
+
+
+
+
+     
+     void MakeCaloTrigger::associateFast(Calorimeter const& cal, AssoMap& associatedMainId, std::vector<CaloCrystalList> const& clusterColl, 
+                                          double deltaTime, double maxDist)  
+     { 
+
+	std::vector<int>  isAssociatedTo(clusterColl.size(),-1);
+
+        for (unsigned int i=0;i<clusterColl.size(); ++i)
+	{	   	     	       
+	    associatedMainId[i].clear();
+            CaloCrystalHit const* hitFirst = *(clusterColl[i].begin());
+
+	    for (unsigned int j=i+1;j<clusterColl.size();++j)
+	    {
+ 	         CaloCrystalHit const* hitSecond = *(clusterColl[j].begin());	     
+		 if (isAssociatedTo[j] > -1) continue;
+	      
+	         if (hitSecond->time()  -  hitFirst->time() > deltaTime)  break;
+		 CLHEP::Hep3Vector crystalPos1 = cal.crystalOrigin(hitFirst->id());
+		 CLHEP::Hep3Vector crystalPos2 = cal.crystalOrigin(hitSecond->id());
+        	 double dist = (crystalPos1-crystalPos2).mag();
+
+		 if (dist > maxDist) continue;
+
+		 isAssociatedTo[j] = i;
+		 associatedMainId[i].push_back(j); 
+	    }	  
+	}
+	
+	return;
+    } 
+
+
+
+
+     void MakeCaloTrigger::associateFancy(Calorimeter const& cal, AssoMap& associatedMainId, std::vector<CaloCrystalList> const& clusterColl, 
+                                           double deltaTime, double maxDist)  
+     { 
+
+	std::vector<int>                isAssociatedTo(clusterColl.size(),-1);
+	std::vector<std::vector<int> >  associatedId(clusterColl.size());
+
+
+        for (unsigned int i=0;i<clusterColl.size(); ++i)
+	{	   	     	       
+	    associatedMainId[i].clear();
+            CaloCrystalHit const* hitFirst = *(clusterColl[i].begin());
+
+	    for (unsigned int j=i+1;j<clusterColl.size();++j)
+	    {
+ 	         CaloCrystalHit const* hitSecond = *(clusterColl[j].begin());	     
+		 if (isAssociatedTo[j] > -1) continue;
+	      
+	         if (hitSecond->time()  -  hitFirst->time() > deltaTime)  break;
+
+		 double dist = closestDistance(cal, clusterColl[i], clusterColl[j]);
+		 if (dist > maxDist) continue;
+
+		 isAssociatedTo[j] = i;
+		 associatedId[i].push_back(j);
+		 //associatedMainId[i].push_back(j); // and remove next snippet of code
+	    }	  
+	}
+
+
+	for (unsigned int i=0;i<associatedId.size();++i)
+	{	       
+	     std::set<int> neighbors;
+	     std::queue<int> list;
+	     for (int id : associatedId[i]){neighbors.insert(id); list.push(id);}
+
+	     while (!list.empty())
+	     {
+	          int nextId = list.front();
+		  for (int id : associatedId[nextId]) {neighbors.insert(id); list.push(id);}
+	          associatedId[nextId].clear();  
+		  list.pop();	       
+	     }
+	     for (int id : neighbors) associatedMainId[i].push_back(id);
+	}
+	
+	return;
+    } 
+
+
+
+    double MakeCaloTrigger::closestDistance(Calorimeter const& cal, CaloCrystalList const& cluster, CaloCrystalList const& cluster2)
+    {
+       double minDistance(1e6);    
+       for (auto const& hit : cluster)
+       {        
+	   CLHEP::Hep3Vector crystalPos = cal.crystalOrigin(hit->id());
+
+	   for (auto const& hit2 : cluster2)
+	   {
+	      double dist = (crystalPos - cal.crystalOrigin(hit2->id())).mag();
+	      if (dist<minDistance) minDistance = dist;
+	   }	 
+       }
+
+      return minDistance;
+    }
 
 
 
