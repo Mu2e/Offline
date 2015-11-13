@@ -33,7 +33,7 @@
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALModuleIdConverter.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
 

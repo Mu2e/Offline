@@ -55,7 +55,7 @@ using namespace CLHEP;
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/PointTrajectory.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 
 #include "BFieldGeom/inc/BFieldManager.hh"

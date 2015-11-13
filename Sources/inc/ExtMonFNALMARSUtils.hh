@@ -8,8 +8,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "MCDataProducts/inc/GenParticle.hh"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

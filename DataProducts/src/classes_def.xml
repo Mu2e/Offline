@@ -16,8 +16,6 @@
 
 
 <lcgdict>
- <class name="mu2e::FilterEfficiency"/>
- <class name="art::Wrapper<mu2e::FilterEfficiency>"/>
  <class name="mu2e::StrawIndex"/>
  <class name="mu2e::ExtMonFNALModuleId"/>
  <class name="mu2e::ExtMonFNALChipId"/>

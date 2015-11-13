@@ -9,8 +9,8 @@
 //
 
 #include "GeometryService/inc/GeomHandle.hh"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
 #include "GeometryService/inc/VirtualDetector.hh"

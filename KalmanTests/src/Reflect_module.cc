@@ -14,13 +14,13 @@
 #include "art/Framework/Core/ModuleMacros.h"
 // services
 #include "BFieldGeom/inc/BFieldConfig.hh"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 // data
 #include "MCDataProducts/inc/SimParticleCollection.hh"

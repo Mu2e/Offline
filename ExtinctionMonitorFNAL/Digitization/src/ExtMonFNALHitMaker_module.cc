@@ -55,8 +55,8 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/ExtMonFNALConditions.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "SeedService/inc/SeedService.hh"
 
 

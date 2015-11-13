@@ -3,17 +3,13 @@
 //
 // Class to describe derived information from a StrawHit, in particular pos().
 //
-// $Id: StrawHitPosition.hh,v 1.5 2013/08/09 22:09:41 brownd Exp $
-// $Author: brownd $
-// $Date: 2013/08/09 22:09:41 $
-//
 // Original author David Brown
 //
 // Mu2e includes
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
-#include "ConditionsService/inc/TrackerCalibrationStructs.hh"
+#include "ConditionsBase/inc/TrackerCalibrationStructs.hh"
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -23,9 +19,9 @@ namespace mu2e {
     public:
 #ifndef __GCCXML__
 // construct from a straw hit.  Calibration and other information must be provided from outside
-      StrawHitPosition(StrawHit const& hit, Straw const& straw, SHInfo const& shinfo, StrawHitFlag const& flag=_nullflag );
+      StrawHitPosition(StrawHit const& hit, Straw const& straw, SHInfo const& shinfo, StrawHitFlag flag=StrawHitFlag() );
 // construct from another hit, optionally with additional flag bits (these will be ORed with the existing bits
-      StrawHitPosition(StrawHitPosition const& pos,StrawHitFlag const& orflag=_nullflag);
+      StrawHitPosition(StrawHitPosition const& pos,StrawHitFlag orflag=StrawHitFlag() );
 // construct from a stereo hit
       StrawHitPosition(StereoHitCollection const& sthits, size_t stindex, size_t shindex);
 // null constructor for root
@@ -49,8 +45,6 @@ namespace mu2e {
       float _rres; // pos resolution perpendicular to the Z axis
       int _stindex; // index into stereo hit collection (-1 if not based on stereo)
       StrawHitFlag _flag; // bit flags for this hit
-      static StrawHitFlag _nullflag; // null flag
-      static double _invsqrt12; // 1/sqrt(12)
   };
 }
 #endif

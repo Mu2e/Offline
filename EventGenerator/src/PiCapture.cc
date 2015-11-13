@@ -20,12 +20,12 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "EventGenerator/inc/PiCapture.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "StoppingTargetGeom/inc/zBinningForFoils.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // CLHEP includes

@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 #
-#
-# $Id: SConscript,v 1.4 2013/05/30 18:40:35 gandr Exp $
-# $Author: gandr $
-# $Date: 2013/05/30 18:40:35 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -19,6 +14,7 @@ helper=mu2e_helper()
 mainlib = helper.make_mainlib ( [
     'art_Framework_Core',
     'art_Framework_IO_ProductMix',
+    'mu2e_GlobalConstantsService_GlobalConstantsService_service',
     'mu2e_MCDataProducts',
     'mu2e_RecoDataProducts',
     'mu2e_GeneralUtilities',
@@ -27,6 +23,7 @@ mainlib = helper.make_mainlib ( [
 helper.make_plugins( [
     mainlib,
     'art_Framework_IO_ProductMix',
+    'mu2e_GlobalConstantsService_GlobalConstantsService_service',
     'mu2e_MCDataProducts',
     'mu2e_RecoDataProducts',
     'mu2e_GeneralUtilities',

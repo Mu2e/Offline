@@ -5,10 +5,6 @@
 // Helper class to construct a series of similar
 // names and titles for root objects.
 //
-// $Id: RootNameTitleHelper.hh,v 1.4 2011/05/18 02:27:16 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/18 02:27:16 $
-//
 // This class helps to make a series of root objects that
 // have names that differ only by a trailing integer, such as:
 //
@@ -38,8 +34,6 @@
 //
 
 #include <string>
-
-#include "TString.h"
 
 class RootNameTitleHelper {
 

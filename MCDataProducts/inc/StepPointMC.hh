@@ -20,7 +20,7 @@
 
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 #include "DataProducts/inc/StrawIndex.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 

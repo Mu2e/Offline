@@ -23,7 +23,7 @@
 #include "ConditionsService/inc/DAQParams.hh"
 #include "EventGenerator/inc/PiEplusNuGun.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"

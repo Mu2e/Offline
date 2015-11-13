@@ -16,8 +16,8 @@
 #include "art/Persistency/Common/Ptr.h"
 
 // Mu2e includes
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/PhysicsParams.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 

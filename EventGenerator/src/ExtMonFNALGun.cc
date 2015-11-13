@@ -3,7 +3,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 

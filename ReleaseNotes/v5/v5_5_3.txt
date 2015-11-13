@@ -1,0 +1,90 @@
+Still under construction
+
+           Release notes for Mu2e Offline software, v5_5_3
+
+10) Nov 12, 2015 kutschke
+    Split GlobalConstantsService/src/GlobalConstantsService_service.cc into two files:
+       - GlobalConstantsService.cc
+       - GlobalConstantsService_service.cc
+    The first file contains the implementation of the class.
+    The second file contains the plugin macros only.
+
+    This was needed to break a link-time loop.  The file MassCache.cc, the line
+
+    static ParticleDataTable const& pdt = *GlobalConstantsHandle<ParticleDataTable>();
+
+    needs getElement<ParticleDataTable>, which is instantiated in the implementation
+    of GlobalConstantsService.  This causes a link time loop between
+    GlobalConstantsService.so and GlobalConstantsService_service.so
+
+9) Nov 12, 2015 kutschke
+   Clean up link lists for the main libraries but not for the
+   _dict and _map libraries, if any:
+      DataProducts/src/SConscript
+      GeneralUtilities/src/SConscript
+      ConfigTools/src/SConscript
+      DataProducts/src/SConscript
+      GeomPrimitives/src/SConscript
+      GlobalConstantsService/src/SConscript
+
+   This file did not need fixing:
+      Mu2eInterfaces/src/SConscript
+
+8) Nov 12, 2015 kutschke
+   RecoDataProducts/inc/StrawHitPosition.hh
+   RecoDataProducts/src/StrawHitPosition.cc
+     - Get rid of two static data members
+     - Since a StrawHitFlag object is smaller than a pointer
+       and it is not modified, it can be passed by value;
+       also a default constructed BitMap object is just a
+       zero initialized unsigned int - and the compiler will
+       figure that out;so there is no run-time cost to the constructor
+     - Relace the static constant invsqrt12 with a constexpr which is
+       evaluated once at compile time.
+
+7) Nov 12, 2015 kutschke
+   Last step in breaking link time loops (I hope).
+
+   Created a new package to hold the definitions of "dumb" structs
+   that will be part of the conditions system.  For now it has
+   one file:
+       ConditionsBase/inc/TrackerCalibrationStructs.hh
+   which was moved from ConditionsService/inc/TrackerCalibrationStructs.hh
+
+6) Nov 11, 2015 kutschke
+   Moved the four ID objects (Device, Sector, Layer, Straw)
+   from TrackerGeom to DataProducts.
+
+5) Nov 10, 2015 kutschke
+   Moved files from ConditionsService/data to GlobalConstantsService/data
+       - mass_width_2008.mc
+       - data/particle.tbl
+
+   Mu2eG4/test/globalConstants_01.txt
+     - Modified to find the above files in their new place.
+
+4) Nov 10, 2015 kutschke
+   Identified all packages that #include any file from
+   the new GlobalConstantsService directory.  Added the new
+   service to the link list for these pacakges.
+
+3) Nov 10, 2015 kutschke
+   In the full code base, updated all #include directives that
+   include one of the header files moved in items 1 or 2.
+
+2) Nov 10, 2015 kutschke
+   - Created a new top level directory GlobalConstantsService
+   - Moved everything related to GlobalConstantsService from
+     the ConditionsService directory to the GlobalConstantsService
+     directory.
+   There are two reasons for this; ConditionsService was getting big
+   and this organization makes dependencies clearer.
+
+1) Nov 10, 2015 kutschke
+   Move two classes from MCDataProducts to DataProducts.
+    - VirtualDetectorId
+    - PDGCode
+   These two classes are used in the Geometry and GlobalConstants
+   packages.  I prefer that those packages depend on a low level
+   pacakge, ie DataProducts, and not on a higher level package such
+   as MCDataProducts.

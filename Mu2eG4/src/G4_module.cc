@@ -36,6 +36,7 @@
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/postG4InitializeTasks.hh"
+#include "Mu2eG4/inc/preG4InitializeTasks.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
@@ -49,6 +50,8 @@
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT ) 
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
+
+#include "Mu2eG4/inc/findMaterialOrThrow.hh"
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -120,6 +123,7 @@ namespace mu2e {
     virtual void beginSubRun(art::SubRun &sr);
 
   private:
+    fhicl::ParameterSet pset_;
     typedef std::vector<art::InputTag> InputTags;
     typedef std::vector<std::string> Strings;
 
@@ -205,6 +209,7 @@ namespace mu2e {
   }; // end G4 header
 
   G4::G4(fhicl::ParameterSet const& pSet):
+    pset_(pSet),
     _runManager(nullptr),
     _warnEveryNewRun(pSet.get<bool>("warnEveryNewRun",false)),
     _exportPDTStart(pSet.get<bool>("exportPDTStart",false)),
@@ -360,6 +365,8 @@ namespace mu2e {
     // Create user actions and register them with G4.
 
     WorldMaker<Mu2eWorld>* allMu2e    = new WorldMaker<Mu2eWorld>(std::unique_ptr<Mu2eWorld>(new Mu2eWorld(&_sensitiveDetectorHelper)));
+
+    preG4InitializeTasks(pset_);
 
     _runManager->SetVerboseLevel(_rmvlevel);
 

@@ -3,7 +3,7 @@
 #ifndef ExtinctionMonitorFNAL_Utilities_inc_EMFRandomizationParticleDefs_hh
 #define ExtinctionMonitorFNAL_Utilities_inc_EMFRandomizationParticleDefs_hh
 
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 
 namespace mu2e {
   namespace ExtMonFNAL {

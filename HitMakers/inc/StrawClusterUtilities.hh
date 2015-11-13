@@ -20,8 +20,8 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "GeneralUtilities/inc/LineSegmentPCA.hh"
-#include "TrackerGeom/inc/DeviceId.hh"
-#include "TrackerGeom/inc/SectorId.hh"
+#include "DataProducts/inc/DeviceId.hh"
+#include "DataProducts/inc/SectorId.hh"
 
 // CLHEP includes:
 #include "CLHEP/Vector/ThreeVector.h"

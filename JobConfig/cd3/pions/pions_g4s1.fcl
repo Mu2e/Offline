@@ -138,7 +138,7 @@ outputs: {
                            "keep mu2e::StatusG4_*_*_*",
                            "keep *_g4filter_*_*",
                            "keep *_compressPV_*_*" ]
-        fileName       : "data_pions_g4s1.art"
+        fileName       : "sim.owner.cd3-pions-g4s1.version.sequencer.art"
     }
 }
 

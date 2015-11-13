@@ -9,9 +9,9 @@
 //
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
-#include "ConditionsService/inc/unknownPDGIdName.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/unknownPDGIdName.hh"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 

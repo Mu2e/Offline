@@ -44,7 +44,7 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 
 // ROOT includes
 #include "TH1D.h"

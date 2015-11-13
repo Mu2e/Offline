@@ -15,9 +15,9 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/PiCaptureEffects.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
+#include "DataProducts/inc/PDGCode.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 

@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 #
-#
-# $Id: SConscript,v 1.32 2014/09/03 18:02:09 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2014/09/03 18:02:09 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -42,6 +37,7 @@ mainlib = helper.make_mainlib ( [
     'mu2e_Mu2eUtilities',
     'mu2e_ConfigTools',
     'mu2e_Mu2eInterfaces',
+    'mu2e_GlobalConstantsService_GlobalConstantsService_service',
     'MF_MessageLogger',
     'fhiclcpp',
     rootlibs

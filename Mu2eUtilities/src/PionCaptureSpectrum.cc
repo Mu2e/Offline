@@ -6,9 +6,9 @@
 //
 
 // Mu2e includes
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/PhysicsParams.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "Mu2eUtilities/inc/PionCaptureSpectrum.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 

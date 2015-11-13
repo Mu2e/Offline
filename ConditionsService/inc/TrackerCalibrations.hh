@@ -3,10 +3,6 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.hh,v 1.18 2014/03/01 11:13:30 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/03/01 11:13:30 $
-//
 // Original author Vadim Rusu
 //
 
@@ -15,7 +11,7 @@
 
 // Mu2e includes.
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
-#include "ConditionsService/inc/TrackerCalibrationStructs.hh"
+#include "ConditionsBase/inc/TrackerCalibrationStructs.hh"
 #include "DataProducts/inc/StrawIndex.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -59,7 +55,7 @@ namespace mu2e
     // time-division base resolution and length-dependent quadratic term
     double _tdresopar0;
     double _tdresopar1;
-    // temoprary constant drift velocity and time resolution.  Replace these with a more physical model	FIXME!!!
+    // temoprary constant drift velocity and time resolution.  Replace these with a more physical model FIXME!!!
     double _vdrift;
     double _rres_min, _rres_max, _rres_rad;
 

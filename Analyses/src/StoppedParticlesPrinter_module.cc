@@ -12,7 +12,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Utilities/InputTag.h"
 
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 

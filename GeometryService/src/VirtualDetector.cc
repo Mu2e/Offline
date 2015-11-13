@@ -4,7 +4,7 @@
 //
 
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 
 namespace mu2e {
 

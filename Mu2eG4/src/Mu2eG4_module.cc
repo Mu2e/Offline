@@ -25,6 +25,7 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
+#include "Mu2eG4/inc/preG4InitializeTasks.hh"
 #include "Mu2eG4/inc/postG4InitializeTasks.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
@@ -41,6 +42,8 @@
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
+#include "Mu2eG4/inc/findMaterialOrThrow.hh"
+
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -186,6 +189,8 @@ namespace mu2e {
 
     // throws if obsolete config parameters are detected
     static void checkConfigRelics(const SimpleConfig& config);
+
+
 
   }; // end G4 header
 
@@ -335,7 +340,10 @@ namespace mu2e {
     auto* allMu2e = new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &_sensitiveDetectorHelper),
                                               std::make_unique<ConstructMaterials>(pset_));
 
+    preG4InitializeTasks(pset_.get<fhicl::ParameterSet>("physics"));
+ 
     _runManager->SetVerboseLevel(_rmvlevel);
+
 
     _runManager->SetUserInitialization(allMu2e);
 

@@ -28,7 +28,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 
 #include "art/Persistency/Common/Ptr.h"
 

@@ -1,6 +1,6 @@
 // diagnostic structs
 #include "Rtypes.h"
-#include "TrackerGeom/inc/StrawId.hh"
+#include "DataProducts/inc/StrawId.hh"
 namespace mu2e {
 
   struct SHID {

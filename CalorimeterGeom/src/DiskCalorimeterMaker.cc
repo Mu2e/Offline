@@ -15,21 +15,21 @@
 //  calibration system (pipes) in front of the crystals
 //  pipes + casing form a disk
 //
-//  cross section in z:      pipes - wrapper - crystal - readout - wrapper 
+//  cross section in z:      pipes - wrapper - crystal - readout - wrapper
 //  cross section in radius: casing - wrapper - crystal - wrapper - crystal - ... - wrapper - casing
 
 
 
-//  Coordinate systems 
-      
-//    Intro: We model the crtsyals as polyhedra, so they can be either squares or hexagons. In G4, 
-//           polyhedra have the origin of the coordinate system at their _base_, and are always 
-//           oriented along the z direction. 
+//  Coordinate systems
+
+//    Intro: We model the crtsyals as polyhedra, so they can be either squares or hexagons. In G4,
+//           polyhedra have the origin of the coordinate system at their _base_, and are always
+//           oriented along the z direction.
 //           On the other hand, the disk have origin of the coordinate system at their _center_
 //
-//           This choice is the easiest for creation of the geometry and reconstruction. 
-//           It is also convenient when analyzing track/calo matching to have a coordinate system 
-//           at the front face of the active volume, the crystals in our case. This one is available 
+//           This choice is the easiest for creation of the geometry and reconstruction.
+//           It is also convenient when analyzing track/calo matching to have a coordinate system
+//           at the front face of the active volume, the crystals in our case. This one is available
 //           in addiiton to the base choice.
 
 //           The idea is to go from the calorimeter -> disk frame -> crystal frame to navigate the geometry
@@ -37,10 +37,10 @@
 
 //    Coordinate system
 //
-//           - crystal: 
+//           - crystal:
 //                      origin:      base of the crystal
 //                      orientation: crystal oriented along the z direction (direction fron face - back face)
-//                                   the front (back) face is at z=0 (z=crysdtal length), see above about polyhedra.                     
+//                                   the front (back) face is at z=0 (z=crysdtal length), see above about polyhedra.
 //           - disk:
 //                      origin:      center of the disk
 //                      orientation: along the z axis
@@ -49,20 +49,20 @@
 //           - calorimeter:
 //                      origin:      center of front face, point closest to the traclker along z
 //
-//         Note: the "disk" is defined as whatever volume containing the crystal is rotated in G4. For example, if 
-//               the crystal + calibration systems are rotated/placed as a single volume, then this is the disk. 
+//         Note: the "disk" is defined as whatever volume containing the crystal is rotated in G4. For example, if
+//               the crystal + calibration systems are rotated/placed as a single volume, then this is the disk.
 //               if the crystals and the calibration systems are rotated/placed separately, then the disk contains only the crystals
 //
 //         Note: The extra disk coordinate system is suffixed "FF" for FrontFace
 //
-//    Placement: 
+//    Placement:
 //
-//         The position of the crystals in the disks (see disk.cc) = the position of the crystal w.r.t disk origin, given by 
+//         The position of the crystals in the disks (see disk.cc) = the position of the crystal w.r.t disk origin, given by
 //         diskOriginToCrystalOrigin:
 //              diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness);
-        
 
-// There is a git tag (ef94504f51edbbfeb54a5e63651856bdf5c0a60d) that has the code for a generic placement of the disk origin. 
+
+// There is a git tag (ef94504f51edbbfeb54a5e63651856bdf5c0a60d) that has the code for a generic placement of the disk origin.
 // This is however more complicated, and I think this choice is the best at the moment.
 
 
@@ -79,7 +79,6 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
-#include "Mu2eUtilities/inc/hep3VectorFromStdVector.hh"
 
 // other includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -100,72 +99,72 @@ namespace mu2e {
     {
 
           _calo = std::unique_ptr<DiskCalorimeter>(new DiskCalorimeter());
-	  _calo->_caloType = Calorimeter::CaloType::disk;
+          _calo->_caloType = Calorimeter::CaloType::disk;
 
-	  _calo->_nSections  = config.getInt("calorimeter.numberOfDisks");      
+          _calo->_nSections  = config.getInt("calorimeter.numberOfDisks");
           config.getVectorDouble("calorimeter.diskInnerRadius",  _calo->_diskInnerRadius, _calo->_nSections);
           config.getVectorDouble("calorimeter.diskOuterRadius",  _calo->_diskOuterRadius, _calo->_nSections);
           config.getVectorDouble("calorimeter.diskRotationAngle",_calo->_diskRotAngle,    _calo->_nSections);
           config.getVectorDouble("calorimeter.diskSeparation",   _calo->_diskSeparation,  _calo->_nSections);
 
 
-	  //Fill the Common Calo Data
-	  _calo->_caloGeomInfo.crystalNedges(      config.getInt("calorimeter.crystalNumEdges"));
-	  _calo->_caloGeomInfo.crystalShift(       config.getBool("calorimeter.crystalShift"));
-	  _calo->_caloGeomInfo.nROPerCrystal(      config.getInt("calorimeter.crystalReadoutChannelCount"));
-	  _calo->_caloGeomInfo.crystalHalfTrans(   config.getDouble("calorimeter.crystalHalfTrans") );
-	  _calo->_caloGeomInfo.crystalHalfLength(  config.getDouble("calorimeter.crystalHalfLong") );
-	  _calo->_caloGeomInfo.wrapperThickness(   config.getDouble("calorimeter.crystalWrapperThickness") );
-	  _calo->_caloGeomInfo.roHalfTrans(        config.getDouble("calorimeter.crystalReadoutHalfTrans") );
-	  _calo->_caloGeomInfo.roHalfThickness(    config.getDouble("calorimeter.crystalReadoutHalfThickness") );
-	  _calo->_caloGeomInfo.caseThickness(      config.getDouble("calorimeter.caseThickness") );
-	  _calo->_caloGeomInfo.enveloppeInRadius(  config.getDouble("calorimeter.caloMotherInRadius") );
-	  _calo->_caloGeomInfo.enveloppeOutRadius( config.getDouble("calorimeter.caloMotherOutRadius") );
-	  _calo->_caloGeomInfo.enveloppeZ0(        config.getDouble("calorimeter.caloMotherZ0") );
-	  _calo->_caloGeomInfo.enveloppeZ1(        config.getDouble("calorimeter.caloMotherZ1") );
+          //Fill the Common Calo Data
+          _calo->_caloGeomInfo.crystalNedges(      config.getInt("calorimeter.crystalNumEdges"));
+          _calo->_caloGeomInfo.crystalShift(       config.getBool("calorimeter.crystalShift"));
+          _calo->_caloGeomInfo.nROPerCrystal(      config.getInt("calorimeter.crystalReadoutChannelCount"));
+          _calo->_caloGeomInfo.crystalHalfTrans(   config.getDouble("calorimeter.crystalHalfTrans") );
+          _calo->_caloGeomInfo.crystalHalfLength(  config.getDouble("calorimeter.crystalHalfLong") );
+          _calo->_caloGeomInfo.wrapperThickness(   config.getDouble("calorimeter.crystalWrapperThickness") );
+          _calo->_caloGeomInfo.roHalfTrans(        config.getDouble("calorimeter.crystalReadoutHalfTrans") );
+          _calo->_caloGeomInfo.roHalfThickness(    config.getDouble("calorimeter.crystalReadoutHalfThickness") );
+          _calo->_caloGeomInfo.caseThickness(      config.getDouble("calorimeter.caseThickness") );
+          _calo->_caloGeomInfo.enveloppeInRadius(  config.getDouble("calorimeter.caloMotherInRadius") );
+          _calo->_caloGeomInfo.enveloppeOutRadius( config.getDouble("calorimeter.caloMotherOutRadius") );
+          _calo->_caloGeomInfo.enveloppeZ0(        config.getDouble("calorimeter.caloMotherZ0") );
+          _calo->_caloGeomInfo.enveloppeZ1(        config.getDouble("calorimeter.caloMotherZ1") );
 
-	  _calo->_caloGeomInfo.apdMeanNoise(       config.getDouble("calorimeter.meanNoiseAPD", 0.0) );
-	  _calo->_caloGeomInfo.apdSigmaNoise(      config.getDouble("calorimeter.sigmaNoiseAPD", 0.03) );
-	  _calo->_caloGeomInfo.lysoLightYield(     config.getDouble("calorimeter.lysoLightYield", 2000.0) );
-	  _calo->_caloGeomInfo.apdQuantumEff(      config.getDouble("calorimeter.quantumEffAPD", 0.68) );
-	  _calo->_caloGeomInfo.apdCollectEff(      config.getDouble("calorimeter.lightCollectEffAPD", 0.11));
-	  _calo->_caloGeomInfo.nonUniformity(      config.getDouble("calorimeter.crystalNonUniformity",0.0) );
-	  _calo->_caloGeomInfo.timeGap(            config.getDouble("calorimeter.timeGap",100.0) );
-	  _calo->_caloGeomInfo.electronEdep(       config.getDouble("calorimeter.electronDepositionAPD",1000.0) );
-	  _calo->_caloGeomInfo.electronEmin(       config.getDouble("calorimeter.electronMinEnergyAPD",0.1) );
+          _calo->_caloGeomInfo.apdMeanNoise(       config.getDouble("calorimeter.meanNoiseAPD", 0.0) );
+          _calo->_caloGeomInfo.apdSigmaNoise(      config.getDouble("calorimeter.sigmaNoiseAPD", 0.03) );
+          _calo->_caloGeomInfo.lysoLightYield(     config.getDouble("calorimeter.lysoLightYield", 2000.0) );
+          _calo->_caloGeomInfo.apdQuantumEff(      config.getDouble("calorimeter.quantumEffAPD", 0.68) );
+          _calo->_caloGeomInfo.apdCollectEff(      config.getDouble("calorimeter.lightCollectEffAPD", 0.11));
+          _calo->_caloGeomInfo.nonUniformity(      config.getDouble("calorimeter.crystalNonUniformity",0.0) );
+          _calo->_caloGeomInfo.timeGap(            config.getDouble("calorimeter.timeGap",100.0) );
+          _calo->_caloGeomInfo.electronEdep(       config.getDouble("calorimeter.electronDepositionAPD",1000.0) );
+          _calo->_caloGeomInfo.electronEmin(       config.getDouble("calorimeter.electronMinEnergyAPD",0.1) );
 
-	  _calo->_caloGeomInfo.nPipes(             config.getInt("calorimeter.nPipes",0));
-	  _calo->_caloGeomInfo.pipeRadius(         config.getDouble("calorimeter.pipeRadius",5) );
-	  _calo->_caloGeomInfo.pipeThickness(      config.getDouble("calorimeter.pipeThickness",0.5) );
+          _calo->_caloGeomInfo.nPipes(             config.getInt("calorimeter.nPipes",0));
+          _calo->_caloGeomInfo.pipeRadius(         config.getDouble("calorimeter.pipeRadius",5) );
+          _calo->_caloGeomInfo.pipeThickness(      config.getDouble("calorimeter.pipeThickness",0.5) );
 
-	  std::vector<double> temp;
-	  config.getVectorDouble("calorimeter.pipeTorRadius", temp, _calo->_caloGeomInfo.nPipes());
-	  _calo->_caloGeomInfo.pipeTorRadius( temp );
+          std::vector<double> temp;
+          config.getVectorDouble("calorimeter.pipeTorRadius", temp, _calo->_caloGeomInfo.nPipes());
+          _calo->_caloGeomInfo.pipeTorRadius( temp );
 
 
 
-	  //THE CALORIMETER ORIGIN IS TAKEN AS THE POINT CLOSEST TO THE TRACKER IN MU2E COORDINATES
+          //THE CALORIMETER ORIGIN IS TAKEN AS THE POINT CLOSEST TO THE TRACKER IN MU2E COORDINATES
           double xOrigin         = -config.getDouble("mu2e.solenoidOffset");
           double zCaloFront      = config.getDouble("calorimeter.calorimeterZFront");
           double zTrackerCenter  = config.getDouble("mu2e.detectorSystemZ0");
-	  _calo->_origin         = CLHEP::Hep3Vector(xOrigin,0,zCaloFront);
-	  _calo->_trackerCenter  = CLHEP::Hep3Vector(xOrigin,0,zTrackerCenter);
+          _calo->_origin         = CLHEP::Hep3Vector(xOrigin,0,zCaloFront);
+          _calo->_trackerCenter  = CLHEP::Hep3Vector(xOrigin,0,zTrackerCenter);
 
           //Get the volume of the solid with hexagonal / rectangular base
-	  double hl              = _calo->_caloGeomInfo.crystalHalfLength();
-	  double ht              = _calo->_caloGeomInfo.crystalHalfTrans();
-	  double cryVolume       = (_calo->_caloGeomInfo.crystalNedges()==4) ? 8*ht*ht*hl : 6.9282032*ht*ht*hl;        
-	  _calo->_caloGeomInfo.crystalVolume(cryVolume);
+          double hl              = _calo->_caloGeomInfo.crystalHalfLength();
+          double ht              = _calo->_caloGeomInfo.crystalHalfTrans();
+          double cryVolume       = (_calo->_caloGeomInfo.crystalNedges()==4) ? 8*ht*ht*hl : 6.9282032*ht*ht*hl;
+          _calo->_caloGeomInfo.crystalVolume(cryVolume);
 
 
-	  _verbosityLevel = config.getInt("calorimeter.verbosityLevel",0);
+          _verbosityLevel = config.getInt("calorimeter.verbosityLevel",0);
 
 
-	  //make sure above information is consistent
-	  CheckIt();
+          //make sure above information is consistent
+          CheckIt();
 
-	  // Create Disks
-	  MakeDisks();
+          // Create Disks
+          MakeDisks();
 
 
     }
@@ -179,86 +178,86 @@ namespace mu2e {
     void DiskCalorimeterMaker::MakeDisks(void)
     {
 
-	int    crystalNedges      = _calo->_caloGeomInfo.crystalNedges();
-	bool   crystalShift       = _calo->_caloGeomInfo.crystalShift();
-	double crystalHalfLength  = _calo->_caloGeomInfo.crystalHalfLength();
-	double crystalHalfTrans   = _calo->_caloGeomInfo.crystalHalfTrans();
-	double roHalfThickness    = _calo->_caloGeomInfo.roHalfThickness();
-	double caseThickness      = _calo->_caloGeomInfo.caseThickness();
-	double wrapperThickness   = _calo->_caloGeomInfo.wrapperThickness();
-	double pipeRadius         = _calo->_caloGeomInfo.pipeRadius();
+        int    crystalNedges      = _calo->_caloGeomInfo.crystalNedges();
+        bool   crystalShift       = _calo->_caloGeomInfo.crystalShift();
+        double crystalHalfLength  = _calo->_caloGeomInfo.crystalHalfLength();
+        double crystalHalfTrans   = _calo->_caloGeomInfo.crystalHalfTrans();
+        double roHalfThickness    = _calo->_caloGeomInfo.roHalfThickness();
+        double caseThickness      = _calo->_caloGeomInfo.caseThickness();
+        double wrapperThickness   = _calo->_caloGeomInfo.wrapperThickness();
+        double pipeRadius         = _calo->_caloGeomInfo.pipeRadius();
 
 
-	double diskHalfZLength    = crystalHalfLength + roHalfThickness + wrapperThickness + pipeRadius;
-	double crystalCellRadius  = crystalHalfTrans  + wrapperThickness;      
+        double diskHalfZLength    = crystalHalfLength + roHalfThickness + wrapperThickness + pipeRadius;
+        double crystalCellRadius  = crystalHalfTrans  + wrapperThickness;
 
 
-	// This is where the offsets between the different coordinate systems are set, see Note for full explanation
-	// Seriously, read the note at the top before changing this! Really!      
-	CLHEP::Hep3Vector diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness);
+        // This is where the offsets between the different coordinate systems are set, see Note for full explanation
+        // Seriously, read the note at the top before changing this! Really!
+        CLHEP::Hep3Vector diskOriginToCrystalOrigin(0,0,pipeRadius - crystalHalfLength - roHalfThickness);
 
 
 
-	for (unsigned int idisk=0; idisk<_calo->_nSections; ++idisk)
-	{			 	 
+        for (unsigned int idisk=0; idisk<_calo->_nSections; ++idisk)
+        {
             double dR1    = _calo->_diskInnerRadius[idisk] - caseThickness;
-	    double dR2    = _calo->_diskOuterRadius[idisk] + caseThickness;
-	    double dZ     = 2.0*diskHalfZLength;
+            double dR2    = _calo->_diskOuterRadius[idisk] + caseThickness;
+            double dZ     = 2.0*diskHalfZLength;
 
-	    CLHEP::Hep3Vector size(dR1,dR2,dZ) ;
-	    CLHEP::Hep3Vector originLocal(0, 0, diskHalfZLength + _calo->_diskSeparation[idisk]);
+            CLHEP::Hep3Vector size(dR1,dR2,dZ) ;
+            CLHEP::Hep3Vector originLocal(0, 0, diskHalfZLength + _calo->_diskSeparation[idisk]);
 
-	    //this is expressed in the Mu2e coordinate system, need to go to the tracker system
-	    double frontFaceZ0 = _calo->origin().z() + originLocal.z() + diskOriginToCrystalOrigin.z();
-	    double frontFaceZ1 = frontFaceZ0 + 2.0*crystalHalfLength+2*roHalfThickness+2*wrapperThickness;
-
-
-
-	    std::shared_ptr<Disk> thisDisk( new Disk(idisk,_calo->_diskInnerRadius[idisk], _calo->_diskOuterRadius[idisk], size, 
-	                                	     2.0*crystalCellRadius,crystalNedges, crystalShift, crystalHalfLength, diskOriginToCrystalOrigin) );	 
-	    _calo->_sections.push_back(thisDisk);
-
-	    thisDisk->setOriginLocal(     originLocal );
-	    thisDisk->setOrigin(          _calo->origin() + originLocal );
-	    thisDisk->setRotation(        CLHEP::HepRotation::IDENTITY*CLHEP::HepRotationZ(_calo->_diskRotAngle[idisk]) );
-	    thisDisk->setBoundsInTracker(  _calo->_trackerCenter, frontFaceZ0, frontFaceZ1, dR1,dR2);
-	    
+            //this is expressed in the Mu2e coordinate system, need to go to the tracker system
+            double frontFaceZ0 = _calo->origin().z() + originLocal.z() + diskOriginToCrystalOrigin.z();
+            double frontFaceZ1 = frontFaceZ0 + 2.0*crystalHalfLength+2*roHalfThickness+2*wrapperThickness;
 
 
-	    //fill the full Crystal List / CaloSectionId (direct access for performance optimization) 
-	    int crystalOffset = _calo->_fullCrystalList.size();
-	    for (int icry=0;icry<thisDisk->nCrystals();++icry)
-	    {	         
-		 Crystal& thisCrystal = thisDisk->crystal(icry);
-		 _calo->_fullCrystalList.push_back(&thisCrystal);
 
-		 //precompute the neighbors in the global frame
-		 thisCrystal.setNeighbors(_calo->neighborsByLevel(icry+crystalOffset,1));
-		 thisCrystal.setNextNeighbors(_calo->neighborsByLevel(icry+crystalOffset,2));
+            std::shared_ptr<Disk> thisDisk( new Disk(idisk,_calo->_diskInnerRadius[idisk], _calo->_diskOuterRadius[idisk], size,
+                                                     2.0*crystalCellRadius,crystalNedges, crystalShift, crystalHalfLength, diskOriginToCrystalOrigin) );
+            _calo->_sections.push_back(thisDisk);
 
-        	 //pre-compute the crystal position in the mu2e frame (aka global frame), taken from BaseCalorimeter.cc
-		 CLHEP::Hep3Vector globalPosition = thisDisk->origin() + thisDisk->inverseRotation()*(thisCrystal.localPosition()); 		 
-		 thisCrystal.setPosition(globalPosition);
-	    }	 
+            thisDisk->setOriginLocal(     originLocal );
+            thisDisk->setOrigin(          _calo->origin() + originLocal );
+            thisDisk->setRotation(        CLHEP::HepRotation::IDENTITY*CLHEP::HepRotationZ(_calo->_diskRotAngle[idisk]) );
+            thisDisk->setBoundsInTracker(  _calo->_trackerCenter, frontFaceZ0, frontFaceZ1, dR1,dR2);
 
 
-	    if (_verbosityLevel) std::cout<<"Constructed Disk "<<thisDisk->id()<<":  Rin="<<thisDisk->innerRadius()<<"  Rout="<<thisDisk->outerRadius()
-        	                	  <<" (X,Y,Z)="<<thisDisk->origin()<<"  local_(X,Y,Z)="<<thisDisk->originLocal()
-					  <<"  with "<<thisDisk->nCrystals()<<" crystals"<<std::endl;   
 
-	    if (_verbosityLevel > 1) thisDisk->print()		           ;
+            //fill the full Crystal List / CaloSectionId (direct access for performance optimization)
+            int crystalOffset = _calo->_fullCrystalList.size();
+            for (int icry=0;icry<thisDisk->nCrystals();++icry)
+            {
+                 Crystal& thisCrystal = thisDisk->crystal(icry);
+                 _calo->_fullCrystalList.push_back(&thisCrystal);
 
-	    if (_verbosityLevel > 2)
-	    {
-		double espace          = thisDisk->estimateEmptySpace();
-        	double diskVolume    = 3.1415926*(thisDisk->outerRadius()*thisDisk->outerRadius()-thisDisk->innerRadius()*thisDisk->innerRadius());
-        	double crystalVolume = 3.4641016*crystalCellRadius*crystalCellRadius*thisDisk->nCrystals();
+                 //precompute the neighbors in the global frame
+                 thisCrystal.setNeighbors(_calo->neighborsByLevel(icry+crystalOffset,1));
+                 thisCrystal.setNextNeighbors(_calo->neighborsByLevel(icry+crystalOffset,2));
 
-        	std::cout<<"Estimated empty space between the disks and the crystals "<<std::endl;
-		std::cout<<"Inner edge and crystals = "<<espace<<std::endl;
-        	std::cout<<"Outer edge and crystals = "<<diskVolume-crystalVolume-espace<<" "<<std::endl;
-	    }               
-	}
+                 //pre-compute the crystal position in the mu2e frame (aka global frame), taken from BaseCalorimeter.cc
+                 CLHEP::Hep3Vector globalPosition = thisDisk->origin() + thisDisk->inverseRotation()*(thisCrystal.localPosition());
+                 thisCrystal.setPosition(globalPosition);
+            }
+
+
+            if (_verbosityLevel) std::cout<<"Constructed Disk "<<thisDisk->id()<<":  Rin="<<thisDisk->innerRadius()<<"  Rout="<<thisDisk->outerRadius()
+                                          <<" (X,Y,Z)="<<thisDisk->origin()<<"  local_(X,Y,Z)="<<thisDisk->originLocal()
+                                          <<"  with "<<thisDisk->nCrystals()<<" crystals"<<std::endl;
+
+            if (_verbosityLevel > 1) thisDisk->print()                     ;
+
+            if (_verbosityLevel > 2)
+            {
+                double espace          = thisDisk->estimateEmptySpace();
+                double diskVolume    = 3.1415926*(thisDisk->outerRadius()*thisDisk->outerRadius()-thisDisk->innerRadius()*thisDisk->innerRadius());
+                double crystalVolume = 3.4641016*crystalCellRadius*crystalCellRadius*thisDisk->nCrystals();
+
+                std::cout<<"Estimated empty space between the disks and the crystals "<<std::endl;
+                std::cout<<"Inner edge and crystals = "<<espace<<std::endl;
+                std::cout<<"Outer edge and crystals = "<<diskVolume-crystalVolume-espace<<" "<<std::endl;
+            }
+        }
 
 
 
@@ -269,71 +268,71 @@ namespace mu2e {
     void DiskCalorimeterMaker::CheckIt(void)
     {
 
-	int    crystalNedges      = _calo->_caloGeomInfo.crystalNedges();
-	int    nROPerCrystal      = _calo->_caloGeomInfo.nROPerCrystal();
-	double crystalHalfLength  = _calo->_caloGeomInfo.crystalHalfLength();
-	double roHalfThickness    = _calo->_caloGeomInfo.roHalfThickness();
-	double roHalfTrans        = _calo->_caloGeomInfo.roHalfTrans();
-	double caseThickness      = _calo->_caloGeomInfo.caseThickness();
-	double wrapperThickness   = _calo->_caloGeomInfo.wrapperThickness();
-	double pipeRadius         = _calo->_caloGeomInfo.pipeRadius();
+        int    crystalNedges      = _calo->_caloGeomInfo.crystalNedges();
+        int    nROPerCrystal      = _calo->_caloGeomInfo.nROPerCrystal();
+        double crystalHalfLength  = _calo->_caloGeomInfo.crystalHalfLength();
+        double roHalfThickness    = _calo->_caloGeomInfo.roHalfThickness();
+        double roHalfTrans        = _calo->_caloGeomInfo.roHalfTrans();
+        double caseThickness      = _calo->_caloGeomInfo.caseThickness();
+        double wrapperThickness   = _calo->_caloGeomInfo.wrapperThickness();
+        double pipeRadius         = _calo->_caloGeomInfo.pipeRadius();
 
-	 if( ! (crystalNedges == 4 || crystalNedges==6 ) )
-            {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalNumEdges can only be 4 (squares) or 6 (hexagons)\n";}       
+         if( ! (crystalNedges == 4 || crystalNedges==6 ) )
+            {throw cet::exception("DiskCaloGeom") << "calorimeter.crystalNumEdges can only be 4 (squares) or 6 (hexagons)\n";}
 
-	if( ! (nROPerCrystal ==1 || nROPerCrystal ==2 || nROPerCrystal ==4) ) 
-            throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutChannelCount can only be 1,2 or 4.\n";      
+        if( ! (nROPerCrystal ==1 || nROPerCrystal ==2 || nROPerCrystal ==4) )
+            throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutChannelCount can only be 1,2 or 4.\n";
 
-	// Check size of readouts      
-	if( nROPerCrystal==1 )
-	{          
-	    if (roHalfTrans > _calo->_caloGeomInfo.crystalHalfTrans() ) 
-        	throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > calorimeter.crystalHexsize.\n";
+        // Check size of readouts
+        if( nROPerCrystal==1 )
+        {
+            if (roHalfTrans > _calo->_caloGeomInfo.crystalHalfTrans() )
+                throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > calorimeter.crystalHexsize.\n";
 
-	} else {
-            if (roHalfTrans > 0.5*_calo->caloGeomInfo().crystalHalfTrans()) 
-        	throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > 0.5*calorimeter.crystalHalfTrans.\n";
-	}
+        } else {
+            if (roHalfTrans > 0.5*_calo->caloGeomInfo().crystalHalfTrans())
+                throw cet::exception("DiskCaloGeom") << "calorimeter.crystalReadoutHalfTrans > 0.5*calorimeter.crystalHalfTrans.\n";
+        }
 
 
 
-	//check enveloppe dimensions
-	for (unsigned int i=0;i<_calo->_nSections;++i)
-	{
-          if (_calo->_diskInnerRadius[i] > _calo->_diskOuterRadius[i]) 
+        //check enveloppe dimensions
+        for (unsigned int i=0;i<_calo->_nSections;++i)
+        {
+          if (_calo->_diskInnerRadius[i] > _calo->_diskOuterRadius[i])
               throw cet::exception("DiskCaloGeom") << "calorimeter.diskInnerRadius > calorimeter.diskOuterRadius for index="<<i<<".\n";
 
-	  if ( (_calo->_diskOuterRadius[i] + caseThickness) > _calo->_caloGeomInfo.enveloppeOutRadius()) 
+          if ( (_calo->_diskOuterRadius[i] + caseThickness) > _calo->_caloGeomInfo.enveloppeOutRadius())
                       throw cet::exception("DiskCaloGeom") << "calorimeter.diskOuterRadius larger than calorimeter mother for index="<<i<<".\n";
 
-	  if ( (_calo->_diskInnerRadius[i] - caseThickness) < _calo->_caloGeomInfo.enveloppeInRadius()) 
-                      {throw cet::exception("DiskCaloGeom") << "calorimeter.diskInnerRadius smaller than calorimeter mother for index="<<i<<".\n";} 
+          if ( (_calo->_diskInnerRadius[i] - caseThickness) < _calo->_caloGeomInfo.enveloppeInRadius())
+                      {throw cet::exception("DiskCaloGeom") << "calorimeter.diskInnerRadius smaller than calorimeter mother for index="<<i<<".\n";}
 
-	}  
+        }
 
 
-	//check disk length and envelope
-	double diskLength   = 2.0*( crystalHalfLength + roHalfThickness + wrapperThickness + caseThickness + pipeRadius);
-	double calozEnd     = _calo->_origin.z() + diskLength + _calo->_diskSeparation[_calo->_nSections-1]; 
-	double calozBegin   = _calo->_origin.z();
+        //check disk length and envelope
+        double diskLength   = 2.0*( crystalHalfLength + roHalfThickness + wrapperThickness + caseThickness + pipeRadius);
+        double calozEnd     = _calo->_origin.z() + diskLength + _calo->_diskSeparation[_calo->_nSections-1];
+        double calozBegin   = _calo->_origin.z();
 
-	if (calozBegin < (_calo->_caloGeomInfo.enveloppeZ0()-0.1) || calozBegin > _calo->_caloGeomInfo.enveloppeZ1()) 
+        if (calozBegin < (_calo->_caloGeomInfo.enveloppeZ0()-0.1) || calozBegin > _calo->_caloGeomInfo.enveloppeZ1())
             throw cet::exception("DiskCaloGeom") << "calorimeter.calorimeterZFront outside calorimeter mother (need 1mm margin for virtual detectors).\n";
 
-	if (calozEnd   > (_calo->_caloGeomInfo.enveloppeZ1()-0.1))                       
+        if (calozEnd   > (_calo->_caloGeomInfo.enveloppeZ1()-0.1))
             throw cet::exception("DiskCaloGeom") << "calorimeter z-coordinate extends outside calorimeter mother (need 1mm margin for virtual detectors).\n";
 
 
 
-	//look at pipes
-	for (int i=0;i<_calo->caloGeomInfo().nPipes();++i) 
-	{      
-          if ( (_calo->_caloGeomInfo.pipeTorRadius().at(i)- _calo->_caloGeomInfo.pipeRadius()) <   _calo->_caloGeomInfo.enveloppeInRadius())           
-	    throw cet::exception("DiskCaloGeom") << "element "<<i<<" of calorimeter.pipeTorRadius is smaller than disk inner radius\n";
+        //look at pipes
+        for (int i=0;i<_calo->caloGeomInfo().nPipes();++i)
+        {
+          if ( (_calo->_caloGeomInfo.pipeTorRadius().at(i)- _calo->_caloGeomInfo.pipeRadius()) <   _calo->_caloGeomInfo.enveloppeInRadius())
+            throw cet::exception("DiskCaloGeom") << "element "<<i<<" of calorimeter.pipeTorRadius is smaller than disk inner radius\n";
 
-          if ( (_calo->_caloGeomInfo.pipeTorRadius().at(i)+ _calo->_caloGeomInfo.pipeRadius()) >  _calo->_caloGeomInfo.enveloppeOutRadius())           
-	    throw cet::exception("DiskCaloGeom") << "element "<<i<<" of calorimeter.pipeTorRadius is larger than disk outer radius\n";        
-	}
+          if ( (_calo->_caloGeomInfo.pipeTorRadius().at(i)+ _calo->_caloGeomInfo.pipeRadius()) >  _calo->_caloGeomInfo.enveloppeOutRadius())
+            throw cet::exception("DiskCaloGeom") << "element "<<i<<" of calorimeter.pipeTorRadius is larger than disk outer radius\n";
+        }
 
     }
 

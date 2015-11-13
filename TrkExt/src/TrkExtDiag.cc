@@ -33,7 +33,7 @@
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "MCDataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"

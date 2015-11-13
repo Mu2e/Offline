@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 #
-# $Id: SConscript,v 1.15 2014/01/18 17:31:59 brownd Exp $
-# $Author: brownd $
-# $Date: 2014/01/18 17:31:59 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -21,8 +17,6 @@ mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
                                   'mu2e_Mu2eUtilities',
                                   'mu2e_ConfigTools',
                                   'mu2e_TrackerConditions',
-                                  'HepPDT',
-                                  'HepPID',
                                   'MF_MessageLogger',
                                   ] )
 

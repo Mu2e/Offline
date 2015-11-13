@@ -1,15 +1,10 @@
 //
 // Parameters for tracker calibrations.
 //
-// $Id: TrackerCalibrations.cc,v 1.16 2014/04/04 17:11:34 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/04/04 17:11:34 $
-//
 
 // Mu2e include files
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -33,7 +28,7 @@ namespace mu2e {
     _amplRes = config.getDouble("AmplRes", 0.0); //   relative
     _crossTalk = config.getDouble("Crosstalk",0.0); //   relative
   }
-  
+
   void TrackerCalibrations::DistanceToTime(StrawIndex strawIndex,double rdrift, CLHEP::Hep3Vector const& tdir,D2T& d2t) const {
     // oversimplfied model, FIXME!!!
     // Note that negative drift radii are allowed: this is necessary to allow continuous derivatives at the wire.

@@ -14,7 +14,7 @@
 #include <iostream>
 
 // Mu2e includes
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 
 // Other external includes.

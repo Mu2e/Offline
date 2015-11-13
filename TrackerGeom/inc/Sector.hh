@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "TrackerGeom/inc/Layer.hh"
-#include "TrackerGeom/inc/SectorId.hh"
+#include "DataProducts/inc/SectorId.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #ifndef __CINT__

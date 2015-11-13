@@ -9,7 +9,7 @@
 //
 
 #include "Mu2eG4/inc/exportG4PDT.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 
 #include "G4ParticleTable.hh"
 

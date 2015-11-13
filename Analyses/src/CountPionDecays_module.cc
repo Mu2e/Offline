@@ -9,7 +9,7 @@
 //
 
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"

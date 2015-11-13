@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "TrackerGeom/inc/StrawDetail.hh"
-#include "TrackerGeom/inc/StrawId.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIndex.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 

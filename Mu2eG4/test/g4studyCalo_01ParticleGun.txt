@@ -1,10 +1,6 @@
 //
 // config file to perform Geant4 studies using the Mu2e framework infrastructure and simple geometry
 //
-// $Id: g4studyCalo_01ParticleGun.txt,v 1.1 2013/04/09 23:24:37 genser Exp $
-// $Author: genser $
-// $Date: 2013/04/09 23:24:37 $
-//
 // Original author K. Genser based on the "standard particle Gun"
 // added ParticleGun process
 
@@ -32,7 +28,7 @@ vector<double> particleGun.halfLength = { 0., 0., 0. };
 double particleGun.pmin = 1000.;
 double particleGun.pmax = 1000.;
 
-// Particle Id, see e.g. ConditionsService/data/mass_width_2008.mc
+// Particle Id, see e.g. GlobalConstantsService/data/mass_width_2008.mc
 // e-     11
 // mu-    13
 // pi+   211
@@ -41,7 +37,7 @@ double particleGun.pmax = 1000.;
 int particleGun.id = 11;
 
 // Mean particle number
-double particleGun.mean =  -1; // -n exactly n 
+double particleGun.mean =  -1; // -n exactly n
 
 // Control of histograms.
 bool particleGun.doHistograms = true;

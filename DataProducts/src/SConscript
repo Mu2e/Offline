@@ -2,10 +2,6 @@
 #
 # Script to build the files found in this directory.
 #
-# $Id: SConscript,v 1.4 2013/07/01 06:52:13 gandr Exp $
-# $Author: gandr $
-# $Date: 2013/07/01 06:52:13 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -15,13 +11,10 @@ Import('mu2e_helper')
 
 helper=mu2e_helper();
 
-mainlib = helper.make_mainlib ( [ 'art_Framework_Core', ] )
-
-helper.make_plugins( [ mainlib,
-                     ] )
+mainlib = helper.make_mainlib ( [] )
 
 helper.make_dict_and_map( [ mainlib,
-                            'CLHEP',
+                            'art_Persistency_Common',
                           ] )
 
 # This tells emacs to view this file in python mode.

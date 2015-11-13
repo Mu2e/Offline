@@ -12,6 +12,7 @@ g4run : {
     diagLevel               : 0
     trackingVerbosityLevel  : 0
     simParticleNumberOffset : 0
+    BirksConsts             : {} // e.g. { G4_POLYSTYRENE : 0.07943 } // { string : mm/MeV }
     visGUIMacro             : "Mu2eG4/test/visqtGUI.mac"
 
 					# Can selectively enable sensitive detectors here
@@ -41,6 +42,7 @@ mu2eg4BeamDumpNormal: [ -0.237177266249502805 , 0,  -0.971466388700305217 ]
 mu2eg4DefaultPhysics: {
     PiENuPolicy : "PDG"
     noDecay: []
+    BirksConsts : {} // e.g. { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV}
     useNewMuMinusAtomicCapture: false
     minRangeCut: 0.010 // mm
     physicsListName:  "Shielding_MU2E01"

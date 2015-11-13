@@ -22,12 +22,12 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/PrimaryProtonGun.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "ConditionsService/inc/GlobalConstantsHandle.hh"
-#include "ConditionsService/inc/ParticleDataTable.hh"
-#include "ConditionsService/inc/PhysicsParams.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 

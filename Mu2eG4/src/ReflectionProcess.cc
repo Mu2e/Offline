@@ -20,7 +20,7 @@
 
 // Mu2e includes
 #include "Mu2eG4/inc/ReflectionProcess.hh"
-#include "MCDataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/PDGCode.hh"
 #include "GeneralUtilities/inc/safeSqrt.hh"
 
 using namespace std;
