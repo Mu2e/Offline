@@ -2,6 +2,18 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_5_3
 
+8) Nov 12, 2015 kutschke
+   RecoDataProducts/inc/StrawHitPosition.hh
+   RecoDataProducts/src/StrawHitPosition.cc
+     - Get rid of two static data members
+     - Since a StrawHitFlag object is smaller than a pointer
+       and it is not modified, it can be passed by value;
+       also a default constructed BitMap object is just a
+       zero initialized unsigned int - and the compiler will
+       figure that out;so there is no run-time cost to the constructor
+     - Relace the static constant invsqrt12 with a constexpr which is
+       evaluated once at compile time.
+
 7) Nov 12, 2015 kutschke
    Last step in breaking link time loops (I hope).
 
