@@ -2,10 +2,6 @@
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
 //
-// $Id: GeometryService_service.cc,v 1.65 2014/09/03 16:39:15 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/03 16:39:15 $
-//
 // Original author Rob Kutschke
 //
 
@@ -37,13 +33,13 @@
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "ProductionTargetGeom/inc/ProductionTargetMaker.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
-#include "ProductionSolenoidGeom/inc/ProductionSolenoidMaker.hh"
+#include "GeometryService/inc/ProductionSolenoidMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
-#include "ProductionSolenoidGeom/inc/PSEnclosureMaker.hh"
+#include "GeometryService/inc/PSEnclosureMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
-#include "ProductionSolenoidGeom/inc/PSVacuumMaker.hh"
+#include "GeometryService/inc/PSVacuumMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
-#include "ProductionSolenoidGeom/inc/PSShieldMaker.hh"
+#include "GeometryService/inc/PSShieldMaker.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDumpMaker.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
@@ -69,8 +65,8 @@
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/BFieldManagerMaker.hh"
 #include "BeamlineGeom/inc/Beamline.hh"
-#include "BeamlineGeom/inc/BeamlineMaker.hh"
 #include "BeamlineGeom/inc/StraightSection.hh"
+#include "GeometryService/inc/BeamlineMaker.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "GeometryService/inc/VirtualDetectorMaker.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
