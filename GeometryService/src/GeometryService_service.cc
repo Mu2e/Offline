@@ -50,7 +50,7 @@
 #include "GeometryService/inc/StoppingTargetMaker.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
-#include "DetectorSolenoidGeom/inc/DetectorSolenoidShieldingMaker.hh"
+#include "GeometryService/inc/DetectorSolenoidShieldingMaker.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldUpstream.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldUpstreamMaker.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
