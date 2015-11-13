@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 #
-#
-# $Id: SConscript,v 1.1 2013/05/31 20:04:27 gandr Exp $
-# $Author: gandr $
-# $Date: 2013/05/31 20:04:27 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -18,6 +13,7 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeneralUtilities',
                                   'mu2e_ConfigTools',
                                   'mu2e_Mu2eInterfaces',
                                   'art_Framework_Core',
+                                  'cetlib',
                                   'CLHEP' ] )
 
 # This tells emacs to view this file in python mode.
