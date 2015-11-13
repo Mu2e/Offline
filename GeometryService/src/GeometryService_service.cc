@@ -78,7 +78,7 @@
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
 #include "GeometryService/inc/MECOStyleProtonAbsorberMaker.hh"
 #include "MBSGeom/inc/MBS.hh"
-#include "MBSGeom/inc/MBSMaker.hh"
+#include "GeometryService/inc/MBSMaker.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 
 using namespace std;
