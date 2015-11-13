@@ -15,10 +15,11 @@ Import('mu2e_helper')
 
 helper=mu2e_helper();
 
-mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
+mainlib = helper.make_mainlib ( [ 'art_Utilities',
                                   'mu2e_GeneralUtilities',
-                                  'CLHEP',
+                                  'MF_MessageLogger',
                                   'cetlib',
+                                  'CLHEP',
                                 ] )
 
 helper.make_plugins( [ mainlib,
