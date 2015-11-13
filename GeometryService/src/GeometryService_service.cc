@@ -31,7 +31,7 @@
 #include "GeometryService/src/DetectorSystemMaker.hh"
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "ProductionTargetGeom/inc/ProductionTargetMaker.hh"
+#include "GeometryService/inc/ProductionTargetMaker.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 #include "GeometryService/inc/ProductionSolenoidMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
