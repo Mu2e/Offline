@@ -19,13 +19,16 @@ Still under construction
 
 9) Nov 12, 2015 kutschke
    Clean up link lists for the main libraries but not for the
-   _dict and map files, if any:
+   _dict and _map libraries, if any:
       DataProducts/src/SConscript
       GeneralUtilities/src/SConscript
       ConfigTools/src/SConscript
       DataProducts/src/SConscript
       GeomPrimitives/src/SConscript
       GlobalConstantsService/src/SConscript
+
+   This file did not need fixing:
+      Mu2eInterfaces/src/SConscript
 
 8) Nov 12, 2015 kutschke
    RecoDataProducts/inc/StrawHitPosition.hh
