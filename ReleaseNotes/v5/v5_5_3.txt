@@ -2,6 +2,11 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_5_3
 
+12) Nov 13, 2015 genser
+    Added VetoIncorrectHits_module  (if used) rejecting bad tracker and crv hits
+      Filters/fcl/prolog.fcl
+      Filters/src/VetoIncorrectHits_module.cc
+
 11) Nov 12, 2015 kutschke
     Continue the work of moving geometry *Maker.cc files to GeometryService.
     Continue the work of cleaning up SConsript files to support closed links.
