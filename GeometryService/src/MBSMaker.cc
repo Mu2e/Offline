@@ -24,7 +24,7 @@
 #include "cetlib/exception.h"
 
 // Mu2e includes
-#include "MBSGeom/inc/MBSMaker.hh"
+#include "GeometryService/inc/MBSMaker.hh"
 #include "MBSGeom/inc/MBS.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
