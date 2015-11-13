@@ -2,6 +2,31 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_5_3
 
+10) Nov 12, 2015 kutschke
+    Split GlobalConstantsService/src/GlobalConstantsService_service.cc into two files:
+       - GlobalConstantsService.cc
+       - GlobalConstantsService_service.cc
+    The first file contains the implementation of the class.
+    The second file contains the plugin macros only.
+
+    This was needed to break a link-time loop.  The file MassCache.cc, the line
+
+    static ParticleDataTable const& pdt = *GlobalConstantsHandle<ParticleDataTable>();
+
+    needs getElement<ParticleDataTable>, which is instantiated in the implementation
+    of GlobalConstantsService.  This causes a link time loop between
+    GlobalConstantsService.so and GlobalConstantsService_service.so
+
+9) Nov 12, 2015 kutschke
+   Clean up link lists for the main libraries but not for the
+   _dict and map files, if any:
+      DataProducts/src/SConscript
+      GeneralUtilities/src/SConscript
+      ConfigTools/src/SConscript
+      DataProducts/src/SConscript
+      GeomPrimitives/src/SConscript
+      GlobalConstantsService/src/SConscript
+
 8) Nov 12, 2015 kutschke
    RecoDataProducts/inc/StrawHitPosition.hh
    RecoDataProducts/src/StrawHitPosition.cc
