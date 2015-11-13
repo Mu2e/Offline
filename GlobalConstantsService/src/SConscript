@@ -11,17 +11,23 @@ Import('mu2e_helper')
 
 helper=mu2e_helper()
 
-mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
-                                  'art_Framework_Services_Registry',
+mainlib = helper.make_mainlib ( [ 'art_Framework_Services_Registry',
+                                  'art_Utilities',
                                   'mu2e_Mu2eInterfaces',
                                   'mu2e_ConfigTools',
+                                  'mu2e_DataProducts',
                                   'HepPDT',
                                   'HepPID',
                                   'MF_MessageLogger',
+                                  'fhiclcpp',
+                                  'cetlib',
+                                  'CLHEP',
+                                  'boost_system',
                                   ] )
 
 helper.make_plugins( [ mainlib,
-                       'art_Framework_Core'
+                       'boost_filesystem',
+                       'boost_system',
                        ] )
 
 
