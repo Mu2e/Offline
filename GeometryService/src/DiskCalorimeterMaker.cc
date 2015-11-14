@@ -1,10 +1,6 @@
 //
 // Make a Calorimeter.
 //
-// $Id: DiskCalorimeterMaker.cc,v 1.13 2014/08/01 21:54:46 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 21:54:46 $
-
 // original authors  Bertrand Echenarrd
 
 // Disk geometry
@@ -74,11 +70,11 @@
 
 // Mu2e includes
 #include "cetlib/exception.h"
-#include "CalorimeterGeom/inc/DiskCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
+#include "GeometryService/inc/DiskCalorimeterMaker.hh"
 
 // other includes
 #include "CLHEP/Vector/ThreeVector.h"

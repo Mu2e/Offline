@@ -1,10 +1,6 @@
 //
 // Make a Vane Calorimeter.
 //
-// $Id: VaneCalorimeterMaker.cc,v 1.12 2014/08/01 20:57:45 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:45 $
-
 // original authors Julie Managan and Robert Bernstein
 
 //
@@ -14,10 +10,10 @@
 
 
 // Mu2e includes
-#include "CalorimeterGeom/inc/VaneCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/Vane.hh"
+#include "GeometryService/inc/VaneCalorimeterMaker.hh"
 
 // Framework include files
 #include "cetlib/exception.h"

@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2011
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnetMaker.hh"
+#include "GeometryService/inc/ExtMonFNALMagnetMaker.hh"
 
 #include <algorithm>
 #include <iterator>
@@ -29,7 +29,7 @@ namespace mu2e {
     ExtMonFNALMagnet mag;
     mag.inRotationInMu2e_ = magnetInRotationInMu2e;
     mag.nominalMomentum_ = nominalMomentum;
-    
+
     c.getVectorDouble(prefix + ".outerHalfSize", mag.outerHalfSize_, 3);
     mag.apertureWidth_ = c.getDouble(prefix + ".apertureWidth") * CLHEP::mm;
     mag.apertureHeight_ = c.getDouble(prefix + ".apertureHeight") * CLHEP::mm;

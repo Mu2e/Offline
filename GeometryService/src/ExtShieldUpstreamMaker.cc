@@ -10,7 +10,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ExternalShieldingGeom/inc/ExtShieldUpstreamMaker.hh"
+#include "GeometryService/inc/ExtShieldUpstreamMaker.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldUpstream.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -19,8 +19,8 @@ namespace mu2e {
 
   //  namespace {
 
-  std::unique_ptr<ExtShieldUpstream>  ExtShieldUpstreamMaker::make(const 
-							      SimpleConfig& c)
+  std::unique_ptr<ExtShieldUpstream>  ExtShieldUpstreamMaker::make(const
+                                                              SimpleConfig& c)
   {
 
     // We use just a few basic types, so simplify config file by
@@ -48,7 +48,7 @@ namespace mu2e {
     // Some temporary holders
     std::vector<double> tempDoubleVec;
 
-    // Loop over the various box types and fill the vectors with 
+    // Loop over the various box types and fill the vectors with
     // information needed for the types.
     for ( int iType = 1; iType <= nType; iType++ ) {
       // A stream trick for creating variable variable names!
@@ -61,7 +61,7 @@ namespace mu2e {
       // than three separate doubles for things that are stored as vectors
       std::ostringstream bdimsVarName;
       bdimsVarName << dimsBaseName << "Type" << iType;
-      // Divide dimensions by 2.0 because G4 boxes are created in terms of 
+      // Divide dimensions by 2.0 because G4 boxes are created in terms of
       // half-lengths.
       c.getVectorDouble(bdimsVarName.str(),tempDoubleVec,3);
       for ( int itmp = 0; itmp < 3; itmp++ ) tempDoubleVec[itmp]*=(CLHEP::mm/2.0);
@@ -73,13 +73,13 @@ namespace mu2e {
       btolsVarName << tolsBaseName << "Type" << iType;
       c.getVectorDouble(btolsVarName.str(),tempDoubleVec,3);
       for ( int itmp = 0; itmp < 3; itmp++ ) {
-	if ( tempDoubleVec[itmp] > 10.0 || tempDoubleVec[itmp] < -20.0 ) {
-	  // Throw if tolerances out of tolerance.
-	  throw cet::exception("GEOM")
-	    << "Tolerance on ExternalShielding Upstream outside limits. "
-	    << "\nTolerances must be between -20 and 10 mm.";
-	}
-	tempDoubleVec[itmp]*= ( CLHEP::mm/2.0 );
+        if ( tempDoubleVec[itmp] > 10.0 || tempDoubleVec[itmp] < -20.0 ) {
+          // Throw if tolerances out of tolerance.
+          throw cet::exception("GEOM")
+            << "Tolerance on ExternalShielding Upstream outside limits. "
+            << "\nTolerances must be between -20 and 10 mm.";
+        }
+        tempDoubleVec[itmp]*= ( CLHEP::mm/2.0 );
       }
       tolsOfType.push_back(tempDoubleVec);
       tempDoubleVec.clear();  // So it can be re-used
@@ -112,42 +112,42 @@ namespace mu2e {
     // Loop over all the boxes and fill the vectors used to build them
     for ( int it = 0; it < nType; it++ ) {
       for ( int iboxt = 0; iboxt < nBoxesOfType[it]; iboxt++ ) {
-	dims.push_back(dimsOfType[it]);
-	tols.push_back(tolsOfType[it]);
-	mats.push_back(materialOfType[it]);
+        dims.push_back(dimsOfType[it]);
+        tols.push_back(tolsOfType[it]);
+        mats.push_back(materialOfType[it]);
 
 
-	// Location of the center of the box in Mu2e coords
-	// Use our now-familiar trick for variable names
-	std::ostringstream bCentVarName;
-	bCentVarName << centerBaseName << "Type" << it+1 << "Box" << iboxt+1;
-	CLHEP::Hep3Vector boxCenter = c.getHep3Vector(bCentVarName.str());
-	boxCenter *= CLHEP::mm;
-	sites.push_back(boxCenter);			   
-    
-	std::ostringstream bOrientVarName;
-	bOrientVarName << orientBaseName << "Type" << it+1 << "Box" << iboxt+1;
+        // Location of the center of the box in Mu2e coords
+        // Use our now-familiar trick for variable names
+        std::ostringstream bCentVarName;
+        bCentVarName << centerBaseName << "Type" << it+1 << "Box" << iboxt+1;
+        CLHEP::Hep3Vector boxCenter = c.getHep3Vector(bCentVarName.str());
+        boxCenter *= CLHEP::mm;
+        sites.push_back(boxCenter);
 
-	std::string orientation( c.getString(bOrientVarName.str(),"000"));
-	if ( orientation.length() != 3 ) {
-	  throw cet::exception("GEOM")
-	    << "Orientation must be specified with a three-digit number"
-	    << "\nentered as a string.  You specified: " << orientation;
-	}
+        std::ostringstream bOrientVarName;
+        bOrientVarName << orientBaseName << "Type" << it+1 << "Box" << iboxt+1;
 
-	orients.push_back(orientation);
+        std::string orientation( c.getString(bOrientVarName.str(),"000"));
+        if ( orientation.length() != 3 ) {
+          throw cet::exception("GEOM")
+            << "Orientation must be specified with a three-digit number"
+            << "\nentered as a string.  You specified: " << orientation;
+        }
+
+        orients.push_back(orientation);
 
       } // end loop over boxes of type...
     } // end loop over types...
 
     // Now make the pointer to the object itself.
     std::unique_ptr<ExtShieldUpstream> res(new ExtShieldUpstream(
-								     dims,
-								     tols,
-								     mats,
-								     sites,
-								     orients)
-					     );
+                                                                     dims,
+                                                                     tols,
+                                                                     mats,
+                                                                     sites,
+                                                                     orients)
+                                             );
 
     //----------------------------------------------------------------
     if(c.getInt("ExtShieldUpstream.verbosityLevel") > 0) {

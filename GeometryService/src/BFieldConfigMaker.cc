@@ -1,4 +1,4 @@
-#include "BFieldGeom/inc/BFieldConfigMaker.hh"
+#include "GeometryService/inc/BFieldConfigMaker.hh"
 
 #include <string>
 #include <iostream>
