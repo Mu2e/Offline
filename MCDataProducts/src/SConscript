@@ -2,10 +2,6 @@
 #
 # Script to build the files found in this directory.
 #
-# $Id: SConscript,v 1.6 2013/03/18 18:49:07 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/03/18 18:49:07 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -15,22 +11,36 @@ Import('mu2e_helper')
 
 helper=mu2e_helper();
 
-mainlib = helper.make_mainlib ( [ 'mu2e_RecoDataProducts',
+mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
+                                  'mu2e_TrackerGeom',
+                                  'mu2e_TTrackerGeom',
+                                  'mu2e_RecoDataProducts',
                                   'mu2e_DataProducts',
-                                  'art_Framework_Core',
-                                  'art_Framework_Core',
-                                  'art_Utilities',
-                                  'art_Framework_Services_Registry',
+                                  'mu2e_GeomPrimitives',
+                                  'mu2e_Mu2eInterfaces',
+                                  'art_Persistency_Common',
                                   'art_Persistency_Provenance',
+                                  'art_Utilities',
                                   'cetlib',
-                                  'Reflex',
-                                  'Core',
+                                  'CLHEP',
+                                  'Core'
                                 ] )
 
-helper.make_plugins( [ mainlib,
-                     ] )
-
 helper.make_dict_and_map( [ mainlib,
+                            'mu2e_GeometryService',
+                            'mu2e_TrackerGeom',
+                            'mu2e_TTrackerGeom',
+                            'mu2e_RecoDataProducts',
+                            'mu2e_DataProducts',
+                            'mu2e_GeomPrimitives',
+                            'mu2e_Mu2eInterfaces',
+                            'art_Persistency_Common',
+                            'art_Persistency_Provenance',
+                            'art_Utilities',
+                            'cetlib',
+                            'CLHEP',
+                            'Reflex',
+                            'Core',
                           ],
                           [ '-fvar-tracking-assignments-toggle'] )
 

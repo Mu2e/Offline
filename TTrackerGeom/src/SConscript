@@ -2,10 +2,6 @@
 #
 # Script to build the files found in this directory.
 #
-# $ Id: SConscript,v 1.7 2012/08/24 20:19:31 gandr Exp $
-# $ Author: gandr $
-# $ Date: 2012/08/24 20:19:31 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -15,19 +11,11 @@ Import('mu2e_helper')
 
 helper=mu2e_helper();
 
-mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
+mainlib = helper.make_mainlib ( [ 'mu2e_GeomPrimitives',
+                                  'mu2e_Mu2eInterfaces',
                                   'mu2e_TrackerGeom',
-                                  'mu2e_GeomPrimitives',
-                                  'mu2e_Mu2eUtilities',
-                                  'mu2e_ConfigTools',
-                                  'CLHEP'
+                                  'CLHEP',
                                 ] )
-
-helper.make_plugins( [ mainlib,
-                     ] )
-
-helper.make_dict_and_map( [ mainlib,
-                          ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
