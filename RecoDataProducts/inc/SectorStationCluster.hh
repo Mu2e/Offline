@@ -72,7 +72,8 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
     }
 
     // Print contents of the object.
-    void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
+    // Not yet implemented. Comment out until it is implemented.
+    //void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
