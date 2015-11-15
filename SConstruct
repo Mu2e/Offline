@@ -156,11 +156,6 @@ if level == 'prof':
 if level == 'debug':
     env.MergeFlags('-O0')
 
-# Extract gcc version.  Some libraries have this version embedded in their names.
-ff = os.popen('g++ --version'); ll = ff.readline(); ff.close()
-gcc_version = ll[10:13]
-env.gcc_ver=gcc_version.replace('.','')
-
 # This comes from: root-config --cflags --glibs
 # Then guess at the correct location of Spectrum and MLP.
 rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
