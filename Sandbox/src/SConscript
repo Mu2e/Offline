@@ -11,17 +11,101 @@ Import('mu2e_helper')
 
 helper=mu2e_helper();
 
+# Libraries need
+common = [ 'mu2e_SeedService_SeedService_service',
+           'mu2e_MCDataProducts',
+           'mu2e_RecoDataProducts',
+           'mu2e_ConfigTools',
+           'mu2e_GeneralUtilities',
+           'art_Framework_Core',
+           'art_Framework_IO_Sources',
+           'art_Framework_Principal',
+           'art_Persistency_Common',
+           'art_Persistency_Provenance',
+           'art_Framework_Services_Registry',
+           'art_Framework_Services_Optional',
+           'art_Utilities',
+           'MF_MessageLogger',
+           'fhiclcpp',
+           'cetlib',
+           'CLHEP',
+           'Core',
+           'boost_filesystem',
+           'boost_system',
+    ]
+
+services = [ 'BarService_service.cc',
+             'Bug01Service_service.cc',
+             'FooService_service.cc',
+             'XBarService_service.cc'
+             ]
+
 mainlib = helper.make_mainlib ( [ 'MF_MessageLogger',
                                 ] )
 
-#
-# Fixme:
-# The link list below is not fully tested for closed links
-# Before we can continue we need to have separate builders
-# for each service and for all modules. We don't need, but
-# should think about, the ability to have separate builders
-# for each module.
+# Each service requires a custom link list so make them one at a time.
+helper.make_plugin( 'FooService_service.cc',
+                    [ mainlib,
+                      'art_Framework_Principal',
+                      'art_Persistency_Provenance',
+                      'art_Framework_Services_Registry',
+                      'fhiclcpp',
+                      'boost_filesystem',
+                      'boost_system',
+                      ],
+                    )
+
+helper.make_plugin( 'BarService_service.cc',
+                    [ mainlib,
+                      'mu2e_Sandbox_FooService_service',
+                      'art_Framework_Principal',
+                      'art_Persistency_Provenance',
+                      'art_Framework_Services_Registry',
+                      'art_Utilities',
+                      'fhiclcpp',
+                      'cetlib',
+                      'boost_filesystem',
+                      'boost_system',
+                      ],
+                    )
+
+helper.make_plugin( 'XBarService_service.cc',
+                    [ mainlib,
+                      'mu2e_Sandbox_FooService_service',
+                      'art_Framework_Principal',
+                      'art_Persistency_Provenance',
+                      'art_Framework_Services_Registry',
+                      'art_Utilities',
+                      'fhiclcpp',
+                      'cetlib',
+                      'boost_filesystem',
+                      'boost_system',
+                      ],
+                    )
+
+
+helper.make_plugin( 'Bug01Service_service.cc',
+                    [ mainlib,
+                      'mu2e_ConfigTools',
+                      'art_Framework_Principal',
+                      'art_Persistency_Provenance',
+                      'art_Framework_Services_Registry',
+                      'fhiclcpp',
+                      'cetlib',
+                      'boost_filesystem',
+                      'boost_system',
+                      ],
+                    )
+
+# Make all of the _module plugins; do not build any of the
+# services, which have been built already.
+# Fix me: we need to learn how wasteful it is to have a single
+# mother-of-all-link-lists rather than custom lists for each module.
 helper.make_plugins( [ mainlib,
+                       'mu2e_Sandbox_FooService_service',
+                       'mu2e_Sandbox_BarService_service',
+                       'mu2e_Sandbox_XBarService_service',
+                       'mu2e_Sandbox_Bug01Service_service',
                        'mu2e_SeedService_SeedService_service',
                        'mu2e_MCDataProducts',
                        'mu2e_RecoDataProducts',
@@ -34,6 +118,7 @@ helper.make_plugins( [ mainlib,
                        'art_Persistency_Provenance',
                        'art_Framework_Services_Registry',
                        'art_Framework_Services_Optional',
+                       'art_Framework_Services_Optional_RandomNumberGenerator_service',
                        'art_Utilities',
                        'MF_MessageLogger',
                        'fhiclcpp',
@@ -42,10 +127,17 @@ helper.make_plugins( [ mainlib,
                        'Core',
                        'boost_filesystem',
                        'boost_system',
-                     ] )
+                     ],
+                     services,
+                     )
 
 helper.make_dict_and_map( [ mainlib,
-                          ] )
+                           'mu2e_GeneralUtilities',
+                           'art_Persistency_Common',
+                           'art_Utilities',
+                           'cetlib',
+                           'Reflex'
+                            ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
