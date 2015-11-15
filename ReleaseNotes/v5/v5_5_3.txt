@@ -2,6 +2,43 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_5_3
 
+19) Nov 15, 2015 kutschke
+    setup.sh
+      - Define a few more environment variables that are used by
+        a modified SConstruct that I am experimenting with
+        (not yet committed).
+
+18) Nov 15, 2015 kutschke
+    SConstruct - removed a feature that is no longer needed.
+
+17) Nov 15, 2015 kutschke
+    Temporary hack - added a missing link library.
+    A full fix to this will come when the --no-undefined migration
+    reaches this library.
+      TrackerMC/src/SConscript
+
+16) Nov 15, 2015 kutschke
+    This describes the fix to the main issue identified in 15).
+
+    The mu2e_helper python class that is used by our SConscript
+    files has two methods for plugins:
+       make_plugin  - builds only the plugin indentified by a single .cc
+                      file passed in as an argument.
+       make_plugins - note the plural. This builds all of the plugins in
+                      the current directory.  It has an optional argument
+                      to list .cc files to exclude from consideration,
+    Using these tools I completed the migration to --no-undefined for:
+
+    SeedService/src/SConscript
+    Sandbox/src/SConscript
+    ExtinctionMonitorFNAL/Reconstruction/src/SConscript
+
+    Also made progress on:
+    ConditionsService/src/SConscript
+
+    But before I can finsih I need to break another linkage loop that Chris'
+    tool did not find.
+
 15) Nov 15, 2015 kutschke
     Cleaned up the link lists for HelloWorld/src/SConscript
 
