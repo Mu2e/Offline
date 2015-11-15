@@ -2,6 +2,29 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_5_3
 
+15) Nov 15, 2015 kutschke
+    Cleaned up the link lists for HelloWorld/src/SConscript
+
+    I started to clean up the link list for SeedService/src/SConscript
+    but this reveals a showstopper in the build system.  This package
+    needs to bulid a service and a module; the link list of the module
+    requires the service; however the service must not be present on the
+    link list when building the service itself.
+
+    Conclusion, we need separate link lists for services and modules.
+
+    I also started to clean up the link list for Sandbox/src/SConscript
+    This package has multiple services and there are cases in which
+    service A depends on service B.  To solve this linking problem we
+    can do one of two thinks:
+
+      a) go to the three file service model, .hh, .cc and _service.cc
+         Then the link list can be the same for all services.
+
+      b) extend the build system to allow separate link lists for
+         each service in a directory.
+
+
 14) Nov 14, 2015 kutschke
     Complete migration of Maker classes to GeometryService.
 
