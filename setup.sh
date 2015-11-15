@@ -95,3 +95,14 @@ source ${MU2E_BASE_RELEASE}/bin/setup_mu2e_project.sh
 if [ "${MU2E_BASE_RELEASE}" != `/bin/pwd` ]; then
   source ${MU2E_BASE_RELEASE}/bin/addlocal.sh
 fi
+
+# Environment variables used by the test build system.
+export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
+export BUILD_BASE=${MU2E_BASE_RELEASE}
+
+# Tell SConstruct where to find helpers.py
+if [ "${PYTHONPATH}" = '' ];then
+ export PYTHONPATH=${PACKAGE_SOURCE}/python
+else
+ export PYTHONPATH=${PYTHONPATH}:${PACKAGE_SOURCE}/python
+fi
