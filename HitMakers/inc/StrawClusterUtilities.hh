@@ -3,10 +3,6 @@
 //
 // First version of a Cluster.
 //
-// $Id: StrawClusterUtilities.hh,v 1.1 2012/03/01 02:09:33 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/01 02:09:33 $
-//
 // Original author Hans Wenzel
 //
 
@@ -14,7 +10,6 @@
 #include <vector>
 #include <map>
 // Framework includes:
-#include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 // Mu2e includes:
 #include "RecoDataProducts/inc/StrawHitCollection.hh"

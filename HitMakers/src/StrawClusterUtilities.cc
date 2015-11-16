@@ -1,16 +1,9 @@
 //
 // StrawClusterUtilities
 //
-// $Id: StrawClusterUtilities.cc,v 1.1 2012/03/01 02:09:33 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/03/01 02:09:33 $
-//
 
 // C++ includes
 //#include <ostream>
-
-// Framework includes.
-#include "art/Persistency/Provenance/ProductID.h"
 
 // Mu2e includes
 #include "HitMakers/inc/StrawClusterUtilities.hh"
