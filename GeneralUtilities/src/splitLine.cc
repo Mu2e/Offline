@@ -1,14 +1,10 @@
 //
 // Split a string, s, into pieces, using the given delimiter.
 //
-// $Id: splitLine.cc,v 1.1 2012/10/03 06:40:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/10/03 06:40:04 $
-//
 // Original author Rob Kutschke
 //
 
-#include "Mu2eUtilities/inc/splitLine.hh"
+#include "GeneralUtilities/inc/splitLine.hh"
 
 using namespace std;
 

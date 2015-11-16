@@ -1,10 +1,6 @@
 //
 // First version of a hit as described by Mu2e-doc-900.
 //
-// $Id: DeadStrawList.cc,v 1.1 2014/05/30 19:15:32 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/05/30 19:15:32 $
-//
 // Original author Rob Kutschke
 //
 
@@ -15,7 +11,7 @@
 #include "TrackerConditions/inc/DeadStrawList.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "Mu2eUtilities/inc/splitLine.hh"
+#include "GeneralUtilities/inc/splitLine.hh"
 
 using namespace std;
 
