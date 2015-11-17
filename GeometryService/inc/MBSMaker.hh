@@ -9,6 +9,8 @@
 //
 // Original author KLG
 //
+// Update by D. No. Brown to Version 2, representing version in 
+// WBS 5.8 v7 (Mu2e-doc-1351 v7)
 
 #include <memory>
 #include <string>
@@ -46,31 +48,41 @@ namespace mu2e {
     std::unique_ptr<MBS> _mbs;
 
     int    _verbosityLevel;
+    int    _MBSVersion;
 
     double _MBSCZ;
 
-    double _BSTSInnerRadius;
-    double _BSTSOuterRadius;
-    double _BSTSHLength;
-    std::string _BSTSMaterialName;
-    double _BSTSZ;
+    double _BSTSInnerRadius;  // Version 1 only
+    double _BSTSOuterRadius;  // Versions 1 and 2
+    std::vector<double> _BSTSInnRadii; // Version 2 only
+    std::vector<double> _BSTSOutRadii; // Version 2 only
+    std::vector<double> _BSTSZLengths; // Version 2 only
+    double _BSTSHLength;  // Versions 1 and 2
+    std::string _BSTSMaterialName;  // Versions 1 and 2
+    double _BSTSZ;  // Versions 1 and 2
 
+    // Support Ring 1 - Version 1 only
     double _SPBSSup1InnerRadius;
     double _SPBSSup1OuterRadius;
     double _SPBSSup1HLength;
     std::string _SPBSSup1MaterialName;
     double _SPBSSup1Z;
+
+    // Support Ring 2 - Version 1 only
     double _SPBSSup2InnerRadius;
     double _SPBSSup2OuterRadius;
     double _SPBSSup2HLength;
     std::string _SPBSSup2MaterialName;
     double _SPBSSup2Z;
 
+    // Upstream outer HDPE - Version 1 only
     double _SPBSLInnerRadius;
     double _SPBSLOuterRadius;
     double _SPBSLHLength;
     std::string _SPBSLMaterialName;
     double _SPBSLZ;
+
+    // Midstream outer HDPE - Versions 1 and 2
     double _SPBSCInnerRadius;
     double _SPBSCOuterRadius;
     double _SPBSCHLength;
@@ -78,22 +90,29 @@ namespace mu2e {
     double _SPBSCmaxAngle;
    std::string _SPBSCMaterialName;
     double _SPBSCZ;
+
+    // Downstream outer HDPE - Version 1 only
     double _SPBSRInnerRadius;
     double _SPBSROuterRadius;
     double _SPBSRHLength;
     std::string _SPBSRMaterialName;
     double _SPBSRZ;
 
+    // Inner HDPE upstream - Versions 1 and 2
     std::vector<double> _BSTCInnerRadii;
     std::vector<double> _BSTCOuterRadii;
     std::vector<double> _BSTCLengths;
     std::string _BSTCMaterialName;
     double _BSTCZ;
+
+    // Inner HDPE downstream - Versions 1 and 2
     std::vector<double> _BSBSInnerRadii;
     std::vector<double> _BSBSOuterRadii;
     std::vector<double> _BSBSLengths;
     std::string _BSBSMaterialName;
     double _BSBSZ;
+
+    // HDPE end plug - Versions 1 and 2
     std::vector<double> _CLV2InnerRadii;
     std::vector<double> _CLV2OuterRadii;
     std::vector<double> _CLV2Lengths;
