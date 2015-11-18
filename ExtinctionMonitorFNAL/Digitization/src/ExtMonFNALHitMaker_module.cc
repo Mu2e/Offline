@@ -1,10 +1,6 @@
 // Pixel digitization: create ExtMonFNALRawHits and associated truth.
 // Time stamps of created hits are in [0, numClockTicksPerDebuncherPeriod-1].
 //
-// $Id: ExtMonFNALHitMaker_module.cc,v 1.23 2013/12/12 20:06:14 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/12/12 20:06:14 $
-//
 // Original author Andrei Gaponenko
 
 #include <string>
@@ -29,8 +25,6 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Persistency/Common/Ptr.h"
@@ -159,7 +153,7 @@ namespace mu2e {
           chipSimFile_.reset(new std::ofstream(chipFileName.c_str()));
           ExtMonFNALModuleIdConverter con(*extMon_);
           ExtMonFNALModuleId mod = con.moduleId(ExtMonFNALModuleDenseId(chipSimPset.get<int>("module")));
-          
+
           chipSimChipId_ = ExtMonFNALChipId(mod,
                                             chipSimPset.get<unsigned>("chipCol"),
                                             chipSimPset.get<unsigned>("chipRow")
