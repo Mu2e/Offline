@@ -151,7 +151,7 @@ physics :
          module_type: CompressPhysicalVolumes
          volumesInput : "g4run"
          hitInputs : []
-         particleInputs : [ "cosmicFilter" ]
+         particleInputs : [ "detectorFilter" ]
       }
 
       compressPVFull : {
@@ -169,7 +169,7 @@ physics :
          module_type : TrackerStepPointFilter 
       }
 
-      cosmicFilter: 
+      detectorFilter:
       {
          module_type: FilterG4Out
 	 noInstanceName : true
@@ -193,7 +193,7 @@ physics :
       }
    }
 
-   trigFilter     : [g4run, g4consistent, trackerStepPointFilter, cosmicFilter, compressPV]
+   trigFilter     : [g4run, g4consistent, trackerStepPointFilter, detectorFilter, compressPV]
    g4StatusFilter : [g4run, "!g4status", compressPVFull ]
    trigger_paths  : [trigFilter, g4StatusFilter]
 
@@ -214,7 +214,7 @@ outputs:
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
-         "keep *_cosmicFilter_*_cosmics2",
+         "keep *_detectorFilter_*_cosmics2",
          "keep *_compressPV_*_cosmics2"
       ]
    }
