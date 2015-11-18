@@ -5,43 +5,76 @@
 # Original author Rob Kutschke.
 #
 
+# Fixme:
+#   - Get rid of stale code.  In particular the two things that depend on Minuit.
+#   - Does it make sense that the MakeStereoHits_module depends on KalDiag
+#     Should that code go somewhere else?
+#
 import os
 Import('env')
 Import('mu2e_helper')
 
 helper=mu2e_helper();
 
-mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
-                                  'art_Framework_Modules_RandomNumberSaver_module',
-                                  'art_Framework_Services_Optional_TFileService_service',
+rootlibs = env['ROOTLIBS']
+
+mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'mu2e_GeometryService',
-                                  'mu2e_ConditionsService_ConditionsService_service',
-                                  'mu2e_GlobalConstantsService_GlobalConstantsService_service',
-                                  'mu2e_SeedService_SeedService_service',
                                   'mu2e_MCDataProducts',
                                   'mu2e_RecoDataProducts',
+                                  'mu2e_CalorimeterGeom',
+                                  'mu2e_TrackerGeom',
+                                  'mu2e_GlobalConstantsService',
+                                  'mu2e_DataProducts',
                                   'mu2e_GeneralUtilities',
+                                  'art_Persistency_Provenance',
+                                  'art_Persistency_Common',
+                                  'art_Framework_Principal',
+                                  'art_Framework_Core',
+                                  'art_Utilities',
+                                  'cetlib',
                                   'CLHEP',
-                                  'Minuit',  # Fixme - pretty sure we do not want this.
+                                  'boost_system',
                                 ] )
 
 helper.make_plugins( [ mainlib,
-                       'art_Framework_Core',
-                       'art_Framework_Modules_RandomNumberSaver_module',
-                       'art_Framework_Services_Optional_TFileService_service',
+                       'mu2e_KalmanTests',
+                       'mu2e_Mu2eUtilities',
+                       'mu2e_ConditionsService',
+                       'mu2e_TrackerConditions',
                        'mu2e_GeometryService',
-                       'mu2e_ConditionsService_ConditionsService_service',
                        'mu2e_SeedService_SeedService_service',
+                       'mu2e_BFieldGeom',
+                       'mu2e_CalorimeterGeom',
+                       'mu2e_TrackerGeom',
                        'mu2e_MCDataProducts',
                        'mu2e_RecoDataProducts',
+                       'mu2e_GlobalConstantsService',
+                       'mu2e_DataProducts',
+                       'mu2e_Mu2eInterfaces',
                        'mu2e_GeneralUtilities',
-                       'mu2e_Mu2eUtilities',
+                       'art_Framework_Core',
+                       'art_Framework_Principal',
+                       'art_Framework_Services_Registry',
+                       'art_Framework_Services_Optional',
+                       'art_Framework_Services_Optional_TFileService_service',
+                       'art_Framework_Services_Optional_RandomNumberGenerator_service',
+                       'art_Persistency_Common',
+                       'art_Persistency_Provenance',
+                       'art_Utilities',
+                       'MF_MessageLogger',
+                       'fhiclcpp',
+                       'cetlib',
                        'CLHEP',
-                       'Minuit'  # Fixme - pretty sure we do not want this.
-                     ] )
-
-helper.make_dict_and_map( [ mainlib,
-                          ] )
+                       'HepPDT',
+                       'boost_filesystem',
+                       'boost_system',
+                       rootlibs,
+                       'xerces-c', # only needed for MakeStereoHits_module.cc
+                       'Minuit'  # Needed for BetaTauPitch_module.cc and ReadStrawCluster_module.cc
+                                 # See the Fixme at the top of the file.
+                     ],
+                     )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

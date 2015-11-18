@@ -1,7 +1,7 @@
 // Andrei Gaponenko, 2011
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL_Maker.hh"
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnetMaker.hh"
+#include "GeometryService/inc/ExtMonFNAL_Maker.hh"
+#include "GeometryService/inc/ExtMonFNALMagnetMaker.hh"
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
@@ -35,7 +35,7 @@ namespace mu2e {
       config.getVectorDouble(prefix+".plane_xoffset", pt.m_plane_xoffset, -1);
       config.getVectorDouble(prefix+".plane_yoffset", pt.m_plane_yoffset, -1);
       config.getVectorDouble(prefix+".motherTransverseHalfSize", pt.m_motherTransverseHalfSize, -1);
-      pt.m_motherStartZ = config.getDouble(prefix+".motherStartZ"); 
+      pt.m_motherStartZ = config.getDouble(prefix+".motherStartZ");
       pt.m_motherEndZ = config.getDouble(prefix+".motherEndZ");
 
       if(!boost::is_sorted(pt.m_plane_zoffset)) {
@@ -43,7 +43,7 @@ namespace mu2e {
                                     <<prefix<<".plane_zoffset must be sorted in the ascending order"
                                     <<"\n";
       }
-      
+
       std::vector<double> hs;
       config.getVectorDouble("extMonFNAL.planeHalfSize",  hs, 3);
       for(unsigned iplane = 0; iplane < pt.m_plane_zoffset.size(); ++iplane)
@@ -56,7 +56,7 @@ namespace mu2e {
           for(unsigned imodule = 0; imodule < pt.nModulesPerPlane(); imodule++)
             pt.planes_[iplane].m_module_rotation[imodule] *= CLHEP::degree;
         }
-      
+
       return pt;
     }
 
@@ -105,7 +105,7 @@ namespace mu2e {
       det->dn_ = readStack(config, "extMonFNAL.dn", dnRefPointInMu2e, det->spectrometerMagnet_.outRotationInMu2e(), det->module_);
 
       //----------------------------------------------------------------
-    
+
       det->dn_.planeNumberOffset_ = 0;
       det->up_.planeNumberOffset_ = det->dn_.nplanes();
 

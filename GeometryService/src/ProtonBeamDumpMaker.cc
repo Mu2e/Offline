@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2011
 
-#include "ProtonBeamDumpGeom/inc/ProtonBeamDumpMaker.hh"
+#include "GeometryService/inc/ProtonBeamDumpMaker.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -22,7 +22,7 @@ namespace mu2e {
 
   //================================================================
   std::unique_ptr<ProtonBeamDump> ProtonBeamDumpMaker::make(const SimpleConfig& c,
-                                                	    const Mu2eHall& hall)
+                                                            const Mu2eHall& hall)
   {
 
     std::unique_ptr<ProtonBeamDump> dump(new ProtonBeamDump());
@@ -30,11 +30,11 @@ namespace mu2e {
     int verbose = c.getInt("protonBeamDump.verbosityLevel", 0);
 
     // Get relevant Hall solids
-    ExtrudedSolid psArea  = hall.getBldgSolid("psArea");   	// contains front corners of dump slab
+    ExtrudedSolid psArea  = hall.getBldgSolid("psArea");        // contains front corners of dump slab
     ExtrudedSolid psWall  = hall.getBldgSolid("psWallUpper");   // contains back corners of dump slab
-    ExtrudedSolid psWallS = hall.getBldgSolid("psAreaUpperS");	// contains boundary between front and back
-    ExtrudedSolid psWallN = hall.getBldgSolid("psAreaUpperN");	// contains boundary between front and back
-    ExtrudedSolid psCeil  = hall.getBldgSolid("psAreaCeiling");	// contains ceiling height
+    ExtrudedSolid psWallS = hall.getBldgSolid("psAreaUpperS");  // contains boundary between front and back
+    ExtrudedSolid psWallN = hall.getBldgSolid("psAreaUpperN");  // contains boundary between front and back
+    ExtrudedSolid psCeil  = hall.getBldgSolid("psAreaCeiling"); // contains ceiling height
 
     // position
     dump->_coreCenterInMu2e = c.getHep3Vector("protonBeamDump.coreCenterInMu2e");
@@ -48,7 +48,7 @@ namespace mu2e {
     c.getVectorDouble("protonBeamDump.additionalSteel", additionalSteel, 3);
     dump->_minCoreShieldingThickness = c.getDouble("protonBeamDump.minCoreShieldingThickness");
     const double coreAirGap = c.getDouble("protonBeamDump.coreAirGap");
- 
+
     const CLHEP::Hep3Vector& offset = psWall.getOffsetFromMu2eOrigin();
     dump->_shieldingFaceYmin = offset[1] - psWall.getYhalfThickness();
     const CLHEP::Hep3Vector& ceiling = psCeil.getOffsetFromMu2eOrigin();
@@ -104,13 +104,13 @@ namespace mu2e {
 
     dump->_coreAirCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e * CLHEP::Hep3Vector(0,0,-coreAirGap/2.0);
 
-    dump->_frontSteelCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e 
-      *CLHEP::Hep3Vector(0,	dump->_coreAirHalfSize[1] + dump->_frontSteelHalfSize[1],
-				dump->_coreHalfSize[2] - dump->_frontSteelHalfSize[2]);
-    
-    dump->_backSteelCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e 
-      *CLHEP::Hep3Vector(0,	dump->_coreAirHalfSize[1] + dump->_backSteelHalfSize[1],
-				dump->_coreHalfSize[2] - 2.0*dump->_frontSteelHalfSize[2] - dump->_backSteelHalfSize[2]);
+    dump->_frontSteelCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e
+      *CLHEP::Hep3Vector(0,     dump->_coreAirHalfSize[1] + dump->_frontSteelHalfSize[1],
+                                dump->_coreHalfSize[2] - dump->_frontSteelHalfSize[2]);
+
+    dump->_backSteelCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e
+      *CLHEP::Hep3Vector(0,     dump->_coreAirHalfSize[1] + dump->_backSteelHalfSize[1],
+                                dump->_coreHalfSize[2] - 2.0*dump->_frontSteelHalfSize[2] - dump->_backSteelHalfSize[2]);
 
     //----------------------------------------------------------------
     // Shielding face coordinates
@@ -133,7 +133,7 @@ namespace mu2e {
       + dump->_frontShieldingHalfSize[2] * cos(coreRotY)
       - dump->_frontShieldingHalfSize[0] * sin(coreRotY)
       ;
-    
+
     //----------------------------------------------------------------
     // For the dump shielding we define an extruded solid that extends
     // the side faces of the nominal dump horizontally to the enclosure
@@ -158,7 +158,7 @@ namespace mu2e {
     const auto & psaVertices =  psArea.getVertices();
     const auto & pswVertices =  psWall.getVertices();
     const auto & psSVertices = psWallS.getVertices();
-    const auto & psNVertices = psWallN.getVertices();    
+    const auto & psNVertices = psWallN.getVertices();
 
     double zs = dump->_coreCenterInMu2e[2] - dump->_coreHalfSize[2]*cos(coreRotY)
       + dump->_frontShieldingHalfSize[0]*sin(coreRotY);
@@ -190,13 +190,13 @@ namespace mu2e {
     if(verbose) {
 
       for( std::size_t i=0; i<dump->_frontShieldingOutline.size(); i++ ) {
-        std::cout<<"front "	<<	dump->_frontShieldingOutline[i][0]
-                 <<"\t"		<<	dump->_frontShieldingOutline[i][1]	<<"\n";
+        std::cout<<"front "     <<      dump->_frontShieldingOutline[i][0]
+                 <<"\t"         <<      dump->_frontShieldingOutline[i][1]      <<"\n";
       }
 
       for( std::size_t i=0; i<dump->_backShieldingOutline.size(); i++ ) {
-        std::cout<<"back "	<<	dump->_backShieldingOutline[i][0]
-                 <<"\t"		<<	dump->_backShieldingOutline[i][1]	<<"\n";
+        std::cout<<"back "      <<      dump->_backShieldingOutline[i][0]
+                 <<"\t"         <<      dump->_backShieldingOutline[i][1]       <<"\n";
       }
 
       std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump core center in mu2e = "<<dump->_coreCenterInMu2e<<std::endl;

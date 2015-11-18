@@ -1,6 +1,3 @@
-// $Id: PSVacuumMaker.cc,v 1.3 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Andrei Gaponenko
 
@@ -9,7 +6,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ProductionSolenoidGeom/inc/PSVacuumMaker.hh"
+#include "GeometryService/inc/PSVacuumMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"

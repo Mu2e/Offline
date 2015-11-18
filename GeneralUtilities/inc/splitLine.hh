@@ -3,10 +3,6 @@
 //
 // Split a string, s, into pieces.
 //
-// $Id: splitLine.hh,v 1.1 2012/10/03 06:40:04 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2012/10/03 06:40:04 $
-//
 // Original author Rob Kutschke
 //
 // Arguments:

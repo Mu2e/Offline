@@ -1,6 +1,3 @@
-// $Id: PSShieldMaker.cc,v 1.7 2013/08/09 05:13:09 gandr Exp $
-// $Author: gandr $
-// $Date: 2013/08/09 05:13:09 $
 //
 // Original author Andrei Gaponenko
 
@@ -12,7 +9,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ProductionSolenoidGeom/inc/PSShieldMaker.hh"
+#include "GeometryService/inc/PSShieldMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSShield.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -105,10 +102,10 @@ namespace mu2e {
     CLHEP::HepRotation pipeRotat(CLHEP::HepRotation::IDENTITY);
     pipeRotat.rotateY(angle1);
     pipeRotat.rotateX(angle2);
- 
+
     res->beamInlet_ = Tube(pipeMaterial, shieldOriginInMu2e,
-			   pipeIR, pipeOR, pipeLength/2.0, 0, CLHEP::twopi,
-			   pipeRotat);
+                           pipeIR, pipeOR, pipeLength/2.0, 0, CLHEP::twopi,
+                           pipeRotat);
 
     return res;
   }

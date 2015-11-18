@@ -23,7 +23,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "CosmicRayShieldGeom/inc/CosmicRayShieldMaker.hh"
+#include "GeometryService/inc/CosmicRayShieldMaker.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"

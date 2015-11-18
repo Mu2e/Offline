@@ -43,16 +43,12 @@ namespace mu2e {
     const std::map<double, CLHEP::Hep3Vector> & anchoringPntsRgt() const { return _anchoringPntsRgt; }
     const std::map<double, CLHEP::Hep3Vector> & anchoringPntsLft() const { return _anchoringPntsLft; }
 
-    ~ProductionTarget() { 
+    ~ProductionTarget() {
            if (_pHubsRgtParams!=NULL) delete _pHubsRgtParams;
            if (_pHubsLftParams!=NULL) delete _pHubsLftParams;
     }
 
     //----------------------------------------------------------------
-
-    // hide automatic copy/assignments as not needed (would be incorrect due to unique_ptr anyway)
-    ProductionTarget( ProductionTarget const & );
-    ProductionTarget const & operator= ( ProductionTarget const & );
 
   private:
     friend class ProductionTargetMaker;

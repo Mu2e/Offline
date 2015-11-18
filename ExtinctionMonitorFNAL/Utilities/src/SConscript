@@ -11,11 +11,19 @@ helper=mu2e_helper();
 
 mainlib = helper.make_mainlib ( [ 'mu2e_ExtinctionMonitorFNAL_Geometry',
                                   'mu2e_ProtonBeamDumpGeom',
-                                  'mu2e_DataProducts',
                                   'mu2e_MCDataProducts',
-                                  'mu2e_ConditionsService',
-                                  'mu2e_GlobalConstantsService_GlobalConstantsService_service',
-                                  'CLHEP' ] )
+                                  'mu2e_GlobalConstantsService',
+                                  'mu2e_DataProducts',
+                                  'art_Framework_Services_Registry',
+                                  'art_Framework_Services_Optional',
+                                  'art_Utilities',
+                                  'fhiclcpp',
+                                  'cetlib',
+                                  'CLHEP',
+                                  'HepPDT',
+                                  'HepPID',
+                                  'boost_system'
+                                  ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

@@ -1,14 +1,109 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_5_3
 
-11) Nov 18, 2015 brownd
+23) Nov 18, 2015 brownd
     Disallow use of deprecated TrkPatRec_module (exception on construction)
     Provide tables and sequences for standard CD3 mixing in
     EventMixers/fcl/prolog.fcl
     Update CD3 mixing template to use tables and sequences
     Provide examples for tracking and mixing in TrkPatRec/test
     Remove obsolete example tracking scripts
+
+22) Nov 17, 2015  dnbrow01
+    Add new version of MBS, retaining existing version.  Existing version
+    is default and is internally known as version 1.  New version is
+    Version 2.  New version reflects WBS 5.8 v7.
+    modified:   GeometryService/inc/MBSMaker.hh
+    modified:   GeometryService/src/MBSMaker.cc
+    modified:   MBSGeom/inc/MBS.hh
+    new file:   Mu2eG4/geom/muonBeamStop_v02.txt
+    modified:   Mu2eG4/src/constructMBS.cc
+
+21) Nov 15, 2015 kutschke
+    In the conditions service, removed all references to TrackerCalibrationsI.
+    The header will be removed when we remove FastPatternReco.
+
+20) Nov 15, 2015 kutschke
+    Moved the function splitLine from Mu2eUtilities to GeneralUtilties.
+    The function belongs in its new home and it simplfies the link order.
+
+19) Nov 15, 2015 kutschke
+    setup.sh
+      - Define a few more environment variables that are used by
+        a modified SConstruct that I am experimenting with
+        (not yet committed).
+
+18) Nov 15, 2015 kutschke
+    SConstruct - removed a feature that is no longer needed.
+
+17) Nov 15, 2015 kutschke
+    Temporary hack - added a missing link library.
+    A full fix to this will come when the --no-undefined migration
+    reaches this library.
+      TrackerMC/src/SConscript
+
+16) Nov 15, 2015 kutschke
+    This describes the fix to the main issue identified in 15).
+
+    The mu2e_helper python class that is used by our SConscript
+    files has two methods for plugins:
+       make_plugin  - builds only the plugin indentified by a single .cc
+                      file passed in as an argument.
+       make_plugins - note the plural. This builds all of the plugins in
+                      the current directory.  It has an optional argument
+                      to list .cc files to exclude from consideration,
+    Using these tools I completed the migration to --no-undefined for:
+
+    SeedService/src/SConscript
+    Sandbox/src/SConscript
+    ExtinctionMonitorFNAL/Reconstruction/src/SConscript
+
+    Also made progress on:
+    ConditionsService/src/SConscript
+
+    But before I can finsih I need to break another linkage loop that Chris'
+    tool did not find.
+
+15) Nov 15, 2015 kutschke
+    Cleaned up the link lists for HelloWorld/src/SConscript
+
+    I started to clean up the link list for SeedService/src/SConscript
+    but this reveals a showstopper in the build system.  This package
+    needs to bulid a service and a module; the link list of the module
+    requires the service; however the service must not be present on the
+    link list when building the service itself.
+
+    Conclusion, we need separate link lists for services and modules.
+
+    I also started to clean up the link list for Sandbox/src/SConscript
+    This package has multiple services and there are cases in which
+    service A depends on service B.  To solve this linking problem we
+    can do one of two thinks:
+
+      a) go to the three file service model, .hh, .cc and _service.cc
+         Then the link list can be the same for all services.
+
+      b) extend the build system to allow separate link lists for
+         each service in a directory.
+
+14) Nov 14, 2015 kutschke
+    Complete migration of Maker classes to GeometryService.
+
+13) Nov 13, 2015 oksuzian
+   Added new geometry files:
+   Mu2eG4/geom/ExtShieldUpstream_v02.txt
+   Mu2eG4/geom/ExtShieldDownstream_v02.txt
+   The files include: boron shielding, updated shielding in
+   the penetration and NW/NE corners.
+   Adjusted the boron concrete material to use MARS concrete instead of G4_CONCRETE
+
+12) Nov 13, 2015 genser
+    Added VetoIncorrectHits_module  (if used) rejecting bad tracker and crv hits
+      Filters/fcl/prolog.fcl
+      Filters/src/VetoIncorrectHits_module.cc
+
+11) Nov 12, 2015 kutschke
+    Continue the work of moving geometry *Maker.cc files to GeometryService.
+    Continue the work of cleaning up SConsript files to support closed links.
 
 10) Nov 12, 2015 kutschke
     Split GlobalConstantsService/src/GlobalConstantsService_service.cc into two files:

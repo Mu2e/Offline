@@ -1,4 +1,4 @@
-#include "ProductionTargetGeom/inc/ProductionTargetMaker.hh"
+#include "GeometryService/inc/ProductionTargetMaker.hh"
 
 #include "cetlib/exception.h"
 
@@ -188,7 +188,7 @@ namespace mu2e {
 //                       HubRgtCornersOutRadii,
 //                       center,
 //                       c.getString("targetPS_Hub_materialName")));
-// 
+//
 //     tgtPS->_pHubsLftParams = std::unique_ptr<Polycone>
 //       (new Polycone(HubLftCornersZ,
 //                       HubLftCornersInnRadii,

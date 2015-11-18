@@ -46,7 +46,8 @@ typedef std::vector<mu2e::SectorStationCluster> SectorStationClusterCollection;
     }
 
     // Print contents of the object.
-    void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
+    // Not yet implemented - comment out declaration until the implementation is available.
+    //void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
   };
 
   inline std::ostream& operator<<( std::ostream& ost,

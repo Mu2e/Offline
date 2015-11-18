@@ -1,10 +1,10 @@
 // Andrei Gaponenko, 2011
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuildingMaker.hh"
+#include "GeometryService/inc/ExtMonFNALBuildingMaker.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 
-#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMagnetMaker.hh"
+#include "GeometryService/inc/ExtMonFNALMagnetMaker.hh"
 
 #include <algorithm>
 #include <iterator>
@@ -66,15 +66,15 @@ namespace mu2e {
 
   //================================================================
   std::unique_ptr<ExtMonFNALBuilding> ExtMonFNALBuildingMaker::make(const SimpleConfig& c,
-                                                	    	    const Mu2eHall& hall,
-								    const ProtonBeamDump& dump) {
+                                                                    const Mu2eHall& hall,
+                                                                    const ProtonBeamDump& dump) {
     using CLHEP::Hep3Vector;
     using CLHEP::Hep2Vector;
 
     std::unique_ptr<ExtMonFNALBuilding> emfb(new ExtMonFNALBuilding());
 
     int verbose = c.getInt("extMonFNAL.verbosityLevel");
- 
+
   // Get relevant Hall solid
     ExtrudedSolid extMonRoom = hall.getBldgSolid("extMon");
     const CLHEP::Hep3Vector& offset = extMonRoom.getOffsetFromMu2eOrigin();
@@ -100,13 +100,13 @@ namespace mu2e {
     const double dzdL = (zback-zfront)/roomLength;
     const double shieldwidth = c.getDouble("extMonFNAL.collimator2.shielding.width");
     emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*magnetRoomLength,
-					      xfront+dxdL*magnetRoomLength);
+                                              xfront+dxdL*magnetRoomLength);
     emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*(magnetRoomLength+col2zLength),
-					      xfront+dxdL*(magnetRoomLength+col2zLength));
+                                              xfront+dxdL*(magnetRoomLength+col2zLength));
     emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*(magnetRoomLength+col2zLength)-shieldwidth*dxdL,
-					      xfront+dxdL*(magnetRoomLength+col2zLength)+shieldwidth*dzdL);
+                                              xfront+dxdL*(magnetRoomLength+col2zLength)+shieldwidth*dzdL);
     emfb->coll2ShieldingOutline_.emplace_back(zfront+dzdL*magnetRoomLength-shieldwidth*dxdL,
-					      xfront+dxdL*magnetRoomLength+shieldwidth*dzdL);
+                                              xfront+dxdL*magnetRoomLength+shieldwidth*dzdL);
 
     emfb->magnetRoomLength_ = magnetRoomLength;
 
@@ -163,8 +163,8 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     // collimator1
-    const double referenceLength = dump.coreCenterDistanceToReferencePlane() 	- dump.coreCenterDistanceToShieldingFace()
-										+ dump.frontShieldingHalfSize()[2];
+    const double referenceLength = dump.coreCenterDistanceToReferencePlane()    - dump.coreCenterDistanceToShieldingFace()
+                                                                                + dump.frontShieldingHalfSize()[2];
     const Hep3Vector collimator1CenterInDump(emfb->filterEntranceOffsetX()
                                              + referenceLength*tan(emfb->collimator1().angleH()),
 

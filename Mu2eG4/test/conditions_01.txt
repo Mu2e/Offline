@@ -39,8 +39,8 @@ double extMonFNAL.biasVoltage = -150; // Volts
 //Calorimeter calibration information
 
 // Longitudinal non-uniformity response, see Mu2e doc ... 
-double CrystalNonUniformity_0 = 0.45;//% / cm
-double CrystalNonUniformityErr_0 = 0.0;//% / cm
+double CrystalNonUniformity_0 = 0.05; 
+double CrystalNonUniformityErr_0 = 0.0;
 
 //non-linearity parameters, see Mu2e doc ...
 double CrystalNonLinearity_0 = 10.35;
@@ -56,13 +56,14 @@ double CrystalNonLinearity_3 = 0.06654;
 double CrystalNonLinearity_3Err = 0.0;
 
 //APD photo-statistic number
-double ROphotostatistic = 1660.0;//p.e / MeV
-double ROphotostatisticErr = 224.0;//p.e / MeV
+double ROphotostatistic = 45.0;//p.e / MeV
+double ROphotostatisticErr = 7.0;//p.e / MeV
 double ROfanoFactor = 1.3;
 
-//value of the sigma used to do the Gaussian smearing due to the electronic noise
-double ReadOutElectronicNoise      = 0.03;//MeV
-double ReadOutElectronicNoiseSigma = 0.015;//MeV
+//value of the sigma used to do the Gaussian smearing due to the electronic noise,
+//this is the quadratic sum of all APDs.....
+double ReadOutElectronicNoise      = 0.42;//MeV
+double ReadOutElectronicNoiseSigma = 0.05;//MeV
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

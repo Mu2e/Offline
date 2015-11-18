@@ -462,14 +462,14 @@ namespace mu2e {
       }
     }
 
-    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
+    if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ){
       for ( size_t i=0; i<caloHits->size(); ++i ) {
         CaloHit const & hit = (*caloHits).at(i);
         cout << "Readback: " << hit << endl;
       }
     }
 
-    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
+    if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ){
       for ( size_t i=0; i<caloMC->size(); ++i ) {
         CaloHitMCTruth const & hit = (*caloMC).at(i);
 
@@ -548,7 +548,7 @@ namespace mu2e {
     _hRCEdep->Fill(totalEdep);
     _hRCNCrystals->Fill(hitCrystals.size());
 
-    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
+    if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ){
       for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
         CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
         cout << "Readback: " << hit << endl;
@@ -602,7 +602,7 @@ namespace mu2e {
     _hRCEdepMC->Fill(simEdep);
     _hRCNCrystalsMC->Fill(hitCrystals.size());
 
-    if ( _diagLevel > -1 && _nAnalyzed < _maxFullPrint ){
+    if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ){
       for ( size_t i=0; i<caloCrystalOnlyHits->size(); ++i ) {
         CaloCrystalOnlyHit const & hit = (*caloCrystalOnlyHits).at(i);
         cout << "Readback: " << hit << endl;

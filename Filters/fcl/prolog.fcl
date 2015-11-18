@@ -20,4 +20,17 @@ FilterStepPointMomentum : {
     cutMomentumMin : 10. # MeV/c
 }
 
+# throw when hits are outside their sensitive volumes
+VetoIncorrectHits: { 
+    module_type          : VetoIncorrectHits
+    g4ModuleLabel        : g4run
+    diagLevel            : 0
+    maxFullPrint         : 5
+    doNotThrow           : false
+    trackerStepPoints    : tracker
+    shPositionTolerance  : 0.01
+    crvStepPoints        : CRV
+    crvPositionTolerance : 0.01
+}
+
 END_PROLOG

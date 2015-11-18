@@ -17,7 +17,7 @@
 #include <vector>
 #include "CLHEP/Vector/ThreeVector.h"
 
-namespace mu2e { 
+namespace mu2e {
 
   namespace ExtMonFNAL { class ExtMon; }
   namespace ExtMonFNAL { class ExtMonMaker; }
@@ -26,7 +26,7 @@ namespace mu2e {
   public:
     // the plane itself
     std::vector<double> halfSize() const { return halfSize_; }
-  
+
     // contains several modules
     const std::vector<double>& module_zoffset() const { return m_module_zoffset; }
     const std::vector<double>& module_xoffset() const { return m_module_xoffset; }
@@ -35,10 +35,11 @@ namespace mu2e {
 
     unsigned nModules() const { return m_module_zoffset.size(); }
 
-    ExtMonFNALPixelId findPixel(ExtMonFNALPlaneId pid, double xPlane, double yPlane) const;
+    //Not implemented - comment out to satisfy ROOT dictionary maker.
+    //ExtMonFNALPixelId findPixel(ExtMonFNALPlaneId pid, double xPlane, double yPlane) const;
 
     const ExtMonFNALModule& module() const { return module_; }
-   
+
     CLHEP::Hep3Vector planeCoordinates(const ExtMonFNALPixelId& pix) const;
     const std::string& planeMaterial() const { return m_planeMaterial; }
 
@@ -52,16 +53,16 @@ namespace mu2e {
   private:
     ExtMonFNALModule module_;
     std::vector<double> halfSize_;
-    
+
     // Plane material
     std::string m_planeMaterial;
-    
+
     // Module center positions
     std::vector<double> m_module_zoffset;
     std::vector<double> m_module_xoffset;
     std::vector<double> m_module_yoffset;
     std::vector<double> m_module_rotation;
-    
+
     template<class T> friend class art::Wrapper;
 
     friend class ExtMonFNAL::ExtMon;

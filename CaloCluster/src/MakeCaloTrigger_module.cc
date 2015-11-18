@@ -29,7 +29,6 @@
 //calorimeter packages
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CaloCluster/inc/CaloClusterFinder.hh"
-#include "CaloCluster/inc/CaloSeedManager.hh"
 #include "CaloCluster/inc/CaloClusterAssociator.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -43,6 +42,12 @@
 
 
 
+namespace
+{
+   struct caloSeedCompare {
+     bool operator() (mu2e::CaloCrystalHit const* a, mu2e::CaloCrystalHit const* b) const {return a->energyDep() > b->energyDep();}
+   };
+}
 
 
 
@@ -52,7 +57,7 @@ namespace mu2e {
 
 	     
 
-class MakeCaloTrigger : public art::EDProducer {
+  class MakeCaloTrigger : public art::EDProducer {
 
 
      public:
@@ -166,28 +171,27 @@ class MakeCaloTrigger : public art::EDProducer {
 	    //declare and fill the hash map crystal_id -> list of CaloHits
             std::vector<CaloCrystalList>    mainClusterList;           
 	    std::vector<CaloCrystalVec>     caloIdHitMap(cal.nCrystal());
-	    CaloSeedManager                 seedList(cal.nCrystal());
+            std::set<CaloCrystalHit const*, caloSeedCompare> seedList;
 
 	    for (auto const& hit : caloCrystalHits)
 	    {
-	        if (hit.energyDep() < _EnoiseCut) continue;
-	        if (hit.time()      < _timeCut) continue;
+	        if (hit.energyDep() < _EnoiseCut || hit.time() < _timeCut) continue;
 	        caloIdHitMap[hit.id()].push_back(&hit);     
-	        seedList.add(&hit);     
+                seedList.insert(&hit);
 	    }   
 
 
 	    //produce main clusters
-	    while( CaloCrystalHit const* crystalSeed = seedList.seed() )
+	    while( !seedList.empty() )
 	    {
-	       if (crystalSeed->energyDep() < _EminSeed) break;
+	         CaloCrystalHit const* crystalSeed = *seedList.begin();
+	         if (crystalSeed->energyDep() < _EminSeed) break;
 
-	       CaloClusterFinder finder(cal,crystalSeed,_deltaTimePlus,_deltaTimeMinus, _ExpandCut);
-	       finder.formCluster(caloIdHitMap);	 
+	         CaloClusterFinder finder(cal,crystalSeed,_deltaTimePlus,_deltaTimeMinus, _ExpandCut);
+	         finder.formCluster(caloIdHitMap);	 
 
-	       CaloCrystalList crystalsInCluster = finder.clusterList();	       
-	       mainClusterList.push_back(crystalsInCluster);
-	       seedList.checkSeedbyList(finder.inspected(),caloIdHitMap);
+	         mainClusterList.push_back(finder.clusterList());
+	         for (auto const& hit: finder.clusterList()) seedList.erase(seedList.find(hit));
 	    }  
 
             std::sort(mainClusterList.begin(),mainClusterList.end(),[](CaloCrystalList const& a, CaloCrystalList const& b){return (*a.begin())->time() < (*b.begin())->time();});

@@ -1,6 +1,3 @@
-// $Id: PSEnclosureMaker.cc,v 1.6 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
 //
 // Original author Andrei Gaponenko
 
@@ -9,7 +6,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "ProductionSolenoidGeom/inc/PSEnclosureMaker.hh"
+#include "GeometryService/inc/PSEnclosureMaker.hh"
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"

@@ -16,6 +16,9 @@
 // probably be more related to the SolenoidCoil once the dimensions of
 // those components are reconciled
 
+// Update by D. No. Brown, Louisville, 30/10/2015.  Updated version is 
+// "Version 2"
+
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -56,17 +59,19 @@ namespace mu2e {
     // BSTS is the main support tube; the other z positions are dependent upon it
 
     MBS const & mbsgh = *(GeomHandle<MBS>());
+    int MBSversion = mbsgh.getVersion();
 
     Polycone const & pMBSMParams = *mbsgh.getMBSMPtr();
-    Tube const & pBSTSParams     = *mbsgh.getBSTSPtr();
-    Tube const & pSPBSSup1Params = *mbsgh.getSPBSSup1Ptr();
-    Tube const & pSPBSSup2Params = *mbsgh.getSPBSSup2Ptr();
-    Tube const & pSPBSLParams    = *mbsgh.getSPBSLPtr();
+    Polycone const & pBSTSParams = *mbsgh.getBSTSPtr();
     Tube const & pSPBSCParams    = *mbsgh.getSPBSCPtr();
-    Tube const & pSPBSRParams    = *mbsgh.getSPBSRPtr();
     Polycone const & pBSTCParams = *mbsgh.getBSTCPtr();
     Polycone const & pBSBSParams = *mbsgh.getBSBSPtr();
     Polycone const & pCLV2Params = *mbsgh.getCLV2Ptr();
+    Tube const & pSPBSSup1Params = *mbsgh.getSPBSSup1Ptr();
+    Tube const & pSPBSSup2Params = *mbsgh.getSPBSSup2Ptr();
+    Tube const & pSPBSLParams    = *mbsgh.getSPBSLPtr();
+    Tube const & pSPBSRParams    = *mbsgh.getSPBSRPtr();
+
 
     bool const MBSisVisible        = _config.getBool("mbs.visible",true);
     bool const MBSisSolid          = _config.getBool("mbs.solid", false);
@@ -133,6 +138,9 @@ namespace mu2e {
     }
 
     // BSTS see WBS 5.8 for the naming conventions
+    // Stainless steel pipe - in Version 1, a single tube rendered as 
+    // a polycone.  In Version 2, a polycone with 3 segments of varying
+    // thickness.
 
     CLHEP::Hep3Vector BSTSOffsetInMu2e = pBSTSParams.originInMu2e();
 
@@ -144,8 +152,8 @@ namespace mu2e {
     CLHEP::Hep3Vector BSTSOffset =  BSTSOffsetInMu2e - MBSMOffsetInMu2e;
 
     // Use BSTS as mother volume for MBS
-    VolumeInfo BSTSInfo  = nestTubs("BSTS",
-                                    pBSTSParams.getTubsParams(),
+    VolumeInfo BSTSInfo  = nestPolycone("BSTS",
+                                    pBSTSParams.getPolyconsParams(),
                                     findMaterialOrThrow(pBSTSParams.materialName()),
                                     0,
                                     BSTSOffset,
@@ -161,126 +169,161 @@ namespace mu2e {
                                     doSurfaceCheck
                                     );
 
-    if ( verbosityLevel > 0) {
-      double zhl         = static_cast<G4Tubs*>(BSTSInfo.solid)->GetZHalfLength();
-      double BSTSOffsetInMu2eZ = BSTSOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " BSTSOffsetZ           in Mu2e    : " <<
-        BSTSOffsetInMu2eZ << endl;
-      cout << __func__ << " BSTS         Z extent in Mu2e    : " <<
-        BSTSOffsetInMu2eZ - zhl << ", " << BSTSOffsetInMu2eZ + zhl << endl;
-    }
+    if ( MBSversion == 1 ) {
 
-    // SPBSSup1
-    // This one is placed directly into DS3Vacuum;
-    // Note that its radius is lager than theone of BSTS
+      // SPBSSup1
+      // This one is placed directly into DS3Vacuum;
+      // Note that its radius is lager than theone of BSTS
 
-    CLHEP::Hep3Vector SPBSSup1OffsetInMu2e = pSPBSSup1Params.originInMu2e();
+      CLHEP::Hep3Vector SPBSSup1OffsetInMu2e = pSPBSSup1Params.originInMu2e();
 
-    if ( verbosityLevel > 0) {
-      cout << __func__ << " SPBSSup1OffsetInMu2e                 : " << SPBSSup1OffsetInMu2e << endl;
-    }
+      if ( verbosityLevel > 0) {
+	cout << __func__ << " SPBSSup1OffsetInMu2e                 : " << SPBSSup1OffsetInMu2e << endl;
+      }
 
-    // now local offset in mother volume
-    CLHEP::Hep3Vector SPBSSup1Offset = SPBSSup1OffsetInMu2e - MBSMOffsetInMu2e;
+      // now local offset in mother volume
+      CLHEP::Hep3Vector SPBSSup1Offset = SPBSSup1OffsetInMu2e - MBSMOffsetInMu2e;
 
-    VolumeInfo SPBSSup1Info  = nestTubs("SPBSSup1",
-                                    pSPBSSup1Params.getTubsParams(),
-                                    findMaterialOrThrow(pSPBSSup1Params.materialName()),
-                                    0,
-                                    SPBSSup1Offset,
-                                    //detSolDownstreamVacInfo,
-                                    MBSMotherInfo,
-                                    0,
-                                    MBSisVisible,
-                                    G4Colour::Blue(),
-                                    MBSisSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
+      VolumeInfo SPBSSup1Info  = nestTubs("SPBSSup1",
+					  pSPBSSup1Params.getTubsParams(),
+					  findMaterialOrThrow(pSPBSSup1Params.materialName()),
+					  0,
+					  SPBSSup1Offset,
+					  //detSolDownstreamVacInfo,
+					  MBSMotherInfo,
+					  0,
+					  MBSisVisible,
+					  G4Colour::Blue(),
+					  MBSisSolid,
+					  forceAuxEdgeVisible,
+					  placePV,
+					  doSurfaceCheck
+					  );
+
+      if ( verbosityLevel > 0) {
+	double zhl         = static_cast<G4Tubs*>(SPBSSup1Info.solid)->GetZHalfLength();
+	double SPBSSup1OffsetInMu2eZ = SPBSSup1OffsetInMu2e[CLHEP::Hep3Vector::Z];
+	cout << __func__ << " SPBSSup1         Z extent in Mu2e    : " <<
+	  SPBSSup1OffsetInMu2eZ - zhl << ", " << SPBSSup1OffsetInMu2eZ + zhl << endl;
+      }
+
+      // SPBSSup2
+      // This one is placed directly into DS3Vacuum;
+      // Note that its radius is lager than theone of BSTS
+
+      CLHEP::Hep3Vector SPBSSup2OffsetInMu2e = pSPBSSup2Params.originInMu2e();
+
+      if ( verbosityLevel > 0) {
+	cout << __func__ << " SPBSSup2OffsetInMu2e                 : " << SPBSSup2OffsetInMu2e << endl;
+      }
+
+      // now local offset in mother volume
+      CLHEP::Hep3Vector SPBSSup2Offset = SPBSSup2OffsetInMu2e - MBSMOffsetInMu2e;
+
+      VolumeInfo SPBSSup2Info  = nestTubs("SPBSSup2",
+					  pSPBSSup2Params.getTubsParams(),
+					  findMaterialOrThrow(pSPBSSup2Params.materialName()),
+					  0,
+					  SPBSSup2Offset,
+					  //detSolDownstreamVacInfo,
+					  MBSMotherInfo,
+					  0,
+					  MBSisVisible,
+					  G4Colour::Blue(),
+					  MBSisSolid,
+					  forceAuxEdgeVisible,
+					  placePV,
                                     doSurfaceCheck
-                                    );
+					  );
 
-    if ( verbosityLevel > 0) {
-      double zhl         = static_cast<G4Tubs*>(SPBSSup1Info.solid)->GetZHalfLength();
-      double SPBSSup1OffsetInMu2eZ = SPBSSup1OffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " SPBSSup1         Z extent in Mu2e    : " <<
-        SPBSSup1OffsetInMu2eZ - zhl << ", " << SPBSSup1OffsetInMu2eZ + zhl << endl;
-    }
+      if ( verbosityLevel > 0) {
+	double zhl         = static_cast<G4Tubs*>(SPBSSup2Info.solid)->GetZHalfLength();
+	double SPBSSup2OffsetInMu2eZ = SPBSSup2OffsetInMu2e[CLHEP::Hep3Vector::Z];
+	cout << __func__ << " SPBSSup2         Z extent in Mu2e    : " <<
+	  SPBSSup2OffsetInMu2eZ - zhl << ", " << SPBSSup2OffsetInMu2eZ + zhl << endl;
+      }
 
-    // SPBSSup2
-    // This one is placed directly into DS3Vacuum;
-    // Note that its radius is lager than theone of BSTS
 
-    CLHEP::Hep3Vector SPBSSup2OffsetInMu2e = pSPBSSup2Params.originInMu2e();
+      // SPBSL
+      // This one is placed directly into DS3Vacuum;
+      // Note that its radius is lager than theone of BSTS
 
-    if ( verbosityLevel > 0) {
-      cout << __func__ << " SPBSSup2OffsetInMu2e                 : " << SPBSSup2OffsetInMu2e << endl;
-    }
+      CLHEP::Hep3Vector SPBSLOffsetInMu2e = pSPBSLParams.originInMu2e();
 
-    // now local offset in mother volume
-    CLHEP::Hep3Vector SPBSSup2Offset = SPBSSup2OffsetInMu2e - MBSMOffsetInMu2e;
+      if ( verbosityLevel > 0) {
+	cout << __func__ << " SPBSLOffsetInMu2e                 : " << SPBSLOffsetInMu2e << endl;
+      }
 
-    VolumeInfo SPBSSup2Info  = nestTubs("SPBSSup2",
-                                    pSPBSSup2Params.getTubsParams(),
-                                    findMaterialOrThrow(pSPBSSup2Params.materialName()),
-                                    0,
-                                    SPBSSup2Offset,
-                                    //detSolDownstreamVacInfo,
-                                    MBSMotherInfo,
-                                    0,
-                                    MBSisVisible,
-                                    G4Colour::Blue(),
-                                    MBSisSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
+      // now local offset in mother volume
+      CLHEP::Hep3Vector SPBSLOffset = SPBSLOffsetInMu2e - MBSMOffsetInMu2e;
+
+      VolumeInfo SPBSLInfo  = nestTubs("SPBSL",
+				       pSPBSLParams.getTubsParams(),
+				       findMaterialOrThrow(pSPBSLParams.materialName()),
+				       0,
+				       SPBSLOffset,
+				       //detSolDownstreamVacInfo,
+				       MBSMotherInfo,
+				       0,
+				       MBSisVisible,
+				       G4Colour::Blue(),
+				       MBSisSolid,
+				       forceAuxEdgeVisible,
+				       placePV,
+				       doSurfaceCheck
+				       );
+
+      if ( verbosityLevel > 0) {
+	double zhl         = static_cast<G4Tubs*>(SPBSLInfo.solid)->GetZHalfLength();
+	double SPBSLOffsetInMu2eZ = SPBSLOffsetInMu2e[CLHEP::Hep3Vector::Z];
+	cout << __func__ << " SPBSL         Z extent in Mu2e    : " <<
+	  SPBSLOffsetInMu2eZ - zhl << ", " << SPBSLOffsetInMu2eZ + zhl << endl;
+      }
+
+
+      // SPBSR
+      // This one is placed directly into DS3Vacuum;
+      // Note that its radius is larger than the one of BSTS
+
+      CLHEP::Hep3Vector SPBSROffsetInMu2e = pSPBSRParams.originInMu2e();
+
+      if ( verbosityLevel > 0) {
+	cout << __func__ << " SPBSROffsetInMu2e                 : " << SPBSROffsetInMu2e << endl;
+      }
+
+      // now local offset in mother volume
+      CLHEP::Hep3Vector SPBSROffset = SPBSROffsetInMu2e - MBSMOffsetInMu2e;
+
+      VolumeInfo SPBSRInfo  = nestTubs("SPBSR",
+				       pSPBSRParams.getTubsParams(),
+				       findMaterialOrThrow(pSPBSRParams.materialName()),
+				       0,
+				       SPBSROffset,
+				       //detSolDownstreamVacInfo,
+				       MBSMotherInfo,
+				       0,
+				       MBSisVisible,
+				       G4Colour::Blue(),
+				       MBSisSolid,
+				       forceAuxEdgeVisible,
+				       placePV,
                                     doSurfaceCheck
-                                    );
+				       );
 
-    if ( verbosityLevel > 0) {
-      double zhl         = static_cast<G4Tubs*>(SPBSSup2Info.solid)->GetZHalfLength();
-      double SPBSSup2OffsetInMu2eZ = SPBSSup2OffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " SPBSSup2         Z extent in Mu2e    : " <<
-        SPBSSup2OffsetInMu2eZ - zhl << ", " << SPBSSup2OffsetInMu2eZ + zhl << endl;
-    }
+      if ( verbosityLevel > 0) {
+	double zhl         = static_cast<G4Tubs*>(SPBSRInfo.solid)->GetZHalfLength();
+	double SPBSROffsetInMu2eZ = SPBSROffsetInMu2e[CLHEP::Hep3Vector::Z];
+	cout << __func__ << " SPBSR         Z extent in Mu2e    : " <<
+	  SPBSROffsetInMu2eZ - zhl << ", " << SPBSROffsetInMu2eZ + zhl << endl;
+      }
 
-    // SPBSL
-    // This one is placed directly into DS3Vacuum;
-    // Note that its radius is lager than theone of BSTS
 
-    CLHEP::Hep3Vector SPBSLOffsetInMu2e = pSPBSLParams.originInMu2e();
+    } // end of version 1 specific items
 
-    if ( verbosityLevel > 0) {
-      cout << __func__ << " SPBSLOffsetInMu2e                 : " << SPBSLOffsetInMu2e << endl;
-    }
-
-    // now local offset in mother volume
-    CLHEP::Hep3Vector SPBSLOffset = SPBSLOffsetInMu2e - MBSMOffsetInMu2e;
-
-    VolumeInfo SPBSLInfo  = nestTubs("SPBSL",
-                                    pSPBSLParams.getTubsParams(),
-                                    findMaterialOrThrow(pSPBSLParams.materialName()),
-                                    0,
-                                    SPBSLOffset,
-                                    //detSolDownstreamVacInfo,
-                                    MBSMotherInfo,
-                                    0,
-                                    MBSisVisible,
-                                    G4Colour::Blue(),
-                                    MBSisSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    doSurfaceCheck
-                                    );
-
-    if ( verbosityLevel > 0) {
-      double zhl         = static_cast<G4Tubs*>(SPBSLInfo.solid)->GetZHalfLength();
-      double SPBSLOffsetInMu2eZ = SPBSLOffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " SPBSL         Z extent in Mu2e    : " <<
-        SPBSLOffsetInMu2eZ - zhl << ", " << SPBSLOffsetInMu2eZ + zhl << endl;
-    }
 
     // SPBSC
     // This one is placed directly into DS3Vacuum;
-    // Note that its radius is lager than theone of BSTS
+    // Note that its radius is larger than the one of BSTS
 
     CLHEP::Hep3Vector SPBSCOffsetInMu2e = pSPBSCParams.originInMu2e();
 
@@ -314,41 +357,6 @@ namespace mu2e {
         SPBSCOffsetInMu2eZ - zhl << ", " << SPBSCOffsetInMu2eZ + zhl << endl;
     }
 
-    // SPBSR
-    // This one is placed directly into DS3Vacuum;
-    // Note that its radius is lager than theone of BSTS
-
-    CLHEP::Hep3Vector SPBSROffsetInMu2e = pSPBSRParams.originInMu2e();
-
-    if ( verbosityLevel > 0) {
-      cout << __func__ << " SPBSROffsetInMu2e                 : " << SPBSROffsetInMu2e << endl;
-    }
-
-    // now local offset in mother volume
-    CLHEP::Hep3Vector SPBSROffset = SPBSROffsetInMu2e - MBSMOffsetInMu2e;
-
-    VolumeInfo SPBSRInfo  = nestTubs("SPBSR",
-                                    pSPBSRParams.getTubsParams(),
-                                    findMaterialOrThrow(pSPBSRParams.materialName()),
-                                    0,
-                                    SPBSROffset,
-                                    //detSolDownstreamVacInfo,
-                                    MBSMotherInfo,
-                                    0,
-                                    MBSisVisible,
-                                    G4Colour::Blue(),
-                                    MBSisSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    doSurfaceCheck
-                                    );
-
-    if ( verbosityLevel > 0) {
-      double zhl         = static_cast<G4Tubs*>(SPBSRInfo.solid)->GetZHalfLength();
-      double SPBSROffsetInMu2eZ = SPBSROffsetInMu2e[CLHEP::Hep3Vector::Z];
-      cout << __func__ << " SPBSR         Z extent in Mu2e    : " <<
-        SPBSROffsetInMu2eZ - zhl << ", " << SPBSROffsetInMu2eZ + zhl << endl;
-    }
 
     // BSTC
 
@@ -395,7 +403,7 @@ namespace mu2e {
 
     // now local offset in mother volume
     CLHEP::Hep3Vector BSBSOffset =  BSBSOffsetInMu2e - MBSMOffsetInMu2e; //-MBSMotherInfo.centerInMu2e();
-    //BSBSOffset.setZ(0.0);
+
 
     if ( verbosityLevel > 0) {
       cout << __func__ << " BSBSOffsetInMu2e                 : " << BSBSOffsetInMu2e << endl;

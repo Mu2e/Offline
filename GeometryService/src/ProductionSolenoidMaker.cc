@@ -1,10 +1,6 @@
 //
 // Construct and return ProductionSolenoid
 //
-// $Id: ProductionSolenoidMaker.cc,v 1.11 2013/03/15 15:52:05 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 15:52:05 $
-//
 // Original author KLG
 //
 // Notes
@@ -22,7 +18,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
-#include "ProductionSolenoidGeom/inc/ProductionSolenoidMaker.hh"
+#include "GeometryService/inc/ProductionSolenoidMaker.hh"
 #include "ProductionSolenoidGeom/inc/ProductionSolenoid.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -75,18 +71,18 @@ namespace mu2e {
     CLHEP::Hep3Vector _psRing1Mu2eOffset(solenoidOffset,0,_psRing1Mu2eOffsetZ);
     ps._psRing1Params = std::unique_ptr<Tube>
       (new Tube(_psRingMaterialName,
-		_psRing1Mu2eOffset,
-		_psRingIR,
-		_psRingOR,
-		_psRingLength/2.0));
+                _psRing1Mu2eOffset,
+                _psRingIR,
+                _psRingOR,
+                _psRingLength/2.0));
 
     CLHEP::Hep3Vector _psRing2Mu2eOffset(solenoidOffset,0,_psRing2Mu2eOffsetZ);
     ps._psRing2Params = std::unique_ptr<Tube>
       (new Tube(_psRingMaterialName,
-		_psRing2Mu2eOffset,
-		_psRingIR,
-		_psRingOR,
-		_psRingLength/2.0));
+                _psRing2Mu2eOffset,
+                _psRingIR,
+                _psRingOR,
+                _psRingLength/2.0));
 
     // two endplates
 
