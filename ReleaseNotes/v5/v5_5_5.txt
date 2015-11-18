@@ -1,1 +1,37 @@
+Still under construction
+
            Release notes for Mu2e Offline software, v5_5_5
+
+2) Nov 17, 2015 kutschke
+   EventGenerator/src/ExtMonFNALBoxGenerator_module.cc
+
+   This code used to check each incoming PDGId to see if G4
+   knew about that PDGId.  This happened when running stage
+   2 and greater jobs, reading in ions, nuclei and excited
+   nuclei created by G4 in an earlier stage.  Because G4
+   creates particle table entries for these particles "on demand"
+   and inside the hadronic physics code, they do not, in general
+   exist in the particle table when a job starts, such as at
+   the start of stage 2.
+
+   Usually these particles had very low kinetic energy.  The
+   hack fix was to replace the unknown particle with a proton with
+   same kinetic energy.
+
+   This behaviour caused a runtime dependence on G4.
+
+   Since the creation of this hack, the G4 UserPrimaryGeneratorAction
+   has been improved.  It now knows how to parse nuclei and ion ID
+   codes and correctly sends them to G4.
+
+   So the hack is no longer needed and has been removed.
+
+1) Nov 17, 2015 kutschke
+   Mu2eG4/inc/QGSP_BERT_HP_MU2E00.icc
+     The code in the muoncapture subdirectory is not being built
+     because it needs some maintenance. Therefore attempts to use
+     it cause a link-time failure when closed links are enabled.
+     Therefore I had to remove the option to use this code.
+
+     If you try to use the unavailable code an exception will be
+     thrown.
