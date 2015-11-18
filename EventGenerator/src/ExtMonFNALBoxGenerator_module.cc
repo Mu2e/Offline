@@ -49,7 +49,6 @@
 #include "MCDataProducts/inc/MARSInfo.hh"
 #include "MCDataProducts/inc/MARSInfoCollection.hh"
 #include "MCDataProducts/inc/GenParticleMARSAssns.hh"
-#include "Mu2eG4/inc/checkParticleCodeForG4.hh"
 
 #include "ExtinctionMonitorFNAL/Utilities/inc/EMFBoxIO.hh"
 
@@ -164,9 +163,6 @@ namespace mu2e {
 
       GenParticle createOutputMuon(double muonTime, const InputStop& ms);
 
-      bool fixG4UnknownsCalled_;
-      void fixG4Unknowns();
-
     public:
       explicit ExtMonFNALBoxGenerator(const fhicl::ParameterSet& pset);
       virtual void produce(art::Event& event);
@@ -199,7 +195,6 @@ namespace mu2e {
       , randPoisson_(eng_)
 
       , extmon_()
-      , fixG4UnknownsCalled_(false)
     {
       produces<mu2e::GenParticleCollection>();
       produces<mu2e::MARSInfoCollection>();
@@ -420,12 +415,6 @@ namespace mu2e {
 
     //================================================================
     void ExtMonFNALBoxGenerator::produce(art::Event& event) {
-
-      // NB: can't call fixG4Unknowns() from beginRun() because G4 is not ready.
-      if(!fixG4UnknownsCalled_) {
-        fixG4Unknowns();
-        fixG4UnknownsCalled_ = true;
-      }
 
       std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
       std::unique_ptr<MARSInfoCollection> info(new MARSInfoCollection());
@@ -669,37 +658,6 @@ namespace mu2e {
                          posMu2e,
                          momMu2e,
                          muonTime);
-    }
-
-    //================================================================
-    void ExtMonFNALBoxGenerator::fixG4Unknowns() {
-      for(InputHits::iterator i = vdhits_.begin(); i != vdhits_.end(); ++i) {
-        if(!checkParticleCodeForG4(i->particle.pdgId)) {
-          std::cout<<"ExtMonFNALBoxGenerator: G4 unknown pdgId="<<i->particle.pdgId
-                   <<", replacing with same EKine proton"
-                   <<std::endl;
-
-          const double origMass = mc_.mass(PDGCode::type(i->particle.pdgId));
-          const double origEKine = i->energy - origMass;
-          const double origpmag2 =
-            std::pow(i->particle.mu2epx, 2) +
-            std::pow(i->particle.mu2epy, 2) +
-            std::pow(i->particle.mu2epz, 2);
-
-          const double newMass = mc_.mass(PDGCode::p_plus);
-          const double newEnergy = newMass + origEKine;
-          const double newpmag2 = std::pow(newEnergy, 2) - std::pow(newMass, 2);
-
-          const double pmagRatio = (origpmag2 > 1.e-30) ? std::sqrt(newpmag2/origpmag2) : 0;
-
-          // apply the fix
-          i->particle.pdgId = PDGCode::p_plus;
-          i->energy = newEnergy;
-          i->particle.mu2epx *= pmagRatio;
-          i->particle.mu2epy *= pmagRatio;
-          i->particle.mu2epz *= pmagRatio;
-        }
-      }
     }
 
     //================================================================
