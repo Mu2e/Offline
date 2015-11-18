@@ -23,8 +23,12 @@ KalDiagRead.SimParticleLabel    : detectorFilter
 # TDR samples gave an instance name to the sim particle collection, CD3 and beyond won't
 KalDiagReadTDR : @local::KalDiagRead
 KalDiagReadTDR.SimParticleInstance : "s0"
-
+# CD3 beam data have no instance labels
 KalDiagReadCD3 : @local::KalDiagRead
 KalDiagReadCD3.SimParticleInstance : ""
+# CD3 Cosmic data have different filter module labels
+KalDiagReadCD3Cosmics			  : @local::KalDiagReadCD3
+KalDiagReadCD3Cosmics.MCStepsLabel        : cosmicFilter
+KalDiagReadCD3Cosmics.SimParticleLabel    : cosmicFilter
 
 END_PROLOG
