@@ -49,11 +49,12 @@ physics :
       RKFDownstreameMinus: {
          module_type : ReadKalFits
          fitterModuleLabel : TRFDownstreameMinus
-	 KalDiag : @local::KalDiagReadCD3 # configure KalDiag to look for CD3 data products
+	 KalDiag : @local::KalDiagReadCD3 # configure KalDiag to look for CD3 beam data products
+#	 KalDiag : @local::KalDiagReadCD3Cosmics # configure KalDiag to look for CD3 cosmic data products
       }
    }
 # trigger path; this creates hits from MCSteps, then reconstructs the tracks
-p1: [ 	@sequence::EventMixing.TimeMaps,
+  p1: [ @sequence::EventMixing.TimeMaps,
 	@sequence::Tracking.DigiSim,
 	@sequence::Tracking.TPRDownstreameMinus ]
 # end path
