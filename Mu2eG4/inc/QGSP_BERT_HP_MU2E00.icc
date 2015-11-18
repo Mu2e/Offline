@@ -40,7 +40,7 @@
 // 26.04.2007 G.Folger: Enable quasielastic for QGS string model
 // 16.05.2007 V.Ivanchenko: rename EM builders
 // 04.06.2010 G.Folger: Use new ctor for builders
-// 16.08.2010 H.Kurashige: Remove inclusion of G4ParticleWithCuts 
+// 16.08.2010 H.Kurashige: Remove inclusion of G4ParticleWithCuts
 // 22.02.2012 KLG use new muon stopping schema and G4EmStandardPhysics_option3
 //
 //----------------------------------------------------------------------------
@@ -55,7 +55,7 @@
 #include "G4Material.hh"
 #include "G4MaterialTable.hh"
 #include "G4ios.hh"
-#include <iomanip>   
+#include <iomanip>
 
 #include "G4DecayPhysics.hh"
 #include "G4EmStandardPhysics_option3.hh"
@@ -101,7 +101,7 @@ template<class T, class Config> TQGSP_BERT_HP_MU2E00<T,Config>::TQGSP_BERT_HP_MU
   throw cet::exception("BADINPUT")<<"This Mu2e Physics List has not been certified for use with Geant4 v10+ consider QGSP_BERT_HP_EMY.\n";
 #endif
 
-  this->defaultCutValue = 0.7*mm;  
+  this->defaultCutValue = 0.7*mm;
   this->SetVerboseLevel(ver);
 
   // EM Physics
@@ -126,9 +126,13 @@ template<class T, class Config> TQGSP_BERT_HP_MU2E00<T,Config>::TQGSP_BERT_HP_MU
   this->RegisterPhysics( new G4StoppingPhysics(ver));
 #endif
 
-  // use Kevin's muon stopping 
+  // use Kevin's muon stopping
   if ( getUseNewMuMinusAtomicCapture(config) ) {
-    this->RegisterPhysics( new G4MuonMinusCapturePhysics(ver));
+       throw cet::exception("BADINPUT")
+         <<"The mu minus atomic capture code is needs maintenance and is not available for use\n"
+         <<"Please modify your configuration to disable it's use.\n"
+         <<"If you need additional help consult the Mu2e software team.\n";
+       //this->RegisterPhysics( new G4MuonMinusCapturePhysics(ver));
   }
 
   // Ion Physics
@@ -144,16 +148,16 @@ template<class T, class Config> void TQGSP_BERT_HP_MU2E00<T,Config>::SetCuts()
 {
   if (this->verboseLevel >1){
     G4cout << "QGSP_BERT_HP_MU2E00::SetCuts:";
-  }  
-  //  " G4VUserPhysicsList::SetCutsWithDefault" method sets 
-  //   the default cut value for all particle types 
+  }
+  //  " G4VUserPhysicsList::SetCutsWithDefault" method sets
+  //   the default cut value for all particle types
 
-  this->SetCutsWithDefault();   
-  
+  this->SetCutsWithDefault();
+
 //  if (this->verboseLevel >0)
-//    G4VUserPhysicsList::DumpCutValuesTable();  
- 
-  
+//    G4VUserPhysicsList::DumpCutValuesTable();
+
+
 }
 
 
