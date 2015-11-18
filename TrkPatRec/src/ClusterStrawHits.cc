@@ -1,14 +1,8 @@
 //
 // Object to perform helix fit to straw hits
 //
-// $Id: ClusterStrawHits.cc,v 1.8 2014/04/28 13:51:26 brownd Exp $
-// $Author: brownd $ 
-// $Date: 2014/04/28 13:51:26 $
-//
-//
 #include "TrkPatRec/inc/ClusterStrawHits.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -19,15 +13,12 @@
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // boost
-// Root
-#include "TH1F.h"
-#include "TH2F.h"
 
 #include <vector>
 #include <algorithm>
 using namespace boost::accumulators;
 using namespace std;
-namespace mu2e 
+namespace mu2e
 {
   unsigned StrawHitCluster::_currentid(0);
 
@@ -53,8 +44,8 @@ namespace mu2e
       accumulate(*ih);
     }
   }
-  
-  
+
+
   StrawHitCluster& StrawHitCluster::operator =(StrawHitCluster const& other){
     if(&other != this){
       _pos = other._pos;
@@ -63,13 +54,13 @@ namespace mu2e
       _hits.clear();
       _hits = other._hits;
       for(vector<ClusterHit>::iterator ih=_hits.begin();ih!= _hits.end();++ih){
-	accumulate(*ih);
+        accumulate(*ih);
       }
     }
     return *this;
   }
   StrawHitCluster::~StrawHitCluster() {}
-  
+
   void StrawHitCluster::addHit(ClusterHit const& hit,double dist,bool update) {
     _hits.push_back(hit);
     _hits.back()._dist = dist;
@@ -154,16 +145,16 @@ namespace mu2e
       bool stereo = hit._flag.hasAllProperties(stflag);
       double psig2 = stereo ? _srms2 : _nsrms2;
       if(_mode == hitcluster){
-	double dperp = (cluster.pos()-hit._pos).perp();
-	retval = sqrt(pow(fmax(0.0,dperp-_dd),2)/psig2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
+        double dperp = (cluster.pos()-hit._pos).perp();
+        retval = sqrt(pow(fmax(0.0,dperp-_dd),2)/psig2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
       } else  {
 // loop over all hits in the cluster, and determine the distance to the closests one
-	double mindp2(FLT_MAX);
-	for(size_t ih=0;ih<cluster.hits().size();++ih){
-	  double dp2 = (cluster.hits()[ih]._pos-hit._pos).perp();
-	  if(dp2 < mindp2)mindp2 = dp2;
-	}
-	retval = sqrt(pow(fmax(0.0,sqrt(mindp2)-_dd),2)/psig2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
+        double mindp2(FLT_MAX);
+        for(size_t ih=0;ih<cluster.hits().size();++ih){
+          double dp2 = (cluster.hits()[ih]._pos-hit._pos).perp();
+          if(dp2 < mindp2)mindp2 = dp2;
+        }
+        retval = sqrt(pow(fmax(0.0,sqrt(mindp2)-_dd),2)/psig2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
       }
     }
     return retval;
@@ -174,21 +165,21 @@ namespace mu2e
     double dt = fabs(c1.time()-c2.time());
     if( dt < _maxdt){
       if(_mode == hitcluster) {
-	double dperp = (c1.pos()-c2.pos()).perp();
-	retval = sqrt(pow(fmax(0.0,dperp-_dd),2)/_srms2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
+        double dperp = (c1.pos()-c2.pos()).perp();
+        retval = sqrt(pow(fmax(0.0,dperp-_dd),2)/_srms2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
       } else {
-	double mindp2(FLT_MAX);
-	for(size_t ih=0;ih<c1.hits().size();++ih){
-	  for(size_t jh=0;jh<c2.hits().size();++jh){
-	    double dp2 = (c1.hits()[ih]._pos-c2.hits()[jh]._pos).perp();
-	    if(dp2 < mindp2)mindp2 = dp2;
-	  }
-	}
-	retval = sqrt(pow(fmax(0.0,sqrt(mindp2)-_dd),2)/_srms2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
+        double mindp2(FLT_MAX);
+        for(size_t ih=0;ih<c1.hits().size();++ih){
+          for(size_t jh=0;jh<c2.hits().size();++jh){
+            double dp2 = (c1.hits()[ih]._pos-c2.hits()[jh]._pos).perp();
+            if(dp2 < mindp2)mindp2 = dp2;
+          }
+        }
+        retval = sqrt(pow(fmax(0.0,sqrt(mindp2)-_dd),2)/_srms2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
       }
     }
     return retval;
-  } 
+  }
 
   void ClusterStrawHits::findClusters(StrawHitCollection const& shcol,
       StrawHitPositionCollection const& shpcol,
@@ -209,7 +200,7 @@ namespace mu2e
     chits.reserve(shcol.size());
     for(size_t ish=0;ish<shcol.size();++ish){
       if(shfcol[ish].hasAllProperties(_sigmask) && !shfcol[ish].hasAnyProperty(_bkgmask)){
-	chits.push_back(ClusterHit(shpcol[ish],shcol[ish],shfcol[ish],ish));
+        chits.push_back(ClusterHit(shpcol[ish],shcol[ish],shfcol[ish],ish));
       }
     }
 // The 1st hit becomes the first cluster
@@ -221,9 +212,9 @@ namespace mu2e
       clusters._cids[chits[0]._index] = clusters._clist.begin()->id();
       // now iterate
       while (clusters._nchanged > _maxnchanged && clusters._niter < _maxniter){
-	// update the cluster positions, and record any changes in hit assignments to clusters
-	clusters._nchanged = formClusters(chits,clusters);
-	++clusters._niter;
+        // update the cluster positions, and record any changes in hit assignments to clusters
+        clusters._nchanged = formClusters(chits,clusters);
+        ++clusters._niter;
       }
     }
   }
@@ -241,28 +232,28 @@ namespace mu2e
       double mindist(FLT_MAX);
       list<StrawHitCluster>::iterator minc = clusters._clist.end();
       for(list<StrawHitCluster>::iterator ic=clusters._clist.begin();ic!=clusters._clist.end();++ic){
-	double dist = distance(*ic,chit);
-	if(dist < mindist){
-	  mindist = dist;
-	  minc = ic;
-	}
+        double dist = distance(*ic,chit);
+        if(dist < mindist){
+          mindist = dist;
+          minc = ic;
+        }
       }
       if(mindist < _dhit){
 // append this hit to the cluster, and update the cache
-	minc->addHit(chit,mindist,update);
+        minc->addHit(chit,mindist,update);
       } else if(mindist > _dseed) {
 // seed a new cluster
-	clusters._clist.push_back(StrawHitCluster(chit));
-	minc = --clusters._clist.end();
+        clusters._clist.push_back(StrawHitCluster(chit));
+        minc = --clusters._clist.end();
       }
 // see if the cluster assignment of this hit has changed
       if(minc != clusters._clist.end()){
-	if(clusters._cids[chit._index] != (int)minc->id())++nchanged;
-	clusters._cids[chit._index] = (int)minc->id();
+        if(clusters._cids[chit._index] != (int)minc->id())++nchanged;
+        clusters._cids[chit._index] = (int)minc->id();
       } else {
 // unassigned hit
-	if(clusters._cids[chit._index] >=0)++nchanged;
-	clusters._cids[chit._index] = -1;
+        if(clusters._cids[chit._index] >=0)++nchanged;
+        clusters._cids[chit._index] = -1;
       }
     }
 // final cluster update
@@ -285,22 +276,22 @@ namespace mu2e
       double mindist(FLT_MAX);
       list<StrawHitCluster>::iterator imin=clusters._clist.end();
       for(;jc!=clusters._clist.end();++jc){
-	double dist = distance(*ic,*jc);
-	if(dist < mindist){
-	  mindist = dist;
-	  imin = jc;
-	}
+        double dist = distance(*ic,*jc);
+        if(dist < mindist){
+          mindist = dist;
+          imin = jc;
+        }
       }
       if(mindist < _dmerge){
       // merge the smaller cluster into the bigger
-	ic->merge(*imin);
-	// reassign the index
-	for(size_t ih=0;ih<imin->hits().size();++ih){
-	  clusters._cids[imin->hits()[ih]._index] = ic->id();
-	}
-	// erase the 2nd cluster
-	nmerged += imin->hits().size();
-	clusters._clist.erase(imin);
+        ic->merge(*imin);
+        // reassign the index
+        for(size_t ih=0;ih<imin->hits().size();++ih){
+          clusters._cids[imin->hits()[ih]._index] = ic->id();
+        }
+        // erase the 2nd cluster
+        nmerged += imin->hits().size();
+        clusters._clist.erase(imin);
       }
     }
     return nmerged;
