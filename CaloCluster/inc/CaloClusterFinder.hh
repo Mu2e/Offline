@@ -35,7 +35,6 @@ namespace mu2e {
 	     
 	     
 	     CaloCrystalList const& clusterList()  const {return _clusterList;}
-	     CaloCrystalList const& inspected()    const {return _inspected;}
 	     
              void formCluster(std::vector<CaloCrystalVec>& idHitVec);
 
@@ -46,7 +45,6 @@ namespace mu2e {
 	     double                 _seedTime;
 
 	     CaloCrystalList        _clusterList;
-             CaloCrystalList        _inspected;           
 	     std::queue<int>        _crystalToVisit;
              std::vector<bool>      _isVisited; 
 
