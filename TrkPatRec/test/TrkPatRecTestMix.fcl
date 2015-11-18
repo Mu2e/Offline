@@ -1,0 +1,23 @@
+#
+#  This script runs hit and track reconstruction on a file containing StepPointMCs, including background frame mixing for CD3
+# for example, the command
+#  > mu2e --config TrkPatRec/test/TrkPatRecTestMix.fcl /pnfs/mu2e/scratch/outstage/gandr/3028848.beam-g4s4-conversion/00000/sim.mu2e.cd3-beam-g4s4-detconversion.0918a.004001_00000000.art --nevts=100
+#
+# will read 100 CD3 CE events, mix CD3 backgrounds on them, reconstruct the tracks, and produce the standard KalDiag TTree for those tracks
+#
+# David Brown, 13 Nov, 2015
+#
+# define background frame files.  DO NOT INCLUDE THIS for grid submission, each
+# grid job needs to be provided its own background frames!!!
+BEGIN_PROLOG
+bgHitFiles : [
+"/pnfs/mu2e/persistent/projects/production/data/sim/mu2e/cd3-detmix-cut/1109a/4e/fa/e6/sim.mu2e.cd3-detmix-cut.1109a.000001_00001167.art"
+]
+END_PROLOG
+#include "JobConfig/cd3/beam/MixPremixedPBIAndTrack.fcl"
+services.TFileService : { fileName : "TrkPatRecTestMix.root" }
+# the following are needed for interactive running.  They will be overwritten if you submit this job
+# on the grid with mu2eart and do not need to be removed.
+services.user.SeedService.baseSeed         :  773651
+services.user.SeedService.maxUniqueEngines :  20
+

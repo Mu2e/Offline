@@ -5,7 +5,7 @@
 BEGIN_PROLOG
 
 # Note that KalDiag must be configured differently depending on whether you are
-# reading data generated inline, or are reading data output through DetectorFilter
+# reading data generated inline, or are reading data output through Read
 KalDiag : {
   MCPtrLabel	      : makeSH
   StrawHitMCLabel     : makeSH
@@ -16,12 +16,15 @@ KalDiagDirect			  : @local::KalDiag
 KalDiagDirect.MCStepsLabel        : g4run
 KalDiagDirect.SimParticleLabel    : g4run
 KalDiagDirect.SimParticleInstance : "" 
-# Production samples use DetectorFilter, which requires the following setup
-KalDiagDetectorFilter			  : @local::KalDiag
-KalDiagDetectorFilter.MCStepsLabel        : detectorFilter
-KalDiagDetectorFilter.SimParticleLabel    : detectorFilter
+# Production samples use Read, which requires the following setup
+KalDiagRead			  : @local::KalDiag
+KalDiagRead.MCStepsLabel        : detectorFilter
+KalDiagRead.SimParticleLabel    : detectorFilter
 # TDR samples gave an instance name to the sim particle collection, CD3 and beyond won't
-KalDiagDetectorFilterTDR : @local::KalDiagDetectorFilter
-KalDiagDetectorFilterTDR.SimParticleInstance : "s0"
+KalDiagReadTDR : @local::KalDiagRead
+KalDiagReadTDR.SimParticleInstance : "s0"
+
+KalDiagReadCD3 : @local::KalDiagRead
+KalDiagReadCD3.SimParticleInstance : ""
 
 END_PROLOG

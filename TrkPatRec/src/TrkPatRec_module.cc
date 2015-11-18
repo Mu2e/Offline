@@ -96,6 +96,7 @@ namespace mu2e
       int _diag,_debug;
       int _printfreq;
       bool _addhits; 
+      bool _useobsolete;
       // event object labels
       string _shLabel;
       string _shpLabel;
@@ -212,6 +213,7 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
     _addhits(pset.get<bool>("addhits",true)),
+    _useobsolete(pset.get<bool>("UseObsolete",false)),
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _stLabel(pset.get<string>("StereoHitCollectionLabel","MakeStereoHits")),
@@ -248,6 +250,10 @@ namespace mu2e
     _hfit(pset.get<fhicl::ParameterSet>("HelixFit",fhicl::ParameterSet())),
     _payloadSaver(pset)
     {
+    if(!_useobsolete){
+      throw cet::exception("RECO")<<"mu2e::TrkPatRec: This module is obsolete.  Use one of the TrkPatRec sequences defined in TrkPatRec/fcl/prolog.fcl"<< endl;
+    }
+
     // tag the data product instance by the direction and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();
     produces<KalRepCollection>(_iname);
