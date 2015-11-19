@@ -2,10 +2,6 @@
 #
 # Script to build the files found in this directory.
 #
-# $ Id: SConscript,v 1.7 2012/08/24 20:19:31 gandr Exp $
-# $ Author: gandr $
-# $ Date: 2012/08/24 20:19:31 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -13,40 +9,89 @@ import os
 Import('env')
 Import('mu2e_helper')
 
+babarlibs     = env['BABARLIBS']
+rootlibs      = env['ROOTLIBS']
 extrarootlibs = ['Spectrum', 'TMVA' , 'Minuit' , 'XMLIO' ]
-
-babarlibs = env['BABARLIBS']
 
 helper=mu2e_helper();
 
-mainlib = helper.make_mainlib ( [ 'art_Framework_Core',
-                                  'art_Framework_Core',
-                                  'art_Framework_Services_Optional_TFileService_service',
-                                  babarlibs,
-                                  'mu2e_GeometryService',
-                                  'mu2e_ConditionsService',
-                                  'mu2e_Mu2eUtilities',
-                                  'mu2e_GeneralUtilities',
-                                  'mu2e_MCDataProducts',
-                                  'mu2e_RecoDataProducts',
-                                  'mu2e_KalmanTests',
-                                  'CLHEP',
-                                  extrarootlibs
-                                ] )
+#
+# At this time, there is a linkage loop between the package library
+# (mu2e_CalPatRec.so) and the dictionary library.  The solution is
+# to do ROOT "old style" dictionaries.  That is,
+#  a) there is no mu2e_CalPatRec.so
+#  b) Code that would normally go into mu2e_CalPatRec.so goes into
+#     mu2e_CalPatRec_dict.so
+#  c) Code that normally would like against mu2e_CalPatRec.so instead
+#     links against mu2e_CalPatRec_dict.so
+#
+# Only the classes that inherit from TNamed cause this problem. I believe
+# that we could put all of the other classes in mu2e_CalPatRec.so and
+# only those that inherit from TNamed in mu2e_CalPatRec_dict.so
 
-helper.make_plugins( [ mainlib,
-                       'art_Framework_Core',
-                       'art_Framework_Services_Optional_TFileService_service',
-                       'mu2e_Mu2eUtilities',
-                       'mu2e_GeneralUtilities',
-                       'CLHEP',
-                       'mu2e_MCDataProducts',
-                       'mu2e_RecoDataProducts',
+dictlib = helper.make_dict_and_map_hack( [ 'mu2e_CaloCluster',
+                                           'mu2e_TrkPatRec',
+                                           'mu2e_KalmanTests',
+                                           'mu2e_Mu2eUtilities',
+                                           'mu2e_ConditionsService',
+                                           'mu2e_GeometryService',
+                                           'mu2e_BFieldGeom',
+                                           'mu2e_CalorimeterGeom',
+                                           'mu2e_TTrackerGeom',
+                                           'mu2e_MCDataProducts',
+                                           'mu2e_RecoDataProducts',
+                                           'mu2e_Mu2eInterfaces',
+                                           'mu2e_ConfigTools',
+                                           'mu2e_DataProducts',
+                                           babarlibs,
+                                           'art_Framework_Core',
+                                           'art_Framework_Principal',
+                                           'art_Framework_Services_Registry',
+                                           'art_Framework_Services_Optional_TFileService_service',
+                                           'art_Framework_Services_Optional',
+                                           'art_Persistency_Provenance',
+                                           'art_Persistency_Common',
+                                           'art_Utilities',
+                                           'fhiclcpp',
+                                           'cetlib',
+                                           rootlibs,
+                                           'Reflex',
+                                           extrarootlibs,
+                                           'CLHEP',
+                                           'xerces-c',
+                                           'boost_system',
+                                           ] )
+
+helper.make_plugins( [ dictlib,
                        'mu2e_KalmanTests',
-                        extrarootlibs
+                       'mu2e_Mu2eUtilities',
+                       'mu2e_CaloCluster',
+                       'mu2e_ConditionsService',
+                       'mu2e_GeometryService',
+                       'mu2e_CalorimeterGeom',
+                       'mu2e_RecoDataProducts',
+                       'mu2e_Mu2eInterfaces',
+                       'mu2e_ConfigTools',
+                       babarlibs,
+                       'art_Framework_Core',
+                       'art_Framework_Principal',
+                       'art_Framework_Services_Registry',
+                       'art_Framework_Services_Optional',
+                       'art_Framework_Services_Optional_TFileService_service',
+                       'art_Framework_Services_Optional_RandomNumberGenerator_service',
+                       'art_Persistency_Common',
+                       'art_Persistency_Provenance',
+                       'art_Utilities',
+                       'MF_MessageLogger',
+                       'fhiclcpp',
+                       'cetlib',
+                       'CLHEP',
+                       rootlibs,
+                       extrarootlibs,
+                       'xerces-c',
+                       'boost_filesystem',
+                       'boost_system',
                      ] )
-
-helper.make_dict_and_map( [mainlib] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
