@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 #
-#
-# $Id: SConscript,v 1.3 2013/03/18 23:50:10 gandr Exp $
-# $Author: gandr $
-# $Date: 2013/03/18 23:50:10 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -14,11 +9,29 @@ Import('mu2e_helper')
 
 helper=mu2e_helper();
 
+rootlibs = env['ROOTLIBS']
+
 helper.make_plugins( [
-    'mu2e_GeometryService',
-    'art_Framework_Core',
-    'CLHEP',
-    ] )
+        'mu2e_SeedService_SeedService_service',
+        'mu2e_GeometryService',
+        'mu2e_BFieldGeom',
+        'mu2e_Mu2eInterfaces',
+        'art_Framework_Core',
+        'art_Framework_Principal',
+        'art_Framework_Services_Registry',
+        'art_Framework_Services_Optional',
+        'art_Framework_Services_Optional_TFileService_service',
+        'art_Persistency_Common',
+        'art_Persistency_Provenance',
+        'art_Utilities',
+        'MF_MessageLogger',
+        'fhiclcpp',
+        'cetlib',
+        'CLHEP',
+        rootlibs,
+        'boost_filesystem',
+        'boost_system',
+        ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
