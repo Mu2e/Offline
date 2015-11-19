@@ -52,7 +52,7 @@ physics : {
    producers: {
       generate: {
          module_type          : EventGenerator
-         inputfile            : "JobConfig/TDR/genconfig_PrimaryProtons.txt"
+         inputfile            : "JobConfig/cd3/genconfig_PrimaryProtons.txt"
       }
 
       genCounter: {
