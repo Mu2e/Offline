@@ -2,6 +2,32 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_5_5
 
+3) Nov 19, 2015 kutschke
+   CalPatrec/src/SConscript now does closed links but it was a lot
+   of work to get there.
+
+   The BTrk class KalContext declares but does not provide a copy
+   c'tor and an copy assignment operator; this is intentional, to
+   prevent copying.
+
+   The package requires that a root dictionary be built for a class
+   that inherits from KalContext.  Therefore a closed link is impossible.
+   To fix this I added:
+
+    CalPatRec/src/KalContextHack.cc
+
+   which contains implmentations of the missing functions. These
+   implementations throw an exception if these functions are ever
+   called ( which they should not be ).
+
+   There are several classes in the dictionary that invoke the ClassDef
+   macro.  The effect of this is that mainlib and the the dictionary cannot
+   be linked separately with a closed link in both.
+
+   To fix this I added a new member function to the helper class in SConstruct;
+   this function builds the the dictionary but also includes all code that
+   would normally go into the mainlib; the mainlib is not built.
+
 2) Nov 17, 2015 kutschke
    EventGenerator/src/ExtMonFNALBoxGenerator_module.cc
 
