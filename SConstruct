@@ -148,7 +148,7 @@ env.MergeFlags('-Wall')
 env.MergeFlags('-Wno-unused-local-typedefs')
 env.MergeFlags('-g')
 env.MergeFlags('-Werror')
-#env.MergeFlags('-Wl,--no-undefined')   # uncomment for closed link
+env.MergeFlags('-Wl,--no-undefined')
 if level == 'prof':
     env.MergeFlags('-O3')
     env.MergeFlags('-fno-omit-frame-pointer')
