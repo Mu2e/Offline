@@ -148,6 +148,7 @@ env.MergeFlags('-Wall')
 env.MergeFlags('-Wno-unused-local-typedefs')
 env.MergeFlags('-g')
 env.MergeFlags('-Werror')
+#env.MergeFlags('-Wl,--no-undefined')   # uncomment for closed link
 if level == 'prof':
     env.MergeFlags('-O3')
     env.MergeFlags('-fno-omit-frame-pointer')
@@ -313,6 +314,31 @@ class mu2e_helper:
                 env.SharedLibrary( self.prefixed_map_libname(),
                                    self.map_tmp_name()
                                    )
+
+#
+#   Make a single library that contains the object code plus
+#   the dictionary.  Also make the map file.
+#
+    def make_dict_and_map_hack( self, userlibs, pf_dict=[] ):
+        non_plugin_cc = self.non_plugin_cc()
+        all_source = [ non_plugin_cc,  self.dict_tmp_name()  ]
+        print 'Test: ' + self.dict_libname()
+        if os.path.exists('classes.h'):
+            if os.path.exists('classes_def.xml'):
+                env.DictionarySource([ self.dict_tmp_name(),
+                                       self.map_tmp_name() ],
+                                     [ 'classes.h', 'classes_def.xml'] )
+                env.SharedLibrary( self.prefixed_dict_libname(),
+                                   all_source,
+                                   LIBS=[ userlibs ],
+                                   parse_flags=pf_dict
+                                   )
+                env.SharedLibrary( self.prefixed_map_libname(),
+                                   self.map_tmp_name()
+                                   )
+                pass
+            pass
+        return self.dict_libname()
 
 # Export the class so that it can be used in the SConscript files
 # For reasons I don't understand, this must come before the env.SConscript(ss) line.
