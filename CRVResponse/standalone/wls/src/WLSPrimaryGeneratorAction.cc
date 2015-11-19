@@ -399,8 +399,8 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 //    double beamsize=1.0*mm;
     double beamsize=0.0*mm;
     double x0 = -1.0*cm;
-//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);    //center
-    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,-1.0*cm,beamsize);    //at fiber 0
+    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);    //center
+//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,-1.0*cm,beamsize);    //at fiber 0
 
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-149.0*cm,beamsize);  //1cm from left side
 //    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-140.0*cm,beamsize);  //10cm from left side

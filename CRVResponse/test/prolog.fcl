@@ -4,17 +4,17 @@ BEGIN_PROLOG
       module_type               : CrvPhotonArrivalsGenerator
       g4ModuleLabels            : ["g4filter"]
       processNames              : ["cosmics2"]
-      lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable_6600",
-                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable_5600",
-                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable_4500",
-                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable_3000",
-                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable_2300",
-                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/LookupTable_900"]
+      lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6600",
+                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_5600",
+                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_4500",
+                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_3000",
+                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_2300",
+                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 1750.0   //1750.0 photons per MeV 
-      scintillatorRatioFastSlow : 0.5      //100% fast
-      scintillatorDecayTimeFast : 3.0      //10.0 ns   //includes WLS component in the scintillator
-      scintillatorDecayTimeSlow : 10.0     //100.0 ns  //unknown, not used
+      scintillationYield        : 6000.0   //6000.0 photons per MeV 
+      scintillatorRatioFastSlow : 1.0      //100% fast
+      scintillatorDecayTimeFast : 3.0      //3.0 ns   //includes WLS component in the scintillator
+      scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used
       fiberDecayTime            : 7.4      //7.4 ns
       timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
       startTime                 : 400.0    //0.0 ns
@@ -65,10 +65,11 @@ BEGIN_PROLOG
     {
       module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
-      param0                    : 1.8      //3.2
-      param1                    : 49.6     //33.6
+      param0                    : 0.0      //0.0
+      param1                    : 51.0     //51.0
       pulseThreshold            : 0.015    //15mV
       leadingEdgeThreshold      : 0.2      //20% of the maximum bin
+      minPEs                    : 3        //3 PEs
     }
     SimpleCrvCoincidence:
     {

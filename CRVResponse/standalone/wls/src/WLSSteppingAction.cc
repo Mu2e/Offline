@@ -128,6 +128,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       G4Material* scintillator = G4Material::GetMaterial("Polystyrene",true);
       G4MaterialPropertiesTable* scintillatorPropertiesTable = scintillator->GetMaterialPropertiesTable();
       double scintillationYield = scintillatorPropertiesTable->GetConstProperty("SCINTILLATIONYIELD");
+      double scintillatorRatioFastSlow = scintillatorPropertiesTable->GetConstProperty("YIELDRATIO");
       double scintillatorDecayTimeFast = scintillatorPropertiesTable->GetConstProperty("FASTTIMECONSTANT");
       double scintillatorDecayTimeSlow = scintillatorPropertiesTable->GetConstProperty("SLOWTIMECONSTANT");
 
@@ -136,6 +137,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       double fiberDecayTime = fiberPropertiesTable->GetConstProperty("WLSTIMECONSTANT");
 
       _crvPhotonArrivals->SetScintillationYield(scintillationYield);
+      _crvPhotonArrivals->SetScintillatorRatioFastSlow(scintillatorRatioFastSlow);
       _crvPhotonArrivals->SetScintillatorDecayTimeFast(scintillatorDecayTimeFast);
       _crvPhotonArrivals->SetScintillatorDecayTimeSlow(scintillatorDecayTimeSlow);
       _crvPhotonArrivals->SetFiberDecayTime(fiberDecayTime);

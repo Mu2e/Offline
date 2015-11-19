@@ -17,7 +17,7 @@ double cosmicDYB.muCosThMin = 0.0;
 double cosmicDYB.muCosThMax = 1.0;
 int    cosmicDYB.nBinsE = 20000;
 int    cosmicDYB.nBinsTheta = 100;
-double cosmicDYB.dx     = 2800.0;
+double cosmicDYB.dx     = 2700.0;   //10cm away from counter edges
 double cosmicDYB.dy     = 0;
 double cosmicDYB.dz     = 732.72;
 double cosmicDYB.y0     = 2699.9;
@@ -27,7 +27,7 @@ double cosmicDYB.tMax   = 800.0;
 string cosmicDYB.refPointChoice  = "Customized";
 bool   cosmicDYB.vertical        = false;
 string cosmicDYB.directionChoice = "All";
-vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-3904.0, 2702.35, 14639.4};
+vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-3904.0, 2699.9, 14639.4};
 
 bool   cosmicDYB.dontProjectToSurface = true;
 

@@ -55,14 +55,16 @@ namespace mu2e
     double      _pulseThreshold;
     double      _leadingEdgeThreshold;
     double      _microBunchPeriod;
+    int         _minPEs;
   };
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
-    _param0(pset.get<double>("param0")),   //3.2  should be 0?
-    _param1(pset.get<double>("param1")),   //33.6
+    _param0(pset.get<double>("param0")),   //needs to be 0
+    _param1(pset.get<double>("param1")),   //51.0
     _pulseThreshold(pset.get<double>("pulseThreshold")),  //0.015
-    _leadingEdgeThreshold(pset.get<double>("leadingEdgeThreshold"))   //0.2
+    _leadingEdgeThreshold(pset.get<double>("leadingEdgeThreshold")),   //0.2
+    _minPEs(pset.get<int>("minPEs"))   //3
   {
     produces<CrvRecoPulsesCollection>();
     _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_pulseThreshold, _leadingEdgeThreshold, _param0, _param1));
@@ -109,9 +111,10 @@ namespace mu2e
           double time=_makeCrvRecoPulses->GetLeadingEdge(i);
           if(time<0) continue;
           if(time>_microBunchPeriod) continue;
-          crvRecoPulses.GetRecoPulses(SiPM).emplace_back(_makeCrvRecoPulses->GetPEs(i),
-                                                         time,
-                                                         _makeCrvRecoPulses->GetPulseHeight(i));
+          int PEs = _makeCrvRecoPulses->GetPEs(i);
+          double height = _makeCrvRecoPulses->GetPulseHeight(i);
+          if(PEs<_minPEs) continue; 
+          crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, time,height);
         }
       }
     }

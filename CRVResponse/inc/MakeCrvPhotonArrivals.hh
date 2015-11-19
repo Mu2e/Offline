@@ -84,7 +84,7 @@ class MakeCrvPhotonArrivals
                                       double energyDepositedNonIonizing);
     int                       GetNumberOfPhotons(int SiPM);
     const std::vector<double> &GetArrivalTimes(int SiPM);
-    void                      SetScintillationYield(double scintillationYield) {_scintillationYield=scintillationYield;}
+    void                      SetScintillationYield(double yield) {_scintillationYield=yield;}
     void                      SetScintillatorRatioFastSlow(double ratio) {_scintillatorRatioFastSlow=ratio;}
     void                      SetScintillatorDecayTimeFast(double decayTime) {_scintillatorDecayTimeFast=decayTime;}
     void                      SetScintillatorDecayTimeSlow(double decayTime) {_scintillatorDecayTimeSlow=decayTime;}

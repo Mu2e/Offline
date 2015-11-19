@@ -99,8 +99,6 @@ namespace mu2e
   , _nth( config.getInt("cosmicDYB.nBinsTheta") )
 
     // Time range (in ns) over which to generate events.
-  ,_tmin( config.getDouble("cosmicDYB.tMin", NAN) )
-  ,_tmax( config.getDouble("cosmicDYB.tMax", NAN) )
   ,_dt  ( 0.0 )
 
     // Random number distributions; getEngine comes from the base class.
@@ -189,8 +187,13 @@ namespace mu2e
     double offset = 100.;
 
     // Start and end times for generation.
-    if(isnan(_tmin)) _tmin = (daqPar->t0 > offset)? daqPar->t0-offset : 0.;
-    if(isnan(_tmax)) _tmax = accPar->deBuncherPeriod;
+    _tmin = (daqPar->t0 > offset)? daqPar->t0-offset : 0.;
+    _tmax = accPar->deBuncherPeriod;
+
+    //default can be overriden by user values
+    _tmin = config.getDouble("cosmicDYB.tMin", _tmin);
+    _tmax = config.getDouble("cosmicDYB.tMax", _tmax);
+
     _dt   = _tmax - _tmin;
 
 

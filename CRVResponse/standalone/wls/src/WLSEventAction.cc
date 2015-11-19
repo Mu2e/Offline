@@ -288,12 +288,10 @@ void WLSEventAction::Draw(const G4Event* evt) const
   probabilities._constThermalProb = 6.31e-7; 
   probabilities._constPhotonProduction = 0.136; 
 
-/*
   probabilities._constTrapType0Prob = 0;  
   probabilities._constTrapType1Prob = 0;
   probabilities._constThermalProb = 0; 
   probabilities._constPhotonProduction = 0; 
-*/
 
   static CLHEP::HepJamesRandom engine(1);
   static CLHEP::RandFlat randFlat(engine);
@@ -313,8 +311,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
   std::vector<double> waveform[4], waveform2[4];
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-//    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);  //from lookup tables
-    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);  //from full GEANT
+    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);  //from lookup tables
+//    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);  //from full GEANT
 
     std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
     sim.Simulate(photonTimes, SiPMresponseVector);
@@ -441,7 +439,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
     }
 
 //Landau fit
-    mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.015,0.2, 1.8,49.6);
+    mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.015,0.2, 0.0,51.0);
     makeRecoPulses.SetWaveform(waveform[SiPM], startTime, binWidth);
     unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
@@ -492,12 +490,18 @@ void WLSEventAction::Draw(const G4Event* evt) const
       int photons = photonTimes.size();
       double integral = makeRecoPulses.GetIntegral(0);
       double pulseHeight = makeRecoPulses.GetPulseHeight(0);
+      std::cout<<"SiPM: "<<SiPM<<"  integral: "<<integral<<std::endl;
       std::cout<<"Photons/integral: "<<photons/integral<<"         ";
       std::cout<<"Photons/maxBin: "<<photons/pulseHeight<<std::endl;
       _photonsVsIntegral->Fill(integral,photons);
       _photonsVsPulseHeight->Fill(pulseHeight,photons);
       double PEs=0;
-      for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++) PEs+=siPMcharges[SiPM][j];
+      double leadingEdge=makeRecoPulses.GetLeadingEdge(0);
+      double TOT=makeRecoPulses.GetTimeOverThreshold(0);
+      for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++) 
+      {
+        if(siPMtimes[SiPM][j]<leadingEdge+TOT-40.0 && siPMtimes[SiPM][j]>leadingEdge-40.0) PEs+=siPMcharges[SiPM][j];
+      } 
       std::cout<<"PEs/integral: "<<PEs/integral<<"         ";
       std::cout<<"PEs/maxBin: "<<PEs/pulseHeight<<std::endl;
       _PEsVsIntegral->Fill(integral,PEs);

@@ -14,12 +14,12 @@ source :
 services :
 {
   message               : @local::default_message
-  TFileService          : { fileName : "hist.root" }
+  TFileService          : { fileName : "hist_6cm.root" }
   RandomNumberGenerator : { }
 
   user :
   {
-    GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom.txt" }
+    GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom_6cm.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
     G4Helper               : { }
@@ -34,7 +34,7 @@ physics :
     generate: 
     {
        module_type          : EventGenerator
-       inputfile            : "CRVResponse/singleCounter/genconfig.txt"
+       inputfile            : "CRVResponse/singleCounter/genconfig_6cm.txt"
     }
 
     g4run : 
@@ -108,16 +108,16 @@ physics :
 
 physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotonArrivals.processNames   : ["*"]
-physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_4500"]
+physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6cm_4500"]
 physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [4500]
-physics.producers.CrvPhotonArrivals.scintillationYield        : 10000.0 // photons/MeV
+physics.producers.CrvPhotonArrivals.scintillationYield        : 10000.0
 
 outputs: 
 {
     Output : 
     {
         module_type : RootOutput
-        fileName    : "data_crv.root"
+        fileName    : "data_crv_6cm.root"
     }
 }
 

@@ -74,6 +74,11 @@ namespace mu2e
       CrvHit(double time, int PEs, mu2e::CRSScintillatorBarIndex barIndex, int layer, int counter, int SiPM, double x, double y): 
                                                           _time(time), _PEs(PEs), _barIndex(barIndex), 
                                                           _layer(layer), _counter(counter), _SiPM(SiPM), _x(x), _y(y) {}
+      void Print(int sectorType) const
+      {
+        std::cout<<"sectorType: "<<sectorType<<"   layer: "<<_layer<<"   counter: "<<_counter<<"  SiPM: "<<_SiPM<<"      ";
+        std::cout<<"  PEs: "<<_PEs<<"   LE: "<<_time<<"   x: "<<_x<<"   y: "<<_y<<"         "<<_barIndex<<std::endl;
+      }
     };
 
     void AddCoincidence(std::unique_ptr<CrvCoincidenceCheckResult> &crvCoincidenceCheckResult, int sectorType, const CrvHit &h1, const CrvHit &h2, const CrvHit &h3);
@@ -225,8 +230,8 @@ namespace mu2e
           double time=pulse._leadingEdge;
           if(_verboseLevel>4)
           {
-            std::cout<<"sector: "<<sectorNumber<<"  module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  bar: "<<barNumber<<"  SiPM: "<<SiPM<<"      ";
-            std::cout<<"  PEs: "<<PEs<<"   LE: "<<time<<"   x: "<<x<<"   y: "<<y<<std::endl;
+            std::cout<<"sector: "<<sectorNumber<<"  module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";
+            std::cout<<"  PEs: "<<PEs<<"   LE: "<<time<<"   x: "<<x<<"   y: "<<y<<"       bar: "<<barNumber<<std::endl;
           }
 
           //check whether this reco pulses is within the time window
@@ -235,11 +240,7 @@ namespace mu2e
           {
             //get the right set of hits based on the hitmap key, and insert a new hit
             crvHits[sectorType].emplace_back(time,PEs,barIndex,layerNumber,counterNumber,SiPM, x,y);
-            if(_verboseLevel==4)
-            {
-              std::cout<<"sectorType: "<<sectorType<<"   layer: "<<layerNumber<<"   counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";
-              std::cout<<"  PEs: "<<PEs<<"   LE: "<<time<<"   x: "<<x<<"   y: "<<y<<std::endl;
-            }
+            if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
           }
 
           //allow coincidences between consecutive microbunches (if the time window extends over the microbunch end)
@@ -248,11 +249,7 @@ namespace mu2e
           {
             //get the right set of hits based on the hitmap key, and insert a new hit
             crvHits[sectorType].emplace_back(time,PEs,barIndex,layerNumber,counterNumber,SiPM, x,y);
-            if(_verboseLevel==4)
-            {
-              std::cout<<"sectorType: "<<sectorType<<"   layer: "<<layerNumber<<"   counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";
-              std::cout<<"  PEs: "<<PEs<<"   LE: "<<time<<"   x: "<<x<<"   y: "<<y<<std::endl;
-            }
+            if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
           }
         }
       }//loop over SiPM
@@ -276,24 +273,30 @@ namespace mu2e
         int counter=iterHit->_counter;
         int PEs=iterHit->_PEs;
         int time=iterHit->_time;
-        if(PEs>=_PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);
-        else  //check adjacent counters
+
+        //check other SiPM and the SiPMs at the adjacent counters
+        int PEs_thisCounter=PEs;
+        int PEs_adjacentCounter1=0;
+        int PEs_adjacentCounter2=0;
+        std::vector<CrvHit>::const_iterator iterHitAdjacent;
+        for(iterHitAdjacent=crvHitsOfSectorType.begin(); iterHitAdjacent!=crvHitsOfSectorType.end(); iterHitAdjacent++)
         {
-          std::vector<CrvHit>::const_iterator iterHitAdjacent;
-          for(iterHitAdjacent=crvHitsOfSectorType.begin(); iterHitAdjacent!=crvHitsOfSectorType.end(); iterHitAdjacent++)
-          {
-            if(iterHitAdjacent->_layer==layer && 
-               abs(iterHitAdjacent->_counter-counter)<=1 &&
-               fabs(iterHitAdjacent->_time-time)<=_adjacentPulseTimeDifference &&
-               iterHitAdjacent->_PEs<=PEs) //another hit at an adjacent counter within a certain window 
-                                           //with the same number of PEs or less
-            {
-              //check, if the number of PEs of the adjacent counter added to the current hit's PE number 
-              //brings this hit above the threshold, add this hit to vector of hits
-              if(PEs+iterHitAdjacent->_PEs>=_PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);
-            }
-          }
+          if(std::distance(iterHitAdjacent,iterHit)==0) continue;  //don't compare with itself
+          if(iterHitAdjacent->_layer!=layer) continue;             //compare hits of the same layer only
+          if(fabs(iterHitAdjacent->_time-time)>_adjacentPulseTimeDifference) continue; //compare hits within a certain time window only
+
+          int counterDiff=iterHitAdjacent->_counter-counter;
+          if(counterDiff==0) PEs_thisCounter+=iterHitAdjacent->_PEs;   //add PEs from the same counter (i.e. the "other" SiPM), 
+                                                                       //if the "other" hit is within a certain time window (5ns)
+          if(counterDiff==-1) PEs_adjacentCounter1+=iterHitAdjacent->_PEs;  //add PEs from an adjacent counter, 
+                                                                            //if these hits are within a certain time window (5ns)
+          if(counterDiff==1) PEs_adjacentCounter2+=iterHitAdjacent->_PEs;   //add PEs from an adjacent counter, 
+                                                                            //if these hits are within a certain time window (5ns)
         }
+        //check, if the number of PEs of the adjacent counter added to the current hit's PE number 
+        //brings this hit above the threshold, add this hit to vector of hits
+        if(PEs_thisCounter+PEs_adjacentCounter1>=_PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);
+        else {if(PEs_thisCounter+PEs_adjacentCounter2>=_PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);}
       }
 
       //find coincidences using 3 hits in 3 layers
@@ -417,18 +420,13 @@ namespace mu2e
   {
     std::vector<const CrvHit*> hits{&h1,&h2,&h3};
     CrvCoincidenceCheckResult::CoincidenceCombination combination;
-    if(_verboseLevel>2) std::cout<<"Coincidence sectorType/layers/counters/times/counters/SiPMs/PEs: "<<std::endl;
     for(int k=0; k<3; k++) 
     {
       combination._time[k] = hits[k]->_time;
       combination._PEs[k]  = hits[k]->_PEs;
       combination._counters[k] = hits[k]->_barIndex;
       combination._SiPMs[k] = hits[k]->_SiPM;
-      if(_verboseLevel>2)
-      {
-        std::cout<<"   "<<sectorType<<" / "<<hits[k]->_layer<<" / "<<hits[k]->_counter<<" / "<<hits[k]->_SiPM
-                 <<" / "<<hits[k]->_PEs<<" / "<<hits[k]->_time<<std::endl;
-      }
+      if(_verboseLevel>2) hits[k]->Print(sectorType);
     }
     crvCoincidenceCheckResult->GetCoincidenceCombinations().push_back(combination);
   }

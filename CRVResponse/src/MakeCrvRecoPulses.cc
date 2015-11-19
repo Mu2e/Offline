@@ -30,6 +30,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
   _landauParams2.clear();
   _T1s.clear();
   _T2s.clear();
+  _TOTs.clear();
 
   unsigned int nBins = waveform.size();
   double time = startTime;
@@ -41,6 +42,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
       TGraph g;
       double T1 = time;
       double T2 = NAN;
+      double TOTstart = time;
       double integral = 0;
       double maxVoltage = NAN;
       bool   insideFitInterval = true;
@@ -54,8 +56,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
         voltage = waveform[bin];
         if(voltage<_pulseThreshold) break;
 
-        if(insideFitInterval) g.SetPoint(g.GetN(),time,voltage);
         integral += voltage;
+        if(insideFitInterval) g.SetPoint(g.GetN(),time,voltage);
         if(voltage>maxVoltage || isnan(maxVoltage)) maxVoltage=voltage;
         else
         {
@@ -109,6 +111,8 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
       _integrals.push_back(integral);
       _T1s.push_back(T1);
       _T2s.push_back(T2);
+      _TOTs.push_back(time-TOTstart);
+
     }
   }
 }
@@ -179,6 +183,13 @@ double MakeCrvRecoPulses::GetT2(int pulse)
   int n = _T2s.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
   return _T2s[pulse];
+}
+
+double MakeCrvRecoPulses::GetTimeOverThreshold(int pulse)
+{
+  int n = _TOTs.size();
+  if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
+  return _TOTs[pulse];
 }
 
 }
