@@ -14,7 +14,8 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
-
+#include "KalmanTests/fcl/KalDiag.fcl"
+#
 #include "Analyses/fcl/prolog.fcl"
 
 #------------------------------------------------------------------------------
@@ -23,38 +24,26 @@
 BEGIN_PROLOG
   generatorSeq  : [ generate, g4run, protonTimeMap, muonTimeMap ]
 
-  hitMakerSeq   : [ MakeCaloReadoutHits, MakeCaloCrystalHits, makeSD, makeSH ]
-
-# MC generator and hit makers
-  genHitsSeq    : [ @sequence::generatorSeq, @sequence::hitMakerSeq ]
+  hitMakerSeq   : [ MakeCaloReadoutHits, MakeCaloCrystalHits, @sequence::Tracking.DigiSim ]
 
 # calorimeter cluster reconstruction
   calRecoSeq    : [ MakeCaloProtoCluster, MakeCaloCluster ]
-
-# MC generator and hit makers
-  genHitsSeq    : [ @sequence::generatorSeq, @sequence::hitMakerSeq ]
-
-# hit pre-making for TrkPatRec; FSHPreStereo is needed to flag straw hits
-  tprMakeHitSeq : [ FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
 
 # hit making for CalPatRec
   cprMakeHitSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
 		    CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
 # 
-  trkPatRecSeq  : [ @sequence::tprMakeHitSeq, TrkPatRec, MergePatRec ]
   calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
-  allPatRecSeq  : [ @sequence::tprMakeHitSeq, TrkPatRec, @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
 
 #------------------------------------------------------------------------------
 # downstream electron and downstream muon reconstruction - needed for particle ID
 #------------------------------------------------------------------------------
-  trkPatRecDemDmmSeq  : [ @sequence::tprMakeHitSeq, TrkPatRecDem, TrkPatRecDmm, MergePatRecDem, MergePatRecDmm ]
 
   calPatRecDemDmmSeq  : [ @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, MergePatRecDem, MergePatRecDmm ]
 
-  allPatRecDemDmmSeq  : [ @sequence::tprMakeHitSeq, TrkPatRecDem, TrkPatRecDmm, 
-			  @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, 
-			  MergePatRecDem, MergePatRecDmm ]
+  allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, @sequence::Tracking.TPRDownstreammuMinus
+			  , @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm
+			  , MergePatRecDem, MergePatRecDmm ]
 
 # particle identification
 
@@ -126,16 +115,9 @@ physics : {
 	MakeCaloProtoCluster : @local::MakeCaloProtoCluster
 	MakeCaloCluster      : @local::MakeCaloCluster
 #------------------------------------------------------------------------------
-#  TrkPatRec 
+#  Tracking: all tracking modules come from prolog.fcl
 #------------------------------------------------------------------------------
-	FSHPreStereo         : @local::FSHPreStereo
-	MakeStereoHits       : @local::MakeStereoHits
-	FlagStrawHits        : @local::FlagStrawHits
-	FlagBkgHits          : @local::FlagBkgHits
-
-	TrkPatRec            : { @table::TrkPatRecDownstreameMinus  }
-	TrkPatRecDem         : { @table::TrkPatRecDownstreameMinus  }
-	TrkPatRecDmm         : { @table::TrkPatRecDownstreammuMinus }
+	@table::Tracking.producers
 #------------------------------------------------------------------------------
 # CalPatRec 
 #------------------------------------------------------------------------------
@@ -218,17 +200,10 @@ physics : {
       RKFDownstreameMinus: {
          module_type          : ReadKalFits
          fitterModuleLabel    : MergePatRecDem
-         KalDiag : {
-          MCPtrLabel          : "makeSH"
-          MCStepsLabel        : "g4run"
-          SimParticleLabel    : "g4run"
-          SimParticleInstance : ""
-          StrawHitMCLabel     : "makeSH"
-          TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-        }
+         KalDiag : @local::KalDiagDirect
       }
-
     }
+
 #------------------------------------------------------------------------------
 # paths:
 #------------------------------------------------------------------------------
@@ -236,13 +211,11 @@ physics : {
 #    e1 : [  ]
 
     p1 : [generate, g4run
-	  , protonTimeMap, muonTimeMap
-	  , makeSD, makeSH
+	  , @sequence::EventMixing.TimeMaps
+	  , @sequence::Tracking.DigiSim
 	  , MakeCaloReadoutHits, MakeCaloCrystalHits
 	  , MakeCaloProtoCluster, MakeCaloCluster
-#
-	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec
-#
+	  , @sequence::Tracking.TPRDownstreameMinus
 	  , TrkExtrapol, CaloMatching, ParticleID
 	 ]
 
