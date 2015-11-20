@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 #
-#
-# $Id: SConscript,v 1.6 2013/03/18 23:50:37 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/03/18 23:50:37 $
-#
 # Original author Rob Kutschke.
 #
 
@@ -14,12 +9,31 @@ Import('mu2e_helper')
 
 helper=mu2e_helper();
 
-helper.make_plugins ( [ 'mu2e_MCDataProducts',
-                        'mu2e_DataProducts',
-                        'mu2e_SeedService_SeedService_service',
-                        'art_Framework_IO_ProductMix',
-                        'art_Framework_Core',
-                        'CLHEP' ] )
+helper.make_plugins ( [
+        'mu2e_Mu2eUtilities',
+        'mu2e_SeedService_SeedService_service',
+        'mu2e_MCDataProducts',
+        'mu2e_DataProducts',
+        'art_Framework_Core',
+        'art_Framework_Principal',
+        'art_Framework_Services_Registry',
+        'art_Framework_Services_Optional',
+        'art_Framework_Services_Optional_TFileService_service',
+        'art_Framework_Services_Optional_RandomNumberGenerator_service',
+        'art_Framework_IO_ProductMix',
+        'art_Framework_IO_Root',
+        'art_Persistency_Common',
+        'art_Persistency_Provenance',
+        'art_Utilities',
+        'MF_MessageLogger',
+        'fhiclcpp',
+        'cetlib',
+        'CLHEP',
+        'Hist',
+        'Core',
+        'boost_filesystem',
+        'boost_system',
+ ] )
 
 
 # This tells emacs to view this file in python mode.

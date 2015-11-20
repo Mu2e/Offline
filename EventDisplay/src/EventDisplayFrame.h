@@ -32,7 +32,7 @@ class TText;
 class TTimer;
 class TGTextButton;
 
-namespace fhicl 
+namespace fhicl
 {
   class ParameterSet;
 }
@@ -66,7 +66,6 @@ namespace mu2e_eventdisplay
     int              getMinimumHits() const;
     int              getEventToFind(bool &findEvent) const;
     void             showInfo(TObject*);
-    void             showHist(TObject*);
     void             keyboardInput();
     void             fillZoomAngleFields();
     void             addHistDraw();
@@ -75,7 +74,7 @@ namespace mu2e_eventdisplay
                                  bool showSupportStructures,
                                  bool showCRV,
                                  bool showOtherStructures,
-                                 bool showMuonBeamStop, 
+                                 bool showMuonBeamStop,
                                  bool showProtonAbsorber);
 
     private:
