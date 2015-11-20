@@ -1,7 +1,4 @@
 # -*- mode: tcl -*-
-#------------------------------------------------------------------------------
-# this file is included by fcl/standardProducers.fcl inside the PROLOG section
-#------------------------------------------------------------------------------
 BEGIN_PROLOG
 
 # Note that KalDiag must be configured differently depending on whether you are
