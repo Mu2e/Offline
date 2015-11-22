@@ -1,0 +1,33 @@
+#
+# An example that produces buggy debug-config output using art v1_17_02
+# Note that this does not produce a valid art configuration - it is stripped
+# down to illustrate the bug.
+#
+# To produce the bug:
+#
+#  mu2e -c Analyses/test/debug_config_bug.fcl --debug-config bug.fcl
+#
+# Inspect the definiton of gen_allpatrec_reco in bug.fcl.  You will
+# see that it is missing commas after the 10th entry in the list.
+#
+
+#include "standardProducers.fcl"
+
+BEGIN_PROLOG
+  generatorSeq  : [ generate, g4run, protonTimeMap, muonTimeMap ]
+
+  hitMakerSeq   : [ MakeCaloReadoutHits, MakeCaloCrystalHits, @sequence::Tracking.DigiSim ]
+
+  allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus ]
+END_PROLOG
+
+process_name : GenReco
+physics : {
+    gen_allpatrec_reco : [ @sequence::generatorSeq,
+			   @sequence::hitMakerSeq,
+			   @sequence::allPatRecDemDmmSeq
+			  ]
+
+    trigger_paths  : [gen_allpatrec_reco]
+
+}
