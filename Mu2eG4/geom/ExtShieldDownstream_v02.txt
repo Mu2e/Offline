@@ -535,27 +535,28 @@ string ExtShieldDownstream.orientationType24Box2 = "010";
 
 
 // Notch information
+// Boxes 13-15 have notches for the penetration for DS services.
 int ExtShieldDownstream.nNotchesType1Box13 = 2;
-vector<double> ExtShieldDownstream.notchCenterType1Box13Notch1 = {118,152.4,1676.5};
-vector<double> ExtShieldDownstream.notchDimType1Box13Notch1 = {225,612,510.0};
-vector<double> ExtShieldDownstream.notchCenterType1Box13Notch2 = {459,-76.2,1676.5};
-vector<double> ExtShieldDownstream.notchDimType1Box13Notch2 = {457.4,152.6,510.0};
+vector<double> ExtShieldDownstream.notchCenterType1Box13Notch1 = {118,152.4,1651.1};
+vector<double> ExtShieldDownstream.notchDimType1Box13Notch1 = {275.8,662.8,560.8};
+vector<double> ExtShieldDownstream.notchCenterType1Box13Notch2 = {459,-76.2,1651.1};
+vector<double> ExtShieldDownstream.notchDimType1Box13Notch2 = {508.2,203.4,560.8};
 
 int ExtShieldDownstream.nNotchesType1Box14 = 4;
-vector<double> ExtShieldDownstream.notchCenterType1Box14Notch1 = {647.6,-228.6,1676.5};
-vector<double> ExtShieldDownstream.notchDimType1Box14Notch1 = {80,457.2,510.0};
-vector<double> ExtShieldDownstream.notchCenterType1Box14Notch2 = {419,-76.2,1676.5};
-vector<double> ExtShieldDownstream.notchDimType1Box14Notch2 = {377.4,152.4,510.0};
-vector<double> ExtShieldDownstream.notchCenterType1Box14Notch3 = {0,0,1676.5};
-vector<double> ExtShieldDownstream.notchDimType1Box14Notch3 = {460.8,304.8,510.0};
-vector<double> ExtShieldDownstream.notchCenterType1Box14Notch4 = {-419.2,-76.2,1676.5};
-vector<double> ExtShieldDownstream.notchDimType1Box14Notch4 = {377.6,152.4,510.0};
+vector<double> ExtShieldDownstream.notchCenterType1Box14Notch1 = {647.6,-228.6,1651.1};
+vector<double> ExtShieldDownstream.notchDimType1Box14Notch1 = {130.8,508.0,560.8};
+vector<double> ExtShieldDownstream.notchCenterType1Box14Notch2 = {419,-76.2,1651.1};
+vector<double> ExtShieldDownstream.notchDimType1Box14Notch2 = {428.2,203.2,560.8};
+vector<double> ExtShieldDownstream.notchCenterType1Box14Notch3 = {0,0,1651.1};
+vector<double> ExtShieldDownstream.notchDimType1Box14Notch3 = {511.6,355.6,560.8};
+vector<double> ExtShieldDownstream.notchCenterType1Box14Notch4 = {-419.2,-76.2,1651.1};
+vector<double> ExtShieldDownstream.notchDimType1Box14Notch4 = {428.4,203.2,560.8};
 
 int ExtShieldDownstream.nNotchesType1Box15 = 2;
-vector<double> ExtShieldDownstream.notchCenterType1Box15Notch1 = {-466,-228.6,1676.5};
-vector<double> ExtShieldDownstream.notchDimType1Box15Notch1 = {304.8,457.2,510.0};
-vector<double> ExtShieldDownstream.notchCenterType1Box15Notch2 = {-653,-76.2,1676.5};
-vector<double> ExtShieldDownstream.notchDimType1Box15Notch2 = {69.4,152.6,510.0};
+vector<double> ExtShieldDownstream.notchCenterType1Box15Notch1 = {-466,-228.6,1651.1};
+vector<double> ExtShieldDownstream.notchDimType1Box15Notch1 = {355.6,509.0,560.8};
+vector<double> ExtShieldDownstream.notchCenterType1Box15Notch2 = {-653,-76.2,1651.1};
+vector<double> ExtShieldDownstream.notchDimType1Box15Notch2 = {120.2,203.4,560.8};
 
 // Notches for roof support beam
 int ExtShieldDownstream.nNotchesType4Box2 = 1;
