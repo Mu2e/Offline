@@ -6,3 +6,10 @@ Still under construction
 1)  24 Nov 2015, dnbrow01
     Small modification to Mu2eG4/geom/ExtShieldDownstream_v02.txt to widen
     the DS right penetration to accommodate 14" pipes rather than 12".
+
+2) 24 Nov 2015, logash
+   
+   Small update of Mu2eG4Cuts.cc: added new cut "globalTime" in ns. 
+   If global (G4) time for a particular particle reaches this limit, the
+   particle is killed. This cut is useful for simulation of trapped 
+   particles. 
