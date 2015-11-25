@@ -35,7 +35,10 @@ class BaseRun {
 
   bool Exists() { return fExists; }
 
-  virtual std::string GetStrawNumberBranch() { if (fGetSHDiagFromTrkDiag) { return "tsh._straw"; } else { return "straw"; } }
+  TChain* GetTrkDiagChain() { return fTrkDiagChain; }
+  TChain* GetSHDiagChain() { return fSHDiagChain; }
+
+  void SetNParticlesPerMicrobunch(double n_particles) { fNParticlesPerMicrobunch = n_particles; }
 
  private:
   std::string fParticleName;
@@ -43,7 +46,6 @@ class BaseRun {
 
   TChain* fTrkDiagChain;
   TChain* fSHDiagChain;
-  bool fGetSHDiagFromTrkDiag; // my ConvEMinus runs don't have a separate shdiag tree...
 
   double fNSimulatedParticles;
   double fNParticlesPerMicrobunch;
@@ -55,6 +57,7 @@ class BaseRun {
   //  static const int n_layers = 2;
   static const int n_straws = 96;
 
+ public:
   static double n_POT_per_microbunch;
   static double n_stopped_muons_per_POT;
   static double n_captured_muons_per_stopped_muon;
@@ -64,6 +67,7 @@ class BaseRun {
   static double charge_per_electron;
   static double gas_gain;
 
+ private:
   double fChargeDepositPerHit;
 
   TH3F* fHitMap;
@@ -82,7 +86,7 @@ double BaseRun::charge_per_electron = 1.6e-19;
 double BaseRun::gas_gain = 4e4; //  from gas gain fit
 
 BaseRun::BaseRun(std::string filename, std::string particle) : fParticleName(particle), fPDGId(0), 
-  fGetSHDiagFromTrkDiag(false), fHitMap(NULL), fSHEDepPlot(NULL), fHitMapTime(NULL), fChargeDepositPerHit(0), fNParticlesPerMicrobunch(0), 
+  fHitMap(NULL), fSHEDepPlot(NULL), fHitMapTime(NULL), fChargeDepositPerHit(0), fNParticlesPerMicrobunch(0), 
   fExists(true) {
 
   if (fParticleName == "eMinus" || fParticleName == "Flash" || fParticleName == "DIO") {
@@ -100,8 +104,8 @@ BaseRun::BaseRun(std::string filename, std::string particle) : fParticleName(par
     throw std::invalid_argument(message);
   }
 
-  // Get the trkdiag tree and chain multiple files together
-  std::string trkdiag_name = "RKFDownstream" + fParticleName + "/trkdiag";
+  // Get the shdiag tree and chain multiple files together
+  std::string trkdiag_name = "TRFDownstreameMinus/trkdiag"; // all runs are called TRFDownstreameMinus
   fTrkDiagChain = new TChain(trkdiag_name.c_str());
   fTrkDiagChain->Add(filename.c_str());
   if (fTrkDiagChain->GetEntries() == 0) {
@@ -111,30 +115,23 @@ BaseRun::BaseRun(std::string filename, std::string particle) : fParticleName(par
   }
 
   // Get the shdiag tree and chain multiple files together
-  std::string shdiag_name = "TPRDownstream" + fParticleName + "/shdiag";
+  std::string shdiag_name = "makeSH/shdiag";
   fSHDiagChain = new TChain(shdiag_name.c_str());
   fSHDiagChain->Add(filename.c_str());
   if (fSHDiagChain->GetEntries() == 0) {
-    std::cout << "WARNING: BaseRun::BaseRun() : SHDiagTree " + shdiag_name + " has no entries (will get any variables from trkdiag.tsh or trkdiag.tshmc)" << std::endl;
-    fSHDiagChain = fTrkDiagChain;
-    fGetSHDiagFromTrkDiag = true;
+    std::string message = "ERROR: BaseRun::BaseRun() : ShDiagTree " + shdiag_name + " has no entries (does it exist in this file?)";
     //    throw std::invalid_argument(message);
+    fExists = false;
   }
 
-  fNSimulatedParticles = fTrkDiagChain->GetEntries();
+  fNSimulatedParticles = fSHDiagChain->GetEntries();
   std::stringstream cutcmd;
-  if (fGetSHDiagFromTrkDiag) {
-    cutcmd << "tshmc._pdg";
-  }
-  else {
-    cutcmd << "mcpdg";
-  }
-  cutcmd << "==" << fPDGId;
+  cutcmd << "mcinfo._pdg" << "==" << fPDGId;
   fNStrawHits = fSHDiagChain->GetEntries(cutcmd.str().c_str());
   fNStrawHitsError = std::sqrt(fNStrawHits);
 
   fChargeDepositPerHit = (GetSHEDepPlot()->GetMean() / gas_ionisation_energy) * charge_per_electron * gas_gain;
-  //  std::cout << filename << " " << fParticleName << " " << fTrkDiagChain->GetEntries() << " " << fSHDiagChain->GetEntries() << " worked!" << std::endl;		   
+  //  std::cout << filename << " " << fParticleName << " " << fSHDiagChain->GetEntries() << " " << fSHDiagChain->GetEntries() << " worked!" << std::endl;		   
 }
 
 TH3F* BaseRun::GetHitMap() {
@@ -147,20 +144,8 @@ TH3F* BaseRun::GetHitMap() {
     int n_bins = (max_len_pos - min_len_pos) / bin_width;
     
     std::string histname = "fHitMap_" + fParticleName;
-    std::string drawcmd;
-    if (fGetSHDiagFromTrkDiag) {
-      drawcmd = GetStrawNumberBranch()+":6*tsh._device+tsh._sector:tshmc._len>>"+histname;
-    }
-    else {
-      drawcmd = GetStrawNumberBranch()+":6*device+sector:mcshlen>>"+histname;
-    }
-    std::stringstream cutcmd;
-    if (fGetSHDiagFromTrkDiag) {
-      cutcmd << "tshmc._pdg==" << fPDGId;
-    }
-    else {
-      cutcmd << "mcpdg==" << fPDGId;
-    }
+    std::string drawcmd = "shid._straw:6*shid._device+shid._sector:mcinfo._len>>"+histname;
+    std::stringstream cutcmd; cutcmd << "mcinfo._pdg==" << fPDGId;
 
     fHitMap = new TH3F(histname.c_str(), "", n_bins,min_len_pos,max_len_pos, n_devices*n_sectors,0,n_devices*n_sectors, n_straws,0,n_straws);
     fHitMap->SetXTitle("Position Along Straw [mm]");
@@ -183,18 +168,8 @@ TH1F* BaseRun::GetSHEDepPlot() {
     std::string histname = "SHEDep_" + fParticleName;
     fSHEDepPlot = new TH1F(histname.c_str(), "", n_edep_bins,min_edep,max_edep);
 
-    std::string drawcmd;
-    std::stringstream cutcmd;
-    if (fGetSHDiagFromTrkDiag) {
-      drawcmd = "tshmc._edep";
-      cutcmd << "tshmc._pdg";
-    }
-    else {
-      drawcmd = "mcedep";
-      cutcmd << "mcpdg";
-    }
-    drawcmd += ">>" + histname;
-    cutcmd << "==" << fPDGId;
+    std::string drawcmd = "edep>>" + histname;
+    std::stringstream cutcmd; cutcmd << "mcinfo._pdg==" << fPDGId;
     fSHDiagChain->Draw(drawcmd.c_str(), cutcmd.str().c_str(), "goff");
   }
 
@@ -216,18 +191,8 @@ TH3F* BaseRun::GetHitMapTime() {
     fHitMapTime->SetZTitle("straw number");
     
     
-    std::string drawcmd;
-    std::stringstream cutcmd;
-    if (fGetSHDiagFromTrkDiag) {
-      drawcmd = GetStrawNumberBranch()+":6*tsh._device+tsh._sector:tsh._time";
-      cutcmd << "tsh._time < " << max_time << " && tshmc._pdg";
-    }
-    else {
-      drawcmd = GetStrawNumberBranch()+":6*device+sector:time";
-      cutcmd << "time < " << max_time << " && mcpdg";
-    }
-    drawcmd += ">>" + histname;
-    cutcmd << "==" << fPDGId;
+    std::string drawcmd = "shid._straw:6*shid._device+shid._sector:time>>" + histname;
+    std::stringstream cutcmd; cutcmd << "time < " << max_time << " && mcinfo._pdg==" << fPDGId;
     fSHDiagChain->Draw(drawcmd.c_str(), cutcmd.str().c_str(), "goff");    
     fHitMapTime->Scale(1/GetNMicrobunchesSimulated());
   }

@@ -19,7 +19,7 @@
 class ConvEMinusRun : public BaseRun {
 
 public:
-  ConvEMinusRun(std::string filename);
+  ConvEMinusRun(std::string filename, double min_mom = 100, double max_mom = 106, double bin_width = 0.1);
 
 private:
   TH1F* fRecoHist;
@@ -40,6 +40,8 @@ private:
   double fSignalEnergy;
   double fSignalRate;
 
+  double fMinMomentum;
+  double fMaxMomentum;
   double fBinWidth;
 
   void CalculateFWHMAndError();
@@ -54,22 +56,23 @@ public:
   double GetFWHM() { return fFWHM; }
   double GetFWHMError() { return fFWHMError; }
   double GetDeltaE() { return fSignalEnergy - fPeakEnergy; }
-  void FitPeak();
+
   void FitCrystalBall();
   void Draw(std::string drawopt  = "HIST E");
   double GetSignalRate() { return fSignalRate; }
 };
 
-ConvEMinusRun::ConvEMinusRun(std::string filename) : BaseRun(filename, "eMinus") {
+ConvEMinusRun::ConvEMinusRun(std::string filename, double min_mom, double max_mom, double bin_width) 
+                     : BaseRun(filename, "eMinus"), fMinMomentum(min_mom), fMaxMomentum(max_mom), fBinWidth(bin_width) {
 
-  double min_mom = 100; double max_mom = 106; fBinWidth = 0.1;
-  int n_bins = (max_mom - min_mom) / fBinWidth;
-  fRecoHist = new TH1F("fRecoHist", "", n_bins,min_mom,max_mom);
+  int n_bins = (fMaxMomentum - fMinMomentum) / fBinWidth;
+  fRecoHist = new TH1F("fRecoHist", "", n_bins,fMinMomentum,fMaxMomentum);
   fRecoHist->SetXTitle("Reco Momentum [MeV]");
-  fRecoHist->SetYTitle("Counts per 0.1 MeV");
+  std::stringstream axistitle; axistitle << "Counts per " << fBinWidth << " MeV";
+  fRecoHist->SetYTitle(axistitle.str().c_str());
   //    fRecoHist->SetStats(false);
   
-  fTrkDiagChain->Draw("fit.mom>>fRecoHist", "fit.status>0", "goff");
+  GetTrkDiagChain()->Draw("fit.mom>>fRecoHist", "fit.status>0", "goff");
   fRecoHist->SetDirectory(0);
 
   // Set some initial estimates of the peak energy and fwhm
@@ -79,11 +82,11 @@ ConvEMinusRun::ConvEMinusRun(std::string filename) : BaseRun(filename, "eMinus")
   fPeakEnergyCountError = 0;
   
   fCrystalBallFit = NULL;
-  CalculateFWHMAndError();
+  FitCrystalBall();
 
   fSignalEnergy = 104.97;
   fSignalRate = 3e-17;
-  fNParticlesPerMicrobunch = n_POT_per_microbunch * n_stopped_muons_per_POT * n_decayed_muons_per_stopped_muon * fSignalRate;
+  SetNParticlesPerMicrobunch(n_POT_per_microbunch * n_stopped_muons_per_POT * n_decayed_muons_per_stopped_muon * fSignalRate);
 }
 
 void ConvEMinusRun::CalculateFWHMAndError() {
@@ -97,93 +100,28 @@ void ConvEMinusRun::CalculateFWHMAndError() {
   fFWHM = fHighEdge - fLowEdge;
   //  std::cout << "AE: At Start: Low Edge = " << fLowEdge << ", High Edge = " << fHighEdge << ", FWHM = " << fFWHM << std::endl;
 
-  if (fCrystalBallFit) {
-    fLowEdge = fCrystalBallFit->GetX(half_max, fLowEdge-0.5, fLowEdge+0.5); // find the low edge
-    fHighEdge = fCrystalBallFit->GetX(half_max, fHighEdge-0.5, fHighEdge+0.5); // find the low edge
-    fFWHM = fHighEdge - fLowEdge;
-    //    std::cout << "AE: Crystal Ball: Low Edge = " << fLowEdge << ", High Edge = " << fHighEdge << ", FWHM = " << fFWHM << std::endl;
-    //    std::cout << half_max << ", " << fCrystalBallFit->Eval(fLowEdge) << ", " << fCrystalBallFit->Eval(fHighEdge) << std::endl;
-
-    double higher_half_max = (fPeakEnergyCount + fPeakEnergyCountError) / 2;
-    double higher_low_edge = fCrystalBallFit->GetX(higher_half_max, fLowEdge-0.5, fLowEdge+0.5); // find the low edge
-    double higher_high_edge = fCrystalBallFit->GetX(higher_half_max, fHighEdge-0.5, fHighEdge+0.5); // find the high edge
-    double higher_fwhm = higher_high_edge - higher_low_edge;
-    //    std::cout << "AE: Crystal Ball (Higher): Low Edge = " << higher_low_edge << ", High Edge = " << higher_high_edge << ", FWHM = " << higher_fwhm << std::endl;
-    //    std::cout << higher_half_max << ", " << fCrystalBallFit->Eval(higher_low_edge) << ", " << fCrystalBallFit->Eval(higher_high_edge) << std::endl;
-
-    double lower_half_max = (fPeakEnergyCount - fPeakEnergyCountError) / 2;
-    double lower_low_edge = fCrystalBallFit->GetX(lower_half_max, fLowEdge-0.5, fLowEdge+0.5); // find the low edge
-    double lower_high_edge = fCrystalBallFit->GetX(lower_half_max, fHighEdge-0.5, fHighEdge+0.5); // find the high edge
-    double lower_fwhm = lower_high_edge - lower_low_edge;
-    //    std::cout << "AE: Crystal Ball (Lower): Low Edge = " << lower_low_edge << ", High Edge = " << lower_high_edge << ", FWHM = " << lower_fwhm << std::endl;
-    //    std::cout << lower_half_max << ", " << fCrystalBallFit->Eval(lower_low_edge) << ", " << fCrystalBallFit->Eval(lower_high_edge) << std::endl;
-
-    //    std::cout << "AE: Differences: " << std::fabs(fFWHM - higher_fwhm) << ", " << std::fabs(fFWHM - lower_fwhm) << std::endl;
-    fFWHMError = ( std::fabs(fFWHM - higher_fwhm)+std::fabs(fFWHM - lower_fwhm) ) / 2;
-    //    std::cout << "FWHM Error = " << fFWHMError << std::endl;
-  }
-  else {
-    fLowEdgeFn = new TF1("low_edge", "pol1", fLowEdge-fBinWidth, fLowEdge+fBinWidth);
-    fHighEdgeFn = new TF1("high_edge", "pol1", fHighEdge-fBinWidth, fHighEdge+fBinWidth);
-
-    TFitResultPtr grad_fit_low = fRecoHist->Fit(fLowEdgeFn, "QSR0");
-    TFitResultPtr grad_fit_high = fRecoHist->Fit(fHighEdgeFn, "QSR0");
-    
-    if ( (int) grad_fit_low == 0 && (int) grad_fit_high == 0) {
-      
-      // Calculate the central value
-      double gradient_low = grad_fit_low->Parameter(1);
-      double offset_low = grad_fit_low->Parameter(0);
-      
-      double gradient_high = grad_fit_high->Parameter(1);
-      double offset_high = grad_fit_high->Parameter(0);
-      
-      fLowEdge = (half_max - offset_low)/gradient_low;
-      fHighEdge = (half_max - offset_high)/gradient_high;
-      
-      fFWHM = fHighEdge - fLowEdge;
-      
-      // Calculate the extremes
-      double half_max_plus_error = (fPeakEnergyCount + fPeakEnergyCountError)/2;
-      double new_low_edge = (half_max_plus_error - offset_low)/gradient_low;
-      double new_high_edge = (half_max_plus_error - offset_high)/gradient_high;
-      double fwhm_plus = new_high_edge - new_low_edge;
-      double fwhm_plus_error = std::fabs(fFWHM - fwhm_plus);
-      
-      double half_max_minus_error = (fPeakEnergyCount - fPeakEnergyCountError)/2;
-      new_low_edge = (half_max_minus_error - offset_low)/gradient_low;
-      new_high_edge = (half_max_minus_error - offset_high)/gradient_high;
-      double fwhm_minus = new_high_edge - new_low_edge;
-      double fwhm_minus_error = std::fabs(fFWHM - fwhm_minus);
-      
-      fFWHMError = (fwhm_plus_error + fwhm_minus_error)/2;
-      //    std::cout << "AE: " << fPeakEnergyCount/2 << ", " << half_max_plus_error << ", " << half_max_minus_error << std::endl;
-      //    std::cout << "AE: " << fFWHM << ", " << fwhm_plus << ", " << fwhm_minus << std::endl;
-      //    std::cout << "AE: " << fFWHMError << ", " << fwhm_plus_error << ", " << fwhm_minus_error << std::endl;
-    }
-    else {
-      std::cout << "FWHM gradient fits failed" << std::endl;
-    }
-  }
-}
-
-void ConvEMinusRun::FitPeak() {
-
-  // Fit the current peak energy to a gaussian
-  fPeakFn = new TF1("gaus", "gaus", fPeakEnergy-3*fBinWidth, fPeakEnergy+5*fBinWidth);
-  TFitResultPtr fit = fRecoHist->Fit(fPeakFn, "SQR0");
-
-  int fit_status = fit;
-  if (fit_status != 0) {
-    std::cout << "Peak energy fit failed" << std::endl;
-  }
-  else {
-    fPeakEnergy = fit->Parameter(1);
-    fPeakEnergyError = fit->Error(1);
-    fPeakEnergyCount = fit->Parameter(0);
-    fPeakEnergyCountError = fit->Error(0);
-    CalculateFWHMAndError(); // now recalculate the FWHM
-  }
+  fLowEdge = fCrystalBallFit->GetX(half_max, fLowEdge-0.5, fLowEdge+0.5); // find the low edge
+  fHighEdge = fCrystalBallFit->GetX(half_max, fHighEdge-0.5, fHighEdge+0.5); // find the low edge
+  fFWHM = fHighEdge - fLowEdge;
+  //    std::cout << "AE: Crystal Ball: Low Edge = " << fLowEdge << ", High Edge = " << fHighEdge << ", FWHM = " << fFWHM << std::endl;
+  //    std::cout << half_max << ", " << fCrystalBallFit->Eval(fLowEdge) << ", " << fCrystalBallFit->Eval(fHighEdge) << std::endl;
+  
+  double higher_half_max = (fPeakEnergyCount + fPeakEnergyCountError) / 2;
+  double higher_low_edge = fCrystalBallFit->GetX(higher_half_max, fLowEdge-0.5, fLowEdge+0.5); // find the low edge
+  double higher_high_edge = fCrystalBallFit->GetX(higher_half_max, fHighEdge-0.5, fHighEdge+0.5); // find the high edge
+  double higher_fwhm = higher_high_edge - higher_low_edge;
+  //    std::cout << "AE: Crystal Ball (Higher): Low Edge = " << higher_low_edge << ", High Edge = " << higher_high_edge << ", FWHM = " << higher_fwhm << std::endl;
+  //    std::cout << higher_half_max << ", " << fCrystalBallFit->Eval(higher_low_edge) << ", " << fCrystalBallFit->Eval(higher_high_edge) << std::endl;
+  
+  double lower_half_max = (fPeakEnergyCount - fPeakEnergyCountError) / 2;
+  double lower_low_edge = fCrystalBallFit->GetX(lower_half_max, fLowEdge-0.5, fLowEdge+0.5); // find the low edge
+  double lower_high_edge = fCrystalBallFit->GetX(lower_half_max, fHighEdge-0.5, fHighEdge+0.5); // find the high edge
+  double lower_fwhm = lower_high_edge - lower_low_edge;
+  //    std::cout << "AE: Crystal Ball (Lower): Low Edge = " << lower_low_edge << ", High Edge = " << lower_high_edge << ", FWHM = " << lower_fwhm << std::endl;
+  //    std::cout << lower_half_max << ", " << fCrystalBallFit->Eval(lower_low_edge) << ", " << fCrystalBallFit->Eval(lower_high_edge) << std::endl;
+  
+  //    std::cout << "AE: Differences: " << std::fabs(fFWHM - higher_fwhm) << ", " << std::fabs(fFWHM - lower_fwhm) << std::endl;
+  fFWHMError = ( std::fabs(fFWHM - higher_fwhm)+std::fabs(fFWHM - lower_fwhm) ) / 2;
 }
 
 void ConvEMinusRun::Draw(std::string drawopt) {
@@ -298,31 +236,5 @@ void ConvEMinusRun::FitCrystalBall() {
   }
 
 }
-
-/*TH1F* ConvEMinusRun::GetHitsPerLengthPlot(int device, int sector, int layer, int straw) {
-
-  fFile->cd(); // make sure we're on the correct file so that we can draw onto the correct histogram and not create a new one
-  fHitsPerLengthPlot->Reset();
-  std::stringstream cut;
-  if (device >= 0) {
-    cut << "tsh._device==" << device << " && ";
-  }
-  if (sector >= 0) {
-    cut << "tsh._sector==" << sector << " && ";
-  }
-  if (layer >= 0) {
-    cut << "tsh._layer==" << layer << " && ";
-  }
-  if (straw >= 0) {
-    cut << "tsh._straw==" << straw << " && ";
-  }
-  cut << "tshmc._pdg==11";
-
-  fTrkDiagChain->Draw("tshmc._len>>fHitsPerLengthPlot", cut.str().c_str(), "goff");
-  fHitsPerLengthPlot->Scale(1.0/fTotalCEStrawHits);
-
-  return fHitsPerLengthPlot;
-}
-*/
 
 #endif

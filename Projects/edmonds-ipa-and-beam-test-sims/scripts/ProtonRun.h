@@ -24,55 +24,17 @@ class ProtonRun : public BaseRun {
 
  public:
   //  void Draw();
-  void DrawProtonsThatReachTracker();
+  //  void DrawProtonsThatReachTracker();
 };
 
 ProtonRun::ProtonRun(std::string filename) : BaseRun(filename, "pPlus") {
 
   fChargeDepositPerHit = 8.8e-12;
   double n_protons_per_captured_muon = 0.05;
-  fNParticlesPerMicrobunch = n_POT_per_microbunch * n_stopped_muons_per_POT * n_captured_muons_per_stopped_muon * n_protons_per_captured_muon;
+  SetNParticlesPerMicrobunch(n_POT_per_microbunch * n_stopped_muons_per_POT * n_captured_muons_per_stopped_muon * n_protons_per_captured_muon);
 }
 
-/*void ProtonRun::Draw() {
-
-  int n_straws = 48;
-  int n_layers = 2;
-  int n_sectors = 6;
-  int n_devices = 44;
-
-  int min_full_straw_number = 0;
-  int max_full_straw_number = 100;
-  int min_device_number = 0;
-  int max_device_number = 500;
-  double bin_width = 1;
-  int n_full_straw_bins = (max_full_straw_number - min_full_straw_number)/bin_width;
-  int n_device_bins = (max_device_number - min_device_number)/bin_width;
-
-  TH2F* hHitLocations = new TH2F("hHitLocations", "Straw Hits per Initial Proton", n_device_bins,min_device_number,max_device_number, n_full_straw_bins,min_full_straw_number,max_full_straw_number);
-  hHitLocations->SetXTitle("Device*10 + Sector");
-  hHitLocations->SetYTitle("Straw Number");
-  hHitLocations->GetZaxis()->SetLabelSize(0.03);
-  hHitLocations->SetStats(false);
-  //  hHitLocations->SetZTitle("Hits per Emitted Proton");
-
-  fSHDiagChain->Draw("(straw*2 + layer):(device*10 + sector)>>hHitLocations", "mcpdg==2212 && time>700 && time<1695", "COLZ"); 
-  hHitLocations->Scale(1.0/fNSimulatedParticles);
-
-  std::stringstream latex;
-  latex.precision(3);
-  latex << "#splitline{Total Number of Straw}{Hits Per Proton = " << GetNStrawHitsPerSimulatedParticle() << " #pm ";
-  latex.precision(1);
-  latex << GetNStrawHitsPerSimulatedParticleError() << "}";
-  
-  TLatex* text = new TLatex(1, 80, latex.str().c_str());
-  text->SetTextSize(0.05);
-  text->SetTextColor(kRed);
-  text->Draw("SAME");
-}
-*/
-
-void ProtonRun::DrawProtonsThatReachTracker() {
+/*void ProtonRun::DrawProtonsThatReachTracker() {
 
   double min_energy = 0;
   double max_energy = 50;
@@ -80,7 +42,7 @@ void ProtonRun::DrawProtonsThatReachTracker() {
   int n_energy_bins = (max_energy - min_energy) / energy_width;
 
   TH1F* hKineticEnergy_Gen = new TH1F("hKineticEnergy_Gen", "35M Initial Protons (TDR Cone IPA)", n_energy_bins,min_energy,max_energy);
-  fTrkDiagChain->Draw("(sqrt(mcgen.mom*mcgen.mom + 938*938) - 938)>>hKineticEnergy_Gen", "mc.pdg==2212", "goff");
+  GetTrkDiagChain()->Draw("(sqrt(mcgen.mom*mcgen.mom + 938*938) - 938)>>hKineticEnergy_Gen", "mc.pdg==2212", "goff");
   hKineticEnergy_Gen->SetLineWidth(2);
   hKineticEnergy_Gen->SetXTitle("Kinetic Energy [MeV]");
   hKineticEnergy_Gen->SetYTitle("Counts per Simulated Proton");
@@ -90,7 +52,7 @@ void ProtonRun::DrawProtonsThatReachTracker() {
 
   // Generated proton kinetic energy of protons that reach tracker
   TH1F* hKineticEnergy_Gen_TrkEnt = new TH1F("hKineticEnergy_Gen_TrkEnt", "", n_energy_bins,min_energy,max_energy);
-  fTrkDiagChain->Draw("(sqrt(mcgen.mom*mcgen.mom + 938*938) - 938)>>hKineticEnergy_Gen_TrkEnt", "mc.pdg==2212 && mc.ndigi!=0", "goff");
+  GetTrkDiagChain()->Draw("(sqrt(mcgen.mom*mcgen.mom + 938*938) - 938)>>hKineticEnergy_Gen_TrkEnt", "mc.pdg==2212 && mc.ndigi!=0", "goff");
   hKineticEnergy_Gen_TrkEnt->SetLineColor(kRed);
   hKineticEnergy_Gen_TrkEnt->SetLineWidth(2);
   hKineticEnergy_Gen_TrkEnt->SetXTitle("Kinetic Energy [MeV]");
@@ -112,5 +74,5 @@ void ProtonRun::DrawProtonsThatReachTracker() {
   legend->AddEntry(hKineticEnergy_Gen, "Kinetic Energy at Emission (all)", "l");
   legend->AddEntry(hKineticEnergy_Gen_TrkEnt, "Kinetic Energy at Emission (reach tracker)", "l");
   legend->Draw();
-}
+  }*/
 #endif
