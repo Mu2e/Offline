@@ -22,8 +22,8 @@ physics.producers : { @table::physics.producers  @table::Tracking.producers }
 physics.producers.makeSH.diagLevel : 3
 physics.producers.TRFDownstreameMinus.diagLevel : 3
 physics.producers.TRFDownstreameMinus.KalDiag : { MCPtrLabel : "makeSH" 
-					      	  MCStepsLabel : "detectorFilter"
-						  SimParticleLabel : "detectorFilter"
+					      	  MCStepsLabel : "g4run"
+						  SimParticleLabel : "g4run"
 						  SimParticleInstance : ""
 						  StrawHitMCLabel : "makeSH"
 						  TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
@@ -32,8 +32,8 @@ physics.producers.TRFDownstreameMinus.KalDiag : { MCPtrLabel : "makeSH"
 
 
 # ...now we can add everything to the detPath
-physics.detPath : [ @sequence::physics.detPath, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus ]
-
+physics.myPath : [ generate, genCounter, g4run, g4consistent, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus ]
+physics.trigger_paths : [ @sequence::physics.trigger_paths, myPath ]
 
 # ...add any analyzer modules we want...
 physics.analyzers.dumpGen : { module_type : GenParticlesAnalyzer

@@ -124,7 +124,7 @@ BaseRun::BaseRun(std::string filename, std::string particle) : fParticleName(par
     fExists = false;
   }
 
-  fNSimulatedParticles = fSHDiagChain->GetEntries();
+  fNSimulatedParticles = fTrkDiagChain->GetEntries();
   std::stringstream cutcmd;
   cutcmd << "mcinfo._pdg" << "==" << fPDGId;
   fNStrawHits = fSHDiagChain->GetEntries(cutcmd.str().c_str());
