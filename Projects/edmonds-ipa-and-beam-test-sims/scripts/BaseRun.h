@@ -67,6 +67,8 @@ class BaseRun {
   static double charge_per_electron;
   static double gas_gain;
 
+  static double max_microbunch_time;
+
  private:
   double fChargeDepositPerHit;
 
@@ -76,6 +78,8 @@ class BaseRun {
 
   bool fExists;
 };
+
+double BaseRun::max_microbunch_time = 1800;
 
 double BaseRun::n_POT_per_microbunch = 3.1e7;
 double BaseRun::n_stopped_muons_per_POT = 0.0019;	   
@@ -126,7 +130,7 @@ BaseRun::BaseRun(std::string filename, std::string particle) : fParticleName(par
 
   fNSimulatedParticles = fTrkDiagChain->GetEntries();
   std::stringstream cutcmd;
-  cutcmd << "mcinfo._pdg" << "==" << fPDGId;
+  cutcmd << "mcinfo._pdg==" << fPDGId << " && time<" << max_microbunch_time;
   fNStrawHits = fSHDiagChain->GetEntries(cutcmd.str().c_str());
   fNStrawHitsError = std::sqrt(fNStrawHits);
 
@@ -180,7 +184,7 @@ TH3F* BaseRun::GetHitMapTime() {
 
   if (!fHitMapTime) {
     double min_time = 0;
-    double max_time = 2000;
+    double max_time = BaseRun::max_microbunch_time;
     double time_width = 1;
     int n_time_bins = (max_time - min_time) / time_width;
 
