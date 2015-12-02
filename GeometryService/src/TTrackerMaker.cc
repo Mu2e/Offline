@@ -146,10 +146,10 @@ namespace mu2e {
     // station
     // TODO Maybe -- These might eventually want to be config parameter driven
     _planesPerStation     = 2;
-    _panelsPerFace        = 3;                    // hardwired 3 sectors/face
-    _facesPerPlane        = _sectorsPerDevice / _panelsPerFace;
+    _panelMFsPerFace        = 3;                    // hardwired 3 sectors/face
+    _facesPerPlane        = _sectorsPerDevice / _panelMFsPerFace;
     _facesPerStation      = _planesPerStation*_facesPerPlane;
-    _zLayersPerPanel      = _layersPerSector;
+    _zLayersPerPanelMF      = _layersPerSector;
     _strawsPerZLayer      = _manifoldsPerEnd*_strawsPerManifold;
 
     config.getVectorDouble("ttracker.manifoldHalfLengths", _manifoldHalfLengths, 3);
@@ -861,29 +861,29 @@ namespace mu2e {
 
     plane._faces.push_back(Face(faceId, faceZ));
     Face & f =  plane._faces.back();
-    f._panels.reserve  (_panelsPerFace);
-    for ( int ipanel = 0; ipanel < _panelsPerFace; ++ipanel ) {
-      makePanel ( PanelId ( faceId, ipanel ), f,
-                  device.getSector(2*ipanel + faceParity) );
+    f._panelMFs.reserve  (_panelMFsPerFace);
+    for ( int ipanelMF = 0; ipanelMF < _panelMFsPerFace; ++ipanelMF ) {
+      makePanelMF ( PanelMFId ( faceId, ipanelMF ), f,
+                  device.getSector(2*ipanelMF + faceParity) );
     }
 
 //std::cout << "<-<-<- makeFace\n";
   }  // makeFace
 
   // station view
-  void TTrackerMaker::makePanel( const PanelId & panelId,
+  void TTrackerMaker::makePanelMF( const PanelMFId & panelMFId,
                                        Face  & face,
                                  const Sector & sector )
   {
-//std::cout << "->->-> makePanel " << panelId << "\n";
-    double panelZ = face.midZ();
-    face._panels.push_back(Panel(panelId, panelZ));
-    Panel & pnl =  face._panels.back();
-    pnl._zlayers.reserve  (_zLayersPerPanel);
-    for ( int izlayer = 0; izlayer < _zLayersPerPanel; ++izlayer ) {
+//std::cout << "->->-> makePanelMF " << panelMFId << "\n";
+    double panelMFZ = face.midZ();
+    face._panelMFs.push_back(PanelMF(panelMFId, panelMFZ));
+    PanelMF & pnl =  face._panelMFs.back();
+    pnl._zlayers.reserve  (_zLayersPerPanelMF);
+    for ( int izlayer = 0; izlayer < _zLayersPerPanelMF; ++izlayer ) {
       int faceParity = face.id().getFace()%2;
       int ilayer = 1 - faceParity + (2*faceParity -1)*izlayer;
-      makeZLayer ( ZLayerId ( panelId, izlayer ), pnl,
+      makeZLayer ( ZLayerId ( panelMFId, izlayer ), pnl,
                                                   sector.getLayer(ilayer) );
     }
     // Determine phi (and view) by looking at just one sample straw;
@@ -908,7 +908,7 @@ namespace mu2e {
         // is also clasified as problematic
         if ( directionDiscrepancy > directionTolerance ) {
           throw cet::exception("GEOM")
-            << "makePanel: Straw Direction Discrepancy \n"
+            << "makePanelMF: Straw Direction Discrepancy \n"
             << "Straw " << sampleStraw->id() << " direction " << dir  << "\n"
             << "Straw " << (*is)->id()       << " direction " << dir2 << "\n";
         }
@@ -919,7 +919,7 @@ namespace mu2e {
     if ( (phi < 0) || (phi >= 2*M_PI) ) {
 //       throw cet::exception("GEOM")
 //      std::cout
-//         << "makePanel: An ill-understood phi - "
+//         << "makePanelMF: An ill-understood phi - "
 //         << dir.phi() << phi-2*M_PI << std::endl;
     }
     pnl._phi = phi;
@@ -930,21 +930,21 @@ namespace mu2e {
     int hour = static_cast<int> (std::floor(clockAngle/(M_PI/6)));
     if ( (hour < 0 || hour >= 12) ) {
        throw cet::exception("GEOM")
-         << "makePanel: An ill-understood conversion of phi to hour - "
+         << "makePanelMF: An ill-understood conversion of phi to hour - "
          << dir.phi() << " --> " << hour;
     }
     pnl._view = hour;
-//std::cout << "<-<-<- makePanel\n";
-  }  // makePanel
+//std::cout << "<-<-<- makePanelMF\n";
+  }  // makePanelMF
 
   // station view
   void TTrackerMaker::makeZLayer( const ZLayerId & zlayerId,
-                                        Panel  & panel,
+                                        PanelMF  & panelMF,
                                   const Layer & layer )
   {
     double layerZ = layer.straw0MidPoint().z();
-    panel._zlayers.push_back(ZLayer(zlayerId, layerZ));
-    ZLayer & zlay =  panel._zlayers.back();
+    panelMF._zlayers.push_back(ZLayer(zlayerId, layerZ));
+    ZLayer & zlay =  panelMF._zlayers.back();
     zlay._straws.reserve  (_strawsPerZLayer);
     zlay._straws = layer.getStraws();
   }  // makeZLayer

@@ -1,12 +1,12 @@
-#ifndef TrackerGeom_PanelId_hh
-#define TrackerGeom_PanelId_hh
+#ifndef TrackerGeom_PanelMFId_hh
+#define TrackerGeom_PanelMFId_hh
 
 //
-// Identifier for a panel.
+// Identifier for a panelMF.
 //
 
 //
-// $Id: PanelId.hh,v 1.1 2011/08/03 18:31:25 mf Exp $
+// $Id: PanelMFId.hh,v 1.1 2011/08/03 18:31:25 mf Exp $
 // $Author: mf $
 // $Date: 2011/08/03 18:31:25 $
 //
@@ -18,29 +18,29 @@
 
 namespace mu2e {
 
-  struct PanelId;
+  struct PanelMFId;
   inline std::ostream& operator<<(std::ostream& ost,
-                                  const PanelId& pan );
+                                  const PanelMFId& pan );
 
-  class PanelId{
+  class PanelMFId{
 
   public:
 
-    PanelId():
+    PanelMFId():
       _fid(),
-      _panel(-1){
+      _panelMF(-1){
     }
 
-    PanelId( FaceId const & face,
-              int panel
+    PanelMFId( FaceId const & face,
+              int panelMF
               ):
       _fid(face),
-      _panel(panel){
+      _panelMF(panelMF){
     }
 
-    PanelId( int station, int face, int panel )
+    PanelMFId( int station, int face, int panelMF )
       : _fid(station, face)
-      , _panel(panel){
+      , _panelMF(panelMF){
     }
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
@@ -51,44 +51,44 @@ namespace mu2e {
           int   getStation()        const { return _fid.getStation();   }
           int   getPlane()          const { return _fid.getPlane();     }
           int   getFace()           const { return _fid.getFace();      }
-          int   getPanel()          const { return _panel;              }
+          int   getPanelMF()          const { return _panelMF;              }
 
 
-    bool operator==(PanelId const& rhs) const{
-      return ( _fid == rhs._fid && _panel == rhs._panel );
+    bool operator==(PanelMFId const& rhs) const{
+      return ( _fid == rhs._fid && _panelMF == rhs._panelMF );
     }
 
-    bool operator!=(PanelId const& rhs) const{
+    bool operator!=(PanelMFId const& rhs) const{
       return !( *this == rhs);
     }
 
-    bool operator< (PanelId const& rhs) const {
+    bool operator< (PanelMFId const& rhs) const {
       if (_fid < rhs._fid) return true;
       if (_fid > rhs._fid) return false;
-      if (_panel < rhs._panel) return true;
+      if (_panelMF < rhs._panelMF) return true;
       return false;
     }
     
-    bool operator> (PanelId const& rhs) const {
+    bool operator> (PanelMFId const& rhs) const {
       if (_fid > rhs._fid) return true;
       if (_fid < rhs._fid) return false;
-      if (_panel > rhs._panel) return true;
+      if (_panelMF > rhs._panelMF) return true;
       return false;
     }
     
     friend std::ostream& operator<<(std::ostream& ost,
-                                    const PanelId& pan ){
-      ost << pan._fid << " " << pan._panel;
+                                    const PanelMFId& pan ){
+      ost << pan._fid << " " << pan._panelMF;
       return ost;
     }
 
   private:
 
     FaceId _fid;
-    int    _panel;
+    int    _panelMF;
 
   };
 
 }  //namespace mu2e
 
-#endif /* TrackerGeom_PanelId_hh */
+#endif /* TrackerGeom_PanelMFId_hh */

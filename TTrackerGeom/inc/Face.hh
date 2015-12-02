@@ -16,7 +16,7 @@
 #include <iostream>
 
 #include "TTrackerGeom/inc/FaceId.hh"
-#include "TTrackerGeom/inc/Panel.hh"
+#include "TTrackerGeom/inc/PanelMF.hh"
 
 namespace mu2e {
 
@@ -38,12 +38,12 @@ namespace mu2e {
 
     const FaceId& id() const { return _id;}
 
-    // The next layer down in the hierarchy is Panels
-    int   nPanels()                        const { return _panels.size(); }
-    const std::vector<Panel>& getPanels () const { return _panels; }
-    const Panel& getPanel ( int n)         const { return _panels.at(n); }
-    const Panel& getPanel ( const PanelId& panid ) const{
-      return _panels.at(panid.getPanel());
+    // The next layer down in the hierarchy is PanelMFs
+    int   nPanelMFs()                        const { return _panelMFs.size(); }
+    const std::vector<PanelMF>& getPanelMFs () const { return _panelMFs; }
+    const PanelMF& getPanelMF ( int n)         const { return _panelMFs.at(n); }
+    const PanelMF& getPanelMF ( const PanelMFId& panid ) const{
+      return _panelMFs.at(panid.getPanelMF());
     }
 
     // Unlike the Device/Sector/Layer abstraction, one does not go directly
@@ -69,7 +69,7 @@ namespace mu2e {
     //              handle adjustments off the basic geometry, so we keep this 
     //              simple.
 
-    std::vector<Panel> _panels;
+    std::vector<PanelMF> _panelMFs;
 
  };
 

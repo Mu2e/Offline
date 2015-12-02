@@ -64,8 +64,8 @@ namespace mu2e {
     void makeStation( StationId stationId );
     void makePlane  ( const PlaneId &planeId, Station & station );
     void makeFace   ( const FaceId &faceId, Plane &plane, const Device &device );
-    void makePanel  ( const PanelId &panelId, Face &face, const Sector &sector );
-    void makeZLayer ( const ZLayerId &zlayerId, Panel &panel, const Layer &layer );
+    void makePanelMF  ( const PanelMFId &panelMFId, Face &face, const Sector &sector );
+    void makeZLayer ( const ZLayerId &zlayerId, PanelMF &panelMF, const Layer &layer );
 
     // Do the work of constructing it.
     void buildIt();
@@ -172,13 +172,13 @@ namespace mu2e {
     // Z Location of the first device.
     double _z0;
 
-    // Parameters used in the Station/Plane/Face/Panel/ZLayer view
+    // Parameters used in the Station/Plane/Face/PanelMF/ZLayer view
     int    _numStations;                  // Number of Stations.
     int    _planesPerStation;
     int    _facesPerStation;
     int    _facesPerPlane;
-    int    _panelsPerFace;
-    int    _zLayersPerPanel;
+    int    _panelMFsPerFace;
+    int    _zLayersPerPanelMF;
     int    _strawsPerZLayer;
 
     // The detailed description of the complete support structure

@@ -1,11 +1,11 @@
-#ifndef TrackerGeom_Panel_hh
-#define TrackerGeom_Panel_hh
+#ifndef TrackerGeom_PanelMF_hh
+#define TrackerGeom_PanelMF_hh
 //
 // Holds information about one face in a tracker.
 //
 
 //
-// $Id: Panel.hh,v 1.1 2011/08/03 18:31:25 mf Exp $
+// $Id: PanelMF.hh,v 1.1 2011/08/03 18:31:25 mf Exp $
 // $Author: mf $
 // $Date: 2011/08/03 18:31:25 $
 //
@@ -22,7 +22,7 @@ namespace mu2e {
 
   class TTracker;
 
-  class Panel{
+  class PanelMF{
 
    friend class TTracker;
    friend class TTrackerMaker;
@@ -32,12 +32,12 @@ namespace mu2e {
 
   public:
 
-    Panel():_id(PanelId()) {}
-    Panel( const PanelId& id, double z ) : _id(id), _z(z) {}
+    PanelMF():_id(PanelMFId()) {}
+    PanelMF( const PanelMFId& id, double z ) : _id(id), _z(z) {}
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    const PanelId& id() const { return _id;}
+    const PanelMFId& id() const { return _id;}
 
     // The next layer down in the hierarchy is ZLayers
     int   nZLayers()                         const { return _zlayers.size(); }
@@ -48,9 +48,9 @@ namespace mu2e {
     }
 
     // Unlike the Device/Sector/Layer abstraction, one does not go directly
-    // from a Panel to a Straw
+    // from a PanelMF to a Straw
 
-   // Get geometric abtraction information about this panel
+   // Get geometric abtraction information about this panelMF
    
    double midZ() const { return _z; } 
    View view()   const { return _view; }
@@ -58,7 +58,7 @@ namespace mu2e {
    
 
 
-    // Formatted string embedding the id of the panel.
+    // Formatted string embedding the id of the panelMF.
     std::string name( std::string const& base ) const;
 
    // On readback from persistency, recursively recompute mutable members.
@@ -66,7 +66,7 @@ namespace mu2e {
 
   protected:
 
-    PanelId _id;
+    PanelMFId _id;
     double  _z;
     View    _view;
     double  _phi;
@@ -76,8 +76,8 @@ namespace mu2e {
  };
 
   inline
-  std::ostream & operator<< (std::ostream & os, Panel const &x) 
-    { return os << x.name("Panel "); }
+  std::ostream & operator<< (std::ostream & os, PanelMF const &x) 
+    { return os << x.name("PanelMF "); }
 
 }  //namespace mu2e
-#endif /* TrackerGeom_Panel_hh */
+#endif /* TrackerGeom_PanelMF_hh */

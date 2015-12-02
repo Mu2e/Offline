@@ -3,7 +3,7 @@
 
 //
 // Identifier for a layer ordered by Z (ZLayer).
-// Although all 3 panels in a face have layers at the identical Z,
+// Although all 3 panelMFs in a face have layers at the identical Z,
 // we consider each such layer as a distinct ZLayer.
 //
 
@@ -16,7 +16,7 @@
 //
 
 #include <ostream>
-#include "TTrackerGeom/inc/PanelId.hh"
+#include "TTrackerGeom/inc/PanelMFId.hh"
 
 namespace mu2e {
 
@@ -29,37 +29,37 @@ namespace mu2e {
   public:
 
     ZLayerId():
-      _panid(),
+      _panMFid(),
       _zlayer(-1){
     }
 
-    ZLayerId( PanelId const & pan,
+    ZLayerId( PanelMFId const & pan,
               int zlay
               ):
-      _panid(pan),
+      _panMFid(pan),
       _zlayer(zlay){
     }
 
-    ZLayerId( int station, int face, int panel, int zlay )
-      : _panid(station, face, panel)
+    ZLayerId( int station, int face, int panelMF, int zlay )
+      : _panMFid(station, face, panelMF)
       , _zlayer(zlay){
     }
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
-    const StationId& getStationId() const { return _panid.getStationId(); }
-    const PlaneId&   getPlaneId()   const { return _panid.getPlaneId();   }
-    const FaceId&    getFaceId()    const { return _panid.getFaceId();    }
-    const PanelId&   getPanelId()   const { return _panid;                }
-          int   getStation()        const { return _panid.getStation();   }
-          int   getPlane()          const { return _panid.getPlane();     }
-          int   getFace()           const { return _panid.getFace();      }
-          int   getPanel()          const { return _panid.getPanel();     }
+    const StationId& getStationId() const { return _panMFid.getStationId(); }
+    const PlaneId&   getPlaneId()   const { return _panMFid.getPlaneId();   }
+    const FaceId&    getFaceId()    const { return _panMFid.getFaceId();    }
+    const PanelMFId&   getPanelMFId()   const { return _panMFid;                }
+          int   getStation()        const { return _panMFid.getStation();   }
+          int   getPlane()          const { return _panMFid.getPlane();     }
+          int   getFace()           const { return _panMFid.getFace();      }
+          int   getPanelMF()          const { return _panMFid.getPanelMF();     }
           int   getZLayer()         const { return _zlayer;               }
 
 
     bool operator==(ZLayerId const& rhs) const{
-      return ( _panid == rhs._panid && _zlayer == rhs._zlayer );
+      return ( _panMFid == rhs._panMFid && _zlayer == rhs._zlayer );
     }
 
     bool operator!=(ZLayerId const& rhs) const{
@@ -67,28 +67,28 @@ namespace mu2e {
     }
 
     bool operator< (ZLayerId const& rhs) const {
-      if (_panid < rhs._panid) return true;
-      if (_panid > rhs._panid) return false;
+      if (_panMFid < rhs._panMFid) return true;
+      if (_panMFid > rhs._panMFid) return false;
       if (_zlayer < rhs._zlayer) return true;
       return false;
     }
     
     bool operator> (ZLayerId const& rhs) const {
-      if (_panid > rhs._panid) return true;
-      if (_panid < rhs._panid) return false;
+      if (_panMFid > rhs._panMFid) return true;
+      if (_panMFid < rhs._panMFid) return false;
       if (_zlayer > rhs._zlayer) return true;
       return false;
     }
     
     friend std::ostream& operator<<(std::ostream& ost,
                                     const ZLayerId& zlay ){
-      ost << zlay._panid << " " << zlay._zlayer;
+      ost << zlay._panMFid << " " << zlay._zlayer;
       return ost;
     }
 
   private:
 
-    PanelId _panid;
+    PanelMFId _panMFid;
     int     _zlayer;
 
   };
