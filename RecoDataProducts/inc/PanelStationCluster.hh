@@ -1,9 +1,9 @@
-#ifndef RecoDataProducts_SectorStationCluster_hh
-#define RecoDataProducts_SectorStationCluster_hh
+#ifndef RecoDataProducts_PanelStationCluster_hh
+#define RecoDataProducts_PanelStationCluster_hh
 //
 // out data of the geom based algorithm for fast pattern recognition
 //
-// $Id: SectorStationCluster.hh,v 1.1 2011/06/25 23:58:29 tassiell Exp $
+// $Id: PanelStationCluster.hh,v 1.1 2011/06/25 23:58:29 tassiell Exp $
 // $Author: tassiell $
 // $Date: 2011/06/25 23:58:29 $
 //
@@ -21,52 +21,52 @@ namespace mu2e {
 
 typedef art::Ptr<StrawHit> StrawHitPtr;
 
-  struct SectorStationCluster{
+  struct PanelStationCluster{
 
     std::vector<StrawHitPtr> _selectedTrackerHits;
-    float _mean_Sttn;
-    float _sigma_Sttn;
-    float _mean_Sctr;
-    float _sigma_Sctr;
+    float _mean_Station;
+    float _sigma_Station;
+    float _mean_Panel;
+    float _sigma_Panel;
     float _m;
     float _q;
     float _errm;
     float _errq;
-    unsigned short _firstSectorID;
-    unsigned short _lastSectorID;
+    unsigned short _firstPanelID;
+    unsigned short _lastPanelID;
     unsigned short _minStationID;
     unsigned short _maxStationID;
 
   public:
 
-    SectorStationCluster():
-            _mean_Sttn(0.00000),
-            _sigma_Sttn(0.00000),
-            _mean_Sctr(0.00000),
-            _sigma_Sctr(0.00000),
+    PanelStationCluster():
+            _mean_Station(0.00000),
+            _sigma_Station(0.00000),
+            _mean_Panel(0.00000),
+            _sigma_Panel(0.00000),
             _m(0.00000),
             _q(0.00000),
             _errm(0.00000),
             _errq(0.00000),
-            _firstSectorID(0),
-            _lastSectorID(0),
+            _firstPanelID(0),
+            _lastPanelID(0),
             _minStationID(0),
             _maxStationID(0) {
     }
 
-    SectorStationCluster( float mean_Sttn_, float sigma_Sttn_, float mean_Sctr_, float sigma_Sctr_,
+    PanelStationCluster( float mean_Station_, float sigma_Station_, float mean_Panel_, float sigma_Panel_,
                     float m_, float q_, float errm_, float errq_,
-                    unsigned short firstSectorID_, unsigned short lastSectorID_, unsigned short minStationID_, unsigned short maxStationID_):
-            _mean_Sttn(mean_Sttn_),
-            _sigma_Sttn(sigma_Sttn_),
-            _mean_Sctr(mean_Sctr_),
-            _sigma_Sctr(sigma_Sctr_),
+                    unsigned short firstPanelID_, unsigned short lastPanelID_, unsigned short minStationID_, unsigned short maxStationID_):
+            _mean_Station(mean_Station_),
+            _sigma_Station(sigma_Station_),
+            _mean_Panel(mean_Panel_),
+            _sigma_Panel(sigma_Panel_),
             _m(m_),
             _q(q_),
             _errm(errm_),
             _errq(errq_),
-            _firstSectorID(firstSectorID_),
-            _lastSectorID(lastSectorID_),
+            _firstPanelID(firstPanelID_),
+            _lastPanelID(lastPanelID_),
             _minStationID(minStationID_),
             _maxStationID(maxStationID_) {
     }
@@ -77,9 +77,9 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
-                                   SectorStationCluster const& hit){
-    ost<<"Sctr-Station cluster: "<<std::endl;
-    ost<<"\t Station mean: "<<hit._mean_Sttn<<" sigma "<<hit._sigma_Sttn<<" Sector mean "<<hit._mean_Sctr<<" sigma "<<hit._sigma_Sctr<<std::endl;
+                                   PanelStationCluster const& hit){
+    ost<<"Panel-Station cluster: "<<std::endl;
+    ost<<"\t Station mean: "<<hit._mean_Station<<" sigma "<<hit._sigma_Station<<" Panel mean "<<hit._mean_Panel<<" sigma "<<hit._sigma_Panel<<std::endl;
     ost<<"\t m "<<hit._m<<" q "<<hit._q<<" errm "<<hit._errm<<" errq "<<hit._errq<<std::endl;
     ost<<"\t number of tracker hits selected: "<<hit._selectedTrackerHits.size()<<std::endl;
     return ost;
@@ -88,4 +88,4 @@ typedef art::Ptr<StrawHit> StrawHitPtr;
 
 } // namespace mu2e
 
-#endif /* RecoDataProducts_SectorStationCluster_hh */
+#endif /* RecoDataProducts_PanelStationCluster_hh */

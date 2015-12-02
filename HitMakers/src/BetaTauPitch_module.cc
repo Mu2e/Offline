@@ -153,7 +153,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       cout<< "======  " << endl;
       cout<< "Layer:  " << lay  <<endl;
       cout<< "DID:    " << did  <<endl;
-      cout<< "Sector: " << sec  <<endl;
+      cout<< "Panel: " << sec  <<endl;
       cout<< "hl:     " << hl   <<endl;
       cout<< "mpx:    " << mpx  <<endl;
       cout<< "mpy:    " << mpy  <<endl;
@@ -481,9 +481,9 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     Straw str;
     StrawId sid;
     LayerId lid;
-    SectorId secid;
+    PanelId secid;
     // mf study 1
-    int sector;
+    int panel;
     // --- mf
     vector<double> X;       // x of cluster intersections
     vector<double> Y;       // y of cluster intersections
@@ -688,13 +688,13 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     DeviceId did = sid.getDeviceId();
                     std::vector<StepPointMC const *> const& steps = info.steps();
                     // mf study 1
-                    sector = sid.getSector();
+                    panel = sid.getPanel();
                     const CLHEP::Hep3Vector straw_direction = str.getDirection();
                     if ((straw_direction.z() > .000001) || (straw_direction.mag() > 1.000001)) {
                       cout << "????? unexpected straw direction: \n      " << straw_direction << "\n";
                     }
-                    if ((sector < 0) || (sector > 5)) {
-                      cout << "????? unexpected straw sector: \n      " << sector << "\n";
+                    if ((panel < 0) || (panel > 5)) {
+                      cout << "????? unexpected straw panel: \n      " << panel << "\n";
                     }
                     // --- mf
                     deviceStrawDirections[did] = straw_direction;
@@ -842,7 +842,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
         sid = str.id();
         lid = sid.getLayerId();
         did = sid.getDeviceId();
-        secid = sid.getSectorId();
+        secid = sid.getPanelId();
         const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
         const CLHEP::Hep3Vector dirvec = str.getDirection();
         dvec = CLHEP::Hep3Vector(dirvec.getX(),dirvec.getY(),dirvec.getZ());
@@ -859,7 +859,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
       pstraw pstr;
       pstr.lay=lid.getLayer();
       pstr.did=did;
-      pstr.sec=secid.getSector();
+      pstr.sec=secid.getPanel();
       pstr.hl=hlen;
       pstr.mpx=pvec.getX();
       pstr.mpy=pvec.getY();

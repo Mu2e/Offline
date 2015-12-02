@@ -3,7 +3,7 @@
 
 #include <ostream>
 
-#include "DataProducts/inc/SectorId.hh"
+#include "DataProducts/inc/PanelId.hh"
 
 namespace mu2e {
 
@@ -16,16 +16,16 @@ namespace mu2e {
       _manifold(-1){
     }
 
-    ManifoldId(SectorId sector,
+    ManifoldId(PanelId panel,
                int manifold
                ):
-      _sid(sector),
+      _sid(panel),
       _manifold(manifold)
     {}
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    SectorId getSectorId() const {
+    PanelId getPanelId() const {
       return _sid;
     }
 
@@ -40,14 +40,14 @@ namespace mu2e {
   private:
 
     // Member variables
-    SectorId _sid;
+    PanelId _sid;
     int _manifold;
 
   };
 
   inline std::ostream& operator<<(std::ostream& ost,
                                   const ManifoldId& m ){
-    ost << m.getSectorId() << " " << m.getManifold();
+    ost << m.getPanelId() << " " << m.getManifold();
     return ost;
   }
 

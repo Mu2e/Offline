@@ -189,7 +189,7 @@ namespace mu2e {
       nt[2]  = pos.z();
       nt[3]  = hit.time();
       nt[4]  = straw.id().getDevice();
-      nt[5]  = straw.id().getSector();
+      nt[5]  = straw.id().getPanel();
       nt[6]  = straw.id().getLayer();
       nt[7]  = hit.eDep()/CLHEP::keV;
 

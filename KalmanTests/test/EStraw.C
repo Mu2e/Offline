@@ -3,7 +3,7 @@ double iongain(15); // number of ionizations per primary electron
 double eele(0.0025); // MPV straw energy deposition of an electron (MeV)
 double ggain(1e4); // gas amplification
 double qe(1.6e-19); // electron charge (C)
-unsigned nsect(6); // # sectors
+unsigned npanel(6); // # panels
 unsigned nlayer(2); // # layers
 unsigned ndevstat(2); // # devices/station
 double mamp(1e6); // microamps/amp
@@ -16,7 +16,7 @@ unsigned nxbins(30);
 double xrange(600.0); // cm
 
 void estraw(TTree* estraw,double nmicro) {
-  double factor = nmicro_total*iongain*ggain*qe*nxbins*10/(nmicro*nsect*nlayer*ndevstat*eele*2*xrange);
+  double factor = nmicro_total*iongain*ggain*qe*nxbins*10/(nmicro*npanel*nlayer*ndevstat*eele*2*xrange);
   TH2F* epanel[18];
   unsigned ican(0);
   unsigned ipad(0);
@@ -57,8 +57,8 @@ void estraw(TTree* estraw,double nmicro) {
 }
 
 void estraw_current(TTree* estraw,double nmicro) {
-  double factor = iongain*ggain*qe*mamp*ntbins/(nmicro*nsect*nlayer*eele*maxdevice*maxstraw*mblength*secpernsec);
-  double factor2 = iongain*ggain*qe*mamp*ntbins*nxbins*10/(nmicro*nsect*nlayer*eele*maxdevice*maxstraw*mblength*secpernsec*2*xrange);
+  double factor = iongain*ggain*qe*mamp*ntbins/(nmicro*npanel*nlayer*eele*maxdevice*maxstraw*mblength*secpernsec);
+  double factor2 = iongain*ggain*qe*mamp*ntbins*nxbins*10/(nmicro*npanel*nlayer*eele*maxdevice*maxstraw*mblength*secpernsec*2*xrange);
 //  cout << "factor = " << factor << endl;
   TH1F* cvt = new TH1F("cvt","Current on wire 0+1, station <=4;time(nsec);#muA/wire",ntbins,0,mblength);
   TH2F* cvt2 = new TH2F("cvt2","Current on wire 0+1, station <=4;time(nsec);Position WRT wire center (mm);#muA/wire/cm",ntbins,0,mblength,
@@ -84,8 +84,8 @@ void estraw_current(TTree* estraw,double nmicro) {
 }
 
 void estraw_rate(TTree* estraw,double nmicro) {
-  double factor = (1e-6)*ntbins/(nmicro*nsect*nlayer*maxdevice*maxstraw*mblength*secpernsec);
-  double factor2 = (1e-6)*ntbins*nxbins*10/(nmicro*nsect*nlayer*maxdevice*maxstraw*mblength*secpernsec*2*xrange);
+  double factor = (1e-6)*ntbins/(nmicro*npanel*nlayer*maxdevice*maxstraw*mblength*secpernsec);
+  double factor2 = (1e-6)*ntbins*nxbins*10/(nmicro*npanel*nlayer*maxdevice*maxstraw*mblength*secpernsec*2*xrange);
   cout << "factor = " << factor << endl;
   TH1F* hr = new TH1F("hr","Hit Rate on wire 0+1, station <=4;time(nsec);MHz/wire",ntbins,0,mblength);
   TH2F* hr2 = new TH2F("hr2","Hit Rate on wire 0+1, station <=4;time(nsec);Position WRT wire center (mm);MHz/wire/cm",ntbins,0,mblength,

@@ -23,7 +23,7 @@ namespace mu2e {
 
   class Layer{
 
-    friend class Sector;
+    friend class Panel;
     friend class Device;
     friend class TTracker;
     friend class TTrackerMaker;

@@ -1,11 +1,11 @@
-#ifndef TrackerGeom_Sector_hh
-#define TrackerGeom_Sector_hh
+#ifndef TrackerGeom_Panel_hh
+#define TrackerGeom_Panel_hh
 //
-// Holds information about one sector in a tracker.
+// Holds information about one panel in a tracker.
 //
 
 //
-// $Id: Sector.hh,v 1.14 2013/03/26 23:28:23 kutschke Exp $
+// $Id: Panel.hh,v 1.14 2013/03/26 23:28:23 kutschke Exp $
 // $Author: kutschke $
 // $Date: 2013/03/26 23:28:23 $
 //
@@ -16,7 +16,7 @@
 #include <vector>
 
 #include "TrackerGeom/inc/Layer.hh"
-#include "DataProducts/inc/SectorId.hh"
+#include "DataProducts/inc/PanelId.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #ifndef __CINT__
@@ -28,7 +28,7 @@ namespace mu2e {
 
   class Tracker;
 
-  class Sector{
+  class Panel{
 
 
     friend class Device;
@@ -37,12 +37,12 @@ namespace mu2e {
 
   public:
 
-    Sector():_id(SectorId(-1,-1)){}
-    Sector( const SectorId& id ):_id(id){}
+    Panel():_id(PanelId(-1,-1)){}
+    Panel( const PanelId& id ):_id(id){}
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    const SectorId& id() const { return _id;}
+    const PanelId& id() const { return _id;}
 
     const std::vector<Layer>& getLayers() const{
       return _layers;
@@ -73,7 +73,7 @@ namespace mu2e {
     CLHEP::Hep3Vector straw0MidPoint()  const { return _straw0MidPoint;  }
     CLHEP::Hep3Vector straw0Direction() const { return _straw0Direction; }
 
-    // Formatted string embedding the id of the sector.
+    // Formatted string embedding the id of the panel.
     std::string name( std::string const& base ) const;
 
     const std::vector<double>& boxHalfLengths() const { return _boxHalfLengths; }
@@ -131,7 +131,7 @@ namespace mu2e {
 
   protected:
 
-    SectorId _id;
+    PanelId _id;
     std::vector<Layer> _layers;
 
     // Vertices of enclosing polygon.
@@ -165,4 +165,4 @@ namespace mu2e {
   };
 
 }  //namespace mu2e
-#endif /* TrackerGeom_Sector_hh */
+#endif /* TrackerGeom_Panel_hh */

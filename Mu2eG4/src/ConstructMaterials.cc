@@ -447,7 +447,7 @@ namespace mu2e {
       SCCableInsulation->AddMaterial(findMaterialOrThrow("G10"), 0.66);
     }
 
-    //http://sector7.xor.aps.anl.gov/~dufresne/UofM/techinfo/kapton.html
+    //http://panel7.xor.aps.anl.gov/~dufresne/UofM/techinfo/kapton.html
     //The chemical formula of Kapton is C22H10N205,  its density is 1.43
     // also see below, do we need more than one?
 

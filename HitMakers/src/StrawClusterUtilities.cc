@@ -136,14 +136,14 @@ namespace mu2e {
     return did;
 
   }
-  SectorId StrawClusterUtilities::secid(StrawCluster const & cluster,art::Event const & event) const
+  PanelId StrawClusterUtilities::secid(StrawCluster const & cluster,art::Event const & event) const
   {
     const Tracker& tracker = getTrackerOrThrow();
     StrawHitPtrVector const & strawHits = cluster.strawHits();
     StrawHit const& strawhit = *strawHits[0];
     Straw    str = tracker.getStraw(strawhit.strawIndex());
     StrawId  sid = str.id();
-    SectorId secid = sid.getSectorId();
+    PanelId secid = sid.getPanelId();
     return secid;
   }
   DeviceId StrawClusterUtilities::Station(StrawCluster const & cluster,art::Event const & event) const

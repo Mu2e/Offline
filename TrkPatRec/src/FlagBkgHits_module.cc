@@ -541,7 +541,7 @@ namespace mu2e
     shinfo._edep = sh.energyDep();
     const Straw& straw = tracker.getStraw( sh.strawIndex() );
     shinfo._device = straw.id().getDevice();
-    shinfo._sector = straw.id().getSector();
+    shinfo._panel = straw.id().getPanel();
     shinfo._layer = straw.id().getLayer();
     shinfo._straw = straw.id().getStraw();
     shinfo._esel = shflag.hasAllProperties(StrawHitFlag::energysel);

@@ -142,7 +142,7 @@ namespace mu2e {
     if(banner==0){
       printf("-----------------------------------------------------------------------------------");
       printf("------------------------------\n");
-      printf("   x       y     z   SHID    Station Sector Layer Straw     Flags      Time          dt       eDep \n");
+      printf("   x       y     z   SHID    Station Panel Layer Straw     Flags      Time          dt       eDep \n");
       printf("-----------------------------------------------------------------------------------");
       printf("------------------------------\n");
       banner = false;
@@ -152,7 +152,7 @@ namespace mu2e {
 	   x,y,z,
 	   Hit.strawIndex().asInt(),
 	   straw.id().getDevice(),
-	   straw.id().getSector(),
+	   straw.id().getPanel(),
 	   straw.id().getLayer(),
 	   straw.id().getStraw(),
 	   Pos.flag().hex().data(),
@@ -236,10 +236,10 @@ namespace mu2e {
       flist->Add(sleg);
       for(int idev=0;idev<2;++idev){
 	const Device& dev = tt.getDevice(2*ista+idev);
-	const std::vector<Sector>& sectors = dev.getSectors();
-	for(size_t isec=0;isec<sectors.size();++isec){
+	const std::vector<Panel>& panels = dev.getPanels();
+	for(size_t isec=0;isec<panels.size();++isec){
 	  int iface = isec%2;
-	  const Sector& sec = sectors[isec];
+	  const Panel& sec = panels[isec];
 	  CLHEP::Hep3Vector spos = sec.straw0MidPoint();
 	  CLHEP::Hep3Vector sdir = sec.straw0Direction();
 	  CLHEP::Hep3Vector end0 = spos - 100.0*sdir;

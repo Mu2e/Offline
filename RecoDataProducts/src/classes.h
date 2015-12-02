@@ -32,7 +32,7 @@
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"
 #include "RecoDataProducts/inc/SubEventCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
-#include "RecoDataProducts/inc/SctrSttnClusterGroupCollection.hh"
+#include "RecoDataProducts/inc/PanelStationClusterGroupCollection.hh"
 #include "RecoDataProducts/inc/ZRotStrawHitMapCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
@@ -130,7 +130,7 @@ template class art::Wrapper<art::Assns<mu2e::TrackSummary, art::Ptr<KalRep> > >;
 template class art::Wrapper<mu2e::ExtMonUCITofHitCollection>;
 template class art::Wrapper<mu2e::SubEventCollection>;
 template class art::Wrapper<mu2e::TrackerHitTimeClusterCollection>;
-template class art::Wrapper<mu2e::SctrSttnClusterGroupCollection>;
+template class art::Wrapper<mu2e::PanelStationClusterGroupCollection>;
 template class art::Wrapper<mu2e::ZRotStrawHitMapCollection>;
 template class art::Wrapper<mu2e::TrackerHitByID>;
 template class art::Wrapper<mu2e::TrackSeedCollection>;

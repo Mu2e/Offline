@@ -499,7 +499,7 @@ namespace mu2e
         tshinfo._active = tsh->isActive();
         tshinfo._usable = tsh->usability();
 	tshinfo._device = tsh->straw().id().getDevice();
-	tshinfo._sector = tsh->straw().id().getSector();
+	tshinfo._panel = tsh->straw().id().getPanel();
 	tshinfo._layer = tsh->straw().id().getLayer();
 	tshinfo._straw = tsh->straw().id().getStraw();
 	tshinfo._edep = tsh->strawHit().energyDep();

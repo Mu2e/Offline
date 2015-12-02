@@ -26,7 +26,7 @@
 #include "TTrackerGeom/inc/Support.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Device.hh"
-#include "TrackerGeom/inc/Sector.hh"
+#include "TrackerGeom/inc/Panel.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -99,8 +99,8 @@ namespace mu2e {
     TFile * _file;
 
     void drawEnvelopesSupport(bool dolabels);
-    void drawSector(bool dolabels);
-    void drawSectorXZdetail(size_t dolabels,
+    void drawPanel(bool dolabels);
+    void drawPanelXZdetail(size_t dolabels,
                             double lx=-std::numeric_limits<double>::max(),
                             double ux= std::numeric_limits<double>::max(),
                             double lz=-std::numeric_limits<double>::max(),
@@ -278,7 +278,7 @@ namespace mu2e {
     // here we do the geometry drawings
 
     drawEnvelopesSupport(true);
-    drawSector(true);
+    drawPanel(true);
     drawStraws(true);
     drawManifolds(true);
 
@@ -322,7 +322,7 @@ namespace mu2e {
 
     // here we do the geometry drawings
 
-    drawSectorXZdetail(2);
+    drawPanelXZdetail(2);
     drawStrawsXZdetail(false);
 
     _canvas->Modified();
@@ -357,7 +357,7 @@ namespace mu2e {
 
     // here we do the geometry drawings
 
-    drawSectorXZdetail(3,    -_spanx, _spanx, -_spanz, _spanz);
+    drawPanelXZdetail(3,    -_spanx, _spanx, -_spanz, _spanz);
     drawStrawsXZdetail(true, -_spanx, _spanx, -_spanz, _spanz);
 
     std::cerr << "Double click on the Canvas to go to the next one" ;
@@ -390,7 +390,7 @@ namespace mu2e {
 
     // here we do the geometry drawings
 
-    drawSectorXZdetail(4,   _lx, _ux, _lz, _uz);
+    drawPanelXZdetail(4,   _lx, _ux, _lz, _uz);
     drawStrawsXZdetail(true,_lx, _ux, _lz, _uz);
 
     std::cerr << "Double click on the Canvas to close it" ;
@@ -423,7 +423,7 @@ namespace mu2e {
 
     // here we do the geometry drawings
 
-    drawSectorXZdetail(5,   _lx, _ux, _lz, _uz);
+    drawPanelXZdetail(5,   _lx, _ux, _lz, _uz);
     drawStrawsXZdetail(true,_lx, _ux, _lz, _uz);
 
     std::cerr << "Double click on the Canvas to close it" ;
@@ -437,7 +437,7 @@ namespace mu2e {
 
   }
 
-  void TTrackerGeomIntRootPlots::drawSectorXZdetail(size_t dolabels,
+  void TTrackerGeomIntRootPlots::drawPanelXZdetail(size_t dolabels,
                                                     double lx, double ux,
                                                     double lz, double uz
                                                     ){
@@ -446,36 +446,36 @@ namespace mu2e {
     line->SetLineColor(kRed);
     line->SetLineStyle(kDotted);
 
-    // Draw the sector box in x,y
+    // Draw the panel box in x,y
 
     const size_t idev = 0;
     const Device& device = _ttracker->getDevice(idev);
 
     const size_t isec = 0;
-    const Sector& sector = device.getSector(isec);
+    const Panel& panel = device.getPanel(isec);
 
-    std::cout << "sector.boxHalfLengths : " <<
-      sector.boxHalfLengths()[1] << " " <<
-      sector.boxHalfLengths()[2] << " " <<
-      sector.boxHalfLengths()[3] << " " <<
-      sector.boxHalfLengths()[4] << " " << std::endl;
+    std::cout << "panel.boxHalfLengths : " <<
+      panel.boxHalfLengths()[1] << " " <<
+      panel.boxHalfLengths()[2] << " " <<
+      panel.boxHalfLengths()[3] << " " <<
+      panel.boxHalfLengths()[4] << " " << std::endl;
 
-    std::cout << " sector.boxOffset : " <<
-      sector.boxOffset().x() << " " <<
-      sector.boxOffset().y() << " " <<
-      sector.boxOffset().z() << " " << std::endl;
+    std::cout << " panel.boxOffset : " <<
+      panel.boxOffset().x() << " " <<
+      panel.boxOffset().y() << " " <<
+      panel.boxOffset().z() << " " << std::endl;
 
     std::cout << " _drawingOrigin : " <<
       _drawingOrigin.x() << " " <<
       _drawingOrigin.y() << " " <<
       _drawingOrigin.z() << " " << std::endl;
 
-    // we do it arround "0" e.g. sector.boxOffset() as we have done the straws
+    // we do it arround "0" e.g. panel.boxOffset() as we have done the straws
 
-    double x1 = _drawingOrigin.x()-sector.boxHalfLengths()[1];
+    double x1 = _drawingOrigin.x()-panel.boxHalfLengths()[1];
     double x2 = x1;
-    double z1 = _drawingOrigin.z()-sector.boxHalfLengths()[2];
-    double z2 = _drawingOrigin.z()+sector.boxHalfLengths()[2];
+    double z1 = _drawingOrigin.z()-panel.boxHalfLengths()[2];
+    double z2 = _drawingOrigin.z()+panel.boxHalfLengths()[2];
 
     std::cout << "x1, z1 :" <<
       x1 << " " <<
@@ -489,16 +489,16 @@ namespace mu2e {
 
     printAndDraw(line,x1,z1,x2,z2);
 
-    double x3 = _drawingOrigin.x()+sector.boxHalfLengths()[1];
-    double z3 = _drawingOrigin.z()+sector.boxHalfLengths()[2];
+    double x3 = _drawingOrigin.x()+panel.boxHalfLengths()[1];
+    double z3 = _drawingOrigin.z()+panel.boxHalfLengths()[2];
 
     boundit (x3,lx,ux);
     boundit (z3,lz,uz);
 
     printAndDraw(line,x2,z2,x3,z3);
 
-    double x4 = _drawingOrigin.x()+sector.boxHalfLengths()[1];
-    double z4 = _drawingOrigin.z()-sector.boxHalfLengths()[2];
+    double x4 = _drawingOrigin.x()+panel.boxHalfLengths()[1];
+    double z4 = _drawingOrigin.z()-panel.boxHalfLengths()[2];
 
     boundit (x4,lx,ux);
     boundit (z4,lz,uz);
@@ -562,17 +562,17 @@ namespace mu2e {
     const size_t idev = 0;
     const Device& device = _ttracker->getDevice(idev);
     const size_t isec = 0;
-    const Sector& sector = device.getSector(isec);
+    const Panel& panel = device.getPanel(isec);
 
-    std::cout << "sector.boxOffset()  " <<
-      sector.boxOffset() << std::endl;
+    std::cout << "panel.boxOffset()  " <<
+      panel.boxOffset() << std::endl;
 
     std::cout << "device.origin()  " <<
       device.origin() << std::endl;
 
-    for ( int ilay=0; ilay<sector.nLayers(); ++ilay ) {
+    for ( int ilay=0; ilay<panel.nLayers(); ++ilay ) {
 
-      const Layer& layer = sector.getLayer(ilay);
+      const Layer& layer = panel.getLayer(ilay);
 
       if(ilay%2==0) {
         line->SetLineColor(kBlue);
@@ -589,8 +589,8 @@ namespace mu2e {
 
         std::cout << "straw.getMidPoint() " << straw.getMidPoint() << std::endl;
 
-        double sx = straw.getMidPoint().x() - sector.boxOffset().x();
-        double sz = straw.getMidPoint().z() - sector.boxOffset().z();
+        double sx = straw.getMidPoint().x() - panel.boxOffset().x();
+        double sz = straw.getMidPoint().z() - panel.boxOffset().z();
 
         std::cout << "sx, sz :" <<
           sx << " " <<
@@ -635,11 +635,11 @@ namespace mu2e {
     const Device& device = _ttracker->getDevice(idev);
 
     const size_t isec = 0;
-    const Sector& sector = device.getSector(isec);
+    const Panel& panel = device.getPanel(isec);
 
-    for ( int ilay=0; ilay<sector.nLayers(); ++ilay ) {
+    for ( int ilay=0; ilay<panel.nLayers(); ++ilay ) {
 
-      const Layer& layer = sector.getLayer(ilay);
+      const Layer& layer = panel.getLayer(ilay);
 
       if(ilay%2==0) {
         line->SetLineColor(kBlue);
@@ -707,11 +707,11 @@ namespace mu2e {
     //const int _manifoldsPerEnd = _manifoldHalfLengths.size();
 
     const size_t isec = 0;
-    const Sector& sector = device.getSector(isec);
+    const Panel& panel = device.getPanel(isec);
 
-    for ( int ilay=0; ilay<sector.nLayers(); ++ilay ) {
+    for ( int ilay=0; ilay<panel.nLayers(); ++ilay ) {
 
-      const Layer& layer = sector.getLayer(ilay);
+      const Layer& layer = panel.getLayer(ilay);
 
       if(ilay%2==0) {
         line->SetLineColor(kRed);
@@ -837,40 +837,40 @@ namespace mu2e {
 
   }
 
-  void TTrackerGeomIntRootPlots::drawSector(bool dolabels){
+  void TTrackerGeomIntRootPlots::drawPanel(bool dolabels){
 
     TLine* line   = new TLine();
     line->SetLineColor(kRed);
     line->SetLineStyle(kDotted);
 
-    // Draw the sector box in x,y
+    // Draw the panel box in x,y
 
     const size_t idev = 0;
     const Device& device = _ttracker->getDevice(idev);
 
     const size_t isec = 0;
-    const Sector& sector = device.getSector(isec);
+    const Panel& panel = device.getPanel(isec);
 
-    std::cout << "sector.boxHalfLengths : " <<
-      sector.boxHalfLengths()[1] << " " <<
-      sector.boxHalfLengths()[2] << " " <<
-      sector.boxHalfLengths()[3] << " " <<
-      sector.boxHalfLengths()[4] << " " << std::endl;
+    std::cout << "panel.boxHalfLengths : " <<
+      panel.boxHalfLengths()[1] << " " <<
+      panel.boxHalfLengths()[2] << " " <<
+      panel.boxHalfLengths()[3] << " " <<
+      panel.boxHalfLengths()[4] << " " << std::endl;
 
-    std::cout << " sector.boxOffset : " <<
-      sector.boxOffset().x() << " " <<
-      sector.boxOffset().y() << " " <<
-      sector.boxOffset().z() << " " << std::endl;
+    std::cout << " panel.boxOffset : " <<
+      panel.boxOffset().x() << " " <<
+      panel.boxOffset().y() << " " <<
+      panel.boxOffset().z() << " " << std::endl;
 
     std::cout << " _drawingOrigin : " <<
       _drawingOrigin.x() << " " <<
       _drawingOrigin.y() << " " <<
       _drawingOrigin.z() << " " << std::endl;
 
-    double x1 = -_drawingOrigin.x() + sector.boxOffset().x()-sector.boxHalfLengths()[1];
+    double x1 = -_drawingOrigin.x() + panel.boxOffset().x()-panel.boxHalfLengths()[1];
     double x2 = x1;
     double y1 = -_drawingOrigin.y();
-    double y2 = -_drawingOrigin.y() + sector.boxHalfLengths()[4];
+    double y2 = -_drawingOrigin.y() + panel.boxHalfLengths()[4];
 
     std::cout << "x1, y1 :" <<
       x1 << " " <<
@@ -878,12 +878,12 @@ namespace mu2e {
 
     printAndDraw(line,x1,y1,x2,y2);
 
-    double x3 = -_drawingOrigin.x() + sector.boxOffset().x()+sector.boxHalfLengths()[1];
-    double y3 = -_drawingOrigin.y() + sector.boxHalfLengths()[3];
+    double x3 = -_drawingOrigin.x() + panel.boxOffset().x()+panel.boxHalfLengths()[1];
+    double y3 = -_drawingOrigin.y() + panel.boxHalfLengths()[3];
 
     printAndDraw(line,x2,y2,x3,y3);
 
-    double x4 = -_drawingOrigin.x() + sector.boxOffset().x()+sector.boxHalfLengths()[1];
+    double x4 = -_drawingOrigin.x() + panel.boxOffset().x()+panel.boxHalfLengths()[1];
     double y4 = -_drawingOrigin.y();
 
     printAndDraw(line,x3,y3,x4,y4);

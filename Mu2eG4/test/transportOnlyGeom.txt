@@ -138,11 +138,11 @@ bool ts.coils.visible      = false;
 
 bool ttracker.deviceEnvelopeVisible = false;
 bool ttracker.envelopeVisible       = false;
-bool ttracker.sectorEnvelopeVisible = false;
+bool ttracker.panelEnvelopeVisible = false;
 bool ttracker.strawVisible          = false;
 bool ttracker.supportVisible        = false;
 
-// Debug control for TTracker; uncomment to make only a selected sector.
+// Debug control for TTracker; uncomment to make only a selected panel.
 // it is not about drawing, but about the construction itself
 // int    ttracker.devDraw  =   -1;
 // int    ttracker.secDraw  =   -1;

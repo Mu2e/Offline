@@ -32,7 +32,7 @@ makeSH : {
   deadStrawList        : {
     verbosity   : 0
     deadDevices : [ ]
-    deadSectors : [ ]
+    deadPanels : [ ]
     deadLayers  : [ ]
     deadStraws  : [ ]
   }
@@ -45,7 +45,7 @@ makeSD : {
     deadStrawList        : {
 	verbosity   : 0
 	deadDevices : [ ]
-	deadSectors : [ ]
+	deadPanels : [ ]
 	deadLayers  : [ ]
 	deadStraws  : [ ]
     }

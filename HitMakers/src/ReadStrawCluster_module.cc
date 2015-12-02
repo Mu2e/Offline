@@ -89,7 +89,7 @@ namespace mu2e {
   StrawId sid;
   LayerId lid;
   DeviceId did;
-  SectorId secid;
+  PanelId secid;
   CLHEP::Hep3Vector  X_in;  
   CLHEP::Hep3Vector  P_in_si;
   CLHEP::Hep3Vector  P_out_si;
@@ -511,7 +511,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
         cout << "averageT:  "<<sutils.averageT(scluster,evt)
              <<"  did: "<< sutils.did(scluster,evt)
              <<"  Station: "<<sutils.Station(scluster,evt)
-             <<"  sector: "<< sutils.secid(scluster,evt)
+             <<"  panel: "<< sutils.secid(scluster,evt)
              <<" X:  "<<sutils.midX(scluster,evt)
              <<" dirX:  "<<sutils.dirX(scluster,evt)
              <<endl;

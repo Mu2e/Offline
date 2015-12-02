@@ -49,7 +49,7 @@ namespace mu2e {
 
     os << base
        << _id.getDevice() << "_"
-       << _id.getSector() << "_"
+       << _id.getPanel() << "_"
        << _id.getLayer();
     return os.str();
   }

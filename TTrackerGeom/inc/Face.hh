@@ -46,7 +46,7 @@ namespace mu2e {
       return _panelMFs.at(panid.getPanelMF());
     }
 
-    // Unlike the Device/Sector/Layer abstraction, one does not go directly
+    // Unlike the Device/Panel/Layer abstraction, one does not go directly
     // from a Face to a ZLayer or Straw
 
     // Formatted string embedding the id of the face.

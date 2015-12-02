@@ -356,7 +356,7 @@ namespace mu2e {
 	B_strawidx[i] = stw.id().getStraw();
 	B_strawlay[i] = stw.id().getLayerId().getLayer();
 	B_strawdev[i] = stw.id().getDeviceId();
-	B_strawsec[i] = stw.id().getSectorId().getSector();
+	B_strawsec[i] = stw.id().getPanelId().getPanel();
 	const CLHEP::Hep3Vector stMidPoint3 = stw.getMidPoint();
 	B_strawx[i] = stMidPoint3.getX();
 	B_strawy[i] = stMidPoint3.getY();

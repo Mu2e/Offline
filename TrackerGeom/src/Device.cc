@@ -25,8 +25,8 @@ namespace mu2e {
   }
 
   void Device::fillPointers ( const Tracker& tracker ) const{
-    for ( size_t i=0; i<_sectors.size(); ++i ){
-      _sectors[i].fillPointers(tracker);
+    for ( size_t i=0; i<_panels.size(); ++i ){
+      _panels[i].fillPointers(tracker);
     }
   }
 

@@ -803,7 +803,7 @@ namespace mu2e {
       nt[9]  = pca.dca();
       nt[10] = hit.time();
       nt[11] = straw.id().getDevice();
-      nt[12] = straw.id().getSector();
+      nt[12] = straw.id().getPanel();
       nt[13] = straw.id().getLayer();
       nt[14] = pdgId;
       nt[15] = genId.id();

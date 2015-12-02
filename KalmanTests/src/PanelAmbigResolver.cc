@@ -27,9 +27,9 @@
 
 namespace mu2e {
   namespace PanelAmbig {
-    // functor for sorting by panel.  Note that SectorId uniquely defines a panel
+    // functor for sorting by panel.  Note that PanelId uniquely defines a panel
     struct panelcomp : public std::binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
-      bool operator()(TrkStrawHit* x, TrkStrawHit* y) { return x->straw().id().getSectorId() < y->straw().id().getSectorId(); }
+      bool operator()(TrkStrawHit* x, TrkStrawHit* y) { return x->straw().id().getPanelId() < y->straw().id().getPanelId(); }
     };
 
     // functor to sort panel results by chisquared
@@ -101,11 +101,11 @@ namespace mu2e {
       // collect hits in the same panel
       TSHI ihit = kfit._hits.begin();
       while(ihit != kfit._hits.end()){ 
-	SectorId pid = (*ihit)->straw().id().getSectorId();
+	PanelId pid = (*ihit)->straw().id().getPanelId();
 	(*ihit)->setExtErr(AmbigResolver::_extErr);
 	TSHI jhit = ihit;
 	TSHV phits;
-	while(jhit != kfit._hits.end() && (*jhit)->straw().id().getSectorId() == pid){
+	while(jhit != kfit._hits.end() && (*jhit)->straw().id().getPanelId() == pid){
 	  phits.push_back(*jhit++);
 	}
 	// resolve the panel hits

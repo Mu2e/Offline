@@ -21,7 +21,7 @@
 #include "TTrackerGeom/inc/SupportStructure.hh"
 
 #include "TrackerGeom/inc/Device.hh"
-#include "DataProducts/inc/SectorId.hh"
+#include "DataProducts/inc/PanelId.hh"
 #include "TrackerGeom/inc/StrawDetail.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
@@ -59,18 +59,18 @@ namespace mu2e {
                );
     };
 
-    bool isLegal(const SectorId& sid) const{
+    bool isLegal(const PanelId& sid) const{
       return (isLegal(sid.getDeviceId()) &&
-              sid.getSector() >-1   &&
-              std::vector<Sector>::size_type(sid.getSector()) < getDevice(sid.getDeviceId()).getSectors().size()
+              sid.getPanel() >-1   &&
+              std::vector<Panel>::size_type(sid.getPanel()) < getDevice(sid.getDeviceId()).getPanels().size()
               );
     }
 
-    typedef std::vector<Sector>::size_type stypeLayer;
+    typedef std::vector<Panel>::size_type stypeLayer;
     bool isLegal(const LayerId& lid ) const{
-      return ( isLegal(lid.getSectorId()) &&
+      return ( isLegal(lid.getPanelId()) &&
                lid.getLayer() > -1   &&
-               std::vector<Layer>::size_type(lid.getLayer()) < getSector(lid.getSectorId()).getLayers().size()
+               std::vector<Layer>::size_type(lid.getLayer()) < getPanel(lid.getPanelId()).getLayers().size()
                );
     }
 
@@ -94,8 +94,8 @@ namespace mu2e {
       return _devices.at(id);
     }
 
-    const Sector& getSector ( const SectorId& sid ) const{
-      return _devices.at(sid.getDevice()).getSector(sid);
+    const Panel& getPanel ( const PanelId& sid ) const{
+      return _devices.at(sid.getDevice()).getPanel(sid);
     }
 
     const Layer& getLayer ( const LayerId& lid ) const{
@@ -182,10 +182,10 @@ namespace mu2e {
     }
 
     template <class F>
-    inline void forAllSectors ( F& f) const{
+    inline void forAllPanels ( F& f) const{
       for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
             i !=e; ++i){
-        i->forAllSectors(f);
+        i->forAllPanels(f);
       }
     }
 

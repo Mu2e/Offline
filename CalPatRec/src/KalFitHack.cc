@@ -393,7 +393,7 @@ namespace mu2e
 		 straw.index().asInt(),
 		 activity,
 		 straw.id().getDevice(),
-		 straw.id().getSector(),
+		 straw.id().getPanel(),
 		 trkhit->residual(),
 		 trkhit->hitRms(),
 		 trkhit->driftRadius(),
@@ -739,7 +739,7 @@ namespace mu2e
 
       printf(" %2i %2i %2i %2i",
 	     straw->id().getDevice(),
-	     straw->id().getSector(),
+	     straw->id().getPanel(),
 	     straw->id().getLayer(),
 	     straw->id().getStraw()
 	     );

@@ -433,7 +433,7 @@ namespace mu2e {
 
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
-      ele_secall[k]=straw->id().getSector();
+      ele_secall[k]=straw->id().getPanel();
       ele_devall[k]=straw->id().getDevice();
       ele_layall[k]=straw->id().getLayer();
       ele_Nall[k]=straw->id().getStraw();
@@ -525,7 +525,7 @@ namespace mu2e {
 
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
-      muo_secall[k]  = straw->id().getSector();
+      muo_secall[k]  = straw->id().getPanel();
       muo_devall[k]  = straw->id().getDevice();
       muo_layall[k]  = straw->id().getLayer();
       muo_Nall[k]    = straw->id().getStraw();

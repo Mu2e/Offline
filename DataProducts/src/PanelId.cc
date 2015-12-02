@@ -1,13 +1,13 @@
-#include "DataProducts/inc/SectorId.hh"
+#include "DataProducts/inc/PanelId.hh"
 
 namespace mu2e {
 
-  SectorId::isep SectorId::separation(SectorId const& other) const {
+  PanelId::isep PanelId::separation(PanelId const& other) const {
     isep retval=apart;
     // same station
     if(other.getDeviceId()/2 == getDeviceId()/2){
-      int plane1 = getSector()%2;
-      int plane2 = other.getSector()%2;
+      int plane1 = getPanel()%2;
+      int plane2 = other.getPanel()%2;
       int dp = plane2 - plane1;
       if(other.getDeviceId() == getDeviceId()){
 	if(dp == 0)

@@ -36,11 +36,11 @@ public:
     _n(n){
   }
 
-  StrawId( SectorId sectorid,
+  StrawId( PanelId panelid,
            int layer,
            int n
            ):
-    _lid(sectorid,layer),
+    _lid(panelid,layer),
     _n(n){
   }
 
@@ -59,8 +59,8 @@ public:
     return _lid.getDeviceId();
   }
 
-  const SectorId& getSectorId() const {
-    return _lid.getSectorId();
+  const PanelId& getPanelId() const {
+    return _lid.getPanelId();
   }
 
   const LayerId& getLayerId() const {
@@ -71,8 +71,8 @@ public:
     return _lid.getDevice();
   }
 
-  int getSector() const{
-    return _lid.getSector();
+  int getPanel() const{
+    return _lid.getPanel();
   }
 
   int getLayer() const{

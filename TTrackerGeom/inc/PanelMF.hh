@@ -47,7 +47,7 @@ namespace mu2e {
       return _zlayers.at(zid.getZLayer());
     }
 
-    // Unlike the Device/Sector/Layer abstraction, one does not go directly
+    // Unlike the Device/Panel/Layer abstraction, one does not go directly
     // from a PanelMF to a Straw
 
    // Get geometric abtraction information about this panelMF

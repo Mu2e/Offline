@@ -53,7 +53,7 @@
 using namespace std;
 
 namespace mu2e {
-  // used to sort sectors by dphi
+  // used to sort panels by dphi
   struct SecPhi {
     int isec;
     double dphi;
@@ -100,8 +100,8 @@ namespace mu2e {
     // for optimized Stereo Hit finding
     size_t _nsta;
     size_t _nsec;
-    vector <vector<int> >_imap;             // remap sector indices to new scheme
-    vector <vector<int> >_dosec;            // list of overlapping sectors in "road" to search in
+    vector <vector<int> >_imap;             // remap panel indices to new scheme
+    vector <vector<int> >_dosec;            // list of overlapping panels in "road" to search in
     void genMap(const Tracker& tracker);    // function to generate imap from tracker geometry
     // diagnostics
     TH1F* _nhits;
@@ -237,10 +237,10 @@ namespace mu2e {
 	flist->Add(sleg);
 	for(int idev=0;idev<2;++idev){
 	  const Device& dev = tt.getDevice(2*ista+idev);
-	  const vector<Sector>& sectors = dev.getSectors();
-	  for(size_t isec=0;isec<sectors.size();++isec){
+	  const vector<Panel>& panels = dev.getPanels();
+	  for(size_t isec=0;isec<panels.size();++isec){
 	    int iface = isec%2;
-	    const Sector& sec = sectors[isec];
+	    const Panel& sec = panels[isec];
 	    CLHEP::Hep3Vector spos = sec.straw0MidPoint();
 	    CLHEP::Hep3Vector sdir = sec.straw0Direction();
 	    CLHEP::Hep3Vector end0 = spos - 100.0*sdir;
@@ -306,7 +306,7 @@ namespace mu2e {
       Straw const& straw = tracker.getStraw(hit.strawIndex());
       if(shfcol->at(ish).hasAllProperties(_shsel)){
         int idev = straw.id().getDevice();
-        int isec = straw.id().getSector();
+        int isec = straw.id().getPanel();
         int jdev = idev/2;
         int jsec = _imap[idev][isec];
         hdx[jdev][jsec].push_back(ish);
@@ -319,31 +319,31 @@ namespace mu2e {
     StereoHitCollection stereohits;
     stereohits.reserve(3*nsh);
     vector<double> maxMVA(nsh,-FLT_MAX);
-    vector<int> minsep(nsh,SectorId::apart);
+    vector<int> minsep(nsh,PanelId::apart);
     vector<size_t> ibest(nsh);
     // double loop over selected straw hits
 
     for(vector<vector<int>> rhdx : hdx){                                // loop over stations
-      for(vector<int>::size_type isec=0; isec!=rhdx.size(); isec++){    // loop over sectors
+      for(vector<int>::size_type isec=0; isec!=rhdx.size(); isec++){    // loop over panels
         if(!_dosec[isec].empty()){
           for(int ish : rhdx[isec]){                                    // loop over hit1
             StrawHit const& sh1 = strawhits->at(ish);
             Straw const& straw1 = tracker.getStraw(sh1.strawIndex());
             StrawHitPosition const& shp1 = (*shpos)[ish];
-            for( int jsec : _dosec[isec]){                            // loop over overlapping sectors
+            for( int jsec : _dosec[isec]){                            // loop over overlapping panels
               for(int jsh : rhdx[jsec]){                              // loop over hit2
 	        StrawHit const& sh2 = strawhits->at(jsh);
 	        Straw const& straw2 = tracker.getStraw(sh2.strawIndex());
 	        StrawHitPosition const& shp2 = (*shpos)[jsh];
 	        double ddot = straw1.direction().dot(straw2.direction());
-	        SectorId::isep sep = straw1.id().getSectorId().separation(straw2.id().getSectorId());
+	        PanelId::isep sep = straw1.id().getPanelId().separation(straw2.id().getPanelId());
 	        double de = min((float)1.0,fabs((sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep())));
 	        CLHEP::Hep3Vector dp = shp1.pos()-shp2.pos();
 	        double dist = dp.mag();
 	        double dperp = dp.perp();
 	        double dz = fabs(dp.z());
 	        double dt = fabs(sh1.time()-sh2.time()); 
-	        if( sep != SectorId::same && sep < SectorId::apart // hits are in the same station but not the same sector
+	        if( sep != PanelId::same && sep < PanelId::apart // hits are in the same station but not the same panel
 	            && (sep <= minsep[ish] || sep <= minsep[jsh]) // this separation is at least as good as the current best for one of the hits
 	            && ddot > _minDdot // negative crosings are in opposite quadrants
 	            && dt < _maxDt // hits are close in time
@@ -425,15 +425,15 @@ namespace mu2e {
 	        }
 
               } // loop over hit2: jsh
-            } // loop over overlapping sectors: jsec
+            } // loop over overlapping panels: jsec
           } // loop over hit1: ish
         } // dosec not empty
-      } // loop over 2nd dim: isec, sectors
+      } // loop over 2nd dim: isec, panels
     } // loop over 1st dim: rhdx, stations
 // now, overwrite the positions for those hits which have stereosresolve the stereo hits to find the best position for each hit that particpates.  The algorithm is:
     for(size_t ish=0; ish<nsh;++ish){
       bool stereo(false);
-      if(minsep[ish] < SectorId::apart){
+      if(minsep[ish] < PanelId::apart){
 	shpos->at(ish) = StrawHitPosition(stereohits,ibest[ish],ish);
 	stereo = true;
       }
@@ -458,7 +458,7 @@ namespace mu2e {
 	  StereoHit const& sh = stereohits.at(ibest[ish]);
 	  _schi2 = sh.chisq();
 	  _smvaout = maxMVA[ish];
-	  _sfs = sh.sectorSeparation();
+	  _sfs = sh.panelSeparation();
 	  StrawHit const h1 = strawhits->at(sh.hitIndex1());
 	  StrawHit const h2 = strawhits->at(sh.hitIndex2());
 	  Straw const& straw1 = tracker.getStraw(h1.strawIndex());
@@ -508,10 +508,10 @@ namespace mu2e {
     const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
     size_t ndev = tt.nDevices();
     _nsta = ndev/2;
-    _nsec = tt.getDevice(0).getSectors().size();
+    _nsec = tt.getDevice(0).getPanels().size();
     vector <vector<int> >jmap(ndev,vector<int>(_nsec));
     vector <vector<int> >newisec(2,vector<int>(_nsec));
-    // clockwise sequence of sector indices per layer in remapped scheme
+    // clockwise sequence of panel indices per layer in remapped scheme
     //vector <vector<int> >newisec{ { 0, 3, 1, 4, 2, 5},{ 6, 9, 7,10, 8,11} };
     for(size_t i=0; i<2; i++){
       for(size_t j=0; j<_nsec-1; j+=2){
@@ -527,13 +527,13 @@ namespace mu2e {
         vector<SecPhi>vsecphi;
         int jdev=2*ista+idev;
         const Device& dev = tt.getDevice(jdev);
-        const vector<Sector>& sectors = dev.getSectors();
+        const vector<Panel>& panels = dev.getPanels();
         // for 1st device in station (even numbered dev)
         if(idev==0){
           for(size_t isec=0;isec<_nsec;++isec){
-            const Sector& sec = sectors[isec];
+            const Panel& sec = panels[isec];
             CLHEP::Hep3Vector spos = sec.straw0MidPoint();
-            // calculate deltaphi of all sectors relative to sector0
+            // calculate deltaphi of all panels relative to panel0
             if(isec==0)spos0 = spos;
             double dphi = spos0.deltaPhi(spos);
             if(dphi<0)dphi += 2*M_PI;
@@ -542,14 +542,14 @@ namespace mu2e {
             secphi.dphi=dphi;
             vsecphi.push_back(secphi);
           }
-          // sort all sectors of device by deltaphi
+          // sort all panels of device by deltaphi
           sort(vsecphi.begin(), vsecphi.end(),sortSec());
         // for 2nd device in station (odd numbered devices)
         }else{
           vector<SecPhi>vtmp;
           for(int ilyr=0;ilyr<2;ilyr++){
             for(size_t isec=ilyr;isec<_nsec;isec+=2){
-              const Sector& sec = sectors[isec];
+              const Panel& sec = panels[isec];
               CLHEP::Hep3Vector spos = sec.straw0MidPoint();
               double dphi = spos0.deltaPhi(spos);
               if(dphi<0)dphi += 2*M_PI;
@@ -558,13 +558,13 @@ namespace mu2e {
               secphi.dphi=dphi;
               vtmp.push_back(secphi);
             }
-            // sort sectors of each layer separately by deltaphi
+            // sort panels of each layer separately by deltaphi
             sort(vtmp.begin(), vtmp.end(),sortSec());
             if(ilyr==0){
-              // append front layer sector info to existing vector from 1st device
+              // append front layer panel info to existing vector from 1st device
               vsecphi.insert(vsecphi.end(),vtmp.begin(),vtmp.end());
             }else{
-              // insert rear layer sector info between elements of front layer
+              // insert rear layer panel info between elements of front layer
               int msec=_nsec/2;
               for(int i=0;i<msec;i++){
                 vsecphi.insert(vsecphi.end()-msec+1+i,vtmp[i]);
@@ -573,7 +573,7 @@ namespace mu2e {
             vtmp.clear();
           }
         }
-        for(vector<SecPhi>::size_type isec=0; isec!=vsecphi.size(); isec++){    // loop over sectors
+        for(vector<SecPhi>::size_type isec=0; isec!=vsecphi.size(); isec++){    // loop over panels
           int sp_isec = vsecphi[isec].isec;
           jmap[jdev][sp_isec]=newisec[idev][isec];
         }

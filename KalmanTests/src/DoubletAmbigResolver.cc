@@ -110,7 +110,7 @@ namespace mu2e {
       wdir      = &straw->getDirection();
       pos       = straw->getMidPoint();
       station   = straw->id().getDevice();
-      panel     = straw->id().getSector();
+      panel     = straw->id().getPanel();
       shId      = straw->index().asInt();
 //-----------------------------------------------------------------------------
 // track info 

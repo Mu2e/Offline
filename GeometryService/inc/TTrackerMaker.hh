@@ -14,7 +14,7 @@
 
 #include "TrackerGeom/inc/Device.hh"
 #include "TrackerGeom/inc/Layer.hh"
-#include "TrackerGeom/inc/Sector.hh"
+#include "TrackerGeom/inc/Panel.hh"
 
 #include "TTrackerGeom/inc/Station.hh"
 
@@ -45,13 +45,13 @@ namespace mu2e {
 
     void makeMother();
     void makeDevice( DeviceId devId );
-    void makeSector( const SectorId& secId, Device& dev );
-    void makeLayer ( const LayerId& layId,  Sector& sec );
-    void makeManifolds( const SectorId& secId);
+    void makePanel( const PanelId& secId, Device& dev );
+    void makeLayer ( const LayerId& layId,  Panel& sec );
+    void makeManifolds( const PanelId& secId);
 
     void computeStrawHalfLengths();
-    void computeSectorBoxParams(Sector& sector, Device& dev);
-    void computeConstantSectorBoxParams();
+    void computePanelBoxParams(Panel& panel, Device& dev);
+    void computeConstantPanelBoxParams();
     void computeLayerSpacingAndShift();
     void computeManifoldEdgeExcessSpace();
     void computeTrackerEnvelope();
@@ -64,7 +64,7 @@ namespace mu2e {
     void makeStation( StationId stationId );
     void makePlane  ( const PlaneId &planeId, Station & station );
     void makeFace   ( const FaceId &faceId, Plane &plane, const Device &device );
-    void makePanelMF  ( const PanelMFId &panelMFId, Face &face, const Sector &sector );
+    void makePanelMF  ( const PanelMFId &panelMFId, Face &face, const Panel &panel );
     void makeZLayer ( const ZLayerId &zlayerId, PanelMF &panelMF, const Layer &layer );
 
     // Do the work of constructing it.
@@ -72,7 +72,7 @@ namespace mu2e {
 
     double chooseDeviceSpacing( int idev ) const;
     double findFirstDevZ0() const;
-    double sectorRotation(int isec,int idev) const;
+    double panelRotation(int isec,int idev) const;
 
     // Some functions for the, fully detailed support structure.
     void makeSupportStructure();
@@ -97,8 +97,8 @@ namespace mu2e {
 
     // Basic parameters needed to describe the TTracker.
     int    _numDevices;                  // Number of devices.
-    int    _sectorsPerDevice;            // Number of sectors in one device.
-    int    _layersPerSector;             // Number of layers in one sector.
+    int    _panelsPerDevice;            // Number of panels in one device.
+    int    _layersPerPanel;             // Number of layers in one panel.
     int    _manifoldsPerEnd;             // Number of manifolds along one end of the wires in a layer.
     int    _strawsPerManifold;           // Number of straws connected to each manifold.
     int    _rotationPattern;             // Pattern of rotations from device to device.
@@ -134,9 +134,9 @@ namespace mu2e {
     std::vector<double> _manifoldHalfLengths; // Dimensions of each manifold.
     std::vector<std::string> _strawMaterials; // Names of the materials.
 
-    // Base rotations of a sector; does not include device rotation.
-    std::vector<double> _sectorBaseRotations;
-    std::vector<double> _sectorZSide;
+    // Base rotations of a panel; does not include device rotation.
+    std::vector<double> _panelBaseRotations;
+    std::vector<double> _panelZSide;
     double _devrot; // hack to make redundant information self-consistent
 
     std::unique_ptr<TTracker> _tt;
@@ -153,12 +153,12 @@ namespace mu2e {
     // This is only valid for SupportModel==simple
     std::vector<double> _strawActiveHalfLengths;
 
-    // sector box half lengths
-    std::vector<double> _sectorBoxHalfLengths;
+    // panel box half lengths
+    std::vector<double> _panelBoxHalfLengths;
 
-    // sector box offset magnitudes
-    double _sectorBoxXOffsetMag;
-    double _sectorBoxZOffsetMag;
+    // panel box offset magnitudes
+    double _panelBoxXOffsetMag;
+    double _panelBoxZOffsetMag;
 
     // distance between layers (in Z)
     double _layerHalfSpacing;

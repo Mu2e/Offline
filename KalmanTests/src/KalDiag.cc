@@ -234,7 +234,7 @@ namespace mu2e
 	    const TrkStrawHit* otsh = dynamic_cast<const TrkStrawHit*>(jhot.get());
 	    if(otsh != 0){
 	      if(tsh->straw().id().getDevice() ==  otsh->straw().id().getDevice() &&
-		  tsh->straw().id().getSector() == otsh->straw().id().getSector() ){
+		  tsh->straw().id().getPanel() == otsh->straw().id().getPanel() ){
 		  isdouble = true;
 		if(otsh->isActive()){
 		  dactive = true;
@@ -327,7 +327,7 @@ namespace mu2e
 	    const TrkStrawHit* otsh = dynamic_cast<const TrkStrawHit*>(jhot.get());
 	    if(otsh != 0){
 	      if(tshinfo._device ==  otsh->straw().id().getDevice() &&
-		  tshinfo._sector == otsh->straw().id().getSector() ){
+		  tshinfo._panel == otsh->straw().id().getPanel() ){
 		tshinfo._dhit = true;
 		if(otsh->isActive()){
 		  tshinfo._dactive = true;
@@ -345,7 +345,7 @@ namespace mu2e
   void KalDiag::fillHitInfo(const TrkStrawHit* tsh,TrkStrawHitInfo& tshinfo) const {
     tshinfo._active = tsh->isActive();
     tshinfo._device = tsh->straw().id().getDevice();
-    tshinfo._sector = tsh->straw().id().getSector();
+    tshinfo._panel = tsh->straw().id().getPanel();
     tshinfo._layer = tsh->straw().id().getLayer();
     tshinfo._straw = tsh->straw().id().getStraw();
     tshinfo._edep = tsh->strawHit().energyDep();
