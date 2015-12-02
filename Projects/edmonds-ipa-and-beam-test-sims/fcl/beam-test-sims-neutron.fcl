@@ -1,0 +1,45 @@
+#include "JobConfig/cd3/beam/beam_g4s4_neutron.fcl" 
+# Mostly use what was done in the above, except...
+
+# ...change the process name
+process_name: BeamTestSimsNeutron
+
+# ...change the output file names
+services.TFileService.fileName: "nts.beam-test-sims-neutron.root"
+outputs.detectorOutput.fileName: "sim.beam-test-sims-neutron.detOutput.art"
+outputs.crvOutput.fileName: "sim.beam-test-sims-neutron.detOutput.art"
+outputs.truncatedEvtsOutput.fileName: "sim.beam-test-sims-neutron.truncatedOutput.art"
+
+# ...add the new TrkPatRec module, but...
+# ...first, need the BTrkHelper service
+services.user.BTrkHelper : @local::BTrkHelperDefault
+# ...second, need to be able to add times due to the primary protons and the stopped muons
+physics.producers.protonTimeMap: { module_type : GenerateProtonTimes }
+physics.producers.muonTimeMap: { module_type : GenerateMuonLife }
+
+# ...third, want to record things in the tracker electronics only
+physics.producers.g4run.SDConfig.sensitiveVolumes : [ "TTrackerSupportElecG10Upstream", "TTrackerSupportElecG10Downstream" ]
+physics.analyzers.readVirtDets : {
+                   module_type : ReadVirtualDetector
+                   saveVD : [ 13 ]
+                   saveAllPDG : true
+                   maxPrint : 1
+                   simParticleColl : "g4run"
+		   vdStepPoints: "g4run:virtualdetector"
+                   SelectEvents: { SelectEvents : [myPath] }
+#		   debugOutput : 1
+                   }			       
+
+
+# ...now we can add everything to the detPath
+physics.myPath : [ generate, genCounter, g4run, g4consistent, protonTimeMap, muonTimeMap ]
+physics.trigger_paths : [ myPath ]
+
+# ...add any analyzer modules we want...
+physics.analyzers.dumpGen : { module_type : GenParticlesAnalyzer
+			      inputs : "generate"
+			    }
+
+# ...and append them to the end_paths
+physics.extrapaths : [ readVirtDets, dumpGen ]
+physics.end_paths : [ extrapaths ]
