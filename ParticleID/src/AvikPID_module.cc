@@ -401,8 +401,8 @@ namespace mu2e {
     float ele_resall   [ele_nhits];
     int   ele_resgood  [ele_nhits];
     float ele_res      [ele_nhits];
-    int   ele_secall   [ele_nhits];
-    int   ele_devall   [ele_nhits];
+    int   ele_panelall   [ele_nhits];
+    int   ele_planeall   [ele_nhits];
     int   ele_layall   [ele_nhits];
     int   ele_Nall     [ele_nhits];
     int   ele_strawall [ele_nhits];
@@ -433,8 +433,8 @@ namespace mu2e {
 
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
-      ele_secall[k]=straw->id().getPanel();
-      ele_devall[k]=straw->id().getDevice();
+      ele_panelall[k]=straw->id().getPanel();
+      ele_planeall[k]=straw->id().getPlane();
       ele_layall[k]=straw->id().getLayer();
       ele_Nall[k]=straw->id().getStraw();
       ele_strawall[k]= straw->index().asInt();
@@ -454,8 +454,8 @@ namespace mu2e {
 
       for(int j=0; j<i; j++) {     //this loop checks current hit against all previous hits in list
 
-        if((ele_secall[i]==ele_secall[i-(j+1)]) &&
-           (ele_devall[i]==ele_devall[i-(j+1)]) &&
+        if((ele_panelall[i]==ele_panelall[i-(j+1)]) &&
+           (ele_planeall[i]==ele_planeall[i-(j+1)]) &&
            (ele_layall[i]!=ele_layall[i-(j+1)]) &&
            (abs(ele_Nall[i]-ele_Nall[i-(j+1)])<=2) &&
            (ele_iamball[i]!=ele_iamball[i-(j+1)]) &&
@@ -507,8 +507,8 @@ namespace mu2e {
     float muo_resall   [muo_nhits];
     float muo_res      [muo_nhits];
     int   muo_resgood  [muo_nhits];
-    int   muo_secall   [muo_nhits];
-    int   muo_devall   [muo_nhits];
+    int   muo_panelall   [muo_nhits];
+    int   muo_planeall   [muo_nhits];
     int   muo_layall   [muo_nhits];
     int   muo_Nall     [muo_nhits];
     int   muo_strawall [muo_nhits];
@@ -525,8 +525,8 @@ namespace mu2e {
 
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
-      muo_secall[k]  = straw->id().getPanel();
-      muo_devall[k]  = straw->id().getDevice();
+      muo_panelall[k]  = straw->id().getPanel();
+      muo_planeall[k]  = straw->id().getPlane();
       muo_layall[k]  = straw->id().getLayer();
       muo_Nall[k]    = straw->id().getStraw();
       muo_strawall[k]= straw->index().asInt();
@@ -543,8 +543,8 @@ namespace mu2e {
 
       for(int j=0; j<i; j++){     //this loop checks current hit against all previous hits in list
 
-        if((muo_secall[i]==muo_secall[i-(j+1)]) &&
-           (muo_devall[i]==muo_devall[i-(j+1)]) &&
+        if((muo_panelall[i]==muo_panelall[i-(j+1)]) &&
+           (muo_planeall[i]==muo_planeall[i-(j+1)]) &&
            (muo_layall[i]!=muo_layall[i-(j+1)]) &&
            (abs(muo_Nall[i]-muo_Nall[i-(j+1)])<=2) &&
            (muo_iamball[i]!=muo_iamball[i-(j+1)]) &&

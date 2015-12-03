@@ -46,7 +46,7 @@ namespace mu2e {
       return _faces.at(fid.getFace());
     }
 
-    // Unlike the Device/Panel/Layer abstraction, one does not go directly
+    // Unlike the Plane/Panel/Layer abstraction, one does not go directly
     // from a PlaneMF to a Panel or a Layer or Straw
 
     // Get geometric abtraction information about this PlaneMF

@@ -25,7 +25,7 @@
 #include "TText.h"
 #include "TTrackerGeom/inc/Support.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-#include "TrackerGeom/inc/Device.hh"
+#include "TrackerGeom/inc/Plane.hh"
 #include "TrackerGeom/inc/Panel.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -448,11 +448,11 @@ namespace mu2e {
 
     // Draw the panel box in x,y
 
-    const size_t idev = 0;
-    const Device& device = _ttracker->getDevice(idev);
+    const size_t iplane = 0;
+    const Plane& plane = _ttracker->getPlane(iplane);
 
     const size_t isec = 0;
-    const Panel& panel = device.getPanel(isec);
+    const Panel& panel = plane.getPanel(isec);
 
     std::cout << "panel.boxHalfLengths : " <<
       panel.boxHalfLengths()[1] << " " <<
@@ -559,16 +559,16 @@ namespace mu2e {
     // poly->SetMarkerStyle(kFull);
     poly->SetMarkerColor(kOrange);
 
-    const size_t idev = 0;
-    const Device& device = _ttracker->getDevice(idev);
+    const size_t iplane = 0;
+    const Plane& plane = _ttracker->getPlane(iplane);
     const size_t isec = 0;
-    const Panel& panel = device.getPanel(isec);
+    const Panel& panel = plane.getPanel(isec);
 
     std::cout << "panel.boxOffset()  " <<
       panel.boxOffset() << std::endl;
 
-    std::cout << "device.origin()  " <<
-      device.origin() << std::endl;
+    std::cout << "plane.origin()  " <<
+      plane.origin() << std::endl;
 
     for ( int ilay=0; ilay<panel.nLayers(); ++ilay ) {
 
@@ -631,11 +631,11 @@ namespace mu2e {
     TLine* line   = new TLine();
     line->SetLineStyle(kSolid);
 
-    const size_t idev = 0;
-    const Device& device = _ttracker->getDevice(idev);
+    const size_t iplane = 0;
+    const Plane& plane = _ttracker->getPlane(iplane);
 
     const size_t isec = 0;
-    const Panel& panel = device.getPanel(isec);
+    const Panel& panel = plane.getPanel(isec);
 
     for ( int ilay=0; ilay<panel.nLayers(); ++ilay ) {
 
@@ -700,14 +700,14 @@ namespace mu2e {
     TLine* line   = new TLine();
     line->SetLineStyle(kSolid);
 
-    const size_t idev = 0;
-    const Device& device = _ttracker->getDevice(idev);
+    const size_t iplane = 0;
+    const Plane& plane = _ttracker->getPlane(iplane);
 
     const std::vector<double>& _manifoldHalfLengths = _ttracker->getManifoldHalfLengths();
     //const int _manifoldsPerEnd = _manifoldHalfLengths.size();
 
     const size_t isec = 0;
-    const Panel& panel = device.getPanel(isec);
+    const Panel& panel = plane.getPanel(isec);
 
     for ( int ilay=0; ilay<panel.nLayers(); ++ilay ) {
 
@@ -845,11 +845,11 @@ namespace mu2e {
 
     // Draw the panel box in x,y
 
-    const size_t idev = 0;
-    const Device& device = _ttracker->getDevice(idev);
+    const size_t iplane = 0;
+    const Plane& plane = _ttracker->getPlane(iplane);
 
     const size_t isec = 0;
-    const Panel& panel = device.getPanel(isec);
+    const Panel& panel = plane.getPanel(isec);
 
     std::cout << "panel.boxHalfLengths : " <<
       panel.boxHalfLengths()[1] << " " <<

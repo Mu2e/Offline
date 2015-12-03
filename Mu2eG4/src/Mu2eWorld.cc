@@ -58,7 +58,7 @@
 #include "Mu2eG4/inc/TrackerWireSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
-#include "Mu2eG4/inc/TTrackerDeviceSupportSD.hh"
+#include "Mu2eG4/inc/TTrackerPlaneSupportSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestTorus.hh"
@@ -538,8 +538,8 @@ namespace mu2e {
     }
     
     if(sdHelper_->enabled(StepInstanceName::ttrackerDS)) {
-      TTrackerDeviceSupportSD* ttdsSD =
-        new TTrackerDeviceSupportSD(SensitiveDetectorName::TTrackerDeviceSupport(), _config);
+      TTrackerPlaneSupportSD* ttdsSD =
+        new TTrackerPlaneSupportSD(SensitiveDetectorName::TTrackerPlaneSupport(), _config);
       SDman->AddNewDetector(ttdsSD);
     }
     

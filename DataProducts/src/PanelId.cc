@@ -5,17 +5,17 @@ namespace mu2e {
   PanelId::isep PanelId::separation(PanelId const& other) const {
     isep retval=apart;
     // same station
-    if(other.getDeviceId()/2 == getDeviceId()/2){
+    if(other.getPlaneId()/2 == getPlaneId()/2){
       int plane1 = getPanel()%2;
       int plane2 = other.getPanel()%2;
       int dp = plane2 - plane1;
-      if(other.getDeviceId() == getDeviceId()){
+      if(other.getPlaneId() == getPlaneId()){
 	if(dp == 0)
 	  retval = same;
 	else
-	  retval = device;
+	  retval = plane;
       } else {
-	int dd = other.getDeviceId() - getDeviceId();
+	int dd = other.getPlaneId() - getPlaneId();
 	if(dp == 0)
 	  retval = station2;
 	else if(dd*dp>0)

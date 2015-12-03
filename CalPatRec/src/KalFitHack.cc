@@ -392,7 +392,7 @@ namespace mu2e
 	  printf("[KalFitHack::addHits] %5i %3i  %6i  %6i  %10.3f  %10.3f %10.3f  %10.3f \n",
 		 straw.index().asInt(),
 		 activity,
-		 straw.id().getDevice(),
+		 straw.id().getPlane(),
 		 straw.id().getPanel(),
 		 trkhit->residual(),
 		 trkhit->hitRms(),
@@ -738,7 +738,7 @@ namespace mu2e
 	     );
 
       printf(" %2i %2i %2i %2i",
-	     straw->id().getDevice(),
+	     straw->id().getPlane(),
 	     straw->id().getPanel(),
 	     straw->id().getLayer(),
 	     straw->id().getStraw()

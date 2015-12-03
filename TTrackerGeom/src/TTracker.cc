@@ -16,8 +16,8 @@ using namespace std;
 namespace mu2e {
 
   void TTracker::fillPointers () const{
-    for ( size_t i=0; i<_devices.size(); ++i){
-      _devices[i].fillPointers(*this);
+    for ( size_t i=0; i<_planes.size(); ++i){
+      _planes[i].fillPointers(*this);
     }
   }
 

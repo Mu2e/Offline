@@ -109,7 +109,7 @@ namespace mu2e {
       straw     = &hit ->straw();
       wdir      = &straw->getDirection();
       pos       = straw->getMidPoint();
-      station   = straw->id().getDevice();
+      station   = straw->id().getPlane();
       panel     = straw->id().getPanel();
       shId      = straw->index().asInt();
 //-----------------------------------------------------------------------------

@@ -38,25 +38,25 @@ namespace mu2e {
       _layer(layer){
     }
 
-    LayerId( DeviceId device,
+    LayerId( PlaneId plane,
              int panel,
              int layer
              ):
-      _sid(PanelId(device,panel)),
+      _sid(PanelId(plane,panel)),
       _layer(layer){
     }
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
-    const DeviceId& getDeviceId () const{
-      return _sid.getDeviceId();
+    const PlaneId& getPlaneId () const{
+      return _sid.getPlaneId();
     }
     const PanelId& getPanelId () const{
       return _sid;
     }
 
-    int getDevice () const{
-      return _sid.getDevice();
+    int getPlane () const{
+      return _sid.getPlane();
     }
 
     int getPanel () const{

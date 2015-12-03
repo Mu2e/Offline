@@ -88,13 +88,13 @@ namespace mu2e {
   Double_t P_outval_si;
   StrawId sid;
   LayerId lid;
-  DeviceId did;
+  PlaneId did;
   PanelId secid;
   CLHEP::Hep3Vector  X_in;  
   CLHEP::Hep3Vector  P_in_si;
   CLHEP::Hep3Vector  P_out_si;
   double  edep[36] ;
-  int nhitdev[36];
+  int nhitplane[36];
   CLHEP::Hep3Vector  MCPoint[36];
     vector<CLHEP::Hep3Vector> Points3d; 
     //
@@ -374,19 +374,19 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                 //_hNEleHits->Fill(infos.size());
                 // calculate the average hit position of track at a plane
 
-                for (int idev = 0; idev < 36 ; idev++) { 
-                  nhitdev[idev] = 0 ;
-                  edep[idev] = 0.0 ;
-                  MCPoint[idev] = CLHEP::Hep3Vector(0.,0.,0.);
+                for (int iplane = 0; iplane < 36 ; iplane++) { 
+                  nhitplane[iplane] = 0 ;
+                  edep[iplane] = 0.0 ;
+                  MCPoint[iplane] = CLHEP::Hep3Vector(0.,0.,0.);
                 }
                 
-                for ( size_t jdev=0; jdev<infos.size(); ++jdev) // Loop over associated Hits
+                for ( size_t jplane=0; jplane<infos.size(); ++jplane) // Loop over associated Hits
                   {
-                    StrawHitMCInfo const& info = infos.at(jdev);
+                    StrawHitMCInfo const& info = infos.at(jplane);
                     StrawHit const& hit        = info.hit();
                     Straw const& str           = tracker.getStraw(hit.strawIndex());
                     sid = str.id();
-                    did = sid.getDeviceId();
+                    did = sid.getPlaneId();
                     std::vector<StepPointMC const *> const& steps = info.steps();
                     for ( size_t ks=0; ks<steps.size(); ++ks){
                       StepPointMC const& step = *(steps[ks]);
@@ -394,15 +394,15 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                         {
                           MCPoint[did] =  MCPoint[did]+step.position();
                           edep[did] =  edep[did]+step.totalEDep();
-                          nhitdev[did]++;
+                          nhitplane[did]++;
                         }
                     }
                   }                                             // end loop over associated Hits
-                for (int idev = 0; idev < 36 ; idev++) {
-                  if (nhitdev[idev]>0)
+                for (int iplane = 0; iplane < 36 ; iplane++) {
+                  if (nhitplane[iplane]>0)
                     {
-                      double a = 1.0/double(nhitdev[idev]);
-                      MCPoint[idev] = MCPoint[idev]*a;
+                      double a = 1.0/double(nhitplane[iplane]);
+                      MCPoint[iplane] = MCPoint[iplane]*a;
                     }      
                 }
                 for ( size_t jhit=0; jhit<infos.size(); ++jhit) // Loop over associated Hits
@@ -411,7 +411,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     StrawHit const& hit        = info.hit();
                     Straw const& str           = tracker.getStraw(hit.strawIndex());
                     sid = str.id();
-                    did = sid.getDeviceId();
+                    did = sid.getPlaneId();
                     const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
                     const CLHEP::Hep3Vector dirvec = str.getDirection();
                     double dt =hit.dt();
@@ -421,7 +421,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     X_straw.push_back(hitpos.getX());
                     Y_straw.push_back(hitpos.getY());
                     Z_straw.push_back(hitpos.getZ());
-                    cout<< "Device ID: "<<did<<endl;
+                    cout<< "Plane ID: "<<did<<endl;
                     cout<< "x:  "<<hitpos.getX()<<"  y:  "<<  hitpos.getY()<<"  z:  "<<hitpos.getZ()<<endl;
                     cout<<  MCPoint[did]<<endl;
                     mpoint mp;
@@ -517,7 +517,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
              <<endl;
         clusterbydid.insert(pair<int,StrawCluster>(sutils.did(scluster,evt),scluster));
         clusterbystation.insert(pair<int,StrawCluster>(sutils.Station(scluster,evt),scluster));
-        cout<< "cluster Device ID: "<<sutils.did(scluster,evt)<<endl;
+        cout<< "cluster Plane ID: "<<sutils.did(scluster,evt)<<endl;
         cout<< "dTX:"<<sutils.dTX(scluster,evt)<<endl;
         cout<< "X:  "<<sutils.midX(scluster,evt)<<endl;
         cout<< "MC:  "<< MCPoint[sutils.did(scluster,evt)]<<endl;
@@ -584,7 +584,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
           // cout << "Number of elements with key: "<<i<<"  " << m.count(i) << endl;
           //pair<multimap< int,straw>::iterator, multimap<int,straw>::iterator> ppp;
 
-      }   ///endloop over all devices
+      }   ///endloop over all planes
     cout<<"nint:  "<<nint<<endl;
    _hNInter->Fill(X.size());
    // nt[NINT] = X.size();
@@ -668,7 +668,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
           // cout << "Number of elements with key: "<<i<<"  " << m.count(i) << endl;
           //pair<multimap< int,straw>::iterator, multimap<int,straw>::iterator> ppp;
 
-      }   ///endloop over all devices
+      }   ///endloop over all planes
     cout<<"sint:  "<<nint<<endl;
 
     ++ncalls;  

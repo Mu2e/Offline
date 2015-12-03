@@ -24,8 +24,8 @@ void StereoTest(TTree* shdiag,const char* page="events",const char* cutstring=""
   TCut convhit("mcgen==2&&pmom>100.0&&tsel");
   TCut dhit("mcproc<20");
   TCut addcut(cutstring);
-  TCut evenstation("(device/2)%2==0");
-  TCut oddstation("(device/2)%2==1");
+  TCut evenstation("(plane/2)%2==0");
+  TCut oddstation("(plane/2)%2==1");
   if(strcmp(cutstring,"")!= 0){
     convhit += addcut;
     dhit += addcut;

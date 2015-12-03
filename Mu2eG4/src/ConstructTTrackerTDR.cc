@@ -93,7 +93,7 @@ namespace mu2e {
     bool const noSurfaceCheck(false);
     bool const doSurfaceCheck(true);
     G4RotationMatrix * noRotation(nullptr);
-    string trackerEnvelopeName("TTrackerDeviceEnvelope");
+    string trackerEnvelopeName("TTrackerPlaneEnvelope");
 
 
   } // end anonymous namespace
@@ -376,7 +376,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
 // Construct all stations and place them in the mother volume.
 // We do not yet represent stations as G4 objects.  Each station is representated
-// in G4 as two independent planes (devices).
+// in G4 as two independent planes (planes).
 void
 mu2e::ConstructTTrackerTDR::constructStations(){
 
@@ -386,60 +386,60 @@ mu2e::ConstructTTrackerTDR::constructStations(){
   VolumeInfo basePanel = preparePanel();
 
   // Build logical volume heirarchy for all elements of the support structure that live
-  // inside each device envelope.
+  // inside each plane envelope.
   std::vector<VolumeInfo> baseSupports;
   preparePlaneSupports(baseSupports);
 
-  TubsParams deviceEnvelopeParams = _ttracker.getDeviceEnvelopeParams();
-  bool deviceEnvelopeVisible      = _config.getBool("ttracker.deviceEnvelopeVisible",false);
-  bool deviceEnvelopeSolid        = _config.getBool("ttracker.deviceEnvelopeSolid",true);
+  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
+  bool planeEnvelopeVisible      = _config.getBool("ttracker.planeEnvelopeVisible",false);
+  bool planeEnvelopeSolid        = _config.getBool("ttracker.planeEnvelopeSolid",true);
 
   G4Material* envelopeMaterial = findMaterialOrThrow(_ttracker.envelopeMaterial());
 
   double dPhiPanel = panelHalfAzimuth();
 
-  for ( int idev=0; idev<_ttracker.nDevices(); ++idev ){
+  for ( int idev=0; idev<_ttracker.nPlanes(); ++idev ){
 
     if ( devDraw > -1 && idev > devDraw ) continue;
 
     if (_verbosityLevel > 0 ) {
       cout << "Debugging dev: " << idev << " devDraw: " << devDraw << endl;
-      cout << __func__ << " working on device:   " << idev << endl;
+      cout << __func__ << " working on plane:   " << idev << endl;
     }
 
-    const Device& device = _ttracker.getDevice(idev);
+    const Plane& plane = _ttracker.getPlane(idev);
 
-    if (!device.exists()) continue;
+    if (!plane.exists()) continue;
     if (_verbosityLevel > 0 ) {
-      cout << __func__ << " existing   device:   " << idev << endl;
+      cout << __func__ << " existing   plane:   " << idev << endl;
     }
 
-    // device.origin() is in the detector coordinate system.
+    // plane.origin() is in the detector coordinate system.
     // devPosition - is in the coordinate system of the Tracker mother volume.
-    CLHEP::Hep3Vector devPosition = device.origin()+ _offset;
+    CLHEP::Hep3Vector devPosition = plane.origin()+ _offset;
 
     if ( _verbosityLevel > 1 ){
-      cout << "Debugging -device.rotation(): " << -device.rotation() << " " << endl;
-      cout << "Debugging device.origin():    " << device.origin() << " " << endl;
+      cout << "Debugging -plane.rotation(): " << -plane.rotation() << " " << endl;
+      cout << "Debugging plane.origin():    " << plane.origin() << " " << endl;
       cout << "Debugging position in mother: " << devPosition << endl;
     }
 
 
-    // We need a new logical volume for each device envelope - because the panels
+    // We need a new logical volume for each plane envelope - because the panels
     // may be placed differently.  We need a distinct name for each logical volume.
     ostringstream os;
     os << "_"  << std::setfill('0') << std::setw(2) << idev;
 
     VolumeInfo devInfo = nestTubs( trackerEnvelopeName + os.str(),
-                                   deviceEnvelopeParams,
+                                   planeEnvelopeParams,
                                    envelopeMaterial,
                                    noRotation,
                                    devPosition,
                                    _motherInfo.logical,
                                    idev,
-                                   deviceEnvelopeVisible,
+                                   planeEnvelopeVisible,
                                    G4Colour::Magenta(),
-                                   deviceEnvelopeSolid,
+                                   planeEnvelopeSolid,
                                    _forceAuxEdgeVisible,
                                    place,
                                    noSurfaceCheck
@@ -453,17 +453,17 @@ mu2e::ConstructTTrackerTDR::constructStations(){
 
     addPanels ( basePanel, idev, devInfo.logical, dPhiPanel );
 
-  } // end loop over devices
+  } // end loop over planes
 
 } // end constructStations
 
 mu2e::VolumeInfo
 mu2e::ConstructTTrackerTDR::preparePanel(){
 
-  TubsParams deviceEnvelopeParams = _ttracker.getDeviceEnvelopeParams();
+  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
   SupportStructure const& sup     = _ttracker.getSupportStructure();
 
-  // Panels are identical other than placement - so get required properties from device 0, panel 0.
+  // Panels are identical other than placement - so get required properties from plane 0, panel 0.
   Panel const& sec00(_ttracker.getPanel(PanelId(0,0)));
 
   bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",false);
@@ -485,7 +485,7 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   // Internally all panel envelopes are the same.
   // Create one logical panel envelope but, for now, do not place it.
   // Fill it with straws and then place it multiple times.
-  TubsParams secEnvParams(deviceEnvelopeParams.innerRadius(),
+  TubsParams secEnvParams(planeEnvelopeParams.innerRadius(),
                           sup.innerChannelUpstream().tubsParams().outerRadius(),
                           chanUp.tubsParams().zHalfLength(),
                           0.,
@@ -822,27 +822,27 @@ mu2e::ConstructTTrackerTDR::constructAxes(){
 
 
 void
-mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4LogicalVolume* deviceLogical,
+mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4LogicalVolume* planeLogical,
                                       double panelCenterPhi ){
 
-  Device const& dev = _ttracker.getDevice(idev);
+  Plane const& dev = _ttracker.getPlane(idev);
 
   int secDraw = _config.getInt ("ttracker.secDraw",-1);
 
-  // Assume all devices have the same number of panels.
-  int baseCopyNo = idev * _ttracker.getDevice(0).nPanels();
+  // Assume all planes have the same number of panels.
+  int baseCopyNo = idev * _ttracker.getPlane(0).nPanels();
 
   // The panel will be placed in the middle of the channel.
   PlacedTubs const& chanUp(_ttracker.getSupportStructure().innerChannelUpstream());
 
-  // Place the panel envelope into the device envelope, one placement per panel.
+  // Place the panel envelope into the plane envelope, one placement per panel.
   for ( int isec=0; isec<dev.nPanels(); ++isec){
 
     // For debugging, only place the one requested panel.
     if ( secDraw > -1  && isec != secDraw ) continue;
     //if ( secDraw > -1  && isec%2 == 0 ) continue;
 
-    // Choose a representative straw from this this (device,panel).
+    // Choose a representative straw from this this (plane,panel).
     Straw const& straw = _ttracker.getStraw( StrawId(idev,isec,0,0) );
 
     // Azimuth of the midpoint of the wire.
@@ -873,7 +873,7 @@ mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4Logical
                                                    panelPosition,
                                                    basePanel.logical,
                                                    basePanel.name,
-                                                   deviceLogical,
+                                                   planeLogical,
                                                    many,
                                                    baseCopyNo + isec,
                                                    false);
@@ -888,12 +888,12 @@ mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4Logical
 double
 mu2e::ConstructTTrackerTDR::panelHalfAzimuth(){
 
-  TubsParams deviceEnvelopeParams = _ttracker.getDeviceEnvelopeParams();
+  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
   SupportStructure const& sup     = _ttracker.getSupportStructure();
 
   // Azimuth of the centerline of a panel enveleope: panelCenterPhi
   // Upon construction and before placement, the panel envelope occupies [0,2.*panelCenterPhi].
-  double r1              = deviceEnvelopeParams.innerRadius();
+  double r1              = planeEnvelopeParams.innerRadius();
   double r2              = sup.innerChannelUpstream().tubsParams().outerRadius();
   double halfChord       = sqrt ( r2*r2 - r1*r1 );
   double panelCenterPhi = atan2(halfChord,r1);
@@ -939,9 +939,9 @@ namespace mu2e {
 
 
 // Create heirarchy of logical volumes for the elements of the support structure that live inside
-// each device envelope.  The argument is passed in empty and is filled by this routine.
+// each plane envelope.  The argument is passed in empty and is filled by this routine.
 // It contains a VolumeInfo object for each logical volume at the top level of the heirarchy;
-// these are placed inside a device envelope by the member function addPlaneSupports.
+// these are placed inside a plane envelope by the member function addPlaneSupports.
 void
 mu2e::ConstructTTrackerTDR::preparePlaneSupports( std::vector<VolumeInfo>& supportsToPlace ){
 
@@ -972,7 +972,7 @@ mu2e::ConstructTTrackerTDR::preparePlaneSupports( std::vector<VolumeInfo>& suppo
 
     if ( vol.motherName.empty() ){
 
-      // These volumes are top level volumes of the support structure and will be placed inside each device envelope.
+      // These volumes are top level volumes of the support structure and will be placed inside each plane envelope.
       vol.info = nestTubs( part.name(),
                            part.tubsParams(),
                            findMaterialOrThrow(part.materialName()),

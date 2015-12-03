@@ -1,7 +1,7 @@
 //
-// Define a sensitive detector for TTrackerDeviceSupport
+// Define a sensitive detector for TTrackerPlaneSupport
 //
-// $Id: TTrackerDeviceSupportSD.cc,v 1.6 2013/08/28 05:58:17 gandr Exp $
+// $Id: TTrackerPlaneSupportSD.cc,v 1.6 2013/08/28 05:58:17 gandr Exp $
 // $Author: gandr $
 // $Date: 2013/08/28 05:58:17 $
 //
@@ -15,7 +15,7 @@
 #include "cetlib/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/TTrackerDeviceSupportSD.hh"
+#include "Mu2eG4/inc/TTrackerPlaneSupportSD.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -32,7 +32,7 @@ using namespace std;
 
 namespace mu2e {
 
-  TTrackerDeviceSupportSD::TTrackerDeviceSupportSD(G4String name, SimpleConfig const & config ):
+  TTrackerPlaneSupportSD::TTrackerPlaneSupportSD(G4String name, SimpleConfig const & config ):
     Mu2eSensitiveDetector(name,config)
   {
 
@@ -47,13 +47,13 @@ namespace mu2e {
     else {
       _TrackerVersion = config.getInt("TTrackerVersion",3);
       if ( _TrackerVersion != 3) {
-        throw cet::exception("TTrackerDeviceSupportSD")
+        throw cet::exception("TTrackerPlaneSupportSD")
           << "Expected TTrackerVersion of 3 but found " << _TrackerVersion <<endl;
       }
     }
   }
 
-  G4bool TTrackerDeviceSupportSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
+  G4bool TTrackerPlaneSupportSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
     _currentSize += 1;
 
@@ -78,8 +78,8 @@ namespace mu2e {
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
 
-    // we take here the numbering from TTrackerDeviceEnvelope
-    // (not TTrackerDeviceSupport which is always 0)
+    // we take here the numbering from TTrackerPlaneEnvelope
+    // (not TTrackerPlaneSupport which is always 0)
 
     G4int en = event->GetEventID();
     G4int ti = aStep->GetTrack()->GetTrackID();
@@ -90,34 +90,34 @@ namespace mu2e {
 
     if (verboseLevel > 1) {
 
-      cout << "TTrackerDeviceSupportSD::" << __func__ << " Debugging history depth " <<
+      cout << "TTrackerPlaneSupportSD::" << __func__ << " Debugging history depth " <<
         setw(4) << touchableHandle->GetHistoryDepth() << endl;
 
-      cout << "TTrackerDeviceSupportSD::" << __func__ << " Debugging copy n 0 1 2 3 4 " <<
+      cout << "TTrackerPlaneSupportSD::" << __func__ << " Debugging copy n 0 1 2 3 4 " <<
         setw(4) << touchableHandle->GetCopyNumber(0) <<
         setw(4) << touchableHandle->GetCopyNumber(1) <<
         setw(4) << touchableHandle->GetCopyNumber(2) <<
         setw(4) << touchableHandle->GetCopyNumber(3) <<
         setw(4) << touchableHandle->GetCopyNumber(4) << endl;
 
-      cout << "TTrackerDeviceSupportSD::" << __func__ << " Debugging PV Name Mother Name " <<
+      cout << "TTrackerPlaneSupportSD::" << __func__ << " Debugging PV Name Mother Name " <<
         touchableHandle->GetVolume(0)->GetName() << " " <<
         touchableHandle->GetVolume(1)->GetName() << " " <<
         touchableHandle->GetVolume(2)->GetName() << " " <<
         touchableHandle->GetVolume(3)->GetName() << " " <<
         touchableHandle->GetVolume(4)->GetName() << endl;
 
-      cout << "TTrackerDeviceSupportSD::" << __func__ 
+      cout << "TTrackerPlaneSupportSD::" << __func__ 
            << " Debugging hit info event track copyn replican: " <<
         setw(4) << en << " " <<
         setw(4) << ti << " " <<
         setw(4) << cn << endl;
 
-      cout << "TTrackerDeviceSupportSD::" << __func__ << " Debugging _TrackerVersion: " << 
+      cout << "TTrackerPlaneSupportSD::" << __func__ << " Debugging _TrackerVersion: " << 
         _TrackerVersion << endl;
 
     }
-    // device support is placed in a device envelope; device name should be unique though
+    // plane support is placed in a plane envelope; plane name should be unique though
     // therefore _TrackerVersion is probably not needed
     //
 
@@ -141,9 +141,9 @@ namespace mu2e {
                             ));
 
     if (verboseLevel >0) {
-      cout << "TTrackerDeviceSupportSD::" << __func__ << " Event " << setw(4) <<
+      cout << "TTrackerPlaneSupportSD::" << __func__ << " Event " << setw(4) <<
         G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() <<
-        " TTrackerDeviceSupport " << 
+        " TTrackerPlaneSupport " << 
         touchableHandle->GetVolume(1)->GetName() << " " <<
         setw(4) << touchableHandle->GetVolume(1)->GetCopyNo() <<
         " hit at: " << aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin << endl;

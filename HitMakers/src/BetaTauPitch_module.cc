@@ -520,7 +520,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
 
     // mf study 1
     vector<CLHEP::Hep3Vector> momentum_cluster(36);
-    vector<CLHEP::Hep3Vector> deviceStrawDirections(36);
+    vector<CLHEP::Hep3Vector> planeStrawDirections(36);
     vector<double> beta_cluster;            // angle against projection of wire
     vector<double> tanTau_cluster;          // attack angle of path to panel
     vector<double> tanTheta_cluster;        // helix pitch
@@ -528,7 +528,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //cout << "[[  1 ]]\n";
     vector<CLHEP::Hep3Vector> Points3d_cluster; // x,y measurement packed in
     //double  edep[36] ;
-    int nhitdev[36];
+    int nhitplane[36];
     CLHEP::Hep3Vector  MCPoint[36];
 
     X.clear();
@@ -674,10 +674,10 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                 _hNEleHits->Fill(infos.size());
 
                 // calculate the average hit position of track at a plane
-                for (int idev = 0; idev < 36 ; idev++) {
-                  nhitdev[idev] = 0 ;
-                  //edep[idev] = 0.0 ;
-                  MCPoint[idev] = CLHEP::Hep3Vector(0.,0.,0.);
+                for (int iplane = 0; iplane < 36 ; iplane++) {
+                  nhitplane[iplane] = 0 ;
+                  //edep[iplane] = 0.0 ;
+                  MCPoint[iplane] = CLHEP::Hep3Vector(0.,0.,0.);
                 }
                 for ( size_t associatedHit=0; associatedHit<infos.size(); ++associatedHit) // Loop over associated Hits
                   {
@@ -685,7 +685,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     StrawHit const& hit        = info.hit();
                     Straw const& str           = tracker.getStraw(hit.strawIndex());
                     sid = str.id();
-                    DeviceId did = sid.getDeviceId();
+                    PlaneId did = sid.getPlaneId();
                     std::vector<StepPointMC const *> const& steps = info.steps();
                     // mf study 1
                     panel = sid.getPanel();
@@ -697,8 +697,8 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                       cout << "????? unexpected straw panel: \n      " << panel << "\n";
                     }
                     // --- mf
-                    deviceStrawDirections[did] = straw_direction;
-                    //cout << "Device " << did << " Straw Direction " << straw_direction << "\n";
+                    planeStrawDirections[did] = straw_direction;
+                    //cout << "Plane " << did << " Straw Direction " << straw_direction << "\n";
                     double energyAH  = 0.;
                     double energyAHX = 0.;
                     for ( size_t ks=0; ks<steps.size(); ++ks){
@@ -713,7 +713,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                           // mf study 1
                           momentum_cluster[did] +=step.momentum();
                           // --- mf
-                          nhitdev[did]++;
+                          nhitplane[did]++;
                         }
                       else // step momentum is less than 5
                         {
@@ -728,21 +728,21 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                     // --- mf
                   } // end of loop over associated hits
 
-                // Device quantity normalization loop
-                for (int idev = 0; idev < 36 ; idev++) {
-                  if (nhitdev[idev] <= 0) continue;
-                  double a = 1.0/double(nhitdev[idev]);
-                  MCPoint[idev] = MCPoint[idev]*a;
+                // Plane quantity normalization loop
+                for (int iplane = 0; iplane < 36 ; iplane++) {
+                  if (nhitplane[iplane] <= 0) continue;
+                  double a = 1.0/double(nhitplane[iplane]);
+                  MCPoint[iplane] = MCPoint[iplane]*a;
                   // mf study 1
-                  momentum_cluster[idev] *= a;
-                  CLHEP::Hep3Vector projectedMomentum = momentum_cluster[idev];
+                  momentum_cluster[iplane] *= a;
+                  CLHEP::Hep3Vector projectedMomentum = momentum_cluster[iplane];
                   projectedMomentum.setZ(0);
-                  double beta = std::acos(projectedMomentum.dot(deviceStrawDirections[idev])/projectedMomentum.mag());
+                  double beta = std::acos(projectedMomentum.dot(planeStrawDirections[iplane])/projectedMomentum.mag());
                   // double beta = 0;
                   _beta_c->Fill(beta*180.0/3.141592653589793);
                   //              if (nt[BETA_C] == -9999.) nt[BETA_C] = beta;
                   nt[BETA_C] = beta;
-                  double tanTheta = momentum_cluster[idev].perp()/momentum_cluster[idev].z();
+                  double tanTheta = momentum_cluster[iplane].perp()/momentum_cluster[iplane].z();
                   _tanTheta_c->Fill(tanTheta);
                   //              if (nt[TANTHETA_C] == -9999.) nt[TANTHETA_C] = tanTheta;
                   nt[TANTHETA_C] = tanTheta;
@@ -751,7 +751,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                   //              if (nt[TANTAU_C] == -9999.) nt[TANTAU_C] = tanTau;
                   nt[TANTAU_C] = tanTau;
                   // --- mf
-                } // End of Device quantity normalization loop
+                } // End of Plane quantity normalization loop
                 //cout << "[[  4 ]]\n";
 
                 for ( size_t jhit=0; jhit<infos.size(); ++jhit) // Loop over associated Hits
@@ -824,7 +824,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
     //cout << "[[  5 ]]\n";
 
     for ( size_t i=0; i<clusters.size(); ++i ) { // Apparently a loop over clusters
-      DeviceId did = -1;
+      PlaneId did = -1;
       double hlen=9999999.;
       StrawCluster      const& cluster(clusters.at(i));
       StrawHitPtrVector const& strawHits(cluster.strawHits());
@@ -841,7 +841,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
         str = tracker.getStraw(strawhit.strawIndex());
         sid = str.id();
         lid = sid.getLayerId();
-        did = sid.getDeviceId();
+        did = sid.getPlaneId();
         secid = sid.getPanelId();
         const CLHEP::Hep3Vector mpvec  = str.getMidPoint();
         const CLHEP::Hep3Vector dirvec = str.getDirection();
@@ -942,7 +942,7 @@ void myfcn2(Int_t &, Double_t *, Double_t &f, Double_t *par, Int_t) {
                   } // end for first2
               }// end for first1
           }// end count >1
-      }   ///endloop over all devices
+      }   ///endloop over all planes
 
     // Fit to circle if there are at least three points
     //cout << "[[  8 ]]\n";

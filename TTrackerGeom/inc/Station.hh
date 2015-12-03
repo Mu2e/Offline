@@ -66,7 +66,7 @@ namespace mu2e {
       return *(_faces.at(pid.getFace()));
     }
 
-    // Unlike the Device/Panel/Layer abstraction, one does not go directly
+    // Unlike the Plane/Panel/Layer abstraction, one does not go directly
     // from a Station to a Panel or a Layer
 
     // Get geometric abtraction information about this Station

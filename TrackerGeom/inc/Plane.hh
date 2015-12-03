@@ -1,9 +1,9 @@
-#ifndef TrackerGeom_Device_hh
-#define TrackerGeom_Device_hh
+#ifndef TrackerGeom_Plane_hh
+#define TrackerGeom_Plane_hh
 //
-// Hold information about one device in a tracker.
+// Hold information about one plane in a tracker.
 //
-// $Id: Device.hh,v 1.10 2014/04/11 04:39:13 genser Exp $
+// $Id: Plane.hh,v 1.10 2014/04/11 04:39:13 genser Exp $
 // $Author: genser $
 // $Date: 2014/04/11 04:39:13 $
 //
@@ -14,7 +14,7 @@
 #include <vector>
 
 // Mu2e includes
-#include "DataProducts/inc/DeviceId.hh"
+#include "DataProducts/inc/PlaneId.hh"
 #include "TrackerGeom/inc/Panel.hh"
 
 // CLHEP includes
@@ -24,19 +24,19 @@ namespace mu2e {
 
   class Tracker;
 
-  class Device{
+  class Plane{
 
     friend class TTracker;
     friend class TTrackerMaker;
 
   public:
 
-    // A free function, returning void, that takes a const Device& as an argument.
-    typedef void (*DeviceFunction)( const Device& s);
+    // A free function, returning void, that takes a const Plane& as an argument.
+    typedef void (*PlaneFunction)( const Plane& s);
 
-    Device():_id(-1),_rotation(0.),_origin(),_panels(),_exists(true){}
+    Plane():_id(-1),_rotation(0.),_origin(),_panels(),_exists(true){}
 
-    explicit Device( const DeviceId& id,
+    explicit Plane( const PlaneId& id,
             CLHEP::Hep3Vector const& origin = CLHEP::Hep3Vector(0.,0.,0.),
             double rotation = 0., bool exists = true ):
       _id(id),
@@ -48,7 +48,7 @@ namespace mu2e {
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     // Accessors
-    DeviceId id() const { return _id;}
+    PlaneId id() const { return _id;}
 
     double rotation() const { return _rotation; }
 
@@ -122,7 +122,7 @@ namespace mu2e {
 
   protected:
 
-    DeviceId            _id;
+    PlaneId            _id;
     double              _rotation;
     CLHEP::Hep3Vector   _origin;
     std::vector<Panel> _panels;
@@ -131,4 +131,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif /* TrackerGeom_Device_hh */
+#endif /* TrackerGeom_Plane_hh */

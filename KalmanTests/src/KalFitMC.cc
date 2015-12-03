@@ -66,13 +66,13 @@ namespace mu2e
   struct timecomp : public binary_function<MCStepItr,MCStepItr, bool> {
     bool operator()(MCStepItr x,MCStepItr y) { return x->time() < y->time(); }
   };
-  struct devicecomp : public binary_function<const TrkStrawHit*, const TrkStrawHit*, bool> {
+  struct planecomp : public binary_function<const TrkStrawHit*, const TrkStrawHit*, bool> {
     bool operator()(const TrkStrawHit* x, const TrkStrawHit* y) { 
-// predicate on device first, as fltlen might be ambiguous for inactive hots
-      if(x->straw().id().getDevice() == y->straw().id().getDevice())
+// predicate on plane first, as fltlen might be ambiguous for inactive hots
+      if(x->straw().id().getPlane() == y->straw().id().getPlane())
 	return x->fltLen() < y->fltLen();
       else
-	return(x->straw().id().getDevice() < y->straw().id().getDevice());
+	return(x->straw().id().getPlane() < y->straw().id().getPlane());
     }
   };
 
@@ -349,7 +349,7 @@ namespace mu2e
 	const TrkStrawHit* hit = dynamic_cast<const TrkStrawHit*>(ihot.get());
 	if(hit != 0)hits.push_back(hit);
       }
-      std::sort(hits.begin(),hits.end(),devicecomp());
+      std::sort(hits.begin(),hits.end(),planecomp());
     }
   }
 
@@ -498,7 +498,7 @@ namespace mu2e
         TrkStrawHitInfo_old tshinfo;
         tshinfo._active = tsh->isActive();
         tshinfo._usable = tsh->usability();
-	tshinfo._device = tsh->straw().id().getDevice();
+	tshinfo._plane = tsh->straw().id().getPlane();
 	tshinfo._panel = tsh->straw().id().getPanel();
 	tshinfo._layer = tsh->straw().id().getLayer();
 	tshinfo._straw = tsh->straw().id().getStraw();

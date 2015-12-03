@@ -27,15 +27,15 @@ namespace mu2e {
     // Return origin in tracker coordinates
     const CLHEP::Hep3Vector& getOrigin() const {return _origin;}
 
-    //Return origin in coordinates local to the device
-    //const CLHEP::Hep3Vector& getDeviceLocalOrigin() const {
+    //Return origin in coordinates local to the plane
+    //const CLHEP::Hep3Vector& getPlaneLocalOrigin() const {
     //return _origin;
     //}
 
     // Return halfLengths
     const std::vector<double>& getHalfLengths() const {return _halfLengths;}
 
-    // Construct a string containing the device Id.
+    // Construct a string containing the plane Id.
     //std::string name( std::string const& base ) const;
 
   protected:

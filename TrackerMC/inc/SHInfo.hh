@@ -4,10 +4,10 @@
 namespace mu2e {
 
   struct SHID {
-    Int_t _device, _panel, _layer, _straw;
-    SHID() : _device(-1), _panel(-1), _layer(-1), _straw(-1) {}
+    Int_t _plane, _panel, _layer, _straw;
+    SHID() : _plane(-1), _panel(-1), _layer(-1), _straw(-1) {}
     SHID(StrawId const& strawid) : 
-	  _device(strawid.getDevice()),
+	  _plane(strawid.getPlane()),
 	  _panel(strawid.getPanel()),
 	  _layer(strawid.getLayer()),
 	  _straw(strawid.getStraw()) {}

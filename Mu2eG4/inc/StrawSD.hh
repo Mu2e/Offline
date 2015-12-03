@@ -36,7 +36,7 @@ namespace mu2e {
 
     G4ThreeVector GetTrackerOrigin();
 
-    int _nStrawsPerDevice;
+    int _nStrawsPerPlane;
     int _nStrawsPerPanel;
     int _TrackerVersion;
 

@@ -73,7 +73,7 @@ namespace mu2e {
 	   
 	   public:
 
-	     // Is this StepPointMC from a hit in the crystal or a hit in the readout device?
+	     // Is this StepPointMC from a hit in the crystal or a hit in the readout plane?
 	     enum step_type {crystal, readout};
 
 	     art::Ptr<StepPointMC> _step;    // Ptr back to the StepPointMC.

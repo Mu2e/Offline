@@ -178,7 +178,7 @@ namespace mu2e
       Float_t _pdist,_pperp,_pmom;
       Float_t _mctime, _mcptime;
       Int_t _esel,_rsel, _timesel,  _delta, _stereo, _isolated;
-      Int_t _device, _panel, _layer, _straw;
+      Int_t _plane, _panel, _layer, _straw;
       Float_t _shpres, _shrres, _shchisq, _shdt, _shdist;
       Bool_t _xtalk;
       // time peak diag variables
@@ -653,7 +653,7 @@ namespace mu2e
     _shdiag->Branch("time",&_time,"time/F");
     _shdiag->Branch("deltat",&_deltat,"deltat/F");
     _shdiag->Branch("rho",&_rho,"rho/F");
-    _shdiag->Branch("device",&_device,"device/I");
+    _shdiag->Branch("plane",&_plane,"plane/I");
     _shdiag->Branch("panel",&_panel,"panel/I");
     _shdiag->Branch("layer",&_layer,"layer/I");
     _shdiag->Branch("straw",&_straw,"straw/I");
@@ -766,7 +766,7 @@ namespace mu2e
       StrawHit const& sh = _shcol->at(istr);
       StrawHitPosition const& shp = _shpcol->at(istr);
       const Straw& straw = tracker.getStraw( sh.strawIndex() );
-      _device = straw.id().getDevice();
+      _plane = straw.id().getPlane();
       _panel = straw.id().getPanel();
       _layer = straw.id().getLayer();
       _straw = straw.id().getStraw();
@@ -1102,7 +1102,7 @@ namespace mu2e
     }
     shinfo._edep = sh.energyDep();
     const Straw& straw = tracker.getStraw( sh.strawIndex() );
-    shinfo._device = straw.id().getDevice();
+    shinfo._plane = straw.id().getPlane();
     shinfo._panel = straw.id().getPanel();
     shinfo._layer = straw.id().getLayer();
     shinfo._straw = straw.id().getStraw();

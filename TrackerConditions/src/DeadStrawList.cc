@@ -97,19 +97,19 @@ namespace mu2e {
 
     // Out-of-class functions to deal with the parameter set work.
     // Kept out-of-class to hide implementation from the header.
-    void addDeadDevices( TTracker const& tracker,
+    void addDeadPlanes( TTracker const& tracker,
                          fhicl::ParameterSet const& pset,
                          vector<bool>& alive,
                          bool verbosity ){
 
-      vector<int> devs = pset.get<vector<int> >( "deadDevices", vector<int>() );
+      vector<int> devs = pset.get<vector<int> >( "deadPlanes", vector<int>() );
 
       MarkAsDead marker(alive);
 
       for ( vector<int>::const_iterator i=devs.begin(), e=devs.end();
             i != e; ++i ){
-        if ( verbosity > 0 ) cout << "Deadening straws in Device: " << *i << endl;
-        tracker.getDevice(*i).forAllStraws( marker );
+        if ( verbosity > 0 ) cout << "Deadening straws in Plane: " << *i << endl;
+        tracker.getPlane(*i).forAllStraws( marker );
       }
 
     }
@@ -198,7 +198,7 @@ namespace mu2e {
     _alive.assign( tracker.getAllStraws().size(), true);
 
     // Parse the input to mark straws as dead.
-    addDeadDevices( tracker, pset, _alive, _verbosity );
+    addDeadPlanes( tracker, pset, _alive, _verbosity );
     addDeadPanels( tracker, pset, _alive, _verbosity );
     addDeadLayers ( tracker, pset, _alive, _verbosity );
     addDeadStraws ( tracker, pset, _alive, _verbosity );

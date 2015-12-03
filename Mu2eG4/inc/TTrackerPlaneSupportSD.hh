@@ -1,9 +1,9 @@
-#ifndef Mu2eG4_TTrackerDeviceSupportSD_hh
-#define Mu2eG4_TTrackerDeviceSupportSD_hh
+#ifndef Mu2eG4_TTrackerPlaneSupportSD_hh
+#define Mu2eG4_TTrackerPlaneSupportSD_hh
 //
-// Defines a sensitive detector for TTrackerDeviceSupport
+// Defines a sensitive detector for TTrackerPlaneSupport
 //
-// $Id: TTrackerDeviceSupportSD.hh,v 1.3 2012/05/29 22:57:44 genser Exp $
+// $Id: TTrackerPlaneSupportSD.hh,v 1.3 2012/05/29 22:57:44 genser Exp $
 // $Author: genser $
 // $Date: 2012/05/29 22:57:44 $
 //
@@ -21,11 +21,11 @@
 
 namespace mu2e {
 
-  class TTrackerDeviceSupportSD : public Mu2eSensitiveDetector{
+  class TTrackerPlaneSupportSD : public Mu2eSensitiveDetector{
 
   public:
 
-    TTrackerDeviceSupportSD(G4String, const SimpleConfig& config);
+    TTrackerPlaneSupportSD(G4String, const SimpleConfig& config);
 
     G4bool ProcessHits(G4Step* aStep, G4TouchableHistory*);
 
@@ -38,4 +38,4 @@ namespace mu2e {
 
 } // namespace mu2e
 
-#endif /* Mu2eG4_TTrackerDeviceSupportSD_hh */
+#endif /* Mu2eG4_TTrackerPlaneSupportSD_hh */

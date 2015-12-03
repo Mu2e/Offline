@@ -14,7 +14,7 @@
 //
 
 #include <ostream>
-#include "DataProducts/inc/DeviceId.hh"
+#include "DataProducts/inc/PlaneId.hh"
 
 namespace mu2e {
 
@@ -27,27 +27,27 @@ namespace mu2e {
   public:
 // qualify how close 2 panels are by their Z separation.  This needs to be a logical
 // separation, in case there are alignment constants applied
-    enum isep{same=0,device,station1,station2,station3,apart};
+    enum isep{same=0,plane,station1,station2,station3,apart};
 
     PanelId():
       _did(-1),
       _panel(-1){
     }
 
-    PanelId( DeviceId device,
+    PanelId( PlaneId plane,
               int panel
               ):
-      _did(device),
+      _did(plane),
       _panel(panel){
     }
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
-    const DeviceId& getDeviceId() const {
+    const PlaneId& getPlaneId() const {
       return _did;
     }
 
-    int getDevice() const {
+    int getPlane() const {
       return _did;
     }
 
@@ -77,7 +77,7 @@ namespace mu2e {
 
   private:
 
-    DeviceId _did;
+    PlaneId _did;
     int      _panel;
 
   };

@@ -210,10 +210,10 @@ namespace mu2e {
           Straw str = allstraws[i];
           StrawId sid = str.id();
           LayerId lid = sid.getLayerId();
-          DeviceId did = sid.getDeviceId();
+          PlaneId did = sid.getPlaneId();
           PanelId secid = sid.getPanelId();
 
-          // cout <<  __func__ << " index: "  << i << " Layer: "<< lid.getLayer()<< " Device: "<< did <<"  Panel:  "<<secid.getPanel()<<endl;
+          // cout <<  __func__ << " index: "  << i << " Layer: "<< lid.getLayer()<< " Plane: "<< did <<"  Panel:  "<<secid.getPanel()<<endl;
           // cout<<str.getHalfLength()<<endl;
           const CLHEP::Hep3Vector vec3j = str.getMidPoint();
           const CLHEP::Hep3Vector vec3j1 = str.getDirection();
@@ -354,7 +354,7 @@ namespace mu2e {
       Straw str = tracker.getStraw(si);
       StrawId sid = str.id();
       LayerId lid = sid.getLayerId();
-      DeviceId did = sid.getDeviceId();
+      PlaneId did = sid.getPlaneId();
       PanelId secid = sid.getPanelId();
 
       double fracDist = 0.0;

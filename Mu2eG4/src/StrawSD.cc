@@ -53,7 +53,7 @@ namespace mu2e {
 
   StrawSD::StrawSD(G4String name, SimpleConfig const & config ):
     Mu2eSensitiveDetector(name,config),
-    _nStrawsPerDevice(0),
+    _nStrawsPerPlane(0),
     _nStrawsPerPanel(0),
     _TrackerVersion(0),
     _supportModel(),
@@ -71,12 +71,12 @@ namespace mu2e {
 
       GeomHandle<TTracker> ttracker;
 
-      const Device& device = ttracker->getDevice(0);
-      const Panel& panel = device.getPanel(0);
+      const Plane& plane = ttracker->getPlane(0);
+      const Panel& panel = plane.getPanel(0);
       const Layer&  layer  = panel.getLayer(0);
 
       _nStrawsPerPanel = panel.nLayers()  * layer.nStraws();
-      _nStrawsPerDevice = device.nPanels() * _nStrawsPerPanel;
+      _nStrawsPerPlane = plane.nPanels() * _nStrawsPerPanel;
 
       _TrackerVersion = config.getInt("TTrackerVersion",3);
       _verbosityLevel = max(verboseLevel,config.getInt("ttracker.verbosityLevel",0)); // Geant4 SD verboseLevel
@@ -89,7 +89,7 @@ namespace mu2e {
       }
 
       if (_verbosityLevel>2) {
-        cout << __func__ << " _nStrawsPerDevice " << _nStrawsPerDevice << endl;
+        cout << __func__ << " _nStrawsPerPlane " << _nStrawsPerPlane << endl;
         cout << __func__ << " _nStrawsPerPanel " << _nStrawsPerPanel << endl;
       }
 
@@ -181,7 +181,7 @@ namespace mu2e {
 
     }
 
-    // getting the panel/device number
+    // getting the panel/plane number
 
     G4int sdcn = 0;
     if ( _TrackerVersion == 3) {
@@ -189,7 +189,7 @@ namespace mu2e {
       if ( _supportModel == SupportModel::simple ){
         sdcn = touchableHandle->GetCopyNumber(1) +
           _nStrawsPerPanel*(touchableHandle->GetCopyNumber(2)) +
-          _nStrawsPerDevice*(touchableHandle->GetCopyNumber(3));
+          _nStrawsPerPlane*(touchableHandle->GetCopyNumber(3));
       } else {
         sdcn = touchableHandle->GetCopyNumber(0) +
           _nStrawsPerPanel*(touchableHandle->GetCopyNumber(1));
@@ -204,7 +204,7 @@ namespace mu2e {
 
     if (_verbosityLevel>2) {
 
-      cout << __func__ << " hit info: event track panel device straw:   " <<
+      cout << __func__ << " hit info: event track panel plane straw:   " <<
         setw(4) << en << " " <<
         setw(4) << ti << " " <<
         setw(4) << touchableHandle->GetCopyNumber(2) << " " <<
@@ -257,14 +257,14 @@ namespace mu2e {
 
       if ( _verbosityLevel>4 || diffMag>tolerance) {
 
-        const Device& device = ttracker->getDevice(straw.id().getDevice());
-        const Panel& panel = device.getPanel(straw.id().getPanel());
+        const Plane& plane = ttracker->getPlane(straw.id().getPlane());
+        const Panel& panel = plane.getPanel(straw.id().getPanel());
 
-        cout << __func__ << " straw info: event track panel device straw id: " <<
+        cout << __func__ << " straw info: event track panel plane straw id: " <<
           setw(4) << en << " " <<
           setw(4) << ti << " " <<
           setw(4) << straw.id().getPanel() << " " <<
-          setw(4) << straw.id().getDevice() << " " <<
+          setw(4) << straw.id().getPlane() << " " <<
           setw(6) << sdcn << " " <<
           straw.id() << endl;
 
@@ -274,9 +274,9 @@ namespace mu2e {
           " sdcn: "             << sdcn <<
           ", straw.MidPoint "   << straw.getMidPoint() <<
           ", panel.boxOffset " << panel.boxOffset() <<
-          ", device.origin "    << device.origin() <<
+          ", plane.origin "    << plane.origin() <<
           ", panel.boxRzAngle " << panel.boxRzAngle()/M_PI*180. <<
-          ", device.rotation "  << device.rotation() <<
+          ", plane.rotation "  << plane.rotation() <<
           endl;
 
         cout << __func__ << " straw pos G4  "

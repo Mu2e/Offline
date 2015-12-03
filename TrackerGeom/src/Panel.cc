@@ -21,7 +21,7 @@ namespace mu2e {
     ostringstream os;
 
     os << base
-       << _id.getDevice() << "_"
+       << _id.getPlane() << "_"
        << _id.getPanel();
 
     return os.str();

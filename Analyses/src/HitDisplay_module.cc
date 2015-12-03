@@ -301,7 +301,7 @@ namespace mu2e {
 	  hit->hitPosition(pos);
 	  printf("%6i %3i %3i %3i %3i %3i %8.3f %8.3f %10.3f %10.3f %10.3f %10.3f\n",
 		 straw->index().asInt(), 
-		 straw->id().getDevice(),
+		 straw->id().getPlane(),
 		 straw->id().getPanel(),
 		 straw->id().getLayer(),
 		 straw->id().getStraw(),

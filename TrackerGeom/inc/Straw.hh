@@ -30,7 +30,7 @@ namespace mu2e {
 
     friend class Layer;
     friend class Panel;
-    friend class Device;
+    friend class Plane;
     friend class TTracker;
     friend class TTrackerMaker;
 

@@ -14,7 +14,7 @@ namespace mu2e
  // simple structs for diagnostics
   struct TrkStrawHitInfo {
     Bool_t _active, _dhit, _dactive;
-    Int_t _device, _panel, _layer, _straw;
+    Int_t _plane, _panel, _layer, _straw;
     Int_t _nplane, _npanel, _nlayer;
     Int_t _ambig;
     Float_t _z, _phi, _rho;
@@ -22,7 +22,7 @@ namespace mu2e
     Float_t _doca, _exerr, _penerr, _t0, _t0err;
     Float_t _ht, _tddist, _tdderr, _hlen, _wdot;
     Float_t _edep, _dx;
-    TrkStrawHitInfo() : _active(false), _device(-1),
+    TrkStrawHitInfo() : _active(false), _plane(-1),
     _panel(-1), _layer(-1), _straw(-1), _nplane(0), _npanel(0), _nlayer(0),_ambig(-1),
     _z(-1000.0), _phi(-1000.0), _rho(-1000.0),
     _resid(-1000.0), _residerr(-1000.0), _rdrift(-1000.0), _rdrifterr(-1000.0),
@@ -46,7 +46,7 @@ namespace mu2e
  
  // deprecated struct, will go away soon
  struct TrkStrawHitInfo_old{
-    Int_t _active, _usable, _device, _panel, _layer, _straw;
+    Int_t _active, _usable, _plane, _panel, _layer, _straw;
     Float_t _z, _phi, _rho;
     Float_t _resid, _residerr, _rdrift, _rdrifterr, _trklen;
     Float_t _doca, _exerr, _penerr, _t0, _t0err;

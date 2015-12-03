@@ -154,10 +154,10 @@ namespace mu2e {
 
         ostringstream vdName(VirtualDetectorId::name(VirtualDetectorId::TT_Mid));
 
-        if(c.getInt("ttracker.numDevices")%2!=0){
+        if(c.getInt("ttracker.numPlanes")%2!=0){
           throw cet::exception("GEOM")
             << "This virtual detector " << vdName
-            << " can only be placed if the TTracker has an even number of devices \n";
+            << " can only be placed if the TTracker has an even number of planes \n";
         }
 
         TTracker const & ttracker = *(GeomHandle<TTracker>());

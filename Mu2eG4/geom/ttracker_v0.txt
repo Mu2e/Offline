@@ -16,8 +16,8 @@ int TTrackerVersion   = 3;
 
 int    ttracker.verbosityLevel     =    0;
 
-int    ttracker.numDevices         =   36;
-int    ttracker.panelsPerDevice   =    6;
+int    ttracker.numPlanes         =   36;
+int    ttracker.panelsPerPlane   =    6;
 int    ttracker.layersPerPanel    =    1;
 int    ttracker.manifoldsPerEnd    =    4;
 int    ttracker.strawsPerManifold  =   15;
@@ -29,9 +29,9 @@ double ttracker.envelopeInnerRadius  =   380.0;
 double ttracker.strawOuterRadius     =     2.5;
 double ttracker.strawWallThickness   =     0.015;
 double ttracker.strawGap             =     0.0;
-double ttracker.deviceSpacing        =   170.;
-double ttracker.deviceHalfSeparation =    10.0;
-double ttracker.deviceRotation       =    60.;
+double ttracker.planeSpacing        =   170.;
+double ttracker.planeHalfSeparation =    10.0;
+double ttracker.planeRotation       =    60.;
 double ttracker.outerSupportRadius   =   830.0;
 double ttracker.innerSupportRadius   =   700.0;
 double ttracker.supportHalfThickness =     2.5;
@@ -43,8 +43,8 @@ double ttracker.panelPhi0           =     0.;
 bool   ttracker.envelopeVisible      =  true;
 bool   ttracker.envelopeSolid        =  false;
 
-bool   ttracker.deviceEnvelopeVisible = true;
-bool   ttracker.deviceEnvelopeSolid   = false;
+bool   ttracker.planeEnvelopeVisible = true;
+bool   ttracker.planeEnvelopeSolid   = false;
 
 bool   ttracker.supportVisible        = true;
 bool   ttracker.supportSolid          = false;

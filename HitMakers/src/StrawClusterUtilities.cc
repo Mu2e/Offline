@@ -125,14 +125,14 @@ namespace mu2e {
     dT=dT/double(strawHits.size());
     return dT;
   }
-  DeviceId StrawClusterUtilities::did(StrawCluster const & cluster,art::Event const & event) const
+  PlaneId StrawClusterUtilities::did(StrawCluster const & cluster,art::Event const & event) const
   {
     const Tracker& tracker = getTrackerOrThrow();
     StrawHitPtrVector const & strawHits = cluster.strawHits();
     StrawHit const& strawhit = *strawHits[0];
     Straw    str = tracker.getStraw(strawhit.strawIndex());
     StrawId  sid = str.id();
-    DeviceId did = sid.getDeviceId();
+    PlaneId did = sid.getPlaneId();
     return did;
 
   }
@@ -146,14 +146,14 @@ namespace mu2e {
     PanelId secid = sid.getPanelId();
     return secid;
   }
-  DeviceId StrawClusterUtilities::Station(StrawCluster const & cluster,art::Event const & event) const
+  PlaneId StrawClusterUtilities::Station(StrawCluster const & cluster,art::Event const & event) const
   {
     const Tracker& tracker = getTrackerOrThrow();
     StrawHitPtrVector const & strawHits = cluster.strawHits();
     StrawHit const& strawhit = *strawHits[0];
     Straw    str = tracker.getStraw(strawhit.strawIndex());
     StrawId  sid = str.id();
-    DeviceId did = sid.getDeviceId();
+    PlaneId did = sid.getPlaneId();
     int station = (int)(did*0.5);
     return station;
 
