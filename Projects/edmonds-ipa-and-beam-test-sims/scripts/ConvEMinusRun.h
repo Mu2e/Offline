@@ -63,7 +63,7 @@ public:
 };
 
 ConvEMinusRun::ConvEMinusRun(std::string filename, double min_mom, double max_mom, double bin_width) 
-                     : BaseRun(filename, "eMinus"), fMinMomentum(min_mom), fMaxMomentum(max_mom), fBinWidth(bin_width) {
+                     : BaseRun(filename, "ConvEMinus"), fMinMomentum(min_mom), fMaxMomentum(max_mom), fBinWidth(bin_width) {
 
   int n_bins = (fMaxMomentum - fMinMomentum) / fBinWidth;
   fRecoHist = new TH1F("fRecoHist", "", n_bins,fMinMomentum,fMaxMomentum);

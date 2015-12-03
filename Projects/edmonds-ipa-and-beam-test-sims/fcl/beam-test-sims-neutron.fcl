@@ -21,11 +21,13 @@ physics.producers.muonTimeMap: { module_type : GenerateMuonLife }
 physics.producers.g4run.SDConfig.sensitiveVolumes : [ "TTrackerSupportElecG10Upstream", "TTrackerSupportElecG10Downstream" ]
 physics.analyzers.readVirtDets : {
                    module_type : ReadVirtualDetector
-                   saveVD : [ 13 ]
+                   saveVD : [ 13, 14 ]
                    saveAllPDG : true
                    maxPrint : 1
                    simParticleColl : "g4run"
 		   vdStepPoints: "g4run:virtualdetector"
+		   writeNTPART : false
+		   writeNTPART1 : false
                    SelectEvents: { SelectEvents : [myPath] }
 #		   debugOutput : 1
                    }			       

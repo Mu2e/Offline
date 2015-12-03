@@ -27,9 +27,9 @@ class ProtonRun : public BaseRun {
   //  void DrawProtonsThatReachTracker();
 };
 
-ProtonRun::ProtonRun(std::string filename) : BaseRun(filename, "pPlus") {
+ProtonRun::ProtonRun(std::string filename) : BaseRun(filename, "Proton") {
 
-  fChargeDepositPerHit = 8.8e-12;
+  fChargeDepositPerHit = 8.8e-12 * (BaseRun::gas_gain/4e4); // 4e4 is the gas gain we measured at 1375 V (NB this relationship doesn't quite match the data we have at the moment)
   double n_protons_per_captured_muon = 0.05;
   SetNParticlesPerMicrobunch(n_POT_per_microbunch * n_stopped_muons_per_POT * n_captured_muons_per_stopped_muon * n_protons_per_captured_muon);
 }

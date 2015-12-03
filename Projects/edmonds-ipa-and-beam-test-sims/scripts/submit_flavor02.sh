@@ -13,7 +13,7 @@ N_EVTS=( 50000 6000000 6000000 );
 
 TOTAL_JOBS=0
 for I_PARTICLE in `seq 0 1 $N_PARTICLES`; do
-    NAME="IPA-Cone_"${PARTICLES[$I_PARTICLE]}
+    NAME="IPA-None_"${PARTICLES[$I_PARTICLE]}
     OUTDIR="data/batch/cd3-sims/"$NAME
     echo $NAME
     if [ -d $OUTDIR ] ; then
