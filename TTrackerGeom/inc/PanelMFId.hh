@@ -46,10 +46,10 @@ namespace mu2e {
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
     const StationId& getStationId() const { return _fid.getStationId(); }
-    const PlaneId&   getPlaneId()   const { return _fid.getPlaneId();   }
+    const PlaneMFId&   getPlaneMFId()   const { return _fid.getPlaneMFId();   }
     const FaceId&    getFaceId()    const { return _fid;                }
           int   getStation()        const { return _fid.getStation();   }
-          int   getPlane()          const { return _fid.getPlane();     }
+          int   getPlaneMF()          const { return _fid.getPlaneMF();     }
           int   getFace()           const { return _fid.getFace();      }
           int   getPanelMF()          const { return _panelMF;              }
 

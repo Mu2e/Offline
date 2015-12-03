@@ -16,7 +16,7 @@
 #include <ostream>
 
 #include "TTrackerGeom/inc/StationId.hh"
-#include "TTrackerGeom/inc/PlaneId.hh"
+#include "TTrackerGeom/inc/PlaneMFId.hh"
 
 namespace mu2e {
 
@@ -43,9 +43,9 @@ namespace mu2e {
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
     const StationId& getStationId() const { return _sid;  }
-    const PlaneId&   getPlaneId()   const { return _pid;  }
+    const PlaneMFId&   getPlaneMFId()   const { return _pid;  }
           int   getStation()        const { return _sid;  }
-          int   getPlane()          const { return _pid.getPlane();  }
+          int   getPlaneMF()          const { return _pid.getPlaneMF();  }
           int   getFace()           const { return _face; }
 
     bool operator==(FaceId const& rhs) const{
@@ -79,7 +79,7 @@ namespace mu2e {
   private:
 
     StationId _sid;
-    PlaneId   _pid;
+    PlaneMFId   _pid;
     int       _face;
 
   };

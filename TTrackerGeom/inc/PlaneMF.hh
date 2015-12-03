@@ -1,11 +1,11 @@
-#ifndef TrackerGeom_Plane_hh
-#define TrackerGeom_Plane_hh
+#ifndef TTrackerGeom_PlaneMF_hh
+#define TTrackerGeom_PlaneMF_hh
 //
-// Holds information about one plane in a tracker.
+// Holds information about one planeMF in a tracker.
 //
 
 //
-// $Id: Plane.hh,v 1.1 2011/08/03 18:31:25 mf Exp $
+// $Id: PlaneMF.hh,v 1.1 2011/08/03 18:31:25 mf Exp $
 // $Author: mf $
 // $Date: 2011/08/03 18:31:25 $
 //
@@ -15,14 +15,14 @@
 #include <vector>
 #include <iostream>
 
-#include "TTrackerGeom/inc/PlaneId.hh"
+#include "TTrackerGeom/inc/PlaneMFId.hh"
 #include "TTrackerGeom/inc/Face.hh"
 
 namespace mu2e {
 
   class TTracker;
 
-  class Plane{
+  class PlaneMF{
 
     friend class TTracker;
     friend class TTrackerMaker;
@@ -31,12 +31,12 @@ namespace mu2e {
 
   public:
 
-    Plane() : _id(PlaneId(-1,-1)), _z(0.0)               {}
-    Plane( const PlaneId& id, double z ): _id(id), _z(z) {}
+    PlaneMF() : _id(PlaneMFId(-1,-1)), _z(0.0)               {}
+    PlaneMF( const PlaneMFId& id, double z ): _id(id), _z(z) {}
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
-    const PlaneId& id() const { return _id;}
+    const PlaneMFId& id() const { return _id;}
 
     // The next layer down in the hierarchy is Faces
     int   nFaces()                       const { return _faces.size(); }
@@ -47,12 +47,12 @@ namespace mu2e {
     }
 
     // Unlike the Device/Panel/Layer abstraction, one does not go directly
-    // from a Plane to a Panel or a Layer or Straw
+    // from a PlaneMF to a Panel or a Layer or Straw
 
-    // Get geometric abtraction information about this Plane
+    // Get geometric abtraction information about this PlaneMF
     double midZ() const {return _z;}
 
-    // Formatted string embedding the id of the plane.
+    // Formatted string embedding the id of the planeMF.
     std::string name( std::string const& base ) const;
 
 
@@ -61,7 +61,7 @@ namespace mu2e {
 
   protected:
 
-    PlaneId _id;
+    PlaneMFId _id;
     double  _z;
     
     // TODO MAYBE - if we need to allow for rotation variances, we may have 
@@ -74,8 +74,8 @@ namespace mu2e {
  };
 
  inline
- std::ostream & operator<< (std::ostream & os, Plane const &x) 
-    { return os << x.name("Plane "); }
+ std::ostream & operator<< (std::ostream & os, PlaneMF const &x) 
+    { return os << x.name("PlaneMF "); }
 
 }  //namespace mu2e
-#endif /* TrackerGeom_Plane_hh */
+#endif /* TTrackerGeom_PlaneMF_hh */

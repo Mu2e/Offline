@@ -145,10 +145,10 @@ namespace mu2e {
 
     // station
     // TODO Maybe -- These might eventually want to be config parameter driven
-    _planesPerStation     = 2;
+    _planeMFsPerStation     = 2;
     _panelMFsPerFace        = 3;                    // hardwired 3 panels/face
-    _facesPerPlane        = _panelsPerDevice / _panelMFsPerFace;
-    _facesPerStation      = _planesPerStation*_facesPerPlane;
+    _facesPerPlaneMF        = _panelsPerDevice / _panelMFsPerFace;
+    _facesPerStation      = _planeMFsPerStation*_facesPerPlaneMF;
     _zLayersPerPanelMF      = _layersPerPanel;
     _strawsPerZLayer      = _manifoldsPerEnd*_strawsPerManifold;
 
@@ -296,7 +296,7 @@ namespace mu2e {
         _panelBaseRotations.push_back(  300.*CLHEP::degree);
       } else if(_rotationPattern==4){
 //-----------------------------------------------------------------------------
-// Mu2e-2 studies: 2 faces within one plane have parallel straws within
+// Mu2e-2 studies: 2 faces within one planeMF have parallel straws within
 //                 each 120 deg panel
 //-----------------------------------------------------------------------------
         _panelBaseRotations.push_back(   0.*CLHEP::degree);
@@ -800,38 +800,38 @@ namespace mu2e {
           _tt->_devices.at(idev2).origin().z() );
     _tt->_stations.push_back(Station(stationId, stationZ));
     Station & st = _tt->_stations.back();
-    st._planes.reserve (_planesPerStation);
+    st._planeMFs.reserve (_planeMFsPerStation);
     st._faces.reserve (_facesPerStation);
 
-    for ( int iplane = 0; iplane < _planesPerStation; ++iplane ) {
-      makePlane ( PlaneId ( stationId, iplane ), st );
+    for ( int iplaneMF = 0; iplaneMF < _planeMFsPerStation; ++iplaneMF ) {
+      makePlaneMF ( PlaneMFId ( stationId, iplaneMF ), st );
     }
 
 //std::cout << "<-<-<- makeStation\n";
   }
 
   // station view
-  void TTrackerMaker::makePlane( const PlaneId& planeId, Station & station ){
-//std::cout << "->->-> makePlane\n";
+  void TTrackerMaker::makePlaneMF( const PlaneMFId& planeMFId, Station & station ){
+//std::cout << "->->-> makePlaneMF\n";
 
-    int idev = 2*planeId.getStation() + planeId.getPlane();
+    int idev = 2*planeMFId.getStation() + planeMFId.getPlaneMF();
     const Device & device = _tt->_devices.at(idev);
-    double planeZ = device.origin().z();
-    station._planes.push_back(Plane(planeId, planeZ));
-    Plane & plane = station._planes.back();
-    plane._faces.reserve(_facesPerPlane);
-    for ( int iface = 0; iface < _facesPerPlane; ++iface ) {
-      int faceNum = 2*planeId.getPlane() + iface;
-      makeFace ( FaceId ( station.id(), faceNum ), plane, device );
-      station._faces.push_back(&(plane._faces.back()));  // quelle haque
+    double planeMFZ = device.origin().z();
+    station._planeMFs.push_back(PlaneMF(planeMFId, planeMFZ));
+    PlaneMF & planeMF = station._planeMFs.back();
+    planeMF._faces.reserve(_facesPerPlaneMF);
+    for ( int iface = 0; iface < _facesPerPlaneMF; ++iface ) {
+      int faceNum = 2*planeMFId.getPlaneMF() + iface;
+      makeFace ( FaceId ( station.id(), faceNum ), planeMF, device );
+      station._faces.push_back(&(planeMF._faces.back()));  // quelle haque
     }
 
-//std::cout << "<-<-<- makePlane\n";
-  }  // makePlane
+//std::cout << "<-<-<- makePlaneMF\n";
+  }  // makePlaneMF
 
 // station view
   void TTrackerMaker::makeFace( const FaceId & faceId,
-                                      Plane  & plane,
+                                      PlaneMF  & planeMF,
                                 const Device & device )
   {
 //std::cout << "->->-> makeFace " << faceId << "\n";
@@ -859,8 +859,8 @@ namespace mu2e {
       }
     }
 
-    plane._faces.push_back(Face(faceId, faceZ));
-    Face & f =  plane._faces.back();
+    planeMF._faces.push_back(Face(faceId, faceZ));
+    Face & f =  planeMF._faces.back();
     f._panelMFs.reserve  (_panelMFsPerFace);
     for ( int ipanelMF = 0; ipanelMF < _panelMFsPerFace; ++ipanelMF ) {
       makePanelMF ( PanelMFId ( faceId, ipanelMF ), f,

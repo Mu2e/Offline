@@ -16,7 +16,7 @@
 
 // Mu2e includes
 #include "TTrackerGeom/inc/StationId.hh"
-#include "TTrackerGeom/inc/Plane.hh"
+#include "TTrackerGeom/inc/PlaneMF.hh"
 #include "TTrackerGeom/inc/Face.hh"
 
 // CLHEP includes
@@ -48,16 +48,16 @@ namespace mu2e {
     //              and/or XY origin, we ought to have accessors for that
     //              information here.
     
-    // The next layer down in the hierarchy is Planes
-    int   nPlanes()                        const { return _planes.size(); }
-    const std::vector<Plane>& getPlanes () const { return _planes; }
-    const Plane& getPlane ( int n)         const { return _planes.at(n); }
-    const Plane& getPlane ( const PlaneId& pid ) const{
+    // The next layer down in the hierarchy is PlaneMFs
+    int   nPlaneMFs()                        const { return _planeMFs.size(); }
+    const std::vector<PlaneMF>& getPlaneMFs () const { return _planeMFs; }
+    const PlaneMF& getPlaneMF ( int n)         const { return _planeMFs.at(n); }
+    const PlaneMF& getPlaneMF ( const PlaneMFId& pid ) const{
       // TODO -- throw if pid.getStation() does not match _id
-      return _planes.at(pid.getPlane());
+      return _planeMFs.at(pid.getPlaneMF());
     }
 
-    // Often, algorithms skip the Planes layer and work with Faces
+    // Often, algorithms skip the PlaneMFs layer and work with Faces
     int nFaces()                                 const { return _faces.size(); }
     const std::vector<Face const *>& getFaces () const { return _faces; }
     const Face& getFace ( int n)               const { return *(_faces.at(n)); }
@@ -91,7 +91,7 @@ namespace mu2e {
     //              handle adjustments off the basic geometry, so we keep this 
     //              simple.  (Similarly for XY origin variances.)
     
-    std::vector<Plane>        _planes;
+    std::vector<PlaneMF>        _planeMFs;
     std::vector<Face const *> _faces;
 
   };
