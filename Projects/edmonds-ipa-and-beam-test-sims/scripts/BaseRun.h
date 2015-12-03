@@ -88,7 +88,8 @@ double BaseRun::max_microbunch_time = 1800;
 
 double BaseRun::n_years_running = 3;
 double BaseRun::n_POT_per_year = 1.2e20;
-double BaseRun::n_POT_per_microbunch = 3.1e7; //FIXME: new cd3 
+//double BaseRun::n_POT_per_microbunch = 3.1e7; //TDR
+double BaseRun::n_POT_per_microbunch = 3.9e7; //CD3
 double BaseRun::n_microbunches_per_year = BaseRun::n_POT_per_year / BaseRun::n_POT_per_microbunch;
 double BaseRun::n_stopped_muons_per_POT = 0.0019;	   
 double BaseRun::n_captured_muons_per_stopped_muon = 0.609;
