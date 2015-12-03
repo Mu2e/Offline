@@ -138,7 +138,8 @@ BaseRun::BaseRun(std::string filename, std::string particle) : fParticleName(par
   }
 
   fNSimulatedParticles = fTrkDiagChain->GetEntries();
-  fNStrawHits = fSHDiagChain->GetEntries();
+  std::stringstream cutcmd; cutcmd << ""; //cutcmd << "mcinfo._pdg==" << fPDGId;
+  fNStrawHits = fSHDiagChain->GetEntries(cutcmd.str().c_str());
   fNStrawHitsError = std::sqrt(fNStrawHits);
 
   fChargeDepositPerHit = (GetSHEDepPlot()->GetMean() / gas_ionisation_energy) * charge_per_electron * gas_gain;
