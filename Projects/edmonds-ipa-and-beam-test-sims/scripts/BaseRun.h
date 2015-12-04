@@ -220,13 +220,13 @@ TH3F* BaseRun::GetHitMapEDep() {
 TH1F* BaseRun::GetSHEDepPlot() {
   if (!fSHEDepPlot) {
     double min_edep = 0;
-    double max_edep = 0.02;
-    double edep_width = 0.0001;
+    double max_edep = 0.2;
+    double edep_width = 0.001;
     int n_edep_bins = (max_edep - min_edep) / edep_width;
     std::string histname = "SHEDep_" + fParticleName + "Run";
     fSHEDepPlot = new TH1F(histname.c_str(), "Energy Deposited by All Particles", n_edep_bins,min_edep,max_edep);
 
-    std::string drawcmd = "edep>>" + histname;
+    std::string drawcmd = "mcinfo._energy>>" + histname;
     fSHDiagChain->Draw(drawcmd.c_str(), "", "goff");
   }
 
