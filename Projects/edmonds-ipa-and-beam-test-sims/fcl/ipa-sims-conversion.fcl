@@ -1,3 +1,4 @@
+#include "KalmanTests/fcl/KalDiag.fcl"
 #include "JobConfig/cd3/beam/beam_g4s4_conversion.fcl" 
 # Mostly use what was done in the above, except...
 
@@ -30,6 +31,20 @@ physics.producers.TRFDownstreameMinus.KalDiag : { MCPtrLabel : "makeSH"
 						  diagLevel : 3
 						}
 
+physics.analyzers.RKFDownstreameMinus: {
+         module_type: ReadKalFits
+	 fitterModuleLabel: TRFDownstreameMinus
+	 KalDiag : { MCPtrLabel : "makeSH" 
+	 	     MCStepsLabel : "g4run"
+		     SimParticleLabel : "g4run"
+		     SimParticleInstance : ""
+		     StrawHitMCLabel : "makeSH"
+		     TimeOffsets :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+		     diagLevel : 3
+		   }
+
+	 diagLevel : 1 # track-level diagnostics.  For detailed (hit-level) diagnostics use diagLevel : 2
+      }
 
 # ...now we can add everything to the detPath
 physics.myPath : [ generate, genCounter, g4run, g4consistent, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus ]
@@ -41,5 +56,5 @@ physics.analyzers.dumpGen : { module_type : GenParticlesAnalyzer
 			    }
 
 # ...and append them to the end_paths
-physics.extrapaths : [ dumpGen ]
+physics.extrapaths : [ dumpGen, RKFDownstreameMinus ]
 physics.end_paths : [ extrapaths ]
