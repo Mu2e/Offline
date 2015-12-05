@@ -34,7 +34,8 @@ class DeuteronRun : public BaseRun {
 DeuteronRun::DeuteronRun(std::string filename) : BaseRun(filename, "Deuteron") {
 
   //  fChargeDepositPerHit = 8.8e-12;
-  double n_deuterons_per_captured_muon = 0.0175;
+  //  double n_deuterons_per_captured_muon = 0.0175;
+  double n_deuterons_per_captured_muon = 0.025; // CD3 number
   fNParticlesPerMicrobunch = n_POT_per_microbunch * n_stopped_muons_per_POT * n_captured_muons_per_stopped_muon * n_deuterons_per_captured_muon;
 }
 /*
