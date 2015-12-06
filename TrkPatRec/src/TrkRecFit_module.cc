@@ -77,7 +77,7 @@ namespace mu2e
     private:
       unsigned _iev;
       // MC tools
-      KalDiag* _kdiag;
+      KalDiag _kdiag;
       // configuration parameters
       int _diag,_debug;
       int _printfreq;
@@ -136,7 +136,7 @@ namespace mu2e
   };
 
   TrkRecFit::TrkRecFit(fhicl::ParameterSet const& pset) :
-    _kdiag(0),
+    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
@@ -155,18 +155,15 @@ namespace mu2e
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
-    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet()),_kdiag),
+    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
     _payloadSaver(pset)
   {
-    if(_diag > 0)
-      _kdiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()));
 // tag the data product instance by the direction and particle type found by this fitter
     _iname = _fdir.name() + _tpart.name();
     produces<KalRepCollection>(_iname);
     produces<KalRepPtrCollection>(_iname);
     produces<KalRepPayloadCollection>();
     produces<StrawHitFlagCollection>(_iname);
-    produces<KalFitResultCollection>(_iname);
   }
 
   TrkRecFit::~TrkRecFit(){}
@@ -221,9 +218,9 @@ namespace mu2e
     unique_ptr<StrawHitFlagCollection> flags(_flags );
     unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
     // find mc truth if we're making diagnostics
-    if(_diag > 0 && !_kdiag->findMCData(event)){
+    if(_diag > 0 && !_kdiag.findMCData(event)){
       throw cet::exception("RECO")<<"mu2e::TrkRecFit: MC data missing or incomplete"<< endl;
-      _nchit = _kdiag->countCEHits();
+      _nchit = _kdiag.countCEHits();
       if(_nchit>14)_ccutflow->Fill(1.0);
     }
 
@@ -233,7 +230,7 @@ namespace mu2e
 
     if(_diag>0){
 // fill primary particle MC truth information
-      _kdiag->kalDiag(0,false);
+      _kdiag.kalDiag(0,false);
     }
     // dummy objects
     static TrkDef dummydef;
@@ -324,7 +321,6 @@ namespace mu2e
 	tracks->push_back( kalfit.stealTrack() );
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
-	kfresults->push_back(kalfit);
       } else
 	kalfit.deleteTrack();
       // cleanup the seed fit
@@ -406,8 +402,8 @@ namespace mu2e
         HepPoint tpos =  traj.position(hitpoca.flt1());
         thfilter._pos = CLHEP::Hep3Vector(tpos.x(),tpos.y(),tpos.z());
         thfilter._doca = hitpoca.doca();
-        if(_kdiag->mcData()._mcdigis != 0){
-          StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(indices[ihit]._index);
+        if(_kdiag.mcData()._mcdigis != 0){
+          StrawDigiMC const& mcdigi = _kdiag.mcData()._mcdigis->at(indices[ihit]._index);
           // use TDC channel 0 to define the MC match
           StrawDigi::TDCChannel itdc = StrawDigi::zero;
           if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -463,7 +459,7 @@ namespace mu2e
   void TrkRecFit::createDiagnostics() {
     art::ServiceHandle<art::TFileService> tfs;
     // extend the KalDiag track diagnostic tuple
-    TTree* trkdiag = _kdiag->createTrkDiag();
+    TTree* trkdiag = _kdiag.createTrkDiag();
     trkdiag->Branch("eventid",&_eventid,"eventid/I");
     trkdiag->Branch("nadd",&_nadd,"nadd/I");
     trkdiag->Branch("ipeak",&_ipeak,"ipeak/I");
@@ -538,7 +534,7 @@ namespace mu2e
       if((*ish)->usability()==3)++_nadd;
     }
     // fill kalman fit info.  This needs to be last, as it calls TTree::Fill().
-    _kdiag->kalDiag(kalfit._krep);
+    _kdiag.kalDiag(kalfit._krep);
   }
 
 }
