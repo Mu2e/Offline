@@ -199,6 +199,10 @@ namespace mu2e {
     // Should we add together proper time for the whole decay chain
     bool _add_proper_time;
 
+    // If we are analyzing output of the staged simulation, look for 
+    // real parent, navigating through the staged SimParticles
+    bool _navigate_to_parent;
+
   public:
 
     explicit ReadVirtualDetector(fhicl::ParameterSet const& pset);
@@ -223,7 +227,8 @@ namespace mu2e {
     _minMomentum(pset.get<double>("minMomentum",-1.0)),
     _stopped_only(pset.get<bool>("saveStopped",false)),
     _save_all_pdg(pset.get<bool>("saveAllPDG",false)),
-    _add_proper_time(pset.get<bool>("addProperTime",false))
+    _add_proper_time(pset.get<bool>("addProperTime",false)),
+    _navigate_to_parent(pset.get<bool>("navigateToParent",true))
   {
     _vdInputTag = pset.get<std::string>("vdStepPoints","virtualdetector");
     _tvdInputTag = pset.get<string>("tvdStepPoints","timeVD");
@@ -751,36 +756,62 @@ namespace mu2e {
         ntp.trk = sim.id().asInt();      // track_id
         ntp.pdg = sim.pdgId();           // PDG id
 
-	      // Calculate parent proper time
-	      double gtime_parent = 0.0;
-	      if( _add_proper_time ) {
-	        SimParticle const* sim_parent = &sim;
-	        while( sim_parent && sim_parent->hasParent() ) {
-	          sim_parent = simParticles->getOrNull(sim_parent->parentId());
-	          if( sim_parent && sim_parent->pdgId()==ntp.pdg && sim.endDefined() ) {
-	            gtime_parent += sim_parent->endProperTime();
-	          }
-	        }
-	      }
+	// Calculate parent proper time
+	double gtime_parent = 0.0;
+	if( _add_proper_time ) {
+	  SimParticle const* sim_par = &sim;
+	  while( sim_par && sim_par->hasParent() ) {
+	    sim_par = simParticles->getOrNull(sim_par->parentId());
+	    if( sim_par && sim_par->pdgId()==ntp.pdg && sim.endDefined() ) {
+	      gtime_parent += sim_par->endProperTime();
+	    }
+	  }
+	}
+	
+        // Parent info
+        SimParticle const* sim_parent = 0; // True parent
+	SimParticle const* sim_child = &sim; // First incrarnation of the current particle
+
+	while( sim_child && sim_child->hasParent() ) {
+	  sim_parent = simParticles->getOrNull(sim_child->parentId());
+	  if(_navigate_to_parent && (sim_child->creationCode() == ProcessCode::mu2ePrimary)) {
+	    // Thats not really a parent, this is the same particle
+	    // Need to navigate one more step up the chain
+	    sim_child = sim_parent;
+	  } else {
+	    break;
+	  }
+	}
 
         // Save SimParticle other info
         ntp.time = sim.startGlobalTime(); // start time
         ntp.gtime = gtime_parent+sim.startProperTime(); // start time
-        CLHEP::Hep3Vector const & pos_start = sim.startPosition();
-        CLHEP::Hep3Vector const & mom_start = sim.startMomentum();
-        ntp.x = pos_start.x();
-        ntp.y = pos_start.y();
-        ntp.z = pos_start.z();
-        ntp.px = mom_start.x();
-        ntp.py = mom_start.y();
-        ntp.pz = mom_start.z();
-        ntp.p = mom_start.mag();
-        ntp.code = sim.creationCode();
+	if( sim_child ) {
+	  CLHEP::Hep3Vector const & pos_start = sim_child->startPosition();
+	  CLHEP::Hep3Vector const & mom_start = sim_child->startMomentum();
+	  ntp.x = pos_start.x();
+	  ntp.y = pos_start.y();
+	  ntp.z = pos_start.z();
+	  ntp.px = mom_start.x();
+	  ntp.py = mom_start.y();
+	  ntp.pz = mom_start.z();
+	  ntp.p = mom_start.mag();
+	  ntp.code = sim_child->creationCode();
+	} else {
+	  ntp.x = 0;
+	  ntp.y = 0;
+	  ntp.z = 0;
+	  ntp.px = 0;
+	  ntp.py = 0;
+	  ntp.pz = 0;
+	  ntp.p = 0;
+	  ntp.code = sim.creationCode();
+	}
 
 	// Apply momentum cut
-	if( ntp.p<_minMomentum ) continue;
+	if( ntp.p>0 && ntp.p<_minMomentum ) continue;
 
-        // Check id of the volume there particle dies
+        // Check id of the volume where particle dies
         if( sim.endDefined() ) {
           if( vid_stop.find(sim.endVolumeIndex()) != vid_stop.end() ) {
             ntp.isstop = true;
@@ -826,15 +857,8 @@ namespace mu2e {
           ntp.g4bl_time   = 0;
         }
 
-        // Parent info
-        SimParticle const* sim_parent = 0;
-        if( sim.hasParent() ) {
-          ntp.parent_id = sim.parentId().asInt();
-          sim_parent = simParticles->getOrNull(sim.parentId());
-        } else {
-          ntp.parent_id = -1;
-        }
         if( sim_parent ) {
+          ntp.parent_id = sim_parent->id().asInt();
           ntp.parent_pdg = sim_parent->pdgId();
           CLHEP::Hep3Vector const & pos_parent = sim_parent->startPosition();
           CLHEP::Hep3Vector const & mom_parent = sim_parent->startMomentum();
@@ -853,6 +877,7 @@ namespace mu2e {
           ntp.parent_code = sim_parent->stoppingCode();
 	  ntp.parent_lastke = sim_parent->preLastStepKineticEnergy();
         } else {
+          ntp.parent_id = -1;
           ntp.parent_pdg = 0;
           ntp.parent_x = 0;
           ntp.parent_y = 0;
@@ -895,7 +920,17 @@ namespace mu2e {
 
           // Only use hits associated with current particle
           key_type trackId = hit.trackId();
-          if( trackId != isp->first ) continue;
+          //if( trackId != isp->first ) continue;
+	  bool sim_vd_found = (trackId == sim.id());
+	  if( (!sim_vd_found) && _navigate_to_parent ) {
+	    SimParticle const* sim_vd = &sim;
+	    while( (!sim_vd_found) && (sim_vd->creationCode() == ProcessCode::mu2ePrimary) && sim_vd->hasParent() ) {
+	      sim_vd = simParticles->getOrNull(sim_vd->parentId());
+	      if( !sim_vd ) break;
+	      sim_vd_found = (trackId == sim_vd->id());
+	    }
+	  }
+	  if( !sim_vd_found ) continue;
 
           // Get the hit information.
 
@@ -951,7 +986,17 @@ namespace mu2e {
 
           // Only use hits associated with current particle
           key_type trackId = hit.trackId();
-          if( trackId != isp->first ) continue;
+          //if( trackId != isp->first ) continue;
+	  bool sim_tvd_found = (trackId == sim.id());
+	  if( (!sim_tvd_found) && _navigate_to_parent ) {
+	    SimParticle const* sim_tvd = &sim;
+	    while( (!sim_tvd_found) && (sim_tvd->creationCode() == ProcessCode::mu2ePrimary) && sim_tvd->hasParent() ) {
+	      sim_tvd = simParticles->getOrNull(sim_tvd->parentId());
+	      if( !sim_tvd ) break;
+	      sim_tvd_found = (trackId == sim_tvd->id());
+	    }
+	  }
+	  if( !sim_tvd_found ) continue;
 
           // Get the hit information.
 
