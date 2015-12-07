@@ -62,10 +62,6 @@ namespace mu2e {
     StrawIndex ttStrawIndex (LayerId const &layerId, int snum);
 
     void makeStation( StationId stationId );
-    void makePlaneMF  ( const PlaneMFId &planeMFId, Station & station );
-    void makeFace   ( const FaceId &faceId, PlaneMF &planeMF, const Plane &plane );
-    void makePanelMF  ( const PanelMFId &panelMFId, Face &face, const Panel &panel );
-    void makeZLayer ( const ZLayerId &zlayerId, PanelMF &panelMF, const Layer &layer );
 
     // Do the work of constructing it.
     void buildIt();
@@ -172,14 +168,7 @@ namespace mu2e {
     // Z Location of the first plane.
     double _z0;
 
-    // Parameters used in the Station/PlaneMF/Face/PanelMF/ZLayer view
     int    _numStations;                  // Number of Stations.
-    int    _planeMFsPerStation;
-    int    _facesPerStation;
-    int    _facesPerPlaneMF;
-    int    _panelMFsPerFace;
-    int    _zLayersPerPanelMF;
-    int    _strawsPerZLayer;
 
     // The detailed description of the complete support structure
     SupportModel _supportModel;

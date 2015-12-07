@@ -143,15 +143,6 @@ namespace mu2e {
            << _nonExistingPlanes.back()
            << endl;
 
-    // station
-    // TODO Maybe -- These might eventually want to be config parameter driven
-    _planeMFsPerStation     = 2;
-    _panelMFsPerFace        = 3;                    // hardwired 3 panels/face
-    _facesPerPlaneMF        = _panelsPerPlane / _panelMFsPerFace;
-    _facesPerStation      = _planeMFsPerStation*_facesPerPlaneMF;
-    _zLayersPerPanelMF      = _layersPerPanel;
-    _strawsPerZLayer      = _manifoldsPerEnd*_strawsPerManifold;
-
     config.getVectorDouble("ttracker.manifoldHalfLengths", _manifoldHalfLengths, 3);
     for ( size_t i=0; i<_manifoldHalfLengths.size(); ++i ){
       _manifoldHalfLengths.at(i) *= CLHEP::mm;
@@ -296,7 +287,7 @@ namespace mu2e {
         _panelBaseRotations.push_back(  300.*CLHEP::degree);
       } else if(_rotationPattern==4){
 //-----------------------------------------------------------------------------
-// Mu2e-2 studies: 2 faces within one planeMF have parallel straws within
+// Mu2e-2 studies: 2 faces within one plane have parallel straws within
 //                 each 120 deg panel
 //-----------------------------------------------------------------------------
         _panelBaseRotations.push_back(   0.*CLHEP::degree);
@@ -799,157 +790,9 @@ namespace mu2e {
         ( _tt->_planes.at(idev1).origin().z() +
           _tt->_planes.at(idev2).origin().z() );
     _tt->_stations.push_back(Station(stationId, stationZ));
-    Station & st = _tt->_stations.back();
-    st._planeMFs.reserve (_planeMFsPerStation);
-    st._faces.reserve (_facesPerStation);
-
-    for ( int iplaneMF = 0; iplaneMF < _planeMFsPerStation; ++iplaneMF ) {
-      makePlaneMF ( PlaneMFId ( stationId, iplaneMF ), st );
-    }
-
+    _tt->_stations.back();
 //std::cout << "<-<-<- makeStation\n";
   }
-
-  // station view
-  void TTrackerMaker::makePlaneMF( const PlaneMFId& planeMFId, Station & station ){
-//std::cout << "->->-> makePlaneMF\n";
-
-    int idev = 2*planeMFId.getStation() + planeMFId.getPlaneMF();
-    const Plane & plane = _tt->_planes.at(idev);
-    double planeMFZ = plane.origin().z();
-    station._planeMFs.push_back(PlaneMF(planeMFId, planeMFZ));
-    PlaneMF & planeMF = station._planeMFs.back();
-    planeMF._faces.reserve(_facesPerPlaneMF);
-    for ( int iface = 0; iface < _facesPerPlaneMF; ++iface ) {
-      int faceNum = 2*planeMFId.getPlaneMF() + iface;
-      makeFace ( FaceId ( station.id(), faceNum ), planeMF, plane );
-      station._faces.push_back(&(planeMF._faces.back()));  // quelle haque
-    }
-
-//std::cout << "<-<-<- makePlaneMF\n";
-  }  // makePlaneMF
-
-// station view
-  void TTrackerMaker::makeFace( const FaceId & faceId,
-                                      PlaneMF  & planeMF,
-                                const Plane & plane )
-  {
-//std::cout << "->->-> makeFace " << faceId << "\n";
-    bool faceZisKnown = false;
-    double faceZ = 0.0;
-    double faceZtolerance = .0001;
-    int faceParity = faceId.getFace()%2;
-
-    for (int ipanel = faceParity; ipanel < _panelsPerPlane; ipanel += 2) {
-      const Panel & panel = plane.getPanel(ipanel);
-      if (faceZisKnown) {
-        if (abs ( panel.straw0MidPoint().z() - faceZ ) > faceZtolerance ) {
-          throw cet::exception ( "GEOM" )
-          << "Inconsistent panel positions within a face for faceId = "
-          << faceId << "\nExpected Z position = " << faceZ
-          << "  Panel base position Z = " << panel.straw0MidPoint().z()
-          << " in panel " << panel.id() << "\n";
-        }
-      } else {
-        faceZ = panel.straw0MidPoint().z();
-        // TODO -- If this is absolutely correct, I will be surprised.
-        //         We need to look at where this places the faces, and
-        //         that will clue us in to how to do it right.
-        faceZisKnown = true;
-      }
-    }
-
-    planeMF._faces.push_back(Face(faceId, faceZ));
-    Face & f =  planeMF._faces.back();
-    f._panelMFs.reserve  (_panelMFsPerFace);
-    for ( int ipanelMF = 0; ipanelMF < _panelMFsPerFace; ++ipanelMF ) {
-      makePanelMF ( PanelMFId ( faceId, ipanelMF ), f,
-                  plane.getPanel(2*ipanelMF + faceParity) );
-    }
-
-//std::cout << "<-<-<- makeFace\n";
-  }  // makeFace
-
-  // station view
-  void TTrackerMaker::makePanelMF( const PanelMFId & panelMFId,
-                                       Face  & face,
-                                 const Panel & panel )
-  {
-//std::cout << "->->-> makePanelMF " << panelMFId << "\n";
-    double panelMFZ = face.midZ();
-    face._panelMFs.push_back(PanelMF(panelMFId, panelMFZ));
-    PanelMF & pnl =  face._panelMFs.back();
-    pnl._zlayers.reserve  (_zLayersPerPanelMF);
-    for ( int izlayer = 0; izlayer < _zLayersPerPanelMF; ++izlayer ) {
-      int faceParity = face.id().getFace()%2;
-      int ilayer = 1 - faceParity + (2*faceParity -1)*izlayer;
-      makeZLayer ( ZLayerId ( panelMFId, izlayer ), pnl,
-                                                  panel.getLayer(ilayer) );
-    }
-    // Determine phi (and view) by looking at just one sample straw;
-    // check that the remaining straws are consisdtent direction-wise
-    Straw const * sampleStraw = pnl.getZLayer(0).getStrawptr(0);
-    CLHEP::Hep3Vector dir = sampleStraw->getDirection();
-    const double directionTolerance = .01e-8;
-    typedef  std::vector<ZLayer>::const_iterator ZLayersIt;
-    ZLayersIt izlend =  pnl.getZLayers().end();
-    for ( ZLayersIt izl = pnl.getZLayers().begin(); izl != izlend; ++izl )
-    {
-      typedef std::vector<Straw const *>::const_iterator StrawptrsIt;
-      StrawptrsIt isend = izl->getStraws().end();
-      for ( StrawptrsIt is = izl->getStraws().begin(); is != isend; ++is )
-      {
-        CLHEP::Hep3Vector dir2 = (*is)->getDirection();
-        double directionDiscrepancy =
-          (dir.x() - dir2.x())*(dir.x() - dir2.x()) +
-          (dir.y() - dir2.y())*(dir.y() - dir2.y()) +
-          dir2.z()*dir2.z();
-        // Note that a significantly non-zero z component of any direction
-        // is also clasified as problematic
-        if ( directionDiscrepancy > directionTolerance ) {
-          throw cet::exception("GEOM")
-            << "makePanelMF: Straw Direction Discrepancy \n"
-            << "Straw " << sampleStraw->id() << " direction " << dir  << "\n"
-            << "Straw " << (*is)->id()       << " direction " << dir2 << "\n";
-        }
-      }
-    }
-    double phi = dir.phi() - M_PI/2;
-    if (phi < 0) phi += 2*M_PI;  // phi is now in range [0,2 pi)
-    if ( (phi < 0) || (phi >= 2*M_PI) ) {
-//       throw cet::exception("GEOM")
-//      std::cout
-//         << "makePanelMF: An ill-understood phi - "
-//         << dir.phi() << phi-2*M_PI << std::endl;
-    }
-    pnl._phi = phi;
-    double phi0 = 0.0;  // TODO -- cope with non-zero station rotation offsets
-    double clockAngle = phi - phi0 + M_PI/36;
-    if (clockAngle < 0)       clockAngle += 2*M_PI;
-    if (clockAngle > 2*M_PI ) clockAngle -= 2*M_PI;
-    int hour = static_cast<int> (std::floor(clockAngle/(M_PI/6)));
-    if ( (hour < 0 || hour >= 12) ) {
-       throw cet::exception("GEOM")
-         << "makePanelMF: An ill-understood conversion of phi to hour - "
-         << dir.phi() << " --> " << hour;
-    }
-    pnl._view = hour;
-//std::cout << "<-<-<- makePanelMF\n";
-  }  // makePanelMF
-
-  // station view
-  void TTrackerMaker::makeZLayer( const ZLayerId & zlayerId,
-                                        PanelMF  & panelMF,
-                                  const Layer & layer )
-  {
-    double layerZ = layer.straw0MidPoint().z();
-    panelMF._zlayers.push_back(ZLayer(zlayerId, layerZ));
-    ZLayer & zlay =  panelMF._zlayers.back();
-    zlay._straws.reserve  (_strawsPerZLayer);
-    zlay._straws = layer.getStraws();
-  }  // makeZLayer
-
-// ======= end of Station view makers ================
 
   // Assumes all planes and all panels are the same.
   // The straw length depends only on the manifold number.

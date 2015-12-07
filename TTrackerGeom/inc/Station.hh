@@ -16,8 +16,6 @@
 
 // Mu2e includes
 #include "TTrackerGeom/inc/StationId.hh"
-#include "TTrackerGeom/inc/PlaneMF.hh"
-#include "TTrackerGeom/inc/Face.hh"
 
 // CLHEP includes
 
@@ -44,31 +42,6 @@ namespace mu2e {
     // Accessors
     const StationId& id() const { return _id;}
 
-    // TODO MAYBE - If we allow for variances in rotatoinal orientation
-    //              and/or XY origin, we ought to have accessors for that
-    //              information here.
-    
-    // The next layer down in the hierarchy is PlaneMFs
-    int   nPlaneMFs()                        const { return _planeMFs.size(); }
-    const std::vector<PlaneMF>& getPlaneMFs () const { return _planeMFs; }
-    const PlaneMF& getPlaneMF ( int n)         const { return _planeMFs.at(n); }
-    const PlaneMF& getPlaneMF ( const PlaneMFId& pid ) const{
-      // TODO -- throw if pid.getStation() does not match _id
-      return _planeMFs.at(pid.getPlaneMF());
-    }
-
-    // Often, algorithms skip the PlaneMFs layer and work with Faces
-    int nFaces()                                 const { return _faces.size(); }
-    const std::vector<Face const *>& getFaces () const { return _faces; }
-    const Face& getFace ( int n)               const { return *(_faces.at(n)); }
-    const Face& getFace ( const FaceId& pid )  const{
-      // TODO -- throw if pid.getStation() does not match _id
-      return *(_faces.at(pid.getFace()));
-    }
-
-    // Unlike the Plane/Panel/Layer abstraction, one does not go directly
-    // from a Station to a Panel or a Layer
-
     // Get geometric abtraction information about this Station
     double midZ() const {return _z;}
 
@@ -82,17 +55,6 @@ namespace mu2e {
 
     StationId          _id;
     double             _z;  // This is Z of the CENTER of the station.
- 
-    // TODO MAYBE - if we need to allow for XY variances, we will have 
-    //              to replace _z with a Hep3Vector _origin.
-    
-    // TODO MAYBE - if we need to allow for rotation variances, we will have 
-    //              to add that here.  At this time, we don't know how we will 
-    //              handle adjustments off the basic geometry, so we keep this 
-    //              simple.  (Similarly for XY origin variances.)
-    
-    std::vector<PlaneMF>        _planeMFs;
-    std::vector<Face const *> _faces;
 
   };
 

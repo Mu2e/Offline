@@ -242,7 +242,7 @@ namespace mu2e {
     // All supports are the same shape; only relevant for _supportModel=="simple"
     Support _supportParams;
 
-    // A more detailed model of the supports; again each planeMF has identical supports.
+    // A more detailed model of the supports; again each plane has identical supports.
     // only relevant for _supportModel == "detailedv0".
     SupportStructure _supportStructure;
 
