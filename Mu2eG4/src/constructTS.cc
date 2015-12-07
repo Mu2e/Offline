@@ -36,6 +36,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "GeomPrimitives/inc/PolyconsParams.hh"
+#include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestPolycone.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestTorus.hh"
@@ -43,6 +44,7 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "GeomPrimitives/inc/Tube.hh"
+#include "GeomPrimitives/inc/Polycone.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 
 // G4 includes
@@ -1202,9 +1204,17 @@ namespace mu2e {
     bool is_pbarTS1Out = config.getBool("pbar.coll1Out.build", true);
     bool is_pbarTS31   = config.getBool("pbar.coll31In.build", false);
 
+    // ************************************************************
+    // Here we start building the upstream Pbar window.  Currently,
+    // the model has it located upstream of the TS by 100 mm.
+    // In the future we'd like to get this into the GeometryService
+    // ***********************DNB**********************************
+
     if (is_pbarTS1In) {
       CollimatorTS1 const& coll1  = ts.getColl1() ;
-
+      // ***
+      // Pull in the existing parameters from config
+      // ***
       string pbarTS1InMaterial   = config.getString("pbar.coll1In.material1Name");
       double pbarTS1InHalfLength = config.getDouble("pbar.coll1In.halfLength");
       double pbarTS1InROut       = config.getDouble("pbar.coll1In.rOut");
@@ -1212,6 +1222,7 @@ namespace mu2e {
 
       double pbarTS1InParams[5]  = { 0.0, pbarTS1InROut, pbarTS1InHalfLength, 0.0, CLHEP::twopi };  // coll1.rIn1()
       double pbarTS1InOffset = config.getDouble("pbar.coll1In.offset", 1.0);
+
       if ( verbosityLevel > 0 ) {
         cout << __func__ << "Pbar absorber at TS1 coll1 entrance halfLength : " << pbarTS1InHalfLength << std::endl;
         cout << __func__ << "Pbar absorber at TS1 coll1 entrance offset : " << pbarTS1InOffset << std::endl;
@@ -1219,6 +1230,9 @@ namespace mu2e {
 
       CLHEP::Hep3Vector pbarTS1InPos = coll1.getLocal();
       VolumeInfo motherVolume = _helper->locateVolInfo("TS1Vacuum");
+
+      // This block determines the mother volume to use
+
       if (pbarTS1InOffset >= 0.0) {
         // use local when put in the TS1Vacuum
         pbarTS1InPos = coll1.getLocal();
@@ -1243,7 +1257,9 @@ namespace mu2e {
           cout << __func__ << "pbarTS1InPos " << pbarTS1InPos << endl;
         }
       }
+      // mother volume set in block above
 
+      // Here we put in the actual window - true in all versions
       nestTubs( "PbarAbsTS1In",
                 pbarTS1InParams,
                 findMaterialOrThrow(pbarTS1InMaterial),
@@ -1254,6 +1270,210 @@ namespace mu2e {
                 G4Color::Yellow(),
 		"PbarAbs"
               );
+
+      // ***
+      // Check the version.  If version 2 or above, get new parameters
+      // for the Pbar window supports.  December 2015
+      // ***
+      int pbarTS1InVersion = config.getInt("pbar.coll1In.Version",1);
+      if ( pbarTS1InVersion > 1 ) {
+      // Support structure inner and outer radius, halflength, and material
+	double pbarTS1InSupRIn = config.getDouble("pbar.coll1In.supportRIn");
+	double pbarTS1InSupROut = config.getDouble("pbar.coll1In.supportROut");
+	double pbarTS1InSupHLen = config.getDouble("pbar.coll1In.supportHLen");
+	string pbarTS1InSupMaterial = config.getString("pbar.coll1In.supportMaterialName");
+	// Offset from Pbar window in z, and vector built from it
+	double pbarTS1InSupOffsetZ = config.getDouble("pbar.coll1In.supportOffsetZ");
+	CLHEP::Hep3Vector pbarTS1InSupRelPos(0,0,pbarTS1InSupOffsetZ);
+	
+	// set up the tube parameters
+	double pbarTS1InSuptParams[5]  = { pbarTS1InSupRIn, 
+					   pbarTS1InSupROut, 
+					   pbarTS1InSupHLen, 
+					   0.0, CLHEP::twopi }; 
+
+
+	// Now put in the support ring
+	nestTubs( "PbarAbsTS1InSup",
+                pbarTS1InSuptParams,
+                findMaterialOrThrow(pbarTS1InSupMaterial),
+                0,
+                pbarTS1InPos+pbarTS1InSupRelPos,
+                motherVolume,
+                0,
+                G4Color::Yellow(),
+		"PbarAbs"
+              );
+
+	// The frames between which the Pbar window is sandwiched are
+	// the same basic size and shape as the support ring, but with
+	// different material and offsets.  So build in the same way
+	// First get the new material and offset.
+
+	string pbarTS1InFrameMaterial = config.getString("pbar.coll1In.frameMaterialName");
+	double pbarTS1InFrameOffsetZ = config.getDouble("pbar.coll1In.frameOffsetZ");
+	CLHEP::Hep3Vector pbarTS1InFrameRelPos(0,0,pbarTS1InFrameOffsetZ);
+
+	nestTubs( "PbarAbsTS1InFrameUp",
+		  pbarTS1InSuptParams,
+		  findMaterialOrThrow(pbarTS1InFrameMaterial),
+		  0,
+		  pbarTS1InPos-pbarTS1InFrameRelPos,
+		  motherVolume,
+		  0,
+		  G4Color::Yellow(),
+		  "PbarAbs"
+		  );
+      
+
+	nestTubs( "PbarAbsTS1InFrameDown",
+		  pbarTS1InSuptParams,
+		  findMaterialOrThrow(pbarTS1InFrameMaterial),
+		  0,
+		  pbarTS1InPos+pbarTS1InFrameRelPos,
+		  motherVolume,
+		  0,
+		  G4Color::Yellow(),
+		  "PbarAbs"
+		  );
+      
+	// ***
+	// Add the tabs used to hold the support ring in place.  Tabs are
+	// located at 4, 8, and 12-o'clock
+	// ***
+	// Treat tab as a box.  Get half dimensions and material
+	std::vector<double> pbarTS1InTabDims;
+	config.getVectorDouble("pbar.coll1In.tabDims",pbarTS1InTabDims,3);
+	string pbarTS1InTabMaterial = config.getString("pbar.coll1In.tabMaterialName");
+	double pbarTS1InTabOffsetZ = config.getDouble("pbar.coll1In.tabOffsetZ");
+	double pbarTS1InTabOffsetRad = config.getDouble("pbar.coll1In.tabOffsetR");
+
+	CLHEP::Hep3Vector pbarTS1InTab1RelPos(0,
+					      pbarTS1InTabOffsetRad,
+					      pbarTS1InSupOffsetZ
+					      + pbarTS1InTabOffsetZ);
+	// first tab at 12 o'clock
+	nestBox( "PbarAbsTS1InSupTab1",
+		 pbarTS1InTabDims,
+		 findMaterialOrThrow(pbarTS1InTabMaterial),
+		 0, 
+		 pbarTS1InPos+pbarTS1InTab1RelPos,
+		 motherVolume,
+		 0,
+		 G4Color::Yellow(),
+		 "PbarAbs"
+		 );
+
+	// next tab at 4 o'clock (looking downstream)
+	CLHEP::Hep3Vector pbarTS1InTab2RelPos(-pbarTS1InTabOffsetRad*std::sin(120*CLHEP::degree),
+					      pbarTS1InTabOffsetRad*std::cos(120*CLHEP::degree),
+					      pbarTS1InSupOffsetZ+pbarTS1InTabOffsetZ);
+
+	CLHEP::HepRotation* rotaTab2 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	rotaTab2->rotateZ(-120*CLHEP::degree);
+
+	nestBox( "PbarAbsTS1InSupTab2",
+		 pbarTS1InTabDims,
+		 findMaterialOrThrow(pbarTS1InTabMaterial),
+		 rotaTab2, 
+		 pbarTS1InPos+pbarTS1InTab2RelPos,
+		 motherVolume,
+		 0,
+		 G4Color::Yellow(),
+		 "PbarAbs"
+		 );
+
+	// next tab at 8 o'clock (looking downstream)
+	CLHEP::Hep3Vector pbarTS1InTab3RelPos(pbarTS1InTabOffsetRad*std::sin(120*CLHEP::degree),
+					      pbarTS1InTabOffsetRad*std::cos(120*CLHEP::degree),
+					      pbarTS1InSupOffsetZ+pbarTS1InTabOffsetZ);
+
+	CLHEP::HepRotation* rotaTab3 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	rotaTab3->rotateZ(120*CLHEP::degree);
+
+	nestBox( "PbarAbsTS1InSupTab3",
+		 pbarTS1InTabDims,
+		 findMaterialOrThrow(pbarTS1InTabMaterial),
+		 rotaTab3, 
+		 pbarTS1InPos+pbarTS1InTab3RelPos,
+		 motherVolume,
+		 0,
+		 G4Color::Yellow(),
+		 "PbarAbs"
+		 );
+
+	// ****
+	// Now build the pegs used for handling.
+	// Treat as simple polycones.
+	// The pegs are located at 2, 6, and 10 o'clock around the z-axis  
+	// ****
+
+	// Get shape and material parameters
+	std::vector<double> pegIR;
+	config.getVectorDouble("pbar.coll1In.pegInnerRadii",pegIR,7);
+	std::vector<double> pegOR;
+	config.getVectorDouble("pbar.coll1In.pegOuterRadii",pegOR,7);
+	std::vector<double> pegZ;
+	config.getVectorDouble("pbar.coll1In.pegZPlanes",pegZ,7);
+	std::string pegMaterial = config.getString("pbar.coll1In.pegMaterialName");
+	double pegOffsetZ = config.getDouble("pbar.coll1In.pegOffsetZ");
+	double pegRad = config.getDouble("pbar.coll1In.pegRadialPosition");
+
+	//This one at 2 o'clock looking down the z axis
+	CLHEP::Hep3Vector peg1Pos(-pegRad*std::sin(60*CLHEP::degree),
+				  pegRad*std::cos(60*CLHEP::degree),
+				  -pegOffsetZ);
+
+	Polycone pegCone( pegZ, pegIR, pegOR, 
+		  pbarTS1InPos - peg1Pos,
+		  pegMaterial);
+
+	VolumeInfo pegInfo = nestPolycone( "PbarAbsTS1InPeg1",
+					   pegCone.getPolyconsParams(),
+					   findMaterialOrThrow(pegMaterial),
+					   0,
+					   pbarTS1InPos+peg1Pos,
+					   motherVolume,
+					   0,
+					   G4Colour::Yellow(),
+					   "PbarAbs"
+					   );
+
+	//This one at 6 o'clock looking down the z axis
+	CLHEP::Hep3Vector peg2Pos(0, -pegRad, -pegOffsetZ);
+	VolumeInfo peg2Info = nestPolycone( "PbarAbsTS1InPeg2",
+					   pegCone.getPolyconsParams(),
+					   findMaterialOrThrow(pegMaterial),
+					   0,
+					   pbarTS1InPos+peg2Pos,
+					   motherVolume,
+					   0,
+					   G4Colour::Yellow(),
+					   "PbarAbs"
+					   );
+
+
+	//This one at 10 o'clock looking down the z axis
+	CLHEP::Hep3Vector peg3Pos(pegRad*std::sin(60*CLHEP::degree),
+				  pegRad*std::cos(60*CLHEP::degree),
+				  -pegOffsetZ);
+
+	VolumeInfo peg3Info = nestPolycone( "PbarAbsTS1InPeg3",
+					   pegCone.getPolyconsParams(),
+					   findMaterialOrThrow(pegMaterial),
+					   0,
+					   pbarTS1InPos+peg3Pos,
+					   motherVolume,
+					   0,
+					   G4Colour::Yellow(),
+					   "PbarAbs"
+					   );
+
+
+      } // end of building support structure
+
+
+
 
       double pbarTS1InRecordParams[5]  = { 0.0, pbarTS1InRecordROut, vdHalfLength, 0.0, CLHEP::twopi };  
       CLHEP::Hep3Vector pbarTS1InRecordPos = pbarTS1InPos;

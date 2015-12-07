@@ -2,6 +2,14 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_5_7
 
+5) 06 Dec 2015  dnbrow01
+   Added support structure for the upstream Pbar window just before the 
+   entrance to TS1.  It is selectable with a variable 
+   pbar.coll1In.version.  The value 1 gives the old window without support,
+   version 2 adds the support.  Files affected:
+   Mu2eG4/geom/TransportSolenoid_v01.txt
+   Mu2eG4/src/constructTS.cc
+
 4) Dec 4, 2015 genser
 
    Renamed ttracker objects: The change was done in four major steps:

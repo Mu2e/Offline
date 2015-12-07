@@ -85,6 +85,27 @@ double pbar.coll1In.rOut = 160.0;
 double pbar.coll1In.offset = -100.02;       // distance to the TS1 entrance on +z
 double pbar.coll1In.material1Name = "G4_Al";
 double pbar.coll1In.rOutRecord = 200.0;
+// Support structure for the upstream Pbar window in front of TS1 entrance
+int    pbar.coll1In.Version = 1; // 1 for just the window. 2 adds supports
+double pbar.coll1In.supportRIn = 152.4;    // support dimensions also apply
+double pbar.coll1In.supportROut = 168.275; // to frames
+double pbar.coll1In.supportHLen = 3.175;
+string pbar.coll1In.supportMaterialName = "StainlessSteel";
+double pbar.coll1In.supportOffsetZ = 12.5;
+string pbar.coll1In.frameMaterialName = "G4_Al";
+double pbar.coll1In.frameOffsetZ = 3.695;
+vector<double> pbar.coll1In.tabDims = {25.4,12.7,6.35};
+string pbar.coll1In.tabMaterialName = "StainlessSteel";
+double pbar.coll1In.tabOffsetZ = 6.36; // from support ring
+double pbar.coll1In.tabOffsetR = 185.5; // from center of ring/window
+vector<double> pbar.coll1In.pegInnerRadii = {0,0,0,0,0,0,0};
+vector<double> pbar.coll1In.pegOuterRadii = {4.5,6.35,6.35,3.175,3.175,6.35,6.35};
+vector<double> pbar.coll1In.pegZPlanes = {0,1,2,2,10.7,10.7,12.7};
+string pbar.coll1In.pegMaterialName = "G4_Al";
+double pbar.coll1In.pegOffsetZ = 19.65;
+double pbar.coll1In.pegRadialPosition = 160.34;
+
+
 
 // Collar pbar absorber in TS1 collimator near end
 bool   pbar.coll1Out.build = true;
