@@ -86,7 +86,7 @@ double pbar.coll1In.offset = -100.02;       // distance to the TS1 entrance on +
 double pbar.coll1In.material1Name = "G4_Al";
 double pbar.coll1In.rOutRecord = 200.0;
 // Support structure for the upstream Pbar window in front of TS1 entrance
-int    pbar.coll1In.Version = 1; // 1 for just the window. 2 adds supports
+int    pbar.coll1In.Version = 2; // 1 for just the window. 2 adds supports
 double pbar.coll1In.supportRIn = 152.4;    // support dimensions also apply
 double pbar.coll1In.supportROut = 168.275; // to frames
 double pbar.coll1In.supportHLen = 3.175;
