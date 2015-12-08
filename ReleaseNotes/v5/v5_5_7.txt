@@ -2,6 +2,24 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_5_7
 
+8) Dec 8, 2015 genser
+
+   Removed ttracker old Face, Panel, Plane and Zlayer objects"
+
+     modified: GeometryService/inc/TTrackerMaker.hh
+     modified: GeometryService/src/TTrackerMaker.cc
+     modified: TTrackerGeom/inc/Station.hh
+     modified: TTrackerGeom/inc/TTracker.hh
+
+     deleted: TTrackerGeom/inc/Face.hh
+     deleted: TTrackerGeom/inc/FaceId.hh
+     deleted: TTrackerGeom/inc/PanelMF.hh
+     deleted: TTrackerGeom/inc/PanelMFId.hh
+     deleted: TTrackerGeom/inc/PlaneMF.hh
+     deleted: TTrackerGeom/inc/PlaneMFId.hh
+     deleted: TTrackerGeom/inc/ZLayer.hh
+     deleted: TTrackerGeom/inc/ZLayerId.hh
+
 7) 07 Dec 2015 dnbrow01
    Made version 2 of the upstream Pbar Absorber window the new default -
    this builds the support structure along with the window.  Changed
