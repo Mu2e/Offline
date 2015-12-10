@@ -16,6 +16,7 @@
 
 // Mu2e includes
 #include "TTrackerGeom/inc/StationId.hh"
+#include "TrackerGeom/inc/Plane.hh"
 
 // CLHEP includes
 
@@ -31,6 +32,15 @@ namespace mu2e {
   public:
 
     Station():_id(-1){}
+
+    // The next layer down in the hierarchy is Planes
+    int nPlanes() const { return _planes.size(); }
+
+    const std::vector<Plane>& getPlanes()  const { return _planes; }
+    const Plane& getPlane ( int n)         const { return _planes.at(n); }
+    const Plane& getPlane ( const PlaneId& pid ) const{
+      return _planes.at(pid);
+    }
 
     explicit Station( const StationId& id, double z = 0. )
       : _id(id)
@@ -55,6 +65,7 @@ namespace mu2e {
 
     StationId          _id;
     double             _z;  // This is Z of the CENTER of the station.
+    std::vector<Plane>   _planes;
 
   };
 

@@ -169,6 +169,7 @@ namespace mu2e {
     double _z0;
 
     int    _numStations;                  // Number of Stations.
+    int    _planesPerStation;
 
     // The detailed description of the complete support structure
     SupportModel _supportModel;
