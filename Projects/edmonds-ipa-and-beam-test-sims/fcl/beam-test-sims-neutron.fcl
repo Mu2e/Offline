@@ -19,19 +19,19 @@ physics.producers.muonTimeMap: { module_type : GenerateMuonLife }
 
 # ...third, want to record things in the tracker electronics only
 physics.producers.g4run.SDConfig.sensitiveVolumes : [ "TTrackerSupportElecG10Upstream", "TTrackerSupportElecG10Downstream" ]
-physics.analyzers.readVirtDets : {
-                   module_type : ReadVirtualDetector
-                   saveVD : [ 13, 14 ]
-                   saveAllPDG : true
-                   maxPrint : 1
-                   simParticleColl : "g4run"
-		   vdStepPoints: "g4run:virtualdetector"
-		   writeNTPART : false
-		   writeNTPART1 : false
-                   SelectEvents: { SelectEvents : [myPath] }
-#		   debugOutput : 1
-                   }			       
 
+physics.analyzers.g10upstream: {
+         module_type: StepPointMCDumper TimeOffsets: {}
+         hitsInputTag: "g4run:TTrackerSupportElecG10Upstream"
+      }
+
+physics.analyzers.g10downstream: {
+         module_type: StepPointMCDumper TimeOffsets: {}
+         hitsInputTag: "g4run:TTrackerSupportElecG10Downstream"
+      }
+
+#physics.producers.g4run.visualization.macro : "Projects/edmonds-ipa-and-beam-test-sims/fcl/vis-proton-absorber.mac"
+#physics.producers.g4run.debug.trackingVerbosityLevel : 1
 
 # ...now we can add everything to the detPath
 physics.myPath : [ generate, genCounter, g4run, g4consistent, protonTimeMap, muonTimeMap ]
@@ -42,6 +42,18 @@ physics.analyzers.dumpGen : { module_type : GenParticlesAnalyzer
 			      inputs : "generate"
 			    }
 
+outputs.detectorOutput.outputCommands:   [ "drop *_*_*_*",
+					   "keep mu2e::GenParticles_*_*_*",
+         				   "keep mu2e::GenEventCount_*_*_*",
+					   "keep mu2e::StatusG4_*_*_*",
+         				   "keep *_g4run_TTracker*_*",
+					   "keep mu2e::SimParticle*_*_*_*"
+      					 ]
+
+outputs.detectorOutput.SelectEvents: { SelectEvents: [myPath] }
+
+physics.analyzers.beamTestAnalysis : { module_type : BeamTestAnalysis }
+
 # ...and append them to the end_paths
-physics.extrapaths : [ readVirtDets, dumpGen ]
+physics.extrapaths : [ detectorOutput, g10upstream, g10downstream, dumpGen, beamTestAnalysis ]
 physics.end_paths : [ extrapaths ]
