@@ -391,7 +391,7 @@ namespace mu2e {
 
       // Charge fluctuations
       const double totalCharge = meanTotalCharge +
-        gaussian_.shoot() * std::sqrt(siProps_.fanoFactor() * meanTotalCharge);
+        gaussian_.fire() * std::sqrt(siProps_.fanoFactor() * meanTotalCharge);
 
       const double clusterCharge = totalCharge/nclusters_;
 
