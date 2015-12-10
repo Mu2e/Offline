@@ -83,6 +83,10 @@ public:
     return _n;
   }
 
+  int getStation() const{
+    return _lid.getStation();
+  }
+
   bool operator==( StrawId const& rhs) const{
     return ( _lid == rhs._lid && _n == rhs._n );
   }

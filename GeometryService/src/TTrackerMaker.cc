@@ -367,7 +367,10 @@ namespace mu2e {
       throw cet::exception("GEOM")  << "_numPlanes = " << _numPlanes
                                     << ": Current TTracker geometry assumes even number of planes  \n";
     }
-    _numStations = _numPlanes/2;
+
+    // planes per station has to be 2
+    _planesPerStation = 2;
+    _numStations = _numPlanes/_planesPerStation;
 
     makeMother();
 
@@ -781,17 +784,27 @@ namespace mu2e {
 // ======= Station view makers ============
 
   void TTrackerMaker::makeStation( StationId stationId ){
-//std::cout << "->->-> makeStation\n";
+    //    std::cout << "->->-> makeStation\n";
 
     int ist = stationId;
-    int idev1 = 2*ist;
-    int idev2 = idev1 + 1;
+    int ipln1 = _planesPerStation*ist; // it has to be 2 anyway
+    int ipln2 = ipln1 + 1;
     double stationZ = 0.5 *
-        ( _tt->_planes.at(idev1).origin().z() +
-          _tt->_planes.at(idev2).origin().z() );
+        ( _tt->_planes.at(ipln1).origin().z() +
+          _tt->_planes.at(ipln2).origin().z() );
     _tt->_stations.push_back(Station(stationId, stationZ));
-    _tt->_stations.back();
-//std::cout << "<-<-<- makeStation\n";
+
+    Station & st = _tt->_stations.back();
+    st._planes.reserve (_planesPerStation);
+    st._planes.push_back(_tt->_planes.at(ipln1));
+    st._planes.push_back(_tt->_planes.at(ipln1));
+
+    // std::cout << __func__ << "StationId, plane1, plane2 :" 
+    //           << stationId << ", "
+    //           << ipln1 << ", "
+    //           << ipln2 << ", "  
+    //           << std::endl;
+    // std::cout << "<-<-<- makeStation\n";
   }
 
   // Assumes all planes and all panels are the same.

@@ -59,6 +59,10 @@ namespace mu2e {
       return _sid.getPlane();
     }
 
+    int getStation() const{
+      return _layer/2;
+    }
+
     int getPanel () const{
       return _sid.getPanel();
     }
