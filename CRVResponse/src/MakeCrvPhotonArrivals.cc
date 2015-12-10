@@ -165,7 +165,8 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
                           double timeStart, double timeEnd,
                           int PDGcode, double beta, double charge,
                           double energyDepositedTotal,
-                          double energyDepositedNonIonizing)
+                          double energyDepositedNonIonizing,
+                          double scintillationYieldAdjustment)
 {
   for(int SiPM=0; SiPM<4; SiPM++) _arrivalTimes[SiPM].clear();
 
@@ -197,7 +198,7 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
     int nPhotonsCerenkov=0;
     if(isInScintillator)
     {
-      nPhotonsScintillation = static_cast<int>(_scintillationYield*energyPortion+0.5);
+      nPhotonsScintillation = static_cast<int>((_scintillationYield+scintillationYieldAdjustment)*energyPortion+0.5);
       nPhotonsCerenkov = static_cast<int>(GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexScintillator, _LC.cerenkovEnergyIntervalScintillator)*precision+0.5);
     } 
     if(fiber>0) //this implies not in scintillator
@@ -370,7 +371,7 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
     if(evis>0)
     {
       double eDepOverElectronRange = 27.0*exp(-0.247*pow(fabs(log(evis)+8.2),1.6))+0.177;
-      evis /= (1.0 + _LC.scintillatorBirksConstant*eDepOverElectronRange);
+      evis /= (1.0 + _scintillatorBirksConstant*eDepOverElectronRange);
     }
   }
   else 
@@ -388,7 +389,7 @@ double MakeCrvPhotonArrivals::VisibleEnergyDeposition(int PDGcode, double stepLe
     }
 
     // continues energy loss
-    if(eloss > 0.0) { eloss /= (1.0 + _LC.scintillatorBirksConstant*eloss/stepLength); }
+    if(eloss > 0.0) { eloss /= (1.0 + _scintillatorBirksConstant*eloss/stepLength); }
  
     evis = eloss + nloss;
   }

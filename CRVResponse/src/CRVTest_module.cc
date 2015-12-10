@@ -68,7 +68,7 @@ namespace mu2e
   {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("CrvSingleCounter");
-    _recoPulses = tfdir.make<TNtuple>( "RecoPulses",    "RecoPulses",  "SiPM:startX:startZ:recoPEs:PEs" );
+    _recoPulses = tfdir.make<TNtuple>( "RecoPulses",    "RecoPulses",  "SiPM:startX:startZ:recoPEs:PEs:theta:phi" );
     _leadingEdgesGlobal = tfdir.make<TNtuple>( "LeadingEdgesGlobal",    "LeadingEdgesGlobal",  "timeDifferenceGlobal:trackLength" );
     _leadingEdgesCounter = tfdir.make<TNtuple>( "LeadingEdgesCounter",    "LeadingEdgesCounter",  "timeDifferenceCounter" );
   }
@@ -131,9 +131,12 @@ namespace mu2e
       }
     }
 
+    double theta=acos(simParticleCollection->getOrThrow(cet::map_vector_key(1)).startMomentum().vect().unit().y());
+    double phi=atan2(simParticleCollection->getOrThrow(cet::map_vector_key(1)).startMomentum().vect().z(),simParticleCollection->getOrThrow(cet::map_vector_key(1)).startMomentum().vect().x());
+
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      _recoPulses->Fill(SiPM,startX,startZ,recoPEs[SiPM],PEs[SiPM]);
+      _recoPulses->Fill(SiPM,startX,startZ,recoPEs[SiPM],PEs[SiPM],theta,phi);
     }
 
 

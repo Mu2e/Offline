@@ -25,9 +25,6 @@
 
 #include "TH3D.h"
 
-#include "CLHEP/Random/Random.h"
-#include "CLHEP/Random/RandGaussQ.h"
-
 #include <stdexcept>
 
 WLSPrimaryGeneratorAction::WLSPrimaryGeneratorAction(int mode, int numberOfPhotons, int simType, int startBin, bool verbose) : 
@@ -399,22 +396,22 @@ void WLSPrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 //    double beamsize=1.0*mm;
     double beamsize=0.0*mm;
     double x0 = -1.0*cm;
-    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);    //center
-//    double y0 = CLHEP::RandGaussQ::shoot(_randomEngine,-1.0*cm,beamsize);    //at fiber 0
+    double y0 = G4RandGauss::shoot(_randomEngine,0.0*cm,beamsize);    //center
+//    double y0 = G4RandGauss::shoot(_randomEngine,-1.0*cm,beamsize);    //at fiber 0
 
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-149.0*cm,beamsize);  //1cm from left side
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-140.0*cm,beamsize);  //10cm from left side
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-130.0*cm,beamsize);  //20cm from left side
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-125.0*cm,beamsize);  //25cm from left side
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-50.0*cm,beamsize);  //100cm from left side
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,0.0*cm,beamsize);  //150cm from left side (center)
+//    double z0 = G4RandGauss::shoot(_randomEngine,-149.0*cm,beamsize);  //1cm from left side
+//    double z0 = G4RandGauss::shoot(_randomEngine,-140.0*cm,beamsize);  //10cm from left side
+//    double z0 = G4RandGauss::shoot(_randomEngine,-130.0*cm,beamsize);  //20cm from left side
+//    double z0 = G4RandGauss::shoot(_randomEngine,-125.0*cm,beamsize);  //25cm from left side
+//    double z0 = G4RandGauss::shoot(_randomEngine,-50.0*cm,beamsize);  //100cm from left side
+//    double z0 = G4RandGauss::shoot(_randomEngine,0.0*cm,beamsize);  //150cm from left side (center)
 
-    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-180.0*cm,beamsize);  //100cm from left side of 5.6m counter
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-255.0*cm,beamsize);  //25cm from left side of 5.6m counter
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-260.0*cm,beamsize);  //20cm from left side of 5.6m counter
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-265.0*cm,beamsize);  //15cm from left side of 5.6m counter
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-275.0*cm,beamsize);  //5cm from left side of 5.6m counter
-//    double z0 = CLHEP::RandGaussQ::shoot(_randomEngine,-279.0*cm,beamsize);  //1cm from left side of 5.6m counter
+    double z0 = G4RandGauss::shoot(_randomEngine,-180.0*cm,beamsize);  //100cm from left side of 5.6m counter
+//    double z0 = G4RandGauss::shoot(_randomEngine,-255.0*cm,beamsize);  //25cm from left side of 5.6m counter
+//    double z0 = G4RandGauss::shoot(_randomEngine,-260.0*cm,beamsize);  //20cm from left side of 5.6m counter
+//    double z0 = G4RandGauss::shoot(_randomEngine,-265.0*cm,beamsize);  //15cm from left side of 5.6m counter
+//    double z0 = G4RandGauss::shoot(_randomEngine,-275.0*cm,beamsize);  //5cm from left side of 5.6m counter
+//    double z0 = G4RandGauss::shoot(_randomEngine,-279.0*cm,beamsize);  //1cm from left side of 5.6m counter
   
     _particleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
     _particleGun->GeneratePrimaryVertex(anEvent);

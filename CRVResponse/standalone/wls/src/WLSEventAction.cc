@@ -228,7 +228,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       LC.cerenkovEnergyIntervalFiber = cerenkovEnergyMax - cerenkovEnergyMin;
       LC.ratioFastSlow             = scintillatorPropertiesTable->GetConstProperty("YIELDRATIO");  //will not be used later
       LC.scintillatorDensity       = scintillator->GetDensity();
-      LC.scintillatorBirksConstant = scintillator->GetIonisation()->GetBirksConstant();
+      LC.scintillatorBirksConstant = scintillator->GetIonisation()->GetBirksConstant();  //will not be used later
       LC.fiberSeparation = detector->GetFiberSeparation(),
       LC.holeRadius      = detector->GetHoleRadius(),
       LC.fiberRadius     = detector->GetClad2Radius();
