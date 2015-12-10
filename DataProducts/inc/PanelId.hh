@@ -55,6 +55,10 @@ namespace mu2e {
       return _panel;
     }
 
+    int getStation() const{
+      return _did/2;
+    }
+
     bool operator==(PanelId const& rhs) const{
       return ( _did == rhs._did && _panel == rhs._panel );
     }

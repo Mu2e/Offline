@@ -60,7 +60,7 @@ namespace mu2e {
     }
 
     int getStation() const{
-      return _layer/2;
+      return _sid.getStation();
     }
 
     int getPanel () const{
