@@ -66,7 +66,7 @@ namespace mu2e
       }
     }
 
-    void PanelState::setHitStates(TSHV& tshv) const {
+    void PanelState::setHitStates(TrkStrawHitVector& tshv) const {
       for(size_t ihit=0;ihit<tshv.size(); ++ihit)
 	hitState(ihit).setHitState(tshv[ihit]);
     }

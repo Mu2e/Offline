@@ -23,7 +23,7 @@
 #include <algorithm>
 
 using namespace std;
-using namespace CLHEP;
+using CLHEP::Hep3Vector;
 
 namespace mu2e
 {
@@ -62,8 +62,8 @@ namespace mu2e
     _wpos = shinfo._pos;
     _tddist = shinfo._tddist;
     _tddist_err = shinfo._tdres;
-    CLHEP::Hep3Vector const& wiredir = _straw.getDirection();
-    CLHEP::Hep3Vector const& mid = _straw.getMidPoint();
+    Hep3Vector const& wiredir = _straw.getDirection();
+    Hep3Vector const& mid = _straw.getMidPoint();
 // the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center
     _hittraj = new TrkLineTraj(HepPoint(mid.x(),mid.y(),mid.z()),wiredir,_tddist-_tddist_err,_tddist+_tddist_err);
     setHitLen(_tddist);
@@ -101,7 +101,7 @@ namespace mu2e
 // compute the drift time
     double tdrift = strawHit().time() - _hitt0._t0 - _stime;
 // find the track direction at this hit
-    CLHEP::Hep3Vector tdir = getParentRep()->traj().direction(fltLen());
+    Hep3Vector tdir = getParentRep()->traj().direction(fltLen());
 // convert time to distance.  This computes the intrinsic drift radius error as well
     tcal->TimeToDistance(straw().index(),tdrift,tdir,_t2d);
 // Propogate error in t0, using local drift velocity
@@ -112,6 +112,7 @@ namespace mu2e
     double rstraw = _straw.getRadius(); 
     if(!physicalDrift(_maxdriftpull)){
       setActivity(false);
+      setFlag(driftFail);
     } else {
 // otherwise restrict to a physical range
       if (_t2d._rdrift < 0.0){
@@ -170,7 +171,8 @@ namespace mu2e
       setHitResid(residual);
       setHitRms(_toterr);
     } else {
-      cout << "TrkStrawHit:: updateMeasurement() failed" << endl;
+//      cout << "TrkStrawHit:: updateMeasurement() failed" << endl;
+      setFlag(updateFail);
       setHitResid(999999);
       setHitRms(999999);
       setActivity(false);
@@ -179,9 +181,9 @@ namespace mu2e
   }
   
   void
-  TrkStrawHit::hitPosition(CLHEP::Hep3Vector& hpos) const{
+  TrkStrawHit::hitPosition(Hep3Vector& hpos) const{
     if( poca().status().success() && _iamb!=0){
-      CLHEP::Hep3Vector pdir = (trkTraj()->position(fltLen()) - hitTraj()->position(hitLen())).unit();
+      Hep3Vector pdir = (trkTraj()->position(fltLen()) - hitTraj()->position(hitLen())).unit();
       hpos = _wpos + pdir*_t2d._rdrift*_iamb;
     } else {
       hpos = _wpos;
@@ -249,9 +251,19 @@ namespace mu2e
     o<<"driftRadius "<<driftRadius()<<" driftRadiusErr "<<driftRadiusErr();
     o<<" hitT0 "<<_hitt0.t0()<<" hitT0err "<<_hitt0.t0Err()<<" t0err "<<t0Err()<<std::endl;
     o<<"ambig "<<_iamb<<" ambig upd "<<_ambigupdate<<std::endl;
-    CLHEP::Hep3Vector hpos; hitPosition(hpos);
+    Hep3Vector hpos; hitPosition(hpos);
     o<<"hitPosition "<<hpos<<std::endl;
     o<<"---------------------------------------------------"<<std::endl;
+  }
+
+// utility function: this lives in namespace mu2e
+  void
+  convert(TrkHitVector const& thv, TrkStrawHitVector& tshv) {
+    tshv.clear();
+    tshv.reserve(thv.size());
+    for(auto ith=thv.begin(); ith!=thv.end(); ++ith){
+      tshv.push_back(static_cast<TrkStrawHit*>(*ith));
+    }
   }
 
 } 

@@ -59,6 +59,8 @@
 #include "CalPatRec/inc/HelixFitHack.hh"
 #include "CalPatRec/inc/THackData.hh"
 
+using CLHEP::HepVector;
+using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
@@ -1071,7 +1073,7 @@ namespace mu2e {
     }
     
     _chi2nFindZ = Helix._srphi.chi2DofLine();
-    if(_chi2nFindZ < 0.0)  _eventToLook = Helix._hdef.eventId();
+    if(_chi2nFindZ < 0.0)  _eventToLook = 0; // FIXME!!
 
     if (_debug > 5) {
       printf("[HelixFitHack::doLinearFitPhiZ] retval = %d\n",success ? 1:0);

@@ -7,7 +7,7 @@
 //
 // Original author David Brown, LBNL
 //
-#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 
 namespace mu2e 
 {

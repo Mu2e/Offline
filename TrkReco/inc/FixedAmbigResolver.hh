@@ -11,6 +11,9 @@
 #define FixedAmbigResolver_HH
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
+#ifndef __GCCXML__
+#include "fhiclcpp/ParameterSet.h"
+#endif/*__GCCXML__*/
 
 namespace mu2e {
 
@@ -21,7 +24,7 @@ namespace mu2e {
     explicit FixedAmbigResolver(fhicl::ParameterSet const& pset, double extErr);
 #endif/*__GCCXML__*/
       virtual ~FixedAmbigResolver();
-    virtual void resolveTrk(KalFitResult& kfit) const;
+    virtual void resolveTrk(KalRep* kfit) const;
     private:
       bool _neutralize; // if true, set the initial ambiguity to 0
   };

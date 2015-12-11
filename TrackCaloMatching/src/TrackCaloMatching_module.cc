@@ -25,7 +25,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
@@ -67,6 +67,7 @@
 using namespace std;
 using cet::square;
 using cet::sum_of_squares;
+using CLHEP::Hep3Vector;
 
 namespace mu2e {
 

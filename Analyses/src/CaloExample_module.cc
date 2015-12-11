@@ -24,11 +24,12 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 
-#include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
@@ -79,6 +80,7 @@
 
 using namespace std;
 using CLHEP::Hep3Vector;
+using CLHEP::HepVector;
 using CLHEP::keV;
 
 

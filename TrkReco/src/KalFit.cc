@@ -35,7 +35,6 @@
 #include "BTrk/KalmanTrack/KalBend.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
-#include "BTrk/TrkBase/TrkHotListFull.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/BaBar/ErrLog.hh"
@@ -76,11 +75,7 @@ namespace mu2e
   KalFit::KalFit(fhicl::ParameterSet const& pset, TrkFitDirection const& fitdir) :
 // KalFit parameters
     _debug(pset.get<int>("debugLevel",0)),
-    _weedhits(pset.get<vector<bool> >("weedhits")),
-//    _weedhits(pset.get<bool >("weedhits",true)),
     _maxhitchi(pset.get<double>("maxhitchi",3.5)),
-    _maxweed(pset.get<unsigned>("maxweed",10)),
-    _herr(pset.get< vector<double> >("hiterr")),
     _maxdriftpull(pset.get<double>("maxDriftPull",10)),
     // t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
@@ -92,9 +87,11 @@ namespace mu2e
     //
     _removefailed(pset.get<bool>("RemoveFailedFits",true)),
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
+    _weedhits(pset.get<vector<bool> >("weedhits")),
+    _herr(pset.get< vector<double> >("hiterr")),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
     _resolveAfterWeeding(pset.get<bool>("ResolveAfterWeeding",false)),
-    _fitdir(fitdir),
+    _fdir(fitdir),
     _bfield(0)
   {
 // set KalContext parameters
@@ -134,42 +131,40 @@ namespace mu2e
     if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
     if(_herr.size() != _t0tol.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
     if(_herr.size() != _weedhits.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
-    // construct the ambiguity resolvers
-
-    AmbigResolver* ar(0);
     // Search for explicit resolver parameter sets.  These may not be used
     fhicl::ParameterSet const& fixedPset = pset.get<fhicl::ParameterSet>("FixedAmbigResolver",fhicl::ParameterSet());
     fhicl::ParameterSet const& hitPset = pset.get<fhicl::ParameterSet>("HitAmbigResolver",fhicl::ParameterSet());
     fhicl::ParameterSet const& panelPset = pset.get<fhicl::ParameterSet>("PanelAmbigResolver",fhicl::ParameterSet());
     fhicl::ParameterSet const& pocaPset = pset.get<fhicl::ParameterSet>("POCAAmbigResolver",fhicl::ParameterSet());
     fhicl::ParameterSet const& doubletPset = pset.get<fhicl::ParameterSet>("DoubletAmbigResolver",fhicl::ParameterSet());
-// construct the explicit ambiguity resolvers
-    int n = _ambigstrategy.size();
-    int Final;
-    for(int i=0; i<n; ++i) {
-      switch (_ambigstrategy[i]) {
+// construct the explicit ambiguity resolvers, 1 instance per iteration
+    size_t niter = _ambigstrategy.size();
+    for(size_t iter=0; iter<niter; ++iter) {
+      int Final = iter==niter-1 ? 1 : 0;
+      AmbigResolver* ar(0);
+      switch (_ambigstrategy[iter]) {
       case fixedambig:
-	ar = new FixedAmbigResolver(fixedPset,_herr[i]);
+	ar = new FixedAmbigResolver(fixedPset,_herr[iter]);
 	break;
       case hitambig:
-	ar = new HitAmbigResolver(hitPset,_herr[i]);
+	ar = new HitAmbigResolver(hitPset,_herr[iter]);
 	break;
       case panelambig:
-	ar = new PanelAmbig::PanelAmbigResolver(panelPset,_herr[i]);
+	ar = new PanelAmbig::PanelAmbigResolver(panelPset,_herr[iter],iter);
 	break;
       case pocaambig:
-	ar = new PocaAmbigResolver(pocaPset,_herr[i]);
+	ar = new PocaAmbigResolver(pocaPset,_herr[iter]);
 	break;
       case doubletambig: // 4
-	Final = i==n-1 ? 1 : 0;
- 	ar = new DoubletAmbigResolver(doubletPset,_herr[i],i,Final);
+ 	ar = new DoubletAmbigResolver(doubletPset,_herr[iter],iter,Final);
  	break;
       default:
+	break;
       }
       if(ar != 0)
 	_ambigresolver.push_back(ar);
       else
-	throw cet::exception("RECO")<<"mu2e::KalFit: unknown ambiguity resolver " << _ambigstrategy[i] << " for iteration " << i << endl;
+	throw cet::exception("RECO")<<"mu2e::KalFit: unknown ambiguity resolver " << _ambigstrategy[iter] << " for iteration " << iter << endl;
     }
   }
 
@@ -183,51 +178,56 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // create the track (KalRep) from the track definition
 //-----------------------------------------------------------------------------
-  void KalFit::makeTrack(KalFitResult& kres) {
-    kres._fit = TrkErrCode(TrkErrCode::fail);
+  void KalFit::makeTrack(TrkDef const& tdef, KalRep* krep) {
 // test if fitable
-    if(fitable(*kres._tdef)){
+    if(fitable(tdef)){
 // first, find t0
       TrkT0 t0;
       if(_initt0)
-	initT0(*kres._tdef, t0);
+	initT0(tdef, t0);
       else
-	t0 = kres._tdef->t0();
+	t0 = tdef.t0();
 // create the hits
-      makeHits(kres, t0);
+      TrkStrawHitVector tshv;
+      makeHits(tdef, t0, tshv);
 // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
-// This will go away when we cleanup the BaBar hit storage, FIXME!!!
-      TrkHotListFull* hotlist = new TrkHotListFull();
-      for(std::vector<TrkStrawHit*>::iterator ihit=kres._hits.begin();ihit!=kres._hits.end();ihit++){
-        TrkStrawHit* trkhit = *ihit;
-	hotlist->append(trkhit);
-	if (_debug>0) { trkhit->print(std::cout); }
+      std::vector<TrkHit*> thv;
+      for(auto ihit = tshv.begin(); ihit != tshv.end(); ++ihit){
+	thv.push_back(*ihit);
+	if (_debug>0) { (*ihit)->print(std::cout); }
       }
 // Find the wall and gas material description objects for these hits
-      if(_matcorr)makeMaterials(kres);
+      std::vector<DetIntersection> detinter;
+      if(_matcorr)makeMaterials(tshv,tdef,detinter);
 // create Kalman rep
-      kres._krep = new KalRep(kres._tdef->helix(), hotlist, kres._detinter, *this, kres._tdef->particle());
-      assert(kres._krep != 0);
+      krep = new KalRep(tdef.helix(), thv, detinter, *this, tdef.particle());
+      assert(krep != 0);
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
-      double flt0 = kres._tdef->helix().zFlight(0.0);
-      kres._krep->setT0(t0,flt0);
+      double flt0 = tdef.helix().zFlight(0.0);
+      krep->setT0(t0,flt0);
 // initialize history list
-      kres._krep->addHistory(TrkErrCode(),"Creation");
+      krep->addHistory(TrkErrCode(),"KalFit creation");
 // now fit
-      fitTrack(kres);
-      if(_removefailed)kres.removeFailed();
+      TrkErrCode fitstat = fitTrack(krep,tshv);
+      krep->addHistory(fitstat,"KalFit fit");
+      if(_removefailed && !fitstat.success()){
+	delete krep;
+	krep = 0;
+      }
     }
   }
 
-  void KalFit::addHits(KalFitResult& kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi) {
+  void KalFit::addHits(KalRep* krep,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi) {
 // there must be a valid Kalman fit to add hits to
-    if(kres._krep != 0 && kres._fit.success()){
+    if(krep != 0 && indices.size() > 0 && krep->fitStatus().success()){
+      TrkStrawHitVector tshv;
+      convert(krep->hitVector(),tshv);
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
       const Tracker& tracker = getTrackerOrThrow();
-      std::vector<TrkStrawHit*>::iterator ihigh;
-      std::vector<TrkStrawHit*>::reverse_iterator ilow;
+      TrkStrawHitVector::iterator ihigh;
+      TrkStrawHitVector::reverse_iterator ilow;
 // use the reference trajectory, as that's what all the existing hits do
-      const TrkDifPieceTraj* reftraj = kres._krep->referenceTraj();
+      const TrkDifPieceTraj* reftraj = krep->referenceTraj();
       for(unsigned iind=0;iind<indices.size(); ++iind){
 	size_t istraw = indices[iind]._index;
 	const StrawHit& strawhit(straws->at(istraw));
@@ -236,16 +236,16 @@ namespace mu2e
 	double hflt(0.0);
 	TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
 // find the bounding sites near this hit, and extrapolate to get the hit t0
-	std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(_fdir));
-	findBoundingHits(kres._hits,hflt,ilow,ihigh);
+	std::sort(tshv.begin(),tshv.end(),fltlencomp(_fdir.fitDirection()));
+	findBoundingHits(tshv,hflt,ilow,ihigh);
 	const TrkStrawHit* nearhit;
-	if(ihigh != kres._hits.end())
+	if(ihigh != tshv.end())
 	  nearhit = *ihigh;
 	else
 	  nearhit = *ilow;
 	TrkT0 hitt0 = nearhit->hitT0();
-	double mom = kres._krep->momentum(nearhit->fltLen()).mag();
-	double beta = kres._tdef->particle().beta(mom);
+	double mom = krep->momentum(nearhit->fltLen()).mag();
+	double beta = krep->particleType().beta(mom);
 	double tflt = (hflt-nearhit->fltLen())/(beta*CLHEP::c_light);
 // update the time in the TrkT0 object
 	hitt0._t0 += tflt;
@@ -254,20 +254,18 @@ namespace mu2e
 	assert(trkhit != 0);
 // allow the hit to update its own ambiguity for now: eventually we should get the resolver to do this, FIXME!!!
 	trkhit->setAmbigUpdate(true);
+	trkhit->setFlag(TrkStrawHit::addedHit);
 // must be initialy active for KalRep to process correctly
 	trkhit->setActivity(true);
-// flag the added hit
-	trkhit->setUsability(3);
-// add the hit to the track and the fit
-	kres._krep->addHit(trkhit);
-	kres._hits.push_back(trkhit);
+// add the hit to the track
+	krep->addHit(trkhit);
 // create intersections for the material of this hit and add those to the track
 	DetIntersection wallinter;
 	if(trkhit->wallElem().reIntersect(reftraj,wallinter))
-	  kres._krep->addInter(wallinter);	
+	  krep->addInter(wallinter);	
 	DetIntersection gasinter;
 	if(trkhit->gasElem().reIntersect(reftraj,gasinter))
-	  kres._krep->addInter(gasinter);
+	  krep->addInter(gasinter);
 // check the raw residual: This call works because the HOT isn't yet processed as part of the fit.
         double chi = fabs(trkhit->residual()/trkhit->hitRms());
 //if it's outside limits, deactivate the HOT
@@ -277,55 +275,56 @@ namespace mu2e
 	trkhit->setAmbigUpdate(false);
       }
 // refit the last iteration of the track
-      fitIteration(kres,_herr.size()-1);
-      kres._krep->addHistory(kres._fit,"AddHits");
+      TrkErrCode fitstat = fitIteration(krep,tshv,_herr.size()-1);
+      krep->addHistory(fitstat,"AddHits");
     }
   }
 //
-  void KalFit::fitTrack(KalFitResult& kres) {
+  TrkErrCode KalFit::fitTrack(KalRep* krep,TrkStrawHitVector& tshv) {
     // loop over external hit errors, ambiguity assignment, t0 toleratnce
+    TrkErrCode fitstat;
     for(size_t iherr=0;iherr < _herr.size(); ++iherr) {
-      fitIteration(kres,iherr);
-      if(! kres._fit.success())break;
+      fitstat = fitIteration(krep,tshv,iherr);
+      if(!fitstat.success())break;
     }
-    if(kres._krep != 0) kres._krep->addHistory(kres._fit,"KalFit");
+    if(krep != 0) krep->addHistory(fitstat,"KalFit");
+    return fitstat;
   }
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-  void KalFit::fitIteration(KalFitResult& kres,size_t iter) {
+  TrkErrCode KalFit::fitIteration(KalRep* krep,TrkStrawHitVector& tshv, size_t iter) {
     // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
-    for(std::vector<TrkStrawHit*>::iterator itsh = kres._hits.begin(); itsh != kres._hits.end(); ++itsh){
+    for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
       (*itsh)->setExtErr(_herr[iter]);
     }
     // update t0, and propagate it to the hits
-    double oldt0 = kres._krep->t0()._t0;
-    kres._nt0iter = 0;
+    double oldt0 = krep->t0()._t0;
     unsigned niter(0);
     bool changed(true);
-
-    kres._fit = TrkErrCode::succeed;
-    while(kres._fit.success() && changed && niter < maxiters()){
+    TrkErrCode retval = TrkErrCode::succeed;
+    while(retval.success() && changed && niter < maxIterations()){
       changed = false;
 //-----------------------------------------------------------------------------
 // convention: resolve drift signs before the fit with respect to the trajectory 
 // determined at the previous iteration
 //-----------------------------------------------------------------------------
-      _ambigresolver[iter]->resolveTrk(kres);
-      kres._krep->resetFit();
-      kres.fit();
-      if(! kres._fit.success())break;
+      _ambigresolver[iter]->resolveTrk(krep);
+      krep->resetFit();
+      retval = krep->fit();
+      if(! retval.success())break;
       if(_updatet0){
-	updateT0(kres);
-	changed |= fabs(kres._krep->t0()._t0-oldt0) > _t0tol[iter];
-	oldt0 = kres._krep->t0()._t0;
+	updateT0(krep,tshv);
+	changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
+	oldt0 = krep->t0()._t0;
       }
       // drop outliers
       if(_weedhits[iter]){
-	changed |= weedHits(kres);
+	changed |= weedHits(krep,tshv,iter);
       }
       niter++;
     }
+    return retval;
   }
 
   bool
@@ -334,9 +333,8 @@ namespace mu2e
   }
   
   void
-  KalFit::makeHits(KalFitResult& kres,TrkT0 const& t0) {
+  KalFit::makeHits(TrkDef const& tdef, TrkT0 const& t0, TrkStrawHitVector& tshv ) {
     const Tracker& tracker = getTrackerOrThrow();
-    TrkDef const& tdef = *kres._tdef;
 // compute the propagaion velocity
     double flt0 = tdef.helix().zFlight(0.0);
     double mom = TrkMomCalculator::vecMom(tdef.helix(),bField(),flt0).mag();
@@ -360,16 +358,16 @@ namespace mu2e
       if(pstat.failure()){
         trkhit->setActivity(false);
       }
-      kres._hits.push_back(trkhit);
+      tshv.push_back(trkhit);
     }
  // sort the hits by flightlength
-    std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(_fdir));
+    std::sort(tshv.begin(),tshv.end(),fltlencomp(_fdir.fitDirection()));
   }
 
+// this is a kludge function to extract materials from the straw hits.
   void
-  KalFit::makeMaterials(KalFitResult& kres) {
-    TrkDef const& tdef = *kres._tdef;
-    for(std::vector<TrkStrawHit*>::iterator ihit=kres._hits.begin();ihit!=kres._hits.end();ihit++){
+  KalFit::makeMaterials(TrkStrawHitVector const& tshv, TrkDef const& tdef,std::vector<DetIntersection>& detinter) {
+    for (auto ihit=tshv.begin();ihit!=tshv.end(); ++ihit){
       TrkStrawHit* trkhit = *ihit;
       // create wall and gas intersection objects from each straw hit (active or not)
       DetIntersection wallinter;
@@ -379,95 +377,97 @@ namespace mu2e
       gasinter.delem = 0;
       gasinter.pathlen = trkhit->fltLen();
       if(trkhit->wallElem().reIntersect(&tdef.helix(),wallinter))
-	kres._detinter.push_back(wallinter);
+	detinter.push_back(wallinter);
       if(trkhit->gasElem().reIntersect(&tdef.helix(),gasinter))
-	kres._detinter.push_back(gasinter);
+	detinter.push_back(gasinter);
     }
   }
 
   bool
-  KalFit::weedHits(KalFitResult& kres ) {
+  KalFit::weedHits(KalRep* krep, TrkStrawHitVector& tshv,size_t iter) {
     // Loop over HoTs and find HoT with largest contribution to chi2.  If this value
     // is greater than some cut value, deactivate that HoT and reFit
     bool retval(false);
     double worst = -1.;
-    TrkStrawHit* worstHot = 0;
-    for (std::vector<TrkStrawHit*>::iterator iter = kres._hits.begin(); iter != kres._hits.end(); ++iter){
-      TrkStrawHit* iHot = *iter;
-      if (iHot->isActive()) {
+    TrkStrawHit* worsthit = 0;
+    for (auto ihit=tshv.begin();ihit!=tshv.end(); ++ihit){
+      TrkStrawHit* hit = *ihit;
+      if (hit->isActive()) {
         double resid, residErr;
-        if(iHot->resid(resid, residErr, true)){
+        if(hit->resid(resid, residErr, true)){
           double value = fabs(resid/residErr);
           if (value > _maxhitchi && value > worst) {
             worst = value;
-            worstHot = iHot;
+            worsthit = hit;
           }
         }
       }
     }
-    if(0 != worstHot){
+    if(0 != worsthit){
       retval = true;
-      worstHot->setActivity(false);
-      worstHot->setUsability(5); // positive usability allows hot to be re-enabled later
-
+      worsthit->setActivity(false);
+      worsthit->setFlag(TrkStrawHit::weededHit);
       if (_resolveAfterWeeding) {
 //-----------------------------------------------------------------------------
 // _resolveAfterWeeding=0 makes changes in the logic fully reversible
 //-----------------------------------------------------------------------------
-	_ambigresolver[Iteration]->resolveTrk(kres);
+	_ambigresolver[iter]->resolveTrk(krep);
       }
-      kres.fit();
-      kres._krep->addHistory(kres._fit, "HitWeed");
+      TrkErrCode fitstat = krep->fit();
+      krep->addHistory(fitstat, "HitWeed");
       // Recursively iterate
-      kres._nweediter++;
-      if (kres._fit.success() && kres._nweediter < _maxweed ) {
-        retval |= weedHits(kres);
+      if (fitstat.success() ) {
+        retval |= weedHits(krep,tshv,iter);
       }
     }
     return retval;
   }
   
   bool
-  KalFit::unweedHits(KalFitResult& kres, double maxchi) {
+  KalFit::unweedHits(KalRep* krep, double maxchi) {
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    return unweedHits(krep,tshv,maxchi);
+  }
+  
+  bool
+  KalFit::unweedHits(KalRep* krep, TrkStrawHitVector& tshv, double maxchi) {
     // Loop over inactive HoTs and find the one with the smallest contribution to chi2.  If this value
     // is less than some cut value, reactivate that HoT and reFit
-    int const final(1);
     bool      retval(false);
     double    best = 1.e12;
     int       last = _herr.size()-1;
-
-    TrkStrawHit* bestHot = 0;
-    for (std::vector<TrkStrawHit*>::iterator iter = kres._hits.begin(); iter != kres._hits.end(); ++iter){
-      TrkStrawHit* iHot = *iter;
-      if (!iHot->isActive()) {
+// no need to cast
+    TrkStrawHit* besthit = 0;
+    for (auto ihit=tshv.begin();ihit!=tshv.end(); ++ihit){
+      TrkStrawHit* hit = *ihit;
+      if (!hit->isActive()) {
         double resid, residErr;
-        if(iHot->resid(resid, residErr, true)){
+        if(hit->resid(resid, residErr, true)){
           double chival = fabs(resid/residErr);
   // test both for a good chisquared and for the drift radius to be physical
-          if (chival < maxchi && iHot->physicalDrift(maxchi) && chival < best) {
+          if (chival < maxchi && hit->physicalDrift(maxchi) && chival < best) {
             best = chival;
-            bestHot = iHot;
+            besthit = hit;
           }
         }
       }
     }
-    if(0 != bestHot){
+    if(0 != besthit){
       retval = true;
-      bestHot->setActivity(true);
-      bestHot->setUsability(4);
-
+      besthit->setActivity(true);
+      besthit->setFlag(TrkStrawHit::unweededHit);
       if (_resolveAfterWeeding) {
 	// 2015-04-12 P.Murat: '_resolveAfterWeeding' is here to make my changes fully reversible
 	// I think, resolving ambiguities before each fit, makes a lot of sense
-	_ambigresolver[last]->resolveTrk(kres,final);
+	_ambigresolver[last]->resolveTrk(krep);
       }
 
-      kres.fit();
-      kres._krep->addHistory(kres._fit, "HitUnWeed");
+      TrkErrCode fitstat = krep->fit();
+      krep->addHistory(fitstat, "HitUnWeed");
       // Recursively iterate
-      kres._nunweediter++;
-      if (kres._fit.success() && kres._nunweediter < _maxweed  ) {
-        retval |= unweedHits(kres,maxchi);
+      if (fitstat.success() ) {
+        retval |= unweedHits(krep,tshv,maxchi);
       }
     }
     return retval;
@@ -549,11 +549,10 @@ namespace mu2e
   }
 
   bool
-  KalFit::updateT0(KalFitResult& kres){
+  KalFit::updateT0(KalRep* krep,TrkStrawHitVector& tshv){
     using namespace boost::accumulators;
     bool retval(false);
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
-    KalRep* krep = kres._krep;
 // need to have a valid fit
     if(krep->fitValid()){
 // find the global fltlen associated with z=0. 
@@ -562,12 +561,13 @@ namespace mu2e
       if(converged){
 	std::vector<double> hitt0; // store t0, to allow outlyer removal
 	std::vector<double> hitt0err;
-	hitt0.reserve(kres._hits.size());
-	hitt0err.reserve(kres._hits.size());
+	size_t nhits = krep->hitVector().size();
+	hitt0.reserve(nhits);
+	hitt0err.reserve(nhits);
 	// loop over the hits
-	for(std::vector<TrkStrawHit*>::iterator ihit= kres._hits.begin();ihit != kres._hits.end(); ihit++){
+	for(auto ihit=tshv.begin(); ihit != tshv.end(); ihit++){
 	  TrkStrawHit* hit = *ihit;
-	  if(hit->isActive() && hit->poca()!= 0 && hit->poca()->status().success()){
+	  if(hit->isActive() && hit->hasResidual()){
 	    // find the residual, exluding this hits measurement
 	    double resid,residerr;
 	    if(krep->resid(hit,resid,residerr,true)){
@@ -626,7 +626,7 @@ namespace mu2e
 	    // put in t0 from the track.
 	    t0._t0 += krep->t0()._t0;
 	    krep->setT0(t0,flt0);
-	    updateHitTimes(kres);
+	    updateHitTimes(krep,tshv);
 	    retval = true;
 	  }
 	}
@@ -636,23 +636,23 @@ namespace mu2e
   }
 
   void
-  KalFit::updateHitTimes(KalFitResult& kres) {
+  KalFit::updateHitTimes(KalRep* krep,TrkStrawHitVector& tshv) {
   // compute the time the track came closest to the wire for each hit, starting from t0 and working out.
   // this function allows for momentum change along the track.
   // find the bounding hits on either side of this
-    std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(_fdir));
-    std::vector<TrkStrawHit*>::iterator ihigh;
-    std::vector<TrkStrawHit*>::reverse_iterator ilow;
-    findBoundingHits(kres._hits,kres._krep->flt0(),ilow,ihigh);
+    std::sort(tshv.begin(),tshv.end(),fltlencomp(_fdir.fitDirection()));
+    TrkStrawHitVector::iterator ihigh;
+    TrkStrawHitVector::reverse_iterator ilow;
+    findBoundingHits(tshv,krep->flt0(),ilow,ihigh);
     // reset all the hit times
-    double hflt = kres._krep->flt0();
-    TrkT0 hitt0 = kres._krep->t0();
-    for(std::vector<TrkStrawHit*>::iterator ihit= ihigh;ihit != kres._hits.end(); ++ihit){
+    double hflt = krep->flt0();
+    TrkT0 hitt0 = krep->t0();
+    for(TrkStrawHitVector::iterator ihit= ihigh;ihit != tshv.end(); ++ihit){
       TrkStrawHit* hit = *ihit;
 // particle momentum at this point, using the full fit
-      double mom = kres._krep->momentum(hit->fltLen()).mag();
+      double mom = krep->momentum(hit->fltLen()).mag();
 // relativistic velocity from that
-      double beta = kres._tdef->particle().beta(mom);
+      double beta = krep->particleType().beta(mom);
 // particle transit time to this hit from the reference
       double tflt = (hit->fltLen()-hflt)/(beta*CLHEP::c_light);
 // update the time in the TrkT0 object
@@ -662,12 +662,12 @@ namespace mu2e
       hflt = hit->fltLen();
     }
 // now the same, moving backwards
-    hflt = kres._krep->flt0();
-    hitt0 = kres._krep->t0();
-    for(std::vector<TrkStrawHit*>::reverse_iterator ihit= ilow;ihit != kres._hits.rend(); ++ihit){
+    hflt = krep->flt0();
+    hitt0 = krep->t0();
+    for(TrkStrawHitVector::reverse_iterator ihit= ilow;ihit != tshv.rend(); ++ihit){
       TrkStrawHit* hit = *ihit;
-      double mom = kres._krep->momentum(hit->fltLen()).mag();
-      double beta = kres._tdef->particle().beta(mom);
+      double mom = krep->momentum(hit->fltLen()).mag();
+      double beta = krep->particleType().beta(mom);
       double tflt = (hit->fltLen()-hflt)/(beta*CLHEP::c_light);
       hitt0._t0 += tflt;
       (*ihit)->updateHitT0(hitt0);
@@ -676,13 +676,12 @@ namespace mu2e
   }
 
   void
-  KalFit::findBoundingHits(std::vector<TrkStrawHit*>& hits,double flt0,
-    std::vector<TrkStrawHit*>::reverse_iterator& ilow,
-    std::vector<TrkStrawHit*>::iterator& ihigh) {
+  KalFit::findBoundingHits(TrkStrawHitVector& hits,double flt0,
+    TrkStrawHitVector::reverse_iterator& ilow,
+    TrkStrawHitVector::iterator& ihigh) {
     ilow = hits.rbegin();
     ihigh = hits.begin();
     while(ilow != hits.rend() && (*ilow)->fltLen() > flt0 )++ilow;
     while(ihigh != hits.end() && (*ihigh)->fltLen() < flt0 )++ihigh;
   }
-
 }

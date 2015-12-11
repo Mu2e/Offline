@@ -1,0 +1,6 @@
+<lcgdict>
+ <class name="mu2e::TrkStrawHitInfoMC" />
+ <class name="std::vector<mu2e::TrkStrawHitInfoMC>" />
+ <class name="mu2e::TrkStrawHitInfo" />
+ <class name="std::vector<mu2e::TrkStrawHitInfo>" />
+</lcgdict>

@@ -40,12 +40,11 @@ using namespace CLHEP;
 #include "TTree.h"
 #include "TNtuple.h"
 
-#include "KalmanTests/inc/KalRepCollection.hh"
-#include "BTrk/TrkBase/TrkHotList.hh"
-#include "BTrk/TrkBase/TrkHitOnTrk.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -165,7 +164,7 @@ namespace mu2e {
                       Hep3Vector * xstop, Hep3Vector * pstop, 
                       HepMatrix * covstart, HepMatrix * covstop,
                       double * timestart, double * timestop) ;
-    bool readVD (const art::Event& event, TrkHotList const * hits) ;
+    bool readVD (const art::Event& event, TrkHitVector const& hits) ;
     int doExtrapolation (Hep3Vector x, Hep3Vector p, double t, HepMatrix cov, bool direction, TrkExtInstanceNameEntry & instance) ;
 
     HepVector _runge_kutta_newpar_5th (HepVector r0, double ds, bool mode, int charge) ;
@@ -423,7 +422,7 @@ namespace mu2e {
   
         _traj.clear();
         if (_useVirtualDetector) {
-          TrkHotList const* hits  = trk.hotList();
+          TrkHitVector const& hits  = trk.hitVector();
           if (!(readVD(event, hits))) {
             if (_verbosity>=0) cout << "TrkExt Warning: Cannot read VD at evt " << _evtid << ", trk " << i << ". Skipping" << endl;
             trajcol->push_back(_traj);
@@ -566,13 +565,13 @@ namespace mu2e {
 
 /////////// Read VD //////////////
 
-  bool TrkExt::readVD (const art::Event& event, TrkHotList const * hits) {
+  bool TrkExt::readVD (const art::Event& event, TrkHitVector const& hits) {
     unsigned int i = 0, j, k = -1;
 
     // iterate from hot list
-    for (TrkHotList::hot_iterator iter = hits->begin() ; iter != hits->end() ; ++iter) {
+    for (auto iter = hits.begin() ; iter != hits.end() ; ++iter) {
       ++k;
-      const TrkHitOnTrk * hit  = iter.get();
+      const TrkHit * hit  = *iter;
       // read assoc. TrkStrawHit
       const mu2e::TrkStrawHit* trkStrawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hit);
 

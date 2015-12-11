@@ -38,11 +38,11 @@
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 // Mu2e
-#include "KalmanTests/inc/TrkDef.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/KalFit.hh"
-#include "KalmanTests/inc/KalDiag.hh"
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "TrkReco/inc/TrkDef.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/KalFit.hh"
+#include "TrkDiag/inc/KalDiag.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
@@ -62,6 +62,7 @@
 #include <float.h>
 #include <vector>
 using namespace std; 
+using CLHEP::Hep3Vector;
 
 namespace mu2e 
 {
@@ -112,10 +113,9 @@ namespace mu2e
       // helper functions
       bool findData(const art::Event& e);
       void filterOutliers(TrkDef& mytrk,Trajectory const& traj,double maxdoca,vector<TrkHitFilter>& thfvec);
-      void findMissingHits(KalFitResult& kalfit, vector<hitIndex>& indices);
+      void findMissingHits(KalRep* krep, vector<hitIndex>& indices);
       void createDiagnostics();
-      void fillFitDiag(TrackSeed const& seed, 
-	  KalFitResult const& seedfit,KalFitResult const& kalfit);
+      void fillFitDiag(TrackSeed const& seed, TrkDef const& tdef,const KalRep* seedrep,const KalRep* krep);
 
       // fit tuple variables
       Int_t _eventid;
@@ -123,7 +123,7 @@ namespace mu2e
       Int_t _helixfail,_seedfail,_kalfail;
       helixpar _hpar,_spar;
       helixpar _sparerr;
-      Int_t _snhits, _snactive, _sniter, _sndof, _snweediter;
+      Int_t _snhits, _snactive, _sniter, _sndof;
       Float_t _schisq, _st0;
       Int_t _nchit;
       Int_t _npeak;
@@ -154,8 +154,8 @@ namespace mu2e
     _maxaddchi(pset.get<double>("MaxAddChi",4.0)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet())),
-    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
+    _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet()),_fdir),
+    _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet()),_fdir),
     _payloadSaver(pset)
   {
 // tag the data product instance by the direction and particle type found by this fitter
@@ -216,7 +216,6 @@ namespace mu2e
     // copy in the existing flags
     _flags = new StrawHitFlagCollection(*_shfcol);
     unique_ptr<StrawHitFlagCollection> flags(_flags );
-    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
     // find mc truth if we're making diagnostics
     if(_diag > 0 && !_kdiag.findMCData(event)){
       throw cet::exception("RECO")<<"mu2e::TrkRecFit: MC data missing or incomplete"<< endl;
@@ -234,8 +233,8 @@ namespace mu2e
     }
     // dummy objects
     static TrkDef dummydef;
-    static KalFitResult dummykfit(&dummydef);
     static TrackSeed dummyseed;
+    static KalRep* dummyrep(0);
     // loop over the accepted time peaks
     if(_tscol->size()>0)_cutflow->Fill(1.0);
     if(_diag>1 && _icepeak >=0)_ccutflow->Fill(3.0);
@@ -263,68 +262,62 @@ namespace mu2e
       }
 
       TrkDef seeddef(_shcol,goodhits,recoseed,_tpart,_fdir);
-
-      seeddef.setEventId(_iev);
-      seeddef.setTrackId(iTrackSeed);
       TrkT0 t0(iTrkSeed._t0,iTrkSeed._errt0);
-      
       seeddef.setT0(t0);
       TrkDef kaldef(seeddef);
-      KalFitResult seedfit(&seeddef);
-      KalFitResult kalfit(&kaldef);
       // initialize filters.  These are used only for diagnostics
       _hfilt.clear();
       _sfilt.clear();
 
       filterOutliers(seeddef,seeddef.helix(),_maxhelixdoca,_hfilt);
       // now, fit the seed helix from the filtered hits
-      _seedfit.makeTrack(seedfit);
-      if(seedfit._fit.success()){
+      KalRep *seedrep(0), *krep(0);
+      _seedfit.makeTrack(seeddef,seedrep);
+      if(seedrep->fitStatus().success()){
         findseed = true;
         // find the helix parameters from the helix fit, and initialize the full Kalman fit with this
         double locflt;
-        const HelixTraj* shelix = dynamic_cast<const HelixTraj*>(seedfit._krep->localTrajectory(seedfit._krep->flt0(),locflt));
+        const HelixTraj* shelix = dynamic_cast<const HelixTraj*>(seedrep->localTrajectory(seedrep->flt0(),locflt));
         kaldef.setHelix(*shelix);
         // filter the outliers
-        filterOutliers(kaldef,seedfit._krep->traj(),_maxseeddoca,_sfilt);
-        _kfit.makeTrack(kalfit);
+        filterOutliers(kaldef,seedrep->traj(),_maxseeddoca,_sfilt);
+        _kfit.makeTrack(kaldef,krep);
         // if successfull, try to add missing hits
-        if(kalfit._fit.success()){
+        if(krep->fitStatus().success()){
           findkal = true;
           if(_addhits){
             // first, add back the hits on this track
-            _kfit.unweedHits(kalfit,_maxaddchi);
+            _kfit.unweedHits(krep,_maxaddchi);
             vector<hitIndex> misshits;
-            findMissingHits(kalfit,misshits);
+            findMissingHits(krep,misshits);
             if(misshits.size() > 0){
-              _kfit.addHits(kalfit,_shcol,misshits,_maxaddchi);
+              _kfit.addHits(krep,_shcol,misshits,_maxaddchi);
             }
           }
         }
       }
       // fill fit diagnostics if requested
       if(_diag > 0)
-	fillFitDiag(iTrkSeed,seedfit,kalfit);
+	fillFitDiag(iTrkSeed,kaldef,seedrep,krep);
       if(_diag > 1 && (int)ipeak == _icepeak){
-	if(seedfit._fit.success())_ccutflow->Fill(8.0);
-	if(kalfit._fit.success())_ccutflow->Fill(9.0);
+	if(seedrep != 0 && seedrep->fitStatus().success())_ccutflow->Fill(8.0);
+	if(krep != 0 && krep->fitStatus().success())_ccutflow->Fill(9.0);
       }
-      if(kalfit._fit.success()){
-	// flag the hits used in this track.  This should use the track id, FIXME!!! (in the BaBar code)
+      if(krep != 0 && krep->fitStatus().success()){
+	// flag the hits used in this track. 
 	if(ipeak<16){
-	  for(size_t ihit=0;ihit<kalfit._hits.size();++ihit){
-	    const TrkStrawHit* tsh = kalfit._hits[ihit];
-	    if(tsh->isActive())_flags->at(tsh->index()).merge(StrawHitFlag::trackBit(ipeak));
+	  for(auto ihit=krep->hitVector().begin();ihit != krep->hitVector().end();++ihit){
+	    if((*ihit)->isActive())_flags->at(static_cast<TrkStrawHit*>(*ihit)->index()).merge(StrawHitFlag::trackBit(ipeak));
 	  }
 	}
 	// save successful kalman fits in the event
-	tracks->push_back( kalfit.stealTrack() );
+	tracks->push_back(krep);
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
       } else
-	kalfit.deleteTrack();
+	delete krep;
       // cleanup the seed fit
-      seedfit.deleteTrack();
+      delete seedrep;
     }
     // cutflow diagnostics
     if(findhelix)_cutflow->Fill(2.0);
@@ -332,14 +325,13 @@ namespace mu2e
     if(findkal)_cutflow->Fill(4.0);
     // add a dummy entry in case there are no helices
     if(_diag > 0 && _tscol->size() == 0)
-      fillFitDiag(dummyseed,dummykfit,dummykfit);
+      fillFitDiag(dummyseed,dummydef,dummyrep,dummyrep);
     // put the tracks into the event
     art::ProductID tracksID(getProductID<KalRepPayloadCollection>(event));
     _payloadSaver.put(*tracks, tracksID, event);
     event.put(move(tracks),_iname);
     event.put(move(trackPtrs),_iname);
     event.put(move(flags),_iname);
-    event.put(move(kfresults),_iname);
   }
 
   void TrkRecFit::endJob(){
@@ -422,20 +414,23 @@ namespace mu2e
     mytrk.setIndices(goodhits);
   }
 
-  void TrkRecFit::findMissingHits(KalFitResult& kalfit,vector<hitIndex>& misshits) {
+  void TrkRecFit::findMissingHits(KalRep* krep,vector<hitIndex>& misshits) {
     const Tracker& tracker = getTrackerOrThrow();
     //  Trajectory info
     Hep3Vector tdir;
     HepPoint tpos;
-    kalfit._krep->pieceTraj().getInfo(0.0,tpos,tdir);
+    krep->pieceTraj().getInfo(0.0,tpos,tdir);
     unsigned nstrs = _shcol->size();
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
     for(unsigned istr=0; istr<nstrs;++istr){
       if(_flags->at(istr).hasAllProperties(_addsel)&& !_flags->at(istr).hasAnyProperty(_addbkg)){
         StrawHit const& sh = _shcol->at(istr);
-        if(fabs(_shcol->at(istr).time()-kalfit._krep->t0()._t0) < _maxdtmiss) {
+        if(fabs(_shcol->at(istr).time()-krep->t0()._t0) < _maxdtmiss) {
           // make sure we haven't already used this hit
-          vector<TrkStrawHit*>::iterator ifnd = find_if(kalfit._hits.begin(),kalfit._hits.end(),FindTrkStrawHit(sh));
-          if(ifnd == kalfit._hits.end()){
+
+          vector<TrkStrawHit*>::iterator ifnd = find_if(tshv.begin(),tshv.end(),FindTrkStrawHit(sh));
+          if(ifnd == tshv.end()){
             // good in-time hit.  Compute DOCA of the wire to the trajectory
             Straw const& straw = tracker.getStraw(sh.strawIndex());
             CLHEP::Hep3Vector hpos = straw.getMidPoint();
@@ -445,7 +440,7 @@ namespace mu2e
             TrkLineTraj htraj(spt,hdir,-20,20);
             // estimate flightlength along track.  This assumes a constant BField!!!
             double fltlen = (hpos.z()-tpos.z())/tdir.z();
-            TrkPoca hitpoca(kalfit._krep->pieceTraj(),fltlen,htraj,0.0);
+            TrkPoca hitpoca(krep->pieceTraj(),fltlen,htraj,0.0);
             // flag hits with small residuals
             if(fabs(hitpoca.doca()) < _maxadddoca){
               misshits.push_back(istr);
@@ -473,7 +468,6 @@ namespace mu2e
     trkdiag->Branch("snhits",&_snhits,"snhits/I");
     trkdiag->Branch("sndof",&_sndof,"sndof/I");
     trkdiag->Branch("sniter",&_sniter,"sniter/I");
-    trkdiag->Branch("snweediter",&_snweediter,"snweediter/I");
     trkdiag->Branch("snactive",&_snactive,"snactive/I");
     trkdiag->Branch("schisq",&_schisq,"schisq/F");
     trkdiag->Branch("nchit",&_nchit,"nchit/I");
@@ -483,8 +477,8 @@ namespace mu2e
     trkdiag->Branch("helixfilt",&_hfilt);
   }
 
-  void TrkRecFit::fillFitDiag(TrackSeed const& seed,
-      KalFitResult const& seedfit, KalFitResult const& kalfit) {
+  void TrkRecFit::fillFitDiag(TrackSeed const& seed,TrkDef const& tdef,
+  const KalRep* seedrep, const KalRep* krep) {
     // Peak information for this seed
     TrackerHitTimeCluster const*  tclust = seed._relatedTimeCluster.get();
     if(tclust != 0){
@@ -502,21 +496,20 @@ namespace mu2e
       _helixfail = -1;
     }
     // fit status
-    _seedfail = seedfit._fit.failure();
-    _kalfail = kalfit._fit.failure();
+    _seedfail = seedrep->fitStatus().failure();
+    _kalfail = krep->fitStatus().failure();
     // helix information
     _hpar = helixpar(seed._fullTrkSeed);
     // seed fit information
-    if(seedfit._fit.success()){
-      _snhits = seedfit._tdef->strawHitIndices().size();
-      _snactive = seedfit._krep->nActive();
-      _sniter = seedfit._krep->iterations();
-      _sndof = seedfit._krep->nDof();
-      _schisq = seedfit._krep->chisq();
-      _st0 = seedfit._krep->t0()._t0;
-      _snweediter = seedfit._nweediter;
+    if(seedrep->fitStatus().success()){
+      _snhits = seedrep->nHits(); 
+      _snactive = seedrep->nActive();
+      _sniter = seedrep->iterations();
+      _sndof = seedrep->nDof();
+      _schisq = seedrep->chisq();
+      _st0 = seedrep->t0()._t0;
       double loclen;
-      const TrkSimpTraj* ltraj = seedfit._krep->localTrajectory(0.0,loclen);
+      const TrkSimpTraj* ltraj = seedrep->localTrajectory(0.0,loclen);
       _spar = helixpar(ltraj->parameters()->parameter());
       _sparerr = helixpar(ltraj->parameters()->covariance());
     } else {
@@ -526,15 +519,16 @@ namespace mu2e
       _sndof = -1;
       _schisq = -1.0;
       _st0 = -1.0;
-      _snweediter = -1;
     }
     // count # of added hits
     _nadd = 0;
-    for(vector<TrkStrawHit*>::const_iterator ish=kalfit._hits.begin();ish!=kalfit._hits.end();++ish){
-      if((*ish)->usability()==3)++_nadd;
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for(auto ihit=tshv.begin();ihit != tshv.end();++ihit){
+      if((*ihit)->hitFlag()==TrkStrawHit::addedHit)++_nadd;
     }
     // fill kalman fit info.  This needs to be last, as it calls TTree::Fill().
-    _kdiag.kalDiag(kalfit._krep);
+    _kdiag.kalDiag(krep);
   }
 
 }

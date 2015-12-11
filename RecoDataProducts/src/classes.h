@@ -11,6 +11,8 @@
 #define ENABLE_MU2E_GENREFLEX_HACKS
 
 #include <vector>
+#include "CLHEP/Vector/ThreeVector.h"
+using CLHEP::Hep3Vector;
 //#include <array>
 
 #include "art/Persistency/Common/Wrapper.h"

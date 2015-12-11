@@ -7,7 +7,6 @@
 // $Date: 2012/08/31 22:39:00 $
 //
 #include "TrkReco/inc/HitAmbigResolver.hh"
-#include "TrkReco/inc/KalFitResult.hh"
 #include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
@@ -16,8 +15,6 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
-
-///using namespace CLHEP;
 
 namespace mu2e {
   typedef std::vector<TrkStrawHit*>::iterator TSHI;
@@ -36,36 +33,36 @@ namespace mu2e {
   HitAmbigResolver::~HitAmbigResolver() {}
 
   void
-  HitAmbigResolver::resolveTrk(KalFitResult& kfit) const {
+  HitAmbigResolver::resolveTrk(KalRep* krep) const {
 
-    initHitErrors(kfit);
+    initHitErrors(krep);
 
 // loop over all the hits
-    TSHI ihit = kfit._hits.begin();
-    while(ihit != kfit._hits.end()){
-      TrkStrawHit* hit = *ihit++;
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
 // don't allow the hit to auto-update its ambiguity
-      hit->setAmbigUpdate(false);
+      (*itsh)->setAmbigUpdate(false);
 // get the drift radius
-      double rdrift = hit->driftRadius();
+      double rdrift = (*itsh)->driftRadius();
       if(rdrift <= _mindrift){
-	hit->setAmbig(0);
-	hit->setPenalty(_zeropenalty);
+	(*itsh)->setAmbig(0);
+	(*itsh)->setPenalty(_zeropenalty);
       } else {
 // find the best trajectory we can local to these hits, but excluding their information ( if possible).
 	std::vector<TrkStrawHit*> hits;
-	hits.push_back(hit);
-	const TrkDifTraj* traj = findTraj(hits,kfit._krep);
+	hits.push_back(*itsh);
+	const TrkDifTraj* traj = findTraj(hits,krep);
 	// compute POCA to this traj
-	TrkPoca poca(*traj,hit->fltLen(),*hit->hitTraj(),hit->hitLen());
+	TrkPoca poca(*traj,(*itsh)->fltLen(),*(*itsh)->hitTraj(),(*itsh)->hitLen());
 	if(poca.status().success()){
 	  // set the ambiguity if allowed, based on the sign of DOCA
 	  int newamb = poca.doca() > 0 ? 1 : -1;
-	  hit->setAmbig(newamb);
+	  (*itsh)->setAmbig(newamb);
 	  // based on the drift distance, set the penalty error based on the a-priori function.
 	  if(_penalty){
-	    double perr = penaltyError(hit->driftRadius());
-	    hit->setPenalty(perr);
+	    double perr = penaltyError((*itsh)->driftRadius());
+	    (*itsh)->setPenalty(perr);
 	  }
 	}
       }

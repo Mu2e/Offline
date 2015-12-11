@@ -30,7 +30,7 @@
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 // diagnostics
 #include "TrkPatRec/inc/StrawHitInfo.hh"
-#include "KalmanTests/inc/threevec.hh"
+#include "DataProducts/inc/threevec.hh"
 using namespace std; 
 
 namespace mu2e 

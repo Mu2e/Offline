@@ -36,13 +36,11 @@
 #include "TStyle.h"
 
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "BTrk/TrkBase/TrkHotList.hh"
-#include "BTrk/TrkBase/TrkHitOnTrk.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/PIDProduct.hh"
@@ -50,7 +48,7 @@
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 
 #include "ParticleID/inc/PIDUtilities.hh"
 
@@ -301,8 +299,8 @@ int findlowhist(float d){
      _trkid = i;
      const KalRep* krep = trks->at(i).get();
 
-     double firsthitfltlen = krep->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-     double lasthitfltlen = krep->lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+     double firsthitfltlen = krep->firstHit()->kalHit()->hit()->fltLen() - 10;
+     double lasthitfltlen = krep->lastHit()->kalHit()->hit()->fltLen() - 10;
      double entlen = std::min(firsthitfltlen,lasthitfltlen);
      _trkmom = krep->momentum(entlen).mag();
 
@@ -324,13 +322,13 @@ int findlowhist(float d){
        if (ksite->type() == KalSite::hitSite){
 	 
 	 
-	 TrkStrawHit* hit = dynamic_cast<TrkStrawHit*>(ksite->kalHit()->hitOnTrack());
+	 TrkStrawHit* hit = dynamic_cast<TrkStrawHit*>(ksite->kalHit()->hit());
 	 double resid, residerr;
 	 hit->resid(resid,residerr,true);
 	 
 	 bool activehit = hit->isActive();
 	 if (activehit){
-	   double aresd = (hit->poca()->doca()>0?resid:-resid);
+	   double aresd = (hit->poca().doca()>0?resid:-resid);
 	   double normflt = hit->fltLen() -  krep->flt0();
 	   double normresd = aresd/residerr;
 

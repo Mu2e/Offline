@@ -13,7 +13,8 @@ rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
-    'mu2e_KalmanTests',
+    'mu2e_TrkReco',
+    'mu2e_Mu2eBTrk',
     'mu2e_GeometryService',
     'mu2e_CalorimeterGeom',
     'mu2e_Mu2eInterfaces',
@@ -30,7 +31,6 @@ mainlib = helper.make_mainlib ( [
 
 helper.make_plugins( [
     mainlib,
-    'mu2e_KalmanTests',
     'mu2e_ConditionsService',
     'mu2e_GeometryService',
     'mu2e_RecoDataProducts',

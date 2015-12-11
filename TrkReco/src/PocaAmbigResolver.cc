@@ -7,7 +7,6 @@
 // $Date: 2012/08/31 22:39:00 $
 //
 #include "TrkReco/inc/PocaAmbigResolver.hh"
-#include "TrkReco/inc/KalFitResult.hh"
 #include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
@@ -16,8 +15,6 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
-
-///using namespace CLHEP;
 
 namespace mu2e {
   typedef std::vector<TrkStrawHit*>::iterator TSHI;
@@ -29,14 +26,14 @@ namespace mu2e {
   PocaAmbigResolver::~PocaAmbigResolver() {}
   
   void
-  PocaAmbigResolver::resolveTrk(KalFitResult& kfit) const {
+  PocaAmbigResolver::resolveTrk(KalRep* krep) const {
     // init hit external errors
-    initHitErrors(kfit);
+    initHitErrors(krep);
     // loop over all the hits
-    TSHI ihit = kfit._hits.begin();
-    while(ihit != kfit._hits.end()){
-      TrkStrawHit* hit = *ihit++;
-      hit->setAmbigUpdate(true);
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for (auto ihit=tshv.begin();ihit!=tshv.end(); ++ihit){
+      (*ihit)->setAmbigUpdate(true);
     }
   }
 }

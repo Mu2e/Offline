@@ -6,7 +6,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 using namespace CLHEP;
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 
 #include <string>

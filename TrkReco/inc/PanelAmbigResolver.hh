@@ -32,17 +32,17 @@ namespace mu2e {
       public:
 	// construct from parameter set
 #ifndef __GCCXML__
-	explicit PanelAmbigResolver(fhicl::ParameterSet const&, double ExtErr);
+	explicit PanelAmbigResolver(fhicl::ParameterSet const&, double ExtErr, size_t iter );
 #endif/*__GCCXML__*/
 	virtual ~PanelAmbigResolver();
 	// resolve a track.  Depending on the configuration, this might
 	// update the hit state and the t0 value.
-	virtual void resolveTrk(KalFitResult& kfit) const;
+	virtual void resolveTrk(KalRep* krep) const;
       private:
 	// resolve the ambiguity on a single panel
-	void resolvePanel(TSHV& phits, KalFitResult& kfit) const;
+	void resolvePanel(TrkStrawHitVector& phits, KalRep* krep) const;
 	// fill information about a given panel's track and hits
-	bool fillPanelInfo(TSHV const& phits, const KalRep* krep, PanelInfo& pinfo) const;
+	bool fillPanelInfo(TrkStrawHitVector const& phits, const KalRep* krep, PanelInfo& pinfo) const;
 	// compute the panel result for a given ambiguity/activity state and the ionput t0
 	void fillResult(PanelInfo const& pinfo,TrkT0 const& t0, PanelResult& result) const;
 	// parameters

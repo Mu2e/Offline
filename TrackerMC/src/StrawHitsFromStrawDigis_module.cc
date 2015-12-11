@@ -49,7 +49,7 @@
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 
 using namespace std;
-using namespace CLHEP;
+using CLHEP::Hep3Vector;
 namespace mu2e {
 
   class StrawHitsFromStrawDigis : public art::EDProducer {

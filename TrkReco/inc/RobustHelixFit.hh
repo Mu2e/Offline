@@ -18,44 +18,16 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // HelixFit objects
-#include "KalmanTests/inc/TrkDef.hh"
+#include "TrkReco/inc/HelixDef.hh"
+#include "TrkReco/inc/HelixFitResult.hh"
 // BaBar
 #include "BTrk/TrkBase/TrkErrCode.hh"
-//CLHEP
-//#include "CLHEP/Matrix/Vector.h"
 //root
 class TH1F;
 // C+
 
 namespace mu2e 
 {
-
-// add the StrawHitPosition collection to TrkDef
-  class HelixDef : public TrkDef {
-    public:
-      HelixDef(TrkDef const& tdef) : TrkDef(tdef), _shpos(0) {}
-      HelixDef(const StrawHitCollection* strawcollection,const StrawHitPositionCollection* shposcollection, const std::vector<hitIndex>& strawhits,
-      TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream) : TrkDef(strawcollection,strawhits,tpart,fdir), _shpos(shposcollection) {}
-      HelixDef() {}
-      const StrawHitPositionCollection* strawHitPositionCollection() const { return _shpos; }
-    private:
-      const StrawHitPositionCollection* _shpos;
-  };
-// output struct
-  struct HelixFitResult {
-    HelixDef _hdef; // must copy by value as references can't be re-assigned
-// fit status
-    TrkErrCode _fit; // error code from last fit
-// circle parameters; the z center is ignored.
-    CLHEP::Hep3Vector _center;
-    double _radius;
-// Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), fz0 is the phi value of the particle where it goes through z=0
-// note that dfdz has a physical ambiguity in q*zdir.
-    double _dfdz, _fz0;
-    HelixFitResult(TrkDef const& tdef) : _hdef(tdef),  _fit(TrkErrCode::fail),_radius(-1.0),_dfdz(0.0),_fz0(0.0) {}
-    HelixFitResult(HelixDef const& hdef) : _hdef(hdef),  _fit(TrkErrCode::fail),_radius(-1.0),_dfdz(0.0),_fz0(0.0) {}
-    HelixFitResult& operator =(HelixFitResult const& other);
- };
 
 // utility struct; value plus error
   struct VALERR {
@@ -111,12 +83,12 @@ namespace mu2e
       _nc = _no = _ni = 0; }
   };
   
-  class HelixFit
+  class RobustHelixFit
   {
   public:
 // parameter set should be passed in on construction
-    explicit HelixFit(fhicl::ParameterSet const&);
-    virtual ~HelixFit();
+    explicit RobustHelixFit(fhicl::ParameterSet const&);
+    virtual ~RobustHelixFit();
 // main function: given a track definition, find the helix parameters
     bool findHelix(HelixFitResult& myfit,bool plothelix=false);
 // allow passing in the struct by hand

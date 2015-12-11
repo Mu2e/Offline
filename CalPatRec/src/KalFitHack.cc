@@ -8,13 +8,13 @@
 // the following has to come before other BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
 #include "CalPatRec/inc/KalFitHack.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/PanelAmbigResolver.hh"
-#include "KalmanTests/inc/PocaAmbigResolver.hh"
-#include "KalmanTests/inc/HitAmbigResolver.hh"
-#include "KalmanTests/inc/FixedAmbigResolver.hh"
-#include "KalmanTests/inc/DoubletAmbigResolver.hh"
-#include "KalmanTests/inc/BaBarMu2eField.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/PanelAmbigResolver.hh"
+#include "TrkReco/inc/PocaAmbigResolver.hh"
+#include "TrkReco/inc/HitAmbigResolver.hh"
+#include "TrkReco/inc/FixedAmbigResolver.hh"
+#include "TrkReco/inc/DoubletAmbigResolver.hh"
+#include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -36,13 +36,13 @@
 #include "BTrk/TrkBase/HelixParams.hh"
 //----------------------------------------
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
-#include "BTrk/TrkBase/TrkHotListFull.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/BaBar/ErrLog.hh"
 #include "BTrk/BField/BFieldFixed.hh"
 #include "BTrk/DetectorModel/DetIntersection.hh"
 #include "BTrk/DetectorModel/DetMaterial.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 // boost
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
@@ -55,6 +55,7 @@
 #include <memory>
 
 using namespace std; 
+using CLHEP::Hep3Vector;
 
 namespace mu2e 
 {
@@ -132,8 +133,7 @@ namespace mu2e
     _momfac = pset.get<double>("MomFactor",0.0);
     _maxpardif[0] = _maxpardif[1] = pset.get<double>("MaxParameterDifference",1.0);
     // DOF counting subdivision is illogical, FIXME!!!!
-    _mindof[0] = _mindof[2] = pset.get<double>("MinNDOF",10);
-    _mindof[1] = 0;
+    _mindof = pset.get<double>("MinNDOF",10);
 //----------------------------------------------------------------------
 // 2015-01-09 G.Pezzullo and P.Murat
 // Noticed that with respect to KalmanTest/src/KalFit.cc we were using
@@ -181,22 +181,23 @@ namespace mu2e
     double         err;
     int n = _ambigstrategy.size();
     for(int i=0; i<n; ++i) {
+      int Final = i==n-1 ? 1 : 0;
       err = _hiterr[i];
       switch (_ambigstrategy[i]) {
       case kFixedAmbig: default:
-	ar = new FixedAmbigResolver(pset,err,i);
+	ar = new FixedAmbigResolver(pset,err);
 	break;
       case kHitAmbig:
-	ar = new HitAmbigResolver(pset,err,i);
+	ar = new HitAmbigResolver(pset,err);
 	break;
       case kPanelAmbig:
 	ar = new PanelAmbig::PanelAmbigResolver(pset,err,i);
 	break;
       case kPocaAmbig:
-	ar = new PocaAmbigResolver(pset,err,i);
+	ar = new PocaAmbigResolver(pset,err);
 	break;
       case kDoubletAmbig: // 4
-	ar = new DoubletAmbigResolver(*_darPset,err,i);
+	ar = new DoubletAmbigResolver(*_darPset,err,i,Final);
 	break;
       }
       _ambigresolver.push_back(ar);
@@ -252,10 +253,10 @@ namespace mu2e
 // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
 // This will go away when we cleanup the BaBar hit storage, FIXME!!!
 //-----------------------------------------------------------------------------
-    TrkHotListFull* hotlist = new TrkHotListFull();
+    TrkHitVector hotlist;
     for(std::vector<TrkStrawHit*>::iterator ihit=kres._hits.begin();ihit!=kres._hits.end();ihit++){
       TrkStrawHit* trkhit = *ihit;
-      hotlist->append(trkhit);
+      hotlist.push_back(trkhit);
     }
 //-----------------------------------------------------------------------------
 // Find the wall and gas material description objects for these hits
@@ -356,9 +357,9 @@ namespace mu2e
 					// must be initialy active for KalRep to process correctly
 	trkhit->setActivity(true);
 					// flag the added hit
-	trkhit->setUsability(3);
+	trkhit->setFlag(3);
 					// add the hit to the track and the fit
-	kres._krep->addHot(trkhit);
+	kres._krep->addHit(trkhit);
 	kres._hits.push_back(trkhit);
 					// create intersections for the material of this hit 
 					// and add those to the track
@@ -490,7 +491,7 @@ namespace mu2e
 // signs for which the 2-hit segment slope is the closest to that of the track 
 // ** all this becomes hiden inside the ambiguity resolver** FIXME
 //-----------------------------------------------------------------------------
-      _ambigresolver[_annealingStep]->resolveTrk(KRes,Final);
+      _ambigresolver[_annealingStep]->resolveTrk(KRes._krep);
 //-----------------------------------------------------------------------------
 // perform the track fit
 //-----------------------------------------------------------------------------
@@ -606,7 +607,7 @@ namespace mu2e
 
       Hep3Vector trk_mom;
 
-      double h1_fltlen = Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+      double h1_fltlen = Trk->firstHit()->kalHit()->hit()->fltLen() - 10;
       trk_mom          = Trk->momentum(h1_fltlen);
       double mom       = trk_mom.mag();
       double pt        = trk_mom.perp();
@@ -615,8 +616,8 @@ namespace mu2e
 
       int    nhits(0);
 
-      const TrkHotList* hots = Trk->hotList();
-      for (TrkHotList::hot_iterator ihot=hots->begin(); ihot != hots->end(); ++ihot) {
+      TrkHitVector const& hots = Trk->hitVector();
+      for (auto ihot=hots.begin(); ihot != hots.end(); ++ihot) {
 	nhits++;
       }
 
@@ -626,8 +627,8 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // in all cases define momentum at lowest Z - ideally, at the tracker entrance
 //-----------------------------------------------------------------------------
-      double s1     = Trk->firstHit()->kalHit()->hitOnTrack()->fltLen();
-      double s2     = Trk->lastHit ()->kalHit()->hitOnTrack()->fltLen();
+      double s1     = Trk->firstHit()->kalHit()->hit()->fltLen();
+      double s2     = Trk->lastHit ()->kalHit()->hit()->fltLen();
       double s      = std::min(s1,s2);
 
       double d0     = Trk->helix(s).d0();
@@ -658,7 +659,7 @@ namespace mu2e
     //-----------------------------------------------------------------------------
     // print detailed information about the track hits
     //-----------------------------------------------------------------------------
-    //    const TrkHotList* hot_list = Trk->hotList();
+    //    const TrkHitVector* hot_list = Trk->hitVector();
     int nhits = KRes._hits.size();
     printf("--------------------------------------------------------------------");
     printf("----------------------------------------------------------------");
@@ -729,7 +730,7 @@ namespace mu2e
       printf("%3i %5i %1i %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
 	     ihit,
 	     straw->index().asInt(), 
-	     hit->isUsable(),
+	     hit->hitFlag(),
 	     hit->isActive(),
 	     len,
 	     //	     hit->hitRms(),
@@ -815,9 +816,9 @@ namespace mu2e
     if(0 != worstHot){
       retval = true;
       worstHot->setActivity(false);
-      worstHot->setUsability(5); // positive usability allows hot to be re-enabled later
+      worstHot->setFlag(5); // positive usability allows hot to be re-enabled later
 
-      _ambigresolver[Iteration]->resolveTrk(KRes,Final);
+      _ambigresolver[Iteration]->resolveTrk(KRes._krep);
 
       KRes.fit();
       KRes._krep->addHistory(KRes._fit, "HitWeed");
@@ -838,7 +839,7 @@ namespace mu2e
     // Loop over inactive HoTs and find the one with the smallest contribution to chi2.  If this value
     // is less than some cut value, reactivate that HoT and reFit
     bool       retval(false);
-    int  const final (1);
+//    int  const final (1);
     double     best = 1.e12;
     int        last_iteration = _hiterr.size()-1;
 
@@ -860,7 +861,7 @@ namespace mu2e
     if (0 != bestHot) {
       retval = true;
       bestHot->setActivity(true);
-      bestHot->setUsability(4);
+      bestHot->setFlag(4);
 //-----------------------------------------------------------------------------
 // update drift signs before the fit again - more doublets could've been recovered
 // one more place for the ambiguity resolver to be called from
@@ -868,7 +869,7 @@ namespace mu2e
 // here we call fitter not invoking the fitIteration
 //-----------------------------------------------------------------------------
 //      KRes._decisionMode = _decisionMode;
-      _ambigresolver[last_iteration]->resolveTrk(KRes,final);
+      _ambigresolver[last_iteration]->resolveTrk(KRes._krep);
 
       KRes.fit();
       KRes._krep->addHistory(KRes._fit, "HitUnWeed");
@@ -1037,7 +1038,7 @@ namespace mu2e
 	// loop over the hits
 	for(std::vector<TrkStrawHit*>::iterator ihit= KRes._hits.begin();ihit != KRes._hits.end(); ihit++){
 	  TrkStrawHit* hit = *ihit;
-	  if(hit->isActive() && hit->poca()!= 0 && hit->poca()->status().success()){
+	  if(hit->isActive() && hit->poca().status().success()){
 	    // find the residual, exluding this hits measurement
 	    double resid,residerr;
 	    if(krep->resid(hit,resid,residerr,true)){

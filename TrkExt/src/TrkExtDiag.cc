@@ -18,9 +18,8 @@
 #include "TrkExt/inc/TrkExtDiag.hh"
 #include "TrkExt/inc/TrkExtMCHits.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
-#include "BTrk/TrkBase/TrkHotList.hh"
-#include "BTrk/TrkBase/TrkHitOnTrk.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/BField/BField.hh"
@@ -41,15 +40,16 @@
 #include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/PointTrajectory.hh"
 
-using namespace CLHEP;
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Matrix.h"
+#include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
 #include "TTree.h"
 
 using namespace std; 
- 
+using CLHEP::HepVector; 
+using CLHEP::Hep3Vector; 
  
 namespace mu2e 
 {
@@ -290,10 +290,10 @@ namespace mu2e
   //////////////////////////
 
   void TrkExtDiag::trkExtDiag(const art::Event & evt, const KalRep & krep, const TrkExtTraj & trkext) {
-    TrkHotList const * hots = krep.hotList();
-    _nhots = readHit(evt, *hots);
+    TrkHitVector const& hots = krep.hitVector();
+    _nhots = readHit(evt, hots);
     _ntrks = readTrk(evt, krep);
-    _nsim = readMC (evt, krep, *hots);
+    _nsim = readMC (evt, krep, hots);
     _next = readExt(evt, trkext);
     _extdiag->Fill();
   }
@@ -330,10 +330,10 @@ namespace mu2e
   /////////////
 
 
-  unsigned int TrkExtDiag::readHit(const art::Event &evt, const TrkHotList & hots) {
+  unsigned int TrkExtDiag::readHit(const art::Event &evt, const TrkHitVector & hots) {
     unsigned int i = 0;
-    for (TrkHotList::hot_iterator iter = hots.begin() ; iter != hots.end() ; ++iter) {
-      const TrkHitOnTrk * hit  = iter.get();
+    for (auto iter = hots.begin() ; iter != hots.end() ; ++iter) {
+      const TrkHit * hit  = *iter;
       const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hit);
       if (strawHit) {
         const HepPoint &point = strawHit->hitTraj()->position(strawHit->hitLen());
@@ -411,16 +411,16 @@ namespace mu2e
   // readMC //
   ////////////
 
-  unsigned int TrkExtDiag::readMC(const art::Event &evt, const KalRep & krep, const TrkHotList & hot){
+  unsigned int TrkExtDiag::readMC(const art::Event &evt, const KalRep & krep, const TrkHitVector & hot){
 
     unsigned int i, j;
     bool readflag = false;
     unsigned int minsim = 0;
     _simtp.z = 99999;
     _simtpqual = -1;
-    for (TrkHotList::hot_iterator iter = hot.begin() ; iter != hot.end() ; ++iter) {
+    for (auto iter = hot.begin() ; iter != hot.end() ; ++iter) {
       if (readflag) break;
-      const TrkHitOnTrk * hit  = iter.get();
+      const TrkHit * hit  = *iter;
       const mu2e::TrkStrawHit* trkstrawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hit);
       if (trkstrawHit == nullptr) {
         cerr << "TrkExtDiag warning : no trkstrawHit" <<endl;

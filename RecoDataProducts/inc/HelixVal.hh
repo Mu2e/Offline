@@ -14,11 +14,10 @@
 #include <vector>
 
 // Mu2e includes
-//#include "KalmanTests/inc/TrkDef.hh"
 
 namespace mu2e {
 
-// copied form KalmanTests/inc/TrkDef.hh to avoid compilation problem
+// copied form TrkDef.hh to avoid compilation problem
 struct HitIndex {
   size_t _index; // index into the straw hit container
   int _ambig; // hit ambiguity.  0 means compute from track

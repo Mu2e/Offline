@@ -7,7 +7,6 @@
 //
 #include "TrkReco/inc/PanelAmbigResolver.hh"
 #include "TrkReco/inc/PanelStateIterator.hh"
-#include "TrkReco/inc/KalFitResult.hh"
 #include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkT0.hh"
@@ -23,7 +22,9 @@
 // art
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-
+using CLHEP::Hep3Vector;
+using CLHEP::HepSymMatrix;
+using CLHEP::HepVector;
 namespace mu2e {
   namespace PanelAmbig {
     // functor for sorting by panel.  Note that SectorId uniquely defines a panel
@@ -36,11 +37,11 @@ namespace mu2e {
       bool operator()(PanelResult const& a, PanelResult const& b) { return a._chisq < b._chisq; }
     };
 
-    typedef TSHV::iterator TSHI;
-    typedef TSHV::const_iterator TSHCI;
+    typedef TrkStrawHitVector::iterator TSHI;
+    typedef TrkStrawHitVector::const_iterator TSHCI;
 
 
-    PanelAmbigResolver::PanelAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, int Iter): 
+    PanelAmbigResolver::PanelAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr, size_t iter): 
       AmbigResolver(ExtErr),
       _minsep(pset.get<double>("minChisqSep",4.0)),
       _inactivepenalty(pset.get<double>("inactivePenalty",16.0)),
@@ -49,8 +50,7 @@ namespace mu2e {
       _addtrkpos(pset.get<bool>("AddTrackPositionConstraint",true)),
       _maxhitu(pset.get<double>("MaximumHitU",8.0)),
       _fixunallowed(pset.get<bool>("FixUnallowedHitStates",true)),
-      _diag(pset.get<int>("DiagLevel",0)),
-      _kdiag(kdiag)
+      _diag(pset.get<int>("DiagLevel",0))
     {
       double nullerr = pset.get<double>("NullAmbigPenalty",0.0);
       _nullerr2 = nullerr*nullerr;
@@ -65,60 +65,58 @@ namespace mu2e {
       if(_diag > 0){
 	art::ServiceHandle<art::TFileService> tfs;
 	char title[40];
-	snprintf(title,40,"padiag_%i",Iter);
+	snprintf(title,40,"padiag_%lu",iter);
 	_padiag=tfs->make<TTree>(title,"Panel Ambiguity Resolution Diagnostics");
 	_padiag->Branch("nhits",&_nrhits,"nhits/I");
 	_padiag->Branch("nactive",&_nactive,"nactive/I");
 	_padiag->Branch("nres",&_nres,"nres/I");
 	_padiag->Branch("results",&_results);
 
-	snprintf(title,40,"pudiag_%i",Iter);
+	snprintf(title,40,"pudiag_%lu",iter);
 	_pudiag=tfs->make<TTree>(title,"Panel U position Diagnostics");
 	_pudiag->Branch("nhits",&_nuhits,"nhits/I");
 	_pudiag->Branch("tupos",&_tupos,"tupos/F");
 	_pudiag->Branch("tuerr",&_tuerr,"tuerr/F");
 	_pudiag->Branch("uinfo",&_uinfo);
-	if(_kdiag != 0){
-	  _pudiag->Branch("mctupos",&_mctupos,"mctupos/F");
-	  _pudiag->Branch("mcuinfo",&_mcuinfo);
-	}
       }
     }
 
     PanelAmbigResolver::~PanelAmbigResolver() {}
 
-    void PanelAmbigResolver::resolveTrk(KalFitResult& kfit) const {
+    void PanelAmbigResolver::resolveTrk(KalRep* krep) const {
       // initialize hit external errors
-      initHitErrors(kfit);
+      initHitErrors(krep);
       // sort by panel
-      std::sort(kfit._hits.begin(),kfit._hits.end(),panelcomp());
+      TrkStrawHitVector tshv;
+      convert(krep->hitVector(),tshv);
+      std::sort(tshv.begin(),tshv.end(),panelcomp());
       // collect hits in the same panel
-      TSHI ihit = kfit._hits.begin();
-      while(ihit != kfit._hits.end()){ 
+      auto ihit=tshv.begin();
+      while(ihit!=tshv.end()){
 	SectorId pid = (*ihit)->straw().id().getSectorId();
 	(*ihit)->setExtErr(AmbigResolver::_extErr);
-	TSHI jhit = ihit;
-	TSHV phits;
-	while(jhit != kfit._hits.end() && (*jhit)->straw().id().getSectorId() == pid){
+	TrkStrawHitVector phits;
+	auto jhit=ihit;
+	while(jhit != tshv.end() && (*jhit)->straw().id().getSectorId() == pid){
 	  phits.push_back(*jhit++);
 	}
 	// resolve the panel hits
-	resolvePanel(phits,kfit);
+	resolvePanel(phits,krep);
 	ihit = jhit;
       }
     }
 
-    void PanelAmbigResolver::resolvePanel(TSHV& phits,KalFitResult& kfit) const {
+    void PanelAmbigResolver::resolvePanel(TrkStrawHitVector& phits,KalRep* krep) const {
       // fill panel information
       PanelInfo pinfo;
-      fillPanelInfo(phits,kfit._krep,pinfo);
+      fillPanelInfo(phits,krep,pinfo);
       // loop over all ambiguity/activity states for this panel
       PanelStateIterator psi(pinfo._uinfo,_allowed);
       PRV results;
       do {
 	// for each state, fill the result of the 1-dimensional optimization
 	PanelResult result(psi.current());
-	fillResult(pinfo,kfit._krep->t0(),result);
+	fillResult(pinfo,krep->t0(),result);
 	if(result._status == 0)results.push_back(result);
       } while(psi.increment());
       if(results.size() > 0){
@@ -157,7 +155,7 @@ namespace mu2e {
       }
     }
 
-    bool PanelAmbigResolver::fillPanelInfo(TSHV const& phits, const KalRep* krep, PanelInfo& pinfo) const {
+    bool PanelAmbigResolver::fillPanelInfo(TrkStrawHitVector const& phits, const KalRep* krep, PanelInfo& pinfo) const {
       bool retval(false);
       // find the best trajectory we can local to these hits, but excluding their information ( if possible).
       const TrkSimpTraj* straj = findTraj(phits,krep);
@@ -172,14 +170,14 @@ namespace mu2e {
 	  DifVector tdir;
 	  straj->getDFInfo2(tpoca.flt1(), tpos, tdir);
 	  // straw information; cast to dif even though the derivatives are 0
-	  CLHEP::Hep3Vector wdir = firsthit->hitTraj()->direction(firsthit->hitLen());
+	  Hep3Vector wdir = firsthit->hitTraj()->direction(firsthit->hitLen());
 	  HepPoint wpos = firsthit->hitTraj()->position(firsthit->hitLen());
-	  CLHEP::Hep3Vector wposv(wpos.x(),wpos.y(),wpos.z());
+	  Hep3Vector wposv(wpos.x(),wpos.y(),wpos.z());
 	  DifVector delta = DifVector(wposv) - tpos;
 	  // compute the U direction (along the measurement, perp to the track and wire
 	  // The sign is chosen to give positive and negative ambiguity per BaBar convention
 	  DifVector dudir = cross(DifVector(wdir),tdir).normalize();
-	  CLHEP::Hep3Vector udir(dudir.x.number(),dudir.y.number(),dudir.z.number());
+	  Hep3Vector udir(dudir.x.number(),dudir.y.number(),dudir.z.number());
 	  // compute the track constraint on u, and it's error.  The dif algebra part propagates the error
 	  DifNumber trku = dudir.dot(delta);
 	  pinfo._udir = udir;
@@ -268,7 +266,7 @@ namespace mu2e {
 	if(_addtrkpos || pinfo._nused == 1)wsum += pinfo._tuwt;
 	// now compute the scalar, vector, and tensor terms for the 2nd-order chisquared expansion
 	double alpha = uuwsum;
-	CLHEP::HepVector beta(2);
+	HepVector beta(2);
 	beta(1) = uwsum;
 	beta(2) = uvwsum;
 	HepSymMatrix gamma(2);

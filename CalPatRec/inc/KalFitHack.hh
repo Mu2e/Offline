@@ -17,11 +17,11 @@
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 // KalFitHack objects
-#include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/TrkDef.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "TrkReco/inc/TrkDef.hh"
 #include "KalmanTests/inc/KalFitResult.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/AmbigResolver.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/AmbigResolver.hh"
 #include "BTrk/KalmanTrack/KalContext.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/BField/BField.hh"
@@ -30,7 +30,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 
 #include "CalPatRec/inc/CalTimePeak.hh"
-#include "KalmanTests/inc/Doublet.hh"
+#include "RecoDataProducts/inc/Doublet.hh"
 
 //ROOT
 #include "TStopwatch.h"

@@ -8,7 +8,7 @@
 //
 // the following has to come before other BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkPatRec/inc/HelixFit.hh"
+#include "TrkReco/inc/RobustHelixFit.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -140,7 +140,7 @@ namespace mu2e
   }
   
   void
-  HelixFit::helixParams(HelixFitResult const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const {
+  RobustHelixFit::helixParams(HelixFitResult const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const {
     HelixDef const& mytrk = helix._hdef;
     static const double pi(M_PI);
 //    static const double twopi(2*pi);
@@ -178,7 +178,7 @@ namespace mu2e
     perr[HelixTraj::z0Index] = 15.0;
   }
 
-  HelixFit::HelixFit(fhicl::ParameterSet const& pset) :
+  RobustHelixFit::RobustHelixFit(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _mindelta(pset.get<double>("minDelta",5000.0)),
@@ -219,11 +219,11 @@ namespace mu2e
     if(_stereofit)XYZP::_useflag = StrawHitFlag(StrawHitFlag::stereo);
   }
 
-  HelixFit::~HelixFit()
+  RobustHelixFit::~RobustHelixFit()
   {}
 
   double
-  HelixFit::bz() const {
+  RobustHelixFit::bz() const {
     if(_bz == 0.0){
 // find the magnetic field Z component at the origin
       GeomHandle<BFieldManager> bfmgr;
@@ -238,7 +238,7 @@ namespace mu2e
   }
 
   bool
-  HelixFit::findHelix(HelixFitResult& myhel,bool plothelix) {
+  RobustHelixFit::findHelix(HelixFitResult& myhel,bool plothelix) {
     HelixDef const& mytrk = myhel._hdef;
 //  compute the allowed range in radius for this fit
     double pb = fabs((CLHEP::c_light*1e-3)/(bz()*mytrk.particle().charge()));
@@ -267,7 +267,7 @@ namespace mu2e
   }
 
   bool
-  HelixFit::findHelix(XYZPVector& xyzp,HelixFitResult& myhel) {
+  RobustHelixFit::findHelix(XYZPVector& xyzp,HelixFitResult& myhel) {
     bool retval(false);
 // filter by geometry
     if(_filter)filterDist(xyzp);
@@ -294,7 +294,7 @@ namespace mu2e
   }
  
   bool
-  HelixFit::findXY(XYZPVector& xyzp,HelixFitResult& myhel) {
+  RobustHelixFit::findXY(XYZPVector& xyzp,HelixFitResult& myhel) {
     double rmed, age;
     Hep3Vector center = myhel._center;
 //    findCenterAGE(xyzp,center,rmed,age,false);
@@ -315,9 +315,10 @@ namespace mu2e
   }
 
   void
-  HelixFit::plotXY(HelixDef const& mytrk, XYZPVector const& xyzp,
+  RobustHelixFit::plotXY(HelixDef const& mytrk, XYZPVector const& xyzp,
     HelixFitResult const& myhel) const {
-    unsigned igraph = 100*mytrk.eventId()+mytrk.trackId();
+    static unsigned igraph = 0;
+    igraph++;
     art::ServiceHandle<art::TFileService> tfs;
     char gname[100];
     snprintf(gname,100,"gshxy%i",igraph);
@@ -328,7 +329,7 @@ namespace mu2e
     char bsname[100];
     snprintf(bsname,100,"bsshxy%i",igraph);
     char title[100];
-    snprintf(title,100,"StrawHit XY evt %i trk %i;mm;mm",mytrk.eventId(),mytrk.trackId());
+    snprintf(title,100,"StrawHit XY trk %i;mm;mm",igraph);
     TH2F* g = tfs->make<TH2F>(gname,title,100,-500,500,100,-500,500);
     TH2F* b = tfs->make<TH2F>(bname,title,100,-500,500,100,-500,500);
     TH2F* s = tfs->make<TH2F>(sname,title,100,-500,500,100,-500,500);
@@ -376,7 +377,7 @@ namespace mu2e
   }
 
   bool
-  HelixFit::findCenterAGE(XYZPVector const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights) {
+  RobustHelixFit::findCenterAGE(XYZPVector const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights) {
 // this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs"
 // initialize step
     double lambda = _lambda0;
@@ -444,7 +445,7 @@ namespace mu2e
   }
   
   bool
-  HelixFit::findZ(XYZPVector& xyzp,HelixFitResult& myhel) {
+  RobustHelixFit::findZ(XYZPVector& xyzp,HelixFitResult& myhel) {
     using namespace boost::accumulators;
 // sort points by z
     std::sort(xyzp.begin(),xyzp.end(),zcomp());
@@ -592,8 +593,9 @@ namespace mu2e
   }
 
   void
-  HelixFit::plotZ(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const {
-    unsigned igraph = 100*mytrk.eventId()+mytrk.trackId();
+  RobustHelixFit::plotZ(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const {
+    static unsigned igraph = 0;
+    igraph++;
     art::ServiceHandle<art::TFileService> tfs;
     char gname[100];
     snprintf(gname,100,"gshphiz%i",igraph);
@@ -604,7 +606,7 @@ namespace mu2e
     char bsname[100];
     snprintf(bsname,100,"bsshphiz%i",igraph);
     char title[100];
-    snprintf(title,100,"StrawHit #phi Z evt %i trk %i;mm;rad",mytrk.eventId(),mytrk.trackId());
+    snprintf(title,100,"StrawHit #phi Z trk %i;mm;rad",igraph);
     TH2F* g = tfs->make<TH2F>(gname,title,100,-1500,1500,100,-12.5,12.5);
     TH2F* b = tfs->make<TH2F>(bname,title,100,-1500,1500,100,-12.5,12.5);
     TH2F* s = tfs->make<TH2F>(sname,title,100,-1500,1500,100,-12.5,12.5);
@@ -639,7 +641,7 @@ namespace mu2e
   }
 
   bool
-  HelixFit::initCircle(XYZPVector const& xyzp,HelixFitResult& myhel) {
+  RobustHelixFit::initCircle(XYZPVector const& xyzp,HelixFitResult& myhel) {
     bool retval(false);
     static const double mind2 = _mindist*_mindist;
     using namespace boost::accumulators;
@@ -716,7 +718,7 @@ namespace mu2e
     return retval;
   }
 
-  void HelixFit::fillXYZP(HelixDef const& mytrk, XYZPVector& xyzp) {
+  void RobustHelixFit::fillXYZP(HelixDef const& mytrk, XYZPVector& xyzp) {
     const Tracker& tracker = getTrackerOrThrow();
     if(mytrk.strawHitPositionCollection() != 0){
     // loop over straw hits, and store their positions
@@ -743,7 +745,7 @@ namespace mu2e
   }
 
   void
-  HelixFit::findAGE(XYZPVector const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights) {
+  RobustHelixFit::findAGE(XYZPVector const& xyzp, Hep3Vector const& center,double& rmed, double& age,bool useweights) {
     using namespace boost::accumulators;
     // protection against empty data
     if(xyzp.size() == 0)return;
@@ -782,7 +784,7 @@ namespace mu2e
   }
 
   void
-  HelixFit::fillSums(XYZPVector const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums,bool useweights) {
+  RobustHelixFit::fillSums(XYZPVector const& xyzp, Hep3Vector const& center,double rmed,SUMS& sums,bool useweights) {
     // initialize sums
     sums.clear();
     // compute the transverse sums
@@ -825,7 +827,7 @@ namespace mu2e
   }
 
   void
-  HelixFit::filterDist(XYZPVector& xyzp) {
+  RobustHelixFit::filterDist(XYZPVector& xyzp) {
     using namespace boost::accumulators;
     static const double pi(M_PI);
     static const double twopi(2*pi);
@@ -862,7 +864,7 @@ namespace mu2e
   }
 
   void
-  HelixFit::filterXY(XYZPVector& xyzp, Hep3Vector const& center,double rmed,bool& changed) {
+  RobustHelixFit::filterXY(XYZPVector& xyzp, Hep3Vector const& center,double rmed,bool& changed) {
     static StrawHitFlag other(StrawHitFlag::other);
     changed = false;
     for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
@@ -879,7 +881,7 @@ namespace mu2e
   }
 
   double
-  HelixFit::deltaPhi(double phi1, double phi2){
+  RobustHelixFit::deltaPhi(double phi1, double phi2){
     static const double pi(M_PI);
     static const double twopi(2*pi);
     double dphi = fmod(phi2-phi1,twopi);

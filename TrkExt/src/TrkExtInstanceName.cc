@@ -24,7 +24,7 @@
 // Framework includes.
 
 #include "TrkExt/inc/TrkExtInstanceName.hh"
-#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 
 

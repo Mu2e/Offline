@@ -29,7 +29,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"

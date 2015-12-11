@@ -16,8 +16,10 @@ rootlibs  = env['ROOTLIBS']
 
 helper=mu2e_helper();
 
-mainlib = helper.make_mainlib ( [ 'mu2e_KalmanTests',
-                                  'mu2e_ConditionsService',
+mainlib = helper.make_mainlib ( [ 'mu2e_TrkDiag',
+				  'mu2e_Mu2eBTrk',
+				  'mu2e_TrkReco',
+				  'mu2e_ConditionsService',
                                   'mu2e_GeometryService',
                                   'mu2e_BFieldGeom',
                                   'mu2e_TrackerGeom',
@@ -42,8 +44,10 @@ mainlib = helper.make_mainlib ( [ 'mu2e_KalmanTests',
                                 ] )
 
 helper.make_plugins( [ mainlib,
-                       'mu2e_KalmanTests',
-                       'mu2e_ConditionsService',
+		       'mu2e_TrkDiag',
+		       'mu2e_Mu2eBTrk',
+		       'mu2e_TrkReco',
+		       'mu2e_ConditionsService',
                        'mu2e_GeometryService',
                        'mu2e_TrackerGeom',
                        'mu2e_MCDataProducts',

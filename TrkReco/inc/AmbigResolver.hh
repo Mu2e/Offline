@@ -15,7 +15,6 @@
 class KalRep;
 class TrkSimpTraj;
 namespace mu2e {
-  class KalFitResult;
   class TrkStrawHit;
 
   class AmbigResolver {
@@ -26,11 +25,11 @@ namespace mu2e {
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value.
 
-    virtual void resolveTrk(KalFitResult& kfit) const = 0;
+    virtual void resolveTrk(KalRep* kfit) const = 0;
 
     protected:
 // init hit external errors for simulated annealing
-    virtual void initHitErrors(KalFitResult& kfit) const ;
+    virtual void initHitErrors(KalRep* kfit) const ;
 // find the local trajectory piece computed from the fit excluding a particular set of hits.
 // the hits are assumed to be contiguous
     const TrkSimpTraj* findTraj(std::vector<TrkStrawHit*> const& phits, const KalRep* krep) const;

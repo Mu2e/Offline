@@ -18,6 +18,7 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
@@ -70,8 +71,8 @@ namespace mu2e {
         // The following code is based on KalFitMC.cc
         CLHEP::Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
         double zent = entpos.z();
-        double firsthitfltlen = krep->firstHit()->kalHit()->hitOnTrack()->fltLen();
-        double lasthitfltlen = krep->lastHit()->kalHit()->hitOnTrack()->fltLen();
+        double firsthitfltlen = krep->firstHit()->kalHit()->hit()->fltLen();
+        double lasthitfltlen = krep->lastHit()->kalHit()->hit()->fltLen();
         double entlen = std::min(firsthitfltlen,lasthitfltlen);
         if(!TrkHelixUtils::findZFltlen(krep->traj(),zent,entlen,0.1)) {
           throw cet::exception("RUNTIME")<<"Error from findZFltlen()\n";

@@ -18,9 +18,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
-#include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
@@ -33,6 +32,7 @@
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"

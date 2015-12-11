@@ -1,5 +1,5 @@
-#ifndef KalmanTests_KalRepPtrCollection_hh
-#define KalmanTests_KalRepPtrCollection_hh
+#ifndef RecoDataProducts_KalRepPtrCollection_hh
+#define RecoDataProducts_KalRepPtrCollection_hh
 
 //
 // Define a type for a collection of art::Ptr's to KalRep  objects.
@@ -26,4 +26,4 @@ namespace mu2e {
   typedef std::vector<KalRepPtr> KalRepPtrCollection;
 }
 
-#endif /* KalmanTests_KalRepPtrCollection_hh */
+#endif /* RecoDataProducts_KalRepPtrCollection_hh */

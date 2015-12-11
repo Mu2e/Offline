@@ -22,8 +22,7 @@
 #include "CalPatRec/inc/HelixFitHack.hh"
 #include "CalPatRec/inc/KalFitHack.hh"
 #include "CalPatRec/inc/Ref.hh"
-
-#include "KalmanTests/inc/TrkDef.hh"
+#include "TrkReco/inc/TrkDef.hh"
 
 // Cannot use the typedefs in here - not sure why.
 

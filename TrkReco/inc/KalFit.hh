@@ -30,7 +30,6 @@
 #include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "TrkReco/inc/TrkDef.hh"
-#include "TrkReco/inc/KalFitResult.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -45,16 +44,16 @@ namespace mu2e
     enum ambigStrategy {fixedambig=0,pocaambig=1,hitambig=2,panelambig=3,doubletambig=4};
 // parameter set should be passed in on construction
 #ifndef __GCCXML__
-    explicit KalFit(fhicl::ParameterSet const&, TrkDirection const& tdir);
+    explicit KalFit(fhicl::ParameterSet const&, TrkFitDirection const& tdir);
 #endif/*__GCCXML__*/
 
     virtual ~KalFit();
 // main function: given a track definition, create a fit object from it
-    virtual void makeTrack(KalFitResult& kres);
+    virtual void makeTrack(TrkDef const& tdef, KalRep* kres);
 // add a set of hits to an existing fit
-    virtual void addHits(KalFitResult& kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi);
+    virtual void addHits(KalRep* kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi);
 // Try to put back inactive hits
-    bool unweedHits(KalFitResult& kres, double maxchi);
+    bool unweedHits(KalRep* kres, double maxchi);
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
     BField const& bField() const;
@@ -62,10 +61,10 @@ namespace mu2e
     // iteration-independent configuration parameters
     int _debug;		    // debug level
     double _maxhitchi;	    // maximum hit chi when adding or weeding
-    unsigned _maxweed;	    // maximum number of hits to remove when weeding
     double _maxdriftpull;   // maximum drift pull in TrkStrawHit 
     bool _initt0;	    // initialize t0?
     bool _updatet0;	    // update t0 ieach iteration?
+    std::vector<double> _t0tol;  // convergence tolerance for t0
     double _t0errfac;	    // fudge factor for the calculated t0 error
     double _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     double _t0nsig;	    // # of sigma to include when selecting hits for t0
@@ -75,8 +74,8 @@ namespace mu2e
     std::vector<bool> _weedhits;	// weed hits?
     std::vector<double> _herr;		// what external hit error to add (for simulated annealing)
     std::vector<int> _ambigstrategy;	// which ambiguity resolver to use
-    std::vector<AmbigResolver*> _ambigresolver;	
-    std::vector<double> _t0tol;  // convergence tolerance for t0
+    std::vector<AmbigResolver*> _ambigresolver;
+    bool _resolveAfterWeeding;
 // state
     TrkParticle _tpart;
     TrkFitDirection _fdir;
@@ -85,18 +84,20 @@ namespace mu2e
   // helper functions
     bool fitable(TrkDef const& tdef);
     void initT0(TrkDef const& tdef, TrkT0& t0);
+    virtual void makeHits(TrkDef const& tdef, TrkT0 const& t0, TrkStrawHitVector& tshv); 
+    virtual void makeMaterials(TrkStrawHitVector const&, TrkDef const& tdef, std::vector<DetIntersection>& dinter);
     
-    bool weedHits(KalFitResult& kres); //  KalRep and TrkHit
-    bool updateT0(KalFitResult& kres); // KalRep and TrkStrawHit
-    void fitTrack(KalFitResult& kres); // KalRep
-    virtual void makeHits(KalFitResult& kres, TrkT0 const& t0); // TrkDef and TrkStrawHit
-    virtual void makeMaterials(KalFitResult& kres); // TrkDef and TrkStrawHit
-    void fitIteration(KalFitResult& kres); // KalRep and TrkStrawHit
-    void updateHitTimes(KalFitResult& kres); // KalRep and TrkStrawHit
+    bool weedHits(KalRep* kres, TrkStrawHitVector& tshv,size_t iter);
+    bool unweedHits(KalRep* kres, TrkStrawHitVector& tshv, double maxchi);
+    bool updateT0(KalRep* kres, TrkStrawHitVector& tshv);
+    TrkErrCode fitTrack(KalRep* kres, TrkStrawHitVector& tshv);
+    TrkErrCode fitIteration(KalRep* kres,TrkStrawHitVector& tshv,size_t iter); 
+    void updateHitTimes(KalRep* kres, TrkStrawHitVector& tshv); 
     
-    void findBoundingHits(std::vector<TrkStrawHit*>& hits, double flt0,
-	std::vector<TrkStrawHit*>::reverse_iterator& ilow,
-	std::vector<TrkStrawHit*>::iterator& ihigh);
+    void findBoundingHits(TrkStrawHitVector& hits, double flt0,
+	TrkStrawHitVector::reverse_iterator& ilow,
+	TrkStrawHitVector::iterator& ihigh);
+
   };
 }
 #endif

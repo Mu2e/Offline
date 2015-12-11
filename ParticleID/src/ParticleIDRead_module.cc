@@ -30,7 +30,7 @@
 
 #include "BTrk/TrkBase/TrkParticle.hh"
 // mu2e tracking
-#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 
 
 //ROOT

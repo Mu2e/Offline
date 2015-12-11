@@ -58,9 +58,8 @@
 
 #ifdef BABARINSTALLED
 using namespace CLHEP;
-#include "BTrk/TrkBase/TrkHotList.hh"
-#include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #else
 #warning BaBar package is absent. KalRep cannot be displayed in the event display.
@@ -1018,13 +1017,13 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(unsigned int i=0; i<kalRepHits->size(); i++)
     {
       const KalRep &particle = kalRepHits->at(i);
-      const TrkHotList* hots = particle.hotList();
-      if(hots!=nullptr)
+      TrkHitVector const& hots = particle.hitVector();
+      if(hots.size() > 0)
       {
-        _numberHits+=hots->nHit();
-        for(TrkHotList::hot_iterator iter=hots->begin(); iter!=hots->end(); iter++)
+        _numberHits+=hots.size();
+        for(auto iter=hots.begin(); iter!=hots.end(); iter++)
         {
-          const TrkHitOnTrk *hitOnTrack = iter.get();
+          const TrkHit *hitOnTrack = *iter;
           const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
           if(strawHit)
           {
@@ -1330,14 +1329,14 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
         double hitcount=0;
         double offset=0;
-        const TrkHotList* hots=kalrep->hotList();
-        if(hots!=nullptr)
+        TrkHitVector const& hots=kalrep->hitVector();
+        if(hots.size()>0)
         {
           boost::shared_ptr<TGraphErrors> residualGraph(new TGraphErrors());
           residualGraph->SetTitle("Residual Graph");
-          for(TrkHotList::hot_iterator iter=hots->begin(); iter!=hots->end(); iter++)
+          for(auto iter=hots.begin(); iter!=hots.end(); iter++)
           {
-            const TrkHitOnTrk *hitOnTrack = iter.get();
+            const TrkHit *hitOnTrack = *iter;
             const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
             if(strawHit)
             {

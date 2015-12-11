@@ -17,7 +17,7 @@
 #include "TrackerGeom/inc/Straw.hh"
 
 // HelixFitHack objects
-#include "KalmanTests/inc/TrkDef.hh"
+#include "TrkReco/inc/TrkDef.hh"
 // BaBar
 #include "BTrk/TrkBase/TrkErrCode.hh"
 //CLHEP
@@ -172,26 +172,26 @@ namespace mu2e {
     void   calculateDfDz(double &phi0, double &phi1, double &z0,  double &z1, double &dfdz);
 
     //projects the straw hit error along the radial direction of the circle-helix
-    double calculateWeight     (Hep3Vector HitPos, Hep3Vector StrawDir, Hep3Vector HelCenter, double Radius,
+    double calculateWeight     (CLHEP::Hep3Vector HitPos, CLHEP::Hep3Vector StrawDir, CLHEP::Hep3Vector HelCenter, double Radius,
                                 int Print, TString Banner);
 
-    double calculatePhiWeight     (Hep3Vector HitPos, Hep3Vector StrawDir, Hep3Vector HelCenter, double Radius,
+    double calculatePhiWeight     (CLHEP::Hep3Vector HitPos, CLHEP::Hep3Vector StrawDir, CLHEP::Hep3Vector HelCenter, double Radius,
                                 int Print, TString Banner);
 
     //calculates the residual along the radial direction of the helix-circle
-    double calculateRadialDist (Hep3Vector HitPos, Hep3Vector HelCenter, double Radius);
+    double calculateRadialDist (CLHEP::Hep3Vector HitPos, CLHEP::Hep3Vector HelCenter, double Radius);
 
-    void   calculateTrackParameters(Hep3Vector& p0, double&radius,
+    void   calculateTrackParameters(CLHEP::Hep3Vector& p0, double&radius,
                                     double& phi0, double& tanLambda,
-                                    Hep3Vector p1, Hep3Vector p2,
-                                    Hep3Vector p3, HelixFitHackResult& mytrk,
+                                    CLHEP::Hep3Vector p1, CLHEP::Hep3Vector p2,
+                                    CLHEP::Hep3Vector p3, HelixFitHackResult& mytrk,
                                     bool cleanPattern=false);
 
     // returns the index of the hit which provides the highest contribute to the chi2
     void    doCleanUpWeightedCircleFit(::LsqSums4     &TrkSxy,
                                        int            SeedIndex,
                                        int            *IdVec,
-                                       Hep3Vector     &HelCenter,
+                                       CLHEP::Hep3Vector     &HelCenter,
                                        double         &Radius,
                                        double         *Weights,
                                        int            &Iworst);
@@ -199,7 +199,7 @@ namespace mu2e {
     //perfoms the weighted circle fit, update the helix parameters (HelicCenter, Radius) and
     // fills the vector Weights which holds the calculated weights of the hits
     void   doWeightedCircleFit (::LsqSums4 &TrkSxy, int SeedIndex,int *IdVec,
-                                Hep3Vector &HelCenter, double &Radius, double *Weights,
+                                CLHEP::Hep3Vector &HelCenter, double &Radius, double *Weights,
                                 int Print=0, TString Banner="");
 
                                         // convert to BaBar helix parameters.
@@ -274,7 +274,7 @@ namespace mu2e {
 
     void   searchWorstHitWeightedCircleFit(int             SeedIndex,
                                            int            *IdVec,
-                                           Hep3Vector     &HelCenter,
+                                           CLHEP::Hep3Vector     &HelCenter,
                                            double         &Radius,
                                            double         *Weights,
                                            int            &Iworst ,

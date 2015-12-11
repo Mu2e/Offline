@@ -13,7 +13,7 @@
 
 // Cannot use forward declaration because of typedef.
 #include "BTrk/BaBar/BaBar.hh"
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
 
 // Forward declarations
 namespace art{

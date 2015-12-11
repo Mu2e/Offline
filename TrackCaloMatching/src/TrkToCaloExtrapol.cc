@@ -15,6 +15,9 @@
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "BTrk/BbrGeom/BbrPointErr.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 
 
 
@@ -24,6 +27,7 @@
 
 
 using namespace std;
+using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
@@ -139,7 +143,7 @@ namespace mu2e {
 
     //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
 
-    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hitOnTrack() );
+    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hit() );
     double fltlen = firsthit->fltLen();
     //std::cout<<" TrkToCaloExtrapol-> fltlen = "<<fltlen<<std::endl;
 
@@ -152,7 +156,7 @@ namespace mu2e {
     //   const KalRep* kalrepc = dynamic_cast<const KalRep*>( ((*_trk.get()) ));//->getRep(PdtPid::electron)) );
     //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
 
-    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hitOnTrack() );
+    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hit() );
 
     double fltlen = firsthit->fltLen();
 

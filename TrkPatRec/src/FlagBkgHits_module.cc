@@ -24,7 +24,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 // Mu2e
-#include "KalmanTests/inc/KalDiag.hh"
+#include "TrkDiag/inc/KalDiag.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "TrkPatRec/inc/ClusterStrawHits.hh"
 //CLHEP

@@ -15,6 +15,7 @@
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "DataProducts/inc/threevec.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -23,7 +24,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TrackerGeom/inc/Straw.hh"
-#include "KalmanTests/inc/KalDiag.hh"
+#include "TrkDiag/inc/KalDiag.hh"
 #include "TTree.h"
 #include "TBranch.h"
 #include <cmath>
@@ -31,6 +32,7 @@
 #include <string>
 
 using namespace std;
+using CLHEP::Hep3Vector;
 
 namespace mu2e {
  // simple structs

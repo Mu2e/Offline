@@ -27,8 +27,7 @@
 
 #ifdef BABARINSTALLED
 using namespace CLHEP;
-#include "BTrk/TrkBase/TrkHotList.hh"
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
 #endif
 
 namespace mu2e
@@ -164,8 +163,8 @@ namespace mu2e
         for(unsigned int i=0; i<kalmantrackCollection->size(); i++)
         {
           KalRep const* particle = kalmantrackCollection->get(i);
-          const TrkHotList* hots = particle->hotList();
-          if(hots!=nullptr) numberHits+=hots->nHit();
+          TrkHitVector const& hots = particle->hitVector();
+	  numberHits+=hots.size();
         }
         if(numberHits < _frame->getMinimumHits())
         {

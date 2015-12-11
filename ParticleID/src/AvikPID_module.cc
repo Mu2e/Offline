@@ -34,28 +34,28 @@
 #include "TROOT.h"
 
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "BTrk/TrkBase/TrkHotList.hh"
-#include "BTrk/TrkBase/TrkHitOnTrk.hh"
+#include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/PIDProduct.hh"
 #include "RecoDataProducts/inc/PIDProductCollection.hh"
-#include "KalmanTests/inc/Doublet.hh"
+#include "RecoDataProducts/inc/Doublet.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 
 #include "ParticleID/inc/PIDUtilities.hh"
 #include "RecoDataProducts/inc/AvikPIDProductCollection.hh"
 
-#include "KalmanTests/inc/KalFitResult.hh"
-#include "KalmanTests/inc/DoubletAmbigResolver.hh"
+#include "TrkReco/inc/DoubletAmbigResolver.hh"
+
+using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
@@ -327,7 +327,7 @@ namespace mu2e {
 
     _minuit  = NULL;
 
-    _dar     = new DoubletAmbigResolver(_darPset,0,0);
+    _dar     = new DoubletAmbigResolver(_darPset,0,0,0);
 
   }
 
@@ -386,15 +386,15 @@ namespace mu2e {
     art::Handle<mu2e::KalRepPtrCollection> eleKrepsHandle;
     art::Handle<mu2e::KalRepPtrCollection> muoKrepsHandle;
 
-    const TrkHotList* ele_hot_list = ele_Trk->hotList();
-    const TrkHotList* muo_hot_list = muo_Trk->hotList();
+    TrkHitVector const& ele_hot_list = ele_Trk->hitVector();
+    TrkHitVector const& muo_hot_list = muo_Trk->hitVector();
 //-----------------------------------------------
 // ELECTRONS:
 //-----------------------------------------------
     int ele_nhits  = 0;  // total number of hits
     int ele_ncount = 0;  // number of hits in doublets/triplets etc
 
-    for (TrkHotList::hot_iterator it=ele_hot_list->begin(); it<ele_hot_list->end(); it++) ele_nhits+=1;
+    for (auto it=ele_hot_list.begin(); it<ele_hot_list.end(); it++) ele_nhits+=1;
 
     int   ele_iamb0 = 0;
 
@@ -412,8 +412,8 @@ namespace mu2e {
 
     int   ele_nnlet[6] = {ele_nhits};       // array giving number of singlets, doublets, triplets, ...
 
-//     float h1_fltlen = ele_Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-//     float hn_fltlen = ele_Trk->lastHit ()->kalHit()->hitOnTrack()->fltLen() - 10;
+//     float h1_fltlen = ele_Trk->firstHit()->kalHit()->hit()->fltLen() - 10;
+//     float hn_fltlen = ele_Trk->lastHit ()->kalHit()->hit()->fltLen() - 10;
 //     float entlen = std::min(h1_fltlen,hn_fltlen);
 
 //    BbrVectorErr momerr = ele_Trk->momentumErr(entlen);
@@ -427,9 +427,9 @@ namespace mu2e {
     Hep3Vector pos;
     double     hitres, hiterr;
 
-    for (TrkHotList::hot_iterator it=ele_hot_list->begin(); it<ele_hot_list->end(); it++) {
+    for (auto it=ele_hot_list.begin(); it<ele_hot_list.end(); it++) {
 
-      const mu2e::TrkStrawHit* hit = (const mu2e::TrkStrawHit*) &(*it);
+      const mu2e::TrkStrawHit* hit = (const mu2e::TrkStrawHit*) (*it);
 
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
@@ -501,7 +501,7 @@ namespace mu2e {
     int muo_nhits  = 0; // total number of hits
     int muo_ncount = 0; // number of special hits (i.e. events in doublets or triplets etc)
 
-    for(TrkHotList::hot_iterator it=muo_hot_list->begin(); it<muo_hot_list->end(); it++) muo_nhits+=1;
+    for(auto it=muo_hot_list.begin(); it<muo_hot_list.end(); it++) muo_nhits+=1;
 
     int   muo_iamb0=0;
     float muo_resall   [muo_nhits];
@@ -519,9 +519,9 @@ namespace mu2e {
     //    float muo_chi2 = muo_Trk->chisq();
 
     k = 0;
-    for(TrkHotList::hot_iterator it=muo_hot_list->begin(); it<muo_hot_list->end(); it++) {
+    for(auto it=muo_hot_list.begin(); it<muo_hot_list.end(); it++) {
 
-      const mu2e::TrkStrawHit* hit = (const mu2e::TrkStrawHit*) &(*it);
+      const mu2e::TrkStrawHit* hit = (const mu2e::TrkStrawHit*) (*it);
 
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
@@ -803,12 +803,10 @@ namespace mu2e {
     std::vector<double> res, flt, eres, eflt;
     mu2e::TrkStrawHit*  hit;
     double              resid, residerr, aresd, normflt, normresd;
-    const TrkHotList*   hotList;
+    TrkHitVector const&   hotList = KRep->hitVector();
 
-    hotList  = KRep->hotList();
-
-    for (TrkHotList::hot_iterator ihot=hotList->begin(); ihot != hotList->end(); ++ihot) {
-      hit = (mu2e::TrkStrawHit*) &(*ihot);
+    for (auto ihot=hotList.begin(); ihot != hotList.end(); ++ihot) {
+      hit = (mu2e::TrkStrawHit*) (*ihot);
       if (hit->isActive()) {
 //-----------------------------------------------------------------------------
 // 'unbiased' residual, signed with the radius - if the drift radius is greater than
@@ -817,7 +815,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         hit->resid(resid,residerr,true);
 
-        aresd    = (hit->poca()->doca()>0?resid:-resid);
+        aresd    = (hit->poca().doca()>0?resid:-resid);
         normflt  = hit->fltLen() -  KRep->flt0();
         normresd = aresd/residerr;
 
@@ -875,7 +873,7 @@ namespace mu2e {
       ihit = Multiplet->fHitIndex[i];
       flt  = Multiplet->fHit[ihit]->fltLen();
       Multiplet->fHit[ihit]->resid(res, reserr, true);
-      res  = (Multiplet->fHit[ihit]->poca()->doca()>0?res:-res);
+      res  = (Multiplet->fHit[ihit]->poca().doca()>0?res:-res);
       Fltlen.push_back(flt);
       Resid.push_back(res);
     }
@@ -1113,7 +1111,7 @@ namespace mu2e {
 
     const KalRep            *ele_Trk, *muo_Trk;
 
-    const TrkHotList        *ele_hots, *muo_hots;
+    TrkHitVector        ele_hots, muo_hots;
     const mu2e::TrkStrawHit *hit, *ehit, *mhit;
 
     _evtid = event.id().event();
@@ -1173,7 +1171,7 @@ namespace mu2e {
     for (int i=0; i<n_ele_trk; i++) {
       _ele_trkid     = i;
       ele_Trk        = _listOfEleTracks->at(i).get();
-      ele_hots       = ele_Trk->hotList();
+      ele_hots       = ele_Trk->hitVector();
       ele_nhits      = ele_Trk->nActive();
 //-----------------------------------------------------------------------------
 // electron track hit doublets
@@ -1190,16 +1188,16 @@ namespace mu2e {
 // dE/dX for the electron track hits
 // calculate dE/dX, clear vectors, start forming a list of hits from the electron track
 //-----------------------------------------------------------------------------
-      firsthitfltlen = ele_Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-      lasthitfltlen  = ele_Trk->lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+      firsthitfltlen = ele_Trk->firstHit()->kalHit()->hit()->fltLen() - 10;
+      lasthitfltlen  = ele_Trk->lastHit()->kalHit()->hit()->fltLen() - 10;
       entlen         = std::min(firsthitfltlen,lasthitfltlen);
       _trkmom        = ele_Trk->momentum(entlen).mag();
 
       gaspaths.clear();
       edeps.clear();
 
-      for (TrkHotList::hot_iterator ihot=ele_hots->begin(); ihot != ele_hots->end(); ++ihot) {
-        hit = (mu2e::TrkStrawHit*) &(*ihot);
+      for (auto ihot=ele_hots.begin(); ihot != ele_hots.end(); ++ihot) {
+        hit = (mu2e::TrkStrawHit*) (*ihot);
         if (hit->isActive()) {
 //-----------------------------------------------------------------------------
 // hit charges: '2.*' here because KalmanFit reports half-path through gas.
@@ -1222,18 +1220,18 @@ namespace mu2e {
       for (int j=0; j<n_muo_trk; j++) {
         _muo_trkid     = j;
         muo_Trk        = _listOfMuoTracks->at(j).get();
-        muo_hots       = muo_Trk->hotList();
+        muo_hots       = muo_Trk->hitVector();
         muo_nhits      = muo_Trk->nActive();
 //-----------------------------------------------------------------------------
 // check if muon and electron tracks are the same track - use 50% of active hits
 // of the same hits criterion
 //-----------------------------------------------------------------------------
         ncommon = 0;
-        for(TrkHotList::hot_iterator ite=ele_hots->begin(); ite<ele_hots->end(); ite++) {
-          ehit = (const mu2e::TrkStrawHit*) &(*ite);
+        for(auto ite=ele_hots.begin(); ite<ele_hots.end(); ite++) {
+          ehit = (const mu2e::TrkStrawHit*) (*ite);
           if (ehit->isActive()) {
-            for(TrkHotList::hot_iterator itm=muo_hots->begin(); itm<muo_hots->end(); itm++) {
-              mhit = (const mu2e::TrkStrawHit*) &(*itm);
+            for(auto itm=muo_hots.begin(); itm<muo_hots.end(); itm++) {
+              mhit = (const mu2e::TrkStrawHit*) (*itm);
               if (mhit->isActive()) {
                 if (&ehit->strawHit() == &mhit->strawHit()) {
                   ncommon += 1;
@@ -1264,7 +1262,7 @@ namespace mu2e {
             _dar->calculateDoubletParameters(muo_Trk,d,&r);
           }
 
-          for (TrkHotList::hot_iterator ihot=muo_hots->begin(); ihot != muo_hots->end(); ++ihot) {
+          for (auto ihot=muo_hots.begin(); ihot != muo_hots.end(); ++ihot) {
             hit = (mu2e::TrkStrawHit*) &(*ihot);
             if (hit->isActive()) {
               msh = &hit->strawHit();
@@ -1272,7 +1270,7 @@ namespace mu2e {
 // check if 'hit' is unique for the muon track
 //-----------------------------------------------------------------------------
               found = 0;
-              for (TrkHotList::hot_iterator ehot=ele_hots->begin(); ehot != ele_hots->end(); ++ehot) {
+              for (auto ehot=ele_hots.begin(); ehot != ele_hots.end(); ++ehot) {
                 ehit = (mu2e::TrkStrawHit*) &(*ehot);
                 if (ehit->isActive()) {
                   esh  = &ehit->strawHit();
@@ -1400,7 +1398,7 @@ namespace mu2e {
       if (muo_unique[j] == 1) {
         _muo_trkid     = j;
         muo_Trk        = _listOfMuoTracks->at(j).get();
-        muo_hots       = muo_Trk->hotList();
+        muo_hots       = muo_Trk->hitVector();
         muo_nhits      = muo_Trk->nActive();
 //-----------------------------------------------------------------------------
 // lists of doublets need to be recreated even when they existed - their
@@ -1418,15 +1416,15 @@ namespace mu2e {
 // dE/dX for the muoon track hits
 // calculate dE/dX, clear vectors, start forming a list of hits from the electron track
 //-----------------------------------------------------------------------------
-        firsthitfltlen = muo_Trk->firstHit()->kalHit()->hitOnTrack()->fltLen() - 10;
-        lasthitfltlen  = muo_Trk->lastHit()->kalHit()->hitOnTrack()->fltLen() - 10;
+        firsthitfltlen = muo_Trk->firstHit()->kalHit()->hit()->fltLen() - 10;
+        lasthitfltlen  = muo_Trk->lastHit()->kalHit()->hit()->fltLen() - 10;
         entlen         = std::min(firsthitfltlen,lasthitfltlen);
         _trkmom        = muo_Trk->momentum(entlen).mag();
 
         gaspaths.clear();
         edeps.clear();
 
-        for (TrkHotList::hot_iterator ihot=muo_hots->begin(); ihot != muo_hots->end(); ++ihot) {
+        for (auto ihot=muo_hots.begin(); ihot != muo_hots.end(); ++ihot) {
           hit = (mu2e::TrkStrawHit*) &(*ihot);
           if (hit->isActive()) {
 //-----------------------------------------------------------------------------

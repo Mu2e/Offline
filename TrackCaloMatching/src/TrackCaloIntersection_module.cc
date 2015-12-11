@@ -50,11 +50,11 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/TrkBase/TrkRep.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
-
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 
 
 // Other includes.
@@ -71,8 +71,7 @@
 #include "TDirectory.h"
 #include "TNtuple.h"
 
-
-
+#include "CLHEP/Vector/ThreeVector.h"
   
 namespace {
 

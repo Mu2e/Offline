@@ -24,15 +24,17 @@
 #include "TH1F.h"
 
 // Need this for the BaBar headers.
-using namespace CLHEP;
+using CLHEP::Hep3Vector;
 
 // BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
 // mu2e tracking
-#include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalDiag.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "TrkDiag/inc/KalDiag.hh"
 
 // C++ includes.
 #include <iostream>

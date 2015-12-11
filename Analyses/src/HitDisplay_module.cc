@@ -72,8 +72,8 @@
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 
 #include "BTrk/TrkBase/HelixParams.hh"
-#include "BTrk/TrkBase/TrkHotList.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -82,8 +82,8 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 
-#include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
 
 // ROOT includes
 #include "TApplication.h"
@@ -263,7 +263,8 @@ namespace mu2e {
 	//-----------------------------------------------------------------------------
 	// print detailed information about the track hits
 	//-----------------------------------------------------------------------------
-	const TrkHotList* hot_list = Trk->hotList();
+	TrkStrawHitVector tshv;
+	convert(Trk->hitVector(),tshv);
 
 	printf("---------------------------------------------------------------------------");
 	printf("-------------------------------------------------------------------------------\n");
@@ -272,13 +273,13 @@ namespace mu2e {
 	printf("---------------------------------------------------------------------------");
 	printf("-------------------------------------------------------------------------------\n");
 
-	int i = 0;
- 	for(TrkHotList::hot_iterator it=hot_list->begin(); it<hot_list->end(); it++) {
+	int i(0);
+        for(auto ihit=tshv.begin(); ihit!= tshv.end(); ++ihit){
 	  //	  const KalHit* kh = (*it).kalHit();
 
 	  // TrkStrawHit inherits from TrkHitOnTrk
 
-  	  const TrkStrawHit* hit = (const TrkStrawHit*) &(*it);
+  	  const TrkStrawHit* hit = (*ihit);
 
 	  const StrawHit* sh = &hit->strawHit();
 	  Straw*   straw = (Straw*) &hit->straw();
@@ -289,7 +290,7 @@ namespace mu2e {
 
 	  printf("%3i %1i %1i %10.3f %6.3f %10.3f %10.3f %10.3f %8.3f %7.3f",
 		 ++i,
-		 hit->isUsable(),
+		 hit->hitFlag(),
 		 hit->isActive(),
 		 len,
 		 hit->hitRms(),

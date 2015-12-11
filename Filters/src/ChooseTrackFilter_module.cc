@@ -17,10 +17,9 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 
-#include "KalmanTests/inc/KalRepCollection.hh"
-#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 
@@ -66,10 +65,12 @@
 #include <vector>
 
 
-
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;
+using CLHEP::HepVector;
 using CLHEP::keV;
 
 

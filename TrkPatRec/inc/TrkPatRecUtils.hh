@@ -10,9 +10,9 @@
 #define TrkPatRecUtils_HH
 
 // framework
-#include "KalmanTests/inc/TrkDef.hh"
+#include "TrkReco/inc/TrkDef.hh"
 //Mu2e
-#include "KalmanTests/inc/KalDiag.hh"
+#include "TrkDiag/inc/KalDiag.hh"
 #include "TrkPatRec/inc/TrkPatRec.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -28,6 +28,9 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 // C++
 #include <vector>
+// CLHEP
+#include "CLHEP/Matrix/Vector.h"
+#include "CLHEP/Matrix/SymMatrix.h"
 
 namespace mu2e 
 {
@@ -70,13 +73,13 @@ namespace mu2e
 
   inline void HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
           //TrkExchangePar helParams( helIn._d0, helIn._phi0, helIn._omega, helIn._z0, helIn._tanDip );
-          HepVector helParams(5);
+          CLHEP::HepVector helParams(5);
           helParams(1) = helIn._d0;
           helParams(2) = helIn._phi0;
           helParams(3) = helIn._omega;
           helParams(4) = helIn._z0;
           helParams(5) = helIn._tanDip;
-          HepSymMatrix conv(5,1);
+          CLHEP::HepSymMatrix conv(5,1);
           conv(1,1)=helIn._covMtrx[0][0]; conv(1,2)=helIn._covMtrx[0][1]; conv(1,3)=helIn._covMtrx[0][2]; conv(1,4)=helIn._covMtrx[0][3]; conv(1,5)=helIn._covMtrx[0][4];
           conv(2,1)=helIn._covMtrx[1][0]; conv(2,2)=helIn._covMtrx[1][1]; conv(2,3)=helIn._covMtrx[1][2]; conv(2,4)=helIn._covMtrx[1][3]; conv(2,5)=helIn._covMtrx[1][4];
           conv(3,1)=helIn._covMtrx[2][0]; conv(3,2)=helIn._covMtrx[2][1]; conv(3,3)=helIn._covMtrx[2][2]; conv(3,4)=helIn._covMtrx[2][3]; conv(3,5)=helIn._covMtrx[2][4];

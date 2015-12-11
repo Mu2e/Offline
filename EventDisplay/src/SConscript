@@ -26,8 +26,9 @@ cc_files2 = Glob('dict_classes/*.cc',strings=True)
 env.SharedLibrary( helper.prefixed_plugin_libname('EventDisplay_module.cc')
                    , cc_files, cc_files2,
                    # common libs
-                   LIBS=[ 'mu2e_KalmanTests',
-                          'mu2e_Mu2eUtilities',
+                   LIBS=[ 'mu2e_Mu2eBTrk',
+			  'mu2e_TrkReco',
+			  'mu2e_Mu2eUtilities',
                           'mu2e_MCDataProducts',
                           'mu2e_RecoDataProducts',
                           'mu2e_GeometryService',

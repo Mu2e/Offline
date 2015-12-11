@@ -10,7 +10,6 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
-#include "TrkReco/inc/KalFitResult.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/difAlgebra/DifPoint.hh"
 #include "BTrk/difAlgebra/DifVector.hh"
@@ -30,13 +29,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // in the beginning of iteration set external hit errors to a constant
 //-----------------------------------------------------------------------------
-  void AmbigResolver::initHitErrors(KalFitResult& KRes) const {
-    TrkStrawHit *hit;
-    
-    int nhits = KRes._hits.size();
-    for (int i=0; i<nhits; ++i) {
-      hit = KRes._hits.at(i);
-      hit->setExtErr(_extErr);
+  void AmbigResolver::initHitErrors(KalRep* krep) const {
+// get hits and cast to TrkStrawHits
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
+      (*itsh)->setExtErr(_extErr);
     }
   }
 
@@ -54,7 +52,7 @@ namespace mu2e {
       KSI last = sites.begin();
       for(TSHCI ihit = phits.begin();ihit != phits.end();++ihit){
 	if((*ihit)->isActive()){
-	  const KalHit* hitsite = krep->findHotSite(*ihit);
+	  const KalHit* hitsite = krep->findHitSite(*ihit);
 	  // find the index to this site
 	  KSI ifnd = std::find(sites.begin(),sites.end(),hitsite);
 	  if(ifnd != sites.end()) {

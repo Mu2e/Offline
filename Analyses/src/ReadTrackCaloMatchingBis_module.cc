@@ -28,7 +28,7 @@
 
 #include "BTrk/BaBar/Constants.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
@@ -43,7 +43,7 @@
 //CLHEP includes
 #include "CLHEP/Vector/TwoVector.h"
 #include "BTrk/BbrGeom/HepPoint.h"
-
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 
 // Other includes.
 #include "cetlib/exception.h"

@@ -27,7 +27,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
-#include "KalmanTests/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 // From the art tool-chain
@@ -40,7 +40,6 @@
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkRep.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-// #include "KalmanTests/inc/KalFitMC.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"

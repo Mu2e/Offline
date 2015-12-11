@@ -24,6 +24,8 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "KalmanTests/inc/KalFitResult.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -35,6 +37,9 @@
 
 using namespace std;
 using namespace boost::accumulators;
+using CLHEP::HepVector;
+using CLHEP::HepSymMatrix;
+using CLHEP::Hep3Vector;
 
 namespace mu2e {
 //-----------------------------------------------------------------------------
@@ -687,9 +692,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       HelixDefHack helixdef(_shcol,_shpcol,_flags,tp->_index,_tpart,_fdir);
 
-                                        // set some identifiers
-      helixdef.setEventId  (_eventid);
-      helixdef.setTrackId  (ipeak   );
                                         // copy this for the other fits
 
       TrkDef             seeddef(helixdef);
@@ -854,8 +856,7 @@ namespace mu2e {
           goodhits.clear();
           const mu2e::TrkStrawHit* hit;
           int                      hit_index;
-          const TrkHotList*        hot_list = _sfresult->_krep->hotList();
-
+	  TrkHitVector const&  hot_l = _sfresult->_krep->hitVector();
           const StrawHit*          sh;
           const Straw*             straw;
           const CLHEP::Hep3Vector  *wpos, *wdir;
@@ -893,8 +894,8 @@ namespace mu2e {
 
             doca = wpoca.doca();
 
-            for (auto it=hot_list->begin(); it<hot_list->end(); it++) {
-              hit    = (const mu2e::TrkStrawHit*) &(*it);
+            for (auto it=hot_l.begin(); it<hot_l.end(); it++) {
+              hit    = (const mu2e::TrkStrawHit*) (*it);
               rdrift = hit->driftRadius();
               int shIndex = int(hit->index());
               if (hit_index == shIndex) {
@@ -993,7 +994,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // done, fill debug histograms
 //-----------------------------------------------------------------------------
-           const TrkHotList* hot_l = _kfresult->_krep->hotList();
+	    TrkHitVector const& hot_l = _sfresult->_krep->hitVector();
 
             for (int i=0; i< _nindex; ++i){
               StrawHit const*     sh = _index[i]._strawhit;
@@ -1009,8 +1010,8 @@ namespace mu2e {
               TrkPoca hitpoca(_kfresult->_krep->traj(),fltlen,htraj,0.0);
 
               doca = hitpoca.doca();
-              for(TrkHotList::hot_iterator it=hot_l->begin(); it<hot_l->end(); it++) {
-                hit = (const mu2e::TrkStrawHit*) &(*it);
+              for(auto it=hot_l.begin(); it<hot_l.end(); it++) {
+                hit = (const mu2e::TrkStrawHit*) (*it);
                 if (!hit->isActive()) continue;
                 hit_index = hit->index();
                 if (int(_index[i]._ind) == hit_index){
@@ -1500,13 +1501,12 @@ namespace mu2e {
     double                   doca, fltlen;
     Hep3Vector               tdir;
     HepPoint                 tpos;
-    const TrkHotList*        hot_list;
+    TrkHitVector const& hot_l = SFResult._krep->hitVector();
     const mu2e::TrkStrawHit* hit;
     KalRep*                  krep;
     //    const HelixTraj*         shelix;
 
     krep     = SFResult._krep;
-    hot_list = krep->hotList();
 
     //    shelix   = (const HelixTraj*) krep->localTrajectory(krep->flt0(),locflt);
     krep->traj().getInfo(0.0,tpos,tdir);
@@ -1529,7 +1529,7 @@ namespace mu2e {
       else                       _hist._doca[0]->Fill(doca);
     }
 
-    for (auto it=hot_list->begin(); it<hot_list->end(); it++) {
+    for (auto it=hot_l.begin(); it<hot_l.end(); it++) {
       hit = (const mu2e::TrkStrawHit*) &(*it);
       if (!hit->isActive()) ++ndeactivated;
     }
@@ -1564,7 +1564,7 @@ namespace mu2e {
     int                    hit_index;
     double                 fltlen;
 
-    const TrkHotList* hotl = krep->hotList();
+    TrkHitVector const& hotl = krep->hitVector();
 
     for (int i=0; i<_nindex; ++i){
       const StrawHit*   sh    = _index[i]._strawhit;
@@ -1583,7 +1583,7 @@ namespace mu2e {
       double doca = hitpoca.doca();
 
       found = false;
-      for(TrkHotList::hot_iterator it=hotl->begin();it<hotl->end(); it++) {
+      for(auto it=hotl.begin();it<hotl.end(); it++) {
         hit   = (const mu2e::TrkStrawHit*) &(*it);
         if (!hit->isActive()) continue;
         hit_index = hit->index();
@@ -1617,7 +1617,7 @@ namespace mu2e {
     double    tmpFltz0(-9999.);
     double    dz = 1e10;
 
-    for(TrkHotList::hot_iterator it=hotl->begin();it<hotl->end(); it++) {
+    for(auto it=hotl.begin();it<hotl.end(); it++) {
       hit   = (const mu2e::TrkStrawHit*) &(*it);
       if (!hit->isActive())            continue;
       fltlen = hit->fltLen();
@@ -1665,8 +1665,8 @@ namespace mu2e {
     // calculate the phi residual of the straw hit position using the track result
     //--------------------------------------------------------------------------------
 
-    for(TrkHotList::hot_iterator it=hotl->begin();it<hotl->end(); it++) {
-      hit   = (const mu2e::TrkStrawHit*) &(*it);
+    for(auto it=hotl.begin();it<hotl.end(); it++) {
+      hit   = (const mu2e::TrkStrawHit*) (*it);
       if (!hit->isActive())            continue;
 
       //calculate the hit phi

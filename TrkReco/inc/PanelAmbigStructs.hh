@@ -13,6 +13,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Matrix/Vector.h"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "Rtypes.h"
 #include <cstddef>
 #include <vector>
@@ -38,7 +39,6 @@ namespace mu2e {
       bool operator < (HitState const& other ) const { return _state < other._state; }
       TSHState _state; //
     };
-    typedef std::vector<TrkStrawHit*> TSHV;
     typedef std::vector<HitState> HSV;
 
     // class for root to hold Hit States per panel.  Genreflex can't
@@ -85,13 +85,13 @@ namespace mu2e {
 	  _pstate.hitState(ish) = hsv[ish];
       }
       // construct from a vector of hits.  This assumes all hits are from the same panel!!!
-      PanelState(TSHV const& tshv) : _nhits(tshv.size()) {
+      PanelState(TrkStrawHitVector const& tshv) : _nhits(tshv.size()) {
 	assert(tshv.size() <=MAXNHITS);
 	for(size_t ish=0;ish < tshv.size(); ++ish)
 	  _pstate.hitState(ish) = HitState(tshv[ish]);
       }
       // set the state of the referenced TrkStrawHits.
-      void setHitStates(TSHV& hits) const;
+      void setHitStates(TrkStrawHitVector& hits) const;
       // accessors
       HitState& hitState(size_t ish) { return _pstate.hitState(ish); }
       HitState const& hitState(size_t ish) const { return _pstate.hitState(ish); }

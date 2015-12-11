@@ -32,13 +32,15 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "KalmanTests/inc/TrkDef.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
-#include "TrkPatRec/inc/HelixFit.hh"
+#include "TrkReco/inc/TrkDef.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/RobustHelixFit.hh"
 // Mu2e
 #include "TrkPatRec/inc/TrkPatRecUtils.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
+#include "CLHEP/Matrix/Vector.h"
+#include "CLHEP/Matrix/SymMatrix.h"
 // C++
 #include <iostream>
 #include <fstream>
@@ -50,6 +52,8 @@
 #include <set>
 #include <map>
 using namespace std; 
+using CLHEP::HepVector;
+using CLHEP::HepSymMatrix;
 
 namespace mu2e 
 {
@@ -80,7 +84,7 @@ namespace mu2e
       const StrawHitPositionCollection* _shpcol;
       const TrackerHitTimeClusterCollection* _tccol;
       // robust helix fitter
-      HelixFit _hfit;
+      RobustHelixFit _hfit;
       // cache of time peaks
       std::vector<TrkTimePeak> _tpeaks;
       //
@@ -98,7 +102,7 @@ namespace mu2e
     _tpkfLabel(pset.get<string>("TrackerHitTimeClusterCollection","TimePeakFinder")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _hfit(pset.get<fhicl::ParameterSet>("HelixFit",fhicl::ParameterSet()))
+    _hfit(pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet()))
   {
      produces<TrackSeedCollection>();
   }
@@ -132,9 +136,6 @@ namespace mu2e
     for(unsigned ipeak=0;ipeak<_tpeaks.size();++ipeak){
       // create track definitions for the helix fit from this initial information 
       HelixDef helixdef(_shcol,_shpcol,_tpeaks[ipeak]._trkptrs,_tpart,_fdir);
-      // set some identifiers
-      helixdef.setEventId(_eventid);
-      helixdef.setTrackId(ipeak);
       // copy this for the other fits
       TrkDef seeddef(helixdef);
       // track fitting objects for this peak

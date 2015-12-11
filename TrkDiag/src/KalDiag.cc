@@ -33,13 +33,14 @@
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "KalmanTests/inc/KalDiag.hh"
+#include "TrkDiag/inc/KalDiag.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
-#include "BTrk/TrkBase/TrkHotList.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 #include "BTrk/BField/BFieldFixed.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 
@@ -55,7 +56,8 @@
 #include <iostream>
 #include <functional>
 
-using namespace std; 
+using namespace std;
+using CLHEP::Hep3Vector;
  
 namespace mu2e 
 {
@@ -98,7 +100,7 @@ namespace mu2e
     _xitvids.push_back(VirtualDetectorId::TT_Back);
 // initialize TrkQual MVA.  Note the weight file is passed in from the KalDiag config
     fhicl::ParameterSet mvapset = pset.get<fhicl::ParameterSet>("TrkQualMVA",fhicl::ParameterSet());
-    mvapset.put<string>("MVAWeights",pset.get<string>("TrkQualWeights","KalmanTests/test/TrkQual.weights.xml"));
+    mvapset.put<string>("MVAWeights",pset.get<string>("TrkQualWeights","TrkDiag/test/TrkQual.weights.xml"));
     _trkqualmva.reset(new MVATools(mvapset));
     _trkqualmva->initMVA();
     if(_debug>0)_trkqualmva->showMVA();
@@ -191,7 +193,7 @@ namespace mu2e
     trkinfo._fitpart = krep->particleType().particleType();
     trkinfo._t0 = krep->t0().t0();
     trkinfo._t0err = krep->t0().t0Err();
-    trkinfo._nhits = krep->hotList()->nHit();
+    trkinfo._nhits = krep->hitVector().size();
     trkinfo._ndof = krep->nDof();
     trkinfo._nactive = krep->nActive();
     trkinfo._chisq = krep->chisq();
@@ -199,12 +201,12 @@ namespace mu2e
     trkinfo._radlen = krep->radiationFraction();
     trkinfo._firstflt = krep->firstHit()->globalLength();
     trkinfo._lastflt = krep->lastHit()->globalLength();
-    CLHEP::Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->kalContext().bField(),0.0);
+    Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->kalContext().bField(),0.0);
     trkinfo._seedmom = seedmom.mag();
 // count # of double hits
     countDoubles(krep,trkinfo._ndouble, trkinfo._ndactive);
    // get the fit at the entrance to the tracker
-    CLHEP::Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
+    Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
     double zent = entpos.z();
     // we don't know which way the fit is going: try both, and pick the one with the smallest flightlength
     double firsthitfltlen = krep->lowFitRange(); 
@@ -222,24 +224,23 @@ namespace mu2e
 // count number of hits with other (active) hits in the same panel
     ndouble = ndactive = 0;
 // loop over hits, and count
-    const TrkHotList* hots = krep->hotList();
-    for(TrkHotList::hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
-      const TrkStrawHit* tsh = dynamic_cast<const TrkStrawHit*>(ihot.get());
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
+      const TrkStrawHit* tsh = *ihit;
       if(tsh != 0){
 	bool isdouble(false);
 	bool dactive(false);
-// count correlations with other TSH
-	for(TrkHotList::hot_iterator jhot=hots->begin();jhot != hots->end();++jhot){
-	  if(jhot != ihot){
-	    const TrkStrawHit* otsh = dynamic_cast<const TrkStrawHit*>(jhot.get());
-	    if(otsh != 0){
-	      if(tsh->straw().id().getDevice() ==  otsh->straw().id().getDevice() &&
-		  tsh->straw().id().getSector() == otsh->straw().id().getSector() ){
-		  isdouble = true;
-		if(otsh->isActive()){
-		  dactive = true;
-		  break;
-		}
+	// count correlations with other TSH
+	for(auto jhit=tshv.begin(); jhit != ihit; ++jhit){
+	  const TrkStrawHit* otsh = *jhit;
+	  if(otsh != 0){
+	    if(tsh->straw().id().getDevice() ==  otsh->straw().id().getDevice() &&
+		tsh->straw().id().getSector() == otsh->straw().id().getSector() ){
+	      isdouble = true;
+	      if(otsh->isActive()){
+		dactive = true;
+		break;
 	      }
 	    }
 	  }
@@ -251,15 +252,15 @@ namespace mu2e
   }
 
   void
-  KalDiag::fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) {
-  // find momentum and parameters
-    double loclen(0.0);
-    const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
-    trkfitinfo._fitpar = helixpar(ltraj->parameters()->parameter());
-    trkfitinfo._fitparerr = helixpar(ltraj->parameters()->covariance());
-    CLHEP::Hep3Vector fitmom = krep->momentum(fltlen);
-    BbrVectorErr momerr = krep->momentumErr(fltlen);
-    trkfitinfo._fitmom = fitmom.mag();
+    KalDiag::fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) {
+      // find momentum and parameters
+      double loclen(0.0);
+      const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
+      trkfitinfo._fitpar = helixpar(ltraj->parameters()->parameter());
+      trkfitinfo._fitparerr = helixpar(ltraj->parameters()->covariance());
+      Hep3Vector fitmom = krep->momentum(fltlen);
+      BbrVectorErr momerr = krep->momentumErr(fltlen);
+      trkfitinfo._fitmom = fitmom.mag();
     Hep3Vector momdir = fitmom.unit();
     HepVector momvec(3);
     for(int icor=0;icor<3;icor++)
@@ -283,9 +284,10 @@ namespace mu2e
 // find the SimParticles which contributed hits.
     if(_mcdata._mcdigis != 0) {
 // get the straw hits from the track
-      const TrkHotList* hots = krep->hotList();
-      for(TrkHotList::hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
-	const TrkStrawHit* tsh = dynamic_cast<const TrkStrawHit*>(ihot.get());
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
+	const TrkStrawHit* tsh = *ihit;
 	// loop over the hits and find the associated steppoints
 	if(tsh != 0 && tsh->isActive()){
 	  StrawDigiMC const& mcdigi = _mcdata._mcdigis->at(tsh->index());
@@ -315,24 +317,23 @@ namespace mu2e
   void KalDiag::fillHitInfo(const KalRep* krep, std::vector<TrkStrawHitInfo>& tshinfos ) const { 
     tshinfos.clear();
  // loop over hits
-    const TrkHotList* hots = krep->hotList();
-    for(TrkHotList::hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
-      const TrkStrawHit* tsh = dynamic_cast<const TrkStrawHit*>(ihot.get());
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
+      const TrkStrawHit* tsh = *ihit;
       if(tsh != 0){
         TrkStrawHitInfo tshinfo;
 	fillHitInfo(tsh,tshinfo);
 // count correlations with other TSH
-	for(TrkHotList::hot_iterator jhot=hots->begin();jhot != hots->end();++jhot){
-	  if(jhot != ihot){
-	    const TrkStrawHit* otsh = dynamic_cast<const TrkStrawHit*>(jhot.get());
-	    if(otsh != 0){
-	      if(tshinfo._device ==  otsh->straw().id().getDevice() &&
-		  tshinfo._sector == otsh->straw().id().getSector() ){
-		tshinfo._dhit = true;
-		if(otsh->isActive()){
-		  tshinfo._dactive = true;
-		  break;
-		}
+	for(auto jhit=tshv.begin(); jhit != ihit; ++jhit){
+	  const TrkStrawHit* otsh = *jhit;
+	  if(otsh != 0){
+	    if(tshinfo._device ==  otsh->straw().id().getDevice() &&
+		tshinfo._sector == otsh->straw().id().getSector() ){
+	      tshinfo._dhit = true;
+	      if(otsh->isActive()){
+		tshinfo._dactive = true;
+		break;
 	      }
 	    }
 	  }
@@ -350,7 +351,7 @@ namespace mu2e
     tshinfo._straw = tsh->straw().id().getStraw();
     tshinfo._edep = tsh->strawHit().energyDep();
     static HepPoint origin(0.0,0.0,0.0);
-    CLHEP::Hep3Vector hpos = tsh->hitTraj()->position(tsh->hitLen()) - origin;
+    Hep3Vector hpos = tsh->hitTraj()->position(tsh->hitLen()) - origin;
     tshinfo._z = hpos.z();
     tshinfo._phi = hpos.phi();
     tshinfo._rho = hpos.perp();
@@ -375,8 +376,8 @@ namespace mu2e
     tshinfo._tddist = tsh->timeDiffDist();
     tshinfo._tdderr = tsh->timeDiffDistErr();
     tshinfo._ambig = tsh->ambig();
-    if(tsh->poca() != 0)
-      tshinfo._doca = tsh->poca()->doca();
+    if(tsh->hasResidual())
+      tshinfo._doca = tsh->poca().doca();
     else
       tshinfo._doca = -100.0;
     tshinfo._exerr = tsh->extErr();
@@ -390,9 +391,10 @@ namespace mu2e
      std::vector<TrkStrawHitInfoMC>& tshinfomcs) const {
     tshinfomcs.clear();
  // loop over hits
-    const TrkHotList* hots = krep->hotList();
-    for(TrkHotList::hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
-      const TrkStrawHit* tsh = dynamic_cast<const TrkStrawHit*>(ihot.get());
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
+      const TrkStrawHit* tsh = *ihit;
       if(tsh != 0){
 	StrawDigiMC const& mcdigi = _mcdata._mcdigis->at(tsh->index());
 	TrkStrawHitInfoMC tshinfomc;
@@ -447,14 +449,15 @@ namespace mu2e
       if(pp->genParticle().isNonnull())
 	mcinfo._pgen = pp->genParticle()->generatorId().id();
     }
-    CLHEP::Hep3Vector mcmomvec = spp->startMomentum();
+    Hep3Vector mcmomvec = spp->startMomentum();
     double mcmom = mcmomvec.mag(); 
     // fill track-specific  MC info
     mcinfo._nactive = mcinfo._nhits = mcinfo._ngood = mcinfo._nambig = 0;
     if(krep != 0){
-      const TrkHotList* hots = krep->hotList();
-      for(TrkHotList::hot_iterator ihot=hots->begin();ihot != hots->end();++ihot){
-	const TrkStrawHit* tsh = dynamic_cast<const TrkStrawHit*>(ihot.get());
+      TrkStrawHitVector tshv;
+      convert(krep->hitVector(),tshv);
+      for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
+	const TrkStrawHit* tsh = *ihit;
 	if(tsh != 0){
 	  StrawDigiMC const& mcdigi = _mcdata._mcdigis->at(tsh->index());
 	  StrawDigi::TDCChannel itdc = StrawDigi::zero;
@@ -602,9 +605,9 @@ namespace mu2e
     GeomHandle<DetectorSystem> det;
     mcstepinfo._time = _toff.timeWithOffsetsApplied(*imcs);
     double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
-    CLHEP::Hep3Vector mom = imcs->momentum();
+    Hep3Vector mom = imcs->momentum();
     // need to transform into the tracker coordinate system
-    CLHEP::Hep3Vector pos = det->toDetector(imcs->position());
+    Hep3Vector pos = det->toDetector(imcs->position());
     fillTrkInfoMCStep(mom,pos,charge,mcstepinfo);
   }
 
@@ -614,14 +617,14 @@ namespace mu2e
     GeomHandle<DetectorSystem> det;
     mcstepinfo._time = _toff.totalTimeOffset(spp) + spp->startGlobalTime();
     double charge = pdt->particle(spp->pdgId()).ref().charge();
-    CLHEP::Hep3Vector mom = spp->startMomentum();
+    Hep3Vector mom = spp->startMomentum();
     // need to transform into the tracker coordinate system
-    CLHEP::Hep3Vector pos = det->toDetector(spp->startPosition());
+    Hep3Vector pos = det->toDetector(spp->startPosition());
     fillTrkInfoMCStep(mom,pos,charge,mcstepinfo);
   }
 
   void
-  KalDiag::fillTrkInfoMCStep(CLHEP::Hep3Vector const& mom, CLHEP::Hep3Vector const& pos, double charge, TrkInfoMCStep& mcstepinfo) const {
+  KalDiag::fillTrkInfoMCStep(Hep3Vector const& mom, Hep3Vector const& pos, double charge, TrkInfoMCStep& mcstepinfo) const {
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
 
@@ -629,7 +632,7 @@ namespace mu2e
     mcstepinfo._pos = pos;
     double hflt(0.0);
     HepVector parvec(5,0);
-    static CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
+    static Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
     static double bz = bfmgr->getBField(vpoint_mu2e).z();
     HepPoint ppos(pos.x(),pos.y(),pos.z());
     TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
@@ -739,9 +742,9 @@ namespace mu2e
         MCStepItr imcs = steps[0];
         double t0 = imcs->time();
         double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
-        CLHEP::Hep3Vector mom = imcs->momentum();
+        Hep3Vector mom = imcs->momentum();
 // need to transform into the tracker coordinate system
-        CLHEP::Hep3Vector pos = det->toDetector(imcs->position());
+        Hep3Vector pos = det->toDetector(imcs->position());
         if(_debug > 1)std::cout << "Defining track at virtual detector id= " << imcs->volumeId()
           << " name " << VirtualDetectorId(imcs->volumeId()).name()
           << " position = " << pos
@@ -783,7 +786,7 @@ namespace mu2e
           double hflt(0.0);
 	  GeomHandle<BFieldManager> bfmgr;
 	  GeomHandle<DetectorSystem> det;
-	  CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
+	  Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
 	  double bz = bfmgr->getBField(vpoint_mu2e).z();
 	  TrkHelixUtils::helixFromMom( parvec, hflt, 
             HepPoint(pos.x(),pos.y(),pos.z()),

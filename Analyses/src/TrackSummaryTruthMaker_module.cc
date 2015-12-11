@@ -17,7 +17,7 @@
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 
@@ -64,10 +64,10 @@ namespace mu2e {
 
     for(const auto recoMapEntry: *ireco) {
       const KalRep& krep = **recoMapEntry.first;
-      for(const auto& hot : *krep.hotList()) {
-        const TrkStrawHit *hit = dynamic_cast<const TrkStrawHit*>(&hot);
+      for(const auto hot : krep.hitVector()) {
+        const TrkStrawHit *hit = dynamic_cast<const TrkStrawHit*>(hot);
         if(!hit) {
-          throw cet::exception("BADINPUT")<<"TrackSummaryTruthMaker: an entry in KalRep::hotList() is not a TrkStrawHit.\n";
+          throw cet::exception("BADINPUT")<<"TrackSummaryTruthMaker: an entry in KalRep::hitVector() is not a TrkStrawHit.\n";
         }
 
         const StrawDigiMC& dmc = imc->at(hit->index());

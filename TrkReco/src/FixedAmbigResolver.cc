@@ -7,13 +7,10 @@
 // $Date: 2012/08/31 22:39:00 $
 //
 #include "TrkReco/inc/FixedAmbigResolver.hh"
-#include "TrkReco/inc/KalFitResult.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "Mu2eBTrk/inc/TrkStrawHit.hh"
 
-///using namespace CLHEP;
-
 namespace mu2e {
-  typedef std::vector<TrkStrawHit*>::iterator TSHI;
 
   FixedAmbigResolver::FixedAmbigResolver(fhicl::ParameterSet const& pset , double extErr) : 
     AmbigResolver(extErr),
@@ -23,18 +20,18 @@ namespace mu2e {
   FixedAmbigResolver::~FixedAmbigResolver() {}
 
   void
-  FixedAmbigResolver::resolveTrk(KalFitResult& kfit) const {
+  FixedAmbigResolver::resolveTrk(KalRep* krep) const {
 
 					// init hit errors
-    initHitErrors(kfit);
+    initHitErrors(krep);
 
 // loop over all the hits
-    TSHI ihit = kfit._hits.begin();
-    while(ihit != kfit._hits.end()){
-      TrkStrawHit* hit = *ihit++;
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
       // set external error and don't allow the hit to auto-update its ambiguity
-      hit->setAmbigUpdate(false);
-      if(_neutralize) hit->setAmbig(0);
+      (*itsh)->setAmbigUpdate(false);
+      if(_neutralize) (*itsh)->setAmbig(0);
     }
   }
 }

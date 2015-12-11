@@ -33,7 +33,7 @@ namespace mu2e {
       virtual ~HitAmbigResolver();
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value.
-    virtual void resolveTrk(KalFitResult& kfit) const;
+    virtual void resolveTrk(KalRep* kfit) const;
     private:
 // penalty function depends on the drift radius
       double penaltyError(double rdrift) const;

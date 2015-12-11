@@ -7,10 +7,11 @@
 #ifndef KalDiag_HH
 #define KalDiag_HH
 // structs
-#include "KalmanTests/inc/MCEvtData.hh"
-#include "KalmanTests/inc/threevec.hh"
-#include "KalmanTests/inc/helixpar.hh"
-#include "KalmanTests/inc/TrkInfo.hh"
+#include "TrkDiag/inc/MCEvtData.hh"
+#include "TrkDiag/inc/helixpar.hh"
+#include "TrkDiag/inc/TrkInfo.hh"
+#include "TrkDiag/inc/TrkStrawHitInfo.hh"
+#include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 // data
 #include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -27,11 +28,10 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "KalmanTests/inc/TrkDef.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
-#include "KalmanTests/inc/TrkInfo.hh"
-#include "KalmanTests/inc/TrkStrawHitInfo.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
+// Mu2e tracking
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkDef.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 

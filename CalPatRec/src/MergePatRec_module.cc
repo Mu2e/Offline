@@ -13,13 +13,13 @@
 #include "art/Framework/Core/ModuleMacros.h"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "KalmanTests/inc/TrkDef.hh"
-#include "KalmanTests/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkDef.hh"
+#include "Mu2eBTrk/inc/TrkStrawHit.hh"
 
 #include "TROOT.h"
 #include "TFolder.h"
 
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 // #include "KalmanTests/inc/KalFitResult.hh"
@@ -45,6 +45,7 @@
 #include <set>
 #include <map>
 using namespace std; 
+using CLHEP::Hep3Vector;
 
 namespace mu2e {
   class MergePatRec : public art::EDProducer {
@@ -149,7 +150,7 @@ namespace mu2e {
     Hep3Vector                cpr_mom, tpr_mom;
     short                     best(-1),  mask;
     AlgorithmID               alg_id;
-    const TrkHotList         *tlist, *clist;
+    TrkHitVector         tlist, clist;
     int                       nat, nac, natc;
     const mu2e::TrkStrawHit  *hitt, *hitc;
     //    double                    tfcons, cfcons;
@@ -160,7 +161,7 @@ namespace mu2e {
       //      tkr     = &list_of_kfres_tpr->at(i1);
       tpr_mom = (*tpr)->momentum();
       mask    = 1 << AlgorithmID::TrkPatRecBit;
-      tlist   = (*tpr)->hotList();
+      tlist   = (*tpr)->hitVector();
       nat     = (*tpr)->nActive();
       natc    = 0;
       //      tfcons  = tpr->chisqConsistency().consistency();
@@ -169,17 +170,17 @@ namespace mu2e {
 	cpr     = &list_of_kreps_cpr->at(i2);
 	//	ckr     = &list_of_kfres_cpr->at(i2);
 	cpr_mom = (*cpr)->momentum();
-	clist   = (*cpr)->hotList();
+	clist   = (*cpr)->hitVector();
 	nac     = (*cpr)->nActive();
 	//	cfcons  = cpr->chisqConsistency().consistency();
 //-----------------------------------------------------------------------------
 // primitive check if this is the same track - require delta(p) less than 5 MeV/c
 // ultimately - check the number of common hits
 //-----------------------------------------------------------------------------
-	for(TrkHotList::hot_iterator itt=tlist->begin(); itt<tlist->end(); itt++) {
+	for(auto itt=tlist.begin(); itt<tlist.end(); itt++) {
 	  hitt = (const mu2e::TrkStrawHit*) &(*itt);
 	  if (hitt->isActive()) {
-	    for(TrkHotList::hot_iterator itc=clist->begin(); itc<clist->end(); itc++) {
+	    for(auto itc=clist.begin(); itc<clist.end(); itc++) {
 	      hitc = (const mu2e::TrkStrawHit*) &(*itc);
 	      if (hitc->isActive()) {
 		if (&hitt->strawHit() == &hitc->strawHit()) {

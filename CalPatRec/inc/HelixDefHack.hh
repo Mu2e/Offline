@@ -15,7 +15,7 @@
 
 // #include "RecoDataProducts/inc/StrawHitFlag.hh"
 
-#include "KalmanTests/inc/TrkDef.hh"
+#include "TrkReco/inc/TrkDef.hh"
 
 namespace mu2e {
 					// add the StrawHitPosition collection to TrkDef

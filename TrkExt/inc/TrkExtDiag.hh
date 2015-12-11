@@ -32,10 +32,11 @@
 #include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/TrkBase/TrkHotList.hh"
 #include "TTree.h"
 #include "Rtypes.h"
 #include "BFieldGeom/inc/BFieldManager.hh"
+#include "CLHEP/Matrix/Vector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e 
 {  
@@ -148,13 +149,13 @@ namespace mu2e
     void trkExtDiag(void);
 
   private:
-    unsigned int readHit(const art::Event &evt, const TrkHotList & hot);
+    unsigned int readHit(const art::Event &evt, const TrkHitVector & hot);
     unsigned int readTrk(const art::Event &evt, const KalRep & krep);
-    unsigned int readMC(const art::Event &evt, const KalRep & krep, const TrkHotList & hot);
+    unsigned int readMC(const art::Event &evt, const KalRep & krep, const TrkHitVector & hot);
     unsigned int readExt(const art::Event &evt, const TrkExtTraj & trkext);
 
-    HepVector getHelixParameters (const CLHEP::Hep3Vector & x, const Hep3Vector & p, int sign) const ;
-    HepVector getHelixParametersErr (const CLHEP::Hep3Vector & x, const Hep3Vector & p,  CLHEP::Hep3Vector &ex, CLHEP::Hep3Vector &ep, int sign) const ;
+    CLHEP::HepVector getHelixParameters (const CLHEP::Hep3Vector & x, const CLHEP::Hep3Vector & p, int sign) const ;
+    CLHEP::HepVector getHelixParametersErr (const CLHEP::Hep3Vector & x, const CLHEP::Hep3Vector & p,  CLHEP::Hep3Vector &ex, CLHEP::Hep3Vector &ep, int sign) const ;
     double findTurnAround (double s1, double s2, double s3, double f1, double f2, double f3);
     double findTurnAroundSim (int i, double f1, double f2, double f3);
     double interpolate (double s, double s1, double s2, double s3, double f1, double f2, double f3);

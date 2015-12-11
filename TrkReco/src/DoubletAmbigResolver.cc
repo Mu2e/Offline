@@ -3,7 +3,6 @@
 // fit as input
 ///////////////////////////////////////////////////////////////////////////////
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
-#include "TrkReco/inc/KalFitResult.hh"
 #include "Mu2eBTrk/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
@@ -13,7 +12,8 @@
 #include <algorithm>
 #include <functional>
 
-///using namespace CLHEP;
+using CLHEP::Hep3Vector;
+using CLHEP::HepRotationZ;
 
 namespace mu2e {
   typedef std::vector<TrkStrawHit*>::iterator TSHI;
@@ -71,15 +71,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void DoubletAmbigResolver::findDoublets (const KalRep* KRep, vector<Doublet>* DCol) const {
     mu2e::TrkStrawHit *hit;
-    const Straw       *straw;
 
     int               station, panel;
     int               oldStation(-1), oldPanel(-1), idlast(0);
     int               trkshsize, shId, layer, istraw;
     
-    const CLHEP::Hep3Vector  *wdir;
-    CLHEP::Hep3Vector  pos, posPanel, wpos[10], tmppos;    
-    CLHEP::Hep3Vector  tdir, trkpos;
+    Hep3Vector  wdir;
+    Hep3Vector  pos, posPanel, wpos[10], tmppos;    
+    Hep3Vector  tdir, trkpos;
     HepPoint           tpos;
 
     std::vector<Doublet>* dcol;
@@ -103,18 +102,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     //    for (int i=0; i<nhits; ++i) {
     int i = 0;
-    const TrkHotList* hots = KRep->hotList();
-    TrkHotList::hot_iterator end = hots->end();
-    for (TrkHotList::hot_iterator ihit=hots->begin(); ihit!=end; ihit++) {
-      hit       = (mu2e::TrkStrawHit*) ihit.get(); // KRes._hits.at(i);
+    TrkStrawHitVector tshv;
+    convert(KRep->hitVector(),tshv);
+    for (auto ihit=tshv.begin(); ihit!=tshv.end(); ++ihit) {
       //      idoublet  = -1;
       //      if (hit->isActive() == 0)                             goto END_OF_LOOP;
-      straw     = &hit ->straw();
-      wdir      = &straw->getDirection();
-      pos       = straw->getMidPoint();
-      station   = straw->id().getDevice();
-      panel     = straw->id().getSector();
-      shId      = straw->index().asInt();
+      Straw const& straw     = (*ihit) ->straw();
+      wdir      = straw.getDirection();
+      pos       = straw.getMidPoint();
+      station   = straw.id().getDevice();
+      panel     = straw.id().getSector();
+      shId      = straw.index().asInt();
 //-----------------------------------------------------------------------------
 // track info 
 //-----------------------------------------------------------------------------
@@ -132,7 +130,7 @@ namespace mu2e {
       HepPoint p1(pos.x(),pos.y(),pos.z());
       HepPoint p2(trkpos.x() ,trkpos.y() ,trkpos.z());
       
-      TrkLineTraj trstraw(p1, *wdir, 0., 0.);
+      TrkLineTraj trstraw(p1, wdir, 0., 0.);
       TrkLineTraj trtrk  (p2, tdir, 0., 0.);
 //-----------------------------------------------------------------------------
 // distance of closest approach calculated from the track to the hit,
@@ -141,11 +139,11 @@ namespace mu2e {
       TrkPoca poca  (trtrk,0.,trstraw,0.);
       doca   = poca.doca();
 					// get the drift radius
-      rdrift  =  hit->driftRadius();
+      rdrift  =  (*ihit)->driftRadius();
 
       if (_debugLevel > 1) {
-	layer  = straw->id().getLayer();
-	istraw = straw->id().getStraw();
+	layer  = straw.id().getLayer();
+	istraw = straw.id().getStraw();
 	printf("[KalFitHack::findDoublets] %2i  %5i %3i  %4i  %3i %3i %8.3f %8.3f\n",
 	       i, shId, station, panel, layer, istraw, rdrift, doca);
       }
@@ -156,7 +154,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // new chamber : create new doublet candidate
 //-----------------------------------------------------------------------------
-	dcol->push_back(Doublet(multipletIndex, station, panel, *wdir, tdir, trkpos, hit));
+	dcol->push_back(Doublet(multipletIndex, station, panel, wdir, tdir, trkpos, *ihit));
 	oldStation = station;
 	oldPanel   = panel;
 	//	idoublet   = idlast;
@@ -168,14 +166,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // same chamber, same panel : add one more hit to the last doublet
 //-----------------------------------------------------------------------------
-	  dcol->at(idlast-1).addStrawHit(tdir, trkpos, hit);
+	  dcol->at(idlast-1).addStrawHit(tdir, trkpos, *ihit);
 	  //	  idoublet = idlast-1;
 	}
 	else {
 //-----------------------------------------------------------------------------
 // same chamber, different panel : new doublet candidate
 //-----------------------------------------------------------------------------
-	  dcol->push_back(Doublet(multipletIndex, station, panel, *wdir, tdir, trkpos, hit)); // 
+	  dcol->push_back(Doublet(multipletIndex, station, panel, wdir, tdir, trkpos, *ihit)); // 
 	  oldStation = station;
 	  oldPanel   = panel;
 	  //	  idoublet   = idlast;
@@ -219,13 +217,13 @@ namespace mu2e {
       
       for (int j=0; j<trkshsize; ++j) {
 	hit   = doublet->fHit[j];
-	straw = &hit->straw();
-	shId  = straw->index().asInt();
+	Straw const& straw = hit->straw();
+	shId  = straw.index().asInt();
 //-----------------------------------------------------------------------------
 // mid-wire position and the wire direction
 //-----------------------------------------------------------------------------
-	wpos[j] = straw->getMidPoint();
-	wdir    = &doublet->fShDir;
+	wpos[j] = straw.getMidPoint();
+	wdir    = doublet->fShDir;
 //-----------------------------------------------------------------------------
 // track position and direction
 //-----------------------------------------------------------------------------
@@ -235,7 +233,7 @@ namespace mu2e {
 	HepPoint p1(wpos[j].x(),wpos[j].y(),wpos[j].z());
 	HepPoint p2(trkpos.x() ,trkpos.y() ,trkpos.z());
 	
-	TrkLineTraj trstraw(p1, *wdir, 0., 0.);
+	TrkLineTraj trstraw(p1, wdir, 0., 0.);
 	TrkLineTraj trtrk  (p2, tdir, 0., 0.);
 	TrkPoca     poca   (trstraw, 0.,trtrk   , 0.);
 	doca   = poca.doca();
@@ -252,12 +250,12 @@ namespace mu2e {
 	if (_debugLevel > 1) {
 	  printf(" %2i %5i %2i %3i %3i %3i %9.3f %9.3f %9.3f  %6.3f  ",
 		 i, shId, doublet->fStationId, doublet->fPanelId, 
-		 straw->id().getLayer(),
-		 straw->id().getStraw(),
-		 straw->getMidPoint().x(), 
-		 straw->getMidPoint().y(), 
-		 straw->getMidPoint().z(),
-		 wdir->y()
+		 straw.id().getLayer(),
+		 straw.id().getStraw(),
+		 straw.getMidPoint().x(), 
+		 straw.getMidPoint().y(), 
+		 straw.getMidPoint().z(),
+		 wdir.y()
 		 );
 
 	  printf("%6.3f %9.3f %8.3f %9.3f %8.3f %4.1f %9.3f %6.3f %5.3f\n",
@@ -275,22 +273,22 @@ namespace mu2e {
 //---------------------------------------------------------------------------
 // resolve drift ambiguity for a single (non-doublet)  hit
 //---------------------------------------------------------------------------
-  void DoubletAmbigResolver::resolveSingleHit(KalFitResult&      Kres, 
+  void DoubletAmbigResolver::resolveSingleHit(KalRep*      Krep, 
 					      mu2e::TrkStrawHit* Hit ) const {
 
     double                     doca[2], xbest, xnext;
     std::vector<TrkStrawHit*>  hits;
 
-    const Straw* straw = &Hit->straw();
+    Straw const& straw = Hit->straw();
     
-    const CLHEP::Hep3Vector& wdir = straw->getDirection();
-    const CLHEP::Hep3Vector& wmid = straw->getMidPoint();
+    const Hep3Vector& wdir = straw.getDirection();
+    const Hep3Vector& wmid = straw.getMidPoint();
 //-----------------------------------------------------------------------------
 // calculate residuals for two hit positions corresponding to two different 
 // drift signs
 //-----------------------------------------------------------------------------
     hits.push_back(Hit);
-    const TrkDifTraj* traj = findTraj(hits,Kres._krep);
+    const TrkDifTraj* traj = findTraj(hits,Krep);
 
     double dmin = Hit->timeDiffDist()-Hit->timeDiffDistErr();
     double dmax = Hit->timeDiffDist()+Hit->timeDiffDistErr();
@@ -406,11 +404,11 @@ namespace mu2e {
     mu2e::TrkStrawHit *hit  [2];
     //    const mu2e::Straw *straw[2];
    
-    CLHEP::Hep3Vector /*spos[2], sposr[2], */ sdir[2], sdirr[2], wpos[10], posPanel;    
-    CLHEP::Hep3Vector /*tpos[2], tposr[2], */ tdir[2], tdirr[2];
+    Hep3Vector /*spos[2], sposr[2], */ sdir[2], sdirr[2], wpos[10], posPanel;    
+    Hep3Vector /*tpos[2], tposr[2], */ tdir[2], tdirr[2];
     
-    //    const CLHEP::Hep3Vector *wdir;
-    CLHEP::Hep3Vector wdir1, wdir2;
+    //    const Hep3Vector wdir;
+    Hep3Vector wdir1, wdir2;
 
     //    int               /*layer[2],*/ ibest, inext;
     double            phiPanel;
@@ -499,7 +497,7 @@ namespace mu2e {
 	for (std::vector<KalSite*>::const_iterator it=KRep->siteList().begin();
 	     it!= KRep->siteList().end(); it++) {
 	  const KalHit* kalhit = (*it)->kalHit();
-	  if (kalhit && (kalhit->hitOnTrack() == hit[ih])) {
+	  if (kalhit && (kalhit->hit() == hit[ih])) {
 	    itt[ih] = it;
 	    break;
 	  }
@@ -547,7 +545,7 @@ namespace mu2e {
 	for (std::vector<KalSite*>::const_iterator it=KRep->siteList().begin();
 	       it!= KRep->siteList().end(); it++) {
 	  const KalHit* kalhit = (*it)->kalHit();
-	  if (kalhit && (kalhit->hitOnTrack() == hit[ih])) {
+	  if (kalhit && (kalhit->hit() == hit[ih])) {
 	    itt = it;
 	    break;
 	  }
@@ -639,18 +637,18 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
 // given a multiplet, resolve the ambiguity for hit: index0 and index1
 //--------------------------------------------------------------------------------
-  void DoubletAmbigResolver::markDoublet(KalFitResult& KRes, 
+  void DoubletAmbigResolver::markDoublet(KalRep* KRep, 
 					 Doublet*      HitDoublet, 
 					 int           Index0, 
 					 int           Index1 ) const {
     mu2e::TrkStrawHit *hit  [2];
 //     const mu2e::Straw *straw[2];
    
-//     CLHEP::Hep3Vector spos[2], sposr[2], sdir[2], sdirr[2], wpos[10], posPanel;    
-//     CLHEP::Hep3Vector tpos[2], tposr[2], tdir[2], tdirr[2];
+//     Hep3Vector spos[2], sposr[2], sdir[2], sdirr[2], wpos[10], posPanel;    
+//     Hep3Vector tpos[2], tposr[2], tdir[2], tdirr[2];
     
-    const CLHEP::Hep3Vector *wdir;
-//     CLHEP::Hep3Vector wdir1, wdir2;
+    Hep3Vector wdir;
+//     Hep3Vector wdir1, wdir2;
 
     int                  os; // , ibest , inext;
 //     double            rdrift[2], phiPanel;
@@ -674,11 +672,11 @@ namespace mu2e {
     r.index[0] = Index0;
     r.index[1] = Index1;
 
-    calculateDoubletParameters(KRes._krep,HitDoublet,&r);
+    calculateDoubletParameters(KRep,HitDoublet,&r);
 //-----------------------------------------------------------------------------
 // create an array with the straw hit indices within a multiplet
 //-----------------------------------------------------------------------------
-    wdir  = &HitDoublet->fShDir;
+    wdir  = HitDoublet->fShDir;
 // //-----------------------------------------------------------------------------
 // // by construction, both hits are in the same panel, could be in the same or in 
 // // different layers
@@ -1102,7 +1100,7 @@ namespace mu2e {
 	       r.straw[i]->id().getLayer(),
 	       r.straw[i]->id().getStraw(),
 	       r.spos[i].x(), r.spos[i].y(), r.spos[i].z(),
-	       wdir->y()
+	       wdir.y()
 	       );
 	printf(" %6.3f %8.3f %8.3f %9.3f %8.3f %9.3f %6.3f %6.3f",
 	       HitDoublet->fTrkDxDz,
@@ -1124,15 +1122,13 @@ namespace mu2e {
 //---------------------------------------------------------------------------
 // loop over the doublets found and mark their ambiguities
 //---------------------------------------------------------------------------
-  void DoubletAmbigResolver::markMultiplets (KalFitResult& Kres) const {
+  void DoubletAmbigResolver::markMultiplets (KalRep* Krep, std::vector<Doublet>* dcol ) const {
 
     mu2e::TrkStrawHit    *hit, *hitj, *hitk;
-    const mu2e::Straw    *straw;
+    mu2e::Straw    straw;
     Doublet              *doublet;
-    std::vector<Doublet> *dcol;
     int                  ndoublets, ndhits;
 
-    dcol       = &Kres._listOfDoublets;
     ndoublets  = dcol->size();
 
     if (_debugLevel > 0) {
@@ -1159,13 +1155,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	hit = doublet->fHit[0];
 
-	resolveSingleHit(Kres,hit);
+	resolveSingleHit(Krep,hit);
       }
       else if (ndhits == 2) {
 //-----------------------------------------------------------------------------
 // 2 hits in a panel - attempt to determine the drift signs
 //-----------------------------------------------------------------------------
-	markDoublet(Kres,doublet,0,1);
+	markDoublet(Krep,doublet,0,1);
       }
       else {
 //-----------------------------------------------------------------------------
@@ -1187,7 +1183,7 @@ namespace mu2e {
 // - this could be dangerous, especially, in presence of the background 
 // change logic: 
 //-----------------------------------------------------------------------------
-	    markDoublet(Kres,doublet,j,k); 
+	    markDoublet(Krep,doublet,j,k); 
 
 	    list.push_back(*doublet);
 
@@ -1207,14 +1203,14 @@ namespace mu2e {
 // the "best" doublet is good enough, resolve drift signs for the rest hits
 //----------------------------------------------------------------------------- 
 	  hitj    = doublet->fHit[jbest];
-	  straw   = &hitj->straw();
-	  layer0  = straw->id().getLayer();
-	  id0     = straw->index().asInt();
+	  straw   = hitj->straw();
+	  layer0  = straw.id().getLayer();
+	  id0     = straw.index().asInt();
 
 	  hitk    = doublet->fHit[kbest];
-	  straw   = &hitk->straw();
-	  layer1  = straw->id().getLayer();
-	  id1     = straw->index().asInt();
+	  straw   = hitk->straw();
+	  layer1  = straw.id().getLayer();
+	  id1     = straw.index().asInt();
 //-----------------------------------------------------------------------------
 // out of the two hits making the best doublet, select the one with the larger 
 // radius
@@ -1224,9 +1220,9 @@ namespace mu2e {
 
 	  for (int ih=0; ih<ndhits; ++ih) {
 	    hit        = doublet->fHit[ih];
-	    straw      = &hit->straw();
-	    tmpLayerId = straw->id().getLayer();
-	    tmpId      = straw->index().asInt();
+	    Straw const& straw      = hit->straw();
+	    tmpLayerId = straw.id().getLayer();
+	    tmpId      = straw.index().asInt();
 
 	    if (ih == jbest) {
 	      hit->setAmbig(bd.fStrawAmbig[0]);
@@ -1304,13 +1300,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // build list of doublets and resolve the drift signs
 //-----------------------------------------------------------------------------
-  void DoubletAmbigResolver::resolveTrk(KalFitResult& KRes) const {
+  void DoubletAmbigResolver::resolveTrk(KalRep* KRep) const {
 
 					// initialize external hit errors
-    initHitErrors(KRes);
-    findDoublets (KRes._krep,&KRes._listOfDoublets);
+    initHitErrors(KRep);
+    vector<Doublet> listOfDoublets;
+    findDoublets (KRep,&listOfDoublets);
 
-    if (KRes._listOfDoublets.size() > 0) markMultiplets(KRes);
+    if (listOfDoublets.size() > 0) markMultiplets(KRep,&listOfDoublets);
   }
 
 //-----------------------------------------------------------------------------

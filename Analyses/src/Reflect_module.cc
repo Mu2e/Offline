@@ -25,6 +25,7 @@
 // data
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
+#include "DataProducts/inc/threevec.hh"
 // ROOT incldues
 #include "TTree.h"
 #include "TH1F.h"
@@ -37,9 +38,9 @@ using namespace CLHEP;
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 // mu2e tracking
-#include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalDiag.hh"
-#include "KalmanTests/inc/TrkInfo.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "TrkDiag/inc/KalDiag.hh"
+#include "TrkDiag/inc/TrkInfo.hh"
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -47,7 +48,7 @@ using namespace CLHEP;
 #include <memory>
 // This is fragile and needs to be last until CLHEP is
 // properly qualified and included in the BaBar classes.
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
 
 using namespace std;
 

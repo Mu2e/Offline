@@ -5,7 +5,7 @@
 // $Date: 2014/05/31 14:28:10 $
 //
 
-#include "KalmanTests/inc/TrkDef.hh"
+#include "TrkReco/inc/TrkDef.hh"
 // C++
 #include <vector>
 #include "Rtypes.h"

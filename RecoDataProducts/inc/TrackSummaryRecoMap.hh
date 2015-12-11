@@ -2,8 +2,8 @@
 //
 // Andrei Gaponenko, 2014
 
-#ifndef KalmanTests_inc_TrackSummaryRecoMap_hh
-#define KalmanTests_inc_TrackSummaryRecoMap_hh
+#ifndef RecoDataProducts_inc_TrackSummaryRecoMap_hh
+#define RecoDataProducts_inc_TrackSummaryRecoMap_hh
 
 #include "art/Persistency/Common/Assns.h"
 
@@ -14,4 +14,4 @@ namespace mu2e {
   typedef art::Assns<KalRepPtr,TrackSummary> TrackSummaryRecoMap;
 }
 
-#endif /* KalmanTests_inc_TrackSummaryRecoMap_hh */
+#endif /* RecoDataProducts_inc_TrackSummaryRecoMap_hh */

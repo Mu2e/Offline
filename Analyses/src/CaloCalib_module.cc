@@ -60,10 +60,9 @@
 #include "TH2.h"
 
 // Mu2e includes.
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "KalmanTests/inc/TrkFitDirection.hh"
-#include "KalmanTests/inc/KalFitMC.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
 
 // BaBar Kalman filter includes
 #include "BTrk/KalmanTrack/KalRep.hh"

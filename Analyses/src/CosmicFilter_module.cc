@@ -33,7 +33,7 @@
 #include "TrackerGeom/inc/Tracker.hh"
 
 #include "BTrk/TrkBase/HelixParams.hh"
-#include "KalmanTests/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
 
 using namespace std;
 

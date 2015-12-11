@@ -24,7 +24,6 @@ rootlibs  = env['ROOTLIBS']
 
 helper.make_plugins( [
     'mu2e_Mu2eUtilities',
-    'mu2e_KalmanTests',
     'mu2e_CaloCluster',
     'mu2e_MCDataProducts',
     'mu2e_RecoDataProducts',

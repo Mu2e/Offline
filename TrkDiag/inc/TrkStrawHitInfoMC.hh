@@ -4,8 +4,8 @@
 // $Author: brownd $ 
 // $Date: 2014/09/22 12:13:17 $
 //
-#ifndef TrkStrawHitInfo_HH
-#define TrkStrawHitInfo_HH
+#ifndef TrkStrawHitInfoMC_HH
+#define TrkStrawHitInfoMC_HH
 #include "Rtypes.h"
 // simple structs
 namespace mu2e 

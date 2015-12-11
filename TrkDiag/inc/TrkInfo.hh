@@ -3,8 +3,8 @@
 // 
 #ifndef TrkInfo_HH
 #define TrkInfo_HH
-#include "KalmanTests/inc/threevec.hh"
-#include "KalmanTests/inc/helixpar.hh"
+#include "DataProducts/inc/threevec.hh"
+#include "TrkDiag/inc/helixpar.hh"
 #include "Rtypes.h"
 namespace mu2e
 {

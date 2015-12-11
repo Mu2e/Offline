@@ -21,7 +21,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "KalmanTests/inc/KalDiag.hh"
+#include "TrkDiag/inc/KalDiag.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 

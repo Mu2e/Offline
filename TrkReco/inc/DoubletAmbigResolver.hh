@@ -15,6 +15,7 @@
 #endif/*__GCCXML__*/
 #include <cstddef>
 #include <vector>
+#include "CLHEP/Vector/ThreeVector.h"
 
 class TrkDifTraj;
 class KalRep;
@@ -82,20 +83,20 @@ namespace mu2e {
     
     int calculateDoubletParameters(const KalRep* KRep, Doublet* HitDoublet, Data_t* R) const ;
 
-    void findLines       (Hep3Vector* Pos, double* R, double* Slopes) const ;
+    void findLines       (CLHEP::Hep3Vector* Pos, double* R, double* Slopes) const ;
       
     void findDoublets    (const KalRep* KRep, vector<Doublet>* DCol) const ;
       
-    void markDoublet     (KalFitResult& KRes, Doublet *HitDoublet, int Index0, int Index1, int Final) const;
-    void markMultiplets  (KalFitResult& Kres, int Final) const;
-    void resolveSingleHit(KalFitResult& Kres, mu2e::TrkStrawHit* Hit, int Final) const ;
+    void markDoublet     (KalRep* KRes, Doublet *HitDoublet, int Index0, int Index1) const;
+    void markMultiplets  (KalRep* Kres, vector<Doublet>* dcol) const;
+    void resolveSingleHit(KalRep* Kres, mu2e::TrkStrawHit* Hit) const ;
     
 					// resolve a track.  Depending on the configuration, this might
 					// penalty function depends on the drift radius
 
     double penaltyError(double rdrift) const;
 					// update the hit state and the t0 value.
-    virtual void resolveTrk(KalFitResult& KRes) const;
+    virtual void resolveTrk(KalRep* KRes) const;
   };
 }
 #endif

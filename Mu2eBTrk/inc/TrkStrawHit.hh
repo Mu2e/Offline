@@ -25,7 +25,8 @@
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
-
+// c++
+#include <vector>
 // forward refs
 class TrkT0;
 class TrkRep;
@@ -35,6 +36,8 @@ namespace mu2e
 {
   class TrkStrawHit : public TrkHit {
   public:
+  // enum for hit flags
+    enum TrkStrawHitFlag {weededHit=-5, driftFail=-3, updateFail=-1,addedHit=3,unweededHit=4};
     TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,
     const TrkT0& trkt0, double fltlen, double exterr, double maxdriftpull);
     virtual ~TrkStrawHit();
@@ -118,8 +121,10 @@ namespace mu2e
     bool operator () (TrkStrawHit* const& tsh ) { return tsh->strawHit() == _strawhit; }
     StrawHit const& _strawhit;
   };
-
-  
+// define TrkStrawHitVector, to allow explicit conversion and construction
+  typedef std::vector<TrkStrawHit*> TrkStrawHitVector;
+// utility function to convert vector of TrkHits into TrkStrawHits
+  void convert(TrkHitVector const& thv, TrkStrawHitVector& tshv);
 }
 
 #endif
