@@ -41,8 +41,8 @@ namespace mu2e {
 
     if (_verbosityLevel>2) {
 
-      int idev = -1;
-      int isec = -1;
+      int ipln = -1;
+      int ipnl = -1;
       int ilay = -1;
       double iang = -36000;
 
@@ -51,12 +51,12 @@ namespace mu2e {
 
         const Straw& straw = _tt->getStraw(StrawIndex(istr));
 
-        int cdev = straw.id().getPlane();
-        int csec = straw.id().getPanel();
+        int cpln = straw.id().getPlane();
+        int cpnl = straw.id().getPanel();
         int clay = straw.id().getLayer();
 
-        const Plane& plane = _tt->getPlane(cdev);
-        const Panel& panel = plane.getPanel(csec);
+        const Plane& plane = _tt->getPlane(cpln);
+        const Panel& panel = plane.getPanel(cpnl);
         const Layer&  layer  = panel.getLayer(clay);
 
         size_t nStrawsPerPanel = panel.nLayers()  * layer.nStraws();
@@ -66,11 +66,11 @@ namespace mu2e {
         double dang = plane.rotation()/M_PI*180.;
         double sroz = (panel.boxOffset() - plane.origin()).z();
 
-        size_t isecf = nStrawsPerPanel*csec + nStrawsPerPlane*cdev;
+        size_t ipnlf = nStrawsPerPanel*cpnl + nStrawsPerPlane*cpln;
 
         cout << __func__ << " Straw "
              << fixed << setw(6) << istr
-             << " secfloor " << setw(6) << isecf << " "
+             << " plnfloor " << setw(6) << ipnlf << " "
              << straw.id()
              << " mid point " << straw.getMidPoint()
              << " r " << sqrt(straw.getMidPoint()[0]*straw.getMidPoint()[0]+
@@ -80,16 +80,16 @@ namespace mu2e {
              << " origin " << panel.boxOffset()
              << " plane rotation: " << dang
              << " origin " << plane.origin()
-             << " sec rel origin z " << sroz
+             << " pln rel origin z " << sroz
              << " straw exists " << _tt->strawExists(StrawIndex(istr))
              << " plane exists " << plane.exists();
 
-        if (isec>csec && idev==cdev) cout << " <--S";
-        if (iang>cang && idev==cdev) cout << " <--A";
-        if (ilay>clay && isec==csec) cout << " <--L";
-        if ((csec%2 == 0 && sroz>0.) || (csec%2 != 0 && sroz<0.)) cout << " <--Z";
-        if (idev!=cdev) idev=cdev;
-        if (isec!=csec) isec=csec;
+        if (ipnl>cpnl && ipln==cpln) cout << " <--S";
+        if (iang>cang && ipln==cpln) cout << " <--A";
+        if (ilay>clay && ipnl==cpnl) cout << " <--L";
+        if ((cpnl%2 == 0 && sroz>0.) || (cpnl%2 != 0 && sroz<0.)) cout << " <--Z";
+        if (ipln!=cpln) ipln=cpln;
+        if (ipnl!=cpnl) ipnl=cpnl;
         if (ilay!=clay) ilay=clay;
 
         cout << endl;
@@ -339,11 +339,11 @@ namespace mu2e {
          << endl;
   }
 
-  void devtest( const Plane& dev){
+  void plntest( const Plane& plane){
     cout << "Plane: "
-         << dev.id() << " "
-         << dev.origin() << " "
-         << dev.rotation()
+         << plane.id() << " "
+         << plane.origin() << " "
+         << plane.rotation()
          << endl;
   }
 
@@ -396,7 +396,7 @@ namespace mu2e {
     _tt->_envelopeMaterial    = _envelopeMaterial;
 
     // Z location of the first plane.
-    _z0 = -findFirstDevZ0();
+    _z0 = -findFirstPlaneZ0();
 
     makeDetails();
 
@@ -410,8 +410,8 @@ namespace mu2e {
 
     _tt->_planes.reserve(_numPlanes);
     // Construct the planes and their internals.
-    for ( int idev=0; idev<_numPlanes; ++idev ){
-      makePlane( PlaneId(idev) );
+    for ( int ipln=0; ipln<_numPlanes; ++ipln ){
+      makePlane( PlaneId(ipln) );
     }
 
     // Fill all of the non-persistent information.
@@ -444,7 +444,7 @@ namespace mu2e {
 
     // Test the forAll methods.
     //_tt->forAllLayers( lptest);
-    //_tt->forAllPlanes( devtest);
+    //_tt->forAllPlanes( plntest);
     //_tt->forAllLayers( positionTest);
 
   } //end TTrackerMaker::buildIt.
@@ -484,35 +484,35 @@ namespace mu2e {
   }
 
 
-  void TTrackerMaker::makePlane( PlaneId devId ){
+  void TTrackerMaker::makePlane( PlaneId planeId ){
 
 //std::cout << "->->-> makePlane\n";
-    int idev = devId;
+    int ipln = planeId;
 
-    double devDeltaZ = choosePlaneSpacing(idev);
-    CLHEP::Hep3Vector origin( 0., 0., _z0+devDeltaZ);
+    double planeDeltaZ = choosePlaneSpacing(ipln);
+    CLHEP::Hep3Vector origin( 0., 0., _z0+planeDeltaZ);
 
     // plane rotation is no longer used.
     double phi = 0.0;
-    _tt->_planes.push_back(Plane(devId, origin, phi));
-    Plane& dev = _tt->_planes.back();
-    dev._exists = ( find ( _nonExistingPlanes.begin(), _nonExistingPlanes.end(), idev) ==
+    _tt->_planes.push_back(Plane(planeId, origin, phi));
+    Plane& plane = _tt->_planes.back();
+    plane._exists = ( find ( _nonExistingPlanes.begin(), _nonExistingPlanes.end(), ipln) ==
                       _nonExistingPlanes.end() );
 
-    dev._panels.reserve(_panelsPerPlane);
+    plane._panels.reserve(_panelsPerPlane);
 
-    for ( int isec=0; isec<_panelsPerPlane; ++isec ){
-      makePanel ( PanelId(devId,isec), dev );
+    for ( int ipnl=0; ipnl<_panelsPerPlane; ++ipnl ){
+      makePanel ( PanelId(planeId,ipnl), plane );
     }
 
 //std::cout << "<-<-<- makePlane\n";
   }
 
-  void TTrackerMaker::makePanel( const PanelId& secId, Plane& dev ){
+  void TTrackerMaker::makePanel( const PanelId& plnId, Plane& plane ){
 //std::cout << "->->-> makePanel\n";
 
-    dev._panels.push_back( Panel(secId) );
-    Panel& panel = dev._panels.back();
+    plane._panels.push_back( Panel(plnId) );
+    Panel& panel = plane._panels.back();
     panel._layers.reserve(_layersPerPanel);
 
     // check if the opposite panels do not overlap
@@ -524,12 +524,12 @@ namespace mu2e {
       throw cet::exception("GEOM")  << "Planes are too close \n";
     }
 
-    makeManifolds( secId );
+    makeManifolds( plnId );
 
     double strawSpacing = _strawGap+2.*_strawOuterRadius;
 
     for ( int ilay=0; ilay<_layersPerPanel; ++ilay ){
-      makeLayer( LayerId(secId,ilay), panel );
+      makeLayer( LayerId(plnId,ilay), panel );
 
       // checking spacing of the individual layers
       // are the manifolds sized correctly for the straws?
@@ -616,7 +616,7 @@ namespace mu2e {
     }
 
     // calculate/make a panel envelope
-    computePanelBoxParams(panel, dev);
+    computePanelBoxParams(panel, plane);
 
 //std::cout << "<-<-<- makePanel\n";
   }  // makePanel
@@ -632,7 +632,7 @@ namespace mu2e {
     deque<Straw>& allStraws = _tt->_allStraws;
     const Plane& plane = _tt->getPlane( layId.getPlaneId() );
     int ilay = layId.getLayer();
-    int isec = layId.getPanel();
+    int ipnl = layId.getPanel();
 
     //    cout << "Debugging TTrackerMaker ilay: " << ilay << endl;
 
@@ -652,8 +652,8 @@ namespace mu2e {
 
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
-    // CLHEP::HepRotationZ RZ(_panelBaseRotations.at(isec));
-    CLHEP::HepRotationZ RZ(panelRotation(isec,layId.getPlaneId()));
+    // CLHEP::HepRotationZ RZ(_panelBaseRotations.at(ipnl));
+    CLHEP::HepRotationZ RZ(panelRotation(ipnl,layId.getPlaneId()));
 
     // Unit vector in the wire direction. (nominal is the panel 0 to the right?)
     CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
@@ -687,7 +687,7 @@ namespace mu2e {
           xA + (1 + 2*istr)*_strawOuterRadius + istr*_strawGap :
           xA + (1 + 2*istr)*_strawOuterRadius + istr*_strawGap + 2.0*_layerHalfShift;
 
-        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*_panelZSide.at(isec) );
+        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*_panelZSide.at(ipnl) );
         mid += plane.origin();
 
         // Rotate straw midpoint to its actual location.
@@ -733,7 +733,7 @@ namespace mu2e {
 //std::cout << "<-<-<- makeLayer\n";
   }
 
-  void TTrackerMaker::makeManifolds( const PanelId& secId){
+  void TTrackerMaker::makeManifolds( const PanelId& plnId){
 //std::cout << "->->-> makeManifolds\n";
 
     if ( _panelsPerPlane != 4 && _panelsPerPlane != 6 ) {
@@ -741,7 +741,7 @@ namespace mu2e {
         << "This code only knows how to do 4 or 6 panels per plane.\n";
     }
 
-//    double phi = _tt->getPlane(secId.getPlane()).rotation();
+//    double phi = _tt->getPlane(plnId.getPlane()).rotation();
 //    CLHEP::HepRotationZ RZ(phi);
 
 
@@ -757,12 +757,12 @@ namespace mu2e {
       double y0 = _tt->_strawDetails.at(i).halfLength() + _manifoldHalfLengths.at(2);
 
       double z0 = ( _supportHalfThickness + _manifoldHalfLengths.at(2) );
-      //if ( secId.getPanel() <= 1 ) z0 = -z0; // is this correct for the 6 panels?
-      // why not *_panelZSide.at(secId.getPanel())
+      //if ( plnId.getPanel() <= 1 ) z0 = -z0; // is this correct for the 6 panels?
+      // why not *_panelZSide.at(plnId.getPanel())
 
-      z0 = z0*_panelZSide.at(secId.getPanel());
+      z0 = z0*_panelZSide.at(plnId.getPanel());
 
-      // is the above assuming correct Z? why not secId.getPanel()%2?
+      // is the above assuming correct Z? why not plnId.getPanel()%2?
       // are manifolds ever used?
       // is it correct at all? I mean the origin? It is always the same for each plane...
       // x never changes
@@ -770,8 +770,8 @@ namespace mu2e {
       CLHEP::Hep3Vector origin(x0,y0,z0);
 
       //       cout << "Manifold plane, panel, origin, length[0] :" <<
-      //         _tt->getPlane(secId.getPlane()).id() << ", " <<
-      //         secId.getPanel() << ", " <<
+      //         _tt->getPlane(plnId.getPlane()).id() << ", " <<
+      //         plnId.getPanel() << ", " <<
       //         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
 
 
@@ -880,28 +880,28 @@ namespace mu2e {
 
   } // end TTrackerMaker::makeDetails
 
-  void  TTrackerMaker::computePanelBoxParams(Panel& panel, Plane& dev){
+  void  TTrackerMaker::computePanelBoxParams(Panel& panel, Plane& plane){
 
     // get panel number
-    int isec = panel.id().getPanel();
-    //    int idev = dev.id();
-    //    cout << "Debugging TTrackerMaker isec,idev: " << isec << ", " << idev << endl;
+    int ipnl = panel.id().getPanel();
+    //    int ipln = plane.id();
+    //    cout << "Debugging TTrackerMaker ipnl,ipln: " << ipnl << ", " << ipln << endl;
 
     // we copy precalculated _panelBoxHalfLengths etc.. into the panel
 
     panel._boxHalfLengths = _panelBoxHalfLengths;
     double xOffset = _panelBoxXOffsetMag;
-    double zOffset = _panelBoxZOffsetMag * _panelZSide.at(isec);
+    double zOffset = _panelBoxZOffsetMag * _panelZSide.at(ipnl);
 
     // Now calculate the rotations and placement of the panel envelope
 
     panel._boxRxAngle = 0.;
     panel._boxRyAngle = 0.;
-    panel._boxRzAngle = panelRotation(isec,dev.id() );
+    panel._boxRzAngle = panelRotation(ipnl,plane.id() );
 
     CLHEP::HepRotationZ RZ(panel._boxRzAngle);
 
-    panel._boxOffset  = RZ*(CLHEP::Hep3Vector( xOffset, 0., zOffset) + dev.origin());
+    panel._boxOffset  = RZ*(CLHEP::Hep3Vector( xOffset, 0., zOffset) + plane.origin());
 
     // we set to 0.0  values smaller than a small number
     static const double max0val = 1.e-06;
@@ -909,8 +909,8 @@ namespace mu2e {
       if (abs(panel._boxOffset[ii])<max0val) panel._boxOffset[ii]=0.0;
     }
 
-    //     cout << "Debugging panel box isec, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
-    //       isec << ", " <<
+    //     cout << "Debugging panel box ipnl, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
+    //       ipnl << ", " <<
     //       by << ", " <<
     //       bz << ", " <<
     //       bxl << ", " <<
@@ -919,7 +919,7 @@ namespace mu2e {
     //       panel._boxOffset <<
     //       endl;
 
-    //     cout << "Debugging panel box isec, straw lengths: ";
+    //     cout << "Debugging panel box ipnl, straw lengths: ";
     //     for ( int i=0; i<_manifoldsPerEnd; ++i ){
     //       cout << i << " " << _strawHalfLengths.at(i);
     //     }
@@ -1049,7 +1049,7 @@ namespace mu2e {
     _panelBoxZOffsetMag = _supportHalfThickness + _panelBoxHalfLengths.at(2); // bz + pad
 
     // we need to make sure the trapezoids do not extend beyond the plane envelope...
-    // we will check if the dev envelope radius acomodates the newly created box
+    // we will check if the plane envelope radius acomodates the newly created box
 
     double outerSupportRadiusRequireds =
       sqrt( sum_of_squares(_envelopeInnerRadius + 2.0*_panelBoxHalfLengths.at(1),
@@ -1088,16 +1088,16 @@ namespace mu2e {
 
 
   // Compute the spacing for the given plane.
-  double TTrackerMaker::choosePlaneSpacing( int idev ) const {
+  double TTrackerMaker::choosePlaneSpacing( int ipln ) const {
 
 
     if ( _spacingPattern == 0 ) {
-      return idev * _planeSpacing;
+      return ipln * _planeSpacing;
     }
 
     else if ( _spacingPattern == 1 ) {
-      int station = idev/2;
-      int k = idev%2;
+      int station = ipln/2;
+      int k = ipln%2;
       if (k == 0 ) {
         return  station*_planeSpacing - _planeHalfSeparation;
       } else if (k == 1 ) {
@@ -1110,7 +1110,7 @@ namespace mu2e {
 
   }
 
-  double TTrackerMaker::findFirstDevZ0() const{
+  double TTrackerMaker::findFirstPlaneZ0() const{
 
     if ( _spacingPattern == 0 ) {
       return _planeSpacing*double(_numPlanes-1)/2.0;
@@ -1707,15 +1707,15 @@ namespace mu2e {
     for ( size_t i=0; i< _midRingSlot.size(); ++i){
       std::ostringstream name;
       int station = _midRingSlot.at(i);
-      int idev1 = station*2+1;
-      int idev2 = idev1+1;
-      if ( idev2 >= _tt->nPlanes() ){
+      int ipln1 = station*2+1;
+      int ipln2 = ipln1+1;
+      if ( ipln2 >= _tt->nPlanes() ){
         throw cet::exception("GEOM")
           << "Requested a thin support after station: "
           << station
           << " This is between planes: "
-          << idev1 << " and "
-          << idev2 << "\n"
+          << ipln1 << " and "
+          << ipln2 << "\n"
           << "But there are only "
           << _tt->nPlanes()
           << " planes\n";
@@ -1723,7 +1723,7 @@ namespace mu2e {
       name << "ThinSupportRing_" << i;
 
       // Center the support in the gap between two stations.
-      double z = 0.5*( _tt->getPlane(idev1).origin().z() +  _tt->getPlane(idev2).origin().z());
+      double z = 0.5*( _tt->getPlane(ipln1).origin().z() +  _tt->getPlane(ipln2).origin().z());
       sup._stiffRings.push_back(PlacedTubs ( name.str(),  thinRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter+z), _endRingMaterial ));
     }
 
@@ -1814,8 +1814,8 @@ namespace mu2e {
       return;
     }
 
-    size_t idev0(0);
-    size_t isec0(0);
+    size_t ipln0(0);
+    size_t ipnl0(0);
 
     deque<Straw>& allStraws              = _tt->_allStraws;
     std::vector<StrawDetail>& allDetails = _tt->_strawDetails;
@@ -1872,7 +1872,7 @@ namespace mu2e {
     //         For layers > 0:
     //            - create a new StrawDetail object to hold the new length.
     //            - Reseat the _detail and _detailIndex objects in the Straw object.
-    vector<Layer>& lays = _tt->_planes.at(idev0)._panels.at(isec0)._layers;
+    vector<Layer>& lays = _tt->_planes.at(ipln0)._panels.at(ipnl0)._layers;
     for ( size_t ilay=0; ilay<lays.size(); ++ilay){
       Layer& lay(lays.at(ilay));
 
@@ -2026,11 +2026,11 @@ namespace mu2e {
 
   } //end TTrackerMaker::recomputeHalfLengths
   double
-  TTrackerMaker::panelRotation(int isec,int idev) const {
-    int jdev = idev%2;
-    int ista = (idev/2)%2;
-    int jsec = isec + jdev*_panelsPerPlane;
-    double phi = _panelBaseRotations.at(jsec);
+  TTrackerMaker::panelRotation(int ipnl,int ipln) const {
+    int jplane = ipln%2;
+    int ista = (ipln/2)%2;
+    int jpln = ipnl + jplane*_panelsPerPlane;
+    double phi = _panelBaseRotations.at(jpln);
     if(ista==1)phi += _oddStationRotation;
     return phi;
   }
