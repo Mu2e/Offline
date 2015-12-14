@@ -65,9 +65,15 @@
 namespace
 {
    struct caloSeedCompare {
-     bool operator() (mu2e::CaloCrystalHit const* a, mu2e::CaloCrystalHit const* b) const {return a->energyDep() > b->energyDep();}
+     bool operator() (mu2e::CaloCrystalHit const* a, mu2e::CaloCrystalHit const* b) const 
+     {
+        if (std::abs(a->energyDep() - b->energyDep()) > 1e-6) return a->energyDep() > b->energyDep();
+        if (a->id() != b->id()) return a->id() > b->id();
+        return a->time() > b->time();
+     }
    };
 }
+
 
 
 
