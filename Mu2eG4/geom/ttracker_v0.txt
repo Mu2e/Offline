@@ -67,8 +67,8 @@ string ttracker.mat.support   = "G4_Al";
 
 // Debug control for TTracker; uncomment to make only a selected panel.
 // it is not about drawing, but about the construction itself
-int    ttracker.devDraw  =   -1;
-int    ttracker.secDraw  =   -1;
+int    ttracker.plnDraw  =   -1;
+int    ttracker.pnlDraw  =   -1;
 
 //
 // This tells emacs to view this file in c++ mode.

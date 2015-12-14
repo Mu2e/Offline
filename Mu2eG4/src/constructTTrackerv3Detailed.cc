@@ -91,17 +91,17 @@ namespace {
     bool                    visible;
   };
 
-  void addPanels( int idev,
-                   VolumeInfo const& devInfo,
-                   VolumeInfo& sec0Info,
+  void addPanels( int ipln,
+                   VolumeInfo const& plnInfo,
+                   VolumeInfo& pnl0Info,
                    double panelCenterPhi,
                    AntiLeakRegistry& reg,
                    SimpleConfig const& config ){
 
     TTracker const& ttracker = *(GeomHandle<TTracker>());
-    Plane const& dev        = ttracker.getPlane(idev);
+    Plane const& pln        = ttracker.getPlane(ipln);
 
-    int secDraw         = config.getInt ("ttracker.secDraw",-1);
+    int pnlDraw         = config.getInt ("ttracker.pnlDraw",-1);
     bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
     int verbosityLevel  = config.getInt ("ttracker.verbosityLevel",0);
 
@@ -110,14 +110,14 @@ namespace {
     PlacedTubs const& chanUp(ttracker.getSupportStructure().innerChannelUpstream());
 
     // Place the panel envelope into the plane envelope, one placement per panel.
-    for ( int isec=0; isec<dev.nPanels(); ++isec){
+    for ( int ipnl=0; ipnl<pln.nPanels(); ++ipnl){
 
       // For debugging, only place the one requested panel.
-      if ( secDraw > -1  && isec != secDraw ) continue;
-      //if ( secDraw > -1  && isec%2 == 0 ) continue;
+      if ( pnlDraw > -1  && ipnl != pnlDraw ) continue;
+      //if ( pnlDraw > -1  && ipnl%2 == 0 ) continue;
 
       // Choose a representative straw from this this (plane,panel).
-      Straw const& straw = ttracker.getStraw( StrawId(idev,isec,0,0) );
+      Straw const& straw = ttracker.getStraw( StrawId(ipln,ipnl,0,0) );
 
       // Azimuth of the midpoint of the wire.
       CLHEP::Hep3Vector const& mid = straw.getMidPoint();
@@ -125,7 +125,7 @@ namespace {
       if ( phimid < 0 ) phimid += 2.*M_PI;
 
       // Is this panel on the front or back face of the plane?
-      double sign   = ((mid.z() - dev.origin().z())>0. ? 1.0 : -1.0 );
+      double sign   = ((mid.z() - pln.origin().z())>0. ? 1.0 : -1.0 );
       CLHEP::Hep3Vector panelPosition(0.,0., sign*std::abs(chanUp.position().z()) );
 
       // The rotation that will make the straw mid point have the correct azimuth.
@@ -143,16 +143,16 @@ namespace {
         reg.add(G4RotationMatrix(rotZ*rotY));
 
       bool many(false);
-      sec0Info.physical =  new G4PVPlacement(rotation,
+      pnl0Info.physical =  new G4PVPlacement(rotation,
                                              panelPosition,
-                                             sec0Info.logical,
-                                             sec0Info.name,
-                                             devInfo.logical,
+                                             pnl0Info.logical,
+                                             pnl0Info.name,
+                                             plnInfo.logical,
                                              many,
-                                             isec,
+                                             ipnl,
                                              false);
       if ( doSurfaceCheck) {
-        checkForOverlaps(sec0Info.physical, config, verbosityLevel>0);
+        checkForOverlaps(pnl0Info.physical, config, verbosityLevel>0);
       }
 
     }
@@ -174,8 +174,8 @@ namespace {
 
     // Control of graphics for debugging the geometry.
     // Only instantiate panels to be drawn.
-    int devDraw = config.getInt("ttracker.devDraw",-1);
-    //int secDraw = config.getInt("ttracker.secDraw",-1);
+    int plnDraw = config.getInt("ttracker.plnDraw",-1);
+    //int pnlDraw = config.getInt("ttracker.pnlDraw",-1);
     bool const doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false);
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
@@ -337,7 +337,7 @@ namespace {
     // Construct one plane but do not place it until its insides have been populated.
 
     string trackerEnvelopeName("TTrackerPlaneEnvelope");
-    VolumeInfo devInfo = nestTubs( trackerEnvelopeName,
+    VolumeInfo plnInfo = nestTubs( trackerEnvelopeName,
                                    planeEnvelopeParams,
                                    envelopeMaterial,
                                    noRotation,
@@ -366,13 +366,13 @@ namespace {
     SupportStructure const& sup = ttracker.getSupportStructure();
     G4Colour  lightBlue (0.0, 0.0, 0.75);
     std::deque<VolHelper> vols;
-    vols.push_back( VolHelper(sup.centerPlate(),         lightBlue,           trackerEnvelopeName,        devInfo, supportVisible ));
-    vols.push_back( VolHelper(sup.outerRingUpstream(),   G4Colour::Green(),   trackerEnvelopeName,        devInfo, supportVisible ));
-    vols.push_back( VolHelper(sup.outerRingDownstream(), G4Colour::Green(),   trackerEnvelopeName,        devInfo, supportVisible ));
-    vols.push_back( VolHelper(sup.coverUpstream(),       G4Colour::Cyan(),    trackerEnvelopeName,        devInfo, supportVisible ));
-    vols.push_back( VolHelper(sup.coverDownstream(),     G4Colour::Cyan(),    trackerEnvelopeName,        devInfo, supportVisible ));
-    vols.push_back( VolHelper(sup.gasUpstream(),         G4Colour::Magenta(), trackerEnvelopeName,        devInfo, supportVisible ));
-    vols.push_back( VolHelper(sup.gasDownstream(),       G4Colour::Magenta(), trackerEnvelopeName,        devInfo, supportVisible ));
+    vols.push_back( VolHelper(sup.centerPlate(),         lightBlue,           trackerEnvelopeName,        plnInfo, supportVisible ));
+    vols.push_back( VolHelper(sup.outerRingUpstream(),   G4Colour::Green(),   trackerEnvelopeName,        plnInfo, supportVisible ));
+    vols.push_back( VolHelper(sup.outerRingDownstream(), G4Colour::Green(),   trackerEnvelopeName,        plnInfo, supportVisible ));
+    vols.push_back( VolHelper(sup.coverUpstream(),       G4Colour::Cyan(),    trackerEnvelopeName,        plnInfo, supportVisible ));
+    vols.push_back( VolHelper(sup.coverDownstream(),     G4Colour::Cyan(),    trackerEnvelopeName,        plnInfo, supportVisible ));
+    vols.push_back( VolHelper(sup.gasUpstream(),         G4Colour::Magenta(), trackerEnvelopeName,        plnInfo, supportVisible ));
+    vols.push_back( VolHelper(sup.gasDownstream(),       G4Colour::Magenta(), trackerEnvelopeName,        plnInfo, supportVisible ));
     vols.push_back( VolHelper(sup.g10Upstream(),         G4Colour::Blue(),    sup.gasUpstream().name(),   vols, supportVisible ));
     vols.push_back( VolHelper(sup.g10Downstream(),       G4Colour::Blue(),    sup.gasDownstream().name(), vols, supportVisible ));
     vols.push_back( VolHelper(sup.cuUpstream(),          G4Colour::Yellow(),  sup.gasUpstream().name(),   vols, supportVisible ));
@@ -459,7 +459,7 @@ namespace {
         rOut[i] = ring.tubsParams().outerRadius();
       }
 
-      VolumeInfo innerRingInfo( ring.name(), ring.position(), ring.position() + devInfo.centerInWorld );
+      VolumeInfo innerRingInfo( ring.name(), ring.position(), ring.position() + plnInfo.centerInWorld );
       innerRingInfo.solid = new G4Polycone( ring.name(),
                                             0.,
                                             2.*M_PI,
@@ -474,7 +474,7 @@ namespace {
                      findMaterialOrThrow(ring.materialName()),
                      0,
                      ring.position(),
-                     devInfo.logical,
+                     plnInfo.logical,
                      0,
                      visible,
                      G4Colour::Red(),
@@ -491,7 +491,7 @@ namespace {
     // In this model, panel envelopes are arcs of a disk.
 
     // Panels are identical other than placement - so get required properties from plane 0, panel 0.
-    Panel const& sec00(ttracker.getPanel(PanelId(0,0)));
+    Panel const& pnl00(ttracker.getPanel(PanelId(0,0)));
 
     // Azimuth of the centerline of a the panel enveleope: panelCenterPhi
     // Upon construction and before placement, the panel envelope occupies [0,phiMax].
@@ -508,12 +508,12 @@ namespace {
     // Create one logical panel envelope but, for now, do not place it.
     // Fill it with straws and then place it multiple times.
     TubsParams s0(r1, r2, chanUp.tubsParams().zHalfLength(), 0., phiMax);
-    VolumeInfo sec0Info = nestTubs( "PanelEnvelope0",
+    VolumeInfo pnl0Info = nestTubs( "PanelEnvelope0",
                                     s0,
                                     findMaterialOrThrow(chanUp.materialName()),
                                     0,
                                     zeroVector,
-                                    devInfo.logical,
+                                    plnInfo.logical,
                                     0,                     // copyNo
                                     panelEnvelopeVisible,
                                     G4Colour::Magenta(),
@@ -530,23 +530,23 @@ namespace {
     // within the TTracker class.  For straws on the downstream side of the support, the z axis of the straw
     // volume is positive when going counter-clockwise.  This won't be important since we never work
     // in the straw-local coordiates within G4.
-    CLHEP::HepRotationZ secRz(-panelCenterPhi);
-    CLHEP::HepRotationX secRx(M_PI/2.);
-    G4RotationMatrix* sec00Rotation = reg.add(G4RotationMatrix(secRx*secRz));
+    CLHEP::HepRotationZ pnlRz(-panelCenterPhi);
+    CLHEP::HepRotationX pnlRx(M_PI/2.);
+    G4RotationMatrix* pnl00Rotation = reg.add(G4RotationMatrix(pnlRx*pnlRz));
 
     // The z of the center of the placed panel envelope, in Mu2e coordinates.
     // This carries a sign, depending on upstream/downstream.
     double zPanel(0.);
-    for ( int i=0; i<sec00.nLayers(); ++i){
-      zPanel += sec00.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
+    for ( int i=0; i<pnl00.nLayers(); ++i){
+      zPanel += pnl00.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
     }
-    zPanel /= sec00.nLayers();
+    zPanel /= pnl00.nLayers();
 
     // A unit vector in the direction from the origin to the wire center within the panel envelope.
     CLHEP::Hep3Vector unit( cos(panelCenterPhi), sin(panelCenterPhi), 0.);
 
     // Place the straws into the panel envelope.
-    for ( std::vector<Layer>::const_iterator i=sec00.getLayers().begin(); i != sec00.getLayers().end(); ++i ){
+    for ( std::vector<Layer>::const_iterator i=pnl00.getLayers().begin(); i != pnl00.getLayers().end(); ++i ){
 
       Layer const& lay(*i);
 
@@ -576,9 +576,9 @@ namespace {
         VolumeInfo strawVol =  nestTubs( straw.name("TTrackerStrawGas_"),
                                          detail.getOuterTubsParams(),
                                          findMaterialOrThrow(detail.gasMaterialName()),
-                                         sec00Rotation,
+                                         pnl00Rotation,
                                          mid,
-                                         sec0Info.logical,
+                                         pnl0Info.logical,
                                          copyNo,
                                          strawVisible,
                                          G4Colour::Red(),
@@ -723,26 +723,26 @@ namespace {
 
 
     // Place the plane envelopes into the tracker mother.
-    for ( int idev=0; idev<ttracker.nPlanes(); ++idev ){
+    for ( int ipln=0; ipln<ttracker.nPlanes(); ++ipln ){
 
       // changes here affect StrawSD
 
-      //if ( devDraw > -1 && idev != devDraw ) continue;
-      if ( devDraw > -1 && idev > devDraw ) continue;
+      //if ( plnDraw > -1 && ipln != plnDraw ) continue;
+      if ( plnDraw > -1 && ipln > plnDraw ) continue;
 
       verbosityLevel > 1 &&
-        cout << "Debugging dev: " << idev << " " << devInfo.name << " devDraw: " << devDraw << endl;
+        cout << "Debugging pln: " << ipln << " " << plnInfo.name << " plnDraw: " << plnDraw << endl;
 
-      const Plane& plane = ttracker.getPlane(idev);
+      const Plane& plane = ttracker.getPlane(ipln);
 
-      // devPosition - is in the coordinate system of the Tracker mother volume.
+      // plnPosition - is in the coordinate system of the Tracker mother volume.
       // plane.origin() is in the detector coordinate system.
-      CLHEP::Hep3Vector devPosition = plane.origin()+motherOffset;
+      CLHEP::Hep3Vector plnPosition = plane.origin()+motherOffset;
 
       if ( verbosityLevel > 1 ){
         cout << "Debugging -plane.rotation(): " << -plane.rotation() << " " << endl;
         cout << "Debugging plane.origin():    " << plane.origin() << " " << endl;
-        cout << "Debugging position in mother: " << devPosition << endl;
+        cout << "Debugging position in mother: " << plnPosition << endl;
       }
 
       // could we descend the final hierarchy and set the "true" copy numbers?
@@ -750,19 +750,19 @@ namespace {
       // we may need to keep those pointers somewhre... (this is only the last one...)
       bool pMany(false);
       bool pSurfChk(false);
-      devInfo.physical =  new G4PVPlacement(noRotation,
-                                            devPosition,
-                                            devInfo.logical,
-                                            devInfo.name,
+      plnInfo.physical =  new G4PVPlacement(noRotation,
+                                            plnPosition,
+                                            plnInfo.logical,
+                                            plnInfo.name,
                                             motherInfo.logical,
                                             pMany,
-                                            idev,
+                                            ipln,
                                             pSurfChk);
       if ( doSurfaceCheck) {
-         checkForOverlaps(devInfo.physical, config, verbosityLevel>0);
+         checkForOverlaps(plnInfo.physical, config, verbosityLevel>0);
       }
 
-      addPanels ( idev, devInfo, sec0Info, panelCenterPhi, reg, config );
+      addPanels ( ipln, plnInfo, pnl0Info, panelCenterPhi, reg, config );
 
     } // end loop over planes
 

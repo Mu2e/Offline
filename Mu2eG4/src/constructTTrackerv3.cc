@@ -91,8 +91,8 @@ namespace mu2e{
 
     // Control of graphics for debugging the geometry.
     // Only instantiate panels to be drawn.
-    int planeDraw = config.getInt("ttracker.devDraw",-1);
-    int panelDraw = config.getInt("ttracker.secDraw",-1);
+    int planeDraw = config.getInt("ttracker.plnDraw",-1);
+    int panelDraw = config.getInt("ttracker.pnlDraw",-1);
     bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false) ||
       config.getBool("ttracker.doSurfaceCheck",false);
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
@@ -187,9 +187,9 @@ namespace mu2e{
 
     VolumeInfo panelInfo;
 
-    const size_t idev0 = 0;
+    const size_t ipln0 = 0;
 
-    const Plane& plane0 = ttracker.getPlane(idev0);
+    const Plane& plane0 = ttracker.getPlane(ipln0);
 
     // place straws etc... wrt the envelope
 
@@ -197,9 +197,9 @@ namespace mu2e{
 
     // Construct One panel logical volume (and then place it N times)
 
-    const size_t isec0 = 0;
+    const size_t ipnl0 = 0;
 
-    const Panel& panel0 = plane0.getPanel(isec0);
+    const Panel& panel0 = plane0.getPanel(ipnl0);
 
     // constructing panel envelope
 
@@ -215,18 +215,18 @@ namespace mu2e{
     StrawDetail const& detail0 = straw0.getDetail();
 
     verbosityLevel > 0 &&
-      cout << __func__ << " panel box isec detail0.halfLength(): " << detail0.halfLength() << endl;
+      cout << __func__ << " panel box ipnl detail0.halfLength(): " << detail0.halfLength() << endl;
 
 
     panelInfo.name = "TTrackerPanelEnvelope";
 
-    G4Box* secBox = new G4Box(panelInfo.name+"Box",
+    G4Box* pnlBox = new G4Box(panelInfo.name+"Box",
                               detail0.halfLength(),
                               panel0.boxHalfLengths()[2],
                               panel0.boxHalfLengths()[1]
                               );
 
-    G4Trd* secTrd = new G4Trd(panelInfo.name+"Trd",
+    G4Trd* pnlTrd = new G4Trd(panelInfo.name+"Trd",
                               panel0.boxHalfLengths()[4],
                               panel0.boxHalfLengths()[3],
                               panel0.boxHalfLengths()[2],
@@ -237,7 +237,7 @@ namespace mu2e{
     // one could also intersect it with a ring to decrease its radial spread
 
     panelInfo.solid =
-      new G4IntersectionSolid(panelInfo.name, secBox, secTrd);
+      new G4IntersectionSolid(panelInfo.name, pnlBox, pnlTrd);
 
     // false for placing physical volume, just create a logical one
     finishNesting(panelInfo,
@@ -259,8 +259,8 @@ namespace mu2e{
       int oldWidth = cout.width(newWidth);
       std::ios::fmtflags oldFlags = cout.flags();
       cout.setf(std::ios::fixed,std::ios::floatfield);
-      cout << __func__ << " panel box isec, panel.boxHalfLengths().at(4,3,2,2,1): " <<
-        isec0 << ", " <<
+      cout << __func__ << " panel box ipnl, panel.boxHalfLengths().at(4,3,2,2,1): " <<
+        ipnl0 << ", " <<
         panel0.boxHalfLengths().at(4) << ", " <<
         panel0.boxHalfLengths().at(3) << ", " <<
         panel0.boxHalfLengths().at(2) << ", " <<
@@ -429,43 +429,43 @@ namespace mu2e{
 
     vector<VolumeInfo>  planeInfoVect;
     vector<VolumeInfo> supportInfoVect;
-    int tndev = ttracker.nPlanes();
-    planeInfoVect.reserve(tndev);
-    supportInfoVect.reserve(tndev);
+    int tnpln = ttracker.nPlanes();
+    planeInfoVect.reserve(tnpln);
+    supportInfoVect.reserve(tnpln);
 
-    // idev can't be size_t here as planeDraw can be -1
-    for ( int idev=0; idev<tndev; ++idev ){
+    // ipln can't be size_t here as planeDraw can be -1
+    for ( int ipln=0; ipln<tnpln; ++ipln ){
 
-      if ( planeDraw > -1 && idev != planeDraw )  continue;
+      if ( planeDraw > -1 && ipln != planeDraw )  continue;
 
       if (verbosityLevel > 0 ) {
-        cout << __func__ << " working on plane:   " << idev << endl;
+        cout << __func__ << " working on plane:   " << ipln << endl;
       }
 
-      const Plane& plane = ttracker.getPlane(idev);
+      const Plane& plane = ttracker.getPlane(ipln);
 
       if (!plane.exists()) continue;
       if (verbosityLevel > 0 ) {
-	cout << __func__ << " existing   plane:   " << idev << endl;
+	cout << __func__ << " existing   plane:   " << ipln << endl;
       }
 
-      std::ostringstream devs;
-      devs << idev;
+      std::ostringstream plns;
+      plns << ipln;
 
       CLHEP::HepRotationZ planeRZ(-plane.rotation()); //It is arround z
       G4RotationMatrix* planeRotation  = reg.add(G4RotationMatrix(planeRZ));
 
       // plane.origin() is in detector coordinates.
-      // devOrigin is in the coordinate system of the mother volume.
-      CLHEP::Hep3Vector devOrigin = plane.origin() + originOffset;
+      // plnOrigin is in the coordinate system of the mother volume.
+      CLHEP::Hep3Vector plnOrigin = plane.origin() + originOffset;
 
-      planeInfoVect.push_back(nestTubs("TTrackerPlaneEnvelope_"  + devs.str(),
+      planeInfoVect.push_back(nestTubs("TTrackerPlaneEnvelope_"  + plns.str(),
                                         planeEnvelopeParams,
                                         envelopeMaterial,
                                         planeRotation,
-                                        devOrigin,
+                                        plnOrigin,
                                         motherInfo.logical,
-                                        idev,
+                                        ipln,
                                         ttrackerPlaneEnvelopeVisible,
                                         G4Colour::Magenta(),
                                         ttrackerPlaneEnvelopeSolid,
@@ -475,21 +475,21 @@ namespace mu2e{
                                         ));
       
       verbosityLevel > 1 &&
-        cout << __func__ << " placing plane: " << idev << " " << devOrigin << " " 
-             << planeInfoVect[idev].name << endl;
+        cout << __func__ << " placing plane: " << ipln << " " << plnOrigin << " " 
+             << planeInfoVect[ipln].name << endl;
 
       // placing support
 
       TubsParams ttrackerPlaneSupportParams = ttracker.getSupportParams().getTubsParams();
 
       G4Colour  lightBlue (0.0, 0.0, 0.75);
-      supportInfoVect.push_back(nestTubs("TTrackerPlaneSupport_" + devs.str(),
+      supportInfoVect.push_back(nestTubs("TTrackerPlaneSupport_" + plns.str(),
                                          ttrackerPlaneSupportParams,
                                          findMaterialOrThrow(ttracker.getSupportParams().materialName()),
                                          0,
                                          zeroVector,
-                                         planeInfoVect[idev].logical,
-                                         idev,
+                                         planeInfoVect[ipln].logical,
+                                         ipln,
                                          ttrackerSupportVisible,
                                          lightBlue,
                                          ttrackerSupportSolid,
@@ -498,7 +498,7 @@ namespace mu2e{
                                          doSurfaceCheck
                                          ));
     
-      if ( verbosityLevel > 0 && idev==0) {
+      if ( verbosityLevel > 0 && ipln==0) {
         int oldPrecision = cout.precision(newPrecision);
         int oldWidth = cout.width(newWidth);
         std::ios::fmtflags oldFlags = cout.flags();
@@ -510,8 +510,8 @@ namespace mu2e{
              << ttrackerPlaneSupportParams.zHalfLength() << " "
              << endl;
 
-        cout << __func__ << " plane env idev, planeEnvelopeParams ir,or,zhl,phi0,phimax: " <<
-          idev << ", " <<
+        cout << __func__ << " plane env ipln, planeEnvelopeParams ir,or,zhl,phi0,phimax: " <<
+          ipln << ", " <<
           planeEnvelopeParams.innerRadius() << ", " <<
           planeEnvelopeParams.outerRadius() << ", " <<
           planeEnvelopeParams.zHalfLength() << ", " <<
@@ -527,27 +527,27 @@ namespace mu2e{
 
       G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
         FindSensitiveDetector(SensitiveDetectorName::TTrackerPlaneSupport());
-      if(sd) supportInfoVect[idev].logical->SetSensitiveDetector(sd);
+      if(sd) supportInfoVect[ipln].logical->SetSensitiveDetector(sd);
 
       verbosityLevel > 1 &&
-        cout << __func__ << " plane: " << idev << " " 
-             << planeInfoVect[idev].name << " planeDraw: " << planeDraw << endl;
+        cout << __func__ << " plane: " << ipln << " " 
+             << planeInfoVect[ipln].name << " planeDraw: " << planeDraw << endl;
 
       if ( verbosityLevel > 1 ) {
         cout << __func__ << " -plane.rotation(): " << -plane.rotation() << " " << endl;
         cout << __func__ << " plane.origin(): " << plane.origin() << " " << endl;
       }
 
-      // isec can't be size_t here as panelDraw can be -1
-      for ( int isec = 0; isec<plane.nPanels(); ++isec){
+      // ipnl can't be size_t here as panelDraw can be -1
+      for ( int ipnl = 0; ipnl<plane.nPanels(); ++ipnl){
 
-        if ( panelDraw > -1 && isec > panelDraw ) continue;
+        if ( panelDraw > -1 && ipnl > panelDraw ) continue;
 
         verbosityLevel > 1 &&
-          cout << __func__ << " panel: " << isec << " " 
+          cout << __func__ << " panel: " << ipnl << " " 
                << panelInfo.name << " panelDraw: " << panelDraw << endl;
 
-        const Panel& panel = plane.getPanel(isec);
+        const Panel& panel = plane.getPanel(ipnl);
 
         // place the trapezoid in its position ready for the RZ rotation
 
@@ -567,23 +567,23 @@ namespace mu2e{
 
         // origin a.k.a offset wrt current mother volume
         CLHEP::Hep3Vector panelOrigin = panel.boxOffset() - plane.origin();
-        double secRelZ = panelOrigin.z();
+        double pnlRelZ = panelOrigin.z();
 
         CLHEP::Hep3Vector nominalRelPos(CLHEP::Hep3Vector(panelOrigin.x(),panelOrigin.y(),0.).mag(), 
-                                        0., secRelZ);
+                                        0., pnlRelZ);
 
         if (verbosityLevel > 1) {
-          cout << __func__ << " plane, panel, isec%2, secRelZ : " 
-               << setw(3)  << idev << ", " 
-               << isec     << ", " 
-               << isec%2   << ", " 
-               << setw(10) << secRelZ;
+          cout << __func__ << " plane, panel, ipnl%2, pnlRelZ : " 
+               << setw(3)  << ipln << ", " 
+               << ipnl     << ", " 
+               << ipnl%2   << ", " 
+               << setw(10) << pnlRelZ;
           cout  << endl;
         }
 
         // we add a 180deg rotation for panel on "even/upstream" side of planes
         
-        G4RotationMatrix* panelRotation = (secRelZ>0.0) ?
+        G4RotationMatrix* panelRotation = (pnlRelZ>0.0) ?
           reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*panelRZ.inverse())):
           reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RX2ForTrapezoids*panelRZ.inverse()));
 
@@ -592,15 +592,15 @@ namespace mu2e{
         // we still need to do a complemetary rotation
 
         if ( verbosityLevel > 1 ) {
-          cout << __func__ << " plane.origin:      " << idev << " " << isec 
-               << " " << planeInfoVect[idev].name << plane.origin() << endl;
-          cout << __func__ << " panel.origin:      " << idev << " " << isec 
+          cout << __func__ << " plane.origin:      " << ipln << " " << ipnl 
+               << " " << planeInfoVect[ipln].name << plane.origin() << endl;
+          cout << __func__ << " panel.origin:      " << ipln << " " << ipnl 
                << " " << panelInfo.name << panelOrigin << endl;
-          cout << __func__ << " nominalRelPos:      " << idev << " " << isec 
+          cout << __func__ << " nominalRelPos:      " << ipln << " " << ipnl 
                << " " << panelInfo.name << nominalRelPos << endl;
-          cout << __func__ << " panelRelOrigin:    " << idev << " " << isec 
+          cout << __func__ << " panelRelOrigin:    " << ipln << " " << ipnl 
                << " " << panelInfo.name << panelRelOrigin << endl;
-          cout << __func__ << " panel.boxOffset(): " << idev << " " << isec 
+          cout << __func__ << " panel.boxOffset(): " << ipln << " " << ipnl 
                << " " << panelInfo.name << panel.boxOffset() << endl;
         }
 
@@ -610,9 +610,9 @@ namespace mu2e{
                                                  panelRelOrigin,
                                                  panelInfo.logical,
                                                  panelInfo.name,
-                                                 planeInfoVect[idev].logical,
+                                                 planeInfoVect[ipln].logical,
                                                  false,
-                                                 isec,
+                                                 ipnl,
                                                  false);
         if ( doSurfaceCheck) {
           checkForOverlaps( panelInfo.physical, config, verbosityLevel>0);
@@ -620,7 +620,7 @@ namespace mu2e{
 
         if (verbosityLevel > 1) {
 
-          cout << __func__ << " placed panel: " << isec << " in plane " << idev << " " 
+          cout << __func__ << " placed panel: " << ipnl << " in plane " << ipln << " " 
                << panelInfo.name << endl;
 
           const Layer&  layer  = panel.getLayer(0);
@@ -628,9 +628,9 @@ namespace mu2e{
           int nStrawsPerPlane = plane.nPanels() * nStrawsPerPanel;
 
           cout << __func__ << " first straw number in panel " << fixed << setw(4)
-               << isec << " in dev " << fixed << setw(4)
-               << idev << " should be: " << fixed << setw(8)
-               << nStrawsPerPanel * isec + nStrawsPerPlane * idev
+               << ipnl << " in pln " << fixed << setw(4)
+               << ipln << " should be: " << fixed << setw(8)
+               << nStrawsPerPanel * ipnl + nStrawsPerPlane * ipln
                << endl;
 
         }
@@ -638,8 +638,8 @@ namespace mu2e{
       } // end loop over panels
     
       verbosityLevel > 1 &&
-        cout << __func__ << " placed plane: " << idev << " " << idev%2 << " " 
-             << planeInfoVect[idev].name << endl;
+        cout << __func__ << " placed plane: " << ipln << " " << ipln%2 << " " 
+             << planeInfoVect[ipln].name << endl;
 
     } // end loop over planes
 
