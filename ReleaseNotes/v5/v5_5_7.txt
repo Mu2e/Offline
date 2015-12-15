@@ -23,6 +23,15 @@ Still under construction
       Mu2eG4/src/constructTTrackerv3Detailed.cc
       Mu2eG4/test/transportOnlyGeom.txt
 
+   Renamed variables similar to "did" to "plnid", "sid" to "pnlid" or "strid"
+
+      TTrackerGeom/inc/ManifoldId.hh
+      TTrackerGeom/inc/TTracker.hh
+      TTrackerGeom/src/Manifold.cc
+      TrackerGeom/inc/Panel.hh
+      TrackerGeom/inc/Plane.hh
+      TrackerGeom/inc/Tracker.hh
+
 
 9) Dec 13, 2015 kutschke
    Analyses/src/VMMonitor_module.cc
