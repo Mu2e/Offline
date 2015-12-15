@@ -85,7 +85,6 @@ namespace mu2e
     _mint0doca(pset.get<double>("minT0DOCA",-0.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
     //
-    _removefailed(pset.get<bool>("RemoveFailedFits",true)),
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _weedhits(pset.get<vector<bool> >("weedhits")),
     _herr(pset.get< vector<double> >("hiterr")),
@@ -210,10 +209,6 @@ namespace mu2e
 // now fit
       TrkErrCode fitstat = fitTrack(krep,tshv);
       krep->addHistory(fitstat,"KalFit fit");
-      if(_removefailed && !fitstat.success()){
-	delete krep;
-	krep = 0;
-      }
     }
   }
 
@@ -287,7 +282,7 @@ namespace mu2e
       fitstat = fitIteration(krep,tshv,iherr);
       if(!fitstat.success())break;
     }
-    if(krep != 0) krep->addHistory(fitstat,"KalFit");
+    krep->addHistory(fitstat,"KalFit");
     return fitstat;
   }
 

@@ -68,7 +68,6 @@ namespace mu2e
     double _t0errfac;	    // fudge factor for the calculated t0 error
     double _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     double _t0nsig;	    // # of sigma to include when selecting hits for t0
-    bool _removefailed;	    // remove failed fits?
     unsigned _minnstraws;   // minimum # staws for fit
     // iteration-dependent configuration parameters
     std::vector<bool> _weedhits;	// weed hits?

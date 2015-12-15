@@ -72,17 +72,17 @@ namespace mu2e
     updateSignalTime();
 // compute initial hit t0 and drift
     updateHitT0(trkt0);
+    setActivity(true);
 //    std::cout << "creating TrkStrawHit " << this << std::endl;
   }
   
  
   TrkStrawHit::~TrkStrawHit(){
 // delete the hit
-//    std::cout << "deleting hit " << _theHit << std::endl;
+    std::cout << "deleting hit " << *this << std::endl;
     delete _hittraj;
-// ugly trick to keep the base class from trying to delete _TrkDummyHit
     _parentRep=0;  
-//    std::cout << "deleted TrkStrawHit " << this << std::endl;
+    std::cout << "deleted TrkStrawHit " << *this << std::endl;
   }
 
   double

@@ -2,7 +2,7 @@
 #------------------------------------------------------------------------------
 # Configurations needed for doublet-based L-R tracker hit ambiguity resolution 
 #------------------------------------------------------------------------------
-#include "KalmanTests/fcl/AmbigResolver.fcl"
+#include "TrkPatRec/fcl/AmbigResolver.fcl"
 BEGIN_PROLOG
 
 # parameter configuration for the panel-based resolver

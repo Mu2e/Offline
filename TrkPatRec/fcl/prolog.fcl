@@ -4,7 +4,7 @@
 #------------------------------------------------------------------------------
 #include "TrkPatRec/fcl/Particle.fcl"
 #include "TrkPatRec/fcl/PanelAmbigResolver.fcl"
-#
+#include "TrkDiag/fcl/KalDiag.fcl"
 
 BEGIN_PROLOG
 
@@ -86,6 +86,7 @@ TrkRecFit : {
   module_type                 : TrkRecFit
   SeedFit		      : @local::KalSeedFit
   KalFit		      : @local::KalFinalFit
+  KalDiag		      : @local::KalDiagDirect
 }
 
 # dedicated configurations for reconstructing specific particles

@@ -273,7 +273,7 @@ namespace mu2e
       // now, fit the seed helix from the filtered hits
       KalRep *seedrep(0), *krep(0);
       _seedfit.makeTrack(seeddef,seedrep);
-      if(seedrep->fitStatus().success()){
+      if(seedrep != 0 && seedrep->fitStatus().success()){
         findseed = true;
         // find the helix parameters from the helix fit, and initialize the full Kalman fit with this
         double locflt;
@@ -283,7 +283,7 @@ namespace mu2e
         filterOutliers(kaldef,seedrep->traj(),_maxseeddoca,_sfilt);
         _kfit.makeTrack(kaldef,krep);
         // if successfull, try to add missing hits
-        if(krep->fitStatus().success()){
+        if(krep != 0 && krep->fitStatus().success()){
           findkal = true;
           if(_addhits){
             // first, add back the hits on this track
