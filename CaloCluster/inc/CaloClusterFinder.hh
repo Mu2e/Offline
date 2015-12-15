@@ -36,7 +36,9 @@ namespace mu2e {
 	     
 	     CaloCrystalList const& clusterList()  const {return _clusterList;}
 	     
-             void formCluster(std::vector<CaloCrystalVec>& idHitVec);
+             void formCluster(std::vector<CaloCrystalList>& idHitVec);
+
+
 
 	 private:
              

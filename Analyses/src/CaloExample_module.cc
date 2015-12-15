@@ -126,7 +126,6 @@ namespace mu2e {
 
        std::string _caloReadoutModuleLabel;
        std::string _caloCrystalModuleLabel;
-       std::string _caloHitMCCrystalPtrLabel;
        std::string _caloClusterModuleLabel;
        std::string _caloClusterAlgorithm;
        std::string _caloClusterSeeding;
@@ -188,7 +187,6 @@ namespace mu2e {
     _simParticleTag(pset.get<string>("simParticleTag")),
     _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel")),
     _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel")),
-    _caloHitMCCrystalPtrLabel(pset.get<string>("calorimeterHitMCCrystalPtr")),
     _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
     _virtualDetectorLabel(pset.get<string>("virtualDetectorName")),
     _stepPointMCLabel(pset.get<string>("stepPointMCLabel")),
@@ -304,20 +302,19 @@ namespace mu2e {
        _Ntup->Branch("trkOmega",     &_trkOmega ,    "trkOmega[nTrk]/F");
        _Ntup->Branch("trkPhi0",      &_trkPhi0 ,     "trkPhi0[nTrk]/F");
 
-       _hcryE = tfs->make<TH1F>("cryEdep","Energy deposited / crystal",100,0.,50.);
-       _hcryT = tfs->make<TH1F>("cryTime","Time of crystal hit",100,0.,2000.);
-       _hcryX = tfs->make<TH1F>("cryX","X coord of crystal hit",100,300.,700.);
-       _hcryY = tfs->make<TH1F>("cryY","Y coord of crystal hit",100,300.,700.);
-       _hcryZ = tfs->make<TH1F>("cryZ","Z coord of crystal hit",100,11000.,13000.);
-
-       _hcluE = tfs->make<TH1F>("cluEdep","Energy deposited / clustal",150,0.,150.);
-       _hcluT = tfs->make<TH1F>("cluTime","Time of clustal hit",100,0.,2000.);
-       _hcluX = tfs->make<TH1F>("cluX","X coord of clustal hit",100,300.,700.);
-       _hcluY = tfs->make<TH1F>("cluY","Y coord of clustal hit",100,300.,700.);
-       _hcluZ = tfs->make<TH1F>("cluZ","Z coord of clustal hit",100,11000.,13000.);
-       _hcluE1Et = tfs->make<TH1F>("cluE1Et","E1/Etot",100,0,1.1);
-       _hcluE1E9 = tfs->make<TH1F>("cluE1E9","E1/E9",100,0,1.1);
-       _hcluE1E25 = tfs->make<TH1F>("cluE1E25","E1/E25",100,0,1.1);
+       _hcryE     = tfs->make<TH1F>("cryEdep",  "Energy deposited / crystal", 100,    0., 50.   );
+       _hcryT     = tfs->make<TH1F>("cryTime",  "Time of crystal hit",        100,    0., 2000. );
+       _hcryX     = tfs->make<TH1F>("cryX",     "X coord of crystal hit",     100,  300., 700.  );
+       _hcryY     = tfs->make<TH1F>("cryY",     "Y coord of crystal hit",     100,  300., 700.  );
+       _hcryZ     = tfs->make<TH1F>("cryZ",     "Z coord of crystal hit",     100,11000., 13000.);
+       _hcluE     = tfs->make<TH1F>("cluEdep",  "Energy deposited / clustal", 150,    0., 150.  );
+       _hcluT     = tfs->make<TH1F>("cluTime",  "Time of clustal hit",        100,    0., 2000. );
+       _hcluX     = tfs->make<TH1F>("cluX",     "X coord of clustal hit",     100,  300., 700.  );
+       _hcluY     = tfs->make<TH1F>("cluY",     "Y coord of clustal hit",     100,  300., 700.  );
+       _hcluZ     = tfs->make<TH1F>("cluZ",     "Z coord of clustal hit",     100,11000., 13000.);
+       _hcluE1Et  = tfs->make<TH1F>("cluE1Et",  "E1/Etot",                    100,    0., 1.1   );
+       _hcluE1E9  = tfs->make<TH1F>("cluE1E9",  "E1/E9",                      100,    0., 1.1   );
+       _hcluE1E25 = tfs->make<TH1F>("cluE1E25", "E1/E25",                     100,    0., 1.1   );
 
   }
 
@@ -444,7 +441,6 @@ namespace mu2e {
            _hcryX->Fill(crystalPos.x());
            _hcryY->Fill(crystalPos.y());
            _hcryZ->Fill(crystalPos.z());
-
 
 
            _cryEtot             += hit.energyDep();
@@ -637,10 +633,7 @@ namespace mu2e {
           _trkt0Err[_nTrk] = trkt0Err;
           ++_nTrk;
 
-          //              std:: cout << "CaloExample t0 = " << krep.t0().t0() << std::endl;
-          //      std:: cout << "CaloExample fitstatus = " << krep.fitStatus().success() << " " << _fitStatus[_nTrk] << std::endl;
-
-           if (cutC)  ++_nTrkOk;
+          if (cutC)  ++_nTrkOk;
         }
 
         _Ntup->Fill();
@@ -653,7 +646,7 @@ namespace mu2e {
 
 
 
-}  // end namespace mu2e
+}  
 
 DEFINE_ART_MODULE(mu2e::CaloExample);
 

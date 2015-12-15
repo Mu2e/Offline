@@ -115,18 +115,16 @@ namespace mu2e {
 
       private:
 
-              int         _diagLevel;
-              std::string _caloCrystalModuleLabel;
-              std::string _producerNameMain;
-              std::string _producerNameSplit;
-
-              double      _EminSeed;
-              double      _EnoiseCut;
-              double      _ExpandCut;
-              double      _timeCut;
-              double      _deltaTimePlus;
-              double      _deltaTimeMinus;
-
+              int               _diagLevel;
+              std::string       _caloCrystalModuleLabel;
+              std::string       _producerNameMain;
+              std::string       _producerNameSplit;
+              double            _EminSeed;
+              double            _EnoiseCut;
+              double            _ExpandCut;
+              double            _timeCut;
+              double            _deltaTimePlus;
+              double            _deltaTimeMinus;
               const std::string _messageCategory;
 
 
@@ -135,8 +133,11 @@ namespace mu2e {
 	                                 CaloProtoClusterCollection& caloProtoClustersSplit, 
                                 	 art::Handle<CaloCrystalHitCollection> const& caloCrystalHitsHandle);
 
-              void filterByTime(CaloCrystalVec& vec, std::vector<double>& clusterTime,std::set<CaloCrystalHit const*, caloSeedCompare>& seedList);
-              void dump(std::vector<CaloCrystalVec >& caloIdHitMap);
+              void filterByTime(CaloCrystalList& liste, 
+	                        std::vector<double> const& clusterTime, 
+	                        std::set<CaloCrystalHit const*, caloSeedCompare>& seedListe);
+
+              void dump(std::vector<CaloCrystalList> const& caloIdHitMap);
 
 
 
@@ -193,10 +194,9 @@ namespace mu2e {
 
 
 	     //declare and fill the hash map crystal_id -> list of CaloHits
-             std::vector<CaloCrystalList>    mainClusterList, splitClusterList;
-	     std::vector<CaloCrystalVec>     caloIdHitMap(cal.nCrystal());
+             std::vector<CaloCrystalList>                     mainClusterList, splitClusterList,caloIdHitMap(cal.nCrystal());
              std::set<CaloCrystalHit const*, caloSeedCompare> seedList;
-	     std::vector<double>             clusterTime;
+	     std::vector<double>                              clusterTime;
 
 
 
@@ -204,7 +204,7 @@ namespace mu2e {
 	     for (auto const& hit : caloCrystalHits)
 	     {
 	         if (hit.energyDep() < _EnoiseCut || hit.time() < _timeCut) continue;
-	         caloIdHitMap[hit.id()].push_back(&hit);     
+	         caloIdHitMap[hit.id()].push_back(&hit);      
 	         seedList.insert(&hit);
 	     }   
 
@@ -245,7 +245,7 @@ namespace mu2e {
 
 
 
-	     //save these little clusters
+	     //save these clusters
 	     for (auto main : mainClusterList)
 	     {
 		 if (_diagLevel) std::cout<<"This cluster contains "<<main.size()<<" crystals, id= ";
@@ -308,30 +308,31 @@ namespace mu2e {
 
 
       //----------------------------------------------------------------------------------------------------------
-      void MakeCaloProtoCluster::filterByTime(CaloCrystalVec& vec, std::vector<double>& clusterTime, std::set<CaloCrystalHit const*, caloSeedCompare>& seedList)
+      void MakeCaloProtoCluster::filterByTime(CaloCrystalList& liste, std::vector<double> const& clusterTime, std::set<CaloCrystalHit const*, caloSeedCompare>& seedList)
       {
 
-             for (auto& hit : vec)
+             for (auto it = liste.begin(); it != liste.end(); ++it)
 	     {	        
-		 if (hit == 0) continue;
-		 double timePlus   =  _deltaTimeMinus + hit->time();
-		 double timeMinus  =  hit->time() - _deltaTimePlus;
+		  CaloCrystalHit const* hit = *it;
+		  double timePlus           =  _deltaTimeMinus + hit->time();
+		  double timeMinus          =  hit->time() - _deltaTimePlus;
 
-		 auto itTime = clusterTime.begin();
-		 while (itTime != clusterTime.end())
-		 {
-		   if ( timeMinus < *itTime && *itTime < timePlus) break;
-		   ++itTime;
-		 }  
+		  auto itTime = clusterTime.begin();
+		  while (itTime != clusterTime.end())
+		  {
+		      if ( timeMinus < *itTime && *itTime < timePlus) break;
+		      ++itTime;
+		  }  
 
-	         if (itTime == clusterTime.end() ) {seedList.erase(seedList.find(hit)); hit=0;}
+	          if (itTime == clusterTime.end() ) {seedList.erase(seedList.find(hit)); liste.erase(it); --it;} 		 
 	     }
+
 
       }
 
 
       //----------------------------------------------------------------------------------------------------------
-      void MakeCaloProtoCluster::dump(std::vector<CaloCrystalVec>& caloIdHitMap)
+      void MakeCaloProtoCluster::dump(std::vector<CaloCrystalList> const& caloIdHitMap)
       {
 
 	for (unsigned int i=0; i<caloIdHitMap.size(); ++i)
@@ -348,6 +349,10 @@ namespace mu2e {
 
 using mu2e::MakeCaloProtoCluster;
 DEFINE_ART_MODULE(MakeCaloProtoCluster);
+
+
+
+
 
 
 

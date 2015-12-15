@@ -30,17 +30,16 @@ namespace mu2e {
        
 
 
-       void CaloClusterFinder::formCluster(std::vector<CaloCrystalVec>& idHitVec)  
+       void CaloClusterFinder::formCluster(std::vector<CaloCrystalList>& idHitVec)  
        { 
 
 	    _clusterList.clear();	    
 	    _clusterList.push_front(_crystalSeed);
 	    _crystalToVisit.push(_crystalSeed->id());  
 
-	    
-	    CaloCrystalVec& vecSeed = idHitVec[_crystalSeed->id()];
-	    for (unsigned int ivec=0; ivec < vecSeed.size(); ++ivec)
-	       if (vecSeed[ivec]==_crystalSeed) {vecSeed[ivec]=0; break;}
+	    	    
+	    CaloCrystalList& liste = idHitVec[_crystalSeed->id()];
+	    liste.erase(std::find(liste.begin(), liste.end(), _crystalSeed));
 
 
 	    while (!_crystalToVisit.empty())
@@ -54,24 +53,23 @@ namespace mu2e {
 		     if (_isVisited[iId]) continue;
 		     _isVisited[iId]=1;
 
-		     CaloCrystalVec& vec = idHitVec[iId];
-		     for (unsigned int ivec=0; ivec < vec.size(); ++ivec)
-		     {
-			 if (vec[ivec]==0) continue;
-			 CaloCrystalHit const* hit = vec[ivec];
-			 
 
-			 if (hit->time() - _seedTime > _deltaTimePlus)  continue; //see note
+		     CaloCrystalList& list = idHitVec[iId];
+		     for (auto it=list.begin(); it != list.end(); ++it)
+		     {
+		         CaloCrystalHit const* hit = *it;
+
+			 if (hit->time() - _seedTime > _deltaTimePlus)  continue; 
 			 if (_seedTime - hit->time() > _deltaTimeMinus) continue;
 
          		 if (hit->energyDep() > _ExpandCut) _crystalToVisit.push(iId);
                          _clusterList.push_front(hit);
-
-        		 vec[ivec]=0;
+			 list.erase(it--);   //do not change it--
+			 
 		     } 
 		     
 		 }
-		      
+		 		      
 		 _crystalToVisit.pop();		 
 	    }
 	    
