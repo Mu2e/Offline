@@ -38,9 +38,6 @@ namespace mu2e {
 
     const std::vector<Plane>& getPlanes()  const { return _planes; }
     const Plane& getPlane ( int n)         const { return _planes.at(n); }
-    const Plane& getPlane ( const PlaneId& pid ) const{
-      return _planes.at(pid);
-    }
 
     explicit Station( const StationId& id, double z = 0. )
       : _id(id)
