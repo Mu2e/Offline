@@ -30,11 +30,11 @@ namespace mu2e {
 
     // Check for legal identifiers; add these later.
     //virtual isLegal(PlaneId d) const = 0;
-    //virtual bool isLegal(const PanelId& sid) const = 0;
-    //vitrual bool isLegal(const LayerId& lid ) const = 0;
-    //virtual bool isLegal(const StrawId& sid) const =0;
+    //virtual bool isLegal(const PanelId& pnlid) const = 0;
+    //vitrual bool isLegal(const LayerId& layid ) const = 0;
+    //virtual bool isLegal(const StrawId& strid) const =0;
 
-    virtual const Straw& getStraw ( const StrawId& sid ) const=0;
+    virtual const Straw& getStraw ( const StrawId& strid ) const=0;
     virtual const Straw& getStraw ( StrawIndex i ) const=0;
     virtual const std::deque<Straw>& getAllStraws() const=0;
     virtual const std::vector<StrawDetail>& getStrawDetails() const=0;

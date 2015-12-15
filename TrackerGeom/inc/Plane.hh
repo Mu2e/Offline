@@ -66,16 +66,16 @@ namespace mu2e {
       return _panels.at(n);
     }
 
-    const Panel& getPanel ( const PanelId& sid ) const{
-      return _panels.at(sid.getPanel());
+    const Panel& getPanel ( const PanelId& pnlid ) const{
+      return _panels.at(pnlid.getPanel());
     }
 
-    const Layer& getLayer ( const LayerId& lid ) const{
-      return _panels.at(lid.getPanel()).getLayer(lid);
+    const Layer& getLayer ( const LayerId& layid ) const{
+      return _panels.at(layid.getPanel()).getLayer(layid);
     }
 
-    const Straw& getStraw ( const StrawId& sid ) const{
-      return _panels.at(sid.getPanel()).getStraw(sid);
+    const Straw& getStraw ( const StrawId& strid ) const{
+      return _panels.at(strid.getPanel()).getStraw(strid);
     }
 
     // Formatted string embedding the id of the panel.

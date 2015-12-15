@@ -12,21 +12,21 @@ namespace mu2e {
   public:
 
     ManifoldId():
-      _sid(),
+      _pnlid(),
       _manifold(-1){
     }
 
     ManifoldId(PanelId panel,
                int manifold
                ):
-      _sid(panel),
+      _pnlid(panel),
       _manifold(manifold)
     {}
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
     PanelId getPanelId() const {
-      return _sid;
+      return _pnlid;
     }
 
     int getManifold() const {
@@ -34,13 +34,13 @@ namespace mu2e {
     }
 
     bool operator== (const ManifoldId s) const{
-      return (_sid == s._sid && _manifold == s._manifold);
+      return (_pnlid == s._pnlid && _manifold == s._manifold);
     }
 
   private:
 
     // Member variables
-    PanelId _sid;
+    PanelId _pnlid;
     int _manifold;
 
   };

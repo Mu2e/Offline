@@ -56,12 +56,12 @@ namespace mu2e {
       return _layers.at(n);
     }
 
-    const Layer& getLayer ( const LayerId& lid) const {
-      return _layers.at(lid.getLayer());
+    const Layer& getLayer ( const LayerId& layid) const {
+      return _layers.at(layid.getLayer());
     }
 
-    const Straw& getStraw ( const StrawId& sid ) const{
-      return _layers.at(sid.getLayer()).getStraw(sid);
+    const Straw& getStraw ( const StrawId& strid ) const{
+      return _layers.at(strid.getLayer()).getStraw(strid);
     }
 
     // Mid-point position of the average (over the layers) of the primary 
