@@ -78,6 +78,10 @@ private:
   TH1D* hKineticEnergy_FirstLayer;
   TH2D* hPosition_XYFirstLayer;
   TH1D* hTime_FirstLayer;
+  TH1D* hNeutronRate_ZPos;
+  TH3F* hOriginPosition_NonNeutron;
+  TH3F* hOriginPosition_Neutron;
+  TH1D* hPDGNumbers;
 
   std::vector<std::string> fTrackerVolumes;
   std::vector<double> fG10ZPositions;
@@ -128,7 +132,7 @@ void mu2e::BeamTestAnalysis::beginJob() {
 
   hKineticEnergy_FirstLayer = tfs->make<TH1D>("hKineticEnergy_FirstLayer", "hKineticEnergy_FirstLayer", n_bins_ke,min_kinetic_energy,max_kinetic_energy);
   hKineticEnergy_FirstLayer->SetXTitle("Kinetic Energy [MeV]");
-  hKineticEnergy_FirstLayer->SetYTitle("Hits per 0.1 MeV");
+  hKineticEnergy_FirstLayer->SetYTitle("StepPointMCs per 0.1 MeV");
 
   double edep_bin_width = 0.01;
   double min_edep = 0;
@@ -136,7 +140,7 @@ void mu2e::BeamTestAnalysis::beginJob() {
   int n_bins_edep = (max_edep - min_edep) / edep_bin_width;
   hEDep = tfs->make<TH1D>("hEDep", "hEDep", n_bins_edep,min_edep,max_edep);
   hEDep->SetXTitle("Total Energy Deposited [MeV]");
-  hEDep->SetYTitle("Hits per 0.01 MeV");
+  hEDep->SetYTitle("StepPointMCs per 0.01 MeV");
 
   hPosition_XYFirstLayer = tfs->make<TH2D>("hPosition_XYFirstLayer", "hPosition_XYFirstLayer", n_bins_x,min_x,max_x, n_bins_y,min_y,max_y);
   hPosition_XYFirstLayer->SetXTitle("X [mm]");
@@ -148,6 +152,33 @@ void mu2e::BeamTestAnalysis::beginJob() {
   int n_bins_time = (max_time - min_time) / time_width;
   hTime_FirstLayer = tfs->make<TH1D>("hTime_FirstLayer", "hTime_FirstLayer", n_bins_time,min_time,max_time);  
   hTime_FirstLayer->SetXTitle("Time [ns]");
+
+  hNeutronRate_ZPos = tfs->make<TH1D>("hNeutronRate_ZPos", "hNeutronRate_ZPos", n_bins_z,min_z,max_z);
+  hNeutronRate_ZPos->SetXTitle("Z [mm]");
+
+
+  bin_width = 10;
+  min_x = -5000;
+  max_x = -2800;
+  n_bins_x = (max_x - min_x) / bin_width;
+  min_y = -1000;
+  max_y = 1000;
+  n_bins_y = (max_y - min_y) / bin_width;
+  min_z = 0;
+  max_z = 12000;
+  n_bins_z = (max_z - min_z) / bin_width;
+  hOriginPosition_NonNeutron = tfs->make<TH3F>("hOriginPosition_NonNeutron", "hOriginPosition_NonNeutron", n_bins_x,min_x,max_x, n_bins_y,min_y,max_y, n_bins_z,min_z,max_z);
+  hOriginPosition_NonNeutron->SetXTitle("X [mm]");
+  hOriginPosition_NonNeutron->SetYTitle("Y [mm]");
+  hOriginPosition_NonNeutron->SetZTitle("Z [mm]");
+  hOriginPosition_Neutron = tfs->make<TH3F>("hOriginPosition_Neutron", "hOriginPosition_Neutron", n_bins_x,min_x,max_x, n_bins_y,min_y,max_y, n_bins_z,min_z,max_z);
+  hOriginPosition_Neutron->SetXTitle("X [mm]");
+  hOriginPosition_Neutron->SetYTitle("Y [mm]");
+  hOriginPosition_Neutron->SetZTitle("Z [mm]");
+
+  hPDGNumbers = tfs->make<TH1D>("hPDGNumbers", "hPDGNumbers", 5000,0,5000);
+  //  hPDGNumbers->SetBit(TH1::kCanRebin);
+  hPDGNumbers->SetXTitle("PDG ID");
 }  
 
 void mu2e::BeamTestAnalysis::endJob() {
@@ -163,7 +194,7 @@ void mu2e::BeamTestAnalysis::endJob() {
   //  double peak_hit_rate = hTime_FirstLayer->GetMaximum();
   double total_hits = hTime_FirstLayer->GetEntries();
   //  std::cout << "BeamTestAnalysis: Peak Hit Rate = " << peak_hit_rate << " Hz" << std::endl;
-  std::cout << "BeamTestAnalysis: Total Hits in First Layer = " << total_hits << " incoming neutrons" << std::endl;
+  std::cout << "BeamTestAnalysis: Total StepPointMCs in First Layer = " << total_hits << " incoming neutrons" << std::endl;
   //  std::cout << "BeamTestAnalysis: Neutron fluence = " << peak_hit_rate / (fG10SurfaceArea/100) << " neutrons cm^-2 s^-1" << std::endl;
   //  std::cout << "BeamTestAnalysis: or, neutron fluence = " << total_hits / ((fG10SurfaceArea/100) * (10000/1e9)) << " neutrons cm^-2 s^-1" << std::endl << std::endl;
 
@@ -173,7 +204,7 @@ void mu2e::BeamTestAnalysis::endJob() {
   //  std::cout << "BeamTestAnalysis: Peak Hits (XY First Layer) = " << peak_hits_xy << " hits cm^-2" << std::endl;
   std::cout << "BeamTestAnalysis: N Simulated Neutrons = " << fNEvents << " emitted neutrons" << std::endl;
   //  std::cout << "BeamTestAnalysis: Peak Hits per Simulated Neutron = " << hits_per_simulated_neutron << std::endl << std::endl;
-  std::cout << "BeamTestAnalysis: Total Hits per Simulated Neutron = " << total_hits_per_simulated_neutron << " incoming neutrons per emitted neutron" << std::endl;
+  std::cout << "BeamTestAnalysis: Total StepPointMCs per Simulated Neutron = " << total_hits_per_simulated_neutron << " incoming neutrons per emitted neutron" << std::endl;
 
   double neutrons_per_capture = 1.2;
   double fraction_captured = 0.61;
@@ -187,11 +218,19 @@ void mu2e::BeamTestAnalysis::endJob() {
   double hits_per_microbunch = (total_hits_per_simulated_neutron * neutrons_per_capture * fraction_captured * stops_per_POT * POT_per_microbunch);
   double hits_per_second = hits_per_microbunch / (microbunch_width/1e9);
   double neutron_fluence = hits_per_second / (fG10SurfaceArea/100);
-  std::cout << "BeamTestAnalysis: Hits per Microbunch = " << hits_per_microbunch << " incoming neutrons per microbunch" << std::endl;
+  std::cout << "BeamTestAnalysis: StepPointMCs per Microbunch = " << hits_per_microbunch << " incoming neutrons per microbunch" << std::endl;
   std::cout << "BeamTestAnalysis: Microbunch Length = " << microbunch_width << " ns" << std::endl;
-  std::cout << "BeamTestAnalysis: Hits per Second = " << hits_per_second << " incoming neutrons s^-1" << std::endl;
+  std::cout << "BeamTestAnalysis: StepPointMCs per Second = " << hits_per_second << " incoming neutrons s^-1" << std::endl;
   std::cout << "BeamTestAnalysis: G10 Surface Area = " << fG10SurfaceArea << " mm^2" << std::endl;
-  std::cout << "BeamTestAnalysis: Peak Hit Rate = " << neutron_fluence << " incoming neutrons cm^-2 s^-1" << std::endl;
+  std::cout << "BeamTestAnalysis: Peak StepPointMC Rate = " << neutron_fluence << " incoming neutrons cm^-2 s^-1" << std::endl;
+
+
+  hNeutronRate_ZPos->Scale(1.0/fNEvents); // scale to be per emitted neutron
+  hNeutronRate_ZPos->Scale(neutrons_per_capture * fraction_captured * stops_per_POT * POT_per_microbunch); // scale to be per microbunch
+  hNeutronRate_ZPos->Scale(1.0/(microbunch_width/1e9)); // scale to be per s
+  hNeutronRate_ZPos->Scale(1.0/(fG10SurfaceArea/100)); // scale to be per cm^2
+  hNeutronRate_ZPos->SetYTitle("Neutron Rate [neutrons cm^{-2} s^{-1}]");
+  hNeutronRate_ZPos->SetTitle("Rate of Incoming Neutrons in each G10 Volume");
 }
 
 void mu2e::BeamTestAnalysis::analyze(art::Event const & e)
@@ -295,6 +334,29 @@ void mu2e::BeamTestAnalysis::analyze(art::Event const & e)
 	    // Haven't seen a StepPointMC in this region before, so assume it is the first and is the incident kinetic energy
 	    kinetic_energy = getKineticEnergy(i_hit);
 
+	    // If it's a neutron record it's kinetic energy
+	    if (i_hit.simParticle()->pdgId() == 2112) {
+	      hKineticEnergy_ZPos->SetTitle("Kinetic Energy vs Z Position (for first neutron StepPointMC in each G10 volume)");
+	      hKineticEnergy_ZPos->Fill(kinetic_energy, i_hit.position().z());
+
+	      hNeutronRate_ZPos->Fill(i_hit.position().z());
+
+	      if (i_hit.position().z() < 8700) {
+		hKineticEnergy_FirstLayer->SetTitle("Kinetic Energy in First Layer (z < 8700 mm, first neutron StepPointMC)");
+		hKineticEnergy_FirstLayer->Fill(kinetic_energy);
+		
+		hPosition_XYFirstLayer->SetTitle("XY StepPoint Position for incoming neutrons (z < 8700 mm)");
+		hPosition_XYFirstLayer->Fill(i_hit.position().x(), i_hit.position().y());
+		
+		hTime_FirstLayer->SetTitle("Time for incoming neutrons (z < 8700 mm)");
+		hTime_FirstLayer->Fill(i_hit.time());
+	      }
+	      hOriginPosition_Neutron->SetTitle("Origin Position of Incoming Neutrons");
+	      hOriginPosition_Neutron->Fill(i_hit.simParticle()->startPosition().x(),i_hit.simParticle()->startPosition().y(),i_hit.simParticle()->startPosition().z());
+
+	    }
+
+
 	    // and now we've seen a hit in this region
 	    g10_zpositions_seen.push_back(i_zpos);
 	  }
@@ -306,20 +368,17 @@ void mu2e::BeamTestAnalysis::analyze(art::Event const & e)
       }
 
       // Before filling in the kinetic energy plot, check that it's a neutron
-      if (i_hit.simParticle()->pdgId() == 2112) {
-	hKineticEnergy_ZPos->SetTitle("Kinetic Energy vs Z Position (for first neutron StepPointMC in each G10 volume)");
-	hKineticEnergy_ZPos->Fill(kinetic_energy, i_hit.position().z());
+      //      if (i_hit.simParticle()->pdgId() == 2112) {
 
-	if (i_hit.position().z() < 8700) {
-	  hKineticEnergy_FirstLayer->SetTitle("Kinetic Energy in First Layer (z < 8700 mm, first neutron StepPointMC)");
-	  hKineticEnergy_FirstLayer->Fill(kinetic_energy);
+      //      }
+      if (i_hit.simParticle()->pdgId() != 2112) {
+	// For all other particles record their origin position
+	hOriginPosition_NonNeutron->Fill(i_hit.simParticle()->startPosition().x(),i_hit.simParticle()->startPosition().y(),i_hit.simParticle()->startPosition().z());
+	hPDGNumbers->Fill(i_hit.simParticle()->pdgId());
 
-	  hPosition_XYFirstLayer->SetTitle("XY Hit Position for incoming neutrons (z < 8700 mm)");
-	  hPosition_XYFirstLayer->Fill(i_hit.position().x(), i_hit.position().y());
-
-	  hTime_FirstLayer->SetTitle("Time for incoming neutrons (z < 8700 mm)");
-	  hTime_FirstLayer->Fill(i_hit.time());
-	}
+	//	if (i_hit.simParticle()->pdgId() > 5000) {
+	//	  std::cout << "PDG Histogram Overflow: Value = " << i_hit.simParticle()->pdgId() << std::endl;
+	//	}
       }
     }
   }
