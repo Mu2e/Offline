@@ -11,8 +11,8 @@
 /control/verbose 0
 /run/verbose 0
 /vis/open OGLSX 600x600-0+0
-/vis/viewer/set/viewpointThetaPhi 90 0 deg
-#/vis/viewer/set/viewpointThetaPhi 45 45 deg
+#/vis/viewer/set/viewpointThetaPhi 90 0 deg
+/vis/viewer/set/viewpointThetaPhi 45 45 deg
 #/vis/viewer/set/viewpointThetaPhi 0 90 deg
 /vis/viewer/zoom 1.0
 /vis/disable
@@ -21,10 +21,22 @@
 /vis/scene/create
 #/vis/geometry/list
 /vis/scene/add/volume protonabs1
+/vis/scene/add/volume IPAsupport_set1_wire1
+/vis/scene/add/volume IPAsupport_set1_wire2
+/vis/scene/add/volume IPAsupport_set1_wire3
+/vis/scene/add/volume IPAsupport_set1_wire4
+/vis/scene/add/volume IPAsupport_set1_wire5
+/vis/scene/add/volume IPAsupport_set1_wire6
+/vis/scene/add/volume IPAsupport_set2_wire1
+/vis/scene/add/volume IPAsupport_set2_wire2
+/vis/scene/add/volume IPAsupport_set2_wire3
+/vis/scene/add/volume IPAsupport_set2_wire4
+/vis/scene/add/volume IPAsupport_set2_wire5
+/vis/scene/add/volume IPAsupport_set2_wire6
+/vis/scene/add/volume IPAsupport_endring0
+/vis/scene/add/volume IPAsupport_endring1
 /vis/scene/add/volume protonabs3
 /vis/scene/add/volume StoppingTargetMother
-/vis/scene/add/volume cfrpEndRingFront
-/vis/scene/add/volume cfrpEndRingBack
 #/vis/scene/add/volume TrackerMother
 /vis/scene/add/trajectories smooth
 /vis/sceneHandler/attach
