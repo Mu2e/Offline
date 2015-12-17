@@ -13,15 +13,15 @@
 //     have implemented a single TTracker design in G4.  It does not refer
 //     to alternate designs of the TTracker.
 //
-//     This version makes logical mother volumes per device and per
-//     sector and places sectors in device and straws in sector
-//     It has only one sector/device logical volume placed several times
+//     This version makes logical mother volumes per plane and per
+//     panel and places panels in plane and straws in panel
+//     It has only one panel/plane logical volume placed several times
 //     This version has a negligeable construction time and a much smaler memory footprint
 //
 // 2) This function can build the TTracker designs described in:
 //      Mu2eG4/test/ttracker_meco.txt - The MECO design, uniform plane spacing
 //      Mu2eG4/test/ttracker_v0.txt   - The first Aseet version, pairs of planes form stations
-//                                      but one layer of straws per panel (called a sector in this code)
+//                                      but one layer of straws per panel (called a panel in this code)
 //      Mu2eG4/test/ttracker_v1.txt   - v0 but with with two layers of straws per panel
 //      Mu2eG4/test/ttracker_v2.txt   - Adjust spacings to match Mu2e-doc-888-v2.
 //
@@ -90,16 +90,16 @@ namespace mu2e{
     int verbosityLevel = config.getInt("ttracker.verbosityLevel",0);
 
     // Control of graphics for debugging the geometry.
-    // Only instantiate sectors to be drawn.
-    int deviceDraw = config.getInt("ttracker.devDraw",-1);
-    int sectorDraw = config.getInt("ttracker.secDraw",-1);
+    // Only instantiate panels to be drawn.
+    int planeDraw = config.getInt("ttracker.devDraw",-1);
+    int panelDraw = config.getInt("ttracker.secDraw",-1);
     bool doSurfaceCheck = config.getBool("g4.doSurfaceCheck",false) ||
       config.getBool("ttracker.doSurfaceCheck",false);
     bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
 
     G4ThreeVector const zeroVector(0.0,0.0,0.0);
 
-    // The devices are now called planes in the CDR
+    // The planes are now called planes in the CDR
 
     static int const newPrecision = 8;
     static int const newWidth = 14;
@@ -162,19 +162,19 @@ namespace mu2e{
       cout.precision(oldPrecision);
     }
 
-    TubsParams deviceEnvelopeParams = ttracker.getDeviceEnvelopeParams();
+    TubsParams planeEnvelopeParams = ttracker.getPlaneEnvelopeParams();
 
-    bool ttrackerDeviceEnvelopeVisible = config.getBool("ttracker.deviceEnvelopeVisible",false);
-    bool ttrackerDeviceEnvelopeSolid   = config.getBool("ttracker.deviceEnvelopeSolid",true);
+    bool ttrackerPlaneEnvelopeVisible = config.getBool("ttracker.planeEnvelopeVisible",false);
+    bool ttrackerPlaneEnvelopeSolid   = config.getBool("ttracker.planeEnvelopeSolid",true);
     bool ttrackerSupportVisible        = config.getBool("ttracker.supportVisible",false);
     bool ttrackerSupportSolid          = config.getBool("ttracker.supportSolid",true);
-    bool ttrackerSectorEnvelopeVisible = config.getBool("ttracker.sectorEnvelopeVisible",false);
-    bool ttrackerSectorEnvelopeSolid   = config.getBool("ttracker.sectorEnvelopeSolid",true);
+    bool ttrackerPanelEnvelopeVisible = config.getBool("ttracker.panelEnvelopeVisible",false);
+    bool ttrackerPanelEnvelopeSolid   = config.getBool("ttracker.panelEnvelopeSolid",true);
     bool ttrackerStrawVisible          = config.getBool("ttracker.strawVisible",false);
     bool ttrackerStrawSolid            = config.getBool("ttracker.strawSolid",true);
 
-    // will construct one panel=sector in its nominal position
-    // in the new language the device is called a plane ( with two faces ) 
+    // will construct one panel=panel in its nominal position
+    // in the new language the plane is called a plane ( with two faces ) 
     // then stations have n=2 planes
 
     // some specific g4 rotations related to the volume type and direction of their axis
@@ -185,70 +185,70 @@ namespace mu2e{
     CLHEP::HepRotationY RYForTrapezoids(tRAngle);
     CLHEP::HepRotationZ RZForTrapezoids(tRAngle);
 
-    VolumeInfo sectorInfo;
+    VolumeInfo panelInfo;
 
     const size_t idev0 = 0;
 
-    const Device& device0 = ttracker.getDevice(idev0);
+    const Plane& plane0 = ttracker.getPlane(idev0);
 
     // place straws etc... wrt the envelope
 
-    // create a "sector" volume
+    // create a "panel" volume
 
-    // Construct One sector logical volume (and then place it N times)
+    // Construct One panel logical volume (and then place it N times)
 
     const size_t isec0 = 0;
 
-    const Sector& sector0 = device0.getSector(isec0);
+    const Panel& panel0 = plane0.getPanel(isec0);
 
-    // constructing sector envelope
+    // constructing panel envelope
 
-    // Make a logical volume for this sector,
+    // Make a logical volume for this panel,
 
     // G4IntersectionSolid of G4Box and G4Trd to avoid overlaps of two envelopes
 
-    // reuse device attributes for now
+    // reuse plane attributes for now
 
     // get the length of the innermost straw
-    Layer const& layer0        = sector0.getLayer(0);
+    Layer const& layer0        = panel0.getLayer(0);
     Straw const& straw0        = layer0.getStraw(0);
     StrawDetail const& detail0 = straw0.getDetail();
 
     verbosityLevel > 0 &&
-      cout << __func__ << " sector box isec detail0.halfLength(): " << detail0.halfLength() << endl;
+      cout << __func__ << " panel box isec detail0.halfLength(): " << detail0.halfLength() << endl;
 
 
-    sectorInfo.name = "TTrackerSectorEnvelope";
+    panelInfo.name = "TTrackerPanelEnvelope";
 
-    G4Box* secBox = new G4Box(sectorInfo.name+"Box",
+    G4Box* secBox = new G4Box(panelInfo.name+"Box",
                               detail0.halfLength(),
-                              sector0.boxHalfLengths()[2],
-                              sector0.boxHalfLengths()[1]
+                              panel0.boxHalfLengths()[2],
+                              panel0.boxHalfLengths()[1]
                               );
 
-    G4Trd* secTrd = new G4Trd(sectorInfo.name+"Trd",
-                              sector0.boxHalfLengths()[4],
-                              sector0.boxHalfLengths()[3],
-                              sector0.boxHalfLengths()[2],
-                              sector0.boxHalfLengths()[2],
-                              sector0.boxHalfLengths()[1]
+    G4Trd* secTrd = new G4Trd(panelInfo.name+"Trd",
+                              panel0.boxHalfLengths()[4],
+                              panel0.boxHalfLengths()[3],
+                              panel0.boxHalfLengths()[2],
+                              panel0.boxHalfLengths()[2],
+                              panel0.boxHalfLengths()[1]
                               );
 
     // one could also intersect it with a ring to decrease its radial spread
 
-    sectorInfo.solid =
-      new G4IntersectionSolid(sectorInfo.name, secBox, secTrd);
+    panelInfo.solid =
+      new G4IntersectionSolid(panelInfo.name, secBox, secTrd);
 
     // false for placing physical volume, just create a logical one
-    finishNesting(sectorInfo,
+    finishNesting(panelInfo,
                   envelopeMaterial,
                   0,
                   zeroVector, // this is the "canonical" position, but it does not matter as there is no placement
                   0,
                   0,
-                  ttrackerSectorEnvelopeVisible,
+                  ttrackerPanelEnvelopeVisible,
                   G4Colour::Cyan(),
-                  ttrackerSectorEnvelopeSolid,
+                  ttrackerPanelEnvelopeSolid,
                   forceAuxEdgeVisible,
                   false, // only creating a logical volume
                   doSurfaceCheck
@@ -259,30 +259,30 @@ namespace mu2e{
       int oldWidth = cout.width(newWidth);
       std::ios::fmtflags oldFlags = cout.flags();
       cout.setf(std::ios::fixed,std::ios::floatfield);
-      cout << __func__ << " sector box isec, sector.boxHalfLengths().at(4,3,2,2,1): " <<
+      cout << __func__ << " panel box isec, panel.boxHalfLengths().at(4,3,2,2,1): " <<
         isec0 << ", " <<
-        sector0.boxHalfLengths().at(4) << ", " <<
-        sector0.boxHalfLengths().at(3) << ", " <<
-        sector0.boxHalfLengths().at(2) << ", " <<
-        sector0.boxHalfLengths().at(2) << ", " <<
-        sector0.boxHalfLengths().at(1) << ", " <<
+        panel0.boxHalfLengths().at(4) << ", " <<
+        panel0.boxHalfLengths().at(3) << ", " <<
+        panel0.boxHalfLengths().at(2) << ", " <<
+        panel0.boxHalfLengths().at(2) << ", " <<
+        panel0.boxHalfLengths().at(1) << ", " <<
         endl;
       cout.setf(oldFlags);
       cout.precision(oldPrecision);
       cout.width(oldWidth);
     }
 
-    // one has to "unrotate" the sector for the placements of the straws; see below 
-    const CLHEP::HepRotationZ sector0RZRot(-sector0.boxRzAngle()); //It is arround z
-    const G4ThreeVector unrotatedSector0Origin = sector0RZRot*sector0.boxOffset();
+    // one has to "unrotate" the panel for the placements of the straws; see below 
+    const CLHEP::HepRotationZ panel0RZRot(-panel0.boxRzAngle()); //It is arround z
+    const G4ThreeVector unrotatedPanel0Origin = panel0RZRot*panel0.boxOffset();
 
     G4RotationMatrix* rotTub = reg.add(G4RotationMatrix(RYForTrapezoids));
 
-    for ( int ilay =0; ilay<sector0.nLayers(); ++ilay ){
+    for ( int ilay =0; ilay<panel0.nLayers(); ++ilay ){
 
       verbosityLevel > 1 &&   cout << __func__ << " constructTTrackerv3 ilay: " << ilay << endl;
 
-      const Layer& layer = sector0.getLayer(ilay);
+      const Layer& layer = panel0.getLayer(ilay);
 
       for ( int istr=0; istr<layer.nStraws(); ++istr ){
 
@@ -299,31 +299,31 @@ namespace mu2e{
         TubsParams strawWireParams( 0.0, detail.wireRadius(),  detail.halfLength() );
 
         // we are placing the straw w.r.t the trapezoid...
-        // the trapezoid aka device envelope has a different coordinate system x->z, z->y, y->x
+        // the trapezoid aka plane envelope has a different coordinate system x->z, z->y, y->x
 
-        // this only works for "unrotated sector 0"; 
+        // this only works for "unrotated panel 0"; 
         // one has to make sure the calculation is done in that state
 
-        G4ThreeVector unrotatedStrawOrigin = sector0RZRot*straw.getMidPoint();
+        G4ThreeVector unrotatedStrawOrigin = panel0RZRot*straw.getMidPoint();
 
-        G4ThreeVector const unrotatedMid(unrotatedStrawOrigin.y() - unrotatedSector0Origin.y(),
-                                         unrotatedStrawOrigin.z() - unrotatedSector0Origin.z(),
-                                         unrotatedStrawOrigin.x() - unrotatedSector0Origin.x());
+        G4ThreeVector const unrotatedMid(unrotatedStrawOrigin.y() - unrotatedPanel0Origin.y(),
+                                         unrotatedStrawOrigin.z() - unrotatedPanel0Origin.z(),
+                                         unrotatedStrawOrigin.x() - unrotatedPanel0Origin.x());
 
         G4ThreeVector const zeroVector(0.0,0.0,0.0);
 
         if ( verbosityLevel > 2 ) {
 
-          G4ThreeVector const mid(straw.getMidPoint().y() - sector0.boxOffset().y(),
-                                  straw.getMidPoint().z() - sector0.boxOffset().z(),
-                                  straw.getMidPoint().x() - sector0.boxOffset().x());
+          G4ThreeVector const mid(straw.getMidPoint().y() - panel0.boxOffset().y(),
+                                  straw.getMidPoint().z() - panel0.boxOffset().z(),
+                                  straw.getMidPoint().x() - panel0.boxOffset().x());
 
           cout << __func__ << " istr: " << istr <<
             " mid: " << mid <<
             ", unrotated mid: " << unrotatedMid <<
             ", straw.MidPoint " << straw.getMidPoint() <<
-            ", sector.boxOffset " <<  sector0.boxOffset() <<
-            ", device.origin " << device0.origin() <<
+            ", panel.boxOffset " <<  panel0.boxOffset() <<
+            ", plane.origin " << plane0.origin() <<
             endl;
 
           cout << __func__ << " istr: " << istr << " mid: " <<
@@ -364,7 +364,7 @@ namespace mu2e{
                                              findMaterialOrThrow(detail.wallMaterialName() ),
                                              rotTub,
                                              unrotatedMid,
-                                             sectorInfo.logical,
+                                             panelInfo.logical,
                                              straw.index().asInt(),
                                              ttrackerStrawVisible,
                                              wallColor,
@@ -423,72 +423,72 @@ namespace mu2e{
       }   // end loop over straws
     }     // end loop over layers
 
-    // We have constructed one sector, 
+    // We have constructed one panel, 
 
-    // Now construct the devices and place the sectors in them
+    // Now construct the planes and place the panels in them
 
-    vector<VolumeInfo>  deviceInfoVect;
+    vector<VolumeInfo>  planeInfoVect;
     vector<VolumeInfo> supportInfoVect;
-    int tndev = ttracker.nDevices();
-    deviceInfoVect.reserve(tndev);
+    int tndev = ttracker.nPlanes();
+    planeInfoVect.reserve(tndev);
     supportInfoVect.reserve(tndev);
 
-    // idev can't be size_t here as deviceDraw can be -1
+    // idev can't be size_t here as planeDraw can be -1
     for ( int idev=0; idev<tndev; ++idev ){
 
-      if ( deviceDraw > -1 && idev != deviceDraw )  continue;
+      if ( planeDraw > -1 && idev != planeDraw )  continue;
 
       if (verbosityLevel > 0 ) {
-        cout << __func__ << " working on device:   " << idev << endl;
+        cout << __func__ << " working on plane:   " << idev << endl;
       }
 
-      const Device& device = ttracker.getDevice(idev);
+      const Plane& plane = ttracker.getPlane(idev);
 
-      if (!device.exists()) continue;
+      if (!plane.exists()) continue;
       if (verbosityLevel > 0 ) {
-	cout << __func__ << " existing   device:   " << idev << endl;
+	cout << __func__ << " existing   plane:   " << idev << endl;
       }
 
       std::ostringstream devs;
       devs << idev;
 
-      CLHEP::HepRotationZ deviceRZ(-device.rotation()); //It is arround z
-      G4RotationMatrix* deviceRotation  = reg.add(G4RotationMatrix(deviceRZ));
+      CLHEP::HepRotationZ planeRZ(-plane.rotation()); //It is arround z
+      G4RotationMatrix* planeRotation  = reg.add(G4RotationMatrix(planeRZ));
 
-      // device.origin() is in detector coordinates.
+      // plane.origin() is in detector coordinates.
       // devOrigin is in the coordinate system of the mother volume.
-      CLHEP::Hep3Vector devOrigin = device.origin() + originOffset;
+      CLHEP::Hep3Vector devOrigin = plane.origin() + originOffset;
 
-      deviceInfoVect.push_back(nestTubs("TTrackerDeviceEnvelope_"  + devs.str(),
-                                        deviceEnvelopeParams,
+      planeInfoVect.push_back(nestTubs("TTrackerPlaneEnvelope_"  + devs.str(),
+                                        planeEnvelopeParams,
                                         envelopeMaterial,
-                                        deviceRotation,
+                                        planeRotation,
                                         devOrigin,
                                         motherInfo.logical,
                                         idev,
-                                        ttrackerDeviceEnvelopeVisible,
+                                        ttrackerPlaneEnvelopeVisible,
                                         G4Colour::Magenta(),
-                                        ttrackerDeviceEnvelopeSolid,
+                                        ttrackerPlaneEnvelopeSolid,
                                         forceAuxEdgeVisible,
                                         true,
                                         doSurfaceCheck
                                         ));
       
       verbosityLevel > 1 &&
-        cout << __func__ << " placing device: " << idev << " " << devOrigin << " " 
-             << deviceInfoVect[idev].name << endl;
+        cout << __func__ << " placing plane: " << idev << " " << devOrigin << " " 
+             << planeInfoVect[idev].name << endl;
 
       // placing support
 
-      TubsParams ttrackerDeviceSupportParams = ttracker.getSupportParams().getTubsParams();
+      TubsParams ttrackerPlaneSupportParams = ttracker.getSupportParams().getTubsParams();
 
       G4Colour  lightBlue (0.0, 0.0, 0.75);
-      supportInfoVect.push_back(nestTubs("TTrackerDeviceSupport_" + devs.str(),
-                                         ttrackerDeviceSupportParams,
+      supportInfoVect.push_back(nestTubs("TTrackerPlaneSupport_" + devs.str(),
+                                         ttrackerPlaneSupportParams,
                                          findMaterialOrThrow(ttracker.getSupportParams().materialName()),
                                          0,
                                          zeroVector,
-                                         deviceInfoVect[idev].logical,
+                                         planeInfoVect[idev].logical,
                                          idev,
                                          ttrackerSupportVisible,
                                          lightBlue,
@@ -504,54 +504,54 @@ namespace mu2e{
         std::ios::fmtflags oldFlags = cout.flags();
         cout.setf(std::ios::fixed,std::ios::floatfield);
 
-        cout << __func__ << " TTrackerDeviceSupport params: "
-             << ttrackerDeviceSupportParams.innerRadius() << " "
-             << ttrackerDeviceSupportParams.outerRadius() << " "
-             << ttrackerDeviceSupportParams.zHalfLength() << " "
+        cout << __func__ << " TTrackerPlaneSupport params: "
+             << ttrackerPlaneSupportParams.innerRadius() << " "
+             << ttrackerPlaneSupportParams.outerRadius() << " "
+             << ttrackerPlaneSupportParams.zHalfLength() << " "
              << endl;
 
-        cout << __func__ << " device env idev, deviceEnvelopeParams ir,or,zhl,phi0,phimax: " <<
+        cout << __func__ << " plane env idev, planeEnvelopeParams ir,or,zhl,phi0,phimax: " <<
           idev << ", " <<
-          deviceEnvelopeParams.innerRadius() << ", " <<
-          deviceEnvelopeParams.outerRadius() << ", " <<
-          deviceEnvelopeParams.zHalfLength() << ", " <<
-          deviceEnvelopeParams.phi0()        << ", " <<
-          deviceEnvelopeParams.phiMax()      << ", " <<
+          planeEnvelopeParams.innerRadius() << ", " <<
+          planeEnvelopeParams.outerRadius() << ", " <<
+          planeEnvelopeParams.zHalfLength() << ", " <<
+          planeEnvelopeParams.phi0()        << ", " <<
+          planeEnvelopeParams.phiMax()      << ", " <<
           endl;
         cout.setf(oldFlags);
         cout.precision(oldPrecision);
         cout.width(oldWidth);
       }
 
-      // Make TTrackerDeviceSupport a sensitive detector for radiation damage studies
+      // Make TTrackerPlaneSupport a sensitive detector for radiation damage studies
 
       G4VSensitiveDetector *sd = G4SDManager::GetSDMpointer()->
-        FindSensitiveDetector(SensitiveDetectorName::TTrackerDeviceSupport());
+        FindSensitiveDetector(SensitiveDetectorName::TTrackerPlaneSupport());
       if(sd) supportInfoVect[idev].logical->SetSensitiveDetector(sd);
 
       verbosityLevel > 1 &&
-        cout << __func__ << " device: " << idev << " " 
-             << deviceInfoVect[idev].name << " deviceDraw: " << deviceDraw << endl;
+        cout << __func__ << " plane: " << idev << " " 
+             << planeInfoVect[idev].name << " planeDraw: " << planeDraw << endl;
 
       if ( verbosityLevel > 1 ) {
-        cout << __func__ << " -device.rotation(): " << -device.rotation() << " " << endl;
-        cout << __func__ << " device.origin(): " << device.origin() << " " << endl;
+        cout << __func__ << " -plane.rotation(): " << -plane.rotation() << " " << endl;
+        cout << __func__ << " plane.origin(): " << plane.origin() << " " << endl;
       }
 
-      // isec can't be size_t here as sectorDraw can be -1
-      for ( int isec = 0; isec<device.nSectors(); ++isec){
+      // isec can't be size_t here as panelDraw can be -1
+      for ( int isec = 0; isec<plane.nPanels(); ++isec){
 
-        if ( sectorDraw > -1 && isec > sectorDraw ) continue;
+        if ( panelDraw > -1 && isec > panelDraw ) continue;
 
         verbosityLevel > 1 &&
-          cout << __func__ << " sector: " << isec << " " 
-               << sectorInfo.name << " sectorDraw: " << sectorDraw << endl;
+          cout << __func__ << " panel: " << isec << " " 
+               << panelInfo.name << " panelDraw: " << panelDraw << endl;
 
-        const Sector& sector = device.getSector(isec);
+        const Panel& panel = plane.getPanel(isec);
 
         // place the trapezoid in its position ready for the RZ rotation
 
-        CLHEP::HepRotationZ sectorRZ(sector.boxRzAngle() - device.rotation()); // we know it is only around z...
+        CLHEP::HepRotationZ panelRZ(panel.boxRzAngle() - plane.rotation()); // we know it is only around z...
         // this is a relative rotation and this is what we need to calculate relative positions
 
         // it is probably the safest to recalculate offsets from the
@@ -559,21 +559,21 @@ namespace mu2e{
         // positions provided by the geometry service
 
         verbosityLevel > 1 &&
-          cout << __func__ << " sector.boxRzAngle(), device.rotation(), diff:   " 
-               << sector.boxRzAngle()/M_PI*180. << ", "
-               << device.rotation()/M_PI*180.   << ", " 
-               << ((sector.boxRzAngle() - device.rotation())/M_PI)*180. << endl;
+          cout << __func__ << " panel.boxRzAngle(), plane.rotation(), diff:   " 
+               << panel.boxRzAngle()/M_PI*180. << ", "
+               << plane.rotation()/M_PI*180.   << ", " 
+               << ((panel.boxRzAngle() - plane.rotation())/M_PI)*180. << endl;
 
 
         // origin a.k.a offset wrt current mother volume
-        CLHEP::Hep3Vector sectorOrigin = sector.boxOffset() - device.origin();
-        double secRelZ = sectorOrigin.z();
+        CLHEP::Hep3Vector panelOrigin = panel.boxOffset() - plane.origin();
+        double secRelZ = panelOrigin.z();
 
-        CLHEP::Hep3Vector nominalRelPos(CLHEP::Hep3Vector(sectorOrigin.x(),sectorOrigin.y(),0.).mag(), 
+        CLHEP::Hep3Vector nominalRelPos(CLHEP::Hep3Vector(panelOrigin.x(),panelOrigin.y(),0.).mag(), 
                                         0., secRelZ);
 
         if (verbosityLevel > 1) {
-          cout << __func__ << " device, sector, isec%2, secRelZ : " 
+          cout << __func__ << " plane, panel, isec%2, secRelZ : " 
                << setw(3)  << idev << ", " 
                << isec     << ", " 
                << isec%2   << ", " 
@@ -581,67 +581,67 @@ namespace mu2e{
           cout  << endl;
         }
 
-        // we add a 180deg rotation for sector on "even/upstream" side of devices
+        // we add a 180deg rotation for panel on "even/upstream" side of planes
         
-        G4RotationMatrix* sectorRotation = (secRelZ>0.0) ?
-          reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*sectorRZ.inverse())):
-          reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RX2ForTrapezoids*sectorRZ.inverse()));
+        G4RotationMatrix* panelRotation = (secRelZ>0.0) ?
+          reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*panelRZ.inverse())):
+          reg.add(G4RotationMatrix(RXForTrapezoids*RZForTrapezoids*RX2ForTrapezoids*panelRZ.inverse()));
 
 
-        CLHEP::Hep3Vector sectorRelOrigin = sectorRZ*nominalRelPos; 
+        CLHEP::Hep3Vector panelRelOrigin = panelRZ*nominalRelPos; 
         // we still need to do a complemetary rotation
 
         if ( verbosityLevel > 1 ) {
-          cout << __func__ << " device.origin:      " << idev << " " << isec 
-               << " " << deviceInfoVect[idev].name << device.origin() << endl;
-          cout << __func__ << " sector.origin:      " << idev << " " << isec 
-               << " " << sectorInfo.name << sectorOrigin << endl;
+          cout << __func__ << " plane.origin:      " << idev << " " << isec 
+               << " " << planeInfoVect[idev].name << plane.origin() << endl;
+          cout << __func__ << " panel.origin:      " << idev << " " << isec 
+               << " " << panelInfo.name << panelOrigin << endl;
           cout << __func__ << " nominalRelPos:      " << idev << " " << isec 
-               << " " << sectorInfo.name << nominalRelPos << endl;
-          cout << __func__ << " sectorRelOrigin:    " << idev << " " << isec 
-               << " " << sectorInfo.name << sectorRelOrigin << endl;
-          cout << __func__ << " sector.boxOffset(): " << idev << " " << isec 
-               << " " << sectorInfo.name << sector.boxOffset() << endl;
+               << " " << panelInfo.name << nominalRelPos << endl;
+          cout << __func__ << " panelRelOrigin:    " << idev << " " << isec 
+               << " " << panelInfo.name << panelRelOrigin << endl;
+          cout << __func__ << " panel.boxOffset(): " << idev << " " << isec 
+               << " " << panelInfo.name << panel.boxOffset() << endl;
         }
 
         // we may need to keep those pointers somewhre... (this is only the last one...)
 
-        sectorInfo.physical =  new G4PVPlacement(sectorRotation,
-                                                 sectorRelOrigin,
-                                                 sectorInfo.logical,
-                                                 sectorInfo.name,
-                                                 deviceInfoVect[idev].logical,
+        panelInfo.physical =  new G4PVPlacement(panelRotation,
+                                                 panelRelOrigin,
+                                                 panelInfo.logical,
+                                                 panelInfo.name,
+                                                 planeInfoVect[idev].logical,
                                                  false,
                                                  isec,
                                                  false);
         if ( doSurfaceCheck) {
-          checkForOverlaps( sectorInfo.physical, config, verbosityLevel>0);
+          checkForOverlaps( panelInfo.physical, config, verbosityLevel>0);
         }
 
         if (verbosityLevel > 1) {
 
-          cout << __func__ << " placed sector: " << isec << " in device " << idev << " " 
-               << sectorInfo.name << endl;
+          cout << __func__ << " placed panel: " << isec << " in plane " << idev << " " 
+               << panelInfo.name << endl;
 
-          const Layer&  layer  = sector.getLayer(0);
-          int nStrawsPerSector = sector.nLayers()  * layer.nStraws();
-          int nStrawsPerDevice = device.nSectors() * nStrawsPerSector;
+          const Layer&  layer  = panel.getLayer(0);
+          int nStrawsPerPanel = panel.nLayers()  * layer.nStraws();
+          int nStrawsPerPlane = plane.nPanels() * nStrawsPerPanel;
 
-          cout << __func__ << " first straw number in sector " << fixed << setw(4)
+          cout << __func__ << " first straw number in panel " << fixed << setw(4)
                << isec << " in dev " << fixed << setw(4)
                << idev << " should be: " << fixed << setw(8)
-               << nStrawsPerSector * isec + nStrawsPerDevice * idev
+               << nStrawsPerPanel * isec + nStrawsPerPlane * idev
                << endl;
 
         }
 
-      } // end loop over sectors
+      } // end loop over panels
     
       verbosityLevel > 1 &&
-        cout << __func__ << " placed device: " << idev << " " << idev%2 << " " 
-             << deviceInfoVect[idev].name << endl;
+        cout << __func__ << " placed plane: " << idev << " " << idev%2 << " " 
+             << planeInfoVect[idev].name << endl;
 
-    } // end loop over devices
+    } // end loop over planes
 
     return motherInfo;
 

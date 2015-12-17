@@ -138,7 +138,7 @@ namespace mu2e {
     DeadStrawList _strawStatus;
 // diagnostics
     TTree* _swdiag;
-    Int_t _sdevice, _ssector, _slayer, _sstraw;
+    Int_t _splane, _spanel, _slayer, _sstraw;
     Int_t _nhitlet,_ihitlet;
     Float_t _hqsum, _vmax, _tvmax, _sesum;
     Int_t _wmcpdg, _wmcproc, _nxing;
@@ -148,7 +148,7 @@ namespace mu2e {
     Float_t _tmin, _tmax, _txing, _xddist, _xwdist;
     Bool_t _wfxtalk;
     TTree* _sddiag;
-    Int_t _sddevice, _sdsector, _sdlayer, _sdstraw;
+    Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
     Int_t _nend, _nstep;
     Float_t _xtime0, _xtime1, _htime0, _htime1, _charge0, _charge1, _ddist0, _ddist1, _wdist0, _wdist1, _vstart0, _vstart1, _vcross0, _vcross1;
     Float_t _mctime, _mcenergy, _mctrigenergy, _mcthreshenergy;
@@ -230,8 +230,8 @@ namespace mu2e {
     if(_diagLevel > 0){
       art::ServiceHandle<art::TFileService> tfs;
       _swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
-      _swdiag->Branch("device",&_sdevice,"device/I");
-      _swdiag->Branch("sector",&_ssector,"sector/I");
+      _swdiag->Branch("plane",&_splane,"plane/I");
+      _swdiag->Branch("panel",&_spanel,"panel/I");
       _swdiag->Branch("layer",&_slayer,"layer/I");
       _swdiag->Branch("straw",&_sstraw,"straw/I");
       _swdiag->Branch("nhitlet",&_nhitlet,"nhitlet/I");
@@ -257,8 +257,8 @@ namespace mu2e {
 
       if(_diagLevel > 1){
         _sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
-        _sddiag->Branch("device",&_sddevice,"device/I");
-        _sddiag->Branch("sector",&_sdsector,"sector/I");
+        _sddiag->Branch("plane",&_sdplane,"plane/I");
+        _sddiag->Branch("panel",&_sdpanel,"panel/I");
         _sddiag->Branch("layer",&_sdlayer,"layer/I");
         _sddiag->Branch("straw",&_sdstraw,"straw/I");
         _sddiag->Branch("nend",&_nend,"nend/I");
@@ -709,8 +709,8 @@ namespace mu2e {
       WFXList const& xings) {
     const Tracker& tracker = getTrackerOrThrow();
     const Straw& straw = tracker.getStraw( wf.hitlets().strawIndex() );
-    _sdevice = straw.id().getDevice();
-    _ssector = straw.id().getSector();
+    _splane = straw.id().getPlane();
+    _spanel = straw.id().getPanel();
     _slayer = straw.id().getLayer();
     _sstraw = straw.id().getStraw();
     HitletList const& hitlets = wf.hitlets().hitletList();
@@ -818,8 +818,8 @@ namespace mu2e {
       const Tracker& tracker = getTrackerOrThrow();
     StrawEnd primaryend = primaryEnd(digi.strawIndex());
     const Straw& straw = tracker.getStraw( digi.strawIndex() );
-    _sddevice = straw.id().getDevice();
-    _sdsector = straw.id().getSector();
+    _sdplane = straw.id().getPlane();
+    _sdpanel = straw.id().getPanel();
     _sdlayer = straw.id().getLayer();
     _sdstraw = straw.id().getStraw();
     _xtime0 = _xtime1 = -1000.0;

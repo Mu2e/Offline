@@ -54,7 +54,7 @@ namespace mu2e {
     std::string _makerModuleLabel,_mcdigislabel;
     TTree* _estraw;
 // branch variables
-    Int_t _device, _sector, _layer, _straw;
+    Int_t _plane, _panel, _layer, _straw;
     Int_t _mcpdg, _mcgen, _mcproc;
     Int_t _mcppdg;
     threevec _mcpspos, _mcpsmom;
@@ -81,8 +81,8 @@ namespace mu2e {
     // Get access to the TFile service.
     art::ServiceHandle<art::TFileService> tfs;
     _estraw=tfs->make<TTree>("estraw","straw energy");
-    _estraw->Branch("device",&_device,"device/I");
-    _estraw->Branch("sector",&_sector,"sector/I");
+    _estraw->Branch("plane",&_plane,"plane/I");
+    _estraw->Branch("panel",&_panel,"panel/I");
     _estraw->Branch("layer",&_layer,"layer/I");
     _estraw->Branch("straw",&_straw,"straw/I");
     _estraw->Branch("mcpdg",&_mcpdg,"mcpdg/I");
@@ -157,8 +157,8 @@ namespace mu2e {
       }
 // Get the straw information:
       const Straw& straw = tracker.getStraw( hit.strawIndex() );
-      _device = straw.id().getDevice();
-      _sector = straw.id().getSector();
+      _plane = straw.id().getPlane();
+      _panel = straw.id().getPanel();
       _layer = straw.id().getLayer();
       _straw = straw.id().getStraw();
       const CLHEP::Hep3Vector& mid   = straw.getMidPoint();

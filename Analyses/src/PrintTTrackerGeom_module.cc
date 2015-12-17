@@ -48,15 +48,15 @@ namespace mu2e {
 
     TTracker const& tracker(*GeomHandle<TTracker>());
 
-    cout << "Tracker: " << tracker.nDevices() << endl;
-    for ( auto const& dev : tracker.getDevices() ){
-      for ( auto const& sec : dev.getSectors() ){
+    cout << "Tracker: " << tracker.nPlanes() << endl;
+    for ( auto const& dev : tracker.getPlanes() ){
+      for ( auto const& sec : dev.getPanels() ){
         StrawId sid( sec.id(), 0, 0 );
         Straw const& straw = sec.getStraw(sid);
         double phi  = straw.direction().phi();
         double z    = straw.getMidPoint().z() - dev.origin().z();
         double phi1 = phi/M_PI*180.;
-        cout << "sector: "
+        cout << "panel: "
              << sec.id()      << " "
              << sid           << " "
              << straw.index() << " : "

@@ -22,24 +22,24 @@ double ttracker.envelopeInnerRadius  =   377.0;
 double ttracker.z0                   = 10200.0;
 
 // basic geometry numbers
-int    ttracker.sectorsPerDevice	    =   6;
+int    ttracker.panelsPerPlane	    =   6;
 int    ttracker.spacingPattern		    =   1;
-int    ttracker.layersPerSector             =   2;
+int    ttracker.layersPerPanel             =   2;
 int    ttracker.strawsPerManifold           =	1;
 int    ttracker.manifoldsPerEnd             =   48;
-int    ttracker.numDevices                  =	40;
+int    ttracker.numPlanes                  =	40;
 int    ttracker.rotationPattern             =	2;
 // by default, 18 slots of 20 are filled
-vector<int> ttracker.nonExistingDevices = { 12,13,26,27 };
+vector<int> ttracker.nonExistingPlanes = { 12,13,26,27 };
 
 // angles and spacings
-double ttracker.deviceRotation		    =   60.0;
+double ttracker.planeRotation		    =   60.0;
 double ttracker.oddStationRotation          =	60.0;
-double ttracker.deviceHalfSeparation        =   25.08;
-double ttracker.deviceSpacing               =   155.7;
+double ttracker.planeHalfSeparation        =   25.08;
+double ttracker.planeSpacing               =   155.7;
 vector<double> ttracker.manifoldHalfLengths = { 3.125, 5.0, 8.5};
 double ttracker.manifoldYOffset             =   0.0;
-double ttracker.sectorPhi0                  =   45.0; // degrees
+double ttracker.panelPhi0                  =   45.0; // degrees
 
 // straw parameters
 double ttracker.strawOuterRadius     =     2.5;
@@ -139,19 +139,19 @@ double ttrackerSupport.channel.depth    =  5.0;
 string ttrackerSupport.channel.material =  "DSVacuum";
 string ttrackerSupport.electronicsSpace.material =  "StrawGas";
 
-// Debug control for TTracker; uncomment to make only a selected sector.
+// Debug control for TTracker; uncomment to make only a selected panel.
 // it is not about drawing, but about the construction itself
 int    ttracker.devDraw  =   -1;
 int    ttracker.secDraw  =   -1;
 //  
 bool   ttracker.envelopeVisible      =  true;
 bool   ttracker.envelopeSolid        =  false;
-bool   ttracker.deviceEnvelopeVisible = true;
-bool   ttracker.deviceEnvelopeSolid   = false;
+bool   ttracker.planeEnvelopeVisible = true;
+bool   ttracker.planeEnvelopeSolid   = false;
 bool   ttracker.supportVisible        = true;
 bool   ttracker.supportSolid          = false;
-bool   ttracker.sectorEnvelopeVisible = true;
-bool   ttracker.sectorEnvelopeSolid   = false;
+bool   ttracker.panelEnvelopeVisible = true;
+bool   ttracker.panelEnvelopeSolid   = false;
 bool   ttracker.strawVisible         =  false;
 bool   ttracker.strawSolid           =  false;
 

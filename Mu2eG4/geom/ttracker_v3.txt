@@ -53,25 +53,25 @@ double ttracker.mother.halfLength  =  1635.1; // mm
 double ttracker.mother.z0          = 10175.;  // mm
 
 // Adjust spacings and rotations within the TTracker to match Mu2e-doc-888-v5
-double ttracker.deviceHalfSeparation        =    23.5;
-double ttracker.deviceSpacing               =   140.86;
+double ttracker.planeHalfSeparation        =    23.5;
+double ttracker.planeSpacing               =   140.86;
 double ttracker.supportHalfThickness        =     2.5;
 vector<double> ttracker.manifoldHalfLengths = { 3.125, 5.0, 8.5};
 double ttracker.manifoldYOffset             =     0.;
-double ttracker.sectorPhi0                  =    45.; // degrees
-int    ttracker.layersPerSector             =    2;
+double ttracker.panelPhi0                  =    45.; // degrees
+int    ttracker.layersPerPanel             =    2;
 int    ttracker.strawsPerManifold           =    1; //  1,10
 int    ttracker.manifoldsPerEnd             =   48; // 50, 5
 double ttracker.strawGap                    =     1.25;
-int    ttracker.numDevices                  = 44;
+int    ttracker.numPlanes                  = 44;
 
 // going from 44 to 20 does the spacing increase?
-// or is it ok to remove four more devices? i.e. 12,13, 30, 31?
+// or is it ok to remove four more planes? i.e. 12,13, 30, 31?
 
 int    ttracker.rotationPattern             =    2;
 double ttracker.oddStationRotation          = 60.0;
 
-//vector<int> ttracker.nonExistingDevices = { 8,9,16,17,26,27,34,35 };
+//vector<int> ttracker.nonExistingPlanes = { 8,9,16,17,26,27,34,35 };
 
 // Bug fixes
 string ttracker.mat.vacuum             = "DSVacuum";
@@ -157,7 +157,7 @@ double ttracker.straw.wirePlate.thickness       = 0.00025;
 string ttracker.straw.wirePlate.material        = "G4_Au";
 
 // Turn off 2 stations for TDR
-vector<int> ttracker.nonExistingDevices = { 14,15,28,29 };
+vector<int> ttracker.nonExistingPlanes = { 14,15,28,29 };
 
 //
 // This tells emacs to view this file in c++ mode.

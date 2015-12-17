@@ -20,8 +20,8 @@
 #include "TTrackerGeom/inc/SupportModel.hh"
 #include "TTrackerGeom/inc/SupportStructure.hh"
 
-#include "TrackerGeom/inc/Device.hh"
-#include "DataProducts/inc/SectorId.hh"
+#include "TrackerGeom/inc/Plane.hh"
+#include "DataProducts/inc/PanelId.hh"
 #include "TrackerGeom/inc/StrawDetail.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
@@ -53,24 +53,24 @@ namespace mu2e {
     std::string const& envelopeMaterial() const { return _envelopeMaterial; }
 
     // Check for legal identifiers.
-    bool isLegal(DeviceId d) const{
+    bool isLegal(PlaneId d) const{
       return ( d>-1 &&
-               std::vector<Device>::size_type(d) <_devices.size()
+               std::vector<Plane>::size_type(d) <_planes.size()
                );
     };
 
-    bool isLegal(const SectorId& sid) const{
-      return (isLegal(sid.getDeviceId()) &&
-              sid.getSector() >-1   &&
-              std::vector<Sector>::size_type(sid.getSector()) < getDevice(sid.getDeviceId()).getSectors().size()
+    bool isLegal(const PanelId& sid) const{
+      return (isLegal(sid.getPlaneId()) &&
+              sid.getPanel() >-1   &&
+              std::vector<Panel>::size_type(sid.getPanel()) < getPlane(sid.getPlaneId()).getPanels().size()
               );
     }
 
-    typedef std::vector<Sector>::size_type stypeLayer;
+    typedef std::vector<Panel>::size_type stypeLayer;
     bool isLegal(const LayerId& lid ) const{
-      return ( isLegal(lid.getSectorId()) &&
+      return ( isLegal(lid.getPanelId()) &&
                lid.getLayer() > -1   &&
-               std::vector<Layer>::size_type(lid.getLayer()) < getSector(lid.getSectorId()).getLayers().size()
+               std::vector<Layer>::size_type(lid.getLayer()) < getPanel(lid.getPanelId()).getLayers().size()
                );
     }
 
@@ -82,28 +82,28 @@ namespace mu2e {
     }
 
     // Accessors
-    int nDevices() const{
-      return _devices.size();
+    int nPlanes() const{
+      return _planes.size();
     }
 
-    const std::vector<Device>& getDevices() const{
-      return _devices;
+    const std::vector<Plane>& getPlanes() const{
+      return _planes;
     }
 
-    const Device& getDevice ( DeviceId id) const{
-      return _devices.at(id);
+    const Plane& getPlane ( PlaneId id) const{
+      return _planes.at(id);
     }
 
-    const Sector& getSector ( const SectorId& sid ) const{
-      return _devices.at(sid.getDevice()).getSector(sid);
+    const Panel& getPanel ( const PanelId& sid ) const{
+      return _planes.at(sid.getPlane()).getPanel(sid);
     }
 
     const Layer& getLayer ( const LayerId& lid ) const{
-      return _devices.at(lid.getDevice()).getLayer(lid);
+      return _planes.at(lid.getPlane()).getLayer(lid);
     }
 
     const Straw& getStraw ( const StrawId& sid ) const{
-      return _devices.at(sid.getDevice()).getStraw(sid);
+      return _planes.at(sid.getPlane()).getStraw(sid);
     }
 
     const Straw& getStraw ( StrawIndex i ) const{
@@ -144,8 +144,8 @@ namespace mu2e {
       return _manifoldHalfLengths;
     }
 
-    TubsParams getDeviceEnvelopeParams() const{
-      return _deviceEnvelopeParams;
+    TubsParams getPlaneEnvelopeParams() const{
+      return _planeEnvelopeParams;
     }
 
     const TubsParams& getInnerTrackerEnvelopeParams() const{
@@ -167,7 +167,7 @@ namespace mu2e {
     // F can be a class with an operator() or a free function.
     template <class F>
     inline void forAllStraws ( F& f) const{
-      for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
+      for ( std::vector<Plane>::const_iterator i=_planes.begin(), e=_planes.end();
             i !=e; ++i){
         i->forAllStraws(f);
       }
@@ -175,23 +175,23 @@ namespace mu2e {
 
     template <class F>
     inline void forAllLayers ( F& f) const{
-      for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
+      for ( std::vector<Plane>::const_iterator i=_planes.begin(), e=_planes.end();
             i !=e; ++i){
         i->forAllLayers(f);
       }
     }
 
     template <class F>
-    inline void forAllSectors ( F& f) const{
-      for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
+    inline void forAllPanels ( F& f) const{
+      for ( std::vector<Plane>::const_iterator i=_planes.begin(), e=_planes.end();
             i !=e; ++i){
-        i->forAllSectors(f);
+        i->forAllPanels(f);
       }
     }
 
     template <class F>
-    inline void forAllDevices ( F& f) const{
-      for ( std::vector<Device>::const_iterator i=_devices.begin(), e=_devices.end();
+    inline void forAllPlanes ( F& f) const{
+      for ( std::vector<Plane>::const_iterator i=_planes.begin(), e=_planes.end();
             i !=e; ++i){
         f(*i);
       }
@@ -214,8 +214,8 @@ namespace mu2e {
     // Detailed info about each type of straw.
     std::vector<StrawDetail> _strawDetails;
 
-    // An TTracker is made of two devices, sides and vanes.
-    std::vector<Device> _devices;
+    // An TTracker is made of two planes, sides and vanes.
+    std::vector<Plane> _planes;
 
     // An alternative viewpoint:
     // A TTracker is made of a collection of Stations.
@@ -230,11 +230,11 @@ namespace mu2e {
     // Outer envelope that holds the new style support structure.
     PlacedTubs _mother;
 
-    // The envelope that holds all of the devices in the tracker, including the device supports.
+    // The envelope that holds all of the planes in the tracker, including the plane supports.
     TubsParams _innerTrackerEnvelopeParams;
 
-    // The envelope that holds all of the pieces in one device, including supports.
-    TubsParams _deviceEnvelopeParams;
+    // The envelope that holds all of the pieces in one plane, including supports.
+    TubsParams _planeEnvelopeParams;
 
     // Which level of detail is present in the model of the support structure?
     SupportModel _supportModel;
@@ -242,7 +242,7 @@ namespace mu2e {
     // All supports are the same shape; only relevant for _supportModel=="simple"
     Support _supportParams;
 
-    // A more detailed model of the supports; again each plane has identical supports.
+    // A more detailed model of the supports; again each planeMF has identical supports.
     // only relevant for _supportModel == "detailedv0".
     SupportStructure _supportStructure;
 

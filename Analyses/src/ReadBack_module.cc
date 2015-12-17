@@ -476,7 +476,7 @@ namespace mu2e {
         // Ptrs to StepPointMCs in the crystals.
         PtrStepPointMCVector const& xptr = crystalPtr->at(i);
 
-        // Ptrs to StepPointMCs in the readout devices.
+        // Ptrs to StepPointMCs in the readout planes.
         PtrStepPointMCVector const& rptr = readoutPtr->at(i);
 
         cout << "Readback: " << hit << " | " << rptr.size() << " " << xptr.size();
@@ -802,8 +802,8 @@ namespace mu2e {
       nt[8]  = mid.z();
       nt[9]  = pca.dca();
       nt[10] = hit.time();
-      nt[11] = straw.id().getDevice();
-      nt[12] = straw.id().getSector();
+      nt[11] = straw.id().getPlane();
+      nt[12] = straw.id().getPanel();
       nt[13] = straw.id().getLayer();
       nt[14] = pdgId;
       nt[15] = genId.id();

@@ -16,9 +16,9 @@ int TTrackerVersion   = 3;
 
 int    ttracker.verbosityLevel     =    0;
 
-int    ttracker.numDevices         =   36;
-int    ttracker.sectorsPerDevice   =    6;
-int    ttracker.layersPerSector    =    1;
+int    ttracker.numPlanes         =   36;
+int    ttracker.panelsPerPlane   =    6;
+int    ttracker.layersPerPanel    =    1;
 int    ttracker.manifoldsPerEnd    =    4;
 int    ttracker.strawsPerManifold  =   15;
 int    ttracker.rotationPattern    =    1;
@@ -29,28 +29,28 @@ double ttracker.envelopeInnerRadius  =   380.0;
 double ttracker.strawOuterRadius     =     2.5;
 double ttracker.strawWallThickness   =     0.015;
 double ttracker.strawGap             =     0.0;
-double ttracker.deviceSpacing        =   170.;
-double ttracker.deviceHalfSeparation =    10.0;
-double ttracker.deviceRotation       =    60.;
+double ttracker.planeSpacing        =   170.;
+double ttracker.planeHalfSeparation =    10.0;
+double ttracker.planeRotation       =    60.;
 double ttracker.outerSupportRadius   =   830.0;
 double ttracker.innerSupportRadius   =   700.0;
 double ttracker.supportHalfThickness =     2.5;
 double ttracker.wireRadius           =     0.0125;
 double ttracker.manifoldYOffset      =    10.;
-double ttracker.sectorPhi0           =     0.;
+double ttracker.panelPhi0           =     0.;
 
 
 bool   ttracker.envelopeVisible      =  true;
 bool   ttracker.envelopeSolid        =  false;
 
-bool   ttracker.deviceEnvelopeVisible = true;
-bool   ttracker.deviceEnvelopeSolid   = false;
+bool   ttracker.planeEnvelopeVisible = true;
+bool   ttracker.planeEnvelopeSolid   = false;
 
 bool   ttracker.supportVisible        = true;
 bool   ttracker.supportSolid          = false;
 
-bool   ttracker.sectorEnvelopeVisible = true;
-bool   ttracker.sectorEnvelopeSolid   = false;
+bool   ttracker.panelEnvelopeVisible = true;
+bool   ttracker.panelEnvelopeSolid   = false;
 
 bool   ttracker.strawVisible         =  false;
 bool   ttracker.strawSolid           =  false;
@@ -65,7 +65,7 @@ string ttracker.mat.wire      = "G4_W";
 string ttracker.mat.manifold  = "G4_Al";
 string ttracker.mat.support   = "G4_Al";
 
-// Debug control for TTracker; uncomment to make only a selected sector.
+// Debug control for TTracker; uncomment to make only a selected panel.
 // it is not about drawing, but about the construction itself
 int    ttracker.devDraw  =   -1;
 int    ttracker.secDraw  =   -1;

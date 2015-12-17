@@ -15,7 +15,7 @@ bool mbs.visible             = false;
 bool vd.visible              = false;
 
 bool ttracker.envelopeVisible       = false;
-bool ttracker.deviceEnvelopeVisible = false;
+bool ttracker.planeEnvelopeVisible = false;
 bool ttracker.supportVisible        = false;
 
 string g4.physicsListName = "QGSP_BERT";

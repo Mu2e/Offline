@@ -1,5 +1,5 @@
 //
-// example Plugin to read TTracker DeviceSupport Detectors data and create ntuples
+// example Plugin to read TTracker PlaneSupport Detectors data and create ntuples
 //
 //  $Id: ReadTTrackerDSDetectors_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
 //  $Author: genser $
@@ -108,12 +108,12 @@ namespace mu2e {
                                  50,  0., 50. );
 
     _hNsdDetH = tfs->make<TH1F>( "hNsdDetH", 
-                                 "Number of hits in DeviceSupport Detectors",
+                                 "Number of hits in PlaneSupport Detectors",
                                  50,  0., 50. );
 
     // Create an ntuple.
     _nttsdd = tfs->make<TNtuple>( "nttsdd", 
-                                  "Device Support Detectors ntuple",
+                                  "Plane Support Detectors ntuple",
                                   "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
                                   "g4bl_time");
   }

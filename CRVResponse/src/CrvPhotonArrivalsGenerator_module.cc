@@ -159,7 +159,8 @@ namespace mu2e
         {
           StepPointMC const& step(*iter);
 
-          if(step.time()<_startTime) continue;   //Ignore this StepPoint to reduce computation time.
+          double t1 = _timeOffsets.timeWithOffsetsApplied(step);
+          if(t1<_startTime) continue;   //Ignore this StepPoint to reduce computation time.
 
           const CLHEP::Hep3Vector &p1 = step.position();
           CLHEP::Hep3Vector p2 = p1 + step.momentum().unit()*step.stepLength();
@@ -190,7 +191,6 @@ namespace mu2e
           double beta2 = sqrt(1.0-1.0/(gamma2*gamma2));
           double beta = (beta1+beta2)/2.0;
           double velocity = beta*CLHEP::c_light;
-          double t1 = _timeOffsets.timeWithOffsetsApplied(step);
           double t2 = t1 + step.stepLength()/velocity;
 
 //if there is a following step point, it will give a more realistic energy and time

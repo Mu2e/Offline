@@ -35,12 +35,12 @@ namespace mu2e {
     };
 
     // Fixme: the *FromString methods need to go into the TrackerGeom class.
-    SectorId sectorIdFromString ( std::string const& s ){
+    PanelId panelIdFromString ( std::string const& s ){
       vector<string> v;
       splitLine( s, "_", v);
       if ( v.size() != 2 ){
         throw cet::exception("CONFIG")
-          << "sectorIdFromString: expected two parts but found: "
+          << "panelIdFromString: expected two parts but found: "
           << v.size()
           << "\n";
       }
@@ -50,7 +50,7 @@ namespace mu2e {
       int dev, sec;
       sdev >> dev;
       ssec >> sec;
-      return SectorId(dev,sec);
+      return PanelId(dev,sec);
     }
 
     LayerId layerIdFromString ( std::string const& s ){
@@ -97,42 +97,42 @@ namespace mu2e {
 
     // Out-of-class functions to deal with the parameter set work.
     // Kept out-of-class to hide implementation from the header.
-    void addDeadDevices( TTracker const& tracker,
+    void addDeadPlanes( TTracker const& tracker,
                          fhicl::ParameterSet const& pset,
                          vector<bool>& alive,
                          bool verbosity ){
 
-      vector<int> devs = pset.get<vector<int> >( "deadDevices", vector<int>() );
+      vector<int> devs = pset.get<vector<int> >( "deadPlanes", vector<int>() );
 
       MarkAsDead marker(alive);
 
       for ( vector<int>::const_iterator i=devs.begin(), e=devs.end();
             i != e; ++i ){
-        if ( verbosity > 0 ) cout << "Deadening straws in Device: " << *i << endl;
-        tracker.getDevice(*i).forAllStraws( marker );
+        if ( verbosity > 0 ) cout << "Deadening straws in Plane: " << *i << endl;
+        tracker.getPlane(*i).forAllStraws( marker );
       }
 
     }
 
-    void addDeadSectors( TTracker const& tracker,
+    void addDeadPanels( TTracker const& tracker,
                          fhicl::ParameterSet const& pset,
                          vector<bool>& alive,
                          bool verbosity  ){
 
-      vector<string> secs = pset.get<vector<string> >( "deadSectors", vector<string>() );
-      vector<SectorId> secIds;
+      vector<string> secs = pset.get<vector<string> >( "deadPanels", vector<string>() );
+      vector<PanelId> secIds;
 
       for ( vector<string>::const_iterator i=secs.begin(), e=secs.end();
             i != e; ++i ){
-        secIds.push_back( sectorIdFromString(*i) );
+        secIds.push_back( panelIdFromString(*i) );
       }
 
       MarkAsDead marker(alive);
 
-      for ( vector<SectorId>::const_iterator i=secIds.begin(), e=secIds.end();
+      for ( vector<PanelId>::const_iterator i=secIds.begin(), e=secIds.end();
             i != e; ++i ){
-        if ( verbosity > 0 ) cout << "Deadening straws in Sector: " << *i << endl;
-        tracker.getSector(*i).forAllStraws( marker );
+        if ( verbosity > 0 ) cout << "Deadening straws in Panel: " << *i << endl;
+        tracker.getPanel(*i).forAllStraws( marker );
       }
 
     }
@@ -198,8 +198,8 @@ namespace mu2e {
     _alive.assign( tracker.getAllStraws().size(), true);
 
     // Parse the input to mark straws as dead.
-    addDeadDevices( tracker, pset, _alive, _verbosity );
-    addDeadSectors( tracker, pset, _alive, _verbosity );
+    addDeadPlanes( tracker, pset, _alive, _verbosity );
+    addDeadPanels( tracker, pset, _alive, _verbosity );
     addDeadLayers ( tracker, pset, _alive, _verbosity );
     addDeadStraws ( tracker, pset, _alive, _verbosity );
 

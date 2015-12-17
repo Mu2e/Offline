@@ -29,8 +29,8 @@ namespace mu2e {
     // should be OK.
 
     // Check for legal identifiers; add these later.
-    //virtual isLegal(DeviceId d) const = 0;
-    //virtual bool isLegal(const SectorId& sid) const = 0;
+    //virtual isLegal(PlaneId d) const = 0;
+    //virtual bool isLegal(const PanelId& sid) const = 0;
     //vitrual bool isLegal(const LayerId& lid ) const = 0;
     //virtual bool isLegal(const StrawId& sid) const =0;
 

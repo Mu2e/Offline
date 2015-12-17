@@ -121,7 +121,7 @@ namespace mu2e {
     Int_t   B_ndau, B_isfirst[1000]; // --2--
     Float_t B_daux[1000], B_dauy[1000], B_dauz[1000], B_daup[1000], B_daucosth[1000], B_dauphi[1000], B_dautime[1000], B_daupdgid[1000]; //--8--               
     Int_t B_nstraw;
-    Float_t B_strawidx[10000], B_strawlay[10000], B_strawdev[10000], B_strawsec[10000], B_strawx[10000], B_strawy[10000], B_strawz[10000];
+    Float_t B_strawidx[10000], B_strawlay[10000], B_strawplane[10000], B_strawsec[10000], B_strawx[10000], B_strawy[10000], B_strawz[10000];
   };
 
 
@@ -199,7 +199,7 @@ namespace mu2e {
       _tNtup->Branch("strawz[nstraw]", B_strawz, "strawz[nstraw]/F");
       _tNtup->Branch("strawidx[nstraw]", B_strawidx, "strawidx[nstraw]/F");
       _tNtup->Branch("strawlay[nstraw]", B_strawlay, "strawlay[nstraw]/F");
-      _tNtup->Branch("strawdev[nstraw]", B_strawdev, "strawdev[nstraw]/F");
+      _tNtup->Branch("strawplane[nstraw]", B_strawplane, "strawplane[nstraw]/F");
       _tNtup->Branch("strawsec[nstraw]", B_strawsec, "strawsec[nstraw]/F");
 
       //      _tNtup->Branch("ncrys", &B_ncrys, "ncrys/F");
@@ -340,8 +340,8 @@ namespace mu2e {
 	Straw stw = tracker.getStraw(strawvec[i]);
 	B_strawidx[i] = stw.id().getStraw();
 	B_strawlay[i] = stw.id().getLayerId().getLayer();
-	B_strawdev[i] = stw.id().getDeviceId();
-	B_strawsec[i] = stw.id().getSectorId().getSector();
+	B_strawplane[i] = stw.id().getPlaneId();
+	B_strawsec[i] = stw.id().getPanelId().getPanel();
 	const CLHEP::Hep3Vector stMidPoint3 = stw.getMidPoint();
 	B_strawx[i] = stMidPoint3.getX();
 	B_strawy[i] = stMidPoint3.getY();

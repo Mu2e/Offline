@@ -31,8 +31,8 @@ makeSH : {
   maxFullPrint         : 0
   deadStrawList        : {
     verbosity   : 0
-    deadDevices : [ ]
-    deadSectors : [ ]
+    deadPlanes : [ ]
+    deadPanels : [ ]
     deadLayers  : [ ]
     deadStraws  : [ ]
   }
@@ -44,8 +44,8 @@ makeSD : {
     TimeOffsets   : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     deadStrawList        : {
 	verbosity   : 0
-	deadDevices : [ ]
-	deadSectors : [ ]
+	deadPlanes : [ ]
+	deadPanels : [ ]
 	deadLayers  : [ ]
 	deadStraws  : [ ]
     }

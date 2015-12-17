@@ -93,8 +93,8 @@ namespace mu2e {
     std::ostringstream os;
 
     os << base
-       << _id.getDevice() << "_"
-       << _id.getSector() << "_"
+       << _id.getPlane() << "_"
+       << _id.getPanel() << "_"
        << _id.getLayer()  << "_"
        << _id.getStraw();
     return os.str();

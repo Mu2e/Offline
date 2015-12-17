@@ -422,7 +422,7 @@ namespace mu2e {
     for (int i=seedIndex; i<np; i++) {
       if ( (! fxyzp[i].isOutlier()) && (indexVec[i] >0 )) {
 	// didn't find an accessor returning the station number, hack
-	ist = fxyzp[i]._straw->id().getDevice()/2;
+	ist = fxyzp[i]._straw->id().getPlane()/2;
 	pos = fxyzp[i]._pos;
 	phi = CLHEP::Hep3Vector(pos - center).phi();
 	phi = TVector2::Phi_0_2pi(phi);

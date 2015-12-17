@@ -364,12 +364,12 @@ namespace mu2e
   void FlagBkgHits::fillDeltaSummary(DeltaInfo& delta) {
     // tracker, to get StrawID later
     const TTracker& tracker = dynamic_cast<const TTracker&>(getTrackerOrThrow());
-    unsigned ndevices = tracker.nDevices();
-    unsigned nstations = ndevices/2;
+    unsigned nplanes = tracker.nPlanes();
+    unsigned nstations = nplanes/2;
     // fill the BDT information about each hit, compared to the centroid
     // also accumulate information about selected hits
     accumulator_set<double, stats<tag::mean,tag::variance(lazy)> > tacc,pacc,racc;
-    std::vector<bool> devices(ndevices,false);
+    std::vector<bool> planes(nplanes,false);
     std::vector<bool> stations(nstations,false);
     std::vector<double> hz;
     hz.reserve(delta._dhinfo.size());
@@ -382,9 +382,9 @@ namespace mu2e
 	pacc(dhinfo._hphi);
 	racc(dhinfo._hrho);
 	const StrawHit& sh = _shcol->at(dhinfo._hindex);
-	unsigned idevice = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getDeviceId());
-	unsigned istation = idevice/2;
-	devices[idevice] = true;
+	unsigned iplane = (unsigned)(tracker.getStraw(sh.strawIndex()).id().getPlaneId());
+	unsigned istation = iplane/2;
+	planes[iplane] = true;
 	stations[istation] = true;
 	hz.push_back(dhinfo._hz);
 	++delta._ngdhits;
@@ -410,11 +410,11 @@ namespace mu2e
       for(unsigned iz=1;iz<hz.size();++iz){
 	if(hz[iz]-hz[iz-1] > delta._zgap)delta._zgap = hz[iz]-hz[iz-1]; 
       }
-      // count 'missing' devices between first and last
+      // count 'missing' planes between first and last
       delta._ismin = 0;
-      delta._ismax = ndevices/2-1;
+      delta._ismax = nplanes/2-1;
       delta._idmin = 0;
-      delta._idmax = ndevices-1;
+      delta._idmax = nplanes-1;
       delta._nsmiss = 0;
       delta._ndmiss = 0;
       while(!stations[delta._ismin])++delta._ismin;
@@ -423,11 +423,11 @@ namespace mu2e
       for(unsigned is =delta._ismin;is<delta._ismax;++is){
 	if(!stations[is])++delta._nsmiss;
       }
-      while(!devices[delta._idmin])++delta._idmin;
-      while(!devices[delta._idmax])--delta._idmax;
+      while(!planes[delta._idmin])++delta._idmin;
+      while(!planes[delta._idmax])--delta._idmax;
       delta._nd = delta._idmax-delta._idmin+1;
       for(unsigned id =delta._idmin;id<delta._idmax;++id){
-	if(!devices[id])++delta._ndmiss;
+	if(!planes[id])++delta._ndmiss;
       }
       // compute final delta selection based on the delta properties
       delta._isdelta = false;
@@ -540,8 +540,8 @@ namespace mu2e
     }
     shinfo._edep = sh.energyDep();
     const Straw& straw = tracker.getStraw( sh.strawIndex() );
-    shinfo._device = straw.id().getDevice();
-    shinfo._sector = straw.id().getSector();
+    shinfo._plane = straw.id().getPlane();
+    shinfo._panel = straw.id().getPanel();
     shinfo._layer = straw.id().getLayer();
     shinfo._straw = straw.id().getStraw();
     shinfo._esel = shflag.hasAllProperties(StrawHitFlag::energysel);

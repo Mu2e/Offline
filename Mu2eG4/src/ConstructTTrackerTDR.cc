@@ -93,7 +93,7 @@ namespace mu2e {
     bool const noSurfaceCheck(false);
     bool const doSurfaceCheck(true);
     G4RotationMatrix * noRotation(nullptr);
-    string trackerEnvelopeName("TTrackerDeviceEnvelope");
+    string trackerEnvelopeName("TTrackerPlaneEnvelope");
 
 
   } // end anonymous namespace
@@ -376,70 +376,70 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
 // Construct all stations and place them in the mother volume.
 // We do not yet represent stations as G4 objects.  Each station is representated
-// in G4 as two independent planes (devices).
+// in G4 as two independent planes (planes).
 void
 mu2e::ConstructTTrackerTDR::constructStations(){
 
   int devDraw(_config.getInt("ttracker.devDraw",-1));
 
-  // Build logical volume heirarchy for a single panel (sector).
+  // Build logical volume heirarchy for a single panel (panel).
   VolumeInfo basePanel = preparePanel();
 
   // Build logical volume heirarchy for all elements of the support structure that live
-  // inside each device envelope.
+  // inside each plane envelope.
   std::vector<VolumeInfo> baseSupports;
   preparePlaneSupports(baseSupports);
 
-  TubsParams deviceEnvelopeParams = _ttracker.getDeviceEnvelopeParams();
-  bool deviceEnvelopeVisible      = _config.getBool("ttracker.deviceEnvelopeVisible",false);
-  bool deviceEnvelopeSolid        = _config.getBool("ttracker.deviceEnvelopeSolid",true);
+  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
+  bool planeEnvelopeVisible      = _config.getBool("ttracker.planeEnvelopeVisible",false);
+  bool planeEnvelopeSolid        = _config.getBool("ttracker.planeEnvelopeSolid",true);
 
   G4Material* envelopeMaterial = findMaterialOrThrow(_ttracker.envelopeMaterial());
 
-  double dPhiSector = sectorHalfAzimuth();
+  double dPhiPanel = panelHalfAzimuth();
 
-  for ( int idev=0; idev<_ttracker.nDevices(); ++idev ){
+  for ( int idev=0; idev<_ttracker.nPlanes(); ++idev ){
 
     if ( devDraw > -1 && idev > devDraw ) continue;
 
     if (_verbosityLevel > 0 ) {
       cout << "Debugging dev: " << idev << " devDraw: " << devDraw << endl;
-      cout << __func__ << " working on device:   " << idev << endl;
+      cout << __func__ << " working on plane:   " << idev << endl;
     }
 
-    const Device& device = _ttracker.getDevice(idev);
+    const Plane& plane = _ttracker.getPlane(idev);
 
-    if (!device.exists()) continue;
+    if (!plane.exists()) continue;
     if (_verbosityLevel > 0 ) {
-      cout << __func__ << " existing   device:   " << idev << endl;
+      cout << __func__ << " existing   plane:   " << idev << endl;
     }
 
-    // device.origin() is in the detector coordinate system.
+    // plane.origin() is in the detector coordinate system.
     // devPosition - is in the coordinate system of the Tracker mother volume.
-    CLHEP::Hep3Vector devPosition = device.origin()+ _offset;
+    CLHEP::Hep3Vector devPosition = plane.origin()+ _offset;
 
     if ( _verbosityLevel > 1 ){
-      cout << "Debugging -device.rotation(): " << -device.rotation() << " " << endl;
-      cout << "Debugging device.origin():    " << device.origin() << " " << endl;
+      cout << "Debugging -plane.rotation(): " << -plane.rotation() << " " << endl;
+      cout << "Debugging plane.origin():    " << plane.origin() << " " << endl;
       cout << "Debugging position in mother: " << devPosition << endl;
     }
 
 
-    // We need a new logical volume for each device envelope - because the sectors
+    // We need a new logical volume for each plane envelope - because the panels
     // may be placed differently.  We need a distinct name for each logical volume.
     ostringstream os;
     os << "_"  << std::setfill('0') << std::setw(2) << idev;
 
     VolumeInfo devInfo = nestTubs( trackerEnvelopeName + os.str(),
-                                   deviceEnvelopeParams,
+                                   planeEnvelopeParams,
                                    envelopeMaterial,
                                    noRotation,
                                    devPosition,
                                    _motherInfo.logical,
                                    idev,
-                                   deviceEnvelopeVisible,
+                                   planeEnvelopeVisible,
                                    G4Colour::Magenta(),
-                                   deviceEnvelopeSolid,
+                                   planeEnvelopeSolid,
                                    _forceAuxEdgeVisible,
                                    place,
                                    noSurfaceCheck
@@ -451,41 +451,41 @@ mu2e::ConstructTTrackerTDR::constructStations(){
 
     addPlaneSupports( baseSupports, idev, devInfo );
 
-    addPanels ( basePanel, idev, devInfo.logical, dPhiSector );
+    addPanels ( basePanel, idev, devInfo.logical, dPhiPanel );
 
-  } // end loop over devices
+  } // end loop over planes
 
 } // end constructStations
 
 mu2e::VolumeInfo
 mu2e::ConstructTTrackerTDR::preparePanel(){
 
-  TubsParams deviceEnvelopeParams = _ttracker.getDeviceEnvelopeParams();
+  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
   SupportStructure const& sup     = _ttracker.getSupportStructure();
 
-  // Sectors are identical other than placement - so get required properties from device 0, sector 0.
-  Sector const& sec00(_ttracker.getSector(SectorId(0,0)));
+  // Panels are identical other than placement - so get required properties from plane 0, panel 0.
+  Panel const& sec00(_ttracker.getPanel(PanelId(0,0)));
 
-  bool sectorEnvelopeVisible = _config.getBool("ttracker.sectorEnvelopeVisible",false);
-  bool sectorEnvelopeSolid   = _config.getBool("ttracker.sectorEnvelopeSolid",true);
+  bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",false);
+  bool panelEnvelopeSolid   = _config.getBool("ttracker.panelEnvelopeSolid",true);
   bool strawVisible          = _config.getBool("ttracker.strawVisible",false);
   bool strawSolid            = _config.getBool("ttracker.strawSolid",true);
   bool strawLayeringVisible  = _config.getBool("ttracker.strawLayeringVisible",false);
   bool strawLayeringSolid    = _config.getBool("ttracker.strawLayeringSolid",false);
   bool partialStraws         = _config.getBool("ttracker.partialStraws",false);
 
-  // Azimuth of the centerline of a the sector enveleope: sectorCenterPhi
-  // Upon construction and before placement, the sector envelope occupies [0,phiMax].
-  double sectorCenterPhi = sectorHalfAzimuth();
-  double phiMax          = 2.*sectorCenterPhi;
+  // Azimuth of the centerline of a the panel enveleope: panelCenterPhi
+  // Upon construction and before placement, the panel envelope occupies [0,phiMax].
+  double panelCenterPhi = panelHalfAzimuth();
+  double phiMax          = 2.*panelCenterPhi;
 
   // Get information about the channel position and depth.
   PlacedTubs const& chanUp(sup.innerChannelUpstream());
 
-  // Internally all sector envelopes are the same.
-  // Create one logical sector envelope but, for now, do not place it.
+  // Internally all panel envelopes are the same.
+  // Create one logical panel envelope but, for now, do not place it.
   // Fill it with straws and then place it multiple times.
-  TubsParams secEnvParams(deviceEnvelopeParams.innerRadius(),
+  TubsParams secEnvParams(planeEnvelopeParams.innerRadius(),
                           sup.innerChannelUpstream().tubsParams().outerRadius(),
                           chanUp.tubsParams().zHalfLength(),
                           0.,
@@ -493,42 +493,42 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
 
   G4Material* envelopeMaterial = findMaterialOrThrow(_ttracker.envelopeMaterial());
 
-  VolumeInfo sec0Info = nestTubs( "SectorEnvelope",
+  VolumeInfo sec0Info = nestTubs( "PanelEnvelope",
                                   secEnvParams,
                                   envelopeMaterial,
                                   noRotation,
                                   zeroVector,
                                   nullptr,               // logical volume - not needed since no placement.
                                   0,                     // copyNo
-                                  sectorEnvelopeVisible,
+                                  panelEnvelopeVisible,
                                   G4Colour::Magenta(),
-                                  sectorEnvelopeSolid,
+                                  panelEnvelopeSolid,
                                   true,                  // edge visible
                                   doNotPlace,
                                   _doSurfaceCheck
                                   );
 
 
-  // The rotation matrix that will place the straw inside the sector envelope.
+  // The rotation matrix that will place the straw inside the panel envelope.
   // For straws on the upstream side of the support, the sign of the X rotation was chosen to put the
   // z axis of the straw volume to be positive when going clockwise; this is the same convention used
   // within the TTracker class.  For straws on the downstream side of the support, the z axis of the straw
   // volume is positive when going counter-clockwise.  This won't be important since we never work
   // in the straw-local coordiates within G4.
-  CLHEP::HepRotationZ secRz(-sectorCenterPhi);
+  CLHEP::HepRotationZ secRz(-panelCenterPhi);
   CLHEP::HepRotationX secRx(M_PI/2.);
   G4RotationMatrix* sec00Rotation = _reg.add(G4RotationMatrix(secRx*secRz));
 
-  // The z of the center of the placed sector envelope, in Mu2e coordinates.
+  // The z of the center of the placed panel envelope, in Mu2e coordinates.
   // This carries a sign, depending on upstream/downstream.
-  double zSector(0.);
+  double zPanel(0.);
   for ( int i=0; i<sec00.nLayers(); ++i){
-    zSector += sec00.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
+    zPanel += sec00.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
   }
-  zSector /= sec00.nLayers();
+  zPanel /= sec00.nLayers();
 
-  // A unit vector in the direction from the origin to the wire center within the sector envelope.
-  CLHEP::Hep3Vector unit( cos(sectorCenterPhi), sin(sectorCenterPhi), 0.);
+  // A unit vector in the direction from the origin to the wire center within the panel envelope.
+  CLHEP::Hep3Vector unit( cos(panelCenterPhi), sin(panelCenterPhi), 0.);
 
   // Sensitive detector object for the straw gas.
   G4VSensitiveDetector *strawSD =
@@ -547,7 +547,7 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   G4VSensitiveDetector *strawWallSD = G4SDManager::GetSDMpointer()->
     FindSensitiveDetector(SensitiveDetectorName::TrackerWalls());
 
-  // Place the straws into the sector envelope.
+  // Place the straws into the panel envelope.
   for ( std::vector<Layer>::const_iterator i=sec00.getLayers().begin(); i != sec00.getLayers().end(); ++i ){
 
     Layer const& lay(*i);
@@ -589,10 +589,10 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
       // Mid point of the straw in Mu2e coordinates.
       CLHEP::Hep3Vector const& pos(straw.getMidPoint());
 
-      // Mid point of the straw, within the sector envelope.
+      // Mid point of the straw, within the panel envelope.
       double r = (CLHEP::Hep3Vector( pos.x(), pos.y(), 0.)).mag();
       CLHEP::Hep3Vector mid = r*unit;
-      mid.setZ(pos.z() - zSector);
+      mid.setZ(pos.z() - zPanel);
 
       int copyNo=straw.index().asInt();
       bool edgeVisible(true);
@@ -822,27 +822,27 @@ mu2e::ConstructTTrackerTDR::constructAxes(){
 
 
 void
-mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4LogicalVolume* deviceLogical,
-                                      double sectorCenterPhi ){
+mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4LogicalVolume* planeLogical,
+                                      double panelCenterPhi ){
 
-  Device const& dev = _ttracker.getDevice(idev);
+  Plane const& dev = _ttracker.getPlane(idev);
 
   int secDraw = _config.getInt ("ttracker.secDraw",-1);
 
-  // Assume all devices have the same number of sectors.
-  int baseCopyNo = idev * _ttracker.getDevice(0).nSectors();
+  // Assume all planes have the same number of panels.
+  int baseCopyNo = idev * _ttracker.getPlane(0).nPanels();
 
-  // The sector will be placed in the middle of the channel.
+  // The panel will be placed in the middle of the channel.
   PlacedTubs const& chanUp(_ttracker.getSupportStructure().innerChannelUpstream());
 
-  // Place the sector envelope into the device envelope, one placement per sector.
-  for ( int isec=0; isec<dev.nSectors(); ++isec){
+  // Place the panel envelope into the plane envelope, one placement per panel.
+  for ( int isec=0; isec<dev.nPanels(); ++isec){
 
-    // For debugging, only place the one requested sector.
+    // For debugging, only place the one requested panel.
     if ( secDraw > -1  && isec != secDraw ) continue;
     //if ( secDraw > -1  && isec%2 == 0 ) continue;
 
-    // Choose a representative straw from this this (device,sector).
+    // Choose a representative straw from this this (plane,panel).
     Straw const& straw = _ttracker.getStraw( StrawId(idev,isec,0,0) );
 
     // Azimuth of the midpoint of the wire.
@@ -850,16 +850,16 @@ mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4Logical
     double phimid = mid.phi();
     if ( phimid < 0 ) phimid += 2.*M_PI;
 
-    // Is this sector on the front or back face of the plane?
+    // Is this panel on the front or back face of the plane?
     double sign   = ((mid.z() - dev.origin().z())>0. ? 1.0 : -1.0 );
-    CLHEP::Hep3Vector sectorPosition(0.,0., sign*std::abs(chanUp.position().z()) );
+    CLHEP::Hep3Vector panelPosition(0.,0., sign*std::abs(chanUp.position().z()) );
 
     // The rotation that will make the straw mid point have the correct azimuth.
-    // Sectors on the downstream side are flipped front/back by rotation about Y.
+    // Panels on the downstream side are flipped front/back by rotation about Y.
     // so the sense of the z rotation changes sign.
-    double phi0 = sectorCenterPhi-phimid;
+    double phi0 = panelCenterPhi-phimid;
     if ( sign > 0 ){
-      phi0 = sectorCenterPhi + M_PI +phimid;
+      phi0 = panelCenterPhi + M_PI +phimid;
     }
 
     CLHEP::HepRotationZ rotZ(phi0);
@@ -870,10 +870,10 @@ mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4Logical
 
     bool many(false);
     G4VPhysicalVolume* physVol = new G4PVPlacement(rotation,
-                                                   sectorPosition,
+                                                   panelPosition,
                                                    basePanel.logical,
                                                    basePanel.name,
-                                                   deviceLogical,
+                                                   planeLogical,
                                                    many,
                                                    baseCopyNo + isec,
                                                    false);
@@ -886,19 +886,19 @@ mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4Logical
 }
 
 double
-mu2e::ConstructTTrackerTDR::sectorHalfAzimuth(){
+mu2e::ConstructTTrackerTDR::panelHalfAzimuth(){
 
-  TubsParams deviceEnvelopeParams = _ttracker.getDeviceEnvelopeParams();
+  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
   SupportStructure const& sup     = _ttracker.getSupportStructure();
 
-  // Azimuth of the centerline of a sector enveleope: sectorCenterPhi
-  // Upon construction and before placement, the sector envelope occupies [0,2.*sectorCenterPhi].
-  double r1              = deviceEnvelopeParams.innerRadius();
+  // Azimuth of the centerline of a panel enveleope: panelCenterPhi
+  // Upon construction and before placement, the panel envelope occupies [0,2.*panelCenterPhi].
+  double r1              = planeEnvelopeParams.innerRadius();
   double r2              = sup.innerChannelUpstream().tubsParams().outerRadius();
   double halfChord       = sqrt ( r2*r2 - r1*r1 );
-  double sectorCenterPhi = atan2(halfChord,r1);
+  double panelCenterPhi = atan2(halfChord,r1);
 
-  return  sectorCenterPhi;
+  return  panelCenterPhi;
 
 }
 
@@ -939,9 +939,9 @@ namespace mu2e {
 
 
 // Create heirarchy of logical volumes for the elements of the support structure that live inside
-// each device envelope.  The argument is passed in empty and is filled by this routine.
+// each plane envelope.  The argument is passed in empty and is filled by this routine.
 // It contains a VolumeInfo object for each logical volume at the top level of the heirarchy;
-// these are placed inside a device envelope by the member function addPlaneSupports.
+// these are placed inside a plane envelope by the member function addPlaneSupports.
 void
 mu2e::ConstructTTrackerTDR::preparePlaneSupports( std::vector<VolumeInfo>& supportsToPlace ){
 
@@ -972,7 +972,7 @@ mu2e::ConstructTTrackerTDR::preparePlaneSupports( std::vector<VolumeInfo>& suppo
 
     if ( vol.motherName.empty() ){
 
-      // These volumes are top level volumes of the support structure and will be placed inside each device envelope.
+      // These volumes are top level volumes of the support structure and will be placed inside each plane envelope.
       vol.info = nestTubs( part.name(),
                            part.tubsParams(),
                            findMaterialOrThrow(part.materialName()),

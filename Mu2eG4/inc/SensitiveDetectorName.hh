@@ -50,7 +50,7 @@ namespace mu2e {
       return StepInstanceName::name(StepInstanceName::CRV).c_str();
     }
 
-    static char const * TTrackerDeviceSupport(){
+    static char const * TTrackerPlaneSupport(){
       return StepInstanceName::name(StepInstanceName::ttrackerDS).c_str();
     }
 

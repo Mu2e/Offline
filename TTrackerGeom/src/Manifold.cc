@@ -24,13 +24,13 @@ namespace mu2e {
     _halfLengths(halfLengths)
   {}
 
-  // Construct a string containing the device Id.
+  // Construct a string containing the plane Id.
   /*
     std::string Manifold::name( std::string const& base ) const{
     std::ostringstream os;
     os << base
-    << _id.getSectorId()._did    << "_"
-         << _id.getSectorId()._sector << "_"
+    << _id.getPanelId()._did    << "_"
+         << _id.getPanelId()._panel << "_"
          << _id.getManifold();
          return os.str();
          }

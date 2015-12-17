@@ -15,7 +15,7 @@
 
 #include <ostream>
 
-#include "DataProducts/inc/SectorId.hh"
+#include "DataProducts/inc/PanelId.hh"
 
 namespace mu2e {
   class LayerId;
@@ -27,40 +27,40 @@ namespace mu2e {
   public:
 
     LayerId():
-      _sid(SectorId()),
+      _sid(PanelId()),
       _layer(-1){
     }
 
-    LayerId( SectorId sector,
+    LayerId( PanelId panel,
              int layer
              ):
-      _sid(sector),
+      _sid(panel),
       _layer(layer){
     }
 
-    LayerId( DeviceId device,
-             int sector,
+    LayerId( PlaneId plane,
+             int panel,
              int layer
              ):
-      _sid(SectorId(device,sector)),
+      _sid(PanelId(plane,panel)),
       _layer(layer){
     }
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
-    const DeviceId& getDeviceId () const{
-      return _sid.getDeviceId();
+    const PlaneId& getPlaneId () const{
+      return _sid.getPlaneId();
     }
-    const SectorId& getSectorId () const{
+    const PanelId& getPanelId () const{
       return _sid;
     }
 
-    int getDevice () const{
-      return _sid.getDevice();
+    int getPlane () const{
+      return _sid.getPlane();
     }
 
-    int getSector () const{
-      return _sid.getSector();
+    int getPanel () const{
+      return _sid.getPanel();
     }
 
     int getLayer() const{
@@ -87,7 +87,7 @@ namespace mu2e {
 
 private:
 
-    SectorId _sid;
+    PanelId _sid;
     int      _layer;
 
   };

@@ -210,10 +210,10 @@ namespace mu2e {
           Straw str = allstraws[i];
           StrawId sid = str.id();
           LayerId lid = sid.getLayerId();
-          DeviceId did = sid.getDeviceId();
-          SectorId secid = sid.getSectorId();
+          PlaneId did = sid.getPlaneId();
+          PanelId secid = sid.getPanelId();
 
-          // cout <<  __func__ << " index: "  << i << " Layer: "<< lid.getLayer()<< " Device: "<< did <<"  Sector:  "<<secid.getSector()<<endl;
+          // cout <<  __func__ << " index: "  << i << " Layer: "<< lid.getLayer()<< " Plane: "<< did <<"  Panel:  "<<secid.getPanel()<<endl;
           // cout<<str.getHalfLength()<<endl;
           const CLHEP::Hep3Vector vec3j = str.getMidPoint();
           const CLHEP::Hep3Vector vec3j1 = str.getDirection();
@@ -221,7 +221,7 @@ namespace mu2e {
             cout << i <<
             ","<<lid.getLayer()<<
             ","<<did <<
-            ","<<secid.getSector()<<
+            ","<<secid.getPanel()<<
             ","<<str.getHalfLength()<<
             ","<<vec3j.getX()<<
             ","<<vec3j.getY()<<
@@ -235,7 +235,7 @@ namespace mu2e {
           detnt[0]  = i;
           detnt[1]  = lid.getLayer();
           detnt[2]  = did;
-          detnt[3]  = secid.getSector();
+          detnt[3]  = secid.getPanel();
           detnt[4]  = str.getHalfLength();
           detnt[5]  = vec3j.getX();
           detnt[6]  = vec3j.getY();
@@ -354,8 +354,8 @@ namespace mu2e {
       Straw str = tracker.getStraw(si);
       StrawId sid = str.id();
       LayerId lid = sid.getLayerId();
-      DeviceId did = sid.getDeviceId();
-      SectorId secid = sid.getSectorId();
+      PlaneId did = sid.getPlaneId();
+      PanelId secid = sid.getPanelId();
 
       double fracDist = 0.0;
       StrawDigi::TDCChannel itdc = StrawDigi::zero;
@@ -430,7 +430,7 @@ namespace mu2e {
       nt[0]  = evt.id().event();
       nt[1]  = lid.getLayer();
       nt[2]  = did;
-      nt[3]  = secid.getSector();
+      nt[3]  = secid.getPanel();
       nt[4]  = str.getHalfLength();
       nt[5]  = smidp.getX();
       nt[6]  = smidp.getY();

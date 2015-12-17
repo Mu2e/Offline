@@ -46,25 +46,25 @@ namespace mu2e {
     // Construct all stations.
     void constructStations();
 
-    // Construct all panels(sectors) within one station
+    // Construct all panels(panels) within one station
     void addPanels( VolumeInfo&      basePanel,
                     int              idev,
-                    G4LogicalVolume* deviceLogical,
-                    double           sectorCenterPhi );
+                    G4LogicalVolume* planeLogical,
+                    double           panelCenterPhi );
 
     // Construct the support infrastructure for each station.
     void addPlaneSupports( std::vector<VolumeInfo>& supportsInfo, int idev, VolumeInfo const& devInfo );
 
     // Build logical volume heirarchy for the elements of the support structure that are inside
-    // each device(plane) envelope.  Do not place this volume heirarchy.
+    // each plane(plane) envelope.  Do not place this volume heirarchy.
     void preparePlaneSupports( std::vector<VolumeInfo>& supportsInfo );
 
-    // Build logical volume heirarchy for one sector: straws placed inside a sector mother volume.
+    // Build logical volume heirarchy for one panel: straws placed inside a panel mother volume.
     // Do not place this volume heirarchy.
     VolumeInfo preparePanel();
 
-    // Compute the half width, in phi, of a sector envelope.
-    double sectorHalfAzimuth();
+    // Compute the half width, in phi, of a panel envelope.
+    double panelHalfAzimuth();
 
     // For debubbing, construct boxes that represent coordinate axes for debugging.
     void constructAxes();

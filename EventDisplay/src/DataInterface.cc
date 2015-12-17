@@ -247,12 +247,12 @@ void DataInterface::fillGeometry()
       double l = s.getHalfLength();
       int idStraw =  s.id().getStraw();
       int idLayer =  s.id().getLayer();
-      int idSector =  s.id().getSector();
-      int idDevice =  s.id().getDevice();
+      int idPanel =  s.id().getPanel();
+      int idPlane =  s.id().getPlane();
       int index = s.index().asInt();
 
       char c[200];
-      sprintf(c,"Straw %i  Layer %i  Sector %i  Device %i",idStraw,idLayer,idSector,idDevice);
+      sprintf(c,"Straw %i  Layer %i  Panel %i  Plane %i",idStraw,idLayer,idPanel,idPlane);
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       info->setName(c);
       info->setText(0,c);

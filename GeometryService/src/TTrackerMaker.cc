@@ -14,7 +14,7 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/TTrackerMaker.hh"
-#include "TrackerGeom/inc/Sector.hh"
+#include "TrackerGeom/inc/Panel.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -51,22 +51,22 @@ namespace mu2e {
 
         const Straw& straw = _tt->getStraw(StrawIndex(istr));
 
-        int cdev = straw.id().getDevice();
-        int csec = straw.id().getSector();
+        int cdev = straw.id().getPlane();
+        int csec = straw.id().getPanel();
         int clay = straw.id().getLayer();
 
-        const Device& device = _tt->getDevice(cdev);
-        const Sector& sector = device.getSector(csec);
-        const Layer&  layer  = sector.getLayer(clay);
+        const Plane& plane = _tt->getPlane(cdev);
+        const Panel& panel = plane.getPanel(csec);
+        const Layer&  layer  = panel.getLayer(clay);
 
-        size_t nStrawsPerSector = sector.nLayers()  * layer.nStraws();
-        size_t nStrawsPerDevice = device.nSectors() * nStrawsPerSector;
+        size_t nStrawsPerPanel = panel.nLayers()  * layer.nStraws();
+        size_t nStrawsPerPlane = plane.nPanels() * nStrawsPerPanel;
 
-        double cang = sector.boxRzAngle()/M_PI*180.;
-        double dang = device.rotation()/M_PI*180.;
-        double sroz = (sector.boxOffset() - device.origin()).z();
+        double cang = panel.boxRzAngle()/M_PI*180.;
+        double dang = plane.rotation()/M_PI*180.;
+        double sroz = (panel.boxOffset() - plane.origin()).z();
 
-        size_t isecf = nStrawsPerSector*csec + nStrawsPerDevice*cdev;
+        size_t isecf = nStrawsPerPanel*csec + nStrawsPerPlane*cdev;
 
         cout << __func__ << " Straw "
              << fixed << setw(6) << istr
@@ -76,13 +76,13 @@ namespace mu2e {
              << " r " << sqrt(straw.getMidPoint()[0]*straw.getMidPoint()[0]+
                               straw.getMidPoint()[1]*straw.getMidPoint()[1])
              << " direction " << straw.getDirection()
-             << " sector rotation: " << cang
-             << " origin " << sector.boxOffset()
-             << " device rotation: " << dang
-             << " origin " << device.origin()
+             << " panel rotation: " << cang
+             << " origin " << panel.boxOffset()
+             << " plane rotation: " << dang
+             << " origin " << plane.origin()
              << " sec rel origin z " << sroz
              << " straw exists " << _tt->strawExists(StrawIndex(istr))
-             << " device exists " << device.exists();
+             << " plane exists " << plane.exists();
 
         if (isec>csec && idev==cdev) cout << " <--S";
         if (iang>cang && idev==cdev) cout << " <--A";
@@ -110,9 +110,9 @@ namespace mu2e {
     _motherHalfLength = config.getDouble("ttracker.mother.halfLength" )*CLHEP::mm;
     _motherZ0         = config.getDouble("ttracker.mother.z0"         )*CLHEP::mm;
 
-    _numDevices         = config.getInt("ttracker.numDevices");
-    _sectorsPerDevice   = config.getInt("ttracker.sectorsPerDevice");
-    _layersPerSector    = config.getInt("ttracker.layersPerSector");
+    _numPlanes         = config.getInt("ttracker.numPlanes");
+    _panelsPerPlane   = config.getInt("ttracker.panelsPerPlane");
+    _layersPerPanel    = config.getInt("ttracker.layersPerPanel");
     _manifoldsPerEnd    = config.getInt("ttracker.manifoldsPerEnd");
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
@@ -125,8 +125,8 @@ namespace mu2e {
     _strawOuterRadius     =  config.getDouble("ttracker.strawOuterRadius")*CLHEP::mm;
     _strawWallThickness   =  config.getDouble("ttracker.strawWallThickness")*CLHEP::mm;
     _strawGap             =  config.getDouble("ttracker.strawGap")*CLHEP::mm;
-    _deviceSpacing        =  config.getDouble("ttracker.deviceSpacing")*CLHEP::mm;
-    _deviceHalfSeparation =  config.getDouble("ttracker.deviceHalfSeparation")*CLHEP::mm;
+    _planeSpacing        =  config.getDouble("ttracker.planeSpacing")*CLHEP::mm;
+    _planeHalfSeparation =  config.getDouble("ttracker.planeHalfSeparation")*CLHEP::mm;
 
     _outerSupportRadius   =  config.getDouble("ttracker.outerSupportRadius")*CLHEP::mm;
     _innerSupportRadius   =  config.getDouble("ttracker.innerSupportRadius")*CLHEP::mm;
@@ -135,21 +135,21 @@ namespace mu2e {
     _manifoldYOffset      =  config.getDouble("ttracker.manifoldYOffset")*CLHEP::mm;
     _virtualDetectorHalfLength = config.getDouble("vd.halfLength")*CLHEP::mm;
 
-    config.getVectorInt("ttracker.nonExistingDevices", _nonExistingDevices,  vector<int>() );
+    config.getVectorInt("ttracker.nonExistingPlanes", _nonExistingPlanes,  vector<int>() );
 
-    _verbosityLevel > 0 && _nonExistingDevices.size()>0 &&
-      cout << __func__ << " inactive devices : f/l   "
-           << _nonExistingDevices.front() << " / "
-           << _nonExistingDevices.back()
+    _verbosityLevel > 0 && _nonExistingPlanes.size()>0 &&
+      cout << __func__ << " inactive planes : f/l   "
+           << _nonExistingPlanes.front() << " / "
+           << _nonExistingPlanes.back()
            << endl;
 
     // station
     // TODO Maybe -- These might eventually want to be config parameter driven
-    _planesPerStation     = 2;
-    _panelsPerFace        = 3;                    // hardwired 3 sectors/face
-    _facesPerPlane        = _sectorsPerDevice / _panelsPerFace;
-    _facesPerStation      = _planesPerStation*_facesPerPlane;
-    _zLayersPerPanel      = _layersPerSector;
+    _planeMFsPerStation     = 2;
+    _panelMFsPerFace        = 3;                    // hardwired 3 panels/face
+    _facesPerPlaneMF        = _panelsPerPlane / _panelMFsPerFace;
+    _facesPerStation      = _planeMFsPerStation*_facesPerPlaneMF;
+    _zLayersPerPanelMF      = _layersPerPanel;
     _strawsPerZLayer      = _manifoldsPerEnd*_strawsPerManifold;
 
     config.getVectorDouble("ttracker.manifoldHalfLengths", _manifoldHalfLengths, 3);
@@ -235,82 +235,82 @@ namespace mu2e {
     //string ttracker.mat.manifold  = "G4_Al";  // Placeholder.
 
     // Also define some parameters that may become variable some day.
-    _sectorBaseRotations.clear();
-    _sectorZSide.clear();
+    _panelBaseRotations.clear();
+    _panelZSide.clear();
 
-    if (_sectorsPerDevice == 6 ){
-  // the Z pattern here is forced by the 'alternating sector id' convention
+    if (_panelsPerPlane == 6 ){
+  // the Z pattern here is forced by the 'alternating panel id' convention
   // that permeates the rest of the code.
-        _sectorZSide.push_back(-1.);
-        _sectorZSide.push_back(+1.);
-        _sectorZSide.push_back(-1.);
-        _sectorZSide.push_back(+1.);
-        _sectorZSide.push_back(-1.);
-        _sectorZSide.push_back(+1.);
+        _panelZSide.push_back(-1.);
+        _panelZSide.push_back(+1.);
+        _panelZSide.push_back(-1.);
+        _panelZSide.push_back(+1.);
+        _panelZSide.push_back(-1.);
+        _panelZSide.push_back(+1.);
       if(_rotationPattern == 1){
 // cdr geometry, taken from DOC 888, also alternatives 1 and 3 from doc 2799
         // faces overlap by 60 degrees
-// Implicitly define the rotations for the even and odd (sequentially) sectors.
-        _sectorBaseRotations.push_back(  45.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 105.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 165.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 225.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 285.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 345.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  75.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  15.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 195.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 135.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 315.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 255.*CLHEP::degree);
+// Implicitly define the rotations for the even and odd (sequentially) panels.
+        _panelBaseRotations.push_back(  45.*CLHEP::degree);
+        _panelBaseRotations.push_back( 105.*CLHEP::degree);
+        _panelBaseRotations.push_back( 165.*CLHEP::degree);
+        _panelBaseRotations.push_back( 225.*CLHEP::degree);
+        _panelBaseRotations.push_back( 285.*CLHEP::degree);
+        _panelBaseRotations.push_back( 345.*CLHEP::degree);
+        _panelBaseRotations.push_back(  75.*CLHEP::degree);
+        _panelBaseRotations.push_back(  15.*CLHEP::degree);
+        _panelBaseRotations.push_back( 195.*CLHEP::degree);
+        _panelBaseRotations.push_back( 135.*CLHEP::degree);
+        _panelBaseRotations.push_back( 315.*CLHEP::degree);
+        _panelBaseRotations.push_back( 255.*CLHEP::degree);
 
       } else if(_rotationPattern==2){
         // alternative 2 from DOC 2799
         // faces overlap by 60 degrees
-        _sectorBaseRotations.push_back(  45.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  75.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 165.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 195.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 285.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 315.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 105.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  15.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 225.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 135.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 345.*CLHEP::degree);
-        _sectorBaseRotations.push_back( 255.*CLHEP::degree);
+        _panelBaseRotations.push_back(  45.*CLHEP::degree);
+        _panelBaseRotations.push_back(  75.*CLHEP::degree);
+        _panelBaseRotations.push_back( 165.*CLHEP::degree);
+        _panelBaseRotations.push_back( 195.*CLHEP::degree);
+        _panelBaseRotations.push_back( 285.*CLHEP::degree);
+        _panelBaseRotations.push_back( 315.*CLHEP::degree);
+        _panelBaseRotations.push_back( 105.*CLHEP::degree);
+        _panelBaseRotations.push_back(  15.*CLHEP::degree);
+        _panelBaseRotations.push_back( 225.*CLHEP::degree);
+        _panelBaseRotations.push_back( 135.*CLHEP::degree);
+        _panelBaseRotations.push_back( 345.*CLHEP::degree);
+        _panelBaseRotations.push_back( 255.*CLHEP::degree);
 
       } else if(_rotationPattern==3){
-      // faces overlap by 60 degrees, second device 'flipped'
-        _sectorBaseRotations.push_back(   0.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  90.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  120.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  210.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  240.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  330.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  30.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  60.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  150.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  180.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  270.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  300.*CLHEP::degree);
+      // faces overlap by 60 degrees, second plane 'flipped'
+        _panelBaseRotations.push_back(   0.*CLHEP::degree);
+        _panelBaseRotations.push_back(  90.*CLHEP::degree);
+        _panelBaseRotations.push_back(  120.*CLHEP::degree);
+        _panelBaseRotations.push_back(  210.*CLHEP::degree);
+        _panelBaseRotations.push_back(  240.*CLHEP::degree);
+        _panelBaseRotations.push_back(  330.*CLHEP::degree);
+        _panelBaseRotations.push_back(  30.*CLHEP::degree);
+        _panelBaseRotations.push_back(  60.*CLHEP::degree);
+        _panelBaseRotations.push_back(  150.*CLHEP::degree);
+        _panelBaseRotations.push_back(  180.*CLHEP::degree);
+        _panelBaseRotations.push_back(  270.*CLHEP::degree);
+        _panelBaseRotations.push_back(  300.*CLHEP::degree);
       } else if(_rotationPattern==4){
 //-----------------------------------------------------------------------------
-// Mu2e-2 studies: 2 faces within one plane have parallel straws within
-//                 each 120 deg sector
+// Mu2e-2 studies: 2 faces within one planeMF have parallel straws within
+//                 each 120 deg panel
 //-----------------------------------------------------------------------------
-        _sectorBaseRotations.push_back(   0.*CLHEP::degree);
-        _sectorBaseRotations.push_back(   0.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  120.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  120.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  240.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  240.*CLHEP::degree);
-        _sectorBaseRotations.push_back(   60.*CLHEP::degree);
-        _sectorBaseRotations.push_back(   60.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  210.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  210.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  270.*CLHEP::degree);
-        _sectorBaseRotations.push_back(  270.*CLHEP::degree);
+        _panelBaseRotations.push_back(   0.*CLHEP::degree);
+        _panelBaseRotations.push_back(   0.*CLHEP::degree);
+        _panelBaseRotations.push_back(  120.*CLHEP::degree);
+        _panelBaseRotations.push_back(  120.*CLHEP::degree);
+        _panelBaseRotations.push_back(  240.*CLHEP::degree);
+        _panelBaseRotations.push_back(  240.*CLHEP::degree);
+        _panelBaseRotations.push_back(   60.*CLHEP::degree);
+        _panelBaseRotations.push_back(   60.*CLHEP::degree);
+        _panelBaseRotations.push_back(  210.*CLHEP::degree);
+        _panelBaseRotations.push_back(  210.*CLHEP::degree);
+        _panelBaseRotations.push_back(  270.*CLHEP::degree);
+        _panelBaseRotations.push_back(  270.*CLHEP::degree);
       } else {
         throw cet::exception("GEOM")
           << "Unrecognized rotation pattern in TTrackerMaker. \n";
@@ -321,19 +321,19 @@ namespace mu2e {
     }
 
     // Parts of the algorithm require that the Aseet style tracker is built
-    // of stations with 2 devices each.
+    // of stations with 2 planes each.
     if ( _spacingPattern == 1 ){
-      if ( _numDevices%2 == 1 ){
+      if ( _numPlanes%2 == 1 ){
         throw cet::exception("GEOM")
-          << "Aseet style tracker requires 2 devices per station.\n"
-          << "So ttracker.numDevices must be even.  It was: "
-          << _numDevices
+          << "Aseet style tracker requires 2 planes per station.\n"
+          << "So ttracker.numPlanes must be even.  It was: "
+          << _numPlanes
           << "\n";
       }
     }
 
-    _sectorBoxXOffsetMag = 0.0;
-    _sectorBoxZOffsetMag = 0.0;
+    _panelBoxXOffsetMag = 0.0;
+    _panelBoxZOffsetMag = 0.0;
     _layerHalfSpacing = 0.0;
     _layerHalfShift = 0.0;
     _manifoldXEdgeExcessSpace = 0.0;
@@ -348,8 +348,8 @@ namespace mu2e {
          << endl;
   }
 
-  void devtest( const Device& dev){
-    cout << "Device: "
+  void devtest( const Plane& dev){
+    cout << "Plane: "
          << dev.id() << " "
          << dev.origin() << " "
          << dev.rotation()
@@ -371,12 +371,12 @@ namespace mu2e {
     _tt = unique_ptr<TTracker>(new TTracker());
 
     // Stations
-    // Construct the stations and their internals based on devices internals
-    if ( _numDevices%2 != 0 ) {
-      throw cet::exception("GEOM")  << "_numDevices = " << _numDevices
-                                    << ": Current TTracker geometry assumes even number of devices  \n";
+    // Construct the stations and their internals based on planes internals
+    if ( _numPlanes%2 != 0 ) {
+      throw cet::exception("GEOM")  << "_numPlanes = " << _numPlanes
+                                    << ": Current TTracker geometry assumes even number of planes  \n";
     }
-    _numStations = _numDevices/2;
+    _numStations = _numPlanes/2;
 
     makeMother();
 
@@ -401,23 +401,23 @@ namespace mu2e {
     _tt->_manifoldHalfLengths = _manifoldHalfLengths;
     _tt->_envelopeMaterial    = _envelopeMaterial;
 
-    // Z location of the first device.
+    // Z location of the first plane.
     _z0 = -findFirstDevZ0();
 
     makeDetails();
 
     // Reserve space for straws so that pointers are valid.
-    _nStrawsToReserve = _numDevices * _sectorsPerDevice * _layersPerSector *
+    _nStrawsToReserve = _numPlanes * _panelsPerPlane * _layersPerPanel *
       _manifoldsPerEnd * _strawsPerManifold;
     //_tt->_allStraws.reserve(_nStrawsToReserve); // see makeLayer
 
     // we need to be able to assign true/false for a given straw index
     _tt->_strawExists.resize(_nStrawsToReserve);
 
-    _tt->_devices.reserve(_numDevices);
-    // Construct the devices and their internals.
-    for ( int idev=0; idev<_numDevices; ++idev ){
-      makeDevice( DeviceId(idev) );
+    _tt->_planes.reserve(_numPlanes);
+    // Construct the planes and their internals.
+    for ( int idev=0; idev<_numPlanes; ++idev ){
+      makePlane( PlaneId(idev) );
     }
 
     // Fill all of the non-persistent information.
@@ -427,18 +427,18 @@ namespace mu2e {
     identifyDirectionalNeighbourStraws();
 
     _tt->_stations.reserve(_numStations);
-    // Construct the devices and their internals.
+    // Construct the planes and their internals.
     for ( int istation=0; istation<_numStations; ++istation ){
       makeStation( StationId(istation) );
     }
 
     // Order is important here.
-    computeDeviceEnvelope();
+    computePlaneEnvelope();
     computeTrackerEnvelope();
     recomputeHalfLengths();
     makeStrawTubs();
 
-    // This uses information from the devices
+    // This uses information from the planes
     makeThinSupportRings();
 
 
@@ -450,7 +450,7 @@ namespace mu2e {
 
     // Test the forAll methods.
     //_tt->forAllLayers( lptest);
-    //_tt->forAllDevices( devtest);
+    //_tt->forAllPlanes( devtest);
     //_tt->forAllLayers( positionTest);
 
   } //end TTrackerMaker::buildIt.
@@ -475,13 +475,13 @@ namespace mu2e {
     if ( _supportModel == SupportModel::simple ) return;
 
     double ztest = 0.5*(_tt->getStraw ( StrawId(0,1,0,0) ).getMidPoint().z()+_tt->getStraw ( StrawId(0,1,1,0) ).getMidPoint().z())
-      -  _tt->getDevice( DeviceId(0) ).origin().z();
+      -  _tt->getPlane( PlaneId(0) ).origin().z();
 
     double tolerance = 1.e-6;
     if ( std::abs(ztest-_channelZOffset) > tolerance ){
       throw cet::exception("GEOM")  << "Inconsistent channel center and wire z location. \n"
                                     << "channel Z offset: " <<  _channelZOffset << "\n"
-                                    << "device z center:  " << _tt->getDevice( DeviceId(0) ).origin().z() << "\n "
+                                    << "plane z center:  " << _tt->getPlane( PlaneId(0) ).origin().z() << "\n "
                                     << "Straw z layer 0:  " << _tt->getStraw ( StrawId(0,1,0,0) ).getMidPoint().z() << "\n"
                                     << "Straw z layer 1:  " << _tt->getStraw ( StrawId(0,1,1,0) ).getMidPoint().z() << "\n"
                                     << "z test:           " << ztest << " delta " << std::abs(ztest-_channelZOffset) << "\n";
@@ -490,57 +490,57 @@ namespace mu2e {
   }
 
 
-  void TTrackerMaker::makeDevice( DeviceId devId ){
+  void TTrackerMaker::makePlane( PlaneId devId ){
 
-//std::cout << "->->-> makeDevice\n";
+//std::cout << "->->-> makePlane\n";
     int idev = devId;
 
-    double devDeltaZ = chooseDeviceSpacing(idev);
+    double devDeltaZ = choosePlaneSpacing(idev);
     CLHEP::Hep3Vector origin( 0., 0., _z0+devDeltaZ);
 
-    // device rotation is no longer used.
+    // plane rotation is no longer used.
     double phi = 0.0;
-    _tt->_devices.push_back(Device(devId, origin, phi));
-    Device& dev = _tt->_devices.back();
-    dev._exists = ( find ( _nonExistingDevices.begin(), _nonExistingDevices.end(), idev) ==
-                      _nonExistingDevices.end() );
+    _tt->_planes.push_back(Plane(devId, origin, phi));
+    Plane& dev = _tt->_planes.back();
+    dev._exists = ( find ( _nonExistingPlanes.begin(), _nonExistingPlanes.end(), idev) ==
+                      _nonExistingPlanes.end() );
 
-    dev._sectors.reserve(_sectorsPerDevice);
+    dev._panels.reserve(_panelsPerPlane);
 
-    for ( int isec=0; isec<_sectorsPerDevice; ++isec ){
-      makeSector ( SectorId(devId,isec), dev );
+    for ( int isec=0; isec<_panelsPerPlane; ++isec ){
+      makePanel ( PanelId(devId,isec), dev );
     }
 
-//std::cout << "<-<-<- makeDevice\n";
+//std::cout << "<-<-<- makePlane\n";
   }
 
-  void TTrackerMaker::makeSector( const SectorId& secId, Device& dev ){
-//std::cout << "->->-> makeSector\n";
+  void TTrackerMaker::makePanel( const PanelId& secId, Plane& dev ){
+//std::cout << "->->-> makePanel\n";
 
-    dev._sectors.push_back( Sector(secId) );
-    Sector& sector = dev._sectors.back();
-    sector._layers.reserve(_layersPerSector);
+    dev._panels.push_back( Panel(secId) );
+    Panel& panel = dev._panels.back();
+    panel._layers.reserve(_layersPerPanel);
 
-    // check if the opposite sectors do not overlap
+    // check if the opposite panels do not overlap
     static double const tolerance = 1.e-6; // this should be in a config file
 
-    if ((2.*_manifoldHalfLengths.at(2)+_supportHalfThickness)>_deviceHalfSeparation + tolerance) {
-      cout << "(2.*_manifoldHalfLengths.at(2)+_supportHalfThickness), _deviceHalfSeparation " <<
-        (2.*_manifoldHalfLengths.at(2)+_supportHalfThickness) << ", " <<_deviceHalfSeparation << endl;
-      throw cet::exception("GEOM")  << "Devices are too close \n";
+    if ((2.*_manifoldHalfLengths.at(2)+_supportHalfThickness)>_planeHalfSeparation + tolerance) {
+      cout << "(2.*_manifoldHalfLengths.at(2)+_supportHalfThickness), _planeHalfSeparation " <<
+        (2.*_manifoldHalfLengths.at(2)+_supportHalfThickness) << ", " <<_planeHalfSeparation << endl;
+      throw cet::exception("GEOM")  << "Planes are too close \n";
     }
 
     makeManifolds( secId );
 
     double strawSpacing = _strawGap+2.*_strawOuterRadius;
 
-    for ( int ilay=0; ilay<_layersPerSector; ++ilay ){
-      makeLayer( LayerId(secId,ilay), sector );
+    for ( int ilay=0; ilay<_layersPerPanel; ++ilay ){
+      makeLayer( LayerId(secId,ilay), panel );
 
       // checking spacing of the individual layers
       // are the manifolds sized correctly for the straws?
 
-      Layer const & layer = sector.getLayer(ilay);
+      Layer const & layer = panel.getLayer(ilay);
       //      cout << "Debugging looking at the layer   : " << layer.id() << endl;
       for (int ns = 0; ns<(layer.nStraws()*2-2); ns+=2) {
 
@@ -565,12 +565,12 @@ namespace mu2e {
 
     // check spacing between layers/straws
 
-    if (_layersPerSector>1) {
+    if (_layersPerPanel>1) {
 
       // we should do this using iterators
 
-      Layer const & layer0 = sector.getLayer(0);
-      Layer const & layer1 = sector.getLayer(1);
+      Layer const & layer0 = panel.getLayer(0);
+      Layer const & layer1 = panel.getLayer(1);
 
       for (int ns = 0; ns<layer0.nStraws()*2; ns+=2) {
         double xLayerDeltaMag =
@@ -621,24 +621,24 @@ namespace mu2e {
       }
     }
 
-    // calculate/make a sector envelope
-    computeSectorBoxParams(sector, dev);
+    // calculate/make a panel envelope
+    computePanelBoxParams(panel, dev);
 
-//std::cout << "<-<-<- makeSector\n";
-  }  // makeSector
+//std::cout << "<-<-<- makePanel\n";
+  }  // makePanel
 
-  void TTrackerMaker::makeLayer ( const LayerId& layId, Sector& sector ){
+  void TTrackerMaker::makeLayer ( const LayerId& layId, Panel& panel ){
 //std::cout << "->->-> makeLayer\n";
 
     // Make an empty layer object.
-    sector._layers.push_back( Layer(layId) );
-    Layer& layer = sector._layers.back();
+    panel._layers.push_back( Layer(layId) );
+    Layer& layer = panel._layers.back();
 
     // Get additional bookkeeping info.
     deque<Straw>& allStraws = _tt->_allStraws;
-    const Device& device = _tt->getDevice( layId.getDeviceId() );
+    const Plane& plane = _tt->getPlane( layId.getPlaneId() );
     int ilay = layId.getLayer();
-    int isec = layId.getSector();
+    int isec = layId.getPanel();
 
     //    cout << "Debugging TTrackerMaker ilay: " << ilay << endl;
 
@@ -646,10 +646,10 @@ namespace mu2e {
     layer._nStraws = _manifoldsPerEnd*_strawsPerManifold;
     layer._straws.reserve(_manifoldsPerEnd*_strawsPerManifold);
 
-    // |z| of straw center, relative to the center of the device.
+    // |z| of straw center, relative to the center of the plane.
     // Sign is taken care of elsewhere.
 
-    // see similar calc in computeSectorBoxParams
+    // see similar calc in computePanelBoxParams
     //    double zOffset = _supportHalfThickness + _strawOuterRadius + ilay*2.*_layerHalfSpacing;
     // the above commented out calculation places the straws at the edge of the manifold in Z
 
@@ -658,14 +658,14 @@ namespace mu2e {
 
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
-    // CLHEP::HepRotationZ RZ(_sectorBaseRotations.at(isec));
-    CLHEP::HepRotationZ RZ(sectorRotation(isec,layId.getDeviceId()));
+    // CLHEP::HepRotationZ RZ(_panelBaseRotations.at(isec));
+    CLHEP::HepRotationZ RZ(panelRotation(isec,layId.getPlaneId()));
 
-    // Unit vector in the wire direction. (nominal is the sector 0 to the right?)
+    // Unit vector in the wire direction. (nominal is the panel 0 to the right?)
     CLHEP::Hep3Vector unit = RZ*CLHEP::Hep3Vector(0.,1.,0.);
 
     // Straw number within the layer; does not reset to zero at each manifold.
-    // we number the straws starting from the most inner one across the two layers in the sector/panel
+    // we number the straws starting from the most inner one across the two layers in the panel/panel
     // it will be 0 for layer0 and 1 for layer1
     int _istraw(ilay-2);
 
@@ -686,22 +686,22 @@ namespace mu2e {
         // layers with fewer straws would complicate StrawSD, constructTTrackerv, TTrackerMaker
 
         // Construct straw midpoint in its base position in the
-        // coord system of the device envelope.
+        // coord system of the plane envelope.
         // we will shift the "second" layer from the manifold edge
 
         double xstraw = (ilay%2==0) ?
           xA + (1 + 2*istr)*_strawOuterRadius + istr*_strawGap :
           xA + (1 + 2*istr)*_strawOuterRadius + istr*_strawGap + 2.0*_layerHalfShift;
 
-        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*_sectorZSide.at(isec) );
-        mid += device.origin();
+        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*_panelZSide.at(isec) );
+        mid += plane.origin();
 
         // Rotate straw midpoint to its actual location.
         CLHEP::Hep3Vector offset = RZ*mid;
 
         StrawIndex index(allStraws.size());
 
-        _tt->_strawExists[index.asInt()] = device.exists();
+        _tt->_strawExists[index.asInt()] = plane.exists();
 
         allStraws.push_back( Straw( StrawId( layId, _istraw),
                                     index,
@@ -715,7 +715,7 @@ namespace mu2e {
         layer._indices.push_back(index);
 
 
-        //         if ( layId.getDevice() != -1 ){
+        //         if ( layId.getPlane() != -1 ){
         //           cout << "Position: " << setw(3) <<
         //             layId << " | " << setw(3) <<
         //             iman << " " << setw(3) <<
@@ -724,7 +724,7 @@ namespace mu2e {
         //             xstraw << " " << fixed << setprecision(2) << setw(8) <<
         //             2.*_strawHalfLengths.at(iman) << " " << fixed << setprecision(2) <<
         //             mid << " " << fixed << setprecision(2) << setw(8) <<
-        //             device.origin() << " | "  << setw(3) <<
+        //             plane.origin() << " | "  << setw(3) <<
         //             index <<  " " << setw(3) <<
         //             allStraws.size() << " "  << setw(3) <<
         //             layer._straws.size() << " | " << setw(5) <<
@@ -739,15 +739,15 @@ namespace mu2e {
 //std::cout << "<-<-<- makeLayer\n";
   }
 
-  void TTrackerMaker::makeManifolds( const SectorId& secId){
+  void TTrackerMaker::makeManifolds( const PanelId& secId){
 //std::cout << "->->-> makeManifolds\n";
 
-    if ( _sectorsPerDevice != 4 && _sectorsPerDevice != 6 ) {
+    if ( _panelsPerPlane != 4 && _panelsPerPlane != 6 ) {
       throw cet::exception("GEOM")
-        << "This code only knows how to do 4 or 6 sectors per device.\n";
+        << "This code only knows how to do 4 or 6 panels per plane.\n";
     }
 
-//    double phi = _tt->getDevice(secId.getDevice()).rotation();
+//    double phi = _tt->getPlane(secId.getPlane()).rotation();
 //    CLHEP::HepRotationZ RZ(phi);
 
 
@@ -755,7 +755,7 @@ namespace mu2e {
 
     for ( int i=0; i<_manifoldsPerEnd; ++i){
 
-      // First compute everything in their nominal positions: sector 0, right ?
+      // First compute everything in their nominal positions: panel 0, right ?
       double x0 = _envelopeInnerRadius +
         _strawsPerManifold*_strawOuterRadius +
         _manifoldHalfLengths.at(0);
@@ -763,21 +763,21 @@ namespace mu2e {
       double y0 = _tt->_strawDetails.at(i).halfLength() + _manifoldHalfLengths.at(2);
 
       double z0 = ( _supportHalfThickness + _manifoldHalfLengths.at(2) );
-      //if ( secId.getSector() <= 1 ) z0 = -z0; // is this correct for the 6 sectors?
-      // why not *_sectorZSide.at(secId.getSector())
+      //if ( secId.getPanel() <= 1 ) z0 = -z0; // is this correct for the 6 panels?
+      // why not *_panelZSide.at(secId.getPanel())
 
-      z0 = z0*_sectorZSide.at(secId.getSector());
+      z0 = z0*_panelZSide.at(secId.getPanel());
 
-      // is the above assuming correct Z? why not secId.getSector()%2?
+      // is the above assuming correct Z? why not secId.getPanel()%2?
       // are manifolds ever used?
-      // is it correct at all? I mean the origin? It is always the same for each device...
+      // is it correct at all? I mean the origin? It is always the same for each plane...
       // x never changes
 
       CLHEP::Hep3Vector origin(x0,y0,z0);
 
-      //       cout << "Manifold device, sector, origin, length[0] :" <<
-      //         _tt->getDevice(secId.getDevice()).id() << ", " <<
-      //         secId.getSector() << ", " <<
+      //       cout << "Manifold plane, panel, origin, length[0] :" <<
+      //         _tt->getPlane(secId.getPlane()).id() << ", " <<
+      //         secId.getPanel() << ", " <<
       //         origin << ", " << _manifoldHalfLengths.at(0) <<endl;
 
 
@@ -796,43 +796,43 @@ namespace mu2e {
     int idev1 = 2*ist;
     int idev2 = idev1 + 1;
     double stationZ = 0.5 *
-        ( _tt->_devices.at(idev1).origin().z() +
-          _tt->_devices.at(idev2).origin().z() );
+        ( _tt->_planes.at(idev1).origin().z() +
+          _tt->_planes.at(idev2).origin().z() );
     _tt->_stations.push_back(Station(stationId, stationZ));
     Station & st = _tt->_stations.back();
-    st._planes.reserve (_planesPerStation);
+    st._planeMFs.reserve (_planeMFsPerStation);
     st._faces.reserve (_facesPerStation);
 
-    for ( int iplane = 0; iplane < _planesPerStation; ++iplane ) {
-      makePlane ( PlaneId ( stationId, iplane ), st );
+    for ( int iplaneMF = 0; iplaneMF < _planeMFsPerStation; ++iplaneMF ) {
+      makePlaneMF ( PlaneMFId ( stationId, iplaneMF ), st );
     }
 
 //std::cout << "<-<-<- makeStation\n";
   }
 
   // station view
-  void TTrackerMaker::makePlane( const PlaneId& planeId, Station & station ){
-//std::cout << "->->-> makePlane\n";
+  void TTrackerMaker::makePlaneMF( const PlaneMFId& planeMFId, Station & station ){
+//std::cout << "->->-> makePlaneMF\n";
 
-    int idev = 2*planeId.getStation() + planeId.getPlane();
-    const Device & device = _tt->_devices.at(idev);
-    double planeZ = device.origin().z();
-    station._planes.push_back(Plane(planeId, planeZ));
-    Plane & plane = station._planes.back();
-    plane._faces.reserve(_facesPerPlane);
-    for ( int iface = 0; iface < _facesPerPlane; ++iface ) {
-      int faceNum = 2*planeId.getPlane() + iface;
-      makeFace ( FaceId ( station.id(), faceNum ), plane, device );
-      station._faces.push_back(&(plane._faces.back()));  // quelle haque
+    int idev = 2*planeMFId.getStation() + planeMFId.getPlaneMF();
+    const Plane & plane = _tt->_planes.at(idev);
+    double planeMFZ = plane.origin().z();
+    station._planeMFs.push_back(PlaneMF(planeMFId, planeMFZ));
+    PlaneMF & planeMF = station._planeMFs.back();
+    planeMF._faces.reserve(_facesPerPlaneMF);
+    for ( int iface = 0; iface < _facesPerPlaneMF; ++iface ) {
+      int faceNum = 2*planeMFId.getPlaneMF() + iface;
+      makeFace ( FaceId ( station.id(), faceNum ), planeMF, plane );
+      station._faces.push_back(&(planeMF._faces.back()));  // quelle haque
     }
 
-//std::cout << "<-<-<- makePlane\n";
-  }  // makePlane
+//std::cout << "<-<-<- makePlaneMF\n";
+  }  // makePlaneMF
 
 // station view
   void TTrackerMaker::makeFace( const FaceId & faceId,
-                                      Plane  & plane,
-                                const Device & device )
+                                      PlaneMF  & planeMF,
+                                const Plane & plane )
   {
 //std::cout << "->->-> makeFace " << faceId << "\n";
     bool faceZisKnown = false;
@@ -840,18 +840,18 @@ namespace mu2e {
     double faceZtolerance = .0001;
     int faceParity = faceId.getFace()%2;
 
-    for (int isector = faceParity; isector < _sectorsPerDevice; isector += 2) {
-      const Sector & sector = device.getSector(isector);
+    for (int ipanel = faceParity; ipanel < _panelsPerPlane; ipanel += 2) {
+      const Panel & panel = plane.getPanel(ipanel);
       if (faceZisKnown) {
-        if (abs ( sector.straw0MidPoint().z() - faceZ ) > faceZtolerance ) {
+        if (abs ( panel.straw0MidPoint().z() - faceZ ) > faceZtolerance ) {
           throw cet::exception ( "GEOM" )
-          << "Inconsistent sector positions within a face for faceId = "
+          << "Inconsistent panel positions within a face for faceId = "
           << faceId << "\nExpected Z position = " << faceZ
-          << "  Sector base position Z = " << sector.straw0MidPoint().z()
-          << " in sector " << sector.id() << "\n";
+          << "  Panel base position Z = " << panel.straw0MidPoint().z()
+          << " in panel " << panel.id() << "\n";
         }
       } else {
-        faceZ = sector.straw0MidPoint().z();
+        faceZ = panel.straw0MidPoint().z();
         // TODO -- If this is absolutely correct, I will be surprised.
         //         We need to look at where this places the faces, and
         //         that will clue us in to how to do it right.
@@ -859,32 +859,32 @@ namespace mu2e {
       }
     }
 
-    plane._faces.push_back(Face(faceId, faceZ));
-    Face & f =  plane._faces.back();
-    f._panels.reserve  (_panelsPerFace);
-    for ( int ipanel = 0; ipanel < _panelsPerFace; ++ipanel ) {
-      makePanel ( PanelId ( faceId, ipanel ), f,
-                  device.getSector(2*ipanel + faceParity) );
+    planeMF._faces.push_back(Face(faceId, faceZ));
+    Face & f =  planeMF._faces.back();
+    f._panelMFs.reserve  (_panelMFsPerFace);
+    for ( int ipanelMF = 0; ipanelMF < _panelMFsPerFace; ++ipanelMF ) {
+      makePanelMF ( PanelMFId ( faceId, ipanelMF ), f,
+                  plane.getPanel(2*ipanelMF + faceParity) );
     }
 
 //std::cout << "<-<-<- makeFace\n";
   }  // makeFace
 
   // station view
-  void TTrackerMaker::makePanel( const PanelId & panelId,
+  void TTrackerMaker::makePanelMF( const PanelMFId & panelMFId,
                                        Face  & face,
-                                 const Sector & sector )
+                                 const Panel & panel )
   {
-//std::cout << "->->-> makePanel " << panelId << "\n";
-    double panelZ = face.midZ();
-    face._panels.push_back(Panel(panelId, panelZ));
-    Panel & pnl =  face._panels.back();
-    pnl._zlayers.reserve  (_zLayersPerPanel);
-    for ( int izlayer = 0; izlayer < _zLayersPerPanel; ++izlayer ) {
+//std::cout << "->->-> makePanelMF " << panelMFId << "\n";
+    double panelMFZ = face.midZ();
+    face._panelMFs.push_back(PanelMF(panelMFId, panelMFZ));
+    PanelMF & pnl =  face._panelMFs.back();
+    pnl._zlayers.reserve  (_zLayersPerPanelMF);
+    for ( int izlayer = 0; izlayer < _zLayersPerPanelMF; ++izlayer ) {
       int faceParity = face.id().getFace()%2;
       int ilayer = 1 - faceParity + (2*faceParity -1)*izlayer;
-      makeZLayer ( ZLayerId ( panelId, izlayer ), pnl,
-                                                  sector.getLayer(ilayer) );
+      makeZLayer ( ZLayerId ( panelMFId, izlayer ), pnl,
+                                                  panel.getLayer(ilayer) );
     }
     // Determine phi (and view) by looking at just one sample straw;
     // check that the remaining straws are consisdtent direction-wise
@@ -908,7 +908,7 @@ namespace mu2e {
         // is also clasified as problematic
         if ( directionDiscrepancy > directionTolerance ) {
           throw cet::exception("GEOM")
-            << "makePanel: Straw Direction Discrepancy \n"
+            << "makePanelMF: Straw Direction Discrepancy \n"
             << "Straw " << sampleStraw->id() << " direction " << dir  << "\n"
             << "Straw " << (*is)->id()       << " direction " << dir2 << "\n";
         }
@@ -919,7 +919,7 @@ namespace mu2e {
     if ( (phi < 0) || (phi >= 2*M_PI) ) {
 //       throw cet::exception("GEOM")
 //      std::cout
-//         << "makePanel: An ill-understood phi - "
+//         << "makePanelMF: An ill-understood phi - "
 //         << dir.phi() << phi-2*M_PI << std::endl;
     }
     pnl._phi = phi;
@@ -930,28 +930,28 @@ namespace mu2e {
     int hour = static_cast<int> (std::floor(clockAngle/(M_PI/6)));
     if ( (hour < 0 || hour >= 12) ) {
        throw cet::exception("GEOM")
-         << "makePanel: An ill-understood conversion of phi to hour - "
+         << "makePanelMF: An ill-understood conversion of phi to hour - "
          << dir.phi() << " --> " << hour;
     }
     pnl._view = hour;
-//std::cout << "<-<-<- makePanel\n";
-  }  // makePanel
+//std::cout << "<-<-<- makePanelMF\n";
+  }  // makePanelMF
 
   // station view
   void TTrackerMaker::makeZLayer( const ZLayerId & zlayerId,
-                                        Panel  & panel,
+                                        PanelMF  & panelMF,
                                   const Layer & layer )
   {
     double layerZ = layer.straw0MidPoint().z();
-    panel._zlayers.push_back(ZLayer(zlayerId, layerZ));
-    ZLayer & zlay =  panel._zlayers.back();
+    panelMF._zlayers.push_back(ZLayer(zlayerId, layerZ));
+    ZLayer & zlay =  panelMF._zlayers.back();
     zlay._straws.reserve  (_strawsPerZLayer);
     zlay._straws = layer.getStraws();
   }  // makeZLayer
 
 // ======= end of Station view makers ================
 
-  // Assumes all devices and all sectors are the same.
+  // Assumes all planes and all panels are the same.
   // The straw length depends only on the manifold number.
   // See Mu2e-doc-??? for the algorithm.
 
@@ -968,7 +968,7 @@ namespace mu2e {
       double xA =
         _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace;
 
-      //    double xA = (_layersPerSector==1) ?
+      //    double xA = (_layersPerPanel==1) ?
       //      _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace :
       //      _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace +
       //       _strawOuterRadius;
@@ -998,14 +998,14 @@ namespace mu2e {
 
   void TTrackerMaker::makeDetails(){
 
-    computeConstantSectorBoxParams();
+    computeConstantPanelBoxParams();
 
     if ( _supportModel == SupportModel::simple ){
       _tt->_strawDetails.reserve(_manifoldsPerEnd);
     } else{
       // This will be extended in recomputeHalfLengths - reserve enough space for the extention.
       // as we need to insert sparsly will resize now
-      _tt->_strawDetails.resize(_manifoldsPerEnd*_layersPerSector);
+      _tt->_strawDetails.resize(_manifoldsPerEnd*_layersPerPanel);
     }
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
@@ -1024,46 +1024,46 @@ namespace mu2e {
 
   } // end TTrackerMaker::makeDetails
 
-  void  TTrackerMaker::computeSectorBoxParams(Sector& sector, Device& dev){
+  void  TTrackerMaker::computePanelBoxParams(Panel& panel, Plane& dev){
 
-    // get sector number
-    int isec = sector.id().getSector();
+    // get panel number
+    int isec = panel.id().getPanel();
     //    int idev = dev.id();
     //    cout << "Debugging TTrackerMaker isec,idev: " << isec << ", " << idev << endl;
 
-    // we copy precalculated _sectorBoxHalfLengths etc.. into the sector
+    // we copy precalculated _panelBoxHalfLengths etc.. into the panel
 
-    sector._boxHalfLengths = _sectorBoxHalfLengths;
-    double xOffset = _sectorBoxXOffsetMag;
-    double zOffset = _sectorBoxZOffsetMag * _sectorZSide.at(isec);
+    panel._boxHalfLengths = _panelBoxHalfLengths;
+    double xOffset = _panelBoxXOffsetMag;
+    double zOffset = _panelBoxZOffsetMag * _panelZSide.at(isec);
 
-    // Now calculate the rotations and placement of the sector envelope
+    // Now calculate the rotations and placement of the panel envelope
 
-    sector._boxRxAngle = 0.;
-    sector._boxRyAngle = 0.;
-    sector._boxRzAngle = sectorRotation(isec,dev.id() );
+    panel._boxRxAngle = 0.;
+    panel._boxRyAngle = 0.;
+    panel._boxRzAngle = panelRotation(isec,dev.id() );
 
-    CLHEP::HepRotationZ RZ(sector._boxRzAngle);
+    CLHEP::HepRotationZ RZ(panel._boxRzAngle);
 
-    sector._boxOffset  = RZ*(CLHEP::Hep3Vector( xOffset, 0., zOffset) + dev.origin());
+    panel._boxOffset  = RZ*(CLHEP::Hep3Vector( xOffset, 0., zOffset) + dev.origin());
 
     // we set to 0.0  values smaller than a small number
     static const double max0val = 1.e-06;
-    for (int ii=0; ii!=sector._boxOffset.SIZE; ++ii) {
-      if (abs(sector._boxOffset[ii])<max0val) sector._boxOffset[ii]=0.0;
+    for (int ii=0; ii!=panel._boxOffset.SIZE; ++ii) {
+      if (abs(panel._boxOffset[ii])<max0val) panel._boxOffset[ii]=0.0;
     }
 
-    //     cout << "Debugging sector box isec, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
+    //     cout << "Debugging panel box isec, by, bz, bxl, bxs, boxRzAngle, boxOffset: " <<
     //       isec << ", " <<
     //       by << ", " <<
     //       bz << ", " <<
     //       bxl << ", " <<
     //       bxs << ", " <<
-    //       sector._boxRzAngle << ", " <<
-    //       sector._boxOffset <<
+    //       panel._boxRzAngle << ", " <<
+    //       panel._boxOffset <<
     //       endl;
 
-    //     cout << "Debugging sector box isec, straw lengths: ";
+    //     cout << "Debugging panel box isec, straw lengths: ";
     //     for ( int i=0; i<_manifoldsPerEnd; ++i ){
     //       cout << i << " " << _strawHalfLengths.at(i);
     //     }
@@ -1071,13 +1071,13 @@ namespace mu2e {
 
     return;
 
-  } // end TTrackerMaker::computeSectorBoxParams
+  } // end TTrackerMaker::computePanelBoxParams
 
   void TTrackerMaker::computeLayerSpacingAndShift(){
 
-    _layerHalfSpacing = (_layersPerSector<=1) ? 0.0 :
+    _layerHalfSpacing = (_layersPerPanel<=1) ? 0.0 :
       sqrt(3.0*(square(_strawOuterRadius)+_strawOuterRadius*_strawGap+0.25*square(_strawGap)))*0.5;
-    _layerHalfShift   = (_layersPerSector<=1) ? 0.0 : _strawGap*0.25 + _strawOuterRadius*0.5;
+    _layerHalfShift   = (_layersPerPanel<=1) ? 0.0 : _strawGap*0.25 + _strawOuterRadius*0.5;
 
   }
 
@@ -1090,7 +1090,7 @@ namespace mu2e {
       _strawGap*(_strawsPerManifold-1)*0.5;
 
     _manifoldZEdgeExcessSpace = _manifoldHalfLengths.at(2) - _strawOuterRadius -
-      (_layersPerSector-1)*_layerHalfSpacing;
+      (_layersPerPanel-1)*_layerHalfSpacing;
 
     //cout << "Debugging,  _manifoldXEdgeExcessSpace, _manifoldZEdgeExcessSpace: " <<
     //     _manifoldXEdgeExcessSpace << ", " << _manifoldZEdgeExcessSpace << endl;
@@ -1102,7 +1102,7 @@ namespace mu2e {
 
   }
 
-  void TTrackerMaker::computeConstantSectorBoxParams() {
+  void TTrackerMaker::computeConstantPanelBoxParams() {
 
     computeStrawHalfLengths();
 
@@ -1124,7 +1124,7 @@ namespace mu2e {
 
     // x
 
-    // if there are more than one layer per sector, manifolds have a
+    // if there are more than one layer per panel, manifolds have a
     // straw "sticking out" by a straw radius (and half of the straw
     // gap), but only the last one extends beyond the entire structure
     // in the z direction; remember that those are "halfLengths", so
@@ -1164,46 +1164,46 @@ namespace mu2e {
     double bz = _manifoldHalfLengths.at(2);
 
     // now push it all back into the vector
-    // std::vector<double> _sectorBoxHalfLengths;
+    // std::vector<double> _panelBoxHalfLengths;
 
-    static const size_t sectorBoxHalfLengthsSize= 5;
+    static const size_t panelBoxHalfLengthsSize= 5;
 
-    _sectorBoxHalfLengths.reserve(sectorBoxHalfLengthsSize);
+    _panelBoxHalfLengths.reserve(panelBoxHalfLengthsSize);
 
     // Pad the trapezoid to be slightly larger than it needs to be
     static const double pad = 0.0; // this needs to be in the geom file... if to be non-zero
 
-    // the order is forced by the nestTrp/G4Trd and Sector data
+    // the order is forced by the nestTrp/G4Trd and Panel data
 
-    _sectorBoxHalfLengths.push_back(0.0); //dummy to be compatible with LTracker
-    _sectorBoxHalfLengths.push_back(bx+pad);
-    _sectorBoxHalfLengths.push_back(bz+pad);
+    _panelBoxHalfLengths.push_back(0.0); //dummy to be compatible with LTracker
+    _panelBoxHalfLengths.push_back(bx+pad);
+    _panelBoxHalfLengths.push_back(bz+pad);
 
-    _sectorBoxHalfLengths.push_back(bys+pad);
-    _sectorBoxHalfLengths.push_back(byl+pad);
+    _panelBoxHalfLengths.push_back(bys+pad);
+    _panelBoxHalfLengths.push_back(byl+pad);
 
-    if (_sectorBoxHalfLengths.size()!=sectorBoxHalfLengthsSize) {
-      cout << " _sectorBoxHalfLengths.size() sould be " << sectorBoxHalfLengthsSize <<
-        ", but is : " << _sectorBoxHalfLengths.size() << endl;
+    if (_panelBoxHalfLengths.size()!=panelBoxHalfLengthsSize) {
+      cout << " _panelBoxHalfLengths.size() sould be " << panelBoxHalfLengthsSize <<
+        ", but is : " << _panelBoxHalfLengths.size() << endl;
       throw cet::exception("GEOM")
-        << "something is wrong with sector _sectorBoxHalfLengths calculations \n";
+        << "something is wrong with panel _panelBoxHalfLengths calculations \n";
     }
 
-    _sectorBoxXOffsetMag = _envelopeInnerRadius  + _sectorBoxHalfLengths.at(1); // bx + pad
-    _sectorBoxZOffsetMag = _supportHalfThickness + _sectorBoxHalfLengths.at(2); // bz + pad
+    _panelBoxXOffsetMag = _envelopeInnerRadius  + _panelBoxHalfLengths.at(1); // bx + pad
+    _panelBoxZOffsetMag = _supportHalfThickness + _panelBoxHalfLengths.at(2); // bz + pad
 
-    // we need to make sure the trapezoids do not extend beyond the device envelope...
+    // we need to make sure the trapezoids do not extend beyond the plane envelope...
     // we will check if the dev envelope radius acomodates the newly created box
 
     double outerSupportRadiusRequireds =
-      sqrt( sum_of_squares(_envelopeInnerRadius + 2.0*_sectorBoxHalfLengths.at(1),
-                           _sectorBoxHalfLengths.at(3)
+      sqrt( sum_of_squares(_envelopeInnerRadius + 2.0*_panelBoxHalfLengths.at(1),
+                           _panelBoxHalfLengths.at(3)
                            )
             );
     double outerSupportRadiusRequiredl =
       max( outerSupportRadiusRequireds,
            sqrt( sum_of_squares(_envelopeInnerRadius-pad,
-                                _sectorBoxHalfLengths.at(4))
+                                _panelBoxHalfLengths.at(4))
                  )
            );
 
@@ -1228,24 +1228,24 @@ namespace mu2e {
 
     return;
 
-  } // end TTrackerMaker::computeConstantSectorBoxParams
+  } // end TTrackerMaker::computeConstantPanelBoxParams
 
 
-  // Compute the spacing for the given device.
-  double TTrackerMaker::chooseDeviceSpacing( int idev ) const {
+  // Compute the spacing for the given plane.
+  double TTrackerMaker::choosePlaneSpacing( int idev ) const {
 
 
     if ( _spacingPattern == 0 ) {
-      return idev * _deviceSpacing;
+      return idev * _planeSpacing;
     }
 
     else if ( _spacingPattern == 1 ) {
       int station = idev/2;
       int k = idev%2;
       if (k == 0 ) {
-        return  station*_deviceSpacing - _deviceHalfSeparation;
+        return  station*_planeSpacing - _planeHalfSeparation;
       } else if (k == 1 ) {
-        return  station*_deviceSpacing + _deviceHalfSeparation;
+        return  station*_planeSpacing + _planeHalfSeparation;
       }
     }
 
@@ -1257,12 +1257,12 @@ namespace mu2e {
   double TTrackerMaker::findFirstDevZ0() const{
 
     if ( _spacingPattern == 0 ) {
-      return _deviceSpacing*double(_numDevices-1)/2.0;
+      return _planeSpacing*double(_numPlanes-1)/2.0;
     }
 
     else if ( _spacingPattern == 1 ) {
-      int nStations = _numDevices/2;
-      return double(nStations-1)/2.0 * _deviceSpacing;
+      int nStations = _numPlanes/2;
+      return double(nStations-1)/2.0 * _planeSpacing;
     }
     else {
       throw cet::exception("GEOM")
@@ -1279,11 +1279,11 @@ namespace mu2e {
 
     for (deque<Straw>::iterator i = allStraws.begin();
          i != allStraws.end(); ++i) {
-      // throw exception if more than 2 layers per sector
+      // throw exception if more than 2 layers per panel
 
-      if (_tt->getSector(i->id().getSectorId()).nLayers() > 2 ) {
+      if (_tt->getPanel(i->id().getPanelId()).nLayers() > 2 ) {
         throw cet::exception("GEOM")
-          << "The code works with no more than 2 layers per sector. \n";
+          << "The code works with no more than 2 layers per panel. \n";
       }
 
       if (_verbosityLevel>2) {
@@ -1334,18 +1334,18 @@ namespace mu2e {
 
       // add the "opposite layer" n neighbours straw (if more than 1 layer)
 
-      if (_layersPerSector == 2) {
+      if (_layersPerPanel == 2) {
 
-        // throw exception if the two layer of the same sector have different
+        // throw exception if the two layer of the same panel have different
         // number of straws
         if (_tt->getLayer(lId)._nStraws != nStrawLayer) {
           throw cet::exception("GEOM")
             << "The code works only with the same number of straws "
-            << "per layer in the same sector. \n";
+            << "per layer in the same panel. \n";
         }
 
         if (layer==0 && i->id().getStraw()<2*nStrawLayer) {
-          const StrawId nsId( i->id().getSectorId(), 1 , i->id().getStraw() + 1 );
+          const StrawId nsId( i->id().getPanelId(), 1 , i->id().getStraw() + 1 );
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
@@ -1355,7 +1355,7 @@ namespace mu2e {
         }
 
         if (layer==1 && i->id().getStraw()<2*nStrawLayer-1) {
-          const StrawId nsId( i->id().getSectorId(), 0 , i->id().getStraw() + 1 );
+          const StrawId nsId( i->id().getPanelId(), 0 , i->id().getStraw() + 1 );
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
@@ -1365,7 +1365,7 @@ namespace mu2e {
         }
 
         if (layer==0 && i->id().getStraw()>0) {
-          const StrawId nsId( i->id().getSectorId(), 1 , i->id().getStraw() - 1 );
+          const StrawId nsId( i->id().getPanelId(), 1 , i->id().getStraw() - 1 );
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
@@ -1375,7 +1375,7 @@ namespace mu2e {
         }
 
         if (layer==1 && i->id().getStraw()>0) { // layer 1 straw 1 is ok
-          const StrawId nsId( i->id().getSectorId(), 0 , i->id().getStraw() - 1 );
+          const StrawId nsId( i->id().getPanelId(), 0 , i->id().getStraw() - 1 );
           i->_nearestById.push_back( nsId );
           i->_nearestByIndex.push_back( _tt->getStraw( nsId ).index() );
           if ( _verbosityLevel>2 ) {
@@ -1405,10 +1405,10 @@ namespace mu2e {
     for (deque<Straw>::iterator straw = allStraws.begin();
          straw != allStraws.end(); ++straw) {
 
-      // throw exception if more than 2 layers in the sector of this straw
-      if (_tt->getSector(straw->id().getSectorId()).nLayers() != 2 ) {
+      // throw exception if more than 2 layers in the panel of this straw
+      if (_tt->getPanel(straw->id().getPanelId()).nLayers() != 2 ) {
         throw cet::exception("GEOM")
-          << "The code expects exactly 2 layers per sector. \n";
+          << "The code expects exactly 2 layers per panel. \n";
       }
 
       LayerId layerId = straw->id().getLayerId();
@@ -1420,7 +1420,7 @@ namespace mu2e {
       // FIXME the above is probably not true
       // TODO -- Do the check
 
-      LayerId otherLayerId ( layerId.getSectorId(), 1-layerNumber );
+      LayerId otherLayerId ( layerId.getPanelId(), 1-layerNumber );
 
       int nStrawLayer = _tt->getLayer(layerId)._nStraws;
 
@@ -1514,14 +1514,14 @@ namespace mu2e {
     sup._stiffRings.push_back(PlacedTubs ( "TTrackerEndRingUpstream",   endRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter-_endRingZOffset), _endRingMaterial ));
 
     {
-      if ( _numDevices%2 !=0 ){
+      if ( _numPlanes%2 !=0 ){
         throw cet::exception("GEOM")
-          << "TTrackerMaker::makeSupportStructure expected and even number of devices. Saw " << _numDevices << " devices.\n";
+          << "TTrackerMaker::makeSupportStructure expected and even number of planes. Saw " << _numPlanes << " planes.\n";
       }
 
       // From upstream end of most upstream station to the downstream end of the most downstream station.
       // Including all materials.
-      double overallLength = (_numDevices/2-1)*_deviceSpacing + 2.*_deviceHalfSeparation + 2.* _innerRingHalfLength;
+      double overallLength = (_numPlanes/2-1)*_planeSpacing + 2.*_planeHalfSeparation + 2.* _innerRingHalfLength;
 
       // we make support beams here (they used to be called staves)
 
@@ -1784,7 +1784,7 @@ namespace mu2e {
 
     }
 
-    // Positions from here onward are in the coordinates of the device envelope.
+    // Positions from here onward are in the coordinates of the plane envelope.
     {
       TubsParams centerPlateTubs( _innerRingOuterRadius, _outerRingOuterRadius, _centerPlateHalfLength);
       sup._centerPlate = PlacedTubs( "TTrackerSupportCenterPlate", centerPlateTubs, CLHEP::Hep3Vector(0.,0.,0.), _centerPlateMaterial);
@@ -1853,21 +1853,21 @@ namespace mu2e {
       int station = _midRingSlot.at(i);
       int idev1 = station*2+1;
       int idev2 = idev1+1;
-      if ( idev2 >= _tt->nDevices() ){
+      if ( idev2 >= _tt->nPlanes() ){
         throw cet::exception("GEOM")
           << "Requested a thin support after station: "
           << station
-          << " This is between devices: "
+          << " This is between planes: "
           << idev1 << " and "
           << idev2 << "\n"
           << "But there are only "
-          << _tt->nDevices()
-          << " devices\n";
+          << _tt->nPlanes()
+          << " planes\n";
       }
       name << "ThinSupportRing_" << i;
 
       // Center the support in the gap between two stations.
-      double z = 0.5*( _tt->getDevice(idev1).origin().z() +  _tt->getDevice(idev2).origin().z());
+      double z = 0.5*( _tt->getPlane(idev1).origin().z() +  _tt->getPlane(idev2).origin().z());
       sup._stiffRings.push_back(PlacedTubs ( name.str(),  thinRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter+z), _endRingMaterial ));
     }
 
@@ -1894,21 +1894,21 @@ namespace mu2e {
     }
   }
 
-  // Envelope that holds one device ("TTrackerDeviceEnvelope")
-  void TTrackerMaker::computeDeviceEnvelope(){
+  // Envelope that holds one plane ("TTrackerPlaneEnvelope")
+  void TTrackerMaker::computePlaneEnvelope(){
 
     if ( _supportModel == SupportModel::simple ){
       double halfThick = _tt->_supportParams.halfThickness() + 2.*_tt->_manifoldHalfLengths[2];
-      _tt->_deviceEnvelopeParams = TubsParams( _tt->_envelopeInnerRadius,
+      _tt->_planeEnvelopeParams = TubsParams( _tt->_envelopeInnerRadius,
                                                _tt->_supportParams.outerRadius(),
                                                halfThick);
     } else if ( _supportModel == SupportModel::detailedv0 ){
-      _tt->_deviceEnvelopeParams = TubsParams( _envelopeInnerRadius,
+      _tt->_planeEnvelopeParams = TubsParams( _envelopeInnerRadius,
                                                _outerRingOuterRadius,
                                                _innerRingHalfLength );
     }else{
       throw cet::exception("GEOM")
-        << "Unknown value of _supportModel in TTrackerMaker::computeDeviceEnvelopeParams "
+        << "Unknown value of _supportModel in TTrackerMaker::computePlaneEnvelopeParams "
         << _supportModel
         << "\n";
     }
@@ -1919,23 +1919,23 @@ namespace mu2e {
 
     if ( _supportModel == SupportModel::simple ){
 
-      // Envelope of a single device.
-      TubsParams deviceEnvelope = _tt->getDeviceEnvelopeParams();
+      // Envelope of a single plane.
+      TubsParams planeEnvelope = _tt->getPlaneEnvelopeParams();
 
-      // Full length from center to center of the first and last devices.
-      double fullLength = _tt->_devices.back().origin().z()-_tt->_devices.front().origin().z();
+      // Full length from center to center of the first and last planes.
+      double fullLength = _tt->_planes.back().origin().z()-_tt->_planes.front().origin().z();
 
-      // Remember the thickness of the devices.
-      double halfLength = fullLength/2. + deviceEnvelope.zHalfLength();
+      // Remember the thickness of the planes.
+      double halfLength = fullLength/2. + planeEnvelope.zHalfLength();
 
-      _tt->_innerTrackerEnvelopeParams = TubsParams( deviceEnvelope.innerRadius(),
-                                                     deviceEnvelope.outerRadius(),
+      _tt->_innerTrackerEnvelopeParams = TubsParams( planeEnvelope.innerRadius(),
+                                                     planeEnvelope.outerRadius(),
                                                      halfLength);
 
     } else if ( _supportModel == SupportModel::detailedv0 ){
 
-      double fullLength = _tt->_devices.back().origin().z()-_tt->_devices.front().origin().z();
-      double halfLength = fullLength/2. + _tt->getDeviceEnvelopeParams().zHalfLength();
+      double fullLength = _tt->_planes.back().origin().z()-_tt->_planes.front().origin().z();
+      double halfLength = fullLength/2. + _tt->getPlaneEnvelopeParams().zHalfLength();
 
       TubsParams val( _envelopeInnerRadius, _outerRingOuterRadius, halfLength);
       _tt->_innerTrackerEnvelopeParams = val;
@@ -2012,11 +2012,11 @@ namespace mu2e {
     // Number of straws that have an illegal active length.
     int nIllegalActive(0);
 
-    // Step 2: For all layers in SectorId(0,0) recompute the straw lengths.
+    // Step 2: For all layers in PanelId(0,0) recompute the straw lengths.
     //         For layers > 0:
     //            - create a new StrawDetail object to hold the new length.
     //            - Reseat the _detail and _detailIndex objects in the Straw object.
-    vector<Layer>& lays = _tt->_devices.at(idev0)._sectors.at(isec0)._layers;
+    vector<Layer>& lays = _tt->_planes.at(idev0)._panels.at(isec0)._layers;
     for ( size_t ilay=0; ilay<lays.size(); ++ilay){
       Layer& lay(lays.at(ilay));
 
@@ -2146,7 +2146,7 @@ namespace mu2e {
       Straw& straw(*i);
 
       // These are already done:
-      if ( straw.id().getSectorId() == SectorId(0,0) ) continue;
+      if ( straw.id().getPanelId() == PanelId(0,0) ) continue;
       if ( straw.id().getLayer()    ==            0  ) continue;
 
       // Get the new detail object for this straw.
@@ -2170,11 +2170,11 @@ namespace mu2e {
 
   } //end TTrackerMaker::recomputeHalfLengths
   double
-  TTrackerMaker::sectorRotation(int isec,int idev) const {
+  TTrackerMaker::panelRotation(int isec,int idev) const {
     int jdev = idev%2;
     int ista = (idev/2)%2;
-    int jsec = isec + jdev*_sectorsPerDevice;
-    double phi = _sectorBaseRotations.at(jsec);
+    int jsec = isec + jdev*_panelsPerPlane;
+    double phi = _panelBaseRotations.at(jsec);
     if(ista==1)phi += _oddStationRotation;
     return phi;
   }

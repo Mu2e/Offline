@@ -1,0 +1,260 @@
+Still under construction
+
+           Release notes for Mu2e Offline software, v5_5_7
+
+7) 07 Dec 2015 dnbrow01
+   Made version 2 of the upstream Pbar Absorber window the new default -
+   this builds the support structure along with the window.  Changed
+   Mu2eG4/geom/TransportSolenoid_v01.txt
+
+6) 07 Dec 2015 logash
+ 
+   Changes in Analyses/src/ReadVirtualDetector_module.cc
+
+   For staged simulation output (used in all standard simulations) it now 
+   correctly identifies the particle's parent. The problem occurs if
+   particle's simulation continuos from one stage to another. In this case 
+   a particle "dies" at the end of previous stage and becomes a parent of
+   itself in the next stage. ReadVirtualDetector now correctly identifies 
+   these cases and glues together all particles which are actually the same
+   particle. This leads to two visible changes in the particles ntuple 
+   (ntpart):
+    - all parent info is now related to true parent of the particle, even if
+      this parent disappeared in previous stages of simulation
+    - if particle crossed virtual detectors in previous stages, this 
+      info is correctly merged with the data from the current stage
+
+   This behavious is on by default, but can be switched off with new
+   run-time (fcl) parameter:
+      navigateToParent : false
+
+5) 06 Dec 2015  dnbrow01
+   Added support structure for the upstream Pbar window just before the 
+   entrance to TS1.  It is selectable with a variable 
+   pbar.coll1In.version.  The value 1 gives the old window without support,
+   version 2 adds the support.  Files affected:
+   Mu2eG4/geom/TransportSolenoid_v01.txt
+   Mu2eG4/src/constructTS.cc
+
+4) Dec 4, 2015 genser
+
+   Renamed ttracker objects: The change was done in four major steps:
+
+    Renamed old Panel to PanelMF
+    Renamed Sector to Panel
+    Renamed old Plane to PlaneMF
+    Renamed Detector to Plane
+
+   Shown below together with the files involved:
+
+     renamed old Panel to PanelMF
+     --
+      GeometryService/inc/TTrackerMaker.hh          |   10 ++--
+      GeometryService/src/TTrackerMaker.cc          |   46 +++++++++++-----------
+      TTrackerGeom/inc/Face.hh                      |   16 ++++----
+      TTrackerGeom/inc/{Panel.hh => PanelMF.hh}     |   28 +++++++-------
+      TTrackerGeom/inc/{PanelId.hh => PanelMFId.hh} |   52 ++++++++++++------------
+      TTrackerGeom/inc/ZLayerId.hh                  |   44 ++++++++++----------
+      6 files changed, 98 insertions(+), 98 deletions(-)
+     
+     renamed tracker Sector to Panel
+     --
+      Analyses/src/BkgRates_module.cc                    |    4 +-
+      Analyses/src/ConvElecHistory_module.cc             |    2 +-
+      Analyses/src/DIOElecHistory_module.cc              |    2 +-
+      Analyses/src/HitDisplay_module.cc                  |    2 +-
+      Analyses/src/PrintTTrackerGeom_module.cc           |    4 +-
+      Analyses/src/ReadBack0_module.cc                   |    2 +-
+      Analyses/src/ReadBack_module.cc                    |    2 +-
+      Analyses/src/TTrackerGeomIntRootPlots_module.cc    |  116 +++---
+      CalPatRec/src/CalPatRec_module.cc                  |    2 +-
+      CalPatRec/src/KalFitHack.cc                        |    4 +-
+      DataProducts/inc/LayerId.hh                        |   20 +-
+      DataProducts/inc/PanelId.hh                        |   87 +++++
+      DataProducts/inc/SectorId.hh                       |   87 -----
+      DataProducts/inc/StrawId.hh                        |   12 +-
+      DataProducts/src/{SectorId.cc => PanelId.cc}       |    8 +-
+      EventDisplay/src/DataInterface.cc                  |    4 +-
+      GeometryService/inc/TTrackerMaker.hh               |   36 +-
+      GeometryService/src/TTrackerMaker.cc               |  392 ++++++++++----------
+      HitMakers/fcl/prolog.fcl                           |    4 +-
+      HitMakers/inc/StrawClusterUtilities.hh             |    4 +-
+      HitMakers/src/BetaTauPitch_module.cc               |   16 +-
+      HitMakers/src/MakeStereoHits_module.cc             |   54 ++--
+      HitMakers/src/MakeStrawHitPositions_module.cc      |   10 +-
+      HitMakers/src/ReadStrawCluster_module.cc           |    4 +-
+      HitMakers/src/ReadStrawHit_module.cc               |   12 +-
+      HitMakers/src/StrawClusterUtilities.cc             |    4 +-
+      KalmanTests/inc/TrkStrawHitInfo.hh                 |    6 +-
+      KalmanTests/src/DoubletAmbigResolver.cc            |    2 +-
+      KalmanTests/src/KalDiag.cc                         |    6 +-
+      KalmanTests/src/KalFitMC.cc                        |    2 +-
+      KalmanTests/src/PanelAmbigResolver.cc              |    8 +-
+      KalmanTests/src/StrawEnergy_module.cc              |    6 +-
+      KalmanTests/test/EStraw.C                          |   12 +-
+      Mu2eG4/geom/ttracker_cd3.txt                       |   12 +-
+      Mu2eG4/geom/ttracker_v0.txt                        |   12 +-
+      Mu2eG4/geom/ttracker_v3.txt                        |    4 +-
+      Mu2eG4/inc/ConstructTTrackerTDR.hh                 |   10 +-
+      Mu2eG4/inc/StrawSD.hh                              |    2 +-
+      Mu2eG4/src/ConstructMaterials.cc                   |    2 +-
+      Mu2eG4/src/ConstructTTrackerTDR.cc                 |   94 +++---
+      Mu2eG4/src/StrawSD.cc                              |   30 +-
+      Mu2eG4/src/constructTTrackerv3.cc                  |  186 +++++-----
+      Mu2eG4/src/constructTTrackerv3Detailed.cc          |   88 +++---
+      Mu2eG4/test/transportOnlyGeom.txt                  |    4 +-
+      ParticleID/src/AvikPID_module.cc                   |    4 +-
+      ...torStationCluster.hh => PanelStationCluster.hh} |   58 ++--
+      ...ClusterGroup.hh => PanelStationClusterGroup.hh} |   22 +-
+      .../inc/PanelStationClusterGroupCollection.hh      |   20 +
+      .../inc/SctrSttnClusterGroupCollection.hh          |   20 -
+      RecoDataProducts/inc/StereoHit.hh                  |    6 +-
+      RecoDataProducts/src/StereoHit.cc                  |    4 +-
+      RecoDataProducts/src/classes.h                     |    4 +-
+      RecoDataProducts/src/classes_def.xml               |    8 +-
+      TTrackerGeom/inc/Face.hh                           |    2 +-
+      TTrackerGeom/inc/ManifoldId.hh                     |   12 +-
+      TTrackerGeom/inc/PanelMF.hh                        |    2 +-
+      TTrackerGeom/inc/Plane.hh                          |    2 +-
+      TTrackerGeom/inc/Station.hh                        |    2 +-
+      TTrackerGeom/inc/TTracker.hh                       |   22 +-
+      TTrackerGeom/src/Manifold.cc                       |    4 +-
+      TrackerConditions/src/DeadStrawList.cc             |   22 +-
+      TrackerGeom/inc/Device.hh                          |   36 +-
+      TrackerGeom/inc/Layer.hh                           |    2 +-
+      TrackerGeom/inc/{Sector.hh => Panel.hh}            |   24 +-
+      TrackerGeom/inc/Straw.hh                           |    2 +-
+      TrackerGeom/inc/Tracker.hh                         |    2 +-
+      TrackerGeom/src/Device.cc                          |    4 +-
+      TrackerGeom/src/Layer.cc                           |    2 +-
+      TrackerGeom/src/{Sector.cc => Panel.cc}            |   12 +-
+      TrackerGeom/src/Straw.cc                           |    2 +-
+      TrackerMC/inc/SHInfo.hh                            |    6 +-
+      TrackerMC/src/StrawDigisFromStepPointMCs_module.cc |   12 +-
+      TrkPatRec/inc/StrawHitInfo.hh                      |    2 +-
+      TrkPatRec/src/FlagBkgHits_module.cc                |    2 +-
+      TrkPatRec/src/StrawHitDiag_module.cc               |    8 +-
+      TrkPatRec/src/TrkPatRec_module.cc                  |    8 +-
+      76 files changed, 859 insertions(+), 859 deletions(-)
+     
+     renamed old tracker Plane to PlaneMF
+     ---
+      GeometryService/inc/TTrackerMaker.hh      |   10 ++--
+      GeometryService/src/TTrackerMaker.cc      |   46 +++++++++---------
+      TTrackerGeom/inc/FaceId.hh                |    8 ++--
+      TTrackerGeom/inc/PanelMFId.hh             |    4 +-
+      TTrackerGeom/inc/PlaneId.hh               |   77 -----------------------------
+      TTrackerGeom/inc/{Plane.hh => PlaneMF.hh} |   32 ++++++------
+      TTrackerGeom/inc/PlaneMFId.hh             |   77 +++++++++++++++++++++++++++++
+      TTrackerGeom/inc/Station.hh               |   18 +++---
+      TTrackerGeom/inc/TTracker.hh              |    2 +-
+      TTrackerGeom/inc/ZLayerId.hh              |    4 +-
+      10 files changed, 139 insertions(+), 139 deletions(-)
+     
+     renamed tracker Detector to Plane
+     ---
+      Analyses/src/BkgRates_module.cc                    |    2 +-
+      Analyses/src/ConvElecHistory_module.cc             |    6 +-
+      Analyses/src/DIOElecHistory_module.cc              |    6 +-
+      Analyses/src/HitDisplay_module.cc                  |    2 +-
+      Analyses/src/PrintTTrackerGeom_module.cc           |    4 +-
+      Analyses/src/ReadBack0_module.cc                   |    2 +-
+      Analyses/src/ReadBack_module.cc                    |    4 +-
+      Analyses/src/ReadTTrackerDSDetectors_module.cc     |    6 +-
+      Analyses/src/TTrackerGeomIntRootPlots_module.cc    |   36 ++--
+      CalPatRec/src/CalPatRec_module.cc                  |    2 +-
+      CalPatRec/src/HelixFitHack.cc                      |    2 +-
+      CalPatRec/src/KalFitHack.cc                        |    4 +-
+      DataProducts/inc/DeviceId.hh                       |   20 --
+      DataProducts/inc/LayerId.hh                        |   12 +-
+      DataProducts/inc/PanelId.hh                        |   14 +-
+      DataProducts/inc/PlaneId.hh                        |   20 ++
+      DataProducts/inc/StrawId.hh                        |   12 +-
+      DataProducts/src/PanelId.cc                        |    8 +-
+      EventDisplay/src/DataInterface.cc                  |    4 +-
+      GeometryService/inc/TTrackerMaker.hh               |   32 ++--
+      GeometryService/src/TTrackerMaker.cc               |  244 ++++++++++----------
+      GeometryService/src/VirtualDetectorMaker.cc        |    4 +-
+      HitMakers/fcl/prolog.fcl                           |    4 +-
+      HitMakers/inc/StrawClusterUtilities.hh             |    4 +-
+      HitMakers/src/BetaTauPitch_module.cc               |   46 ++--
+      HitMakers/src/MakeCaloReadoutHits_module.cc        |    2 +-
+      HitMakers/src/MakeStereoHits_module.cc             |  174 +++++++-------
+      HitMakers/src/MakeStrawHitPositions_module.cc      |   28 ++--
+      HitMakers/src/ReadStrawCluster_module.cc           |   38 ++--
+      HitMakers/src/ReadStrawHit_module.cc               |    6 +-
+      HitMakers/src/StrawClusterUtilities.cc             |    8 +-
+      KalmanTests/inc/TrkStrawHitInfo.hh                 |    6 +-
+      KalmanTests/src/DoubletAmbigResolver.cc            |    2 +-
+      KalmanTests/src/KalDiag.cc                         |    6 +-
+      KalmanTests/src/KalFitMC.cc                        |   12 +-
+      KalmanTests/src/StrawEnergy_module.cc              |    6 +-
+      KalmanTests/test/EStraw.C                          |   18 +-
+      Mu2eG4/fcl/transportOnly.fcl                       |    2 +-
+      Mu2eG4/geom/ttracker_cd3.txt                       |   16 +-
+      Mu2eG4/geom/ttracker_v0.txt                        |   14 +-
+      Mu2eG4/geom/ttracker_v3.txt                        |   12 +-
+      Mu2eG4/inc/ConstructTTrackerTDR.hh                 |    4 +-
+      Mu2eG4/inc/SensitiveDetectorName.hh                |    2 +-
+      Mu2eG4/inc/StrawSD.hh                              |    2 +-
+      ...eviceSupportSD.hh => TTrackerPlaneSupportSD.hh} |   14 +-
+      Mu2eG4/src/ConstructTTrackerTDR.cc                 |   70 +++---
+      Mu2eG4/src/Mu2eWorld.cc                            |    6 +-
+      Mu2eG4/src/StrawSD.cc                              |   28 ++--
+      ...eviceSupportSD.cc => TTrackerPlaneSupportSD.cc} |   32 ++--
+      Mu2eG4/src/constructTTrackerv3.cc                  |  146 ++++++------
+      Mu2eG4/src/constructTTrackerv3Detailed.cc          |   56 +++---
+      Mu2eG4/src/constructVirtualDetectors.cc            |    4 +-
+      Mu2eG4/test/geom_01_LowDetailGraphics.txt          |    2 +-
+      Mu2eG4/test/transportOnlyGeom.txt                  |    2 +-
+      ParticleID/src/AvikPID_module.cc                   |   24 +-
+      TTrackerGeom/inc/Face.hh                           |    2 +-
+      TTrackerGeom/inc/Manifold.hh                       |    6 +-
+      TTrackerGeom/inc/PanelMF.hh                        |    2 +-
+      TTrackerGeom/inc/PlaneMF.hh                        |    2 +-
+      TTrackerGeom/inc/Station.hh                        |    2 +-
+      TTrackerGeom/inc/SupportStructure.hh               |    2 +-
+      TTrackerGeom/inc/TTracker.hh                       |   52 ++--
+      TTrackerGeom/src/Manifold.cc                       |    2 +-
+      TTrackerGeom/src/TTracker.cc                       |    4 +-
+      TrackerConditions/src/DeadStrawList.cc             |   10 +-
+      TrackerGeom/inc/Layer.hh                           |    2 +-
+      TrackerGeom/inc/Panel.hh                           |    2 +-
+      TrackerGeom/inc/{Device.hh => Plane.hh}            |   26 +-
+      TrackerGeom/inc/Straw.hh                           |    2 +-
+      TrackerGeom/inc/Tracker.hh                         |    2 +-
+      TrackerGeom/src/Device.cc                          |   10 +-
+      TrackerGeom/src/Layer.cc                           |    2 +-
+      TrackerGeom/src/Panel.cc                           |    2 +-
+      TrackerGeom/src/Straw.cc                           |    2 +-
+      TrackerMC/inc/SHInfo.hh                            |    6 +-
+      TrackerMC/src/StrawDigisFromStepPointMCs_module.cc |   12 +-
+      TrkPatRec/inc/StrawHitInfo.hh                      |    2 +-
+      TrkPatRec/src/FlagBkgHits_module.cc                |   26 +-
+      TrkPatRec/src/StrawHitDiag_module.cc               |    8 +-
+      TrkPatRec/src/TrkPatRec_module.cc                  |    8 +-
+      TrkPatRec/test/StereoTest.C                        |    4 +-
+      81 files changed, 721 insertions(+), 721 deletions(-)
+     
+     Dave Nathan Brown: fix name
+     ---
+      TrackerGeom/src/{Device.cc => Plane.cc} |    0
+      1 files changed, 0 insertions(+), 0 deletions(-)
+     
+
+3) Dec 2, 2015 kutschke
+   Added an example of using multiple random engines in one module.
+     Sandbox/src/Random10_module.cc
+     Sandbox/test/random10a.fcl
+     Sandbox/test/random10b.fcl
+
+2) 24 Nov 2015, logash
+
+   Small update of Mu2eG4Cuts.cc: added new cut "globalTime" in ns.
+   If global (G4) time for a particular particle reaches this limit, the
+   particle is killed. This cut is useful for simulation of trapped
+   particles.
+
+1)  24 Nov 2015, dnbrow01
+    Small modification to Mu2eG4/geom/ExtShieldDownstream_v02.txt to widen
+    the DS right penetration to accommodate 14" pipes rather than 12".

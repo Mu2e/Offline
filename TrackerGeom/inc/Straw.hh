@@ -29,8 +29,8 @@ namespace mu2e {
   class Straw{
 
     friend class Layer;
-    friend class Sector;
-    friend class Device;
+    friend class Panel;
+    friend class Plane;
     friend class TTracker;
     friend class TTrackerMaker;
 

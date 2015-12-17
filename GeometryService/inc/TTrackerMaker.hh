@@ -12,9 +12,9 @@
 
 #include "TTrackerGeom/inc/TTracker.hh"
 
-#include "TrackerGeom/inc/Device.hh"
+#include "TrackerGeom/inc/Plane.hh"
 #include "TrackerGeom/inc/Layer.hh"
-#include "TrackerGeom/inc/Sector.hh"
+#include "TrackerGeom/inc/Panel.hh"
 
 #include "TTrackerGeom/inc/Station.hh"
 
@@ -44,35 +44,35 @@ namespace mu2e {
     void makeDetails();
 
     void makeMother();
-    void makeDevice( DeviceId devId );
-    void makeSector( const SectorId& secId, Device& dev );
-    void makeLayer ( const LayerId& layId,  Sector& sec );
-    void makeManifolds( const SectorId& secId);
+    void makePlane( PlaneId devId );
+    void makePanel( const PanelId& secId, Plane& dev );
+    void makeLayer ( const LayerId& layId,  Panel& sec );
+    void makeManifolds( const PanelId& secId);
 
     void computeStrawHalfLengths();
-    void computeSectorBoxParams(Sector& sector, Device& dev);
-    void computeConstantSectorBoxParams();
+    void computePanelBoxParams(Panel& panel, Plane& dev);
+    void computeConstantPanelBoxParams();
     void computeLayerSpacingAndShift();
     void computeManifoldEdgeExcessSpace();
     void computeTrackerEnvelope();
-    void computeDeviceEnvelope();
+    void computePlaneEnvelope();
 
     void identifyNeighbourStraws();
     void identifyDirectionalNeighbourStraws();
     StrawIndex ttStrawIndex (LayerId const &layerId, int snum);
 
     void makeStation( StationId stationId );
-    void makePlane  ( const PlaneId &planeId, Station & station );
-    void makeFace   ( const FaceId &faceId, Plane &plane, const Device &device );
-    void makePanel  ( const PanelId &panelId, Face &face, const Sector &sector );
-    void makeZLayer ( const ZLayerId &zlayerId, Panel &panel, const Layer &layer );
+    void makePlaneMF  ( const PlaneMFId &planeMFId, Station & station );
+    void makeFace   ( const FaceId &faceId, PlaneMF &planeMF, const Plane &plane );
+    void makePanelMF  ( const PanelMFId &panelMFId, Face &face, const Panel &panel );
+    void makeZLayer ( const ZLayerId &zlayerId, PanelMF &panelMF, const Layer &layer );
 
     // Do the work of constructing it.
     void buildIt();
 
-    double chooseDeviceSpacing( int idev ) const;
+    double choosePlaneSpacing( int idev ) const;
     double findFirstDevZ0() const;
-    double sectorRotation(int isec,int idev) const;
+    double panelRotation(int isec,int idev) const;
 
     // Some functions for the, fully detailed support structure.
     void makeSupportStructure();
@@ -96,13 +96,13 @@ namespace mu2e {
                                      // necessarily the same as the center of the instrumented region of the tracker.
 
     // Basic parameters needed to describe the TTracker.
-    int    _numDevices;                  // Number of devices.
-    int    _sectorsPerDevice;            // Number of sectors in one device.
-    int    _layersPerSector;             // Number of layers in one sector.
+    int    _numPlanes;                  // Number of planes.
+    int    _panelsPerPlane;            // Number of panels in one plane.
+    int    _layersPerPanel;             // Number of layers in one panel.
     int    _manifoldsPerEnd;             // Number of manifolds along one end of the wires in a layer.
     int    _strawsPerManifold;           // Number of straws connected to each manifold.
-    int    _rotationPattern;             // Pattern of rotations from device to device.
-    int    _spacingPattern;              // Pattern of spacing from device to device.
+    int    _rotationPattern;             // Pattern of rotations from plane to plane.
+    int    _spacingPattern;              // Pattern of spacing from plane to plane.
     double _oddStationRotation;           // rotation of odd stations relative to even
     double _zCenter;                     // z position of the center of the tracker, in the Mu2e coord system.
     double _xCenter;                     // x position of the center of the tracker, in the Mu2e coord system.
@@ -110,8 +110,8 @@ namespace mu2e {
     double _strawOuterRadius;            // Radius of each straw.
     double _strawWallThickness;          // Thickness of each straw.
     double _strawGap;                    // Gap between straws.
-    double _deviceSpacing;               // Z-separation between adjacent stations.
-    double _deviceHalfSeparation;        // Z-separation between adjacent devices.
+    double _planeSpacing;               // Z-separation between adjacent stations.
+    double _planeHalfSeparation;        // Z-separation between adjacent planes.
     double _innerSupportRadius;          // Inner radius of support frame.
     double _outerSupportRadius;          // Outer radius of support frame.
     double _supportHalfThickness;        // Thickness of support frame.
@@ -134,9 +134,9 @@ namespace mu2e {
     std::vector<double> _manifoldHalfLengths; // Dimensions of each manifold.
     std::vector<std::string> _strawMaterials; // Names of the materials.
 
-    // Base rotations of a sector; does not include device rotation.
-    std::vector<double> _sectorBaseRotations;
-    std::vector<double> _sectorZSide;
+    // Base rotations of a panel; does not include plane rotation.
+    std::vector<double> _panelBaseRotations;
+    std::vector<double> _panelZSide;
     double _devrot; // hack to make redundant information self-consistent
 
     std::unique_ptr<TTracker> _tt;
@@ -153,12 +153,12 @@ namespace mu2e {
     // This is only valid for SupportModel==simple
     std::vector<double> _strawActiveHalfLengths;
 
-    // sector box half lengths
-    std::vector<double> _sectorBoxHalfLengths;
+    // panel box half lengths
+    std::vector<double> _panelBoxHalfLengths;
 
-    // sector box offset magnitudes
-    double _sectorBoxXOffsetMag;
-    double _sectorBoxZOffsetMag;
+    // panel box offset magnitudes
+    double _panelBoxXOffsetMag;
+    double _panelBoxZOffsetMag;
 
     // distance between layers (in Z)
     double _layerHalfSpacing;
@@ -169,16 +169,16 @@ namespace mu2e {
     double _manifoldXEdgeExcessSpace;
     double _manifoldZEdgeExcessSpace;
 
-    // Z Location of the first device.
+    // Z Location of the first plane.
     double _z0;
 
-    // Parameters used in the Station/Plane/Face/Panel/ZLayer view
+    // Parameters used in the Station/PlaneMF/Face/PanelMF/ZLayer view
     int    _numStations;                  // Number of Stations.
-    int    _planesPerStation;
+    int    _planeMFsPerStation;
     int    _facesPerStation;
-    int    _facesPerPlane;
-    int    _panelsPerFace;
-    int    _zLayersPerPanel;
+    int    _facesPerPlaneMF;
+    int    _panelMFsPerFace;
+    int    _zLayersPerPanelMF;
     int    _strawsPerZLayer;
 
     // The detailed description of the complete support structure
@@ -242,7 +242,7 @@ namespace mu2e {
     std::vector<double> _beam1_serviceCovRelThickness;
     std::vector<std::string> _beam1_serviceMaterialsCov;
 
-    std::vector<int>  _nonExistingDevices;
+    std::vector<int>  _nonExistingPlanes;
 
   };
 

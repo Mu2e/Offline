@@ -142,7 +142,7 @@ namespace mu2e {
     if(banner==0){
       printf("-----------------------------------------------------------------------------------");
       printf("------------------------------\n");
-      printf("   x       y     z   SHID    Station Sector Layer Straw     Flags      Time          dt       eDep \n");
+      printf("   x       y     z   SHID    Station Panel Layer Straw     Flags      Time          dt       eDep \n");
       printf("-----------------------------------------------------------------------------------");
       printf("------------------------------\n");
       banner = false;
@@ -151,8 +151,8 @@ namespace mu2e {
     printf("%5.3f %5.3f %5.3f %5i  %5i  %5i   %5i   %5i   0x%s %8.3f   %8.3f   %9.6f\n",
 	   x,y,z,
 	   Hit.strawIndex().asInt(),
-	   straw.id().getDevice(),
-	   straw.id().getSector(),
+	   straw.id().getPlane(),
+	   straw.id().getPanel(),
 	   straw.id().getLayer(),
 	   straw.id().getStraw(),
 	   Pos.flag().hex().data(),
@@ -225,7 +225,7 @@ namespace mu2e {
     // Throw exception if not successful.
     const TTracker& tt = dynamic_cast<const TTracker&>(*_tracker);
     art::ServiceHandle<art::TFileService> tfs;
-    int nsta = tt.nDevices()/2;
+    int nsta = tt.nPlanes()/2;
     for(int ista=0;ista<nsta;++ista){
       char name[100];
       snprintf(name,100,"station%i",ista);
@@ -234,26 +234,26 @@ namespace mu2e {
       TList* flist = _stations[ista]->GetListOfFunctions();
       TLegend* sleg = new TLegend(0.1,0.6,0.3,0.9);
       flist->Add(sleg);
-      for(int idev=0;idev<2;++idev){
-	const Device& dev = tt.getDevice(2*ista+idev);
-	const std::vector<Sector>& sectors = dev.getSectors();
-	for(size_t isec=0;isec<sectors.size();++isec){
-	  int iface = isec%2;
-	  const Sector& sec = sectors[isec];
-	  CLHEP::Hep3Vector spos = sec.straw0MidPoint();
-	  CLHEP::Hep3Vector sdir = sec.straw0Direction();
+      for(int iplane=0;iplane<2;++iplane){
+	const Plane& pln = tt.getPlane(2*ista+iplane);
+	const std::vector<Panel>& panels = pln.getPanels();
+	for(size_t ipnl=0;ipnl<panels.size();++ipnl){
+	  int iface = ipnl%2;
+	  const Panel& pnl = panels[ipnl];
+	  CLHEP::Hep3Vector spos = pnl.straw0MidPoint();
+	  CLHEP::Hep3Vector sdir = pnl.straw0Direction();
 	  CLHEP::Hep3Vector end0 = spos - 100.0*sdir;
 	  CLHEP::Hep3Vector end1 = spos + 100.0*sdir;
 	  TLine* sline = new TLine(end0.x(),end0.y(),end1.x(),end1.y());
-	  sline->SetLineColor(isec+1);
-	  sline->SetLineStyle(2*idev+iface+1);
+	  sline->SetLineColor(ipnl+1);
+	  sline->SetLineStyle(2*iplane+iface+1);
 	  flist->Add(sline);
 	  TMarker* smark = new TMarker(end0.x(),end0.y(),8);
-	  smark->SetMarkerColor(isec+1);
+	  smark->SetMarkerColor(ipnl+1);
 	  smark->SetMarkerSize(2);
 	  flist->Add(smark);
 	  char label[80];
-	  snprintf(label,80,"dev %i sec %i",idev,(int)isec);
+	  snprintf(label,80,"pln %i pnl %i",iplane,(int)ipnl);
 	  sleg->AddEntry(sline,label,"l");
 	}
       }

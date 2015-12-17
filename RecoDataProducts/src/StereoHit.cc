@@ -19,7 +19,7 @@
 using namespace std;
 
 namespace mu2e {
-  StereoHit::StereoHit() : _hind1(0), _hind2(0), _dist(-5.0), _isep(SectorId::apart), _time(0.0), _dt(0.0), _edep(0.0), _wd1(0.0), _wd2(0.0), _chisq(-1.0)
+  StereoHit::StereoHit() : _hind1(0), _hind2(0), _dist(-5.0), _isep(PanelId::apart), _time(0.0), _dt(0.0), _edep(0.0), _wd1(0.0), _wd2(0.0), _chisq(-1.0)
   {}
 
   StereoHit::StereoHit(StrawHitCollection const& strawhits,Tracker const& tracker, size_t ind1, size_t ind2) : 
@@ -44,7 +44,7 @@ namespace mu2e {
     _wd1 = pca.s1();
     _wd2 = pca.s2();
     _wdot = wdir1.dot(wdir2);
-    _isep = s1(strawhits,tracker).id().getSectorId().separation(s2(strawhits,tracker).id().getSectorId());
+    _isep = s1(strawhits,tracker).id().getPanelId().separation(s2(strawhits,tracker).id().getPanelId());
   }
 
 }

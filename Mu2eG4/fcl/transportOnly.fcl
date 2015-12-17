@@ -79,7 +79,7 @@ physics : {
       maxFullPrint           : 201
     }
 
-    # Look at the hits from TTrackerDeviceSupport Sensitive Detectors
+    # Look at the hits from TTrackerPlaneSupport Sensitive Detectors
     checksdd: {
       module_type          : ReadTTrackerDSDetectors
       diagLevel            : 0

@@ -110,8 +110,8 @@ namespace mu2e {
       Straw const& straw     = (*ihit) ->straw();
       wdir      = straw.getDirection();
       pos       = straw.getMidPoint();
-      station   = straw.id().getDevice();
-      panel     = straw.id().getSector();
+      station   = straw.id().getPlane();
+      panel     = straw.id().getPanel();
       shId      = straw.index().asInt();
 //-----------------------------------------------------------------------------
 // track info 

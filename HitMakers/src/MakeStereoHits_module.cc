@@ -53,15 +53,15 @@
 using namespace std;
 
 namespace mu2e {
-  // used to sort sectors by dphi
-  struct SecPhi {
-    int isec;
+  // used to sort panels by dphi
+  struct PnlPhi {
+    int ipnl;
     double dphi;
   };
 
   // comparison functor for sorting by dphi
-  struct sortSec : public std::binary_function<SecPhi,SecPhi,bool> {
-    bool operator()(SecPhi const& v1, SecPhi const& v2) { return (v1.dphi < v2.dphi); }
+  struct sortPnl : public std::binary_function<PnlPhi,PnlPhi,bool> {
+    bool operator()(PnlPhi const& v1, PnlPhi const& v2) { return (v1.dphi < v2.dphi); }
   };
 
   class MakeStereoHits : public art::EDProducer {
@@ -99,9 +99,9 @@ namespace mu2e {
     vector<double> _vmva; // input variables to TMVA for stereo selection
     // for optimized Stereo Hit finding
     size_t _nsta;
-    size_t _nsec;
-    vector <vector<int> >_imap;             // remap sector indices to new scheme
-    vector <vector<int> >_dosec;            // list of overlapping sectors in "road" to search in
+    size_t _npnl;
+    vector <vector<int> >_imap;             // remap panel indices to new scheme
+    vector <vector<int> >_dopnl;            // list of overlapping panels in "road" to search in
     void genMap(const Tracker& tracker);    // function to generate imap from tracker geometry
     // diagnostics
     TH1F* _nhits;
@@ -216,7 +216,7 @@ namespace mu2e {
     // Throw exception if not successful.
     const Tracker& tracker = getTrackerOrThrow();
 
-    // setup imap, dosec, and hdx
+    // setup imap, dopnl, and hdx
     if(_genmap){
       _genmap = false;
       genMap(tracker);
@@ -226,7 +226,7 @@ namespace mu2e {
       _first_call_to_produce = false;
       const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
       art::ServiceHandle<art::TFileService> tfs;
-      unsigned nsta = tt.nDevices()/2;
+      unsigned nsta = tt.nPlanes()/2;
       for(unsigned ista=0;ista<nsta;++ista){
 	char name[100];
 	snprintf(name,100,"station%i",ista);
@@ -235,26 +235,26 @@ namespace mu2e {
 	TList* flist = _stations[ista]->GetListOfFunctions();
 	TLegend* sleg = new TLegend(0.1,0.6,0.3,0.9);
 	flist->Add(sleg);
-	for(int idev=0;idev<2;++idev){
-	  const Device& dev = tt.getDevice(2*ista+idev);
-	  const vector<Sector>& sectors = dev.getSectors();
-	  for(size_t isec=0;isec<sectors.size();++isec){
-	    int iface = isec%2;
-	    const Sector& sec = sectors[isec];
-	    CLHEP::Hep3Vector spos = sec.straw0MidPoint();
-	    CLHEP::Hep3Vector sdir = sec.straw0Direction();
+	for(int iplane=0;iplane<2;++iplane){
+	  const Plane& pln = tt.getPlane(2*ista+iplane);
+	  const vector<Panel>& panels = pln.getPanels();
+	  for(size_t ipnl=0;ipnl<panels.size();++ipnl){
+	    int iface = ipnl%2;
+	    const Panel& pnl = panels[ipnl];
+	    CLHEP::Hep3Vector spos = pnl.straw0MidPoint();
+	    CLHEP::Hep3Vector sdir = pnl.straw0Direction();
 	    CLHEP::Hep3Vector end0 = spos - 100.0*sdir;
 	    CLHEP::Hep3Vector end1 = spos + 100.0*sdir;
 	    TLine* sline = new TLine(end0.x(),end0.y(),end1.x(),end1.y());
-	    sline->SetLineColor(isec+1);
-	    sline->SetLineStyle(2*idev+iface+1);
+	    sline->SetLineColor(ipnl+1);
+	    sline->SetLineStyle(2*iplane+iface+1);
 	    flist->Add(sline);
 	    TMarker* smark = new TMarker(end0.x(),end0.y(),8);
-	    smark->SetMarkerColor(isec+1);
+	    smark->SetMarkerColor(ipnl+1);
 	    smark->SetMarkerSize(2);
 	    flist->Add(smark);
 	    char label[80];
-	    snprintf(label,80,"dev %i sec %i",idev,(int)isec);
+	    snprintf(label,80,"pln %i pnl %i",iplane,(int)ipnl);
 	    sleg->AddEntry(sline,label,"l");
 	  }
 	}
@@ -294,7 +294,7 @@ namespace mu2e {
     shpos->reserve(2*nsh);
 
     size_t nres = max(size_t(100),nsh/20);
-    vector <vector<vector<int> > >hdx(_nsta,vector<vector<int> >(_nsec*2));
+    vector <vector<vector<int> > >hdx(_nsta,vector<vector<int> >(_npnl*2));
     for(vector<vector<int>> rhdx : hdx){
       for(vector<int>  chdx : rhdx){
         chdx.reserve(nres);
@@ -305,11 +305,11 @@ namespace mu2e {
       StrawHit const& hit = strawhits->at(ish);
       Straw const& straw = tracker.getStraw(hit.strawIndex());
       if(shfcol->at(ish).hasAllProperties(_shsel)){
-        int idev = straw.id().getDevice();
-        int isec = straw.id().getSector();
-        int jdev = idev/2;
-        int jsec = _imap[idev][isec];
-        hdx[jdev][jsec].push_back(ish);
+        int iplane = straw.id().getPlane();
+        int ipnl = straw.id().getPanel();
+        int jplane = iplane/2;
+        int jpnl = _imap[iplane][ipnl];
+        hdx[jplane][jpnl].push_back(ish);
       }
       SHInfo shinfo;
       tcal->StrawHitInfo(straw,hit,shinfo);
@@ -319,31 +319,31 @@ namespace mu2e {
     StereoHitCollection stereohits;
     stereohits.reserve(3*nsh);
     vector<double> maxMVA(nsh,-FLT_MAX);
-    vector<int> minsep(nsh,SectorId::apart);
+    vector<int> minsep(nsh,PanelId::apart);
     vector<size_t> ibest(nsh);
     // double loop over selected straw hits
 
     for(vector<vector<int>> rhdx : hdx){                                // loop over stations
-      for(vector<int>::size_type isec=0; isec!=rhdx.size(); isec++){    // loop over sectors
-        if(!_dosec[isec].empty()){
-          for(int ish : rhdx[isec]){                                    // loop over hit1
+      for(vector<int>::size_type ipnl=0; ipnl!=rhdx.size(); ipnl++){    // loop over panels
+        if(!_dopnl[ipnl].empty()){
+          for(int ish : rhdx[ipnl]){                                    // loop over hit1
             StrawHit const& sh1 = strawhits->at(ish);
             Straw const& straw1 = tracker.getStraw(sh1.strawIndex());
             StrawHitPosition const& shp1 = (*shpos)[ish];
-            for( int jsec : _dosec[isec]){                            // loop over overlapping sectors
-              for(int jsh : rhdx[jsec]){                              // loop over hit2
+            for( int jpnl : _dopnl[ipnl]){                            // loop over overlapping panels
+              for(int jsh : rhdx[jpnl]){                              // loop over hit2
 	        StrawHit const& sh2 = strawhits->at(jsh);
 	        Straw const& straw2 = tracker.getStraw(sh2.strawIndex());
 	        StrawHitPosition const& shp2 = (*shpos)[jsh];
 	        double ddot = straw1.direction().dot(straw2.direction());
-	        SectorId::isep sep = straw1.id().getSectorId().separation(straw2.id().getSectorId());
+	        PanelId::isep sep = straw1.id().getPanelId().separation(straw2.id().getPanelId());
 	        double de = min((float)1.0,fabs((sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep())));
 	        CLHEP::Hep3Vector dp = shp1.pos()-shp2.pos();
 	        double dist = dp.mag();
 	        double dperp = dp.perp();
 	        double dz = fabs(dp.z());
 	        double dt = fabs(sh1.time()-sh2.time()); 
-	        if( sep != SectorId::same && sep < SectorId::apart // hits are in the same station but not the same sector
+	        if( sep != PanelId::same && sep < PanelId::apart // hits are in the same station but not the same panel
 	            && (sep <= minsep[ish] || sep <= minsep[jsh]) // this separation is at least as good as the current best for one of the hits
 	            && ddot > _minDdot // negative crosings are in opposite quadrants
 	            && dt < _maxDt // hits are close in time
@@ -425,15 +425,15 @@ namespace mu2e {
 	        }
 
               } // loop over hit2: jsh
-            } // loop over overlapping sectors: jsec
+            } // loop over overlapping panels: jpnl
           } // loop over hit1: ish
-        } // dosec not empty
-      } // loop over 2nd dim: isec, sectors
+        } // dopnl not empty
+      } // loop over 2nd dim: ipnl, panels
     } // loop over 1st dim: rhdx, stations
 // now, overwrite the positions for those hits which have stereosresolve the stereo hits to find the best position for each hit that particpates.  The algorithm is:
     for(size_t ish=0; ish<nsh;++ish){
       bool stereo(false);
-      if(minsep[ish] < SectorId::apart){
+      if(minsep[ish] < PanelId::apart){
 	shpos->at(ish) = StrawHitPosition(stereohits,ibest[ish],ish);
 	stereo = true;
       }
@@ -458,7 +458,7 @@ namespace mu2e {
 	  StereoHit const& sh = stereohits.at(ibest[ish]);
 	  _schi2 = sh.chisq();
 	  _smvaout = maxMVA[ish];
-	  _sfs = sh.sectorSeparation();
+	  _sfs = sh.panelSeparation();
 	  StrawHit const h1 = strawhits->at(sh.hitIndex1());
 	  StrawHit const h2 = strawhits->at(sh.hitIndex2());
 	  Straw const& straw1 = tracker.getStraw(h1.strawIndex());
@@ -502,96 +502,96 @@ namespace mu2e {
 
   void MakeStereoHits::genMap(const Tracker& tracker) {
 
-    vector <vector<int> >jdosec
+    vector <vector<int> >jdopnl
                     { { 3, 5, 6, 8, 9,11},{ 3, 4, 6, 7, 9,10},{ 4, 5, 7, 8,10,11},
                       { 6, 8, 9,11},{ 6, 7, 9,10},{ 7, 8,10,11},{ 9,11},{ 9,10},{10,11},{},{},{} };
     const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
-    size_t ndev = tt.nDevices();
-    _nsta = ndev/2;
-    _nsec = tt.getDevice(0).getSectors().size();
-    vector <vector<int> >jmap(ndev,vector<int>(_nsec));
-    vector <vector<int> >newisec(2,vector<int>(_nsec));
-    // clockwise sequence of sector indices per layer in remapped scheme
-    //vector <vector<int> >newisec{ { 0, 3, 1, 4, 2, 5},{ 6, 9, 7,10, 8,11} };
+    size_t nplane = tt.nPlanes();
+    _nsta = nplane/2;
+    _npnl = tt.getPlane(0).getPanels().size();
+    vector <vector<int> >jmap(nplane,vector<int>(_npnl));
+    vector <vector<int> >newipnl(2,vector<int>(_npnl));
+    // clockwise sequence of panel indices per layer in remapped scheme
+    //vector <vector<int> >newipnl{ { 0, 3, 1, 4, 2, 5},{ 6, 9, 7,10, 8,11} };
     for(size_t i=0; i<2; i++){
-      for(size_t j=0; j<_nsec-1; j+=2){
-        int k=j/2+i*_nsec;
-        newisec[i][j]=k;
-        newisec[i][j+1]=k+3;
+      for(size_t j=0; j<_npnl-1; j+=2){
+        int k=j/2+i*_npnl;
+        newipnl[i][j]=k;
+        newipnl[i][j+1]=k+3;
       }
     }
 
     for(size_t ista=0;ista<_nsta;++ista){
       CLHEP::Hep3Vector spos0;
-      for(int idev=0;idev<2;++idev){
-        vector<SecPhi>vsecphi;
-        int jdev=2*ista+idev;
-        const Device& dev = tt.getDevice(jdev);
-        const vector<Sector>& sectors = dev.getSectors();
-        // for 1st device in station (even numbered dev)
-        if(idev==0){
-          for(size_t isec=0;isec<_nsec;++isec){
-            const Sector& sec = sectors[isec];
-            CLHEP::Hep3Vector spos = sec.straw0MidPoint();
-            // calculate deltaphi of all sectors relative to sector0
-            if(isec==0)spos0 = spos;
+      for(int iplane=0;iplane<2;++iplane){
+        vector<PnlPhi>vpnlphi;
+        int jplane=2*ista+iplane;
+        const Plane& pln = tt.getPlane(jplane);
+        const vector<Panel>& panels = pln.getPanels();
+        // for 1st plane in station (even numbered pln)
+        if(iplane==0){
+          for(size_t ipnl=0;ipnl<_npnl;++ipnl){
+            const Panel& pnl = panels[ipnl];
+            CLHEP::Hep3Vector spos = pnl.straw0MidPoint();
+            // calculate deltaphi of all panels relative to panel0
+            if(ipnl==0)spos0 = spos;
             double dphi = spos0.deltaPhi(spos);
             if(dphi<0)dphi += 2*M_PI;
-            SecPhi secphi;
-            secphi.isec=isec;
-            secphi.dphi=dphi;
-            vsecphi.push_back(secphi);
+            PnlPhi pnlphi;
+            pnlphi.ipnl=ipnl;
+            pnlphi.dphi=dphi;
+            vpnlphi.push_back(pnlphi);
           }
-          // sort all sectors of device by deltaphi
-          sort(vsecphi.begin(), vsecphi.end(),sortSec());
-        // for 2nd device in station (odd numbered devices)
+          // sort all panels of plane by deltaphi
+          sort(vpnlphi.begin(), vpnlphi.end(),sortPnl());
+        // for 2nd plane in station (odd numbered planes)
         }else{
-          vector<SecPhi>vtmp;
+          vector<PnlPhi>vtmp;
           for(int ilyr=0;ilyr<2;ilyr++){
-            for(size_t isec=ilyr;isec<_nsec;isec+=2){
-              const Sector& sec = sectors[isec];
-              CLHEP::Hep3Vector spos = sec.straw0MidPoint();
+            for(size_t ipnl=ilyr;ipnl<_npnl;ipnl+=2){
+              const Panel& pnl = panels[ipnl];
+              CLHEP::Hep3Vector spos = pnl.straw0MidPoint();
               double dphi = spos0.deltaPhi(spos);
               if(dphi<0)dphi += 2*M_PI;
-              SecPhi secphi;
-              secphi.isec=isec;
-              secphi.dphi=dphi;
-              vtmp.push_back(secphi);
+              PnlPhi pnlphi;
+              pnlphi.ipnl=ipnl;
+              pnlphi.dphi=dphi;
+              vtmp.push_back(pnlphi);
             }
-            // sort sectors of each layer separately by deltaphi
-            sort(vtmp.begin(), vtmp.end(),sortSec());
+            // sort panels of each layer separately by deltaphi
+            sort(vtmp.begin(), vtmp.end(),sortPnl());
             if(ilyr==0){
-              // append front layer sector info to existing vector from 1st device
-              vsecphi.insert(vsecphi.end(),vtmp.begin(),vtmp.end());
+              // append front layer panel info to existing vector from 1st plane
+              vpnlphi.insert(vpnlphi.end(),vtmp.begin(),vtmp.end());
             }else{
-              // insert rear layer sector info between elements of front layer
-              int msec=_nsec/2;
-              for(int i=0;i<msec;i++){
-                vsecphi.insert(vsecphi.end()-msec+1+i,vtmp[i]);
+              // insert rear layer panel info between elements of front layer
+              int mpnl=_npnl/2;
+              for(int i=0;i<mpnl;i++){
+                vpnlphi.insert(vpnlphi.end()-mpnl+1+i,vtmp[i]);
               }
             }  
             vtmp.clear();
           }
         }
-        for(vector<SecPhi>::size_type isec=0; isec!=vsecphi.size(); isec++){    // loop over sectors
-          int sp_isec = vsecphi[isec].isec;
-          jmap[jdev][sp_isec]=newisec[idev][isec];
+        for(vector<PnlPhi>::size_type ipnl=0; ipnl!=vpnlphi.size(); ipnl++){    // loop over panels
+          int sp_ipnl = vpnlphi[ipnl].ipnl;
+          jmap[jplane][sp_ipnl]=newipnl[iplane][ipnl];
         }
       } // loop over front and back
     } // loop over stations
     _imap=jmap;
-    _dosec=jdosec;
+    _dopnl=jdopnl;
     if(_debugLevel >0){
       // print out the generated map
       const string stars(16,'*');
-      ostringstream sndev,snsec;
-      sndev << ndev;
-      snsec << _nsec;
-      const string label = " Generated imap[" + sndev.str() + "][" + snsec.str() + "] ";
+      ostringstream snplane,snpnl;
+      snplane << nplane;
+      snpnl << _npnl;
+      const string label = " Generated imap[" + snplane.str() + "][" + snpnl.str() + "] ";
       cout << stars << label << stars << endl;
-      for(size_t i=0;i<ndev;i++){
+      for(size_t i=0;i<nplane;i++){
         if(i%2==0)cout << "Station " << i/2 << ": ";
-        for(size_t j=0;j<_nsec;j++){
+        for(size_t j=0;j<_npnl;j++){
           if(j==0)cout << "{ ";
           cout << _imap[i][j];
           if(j<5){

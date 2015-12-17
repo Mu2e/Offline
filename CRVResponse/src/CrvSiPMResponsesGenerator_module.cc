@@ -178,6 +178,7 @@ namespace mu2e
           }
         }
         if(totalCharge>=_minCharge) minChargeReached=true;
+        else responsesOneSiPM.clear();  //don't store anything, if less than minimum charge
       }
 
       if(minChargeReached)

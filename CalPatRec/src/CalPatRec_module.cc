@@ -1441,8 +1441,8 @@ namespace mu2e {
           if (_debugLevel > 0) {
             printf("[CalPatRec::findMissingHits] %8i  %6i  %8i  %10.3f \n",
                    straw.index().asInt(),
-                   straw.id().getDevice(),
-                   straw.id().getSector(),
+                   straw.id().getPlane(),
+                   straw.id().getPanel(),
                    hitpoca.doca());
           }
 //-----------------------------------------------------------------------------

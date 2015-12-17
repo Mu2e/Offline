@@ -374,8 +374,8 @@ namespace mu2e {
 
       // placing virtual detectors in the middle of the ttracker
 
-      // check if ttracker exists and if the number of devices
-      // ttracker.numDevices is even is done in VirtualDetectorMaker
+      // check if ttracker exists and if the number of planes
+      // ttracker.numPlanes is even is done in VirtualDetectorMaker
 
       vdId = VirtualDetectorId::TT_Mid;
       if( vdg->exist(vdId) ) {

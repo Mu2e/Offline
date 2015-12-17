@@ -15,8 +15,8 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawClusterCollection.hh"
 #include "GeneralUtilities/inc/LineSegmentPCA.hh"
-#include "DataProducts/inc/DeviceId.hh"
-#include "DataProducts/inc/SectorId.hh"
+#include "DataProducts/inc/PlaneId.hh"
+#include "DataProducts/inc/PanelId.hh"
 
 // CLHEP includes:
 #include "CLHEP/Vector/ThreeVector.h"
@@ -40,8 +40,8 @@ namespace mu2e {
     double Halflength(StrawCluster const& cluster,art::Event const& event) const;
     double averageT(StrawCluster const& cluster,art::Event const& event) const;
     double averagedT(StrawCluster const& cluster,art::Event const & event) const;
-    DeviceId did(StrawCluster const& cluster,art::Event const & event) const;
-    SectorId secid(StrawCluster const& cluster,art::Event const & event) const;
+    PlaneId did(StrawCluster const& cluster,art::Event const & event) const;
+    PanelId secid(StrawCluster const& cluster,art::Event const & event) const;
     int Station(StrawCluster const& cluster,art::Event const & event) const;
 
     LineSegmentPCA linesegment(StrawCluster const& cluster,art::Event const& event) const;

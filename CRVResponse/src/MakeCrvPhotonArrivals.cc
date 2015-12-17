@@ -179,8 +179,9 @@ void MakeCrvPhotonArrivals::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //
 
   double precision=0.1; //mm
   int    steps=static_cast<int>(stepLength/precision);
-  double energyPortion=energy/steps;
-  for(double distance=precision/2.0; distance<stepLength; distance+=precision)
+  double energyPortion=(steps>0?energy/steps:energy);
+  double distance=(steps>0?precision/2.0:stepLength/2.0);
+  for(; distance<stepLength; distance+=precision)
   {
     CLHEP::Hep3Vector p = stepStart + distanceVector*distance/stepLength;  //start position of photons
     double t = timeStart + (timeEnd-timeStart)*distance/stepLength;

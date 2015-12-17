@@ -36,43 +36,43 @@ public:
     _n(n){
   }
 
-  StrawId( SectorId sectorid,
+  StrawId( PanelId panelid,
            int layer,
            int n
            ):
-    _lid(sectorid,layer),
+    _lid(panelid,layer),
     _n(n){
   }
 
-  StrawId( DeviceId device,
+  StrawId( PlaneId plane,
            int section,
            int layer,
            int n
            ):
-    _lid(LayerId(device,section,layer)),
+    _lid(LayerId(plane,section,layer)),
     _n(n){
   }
 
   // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
-  const DeviceId& getDeviceId() const {
-    return _lid.getDeviceId();
+  const PlaneId& getPlaneId() const {
+    return _lid.getPlaneId();
   }
 
-  const SectorId& getSectorId() const {
-    return _lid.getSectorId();
+  const PanelId& getPanelId() const {
+    return _lid.getPanelId();
   }
 
   const LayerId& getLayerId() const {
     return _lid;
   }
 
-  int getDevice() const{
-    return _lid.getDevice();
+  int getPlane() const{
+    return _lid.getPlane();
   }
 
-  int getSector() const{
-    return _lid.getSector();
+  int getPanel() const{
+    return _lid.getPanel();
   }
 
   int getLayer() const{

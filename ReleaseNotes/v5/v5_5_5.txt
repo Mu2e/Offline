@@ -1,6 +1,16 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_5_5
+
+8) Nov 20, 2015 kutschke
+   Removed obsolete packages:
+     CDFFitting
+     CDFTrajectory
+     EarlyPatRec
+     FastPatternReco
+     FigureOfMerit
+     Mu2eBuildingGeom
+
+7) Nov 20, 2015 gandr
+   Committed fcl scripts for first round of pbar studies.
 
 6) Nov 19, 2015 kutschke
    SConstruct

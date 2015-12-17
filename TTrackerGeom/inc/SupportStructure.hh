@@ -30,7 +30,7 @@ namespace mu2e {
 
     // Accept compiler supplied destructor, copy c'tor and assignment operator.
 
-    // Accessors for device support information
+    // Accessors for plane support information
     PlacedTubs const& centerPlate()             const { return _centerPlate;}
     PlacedTubs const& gasUpstream()             const { return _gasUpstream;}
     PlacedTubs const& gasDownstream()           const { return _gasDownstream;}

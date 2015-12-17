@@ -596,6 +596,41 @@ namespace mu2e {
     }
 
     //================================================================
+    class GlobalTime: virtual public IMu2eG4Cut,
+                         public IOHelper
+    {
+    public:
+      virtual bool steppingActionCut(const G4Step  *step);
+      virtual bool stackingActionCut(const G4Track *trk);
+
+      explicit GlobalTime(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
+    private:
+      double cut_;
+      bool cut_impl(const G4Track* trk);
+    };
+
+    GlobalTime::GlobalTime(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim)
+      : IOHelper(pset, lim)
+      , cut_(pset.get<double>("cut"))
+    {}
+
+    bool GlobalTime::cut_impl(const G4Track* trk) {
+      return trk->GetGlobalTime() > cut_;
+    }
+
+    bool GlobalTime::steppingActionCut(const G4Step *step) {
+      const bool result = cut_impl(step->GetTrack());
+      if(result && steppingOutput_) {
+        addHit(step);
+      }
+      return result;
+    }
+
+    bool GlobalTime::stackingActionCut(const G4Track *trk) {
+      return cut_impl(trk);
+    }
+
+    //================================================================
     class PrimaryOnly: virtual public IMu2eG4Cut,
                        public IOHelper
     {
@@ -686,6 +721,7 @@ namespace mu2e {
     if(cuttype == "isCharged") return make_unique<ParticleChargeCut<AcceptCharged> >(pset, lim);
 
     if(cuttype == "kineticEnergy") return make_unique<KineticEnergy>(pset, lim);
+    if(cuttype == "globalTime") return make_unique<GlobalTime>(pset, lim);
     if(cuttype == "primary") return make_unique<PrimaryOnly>(pset, lim);
 
     if(cuttype == "constant") return make_unique<Constant>(pset, lim);
