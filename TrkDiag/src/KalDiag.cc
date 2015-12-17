@@ -236,22 +236,12 @@ namespace mu2e
 	  for(auto jhit=tshv.begin(); jhit != ihit; ++jhit){
 	    const TrkStrawHit* otsh = *jhit;
 	    if(otsh != 0){
-<<<<<<< HEAD:TrkDiag/src/KalDiag.cc
 	    if(tsh->straw().id().getPlane() ==  otsh->straw().id().getPlane() &&
 		tsh->straw().id().getPanel() == otsh->straw().id().getPanel() ){
 	      isdouble = true;
 	      if(otsh->isActive()){
 		dactive = true;
 		break;
-=======
-	      if(tsh->straw().id().getPlane() ==  otsh->straw().id().getPlane() &&
-		  tsh->straw().id().getPanel() == otsh->straw().id().getPanel() ){
-		  isdouble = true;
-		if(otsh->isActive()){
-		  dactive = true;
-		  break;
-		}
->>>>>>> master:KalmanTests/src/KalDiag.cc
 	      }
 	    }
 	  }
