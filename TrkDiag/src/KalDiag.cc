@@ -185,56 +185,57 @@ namespace mu2e
   KalDiag::fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo) {
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
-    if(krep->fitCurrent())
+    if(krep != 0 && krep->fitCurrent()){
       trkinfo._fitstatus = krep->fitStatus().success();
-    else
+      trkinfo._fitpart = krep->particleType().particleType();
+      trkinfo._t0 = krep->t0().t0();
+      trkinfo._t0err = krep->t0().t0Err();
+      trkinfo._nhits = krep->hitVector().size();
+      trkinfo._ndof = krep->nDof();
+      trkinfo._nactive = krep->nActive();
+      trkinfo._chisq = krep->chisq();
+      trkinfo._fitcon = krep->chisqConsistency().significanceLevel();
+      trkinfo._radlen = krep->radiationFraction();
+      trkinfo._firstflt = krep->firstHit()->globalLength();
+      trkinfo._lastflt = krep->lastHit()->globalLength();
+      Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->kalContext().bField(),0.0);
+      trkinfo._seedmom = seedmom.mag();
+      // count # of double hits
+      countDoubles(krep,trkinfo._ndouble, trkinfo._ndactive);
+      // get the fit at the entrance to the tracker
+      Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
+      double zent = entpos.z();
+      // we don't know which way the fit is going: try both, and pick the one with the smallest flightlength
+      double firsthitfltlen = krep->lowFitRange(); 
+      double lasthitfltlen = krep->hiFitRange();
+      double entlen = min(firsthitfltlen,lasthitfltlen);
+      TrkHelixUtils::findZFltlen(krep->traj(),zent,entlen,0.1);
+      // compute the tracker entrance fit information
+      fillTrkFitInfo(krep,entlen,trkinfo._ent);
+      // use the above information to compute the TrkQual value.
+      fillTrkQual(trkinfo); 
+    } else {
       // failed fit
       trkinfo._fitstatus = -krep->fitStatus().failure();
-    trkinfo._fitpart = krep->particleType().particleType();
-    trkinfo._t0 = krep->t0().t0();
-    trkinfo._t0err = krep->t0().t0Err();
-    trkinfo._nhits = krep->hitVector().size();
-    trkinfo._ndof = krep->nDof();
-    trkinfo._nactive = krep->nActive();
-    trkinfo._chisq = krep->chisq();
-    trkinfo._fitcon = krep->chisqConsistency().significanceLevel();
-    trkinfo._radlen = krep->radiationFraction();
-    trkinfo._firstflt = krep->firstHit()->globalLength();
-    trkinfo._lastflt = krep->lastHit()->globalLength();
-    Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->kalContext().bField(),0.0);
-    trkinfo._seedmom = seedmom.mag();
-// count # of double hits
-    countDoubles(krep,trkinfo._ndouble, trkinfo._ndactive);
-   // get the fit at the entrance to the tracker
-    Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
-    double zent = entpos.z();
-    // we don't know which way the fit is going: try both, and pick the one with the smallest flightlength
-    double firsthitfltlen = krep->lowFitRange(); 
-    double lasthitfltlen = krep->hiFitRange();
-    double entlen = min(firsthitfltlen,lasthitfltlen);
-    TrkHelixUtils::findZFltlen(krep->traj(),zent,entlen,0.1);
-    // compute the tracker entrance fit information
-    fillTrkFitInfo(krep,entlen,trkinfo._ent);
-// use the above information to compute the TrkQual value.
-    fillTrkQual(trkinfo); 
+    }
   } 
 
   void
-  KalDiag::countDoubles(const KalRep* krep,int& ndouble, int& ndactive) const {
-// count number of hits with other (active) hits in the same panel
-    ndouble = ndactive = 0;
-// loop over hits, and count
-    TrkStrawHitVector tshv;
-    convert(krep->hitVector(),tshv);
-    for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
-      const TrkStrawHit* tsh = *ihit;
-      if(tsh != 0){
-	bool isdouble(false);
-	bool dactive(false);
-	// count correlations with other TSH
-	for(auto jhit=tshv.begin(); jhit != ihit; ++jhit){
-	  const TrkStrawHit* otsh = *jhit;
-	  if(otsh != 0){
+    KalDiag::countDoubles(const KalRep* krep,int& ndouble, int& ndactive) const {
+      // count number of hits with other (active) hits in the same panel
+      ndouble = ndactive = 0;
+      // loop over hits, and count
+      TrkStrawHitVector tshv;
+      convert(krep->hitVector(),tshv);
+      for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
+	const TrkStrawHit* tsh = *ihit;
+	if(tsh != 0){
+	  bool isdouble(false);
+	  bool dactive(false);
+	  // count correlations with other TSH
+	  for(auto jhit=tshv.begin(); jhit != ihit; ++jhit){
+	    const TrkStrawHit* otsh = *jhit;
+	    if(otsh != 0){
 	    if(tsh->straw().id().getDevice() ==  otsh->straw().id().getDevice() &&
 		tsh->straw().id().getSector() == otsh->straw().id().getSector() ){
 	      isdouble = true;

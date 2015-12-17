@@ -177,7 +177,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // create the track (KalRep) from the track definition
 //-----------------------------------------------------------------------------
-  void KalFit::makeTrack(TrkDef const& tdef, KalRep* krep) {
+  void KalFit::makeTrack(TrkDef const& tdef, KalRep*& krep) {
 // test if fitable
     if(fitable(tdef)){
 // first, find t0
@@ -422,7 +422,24 @@ namespace mu2e
   KalFit::unweedHits(KalRep* krep, double maxchi) {
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
-    return unweedHits(krep,tshv,maxchi);
+    bool retval = unweedHits(krep,tshv,maxchi);
+       // if any hits were added, re-analyze ambiguity
+    if (retval && _resolveAfterWeeding) {
+      // 2015-04-12 P.Murat: '_resolveAfterWeeding' is here to make my changes fully reversible
+      // I think, resolving ambiguities before each fit, makes a lot of sense
+      //
+      // Moved to after iteration: PanelAmbig resolver can change the state of hit resulting in infinte
+      // loop if the resolver is called each iteration
+      int last = _herr.size()-1;
+      _ambigresolver[last]->resolveTrk(krep);
+      if(!krep->fitCurrent()){
+    // if this changed the track state, refit it
+	krep->resetFit();
+	TrkErrCode fitstat = krep->fit();
+	krep->addHistory(fitstat, "HitUnWeedResolver");
+      }
+    }
+    return retval; 
   }
   
   bool
@@ -431,7 +448,6 @@ namespace mu2e
     // is less than some cut value, reactivate that HoT and reFit
     bool      retval(false);
     double    best = 1.e12;
-    int       last = _herr.size()-1;
 // no need to cast
     TrkStrawHit* besthit = 0;
     for (auto ihit=tshv.begin();ihit!=tshv.end(); ++ihit){
@@ -452,12 +468,6 @@ namespace mu2e
       retval = true;
       besthit->setActivity(true);
       besthit->setFlag(TrkStrawHit::unweededHit);
-      if (_resolveAfterWeeding) {
-	// 2015-04-12 P.Murat: '_resolveAfterWeeding' is here to make my changes fully reversible
-	// I think, resolving ambiguities before each fit, makes a lot of sense
-	_ambigresolver[last]->resolveTrk(krep);
-      }
-
       TrkErrCode fitstat = krep->fit();
       krep->addHistory(fitstat, "HitUnWeed");
       // Recursively iterate

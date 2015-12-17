@@ -78,11 +78,9 @@ namespace mu2e
   
  
   TrkStrawHit::~TrkStrawHit(){
-// delete the hit
-    std::cout << "deleting hit " << *this << std::endl;
+// delete the trajectory
     delete _hittraj;
     _parentRep=0;  
-    std::cout << "deleted TrkStrawHit " << *this << std::endl;
   }
 
   double
@@ -145,8 +143,11 @@ namespace mu2e
 
   void 
   TrkStrawHit::setAmbig(int newambig){
-//    if(newambig != _iamb && _iamb != 0)
+// if the state changes and the hit is active, warn the rep
+    if(isActive() && newambig != _iamb){
+      parentRep()->setCurrent(false);
 //      std::cout << "changing hit ambiguity " << std::endl;
+    }
     if(newambig > 0)
       _iamb = 1;
     else if(newambig < 0)

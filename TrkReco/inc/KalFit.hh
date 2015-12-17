@@ -49,7 +49,7 @@ namespace mu2e
 
     virtual ~KalFit();
 // main function: given a track definition, create a fit object from it
-    virtual void makeTrack(TrkDef const& tdef, KalRep* kres);
+    virtual void makeTrack(TrkDef const& tdef, KalRep*& kres);
 // add a set of hits to an existing fit
     virtual void addHits(KalRep* kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi);
 // Try to put back inactive hits

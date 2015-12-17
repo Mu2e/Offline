@@ -495,13 +495,11 @@ namespace mu2e
       _ipeak = -1;
       _helixfail = -1;
     }
-    // fit status
-    _seedfail = seedrep->fitStatus().failure();
-    _kalfail = krep->fitStatus().failure();
     // helix information
     _hpar = helixpar(seed._fullTrkSeed);
     // seed fit information
-    if(seedrep->fitStatus().success()){
+    if(seedrep != 0 && seedrep->fitStatus().success()){
+      _seedfail = seedrep->fitStatus().failure();
       _snhits = seedrep->nHits(); 
       _snactive = seedrep->nActive();
       _sniter = seedrep->iterations();
@@ -513,6 +511,7 @@ namespace mu2e
       _spar = helixpar(ltraj->parameters()->parameter());
       _sparerr = helixpar(ltraj->parameters()->covariance());
     } else {
+      _seedfail = -1;
       _snhits = -1;
       _snactive = -1;
       _sniter = -1;
@@ -523,12 +522,18 @@ namespace mu2e
     // count # of added hits
     _nadd = 0;
     TrkStrawHitVector tshv;
-    convert(krep->hitVector(),tshv);
-    for(auto ihit=tshv.begin();ihit != tshv.end();++ihit){
-      if((*ihit)->hitFlag()==TrkStrawHit::addedHit)++_nadd;
-    }
     // fill kalman fit info.  This needs to be last, as it calls TTree::Fill().
-    _kdiag.kalDiag(krep);
+    //
+    if(krep != 0) {
+      _kalfail = krep->fitStatus().failure();
+      _kdiag.kalDiag(krep);
+      convert(krep->hitVector(),tshv);
+      for(auto ihit=tshv.begin();ihit != tshv.end();++ihit){
+	if((*ihit)->hitFlag()==TrkStrawHit::addedHit)++_nadd;
+      }
+    } else {
+      _kalfail = -1;
+    }
   }
 
 }

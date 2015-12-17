@@ -482,7 +482,7 @@ namespace mu2e {
 // generate random points for each ionization
     vector<double> lengths(ndiv,0.0);
 // the following assumes StepPointMC::position is at the begining of the step
-    _randflat.shootArray(ndiv,lengths.data(),0.0,step.stepLength());
+    _randflat.fireArray(ndiv,lengths.data(),0.0,step.stepLength());
 // sort these
     sort(lengths.begin(),lengths.end());
 // make clusters for each
@@ -512,10 +512,10 @@ namespace mu2e {
     double dphi = 0.0;
     double gain = _strawphys->strawGain(dd,dphi);
     // smear the charge by the gas gain statistics
-    double dgain = _gaussian.shoot(0.0,sqrt(gain));
+    double dgain = _gaussian.fire(0.0,sqrt(gain));
     wireq._charge = cluster._charge*(gain+dgain);
     // smear drift time
-    wireq._time = _gaussian.shoot(_strawphys->driftDistanceToTime(dd,dphi),
+    wireq._time = _gaussian.fire(_strawphys->driftDistanceToTime(dd,dphi),
         _strawphys->driftTimeSpread(dd,dphi));
     wireq._dd = dd;
     // position along wire
@@ -556,7 +556,7 @@ namespace mu2e {
      // start when the electronics becomes enabled:
     WFX wfx(swf,_strawele->flashEnd());
     //randomize the threshold to account for electronics noise
-    double threshold = _gaussian.shoot(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
+    double threshold = _gaussian.fire(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
     // iterate sequentially over hitlets inside the sequence.  Note we fold
     // the flash blanking to AFTER the end of the microbunch
     while( wfx._time < _mbtime+_strawele->flashStart() &&
@@ -573,7 +573,7 @@ namespace mu2e {
       // skip to the next hitlet
       ++(wfx._ihitlet);
 // update threshold
-      threshold = _gaussian.shoot(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
+      threshold = _gaussian.fire(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
     }
   }
 
@@ -647,7 +647,7 @@ namespace mu2e {
     array<double,2> xtimes = {2*_mbtime,2*_mbtime}; // overflow signals missing information
     StrawEnd primaryend = primaryEnd(index);
     // smear (coherently) both times for the TDC clock jitter
-    double dt = _gaussian.shoot(0.0,_strawele->clockJitter());
+    double dt = _gaussian.fire(0.0,_strawele->clockJitter());
     // loop over the associated crossings
     for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
       WFX const& wfx = **iwfx;
@@ -669,7 +669,7 @@ namespace mu2e {
     // add ends and add noise
     vector<double> wfsum; wfsum.reserve(adctimes.size());
     for(unsigned isamp=0;isamp<adctimes.size();++isamp){
-      wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_gaussian.shoot(0.0,_strawele->analogNoise(StrawElectronics::adc)));
+      wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_gaussian.fire(0.0,_strawele->analogNoise(StrawElectronics::adc)));
     }
     // digitize
     StrawDigi::ADCWaveform adc;

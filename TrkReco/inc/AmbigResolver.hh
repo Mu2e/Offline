@@ -23,7 +23,7 @@ namespace mu2e {
     virtual ~AmbigResolver() = 0;
 
 // resolve a track.  Depending on the configuration, this might
-// update the hit state and the t0 value.
+// update the hit state and the t0 value. 
 
     virtual void resolveTrk(KalRep* kfit) const = 0;
 
