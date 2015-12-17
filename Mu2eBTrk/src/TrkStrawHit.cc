@@ -156,9 +156,17 @@ namespace mu2e
       _iamb = 0;
   }
 
+  void
+  TrkStrawHit::invert() {
+    //flip the ambiguity state; does nothing for null ambiguilty
+    setAmbig( -1*ambig() );
+    // call down to base class
+    TrkHit::invert();
+  }
+
   TrkErrCode
-  TrkStrawHit::updateMeasurement(const TrkDifTraj* traj) {
-    TrkErrCode status(TrkErrCode::fail);
+    TrkStrawHit::updateMeasurement(const TrkDifTraj* traj) {
+      TrkErrCode status(TrkErrCode::fail);
 // find POCA to the wire
     updatePoca(traj);
    if( poca().status().success()) {

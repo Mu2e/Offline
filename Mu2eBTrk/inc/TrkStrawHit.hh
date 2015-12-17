@@ -44,6 +44,7 @@ namespace mu2e
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
     virtual int ambig() const { return _iamb; }
+    virtual void invert();
     virtual void setAmbig(int newambig);
     void setAmbigUpdate(bool update) { _ambigupdate = update; }
     unsigned index() const { return _istraw; } // index into StrawHit vector
