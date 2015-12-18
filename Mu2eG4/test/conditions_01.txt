@@ -60,6 +60,9 @@ double ROphotostatistic = 45.0;//p.e / MeV
 double ROphotostatisticErr = 7.0;//p.e / MeV
 double ROfanoFactor = 1.3;
 
+//conversion factor from ADC counts to MeV
+double ADC2MeVConversionFactor = 5.46e-04;//0.989e-03;
+
 //value of the sigma used to do the Gaussian smearing due to the electronic noise,
 //this is the quadratic sum of all APDs.....
 double ReadOutElectronicNoise      = 0.42;//MeV
