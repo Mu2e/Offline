@@ -18,6 +18,11 @@
 <lcgdict>
  <class name="mu2e::StrawHit"/>
  <class name="mu2e::StrawHitCollection"/>
+ <class name="mu2e::CaloDigiPacked"/>
+ <class name="mu2e::CaloDigi"/>
+ <class name="mu2e::CaloDigiCollection"/>
+ <class name="mu2e::RecoCaloDigi"/>
+ <class name="mu2e::RecoCaloDigiCollection"/>
  <class name="mu2e::StereoHit"/>
  <class name="mu2e::StereoHitCollection"/>
  <class name="mu2e::StrawHitPosition"/>
@@ -88,6 +93,12 @@
  <class name="std::vector<art::Ptr<mu2e::ExtMonUCITofHit> >"/>
  <class name="art::Ptr<mu2e::StrawHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHit> >"/>
+ <class name="art::Ptr<mu2e::CaloDigiPacked>"/>
+ <class name="std::vector<art::Ptr<mu2e::CaloDigiPacked> >"/>
+ <class name="art::Ptr<mu2e::CaloDigi>"/>
+ <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
+ <class name="art::Ptr<mu2e::RecoCaloDigi>"/>
+ <class name="std::vector<art::Ptr<mu2e::RecoCaloDigi> >"/>
  <class name="art::Ptr<mu2e::StereoHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StereoHit> >"/>
  <class name="art::Ptr<mu2e::StrawHitPosition>"/>
@@ -115,6 +126,9 @@
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
 
  <class name="art::Wrapper<mu2e::StrawHitCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloDigiPacked>"/>
+ <class name="art::Wrapper<mu2e::CaloDigiCollection>"/>
+ <class name="art::Wrapper<mu2e::RecoCaloDigiCollection>"/>
  <class name="art::Wrapper<mu2e::StereoHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitPositionCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
