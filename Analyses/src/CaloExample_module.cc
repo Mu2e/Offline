@@ -128,7 +128,6 @@ namespace mu2e {
 
        std::string _caloReadoutModuleLabel;
        std::string _caloCrystalModuleLabel;
-       std::string _caloHitMCCrystalPtrLabel;
        std::string _caloClusterModuleLabel;
        std::string _caloClusterAlgorithm;
        std::string _caloClusterSeeding;
@@ -169,7 +168,7 @@ namespace mu2e {
        float _clusimMom[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimTime[16384],_clusimEdep[16384];
 
        int   _nVd,_vdId[16384],_vdPdgId[16384],_vdenIdx[16384];
-       float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMom[16384];
+       float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMomX[16384],_vdMomY[16384],_vdMomZ[16384];
 
        int   _nTrkOk,_nTrk,_trkOk[8192],_trkstat[8192],_trknHit[8192];
        float _trkDip[8192],_trkpt[8192],_trkcon[8192],_trkmomErr[8192];
@@ -190,7 +189,6 @@ namespace mu2e {
     _simParticleTag(pset.get<string>("simParticleTag")),
     _caloReadoutModuleLabel(pset.get<string>("caloReadoutModuleLabel")),
     _caloCrystalModuleLabel(pset.get<string>("caloCrystalModuleLabel")),
-    _caloHitMCCrystalPtrLabel(pset.get<string>("calorimeterHitMCCrystalPtr")),
     _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
     _virtualDetectorLabel(pset.get<string>("virtualDetectorName")),
     _stepPointMCLabel(pset.get<string>("stepPointMCLabel")),
@@ -281,7 +279,9 @@ namespace mu2e {
        _Ntup->Branch("nVd",      &_nVd ,     "nVd/I");
        _Ntup->Branch("vdId",     &_vdId ,    "vdId[nVd]/I");
        _Ntup->Branch("vdPdgId",  &_vdPdgId , "vdPdgId[nVd]/I");
-       _Ntup->Branch("vdMom",    &_vdMom ,   "vdMom[nVd]/F");
+       _Ntup->Branch("vdMomX",   &_vdMomX ,  "vdMomX[nVd]/F");
+       _Ntup->Branch("vdMomY",   &_vdMomY ,  "vdMomY[nVd]/F");
+       _Ntup->Branch("vdMomZ",   &_vdMomZ ,  "vdMomZ[nVd]/F");
        _Ntup->Branch("vdPosX",   &_vdPosX ,  "vdPosX[nVd]/F");
        _Ntup->Branch("vdPosY",   &_vdPosY ,  "vdPosY[nVd]/F");
        _Ntup->Branch("vdPosZ",   &_vdPosZ ,  "vdPosZ[nVd]/F");
@@ -306,20 +306,19 @@ namespace mu2e {
        _Ntup->Branch("trkOmega",     &_trkOmega ,    "trkOmega[nTrk]/F");
        _Ntup->Branch("trkPhi0",      &_trkPhi0 ,     "trkPhi0[nTrk]/F");
 
-       _hcryE = tfs->make<TH1F>("cryEdep","Energy deposited / crystal",100,0.,50.);
-       _hcryT = tfs->make<TH1F>("cryTime","Time of crystal hit",100,0.,2000.);
-       _hcryX = tfs->make<TH1F>("cryX","X coord of crystal hit",100,300.,700.);
-       _hcryY = tfs->make<TH1F>("cryY","Y coord of crystal hit",100,300.,700.);
-       _hcryZ = tfs->make<TH1F>("cryZ","Z coord of crystal hit",100,11000.,13000.);
-
-       _hcluE = tfs->make<TH1F>("cluEdep","Energy deposited / clustal",150,0.,150.);
-       _hcluT = tfs->make<TH1F>("cluTime","Time of clustal hit",100,0.,2000.);
-       _hcluX = tfs->make<TH1F>("cluX","X coord of clustal hit",100,300.,700.);
-       _hcluY = tfs->make<TH1F>("cluY","Y coord of clustal hit",100,300.,700.);
-       _hcluZ = tfs->make<TH1F>("cluZ","Z coord of clustal hit",100,11000.,13000.);
-       _hcluE1Et = tfs->make<TH1F>("cluE1Et","E1/Etot",100,0,1.1);
-       _hcluE1E9 = tfs->make<TH1F>("cluE1E9","E1/E9",100,0,1.1);
-       _hcluE1E25 = tfs->make<TH1F>("cluE1E25","E1/E25",100,0,1.1);
+       _hcryE     = tfs->make<TH1F>("cryEdep",  "Energy deposited / crystal", 100,    0., 50.   );
+       _hcryT     = tfs->make<TH1F>("cryTime",  "Time of crystal hit",        100,    0., 2000. );
+       _hcryX     = tfs->make<TH1F>("cryX",     "X coord of crystal hit",     100,  300., 700.  );
+       _hcryY     = tfs->make<TH1F>("cryY",     "Y coord of crystal hit",     100,  300., 700.  );
+       _hcryZ     = tfs->make<TH1F>("cryZ",     "Z coord of crystal hit",     100,11000., 13000.);
+       _hcluE     = tfs->make<TH1F>("cluEdep",  "Energy deposited / clustal", 150,    0., 150.  );
+       _hcluT     = tfs->make<TH1F>("cluTime",  "Time of clustal hit",        100,    0., 2000. );
+       _hcluX     = tfs->make<TH1F>("cluX",     "X coord of clustal hit",     100,  300., 700.  );
+       _hcluY     = tfs->make<TH1F>("cluY",     "Y coord of clustal hit",     100,  300., 700.  );
+       _hcluZ     = tfs->make<TH1F>("cluZ",     "Z coord of clustal hit",     100,11000., 13000.);
+       _hcluE1Et  = tfs->make<TH1F>("cluE1Et",  "E1/Etot",                    100,    0., 1.1   );
+       _hcluE1E9  = tfs->make<TH1F>("cluE1E9",  "E1/E9",                      100,    0., 1.1   );
+       _hcluE1E25 = tfs->make<TH1F>("cluE1E25", "E1/E25",                     100,    0., 1.1   );
 
   }
 
@@ -446,7 +445,6 @@ namespace mu2e {
            _hcryX->Fill(crystalPos.x());
            _hcryY->Fill(crystalPos.y());
            _hcryZ->Fill(crystalPos.z());
-
 
 
            _cryEtot             += hit.energyDep();
@@ -576,10 +574,12 @@ namespace mu2e {
                _vdId[_nVd]    = hit.volumeId();
                _vdPdgId[_nVd] = hit.simParticle()->pdgId();
                _vdTime[_nVd]  = hitTime;//hit.time();
-               _vdPosX[_nVd]  = hit.position().x()+ 3904;
+               _vdPosX[_nVd]  = hit.position().x();
                _vdPosY[_nVd]  = hit.position().y();
                _vdPosZ[_nVd]  = hit.position().z()-10200;
-               _vdMom[_nVd]   = hit.momentum().mag();
+               _vdMomX[_nVd]  = hit.momentum().x();
+               _vdMomY[_nVd]  = hit.momentum().y();
+               _vdMomZ[_nVd]  = hit.momentum().z();
                _vdenIdx[_nVd] = hit.simParticle()->generatorIndex();
                ++_nVd;
              }
@@ -639,10 +639,7 @@ namespace mu2e {
           _trkt0Err[_nTrk] = trkt0Err;
           ++_nTrk;
 
-          //              std:: cout << "CaloExample t0 = " << krep.t0().t0() << std::endl;
-          //      std:: cout << "CaloExample fitstatus = " << krep.fitStatus().success() << " " << _fitStatus[_nTrk] << std::endl;
-
-           if (cutC)  ++_nTrkOk;
+          if (cutC)  ++_nTrkOk;
         }
 
         _Ntup->Fill();
@@ -655,7 +652,7 @@ namespace mu2e {
 
 
 
-}  // end namespace mu2e
+}  
 
 DEFINE_ART_MODULE(mu2e::CaloExample);
 

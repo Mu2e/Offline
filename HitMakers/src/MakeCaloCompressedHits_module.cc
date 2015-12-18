@@ -66,6 +66,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepMCCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 
@@ -143,8 +144,9 @@ namespace mu2e {
 	    _procCodes(),
 	    _zSliceSize(0)
 	 {
-	    produces<CaloShowerStepMCCollection>("calorimeter");
-	    produces<CaloShowerStepMCCollection>("calorimeterRO");
+	     produces<CaloShowerStepMCCollection>("calorimeter");
+	     produces<CaloShowerStepMCCollection>("calorimeterRO");
+	     produces<SimParticlePtrCollection>();
 	 }
 
 	 virtual      ~MakeCaloCompressedHits() {}
@@ -158,12 +160,7 @@ namespace mu2e {
 
 
 	 typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
-	 typedef art::Ptr<StepPointMC>       StepPtr;
-	 typedef std::vector<StepPtr >       StepPtrs;
-	 typedef art::Ptr<SimParticle>       SimPtr;
-	 typedef std::vector<SimPtr >        SimPtrs;
-	 typedef art::Ptr<CaloShowerStepMC>  CaloShowerPtr;
-	 typedef std::vector<CaloShowerPtr > CaloShowerPtrs;
+	 typedef art::Ptr<SimParticle> SimPtr;
 
 
 
@@ -189,14 +186,14 @@ namespace mu2e {
 
 
 	 void makeCompressedHits(HandleVector const&, HandleVector const&, CaloShowerStepMCCollection&,  
-                        	 CaloShowerStepMCCollection&);
+                        	 CaloShowerStepMCCollection&, SimParticlePtrCollection&);
 
 	 void collectStepBySimAncestor(Calorimeter const&, PhysicalVolumeMultiHelper const& , 
                                        HandleVector const&, std::map<SimPtr,caloCompressUtil>&);
 	 void collectStepBySim(HandleVector const&, std::map<SimPtr,std::vector<StepPointMC const*> >&);
 	 bool isInsideCalorimeter(PhysicalVolumeMultiHelper const&, art::Ptr<SimParticle> const&);
 
-	 bool isCompressible(int simPdgId, std::unordered_set<int> const&, SimPtrs const&);
+	 bool isCompressible(int simPdgId, std::unordered_set<int> const&, SimParticlePtrCollection const&);
 	 void compressSteps(Calorimeter const&, CaloShowerStepMCCollection &, bool isCrystal,
                             int volId, SimPtr const&, std::vector<StepPointMC const*>&);
 
@@ -222,11 +219,11 @@ namespace mu2e {
 	_procCodes[2212].insert( {16,17,21,23,29,40,45,49,58} );   // proton      
 
         art::ServiceHandle<art::TFileService> tfs;
-        _hStartPos = tfs->make<TH2F>("hStartPos", "Sim start position", 1000,  5000, 15000, 200, 0, 1000);
-        _hStopPos  = tfs->make<TH2F>("hStopPos",  "Sim stop position",  1000,  5000, 15000, 200, 0, 1000);
-        _hStopPos2 = tfs->make<TH2F>("hStopPos2", "Sim stop position",  1000,  5000, 15000, 200, 0, 1000);
-        _hStartPos2 = tfs->make<TH2F>("hStartPos2", "Sim stop position",  1000,  5000, 15000, 200, 0, 1000);
-        _hEtot      = tfs->make<TH1F>("hEtot", "Sim stop position",  150,  0, 150);
+        _hStartPos = tfs->make<TH2F>("hStartPos", "Sim start position",  1000,  5000, 15000, 200, 0, 1000);
+        _hStopPos  = tfs->make<TH2F>("hStopPos",  "Sim stop position",   1000,  5000, 15000, 200, 0, 1000);
+        _hStopPos2 = tfs->make<TH2F>("hStopPos2", "Sim stop position",   1000,  5000, 15000, 200, 0, 1000);
+        _hStartPos2 = tfs->make<TH2F>("hStartPos2", "Sim stop position", 1000,  5000, 15000, 200, 0, 1000);
+        _hEtot      = tfs->make<TH1F>("hEtot", "Sim stop position",       150,     0, 150);
    
     }
 
@@ -241,8 +238,9 @@ namespace mu2e {
 	{	
 	   for (auto const& mv : vol.second) 
 	   {
-	     std::string material = mv.second.materialName();
-	     for (std::string const& caloMaterial : _caloMaterial) if (material == caloMaterial) _mapPhysVol.insert(&mv.second);
+	       std::string material = mv.second.materialName();
+	       for (std::string const& caloMaterial : _caloMaterial) 
+	           if (material == caloMaterial) _mapPhysVol.insert(&mv.second);
 	   }  		
 	}
 	
@@ -265,6 +263,7 @@ namespace mu2e {
 	// A container to hold the output hits.
 	std::unique_ptr<CaloShowerStepMCCollection> caloShowerStepMCs(new CaloShowerStepMCCollection);
 	std::unique_ptr<CaloShowerStepMCCollection> caloROShowerStepMCs(new CaloShowerStepMCCollection);
+        std::unique_ptr<SimParticlePtrCollection>   simsToKeep(new SimParticlePtrCollection());
 
 	// These selectors will select data products with the given instance name, and ignore all other fields of the product ID.
 	art::ProductInstanceNameSelector getCrystalSteps(_calorimeterStepPoints);
@@ -276,11 +275,12 @@ namespace mu2e {
 	event.getMany( getReadoutSteps, readoutStepsHandles);
 
 
-	makeCompressedHits(crystalStepsHandles,readoutStepsHandles,*caloShowerStepMCs,*caloROShowerStepMCs);
+	makeCompressedHits(crystalStepsHandles,readoutStepsHandles,*caloShowerStepMCs,*caloROShowerStepMCs,*simsToKeep);
 
 	// Add the output hit collection to the event
 	event.put(std::move(caloShowerStepMCs),"calorimeter");
 	event.put(std::move(caloROShowerStepMCs),"calorimeterRO");
+	event.put(std::move(simsToKeep));
 
 	if ( _diagLevel > 0 ) std::cout << "MakeCaloCompressedHits: produce() end" << std::endl;
 
@@ -291,7 +291,8 @@ namespace mu2e {
     void MakeCaloCompressedHits::makeCompressedHits(HandleVector const& crystalStepsHandles, 
                                                     HandleVector const& readoutStepsHandles, 
                                                     CaloShowerStepMCCollection& caloShowerStepMCs, 
-						    CaloShowerStepMCCollection& caloROShowerStepMCs)
+						    CaloShowerStepMCCollection& caloROShowerStepMCs,
+						    SimParticlePtrCollection& simsToKeep)
     {
 
 	 PhysicalVolumeMultiHelper vi(*_vols);
@@ -314,7 +315,6 @@ namespace mu2e {
 	 //Loop over ancestor simParticles, check if they are compressible, and produce the corresponding caloShowerStepMC
 	 //---------------------------------------------------------------------------------------------------------------
 	 int nCompress(0),nCompressAll(0);
-	 SimPtrs simsToKeep;
 
 	 for (auto const& iter : crystalAncestorsMap )
 	 {
@@ -429,7 +429,7 @@ namespace mu2e {
 	      {
 		    SimPtr sim = step.simParticle();
 
-		    SimPtrs inspectedSims;	      
+		    SimParticlePtrCollection inspectedSims;	      
 		    while (sim->hasParent() && isInsideCalorimeter(vi,sim) )  
 		    //while (sim->hasParent() && cal.isInsideCalorimeter(sim->startPosition()) )  
 		    {
@@ -515,7 +515,7 @@ namespace mu2e {
 
 
   //----------------------------------------------------------------------------------------------------------------------------
-    bool MakeCaloCompressedHits::isCompressible(int simPdgId, std::unordered_set<int> const& processCodes, SimPtrs const& sims)
+    bool MakeCaloCompressedHits::isCompressible(int simPdgId, std::unordered_set<int> const& processCodes, SimParticlePtrCollection const& sims)
     {      
 
 	if (simPdgId > 1000000000) return true;                            //ions are always compressed

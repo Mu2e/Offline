@@ -1,6 +1,65 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_5_7
+
+10) Dec 14, 2015 genser
+
+   Several ttracker related modifications as a follow up on the rename
+   and removal of the ttracker old objects mentioned in items 8 & 4 below.
+
+   Restored getStation() and getPlane(), getPlanes() using current objects;
+   Continued the rename of the variables similar to "dev" to "pln", "sec" to "pnl"
+
+      DataProducts/inc/LayerId.hh
+      DataProducts/inc/PanelId.hh
+      GeometryService/inc/TTrackerMaker.hh
+      GeometryService/src/TTrackerMaker.cc
+      TTrackerGeom/inc/Station.hh
+
+      Analyses/src/ReadBack_module.cc
+      Mu2eG4/geom/ttracker_cd3.txt
+      Mu2eG4/geom/ttracker_v0.txt
+      Mu2eG4/src/constructTTrackerv3.cc
+      Mu2eG4/src/constructTTrackerv3Detailed.cc
+      Mu2eG4/test/transportOnlyGeom.txt
+
+   Renamed variables similar to "did" to "plnid", "sid" to "pnlid" or "strid"
+
+      TTrackerGeom/inc/ManifoldId.hh
+      TTrackerGeom/inc/TTracker.hh
+      TTrackerGeom/src/Manifold.cc
+      TrackerGeom/inc/Panel.hh
+      TrackerGeom/inc/Plane.hh
+      TrackerGeom/inc/Tracker.hh
+
+
+9) Dec 13, 2015 kutschke
+   Analyses/src/VMMonitor_module.cc
+     - A new module to monitor peak virtual size and max resident set size
+
+   A module that has deliberate memory leaks; and .fcl file to run this
+   module and monitor the leaks with the first one.
+     - Sandbox/src/Leak_module.cc
+     - Sandbox/test/leak.fcl
+
+   The monitoring code looks at /proc/self/status - this was the only place
+   that I could find both peak virtual size and max RSS.
+
+8) Dec 8, 2015 genser
+
+   Removed ttracker old Face, Panel, Plane and Zlayer objects
+
+     modified: GeometryService/inc/TTrackerMaker.hh
+     modified: GeometryService/src/TTrackerMaker.cc
+     modified: TTrackerGeom/inc/Station.hh
+     modified: TTrackerGeom/inc/TTracker.hh
+
+     deleted: TTrackerGeom/inc/Face.hh
+     deleted: TTrackerGeom/inc/FaceId.hh
+     deleted: TTrackerGeom/inc/PanelMF.hh
+     deleted: TTrackerGeom/inc/PanelMFId.hh
+     deleted: TTrackerGeom/inc/PlaneMF.hh
+     deleted: TTrackerGeom/inc/PlaneMFId.hh
+     deleted: TTrackerGeom/inc/ZLayer.hh
+     deleted: TTrackerGeom/inc/ZLayerId.hh
 
 7) 07 Dec 2015 dnbrow01
    Made version 2 of the upstream Pbar Absorber window the new default -
@@ -8,20 +67,20 @@ Still under construction
    Mu2eG4/geom/TransportSolenoid_v01.txt
 
 6) 07 Dec 2015 logash
- 
+
    Changes in Analyses/src/ReadVirtualDetector_module.cc
 
-   For staged simulation output (used in all standard simulations) it now 
+   For staged simulation output (used in all standard simulations) it now
    correctly identifies the particle's parent. The problem occurs if
-   particle's simulation continuos from one stage to another. In this case 
+   particle's simulation continuos from one stage to another. In this case
    a particle "dies" at the end of previous stage and becomes a parent of
-   itself in the next stage. ReadVirtualDetector now correctly identifies 
+   itself in the next stage. ReadVirtualDetector now correctly identifies
    these cases and glues together all particles which are actually the same
-   particle. This leads to two visible changes in the particles ntuple 
+   particle. This leads to two visible changes in the particles ntuple
    (ntpart):
     - all parent info is now related to true parent of the particle, even if
       this parent disappeared in previous stages of simulation
-    - if particle crossed virtual detectors in previous stages, this 
+    - if particle crossed virtual detectors in previous stages, this
       info is correctly merged with the data from the current stage
 
    This behavious is on by default, but can be switched off with new
@@ -29,8 +88,8 @@ Still under construction
       navigateToParent : false
 
 5) 06 Dec 2015  dnbrow01
-   Added support structure for the upstream Pbar window just before the 
-   entrance to TS1.  It is selectable with a variable 
+   Added support structure for the upstream Pbar window just before the
+   entrance to TS1.  It is selectable with a variable
    pbar.coll1In.version.  The value 1 gives the old window without support,
    version 2 adds the support.  Files affected:
    Mu2eG4/geom/TransportSolenoid_v01.txt
@@ -56,7 +115,7 @@ Still under construction
       TTrackerGeom/inc/{PanelId.hh => PanelMFId.hh} |   52 ++++++++++++------------
       TTrackerGeom/inc/ZLayerId.hh                  |   44 ++++++++++----------
       6 files changed, 98 insertions(+), 98 deletions(-)
-     
+
      renamed tracker Sector to Panel
      --
       Analyses/src/BkgRates_module.cc                    |    4 +-
@@ -136,7 +195,7 @@ Still under construction
       TrkPatRec/src/StrawHitDiag_module.cc               |    8 +-
       TrkPatRec/src/TrkPatRec_module.cc                  |    8 +-
       76 files changed, 859 insertions(+), 859 deletions(-)
-     
+
      renamed old tracker Plane to PlaneMF
      ---
       GeometryService/inc/TTrackerMaker.hh      |   10 ++--
@@ -150,7 +209,7 @@ Still under construction
       TTrackerGeom/inc/TTracker.hh              |    2 +-
       TTrackerGeom/inc/ZLayerId.hh              |    4 +-
       10 files changed, 139 insertions(+), 139 deletions(-)
-     
+
      renamed tracker Detector to Plane
      ---
       Analyses/src/BkgRates_module.cc                    |    2 +-
@@ -235,12 +294,12 @@ Still under construction
       TrkPatRec/src/TrkPatRec_module.cc                  |    8 +-
       TrkPatRec/test/StereoTest.C                        |    4 +-
       81 files changed, 721 insertions(+), 721 deletions(-)
-     
+
      Dave Nathan Brown: fix name
      ---
       TrackerGeom/src/{Device.cc => Plane.cc} |    0
       1 files changed, 0 insertions(+), 0 deletions(-)
-     
+
 
 3) Dec 2, 2015 kutschke
    Added an example of using multiple random engines in one module.

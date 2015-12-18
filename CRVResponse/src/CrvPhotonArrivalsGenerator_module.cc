@@ -59,6 +59,8 @@ namespace mu2e
     std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> > _makeCrvPhotonArrivals;
 
     double      _scintillationYield;
+    double      _scintillationYieldTolerance;
+    double      _scintillatorBirksConstant;
     double      _scintillatorRatioFastSlow;
     double      _scintillatorDecayTimeFast;
     double      _scintillatorDecayTimeSlow;
@@ -72,6 +74,9 @@ namespace mu2e
     SimParticleTimeOffset _timeOffsets;
 
     CLHEP::RandFlat       _randFlat;
+    CLHEP::RandGaussQ     _randGaussQ;
+
+    std::map<CRSScintillatorBarIndex,double>  _scintillationYieldAdjustments;
   };
 
   CrvPhotonArrivalsGenerator::CrvPhotonArrivalsGenerator(fhicl::ParameterSet const& pset) :
@@ -79,14 +84,17 @@ namespace mu2e
     _processNames(pset.get<std::vector<std::string> >("processNames")),
     _lookupTableFileNames(pset.get<std::vector<std::string> >("lookupTableFileNames")),
     _lookupTableCounterLengths(pset.get<std::vector<double> >("lookupTableCounterLengths")),
-    _scintillationYield(pset.get<double>("scintillationYield")),    //2000.0 photons per MeV
+    _scintillationYield(pset.get<double>("scintillationYield")),    //5000.0 photons per MeV
+    _scintillationYieldTolerance(pset.get<double>("scintillationYieldTolerance")),    //750.0 / 1500.00 photons per MeV
+    _scintillatorBirksConstant(pset.get<double>("scintillatorBirksConstant")), //0.126 mm/MeV
     _scintillatorRatioFastSlow(pset.get<double>("scintillatorRatioFastSlow")), //1.0
     _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast")), //10.0 ns, includes WLS components in the scintillator
     _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow")), //100.0 ns, unknown, not used
     _fiberDecayTime(pset.get<double>("fiberDecayTime")),     //7.4 ns
     _startTime(pset.get<double>("startTime")),               //0.0 ns
     _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet())),
-    _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
+    _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
 
@@ -98,6 +106,7 @@ namespace mu2e
       std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
       iterCPA->second->LoadLookupTable(_lookupTableFileNames[i].c_str());
       iterCPA->second->SetScintillationYield(_scintillationYield);
+      iterCPA->second->SetScintillatorBirksConstant(_scintillatorBirksConstant);
       iterCPA->second->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);
       iterCPA->second->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
       iterCPA->second->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
@@ -131,6 +140,7 @@ namespace mu2e
   void CrvPhotonArrivalsGenerator::produce(art::Event& event) 
   {
     _timeOffsets.updateMap(event);
+    _scintillationYieldAdjustments.clear();
 
     std::unique_ptr<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection(new CrvPhotonArrivalsCollection);
 
@@ -210,6 +220,13 @@ namespace mu2e
           const CLHEP::Hep3Vector &p1Local = CRSbar.toLocal(p1);
           const CLHEP::Hep3Vector &p2Local = CRSbar.toLocal(p2);
 
+          if(_scintillationYieldAdjustments.find(step.barIndex())==_scintillationYieldAdjustments.end())
+          {
+            double adjustment = _randGaussQ.fire(0, _scintillationYieldTolerance);
+            _scintillationYieldAdjustments[step.barIndex()] = adjustment;
+          }
+          double scintillationYieldAdjustment = _scintillationYieldAdjustments[step.barIndex()];
+
           double counterLength = CRSbar.getHalfLength()*2.0;
           std::map<double, boost::shared_ptr<mu2eCrv::MakeCrvPhotonArrivals> >::iterator iterCPA=_makeCrvPhotonArrivals.find(counterLength);
           if(iterCPA!=_makeCrvPhotonArrivals.end())
@@ -217,7 +234,8 @@ namespace mu2e
             iterCPA->second->MakePhotons(p1Local, p2Local, t1, t2,  
                                         PDGcode, beta, charge,
                                         energyDepositedTotal,
-                                        energyDepositedNonIonizing);
+                                        energyDepositedNonIonizing,
+                                        scintillationYieldAdjustment);
 
             CrvPhotonArrivals &crvPhotons = (*crvPhotonArrivalsCollection)[step.barIndex()];
             for(int SiPM=0; SiPM<4; SiPM++)

@@ -44,13 +44,13 @@ namespace mu2e {
     void makeDetails();
 
     void makeMother();
-    void makePlane( PlaneId devId );
-    void makePanel( const PanelId& secId, Plane& dev );
+    void makePlane( PlaneId planeId );
+    void makePanel( const PanelId& secId, Plane& plane );
     void makeLayer ( const LayerId& layId,  Panel& sec );
     void makeManifolds( const PanelId& secId);
 
     void computeStrawHalfLengths();
-    void computePanelBoxParams(Panel& panel, Plane& dev);
+    void computePanelBoxParams(Panel& panel, Plane& plane);
     void computeConstantPanelBoxParams();
     void computeLayerSpacingAndShift();
     void computeManifoldEdgeExcessSpace();
@@ -62,17 +62,13 @@ namespace mu2e {
     StrawIndex ttStrawIndex (LayerId const &layerId, int snum);
 
     void makeStation( StationId stationId );
-    void makePlaneMF  ( const PlaneMFId &planeMFId, Station & station );
-    void makeFace   ( const FaceId &faceId, PlaneMF &planeMF, const Plane &plane );
-    void makePanelMF  ( const PanelMFId &panelMFId, Face &face, const Panel &panel );
-    void makeZLayer ( const ZLayerId &zlayerId, PanelMF &panelMF, const Layer &layer );
 
     // Do the work of constructing it.
     void buildIt();
 
-    double choosePlaneSpacing( int idev ) const;
-    double findFirstDevZ0() const;
-    double panelRotation(int isec,int idev) const;
+    double choosePlaneSpacing( int iplane ) const;
+    double findFirstPlaneZ0() const;
+    double panelRotation(int isec,int iplane) const;
 
     // Some functions for the, fully detailed support structure.
     void makeSupportStructure();
@@ -137,7 +133,7 @@ namespace mu2e {
     // Base rotations of a panel; does not include plane rotation.
     std::vector<double> _panelBaseRotations;
     std::vector<double> _panelZSide;
-    double _devrot; // hack to make redundant information self-consistent
+    double _planerot; // hack to make redundant information self-consistent
 
     std::unique_ptr<TTracker> _tt;
 
@@ -172,14 +168,8 @@ namespace mu2e {
     // Z Location of the first plane.
     double _z0;
 
-    // Parameters used in the Station/PlaneMF/Face/PanelMF/ZLayer view
     int    _numStations;                  // Number of Stations.
-    int    _planeMFsPerStation;
-    int    _facesPerStation;
-    int    _facesPerPlaneMF;
-    int    _panelMFsPerFace;
-    int    _zLayersPerPanelMF;
-    int    _strawsPerZLayer;
+    int    _planesPerStation;
 
     // The detailed description of the complete support structure
     SupportModel _supportModel;

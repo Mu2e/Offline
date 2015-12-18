@@ -30,33 +30,37 @@ namespace mu2e {
     enum isep{same=0,plane,station1,station2,station3,apart};
 
     PanelId():
-      _did(-1),
+      _planeId(-1),
       _panel(-1){
     }
 
     PanelId( PlaneId plane,
               int panel
               ):
-      _did(plane),
+      _planeId(plane),
       _panel(panel){
     }
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
     const PlaneId& getPlaneId() const {
-      return _did;
+      return _planeId;
     }
 
     int getPlane() const {
-      return _did;
+      return _planeId;
     }
 
     int getPanel() const {
       return _panel;
     }
 
+    int getStation() const{
+      return _planeId/2;
+    }
+
     bool operator==(PanelId const& rhs) const{
-      return ( _did == rhs._did && _panel == rhs._panel );
+      return ( _planeId == rhs._planeId && _panel == rhs._panel );
     }
 
     bool operator!=(PanelId const& rhs) const{
@@ -64,21 +68,21 @@ namespace mu2e {
     }
 
     bool operator < (PanelId const& rhs) const {
-      return _did < rhs._did || (_did == rhs._did && _panel < rhs._panel);
+      return _planeId < rhs._planeId || (_planeId == rhs._planeId && _panel < rhs._panel);
     }
 
     isep separation(PanelId const& other) const;
 
     friend std::ostream& operator<<(std::ostream& ost,
                                     const PanelId& s ){
-      ost << s._did << " " << s._panel;
+      ost << s._planeId << " " << s._panel;
       return ost;
     }
 
   private:
 
-    PlaneId _did;
-    int      _panel;
+    PlaneId _planeId;
+    int     _panel;
 
   };
 

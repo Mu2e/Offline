@@ -1,0 +1,36 @@
+#include "minimalMessageService.fcl"
+
+process_name: leaktest
+
+source: {
+    module_type: EmptyEvent
+    maxEvents: 100
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics: {
+    analyzers: {
+        leak2 : {
+            module_type  : Leak
+            everyN       : 2       // Leak on events evenly divisble by 2
+            nwords       : 1048576 // Number of ints to allocate per event (1048576 = 1 MWords = 4 MB)
+            sleepSeconds : 0       // time to sleep between events, in seconds
+        }
+        leak3 : {
+            module_type  : Leak
+            everyN       : 3      // Leak on events evenly divisble by 3
+            nwords       : 524288 // Number of ints to allocate per event ( 524288 = 0.5 MWords = 2 MB)
+            sleepSeconds : 0      // time to sleep between events, in seconds
+        }
+
+        vmMonitor : {
+            module_type  : VMMonitor
+        }
+    }
+
+    e1: [ leak2, leak3, vmMonitor ]
+    end_paths: [e1]
+}

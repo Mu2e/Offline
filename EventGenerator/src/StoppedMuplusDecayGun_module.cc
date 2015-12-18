@@ -85,9 +85,9 @@ namespace mu2e {
     double xval(emin_);
     while(!pass){
     // xval = ratio of energy to half the muon mass
-      xval = flat_.shoot(2.0*emin_/muMass(),1.0);
+      xval = flat_.fire(2.0*emin_/muMass(),1.0);
       double spect = xval*xval*(3.0-2.0*xval);
-      pass = flat_.shoot(0.0,1.0) < spect;
+      pass = flat_.fire(0.0,1.0) < spect;
     }
     double eele = xval*0.5*muMass();
     double pele = sqrt(eele*eele - electronMass2());

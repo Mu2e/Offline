@@ -22,9 +22,9 @@ struct LookupConstants
   double rindexFiber;
   double cerenkovEnergyIntervalScintillator;
   double cerenkovEnergyIntervalFiber;
-  double ratioFastSlow;
+  double ratioFastSlow;    //not used
   double scintillatorDensity;
-  double scintillatorBirksConstant;
+  double scintillatorBirksConstant;   //not used
   double fiberSeparation, holeRadius, fiberRadius;
   void Write(const std::string &filename);
   void Read(std::ifstream &lookupfile);
@@ -81,10 +81,12 @@ class MakeCrvPhotonArrivals
                                       double timeStart, double timeEnd,
                                       int PDGcode, double beta, double charge,
                                       double energyDepositedTotal,
-                                      double energyDepositedNonIonizing);
+                                      double energyDepositedNonIonizing,
+                                      double scintillationYieldAdjustment=0);   //allows small random variations of the scintillation yield for individual counters
     int                       GetNumberOfPhotons(int SiPM);
     const std::vector<double> &GetArrivalTimes(int SiPM);
     void                      SetScintillationYield(double yield) {_scintillationYield=yield;}
+    void                      SetScintillatorBirksConstant(double birksConstant) {_scintillatorBirksConstant=birksConstant;}
     void                      SetScintillatorRatioFastSlow(double ratio) {_scintillatorRatioFastSlow=ratio;}
     void                      SetScintillatorDecayTimeFast(double decayTime) {_scintillatorDecayTimeFast=decayTime;}
     void                      SetScintillatorDecayTimeSlow(double decayTime) {_scintillatorDecayTimeSlow=decayTime;}
@@ -96,6 +98,7 @@ class MakeCrvPhotonArrivals
 
     std::vector<double>       _arrivalTimes[4];
     double                    _scintillationYield;
+    double                    _scintillatorBirksConstant;
     double                    _scintillatorRatioFastSlow;
     double                    _scintillatorDecayTimeFast; 
     double                    _scintillatorDecayTimeSlow; 

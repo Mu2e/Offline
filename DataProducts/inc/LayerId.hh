@@ -27,14 +27,14 @@ namespace mu2e {
   public:
 
     LayerId():
-      _sid(PanelId()),
+      _panelId(PanelId()),
       _layer(-1){
     }
 
     LayerId( PanelId panel,
              int layer
              ):
-      _sid(panel),
+      _panelId(panel),
       _layer(layer){
     }
 
@@ -42,25 +42,29 @@ namespace mu2e {
              int panel,
              int layer
              ):
-      _sid(PanelId(plane,panel)),
+      _panelId(PanelId(plane,panel)),
       _layer(layer){
     }
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
     const PlaneId& getPlaneId () const{
-      return _sid.getPlaneId();
+      return _panelId.getPlaneId();
     }
     const PanelId& getPanelId () const{
-      return _sid;
+      return _panelId;
     }
 
     int getPlane () const{
-      return _sid.getPlane();
+      return _panelId.getPlane();
+    }
+
+    int getStation() const{
+      return _panelId.getStation();
     }
 
     int getPanel () const{
-      return _sid.getPanel();
+      return _panelId.getPanel();
     }
 
     int getLayer() const{
@@ -68,7 +72,7 @@ namespace mu2e {
     }
 
     bool operator==(LayerId const& rhs) const{
-      return ( _sid == rhs._sid && _layer == rhs._layer );
+      return ( _panelId == rhs._panelId && _layer == rhs._layer );
     }
 
     bool operator!=(LayerId const& rhs) const{
@@ -76,19 +80,19 @@ namespace mu2e {
     }
 
     bool operator < (LayerId const& rhs) const {
-      return _sid < rhs._sid || (_sid == rhs._sid && _layer < rhs._layer);
+      return _panelId < rhs._panelId || (_panelId == rhs._panelId && _layer < rhs._layer);
     }
   
     friend std::ostream& operator<<(std::ostream& ost,
                                     const LayerId& l ){
-      ost << l._sid << " " << l._layer;
+      ost << l._panelId << " " << l._layer;
       return ost;
     }
 
 private:
 
-    PanelId _sid;
-    int      _layer;
+    PanelId _panelId;
+    int     _layer;
 
   };
 

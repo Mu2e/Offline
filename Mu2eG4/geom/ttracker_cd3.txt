@@ -141,8 +141,8 @@ string ttrackerSupport.electronicsSpace.material =  "StrawGas";
 
 // Debug control for TTracker; uncomment to make only a selected panel.
 // it is not about drawing, but about the construction itself
-int    ttracker.devDraw  =   -1;
-int    ttracker.secDraw  =   -1;
+int    ttracker.plnDraw  =   -1;
+int    ttracker.pnlDraw  =   -1;
 //  
 bool   ttracker.envelopeVisible      =  true;
 bool   ttracker.envelopeSolid        =  false;

@@ -11,7 +11,9 @@ BEGIN_PROLOG
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_2300",
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 6000.0   //6000.0 photons per MeV 
+      scintillationYield        : 5000.0   //5000.0 photons per MeV 
+      scintillationYieldTolerance : 750.0    //750.0 photons per MeV 
+      scintillatorBirksConstant : 0.126    //0.126 mm/Mev
       scintillatorRatioFastSlow : 1.0      //100% fast
       scintillatorDecayTimeFast : 3.0      //3.0 ns   //includes WLS component in the scintillator
       scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used

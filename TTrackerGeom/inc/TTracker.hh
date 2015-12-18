@@ -59,10 +59,10 @@ namespace mu2e {
                );
     };
 
-    bool isLegal(const PanelId& sid) const{
-      return (isLegal(sid.getPlaneId()) &&
-              sid.getPanel() >-1   &&
-              std::vector<Panel>::size_type(sid.getPanel()) < getPlane(sid.getPlaneId()).getPanels().size()
+    bool isLegal(const PanelId& pnlid) const{
+      return (isLegal(pnlid.getPlaneId()) &&
+              pnlid.getPanel() >-1   &&
+              std::vector<Panel>::size_type(pnlid.getPanel()) < getPlane(pnlid.getPlaneId()).getPanels().size()
               );
     }
 
@@ -74,10 +74,10 @@ namespace mu2e {
                );
     }
 
-    bool isLegal(const StrawId& sid) const{
-      return ( isLegal(sid.getLayerId()) &&
-               sid.getStraw() > -1       &&
-               std::vector<Straw>::size_type(sid.getStraw()) < getLayer(sid.getLayerId()).getStraws().size()
+    bool isLegal(const StrawId& strid) const{
+      return ( isLegal(strid.getLayerId()) &&
+               strid.getStraw() > -1       &&
+               std::vector<Straw>::size_type(strid.getStraw()) < getLayer(strid.getLayerId()).getStraws().size()
                );
     }
 
@@ -94,16 +94,16 @@ namespace mu2e {
       return _planes.at(id);
     }
 
-    const Panel& getPanel ( const PanelId& sid ) const{
-      return _planes.at(sid.getPlane()).getPanel(sid);
+    const Panel& getPanel ( const PanelId& pnlid ) const{
+      return _planes.at(pnlid.getPlane()).getPanel(pnlid);
     }
 
     const Layer& getLayer ( const LayerId& lid ) const{
       return _planes.at(lid.getPlane()).getLayer(lid);
     }
 
-    const Straw& getStraw ( const StrawId& sid ) const{
-      return _planes.at(sid.getPlane()).getStraw(sid);
+    const Straw& getStraw ( const StrawId& strid ) const{
+      return _planes.at(strid.getPlane()).getStraw(strid);
     }
 
     const Straw& getStraw ( StrawIndex i ) const{
@@ -242,7 +242,7 @@ namespace mu2e {
     // All supports are the same shape; only relevant for _supportModel=="simple"
     Support _supportParams;
 
-    // A more detailed model of the supports; again each planeMF has identical supports.
+    // A more detailed model of the supports; again each plane has identical supports.
     // only relevant for _supportModel == "detailedv0".
     SupportStructure _supportStructure;
 
