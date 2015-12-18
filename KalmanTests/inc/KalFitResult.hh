@@ -16,7 +16,7 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
-
+#include <iostream>
 // C++
 
 namespace mu2e 
@@ -26,7 +26,13 @@ namespace mu2e
     KalFitResult(): _tdef(0) ,_krep(0), _fit(TrkErrCode::fail), _nt0iter(0), _nweediter(0), _nunweediter(0), _ninter(0) {}
 
 // must initialize with a TrkDef
-    KalFitResult(TrkDef const* tdef) : _tdef(tdef) ,_krep(0), _fit(TrkErrCode::fail), _nt0iter(0), _nweediter(0), _nunweediter(0), _ninter(0) {}
+    KalFitResult(TrkDef const* tdef) : _tdef(tdef) ,_krep(0), _fit(TrkErrCode::fail), _nt0iter(0), _nweediter(0), _nunweediter(0), _ninter(0) {
+      static unsigned icount(0);
+      while(++icount<10){
+	std::cout << "KalFitResult is DEPRECATED: the code calling this function needs to be refactored.  " 
+	<< "This message will repeat " << 10-icount << " more times." << std::endl;
+      }
+    }
 //-----------------------------------------------------------------------------
 // KalFitResult doesn't own any pointers, '_krep' is handled in the pattern 
 // recognition modules, so, in principle, no need to delete it here

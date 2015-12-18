@@ -1,3 +1,25 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_5_8
+
+1) Dec 18, 2015 brownd
+    Refactoring of BTrk code in preparation for track persistence.  This
+    mainly affects the interface of tracks to hits.  Many files have been
+    changed, and though standard Offline tests have been verified, private
+    code and/or scripts, and code not part of the standard tests may still
+    need modification.
+    
+    The major visible change is that the KalmanTests package has been split
+    into 3 new packages divided by function:
+      -Mu2eBTrk holds the Mu2e-specific subclasses of BTrk base classes.
+      -TrkReco holds basic track reconstruction algorithms
+      -TrkDiag holds classes and modules used for testing and reading tracks
+    In addition, persistent class definitions that were in KalmanTests have
+    been moved into the appropriate *DataProducts packages.  Some algorithms
+    formerly in TrkPatRec have been moved to TrkReco, and more may follow as
+    we continue to refactor and consolidate.
+    The KalmanTests package still exists, but holds only DEPRECATED CODE.
+    Remaining references to KalmanTests in the code base need to be refactored
+    as it will be removed in a future tag.
+
+
