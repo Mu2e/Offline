@@ -35,13 +35,13 @@ physics.producers.TRFDownstreameMinus.KalDiag : { MCPtrLabel : "makeSH"
 						  SimParticleLabel : "detectorFilter"
 						  SimParticleInstance : ""
 						  StrawHitMCLabel : "makeSH"
-						  TimeOffsets :  { inputs : [ ] }
+						  TimeOffsets :  { inputs : [ "protonTimeMap" ] }
 						  diagLevel : 3
 						}
 
 
 # ...now we can add everything to the detPath
-physics.myPath : [ @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus ]
+physics.myPath : [ protonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus ]
 physics.trigger_paths : [ myPath ]
 
 # ...add any analyzer modules we want...
@@ -49,6 +49,14 @@ physics.analyzers.dumpGen : { module_type : GenParticlesAnalyzer
 			      inputs : "generate"
 			    }
 
+physics.analyzers.stepPointDump : { module_type : StepPointMCDumper
+				    hitsInputTag : "detectorFilter:tracker"
+				    TimeOffsets : { inputs : [ "protonTimeMap" ] }
+				  }
+
+physics.analyzers.genCountLogger : { module_type : GenEventCountReader
+				   }
+
 # ...and append them to the end_paths
-physics.extrapaths : [ dumpGen ]
+physics.extrapaths : [ dumpGen, genCountLogger, stepPointDump ]
 physics.end_paths : [ extrapaths ]
