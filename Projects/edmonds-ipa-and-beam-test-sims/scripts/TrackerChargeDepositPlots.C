@@ -1,0 +1,94 @@
+#include "BaseRun.h"
+
+#include "TH2.h"
+
+TH2F* TrackerChargeDepositPlots(std::string id, BaseRun* particle_run) {
+
+  int n_years = BaseRun::n_years_running;
+  int n_days = 365;
+  int n_time_bins = n_years*52;
+
+  double min_charge = 0;
+  double max_charge = 10;
+  double charge_width = 0.01;
+  int n_charge_bins = (max_charge - min_charge) / charge_width;
+
+  std::string histname = "hTotalChargeDeposit_" + id;
+  TH2F* hTotalChargeDeposit = new TH2F(histname.c_str(), "", n_time_bins,0,n_time_bins, n_charge_bins,min_charge,max_charge);
+  hTotalChargeDeposit->SetXTitle("Weeks of Running");
+  hTotalChargeDeposit->SetYTitle("Straw Charge Deposit [C/cm]");
+  hTotalChargeDeposit->SetZTitle("Number of Straw-cm");
+  //  hTotalChargeDeposit->GetZaxis()->SetLabelOffset(0.00005);
+  hTotalChargeDeposit->GetZaxis()->SetTitleOffset(0.75);
+  hTotalChargeDeposit->SetStats(false);
+  
+  double charge_limit = 1; // C/cm
+  histname = "hDeadStrawCms_" + id;
+  TH1F* hDeadStrawCms = new TH1F(histname.c_str(), "", n_time_bins,0,n_time_bins);
+  hDeadStrawCms->Sumw2();
+  hDeadStrawCms->SetXTitle("Weeks of Running");
+  hDeadStrawCms->SetYTitle("Fraction of Dead Straw-cm");
+
+  histname = "hDeadStraws_" + id;
+  TH1F* hDeadStraws = (TH1F*) hDeadStrawCms->Clone(histname.c_str());
+  hDeadStraws->SetYTitle("Fraction of Dead Straws");
+
+  TAxis* straw_length_axis = particle_run->GetHitMap()->GetXaxis(); // just so know what to loop over
+      
+  // Start looping through individual straws
+  for (int i_device = 0; i_device < BaseRun::n_devices; ++i_device) {
+    for (int i_sector = 0; i_sector < BaseRun::n_sectors; ++i_sector) {
+
+      for (int i_straw = 0; i_straw < BaseRun::n_straws; ++i_straw) {
+	int y_bin = 6*i_device + i_sector;
+	int z_bin = i_straw;
+
+	// Now loop along each cm of this straw
+	bool straw_dead = false;
+	bool dead_straw_times_filled = false;
+	for (int i_cm_bin = 1; i_cm_bin <= straw_length_axis->GetNbins(); ++i_cm_bin) {
+	  TH3F* hHitMap = particle_run->GetHitMap(); // this gives the number of hits per microbunch
+	  
+	  double hits_per_microbunch = hHitMap->GetBinContent(i_cm_bin, y_bin, z_bin);
+	  double charge_per_length = (hits_per_microbunch * particle_run->GetChargeDepositPerHit() * BaseRun::n_microbunches_per_year * BaseRun::n_years_running); // over the whole experiment
+
+	  // Now start looping through the time bins
+	  for (int i_time_bin = 1; i_time_bin <= n_time_bins; ++i_time_bin) {
+	    double time = hTotalChargeDeposit->GetXaxis()->GetBinLowEdge(i_time_bin);
+
+	    double charge_per_length_now = charge_per_length;
+	    charge_per_length_now /= n_time_bins;
+	    charge_per_length_now *= i_time_bin; // divide down to the time after this bin
+
+	    hTotalChargeDeposit->Fill(time, charge_per_length_now);
+
+	    if (charge_per_length_now >= charge_limit) {
+	      hDeadStrawCms->Fill(time);
+	      straw_dead = true;
+
+	      if (!dead_straw_times_filled) {
+		hDeadStraws->Fill(time);
+	      }
+	    }
+	  }
+	  
+	  if (straw_dead && !dead_straw_times_filled) {
+	    dead_straw_times_filled = true;
+	  }
+	}
+      }
+    }
+  }
+
+  double total_number_of_straw_cm = 2.14031e6;
+  hDeadStrawCms->Scale(1.0/total_number_of_straw_cm);
+  hDeadStrawCms->SetLineWidth(2);
+  hDeadStrawCms->SetStats(false);
+
+  double total_number_of_straw = 23040;
+  hDeadStraws->Scale(1.0/total_number_of_straw);
+  hDeadStraws->SetLineWidth(2);
+  hDeadStraws->SetStats(false);
+
+  return hTotalChargeDeposit;
+}
