@@ -200,6 +200,7 @@ namespace mu2e {
     _maxFullPrint(pset.get<int>("maxFullPrint",2)),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _addXtalk(pset.get<bool>("addCrossTalk",false)),
+    _addNoise(pset.get<bool>("addNoise",false)),
     _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
     _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
