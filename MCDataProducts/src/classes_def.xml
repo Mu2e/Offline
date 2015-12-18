@@ -41,6 +41,8 @@
  <class name="mu2e::CaloShowerStepMCCollection"/>
  <class name="mu2e::CaloHitMCTruth"/>
  <class name="mu2e::CaloHitMCTruthCollection"/>
+<class name="mu2e::CaloDigiMC"/>
+ <class name="mu2e::CaloDigiMCCollection"/>
  <class name="mu2e::CaloCrystalOnlyHit"/>
  <class name="mu2e::CaloCrystalOnlyHitCollection"/>
  <class name="mu2e::CaloHitSimPartMC"/>
@@ -87,6 +89,7 @@
  <class name="art::Wrapper<mu2e::G4BeamlineInfoCollection>"/>
  <class name="art::Wrapper<mu2e::CaloShowerStepMCCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloDigiMCCollection>"/>
  <class name="art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitSimPartMCCollection>"/>
  <class name="art::Wrapper<mu2e::ExtMonUCITofHitMCTruthCollection>"/>
@@ -220,4 +223,4 @@
  <class name="art::Wrapper<mu2e::ProtonBunchIntensity>"/>
  
 
- </lcgdict>
+</lcgdict>
