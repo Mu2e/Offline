@@ -37,14 +37,7 @@ physics: {
         protonTimeMap        : { module_type : GenerateProtonTimes }
         muonTimeMap          : { module_type : GenerateMuonLife }
 	
-	makeSD               : @local::makeSD
-	makeSH               : @local::makeSHfromSD
-	FSHPreStereo         : @local::FSHPreStereo
-	MakeStereoHits       : @local::MakeStereoHits
-	FlagStrawHits        : @local::FlagStrawHits
-	FlagBkgHits          : @local::FlagBkgHits
-
-	TPRDownstreameMinus  :  @local::TrkPatRecDownstreameMinus
+        @table::Tracking.producers
 
 	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
         MakeCaloCrystalHits  : @local::MakeCaloCrystalHits
@@ -55,7 +48,7 @@ physics: {
 	TrackCaloIntersection :
 	{
 	  module_type            : TrackCaloIntersection
-	  fitterModuleLabel      : TPRDownstreameMinus
+	  fitterModuleLabel      : TRFDownstreameMinus
 	  fitparticle            : 11
 	  fitdirection           : 0 
 	  checkExit              : true
@@ -70,7 +63,7 @@ physics: {
 	  module_type             : TrackCaloMatchingBis
 	  caloClusterModuleLabel  : MakeCaloCluster
 	  trkIntersectModuleLabel : TrackCaloIntersection
-	  fitterModuleLabel       : TPRDownstreameMinus
+	  fitterModuleLabel       : TRFDownstreameMinus
 	  fitparticle             : 11
 	  fitdirection            : 0 
 	  diagLevel               : 0
@@ -99,7 +92,7 @@ physics: {
 	    caloClusterModuleLabel     : MakeCaloCluster
 	    virtualDetectorName        : virtualdetector
             stepPointMCLabel           : g4run
-  	    trkPatRecModuleLabel       : TPRDownstreameMinus
+  	    trkPatRecModuleLabel       : TRFDownstreameMinus
 	    fitparticle                : 11
 	    fitdirection               : 0 
 	}
@@ -110,7 +103,7 @@ physics: {
 	    caloClusterModuleLabel  : MakeCaloCluster
 	    trkIntersectModuleLabel : TrackCaloIntersection
 	    trkCaloMatchModuleLabel : TrkCaloMatcherBis
-  	    fitterModuleLabel       : TPRDownstreameMinus
+  	    fitterModuleLabel       : TRFDownstreameMinus
 	    fitparticle             : 11
 	    fitdirection            : 0 
 	    g4ModuleLabel           : g4run
@@ -119,7 +112,7 @@ physics: {
 
 	CaloTrackMatchExample: {
             module_type             : CaloTrackMatchExample
-  	    fitterModuleLabel       : TPRDownstreameMinus
+  	    fitterModuleLabel       : TRFDownstreameMinus
 	    fitparticle             : 11
 	    fitdirection            : 0 
 	    caloClusterModuleLabel  : MakeCaloCluster
@@ -132,13 +125,13 @@ physics: {
 
    }
 
-    p1: [ generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, FSHPreStereo,MakeStereoHits, FlagStrawHits, FlagBkgHits,
-          TPRDownstreameMinus, MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster, 
+    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus, 
+          MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster, 
 	  TrackCaloIntersection, TrkCaloMatcherBis]
 
     trigger_paths: [p1]
 
-    e1: [ CaloExample, CaloTrackMatchExample, ReadTrackCaloMatching]
+    e1: [ CaloExample, CaloTrackMatchExample, ReadTrackCaloMatching ]
     end_paths: [e1]
 }
 

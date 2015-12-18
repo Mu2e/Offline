@@ -8,7 +8,7 @@ process_name: g4CaloExample
 
 source: { 
    module_type: EmptyEvent
-   maxEvents : 100
+   maxEvents : 100000
 }
 
 

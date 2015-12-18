@@ -166,7 +166,7 @@ namespace mu2e {
        float _clusimMom[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimTime[16384],_clusimEdep[16384];
 
        int   _nVd,_vdId[16384],_vdPdgId[16384],_vdenIdx[16384];
-       float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMom[16384];
+       float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMomX[16384],_vdMomY[16384],_vdMomZ[16384];
 
        int   _nTrkOk,_nTrk,_trkOk[8192],_trkstat[8192],_trknHit[8192];
        float _trkDip[8192],_trkpt[8192],_trkcon[8192],_trkmomErr[8192];
@@ -277,7 +277,9 @@ namespace mu2e {
        _Ntup->Branch("nVd",      &_nVd ,     "nVd/I");
        _Ntup->Branch("vdId",     &_vdId ,    "vdId[nVd]/I");
        _Ntup->Branch("vdPdgId",  &_vdPdgId , "vdPdgId[nVd]/I");
-       _Ntup->Branch("vdMom",    &_vdMom ,   "vdMom[nVd]/F");
+       _Ntup->Branch("vdMomX",   &_vdMomX ,  "vdMomX[nVd]/F");
+       _Ntup->Branch("vdMomY",   &_vdMomY ,  "vdMomY[nVd]/F");
+       _Ntup->Branch("vdMomZ",   &_vdMomZ ,  "vdMomZ[nVd]/F");
        _Ntup->Branch("vdPosX",   &_vdPosX ,  "vdPosX[nVd]/F");
        _Ntup->Branch("vdPosY",   &_vdPosY ,  "vdPosY[nVd]/F");
        _Ntup->Branch("vdPosZ",   &_vdPosZ ,  "vdPosZ[nVd]/F");
@@ -570,10 +572,12 @@ namespace mu2e {
                _vdId[_nVd]    = hit.volumeId();
                _vdPdgId[_nVd] = hit.simParticle()->pdgId();
                _vdTime[_nVd]  = hitTime;//hit.time();
-               _vdPosX[_nVd]  = hit.position().x()+ 3904;
+               _vdPosX[_nVd]  = hit.position().x();
                _vdPosY[_nVd]  = hit.position().y();
                _vdPosZ[_nVd]  = hit.position().z()-10200;
-               _vdMom[_nVd]   = hit.momentum().mag();
+               _vdMomX[_nVd]  = hit.momentum().x();
+               _vdMomY[_nVd]  = hit.momentum().y();
+               _vdMomZ[_nVd]  = hit.momentum().z();
                _vdenIdx[_nVd] = hit.simParticle()->generatorIndex();
                ++_nVd;
              }
