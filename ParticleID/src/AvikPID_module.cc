@@ -1263,7 +1263,7 @@ namespace mu2e {
           }
 
           for (auto ihot=muo_hots.begin(); ihot != muo_hots.end(); ++ihot) {
-            hit = (mu2e::TrkStrawHit*) &(*ihot);
+            TrkStrawHit* hit = (mu2e::TrkStrawHit*) (*ihot);
             if (hit->isActive()) {
               msh = &hit->strawHit();
 //-----------------------------------------------------------------------------
@@ -1271,7 +1271,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
               found = 0;
               for (auto ehot=ele_hots.begin(); ehot != ele_hots.end(); ++ehot) {
-                ehit = (mu2e::TrkStrawHit*) &(*ehot);
+                ehit = (mu2e::TrkStrawHit*) (*ehot);
                 if (ehit->isActive()) {
                   esh  = &ehit->strawHit();
                   if (esh == msh) {
@@ -1425,7 +1425,7 @@ namespace mu2e {
         edeps.clear();
 
         for (auto ihot=muo_hots.begin(); ihot != muo_hots.end(); ++ihot) {
-          hit = (mu2e::TrkStrawHit*) &(*ihot);
+          hit = (mu2e::TrkStrawHit*) (*ihot);
           if (hit->isActive()) {
 //-----------------------------------------------------------------------------
 // hit charges: '2.*' here because KalmanFit reports half-path through gas.

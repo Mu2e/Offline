@@ -9,7 +9,7 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
-#include "KalmanTests/fcl/KalDiag.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
 
 process_name : TrkPatRecTest
 
