@@ -30,6 +30,7 @@
 #include "MCDataProducts/inc/CaloShowerStepMCCollection.hh"
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/CaloDigiMCCollection.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 #include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
@@ -112,6 +113,7 @@ template class art::Wrapper<mu2e::G4BeamlineInfo>;
 template class art::Wrapper<mu2e::G4BeamlineInfoCollection>;
 template class art::Wrapper<mu2e::CaloShowerStepMCCollection>;
 template class art::Wrapper<mu2e::CaloHitMCTruthCollection>;
+template class art::Wrapper<mu2e::CaloDigiMCCollection>;
 template class art::Wrapper<mu2e::CaloHitSimPartMCCollection>;
 template class art::Wrapper<mu2e::CaloCrystalOnlyHitCollection>;
 template class art::Wrapper<mu2e::ExtMonUCITofHitMCTruthCollection>;

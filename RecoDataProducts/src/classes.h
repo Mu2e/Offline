@@ -11,13 +11,15 @@
 #define ENABLE_MU2E_GENREFLEX_HACKS
 
 #include <vector>
-#include "CLHEP/Vector/ThreeVector.h"
-using CLHEP::Hep3Vector;
 //#include <array>
 
 #include "art/Persistency/Common/Wrapper.h"
 #include "art/Persistency/Common/Assns.h"
 
+
+#include "RecoDataProducts/inc/CaloDigiPacked.hh"
+#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/RecoCaloDigiCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -70,6 +72,12 @@ template class art::Ptr<mu2e::ExtMonUCITofHit>;
 template class std::vector<art::Ptr<mu2e::ExtMonUCITofHit> >;
 template class art::Ptr<mu2e::StrawHit>;
 template class std::vector<art::Ptr<mu2e::StrawHit> >;
+template class art::Ptr<mu2e::CaloDigiPacked>;
+template class std::vector<art::Ptr<mu2e::CaloDigiPacked> >;
+template class art::Ptr<mu2e::CaloDigi>;
+template class std::vector<art::Ptr<mu2e::CaloDigi> >;
+template class art::Ptr<mu2e::RecoCaloDigi>;
+template class std::vector<art::Ptr<mu2e::RecoCaloDigi> >;
 template class art::Ptr<mu2e::StereoHit>;
 template class std::vector<art::Ptr<mu2e::StereoHit> >;
 template class art::Ptr<mu2e::StrawHitPosition>;
@@ -108,6 +116,11 @@ template class art::Ptr<KalRep>;
 template class std::vector<art::Ptr<KalRep> >;
 
 template class art::Wrapper<mu2e::StrawHitCollection>;
+template class art::Wrapper<mu2e::CaloDigiPacked>;
+template class art::Wrapper<mu2e::CaloDigi>;
+template class art::Wrapper<mu2e::CaloDigiCollection>;
+template class art::Wrapper<mu2e::RecoCaloDigi>;
+template class art::Wrapper<mu2e::RecoCaloDigiCollection>;
 template class art::Wrapper<mu2e::StereoHitCollection>;
 template class art::Wrapper<mu2e::StrawHitPositionCollection>;
 template class art::Wrapper<mu2e::StrawHitFlagCollection>;
