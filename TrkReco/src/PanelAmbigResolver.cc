@@ -19,6 +19,7 @@
 #include <vector>
 #include <algorithm>
 #include <functional>
+#include <iostream>
 // art
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -50,6 +51,7 @@ namespace mu2e {
       _addtrkpos(pset.get<bool>("AddTrackPositionConstraint",true)),
       _maxhitu(pset.get<double>("MaximumHitU",8.0)),
       _fixunallowed(pset.get<bool>("FixUnallowedHitStates",true)),
+      _maxnpanel(pset.get<unsigned>("MaxHitsPerPanel",8)),
       _diag(pset.get<int>("DiagLevel",0))
     {
       double nullerr = pset.get<double>("NullAmbigPenalty",0.0);
@@ -107,52 +109,56 @@ namespace mu2e {
     }
 
     void PanelAmbigResolver::resolvePanel(TrkStrawHitVector& phits,KalRep* krep) const {
+      // sort hits for this panel
+      std::sort(phits.begin(),phits.end(),hitsort());
       // fill panel information
       PanelInfo pinfo;
-      fillPanelInfo(phits,krep,pinfo);
-      // loop over all ambiguity/activity states for this panel
-      PanelStateIterator psi(pinfo._uinfo,_allowed);
-      PRV results;
-      do {
-	// for each state, fill the result of the 1-dimensional optimization
-	PanelResult result(psi.current());
-	fillResult(pinfo,krep->t0(),result);
-	if(result._status == 0)results.push_back(result);
-      } while(psi.increment());
-      if(results.size() > 0){
-	// sort the results to have lowest chisquard first
-	std::sort(results.begin(),results.end(),resultcomp());
-	// for now, set the hit state according to the best result.  In future, maybe we want to treat
-	// cases with different ambiguities differently from inactive hits
-	results[0]._state.setHitStates(phits);
-	// if the chisq difference between patterns is negligible, inflate the errors of the
-	// hit which changes
-	size_t nhits = results[0]._state._nhits;
-	size_t ires(1);
-	while (ires < results.size() && results[ires]._chisq - results[0]._chisq < _minsep){
-	  for(size_t ihit=0;ihit<nhits;++ihit){
-	    if(results[ires]._state.hitState(ihit) != results[0]._state.hitState(ihit)){
-	      phits[ihit]->setPenalty(_penaltyres);
+      if(fillPanelInfo(phits,krep,pinfo)){
+	// loop over all ambiguity/activity states for this panel
+	PanelStateIterator psi(pinfo._uinfo,_allowed);
+	PRV results;
+	do {
+	  // for each state, fill the result of the 1-dimensional optimization
+	  PanelResult result(psi.current());
+	  fillResult(pinfo,krep->t0(),result);
+	  if(result._status == 0)results.push_back(result);
+	} while(psi.increment());
+	if(results.size() > 0){
+	  // sort the results to have lowest chisquard first
+	  std::sort(results.begin(),results.end(),resultcomp());
+	  // for now, set the hit state according to the best result.  In future, maybe we want to treat
+	  // cases with different ambiguities differently from inactive hits
+	  results[0]._state.setHitStates(phits);
+	  // if the chisq difference between patterns is negligible, inflate the errors of the
+	  // hit which changes
+	  size_t nhits = results[0]._state._nhits;
+	  size_t ires(1);
+	  while (ires < results.size() && results[ires]._chisq - results[0]._chisq < _minsep){
+	    for(size_t ihit=0;ihit<nhits;++ihit){
+	      if(results[ires]._state.hitState(ihit) != results[0]._state.hitState(ihit)){
+		phits[ihit]->setPenalty(_penaltyres);
+	      }
 	    }
+	    ++ires;
 	  }
-	  ++ires;
 	}
-      }
-      if( _diag > 1 ) {
-	_nuhits = _nrhits = pinfo._uinfo.size();
-	_nactive = 0;
-	for(auto ishi : pinfo._uinfo) {
-	  if(ishi._active)++_nactive;
+	if( _diag > 1 ) {
+	  _nuhits = _nrhits = pinfo._uinfo.size();
+	  _nactive = 0;
+	  for(auto ishi : pinfo._uinfo) {
+	    if(ishi._active)++_nactive;
+	  }
+	  _nres = results.size();
+	  _results = results;
+	  _padiag->Fill();
+	  //
+	  _tupos = pinfo._tupos;
+	  _tuerr = pinfo._tuerr;
+	  _uinfo = pinfo._uinfo;
+	  _pudiag->Fill();
 	}
-	_nres = results.size();
-	_results = results;
-	_padiag->Fill();
-	//
-	_tupos = pinfo._tupos;
-	_tuerr = pinfo._tuerr;
-	_uinfo = pinfo._uinfo;
-	_pudiag->Fill();
-      }
+      } else 
+	std::cout << "PanelAmbigResolver: Panel with " << phits.size() << " hits has no usable info" << std::endl;
     }
 
     bool PanelAmbigResolver::fillPanelInfo(TrkStrawHitVector const& phits, const KalRep* krep, PanelInfo& pinfo) const {
@@ -160,18 +166,26 @@ namespace mu2e {
       // find the best trajectory we can local to these hits, but excluding their information ( if possible).
       const TrkSimpTraj* straj = findTraj(phits,krep);
       if(straj != 0){
-	// find POCA to the first hit
-	const TrkStrawHit* firsthit = phits[0];
-	TrkPoca tpoca(*straj,firsthit->fltLen(),*firsthit->hitTraj(),firsthit->hitLen());
-	if(tpoca.status().success()){
-	  retval = true;
-	  // find the position and direction information at the middle of this range.
+	// find a reference point on this traj using POCA to the first good hit
+	double gdist;
+	Hep3Vector wdir; 
+	HepPoint wpos;
+	for(auto ihit = phits.begin();ihit != phits.end(); ++ihit){
+	  TrkPoca tpoca(*straj,(*ihit)->fltLen(),(*ihit)->hitTraj(),(*ihit)->hitLen());
+	  if(tpoca.status().success() ) { //&& abs(tpoca.doca()) < _maxhitu){
+	    retval = true;
+	    gdist = tpoca.flt1();
+	    wdir = (*ihit)->hitTraj()->direction(tpoca.flt2()); 
+	    wpos = (*ihit)->hitTraj()->position(tpoca.flt2()); 
+	    break;
+	  }
+	}
+	if(retval){
+	  // find the trajectory position and direction information at this distance
 	  DifPoint tpos;
 	  DifVector tdir;
-	  straj->getDFInfo2(tpoca.flt1(), tpos, tdir);
+	  straj->getDFInfo2(gdist, tpos, tdir);
 	  // straw information; cast to dif even though the derivatives are 0
-	  Hep3Vector wdir = firsthit->hitTraj()->direction(firsthit->hitLen());
-	  HepPoint wpos = firsthit->hitTraj()->position(firsthit->hitLen());
 	  Hep3Vector wposv(wpos.x(),wpos.y(),wpos.z());
 	  DifVector delta = DifVector(wposv) - tpos;
 	  // compute the U direction (along the measurement, perp to the track and wire
@@ -187,7 +201,7 @@ namespace mu2e {
 	  // degrade the track information
 	  pinfo._tuwt = 1.0/(pinfo._tuerr*pinfo._tuerr + _trkpenaltyres*_trkpenaltyres);
 	  // now, project the hits onto u, WRT the projected track position. 
-	  for(TSHCI ihit = phits.begin();ihit != phits.end();++ihit){
+	  for(auto ihit = phits.begin();ihit != phits.end();++ihit){
 	    TSHUInfo uinfo(*ihit,udir,tpos.hepPoint());
 	    // mask off hits with wire u values outside the limits, and (optionally) those whose
 	    // initial state isn't allowed
@@ -197,6 +211,11 @@ namespace mu2e {
 	      auto ifnd = std::find(_allowed.begin(),_allowed.end(),uinfo._hstate);
 	      if(ifnd == _allowed.end())
 		uinfo._use = TSHUInfo::fixed;
+	    }
+	    // limit the # of hits considered
+	    if(pinfo._nfree >= _maxnpanel){
+	      std::cout << "PanelAmbigResolver: Maximum number of hits/panel exceeded: truncating" << std::endl;
+	      uinfo._use = TSHUInfo::unused;
 	    }
 	    if(uinfo._use == TSHUInfo::free)++pinfo._nfree;
 	    if(uinfo._use != TSHUInfo::unused)++pinfo._nused;

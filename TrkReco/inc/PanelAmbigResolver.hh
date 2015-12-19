@@ -55,6 +55,7 @@ namespace mu2e {
 	HSV _allowed; // allowed states of a TrkStrawHit
 	double _maxhitu; // maximum u value allowed for a hit
 	bool _fixunallowed; // fix the state of any hit whose initial state isn't allowed
+	unsigned _maxnpanel; // max # of hits to consider for a panel
 	int _diag; // diagnostic level`
 	// TTree variables, mutable so they don't change const
 	mutable TTree *_padiag, *_pudiag; // diagnostic TTree
