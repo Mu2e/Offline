@@ -13,6 +13,10 @@
 
 // Mu2e includes
 #include "RecoDataProducts/inc/CaloHit.hh"
+
+#include "RecoDataProducts/inc/RecoCaloDigi.hh"
+#include "RecoDataProducts/inc/RecoCaloDigiCollection.hh"
+
 #include "art/Persistency/Common/Ptr.h"
 
 namespace mu2e {
@@ -32,6 +36,9 @@ namespace mu2e {
     {}
 
     CaloCrystalHit(int  crystalId, CaloHit const & hit, CaloHitPtr const& chPtr );
+
+    //constructor that uses the CaloDigi
+    CaloCrystalHit(int  crystalId, RecoCaloDigiCollection RecoCaloDigiCol);
 
     // Accessors
 
@@ -57,12 +64,14 @@ namespace mu2e {
 
     // almost like one of the constructors, plays a role of a two
     // argument assignment operator
-    void assign(int crystalId, CaloHit const & hit, CaloHitPtr const& chPtr );
+    void assign           (int crystalId, CaloHit const & hit, CaloHitPtr const& chPtr );
 
     void assignEnergyToTot(int crystalId, CaloHit const & hit);
 
-    void setEnergyDep(double energy);
+    void setEnergyDep     (double energy);
     void setEnergyDepTotal(double energy);
+
+    void setTime          (double Time);
 
   private:
 
@@ -74,6 +83,7 @@ namespace mu2e {
     float            _energyDepTotal;     // (MeV)
     int              _numberOfROIdsUsed;  // roIds used to calculate _energyDep
     std::vector<CaloHitPtr> _readouts;
+    RecoCaloDigiCollection  _recoCaloDigis;
 
   };
 

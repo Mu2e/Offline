@@ -588,20 +588,24 @@ namespace mu2e {
     if (_wfInput == 0){
       f = TFile::Open("/mu2e/data/users/gianipez/test-waveforms-2015.root", "R");
       _pshape = (TH1F*) gDirectory->Get("pshape");
+      f->Close();
     }else  if (_wfInput == 1){
       f = TFile::Open("/mu2e/data/users/gianipez/test-waveforms-2015.root", "R");
       _pshape = (TH1F*) gDirectory->Get("histo50");
+      f->Close();
     }    if (_wfInput == 2){
       f = TFile::Open("/mu2e/data/users/gianipez/test-waveforms-2015.root", "R");
       _pshape = (TH1F*) gDirectory->Get("histo100"); 
+      f->Close();
     }    if (_wfInput == 3){
       f = TFile::Open("/mu2e/data/users/gianipez/test-CsI-2015-10-06.root");
       _pshape = (TH1F*) gDirectory->Get("CsIPulse");
+      f->Close();
     }
 
 
     _wfnorm = _pshape->Integral();
-    f->Close();
+
 
     art::ServiceHandle<art::TFileService> tfs;
     _hist._hEdep   = tfs->make<TH1F>("hEdep","Hit energy deposition",200,0.,100);

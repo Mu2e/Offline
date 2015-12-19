@@ -29,6 +29,35 @@ namespace mu2e {
     _readouts(1,CaloHitPtr(chPtr))
   {}
 
+  //constructor that uses the CaloDigi
+  CaloCrystalHit::CaloCrystalHit(int  CrystalId, RecoCaloDigiCollection RecoCaloDigiCol){
+    _crystalId = CrystalId;
+
+    //set the time and teh energy as the mean. It assumes that realtive dealy between 
+    //the channels have been already accounted in each RacoCaloDigi
+    int     nRecoDigis = RecoCaloDigiCol.size();
+    RecoCaloDigi* recoDigi;  
+
+    //initialize internal parameters
+    _time      = 0.;
+    _energyDep = 0.;
+
+    for (int i=0; i<nRecoDigis; ++i){
+      recoDigi    = &RecoCaloDigiCol.at(i);
+      _time      += recoDigi->time();  
+      _energyDep += recoDigi->edep();  
+    }
+    _time      /= nRecoDigis;
+    _energyDep /= nRecoDigis;
+
+    _energyDepTotal = _energyDep;
+
+    _numberOfROIdsUsed = nRecoDigis;
+
+    _recoCaloDigis = RecoCaloDigiCol;
+  }
+  
+
   // operator += CaloHit
   CaloCrystalHit& CaloCrystalHit::add(CaloHit const & hit, CaloHitPtr const& chPtr ) {
     _readouts.push_back(chPtr);
@@ -43,9 +72,9 @@ namespace mu2e {
     return *this;
   }
 
-//-----------------------------------------------------------------------------
-// hit merging: merge 'Hit' with 'this'
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // hit merging: merge 'Hit' with 'this'
+  //-----------------------------------------------------------------------------
   void CaloCrystalHit::add(CaloCrystalHit* Hit) {
 
     double he = Hit->energyDep();
@@ -57,8 +86,8 @@ namespace mu2e {
 
     for (std::vector<art::Ptr<mu2e::CaloHit>>::const_iterator k = Hit->readouts().begin(); 
 	 k != Hit->readouts().end(); k++) {
-	_readouts.push_back(*k);
-	++_numberOfROIdsUsed;
+      _readouts.push_back(*k);
+      ++_numberOfROIdsUsed;
     }
   }
 
@@ -92,14 +121,19 @@ namespace mu2e {
 
   void CaloCrystalHit::setEnergyDep(double energy) {
 
-      _energyDep = energy;
+    _energyDep = energy;
 
     return;
 
   }
+
+  void CaloCrystalHit::setTime     (double Time){
+    _time      = Time;
+  }
+  
   void CaloCrystalHit::setEnergyDepTotal(double energy) {
 
-      _energyDepTotal = energy;
+    _energyDepTotal = energy;
 
     return;
 
