@@ -54,6 +54,10 @@ CalorimeterCalibrations::CalorimeterCalibrations( SimpleConfig const& config )
 
         //value of the sigma used to do the Gaussian smearing due to the electronic noise
         _ROnoise = config.getDouble("ReadOutElectronicNoise", 0.030);//MeV
+
+
+	//conversion factor between ADC counts and MeV for a specific RO
+	_ADC2MeV  = config.getDouble("ADC2MeVConversionFactor", 1.);
       }
 
 }

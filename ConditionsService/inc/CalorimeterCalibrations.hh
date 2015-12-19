@@ -24,84 +24,86 @@
 
 namespace mu2e
 {
-class SimpleConfig;
+  class SimpleConfig;
 
 
-struct CalorimeterCalibrations: virtual public ConditionsEntity{
+  struct CalorimeterCalibrations: virtual public ConditionsEntity{
 
 
-        CalorimeterCalibrations ( SimpleConfig const& config );
+    CalorimeterCalibrations ( SimpleConfig const& config );
 
-        double LRUpar0( int& crystalId) const{return _LRUpar0;}
+    double LRUpar0( int& crystalId) const{return _LRUpar0;}
 
-        double LRUpar0Err(int& crystalId) const{return _LRUpar0Err;}
+    double LRUpar0Err(int& crystalId) const{return _LRUpar0Err;}
 
-        double LINpar0(int& crystalId) const{return _linpar0;}
+    double LINpar0(int& crystalId) const{return _linpar0;}
 
-        double LINpar0Err(int& crystalId) const{return _linpar0Err;}
+    double LINpar0Err(int& crystalId) const{return _linpar0Err;}
 
-        double LINpar1(int& crystalId) const{return _linpar1;}
+    double LINpar1(int& crystalId) const{return _linpar1;}
 
-        double LINpar1Err(int& crystalId) const{return _linpar1Err;}
+    double LINpar1Err(int& crystalId) const{return _linpar1Err;}
 
-        double LINpar2(int& crystalId) const{return _linpar2;}
+    double LINpar2(int& crystalId) const{return _linpar2;}
 
-        double LINpar2Err(int& crystalId) const{return _linpar2Err;}
+    double LINpar2Err(int& crystalId) const{return _linpar2Err;}
 
-        double LINpar3(int& crystalId) const{return _linpar3;}
+    double LINpar3(int& crystalId) const{return _linpar3;}
 
-        double LINpar3Err(int& crystalId) const{return _linpar3Err;}
+    double LINpar3Err(int& crystalId) const{return _linpar3Err;}
 
 
-        double ROpe(int& roId) const{return _ROpe;}
-        double ROpeErr(int& roId) const{return _ROpeErr;}
+    double ROpe(int& roId) const{return _ROpe;}
+    double ROpeErr(int& roId) const{return _ROpeErr;}
 
-        double ROfano(int& roId) const{return _ROfano;}
+    double ROfano(int& roId) const{return _ROfano;}
 
-        double ROnoise(int& roId) const{return _ROnoise;}
+    double ROnoise(int& roId) const{return _ROnoise;}
        
+    double ADC2MeV(int & roId)      const{return _ADC2MeV;}
 
-private:
+  private:
 
-        // We want to discourage multi-phase construction.
-        CalorimeterCalibrations ();
-
-
-        // LRU parameters
-        double _LRUpar0;// % / cm
-        double _LRUpar0Err;
+    // We want to discourage multi-phase construction.
+    CalorimeterCalibrations ();
 
 
-        //non-linearity parameters
-        double _linpar0;
-        double _linpar1;
-        double _linpar2;
-        double _linpar3;
-        double _linpar0Err;
-        double _linpar1Err;
-        double _linpar2Err;
-        double _linpar3Err;
+    // LRU parameters
+    double _LRUpar0;// % / cm
+    double _LRUpar0Err;
 
-        //RO photo-statistic number
-        double _ROpe;//p.e. / MeV
-        double _ROpeErr;//p.e. / MeV
 
-        double _ROfano;
+    //non-linearity parameters
+    double _linpar0;
+    double _linpar1;
+    double _linpar2;
+    double _linpar3;
+    double _linpar0Err;
+    double _linpar1Err;
+    double _linpar2Err;
+    double _linpar3Err;
 
-        //value of the sigma used to do the Gaussian smearing due to the electronic noise
-        double _ROnoise;//MeV
-  double _ROnoiseSigma;//MeV
+    //RO photo-statistic number
+    double _ROpe;//p.e. / MeV
+    double _ROpeErr;//p.e. / MeV
 
-};
+    double _ROfano;
 
-// Shift left (printing) operator.
-inline std::ostream& operator<<(std::ostream& ost,
-                const CalorimeterCalibrations&  ){
-        ost << "( CalorimeterCalibrations: to be implemented "
-                        << " )";
+    //value of the sigma used to do the Gaussian smearing due to the electronic noise
+    double _ROnoise;//MeV
+    double _ROnoiseSigma;//MeV
 
-        return ost;
-}
+    double _ADC2MeV;//conversion factor between ADC count and MeV
+  };
+
+  // Shift left (printing) operator.
+  inline std::ostream& operator<<(std::ostream& ost,
+				  const CalorimeterCalibrations&  ){
+    ost << "( CalorimeterCalibrations: to be implemented "
+	<< " )";
+
+    return ost;
+  }
 }
 
 #endif /* ConditionsService_CalorimeterCalibrations_hh */
