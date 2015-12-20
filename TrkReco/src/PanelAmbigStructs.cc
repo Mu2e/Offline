@@ -66,19 +66,14 @@ namespace mu2e
       }
     }
 
-    void PanelState::setHitStates(TrkStrawHitVector& tshv) const {
-      for(size_t ihit=0;ihit<tshv.size(); ++ihit)
-	hitState(ihit).setHitState(tshv[ihit]);
-    }
-
     PanelResult::PanelResult(PanelState const& state) : _state(state),
     _chisq(-1.0), _status(-1), _hpat(null), _statechange(0) {
 // classify the state.  If any hits are opposite, it's opposite.  Otherwise if at least 2
 // are on the same side, they are same.  Otherwise it is null
-      for(size_t ihit=0;ihit<_state._nhits;++ihit){
-	for(size_t jhit=ihit+1;jhit<_state._nhits;++jhit){
-	  int hprod = static_cast<int>(_state.hitState(ihit)._state) * 
-	    static_cast<int>(_state.hitState(jhit)._state);
+      for(size_t ihit=0;ihit<_state.size();++ihit){
+	for(size_t jhit=ihit+1;jhit<_state.size();++jhit){
+	  int hprod = static_cast<int>(_state[ihit]._state) * 
+	    static_cast<int>(_state[jhit]._state);
 	    if(hprod < 0){
 	      _hpat = opposite;
 	      break;
@@ -105,6 +100,25 @@ namespace mu2e
       _ambig = tsh->ambig();
       _active = tsh->isActive();
       _index = tsh->index();
+    }
+
+    unsigned ipow(unsigned base, unsigned exp) {
+      unsigned result = 1;
+      while (exp)
+      {
+	if (exp & 1)
+	  result *= base;
+	exp >>= 1;
+	base *= base;
+      }
+      return result;
+    }
+
+    void setHitStates(PanelState const& pstate, TrkStrawHitVector& hits) {
+      if(pstate.size() != hits.size())
+	throw cet::exception("RECO")<<"mu2e::PanelAmbigResolver: state size doesn't match" << std::endl;
+      for(size_t ihit=0;ihit<hits.size(); ++ihit)
+	pstate[ihit].setHitState(hits[ihit]);        
     }
 
   } // PanelAmbig namespace

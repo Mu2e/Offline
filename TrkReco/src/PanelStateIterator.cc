@@ -10,32 +10,35 @@ namespace mu2e {
   namespace PanelAmbig {
     
     PanelStateIterator::PanelStateIterator(TSHUIV const& uinfo, HSV const& allowed) : _uinfo(uinfo), _allowedHS(allowed) {
-      HSV hsv;
-      // Define the first panel state.
-      // loop over the hits in this panel
+      // reserve enough space
+      _allowedPS.reserve(ipow(_allowedHS.size(),_uinfo.size()));
+      // setup an initial panel state.  The order follows the uinfo
+      PanelState pstate;
+      pstate.reserve(_uinfo.size());
       for(auto tshui : _uinfo) {
 	if(tshui._use == TSHUInfo::free)
 	// free hits are initialized to the first allowed state
-	  hsv.push_back(_allowedHS[0]);
+	  pstate.push_back(_allowedHS.front());
 	else
 	// fixed or unused hits are kept at the initial state
-	  hsv.push_back(tshui._hstate);
+	  pstate.push_back(tshui._hstate);
       }
-      _allowedPS.push_back(hsv);
-      // loop over all possible states and record them
-      while(increment(hsv)) {
-	_allowedPS.push_back(PanelState(hsv));
+      // this is the 1st panel state
+      _allowedPS.push_back(pstate);
+      // iterate over all possible states and record them
+      while(increment(pstate)) {
+	_allowedPS.push_back(pstate);
       }
       // set current to the 1st allowed state
       reset();
     }
 
-    bool PanelStateIterator::increment(HSV& hsv) {
+    bool PanelStateIterator::increment(PanelState& pstate) {
       bool retval(false); // default is failure
       size_t ihit=0;
       do {
 	if(_uinfo[ihit]._use == TSHUInfo::free){
-	  HitState& hs = hsv[ihit];
+	  HitState& hs = pstate[ihit];
 	  if(increment(hs)){
 	    retval = true;
 	    break;
@@ -46,7 +49,7 @@ namespace mu2e {
 	  }
 	} else
 	  ++ihit; // skip hits not free to change
-      } while(ihit < hsv.size());
+      } while(ihit < pstate.size());
       return retval;
     }
 

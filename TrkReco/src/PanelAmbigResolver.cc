@@ -128,14 +128,14 @@ namespace mu2e {
 	  std::sort(results.begin(),results.end(),resultcomp());
 	  // for now, set the hit state according to the best result.  In future, maybe we want to treat
 	  // cases with different ambiguities differently from inactive hits
-	  results[0]._state.setHitStates(phits);
+	  setHitStates(results[0]._state,phits);
 	  // if the chisq difference between patterns is negligible, inflate the errors of the
 	  // hit which changes
-	  size_t nhits = results[0]._state._nhits;
+	  size_t nhits = results[0]._state.size();
 	  size_t ires(1);
 	  while (ires < results.size() && results[ires]._chisq - results[0]._chisq < _minsep){
 	    for(size_t ihit=0;ihit<nhits;++ihit){
-	      if(results[ires]._state.hitState(ihit) != results[0]._state.hitState(ihit)){
+	      if(results[ires]._state[ihit] != results[0]._state[ihit]){
 		phits[ihit]->setPenalty(_penaltyres);
 	      }
 	    }
@@ -240,10 +240,10 @@ namespace mu2e {
       // loop over the straw hit info and accumulate the sums used to compute chisquared
       size_t ntsh = pinfo._uinfo.size();
       // consistency check
-      if(ntsh != result._state._nhits) 
+      if(ntsh != result._state.size()) 
 	throw cet::exception("RECO")<<"mu2e::PanelAmbigResolver: inconsistent hits" << std::endl;
       for(size_t itsh=0;itsh<ntsh;++itsh){
-	HitState const& tshs = result._state.hitState(itsh);
+	HitState const& tshs = result._state[itsh];
 	TSHUInfo const& tshui = pinfo._uinfo[itsh];
 	// compute chisquared for selected hits
 	if(tshui._use == TSHUInfo::free || tshui._use == TSHUInfo::fixed){

@@ -22,7 +22,6 @@
     <class name="mu2e::PanelAmbig::PanelResult" />
     <class name="mu2e::PanelAmbig::PanelState" />
     <class name="mu2e::PanelAmbig::HitState" />
-    <class name="mu2e::PanelAmbig::PanelHitState" />
     <class name="std::vector<mu2e::PanelAmbig::PanelResult>" />
     <class name="mu2e::PanelAmbig::TSHUInfo" />
     <class name="std::vector<mu2e::PanelAmbig::TSHUInfo>" />
