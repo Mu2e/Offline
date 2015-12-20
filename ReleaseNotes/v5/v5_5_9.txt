@@ -1,4 +1,12 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_5_9
+
+1) Dec 19, 2015 kutschke
+   From from genser:
+    - Added FTFP_BERT_PBAR_MU2E02 physics list and ported Zhengyun's pbar
+      code to Geant4 9.6.p04
+
+   From gianipez:
+    - New code to create calorimeter digis and to create hits from digis
+    - New digi data products
+    - mods to CaloCyrstalHit
 
