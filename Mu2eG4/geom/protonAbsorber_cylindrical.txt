@@ -8,6 +8,8 @@
 // $Date: 2014/08/29 16:37:09 $
 //
 
+int protonabsorber.version = 2;
+
 string protonabsorber.materialName = "Polyethylene096";
 double protonabsorber.OutRadius1   =  350.0;
 double protonabsorber.OutRadius0   =  350.0;

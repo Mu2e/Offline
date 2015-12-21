@@ -8,13 +8,15 @@
 // $Date: 2014/08/29 16:37:09 $
 //
 
+int protonabsorber.version = 1; // version 1 is the TDR, version 2 is CD3
+
 string protonabsorber.materialName = "Polyethylene096";
 double protonabsorber.OutRadius1   =  380.0;
 double protonabsorber.OutRadius0   =  335.2;
 double protonabsorber.thickness    =    0.5;
 int    protonabsorber.verbosityLevel = 2;
 bool   protonabsorber.visible      = true;
-bool   protonabsorber.solid        = true;
+bool   protonabsorber.solid        = false;
 
 // To make inner part shorter than MECO design
 bool   protonabsorber.isShorterCone = true;

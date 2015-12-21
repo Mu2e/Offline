@@ -44,10 +44,12 @@ namespace mu2e {
 
     int verbosity(_config.getInt("protonabsorber.verbosityLevel",0));
     if ( verbosity > 0 ) PrintConfig();
+
   }
 
   void MECOStyleProtonAbsorberMaker::BuildIt ( SimpleConfig const& _config)
   {
+    _IPAVersion = _config.getInt("protonabsorber.version", 1);
     Build(_config);
   }
 
@@ -264,37 +266,52 @@ namespace mu2e {
     const std::size_t wiresPerSet   = _config.getInt   ("protonabsorber.ipa.nWiresPerSet" ,0 );
     const double      wireRadius    = _config.getDouble( "protonabsorber.ipa.wireRadius"  ,0.);
     const string      wireMaterial  = _config.getString( "protonabsorber.ipa.wireMaterial"   );
-    const double      wireRotation  = _config.getDouble("protonabsorber.ipa.wireRotationToVertical", 45);
 
     _pabs->_buildSupports = _config.getBool("protonabsorber.ipa.buildSupports"   );
     _pabs->_ipaSupport.reset( new InnerProtonAbsSupport( supportSets, wiresPerSet ) );
 
     // Calculate zPosition spacing
-    const double zSpacing = 2*pabs1halflen;// want one set at each end to the spacing between the sets is the full length of the IPA/(supportSets+1);
+    double zSpacing = 0;
+    if (_IPAVersion == 1) {
+      zSpacing = 2*pabs1halflen/(supportSets+1); 
+    }
+    else if (_IPAVersion == 2) {
+      zSpacing = 2*pabs1halflen; // want one set at each end of the IPA so the spacing between the sets for v2
+    }
 
     const double ipazstart = targetEnd + distFromTargetEnd;
     const double opazstart = _pabs->_oPAzcenter - _pabs->_oPAhalflength;
+
+    // Will be used for v2 only
+    const double wireRotation = _config.getDouble("protonabsorber.ipa.wireRotationToVertical", 45);
     const double wire_rotation_from_vertical = wireRotation*CLHEP::deg;
+
 
     for ( std::size_t iS(0); iS < _pabs->_ipaSupport->nSets() ; iS++ ) {
       std::vector<Tube> wireVector;
 
-      const double zPosition       = ipazstart + zSpacing*(iS);
+      double zPosition = 0;
+      if (_IPAVersion == 1) {
+	zPosition = ipazstart + zSpacing*(iS+1);
+      }
+      else if (_IPAVersion == 2) {
+	zPosition = ipazstart + zSpacing*(iS);
+      }
 
-      // If the wire goes straight from the IPA to the OPA
       const double wireOuterRadius = oPAin0 + ( zPosition-opazstart )*(oPAin1-oPAin0)/(2*_pabs->_oPAhalflength);
       const double wireInnerRadius = pabs1rOut0 + ( zPosition-ipazstart )*(pabs1rOut1-pabs1rOut0)/(2*pabs1halflen);
-      const double wireLengthIfStraight      = wireOuterRadius - wireInnerRadius;
+      double wireLength      = wireOuterRadius - wireInnerRadius;
 
-      // ...but we want the wire to be angled from the vertical in order to provide longitudinal tension
-      const double wireLength = wireLengthIfStraight / sin(wire_rotation_from_vertical);
+      if (_IPAVersion == 2) { // for v2, we want the wire to be angled from the vertical in order to provide longitudinal tension
+	wireLength = wireLength / sin(wire_rotation_from_vertical);
+      }
 
 
       for ( std::size_t iW(0); iW < _pabs->_ipaSupport->nWiresPerSet() ; iW++ ) {
         wireVector.push_back( Tube( 0. ,
                                     wireRadius ,
                                     wireLength*0.5-0.01, // 0.01 offset to avoid run-ins with the absorbvers
-                                    CLHEP::Hep3Vector( -3904, 0., zPosition ), // -3904 is the x-value of the target region?
+                                    CLHEP::Hep3Vector( -3904, 0., zPosition ),
                                     CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
                                     0,
                                     CLHEP::twopi,
@@ -308,10 +325,12 @@ namespace mu2e {
     ////////////////////
     // End Rings for IPA
     ////////////////////
+
+    // defaults chosen so that there are no end-rings for v1 of the IPA
     _pabs->_ipaSupport->_nEndRings = _config.getInt("protonabsorber.ipa.nEndRings", 0);
     const double endRingHalfLength = _config.getDouble("protonabsorber.ipa.endRingHalfLength", 0);
     const double endRingRadialLength = _config.getDouble("protonabsorber.ipa.endRingRadialLength", 0);
-    const string endRingMaterial = _config.getString("protonabsorber.ipa.endRingMaterial");
+    const string endRingMaterial = _config.getString("protonabsorber.ipa.endRingMaterial", "DSVacuum");
 
     for (std::size_t iRing(0); iRing < _pabs->_ipaSupport->nEndRings(); iRing++) {
       const double zPosition = ipazstart + zSpacing*(iRing); // same z spacing as for the wire sets
@@ -322,7 +341,7 @@ namespace mu2e {
       _pabs->_ipaSupport->_endRingMap.push_back( Tube( endRingInnerRadius,
 						       endRingOuterRadius,
 						       endRingHalfLength, 
-						       CLHEP::Hep3Vector( -3904, 0., zPosition ), // -3904 is the x-value of the target region?
+						       CLHEP::Hep3Vector( -3904, 0., zPosition ),
 						       CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
 						       0,
 						       CLHEP::twopi,
