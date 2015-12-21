@@ -2,7 +2,7 @@
 
 #include "TH2.h"
 
-TH2F* TrackerChargeDepositPlots(std::string id, BaseRun* particle_run) {
+TH2F* TrackerChargeDepositPlots(std::string id, BaseRun* particle_run, BaseRun* ce_run) {
 
   int n_years = BaseRun::n_years_running;
   int n_days = 365;
@@ -33,6 +33,17 @@ TH2F* TrackerChargeDepositPlots(std::string id, BaseRun* particle_run) {
   TH1F* hDeadStraws = (TH1F*) hDeadStrawCms->Clone(histname.c_str());
   hDeadStraws->SetYTitle("Fraction of Dead Straws");
 
+  TH3F* hConvEMinus_StrawCm_HitMap = ce_run->GetHitMap(); // get the conversion electron hitmape
+  histname = "hFractionCEHitsLost_StrawCm_" + id;
+  TH1F* hFractionCEHitsLost_StrawCm = (TH1F*) hDeadStrawCms->Clone(histname.c_str());
+  hFractionCEHitsLost_StrawCm->SetYTitle("Fraction of CE Hits Lost (due to dead straw-cm)");
+
+  TH2D* hConvEMinus_Straw_HitMap = (TH2D*) hConvEMinus_StrawCm_HitMap->Project3D("yz"); // get the conversion electron hitmap
+  histname = "hFractionCEHitsLost_Straw_" + id;
+  TH1F* hFractionCEHitsLost_Straw = (TH1F*) hDeadStraws->Clone(histname.c_str());
+  hFractionCEHitsLost_Straw->SetYTitle("Fraction of CE Hits Lost (due to dead straws)");
+
+
   TAxis* straw_length_axis = particle_run->GetHitMap()->GetXaxis(); // just so know what to loop over
       
   // Start looping through individual straws
@@ -45,7 +56,7 @@ TH2F* TrackerChargeDepositPlots(std::string id, BaseRun* particle_run) {
 
 	// Now loop along each cm of this straw
 	bool straw_dead = false;
-	bool dead_straw_times_filled = false;
+	int earliest_time = n_time_bins;
 	for (int i_cm_bin = 1; i_cm_bin <= straw_length_axis->GetNbins(); ++i_cm_bin) {
 	  TH3F* hHitMap = particle_run->GetHitMap(); // this gives the number of hits per microbunch
 	  
@@ -64,16 +75,25 @@ TH2F* TrackerChargeDepositPlots(std::string id, BaseRun* particle_run) {
 
 	    if (charge_per_length_now >= charge_limit) {
 	      hDeadStrawCms->Fill(time);
-	      straw_dead = true;
+	      double fraction_ce_hits_lost_straw_cm = (hConvEMinus_StrawCm_HitMap->GetBinContent(i_cm_bin, y_bin, z_bin) * ce_run->GetNMicrobunchesSimulated()) / hConvEMinus_StrawCm_HitMap->GetEntries();
+	      hFractionCEHitsLost_StrawCm->Fill(time, fraction_ce_hits_lost_straw_cm);
 
-	      if (!dead_straw_times_filled) {
-		hDeadStraws->Fill(time);
+	      straw_dead = true;
+	      if (i_time_bin < earliest_time) {
+		earliest_time = i_time_bin;
 	      }
 	    }
 	  }
-	  
-	  if (straw_dead && !dead_straw_times_filled) {
-	    dead_straw_times_filled = true;
+	}
+
+	// After we've gone across the whole straw, we know at what time it will die
+	if (straw_dead) {
+	  for (int i_time_bin = earliest_time; i_time_bin <= n_time_bins; ++i_time_bin) {
+	    double time = hTotalChargeDeposit->GetXaxis()->GetBinLowEdge(i_time_bin);
+	    hDeadStraws->Fill(time);
+	    
+	    double fraction_ce_hits_lost_straw = (hConvEMinus_Straw_HitMap->GetBinContent(y_bin, z_bin) * ce_run->GetNMicrobunchesSimulated()) / hConvEMinus_Straw_HitMap->GetEntries();
+	    hFractionCEHitsLost_Straw->Fill(time, fraction_ce_hits_lost_straw);
 	  }
 	}
       }
