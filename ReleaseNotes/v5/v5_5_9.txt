@@ -1,9 +1,29 @@
            Release notes for Mu2e Offline software, v5_5_9
 
 1) Dec 19, 2015 kutschke
-   From from genser:
+   From genser:
     - Added FTFP_BERT_PBAR_MU2E02 physics list and ported Zhengyun's pbar
       code to Geant4 9.6.p04
+
+   affected files:
+
+      Mu2eG4/inc/FTFP_BERT_PBAR_MU2E02.hh              |   65 +
+      Mu2eG4/inc/FTFP_BERT_PBAR_MU2E02.icc             |  122 ++
+      Mu2eG4/inc/HadronPhysicsFTFP_BERT_PBAR_MU2E02.hh |  110 ++
+      Mu2eG4/inc/PBARDiffractiveExcitation.hh          |   84 +
+      Mu2eG4/inc/PBARExcitedStringDecay.hh             |   66 +
+      Mu2eG4/inc/PBARFTFModel.hh                       |  127 ++
+      Mu2eG4/inc/PBARFTFPProtonBuilder.hh              |   90 ++
+      Mu2eG4/inc/PBARLundStringFragmentation.hh        |  140 ++
+      Mu2eG4/inc/PBARVLongitudinalStringDecay.hh       |  205 +++
+      Mu2eG4/src/HadronPhysicsFTFP_BERT_PBAR_MU2E02.cc |  192 +++
+      Mu2eG4/src/PBARDiffractiveExcitation.cc          | 1616 +++++++++++++++++++
+      Mu2eG4/src/PBARExcitedStringDecay.cc             |  251 +++
+      Mu2eG4/src/PBARFTFModel.cc                       | 1812 ++++++++++++++++++++++
+      Mu2eG4/src/PBARFTFPProtonBuilder.cc              |  103 ++
+      Mu2eG4/src/PBARLundStringFragmentation.cc        | 1373 ++++++++++++++++
+      Mu2eG4/src/PBARVLongitudinalStringDecay.cc       |  641 ++++++++
+      Mu2eG4/src/physicsListDecider.cc                 |   11 +
 
    From gianipez:
     - New code to create calorimeter digis and to create hits from digis
