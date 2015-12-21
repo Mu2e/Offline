@@ -886,7 +886,12 @@ G4bool PBARFTFModel::PutOnMassShell()
                                            + targetSplitable->Get4Momentum().perp2());
 
               G4int PDGcode = targetSplitable->GetDefinition()->GetPDGEncoding();
+
+#if G4VERSION<4099
               G4ParticleDefinition* Old_def = targetSplitable->GetDefinition();
+#else
+              const G4ParticleDefinition* Old_def = targetSplitable->GetDefinition();
+#endif
 
               G4int newPDGcode = PDGcode/10; newPDGcode=newPDGcode*10+4; // Delta
               G4ParticleDefinition* ptr = 

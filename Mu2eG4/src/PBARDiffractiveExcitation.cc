@@ -107,7 +107,14 @@ G4bool PBARDiffractiveExcitation::
 
      G4double ProjectileDiffStateMinMass=theParameters->GetProjMinDiffMass();
      G4double ProjectileNonDiffStateMinMass=theParameters->GetProjMinNonDiffMass();
+#if G4VERSION<4099
      G4double ProbProjectileDiffraction=theParameters->GetProbabilityOfProjDiff();
+#else
+     G4cout << "This code does not work with Geant4 10+ " << G4endl;
+     G4double ProbProjectileDiffraction=0.; // does not work with 10+
+     abort();
+#endif
+
 ProjectileDiffStateMinMass = 3000;
 /*yzy
 G4cout << "ProjectileDiffStateMinMass " << ProjectileDiffStateMinMass << G4endl;
@@ -133,8 +140,12 @@ G4cout << "ProjectileDiffStateMinMass " << ProjectileDiffStateMinMass << G4endl;
      G4double M0target2 = M0target * M0target; 
  
      G4double TargetDiffStateMinMass=theParameters->GetTarMinDiffMass();    
-     G4double TargetNonDiffStateMinMass=theParameters->GetTarMinNonDiffMass();    
+     G4double TargetNonDiffStateMinMass=theParameters->GetTarMinNonDiffMass();
+#if G4VERSION<4099
      G4double ProbTargetDiffraction=theParameters->GetProbabilityOfTarDiff();
+#else
+     G4double ProbTargetDiffraction=0; // does not work with 10+
+#endif
 TargetDiffStateMinMass = 3000;
 /*yzy
 G4cout << "TargetDiffStateMinMass " << TargetDiffStateMinMass << G4endl;
@@ -265,8 +276,13 @@ G4cout<<"Rapid "<<ProjectileRapidity<<G4endl; //" "<<TargetRapidity<<G4endl;
 // Charge exchange can be possible for baryons -----------------
 
 // Getting the values needed for exchange ----------------------
+#if G4VERSION<4099
      G4double MagQuarkExchange        =theParameters->GetMagQuarkExchange();//0.045; //
      G4double SlopeQuarkExchange      =theParameters->GetSlopeQuarkExchange();//0.; //
+#else
+     G4double MagQuarkExchange=0.; 
+     G4double SlopeQuarkExchange=0.; // does not work with Geant4 10+
+#endif
 // 777777777777777777777777777777777777777777777777777777777777777777777777777777
      G4double DeltaProbAtQuarkExchange=theParameters->GetDeltaProbAtQuarkExchange();
 

@@ -59,8 +59,9 @@
 #include "G4NeutronBuilder.hh"
 #include "G4BertiniNeutronBuilder.hh"
 #include "G4FTFPNeutronBuilder.hh"
+#if G4VERSION<4099
 #include "G4LEPNeutronBuilder.hh"
-
+#endif
 #include "G4HyperonFTFPBuilder.hh"
 #include "G4AntiBarionBuilder.hh"
 #include "G4FTFPAntiBarionBuilder.hh"
@@ -82,8 +83,9 @@ class HadronPhysicsFTFP_BERT_PBAR_MU2E02 : public G4VPhysicsConstructor
     G4NeutronBuilder * theNeutrons;
     G4BertiniNeutronBuilder * theBertiniNeutron;
     G4FTFPNeutronBuilder * theFTFPNeutron;
+#if G4VERSION<4099
     G4LEPNeutronBuilder * theLEPNeutron;        //needed for capture&fission
- 
+#endif 
     G4PiKBuilder * thePiK;
     G4BertiniPiKBuilder * theBertiniPiK;
     G4FTFPPiKBuilder * theFTFPPiK;

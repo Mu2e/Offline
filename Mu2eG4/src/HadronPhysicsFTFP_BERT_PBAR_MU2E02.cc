@@ -67,7 +67,9 @@ HadronPhysicsFTFP_BERT_PBAR_MU2E02::HadronPhysicsFTFP_BERT_PBAR_MU2E02(G4int)
     , theNeutrons(0)
     , theBertiniNeutron(0)
     , theFTFPNeutron(0)
+#if G4VERSION<4099
     , theLEPNeutron(0)
+#endif
     , thePiK(0)
     , theBertiniPiK(0)
     , theFTFPPiK(0)
@@ -88,7 +90,9 @@ HadronPhysicsFTFP_BERT_PBAR_MU2E02::HadronPhysicsFTFP_BERT_PBAR_MU2E02(const G4S
     , theNeutrons(0)
     , theBertiniNeutron(0)
     , theFTFPNeutron(0)
+#if G4VERSION<4099
     , theLEPNeutron(0)
+#endif
     , thePiK(0)
     , theBertiniPiK(0)
     , theFTFPPiK(0)
@@ -113,9 +117,11 @@ void HadronPhysicsFTFP_BERT_PBAR_MU2E02::CreateModels()
   theNeutrons->RegisterMe(theBertiniNeutron=new G4BertiniNeutronBuilder);
   theBertiniNeutron->SetMinEnergy(0.0*GeV);
   theBertiniNeutron->SetMaxEnergy(5*GeV);
+#if G4VERSION<4099
   theNeutrons->RegisterMe(theLEPNeutron=new G4LEPNeutronBuilder);
   theLEPNeutron->SetMinInelasticEnergy(0.0*eV);   // no inelastic from LEP
   theLEPNeutron->SetMaxInelasticEnergy(0.0*eV);  
+#endif
 
   thePro=new G4ProtonBuilder;
   theFTFPPro=new PBARFTFPProtonBuilder(QuasiElastic);
@@ -140,7 +146,9 @@ HadronPhysicsFTFP_BERT_PBAR_MU2E02::~HadronPhysicsFTFP_BERT_PBAR_MU2E02()
   delete theNeutrons;
   delete theBertiniNeutron;
   delete theFTFPNeutron;
+#if G4VERSION<4099
   delete theLEPNeutron;    
+#endif
 
   delete thePiK;
   delete theBertiniPiK;

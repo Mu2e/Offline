@@ -46,7 +46,9 @@
 #include "G4VShortLivedParticle.hh"
 #include "G4ShortLivedConstructor.hh"
 #include "G4ParticleTable.hh"
+#if G4VERSION<4099
 #include "G4ShortLivedTable.hh"
+#endif
 #include "G4PhaseSpaceDecayChannel.hh"
 #include "G4VDecayChannel.hh"
 #include "G4DecayTable.hh"
