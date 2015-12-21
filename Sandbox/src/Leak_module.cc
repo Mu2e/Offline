@@ -36,7 +36,7 @@ namespace mu2e {
               << everyN_ << " events."
               << std::endl;
     if ( everyN_ == 0 ){
-      throw cet::exception("CONFIG") << "Value of everyN must be positive;  it is: " << everyN_ << "\n";
+      throw cet::exception("CONFIG") << "Value of everyN must be positive;  it's value is: " << everyN_ << "\n";
     }
   }
 
