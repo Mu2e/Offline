@@ -44,4 +44,4 @@ physics.analyzers.dumpGen : { module_type : GenParticlesAnalyzer
 physics.extrapaths : [ dumpGen ]
 physics.end_paths : [ extrapaths ]
 
-physics.producers.g4run.visualization.macro : "Projects/edmonds-ipa-and-beam-test-sims/fcl/vis-proton-absorber.mac"
+#physics.producers.g4run.visualization.macro : "Projects/edmonds-ipa-and-beam-test-sims/fcl/vis-proton-absorber.mac"
