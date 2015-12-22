@@ -1,0 +1,54 @@
+//
+// Conical proton absorber geometry file.
+// Now the default is 1m inner part and 2.2m outer part.
+// See doc-3186, 3155, 3006, and 2259
+//
+// $Id: protonAbsorber_cylindrical_v2.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/08/29 16:37:09 $
+//
+
+int protonabsorber.version = 2;
+
+string protonabsorber.materialName = "Polyethylene096";
+double protonabsorber.OutRadius1   =  300.0;
+double protonabsorber.OutRadius0   =  300.0;
+double protonabsorber.thickness    =    0.5;
+int    protonabsorber.verbosityLevel = 2;
+bool   protonabsorber.visible      = true;
+bool   protonabsorber.solid        = false;
+
+// To make inner part shorter than MECO design
+bool   protonabsorber.isShorterCone = true;
+double protonabsorber.distFromTargetEnd = 630.;
+double protonabsorber.halfLength   = 100.0;
+
+bool   protonabsorber.ipa.buildSupports = true;
+int    protonabsorber.ipa.nSets         = 2;
+int    protonabsorber.ipa.nWiresPerSet  = 6;
+//double protonabsorber.ipa.wireRadius    = 0.0762; // assume 6-mil diameter
+double protonabsorber.ipa.wireRadius    = 0.0381; // assume 3-mil diameter
+string protonabsorber.ipa.wireMaterial  = "G4_W";
+double protonabsorber.ipa.wireRotationToVertical = 45; // degrees
+
+int    protonabsorber.ipa.nEndRings = 2;
+double protonabsorber.ipa.endRingHalfLength = 9.525; // 3/4" long in the z-direction
+double protonabsorber.ipa.endRingRadialLength = 6.35; // 1/4" long in the r-direction
+string protonabsorber.ipa.endRingMaterial = "CorrugatedPolypropylene";
+
+
+// Outer part
+bool   protonabsorber.isShorterCone = true;
+bool   protonabsorber.outerPA = true;
+double protonabsorber.outerPAInnerRadius0 = 452.4;
+double protonabsorber.outerPAInnerRadius1 = 721.74;
+double protonabsorber.outerPAHalfLength = 2137.5;
+double protonabsorber.outerPAThickness = 20.0;
+double protonabsorber.outerPAZCenter = 6392.5;
+//string protonabsorber.outerPAMaterialName = "Polyethylene092B050d095";
+string protonabsorber.outerPAMaterialName = "Polyethylene096";
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
