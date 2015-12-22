@@ -8,7 +8,7 @@
 // $Date: 2014/08/29 16:37:09 $
 //
 
-int protonabsorber.version = 1; // version 1 is the TDR, version 2 is CD3
+int protonabsorber.version = 2; // version 1 is the TDR version support wires, version 2 is CD3 support wires
 
 string protonabsorber.materialName = "Polyethylene096";
 double protonabsorber.OutRadius1   =  380.0;
