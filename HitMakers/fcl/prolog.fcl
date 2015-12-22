@@ -180,10 +180,10 @@ MakeCaloCompressedHits  : {
 CaloDigisFromStepPointMCs :  {
     module_type           : CaloDigisFromStepPointMCs
 
-    diagLevel             : 1  
+    diagLevel             : 0  
     debugLevel            : 0
     wfInput               : 3
-    timeGap               : 2.
+
     blindTime             : 300.
     caloLRUcorrection     : false
     caloNonLinCorrection  : false
@@ -195,8 +195,7 @@ CaloDigisFromStepPointMCs :  {
     caloROShowerMCName          : calorimeterRO
     g4ModuleLabel               : g4run
 
-#    TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-    TimeOffsets                 : { inputs : [  ] }
+    TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     TimeFoldingBuffer           : 100.0
 
     addNoise                    : 0
@@ -213,13 +212,13 @@ CaloDigisFromStepPointMCs :  {
     acquisitionLength           : 1965.
 
     bufferAfter                 : 0  #n-timestamps
-    bufferBefore                : 8 #5  #n-timestamps
+    bufferBefore                : 8  #n-timestamps
     waveformOffset              : 150.  # ns
 }
 
 CaloHitsFromCaloDigis :{
     module_type           : CaloHitsFromCaloDigis
-    diagLevel             : 10
+    diagLevel             : 0
     debugMode             : 0
 
     digiSampling          : 4 #ns
@@ -228,8 +227,7 @@ CaloHitsFromCaloDigis :{
     caloCalibNoise        : 0
     g4ModuleLabel         : g4run
 
-#    TimeOffsets           : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-    TimeOffsets           : { inputs : [  ] }
+    TimeOffsets           : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 
     caloDigiModuleLabel   : CaloDigisFromStepPointMCs
 
@@ -244,7 +242,7 @@ CaloHitsFromCaloDigis :{
 	acquisitionLenght : 1965 #ns
 	digiSampling      : 4    #ns
 	pulseErrorSample  : 1    #ADC counts
-	psdThreshold      : 125   #a.u.  
+	psdThreshold      : 125  #a.u.  
 	timeFraction      : 0.02
     }
 
@@ -254,14 +252,14 @@ CaloHitsFromCaloDigis :{
 CaloCrystalHitsFromCaloHits  :{
     module_type           : CaloCrystalHitsFromCaloHits
 
-    diagLevel             : 1
+    diagLevel             : 0
     debugMode             : 0
     digiSampling          : 4 #ns
     acquisitionLenght     : 2000
     time4Merge            : 4.
     g4ModuleLabel         : g4run
-#    TimeOffsets           : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-    TimeOffsets           : { inputs : [ ] }
+    TimeOffsets           : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+
     caloDigisModuleLabel  : CaloHitsFromCaloDigis
     calorimeterStepPoints : calorimeter
 }
