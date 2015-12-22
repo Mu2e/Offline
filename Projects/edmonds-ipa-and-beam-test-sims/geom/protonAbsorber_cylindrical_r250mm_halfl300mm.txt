@@ -3,16 +3,16 @@
 // Now the default is 1m inner part and 2.2m outer part.
 // See doc-3186, 3155, 3006, and 2259
 //
-// $Id: protonAbsorber_conical_v2.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
+// $Id: protonAbsorber_cylindrical_v2.txt,v 1.1 2014/08/29 16:37:09 knoepfel Exp $
 // $Author: knoepfel $
 // $Date: 2014/08/29 16:37:09 $
 //
 
-int protonabsorber.version = 2; // version 1 is the TDR version support wires, version 2 is CD3 support wires
+int protonabsorber.version = 2;
 
 string protonabsorber.materialName = "Polyethylene096";
-double protonabsorber.OutRadius1   =  380.0;
-double protonabsorber.OutRadius0   =  335.2;
+double protonabsorber.OutRadius1   =  250.0;
+double protonabsorber.OutRadius0   =  250.0;
 double protonabsorber.thickness    =    0.5;
 int    protonabsorber.verbosityLevel = 2;
 bool   protonabsorber.visible      = true;
@@ -20,14 +20,22 @@ bool   protonabsorber.solid        = false;
 
 // To make inner part shorter than MECO design
 bool   protonabsorber.isShorterCone = true;
-double protonabsorber.distFromTargetEnd = 5.;
-double protonabsorber.halfLength   = 500.0;
+double protonabsorber.distFromTargetEnd = 630.;
+double protonabsorber.halfLength   = 300.0;
 
 bool   protonabsorber.ipa.buildSupports = true;
 int    protonabsorber.ipa.nSets         = 2;
-int    protonabsorber.ipa.nWiresPerSet  = 3;
-double protonabsorber.ipa.wireRadius    = 0.0762; // assume 6-mil diameter
+int    protonabsorber.ipa.nWiresPerSet  = 6;
+//double protonabsorber.ipa.wireRadius    = 0.0762; // assume 6-mil diameter
+double protonabsorber.ipa.wireRadius    = 0.0381; // assume 3-mil diameter
 string protonabsorber.ipa.wireMaterial  = "G4_W";
+double protonabsorber.ipa.wireRotationToVertical = 45; // degrees
+
+int    protonabsorber.ipa.nEndRings = 2;
+double protonabsorber.ipa.endRingHalfLength = 9.525; // 3/4" long in the z-direction
+double protonabsorber.ipa.endRingRadialLength = 6.35; // 1/4" long in the r-direction
+string protonabsorber.ipa.endRingMaterial = "CorrugatedPolypropylene";
+
 
 // Outer part
 bool   protonabsorber.isShorterCone = true;

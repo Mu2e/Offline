@@ -1,0 +1,153 @@
+//
+// Top level geometry file first used in stage 3 of the CD3c simulation campagin.
+//
+// Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+
+string detector.name  = "g4geom_v00";
+
+bool hasHall            = true;
+bool hasTarget          = true;
+bool hasProtonAbsorber  = true;
+bool hasTSdA           = true;
+bool hasExternalShielding = true;
+bool hasVaneCalorimeter = false;
+bool hasDiskCalorimeter = true;
+bool hasHybridCalorimeter = false;
+bool hasBFieldManager   = true;
+bool hasBeamline        = true;
+bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now;
+bool hasCosmicRayShield = true;
+bool hasMBS             = true; // note the two subcomponents, see mbs section below;
+                                // no MBS implies no downstream hole in Cosmic Ray Passive Shield
+                                // Magnetic field may be affected as well
+
+#include "Mu2eG4/geom/g4_visOptions.txt"
+
+//-------------------------------------------
+// Mu2e geometry includes
+//-------------------------------------------
+
+// X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
+// The origin of the detector coordinate system is on the DS axis at the specified z.
+double mu2e.solenoidOffset   =  3904.;   // mm
+double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
+
+#include "Mu2eG4/geom/mu2eWorld.txt"
+#include "Mu2eG4/geom/mu2eHall.txt"
+
+// Solenoids
+#include "Mu2eG4/geom/DetectorSolenoid_v02.txt"
+#include "Mu2eG4/geom/DSShielding_v01.txt"
+#include "Mu2eG4/geom/ProductionSolenoid_v01.txt"
+#include "Mu2eG4/geom/psEnclosure_v01.txt"
+#include "Mu2eG4/geom/PSShield_v05.txt"
+#include "Mu2eG4/geom/PSExternalShielding_v01.txt"
+#include "Mu2eG4/geom/TransportSolenoid_v01.txt"
+#include "Mu2eG4/geom/pionDegrader.txt"
+
+// External Shielding
+#include "Mu2eG4/geom/ExtShieldUpstream_v02.txt"
+#include "Mu2eG4/geom/ExtShieldDownstream_v02.txt"
+#include "Mu2eG4/geom/Saddle_cd3.txt"
+
+//#include "Mu2eG4/geom/stoppingTarget_TDR.txt" // 17 foil tapered muon stopping target used for the TDR simulations
+#include "Mu2eG4/geom/stoppingTarget_CD3C_34foils.txt" // 34 foil muon stopping target to be used for the CDC3 simulations
+
+#include "Mu2eG4/geom/TSdA_v01.txt"
+#include "Mu2eG4/geom/muonBeamStop_v02.txt"
+#include "Mu2eG4/geom/MSTM_v01.txt" // muon stopping target monitor
+
+// Proton Absorber
+#include "Projects/edmonds-ipa-and-beam-test-sims/geom/protonAbsorber_cylindrical_r300mm_halfl300mm.txt"
+//#include "Mu2eG4/geom/protonAbsorber_conical_v2.txt"
+//#include "Mu2eG4/geom/protonAbsorber_conical.txt" // MECO-style PA
+//#include "Mu2eG4/geom/protonAbsorber_helical.txt" // Helical PA
+
+#include "Mu2eG4/geom/ProductionTargetInPS.txt"
+#include "Mu2eG4/geom/protonBeamDump_v02.txt"
+#include "Mu2eG4/geom/extmon_fnal_v02.txt"
+
+#include "Mu2eG4/geom/ttracker_cd3.txt"
+
+// Crystal calorimeter
+//#include "Mu2eG4/geom/calorimeter_LYSO.txt"
+#include "Mu2eG4/geom/calorimeter_BaF2.txt"
+
+//CRV counters
+#include "Mu2eG4/geom/crv_counters_v03.txt"
+
+//-------------------------------------------
+// Magnetic field
+//-------------------------------------------
+
+// default is now Mau9 everywhere, including the DS
+// Form of DS field: 0 is full field;
+//                   1 is full upstream, const downstream;
+//                   2 is const throughout
+int detSolFieldForm = 0;
+// Mau 9 maps
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau9/Mu2e_DSMap.header",
+  "BFieldMaps/Mau9/Mu2e_PSMap.header",
+  "BFieldMaps/Mau9/Mu2e_TSuMap.header",
+  "BFieldMaps/Mau9/Mu2e_TSdMap.header",
+  "BFieldMaps/Mau9/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau9/ProtonDumpAreaMap.header",
+  "BFieldMaps/Mau9/DSExtension.header"
+};
+
+// Value of the uniform magnetic field with the DS volume (only for
+// detSolFieldForm>0)
+double toyDS.bz            = 1.0;
+
+// Gradient of field in DS2 volume. Applied only in the case
+// of detSolFieldForm=1 or detSolFieldForm=2.
+double toyDS.gradient      = 0.0; // Tesla/m
+
+// This is recommended field map. See geom_mecofield.txt to use the meco field.
+string bfield.format  = "G4BL";
+
+// The other option is "meco"
+string bfield.interpolationStyle = trilinear;
+
+int  bfield.verbosityLevel =  0;
+bool bfield.writeG4BLBinaries     =  false;
+
+vector<string> bfield.outerMaps = {
+  "BFieldMaps/Mau9/ExtMonUCIInternal1AreaMap.header",
+  "BFieldMaps/Mau9/ExtMonUCIInternal2AreaMap.header",
+  "BFieldMaps/Mau9/ExtMonUCIAreaMap.header",
+  "BFieldMaps/Mau9/PSAreaMap.header"
+};
+
+// This scale factor is of limited use.
+// It can make approximate sense to scale the PS field to get a rough
+// answer; the answer will be wrong in detail.
+// It never makes sense to scale the TS field.
+// Not sure if it ever makes sense to scale the PS field.
+double bfield.scaleFactor = 1.0;
+
+//---------------------------------------
+// Virtual detectors
+//---------------------------------------
+double vd.halfLength     = 0.01; //mm
+int    vd.verbosityLevel = 0;
+bool   vd.visible        = true;
+bool   vd.solid          = false;
+
+// // VD right in front of a hall wall
+// double vd.ExtMonCommonPlane.z = -11999.99;
+
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -60,12 +60,15 @@ namespace mu2e {
     const Tube& getWire( std::size_t iSet, std::size_t iWire ) const { return _supportWireMap.at(iSet).at(iWire); }
     std::size_t nSets() const { return _nSets; }
     std::size_t nWiresPerSet() const { return _nWiresPerSet; }
+    const Tube& getEndRing( std::size_t iRing ) const { return _endRingMap.at(iRing); }
+    std::size_t nEndRings() const { return _nEndRings; }
 
   private:
     std::size_t _nSets;
     std::size_t _nWiresPerSet;
     std::vector<std::vector<Tube>> _supportWireMap;
-    
+    std::size_t _nEndRings;
+    std::vector<Tube> _endRingMap;
   };
 
   class MECOStyleProtonAbsorber : virtual public Detector{

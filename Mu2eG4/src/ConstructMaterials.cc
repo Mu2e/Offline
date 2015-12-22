@@ -981,6 +981,16 @@ namespace mu2e {
       tgt->AddMaterial(met, 1.);
     }
 
+    mat = uniqueMaterialOrThrow("CorrugatedPolypropylene");
+    {
+      G4double standardPolypropyleneDensity = 0.946*CLHEP::g/CLHEP::cm3;
+      G4double corrugatedEffectiveDensity = 0.2 * standardPolypropyleneDensity;
+      G4Material* CorrugatedPolypropylene = new G4Material( mat.name, corrugatedEffectiveDensity, 2);
+      CorrugatedPolypropylene->AddElement( getElementOrThrow("C"), 3);
+      CorrugatedPolypropylene->AddElement( getElementOrThrow("H"), 6);
+    }
+
+
     // Completed constructing Mu2e specific materials.
     
   }
