@@ -2,7 +2,7 @@
 
 #include "TH2.h"
 
-TH2F* TrackerChargeDepositPlots(std::string id, BaseRun* particle_run, BaseRun* ce_run) {
+TH2F* TrackerChargeDepositPlots(std::string id, std::vector<BaseRun*>& particle_runs, BaseRun* ce_run) {
 
   int n_years = BaseRun::n_years_running;
   int n_days = 365;
@@ -44,7 +44,7 @@ TH2F* TrackerChargeDepositPlots(std::string id, BaseRun* particle_run, BaseRun* 
   hFractionCEHitsLost_Straw->SetYTitle("Fraction of CE Hits Lost (due to dead straws)");
 
 
-  TAxis* straw_length_axis = particle_run->GetHitMap()->GetXaxis(); // just so know what to loop over
+  TAxis* straw_length_axis = (particle_runs.at(0))->GetHitMap()->GetXaxis(); // just so know what to loop over
       
   // Start looping through individual straws
   for (int i_device = 0; i_device < BaseRun::n_devices; ++i_device) {
@@ -58,21 +58,26 @@ TH2F* TrackerChargeDepositPlots(std::string id, BaseRun* particle_run, BaseRun* 
 	bool straw_dead = false;
 	int earliest_time = n_time_bins;
 	for (int i_cm_bin = 1; i_cm_bin <= straw_length_axis->GetNbins(); ++i_cm_bin) {
-	  TH3F* hHitMap = particle_run->GetHitMap(); // this gives the number of hits per microbunch
+
+	  // Loop through the different particle types
+	  double charge_per_length = 0; // want to keep track of this for all particle types
+	  for(std::vector<BaseRun*>::const_iterator i_particle_run = particle_runs.begin(); i_particle_run != particle_runs.end(); ++i_particle_run) {
+	    TH3F* hHitMap = (*i_particle_run)->GetHitMap(); // this gives the number of hits per microbunch
 	  
-	  double hits_per_microbunch = hHitMap->GetBinContent(i_cm_bin, y_bin, z_bin);
-	  double charge_per_length = (hits_per_microbunch * particle_run->GetChargeDepositPerHit() * BaseRun::n_microbunches_per_year * BaseRun::n_years_running); // over the whole experiment
+	    double hits_per_microbunch = hHitMap->GetBinContent(i_cm_bin, y_bin, z_bin);
+	    charge_per_length += (hits_per_microbunch * (*i_particle_run)->GetChargeDepositPerHit() * BaseRun::n_microbunches_per_year * BaseRun::n_years_running); // over the whole experiment
+	  }
 
 	  // Now start looping through the time bins
 	  for (int i_time_bin = 1; i_time_bin <= n_time_bins; ++i_time_bin) {
 	    double time = hTotalChargeDeposit->GetXaxis()->GetBinLowEdge(i_time_bin);
-
+	    
 	    double charge_per_length_now = charge_per_length;
 	    charge_per_length_now /= n_time_bins;
 	    charge_per_length_now *= i_time_bin; // divide down to the time after this bin
-
+	    
 	    hTotalChargeDeposit->Fill(time, charge_per_length_now);
-
+	    
 	    if (charge_per_length_now >= charge_limit) {
 	      hDeadStrawCms->Fill(time);
 	      double fraction_ce_hits_lost_straw_cm = (hConvEMinus_StrawCm_HitMap->GetBinContent(i_cm_bin, y_bin, z_bin) * ce_run->GetNMicrobunchesSimulated()) / hConvEMinus_StrawCm_HitMap->GetEntries();
