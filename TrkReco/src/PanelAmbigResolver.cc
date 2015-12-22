@@ -170,13 +170,13 @@ namespace mu2e {
 	double gdist;
 	Hep3Vector wdir; 
 	HepPoint wpos;
-	for(auto ihit = phits.begin();ihit != phits.end(); ++ihit){
-	  TrkPoca tpoca(*straj,(*ihit)->fltLen(),(*ihit)->hitTraj(),(*ihit)->hitLen());
+	for(const TrkStrawHit* refhit : phits) {
+	  TrkPoca tpoca(*straj,refhit->fltLen(),*refhit->hitTraj(),refhit->hitLen());
 	  if(tpoca.status().success() ) { //&& abs(tpoca.doca()) < _maxhitu){
 	    retval = true;
 	    gdist = tpoca.flt1();
-	    wdir = (*ihit)->hitTraj()->direction(tpoca.flt2()); 
-	    wpos = (*ihit)->hitTraj()->position(tpoca.flt2()); 
+	    wdir = refhit->hitTraj()->direction(tpoca.flt2()); 
+	    wpos = refhit->hitTraj()->position(tpoca.flt2()); 
 	    break;
 	  }
 	}
