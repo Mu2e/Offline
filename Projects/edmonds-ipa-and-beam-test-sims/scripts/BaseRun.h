@@ -84,7 +84,7 @@ class BaseRun {
   bool fExists;
 };
 
-double BaseRun::max_microbunch_time = 1800;
+double BaseRun::max_microbunch_time = 1700;
 
 double BaseRun::n_years_running = 3;
 double BaseRun::n_POT_per_year = 1.2e20;
