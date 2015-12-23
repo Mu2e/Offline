@@ -2,12 +2,16 @@
 # A script to generate the text files
 
 radius_change_line="350"
-new_radii=[ "300", "250", "200" ]
+new_radii=[ "350", "300", "250", "200" ]
 length_change_line="500"
-new_lengths=[ "0", "100", "200", "300", "400"  ]
+new_lengths=[ "0", "100", "200", "300", "400", "500"  ]
 
 for radius in new_radii:
     for length in new_lengths:
+
+        if radius=="350" and length=="500":
+            continue;
+
         geom_file = open('protonAbsorber_cylindrical_r350mm_halfl500mm.txt', 'r');
         geom_filename="protonAbsorber_cylindrical_r"+radius+"mm_halfl"+length+"mm.txt"
         out_geom_file = open(geom_filename, 'w');
