@@ -1,23 +1,22 @@
 //--------------------------------------------------------------------------
 // Name:
-//   DetStrawHitType:  Trivial class to define types for TrkStrawHits
+//   DetUniformType:  Trivial class to define types for uniform elements
 //        Copyright (C) 2011    Lawrence Berkeley Laboratory
 // Author List:
 //      Dave Brown 9 Sept. 2011
 //------------------------------------------------------------------------
-#ifndef DetStrawHitType_hh
-#define DetStrawHitType_hh
+#ifndef DetUniformType_hh
+#define DetUniformType_hh
 
 #include "BTrk/DetectorModel/DetType.hh"
-#include "BTrk/MatEnv/MatDBInfo.hh"
+#include "BTrk/DetectorModel/DetMaterial.hh"
 
 namespace mu2e {
-class DetStrawHitType : public DetType {
+class DetUniformType : public DetType {
   public:
-    DetStrawHitType(MatDBInfo const* matdbinfo,const char* strawwallmat) {
-      _mat = matdbinfo->findDetMaterial(strawwallmat); }
-    virtual ~DetStrawHitType() {}
-// DetType interface
+    DetUniformType(const DetMaterial* mat) : _mat(mat) {}
+    virtual ~DetUniformType() {}
+// Trivial implementation of DetType interface
     virtual bool physicalMaterial(const TypeCoord*) const { return true; }
     virtual const DetMaterial& material(const TypeCoord*) const { return *_mat; }
   private:

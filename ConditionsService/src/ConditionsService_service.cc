@@ -25,6 +25,7 @@
 // sources of served objects
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
+#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 
 using namespace std;
 
@@ -89,6 +90,7 @@ namespace mu2e {
     addEntity( std::move(std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config))) );
     addEntity(std::move(std::unique_ptr<StrawElectronics>(new StrawElectronics(_pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())))) );
     addEntity(std::move(std::unique_ptr<StrawPhysics>(new StrawPhysics(_pset.get<fhicl::ParameterSet>("StrawPhysics",fhicl::ParameterSet())))) );
+    addEntity(std::move(std::unique_ptr<Mu2eDetectorModel>(new Mu2eDetectorModel(_pset.get<fhicl::ParameterSet>("Mu2eDetectorModel",fhicl::ParameterSet())))) );
 
   }
 
