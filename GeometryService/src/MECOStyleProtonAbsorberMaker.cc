@@ -310,7 +310,7 @@ namespace mu2e {
       for ( std::size_t iW(0); iW < _pabs->_ipaSupport->nWiresPerSet() ; iW++ ) {
         wireVector.push_back( Tube( 0. ,
                                     wireRadius ,
-                                    wireLength*0.5-0.01, // 0.01 offset to avoid run-ins with the absorbvers
+                                    wireLength*0.5-3.0, // 3.0 offset to avoid run-ins with the absorbers
                                     CLHEP::Hep3Vector( -3904, 0., zPosition ),
                                     CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
                                     0,
