@@ -12,7 +12,6 @@
 // BaBar
 #include "BTrk/BbrGeom/TrkLineTraj.hh"
 #include "BTrk/TrkBase/TrkHit.hh"
-#include "BTrk/TrkBase/TrkDetElemId.hh"
 #include "BTrk/TrkBase/TrkT0.hh"
 // Mu2e
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -23,8 +22,6 @@
 // c++
 #include <vector>
 // forward refs
-class TrkT0;
-class TrkRep;
 class TrkDifTraj;
 
 namespace mu2e 
@@ -39,7 +36,7 @@ namespace mu2e
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
     virtual int ambig() const { return _iamb; }
-    virtual void invert();
+//    virtual void invert();
     virtual void setAmbig(int newambig);
     void setAmbigUpdate(bool update) { _ambigupdate = update; }
     unsigned index() const { return _istraw; } // index into StrawHit vector

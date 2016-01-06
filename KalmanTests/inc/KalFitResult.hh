@@ -11,7 +11,7 @@
 #include "BTrk/BaBar/BaBar.hh"
 // KalFit objects
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"

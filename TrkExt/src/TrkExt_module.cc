@@ -44,7 +44,7 @@ using namespace CLHEP;
 #include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"

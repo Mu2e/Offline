@@ -18,7 +18,7 @@
 #include "TrkExt/inc/TrkExtDiag.hh"
 #include "TrkExt/inc/TrkExtMCHits.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/TrkBase/HelixParams.hh"

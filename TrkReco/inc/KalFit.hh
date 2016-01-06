@@ -27,7 +27,7 @@
 #include "BTrk/BField/BField.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 // Mu2e objects
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
@@ -52,6 +52,8 @@ namespace mu2e
     virtual void makeTrack(TrkDef const& tdef, KalRep*& kres);
 // add a set of hits to an existing fit
     virtual void addHits(KalRep* kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi);
+// add materials to a track
+    virtual void addMaterials(KalRep* krep);
 // Try to put back inactive hits
     bool unweedHits(KalRep* kres, double maxchi);
 // KalContext interface
@@ -96,7 +98,6 @@ namespace mu2e
     void findBoundingHits(TrkStrawHitVector& hits, double flt0,
 	TrkStrawHitVector::reverse_iterator& ilow,
 	TrkStrawHitVector::iterator& ihigh);
-
   };
 }
 #endif

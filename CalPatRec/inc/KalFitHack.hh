@@ -20,7 +20,7 @@
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "KalmanTests/inc/KalFitResult.hh"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
 #include "BTrk/KalmanTrack/KalContext.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"

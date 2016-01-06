@@ -7,13 +7,14 @@
 //
 // Original author David Brown, LBNL
 //
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 // BTrk
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkDifTraj.hh"
 #include "BTrk/TrkBase/TrkRep.hh"
+#include "BTrk/TrkBase/TrkHit.hh"
 //
 #include "CLHEP/Vector/ThreeVector.h"
 // conditions
@@ -137,14 +138,6 @@ namespace mu2e
       _iamb = -1;
     else
       _iamb = 0;
-  }
-
-  void
-  TrkStrawHit::invert() {
-    //flip the ambiguity state; does nothing for null ambiguilty
-    setAmbig( -1*ambig() );
-    // call down to base class
-    TrkHit::invert();
   }
 
   TrkErrCode

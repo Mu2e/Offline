@@ -33,7 +33,7 @@
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/RobustHelixFit.hh"
 // Mu2e
 #include "TrkPatRec/inc/TrkPatRecUtils.hh"

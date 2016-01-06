@@ -16,14 +16,16 @@
 #include "TrkReco/inc/FixedAmbigResolver.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 #include "Mu2eBTrk/inc/BaBarMu2eField.hh"
+#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
-// conditions
+// services
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -33,6 +35,7 @@
 // BaBar
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/KalmanTrack/KalBend.hh"
+#include "BTrk/KalmanTrack/KalMaterial.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
@@ -213,6 +216,8 @@ namespace mu2e
   }
 
   void KalFit::addHits(KalRep* krep,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi) {
+  // fetcth the DetectorModel
+   GeomHandle<Mu2eDetectorModel> detmodel;
 // there must be a valid Kalman fit to add hits to
     if(krep != 0 && indices.size() > 0 && krep->fitStatus().success()){
       TrkStrawHitVector tshv;
@@ -254,13 +259,6 @@ namespace mu2e
 	trkhit->setActivity(true);
 // add the hit to the track
 	krep->addHit(trkhit);
-// create intersections for the material of this hit and add those to the track
-	DetIntersection wallinter;
-	if(trkhit->wallElem().reIntersect(reftraj,wallinter))
-	  krep->addInter(wallinter);	
-	DetIntersection gasinter;
-	if(trkhit->gasElem().reIntersect(reftraj,gasinter))
-	  krep->addInter(gasinter);
 // check the raw residual: This call works because the HOT isn't yet processed as part of the fit.
         double chi = fabs(trkhit->residual()/trkhit->hitRms());
 //if it's outside limits, deactivate the HOT
@@ -268,6 +266,31 @@ namespace mu2e
 	  trkhit->setActivity(false);
 // now that we've got the residual, we can turn of auto-ambiguity resolution
 	trkhit->setAmbigUpdate(false);
+   // find the DetElem associated this straw
+	const DetStrawElem* strawelem = detmodel->strawElem(trkhit->straw());
+// see if this KalRep already has a KalMaterial with this element: if not, add it
+	bool addmat(true);
+	std::vector<const KalMaterial*> kmats;
+	krep->findMaterialSites(strawelem,kmats);
+// if this is a reflecting track the same material can appear multiple times: check the flight lengths
+	if(kmats.size() > 0){
+	  for(auto kmat: kmats) {
+	    if( fabs( kmat->globalLength() - trkhit->fltLen()) < 10*strawelem->straw()->getRadius()){
+	      addmat = true;
+	      break;
+	    }
+	  }
+	}
+	if(addmat){
+	  // create intersection object for this element; it includes all materials
+	  DetIntersection strawinter;
+	  strawinter.delem = strawelem;
+	  strawinter.pathlen = trkhit->fltLen();
+	  strawinter.thit = trkhit;
+	  // compute initial intersection: this gets updated each fit iteration
+	  strawelem->reIntersect(trkhit->trkTraj(),strawinter);
+	  krep->addInter(strawinter);
+	}
       }
 // refit the last iteration of the track
       TrkErrCode fitstat = fitIteration(krep,tshv,_herr.size()-1);
@@ -359,23 +382,34 @@ namespace mu2e
     std::sort(tshv.begin(),tshv.end(),fltlencomp(_fdir.fitDirection()));
   }
 
-// this is a kludge function to extract materials from the straw hits.
   void
   KalFit::makeMaterials(TrkStrawHitVector const& tshv, TrkDef const& tdef,std::vector<DetIntersection>& detinter) {
-    for (auto ihit=tshv.begin();ihit!=tshv.end(); ++ihit){
-      TrkStrawHit* trkhit = *ihit;
-      // create wall and gas intersection objects from each straw hit (active or not)
-      DetIntersection wallinter;
-      wallinter.delem = 0;
-      wallinter.pathlen = trkhit->fltLen();
-      DetIntersection gasinter;
-      gasinter.delem = 0;
-      gasinter.pathlen = trkhit->fltLen();
-      if(trkhit->wallElem().reIntersect(&tdef.helix(),wallinter))
-	detinter.push_back(wallinter);
-      if(trkhit->gasElem().reIntersect(&tdef.helix(),gasinter))
-	detinter.push_back(gasinter);
+  // fetcth the DetectorModel
+    GeomHandle<Mu2eDetectorModel> detmodel;
+    // loop over strawhits and extract the straws
+    for (auto trkhit : tshv) {
+   // find the DetElem associated this straw
+      const DetStrawElem* strawelem = detmodel->strawElem(trkhit->straw());
+      // create intersection object for this element; it includes all materials
+      DetIntersection strawinter;
+      strawinter.delem = strawelem;
+      strawinter.pathlen = trkhit->fltLen();
+      strawinter.thit = trkhit;
+      // compute initial intersection: this gets updated each fit iteration
+      strawelem->reIntersect(&tdef.helix(),strawinter);
+      detinter.push_back(strawinter);
     }
+  }
+
+  void
+  KalFit::addMaterials(KalRep* krep) {
+    // fetcth the DetectorModel
+    ConditionsHandle<Mu2eDetectorModel> detmodel;
+  // this function needs to be implemented, FIXME!!!
+// loop over the detector model using the fit trajectory and find straws intersected by this track
+// for now do this by brute force, but a smarter lookup is needed FIXME!!!
+  
+// Now see if the Kalman rep includes material elements for all these straws; add the ones that are missing
   }
 
   bool
