@@ -1,0 +1,23 @@
+           Release notes for Mu2e Offline software, v5_6_0
+
+2) Dec 22, 2015 kutschke
+   This is the release to be used for Zhengyun style pbar production
+   for cd3c.
+
+   Important recent changes:
+    - fcl updates to support the new pbar jobs
+    - Bug fix in tracking code from Dave Brown - needed
+      for cosmic stage 3.
+
+1) Dec 21, 2015 genser
+
+   Made FTFP_BERT_PBAR_MU2E02 physics list files to compile with Geant4 10.1.p02
+   (The list can only be used with Geant4 9.6 though)
+   affected files:
+
+      Mu2eG4/inc/FTFP_BERT_PBAR_MU2E02.icc             |    6 ++++++
+      Mu2eG4/inc/HadronPhysicsFTFP_BERT_PBAR_MU2E02.hh |    6 ++++--
+      Mu2eG4/src/HadronPhysicsFTFP_BERT_PBAR_MU2E02.cc |    8 ++++++++
+      Mu2eG4/src/PBARDiffractiveExcitation.cc          |   18 +++++++++++++++++-
+      Mu2eG4/src/PBARFTFModel.cc                       |    5 +++++
+      Mu2eG4/src/PBARVLongitudinalStringDecay.cc       |    2 ++

@@ -49,7 +49,7 @@ namespace mu2e {
 
   void constructProtonAbsorber( SimpleConfig const & _config
                                 ){
-    
+
     if( !_config.getBool("hasProtonAbsorber", true) ) return;
     
     int  const verbosityLevel           = _config.getInt("protonabsorber.verbosityLevel", 0);
@@ -546,9 +546,12 @@ namespace mu2e {
         AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
         const InnerProtonAbsSupport* ipaSup = pabs->getIPAsupport();
+	const int ipa_version = _config.getInt("protonabsorber.version", 1); // also need to know the version number in this file
+	const double wireRotation = _config.getDouble("protonabsorber.ipa.wireRotationToVertical", 45); // will be used for v2 only
+
         int iS(0);
         for ( std::size_t iSet(0); iSet < ipaSup->nSets(); iSet++) {
-
+	  ++iS; // increment here so we have set 1 and set 2, one for each end of the IPA
           const double pabs1rOut0 = pabs->part(0).outerRadiusAtStart();
           const double pabs1rOut1 = pabs->part(0).outerRadiusAtEnd();
           const double pabs1len   = pabs->part(0).halfLength() *2.;
@@ -560,18 +563,43 @@ namespace mu2e {
 
             Tube supportWire = ipaSup->getWire( iSet, iWire );
 
-            ostringstream wirename ; wirename << "IPAsupport_set" << ++iS << "_wire" << ++iW ;
+            ostringstream wirename ; wirename << "IPAsupport_set" << iS << "_wire" << ++iW ;
 
             const double rStartOfWire = pabs1rOut0+(supportWire.originInMu2e().z()-zstartOfIPA)/pabs1len*(pabs1rOut1-pabs1rOut0);
 
             CLHEP::Hep3Vector additionalOffset ( (supportWire.halfLength()+0.005+rStartOfWire) * std::cos(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() ),
                                                  (supportWire.halfLength()+0.005+rStartOfWire) * std::sin(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet() ), 
-                                                 0);
+                                                 0 );
 
             // Now get appropriate rotation angles
             G4RotationMatrix* supportRot = reg.add(G4RotationMatrix());
-            supportRot->rotateY(-M_PI/2.);
-            supportRot->rotateZ(-iW*360.*CLHEP::deg / ipaSup->nWiresPerSet() );
+
+	    if (ipa_version == 1) {
+	      supportRot->rotateY(-M_PI/2.);
+	      supportRot->rotateZ(-iW*360.*CLHEP::deg / ipaSup->nWiresPerSet() );
+	    }
+	    else if (ipa_version == 2) {
+	      CLHEP::Hep3Vector rotationAxis(0, 1, 0); // start off with rotating around the y-axis
+	      rotationAxis.rotateZ((iW-1)*360.*CLHEP::deg / ipaSup->nWiresPerSet()); // each wire wants to be rotated arounf a slightly different axis
+	      supportRot->rotate(wireRotation*CLHEP::deg, rotationAxis);
+	    
+	      CLHEP::Hep3Vector extraZOffset(0, 0, supportWire.halfLength() * std::cos(wireRotation*CLHEP::deg)); // because of the rotation from the vertical
+	      CLHEP::Hep3Vector extraROffset(std::cos(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet()) * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
+					   std::sin(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet()) * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
+					   0);
+	      additionalOffset -= extraROffset;
+
+	      if (supportWire.originInMu2e().z() > pabs->part(0).center().z()) { // if the wires are further away from the target...
+		// ...we need to rotate them again
+		supportRot->rotate(90.*CLHEP::deg, rotationAxis);
+		
+		// and move them
+		additionalOffset += extraZOffset;
+	      }
+	      else {
+		additionalOffset -= extraZOffset;
+	      }
+	    }
 
             nestTubs( wirename.str() ,
                       supportWire.getTubsParams(),
@@ -589,6 +617,30 @@ namespace mu2e {
 
           } // wire loop
         } // set loop
+
+	// Build the end rings
+	// this will only happen for v2 of the IPA because the deafult number of end rings is 0
+        for ( std::size_t iEndRing(0); iEndRing < ipaSup->nEndRings(); iEndRing++) {
+
+            Tube endRing = ipaSup->getEndRing( iEndRing );
+
+            ostringstream endRingName ; endRingName << "IPAsupport_endring" << iEndRing;
+
+            nestTubs( endRingName.str() ,
+                      endRing.getTubsParams(),
+                      findMaterialOrThrow( endRing.materialName() ),
+                      0,
+                      endRing.originInMu2e()-parent1Info.centerInMu2e(),
+                      parent1Info,
+                      0,
+                      pabsIsVisible,
+                      G4Color::Red(),
+                      pabsIsSolid,
+                      forceAuxEdgeVisible,
+                      placePV,
+                      doSurfaceCheck );
+
+	} // end ring loop
       } // build ipa supports
     }
   }

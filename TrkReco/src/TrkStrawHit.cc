@@ -7,14 +7,14 @@
 //
 // Original author David Brown, LBNL
 //
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 // BTrk
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkDifTraj.hh"
-#include "BTrk/TrkBase/TrkDetElemId.hh"
 #include "BTrk/TrkBase/TrkRep.hh"
+#include "BTrk/TrkBase/TrkHit.hh"
 //
 #include "CLHEP/Vector/ThreeVector.h"
 // conditions
@@ -27,20 +27,6 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e
 {
-/// Material information, BaBar style
-  MatDBInfo* TrkStrawHit::matdbinfo(){
-    static MatDBInfo mat;
-    return &mat;
-  }
-  DetStrawHitType* TrkStrawHit::wtype(){
-    static DetStrawHitType instance(matdbinfo(),"straw-wall");
-    return &instance;
-  }
-  DetStrawHitType* TrkStrawHit::gtype(){
-    static DetStrawHitType instance(matdbinfo(),"straw-gas");
-    return &instance;
-  }
-
   TrkStrawHit::TrkStrawHit(const StrawHit& strawhit, const Straw& straw, unsigned istraw,
     const TrkT0& trkt0,double fltlen,double exterr,double maxdriftpull) :
     _strawhit(strawhit),
@@ -51,9 +37,7 @@ namespace mu2e
     _toterr(0.0),
     _iamb(0),
     _ambigupdate(false),
-    _maxdriftpull(maxdriftpull),
-    _welem(wtype(),this),
-    _gelem(gtype(),this)
+    _maxdriftpull(maxdriftpull)
   {
 // is there an efficiency issue fetching the calibration object for every hit???
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -156,14 +140,6 @@ namespace mu2e
       _iamb = 0;
   }
 
-  void
-  TrkStrawHit::invert() {
-    //flip the ambiguity state; does nothing for null ambiguilty
-    setAmbig( -1*ambig() );
-    // call down to base class
-    TrkHit::invert();
-  }
-
   TrkErrCode
     TrkStrawHit::updateMeasurement(const TrkDifTraj* traj) {
       TrkErrCode status(TrkErrCode::fail);
@@ -199,58 +175,7 @@ namespace mu2e
     }
   }
 
-// compute the pathlength through one wall of the straw, given the drift distance and straw geometry
-  double
-  TrkStrawHit::wallPath(double pdist,Hep3Vector const& tdir) const {
-    double thick = straw().getThickness();
-    double radius = straw().getRadius();
-    double inRadius = radius-thick;
-    if(pdist>=inRadius)
-      pdist = 0.96*inRadius;
-    double wallpath =  (sqrt( (radius+pdist)*(radius-pdist) ) -
-      sqrt( (inRadius+pdist)*(inRadius-pdist) ));
-  // scale for the other dimension
-    double cost = tdir.dot(_straw.getDirection());
-    if(fabs(cost)<0.999)
-      wallpath /= sqrt( (1.0-cost)*(1.0+cost) );
-    else
-      wallpath = radius;
-// use half-length as maximum length
-    wallpath = std::min(wallpath,radius);
-// test for NAN	
-    if(wallpath != wallpath){
-      std::cout << "NAN wall" << std::endl;
-      wallpath = thick;
-   }
-    return wallpath;
-  }
-  
-  // compute the pathlength through half the gas , given the drift distance and straw geometry
-  double
-  TrkStrawHit::gasPath(double pdist,Hep3Vector const& tdir) const {
-    double thick = straw().getThickness();
-    double radius = straw().getRadius();
-    radius-=thick;
-    double hlen = straw().getHalfLength();
-    if(pdist>=radius)
-      pdist = 0.96*radius;
-    double gaspath = sqrt( (radius+pdist)*(radius-pdist) );
-// scale for the other dimension
-    double cost = tdir.dot(_straw.getDirection());
-    if(fabs(cost)<0.999)
-      gaspath /= sqrt( (1.0-cost)*(1.0+cost) );
-    else
-      gaspath = hlen;
-// use half-length as maximum length
-    gaspath = std::min(gaspath,hlen);
-//NAN test
-    if(gaspath != gaspath){
-      std::cout << "NAN gas" << endl;
-      gaspath = 2*radius;
-    }
-    return gaspath;
-  }
-
+ 
   void TrkStrawHit::print(std::ostream& o) const {
     o<<"------------------- TrkStrawHit -------------------"<<std::endl;
     o<<"istraw "<<_istraw<<std::endl;

@@ -1,0 +1,22 @@
+Still under construction
+
+           Release notes for Mu2e Offline software, v5_6_1
+
+1.  dnbrow01  24 Dec 2015
+    Fix the length of the wires of the IPA support (version 2) recently
+    introduced by Andy Edmonds.  This fix avoids an overlap issue but
+    should be understood better.
+    GeometryService/src/MECOStyleProtonAbsorberMaker.cc
+
+2.  brownd  6 Jan 2015
+    Further refactoring of the BTrk code.  The major change is the creation
+    of an actual Mu2e DetectorModel (BaBar style offline geometry/material),
+    and removing the previous hacks to get the KalmanFilter to work without
+    this.  The changes that might be visible to users is that the
+    TrkStrawHit moved from Mu2eBTrk to TrkReco (to avoid dependency loops),
+    and moving the material-related classes (used in PID) from TrkStrawHit
+    to DetTrkElem.  Internally, the material modeling of the straws used in
+    the Kalman fit was consolidated and simplified, which reduces the size of
+    the KalRep object, speeds the fitting, and slightly improves the fit
+    results.  This update also provide all the structural changes needed to
+    add materials from inefficient straws to the Kalman fit.

@@ -80,6 +80,7 @@
 #include "MBSGeom/inc/MBS.hh"
 #include "GeometryService/inc/MBSMaker.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
+#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 
 using namespace std;
 
@@ -94,6 +95,7 @@ namespace mu2e {
     _configStatsVerbosity( pset.get<int>         ("configStatsVerbosity", 0)),
     _printConfig(          pset.get<bool>        ("printConfig",          false)),
     _config(nullptr),
+    _pset(pset),
     _detectors(),
     _run_count()
   {
@@ -285,6 +287,14 @@ namespace mu2e {
     if(_config->getBool("hasProtonAbsorber",false) && !_config->getBool("protonabsorber.isHelical", false) ){
       MECOStyleProtonAbsorberMaker mecopam( *_config, ds, target);
       addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
+    }
+
+  // add DetectorModel.  At the moment this is just for the TTracker
+    auto findtt = _detectors.find(typeid(TTracker).name()); 
+    if(findtt != _detectors.end()){
+      const TTracker* tt = dynamic_cast<const TTracker*>(findtt->second.get());
+      if(tt != 0)
+	addDetector(std::move(std::unique_ptr<Mu2eDetectorModel>(new Mu2eDetectorModel(_pset.get<fhicl::ParameterSet>("Mu2eDetectorModel",fhicl::ParameterSet()),*tt))));
     }
 
   } // preBeginRun()

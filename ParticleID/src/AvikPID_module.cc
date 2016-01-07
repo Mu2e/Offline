@@ -39,7 +39,7 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/PIDProduct.hh"
@@ -54,6 +54,9 @@
 #include "RecoDataProducts/inc/AvikPIDProductCollection.hh"
 
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
+#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 
 using CLHEP::Hep3Vector;
 
@@ -1090,6 +1093,8 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   void AvikPID::produce(art::Event& event) {
+  // fetcth the DetectorModel
+    GeomHandle<Mu2eDetectorModel> detmodel;
 
     art::Handle<mu2e::KalRepPtrCollection> eleHandle, muoHandle;
 
@@ -1202,7 +1207,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // hit charges: '2.*' here because KalmanFit reports half-path through gas.
 //-----------------------------------------------------------------------------
-          path = 2.*hit->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
+	  const DetStrawElem* strawelem = detmodel->strawElem(hit->straw());
+          path = 2.*strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
           gaspaths.push_back(path);
           edeps.push_back(hit->strawHit().energyDep());
         }
@@ -1286,7 +1292,8 @@ namespace mu2e {
 // straw hit present in the list of active muon track hits, but not in the list
 // of active electron track hits, add it to the list of hits used in de/dx calculation
 //-----------------------------------------------------------------------------
-                path = 2.*hit->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
+		const DetStrawElem* strawelem = detmodel->strawElem(hit->straw());
+                path = 2.*strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
                 gaspaths.push_back(path);
                 edeps.push_back(hit->strawHit().energyDep());
               }
@@ -1430,7 +1437,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // hit charges: '2.*' here because KalmanFit reports half-path through gas.
 //-----------------------------------------------------------------------------
-            path = 2.*hit->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
+
+	    const DetStrawElem* strawelem = detmodel->strawElem(hit->straw());
+            path = 2.*strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
             gaspaths.push_back(path);
             edeps.push_back(hit->strawHit().energyDep());
           }

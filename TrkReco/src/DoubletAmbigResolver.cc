@@ -3,7 +3,7 @@
 // fit as input
 ///////////////////////////////////////////////////////////////////////////////
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"

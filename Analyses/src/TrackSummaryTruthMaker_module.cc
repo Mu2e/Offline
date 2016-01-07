@@ -17,7 +17,7 @@
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 

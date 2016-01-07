@@ -8,13 +8,14 @@
 // the following has to come before other BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
 #include "CalPatRec/inc/KalFitHack.hh"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/PanelAmbigResolver.hh"
 #include "TrkReco/inc/PocaAmbigResolver.hh"
 #include "TrkReco/inc/HitAmbigResolver.hh"
 #include "TrkReco/inc/FixedAmbigResolver.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 #include "Mu2eBTrk/inc/BaBarMu2eField.hh"
+#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -308,6 +309,8 @@ namespace mu2e
     if(kres._krep != 0 && kres._fit.success()){
       ConditionsHandle<TrackerCalibrations> tcal("ignored");
       const Tracker& tracker = getTrackerOrThrow();
+// fetcth the DetectorModel
+      GeomHandle<Mu2eDetectorModel> detmodel;
       std::vector<TrkStrawHit*>::iterator ihigh;
       std::vector<TrkStrawHit*>::reverse_iterator ilow;
 //-----------------------------------------------------------------------------
@@ -363,17 +366,17 @@ namespace mu2e
 	kres._hits.push_back(trkhit);
 					// create intersections for the material of this hit 
 					// and add those to the track
-	DetIntersection wallinter;
-	if (trkhit->wallElem().reIntersect(reftraj,wallinter)) {
-	  kres._krep->addInter(wallinter);
-	}
-	DetIntersection gasinter;
-	if(trkhit->gasElem().reIntersect(reftraj,gasinter))
-	  kres._krep->addInter(gasinter);
+	const DetStrawElem* strawelem = detmodel->strawElem(trkhit->straw());
+	DetIntersection strawinter;
+	strawinter.delem = strawelem;
+	strawinter.pathlen = trkhit->fltLen();
+	strawinter.thit = trkhit;
+	if(strawelem->reIntersect(reftraj,strawinter))
+	  kres._krep->addInter(strawinter);
 
-// check the raw residual: This call works because the HOT isn't yet processed as part of the fit.
-//        double chi = fabs(trkhit->residual()/trkhit->hitRms());
-//-----------------------------------------------------------------------------
+	// check the raw residual: This call works because the HOT isn't yet processed as part of the fit.
+	//        double chi = fabs(trkhit->residual()/trkhit->hitRms());
+	//-----------------------------------------------------------------------------
 // hit is added with _iamb=0, which means that the position uncertainty 
 // includes the drift distance
 //-----------------------------------------------------------------------------
@@ -776,20 +779,19 @@ namespace mu2e
 
 //-----------------------------------------------------------------------------
   void KalFitHack::makeMaterials(KalFitResult& KRes) {
+  // fetcth the DetectorModel
+    GeomHandle<Mu2eDetectorModel> detmodel;
+
     TrkDef const& tdef = *KRes._tdef;
     for(std::vector<TrkStrawHit*>::iterator ihit=KRes._hits.begin();ihit!=KRes._hits.end();ihit++){
       TrkStrawHit* trkhit = *ihit;
-      // create wall and gas intersection objects from each straw hit (active or not)
-      DetIntersection wallinter;
-      wallinter.delem = 0;
-      wallinter.pathlen = trkhit->fltLen();
-      DetIntersection gasinter;
-      gasinter.delem = 0;
-      gasinter.pathlen = trkhit->fltLen();
-      if(trkhit->wallElem().reIntersect(&tdef.helix(),wallinter))
-	KRes._detinter.push_back(wallinter);
-      if(trkhit->gasElem().reIntersect(&tdef.helix(),gasinter))
-	KRes._detinter.push_back(gasinter);
+      const DetStrawElem* strawelem = detmodel->strawElem(trkhit->straw());
+      DetIntersection strawinter;
+      strawinter.delem = strawelem;
+      strawinter.pathlen = trkhit->fltLen();
+      strawinter.thit = trkhit;
+      if(strawelem->reIntersect(&tdef.helix(),strawinter))
+	KRes._detinter.push_back(strawinter);
     }
   }
 

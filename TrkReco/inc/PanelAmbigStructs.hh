@@ -13,7 +13,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Matrix/Vector.h"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "Rtypes.h"
 #include <cstddef>
 #include <vector>
@@ -39,64 +39,11 @@ namespace mu2e {
       bool operator < (HitState const& other ) const { return _state < other._state; }
       TSHState _state; //
     };
+// vector of HitStates 
     typedef std::vector<HitState> HSV;
-
-    // class for root to hold Hit States per panel.  Genreflex can't
-    // handle unions, arrays, ..., so these are hard coded FIXME!!! 
-  #define MAXNHITS 6
-    struct PanelHitState {
-      HitState _hit0, _hit1, _hit2, _hit3, _hit4, _hit5;
-      HitState& hitState(size_t ish) {
-	static HitState def(HitState::inactive);
-	assert(ish <= MAXNHITS);
-	switch(ish) {
-	  case 0:
-	    return _hit0;
-	  case 1:
-	    return _hit1;
-	  case 2:
-	    return _hit2;
-	  case 3:
-	    return _hit3;
-	  case 4:
-	    return _hit4;
-	  case 5:
-	    return _hit5;
-	  default:
-	    return def;
-	}
-	return def;
-      }
-      HitState const& hitState(size_t ish) const {
-	PanelHitState* ncthis = const_cast<PanelHitState*>(this);
-	return ncthis->hitState(ish);
-      }
-    };
-
-    // compact description of the state of an entire panel
-    struct PanelState {
-      PanelHitState _pstate;
-      unsigned _nhits;
-      PanelState() : _nhits(0) {}
-      // construct from a vector of states
-      PanelState(HSV const& hsv) : _nhits(hsv.size()) {
-	assert(hsv.size() <=MAXNHITS);
-	for(size_t ish=0;ish < hsv.size(); ++ish)
-	  _pstate.hitState(ish) = hsv[ish];
-      }
-      // construct from a vector of hits.  This assumes all hits are from the same panel!!!
-      PanelState(TrkStrawHitVector const& tshv) : _nhits(tshv.size()) {
-	assert(tshv.size() <=MAXNHITS);
-	for(size_t ish=0;ish < tshv.size(); ++ish)
-	  _pstate.hitState(ish) = HitState(tshv[ish]);
-      }
-      // set the state of the referenced TrkStrawHits.
-      void setHitStates(TrkStrawHitVector& hits) const;
-      // accessors
-      HitState& hitState(size_t ish) { return _pstate.hitState(ish); }
-      HitState const& hitState(size_t ish) const { return _pstate.hitState(ish); }
-    };
-
+// the state of all hits in a panel defines the panel state
+    typedef std::vector<HitState> PanelState;
+// a vector to expliclty define all possible panel states
     typedef std::vector<PanelState> PSV;
 
    // class to store the 1-d projection of a hit.
@@ -160,6 +107,10 @@ namespace mu2e {
     };
 
     typedef std::vector<PanelResult> PRV;
+
+    // utility function for combinatorics
+    unsigned ipow(unsigned base, unsigned exp);
+    void setHitStates(PanelState const& pstate, TrkStrawHitVector& hits);
   }
 }
 #endif

@@ -40,7 +40,7 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
-#include "Mu2eBTrk/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/PIDProduct.hh"
@@ -51,6 +51,9 @@
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 
 #include "ParticleID/inc/PIDUtilities.hh"
+#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 
 using namespace std;
 
@@ -269,6 +272,7 @@ int findlowhist(float d){
 ////////// Produce ///////////
 
   void ParticleID::produce(art::Event& event) {
+    GeomHandle<Mu2eDetectorModel> detmodel;
     _evtid = event.id().event();
     ++_processed_events;
     if (_processed_events%100 == 0) {
@@ -338,7 +342,8 @@ int findlowhist(float d){
 	   evflt.push_back(0.1);
 
 	   //	   2. * here because KalmanFit reports half the path through gas.
-	   gaspaths.push_back(2. * hit->gasPath(hit->driftRadius(),hit->trkTraj()->direction( hit->fltLen() )));
+	   const DetStrawElem* strawelem = detmodel->strawElem(hit->straw());
+	   gaspaths.push_back(2. * strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction( hit->fltLen() )));
 
 	   edeps.push_back(hit->strawHit().energyDep());
 

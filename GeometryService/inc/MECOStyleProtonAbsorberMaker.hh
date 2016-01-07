@@ -47,7 +47,7 @@ private:
 
   const DetectorSolenoid *_ds;
   const StoppingTarget *_target;
-
+  int _IPAVersion;
 };
 
 }  //namespace mu2e

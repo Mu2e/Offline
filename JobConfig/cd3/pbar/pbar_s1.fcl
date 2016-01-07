@@ -132,7 +132,7 @@ outputs: {
 }
 
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
-physics.producers.g4run.physics.physicsListName: "FTFP_BERT"
+physics.producers.g4run.physics.physicsListName: "FTFP_BERT_PBAR_MU2E02"
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
