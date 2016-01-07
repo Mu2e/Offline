@@ -529,7 +529,7 @@ namespace mu2e {
     RecoCaloDigi *recoHit;
     int          size = RecoCaloHits->size();
 
-    double       eDep, content, recoTimeBest, timeMCBest, eDepMax(0);
+    double       eDep, content(0), recoTimeBest(0), timeMCBest(0), eDepMax(0);
     
     for (int i=0; i<_nMax; ++i){
       recoHit = &RecoCaloHits->at(size - 1 -i);
