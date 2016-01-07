@@ -31,7 +31,7 @@ namespace mu2e {
     _debugLevel       (PSet.get<int>   ("debugLevel")),
     _acquisitionLenght(PSet.get<int>   ("acquisitionLenght")),
     _digiSampling     (PSet.get<int>   ("digiSampling")),
-    _wave_point_error (PSet.get<int>   ("pulseErrorSample")),
+    _wave_point_error (PSet.get<double>("pulseErrorSample")),
     _psdThreshold     (PSet.get<double>("psdThreshold")),
     _timeFraction     (PSet.get<double>("timeFraction"))
   {
@@ -42,7 +42,7 @@ namespace mu2e {
     _flogn    = new TF1("flogn" ,logn , 0., 2000., 4);
     _fdlogn   = new TF1("fdlogn",dlogn, 0., 2000., 6);
 
-    _wave     = new TH1F("wave", "wave", _acquisitionLenght/_digiSampling, 0, _acquisitionLenght);
+    _wave     = new TH1F("wave", "wave", int(_acquisitionLenght/_digiSampling), 0, _acquisitionLenght);
 
     _counter        = 0;
     _debugHistIndex = 0;
@@ -242,17 +242,18 @@ namespace mu2e {
     //initilize function parameters
     double histPeak = WaveMax;//_wave->GetBinCenter(_wave->GetMaximumBin());
     //    _flogn->SetParameter(0, -1.);
-    _flogn->SetParameter(0, -0.34);
-    _flogn->SetParameter(1,  15.);
+
+    _flogn->SetParLimits(0,  -10.,  0.);
+    //_flogn->FixParameter(0,  -0.21);
+    _flogn->SetParLimits(1,   1., 1e2);
+    //    _flogn->FixParameter(1,  11.7);
+    _flogn->SetParLimits(2, histPeak - 20.,  histPeak + 20.);
+    _flogn->SetParLimits(3,   0.,   _wave->Integral("width")*1000.);
+
+    _flogn->SetParameter(0, -0.21);
+    _flogn->SetParameter(1,  12.);
     _flogn->SetParameter(2, _wave->GetBinCenter(_wave->GetMaximumBin()));
     _flogn->SetParameter(3, _wave->Integral("width"));
-
-    _flogn->SetParLimits(0,  -2.,  -0.1);
-    // _flogn->FixParameter(0,  -0.34);
-    _flogn->SetParLimits(1,   1., 1e2);
-    //_flogn->FixParameter(1,  14.7);
-    _flogn->SetParLimits(2, histPeak - 50.,  histPeak + 50.);
-    _flogn->SetParLimits(3,   0.,   _wave->Integral("width")*1000.);
 
     //define the fit range
     double           xmin(0),xmax(2000.);
@@ -273,7 +274,7 @@ namespace mu2e {
     }
     
     //search the minimum x of the fitting range
-    double    fracmin(5e-03);
+    double    fracmin(0.);//1e-02);//(5e-03);
     double    content;
     for (int ibin=_wave->GetMaximumBin();ibin>0;ibin--){
       content  = _wave->GetBinContent(ibin);
@@ -283,7 +284,12 @@ namespace mu2e {
       }
     }
     
-    
+    // if (_debugLevel > 0){
+    //   int    contentMin =  _wave->GetBinContent(xmin/_wave->GetBinWidth(1)+1);
+    //   printf("[FitWaveformProcess::calculateTime] time-fit range: xmin = %5.3f pulseHightMin = %i xmax = %.3f\n", 
+    // 	     xmin, contentMin, xmax);
+    // }
+
     //perform the fit
     _flogn->SetRange(xmin,xmax);
     _wave->Fit("flogn","RQ");
@@ -294,7 +300,7 @@ namespace mu2e {
 
     
     //now extract the time with the digital constant fraction
-    Time = _flogn->GetX(_wave->GetMaximum()*_timeFraction, 0, _wave->GetBinCenter(_wave->GetMaximumBin()));
+    Time = _flogn->GetX(_wave->GetMaximum()*_timeFraction, histPeak-50., histPeak);//0, _wave->GetBinCenter(_wave->GetMaximumBin()));
     
     
   }
@@ -387,7 +393,8 @@ namespace mu2e {
     //lenght of the waveform
     int            wfSize   = CaloHit.waveform().size();
     
-    double content, time, timeBin;
+    double         content, time, timeBin;
+    double         binWidth = _wave->GetBinWidth(1);
 
     _wave->Reset();
 
@@ -397,7 +404,7 @@ namespace mu2e {
       content = CaloHit.waveform().at(i);
 
       _wave->Fill(time, content);
-      _wave->SetBinError( i+1, _wave_point_error);
+      _wave->SetBinError(time/binWidth + 1 , _wave_point_error);
     }
 
     //--------------------------------------------------------------------------------//
@@ -428,7 +435,10 @@ namespace mu2e {
       waveMax = _wave->GetMaximum();
       
       calculateEnergy(eDep);
-      
+
+      // if (_debugLevel > 0){
+      // 	printf("[FitWaveformProcess::processWaveform] pulse charge = %5.3f\n", eDep);
+      //      }
       calculateTime  (_wave->GetBinCenter(_wave->GetMaximumBin()+1), time, chi2);
 
       RecoCaloHits.push_back( RecoCaloDigi(CaloDigi(CaloHit),
@@ -468,7 +478,7 @@ namespace mu2e {
 					    2500,   0., 2500);
     
 
-    _hist._hPSD          = tfdir.make<TH1F>("hPSD","PSD ", 1000, 0., 100);
+    _hist._hPSD          = tfdir.make<TH1F>("hPSD","PSD ", 600, 0., 300);
     _hist._hChi2Time     = tfdir.make<TH1F>("hChi2Time","#Chi^2 from time reco alg:#Chi2^2/ndof"   , 100, 0., 10);
     _hist._hNDofTime     = tfdir.make<TH1F>("hNDofTime","nDof from time reconstruction fit; nDof [#]", 200, 0., 10);
     _hist._hDtBinTime    = tfdir.make<TH1F>("hDtBinTime","#Delta t time reco; t_{reco} - t_{bin-edge} [ns]", 400, 0.,_digiSampling);
@@ -519,8 +529,8 @@ namespace mu2e {
     RecoCaloDigi *recoHit;
     int          size = RecoCaloHits->size();
 
-    double       eDep, content;
- 
+    double       eDep, content, recoTimeBest, timeMCBest, eDepMax(0);
+    
     for (int i=0; i<_nMax; ++i){
       recoHit = &RecoCaloHits->at(size - 1 -i);
 
@@ -549,11 +559,12 @@ namespace mu2e {
 	_fitDlogn = -1;
       }
 
-      double        timeMC     = DigiMC->meanTime();
+      double        timeMC     = DigiMC->timeFirst();//meanTime();
       int           nParticles(0);// = DigiMC->nParticles();
 
       _mcTime     = timeMC;
       _mcEDep     = DigiMC->totalEDep();
+
 
       for (int j=0; j<DigiMC->nParticles(); ++j){
 	if (DigiMC->eDep(j) > 1.){
@@ -575,7 +586,6 @@ namespace mu2e {
 
       _hist._hChi2Time  ->Fill(recoHit->tChi2());
       _hist._hNDofTime  ->Fill(nDof  );
-      _hist._hDtBinTime ->Fill( (recoTime/_digiSampling - int(recoTime/_digiSampling))*_digiSampling);
       _hist._hFitEta    ->Fill(eta   );
       _hist._hFitSigma  ->Fill(sigma );
       _hist._hFitPeak   ->Fill(peak  );
@@ -585,17 +595,25 @@ namespace mu2e {
       _hist._hAmplitude ->Fill(recoHit->amplitude());
 
       _hist._hTime      ->Fill(recoTime);
-      _hist._hTimeVsE   ->Fill(recoTime, recoHit->edep());
       _hist._hTimeVsAmp ->Fill(recoTime, recoHit->amplitude());
       
-      _hist._hDt        ->Fill(recoTime - timeMC);
 
       eDep = recoHit->edep();
 
+      if (eDep > eDepMax){
+	eDepMax      = eDep;
+	recoTimeBest = recoTime;
+	timeMCBest   = timeMC;
+      }
+
+
       if (_debugHistIndex < 20){
-	if (eDep < 2.){
+	//	double      dt = (recoTime - timeMC);
+	//	if ( (dt < 23.4) && (eDep > 30)){
+	  //	if (eDep < 2.){
 	  //	  if (_wfWithPileUp >= 0.5) {
 	  //	    double      binWidth = ;
+	if (recoTime > 600.){
 	  for (int i=0; i<_wave->GetNbinsX(); ++i){
 	    content   = _wave->GetBinContent(i+1);
 	    _hist._debugWf[_debugHistIndex] ->SetBinContent(i+1, content);
@@ -604,19 +622,34 @@ namespace mu2e {
 	  ++_debugHistIndex;
 	}
 	
-	if (eDep > 15.){
-	  for(int i=0; i< _wave->GetNbinsX(); ++i) {
-	      content   = _wave->GetBinContent(i+1);
-	      _hist._debugWf[_debugHistIndex] ->SetBinContent(i+1, content);
-	      _hist._debugWf[_debugHistIndex] ->SetBinError  (i+1, _wave_point_error);
-	  }
+	// if (eDep > 15.){
+	//   for(int i=0; i< _wave->GetNbinsX(); ++i) {
+	//       content   = _wave->GetBinContent(i+1);
+	//       _hist._debugWf[_debugHistIndex] ->SetBinContent(i+1, content);
+	//       _hist._debugWf[_debugHistIndex] ->SetBinError  (i+1, _wave_point_error);
+	//   }
 		 
-	  ++_debugHistIndex;
-	}
+	//   ++_debugHistIndex;
+	// }
       }//end filling pulses
     
     }//end loop on the RecoCaloDigi
     
+    
+    // if (_debugLevel > 0){
+    //   double      dt = (recoTimeBest - timeMCBest);
+    //   if ( (dt < 23.4) && (eDepMax > 30)){
+    // 	printf("[FitWaveformProcess::fillDiag] MCTime = %5.3f MCEDep = %5.3f dt = %5.3f\n", 
+    // 	       DigiMC->meanTime(), DigiMC->totalEDep(), (recoTimeBest - timeMCBest));
+    //   }
+    // }
+ 
+    
+    _hist._hDtBinTime ->Fill( (recoTimeBest/_digiSampling - int(recoTimeBest/_digiSampling))*_digiSampling);
+    _hist._hDt        ->Fill(recoTimeBest - timeMCBest);
+    _hist._hTimeVsE   ->Fill(eDepMax, recoTimeBest- timeMCBest);
+
+
   }
   //------------------------------------------------------------------------------------------//
 

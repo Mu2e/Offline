@@ -86,62 +86,6 @@ using namespace std;
 
 namespace mu2e {
 
-  // Anonymous namespace to hold some helper classes.
-  namespace {
-
-
-    // A helper class to hold temporary information.
-    class ROHit {
-	   
-    public:
-
-      // Is this StepPointMC from a hit in the crystal or a hit in the readout device?
-      enum step_type {crystal, readout};
-
-      art::Ptr<StepPointMC> _step;    // Ptr back to the StepPointMC.
-      double    _edep;                // copy of energy from the StepPointMC.
-      double    _edep_corr;           // Energy corrected for absorption within the crystal.
-      step_type _type;                // Is this a hit in the crystal or the readout?
-      double    _time;                // copy of the time from the StepPointMC.
-
-      ROHit(art::Ptr<StepPointMC> const& step, double edep, double edep1, step_type charged, double time):
-	_step(step), _edep(edep), _edep_corr(edep1),
-	_type(charged), _time(time) { }
-
-      // This operator is overloaded in order to time-sort the hits
-      bool operator <(const ROHit& b) const { return (_time < b._time); }
-
-    }; 
-
-
-    // A helper class to add Ptr's to the appropriate PtrStepPointMCVector collection.
-    class PtrAdder{
-
-    public:
-      PtrAdder( PtrStepPointMCVector& crystals, 
-		PtrStepPointMCVector& readouts ) : 
-	_crystals(crystals),_readouts(readouts){}
-
-      // Choose the appropriate collection and add the Ptr for this hit.
-      void operator()( ROHit const& hit )
-      {
-	if ( hit._type == ROHit::crystal) _crystals.push_back( hit._step );
-	else                              _readouts.push_back( hit._step );
-      }
-
-
-    private:
-
-      PtrStepPointMCVector& _crystals;
-      PtrStepPointMCVector& _readouts;
-
-    }; 
-
-
-  } // end anonymous namespace
-
-
-
   struct Hist_t {
     TH1F*  _hEdep;
     TH1F*  _hTime;
@@ -177,6 +121,7 @@ namespace mu2e {
     int   _wfInput;
 
     double                _blindTime;
+    double                _crystal_refractive_index;
     bool  _caloLRUcorrection;
     bool  _caloNonLinCorrection;
     CLHEP::RandGaussQ _randGauss;
@@ -234,6 +179,7 @@ namespace mu2e {
       _debugLevel                 (pset.get<int>        ("debugLevel")),		  
       _wfInput                    (pset.get<int>        ("wfInput"   )),	   	  
       _blindTime                  (pset.get<double>     ("blindTime" )),         // ns
+      _crystal_refractive_index   (pset.get<double>     ("crystal_refractive_index")),         // 
       _caloLRUcorrection          (pset.get<bool>       ("caloLRUcorrection")),	  
       _caloNonLinCorrection       (pset.get<bool>       ("caloNonLinCorrection")),	  
       _randGauss                  ( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
@@ -308,6 +254,8 @@ namespace mu2e {
 
     void   digitizeWaveform(int ROId, double Time, double Edep);
     
+    void   includeLightPropagation(double& HitTime, CLHEP::Hep3Vector& PosInCrystalFrame);
+
     void   readoutResponse(double Edep, double Time, int CrId, CLHEP::Hep3Vector PosInCrystalFrame);
     
     int                             _nWaveforms;
@@ -323,6 +271,17 @@ namespace mu2e {
 
     //    double convolutionFunction(double time, double tau, double sigma);
   };
+
+  void   CaloDigisFromStepPointMCs::includeLightPropagation(double& HitTime, 
+							    CLHEP::Hep3Vector& PosInCrystalFrame){
+    
+    //    double      crystalLenght = 2.*_calorimeter->caloGeomInfo().crystalHalfLength();
+    
+    double      path          = PosInCrystalFrame.z();
+    double      vLight        = CLHEP::c_light/_crystal_refractive_index;
+
+    HitTime    =  HitTime + path/vLight;
+  }
 
   //FIX ME
   //2015-09-14 G. Pezzullo, L. Morescalchi: still need to implement effects
@@ -761,8 +720,7 @@ namespace mu2e {
 	double      edep_corr = h.energy();
 	int         crid      = h.volumeId();
 
-	CLHEP::Hep3Vector const& posInMu2e  = h.position();
-	CLHEP::Hep3Vector posInCrystalFrame = _calorimeter->toCrystalFrame(crid,posInMu2e);
+	CLHEP::Hep3Vector  posInCrystalFrame  = h.position();
 
 	//should probably go to another class when the code for these corrections grows larger
 	if (_caloNonLinCorrection && h.simParticle().isNonnull()) {
@@ -771,8 +729,7 @@ namespace mu2e {
 
 	if (_caloLRUcorrection) {
 	  // Calculate correction for edep
-	  CLHEP::Hep3Vector const& posInMu2e = h.position();
-	  double posZ = _calorimeter->toCrystalFrame(crid,posInMu2e).z();
+	  double posZ = posInCrystalFrame.z();
 	  
 	  longitudinalResponseUniformityCorrection(posZ, cryhalflength, edep_corr,crid, calorimeterCalibrations);
 	}
@@ -780,6 +737,8 @@ namespace mu2e {
 	// time folding and Adding ghost hits to properly treat boundary conditions with folding, see docdb-3425
 	double hitTimeUnfolded = _toff.totalTimeOffset(h.simParticle()) + h.time();
 	double hitTime         = fmod(hitTimeUnfolded,_mbtime);
+
+	includeLightPropagation(hitTime, posInCrystalFrame);
 
 	if (hitTime < _mbbuffer) {
 	  if (hitTime+_mbtime > _blindTime) {

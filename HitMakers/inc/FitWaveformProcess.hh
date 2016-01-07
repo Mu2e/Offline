@@ -71,7 +71,7 @@ namespace mu2e {
     int         _debugLevel;
     double      _acquisitionLenght;
     int         _digiSampling;
-    int         _wave_point_error;
+    double      _wave_point_error;
     double      _psdThreshold;
     double      _timeFraction;
     

@@ -3,6 +3,14 @@
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
+HitMakerTimeFoldingBuffer    : 100. # ns
+HitMakerBlindTime            : 500. # ns
+HitMakerDigiSampling         : 4    # ns
+HitMakerAcquisitionLenght    : 1965 # ns
+HitMakerTimeOffsets          : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+END_PROLOG
+
+BEGIN_PROLOG
 
 #------------------------------------------------------------------------------
 # time map generation modules, used by the MC digi makers
@@ -168,7 +176,7 @@ MakeCaloCrystalHits     : {
 
 MakeCaloCompressedHits  : {
     module_type             : MakeCaloCompressedHits
-    numZSlices              : 1
+    numZSlices              : 20
     deltaTime               : 0.5
     calorimeterStepPoints   : calorimeter
     calorimeterROStepPoints : calorimeterRO
@@ -180,11 +188,14 @@ MakeCaloCompressedHits  : {
 CaloDigisFromStepPointMCs :  {
     module_type           : CaloDigisFromStepPointMCs
 
-    diagLevel             : 0  
+    diagLevel             : 1  
     debugLevel            : 0
     wfInput               : 3
+    timeGap               : 2.
+    blindTime             : @local::HitMakerBlindTime
 
-    blindTime             : 300.
+    crystal_refractive_index : 1.8
+
     caloLRUcorrection     : false
     caloNonLinCorrection  : false
 
@@ -195,39 +206,44 @@ CaloDigisFromStepPointMCs :  {
     caloROShowerMCName          : calorimeterRO
     g4ModuleLabel               : g4run
 
-    TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-    TimeFoldingBuffer           : 100.0
+    TimeOffsets                 : @local::HitMakerTimeOffsets 
+
+#    TimeOffsets                 : { inputs : [  ] }
+    TimeFoldingBuffer           : @local::HitMakerTimeFoldingBuffer
 
     addNoise                    : 0
-    noise                       : .87
+    noise                       : 1.    # mV              
 
     thresholdVoltage            : 10.0  # mV
     thresholdAmplitude          : 10.0  # mV
     DAQTimeThreshold            : 500  #ns
 
     energyScale                 : 20   # mV / MeV
-    digiSampling                : 4    # ns
+    digiSampling                : @local::HitMakerDigiSampling
     nBits                       : 12
-    dynamicRange                : 2000
-    acquisitionLength           : 1965.
+    dynamicRange                : 2000   # mV 
+    acquisitionLength           : @local::HitMakerAcquisitionLenght
 
     bufferAfter                 : 0  #n-timestamps
-    bufferBefore                : 8  #n-timestamps
+    bufferBefore                : 8 #5  #n-timestamps
     waveformOffset              : 150.  # ns
 }
 
 CaloHitsFromCaloDigis :{
     module_type           : CaloHitsFromCaloDigis
-    diagLevel             : 0
+    diagLevel             : 10
     debugMode             : 0
 
-    digiSampling          : 4 #ns
-    acquisitionLenght     : 1965
+    digiSampling          : @local::HitMakerDigiSampling
+    acquisitionLenght     : @local::HitMakerAcquisitionLenght
  
     caloCalibNoise        : 0
     g4ModuleLabel         : g4run
 
-    TimeOffsets           : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    TimeOffsets           : @local::HitMakerTimeOffsets 
+#    TimeOffsets           : { inputs : [  ] }
+    TimeFoldingBuffer     : @local::HitMakerTimeFoldingBuffer
+    blindTime             : @local::HitMakerBlindTime
 
     caloDigiModuleLabel   : CaloDigisFromStepPointMCs
 
@@ -239,11 +255,11 @@ CaloHitsFromCaloDigis :{
     
     FitWaveformProcessor : {
 	debugLevel        : 1
-	acquisitionLenght : 1965 #ns
-	digiSampling      : 4    #ns
+	acquisitionLenght : @local::HitMakerAcquisitionLenght
+	digiSampling      : @local::HitMakerDigiSampling
 	pulseErrorSample  : 1    #ADC counts
-	psdThreshold      : 125  #a.u.  
-	timeFraction      : 0.02
+	psdThreshold      : 125   #a.u.  
+	timeFraction      : 0.05
     }
 
 }
@@ -252,48 +268,11 @@ CaloHitsFromCaloDigis :{
 CaloCrystalHitsFromCaloHits  :{
     module_type           : CaloCrystalHitsFromCaloHits
 
-    diagLevel             : 0
+    diagLevel             : 1
     debugMode             : 0
-    digiSampling          : 4 #ns
-    acquisitionLenght     : 2000
-    time4Merge            : 4.
-    g4ModuleLabel         : g4run
-    TimeOffsets           : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-
+    time4Merge            : 4.   #    ns
     caloDigisModuleLabel  : CaloHitsFromCaloDigis
-    calorimeterStepPoints : calorimeter
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

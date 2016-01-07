@@ -90,7 +90,6 @@ namespace mu2e {
     TH1F*  _hChi2PileUp;
     TH1F*  _hChi2Time;
     TH1F*  _hNDofTime;
-    TH1F*  _hDtBinTime;
     TH1F*  _hFitEta;
     TH1F*  _hFitPeak;
     TH1F*  _hFitSigma;
@@ -111,20 +110,16 @@ namespace mu2e {
   class CaloCrystalHitsFromCaloHits : public art::EDProducer {
 
   public:
+    typedef art::Ptr<RecoCaloDigi>           RecoCaloDigiPtr;
 
     explicit CaloCrystalHitsFromCaloHits(fhicl::ParameterSet const& pset) :
 
       // Parameters
 
-      _diagLevel(pset.get<int>           ("diagLevel",0)),		      
-      _debugMode(pset.get<int>           ("debugMode",0)),		      
-      _digiSampling(pset.get<double>     ("digiSampling"    , 4)),    // ns   
-      _acquisitionLenght(pset.get<double>("acquisitionLenght"    , 2000)),    // ns
-      _time4Merge(pset.get<double>       ("time4Merge", 4.)), // MeV	      
-      _g4ModuleLabel(pset.get<string>    ("g4ModuleLabel", "g4run")),	      
-      _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
-      _caloDigisModuleLabel(pset.get<std::string>("caloDigisModuleLabel", "CaloHitsFromCaloDigis")),
-      _stepPoints(pset.get<string>       ("calorimeterStepPoints","calorimeter"))
+      _diagLevel           (pset.get<int>                ("diagLevel")),		      
+      _debugMode           (pset.get<int>                ("debugMode")),		      
+      _time4Merge          (pset.get<double>             ("time4Merge")), // MeV	      
+      _caloDigisModuleLabel(pset.get<std::string>        ("caloDigisModuleLabel"))
     {
   
       // Tell the framework what we make.
@@ -138,26 +133,15 @@ namespace mu2e {
     virtual void beginRun(art::Run &);
     void produce( art::Event& e);
 
-    static Double_t logn(Double_t *x, Double_t *par);
-
-    
   private:
 
     int    _diagLevel;
     int    _debugMode;
 
-    double _digiSampling;
-    double _acquisitionLenght;
-
     double _time4Merge; 
     
-    string _g4ModuleLabel;  // Name of the module that made the input hits.
-    SimParticleTimeOffset _toff;     // time offset smearing
-
     string _caloDigisModuleLabel; // Name of the module that made the calo hits.
 
-    std::string       _stepPoints;
-    
     int               _nHits[5], _nSamples[5];
     int               _wfWithPileUp;
     std::vector<int> * _hitMap[2000]; 
@@ -172,13 +156,12 @@ namespace mu2e {
     Float_t             _time[100000], _Chi2Time[100000], _nDof[100000], _fitEta[100000], _fitNorm[100000], _fitSigma[100000], _fitPeak[100000]
       , _amp[100000], _charge[100000];
 
-    TH1F*               _debugWf[20];
-    int                 _debugHistIndex;
     
 
     //----------------------------------------------------------------------//
     void              makeCaloHits   (CaloCrystalHitCollection& caloHits, 
-				      const RecoCaloDigiCollection  recoCaloHits) ;
+				      const art::Handle<RecoCaloDigiCollection>   RecoCaloDigisHandle);
+    //    const RecoCaloDigiCollection  recoCaloHits) ;
     int               pairRO         (int ROid);
 
     double            _eHitMax, _timeReco;
@@ -219,7 +202,6 @@ namespace mu2e {
     _hist._hChi2PileUp   = tfs->make<TH1F>("hChi2PileUp","#Chi^2 from pileup finder  ", 1000, 0., 10);
     _hist._hChi2Time     = tfs->make<TH1F>("hChi2Time","#Chi^2 from time reco alg:#Chi2^2/ndof"   , 4000, 0., 200);
     _hist._hNDofTime     = tfs->make<TH1F>("hNDofTime","nDof from time reconstruction fit; nDof [#]", 200, 0., 10);
-    _hist._hDtBinTime    = tfs->make<TH1F>("hDtBinTime","#Delta t time reco; t_{reco} - t_{bin-edge} [ns]", 400, 0.,_digiSampling);
     
     //histograms for the time reconstruction fit results
     _hist._hFitEta       = tfs->make<TH1F>("hFitEta", "Fit - #eta distribution; #eta", 100, -5, 5);
@@ -284,13 +266,6 @@ namespace mu2e {
        _tree->Branch("charge",       &_charge ,      "charge[nROHits]/F");
     }
     
-    if (_diagLevel > 0){      //create some histograms for few waveforms
-      for (int i=0; i<20; ++i){
-	_debugWf[i] = tfs->make<TH1F>(Form("hDWf%i", i), Form("waveform %i",i),  _acquisitionLenght/_digiSampling, 0, _acquisitionLenght);
-      }
-    }
-    _debugHistIndex = 0;
-    
     _eHitMax = -1.;
   }
 
@@ -315,10 +290,6 @@ namespace mu2e {
     if ( _debugMode > 0 ) {
       printf("[CaloCrystalHitsFromCaloHits::produce] begins \n");
     }
-
-    //get the time offset
-    _toff.updateMap(event);
-
 
     //clear the hitMap
     for (int i=0; i<2000; ++i){
@@ -349,7 +320,8 @@ namespace mu2e {
     }
 
     //reate the CaloCrystalHitCollection
-    makeCaloHits(*caloHits, *recoCaloDigis);
+    //    makeCaloHits(*caloHits, *recoCaloDigis);
+    makeCaloHits(*caloHits, recoCaloDigisHandle);
 
     if (_diagLevel > 0){
       _nROHits =  _hitCounter;
@@ -370,10 +342,13 @@ namespace mu2e {
   }
 
   void CaloCrystalHitsFromCaloHits::makeCaloHits(CaloCrystalHitCollection   & CaloHits, 
-					   const RecoCaloDigiCollection      RecoCaloDigis) {
+						 //					   const RecoCaloDigiCollection      RecoCaloDigis) {
+						 const art::Handle<RecoCaloDigiCollection>   RecoCaloDigisHandle) {
          
     Calorimeter const & cal = *(GeomHandle<Calorimeter>());
       
+    const RecoCaloDigiCollection* RecoCaloDigis = RecoCaloDigisHandle.product();   
+
     //define few helping variables
     
     for(unsigned int icry = 0; icry<cal.nCrystal();icry++){
@@ -397,33 +372,41 @@ namespace mu2e {
 	int indexWF2(-1);
 
 	for(int ipv2 = ipv1+1; ipv2<nhits; ipv2++){
-
-	  _hist._hTime->Fill(RecoCaloDigis.at(ipv2).time());
-	  _hist._hEdep->Fill(RecoCaloDigis.at(ipv2).edep());
 	  
+	  if (_diagLevel > 0){
+	    _hist._hTime->Fill(RecoCaloDigis->at(ipv2).time());
+	    _hist._hEdep->Fill(RecoCaloDigis->at(ipv2).edep());
+	  }
+
 	  if(pairingVec[ipv2] == -1) continue;
 	  
 	  //set the index at which is located the second wf
 	  indexWF2 = _hitMap[icry]->at(ipv2);
 
 	  //check if the hits come from the same RO
-	  if(RecoCaloDigis.at(indexWF1).ROid() == RecoCaloDigis.at(indexWF2).ROid())        continue;
+	  if(RecoCaloDigis->at(indexWF1).ROid() == RecoCaloDigis->at(indexWF2).ROid())        continue;
               
-	  double tdiff = fabs(RecoCaloDigis.at(indexWF1).time() - RecoCaloDigis.at(indexWF2).time());
+	  double tdiff = fabs(RecoCaloDigis->at(indexWF1).time() - RecoCaloDigis->at(indexWF2).time());
 
 	  //check if the time difference of the pulses is compatible
 	  //is time enough or we should add a check over the amplitudes? 
 	  if(tdiff < _time4Merge){
 		
-	    RecoCaloDigiCollection    crystalHitRecoDigis;
-	    crystalHitRecoDigis.push_back(RecoCaloDigis.at(indexWF1));
-	    crystalHitRecoDigis.push_back(RecoCaloDigis.at(indexWF2));
+	    //RecoCaloDigiCollection    crystalHitRecoDigis;
+	    //	    crystalHitRecoDigis.push_back(RecoCaloDigis->at(indexWF1));
+	    //	    crystalHitRecoDigis.push_back(RecoCaloDigis->at(indexWF2));
+	    std::vector<RecoCaloDigiPtr>    crystalHitRecoDigis;
+	    crystalHitRecoDigis.push_back(art::Ptr<RecoCaloDigi>(RecoCaloDigisHandle, indexWF1));
+	    crystalHitRecoDigis.push_back(art::Ptr<RecoCaloDigi>(RecoCaloDigisHandle, indexWF2));
+
 
 	    CaloCrystalHit caloCrystalHit(icry, crystalHitRecoDigis);
 	    CaloHits.push_back(caloCrystalHit);
 		
-	    _hist._hTimeMerged->Fill(caloCrystalHit.time());
-	    _hist._hEdepMerged->Fill(caloCrystalHit.energyDep());
+	    if (_diagLevel > 0){
+	      _hist._hTimeMerged->Fill(caloCrystalHit.time());
+	      _hist._hEdepMerged->Fill(caloCrystalHit.energyDep());
+	    }
 	    
 	    //set these RO-pulses as used
 	    pairingVec[ipv1] = -1;
@@ -436,8 +419,10 @@ namespace mu2e {
 	    
 	if(paired == 0) {//FIXME
 	     
-	  RecoCaloDigiCollection    crystalHitRecoDigis;
-	  crystalHitRecoDigis.push_back(RecoCaloDigis.at(indexWF1));
+	  std::vector<RecoCaloDigiPtr>    crystalHitRecoDigis;
+	  //	  RecoCaloDigiCollection    crystalHitRecoDigis;
+	  crystalHitRecoDigis.push_back(art::Ptr<RecoCaloDigi>(RecoCaloDigisHandle, indexWF1));
+	  //	  crystalHitRecoDigis.push_back(RecoCaloDigis->at(indexWF1));
 
 	  CaloCrystalHit caloCrystalHit(icry, crystalHitRecoDigis);
 
