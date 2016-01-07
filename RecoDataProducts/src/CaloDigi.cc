@@ -16,16 +16,14 @@ using namespace std;
 namespace mu2e {
 
   // Print the information found in this hit. TODO
-  void CaloDigi::print( ostream& ost, bool doEndl ) const {
+  void CaloDigi::print( ) const {
 
-    ost << " CaloDigi output:   "
-        << endl;
-
-
-    if ( doEndl ){
-      ost << endl;
+    printf(" CaloDigi output: roId = %i t0 = %5.2f nSamples = %i waveform = ", _roId, _t0, _nSamples);
+    
+    for (int i=0; i<int(_waveform.size()); ++i){
+      printf("%i ", _waveform.at(i));
     }
-
+    printf("\n");
   }
 
 } // namespace mu2e

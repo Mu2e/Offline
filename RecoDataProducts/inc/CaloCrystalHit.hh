@@ -25,7 +25,8 @@ namespace mu2e {
 
   public:
 
-    typedef art::Ptr<CaloHit> CaloHitPtr;
+    typedef art::Ptr<CaloHit>      CaloHitPtr;
+    typedef art::Ptr<RecoCaloDigi> RecoCaloDigiPtr;
 
     CaloCrystalHit():
       _crystalId(-1),
@@ -34,11 +35,35 @@ namespace mu2e {
       _energyDepTotal(0.),
       _numberOfROIdsUsed(0)
     {}
+    
+    CaloCrystalHit(const CaloCrystalHit &Other):
+      _crystalId        (Other.id()),
+      _time             (Other.time()),
+      _energyDep        (Other.energyDep()),
+      _energyDepTotal   (Other.energyDepTotal()),
+      _numberOfROIdsUsed(Other.numberOfROIdsUsed()){
+      
+      //copy the CaloHits
+      int     size = Other.readouts().size();
+      
+      for (int i=0; i<size; ++i){
+	_readouts.push_back(Other.readouts().at(i));
+      }
 
+      //copy the recoCaloDigi
+      size = Other.recoCaloDigis().size();
+      
+      for (int i=0; i<size; ++i){
+	_recoCaloDigis.push_back(Other.recoCaloDigis().at(i));
+      }
+
+      
+    }
+    
     CaloCrystalHit(int  crystalId, CaloHit const & hit, CaloHitPtr const& chPtr );
 
     //constructor that uses the CaloDigi
-    CaloCrystalHit(int  crystalId, RecoCaloDigiCollection RecoCaloDigiCol);
+    CaloCrystalHit(int  crystalId, std::vector<RecoCaloDigiPtr>  RecoCaloDigiCol);
 
     // Accessors
 
@@ -49,6 +74,8 @@ namespace mu2e {
     int   numberOfROIdsUsed() const { return _numberOfROIdsUsed; }
 
     std::vector<CaloHitPtr> const & readouts() const { return _readouts; }
+
+    std::vector<RecoCaloDigiPtr> const & recoCaloDigis() const { return _recoCaloDigis;}
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
 
@@ -82,8 +109,8 @@ namespace mu2e {
     float            _energyDep;          // (MeV)
     float            _energyDepTotal;     // (MeV)
     int              _numberOfROIdsUsed;  // roIds used to calculate _energyDep
-    std::vector<CaloHitPtr> _readouts;
-    RecoCaloDigiCollection  _recoCaloDigis;
+    std::vector<CaloHitPtr>       _readouts;
+    std::vector<RecoCaloDigiPtr>  _recoCaloDigis;
 
   };
 

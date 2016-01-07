@@ -60,7 +60,7 @@ namespace mu2e {
     double    time     () const { return _time;}               // reconstructed time in ns
     double    tChi2    () const { return _tChi2;}              // chi2 on time fit
        
-    int       psd() const { return _psd;}     // hit from pileup event flag
+    double    psd() const { return _psd;}     // hit from pileup event flag
     	
     
   private:

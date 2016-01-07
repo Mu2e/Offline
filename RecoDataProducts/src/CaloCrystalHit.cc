@@ -30,20 +30,22 @@ namespace mu2e {
   {}
 
   //constructor that uses the CaloDigi
-  CaloCrystalHit::CaloCrystalHit(int  CrystalId, RecoCaloDigiCollection RecoCaloDigiCol){
+  CaloCrystalHit::CaloCrystalHit(int  CrystalId, std::vector<RecoCaloDigiPtr>  RecoCaloDigiCol){
     _crystalId = CrystalId;
 
     //set the time and teh energy as the mean. It assumes that realtive dealy between 
     //the channels have been already accounted in each RacoCaloDigi
     int     nRecoDigis = RecoCaloDigiCol.size();
-    RecoCaloDigi* recoDigi;  
+
+    const RecoCaloDigi*      recoDigi;
 
     //initialize internal parameters
     _time      = 0.;
     _energyDep = 0.;
 
     for (int i=0; i<nRecoDigis; ++i){
-      recoDigi    = &RecoCaloDigiCol.at(i);
+      art::Ptr<RecoCaloDigi>  recoDigiPtr  = RecoCaloDigiCol.at(i);
+      recoDigi = recoDigiPtr.operator ->();
       _time      += recoDigi->time();  
       _energyDep += recoDigi->edep();  
     }
