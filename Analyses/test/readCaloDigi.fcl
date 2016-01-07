@@ -1,0 +1,161 @@
+# -*- mode: tcl -*-
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+
+#process_name : CaloDigiTest
+#------------------------------------------------------------------------------
+# input module definition
+#------------------------------------------------------------------------------
+source : { 
+    module_type : EmptyEvent
+}
+#------------------------------------------------------------------------------
+# services section
+#------------------------------------------------------------------------------
+services : {
+    message               : @local::default_message
+    TFileService          : { fileName : "caloDigiTest.hist" }
+
+    RandomNumberGenerator : { }
+
+    user : {
+        GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt" }
+        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+        G4Helper               : { }
+        SeedService            : { @table::automaticSeeds
+	    baseSeed         :  0
+	    maxUniqueEngines :  20
+	}
+    }
+}
+services.scheduler.wantSummary: true
+#------------------------------------------------------------------------------
+# reconstruction and analysis modules
+#------------------------------------------------------------------------------
+physics : {
+    producers: {
+        generate             : { @table::StoppedMuonConversionGun }
+	g4run                : @local::g4run
+#------------------------------------------------------------------------------
+# hit makers
+#------------------------------------------------------------------------------
+        protonTimeMap             : { @table::protonTimeMap }
+        muonTimeMap               : { @table::muonTimeMap }
+
+	MakeCaloReadoutHits       : @local::MakeCaloReadoutHits
+	MakeCaloCrystalHits       : @local::MakeCaloCrystalHitsNew
+	
+	MakeCaloCompressedHits    : @local::MakeCaloCompressedHits
+
+#------------------------------------------------------------------------------
+# Calorimeter digitization
+#------------------------------------------------------------------------------
+	CaloDigisFromStepPointMCs   :{ @table::CaloDigisFromStepPointMCs}
+	CaloHitsFromCaloDigis       :{ @table::CaloHitsFromCaloDigis}
+	CaloCrystalHitsFromCaloHits :{ @table::CaloCrystalHitsFromCaloHits}
+
+#------------------------------------------------------------------------------
+# Calorimeter clustering modules
+#------------------------------------------------------------------------------
+	MakeCaloProtoCluster            : @local::MakeCaloProtoCluster
+	MakeCaloCluster                 : @local::MakeCaloCluster
+    }
+
+    filters: {
+#------------------------------------------------------------------------------
+# Andrej's filter
+# Reject events with no hits from signal-like tracks in the detectors.  
+# The filter does not look at the background hits from mixed events.
+#------------------------------------------------------------------------------
+	detectorFilter:     @local::FilterStepPointMomentum
+#------------------------------------------------------------------------------
+# event display
+#------------------------------------------------------------------------------
+#	MuHitDisplay: { @table::MuHitDisplay }
+    }
+
+    analyzers:
+    {
+	eventdisplay:
+	{
+	    module_type               : EventDisplay
+	    g4ModuleLabel             : "g4run"
+	    physicalVolumesMultiLabel : "compressPV"
+	}	
+
+	ReadCaloDigi:
+	{
+	    module_type            : ReadCaloDigi
+	    diagLevel              : 0 	    
+	    caloDigisModuleLabel   : CaloHitsFromCaloDigis
+	    caloCrystalModuleLabel : CaloCrystalHitsFromCaloHits
+	    calorimeterStepPoints  : calorimeter
+	    calorimeterROStepPoints: calorimeterRO
+	    caloClusterModuleLabel : MakeCaloCluster
+	    vdStepPoints           : virtualdetector
+	    TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	    blindTime              : 500. # ns  
+	    TimeFoldingBuffer      : 100. # ns
+	    psdThreshold           : 125  #a.u.
+	}
+	
+    } 
+#------------------------------------------------------------------------------
+# paths
+# write out ntuple only, so don't need compression modules...
+# paths:
+# ------
+# p1 : main reconstruction path
+# p2 : MC-only path
+# p3 : reco-only
+#
+# MakeStereoHits also produces the StrawHitPosition collection
+#------------------------------------------------------------------------------
+    all : [generate, g4run
+#	   , detectorFilter 
+	   , protonTimeMap, muonTimeMap
+	   #
+	   , MakeCaloCompressedHits
+	   , CaloDigisFromStepPointMCs
+	   , CaloHitsFromCaloDigis
+	   , CaloCrystalHitsFromCaloHits
+           , MakeCaloProtoCluster
+	   , MakeCaloCluster
+	   # 
+
+	 ]
+
+
+    trigger_paths  : [all]
+#    trigger_paths  : [read]
+#    trigger_paths  : [display]
+
+#    out : [detectorOutput]
+#    out : [eventdisplay]
+
+    out  : [ReadCaloDigi] 
+    end_paths      : [out]
+}
+
+outputs: {
+    detectorOutput : {
+        module_type : RootOutput
+        SelectEvents: { SelectEvents: [all] }
+        outputCommands:   [ "keep *_*_*_*",
+                            "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
+			   ]
+        fileName    : "caloDigiTest.art"
+    }
+}
+#------------------------------------------------------------------------------
+# redefinitions
+#------------------------------------------------------------------------------
+
+physics.producers.MakeCaloProtoCluster.caloCrystalModuleLabel : "CaloCrystalHitsFromCaloHits"
+
+services.user.SeedService.baseSeed             :  0
+services.user.SeedService.maxUniqueEngines     :  20
