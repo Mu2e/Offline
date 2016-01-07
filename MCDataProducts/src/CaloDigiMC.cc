@@ -21,6 +21,7 @@ namespace mu2e {
     _nParticles = 0;
     _totalEDep  = 0.;
     _meanTime   = 0.;
+    _timeFirst  = 1e10;
   }
 
   
@@ -44,6 +45,10 @@ namespace mu2e {
 	}
       }
       
+      if (csTime < _timeFirst){
+	_timeFirst = csTime;
+      }
+
       if (found == 1){//update the information
 	_time.at(index) = (_time.at(index)*eDep(index) + csEdep*csTime) / (eDep(index) + csEdep);
 	_eDep.at(index) += csEdep; 
