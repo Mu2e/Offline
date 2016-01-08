@@ -43,6 +43,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -104,8 +105,9 @@ namespace mu2e {
       _digiSampling               (pset.get<double>             ("digiSampling")),    // ns
       _acquisitionLenght          (pset.get<double>             ("acquisitionLenght")),    // ns
       _caloCalibNoise             (pset.get<double>             ("caloCalibNoise")),
-      _g4ModuleLabel              (pset.get<string>             ("g4ModuleLabel")),
       _toff                       (pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
+      _mbbuffer                   (pset.get<double>             ("TimeFoldingBuffer")),  // ns
+      _blindTime                  (pset.get<double>             ("blindTime" )),         // ns
       _caloDigiModuleLabel        (pset.get<std::string>        ("caloDigiModuleLabel", "CaloDigisFromStepPointMCs")),
       _stepPoints                 (pset.get<string>             ("calorimeterStepPoints","calorimeter")),
       _caloShowerStepMCModuleLabel(pset.get<std::string>        ("caloShowerStepMCModuleLabel")), 
@@ -130,40 +132,37 @@ namespace mu2e {
     virtual void beginRun(art::Run &);
     void produce( art::Event& e);
 
-    static Double_t logn(Double_t *x, Double_t *par);
-
-    
   private:
-    int    _diagLevel;
-    int    _debugMode;
+    int                        _diagLevel;
+    int                        _debugMode;
 
-    double _digiSampling;
-    double _acquisitionLenght;
+    double                     _digiSampling;
+    double                     _acquisitionLenght;
 
-    double _caloCalibNoise;
+    double                     _caloCalibNoise;
 
-    string _g4ModuleLabel;  // Name of the module that made the input hits.
-    SimParticleTimeOffset _toff;     // time offset smearing
+    SimParticleTimeOffset      _toff;     // time offset smearing
+    double                     _mbbuffer;
+    double                     _mbtime;
+    double                     _blindTime;
 
-    string _caloDigiModuleLabel; // Name of the module that made the calo hits.
+    string                     _caloDigiModuleLabel; // Name of the module that made the calo hits.
+			       
+    std::string                _stepPoints;
 
-    std::string _stepPoints;
+    std::string                 _caloShowerStepMCModuleLabel;   
+    std::string                 _caloShowerMCName;   
+    std::string                 _caloROShowerMCName;   
 
-    std::string            _caloShowerStepMCModuleLabel;   
-    std::string            _caloShowerMCName;   
-    std::string            _caloROShowerMCName;   
-
-    //    double            _DAQTimeThreshold;
-    int               _nHits[5], _nSamples[5];
-    double            _wfWithPileUp;
-    
-    WaveformProcess*  _waveformProcessor;
+    int                         _nHits[5], _nSamples[5];
+    double                      _wfWithPileUp;
+    		                
+    WaveformProcess*            _waveformProcessor;
     
 
     //some diagnostic histograms
-    Hist_              _hist;
+    Hist_                       _hist;
     
-    //    double            _waveLengthMap[3500];
 
     const CaloShowerStepMCCollection*        _caloShowerStepCol;
     //----------------------------------------------------------------------//
@@ -178,47 +177,11 @@ namespace mu2e {
 				      CaloDigiMCCollection  &   CaloDigiMCColl,
 				      RecoCaloDigiCollection& RecoCaloHits);
   
-    //    void              fillDiag(unique_ptr<CaloDigiCollection> CaloDigis, unique_ptr<RecoCaloDigiCollection> RecoHits);  
-
-    //    double            _eHitMax;
+    void              unfoldHitTime  (const CaloShowerStepMC*  h,  double & HitTimme);
 
     const Calorimeter*   _calorimeter; // cached pointer to the calorimeter geometry
 
   };
-
-
-
-  //formula from: Particle Detectors, C. Grupen , B. Shwartz
-  Double_t CaloHitsFromCaloDigis::logn(Double_t *x, Double_t *par) {
-    Double_t Epeak, sigma, eta, norm;
-    Double_t Aterm;
-    Double_t logterms0,s0;
-    Double_t logn,logterm;
-    Double_t expterm;
-    Double_t pigreco=3.14159265;
-      
-    eta = par[0];
-    sigma = par[1];
-    Epeak = par[2];
-    norm = par[3];
-
-    logterms0 = eta*2.35/2+sqrt(1+pow((eta*2.35/2),2));
-    s0 = (2/2.35)*log(logterms0);
-    
-    Aterm = eta/(sqrt(2*pigreco)*sigma*s0);
-
-    logterm = 1-(eta/sigma)*(x[0]-Epeak);  
-
-      
-    if(logterm<0){
-      logterm = 0.0001;
-    }
-    expterm = log(logterm)/s0;
-    expterm = -0.5*pow(expterm,2);
-
-    logn = norm*Aterm *exp(expterm);      
-    return logn;
-  }  // fine function
 
   void CaloHitsFromCaloDigis::beginJob(){
 
@@ -226,9 +189,9 @@ namespace mu2e {
 
     _waveformProcessor->book();
 
-    _hist._hEMC       = tfs->make<TH1F>("hEMC%i",
-					   "CaloDigMC energy; E [MeV]",
-					   400, 0, 200);
+    _hist._hEMC       = tfs->make<TH1F>("hEMC",
+					"CaloDigMC energy; E [MeV]",
+					400, 0, 200);
     for (int i=0; i<5; ++i){
       _hist._hNSamples[i]   = tfs->make<TH1F>(Form("hNSamples%i",i),
 					      "Numerb of samples / event distribution; nSamples/event [#] ", 
@@ -242,9 +205,36 @@ namespace mu2e {
       
     }
     
-
+    
   }
+    
+  //--------------------------------------------------------------------------------
+    
+    void CaloHitsFromCaloDigis::unfoldHitTime  (const CaloShowerStepMC* Hit,  double & HitTime){
+      double hitTimeUnfolded = _toff.totalTimeOffset(Hit->simParticle()) + Hit->time();
+      HitTime                = fmod(hitTimeUnfolded, _mbtime);
 
+      if (HitTime < _mbbuffer) {
+	if (HitTime+_mbtime > _blindTime) {
+	  HitTime = HitTime + _mbtime;
+	}
+      }
+      else {
+	if (HitTime > (_mbtime - _mbbuffer)) {
+	  if (HitTime - _mbtime > _blindTime) {
+	    HitTime =   HitTime - _mbtime;
+	  }
+	}
+      }
+      
+      //the digitization include a time offset between the MC time
+      // and the waveform time. FIX ME
+      double      timeOffset = 30;
+
+      HitTime += timeOffset;
+    }
+
+  
   void  CaloHitsFromCaloDigis::endJob(){}
 
 //-----------------------------------------------------------------------------
@@ -260,6 +250,8 @@ namespace mu2e {
     }
 
     //get the time offset
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    _mbtime = accPar->deBuncherPeriod;
     _toff.updateMap(event);
 
  
@@ -308,9 +300,7 @@ namespace mu2e {
 	_hist._hEMC ->Fill(caloDigiMCColl->at(i).totalEDep());
       }
     }
-    //   fillDiag(caloDigiColl, recoHitColl);
-      
-    // }
+
 
     if ( _debugMode > 0 ) {
       printf("[CaloHitsFromCaloDigis::produce] produced RecoCrystalHits ");
@@ -333,8 +323,8 @@ namespace mu2e {
 						const CaloDigiPacked*      CaloDigis    ){
     
     //get the array which holds all the digitized waveforms
-    std::vector<int>   tmpObj  = CaloDigis->output();
-    std::vector<int>* caloFromDigi = &tmpObj;
+    std::vector<int>        tmpObj       = CaloDigis->output();
+    std::vector<int>*       caloFromDigi = &tmpObj;
 
     //total lenght of the digitized waveforms
     int                cfdDim         = caloFromDigi->size();
@@ -359,7 +349,6 @@ namespace mu2e {
 					      RecoCaloDigiCollection&   RecoCaloHits){
 
     ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-    //    Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
     //get the RO id
     int        roId      = CaloFromDigi->at(Index);
@@ -377,13 +366,9 @@ namespace mu2e {
     const CaloShowerStepMC* h;
     double      tEnd;         
     int         nShowerSteps; 
-    double      hitTime(0);  
+    double      hitTime(0);
     int         crystalId;    
     double      adc2MeV;     
-
-    //the digitization include a time offset between the MC time
-    // and the waveform time. FIX ME
-    double      timeOffset = 30;
 
     //check the lenght: if it is 2 that means that it is empty
     if ( hitLenght != 2) {//goto  PROCESS_END;
@@ -402,9 +387,12 @@ namespace mu2e {
 
       //time of the first digitized timestamp
       int         t0     = CaloFromDigi->at(Index + 2);
-   
+
+      //index of the new  CaloDigi int he output collection 
+      int         vecIndex  = CaloDigiColl.size();
+
       //store the unpacked Calo-Hit
-      CaloDigiColl.push_back(CaloDigi(waveform, roId, hitLenght, t0));
+      CaloDigiColl.push_back(CaloDigi(waveform, roId, hitLenght, t0, vecIndex));
     
       //fill MC info
       tEnd          = t0 + waveform.size()*_digiSampling;
@@ -415,23 +403,36 @@ namespace mu2e {
       CaloDigiMC caloDigiMC;
       caloDigiMC.init();
 
-      int        found=0;
+      int        found = 0;
+      hitTime          = -1;
+
       for (int i=0; i<nShowerSteps; ++i){
 	h =  &_caloShowerStepCol->at(i);
+	
+	// if (h->volumeId() == 249 ){
+	//   h->print(std::cout);
+	// }
 	if (h->volumeId() != crystalId)                continue;
 
-	hitTime   = h->time() + _toff.totalTimeOffset(h->simParticle())  + timeOffset;
-      
+	unfoldHitTime(h, hitTime);
+
+	// hitTimeUnfolded   = h->time() + _toff.totalTimeOffset(h->simParticle())  + timeOffset;
+	// hitTime           = fmod(hitTimeUnfolded, _mbtime);
+
 	//FIX ME, there is an offset between data and MC
 	if ( (hitTime > t0) && (hitTime < tEnd)){
 	  caloDigiMC.addCaloShower(h);
 	  found = 1;
+	}else{
+	  printf("[CaloHitsFromCaloDigis::processWaveform] hitTime = %.3f t0 = %i tEnd = %5.3f\n",
+		 hitTime, t0, tEnd); 
 	}
       }
 
       if (found == 0){
-	printf("[] no CaloShowerMC found: t0 = %i hitTime = %3.2f \n", 
-	       t0, hitTime);
+	printf("[CaloHitsFromCaloDigis::processWaveform] no CaloShowerMC found: t0 = %i hitLenght = %d crystalId = %d\n", 
+	       t0, hitLenght, crystalId);
+	CaloDigiColl.at(CaloDigiColl.size()-1).print();
       }
       //store CaloDigMC
       CaloDigiMCColl.push_back(caloDigiMC);

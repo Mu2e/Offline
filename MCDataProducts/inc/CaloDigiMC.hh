@@ -66,6 +66,7 @@ namespace mu2e {
     int                      nParticles  ()          const {return _nParticles; }
     double                   totalEDep   ()          const {return _totalEDep;  }
     double                   meanTime    ()          const {return _meanTime;   }
+    double                   timeFirst   ()          const {return _timeFirst;   }
 
     double                   eDep        (int Index) const {return _eDep.at(Index); }
     double                   time        (int Index) const {return _time.at(Index); }
@@ -81,6 +82,7 @@ namespace mu2e {
 
     double                        _totalEDep;
     double                        _meanTime;
+    double                        _timeFirst;
 
     std::vector<double>           _eDep;
     std::vector<double>           _time;

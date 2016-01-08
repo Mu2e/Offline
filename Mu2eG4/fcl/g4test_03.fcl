@@ -8,9 +8,6 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: g4test_03.fcl,v 1.1 2014/08/29 16:16:17 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2014/08/29 16:16:17 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -36,6 +33,7 @@ services : {
   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
   BTrkHelper             : @local::BTrkHelperDefault 
   G4Helper               : { }
+  BTrkHelper             : @local::BTrkHelperDefault
   SeedService            : @local::automaticSeeds
 }
 

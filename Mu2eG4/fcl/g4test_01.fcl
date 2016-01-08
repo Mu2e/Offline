@@ -2,9 +2,6 @@
 # Generate a single conversion electron, run it through G4
 # and draw a picture in the (x,y) view.  Do only one event.
 #
-# $Id: g4test_01.fcl,v 1.1 2014/08/29 16:16:17 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2014/08/29 16:16:17 $
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
@@ -28,6 +25,7 @@ services : {
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"  }
   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   G4Helper               : { }
+  BTrkHelper             : @local::BTrkHelperDefault
   SeedService            : @local::automaticSeeds
 
 }
