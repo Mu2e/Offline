@@ -85,7 +85,8 @@ namespace mu2e {
 
     PanelAmbigResolver::~PanelAmbigResolver() {}
 
-    void PanelAmbigResolver::resolveTrk(KalRep* krep) const {
+    bool PanelAmbigResolver::resolveTrk(KalRep* krep) const {
+      bool retval(false); // assume nothing changes
       // initialize hit external errors
       initHitErrors(krep);
       // sort by panel
@@ -103,12 +104,14 @@ namespace mu2e {
 	  phits.push_back(*jhit++);
 	}
 	// resolve the panel hits
-	resolvePanel(phits,krep);
+	retval |= resolvePanel(phits,krep);
 	ihit = jhit;
       }
+      return retval;
     }
 
-    void PanelAmbigResolver::resolvePanel(TrkStrawHitVector& phits,KalRep* krep) const {
+    bool PanelAmbigResolver::resolvePanel(TrkStrawHitVector& phits,KalRep* krep) const {
+      bool retval(false); // assume nothing changes
       // sort hits for this panel
       std::sort(phits.begin(),phits.end(),hitsort());
       // fill panel information
@@ -128,7 +131,7 @@ namespace mu2e {
 	  std::sort(results.begin(),results.end(),resultcomp());
 	  // for now, set the hit state according to the best result.  In future, maybe we want to treat
 	  // cases with different ambiguities differently from inactive hits
-	  setHitStates(results[0]._state,phits);
+	  retval |= setHitStates(results[0]._state,phits);
 	  // if the chisq difference between patterns is negligible, inflate the errors of the
 	  // hit which changes
 	  size_t nhits = results[0]._state.size();
@@ -159,6 +162,8 @@ namespace mu2e {
 	}
       } else 
 	std::cout << "PanelAmbigResolver: Panel with " << phits.size() << " hits has no usable info" << std::endl;
+
+      return retval;
     }
 
     bool PanelAmbigResolver::fillPanelInfo(TrkStrawHitVector const& phits, const KalRep* krep, PanelInfo& pinfo) const {

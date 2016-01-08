@@ -37,10 +37,10 @@ namespace mu2e {
 	virtual ~PanelAmbigResolver();
 	// resolve a track.  Depending on the configuration, this might
 	// update the hit state and the t0 value.
-	virtual void resolveTrk(KalRep* krep) const;
+	virtual bool resolveTrk(KalRep* krep) const;
       private:
 	// resolve the ambiguity on a single panel
-	void resolvePanel(TrkStrawHitVector& phits, KalRep* krep) const;
+	bool resolvePanel(TrkStrawHitVector& phits, KalRep* krep) const;
 	// fill information about a given panel's track and hits
 	bool fillPanelInfo(TrkStrawHitVector const& phits, const KalRep* krep, PanelInfo& pinfo) const;
 	// compute the panel result for a given ambiguity/activity state and the ionput t0

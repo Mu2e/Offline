@@ -42,7 +42,9 @@ namespace mu2e
 	_state = inactive;
     }
 
-    void HitState::setHitState(TrkStrawHit* tsh) const {
+    bool HitState::setHitState(TrkStrawHit* tsh) const {
+      bool oldactive = tsh->isActive();
+      int oldambig = tsh->ambig();
       if(tsh != 0){
 	switch (_state) {
 	  default:
@@ -64,6 +66,7 @@ namespace mu2e
 	    break;
 	}
       }
+      return !(oldactive == tsh->isActive() && oldambig == tsh->ambig());
     }
 
     PanelResult::PanelResult(PanelState const& state) : _state(state),
@@ -114,11 +117,13 @@ namespace mu2e
       return result;
     }
 
-    void setHitStates(PanelState const& pstate, TrkStrawHitVector& hits) {
+    bool setHitStates(PanelState const& pstate, TrkStrawHitVector& hits) {
+      bool retval(false); // assume nothing changes
       if(pstate.size() != hits.size())
 	throw cet::exception("RECO")<<"mu2e::PanelAmbigResolver: state size doesn't match" << std::endl;
       for(size_t ihit=0;ihit<hits.size(); ++ihit)
-	pstate[ihit].setHitState(hits[ihit]);        
+	retval |= pstate[ihit].setHitState(hits[ihit]);
+      return retval;
     }
 
   } // PanelAmbig namespace

@@ -25,7 +25,7 @@ namespace mu2e {
   
   PocaAmbigResolver::~PocaAmbigResolver() {}
   
-  void
+  bool 
   PocaAmbigResolver::resolveTrk(KalRep* krep) const {
     // init hit external errors
     initHitErrors(krep);
@@ -35,5 +35,6 @@ namespace mu2e {
     for (auto ihit=tshv.begin();ihit!=tshv.end(); ++ihit){
       (*ihit)->setAmbigUpdate(true);
     }
+    return true;
   }
 }

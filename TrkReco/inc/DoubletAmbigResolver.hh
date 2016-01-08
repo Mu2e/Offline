@@ -96,7 +96,7 @@ namespace mu2e {
 
     double penaltyError(double rdrift) const;
 					// update the hit state and the t0 value.
-    virtual void resolveTrk(KalRep* KRes) const;
+    virtual bool resolveTrk(KalRep* KRes) const;
   };
 }
 #endif

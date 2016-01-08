@@ -24,7 +24,7 @@ namespace mu2e {
     explicit PocaAmbigResolver(fhicl::ParameterSet const& pset, double ExtErr);
 #endif/*__GCCXML__*/
     virtual ~PocaAmbigResolver();
-    virtual void resolveTrk(KalRep* kfit) const;
+    virtual bool resolveTrk(KalRep* kfit) const;
   private:
   };
 }

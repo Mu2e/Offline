@@ -25,7 +25,7 @@ namespace mu2e {
 // resolve a track.  Depending on the configuration, this might
 // update the hit state and the t0 value. 
 
-    virtual void resolveTrk(KalRep* kfit) const = 0;
+    virtual bool resolveTrk(KalRep* kfit) const = 0;
 
     protected:
 // init hit external errors for simulated annealing

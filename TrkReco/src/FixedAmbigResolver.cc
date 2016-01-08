@@ -19,7 +19,7 @@ namespace mu2e {
 
   FixedAmbigResolver::~FixedAmbigResolver() {}
 
-  void
+  bool
   FixedAmbigResolver::resolveTrk(KalRep* krep) const {
 
 					// init hit errors
@@ -33,5 +33,6 @@ namespace mu2e {
       (*itsh)->setAmbigUpdate(false);
       if(_neutralize) (*itsh)->setAmbig(0);
     }
+    return true;
   }
 }

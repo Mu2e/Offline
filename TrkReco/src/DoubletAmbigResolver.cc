@@ -1300,7 +1300,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // build list of doublets and resolve the drift signs
 //-----------------------------------------------------------------------------
-  void DoubletAmbigResolver::resolveTrk(KalRep* KRep) const {
+  bool DoubletAmbigResolver::resolveTrk(KalRep* KRep) const {
 
 					// initialize external hit errors
     initHitErrors(KRep);
@@ -1308,6 +1308,7 @@ namespace mu2e {
     findDoublets (KRep,&listOfDoublets);
 
     if (listOfDoublets.size() > 0) markMultiplets(KRep,&listOfDoublets);
+    return false; // assume no change FIXME!!!
   }
 
 //-----------------------------------------------------------------------------

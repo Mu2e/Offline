@@ -30,6 +30,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 // tracker
+#include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
@@ -49,13 +50,17 @@
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/median.hpp>
 #include <boost/accumulators/statistics/weighted_variance.hpp>
+//CLHEP
+#include "CLHEP/Vector/ThreeVector.h"
 // C++
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <memory>
+#include <set>
 
 using namespace std; 
+using CLHEP::Hep3Vector;
 
 namespace mu2e 
 {
@@ -74,6 +79,24 @@ namespace mu2e
       return x->hitT0()._t0 < y->hitT0()._t0;
     }
   };
+
+// struct for finding materials
+  struct StrawFlight {
+    StrawIndex _index;  // straw being tested
+    double _flt; // flight where trajectory comes near this straw
+// construct from pair
+    StrawFlight(StrawIndex strawind, double flt) : _index(strawind), _flt(flt) {}
+  };
+
+// comparison operators understand that the same straw could be hit twice, so the flight lengths need
+// to be similar befoew we consider these 'the same'
+  struct StrawFlightComp : public binary_function<StrawFlight, StrawFlight, bool> {
+    double _maxdiff; // maximum flight difference; below this, consider 2 intersections 'the same'
+    StrawFlightComp(double maxdiff) : _maxdiff(maxdiff) {}
+    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._index < b._index || 
+    ( a._index == b._index && a._flt < b._flt && fabs(a._flt-b._flt)>=_maxdiff);}
+  };
+
 // construct from a parameter set  
   KalFit::KalFit(fhicl::ParameterSet const& pset, TrkFitDirection const& fitdir) :
 // KalFit parameters
@@ -89,9 +112,11 @@ namespace mu2e
     _t0nsig(pset.get<double>("t0window",2.5)),
     //
     _minnstraws(pset.get<unsigned>("minnstraws",15)),
+    _maxmatfltdiff(pset.get<double>("MaximumMaterialFlightDifference",1000.0)), // mm separation in flightlength
     _weedhits(pset.get<vector<bool> >("weedhits")),
     _herr(pset.get< vector<double> >("hiterr")),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
+    _addmaterial(pset.get<vector<bool> >("AddMaterial")),
     _resolveAfterWeeding(pset.get<bool>("ResolveAfterWeeding",false)),
     _fdir(fitdir),
     _bfield(0)
@@ -269,13 +294,13 @@ namespace mu2e
    // find the DetElem associated this straw
 	const DetStrawElem* strawelem = detmodel->strawElem(trkhit->straw());
 // see if this KalRep already has a KalMaterial with this element: if not, add it
-	bool addmat(true);
+	bool addmat(false);
 	std::vector<const KalMaterial*> kmats;
 	krep->findMaterialSites(strawelem,kmats);
 // if this is a reflecting track the same material can appear multiple times: check the flight lengths
 	if(kmats.size() > 0){
 	  for(auto kmat: kmats) {
-	    if( fabs( kmat->globalLength() - trkhit->fltLen()) < 10*strawelem->straw()->getRadius()){
+	    if( fabs( kmat->globalLength() - trkhit->fltLen()) > 10*strawelem->straw()->getRadius()){
 	      addmat = true;
 	      break;
 	    }
@@ -321,16 +346,17 @@ namespace mu2e
     unsigned niter(0);
     bool changed(true);
     TrkErrCode retval = TrkErrCode::succeed;
-    while(retval.success() && changed && niter < maxIterations()){
-      changed = false;
+    while(retval.success() && changed && ++niter < maxIterations()){
 //-----------------------------------------------------------------------------
 // convention: resolve drift signs before the fit with respect to the trajectory 
 // determined at the previous iteration
 //-----------------------------------------------------------------------------
-      _ambigresolver[iter]->resolveTrk(krep);
+      changed = _ambigresolver[iter]->resolveTrk(krep);
+      // force a refit
       krep->resetFit();
       retval = krep->fit();
       if(! retval.success())break;
+      // updates
       if(_updatet0){
 	updateT0(krep,tshv);
 	changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
@@ -340,8 +366,13 @@ namespace mu2e
       if(_weedhits[iter]){
 	changed |= weedHits(krep,tshv,iter);
       }
-      niter++;
+      // find missing materials
+      if(_addmaterial[iter])
+	changed |= addMaterial(krep) > 0;
     }
+    if(_debug > 1)
+      std::cout << "Fit iteration " << iter << " stopped after " 
+      << niter << " iterations" << std::endl;
     return retval;
   }
 
@@ -401,15 +432,99 @@ namespace mu2e
     }
   }
 
-  void
-  KalFit::addMaterials(KalRep* krep) {
-    // fetcth the DetectorModel
-    ConditionsHandle<Mu2eDetectorModel> detmodel;
-  // this function needs to be implemented, FIXME!!!
-// loop over the detector model using the fit trajectory and find straws intersected by this track
-// for now do this by brute force, but a smarter lookup is needed FIXME!!!
-  
-// Now see if the Kalman rep includes material elements for all these straws; add the ones that are missing
+  unsigned KalFit::addMaterial(KalRep* krep) {
+    unsigned retval(0);
+// TTracker geometry
+    const Tracker& tracker = getTrackerOrThrow();
+    const TTracker& ttracker = dynamic_cast<const TTracker&>(tracker);
+// fetcth the DetectorModel
+    GeomHandle<Mu2eDetectorModel> detmodel;
+// storage of potential straws
+    StrawFlightComp strawcomp(_maxmatfltdiff);
+    std::set<StrawFlight,StrawFlightComp> matstraws(strawcomp);
+// loop over Planes
+    double strawradius = ttracker.strawRadius();
+    unsigned nadded(0);
+    for(auto plane : ttracker.getPlanes()){
+    // crappy access to # of straws in a panel
+      int nstraws = 2*plane.getPanel(0).getLayer(0).nStraws();
+// get an approximate z position for this plane from the average position of the 1st and last straws
+      Hep3Vector s0 = plane.getPanel(0).getLayer(0).getStraw(0).getMidPoint();
+      // funky convention for straw numbering in a layer FIXME!!!!
+      Hep3Vector sn = plane.getPanel(0).getLayer(1).getStraw(2*plane.getPanel(0).getLayer(1).nStraws()-1).getMidPoint();
+      double pz = 0.5*(s0.z() + sn.z());
+// find the transverse position at this z using the reference trajectory
+      double flt = zFlight(krep,pz);
+      HepPoint pos = krep->referenceTraj()->position(flt);
+      Hep3Vector posv(pos.x(),pos.y(),pos.z());
+// see if this position is in the active region.  Double the straw radius to be generous
+      double rho = posv.perp();
+      double rmin = s0.perp()-2*strawradius;
+      double rmax = sn.perp()+2*strawradius;
+      if(rho > rmin && rho < rmax){
+  // loop over panels
+	for(auto panel : plane.getPanels()){
+      // get the straw direction for this panel
+	  Hep3Vector sdir = panel.getLayer(0).getStraw(0).getDirection();
+      // get the transverse direction to this and z
+	  static Hep3Vector zdir(0,0,1.0);
+	  Hep3Vector pdir = sdir.cross(zdir);
+     //  project the position along this
+	  double prho = posv.dot(pdir);
+      // test for acceptance of this panel
+	  if(prho > rmin && prho < rmax) {
+	  // translate the transverse position into a rough straw number
+	    int istraw = (int)rint(nstraws*(prho-s0.perp())/(sn.perp()-s0.perp()));
+	    // take a few straws around this
+	    for(int is = max(0,istraw-2); is<min(nstraws-1,istraw+2); ++is){
+	    // must do this twice due to intrusion of layer on hierarchy FIXME!!!
+	      matstraws.insert(StrawFlight(panel.getLayer(0).getStraw(is).index(),flt));
+	      matstraws.insert(StrawFlight(panel.getLayer(1).getStraw(is).index(),flt));
+	      nadded += 2;
+	    }
+	  }
+	}
+      }
+    }
+// Now test if the Kalman rep hits these straws
+    if(_debug>2)std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
+    for(auto strawflt : matstraws){
+      const DetStrawElem* strawelem = detmodel->strawElem(strawflt._index);
+      DetIntersection strawinter;
+      strawinter.delem = strawelem;
+      strawinter.pathlen = strawflt._flt;
+      if(strawelem->reIntersect(krep->referenceTraj(),strawinter)){
+// If the rep already has a material site for this element, skip it
+	std::vector<const KalMaterial*> kmats;
+	krep->findMaterialSites(strawelem,kmats);
+	if(_debug>2)std::cout << "found intersection with straw " << strawelem->straw()->index() << " with " 
+	<< kmats.size() << " materials " << std::endl;
+// test material isn't on the track
+	bool hasmat(false);
+	for(auto kmat : kmats ){
+	  const DetStrawElem* kelem = dynamic_cast<const DetStrawElem*>(kmat->detIntersection().delem);
+	  if(kelem != 0){
+	    StrawFlight ksflt(kelem->straw()->index(),kmat->globalLength());
+	    if(_debug>2)std::cout << " comparing flights " << kmat->globalLength() << " and " << strawflt._flt << std::endl;
+	    if(!strawcomp.operator()(strawflt,ksflt)){
+	      if(_debug>2)std::cout << "operator returned false!!" << std::endl;
+	      // this straw is already on the track: stop
+	      hasmat = true;
+	      break;
+	    }
+	  }
+	}
+	if(kmats.size() == 0 || !hasmat) {
+	  if(_debug>2)std::cout << "Adding material element" << std::endl;
+	  // this straw doesn't have an entry in the Kalman fit: add it`
+	  DetIntersection detinter(strawelem, krep->referenceTraj(),strawflt._flt);
+	  krep->addInter(detinter);
+	  ++retval;
+	}
+      }
+    }
+    if(_debug>1)std::cout << "Added " << retval << " new material sites" << std::endl;
+    return retval;
   }
 
   bool
@@ -723,4 +838,26 @@ namespace mu2e
     while(ilow != hits.rend() && (*ilow)->fltLen() > flt0 )++ilow;
     while(ihigh != hits.end() && (*ihigh)->fltLen() < flt0 )++ihigh;
   }
+ 
+  // this function belongs in TrkDifTraj, FIXME!!!!
+  double KalFit::zFlight(KalRep* krep,double pz) {
+// get the helix at the middle of the track
+    double loclen;
+    double fltlen(0.0);
+    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->referenceTraj()->localTrajectory(fltlen,loclen));
+// Iterate
+    const HelixTraj* oldtraj;
+    unsigned iter(0);
+    do {
+// remember old traj
+      oldtraj = htraj;
+// correct the global fltlen for this difference in local trajectory fltlen at this Z position
+      fltlen += (htraj->zFlight(pz)-loclen);
+      htraj = dynamic_cast<const HelixTraj*>(krep->referenceTraj()->localTrajectory(fltlen,loclen));
+    } while(oldtraj != htraj && iter++<10);
+    return fltlen;
+  }
+
 }
+
+

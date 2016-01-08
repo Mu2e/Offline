@@ -28,9 +28,10 @@ namespace mu2e {
 // construct with parameter set.  Ignored for now
       Mu2eDetectorModel(fhicl::ParameterSet const& pset, TTracker const& tt);
       virtual ~Mu2eDetectorModel();
-// given a straw, find the associated element.  This will throw
+// given a straw, or index, find the associated element.  This will throw
 // if no match is found
     const DetStrawElem* strawElem(Straw const& straw) const;
+    const DetStrawElem* strawElem(StrawIndex const& strawindex) const;
     private:
       // map between straw index and detector elements 
       std::map<StrawIndex,DetStrawElem*> _strawmap;

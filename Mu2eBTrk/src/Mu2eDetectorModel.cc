@@ -62,15 +62,18 @@ namespace mu2e {
     }
   }
 
-
   const DetStrawElem* Mu2eDetectorModel::strawElem(Straw const& straw) const{
+    return strawElem(straw.index());
+  }
+  
+  const DetStrawElem* Mu2eDetectorModel::strawElem(StrawIndex const& istraw) const{
     const DetStrawElem* retval(0);
-    auto ifnd = _strawmap.find(straw.index());
+    auto ifnd = _strawmap.find(istraw);
     if(ifnd != _strawmap.end())
       retval = ifnd->second;
     else
       throw cet::exception("RECO")<<"mu2e::Mu2eDetectorModel: no element associated to straw " 
-      << straw.index() << std::endl;
+      << istraw << std::endl;
     return retval;
   }
 

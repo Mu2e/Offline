@@ -53,8 +53,6 @@ namespace mu2e
 // add a set of hits to an existing fit
     virtual void addHits(KalRep* kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi);
 // add materials to a track
-    virtual void addMaterials(KalRep* krep);
-// Try to put back inactive hits
     bool unweedHits(KalRep* kres, double maxchi);
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
@@ -71,10 +69,12 @@ namespace mu2e
     double _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     double _t0nsig;	    // # of sigma to include when selecting hits for t0
     unsigned _minnstraws;   // minimum # staws for fit
+    double _maxmatfltdiff; // maximum difference in track flightlength to separate to intersections of the same material
     // iteration-dependent configuration parameters
     std::vector<bool> _weedhits;	// weed hits?
     std::vector<double> _herr;		// what external hit error to add (for simulated annealing)
     std::vector<int> _ambigstrategy;	// which ambiguity resolver to use
+    std::vector<bool> _addmaterial; // look for additional materials along the track
     std::vector<AmbigResolver*> _ambigresolver;
     bool _resolveAfterWeeding;
 // state
@@ -87,13 +87,14 @@ namespace mu2e
     void initT0(TrkDef const& tdef, TrkT0& t0);
     virtual void makeHits(TrkDef const& tdef, TrkT0 const& t0, TrkStrawHitVector& tshv); 
     virtual void makeMaterials(TrkStrawHitVector const&, TrkDef const& tdef, std::vector<DetIntersection>& dinter);
-    
+    unsigned addMaterial(KalRep* krep);
     bool weedHits(KalRep* kres, TrkStrawHitVector& tshv,size_t iter);
     bool unweedHits(KalRep* kres, TrkStrawHitVector& tshv, double maxchi);
     bool updateT0(KalRep* kres, TrkStrawHitVector& tshv);
     TrkErrCode fitTrack(KalRep* kres, TrkStrawHitVector& tshv);
     TrkErrCode fitIteration(KalRep* kres,TrkStrawHitVector& tshv,size_t iter); 
     void updateHitTimes(KalRep* kres, TrkStrawHitVector& tshv); 
+    double zFlight(KalRep* krep,double pz);
     
     void findBoundingHits(TrkStrawHitVector& hits, double flt0,
 	TrkStrawHitVector::reverse_iterator& ilow,

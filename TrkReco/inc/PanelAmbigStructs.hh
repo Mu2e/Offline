@@ -32,7 +32,7 @@ namespace mu2e {
       // set state from an existing strawhit
       HitState(const TrkStrawHit* tsh);
       // set TrkStrawHit to this state
-      void setHitState(TrkStrawHit* tsh) const;
+      bool setHitState(TrkStrawHit* tsh) const;
       // comparators
       bool operator == (HitState const& other) const { return _state == other._state; }
       bool operator != (HitState const& other) const { return !operator==(other); }
@@ -110,7 +110,7 @@ namespace mu2e {
 
     // utility function for combinatorics
     unsigned ipow(unsigned base, unsigned exp);
-    void setHitStates(PanelState const& pstate, TrkStrawHitVector& hits);
+    bool setHitStates(PanelState const& pstate, TrkStrawHitVector& hits);
   }
 }
 #endif

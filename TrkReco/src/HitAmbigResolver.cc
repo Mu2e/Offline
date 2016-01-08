@@ -32,9 +32,9 @@ namespace mu2e {
 
   HitAmbigResolver::~HitAmbigResolver() {}
 
-  void
+  bool
   HitAmbigResolver::resolveTrk(KalRep* krep) const {
-
+    bool retval(false); // assume no change
     initHitErrors(krep);
 
 // loop over all the hits
@@ -58,15 +58,18 @@ namespace mu2e {
 	if(poca.status().success()){
 	  // set the ambiguity if allowed, based on the sign of DOCA
 	  int newamb = poca.doca() > 0 ? 1 : -1;
+	  retval |= newamb == (*itsh)->ambig();
 	  (*itsh)->setAmbig(newamb);
 	  // based on the drift distance, set the penalty error based on the a-priori function.
 	  if(_penalty){
 	    double perr = penaltyError((*itsh)->driftRadius());
+	    retval |= (*itsh)->penaltyErr() == perr;
 	    (*itsh)->setPenalty(perr);
 	  }
 	}
       }
     }
+    return retval;
   }
 
   double

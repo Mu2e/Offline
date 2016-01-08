@@ -24,7 +24,7 @@ namespace mu2e {
     explicit FixedAmbigResolver(fhicl::ParameterSet const& pset, double extErr);
 #endif/*__GCCXML__*/
       virtual ~FixedAmbigResolver();
-    virtual void resolveTrk(KalRep* kfit) const;
+    virtual bool resolveTrk(KalRep* kfit) const;
     private:
       bool _neutralize; // if true, set the initial ambiguity to 0
   };
