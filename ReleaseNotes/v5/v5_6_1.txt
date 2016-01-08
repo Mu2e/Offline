@@ -5,6 +5,7 @@ Still under construction
 3.  kutschke 7, Jan 2016
     Added BTrkHelper to the configuration of
       JobConfig/cd3/validation/stoppedMuonsSingleStage.fcl
+      Mu2eG4/fcl/transportOnly.fcl
       Mu2eG4/fcl/g4test_01.fcl
       Mu2eG4/fcl/g4test_02.fcl
       Mu2eG4/fcl/g4test_03.fcl
