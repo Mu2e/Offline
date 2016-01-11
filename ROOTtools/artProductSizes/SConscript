@@ -8,8 +8,7 @@ rootlibs  = env['ROOTLIBS']
 bindir    = env['BINDIR']
 
 # Boost libraries need for this executable only.
-# boostlibs = [ 'boost_filesystem', 'boost_iostreams', 'boost_system' ]
-boostlibs = [ 'boost_filesystem', 'boost_iostreams', ]
+boostlibs = [ 'boost_filesystem', 'boost_iostreams', 'boost_system' ]
 
 
 env.Program(
