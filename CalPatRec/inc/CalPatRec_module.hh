@@ -186,19 +186,19 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
-    std::string  _shLabel;
-    std::string  _shpLabel;
-    std::string  _shfLabel;
-    std::string  _ccmLabel; // caloClusterModuleLabel
-    std::string  _crmLabel;
-    std::string  _chmccpLabel;
+    std::string      _shLabel ; // MakeStrawHit label (makeSH)
+    std::string      _shpLabel;
+    std::string      _shfLabel;
+    std::string      _ccmLabel; // caloClusterModuleLabel
+    std::string      _crmLabel;
+    std::string      _chmccpLabel;
 
-    std::string  _dtspecpar;
+    //    std::string      _dtspecpar;
 
     StrawHitFlag     _tsel, _hsel, _addsel, _ksel;
     StrawHitFlag     _bkgsel, _addbkg;
     double           _maxedep;
-    int              fUseDoublets;
+    //    int              _useDoublets;
     double           _mindt;
     double           _maxdt;
     double           _maxdtmiss;
@@ -223,6 +223,8 @@ namespace mu2e {
     double           _maxaddchi;
     TrkParticle      _tpart;	        // particle type being searched for
     TrkFitDirection  _fdir;		// fit direction in search
+
+    int              _nhits_from_gen;
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
@@ -271,7 +273,7 @@ namespace mu2e {
 
     THackData*               fHackData;
 
-    int                      fNminMChits;
+    int                      _minNMCHits;
     int                      fQualityTrack;
     int                      fCaloClusterFromCE;
     int                      fNCaloEnergyCut, fNCaloSizeCut, fNHitsTimePeakCut, fNTimeWindow;
