@@ -459,10 +459,10 @@ namespace mu2e {
       }
     }
 
-    art::Handle<MCTrajectoryCollection> inputMCTracjectoryHandle;
+    art::Handle<MCTrajectoryCollection> inputMCTrajectoryHandle;
     if(art::InputTag() != multiStagePars_.inputMCTrajectories()) {
-      event.getByLabel(multiStagePars_.inputMCTrajectories(), inputMCTracjectoryHandle);
-      if(!inputMCTracjectoryHandle.isValid()) {
+      event.getByLabel(multiStagePars_.inputMCTrajectories(), inputMCTrajectoryHandle);
+      if(!inputMCTrajectoryHandle.isValid()) {
         throw cet::exception("CONFIG")
           << "Error retrieving inputMCTrajectories for "<<multiStagePars_.inputMCTrajectories()<<"\n";
       }
@@ -485,7 +485,7 @@ namespace mu2e {
     commonCuts_->beginEvent(event, spHelper);
 
     // Some of the user actions have begin event methods. These are not G4 standards.
-    _trackingAction->beginEvent(inputSimHandle, inputMCTracjectoryHandle,
+    _trackingAction->beginEvent(inputSimHandle, inputMCTrajectoryHandle,
                                 spHelper, parentHelper, *mcTrajectories );
 
     _genAction->setEventData(gensHandle.isValid() ? &*gensHandle : 0, genInputHits, &parentHelper);
