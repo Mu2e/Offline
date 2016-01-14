@@ -149,7 +149,7 @@ namespace mu2e {
     float                      _cryPosX[16384],_cryPosY[16384],_cryPosZ[16384], _cryPosR[16384];
     
     float                      _cluEnergy[2048], _cluCrysE[2048], _cluTime[2048], _cluMCTime[2048], _cluMCMeanTime[2048];
-    float                      _cluCogX[2048],_cluCogY[2048],_cluCogZ[2048];
+    float                      _cluCogX[2048],_cluCogY[2048],_cluCogZ[2048], _cluCogR[2048];
 
     int                        _cluConv[2048];
 
@@ -251,6 +251,7 @@ namespace mu2e {
     _Ntup->Branch("cluCogX",      &_cluCogX ,     "cluCogX[nCluster]/F");	
     _Ntup->Branch("cluCogY",      &_cluCogY ,     "cluCogY[nCluster]/F");	
     _Ntup->Branch("cluCogZ",      &_cluCogZ ,     "cluCogZ[nCluster]/F");	
+    _Ntup->Branch("cluCogR",      &_cluCogR ,     "cluCogR[nCluster]/F");	
     _Ntup->Branch("cluNcrys",     &_cluNcrys ,    "cluNCrys[nCluster]/I");	
     _Ntup->Branch("cluConv",      &_cluConv ,     "cluConv[nCluster]/I");	
   
@@ -528,7 +529,7 @@ namespace mu2e {
       _cluNcrys     [i]     = nCrystals;
       _cluCogX      [i]     = cluster->cog3Vector().x();
       _cluCogY      [i]     = cluster->cog3Vector().y();
-      _cluCogR      [i]     =
+      _cluCogR      [i]     = sqrt(_cluCogX[i]*_cluCogX[i] + _cluCogY[i]*_cluCogY[i]);
       _cluCogZ      [i]     = cluster->cog3Vector().z();
       _cluConv      [i]     = isConversion;
       
