@@ -803,11 +803,12 @@ namespace mu2e {
     // First, construct hole; make it slightly longer that any collimator
     double hDz = coll31.halfLength();
     if( hDz<coll32.halfLength() ) hDz=coll32.halfLength();
-    // Hole is the intersection of box and circles
+    // Hole is the intersection of box and tube
     G4Box* coll3_hole_box = new G4Box("coll3_hole_box",
                                       coll31.holeRadius()+5.0,coll31.holeHalfHeight(),hDz+1.0);
+    // make the tube longer than the box to avoid overlapping surfaces 
     G4Tubs* coll3_hole_circle = new G4Tubs("coll3_hole_circle",
-                                           0.0,coll31.holeRadius(),hDz+1.0,
+                                           0.0,coll31.holeRadius(),hDz+2.0,
                                            0.0, CLHEP::twopi );
     G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
                                                               coll3_hole_box,
