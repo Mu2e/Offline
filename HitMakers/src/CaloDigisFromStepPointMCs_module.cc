@@ -78,6 +78,8 @@
 // Other includes.
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandGaussQ.h"
+#include "CLHEP/Random/RandPoisson.h"
+
 
 
 class THackData;
@@ -122,9 +124,14 @@ namespace mu2e {
 
     double                _blindTime;
     double                _crystal_refractive_index;
-    bool  _caloLRUcorrection;
-    bool  _caloNonLinCorrection;
-    CLHEP::RandGaussQ _randGauss;
+    bool                  _caloLRUcorrection;
+    bool                  _caloNonLinCorrection;
+    int                   _caloChargeProductionEffects;
+
+    CLHEP::HepRandomEngine& _engine;
+    CLHEP::RandGaussQ       _randGauss;
+    CLHEP::RandPoisson      _randPoisson;
+
 
     std::string _stepPoints;
     std::string _rostepPoints;
@@ -142,15 +149,12 @@ namespace mu2e {
     const std::string _messageCategory;
 
     int                   _addNoise;
+    int                   _addLightPropagation;
     double                _noise;
     double                _thresholdVoltage;         
     int                   _thresholdAmplitude;
     double                _DAQTimeThreshold;
-//     double                _tauDecayFast;
-//     double                _tauDecaySlow;
-//     double                _tauRise;               
-//     double                _sigma;
-//     double                _ratio;
+
     double                _energyScale;
     double                _digiSampling;
     int                   _nBits;
@@ -182,7 +186,10 @@ namespace mu2e {
       _crystal_refractive_index   (pset.get<double>     ("crystal_refractive_index")),         // 
       _caloLRUcorrection          (pset.get<bool>       ("caloLRUcorrection")),	  
       _caloNonLinCorrection       (pset.get<bool>       ("caloNonLinCorrection")),	  
-      _randGauss                  ( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
+      _caloChargeProductionEffects(pset.get<int>        ("caloChargeProductionEffects")),
+      _engine                     ( createEngine( art::ServiceHandle<SeedService>()->getSeed() ) ),
+      _randGauss                  ( _engine ),
+      _randPoisson                ( _engine ),
       _stepPoints                 (pset.get<string>     ("calorimeterStepPoints")),
       _rostepPoints               (pset.get<string>     ("calorimeterROStepPoints")),
       _caloShowerStepMCModuleLabel(pset.get<std::string>("caloShowerStepMCModuleLabel")), 
@@ -193,6 +200,7 @@ namespace mu2e {
       _mbbuffer                   (pset.get<double>     ("TimeFoldingBuffer")),  // ns
       _messageCategory            ("CaloDigisFromStepPointMCs"),			  
       _addNoise                    (pset.get<int>       ("addNoise")),           //flag for adding or not Gaussian noise
+      _addLightPropagation         (pset.get<int>       ("addLightPropagation")),  
       _noise                      (pset.get<double>     ("noise"   )),           // mV 
       _thresholdVoltage           (pset.get<double>     ("thresholdVoltage"  )), // mV 
       _thresholdAmplitude         (pset.get<double>     ("thresholdAmplitude")), //mV
@@ -244,6 +252,8 @@ namespace mu2e {
 						  int crid,
 						  ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
 
+    void chargeProductionCorrection(double &Edep, int roId, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibration);
+
     void fillWaveforms        (art::Handle<CaloShowerStepMCCollection>const& crystalStepsHandles);
     void printStepPointDebug(Calorimeter const & cal,StepPointMC const& h, int crid);
 
@@ -282,6 +292,18 @@ namespace mu2e {
 
     HitTime    =  HitTime + path/vLight;
   }
+
+  
+  void CaloDigisFromStepPointMCs::chargeProductionCorrection(double &Edep, int RoId, ConditionsHandle<CalorimeterCalibrations>& CalorimeterCalibrations){
+  
+    double       lightYield = CalorimeterCalibrations->ROpe(RoId);
+    double       mean       = Edep*lightYield/CalorimeterCalibrations->ROfano(RoId);
+    double       npe        = _randPoisson.fire(mean);//gRandom->PoissonD(mean);//
+
+    Edep       = npe*CalorimeterCalibrations->ROfano(RoId)/lightYield;
+    
+  }
+
 
   //FIX ME
   //2015-09-14 G. Pezzullo, L. Morescalchi: still need to implement effects
@@ -365,11 +387,7 @@ namespace mu2e {
 	  //look the amplitude of the waveform and decide to store it or not
 	  if (sampleMax*ADCTomV < _thresholdAmplitude)        goto	  NEXT_WAVEFORM;
 
-	  //	  std::vector<int> pids;
-
 	  for (int i=sampleStart; i<sampleStop; ++i){
-	    //	    MCoutput.push_back(pids); // Put Particle IDs
-	    
 	    output.push_back(itWave->at(i));
 	  }
 
@@ -459,10 +477,16 @@ namespace mu2e {
     for (int it=0; it<_nWaveforms; ++it){
       int size = _acquisitionLength/_digiSampling;
 
+      if (_ROFilled [it] == 0 )        continue;
+
       for (int sample=0; sample<size; ++sample){
 	//inlcude Gaussian noise if requested
 	double content = _waveforms[it]->at(sample);
-	_waveforms[it]->at(sample) = content + _randGauss.fire(0, _noise)*pow(2,_nBits)/_dynamicRange; // _noise is in mV, sample is in counts
+	content +=  _randGauss.fire(0, _noise)*pow(2,_nBits)/_dynamicRange; // _noise is in mV, sample is in counts
+	if (content < 0) {
+	  content = 0;
+	}
+	_waveforms[it]->at(sample) = content;
       }
     }
   }
@@ -496,6 +520,8 @@ namespace mu2e {
     double  pulseAmp  = (Edep/_calorimeter->caloGeomInfo().nROPerCrystal())*_energyScale;
     double  binWidth  = _pshape->GetBinWidth(1);
 
+    double  maxADCCounts = pow(2.,_nBits);
+    
     if (_debugLevel > 10){
       printf("[CaloDigisFromStepPointMCs::makeCalorimeterHits]   eDep = %9.3f MeV amplitude = %9.3f mV time = %9.3f ns\n", Edep, pulseAmp, Time);
       printf("[CaloDigisFromStepPointMCs::makeCalorimeterHits]   timeSample   |   ADC-counts   |    wfAmp    |   signalAmp  \n");
@@ -518,9 +544,14 @@ namespace mu2e {
 
       //now convert it into ADC counts
       double  wfAmp     = pulseAmp*funcValue;
-      int     ADCCounts = wfAmp / _dynamicRange * pow(2.,_nBits);
+      int     ADCCounts = wfAmp / _dynamicRange * maxADCCounts;
       _waveforms[ROId]->at(timeSample)      += ADCCounts;//norm*funcValue;
 
+      //check if the ADC saturates
+      if ( _waveforms[ROId]->at(timeSample) > maxADCCounts){
+	_waveforms[ROId]->at(timeSample) = maxADCCounts;
+      }
+      
       if (_debugLevel > 10){
 	if(wfAmp > 0){
 	  printf("[CaloDigisFromStepPointMCs::makeCalorimeterHits]   %4i   |   %4i   |    %9.3f  | %9.3f \n", timeSample, ADCCounts,  wfAmp, funcValue);
@@ -734,11 +765,17 @@ namespace mu2e {
 	  longitudinalResponseUniformityCorrection(posZ, cryhalflength, edep_corr,crid, calorimeterCalibrations);
 	}
        
+	if (_caloChargeProductionEffects == 1) {
+	  chargeProductionCorrection(edep_corr, crid, calorimeterCalibrations);
+	}
+	
 	// time folding and Adding ghost hits to properly treat boundary conditions with folding, see docdb-3425
 	double hitTimeUnfolded = _toff.totalTimeOffset(h.simParticle()) + h.time();
 	double hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
-	includeLightPropagation(hitTime, posInCrystalFrame);
+	if (_addLightPropagation == 1){
+	  includeLightPropagation(hitTime, posInCrystalFrame);
+	}
 
 	if (hitTime < _mbbuffer) {
 	  if (hitTime+_mbtime > _blindTime) {
@@ -752,6 +789,9 @@ namespace mu2e {
 	    }
 	  }
 	}
+	
+	//avoid the use of hits created before _blindTime
+	if (hitTime < _blindTime)               continue;
 	
 	readoutResponse(edep_corr, hitTime, crid, posInCrystalFrame);
 

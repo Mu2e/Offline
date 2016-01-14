@@ -71,6 +71,7 @@
 
 #include "HitMakers/inc/WaveformProcess.hh"
 #include "HitMakers/inc/FitWaveformProcess.hh"
+#include "HitMakers/inc/FitPolWaveformProcess.hh"
 
 #include "CLHEP/Random/RandPoisson.h"
 #include "CLHEP/Random/RandGaussQ.h"
@@ -95,6 +96,10 @@ namespace mu2e {
   class CaloHitsFromCaloDigis : public art::EDProducer {
 
   public:
+    enum processorStrategy {
+      LogNormalFit = 0,
+      PolFit       = 1
+    };
 
     explicit CaloHitsFromCaloDigis(fhicl::ParameterSet const& pset) :
 
@@ -102,8 +107,8 @@ namespace mu2e {
 
       _diagLevel                  (pset.get<int>                ("diagLevel")),
       _debugMode                  (pset.get<int>                ("debugMode")),
-      _digiSampling               (pset.get<double>             ("digiSampling")),    // ns
-      _acquisitionLenght          (pset.get<double>             ("acquisitionLenght")),    // ns
+      _digiSampling               (pset.get<double>             ("digiSampling")),       // ns
+      _acquisitionLenght          (pset.get<double>             ("acquisitionLenght")),  // ns
       _caloCalibNoise             (pset.get<double>             ("caloCalibNoise")),
       _toff                       (pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
       _mbbuffer                   (pset.get<double>             ("TimeFoldingBuffer")),  // ns
@@ -112,12 +117,22 @@ namespace mu2e {
       _stepPoints                 (pset.get<string>             ("calorimeterStepPoints","calorimeter")),
       _caloShowerStepMCModuleLabel(pset.get<std::string>        ("caloShowerStepMCModuleLabel")), 
       _caloShowerMCName           (pset.get<std::string>        ("caloShowerMCName")),		  
-      _caloROShowerMCName         (pset.get<std::string>        ("caloROShowerMCName"))	  
+      _caloROShowerMCName         (pset.get<std::string>        ("caloROShowerMCName")),
+      _processorStrategy          (pset.get<int>                ("processorStrategy"))
       //      _DAQTimeThreshold           (pset.get<double>             ("DAQTimeThreshold")) //ns
     {
       //      _wave_point_error = 1.;
 
-      _waveformProcessor = new FitWaveformProcess(pset.get<fhicl::ParameterSet>("FitWaveformProcessor",fhicl::ParameterSet()));
+      switch (_processorStrategy){
+      case LogNormalFit: default:
+	_waveformProcessor = new FitWaveformProcess   (pset.get<fhicl::ParameterSet>("FitWaveformProcessor",
+										     fhicl::ParameterSet()));
+	break;
+      case PolFit:
+	_waveformProcessor = new FitPolWaveformProcess(pset.get<fhicl::ParameterSet>("FitWaveformProcessor",
+										     fhicl::ParameterSet()));
+	break;
+      }
 
       // Tell the framework what we make.
       produces<CaloDigiCollection>();
@@ -153,6 +168,8 @@ namespace mu2e {
     std::string                 _caloShowerStepMCModuleLabel;   
     std::string                 _caloShowerMCName;   
     std::string                 _caloROShowerMCName;   
+
+    int                         _processorStrategy;
 
     int                         _nHits[5], _nSamples[5];
     double                      _wfWithPileUp;
@@ -212,8 +229,10 @@ namespace mu2e {
     
     void CaloHitsFromCaloDigis::unfoldHitTime  (const CaloShowerStepMC* Hit,  double & HitTime){
       double hitTimeUnfolded = _toff.totalTimeOffset(Hit->simParticle()) + Hit->time();
+      
       HitTime                = fmod(hitTimeUnfolded, _mbtime);
 
+     
       if (HitTime < _mbbuffer) {
 	if (HitTime+_mbtime > _blindTime) {
 	  HitTime = HitTime + _mbtime;
@@ -227,11 +246,9 @@ namespace mu2e {
 	}
       }
       
-      //the digitization include a time offset between the MC time
-      // and the waveform time. FIX ME
-      double      timeOffset = 30;
+      // HitTime               += timeOffset;
+      // HitTime                = fmod(HitTime, _mbtime);
 
-      HitTime += timeOffset;
     }
 
   
@@ -245,7 +262,7 @@ namespace mu2e {
   }
 
   void CaloHitsFromCaloDigis::produce(art::Event& event) {
-    if ( _debugMode > 0 ) {
+    if ( _debugMode > 2 ) {
       printf("[CaloHitsFromCaloDigis::produce] event %i\n", event.id().event());
     }
 
@@ -302,7 +319,7 @@ namespace mu2e {
     }
 
 
-    if ( _debugMode > 0 ) {
+    if ( _debugMode > 2 ) {
       printf("[CaloHitsFromCaloDigis::produce] produced RecoCrystalHits ");
       printf(": caloDigiColl size  = %i", int(caloDigiColl->size()));
       printf(", recoHitColl  size  = %i \n", int(recoHitColl->size()));
@@ -333,7 +350,7 @@ namespace mu2e {
     //It starts form one because the element 0 represents the size of the array
     int                stringIndex(1);
 
-    if (_debugMode > 0){
+    if (_debugMode > 2){
       printf("[CaloHitsFromCaloDigis::processWaveform]      charge    MC-time     tStamp-0    tStamp-1     tStamp-2    tStamp-3    tStamp-4    tStamp-5\n");
     }
     while ( stringIndex < cfdDim ){
@@ -406,6 +423,11 @@ namespace mu2e {
       int        found = 0;
       hitTime          = -1;
 
+      //the digitization include a time offset between the MC time
+      // and the waveform time. FIX ME
+      double      timeOffset = 50;
+      t0          -= timeOffset;
+      
       for (int i=0; i<nShowerSteps; ++i){
 	h =  &_caloShowerStepCol->at(i);
 	
@@ -416,23 +438,24 @@ namespace mu2e {
 
 	unfoldHitTime(h, hitTime);
 
-	// hitTimeUnfolded   = h->time() + _toff.totalTimeOffset(h->simParticle())  + timeOffset;
-	// hitTime           = fmod(hitTimeUnfolded, _mbtime);
+	//hits created before _blindTime have not been used, just skip them
+	if (hitTime < _blindTime - 100)                      continue;
 
-	//FIX ME, there is an offset between data and MC
 	if ( (hitTime > t0) && (hitTime < tEnd)){
-	  caloDigiMC.addCaloShower(h);
+	  caloDigiMC.addCaloShower(h, hitTime);
 	  found = 1;
 	}else{
-	  printf("[CaloHitsFromCaloDigis::processWaveform] hitTime = %.3f t0 = %i tEnd = %5.3f\n",
-		 hitTime, t0, tEnd); 
+	  if ( _debugMode > 0){
+	    printf("[CaloHitsFromCaloDigis::processWaveform] hitTime = %.3f t0 = %i tEnd = %5.3f\n",
+		   hitTime, t0, tEnd); 
+	  }
 	}
       }
 
-      if (found == 0){
-	printf("[CaloHitsFromCaloDigis::processWaveform] no CaloShowerMC found: t0 = %i hitLenght = %d crystalId = %d\n", 
-	       t0, hitLenght, crystalId);
-	CaloDigiColl.at(CaloDigiColl.size()-1).print();
+      if ( (found == 0) && ( _debugMode > 0) ){
+	  printf("[CaloHitsFromCaloDigis::processWaveform] no CaloShowerMC found: t0 = %i hitLenght = %d crystalId = %d\n", 
+		 t0, hitLenght, crystalId);
+	  CaloDigiColl.at(CaloDigiColl.size()-1).print();
       }
       //store CaloDigMC
       CaloDigiMCColl.push_back(caloDigiMC);

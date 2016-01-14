@@ -2,7 +2,7 @@
 // class to process calo-digitized waveform
 // 
 ///////////////////////////////////////////////////////////////////////////////
-#include "HitMakers/inc/FitWaveformProcess.hh"
+#include "HitMakers/inc/FitPolWaveformProcess.hh"
 #include "art/Framework/Services/Optional/TFileDirectory.h" 
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Run.h"
@@ -25,7 +25,7 @@
 namespace mu2e {
 
 //-----------------------------------------------------------------------------
-  FitWaveformProcess::FitWaveformProcess(fhicl::ParameterSet const& PSet) :
+  FitPolWaveformProcess::FitPolWaveformProcess(fhicl::ParameterSet const& PSet) :
 
     WaveformProcess(PSet),
     _debugLevel       (PSet.get<int>   ("debugLevel")),
@@ -39,12 +39,12 @@ namespace mu2e {
   {
     TFile*f = TFile::Open("/mu2e/data/users/gianipez/test-CsI-2015-10-06.root");
     _refPulse = (TH1F*) f->Get("CsIPulse");
-    // TFile*f = TFile::Open("/mu2e/users/gianipez/CsI-beam-test-waveform-2015.root");
-    // _refPulse = (TH1F*) f->Get("pshape");
     f->Close();
 
-    _flogn    = new TF1("flogn" ,logn , 0., 2000., 4);
-    _fdlogn   = new TF1("fdlogn",dlogn, 0., 2000., 6);
+    _fWave    = new TF1("fWave" , "pol04" , 0., 2000.);
+    _flogn    = new TF1("flogn" , logn , 0., 2000., 4);
+    _fdlogn   = new TF1("fdlogn", dlogn, 0., 2000., 6);
+
 
     _wave     = new TH1F("wave", "wave", int(_acquisitionLenght/_digiSampling), 0, _acquisitionLenght);
 
@@ -56,9 +56,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // destructor
 //-----------------------------------------------------------------------------
-  FitWaveformProcess::~FitWaveformProcess() {}
+  FitPolWaveformProcess::~FitPolWaveformProcess() {}
 
-  void        FitWaveformProcess::psdFromChi2(){
+  void        FitPolWaveformProcess::psdFromChi2(){
     _psd  = 0;
 
     double   tpeak     = _refPulse->GetBinCenter(_refPulse->GetMaximumBin());
@@ -99,7 +99,7 @@ namespace mu2e {
     _psd = pcChi2;
   }
 
-  void        FitWaveformProcess::psdFromAmplitude(){
+  void        FitPolWaveformProcess::psdFromAmplitude(){
     double    amplitude = _wave->GetMaximum();
     double    charge    = _wave->Integral();
     
@@ -108,7 +108,7 @@ namespace mu2e {
   
 
 //--------------------------------------------------------------------------------//
-  void        FitWaveformProcess::findMaxima(){
+  void        FitPolWaveformProcess::findMaxima(){
   
     double   maxCont   [20] = {0};
     double   min   [20];
@@ -173,7 +173,7 @@ namespace mu2e {
 
 
 //--------------------------------------------------------------------------------//
-  void        FitWaveformProcess::separeteWaveform(){
+  void        FitPolWaveformProcess::separeteWaveform(){
     //search for the local maxima
     findMaxima();
 
@@ -237,37 +237,41 @@ namespace mu2e {
 
 //--------------------------------------------------------------------------------//
 
-  void        FitWaveformProcess::calculateEnergy(double &Edep){
+  void        FitPolWaveformProcess::calculateEnergy(double &Edep){
     Edep = _wave->Integral("width")*_ADCToMeV; 
   }
 
-  void        FitWaveformProcess::calculateTime  (double WaveMax, double &Time, double &Chi2){
+  void        FitPolWaveformProcess::calculateTime  (double WaveMax, double &Time, double &Chi2){
    
     //initilize function parameters
-    double histPeak = WaveMax;
+    double histPeak = WaveMax;//_wave->GetBinCenter(_wave->GetMaximumBin());
+    //    _flogn->SetParameter(0, -1.);
 
-    _flogn->SetParLimits(0,  -10.,  0.);
-    //    _flogn->SetParLimits(0,  -3.,  -0.1);
-    //_flogn->FixParameter(0,  -0.8);
-    //    _flogn->SetParLimits(1,   10., 50);
-    _flogn->SetParLimits(1,   5., 5e03);
-    //_flogn->FixParameter(1,  32.);
-    _flogn->SetParLimits(2, histPeak - 20.,  histPeak + 20.);
-    _flogn->SetParLimits(3,   0.,   _wave->Integral("width")*1000.);
+    // _flogn->SetParLimits(0,  -10.,  0.);
+    // //_flogn->FixParameter(0,  -0.21);
+    // _flogn->SetParLimits(1,   1., 1e2);
+    // //    _flogn->FixParameter(1,  11.7);
+    // _flogn->SetParLimits(2, histPeak - 20.,  histPeak + 20.);
+    // _flogn->SetParLimits(3,   0.,   _wave->Integral("width")*1000.);
 
-    _flogn->SetParameter(0, -0.21);
-    _flogn->SetParameter(1,  12.);
-    // _flogn->SetParameter(0, -0.8);
-    // _flogn->SetParameter(1,  30.);
-    _flogn->SetParameter(2, _wave->GetBinCenter(_wave->GetMaximumBin()));
-    _flogn->SetParameter(3, _wave->Integral("width"));
+    // _flogn->SetParameter(0, -0.21);
+    // _flogn->SetParameter(1,  12.);
+    // _flogn->SetParameter(2, _wave->GetBinCenter(_wave->GetMaximumBin()));
+    // _flogn->SetParameter(3, _wave->Integral("width"));
 
     //define the fit range
     double           xmin(0),xmax(2000.);
     double           ymax = _wave->GetMaximum();
+    //double binmin(0), binpsd(0);
 
  
+    //double offset   = -1.;
+    //    _timeFraction = 0.02;//0.05;
+  
+    //double           xmaxFrac(0.85);
+    //    double           xmaxFrac(0.95);
     for (int ibin=_wave->GetMaximumBin();ibin>0;ibin--){
+      //      if (_wave->GetBinContent(ibin)<xmaxFrac*ymax){
       if (_wave->GetBinContent(ibin+1)<=_fitThresholdMax*ymax){
 	xmax = _wave->GetBinCenter(ibin+1);
 	break;
@@ -275,32 +279,40 @@ namespace mu2e {
     }
     
     //search the minimum x of the fitting range
+    //    double    fracmin(2.5e-04);//1e-02);//(5e-03);
     double    content;
     for (int ibin=_wave->GetMaximumBin();ibin>0;ibin--){
       content  = _wave->GetBinContent(ibin+1);
-      if ( content <= _fitThresholdMin*ymax ){
-	xmin = _wave->GetBinCenter(ibin+1);//(ibin+1);
+      //      if ( content <= fracmin*ymax ){
+      if ( content <= _fitThresholdMin ){
+	xmin = _wave->GetBinCenter(ibin+1);//(ibin);
 	break;
       }
     }
     
+    // if (_debugLevel > 0){
+    //   int    contentMin =  _wave->GetBinContent(xmin/_wave->GetBinWidth(1)+1);
+    //   printf("[FitPolWaveformProcess::calculateTime] time-fit range: xmin = %5.3f pulseHightMin = %i xmax = %.3f\n", 
+    // 	     xmin, contentMin, xmax);
+    // }
+
     //perform the fit
-    _flogn->SetRange(xmin,xmax);
-    _wave->Fit("flogn","RQ");
-    _wave->Fit("flogn","RQ");
+    _fWave->SetRange(xmin,xmax);
+    _wave->Fit("fWave","RQ");
+    _wave->Fit("fWave","RQ");
   
-    double    nDof = _flogn->GetNDF();
-    Chi2 = _flogn->GetChisquare()/nDof;
+    double    nDof = _fWave->GetNDF();
+    Chi2 = _fWave->GetChisquare()/nDof;
 
     
     //now extract the time with the digital constant fraction
-    Time = _flogn->GetX(_wave->GetMaximum()*_timeFraction, histPeak-50., histPeak);//0, _wave->GetBinCenter(_wave->GetMaximumBin()));
+    Time = _fWave->GetX(_wave->GetMaximum()*_timeFraction, histPeak-50., histPeak);//0, _wave->GetBinCenter(_wave->GetMaximumBin()));
     
     
   }
   
 //--------------------------------------------------------------------------------//
-  double    FitWaveformProcess::logn(double *x, double *par){
+  double    FitPolWaveformProcess::logn(double *x, double *par){
     double Epeak, sigma, eta, norm;
     double Aterm;
     double logterms0,s0;
@@ -331,7 +343,7 @@ namespace mu2e {
   }
 
 //--------------------------------------------------------------------------------//
-  double    FitWaveformProcess::dlogn(double *x, double *par){
+  double    FitPolWaveformProcess::dlogn(double *x, double *par){
     double Epeak0, Epeak1, sigma, eta, norm0, norm1;
     double Aterm;
     double logterms0,s0;
@@ -374,7 +386,7 @@ namespace mu2e {
 
 
 //------------------------------------------------------------------------------------------//
-  void        FitWaveformProcess::processWaveform(double   ADCToMeV, 
+  void        FitPolWaveformProcess::processWaveform(double   ADCToMeV, 
 						  CaloDigi CaloHit , 
 						  RecoCaloDigiCollection &RecoCaloHits) {
     _ADCToMeV = ADCToMeV;
@@ -431,7 +443,7 @@ namespace mu2e {
       calculateEnergy(eDep);
 
       // if (_debugLevel > 0){
-      // 	printf("[FitWaveformProcess::processWaveform] pulse charge = %5.3f\n", eDep);
+      // 	printf("[FitPolWaveformProcess::processWaveform] pulse charge = %5.3f\n", eDep);
       //      }
       calculateTime  (_wave->GetBinCenter(_wave->GetMaximumBin()+1), time, chi2);
 
@@ -446,7 +458,7 @@ namespace mu2e {
   }
 //------------------------------------------------------------------------------------------//
 
-  void        FitWaveformProcess::book(){
+  void        FitPolWaveformProcess::book(){
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("CaloDigiDiag");
     
@@ -520,7 +532,7 @@ namespace mu2e {
   //--------------------------------------------------------------------------------//
 
 
-  void      FitWaveformProcess::fillDiag(CaloDigiMC*DigiMC, RecoCaloDigiCollection* RecoCaloHits){
+  void      FitPolWaveformProcess::fillDiag(CaloDigiMC*DigiMC, RecoCaloDigiCollection* RecoCaloHits){
     RecoCaloDigi *recoHit;
     int          size = RecoCaloHits->size();
 
@@ -534,11 +546,11 @@ namespace mu2e {
       _charge      = recoHit->edep();
       
       double     recoTime = recoHit->time();
-      double     nDof     = _flogn->GetNDF();
-      double     eta      = _flogn->GetParameter(0);
-      double     sigma    = _flogn->GetParameter(1);
-      double     peak     = _flogn->GetParameter(2);
-      double     norm     = _flogn->GetParameter(3);
+      double     nDof     = _fWave->GetNDF();
+      double     eta      = _fWave->GetParameter(0);
+      double     sigma    = _fWave->GetParameter(1);
+      double     peak     = _fWave->GetParameter(2);
+      double     norm     = _fWave->GetParameter(3);
 
       _timeWf      = recoTime;
       _Chi2Time    = recoHit->tChi2();
@@ -605,9 +617,9 @@ namespace mu2e {
 
       if (_debugHistIndex < 20){
 	double      dt = (recoTime - timeMC);
-
-	if ( ( (_debugHistIndex < 10 ) && (dt < 5.3 && recoHit->edep() > 30.) ) ||
-	     ( (_debugHistIndex >= 10) && (dt > 5.7 && recoHit->edep() > 30.) ) ){
+	
+	//	if (recoTime > 600.){
+	if (dt > -5.3 && recoHit->edep() > 30.){
 	  for (int i=0; i<_wave->GetNbinsX(); ++i){
 	    content   = _wave->GetBinContent(i+1);
 	    _hist._debugWf[_debugHistIndex] ->SetBinContent(i+1, content);
@@ -616,10 +628,27 @@ namespace mu2e {
 	  ++_debugHistIndex;
 	}
 	
+	// if (eDep > 15.){
+	//   for(int i=0; i< _wave->GetNbinsX(); ++i) {
+	//       content   = _wave->GetBinContent(i+1);
+	//       _hist._debugWf[_debugHistIndex] ->SetBinContent(i+1, content);
+	//       _hist._debugWf[_debugHistIndex] ->SetBinError  (i+1, _wave_point_error);
+	//   }
+		 
+	//   ++_debugHistIndex;
+	// }
       }//end filling pulses
     
     }//end loop on the RecoCaloDigi
     
+    
+    // if (_debugLevel > 0){
+    //   double      dt = (recoTimeBest - timeMCBest);
+    //   if ( (dt < 23.4) && (eDepMax > 30)){
+    // 	printf("[FitPolWaveformProcess::fillDiag] MCTime = %5.3f MCEDep = %5.3f dt = %5.3f\n", 
+    // 	       DigiMC->meanTime(), DigiMC->totalEDep(), (recoTimeBest - timeMCBest));
+    //   }
+    // }
  
     
     _hist._hDtBinTime ->Fill( (recoTimeBest/_digiSampling - int(recoTimeBest/_digiSampling))*_digiSampling);
