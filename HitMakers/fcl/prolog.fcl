@@ -6,7 +6,7 @@ BEGIN_PROLOG
 HitMakerTimeFoldingBuffer    : 100. # ns
 HitMakerBlindTime            : 500. # ns
 HitMakerDigiSampling         : 4    # ns
-HitMakerAcquisitionLenght    : 1965 # ns
+HitMakerAcquisitionLenght    : 1695 # ns
 #HitMakerTimeOffsets          : { inputs : [  ] } 
 HitMakerTimeOffsets          : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 END_PROLOG
