@@ -208,7 +208,7 @@ TrackCaloMatching : {
 #------------------------------------------------------------------------------
     meanInteractionDepth         : 59.             # mm
     dtOffset                     : @local::TrackCaloMatchingDtOffset             # ns
-    fitterModuleLabel            : TrkPatRec
+    fitterModuleLabel            : MergePatRec
     fitparticle                  : 11
     fitdirection                 : 0
     trkToCaloExtrapolModuleLabel : TrackCaloIntersection                         # TrkExtrapol

@@ -135,16 +135,21 @@ namespace mu2e {
        
     int                        _cryId[16384],_crySectionId[16384];
 
-    int                        _cluNcrys[128];
+    int                        _cluNcrys[204828];
     
     float                      _caloVolume, _crystalVolume;
 
     float                      _cryEtot,_cryTime[16384],_cryEdep[16384],_cryDose[16384];
-  
-    float                      _cryPosX[16384],_cryPosY[16384],_cryPosZ[16384];
+    float                      _cryMCTime    [16384];
+    float                      _cryMCEdep    [16384];
+    int                        _cryNParticles[16384];
+    float                      _cryPsd       [16384];
+    float                      _cryIsConv    [16384];
+
+    float                      _cryPosX[16384],_cryPosY[16384],_cryPosZ[16384], _cryPosR[16384];
     
-    float                      _cluEnergy[2048], _cluCrysE[2048], _cluTime[2048];
-    float                      _cluCogX[2048],_cluCogY[2048],_cluCogZ[2048];
+    float                      _cluEnergy[2048], _cluCrysE[2048], _cluTime[2048], _cluMCTime[2048], _cluMCMeanTime[2048];
+    float                      _cluCogX[2048],_cluCogY[2048],_cluCogZ[2048], _cluCogR[2048];
 
     int                        _cluConv[2048];
 
@@ -229,17 +234,25 @@ namespace mu2e {
     _Ntup->Branch("cryPosX",      &_cryPosX ,     "cryPosX[nCry]/F");
     _Ntup->Branch("cryPosY",      &_cryPosY ,     "cryPosY[nCry]/F");
     _Ntup->Branch("cryPosZ",      &_cryPosZ ,     "cryPosZ[nCry]/F");
+    _Ntup->Branch("cryPosR",      &_cryPosR ,     "cryPosR[nCry]/F");
     _Ntup->Branch("cryEdep",      &_cryEdep ,     "cryEdep[nCry]/F");
     _Ntup->Branch("cryTime",      &_cryTime ,     "cryTime[nCry]/F");
-
+    _Ntup->Branch("cryMCTime",    &_cryMCTime    ,"cryMCTime[nCry]/F");
+    _Ntup->Branch("cryMCEdep",    &_cryMCEdep    ,"cryMCEdep[nCry]/F");
+    _Ntup->Branch("cryNParticles",&_cryNParticles,"cryNParticles[nCry]/I");
+    _Ntup->Branch("cryPsd",       &_cryPsd       ,"cryPsd[nCry]/F");
+    _Ntup->Branch("cryIsConv",    &_cryIsConv    ,"cryIsConv[nCry]/I");
     _Ntup->Branch("nCluster",     &_nCluster ,    "nCluster/I");
     _Ntup->Branch("cluEnergy",    &_cluEnergy ,   "cluEnergy[nCluster]/F");
-    _Ntup->Branch("cluCrysE",    &_cluCrysE ,   "cluCrysE[nCluster]/F");
+    _Ntup->Branch("cluCrysE",     &_cluCrysE ,    "cluCrysE[nCluster]/F");
     _Ntup->Branch("cluTime",      &_cluTime ,     "cluTime[nCluster]/F");
+    _Ntup->Branch("cluMCTime",    &_cluMCTime ,   "cluMCTime[nCluster]/F");
+    _Ntup->Branch("cluMCMeanTime",    &_cluMCMeanTime ,   "cluMCMeanTime[nCluster]/F");
     _Ntup->Branch("cluCogX",      &_cluCogX ,     "cluCogX[nCluster]/F");	
     _Ntup->Branch("cluCogY",      &_cluCogY ,     "cluCogY[nCluster]/F");	
     _Ntup->Branch("cluCogZ",      &_cluCogZ ,     "cluCogZ[nCluster]/F");	
-    _Ntup->Branch("cluNcrys",     &_cluNcrys ,    "cluNcrys[nCluster]/I");	
+    _Ntup->Branch("cluCogR",      &_cluCogR ,     "cluCogR[nCluster]/F");	
+    _Ntup->Branch("cluNcrys",     &_cluNcrys ,    "cluNCrys[nCluster]/I");	
     _Ntup->Branch("cluConv",      &_cluConv ,     "cluConv[nCluster]/I");	
   
     _Ntup->Branch("vNHits",   &_vNHits ,  "vNHits/I");
@@ -351,6 +364,9 @@ namespace mu2e {
 
 
 	      art::Ptr<SimParticle> const& simptr = hit.simParticle();
+	      //2016-01-10 G. PEzzullo temporary comment for using 
+	      // a custom made gen particle
+
 	      SimParticle const& sim  = *simptr;
 	      if ( sim.fromGenerator() ){
 	      	GenParticle* gen = (GenParticle*) &(*sim.genParticle());
@@ -404,12 +420,21 @@ namespace mu2e {
     _nHits = 0;
     _cryEtot = 0.0;
 
+    //some helper variables
+    const CaloCluster                       *cluster;
+    const std::vector<CaloCrystalHitPtr>    *crystals;
+    const CaloCrystalHit                    *crystalHit;
+    const RecoCaloDigi                      *recoDigi;
+    //    const CaloDigi                    *caloDigi;
+    const CaloDigiMC                        *caloDigiMC;
+    const SimParticle                       *sim;
+    
     for (unsigned int ic=0; ic<caloCrystalHits->size();++ic) {
 
 	   
       CaloCrystalHit const& hit    = caloCrystalHits->at(ic);
       CLHEP::Hep3Vector crystalPos = _calorimeter->crystalOrigin(hit.id());
-           
+
       _cryEtot             += hit.energyDep();
       _cryTime[_nHits]      = hit.time();
       _cryEdep[_nHits]      = hit.energyDep();
@@ -417,24 +442,45 @@ namespace mu2e {
       _cryPosX[_nHits]      = crystalPos.x()+ 3904;
       _cryPosY[_nHits]      = crystalPos.y();
       _cryPosZ[_nHits]      = crystalPos.z()-10200;
+      _cryPosR[_nHits]      = sqrt( _cryPosX[_nHits]*_cryPosX[_nHits] + crystalPos.y()*crystalPos.y() );
       _cryId[_nHits]        = hit.id();
       _crySectionId[_nHits] = _calorimeter->crystal(hit.id()).sectionId();
 
+      int    indexMC, nParticles(0);
+      int    isConversion(0);
+      
+      recoDigi         = hit.recoCaloDigis().at(0).operator ->();
+
+      const CaloDigi	caloDigi  = recoDigi->RODigi();
+      indexMC          = caloDigi.index();
+      caloDigiMC       = &caloDigiMCCol->at(indexMC);
+	
+      for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
+	sim =   caloDigiMC->simParticle(k).operator ->();
+	//	if ( sim->fromGenerator() ){
+	const CLHEP::Hep3Vector genPos = sim->startPosition();
+	
+	if (!_calorimeter->isInsideCalorimeter(genPos)){
+	  ++nParticles;
+	  GenParticle* gen = (GenParticle*) &(sim->genParticle());
+	  if ( gen->generatorId() == GenId::conversionGun ){
+	    isConversion = 1;
+	  }
+	}
+      }//end loop on the particles inside the crystalHit
+
+      _cryMCTime    [_nHits] = caloDigiMC->timeFirst();
+      _cryMCEdep    [_nHits] = caloDigiMC->totalEDep();
+      _cryNParticles[_nHits] = nParticles;
+      _cryPsd       [_nHits] = recoDigi->psd();
+      _cryIsConv    [_nHits] = isConversion;
+      
       ++_nHits;
     }
     
     
     _nCluster = caloClusters->size();
 
-    //some helper variables
-    const CaloCluster                *cluster;
-    const std::vector<CaloCrystalHitPtr>    *crystals;
-    const CaloCrystalHit             *crystalHit;
-    const RecoCaloDigi               *recoDigi;
-    //    const CaloDigi                   *caloDigi;
-    const CaloDigiMC                 *caloDigiMC;
-    const SimParticle                *sim;
-    
     for (int i=0; i<_nCluster; ++i){
       cluster  = &caloClusters->at(i);
 
@@ -444,7 +490,7 @@ namespace mu2e {
       int    indexMC;
       int    isConversion(0);
       
-      double   energyMax(0), clusterTime(0), eDep, psd;
+      double   energyMax(0), clusterTime(0), clusterMCMeanTime(0), clusterMCTime(0), eDep, psd;
       
       for (int j=0; j<nCrystals; ++j){
 	crystalHit	 = crystals->at(j).operator ->();
@@ -458,8 +504,10 @@ namespace mu2e {
 	psd              = recoDigi  ->psd();
 
 	if ( (eDep > energyMax) && (psd > _psdThreshold) ){
-	  clusterTime = crystalHit->time();
-	  energyMax   = eDep;
+	  clusterTime       = crystalHit->time();
+	  clusterMCMeanTime = caloDigiMC->meanTime();
+	  energyMax         = eDep;
+	  clusterMCTime     = caloDigiMC->timeFirst();
 	}
 	
 	for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
@@ -472,15 +520,18 @@ namespace mu2e {
 	  }
 	}//end loop on the particles inside the crystalHit
       }
-      
-      _cluEnergy[i]     = cluster->energyDep();
-      _cluTime  [i]     = clusterTime;
-      _cluCrysE [i]     = energyMax;
-      _cluNcrys [i]     = nCrystals;
-      _cluCogX  [i]     = cluster->cog3Vector().x()+ 3904.;
-      _cluCogY  [i]     = cluster->cog3Vector().y();
-      _cluCogZ  [i]     = cluster->cog3Vector().z();
-      _cluConv  [i]     = isConversion;
+
+      _cluEnergy    [i]     = cluster->energyDep();
+      _cluTime      [i]     = clusterTime;
+      _cluMCTime    [i]     = clusterMCTime;
+      _cluMCMeanTime[i]     = clusterMCMeanTime;
+      _cluCrysE     [i]     = energyMax;
+      _cluNcrys     [i]     = nCrystals;
+      _cluCogX      [i]     = cluster->cog3Vector().x();
+      _cluCogY      [i]     = cluster->cog3Vector().y();
+      _cluCogR      [i]     = sqrt(_cluCogX[i]*_cluCogX[i] + _cluCogY[i]*_cluCogY[i]);
+      _cluCogZ      [i]     = cluster->cog3Vector().z();
+      _cluConv      [i]     = isConversion;
       
     }//end filling calo clusters info
 

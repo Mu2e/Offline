@@ -25,46 +25,46 @@ namespace mu2e {
   }
 
   
-  void          CaloDigiMC::addCaloShower(const CaloShowerStepMC* CaloShower)  {
+  void          CaloDigiMC::addCaloShower(const CaloShowerStepMC* CaloShower, double HitTimeUnfolded)  {
     
     double    csEdep  = CaloShower->energy();
-    double    csTime  = CaloShower->time();
+    double    csTime  = HitTimeUnfolded;//CaloShower->time();
     
     int       csSimId = CaloShower->simParticle()->id().asInt();
     
     
-      //first: search if the particle is already present
+    //first: search if the particle is already present
     int      found(0), index(-1);
       
-      for (int i=0; i<_nParticles; ++i){
-	int   simId = _simParticle.at(i)->id().asInt();
-	if (simId == csSimId){
-	  found = 1;
-	  index = i;
-	  break;
-	}
+    for (int i=0; i<_nParticles; ++i){
+      int   simId = _simParticle.at(i)->id().asInt();
+      if (simId == csSimId){
+	found = 1;
+	index = i;
+	break;
       }
+    }
       
-      if (csTime < _timeFirst){
-	_timeFirst = csTime;
-      }
+    if (csTime < _timeFirst){
+      _timeFirst = csTime;
+    }
 
-      if (found == 1){//update the information
-	_time.at(index) = (_time.at(index)*eDep(index) + csEdep*csTime) / (eDep(index) + csEdep);
-	_eDep.at(index) += csEdep; 
-      }else{   //add particle
+    if (found == 1){//update the information
+      _time.at(index) = (_time.at(index)*eDep(index) + csEdep*csTime) / (eDep(index) + csEdep);
+      _eDep.at(index) += csEdep; 
+    }else{   //add particle
 	
-	_eDep. push_back(csEdep);
-	_time. push_back(csTime);
-	_pdgId.push_back(CaloShower->simParticle()->pdgId());
+      _eDep. push_back(csEdep);
+      _time. push_back(csTime);
+      _pdgId.push_back(CaloShower->simParticle()->pdgId());
 	
-	_simParticle.push_back(CaloShower->simParticle());
+      _simParticle.push_back(CaloShower->simParticle());
 	
-	++_nParticles;
-      }
+      ++_nParticles;
+    }
       
-      _meanTime     =  (_meanTime * _totalEDep + csEdep*csTime) / (_totalEDep    + csEdep);
-      _totalEDep    += csEdep;
+    _meanTime     =  (_meanTime * _totalEDep + csEdep*csTime) / (_totalEDep    + csEdep);
+    _totalEDep    += csEdep;
 
 
   }
