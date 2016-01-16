@@ -431,12 +431,12 @@ namespace mu2e {
 
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
        {
-           CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
-           CLHEP::Hep3Vector crystalPos = cal.crystalOrigin(hit.id());
-           CaloHit const& caloHit       = *(hit.readouts().at(0));
+           const CaloCrystalHit &hit      = caloCrystalHits.at(ic);
+	   int sectionId                  = cal.crystal(hit.id()).sectionId();
+           CLHEP::Hep3Vector crystalPos   = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
+           const CaloHit &caloHit         = *(hit.readouts().at(0));
 
-
-           CaloHitSimPartMC const& hitSim = caloHitNavigator.sim(caloHit);
+           const CaloHitSimPartMC &hitSim = caloHitNavigator.sim(caloHit);
            int nPartInside                = hitSim.simParticles().size();
 
 
@@ -455,38 +455,38 @@ namespace mu2e {
            _cryPosY[_nHits]      = crystalPos.y();
            _cryPosZ[_nHits]      = crystalPos.z();
            _cryId[_nHits]        = hit.id();
-           _crySectionId[_nHits] = cal.crystal(hit.id()).sectionId();
+           _crySectionId[_nHits] = sectionId;
            _crySimIdx[_nHits]    = _nSim;
            _crySimLen[_nHits]    = nPartInside;
 
 
            for (int ip=0; ip<nPartInside;++ip)
            {
+               const art::Ptr<SimParticle> &mother = hitSim.simParticles().at(ip);
 
-             art::Ptr<SimParticle> const& mother = hitSim.simParticles().at(ip);
+               art::Ptr<SimParticle> grandMother = mother;
+               while (grandMother->hasParent()) grandMother = grandMother->parent();
+               const GenParticle *generated = grandMother->genParticle() ? grandMother->genParticle().get() : 0;
 
-             art::Ptr<SimParticle> grandMother = mother;
-             while (grandMother->hasParent()) grandMother = grandMother->parent();
-             GenParticle const* generated = grandMother->genParticle() ? grandMother->genParticle().get() : 0;
+	       CLHEP::Hep3Vector hitSimPos = cal.toSectionFrameFF(sectionId,hitSim.position().at(ip)); //in disk FF frame
 
-             _motId[_nSim]      = mother->id().asInt();
-             _motPdgId[_nSim]   = mother->pdgId();
-             _motmom[_nSim]     = hitSim.momentum().at(ip);
-             _motcrCode[_nSim]  = mother->creationCode();
-             _motStartX[_nSim]  = mother->startPosition().x()+ 3904.;
-             _motStartY[_nSim]  = mother->startPosition().y();
-             _motStartZ[_nSim]  = mother->startPosition().z() - 10200;
-             _motStartT[_nSim]  = mother->startGlobalTime();
-             _motPosX[_nSim]    = hitSim.position().at(ip).x() + 3904.;  //value used to shift in tracker coordinate system
-             _motPosY[_nSim]    = hitSim.position().at(ip).y();
-             _motPosZ[_nSim]    = hitSim.position().at(ip).z() - 10200;  //value used to shift in tracker coordinate system
-             _motTime[_nSim]    = hitSim.time().at(ip);
-             _motEdep[_nSim]    = hitSim.eDep().at(ip);
-	     
-             _motGenIdx[_nSim]  = -1;
-             if (generated) _motGenIdx[_nSim] = generated - &(genParticles.at(0));
-             ++_nSim;
+               _motId[_nSim]      = mother->id().asInt();
+               _motPdgId[_nSim]   = mother->pdgId();
+               _motmom[_nSim]     = hitSim.momentum().at(ip);
+               _motcrCode[_nSim]  = mother->creationCode();
+               _motStartX[_nSim]  = mother->startPosition().x(); //in Mu2e frame
+               _motStartY[_nSim]  = mother->startPosition().y();
+               _motStartZ[_nSim]  = mother->startPosition().z();
+               _motStartT[_nSim]  = mother->startGlobalTime();
+               _motPosX[_nSim]    = hitSimPos.x(); // in disk FF frame
+               _motPosY[_nSim]    = hitSimPos.y();
+               _motPosZ[_nSim]    = hitSimPos.z();
+               _motTime[_nSim]    = hitSim.time().at(ip);
+               _motEdep[_nSim]    = hitSim.eDep().at(ip);
 
+               _motGenIdx[_nSim]  = -1;
+               if (generated) _motGenIdx[_nSim] = generated - &(genParticles.at(0));
+               ++_nSim;
            }
 
            ++_nHits;
@@ -502,7 +502,7 @@ namespace mu2e {
        {
 
           CaloContentMC clutil(caloHitNavigator,*clusterIt);
-          std::vector<art::Ptr<SimParticle> > const& sim1 = clutil.simPart();
+          const std::vector<art::Ptr<SimParticle> > &sim1 = clutil.simPart();
 
           std::vector<int> _list;
           for (int i=0;i<clusterIt->size();++i)
@@ -514,7 +514,7 @@ namespace mu2e {
           _cluEnergy[_nCluster] = clusterIt->energyDep();
           _cluTime[_nCluster]   = clusterIt->time();
           _cluNcrys[_nCluster]  = clusterIt->size();
-          _cluCogX[_nCluster]   = clusterIt->cog3Vector().x();
+          _cluCogX[_nCluster]   = clusterIt->cog3Vector().x(); //in disk FF frame
           _cluCogY[_nCluster]   = clusterIt->cog3Vector().y();
           _cluCogZ[_nCluster]   = clusterIt->cog3Vector().z();
           _cluConv[_nCluster]   = clutil.hasConversion();
@@ -538,14 +538,16 @@ namespace mu2e {
               while (smother->hasParent()) smother = smother->parent();
               int genIdx=-1;
               if (smother->genParticle()) genIdx = smother->genParticle()->generatorId().id();
+              
+              CLHEP::Hep3Vector cluSimPos = cal.toSectionFrameFF(clusterIt->sectionId(),clutil.position().at(ip));
 
              _clusimId[_nCluSim]     = sim1[ip]->id().asInt();
              _clusimPdgId[_nCluSim]  = sim1[ip]->pdgId();
              _clusimGenIdx[_nCluSim] = genIdx;
              _clusimMom[_nCluSim]    = clutil.momentum().at(ip);
-             _clusimPosX[_nCluSim]   = clutil.position().at(ip).x() + 3904.;  //value used to shift in tracker coordinate system
-             _clusimPosY[_nCluSim]   = clutil.position().at(ip).y();
-             _clusimPosZ[_nCluSim]   = clutil.position().at(ip).z() - 10200;  //value used to shift in tracker coordinate system
+             _clusimPosX[_nCluSim]   = cluSimPos.x(); // in disk FF frame
+             _clusimPosY[_nCluSim]   = cluSimPos.y();
+             _clusimPosZ[_nCluSim]   = cluSimPos.z();  
              _clusimTime[_nCluSim]   = clutil.time().at(ip);
              _clusimEdep[_nCluSim]   = clutil.edepTot().at(ip);
 	     
@@ -571,12 +573,14 @@ namespace mu2e {
                double hitTimeUnfolded = _toff.timeWithOffsetsApplied(hit);
    	       double hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
+               CLHEP::Hep3Vector VDPos = cal.toTrackerFrame(hit.position());
+
                _vdId[_nVd]    = hit.volumeId();
                _vdPdgId[_nVd] = hit.simParticle()->pdgId();
-               _vdTime[_nVd]  = hitTime;//hit.time();
-               _vdPosX[_nVd]  = hit.position().x();
-               _vdPosY[_nVd]  = hit.position().y();
-               _vdPosZ[_nVd]  = hit.position().z()-10200;
+               _vdTime[_nVd]  = hitTime;
+               _vdPosX[_nVd]  = VDPos.x(); //tracker frame
+               _vdPosY[_nVd]  = VDPos.y();
+               _vdPosZ[_nVd]  = VDPos.z();
                _vdMomX[_nVd]  = hit.momentum().x();
                _vdMomY[_nVd]  = hit.momentum().y();
                _vdMomZ[_nVd]  = hit.momentum().z();

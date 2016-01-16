@@ -7,8 +7,8 @@
 //
 
 
+#include "CLHEP/Vector/TwoVector.h"
 #include <vector>
-#include "CLHEP/Vector/ThreeVector.h"
 
 
 namespace mu2e {
@@ -19,19 +19,19 @@ namespace mu2e {
 
 	public:
 
-	  //no constructor for this interface
-	  virtual ~CrystalMapper(){}
+	   //no constructor for this interface
+	   virtual ~CrystalMapper() {};
 
-           virtual int                nCrystalMax(int maxRing)                    = 0;
+           virtual int                nCrystalMax(int maxRing) = 0;
 
-           virtual int                nApex()                               const = 0;
-           virtual double             apexX(int i)                          const = 0;
-           virtual double             apexY(int i)                          const = 0;
+           virtual int                nApex()                                      const = 0;
+           virtual double             apexX(int i)                                 const = 0;
+           virtual double             apexY(int i)                                 const = 0;
 
-	   virtual CLHEP::Hep2Vector  xyFromIndex(int thisIndex)            const = 0;
-           virtual int                indexFromXY(double x, double y)       const = 0;
+	   virtual CLHEP::Hep2Vector  xyFromIndex(int thisIndex)                   const = 0;
+           virtual int                indexFromXY(double x, double y)              const = 0;
 
-	   virtual std::vector<int>   neighbors(int thisIndex, int level)   const = 0;
+	   virtual std::vector<int>   neighbors(int thisIndex, unsigned int level) const = 0;
 
     };
 

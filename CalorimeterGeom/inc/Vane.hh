@@ -10,15 +10,15 @@
 // Original author R. Kutschke, Modified B. Echenard
 //
 
-//C++ includes
-#include <vector>
-
-//mu2e includes
 #include "CalorimeterGeom/inc/CaloSection.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
+#include "CalorimeterGeom/inc/CrystalMapper.hh"
 
-//CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
+
+#include <vector>
+#include <memory>
+
 
 
 
@@ -30,40 +30,45 @@ namespace mu2e {
  
       public:
 
-          Vane(int vaneId, double rMin, int nCrystalX, int nCrystalY, CLHEP::Hep3Vector const& size,
-	       double cellSize, double crystalHalfLength,
-	       CLHEP::Hep3Vector const& vaneOriginToCrystalOrigin);
+          Vane(int vaneId, 
+	       double rMin, 
+	       int nCrystalX, 
+	       int nCrystalY, 
+	       const CLHEP::Hep3Vector &size,
+	       double cellSize, 
+	       double crystalHalfLength,
+	       const CLHEP::Hep3Vector &vaneOriginToCrystalOrigin);
 
 
 
           std::vector<int> findLocalNeighbors(int crystalId, int level) const; 
           int              idxFromPosition(double x, double z)          const;
 
-          void             print()                                      const;
+          void             print(std::ostream &os = std::cout)          const;
 
 
 
-          double innerRadius()    const    {return _rMin; }
-          double outerRadius()    const    {return _rMin+_nCrystalY*2.0*_cellSize;}
-          int    crystalY(int id) const    {return id/_nCrystalX;}
-          int    crystalX(int id) const    {return id%_nCrystalX;}
-          double xActiveHalf()    const    {return _xActiveHalf; }
-          double yActiveHalf()    const    {return _yActiveHalf; }
+          virtual double innerRadius()    const  {return _rMin; }
+          virtual double outerRadius()    const  {return _rMin+_nCrystalY*2.0*_cellSize;}
+          int    crystalY(int id)         const  {return id/_nCrystalX;}
+          int    crystalX(int id)         const  {return id%_nCrystalX;}
+          double xActiveHalf()            const  {return _xActiveHalf; }
+          double yActiveHalf()            const  {return _yActiveHalf; }
 
 
 
        private:
  
-          void     fillCrystals(CLHEP::Hep3Vector const& crystalOriginInVane);
+          void     fillCrystals(const CLHEP::Hep3Vector &crystalOriginInVane);
 
           double   _rMin;
           int      _nCrystalX;
           int      _nCrystalY;
           double   _cellSize;
-	  
 	  double   _xActiveHalf;
 	  double   _yActiveHalf;
 
+    	  std::shared_ptr<CrystalMapper>  _crystalMap;
 
     };
 }

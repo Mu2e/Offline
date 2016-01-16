@@ -28,60 +28,63 @@ namespace mu2e {
 
 	public:
 
-	  enum CaloType {disk,vane};
+	   enum CaloType {none,disk,vane};
 
 
-	  //no constructor for this interface
-	  virtual ~Calorimeter(){}
-
-	  //accessor to geometry data
-	  virtual CaloType const& caloType() const = 0;
-	  
-	  //accessor to geometry data
-	  virtual BaseCalorimeterInfoGeom const& caloGeomInfo() const = 0;
-
-	  
-	  // coordinate position and transformation - origin refers to the Mu2e frame
-	  virtual CLHEP::Hep3Vector const& origin()                                                               const = 0; 	  
-	  
-	  virtual CLHEP::Hep3Vector        toCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos)            const = 0;
-	  virtual CLHEP::Hep3Vector        toSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos)            const = 0;
-	  virtual CLHEP::Hep3Vector        toSectionFrameFF(int sectionId, CLHEP::Hep3Vector const& pos)          const = 0;
-	  virtual CLHEP::Hep3Vector        toTrackerFrame(CLHEP::Hep3Vector const& pos)                           const = 0;
-	  
-	  virtual CLHEP::Hep3Vector        fromCrystalFrame(int crystalId, CLHEP::Hep3Vector const& pos)          const = 0;
-	  virtual CLHEP::Hep3Vector        fromSectionFrame(int sectionId, CLHEP::Hep3Vector const& pos)          const = 0;
-	  virtual CLHEP::Hep3Vector        fromSectionFrameFF(int sectionId, CLHEP::Hep3Vector const& pos)        const = 0;
-	  virtual CLHEP::Hep3Vector        fromTrackerFrame(CLHEP::Hep3Vector const& pos)                         const = 0;
-          
-	  virtual CLHEP::Hep3Vector        crystalOrigin(int crystalId)                                           const = 0;	  
-	  virtual CLHEP::Hep3Vector        crystalOriginInSection(int crystalId)                                  const = 0;
-	  virtual int                      crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)                   const = 0;
-
-	  virtual bool                     isInsideCalorimeter(CLHEP::Hep3Vector const& pos)                      const = 0;
-	  virtual bool                     isInsideSection(int iSection, CLHEP::Hep3Vector const& pos)            const = 0;
-	  virtual bool                     isContainedSection(CLHEP::Hep3Vector const&, CLHEP::Hep3Vector const&) const = 0;
-	  virtual void                     print()                                                                const = 0;
-
-	  
-
-	  //calo sections
-	  virtual unsigned int             nSection()                 const = 0;
-	  virtual CaloSection const&       section(int i)             const = 0;
+	   //no constructor for this interface
+	   virtual ~Calorimeter(){}
 
 
-	  //crystal / readout section
-	  virtual unsigned int             nRO()                      const = 0;
-	  virtual unsigned int             nCrystal()                 const = 0;
-          virtual Crystal  const&          crystal(int i)             const = 0;
+	   virtual const CaloType& caloType()                    const = 0;
+	   virtual void  print(std::ostream &os = std::cout)     const = 0;
 
-	  virtual          int             crystalByRO(int roid)      const = 0;
-	  virtual          int             ROBaseByCrystal(int id)    const = 0;
 
-	  // neighbors, indexing 
-          virtual std::vector<int> const&  neighbors(int crystalId)                   const = 0;	  
-          virtual std::vector<int> const&  nextNeighbors(int crystalId)               const = 0;	  
-          virtual std::vector<int>         neighborsByLevel(int crystalId, int level) const = 0;	  
+	   //accessor to geometry data
+	   virtual const BaseCalorimeterInfoGeom& caloGeomInfo() const = 0;
+
+
+	   // Coordinate position and transformation  - The REFERENCE is _Mu2e_ frame
+	   // "from" methods: from XXX to Mu2e 
+           // "to" methods  : from Mu2e  to XXX     
+	   virtual const CLHEP::Hep3Vector& origin() const = 0; 	  
+
+	   virtual CLHEP::Hep3Vector        toCrystalFrame(int crystalId, const CLHEP::Hep3Vector &pos)            const = 0;
+	   virtual CLHEP::Hep3Vector        toSectionFrame(int sectionId, const CLHEP::Hep3Vector &pos)            const = 0;
+	   virtual CLHEP::Hep3Vector        toSectionFrameFF(int sectionId, const CLHEP::Hep3Vector &pos)          const = 0;
+	   virtual CLHEP::Hep3Vector        toTrackerFrame(const CLHEP::Hep3Vector &pos)                           const = 0;
+
+	   virtual CLHEP::Hep3Vector        fromCrystalFrame(int crystalId, const CLHEP::Hep3Vector &pos)          const = 0;
+	   virtual CLHEP::Hep3Vector        fromSectionFrame(int sectionId, const CLHEP::Hep3Vector &pos)          const = 0;
+	   virtual CLHEP::Hep3Vector        fromSectionFrameFF(int sectionId, const CLHEP::Hep3Vector &pos)        const = 0;
+	   virtual CLHEP::Hep3Vector        fromTrackerFrame(const CLHEP::Hep3Vector &pos)                         const = 0;
+
+
+
+	   //position checks
+	   virtual int                      crystalIdxFromPosition(const CLHEP::Hep3Vector &pos)                   const = 0;
+	   virtual bool                     isInsideCalorimeter(const CLHEP::Hep3Vector &pos)                      const = 0;
+	   virtual bool                     isInsideSection(int iSection, const CLHEP::Hep3Vector &pos)            const = 0;
+	   virtual bool                     isContainedSection(CLHEP::Hep3Vector const&, CLHEP::Hep3Vector const&) const = 0;
+
+
+
+	   //access to calo sections
+	   virtual unsigned int             nSection()                                 const = 0;
+	   virtual const CaloSection&       section(int i)                             const = 0;
+
+
+	   //access to crystal / readout section
+	   virtual unsigned int             nCrystal()                                 const = 0;
+           virtual const Crystal&           crystal(int i)                             const = 0;
+
+	   virtual unsigned int             nRO()                                      const = 0;
+	   virtual          int             crystalByRO(int roid)                      const = 0;
+	   virtual          int             ROBaseByCrystal(int id)                    const = 0;
+
+	   // access to neighbors, indexing 
+           virtual const std::vector<int>&  neighbors(int crystalId)                   const = 0;	  
+           virtual const std::vector<int>&  nextNeighbors(int crystalId)               const = 0;	  
+           virtual std::vector<int>         neighborsByLevel(int crystalId, int level) const = 0; //use only for level >2	  
 
 
     };

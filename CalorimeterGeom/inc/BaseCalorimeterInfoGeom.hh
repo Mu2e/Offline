@@ -13,9 +13,8 @@
 // Original author B. Echenard
 //
 
-//C++ includes
-#include <vector>
 
+#include <vector>
 
 
 namespace mu2e {

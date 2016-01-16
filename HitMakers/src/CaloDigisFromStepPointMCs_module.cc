@@ -397,8 +397,8 @@ namespace mu2e {
 	      _nSamples += waveformLength;
 
 	      crId      = _calorimeter->crystalByRO(it);
-	      crX       = _calorimeter->crystalOriginInSection(crId).x();
-	      crY       = _calorimeter->crystalOriginInSection(crId).y();
+	      crX       = _calorimeter->crystal(crId).localPosition().x();
+	      crY       = _calorimeter->crystal(crId).localPosition().y();
 	      roRadius  = sqrt(crX*crX + crY*crY);
 
 	      _hist._hNSamplesVsR   ->Fill(roRadius, waveformLength);
@@ -865,8 +865,8 @@ namespace mu2e {
     std::cout<<"reco position diskFF  "<<_calorimeter->fromSectionFrameFF(_calorimeter->crystal(crid).sectionId(),_calorimeter->toSectionFrameFF(_calorimeter->crystal(crid).sectionId(),testpos))<<std::endl;
     std::cout<<"reco position local   "<<_calorimeter->fromCrystalFrame(crid,_calorimeter->toCrystalFrame(crid,testpos))<<std::endl;
 
-    std::cout<<"reco Crystal orig     "<<_calorimeter->crystalOrigin(crid)<<std::endl;
-    std::cout<<"reco Crystal orig sec "<<_calorimeter->crystalOriginInSection(crid)<<std::endl;
+    std::cout<<"reco Crystal orig     "<<_calorimeter->crystal(crid).position()<<std::endl;
+    std::cout<<"reco Crystal orig sec "<<_calorimeter->crystal(crid).localPosition()<<std::endl;
     std::cout<<"Is inside I           "<<_calorimeter->isInsideCalorimeter(testpos)<<std::endl;
     std::cout<<"Is inside II          "<<_calorimeter->isInsideCalorimeter(testpos+CLHEP::Hep3Vector(0,-1,0))<<std::endl;
     std::cout<<"Is inside III         "<<_calorimeter->isInsideCalorimeter(testpos+CLHEP::Hep3Vector(0,0,-1))<<std::endl;

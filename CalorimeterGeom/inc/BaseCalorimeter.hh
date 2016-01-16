@@ -41,68 +41,63 @@ namespace mu2e {
 	friend class DiskCalorimeterMaker;
 
 
-
 	public:
 
-            BaseCalorimeter() : _sections(),_origin(),_trackerCenter(),_caloGeomInfo(),_fullCrystalList()  {}
+            BaseCalorimeter();
             virtual ~BaseCalorimeter() {}
 
 	   
-	    //type of calorimeter
-	    virtual CaloType const& caloType() const { return _caloType;}
+	    //calo type
+	    virtual const CaloType& caloType() const { return _caloType;}
 
-	    //accessor to geometry data
-	    virtual BaseCalorimeterInfoGeom const& caloGeomInfo()  const  {return _caloGeomInfo;}
+	    //geomInfo accessor
+	    virtual const BaseCalorimeterInfoGeom& caloGeomInfo()  const  {return _caloGeomInfo;}
 	    
-
  	    
-	    // coordinate position and transformation - origin refers to the Mu2e frame	   
-	    virtual CLHEP::Hep3Vector const&   origin()  const  {return _origin;}
-	    
-	    virtual CLHEP::Hep3Vector toCrystalFrame(  int crystalId, CLHEP::Hep3Vector const& pos)   const ; //prefer this when possible
-	    virtual CLHEP::Hep3Vector toSectionFrame(  int sectionId, CLHEP::Hep3Vector const& pos)   const ;	    
-	    virtual CLHEP::Hep3Vector toSectionFrameFF(int sectionId, CLHEP::Hep3Vector const& pos)   const ;	    
-	    virtual CLHEP::Hep3Vector toTrackerFrame(  CLHEP::Hep3Vector const& pos)                  const ;
+	    // Coordinate position and transformation  - The REFERENCE is _Mu2e_ frame
+	    // "from" methods: from XXX to Mu2e 
+            // "to" methods  : from Mu2e  to XXX     
 
-	    virtual CLHEP::Hep3Vector fromCrystalFrame(  int crystalId, CLHEP::Hep3Vector const& pos) const ;
-	    virtual CLHEP::Hep3Vector fromSectionFrame(  int sectionId, CLHEP::Hep3Vector const& pos) const ;
-	    virtual CLHEP::Hep3Vector fromSectionFrameFF(int sectionId, CLHEP::Hep3Vector const& pos) const ;
-	    virtual CLHEP::Hep3Vector fromTrackerFrame(  CLHEP::Hep3Vector const& pos)                const ;
+	    virtual const CLHEP::Hep3Vector&  origin()  const  {return _origin;}
+	    virtual CLHEP::Hep3Vector toCrystalFrame(  int crystalId, const CLHEP::Hep3Vector &pos)   const;
+	    virtual CLHEP::Hep3Vector toSectionFrame(  int sectionId, const CLHEP::Hep3Vector &pos)   const;	    
+	    virtual CLHEP::Hep3Vector toSectionFrameFF(int sectionId, const CLHEP::Hep3Vector &pos)   const;	    
+	    virtual CLHEP::Hep3Vector toTrackerFrame(  const CLHEP::Hep3Vector &pos)                  const;
+
+	    virtual CLHEP::Hep3Vector fromCrystalFrame(  int crystalId, const CLHEP::Hep3Vector &pos) const;
+	    virtual CLHEP::Hep3Vector fromSectionFrame(  int sectionId, const CLHEP::Hep3Vector &pos) const;
+	    virtual CLHEP::Hep3Vector fromSectionFrameFF(int sectionId, const CLHEP::Hep3Vector &pos) const;
+	    virtual CLHEP::Hep3Vector fromTrackerFrame(  const CLHEP::Hep3Vector &pos)                const;
             
-	    virtual CLHEP::Hep3Vector crystalAxis(int crystalId)                                      const ;
-	    virtual CLHEP::Hep3Vector crystalOrigin(int crystalId)                                    const;
-	    virtual CLHEP::Hep3Vector crystalOriginInSection(int crystalId)                           const;
-
-
 
 
   	    //calo sections
-	    virtual unsigned int              nSection()                      const  {return _nSections;}
-	    virtual CaloSection const&        section(int i)                  const  {return *_sections.at(i);}
+	    virtual unsigned int              nSection()                                 const  {return _nSections;}
+	    virtual const CaloSection&        section(int i)                             const  {return *_sections.at(i);}
 
-            
-	    
+            	    
   	    //crystal / readout section
-	    virtual unsigned int              nRO()                           const  {return _fullCrystalList.size()*_caloGeomInfo.nROPerCrystal();}
-            virtual unsigned int              nCrystal()                      const  {return _fullCrystalList.size();}
-            virtual Crystal const&            crystal(int i)                  const  {return *_fullCrystalList.at(i);}
+            virtual unsigned int              nCrystal()                                 const  {return _fullCrystalList.size();}
+            virtual const Crystal&            crystal(int i)                             const  {return *_fullCrystalList.at(i);}
 	            
-	    virtual int                       crystalByRO(int roid)           const  {return (roid/_caloGeomInfo.nROPerCrystal());}
-	    virtual int                       ROBaseByCrystal(int crystalId)  const  {return (crystalId*_caloGeomInfo.nROPerCrystal());}
+
+	    virtual unsigned int              nRO()                                      const  {return _fullCrystalList.size()*_caloGeomInfo.nROPerCrystal();}
+	    virtual int                       crystalByRO(int roid)                      const  {return (roid/_caloGeomInfo.nROPerCrystal());}
+	    virtual int                       ROBaseByCrystal(int crystalId)             const  {return (crystalId*_caloGeomInfo.nROPerCrystal());}
 
             
   	    // neighbors, indexing 
-	    virtual std::vector<int> const&   neighbors(int crystalId)        const  {return _fullCrystalList.at(crystalId)->neighbors();}	  
-            virtual std::vector<int> const&   nextNeighbors(int crystalId)    const  {return _fullCrystalList.at(crystalId)->nextNeighbors();}	  
+	    virtual const std::vector<int>&   neighbors(int crystalId)                   const  {return _fullCrystalList.at(crystalId)->neighbors();}	  
+            virtual const std::vector<int>&   nextNeighbors(int crystalId)               const  {return _fullCrystalList.at(crystalId)->nextNeighbors();}	  
 
 
 
 	protected:
 
-
-	    CaloType                      _caloType;
 	    typedef std::shared_ptr<CaloSection> CaloSectionPtr;
-	    
+
+
+	    CaloType                      _caloType;	    
 	    unsigned int                  _nSections;
 	    std::vector<CaloSectionPtr >  _sections;
 	    CLHEP::Hep3Vector             _origin;
@@ -110,7 +105,7 @@ namespace mu2e {
 
 	    BaseCalorimeterInfoGeom       _caloGeomInfo;
 
-	    std::vector<Crystal const*>   _fullCrystalList;
+	    std::vector<Crystal const*>   _fullCrystalList; //bare pointer is ok, this is just another view for convenience, the objects are managed somewhere else
 	    
 
      };

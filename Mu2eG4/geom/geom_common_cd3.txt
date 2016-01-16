@@ -12,7 +12,6 @@ bool hasTSdA           = true;
 bool hasExternalShielding = true;
 bool hasVaneCalorimeter = false;
 bool hasDiskCalorimeter = true;
-bool hasHybridCalorimeter = false;
 bool hasBFieldManager   = true;
 bool hasBeamline        = true;
 bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now;
@@ -69,7 +68,7 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/ttracker_cd3.txt"
 
 // Crystal calorimeter
-//#include "Mu2eG4/geom/calorimeter_LYSO.txt"
+//#include "Mu2eG4/geom/calorimeter_CsI.txt"
 #include "Mu2eG4/geom/calorimeter_BaF2.txt"
 
 //CRV counters

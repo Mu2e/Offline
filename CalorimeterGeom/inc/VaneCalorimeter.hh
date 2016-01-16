@@ -13,20 +13,13 @@
 // Original author R. Bernstein and Rob Kutschke
 //
 
-//C++ includes
-#include <vector>
-#include <boost/shared_ptr.hpp>
 
-// Mu2e includes
 #include "CalorimeterGeom/inc/BaseCalorimeter.hh"
 #include "CalorimeterGeom/inc/Vane.hh"
 
-//CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
-
-using boost::static_pointer_cast;
-using boost::shared_ptr;
+#include <vector>
 
 
 
@@ -61,21 +54,18 @@ class VaneCalorimeter: public BaseCalorimeter{
 		  
 	
 	  //geometry components / print
-          virtual bool              isInsideCalorimeter(CLHEP::Hep3Vector const& pos)                      const;        
-          virtual bool              isInsideSection(int iSection, CLHEP::Hep3Vector const& pos)            const;
-	  virtual bool              isContainedSection(CLHEP::Hep3Vector const&, CLHEP::Hep3Vector const&) const;
-	  virtual void              print()                                                                const;
-
-
+          virtual bool isInsideCalorimeter(const CLHEP::Hep3Vector &pos)                        const;        
+          virtual bool isInsideSection(int iSection, const CLHEP::Hep3Vector &pos)              const;
+	  virtual bool isContainedSection(const CLHEP::Hep3Vector &, const CLHEP::Hep3Vector &) const;
+	  
 
 	  //crystal id and neighbors component
-	  virtual int               crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)                   const;
-          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)                             const; 
+	  virtual int               crystalIdxFromPosition(const CLHEP::Hep3Vector &pos)  const;
+          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)            const; 
 
+	  virtual void print(std::ostream &os = std::cout)                                const;
 
           
-
-
 
 
       private:

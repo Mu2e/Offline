@@ -300,12 +300,14 @@ namespace mu2e {
                                            HelixTraj const& trkHel, unsigned int iSection, std::vector<TrkCaloInter>& intersect)
     {
 	 	 	 
-	 double zStart       = (_downstream) ? cal.section(iSection).zDownInTracker() : cal.section(iSection).zUpInTracker();
-	 double zEnd         = (_downstream) ? cal.section(iSection).zUpInTracker()   : cal.section(iSection).zDownInTracker() ;	 	 
+	 CLHEP::Hep3Vector frontFaceInTracker = cal.toTrackerFrame(cal.section(iSection).frontFaceCenter());
+	 CLHEP::Hep3Vector backFaceInTracker  = cal.toTrackerFrame(cal.section(iSection).backFaceCenter());
+	 
+	 double zStart       = (_downstream) ? frontFaceInTracker.z() : backFaceInTracker.z();
+	 double zEnd         = (_downstream) ? backFaceInTracker.z()  : frontFaceInTracker.z() ;	 	 
 	 double rangeStart   = trkHel.zFlight(zStart);
 	 double rangeEnd     = trkHel.zFlight(zEnd);
          
-
 	 //apply first order correction to the helix model to match the trajDif model, add buffer to endRange to be on the safe side
 	 //D. Brown will add a zFlight() method for TrajDifTraj in the future, rewrite code when available	 
 	 double sinDip         = sqrt(1.0-trkHel.cosDip()*trkHel.cosDip());
@@ -355,9 +357,12 @@ namespace mu2e {
     {         
 
 	 //check if we're inside the rdial enveloppe, if not, fast forward to it
-	 double initRadius    = radiusAtRange(traj,rangeStart);
-	 if (initRadius < cal.section(iSection).rInTracker())  rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).rInTracker());	 
-	 if (initRadius > cal.section(iSection).rOutTracker()) rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).rOutTracker()); 
+	 double initRadius = radiusAtRange(traj,rangeStart);
+	 
+
+
+	 if (initRadius < cal.section(iSection).innerEnveloppeR())  rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).innerEnveloppeR());	 
+	 if (initRadius > cal.section(iSection).outerEnveloppeR()) rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).outerEnveloppeR()); 
 
 	 if (rangeStart > rangeEnd) return rangeEnd+1e-4;
 
@@ -421,8 +426,8 @@ namespace mu2e {
     {         
 
 	 double rangeForward(0);
-	 double caloRadiusIn  = cal.section(iSection).rInTracker()  + 3*cal.caloGeomInfo().crystalHalfTrans();
-	 double caloRadiusOut = cal.section(iSection).rOutTracker() - 3*cal.caloGeomInfo().crystalHalfTrans();
+	 double caloRadiusIn  = cal.section(iSection).innerEnveloppeR()  + 3*cal.caloGeomInfo().crystalHalfTrans();
+	 double caloRadiusOut = cal.section(iSection).outerEnveloppeR() - 3*cal.caloGeomInfo().crystalHalfTrans();
 
 	 double range(rangeStart);
 
