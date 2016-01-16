@@ -300,7 +300,7 @@ namespace mu2e
 // if this is a reflecting track the same material can appear multiple times: check the flight lengths
 	if(kmats.size() > 0){
 	  for(auto kmat: kmats) {
-	    if( fabs( kmat->globalLength() - trkhit->fltLen()) > 10*strawelem->straw()->getRadius()){
+	    if( fabs( kmat->globalLength() - trkhit->fltLen()) > _maxmatfltdiff){
 	      addmat = true;
 	      break;
 	    }
@@ -308,12 +308,10 @@ namespace mu2e
 	}
 	if(addmat){
 	  // create intersection object for this element; it includes all materials
-	  DetIntersection strawinter;
-	  strawinter.delem = strawelem;
-	  strawinter.pathlen = trkhit->fltLen();
+	  DetIntersection strawinter(strawelem, krep->referenceTraj(),trkhit->fltLen());
 	  strawinter.thit = trkhit;
 	  // compute initial intersection: this gets updated each fit iteration
-	  strawelem->reIntersect(trkhit->trkTraj(),strawinter);
+	  strawelem->reIntersect(krep->referenceTraj(),strawinter);
 	  krep->addInter(strawinter);
 	}
       }
