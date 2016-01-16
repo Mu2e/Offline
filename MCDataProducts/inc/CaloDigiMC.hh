@@ -32,10 +32,16 @@ namespace mu2e {
     {
       _totalEDep  = 0.;
       _meanTime   = 0.;
-      
+      _timeFirst  = 1e10;
+
+      double      hitTime;
       for (int i=0; i< NParticles; ++i){
 	_totalEDep    += EDep.  at(i);
-	_meanTime     += Time.  at(i) * EDep.  at(i);
+	hitTime        = Time.  at(i);
+	_meanTime     += hitTime * EDep.  at(i);
+	if (hitTime < _timeFirst){
+	  _timeFirst = hitTime;
+	}
 	_eDep.        push_back(EDep.  at(i));
 	_time.        push_back(Time.  at(i));
 	_pdgId.       push_back(PdgId. at(i));
@@ -50,7 +56,8 @@ namespace mu2e {
       
       _nParticles = size;
       _totalEDep  = CaloMC.totalEDep();
-      _meanTime   = CaloMC.meanTime();
+      _meanTime   = CaloMC.meanTime ();
+      _timeFirst  = CaloMC.timeFirst();
 
       for (int i=0; i<size; ++i){
 	_eDep.        push_back(CaloMC.eDep(i));
@@ -74,19 +81,19 @@ namespace mu2e {
 
     art::Ptr<SimParticle>    simParticle (int Index)const {return _simParticle.at(Index); }
 
-    void                     addCaloShower(const CaloShowerStepMC* CaloShower);
+    void                     addCaloShower(const CaloShowerStepMC* CaloShower, double HitTimeUnfolded);
     void                     init();
 
   private:
-    int                           _nParticles;
-
-    double                        _totalEDep;
-    double                        _meanTime;
-    double                        _timeFirst;
-
-    std::vector<double>           _eDep;
-    std::vector<double>           _time;
-    std::vector<double>           _pdgId;
+    int                                       _nParticles;
+			                     
+    double                                    _totalEDep;
+    double                                    _meanTime;
+    double                                    _timeFirst;
+			                     
+    std::vector<double>                       _eDep;
+    std::vector<double>                       _time;
+    std::vector<double>                       _pdgId;
 
     std::vector<art::Ptr<SimParticle> >       _simParticle;
 

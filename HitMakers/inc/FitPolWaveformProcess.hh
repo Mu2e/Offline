@@ -4,8 +4,8 @@
 // resolve waveform and creates RecoCaloDigi
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef FitWaveformProcess_HH
-#define FitWaveformProcess_HH
+#ifndef FitPolWaveformProcess_HH
+#define FitPolWaveformProcess_HH
 
 #include "HitMakers/inc/WaveformProcess.hh"
 
@@ -36,7 +36,7 @@ class TFolder;
 
 namespace mu2e {
 
-  struct Hist_t {
+  struct Hist_tt {
     TH1F*  _hEdep;
     TH1F*  _hAmplitude;
     TH1F*  _hTime;
@@ -62,7 +62,7 @@ namespace mu2e {
 
   };
 
-  class FitWaveformProcess : public WaveformProcess {
+  class FitPolWaveformProcess : public WaveformProcess {
      
     
 
@@ -89,10 +89,11 @@ namespace mu2e {
     double      _timeChi2[2];
     TH1F*       _wave;      //input waveform
     TH1F*       _refPulse;  //pulse used as reference
+    TF1*        _fWave;
     TF1*        _flogn;
     TF1*        _fdlogn;
 
-    Hist_t      _hist;
+    Hist_tt     _hist;
     TTree*      _tree;
 
     int         _debugHistIndex;
@@ -105,9 +106,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   public:
 #ifndef __GCCXML__
-    explicit    FitWaveformProcess(fhicl::ParameterSet const&);
+    explicit    FitPolWaveformProcess(fhicl::ParameterSet const&);
 #endif/*__GCCXML__*/
-    virtual    ~FitWaveformProcess();
+    virtual    ~FitPolWaveformProcess();
     
     //check for presence of pile up, fills _psd
     void        psdFromChi2();

@@ -72,7 +72,7 @@ namespace mu2e {
     _crmLabel    (pset.get<string>("caloReadoutModuleLabel"         )),
     _chmccpLabel (pset.get<string>("calorimeterHitMCCrystalPtr"     )),
 
-    _dtspecpar   (pset.get<string>("DeltaTSpectrumParams","nobackgroundnomarkovgoff")),
+    //    _dtspecpar   (pset.get<string>("DeltaTSpectrumParams","nobackgroundnomarkovgoff")),
     _tsel        (pset.get<vector<string> >("TimeSelectionBits")),
     _hsel        (pset.get<vector<string> >("HelixFitSelectionBits")),
     _addsel      (pset.get<vector<string> >("AddHitSelectionBits",vector<string>{} )),
@@ -129,7 +129,7 @@ namespace mu2e {
                                         // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
 
-    fNminMChits = 25;
+    _minNMCHits = 25;
 
     fQualityTrack = 0;
 
@@ -178,7 +178,7 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void CalPatRec::beginRun(art::Run& ){
+  void CalPatRec::beginRun(art::Run& ) {
     mu2e::GeomHandle<mu2e::TTracker> th;
     _tracker = th.get();
 
@@ -507,7 +507,7 @@ namespace mu2e {
     bool                      findhelix (false), findseed (false), findkal (false);
     int                       nhits;
     int                       npeaks;
-    int                       gen_index, nhits_from_gen(0), sim_id;
+    int                       gen_index, sim_id;
 
     ::KalRep*                 krep;
                                         // dummy objects
@@ -524,6 +524,7 @@ namespace mu2e {
     fgTimeOffsets->updateMap(event);
 
     _ntracks = 0;
+    _nhits_from_gen   = 0;
 
     fNCaloEnergyCut   = 0;
     fNCaloSizeCut     = 0;
@@ -589,17 +590,17 @@ namespace mu2e {
         step_time = fgTimeOffsets->timeWithOffsetsApplied(*Step);
         step_time = fmod(step_time,_mbtime);
         if (step_time > time_threshold) {
-          ++nhits_from_gen;
+          ++_nhits_from_gen;
           if (Step->momentum().mag() > pEntrance) {
             pEntrance = Step->momentum().mag();
           }
         }
       }
     }
-    if (pEntrance < 100. ) nhits_from_gen = 0;
+    if (pEntrance < 100. ) _nhits_from_gen = 0;
 
     if (_diagLevel > 0) {
-      if (nhits_from_gen >= fNminMChits)  _hist._cutflow[0]->Fill(0.0);
+      if (_nhits_from_gen >= _minNMCHits)  _hist._cutflow[0]->Fill(0.0);
     }
 
     _kfit.setStepPointMCVectorCollection(_listOfMCStrawHits);
@@ -625,40 +626,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if (_diagLevel > 0) {
       fillTimeDiag();
-
-      if (nhits_from_gen >= fNminMChits) {
-        _hist._cutflow[1]->Fill(.0);
-        if (fNCaloEnergyCut>0){
-          _hist._cutflow[1]->Fill(1.0);
-          if (fNCaloSizeCut>0){
-            _hist._cutflow[1]->Fill(2.0);
-            if (fNTimeWindow>0){
-              _hist._cutflow[1]->Fill(3.0);
-           //  if (fNHitsTimePeakCut>0){
-            //        _hist._cutflow[1]->Fill(4.0);
-//          }
-          //   if (fSHSel[0] > 0){
-//            _hist._cutflow[1]->Fill(4.0);
-              if (fSHSel[1] > 0){
-                _hist._cutflow[1]->Fill(4.0);
-                if (fSHSel[2] > 0){
-                  _hist._cutflow[1]->Fill(5.0);
-                  if (fSHBkg[0] > 0){
-                    _hist._cutflow[1]->Fill(6.0);
-                    if (fSHBkg[1] > 0){
-                      _hist._cutflow[1]->Fill(7.0);
-                      if (fSHSel[0] > 0){
-                        _hist._cutflow[1]->Fill(8.0);
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        if (_tpeaks->size()>0 ) _hist._cutflow[0]->Fill(1.0);
-      }
     }
 //-----------------------------------------------------------------------------
 // loop over found time peaks - for us, - "eligible" calorimeter clusters
@@ -1076,13 +1043,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics in the end
 //-----------------------------------------------------------------------------
-    if (findhelix && (nhits_from_gen >= fNminMChits)) {
+    if (findhelix && (_nhits_from_gen >= _minNMCHits)) {
       _hist._cutflow[0]->Fill(2.0);
       _hist._cutflow[1]->Fill(9.0);
     }
 
-    if (findseed  && (nhits_from_gen >= fNminMChits)) _hist._cutflow[0]->Fill(3.0);
-    if (findkal   && (nhits_from_gen >= fNminMChits)) {
+    if (findseed  && (_nhits_from_gen >= _minNMCHits)) _hist._cutflow[0]->Fill(3.0);
+    if (findkal   && (_nhits_from_gen >= _minNMCHits)) {
       _hist._cutflow[0]->Fill(4.0);
       if (fQualityTrack > 0) {
         _hist._cutflow[0]->Fill(5.0);
@@ -1092,7 +1059,7 @@ namespace mu2e {
     }
 
     if (_debugLevel > 0) {
-      if ((nhits_from_gen >= fNminMChits) && _tpeaks->size() > 0){
+      if ((_nhits_from_gen >= _minNMCHits) && _tpeaks->size() > 0){
         if (_tpeaks->at(0)._tmin > 400.){
           if (!findhelix){
             printf("[CalPatRec::produce] LOOK AT: more than 25 MC hits and findHelix not converged! event = %i\n", _iev);
@@ -1463,6 +1430,7 @@ namespace mu2e {
 
   }
 
+//-----------------------------------------------------------------------------
   void CalPatRec::fillTimeDiag() {
     art::ServiceHandle<art::TFileService> tfs;
 
@@ -1490,6 +1458,36 @@ namespace mu2e {
     }
 
     _hist._Tpeaks->Fill(_tpeaks->size());
+
+    if (_nhits_from_gen >= _minNMCHits) {
+      _hist._cutflow[1]->Fill(.0);
+      if (fNCaloEnergyCut>0){
+	_hist._cutflow[1]->Fill(1.0);
+	if (fNCaloSizeCut>0){
+	  _hist._cutflow[1]->Fill(2.0);
+	  if (fNTimeWindow>0){
+	    _hist._cutflow[1]->Fill(3.0);
+	    if (fSHSel[1] > 0){
+	      _hist._cutflow[1]->Fill(4.0);
+	      if (fSHSel[2] > 0){
+		_hist._cutflow[1]->Fill(5.0);
+		if (fSHBkg[0] > 0){
+		  _hist._cutflow[1]->Fill(6.0);
+		  if (fSHBkg[1] > 0){
+		    _hist._cutflow[1]->Fill(7.0);
+		    if (fSHSel[0] > 0){
+		      _hist._cutflow[1]->Fill(8.0);
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+
+      if (_tpeaks->size() > 0 ) _hist._cutflow[0]->Fill(1.0);
+    }
   }
 
 //-----------------------------------------------------------------------------
