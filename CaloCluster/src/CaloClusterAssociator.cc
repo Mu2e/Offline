@@ -47,8 +47,8 @@ namespace mu2e {
 		   CaloCrystalHitPtrVector const& mainHitsPtr = mainClusterColl[j].caloCrystalHitsPtrVector();	     
 	           CaloCrystalHitPtr       const& hitMain     = *(mainHitsPtr.begin());
 
-		   CLHEP::Hep3Vector crystalPos1 = _cal.crystalOrigin(hitMain->id());
-		   CLHEP::Hep3Vector crystalPos2 = _cal.crystalOrigin(hitSmall->id());
+		   CLHEP::Hep3Vector crystalPos1 = _cal.crystal(hitMain->id()).position();
+		   CLHEP::Hep3Vector crystalPos2 = _cal.crystal(hitSmall->id()).position();
 		   double dist0 = (crystalPos1-crystalPos2).mag();
 
 		   if (dist0 > 2.5*maxDist) continue;
@@ -123,11 +123,11 @@ namespace mu2e {
 	  double minDistance(1e6);    
 	  for (auto const& hit : cluster)
 	  {        
-	      CLHEP::Hep3Vector crystalPos = _cal.crystalOrigin(hit->id());
+	      CLHEP::Hep3Vector crystalPos = _cal.crystal(hit->id()).position();
 
 	      for (auto const& hit2 : cluster2)
 	      {
-		 double dist = (crystalPos - _cal.crystalOrigin(hit2->id())).mag();
+		 double dist = (crystalPos - _cal.crystal(hit2->id()).position()).mag();
 		 if (dist<minDistance) minDistance = dist;
 	      }	 
 	  }

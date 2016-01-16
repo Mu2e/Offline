@@ -37,9 +37,9 @@ namespace mu2e {
 
                 if (_cal.crystal(crId).sectionId() != _iSection) continue;
 
-                double xCrystal = _cal.crystalOrigin(crId).x();
-                double yCrystal = _cal.crystalOrigin(crId).y();
-                double zCrystal = _cal.crystalOrigin(crId).z();
+                double xCrystal = _cal.crystal(crId).position().x();
+                double yCrystal = _cal.crystal(crId).position().y();
+                double zCrystal = _cal.crystal(crId).position().z();
 
                 double weight = energy;
                 if (mode == LinearMod)   weight = 1.01*energy - 6.25;

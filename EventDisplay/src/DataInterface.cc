@@ -412,7 +412,7 @@ void DataInterface::fillGeometry()
       for(int ic=0; ic<nCrystalInThisDisk; ic++)
       {
         int id=crystalIdOffset+ic;
-	const CLHEP::Hep3Vector &pos = calo->crystalOrigin(crystalIdOffset+ic)-_detSysOrigin;
+	const CLHEP::Hep3Vector &pos = calo->crystal(crystalIdOffset+ic).position()-_detSysOrigin;
 
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
         sprintf(c,"Disk %i, Crystal %i",idisk,id);

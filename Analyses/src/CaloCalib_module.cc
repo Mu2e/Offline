@@ -329,7 +329,7 @@ namespace mu2e {
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
        {	   
 	   CaloCrystalHit const& hit      = caloCrystalHits.at(ic);
-	   CLHEP::Hep3Vector crystalPos   = cal.crystalOrigin(hit.id());           
+	   CLHEP::Hep3Vector crystalPos   = cal.crystal(hit.id()).position();           
            CaloHit const& caloHit         = *(hit.readouts().at(0));
 
 

@@ -210,7 +210,7 @@ namespace mu2e {
       {	   
 	  CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
 	  double time0                 = hit.time();
-	  CLHEP::Hep3Vector crystalPos = cal.crystalOrigin(hit.id());
+	  CLHEP::Hep3Vector crystalPos = cal.crystal(hit.id()).position();
 	  if (hit.time() < 500) continue;
 	  if (hit.energyDep() < 0.9) continue;
 
@@ -227,7 +227,7 @@ namespace mu2e {
 		    if (&(*crystalIncluster) == &hit) ++nCr;
                     if (nCr > 1) std::cout<<"Warning, crystal associated to more than one cluster "<<hit.id()<<" for cluster "<<nClu<<std::endl;
 
-		    CLHEP::Hep3Vector crystalPos2 = cal.crystalOrigin(crystalIncluster->id());
+		    CLHEP::Hep3Vector crystalPos2 = cal.crystal(crystalIncluster->id()).position();
 		    double deltaDist = (crystalPos-crystalPos2).mag();
 		    double deltaTime = abs(crystalIncluster->time()-time0);
 

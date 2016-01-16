@@ -8,27 +8,23 @@
 //
 // Original author R. Bernstein and Rob Kutschke
 //
-//C++ includes
-#include <algorithm>
 
-//mu2e includes
 #include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 
+#include <algorithm>
 
 
 namespace mu2e {
 
 
-
-
-    bool VaneCalorimeter::isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const 
+    bool VaneCalorimeter::isInsideCalorimeter(const CLHEP::Hep3Vector &pos) const 
     {   
         for (unsigned int ivane=0;ivane<_nSections;++ivane) if (isInsideSection(ivane,pos)) return true;
         return false;    
     }
 
 
-    bool VaneCalorimeter::isInsideSection(int ivane, CLHEP::Hep3Vector const& pos) const 
+    bool VaneCalorimeter::isInsideSection(int ivane, const CLHEP::Hep3Vector &pos) const 
     {   
 	//in the Section coordinate system, the crystal are oriented along the y direction
 	CLHEP::Hep3Vector posInSection = toSectionFrameFF(ivane, pos);
@@ -48,11 +44,13 @@ namespace mu2e {
     }
 
    
-    int VaneCalorimeter::crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const 
+    int VaneCalorimeter::crystalIdxFromPosition(const CLHEP::Hep3Vector &pos) const 
     {   
         int offset(0);
-        for (unsigned int ivane=0;ivane<_nSections;++ivane) {
-           if ( isInsideSection(ivane,pos) ) {
+        for (unsigned int ivane=0;ivane<_nSections;++ivane)
+	{
+           if ( isInsideSection(ivane,pos) )
+	   {
                  CLHEP::Hep3Vector posInSection = toSectionFrame(ivane, pos);
                  return offset + vane(ivane).idxFromPosition(posInSection.x(),posInSection.y());
   	   }
@@ -73,14 +71,13 @@ namespace mu2e {
 	transform(list.begin(), list.end(), list.begin(),bind2nd(std::plus<int>(), offset));  
 
 	return list;
-
     }
 
-    void VaneCalorimeter::print() const 
+    void VaneCalorimeter::print(std::ostream &os) const 
     {
-      std::cout<<"Vane calorimeter "<<std::endl;
-      std::cout<<"Number of vanes :"<< _nSections<<std::endl;
-      for (unsigned int ivane=0;ivane<_nSections;++ivane) vane(ivane).print();
+      os<<"Vane calorimeter "<<std::endl;
+      os<<"Number of vanes :"<< _nSections<<std::endl;
+      for (unsigned int ivane=0;ivane<_nSections;++ivane) vane(ivane).print(os);
         
     }
 

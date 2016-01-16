@@ -662,8 +662,8 @@ namespace mu2e {
      std::cout<<"reco position diskFF  "<<cal.fromSectionFrameFF(cal.crystal(crid).sectionId(),cal.toSectionFrameFF(cal.crystal(crid).sectionId(),testpos))<<std::endl;
      std::cout<<"reco position local   "<<cal.fromCrystalFrame(crid,cal.toCrystalFrame(crid,testpos))<<std::endl;
 
-     std::cout<<"reco Crystal orig     "<<cal.crystalOrigin(crid)<<std::endl;
-     std::cout<<"reco Crystal orig sec "<<cal.crystalOriginInSection(crid)<<std::endl;
+     std::cout<<"reco Crystal orig     "<<cal.crystal(crid).position()<<std::endl;
+     std::cout<<"reco Crystal orig sec "<<cal.crystal(crid).localPosition()<<std::endl;
      std::cout<<"Is inside I           "<<cal.isInsideCalorimeter(testpos)<<std::endl;
      std::cout<<"Is inside II          "<<cal.isInsideCalorimeter(testpos+CLHEP::Hep3Vector(0,-1,0))<<std::endl;
      std::cout<<"Is inside III         "<<cal.isInsideCalorimeter(testpos+CLHEP::Hep3Vector(0,0,-1))<<std::endl;

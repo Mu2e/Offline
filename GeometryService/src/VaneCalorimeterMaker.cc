@@ -188,7 +188,6 @@ namespace mu2e{
         // Create vanes
         MakeVanes();
 
-
       }
 
 
@@ -237,14 +236,14 @@ namespace mu2e{
               thisVane->setOriginLocal(      originLocal );
               thisVane->setOrigin(           originLocal + _calo->origin() );
               thisVane->setRotation(         (CLHEP::HepRotation::IDENTITY)*CLHEP::HepRotationY(CLHEP::pi/2)*CLHEP::HepRotationZ(-phi+CLHEP::pi/2));
-
               if (_calo->_isVaneTilted) thisVane->setRotation(CLHEP::HepRotation::IDENTITY);
 
 
-              //this is expressed in the Mu2e system, so need to transform coordinates accordingly
-              double frontFaceZ0 =  (_calo->origin() + originLocal).z() - size.x() + 2*absorberHalfLength;
-              double frontFaceZ1 =  frontFaceZ0 + 2*size.x();
-              thisVane->setBoundsInTracker(  _calo->_trackerCenter, frontFaceZ0, frontFaceZ1, _calo->_rMin, _calo->_rMax );
+	      CLHEP::Hep3Vector frontFaceCenter = _calo->origin() + originLocal +  thisVane->rotation()*CLHEP::Hep3Vector(-dX,0,0);
+	      CLHEP::Hep3Vector backFaceCenter  = _calo->origin() + originLocal +  thisVane->rotation()*CLHEP::Hep3Vector(dX,0,0);
+              thisVane->setFrontFaceCenter(frontFaceCenter);
+              thisVane->setBackFaceCenter(backFaceCenter);
+	      thisVane->setEnveloppeRad(_calo->_rMin, _calo->_rMax);
 
 
               //fill the full Crystal List (direct access to crystal from calorimeter as requested from users)
@@ -257,7 +256,7 @@ namespace mu2e{
                  //precompute the neighbors in the global frame
                  thisCrystal.setNeighbors(_calo->neighborsByLevel(icry+crystalOffset,1));
                  thisCrystal.setNextNeighbors(_calo->neighborsByLevel(icry+crystalOffset,2));
-                 thisCrystal.setPosition(_calo->crystalOrigin(icry));
+                 thisCrystal.setPosition(_calo->crystal(icry).position());
 
                  //calculate the crystal position in the mu2e frame (aka global frame), taken from BaseCalorimeter.cc
                  CLHEP::Hep3Vector globalPosition = thisVane->origin() + thisVane->inverseRotation()*(thisCrystal.localPosition());
@@ -287,8 +286,8 @@ namespace mu2e{
             double absorberHalfLength =  _calo->_shieldHalfThickness + _calo->_absorberHalfThickness;
             double dX                 = crystalFullTrans * _calo->_nCrystalX + absorberHalfLength + caseThickness;
             double dY                 = crystalFullTrans * _calo->_nCrystalY + caseThickness;
-
-            double calozBegin         = _calo->_origin.z();
+            
+	    double calozBegin         = _calo->_origin.z();
             double calozEnd           = _calo->_origin.z() + 2*dX;
 
 

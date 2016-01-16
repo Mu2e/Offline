@@ -433,7 +433,7 @@ namespace mu2e {
 
 	   
       CaloCrystalHit const& hit    = caloCrystalHits->at(ic);
-      CLHEP::Hep3Vector crystalPos = _calorimeter->crystalOrigin(hit.id());
+      CLHEP::Hep3Vector crystalPos = _calorimeter->crystal(hit.id()).position();
 
       _cryEtot             += hit.energyDep();
       _cryTime[_nHits]      = hit.time();

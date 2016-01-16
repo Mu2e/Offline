@@ -20,13 +20,13 @@
 namespace mu2e {
 
 
-   bool DiskCalorimeter::isInsideCalorimeter(CLHEP::Hep3Vector const& pos) const 
+   bool DiskCalorimeter::isInsideCalorimeter(const CLHEP::Hep3Vector &pos) const 
    {   
        for (unsigned int idisk=0;idisk<_nSections;++idisk) if (isInsideSection(idisk, pos)) return true;	
        return false;    
    }
 
-   bool DiskCalorimeter::isInsideSection(int idisk, CLHEP::Hep3Vector const& pos) const 
+   bool DiskCalorimeter::isInsideSection(int idisk, const CLHEP::Hep3Vector &pos) const 
    {   
 	CLHEP::Hep3Vector posInSection = toSectionFrameFF(idisk, pos);
 	double posZ = posInSection.z();
@@ -40,17 +40,20 @@ namespace mu2e {
     }
         
     
-    bool DiskCalorimeter::isContainedSection(CLHEP::Hep3Vector const& start,CLHEP::Hep3Vector const& stop) const 
+    bool DiskCalorimeter::isContainedSection(const CLHEP::Hep3Vector &front, const CLHEP::Hep3Vector &back) const 
     {   
 	//for (unsigned int idisk=0;idisk<_nSections;++idisk) 
 	//   if (isInsideSection(idisk,start) && isInsideSection(idisk,stop)) return true;
 	//return false;
 
 	//this is a more efficient way of doing this in the case of two disks
-	return abs(stop.z()-start.z()) < (*_sections.at(0)).size().z();
+	for (unsigned int idisk=0;idisk<_nSections;++idisk) 
+	{
+	  if ( abs(front.z()-back.z()) < (*_sections.at(idisk)).size().z() ) return true;
+	}
+	return false;   
     }
 	 
-
 
     std::vector<int> DiskCalorimeter::neighborsByLevel(int crystalId, int level)  const
     {
@@ -68,7 +71,7 @@ namespace mu2e {
     
     
     
-    int DiskCalorimeter::crystalIdxFromPosition(CLHEP::Hep3Vector const& pos) const 
+    int DiskCalorimeter::crystalIdxFromPosition(const CLHEP::Hep3Vector &pos) const 
     {   
 	int offset(0);
 	for (unsigned int idisk=0;idisk<_nSections;++idisk)
@@ -84,11 +87,11 @@ namespace mu2e {
     }
     
  
-    void DiskCalorimeter::print() const 
+    void DiskCalorimeter::print(std::ostream &os) const 
     {
-       std::cout<<"Disk calorimeter "<<std::endl;
-       std::cout<<"Number of disks :"<< _nSections<<std::endl;
-       for (unsigned int idisk=0;idisk<_nSections;++idisk) disk(idisk).print();
+       os<<"Disk calorimeter "<<std::endl;
+       os<<"Number of disks :"<< _nSections<<std::endl;
+       for (unsigned int idisk=0;idisk<_nSections;++idisk) disk(idisk).print(os);
     }
 
 

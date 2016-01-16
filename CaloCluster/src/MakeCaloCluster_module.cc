@@ -202,7 +202,7 @@ class MakeCaloCluster : public art::EDProducer {
 			  totalEnergy += (*il)->energyDep();
 			  caloCrystalHitPtrVector.push_back(*il);
 			  if (_diagLevel ) std::cout<<(*il)->id()<<" "; 
-			  //if (_diagLevel ) std::cout<<(*il)->id()<<" "<<cal.crystalOrigin((*il)->id()); 
+			  //if (_diagLevel ) std::cout<<(*il)->id()<<" "<<cal.crystal((*il)->id()).position(); 
 		      }
         	  }
 	          if (_diagLevel) std::cout<<std::endl;
@@ -302,8 +302,8 @@ class MakeCaloCluster : public art::EDProducer {
      {
 	 int seedId              = caloCrystalHitPtrVector[0]->id();
 	 double seedEnergy       = caloCrystalHitPtrVector[0]->energyDep();
-	 auto const neighborsId  = cal.neighbors(seedId);
-	 auto const nneighborsId = cal.nextNeighbors(seedId);
+	 auto const neighborsId  = cal.crystal(seedId).neighbors();
+	 auto const nneighborsId = cal.crystal(seedId).nextNeighbors();
 	 
 	 double e1(seedEnergy),e9(seedEnergy),e25(seedEnergy);
 	 for (auto const& il : caloCrystalHitPtrVector)

@@ -53,14 +53,15 @@
 namespace mu2e {
 
 
-      SquareMapper::SquareMapper(void) : _step(),
-                                         _apexX({-0.5,0.5,0.5,-0.5,-0.5}),
-			                 _apexY({-0.5,-0.5,0.5,0.5,-0.5})    
+      SquareMapper::SquareMapper() : 
+         _step(),
+         _apexX({-0.5,0.5,0.5,-0.5,-0.5}),
+	 _apexY({-0.5,-0.5,0.5,0.5,-0.5})    
       {
           _step.push_back( SquLK( 1, 0) );  //right
-	  _step.push_back( SquLK( 0,-1) ); //down
+	  _step.push_back( SquLK( 0,-1) );  //down
 	  _step.push_back( SquLK(-1, 0) );  //left
-	  _step.push_back( SquLK( 0, 1) ); //up 
+	  _step.push_back( SquLK( 0, 1) );  //up 
       }
                        
 
@@ -70,9 +71,7 @@ namespace mu2e {
       CLHEP::Hep2Vector SquareMapper::xyFromIndex(int thisIndex) const
       {        
           SquLK thisLK = lk(thisIndex);
-          double x = thisLK._l;
-          double y = thisLK._k;
-	  return CLHEP::Hep2Vector(x,y);
+	  return CLHEP::Hep2Vector(thisLK._l,thisLK._k);
       }
   
       int SquareMapper::indexFromXY(double x0, double y0) const
@@ -89,7 +88,7 @@ namespace mu2e {
 
   
 
-      std::vector<int> SquareMapper::neighbors(int thisIndex, int level)  const
+      std::vector<int> SquareMapper::neighbors(int thisIndex, unsigned int level)  const
       {	 
 	  std::vector<int> thisNeighbour;
 	  thisNeighbour.reserve(100);
@@ -99,9 +98,9 @@ namespace mu2e {
 
           for (unsigned int i=0;i<_step.size();++i)
 	  {       	     
-	      for (int iseg=0;iseg<2*level;++iseg)
+	      for (unsigned int iseg=0;iseg<2*level;++iseg)
 	      {	  
-		 lk += _step[i];  
+		 lk.add(_step[i]);  
 		 thisNeighbour.push_back( index(lk) );
 	      }
 	  }
@@ -125,7 +124,7 @@ namespace mu2e {
 	               return SquLK(-nRing       , -nRing+nPos); 
       } 
 
-      int SquareMapper::index(SquLK& thisLK) const
+      int SquareMapper::index(const SquLK &thisLK) const
       {
           if (thisLK._l==0 && thisLK._k==0) return 0;
 
@@ -141,7 +140,7 @@ namespace mu2e {
 	  return pos;      
       }
 
-      int SquareMapper::ring(SquLK& thisLK) const
+      int SquareMapper::ring(const SquLK &thisLK) const
       {         
 	  return std::max(std::abs(thisLK._l),std::abs(thisLK._k));
       }

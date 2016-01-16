@@ -202,21 +202,22 @@ namespace mu2e {
 
             CLHEP::Hep3Vector size(dR1,dR2,dZ) ;
             CLHEP::Hep3Vector originLocal(0, 0, diskHalfZLength + _calo->_diskSeparation[idisk]);
-
-            //this is expressed in the Mu2e coordinate system, need to go to the tracker system
-            double frontFaceZ0 = _calo->origin().z() + originLocal.z() + diskOriginToCrystalOrigin.z();
-            double frontFaceZ1 = frontFaceZ0 + 2.0*crystalHalfLength+2*roHalfThickness+2*wrapperThickness;
-
-
-
-            std::shared_ptr<Disk> thisDisk( new Disk(idisk,_calo->_diskInnerRadius[idisk], _calo->_diskOuterRadius[idisk], size,
+            
+	    CLHEP::Hep3Vector frontFaceCenter = _calo->origin() + originLocal + diskOriginToCrystalOrigin;
+            CLHEP::Hep3Vector backFaceCenter  = frontFaceCenter + CLHEP::Hep3Vector(0,0,2.0*(diskHalfZLength-pipeRadius));
+	    
+	    
+	    std::shared_ptr<Disk> thisDisk( new Disk(idisk,_calo->_diskInnerRadius[idisk], _calo->_diskOuterRadius[idisk], size,
                                                      2.0*crystalCellRadius,crystalNedges, crystalShift, crystalHalfLength, diskOriginToCrystalOrigin) );
             _calo->_sections.push_back(thisDisk);
 
-            thisDisk->setOriginLocal(     originLocal );
-            thisDisk->setOrigin(          _calo->origin() + originLocal );
-            thisDisk->setRotation(        CLHEP::HepRotation::IDENTITY*CLHEP::HepRotationZ(_calo->_diskRotAngle[idisk]) );
-            thisDisk->setBoundsInTracker(  _calo->_trackerCenter, frontFaceZ0, frontFaceZ1, dR1,dR2);
+            thisDisk->setOriginLocal(originLocal );
+            thisDisk->setOrigin(_calo->origin() + originLocal );
+            thisDisk->setRotation(CLHEP::HepRotation::IDENTITY*CLHEP::HepRotationZ(_calo->_diskRotAngle[idisk]) );
+            thisDisk->setFrontFaceCenter(frontFaceCenter);
+            thisDisk->setBackFaceCenter(backFaceCenter);
+            	    
+	    thisDisk->setEnveloppeRad(dR1,dR2);
 
 
 

@@ -21,27 +21,19 @@ using std::endl;
 namespace mu2e {
 
 
-      void CaloSection::setBoundsInTracker(CLHEP::Hep3Vector  const& trackerOffset, double z0, double z1, double r0, double r1) 
-      {
-          _zDownInTracker = z0 - trackerOffset.z();
-	  _zUpInTracker   = z1 - trackerOffset.z();
-	  _rInTracker     = r0;
-	  _rOutTracker    = r1;
-	  
-      }  
 
-      void CaloSection::print() const
+      void CaloSection::print(std::ostream &os) const
       {
-           cout<<"Calo section           "<<_id<<endl;
-           cout<<"origin                 "<<_originLocal<<endl;
-           cout<<"origin Mu2e            "<<_origin<<endl;
-           cout<<"size                   "<<_size<<endl;
-           cout<<"rotation               "<<_rotation<<endl;
-           cout<<"originToCrystalOrigin  "<<_originToCrystalOrigin<<endl;
-           cout<<"z Down tracker         "<<_zDownInTracker<<endl;
-           cout<<"z Up tracker           "<<_zUpInTracker<<endl;
-           cout<<"r In tracker           "<<_rInTracker<<endl;
-           cout<<"r Out tracker          "<<_rOutTracker<<endl;
+           os<<"Calo section           "<<_id<<std::endl;
+           os<<"origin                 "<<_originLocal<<std::endl;
+           os<<"origin Mu2e            "<<_origin<<std::endl;
+           os<<"size                   "<<_size<<std::endl;
+           os<<"rotation               "<<_rotation<<std::endl;
+           os<<"originToCrystalOrigin  "<<_originToCrystalOrigin<<std::endl;
+           os<<"z Front                "<<_frontFaceCenter.z()<<std::endl;
+           os<<"z Back                 "<<_backFaceCenter.z()<<std::endl;
+           os<<"r In tracker           "<<_innerRadius<<std::endl;
+           os<<"r Out tracker          "<<_outerRadius<<std::endl;
       }  
 
  

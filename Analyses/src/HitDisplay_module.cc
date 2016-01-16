@@ -360,7 +360,7 @@ namespace mu2e {
 	const CaloCrystalHit* hit = &(*caloClusterHits.at(i));
 	int id = hit->id();
 
-	pos = cg->crystalOriginInSection(id);
+	pos = cg->crystal(id).localPosition();
 
 	if(geom->hasElement<mu2e::VaneCalorimeter>() ){
 	  GeomHandle<VaneCalorimeter> cgvane;

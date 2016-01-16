@@ -39,25 +39,23 @@
 // next ring of neighbours, add (0,-2) and go around the ring,...
 //
 
+#include "CalorimeterGeom/inc/SquareShiftMapper.hh"
 
-// C++ includes
+#include "CLHEP/Vector/TwoVector.h"
+
 #include <iostream>
 #include <map>
 #include <cmath>
 
-// Mu2e includes
-#include "CalorimeterGeom/inc/SquareShiftMapper.hh"
-
-//CLHEP includes
-#include "CLHEP/Vector/TwoVector.h"
 
 
 namespace mu2e {
 
 
-      SquareShiftMapper::SquareShiftMapper(void) : _step(),
-                                         _apexX({-0.5,0.5,0.5,-0.5,-0.5}),
-			                 _apexY({-0.5,-0.5,0.5,0.5,-0.5})    
+      SquareShiftMapper::SquareShiftMapper() : 
+        _step(),
+        _apexX({-0.5,0.5,0.5,-0.5,-0.5}),
+        _apexY({-0.5,-0.5,0.5,0.5,-0.5})    
       {
           _step.push_back( SquShiftLK(  1,  1) ); //right
 	  _step.push_back( SquShiftLK(  0 , 1) ); //down right
@@ -74,9 +72,7 @@ namespace mu2e {
       CLHEP::Hep2Vector SquareShiftMapper::xyFromIndex(int thisIndex) const
       {        
           SquShiftLK thisLK = lk(thisIndex);
-          double x = ( thisLK._l+thisLK._k)/2.0;
-          double y = ( thisLK._l-thisLK._k);
-	  return CLHEP::Hep2Vector(x,y);
+	  return CLHEP::Hep2Vector( (thisLK._l+thisLK._k)/2.0, (thisLK._l-thisLK._k) );
       }
   
       int SquareShiftMapper::indexFromXY(double x0, double y0) const
@@ -99,10 +95,9 @@ namespace mu2e {
 	  return index(lk);
       }
 
-
   
 
-      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, int level)  const
+      std::vector<int> SquareShiftMapper::neighbors(int thisIndex, unsigned int level)  const
       {	 
 	  std::vector<int> thisNeighbour;
 	  thisNeighbour.reserve(100);
@@ -112,9 +107,9 @@ namespace mu2e {
 
 	  for (unsigned int i=0;i<_step.size();++i)
 	  {       	     
-	      for (int iseg=0;iseg<level;++iseg)
+	      for (unsigned int iseg=0;iseg<level;++iseg)
 	      {	  
-		 lk += _step[i];  
+		 lk.add(_step[i]);  
 		 thisNeighbour.push_back( index(lk) );
 	      }
 	  }
@@ -132,9 +127,7 @@ namespace mu2e {
 
 	 int l =          nPos*_step[nSeg]._l;
 	 int k = -nRing + nPos*_step[nSeg]._k;
-
-	 
-	 //pre-calculae this 
+	 	 
 	 for (int i=0;i<nSeg;++i)
 	 {
 	    l += _step[i]._l*nRing;
@@ -145,7 +138,7 @@ namespace mu2e {
       } 
 
 
-      int SquareShiftMapper::index(SquShiftLK& thisLK) const
+      int SquareShiftMapper::index(SquShiftLK const &thisLK) const
       {
 	 if (thisLK._l==0 && thisLK._k==0) return 0;
 
@@ -163,7 +156,7 @@ namespace mu2e {
       }
 
 
-      int SquareShiftMapper::ring(SquShiftLK& thisLK) const
+      int SquareShiftMapper::ring(const SquShiftLK &thisLK) const
       {         
 	  if (thisLK._l*thisLK._k>0) return std::max(std::abs(thisLK._l),std::abs(thisLK._k));
 	  return std::abs(thisLK._l-thisLK._k);

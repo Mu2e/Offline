@@ -291,8 +291,8 @@ namespace mu2e {
 		 if (isAssociatedTo[j] > -1) continue;
 	      
 	         if (hitSecond->time()  -  hitFirst->time() > deltaTime)  break;
-		 CLHEP::Hep3Vector crystalPos1 = cal.crystalOrigin(hitFirst->id());
-		 CLHEP::Hep3Vector crystalPos2 = cal.crystalOrigin(hitSecond->id());
+		 CLHEP::Hep3Vector crystalPos1 = cal.crystal(hitFirst->id()).position();
+		 CLHEP::Hep3Vector crystalPos2 = cal.crystal(hitSecond->id()).position();
         	 double dist = (crystalPos1-crystalPos2).mag();
 
 		 if (dist > maxDist) continue;
@@ -364,11 +364,11 @@ namespace mu2e {
        double minDistance(1e6);    
        for (auto const& hit : cluster)
        {        
-	   CLHEP::Hep3Vector crystalPos = cal.crystalOrigin(hit->id());
+	   CLHEP::Hep3Vector crystalPos = cal.crystal(hit->id()).position();
 
 	   for (auto const& hit2 : cluster2)
 	   {
-	      double dist = (crystalPos - cal.crystalOrigin(hit2->id())).mag();
+	      double dist = (crystalPos - cal.crystal(hit2->id()).position()).mag();
 	      if (dist<minDistance) minDistance = dist;
 	   }	 
        }

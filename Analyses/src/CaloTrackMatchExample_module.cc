@@ -257,7 +257,7 @@ namespace mu2e {
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
        {	   
 	   CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
-	   CLHEP::Hep3Vector crystalPos = cal.crystalOrigin(hit.id());
+	   CLHEP::Hep3Vector crystalPos = cal.crystal(hit.id()).position();
 
 	   _cryTime[_nHits]      = hit.time();
 	   _cryEdep[_nHits]      = hit.energyDep();

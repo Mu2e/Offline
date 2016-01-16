@@ -36,23 +36,25 @@
 //
 
 
-// C++ / CLHEP includes
+
+#include "CalorimeterGeom/inc/HexMapper.hh"
+
+#include "CLHEP/Vector/TwoVector.h"
+
 #include <iostream>
 #include <map>
 #include <cmath>
-#include "CLHEP/Vector/TwoVector.h"
 
-// Mu2e includes
-#include "CalorimeterGeom/inc/HexMapper.hh"
 
 
 
 namespace mu2e {
 
 
-      HexMapper::HexMapper(void) : _step(),
-                                   _apexX( {-0.2886751,+0.2886751,+0.5773502,+0.2886751,-0.2886751,-0.5773502,-0.2886751} ),
-			           _apexY( {-0.5,-0.5,0,0.5,0.5,0,-0.5} ) 
+      HexMapper::HexMapper() : 
+         _step(),
+         _apexX( {-0.2886751,+0.2886751,+0.5773502,+0.2886751,-0.2886751,-0.5773502,-0.2886751} ),
+	 _apexY( {-0.5,-0.5,0,0.5,0.5,0,-0.5} ) 
       {
           _step.push_back( HexLK( 0, 1) ); //down right
 	  _step.push_back( HexLK(-1, 1) ); //down
@@ -69,9 +71,7 @@ namespace mu2e {
       CLHEP::Hep2Vector HexMapper::xyFromIndex(int thisIndex) const
       {        
           HexLK thisLK = lk(thisIndex);
-          double x = (thisLK._l+thisLK._k)*sqrt(3.0)/2.0;
-          double y = (thisLK._l-thisLK._k)/2.0;
-	  return CLHEP::Hep2Vector(x,y);
+	  return CLHEP::Hep2Vector( (thisLK._l+thisLK._k)*sqrt(3.0)/2.0 , (thisLK._l-thisLK._k)/2.0);
       }
   
 
@@ -125,7 +125,7 @@ namespace mu2e {
       }
 
 
-      std::vector<int> HexMapper::neighbors(int thisIndex, int level)  const
+      std::vector<int> HexMapper::neighbors(int thisIndex, unsigned int level)  const
       {	 
 	  std::vector<int> thisNeighbour;
 	  thisNeighbour.reserve(100);
@@ -135,9 +135,9 @@ namespace mu2e {
 
           for (unsigned int i=0;i<_step.size();++i)
 	  {       	     
-	      for (int iseg=0;iseg<level;++iseg)
+	      for (unsigned int iseg=0;iseg<level;++iseg)
 	      {	  
-		 lk += _step[i];
+		 lk.add(_step[i]);
 		 thisNeighbour.push_back( index(lk) );
 	      }
 	  }
@@ -157,9 +157,6 @@ namespace mu2e {
 	  int l = nRing+(nPos+1)*_step[nSeg]._l;
 	  int k = -nRing+(nPos+1)*_step[nSeg]._k;
 
-
-	  //pre-calculate this
-	  
 	  for (int i=0;i<nSeg;++i) {
 	     l += _step[i]._l*nRing;
 	     k += _step[i]._k*nRing;
@@ -169,7 +166,7 @@ namespace mu2e {
       } 
 
 
-      int HexMapper::index(HexLK& thisLK) const
+      int HexMapper::index(const HexLK &thisLK) const
       {
           if (thisLK._l==0 && thisLK._k==0) return 0;
 
@@ -192,7 +189,7 @@ namespace mu2e {
       }
            
 
-      int HexMapper::ring(HexLK& thisLK) const
+      int HexMapper::ring(const HexLK &thisLK) const
       {         
 	  if (thisLK._l*thisLK._k > 0)                     return std::abs(thisLK._l+thisLK._k);
 	  if ( std::abs(thisLK._l) > std::abs(thisLK._k) ) return std::abs(thisLK._l);

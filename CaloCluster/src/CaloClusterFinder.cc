@@ -47,7 +47,7 @@ namespace mu2e {
         	 int visitId         = _crystalToVisit.front();
 		 _isVisited[visitId] = 1;
 
-		 std::vector<int> const& neighborsId = _cal->neighbors(visitId);
+		 std::vector<int> const& neighborsId = _cal->crystal(visitId).neighbors();
          	 for (auto& iId : neighborsId)
         	 {               
 		     if (_isVisited[iId]) continue;

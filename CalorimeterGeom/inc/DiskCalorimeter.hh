@@ -10,35 +10,28 @@
 // knowledge of databases etc, this class can not know
 // how to make itself.
 //
-
-// Look at Mu2eG4/inc/constructDiskCalorimeter.cc 
-// for definition of geometry
-
+//
+// Look at Mu2eG4/inc/constructDiskCalorimeter.cc for definition of geometry
+//
 // Original author B. Echenard
 
 
-//C++ includes
-#include <vector>
-#include <boost/shared_ptr.hpp>
-
-// Mu2e includes
 #include "CalorimeterGeom/inc/BaseCalorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 
-//CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
 
+#include <vector>
 
 
 
 namespace mu2e {
 
 
-    class DiskCalorimeter: public BaseCalorimeter{
+    class DiskCalorimeter: public BaseCalorimeter {
 
        
        friend class DiskCalorimeterMaker;
-
 
        public:
 
@@ -55,15 +48,15 @@ namespace mu2e {
 
 	  
 	  //geometry components
-	  virtual bool              isInsideCalorimeter(CLHEP::Hep3Vector const& pos)                      const;       	 	 
-          virtual bool              isInsideSection(int iSection, CLHEP::Hep3Vector const& pos)            const;
-	  virtual bool              isContainedSection(CLHEP::Hep3Vector const&, CLHEP::Hep3Vector const&) const;
+	  virtual bool              isInsideCalorimeter(const CLHEP::Hep3Vector &pos)                                 const;       	 	 
+          virtual bool              isInsideSection(int iSection, const CLHEP::Hep3Vector &pos)                       const;
+	  virtual bool              isContainedSection(const CLHEP::Hep3Vector &front, const CLHEP::Hep3Vector &back) const;
 
 	  
 	  //crystal id and neighbors component
-	  virtual int               crystalIdxFromPosition(CLHEP::Hep3Vector const& pos)                   const;
-          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)                             const; 
-	  virtual void              print()                                                                const;
+	  virtual int               crystalIdxFromPosition(const CLHEP::Hep3Vector &pos)                    const;
+          virtual std::vector<int>  neighborsByLevel(int crystalId, int level)                              const; 
+	  virtual void              print(std::ostream &os = std::cout)                                     const;
 
 
 

@@ -8,7 +8,7 @@ process_name: g4CaloExample
 
 source: { 
    module_type: EmptyEvent
-   maxEvents : 100000
+   maxEvents : 1000
 }
 
 
@@ -73,8 +73,8 @@ physics: {
     }
 
 
-    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim,@sequence::Tracking.TPRDownstreameMinus, 
-    MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster]
+    p1: [ generate, g4run, protonTimeMap, muonTimeMap, @sequence::Tracking.DigiSim, @sequence::Tracking.TPRDownstreameMinus, 
+          MakeCaloReadoutHits, MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster]
 
     e1: [CaloExample]
 
