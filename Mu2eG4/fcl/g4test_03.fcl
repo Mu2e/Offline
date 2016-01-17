@@ -31,9 +31,8 @@ services : {
   GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-  BTrkHelper             : @local::BTrkHelperDefault 
-  G4Helper               : { }
   BTrkHelper             : @local::BTrkHelperDefault
+  G4Helper               : { }
   SeedService            : @local::automaticSeeds
 }
 
@@ -51,7 +50,8 @@ physics : {
     muonTimeMap          : { module_type : GenerateMuonLife }
 
     # Form StrawHits (SH).
-    makeSH : @local::makeSH
+    makeSD               : @local::makeSD
+    makeSH               : @local::makeSHfromSD
 
     # Form CaloHits (APD hits)
     CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
@@ -91,7 +91,7 @@ physics : {
 
   }
 
-  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
+  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
   e1 : [readGens, checkhits, readStrawHits, outfile]
 
   trigger_paths  : [p1]

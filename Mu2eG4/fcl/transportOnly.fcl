@@ -56,7 +56,9 @@ physics : {
     protonTimeMap        : { module_type : GenerateProtonTimes }
     muonTimeMap          : { module_type : GenerateMuonLife }
 
-    makeSH               : @local::makeSH
+    makeSD               : @local::makeSD
+    makeSH               : @local::makeSHfromSD
+
     CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
     CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
     randomsaver          : @local::randomsaver
@@ -94,7 +96,7 @@ physics : {
 
   }
 
-  p1 : [generate , g4run , protonTimeMap, muonTimeMap, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver]
+  p1 : [generate , g4run , protonTimeMap, muonTimeMap, makeSD, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver]
   e1 : [checkhits, checksdd, readvd, outfile]
 
   trigger_paths  : [p1]
