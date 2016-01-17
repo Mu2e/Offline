@@ -2,6 +2,15 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_1
 
+6.  kutschke 17 jan 2016
+    Use new straw hit making code
+      - Mu2eG4/fcl/g4test_03.fcl
+      - Mu2eG4/fcl/transportOnly.fcl
+
+5.  brownd 16 jan 2016     Note added by kutschke
+    Remove the obsolete MakeStrawHit_module.cc
+      - No one should be using this any more.
+
 4.  brownd 8 jan 2016
     Add straw materials to the Kalman filter track fit for straws which
     don't have hits, but which the trajectory indicates are traversed by the
