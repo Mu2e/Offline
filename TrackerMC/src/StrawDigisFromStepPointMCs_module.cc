@@ -414,18 +414,20 @@ namespace mu2e {
       // find straw index
         StrawIndex const & strawind = steps[ispmc].strawIndex();
         // Skip dead straws, and straws that don't exist
-        if(tracker.strawExists(strawind)
-            && !_strawStatus.isDead(strawind)) {
+        if(tracker.strawExists(strawind)) {
           // lookup straw here, to avoid having to find the tracker for every step
           Straw const& straw = tracker.getStraw(strawind);
-          // Skip steps that occur in the deadened region near the end of each wire.
+          // Skip steps that occur in the deadened region near the end of each wire,
+	  // or in dead regions of the straw
           double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
-          if(wpos >  straw.getDetail().activeHalfLength())continue;
-          // create ptr to MC truth, used for references
-          art::Ptr<StepPointMC> spmcptr(handle,ispmc);
-          // create a hitlet from this step, and add it to the hitlet map
-          addStep(spmcptr,straw,hmap[strawind]);
-        }
+          if(wpos <  straw.getDetail().activeHalfLength() &&
+	    _strawStatus.isAlive(strawind,wpos) ){
+	  // create ptr to MC truth, used for references
+	    art::Ptr<StepPointMC> spmcptr(handle,ispmc);
+	    // create a hitlet from this step, and add it to the hitlet map
+	    addStep(spmcptr,straw,hmap[strawind]);
+	  }
+	}
       }
     }
   }

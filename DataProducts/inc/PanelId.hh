@@ -15,6 +15,7 @@
 
 #include <ostream>
 #include "DataProducts/inc/PlaneId.hh"
+#include <string>
 
 namespace mu2e {
 
@@ -33,6 +34,8 @@ namespace mu2e {
       _planeId(-1),
       _panel(-1){
     }
+
+    PanelId(std::string const&);
 
     PanelId( PlaneId plane,
               int panel
@@ -75,7 +78,7 @@ namespace mu2e {
 
     friend std::ostream& operator<<(std::ostream& ost,
                                     const PanelId& s ){
-      ost << s._planeId << " " << s._panel;
+      ost << s._planeId << "_" << s._panel;
       return ost;
     }
 

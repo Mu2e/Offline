@@ -1,6 +1,38 @@
+// C++ includes
+#include <iostream>
+#include <vector>
+// art includes
+#include "cetlib/exception.h"
+// Mu2e includes
+#include "GeneralUtilities/inc/splitLine.hh"
 #include "DataProducts/inc/PanelId.hh"
+using namespace std;
 
 namespace mu2e {
+// anonymous namespace for string functions
+  namespace {
+    PanelId panelIdFromString ( std::string const& s ){
+      vector<string> v;
+      splitLine( s, "_", v);
+      if ( v.size() != 2 ){
+        throw cet::exception("CONFIG")
+          << "panelIdFromString: expected two parts but found: "
+          << v.size()
+          << "\n";
+      }
+
+      istringstream sdev(v[0]);
+      istringstream ssec(v[1]);
+      int dev, sec;
+      sdev >> dev;
+      ssec >> sec;
+      return PanelId(dev,sec);
+    }
+  }
+ 
+  PanelId::PanelId(std::string const& s) {
+    *this = panelIdFromString(s);
+  }
 
   PanelId::isep PanelId::separation(PanelId const& other) const {
     isep retval=apart;

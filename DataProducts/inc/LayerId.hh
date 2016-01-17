@@ -14,7 +14,7 @@
 //
 
 #include <ostream>
-
+#include <string>
 #include "DataProducts/inc/PanelId.hh"
 
 namespace mu2e {
@@ -30,6 +30,8 @@ namespace mu2e {
       _panelId(PanelId()),
       _layer(-1){
     }
+
+    LayerId(std::string const&);
 
     LayerId( PanelId panel,
              int layer
@@ -85,7 +87,7 @@ namespace mu2e {
   
     friend std::ostream& operator<<(std::ostream& ost,
                                     const LayerId& l ){
-      ost << l._panelId << " " << l._layer;
+      ost << l._panelId << "_" << l._layer;
       return ost;
     }
 

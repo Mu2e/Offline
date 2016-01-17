@@ -13,6 +13,7 @@
 //
 #include <ostream>
 #include "DataProducts/inc/LayerId.hh"
+#include <string>
 
 namespace mu2e {
 
@@ -23,6 +24,8 @@ namespace mu2e {
 class StrawId{
 
 public:
+
+  StrawId(std::string const& asstring);
 
   StrawId():
     _lid(),
@@ -97,10 +100,8 @@ public:
 
   friend std::ostream& operator<<(std::ostream& ost,
                                   const StrawId& s ){
-    ost << "Straw Id: ("
-        << s.getLayerId() << " "
-        << s._n
-        << " )";
+    ost << s.getLayerId() << "_"
+        << s._n;
     return ost;
   }
 
