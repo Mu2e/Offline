@@ -81,6 +81,42 @@ namespace mu2e {
       vd->addVirtualDetector( VirtualDetectorId::Coll1_Out,
                                ts1pos, ts1rot, coll1pos+deltaZ1);
 
+      //************************************************************
+      // VD TS2_Bend, TS4_Bend are placed at the nominal beamline in
+      // the centers of the bends of TS2 and TS4.  DNB (Lou) 17 Jan 2016
+
+      // This gives us the center of curvature of the bend
+      Hep3Vector   ts2pos = bg->getTS().getTSCryo(
+            TransportSolenoid::TSRegion::TS2,
+	    TransportSolenoid::TSRadialPart::IN)->getGlobal();
+
+      // Now displace from center of curvature to nominal beamline
+      double rTor = bg->getTS().torusRadius();
+
+      // Because of rotation of the torus 90 degrees, have to switch put
+      // desire z-displacement in negative y-direction...
+      Hep3Vector displace(rTor*sin(45.0*CLHEP::deg), 
+			  -rTor*cos(45.0*CLHEP::deg),0.0);
+
+      const HepRotation *ts2rot = 
+      	bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS2,
+      			      TransportSolenoid::TSRadialPart::IN)->getRotation();
+
+      vd->addVirtualDetector( VirtualDetectorId::TS2_Bend,
+			      ts2pos, ts2rot, displace);
+
+      Hep3Vector   ts4pos = bg->getTS().getTSCryo(
+            TransportSolenoid::TSRegion::TS4,
+	    TransportSolenoid::TSRadialPart::IN)->getGlobal();
+
+      const HepRotation *ts4rot = 
+      	bg->getTS().getTSCryo(TransportSolenoid::TSRegion::TS4,
+      			      TransportSolenoid::TSRadialPart::IN)->getRotation();
+
+      vd->addVirtualDetector( VirtualDetectorId::TS4_Bend,
+			      ts4pos, ts4rot, -displace );
+
+      //***************************************************
       // VD Coll31_In, Coll31_Out, Coll32_In, Coll32_Out are placed
       // around two sections of collimator 3
 
@@ -752,7 +788,7 @@ namespace mu2e {
                                   vdPositionWRTmstmMother);           //placement w.r.t. reference
            
            
-           int static const verbosityLevel = 1;
+	   int static const verbosityLevel = 1;
            if ( verbosityLevel > -1) {
               cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::MSTM_Coll3DnStr) << endl;
               cout << "               at local=" << vd->getLocal(VirtualDetectorId::MSTM_Coll3DnStr) << " global="<< vd->getGlobal(VirtualDetectorId::MSTM_Coll3DnStr) <<endl;
@@ -795,7 +831,7 @@ namespace mu2e {
          posPSPbarOut.setZ( pbarTS1InPos.z() + pbarTS1InHalfLength + vdHL );
          vd->addVirtualDetector(VirtualDetectorId::PSPbarOut, parentCenterInMu2e, 0, posPSPbarOut);
 
-         int static const verbosityLevel = 1;
+	 int static const verbosityLevel = 1;
          if ( verbosityLevel > 0 ) {
             cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarIn) << endl;
             cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarIn) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarIn) <<endl;

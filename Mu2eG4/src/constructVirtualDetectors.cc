@@ -120,6 +120,65 @@ namespace mu2e {
         vd.logical->SetSensitiveDetector(vdSD);
       }
 
+    // ************************** DNB (Lou) Jan 2016 **********
+    // Virtual Detector TS2_Bend is placed inside TS2
+
+    int myvdId = VirtualDetectorId::TS2_Bend;
+    if ( vdg->exist(myvdId) ) {
+      VolumeInfo const & parent = _helper->locateVolInfo("TS2Vacuum");
+      if ( verbosityLevel > 0 ) {
+	cout << __func__ << " constructing TS2_Bend " <<  " at " 
+	     << vdg->getGlobal(myvdId) << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(myvdId) << endl;
+
+      }
+      CLHEP::HepRotation* tsBendrot = 
+	new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      tsBendrot->rotateX(90.0*CLHEP::deg);
+      tsBendrot->rotateY(-45.0*CLHEP::deg);
+      VolumeInfo myvd = nestTubs( VirtualDetector::volumeName(myvdId),
+				  vdParams, upstreamVacuumMaterial, tsBendrot,
+				  vdg->getLocal(myvdId),
+				  parent, myvdId, vdIsVisible, G4Color::Red(),
+				  vdIsSolid, forceAuxEdgeVisible,
+				  placePV, false);
+
+        doSurfaceCheck && checkForOverlaps(myvd.physical, 
+					   _config, verbosityLevel>0);
+
+        myvd.logical->SetSensitiveDetector(vdSD);
+    }
+
+    // Virtual Detector TS4_Bend is placed inside TS4
+    myvdId = VirtualDetectorId::TS4_Bend;
+    if ( vdg->exist(myvdId) ) {
+      VolumeInfo const & parent = _helper->locateVolInfo("TS4Vacuum");
+      if ( verbosityLevel > 0 ) {
+	cout << __func__ << " constructing TS4_Bend " <<  " at " 
+	     << vdg->getGlobal(myvdId) << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(myvdId) << endl;
+
+      }
+      CLHEP::HepRotation* tsBendrot = 
+	new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+      tsBendrot->rotateX(90.0*CLHEP::deg);
+      tsBendrot->rotateY(-45.0*CLHEP::deg);
+      VolumeInfo myvd = nestTubs( VirtualDetector::volumeName(myvdId),
+				 vdParams, downstreamVacuumMaterial, tsBendrot,
+				  vdg->getLocal(myvdId),
+				  parent, myvdId, vdIsVisible, G4Color::Red(),
+				  vdIsSolid, forceAuxEdgeVisible,
+				  placePV, false);
+
+        doSurfaceCheck && checkForOverlaps(myvd.physical, 
+					   _config, verbosityLevel>0);
+
+        myvd.logical->SetSensitiveDetector(vdSD);
+    }
+
+    //***************************
     // Virtual Detectors Coll31_In, Coll31_Out, Coll32_In, Coll32_Out are placed inside TS3
 
     for( int vdId=VirtualDetectorId::Coll31_In;

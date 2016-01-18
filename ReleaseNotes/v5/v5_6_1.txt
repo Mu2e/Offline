@@ -2,6 +2,16 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_1
 
+7.  dnbrow01  17 Jan 2016
+    Add two new virtual detectors, one each in the middle of the bend of
+    TS2 and TS4.  This was requested by Mau for B field studies.
+    The new virtual detectors are named TS2_Bend and TS4_Bend.
+    In the VirtualDetectorId enum, they are numbers 98 and 99.
+    modified:   DataProducts/inc/VirtualDetectorId.hh
+    modified:   GeometryService/src/VirtualDetectorMaker.cc
+    modified:   Mu2eG4/src/constructVirtualDetectors.cc
+
+
 6.  kutschke 17 jan 2016
     Use new straw hit making code
       - Mu2eG4/fcl/g4test_03.fcl
