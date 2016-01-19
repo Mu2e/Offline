@@ -150,7 +150,7 @@ namespace mu2e {
     Hep3Vector                cpr_mom, tpr_mom;
     short                     best(-1),  mask;
     AlgorithmID               alg_id;
-    TrkHitVector         tlist, clist;
+    TrkHitVector              tlist, clist;
     int                       nat, nac, natc;
     const mu2e::TrkStrawHit  *hitt, *hitc;
     //    double                    tfcons, cfcons;
@@ -178,10 +178,10 @@ namespace mu2e {
 // ultimately - check the number of common hits
 //-----------------------------------------------------------------------------
 	for(auto itt=tlist.begin(); itt<tlist.end(); itt++) {
-	  hitt = (const mu2e::TrkStrawHit*) &(*itt);
+	  hitt = static_cast<const mu2e::TrkStrawHit*> (*itt);
 	  if (hitt->isActive()) {
 	    for(auto itc=clist.begin(); itc<clist.end(); itc++) {
-	      hitc = (const mu2e::TrkStrawHit*) &(*itc);
+	      hitc = static_cast<const mu2e::TrkStrawHit*> (*itc);
 	      if (hitc->isActive()) {
 		if (&hitt->strawHit() == &hitc->strawHit()) {
 		  natc += 1;

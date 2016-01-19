@@ -862,7 +862,7 @@ namespace mu2e {
             doca = wpoca.doca();
 
             for (auto it=hot_l.begin(); it<hot_l.end(); it++) {
-              hit    = (const mu2e::TrkStrawHit*) (*it);
+              hit    = static_cast<const mu2e::TrkStrawHit*> (*it);
               rdrift = hit->driftRadius();
               int shIndex = int(hit->index());
               if (hit_index == shIndex) {
@@ -978,7 +978,7 @@ namespace mu2e {
 
               doca = hitpoca.doca();
               for(auto it=hot_l.begin(); it<hot_l.end(); it++) {
-                hit = (const mu2e::TrkStrawHit*) (*it);
+                hit = static_cast<const mu2e::TrkStrawHit*> (*it);
                 if (!hit->isActive()) continue;
                 hit_index = hit->index();
                 if (int(_index[i]._ind) == hit_index){
@@ -1528,7 +1528,7 @@ namespace mu2e {
     }
 
     for (auto it=hot_l.begin(); it<hot_l.end(); it++) {
-      hit = (const mu2e::TrkStrawHit*) &(*it);
+      hit = static_cast<const mu2e::TrkStrawHit*> (*it);
       if (!hit->isActive()) ++ndeactivated;
     }
 
@@ -1582,7 +1582,7 @@ namespace mu2e {
 
       found = false;
       for(auto it=hotl.begin();it<hotl.end(); it++) {
-        hit   = (const mu2e::TrkStrawHit*) &(*it);
+        hit   = static_cast<const mu2e::TrkStrawHit*> (*it);
         if (!hit->isActive()) continue;
         hit_index = hit->index();
         if (int(_index[i]._ind) == hit_index) {
@@ -1616,7 +1616,7 @@ namespace mu2e {
     double    dz = 1e10;
 
     for(auto it=hotl.begin();it<hotl.end(); it++) {
-      hit   = (const mu2e::TrkStrawHit*) &(*it);
+      hit   = static_cast<const mu2e::TrkStrawHit*> (*it);
       if (!hit->isActive())            continue;
       fltlen = hit->fltLen();
       trkPos = traj.position(fltlen);
@@ -1664,7 +1664,7 @@ namespace mu2e {
     //--------------------------------------------------------------------------------
 
     for(auto it=hotl.begin();it<hotl.end(); it++) {
-      hit   = (const mu2e::TrkStrawHit*) (*it);
+      hit   = static_cast<const mu2e::TrkStrawHit*> (*it);
       if (!hit->isActive())            continue;
 
       //calculate the hit phi
