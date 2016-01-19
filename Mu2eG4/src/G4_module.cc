@@ -513,9 +513,12 @@ namespace mu2e {
     unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);
     _sensitiveDetectorHelper.createProducts(event, spHelper);
 
+    // We need this to satisfy the next call signature.
+    SimParticleRemapping  simsRemap;
+
     // Some of the user actions have begin event methods. These are not G4 standards.
     _trackingAction->beginEvent(inputSimHandle, inputMCTrajectoryHandle,
-                                spHelper, parentHelper, *mcTrajectories );
+                                spHelper, parentHelper, *mcTrajectories,  simsRemap);
 
     _genAction->setEventData(gensHandle.isValid() ? &*gensHandle : 0, genInputHits, &parentHelper);
     _steppingAction->BeginOfEvent(*tvdHits,  spHelper);

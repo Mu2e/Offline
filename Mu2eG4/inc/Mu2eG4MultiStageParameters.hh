@@ -16,6 +16,8 @@ namespace mu2e {
   public:
     explicit Mu2eG4MultiStageParameters(const fhicl::ParameterSet& pset);
 
+    bool multiStage() const { return multiStage_; }
+
     unsigned simParticleNumberOffset() const { return simParticleNumberOffset_; }
 
     const art::InputTag& inputSimParticles() const { return inputSimParticles_; }

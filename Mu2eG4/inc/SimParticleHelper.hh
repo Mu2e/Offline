@@ -32,8 +32,13 @@ namespace mu2e {
 
     SimParticleCollection::key_type particleKeyFromG4TrackID(int g4TrkID) const;
 
+    // of the SimParticleCollection the current G4 run produces
     art::ProductID productID() const { return simID_; }
+    // of the SimParticleCollection the current G4 run produces
     const art::EDProductGetter *productGetter() const;
+
+    // For arbitrary product in this event - e.g. the "old" SimParticleCollection
+    const art::EDProductGetter *otherProductGetter(art::ProductID otherID) const;
   };
 }
 

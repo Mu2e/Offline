@@ -19,6 +19,7 @@
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleRemapping.hh"
 
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
@@ -68,7 +69,8 @@ namespace mu2e {
                      const art::Handle<MCTrajectoryCollection>& inputMCTraj,
                      const SimParticleHelper& spHelper,
                      const SimParticlePrimaryHelper& primaryHelperm,
-                     MCTrajectoryCollection& mcTrajectories
+                     MCTrajectoryCollection& mcTrajectories,
+                     SimParticleRemapping& simsRemap
                      );
 
     void endEvent( SimParticleCollection& simParticles );

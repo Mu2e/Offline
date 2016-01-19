@@ -248,7 +248,8 @@ namespace mu2e {
                                    const art::Handle<MCTrajectoryCollection>& inputTraj,
                                    const SimParticleHelper& spHelper,
                                    const SimParticlePrimaryHelper& primaryHelper,
-                                   MCTrajectoryCollection&  trajectories
+                                   MCTrajectoryCollection&  trajectories,
+                                   SimParticleRemapping& simsRemap
                                    ) {
     _currentSize          = 0;
     _overflowSimParticles = false;
@@ -264,6 +265,15 @@ namespace mu2e {
                                     *inputSimHandle,
                                     KeepAll(),
                                     _transientMap);
+
+      // old -> new particle remapping
+      for(const auto& sim: *inputSimHandle) {
+        art::ProductID oldID(inputSimHandle.id());
+        auto key(sim.second.id().asUint());
+        art::Ptr<SimParticle> oldSim(oldID, key, _spHelper->otherProductGetter(oldID));
+        art::Ptr<SimParticle> newSim(_spHelper->productID(), key, _spHelper->productGetter());
+        simsRemap[oldSim] = newSim;
+      }
     }
 
     if(inputTraj.isValid()) {

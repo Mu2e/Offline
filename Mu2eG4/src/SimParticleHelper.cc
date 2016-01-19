@@ -31,4 +31,8 @@ namespace mu2e {
   const art::EDProductGetter *SimParticleHelper::productGetter() const {
     return event_->productGetter(simID_);
   }
+
+  const art::EDProductGetter *SimParticleHelper::otherProductGetter(art::ProductID otherID) const {
+    return event_->productGetter(otherID);
+  }
 }

@@ -53,6 +53,7 @@
 #include "MCDataProducts/inc/StepInstanceName.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "MCDataProducts/inc/SimParticleRemapping.hh"
 
 // From art and its tool chain.
 #include "art/Framework/Principal/Event.h"
@@ -254,6 +255,10 @@ namespace mu2e {
 
     if(trajectoryControl_.produce()) {
       produces<MCTrajectoryCollection>();
+    }
+
+    if(multiStagePars_.multiStage()) {
+      produces<SimParticleRemapping>();
     }
 
     stackingCuts_->declareProducts(this);
@@ -477,6 +482,7 @@ namespace mu2e {
     unique_ptr<SimParticleCollection>      simParticles(      new SimParticleCollection);
     unique_ptr<StepPointMCCollection>      tvdHits(           new StepPointMCCollection);
     unique_ptr<MCTrajectoryCollection>     mcTrajectories(    new MCTrajectoryCollection);
+    unique_ptr<SimParticleRemapping>       simsRemap(         new SimParticleRemapping);
     unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);
     _sensitiveDetectorHelper.createProducts(event, spHelper);
 
@@ -486,7 +492,7 @@ namespace mu2e {
 
     // Some of the user actions have begin event methods. These are not G4 standards.
     _trackingAction->beginEvent(inputSimHandle, inputMCTrajectoryHandle,
-                                spHelper, parentHelper, *mcTrajectories );
+                                spHelper, parentHelper, *mcTrajectories, *simsRemap);
 
     _genAction->setEventData(gensHandle.isValid() ? &*gensHandle : 0, genInputHits, &parentHelper);
     _steppingAction->BeginOfEvent(*tvdHits,  spHelper);
@@ -531,6 +537,9 @@ namespace mu2e {
     }
     if(trajectoryControl_.produce()) {
       event.put(std::move(mcTrajectories));
+    }
+    if(multiStagePars_.multiStage()) {
+      event.put(std::move(simsRemap));
     }
     if(_sensitiveDetectorHelper.extMonPixelsEnabled()) {
       event.put(std::move(extMonFNALHits));
