@@ -118,6 +118,11 @@ namespace mu2e {
     std::vector<double> _CLV2Lengths;
     std::string _CLV2MaterialName;
     double _CLV2Z;
+    
+    // Absorber
+    bool _CLV2AbsBuild;
+    std::string _CLV2AbsMaterialName;
+    double _CLV2AbsHLength;
 
   };
 
