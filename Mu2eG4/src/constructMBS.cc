@@ -71,6 +71,7 @@ namespace mu2e {
     Tube const & pSPBSSup2Params = *mbsgh.getSPBSSup2Ptr();
     Tube const & pSPBSLParams    = *mbsgh.getSPBSLPtr();
     Tube const & pSPBSRParams    = *mbsgh.getSPBSRPtr();
+    Tube const & pCLV2ABSParams  = *mbsgh.getCLV2ABSPtr();
 
 
     bool const MBSisVisible        = _config.getBool("mbs.visible",true);
@@ -469,8 +470,49 @@ namespace mu2e {
       double zhl = tmpCLV2Info->GetCorner(tmpCLV2Info->GetNumRZCorner()-1).z-tmpCLV2Info->GetCorner(0).z;
       zhl*=0.5;
       double CLV2OffsetInMu2eZ = CLV2OffsetInMu2e[CLHEP::Hep3Vector::Z];
+      cout << __func__ << " CLV2 number of RZ corners        : " << tmpCLV2Info->GetNumRZCorner() << endl;
       cout << __func__ << " CLV2         Z extent in Mu2e    : " <<
         CLV2OffsetInMu2eZ - zhl << ", " << CLV2OffsetInMu2eZ + zhl << endl;
+    }
+    
+
+    if ( MBSversion == 3 ) {
+
+      // CLV2 Absorber :  Variable thickness plug in MBS axial hole
+      if (_config.getBool("mbs.CLV2.absorber.build",false)){
+      
+        CLHEP::Hep3Vector CLV2AbsOffsetInMu2e = pCLV2ABSParams.originInMu2e();
+        // now local offset in mother volume
+        CLHEP::Hep3Vector CLV2AbsOffset = CLV2AbsOffsetInMu2e - MBSMOffsetInMu2e;
+        
+        VolumeInfo CLV2AbsorberInfo  = nestTubs("CLV2Absorber",
+                                        pCLV2ABSParams.getTubsParams(),
+                                        findMaterialOrThrow(pCLV2ABSParams.materialName()),
+                                        0,
+                                        CLV2AbsOffset,
+                                        //detSolDownstreamVacInfo,
+                                        MBSMotherInfo,
+                                        0,
+                                        MBSisVisible,
+                                        orange,
+                                        MBSisSolid,
+                                        forceAuxEdgeVisible,
+                                        placePV,
+                                        doSurfaceCheck
+                                        );
+        
+        if ( verbosityLevel > 0) {
+          cout << __func__ << " CLV2AbsOffsetInMu2e                 : " << CLV2AbsOffsetInMu2e << endl;
+          cout << __func__ << " CLV2AbsOffsetInMBS                  : " << CLV2AbsOffset << endl;       
+          double zhl         = static_cast<G4Tubs*>(CLV2AbsorberInfo.solid)->GetZHalfLength();
+          double CLV2AbsOffsetInMu2eZ = CLV2AbsOffsetInMu2e[CLHEP::Hep3Vector::Z];
+          cout << __func__ << " CLV2Absorber         Z extent in Mu2e    : " <<
+          CLV2AbsOffsetInMu2eZ - zhl << ", " << CLV2AbsOffsetInMu2eZ + zhl << endl;
+        }        
+        
+        
+        
+      }
     }
 
   } // end of constructMBS;

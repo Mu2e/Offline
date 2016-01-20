@@ -63,7 +63,8 @@ namespace mu2e {
       if (mbs._rMax<_SPBSROuterRadius) { mbs._rMax = _SPBSROuterRadius; }
       if (mbs._rMax<_SPBSSup1OuterRadius) { mbs._rMax = _SPBSSup1OuterRadius; }
       if (mbs._rMax<_SPBSSup2OuterRadius) { mbs._rMax = _SPBSSup2OuterRadius; }
-      mbs._rMin = *std::min_element(_CLV2InnerRadii.begin(), _CLV2InnerRadii.end());
+      //mbs._rMin = *std::min_element(_CLV2InnerRadii.begin(), _CLV2InnerRadii.end());
+      mbs._rMin = 0.0; //need to go to zero, since we now have an absorber in the endplug hole
       mbs._totLength = 2.0*_BSTSHLength;
 
 
@@ -259,13 +260,13 @@ namespace mu2e {
                       CLV2CornersOutRadii,
                       _CLV2OffsetInMu2e,
                       _CLV2MaterialName));
-
-
-    } else if ( _MBSVersion == 2 ) {
+      
+    } else if ( _MBSVersion >= 2 ) {
       
       mbs._zMax = _MBSCZ+_BSTSZ+_BSTSHLength;
       mbs._rMax = _SPBSCOuterRadius;
-      mbs._rMin = *std::min_element(_CLV2InnerRadii.begin(), _CLV2InnerRadii.end());
+      //mbs._rMin = *std::min_element(_CLV2InnerRadii.begin(), _CLV2InnerRadii.end());
+      mbs._rMin = 0.0; //need to go to zero, since we now have an absorber in the endplug hole
       mbs._totLength = 2.0*_BSTSHLength;
 
 
@@ -468,6 +469,17 @@ namespace mu2e {
                       CLV2CornersOutRadii,
                       _CLV2OffsetInMu2e,
                       _CLV2MaterialName));
+
+      if ( _MBSVersion == 3 ){  
+        CLHEP::Hep3Vector _CLV2AbsOffsetInMu2e  = _MBSMOffsetInMu2e + CLHEP::Hep3Vector(0.0,0.0,_CLV2Z+0.5*CLV2totLength-_CLV2AbsHLength);        
+        mbs._pCLV2ABSParams = std::unique_ptr<Tube>
+          (new Tube(_CLV2AbsMaterialName,
+                    _CLV2AbsOffsetInMu2e,
+                    0.0, //inner radius
+                    _CLV2InnerRadii.at(0)-0.01, //outer radius of the plug is the same as the inner radius of the hole, leave a 10 micron gap
+                    _CLV2AbsHLength));
+      }    
+        
     } // end of Version 2 - specific constructor
   } // end of constructor for MBSMaker
 
@@ -478,7 +490,7 @@ namespace mu2e {
     _MBSVersion           = _config.getInt("mbs.Version",1);
     _MBSCZ                = _config.getDouble("mbs.MBSCZ");
 
-    if ( _MBSVersion == 2 ) {
+    if ( _MBSVersion >= 2 ) {
       // BSTS is the steel pipe - now a polycone
       _config.getVectorDouble("mbs.BSTSInnerRadii",_BSTSInnRadii);
       _config.getVectorDouble("mbs.BSTSOuterRadii",_BSTSOutRadii);
@@ -551,6 +563,14 @@ namespace mu2e {
     _config.getVectorDouble("mbs.CLV2Lengths",_CLV2Lengths);
     _CLV2MaterialName     = _config.getString("mbs.CLV2MaterialName");
     _CLV2Z                = _config.getDouble("mbs.CLV2ZrelCntr");
+
+    //if ( _MBSVersion == 3 ) {
+      // Absorber in axial hole to prevent muons from escaping downstream
+      _CLV2AbsBuild        = _config.getBool("mbs.CLV2.absorber.build",false);
+      _CLV2AbsMaterialName = _config.getString("mbs.CLV2.absorber.MaterialName","Polyethylene096");
+      _CLV2AbsHLength     = _config.getDouble("mbs.CLV2.absorber.halflength",0.0);
+    //}
+    
 
   } // end parConfig function
 

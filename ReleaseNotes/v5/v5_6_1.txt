@@ -2,6 +2,14 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_1
 
+9.  palladin 20 Jan 2015
+    Added an absorber inside the axial hole in the MBS to prevent
+    muons from escaping outside downstream of the DS (to reduce 
+    CRV deadtime). Increased default axial opening radii of MBS
+    hole and ifb window so the STM can't see their inner edges.
+    Prior to this commit the IFB window was 5cm of Mylar by default.
+    Now the IFB vacuum window is again a normal thin Mylar window.
+           
 8.  gandr  19 Jan 2016
     Mu2eG4_module now produces SimParticleRemapping when used in the
     multi-stage mode.  This allows to use a separate module for
