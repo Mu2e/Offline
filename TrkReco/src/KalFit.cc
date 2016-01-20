@@ -155,9 +155,10 @@ namespace mu2e
 //    KalBend::setErrors(perr,berr);
     // make sure we have at least one entry for additional errors
     if(_herr.size() <= 0) throw cet::exception("RECO")<<"mu2e::KalFit: no hit errors specified" << endl;
-    if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
-    if(_herr.size() != _t0tol.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
-    if(_herr.size() != _weedhits.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution" << endl;
+    if(_herr.size() != _ambigstrategy.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution hiterr" << endl;
+    if(_herr.size() != _t0tol.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution t0" << endl;
+    if(_herr.size() != _weedhits.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution WeedHits" << endl;
+    if(_herr.size() != _addmaterial.size()) throw cet::exception("RECO")<<"mu2e::KalFit: inconsistent ambiguity resolution AddMaterial" << endl;
     // Search for explicit resolver parameter sets.  These may not be used
     fhicl::ParameterSet const& fixedPset = pset.get<fhicl::ParameterSet>("FixedAmbigResolver",fhicl::ParameterSet());
     fhicl::ParameterSet const& hitPset = pset.get<fhicl::ParameterSet>("HitAmbigResolver",fhicl::ParameterSet());

@@ -284,7 +284,6 @@ namespace mu2e
       _mcom = -1;
       _mcshlen = -1;
       _mcshd = -1;
-      _mcppdg=0;
       _mcpproc=-1;
       _mcptime=0.0;
       _mcpop = threevec();
