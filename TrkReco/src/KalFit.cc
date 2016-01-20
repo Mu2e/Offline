@@ -3,7 +3,7 @@
 // Original author: Dave Brown LBNL 2012
 //
 // $Id: KalFit.cc,v 1.43 2014/08/22 16:10:41 tassiell Exp $
-// $Author: tassiell $ 
+// $Author: tassiell $
 // $Date: 2014/08/22 16:10:41 $
 //
 
@@ -18,6 +18,7 @@
 #include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 //geometry
+#include "BTrkHelper/inc/BTrkHelper.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -25,7 +26,6 @@
 // services
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -59,15 +59,15 @@
 #include <memory>
 #include <set>
 
-using namespace std; 
+using namespace std;
 using CLHEP::Hep3Vector;
 
-namespace mu2e 
+namespace mu2e
 {
 // comparison functor for ordering hits
   struct fltlencomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
     fltlencomp(TrkFitDirection::FitDirection fdir=TrkFitDirection::downstream) : _fdir(fdir) {}
-    bool operator()(TrkStrawHit* x, TrkStrawHit* y) { 
+    bool operator()(TrkStrawHit* x, TrkStrawHit* y) {
       return _fdir == TrkFitDirection::downstream ? x->fltLen() < y->fltLen() : y->fltLen() < x->fltLen() ;
     }
     TrkFitDirection::FitDirection _fdir;
@@ -75,7 +75,7 @@ namespace mu2e
 
   struct timecomp : public binary_function<TrkStrawHit*, TrkStrawHit*, bool> {
     timecomp() {}
-    bool operator()(TrkStrawHit* x, TrkStrawHit* y) { 
+    bool operator()(TrkStrawHit* x, TrkStrawHit* y) {
       return x->hitT0()._t0 < y->hitT0()._t0;
     }
   };
@@ -93,11 +93,11 @@ namespace mu2e
   struct StrawFlightComp : public binary_function<StrawFlight, StrawFlight, bool> {
     double _maxdiff; // maximum flight difference; below this, consider 2 intersections 'the same'
     StrawFlightComp(double maxdiff) : _maxdiff(maxdiff) {}
-    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._index < b._index || 
+    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._index < b._index ||
     ( a._index == b._index && a._flt < b._flt && fabs(a._flt-b._flt)>=_maxdiff);}
   };
 
-// construct from a parameter set  
+// construct from a parameter set
   KalFit::KalFit(fhicl::ParameterSet const& pset, TrkFitDirection const& fitdir) :
 // KalFit parameters
     _debug(pset.get<int>("debugLevel",0)),
@@ -172,27 +172,27 @@ namespace mu2e
       AmbigResolver* ar(0);
       switch (_ambigstrategy[iter]) {
       case fixedambig:
-	ar = new FixedAmbigResolver(fixedPset,_herr[iter]);
-	break;
+        ar = new FixedAmbigResolver(fixedPset,_herr[iter]);
+        break;
       case hitambig:
-	ar = new HitAmbigResolver(hitPset,_herr[iter]);
-	break;
+        ar = new HitAmbigResolver(hitPset,_herr[iter]);
+        break;
       case panelambig:
-	ar = new PanelAmbig::PanelAmbigResolver(panelPset,_herr[iter],iter);
-	break;
+        ar = new PanelAmbig::PanelAmbigResolver(panelPset,_herr[iter],iter);
+        break;
       case pocaambig:
-	ar = new PocaAmbigResolver(pocaPset,_herr[iter]);
-	break;
+        ar = new PocaAmbigResolver(pocaPset,_herr[iter]);
+        break;
       case doubletambig: // 4
- 	ar = new DoubletAmbigResolver(doubletPset,_herr[iter],iter,Final);
- 	break;
+        ar = new DoubletAmbigResolver(doubletPset,_herr[iter],iter,Final);
+        break;
       default:
-	break;
+        break;
       }
       if(ar != 0)
-	_ambigresolver.push_back(ar);
+        _ambigresolver.push_back(ar);
       else
-	throw cet::exception("RECO")<<"mu2e::KalFit: unknown ambiguity resolver " << _ambigstrategy[iter] << " for iteration " << iter << endl;
+        throw cet::exception("RECO")<<"mu2e::KalFit: unknown ambiguity resolver " << _ambigstrategy[iter] << " for iteration " << iter << endl;
     }
   }
 
@@ -212,17 +212,17 @@ namespace mu2e
 // first, find t0
       TrkT0 t0;
       if(_initt0)
-	initT0(tdef, t0);
+        initT0(tdef, t0);
       else
-	t0 = tdef.t0();
+        t0 = tdef.t0();
 // create the hits
       TrkStrawHitVector tshv;
       makeHits(tdef, t0, tshv);
 // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
       std::vector<TrkHit*> thv;
       for(auto ihit = tshv.begin(); ihit != tshv.end(); ++ihit){
-	thv.push_back(*ihit);
-	if (_debug>0) { (*ihit)->print(std::cout); }
+        thv.push_back(*ihit);
+        if (_debug>0) { (*ihit)->print(std::cout); }
       }
 // Find the wall and gas material description objects for these hits
       std::vector<DetIntersection> detinter;
@@ -243,7 +243,7 @@ namespace mu2e
 
   void KalFit::addHits(KalRep* krep,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi) {
   // fetcth the DetectorModel
-   GeomHandle<Mu2eDetectorModel> detmodel;
+   Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
 // there must be a valid Kalman fit to add hits to
     if(krep != 0 && indices.size() > 0 && krep->fitStatus().success()){
       TrkStrawHitVector tshv;
@@ -255,66 +255,66 @@ namespace mu2e
 // use the reference trajectory, as that's what all the existing hits do
       const TrkDifPieceTraj* reftraj = krep->referenceTraj();
       for(unsigned iind=0;iind<indices.size(); ++iind){
-	size_t istraw = indices[iind]._index;
-	const StrawHit& strawhit(straws->at(istraw));
-	const Straw& straw = tracker.getStraw(strawhit.strawIndex());
+        size_t istraw = indices[iind]._index;
+        const StrawHit& strawhit(straws->at(istraw));
+        const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 // estimate  initial flightlength
-	double hflt(0.0);
-	TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
+        double hflt(0.0);
+        TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
 // find the bounding sites near this hit, and extrapolate to get the hit t0
-	std::sort(tshv.begin(),tshv.end(),fltlencomp(_fdir.fitDirection()));
-	findBoundingHits(tshv,hflt,ilow,ihigh);
-	const TrkStrawHit* nearhit;
-	if(ihigh != tshv.end())
-	  nearhit = *ihigh;
-	else
-	  nearhit = *ilow;
-	TrkT0 hitt0 = nearhit->hitT0();
-	double mom = krep->momentum(nearhit->fltLen()).mag();
-	double beta = krep->particleType().beta(mom);
-	double tflt = (hflt-nearhit->fltLen())/(beta*CLHEP::c_light);
+        std::sort(tshv.begin(),tshv.end(),fltlencomp(_fdir.fitDirection()));
+        findBoundingHits(tshv,hflt,ilow,ihigh);
+        const TrkStrawHit* nearhit;
+        if(ihigh != tshv.end())
+          nearhit = *ihigh;
+        else
+          nearhit = *ilow;
+        TrkT0 hitt0 = nearhit->hitT0();
+        double mom = krep->momentum(nearhit->fltLen()).mag();
+        double beta = krep->particleType().beta(mom);
+        double tflt = (hflt-nearhit->fltLen())/(beta*CLHEP::c_light);
 // update the time in the TrkT0 object
-	hitt0._t0 += tflt;
+        hitt0._t0 += tflt;
 // create the hit object.  Assume we're at the last iteration over added error
-	TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_herr.back(),_maxdriftpull);
-	assert(trkhit != 0);
+        TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_herr.back(),_maxdriftpull);
+        assert(trkhit != 0);
 // allow the hit to update its own ambiguity for now: eventually we should get the resolver to do this, FIXME!!!
-	trkhit->setAmbigUpdate(true);
-	trkhit->setFlag(TrkStrawHit::addedHit);
+        trkhit->setAmbigUpdate(true);
+        trkhit->setFlag(TrkStrawHit::addedHit);
 // must be initialy active for KalRep to process correctly
-	trkhit->setActivity(true);
+        trkhit->setActivity(true);
 // add the hit to the track
-	krep->addHit(trkhit);
+        krep->addHit(trkhit);
 // check the raw residual: This call works because the HOT isn't yet processed as part of the fit.
         double chi = fabs(trkhit->residual()/trkhit->hitRms());
 //if it's outside limits, deactivate the HOT
-	if(chi > maxchi || !trkhit->physicalDrift(maxchi))	
-	  trkhit->setActivity(false);
+        if(chi > maxchi || !trkhit->physicalDrift(maxchi))
+          trkhit->setActivity(false);
 // now that we've got the residual, we can turn of auto-ambiguity resolution
-	trkhit->setAmbigUpdate(false);
+        trkhit->setAmbigUpdate(false);
    // find the DetElem associated this straw
-	const DetStrawElem* strawelem = detmodel->strawElem(trkhit->straw());
+        const DetStrawElem* strawelem = detmodel.strawElem(trkhit->straw());
 // see if this KalRep already has a KalMaterial with this element: if not, add it
-	bool addmat(false);
-	std::vector<const KalMaterial*> kmats;
-	krep->findMaterialSites(strawelem,kmats);
+        bool addmat(false);
+        std::vector<const KalMaterial*> kmats;
+        krep->findMaterialSites(strawelem,kmats);
 // if this is a reflecting track the same material can appear multiple times: check the flight lengths
-	if(kmats.size() > 0){
-	  for(auto kmat: kmats) {
-	    if( fabs( kmat->globalLength() - trkhit->fltLen()) > _maxmatfltdiff){
-	      addmat = true;
-	      break;
-	    }
-	  }
-	}
-	if(addmat){
-	  // create intersection object for this element; it includes all materials
-	  DetIntersection strawinter(strawelem, krep->referenceTraj(),trkhit->fltLen());
-	  strawinter.thit = trkhit;
-	  // compute initial intersection: this gets updated each fit iteration
-	  strawelem->reIntersect(krep->referenceTraj(),strawinter);
-	  krep->addInter(strawinter);
-	}
+        if(kmats.size() > 0){
+          for(auto kmat: kmats) {
+            if( fabs( kmat->globalLength() - trkhit->fltLen()) > _maxmatfltdiff){
+              addmat = true;
+              break;
+            }
+          }
+        }
+        if(addmat){
+          // create intersection object for this element; it includes all materials
+          DetIntersection strawinter(strawelem, krep->referenceTraj(),trkhit->fltLen());
+          strawinter.thit = trkhit;
+          // compute initial intersection: this gets updated each fit iteration
+          strawelem->reIntersect(krep->referenceTraj(),strawinter);
+          krep->addInter(strawinter);
+        }
       }
 // refit the last iteration of the track
       TrkErrCode fitstat = fitIteration(krep,tshv,_herr.size()-1);
@@ -347,7 +347,7 @@ namespace mu2e
     TrkErrCode retval = TrkErrCode::succeed;
     while(retval.success() && changed && ++niter < maxIterations()){
 //-----------------------------------------------------------------------------
-// convention: resolve drift signs before the fit with respect to the trajectory 
+// convention: resolve drift signs before the fit with respect to the trajectory
 // determined at the previous iteration
 //-----------------------------------------------------------------------------
       changed = _ambigresolver[iter]->resolveTrk(krep);
@@ -357,20 +357,20 @@ namespace mu2e
       if(! retval.success())break;
       // updates
       if(_updatet0){
-	updateT0(krep,tshv);
-	changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
-	oldt0 = krep->t0()._t0;
+        updateT0(krep,tshv);
+        changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
+        oldt0 = krep->t0()._t0;
       }
       // drop outliers
       if(_weedhits[iter]){
-	changed |= weedHits(krep,tshv,iter);
+        changed |= weedHits(krep,tshv,iter);
       }
       // find missing materials
       if(_addmaterial[iter])
-	changed |= addMaterial(krep) > 0;
+        changed |= addMaterial(krep) > 0;
     }
     if(_debug > 1)
-      std::cout << "Fit iteration " << iter << " stopped after " 
+      std::cout << "Fit iteration " << iter << " stopped after "
       << niter << " iterations" << std::endl;
     return retval;
   }
@@ -379,7 +379,7 @@ namespace mu2e
   KalFit::fitable(TrkDef const& tdef){
     return tdef.strawHitIndices().size() >= _minnstraws;
   }
-  
+
   void
   KalFit::makeHits(TrkDef const& tdef, TrkT0 const& t0, TrkStrawHitVector& tshv ) {
     const Tracker& tracker = getTrackerOrThrow();
@@ -415,11 +415,11 @@ namespace mu2e
   void
   KalFit::makeMaterials(TrkStrawHitVector const& tshv, TrkDef const& tdef,std::vector<DetIntersection>& detinter) {
   // fetcth the DetectorModel
-    GeomHandle<Mu2eDetectorModel> detmodel;
+    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
     // loop over strawhits and extract the straws
     for (auto trkhit : tshv) {
    // find the DetElem associated this straw
-      const DetStrawElem* strawelem = detmodel->strawElem(trkhit->straw());
+      const DetStrawElem* strawelem = detmodel.strawElem(trkhit->straw());
       // create intersection object for this element; it includes all materials
       DetIntersection strawinter;
       strawinter.delem = strawelem;
@@ -437,7 +437,7 @@ namespace mu2e
     const Tracker& tracker = getTrackerOrThrow();
     const TTracker& ttracker = dynamic_cast<const TTracker&>(tracker);
 // fetcth the DetectorModel
-    GeomHandle<Mu2eDetectorModel> detmodel;
+    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
 // storage of potential straws
     StrawFlightComp strawcomp(_maxmatfltdiff);
     std::set<StrawFlight,StrawFlightComp> matstraws(strawcomp);
@@ -462,64 +462,64 @@ namespace mu2e
       double rmax = sn.perp()+2*strawradius;
       if(rho > rmin && rho < rmax){
   // loop over panels
-	for(auto panel : plane.getPanels()){
+        for(auto panel : plane.getPanels()){
       // get the straw direction for this panel
-	  Hep3Vector sdir = panel.getLayer(0).getStraw(0).getDirection();
+          Hep3Vector sdir = panel.getLayer(0).getStraw(0).getDirection();
       // get the transverse direction to this and z
-	  static Hep3Vector zdir(0,0,1.0);
-	  Hep3Vector pdir = sdir.cross(zdir);
+          static Hep3Vector zdir(0,0,1.0);
+          Hep3Vector pdir = sdir.cross(zdir);
      //  project the position along this
-	  double prho = posv.dot(pdir);
+          double prho = posv.dot(pdir);
       // test for acceptance of this panel
-	  if(prho > rmin && prho < rmax) {
-	  // translate the transverse position into a rough straw number
-	    int istraw = (int)rint(nstraws*(prho-s0.perp())/(sn.perp()-s0.perp()));
-	    // take a few straws around this
-	    for(int is = max(0,istraw-2); is<min(nstraws-1,istraw+2); ++is){
-	    // must do this twice due to intrusion of layer on hierarchy FIXME!!!
-	      matstraws.insert(StrawFlight(panel.getLayer(0).getStraw(is).index(),flt));
-	      matstraws.insert(StrawFlight(panel.getLayer(1).getStraw(is).index(),flt));
-	      nadded += 2;
-	    }
-	  }
-	}
+          if(prho > rmin && prho < rmax) {
+          // translate the transverse position into a rough straw number
+            int istraw = (int)rint(nstraws*(prho-s0.perp())/(sn.perp()-s0.perp()));
+            // take a few straws around this
+            for(int is = max(0,istraw-2); is<min(nstraws-1,istraw+2); ++is){
+            // must do this twice due to intrusion of layer on hierarchy FIXME!!!
+              matstraws.insert(StrawFlight(panel.getLayer(0).getStraw(is).index(),flt));
+              matstraws.insert(StrawFlight(panel.getLayer(1).getStraw(is).index(),flt));
+              nadded += 2;
+            }
+          }
+        }
       }
     }
 // Now test if the Kalman rep hits these straws
     if(_debug>2)std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
     for(auto strawflt : matstraws){
-      const DetStrawElem* strawelem = detmodel->strawElem(strawflt._index);
+      const DetStrawElem* strawelem = detmodel.strawElem(strawflt._index);
       DetIntersection strawinter;
       strawinter.delem = strawelem;
       strawinter.pathlen = strawflt._flt;
       if(strawelem->reIntersect(krep->referenceTraj(),strawinter)){
 // If the rep already has a material site for this element, skip it
-	std::vector<const KalMaterial*> kmats;
-	krep->findMaterialSites(strawelem,kmats);
-	if(_debug>2)std::cout << "found intersection with straw " << strawelem->straw()->index() << " with " 
-	<< kmats.size() << " materials " << std::endl;
+        std::vector<const KalMaterial*> kmats;
+        krep->findMaterialSites(strawelem,kmats);
+        if(_debug>2)std::cout << "found intersection with straw " << strawelem->straw()->index() << " with "
+        << kmats.size() << " materials " << std::endl;
 // test material isn't on the track
-	bool hasmat(false);
-	for(auto kmat : kmats ){
-	  const DetStrawElem* kelem = dynamic_cast<const DetStrawElem*>(kmat->detIntersection().delem);
-	  if(kelem != 0){
-	    StrawFlight ksflt(kelem->straw()->index(),kmat->globalLength());
-	    if(_debug>2)std::cout << " comparing flights " << kmat->globalLength() << " and " << strawflt._flt << std::endl;
-	    if(!strawcomp.operator()(strawflt,ksflt)){
-	      if(_debug>2)std::cout << "operator returned false!!" << std::endl;
-	      // this straw is already on the track: stop
-	      hasmat = true;
-	      break;
-	    }
-	  }
-	}
-	if(kmats.size() == 0 || !hasmat) {
-	  if(_debug>2)std::cout << "Adding material element" << std::endl;
-	  // this straw doesn't have an entry in the Kalman fit: add it`
-	  DetIntersection detinter(strawelem, krep->referenceTraj(),strawflt._flt);
-	  krep->addInter(detinter);
-	  ++retval;
-	}
+        bool hasmat(false);
+        for(auto kmat : kmats ){
+          const DetStrawElem* kelem = dynamic_cast<const DetStrawElem*>(kmat->detIntersection().delem);
+          if(kelem != 0){
+            StrawFlight ksflt(kelem->straw()->index(),kmat->globalLength());
+            if(_debug>2)std::cout << " comparing flights " << kmat->globalLength() << " and " << strawflt._flt << std::endl;
+            if(!strawcomp.operator()(strawflt,ksflt)){
+              if(_debug>2)std::cout << "operator returned false!!" << std::endl;
+              // this straw is already on the track: stop
+              hasmat = true;
+              break;
+            }
+          }
+        }
+        if(kmats.size() == 0 || !hasmat) {
+          if(_debug>2)std::cout << "Adding material element" << std::endl;
+          // this straw doesn't have an entry in the Kalman fit: add it`
+          DetIntersection detinter(strawelem, krep->referenceTraj(),strawflt._flt);
+          krep->addInter(detinter);
+          ++retval;
+        }
       }
     }
     if(_debug>1)std::cout << "Added " << retval << " new material sites" << std::endl;
@@ -554,7 +554,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // _resolveAfterWeeding=0 makes changes in the logic fully reversible
 //-----------------------------------------------------------------------------
-	_ambigresolver[iter]->resolveTrk(krep);
+        _ambigresolver[iter]->resolveTrk(krep);
       }
       TrkErrCode fitstat = krep->fit();
       krep->addHistory(fitstat, "HitWeed");
@@ -565,7 +565,7 @@ namespace mu2e
     }
     return retval;
   }
-  
+
   bool
   KalFit::unweedHits(KalRep* krep, double maxchi) {
     TrkStrawHitVector tshv;
@@ -582,14 +582,14 @@ namespace mu2e
       _ambigresolver[last]->resolveTrk(krep);
       if(!krep->fitCurrent()){
     // if this changed the track state, refit it
-	krep->resetFit();
-	TrkErrCode fitstat = krep->fit();
-	krep->addHistory(fitstat, "HitUnWeedResolver");
+        krep->resetFit();
+        TrkErrCode fitstat = krep->fit();
+        krep->addHistory(fitstat, "HitUnWeedResolver");
       }
     }
-    return retval; 
+    return retval;
   }
-  
+
   bool
   KalFit::unweedHits(KalRep* krep, TrkStrawHitVector& tshv, double maxchi) {
     // Loop over inactive HoTs and find the one with the smallest contribution to chi2.  If this value
@@ -631,19 +631,19 @@ namespace mu2e
     if(_bfield == 0){
       GeomHandle<BFieldConfig> bfconf;
       if(_fieldcorr){
-// create a wrapper around the mu2e field 
-	_bfield = new BaBarMu2eField();	
+// create a wrapper around the mu2e field
+        _bfield = new BaBarMu2eField();
       } else {
 // create a fixed field using the nominal value
-	GeomHandle<BFieldConfig> bfconf;
-	_bfield=new BFieldFixed(bfconf->getDSUniformValue());
-	assert(_bfield != 0);
+        GeomHandle<BFieldConfig> bfconf;
+        _bfield=new BFieldFixed(bfconf->getDSUniformValue());
+        assert(_bfield != 0);
       }
     }
     return *_bfield;
   }
-   
-  const TrkVolume* 
+
+  const TrkVolume*
   KalFit::trkVolume(trkDirection trkdir) const {
     //FIXME!!!!
     return 0;
@@ -708,81 +708,81 @@ namespace mu2e
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
 // need to have a valid fit
     if(krep->fitValid()){
-// find the global fltlen associated with z=0. 
+// find the global fltlen associated with z=0.
       double flt0(0.0);
       bool converged = TrkHelixUtils::findZFltlen(krep->traj(),0.0,flt0);
       if(converged){
-	std::vector<double> hitt0; // store t0, to allow outlyer removal
-	std::vector<double> hitt0err;
-	size_t nhits = krep->hitVector().size();
-	hitt0.reserve(nhits);
-	hitt0err.reserve(nhits);
-	// loop over the hits
-	for(auto ihit=tshv.begin(); ihit != tshv.end(); ihit++){
-	  TrkStrawHit* hit = *ihit;
-	  if(hit->isActive() && hit->hasResidual()){
-	    // find the residual, exluding this hits measurement
-	    double resid,residerr;
-	    if(krep->resid(hit,resid,residerr,true)){
-	      // convert this to a distance to the wire
-	      double doca = (resid + hit->driftRadius()*hit->ambig());
-	      if(hit->ambig() == 0)
-		doca = fabs(doca);
-	      else
-		doca *= hit->ambig();
-	      // restrict the range, symmetrically to avoid bias
-	      double rad = hit->straw().getRadius();
-	      if(doca > _mint0doca && doca < rad-_mint0doca){
-		// translate the DOCA into a time
-		D2T d2t;
-		tcal->DistanceToTime(hit->straw().index(),doca,krep->traj().direction(hit->fltLen()),d2t);
-		// subtracting hitT0 makes this WRT the previous track t0
-		hitt0.push_back(hit->time() - d2t._tdrift - hit->signalTime() - hit->hitT0()._t0);
-		// assume residual error dominates
-		hitt0err.push_back(residerr/d2t._vdrift);
-	      }
-	    }
-	  }
-	}
-	if(hitt0.size() >1){
-	  TrkT0 t0;
-	  // find the median
-	  accumulator_set<double, stats<tag::median(with_p_square_quantile) > > med;
-	  med = std::for_each( hitt0.begin(), hitt0.end(), med );
-	  t0._t0 = extract_result<tag::median>(med);
-	  // iterate an outlier search and linear fit until the set of used hits doesn't change
-	  bool changed(true);
-	  std::vector<bool> used(hitt0.size(),true);
-	  unsigned niter(0);
-	  while(changed && niter < 10){
-	    niter++;
-	    changed = false;
-	    accumulator_set<double,stats<tag::weighted_variance>,double > wmean;
-	    for(unsigned ihit=0;ihit<hitt0.size();ihit++){
-	      bool useit = fabs(hitt0[ihit]-t0._t0) < _t0nsig*hitt0err[ihit];
-	      changed |= useit != used[ihit];
-	      used[ihit] = useit;
-	      if(useit){
-		wmean(hitt0[ihit], weight=1.0/(hitt0err[ihit]*hitt0err[ihit]));
-	      }
-	    }
-	    unsigned nused = extract_result<tag::count>(wmean);
-	    if(nused > 1){
-	      t0._t0 = extract_result<tag::weighted_mean>(wmean);
-	      t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nused);
-	    } else {
-	      break;
-	    }
-	  }
-	  // reset t0
-	  if(!changed){
-	    // put in t0 from the track.
-	    t0._t0 += krep->t0()._t0;
-	    krep->setT0(t0,flt0);
-	    updateHitTimes(krep,tshv);
-	    retval = true;
-	  }
-	}
+        std::vector<double> hitt0; // store t0, to allow outlyer removal
+        std::vector<double> hitt0err;
+        size_t nhits = krep->hitVector().size();
+        hitt0.reserve(nhits);
+        hitt0err.reserve(nhits);
+        // loop over the hits
+        for(auto ihit=tshv.begin(); ihit != tshv.end(); ihit++){
+          TrkStrawHit* hit = *ihit;
+          if(hit->isActive() && hit->hasResidual()){
+            // find the residual, exluding this hits measurement
+            double resid,residerr;
+            if(krep->resid(hit,resid,residerr,true)){
+              // convert this to a distance to the wire
+              double doca = (resid + hit->driftRadius()*hit->ambig());
+              if(hit->ambig() == 0)
+                doca = fabs(doca);
+              else
+                doca *= hit->ambig();
+              // restrict the range, symmetrically to avoid bias
+              double rad = hit->straw().getRadius();
+              if(doca > _mint0doca && doca < rad-_mint0doca){
+                // translate the DOCA into a time
+                D2T d2t;
+                tcal->DistanceToTime(hit->straw().index(),doca,krep->traj().direction(hit->fltLen()),d2t);
+                // subtracting hitT0 makes this WRT the previous track t0
+                hitt0.push_back(hit->time() - d2t._tdrift - hit->signalTime() - hit->hitT0()._t0);
+                // assume residual error dominates
+                hitt0err.push_back(residerr/d2t._vdrift);
+              }
+            }
+          }
+        }
+        if(hitt0.size() >1){
+          TrkT0 t0;
+          // find the median
+          accumulator_set<double, stats<tag::median(with_p_square_quantile) > > med;
+          med = std::for_each( hitt0.begin(), hitt0.end(), med );
+          t0._t0 = extract_result<tag::median>(med);
+          // iterate an outlier search and linear fit until the set of used hits doesn't change
+          bool changed(true);
+          std::vector<bool> used(hitt0.size(),true);
+          unsigned niter(0);
+          while(changed && niter < 10){
+            niter++;
+            changed = false;
+            accumulator_set<double,stats<tag::weighted_variance>,double > wmean;
+            for(unsigned ihit=0;ihit<hitt0.size();ihit++){
+              bool useit = fabs(hitt0[ihit]-t0._t0) < _t0nsig*hitt0err[ihit];
+              changed |= useit != used[ihit];
+              used[ihit] = useit;
+              if(useit){
+                wmean(hitt0[ihit], weight=1.0/(hitt0err[ihit]*hitt0err[ihit]));
+              }
+            }
+            unsigned nused = extract_result<tag::count>(wmean);
+            if(nused > 1){
+              t0._t0 = extract_result<tag::weighted_mean>(wmean);
+              t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nused);
+            } else {
+              break;
+            }
+          }
+          // reset t0
+          if(!changed){
+            // put in t0 from the track.
+            t0._t0 += krep->t0()._t0;
+            krep->setT0(t0,flt0);
+            updateHitTimes(krep,tshv);
+            retval = true;
+          }
+        }
       }
     }
     return retval;
@@ -837,7 +837,7 @@ namespace mu2e
     while(ilow != hits.rend() && (*ilow)->fltLen() > flt0 )++ilow;
     while(ihigh != hits.end() && (*ihigh)->fltLen() < flt0 )++ihigh;
   }
- 
+
   // this function belongs in TrkDifTraj, FIXME!!!!
   double KalFit::zFlight(KalRep* krep,double pz) {
 // get the helix at the middle of the track
