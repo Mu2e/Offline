@@ -127,16 +127,6 @@ physics : {
     } // filters
 
     analyzers : {
-
-        stoppedPionDumper : {
-            module_type      : StoppedParticlesDumper
-            inputCollection  : "stopFilter"
-            dumpSimParticleLeaves: true
-            writeProperTime  : true
-            decayOffPDGCodes : [ -211, 211 ]
-            hitCollections   : [ "stopFilter:vacuuas1", "stopFilter:vacuuas2" ]
-        }
-
         genCountLogger : { module_type : GenEventCountReader }
     } // analyzers
 
@@ -144,7 +134,7 @@ physics : {
     trigger_paths  : [ pionStopFilter ]
 
     out       : [ pionStopOutput ]
-    stops     : [ stoppedPionDumper, genCountLogger ]
+    stops     : [ genCountLogger ]
     end_paths : [ out, stops ]
 }
 
