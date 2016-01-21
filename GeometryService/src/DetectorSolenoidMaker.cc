@@ -81,6 +81,31 @@ namespace mu2e {
     ds->_s2RailCenter = c.getHep3Vector("ds.s2RailCenter");
     ds->_n3RailCenter = c.getHep3Vector("ds.n3RailCenter");
     ds->_s3RailCenter = c.getHep3Vector("ds.s3RailCenter");
+    // Bearing blocks riding rails
+    int nPtBBlock = c.getInt("ds.nPtBBlock");
+    c.getVectorDouble("ds.outlineBBlockU",ds->_uOutlineBBlock, nPtBBlock);
+    c.getVectorDouble("ds.outlineBBlockV",ds->_vOutlineBBlock, nPtBBlock);
+    ds->_lengthBBlock2 = c.getDouble("ds.lengthBBlock2");
+    ds->_lengthBBlock3 = c.getDouble("ds.lengthBBlock3");
+    ds->_BBlockMaterial = c.getString("ds.BBlockMaterialType");
+    int nBlocks = c.getInt("ds.nBBlocks",0);
+    std::vector<double> xBBCs;
+    xBBCs.reserve(nBlocks);
+    std::vector<double> yBBCs;
+    yBBCs.reserve(nBlocks);
+    std::vector<double> zBBCs;
+    xBBCs.reserve(nBlocks);
+    c.getVectorDouble("ds.xCentersBBlock",xBBCs,nBlocks);
+    c.getVectorDouble("ds.yCentersBBlock",yBBCs,nBlocks);
+    c.getVectorDouble("ds.zCentersBBlock",zBBCs,nBlocks);
+    for ( int iBB = 0; iBB < nBlocks; iBB++ ) {
+      CLHEP::Hep3Vector center(xBBCs[iBB],yBBCs[iBB],zBBCs[iBB]);
+      if ( zBBCs[iBB]*CLHEP::mm > 8340.0 ) {
+	ds->_BBlockCenters3.push_back(center);
+      } else {
+	ds->_BBlockCenters2.push_back(center);
+      }
+    }
 
     // Vacuum volumes
     ds->_vacuumMaterialName = c.getString("ds.vacuumMaterialName");

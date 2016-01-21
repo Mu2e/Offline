@@ -1,7 +1,7 @@
 // Crystal calorimeter
 
 double calorimeter.caloMotherInRadius           = 349;   
-double calorimeter.caloMotherOutRadius          = 765;   
+double calorimeter.caloMotherOutRadius          = 818; //765;    
 double calorimeter.caloMotherZ0                 = 11842;   
 double calorimeter.caloMotherZ1                 = 13220;   
 
@@ -33,7 +33,12 @@ vector<double> calorimeter.diskOuterRadius     = {664.,664.}; //mm
 vector<double> calorimeter.diskRotationAngle   = {0.,0.};     //rad
 vector<double> calorimeter.diskSeparation      = {0.,700.};   //mm  separation w.r.t first disk
 
-
+// Readout crates
+string calorimeter.calorimeterCrateMaterial    = "Electronics"; //"G10";       // calorimeter electronics material. NEED to refine
+double calorimeter.calorimeterCrateInnerRadius = 680;         // calorimeter electronics crates inner radius  //mm
+double calorimeter.calorimeterCrateOuterRadius = 810;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
+double calorimeter.calorimeterCrateExtendLen = 180.0;  // Lengthen crates to
+// get needed volume for material
 
 //crystal characteristics
 int    calorimeter.crystalNumEdges             = 4;
@@ -69,17 +74,17 @@ string calorimeter.pipeMaterial                = "G4_Al";
 
 // Control display and debug printout.
 
-bool calorimeter.calorimeterVisible           = false;
-bool calorimeter.calorimeterSolid             = false;
+bool calorimeter.calorimeterVisible           = true;
+bool calorimeter.calorimeterSolid             = true;
 bool calorimeter.boxVisible                   = true;
-bool calorimeter.boxSolid                     = false;
-bool calorimeter.caseVisible                  = false;
-bool calorimeter.caseSolid                    = false;
-bool calorimeter.pipeVisible                  = false;
-bool calorimeter.pipeSolid                    = false;
+bool calorimeter.boxSolid                     = true;
+bool calorimeter.caseVisible                  = true;
+bool calorimeter.caseSolid                    = true;
+bool calorimeter.pipeVisible                  = true;
+bool calorimeter.pipeSolid                    = true;
 bool calorimeter.crystalVisible               = true;
-bool calorimeter.crystalSolid                 = false;
-bool calorimeter.absorberBoxVisible           = false;
-bool calorimeter.absorberBoxSolid             = false;
+bool calorimeter.crystalSolid                 = true;
+bool calorimeter.absorberBoxVisible           = true;
+bool calorimeter.absorberBoxSolid             = true;
 
 int  calorimeter.verbosityLevel               = 1;

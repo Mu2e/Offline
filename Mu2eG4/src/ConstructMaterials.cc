@@ -209,6 +209,19 @@ namespace mu2e {
       Polyethylene->AddElement( getElementOrThrow("H"), 2);
     }
 
+    mat = uniqueMaterialOrThrow( "Electronics" );
+    {
+      // This material based on measurements at Argonne of some Mu2e
+      // electronics by Gary Drake, conveyed by Vitaly Pronskikh
+      G4Material* Electronics = new G4Material( mat.name, 0.58*CLHEP::g/CLHEP::cm3, 5);
+      Electronics->AddElement( getElementOrThrow("Si"),             0.103);
+      Electronics->AddElement( getElementOrThrow("Al"),             0.034);
+      Electronics->AddElement( getElementOrThrow("Au"),             0.034);
+      Electronics->AddElement( getElementOrThrow("Cu"),             0.691);
+      Electronics->AddMaterial( findMaterialOrThrow("Polyethylene"), 0.138);
+    }
+
+
     mat = uniqueMaterialOrThrow( "Half_Poly" );
     {
       G4Material* HalfPoly = new G4Material( mat.name, 0.465*CLHEP::g/CLHEP::cm3, 1);

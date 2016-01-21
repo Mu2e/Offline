@@ -2,6 +2,24 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_1
 
+11. dnbrow01  20 Jan 2016
+    Add a crude model for the Calorimeter electronics crates based on a 
+    model by Yuri O.  The outer radius of the crates had to be reduced to
+    avoid overlaps at this time - this could and should be revisited in 
+    the near future, but at least this model gets some material where it
+    should be.  Added a new material "Electronics" to support the new crates.
+    Also added a first, crude, model of the bearing blocks along the rails 
+    in the DS.  Had to remove the blocks under the TTracker due to overlaps
+    for the moment.  This will need to be revisited also.
+    modified:   DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+    modified:   GeometryService/src/DetectorSolenoidMaker.cc
+    modified:   Mu2eG4/geom/DetectorSolenoid_v02.txt
+    modified:   Mu2eG4/geom/calorimeter_BaF2.txt
+    modified:   Mu2eG4/src/ConstructMaterials.cc
+    modified:   Mu2eG4/src/constructDS.cc
+    modified:   Mu2eG4/src/constructDiskCalorimeter.cc
+
+
 10.  kutschke 20 Jan 2015
      Move management of the Mu2eDetectorModel object from GeometryService to BTrkHelper.
      With this change, it is only necessary to configure the BTrkHelper service when you
@@ -34,6 +52,7 @@ Still under construction
     multi-stage mode.  This allows to use a separate module for
     updating Ptr<SimParticle> in any other product to the current
     stage SimParticleCollection.
+
 
 7.  dnbrow01  17 Jan 2016
     Add two new virtual detectors, one each in the middle of the bend of
