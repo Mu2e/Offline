@@ -89,6 +89,13 @@ physics : {
             }
         } // g4run
 
+        vacuuas1: {
+            module_type: StepPointMCCollectionUpdater
+            remapping: g4run
+            inputs: [ "g4filter:vacuuas1:pionsg4s1" ]
+            outInstanceName: "vacuuas1"
+        }
+
         compressPV : {
             module_type    : CompressPhysicalVolumes
             volumesInput   : "g4run"
@@ -108,14 +115,14 @@ physics : {
             module_type               : FilterG4Out
             noInstanceName            : true
             mainHitInputs             : [ "g4run:vacuuas2" ]
-            extraHitInputs            : [ "g4run:virtualdetector", "g4filter:vacuuas1:pionsg4s1" ]
+            extraHitInputs            : [ "g4run:virtualdetector", "vacuuas1:vacuuas1" ]
             numSimParticleCollections : 1
             vetoDaughters             : []
         }
     } // filters
 
 
-    trigFilter    : [ g4run, g4filter, compressPV ]
+    trigFilter    : [ g4run, vacuuas1, g4filter, compressPV ]
     trigger_paths : [ trigFilter ]
 
     e1        : [ filteredOutput, genCountLogger ]
