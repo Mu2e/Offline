@@ -22,10 +22,13 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
-// services
+#include "CalorimeterGeom/inc/Calorimeter.hh"
+#include "StoppingTargetGeom/inc/StoppingTarget.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+// conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -118,6 +121,8 @@ namespace mu2e
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
     _addmaterial(pset.get<vector<bool> >("AddMaterial")),
     _resolveAfterWeeding(pset.get<bool>("ResolveAfterWeeding",false)),
+    _exup((extent)pset.get<int>("UpstreamExtent",noextension)),
+    _exdown((extent)pset.get<int>("DownstreamExtent",noextension)),
     _fdir(fitdir),
     _bfield(0)
   {
@@ -238,6 +243,11 @@ namespace mu2e
 // now fit
       TrkErrCode fitstat = fitTrack(krep,tshv);
       krep->addHistory(fitstat,"KalFit fit");
+// extend the fit
+      if(fitstat.success()){
+	fitstat = extendFit(krep);
+	krep->addHistory(fitstat,"KalFit extension");
+      }
     }
   }
 
@@ -329,7 +339,7 @@ namespace mu2e
       fitstat = fitIteration(krep,tshv,iherr);
       if(!fitstat.success())break;
     }
-    krep->addHistory(fitstat,"KalFit");
+    if(_debug > 0) cout << fitstat << endl;
     return fitstat;
   }
 
@@ -372,6 +382,9 @@ namespace mu2e
     if(_debug > 1)
       std::cout << "Fit iteration " << iter << " stopped after " 
       << niter << " iterations" << std::endl;
+// make sure the fit is current
+    if(!krep->fitCurrent())
+      retval = krep->fit();
     return retval;
   }
 
@@ -857,6 +870,45 @@ namespace mu2e
     return fltlen;
   }
 
+// attempt to extend the fit to the specified location
+  TrkErrCode KalFit::extendFit(KalRep* krep) {
+    TrkErrCode retval;
+    // find the downstream and upstream Z positions to extend to
+    if(_exdown != noextension){
+      double downz = extendZ(_exdown);
+    // convert to flightlength using the fit trajectory
+      double downflt = zFlight(krep,downz);
+    // actually extend the track
+      retval = krep->extendThrough(downflt);
+    }
+    // same for upstream extension
+    if(retval.success() && _exup != noextension){
+      double upz = extendZ(_exup);
+      double upflt = zFlight(krep,upz);
+      retval = krep->extendThrough(upflt);
+    }
+    return retval;
+  }
+
+  double KalFit::extendZ(extent ex) {
+    double retval(0.0);
+    if(ex == target){
+      GeomHandle<StoppingTarget> target;
+      GeomHandle<DetectorSystem> det;
+      retval = det->toDetector(target->centerInMu2e()).z() - 0.5*target->cylinderLength();
+    } else if(ex == ipa) {
+    // the following is wrong FIXME!!
+      GeomHandle<StoppingTarget> target;
+      GeomHandle<DetectorSystem> det;
+      retval = det->toDetector(target->centerInMu2e()).z() +  0.5*target->cylinderLength();
+    } else if(ex == tracker) {
+      retval = 0.0;
+    } else if(ex == calo) {
+      GeomHandle<Calorimeter> cg;
+      return cg->caloGeomInfo().enveloppeZ1();
+    }
+    return retval;
+  }
 }
 
 

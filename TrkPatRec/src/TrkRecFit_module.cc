@@ -303,8 +303,11 @@ namespace mu2e
 	if(seedrep != 0 && seedrep->fitStatus().success())_ccutflow->Fill(8.0);
 	if(krep != 0 && krep->fitStatus().success())_ccutflow->Fill(9.0);
       }
-      if(krep != 0 && krep->fitStatus().success()){
-	// flag the hits used in this track. 
+      if(krep != 0 && krep->fitStatus().success()){	// flag the hits used in this track. 
+	if(!krep->fitCurrent()){
+	  cout << "Fit not current! " << endl;
+	}
+	  // flag the hits used in this track. 
 	if(ipeak<16){
 	  for(auto ihit=krep->hitVector().begin();ihit != krep->hitVector().end();++ihit){
 	    if((*ihit)->isActive())_flags->at(static_cast<TrkStrawHit*>(*ihit)->index()).merge(StrawHitFlag::trackBit(ipeak));

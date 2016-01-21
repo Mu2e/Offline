@@ -42,6 +42,8 @@ namespace mu2e
   public:
 // define different ambiguity resolution strategies
     enum ambigStrategy {fixedambig=0,pocaambig=1,hitambig=2,panelambig=3,doubletambig=4};
+// different locations to which the track may be extended
+    enum extent {noextension=-1,target=0,ipa=1,tracker=2,calo=3};
 // parameter set should be passed in on construction
 #ifndef __GCCXML__
     explicit KalFit(fhicl::ParameterSet const&, TrkFitDirection const& tdir);
@@ -77,6 +79,8 @@ namespace mu2e
     std::vector<bool> _addmaterial; // look for additional materials along the track
     std::vector<AmbigResolver*> _ambigresolver;
     bool _resolveAfterWeeding;
+    extent _exup;
+    extent _exdown;
 // state
     TrkParticle _tpart;
     TrkFitDirection _fdir;
@@ -95,7 +99,9 @@ namespace mu2e
     TrkErrCode fitIteration(KalRep* kres,TrkStrawHitVector& tshv,size_t iter); 
     void updateHitTimes(KalRep* kres, TrkStrawHitVector& tshv); 
     double zFlight(KalRep* krep,double pz);
-    
+    double extendZ(extent ex);
+    TrkErrCode extendFit(KalRep* krep);
+
     void findBoundingHits(TrkStrawHitVector& hits, double flt0,
 	TrkStrawHitVector::reverse_iterator& ilow,
 	TrkStrawHitVector::iterator& ihigh);

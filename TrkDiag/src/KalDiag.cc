@@ -198,6 +198,22 @@ namespace mu2e
       trkinfo._radlen = krep->radiationFraction();
       trkinfo._firstflt = krep->firstHit()->globalLength();
       trkinfo._lastflt = krep->lastHit()->globalLength();
+      trkinfo._startvalid = krep->startValidRange();
+      trkinfo._endvalid = krep->endValidRange();
+// site counting
+      int nmat(0), nmatactive(0), nbend(0);
+      for(auto isite : krep->siteList()){
+	if(isite->kalMaterial() != 0){
+	  ++nmat;
+	  if(isite->isActive())++nmatactive;
+	}
+	if(isite->kalBend() != 0)
+	  ++nbend;
+      }
+      trkinfo._nmat = nmat;
+      trkinfo._nmatactive = nmatactive;
+      trkinfo._nbend = nbend;
+
       Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->kalContext().bField(),0.0);
       trkinfo._seedmom = seedmom.mag();
       // count # of double hits
