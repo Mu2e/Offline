@@ -25,8 +25,12 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GlobalConstantsService',
                                 ] )
 
 helper.make_plugins( [ mainlib,
-                       'BTrk_BaBar',
                        'art_Framework_Services_Registry',
+                       'art_Utilities',
+                       'mu2e_Mu2eBTrk',
+                       'mu2e_TTrackerGeom',
+                       'mu2e_Mu2eInterfaces',
+                       'BTrk_BaBar',
                        'fhiclcpp',
                        'cetlib',
                        'HepPID',

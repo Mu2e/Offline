@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
-//  $Id: 
-//  $Author: 
-//  $Date: 
+//  $Id:
+//  $Author:
+//  $Date:
 //
 //  Original author Vadim Rusu
 //
@@ -50,6 +50,7 @@
 
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 
+#include "BTrkHelper/inc/BTrkHelper.hh"
 #include "ParticleID/inc/PIDUtilities.hh"
 #include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -95,10 +96,10 @@ int findlowhist(float d){
   else if (d>pathbounds[8] && d<=pathbounds[9]) return 8;
   else if (d>pathbounds[9] && d<=pathbounds[10]) return 9;
   else if (d>pathbounds[10]) return 10;
-  
+
   else
     {    cout<<"Out of  bounds. Should never end up here\n"; return -9999.;}
-  
+
 
 }
 
@@ -137,7 +138,7 @@ int findlowhist(float d){
     double _residualsSlopeError;
     double _logeprob;
     double _logmprob;
-    
+
     int _debugLevel;
     int _verbosity;
     int _diagLevel;
@@ -158,13 +159,13 @@ int findlowhist(float d){
     TTree *       _pidtree;
     TCanvas*      _plotCanvas;
 
-    
+
     bool calculateSlope(std::vector<double>vresd,std::vector<double>vflt,std::vector<double>evresd,std::vector<double>evflt,  double * slope, double * eslope);
     double calculateProb(std::vector<double>gaspaths, std::vector<double>edeps, TH1D** templates);
 
     unique_ptr<TApplication> _application;
 
-    // Save directory from beginJob so that we can go there in endJob. 
+    // Save directory from beginJob so that we can go there in endJob.
     TDirectory* _directory;
 
 
@@ -237,16 +238,16 @@ int findlowhist(float d){
     if(_doDisplay) {
       // If needed, create the ROOT interactive environment. See note 1.
       if ( !gApplication ){
-	int    tmp_argc(0);
-	char** tmp_argv(0);
-	_application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
+        int    tmp_argc(0);
+        char** tmp_argv(0);
+        _application = unique_ptr<TApplication>(new TApplication( "noapplication", &tmp_argc, tmp_argv ));
       }
 
       gStyle->SetPalette(1);
       gROOT->SetStyle("Plain");
       gStyle->SetOptFit(1);
       gStyle->SetMarkerStyle(22);
-      
+
       _plotCanvas = new TCanvas("plots","PID Plots",600,400);
     }
   }
@@ -272,7 +273,7 @@ int findlowhist(float d){
 ////////// Produce ///////////
 
   void ParticleID::produce(art::Event& event) {
-    GeomHandle<Mu2eDetectorModel> detmodel;
+    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
     _evtid = event.id().event();
     ++_processed_events;
     if (_processed_events%100 == 0) {
@@ -287,7 +288,7 @@ int findlowhist(float d){
    event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
    const KalRepPtrCollection* const trks = trksHandle.product();
 
-   
+
    if (!trksHandle.isValid()) {
      if (_verbosity>=1) cout << "ParticleID : " << "no" << " obj for " << _fitterModuleLabel.c_str() << " of event " << _evtid << endl;
    }
@@ -295,7 +296,7 @@ int findlowhist(float d){
    if (trks->size() >0) {
      if (_verbosity>=1) cout << "ParticleID : " << trks->size() << " obj for " << _fitterModuleLabel.c_str() << " of event " << _evtid << endl;
    }
-  
+
 
    for ( size_t i=0; i< trks->size(); ++i ){
 
@@ -309,7 +310,7 @@ int findlowhist(float d){
      _trkmom = krep->momentum(entlen).mag();
 
      std::vector<KalSite*> kalsites= krep->siteList();
-     
+
      std::vector<double> vresd;
      std::vector<double> vflt;
      std::vector<double> evflt;
@@ -317,40 +318,40 @@ int findlowhist(float d){
      std::vector<double> gaspaths;
      std::vector<double> edeps;
 
-     
+
      for(unsigned isite=0;isite<kalsites.size();isite++){
        KalSite* ksite = kalsites[isite];
-       
-       
-       
+
+
+
        if (ksite->type() == KalSite::hitSite){
-	 
-	 
-	 TrkStrawHit* hit = dynamic_cast<TrkStrawHit*>(ksite->kalHit()->hit());
-	 double resid, residerr;
-	 hit->resid(resid,residerr,true);
-	 
-	 bool activehit = hit->isActive();
-	 if (activehit){
-	   double aresd = (hit->poca().doca()>0?resid:-resid);
-	   double normflt = hit->fltLen() -  krep->flt0();
-	   double normresd = aresd/residerr;
 
-	   vresd.push_back(normresd);
-	   vflt.push_back(normflt);
-	   evresd.push_back(1.);
-	   evflt.push_back(0.1);
 
-	   //	   2. * here because KalmanFit reports half the path through gas.
-	   const DetStrawElem* strawelem = detmodel->strawElem(hit->straw());
-	   gaspaths.push_back(2. * strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction( hit->fltLen() )));
+         TrkStrawHit* hit = dynamic_cast<TrkStrawHit*>(ksite->kalHit()->hit());
+         double resid, residerr;
+         hit->resid(resid,residerr,true);
 
-	   edeps.push_back(hit->strawHit().energyDep());
+         bool activehit = hit->isActive();
+         if (activehit){
+           double aresd = (hit->poca().doca()>0?resid:-resid);
+           double normflt = hit->fltLen() -  krep->flt0();
+           double normresd = aresd/residerr;
 
-	 }
+           vresd.push_back(normresd);
+           vflt.push_back(normflt);
+           evresd.push_back(1.);
+           evflt.push_back(0.1);
+
+           //      2. * here because KalmanFit reports half the path through gas.
+           const DetStrawElem* strawelem = detmodel.strawElem(hit->straw());
+           gaspaths.push_back(2. * strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction( hit->fltLen() )));
+
+           edeps.push_back(hit->strawHit().energyDep());
+
+         }
        }
      }
-     
+
 
      calculateSlope(vresd,vflt,evresd,evflt,&_residualsSlope,&_residualsSlopeError);
 
@@ -374,10 +375,10 @@ int findlowhist(float d){
 
 
      pids->push_back(_pid);
-  
+
    }  // end of trks loop
    event.put(std::move(pids));
-   
+
   }
 
 
@@ -391,35 +392,35 @@ int findlowhist(float d){
 
     for (unsigned int ipath = 0; ipath < gaspaths.size(); ipath++){
       double thispath = gaspaths.at(ipath);
-      double thisedep = edeps.at(ipath);      
+      double thisedep = edeps.at(ipath);
 
       double tmpprob = 0;
       if (thispath > _minpath && thispath<=_maxpath){
-	  int lowhist = findlowhist(thispath);
+          int lowhist = findlowhist(thispath);
 
 
-	  PIDUtilities util;
-	  TH1D* hinterp = util.th1dmorph(templates[lowhist],templates[lowhist+1],pathbounds[lowhist],pathbounds[lowhist+1],thispath,1,0);
-	  //what is the probability for this edep
-	  int thisedepbin = -999;
-	  if (thisedep > _templateslastbin) thisedepbin = _templatesnbins;
-	  else
-	    thisedepbin = int(thisedep/_templatesbinsize)+1;
+          PIDUtilities util;
+          TH1D* hinterp = util.th1dmorph(templates[lowhist],templates[lowhist+1],pathbounds[lowhist],pathbounds[lowhist+1],thispath,1,0);
+          //what is the probability for this edep
+          int thisedepbin = -999;
+          if (thisedep > _templateslastbin) thisedepbin = _templatesnbins;
+          else
+            thisedepbin = int(thisedep/_templatesbinsize)+1;
 
-	  tmpprob=hinterp->GetBinContent(thisedepbin);
+          tmpprob=hinterp->GetBinContent(thisedepbin);
 
-	  if (_doDisplay){
-	    templates[lowhist]->Draw();
-	    templates[lowhist+1]->Draw("same");
-	    hinterp->SetLineColor(2);
-	    hinterp->Draw("same");
-	    _plotCanvas->WaitPrimitive();
-	  }
-	  hinterp->Delete();
-	}
+          if (_doDisplay){
+            templates[lowhist]->Draw();
+            templates[lowhist+1]->Draw("same");
+            hinterp->SetLineColor(2);
+            hinterp->Draw("same");
+            _plotCanvas->WaitPrimitive();
+          }
+          hinterp->Delete();
+        }
 
       if (tmpprob> 0)
-	thisprob = thisprob * tmpprob;
+        thisprob = thisprob * tmpprob;
 
 
     }
@@ -427,14 +428,14 @@ int findlowhist(float d){
     return thisprob;
 
   }
-  
+
 
   bool ParticleID::calculateSlope(std::vector<double>vresd,std::vector<double>vflt,std::vector<double>evresd,std::vector<double>evflt,  double * slope, double * eslope) {
 
 
     error = new TGraphErrors(vresd.size(),vflt.data(),vresd.data(),evflt.data(),evresd.data());
 
-    TMinuit *gmMinuit = new TMinuit(2); 
+    TMinuit *gmMinuit = new TMinuit(2);
     gmMinuit->SetPrintLevel(-1);
     gmMinuit->SetFCN(myfcn);
     const int dim(2);
@@ -443,32 +444,32 @@ int findlowhist(float d){
     Double_t sfpar[dim]={0.0,0.005};
     Double_t errsfpar[dim]={0.0,0.0};
     int ierflg = 0;
-    for (int ii = 0; ii<dim; ii++) {    
+    for (int ii = 0; ii<dim; ii++) {
       gmMinuit->mnparm(ii,par_name[ii],sfpar[ii], step[ii], 0,0,ierflg);
     }
     gmMinuit->FixParameter(0);
     gmMinuit->Migrad();
     bool converged = gmMinuit->fCstatu.Contains("CONVERGED");
-    if (!converged) 
+    if (!converged)
       {
         cout <<"-----------TOF Linear fit did not converge---------------------------" <<endl;
         return converged;
       }
     for (int i = 0;i<dim;i++) {
       gmMinuit->GetParameter(i,sfpar[i],errsfpar[i]);
-    } 
+    }
 
     *slope = sfpar[1];
     *eslope = errsfpar[1];
 
-    
+
     if (_doDisplay){
       error->Draw("AP");
       _plotCanvas->WaitPrimitive();
     }
 
     delete error;
-  
+
     return converged;
   }
 

@@ -1,13 +1,8 @@
 #ifndef GeometryService_GeometryService_hh
 #define GeometryService_GeometryService_hh
-
 //
 // Maintain up to date geometry information and serve it to
 // other services and to the modules.
-//
-// $Id: GeometryService.hh,v 1.22 2014/09/19 19:14:41 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:14:41 $
 //
 // Original author Rob Kutschke
 //
@@ -91,12 +86,8 @@ private:
     // The object that parses run-time configuration file.
     std::unique_ptr<SimpleConfig> _config;
 
-    // parameter set passed on construction; sub-parameter sets contain specific information
-    fhicl::ParameterSet _pset;
-
     // Load G4 geometry options
     std::unique_ptr<G4GeometryOptions> _g4GeomOptions;
-    
 
     // Check the configuration.
     void checkConfig();
