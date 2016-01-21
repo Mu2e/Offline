@@ -14,6 +14,7 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
+
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CaloCluster/inc/CaloContentMC.hh"
@@ -85,7 +86,7 @@
 #include <vector>
 
 
-
+#include "GeneralUtilities/inc/sqrtOrThrow.hh"
 
 using namespace std;
 using CLHEP::Hep3Vector;
@@ -269,6 +270,8 @@ namespace mu2e {
     TH2F *_hFracVsTime, *_hRadiusVsTime, *_hFracVsRadius, *_hFracVsLocation, 
       *_hMuonFracVsLocation, *_hFracVsP;
 
+    int _timeDiff;
+
     TTree* _Ntup;
 
 
@@ -310,7 +313,16 @@ namespace mu2e {
     int _nDeltas;
        
 
+    int  _goodKfrac;
 
+    //
+    //for BaF2
+    double _eCrit = 1./ (0.7833/(610/(56+1.24)) + 0.2167/(610/(9.+1.24)));
+
+    //    CLHEP::Hep3Vector _firstDiskLoc;
+    //CLHEP::Hep3Vector _secondDiskLoc;
+    double _firstDiskZ;
+    double _secondDiskZ;
 
   };
 
@@ -336,6 +348,7 @@ namespace mu2e {
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shfLabel    (pset.get<std::string>("StrawHitFlagCollectionLabel" ,"FlagStrawHits"  )),
     _bkfLabel    (pset.get<std::string>("StrawHitBkgFlagCollectionLabel" ,"FlagBkgHits"  )),
+    _timeDiff(pset.get<int>("timeDifference",15)),
     _Ntup(0)
  
 
@@ -347,7 +360,7 @@ namespace mu2e {
 
     art::ServiceHandle<art::TFileService> tfs;
 
-    _Ntup  = tfs->make<TTree>("Calo", "Calo");
+    _Ntup  = tfs->make<TTree>("KineticFrac", "KineticFrac");
 
 
 
@@ -575,117 +588,14 @@ namespace mu2e {
    _hTanDipVsMomentumPion = tfs->make<TH2F>("_hTanDipVsMomentumPion","Tan Dip vs Momentum Pion",300,0.,300.,100,0.,3.);
 
 
+   //set up some constants
+
+
   }
 
 
 
   void KineticFracAnalysis::endJob(){
-
- 
-  _hfitstatus->Write();
-  _htrkcon->Write();
-  _htrkmomErr->Write();
-  _htrkt0->Write();
-  _htrkt0Err->Write();
-  _hfitpar_d0->Write();
-  _hfitpar_z0->Write();
-  _hfitpar_td->Write();
-  _hfitpar_om->Write();
-  _hfitpar_d0omega->Write();
-  _hPhi0->Write();
-  _hnactive->Write();
-  _hfitmom->Write();
-  _hevtwt->Write();
-  _hfitmomCutSetC->Write();
-  _hfitmomFinal->Write();
-  _hClusterEnergy->Write();
-  _hNumberOfClusters->Write();
-  _hClusterEnergyInWindow->Write();
-  _hNumberOfClustersInWindow->Write();
-  _hTimeOfCluster->Write();
-  _hHighestEnergyCluster->Write();
-  _hNumberOfTracks->Write();
-  _hMomentumOfTrackForCal->Write();
-  _hTotalEnergyInWindow->Write();
-  _hDistX->Write();
-  _hDistY->Write();
-  _htime->Write();
-  _hShortestDistance->Write();
-  _hClusterRadius->Write();
-  _hEnergyAtLargeRadius->Write();
-  _hNumberAtLargeRadius->Write();
-  _hTotalEnergyAtLargeRadius->Write();
-  _hPdgIdOfAllClustersAtLargeRadius->Write();
-
-  _hEnergyAtSmallRadius->Write();
-  _hNumberAtSmallRadius->Write();
-  _hTotalEnergyAtSmallRadius->Write();
-  _hPdgIdOfAllClustersAtSmallRadius->Write();
-
-
-  _hPdgId->Write();
-  _hCluConv->Write();
-  _hEoverP->Write();
-  _hEOverPZoom->Write();
-  _hDistToTrack->Write();
-
-  _hNumberOfHits->Write();
-  _hNumberOfHitsAfter650Nsec->Write();
-  _hTimeDiff->Write();
-  _hNHitsInTime->Write();
-  _hZOfHit->Write();
-  _hEnergyDeposit->Write();
-  _hEnergyDepositFront->Write();
-  _hNumberOfDeltas->Write();
-  _hTimeOfDeltaWrtT0->Write();
-  _hCloseDeltas->Write();
-  _hMuonSampleMomentum->Write();
-  _hFracVsTime->Write();
-  _hRadiusVsTime->Write();
-  _hFracVsRadius->Write();
-  _hFracVsLocation->Write();
-  _hMuonFracVsLocation->Write();
-  _hFracVsP->Write();
-  _hMuonFrac->Write();
-  _hPionFrac->Write();
-  _hMuonFracCutMomentum->Write();
-  _hPionFracCutMomentum->Write();
-  _hWeirdFracCutMomentum->Write();
-  _hWeirdFracCluster->Write();
-  _hMuonFracCluster->Write();
-  _hPionFracCluster->Write();
-  _hNumberOfCrystalsMedFrac->Write();
-  _hNumberOfCrystalsLowFrac->Write();
-  _hNumberOfCrystalsHighFrac->Write();
-  _hSingleCrystalFrac->Write();
-  _hDoubleCrystalFrac->Write();
-  _hTripleCrystalFrac->Write();
-  _hCascade->Write();
-  _hShortestDistanceClusterTime->Write();
-  _hErrVsMomMuon->Write();
-  _hErrVsD0Muon->Write();
-  _hErrVsOmegaMuon->Write();
-  _hErrVsTanDipMuon->Write();
-  _hTanDipVsMomentumMuon->Write();
-
-  _hErrVsMomPion->Write();
-  _hErrVsD0Pion->Write();
-  _hErrVsOmegaPion->Write();
-  _hErrVsTanDipPion->Write();
-  _hTanDipVsMomentumPion->Write();
-
- _hErrVsMomHiFrac->Write();
-  _hErrVsD0HiFrac->Write();
-  _hErrVsOmegaHiFrac->Write();
-  _hErrVsTanDipHiFrac->Write();
-  _hTanDipVsMomentumHiFrac->Write();
-
-
- _hErrVsMomLoFrac->Write();
-  _hErrVsD0LoFrac->Write();
-  _hErrVsOmegaLoFrac->Write();
-  _hErrVsTanDipLoFrac->Write();
-  _hTanDipVsMomentumLoFrac->Write();
 
   }
 
@@ -705,6 +615,16 @@ namespace mu2e {
       art::ServiceHandle<GeometryService> geom;
       if( ! geom->hasElement<Calorimeter>() ) return;
       Calorimeter const & cal = *(GeomHandle<Calorimeter>());
+
+      _firstDiskZ  = cal.toTrackerFrame(cal.section(0).frontFaceCenter()).z();
+      _secondDiskZ = cal.toTrackerFrame(cal.section(1).frontFaceCenter()).z();
+
+      std::cout << "checking disk locations " << _firstDiskZ << " " <<  _secondDiskZ << std::endl;
+
+      std::cout << " and other end " << cal.toTrackerFrame(cal.section(0).frontFaceCenter()) << " " << cal.toTrackerFrame(cal.section(1).frontFaceCenter())<<std::endl;
+      //Get handle to the tracker
+      if( ! geom->hasElement<TTracker>() ) return;
+      //      TTracker const & tracker = *(GeomHandle<TTracker>());
 
       //Get generated particles
       art::Handle<GenParticleCollection> gensHandle;
@@ -753,8 +673,6 @@ namespace mu2e {
       const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
       const double CrMass    = CrDensity*cal.caloGeomInfo().crystalVolume();
 
-
-
       double numberOfTracks = 0;
       double numberOfClusters = 0;
 
@@ -767,7 +685,7 @@ namespace mu2e {
        _evt = event.id().event();
        _run = event.run();
 
-       if (_diagLevel == 3){std::cout << "processing event in calo_example " << _nProcess << " run and event  = " << _run << " " << _evt << " with instance name = " << _instanceName << std::endl;}
+       if (_diagLevel == 3){std::cout << "processing event in Kinetic_Frac " << _nProcess << " run and event  = " << _run << " " << _evt << " with instance name = " << _instanceName << std::endl;}
 
 
       _nGen = genParticles.size();
@@ -795,7 +713,8 @@ namespace mu2e {
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
        {
            CaloCrystalHit const& hit    = caloCrystalHits.at(ic);
-           CLHEP::Hep3Vector crystalPos = cal.crystal(hit.id()).position();
+ 	   int sectionId                  = cal.crystal(hit.id()).sectionId();
+           CLHEP::Hep3Vector crystalPos   = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
            CaloHit const& caloHit       = *(hit.readouts().at(0));
 
 
@@ -818,8 +737,11 @@ namespace mu2e {
            _cryPosX[_nHits]      = crystalPos.x();
            _cryPosY[_nHits]      = crystalPos.y();
            _cryPosZ[_nHits]      = crystalPos.z();
+	   //	   std::cout << "z Position of crystal " << crystalPos.z() << std::endl;
+
+
            _cryId[_nHits]        = hit.id();
-           _crySectionId[_nHits] = cal.crystal(hit.id()).sectionId();
+           _crySectionId[_nHits] = sectionId;
            _crySimIdx[_nHits]    = _nSim;
            _crySimLen[_nHits]    = nPartInside;
 
@@ -832,18 +754,19 @@ namespace mu2e {
              art::Ptr<SimParticle> grandMother = mother;
              while (grandMother->hasParent()) grandMother = grandMother->parent();
              GenParticle const* generated = grandMother->genParticle() ? grandMother->genParticle().get() : 0;
+	     CLHEP::Hep3Vector hitSimPos = cal.toSectionFrameFF(sectionId,hitSim.position().at(ip)); //in disk FF frame
 
              _motId[_nSim]      = mother->id().asInt();
              _motPdgId[_nSim]   = mother->pdgId();
              _motmom[_nSim]     = hitSim.momentum().at(ip);
              _motcrCode[_nSim]  = mother->creationCode();
-             _motStartX[_nSim]  = mother->startPosition().x()+ 3904.;
-             _motStartY[_nSim]  = mother->startPosition().y();
-             _motStartZ[_nSim]  = mother->startPosition().z() - 10200;
+	     _motStartX[_nSim]  = mother->startPosition().x(); //in Mu2e frame
+	     _motStartY[_nSim]  = mother->startPosition().y();
+	     _motStartZ[_nSim]  = mother->startPosition().z();
              _motStartT[_nSim]  = mother->startGlobalTime();
-             _motPosX[_nSim]    = hitSim.position().at(ip).x() + 3904.;  //value used to shift in tracker coordinate system
-             _motPosY[_nSim]    = hitSim.position().at(ip).y();
-             _motPosZ[_nSim]    = hitSim.position().at(ip).z() - 10200;  //value used to shift in tracker coordinate system
+	     _motPosX[_nSim]    = hitSimPos.x(); // in disk FF frame
+	     _motPosY[_nSim]    = hitSimPos.y();
+	     _motPosZ[_nSim]    = hitSimPos.z();
              _motTime[_nSim]    = hitSim.time().at(ip);
              _motEdep[_nSim]    = hitSim.eDep().at(ip);
 	     
@@ -874,13 +797,19 @@ namespace mu2e {
             int idx = int(clusterIt->caloCrystalHitsPtrVector().at(i).get()- &caloCrystalHits.at(0));
             _list.push_back(idx);
           }
-
+	   std::cout << "cluster number = " << _nCluster << " " << clusterIt->time() << std::endl;
           _cluEnergy[_nCluster] = clusterIt->energyDep();
           _cluTime[_nCluster]   = clusterIt->time();
           _cluNcrys[_nCluster]  = clusterIt->size();
           _cluCogX[_nCluster]   = clusterIt->cog3Vector().x();
           _cluCogY[_nCluster]   = clusterIt->cog3Vector().y();
           _cluCogZ[_nCluster]   = clusterIt->cog3Vector().z();
+          if (clusterIt->sectionId() == 0)
+	    {_cluCogZ[_nCluster]   = _firstDiskZ;} 
+          else 
+	    {_cluCogZ[_nCluster]   = _secondDiskZ;}
+
+	   std::cout << " crystal position in z " << _cluCogZ[_nCluster] << std::endl; 
           _cluConv[_nCluster]   = clutil.hasConversion();
           _cluSimIdx[_nCluster] = _nCluSim;
           _cluSimLen[_nCluster] = sim1.size();
@@ -902,14 +831,15 @@ namespace mu2e {
               while (smother->hasParent()) smother = smother->parent();
               int genIdx=-1;
               if (smother->genParticle()) genIdx = smother->genParticle()->generatorId().id();
+              CLHEP::Hep3Vector cluSimPos = cal.toSectionFrameFF(clusterIt->sectionId(),clutil.position().at(ip));
 
              _clusimId[_nCluSim]     = sim1[ip]->id().asInt();
              _clusimPdgId[_nCluSim]  = sim1[ip]->pdgId();
              _clusimGenIdx[_nCluSim] = genIdx;
              _clusimMom[_nCluSim]    = clutil.momentum().at(ip);
-             _clusimPosX[_nCluSim]   = clutil.position().at(ip).x() + 3904.;  //value used to shift in tracker coordinate system
-             _clusimPosY[_nCluSim]   = clutil.position().at(ip).y();
-             _clusimPosZ[_nCluSim]   = clutil.position().at(ip).z() - 10200;  //value used to shift in tracker coordinate system
+             _clusimPosX[_nCluSim]   = cluSimPos.x(); // in disk FF frame
+             _clusimPosY[_nCluSim]   = cluSimPos.y();
+             _clusimPosZ[_nCluSim]   = cluSimPos.z();  
              _clusimTime[_nCluSim]   = clutil.time().at(ip);
              _clusimEdep[_nCluSim]   = clutil.edepTot().at(ip);
 	     
@@ -1085,16 +1015,104 @@ namespace mu2e {
 
     //std::cout << " number of good hits = " << _nGoodHits << std::endl;
 
-    _Ntup->Fill();
+    //    _Ntup->Fill();
 
     // extrapolate the track, see if lines up with a cluster, and calculate the kinetic fraction.
 
-    for (int ithtrk =  0; ithtrk < numberOfTracks;    ++ithtrk) {
+    // set validity variable.
+    //    std::cout << "from KineticFrac, upstream disk edge " << cal.section(0).zUpInTracker() << " " << cal.section(1).zUpInTracker() << std::endl;
+    //  std::cout << "                 and downstream ends " << cal.section(0).zDownInTracker() << " " << cal.section(1).zDownInTracker() << std::endl;
+    _goodKfrac = 0;
 
-      for (int ithclus = 0; ithclus < numberOfClusters; ++ithclus){
-      }    
+    if (numberOfTracks   == 0){_goodKfrac =1;}
+    if (numberOfClusters == 0 && numberOfTracks > 0){_goodKfrac = 2;}
+    if (numberOfClusters > 0 && numberOfTracks == 0){_goodKfrac = 3;}
+    int signFlip = 1;
+    std::cout << "number of tracks = " << numberOfTracks << std::endl;
+    for (int ithtrk =  0; ithtrk < numberOfTracks;    ++ithtrk) {
+	  if (_trkstat[ithtrk] > 0){
+
+	    //	    std::cout << "inside event id, fitstatus " << entry << " " << trkstat[ithtrk] << std::endl;
+	    _hnactive->Fill(_trknHit[ithtrk]);
+	    //if (nActiveHits < 15){std::cout << "nActiveHits = " << nActiveHits << std::endl;}
+	    _htrkcon->Fill(_trkcon[ithtrk]);
+	    _htrkmomErr->Fill(_trkmomErr[ithtrk]);
+	    _htrkt0->Fill(_trkt0[ithtrk]);
+	    _htrkt0Err->Fill(_trkt0Err[ithtrk]);
+	    _hfitpar_d0->Fill(signFlip*_trkd0[ithtrk]);
+	    _hfitpar_z0->Fill(_trkz0[ithtrk]);
+	    _hfitpar_d0omega->Fill(signFlip*(_trkd0[ithtrk]+ 2./_trkOmega[ithtrk]));
+	    _hfitpar_om->Fill(signFlip*_trkOmega[ithtrk]);
+	    _hfitpar_td->Fill(_trkDip[ithtrk]);
+	    _hfitmom->Fill(_trkMom[ithtrk]);
+	    _hPhi0->Fill(_trkPhi0[ithtrk]);
+	    /*
+	    _hErrVsMom->Fill(trkMom[ithtrk],trkmomErr[ithtrk]);
+	    _hErrVsD0->Fill(signFlip*trkd0[ithtrk],trkmomErr[ithtrk]);
+	    _hErrVsOmega->Fill(signFlip*trkOmega[ithtrk],trkmomErr[ithtrk]);
+	    _hErrVsTanDip->Fill(trkDip[ithtrk],trkmomErr[ithtrk]);
+	    _hTanDipVsMomentum->Fill(trkMom[ithtrk],trkDip[ithtrk]);
+	    */
+
+	    //
+	    // coordinate change from center of tracker to Mu2e
+	    _trkz0[ithtrk] = _trkz0[ithtrk] + 10175.;
+
+	    //
+	    //known offset from pezzullo, see his producer file
+	    _trkt0[ithtrk] -= 1.4;
+	  }	
     }
 
+
+    for (int ithtrk =  0; ithtrk < numberOfTracks;    ++ithtrk) {
+
+      // first thing to do is extrapolate track to the disks.  Does it get through first disk and end up striking second disk?
+
+	//
+	// extrapolate to first disk.  just use the helix since the spread on the 
+	//tracker is small compared to the location from the calorimeter.  On the 
+	//other hand, knowing from the track where the shower hit might be helpful 
+	//in making energy corrections for energy going down cracks.  
+	//So eventually will have to look at both
+
+      std::cout << "got a track" << std::endl;
+
+      double betaZ = _trkDip[ithtrk]/sqrtOrThrow(1. + _trkDip[ithtrk]*_trkDip[ithtrk],0.00001);
+
+     for (int ithclus = 0; ithclus < numberOfClusters; ++ithclus){
+
+       std::cout << "got a cluster" << std::endl;
+       //if this particle is being fitted under an e+/e- hypothesis, want to make a correction;
+       //if under a muon hypothesis, correction is zero
+       Float_t showerCorr;
+       if (_tpart == TrkParticle::e_minus || _tpart == TrkParticle::e_plus)
+	 { 
+
+	   std::cout << "in here" << std::endl;
+	   showerCorr = (  log(_cluEnergy[ithclus]/_eCrit) - 0.1 )*20.3; //adjusts for shower development, formula out of Rossi
+	 } else {showerCorr = 0.;}
+
+	    // showerCorr along axis; how far to project in z?
+	    showerCorr *= betaZ;
+	    double zClus = _cluCogZ[ithclus]; //need to add code for which disk this is, use right coordinates, etc.  placeholder
+
+	    std::cout << "zclus is " << zClus << std::endl;
+	    zClus += showerCorr;
+
+	    // l parameter 
+	    //
+	    //switch z0 to Mu2e coordinates
+	    double flightLength = (zClus - _trkz0[0])/_trkDip[0]; 
+	    //
+	    // some random code to avoid compile error
+	    flightLength += 0.;
+
+ 
+
+      }    
+    }
+   
   }
 
 }  // end namespace mu2e
