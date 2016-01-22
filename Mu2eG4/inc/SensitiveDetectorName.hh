@@ -74,9 +74,10 @@ namespace mu2e {
       return StepInstanceName::name(StepInstanceName::trackerWalls).c_str();
     }
 
-    static char const * MSTMCrystal() {
-      return StepInstanceName::name(StepInstanceName::MSTMCrystal).c_str();
+    static char const * STMDet() {
+      return StepInstanceName::name(StepInstanceName::STMDet).c_str();
     }
+   
 
   };
 

@@ -48,6 +48,7 @@
 #include "Mu2eG4/inc/constructVisualizationRegions.hh"
 #include "Mu2eG4/inc/constructDS.hh"
 #include "Mu2eG4/inc/constructMSTM.hh"
+#include "Mu2eG4/inc/constructSTM.hh"
 #include "Mu2eG4/inc/constructTS.hh"
 #include "Mu2eG4/inc/constructPS.hh"
 #include "Mu2eG4/inc/constructPSEnclosure.hh"
@@ -226,7 +227,10 @@ namespace mu2e {
       constructMSTM(hallInfo, _config);
     }
 
-
+    if ( _config.getBool("hasSTM",false) ) {
+      constructSTM(_config);
+    }
+    
     if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
 
       GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
@@ -604,10 +608,10 @@ namespace mu2e {
       SDman->AddNewDetector(psVacuumSD);
     }
 
-    if(sdHelper_->enabled(StepInstanceName::MSTMCrystal)) {
-      Mu2eSensitiveDetector* MSTMCrystalSD =
-        new Mu2eSensitiveDetector(    SensitiveDetectorName::MSTMCrystal(),  _config);
-      SDman->AddNewDetector(MSTMCrystalSD);
+    if(sdHelper_->enabled(StepInstanceName::STMDet)) {
+      Mu2eSensitiveDetector* STMDetSD =
+        new Mu2eSensitiveDetector(    SensitiveDetectorName::STMDet(),  _config);
+      SDman->AddNewDetector(STMDetSD);
     }
 
   } // instantiateSensitiveDetectors

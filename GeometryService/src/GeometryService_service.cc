@@ -79,6 +79,8 @@
 #include "GeometryService/inc/MECOStyleProtonAbsorberMaker.hh"
 #include "MBSGeom/inc/MBS.hh"
 #include "GeometryService/inc/MBSMaker.hh"
+#include "STMGeom/inc/STM.hh"
+#include "GeometryService/inc/STMMaker.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 #include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 
@@ -287,6 +289,11 @@ namespace mu2e {
     if(_config->getBool("hasProtonAbsorber",false) && !_config->getBool("protonabsorber.isHelical", false) ){
       MECOStyleProtonAbsorberMaker mecopam( *_config, ds, target);
       addDetector( mecopam.getMECOStyleProtonAbsorberPtr() );
+    }
+    
+    if(_config->getBool("hasSTM",false)){
+      STMMaker stm( *_config, beamline.solenoidOffset() );
+      addDetector( stm.getSTMPtr() );
     }
 
   // add DetectorModel.  At the moment this is just for the TTracker

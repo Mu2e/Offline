@@ -75,10 +75,12 @@ namespace mu2e {
       PSTargetSurf, // 82
       PT_Front, PT_Back,                         // 83, 84:  Forward and backward side of the production targets
       STMUpstream,                  // 85:  I'm not sure who named this STM, because it's not in the MSTM area (FIXME)
-      MSTM_WallUpStr, MSTM_Coll1DnStr, MSTM_ShutterDnStr, MSTM_Coll2DnStr, MSTM_Coll3DnStr,  // 86, 87, 88, 89, 90:  All inside MSTM area
+      //MSTM_WallUpStr, MSTM_Coll1DnStr, MSTM_ShutterDnStr, MSTM_Coll2DnStr, MSTM_Coll3DnStr,  // 86, 87, 88, 89, 90:  All inside MSTM area
+      STM_UpStr, STM_MagDnStr, STM_CollDnStr, STM_Det1UpStr, STM_Det2UpStr,  // 86, 87, 88, 89, 90:  All inside STM area
       PSPbarIn, PSPbarOut, // 91, 92: Front and back of the new pbar window in the PS
       CRV_R, CRV_L, CRV_T, CRV_D, CRV_U, // 93, 94, 95, 96, 97: virtual detectors next to the major CRV sectors
       TS2_Bend, TS4_Bend, // 98, 99: Virtual detectors requested by Mau for testing magnetic field effects - in the bends of TS
+      STM_FieldOfViewCollDnStr, // 100: inside STM area
       lastEnum
     };
 
@@ -119,10 +121,11 @@ namespace mu2e {
       "DSNeutronShieldExit", \
       "PSTargetSurf", \
       "PT_Front", "PT_Back","STMUpstream", \
-      "MSTM_WallUpStr", "MSTM_Coll1DnStr", "MSTM_ShutterDnStr", "MSTM_Coll2DnStr", "MSTM_Coll3DnStr", \
+      "STM_UpStr", "STM_MagDnStr", "STM_CollDnStr", "STM_Det1UpStr", "STM_Det2UpStr", \
       "PSPbarIn", "PSPbarOut",  \
       "CRV_R", "CRV_L", "CRV_T", "CRV_D", "CRV_U", \
-      "TS2_Bend", "TS4_Bend"
+      "TS2_Bend", "TS4_Bend", \
+      "STM_FieldOfViewCollDnStr"
 
   public:
 

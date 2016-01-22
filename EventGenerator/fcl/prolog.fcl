@@ -72,6 +72,13 @@ StoppedParticleReactionGun: {
     }
 }
 
+StoppedMuonXRayGammaRayGun: {
+    module_type    : StoppedMuonXRayGammaRayGun
+    muonStops      : @local::mu2e.tgtMuonStops
+    verbosityLevel : 1
+    physics        : { }
+}
+
 # Save state of random numbers at the start of each event
 # the module is defined in art/Framework/Modules
 

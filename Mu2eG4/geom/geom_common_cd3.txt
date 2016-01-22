@@ -16,6 +16,7 @@ bool hasBFieldManager   = true;
 bool hasBeamline        = true;
 bool hasVirtualDetector = true; // some components, e.g. ProtonAbsorber assume vd presence now;
 bool hasCosmicRayShield = true;
+bool hasSTM             = true;
 bool hasMBS             = true; // note the two subcomponents, see mbs section below;
                                 // no MBS implies no downstream hole in Cosmic Ray Passive Shield
                                 // Magnetic field may be affected as well
@@ -54,7 +55,9 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 
 #include "Mu2eG4/geom/TSdA_v01.txt"
 #include "Mu2eG4/geom/muonBeamStop_v03.txt"
-#include "Mu2eG4/geom/MSTM_v01.txt" // muon stopping target monitor
+
+//#include "Mu2eG4/geom/MSTM_v01.txt" // muon stopping target monitor (deprecated)
+#include "Mu2eG4/geom/STM_v01.txt" // (muon) stopping target monitor
 
 // Proton Absorber
 #include "Mu2eG4/geom/protonAbsorber_conical_v2.txt"

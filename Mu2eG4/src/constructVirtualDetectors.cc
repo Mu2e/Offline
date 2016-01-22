@@ -1640,93 +1640,177 @@ namespace mu2e {
     //-----------------------------------------------------------------------------------------------------------------------------
     // placing virtual detector in the MSTM Mother
     // FIXME get MSTM from GeometryService once in there
-    vdId = VirtualDetectorId::MSTM_WallUpStr;
+    vdId = VirtualDetectorId::STM_UpStr;
     if ( vdg->exist(vdId) ) {
 
-      const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
-      
-      const double vdRIn  = 0.0;
-      const double vdROut = _config.getDouble("vd.MSTMWallUpStr.r");
+      //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
+      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+      GeomHandle<CosmicRayShield> CRS;
+      //const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
+      const double yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
+      const double x_vd_halflength = (CRS->getSectorHalfLengths("D"))[0];
+      //const double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
+      const double y_mother_halflength = yExtentLow;
+      const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
 
-      const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
-
-      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                   vdParams,
-                                   downstreamVacuumMaterial,
-                                   0,
-                                   vdg->getLocal(vdId), //local position w.r.t. parent
-                                   parent,
-                                   vdId,
-                                   vdIsVisible, //
-                                   G4Color::White(),
-                                   vdIsSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   false
-                                   );
+      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                  dimVD,
+                                  downstreamVacuumMaterial,
+                                  0,                              //rotation
+                                  vdg->getLocal(vdId),
+                                  parent,
+                                  vdId,
+                                  vdIsVisible,
+                                  G4Color::White(),
+                                  vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false
+                                  );
 
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (MSTMMother) " << endl;
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
           cout << __func__ << "    VD parameters: " << vdParams << endl;
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
-      
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
+
+//     vdId = VirtualDetectorId::STM_CRVShieldDnStr;
+//     if ( vdg->exist(vdId) ) {
+// 
+//       const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+//       GeomHandle<CosmicRayShield> CRS;
+//       //const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
+//       const double yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
+//       const double x_vd_halflength = (CRS->getSectorHalfLengths("D"))[0];
+//       //const double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
+//       const double y_mother_halflength = yExtentLow;
+//       const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
+// 
+//       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+//                                   dimVD,
+//                                   downstreamVacuumMaterial,
+//                                   0,                              //rotation
+//                                   vdg->getLocal(vdId),
+//                                   parent,
+//                                   vdId,
+//                                   vdIsVisible,
+//                                   G4Color::White(),
+//                                   vdIsSolid,
+//                                   forceAuxEdgeVisible,
+//                                   placePV,
+//                                   false
+//                                   );
+// 
+//       if ( verbosityLevel > 0) {
+//           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+//                << " at " << vdg->getGlobal(vdId) << endl
+//                << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+//           cout << __func__ << "    VD parameters: " << vdParams << endl;
+//           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+//       }
+//       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+//       vdInfo.logical->SetSensitiveDetector(vdSD);
+//     }    
+
+    vdId = VirtualDetectorId::STM_FieldOfViewCollDnStr;
+    if ( vdg->exist(vdId) ) {
+
+      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+      GeomHandle<CosmicRayShield> CRS;
+      //const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
+      const double yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
+      const double x_vd_halflength = (CRS->getSectorHalfLengths("D"))[0];
+      //const double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
+      const double y_mother_halflength = yExtentLow;
+      const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
+
+      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                  dimVD,
+                                  downstreamVacuumMaterial,
+                                  0,                              //rotation
+                                  vdg->getLocal(vdId),
+                                  parent,
+                                  vdId,
+                                  vdIsVisible,
+                                  G4Color::White(),
+                                  vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false
+                                  );
+
+      if ( verbosityLevel > 0) {
+          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+               << " at " << vdg->getGlobal(vdId) << endl
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+          cout << __func__ << "    VD parameters: " << vdParams << endl;
+          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+      }
+      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+      vdInfo.logical->SetSensitiveDetector(vdSD);
+    }    
     
-    vdId = VirtualDetectorId::MSTM_Coll1DnStr;
+    vdId = VirtualDetectorId::STM_MagDnStr;
     if ( vdg->exist(vdId) ) {
 
-      const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-      //CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+      //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
+      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+      GeomHandle<CosmicRayShield> CRS;
+      //const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
+      double yExtentLow      = 0.0;
+      double x_vd_halflength = 0.0;
+      //double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
       
-      const double vdRIn  = 0.0;
-      const double vdROut = _config.getDouble("vd.MSTMColl1DnStr.r");
+      if (_config.getBool("stm.magnet.build",false)){
+        yExtentLow          = _config.getDouble("stm.magnet.halfHeight");
+        x_vd_halflength     = _config.getDouble("stm.magnet.halfWidth");
+      } else {
+        yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
+        x_vd_halflength = (CRS->getSectorHalfLengths("D"))[0];
+      }
+      const double y_mother_halflength = yExtentLow;
+      
+      const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
 
-      const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
-
-      VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                   vdParams,
-                                   downstreamVacuumMaterial,
-                                   0,
-                                   vdg->getLocal(vdId), //local position w.r.t. parent
-                                   parent,
-                                   vdId,
-                                   vdIsVisible, //
-                                   G4Color::White(),
-                                   vdIsSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   false
-                                   );
+      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+                                  dimVD,
+                                  downstreamVacuumMaterial,
+                                  0,                              //rotation
+                                  vdg->getLocal(vdId),
+                                  parent,
+                                  vdId,
+                                  vdIsVisible,
+                                  G4Color::White(),
+                                  vdIsSolid,
+                                  forceAuxEdgeVisible,
+                                  placePV,
+                                  false
+                                  );
 
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (MSTMMother) " << endl;
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
           cout << __func__ << "    VD parameters: " << vdParams << endl;
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
-      
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
+
     
-    vdId = VirtualDetectorId::MSTM_ShutterDnStr;
+    vdId = VirtualDetectorId::STM_CollDnStr;
     if ( vdg->exist(vdId) ) {
 
-      const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-      //CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
-      
+      //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
+      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
       const double vdRIn  = 0.0;
-      const double vdROut = _config.getDouble("vd.MSTMShutterDnStr.r");
-
+      const double vdROut = _config.getDouble("vd.STMCollDnStr.r");
       const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
@@ -1747,25 +1831,22 @@ namespace mu2e {
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (MSTMMother) " << endl;
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
           cout << __func__ << "    VD parameters: " << vdParams << endl;
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
-      
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
+
     
-    vdId = VirtualDetectorId::MSTM_Coll2DnStr;
+    vdId = VirtualDetectorId::STM_Det1UpStr;
     if ( vdg->exist(vdId) ) {
 
-      const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-      //CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
-      
+      //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
+      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
       const double vdRIn  = 0.0;
-      const double vdROut = _config.getDouble("vd.MSTMColl2DnStr.r");
-
+      const double vdROut = _config.getDouble("stm.det1.rOut");
       const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
@@ -1786,25 +1867,22 @@ namespace mu2e {
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (MSTMMother) " << endl;
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
           cout << __func__ << "    VD parameters: " << vdParams << endl;
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
-      
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
+
     
-    vdId = VirtualDetectorId::MSTM_Coll3DnStr;
+    vdId = VirtualDetectorId::STM_Det2UpStr;
     if ( vdg->exist(vdId) ) {
 
-      const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
-      CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
-      
+      //const VolumeInfo& parent = _helper->locateVolInfo("MSTMMother");
+      const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
       const double vdRIn  = 0.0;
-      const double vdROut = _config.getDouble("vd.MSTMColl3DnStr.r");
-
+      const double vdROut = _config.getDouble("stm.det2.rOut");
       const TubsParams vdParams(vdRIn, vdROut, vdg->getHalfLength());
 
       VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
@@ -1825,15 +1903,14 @@ namespace mu2e {
       if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (MSTMMother) " << endl;
+               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
           cout << __func__ << "    VD parameters: " << vdParams << endl;
           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
-      
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
       vdInfo.logical->SetSensitiveDetector(vdSD);
     }
+
 
     vdId = VirtualDetectorId::PSPbarIn;
     if ( vdg->exist(vdId) ) {

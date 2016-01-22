@@ -77,7 +77,7 @@ double mbs.CLV2ZrelCntr            =  1959.2;
 
 bool   mbs.CLV2.absorber.build          = true;
 string mbs.CLV2.absorber.MaterialName   = "Polyethylene096";
-double mbs.CLV2.absorber.halflength     =  15.0;
+double mbs.CLV2.absorber.halflength     =  10.0;
 
 int    mbs.verbosityLevel = 0;
 bool   mbs.visible      = true;
