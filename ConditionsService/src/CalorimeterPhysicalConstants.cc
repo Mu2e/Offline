@@ -24,14 +24,10 @@ namespace mu2e {
 	_criticalEnergyNeg = 0;
         _density = 0;
 
-    _materialType = config.getString("calorimeter.crystalMaterial","G4_CESIUM_IODIDE");
-    if (_materialType == "G4_CESIUM_IODIDE")
-      {
-	_radiationLength = 1.860*CLHEP::cm ; //cm
-	_criticalEnergyPos = 11.17*CLHEP::MeV; // e^-
-	_criticalEnergyNeg = 10.80*CLHEP::MeV; // e^+
-	_density = 4.51*CLHEP::g/CLHEP::cm3;// gm/cc
-      }
+	_radiationLength   = config.getDouble("calorimeter.radiationLengthCsI")*CLHEP::cm ; //cm
+	_criticalEnergyPos = config.getDouble("calorimeter.criticalEnergyPosCsI")*CLHEP::MeV; // e^-
+	_criticalEnergyNeg = config.getDouble("calorimeter.criticalEnergyNegCsI")*CLHEP::MeV; // e^-
+	_density           = config.getDouble("calorimeter.densityCsI")*CLHEP::g/CLHEP::cm3 ; // g/cc 
 
   }
 
