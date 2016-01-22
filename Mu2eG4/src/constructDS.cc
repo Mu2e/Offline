@@ -65,7 +65,7 @@ namespace mu2e {
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
     // Fetch DS geom. object
-    GeomHandle<DetectorSolenoid> ds;
+   GeomHandle<DetectorSolenoid> ds;
     CLHEP::Hep3Vector const & dsP ( ds->position() );
 
     // DS cryostat
@@ -403,12 +403,13 @@ namespace mu2e {
 
     }
 
+    // ************ End Shielding, begin Rails ************
+    // D. No. Brown
     // Add rails in DS2Vacuum
 
-    std::vector<CLHEP::Hep2Vector> railOutline;
+    //    std::vector<CLHEP::Hep2Vector> railOutline;
     std::vector<double> uRailOutline = ds->uOutlineRail();
     std::vector<double> vRailOutline = ds->vOutlineRail();
-
 
     const bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
     const bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
@@ -437,8 +438,6 @@ namespace mu2e {
 
     // And now in DS3Vacuum
 
-
-
      VolumeInfo RailN3 = nestExtrudedSolid
                       ( "NorthRailDS3", ds->lengthRail3()/2.0*CLHEP::mm,
  		       uRailOutline, vRailOutline, 
@@ -457,6 +456,55 @@ namespace mu2e {
  		       G4Colour::Blue(), _config.getBool("ds.solid"),
  		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
     
+     // Now put bearing blocks on rails
+     // D. No. Brown, Jan 2016
+     // First in DS2Vacuum region
+     std::vector<double> uBBlockOutline = ds->uOutlineBBlock();
+     std::vector<double> vBBlockOutline = ds->vOutlineBBlock();
+     CLHEP::HepRotation* BBRotat = new CLHEP::HepRotation( CLHEP::HepRotation::IDENTITY);
+     double lenBB2 = ds->lengthBBlock2()/2.0*CLHEP::mm;
+     double lenBB3 = ds->lengthBBlock3()/2.0*CLHEP::mm;
+     std::vector<CLHEP::Hep3Vector> BBCenters2 = ds->BBlockCenters2();
+     std::vector<CLHEP::Hep3Vector> BBCenters3 = ds->BBlockCenters3();
+     // First in DS2Vacuum region
+     int nB2 = BBCenters2.size();
+     CLHEP::Hep3Vector DS2Offset(0,0,ds2Z0);
+     for ( int iB2 = 0; iB2 < nB2; iB2++ ) {
+       std::stringstream sstm;
+       sstm << "BearingBlock_DS2_" << iB2+1;
+       VolumeInfo BBlock2 = nestExtrudedSolid
+	 ( sstm.str().c_str(), lenBB2,
+	   uBBlockOutline, vBBlockOutline, 
+	   findMaterialOrThrow(ds->BBlockMaterial()),
+	   BBRotat, BBCenters2[iB2] - DS2Offset,
+	   ds2VacInfo.logical, 0, _config.getBool("ds.visible"),
+	   G4Colour::Blue(), _config.getBool("ds.solid"),
+	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
+
+     }
+
+     // Now in DS3Vacuum region
+     int nB3 = BBCenters3.size();
+     for ( int iB3 = 0; iB3 < nB3; iB3++ ) {
+       std::stringstream sstm;
+       sstm << "BearingBlock_DS3_" << iB3+1;
+
+       VolumeInfo BBlock3 = nestExtrudedSolid
+	 ( sstm.str().c_str(), lenBB3,
+	   uBBlockOutline, vBBlockOutline, 
+	   findMaterialOrThrow(ds->BBlockMaterial()),
+	   BBRotat, BBCenters3[iB3],
+	   dsShieldParent, 0, _config.getBool("ds.visible"),
+	   G4Colour::Blue(), _config.getBool("ds.solid"),
+	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
+ 
+     }
+
+
+     //************* End of Rails and Bearing Blocks ************
+     //************** Begin pion Degrader code *************
+
+
     bool addPionDegrader  = _config.getBool("piondegrader.build",false);
     double piondegXoffset        = _config.getDouble("piondeg.xoffset");
     double piondegZoffset        = _config.getDouble("piondeg.zoffset");

@@ -7,7 +7,6 @@
 
 // C++ include files
 #include <iostream>
-#include <typeinfo>
 #include <utility>
 
 // Framework include files
@@ -82,7 +81,6 @@
 #include "STMGeom/inc/STM.hh"
 #include "GeometryService/inc/STMMaker.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
-#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 
 using namespace std;
 
@@ -97,7 +95,6 @@ namespace mu2e {
     _configStatsVerbosity( pset.get<int>         ("configStatsVerbosity", 0)),
     _printConfig(          pset.get<bool>        ("printConfig",          false)),
     _config(nullptr),
-    _pset(pset),
     _detectors(),
     _run_count()
   {
@@ -294,14 +291,6 @@ namespace mu2e {
     if(_config->getBool("hasSTM",false)){
       STMMaker stm( *_config, beamline.solenoidOffset() );
       addDetector( stm.getSTMPtr() );
-    }
-
-  // add DetectorModel.  At the moment this is just for the TTracker
-    auto findtt = _detectors.find(typeid(TTracker).name()); 
-    if(findtt != _detectors.end()){
-      const TTracker* tt = dynamic_cast<const TTracker*>(findtt->second.get());
-      if(tt != 0)
-	addDetector(std::move(std::unique_ptr<Mu2eDetectorModel>(new Mu2eDetectorModel(_pset.get<fhicl::ParameterSet>("Mu2eDetectorModel",fhicl::ParameterSet()),*tt))));
     }
 
   } // preBeginRun()

@@ -102,6 +102,22 @@ vector<double> ds.n2RailCenter = { 0, 0, 0 };
 vector<double> ds.s2RailCenter = { 0, 0, 0 };
 vector<double> ds.n3RailCenter = { 0, 0, 11090 };
 vector<double> ds.s3RailCenter = { 0, 0, 11090 };
+// Bearing blocks riding the rails.  Added Jan 2016
+int ds.nPtBBlock = 16;
+vector<double> ds.outlineBBlockU = {25, 28, 28, 20, 45, 45, 60, 45, -45, -60, -45, -45, -20, -28, -28, -25};
+vector<double> ds.outlineBBlockV = {0, -5, -10, -23, -23, -5, -5, 20, 20, -5, -5, -23, -23, -10, -5, 0};
+//vector<double> ds.outlineBBlockU = {30, 30, 55, 55, 70, 70, -70, -70, -55, -55, -30, -30};
+//vector<double> ds.outlineBBlockV = {0, -25, -25, -5, -5, 20, 20, -5, -5, -25, -25, 0};
+double ds.lengthBBlock2 = 150;
+double ds.lengthBBlock3 = 190;
+string ds.BBlockMaterialType = "StainlessSteel";
+int ds.nBBlocks = 20;
+vector<double> ds.xCentersBBlock = { 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500};//, 500, -500, 500, -500 };
+vector<double> ds.yCentersBBlock = { -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705}; //, -705, -705, -705, -705 };
+vector<double> ds.zCentersBBlock = { 4605, 4605, 5492,5492, 5821, 5821, 6121, 6121, 6976, 6976, 8028, 8028, 12025, 12025, 12725, 12725, 13355, 13355, 13655, 13655 };
+
+				     //9397, 9397, 10953, 10953, 
+// Temporarily discard Bearing blocks under tracker
 
 
 // Vacuum volumes inside DS

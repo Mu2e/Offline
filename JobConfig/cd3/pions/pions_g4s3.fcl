@@ -83,6 +83,20 @@ physics : {
             }
         } // g4run
 
+        vacuuas1 : {
+            module_type     : StepPointMCCollectionUpdater
+            remapping       : g4run
+            inputs          : [ "g4filter:vacuuas1:pionsg4s2" ]
+            outInstanceName : "vacuuas1"
+        }
+
+        vacuuas2 : {
+            module_type     : StepPointMCCollectionUpdater
+            remapping       : g4run
+            inputs          : [ "g4filter:vacuuas2:pionsg4s2" ]
+            outInstanceName : "vacuuas2"
+        }
+
         compressPVStop : {
             module_type    : CompressPhysicalVolumes
             volumesInput   : "g4run"
@@ -105,7 +119,7 @@ physics : {
             module_type               : FilterG4Out
             noInstanceName            : true
             mainHitInputs             : []
-            extraHitInputs            : [ "g4run:virtualdetector", "g4filter:vacuuas2" ]
+            extraHitInputs            : [ "g4run:virtualdetector", "vacuuas1:vacuuas1" , "vacuuas2:vacuuas2" ]
             mainSPPtrInputs           : [ "stoppedPionFinder" ]
             numSimParticleCollections : 1
             vetoDaughters             : [ "stoppedPionFinder" ]
@@ -113,23 +127,14 @@ physics : {
     } // filters
 
     analyzers : {
-
-        stoppedPionDumper : {
-            module_type      : StoppedParticlesDumper
-            inputCollection  : "stoppedPionFinder"
-            writeProperTime  : true
-            decayOffPDGCodes : [ -211, 211 ]
-            hitCollections   : [ "g4filter:vacuuas1", "g4filter:vacuuas2" ]
-        }
-
         genCountLogger : { module_type : GenEventCountReader }
     } // analyzers
 
-    pionStopFilter : [ g4run, stoppedPionFinder, stopFilter, compressPVStop ]
+    pionStopFilter : [ g4run, vacuuas1, vacuuas2, stoppedPionFinder, stopFilter, compressPVStop ]
     trigger_paths  : [ pionStopFilter ]
 
     out       : [ pionStopOutput ]
-    stops     : [ stoppedPionDumper, genCountLogger ]
+    stops     : [ genCountLogger ]
     end_paths : [ out, stops ]
 }
 
@@ -141,8 +146,6 @@ outputs : {
                            "keep mu2e::GenParticles_*_*_*",
                            "keep mu2e::GenEventCount_*_*_*",
                            "keep mu2e::StatusG4_*_*_*",
-                           "keep *_stoppedPionFinder_*_*",
-                           "keep *_g4filter_*_*",
                            "keep *_stopFilter_*_*",
                            "keep *_compressPVStop_*_*" ]
         fileName       : "sim.owner.cd3-pions-g4s3.version.sequencer.art"
@@ -151,6 +154,11 @@ outputs : {
 
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
 physics.producers.g4run.physics.noDecay     : [ 211, -211 ]
+
+// Limit the rate of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed          : 0

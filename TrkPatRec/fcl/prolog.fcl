@@ -77,7 +77,7 @@ KalFinalFit : {
   t0Tolerance                 : [ 2.0, 1.0, 1.0, 1.0 , 0.5  , 0.5 , 0.2, 0.2, 0.1]
 # specific choices for ambiguity resolution
   weedhits		      : @local::PanelAmbig.Weed
-  AddMaterial		      : [ false, false, false, true, false, false, false, true]
+  AddMaterial		      : [ false, false, false, true, false, false, false, true, true ]
   PanelAmbigResolver          : @local::PanelAmbig.Resolver
   ambiguityStrategy           : @local::PanelAmbig.Strategy
 }

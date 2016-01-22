@@ -47,7 +47,6 @@ mainlib = helper.make_mainlib ( [
 
 helper.make_plugins( [
     mainlib,
-    'mu2e_Mu2eBTrk',
     'mu2e_ExtinctionMonitorFNAL_Geometry',
     'mu2e_CalorimeterGeom',
     'mu2e_ProtonBeamDumpGeom',

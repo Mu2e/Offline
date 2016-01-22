@@ -89,7 +89,18 @@ namespace mu2e {
     CLHEP::Hep3Vector s2RailCenter() const { return _s2RailCenter; }
     CLHEP::Hep3Vector n3RailCenter() const { return _n3RailCenter; }
     CLHEP::Hep3Vector s3RailCenter() const { return _s3RailCenter; }
-    
+    // Bearing Blocks for rails, similarly split into DS2Vacuum part and 
+    // DS3Vacuum part, except outlines and material  D. No. Brown, Jan 2016.
+    std::vector<double>  uOutlineBBlock() const { return _uOutlineBBlock; }
+    std::vector<double>  vOutlineBBlock() const { return _vOutlineBBlock; }
+    std::string BBlockMaterial() const { return _BBlockMaterial; }
+    double lengthBBlock2() const { return _lengthBBlock2; }
+    double lengthBBlock3() const { return _lengthBBlock3; }
+    std::vector<CLHEP::Hep3Vector> BBlockCenters2() const {
+      return _BBlockCenters2; }
+    std::vector<CLHEP::Hep3Vector> BBlockCenters3() const {
+      return _BBlockCenters3; }
+
 
     // Vacuum volumes inside DS
     //
@@ -165,6 +176,14 @@ namespace mu2e {
     CLHEP::Hep3Vector                  _s2RailCenter;
     CLHEP::Hep3Vector                  _n3RailCenter;
     CLHEP::Hep3Vector                  _s3RailCenter;
+    // Bearing blocks on rails
+    std::vector<double>                _uOutlineBBlock;
+    std::vector<double>                _vOutlineBBlock;
+    std::string                        _BBlockMaterial;
+    double                             _lengthBBlock2;
+    double                             _lengthBBlock3;
+    std::vector<CLHEP::Hep3Vector>     _BBlockCenters2;
+    std::vector<CLHEP::Hep3Vector>     _BBlockCenters3;
 
 
     // Vacuum volumes inside DS
