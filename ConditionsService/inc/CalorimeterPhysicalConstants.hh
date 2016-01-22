@@ -34,7 +34,6 @@ namespace mu2e
     double _criticalEnergyPos;
     double _density;
 
-    std::string _materialType;
 
     // We want to discourage multi-phase construction.
     CalorimeterPhysicalConstants();
