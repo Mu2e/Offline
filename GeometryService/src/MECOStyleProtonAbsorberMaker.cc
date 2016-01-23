@@ -259,7 +259,7 @@ namespace mu2e {
     (_pabs->_oPAthickness) = oPAthick;
 
     ////////////////////////
-    // Support Wires for IPA
+    // Support Structure for IPA
     ////////////////////////
 
     const std::size_t supportSets   = _config.getInt   ("protonabsorber.ipa.nSets"        ,0 );
@@ -286,45 +286,8 @@ namespace mu2e {
     const double wireRotation = _config.getDouble("protonabsorber.ipa.wireRotationToVertical", 45);
     const double wire_rotation_from_vertical = wireRotation*CLHEP::deg;
 
-
-    for ( std::size_t iS(0); iS < _pabs->_ipaSupport->nSets() ; iS++ ) {
-      std::vector<Tube> wireVector;
-
-      double zPosition = 0;
-      if (_IPAVersion == 1) {
-	zPosition = ipazstart + zSpacing*(iS+1);
-      }
-      else if (_IPAVersion == 2) {
-	zPosition = ipazstart + zSpacing*(iS);
-      }
-
-      const double wireOuterRadius = oPAin0 + ( zPosition-opazstart )*(oPAin1-oPAin0)/(2*_pabs->_oPAhalflength);
-      const double wireInnerRadius = pabs1rOut0 + ( zPosition-ipazstart )*(pabs1rOut1-pabs1rOut0)/(2*pabs1halflen);
-      double wireLength      = wireOuterRadius - wireInnerRadius;
-
-      if (_IPAVersion == 2) { // for v2, we want the wire to be angled from the vertical in order to provide longitudinal tension
-	wireLength = wireLength / sin(wire_rotation_from_vertical);
-      }
-
-
-      for ( std::size_t iW(0); iW < _pabs->_ipaSupport->nWiresPerSet() ; iW++ ) {
-        wireVector.push_back( Tube( 0. ,
-                                    wireRadius ,
-                                    wireLength*0.5-3.0, // 3.0 offset to avoid run-ins with the absorbers
-                                    CLHEP::Hep3Vector( -3904, 0., zPosition ),
-                                    CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
-                                    0,
-                                    CLHEP::twopi,
-                                    wireMaterial
-                                    )
-                              );
-      }
-      _pabs->_ipaSupport->_supportWireMap.push_back( wireVector );
-    }
-
     ////////////////////
     // End Rings for IPA
-    ////////////////////
 
     // defaults chosen so that there are no end-rings for v1 of the IPA
     _pabs->_ipaSupport->_nEndRings = _config.getInt("protonabsorber.ipa.nEndRings", 0);
@@ -335,8 +298,8 @@ namespace mu2e {
     for (std::size_t iRing(0); iRing < _pabs->_ipaSupport->nEndRings(); iRing++) {
       const double zPosition = ipazstart + zSpacing*(iRing); // same z spacing as for the wire sets
       
-      const double endRingInnerRadius = pabs1rOut0 + ( zPosition-ipazstart )*(pabs1rOut1-pabs1rOut0)/(2*pabs1halflen); // have the end ring on the outside of the IPA
-      const double endRingOuterRadius = endRingInnerRadius + endRingRadialLength;
+      const double endRingOuterRadius = pabs1rIn0 + ( zPosition-ipazstart )*(pabs1rIn1-pabs1rIn0)/(2*pabs1halflen) - 2.5; // have the end ring on the inside of the IPA
+      const double endRingInnerRadius = endRingOuterRadius - endRingRadialLength;
 
       _pabs->_ipaSupport->_endRingMap.push_back( Tube( endRingInnerRadius,
 						       endRingOuterRadius,
@@ -348,6 +311,44 @@ namespace mu2e {
 						       endRingMaterial
 						       )
 						 );
+    }
+
+    /////////////////
+    // Wires for IPA
+
+    for ( std::size_t iS(0); iS < _pabs->_ipaSupport->nSets() ; iS++ ) {
+      std::vector<Tube> wireVector;
+
+      double zPosition = 0;
+      if (_IPAVersion == 1) {
+	zPosition = ipazstart + zSpacing*(iS+1);
+      }
+      else if (_IPAVersion == 2) {
+	zPosition = ipazstart + zSpacing*(iS); 
+      }
+
+      const double wireOuterRadius = oPAin0 + ( zPosition-opazstart )*(oPAin1-oPAin0)/(2*_pabs->_oPAhalflength);
+      const double wireInnerRadius = pabs1rOut0 + ( zPosition-ipazstart )*(pabs1rOut1-pabs1rOut0)/(2*pabs1halflen);
+      double wireLength      = wireOuterRadius - wireInnerRadius;
+
+      if (_IPAVersion == 2) { // for v2, we want the wire to be angled from the vertical in order to provide longitudinal tension
+	wireLength = wireLength / cos(wire_rotation_from_vertical);
+      }
+
+
+      for ( std::size_t iW(0); iW < _pabs->_ipaSupport->nWiresPerSet() ; iW++ ) {
+        wireVector.push_back( Tube( 0. ,
+                                    wireRadius ,
+                                    wireLength*0.5-4.0, // 4.0 offset to avoid run-ins with the absorbers
+                                    CLHEP::Hep3Vector( -3904, 0., zPosition ),
+                                    CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
+                                    0,
+                                    CLHEP::twopi,
+                                    wireMaterial
+                                    )
+                              );
+      }
+      _pabs->_ipaSupport->_supportWireMap.push_back( wireVector );
     }
 
   }

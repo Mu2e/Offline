@@ -2,6 +2,12 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_1
 
+12. edmonds   22 Jan 2016
+    - Modified IPA so that the end rings are inside the IPA and not outside
+    - Also construct the end rings before the wires so that we see the overlaps if we just do a surface check in this volume
+    - Swapped the radial and longitudinal lengths of the end rings so that they are the right way round
+    - Made the cylindirical R = 300 mm, L/2 = 500 mm and Z = 630 mm downstream of the stopping target the default IPA geometry
+
 11. dnbrow01  20 Jan 2016
     Add a crude model for the Calorimeter electronics crates based on a 
     model by Yuri O.  The outer radius of the crates had to be reduced to
