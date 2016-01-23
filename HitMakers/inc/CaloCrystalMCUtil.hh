@@ -11,6 +11,7 @@
 // C++ includes
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 // Mu2e includes.
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -55,7 +56,8 @@ namespace mu2e {
 	 public:
 
 	   CaloCrystalMCUtil() {}
-	   void fillSimMother(Calorimeter const& cal, PtrStepPointMCVector const& mcptr,CaloHitSimPartMC& caloHitSimPartMC);
+	   void fillSimMother(Calorimeter const& cal, PtrStepPointMCVector const& mcptr,CaloHitSimPartMC& caloHitSimPartMC, 
+	                      const std::unordered_map<const StepPointMC*, double> &timeMap);
 
 
 	 private:

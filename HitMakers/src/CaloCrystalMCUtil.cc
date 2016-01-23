@@ -28,6 +28,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
+#include <unordered_map>
 
 // Mu2e includes
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -45,7 +46,8 @@ namespace mu2e {
 
 
     
-     void CaloCrystalMCUtil::fillSimMother(Calorimeter const& cal, PtrStepPointMCVector const& mcptr, CaloHitSimPartMC& caloHitSimPartMC)
+     void CaloCrystalMCUtil::fillSimMother(Calorimeter const& cal, PtrStepPointMCVector const& mcptr, CaloHitSimPartMC& caloHitSimPartMC, 
+                                           const std::unordered_map<const StepPointMC*, double> &timeMap)
      {
        
 	 SimStepMap simStep;
@@ -95,7 +97,13 @@ namespace mu2e {
 	  for (SimStepMap::const_iterator it=simStep.begin();it!=simStep.end();++it)
 	  {        
 	     StepPtr const& mchit = it->second.step();
-	     caloHitSimPartMC.add(it->first,it->second.edepTot(),mchit->time(),mchit->momentum().mag(),mchit->position());
+	     
+	     
+	     double htime = mchit->time();
+	     auto iter = timeMap.find(&(*mchit));
+	     if (iter != timeMap.end()) htime = iter->second;
+	     
+	     caloHitSimPartMC.add(it->first,it->second.edepTot(),htime,mchit->momentum().mag(),mchit->position());
 	  }        	
 
      }

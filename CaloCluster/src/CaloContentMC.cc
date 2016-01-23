@@ -11,7 +11,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 
 #include "CaloCluster/inc/CaloContentMC.hh"
-#include "HitMakers/inc/CaloCrystalMCUtil.hh"
 
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"

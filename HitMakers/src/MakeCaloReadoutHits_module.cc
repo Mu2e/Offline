@@ -18,6 +18,7 @@
 #include <string>
 #include <cmath>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <utility>
 
@@ -271,6 +272,7 @@ namespace mu2e {
     if ( firstEvent ) {
       printDataProductInfo( crystalStepsHandles, readoutStepsHandles);
       firstEvent = false;
+      std::cout<<"Timegap is set to "<<_timeGap<<std::endl;
     }
     
 
@@ -342,9 +344,9 @@ namespace mu2e {
     HitMap hitmapCrystal,hitmapRO;        
     fillMapById( hitmapCrystal, crystalStepsHandles);
     fillMapById( hitmapRO, readoutStepsHandles);
-    
+
     CaloCrystalMCUtil readoutUtil;
-    
+    std::unordered_map<const StepPointMC*, double> tmap;
     
     // First step, we loop over the StepPoints of each crystal and create a Hit for each stepPoint.
     // Faster than looping over the readouts and associating the same crystal hits several times
@@ -353,6 +355,7 @@ namespace mu2e {
       vector<ROHit> cr_hits;
       int crid = crIter.first;
       StepPtrs const& isteps = crIter.second;
+      
       
 	
       // Loop over steps inside the crystal for a given crystal id
@@ -379,7 +382,10 @@ namespace mu2e {
 	// time folding and Adding ghost hits to properly treat boundary conditions with folding, see docdb-3425
 	double hitTimeUnfolded = _toff.timeWithOffsetsApplied(h);
 	double hitTime         = fmod(hitTimeUnfolded,_mbtime);
-
+        
+        const StepPointMC* hptr = &h;
+	tmap[hptr]=hitTime;
+	
 	// 2015-09-30 P.Murat: given that hits are 'point-like' things, need only the first if
 
 	if (hitTime > _blindTime) {
@@ -458,6 +464,7 @@ namespace mu2e {
 	// A tool to add the art::Ptr to the correct output collection.
 	PtrAdder addPtr( mcptr_crystal, mcptr_readout );
 	
+        
 
 	// Loop over sorted hits and form complete ro/calorimeter hits
 	// We will need to digitize the hits here, simulate APD response
@@ -476,7 +483,7 @@ namespace mu2e {
 					  <<"and energy = "<<h_edepc+h_type*addEdep<<std::endl;		      		    
 	      
 	      CaloHitSimPartMC  caloHitSimPartMC;
-	      if (_fillDetailedHit) readoutUtil.fillSimMother(cal,mcptr_crystal,caloHitSimPartMC);
+	      if (_fillDetailedHit) readoutUtil.fillSimMother(cal,mcptr_crystal,caloHitSimPartMC,tmap);
 	      
 	      caloHits.push_back(       CaloHit(       roid,h_time,h_edepc+h_type*addEdep));
 	      caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_type));
@@ -508,7 +515,7 @@ namespace mu2e {
 				    <<"and energy = "<<h_edepc+h_type*addEdep<<std::endl;
 	
 	CaloHitSimPartMC  caloHitSimPartMC;
-	if (_fillDetailedHit) readoutUtil.fillSimMother(cal,mcptr_crystal,caloHitSimPartMC);
+	if (_fillDetailedHit) readoutUtil.fillSimMother(cal,mcptr_crystal,caloHitSimPartMC,tmap);
 	
 	
 	caloHits.push_back(       CaloHit(roid,h_time,h_edepc+h_type*addEdep));

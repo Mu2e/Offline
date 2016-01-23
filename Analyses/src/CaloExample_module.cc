@@ -119,6 +119,7 @@ namespace mu2e {
 
 
        int _diagLevel;
+       bool _doGenerated;
        int _nProcess;
 
        std::string _g4ModuleLabel;
@@ -164,7 +165,7 @@ namespace mu2e {
        int   _cluConv[16384],_cluSimIdx[16384],_cluSimLen[16384];
        std::vector<std::vector<int> > _cluList;
 
-       int   _clusimId[16384],_clusimPdgId[16384],_clusimGenIdx[16384];
+       int   _clusimId[16384],_clusimPdgId[16384],_clusimGenIdx[16384],_clusimCrCode[16384];
        float _clusimMom[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimTime[16384],_clusimEdep[16384];
 
        int   _nVd,_vdId[16384],_vdPdgId[16384],_vdenIdx[16384];
@@ -183,6 +184,7 @@ namespace mu2e {
   CaloExample::CaloExample(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     _diagLevel(pset.get<int>("diagLevel",0)),
+    _doGenerated(pset.get<bool>("doGenerated",false)),
     _nProcess(0),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _generatorModuleLabel(pset.get<string>("generatorModuleLabel")),
@@ -269,6 +271,7 @@ namespace mu2e {
        _Ntup->Branch("clusimId",     &_clusimId ,    "clusimId[nCluSim]/I");
        _Ntup->Branch("clusimPdgId",  &_clusimPdgId , "clusimPdgId[nCluSim]/I");
        _Ntup->Branch("clusimGenIdx", &_clusimGenIdx ,"clusimGenIdx[nCluSim]/I");
+       _Ntup->Branch("clusimCrCode", &_clusimCrCode ,"clusimCrCode[nCluSim]/I");
        _Ntup->Branch("clusimMom",    &_clusimMom ,   "clusimMom[nCluSim]/F");
        _Ntup->Branch("clusimPosX",   &_clusimPosX ,  "clusimPosX[nCluSim]/F");
        _Ntup->Branch("clusimPosY",   &_clusimPosY ,  "clusimPosY[nCluSim]/F");
@@ -344,11 +347,6 @@ namespace mu2e {
       if( ! geom->hasElement<Calorimeter>() ) return;
       Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
-      //Get generated particles
-      art::Handle<GenParticleCollection> gensHandle;
-      event.getByLabel(_generatorModuleLabel, gensHandle);
-      GenParticleCollection const& genParticles(*gensHandle);
-
       //Get calorimeter readout hits (2 readout / crystal as of today)
       art::Handle<CaloHitCollection> caloHitsHandle;
       event.getByLabel(_caloReadoutModuleLabel, caloHitsHandle);
@@ -407,20 +405,32 @@ namespace mu2e {
        if (_diagLevel == 3){std::cout << "processing event in calo_example " << _nProcess << " run and event  = " << _run << " " << _evt << " with instance name = " << _instanceName << std::endl;}
 
 
-      _nGen = genParticles.size();
-       for (unsigned int i=0; i < genParticles.size(); ++i)
+       const mu2e::GenParticle* genStart(nullptr);
+       if (_doGenerated)
        {
-           GenParticle const* gen = &genParticles[i];
-           _genPdgId[i]   = gen->pdgId();
-           _genCrCode[i]  = gen->generatorId().id();
-           _genmomX[i]    = gen->momentum().vect().x();
-           _genmomY[i]    = gen->momentum().vect().y();
-           _genmomZ[i]    = gen->momentum().vect().z();
-           _genStartX[i]  = gen->position().x();
-           _genStartY[i]  = gen->position().y();
-           _genStartZ[i]  = gen->position().z();
-           _genStartT[i]  = gen->time();
-       }
+
+           //Get generated particles
+           art::Handle<GenParticleCollection> gensHandle;
+           event.getByLabel(_generatorModuleLabel, gensHandle);
+           GenParticleCollection const& genParticles(*gensHandle);
+           genStart = &(genParticles.at(0));
+	   
+	   
+	   _nGen = genParticles.size();
+	   for (unsigned int i=0; i < genParticles.size(); ++i)
+	   {
+               GenParticle const* gen = &genParticles[i];
+               _genPdgId[i]   = gen->pdgId();
+               _genCrCode[i]  = gen->generatorId().id();
+               _genmomX[i]    = gen->momentum().vect().x();
+               _genmomY[i]    = gen->momentum().vect().y();
+               _genmomZ[i]    = gen->momentum().vect().z();
+               _genStartX[i]  = gen->position().x();
+               _genStartY[i]  = gen->position().y();
+               _genStartZ[i]  = gen->position().z();
+               _genStartT[i]  = gen->time();
+	   }
+       } else {_nGen=0;}
 
 
 
@@ -438,6 +448,8 @@ namespace mu2e {
 
            const CaloHitSimPartMC &hitSim = caloHitNavigator.sim(caloHit);
            int nPartInside                = hitSim.simParticles().size();
+
+
 
 
            _hcryE->Fill(hit.energyDep());
@@ -485,7 +497,7 @@ namespace mu2e {
                _motEdep[_nSim]    = hitSim.eDep().at(ip);
 
                _motGenIdx[_nSim]  = -1;
-               if (generated) _motGenIdx[_nSim] = generated - &(genParticles.at(0));
+               if (_doGenerated && generated) _motGenIdx[_nSim] = generated - genStart;
                ++_nSim;
            }
 
@@ -532,6 +544,7 @@ namespace mu2e {
           _hcluE1E25->Fill(clusterIt->e1()/clusterIt->e25());
           //note: a signal cluster is defined as _cluConv==1 and _cluSimLen==1 (if it has a signal and there is only one inside)
 
+
           for (unsigned int ip=0; ip<sim1.size();++ip)
           {
               art::Ptr<SimParticle> smother = sim1[ip];
@@ -544,6 +557,7 @@ namespace mu2e {
              _clusimId[_nCluSim]     = sim1[ip]->id().asInt();
              _clusimPdgId[_nCluSim]  = sim1[ip]->pdgId();
              _clusimGenIdx[_nCluSim] = genIdx;
+             _clusimCrCode[_nCluSim] = sim1[ip]->creationCode();
              _clusimMom[_nCluSim]    = clutil.momentum().at(ip);
              _clusimPosX[_nCluSim]   = cluSimPos.x(); // in disk FF frame
              _clusimPosY[_nCluSim]   = cluSimPos.y();

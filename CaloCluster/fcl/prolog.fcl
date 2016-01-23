@@ -24,8 +24,8 @@ BEGIN_PROLOG
 	  caloClusterModuleLabel : MakeCaloProtoCluster
 	  mainClusterCollName    : mainCluster
 	  splitClusterCollName   : splitCluster
-	  deltaTimePlus          : 10
-	  deltaTimeMinus         : 10
+	  deltaTimePlus          : 5
+	  deltaTimeMinus         : 5
 	  maxDistSplit           : 100
 	  maxDistMain            : 100
 	  cogTypeName            : Linear
