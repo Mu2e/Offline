@@ -22,16 +22,16 @@ namespace mu2e
     CalorimeterPhysicalConstants ( SimpleConfig const& config );
 
     double radiationLength()    const{return _radiationLength;}
-    double criticalEnergyNeg()  const{return _criticalEnergyNeg;}
     double criticalEnergyPos()  const{return _criticalEnergyPos;}
+    double criticalEnergyNeg()  const{return _criticalEnergyNeg;}
     double density()            const{return _density;}
 
 
   private:
 
     double _radiationLength;
-    double _criticalEnergyNeg;
     double _criticalEnergyPos;
+    double _criticalEnergyNeg;
     double _density;
 
 
