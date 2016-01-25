@@ -1,4 +1,4 @@
-#include "Mu2eG4/geom/geom_common_cd3.txt"
+#include "Mu2eG4/geom/geom_common_cd3_p2.txt"
 #include "Mu2eG4/geom/g4_userOptions.txt"
 
 // This tells emacs to view this file in c++ mode.
