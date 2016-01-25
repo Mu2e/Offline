@@ -20,6 +20,7 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/DAQParams.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "ConditionsService/inc/CalorimeterPhysicalConstants.hh"
 #include "ConditionsService/inc/ExtMonFNALConditions.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 // sources of served objects
@@ -85,6 +86,7 @@ namespace mu2e {
     addEntity( std::move(acctmp) );
     addEntity( std::move(std::unique_ptr<DAQParams>          ( new DAQParams          (_config))) );
     addEntity( std::move(std::unique_ptr<CalorimeterCalibrations>( new CalorimeterCalibrations(_config))) );
+    addEntity( std::move(std::unique_ptr<CalorimeterPhysicalConstants>( new CalorimeterPhysicalConstants(_config))) );
     addEntity( std::move(std::unique_ptr<TrackerCalibrations>( new TrackerCalibrations(_config))) );
     addEntity( std::move(std::unique_ptr<ExtMonFNALConditions>( new ExtMonFNALConditions(accp, _config))) );
     addEntity(std::move(std::unique_ptr<StrawElectronics>(new StrawElectronics(_pset.get<fhicl::ParameterSet>("StrawElectronics",fhicl::ParameterSet())))) );
