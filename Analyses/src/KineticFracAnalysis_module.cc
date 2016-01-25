@@ -12,6 +12,7 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GlobalConstantsService/inc/unknownPDGIdName.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/CalorimeterPhysicalConstants.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
 
@@ -611,6 +612,10 @@ namespace mu2e {
       double _mbtime = accPar->deBuncherPeriod;
       _toff.updateMap(event);
 
+      ConditionsHandle<CalorimeterPhysicalConstants> calPhys("ignored");
+      double density = calPhys->density();
+      std::cout << "density is " << density << std::endl;
+
       //Get handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
       if( ! geom->hasElement<Calorimeter>() ) return;
@@ -865,12 +870,15 @@ namespace mu2e {
                double hitTimeUnfolded = _toff.timeWithOffsetsApplied(hit);
    	       double hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
+              CLHEP::Hep3Vector VDPos = cal.toTrackerFrame(hit.position());
+
                _vdId[_nVd]    = hit.volumeId();
                _vdPdgId[_nVd] = hit.simParticle()->pdgId();
                _vdTime[_nVd]  = hitTime;//hit.time();
-               _vdPosX[_nVd]  = hit.position().x()+ 3904;
-               _vdPosY[_nVd]  = hit.position().y();
-               _vdPosZ[_nVd]  = hit.position().z()-10200;
+               _vdPosX[_nVd]  = VDPos.x(); //tracker frame
+               _vdPosY[_nVd]  = VDPos.y();
+               _vdPosZ[_nVd]  = VDPos.z();
+
                _vdMom[_nVd]   = hit.momentum().mag();
                _vdenIdx[_nVd] = hit.simParticle()->generatorIndex();
                ++_nVd;
