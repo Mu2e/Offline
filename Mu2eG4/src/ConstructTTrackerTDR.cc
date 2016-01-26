@@ -380,7 +380,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 void
 mu2e::ConstructTTrackerTDR::constructStations(){
 
-  int devDraw(_config.getInt("ttracker.devDraw",-1));
+  int plnDraw(_config.getInt("ttracker.plnDraw",-1));
 
   // Build logical volume heirarchy for a single panel (panel).
   VolumeInfo basePanel = preparePanel();
@@ -398,45 +398,45 @@ mu2e::ConstructTTrackerTDR::constructStations(){
 
   double dPhiPanel = panelHalfAzimuth();
 
-  for ( int idev=0; idev<_ttracker.nPlanes(); ++idev ){
+  for ( int ipln=0; ipln<_ttracker.nPlanes(); ++ipln ){
 
-    if ( devDraw > -1 && idev > devDraw ) continue;
+    if ( plnDraw > -1 && ipln > plnDraw ) continue;
 
     if (_verbosityLevel > 0 ) {
-      cout << "Debugging dev: " << idev << " devDraw: " << devDraw << endl;
-      cout << __func__ << " working on plane:   " << idev << endl;
+      cout << "Debugging pln: " << ipln << " plnDraw: " << plnDraw << endl;
+      cout << __func__ << " working on plane:   " << ipln << endl;
     }
 
-    const Plane& plane = _ttracker.getPlane(idev);
+    const Plane& plane = _ttracker.getPlane(ipln);
 
     if (!plane.exists()) continue;
     if (_verbosityLevel > 0 ) {
-      cout << __func__ << " existing   plane:   " << idev << endl;
+      cout << __func__ << " existing   plane:   " << ipln << endl;
     }
 
     // plane.origin() is in the detector coordinate system.
-    // devPosition - is in the coordinate system of the Tracker mother volume.
-    CLHEP::Hep3Vector devPosition = plane.origin()+ _offset;
+    // plnPosition - is in the coordinate system of the Tracker mother volume.
+    CLHEP::Hep3Vector plnPosition = plane.origin()+ _offset;
 
     if ( _verbosityLevel > 1 ){
       cout << "Debugging -plane.rotation(): " << -plane.rotation() << " " << endl;
       cout << "Debugging plane.origin():    " << plane.origin() << " " << endl;
-      cout << "Debugging position in mother: " << devPosition << endl;
+      cout << "Debugging position in mother: " << plnPosition << endl;
     }
 
 
     // We need a new logical volume for each plane envelope - because the panels
     // may be placed differently.  We need a distinct name for each logical volume.
     ostringstream os;
-    os << "_"  << std::setfill('0') << std::setw(2) << idev;
+    os << "_"  << std::setfill('0') << std::setw(2) << ipln;
 
-    VolumeInfo devInfo = nestTubs( trackerEnvelopeName + os.str(),
+    VolumeInfo plnInfo = nestTubs( trackerEnvelopeName + os.str(),
                                    planeEnvelopeParams,
                                    envelopeMaterial,
                                    noRotation,
-                                   devPosition,
+                                   plnPosition,
                                    _motherInfo.logical,
-                                   idev,
+                                   ipln,
                                    planeEnvelopeVisible,
                                    G4Colour::Magenta(),
                                    planeEnvelopeSolid,
@@ -446,12 +446,12 @@ mu2e::ConstructTTrackerTDR::constructStations(){
                                    );
 
     if ( _doSurfaceCheck) {
-      checkForOverlaps(devInfo.physical, _config, _verbosityLevel>0);
+      checkForOverlaps(plnInfo.physical, _config, _verbosityLevel>0);
     }
 
-    addPlaneSupports( baseSupports, idev, devInfo );
+    addPlaneSupports( baseSupports, ipln, plnInfo );
 
-    addPanels ( basePanel, idev, devInfo.logical, dPhiPanel );
+    addPanels ( basePanel, ipln, plnInfo.logical, dPhiPanel );
 
   } // end loop over planes
 
@@ -822,28 +822,28 @@ mu2e::ConstructTTrackerTDR::constructAxes(){
 
 
 void
-mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4LogicalVolume* planeLogical,
+mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int ipln, G4LogicalVolume* planeLogical,
                                       double panelCenterPhi ){
 
-  Plane const& dev = _ttracker.getPlane(idev);
+  Plane const& pln = _ttracker.getPlane(ipln);
 
   int secDraw = _config.getInt ("ttracker.secDraw",-1);
 
   // Assume all planes have the same number of panels.
-  int baseCopyNo = idev * _ttracker.getPlane(0).nPanels();
+  int baseCopyNo = ipln * _ttracker.getPlane(0).nPanels();
 
   // The panel will be placed in the middle of the channel.
   PlacedTubs const& chanUp(_ttracker.getSupportStructure().innerChannelUpstream());
 
   // Place the panel envelope into the plane envelope, one placement per panel.
-  for ( int isec=0; isec<dev.nPanels(); ++isec){
+  for ( int isec=0; isec<pln.nPanels(); ++isec){
 
     // For debugging, only place the one requested panel.
     if ( secDraw > -1  && isec != secDraw ) continue;
     //if ( secDraw > -1  && isec%2 == 0 ) continue;
 
     // Choose a representative straw from this this (plane,panel).
-    Straw const& straw = _ttracker.getStraw( StrawId(idev,isec,0,0) );
+    Straw const& straw = _ttracker.getStraw( StrawId(ipln,isec,0,0) );
 
     // Azimuth of the midpoint of the wire.
     CLHEP::Hep3Vector const& mid = straw.getMidPoint();
@@ -851,7 +851,7 @@ mu2e::ConstructTTrackerTDR::addPanels(VolumeInfo& basePanel, int idev, G4Logical
     if ( phimid < 0 ) phimid += 2.*M_PI;
 
     // Is this panel on the front or back face of the plane?
-    double sign   = ((mid.z() - dev.origin().z())>0. ? 1.0 : -1.0 );
+    double sign   = ((mid.z() - pln.origin().z())>0. ? 1.0 : -1.0 );
     CLHEP::Hep3Vector panelPosition(0.,0., sign*std::abs(chanUp.position().z()) );
 
     // The rotation that will make the straw mid point have the correct azimuth.
@@ -1119,7 +1119,7 @@ mu2e::ConstructTTrackerTDR::preparePlaneSupports( std::vector<VolumeInfo>& suppo
 
 } // end preparePlaneSupports
 
-void mu2e::ConstructTTrackerTDR::addPlaneSupports( std::vector<VolumeInfo>& supportsInfo, int idev, VolumeInfo const& devInfo ){
+void mu2e::ConstructTTrackerTDR::addPlaneSupports( std::vector<VolumeInfo>& supportsInfo, int ipln, VolumeInfo const& plnInfo ){
 
   for ( auto& info : supportsInfo ){
 
@@ -1140,9 +1140,9 @@ void mu2e::ConstructTTrackerTDR::addPlaneSupports( std::vector<VolumeInfo>& supp
                                       info.centerInParent,
                                       info.logical,
                                       info.name,
-                                      devInfo.logical,
+                                      plnInfo.logical,
                                       many,
-                                      idev,
+                                      ipln,
                                       _doSurfaceCheck);
 
   }

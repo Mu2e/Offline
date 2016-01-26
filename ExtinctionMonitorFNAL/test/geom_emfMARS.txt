@@ -125,7 +125,7 @@ bool neutronabsorber.visible = false;
 bool mbs.visible             = false;
 
 bool ttracker.envelopeVisible       = false;
-bool ttracker.deviceEnvelopeVisible = false;
+bool ttracker.planeEnvelopeVisible = false;
 bool ttracker.supportVisible        = false;
 
 // More tweaks
