@@ -2,6 +2,17 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_1
 
+13. genser 26 Jan 2016
+
+    More ttracker related variable renames dev -> pln:
+       ExtinctionMonitorFNAL/test/gdefsEMFCommon.txt
+       ExtinctionMonitorFNAL/test/geom_emfMARS.txt
+       JobConfig/TDR/geom_baseline.txt
+       Mu2eG4/src/ConstructTTrackerTDR.cc
+    Added diagnostic printout:
+       GeometryService/src/TTrackerMaker.cc
+
+
 12. edmonds   22 Jan 2016
     - Modified IPA so that the end rings are inside the IPA and not outside
     - Also construct the end rings before the wires so that we see the overlaps if we just do a surface check in this volume
