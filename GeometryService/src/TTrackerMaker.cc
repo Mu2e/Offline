@@ -528,6 +528,10 @@ namespace mu2e {
 
     double strawSpacing = _strawGap+2.*_strawOuterRadius;
 
+    if (_verbosityLevel>2) {
+      cout << __func__ << " Expecting the straw spacing to be: " << strawSpacing << endl;
+    }
+
     for ( int ilay=0; ilay<_layersPerPanel; ++ilay ){
       makeLayer( LayerId(plnId,ilay), panel );
 
