@@ -112,6 +112,7 @@ namespace mu2e {
 
     // Parameters
     bool   _addXtalk; // should we add cross talk hits?
+    double _ctMinCharge; // minimum charge to add cross talk (for performance issues)
     bool   _addNoise; // should we add noise hits?
     double _preampxtalk, _postampxtalk; // x-talk parameters; these should come from conditions, FIXME!!
     string _g4ModuleLabel;  // Nameg of the module that made these hits.
@@ -206,6 +207,7 @@ namespace mu2e {
     _maxFullPrint(pset.get<int>("maxFullPrint",2)),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _addXtalk(pset.get<bool>("addCrossTalk",false)),
+    _ctMinCharge(pset.get<double>("xtalkMinimumCharge",0)),
     _addNoise(pset.get<bool>("addNoise",false)),
     _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
     _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
@@ -354,11 +356,16 @@ namespace mu2e {
     // loop over the hitlet sequences
     for(auto ihsp=hmap.begin();ihsp!= hmap.end();++ihsp){
       StrawHitletSequencePair const& hsp = ihsp->second;
+      double totalCharge = 0;
+      for(auto ih=hsp.hitletSequence(StrawEnd::plus).hitletList().begin();ih!= hsp.hitletSequence(StrawEnd::plus).hitletList().end();++ih){
+        totalCharge += ih->charge();
+      }
+
       // create primary digis from this hitlet sequence
       XTalk self(hsp.strawIndex()); // this object represents the straws coupling to itself, ie 100%
       createDigis(hsp,self,digis.get(),mcdigis.get(),mcptrs.get());
       // if we're applying x-talk, look for nearby coupled straws
-      if(_addXtalk){
+      if(_addXtalk && totalCharge > _ctMinCharge){
         vector<XTalk> xtalk;
         Straw const& straw = tracker.getStraw(hsp.strawIndex());
         findCrossTalkStraws(straw,xtalk);
@@ -734,12 +741,17 @@ namespace mu2e {
   // the couplings and straw identities should eventually come from a database, FIXME!!!
   void StrawDigisFromStepPointMCs::findCrossTalkStraws(Straw const& straw, vector<XTalk>& xtalk) {
     StrawIndex selfind = straw.index();
-// find nearest neighgors
-    vector<StrawIndex> const& neighbors = straw.nearestNeighboursByIndex();
-    // convert these to cross-talk
     xtalk.clear();
-    for(auto isind=neighbors.begin();isind!=neighbors.end();++isind){
-      xtalk.push_back(XTalk(selfind,*isind,_preampxtalk,_postampxtalk));
+    // find straws sensitive to straw-to-straw cross talk
+    vector<StrawIndex> const& strawNeighbors = straw.nearestNeighboursByIndex();
+    // find straws sensitive to electronics cross talk
+    vector<StrawIndex> const& preampNeighbors = straw.preampNeighboursByIndex();
+    // convert these to cross-talk
+    for(auto isind=strawNeighbors.begin();isind!=strawNeighbors.end();++isind){
+      xtalk.push_back(XTalk(selfind,*isind,_preampxtalk,0));
+    }
+    for(auto isind=preampNeighbors.begin();isind!=preampNeighbors.end();++isind){
+      xtalk.push_back(XTalk(selfind,*isind,0,_postampxtalk));
     }
   }
 

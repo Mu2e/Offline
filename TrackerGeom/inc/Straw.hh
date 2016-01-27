@@ -78,6 +78,8 @@ namespace mu2e {
     // Return true if the argument is one of the nearest neighbours of this straw.
     bool isNearestNeighbour( StrawIndex idx ) const;
 
+    bool isSamePreamp( StrawIndex idx ) const;
+
     // The following routnies will return the nearest neighbors (or the
     // single nearest neighbor if this straw is at the end of its layer):
     const std::vector<StrawIndex>& nearestNeighboursByIndex() const{
@@ -85,6 +87,12 @@ namespace mu2e {
     }
     const std::vector<StrawId>& nearestNeighboursById() const{
       return _nearestById;
+    }
+    const std::vector<StrawIndex>& preampNeighboursByIndex() const{
+      return _preampByIndex;
+    }
+    const std::vector<StrawId>& preampNeighboursById() const{
+      return _preampById;
     }
     
     
@@ -179,6 +187,8 @@ namespace mu2e {
     // Nearest neighbours.
     std::vector<StrawId>    _nearestById;
     std::vector<StrawIndex> _nearestByIndex;
+    std::vector<StrawId>    _preampById;
+    std::vector<StrawIndex> _preampByIndex;
 
     StrawIndex _nextOuterL;
     StrawIndex _nextInnerL;

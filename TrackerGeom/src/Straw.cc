@@ -89,6 +89,17 @@ namespace mu2e {
     return false;
   }
 
+  bool Straw::isSamePreamp( StrawIndex idx ) const{
+   for ( vector<StrawIndex>::const_iterator i=_preampByIndex.begin(),
+            e=_preampByIndex.end();
+          i<e; ++i ){
+      if ( *i == idx ) return true;
+    }
+
+    return false;
+  }
+ 
+
   std::string Straw::name( std::string const& base ) const{
     std::ostringstream os;
 
