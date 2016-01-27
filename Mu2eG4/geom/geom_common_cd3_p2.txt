@@ -82,17 +82,15 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 // Magnetic field
 //-------------------------------------------
 
-// default is now Mau9 everywhere, including the DS
 // Form of DS field: 0 is full field;
 //                   1 is full upstream, const downstream;
 //                   2 is const throughout
 int detSolFieldForm = 0;
-// Mau 9 maps
 vector<string> bfield.innerMaps = {
-  "BFieldMaps/Mau9/Mu2e_DSMap.header",
-  "BFieldMaps/Mau9/Mu2e_PSMap.header",
-  "BFieldMaps/Mau9/Mu2e_TSuMap.header",
-  "BFieldMaps/Mau9/Mu2e_TSdMap.header",
+  "BFieldMaps/GA05/DSMap.header",
+  "BFieldMaps/GA05/PSMap.header",
+  "BFieldMaps/GA05/TSuMap.header",
+  "BFieldMaps/GA05/TSdMap.header",
   "BFieldMaps/Mau9/PStoDumpAreaMap.header",
   "BFieldMaps/Mau9/ProtonDumpAreaMap.header",
   "BFieldMaps/Mau9/DSExtension.header"
