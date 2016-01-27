@@ -1,0 +1,93 @@
+           Release notes for Mu2e Offline software, v5_6_2
+
+6. kutschke 27 Jan 2016
+
+   setup.sh
+     Bump geant4 version version 4.9.6.p04d from .p04c.  This picks up
+     some fixes for the infinite loop that we hit a handful of times in the
+     targeted cosmic ray jobs.  The infinite loop occured only for boolean
+     solids when a particle was parallel to one of the surfaces.  It was
+     fixed in v4.10 and Krzysztof back-ported it to make .p04d.
+
+5. kutschke 27 Jan 2016
+
+   Mu2eG4/geom/geom_common_cd3_s3p2.txt
+      -Use the GA05 field maps for the 4 main maps; continue to use the Mau9 maps
+       for the other maps.
+
+4. kutschke 27 Jan 2016
+
+   We are about to start a second pass of stages 3, 4 amd mixing for the cd3c
+   simulation campaign.  To prep for this I have updated the organization of the
+   geometry files.
+
+   Remove:
+       Mu2eG4/geom/geom_common_cd3.txt
+
+   Replace it with:
+       Mu2eG4/geom/geom_common_cd3_p1.txt
+       Mu2eG4/geom/geom_common_cd3_s3p2.txt
+
+   where _p1 was used for all of pass1 of the simulations ( beam and cosmic ) and
+   where _s3p2 will be used for pass2 of stage 3.  Both should work with the new
+   code - they describe different geometries.
+
+   There will be a _s4p2 when we start pass 2 or stage 4. There will also need to
+   be special versions for background sim and signal sim; we want to simulate
+   signal with 18 stations but we want to simulation backgrounds with 20 stations
+   and deading 2 stations at hit creation time.
+
+   Changes to the content of the geometry files:
+
+   Relative to Mu2eG4/geom/geom_common_cd3.txt, the changes are:
+
+     Mu2eG4/geom/geom_common_cd3_p1.txt
+       - restore the pass 1 style IPA
+
+     Mu2eG4/geom/geom_common_cd3_s3p2.txt
+       - Keep the new style IPA
+
+   Implicit in the above is that the _p1 file contains two changes that were not really
+   pass 1 - the calorimeter electronics boxes and the newest MSTM.  The first is OK since
+   it does not affect reco, only sim.  The second is OK since we never wrote out MSTM
+   info in pass 1.
+
+   Also updated:
+     Mu2eG4/geom/geom_common.txt
+     Mu2eG4/test/geom_cd3.txt
+
+   to use the _s3p2 file.
+
+3. genser 26 Jan 2016
+
+    More ttracker related variable renames dev -> pln:
+       ExtinctionMonitorFNAL/test/gdefsEMFCommon.txt
+       ExtinctionMonitorFNAL/test/geom_emfMARS.txt
+       JobConfig/TDR/geom_baseline.txt
+       Mu2eG4/src/ConstructTTrackerTDR.cc
+    Added diagnostic printout:
+       GeometryService/src/TTrackerMaker.cc
+
+
+2. edmonds   22 Jan 2016
+    - Modified IPA so that the end rings are inside the IPA and not outside
+    - Also construct the end rings before the wires so that we see the overlaps if we just do a surface check in this volume
+    - Swapped the radial and longitudinal lengths of the end rings so that they are the right way round
+    - Made the cylindirical R = 300 mm, L/2 = 500 mm and Z = 630 mm downstream of the stopping target the default IPA geometry
+
+1. dnbrow01  20 Jan 2016
+    Add a crude model for the Calorimeter electronics crates based on a
+    model by Yuri O.  The outer radius of the crates had to be reduced to
+    avoid overlaps at this time - this could and should be revisited in
+    the near future, but at least this model gets some material where it
+    should be.  Added a new material "Electronics" to support the new crates.
+    Also added a first, crude, model of the bearing blocks along the rails
+    in the DS.  Had to remove the blocks under the TTracker due to overlaps
+    for the moment.  This will need to be revisited also.
+    modified:   DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+    modified:   GeometryService/src/DetectorSolenoidMaker.cc
+    modified:   Mu2eG4/geom/DetectorSolenoid_v02.txt
+    modified:   Mu2eG4/geom/calorimeter_BaF2.txt
+    modified:   Mu2eG4/src/ConstructMaterials.cc
+    modified:   Mu2eG4/src/constructDS.cc
+    modified:   Mu2eG4/src/constructDiskCalorimeter.cc
