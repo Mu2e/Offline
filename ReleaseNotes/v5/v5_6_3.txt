@@ -1,0 +1,11 @@
+Still under construction
+
+           Release notes for Mu2e Offline software, v5_6_3
+
+1) Jan 27, 2016 kutschke
+   Mu2eG4/geome/geom_common_cd3_s4p2.txt
+     - Copied from Mu2eG4/geom/geom_common_cd3_s3p2.txt
+     - New changes needed for stage 4 should be put in here
+
+   Mu2eG4/geome/geom_common.txt
+     - Make cd3_s4p2 the defaut geometry.
