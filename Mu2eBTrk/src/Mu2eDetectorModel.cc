@@ -34,6 +34,10 @@ namespace mu2e {
       << _wallmatname << std::endl;
     // for now the wire type isn't set or used: FIXME!!!
     const DetMaterial* wiremat(0);
+// overwrite the scattering fraction.  Sadly I must cast-off const for this
+    double scatfrac = pset.get<double>("DahlLynchScatteringFraction",0.995);
+    const_cast<DetMaterial*>(gasmat)->setScatterFraction(scatfrac);
+    const_cast<DetMaterial*>(wallmat)->setScatterFraction(scatfrac);
 // parameters for elements
     double tol = pset.get<double>("IntersectionTolerance",0.001);
 // the offset displaces the element from the wire, which avoids problems when
