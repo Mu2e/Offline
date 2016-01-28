@@ -194,11 +194,11 @@ namespace mu2e {
 
     if (_debugLevel >0) {
       printf("[KalFitHack::findDoublets] iherr:%i: found %i multiplets\n",_iter,ndoublets);
-      printf("--------------------------------------------------------------");
+      printf("----------------------------------------------------------------");
       printf("------------------------------------------------------------------------\n");
-      printf("  i  shId ch pnl lay str      x        y         z      sinphi");
+      printf("  i  shId ch pnl lay str      x        y         z      sinphi  ");
       printf("tksphi    xtrk     ytrk      ztrk      xr      yr     zr      doca   rdr\n");
-      printf("--------------------------------------------------------------");
+      printf("----------------------------------------------------------------");
       printf("------------------------------------------------------------------------\n");
     }
 
@@ -1124,8 +1124,8 @@ namespace mu2e {
 //---------------------------------------------------------------------------
   void DoubletAmbigResolver::markMultiplets (KalRep* Krep, std::vector<Doublet>* dcol ) const {
 
-    mu2e::TrkStrawHit    *hit, *hitj, *hitk;
-    mu2e::Straw    straw;
+    mu2e::TrkStrawHit    *hit, *hitj, *hitk, *hmax;
+    mu2e::Straw          straw;
     Doublet              *doublet;
     int                  ndoublets, ndhits;
 
@@ -1167,8 +1167,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // more than 2 hits in a panel
 //-----------------------------------------------------------------------------
-	int      tmpLayerId, layer0, layer1, jbest(-1), kbest(-1), imax;
-	int      tmpId(-1), id0(-1), id1(-1), nd;
+	int      jbest(-1), kbest(-1) ; // imax; // tmpLayerId, layer0, layer1, 
+	int      nd; // tmpId(-1), id0(-1), id1(-1)
 	double   rdrift, chi2_d, chi2_best (1.e12);
 	Doublet  bd, *d;
 	vector<Doublet> list;
@@ -1203,70 +1203,51 @@ namespace mu2e {
 // the "best" doublet is good enough, resolve drift signs for the rest hits
 //----------------------------------------------------------------------------- 
 	  hitj    = doublet->fHit[jbest];
-	  straw   = hitj->straw();
-	  layer0  = straw.id().getLayer();
-	  id0     = straw.index().asInt();
-
 	  hitk    = doublet->fHit[kbest];
-	  straw   = hitk->straw();
-	  layer1  = straw.id().getLayer();
-	  id1     = straw.index().asInt();
+	  //	  straw   = hitk->straw();
 //-----------------------------------------------------------------------------
 // out of the two hits making the best doublet, select the one with the larger 
 // radius
 //-----------------------------------------------------------------------------
-	  if (hitj->driftRadius() > hitk->driftRadius()) imax = jbest;
-	  else                                           imax = kbest;
+	  if (hitj->driftRadius() > hitk->driftRadius()) hmax = hitj;
+	  else                                           hmax = hitk;
 
+	  // loop over hits, assign drift signs
 	  for (int ih=0; ih<ndhits; ++ih) {
-	    hit        = doublet->fHit[ih];
-	    Straw const& straw      = hit->straw();
-	    tmpLayerId = straw.id().getLayer();
-	    tmpId      = straw.index().asInt();
+	    hit = doublet->fHit[ih];
 
 	    if (ih == jbest) {
-	      hit->setAmbig(bd.fStrawAmbig[0]);
+	      //	      hit->setAmbig(bd.fStrawAmbig[0]);
+	      hit->setAmbig(_sign[bd.fIBest][0]);
 	      hit->setAmbigUpdate(false);
 	    }
 	    else if (ih == kbest) {
-	      hit->setAmbig(bd.fStrawAmbig[1]);
+	      //	      hit->setAmbig(bd.fStrawAmbig[1]);
+	      hit->setAmbig(_sign[bd.fIBest][1]);
 	      hit->setAmbigUpdate(false);
 	    }
 	    else {
 //-----------------------------------------------------------------------------
-// the assumption here is that in case of a triplet two hits in the same layer 
-// can't have the same drift sign - which is not necessarily correct.
-// *stick to it for the time being*
+// look for the doublet containing 'hit' and 'hmax'
 //-----------------------------------------------------------------------------
-	      if (tmpLayerId == layer0) {
-		if (tmpId != id0) {
-		  doublet->fStrawAmbig[ih] = -doublet->fStrawAmbig[jbest];
-		}
-	      }
-	      else if (tmpLayerId == layer1) {
-		if (tmpId != id1) {
-		  doublet->fStrawAmbig[ih] = -doublet->fStrawAmbig[kbest];
-		}
-	      }
-	      else {
-//-----------------------------------------------------------------------------
-// 2 best hits in the same layer, this hit is in the different one 
-//-----------------------------------------------------------------------------
-		nd = list.size();
-		for (int i=0; i<nd; i++) {
-		  d = &list[i];
-		  if (d->fHitIndex[0] == ih) {
-		    if (d->fHitIndex[1] == imax) {
-		      doublet->fStrawAmbig[ih] = d->fStrawAmbig[0];
-		    }
+	      nd = list.size();
+	      for (int i=0; i<nd; i++) {
+		d = &list[i];
+		if (hit == d->fHit[d->fHitIndex[0]]) {
+		  if (hmax == d->fHit[d->fHitIndex[1]]) {
+		    doublet->fStrawAmbig[ih] = _sign[d->fIBest][0];
+		    break;
 		  }
-		  else if (d->fHitIndex[1] == ih) {
-		    if (d->fHitIndex[0] == imax) {
-		      doublet->fStrawAmbig[ih] = d->fStrawAmbig[1];
-		    }
+		}
+		else if (hit == d->fHit[d->fHitIndex[1]]) {
+		  if (hmax == d->fHit[d->fHitIndex[0]]) {
+		    //		      doublet->fStrawAmbig[ih] = d->fStrawAmbig[1];
+		    doublet->fStrawAmbig[ih] = _sign[d->fIBest][1];
+		    break;
 		  }
 		}
 	      }
+	      //	    }
 //-----------------------------------------------------------------------------
 // if the hit radius is greated than some minimal value, set the drift sign
 //-----------------------------------------------------------------------------
