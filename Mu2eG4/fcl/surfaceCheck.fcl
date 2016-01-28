@@ -30,7 +30,7 @@ physics : {
 
    producers: {
       generate : @local::generate
-      g4run    : @local::g4run
+      g4run    : @local::mu2eg4runDefaultSingleStage
    }
 
    p1 : [generate, g4run ]
@@ -38,6 +38,8 @@ physics : {
    trigger_paths  : [p1]
 
 }
+
+physics.producers.g4run.physics.physicsListName: "Minimal"
 
 services.SeedService.baseSeed         :  0
 services.SeedService.maxUniqueEngines :  20
