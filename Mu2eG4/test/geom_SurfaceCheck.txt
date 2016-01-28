@@ -15,6 +15,9 @@ int  g4.nSurfaceCheckPointsPercmsq =   1;
 int  g4.minSurfaceCheckPoints      = 100; // per volume
 int  g4.maxSurfaceCheckPoints = 10000000; // per volume
 
+vector<string> bfield.innerMaps = {};
+vector<string> bfield.outerMaps = {};
+
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++
