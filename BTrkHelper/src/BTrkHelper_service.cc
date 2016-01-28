@@ -27,7 +27,8 @@
 mu2e::BTrkHelper::BTrkHelper(fhicl::ParameterSet const& pset,
                              art::ActivityRegistry&     registry):
   particleInfo_(),
-  fileFinder_(pset.get<fhicl::ParameterSet>("dictionaries"))
+  fileFinder_(pset.get<fhicl::ParameterSet>("dictionaries")),
+  detectorModelPSet_(pset.get<fhicl::ParameterSet>("Mu2eDetectorModel"))
 {
 
   // See note 1).
