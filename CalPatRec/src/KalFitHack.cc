@@ -181,9 +181,10 @@ namespace mu2e
                                         // construct the ambiguity resolvers
     AmbigResolver* ar;
     double         err;
-    int n = _ambigstrategy.size();
+    int            n, final(0);
+
+    n = _ambigstrategy.size();
     for(int i=0; i<n; ++i) {
-      int Final = i==n-1 ? 1 : 0;
       err = _hiterr[i];
       switch (_ambigstrategy[i]) {
       case kFixedAmbig: default:
@@ -199,11 +200,18 @@ namespace mu2e
         ar = new PocaAmbigResolver(pset,err);
         break;
       case kDoubletAmbig: // 4
-        ar = new DoubletAmbigResolver(*_darPset,err,i,Final);
+        ar = new DoubletAmbigResolver(*_darPset,err,i,final);
         break;
       }
       _ambigresolver.push_back(ar);
     }
+//-----------------------------------------------------------------------------
+// 2016-01-27 P.Murat: for DoubletAmbigResolver need one more instance: 
+//  'assign drift directions at the final iteration no matter what'
+//-----------------------------------------------------------------------------
+//     final = 1;
+//     ar    = new DoubletAmbigResolver(*_darPset,err,n-1,final);
+//     # // need to figure how to use it.....
   }
 
 //-----------------------------------------------------------------------------
@@ -432,10 +440,15 @@ namespace mu2e
 
 
 //-----------------------------------------------------------------------------
-// loop over external hit errors, ambiguity assignment, t0 tolerance
-// 10-03-2013 giani changed this loop. now it loops on all the stations
-// and store the last fit that converges
-// assume this is not a final call
+// Dave's "annealing" procedure: refit the track 'KRes' multiple times 
+//                               gradually reducing the external hit errors
+//
+// assume this is not the final fit, 
+// the final fit will be performed later, after the hit pickup
+//
+// final=1 in fitIteration means 'make decision about the hit drift directions no matter what'
+//      =0                 means 'reduce external hit error down to zero only for hits which 
+//                                drift direction is well defined'
 //-----------------------------------------------------------------------------
   void KalFitHack::fitTrack(KalFitResult& KRes, CalTimePeak* TPeak) {
     int not_final(0);
@@ -668,7 +681,7 @@ namespace mu2e
     printf("--------------------------------------------------------------------");
     printf("----------------------------------------------------------------");
     printf("--------------------------------------------\n");
-    printf(" ih  SInd U A     len         x        y        z      HitT    HitDt");
+    printf(" ih  SInd Flag      A     len         x        y        z      HitT    HitDt");
     printf(" Ch Pl  L  W     T0       Xs      Ys        Zs      resid  sigres");
     printf("   Rdrift   mcdoca  totErr hitErr  t0Err penErr extErr\n");
     printf("--------------------------------------------------------------------");
@@ -731,7 +744,7 @@ namespace mu2e
       }
 
       ihit += 1;
-      printf("%3i %5i %1i %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
+      printf("%3i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
              ihit,
              straw->index().asInt(),
              hit->hitFlag(),
