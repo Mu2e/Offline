@@ -1128,7 +1128,7 @@ namespace mu2e {
           ++fNCaloEnergyCut;
         }
 
-        if ( (int(cl->size()) > _minClusterSize) ) {
+        if ( (int(cl->size()) >= _minClusterSize) ) {
 
           if (_clCE){
             ++fNCaloSizeCut;
