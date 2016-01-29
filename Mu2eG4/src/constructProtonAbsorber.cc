@@ -608,11 +608,11 @@ namespace mu2e {
 	      rotationAxis.rotateZ((iW-1)*360.*CLHEP::deg / ipaSup->nWiresPerSet()); // each wire wants to be rotated arounf a slightly different axis
 	      supportRot->rotate(wireRotation*CLHEP::deg, rotationAxis);
 	    
-	      CLHEP::Hep3Vector extraZOffset(0, 0, supportWire.halfLength() * std::cos(wireRotation*CLHEP::deg) + 1.0); // because of the rotation from the vertical (1.0 to avoid contact with the end-rings)
+	      CLHEP::Hep3Vector extraZOffset(0, 0, supportWire.halfLength() * std::cos(wireRotation*CLHEP::deg)); // because of the rotation from the vertical
 	      CLHEP::Hep3Vector extraROffset(std::cos(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet()) * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
 					   std::sin(iWire * 360.*CLHEP::deg / ipaSup->nWiresPerSet()) * supportWire.halfLength()*(std::cos((90-wireRotation*CLHEP::deg)))*std::tan(wireRotation*CLHEP::deg), 
 					   0);
-	      additionalOffset -= 0.97*extraROffset; // try to avoid moving back and overlapping with the end ring (0.97 to avoid contact with the endrings)
+	      additionalOffset -= 0.90*extraROffset; 
 
 	      if (supportWire.originInMu2e().z() > pabs->part(0).center().z()) { // if the wires are further away from the target...
 		// ...we need to rotate them again
