@@ -12,6 +12,9 @@ BEGIN_PROLOG
      isotopes  : "BTrkHelper/data/IsotopesList.data"
      materials : "BTrkHelper/data/MaterialsList.data"
    }
- }
+   Mu2eDetectorModel : {
+    DahlLynchScatteringFraction : 0.995
+  }
+}
 
 END_PROLOG
