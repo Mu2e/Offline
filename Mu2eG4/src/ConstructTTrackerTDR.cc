@@ -60,7 +60,8 @@ mu2e::ConstructTTrackerTDR::ConstructTTrackerTDR( VolumeInfo   const& ds3Vac,
 
   // Switches that affect the entire tracker
   _verbosityLevel(_config.getInt("ttracker.verbosityLevel",0)),
-  _doSurfaceCheck(_config.getBool("g4.doSurfaceCheck",false)),
+  _doSurfaceCheck(_config.getBool("g4.doSurfaceCheck",false)||
+                  _config.getBool("ttracker.doSurfaceCheck",false)),
   _forceAuxEdgeVisible(_config.getBool("g4.forceAuxEdgeVisible",false)),
 
   // Coordinate system transformation
