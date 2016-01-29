@@ -642,30 +642,10 @@ namespace mu2e {
 					 int           Index0, 
 					 int           Index1 ) const {
     mu2e::TrkStrawHit *hit  [2];
-//     const mu2e::Straw *straw[2];
-   
-//     Hep3Vector spos[2], sposr[2], sdir[2], sdirr[2], wpos[10], posPanel;    
-//     Hep3Vector tpos[2], tposr[2], tdir[2], tdirr[2];
-    
-    Hep3Vector wdir;
-//     Hep3Vector wdir1, wdir2;
-
-    int                  os; // , ibest , inext;
-//     double            rdrift[2], phiPanel;
-    
-//     int               shId[2];
-//     double            trkslope, lineSlopes[4], dxdz[2], chi2[4], doca[4][2], xdr[4][2];
-//     double            dsl, xdsl, sig, chi2min, chi2next;
-
-//     double            sflt[2], tflt[2];
-//     HepPoint          spi[2] , tpi[2], hpos[4][2];
-//     Hep3Vector        sdi[2] , tdi[2], u[2];
-//     TrkPoca           poca[2];
-//     HepRotationZ      rot;
+    Hep3Vector        wdir;
+    int               os; 
 					// use to pass working data
     Data_t            r;
-
-    //    int               index[2] = {Index0, Index1};
 //-----------------------------------------------------------------------------
 // calculate doublet parameters
 //-----------------------------------------------------------------------------
@@ -677,200 +657,6 @@ namespace mu2e {
 // create an array with the straw hit indices within a multiplet
 //-----------------------------------------------------------------------------
     wdir  = HitDoublet->fShDir;
-// //-----------------------------------------------------------------------------
-// // by construction, both hits are in the same panel, could be in the same or in 
-// // different layers
-// //-----------------------------------------------------------------------------
-//     for (int i=0; i<2; i++) {
-//       hit   [i] = HitDoublet->fHit[index[i]];
-//       straw [i] = &hit[i]->straw();
-//       //      layer [i] = straw[i]->id().getLayer();
-//       rdrift[i] = hit[i]->driftRadius();
-//       shId  [i] = straw[i]->index().asInt();
-
-//       spos  [i] = straw[i]->getMidPoint();
-//       sdir  [i] = straw[i]->getDirection();
-
-//       phiPanel  = std::atan2(spos[i].y(),spos[i].x());
-//       rot.set(-phiPanel);
-      
-//       sposr[i]  = rot*spos[i];
-//       sdirr[i]  = rot*sdir[i];
-      
-//       tpos [i]  = HitDoublet->fTrkPos[index[i]];
-//       tdir [i]  = HitDoublet->fTrkDir[index[i]];
-
-//       tposr[i]  = rot*tpos[i];
-//       tdirr[i]  = rot*tdir[i];
-//       dxdz [i]  = tdirr[i].x()/tdirr[i].z();
-//     }
-// //-----------------------------------------------------------------------------
-// // choose the best combination of the drift signs - the one corresponding 
-// // to the slope closest to that of the track
-// // 1. slope chi2 term 
-// //    for the track dx/dz use average of the two dx/dz slopes 
-// //    calculated in the two layers corresponding to the doublet hits
-// //-----------------------------------------------------------------------------
-//     trkslope  = (dxdz[0]+dxdz[1])/2.;
-//     findLines(sposr,rdrift,lineSlopes);
-      
-//     for (int is=0; is<4; is++) {
-//       dsl       = fabs(trkslope-lineSlopes[is]);
-//       xdsl      = dsl/_sigmaSlope;
-//       chi2[is]  = xdsl*xdsl;
-//     }
-// //-----------------------------------------------------------------------------
-// // 2. add coordinate term, try to exclude both hits simultaneously
-// //-----------------------------------------------------------------------------
-//     const TrkSimpTraj                   *ptraj, *ptraj0;
-//     vector<KalSite*>::const_iterator   it1, it2;
-//     double                             s, slen;
-//     //    bool                               rc;
-//     HepPoint                           t1pos;
-//     Hep3Vector                         t1dir;
-    
-//     KalRep*  KRep = KRes._krep;
-
-//     s      = (hit[0]->fltLen()+hit[1]->fltLen())/2.;*/
-//     ptraj  = KRep->localTrajectory(s,slen);
-//     ptraj0 = ptraj;
-
-//     HelixTraj  smoothed_traj(*ptraj->parameters());
-//     //    const HelixTraj* psmoothed = &smoothed_traj;
-
-//     if (_excludeBothHits == 1) {
-// //------------------------------------------------------------------------------
-// // determine the trajectory w/o both hits , then need to calculate residuals
-// //-----------------------------------------------------------------------------
-//       std::vector<KalSite*>::const_iterator itt[2];
-	
-//       for (int ih=0; ih<2; ih++) {
-// 	for (std::vector<KalSite*>::const_iterator it=KRep->siteList().begin();
-// 	     it!= KRep->siteList().end(); it++) {
-// 	  const KalHit* kalhit = (*it)->kalHit();
-// 	  if (kalhit && (kalhit->hitOnTrack() == hit[ih])) {
-// 	    itt[ih] = it;
-// 	    break;
-// 	  }
-// 	}
-//       }
-
-//       KRep->smoothedTraj(itt[0], itt[1], &smoothed_traj);
-
-//       for (int ih=0; ih<2; ih++) {
-// 	TrkLineTraj st(HepPoint(spos[ih].x(),spos[ih].y(),spos[ih].z()),sdir[ih],0.,0.); 
-// //-----------------------------------------------------------------------------
-// // need to check if I'm close in Z to the hit Z 
-// //-----------------------------------------------------------------------------
-// 	smoothed_traj.getInfo(hit[ih]->fltLen(),t1pos,t1dir);
-
-// 	TrkLineTraj tt (t1pos,t1dir,0.); // track, don't need
-	
-// 	poca[ih] = TrkPoca(st,0.,tt,0);
-	
-// 	sflt[ih] = poca[ih].flt1();
-// 	tflt[ih] = poca[ih].flt2();
-	
-// 	st.getInfo(sflt[ih],spi[ih],sdi[ih]);
-// 	tt.getInfo(tflt[ih],tpi[ih],tdi[ih]);
-	
-// 	u[ih]    = sdi[ih].cross(tdi[ih]).unit();  // direction towards the center
-//       }
-//     }
-// //-----------------------------------------------------------------------------
-// // hopefully, this is a helical parameterization around hits of interest,
-// // so extrapolation uncertainties are not very large
-// // track parameterization is defined in the global coordinate system, do not rotate
-// //-----------------------------------------------------------------------------
-//     for (int ih=0; ih<2; ih++) {
-//       TrkLineTraj st(HepPoint(spos[ih].x(),spos[ih].y(),spos[ih].z()),sdir[ih],0.,0.); 
-
-//       if (_excludeBothHits == 2) {
-// //-----------------------------------------------------------------------------
-// // exclude hits one by one - emulate "unbiased" residuals
-// //-----------------------------------------------------------------------------
-// 	ptraj = ptraj0;
-	
-// 	std::vector<KalSite*>::const_iterator itt;
-	
-// 	for (std::vector<KalSite*>::const_iterator it=KRep->siteList().begin();
-// 	       it!= KRep->siteList().end(); it++) {
-// 	  const KalHit* kalhit = (*it)->kalHit();
-// 	  if (kalhit && (kalhit->hitOnTrack() == hit[ih])) {
-// 	    itt = it;
-// 	    break;
-// 	  }
-// 	}
-      
-// 	bool rc = KRep->smoothedTraj(itt, itt, &smoothed_traj);
-	  
-// 	if (rc == true) {
-// 	  ptraj = &smoothed_traj;
-// 	}
-// 	else {
-// //-----------------------------------------------------------------------------
-// // use the default trajectory parameterization
-// //-----------------------------------------------------------------------------
-// 	  printf(" ERROR in DoubletAmbigResolver::markDoublets: couldnt get Trajectory w/o 1hit, use the local one\n");
-// 	}
-//       }
-
-//       ptraj->getInfo(hit[ih]->fltLen(),t1pos,t1dir);
-
-//       TrkLineTraj tt (t1pos,t1dir,0.); // track, don't need
-      
-//       poca[ih] = TrkPoca(st,0.,tt,0);
-	
-//       sflt[ih] = poca[ih].flt1();
-//       tflt[ih] = poca[ih].flt2();
-	
-//       st.getInfo(sflt[ih],spi[ih],sdi[ih]);
-//       tt.getInfo(tflt[ih],tpi[ih],tdi[ih]);
-	
-//       u[ih]    = sdi[ih].cross(tdi[ih]).unit();  // direction towards the center
-
-//       for (int is=0; is<4; is++) {
-// //-----------------------------------------------------------------------------
-// // chi2 contributions of this hit
-// //-----------------------------------------------------------------------------
-// 	hpos[is][ih] = spi[ih]+u[ih]*rdrift[ih]*_sign[is][ih];
-// 	doca[is][ih] = (hpos[is][ih]-tpi[ih]).dot(u[ih]);
-// 	sig          = sqrt(rdrift[ih]*rdrift[ih] +0.1*0.1); // 2.5; // 1.; // hit[ih]->hitRms();
-// 	xdr[is][ih]  = doca[is][ih]/sig;
-// 	chi2[is]    += xdr[is][ih]*xdr[is][ih];
-//       }
-//     }
-// //-----------------------------------------------------------------------------
-// // determine the best solution
-// //-----------------------------------------------------------------------------
-//     ibest    = -1;
-//     inext    = -1;
-//     chi2min  = 1.e12;
-//     chi2next = 1.e12;
-    
-//     for (int is=0; is<4; is++) {
-//       if (chi2[is] < chi2min) {
-// 	inext    = ibest;
-// 	chi2next = chi2min;
-// 	ibest    = is;
-// 	chi2min  = chi2[is];
-//       }
-//       else if (chi2[is] < chi2next) {
-// 	inext    = is;
-// 	chi2next = chi2[is];
-//       }
-//     }
-//     HitDoublet->fOs          = os;
-//     HitDoublet->fIBest       = ibest;
-//     HitDoublet->fINext       = inext;
-//     HitDoublet->fHitIndex[0] = index[0];
-//     HitDoublet->fHitIndex[1] = index[1];
-
-//     HitDoublet->fTrkDxDz = trkslope;
-//     for (int is=0; is<4; is++) {
-//       HitDoublet->fDxDz[is] = lineSlopes[is];
-//       HitDoublet->fChi2[is] = chi2[is];
-//     }
 //-----------------------------------------------------------------------------
 // set best solutions
 //-----------------------------------------------------------------------------
@@ -885,7 +671,6 @@ namespace mu2e {
 // this code is executed after the standard HitAmbigResolver, so when not sure, 
 // do nothing and default to HitAmbigResolver
 //-----------------------------------------------------------------------------
-//      HitDoublet->fStrawAmbig[index[i]] = _sign[ibest][i];
       if (os == 0) {
 	if (r.chi2min < _maxDoubletChi2) {
 	  if (fabs(r.rdrift[0]+r.rdrift[1]) > 0.8) {
@@ -917,10 +702,47 @@ namespace mu2e {
 	else {
 //-----------------------------------------------------------------------------
 // the chi2 is large, consider hits individually
+// however, the chi2 may be large because of one of the hit times being misreconstructed,
+// while the other hit drift sign still could be reconstructed
 //-----------------------------------------------------------------------------
 	  if (_Final == 0) {
-	    hit[i]->setExtErr(r.rdrift[i]);
-	    hit[i]->setAmbig(0);
+// 	    hit[i]->setExtErr(r.rdrift[i]);
+// 	    hit[i]->setAmbig(0);
+
+	    if (_sign[r.ibest][i] == _sign[r.inext][i]) {
+//-----------------------------------------------------------------------------
+// bothe 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
+// check other two chi2's. If both are an order of magnitude worse than the best,
+// assume that for this hit the drift direction is defined
+//-----------------------------------------------------------------------------
+	      int defined = 1;
+	      for (int j=0; j<4; j++) {
+		if ((j != r.ibest) && (j != r.inext)) {
+		  if (r.chi2[j]/r.chi2min < 10) {
+		    defined = 0;
+		    break;
+		  }
+		}
+	      }
+
+	      if (defined == 1) {
+		hit[i]->setAmbig (_sign[r.ibest][i]);
+	      }
+	      else {
+//-----------------------------------------------------------------------------
+// all 4 chi2s are "of the same order", nothing to fish
+//-----------------------------------------------------------------------------
+		hit[i]->setExtErr(r.rdrift[i]);
+		hit[i]->setAmbig(0);
+	      }
+	    }
+	    else {
+//-----------------------------------------------------------------------------
+// assign external error and set ambiguity to zero
+//-----------------------------------------------------------------------------
+	      hit[i]->setExtErr(r.rdrift[i]);
+	      hit[i]->setAmbig(0);
+	    }
 	  }
 	  else {
 //-----------------------------------------------------------------------------
@@ -952,7 +774,7 @@ namespace mu2e {
 // the hardest case - close drift radii
 //-----------------------------------------------------------------------------
 	  if (r.chi2min < _maxDoubletChi2) {
-	    if (r.chi2min/r.chi2next < 0.1) {
+	    if (r.chi2min/r.chi2next < 0.2) {
 //-----------------------------------------------------------------------------
 // however, the best chi2 is good enough to be reliable under any circumstances
 //-----------------------------------------------------------------------------
@@ -966,8 +788,44 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	      if (_Final == 0) {
 		double err = fabs(r.rdrift[i]);
-		hit[i]->setExtErr(err);
-		hit[i]->setAmbig(0);
+// 		hit[i]->setExtErr(err);
+// 		hit[i]->setAmbig(0);
+
+		if (_sign[r.ibest][i] == _sign[r.inext][i]) {
+//-----------------------------------------------------------------------------
+// bothe 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
+// check other two chi2's. If both are an order of magnitude worse than the best,
+// assume that for this hit the drift direction is defined
+//-----------------------------------------------------------------------------
+		  int defined = 1;
+		  for (int j=0; j<4; j++) {
+		    if ((j != r.ibest) && (j != r.inext)) {
+		      if (r.chi2[j]/r.chi2min < 10) {
+			defined = 0;
+			break;
+		      }
+		    }
+		  }
+
+		  if (defined == 1) {
+		    hit[i]->setAmbig (_sign[r.ibest][i]);
+		  }
+		  else {
+//-----------------------------------------------------------------------------
+// all 4 chi2s are "of the same order", nothing to fish
+//-----------------------------------------------------------------------------
+		    hit[i]->setExtErr(err);
+		    hit[i]->setAmbig(0);
+		  }
+		}
+		else {
+//-----------------------------------------------------------------------------
+// the best and the next solutions correspond to different drift directions 
+// of this hit. Can't choose, assign large error
+//-----------------------------------------------------------------------------
+		  hit[i]->setExtErr(err);
+		  hit[i]->setAmbig(0);
+		}
 	      }
 	      else {
 //-----------------------------------------------------------------------------
@@ -1050,14 +908,51 @@ namespace mu2e {
 	  }
 	  else {
 //-----------------------------------------------------------------------------
-// the best double chi2 is large - cant believe anything, need to treat hits as 
+// the best doublet chi2 is large - cant believe anything, need to treat hits as 
 // separate ones - this is to be implemented yet
 // a good example - one of the hits - on Dave's no-gaussial tail
 //-----------------------------------------------------------------------------
 	    if (_Final == 0) {
-	      hit[i]->setExtErr(r.rdrift[i]);
-	      hit[i]->setAmbig(0);
-	    //	    resolveSingleHit(KRes,hit[i]);
+	      double err = fabs(r.rdrift[i]);
+
+	      // 		hit[i]->setExtErr(err);
+	      // 		hit[i]->setAmbig(0);
+
+	      if (_sign[r.ibest][i] == _sign[r.inext][i]) {
+//-----------------------------------------------------------------------------
+// bothe 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
+// check other two chi2's. If both are an order of magnitude worse than the best,
+// assume that for this hit the drift direction is defined
+//-----------------------------------------------------------------------------
+		int defined = 1;
+		for (int j=0; j<4; j++) {
+		  if ((j != r.ibest) && (j != r.inext)) {
+		    if (r.chi2[j]/r.chi2min < 10) {
+		      defined = 0;
+		      break;
+		    }
+		  }
+		}
+
+		if (defined == 1) {
+		  hit[i]->setAmbig (_sign[r.ibest][i]);
+		}
+		else {
+//-----------------------------------------------------------------------------
+// all 4 chi2s are "of the same order", nothing to fish
+//-----------------------------------------------------------------------------
+		  hit[i]->setExtErr(err);
+		  hit[i]->setAmbig(0);
+		}
+	      }
+	      else {
+//-----------------------------------------------------------------------------
+// the best and the next solutions correspond to different drift directions 
+// of this hit. Can't choose, assign large error
+//-----------------------------------------------------------------------------
+		hit[i]->setExtErr(err);
+		hit[i]->setAmbig(0);
+	      }
 	    }
 	    else {
 //-----------------------------------------------------------------------------
