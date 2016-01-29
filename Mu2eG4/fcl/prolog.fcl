@@ -136,7 +136,7 @@ mu2eg4runDefaultSingleStage: {
     generatorModuleLabel: generate
     MultiStageParameters : {}
 
-    SDConfig : { TimeVD: { times: [] } }
+    SDConfig : { TimeVD: { times: [] } enableAllSDs: true }
 
     debug:  @local::mu2eg4DefaultDebug
     visualization: @local::mu2eg4NoVisualization

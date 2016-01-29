@@ -284,7 +284,7 @@ namespace mu2e {
 
     // Will be used for v2 only
     const double wireRotation = _config.getDouble("protonabsorber.ipa.wireRotationToVertical", 45);
-    const double wire_rotation_from_vertical = wireRotation*CLHEP::deg;
+    const double wire_rotation_from_vertical = wireRotation*CLHEP::rad;
 
     ////////////////////
     // End Rings for IPA
@@ -298,13 +298,13 @@ namespace mu2e {
     for (std::size_t iRing(0); iRing < _pabs->_ipaSupport->nEndRings(); iRing++) {
       const double zPosition = ipazstart + zSpacing*(iRing); // same z spacing as for the wire sets
       
-      const double endRingOuterRadius = pabs1rIn0 + ( zPosition-ipazstart )*(pabs1rIn1-pabs1rIn0)/(2*pabs1halflen) - 2.5; // have the end ring on the inside of the IPA
+      const double endRingOuterRadius = pabs1rIn0 + ( zPosition-ipazstart )*(pabs1rIn1-pabs1rIn0)/(2*pabs1halflen) - 0.01; // have the end ring on the inside of the IPA
       const double endRingInnerRadius = endRingOuterRadius - endRingRadialLength;
 
       _pabs->_ipaSupport->_endRingMap.push_back( Tube( endRingInnerRadius,
 						       endRingOuterRadius,
 						       endRingHalfLength, 
-						       CLHEP::Hep3Vector( -3904, 0., zPosition ),
+						       CLHEP::Hep3Vector( -3904, 0., zPosition+endRingHalfLength ), // want the front end of the ring to be at the front of the IPA
 						       CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
 						       0,
 						       CLHEP::twopi,
@@ -332,14 +332,25 @@ namespace mu2e {
       double wireLength      = wireOuterRadius - wireInnerRadius;
 
       if (_IPAVersion == 2) { // for v2, we want the wire to be angled from the vertical in order to provide longitudinal tension
-	wireLength = wireLength / cos(wire_rotation_from_vertical);
+	//	wireLength = wireLength / cos(wire_rotation_from_vertical);
+	// However, because the OPA is conical the wires at one end need to be longer than the wires at the other
+	double theta_opa = atan2(oPAin1 - oPAin0, 2*_pabs->_oPAhalflength);
+
+	if (zPosition < ipazstart+pabs1halflen) {
+	  // if we're closer to the target
+	  wireLength = (wireLength * sin(CLHEP::pi - 2*wire_rotation_from_vertical - theta_opa)) / sin(wire_rotation_from_vertical + theta_opa);
+	}
+	else {
+	  // we're further from the target so the wire needs to be longer
+	  wireLength = (wireLength * sin(CLHEP::pi -2*wire_rotation_from_vertical - theta_opa)) / sin(wire_rotation_from_vertical - theta_opa);
+	}
       }
 
 
       for ( std::size_t iW(0); iW < _pabs->_ipaSupport->nWiresPerSet() ; iW++ ) {
         wireVector.push_back( Tube( 0. ,
                                     wireRadius ,
-                                    wireLength*0.5-4.0, // 4.0 offset to avoid run-ins with the absorbers
+                                    wireLength*0.5,
                                     CLHEP::Hep3Vector( -3904, 0., zPosition ),
                                     CLHEP::HepRotation(), // put in identiy matrix and determine rotation later
                                     0,
