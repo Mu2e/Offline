@@ -200,7 +200,7 @@ physics : {
       RKFDownstreameMinus: {
          module_type          : ReadKalFits
          fitterModuleLabel    : MergePatRecDem
-         KalDiag : @local::KalDiagDirect
+         KalDiag              : @local::KalDiagDirect
       }
     }
 
