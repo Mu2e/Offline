@@ -69,7 +69,7 @@ double mu2e.detectorSystemZ0 = 10200.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/protonBeamDump_v02.txt"
 #include "Mu2eG4/geom/extmon_fnal_v02.txt"
 
-#include "Mu2eG4/geom/ttracker_cd3.txt"
+#include "Mu2eG4/geom/ttracker_cd3_s4p2.txt"
 
 // Crystal calorimeter
 //#include "Mu2eG4/geom/calorimeter_CsI.txt"
