@@ -9,6 +9,9 @@
 
 
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/ConditionsService.hh"
+#include "ConditionsService/inc/DAQParams.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 
 #include <vector>
 
@@ -29,7 +32,7 @@ namespace mu2e {
 
     WaveformProcess(PSet),
     _debugLevel       (PSet.get<int>   ("debugLevel")),
-    _acquisitionLenght(PSet.get<int>   ("acquisitionLenght")),
+    _acquisitionEndTime(PSet.get<int>  ("acquisitionEndTime")),
     _digiSampling     (PSet.get<int>   ("digiSampling")),
     _wave_point_error (PSet.get<double>("pulseErrorSample")),
     _psdThreshold     (PSet.get<double>("psdThreshold")),
@@ -46,7 +49,11 @@ namespace mu2e {
     _flogn    = new TF1("flogn" ,logn , 0., 2000., 4);
     _fdlogn   = new TF1("fdlogn",dlogn, 0., 2000., 6);
 
-    _wave     = new TH1F("wave", "wave", int(_acquisitionLenght/_digiSampling), 0, _acquisitionLenght);
+
+    int       nDigiSamples = 1965 - _acquisitionEndTime; 
+    double    mbtime       = _digiSampling*nDigiSamples;
+    
+    _wave     = new TH1F("wave", "wave", nDigiSamples, 0, mbtime);
 
     _counter        = 0;
     _debugHistIndex = 0;
@@ -249,16 +256,16 @@ namespace mu2e {
     _flogn->SetParLimits(0,  -10.,  0.);
     //    _flogn->SetParLimits(0,  -3.,  -0.1);
     //_flogn->FixParameter(0,  -0.8);
-    //    _flogn->SetParLimits(1,   10., 50);
-    _flogn->SetParLimits(1,   5., 5e03);
+    _flogn->SetParLimits(1,   10., 50);
+    //    _flogn->SetParLimits(1,   5., 5e03);
     //_flogn->FixParameter(1,  32.);
     _flogn->SetParLimits(2, histPeak - 20.,  histPeak + 20.);
     _flogn->SetParLimits(3,   0.,   _wave->Integral("width")*1000.);
 
     _flogn->SetParameter(0, -0.21);
     _flogn->SetParameter(1,  12.);
-    // _flogn->SetParameter(0, -0.8);
-    // _flogn->SetParameter(1,  30.);
+    //    _flogn->SetParameter(0, -0.8);
+    //    _flogn->SetParameter(1,  30.);
     _flogn->SetParameter(2, _wave->GetBinCenter(_wave->GetMaximumBin()));
     _flogn->SetParameter(3, _wave->Integral("width"));
 
@@ -487,8 +494,12 @@ namespace mu2e {
 
     _hist._hDt           = tfdir.make<TH1F>("hDt","#Deltat distribution; #Delta t = t_{reco} t_{MC} [ns]", 4000, -100., 100);
 
+
+    int       nDigiSamples =  (1695 - _acquisitionEndTime)/_digiSampling; 
+    double    mbtime       =  _digiSampling*nDigiSamples;
+  
     for (int i=0; i<20; ++i){
-      _hist._debugWf[i] = tfdir.make<TH1F>(Form("hDWf%i", i), Form("waveform %i",i),  _acquisitionLenght/_digiSampling, 0, _acquisitionLenght);
+      _hist._debugWf[i] = tfdir.make<TH1F>(Form("hDWf%i", i), Form("waveform %i",i),  nDigiSamples, 0, mbtime);
     }
     //create the  TTree      
     _tree  = tfdir.make<TTree>("Calo", "Calo");
@@ -497,6 +508,7 @@ namespace mu2e {
 
     _tree->Branch("time",         &_timeWf  ,        "time/F");
     _tree->Branch("mcTime",       &_mcTime ,      "mcTime/F");
+    _tree->Branch("mcMeanTime",       &_mcMeanTime ,      "mcMeanTime/F");
     _tree->Branch("mcEDep",       &_mcEDep ,      "mcEDep/F");
 
     _tree->Branch("Chi2Time",     &_Chi2Time ,    "Chi2Time/F");
@@ -528,6 +540,8 @@ namespace mu2e {
     
     for (int i=0; i<_nMax; ++i){
       recoHit = &RecoCaloHits->at(size - 1 -i);
+      // CaloDigi	caloDigi   = recoHit->RODigi();
+      // int       nWords     = caloDigi.nSamples();
 
       _counter     = _hitCounter;
       _psdWf       = _psd;
@@ -559,6 +573,7 @@ namespace mu2e {
       int           nParticles(0);// = DigiMC->nParticles();
 
       _mcTime     = timeMC;
+      _mcMeanTime = DigiMC->meanTime();
       _mcEDep     = DigiMC->totalEDep();
 
 
@@ -604,17 +619,17 @@ namespace mu2e {
 
 
       if (_debugHistIndex < 20){
-	double      dt = (recoTime - timeMC);
+	//	double      dt = (recoTime - timeMC);
 
-	if ( ( (_debugHistIndex < 10 ) && (dt < 5.3 && recoHit->edep() > 30.) ) ||
-	     ( (_debugHistIndex >= 10) && (dt > 5.7 && recoHit->edep() > 30.) ) ){
+	// if ( ( (_debugHistIndex < 10 ) && (dt < 5.3 && recoHit->edep() > 30.) ) ||
+	//      ( (_debugHistIndex >= 10) && (dt > 5.7 && recoHit->edep() > 30.) ) ){
 	  for (int i=0; i<_wave->GetNbinsX(); ++i){
 	    content   = _wave->GetBinContent(i+1);
 	    _hist._debugWf[_debugHistIndex] ->SetBinContent(i+1, content);
 	    _hist._debugWf[_debugHistIndex] ->SetBinError  (i+1, _wave_point_error);
 	  }
 	  ++_debugHistIndex;
-	}
+	  //	}
 	
       }//end filling pulses
     

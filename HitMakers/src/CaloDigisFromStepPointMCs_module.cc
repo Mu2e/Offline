@@ -159,7 +159,7 @@ namespace mu2e {
     double                _digiSampling;
     int                   _nBits;
     double                _dynamicRange;
-    double                _acquisitionLength;
+    double                _acquisitionEndtime;
     int                   _bufferAfter;
     int                   _bufferBefore;
     double                _waveformOffset;    //offset needed for getting the first non null point of the input waveform
@@ -209,7 +209,7 @@ namespace mu2e {
       _digiSampling               (pset.get<double>     ("digiSampling")),       // ns
       _nBits                      (pset.get<int>        ("nBits"       )),       // number of digitizer bits
       _dynamicRange               (pset.get<double>     ("dynamicRange")),       // mV
-      _acquisitionLength          (pset.get<double>     ("acquisitionLength")),  // ns
+      _acquisitionEndtime          (pset.get<double>    ("acquisitionEndTime")),  // ns
       _bufferAfter                (pset.get<int>        ("bufferAfter"      )),  //# timestamps	  
       _bufferBefore               (pset.get<int>        ("bufferBefore"     )),	 //# timestamps 
       _waveformOffset             (pset.get<double>     ("waveformOffset"   ))   // ns
@@ -345,7 +345,7 @@ namespace mu2e {
 	int         waveContent = itWave->at(timeSample);
 	double      funcValue   = waveContent*ADCTomV;
 
-	if (_debugLevel > 0){
+	if (_debugLevel > 1){
 	  if (waveContent > 0){
 	    printf("wfContent (%4i, %9.3f) \n", waveContent, funcValue);
 	  }
@@ -475,7 +475,7 @@ namespace mu2e {
   void CaloDigisFromStepPointMCs::addNoiseToWaveforms(){
 
     for (int it=0; it<_nWaveforms; ++it){
-      int size = _acquisitionLength/_digiSampling;
+      int size = (_mbtime - _acquisitionEndtime)/_digiSampling;
 
       if (_ROFilled [it] == 0 )        continue;
 
@@ -675,12 +675,6 @@ namespace mu2e {
     event.getByLabel(_caloShowerStepMCModuleLabel, _caloShowerMCName,   caloShowerStepMCHandle);
     event.getByLabel(_caloShowerStepMCModuleLabel, _caloROShowerMCName, caloROShowerStepMCHandle);
      
-    //    static bool firstEvent(true);
-//     if ( firstEvent ) {
-//       printDataProductInfo( crystalStepsHandles, readoutStepsHandles);
-//       firstEvent = false;
-//     }
-    
     //clear the holder of the waveforms
     for (int i=0; i<_nWaveforms; ++i){
       _waveforms[i]->clear();
@@ -690,7 +684,7 @@ namespace mu2e {
     //initizlize the waveforms
     for (int it=0; it<_nWaveforms; ++it){
       
-      int size = _acquisitionLength/_digiSampling;
+      int size = (_mbtime - _acquisitionEndtime)/_digiSampling;
 
       for (int sample=0; sample<size; ++sample){
 	_waveforms[it]->push_back(0);
@@ -712,13 +706,7 @@ namespace mu2e {
 						    CaloDigiPacked& CaloDigis){
     
     
-    
-    //    GlobalConstantsHandle<ParticleDataTable> pdt;
-  
-  // Handle to the conditions service
-    //    ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-    
-    // Fill the waveforms
+     // Fill the waveforms
     fillWaveforms( caloShowerStepMCCollHandle);
     
     if (_addNoise == 1){                                        //add noise to the waveforms
@@ -770,9 +758,15 @@ namespace mu2e {
 	}
 	
 	// time folding and Adding ghost hits to properly treat boundary conditions with folding, see docdb-3425
-	double hitTimeUnfolded = _toff.totalTimeOffset(h.simParticle()) + h.time();
-	double hitTime         = fmod(hitTimeUnfolded,_mbtime);
+	double      hitTimeUnfolded = _toff.totalTimeOffset(h.simParticle()) + h.time();
+	double      hitTime         = fmod(hitTimeUnfolded,_mbtime);
 
+	if (_debugLevel>0){
+	  double      totalTimeOffset = _toff.totalTimeOffset(h.simParticle()) ;
+	  h.print(cout);
+	  printf("[CaloDigisFromStepPointMCs::fillWaveforms] i = %i totalTimeOffSet = %4.2f\n", i, totalTimeOffset);
+	}
+	
 	if (_addLightPropagation == 1){
 	  includeLightPropagation(hitTime, posInCrystalFrame);
 	}
@@ -788,6 +782,10 @@ namespace mu2e {
 	      hitTime =   hitTime - _mbtime;
 	    }
 	  }
+	}
+
+	if (_debugLevel>0){
+	  printf("[CaloDigisFromStepPointMCs::fillWaveforms] HitTime = %4.2f\n", hitTime);
 	}
 	
 	//avoid the use of hits created before _blindTime

@@ -52,6 +52,7 @@
 #include "RecoDataProducts/inc/RecoCaloDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
 
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
@@ -81,6 +82,24 @@
 
 
 
+//tracker includes
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/BaBar/Constants.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/TrkBase/TrkRep.hh"
+
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
+
+#include "TrkReco/inc/TrkStrawHit.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "BTrk/TrkBase/HelixParams.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
+#include "BTrk/BbrGeom/TrkLineTraj.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
+
 using namespace std;
 
 using CLHEP::Hep3Vector;
@@ -88,6 +107,11 @@ using CLHEP::keV;
 
 
 namespace mu2e {
+  struct DAQ_t {
+    TH1F*       _hNCaloDigi       [10];
+    TH1F*       _hNSamplesPerDigi [10];
+    TH1F*       _hNSamplesPerEvent[10];
+   };
   
   class ReadCaloDigi : public art::EDAnalyzer {
      
@@ -120,6 +144,7 @@ namespace mu2e {
     std::string                _rostepPoints;
     std::string                _caloClusterModuleLabel;
     std::string                _vdStepPoints;
+    std::string                _trackModuleLabel;
 
     SimParticleTimeOffset      _toff;     // time offset smearing
     double                     _mbtime;
@@ -129,17 +154,24 @@ namespace mu2e {
     double                     _psdThreshold;
 
     TTree*                     _Ntup;
+    DAQ_t                      _histDisk0;
+    DAQ_t                      _histDisk1;
+    TH2F*                      _hNSamplesVsCrysId[10];
+
     int                        _nProcess;
 
     int                        _evt,_run,_caloCrystals,_caloDisk0Crystals,_caloDisk1Crystals,_nHits,_nCluster, _nCryRO;
        
+    int                        _nRecoDigi, _recoDigiSamples[16384];
+    float                      _recoDigiAmp[16384], _recoDigiEnergy[16384], _recoDigiTime[16384];                   
+    
     int                        _cryId[16384],_crySectionId[16384];
 
     int                        _cluNcrys[204828];
     
     float                      _caloVolume, _crystalVolume;
 
-    float                      _cryEtot,_cryTime[16384],_cryEdep[16384],_cryDose[16384];
+    float                      _cryEtot,_cryTime[16384],_cryEdep[16384], _cryAmp[16384], _cryDose[16384];
     float                      _cryMCTime    [16384];
     float                      _cryMCEdep    [16384];
     int                        _cryNParticles[16384];
@@ -148,7 +180,8 @@ namespace mu2e {
 
     float                      _cryPosX[16384],_cryPosY[16384],_cryPosZ[16384], _cryPosR[16384];
     
-    float                      _cluEnergy[2048], _cluCrysE[2048], _cluTime[2048], _cluMCTime[2048], _cluMCMeanTime[2048];
+    float                      _cluEnergy[2048], _cluCrysE[2048], _cluMeanTime[2048],
+      _cluTime[2048], _cluMCTime[2048], _cluMCMeanTime[2048];
     float                      _cluCogX[2048],_cluCogY[2048],_cluCogZ[2048], _cluCogR[2048];
 
     int                        _cluConv[2048];
@@ -157,10 +190,16 @@ namespace mu2e {
     Float_t                   _vP, _vPx, _vPy, _vPz, _vPt;
     Float_t                   _vE, _vEKin, _vM;
     Float_t                   _vT;
-    Float_t                   _vX, _vY, _vZ;
+    Float_t                   _vX, _vY, _vZ, _vR;
     Float_t                   _vCosth, _vRadius;
     Int_t                     _vId;
     Int_t                     _vPdgId;
+
+    Int_t                     _nTrkGood;
+
+
+    //some histograms for DAQ analyses purposes
+
 
     const Calorimeter*        _calorimeter; // cached pointer to the calorimeter geometry
 
@@ -184,7 +223,8 @@ namespace mu2e {
     _vX      = 0.;
     _vY      = 0.;
     _vZ      = 0.;
-          
+    _vR      = 0.;
+
     _vCosth  = 0.;
     _vRadius = 0.;
     _vId     = 0.;
@@ -200,6 +240,7 @@ namespace mu2e {
     _rostepPoints                  (pset.get<string>("calorimeterROStepPoints")),
     _caloClusterModuleLabel        (pset.get<string>("caloClusterModuleLabel")),
     _vdStepPoints                  (pset.get<string>("vdStepPoints")),	     
+    _trackModuleLabel              (pset.get<string>("trackModuleLabel")),	     
     _toff                          (pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _mbbuffer                      (pset.get<double>             ("TimeFoldingBuffer")),  // ns
     _blindTime                     (pset.get<double>             ("blindTime" )),         // ns
@@ -209,13 +250,32 @@ namespace mu2e {
   {}
 
   void ReadCaloDigi::beginRun(art::Run& ){
-//     mu2e::GeomHandle<mu2e::Calorimeter> ch;
-//     _calorimeter = ch.get();
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    _calorimeter = ch.get();
   }
   void ReadCaloDigi::beginJob(){
 
     art::ServiceHandle<art::TFileService> tfs;
 
+    for (int i=0; i<10; ++i){
+      _histDisk0._hNCaloDigi        [i] = tfs->make<TH1F>(Form("hNHitsDisk0%i",i)      ,
+							  Form("Disk0: N caloDigis @ %i MeV threshold",i+1), 1e4, 0, 1e4);
+      _histDisk0._hNSamplesPerDigi  [i] = tfs->make<TH1F>(Form("hNSampleHitsDisk0%i",i), 
+							  Form("Disk0: N of words per caloDigi @ %i MeV threshold",i+1), 1e4, 0, 1e4);
+      _histDisk0._hNSamplesPerEvent [i] = tfs->make<TH1F>(Form("hNSampleDisk0%i",i), 
+							  Form("Disk0: N of words per event @ %i MeV threshold",i+1), 5e4, 0, 5e4);
+      _histDisk1._hNCaloDigi        [i] = tfs->make<TH1F>(Form("hNHitsDisk1%i",i)      ,
+							  Form("Disk1: N caloDigis @ %i MeV threshold",i+1), 1e4, 0, 1e4);
+      _histDisk1._hNSamplesPerDigi  [i] = tfs->make<TH1F>(Form("hNSampleHitsDisk1%i",i), 
+							  Form("Disk1: N of words per caloDigi @ %i MeV threshold",i+1), 1e4, 0, 1e4);
+      _histDisk1._hNSamplesPerEvent [i] = tfs->make<TH1F>(Form("hNSampleDisk1%i",i), 
+							  Form("Disk1: N of words per event @ %i MeV threshold",i+1), 5e4, 0, 5e4);
+      _hNSamplesVsCrysId            [i] = tfs->make<TH2F>(Form("hNSamplesVsCrysId%i",i), 
+							  Form("N of words per event vs crystal Id @ %i MeV threshold",i+1), 
+							  2000, 0, 2e3, 600, 0, 600);
+     
+    }
+    
     _Ntup  = tfs->make<TTree>("Calo", "Calo");
 
 
@@ -226,6 +286,13 @@ namespace mu2e {
     _Ntup->Branch("caloDisk0Crystals", &_caloDisk0Crystals ,"caloDisk0Crystals/I");
     _Ntup->Branch("caloDisk1Crystals", &_caloDisk1Crystals ,"caloDisk1Crystals/I");
      
+    _Ntup->Branch("nRecoDigi",     &_nRecoDigi ,       "nRecoDigi/I");
+    _Ntup->Branch("recoDigiEnergy",        &_recoDigiEnergy ,       "recoDigiEnergy[nRecoDigi]/F");
+    _Ntup->Branch("recoDigiAmp", &_recoDigiAmp, "recoDigiAmp[nRecoDigi]/F");
+    _Ntup->Branch("recoDigiTime", &_recoDigiTime, "recoDigiTime[nRecoDigi]/F");
+    _Ntup->Branch("recoDigiSamples", &_recoDigiSamples, "recoDigiSamples[nRecoDigi]/I");
+  
+
     _Ntup->Branch("cryEtot",      &_cryEtot ,    "cryEtot/F");
 
     _Ntup->Branch("nCry",         &_nHits ,       "nCry/I");
@@ -236,6 +303,7 @@ namespace mu2e {
     _Ntup->Branch("cryPosZ",      &_cryPosZ ,     "cryPosZ[nCry]/F");
     _Ntup->Branch("cryPosR",      &_cryPosR ,     "cryPosR[nCry]/F");
     _Ntup->Branch("cryEdep",      &_cryEdep ,     "cryEdep[nCry]/F");
+    _Ntup->Branch("cryAmp",      &_cryAmp ,      "cryAmp[nCry]/F");
     _Ntup->Branch("cryTime",      &_cryTime ,     "cryTime[nCry]/F");
     _Ntup->Branch("cryMCTime",    &_cryMCTime    ,"cryMCTime[nCry]/F");
     _Ntup->Branch("cryMCEdep",    &_cryMCEdep    ,"cryMCEdep[nCry]/F");
@@ -246,6 +314,7 @@ namespace mu2e {
     _Ntup->Branch("cluEnergy",    &_cluEnergy ,   "cluEnergy[nCluster]/F");
     _Ntup->Branch("cluCrysE",     &_cluCrysE ,    "cluCrysE[nCluster]/F");
     _Ntup->Branch("cluTime",      &_cluTime ,     "cluTime[nCluster]/F");
+    _Ntup->Branch("cluMeanTime",      &_cluMeanTime ,     "cluMeanTime[nCluster]/F");
     _Ntup->Branch("cluMCTime",    &_cluMCTime ,   "cluMCTime[nCluster]/F");
     _Ntup->Branch("cluMCMeanTime",    &_cluMCMeanTime ,   "cluMCMeanTime[nCluster]/F");
     _Ntup->Branch("cluCogX",      &_cluCogX ,     "cluCogX[nCluster]/F");	
@@ -270,10 +339,10 @@ namespace mu2e {
     _Ntup->Branch("vX",   &_vX ,  "vX/F");
     _Ntup->Branch("vY",   &_vY ,  "vY/F");
     _Ntup->Branch("vZ",   &_vZ ,  "vZ/F");
-    _Ntup->Branch("vCosth",   &_vCosth ,  "vCosth/F");
+    _Ntup->Branch("vR",   &_vR ,  "vR/F");
+        _Ntup->Branch("vCosth",   &_vCosth ,  "vCosth/F");
     _Ntup->Branch("vRadius",   &_vRadius ,  "vRadius/F");
-
-
+    _Ntup->Branch("nTrkGood"   ,   &_nTrkGood ,  "nTrkGood/I");
 
   }
 
@@ -286,10 +355,10 @@ namespace mu2e {
 
 
   void ReadCaloDigi::analyze(const art::Event& event) {
-    if (_nProcess == 0){
-      mu2e::GeomHandle<mu2e::Calorimeter> ch;
-      _calorimeter = ch.get();
-    }
+    // if (_nProcess == 0){
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    _calorimeter = ch.get();
+    // }
 
     ++_nProcess;
 
@@ -301,28 +370,49 @@ namespace mu2e {
     //data about hits in the calorimeter crystals
     art::Handle<CaloDigiMCCollection> caloDigiMCHandle;
     event.getByLabel(_caloDigisModuleLabel, caloDigiMCHandle);
-    if (!caloDigiMCHandle.isValid()){
-      printf("[ReadCaloDigi::analyze] no CaloDigiMCCollection: BAILS OUT\n");
-      return;
-    }
-    const     CaloDigiMCCollection*       caloDigiMCCol = caloDigiMCHandle.product();
-    
 
+    const     CaloDigiMCCollection*       caloDigiMCCol;
+    int       nCaloDigiMC(0);
+    if (caloDigiMCHandle.isValid()){
+       caloDigiMCCol = caloDigiMCHandle.product();
+       nCaloDigiMC   = caloDigiMCCol->size();
+    }
+
+   
+    art::Handle<RecoCaloDigiCollection>   recoCaloDigiHandle;
+    event.getByLabel(_caloDigisModuleLabel, recoCaloDigiHandle);
+
+    const     RecoCaloDigiCollection*       recoCaloDigiCol;
+    int       nRecoCaloDigi(0);
+    if (recoCaloDigiHandle.isValid()){
+       recoCaloDigiCol = recoCaloDigiHandle.product();
+       nRecoCaloDigi   = recoCaloDigiCol->size();
+    }
+ 
+
+    int         nCaloCrystals(0);
+    const     CaloCrystalHitCollection*  caloCrystalHits;
     art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
     event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
     if (!caloCrystalHitsHandle.isValid()){
-      printf("[ReadCaloDigi::analyze] no CaloCrystalHitCollection: BAILS OUT \n");
+      //      printf("[ReadCaloDigi::analyze] no CaloCrystalHitCollection: BAILS OUT \n");
+      nCaloCrystals = 0;
+    }else {
+     caloCrystalHits = caloCrystalHitsHandle.product();
+     nCaloCrystals   = caloCrystalHits->size();
     }
-    const     CaloCrystalHitCollection*  caloCrystalHits = caloCrystalHitsHandle.product();
+
 
 
     //data about clusters
     art::Handle<CaloClusterCollection> caloClustersHandle;
+    const     CaloClusterCollection*  caloClusters;
+    int       nCaloClusters(0);
     event.getByLabel(_caloClusterModuleLabel, caloClustersHandle);
-    if (!caloClustersHandle.isValid()){
-      printf("[ReadCaloDigi::analyze] no CaloClusterCollection: BAILS OUT \n");
+    if (caloClustersHandle.isValid()){
+      caloClusters  = caloClustersHandle.product();
+      nCaloClusters = caloClusters->size();
     }
-    const     CaloClusterCollection*  caloClusters = caloClustersHandle.product();
 
 
     //Handle to VD steps
@@ -333,6 +423,21 @@ namespace mu2e {
     event.getMany(selector_vdhits, vdStepsHandleVec);
 
 
+    //Handle to tracks collection
+    art::Handle<mu2e::KalRepCollection> dem_handle;
+    art::Selector  s_dem(art::ProcessNameSelector("")                && 
+			 art::ModuleLabelSelector(_trackModuleLabel)    );
+    event.get(s_dem,dem_handle);
+    
+    int      nTraks(0);
+    const mu2e::KalRepCollection* list_of_ele_tracks;
+
+    if (dem_handle.isValid()) {
+      list_of_ele_tracks = dem_handle.product();
+      nTraks             = list_of_ele_tracks->size();
+    }
+    
+
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
   
@@ -341,10 +446,55 @@ namespace mu2e {
     _caloCrystals = _calorimeter->nCrystal();
     _caloDisk0Crystals = _calorimeter->section(0).nCrystals();
     _caloDisk1Crystals = _calorimeter->section(1).nCrystals();
-    
-    int vdVecSize = vdStepsHandleVec.size();
-    
+    _nTrkGood          = 0;
+
+    //--------------------------------------------------------------------------------
+    if (nTraks>0){
+      double  fMinFitCons      = 2.e-3;
+      double  fMinNActive      = 25;
+      double  fMaxT0Err        = 0.9;  		// in ns
+      double  fMaxFitMomErr    = 0.25;  		// in MeV
+      double  fMinTanDip       = tan(M_PI/6.);	// 0.5773
+      double  fMaxTanDip       = 1.0;  
+      double  fMinD1           = -80.;		// in mm
+      double  fMaxD1           = 105.;
+      double  fTrkMomCut       = 100.;            //MeV/c
+
+      KalRep *trk;
+
+      trk = (KalRep*) &list_of_ele_tracks->at(0);
+      CLHEP::Hep3Vector mom = trk->momentum(0);
+ 
+      BbrVectorErr      momerr = trk->momentumErr(0);
+
+      CLHEP::Hep3Vector momdir = trk->momentum(0).unit();
+      CLHEP::HepVector  momvec(3);
+      for (int i=0; i<3; i++) momvec[i] = momdir[i];
+	
+      double fitmom_err = sqrt(momerr.covMatrix().similarity(momvec));
+
+  
+      if ( (trk->chisqConsistency().consistency() > fMinFitCons  ) &&
+	   (trk->nActive()                        > fMinNActive  ) &&
+	   (trk->t0().t0Err()                     < fMaxT0Err    ) &&
+	   (fitmom_err                             < fMaxFitMomErr) &&
+	   (trk->helix(0).tanDip()                > fMinTanDip   ) &&
+	   (trk->helix(0).tanDip()                < fMaxTanDip   ) &&
+	   (trk->helix(0).d0()                    < fMaxD1       ) &&
+	   (trk->helix(0).d0()                    > fMinD1       ) &&
+	   (mom.mag()                             > fTrkMomCut   )){
+
+	_nTrkGood = 1;
+      }
+    }
+    //--------------------------------------------------------------------------------
+
+
+    int           vdVecSize = vdStepsHandleVec.size();
     initVHits();
+
+    //    double        timeLastHit(1e10);
+    double        timeLastHit(0);
 
     for (int j=0; j< vdVecSize; ++j){
       vdStepsHandle = & vdStepsHandleVec[j];
@@ -368,24 +518,14 @@ namespace mu2e {
 	      // a custom made gen particle
 
 	      SimParticle const& sim  = *simptr;
-	      if ( sim.fromGenerator() ){
-	      	GenParticle* gen = (GenParticle*) &(*sim.genParticle());
-	      	if ( gen->generatorId() != GenId::conversionGun ){
-	      	  continue;
-	      	}
-	      }
-
-	      _vP      = hit.momentum().mag();
-	      _vPx     = hit.momentum().x();
-	      _vPy     = hit.momentum().y();
-	      _vPz     = hit.momentum().z();
-	      _vPt     = std::sqrt( std::pow(_vPx,2.)+std::pow(_vPy,2.) );
-	      _vPdgId  = hit.simParticle()->pdgId();
-	      _vM      = pdt->particle(_vPdgId).ref().mass();
-	      _vE      = sqrt(_vP*_vP + _vM*_vM);
-	      _vEKin   = _vE - _vM;
+	      // if ( sim.fromGenerator() ){
+	      // 	GenParticle* gen = (GenParticle*) &(*sim.genParticle());
+	      // 	if ( gen->generatorId() != GenId::conversionGun ){
+	      // 	  continue;
+	      // 	}
+	      // }
+	      if ( !sim.fromGenerator() )	      	  continue;
 	      
-
 	      double     hitTime = fmod(hit.time() + _toff.totalTimeOffset(simptr), _mbtime);
 	      if (hitTime < _mbbuffer) {
 		if (hitTime+_mbtime > _blindTime) {
@@ -400,17 +540,34 @@ namespace mu2e {
 		}
 	      }
 
+	      //	      if (hitTime > timeLastHit)                  continue;
+	      if (hitTime < timeLastHit)                  continue;
+
+	      timeLastHit = hitTime;
+
 	      _vT      = hitTime;
+
+	      _vP      = hit.momentum().mag();
+	      _vPx     = hit.momentum().x();
+	      _vPy     = hit.momentum().y();
+	      _vPz     = hit.momentum().z();
+	      _vPt     = std::sqrt( std::pow(_vPx,2.)+std::pow(_vPy,2.) );
+	      _vPdgId  = hit.simParticle()->pdgId();
+	      _vM      = pdt->particle(_vPdgId).ref().mass();
+	      _vE      = sqrt(_vP*_vP + _vM*_vM);
+	      _vEKin   = _vE - _vM;
+	      
+
 	      _vX      = hit.position().x()+3904.;
 	      _vY      = hit.position().y();
 	      _vZ      = hit.position().z();
+	      _vR      = sqrt(_vX*_vX + _vY*_vY);
 	                
 	      _vCosth  = _vPz/_vP;
 	      _vRadius = std::sqrt(_vX*_vX+_vY*_vY);
 	      _vId     = id;
 	    
-	      _vNHits++;
-	      break;
+	      _vNHits  = 1;
 	    }
 	  }
 	}
@@ -425,23 +582,92 @@ namespace mu2e {
     const std::vector<CaloCrystalHitPtr>    *crystals;
     const CaloCrystalHit                    *crystalHit;
     const RecoCaloDigi                      *recoDigi;
-    //    const CaloDigi                    *caloDigi;
+    //    const CaloDigi                          *caloDigi;
     const CaloDigiMC                        *caloDigiMC;
     const SimParticle                       *sim;
     
-    for (unsigned int ic=0; ic<caloCrystalHits->size();++ic) {
+
+    //fill DAQ histograms
+    double     amplitude(0);
+    int        roId(0), crystalId(0), diskId(0);
+    
+    int        nThresholds(10), nWords(0);
+    int        disk0NCaloDigi       [10] = {0};
+    int        disk1NCaloDigi       [10] = {0};
+    int        disk0NSamplesPerEvent[10] = {0};   
+    int        disk1NSamplesPerEvent[10] = {0};
+    double     thresholds           [10] = {1., 2., 3, 4., 5., 6, 7, 8, 9, 10};
+    double     ADC2mV                   = 2000./pow(2.,12);
+    //2016-01-27 G. Pezzullo conversion from thresholds given in MeV to mV
+    double     p0(5.35), p1(16.01);
+    for(int i=0; i<nThresholds; ++i){
+      thresholds [i] = thresholds[i]*p1 + p0;
+    }
+
+    int        ncrystals(2000);
+    int        nWordsCrystals       [ncrystals] = {0};
+
+    _nRecoDigi = nRecoCaloDigi;
+
+    for (int i=0; i< nRecoCaloDigi; ++i){
+      recoDigi   = &recoCaloDigiCol->at(i);
+      amplitude  = recoDigi->amplitude()*ADC2mV;
+      roId       = recoDigi->ROid();
+      crystalId  = _calorimeter->crystalByRO(roId);
+      diskId     = _calorimeter->crystal(crystalId).sectionId();
+
+      _recoDigiAmp   [i] = amplitude;
+      _recoDigiEnergy[i] = recoDigi->edep();
+
+      CaloDigi	caloDigi   = recoDigi->RODigi();
+      nWords     = caloDigi.nSamples();
+
+      nWordsCrystals[crystalId] += nWords;
+
+      for (int k=0; k<nThresholds; ++k){
+	if (amplitude > thresholds[k]){
+	  if (diskId ==0){
+	    disk0NCaloDigi[k]        = disk0NCaloDigi[k] + 1;
+	    disk0NSamplesPerEvent[k] = disk0NSamplesPerEvent[k] + nWords ;
+	    _histDisk0._hNSamplesPerDigi [k]->Fill(nWords);
+	  }else if (diskId == 1){
+	    disk1NCaloDigi[k]        = disk1NCaloDigi[k] + 1;
+	    disk1NSamplesPerEvent[k] = disk1NSamplesPerEvent[k] + nWords ;
+	    _histDisk1._hNSamplesPerDigi [k]->Fill(nWords);
+	  }
+	}
+      }//end loop on the thresholds
+      
+    }
+
+    for (int k=0; k<nThresholds; ++k){
+      _histDisk0._hNCaloDigi       [k]->Fill(disk0NCaloDigi       [k]);
+      _histDisk0._hNSamplesPerEvent[k]->Fill(disk0NSamplesPerEvent[k]);
+      _histDisk1._hNCaloDigi       [k]->Fill(disk1NCaloDigi       [k]);
+      _histDisk1._hNSamplesPerEvent[k]->Fill(disk1NSamplesPerEvent[k]);
+      
+      for (int j=0; j<ncrystals; ++j){
+	if (nWordsCrystals[j] > 0){
+	  _hNSamplesVsCrysId[k]->Fill(j, nWordsCrystals[j]);
+	}
+      }
+
+    }
+
+    for (int ic=0; ic<nCaloCrystals;++ic) {
 
 	   
       CaloCrystalHit const& hit    = caloCrystalHits->at(ic);
-      CLHEP::Hep3Vector crystalPos = _calorimeter->crystal(hit.id()).position();
+      CLHEP::Hep3Vector crystalPos = _calorimeter->crystal(hit.id()).localPositionFF();
 
       _cryEtot             += hit.energyDep();
       _cryTime[_nHits]      = hit.time();
       _cryEdep[_nHits]      = hit.energyDep();
+
 	
-      _cryPosX[_nHits]      = crystalPos.x()+ 3904;
+      _cryPosX[_nHits]      = crystalPos.x();
       _cryPosY[_nHits]      = crystalPos.y();
-      _cryPosZ[_nHits]      = crystalPos.z()-10200;
+      _cryPosZ[_nHits]      = crystalPos.z();
       _cryPosR[_nHits]      = sqrt( _cryPosX[_nHits]*_cryPosX[_nHits] + crystalPos.y()*crystalPos.y() );
       _cryId[_nHits]        = hit.id();
       _crySectionId[_nHits] = _calorimeter->crystal(hit.id()).sectionId();
@@ -450,36 +676,43 @@ namespace mu2e {
       int    isConversion(0);
       
       recoDigi         = hit.recoCaloDigis().at(0).operator ->();
+      _cryAmp [_nHits]      = recoDigi->amplitude();
 
       const CaloDigi	caloDigi  = recoDigi->RODigi();
       indexMC          = caloDigi.index();
-      caloDigiMC       = &caloDigiMCCol->at(indexMC);
-	
-      for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
-	sim =   caloDigiMC->simParticle(k).operator ->();
-	//	if ( sim->fromGenerator() ){
-	const CLHEP::Hep3Vector genPos = sim->startPosition();
-	
-	if (!_calorimeter->isInsideCalorimeter(genPos)){
-	  ++nParticles;
-	  GenParticle* gen = (GenParticle*) &(sim->genParticle());
-	  if ( gen->generatorId() == GenId::conversionGun ){
-	    isConversion = 1;
-	  }
-	}
-      }//end loop on the particles inside the crystalHit
 
-      _cryMCTime    [_nHits] = caloDigiMC->timeFirst();
-      _cryMCEdep    [_nHits] = caloDigiMC->totalEDep();
+      if (nCaloDigiMC > 0) {
+	caloDigiMC       = &caloDigiMCCol->at(indexMC);
+	
+	for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
+	  sim =   caloDigiMC->simParticle(k).operator ->();
+	  //	if ( sim->fromGenerator() ){
+	  const CLHEP::Hep3Vector genPos = sim->startPosition();
+	
+	  if (!_calorimeter->isInsideCalorimeter(genPos)){
+	    ++nParticles;
+	    GenParticle* gen = (GenParticle*) &(sim->genParticle());
+	    if ( gen->generatorId() == GenId::conversionGun ){
+	      isConversion = 1;
+	    }
+	  }
+	}//end loop on the particles inside the crystalHit
+
+	_cryMCTime    [_nHits] = caloDigiMC->timeFirst();
+	_cryMCEdep    [_nHits] = caloDigiMC->totalEDep();
+      } else {
+	_cryMCTime    [_nHits] = 0;
+	_cryMCEdep    [_nHits] = 0;
+      }
       _cryNParticles[_nHits] = nParticles;
       _cryPsd       [_nHits] = recoDigi->psd();
       _cryIsConv    [_nHits] = isConversion;
-      
+
       ++_nHits;
     }
     
     
-    _nCluster = caloClusters->size();
+    _nCluster = nCaloClusters;//caloClusters->size();
 
     for (int i=0; i<_nCluster; ++i){
       cluster  = &caloClusters->at(i);
@@ -490,39 +723,59 @@ namespace mu2e {
       int    indexMC;
       int    isConversion(0);
       
-      double   energyMax(0), clusterTime(0), clusterMCMeanTime(0), clusterMCTime(0), eDep, psd;
+      double   energyMax(0), eMeanTot(0), clusterTime(0), clusterMCMeanTime(0), clusterMeanTime(0), clusterMCTime(0), eDep, psd, crystalTime(0);
       
       for (int j=0; j<nCrystals; ++j){
-	crystalHit	 = crystals->at(j).operator ->();
-	recoDigi         = crystalHit->recoCaloDigis().at(0).operator ->();
+      	crystalHit	 = crystals->at(j).operator ->();
+      	recoDigi         = crystalHit->recoCaloDigis().at(0).operator ->();
 
-	const CaloDigi	caloDigi  = recoDigi->RODigi();
-	indexMC          = caloDigi.index();
-	caloDigiMC       = &caloDigiMCCol->at(indexMC);
-	
-	eDep             = crystalHit->energyDep();
-	psd              = recoDigi  ->psd();
+      	const CaloDigi	caloDigi  = recoDigi->RODigi();
+      	indexMC          = caloDigi.index();
 
-	if ( (eDep > energyMax) && (psd > _psdThreshold) ){
-	  clusterTime       = crystalHit->time();
-	  clusterMCMeanTime = caloDigiMC->meanTime();
-	  energyMax         = eDep;
-	  clusterMCTime     = caloDigiMC->timeFirst();
-	}
 	
-	for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
-	  sim =   caloDigiMC->simParticle(k).operator ->();
-	  if ( sim->fromGenerator() ){
-	    GenParticle* gen = (GenParticle*) &(sim->genParticle());
-	    if ( gen->generatorId() == GenId::conversionGun ){
-	      isConversion = 1;
+      	eDep             = crystalHit->energyDep();
+      	psd              = recoDigi  ->psd();
+
+      	if (psd > _psdThreshold){
+      	  crystalTime        =   crystalHit->time();
+
+      	  if (eDep> 10.){
+      	    eMeanTot          += eDep;
+      	    clusterMeanTime   += crystalTime*eDep;
+      	  }
+
+      	  if (eDep > energyMax){
+      	    clusterTime       = crystalTime;
+      	    energyMax         = eDep;
+
+	    if (nCaloDigiMC > 0) {
+	      caloDigiMC        = &caloDigiMCCol->at(indexMC);
+	      clusterMCMeanTime = caloDigiMC->meanTime();
+	      clusterMCTime     = caloDigiMC->timeFirst();
 	    }
-	  }
-	}//end loop on the particles inside the crystalHit
+  	  }
+      	}
+
+	if (nCaloDigiMC > 0) {
+
+	  for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
+	    sim =   caloDigiMC->simParticle(k).operator ->();
+	    if ( sim->fromGenerator() ){
+	      GenParticle* gen = (GenParticle*) &(sim->genParticle());
+	      if ( gen->generatorId() == GenId::conversionGun ){
+		isConversion = 1;
+	      }
+	    }
+	  }//end loop on the particles inside the crystalHit
+	}
+      }
+      if (eMeanTot>0){
+      	clusterMeanTime /= eMeanTot;
       }
 
       _cluEnergy    [i]     = cluster->energyDep();
       _cluTime      [i]     = clusterTime;
+      _cluMeanTime  [i]     = clusterMeanTime;
       _cluMCTime    [i]     = clusterMCTime;
       _cluMCMeanTime[i]     = clusterMCMeanTime;
       _cluCrysE     [i]     = energyMax;

@@ -98,6 +98,7 @@ physics : {
 	    calorimeterROStepPoints: calorimeterRO
 	    caloClusterModuleLabel : MakeCaloCluster
 	    vdStepPoints           : virtualdetector
+	    trackModuleLabel       : ""
 	    TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	    blindTime              : 500. # ns  
 	    TimeFoldingBuffer      : 100. # ns

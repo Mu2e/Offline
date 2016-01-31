@@ -69,7 +69,7 @@ namespace mu2e {
   protected:
     //external parameters to set at the initialization stage
     int         _debugLevel;
-    double      _acquisitionLenght;
+    double      _acquisitionEndTime;
     int         _digiSampling;
     double      _wave_point_error;
     double      _psdThreshold;
@@ -98,7 +98,7 @@ namespace mu2e {
     int         _debugHistIndex;
 
     Int_t       _counter, _nParticles, _hitCounter, _pdgId[1000], _nPeaks;
-    Float_t     _timeWf, _mcTime, _mcEDep, _psdWf,  _Chi2Time, _nDof, _fitEta, _fitNorm, _fitSigma, _fitPeak,_fitDlogn, _amp, _charge;
+    Float_t     _timeWf, _mcTime, _mcMeanTime, _mcEDep, _psdWf,  _Chi2Time, _nDof, _fitEta, _fitNorm, _fitSigma, _fitPeak,_fitDlogn, _amp, _charge;
 
 //-----------------------------------------------------------------------------
 // constructors and destructor
