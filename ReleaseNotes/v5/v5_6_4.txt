@@ -2,6 +2,17 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_4
 
+3) Feb 01, 2016  dnbrow01
+   Added version control to calorimeter crates.  To turn on building of 
+   crates, one needs to add 
+   int calorimeter.calorimeterCrateVersion = 2;  
+   (or higher) to the calorimeterXXX.txt file being used.  If not present,
+   default to crate version 1, which does not build crates.
+   Added version = 2 flag to current calorimeter geom file, 
+   calorimeter_BaF2.txt.  TDR-era geometry files should not choke on this.
+   modified:   Mu2eG4/geom/calorimeter_BaF2.txt
+   modified:   Mu2eG4/src/constructDiskCalorimeter.cc
+
 2) Jan 29, 2016, genser
    changed tracker Planes positions as per doc 888v9
      Mu2eG4/geom/geom_common_cd3_s4p2.txt

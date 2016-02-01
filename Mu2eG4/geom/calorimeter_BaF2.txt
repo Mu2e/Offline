@@ -34,6 +34,7 @@ vector<double> calorimeter.diskRotationAngle   = {0.,0.};     //rad
 vector<double> calorimeter.diskSeparation      = {0.,700.};   //mm  separation w.r.t first disk
 
 // Readout crates
+int calorimeter.calorimeterCrateVersion = 2; 
 string calorimeter.calorimeterCrateMaterial    = "Electronics"; //"G10";       // calorimeter electronics material. NEED to refine
 double calorimeter.calorimeterCrateInnerRadius = 680;         // calorimeter electronics crates inner radius  //mm
 double calorimeter.calorimeterCrateOuterRadius = 810;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906

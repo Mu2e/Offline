@@ -75,13 +75,14 @@ namespace mu2e {
     bool const isCrystalSolid       = config.getBool("calorimeter.crystalSolid",true);
     bool const forceAuxEdgeVisible  = config.getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false);
+    int const crateVersion          = config.getInt("calorimeter.calorimeterCrateVersion",1);
 
 
     //-- A helper class for parsing the config file.
     MaterialFinder materialFinder(config);
 
     G4Material* diskMaterial   = materialFinder.get("calorimeter.calorimeterDiskMaterial");
-    G4Material* cratMaterial   = materialFinder.get("calorimeter.calorimeterCrateMaterial");
+
     G4Material* fillMaterial   = materialFinder.get("calorimeter.calorimeterFillMaterial");
     G4Material* crysMaterial   = materialFinder.get("calorimeter.crystalMaterial");
     G4Material* wrapMaterial   = materialFinder.get("calorimeter.crystalWrapper");
@@ -89,10 +90,6 @@ namespace mu2e {
     G4Material* pipeMaterial   = materialFinder.get("calorimeter.pipeMaterial");
 
     G4VPhysicalVolume* pv;
-
-    double crateRadIn = config.getDouble("calorimeter.calorimeterCrateInnerRadius");
-    double crateRadOut = config.getDouble("calorimeter.calorimeterCrateOuterRadius");
-    double crateExtendLen = config.getDouble("calorimeter.calorimeterCrateExtendLen");
 
     
     //-- Get all disk /crystal informations here
@@ -282,7 +279,6 @@ namespace mu2e {
 
 
 
-
     //--------------------------------------
     // Construct disks: diskCase contains the crystals. DiskBox contains the calibration pipes and diskCase
     //
@@ -304,15 +300,11 @@ namespace mu2e {
 	  double radiusOut      = cal.disk(idisk).outerRadius()+caseThickness;
 	  double diskpar0[5]    = {radiusIn,radiusOut, diskDepth/2.0, 0., CLHEP::twopi};
 	  double diskpar1[5]    = {radiusIn,radiusOut, caseDepth/2.0, 0., CLHEP::twopi};
-	  double diskpar2[5]    = {crateRadIn, crateRadOut, caseDepth/2.0+crateExtendLen/2.0, 0., CLHEP::pi};
 
 	  
 	  //origin gives the position of the center of the disk, irrespective of the coordinate origin set in the calo description
 	  G4ThreeVector posDisk = cal.disk(idisk).origin() - posCaloMother;
-	  G4ThreeVector dposCrate(0.0,0.0,crateExtendLen/2.0);
-	  G4ThreeVector posCrate = posDisk + dposCrate;
-	  if ( idisk == 1 ) posCrate = posDisk - dposCrate;
-	    
+
 	  diskBoxInfo[idisk] =  nestTubs(discname0.str(),
                         		 diskpar0,fillMaterial,&cal.disk(idisk).rotation(),posDisk,
                         		 calorimeterInfo,
@@ -327,12 +319,23 @@ namespace mu2e {
                         		 isDiskCaseVisible,G4Colour::Red(),isDiskCaseSolid,forceAuxEdgeVisible,
                         		 true,doSurfaceCheck );
 
-	  diskFEBInfo[idisk] = nestTubs(discname2.str(),
-					diskpar2,cratMaterial,&cal.disk(idisk).rotation(),posCrate,
-					calorimeterInfo,
-					idisk,
-					isDiskCaseVisible,G4Colour::Green(),isDiskCaseSolid,forceAuxEdgeVisible,
-					true,doSurfaceCheck );
+	  if ( crateVersion > 1 ) {
+	    G4Material* cratMaterial   = materialFinder.get("calorimeter.calorimeterCrateMaterial");
+	    double crateRadIn = config.getDouble("calorimeter.calorimeterCrateInnerRadius");
+	    double crateRadOut = config.getDouble("calorimeter.calorimeterCrateOuterRadius");
+	    double crateExtendLen = config.getDouble("calorimeter.calorimeterCrateExtendLen");
+	    G4ThreeVector dposCrate(0.0,0.0,crateExtendLen/2.0);
+	    G4ThreeVector posCrate = posDisk + dposCrate;
+	    if ( idisk == 1 ) posCrate = posDisk - dposCrate;
+	    double diskpar2[5]    = {crateRadIn, crateRadOut, caseDepth/2.0+crateExtendLen/2.0, 0., CLHEP::pi};
+
+	    diskFEBInfo[idisk] = nestTubs(discname2.str(),
+					  diskpar2,cratMaterial,&cal.disk(idisk).rotation(),posCrate,
+					  calorimeterInfo,
+					  idisk,
+					  isDiskCaseVisible,G4Colour::Green(),isDiskCaseSolid,forceAuxEdgeVisible,
+					  true,doSurfaceCheck );
+	  }
 
 	  if ( verbosityLevel > 0) 
 	  {
