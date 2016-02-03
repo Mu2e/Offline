@@ -133,11 +133,11 @@ namespace mu2e {
       for ( auto dstring : dstraws){
 // split the string into a StrawId (underscore delimited) and the FP range
 	std::istringstream dstrings(dstring);
-	double range(-1.0);
+	double range(0.0);
 	std::string sidname;
 	dstrings >> sidname >> range;
 	// check
-	if(range < 0.0)
+	if(range == 0.0)
         throw cet::exception("CONFIG")
           << "DeadStrawList: expected StrawId and range but got "
 	  << dstring << endl;
@@ -186,8 +186,12 @@ namespace mu2e {
   bool DeadStrawList::isDead ( StrawIndex ind,double hitpos) const {
     bool retval(false);
     auto ifnd = _deadstraws.find(DeadStrawRange(ind));
-    if(ifnd != _deadstraws.end())
-      retval = fabs(hitpos) < ifnd->_range;
+    if(ifnd != _deadstraws.end()){
+      if(ifnd->_range > 0)
+	retval = fabs(hitpos) < ifnd->_range;
+      else
+	retval = fabs(hitpos) > -ifnd->_range;
+    }
     return retval;
   }
 
