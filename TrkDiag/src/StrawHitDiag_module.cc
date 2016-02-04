@@ -28,6 +28,8 @@
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+// Utilities
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "DataProducts/inc/threevec.hh"
@@ -59,7 +61,8 @@ namespace mu2e
       const StereoHitCollection* _stcol;
       const StrawHitFlagCollection* _shfcol;
       const StrawDigiMCCollection *_mcdigis;
-
+      // time offset
+      SimParticleTimeOffset _toff;
       // strawhit tuple variables
       TTree *_shdiag;
       Int_t _eventid;
@@ -91,7 +94,8 @@ namespace mu2e
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _shfLabel(pset.get<string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
     _stLabel(pset.get<string>("StereoHitCollectionLabel","MakeStereoHits")),
-    _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")) 
+    _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
 
   StrawHitDiag::~StrawHitDiag(){}
@@ -101,6 +105,9 @@ namespace mu2e
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::TrkPatRec: data missing or incomplete"<< endl;
     }
+// update time maps
+    _toff.updateMap(event);
+
     fillStrawHitDiag();
   }
 
@@ -142,8 +149,7 @@ namespace mu2e
       if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-      // hit t0 needs correction for event offset FIXME!!!
-      shinfo._mct0 = spmcp->time();
+      shinfo._mct0 = _toff.timeWithOffsetsApplied(*spmcp);
       shinfo._mcht = mcdigi.wireEndTime(itdc);
       shinfo._mcpdg = spp->pdgId();
       shinfo._mcproc = spp->creationCode();
@@ -153,7 +159,7 @@ namespace mu2e
 	shinfo._mcgen = spp->genParticle()->generatorId().id();
 
       shinfo._mcpos = spmcp->position();
-      shinfo._mctime = spmcp->time();
+      shinfo._mctime = shinfo._mct0;
       shinfo._mcedep = mcdigi.energySum();;
       shinfo._mcmom = spmcp->momentum().mag();
       double cosd = spmcp->momentum().cosTheta();
@@ -322,7 +328,7 @@ namespace mu2e
           const art::Ptr<SimParticle>& psp = spp->parent();
           _mcppdg = psp->pdgId();
           _mcpproc = psp->creationCode();
-          _mcptime = psp->startGlobalTime();
+          _mcptime = _toff.totalTimeOffset(psp) + psp->startGlobalTime();
           _mcpop = det->toDetector(psp->startPosition());
           _mcpoe = psp->startMomentum().e();
           _mcpom = psp->startMomentum().vect().mag();
