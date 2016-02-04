@@ -316,7 +316,7 @@ namespace mu2e
         _mcgen = -1;
         if(spp->genParticle().isNonnull())
           _mcgen = spp->genParticle()->generatorId().id();
-        _mctime = spmcp->time();
+        _mctime = _toff.timeWithOffsetsApplied(*spmcp);
         _mcshp = spmcp->position();
         _mcop = det->toDetector(spp->startPosition());
         _mcoe = spp->startMomentum().e();
