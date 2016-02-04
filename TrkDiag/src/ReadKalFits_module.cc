@@ -35,7 +35,7 @@ using CLHEP::Hep3Vector;
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "TrkDiag/inc/KalDiag.hh"
-
+#include "TrkReco/inc/TrkStrawHit.hh"
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -50,6 +50,13 @@ using CLHEP::Hep3Vector;
 using namespace std;
 
 namespace mu2e {
+
+  // struct to look for hit sharing between tracks
+  struct HitShare {
+    size_t _trk1; // index to primary track (== track with the most active hits)
+    size_t _trk2; // index to secondary track (has shared hits)
+    unsigned _nshared; // # of active hits shared between 2 tracks
+  };
 
   class ReadKalFits : public art::EDAnalyzer {
   public:
@@ -94,10 +101,15 @@ namespace mu2e {
 
     TTree* _trkdiag;
 
-
+//  local branches
     Int_t _trkid,_eventid, _runid, _subrunid;
-    Double_t _evtwt; 
+    Double_t _evtwt;
     Float_t g4bl_weight;
+    Int_t _ntrks, _nshared;
+
+    // helper function
+    void countSharedHits(KalRepPtrCollection const& trks,
+	std::vector<HitShare>& overlaps);
 
   };
 
@@ -139,6 +151,8 @@ namespace mu2e {
     _trkdiag->Branch("trkid",&_trkid,"trkid/I");
     _trkdiag->Branch("evtwt",&_evtwt,"evtwt/d");
     _trkdiag->Branch("g4bl_weight",&g4bl_weight,"g4bl_weight/f");
+    _trkdiag->Branch("ntrks",&_ntrks,"ntrks/I");
+    _trkdiag->Branch("nshared",&_nshared,"nshared/I");
 }
 
   // For each event, look at tracker hits and calorimeter hits.
@@ -179,14 +193,29 @@ namespace mu2e {
     }
 
      _hNTracks->Fill( trks.size() );
+    // initialize counting variables
+     _ntrks = trks.size();
+     _nshared = -1;
      _trkid = -1;
 
-    for ( size_t i=0; i< trks.size(); ++i ){
-      _trkid = i;
-      KalRep const* krep = trks.at(i).get();
+    // search for tracks which share hits
+    std::vector<HitShare> overlaps;
+    countSharedHits(trks,overlaps);
+
+    for ( size_t itrk=0; itrk< trks.size(); ++itrk ){
+      _trkid = itrk;
+      KalRep const* krep = trks.at(itrk).get();
       if ( !krep ) continue;
 
+      // sum total shared hits
+      _nshared=0;
+      for(const HitShare& ihs: overlaps) {
+	if(ihs._trk1 == itrk || ihs._trk2 == itrk)
+	  _nshared += ihs._nshared;
+      }
+      // fill the standard diagnostics
      _kdiag.kalDiag(krep);
+      
 
       // For some quantities you require the concrete representation, not
       // just the base class.
@@ -211,7 +240,7 @@ namespace mu2e {
 
       if ( _verbosity > 1 && _eventid <= _maxPrint ){
         cout << "   Fitted track: "
-             << i            << " "
+             << itrk            << " "
              << krep->nDof() << " "
              << krep->chisqConsistency().likelihood()  << " | "
              << s0                        << " "
@@ -228,6 +257,41 @@ namespace mu2e {
     // if there are no tracks, enter dummies
     if(trks.size() == 0 && _processEmpty){
       _kdiag.kalDiag(0);
+    }
+  }
+
+  void ReadKalFits::countSharedHits(KalRepPtrCollection const& trks,
+    std::vector<HitShare>& overlaps) {
+    if(trks.size() > 1){
+      for(size_t itrk =0; itrk < trks.size(); ++itrk){
+	KalRep const* ikrep = trks.at(itrk).get();
+	TrkStrawHitVector ihits;
+	convert(ikrep->hitVector(),ihits);
+	for(size_t jtrk = itrk++; jtrk < trks.size(); ++jtrk ) {
+	  KalRep const* jkrep = trks.at(jtrk).get();
+	  TrkStrawHitVector jhits;
+	  convert(jkrep->hitVector(),jhits);
+	  unsigned nshared(0);
+	  for(const TrkStrawHit* ihit: ihits){
+	    for(const TrkStrawHit* jhit: jhits){
+	      if(ihit->isActive() && jhit->isActive() && ihit->strawHit() == jhit->strawHit())
+		++nshared;
+	    }
+	  }
+	  if(nshared > 0){
+	    HitShare share;
+	    share._nshared = nshared;
+	    if(ikrep->nActive() > jkrep->nActive()){
+	      share._trk1 = itrk;
+	      share._trk2 = jtrk;
+	    } else {
+	      share._trk2 = itrk;
+	      share._trk1 = jtrk;
+	    }
+	    overlaps.push_back(share);
+	  }
+	}
+      }
     }
   }
 
