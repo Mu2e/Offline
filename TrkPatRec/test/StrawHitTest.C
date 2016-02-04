@@ -57,8 +57,10 @@ Int_t myproc(Int_t proc,Bool_t xtalk) {
 void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 
   TString spage(page);
+  cout << "page " << page << " spage " << spage << endl;
   gStyle->SetOptStat(0);
-  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
+//  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
+  TCut conv("mcpdg==11&&mcgen==2");
   TCut oele("abs(mcpdg)==11&&mcgen!=2");
   TCut dio("mcpdg==11&&mcgen==6");
   TCut delta("mcpdg==11&&mcgen<0&&mcproc==17");
@@ -89,7 +91,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 
   TCut hitsel("esel&&rsel&&tsel&&(!delta)&&(!isolated)");
 
-  TCut goodevt("mcmom>100&&mctd<1&&mctd>0.577");
+  TCut goodevt("mcom>100&&mctd<1&&mctd>0.577");
   TCut goodpeak("abs(tpeak-mct0-25)<30");
   if(spage =="scan"){
     TCanvas* scan = new TCanvas("scan","simulation",1200,800);
@@ -279,7 +281,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     tstack->Draw();
     tleg->Draw();
 
-  } else if(spage="selcan"){
+  } else if(spage=="selcan"){
 
     THStack* tstacks = new THStack("tcs","Selected Reco Hit Time by Particle;Hit Time (ns);Hits/event/ns");
     TH1F* ctimes = new TH1F("ctimes","Conversion Reco Hit Time",150,250,1750);
@@ -628,18 +630,23 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     TH1F* stptime = new TH1F("stptime","Stopping Target Proton Reco Hit Time",150,250,1750);
     TH1F* ntime = new TH1F("ntime","Neutron Reco Hit Time",150,250,1750);
     TH1F* mtime = new TH1F("mtime","OOT Muon Reco Hit Time",150,250,1750);
+    TH1F* cetime = new TH1F("cetime","CE Reco Hit Time",150,250,1750);
     dtime->SetFillColor(kOrange);
     gtime->SetFillColor(kBlack);
     pptime->SetFillColor(kBlue);
     stptime->SetFillColor(kGreen);
     ntime->SetFillColor(kCyan);
     mtime->SetFillColor(kYellow);
+    cetime->SetFillColor(kRed);
 
     double scale = 0.1/nevents;
-    hits->Project("dtime","time",dioorigin+timecut);
+    hits->Project("cetime","time",conv+timecut);
+    cetime->Scale(scale);
+    origin->Add(cetime);
+     hits->Project("dtime","time",dioorigin+timecut);
     dtime->Scale(scale);
     origin->Add(dtime);
-    hits->Project("mtime","time",ootmuonorigin+timecut);
+   hits->Project("mtime","time",ootmuonorigin+timecut);
     mtime->Scale(scale);
     origin->Add(mtime);
     hits->Project("ntime","time",norigin+timecut);
@@ -655,7 +662,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     pptime->Scale(scale);
     origin->Add(pptime);
 
-    double total = dtime->Integral() + pptime->Integral() + stptime->Integral() + gtime->Integral() + ntime->Integral() + mtime->Integral();
+    double total = dtime->Integral() + pptime->Integral() + stptime->Integral() + gtime->Integral() + ntime->Integral() + mtime->Integral() + cetime->Integral() ;
  
     cout << "DIO integral = " << dtime->Integral()
       << " Primary Proton inegral = " << pptime->Integral()
@@ -663,6 +670,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
       << " Photon inegral = " << gtime->Integral()
       << " Neutron inegral = " << ntime->Integral()
       << " OOT muon inegral = " << mtime->Integral()
+      << " CE inegral = " << cetime->Integral()
       << " total = " << total << endl;
 
     TCanvas* ocan = new TCanvas("ocan","origin",800,800);
@@ -681,6 +689,8 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     tleg->AddEntry(mtime,title,"F");
     snprintf(title,50,"DIO, #int=%4.0f",dtime->Integral()*10.0);
     tleg->AddEntry(dtime,title,"F");
+    snprintf(title,50,"CE, #int=%4.0f",cetime->Integral()*10.0);
+    tleg->AddEntry(cetime,title,"F");
     snprintf(title,50,"Total #int=%4.0f",total*10.0);
     tleg->AddEntry(dtime,title,"");
     tleg->Draw();
@@ -693,18 +703,23 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     TH1F* stptime = new TH1F("stptime","Stopping Target Proton Reco Hit Time",150,250,1750);
     TH1F* ntime = new TH1F("ntime","Neutron Reco Hit Time",150,250,1750);
     TH1F* mtime = new TH1F("mtime","OOT Muon Reco Hit Time",150,250,1750);
-    dtime->SetFillColor(kRed);
+    TH1F* cetime = new TH1F("cetime","CE Reco Hit Time",150,250,1750);
+    dtime->SetFillColor(kOrange);
     gtime->SetFillColor(kBlack);
     pptime->SetFillColor(kBlue);
     stptime->SetFillColor(kGreen);
     ntime->SetFillColor(kCyan);
     mtime->SetFillColor(kYellow);
+    cetime->SetFillColor(kRed);
 
     double scale = 0.1/nevents;
-    hits->Project("dtime","time",dioorigin+hitsel);
+    hits->Project("cetime","time",conv+hitsel);
+    cetime->Scale(scale);
+    sorigin->Add(cetime);
+     hits->Project("dtime","time",dioorigin+hitsel);
     dtime->Scale(scale);
     sorigin->Add(dtime);
-    hits->Project("mtime","time",ootmuonorigin+hitsel);
+   hits->Project("mtime","time",ootmuonorigin+hitsel);
     mtime->Scale(scale);
     sorigin->Add(mtime);
     hits->Project("ntime","time",norigin+hitsel);
@@ -720,7 +735,8 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     pptime->Scale(scale);
     sorigin->Add(pptime);
 
-    double total = dtime->Integral() + pptime->Integral() + stptime->Integral() + gtime->Integral() + ntime->Integral() + mtime->Integral();
+
+    double total = dtime->Integral() + pptime->Integral() + stptime->Integral() + gtime->Integral() + ntime->Integral() + mtime->Integral() + cetime->Integral();
  
     cout << "DIO integral = " << dtime->Integral()
       << " Primary Proton inegral = " << pptime->Integral()
@@ -728,6 +744,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
       << " Photon inegral = " << gtime->Integral()
       << " Neutron inegral = " << ntime->Integral()
       << " OOT muon inegral = " << mtime->Integral()
+      << " CE inegral = " << cetime->Integral()
       << " total = " << total << endl;
 
     TCanvas* socan = new TCanvas("socan","origin",800,800);
@@ -746,6 +763,8 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     tleg->AddEntry(mtime,title,"F");
     snprintf(title,50,"DIO, #int=%4.0f",dtime->Integral()*10.0);
     tleg->AddEntry(dtime,title,"F");
+    snprintf(title,50,"CE, #int=%4.0f",cetime->Integral()*10.0);
+    tleg->AddEntry(cetime,title,"F");
     snprintf(title,50,"Total #int=%4.0f",total*10.0);
     tleg->AddEntry(dtime,title,"");
     tleg->Draw();
