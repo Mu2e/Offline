@@ -12,39 +12,34 @@ string calorimeter.calorimeterDiskMaterial      = "DSVacuum";
 double calorimeter.caseThickness                = 0;  // mm
 
 
-//vane description
-int    calorimeter.numberOfVanes                =  4;
-int    calorimeter.nCrystalXSlices              =  30;
-int    calorimeter.nCrystalYSlices              =  11;
-double calorimeter.rInscribed                   = 360.;
-
-string calorimeter.shieldMaterial               = "G4_Pb"; 
-string calorimeter.neutronAbsorberMaterial      = "Polyethylene092Li075d106";
-double calorimeter.shieldHalfThickness          = 2.0;
-double calorimeter.neutronAbsorberHalfThickness = 2.0;
-vector<double> calorimeter.scintPos             = {0,0,0};
-
-
 
 //disk description
 int    calorimeter.numberOfDisks               =  2;
-vector<double> calorimeter.diskInnerRadius     = {352.,352.}; //mm
-vector<double> calorimeter.diskOuterRadius     = {664.,664.}; //mm
+vector<double> calorimeter.diskInnerRadius     = {374.,374.}; //mm
+vector<double> calorimeter.diskOuterRadius     = {660.,660.}; //mm
 vector<double> calorimeter.diskRotationAngle   = {0.,0.};     //rad
 vector<double> calorimeter.diskSeparation      = {0.,700.};   //mm  separation w.r.t first disk
 
 
+// Readout crates
+int calorimeter.calorimeterCrateVersion        = 2; 
+string calorimeter.calorimeterCrateMaterial    = "Electronics"; //"G10"  calorimeter electronics material. NEED to refine
+double calorimeter.calorimeterCrateInnerRadius = 680;       
+double calorimeter.calorimeterCrateOuterRadius = 810;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
+double calorimeter.calorimeterCrateExtendLen   = 180.0;  
+// get needed volume for material
+
 
 //crystal characteristics
 int    calorimeter.crystalNumEdges             = 4;
-bool   calorimeter.crystalShift                = false;
-double calorimeter.crystalHalfTrans            = 16.5;
-double calorimeter.crystalHexsize              = 16.5;  //mm  half distance across flats of hex crystal
+bool   calorimeter.crystalShift                = true;
+double calorimeter.crystalHalfTrans            = 17.0;
+double calorimeter.crystalHexsize              = 17.0;  //mm  half distance across flats of hex crystal
 double calorimeter.crystalHalfLong             = 100.0;
 string calorimeter.crystalMaterial             = "G4_CESIUM_IODIDE"; 
 
 string calorimeter.crystalWrapper              = "Polyethylene092";
-double calorimeter.crystalWrapperThickness     = 0.100; //mm
+double calorimeter.crystalWrapperThickness     = 0.150; //mm
 double calorimeter.crystalShellThickness       = 0.0 ;
 
 string calorimeter.crystalReadoutMaterial      = "G4_Si";
