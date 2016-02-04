@@ -107,22 +107,23 @@ namespace mu2e {
 
   class CalPatRec : public art::EDProducer {
   public:
+    struct HelixFitHist_t {
+      TH1F*  nhits;           // number of hits on a helix  
+    };
+
     struct Hist_t {
-      TH1F* _cutflow[2];	     // diagnostic flow
-      TH1F* _dt[2];          // distribution in Dt = t_calo-cluster - t_straw-hit
-      TH1F* _Tpeaks;	     // number of time-peaks found per event
-      TH1F* _NfitIter;	     // number of call to kalman addHits
-	     		     //     TH1F* _hTfit[2];     //time spent on kalman filter per event
-	     		     //     TH1F* _hTtot;     //total time spent per event
-      //      TH1F* _dfdzmode;	     // distribution of the loop index where the findTrack search converged
-      TH1F* _radius;        // radius of the helix used by findTrack
-      TH1F* _phi0;          // phi0 of the helix used by findTrack
-      TH1F* _tanlambda;     // tanLambda (tangent of the pitch angle) of the helix
-      TH1F* _dfdz;          // dfdz of the theretical helix. dfdz = tanLambda/radius
-      //      TH1F* _dist;
-      //      TH1F* _dz;
-      //      TH1F* _Npoints;
-      //      TH1F* _chi2;
+      HelixFitHist_t  helixFit;  // helix fit histograms
+
+      TH1F* _cutflow[2];       // diagnostic flow
+      TH1F* _dt     [2];       // distribution in Dt = t_calo-cluster - t_straw-hit
+      TH1F* _Tpeaks;	       // number of time-peaks found per event
+      TH1F* _NfitIter;	       // number of call to kalman addHits
+	     		       //     TH1F* _hTfit[2];     //time spent on kalman filter per event
+	     		       //     TH1F* _hTtot;     //total time spent per event
+      TH1F* _radius;           // radius of the helix used by findTrack
+      TH1F* _phi0;             // phi0 of the helix used by findTrack
+      TH1F* _tanlambda;        // tanLambda (tangent of the pitch angle) of the helix
+      TH1F* _dfdz;             // dfdz of the theretical helix. dfdz = tanLambda/radius
       TH2F* _distvsdz;
       TH1F* _dphidz[4];
       TH1F* _dphi0 [4];

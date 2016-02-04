@@ -135,7 +135,7 @@ namespace mu2e
     _momfac = pset.get<double>("MomFactor",0.0);
     _maxpardif[0] = _maxpardif[1] = pset.get<double>("MaxParameterDifference",1.0);
     // DOF counting subdivision is illogical, FIXME!!!!
-    _mindof = pset.get<double>("MinNDOF",10);
+    _mindof = pset.get<double>("MinNDOF");
 //----------------------------------------------------------------------
 // 2015-01-09 G.Pezzullo and P.Murat
 // Noticed that with respect to KalmanTest/src/KalFit.cc we were using

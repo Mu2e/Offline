@@ -68,6 +68,9 @@ namespace mu2e {
 
     SaveResults_t        _results[6];
 
+    double               fPhiCorrected[1000];
+    int                  fPhiCorrectedDefined;
+
     int                  fSeedIndex;
     int                  fCandidateIndex;
     int                  fLastIndex;
@@ -150,7 +153,6 @@ namespace mu2e {
     double    _distTrkCandidate   [400];
     double    _dzTrkCandidate     [400];
 
-
     double    _dfdzErr;                 // error on dfdz by ::findDfDz
 
     TH1F*     _hDist;
@@ -172,14 +174,20 @@ namespace mu2e {
     void   calculateDfDz(double &phi0, double &phi1, double &z0,  double &z1, double &dfdz);
 
     //projects the straw hit error along the radial direction of the circle-helix
-    double calculateWeight     (CLHEP::Hep3Vector HitPos, CLHEP::Hep3Vector StrawDir, CLHEP::Hep3Vector HelCenter, double Radius,
-                                int Print, TString Banner);
+    double calculateWeight     (CLHEP::Hep3Vector& HitPos, 
+				CLHEP::Hep3Vector& StrawDir, 
+				CLHEP::Hep3Vector& HelCenter, 
+				double             Radius,
+                                int                Print, 
+				const char*        Banner);
 
     double calculatePhiWeight     (CLHEP::Hep3Vector HitPos, CLHEP::Hep3Vector StrawDir, CLHEP::Hep3Vector HelCenter, double Radius,
                                 int Print, TString Banner);
 
     //calculates the residual along the radial direction of the helix-circle
-    double calculateRadialDist (CLHEP::Hep3Vector HitPos, CLHEP::Hep3Vector HelCenter, double Radius);
+    double calculateRadialDist (const CLHEP::Hep3Vector& HitPos, 
+				const CLHEP::Hep3Vector& HelCenter, 
+				double                   Radius);
 
     void   calculateTrackParameters(CLHEP::Hep3Vector& p0, double&radius,
                                     double& phi0, double& tanLambda,
@@ -212,13 +220,7 @@ namespace mu2e {
     TH1F* hDist() {return _hDist;}
 
     int   isHitUsed(int index);
-
-    //    void printInfo(HelixFitHackResult& myhel);
-
-    XYZPHackVector  fxyzp;
-    double          fPhiCorrected[1000];
-
-                                        // allow passing in the struct by hand
+                                         // allow passing in the struct by hand
 
     bool findHelix      (HelixFitHackResult& Helix);
     bool findHelix      (HelixFitHackResult& Helix, const CalTimePeak* TimePeak );

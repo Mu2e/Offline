@@ -13,6 +13,7 @@ namespace mu2e {
   struct HelixFitHackResult {
     HelixDefHack       _hdef;         // must copy by value as references can't be re-assigned
     TrkErrCode         _fit;	      // fit status code from last fit
+    int                _nGoodPoints;  // number of not-rejected points
 //-----------------------------------------------------------------------------
 // circle parameters; the z center is ignored.
 //-----------------------------------------------------------------------------

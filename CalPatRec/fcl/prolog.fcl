@@ -112,6 +112,8 @@ CalPatRec            : {
     HelixFitHack : {
 	debugLevel                              : 0
 	debugLevel2                             : 0
+	diagLevel                               : 0
+	minNHit                                 : 10      # minimal number of hits on found helix
 	hitChi2Max                              : 25.
 	mostProbableDfDz                        : 0.00475
 	maxDfDz                                 : 0.01
@@ -127,7 +129,9 @@ CalPatRec            : {
 	chi2zphiMax                             : 5.0    # 0.1 #default is 0.1, use 0.05 for debugging puposes
 	dfdzErr                                 : 0.1
     }
-    # Kalman fitter configuration for the seed fit
+#------------------------------------------------------------------------------
+# Kalman fitter configuration for the seed fit
+#------------------------------------------------------------------------------
     SeedFitHack : {
 	makeStrawHitModuleLabel                 : makeSH
 	debugLevel                              : 0
@@ -142,19 +146,22 @@ CalPatRec            : {
 	weedhits                                : [ true, true ]   # default:true
 	initT0					: true 
 	updateT0				: false
-	T0UpdateMode                            : 1       # doesnt matter for the seed fit
+	T0UpdateMode                            : 1                # doesnt matter for the seed fit
 	HitMinDrift 				: 0.2
-	DivergeFlt                              : 1000.   #  default: 1000.
+	DivergeFlt                              : 1000.            #  default: 1000.
 	RdriftMinusDocaTol                      : 1.
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
 #------------------------------------------------------------------------------
 # shouldn't be used during the seed fit, only during the hit-based fit 
 #------------------------------------------------------------------------------
 	scaleErrDoublet                         : 1.
-#	iLoopUseDoublets                        : 0
 	minDriftDoublet                         : 0.3
 	deltaDriftDoublet                       : 0.3
 	sigmaSlope                              : 0.025
+#------------------------------------------------------------------------------
+#  parameters of KalContext 
+#------------------------------------------------------------------------------
+	MinNDOF                                 : 5 # match 10 hits of HelixFit
 #------------------------------------------------------------------------------
 # ambiguity resolver parameters
 #------------------------------------------------------------------------------
@@ -199,6 +206,10 @@ CalPatRec            : {
 	RdriftMinusDocaTol                      : 1.
 	ZeroDriftPenalty 			: 0.05
 	Neutralize 				: true
+#------------------------------------------------------------------------------
+#  KalContext parameters  (there are more to define ! )
+#------------------------------------------------------------------------------
+	MinNDOF                                 : 10 # this means 15 hits min
 #------------------------------------------------------------------------------
 # ambiguity resolver parameters
 #------------------------------------------------------------------------------
