@@ -97,7 +97,7 @@ CalPatRec            : {
     
     tmin                                        : 0.
     tmax                                        : 2000.  # ns
-    minClusterEnergy                            : 60.    # MeV
+    minClusterEnergy                            : 50.    # MeV
     minClusterSize                              : 2      # number of crystals
     MaxHelixDoca                                : 60.    # in mm
     MaxAddDoca                                  : 7.     # in mm

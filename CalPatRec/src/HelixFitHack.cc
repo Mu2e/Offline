@@ -2534,7 +2534,7 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 
 	name = banner;
 	name += "2strawhitsHelixDef";
-	printf(" HelixFitHack::_debug: %5i TEEEEST\n",_debug);
+	//	printf(" HelixFitHack::_debug: %5i TEEEEST\n",_debug);
 	if (_debug > 10) {
 	  printf("[%s] strawhit type     X        Y        Z     index\n", name.Data());
 	  printf("[%s] ----------------------------------------------------\n", name.Data());
