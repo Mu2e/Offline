@@ -54,6 +54,8 @@ namespace mu2e {
 
     _int_depth = Data->int_depth;
     _ds        = Data->ds;
+    _dr        = Data->dr;
+    _sint      = Data->sint;
   }
 
   TrackClusterMatch::~TrackClusterMatch() {

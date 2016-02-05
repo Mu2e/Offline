@@ -691,7 +691,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // pattern recognition succeeded, the seed fit starts
 //-----------------------------------------------------------------------------
-        if (_clCE) findhelix = true;
+        findhelix = true;
 //-----------------------------------------------------------------------------
 // convert the result to standard helix parameters, and initialize the seed definition helix
 //-----------------------------------------------------------------------------
@@ -1045,41 +1045,43 @@ namespace mu2e {
         _kfresult->deleteTrack();
       }
 //-----------------------------------------------------------------------------
-// cleanup the seed fit
+// cleanup the seed fit - why it is not being done ?
 //-----------------------------------------------------------------------------
 //       _sfresult->deleteTrack();
-    }
 
+      if (_debugLevel > 0) {
+	if (_nhits_from_gen >= _minNMCHits) {
+	  if (tp->_tmin > 400.){
+	    if (!findhelix) {
+	      printf("[CalPatRec::produce] LOOK AT: more than 25 MC hits and findHelix not converged! event = %i\n", _iev);
+	    }
+	    if (findhelix && !findseed){
+	      printf("[CalPatRec::produce] LOOK AT: findhelix converged and findseed not! event = %i\n", _iev);
+	    }
+	    if (findseed && !findkal){
+	      printf("[CalPatRec::produce] LOOK AT: findseed converged and findkal not! event = %i\n", _iev);
+	    }
+	  }
+	}
+      }
+    }
 //-----------------------------------------------------------------------------
 // diagnostics in the end
 //-----------------------------------------------------------------------------
-    if (findhelix && (_nhits_from_gen >= _minNMCHits)) {
-      _hist._cutflow[0]->Fill(2.0);
-      _hist._cutflow[1]->Fill(9.0);
-    }
-
-    if (findseed  && (_nhits_from_gen >= _minNMCHits)) _hist._cutflow[0]->Fill(3.0);
-    if (findkal   && (_nhits_from_gen >= _minNMCHits)) {
-      _hist._cutflow[0]->Fill(4.0);
-      if (fQualityTrack > 0) {
-        _hist._cutflow[0]->Fill(5.0);
+    if (_diagLevel > 0) {
+      if (findhelix && (_nhits_from_gen >= _minNMCHits)) {
+	_hist._cutflow[0]->Fill(2.0);
+	_hist._cutflow[1]->Fill(9.0);
       }
-      _hist._NfitIter->Fill(_kfit.nIter());
-      _hist._ntracks->Fill(_ntracks);
-    }
 
-    if (_debugLevel > 0) {
-      if ((_nhits_from_gen >= _minNMCHits) && _tpeaks->size() > 0){
-        if (_tpeaks->at(0)._tmin > 400.){
-          if (!findhelix){
-            printf("[CalPatRec::produce] LOOK AT: more than 25 MC hits and findHelix not converged! event = %i\n", _iev);
-          }if (findhelix && !findseed){
-            printf("[CalPatRec::produce] LOOK AT: findhelix converged and findseed not! event = %i\n", _iev);
-          }
-          if (findseed && !findkal){
-            printf("[CalPatRec::produce] LOOK AT: findseed converged and findkal not! event = %i\n", _iev);
-          }
-        }
+      if (findseed  && (_nhits_from_gen >= _minNMCHits)) _hist._cutflow[0]->Fill(3.0);
+      if (findkal   && (_nhits_from_gen >= _minNMCHits)) {
+	_hist._cutflow[0]->Fill(4.0);
+	if (fQualityTrack > 0) {
+	  _hist._cutflow[0]->Fill(5.0);
+	}
+	_hist._NfitIter->Fill(_kfit.nIter());
+	_hist._ntracks->Fill(_ntracks);
       }
     }
 //-----------------------------------------------------------------------------

@@ -37,6 +37,8 @@ namespace mu2e {
       double   chi2_time;
       double   int_depth;
       double   ds;			// path length inside the disk
+      double   dr;                      // R(cluster)-R(track)
+      double   sint;                    // "interaction length"
     };
 
   protected:
@@ -62,6 +64,8 @@ namespace mu2e {
     double                _chi2_time;
     double                _int_depth;
     double                _ds;
+    double                _dr;
+    double                _sint;
 
   public:
     TrackClusterMatch();
@@ -90,6 +94,8 @@ namespace mu2e {
     double                    chi2_time  () const { return _chi2_time; }
     double                    int_depth  () const { return _int_depth; }
     double                    ds         () const { return _ds; }
+    double                    dr         () const { return _dr; }
+    double                    sint       () const { return _sint; }
 
     void print(const char* Option) const ;
   };

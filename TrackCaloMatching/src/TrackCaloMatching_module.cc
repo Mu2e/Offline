@@ -34,21 +34,16 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
+#include "BTrk/TrkBase/HelixParams.hh"
+
 // Other includes.
 #include "cetlib/exception.h"
 
 //root includes
 #include "TFile.h"
 #include "TDirectory.h"
-#include "TH2D.h"
-#include "TCanvas.h"
-#include "THStack.h"
-#include "TGraph.h"
-#include "TApplication.h"
-#include "TROOT.h"
-#include "TStyle.h"
-#include "TLatex.h"
 #include "TMath.h"
+#include "TVector2.h"
 
 // From the art tool-chain
 #include <cmath>
@@ -174,13 +169,13 @@ namespace mu2e {
   void TrackCaloMatching::doMatching(art::Event & evt, bool skip) {
     const char* oname = "TrackCaloMatching::doMatching";
 
-    int        nclusters, ntracks, nex, nmatches, vane_id;
+    int        nclusters, ntracks, nex, nmatches, idisk;
 
-    double     cl_v, cl_w, cl_time, cl_energy;
-    double     trk_v, trk_w, trk_mom, trk_time;
-    double     sigmaV, sigmaW, sigmaT, sigmaE, chiQ;
+    double     cl_x, cl_y, cl_time, cl_energy;
+    double     trk_x, trk_y, trk_mom, trk_time;
+    double     sigmaV, sigmaW, sigmaT, sigmaE, chi2;
     double     s1, s2, sint, ds;
-    double     nx, ny, dv, dw, dvv, dww, dvv_corr, dt, xv, xw, xt, xe;
+    double     nx, ny, dx, dy, du, dv, dt, xu, xv, xt, xe;
 
     double                     chi2_max(1.e12);
 
@@ -189,14 +184,14 @@ namespace mu2e {
 
     TrackClusterMatch::Data_t tcm_data[100][ndisks];
 
-    //    const TrkToCaloExtrapol    *extrk;
     const TrkCaloIntersect     *extrk;
     const KalRep               *krep;
     const CaloCluster          *cl;
+					// cp_mu2e: cluster position in the MU2E frame
 
-    CLHEP::Hep3Vector           tmpV, cogVaneFrame, tmpPosVaneFrame;
+    CLHEP::Hep3Vector           tp_disk, tp_mu2e, cp_mu2e, cp_st;
     CLHEP::Hep3Vector           mom, pos; 
-    HepPoint                    point;
+    HepPoint                    point, p1, p2, p12, p_closest;
 
     const KalRep               *kkrep[100];
     int                        nkkrep(0);
@@ -224,7 +219,7 @@ namespace mu2e {
     nex = trjExtrapols->size();
 
     if (_debugLevel > 2) {
-      printf(" %s: Event Number : %8i ntracks: %2i nclusters: %4i nex: %2i\n",
+      printf("%s: Event Number : %8i ntracks: %2i nclusters: %4i nex: %2i\n",
 	     oname,evt.event(), ntracks, nclusters, nex);
     }
 
@@ -250,7 +245,7 @@ namespace mu2e {
     for (int jex=0; jex<nex; jex++) {
 
       if(_debugLevel > 2) {
-	printf(" %s : jex = %5i\n", oname, jex);
+	printf("%s: jex = %5i\n", oname, jex);
       }
     
       extrk = &trjExtrapols->at(jex);
@@ -265,26 +260,24 @@ namespace mu2e {
 	  ltrk = ik;
 	}
       }
+
       if (ltrk == nkkrep) {
 	kkrep[nkkrep] = krep;
 	nkkrep       += 1;
       }
-      //      ltrk  = extrk->trackNumber();
 
       if (ltrk > 100) {
-	printf(">>> ERROR in %s: more than 100 tracks, ltrk = %i, skip the rest\n",
-	       oname,ltrk);
+	printf(">>> ERROR in %s: ltrk = %i, skip the rest\n",oname,ltrk);
                                                             goto NEXT_INTERSECTION;
       }
       else if (ltrk < 0) {
-	printf(">>> ERROR in %s: ltrk < 0:, ltrk = %i, skip the rest\n", 
-	       oname,ltrk);
+	printf(">>> ERROR in %s: ltrk = %i, skip the rest\n",oname,ltrk);
                                                             goto NEXT_INTERSECTION;
       }
 //-----------------------------------------------------------------------------
 // apparently, ntupling stuff was mixed in, almost removed
 //-----------------------------------------------------------------------------
-      vane_id  = extrk->sectionId();
+      idisk  = extrk->sectionId();
 					// assume Z(middle of the disk)
 
       s1       = extrk->pathLengthEntrance();
@@ -304,42 +297,67 @@ namespace mu2e {
       mom      = krep->momentum(sint);
       trk_mom  = mom.mag();
 
-      if(_debugLevel > 2){
-	cout<<"vane_id = "<<vane_id<<endl;
-	cout<<"trk_mom = "<<trk_mom<<" [MeV]" << endl;
+      if (_debugLevel > 2) {
+	printf("%s: idisk: %5i trk_mom: %10.5f [MeV/c]\n",oname,idisk,trk_mom);
       }
-					// direction cosines in XY plane
+					// track direction cosines in XY plane
 
       nx      = mom.x()/sqrt(mom.x()*mom.x()+mom.y()*mom.y());
       ny      = mom.y()/sqrt(mom.x()*mom.x()+mom.y()*mom.y());
 
-					// transform position to Mu2e detector frame
+					// transform track position to Mu2e detector frame
 
-      fromTrkToMu2eFrame(point, tmpPosVaneFrame);
+      fromTrkToMu2eFrame(point, tp_mu2e);
 
       if (_debugLevel > 2){
-	cout<<"Mu2e general frame: tmpPosVaneFrame = "<< tmpPosVaneFrame <<  " [mm]" << endl;
       }
 
-      tmpV    = cg->toSectionFrame(vane_id,tmpPosVaneFrame);
-      trk_v   = tmpV.x();
-      trk_w   = tmpV.y();
+      tp_disk = cg->toSectionFrame(idisk,tp_mu2e);
+      trk_x   = tp_disk.x();
+      trk_y   = tp_disk.y();
 
       if(_debugLevel > 2){
-	cout << "tmpPosVaneFrame = "<< tmpV << " [mm]" << endl;
+	printf("%s: tp_mu2e: %10.4f %10.4f %10.4f  tp_disk: %10.4f %10.4f %10.4f\n",
+	       oname,
+	       tp_mu2e.x(),tp_mu2e.y(),tp_mu2e.z(),
+	       tp_disk.x(),tp_disk.y(),tp_disk.z());
       }
 //-----------------------------------------------------------------------------
 // save track-only information
 //-----------------------------------------------------------------------------
-      tcm_data[ltrk][vane_id].xtrk      = tmpV.x();
-      tcm_data[ltrk][vane_id].ytrk      = tmpV.y();
-      tcm_data[ltrk][vane_id].ztrk      = tmpV.z();
-      tcm_data[ltrk][vane_id].ttrk      = trk_time;
-      tcm_data[ltrk][vane_id].nx        = mom.x()/trk_mom;
-      tcm_data[ltrk][vane_id].ny        = mom.y()/trk_mom;
-      tcm_data[ltrk][vane_id].nz        = mom.z()/trk_mom;
-      tcm_data[ltrk][vane_id].int_depth = _meanInteractionDepth;
-      tcm_data[ltrk][vane_id].ds        = ds;
+      tcm_data[ltrk][idisk].xtrk      = tp_disk.x();
+      tcm_data[ltrk][idisk].ytrk      = tp_disk.y();
+      tcm_data[ltrk][idisk].ztrk      = tp_disk.z();
+      tcm_data[ltrk][idisk].ttrk      = trk_time;
+      tcm_data[ltrk][idisk].nx        = mom.x()/trk_mom;
+      tcm_data[ltrk][idisk].ny        = mom.y()/trk_mom;
+      tcm_data[ltrk][idisk].nz        = mom.z()/trk_mom;
+      tcm_data[ltrk][idisk].int_depth = _meanInteractionDepth;
+      tcm_data[ltrk][idisk].ds        = ds;
+
+//-----------------------------------------------------------------------------
+// track helix at Z = Z(middle of the disk) in the tracker frame
+//-----------------------------------------------------------------------------
+      double     trk_d0, trk_om, trk_r, trk_phi0, trk_phi1, trk_x0, trk_y0, trk_tandip;
+      double     cp_dx, cp_dy, cp_phi, cp_dphi, delta_x, delta_y, s12, s_cl;
+      double     dds, dz, dr, sint;
+
+
+      p1       = krep->position(s1);
+      p2       = krep->position(s2);
+
+      s12      = (s1+s2)/2;
+
+      p12       = krep->position(s12);
+
+      trk_d0     = krep->helix(s12).d0();
+      trk_om     = krep->helix(s12).omega();
+      trk_r      = fabs(1./trk_om);
+      trk_phi0   = krep->helix(s12).phi0();
+      trk_tandip = krep->helix(s12).tanDip();
+      trk_x0     =  -(1/trk_om+trk_d0)*sin(trk_phi0);
+      trk_y0     =   (1/trk_om+trk_d0)*cos(trk_phi0);
+      trk_phi1   = atan2(p12.y()-trk_y0,p12.x()-trk_x0);
 //-----------------------------------------------------------------------------
 // loop over clusters
 //-----------------------------------------------------------------------------
@@ -349,88 +367,148 @@ namespace mu2e {
 					            // move peak to zero
 	dt      = trk_time-cl_time-_dtOffset;
 
-	if (cl->sectionId()  != vane_id         )           goto NEXT_CLUSTER;
+	if (cl->sectionId() != idisk           )            goto NEXT_CLUSTER;
 	if (cl->energyDep() < _minClusterEnergy)            goto NEXT_CLUSTER;
 	if (std::fabs(dt)   > _maxDeltaT       )            goto NEXT_CLUSTER;
-//-----------------------------------------------------------------------------
-// 2013-03-24 P.Murat: cluster center of gravity is determined in the GLOBAL 
-//                     coordinate system, 
-// clustering needs to be fixed to define cluster coordinates in the local frame system
-// for now - transform back to the local coordinate system
-//-----------------------------------------------------------------------------
-//	cogVaneFrame = cg->toSectionFrame(vane_id, cl->cog3Vector());
 //------------------------------------------------------------------------------
 // 2015-03-26: as of now, the cluster coordinates are defined in the local disk 
 //             coordinate system
 //-----------------------------------------------------------------------------
-	cl_v         = cl->cog3Vector().x(); // cogVaneFrame.x();
-	cl_w         = cl->cog3Vector().y(); // cogVaneFrame.y();
+	cl_x         = cl->cog3Vector().x();
+	cl_y         = cl->cog3Vector().y();
 	cl_energy    = cl->energyDep();
 //-----------------------------------------------------------------------------
-// V and W - coordinates in the disk system
+// X and Y - coordinates in the disk system
 // rotate them in the direction perpendicular to the track
 //-----------------------------------------------------------------------------
-	dv  = trk_v-cl_v;
-	dw  = trk_w-cl_w;
+	dx  = trk_x-cl_x;
+	dy  = trk_y-cl_y;
 
-	dvv = dv*nx+dw*ny;
-	dww = dv*ny-dw*nx;
+	du = dx*nx+dy*ny;
+	dv = dx*ny-dy*nx;
 //-----------------------------------------------------------------------------
 // to study pattern recognition accuracies, calculate track parameters in the 
-// point closest to the cluster in 2D (XY) - want to understand the resolutions
-// in coordinate and in angle
+// point closest to the cluster in 2D (XY) - want to understand coordinate and 
+// angle resolutions
 //-----------------------------------------------------------------------------
-// ##
+	cp_mu2e = cg->fromSectionFrame(idisk,cl->cog3Vector());
+	cp_st   = cg->toTrackerFrame(cp_mu2e);
+
+	cp_dx   = cp_st.x()-trk_x0;
+	cp_dy   = cp_st.y()-trk_y0;
+					// cluster phi wrt helix center
+	cp_phi  = atan2(cp_dy,cp_dx);
+	cp_dphi = TVector2::Phi_mpi_pi(cp_phi-trk_phi1);
+
+					// radial distance
+
+	dr      = sqrt(cp_dx*cp_dx+cp_dy*cp_dy)-trk_r;
+	delta_x = dr*cos(cp_dphi);
+	delta_y = dr*sin(cp_dphi);
+					// last: track Z in the closest point
+
+	dds     = cp_dphi*trk_r*sqrt(1+trk_tandip*trk_tandip);
+	if (trk_om < 0) dds = -dds;
+
+	s_cl    = s12+dds;
+
+	p_closest = krep->position(s_cl);
+	dz        = p_closest.z()-cp_st.z();
+	sint      = s_cl-s1;
+
+	if (_debugLevel > 2) {
+	  printf("%s: s1     : %9.3f p1     : %9.3f %9.3f %9.3f\n",oname,s1, p1.x(),p1.y(),p1.z());
+	  printf("%s: s2     : %9.3f p2     : %9.3f %9.3f %9.3f\n",oname,s2, p2.x(),p2.y(),p2.z());
+	  printf("%s: s12    : %9.3f p12    : %9.3f %9.3f %9.3f\n",oname,s12,p12.x(),p12.y(),p12.z());
+	  printf("%s: mom    : %9.3f %9.3f %9.3f tandip: %9.3f\n",oname,mom.x(),mom.y(),mom.z(),trk_tandip);
+	  printf("%s: dds    : %9.3f\n",oname,dds);
+	  printf("%s: s_cl   : %9.3f\n",oname,s_cl);
+	  printf("%s: p_cl   : %9.3f %9.3f %9.3f\n",oname,p_closest.x(),p_closest.y(),p_closest.z());
+	  
+	  printf("%s: ",oname);
+	  printf("trk_x0 : %9.3f ",trk_x0);
+	  printf("trk_y0 : %9.3f ",trk_y0);
+	  printf("trk_ph0: %9.3f ",trk_phi0);
+	  printf("trk_ph1: %9.3f ",trk_phi1);
+	  printf("trk_r  : %9.3f ",trk_r );
+	  printf("\n");
+
+	  printf("%s: ",oname);
+	  printf("cl_x   : %9.3f ",cl_x  );
+	  printf("cl_y   : %9.3f ",cl_y  );
+	  printf("cp_phi : %9.3f ",cp_phi);
+	  printf("cp_dphi: %9.3f ",cp_dphi);
+	  printf("\n");
+
+	  printf("%s: ",oname);
+	  printf("delta_x: %9.3f ",delta_x);
+	  printf("delta_y: %9.3f ",delta_y);
+	  printf("dr     : %9.3f ",dr    );
+	  printf("dz     : %9.3f ",dz    );
+	  printf("sint   : %9.3f ",sint  );
+	  printf("\n");
+	}
 //-----------------------------------------------------------------------------
 // 2014-05-14 P.Murat: use 10 MeV as the matching resolution, 
 //            for a 10 MeV cluster the energy term in the chi2 would be (90/10)^2
-//            also set coordinate resolution to 5cm , need to try using dv only
+//            also set coordinate resolution to 5cm , need to try using dx only
 //-----------------------------------------------------------------------------
 	sigmaE = 10.;			// sigma(E) = 10 MeV
 	sigmaV = 15.;			// 15 mm
 	sigmaW = 8. ; 			//  8 mm
-	sigmaT = 0.5; 			// 0.5 ns
-	  
-	if (_debugLevel > 2){
-	  printf("trk_v  : %9.3f "  ,trk_v  );
-	  printf("cl_v   : %9.3f "  ,cl_v   );
-	  printf("sigmaV : %9.3f "  ,sigmaV );
-	  printf("trk_w  : %9.3f "  ,trk_w  );
-	  printf("cl_w   : %9.3f "  ,cl_w   );
-	  printf("sigmaW : %9.3f "  ,sigmaW );
-	  printf("cl_time: %9.3f "  ,cl_time);
-	  printf("sigmaT : %9.3f\n",sigmaT );
-	}
-					// need to handle energy part properly, later! 
-					// 2014-06-06 P.Murat: ad-hoc correction
-	dvv_corr = dvv-0.28*(ds-350.);
-	xv       = dvv_corr/sigmaV;
-	xw       = dww/sigmaW;
+	sigmaT = 0.5; 			//  0.5 ns
+
+	xu       = du/sigmaV;
+	xv       = dv/sigmaW;
 	xt       = dt /sigmaT;
 	xe       = (trk_mom-cl_energy)/sigmaE;
 
-	_posVChiSquare   = xv*xv;
-	_posWChiSquare   = xw*xw;
+	_posVChiSquare   = xu*xu;
+	_posWChiSquare   = xv*xv;
 	_timeChiSquare   = xt*xt;
 	_energyChiSquare = xe*xe;
 
-	chiQ = _posVChiSquare + _posWChiSquare;
+	chi2 = _posVChiSquare + _posWChiSquare;
     
-	if (chiQ < tcm_data[ltrk][vane_id].chi2) {
+	if (_debugLevel > 2){
+	  printf("%s: ",oname);
+	  printf("sigmaV : %9.3f "  ,sigmaV );
+	  printf("sigmaW : %9.3f "  ,sigmaW );
+	  printf("sigmaT : %9.3f "  ,sigmaT );
+	  printf("\n");
+	  printf("%s: ",oname);
+	  printf("trk_x  : %9.3f "  ,trk_x  );
+	  printf("cl_x   : %9.3f "  ,cl_x   );
+	  printf("trk_y  : %9.3f "  ,trk_y  );
+	  printf("cl_y   : %9.3f "  ,cl_y   );
+	  printf("cl_time: %9.3f "  ,cl_time);
+	  printf("\n");
+	  printf("%s: ",oname);
+	  printf("du     : %9.3f "  ,du     );
+	  printf("dv     : %9.3f "  ,dv     );
+	  printf("xu     : %9.3f "  ,xu     );
+	  printf("xv     : %9.3f "  ,xv     );
+	  printf("chi2   : %9.3f "  ,chi2   );
+	  printf("\n");
+	}
+
+	if (chi2 < tcm_data[ltrk][idisk].chi2) {
 //-----------------------------------------------------------------------------
 // new best match
 //-----------------------------------------------------------------------------
-	  tcm_data[ltrk][vane_id].icl       = icl;
-	  tcm_data[ltrk][vane_id].iex       = jex;
-	  tcm_data[ltrk][vane_id].dx        = dv;
-	  tcm_data[ltrk][vane_id].dy        = dw;
-	  tcm_data[ltrk][vane_id].dz        = -1e6;
-	  tcm_data[ltrk][vane_id].du        = dvv;
-	  tcm_data[ltrk][vane_id].dv        = dww;
-	  tcm_data[ltrk][vane_id].dt        = dt;
-	  tcm_data[ltrk][vane_id].ep        = cl_energy/trk_mom;
-	  tcm_data[ltrk][vane_id].chi2      = chiQ;
-	  tcm_data[ltrk][vane_id].chi2_time = _timeChiSquare;
+	  tcm_data[ltrk][idisk].icl       = icl;
+	  tcm_data[ltrk][idisk].iex       = jex;
+	  tcm_data[ltrk][idisk].dx        = dx;
+	  tcm_data[ltrk][idisk].dy        = dy;
+	  tcm_data[ltrk][idisk].dz        = -1e6;
+	  tcm_data[ltrk][idisk].du        = du;
+	  tcm_data[ltrk][idisk].dv        = dv;
+	  tcm_data[ltrk][idisk].dt        = dt;
+	  tcm_data[ltrk][idisk].ep        = cl_energy/trk_mom;
+	  tcm_data[ltrk][idisk].chi2      = chi2;
+	  tcm_data[ltrk][idisk].chi2_time = _timeChiSquare;
+	  tcm_data[ltrk][idisk].dr        = dr;
+	  tcm_data[ltrk][idisk].sint      = sint;
 	}
       NEXT_CLUSTER:;
       }
