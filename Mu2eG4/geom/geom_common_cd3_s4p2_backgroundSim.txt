@@ -1,0 +1,23 @@
+//
+// Special geometry file for simulating background frames; in particular
+// for stage 4 of the beam simulations
+//
+// At present the tracker is designed as a 20 station device but the baseline
+// plan is leave 2 stations empty; should funding become available the other
+// two stations will be populated.
+//
+// As we did for the TDR, the background frames will be simulated with a
+// 20 station tracker. We will generate high statistics signal and DIO tail
+// files with both 18 and 20 station trackers.  When we mix 20 station
+// background frames onto 18 station signal, the hit maker code will simply
+// ignore StepPointMCs from the missing stations.
+//
+
+#include "Mu2eG4/geom/geom_common_cd3_s4p2.txt"
+
+vector<int> ttracker.nonExistingPlanes = {};
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
