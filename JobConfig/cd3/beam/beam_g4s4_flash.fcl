@@ -14,6 +14,10 @@ services: { @table::mu2e.services.cd3simServices }
 physics: { @table::mu2e.physics.g4s4Flash }
 outputs: { @table::mu2e.outputs.g4s4Defs }
 
+// We guarantee that our subruns are atomic. The following line is
+// supposed to prevent excessive memory use.
+services.scheduler.fileMode: MERGE
+
 services.TFileService.fileName: "nts.owner.cd3-beam-g4s4-flash.version.sequencer.root"
 outputs.detectorOutput.fileName: "sim.owner.cd3-beam-g4s4-detflash.version.sequencer.art"
 outputs.crvOutput.fileName: "sim.owner.cd3-beam-g4s4-crvflash.version.sequencer.art"
