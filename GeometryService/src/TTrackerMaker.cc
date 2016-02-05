@@ -803,10 +803,10 @@ namespace mu2e {
     st._planes.push_back(_tt->_planes.at(ipln1));
     st._planes.push_back(_tt->_planes.at(ipln1));
 
-    // std::cout << __func__ << "StationId, plane1, plane2 :" 
+    // std::cout << __func__ << "StationId, plane1, plane2 :"
     //           << stationId << ", "
     //           << ipln1 << ", "
-    //           << ipln2 << ", "  
+    //           << ipln2 << ", "
     //           << std::endl;
     // std::cout << "<-<-<- makeStation\n";
   }
@@ -1869,9 +1869,6 @@ namespace mu2e {
     // Number of straws that are too short.
     int nShort(0);
 
-    // Number of straws that have an illegal active length.
-    int nIllegalActive(0);
-
     // Step 2: For all layers in PanelId(0,0) recompute the straw lengths.
     //         For layers > 0:
     //            - create a new StrawDetail object to hold the new length.
@@ -1909,15 +1906,10 @@ namespace mu2e {
         // limit of the channel.
         double hlen = sqrt(diff_of_squares( rmax, r2));
 
-        // Active half-length of the straw.
+        // Active half-length of the straw; it may be shorter than the full length but not longer.
         double activeHalfLen = sqrt( diff_of_squares(rmin,r0) )-_passivationMargin;
-        activeHalfLen = std::max( activeHalfLen, 1.0);
-
-        if ( activeHalfLen > hlen ){
-          ++nIllegalActive;
-          cout << "TTRackerMaker::recomputeHalfLengths: illegal passivation Margin.\n"
-               << "The active length of straw " << ist << " is longer than its physical length\n";
-        }
+        activeHalfLen = std::max( activeHalfLen, .0);
+        activeHalfLen = std::min( activeHalfLen, hlen);
 
         // Check that the inner edge of the straw reaches the support
         double r3 = sqrt(sum_of_squares(hlen,r1));
@@ -1988,15 +1980,8 @@ namespace mu2e {
     }
     if ( nShort > 0 ){
       throw cet::exception("GEOM")
-        << "TTRackerMaker::recomputeHalfLengths: some straaws are too short.\n"
+        << "TTRackerMaker::recomputeHalfLengths: some straws are too short.\n"
         << "Probably the answer is to deepen the channel."
-        << "\n";
-    }
-
-    if ( nIllegalActive > 0 ){
-      throw cet::exception("GEOM")
-        << "TTRackerMaker::recomputeHalfLengths: some straaws have an active length longer than their physical length.\n"
-        << "Probably the passivationMargin is too negative."
         << "\n";
     }
 
