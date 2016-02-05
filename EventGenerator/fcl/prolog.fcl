@@ -18,11 +18,11 @@ muonStops : {
 #   cd3 - 34 target configuration
 #   no suffix: default, which will be time dependent.
 merged_tgtStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
-merged_tgtStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-tgtstops.0506a_0728a_0825a.001002_00000000.root" ]
+merged_tgtStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-tgtstops.v533_v543_v563b.001002_00000000.root" ]
 merged_tgtStops     : @local::merged_tgtStops_cd3
 
 merged_ootStops_tdr : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
-merged_ootStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-ootstops.0506a_0728a_0825a.001002_00000000.root" ]
+merged_ootStops_cd3 : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-ootstops.v533_v543_v563b.001002_00000000.root" ]
 merged_ootStops     : @local::merged_ootStops_cd3
 
 # CD3 stopped muon configs.
