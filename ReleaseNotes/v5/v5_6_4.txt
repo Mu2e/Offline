@@ -2,13 +2,31 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_4
 
+4) Feb 01, 2016  kutschke
+   Change the meaning of a large negative value of the geometry file parameter:
+
+     double ttracker.passivationMargin;
+   If this parameter modifies the length of the active region of the wire.  The
+   physical length of the wire extends into the manifold.  If this parameter
+   has a value of 0, then the active length of the wire extends from the center
+   of the wire to the point at which the line along the wire enters the manifold.
+   If this parameter is positive, then the active length is shortened by the indicated
+   amount; the active length is limited so that it can never be negative. If this
+   parameter is positive, then the active length extends into the manifold by the indicated
+   amount.
+
+   The new behaviour is that the active length is limited to the full length of the wire.
+
+   The old behaviour was that the computed active length could be longer than the physical
+   length; this resulted in run time error.
+
 3) Feb 01, 2016  dnbrow01
-   Added version control to calorimeter crates.  To turn on building of 
-   crates, one needs to add 
-   int calorimeter.calorimeterCrateVersion = 2;  
+   Added version control to calorimeter crates.  To turn on building of
+   crates, one needs to add
+   int calorimeter.calorimeterCrateVersion = 2;
    (or higher) to the calorimeterXXX.txt file being used.  If not present,
    default to crate version 1, which does not build crates.
-   Added version = 2 flag to current calorimeter geom file, 
+   Added version = 2 flag to current calorimeter geom file,
    calorimeter_BaF2.txt.  TDR-era geometry files should not choke on this.
    modified:   Mu2eG4/geom/calorimeter_BaF2.txt
    modified:   Mu2eG4/src/constructDiskCalorimeter.cc
