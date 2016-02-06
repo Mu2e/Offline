@@ -1,7 +1,7 @@
 // Crystal calorimeter
 
 double calorimeter.caloMotherInRadius           = 349;   
-double calorimeter.caloMotherOutRadius          = 765;   
+double calorimeter.caloMotherOutRadius          = 818; // 765;   
 double calorimeter.caloMotherZ0                 = 11842;   
 double calorimeter.caloMotherZ1                 = 13220;   
 

@@ -2,6 +2,13 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_4
 
+7) Feb 05, 2016  dnbrow01
+   Change the outer radius of the calorimeter mother volume in the 
+   new calorimeter geometry file, calorimeter_CsI.txt, to work with
+   crates.  
+   modified:   Mu2eG4/geom/calorimeter_CsI.txt
+
+
 6) Feb 05, 2016  kutschke
    Special geometry file that should only be used for generating backgrounds, not signals.
    Mu2eG4/geom/geom_common_cd3_s4p2_backgroundSim.txt
@@ -14,7 +21,6 @@ Still under construction
 
 4) Feb 05, 2016  kutschke
    Change the meaning of a large negative value of the geometry file parameter:
-
      double ttracker.passivationMargin;
    If this parameter modifies the length of the active region of the wire.  The
    physical length of the wire extends into the manifold.  If this parameter
