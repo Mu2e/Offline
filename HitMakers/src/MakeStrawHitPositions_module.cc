@@ -253,7 +253,9 @@ namespace mu2e {
 	  smark->SetMarkerSize(2);
 	  flist->Add(smark);
 	  char label[80];
-	  snprintf(label,80,"pln %i pnl %i",iplane,(int)ipnl);
+	  double phi = spos.phi();
+	  if(phi<0)phi+= 2*M_PI;
+	  snprintf(label,80,"pln %i pnl %i phi= %f",iplane,(int)ipnl,180*phi/M_PI);
 	  sleg->AddEntry(sline,label,"l");
 	}
       }

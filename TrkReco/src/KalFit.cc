@@ -228,7 +228,7 @@ namespace mu2e
       std::vector<TrkHit*> thv;
       for(auto ihit = tshv.begin(); ihit != tshv.end(); ++ihit){
         thv.push_back(*ihit);
-        if (_debug>0) { (*ihit)->print(std::cout); }
+        if (_debug>2) { (*ihit)->print(std::cout); }
       }
 // Find the wall and gas material description objects for these hits
       std::vector<DetIntersection> detinter;
@@ -306,19 +306,19 @@ namespace mu2e
    // find the DetElem associated this straw
         const DetStrawElem* strawelem = detmodel.strawElem(trkhit->straw());
 // see if this KalRep already has a KalMaterial with this element: if not, add it
-        bool addmat(false);
+        bool hasmat(false);
         std::vector<const KalMaterial*> kmats;
         krep->findMaterialSites(strawelem,kmats);
 // if this is a reflecting track the same material can appear multiple times: check the flight lengths
         if(kmats.size() > 0){
           for(auto kmat: kmats) {
-            if( fabs( kmat->globalLength() - trkhit->fltLen()) > _maxmatfltdiff){
-              addmat = true;
+            if( fabs( kmat->globalLength() - trkhit->fltLen()) < _maxmatfltdiff){
+              hasmat = true;
               break;
             }
           }
         }
-        if(addmat){
+        if(!hasmat){
           // create intersection object for this element; it includes all materials
           DetIntersection strawinter(strawelem, krep->referenceTraj(),trkhit->fltLen());
           strawinter.thit = trkhit;

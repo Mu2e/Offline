@@ -11,6 +11,7 @@
 #include "TrkDiag/inc/helixpar.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
+#include "TrkDiag/inc/TrkStrawMatInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 // data
 #include "art/Framework/Principal/fwd.h"
@@ -95,6 +96,8 @@ namespace mu2e
 // hit information
     void fillHitInfo(const KalRep* krep, std::vector<TrkStrawHitInfo>& hitinfos) const;
     void fillHitInfo(const TrkStrawHit* tsh,TrkStrawHitInfo& tshinfo) const;
+    void fillMatInfo(const KalRep* krep, std::vector<TrkStrawMatInfo>& hitinfos) const;
+    bool fillMatInfo(const KalMaterial* ,TrkStrawMatInfo& tshinfo) const;
     void fillHitInfoMC(art::Ptr<SimParticle> const& primary,const KalRep* krep,std::vector<TrkStrawHitInfoMC>& tshinfomc) const;
     void fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& mcdigi,Straw const& straw, 
     TrkStrawHitInfoMC& tshinfomc) const;
@@ -148,6 +151,7 @@ namespace mu2e
     TrkInfo _trkinfo;
 // hit information
     std::vector<TrkStrawHitInfo> _tshinfo;
+    std::vector<TrkStrawMatInfo> _tminfo;
 // MC true tuple variables
     TrkInfoMC _mcinfo;
     TrkInfoMCStep _mcgeninfo;

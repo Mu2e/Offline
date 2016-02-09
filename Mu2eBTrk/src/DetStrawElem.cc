@@ -48,6 +48,7 @@ namespace mu2e {
     if(poca.status().success()){
 // if there's an associated active hit with this element, then force the intersection
   // otherwise, require the distance to the wire be inside the straw (within tolerance)
+  // should also check the distance along the wire is inside the active length FIXME!!
       if( (dinter.thit != 0 && dinter.thit->isActive()) ||
 	fabs(poca.doca()) < _straw->getRadius() + _stype->tolerance() ){
 	retval = true;

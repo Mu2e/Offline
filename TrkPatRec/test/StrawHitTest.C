@@ -57,7 +57,6 @@ Int_t myproc(Int_t proc,Bool_t xtalk) {
 void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 
   TString spage(page);
-  cout << "page " << page << " spage " << spage << endl;
   gStyle->SetOptStat(0);
 //  TCut conv("mcpdg==11&&mcgen==2&&mcmom>100.0");
   TCut conv("mcpdg==11&&mcgen==2");
@@ -71,8 +70,8 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
   TCut neutron("mcpdg==2112");
   TCut bkge("abs(mcpdg)==11&&mcgen!=2");
   TCut bkgo("abs(mcpdg)!=11&&mcpdg!=2212");
-  TCut xtalk("xtalk");
-  TCut direct("!xtalk");
+  TCut xtalk("mcxtalk");
+  TCut direct("!mcxtalk");
   TCut opart=!(conv||oele||proton);
 
   TCut pproton("mcppdg==2212");
@@ -91,7 +90,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 
   TCut hitsel("esel&&rsel&&tsel&&(!delta)&&(!isolated)");
 
-  TCut goodevt("mcom>100&&mctd<1&&mctd>0.577");
+  TCut goodevt("mcom>100");
   TCut goodpeak("abs(tpeak-mct0-25)<30");
   if(spage =="scan"){
     TCanvas* scan = new TCanvas("scan","simulation",1200,800);
@@ -114,7 +113,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     nudio->SetLineColor(kGreen);
     nudel->SetLineColor(kCyan);
     nup->SetLineColor(kBlue);
-    TH2F* eve = new TH2F("eve","StrawHit Edep vs #Sigma MC Edep;MeV;MeV",100,0,0.3,100,0,0.3);
+    TH2F* eve = new TH2F("eve","StrawHit Edep vs #Sigma MC Edep;MeV;MeV",100,0,0.05,100,0,0.05);
     eve->SetStats(0);
 
     hits->Project("pdgid","mcpdg");
@@ -385,31 +384,31 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
 	 zdelta->SetLineColor(kCyan);
 	 zp->SetLineColor(kBlue);
      */
-    hits->Project("econv","edep*1000.0",conv+direct+goodevt);
-//    hits->Project("edio","edep*1000.0",dio+direct+goodevt);
-//    hits->Project("eneut","edep*1000.0",neutron+goodevt);
-//    hits->Project("ephot","edep*1000.0",photon+goodevt);
-    hits->Project("edelta","edep*1000.0",bkge+direct+goodevt);
-    hits->Project("ep","edep*1000.0",proton+direct+goodevt);
-    hits->Project("ex","edep*1000.0",xtalk+goodevt);
+    hits->Project("econv","edep*1000.0",conv+direct);
+//    hits->Project("edio","edep*1000.0",dio+direct);
+//    hits->Project("eneut","edep*1000.0",neutron);
+//    hits->Project("ephot","edep*1000.0",photon);
+    hits->Project("edelta","edep*1000.0",bkge+direct);
+    hits->Project("ep","edep*1000.0",proton+direct);
+    hits->Project("ex","edep*1000.0",xtalk);
 
-    hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)",conv+direct+goodevt);
-//    hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)",dio+direct+goodevt);
-//    hits->Project("rneut","sqrt(shpos.y^2+shpos.x^2)",neutron+goodevt);
-//    hits->Project("rphot","sqrt(shpos.y^2+shpos.x^2)",photon+goodevt);
-    hits->Project("rdelta","sqrt(shpos.y^2+shpos.x^2)",bkge+direct+goodevt);
-    hits->Project("rp","sqrt(shpos.y^2+shpos.x^2)",proton+direct+goodevt);
-//    hits->Project("rx","sqrt(shpos.y^2+shpos.x^2)",xtalk+goodevt);
+    hits->Project("rconv","sqrt(shpos.y^2+shpos.x^2)",conv+direct);
+//    hits->Project("rdio","sqrt(shpos.y^2+shpos.x^2)",dio+direct);
+//    hits->Project("rneut","sqrt(shpos.y^2+shpos.x^2)",neutron);
+//    hits->Project("rphot","sqrt(shpos.y^2+shpos.x^2)",photon);
+    hits->Project("rdelta","sqrt(shpos.y^2+shpos.x^2)",bkge+direct);
+    hits->Project("rp","sqrt(shpos.y^2+shpos.x^2)",proton+direct);
+//    hits->Project("rx","sqrt(shpos.y^2+shpos.x^2)",xtalk);
     /*    
-	  hits->Project("nconv","n200",conv+goodevt);
-	  hits->Project("ndio","n200",bkge+goodevt);
-	  hits->Project("ndelta","n200",bkgo+goodevt);
-	  hits->Project("np","n200",proton+goodevt);
+	  hits->Project("nconv","n200",conv);
+	  hits->Project("ndio","n200",bkge);
+	  hits->Project("ndelta","n200",bkgo);
+	  hits->Project("np","n200",proton);
 
-	  hits->Project("zconv","shpos.z",conv+goodevt);
-	  hits->Project("zdio","shpos.z",bkge+goodevt);
-	  hits->Project("zdelta","shpos.z",bkgo+goodevt);
-	  hits->Project("zp","shpos.z",proton+goodevt);
+	  hits->Project("zconv","shpos.z",conv);
+	  hits->Project("zdio","shpos.z",bkge);
+	  hits->Project("zdelta","shpos.z",bkgo);
+	  hits->Project("zp","shpos.z",proton);
      */
     TCanvas* bcan = new TCanvas("bcan","background",1000,800);
     bcan->Divide(1,2);
@@ -640,25 +639,25 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     cetime->SetFillColor(kRed);
 
     double scale = 0.1/nevents;
-    hits->Project("cetime","time",conv+timecut);
+    hits->Project("cetime","mctime",conv+timecut);
     cetime->Scale(scale);
     origin->Add(cetime);
-     hits->Project("dtime","time",dioorigin+timecut);
+     hits->Project("dtime","mctime",dioorigin+timecut);
     dtime->Scale(scale);
     origin->Add(dtime);
-   hits->Project("mtime","time",ootmuonorigin+timecut);
+    hits->Project("mtime","mctime",ootmuonorigin+timecut);
     mtime->Scale(scale);
     origin->Add(mtime);
-    hits->Project("ntime","time",norigin+timecut);
+    hits->Project("ntime","mctime",norigin+timecut);
     ntime->Scale(scale);
     origin->Add(ntime);
-    hits->Project("gtime","time",porigin+timecut);
+    hits->Project("gtime","mctime",porigin+timecut);
     gtime->Scale(scale);
     origin->Add(gtime);
-    hits->Project("stptime","time",stpprotonorigin+timecut);
+    hits->Project("stptime","mctime",stpprotonorigin+timecut);
     stptime->Scale(scale);
     origin->Add(stptime);
-    hits->Project("pptime","time",pprotonorigin+timecut);
+    hits->Project("pptime","mctime",pprotonorigin+timecut);
     pptime->Scale(scale);
     origin->Add(pptime);
 
@@ -713,25 +712,25 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     cetime->SetFillColor(kRed);
 
     double scale = 0.1/nevents;
-    hits->Project("cetime","time",conv+hitsel);
+    hits->Project("cetime","mctime",conv+hitsel);
     cetime->Scale(scale);
     sorigin->Add(cetime);
-     hits->Project("dtime","time",dioorigin+hitsel);
+     hits->Project("dtime","mctime",dioorigin+hitsel);
     dtime->Scale(scale);
     sorigin->Add(dtime);
-   hits->Project("mtime","time",ootmuonorigin+hitsel);
+   hits->Project("mtime","mctime",ootmuonorigin+hitsel);
     mtime->Scale(scale);
     sorigin->Add(mtime);
-    hits->Project("ntime","time",norigin+hitsel);
+    hits->Project("ntime","mctime",norigin+hitsel);
     ntime->Scale(scale);
     sorigin->Add(ntime);
-    hits->Project("gtime","time",porigin+hitsel);
+    hits->Project("gtime","mctime",porigin+hitsel);
     gtime->Scale(scale);
     sorigin->Add(gtime);
-    hits->Project("stptime","time",stpprotonorigin+hitsel);
+    hits->Project("stptime","mctime",stpprotonorigin+hitsel);
     stptime->Scale(scale);
     sorigin->Add(stptime);
-    hits->Project("pptime","time",pprotonorigin+hitsel);
+    hits->Project("pptime","mctime",pprotonorigin+hitsel);
     pptime->Scale(scale);
     sorigin->Add(pptime);
 

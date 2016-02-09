@@ -4,6 +4,7 @@
 // $Author: brownd $ 
 // $Date: 2014/09/22 12:13:17 $
 //
+#include "TrkDiag/inc/KalDiag.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -33,14 +34,15 @@
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkDiag/inc/KalDiag.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 #include "BTrk/BField/BFieldFixed.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
+#include "BTrk/KalmanTrack/KalMaterial.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
+#include "Mu2eBTrk/inc/DetStrawElem.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 
@@ -134,7 +136,10 @@ namespace mu2e
   // fill track info for the tracker entrance
       fillTrkInfo(krep,_trkinfo);
     // compute hit information 
-      if(_diag > 1)fillHitInfo(krep,_tshinfo);
+      if(_diag > 1){
+	fillHitInfo(krep,_tshinfo);
+	fillMatInfo(krep,_tminfo);
+      }
     }
 // if requested, add MC info
     if(_fillmc){
@@ -508,6 +513,44 @@ namespace mu2e
     }
   }
 
+  void KalDiag::fillMatInfo(const KalRep* krep, std::vector<TrkStrawMatInfo>& tminfos ) const { 
+    tminfos.clear();
+ // loop over sites, pick out the materials
+    for(auto isite : krep->siteList()) {
+      if(isite->kalMaterial() != 0){
+	TrkStrawMatInfo tminfo;
+	if(fillMatInfo(isite->kalMaterial(),tminfo))
+	  tminfos.push_back(tminfo);
+      }
+    }
+  }
+
+  bool KalDiag::fillMatInfo(const KalMaterial* kmat, TrkStrawMatInfo& tminfo) const {
+    bool retval(false);
+    const DetStrawElem* delem = dynamic_cast<const DetStrawElem*>(kmat->detElem());
+    if(delem != 0){
+      retval = true;
+      // KalMaterial info
+      tminfo._active = kmat->isActive();
+      tminfo._dp = kmat->momFraction();
+      tminfo._radlen = kmat->radiationFraction();
+      tminfo._sigMS = kmat->deflectRMS();
+      // DetIntersection info
+      const DetIntersection& dinter = kmat->detIntersection();
+      tminfo._thit = (dinter.thit != 0);
+      tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive()); 
+      tminfo._doca = dinter.dist;
+      tminfo._tlen = dinter.pathlen;
+      // straw information
+      Straw const* straw = delem->straw();
+      tminfo._plane = straw->id().getPlane();
+      tminfo._panel = straw->id().getPanel();
+      tminfo._layer = straw->id().getLayer();
+      tminfo._straw = straw->id().getStraw();
+    }
+    return retval;
+  }
+
 // map daughters onto parents within the context of an associated set of StepPointMCs (like from a StrawHit).
   void KalDiag::findRelatives(PtrStepPointMCVector const& mcptr,map<SPPtr,SPPtr>& mdmap){
     // loop over steps
@@ -561,6 +604,7 @@ namespace mu2e
     if(_diag > 1){
       _trkdiag->Branch((brapre+"tsh").c_str(),&_tshinfo);
       if(_fillmc)_trkdiag->Branch((brapre+"tshmc").c_str(),&_tshinfomc);
+      _trkdiag->Branch((brapre+"tm").c_str(),&_tminfo);
     }
     return _trkdiag;
   }
