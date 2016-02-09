@@ -60,6 +60,7 @@ class KalFit {
   void Rad();
   void MomTails(int iwt=-1);
   void MomTailsHits();
+  void StrawMat();
 };
 
 KalFit::KalFit(TTree* trkdiag,size_t ic) : _tdiag(trkdiag), tdlow(0.57735027),
@@ -1526,7 +1527,7 @@ void KalFit::MomTails(int iwt) {
   coresel->SetFillColor(kBlue);
   coresel->SetLineColor(kBlue);
   coresel->SetLineStyle(1);
-  coresel->SetLineWidth(0.2);
+  coresel->SetLineWidth(2);
   coresel->Draw("1");
 
   TBox* tailsel= new TBox(0.5,0.0,maxmom,momres->GetBinContent(momres->FindBin(0.5)));
@@ -1534,7 +1535,7 @@ void KalFit::MomTails(int iwt) {
   tailsel->SetFillColor(kRed);
   tailsel->SetLineColor(kRed);
   tailsel->SetLineStyle(1);
-  tailsel->SetLineWidth(0.2);
+  tailsel->SetLineWidth(2);
   tailsel->Draw("1");
 
   corewt->SetParameter(0,0.1*momres->GetMaximum());
@@ -1805,3 +1806,73 @@ void KalFit::MomTailsHits() {
   ttdrift->Draw("same");
 
 }
+
+void
+KalFit::StrawMat() {
+  TH1F* naddmat = new TH1F("naddmat","N Added Straws",30,-0.5,29.5);
+  TH2F* matvshit = new TH2F("matvshit","N Straw vs N Hits",100,-0.5,99.5,100,-0.5,99.5);
+  TH1F* addmatfrac = new TH1F("addmatfrac","Fraction of Added Straws",100,-0.01,0.5);
+  addmatfrac->SetStats(0);
+  matvshit->SetStats(0);
+
+  TH1F* lofracres = new TH1F("lofracres","Momentum Resolution;Reco - True Mom. (MeV/c)",100,-2,2);
+  TH1F* hifracres = new TH1F("hifracres","Momentum Resolution;Reco - True Mom. (MeV/c)",100,-2,2);
+  lofracres->SetStats(0);
+  hifracres->SetStats(0);
+  lofracres->SetLineColor(kRed);
+  hifracres->SetLineColor(kBlack);
+  
+  TH1F* hitdoca = new TH1F("hitdoca","DOCA to Wire;DOCA (mm)",100,-0.05,2.65);
+  TH1F* adddoca = new TH1F("adddoca","DOCA to Wire;DOCA (mm)",100,-0.05,2.65);
+  hitdoca->SetStats(0);
+  hitdoca->SetLineColor(kRed);
+  adddoca->SetStats(0);
+  adddoca->SetLineColor(kBlue);
+
+  TH1F* hitstraw = new TH1F("hitstraw","Straw Number;straw #",100,-0.5,99.5);
+  TH1F* addstraw = new TH1F("addstraw","Straw number;straw #",100,-0.5,99.5);
+  hitstraw->SetStats(0);
+  hitstraw->SetLineColor(kRed);
+  addstraw->SetStats(0);
+  addstraw->SetLineColor(kBlue);
+
+  _tdiag->Project("addmatfrac","(fit.nmatactive-fit.nactive)/fit.nmatactive","fit.status>0");
+  _tdiag->Project("matvshit","fit.nmatactive:fit.nactive","fit.status>0");
+  _tdiag->Project("naddmat","fit.nmatactive-fit.nactive","fit.status>0");
+  _tdiag->Project("adddoca","tm._doca","fit.status>0&&tm._active&&(!tm._thita)");
+  _tdiag->Project("hitdoca","tm._doca","fit.status>0&&tm._thita");
+  _tdiag->Project("addstraw","tm._straw","fit.status>0&&tm._active&&(!tm._thita)");
+  _tdiag->Project("hitstraw","tm._straw","fit.status>0&&tm._thita");
+
+  _tdiag->Project("lofracres","fit.mom-mcent.mom","fit.status>0&&(fit.nmatactive-fit.nactive)/fit.nmatactive<0.1");
+  _tdiag->Project("hifracres","fit.mom-mcent.mom","fit.status>0&&(fit.nmatactive-fit.nactive)/fit.nmatactive>0.1");
+
+  TLegend* leg = new TLegend(0.6,0.7,0.9,.9);
+  leg->AddEntry(hitdoca,"Hit Straw","L");
+  leg->AddEntry(adddoca,"Added Straw","L");
+
+  TCanvas* mcan = new TCanvas("mcan","mcan",1200,800);
+  mcan->Divide(3,2);
+  mcan->cd(1);
+  matvshit->Draw("colorz");
+  mcan->cd(2);
+  naddmat->Draw();
+  mcan->cd(3);
+  addmatfrac->Draw();
+  mcan->cd(4);
+  hitdoca->Draw();
+  adddoca->Draw("same");
+  leg->Draw();
+  mcan->cd(5);
+  hitstraw->Draw();
+  addstraw->Draw("same");
+  leg->Draw();
+  mcan->cd(6);
+  lofracres->Draw();
+  hifracres->Draw("same");
+  TLegend* mleg = new TLegend(0.6,0.7,0.9,0.9);
+  mleg->AddEntry(lofracres,"N_{added}/N<0.1","L");
+  mleg->AddEntry(hifracres,"N_{added}/N>0.1","L");
+  mleg->Draw();
+}
+
