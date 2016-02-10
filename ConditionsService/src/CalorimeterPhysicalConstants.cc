@@ -21,5 +21,5 @@ namespace mu2e {
     ,_criticalEnergyNeg(config.getDouble("calorimeter.criticalEnergyNegCsI")*CLHEP::MeV) // e^-
     ,_density(config.getDouble("calorimeter.densityCsI")*CLHEP::g/CLHEP::cm3) // g/cc 
 
-  {}
+  { }
 }
