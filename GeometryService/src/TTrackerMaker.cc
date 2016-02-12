@@ -116,12 +116,16 @@ namespace mu2e {
     _manifoldsPerEnd    = config.getInt("ttracker.manifoldsPerEnd");
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
     _rotationPattern    = config.getInt("ttracker.rotationPattern");
+    _panelZPattern      = config.getInt("ttracker.panelZPattern");
+    _layerZPattern      = config.getInt("ttracker.layerZPattern");
     _spacingPattern     = config.getInt("ttracker.spacingPattern");
+    _innermostLayer     = config.getInt("ttracker.innermostLayer");
 
     _oddStationRotation   =  config.getDouble("ttracker.oddStationRotation")*CLHEP::degree;
     _zCenter              =  config.getDouble("ttracker.z0")*CLHEP::mm;
     _xCenter              = -config.getDouble("mu2e.solenoidOffset")*CLHEP::mm;
     _envelopeInnerRadius  =  config.getDouble("ttracker.envelopeInnerRadius")*CLHEP::mm;
+    _rInnermostWire       =  config.getDouble("ttracker.rInnermostWire")*CLHEP::mm;
     _strawOuterRadius     =  config.getDouble("ttracker.strawOuterRadius")*CLHEP::mm;
     _strawWallThickness   =  config.getDouble("ttracker.strawWallThickness")*CLHEP::mm;
     _strawGap             =  config.getDouble("ttracker.strawGap")*CLHEP::mm;
@@ -302,6 +306,31 @@ namespace mu2e {
         _panelBaseRotations.push_back(  210.*CLHEP::degree);
         _panelBaseRotations.push_back(  270.*CLHEP::degree);
         _panelBaseRotations.push_back(  270.*CLHEP::degree);
+      } else if(_rotationPattern==5){
+        _panelBaseRotations.push_back(   15.*CLHEP::degree);
+        _panelBaseRotations.push_back(  105.*CLHEP::degree);
+        _panelBaseRotations.push_back(  135.*CLHEP::degree);
+        _panelBaseRotations.push_back(  225.*CLHEP::degree);
+        _panelBaseRotations.push_back(  255.*CLHEP::degree);
+        _panelBaseRotations.push_back(  345.*CLHEP::degree);
+        _panelBaseRotations.push_back(  165.*CLHEP::degree);
+        _panelBaseRotations.push_back(   75.*CLHEP::degree);
+        _panelBaseRotations.push_back(   45.*CLHEP::degree);
+        _panelBaseRotations.push_back(  315.*CLHEP::degree);
+        _panelBaseRotations.push_back(  285.*CLHEP::degree);
+        _panelBaseRotations.push_back(  195.*CLHEP::degree);
+        _panelBaseRotations.push_back(  165.*CLHEP::degree);
+        _panelBaseRotations.push_back(   75.*CLHEP::degree);
+        _panelBaseRotations.push_back(   45.*CLHEP::degree);
+        _panelBaseRotations.push_back(  315.*CLHEP::degree);
+        _panelBaseRotations.push_back(  285.*CLHEP::degree);
+        _panelBaseRotations.push_back(  195.*CLHEP::degree);
+        _panelBaseRotations.push_back(   15.*CLHEP::degree);
+        _panelBaseRotations.push_back(  105.*CLHEP::degree);
+        _panelBaseRotations.push_back(  135.*CLHEP::degree);
+        _panelBaseRotations.push_back(  225.*CLHEP::degree);
+        _panelBaseRotations.push_back(  255.*CLHEP::degree);
+        _panelBaseRotations.push_back(  345.*CLHEP::degree);
       } else {
         throw cet::exception("GEOM")
           << "Unrecognized rotation pattern in TTrackerMaker. \n";
@@ -468,16 +497,19 @@ namespace mu2e {
     // Only do this test for the new model(s).
     if ( _supportModel == SupportModel::simple ) return;
 
-    double ztest = 0.5*(_tt->getStraw ( StrawId(0,1,0,0) ).getMidPoint().z()+_tt->getStraw ( StrawId(0,1,1,0) ).getMidPoint().z())
+    StrawId s0(0,1,0,0);
+    StrawId s1(0,1,1,1);
+    double ztest = 0.5*(_tt->getStraw ( s0 ).getMidPoint().z()+_tt->getStraw ( s1 ).getMidPoint().z())
       -  _tt->getPlane( PlaneId(0) ).origin().z();
+    ztest *= panelZSide(1,0);
 
     double tolerance = 1.e-6;
     if ( std::abs(ztest-_channelZOffset) > tolerance ){
       throw cet::exception("GEOM")  << "Inconsistent channel center and wire z location. \n"
                                     << "channel Z offset: " <<  _channelZOffset << "\n"
                                     << "plane z center:  " << _tt->getPlane( PlaneId(0) ).origin().z() << "\n "
-                                    << "Straw z layer 0:  " << _tt->getStraw ( StrawId(0,1,0,0) ).getMidPoint().z() << "\n"
-                                    << "Straw z layer 1:  " << _tt->getStraw ( StrawId(0,1,1,0) ).getMidPoint().z() << "\n"
+                                    << "Straw z layer 0:  " << _tt->getStraw ( s0 ).getMidPoint().z() << "\n"
+                                    << "Straw z layer 1:  " << _tt->getStraw ( s1 ).getMidPoint().z() << "\n"
                                     << "z test:           " << ztest << " delta " << std::abs(ztest-_channelZOffset) << "\n";
     }
 
@@ -596,18 +628,25 @@ namespace mu2e {
       }
 
       for (int ns = 1; ns<layer0.nStraws()*2; ns+=2) {
+        int i0 = ns;
+        int i1 = ns-2;
+        if ( _innermostLayer == 1 ){
+          i0 = ns-2;
+          i1 = ns;
+        }
         double xLayerDeltaMag =
-          (layer0.getStraw(ns).getMidPoint() - layer1.getStraw(ns-2).getMidPoint()).mag();
+          (layer0.getStraw(i0).getMidPoint() - layer1.getStraw(i1).getMidPoint()).mag();
+
         if (_verbosityLevel>2) {
           cout << __func__ << " Checking spacig"
-               << " for layer " << layer0.id() << " straw " << layer0.getStraw(ns).id()
-               << " and for layer " << layer1.id() << " straw " << layer1.getStraw(ns-2).id()  << endl;
+               << " for layer " << layer0.id() << " straw " << layer0.getStraw(i0).id()
+               << " and for layer " << layer1.id() << " straw " << layer1.getStraw(i1).id()  << endl;
         }
         if ( abs(xLayerDeltaMag-strawSpacing)> tolerance ) {
           cout << "xLayer straw spacing is (mm)   : "
                << xLayerDeltaMag
                << " for straws: "
-               << layer0.getStraw(ns).id() << ", " << layer1.getStraw(ns-2).id()
+               << layer0.getStraw(i0).id() << ", " << layer1.getStraw(i1).id()
                << endl;
           cout << "It should be                   : "
                << strawSpacing << " diff: "
@@ -638,6 +677,9 @@ namespace mu2e {
     int ilay = layId.getLayer();
     int ipnl = layId.getPanel();
 
+    // Is layer zero closest to the straw or farthest from it.
+    int factor = ( _layerZPattern == 0 ) ? ilay : (_layersPerPanel - ilay - 1);
+
     //    cout << "Debugging TTrackerMaker ilay: " << ilay << endl;
 
     // Start to populate the layer.
@@ -652,7 +694,7 @@ namespace mu2e {
     // the above commented out calculation places the straws at the edge of the manifold in Z
 
     double zOffset = _supportHalfThickness + _manifoldZEdgeExcessSpace +
-      _strawOuterRadius + ilay*2.*_layerHalfSpacing;
+      _strawOuterRadius + factor*2.*_layerHalfSpacing;
 
     // Rotation that puts wire direction and wire mid-point into their
     // correct orientations.
@@ -675,7 +717,7 @@ namespace mu2e {
       // Inner edge of the innermost wire connected to this manifold.
       // this is layer dependent, take care of it at xstraw below
 
-      double xA = _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*iman + _manifoldXEdgeExcessSpace;
+      double xA = _rInnermostWire + 2.*_manifoldHalfLengths.at(0)*iman;
 
       // Add all of the straws connected to this manifold.
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
@@ -687,11 +729,11 @@ namespace mu2e {
         // coord system of the plane envelope.
         // we will shift the "second" layer from the manifold edge
 
-        double xstraw = (ilay%2==0) ?
-          xA + (1 + 2*istr)*_strawOuterRadius + istr*_strawGap :
-          xA + (1 + 2*istr)*_strawOuterRadius + istr*_strawGap + 2.0*_layerHalfShift;
+        double xstraw = (ilay%2==_innermostLayer) ?
+          xA + (2*istr)*_strawOuterRadius + istr*_strawGap :
+          xA + (2*istr)*_strawOuterRadius + istr*_strawGap + 2.0*_layerHalfShift;
 
-        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*_panelZSide.at(ipnl) );
+        CLHEP::Hep3Vector mid( xstraw, 0., zOffset*panelZSide(ipnl, plane.id()) );
         mid += plane.origin();
 
         // Rotate straw midpoint to its actual location.
@@ -735,7 +777,7 @@ namespace mu2e {
     }
 
 //std::cout << "<-<-<- makeLayer\n";
-  }
+  } // end TTrackerMaker::makeLayer
 
   void TTrackerMaker::makeManifolds( const PanelId& plnId){
 //std::cout << "->->-> makeManifolds\n";
@@ -764,7 +806,7 @@ namespace mu2e {
       //if ( plnId.getPanel() <= 1 ) z0 = -z0; // is this correct for the 6 panels?
       // why not *_panelZSide.at(plnId.getPanel())
 
-      z0 = z0*_panelZSide.at(plnId.getPanel());
+      z0 = z0*panelZSide(plnId.getPanel(),plnId.getPlane());
 
       // is the above assuming correct Z? why not plnId.getPanel()%2?
       // are manifolds ever used?
@@ -825,8 +867,7 @@ namespace mu2e {
     _strawActiveHalfLengths.resize(_manifoldsPerEnd*2);
 
     for ( int i=0; i<_manifoldsPerEnd; ++i ){
-      double xA =
-        _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace;
+      double xA = _rInnermostWire  + 2.*_manifoldHalfLengths.at(0)*i;
 
       //    double xA = (_layersPerPanel==1) ?
       //      _envelopeInnerRadius + 2.*_manifoldHalfLengths.at(0)*i + _manifoldXEdgeExcessSpace :
@@ -895,7 +936,7 @@ namespace mu2e {
 
     panel._boxHalfLengths = _panelBoxHalfLengths;
     double xOffset = _panelBoxXOffsetMag;
-    double zOffset = _panelBoxZOffsetMag * _panelZSide.at(ipnl);
+    double zOffset = _panelBoxZOffsetMag * panelZSide(ipnl,plane.id());
 
     // Now calculate the rotations and placement of the panel envelope
 
@@ -2016,12 +2057,35 @@ namespace mu2e {
   } //end TTrackerMaker::recomputeHalfLengths
   double
   TTrackerMaker::panelRotation(int ipnl,int ipln) const {
+    if ( _rotationPattern == 5 ){
+      int jplane = ipln%4;
+      int jpln   = ipnl + jplane*_panelsPerPlane;
+      double phi = _panelBaseRotations.at(jpln);
+      return phi;
+    }
     int jplane = ipln%2;
     int ista = (ipln/2)%2;
     int jpln = ipnl + jplane*_panelsPerPlane;
     double phi = _panelBaseRotations.at(jpln);
     if(ista==1)phi += _oddStationRotation;
     return phi;
+  }
+
+  double
+  TTrackerMaker::panelZSide(int ipanel, int iplane) const {
+
+    // Even panels are upstream.
+    if ( _panelZPattern == 0 ){
+      return _panelZSide.at(ipanel);
+    }
+    if ( _panelZPattern != 1){
+      // throw
+    }
+
+    // Mu2e-doc-888-v9, Figure 9;
+    int jplane = iplane%4;
+    double sign = ( jplane == 0 || jplane == 3) ? -1. : 1.;
+    return sign*_panelZSide.at(ipanel);
   }
 
 } // namespace mu2e

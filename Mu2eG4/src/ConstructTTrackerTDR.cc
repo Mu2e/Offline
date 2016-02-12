@@ -212,7 +212,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
   for ( auto const& sbeam : sup.beamBody() ) {
 
     if ( _verbosityLevel > 0 ) {
-      cout  << __func__ 
+      cout  << __func__
             << "Support Beam Position: "
             << sbeam.name()               << " "
             << sbeam.position()           << " "
@@ -255,7 +255,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
     if ( sbeam.name().find("TTrackerSupportServiceSectionEnvelope_") != string::npos ) {
 
       if ( _verbosityLevel > 0 ) {
-        cout << __func__ 
+        cout << __func__
              << " Support Beam Service eSection Envelope Position: "
              << sbeam.name()               << " "
              << sbeam.position()           << " "
@@ -264,7 +264,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
              << sbeam.tubsParams();
       }
 
-      serviceVI = 
+      serviceVI =
         nestTubs( sbeam.name(),
                   sbeam.tubsParams(),
                   findMaterialOrThrow(sbeam.materialName()),
@@ -281,17 +281,17 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
                   );
 
       if ( _verbosityLevel > 0 ) {
-        cout << " Material " 
+        cout << " Material "
              << serviceVI.logical->GetMaterial()->GetName()
-             << " Mass in kg: " 
+             << " Mass in kg: "
              << serviceVI.logical->GetMass()/CLHEP::kg
              << endl;
       }
-   
+
     }
 
   }
- 
+
   // now placing services in their envelopes
 
   for ( auto const& sbeam : sup.beamServices() ) {
@@ -309,7 +309,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
       VolumeInfo& ttSSE =  _helper.locateVolInfo(sse);
 
       if ( _verbosityLevel > 0 ) {
-        cout << __func__ 
+        cout << __func__
              << " Support Beam Service Position: "
              << sbeam.name()               << " "
              << sse                        << " "
@@ -320,7 +320,7 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
              << endl;
       }
 
-      serviceVI = 
+      serviceVI =
         nestTubs( sbeam.name(),
                   sbeam.tubsParams(),
                   findMaterialOrThrow(sbeam.materialName()),
@@ -337,19 +337,19 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
                   );
 
       if ( _verbosityLevel > 0 ) {
-        cout << " Material " 
+        cout << " Material "
              << serviceVI.logical->GetMaterial()->GetName()
-             << " Mass in kg: " 
+             << " Mass in kg: "
              << serviceVI.logical->GetMass()/CLHEP::kg
              << endl;
       }
-   
+
     }
 
   }
 
   // print the final mass per Service Section envelope
-  
+
   if ( _verbosityLevel > 0 ) {
     for ( auto const& sbeam : sup.beamServices() ) {
       // prinitnt the final mass per Service Section envelope
@@ -357,16 +357,16 @@ mu2e::ConstructTTrackerTDR::constructMainSupports(){
 
         VolumeInfo& ttSSE =  _helper.locateVolInfo(sbeam.name());
 
-        cout << __func__ 
+        cout << __func__
              << " Support Beam Service Section Envelope: "
              << sbeam.name()               << " "
-             << " Material " 
+             << " Material "
              << ttSSE.logical->GetMaterial()->GetName()
-             << " Final Mass in kg: " 
+             << " Final Mass in kg: "
              << ttSSE.logical->GetMass(true)/CLHEP::kg
              << endl;
       }
-   
+
     }
 
   }
@@ -465,6 +465,7 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
   SupportStructure const& sup     = _ttracker.getSupportStructure();
 
   // Panels are identical other than placement - so get required properties from plane 0, panel 0.
+  Plane const& plane(_ttracker.getPlane(PlaneId(0)));
   Panel const& sec00(_ttracker.getPanel(PanelId(0,0)));
 
   bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",false);
@@ -527,6 +528,9 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
     zPanel += sec00.getStraw(StrawId(0,0,i,0)).getMidPoint().z();
   }
   zPanel /= sec00.nLayers();
+
+  // Is sector 0 on the upstream(+1) or downstream(-z) side of the plane.
+  double side = (zPanel-plane.origin().z()) > 0. ? -1. : 1.;
 
   // A unit vector in the direction from the origin to the wire center within the panel envelope.
   CLHEP::Hep3Vector unit( cos(panelCenterPhi), sin(panelCenterPhi), 0.);
@@ -593,7 +597,7 @@ mu2e::ConstructTTrackerTDR::preparePanel(){
       // Mid point of the straw, within the panel envelope.
       double r = (CLHEP::Hep3Vector( pos.x(), pos.y(), 0.)).mag();
       CLHEP::Hep3Vector mid = r*unit;
-      mid.setZ(pos.z() - zPanel);
+      mid.setZ(side*(pos.z() - zPanel));
 
       int copyNo=straw.index().asInt();
       bool edgeVisible(true);

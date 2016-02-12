@@ -69,6 +69,7 @@ namespace mu2e {
     double choosePlaneSpacing( int iplane ) const;
     double findFirstPlaneZ0() const;
     double panelRotation(int isec,int iplane) const;
+    double panelZSide(int ipanel, int iplane) const;
 
     // Some functions for the, fully detailed support structure.
     void makeSupportStructure();
@@ -98,11 +99,15 @@ namespace mu2e {
     int    _manifoldsPerEnd;             // Number of manifolds along one end of the wires in a layer.
     int    _strawsPerManifold;           // Number of straws connected to each manifold.
     int    _rotationPattern;             // Pattern of rotations from plane to plane.
+    int    _panelZPattern;               // Pattern of rotations from plane to plane.
+    int    _layerZPattern;               // If 0 then layer 0 is closest to base plane; if 1 then layer 1 is closes to base plane.
     int    _spacingPattern;              // Pattern of spacing from plane to plane.
+    int    _innermostLayer;              // Which of layers 0, 1 has the more innermost wire.
     double _oddStationRotation;           // rotation of odd stations relative to even
     double _zCenter;                     // z position of the center of the tracker, in the Mu2e coord system.
     double _xCenter;                     // x position of the center of the tracker, in the Mu2e coord system.
     double _envelopeInnerRadius;         // Inner radius of inside of innermost straw.
+    double _rInnermostWire;              // Radius from center to midpoint of the innermost wire, in tracker coord system.
     double _strawOuterRadius;            // Radius of each straw.
     double _strawWallThickness;          // Thickness of each straw.
     double _strawGap;                    // Gap between straws.
