@@ -843,7 +843,7 @@ namespace mu2e {
     Station & st = _tt->_stations.back();
     st._planes.reserve (_planesPerStation);
     st._planes.push_back(_tt->_planes.at(ipln1));
-    st._planes.push_back(_tt->_planes.at(ipln1));
+    st._planes.push_back(_tt->_planes.at(ipln2));
 
     // std::cout << __func__ << "StationId, plane1, plane2 :"
     //           << stationId << ", "
