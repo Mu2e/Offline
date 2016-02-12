@@ -1,7 +1,6 @@
 //
 //
-// Simulate the photons coming from the stopping target when muons are captured
-// by an Al nucleus.
+// Simulate the photons coming from the pipe calibration source
 // //
 // $Id: CaloCalibGun.cc,v 1.16 2014/01/27 22:20:17 knoepfel Exp $
 // $Author: knoepfel $
@@ -53,17 +52,17 @@ namespace mu2e {
     GeneratorBase(),
 
     // Configurable parameters
-    _mean(config.getDouble("CaloCalibGun.mean",1.)),
-    _energy(config.getDouble("CaloCalibGun.energy",6.0)),
-    _cosmin(config.getDouble("CaloCalibGun.cosmin",  -1.)),
-    _cosmax(config.getDouble("CaloCalibGun.cosmax",  1.)),
-    _phimin(config.getDouble("CaloCalibGun.phimin", 0. )),
-    _phimax(config.getDouble("CaloCalibGun.phimax", CLHEP::twopi )),
+    _mean(config.getDouble("caloCalibGun.mean",1.)),
+    _energy(config.getDouble("caloCalibGun.energy",6.13)),
+    _cosmin(config.getDouble("caloCalibGun.cosmin",  -1.)),
+    _cosmax(config.getDouble("caloCalibGun.cosmax",  1.)),
+    _phimin(config.getDouble("caloCalibGun.phimin", 0. )),
+    _phimax(config.getDouble("caloCalibGun.phimax", CLHEP::twopi )),
     _randFlat( getEngine() ),
     _randPoissonQ( getEngine(), std::abs(_mean) ),
     _randomUnitSphere ( getEngine(), _cosmin, _cosmax, 0, CLHEP::twopi  ),
     _detSys(),
-    _doHistograms(config.getBool("CaloCalibGun.doHistograms",true)),
+    _doHistograms(config.getBool("caloCalibGun.doHistograms",true)),
 
     // Histogram pointers
     _hE(0),_hT(0),_hcos(0),_hphi(0),_hrad(0),_hz(0),_hxy(0)
@@ -80,23 +79,22 @@ namespace mu2e {
     // Default values for the start and end of the live window.
     _tmin = 0.;
     _tmax = accPar->deBuncherPeriod;
-    _tmin = config.getDouble("CaloCalibGun.tmin",  _tmin );
-    _tmax = config.getDouble("CaloCalibGun.tmax",  _tmax );
+    _tmin = config.getDouble("caloCalibGun.tmin",  _tmin );
+    _tmax = config.getDouble("caloCalibGun.tmax",  _tmax );
 
     _detSys          = &*GeomHandle<DetectorSystem>();
     _cal             = &*GeomHandle<DiskCalorimeter>();
-    _calOrig         = _cal->origin();
     _nPipes          = _cal->caloGeomInfo().nPipes();
     _pipeRadius      = _cal->caloGeomInfo().pipeRadius();
     _pipeTorRadius   = _cal->caloGeomInfo().pipeTorRadius();
     _randomRad       = _cal->caloGeomInfo().pipeTorRadius();
+    _zPipeCenter     = _cal->section(0).origin()-CLHEP::Hep3Vector(0,0,_cal->section(0).size().z()/2.0-_pipeRadius);
+    
     
 
-    //we normalize the surface of each pipe to the total to draw a random number from which to generate the photons
-    //double sumR2(0);
-    //std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR2+=d*d; d = sumR2; });
-    //std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {d /= sumR2;});
 
+    // we normalize to the volume of the pipe (proportional to 2*pi*R if they have all the same radius) to draw a 
+    // random number from which to generate the photons
     double sumR(0);
     std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {sumR+=d; d = sumR; });
     std::for_each(_randomRad.begin(), _randomRad.end(), [&](double& d) {d /= sumR;});
@@ -109,7 +107,7 @@ namespace mu2e {
        _hE   = tfdir.make<TH1D>( "hE",   "Photon Energy"   ,  100,      0, 20);
        _hT   = tfdir.make<TH1D>( "hT",   "Photon Time"     ,  100,      0, 2000);
        _hcos = tfdir.make<TH1D>( "hcos", "Photon cos theta",  100,     -1, 1);
-       _hphi = tfdir.make<TH1D>( "hphi", "Photon phi"      ,  100,      0, 3.2);
+       _hphi = tfdir.make<TH1D>( "hphi", "Photon phi"      ,  100,      0, 6.3);
        _hrad = tfdir.make<TH1D>( "hrad", "Pos radius"      ,  100,      0, 700);
        _hz   = tfdir.make<TH1D>( "hz",   "Pos z "          ,  100,  10000, 14000);
        _hxy  = tfdir.make<TH2D>( "hxy",  "Pos xy"          ,  100,   -700, 700, 100, -700 ,700);
@@ -118,15 +116,11 @@ namespace mu2e {
 
     if (_mean < 0) throw cet::exception("RANGE") << "CaloCalibGun.mean must be non-negative "<< '\n';
     
-
-
   }
 
 
 // to do on that one
 // get the correct z position of the pipes
-// select the pipe : build a vector with the ratios of the total area of each pipe. i.e.
-// vector<area1/tot area2/tot,... area6/tot> tot =area1+...+area6
 // check what these detector positions are
 
 
@@ -147,13 +141,14 @@ namespace mu2e {
 	int idx = int( std::lower_bound(_randomRad.begin(), _randomRad.end(), rtest) - _randomRad.begin());
 	double rad = _pipeTorRadius[idx];
 	double phi = _randFlat.fire()*(_phimax-_phimin)+_phimin;
-		
-        CLHEP::Hep3Vector pos(rad*cos(phi),rad*sin(phi),_pipeRadius);
-	pos+=_calOrig;
-		
+		        
+	CLHEP::Hep3Vector pos(rad*cos(phi),rad*sin(phi),0);
+	pos +=_zPipeCenter;
+	
+	
+
 	//pick time
         double time = _tmin + _randFlat.fire() * ( _tmax - _tmin );
-
 
         //Pick energy and momentum vector
         //double e = _elow + _flatmomentum.fire() * ( _ehi - _elow );
@@ -176,14 +171,14 @@ namespace mu2e {
           _hE    ->Fill(energy);
           _hT    ->Fill(time);
           _hcos  ->Fill(p3.cosTheta());
-          _hphi  ->Fill(p3.phi());
+          _hphi  ->Fill(phi);
           _hrad  ->Fill(rad);
           _hz    ->Fill(pos.z());
 	  _hxy   ->Fill(rad*cos(phi),rad*sin(phi));
 	}
-      } // end of loop on particles
+      } 
 
 
-  } // end generate
+  } 
 
-} // namespace mu2e
+} 

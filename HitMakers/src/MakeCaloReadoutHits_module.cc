@@ -217,6 +217,8 @@ namespace mu2e {
 						  int crid,
 						  ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
 
+    double BirkesCorrection(int particleCode, double energy);
+
     void fillMapById(HitMap& map,HandleVector const& crystalStepsHandles);
     void printStepPointDebug(Calorimeter const & cal,StepPointMC const& h, int crid);
 
@@ -475,40 +477,53 @@ namespace mu2e {
 	ROHit::step_type h_type = ro_hits[0]._type;
 	addPtr( ro_hits[0] );
 	
-	for( size_t i=1; i<ro_hits.size(); ++i )  {
+	double maxEdepSoFar(ro_hits[0]._edep);
+
+	for( size_t i=1; i<ro_hits.size(); ++i )
+	{
+	  
 	  if( (ro_hits[i]._time - h_time) > _timeGap )   {
-	    // Save current hit , remove ghosts
-	    if (h_time>0 && h_time < _mbtime)  {
-	      if(_diagLevel > 1) std::cout<<"MakeCaloReadoutHits:: insert hit roid="<<roid<<" with time="<< h_time
-					  <<"and energy = "<<h_edepc+h_type*addEdep<<std::endl;		      		    
-	      
-	      CaloHitSimPartMC  caloHitSimPartMC;
-	      if (_fillDetailedHit) readoutUtil.fillSimMother(cal,mcptr_crystal,caloHitSimPartMC,tmap);
-	      
-	      caloHits.push_back(       CaloHit(       roid,h_time,h_edepc+h_type*addEdep));
-	      caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_type));
-	      caloHitsMCCrystalPtr.push_back(mcptr_crystal);
-	      caloHitsMCReadoutPtr.push_back(mcptr_readout);
-	      caloMCSimParts.push_back(caloHitSimPartMC);	
-	    }   
-	    
-	    // ...and create new hit
-	    mcptr_crystal.clear();
-	    mcptr_readout.clear();
-	    addPtr(ro_hits[i]);
-	    
-	    h_time    = ro_hits[i]._time;
-	    h_edep    = ro_hits[i]._edep;
-	    h_edepc   = ro_hits[i]._edep_corr;
-	    h_type    = ro_hits[i]._type;
-	  } 
-	  else {
-	    // Append data to hit
-	    h_edep  += ro_hits[i]._edep;
-	    h_edepc += ro_hits[i]._edep_corr;
-	    if( ro_hits[i]._type != ROHit::crystal ) h_type = ROHit::readout; // this does not count the charge...
-	    addPtr(ro_hits[i]);
+	    	    	    
+	     // Save current hit, remove ghosts
+	     if (h_time>0 && h_time < _mbtime)
+	     {
+	         if(_diagLevel > 1) std::cout<<"MakeCaloReadoutHits:: insert hit roid="<<roid<<" with time="<< h_time
+		    	 		     <<"and energy = "<<h_edepc+h_type*addEdep<<std::endl;		      		    
+
+  	         
+		 CaloHitSimPartMC  caloHitSimPartMC;
+	         if (_fillDetailedHit) readoutUtil.fillSimMother(cal,mcptr_crystal,caloHitSimPartMC,tmap);
+
+	         caloHits.push_back(       CaloHit(       roid,h_time,h_edepc+h_type*addEdep));
+	         caloHitsMCTruth.push_back(CaloHitMCTruth(roid,h_time,h_edep,h_type));
+	         caloHitsMCCrystalPtr.push_back(mcptr_crystal);
+	         caloHitsMCReadoutPtr.push_back(mcptr_readout);
+	         caloMCSimParts.push_back(caloHitSimPartMC);	
+	     }   
+
+	     // ...and create new hit
+	     mcptr_crystal.clear();
+	     mcptr_readout.clear();
+	     addPtr(ro_hits[i]);
+
+	     h_time    = ro_hits[i]._time;
+	     h_edep    = ro_hits[i]._edep;
+	     h_edepc   = ro_hits[i]._edep_corr;
+	     h_type    = ro_hits[i]._type;
+	     
+	     maxEdepSoFar = ro_hits[i]._edep;
+	  } 	  
+	  else
+	  {
+	     h_edep  += ro_hits[i]._edep;
+	     h_edepc += ro_hits[i]._edep_corr;
+	     if( ro_hits[i]._type != ROHit::crystal ) h_type = ROHit::readout; // this does not count the charge...
+	     addPtr(ro_hits[i]);
+	     
+	     if (ro_hits[i]._edep > 1.0001*maxEdepSoFar) h_time = ro_hits[i]._time;
+	     maxEdepSoFar = std::max(maxEdepSoFar,ro_hits[i]._edep);
 	  }
+
 	}
 
 	if(_diagLevel > 1) std::cout<<"MakeCaloReadoutHits:: insert hit roid="<<roid<<" with time="<< h_time
@@ -655,6 +670,14 @@ namespace mu2e {
     }
   }
 
+
+//-----------------------------------------------------------------------------
+  double MakeCaloReadoutHits::BirkesCorrection(int particleCode, double energy)
+  {
+     double edep(energy);
+     if (particleCode==2212 || particleCode == 2112) edep/=4;
+     return edep;    
+  }
 
 //-----------------------------------------------------------------------------
   void MakeCaloReadoutHits::printStepPointDebug(Calorimeter const & cal,StepPointMC const& h, int crid)

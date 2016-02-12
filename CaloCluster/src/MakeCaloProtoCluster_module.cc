@@ -135,7 +135,7 @@ namespace mu2e {
 
               void filterByTime(CaloCrystalList& liste, 
 	                        std::vector<double> const& clusterTime, 
-	                        std::set<CaloCrystalHit const*, caloSeedCompare>& seedListe);
+	                        std::list<CaloCrystalHit const*> &seedList);
 
               void dump(std::vector<CaloCrystalList> const& caloIdHitMap);
 
@@ -194,9 +194,9 @@ namespace mu2e {
 
 
 	     //declare and fill the hash map crystal_id -> list of CaloHits
-             std::vector<CaloCrystalList>                     mainClusterList, splitClusterList,caloIdHitMap(cal.nCrystal());
-             std::set<CaloCrystalHit const*, caloSeedCompare> seedList;
-	     std::vector<double>                              clusterTime;
+             std::vector<CaloCrystalList>       mainClusterList, splitClusterList,caloIdHitMap(cal.nCrystal());
+             std::list<CaloCrystalHit const*>   seedList;
+	     std::vector<double>                clusterTime;
 
 
 
@@ -205,8 +205,10 @@ namespace mu2e {
 	     {
 	         if (hit.energyDep() < _EnoiseCut || hit.time() < _timeCut) continue;
 	         caloIdHitMap[hit.id()].push_back(&hit);      
-	         seedList.insert(&hit);
+	         seedList.push_back(&hit);
 	     }   
+
+	     seedList.sort([](CaloCrystalHit const* a, CaloCrystalHit const* b) {return a->energyDep() > b->energyDep();});
 
 
 	     //produce main clusters
@@ -221,7 +223,7 @@ namespace mu2e {
 	         mainClusterList.push_back(finder.clusterList());
                  clusterTime.push_back(crystalSeed->time());
 
-	         for (auto const& hit: finder.clusterList()) seedList.erase(seedList.find(hit));
+	         for (auto const& hit: finder.clusterList()) seedList.remove(hit);
 	     }  
 
 
@@ -232,15 +234,14 @@ namespace mu2e {
 	     //produce split-offs clusters
 	     while(!seedList.empty())
 	     {
-                 CaloCrystalHit const* crystalSeed = *seedList.begin();
+		 CaloCrystalHit const* crystalSeed = *seedList.begin();
 	         CaloClusterFinder finder(cal,crystalSeed,_deltaTimePlus,_deltaTimeMinus, _ExpandCut);
 
 	         finder.formCluster(caloIdHitMap);	 	    
 	         splitClusterList.push_back(finder.clusterList());
 
-	         for (auto const& hit: finder.clusterList()) seedList.erase(seedList.find(hit));
+	         for (auto const& hit: finder.clusterList()) seedList.remove(hit);
 	     }
-
 
 
 
@@ -308,7 +309,7 @@ namespace mu2e {
 
 
       //----------------------------------------------------------------------------------------------------------
-      void MakeCaloProtoCluster::filterByTime(CaloCrystalList& liste, std::vector<double> const& clusterTime, std::set<CaloCrystalHit const*, caloSeedCompare>& seedList)
+      void MakeCaloProtoCluster::filterByTime(CaloCrystalList& liste, std::vector<double> const& clusterTime, std::list<CaloCrystalHit const*> &seedList)
       {
 
              for (auto it = liste.begin(); it != liste.end(); ++it)
@@ -324,7 +325,7 @@ namespace mu2e {
 		      ++itTime;
 		  }  
 
-	          if (itTime == clusterTime.end() ) {seedList.erase(seedList.find(hit)); liste.erase(it); --it;} 		 
+	          if (itTime == clusterTime.end() ) {seedList.remove(hit); liste.erase(it); --it;} 		 
 	     }
 
 

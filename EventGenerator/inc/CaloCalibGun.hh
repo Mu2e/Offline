@@ -78,11 +78,11 @@ namespace mu2e {
 
     const DetectorSystem  *_detSys;
     const DiskCalorimeter *_cal;
-    CLHEP::Hep3Vector      _calOrig;
     int                    _nPipes;
     double                 _pipeRadius;
     std::vector<double>    _pipeTorRadius;
     std::vector<double>    _randomRad;
+    CLHEP::Hep3Vector      _zPipeCenter;
 
 
     bool _doHistograms;

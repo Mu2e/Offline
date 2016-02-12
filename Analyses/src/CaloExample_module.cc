@@ -144,6 +144,8 @@ namespace mu2e {
 
        TH1F *_hcryE,*_hcryT,*_hcryX,*_hcryY,*_hcryZ;
        TH1F *_hcluE,*_hcluT,*_hcluX,*_hcluY,*_hcluZ,*_hcluE1Et,*_hcluE1E9,*_hcluE1E25;
+       
+       TH2F *_hxy;
 
        TTree* _Ntup;
 
@@ -156,9 +158,9 @@ namespace mu2e {
        int   _nHits,_cryId[16384],_crySectionId[16384],_crySimIdx[16384],_crySimLen[16384];
        float _cryEtot,_cryTime[16384],_cryEdep[16384],_cryDose[16384],_cryPosX[16384],_cryPosY[16384],_cryPosZ[16384],_cryLeak[16384];
 
-       int   _nSim,_motId[16384],_motPdgId[16384],_motcrCode[16384],_motGenIdx[16384];
-       float _motmom[16384],_motStartX[16384],_motStartY[16384],_motStartZ[16384],_motStartT[16384];
-       float _motTime[16384],_motEdep[16348],_motPosX[16384],_motPosY[16384],_motPosZ[16384];
+       int   _nSim,_motId[500000],_motPdgId[500000],_motcrCode[500000],_motGenIdx[500000];
+       float _motmom[500000],_motStartX[500000],_motStartY[500000],_motStartZ[500000],_motStartT[500000];
+       float _motTime[500000],_motEdep[16348],_motPosX[500000],_motPosY[500000],_motPosZ[500000];
 
        int   _nCluster,_nCluSim,_cluNcrys[16384];
        float _cluEnergy[16384],_cluTime[16384],_cluCogX[16384],_cluCogY[16384],_cluCogZ[16384];
@@ -322,6 +324,7 @@ namespace mu2e {
        _hcluE1Et  = tfs->make<TH1F>("cluE1Et",  "E1/Etot",                    100,    0., 1.1   );
        _hcluE1E9  = tfs->make<TH1F>("cluE1E9",  "E1/E9",                      100,    0., 1.1   );
        _hcluE1E25 = tfs->make<TH1F>("cluE1E25", "E1/E25",                     100,    0., 1.1   );
+       _hxy       = tfs->make<TH2F>("cryxy", "cryxy",                     350,-700,700,350,-700,700  );
 
   }
 
@@ -470,6 +473,7 @@ namespace mu2e {
            _crySectionId[_nHits] = sectionId;
            _crySimIdx[_nHits]    = _nSim;
            _crySimLen[_nHits]    = nPartInside;
+	   _hxy->Fill(crystalPos.x(),crystalPos.y(),hit.energyDep());
 
 
            for (int ip=0; ip<nPartInside;++ip)

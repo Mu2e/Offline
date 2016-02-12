@@ -329,7 +329,8 @@ namespace mu2e {
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
        {	   
 	   CaloCrystalHit const& hit      = caloCrystalHits.at(ic);
-	   CLHEP::Hep3Vector crystalPos   = cal.crystal(hit.id()).position();           
+	   int sectionId                  = cal.crystal(hit.id()).sectionId();
+           CLHEP::Hep3Vector crystalPos   = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
            CaloHit const& caloHit         = *(hit.readouts().at(0));
 
 
@@ -357,18 +358,20 @@ namespace mu2e {
 	     art::Ptr<SimParticle> grandMother = mother;
              while (grandMother->hasParent()) grandMother = grandMother->parent();
 	     GenParticle const* generated = grandMother->genParticle() ? grandMother->genParticle().get() : 0;
+
+             CLHEP::Hep3Vector hitSimPos = cal.toSectionFrameFF(sectionId,hitSim.position().at(ip)); //in disk FF frame
              
 	     _motId[_nSim]      = mother->id().asInt();
 	     _motPdgId[_nSim]   = mother->pdgId();
 	     _motmom[_nSim]     = hitSim.momentum().at(ip);
 	     _motcrCode[_nSim]  = mother->creationCode();
-	     _motStartX[_nSim]  = mother->startPosition().x()+ 3904.;
-	     _motStartY[_nSim]  = mother->startPosition().y();
-	     _motStartZ[_nSim]  = mother->startPosition().z() - 10200;
-	     _motStartT[_nSim]  = mother->startGlobalTime();
-	     _motPosX[_nSim]    = hitSim.position().at(ip).x() + 3904.;  //value used to shift in tracker coordinate system
-	     _motPosY[_nSim]    = hitSim.position().at(ip).y();
-	     _motPosZ[_nSim]    = hitSim.position().at(ip).z() - 10200;  //value used to shift in tracker coordinate system
+             _motStartX[_nSim]  = mother->startPosition().x() + 3904; //in Mu2e frame
+             _motStartY[_nSim]  = mother->startPosition().y();
+             _motStartZ[_nSim]  = mother->startPosition().z() - 10200;
+             _motStartT[_nSim]  = mother->startGlobalTime();
+             _motPosX[_nSim]    = hitSimPos.x(); // in disk FF frame
+             _motPosY[_nSim]    = hitSimPos.y();
+             _motPosZ[_nSim]    = hitSimPos.z();
 	     _motTime[_nSim]    = hitSim.time().at(ip);
 	     _motEdep[_nSim]    = hitSim.eDep().at(ip);
 
