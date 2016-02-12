@@ -1,3 +1,11 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_6_7
+
+1) Feb 12, 2015 kutschke
+   GeometryService/src/TTrackerMaker.cc
+     - The makeStation code made two copies of ipln1 rather than one
+       copy each of ipln1 and ipln2.
+     - The Station objects are never used in the construction of the G4
+       representation: so the G4 simulations are OK.
+     - We will investigate to learn if anyone relied on these.
