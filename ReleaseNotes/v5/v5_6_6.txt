@@ -1,3 +1,62 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_6_6
+
+1) Feb 11, 2016
+   Changes to the TTracker geometry to make it almost compliant with Mu2e-doc-888-v9,
+   including the erratum.  The known exceptions are:
+     a) The straws are about 55 microns closer, in z,  to the base plate
+     b) Many details of the support structure have been approximated.
+
+   Introduce 4 new TTracker geometry variables
+
+      double ttracker.rInnermostWire       =   380.0;
+      int    ttracker.layerZPattern        =     1;
+      int    ttracker.innermostLayer       =     0;
+      int    ttracker.panelZPattern        =     1;
+
+   Also introduce a new support value for
+
+      int    ttracker.rotationPattern      =     5;
+
+   The rInnermostWire  parameter specifies the radius at the center of the innermost
+   wire in each panel (presuming no gravitational sag). Previously this was a computed
+   value that started from the inner edge of the envelope volume and had magic calculations
+   using the obsolete manifolds from the MECO TTracker design.
+
+   The layerZPattern variable may have the following values:
+      0 - layer 0 is closest to the base plate and layer 1 is closest to the cover plate
+          ( used in tdr and cd3 p1 designs)
+      1 - layer 0 is closest to the cover plate and layer 1 is closest to the base plate
+          ( used in the cd3 s4p2 and later designs ).
+
+   The innermostLayer varible says whether layer 0 or layer 1 has its innermost straw at a
+   radius of rInnermostWire.  All designs to date have layer 0 being the innermost layer
+   (but the z sense of layer 0 changed for cd3 s4p2 - see the previous variable).
+
+   The panelZPattern variable has the following meaning:
+      0 - even numbered panels are on the upstream (-z) face and odd numbered panels
+          are on the downstream face.  True for all planes.
+          (used for tdr and cd3 p1 designs)
+      1 - the upstream/downstream pattern follows that described in table 4 of the erratum
+          to Mu2e-doc-888-v9.
+
+   The new supported value for the rotation pattern is 5; this selects the rotation pattern
+   given by table 4 of the erratum to Mu2e-doc-888-v9.
+
+   The affected files are:
+
+   Interpret the new geometry variables and apply to the geometry service model of the TTracker.
+     - GeometryService/inc/TTrackerMaker.hh
+     - GeometryService/src/TTrackerMaker.cc
+
+   Updated geometry files:
+    - Mu2eG4/geom/ttracker_cd3.txt
+    - Mu2eG4/geom/ttracker_cd3_s4p2.txt
+    - Mu2eG4/geom/ttracker_v3.txt
+
+   Support panel 0 of plane 0 being either upstream or downstream; previous downstream was implied.
+    - Mu2eG4/src/ConstructTTrackerTDR.cc
+
+    With this changes I believe that it is possible remove all vestiges of the MECO style manifold
+    objects and the trapezoid/box objects in the TTracker and TTrackerMaker code.
