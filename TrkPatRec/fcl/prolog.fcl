@@ -80,6 +80,8 @@ KalFinalFit : {
   AddMaterial		      : [ false, false, false, true, false, false, false, true, true ]
   PanelAmbigResolver          : @local::PanelAmbig.Resolver
   ambiguityStrategy           : @local::PanelAmbig.Strategy
+# Extend downstream to the calorimeter by default
+  DownstreamExtent	      : 3
 }
 
 # Separate pat rec fit.  This, plus supporting modules for finding seeds,

@@ -16,3 +16,7 @@ Still under construction
     The only assumption made is that even and odd stations have reversed
     planes.
 
+3) Feb 13, 2015 brownd
+   TrkPatRec/fcl/prolog.fcl
+    - Make extending the track fit downstream through the calorimeter the default
+    for all particle types.
