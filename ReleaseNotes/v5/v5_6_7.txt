@@ -9,3 +9,10 @@ Still under construction
      - The Station objects are never used in the construction of the G4
        representation: so the G4 simulations are OK.
      - We will investigate to learn if anyone relied on these.
+
+2) Feb 12, 2015 brownd
+   HitMakers/src/MakeStereoHits_module.cc
+    - Define overlapping panel list by discovery, not as a data object.
+    The only assumption made is that even and odd stations have reversed
+    planes.
+

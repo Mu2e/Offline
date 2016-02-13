@@ -84,6 +84,7 @@ namespace mu2e {
     string _mcdigislabel;
   // Parameters
     StrawHitFlag _shsel; // flag selection
+    StrawHitFlag _shmask; // flag anti-selection 
     double _maxDt; // maximum time separation between hits
     double _maxDE; // maximum deposited energy deference: this excludes inconsistent hits
     double _maxDZ; // maximum longitudinal separation
@@ -94,15 +95,13 @@ namespace mu2e {
     double _maxChisq; // maximum # of TimeDivision consistency chisquared to allow making stereo hits
     double _minMVA; // minimum MVA output
     bool _writepairs; // write out the stereo pairs
-    StrawHitFlag _stmask; // selection 
     MVATools _mvatool;
     vector<double> _vmva; // input variables to TMVA for stereo selection
     // for optimized Stereo Hit finding
     size_t _nsta;
     size_t _npnl;
-    vector <vector<int> >_imap;             // remap panel indices to new scheme
     vector <vector<int> >_dopnl;            // list of overlapping panels in "road" to search in
-    void genMap(const Tracker& tracker);    // function to generate imap from tracker geometry
+    void genMap(const TTracker& tt);    // function to generate panel list from tracker geometry
     // diagnostics
     TH1F* _nhits;
     TH1F* _deltat;
@@ -132,6 +131,7 @@ namespace mu2e {
     _shfLabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FSHPreStereo")),
     _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
     _shsel(pset.get<vector<string> >("StrawHitSelectionBits",vector<string>{"EnergySelection","TimeSelection"} )),
+    _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
     _maxDt(pset.get<double>("maxDt",40.0)), // nsec
     _maxDE(pset.get<double>("maxDE",0.99)), // dimensionless, from 0 to 1
     _maxDZ(pset.get<double>("maxDZ",40.)), // mm, maximum longitudinal distance between straws
@@ -212,19 +212,18 @@ namespace mu2e {
   }
 
   void MakeStereoHits::produce(art::Event& event) {
-    // Get a reference to one of the L or T trackers.
-    // Throw exception if not successful.
+    // Get a reference to T trackers
     const Tracker& tracker = getTrackerOrThrow();
+    const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
 
-    // setup imap, dopnl, and hdx
+    // setup dopnl
     if(_genmap){
       _genmap = false;
-      genMap(tracker);
+      genMap(tt);
     }
 
     if(_diagLevel >0 && _first_call_to_produce){
       _first_call_to_produce = false;
-      const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
       art::ServiceHandle<art::TFileService> tfs;
       unsigned nsta = tt.nPlanes()/2;
       for(unsigned ista=0;ista<nsta;++ista){
@@ -303,13 +302,19 @@ namespace mu2e {
 
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& hit = strawhits->at(ish);
-      Straw const& straw = tracker.getStraw(hit.strawIndex());
-      if(shfcol->at(ish).hasAllProperties(_shsel)){
+      Straw const& straw = tt.getStraw(hit.strawIndex());
+      if(shfcol->at(ish).hasAllProperties(_shsel)
+	  && (!shfcol->at(ish).hasAnyProperty(_shmask)) ){
         int iplane = straw.id().getPlane();
         int ipnl = straw.id().getPanel();
-        int jplane = iplane/2;
-        int jpnl = _imap[iplane][ipnl];
-        hdx[jplane][jpnl].push_back(ish);
+        int station = iplane/2;
+	// define a 'global' panel for the station.  This changes sign with odd-even stations
+	int jpnl;
+	if(station%2==0)
+	  jpnl = ipnl + (iplane%2)*_npnl;
+	else
+	  jpnl = ipnl + (1-iplane%2)*_npnl;
+        hdx[station][jpnl].push_back(ish);
       }
       SHInfo shinfo;
       tcal->StrawHitInfo(straw,hit,shinfo);
@@ -328,12 +333,12 @@ namespace mu2e {
         if(!_dopnl[ipnl].empty()){
           for(int ish : rhdx[ipnl]){                                    // loop over hit1
             StrawHit const& sh1 = strawhits->at(ish);
-            Straw const& straw1 = tracker.getStraw(sh1.strawIndex());
+            Straw const& straw1 = tt.getStraw(sh1.strawIndex());
             StrawHitPosition const& shp1 = (*shpos)[ish];
             for( int jpnl : _dopnl[ipnl]){                            // loop over overlapping panels
               for(int jsh : rhdx[jpnl]){                              // loop over hit2
 	        StrawHit const& sh2 = strawhits->at(jsh);
-	        Straw const& straw2 = tracker.getStraw(sh2.strawIndex());
+	        Straw const& straw2 = tt.getStraw(sh2.strawIndex());
 	        StrawHitPosition const& shp2 = (*shpos)[jsh];
 	        double ddot = straw1.direction().dot(straw2.direction());
 	        PanelId::isep sep = straw1.id().getPanelId().separation(straw2.id().getPanelId());
@@ -351,7 +356,7 @@ namespace mu2e {
 	            && dz < _maxDZ // longitudinal separation isn't too big
 	            && dperp < _maxDPerp) { // transverse separation isn't too big
 	          // tentative stereo hit: this solves for the POCA
-	          StereoHit sth(*strawhits,tracker,ish,jsh);
+	          StereoHit sth(*strawhits,tt,ish,jsh);
 	          double dl1 = straw1.getDetail().activeHalfLength()-fabs(sth.wdist1());
 	          double dl2 = straw2.getDetail().activeHalfLength()-fabs(sth.wdist2());
 	          if(_diagLevel > 1 ) {
@@ -370,8 +375,7 @@ namespace mu2e {
 	              if(chisq < _maxChisq){
 	                sth.setChisquared(chisq);
                         // compute MVA
-	                _vmva[0] = de;
-	                _vmva[1] = dt;
+	                _vmva[0] = de;	                _vmva[1] = dt;
 	                _vmva[2] = chisq;
 	                _vmva[3] = sth.pos().perp();
 	                double mvaout = _mvatool.evalMVA(_vmva);
@@ -443,7 +447,7 @@ namespace mu2e {
       }
       if(_diagLevel > 1){
 	StrawHit const& hit = strawhits->at(ish);
-	Straw const& straw = tracker.getStraw(hit.strawIndex());
+	Straw const& straw = tt.getStraw(hit.strawIndex());
 	SHInfo shinfo;
 	tcal->StrawHitInfo(straw,hit,shinfo);
 	StrawHitPosition shp(hit,straw,shinfo);
@@ -461,8 +465,8 @@ namespace mu2e {
 	  _sfs = sh.panelSeparation();
 	  StrawHit const h1 = strawhits->at(sh.hitIndex1());
 	  StrawHit const h2 = strawhits->at(sh.hitIndex2());
-	  Straw const& straw1 = tracker.getStraw(h1.strawIndex());
-	  Straw const& straw2 = tracker.getStraw(h2.strawIndex());
+	  Straw const& straw1 = tt.getStraw(h1.strawIndex());
+	  Straw const& straw2 = tt.getStraw(h2.strawIndex());
 	  SHInfo shi1, shi2;
 	  tcal->StrawHitInfo(straw1,h1,shi1);
 	  tcal->StrawHitInfo(straw2,h2,shi2);
@@ -500,113 +504,68 @@ namespace mu2e {
     event.put(move(shpos));
   } // end MakeStereoHits::produce.
 
-  void MakeStereoHits::genMap(const Tracker& tracker) {
+  void MakeStereoHits::genMap(const TTracker& tt) {
+  // establish sizes
+    _nsta = tt.nPlanes()/2;
+    _npnl = tt.getPlane(0).nPanels();
+  // find the phi extent of the longest straw
+    Straw const& straw = tt.getStraw(StrawId(0,0,0,0));
+    double phi0 = (straw.getMidPoint()-straw.getHalfLength()*straw.getDirection()).phi();
+    double phi1 = (straw.getMidPoint()+straw.getHalfLength()*straw.getDirection()).phi();
+    double lophi = min(phi0,phi1);
+    double hiphi = max(phi0,phi1);
+    double phiwidth = hiphi-lophi;
+    if(phiwidth>M_PI)phiwidth =2*M_PI-phiwidth;
+// loop over stations and see whether the phi ranges of the straws overlap, giving
+// a possibility for stereo hits
+    std::vector<double> panphi(12);
 
-    vector <vector<int> >jdopnl
-                    { { 3, 5, 6, 8, 9,11},{ 3, 4, 6, 7, 9,10},{ 4, 5, 7, 8,10,11},
-                      { 6, 8, 9,11},{ 6, 7, 9,10},{ 7, 8,10,11},{ 9,11},{ 9,10},{10,11},{},{},{} };
-    const TTracker& tt = dynamic_cast<const TTracker&>(tracker);
-    size_t nplane = tt.nPlanes();
-    _nsta = nplane/2;
-    _npnl = tt.getPlane(0).getPanels().size();
-    vector <vector<int> >jmap(nplane,vector<int>(_npnl));
-    vector <vector<int> >newipnl(2,vector<int>(_npnl));
-    // clockwise sequence of panel indices per layer in remapped scheme
-    //vector <vector<int> >newipnl{ { 0, 3, 1, 4, 2, 5},{ 6, 9, 7,10, 8,11} };
-    for(size_t i=0; i<2; i++){
-      for(size_t j=0; j<_npnl-1; j+=2){
-        int k=j/2+i*_npnl;
-        newipnl[i][j]=k;
-        newipnl[i][j+1]=k+3;
+    
+    for(int ipla=0;ipla<2;++ipla){
+      Plane const& plane = tt.getPlane(ipla);
+      for(int ipan=0;ipan<plane.nPanels();++ipan){
+	Panel const& panel = plane.getPanel(ipan);
+	// expand to station-wide 'panel' number.  This changes sign with station
+	int jpan = ipan + (ipla%2)*_npnl;
+	panphi[jpan] = panel.straw0MidPoint().phi();
       }
     }
 
-    for(size_t ista=0;ista<_nsta;++ista){
-      CLHEP::Hep3Vector spos0;
-      for(int iplane=0;iplane<2;++iplane){
-        vector<PnlPhi>vpnlphi;
-        int jplane=2*ista+iplane;
-        const Plane& pln = tt.getPlane(jplane);
-        const vector<Panel>& panels = pln.getPanels();
-        // for 1st plane in station (even numbered pln)
-        if(iplane==0){
-          for(size_t ipnl=0;ipnl<_npnl;++ipnl){
-            const Panel& pnl = panels[ipnl];
-            CLHEP::Hep3Vector spos = pnl.straw0MidPoint();
-            // calculate deltaphi of all panels relative to panel0
-            if(ipnl==0)spos0 = spos;
-            double dphi = spos0.deltaPhi(spos);
-            if(dphi<0)dphi += 2*M_PI;
-            PnlPhi pnlphi;
-            pnlphi.ipnl=ipnl;
-            pnlphi.dphi=dphi;
-            vpnlphi.push_back(pnlphi);
-          }
-          // sort all panels of plane by deltaphi
-          sort(vpnlphi.begin(), vpnlphi.end(),sortPnl());
-        // for 2nd plane in station (odd numbered planes)
-        }else{
-          vector<PnlPhi>vtmp;
-          for(int ilyr=0;ilyr<2;ilyr++){
-            for(size_t ipnl=ilyr;ipnl<_npnl;ipnl+=2){
-              const Panel& pnl = panels[ipnl];
-              CLHEP::Hep3Vector spos = pnl.straw0MidPoint();
-              double dphi = spos0.deltaPhi(spos);
-              if(dphi<0)dphi += 2*M_PI;
-              PnlPhi pnlphi;
-              pnlphi.ipnl=ipnl;
-              pnlphi.dphi=dphi;
-              vtmp.push_back(pnlphi);
-            }
-            // sort panels of each layer separately by deltaphi
-            sort(vtmp.begin(), vtmp.end(),sortPnl());
-            if(ilyr==0){
-              // append front layer panel info to existing vector from 1st plane
-              vpnlphi.insert(vpnlphi.end(),vtmp.begin(),vtmp.end());
-            }else{
-              // insert rear layer panel info between elements of front layer
-              int mpnl=_npnl/2;
-              for(int i=0;i<mpnl;i++){
-                vpnlphi.insert(vpnlphi.end()-mpnl+1+i,vtmp[i]);
-              }
-            }  
-            vtmp.clear();
-          }
-        }
-        for(vector<PnlPhi>::size_type ipnl=0; ipnl!=vpnlphi.size(); ipnl++){    // loop over panels
-          int sp_ipnl = vpnlphi[ipnl].ipnl;
-          jmap[jplane][sp_ipnl]=newipnl[iplane][ipnl];
-        }
-      } // loop over front and back
-    } // loop over stations
-    _imap=jmap;
-    _dopnl=jdopnl;
-    if(_debugLevel >0){
-      // print out the generated map
-      const string stars(16,'*');
-      ostringstream snplane,snpnl;
-      snplane << nplane;
-      snpnl << _npnl;
-      const string label = " Generated imap[" + snplane.str() + "][" + snpnl.str() + "] ";
-      cout << stars << label << stars << endl;
-      for(size_t i=0;i<nplane;i++){
-        if(i%2==0)cout << "Station " << i/2 << ": ";
-        for(size_t j=0;j<_npnl;j++){
-          if(j==0)cout << "{ ";
-          cout << _imap[i][j];
-          if(j<5){
-            cout << ", ";
-          }else{
-            if(i%2==0){
-              cout << " },";
-            }else{
-              cout << " }\n";
-            }
-          }
-        }
+    if(_debugLevel>0){
+      cout << "panel phi width = " << phiwidth;
+      cout << "panel phi positions = ";
+      for(auto pphi : panphi)
+	cout << pphi << " ";
+      cout << endl;
+    }
+
+    _dopnl = vector<vector<int>>(12);
+    if(_debugLevel< 10){
+      for(size_t iphi = 0;iphi<12;++iphi){
+	double phi = panphi[iphi];
+	for(size_t jphi=iphi+1;jphi<12;++jphi){
+	  double dphi = fabs(phi - panphi[jphi]);
+	  if(dphi > M_PI)dphi = 2*M_PI-dphi;
+	  if(dphi < phiwidth)_dopnl[iphi].push_back(jphi);
+	}
       }
-      const string morestars(32+label.size(),'*');
-      cout << morestars << endl;
+    } else {
+    // for testing, assume every panel overlaps
+      for(size_t iphi = 0;iphi<12;++iphi){
+	for(size_t jphi=iphi+1;jphi<12;++jphi){
+	  _dopnl[iphi].push_back(jphi);
+	}
+      }
+    }
+
+    if(_debugLevel >0){
+      for(size_t ipnl=0;ipnl<12;++ipnl){
+	cout << "Panel " << ipnl << " Overlaps with panel ";
+	for(auto jpnl : _dopnl[ipnl]){
+	  cout << jpnl << " ";
+	}
+	cout << endl;
+      }
     }
   }
 
