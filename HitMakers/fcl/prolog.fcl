@@ -4,7 +4,7 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 HitMakerTimeFoldingBuffer    : 100. # ns
-HitMakerBlindTime            : 0. # ns
+HitMakerBlindTime            : 500. # ns
 HitMakerDigiSampling         : 5    # ns
 HitMakerAcquisitionEndTime    : 0 # ns
 #HitMakerTimeOffsets          : { inputs : [  ] } 
@@ -272,7 +272,7 @@ CaloHitsFromCaloDigis :{
 	riseTime          : 20
 	digiSampling      : @local::HitMakerDigiSampling
 	pulseErrorSample  : 1     #ADC counts
-	psdThreshold      : 0   #a.u.  
+	psdThreshold      : 90   #a.u.  
 	timeFraction      : 0.05  #percentage of the pulse amplitude
 	fitThresholdMin   : 0.00
 	fitThresholdMax   : 0.85  #0.95  #percentage of the pulse amplitude
