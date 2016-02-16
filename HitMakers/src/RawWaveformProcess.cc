@@ -58,7 +58,7 @@ namespace mu2e {
 
     //time of the first digitized timestamp
     double         t0       = CaloHit.t0();
-    double         hitTime, time, timeBin, content, eDep, chi2;
+    double         hitTime(0), time(0), timeBin(0), content(0);
     
     for (int i=0; i<wfSize; ++i){
       timeBin = i*_digiSampling;
@@ -73,8 +73,8 @@ namespace mu2e {
     }
 
     //convert ADC counts into MeV
-    eDep     = _charge*_ADCToMeV*_digiSampling; 
-    chi2     =  -1;
+    double eDep     = _charge*_ADCToMeV*_digiSampling; 
+    double chi2     =  -1;
 
     //understand how many signals are within the pulse
     _psd  =  _amplitude/eDep;

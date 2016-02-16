@@ -27,6 +27,7 @@
 #include "art/Persistency/Common/RNGsnapshot.h"
 #include "cetlib/map_vector.h"
 
+#include "MCDataProducts/inc/CaloShowerCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepMCCollection.hh"
 #include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
@@ -101,6 +102,8 @@ template class std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvSiPMResponses>;
 template class std::pair<mu2e::CRSScintillatorBarIndex,mu2e::CrvWaveforms>;
 template class std::map<mu2e::CRSScintillatorBarIndex,mu2e::CrvWaveforms>;
 template class art::Ptr<mu2e::CaloShowerStepMC>;
+template class art::Ptr<mu2e::CaloShower>;
+template class std::vector<art::Ptr<mu2e::CaloShowerStepMC> >;
 
 template class art::Wrapper<mu2e::GenParticleCollection>;
 template class art::Wrapper<mu2e::StepPointMCCollection>;
@@ -112,6 +115,7 @@ template class art::Wrapper<mu2e::StrawDigiMCCollection>;
 template class art::Wrapper<mu2e::G4BeamlineInfo>;
 template class art::Wrapper<mu2e::G4BeamlineInfoCollection>;
 template class art::Wrapper<mu2e::CaloShowerStepMCCollection>;
+template class art::Wrapper<mu2e::CaloShowerCollection>;
 template class art::Wrapper<mu2e::CaloHitMCTruthCollection>;
 template class art::Wrapper<mu2e::CaloDigiMCCollection>;
 template class art::Wrapper<mu2e::CaloHitSimPartMCCollection>;
