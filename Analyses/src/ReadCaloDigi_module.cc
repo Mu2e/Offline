@@ -618,7 +618,7 @@ namespace mu2e {
     const CaloCrystalHit                    *crystalHit;
     const RecoCaloDigi                      *recoDigi;
     //    const CaloDigi                          *caloDigi;
-    const CaloDigiMC                        *caloDigiMC;
+    const CaloDigiMC                        *caloDigiMC(0);
     const SimParticle                       *sim;
     
 
