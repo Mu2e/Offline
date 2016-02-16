@@ -404,7 +404,7 @@ namespace mu2e {
     art::Handle<CaloDigiMCCollection> caloDigiMCHandle;
     event.getByLabel(_caloDigisModuleLabel, caloDigiMCHandle);
 
-    const     CaloDigiMCCollection*       caloDigiMCCol;
+    const     CaloDigiMCCollection*       caloDigiMCCol(0);
     int       nCaloDigiMC(0);
     if (caloDigiMCHandle.isValid()){
        caloDigiMCCol = caloDigiMCHandle.product();
@@ -415,7 +415,7 @@ namespace mu2e {
     art::Handle<RecoCaloDigiCollection>   recoCaloDigiHandle;
     event.getByLabel(_caloDigisModuleLabel, recoCaloDigiHandle);
 
-    const     RecoCaloDigiCollection*       recoCaloDigiCol;
+    const     RecoCaloDigiCollection*       recoCaloDigiCol(0);
     int       nRecoCaloDigi(0);
     if (recoCaloDigiHandle.isValid()){
        recoCaloDigiCol = recoCaloDigiHandle.product();
@@ -424,7 +424,7 @@ namespace mu2e {
  
 
     int         nCaloCrystals(0);
-    const     CaloCrystalHitCollection*  caloCrystalHits;
+    const     CaloCrystalHitCollection*  caloCrystalHits(0);
     art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
     event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
     if (!caloCrystalHitsHandle.isValid()){
@@ -439,7 +439,7 @@ namespace mu2e {
 
     //data about clusters
     art::Handle<CaloClusterCollection> caloClustersHandle;
-    const     CaloClusterCollection*  caloClusters;
+    const     CaloClusterCollection*  caloClusters(0);
     int       nCaloClusters(0);
     event.getByLabel(_caloClusterModuleLabel, caloClustersHandle);
     if (caloClustersHandle.isValid()){
