@@ -111,6 +111,9 @@ namespace mu2e {
     TH1F*       _hNCaloDigi       [10];
     TH1F*       _hNSamplesPerDigi [10];
     TH1F*       _hNSamplesPerEvent[10];
+
+    TH2F*       _hNSamplesVsRadius[10];
+    TH2F*       _hNHitsVsRadius   [10];
    };
   
   class ReadCaloDigi : public art::EDAnalyzer {
@@ -151,13 +154,16 @@ namespace mu2e {
     double                     _mbbuffer;
     double                     _blindTime;
 
+    int                        _fillWaveforms;
     double                     _psdThreshold;
+    double                     _caloRmin;
 
     TTree*                     _Ntup;
     DAQ_t                      _histDisk0;
     DAQ_t                      _histDisk1;
     TH2F*                      _hNSamplesVsCrysId[10];
 
+    
     int                        _nProcess;
 
     int                        _evt,_run,_caloCrystals,_caloDisk0Crystals,_caloDisk1Crystals,_nHits,_nCluster, _nCryRO;
@@ -165,6 +171,11 @@ namespace mu2e {
     int                        _nRecoDigi, _recoDigiSamples[16384];
     float                      _recoDigiAmp[16384], _recoDigiEnergy[16384], _recoDigiTime[16384];                   
     
+    int                        _recoDigiId[16384];
+    float                      _recoDigiT0[16384];
+    float                      _recoDigiX[16384], _recoDigiY[16384], _recoDigiZ[16384];
+    float                      _recoDigiPulse[10000][350];
+
     int                        _cryId[16384],_crySectionId[16384];
 
     int                        _cluNcrys[204828];
@@ -244,7 +255,9 @@ namespace mu2e {
     _toff                          (pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _mbbuffer                      (pset.get<double>             ("TimeFoldingBuffer")),  // ns
     _blindTime                     (pset.get<double>             ("blindTime" )),         // ns
+    _fillWaveforms                 (pset.get<int>                ("fillWaveforms" )),         
     _psdThreshold                  (pset.get<double>("psdThreshold")),        
+    _caloRmin                      (pset.get<double>("caloRmin" )),         
     _Ntup(0),_nProcess(0)
 
   {}
@@ -273,8 +286,22 @@ namespace mu2e {
       _hNSamplesVsCrysId            [i] = tfs->make<TH2F>(Form("hNSamplesVsCrysId%i",i), 
 							  Form("N of words per event vs crystal Id @ %i MeV threshold",i+1), 
 							  2000, 0, 2e3, 600, 0, 600);
-     
+      
+      _histDisk0._hNSamplesVsRadius [i] = tfs->make<TH2F>(Form("hNSamplesVsRadiusDisk0%i",i), 
+							  "N of words per event vs radius on disk 0",
+							  80, 300, 700, 300, 0, 300);
+      _histDisk0._hNHitsVsRadius    [i] = tfs->make<TH2F>(Form("hNHitsVsRadiusDisk0%i",i), 
+							  "N of hits per event vs radius on disk 0",
+							  80, 300, 700, 2000, 0, 2000);
+      
+      _histDisk1._hNSamplesVsRadius [i] = tfs->make<TH2F>(Form("hNSamplesVsRadiusDisk1%i", i), 
+							  "N of words per event vs radius on disk 0",
+							  80, 300, 700, 300, 0, 300);
+      _histDisk1._hNHitsVsRadius    [i] = tfs->make<TH2F>(Form("hNHitsVsRadiusDisk1%i", i), 
+							  "N of hits per event vs radius on disk 0",
+							  80, 300, 700, 2000, 0, 2000);
     }
+    
     
     _Ntup  = tfs->make<TTree>("Calo", "Calo");
 
@@ -289,8 +316,14 @@ namespace mu2e {
     _Ntup->Branch("nRecoDigi",     &_nRecoDigi ,       "nRecoDigi/I");
     _Ntup->Branch("recoDigiEnergy",        &_recoDigiEnergy ,       "recoDigiEnergy[nRecoDigi]/F");
     _Ntup->Branch("recoDigiAmp", &_recoDigiAmp, "recoDigiAmp[nRecoDigi]/F");
-    _Ntup->Branch("recoDigiTime", &_recoDigiTime, "recoDigiTime[nRecoDigi]/F");
+    _Ntup->Branch("recoDigiTime"   , &_recoDigiTime, "recoDigiTime[nRecoDigi]/F");
     _Ntup->Branch("recoDigiSamples", &_recoDigiSamples, "recoDigiSamples[nRecoDigi]/I");
+    _Ntup->Branch("recoDigiId"     , &_recoDigiId     , "recoDigiId[nRecoDigi]/I");
+    _Ntup->Branch("recoDigiT0"     , &_recoDigiT0     , "recoDigiT0[nRecoDigi]/F");
+    _Ntup->Branch("recoDigiX"     , &_recoDigiX     , "recoDigiX[nRecoDigi]/F");
+    _Ntup->Branch("recoDigiY"     , &_recoDigiY     , "recoDigiY[nRecoDigi]/F");
+    _Ntup->Branch("recoDigiZ"     , &_recoDigiZ     , "recoDigiZ[nRecoDigi]/F");
+    _Ntup->Branch("recoDigiPulse"  , &_recoDigiPulse  , "recoDigiPulse[nRecoDigi][350]/F");
   
 
     _Ntup->Branch("cryEtot",      &_cryEtot ,    "cryEtot/F");
@@ -303,7 +336,7 @@ namespace mu2e {
     _Ntup->Branch("cryPosZ",      &_cryPosZ ,     "cryPosZ[nCry]/F");
     _Ntup->Branch("cryPosR",      &_cryPosR ,     "cryPosR[nCry]/F");
     _Ntup->Branch("cryEdep",      &_cryEdep ,     "cryEdep[nCry]/F");
-    _Ntup->Branch("cryAmp",      &_cryAmp ,      "cryAmp[nCry]/F");
+    _Ntup->Branch("cryAmp",       &_cryAmp ,      "cryAmp[nCry]/F");
     _Ntup->Branch("cryTime",      &_cryTime ,     "cryTime[nCry]/F");
     _Ntup->Branch("cryMCTime",    &_cryMCTime    ,"cryMCTime[nCry]/F");
     _Ntup->Branch("cryMCEdep",    &_cryMCEdep    ,"cryMCEdep[nCry]/F");
@@ -371,7 +404,7 @@ namespace mu2e {
     art::Handle<CaloDigiMCCollection> caloDigiMCHandle;
     event.getByLabel(_caloDigisModuleLabel, caloDigiMCHandle);
 
-    const     CaloDigiMCCollection*       caloDigiMCCol(0);
+    const     CaloDigiMCCollection*       caloDigiMCCol;
     int       nCaloDigiMC(0);
     if (caloDigiMCHandle.isValid()){
        caloDigiMCCol = caloDigiMCHandle.product();
@@ -382,7 +415,7 @@ namespace mu2e {
     art::Handle<RecoCaloDigiCollection>   recoCaloDigiHandle;
     event.getByLabel(_caloDigisModuleLabel, recoCaloDigiHandle);
 
-    const     RecoCaloDigiCollection*       recoCaloDigiCol(0);
+    const     RecoCaloDigiCollection*       recoCaloDigiCol;
     int       nRecoCaloDigi(0);
     if (recoCaloDigiHandle.isValid()){
        recoCaloDigiCol = recoCaloDigiHandle.product();
@@ -391,7 +424,7 @@ namespace mu2e {
  
 
     int         nCaloCrystals(0);
-    const     CaloCrystalHitCollection*  caloCrystalHits(0);
+    const     CaloCrystalHitCollection*  caloCrystalHits;
     art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
     event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
     if (!caloCrystalHitsHandle.isValid()){
@@ -406,7 +439,7 @@ namespace mu2e {
 
     //data about clusters
     art::Handle<CaloClusterCollection> caloClustersHandle;
-    const     CaloClusterCollection*  caloClusters(0);
+    const     CaloClusterCollection*  caloClusters;
     int       nCaloClusters(0);
     event.getByLabel(_caloClusterModuleLabel, caloClustersHandle);
     if (caloClustersHandle.isValid()){
@@ -494,7 +527,7 @@ namespace mu2e {
     initVHits();
 
     //    double        timeLastHit(1e10);
-    double        timeLastHit(0);
+    //    double        timeLastHit(0);
 
     for (int j=0; j< vdVecSize; ++j){
       vdStepsHandle = & vdStepsHandleVec[j];
@@ -518,12 +551,14 @@ namespace mu2e {
 	      // a custom made gen particle
 
 	      SimParticle const& sim  = *simptr;
-	      // if ( sim.fromGenerator() ){
-	      // 	GenParticle* gen = (GenParticle*) &(*sim.genParticle());
-	      // 	if ( gen->generatorId() != GenId::conversionGun ){
-	      // 	  continue;
-	      // 	}
-	      // }
+
+	      if ( sim.fromGenerator() ){
+		
+	      	GenParticle* gen = (GenParticle*) &(*sim.genParticle());
+	      	if ( gen->generatorId() != GenId::conversionGun ){
+	      	  continue;
+	      	}
+	      }
 	      if ( !sim.fromGenerator() )	      	  continue;
 	      
 	      double     hitTime = fmod(hit.time() + _toff.totalTimeOffset(simptr), _mbtime);
@@ -541,9 +576,9 @@ namespace mu2e {
 	      }
 
 	      //	      if (hitTime > timeLastHit)                  continue;
-	      if (hitTime < timeLastHit)                  continue;
+	      //	      if (hitTime < timeLastHit)                  continue;
 
-	      timeLastHit = hitTime;
+	      //	      timeLastHit = hitTime;
 
 	      _vT      = hitTime;
 
@@ -583,7 +618,7 @@ namespace mu2e {
     const CaloCrystalHit                    *crystalHit;
     const RecoCaloDigi                      *recoDigi;
     //    const CaloDigi                          *caloDigi;
-    const CaloDigiMC                        *caloDigiMC(0);
+    const CaloDigiMC                        *caloDigiMC;
     const SimParticle                       *sim;
     
 
@@ -597,18 +632,39 @@ namespace mu2e {
     int        disk0NSamplesPerEvent[10] = {0};   
     int        disk1NSamplesPerEvent[10] = {0};
     double     thresholds           [10] = {1., 2., 3, 4., 5., 6, 7, 8, 9, 10};
-    double     ADC2mV                   = 2000./pow(2.,12);
+    double     ADC2mV                    = 2000./pow(2.,12);
+    double     radius(0);
+    
     //2016-01-27 G. Pezzullo conversion from thresholds given in MeV to mV
-    double     p0(5.35), p1(16.01);
+    double     p1(21.65);//for the pulse wfInput =2
+    //    double     p1(14.76);//for the pulse wfInput =3
+    
     for(int i=0; i<nThresholds; ++i){
-      thresholds [i] = thresholds[i]*p1 + p0;
+      thresholds [i] = thresholds[i]*p1;// + p0;
     }
 
-    int        ncrystals(2000);
+    int        ncrystals(_caloCrystals);
     int        nWordsCrystals       [ncrystals] = {0};
 
-    _nRecoDigi = nRecoCaloDigi;
+    std::vector<int>   pulse;
+    CLHEP::Hep3Vector  crystalPos(0);
+    int        nROs = _caloCrystals*2;
 
+    double     nWorsRO   [10][4000];
+    double     radiusRO  [10][4000];
+    double     diskIdRO  [10][4000];
+    int        nHitsRO   [10][4000];
+    for (int i=0;i<nThresholds; ++i){
+      for (int j=0; j<nROs; ++j){
+	nWorsRO   [i][j] = 0;
+	radiusRO  [i][j] = 0;
+	diskIdRO  [i][j] = 0;
+	nHitsRO   [i][j] = 0;
+      }
+    }
+    
+    _nRecoDigi = nRecoCaloDigi;
+    
     for (int i=0; i< nRecoCaloDigi; ++i){
       recoDigi   = &recoCaloDigiCol->at(i);
       amplitude  = recoDigi->amplitude()*ADC2mV;
@@ -616,16 +672,41 @@ namespace mu2e {
       crystalId  = _calorimeter->crystalByRO(roId);
       diskId     = _calorimeter->crystal(crystalId).sectionId();
 
+      crystalPos = _calorimeter->crystal(crystalId).localPositionFF();
+      radius     = sqrt(crystalPos.x()*crystalPos.x() + crystalPos.y()*crystalPos.y());
+
+      if (radius < _caloRmin)               continue;
+
       _recoDigiAmp   [i] = amplitude;
       _recoDigiEnergy[i] = recoDigi->edep();
 
-      CaloDigi	caloDigi   = recoDigi->RODigi();
+      CaloDigi	caloDigi = recoDigi->RODigi();
       nWords     = caloDigi.nSamples();
+      pulse      = caloDigi.waveform();
 
+      _recoDigiSamples [i] = nWords;
+      _recoDigiId      [i] = roId;
+      _recoDigiT0      [i] = caloDigi.t0();
+      _recoDigiX       [i] = crystalPos.x();
+      _recoDigiY       [i] = crystalPos.y();
+      _recoDigiZ       [i] = diskId;
+      _recoDigiTime    [i] = recoDigi->time();
+
+      if (_fillWaveforms == 1){
+	for (int j=0; j<nWords; ++j){
+	  _recoDigiPulse[i][j] = pulse.at(j)*ADC2mV;
+	}
+      }
+      
       nWordsCrystals[crystalId] += nWords;
-
+      
       for (int k=0; k<nThresholds; ++k){
 	if (amplitude > thresholds[k]){
+	  nWorsRO   [k][roId] += nWords;
+	  radiusRO  [k][roId] = radius;
+	  diskIdRO  [k][roId] = diskId;
+	  nHitsRO   [k][roId] += 1;
+	  
 	  if (diskId ==0){
 	    disk0NCaloDigi[k]        = disk0NCaloDigi[k] + 1;
 	    disk0NSamplesPerEvent[k] = disk0NSamplesPerEvent[k] + nWords ;
@@ -643,9 +724,27 @@ namespace mu2e {
     for (int k=0; k<nThresholds; ++k){
       _histDisk0._hNCaloDigi       [k]->Fill(disk0NCaloDigi       [k]);
       _histDisk0._hNSamplesPerEvent[k]->Fill(disk0NSamplesPerEvent[k]);
+
       _histDisk1._hNCaloDigi       [k]->Fill(disk1NCaloDigi       [k]);
       _histDisk1._hNSamplesPerEvent[k]->Fill(disk1NSamplesPerEvent[k]);
       
+      double   content(0);
+      
+      for (int i=0; i<nROs; ++i){
+	content     =  nWorsRO [k][i];
+	radius      =  radiusRO[k][i];
+	if (content > 0){
+	  if (	  diskIdRO[k][i] == 0){
+	    _histDisk0._hNSamplesVsRadius[k]->Fill(radius, content);
+	    _histDisk0._hNHitsVsRadius   [k]->Fill(radius, nHitsRO[k][i]);
+	  }else {
+	    _histDisk1._hNSamplesVsRadius[k]->Fill(radius, content);
+	    _histDisk1._hNHitsVsRadius   [k]->Fill(radius, nHitsRO[k][i]);
+	  }
+	}
+      }
+
+
       for (int j=0; j<ncrystals; ++j){
 	if (nWordsCrystals[j] > 0){
 	  _hNSamplesVsCrysId[k]->Fill(j, nWordsCrystals[j]);
@@ -691,10 +790,14 @@ namespace mu2e {
 	
 	  if (!_calorimeter->isInsideCalorimeter(genPos)){
 	    ++nParticles;
-	    GenParticle* gen = (GenParticle*) &(sim->genParticle());
-	    if ( gen->generatorId() == GenId::conversionGun ){
-	      isConversion = 1;
-	    }
+
+	    int        pdgId       = sim->pdgId();
+	    double     ceEnergy    = 104.9;
+	    double     startEnergy = sim->startMomentum().e();
+	    if ( (pdgId == 11) && (startEnergy>ceEnergy))
+	      {
+		isConversion = 1;
+	      }
 	  }
 	}//end loop on the particles inside the crystalHit
 
@@ -760,12 +863,19 @@ namespace mu2e {
 
 	  for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
 	    sim =   caloDigiMC->simParticle(k).operator ->();
-	    if ( sim->fromGenerator() ){
-	      GenParticle* gen = (GenParticle*) &(sim->genParticle());
-	      if ( gen->generatorId() == GenId::conversionGun ){
+	    int        pdgId       = sim->pdgId();
+	    double     ceEnergy    = 104.9;
+	    double     startEnergy = sim->startMomentum().e();
+	    if ( (pdgId == 11) && (startEnergy>ceEnergy))
+	      {
 		isConversion = 1;
 	      }
-	    }
+	    // if ( sim->fromGenerator() ){
+	    //   GenParticle* gen = (GenParticle*) &(sim->genParticle());
+	    //   if ( gen->generatorId() == GenId::conversionGun ){
+	    // 	isConversion = 1;
+	    //   }
+	    // }
 	  }//end loop on the particles inside the crystalHit
 	}
       }

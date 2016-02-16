@@ -464,12 +464,12 @@ namespace mu2e {
     
       wfOffset = Index + 4;
 
-      //fill the histogram
-      for (int i=0; i<wfSize; ++i){
-	content = CaloFromDigi->at(wfOffset+i);
-
-	waveform.push_back(content);
-      }
+      
+      for (int i=0; i<wfSize; ++i)
+	{
+	  content = CaloFromDigi->at(wfOffset+i);
+	  waveform.push_back(content);
+	}
 
       //time of the first digitized timestamp
       int         t0     = CaloFromDigi->at(Index + 2);

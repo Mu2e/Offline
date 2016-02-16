@@ -31,14 +31,16 @@ namespace mu2e {
   FitWaveformProcess::FitWaveformProcess(fhicl::ParameterSet const& PSet) :
 
     WaveformProcess(PSet),
-    _debugLevel       (PSet.get<int>   ("debugLevel")),
-    _acquisitionEndTime(PSet.get<int>  ("acquisitionEndTime")),
-    _digiSampling     (PSet.get<int>   ("digiSampling")),
-    _wave_point_error (PSet.get<double>("pulseErrorSample")),
-    _psdThreshold     (PSet.get<double>("psdThreshold")),
-    _timeFraction     (PSet.get<double>("timeFraction")),
-    _fitThresholdMin  (PSet.get<double>("fitThresholdMin")),
-    _fitThresholdMax  (PSet.get<double>("fitThresholdMax"))
+    _debugLevel        (PSet.get<int>   ("debugLevel")),
+    _acquisitionEndTime(PSet.get<int>   ("acquisitionEndTime")),
+    _digiSampling      (PSet.get<double>("digiSampling")),
+    _wave_point_error  (PSet.get<double>("pulseErrorSample")),
+    _psdThreshold      (PSet.get<double>("psdThreshold")),
+    _timeFraction      (PSet.get<double>("timeFraction")),
+    _fitThresholdMin   (PSet.get<double>("fitThresholdMin")),
+    _fitThresholdMax   (PSet.get<double>("fitThresholdMax")),
+    _nFitParameters    (PSet.get<int>   ("nFitParameters")),
+    _riseTime          (PSet.get<double>("riseTime"))
   {
     TFile*f = TFile::Open("/mu2e/data/users/gianipez/test-CsI-2015-10-06.root");
     _refPulse = (TH1F*) f->Get("CsIPulse");
@@ -50,13 +52,14 @@ namespace mu2e {
     _fdlogn   = new TF1("fdlogn",dlogn, 0., 2000., 6);
 
 
-    int       nDigiSamples = 1965 - _acquisitionEndTime; 
+    int       nDigiSamples = (1965 - _acquisitionEndTime)/_digiSampling; 
     double    mbtime       = _digiSampling*nDigiSamples;
     
     _wave     = new TH1F("wave", "wave", nDigiSamples, 0, mbtime);
 
     _counter        = 0;
     _debugHistIndex = 0;
+    //    _nFitParameters = 4;
   }
 
 
@@ -142,7 +145,8 @@ namespace mu2e {
 	if (gradient*tmpGradient > 0){
 	  if (content > maxCont[_nMax]) {
 	    maxCont    [_nMax]= content;
-	    _max [_nMax]= i;
+	    _max [_nMax] = i;
+	    _time[_nMax] = _wave->GetBinCenter(i);
 	  }
 	  reference = maxCont[_nMax];
 	}else{
@@ -150,7 +154,8 @@ namespace mu2e {
 	  ++_nMax;
 	  if (content > maxCont[_nMax]) {
 	    maxCont    [_nMax]= content;
-	    _max [_nMax]= i;
+	    _max [_nMax] = i;
+	    _time[_nMax] = _wave->GetBinCenter(i);
 	  }
 	}
       }else{
@@ -184,15 +189,24 @@ namespace mu2e {
     //search for the local maxima
     findMaxima();
 
+    if (_nMax == 2)
+      {
+	fitWaveformSeparation();
+      }
+  }
+
+//--------------------------------------------------------------------------------
+  void        FitWaveformProcess::fitWaveformSeparation(){
+
     //set function parameters
-    double   peak0 = _wave->GetBinCenter(_max[0]+1);
+    double   peak0 = _wave->GetBinCenter (_max[0]+1);
     double   amp0  = _wave->GetBinContent(_max[0]+1);
-    double   peak1 = _wave->GetBinCenter(_max[1]+1);
+    double   peak1 = _wave->GetBinCenter (_max[1]+1);
     double   amp1  = _wave->GetBinContent(_max[1]+1);
 
-    _fdlogn->SetParameters(-0.5, 22, peak0, peak1, amp0*_digiSampling, amp1*_digiSampling);
-    _fdlogn->SetParLimits (0, -1, -0.2);
-    _fdlogn->SetParLimits (1, 10, 100);
+    _fdlogn->SetParameters(-0.5, 14, peak0, peak1, amp0*_digiSampling, amp1*_digiSampling);
+    _fdlogn->SetParLimits (0, -10, 0.);
+    _fdlogn->SetParLimits (1, 1, 100);
     _fdlogn->SetParLimits (2, peak0-10, peak0+10);
     _fdlogn->SetParLimits (3, peak1-10, peak1+10);
     _fdlogn->SetParLimits (4, amp0, amp0*1e3);
@@ -253,19 +267,16 @@ namespace mu2e {
     //initilize function parameters
     double histPeak = WaveMax;
 
-    _flogn->SetParLimits(0,  -10.,  0.);
-    //    _flogn->SetParLimits(0,  -3.,  -0.1);
-    //_flogn->FixParameter(0,  -0.8);
-    _flogn->SetParLimits(1,   10., 50);
-    //    _flogn->SetParLimits(1,   5., 5e03);
-    //_flogn->FixParameter(1,  32.);
+    _flogn->SetParLimits(0,  -10.,  -0.01);
+    // _flogn->FixParameter(0, -0.52);
+    //_flogn->SetParLimits(1,   1., 100);
+    _flogn->FixParameter(1,  14.);
+
     _flogn->SetParLimits(2, histPeak - 20.,  histPeak + 20.);
     _flogn->SetParLimits(3,   0.,   _wave->Integral("width")*1000.);
 
-    _flogn->SetParameter(0, -0.21);
-    _flogn->SetParameter(1,  12.);
-    //    _flogn->SetParameter(0, -0.8);
-    //    _flogn->SetParameter(1,  30.);
+    _flogn->SetParameter(0, -0.52);
+    //_flogn->SetParameter(1,  14.);
     _flogn->SetParameter(2, _wave->GetBinCenter(_wave->GetMaximumBin()));
     _flogn->SetParameter(3, _wave->Integral("width"));
 
@@ -292,17 +303,20 @@ namespace mu2e {
     }
     
     //perform the fit
-    _flogn->SetRange(xmin,xmax);
-    _wave->Fit("flogn","RQ");
-    _wave->Fit("flogn","RQ");
-  
-    double    nDof = _flogn->GetNDF();
-    Chi2 = _flogn->GetChisquare()/nDof;
+    if ( (xmax - xmin) >= _digiSampling*_nFitParameters){
+      _flogn->SetRange(xmin,xmax);
+      _wave->Fit("flogn","RQ");
+      _wave->Fit("flogn","RQ");
+    
+      double    nDof = _flogn->GetNDF();
+      Chi2     = _flogn->GetChisquare()/nDof;
 
-    
-    //now extract the time with the digital constant fraction
-    Time = _flogn->GetX(_wave->GetMaximum()*_timeFraction, histPeak-50., histPeak);//0, _wave->GetBinCenter(_wave->GetMaximumBin()));
-    
+      //now extract the time with the digital constant fraction
+      Time = _flogn->GetX(_wave->GetMaximum()*_timeFraction, histPeak-50., histPeak);//0, _wave->GetBinCenter(_wave->GetMaximumBin()));
+    }else {
+      Chi2     = -1.; 
+      Time = histPeak - _riseTime;
+    }
     
   }
   
@@ -394,18 +408,27 @@ namespace mu2e {
     //lenght of the waveform
     int            wfSize   = CaloHit.waveform().size();
     
-    double         content, time, timeBin;
-    double         binWidth = _wave->GetBinWidth(1);
+    double         content;//, time, timeBin;
+    //    double         binWidth = _wave->GetBinWidth(1);
 
     _wave->Reset();
 
+    // for (int i=0; i<wfSize; ++i){
+    //   timeBin = i*_digiSampling;
+    //   time    = t0 + timeBin;
+    //   content = CaloHit.waveform().at(i);
+
+    //   _wave->Fill(time, content);
+    //   _wave->SetBinError(time/binWidth + 1 , _wave_point_error);
+    // }
+    int           startBin = t0/_digiSampling;
     for (int i=0; i<wfSize; ++i){
-      timeBin = i*_digiSampling;
-      time    = t0 + timeBin;
+      //      timeBin = i*_digiSampling;
+      //      time    = t0 + timeBin;
       content = CaloHit.waveform().at(i);
 
-      _wave->Fill(time, content);
-      _wave->SetBinError(time/binWidth + 1 , _wave_point_error);
+      _wave->SetBinContent(startBin + i + 1, content);
+      _wave->SetBinError  (startBin + i + 1, _wave_point_error);
     }
 
     //--------------------------------------------------------------------------------//
@@ -498,7 +521,7 @@ namespace mu2e {
     int       nDigiSamples =  (1695 - _acquisitionEndTime)/_digiSampling; 
     double    mbtime       =  _digiSampling*nDigiSamples;
   
-    for (int i=0; i<20; ++i){
+    for (int i=0; i<200; ++i){
       _hist._debugWf[i] = tfdir.make<TH1F>(Form("hDWf%i", i), Form("waveform %i",i),  nDigiSamples, 0, mbtime);
     }
     //create the  TTree      
@@ -540,8 +563,8 @@ namespace mu2e {
     
     for (int i=0; i<_nMax; ++i){
       recoHit = &RecoCaloHits->at(size - 1 -i);
-      // CaloDigi	caloDigi   = recoHit->RODigi();
-      // int       nWords     = caloDigi.nSamples();
+      CaloDigi	caloDigi   = recoHit->RODigi();
+      int       nWords     = caloDigi.nSamples();
 
       _counter     = _hitCounter;
       _psdWf       = _psd;
@@ -618,18 +641,18 @@ namespace mu2e {
       }
 
 
-      if (_debugHistIndex < 20){
-	//	double      dt = (recoTime - timeMC);
-
-	// if ( ( (_debugHistIndex < 10 ) && (dt < 5.3 && recoHit->edep() > 30.) ) ||
-	//      ( (_debugHistIndex >= 10) && (dt > 5.7 && recoHit->edep() > 30.) ) ){
-	  for (int i=0; i<_wave->GetNbinsX(); ++i){
-	    content   = _wave->GetBinContent(i+1);
-	    _hist._debugWf[_debugHistIndex] ->SetBinContent(i+1, content);
-	    _hist._debugWf[_debugHistIndex] ->SetBinError  (i+1, _wave_point_error);
+      if (_debugHistIndex < 200){
+	//	if (nWords > 60){
+	if (nWords > 0){
+	  if ( _Chi2Time< 0 ){
+	    for (int i=0; i<_wave->GetNbinsX(); ++i){
+	      content   = _wave->GetBinContent(i+1);
+	      _hist._debugWf[_debugHistIndex] ->SetBinContent(i+1, content);
+	      _hist._debugWf[_debugHistIndex] ->SetBinError  (i+1, _wave_point_error);
+	    }
+	    ++_debugHistIndex;
 	  }
-	  ++_debugHistIndex;
-	  //	}
+	}
 	
       }//end filling pulses
     

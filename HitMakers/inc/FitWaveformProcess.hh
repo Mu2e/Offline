@@ -55,7 +55,7 @@ namespace mu2e {
     TH1F*  _hFitPeak;
     TH1F*  _hFitSigma;
     TH1F*  _hFitNorm;
-    TH1F*  _debugWf[20];
+    TH1F*  _debugWf[200];
     TH2F*  _hEdepAmp;
     
     
@@ -70,7 +70,7 @@ namespace mu2e {
     //external parameters to set at the initialization stage
     int         _debugLevel;
     double      _acquisitionEndTime;
-    int         _digiSampling;
+    double      _digiSampling;
     double      _wave_point_error;
     double      _psdThreshold;
     double      _timeFraction;
@@ -96,6 +96,8 @@ namespace mu2e {
     TTree*      _tree;
 
     int         _debugHistIndex;
+    int         _nFitParameters;
+    double      _riseTime;
 
     Int_t       _counter, _nParticles, _hitCounter, _pdgId[1000], _nPeaks;
     Float_t     _timeWf, _mcTime, _mcMeanTime, _mcEDep, _psdWf,  _Chi2Time, _nDof, _fitEta, _fitNorm, _fitSigma, _fitPeak,_fitDlogn, _amp, _charge;
@@ -117,7 +119,10 @@ namespace mu2e {
     //search maxima and minima, filling the protected variables: _nMax, _nMin, _max[], _min[]
     void        findMaxima();
     
-    //perform a fit for separating the contributes in the pulse
+    //use 2-logn fit for separating two-peaks pulses
+    void        fitWaveformSeparation();
+
+    //perform pileup separation
     void        separeteWaveform();
 
     //integrate the pulse

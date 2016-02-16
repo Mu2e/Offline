@@ -58,7 +58,7 @@ namespace mu2e {
 
     //time of the first digitized timestamp
     double         t0       = CaloHit.t0();
-    double         time, timeBin, content, eDep, chi2;
+    double         hitTime, time, timeBin, content, eDep, chi2;
     
     for (int i=0; i<wfSize; ++i){
       timeBin = i*_digiSampling;
@@ -67,24 +67,22 @@ namespace mu2e {
 
       if ( content > _amplitude){
 	_amplitude = content;
+	hitTime    = time;
       }
       _charge += content;
     }
 
     //convert ADC counts into MeV
     eDep     = _charge*_ADCToMeV*_digiSampling; 
-    
-    //evaluate the time from the linear fit
-    time     =  CaloHit.t0();
     chi2     =  -1;
 
     //understand how many signals are within the pulse
-    _psd  =  _amplitude/_charge;
+    _psd  =  _amplitude/eDep;
 
     RecoCaloHits.push_back( RecoCaloDigi(CaloDigi(CaloHit),
 					 eDep,
 					 _amplitude, 
-					 time, 
+					 hitTime, 
 					 chi2,
 					 _psd    )); 
     
@@ -131,12 +129,13 @@ namespace mu2e {
     _hist._hDt           = tfdir.make<TH1F>("hDt","#Deltat distribution; #Delta t = t_{reco} t_{MC} [ns]", 4000, -100., 100);
 
 
-    //    int       nDigiSamples =  1965 - _acquisitionEndTime; 
-    //    double    mbtime       =  _digiSampling*nDigiSamples;
+    // int       nDigiSamples =  (1695 - _acquisitionEndTime)/_digiSampling; 
+    // double    mbtime       =  _digiSampling*nDigiSamples;
   
     // for (int i=0; i<20; ++i){
     //   _hist._debugWf[i] = tfdir.make<TH1F>(Form("hDWf%i", i), Form("waveform %i",i),  nDigiSamples, 0, mbtime);
     // }
+    
     //create the  TTree      
     _tree  = tfdir.make<TTree>("Calo", "Calo");
        
@@ -173,7 +172,7 @@ namespace mu2e {
     
     
     recoHit = &RecoCaloHits->at(size - 1);
-    
+
     _counter     = _hitCounter;
     _psdWf       = _psd;
     _charge      = recoHit->edep();
@@ -238,22 +237,6 @@ namespace mu2e {
     }
 
 
-      // if (_debugHistIndex < 20){
-      // 	double      dt = (recoTime - timeMC);
-
-      // 	if ( ( (_debugHistIndex < 10 ) && (dt < 5.3 && recoHit->edep() > 30.) ) ||
-      // 	     ( (_debugHistIndex >= 10) && (dt > 5.7 && recoHit->edep() > 30.) ) ){
-      // 	  for (int i=0; i<_wave->GetNbinsX(); ++i){
-      // 	    content   = _wave->GetBinContent(i+1);
-      // 	    _hist._debugWf[_debugHistIndex] ->SetBinContent(i+1, content);
-      // 	    _hist._debugWf[_debugHistIndex] ->SetBinError  (i+1, _wave_point_error);
-      // 	  }
-      // 	  ++_debugHistIndex;
-      // 	}
-	
-      // }
-      //end filling pulses
-    
     //    }//end loop on the RecoCaloDigi
     
  

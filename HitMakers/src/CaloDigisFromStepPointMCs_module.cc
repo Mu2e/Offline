@@ -523,17 +523,20 @@ namespace mu2e {
     double  maxADCCounts = pow(2.,_nBits);
     
     if (_debugLevel > 10){
-      printf("[CaloDigisFromStepPointMCs::makeCalorimeterHits]   eDep = %9.3f MeV amplitude = %9.3f mV time = %9.3f ns\n", Edep, pulseAmp, Time);
+      printf("[CaloDigisFromStepPointMCs::makeCalorimeterHits]   eDep = %9.3f MeV amplitude = %9.3f mV time = %9.3f ns\n", 
+	     Edep, pulseAmp, Time);
       printf("[CaloDigisFromStepPointMCs::makeCalorimeterHits]   timeSample   |   ADC-counts   |    wfAmp    |   signalAmp  \n");
     }
+    int          startSample = Time/_digiSampling;
+    double      timeStamp;
     
-    for (int timeSample = 0; timeSample < size; ++timeSample){
+    for (int timeSample = startSample; timeSample < size; ++timeSample){
 
       // Energy deposition is converted to counts per bin 1 count = 1 V x 2^nBits / dynamicRange 
       // TODO: add propagation delay and time smearing effects
 
       //_waveformOffset is a shift that determines the start of the pulse
-      double  timeStamp = timeSample*_digiSampling - Time;
+      timeStamp = timeSample*_digiSampling - Time;
       if (timeStamp < 0.)         continue;
       timeStamp        +=  _waveformOffset;
 
@@ -580,12 +583,12 @@ namespace mu2e {
       _pshape = (TH1F*) gDirectory->Get("pshape");
       f->Close();
     }else  if (_wfInput == 1){
-      f = TFile::Open("/mu2e/data/users/gianipez/test-waveforms-2015.root", "R");
-      _pshape = (TH1F*) gDirectory->Get("histo50");
+      f = TFile::Open("/mu2e/data/users/gianipez/CsI-waveform-2016-02-03.root", "R");
+      _pshape = (TH1F*) gDirectory->Get("h1");
       f->Close();
     }    if (_wfInput == 2){
-      f = TFile::Open("/mu2e/data/users/gianipez/test-waveforms-2015.root", "R");
-      _pshape = (TH1F*) gDirectory->Get("histo100"); 
+      f = TFile::Open("/mu2e/data/users/gianipez/CsI-waveform-2016-02-03.root", "R");
+      _pshape = (TH1F*) gDirectory->Get("h2"); 
       f->Close();
     }    if (_wfInput == 3){
       f = TFile::Open("/mu2e/data/users/gianipez/test-CsI-2015-10-06.root");

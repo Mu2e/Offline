@@ -61,7 +61,7 @@ double ROphotostatisticErr = 7.0;//p.e / MeV
 double ROfanoFactor = 1.3;
 
 //conversion factor from ADC counts to MeV
-double ADC2MeVConversionFactor = 5.46e-04;//0.989e-03;
+double ADC2MeVConversionFactor = 16.04e-04;//6.03e-04;    //2.47e-04 is for wfInput=0 (beamt test), 5.46e-04 is for wfInput=3
 
 //value of the sigma used to do the Gaussian smearing due to the electronic noise,
 //this is the quadratic sum of all APDs.....
