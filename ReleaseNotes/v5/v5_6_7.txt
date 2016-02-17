@@ -2,6 +2,12 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_7
 
+4) 16 Feb 2016  dnbrow01
+   Added materials Calcite, Dolomite, CA7Backfill, and RockBackfill in 
+   anticipation of inserting backfill around Mu2e building in Offline
+   Geometry model.
+   modified:   Mu2eG4/src/ConstructMaterials.cc
+ 
 1) Feb 12, 2015 kutschke
    GeometryService/src/TTrackerMaker.cc
      - The makeStation code made two copies of ipln1 rather than one
@@ -20,3 +26,4 @@ Still under construction
    TrkPatRec/fcl/prolog.fcl
     - Make extending the track fit downstream through the calorimeter the default
     for all particle types.
+

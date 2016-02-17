@@ -209,6 +209,7 @@ namespace mu2e {
       Polyethylene->AddElement( getElementOrThrow("H"), 2);
     }
 
+
     mat = uniqueMaterialOrThrow( "Electronics" );
     {
       // This material based on measurements at Argonne of some Mu2e
@@ -562,6 +563,43 @@ namespace mu2e {
       Sci->AddElement( getElementOrThrow("H"), 10);
     }
 
+    // These are materials used for backfill around Mu2e Building
+    mat = uniqueMaterialOrThrow( "Calcite" );
+    {
+      G4Material* Calcite = new G4Material( mat.name, 2.71*CLHEP::g/CLHEP::cm3, 3 );
+      Calcite->AddElement( getElementOrThrow("Ca"), 1);
+      Calcite->AddElement( getElementOrThrow("C"), 1);
+      Calcite->AddElement( getElementOrThrow("O"), 3);
+    }
+
+    mat = uniqueMaterialOrThrow( "Dolomite" );
+    {
+      G4Material* Dolomite = new G4Material( mat.name, 2.84*CLHEP::g/CLHEP::cm3, 4 );
+      Dolomite->AddElement( getElementOrThrow("Ca"), 1);
+      Dolomite->AddElement( getElementOrThrow("Mg"), 1);
+      Dolomite->AddElement( getElementOrThrow("C"), 2);
+      Dolomite->AddElement( getElementOrThrow("O"), 6);
+    }
+
+    // The following are some "engineered" fill materials, with information
+    // provided by Tom Hamernik of Fermilab.  The materials are limestone,
+    // which is typically a mixture of Calcite and Dolomite, just defined.
+
+    mat = uniqueMaterialOrThrow( "CA7Backfill" );
+    {
+      G4Material* CA7Backfill = new G4Material( mat.name, 1.64*CLHEP::g/CLHEP::cm3, 2 );
+      CA7Backfill->AddMaterial( findMaterialOrThrow("Calcite"),0.60 );
+      CA7Backfill->AddMaterial( findMaterialOrThrow("Dolomite"),0.40);
+    }
+
+    mat = uniqueMaterialOrThrow( "RockBackfill" );
+    {
+      G4Material* RockBackfill = new G4Material( mat.name, 2.0*CLHEP::g/CLHEP::cm3, 2 );
+      RockBackfill->AddMaterial( findMaterialOrThrow("Calcite"),0.60 );
+      RockBackfill->AddMaterial( findMaterialOrThrow("Dolomite"),0.40);
+    }
+
+    // Vacuum(s)
     mat = uniqueMaterialOrThrow( "WAGVacuum");
     {
       //
