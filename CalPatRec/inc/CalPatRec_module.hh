@@ -61,6 +61,7 @@ namespace art {
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
 #include "CaloCluster/inc/CaloContentMC.hh"
+#include "ConditionsService/inc/TrackerCalibrations.hh"
 
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -263,6 +264,8 @@ namespace mu2e {
 
     const TTracker*          _tracker;     // straw tracker geometry
     const Calorimeter*       _calorimeter; // cached pointer to the calorimeter geometry
+
+    const TrackerCalibrations* _trackerCalib;
 
     TFolder*                 _folder;
     int                      _eventid;
