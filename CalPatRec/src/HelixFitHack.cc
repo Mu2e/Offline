@@ -1131,25 +1131,29 @@ namespace mu2e {
     if (mytrk.strawHitPositionCollection() != 0) {
       int loc;
       StrawHitFlag flag;
-      for (int i=0; i<size; ++i){
+      for (int i=0; i<size; ++i) { 
 	loc                = shIndices[i]._index;
 	flag               = mytrk.strawHitFlagCollection()->at(loc);
 	StrawHit const& sh = mytrk.strawHitCollection()->at(loc);
 	Straw const& straw = tracker.getStraw(sh.strawIndex());
 	StrawHitPosition const& shp = mytrk.strawHitPositionCollection()->at(loc);
-	
-	XYZPHack pos(loc,sh,shp,straw,flag);
-	if (_debug > 0) {
-	  if(i == 0){
-	    printf("----->HelixFitHack::fillXYXP\n");
-	    printf("   strawIndex       straw ID      stereo index        pos          _debug: %i5\n",_debug);
-	  }					
-	  printf("%10d %10d %10d %10.3f %10.3f %10.3f \n", 
-		 (int) loc, sh.strawIndex().asInt(), shp.stereoHitIndex(),
-		 shp.pos().x(), shp.pos().y(), shp.pos().z());
+//-----------------------------------------------------------------------------
+// don't reuse straw hits 
+//-----------------------------------------------------------------------------
+	if (! flag.hasAnyProperty(StrawHitFlag::calosel)) {
+	  XYZPHack pos(loc,sh,shp,straw,flag);
+	  if (_debug > 0) {
+	    if(i == 0){
+	      printf("----->HelixFitHack::fillXYXP\n");
+	      printf("   strawIndex       straw ID      stereo index        pos          _debug: %i5\n",_debug);
+	    }					
+	    printf("%10d %10d %10d %10.3f %10.3f %10.3f \n", 
+		   (int) loc, sh.strawIndex().asInt(), shp.stereoHitIndex(),
+		   shp.pos().x(), shp.pos().y(), shp.pos().z());
+	  }
+	  _xyzp.push_back(pos);
 	}
-	_xyzp.push_back(pos);
-      }	// end loop over the strawindexes
+      }
     }
 //----------------------------------------------------------------------
 // 2014-11-06 gianipez added the following line for ordering the xyzp
