@@ -12,7 +12,6 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 // tracker
-#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
@@ -39,6 +38,9 @@ namespace fhicl {
   class ParameterSet;
 }
 
+// class mu2e::Tracker;
+// class mu2e::TrackerCalibrations;
+
 namespace mu2e {
   class KalFitHack : public KalContext {
   public:
@@ -56,7 +58,6 @@ namespace mu2e {
   protected:
     // configuration parameters
     int                         _debug;
-    //    bool                        _weedhits;
     vector<bool>                _weedhits;
     double                      _maxhitchi;
     unsigned                    _maxweed;
@@ -72,14 +73,12 @@ namespace mu2e {
     int                         fSign[4][2];
     int                         _daveMode;
     std::vector<double>         _t0tol;
-    //    std::vector<Doublet>        fListOfDoublets;
     TStopwatch*                 fStopwatch;       // = new TStopwatch();
     double                      _t0errfac;       // fudge factor for the calculated t0 error
     double                      _mint0doca;      // minimum (?) doca for t0 hits
     double                      _t0nsig;	        // # of sigma to include when selecting hits for t0
     double                      _dtoffset;       // track - luster time offset, ns
     double                      fScaleErrDoublet;
-    //    int                         fUseDoublets;
     double                      fMinDriftDoublet;
     double                      fDeltaDriftDoublet;
     double                      _maxDoubletChi2;
@@ -97,6 +96,9 @@ namespace mu2e {
     int                         _annealingStep;
 
     const mu2e::PtrStepPointMCVectorCollection*  fListOfMCStrawHits;
+
+    const mu2e::Tracker*             _tracker;     // straw tracker geometry
+    const mu2e::TrackerCalibrations* _tcal;
 //-----------------------------------------------------------------------------
 // constructors and destructor, parameter set should be passed in on construction
 //-----------------------------------------------------------------------------
@@ -113,6 +115,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     void setNIter        (int N   ) { _nIter        = N  ; }
 
+    void setTracker      (const Tracker*             Tracker) { _tracker = Tracker; }
+    void setTrackerCalib (const TrackerCalibrations* TCal   ) { _tcal    = TCal;    }
+
     void setStepPointMCVectorCollection(const mu2e::PtrStepPointMCVectorCollection* List) {
       fListOfMCStrawHits = List;
     }
@@ -123,7 +128,6 @@ namespace mu2e {
 			 const StrawHitCollection* straws , 
 			 std::vector<hitIndex>     indices, 
 			 double                    maxchi ,
-			 int                       Final  ,
 			 CalTimePeak*              TPeak=NULL );
 
     void findBoundingHits(std::vector<TrkStrawHit*>&                   hits, 
@@ -131,11 +135,8 @@ namespace mu2e {
 			  std::vector<TrkStrawHit*>::reverse_iterator& ilow ,
 			  std::vector<TrkStrawHit*>::iterator&         ihigh);
 
-//     const TrkSimpTraj* findTraj(std::vector<TrkStrawHit*> const& Hits, 
-// 				const KalRep*                    Krep) const  ;
-
     bool fitable     (TrkDef const& tdef);
-    void fitIteration(KalFitResult& kres , int Iteration, CalTimePeak* TPeak, int Final);
+    void fitIteration(KalFitResult& kres , int Iteration, CalTimePeak* TPeak);
     void fitTrack    (KalFitResult& kres , CalTimePeak* TPeak=NULL);
     void initCaloT0  (CalTimePeak*  TPeak, TrkDef const& tdef, TrkT0& t0);
     void initT0      (TrkDef const& tdef , TrkT0& t0);
@@ -152,7 +153,7 @@ namespace mu2e {
     void updateCalT0     (KalFitResult& kres, CalTimePeak* TPeak);
     void updateHitTimes  (KalFitResult& kres);
     bool updateT0        (KalFitResult& kres);
-    bool weedHits        (KalFitResult& kres, int Iteration, int Final);
+    bool weedHits        (KalFitResult& kres, int Iteration);
 
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;

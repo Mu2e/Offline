@@ -29,8 +29,10 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 // tracker
-#include "TrackerGeom/inc/Tracker.hh"
+// #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
+#include "TTrackerGeom/inc/TTracker.hh"
+#include "ConditionsService/inc/TrackerCalibrations.hh"
 // BaBar
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
@@ -206,12 +208,13 @@ namespace mu2e
       _ambigresolver.push_back(ar);
     }
 //-----------------------------------------------------------------------------
-// 2016-01-27 P.Murat: for DoubletAmbigResolver need one more instance: 
-//  'assign drift directions at the final iteration no matter what'
+// 2016-01-27 P.Murat: for DoubletAmbigResolver need one more instance with 
+// 'final' set to 1 - now need to figure how to use it
+// assume that KalFitHack is using the DoubletAmbigResolver only
 //-----------------------------------------------------------------------------
-//     final = 1;
-//     ar    = new DoubletAmbigResolver(*_darPset,err,n-1,final);
-//     # // need to figure how to use it.....
+//    final = 1;
+    ar    = new DoubletAmbigResolver(*_darPset,err,n,final);
+    _ambigresolver.push_back(ar);
   }
 
 //-----------------------------------------------------------------------------
@@ -303,22 +306,24 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-//
+// addHits is called _only_once_ from CalPatRec_module::produce after 
+// the last iteration
 //-----------------------------------------------------------------------------
   void KalFitHack::addHits(KalFitResult&              kres   ,
                            const StrawHitCollection*  straws ,
                            std::vector<hitIndex>      indices,
                            double                     maxchi ,
-                           int                        Final  ,
                            CalTimePeak*               TPeak  ) {
 
                                         // there must be a valid Kalman fit to add hits to
     int  activity(0);
+					// last iteration
+    int    iteration = _hiterr.size();
+    double hit_error = _hiterr[iteration-1];
 
-    if(kres._krep != 0 && kres._fit.success()){
-      ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    if ((kres._krep != 0) && kres._fit.success()){
       const Tracker& tracker = getTrackerOrThrow();
-// fetcth the DetectorModel
+// fetch the DetectorModel
       Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
       std::vector<TrkStrawHit*>::iterator ihigh;
       std::vector<TrkStrawHit*>::reverse_iterator ilow;
@@ -327,7 +332,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
       const TrkDifPieceTraj* reftraj = kres._krep->referenceTraj();
 
-      if (_debug>0){
+      if (_debug > 0) {
         printf("[KalFitHack::addHits]  shId   A      sec      panel      res        hitRMS       drift      chi2  \n");
       }
 
@@ -335,15 +340,18 @@ namespace mu2e
       const TrkStrawHit* nearhit;
       TrkStrawHit*       trkhit;
 
-
-      for (unsigned iind=0;iind<indices.size(); ++iind) {
-        size_t istraw = indices[iind]._index;
+      for (unsigned i=0; i<indices.size(); i++) {
+        size_t istraw = indices[i]._index;
         const StrawHit& strawhit(straws->at(istraw));
         const Straw& straw = tracker.getStraw(strawhit.strawIndex());
-                                        // estimate  initial flightlength
+//-----------------------------------------------------------------------------
+// estimate  initial flightlength
+//-----------------------------------------------------------------------------
         hflt = 0;
         TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
+//-----------------------------------------------------------------------------
 // find the bounding sites near this hit, and extrapolate to get the hit t0
+//-----------------------------------------------------------------------------
         std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef->fitdir().fitDirection()));
         findBoundingHits(kres._hits,hflt,ilow,ihigh);
 
@@ -359,14 +367,11 @@ namespace mu2e
                                         // update the time in the TrkT0 object and create a new
                                         // hit object.  Assume we're at the last iteration over added error
         hitt0._t0 += tflt;
-        trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_hiterr.back(),_maxdriftpull);
+        trkhit     = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,hit_error,_maxdriftpull);
         assert(trkhit != 0);
-                                        // allow the hit to update its own ambiguity for now:
-                                        // eventually we should get the resolver to do this, FIXME!!!
-        //      trkhit->setAmbigUpdate(true);
-                                        // fixed!
+
         trkhit->setAmbigUpdate(false);
-                                        // must be initialy active for KalRep to process correctly
+                                        // hit initially is set to active for KalRep to process correctly
         trkhit->setActivity(true);
                                         // flag the added hit
         trkhit->setFlag(3);
@@ -375,17 +380,16 @@ namespace mu2e
         kres._hits.push_back(trkhit);
                                         // create intersections for the material of this hit
                                         // and add those to the track
+
         const DetStrawElem* strawelem = detmodel.strawElem(trkhit->straw());
         DetIntersection strawinter;
-        strawinter.delem = strawelem;
+        strawinter.delem   = strawelem;
         strawinter.pathlen = trkhit->fltLen();
-        strawinter.thit = trkhit;
-        if(strawelem->reIntersect(reftraj,strawinter))
+        strawinter.thit    = trkhit;
+        if(strawelem->reIntersect(reftraj,strawinter)) {
           kres._krep->addInter(strawinter);
-
-        // check the raw residual: This call works because the HOT isn't yet processed as part of the fit.
-        //        double chi = fabs(trkhit->residual()/trkhit->hitRms());
-        //-----------------------------------------------------------------------------
+	}
+//-----------------------------------------------------------------------------
 // hit is added with _iamb=0, which means that the position uncertainty
 // includes the drift distance
 //-----------------------------------------------------------------------------
@@ -412,8 +416,6 @@ namespace mu2e
                  trkhit->driftRadius(),
                  chi);
         }
-// now that we've got the residual, turn off auto-ambiguity resolution
-//      trkhit->setAmbigUpdate(false);
       }
  // sort hits by flightlength (or in Z, which is the same)
       std::sort(kres._hits.begin(),kres._hits.end(),fltlencomp(kres._tdef->fitdir().fitDirection()));
@@ -429,10 +431,10 @@ namespace mu2e
 //                     in different cases - Giani?
 // 2015-04-10        : perform one iteration, -1 means 'use the smallest external error defined'
 //------------------------------------------------------------------------------------------
-        fitIteration(kres, -1, TPeak,Final);
+        fitIteration(kres, -1, TPeak);
       }
       else {
-        fitIteration(kres,-1,NULL,Final);
+        fitIteration(kres,-1,NULL);
       }
       kres._krep->addHistory(kres._fit,"AddHits");
     }
@@ -451,11 +453,11 @@ namespace mu2e
 //                                drift direction is well defined'
 //-----------------------------------------------------------------------------
   void KalFitHack::fitTrack(KalFitResult& KRes, CalTimePeak* TPeak) {
-    int not_final(0);
+    //    int not_final(0);
 
     int n = _hiterr.size();
     for (int i=0; i<n; ++i) {
-      fitIteration(KRes,i,TPeak,not_final);
+      fitIteration(KRes,i,TPeak);
 
       if (! KRes._fit.success()) break; //commented by gianipez
      }
@@ -467,7 +469,7 @@ namespace mu2e
 // one step of the track fit
 // update external hit errors.  This isn't strictly necessary on the 1st iteration.
 //-----------------------------------------------------------------------------
-  void KalFitHack::fitIteration(KalFitResult& KRes, int Iteration, CalTimePeak* TPeak, int Final) {
+  void KalFitHack::fitIteration(KalFitResult& KRes, int Iteration, CalTimePeak* TPeak) {
 
     double       oldt0 = KRes._krep->t0()._t0;
     unsigned     niter(0);
@@ -486,7 +488,7 @@ namespace mu2e
 // for the doublets
 // 2015-04-03: IHErr = -1: special value, invoke last iteration
 //-----------------------------------------------------------------------------------
-    if (Iteration == -1) Iteration = _hiterr.size()-1;
+    if (Iteration == -1) Iteration = _ambigresolver.size()-1;
 
     _annealingStep     = Iteration;
 //--------------------------------------------------------------------------------
@@ -549,7 +551,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
       if(_weedhits[Iteration]) {
         KRes._nweediter = 0;
-        changed        |= weedHits(KRes,Iteration,Final);
+        changed        |= weedHits(KRes,Iteration);
         fit_success     = KRes._fit.success();
       }
       niter++;
@@ -810,7 +812,7 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-  bool KalFitHack::weedHits(KalFitResult& KRes, int Iteration, int Final) {
+  bool KalFitHack::weedHits(KalFitResult& KRes, int Iteration) {
     // Loop over HoTs and find HoT with largest contribution to chi2.  If this value
     // is greater than some cut value, deactivate that HoT and reFit
     bool retval(false);
@@ -829,19 +831,27 @@ namespace mu2e
         }
       }
     }
+
+    int iter;
+
+    if (Iteration == -1) iter = _ambigresolver.size()-1;
+    else                 iter = Iteration;
+
     if(0 != worstHot){
       retval = true;
       worstHot->setActivity(false);
       worstHot->setFlag(5); // positive usability allows hot to be re-enabled later
 
-      _ambigresolver[Iteration]->resolveTrk(KRes._krep);
+      _ambigresolver[iter]->resolveTrk(KRes._krep);
 
       KRes.fit();
       KRes._krep->addHistory(KRes._fit, "HitWeed");
-      // Recursively iterate
+//-----------------------------------------------------------------------------
+// Recursively iterate
+//-----------------------------------------------------------------------------
       KRes._nweediter++;
       if (KRes._fit.success() && KRes._nweediter < _maxweed ) {
-        retval |= weedHits(KRes,Iteration,Final);
+        retval |= weedHits(KRes,iter);
       }
     }
     return retval;
