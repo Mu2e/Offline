@@ -145,34 +145,29 @@ namespace mu2e {
     }
 
     art::Ptr<KalRep>          *tpr, *cpr;
-    //    KalFitResult              *tkr, *ckr;
-
     Hep3Vector                cpr_mom, tpr_mom;
     short                     best(-1),  mask;
     AlgorithmID               alg_id;
     TrkHitVector              tlist, clist;
     int                       nat, nac, natc;
     const mu2e::TrkStrawHit  *hitt, *hitc;
-    //    double                    tfcons, cfcons;
+    double                    tpr_chisq, cpr_chisq;
 
     for (int i1=0; i1<ntpr; i1++) {
-      //      tpr     = (KalRep*) list_of_kreps_tpr->get(i1);
-      tpr     = &list_of_kreps_tpr->at(i1);
-      //      tkr     = &list_of_kfres_tpr->at(i1);
-      tpr_mom = (*tpr)->momentum();
-      mask    = 1 << AlgorithmID::TrkPatRecBit;
-      tlist   = (*tpr)->hitVector();
-      nat     = (*tpr)->nActive();
-      natc    = 0;
-      //      tfcons  = tpr->chisqConsistency().consistency();
+      tpr       = &list_of_kreps_tpr->at(i1);
+      tpr_mom   = (*tpr)->momentum();
+      tpr_chisq = (*tpr)->chisq();
+      mask      = 1 << AlgorithmID::TrkPatRecBit;
+      tlist     = (*tpr)->hitVector();
+      nat       = (*tpr)->nActive();
+      natc      = 0;
 
       for (int i2=0; i2<ncpr; i2++) {
-	cpr     = &list_of_kreps_cpr->at(i2);
-	//	ckr     = &list_of_kfres_cpr->at(i2);
-	cpr_mom = (*cpr)->momentum();
-	clist   = (*cpr)->hitVector();
-	nac     = (*cpr)->nActive();
-	//	cfcons  = cpr->chisqConsistency().consistency();
+	cpr       = &list_of_kreps_cpr->at(i2);
+	cpr_mom   = (*cpr)->momentum();
+	cpr_chisq = (*tpr)->chisq();
+	clist     = (*cpr)->hitVector();
+	nac       = (*cpr)->nActive();
 //-----------------------------------------------------------------------------
 // primitive check if this is the same track - require delta(p) less than 5 MeV/c
 // ultimately - check the number of common hits
@@ -193,31 +188,34 @@ namespace mu2e {
 	}
 //-----------------------------------------------------------------------------
 // if > 50% of all hits are common, consider cpr and tpr to be the same
-// choose the one which has better fit consistency
-// 2015-04-13 P.Murat: leave the one with more hits
+// logic of the choice: 
+// 1. take the track which has more active hits
+// 2. if two tracks have the same number of active hits, choose the one with better chi2
 //-----------------------------------------------------------------------------
-	//	if (fabs (cpr_mom.mag()-tpr_mom.mag()) < 5.) {
 	if (natc > (nac+nat)/4.) {
 
 	  mask = mask | (1 << AlgorithmID::CalPatRecBit);
 
-	  //	  if (tfcons > cfcons) {
-	  double end_trk;
 	  if (nat > nac) {
-	    //	    kfresults->push_back(*tkr);
 	    trackPtrs->push_back(*tpr);
 	    best    = AlgorithmID::TrkPatRecBit; 
-	    end_trk = (*tpr)->endFoundRange();
 	  }
-	  else {	
-	    //	    kfresults->push_back(*ckr);
+	  else if (nat < nac) {	
 	    trackPtrs->push_back(*cpr);
 	    best    = AlgorithmID::CalPatRecBit;
-	    end_trk = (*cpr)->endFoundRange();
 	  }
-
-	  if (_debugLevel > 0) {
-	    printf("MergePatRec debug: end_trk = %10.5f\n",end_trk);
+	  else {
+//-----------------------------------------------------------------------------
+// both tracks have the same number of active hits, keep the one with lowest chi2
+//-----------------------------------------------------------------------------
+	    if (tpr_chisq < cpr_chisq) {
+	      trackPtrs->push_back(*tpr);
+	      best    = AlgorithmID::TrkPatRecBit; 
+	    }
+	    else {
+	      trackPtrs->push_back(*cpr);
+	      best    = AlgorithmID::CalPatRecBit;
+	    }
 	  }
 
 	  tpr_flag[i1] = 0;
@@ -227,7 +225,6 @@ namespace mu2e {
       }
 
       if (tpr_flag[i1] == 1) {
-	//	kfresults->push_back(*tkr);
 	trackPtrs->push_back(*tpr);
 	best = AlgorithmID::TrkPatRecBit;
       }
@@ -241,10 +238,8 @@ namespace mu2e {
     for (int i=0; i<ncpr; i++) {
       if (cpr_flag[i] == 1) {
 	cpr = &list_of_kreps_cpr->at(i);
-	//	ckr = &list_of_kfres_cpr->at(i);
 
 	trackPtrs->push_back(*cpr);
-	//	kfresults->push_back(*ckr);
 
 	best = AlgorithmID::CalPatRecBit;
 	mask = 1 << AlgorithmID::CalPatRecBit;
@@ -256,7 +251,6 @@ namespace mu2e {
 
     AnEvent.put(std::move(trackPtrs),_iname);
     AnEvent.put(std::move(algs     ),_iname);
-    //    AnEvent.put(std::move(kfresults),_iname);
   }
 
 
