@@ -1,6 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
-// class to resolve hit ambiguities one hit at a time, assuming a reasonable track
-// fit as input
+// class to resolve hit ambiguities one hit at a time, 
+// assuming a reasonable track fit as input
+// DoubletAmbigResolver is instantiated from Stntuple/mod/InitTrackBlock.cc
+// thus all parameters need to have defaults in the source
 ///////////////////////////////////////////////////////////////////////////////
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 #include "TrkReco/inc/TrkStrawHit.hh"
@@ -44,7 +46,8 @@ namespace mu2e {
     _scaleErrDoublet  (PSet.get<double>("scaleErrDoublet"  ,  5.   )),
     _minDriftDoublet  (PSet.get<double>("minDriftDoublet"  ,  0.3  )),
     _deltaDriftDoublet(PSet.get<double>("deltaDriftDoublet",  0.3  )),
-    _excludeBothHits  (PSet.get<int>   ("excludeBothHits"  ,  1    )),
+    _excludeBothHits  (PSet.get<int>   ("excludeBothHits"  ,  1    )),  // default:1
+    _minChi2Ratio     (PSet.get<double>("minChi2Ratio"     ,  0.3  )),   
     _iter(Iter),
     _Final(Final)
   {
@@ -299,8 +302,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // doca(hit) = doca(wire)-_iamb*radius
 //-----------------------------------------------------------------------------
-      doca[0] = poca.doca()-Hit->driftRadius();
-      doca[1] = poca.doca()+Hit->driftRadius();
+      double r = Hit->driftRadius();
+
+      doca[0] = poca.doca()-r;
+      doca[1] = poca.doca()+r;
 
       double err = AmbigResolver::_extErr;
       double x0  = sqrt(doca[0]*doca[0]+err*err);
@@ -315,9 +320,14 @@ namespace mu2e {
 	ibest = 1;
 	inext = 0;
       }
-      
-      xbest = doca[ibest]/Hit->hitErr();
-      xnext = doca[inext]/Hit->hitErr();
+ 
+      double drift_err = 0.150;   // frivolously assume 150 microns
+
+//       xbest = doca[ibest]/Hit->totalErr();
+//       xnext = doca[inext]/Hit->totalErr();
+
+      xbest = doca[ibest]/drift_err;
+      xnext = doca[inext]/drift_err;
 //-----------------------------------------------------------------------------
 // want the best solution to be consistent with the trajectory, another one - 
 // to be inconsistent, and the two - significantly different
@@ -354,6 +364,55 @@ namespace mu2e {
       Hit->setAmbig(0);
     }
 
+
+
+
+//      int best_ambig = 1-2*ibest;
+//
+// //-----------------------------------------------------------------------------
+// // want the best solution to be consistent with the trajectory, 
+// // and the two solutions - significantly different
+// //-----------------------------------------------------------------------------
+//       if ((fabs(xbest) < 5.) && (fabs(xnext) > 5.)) {
+// 	if ((xbest*xbest)/(xnext*xnext) < 0.2) {
+// //-----------------------------------------------------------------------------
+// // hit is close enough to the trajectory
+// //-----------------------------------------------------------------------------
+// 	  Hit->setAmbig(best_ambig);
+// 	}
+// 	else {
+// //-----------------------------------------------------------------------------
+// // both chi2's are comparable, can't really tell
+// //-----------------------------------------------------------------------------
+// 	  if (_Final == 0) {
+// 	    if (r < err) Hit->setExtErr(err);
+// 	    else         Hit->setExtErr(r);
+// 
+// 	    Hit->setAmbig(0);
+// 	  }
+// 	  else {
+// //-----------------------------------------------------------------------------
+// // both chi2's are comparable but need to make a final decision anyway
+// //-----------------------------------------------------------------------------
+// 	    Hit->setAmbig(best_ambig);
+// 	  }
+// 	}
+//       }
+//       else {
+// //-----------------------------------------------------------------------------
+// // best residual is large enough, no point to keep hits with very large residuals 
+// //-----------------------------------------------------------------------------
+// 	Hit->setAmbig(best_ambig);
+//       }
+//     }
+//     else {
+// //-----------------------------------------------------------------------------
+// // couldn't determine doca
+// //-----------------------------------------------------------------------------
+//       Hit->setExtErr(Hit->driftRadius());
+//       Hit->setAmbig(0);
+//     }
+//  
     Hit->setAmbigUpdate(false);
   }
 
@@ -632,12 +691,57 @@ namespace mu2e {
 
     return 0;
   }
-						       
+		
+
+//-----------------------------------------------------------------------------
+// define hit drift sign in case the two best chi2's are close
+//-----------------------------------------------------------------------------
+  void DoubletAmbigResolver::defineHitDriftSign(mu2e::TrkStrawHit* Hit, int I, Data_t* R) const {
+
+    double err = fabs(R->rdrift[I]);
+    if (_sign[R->ibest][I] == _sign[R->inext][I]) {
+//-----------------------------------------------------------------------------
+// both the 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
+// check other two chi2's. If both are an order of magnitude worse than the best,
+// assume that for this hit the drift direction is defined
+//-----------------------------------------------------------------------------
+      int defined = 1;
+      for (int j=0; j<4; j++) {
+	if ((j != R->ibest) && (j != R->inext)) {
+	  if (R->chi2min/R->chi2[j] > 0.2) {
+	    defined = 0;
+	    break;
+	  }
+	}
+      }
+      
+      if (defined == 1) {
+	Hit->setAmbig (_sign[R->ibest][I]);
+      }
+      else {
+//-----------------------------------------------------------------------------
+// all 4 chi2s are "of the same order", nothing to fish
+//-----------------------------------------------------------------------------
+	Hit->setExtErr(err);
+	Hit->setAmbig(0);
+      }
+    }
+    else {
+//-----------------------------------------------------------------------------
+// the best and the next solutions correspond to different drift directions 
+// of this hit. Can't choose, assign large error
+//-----------------------------------------------------------------------------
+      Hit->setExtErr(err);
+      Hit->setAmbig(0);
+    }
+  }
+
 
 //--------------------------------------------------------------------------------
-// given a multiplet, resolve the ambiguity for hit: index0 and index1
+// given a multiplet, resolve ambiguities for a doublet made out of hits 
+// 'Index0' and 'Index1'
 //--------------------------------------------------------------------------------
-  void DoubletAmbigResolver::markDoublet(KalRep* KRep, 
+  void DoubletAmbigResolver::markDoublet(KalRep*       KRep, 
 					 Doublet*      HitDoublet, 
 					 int           Index0, 
 					 int           Index1 ) const {
@@ -706,43 +810,42 @@ namespace mu2e {
 // while the other hit drift sign still could be reconstructed
 //-----------------------------------------------------------------------------
 	  if (_Final == 0) {
-// 	    hit[i]->setExtErr(r.rdrift[i]);
-// 	    hit[i]->setAmbig(0);
+	    defineHitDriftSign(hit[i],i,&r);
 
-	    if (_sign[r.ibest][i] == _sign[r.inext][i]) {
-//-----------------------------------------------------------------------------
-// bothe 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
-// check other two chi2's. If both are an order of magnitude worse than the best,
-// assume that for this hit the drift direction is defined
-//-----------------------------------------------------------------------------
-	      int defined = 1;
-	      for (int j=0; j<4; j++) {
-		if ((j != r.ibest) && (j != r.inext)) {
-		  if (r.chi2[j]/r.chi2min < 10) {
-		    defined = 0;
-		    break;
-		  }
-		}
-	      }
+// 	    if (_sign[r.ibest][i] == _sign[r.inext][i]) {
+// //-----------------------------------------------------------------------------
+// // bothe 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
+// // check other two chi2's. If both are an order of magnitude worse than the best,
+// // assume that for this hit the drift direction is defined
+// //-----------------------------------------------------------------------------
+// 	      int defined = 1;
+// 	      for (int j=0; j<4; j++) {
+// 		if ((j != r.ibest) && (j != r.inext)) {
+// 		  if (r.chi2min/r.chi2[j] > 0.2) {
+// 		    defined = 0;
+// 		    break;
+// 		  }
+// 		}
+// 	      }
 
-	      if (defined == 1) {
-		hit[i]->setAmbig (_sign[r.ibest][i]);
-	      }
-	      else {
-//-----------------------------------------------------------------------------
-// all 4 chi2s are "of the same order", nothing to fish
-//-----------------------------------------------------------------------------
-		hit[i]->setExtErr(r.rdrift[i]);
-		hit[i]->setAmbig(0);
-	      }
-	    }
-	    else {
-//-----------------------------------------------------------------------------
-// assign external error and set ambiguity to zero
-//-----------------------------------------------------------------------------
-	      hit[i]->setExtErr(r.rdrift[i]);
-	      hit[i]->setAmbig(0);
-	    }
+// 	      if (defined == 1) {
+// 		hit[i]->setAmbig (_sign[r.ibest][i]);
+// 	      }
+// 	      else {
+// //-----------------------------------------------------------------------------
+// // all 4 chi2s are "of the same order", nothing to fish
+// //-----------------------------------------------------------------------------
+// 		hit[i]->setExtErr(r.rdrift[i]);
+// 		hit[i]->setAmbig(0);
+// 	      }
+// 	    }
+// 	    else {
+// //-----------------------------------------------------------------------------
+// // assign external error and set ambiguity to zero
+// //-----------------------------------------------------------------------------
+// 	      hit[i]->setExtErr(r.rdrift[i]);
+// 	      hit[i]->setAmbig(0);
+// 	    }
 	  }
 	  else {
 //-----------------------------------------------------------------------------
@@ -751,7 +854,7 @@ namespace mu2e {
 	    double xr = r.doca[r.ibest][i]/hit[i]->hitErr();
 	    if (fabs(xr) > 5.) {
 //-----------------------------------------------------------------------------
-// hit is very far, reject it
+// hit is very far (more than by 5 "sigma"), reject it
 //-----------------------------------------------------------------------------
 	      hit[i]->setActivity(false);
 	    }
@@ -774,7 +877,7 @@ namespace mu2e {
 // the hardest case - close drift radii
 //-----------------------------------------------------------------------------
 	  if (r.chi2min < _maxDoubletChi2) {
-	    if (r.chi2min/r.chi2next < 0.2) {
+	    if (r.chi2min/r.chi2next < _minChi2Ratio) { // 0.3
 //-----------------------------------------------------------------------------
 // however, the best chi2 is good enough to be reliable under any circumstances
 //-----------------------------------------------------------------------------
@@ -787,45 +890,43 @@ namespace mu2e {
 // the decision point
 //-----------------------------------------------------------------------------
 	      if (_Final == 0) {
-		double err = fabs(r.rdrift[i]);
-// 		hit[i]->setExtErr(err);
-// 		hit[i]->setAmbig(0);
+// 		double err = fabs(r.rdrift[i]);
+// 		if (_sign[r.ibest][i] == _sign[r.inext][i]) {
+// //-----------------------------------------------------------------------------
+// // bothe 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
+// // check other two chi2's. If both are an order of magnitude worse than the best,
+// // assume that for this hit the drift direction is defined
+// //-----------------------------------------------------------------------------
+// 		  int defined = 1;
+// 		  for (int j=0; j<4; j++) {
+// 		    if ((j != r.ibest) && (j != r.inext)) {
+// 		      if (r.chi2min/r.chi2[j] > 0.2) {
+// 			defined = 0;
+// 			break;
+// 		      }
+// 		    }
+// 		  }
 
-		if (_sign[r.ibest][i] == _sign[r.inext][i]) {
-//-----------------------------------------------------------------------------
-// bothe 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
-// check other two chi2's. If both are an order of magnitude worse than the best,
-// assume that for this hit the drift direction is defined
-//-----------------------------------------------------------------------------
-		  int defined = 1;
-		  for (int j=0; j<4; j++) {
-		    if ((j != r.ibest) && (j != r.inext)) {
-		      if (r.chi2[j]/r.chi2min < 10) {
-			defined = 0;
-			break;
-		      }
-		    }
-		  }
-
-		  if (defined == 1) {
-		    hit[i]->setAmbig (_sign[r.ibest][i]);
-		  }
-		  else {
-//-----------------------------------------------------------------------------
-// all 4 chi2s are "of the same order", nothing to fish
-//-----------------------------------------------------------------------------
-		    hit[i]->setExtErr(err);
-		    hit[i]->setAmbig(0);
-		  }
-		}
-		else {
-//-----------------------------------------------------------------------------
-// the best and the next solutions correspond to different drift directions 
-// of this hit. Can't choose, assign large error
-//-----------------------------------------------------------------------------
-		  hit[i]->setExtErr(err);
-		  hit[i]->setAmbig(0);
-		}
+// 		  if (defined == 1) {
+// 		    hit[i]->setAmbig (_sign[r.ibest][i]);
+// 		  }
+// 		  else {
+// //-----------------------------------------------------------------------------
+// // all 4 chi2s are "of the same order", nothing to fish
+// //-----------------------------------------------------------------------------
+// 		    hit[i]->setExtErr(err);
+// 		    hit[i]->setAmbig(0);
+// 		  }
+// 		}
+// 		else {
+// //-----------------------------------------------------------------------------
+// // the best and the next solutions correspond to different drift directions 
+// // of this hit. Can't choose, assign large error
+// //-----------------------------------------------------------------------------
+// 		  hit[i]->setExtErr(err);
+// 		  hit[i]->setAmbig(0);
+// 		}
+		defineHitDriftSign(hit[i],i,&r);
 	      }
 	      else {
 //-----------------------------------------------------------------------------
@@ -874,7 +975,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // the best chi2 is good, the doublet drift signs are determined reliably
 //-----------------------------------------------------------------------------
-	    if (r.chi2min/r.chi2next < 0.2) {
+	    if (r.chi2min/r.chi2next < _minChi2Ratio) {
 	      if (r.rdrift[i] > _minDriftDoublet) {
 		hit[i]->setExtErr(AmbigResolver::_extErr/_scaleErrDoublet);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
@@ -884,18 +985,20 @@ namespace mu2e {
 // small radius (rdrift[i] < _minDriftDoublet) - use the wire position
 // 2015-04-15 P.Murat: for well-resolved doublets it may be possible to decide 
 //                     in all cases - need to check
-//------------------------------------------------------------*/-----------------
+//-----------------------------------------------------------------------------
 		hit[i]->setExtErr(AmbigResolver::_extErr);
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	    }
 	    else {
 //-----------------------------------------------------------------------------
-// the best and he next chi2's are close, postpone the decision
+// the best and the next chi2's are close
 //-----------------------------------------------------------------------------
 	      if (_Final == 0) {
-		hit[i]->setExtErr(r.rdrift[i]);
-		hit[i]->setAmbig(0);
+//-----------------------------------------------------------------------------
+// postpone the decision for as long as possible
+//-----------------------------------------------------------------------------
+		defineHitDriftSign(hit[i],i,&r);
 	      }
 	      else {
 //-----------------------------------------------------------------------------
@@ -913,46 +1016,43 @@ namespace mu2e {
 // a good example - one of the hits - on Dave's no-gaussial tail
 //-----------------------------------------------------------------------------
 	    if (_Final == 0) {
-	      double err = fabs(r.rdrift[i]);
+// 	      double err = fabs(r.rdrift[i]);
+// 	      if (_sign[r.ibest][i] == _sign[r.inext][i]) {
+// //-----------------------------------------------------------------------------
+// // both the 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
+// // check other two chi2's. If both are an order of magnitude worse than the best,
+// // assume that for this hit the drift direction is defined
+// //-----------------------------------------------------------------------------
+// 		int defined = 1;
+// 		for (int j=0; j<4; j++) {
+// 		  if ((j != r.ibest) && (j != r.inext)) {
+// 		    if (r.chi2min/r.chi2[j] > 0.2) {
+// 		      defined = 0;
+// 		      break;
+// 		    }
+// 		  }
+// 		}
 
-	      // 		hit[i]->setExtErr(err);
-	      // 		hit[i]->setAmbig(0);
-
-	      if (_sign[r.ibest][i] == _sign[r.inext][i]) {
-//-----------------------------------------------------------------------------
-// bothe 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
-// check other two chi2's. If both are an order of magnitude worse than the best,
-// assume that for this hit the drift direction is defined
-//-----------------------------------------------------------------------------
-		int defined = 1;
-		for (int j=0; j<4; j++) {
-		  if ((j != r.ibest) && (j != r.inext)) {
-		    if (r.chi2[j]/r.chi2min < 10) {
-		      defined = 0;
-		      break;
-		    }
-		  }
-		}
-
-		if (defined == 1) {
-		  hit[i]->setAmbig (_sign[r.ibest][i]);
-		}
-		else {
-//-----------------------------------------------------------------------------
-// all 4 chi2s are "of the same order", nothing to fish
-//-----------------------------------------------------------------------------
-		  hit[i]->setExtErr(err);
-		  hit[i]->setAmbig(0);
-		}
-	      }
-	      else {
-//-----------------------------------------------------------------------------
-// the best and the next solutions correspond to different drift directions 
-// of this hit. Can't choose, assign large error
-//-----------------------------------------------------------------------------
-		hit[i]->setExtErr(err);
-		hit[i]->setAmbig(0);
-	      }
+// 		if (defined == 1) {
+// 		  hit[i]->setAmbig (_sign[r.ibest][i]);
+// 		}
+// 		else {
+// //-----------------------------------------------------------------------------
+// // all 4 chi2s are "of the same order", nothing to fish
+// //-----------------------------------------------------------------------------
+// 		  hit[i]->setExtErr(err);
+// 		  hit[i]->setAmbig(0);
+// 		}
+// 	      }
+// 	      else {
+// //-----------------------------------------------------------------------------
+// // the best and the next solutions correspond to different drift directions 
+// // of this hit. Can't choose, assign large error
+// //-----------------------------------------------------------------------------
+// 		hit[i]->setExtErr(err);
+// 		hit[i]->setAmbig(0);
+// 	      }
+	      defineHitDriftSign(hit[i],i,&r);
 	    }
 	    else {
 //-----------------------------------------------------------------------------

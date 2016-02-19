@@ -68,6 +68,7 @@ namespace mu2e {
     double _minDriftDoublet;
     double _deltaDriftDoublet;
     int    _excludeBothHits;            // when calculating residuals to choose the drift signs 
+    double _minChi2Ratio;               // if chi2(best)/chi2(next) < _minChi2Ratio, doublet is "well measured"
 
     int    _sign[4][2];
     int    _iter; // iteration
@@ -81,7 +82,8 @@ namespace mu2e {
 #endif/*__GCCXML__*/
     virtual ~DoubletAmbigResolver();
     
-    int calculateDoubletParameters(const KalRep* KRep, Doublet* HitDoublet, Data_t* R) const ;
+    int  calculateDoubletParameters(const KalRep* KRep, Doublet* HitDoublet, Data_t* R) const ;
+    void defineHitDriftSign        (mu2e::TrkStrawHit* Hit, int I, Data_t* R) const ;
 
     void findLines       (CLHEP::Hep3Vector* Pos, double* R, double* Slopes) const ;
       
