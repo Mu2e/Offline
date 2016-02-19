@@ -741,18 +741,12 @@ namespace mu2e {
        }
     */
 
-    printf( "res_ele_sum is:  %4.4f %s %4.4f \n", res_ele_sum, "  res_muo_sum is: ", res_muo_sum);
-    printf( "res_ele_sum2 is:  %4.4f %s %4.4f \n", res_ele_sum2, "  res_muo_sum2 is: ", res_muo_sum2);
-    printf("logratio is: %8.4f \n", logratio);
-    printf("logratio2 is: %8.4f \n", logratio2);
-    printf("logratio3 is: %8.4f \n", logratio3);
-
-    /*
-          printf("t0true is: %8.4f \n", t0true);
-          printf("ele_t0 is: %8.4f \n", ele_t0);
-          printf("t0est is %8.4f \n", t0est);
-          printf("muo_t0 is: %8.4f \n", muo_t0);
-    */
+    if (_debugLevel > 0) {
+      printf( "res_ele_sum  is:  %8.4f res_muo_sum  is: %8.4f res_ele_sum2 is:  %8.4f res_muo_sum2 is: %8.4f\n",
+	      res_ele_sum ,res_muo_sum, res_ele_sum2,res_muo_sum2);
+      printf("logratio  is: %8.4f logratio2 is: %8.4f logratio3 is: %8.4f\n", 
+	     logratio, logratio2, logratio3);
+    }
   }
 
 //-----------------------------------------------------------------------------
