@@ -213,6 +213,7 @@ namespace mu2e
 // assume that KalFitHack is using the DoubletAmbigResolver only
 //-----------------------------------------------------------------------------
 //    final = 1;
+    err = _hiterr[n];
     ar    = new DoubletAmbigResolver(*_darPset,err,n,final);
     _ambigresolver.push_back(ar);
   }
