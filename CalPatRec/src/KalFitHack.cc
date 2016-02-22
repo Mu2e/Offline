@@ -2,6 +2,12 @@
 // $Id: KalFitHack.cc,v 1.4 2014/04/08 04:25:46 murat Exp $
 // $Author: murat $
 // $Date: 2014/04/08 04:25:46 $
+//
+// the following data members have to be initialized at construction time by the
+// code creating the KalPatRec object:
+//
+// KalFitHack::_tracker
+// KalFitHack::_tcal
 ///////////////////////////////////////////////////////////////////////////////
 // framework
 #include "fhiclcpp/ParameterSet.h"
@@ -323,7 +329,7 @@ namespace mu2e
     double hit_error = _hiterr[iteration-1];
 
     if ((kres._krep != 0) && kres._fit.success()){
-      const Tracker& tracker = getTrackerOrThrow();
+      //      const Tracker& tracker = getTrackerOrThrow();
 // fetch the DetectorModel
       Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
       std::vector<TrkStrawHit*>::iterator ihigh;
@@ -344,7 +350,7 @@ namespace mu2e
       for (unsigned i=0; i<indices.size(); i++) {
         size_t istraw = indices[i]._index;
         const StrawHit& strawhit(straws->at(istraw));
-        const Straw& straw = tracker.getStraw(strawhit.strawIndex());
+        const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
 //-----------------------------------------------------------------------------
 // estimate  initial flightlength
 //-----------------------------------------------------------------------------
@@ -575,7 +581,6 @@ namespace mu2e
 
 //-----------------------------------------------------------------------------
   void KalFitHack::makeHits(KalFitResult& KRes, TrkT0 const& t0) {
-    const Tracker& tracker = getTrackerOrThrow();
     TrkDef const& tdef = *KRes._tdef;
 // compute the propagaion velocity
     double flt0 = tdef.helix().zFlight(0.0);
@@ -585,7 +590,7 @@ namespace mu2e
     for(unsigned iind=0;iind<nind;iind++){
       size_t istraw = tdef.strawHitIndices()[iind]._index;
       const StrawHit& strawhit(tdef.strawHitCollection()->at(istraw));
-      const Straw& straw = tracker.getStraw(strawhit.strawIndex());
+      const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
       double fltlen = tdef.helix().zFlight(straw.getMidPoint().z());
     // estimate arrival time at the wire
       TrkT0 hitt0(t0);
@@ -960,8 +965,6 @@ namespace mu2e
   void KalFitHack::initT0(TrkDef const& tdef, TrkT0& t0) {
     using namespace boost::accumulators;
 // make an array of all the hit times, correcting for propagation delay
-    const Tracker& tracker = getTrackerOrThrow();
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
     unsigned nind = tdef.strawHitIndices().size();
     std::vector<double> times;
     times.reserve(nind);
@@ -979,18 +982,18 @@ namespace mu2e
     for(unsigned iind=0;iind<nind;iind++){
       size_t istraw = tdef.strawHitIndices()[iind]._index;
       const StrawHit& strawhit(tdef.strawHitCollection()->at(istraw));
-      const Straw& straw = tracker.getStraw(strawhit.strawIndex());
+      const Straw& straw = _tracker->getStraw(strawhit.strawIndex());
       // compute the flightlength to this hit from z=0 (can be negative)
       double hflt = tdef.helix().zFlight(straw.getMidPoint().z()) - t0flt;
       // Use this to estimate the time for the track to reaches this hit from z=0
       double tprop = hflt/vflt;
       // estimate signal propagation time on the wire assuming the middle (average)
-      double vwire = tcal->SignalVelocity(straw.index());
+      double vwire = _tcal->SignalVelocity(straw.index());
       double teprop = straw.getHalfLength()/vwire;
       // correct the measured time for these effects: this gives the aveage time the particle passed this straw, WRT
       // when the track crossed Z=0
     // assume the average drift time is half the maximum drift distance.  This is a poor approximation, but good enough for now
-      if(iind==0)tcal->DistanceToTime(straw.index(),0.5*straw.getRadius(),zdir,d2t);
+      if(iind==0)_tcal->DistanceToTime(straw.index(),0.5*straw.getRadius(),zdir,d2t);
       double htime = strawhit.time() - tprop - teprop - d2t._tdrift;
       times.push_back(htime);
     }
@@ -1050,7 +1053,6 @@ namespace mu2e
   bool KalFitHack::updateT0(KalFitResult& KRes) {
     using namespace boost::accumulators;
     bool retval(false);
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
     KalRep* krep = KRes._krep;
 // need to have a valid fit
     if(krep->fitValid()) {
@@ -1080,7 +1082,7 @@ namespace mu2e
               if(doca > _mint0doca && doca < rad-_mint0doca){
                 // translate the DOCA into a time
                 D2T d2t;
-                tcal->DistanceToTime(hit->straw().index(),doca,krep->traj().direction(hit->fltLen()),d2t);
+                _tcal->DistanceToTime(hit->straw().index(),doca,krep->traj().direction(hit->fltLen()),d2t);
                 // subtracting hitT0 makes this WRT the previous track t0
                 hitt0.push_back(hit->time() - d2t._tdrift - hit->signalTime() - hit->hitT0()._t0);
                 // assume residual error dominates

@@ -117,14 +117,8 @@ namespace mu2e {
     produces<KalRepCollection>      (_iname);
     produces<KalRepPtrCollection>   (_iname);
 
-    //produces<KalRepPtrCollection>   (_iname_seed);
-
     produces<StrawHitFlagCollection>(_iname);
     produces<CalTimePeakCollection> (_iname);
-
-    //    produces<KalFitResultCollection>(_iname);
-
-    //    produces<KalRepPayloadCollection>();
 
                                         // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
@@ -191,6 +185,9 @@ namespace mu2e {
 
     _kfit.setTracker(_tracker);
     _kfit.setTrackerCalib(_trackerCalib);
+
+    _seedfit.setTracker(_tracker);
+    _seedfit.setTrackerCalib(_trackerCalib);
   }
 
 //-----------------------------------------------------------------------------

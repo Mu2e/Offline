@@ -44,7 +44,7 @@
 
  <class name="LsqSums4"/>
  <class name="mu2e::KalFitHack"/>
- <class name="Ref"/>
+<!--  <class name="Ref"/> -->
 
 <class name="mu2e::HelixFitHack"/>
 <class name="mu2e::HelixFitHackResult" />

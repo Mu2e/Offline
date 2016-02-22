@@ -28,7 +28,7 @@ public:
   void PlotXY  (int ISet = -1);
   void PlotZPhi(int ISet = -1);
 
-  ClassDef(Ref,0)
+  //  ClassDef(Ref,0)
 };
 
 #endif

@@ -29,7 +29,7 @@ helper=mu2e_helper();
 # that we could put all of the other classes in mu2e_CalPatRec.so and
 # only those that inherit from TNamed in mu2e_CalPatRec_dict.so
 
-dictlib = helper.make_dict_and_map_hack( [ 'mu2e_CaloCluster',
+mainlib = helper.make_mainlib( [ 'mu2e_CaloCluster',
                                            'mu2e_TrkPatRec',
 					   'mu2e_TrkReco',
 					   'mu2e_KalmanTests',
@@ -64,7 +64,7 @@ dictlib = helper.make_dict_and_map_hack( [ 'mu2e_CaloCluster',
                                            'boost_system',
                                            ] )
 
-helper.make_plugins( [ dictlib,
+helper.make_plugins( [ mainlib,
                        'mu2e_KalmanTests',
                        'mu2e_TrkReco',
                        'mu2e_Mu2eBTrk',
@@ -97,6 +97,42 @@ helper.make_plugins( [ dictlib,
                        'boost_filesystem',
                        'boost_system',
                      ] )
+
+helper.make_dict_and_map( [ mainlib,
+                            'mu2e_CaloCluster',
+                            'mu2e_TrkPatRec',
+                            'mu2e_TrkReco',
+                            'mu2e_KalmanTests',
+                            'mu2e_Mu2eBTrk',
+                            'mu2e_Mu2eUtilities',
+                            'mu2e_ConditionsService',
+                            'mu2e_GeometryService',
+                            'mu2e_BFieldGeom',
+                            'mu2e_CalorimeterGeom',
+                            'mu2e_TTrackerGeom',
+                            'mu2e_MCDataProducts',
+                            'mu2e_RecoDataProducts',
+                            'mu2e_Mu2eInterfaces',
+                            'mu2e_ConfigTools',
+                            'mu2e_DataProducts',
+                            babarlibs,
+                            'art_Framework_Core',
+                            'art_Framework_Principal',
+                            'art_Framework_Services_Registry',
+                            'art_Framework_Services_Optional_TFileService_service',
+                            'art_Framework_Services_Optional',
+                            'art_Persistency_Provenance',
+                            'art_Persistency_Common',
+                            'art_Utilities',
+                            'fhiclcpp',
+                            'cetlib',
+                            rootlibs,
+                            'Reflex',
+                            extrarootlibs,
+                            'CLHEP',
+                            'xerces-c',
+                            'boost_system',
+                            ] )
 
 # This tells emacs to view this file in python mode.
 # Local Variables:
