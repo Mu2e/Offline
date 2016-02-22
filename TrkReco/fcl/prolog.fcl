@@ -19,6 +19,6 @@ DoubletAmbigResolver : {
     minDriftDoublet                     : 0.3
     deltaDriftDoublet                   : 0.3
     excludeBothHits                     : 1
-    minChi2Ratio                        : 0.35
+    minChi2Ratio                        : 0.1
 }
 END_PROLOG
