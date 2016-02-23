@@ -54,7 +54,8 @@ physics: {
 
     analyzers: {
         
-	CaloExample: {
+	CaloExample: 
+	{
             module_type                : CaloExample
             g4ModuleLabel              : g4run
 	    generatorModuleLabel       : generate

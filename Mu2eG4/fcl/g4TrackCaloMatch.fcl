@@ -13,18 +13,20 @@ source: {
 
 services : {
     message               : @local::default_message
-    TFileService          : { fileName : "teatCaloMatch.root" }
-    RandomNumberGenerator : { }
-    //Timing : { }
+
+    TFileService          : { fileName : "testCaloMatch.root" }
+
+    RandomNumberGenerator: { }
+    
     user: {
-        GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt" }
+        GeometryService        : { inputFile      : "Mu2eG4/test/geom_cd3.txt" }
         ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
         GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-        SeedService            : @local::automaticSeeds
+        SeedService: @local::automaticSeeds
         G4Helper               : { }
-        //Timing               : { }
-	BTrkHelper : @local::BTrkHelperDefault  
-   }
+        //Timing                 : { }
+        BTrkHelper             : @local::BTrkHelperDefault  
+    }
 }
 
 physics: {
@@ -33,17 +35,16 @@ physics: {
         
         generate             : @local::generate
         g4run                : @local::g4run
-	
-        protonTimeMap        : { module_type : GenerateProtonTimes }
-        muonTimeMap          : { module_type : GenerateMuonLife }
-	
+
+        protonTimeMap        : @local::protonTimeMap
+        muonTimeMap          : @local::muonTimeMap
+        
         @table::Tracking.producers
 
 	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-        MakeCaloCrystalHits  : @local::MakeCaloCrystalHits
+        MakeCaloCrystalHits  : @local::MakeCaloCrystalHits      
 	MakeCaloProtoCluster : @local::MakeCaloProtoCluster
-	MakeCaloCluster      : @local::MakeCaloCluster
-	
+	MakeCaloCluster      : @local::MakeCaloCluster	
 
 	TrackCaloIntersection :
 	{
@@ -81,7 +82,8 @@ physics: {
 
     analyzers: {
 
-	CaloExample: {
+	CaloExample: 
+	{
             module_type                : CaloExample
             g4ModuleLabel              : g4run
 	    generatorModuleLabel       : generate
@@ -97,7 +99,8 @@ physics: {
 	    fitdirection               : 0 
 	}
 
-	ReadTrackCaloMatching: {
+	ReadTrackCaloMatching: 
+	{
             module_type             : ReadTrackCaloMatchingBis
 	    caloCrystalModuleLabel  : MakeCaloCrystalHits
 	    caloClusterModuleLabel  : MakeCaloCluster
@@ -110,7 +113,8 @@ physics: {
 	    virtualDetectorName     : virtualdetector	    
 	}
 
-	CaloTrackMatchExample: {
+	CaloTrackMatchExample: 
+	{
             module_type             : CaloTrackMatchExample
   	    fitterModuleLabel       : TRFDownstreameMinus
 	    fitparticle             : 11
@@ -139,9 +143,6 @@ physics: {
 
 services.user.SeedService.baseSeed         :  99
 services.user.SeedService.maxUniqueEngines :  20
-
-//switch cog type calculation for this version of TrackCaloMatching
-physics.producers.MakeCaloCluster.cogTypeName : LinearMod
 
 //needed for CaloExample
 physics.producers.MakeCaloReadoutHits.fillDetailedHit : true
