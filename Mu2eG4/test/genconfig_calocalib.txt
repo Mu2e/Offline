@@ -1,0 +1,27 @@
+//
+// Run-time config info for the event generators.
+//
+// $Id: genconfig_02.txt,v 1.12 2012/07/27 19:45:48 kutschke Exp $
+// $Author: kutschke $
+// $Date: 2012/07/27 19:45:48 $
+//
+// Original author Rob Kutschke
+
+// Which generators to enable.
+bool caloCalibGun.do    = true;
+
+// Limits on cos(polar angle):
+double caloCalibGun.cosmin =  -1.0;
+double caloCalibGun.cosmax =  1.0;
+double caloCalibGun.phimin =  0.0;
+double caloCalibGun.phimax =  1.5708;
+
+// Time limits in ns, relative to protons on target.
+double caloCalibGun.tmin  =  500.;
+double caloCalibGun.tmax  = 1694.;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
