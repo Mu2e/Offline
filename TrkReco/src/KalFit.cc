@@ -906,7 +906,7 @@ namespace mu2e
       retval = 0.0;
     } else if(ex == calo) {
       GeomHandle<Calorimeter> cg;
-      return cg->caloGeomInfo().enveloppeZ1();
+      return cg->caloGeomInfo().envelopeZ1();
     }
     return retval;
   }

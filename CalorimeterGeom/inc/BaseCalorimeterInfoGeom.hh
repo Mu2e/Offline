@@ -39,10 +39,10 @@ namespace mu2e {
            void caseThickness(double value)        {_caseThickness = value;}
            void roHalfTrans(double value)          {_roHalfTrans = value;}
            void roHalfThickness(double value)      {_roHalfThickness = value;}
-           void envelopeInRadius(double value)    {_envelopeInRadius = value;}
-           void envelopeOutRadius(double value)   {_envelopeOutRadius = value;}
-           void envelopeZ0(double value)          {_envelopeZ0 = value;}
-           void envelopeZ1(double value)          {_envelopeZ1 = value;} 
+           void envelopeInRadius(double value)     {_envelopeInRadius = value;}
+           void envelopeOutRadius(double value)    {_envelopeOutRadius = value;}
+           void envelopeZ0(double value)           {_envelopeZ0 = value;}
+           void envelopeZ1(double value)           {_envelopeZ1 = value;} 
 
            int    crystalNedges()       const      {return _crystalNumEdges;}
            bool   crystalShift()        const      {return _crystalShift;}
@@ -54,10 +54,10 @@ namespace mu2e {
            double caseThickness()       const      {return _caseThickness;}
            double roHalfTrans()         const      {return _roHalfTrans;}
            double roHalfThickness()     const      {return _roHalfThickness;}
-           double envelopeInRadius()   const      {return _envelopeInRadius;}
-           double envelopeOutRadius()  const      {return _envelopeOutRadius;}
-           double envelopeZ0()         const      {return _envelopeZ0;}
-           double envelopeZ1()         const      {return _envelopeZ1;}
+           double envelopeInRadius()    const      {return _envelopeInRadius;}
+           double envelopeOutRadius()   const      {return _envelopeOutRadius;}
+           double envelopeZ0()          const      {return _envelopeZ0;}
+           double envelopeZ1()          const      {return _envelopeZ1;}
            
 	   
 	   

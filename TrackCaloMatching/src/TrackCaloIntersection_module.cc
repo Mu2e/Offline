@@ -361,8 +361,8 @@ namespace mu2e {
 	 
 
 
-	 if (initRadius < cal.section(iSection).innerenvelopeR())  rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).innerenvelopeR());	 
-	 if (initRadius > cal.section(iSection).outerenvelopeR()) rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).outerenvelopeR()); 
+	 if (initRadius < cal.section(iSection).innerEnvelopeR())  rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).innerEnvelopeR());	 
+	 if (initRadius > cal.section(iSection).outerEnvelopeR()) rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).outerEnvelopeR()); 
 
 	 if (rangeStart > rangeEnd) return rangeEnd+1e-4;
 
@@ -426,8 +426,8 @@ namespace mu2e {
     {         
 
 	 double rangeForward(0);
-	 double caloRadiusIn  = cal.section(iSection).innerenvelopeR()  + 3*cal.caloGeomInfo().crystalHalfTrans();
-	 double caloRadiusOut = cal.section(iSection).outerenvelopeR() - 3*cal.caloGeomInfo().crystalHalfTrans();
+	 double caloRadiusIn  = cal.section(iSection).innerEnvelopeR()  + 3*cal.caloGeomInfo().crystalHalfTrans();
+	 double caloRadiusOut = cal.section(iSection).outerEnvelopeR() - 3*cal.caloGeomInfo().crystalHalfTrans();
 
 	 double range(rangeStart);
 

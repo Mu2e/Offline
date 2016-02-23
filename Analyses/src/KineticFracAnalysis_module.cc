@@ -1258,17 +1258,17 @@ namespace mu2e {
 	    bool hitSecondDisk = false;
 
 	    double safetyOffset = 0.;
-	    //	    std::cout << "inner, outer radii = " << cal.section(0).innerEnveloppeR() << " " << cal.section(1).innerEnveloppeR() << " " << cal.section(0).outerEnveloppeR() << " " << cal.section(0).outerEnveloppeR() << std::endl;
-	    if (radiusAtFirstDisk > cal.section(0).innerEnveloppeR() + safetyOffset && radiusAtFirstDisk < cal.section(0).outerEnveloppeR())
+	    //	    std::cout << "inner, outer radii = " << cal.section(0).innerEnvelopeR() << " " << cal.section(1).innerEnvelopeR() << " " << cal.section(0).outerEnvelopeR() << " " << cal.section(0).outerEnvelopeR() << std::endl;
+	    if (radiusAtFirstDisk > cal.section(0).innerEnvelopeR() + safetyOffset && radiusAtFirstDisk < cal.section(0).outerEnvelopeR())
 	      {
 	      hitFirstDisk = true;
 	      hitSecondDisk = false;
 	      //	      std::cout << "hit first disk " << hitFirstDisk << " " << hitSecondDisk << std::endl;
 	      }
 
-	    if (radiusAtFirstDisk < cal.section(0).innerEnveloppeR() - safetyOffset && !(radiusAtFirstDisk > cal.section(0).outerEnveloppeR())
+	    if (radiusAtFirstDisk < cal.section(0).innerEnvelopeR() - safetyOffset && !(radiusAtFirstDisk > cal.section(0).outerEnvelopeR())
 		&&
-		(radiusAtSecondDisk > cal.section(1).innerEnveloppeR() + safetyOffset && radiusAtSecondDisk < cal.section(1).outerEnveloppeR()))
+		(radiusAtSecondDisk > cal.section(1).innerEnvelopeR() + safetyOffset && radiusAtSecondDisk < cal.section(1).outerEnvelopeR()))
 	      {
 		hitFirstDisk = false;
 		hitSecondDisk = true;
@@ -1290,7 +1290,7 @@ namespace mu2e {
 	    bool foundMatch = false;
 	    double fracBest = -1;
 	    double timeBest = -100.;
-	    double minDist = cal.section(1).outerEnveloppeR()*cal.section(1).outerEnveloppeR(); // big number
+	    double minDist = cal.section(1).outerEnvelopeR()*cal.section(1).outerEnvelopeR(); // big number
 	    
       
 	    for (int ithclus = 0; ithclus < numberOfClusters; ++ithclus){

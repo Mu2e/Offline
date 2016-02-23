@@ -59,15 +59,15 @@ namespace mu2e {
 	   const CLHEP::HepRotation& inverseRotation()         const {return _inverseRotation;}
            const CLHEP::Hep3Vector&  frontFaceCenter()         const {return _frontFaceCenter; }
            const CLHEP::Hep3Vector&  backFaceCenter()          const {return _backFaceCenter; }
-	   double innerEnveloppeR()                            const {return _innerRadius;}
-	   double outerEnveloppeR()                            const {return _outerRadius;}
+	   double innerEnvelopeR()                             const {return _innerRadius;}
+	   double outerEnvelopeR()                             const {return _outerRadius;}
            
 	   void setOrigin(const CLHEP::Hep3Vector &orig)          {_origin          = orig;}
            void setOriginLocal(const CLHEP::Hep3Vector &orig)     {_originLocal     = orig;}
            void setRotation(const CLHEP::HepRotation &rot)        {_rotation        = rot; _inverseRotation = rot.inverse();}
            void setFrontFaceCenter(const CLHEP::Hep3Vector &pos)  {_frontFaceCenter = pos;}
            void setBackFaceCenter(const CLHEP::Hep3Vector &pos)   {_backFaceCenter  = pos;}
-           void setEnveloppeRad(double rin, double rout)          {_innerRadius=rin; _outerRadius=rout;}
+           void setEnvelopeRad(double rin, double rout)           {_innerRadius=rin; _outerRadius=rout;}
            
            void print(std::ostream &os = std::cout) const;
 

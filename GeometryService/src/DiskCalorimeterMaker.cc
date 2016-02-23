@@ -217,7 +217,7 @@ namespace mu2e {
             thisDisk->setFrontFaceCenter(frontFaceCenter);
             thisDisk->setBackFaceCenter(backFaceCenter);
             	    
-	    thisDisk->setenvelopeRad(dR1,dR2);
+	    thisDisk->setEnvelopeRad(dR1,dR2);
 
 
 

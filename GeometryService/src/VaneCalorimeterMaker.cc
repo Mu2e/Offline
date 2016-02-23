@@ -243,7 +243,7 @@ namespace mu2e{
 	      CLHEP::Hep3Vector backFaceCenter  = _calo->origin() + originLocal +  thisVane->rotation()*CLHEP::Hep3Vector(dX,0,0);
               thisVane->setFrontFaceCenter(frontFaceCenter);
               thisVane->setBackFaceCenter(backFaceCenter);
-	      thisVane->setenvelopeRad(_calo->_rMin, _calo->_rMax);
+	      thisVane->setEnvelopeRad(_calo->_rMin, _calo->_rMax);
 
 
               //fill the full Crystal List (direct access to crystal from calorimeter as requested from users)
