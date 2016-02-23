@@ -126,7 +126,7 @@ namespace mu2e {
 
        private:
 
-	   void fillTrkNtup(int itrk, KalRep const* kalrep,  TrkDifTraj const& traj, std::vector<TrkCaloInter> const& intersec);
+	   void fillTrkNtup(int itrk, KalRepPtr const &kalrep,  TrkDifTraj const& traj, std::vector<TrkCaloInter> const& intersec);
 	   void doExtrapolation(TrkCaloIntersectCollection& extrapolatedTracks, KalRepPtrCollection const& trksPtrColl);
 	   void findIntersectSection(Calorimeter const& cal, TrkDifTraj const& traj, 
 	                             HelixTraj const& trkHel, unsigned int iSection, std::vector<TrkCaloInter>& intersect);
@@ -192,7 +192,7 @@ namespace mu2e {
     }
 
     //-----------------------------------------------------------------------------
-    void TrackCaloIntersection::fillTrkNtup(int itrk, KalRep const* kalrep,  TrkDifTraj const& traj, std::vector<TrkCaloInter> const& intersec)
+    void TrackCaloIntersection::fillTrkNtup(int itrk, KalRepPtr const &kalrep,  TrkDifTraj const& traj, std::vector<TrkCaloInter> const& intersec)
     {
 	_trkid = itrk;
 	_trkint = intersec.size();    
@@ -250,19 +250,8 @@ namespace mu2e {
 	 {
 	      std::vector<TrkCaloInter> intersectVec;
 
-	      KalRepPtr trk  = trksPtrColl.at(itrk);
-	      KalRep*   krep = const_cast<KalRep*>( &(*trk) ); //exception: cast away const to extend track - ok with D.LBL Brown
-	      if ( !krep ) continue;
-
+	      KalRepPtr krep  = trksPtrColl.at(itrk);
 	      HelixTraj trkHel(krep->helix(krep->endFoundRange()).params(),krep->helix(krep->endFoundRange()).covariance());
-	      double endrange = trkHel.zFlight(endCalTracker.z()); 
-
-	      TrkErrCode rc = krep->extendThrough(endrange);
-	      if (rc.success() != 1 && rc.success() !=13)
-	      {
-        	if (_diagLevel) std::cout<<"TrackExtrapol ERROR: could not extend to range = "<<endrange<<", rc = "<<rc.success()<<"  for zend="<<endCalTracker.z()<<std::endl;
-        	continue;
-	      }
 
 	      if (_diagLevel>2)
 	      {
@@ -281,7 +270,7 @@ namespace mu2e {
 	      
 
 
-	      for (auto inter : intersectVec ) extrapolatedTracks.push_back( TrkCaloIntersect(inter.fSection, trk, itrk, inter.fSEntr,inter.fSEntrErr, inter.fSExit) );
+	      for (auto inter : intersectVec ) extrapolatedTracks.push_back( TrkCaloIntersect(inter.fSection, krep, itrk, inter.fSEntr,inter.fSEntrErr, inter.fSExit) );
 	      
 	      if (_diagLevel) std::cout<<"Found "<<intersectVec.size()<<" intersections "<<std::endl;
 	      if (_diagLevel) for (auto inter : intersectVec ) std::cout<<"Final "<<inter.fSection<<" "<<inter.fSEntr<<"  "<<inter.fSExit<<std::endl;
