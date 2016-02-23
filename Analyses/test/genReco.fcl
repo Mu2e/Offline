@@ -24,10 +24,10 @@
 BEGIN_PROLOG
   generatorSeq  : [ generate, g4run, protonTimeMap, muonTimeMap ]
 
-  hitMakerSeq   : [ MakeCaloReadoutHits, MakeCaloCrystalHits, @sequence::Tracking.DigiSim ]
+  hitMakerSeq   : [ MakeCaloReadoutHits, @sequence::Tracking.DigiSim ]
 
 # calorimeter cluster reconstruction
-  calRecoSeq    : [ MakeCaloProtoCluster, MakeCaloCluster ]
+  calRecoSeq    : [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
 
 # hit making for CalPatRec
   cprMakeHitSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
