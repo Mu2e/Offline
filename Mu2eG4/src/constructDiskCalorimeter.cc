@@ -98,11 +98,11 @@ namespace mu2e {
         
     DiskCalorimeter const & cal       = *(GeomHandle<DiskCalorimeter>());
 
-    //calorimeter mother enveloppe
-    G4double mother_inRadius          = cal.caloGeomInfo().enveloppeInRadius();
-    G4double mother_outRadius         = cal.caloGeomInfo().enveloppeOutRadius();
-    G4double mother_z0                = cal.caloGeomInfo().enveloppeZ0();
-    G4double mother_z1                = cal.caloGeomInfo().enveloppeZ1();
+    //calorimeter mother envelope
+    G4double mother_inRadius          = cal.caloGeomInfo().envelopeInRadius();
+    G4double mother_outRadius         = cal.caloGeomInfo().envelopeOutRadius();
+    G4double mother_z0                = cal.caloGeomInfo().envelopeZ0();
+    G4double mother_z1                = cal.caloGeomInfo().envelopeZ1();
     
     //crystal properties
     G4int    nRO                      = cal.caloGeomInfo().nROPerCrystal();

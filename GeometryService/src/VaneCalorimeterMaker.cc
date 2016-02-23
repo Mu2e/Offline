@@ -139,10 +139,10 @@ namespace mu2e{
         _calo->_caloGeomInfo.roHalfTrans(        config.getDouble("calorimeter.crystalReadoutHalfTrans") );
         _calo->_caloGeomInfo.roHalfThickness(    config.getDouble("calorimeter.crystalReadoutHalfThickness") );
         _calo->_caloGeomInfo.caseThickness(      config.getDouble("calorimeter.caseThickness") );
-        _calo->_caloGeomInfo.enveloppeInRadius(  config.getDouble("calorimeter.caloMotherInRadius") );
-        _calo->_caloGeomInfo.enveloppeOutRadius( config.getDouble("calorimeter.caloMotherOutRadius") );
-        _calo->_caloGeomInfo.enveloppeZ0(        config.getDouble("calorimeter.caloMotherZ0") );
-        _calo->_caloGeomInfo.enveloppeZ1(        config.getDouble("calorimeter.caloMotherZ1") );
+        _calo->_caloGeomInfo.envelopeInRadius(  config.getDouble("calorimeter.caloMotherInRadius") );
+        _calo->_caloGeomInfo.envelopeOutRadius( config.getDouble("calorimeter.caloMotherOutRadius") );
+        _calo->_caloGeomInfo.envelopeZ0(        config.getDouble("calorimeter.caloMotherZ0") );
+        _calo->_caloGeomInfo.envelopeZ1(        config.getDouble("calorimeter.caloMotherZ1") );
 
         _calo->_caloGeomInfo.apdMeanNoise(       config.getDouble("calorimeter.meanNoiseAPD", 0.0) );
         _calo->_caloGeomInfo.apdSigmaNoise(      config.getDouble("calorimeter.sigmaNoiseAPD", 0.03) );
@@ -243,7 +243,7 @@ namespace mu2e{
 	      CLHEP::Hep3Vector backFaceCenter  = _calo->origin() + originLocal +  thisVane->rotation()*CLHEP::Hep3Vector(dX,0,0);
               thisVane->setFrontFaceCenter(frontFaceCenter);
               thisVane->setBackFaceCenter(backFaceCenter);
-	      thisVane->setEnveloppeRad(_calo->_rMin, _calo->_rMax);
+	      thisVane->setenvelopeRad(_calo->_rMin, _calo->_rMax);
 
 
               //fill the full Crystal List (direct access to crystal from calorimeter as requested from users)
@@ -291,16 +291,16 @@ namespace mu2e{
             double calozEnd           = _calo->_origin.z() + 2*dX;
 
 
-            if ( (_calo->_rMin + 2*dY) > _calo->_caloGeomInfo.enveloppeOutRadius())
+            if ( (_calo->_rMin + 2*dY) > _calo->_caloGeomInfo.envelopeOutRadius())
                      {throw cet::exception("VaneCaloGeom") << "calorimeter outer radius larger than calorimeter mother \n";}
 
-            if (  _calo->_rMin < _calo->_caloGeomInfo.enveloppeInRadius())
+            if (  _calo->_rMin < _calo->_caloGeomInfo.envelopeInRadius())
                      {throw cet::exception("VaneCaloGeom") << "calorimeter inner radius smaller than calorimeter mother \n";}
 
-            if (calozBegin <  _calo->_caloGeomInfo.enveloppeZ0() || calozBegin >  _calo->_caloGeomInfo.enveloppeZ1())
+            if (calozBegin <  _calo->_caloGeomInfo.envelopeZ0() || calozBegin >  _calo->_caloGeomInfo.envelopeZ1())
                      {throw cet::exception("VaneCaloGeom") << "calorimeter.calorimeterZFront   outside calorimeter mother.\n";}
 
-            if (calozEnd   > _calo->_caloGeomInfo.enveloppeZ1())
+            if (calozEnd   > _calo->_caloGeomInfo.envelopeZ1())
                      {throw cet::exception("VaneCaloGeom") << "calorimeter z-coordinate extends outside calorimeter mother.\n";}
 
 

@@ -39,10 +39,10 @@ namespace mu2e {
            void caseThickness(double value)        {_caseThickness = value;}
            void roHalfTrans(double value)          {_roHalfTrans = value;}
            void roHalfThickness(double value)      {_roHalfThickness = value;}
-           void enveloppeInRadius(double value)    {_enveloppeInRadius = value;}
-           void enveloppeOutRadius(double value)   {_enveloppeOutRadius = value;}
-           void enveloppeZ0(double value)          {_enveloppeZ0 = value;}
-           void enveloppeZ1(double value)          {_enveloppeZ1 = value;} 
+           void envelopeInRadius(double value)    {_envelopeInRadius = value;}
+           void envelopeOutRadius(double value)   {_envelopeOutRadius = value;}
+           void envelopeZ0(double value)          {_envelopeZ0 = value;}
+           void envelopeZ1(double value)          {_envelopeZ1 = value;} 
 
            int    crystalNedges()       const      {return _crystalNumEdges;}
            bool   crystalShift()        const      {return _crystalShift;}
@@ -54,10 +54,10 @@ namespace mu2e {
            double caseThickness()       const      {return _caseThickness;}
            double roHalfTrans()         const      {return _roHalfTrans;}
            double roHalfThickness()     const      {return _roHalfThickness;}
-           double enveloppeInRadius()   const      {return _enveloppeInRadius;}
-           double enveloppeOutRadius()  const      {return _enveloppeOutRadius;}
-           double enveloppeZ0()         const      {return _enveloppeZ0;}
-           double enveloppeZ1()         const      {return _enveloppeZ1;}
+           double envelopeInRadius()   const      {return _envelopeInRadius;}
+           double envelopeOutRadius()  const      {return _envelopeOutRadius;}
+           double envelopeZ0()         const      {return _envelopeZ0;}
+           double envelopeZ1()         const      {return _envelopeZ1;}
            
 	   
 	   
@@ -108,10 +108,10 @@ namespace mu2e {
           double _roHalfThickness;
           double _caseThickness;
 
-          double _enveloppeInRadius;
-          double _enveloppeOutRadius;
-          double _enveloppeZ0;
-          double _enveloppeZ1;
+          double _envelopeInRadius;
+          double _envelopeOutRadius;
+          double _envelopeZ0;
+          double _envelopeZ1;
 	   
           double _nonUniformity;
           double _timeGap;

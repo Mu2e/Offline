@@ -243,7 +243,7 @@ namespace mu2e {
     void TrackCaloIntersection::doExtrapolation(TrkCaloIntersectCollection& extrapolatedTracks, KalRepPtrCollection const& trksPtrColl)
     {
 	 Calorimeter const&  cal = *(GeomHandle<Calorimeter>());
-	 CLHEP::Hep3Vector   endCalTracker = cal.toTrackerFrame( CLHEP::Hep3Vector(cal.origin().x(),cal.origin().y(),cal.caloGeomInfo().enveloppeZ1()) );
+	 CLHEP::Hep3Vector   endCalTracker = cal.toTrackerFrame( CLHEP::Hep3Vector(cal.origin().x(),cal.origin().y(),cal.caloGeomInfo().envelopeZ1()) );
 	 
 	 
 	 for (unsigned int itrk=0; itrk< trksPtrColl.size(); ++itrk )
@@ -352,17 +352,17 @@ namespace mu2e {
 
     //-----------------------------------------------------------------------------
     // find two starting points inside and outside of the calorimeter, either move out if we're in, or move in if we're out
-    // if we are outside the calorimeter enveloppe, fast forward to the enveloppe
+    // if we are outside the calorimeter envelope, fast forward to the envelope
     double TrackCaloIntersection::scanIn(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
     {         
 
-	 //check if we're inside the rdial enveloppe, if not, fast forward to it
+	 //check if we're inside the rdial envelope, if not, fast forward to it
 	 double initRadius = radiusAtRange(traj,rangeStart);
 	 
 
 
-	 if (initRadius < cal.section(iSection).innerEnveloppeR())  rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).innerEnveloppeR());	 
-	 if (initRadius > cal.section(iSection).outerEnveloppeR()) rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).outerEnveloppeR()); 
+	 if (initRadius < cal.section(iSection).innerenvelopeR())  rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).innerenvelopeR());	 
+	 if (initRadius > cal.section(iSection).outerenvelopeR()) rangeStart += extendToRadius(trkHel, traj, rangeStart, cal.section(iSection).outerenvelopeR()); 
 
 	 if (rangeStart > rangeEnd) return rangeEnd+1e-4;
 
@@ -421,13 +421,13 @@ namespace mu2e {
     }
     
     //-----------------------------------------------------------------------------
-    //same as ScanOut, but with an optimization for the disk geometry, forwarding close to the limits of the calorimeter enveloppe if we're inside the calorimeter volume
+    //same as ScanOut, but with an optimization for the disk geometry, forwarding close to the limits of the calorimeter envelope if we're inside the calorimeter volume
     double TrackCaloIntersection::scanOutDisk(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
     {         
 
 	 double rangeForward(0);
-	 double caloRadiusIn  = cal.section(iSection).innerEnveloppeR()  + 3*cal.caloGeomInfo().crystalHalfTrans();
-	 double caloRadiusOut = cal.section(iSection).outerEnveloppeR() - 3*cal.caloGeomInfo().crystalHalfTrans();
+	 double caloRadiusIn  = cal.section(iSection).innerenvelopeR()  + 3*cal.caloGeomInfo().crystalHalfTrans();
+	 double caloRadiusOut = cal.section(iSection).outerenvelopeR() - 3*cal.caloGeomInfo().crystalHalfTrans();
 
 	 double range(rangeStart);
 

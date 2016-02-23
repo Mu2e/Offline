@@ -114,10 +114,10 @@ namespace mu2e {
           _calo->_caloGeomInfo.roHalfTrans(        config.getDouble("calorimeter.crystalReadoutHalfTrans") );
           _calo->_caloGeomInfo.roHalfThickness(    config.getDouble("calorimeter.crystalReadoutHalfThickness") );
           _calo->_caloGeomInfo.caseThickness(      config.getDouble("calorimeter.caseThickness") );
-          _calo->_caloGeomInfo.enveloppeInRadius(  config.getDouble("calorimeter.caloMotherInRadius") );
-          _calo->_caloGeomInfo.enveloppeOutRadius( config.getDouble("calorimeter.caloMotherOutRadius") );
-          _calo->_caloGeomInfo.enveloppeZ0(        config.getDouble("calorimeter.caloMotherZ0") );
-          _calo->_caloGeomInfo.enveloppeZ1(        config.getDouble("calorimeter.caloMotherZ1") );
+          _calo->_caloGeomInfo.envelopeInRadius(  config.getDouble("calorimeter.caloMotherInRadius") );
+          _calo->_caloGeomInfo.envelopeOutRadius( config.getDouble("calorimeter.caloMotherOutRadius") );
+          _calo->_caloGeomInfo.envelopeZ0(        config.getDouble("calorimeter.caloMotherZ0") );
+          _calo->_caloGeomInfo.envelopeZ1(        config.getDouble("calorimeter.caloMotherZ1") );
 
           _calo->_caloGeomInfo.apdMeanNoise(       config.getDouble("calorimeter.meanNoiseAPD", 0.0) );
           _calo->_caloGeomInfo.apdSigmaNoise(      config.getDouble("calorimeter.sigmaNoiseAPD", 0.03) );
@@ -217,7 +217,7 @@ namespace mu2e {
             thisDisk->setFrontFaceCenter(frontFaceCenter);
             thisDisk->setBackFaceCenter(backFaceCenter);
             	    
-	    thisDisk->setEnveloppeRad(dR1,dR2);
+	    thisDisk->setenvelopeRad(dR1,dR2);
 
 
 
@@ -293,16 +293,16 @@ namespace mu2e {
 
 
 
-        //check enveloppe dimensions
+        //check envelope dimensions
         for (unsigned int i=0;i<_calo->_nSections;++i)
         {
           if (_calo->_diskInnerRadius[i] > _calo->_diskOuterRadius[i])
               throw cet::exception("DiskCaloGeom") << "calorimeter.diskInnerRadius > calorimeter.diskOuterRadius for index="<<i<<".\n";
 
-          if ( (_calo->_diskOuterRadius[i] + caseThickness) > _calo->_caloGeomInfo.enveloppeOutRadius())
+          if ( (_calo->_diskOuterRadius[i] + caseThickness) > _calo->_caloGeomInfo.envelopeOutRadius())
                       throw cet::exception("DiskCaloGeom") << "calorimeter.diskOuterRadius larger than calorimeter mother for index="<<i<<".\n";
 
-          if ( (_calo->_diskInnerRadius[i] - caseThickness) < _calo->_caloGeomInfo.enveloppeInRadius())
+          if ( (_calo->_diskInnerRadius[i] - caseThickness) < _calo->_caloGeomInfo.envelopeInRadius())
                       {throw cet::exception("DiskCaloGeom") << "calorimeter.diskInnerRadius smaller than calorimeter mother for index="<<i<<".\n";}
 
         }
@@ -313,10 +313,10 @@ namespace mu2e {
         double calozEnd     = _calo->_origin.z() + diskLength + _calo->_diskSeparation[_calo->_nSections-1];
         double calozBegin   = _calo->_origin.z();
 
-        if (calozBegin < (_calo->_caloGeomInfo.enveloppeZ0()-0.1) || calozBegin > _calo->_caloGeomInfo.enveloppeZ1())
+        if (calozBegin < (_calo->_caloGeomInfo.envelopeZ0()-0.1) || calozBegin > _calo->_caloGeomInfo.envelopeZ1())
             throw cet::exception("DiskCaloGeom") << "calorimeter.calorimeterZFront outside calorimeter mother (need 1mm margin for virtual detectors).\n";
 
-        if (calozEnd   > (_calo->_caloGeomInfo.enveloppeZ1()-0.1))
+        if (calozEnd   > (_calo->_caloGeomInfo.envelopeZ1()-0.1))
             throw cet::exception("DiskCaloGeom") << "calorimeter z-coordinate extends outside calorimeter mother (need 1mm margin for virtual detectors).\n";
 
 
@@ -324,10 +324,10 @@ namespace mu2e {
         //look at pipes
         for (int i=0;i<_calo->caloGeomInfo().nPipes();++i)
         {
-          if ( (_calo->_caloGeomInfo.pipeTorRadius().at(i)- _calo->_caloGeomInfo.pipeRadius()) <   _calo->_caloGeomInfo.enveloppeInRadius())
+          if ( (_calo->_caloGeomInfo.pipeTorRadius().at(i)- _calo->_caloGeomInfo.pipeRadius()) <   _calo->_caloGeomInfo.envelopeInRadius())
             throw cet::exception("DiskCaloGeom") << "element "<<i<<" of calorimeter.pipeTorRadius is smaller than disk inner radius\n";
 
-          if ( (_calo->_caloGeomInfo.pipeTorRadius().at(i)+ _calo->_caloGeomInfo.pipeRadius()) >  _calo->_caloGeomInfo.enveloppeOutRadius())
+          if ( (_calo->_caloGeomInfo.pipeTorRadius().at(i)+ _calo->_caloGeomInfo.pipeRadius()) >  _calo->_caloGeomInfo.envelopeOutRadius())
             throw cet::exception("DiskCaloGeom") << "element "<<i<<" of calorimeter.pipeTorRadius is larger than disk outer radius\n";
         }
 
