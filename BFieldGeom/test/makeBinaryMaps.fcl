@@ -35,11 +35,12 @@ physics : {
 
     generate             : @local::generate
     g4run                : @local::g4run
-    protonTimeMap        : { module_type : GenerateProtonTimes }
-    muonTimeMap          : { module_type : GenerateMuonLife }
-    makeSH               : @local::makeSH
+    protonTimeMap        : @local::protonTimeMap
+    muonTimeMap          : @local::muonTimeMap
+    makeSD               : @local::makeSD
+    makeSH               : @local::makeSHfromSD
     CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    CaloCrystalHitsMaker : @local::MakeCaloCrystalHitsNew
 
   }
 
@@ -65,7 +66,7 @@ physics : {
   }
 
 
-  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker ]
+  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker ]
   e1 : [checkhits, readStrawHits ]
 
   trigger_paths  : [p1]
@@ -73,8 +74,8 @@ physics : {
 
 }
 
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 
 physics.producers.g4run.SDConfig.enableSD : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
 
