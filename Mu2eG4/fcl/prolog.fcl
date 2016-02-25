@@ -66,7 +66,7 @@ mu2eg4DefaultResourceLimits: {
 }
 #----------------
 mu2eg4NoVisualization: {
-    macro : ""
+    initMacro : ""
     GUIMacro : ""
 }
 #----------------

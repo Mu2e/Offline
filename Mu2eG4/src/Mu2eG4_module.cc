@@ -222,7 +222,7 @@ namespace mu2e {
     _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
     _tmvlevel(pSet.get<int>("debug.trackingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("debug.checkFieldMap",0)),
-    _visMacro(pSet.get<std::string>("visualization.macro")),
+    _visMacro(pSet.get<std::string>("visualization.initMacro")),
     _visGUIMacro(pSet.get<std::string>("visualization.GUIMacro")),
     _g4Macro(pSet.get<std::string>("g4Macro","")),
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
