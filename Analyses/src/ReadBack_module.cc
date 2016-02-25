@@ -22,7 +22,7 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
+#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "GeneralUtilities/inc/TwoLinePCA.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -320,7 +320,7 @@ namespace mu2e {
                                         "Number of stopping target foils vs foil of origin",
                                         20, 0., 20., 20, 0, 20. );
 
-    // Histograms for the PointTrajectory Collection
+    // Histograms for the MCTrajectory Collection
     _hNPointTrajectories      = tfs->make<TH1F>( "hNPointTrajectories",      "Number of PointTrajectories stored",      50,  0.,  50. );
     _hNPointsPerTrajectory    = tfs->make<TH1F>( "hNPointsPerTrajectory",    "Number of Points Per Trajectory",        100,  0., 200. );
     _hNPointsPerTrajectoryLog = tfs->make<TH1F>( "hNPointsPerTrajectoryLog", "Log10(Number of Points Per Trajectory)", 120, -1.,   5. );
@@ -1166,15 +1166,15 @@ namespace mu2e {
 
   void ReadBack::doPointTrajectories ( const art::Event& event ){
 
-    art::Handle<PointTrajectoryCollection> trajsHandle;
+    art::Handle<MCTrajectoryCollection> trajsHandle;
     event.getByLabel(_g4ModuleLabel,trajsHandle);
-    PointTrajectoryCollection const& trajs(*trajsHandle);
+    MCTrajectoryCollection const& trajs(*trajsHandle);
 
     _hNPointTrajectories->Fill( trajs.size() );
 
-    for ( PointTrajectoryCollection::const_iterator i=trajs.begin();
+    for ( MCTrajectoryCollection::const_iterator i=trajs.begin();
           i != trajs.end(); ++i ){
-      const PointTrajectory& traj(i->second);
+      const MCTrajectory& traj(i->second);
 
       _hNPointsPerTrajectory->Fill( traj.size() );
 
