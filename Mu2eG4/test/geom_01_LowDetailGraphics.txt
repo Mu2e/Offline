@@ -18,8 +18,6 @@ bool ttracker.envelopeVisible       = false;
 bool ttracker.planeEnvelopeVisible = false;
 bool ttracker.supportVisible        = false;
 
-string g4.physicsListName = "QGSP_BERT";
-
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
 // mode:c++

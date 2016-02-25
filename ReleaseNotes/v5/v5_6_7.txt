@@ -2,6 +2,13 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_6_7
 
+6) 25 Feb 2016  gandr
+   Switch from G4_module to Mu2eG4_module in all jobs that use @local::g4run.
+
+5) 25 Feb 2016  gandr
+   Switch ReadBack_module from deprecated PointTrajectory to the
+   MCTrajectory class.
+
 4) 16 Feb 2016  dnbrow01
    Added materials Calcite, Dolomite, CA7Backfill, and RockBackfill in 
    anticipation of inserting backfill around Mu2e building in Offline

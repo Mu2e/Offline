@@ -4,35 +4,6 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
-# Run geant4 on the generated event.
-#------------------------------------------------------------------------------
-g4run : {      			   
-    module_type             : G4
-    generatorModuleLabel    : generate
-    diagLevel               : 0
-    trackingVerbosityLevel  : 0
-    simParticleNumberOffset : 0
-    BirksConsts             : {} // e.g. { G4_POLYSTYRENE : 0.07943 } // { string : mm/MeV }
-    visGUIMacro             : "Mu2eG4/test/visqtGUI.mac"
-
-					# Can selectively enable sensitive detectors here
-    SDConfig : {
-	enableAllSDs : false  # this will activate all SDs listed in StepInstanceName enum
-
-# activate minimal set of sensitive detectors used by everybody
-	enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
-	
-	# Make arbitrary LogicalVolumes sensitive:
-	# sensitiveVolumes: [ ToyDS3Vacuum ]
-    }
-    
-    SimParticlePrinter : {
-	enabled             : false
-	primariesOnly       : false
-	prefix              : "SimParticle: "
-    }
-}
-#------------------------------------------------------------------------------
 # Configuration blocks for the Mu2eG4 module
 #------------------------------------------------------------------------------
 
@@ -67,7 +38,7 @@ mu2eg4DefaultResourceLimits: {
 #----------------
 mu2eg4NoVisualization: {
     initMacro : ""
-    GUIMacro : ""
+    GUIMacro : "Mu2eG4/test/visqtGUI.mac"
 }
 #----------------
 mu2eg4NoTrajectories: {
@@ -136,7 +107,12 @@ mu2eg4runDefaultSingleStage: {
     generatorModuleLabel: generate
     MultiStageParameters : {}
 
-    SDConfig : { TimeVD: { times: [] } enableAllSDs: true }
+    SDConfig : {
+	enableAllSDs : false  # this would activate all SDs listed in StepInstanceName enum
+	# activate minimal set of sensitive detectors used by everybody
+	enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
+	TimeVD: { times: [] } 
+    }
 
     debug:  @local::mu2eg4DefaultDebug
     visualization: @local::mu2eg4NoVisualization
@@ -147,6 +123,10 @@ mu2eg4runDefaultSingleStage: {
 	prefix              : "SimParticle: "
     }
 }
+
+#------------------------------------------------------------------------------
+# Many legacy configurations use "g4run"
+g4run: @local::mu2eg4runDefaultSingleStage
 
 #----------------------------------------------------------------
 END_PROLOG

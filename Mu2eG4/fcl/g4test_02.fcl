@@ -51,12 +51,15 @@ physics : {
 
 }
 
+// This loads faster than the default physics list
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
+
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  0
 services.SeedService.maxUniqueEngines :  20
 
 // Enable G4 graphics with the yz view.
-physics.producers.g4run.visMacro : "Mu2eG4/test/visyz.mac"
+physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/visyz.mac"
 
 // Print out sim particles
 physics.producers.g4run.SimParticlePrinter : {
