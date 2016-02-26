@@ -54,7 +54,7 @@ string ttracker.mat.strawgas  = "StrawGas";
 string ttracker.mat.wire      = "G4_W";
 vector<string> ttracker.strawMaterials = { "G4_MYLAR", "StrawGas", "G4_W" };
 // define an inactive length at each end of every straw
-double ttracker.passivationMargin = 10.;
+double ttracker.passivationMargin = -4.;
 // Define the parameters of the metal coatings on the straws and wires.
 double ttracker.straw.wallOuterMetal.thickness  = 0.00005;
 string ttracker.straw.wallOuterMetal.material   = "G4_Al";
