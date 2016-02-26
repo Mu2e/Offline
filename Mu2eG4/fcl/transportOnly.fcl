@@ -21,7 +21,7 @@ services : {
   RandomNumberGenerator : { }
 
   user : {
-    GeometryService        : { inputFile      : "Mu2eG4/test/transportOnlyGeom.txt"  }
+    GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
     BTrkHelper             : @local::BTrkHelperDefault
@@ -37,21 +37,6 @@ physics : {
 
     generate : @local::generate
     g4run :  @local::g4run
-
-    g4run :
-    {
-      module_type          : G4
-      diagLevel            : 1
-      generatorModuleLabel : generate
-#      visMacro             : "Mu2eG4/test/visxy.mac"
-#      visMacro             : "Mu2eG4/test/visxz.mac"
-#      visMacro             : "Mu2eG4/test/visyz.mac"
-#      visMacro             : "Mu2eG4/test/vis45.mac"
-#      visMacro             : "Mu2eG4/test/visTree.mac"
-#      visMacro             : "Mu2eG4/test/vismqt.mac"
-       visGUIMacro          : "Mu2eG4/test/visqtGUI.mac"
-# visGUIMacro is used with the Qt GUI
-    }
 
     protonTimeMap        : { module_type : GenerateProtonTimes }
     muonTimeMap          : { module_type : GenerateMuonLife }
@@ -112,6 +97,10 @@ outputs:  {
   }
 
 }
+
+// Disable all physics except transport.
+physics.producers.g4run.physics.physicsListName: "Minimal"
+physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.user.SeedService.baseSeed         :  0
