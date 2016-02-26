@@ -1,5 +1,3 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_6_7
 
 6) 25 Feb 2016  gandr
@@ -10,18 +8,15 @@ Still under construction
    MCTrajectory class.
 
 4) 16 Feb 2016  dnbrow01
-   Added materials Calcite, Dolomite, CA7Backfill, and RockBackfill in 
+   Added materials Calcite, Dolomite, CA7Backfill, and RockBackfill in
    anticipation of inserting backfill around Mu2e building in Offline
    Geometry model.
    modified:   Mu2eG4/src/ConstructMaterials.cc
- 
-1) Feb 12, 2015 kutschke
-   GeometryService/src/TTrackerMaker.cc
-     - The makeStation code made two copies of ipln1 rather than one
-       copy each of ipln1 and ipln2.
-     - The Station objects are never used in the construction of the G4
-       representation: so the G4 simulations are OK.
-     - We will investigate to learn if anyone relied on these.
+
+3) Feb 13, 2015 brownd
+   TrkPatRec/fcl/prolog.fcl
+    - Make extending the track fit downstream through the calorimeter the default
+    for all particle types.
 
 2) Feb 12, 2015 brownd
    HitMakers/src/MakeStereoHits_module.cc
@@ -29,8 +24,10 @@ Still under construction
     The only assumption made is that even and odd stations have reversed
     planes.
 
-3) Feb 13, 2015 brownd
-   TrkPatRec/fcl/prolog.fcl
-    - Make extending the track fit downstream through the calorimeter the default
-    for all particle types.
-
+1) Feb 12, 2015 kutschke
+   GeometryService/src/TTrackerMaker.cc
+     - The makeStation code made two copies of ipln1 rather than one
+       copy each of ipln1 and ipln2.
+     - The Station objects are never used in the construction of the G4
+       representation: so the G4 simulations are OK.
+     - We will investigate to learn if anyone relied on these.
