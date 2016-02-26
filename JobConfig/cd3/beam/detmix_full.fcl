@@ -100,14 +100,14 @@ outputs: {
 
 # Set mean values for the number of events to mix for each process.
 # These are relative to a single proton on target.
-# See docdb-6273
-physics.filters.flashMixer.detail.mean    :  2.02E-03
-physics.filters.ootMixer.detail.mean      :  4.91E-05
-physics.filters.neutronMixer.detail.mean  :  2.52E-05
-physics.filters.dioMixer.detail.mean      :  1.03E-05
-physics.filters.photonMixer.detail.mean   :  9.95E-06
-physics.filters.protonMixer.detail.mean   :  8.36E-07
-physics.filters.deuteronMixer.detail.mean :  1.58E-07
+# See docdb-6273.  These are the pass 2 numbers (s4 with Offline v5_6_6)
+physics.filters.flashMixer.detail.mean    : 1.89e-3
+physics.filters.ootMixer.detail.mean      : 4.70e-5
+physics.filters.neutronMixer.detail.mean  : 2.36e-5
+physics.filters.dioMixer.detail.mean      : 8.37e-6
+physics.filters.photonMixer.detail.mean   : 9.50e-6
+physics.filters.protonMixer.detail.mean   : 8.05e-7
+physics.filters.deuteronMixer.detail.mean : 1.74e-7
 
 # We don't have enough statistics on the beam flash component to
 # instist on unique events in the mix. I expect that randomLimReplace
