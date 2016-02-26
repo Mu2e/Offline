@@ -1,5 +1,10 @@
            Release notes for Mu2e Offline software, v5_6_7
 
+7) 26 Feb 2016  gandr
+   Change passsivation at straw ends from +10 mm to -4mm.  This
+   means that straws will have gain inside the support structure, which
+   is what the current design is.
+
 6) 25 Feb 2016  gandr
    Switch from G4_module to Mu2eG4_module in all jobs that use @local::g4run.
 
