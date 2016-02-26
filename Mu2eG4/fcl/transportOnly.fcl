@@ -20,15 +20,12 @@ services : {
   TFileService          : { fileName : "transportOnly.root" }
   RandomNumberGenerator : { }
 
-  user : {
-    GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-    BTrkHelper             : @local::BTrkHelperDefault
-    G4Helper               : { }
-    SeedService            : @local::automaticSeeds
-  }
-
+  GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+  BTrkHelper             : @local::BTrkHelperDefault
+  G4Helper               : { }
+  SeedService            : @local::automaticSeeds
 }
 
 physics : {
@@ -103,8 +100,8 @@ physics.producers.g4run.physics.physicsListName: "Minimal"
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 
 physics.producers.generate.inputfile   : "Mu2eG4/test/genconfig_tonly.txt"
 physics.producers.makeSH.diagLevel     : 0
