@@ -33,19 +33,21 @@ caloRecoSeq: [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
 //----------------------------------------------------------------
 // PID inputs
 pidInputsTable: {
-   TrkExtrapolDem       : { @table::TrackCaloIntersection
-      fitparticle       : 11
-      fitterModuleLabel : TRFDownstreameMinus // MergePatRecDem 
+   TrkExtrapolDem: {
+      @table::TrackCaloIntersection
+      fitparticle: 11
+      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
    }
-   CaloMatchingDem      : { @table::TrackCaloMatching 
-      fitparticle                  : 11
-      fitdirection                 : 0
-      fitterModuleLabel            : TRFDownstreameMinus // MergePatRecDem
-      trkToCaloExtrapolModuleLabel : TrkExtrapolDem
+   TrackCaloMatchingDem: {
+      @table::TrackCaloMatching
+      fitparticle: 11
+      fitdirection: 0
+      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
+      trkToCaloExtrapolModuleLabel: TrkExtrapolDem
    }
 }
 
-pidInputsSeq: [TrkExtrapolDem, CaloMatchingDem]
+pidInputsSeq: [TrkExtrapolDem, TrackCaloMatchingDem]
 
 // Analysis
 PhysicsCuts: {
@@ -98,17 +100,6 @@ physics : {
       @table::pidInputsTable
 
       //------------------------------------------------------------------------------
-      //------------------------------------------------------------------------------
-//
-//      AvikPID              : { @table::AvikPID           
-//	 trkPatRecDemModuleLabel : MergePatRecDem 
-//	 trkPatRecDmmModuleLabel : MergePatRecDmm 
-//      }
-//
-//      TrackSummaryMaker:    { @table::TrackSummaryMaker
-//	 trackInput : "MergePatRecDem:DownstreameMinus"
-//      }
-
    }
    
    //------------------------------------------------------------------------------
@@ -132,6 +123,7 @@ physics : {
 
 	 // Dowstream e- track input
 	 trackDemInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
+	 caloMatchDemInput: "TrackCaloMatchingDem"
 
 	 weights: []
 

@@ -47,6 +47,11 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "TrkDiag/inc/KalDiag.hh"
 
+#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
+//#include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
+//#include "RecoDataProducts/inc/TrkCaloMatch.hh"
+#include "RecoDataProducts/inc/TrkCaloIntersect.hh"
+
 #include "TH1.h"
 #include "TH2.h"
 
@@ -131,6 +136,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     typedef std::vector<art::InputTag> InputTags;
     art::InputTag trackDemInput_;
+    art::InputTag caloMatchDemInput_;
     InputTags weights_;
     PhysicsCuts cuts_;
     KalDiag kdiag_;
@@ -151,6 +157,7 @@ namespace mu2e {
     X(d0)                                             \
     X(maxd)                                           \
     X(t0)                                             \
+    X(caloMatch)                                      \
     X(momentum)                                       \
     X(accepted)
 
@@ -169,13 +176,15 @@ namespace mu2e {
 
 #undef TRACK_LEVEL_CUTS
 
-    TrkCut processTrack(const KalRep& trk);
+    TrkCut processTrack(const art::Ptr<KalRep>& trk, const art::Event& evt);
+    const TrackClusterMatch* findCaloMatch(const art::Ptr<KalRep>& trk, const art::Event& evt);
   };
 
   //================================================================
   CutAndCountAnalysis::CutAndCountAnalysis(const fhicl::ParameterSet& pset)
     : art::EDAnalyzer(pset)
     , trackDemInput_(pset.get<art::InputTag>("trackDemInput"))
+    , caloMatchDemInput_(pset.get<art::InputTag>("caloMatchDemInput"))
     , weights_(pset.get<std::vector<art::InputTag> >("weights"))
     , cuts_(pset.get<fhicl::ParameterSet>("physicsCuts"))
     , kdiag_(pset.get<fhicl::ParameterSet>("kalDiag"))
@@ -202,7 +211,7 @@ namespace mu2e {
 
     int acceptedTracksCount = 0;
     for(const auto& ptr: *ih) {
-      TrkCut c = processTrack(*ptr);
+      TrkCut c = processTrack(ptr, event);
       h_cuts_r_->Fill(double(c));
       for(int cut=0; cut<=int(c); cut++) {
         h_cuts_p_->Fill(cut);
@@ -216,13 +225,13 @@ namespace mu2e {
   }
 
   //================================================================
-  CutAndCountAnalysis::TrkCut CutAndCountAnalysis::processTrack(const KalRep& trk) {
-    if(!trk.fitCurrent()) {
+  CutAndCountAnalysis::TrkCut CutAndCountAnalysis::processTrack(const art::Ptr<KalRep>& trk, const art::Event& evt) {
+    if(!trk->fitCurrent()) {
       throw cet::exception("BADINPUT")<<"CutAndCountAnalysis: do not know what to do with a fitCurrent==0 track\n";
     }
 
     TrkInfo track;
-    kdiag_.fillTrkInfo(&trk, track);
+    kdiag_.fillTrkInfo(trk.get(), track);
 
     if(track._fitstatus != 1) {
       return TrkCut::status;
@@ -255,6 +264,15 @@ namespace mu2e {
       return TrkCut::t0;
     }
 
+    //----------------------------------------------------------------
+    // Here we start using calorimeter info
+    const auto* cm = findCaloMatch(trk, evt);
+    if(!cm) {
+      return TrkCut::caloMatch;
+    }
+
+    //----------------------------------------------------------------
+    // The analysis momentum window cut
     const double fitmom = track._ent._fitmom;
     hTrkCuts_.momentum->Fill(fitmom);
     if((fitmom < cuts_.pmin)||(fitmom > cuts_.pmax)) {
@@ -264,6 +282,25 @@ namespace mu2e {
     return TrkCut::accepted;
 
   } // processTrack()
+
+  //================================================================
+  const TrackClusterMatch* CutAndCountAnalysis::findCaloMatch(const art::Ptr<KalRep>& trk, const art::Event& evt) {
+    //auto ihmatch = evt.getValidHandle<TrkCaloMatchCollection>(caloMatchDemInput_);
+    auto ihmatch = evt.getValidHandle<TrackClusterMatchCollection>(caloMatchDemInput_);
+    std::cout<<"----------------------------------------------------------------"<<std::endl;
+    for(const auto& match: *ihmatch) {
+      std::cout<<"Looking at match.trk = "<<match.textrapol()->trk()
+               <<", our trk = "<<trk
+               <<std::endl;
+      if(match.textrapol()->trk() == trk) {
+        return &match;
+      }
+    }
+
+    return nullptr;
+  }
+
+  //================================================================
 
 } // namespace mu2e
 
