@@ -62,6 +62,10 @@ PhysicsCuts: {
    t0max: 1695.
    pmin: 103.75
    pmax: 105.0
+
+   caloemin: 10. // MeV
+   caloemax: 120. // MeV
+   caloMatchChi2: 100.
 }
 
 END_PROLOG

@@ -68,6 +68,8 @@ namespace mu2e {
       TH1 *d0;
       TH1 *rmax;
       TH1 *t0;
+      TH1 *caloMatchChi2;
+      TH1 *caloClusterEnergy;
       TH1 *momentum;
     private:
       art::TFileDirectory getdir(art::TFileDirectory orig, const std::string& relpath);
@@ -87,6 +89,8 @@ namespace mu2e {
       , d0{tf.make<TH1D>("d0", "Track d0 before cut", 300, -150., +150.)}
       , rmax{tf.make<TH1D>("rmax", "Track d0+2/om  before cut", 120, 300., 900.)}
       , t0{tf.make<TH1D>("t0", "Track t0  before cut", 170, 0., 1700.)}
+      , caloMatchChi2{tf.make<TH1D>("caloMatchCHi2", "Calo match chi2 before cut", 100, 0., 300.)}
+      , caloClusterEnergy{tf.make<TH1D>("caloClusterEnergy", "Calo cluster energy before cut", 150, 0., 150.)}
       , momentum{tf.make<TH1D>("momentum", "Track momentum  before cut", 500, 98., 108.)}
     {}
 
@@ -114,6 +118,12 @@ namespace mu2e {
       // time
       double t0min;
       double t0max;
+
+      // track-calo match
+      double caloMatchChi2;
+      double caloemin;
+      double caloemax;
+
       // momentum window
       double pmin;
       double pmax;
@@ -128,6 +138,11 @@ namespace mu2e {
         , mdmax(pset.get<double>("mdmax"))
         , t0min(pset.get<double>("t0min"))
         , t0max(pset.get<double>("t0max"))
+
+        , caloMatchChi2(pset.get<double>("caloMatchChi2"))
+        , caloemin(pset.get<double>("caloemin"))
+        , caloemax(pset.get<double>("caloemax"))
+
         , pmin(pset.get<double>("pmin"))
         , pmax(pset.get<double>("pmax"))
       {}
@@ -150,15 +165,17 @@ namespace mu2e {
     // use X-macros to maintain bin labels of cut flow histograms
     // in sync with the cut list
 #undef X
-#define TRACK_LEVEL_CUTS                              \
-    X(status)                                         \
-    X(quality)                                        \
-    X(pitch)                                          \
-    X(d0)                                             \
-    X(maxd)                                           \
-    X(t0)                                             \
-    X(caloMatch)                                      \
-    X(momentum)                                       \
+#define TRACK_LEVEL_CUTS                                     \
+    X(status)                                                \
+    X(quality)                                               \
+    X(pitch)                                                 \
+    X(d0)                                                    \
+    X(maxd)                                                  \
+    X(t0)                                                    \
+    X(caloMatch)                                             \
+    X(caloMatchChi2)                                         \
+    X(caloClusterEnergy)                                     \
+    X(momentum)                                              \
     X(accepted)
 
     enum class TrkCut {
@@ -271,6 +288,17 @@ namespace mu2e {
       return TrkCut::caloMatch;
     }
 
+    hTrkCuts_.caloMatchChi2->Fill(cm->chi2());
+    if(cm->chi2() > cuts_.caloMatchChi2) {
+      return TrkCut::caloMatchChi2;
+    }
+
+    const double clusterEnergy = cm->caloCluster()->energyDep();
+    hTrkCuts_.caloClusterEnergy->Fill(clusterEnergy);
+    if((clusterEnergy < cuts_.caloemin)||(cuts_.caloemax < clusterEnergy)) {
+      return TrkCut::caloClusterEnergy;
+    }
+
     //----------------------------------------------------------------
     // The analysis momentum window cut
     const double fitmom = track._ent._fitmom;
@@ -287,16 +315,11 @@ namespace mu2e {
   const TrackClusterMatch* CutAndCountAnalysis::findCaloMatch(const art::Ptr<KalRep>& trk, const art::Event& evt) {
     //auto ihmatch = evt.getValidHandle<TrkCaloMatchCollection>(caloMatchDemInput_);
     auto ihmatch = evt.getValidHandle<TrackClusterMatchCollection>(caloMatchDemInput_);
-    std::cout<<"----------------------------------------------------------------"<<std::endl;
     for(const auto& match: *ihmatch) {
-      std::cout<<"Looking at match.trk = "<<match.textrapol()->trk()
-               <<", our trk = "<<trk
-               <<std::endl;
       if(match.textrapol()->trk() == trk) {
         return &match;
       }
     }
-
     return nullptr;
   }
 
