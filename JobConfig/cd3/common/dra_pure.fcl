@@ -9,14 +9,45 @@
 #include "TrkDiag/fcl/KalDiag.fcl"
 
 BEGIN_PROLOG
+caloDigiTable: {
+   protonTimeMap        : @local::protonTimeMap
+   muonTimeMap          : @local::muonTimeMap
+   MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
+}
+
 caloDigiSeq:  [protonTimeMap, muonTimeMap, MakeCaloReadoutHits ]
 
-// FIXME: Tracking.DigiSim should include time maps as well.
-digitizationSeq   : [ @sequence::caloDigiSeq, @sequence::Tracking.DigiSim ]
+// FIXME: Tracking.DigiSim should include time maps in addition to other stuff
+digitizationSeq: [ @sequence::caloDigiSeq, @sequence::Tracking.DigiSim ]
 
-# calorimeter cluster reconstruction
-calRecoSeq    : [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
+//----------------------------------------------------------------
+// Calorimeter cluster reconstruction
+caloRecoTable: {
+   MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
+   MakeCaloProtoCluster : @local::MakeCaloProtoCluster
+   MakeCaloCluster      : @local::MakeCaloCluster
+}
 
+caloRecoSeq: [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
+
+//----------------------------------------------------------------
+// PID inputs
+pidInputsTable: {
+   TrkExtrapolDem       : { @table::TrackCaloIntersection
+      fitparticle       : 11
+      fitterModuleLabel : TRFDownstreameMinus // MergePatRecDem 
+   }
+   CaloMatchingDem      : { @table::TrackCaloMatching 
+      fitparticle                  : 11
+      fitdirection                 : 0
+      fitterModuleLabel            : TRFDownstreameMinus // MergePatRecDem
+      trkToCaloExtrapolModuleLabel : TrkExtrapolDem
+   }
+}
+
+pidInputsSeq: [TrkExtrapolDem, CaloMatchingDem]
+
+// Analysis
 PhysicsCuts: {
    trkqual: 0.2
    tdmin: 0.57735027
@@ -53,56 +84,21 @@ physics : {
     producers: {
       //------------------------------------------------------------------------------
       // digitization
-      protonTimeMap        : @local::protonTimeMap
-      muonTimeMap          : @local::muonTimeMap
-      makeSD               : @local::makeSD
-      MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
+      @table::caloDigiTable
+      // FIXME: Tracking.producers below defines digi in addition to defining reco
 
       //------------------------------------------------------------------------------
       // Track reco - multiple hypotheses
-      // FIXME: Tracking.producers duplicate digi in addition to defining reco
       @table::Tracking.producers
 
-      //----------------------------------------------------------------
       // Calorimeter reco
-      MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
-      MakeCaloProtoCluster : @local::MakeCaloProtoCluster
-      MakeCaloCluster      : @local::MakeCaloCluster
+      @table::caloRecoTable
 
+      // PID inputs
+      @table::pidInputsTable
 
-//      //------------------------------------------------------------------------------
-//      // needed for analysis
-//
-//      TrkExtrapol          : { @table::TrackCaloIntersection
-//	 fitterModuleLabel : MergePatRec 
-//      }
-//
-//      TrkExtrapolDem       : { @table::TrackCaloIntersection
-//	 fitparticle       : 11
-//	 fitterModuleLabel : MergePatRecDem 
-//      }
-//      TrkExtrapolDmm       : { @table::TrackCaloIntersection
-//	 fitparticle       : 13
-//	 fitterModuleLabel : MergePatRecDmm 
-//      }
-//
-//      CaloMatching         : { @table::TrackCaloMatching 
-//	 fitterModuleLabel : MergePatRec 
-//      }
-//
-//      CaloMatchingDem      : { @table::TrackCaloMatching 
-//	 fitparticle                  : 11
-//	 fitdirection                 : 0
-//	 fitterModuleLabel            : MergePatRecDem
-//	 trkToCaloExtrapolModuleLabel : TrkExtrapolDem
-//      }
-//
-//      CaloMatchingDmm      : { @table::TrackCaloMatching 
-//	 fitparticle                  : 13
-//	 fitdirection                 : 0
-//	 fitterModuleLabel            : MergePatRecDmm 
-//	 trkToCaloExtrapolModuleLabel : TrkExtrapolDmm
-//      }
+      //------------------------------------------------------------------------------
+      //------------------------------------------------------------------------------
 //
 //      AvikPID              : { @table::AvikPID           
 //	 trkPatRecDemModuleLabel : MergePatRecDem 
@@ -127,14 +123,14 @@ physics : {
       RKFDownstreameMinus: {
          module_type: ReadKalFits
 	 fitterModuleLabel: TRFDownstreameMinus
-	 KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 data files
-	 diagLevel : 1 # track-level diagnostics.  For detailed (hit-level) diagnostics use diagLevel : 2
+	 KalDiag : @local::KalDiagReadCD3 // configure KalDiag to read CD3 data files
+	 diagLevel : 1 // track-level diagnostics.  For detailed (hit-level) diagnostics use diagLevel : 2
       }
 
       cutAndCount: {
 	 module_type: CutAndCountAnalysis
 
-	 ## FIXME: instance name should not be used
+	 // FIXME: instance name should not be used
 	 trackInput: "TRFDownstreameMinus:DownstreameMinus"
 
 	 weights: []
@@ -147,7 +143,8 @@ physics : {
    //==============================================================================
    p1:[ @sequence::digitizationSeq 
       , @sequence::Tracking.TPRDownstreameMinus
-      , @sequence::calRecoSeq
+      , @sequence::caloRecoSeq
+      , @sequence::pidInputsSeq
 //      , @sequence::allPatRecDemDmmSeq
 //      , @sequence::avikPidSeq
 //      , TrackSummaryMaker
@@ -160,7 +157,7 @@ physics : {
 }
 
 outputs:  {
-    # For debugging
+    // For debugging
     dump: { module_type   : DataProductDump }
 }
 
