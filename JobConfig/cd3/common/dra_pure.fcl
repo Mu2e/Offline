@@ -130,8 +130,8 @@ physics : {
       cutAndCount: {
 	 module_type: CutAndCountAnalysis
 
-	 // FIXME: instance name should not be used
-	 trackInput: "TRFDownstreameMinus:DownstreameMinus"
+	 // Dowstream e- track input
+	 trackDemInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
 
 	 weights: []
 

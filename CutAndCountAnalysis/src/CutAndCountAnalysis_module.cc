@@ -130,7 +130,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     typedef std::vector<art::InputTag> InputTags;
-    art::InputTag trackInput_;
+    art::InputTag trackDemInput_;
     InputTags weights_;
     PhysicsCuts cuts_;
     KalDiag kdiag_;
@@ -175,7 +175,7 @@ namespace mu2e {
   //================================================================
   CutAndCountAnalysis::CutAndCountAnalysis(const fhicl::ParameterSet& pset)
     : art::EDAnalyzer(pset)
-    , trackInput_(pset.get<art::InputTag>("trackInput"))
+    , trackDemInput_(pset.get<art::InputTag>("trackDemInput"))
     , weights_(pset.get<std::vector<art::InputTag> >("weights"))
     , cuts_(pset.get<fhicl::ParameterSet>("physicsCuts"))
     , kdiag_(pset.get<fhicl::ParameterSet>("kalDiag"))
@@ -198,7 +198,7 @@ namespace mu2e {
   //================================================================
   void CutAndCountAnalysis::analyze(const art::Event& event) {
 
-    auto ih = event.getValidHandle<KalRepPtrCollection>(trackInput_);
+    auto ih = event.getValidHandle<KalRepPtrCollection>(trackDemInput_);
 
     int acceptedTracksCount = 0;
     for(const auto& ptr: *ih) {
