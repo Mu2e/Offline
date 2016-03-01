@@ -7,4 +7,4 @@
 
 #include "JobConfig/cd3/common/dra_pure_defs.fcl"
 physics.analyzers.cutAndCount.weight: {}
-services.TFileService.fileName: "nts.owner.cd3-dra-baseline.ver.seq.root"
+services.TFileService.fileName: "nts.owner.cd3-dra-pure-baseline.ver.seq.root"

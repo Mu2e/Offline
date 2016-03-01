@@ -1,0 +1,174 @@
+// This is an include file, not a standalone job definition.
+// digitization + reconstruction + analysis in a single job.
+// The "mix" version overlays background hits on top of the
+// primary input event.
+//
+// For use examples, see
+//
+//          JobConfig/cd3/beam/dra_mix_baseline.fcl
+//
+// Andrei Gaponenko, 2016
+
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
+
+BEGIN_PROLOG
+caloDigiTable: {
+   protonTimeMap        : @local::protonTimeMap
+   muonTimeMap          : @local::muonTimeMap
+   MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
+}
+
+caloDigiSeq:  [protonTimeMap, muonTimeMap, MakeCaloReadoutHits ]
+
+// FIXME: Tracking.DigiSim should include time maps in addition to other stuff
+digitizationSeq: [ @sequence::caloDigiSeq, @sequence::Tracking.DigiSim ]
+
+//----------------------------------------------------------------
+// Calorimeter cluster reconstruction
+caloRecoTable: {
+   MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
+   MakeCaloProtoCluster : @local::MakeCaloProtoCluster
+   MakeCaloCluster      : @local::MakeCaloCluster
+}
+
+caloRecoSeq: [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
+
+//----------------------------------------------------------------
+// PID inputs
+pidInputsTable: {
+   TrkExtrapolDem: {
+      @table::TrackCaloIntersection
+      fitparticle: 11
+      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
+   }
+   TrackCaloMatchingDem: {
+      @table::TrackCaloMatching
+      fitparticle: 11
+      fitdirection: 0
+      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
+      trkToCaloExtrapolModuleLabel: TrkExtrapolDem
+   }
+}
+
+pidInputsSeq: [TrkExtrapolDem, TrackCaloMatchingDem]
+
+// Analysis
+PhysicsCuts: {
+   trkqual: 0.2
+   tdmin: 0.57735027
+   tdmax: 1.
+   d0min: -80
+   d0max: 105
+   mdmin: 450.
+   mdmax: 650.
+   t0min: 700.
+   t0max: 1695.
+   pmin: 103.75
+   pmax: 105.0
+
+   caloemin: 10. // MeV
+   caloemax: 120. // MeV
+   caloMatchChi2: 100.
+}
+
+END_PROLOG
+
+process_name: drap
+
+source: { module_type: RootInput }
+
+services: {
+   message               : @local::default_message
+   TFileService          : { fileName : @nil }
+   RandomNumberGenerator : {}
+
+   GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+   BTrkHelper             : @local::BTrkHelperDefault
+   SeedService            : @local::automaticSeeds
+}
+
+physics : {
+    producers: {
+      @table::EventMixing.producers
+
+      //------------------------------------------------------------------------------
+      // digitization
+      @table::caloDigiTable
+      // FIXME: Tracking.producers below defines digi in addition to defining reco
+
+      //------------------------------------------------------------------------------
+      // Track reco - multiple hypotheses
+      @table::Tracking.producers
+
+      // Calorimeter reco
+      @table::caloRecoTable
+
+      // PID inputs
+      @table::pidInputsTable
+
+      //------------------------------------------------------------------------------
+   }
+
+   //------------------------------------------------------------------------------
+   filters: {
+      @table::EventMixing.filters
+   }
+
+   //------------------------------------------------------------------------------
+   analyzers: {
+      // save normalization info to the histogram file
+      genCountLogger: { module_type: GenEventCountReader }
+
+      cutAndCount: {
+	 module_type: CutAndCountAnalysis
+
+	 // Dowstream e- track input
+	 trackDemInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
+	 caloMatchDemInput: "TrackCaloMatchingDem"
+
+	 weight: @nil
+
+	 physicsCuts: @local::PhysicsCuts
+	 kalDiag: @local::KalDiagReadCD3
+      }
+   }
+
+   //==============================================================================
+   p1:[ @sequence::EventMixing.CD3Mixers
+      , @sequence::digitizationSeq
+      , @sequence::Tracking.TPRDownstreameMinus
+      , @sequence::caloRecoSeq
+      , @sequence::pidInputsSeq
+   ]
+   trigger_paths  : [p1]
+
+   e1: [ genCountLogger, cutAndCount ]
+   end_paths      : [e1]
+}
+
+// We guarantee that our subruns are atomic. The following line is
+// supposed to prevent excessive memory use.
+services.scheduler.fileMode: MERGE
+
+// Limit the amount of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+
+// Digitization uses random numbers
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+# specify background frame files: these must be define outside this script, before it is included
+physics.filters.flashMixer.fileNames : @local::bgHitFiles
+physics.filters.ootMixer.fileNames : @local::bgHitFiles
+physics.filters.dioMixer.fileNames : @local::bgHitFiles
+physics.filters.neutronMixer.fileNames : @local::bgHitFiles
+physics.filters.photonMixer.fileNames : @local::bgHitFiles
+physics.filters.protonMixer.fileNames : @local::bgHitFiles
+physics.filters.deuteronMixer.fileNames : @local::bgHitFiles
