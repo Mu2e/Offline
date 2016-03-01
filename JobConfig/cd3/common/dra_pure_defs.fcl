@@ -143,11 +143,6 @@ physics : {
    end_paths      : [e1]
 }
 
-outputs:  {
-    // For debugging
-    dump: { module_type   : DataProductDump }
-}
-
 // We guarantee that our subruns are atomic. The following line is
 // supposed to prevent excessive memory use.
 services.scheduler.fileMode: MERGE
