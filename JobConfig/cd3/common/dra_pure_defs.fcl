@@ -1,5 +1,11 @@
+// This is an include file, not a standalone job definition.
 // digitization + reconstruction + analysis in a single job.
 // The "pure" version works with a single process input (no event mixing).
+//
+// For use examples, see
+//
+//          JobConfig/cd3/beam/dra_pure_baseline.fcl
+//          JobConfig/cd3/pions/dra_pure_pions.fcl
 //
 // Andrei Gaponenko, 2016
 
@@ -76,7 +82,7 @@ source: { module_type: RootInput }
 
 services: {
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.cd3-dra-pure.ver.seq.root" }
+   TFileService          : { fileName : @nil }
    RandomNumberGenerator : {}
 
    GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
@@ -105,9 +111,6 @@ physics : {
 
       //------------------------------------------------------------------------------
    }
-   
-   //------------------------------------------------------------------------------
-   filters: { }
 
    //------------------------------------------------------------------------------
    analyzers: {
@@ -121,7 +124,7 @@ physics : {
 	 trackDemInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
 	 caloMatchDemInput: "TrackCaloMatchingDem"
 
-	 weight: {}
+	 weight: @nil
 
 	 physicsCuts: @local::PhysicsCuts
 	 kalDiag: @local::KalDiagReadCD3
@@ -129,7 +132,7 @@ physics : {
    }
 
    //==============================================================================
-   p1:[ @sequence::digitizationSeq 
+   p1:[ @sequence::digitizationSeq
       , @sequence::Tracking.TPRDownstreameMinus
       , @sequence::caloRecoSeq
       , @sequence::pidInputsSeq
