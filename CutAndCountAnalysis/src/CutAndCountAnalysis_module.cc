@@ -47,6 +47,8 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "TrkDiag/inc/KalDiag.hh"
 
+#include "Mu2eUtilities/inc/EventWeightHelper.hh"
+
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
 //#include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
 //#include "RecoDataProducts/inc/TrkCaloMatch.hh"
@@ -61,8 +63,6 @@ namespace mu2e {
     // Histograms filled during track selection: neither "all" nor "accepted" tracks
     struct TrkCutHist: private boost::noncopyable {
       explicit TrkCutHist(art::TFileDirectory tfdir, const std::string& relpath);
-      explicit TrkCutHist(art::TFileDirectory tfdir);
-
       TH1 *trkqual;
       TH1 *td;
       TH1 *d0;
@@ -73,6 +73,7 @@ namespace mu2e {
       TH1 *momentum;
     private:
       art::TFileDirectory getdir(art::TFileDirectory orig, const std::string& relpath);
+      explicit TrkCutHist(art::TFileDirectory tfdir);
     };
 
     art::TFileDirectory TrkCutHist::getdir(art::TFileDirectory orig, const std::string& relpath) {
@@ -92,7 +93,16 @@ namespace mu2e {
       , caloMatchChi2{tf.make<TH1D>("caloMatchCHi2", "Calo match chi2 before cut", 100, 0., 300.)}
       , caloClusterEnergy{tf.make<TH1D>("caloClusterEnergy", "Calo cluster energy before cut", 150, 0., 150.)}
       , momentum{tf.make<TH1D>("momentum", "Track momentum  before cut", 500, 98., 108.)}
-    {}
+    {
+      trkqual->Sumw2();
+      td->Sumw2();
+      d0->Sumw2();
+      rmax->Sumw2();
+      t0->Sumw2();
+      caloMatchChi2->Sumw2();
+      caloClusterEnergy->Sumw2();
+      momentum->Sumw2();
+    }
 
   } // namespace{}
 
@@ -152,12 +162,14 @@ namespace mu2e {
     typedef std::vector<art::InputTag> InputTags;
     art::InputTag trackDemInput_;
     art::InputTag caloMatchDemInput_;
-    InputTags weights_;
     PhysicsCuts cuts_;
+    EventWeightHelper wh_;
     KalDiag kdiag_;
 
     TH1 *h_cuts_p_;
     TH1 *h_cuts_r_;
+    TH1 *w_cuts_p_;
+    TH1 *w_cuts_r_;
     TH1 *hNumAcceptedTracks_;
     TrkCutHist hTrkCuts_;
 
@@ -202,27 +214,43 @@ namespace mu2e {
     : art::EDAnalyzer(pset)
     , trackDemInput_(pset.get<art::InputTag>("trackDemInput"))
     , caloMatchDemInput_(pset.get<art::InputTag>("caloMatchDemInput"))
-    , weights_(pset.get<std::vector<art::InputTag> >("weights"))
     , cuts_(pset.get<fhicl::ParameterSet>("physicsCuts"))
+    , wh_(pset.get<fhicl::ParameterSet>("weight"), *art::ServiceHandle<art::TFileService>(), "weight")
     , kdiag_(pset.get<fhicl::ParameterSet>("kalDiag"))
     , hTrkCuts_(*art::ServiceHandle<art::TFileService>(), "trkcuts")
   {
     art::ServiceHandle<art::TFileService> tfs;
-    h_cuts_p_ = tfs->make<TH1D>("cuts_p", "Events before cut", double(TrkCut::CUTS_END), -0.5, double(TrkCut::CUTS_END)-0.5);
+
+    h_cuts_p_ = tfs->make<TH1D>("cuts_p", "Unweighted events before cut", double(TrkCut::CUTS_END), -0.5, double(TrkCut::CUTS_END)-0.5);
     h_cuts_p_->SetStats(kFALSE);
     set_cut_bin_labels(h_cuts_p_->GetXaxis());
     h_cuts_p_->SetOption("hist text");
 
-    h_cuts_r_ = tfs->make<TH1D>("cuts_r", "Events rejected by cut", double(TrkCut::CUTS_END), -0.5, double(TrkCut::CUTS_END)-0.5);
+    h_cuts_r_ = tfs->make<TH1D>("cuts_r", "Unweighted events rejected by cut", double(TrkCut::CUTS_END), -0.5, double(TrkCut::CUTS_END)-0.5);
     h_cuts_r_->SetStats(kFALSE);
     set_cut_bin_labels(h_cuts_r_->GetXaxis());
     h_cuts_r_->SetOption("hist text");
 
-    hNumAcceptedTracks_ = tfs->make<TH1D>("numAcceptedTracks", "Number of accepted tracks per event", 5, -0.5, 4.5);
+    w_cuts_p_ = tfs->make<TH1D>("wcuts_p", "Weighted events before cut", double(TrkCut::CUTS_END), -0.5, double(TrkCut::CUTS_END)-0.5);
+    w_cuts_p_->SetStats(kFALSE);
+    set_cut_bin_labels(w_cuts_p_->GetXaxis());
+    w_cuts_p_->SetOption("hist text");
+    w_cuts_p_->Sumw2();
+
+    w_cuts_r_ = tfs->make<TH1D>("wcuts_r", "Weighted events rejected by cut", double(TrkCut::CUTS_END), -0.5, double(TrkCut::CUTS_END)-0.5);
+    w_cuts_r_->SetStats(kFALSE);
+    set_cut_bin_labels(w_cuts_r_->GetXaxis());
+    w_cuts_r_->SetOption("hist text");
+    w_cuts_r_->Sumw2();
+
+    hNumAcceptedTracks_ = tfs->make<TH1D>("numAcceptedTracks", "Number of accepted tracks per event (weighted)", 5, -0.5, 4.5);
+    hNumAcceptedTracks_->Sumw2();
   }
 
   //================================================================
   void CutAndCountAnalysis::analyze(const art::Event& event) {
+
+    wh_.update(event);
 
     auto ih = event.getValidHandle<KalRepPtrCollection>(trackDemInput_);
 
@@ -230,15 +258,18 @@ namespace mu2e {
     for(const auto& ptr: *ih) {
       TrkCut c = processTrack(ptr, event);
       h_cuts_r_->Fill(double(c));
+      w_cuts_r_->Fill(double(c), wh_.weight());
+
       for(int cut=0; cut<=int(c); cut++) {
         h_cuts_p_->Fill(cut);
+        w_cuts_p_->Fill(cut, wh_.weight());
       }
       if(c==TrkCut::accepted) {
         ++acceptedTracksCount;
       }
     }
 
-    hNumAcceptedTracks_->Fill(acceptedTracksCount);
+    hNumAcceptedTracks_->Fill(acceptedTracksCount, wh_.weight());
   }
 
   //================================================================
@@ -254,29 +285,29 @@ namespace mu2e {
       return TrkCut::status;
     }
 
-    hTrkCuts_.trkqual->Fill(track._trkqual);
+    hTrkCuts_.trkqual->Fill(track._trkqual, wh_.weight());
     if(track._trkqual < cuts_.trkqual) {
       return TrkCut::quality;
     }
 
     const helixpar& th = track._ent._fitpar;
-    hTrkCuts_.td->Fill(th._td);
+    hTrkCuts_.td->Fill(th._td, wh_.weight());
     if((th._td < cuts_.tdmin)||(th._td > cuts_.tdmax)) {
       return TrkCut::pitch;
     }
 
-    hTrkCuts_.d0->Fill(th._d0);
+    hTrkCuts_.d0->Fill(th._d0, wh_.weight());
     if((th._d0 < cuts_.d0min)||(th._d0 > cuts_.d0max)) {
       return TrkCut::d0;
     }
 
     const double maxd = th._d0 + 2./th._om;
-    hTrkCuts_.rmax->Fill(maxd);
+    hTrkCuts_.rmax->Fill(maxd, wh_.weight());
     if((maxd < cuts_.mdmin)||(maxd > cuts_.mdmax)) {
       return TrkCut::maxd;
     }
 
-    hTrkCuts_.t0->Fill(track._t0);
+    hTrkCuts_.t0->Fill(track._t0, wh_.weight());
     if((track._t0 < cuts_.t0min)||(track._t0 > cuts_.t0max)) {
       return TrkCut::t0;
     }
@@ -288,13 +319,13 @@ namespace mu2e {
       return TrkCut::caloMatch;
     }
 
-    hTrkCuts_.caloMatchChi2->Fill(cm->chi2());
+    hTrkCuts_.caloMatchChi2->Fill(cm->chi2(), wh_.weight());
     if(cm->chi2() > cuts_.caloMatchChi2) {
       return TrkCut::caloMatchChi2;
     }
 
     const double clusterEnergy = cm->caloCluster()->energyDep();
-    hTrkCuts_.caloClusterEnergy->Fill(clusterEnergy);
+    hTrkCuts_.caloClusterEnergy->Fill(clusterEnergy, wh_.weight());
     if((clusterEnergy < cuts_.caloemin)||(cuts_.caloemax < clusterEnergy)) {
       return TrkCut::caloClusterEnergy;
     }
@@ -302,7 +333,7 @@ namespace mu2e {
     //----------------------------------------------------------------
     // The analysis momentum window cut
     const double fitmom = track._ent._fitmom;
-    hTrkCuts_.momentum->Fill(fitmom);
+    hTrkCuts_.momentum->Fill(fitmom, wh_.weight());
     if((fitmom < cuts_.pmin)||(fitmom > cuts_.pmax)) {
       return TrkCut::momentum;
     }

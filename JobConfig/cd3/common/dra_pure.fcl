@@ -129,7 +129,7 @@ physics : {
 	 trackDemInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
 	 caloMatchDemInput: "TrackCaloMatchingDem"
 
-	 weights: []
+	 weight: {}
 
 	 physicsCuts: @local::PhysicsCuts
 	 kalDiag: @local::KalDiagReadCD3
