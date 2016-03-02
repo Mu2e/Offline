@@ -1,3 +1,6 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_6_7
+
+1) March 1, 2016 gandr
+   Added CutAndCountAnalysis module and CD3 job configs that use it.
