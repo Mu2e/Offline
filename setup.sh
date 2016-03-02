@@ -67,7 +67,7 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
 fi
 
 # Setup the framework and its dependent products
-setup -B art v1_17_02 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v1_17_07 -q${MU2E_UPS_QUALIFIERS}
 
 # The interface to SAM - conflicts with ifdhc from the grid runtime environment
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5

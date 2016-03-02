@@ -52,11 +52,6 @@ public:
   void processRunProvenance(art::Provenance const & prov) { runProvenances_.push_back(prov); }
   void postProcessRun() { process("Run", runProvenances_); }
 
-  // Required in art v1_17_02 (perhaps earlier) because
-  // art::ProvenanceDumper uses fcl pset validation.
-  struct Config{
-  };
-
 private:
   void process(std::string const & label, provs_type const & provs) const;
   void print(provs_type const & provs) const;
