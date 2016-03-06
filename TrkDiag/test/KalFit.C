@@ -1351,8 +1351,8 @@ void KalFit::TrkQualRes() {
   badf->SetFillStyle(3005);
   goodf->SetStats(0);
   badf->SetStats(0);
-  _tdiag->Project("goodf","fit.mom-mcent.mom",reco+rpitch+"trkqual>0.4");
-  _tdiag->Project("badf","fit.mom-mcent.mom",reco+rpitch+"trkqual<0.4");
+  _tdiag->Project("goodf","fit.mom-mcent.mom",reco+rpitch+"trkqual>0.2");
+  _tdiag->Project("badf","fit.mom-mcent.mom",reco+rpitch+"trkqual<0.2");
   badf->Scale(goodf->GetEntries()/badf->GetEntries());
   TCanvas* tqcan = new TCanvas("tqcan","TrkQual",1000,800);
   goodf->Draw();
@@ -1371,9 +1371,9 @@ void KalFit::TrkQualRes() {
   char ltitle[40];
 
   TLegend* leg = new TLegend(0.55,0.6,0.9,0.9);
-  snprintf(ltitle,40,"TrkQual<0.4, FWHM =%3.0f KeV/c",1000.0*gfwhm);
+  snprintf(ltitle,40,"TrkQual<0.2, FWHM =%3.0f KeV/c",1000.0*gfwhm);
   leg->AddEntry(goodf,ltitle,"F");
-  snprintf(ltitle,40,"TrkQual>0.4, FWHM =%3.0f KeV/c",1000.0*bfwhm);
+  snprintf(ltitle,40,"TrkQual>0.2, FWHM =%3.0f KeV/c",1000.0*bfwhm);
   leg->AddEntry(badf,ltitle,"F");
   leg->Draw();
 }

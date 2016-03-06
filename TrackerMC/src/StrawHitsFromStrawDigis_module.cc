@@ -229,7 +229,7 @@ namespace mu2e {
 	}
 	// use time division to correct for attenuation FIXME!!
 	// the gain should come from a straw-dependent database FIXME!!
-	double energy = _strawphys->ionizationEnergy(params._charge/_strawphys->strawGain(2.0,0.0));
+	double energy = _strawphys->ionizationEnergy(params._charge/_strawphys->strawGain());
 	// crate the straw hit and append it to the list
 	StrawHit newhit(digi.strawIndex(),time,dt,energy);
 	strawHits->push_back(newhit);

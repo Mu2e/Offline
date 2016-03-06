@@ -55,7 +55,7 @@
 #include "TGraph.h"
 #include "TMarker.h"
 #include "TTree.h"
-#// C++
+// C++
 #include <map>
 #include <algorithm>
 using namespace std;
@@ -65,7 +65,8 @@ namespace mu2e {
   struct IonCluster {  // ion charge cluster before drift or amplification
     CLHEP::Hep3Vector _pos; // position of this cluster
     double _charge; // charge of this cluster, in pC.  Note: this is pre-gain!!!
-    IonCluster(CLHEP::Hep3Vector const& pos, double charge): _pos(pos),_charge(charge) {}
+    unsigned _nion; // number of ionizations in this cluste
+    IonCluster(CLHEP::Hep3Vector const& pos, double charge, unsigned nion): _pos(pos),_charge(charge), _nion(nion) {}
   };
 
   struct WireCharge { // charge at the wire after drift
@@ -116,7 +117,6 @@ namespace mu2e {
     string _g4ModuleLabel;  // Nameg of the module that made these hits.
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hitlets (for waveform)
-    double _minsteplen; // minimum step size for splitting charge into ion clusters
     double _steptimebuf; // buffer for MC step point times
   // models of straw response to stimuli
     ConditionsHandle<StrawPhysics> _strawphys;
@@ -125,7 +125,7 @@ namespace mu2e {
     StrawElectronics::path _diagpath; // electronics path for waveform diagnostics
     // Random number distributions
     art::RandomNumberGenerator::base_engine_t& _engine;
-    CLHEP::RandGaussQ _gaussian;
+    CLHEP::RandGaussQ _randgauss;
     CLHEP::RandFlat _randflat;
     // A category for the error logger.
     const string _messageCategory;
@@ -159,6 +159,13 @@ namespace mu2e {
     Bool_t _xtalk;
     vector<unsigned> _adc;
     Int_t _tdc0, _tdc1;
+    TTree* _sdiag;
+    Float_t _steplen, _stepE, _qsum, _partP;
+    Int_t _nsubstep, _niontot, _partPDG;
+    TTree* _cdiag;
+    Float_t _gain, _cq;
+    Int_t _nion;
+    
 //    vector<TGraph*> _waveforms;
     vector<TH1F*> _waveforms;
 //  helper functions
@@ -183,7 +190,6 @@ namespace mu2e {
 // diagnostic functions
     void waveformDiag(StrawWaveform const& wf,WFXList const& xings);
     void digiDiag(WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
-
     StrawEnd primaryEnd(StrawIndex strawind) const;
   };
 
@@ -204,13 +210,12 @@ namespace mu2e {
     _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
     _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
-    _minsteplen(pset.get<double>("MinimumIonClusterStep",0.2)), // mm
     _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _diagpath(static_cast<StrawElectronics::path>(pset.get<int>("WaveformDiagPath",StrawElectronics::thresh))),
     // Random number distributions
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
-    _gaussian( _engine ),
+    _randgauss( _engine ),
     _randflat( _engine ),
 
     _messageCategory("HITS"),
@@ -219,17 +224,31 @@ namespace mu2e {
     _firstEvent(true),
     _deadStraws(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet())),
     _strawStatus(pset.get<fhicl::ParameterSet>("deadStrawList", fhicl::ParameterSet()))
-    {
+  {
 // Tell the framework what we make.
-      produces<StrawDigiCollection>();
-      produces<PtrStepPointMCVectorCollection>("StrawDigiMCPtr");
-      produces<StrawDigiMCCollection>("StrawDigiMC");
-    }
-
+    produces<StrawDigiCollection>();
+    produces<PtrStepPointMCVectorCollection>("StrawDigiMCPtr");
+    produces<StrawDigiMCCollection>("StrawDigiMC");
+  }
   void StrawDigisFromStepPointMCs::beginJob(){
 
     if(_diagLevel > 0){
+
       art::ServiceHandle<art::TFileService> tfs;
+      _sdiag =tfs->make<TTree>("sdiag","Step diagnostics");
+      _sdiag->Branch("steplen",&_steplen,"steplen/F");
+      _sdiag->Branch("stepE",&_stepE,"stepE/F");
+      _sdiag->Branch("partP",&_partP,"partP/F");
+      _sdiag->Branch("qsum",&_qsum,"qsum/F");
+      _sdiag->Branch("nsubstep",&_nsubstep,"nsubstep/I");
+      _sdiag->Branch("niontot",&_niontot,"niontot/I");
+      _sdiag->Branch("partPDG",&_partPDG,"partPDG/I");
+
+      _cdiag =tfs->make<TTree>("cdiag","Cluster diagnostics");
+      _cdiag->Branch("gain",&_gain,"gain/F");
+      _cdiag->Branch("charge",&_cq,"charge/F");
+      _cdiag->Branch("nion",&_nion,"nion/I");
+
       _swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
       _swdiag->Branch("plane",&_splane,"plane/I");
       _swdiag->Branch("panel",&_spanel,"panel/I");
@@ -475,33 +494,47 @@ namespace mu2e {
   void
   StrawDigisFromStepPointMCs::divideStep(StepPointMC const& step,
       vector<IonCluster>& clusters) {
-    unsigned ndiv(1);
-    // if the step is already small enough, don't subdivide
-    if(step.stepLength() > _minsteplen) {
-        // subdivide into units of fundamental charge, but no smaller than the smallest step size
-      unsigned maxndiv = static_cast<unsigned>(ceil(step.stepLength()/_minsteplen));
-      ndiv = min(maxndiv,_strawphys->nIonization(_strawphys->ionizationCharge(step.ionizingEdep())));
-    }
-// generate random points for each ionization
-    vector<double> lengths(ndiv,0.0);
-// the following assumes StepPointMC::position is at the begining of the step
-    _randflat.fireArray(ndiv,lengths.data(),0.0,step.stepLength());
-// sort these
-    sort(lengths.begin(),lengths.end());
-// make clusters for each
-    CLHEP::Hep3Vector dir = step.momentum().unit();
-// calculate the sagitta for this step
-//    static double oneeighth(1.0/8.0);
-//    double dperp = step.stepLength()*dir.perp();
-//    double crad = step.momentum().perp()/_bz;
-//    double sag = oneeighth*(dperp*dperp)/crad;
-    double qdiv = _strawphys->ionizationCharge(step.ionizingEdep()/ndiv);
-    for(auto ilen=lengths.begin();ilen!=lengths.end();++ilen){
-// linear approx works for small steps or large curvature radius.
-// otherwise I should use a helix, FIXME!!!
-      CLHEP::Hep3Vector pos = step.position() + (*ilen)*dir;
-      IonCluster cluster(pos,qdiv);
+// calculate the total # of electrons the step energy corresponds to.  We will maintain
+// this, as it includes all the fluctuations G4 has already made
+      unsigned nele = max(unsigned(1),unsigned(rint(step.ionizingEdep()/_strawphys->ionizationEnergy())));
+    // if the step is already smaller than the mean free path, don't subdivide
+    if(step.stepLength() > _strawphys->meanFreePath()) {
+// Calculate the total number of ionization electrons corresponding to this energy
+// create clusters until all the electrons are used up
+      unsigned niontot(0);
+      CLHEP::Hep3Vector dir = step.momentum().unit();
+      while(niontot < nele){
+	unsigned nion = _strawphys->nIons(_randflat.fire());
+	// truncate if necessary
+	if(niontot + nion > nele) nion = nele-niontot;
+	double qc = _strawphys->ionizationCharge(nion*_strawphys->ionizationEnergy());
+// place the cluster at a random position along the step.
+// This works for high-momentum particles, otherwise I should use a helix, FIXME!!!
+	double length = _randflat.fire(0.0,step.stepLength());
+	CLHEP::Hep3Vector pos = step.position() + length*dir;
+	IonCluster cluster(pos,qc,nion);
+	clusters.push_back(cluster);
+	niontot += nion;
+      }
+    } else {
+// just put all the charge into 1 cluster
+      double qstep = _strawphys->ionizationCharge(step.ionizingEdep());
+      IonCluster cluster(step.position(),qstep,nele);
       clusters.push_back(cluster);
+    }
+    if(_diagLevel > 0){
+      _steplen = step.stepLength();
+      _stepE = step.ionizingEdep();
+      _partP = step.momentum().mag();
+      _partPDG = step.simParticle()->pdgId();
+      _nsubstep = clusters.size();
+      _niontot = 0;
+      _qsum = 0.0;
+      for(auto iclust=clusters.begin();iclust != clusters.end();++iclust){
+	_niontot += iclust->_nion;
+	_qsum += iclust->_charge;
+      }
+      _sdiag->Fill();
     }
   }
 
@@ -513,17 +546,22 @@ namespace mu2e {
     double dd = min(cpos.perp(straw.getDirection()),straw.getDetail().innerRadius());
     // for now ignore Lorentz effects FIXME!!!
     double dphi = 0.0;
-    double gain = _strawphys->strawGain(dd,dphi);
-    // smear the charge by the gas gain statistics
-    double dgain = _gaussian.fire(0.0,sqrt(gain));
-    wireq._charge = cluster._charge*(gain+dgain);
+    // sample the gain for this cluster 
+    double gain = _strawphys->clusterGain(_randgauss, _randflat, cluster._nion);
+    wireq._charge = cluster._charge*(gain);
     // smear drift time
-    wireq._time = _gaussian.fire(_strawphys->driftDistanceToTime(dd,dphi),
+    wireq._time = _randgauss.fire(_strawphys->driftDistanceToTime(dd,dphi),
         _strawphys->driftTimeSpread(dd,dphi));
     wireq._dd = dd;
     // position along wire
     // need to add Lorentz effects, this should be in StrawPhysics, FIXME!!!
     wireq._wpos = cpos.dot(straw.getDirection());
+    if(_diagLevel > 0){
+      _gain = gain;
+      _cq = cluster._charge;
+      _nion = cluster._nion;
+     _cdiag->Fill(); 
+    }
   }
 
   void
@@ -559,7 +597,7 @@ namespace mu2e {
      // start when the electronics becomes enabled:
     WFX wfx(swf,_strawele->flashEnd());
     //randomize the threshold to account for electronics noise
-    double threshold = _gaussian.fire(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
+    double threshold = _randgauss.fire(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
     // iterate sequentially over hitlets inside the sequence.  Note we fold
     // the flash blanking to AFTER the end of the microbunch
     while( wfx._time < _mbtime+_strawele->flashStart() &&
@@ -576,7 +614,7 @@ namespace mu2e {
       // skip to the next hitlet
       ++(wfx._ihitlet);
 // update threshold
-      threshold = _gaussian.fire(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
+      threshold = _randgauss.fire(_strawele->threshold(),_strawele->analogNoise(StrawElectronics::thresh));
     }
   }
 
@@ -650,7 +688,7 @@ namespace mu2e {
     array<double,2> xtimes = {2*_mbtime,2*_mbtime}; // overflow signals missing information
     StrawEnd primaryend = primaryEnd(index);
     // smear (coherently) both times for the TDC clock jitter
-    double dt = _gaussian.fire(0.0,_strawele->clockJitter());
+    double dt = _randgauss.fire(0.0,_strawele->clockJitter());
     // loop over the associated crossings
     for(auto iwfx = xpair.begin();iwfx!= xpair.end();++iwfx){
       WFX const& wfx = **iwfx;
@@ -672,7 +710,7 @@ namespace mu2e {
     // add ends and add noise
     vector<double> wfsum; wfsum.reserve(adctimes.size());
     for(unsigned isamp=0;isamp<adctimes.size();++isamp){
-      wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_gaussian.fire(0.0,_strawele->analogNoise(StrawElectronics::adc)));
+      wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_randgauss.fire(0.0,_strawele->analogNoise(StrawElectronics::adc)));
     }
     // digitize
     StrawDigi::ADCWaveform adc;
@@ -902,7 +940,6 @@ namespace mu2e {
     // fill the tree entry
     _sddiag->Fill();
   }
-
 
 } // end namespace mu2e
 

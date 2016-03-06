@@ -620,7 +620,7 @@ void StrawHitTest (TTree* hits, char* page="bcan",unsigned nevents=1000 ) {
     cout << "bkg fraction deltas = " << nsdelta/nsel << " dio " << nsdio/nsel << " proton " << nsprot/nsel << endl;
   } else if(spage=="origin"){
 
-    TCut timecut("time>0");
+    TCut timecut("time>500");
 
     THStack* origin = new THStack("origin","Reco Hit Time by Generator Particle;Hit Time (ns);Hits/event/ns");
     TH1F* dtime = new TH1F("dtime","DIO Reco Hit Time",150,250,1750);

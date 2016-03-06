@@ -193,6 +193,9 @@ namespace mu2e {
     else if (momentumModeLower == "exponential") {
       _momentumMode = exponential;
     }
+    else if (momentumModeLower == "histogram") {
+      _momentumMode = histogram;
+    }
     else {
       throw cet::exception("RANGE")
         << "ParticleGun have read invalid momentumMode : "
@@ -362,6 +365,29 @@ namespace mu2e {
           << "\n";
       }
     }
+    else if (_momentumMode == histogram) {
+      if (_momentumParameters.size() < 3) {
+	throw cet::exception("RANGE")
+          << "ParticleGun require 3 parameters and have read "
+          << _momentumParameters.size()
+          << " parameters for momentumMode = "
+          << _momentumMode
+          << "\n";
+      }
+      // interpret the 1st 2 parameters as the range
+      histogramRange[0] = _momentumParameters[0];
+      histogramRange[1] = _momentumParameters[1];
+      // the rest are bin contents: normalize them and integrate
+      double bint(0.0);
+      for(size_t ibin=2;ibin<_momentumParameters.size();++ibin){
+	bint += _momentumParameters[ibin];
+      }
+      double psum(0.0);
+      for(size_t ibin=2;ibin<_momentumParameters.size();++ibin){
+	histogramBins.push_back(psum + _momentumParameters[ibin]/bint);
+	psum = histogramBins.back();
+      }
+    }
 
     else {}
 
@@ -444,6 +470,10 @@ namespace mu2e {
         case exponential :
           p = getExponentialMomentum() ;
           break;
+
+	case histogram :
+	  p = getHistogramMomentum();
+	  break;
 
         default: // Generate flat dist for all unknown momentumMode ?
           p = getFlatMomentum();
@@ -577,5 +607,13 @@ namespace mu2e {
     return p;
   }
 
+  double ParticleGunImpl::getHistogramMomentum(void) {
+    double urand = _randFlat.fire();
+    size_t ibin=0;
+    while(urand > histogramBins[ibin]){
+      ++ibin;
+    }
+    return histogramRange[0] + (histogramRange[1]-histogramRange[0])*(ibin+0.5)/float(histogramBins.size());
+ } 
 
 } // namespace mu2e

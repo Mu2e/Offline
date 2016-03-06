@@ -97,6 +97,7 @@ namespace mu2e {
     double getGaussianMomentum (void) ;
     double getGenericMomentum (void) ;
     double getExponentialMomentum (void) ;
+    double getHistogramMomentum (void) ;
 
 
     // Start: Information from the run time configuration.
@@ -119,13 +120,16 @@ namespace mu2e {
       flat = 0,
       gaussian = 1,
       generic = 2,
-      exponential = 3
+      exponential = 3,
+      histogram =4,
     }  _momentumMode;
 
     // Parameters for momentum distribution.
     // ex. if pmomentumMode = gaussian, [0] = mean and [1] = stdDev.
     // not used for flat dist
     std::vector<double> _momentumParameters;
+    double histogramRange[2];
+    std::vector<double> histogramBins;
 
     // Time range over which the particle will be produced; units are ns.
     double _tmin;
