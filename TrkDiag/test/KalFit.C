@@ -74,7 +74,7 @@ KalFit::KalFit(TTree* trkdiag,size_t ic) : _tdiag(trkdiag), tdlow(0.57735027),
   donecuts(false)
 {
   double t_minnactive[] = {15,22,25,30};
-  double t_maxt0err[] = {10,0.95,0.9,0.8};
+  double t_maxt0err[] = {10,2.0,1.5,1.3};
   double t_maxmomerr[]   = {1.0,0.28,0.25,0.22};
   double t_minfitcon[]  = {1e-15,1e-3,2e-3,1e-2};
   for(size_t jcut=0;jcut<4;++jcut){
