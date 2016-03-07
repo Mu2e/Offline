@@ -643,27 +643,30 @@ namespace mu2e {
       double wetime[2] ={-100.,-100.};
       CLHEP::HepLorentzVector cpos[2];
       art::Ptr<StepPointMC> stepMC[2];
-      double ptime(-1000.0);
       StrawEnd primaryend = primaryEnd(index);
 
       for(auto ixp=xpair.begin();ixp!=xpair.end();++ixp){
-        xmcsp.insert((*ixp)->_ihitlet->stepPointMC());
+	StrawHitlet const& sh =*((*ixp)->_ihitlet);
+        xmcsp.insert(sh.stepPointMC());
         // index according to the primary end
-        size_t iend = (*ixp)->_ihitlet->strawEnd() == primaryend ? 0 : 1;
-        wetime[iend] = (*ixp)->_ihitlet->time();
-        cpos[iend] = (*ixp)->_ihitlet->clusterPosition();
-        stepMC[iend] = (*ixp)->_ihitlet->stepPointMC();
-        if((*ixp)->_ihitlet->strawEnd() == primaryend)
-          ptime = (*ixp)->_ihitlet->time();
+        size_t iend = sh.strawEnd() == primaryend ? 0 : 1;
+        wetime[iend] = sh.time();
+        cpos[iend] = sh.clusterPosition();
+        stepMC[iend] = sh.stepPointMC();
       }
-     // pickup all StepPointMCs associated with hitlets from the primary waveform inside the time window of the ADC digitizations (after the threshold)
+      // choose the minimum time from either end, as the ADC sums both
+      double ptime = 1.0e10;
+      for(size_t iend = 0; iend < 2; ++iend){
+	if(wetime[iend] > 0)ptime = std::min(ptime,wetime[iend]);
+      }
+      // subtract a small buffer
+      ptime -= 0.01*_strawele->adcPeriod();
+     // pickup all StepPointMCs associated with hitlets inside the time window of the ADC digitizations (after the threshold)
       set<art::Ptr<StepPointMC> > spmcs;
-      if(ptime > 0.0){
-        for(auto ih=wf[primaryend._end].hitlets().hitletList().begin();ih!= wf[primaryend._end].hitlets().hitletList().end();++ih){
-          if(ih->time() >= ptime && ih->time() < ptime +
-          ( _strawele->nADCSamples()-_strawele->nADCPreSamples())*_strawele->adcPeriod())
-            spmcs.insert(ih->stepPointMC());
-        }
+      for(auto ih=wf[primaryend._end].hitlets().hitletList().begin();ih!= wf[primaryend._end].hitlets().hitletList().end();++ih){
+	if(ih->time() >= ptime && ih->time() < ptime +
+	    ( _strawele->nADCSamples()-_strawele->nADCPreSamples())*_strawele->adcPeriod())
+	  spmcs.insert(ih->stepPointMC());
       }
       vector<art::Ptr<StepPointMC>> stepMCs;
       stepMCs.reserve(spmcs.size());
