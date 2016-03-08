@@ -1,5 +1,9 @@
 #include "Mu2eG4/geom/geom_common_cd3_s3p2.txt"
-#include "Mu2eG4/geom/g4_userOptions.txt"
+
+// For Mu2eG4_module useOptions settings should
+// come throught fhicl - do not include the
+// obsolete SimpleConfig file
+//// #include "Mu2eG4/geom/g4_userOptions.txt"
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
