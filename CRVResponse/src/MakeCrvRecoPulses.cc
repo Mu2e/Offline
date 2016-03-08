@@ -111,7 +111,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
       _integrals.push_back(integral);
       _T1s.push_back(T1);
       _T2s.push_back(T2);
-      _TOTs.push_back(time-TOTstart);
+      _TOTs.push_back((time-binWidth)-TOTstart);
 
     }
   }

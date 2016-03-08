@@ -139,14 +139,12 @@ void MakeCrvSiPMResponses::FillPhotonQueue(const std::vector<double> &photons)
 
 //schedule random thermal charges
   double timeWindow = _microBunchPeriod - _blindTime;
-  for(int cellid=0; cellid<_numberPixels; cellid++)
+  int numberThermalCharges = _randPoissonQ.fire(_probabilities._constThermalProb * timeWindow);
+  for(int i=0; i<numberThermalCharges; i++)
   {
-    int numberThermalCharges = _randPoissonQ.fire(_probabilities._constThermalProb * timeWindow);
-    for(int i=0; i<numberThermalCharges; i++)
-    {
-      double time = _blindTime + timeWindow * _randFlat.fire();
-      _scheduledCharges.emplace(cellid, time); //constructs ScheduledCharge(cellid, time)
-    }
+    double cellid = _numberPixels * _randFlat.fire();
+    double time = _blindTime + timeWindow * _randFlat.fire();
+    _scheduledCharges.emplace(cellid, time); //constructs ScheduledCharge(cellid, time)
   }
 }
 
