@@ -27,7 +27,7 @@ namespace mu2e {
 	virtual ~PeakFitRoot(){}
 
 	// PeakFitRoot normal constructor with ConfigStruct initilization parameters
-	PeakFitRoot(StrawElectronics const& strawele, FitConfig const& config,std::string fitoptions="QNEX0S");
+	PeakFitRoot(StrawElectronics const& strawele, FitConfig const& config, FitType const& fittype, std::string fitoptions="QNEX0S");
       	// Converts adcWaveform object to TGraphErrors object for easier manipulation in ROOT
 	void adcWaveform2TGraphErrors(StrawElectronics::ADCWaveform const& adcData, TGraphErrors &fitData) const;
       protected:

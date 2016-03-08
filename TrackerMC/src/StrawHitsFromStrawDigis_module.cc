@@ -69,11 +69,11 @@ namespace mu2e {
     double _mbbuffer; // buffer on that for ghost hits (wrapping)
     double _maxdt; // maximum time difference between end times
     bool _singledigi; // turn single-end digitizations into hits
-    bool _sumADC;
+    TrkChargeReco::FitType _fittype;
     bool _truncateADC; // model ADC truncation
     bool _floatPedestal; // float pedestal in fit
     bool _floatWidth; // _float width in fit
-    bool _earlyPeak, _latePeak, _findPeaks; // additional peak finding
+    bool _earlyPeak, _latePeak; // additional peak finding
 // Diagnostics level.
     int _printLevel, _diagLevel, _debugLevel;
  // fit option
@@ -98,13 +98,12 @@ namespace mu2e {
     _mbbuffer(pset.get<double>("TimeBuffer",100.0)), // nsec
     _maxdt(pset.get<double>("MaxTimeDifference",8.0)), // nsec
     _singledigi(pset.get<bool>("UseSingleDigis",false)), // use or not single-end digitizations
-    _sumADC(pset.get<bool>("SumADC",true)), 
+    _fittype((TrkChargeReco::FitType) pset.get<unsigned>("FitType",0)),
     _truncateADC(pset.get<bool>("TruncateADC",true)), 
     _floatPedestal(pset.get<bool>("FloatPedestal",true)), 
     _floatWidth(pset.get<bool>("FloatWidth",true)), 
     _earlyPeak(pset.get<bool>("EarlyPeak",false)),
     _latePeak(pset.get<bool>("LatePeak",false)),
-    _findPeaks(pset.get<bool>("FindPeaks",false)),
     _printLevel(pset.get<int>("printLevel",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),
     _debugLevel(pset.get<int>("debugLevel",0)),
@@ -144,17 +143,13 @@ namespace mu2e {
     if(_truncateADC)myconfig.setOption(TrkChargeReco::FitConfig::truncateADC);
     if(_earlyPeak)myconfig.setOption(TrkChargeReco::FitConfig::earlyPeak);
     if(_latePeak)myconfig.setOption(TrkChargeReco::FitConfig::latePeak);
-    if(_findPeaks)myconfig.setOption(TrkChargeReco::FitConfig::findPeaks);
     _strawele = ConditionsHandle<StrawElectronics>("ignored");
-    if(_sumADC)
-      _pfit = new TrkChargeReco::PeakFit(*_strawele);
-    else {
-      if(_findPeaks)
-	_pfit = new TrkChargeReco::ComboPeakFitRoot(*_strawele,myconfig,_peakFitOption);
-      else
-	_pfit = new TrkChargeReco::PeakFitRoot(*_strawele,myconfig,_peakFitOption);
-    }
-
+    if (_fittype == TrkChargeReco::FitType::sumadc || _fittype == TrkChargeReco::FitType::peakminusped)
+      _pfit = new TrkChargeReco::PeakFit(*_strawele,_fittype);
+	  else if(_fittype == TrkChargeReco::FitType::combopeakfit)
+	     _pfit = new TrkChargeReco::ComboPeakFitRoot(*_strawele,myconfig,_fittype,_peakFitOption);
+    else
+	     _pfit = new TrkChargeReco::PeakFitRoot(*_strawele,myconfig,_fittype,_peakFitOption);
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis beginRun " << endl;
   }
 

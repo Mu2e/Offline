@@ -77,6 +77,7 @@ namespace mu2e {
       double currentToVoltage(path ipath) const { return _dVdI[ipath]; }
       double normalization(path ipath) const { return _norm[ipath]; }
       double maxLinearResponse(path ipath,double charge=1.0) const { return _linmax[ipath]*charge; }
+      double peakMinusPedestalEnergyScale() const { return _pmpEnergyScale; }
       static double _pC_per_uA_ns; // unit conversion from pC/ns to microAmp
     private:
     // generic waveform parameters
@@ -106,6 +107,7 @@ namespace mu2e {
       unsigned long _maxTDC; // maximum TDC value
       double _clockStart, _clockJitter; // time TDC clock starts, and its error (common to both ends!!)
       double _flashStart, _flashEnd; // flash blanking period (no digitizations during this time!!!)
+      double _pmpEnergyScale; // fudge factor for peak minus pedestal energy method
   // helper functions
       static inline double mypow(double,unsigned);
   };

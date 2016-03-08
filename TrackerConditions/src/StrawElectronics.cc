@@ -42,7 +42,8 @@ namespace mu2e {
     _clockStart(pset.get<double>("clockStart",10.0)), // nsec
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec
-    _flashEnd(pset.get<double>("FlashEnd",300.0)) // nsec
+    _flashEnd(pset.get<double>("FlashEnd",300.0)), // nsec
+    _pmpEnergyScale(pset.get<double>("peakMinusPedestalEnergyScale",1.0)) // fudge factor for peak minus pedestal energy method
  {
     // calcluate normalization.  Formulas are different, first threshold
     _tband = 1.0/(TMath::TwoPi()*pset.get<double>("preampBandwidth",0.2)); //GHz
