@@ -1,8 +1,9 @@
 BEGIN_PROLOG
+
     CrvPhotonArrivals:
     {
       module_type               : CrvPhotonArrivalsGenerator
-      g4ModuleLabels            : ["g4filter"]
+      g4ModuleLabels            : ["detectorFilter"]
       processNames              : ["cosmics2"]
       lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6600",
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_5600",
@@ -77,19 +78,6 @@ BEGIN_PROLOG
       leadingEdgeThreshold      : 0.2      //20% of the maximum bin
       minPEs                    : 4        //3 PEs
     }
-    SimpleCrvCoincidence:
-    {
-      module_type                  : SimpleCrvCoincidenceCheck
-      verboseLevel                 : 1
-      coincidenceGroupsFile        : "CRVResponse/test/coincidenceGroups.txt"
-      checkLayers                  : true
-      crvRecoPulsesModuleLabel     : "CrvRecoPulses"
-      PEthreshold                  : 14
-      maxDistance                  : 200      //mm
-      maxTimeDifference            : 5        //ns
-      timeWindowStart              : 550      //ns
-      timeWindowEnd                : 1750     //1695ns  //if timeWindowEnd > microbunch period (1695), then the time window loops back to the begining (0)
-    }
     CrvCoincidence:
     {
       module_type                   : CrvCoincidenceCheck
@@ -107,5 +95,19 @@ BEGIN_PROLOG
       leadingVetoTime               : 0      //the time window before the first hit time of the coincidence triplet (only used to print out the results)
       trailingVetoTime              : 125    //the time window after the last hit time of the coincidence triplet (only used to print out the results)
     }
+
+
+CrvResponsePackage : 
+{
+   producers : 
+   {
+     CrvPhotonArrivals: @local::CrvPhotonArrivals
+     CrvSiPMResponses : @local::CrvSiPMResponses
+     CrvWaveforms     : @local::CrvWaveforms
+     CrvRecoPulses    : @local::CrvRecoPulses
+     CrvCoincidence   : @local::CrvCoincidence
+   }
+   CrvResponseSequence : [ CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence ]
+}
 
 END_PROLOG

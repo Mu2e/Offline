@@ -1,6 +1,6 @@
 #include "minimalMessageService.fcl"
 #include "standardServices.fcl"
-#include "CRVResponse/test/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
 
 process_name : CRVEfficiency
