@@ -1,5 +1,7 @@
 #include "Mu2eG4/geom/geom_common.txt"
 
+bool hasSTM = false;
+
 // replace the CRV counter setup:
 
 int   crs.nSectors = 1;
@@ -17,9 +19,9 @@ double          crs.gapSmall                     =   1;   //mm
 double          crs.gapBetweenModules            =   5;   //mm
 vector<double>  crs.gapBetweenLayers             =   {9.525, 12.7, 9.525}; //mm
 
-int             crs.nModulesTest                 =   30;
+int             crs.nModulesTest                 =   6;
 int             crs.nCountersPerModuleTest       =   12;
-vector<double>  crs.firstCounterTest             =  {-3904.0, 2600.6, 0}; // next modules start at z=975.96, 1951.92, ..., 28302.84
+vector<double>  crs.firstCounterTest             =  {-3904.0, 2600.6, 0}; // next modules start at z=732.72, ..., 3663.6
 
 string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";

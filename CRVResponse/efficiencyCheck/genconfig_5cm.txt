@@ -13,11 +13,11 @@ bool piEplusNuGun.do = false;
 double cosmicDYB.mean =  -1.1; 
 double cosmicDYB.muEMin = 0.5e3;
 double cosmicDYB.muEMax = 5000e3;
-double cosmicDYB.muCosThMin = 0.0;
+double cosmicDYB.muCosThMin = 0.2;  //no horizontal tracks
 double cosmicDYB.muCosThMax = 1.0;
 int    cosmicDYB.nBinsE = 20000;
 int    cosmicDYB.nBinsTheta = 100;
-double cosmicDYB.dx     = 2700.0;   //10cm away from counter edges
+double cosmicDYB.dx     = 2800.0;
 double cosmicDYB.dy     = 0;
 double cosmicDYB.dz     = 827.0;
 double cosmicDYB.y0     = 2702.35;
@@ -27,7 +27,7 @@ double cosmicDYB.tMax   = 800.0;
 string cosmicDYB.refPointChoice  = "Customized";
 bool   cosmicDYB.vertical        = false;
 string cosmicDYB.directionChoice = "All";
-vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-3904.0, 2702.35, 12405};
+vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-3904.0, 2702.35, 2481.0};
 
 bool   cosmicDYB.dontProjectToSurface = true;
 

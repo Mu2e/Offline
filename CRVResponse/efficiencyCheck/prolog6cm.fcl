@@ -1,0 +1,107 @@
+BEGIN_PROLOG
+    CrvPhotonArrivals:
+    {
+      module_type               : CrvPhotonArrivalsGenerator
+      g4ModuleLabels            : ["g4filter"]
+      processNames              : ["cosmics2"]
+      lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6cm_5600",
+                                   "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6cm_4500"]
+      lookupTableCounterLengths : [5600,4500]
+      scintillationYield        : 5000.0   //5000.0 photons per MeV 
+      scintillationYieldTolerance :  0.0   //0%
+      scintillatorBirksConstant : 0.126    //0.126 mm/Mev
+      scintillatorRatioFastSlow : 1.0      //100% fast
+      scintillatorDecayTimeFast : 3.0      //3.0 ns   //includes WLS component in the scintillator
+      scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used
+      fiberDecayTime            : 7.4      //7.4 ns
+      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      startTime                 : 400.0    //0.0 ns
+    }
+    CrvSiPMResponses:
+    {
+      module_type                  : CrvSiPMResponsesGenerator
+      crvPhotonArrivalsModuleLabel : "CrvPhotonArrivals"
+      deadSiPMProbability          : 0.01
+      numberPixels                 : 1584
+      numberPixelsAtFiber          : 615
+      bias                         : 2.4        //V
+      scaleFactor                  : 0.08
+      minCharge                    : 4.0        //PEs
+      blindTime                    : 500.0      //ns
+
+      GeigerProbCoef               : 1.0        // = pc
+      GeigerProbVoltScale          : 5.5        // = vs
+                                                //from the SiPM specs:
+                                                //Geiger probability at over voltage v = 2.4V (bias voltage): 
+                                                //0.35 = 1 - exp(-pow(v,pc)/vs)
+                                                //Geiger probability at over voltage v = 1.0V: 
+                                                //0.17 = 1 - exp(-pow(v,pc)/vs)
+
+      TrapType0Prob                : 0.14       //trap_prob*trap_type0_prob=0.2*0.7
+      TrapType1Prob                : 0.06       //trap_prob*trap_type1_prob=0.2*0.3
+      TrapType0Lifetime            : 5.0        //ns
+      TrapType1Lifetime            : 50.0       //ns
+
+      ThermalProb                  : 2.9e-3     //ns^-1     1MHz/GeigerProb at SiPM --> 2.9e6 s^-1 = 2.9e-3 ns^-1 
+
+      PhotonProduction             : 0.136      // = p (photon probability with every charge release)
+                                                //total cross talk probability cp:
+                                                //use probability to release a charge r = 0.35 (Geiger probability)
+                                                //cp = p*r + (p*r)^2 + (p*r)^3 + ... = 0.05
+
+      backgroundParam1             : 0          //2.9e-4 ns^-1 @PEyield of 5000photons/MeV     100kHz/GeigerProb  -->  2.9e5 s^-1 = 2.9e-4 ns^-1
+      backgroundParam2             : 0.13
+      backgroundParam3             : 1.00       //@PEyield of 5000photons/MeV (scales inversely with PEyield)
+    }
+    CrvWaveforms:
+    {
+      module_type                  : CrvWaveformsGenerator
+      crvSiPMResponsesModuleLabel  : "CrvSiPMResponses"
+      singlePEWaveformFileName     : "CRVResponse/test/singlePEWaveform.txt"
+      singlePEWaveformBinWidth     : 0.5    //0.5 ns
+      singlePEWaveformBins         : 200
+      binWidth                     : 12.5   //12.5 ns (digitizer sampling rate)
+      FEBtimeSpread                : 2.0    //2.0 ns
+    }
+    CrvRecoPulses:
+    {
+      module_type               : CrvRecoPulsesFinder
+      crvWaveformsModuleLabel   : "CrvWaveforms"
+      param0                    : 0.0      //0.0
+      param1                    : 51.0     //51.0
+      pulseThreshold            : 0.015    //15mV
+      leadingEdgeThreshold      : 0.2      //20% of the maximum bin
+      minPEs                    : 4        //3 PEs
+    }
+    SimpleCrvCoincidence:
+    {
+      module_type                  : SimpleCrvCoincidenceCheck
+      verboseLevel                 : 1
+      coincidenceGroupsFile        : "CRVResponse/test/coincidenceGroups.txt"
+      checkLayers                  : true
+      crvRecoPulsesModuleLabel     : "CrvRecoPulses"
+      PEthreshold                  : 14
+      maxDistance                  : 200      //mm
+      maxTimeDifference            : 5        //ns
+      timeWindowStart              : 550      //ns
+      timeWindowEnd                : 1750     //1695ns  //if timeWindowEnd > microbunch period (1695), then the time window loops back to the begining (0)
+    }
+    CrvCoincidence:
+    {
+      module_type                   : CrvCoincidenceCheck
+      verboseLevel                  : 1
+      coincidencePropertiesFile     : "CRVResponse/test/coincidenceProperties.txt"
+      crvRecoPulsesModuleLabel      : "CrvRecoPulses"
+      PEthreshold                   : 10
+      adjacentPulseTimeDifference   : 5      //ns
+      maxTimeDifference             : 10     //ns
+      maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
+      maxSlopeDifference            : 2.5    //
+      acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
+      timeWindowStart               : 800    //ns
+      timeWindowEnd                 : 900    //1695ns  //if timeWindowEnd > microbunch period (1695), then the time window loops back to the begining (0)
+      leadingVetoTime               : 0      //the time window before the first hit time of the coincidence triplet (only used to print out the results)
+      trailingVetoTime              : 125    //the time window after the last hit time of the coincidence triplet (only used to print out the results)
+    }
+
+END_PROLOG
