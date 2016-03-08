@@ -15,9 +15,12 @@ namespace mu2e {
 // Tracker Calibration information; these correspond to Vadim's June 2012 measurement using 90 Sr
 // for the resolution at the straw center, and his 55 Fe measurement for the
 // position dependence
+// DNB 3/8/2016.  Updated to use measured LBL prototype chamber MIP resolution
     // Here we should eventually interface to some database
-    _tdresopar0 = config.getDouble("TDResolution_0",34.0);
-    _tdresopar1 = config.getDouble("TDResolution_1",32.9);
+//    _tdresopar0 = config.getDouble("TDResolution_0",34.0);
+//    _tdresopar1 = config.getDouble("TDResolution_1",32.9);
+    _tdresopar0 = config.getDouble("TDResolution_0",43.0);
+    _tdresopar1 = config.getDouble("TDResolution_1",0.0);
     // simplistic placeholder for drift calibration parameters
     _vdrift = config.getDouble("DriftVelocity",0.05); // mm/ns
     _rres_min = config.getDouble("MinDriftRadiusResolution",0.09); //mm

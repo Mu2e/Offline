@@ -365,13 +365,20 @@ namespace mu2e {
       XTalk self(hsp.strawIndex()); // this object represents the straws coupling to itself, ie 100%
       createDigis(hsp,self,digis.get(),mcdigis.get(),mcptrs.get());
       // if we're applying x-talk, look for nearby coupled straws
-      if(_addXtalk && totalCharge > _ctMinCharge){
-        vector<XTalk> xtalk;
-        Straw const& straw = tracker.getStraw(hsp.strawIndex());
-        findCrossTalkStraws(straw,xtalk);
-        for(auto ixtalk=xtalk.begin();ixtalk!=xtalk.end();++ixtalk){
-          createDigis(hsp,*ixtalk,digis.get(),mcdigis.get(),mcptrs.get());
-        }
+      if(_addXtalk) {
+      // only apply if the charge is above a threshold
+	double totalCharge = 0;
+	for(auto ih=hsp.hitletSequence(StrawEnd::plus).hitletList().begin();ih!= hsp.hitletSequence(StrawEnd::plus).hitletList().end();++ih){
+	  totalCharge += ih->charge();
+	}
+	if( totalCharge > _ctMinCharge){
+	  vector<XTalk> xtalk;
+	  Straw const& straw = tracker.getStraw(hsp.strawIndex());
+	  findCrossTalkStraws(straw,xtalk);
+	  for(auto ixtalk=xtalk.begin();ixtalk!=xtalk.end();++ixtalk){
+	    createDigis(hsp,*ixtalk,digis.get(),mcdigis.get(),mcptrs.get());
+	  }
+	}
       }
     }
     // store the digis in the event
@@ -791,6 +798,11 @@ namespace mu2e {
           _xwdist = ixing->_ihitlet->wireDistance();
         }
       }
+    } else {
+// no xings: just take the 1st hitlet
+      _ihitlet = 0;
+      _xddist = hitlets.front().driftDistance();
+      _xwdist = hitlets.front().wireDistance();
     }
     _hqsum = 0.0;
     _vmax = _tvmax = 0.0;

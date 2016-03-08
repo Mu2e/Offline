@@ -67,15 +67,15 @@ namespace mu2e {
     _debug(pset.get<int>("debugLevel",0)),
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
-    _minE(pset.get<double>("minimumEnergy",0.0)),
-    _maxE(pset.get<double>("maximumEnergy",0.003)),
-    _ctE(pset.get<double>("crossTalkEnergy",0.005)),
-    _ctMinT(pset.get<double>("crossTalkMinimumTime",-1)),
-    _ctMaxT(pset.get<double>("crossTalkMaximumTime",200)),
-    _minT(pset.get<double>("minimumTime",500)),
-    _maxT(pset.get<double>("maximumTime",2000)),
-    _minR(pset.get<double>("minimumRadius",395.0)),
-    _maxR(pset.get<vector<double> >("maximumRadius",vector<double>{650,650}))
+    _minE(pset.get<double>("minimumEnergy",0.0)), // MeV
+    _maxE(pset.get<double>("maximumEnergy",0.003)), // MeV
+    _ctE(pset.get<double>("crossTalkEnergy",0.005)), // MeV
+    _ctMinT(pset.get<double>("crossTalkMinimumTime",-1)), // nsec
+    _ctMaxT(pset.get<double>("crossTalkMaximumTime",200)), // nsec
+    _minT(pset.get<double>("minimumTime",500)), // nsec
+    _maxT(pset.get<double>("maximumTime",2000)), // nsec
+    _minR(pset.get<double>("minimumRadius",395.0)), // mm
+    _maxR(pset.get<vector<double> >("maximumRadius",vector<double>{650,650})) // mm
     {
       if(_maxR.size() != 2)
 	throw cet::exception("RECO")<<"mu2e::FlagStrawHits: illegal maximumRadius size specified" << endl;
@@ -108,6 +108,9 @@ namespace mu2e {
     // create the output collection
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection);
     shfcol->reserve(nsh);
+// A more efficient algorithm is to first find all big hits, then
+// loop over only those in the double loop.  It avoids the search for indices FIXME!!
+
     vector<StrawIndex> ct_straws_neighbor;
     vector<StrawIndex> ct_straws_preamp;
     
