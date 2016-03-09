@@ -228,7 +228,7 @@ namespace mu2e {
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
     _physVolHelper(),
     _processInfo(),
-    _printPhysicsProcessSummary(pSet.get<bool>("printPhysicsProcessSummary",false)),
+    _printPhysicsProcessSummary(pSet.get<bool>("debug.printPhysicsProcessSummary",false)),
     _simParticlePrinter(pSet.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet())),
     _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
     _extMonFNALPixelSD(),

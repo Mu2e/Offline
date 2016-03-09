@@ -76,7 +76,13 @@ mu2eg4DefaultDebug: {
     worldVerbosityLevel : 0
     printElements : false
     printMaterials : false
+    exportPDTStart : false
+    exportPDTEnd : false
     fillDiagnosticHistograms: false
+    warnEveryNewRun : false
+    diagLevel : 0
+    trackingVerbosityLevel : 0
+    checkFieldMap : 0
     writeGDML : false
     GDMLFileName : "mu2e.gdml"
 }
