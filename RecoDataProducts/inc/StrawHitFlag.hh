@@ -22,7 +22,7 @@ namespace mu2e {
 // properties, 12-15 are for external association (like to a calorimeter cluster)
 // The upper 16 bits are reserved to flag the track number (or cluster) to which these hits are associated.
     enum bit_type {stereo=0, energysel=1, radsel=2, timesel=3,  delta=6, isolated=7, outlier=8, other=9,
-    calosel=12,
+    calosel=12, strawxtalk=13, elecxtalk=14,
     track0=16,track1=17,track2=18,track3=19,track4=20,track5=21,track6=22,track7=23,
     track8=24,track9=25,track10=26,track11=27,track12=28,track13=29,track14=30,track15=31};
 // special function to return the enum value associated with a given track number

@@ -240,8 +240,9 @@ void KalFit::Hit () {
   irpull->SetFillColor(kBlue);
   irpull->SetStats(0);
 
-  _tdiag->Project("dres","_rdrift-tshmc._dist",goodhit+active);
-  _tdiag->Project("dpull","(_rdrift-tshmc._dist)/_rdrifterr",goodhit+active);
+  TCut cdrift("tshmc._dist>0.5");
+  _tdiag->Project("dres","_rdrift-tshmc._dist",goodhit+active+cdrift);
+  _tdiag->Project("dpull","(_rdrift-tshmc._dist)/_rdrifterr",goodhit+active+cdrift);
 
   _tdiag->Project("iresid","_resid",goodhit+!active);
   _tdiag->Project("aresid","_resid",goodhit+active);
@@ -252,9 +253,9 @@ void KalFit::Hit () {
   dcan->Clear();
   dcan->Divide(2,1);
   dcan->cd(1);
-  dres->Fit("gaus");
+  dres->Fit("gaus","","",-0.3,0.18);
   dcan->cd(2);
-  dpull->Fit("gaus");
+  dpull->Fit("gaus","","",-3,1.5);
   
 
   TLegend* rleg = new TLegend(0.1,0.8,0.4,0.9);
@@ -359,8 +360,9 @@ void KalFit::Hit () {
 //  TH2F* pocatd = new TH2F("pocatd","Hit POCA V;true V (mm);POCA V (mm)",
 //      100,-600,600,100,-600,600);
 
-  _tdiag->Project("tdres","_tddist-tshmc._len","_active");
-  _tdiag->Project("tdpull","(_tddist-tshmc._len)/_tdderr","_active");
+  TCut central("abs(tshmc._len)<50");
+  _tdiag->Project("tdres","_tddist-tshmc._len","_active"+central);
+  _tdiag->Project("tdpull","(_tddist-tshmc._len)/_tdderr","_active"+central);
   tdcan->Clear();
   tdcan->Divide(2,2);
   tdcan->cd(1);
@@ -371,9 +373,9 @@ void KalFit::Hit () {
   dtd_1->SetTitle("Average reco #Delta-t V vs true V;true V (mm);reco V (mm)");
   dtd_1->Fit("pol1");
   tdcan->cd(3);
-  tdres->Fit("gaus");
+  tdres->Fit("gaus","","",-100.,100.);
   tdcan->cd(4);
-  tdpull->Fit("gaus");
+  tdpull->Fit("gaus","","",-3,3);
 
 }
 

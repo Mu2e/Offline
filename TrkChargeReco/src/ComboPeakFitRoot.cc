@@ -10,8 +10,8 @@
 namespace mu2e {
   namespace TrkChargeReco {
 
-  ComboPeakFitRoot::ComboPeakFitRoot(StrawElectronics const& strawele, FitConfig const& config,
-    std::string fitoptions) : PeakFitRoot(strawele, config, fitoptions){}
+  ComboPeakFitRoot::ComboPeakFitRoot(StrawElectronics const& strawele, FitConfig const& config, FitType const& fittype,
+    std::string fitoptions) : PeakFitRoot(strawele, config, fittype, fitoptions){}
 
   void ComboPeakFitRoot::process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const {
     // find initial values for the fit

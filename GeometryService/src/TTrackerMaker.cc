@@ -1245,6 +1245,21 @@ namespace mu2e {
             << "per layer in the same panel. \n";
         }
 
+        // add all straws sharing a preamp
+        // assumes current two channel preamps
+      
+        if ( i->id().getStraw() % 2 == 0){
+          const StrawId nsId(i->id().getPanelId(), 1, (i->id().getStraw()) + 1); 
+          i->_preampById.push_back( nsId );
+          i->_preampByIndex.push_back( _tt->getStraw(nsId).index());
+        }else{
+          const StrawId nsId(i->id().getPanelId(), 0, (i->id().getStraw()) - 1); 
+          i->_preampById.push_back( nsId );
+          i->_preampByIndex.push_back( _tt->getStraw(nsId).index());
+        }
+
+        // add neighbors
+
         if (layer==0 && i->id().getStraw()<2*nStrawLayer) {
           const StrawId nsId( i->id().getPanelId(), 1 , i->id().getStraw() + 1 );
           i->_nearestById.push_back( nsId );

@@ -8,6 +8,8 @@
 namespace mu2e {
 
   namespace TrkChargeReco {
+	
+	enum FitType {sumadc=0,peakminusped=1,combopeakfit=2,peakfit=3};
 
     //  PeakFit
     //  Virtual class providing structure for extracting charge from ADC waveforms
@@ -18,13 +20,27 @@ namespace mu2e {
 	// The default implementation simply sums the ADC data after subtracting pedesdal
 	virtual void process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
 
+	// Extract charge by summing the ADC data after subtracting pedestal
+	void sumADC(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
+	
+	// Extract charge by taking the difference of the ADC peak and pedestal
+	void peakMinusPed(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
+
+	// Initialize values to be used as parameters in fit
+	void initializeFit(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const;
+
 	// Destructor
 	virtual ~PeakFit(){}
 
 	// PeakFit normal constructor with ConfigStruct initilization parameters
-	PeakFit(StrawElectronics const& strawele);
+	PeakFit(StrawElectronics const& strawele, FitType const& fittype);
+
       protected:
 	StrawElectronics const& _strawele;
+
+	FitType const& _fittype; 
+
+	
     };
   }
 }

@@ -78,12 +78,14 @@ namespace mu2e {
 
   double StrawDigiMC::triggerEnergySum(StrawDigi::TDCChannel itdc) const {
     double esum(0.0);
-    for(auto imcs = _stepMCs.begin(); imcs!= _stepMCs.end(); ++ imcs){
-    // if the simParticle for this step is the same as the one which fired the discrim, add the energy
-      if( (*imcs)->simParticle() == _stepMC[(size_t)itdc]->simParticle() ||
-	  (*imcs)->simParticle()->parent() == _stepMC[(size_t)itdc]->simParticle() ||
-	  (*imcs)->simParticle() == _stepMC[(size_t)itdc]->simParticle()->parent() )
-	esum += (*imcs)->eDep();
+    if(!_stepMC[(size_t)itdc].isNull()){
+      for(auto imcs = _stepMCs.begin(); imcs!= _stepMCs.end(); ++ imcs){
+	// if the simParticle for this step is the same as the one which fired the discrim, add the energy
+	if( (*imcs)->simParticle() == _stepMC[(size_t)itdc]->simParticle() ||
+	    (*imcs)->simParticle()->parent() == _stepMC[(size_t)itdc]->simParticle() ||
+	    (*imcs)->simParticle() == _stepMC[(size_t)itdc]->simParticle()->parent() )
+	  esum += (*imcs)->eDep();
+      }
     }
     return esum;
   }

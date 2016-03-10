@@ -25,7 +25,7 @@ namespace mu2e {
 		virtual ~ComboPeakFitRoot(){}
 
 		// ComboPeakFitRoot normal constructor with ConfigStruct initilization parameters
-		ComboPeakFitRoot(StrawElectronics const& strawele, FitConfig const& config,std::string fitoptions="QNEX0S");
+		ComboPeakFitRoot(StrawElectronics const& strawele, FitConfig const& config,FitType const& fittype, std::string fitoptions="QNEX0S");
 
 		struct peakResult
 		{

@@ -112,6 +112,7 @@ namespace mu2e {
 
     // Parameters
     bool   _addXtalk; // should we add cross talk hits?
+    double _ctMinCharge; // minimum charge to add cross talk (for performance issues)
     bool   _addNoise; // should we add noise hits?
     double _preampxtalk, _postampxtalk; // x-talk parameters; these should come from conditions, FIXME!!
     string _g4ModuleLabel;  // Nameg of the module that made these hits.
@@ -145,7 +146,7 @@ namespace mu2e {
     Float_t _mce, _slen, _sedep;
     Int_t _nsteppoint;
     Int_t _npart;
-    Float_t _tmin, _tmax, _txing, _xddist, _xwdist;
+    Float_t _tmin, _tmax, _txing, _xddist, _xwdist, _xpdist;
     Bool_t _wfxtalk;
     TTree* _sddiag;
     Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
@@ -188,7 +189,7 @@ namespace mu2e {
     void createDigi(WFXP const& xpair, const StrawWaveform wf[2], StrawIndex index, StrawDigiCollection* digis);
     void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
 // diagnostic functions
-    void waveformDiag(StrawWaveform const& wf,WFXList const& xings);
+    void waveformDiag(const StrawWaveform wf[2], WFXList const& xings);
     void digiDiag(WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
     StrawEnd primaryEnd(StrawIndex strawind) const;
   };
@@ -206,6 +207,7 @@ namespace mu2e {
     _maxFullPrint(pset.get<int>("maxFullPrint",2)),
     _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _addXtalk(pset.get<bool>("addCrossTalk",false)),
+    _ctMinCharge(pset.get<double>("xtalkMinimumCharge",0)),
     _addNoise(pset.get<bool>("addNoise",false)),
     _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
     _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
@@ -273,7 +275,8 @@ namespace mu2e {
       _swdiag->Branch("txing",&_txing,"txing/F");
       _swdiag->Branch("xddist",&_xddist,"xddist/F");
       _swdiag->Branch("xwdist",&_xwdist,"xwdist/F");
-      _swdiag->Branch("xtalk",&_wfxtalk,"xtalk/B");
+      _swdiag->Branch("xpdist",&_xpdist,"xpdist/F");
+       _swdiag->Branch("xtalk",&_wfxtalk,"xtalk/B");
 
       if(_diagLevel > 1){
         _sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
@@ -354,17 +357,29 @@ namespace mu2e {
     // loop over the hitlet sequences
     for(auto ihsp=hmap.begin();ihsp!= hmap.end();++ihsp){
       StrawHitletSequencePair const& hsp = ihsp->second;
+      double totalCharge = 0;
+      for(auto ih=hsp.hitletSequence(StrawEnd::plus).hitletList().begin();ih!= hsp.hitletSequence(StrawEnd::plus).hitletList().end();++ih){
+        totalCharge += ih->charge();
+      }
+
       // create primary digis from this hitlet sequence
       XTalk self(hsp.strawIndex()); // this object represents the straws coupling to itself, ie 100%
       createDigis(hsp,self,digis.get(),mcdigis.get(),mcptrs.get());
       // if we're applying x-talk, look for nearby coupled straws
-      if(_addXtalk){
-        vector<XTalk> xtalk;
-        Straw const& straw = tracker.getStraw(hsp.strawIndex());
-        findCrossTalkStraws(straw,xtalk);
-        for(auto ixtalk=xtalk.begin();ixtalk!=xtalk.end();++ixtalk){
-          createDigis(hsp,*ixtalk,digis.get(),mcdigis.get(),mcptrs.get());
-        }
+      if(_addXtalk) {
+      // only apply if the charge is above a threshold
+	double totalCharge = 0;
+	for(auto ih=hsp.hitletSequence(StrawEnd::plus).hitletList().begin();ih!= hsp.hitletSequence(StrawEnd::plus).hitletList().end();++ih){
+	  totalCharge += ih->charge();
+	}
+	if( totalCharge > _ctMinCharge){
+	  vector<XTalk> xtalk;
+	  Straw const& straw = tracker.getStraw(hsp.strawIndex());
+	  findCrossTalkStraws(straw,xtalk);
+	  for(auto ixtalk=xtalk.begin();ixtalk!=xtalk.end();++ixtalk){
+	    createDigis(hsp,*ixtalk,digis.get(),mcdigis.get(),mcptrs.get());
+	  }
+	}
       }
     }
     // store the digis in the event
@@ -385,7 +400,6 @@ namespace mu2e {
     // instantiate waveforms for both ends of this straw
     StrawWaveform waveforms[2] {StrawWaveform(hsp.hitletSequence(StrawEnd::minus),_strawele,xtalk),
       StrawWaveform(hsp.hitletSequence(StrawEnd::plus),_strawele,xtalk) };
-      StrawEnd primaryend = primaryEnd(hsp.strawIndex());
     // find the threshold crossing points for these waveforms
     WFXList xings;
     // loop over the ends of this straw
@@ -398,7 +412,7 @@ namespace mu2e {
       fillDigis(xings,waveforms,xtalk._dest,digis,mcdigis,mcptrs);
       // diagnostics
     }
-    if(_diagLevel > 0)waveformDiag(waveforms[primaryend._end],xings);
+    if(_diagLevel > 0 && waveforms[0].hitlets().hitletList().size() > 0)waveformDiag(waveforms,xings);
   }
 
   void
@@ -734,12 +748,17 @@ namespace mu2e {
   // the couplings and straw identities should eventually come from a database, FIXME!!!
   void StrawDigisFromStepPointMCs::findCrossTalkStraws(Straw const& straw, vector<XTalk>& xtalk) {
     StrawIndex selfind = straw.index();
-// find nearest neighgors
-    vector<StrawIndex> const& neighbors = straw.nearestNeighboursByIndex();
-    // convert these to cross-talk
     xtalk.clear();
-    for(auto isind=neighbors.begin();isind!=neighbors.end();++isind){
-      xtalk.push_back(XTalk(selfind,*isind,_preampxtalk,_postampxtalk));
+    // find straws sensitive to straw-to-straw cross talk
+    vector<StrawIndex> const& strawNeighbors = straw.nearestNeighboursByIndex();
+    // find straws sensitive to electronics cross talk
+    vector<StrawIndex> const& preampNeighbors = straw.preampNeighboursByIndex();
+    // convert these to cross-talk
+    for(auto isind=strawNeighbors.begin();isind!=strawNeighbors.end();++isind){
+      xtalk.push_back(XTalk(selfind,*isind,_preampxtalk,0));
+    }
+    for(auto isind=preampNeighbors.begin();isind!=preampNeighbors.end();++isind){
+      xtalk.push_back(XTalk(selfind,*isind,0,_postampxtalk));
     }
   }
 
@@ -749,35 +768,52 @@ namespace mu2e {
   }
 // diagnostic functions
   void
-  StrawDigisFromStepPointMCs::waveformDiag(StrawWaveform const& wf,
+  StrawDigisFromStepPointMCs::waveformDiag(const StrawWaveform wfs[2],
       WFXList const& xings) {
     const Tracker& tracker = getTrackerOrThrow();
-    const Straw& straw = tracker.getStraw( wf.hitlets().strawIndex() );
+    const Straw& straw = tracker.getStraw( wfs[0].hitlets().strawIndex() );
     _splane = straw.id().getPlane();
     _spanel = straw.id().getPanel();
     _slayer = straw.id().getLayer();
     _sstraw = straw.id().getStraw();
-    HitletList const& hitlets = wf.hitlets().hitletList();
+    HitletList const& hitlets = wfs[0].hitlets().hitletList();
     _nhitlet = hitlets.size();
     _ihitlet = -1;
     set<art::Ptr<StepPointMC> > steps;
     set<art::Ptr<SimParticle> > parts;
     _nxing = xings.size();
     _txing = _mbtime+_mbbuffer;
-    _xddist = _xwdist = -1.0;
+    _xddist = _xwdist = _xpdist = -1.0;
     if(_nxing > 0){
       for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
         _txing = min(_txing,static_cast<float_t>(ixing->_time));
-        if(ixing->_ihitlet->strawEnd() == wf.strawEnd()){
-  // find the hitlet of the 1st crossing
-          _ihitlet = 0;
-          for(auto ih=hitlets.begin();ih!= hitlets.end();++ih){
-            if(ih == xings.front()._ihitlet)break;
-            ++_ihitlet;
-          }
-          _xddist = ixing->_ihitlet->driftDistance();
-          _xwdist = ixing->_ihitlet->wireDistance();
-        }
+  // find the hitlet index of the 1st crossing
+	for(auto ih=hitlets.begin();ih!= hitlets.end();++ih){
+	  if(ih == ixing->_ihitlet)break;
+	  ++_ihitlet;
+	}
+	_xddist = ixing->_ihitlet->driftDistance();
+	_xwdist = ixing->_ihitlet->wireDistance();
+	// compute direction perpendicular to wire and momentum
+	art::Ptr<StepPointMC> const& spp = ixing->_ihitlet->stepPointMC();
+	if(!spp.isNull()){
+	  CLHEP::Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
+	  // project the differences in position to get the perp distance
+	  _xpdist = pdir.dot(spp->position()-straw.getMidPoint());
+	}
+      }
+    } else {
+      // no xings: just take the 1st hitlet
+      if(_nhitlet > 0 ){
+	_ihitlet = 0;
+	_xddist = hitlets.front().driftDistance();
+	_xwdist = hitlets.front().wireDistance();
+	art::Ptr<StepPointMC> const& spp = hitlets.front().stepPointMC();
+	if(!spp.isNull()){
+	  CLHEP::Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
+	  // project the differences in position to get the perp distance
+	  _xpdist = pdir.dot(spp->position()-straw.getMidPoint());
+	}
       }
     }
     _hqsum = 0.0;
@@ -790,7 +826,7 @@ namespace mu2e {
         parts.insert(ihitl->stepPointMC()->simParticle());
         _hqsum += ihitl->charge();
         double htime = ihitl->time()+_strawele->maxResponseTime(_diagpath);
-        double vout = wf.sampleWaveform(_diagpath,htime);
+        double vout = wfs[0].sampleWaveform(_diagpath,htime);
         if(vout > _vmax){
           _vmax = vout;
           _tvmax = htime;
@@ -809,7 +845,7 @@ namespace mu2e {
       _sesum += (*istep)->ionizingEdep();
     _tmin = hitlets.begin()->time();
     _tmax = hitlets.rbegin()->time();
-    _wfxtalk = !wf.xtalk().self();
+    _wfxtalk = !wfs[0].xtalk().self();
     _swdiag->Fill();
     if(_diagLevel > 2) {
       // histogram individual waveforms
@@ -833,19 +869,19 @@ namespace mu2e {
           times.push_back(t);
           t += tstep;
         }
-        wf.sampleWaveform(_diagpath,times,volts);
+        wfs[0].sampleWaveform(_diagpath,times,volts);
         ++nhist;
         art::ServiceHandle<art::TFileService> tfs;
         char name[60];
         char title[100];
-        snprintf(name,60,"SWF%i_%i",wf.hitlets().strawIndex().asInt(),nhist);
-        snprintf(title,100,"Electronic output for straw %i event %i;time (nSec);mVolts",wf.hitlets().strawIndex().asInt(),nhist);
+        snprintf(name,60,"SWF%i_%i",wfs[0].hitlets().strawIndex().asInt(),nhist);
+        snprintf(title,100,"Electronic output for straw %i event %i;time (nSec);mVolts",wfs[0].hitlets().strawIndex().asInt(),nhist);
         TH1F* wfh = tfs->make<TH1F>(name,title,volts.size(),times.front(),times.back());
         for(size_t ibin=0;ibin<times.size();++ibin)
           wfh->SetBinContent(ibin+1,volts[ibin]);
         TList* flist = wfh->GetListOfFunctions();
         for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
-          if(ixing->_ihitlet->strawEnd() == wf.strawEnd()){
+          if(ixing->_ihitlet->strawEnd() == wfs[0].strawEnd()){
             TMarker* smark = new TMarker(ixing->_time,ixing->_vcross,8);
             smark->SetMarkerColor(kGreen);
             smark->SetMarkerSize(2);

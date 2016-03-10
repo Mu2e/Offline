@@ -16,7 +16,7 @@ namespace mu2e {
     Float_t _edep, _time, _rho;
     Float_t _pres, _rres, _chisq, _stdt, _dist;
     Int_t _plane, _panel, _layer, _straw;
-    Bool_t _esel, _rsel, _delta, _stereo;
+    Bool_t _esel, _rsel, _delta, _stereo, _strawxtalk, _elecxtalk;
     Int_t _relation;
     Bool_t _primary;
     CLHEP::Hep3Vector _mcpos;

@@ -8,9 +8,9 @@
 namespace mu2e {
   namespace TrkChargeReco {
 
-  PeakFitRoot::PeakFitRoot(StrawElectronics const& strawele, FitConfig const& config,
-    std::string fitoptions) : PeakFit(strawele),
-  _peakfit(strawele,config) , _config(config), _fitoptions(fitoptions) {}
+  PeakFitRoot::PeakFitRoot(StrawElectronics const& strawele, FitConfig const& config, FitType const& fittype,
+    std::string fitoptions) : PeakFit(strawele,fittype),
+  _peakfit(strawele,config) , _config(config), _fitoptions(fitoptions){}
 
   void PeakFitRoot::process(StrawElectronics::ADCWaveform const& adcData, PeakFitParams & fit) const {
     // find initial values for the fit

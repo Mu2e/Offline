@@ -81,10 +81,10 @@ namespace mu2e
       Float_t _mcedep;
       Float_t _pdist,_pperp,_pmom;
       Float_t _mctime, _mcptime;
-      Int_t _esel,_rsel, _timesel,  _delta, _stereo, _isolated;
+      Int_t _esel,_rsel, _timesel,  _delta, _stereo, _isolated, _strawxtalk, _elecxtalk;
       Int_t _plane, _panel, _layer, _straw;
       Float_t _shpres, _shrres, _shchisq, _shdt, _shdist;
-      Bool_t _xtalk;
+      Bool_t _mcxtalk;
   };
 
 
@@ -140,6 +140,8 @@ namespace mu2e
     shinfo._rsel = shp.flag().hasAllProperties(StrawHitFlag::radsel);
     shinfo._delta = shp.flag().hasAllProperties(StrawHitFlag::delta);
     shinfo._stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
+    shinfo._strawxtalk = shp.flag().hasAllProperties(StrawHitFlag::strawxtalk);
+    shinfo._elecxtalk = shp.flag().hasAllProperties(StrawHitFlag::elecxtalk);
 
     if(_mcdigis != 0) {
 
@@ -237,6 +239,8 @@ namespace mu2e
     _shdiag->Branch("tsel",&_timesel,"tsel/I");
     _shdiag->Branch("delta",&_delta,"delta/I");
     _shdiag->Branch("stereo",&_stereo,"stereo/I");
+    _shdiag->Branch("strawxtalk",&_strawxtalk,"strawxtalk/I");
+    _shdiag->Branch("elecxtalk",&_elecxtalk,"elecxtalk/I");
     _shdiag->Branch("isolated",&_isolated,"isolated/I");
     _shdiag->Branch("pdist",&_pdist,"pdist/F");
     _shdiag->Branch("pperp",&_pperp,"pperp/F");
@@ -246,7 +250,7 @@ namespace mu2e
     _shdiag->Branch("chisq",&_shchisq,"chisq/F");
     _shdiag->Branch("dt",&_shdt,"dt/F");
     _shdiag->Branch("dist",&_shdist,"dist/F");
-    _shdiag->Branch("xtalk",&_xtalk,"xtalk/B");
+    _shdiag->Branch("mcxtalk",&_mcxtalk,"mcxtalk/B");
   }
 
 
@@ -264,6 +268,8 @@ namespace mu2e
       _straw = straw.id().getStraw();
       _shp = shp.pos();
       _stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
+      _strawxtalk = shp.flag().hasAllProperties(StrawHitFlag::strawxtalk);
+      _elecxtalk = shp.flag().hasAllProperties(StrawHitFlag::elecxtalk);
       _edep = sh.energyDep();
       _time = sh.time();
       _deltat = sh.dt();
@@ -294,7 +300,7 @@ namespace mu2e
       _mcptime=0.0;
       _mcpop = threevec();
       _mcpoe = _mcpom = -1.0;
-      _xtalk = false;
+      _mcxtalk = false;
       if(_mcdigis != 0){
         StrawDigiMC const& mcdigi = _mcdigis->at(istr);
         // use TDC channel 0 to define the MC match
@@ -348,12 +354,15 @@ namespace mu2e
             _mcgpos = det->toDetector(sp->genParticle()->position());
           }
         }
-        _xtalk = spmcp->strawIndex() != sh.strawIndex();
+        _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
+
       }
       _esel = _shfcol->at(istr).hasAllProperties(StrawHitFlag::energysel);
       _rsel = _shfcol->at(istr).hasAllProperties(StrawHitFlag::radsel);
       _timesel = _shfcol->at(istr).hasAllProperties(StrawHitFlag::timesel);
       _stereo = _shfcol->at(istr).hasAllProperties(StrawHitFlag::stereo);
+      _strawxtalk = _shfcol->at(istr).hasAllProperties(StrawHitFlag::strawxtalk);
+      _elecxtalk = _shfcol->at(istr).hasAllProperties(StrawHitFlag::elecxtalk);
       _isolated = _shfcol->at(istr).hasAllProperties(StrawHitFlag::isolated);
       _delta = _shfcol->at(istr).hasAllProperties(StrawHitFlag::delta);
       _shpres = _shpcol->at(istr).posRes(StrawHitPosition::phi);
