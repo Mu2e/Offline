@@ -71,6 +71,10 @@ namespace mu2e
 
     std::string _scintillatorBarMaterialName;
     std::string _absorberMaterialName;
+
+    double      _CMBOffset;
+    double      _CMBHalfThickness;
+    std::string _CMBMaterialName;
   };
 
 }  //namespace mu2e

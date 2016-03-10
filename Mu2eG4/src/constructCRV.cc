@@ -54,7 +54,7 @@ namespace mu2e
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
 
     bool scintillatorShieldVisible = _config.getBool("crs.vetoVisible",true);
-    bool scintillatorShieldSolid   = _config.getBool("crs.vetoSolid",false);
+    bool scintillatorShieldDrawSolid = _config.getBool("crs.vetoSolid",true);
 
     int verbosityLevel = _config.getInt("crs.verbosityLevel",0);
 
@@ -70,24 +70,24 @@ namespace mu2e
     for(ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
     {
       CRSScintillatorShield const & shield = *ishield;
-      std::string const & scintillatorBarName = shield.getName();
+      std::string const & CRVsectorName = shield.getName();
 
-      if(verbosityLevel > 0) cout << __func__ << " constructing            : " << scintillatorBarName << endl;
+      if(verbosityLevel > 0) cout << __func__ << " constructing            : " << CRVsectorName << endl;
 
-      // all materials and dimensions are the same within a particular shield
-     CRSScintillatorBarDetail const & barDetail = shield.getCRSScintillatorBarDetail();
+      // all materials and dimensions are the same within a particular CRV sector
+      CRSScintillatorBarDetail const & barDetail = shield.getCRSScintillatorBarDetail();
 
       G4Material* scintillatorBarMaterial = findMaterialOrThrow(barDetail.getMaterialName());
       std::vector<double> const &  scintillatorBarHalfLengths = barDetail.getHalfLengths();
 
-      G4VSolid* scintillatorBarSolid = new G4Box(scintillatorBarName,
+      G4VSolid* scintillatorBarSolid = new G4Box(CRVsectorName,
                                                  scintillatorBarHalfLengths[0],
                                                  scintillatorBarHalfLengths[1],
                                                  scintillatorBarHalfLengths[2]);
 
       G4LogicalVolume* scintillatorBarLogical = new G4LogicalVolume(scintillatorBarSolid,
                                                                     scintillatorBarMaterial,
-                                                                    scintillatorBarName);
+                                                                    CRVsectorName);
 
       // visibility attributes
       if (!scintillatorShieldVisible) 
@@ -96,9 +96,9 @@ namespace mu2e
       }
       else 
       {
-        G4Colour  orange  (.75, .55, .0);
+        G4Colour  orange(.75, .55, .0);
         G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, orange));
-        visAtt->SetForceSolid(scintillatorShieldSolid);
+        visAtt->SetForceSolid(scintillatorShieldDrawSolid);
         visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
         scintillatorBarLogical->SetVisAttributes(visAtt);
       }
@@ -113,6 +113,31 @@ namespace mu2e
         G4SDManager::GetSDMpointer()->SetVerboseLevel(verbosityLevel-1);
       }
 
+      // build one counter mother board, which will be the same for all counters of this CRV sector
+      G4Material* CMBMaterial = findMaterialOrThrow(barDetail.getCMBMaterialName());
+      std::vector<double> const & CMBHalfLengths = barDetail.getCMBHalfLengths();
+
+      G4VSolid* CMBSolid = new G4Box(CRVsectorName+"_CMB",
+                                     CMBHalfLengths[0],
+                                     CMBHalfLengths[1],
+                                     CMBHalfLengths[2]);
+
+      G4LogicalVolume* CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, CRVsectorName+"_CMB");
+
+      // visibility attributes
+      if (!scintillatorShieldVisible) 
+      {
+        CMBLogical->SetVisAttributes(G4VisAttributes::Invisible);
+      }
+      else 
+      {
+        G4Colour  green(.0, .55, .55);
+        G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, green));
+        visAtt->SetForceSolid(scintillatorShieldDrawSolid);
+        visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
+        CMBLogical->SetVisAttributes(visAtt);
+      }
+
       const std::vector<CRSScintillatorModule> &modules = shield.getCRSScintillatorModules();
       std::vector<CRSScintillatorModule>::const_iterator imodule;
       for(imodule=modules.begin(); imodule!=modules.end(); ++imodule) 
@@ -124,6 +149,8 @@ namespace mu2e
 
           //construct a G4Box around all bars of a layer to speed up the surface checks
           const std::vector<double> &layerHalflengths=ilayer->getHalfLengths();
+
+          //need the position relative to the parent (air) center
           const CLHEP::Hep3Vector &layerCenterInMu2e=ilayer->getPosition();
           CLHEP::Hep3Vector layerAirOffset = layerCenterInMu2e - parentCenterInMu2e;
 
@@ -149,7 +176,10 @@ namespace mu2e
             const CRSScintillatorBar &bar = **ibar; 
 
             //bar.getPosition() returns the bar position in Mu2e coordinates
+            //need the position relative to the layer center
             CLHEP::Hep3Vector barLayerOffset = bar.getPosition() - layerCenterInMu2e; 
+            CLHEP::Hep3Vector CMB0LayerOffset = bar.getCMBPosition(0) - layerCenterInMu2e; 
+            CLHEP::Hep3Vector CMB1LayerOffset = bar.getCMBPosition(1) - layerCenterInMu2e; 
 
             if ( verbosityLevel > 3 ) 
             {
@@ -167,9 +197,29 @@ namespace mu2e
                                                        bar.index().asInt(),
                                                        false);
 
-            if ( doSurfaceCheck) 
+            G4VPhysicalVolume* pvCMB0 = new G4PVPlacement( NULL,
+                                                           CMB0LayerOffset,
+                                                           CMBLogical,
+                                                           bar.name("CMB0_CRSScintillatorBar_"),
+                                                           layerInfo.logical,
+                                                           false,
+                                                           2*bar.index().asInt(),
+                                                           false);
+
+            G4VPhysicalVolume* pvCMB1 = new G4PVPlacement( NULL,
+                                                           CMB1LayerOffset,
+                                                           CMBLogical,
+                                                           bar.name("CMB1_CRSScintillatorBar_"),
+                                                           layerInfo.logical,
+                                                           false,
+                                                           2*bar.index().asInt()+1,
+                                                           false);
+
+            if(doSurfaceCheck) 
             {
               checkForOverlaps( pv, _config, verbosityLevel>0);
+              checkForOverlaps( pvCMB0, _config, verbosityLevel>0);
+              checkForOverlaps( pvCMB1, _config, verbosityLevel>0);
             }
           } //ibar
         } //ilayer
@@ -205,7 +255,7 @@ namespace mu2e
           {
             G4Colour  darkorange  (.45, .25, .0);
             G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, darkorange));
-            visAtt->SetForceSolid(absorberSolid);
+            visAtt->SetForceSolid(scintillatorShieldDrawSolid);
             visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
             absorberLogical->SetVisAttributes(visAtt);
           }

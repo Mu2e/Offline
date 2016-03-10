@@ -202,3 +202,8 @@ vector<double>  crs.vdDirectionT  =  {0, 1, 0};
 vector<double>  crs.vdDirectionD  =  {0, 0, 1};
 vector<double>  crs.vdDirectionU  =  {0, 0, -1};
 
+// counter mother boards
+double crs.CMBOffset        = 10.0;
+double crs.CMBHalfThickness =  1.0;
+string crs.CMBMaterialName  = "G4_PLEXIGLASS";
+

@@ -53,7 +53,7 @@ namespace mu2e
 
     CLHEP::Hep3Vector const & getPosition() const {return _position;}
     std::vector<double> const & getHalfLengths() const {return _detail->getHalfLengths();}
-    std::string const & getMaterialNames() const {return _detail->getMaterialName();}
+    std::string const & getMaterialName() const {return _detail->getMaterialName();}
 
     double getHalfThickness() const { return _detail->getHalfThickness();}
     double getHalfWidth() const { return _detail->getHalfWidth();}
@@ -107,6 +107,23 @@ namespace mu2e
 
     // Detailed description of a bar
     std::shared_ptr<CRSScintillatorBarDetail> _detail;
+
+
+    /********************/
+    // counter motherboard section
+
+    public:
+
+    CLHEP::Hep3Vector getCMBPosition(int side) const  //"side" can be 0 or 1 (i.e. the CMBs on both sides of the counter)
+    {
+      return _detail->getCMBPosition(side, _position);
+    }
+    std::vector<double> getCMBHalfLengths() const 
+    {
+      return _detail->getCMBHalfLengths();
+    }
+    std::string const & getCMBMaterialName() const {return _detail->getCMBMaterialName();}
+
   };
 
 }  //namespace mu2e

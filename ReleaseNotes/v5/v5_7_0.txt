@@ -8,3 +8,6 @@ Still under construction
    physical models of the # of electrons/cluster and gain fluctuations.
    Details, including comparisons with measurements and validation plots,
    are described in doc 6962.
+
+2) March 10, 2016 ehrlich
+   Added counter motherboards to both sides of the CRV counters
