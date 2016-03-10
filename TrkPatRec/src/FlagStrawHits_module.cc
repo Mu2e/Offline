@@ -68,10 +68,10 @@ namespace mu2e {
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _minE(pset.get<double>("minimumEnergy",0.0)), // MeV
-    _maxE(pset.get<double>("maximumEnergy",0.003)), // MeV
-    _ctE(pset.get<double>("crossTalkEnergy",0.005)), // MeV
+    _maxE(pset.get<double>("maximumEnergy",0.0035)), // MeV
+    _ctE(pset.get<double>("crossTalkEnergy",0.007)), // MeV
     _ctMinT(pset.get<double>("crossTalkMinimumTime",-1)), // nsec
-    _ctMaxT(pset.get<double>("crossTalkMaximumTime",200)), // nsec
+    _ctMaxT(pset.get<double>("crossTalkMaximumTime",100)), // nsec
     _minT(pset.get<double>("minimumTime",500)), // nsec
     _maxT(pset.get<double>("maximumTime",2000)), // nsec
     _minR(pset.get<double>("minimumRadius",395.0)), // mm
