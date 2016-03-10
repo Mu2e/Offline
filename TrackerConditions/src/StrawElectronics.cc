@@ -19,26 +19,26 @@ namespace mu2e {
   double StrawElectronics::_pC_per_uA_ns(1000.0); // unit conversion from pC/ns to microAmp.
 
   StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<double>("thresholddVdI",1.3e5),
-      pset.get<double>("adcdVdI",1.6e8) }, // mVolt/uAmps (transimpedance gain)
-    _tau{pset.get<double>("thresholdFallTime",25.0),  // nsec
-      pset.get<double>("adcShapingTime",25.0) }, // nsec
-    _tdead(pset.get<double>("DeadTime",60.0)), // nsec dead after threshold crossing (electronics processing time)
-    _vmax(pset.get<double>("MaximumVoltage",1000.0)), // 1000 mVolt
-    _vsat(pset.get<double>("SaturationVoltage",800.0)), // mVolt
+    _dVdI{pset.get<double>("thresholddVdI",1.5e4),
+      pset.get<double>("adcdVdI",2.0e7) }, // mVolt/uAmps (transimpedance gain)
+    _tau{pset.get<double>("thresholdFallTime",22.0),  // nsec
+      pset.get<double>("adcShapingTime",22.0) }, // nsec
+    _tdead(pset.get<double>("DeadTime",100.0)), // nsec dead after threshold crossing (electronics processing time)
+    _vmax(pset.get<double>("MaximumVoltage",180.0)), // 1000 mVolt
+    _vsat(pset.get<double>("SaturationVoltage",120.0)), // mVolt
     _disp(pset.get<double>("Dispersion",1.0e-4)), // 0.1 ps/mm
-    _vthresh(pset.get<double>("DiscriminatorThreshold",20.0)), //mVolt, post amplification
+    _vthresh(pset.get<double>("DiscriminatorThreshold",12.0)), //mVolt, post amplification
     _analognoise{pset.get<double>("thresholdAnalogNoise",3.0), //mVolt
-      pset.get<double>("adcAnalogNoise",10.0)},
-    _ADCLSB(pset.get<double>("ADCLSB",1.0)), //mVolt
-    _maxADC(pset.get<int>("maxADC",1023)),
-    _ADCped(pset.get<unsigned>("ADCPedestal",64)),
-    _nADC(pset.get<unsigned>("nADC",8)),
-    _nADCpre(pset.get<unsigned>("nADCPresamples",2)),
+      pset.get<double>("adcAnalogNoise",8.0)},
+    _ADCLSB(pset.get<double>("ADCLSB",0.3662)), //mVolt
+    _maxADC(pset.get<int>("maxADC",4095)),
+    _ADCped(pset.get<unsigned>("ADCPedestal",1393)),
+    _nADC(pset.get<unsigned>("nADC",12)),
+    _nADCpre(pset.get<unsigned>("nADCPresamples",4)),
     _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec
     _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
-    _TDCLSB(pset.get<double>("TDCLSB",0.037)),  // nsec
-    _maxTDC(pset.get<unsigned>("maxTDC",65535)),
+    _TDCLSB(pset.get<double>("TDCLSB",0.015625)),  // nsec
+    _maxTDC(pset.get<unsigned>("maxTDC",16777216)),
     _clockStart(pset.get<double>("clockStart",10.0)), // nsec
     _clockJitter(pset.get<double>("clockJitter",0.2)), // nsec
     _flashStart(pset.get<double>("FlashStart",0.0)), //nsec

@@ -111,7 +111,7 @@ namespace mu2e
   ClusterStrawHits::ClusterStrawHits(fhicl::ParameterSet const& pset) :
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
-    _bkgmask(pset.get<vector<string> >("BackgroundMask",vector<string>{})),
+    _bkgmask(pset.get<vector<string> >("BackgroundMask",vector<string>{"ElectronicsXTalk"})),
     _sigmask(pset.get<vector<string> >("SignalMask",vector<string>{"EnergySelection","RadiusSelection","TimeSelection"})),
     _dseed(pset.get<double>("SeedDistance",10.0)), // # of sigma to define a new cluster
     _dhit(pset.get<unsigned>("HitDistance",5.0)), // # of sigma to add hits
