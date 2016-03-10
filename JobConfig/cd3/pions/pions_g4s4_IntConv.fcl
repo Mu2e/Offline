@@ -73,7 +73,7 @@ physics : {
             SDConfig : {
                 // do not want e.g. the "stoppingtarget" SD, thus do not use enableAllSDs
                 // Instead explicitly list all the detectors we want
-                enableSD         : [ tracker, virtualdetector ]
+                enableSD         : [ tracker, calorimeter, calorimeterRO, virtualdetector ]
                 TimeVD           : { times : [] }
                 sensitiveVolumes : []
             }
