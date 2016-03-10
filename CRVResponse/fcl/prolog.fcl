@@ -62,7 +62,7 @@ BEGIN_PROLOG
     {
       module_type                  : CrvWaveformsGenerator
       crvSiPMResponsesModuleLabel  : "CrvSiPMResponses"
-      singlePEWaveformFileName     : "CRVResponse/test/singlePEWaveform.txt"
+      singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform.txt"
       singlePEWaveformBinWidth     : 0.5    //0.5 ns
       singlePEWaveformBins         : 200
       binWidth                     : 12.5   //12.5 ns (digitizer sampling rate)
@@ -82,7 +82,7 @@ BEGIN_PROLOG
     {
       module_type                   : CrvCoincidenceCheck
       verboseLevel                  : 1
-      coincidencePropertiesFile     : "CRVResponse/test/coincidenceProperties.txt"
+      coincidencePropertiesFile     : "CRVResponse/fcl/coincidenceProperties.txt"
       crvRecoPulsesModuleLabel      : "CrvRecoPulses"
       PEthreshold                   : 10
       adjacentPulseTimeDifference   : 5      //ns
