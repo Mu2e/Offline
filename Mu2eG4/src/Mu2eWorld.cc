@@ -401,13 +401,13 @@ namespace mu2e {
         ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
         if ( _verbosityLevel > 0 ) cout << "Use uniform field in DS3" << endl;
       }
-      /*
-      if( _config.getBool("hasMBS",false) ) {
-        VolumeInfo const & MBSMotherInfo = _helper->locateVolInfo("MBSMother");
-        G4LogicalVolume* mbsMother = MBSMotherInfo.logical;
-        mbsMother->SetFieldManager(0,true);
-      }
-      */
+
+      // if( _config.getBool("hasMBS",false) ) {
+      //   VolumeInfo const & MBSMotherInfo = _helper->locateVolInfo("MBSMother");
+      //   G4LogicalVolume* mbsMother = MBSMotherInfo.logical;
+      //   mbsMother->SetFieldManager(0,true);
+      // }
+
     }
 
     // Adjust properties of the integrators to control accuracy vs time.
@@ -457,6 +457,14 @@ namespace mu2e {
     tsVacua.push_back( _helper->locateVolInfo("TS4Vacuum").logical );
     tsVacua.push_back( _helper->locateVolInfo("TS5Vacuum").logical );
 
+    vector<G4LogicalVolume*> mbsLVS;
+    mbsLVS.push_back( _helper->locateVolInfo("MBSMother").logical );
+    mbsLVS.push_back( _helper->locateVolInfo("BSBS").logical );
+    mbsLVS.push_back( _helper->locateVolInfo("BSTC").logical );
+    mbsLVS.push_back( _helper->locateVolInfo("BSTS").logical );
+    mbsLVS.push_back( _helper->locateVolInfo("CLV2").logical );
+    mbsLVS.push_back( _helper->locateVolInfo("CLV2Absorber").logical );
+
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
     //_stepLimits.push_back( G4UserLimits(bfieldMaxStep_) );
     //G4UserLimits* stepLimit = &(_stepLimits.back());
@@ -477,6 +485,10 @@ namespace mu2e {
     for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
           i!=tsVacua.end(); ++i ){
       (**i).SetUserLimits( stepLimit);
+    }
+
+    for ( auto lv : mbsLVS ){
+      lv->SetUserLimits( stepLimit );
     }
 
     // An option to limit the step size in these non-vaccum volumes to

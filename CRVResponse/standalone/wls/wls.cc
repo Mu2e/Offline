@@ -107,7 +107,7 @@ int main(int argc, char** argv)
     std::cout<<"-v           Verbose"<<std::endl;
     std::cout<<"-h           Help"<<std::endl;
     std::cout<<"-c           Create lookup table"<<std::endl;
-    std::cout<<"-s           Run a simulation"<<std::endl;
+    std::cout<<"-s           Run a simulation with GEANT and lookup table as comparison"<<std::endl;
     std::cout<<"-d           Draw histograms of lookup table"<<std::endl;
     std::cout<<std::endl;
     std::cout<<"Options for creating the lookup table:"<<std::endl;

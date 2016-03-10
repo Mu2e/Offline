@@ -56,6 +56,10 @@ namespace mu2e
     double      _timeWindowStart;
     double      _timeWindowEnd;
     double      _microBunchPeriod;
+
+    //the following variable are only used to print out results and summaries
+    double      _leadingVetoTime;
+    double      _trailingVetoTime;
     double      _totalTime;
     double      _totalDeadTime;
     int         _totalEvents;
@@ -110,6 +114,8 @@ namespace mu2e
     _acceptThreeAdjacentCounters(pset.get<bool>("acceptThreeAdjacentCounters")),
     _timeWindowStart(pset.get<double>("timeWindowStart")),
     _timeWindowEnd(pset.get<double>("timeWindowEnd")),
+    _leadingVetoTime(pset.get<double>("leadingVetoTime")),
+    _trailingVetoTime(pset.get<double>("trailingVetoTime")),
     _coincidencePropertiesFile(pset.get<std::string>("coincidencePropertiesFile"))
   {
     produces<CrvCoincidenceCheckResult>();
@@ -377,13 +383,16 @@ namespace mu2e
     if(crvCoincidenceCheckResult->CoincidenceFound()) _totalEventsCoincidence++;
     _moduleLabel = *this->currentContext()->moduleLabel();
 
+/*************************************************/
+//This section is used only to print out results
+
     if(_verboseLevel>0)
     {
       std::cout<<_moduleLabel<<"   run "<<event.id().run()<<"  subrun "<<event.id().subRun()<<"  event "<<event.id().event()<<"    ";
       std::cout<<(crvCoincidenceCheckResult->CoincidenceFound()?"Coincidence satisfied":"No coincidence found")<<std::endl;
 
       std::vector<CrvCoincidenceCheckResult::DeadTimeWindow> deadTimeWindows;
-      deadTimeWindows = crvCoincidenceCheckResult->GetDeadTimeWindows(0,150);  //TODO: Don't hardcode these numbers
+      deadTimeWindows = crvCoincidenceCheckResult->GetDeadTimeWindows(_leadingVetoTime,_trailingVetoTime);
 
       double deadTime = 0;
       for(unsigned int i=0; i < deadTimeWindows.size(); i++)
@@ -410,6 +419,8 @@ namespace mu2e
       double fractionDeadTime = _totalDeadTime / _totalTime;
       std::cout << "Dead time so far: " << _totalDeadTime << " / " << _totalTime << " = " << fractionDeadTime*100 << "%" << std::endl;
     }
+
+/*************************************************/
 
     event.put(std::move(crvCoincidenceCheckResult));
 

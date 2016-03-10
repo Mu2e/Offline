@@ -1,6 +1,6 @@
 #include "minimalMessageService.fcl"
 #include "standardServices.fcl"
-#include "CRVResponse/test/prolog.fcl"
+#include "CRVResponse/efficiencyCheck/prolog6cm.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
 
 BEGIN_PROLOG
@@ -14,13 +14,13 @@ outsideCrvCut:
       { 
         type  : plane 
         normal: [ 0, 1, 0 ] 
-        point : [ 0, 2362.8, 0 ] 
+        point : [ 0, 2462.8, 0 ] 
       },
       // -y plane
       { 
         type  : plane 
         normal: [ 0, -1, 0 ] 
-        point : [ 0, -1937.2, 0 ] 
+        point : [ 0, -2037.2, 0 ] 
       }
    ]
 }
@@ -125,9 +125,6 @@ physics :
        }
     }
 
-    protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap: { module_type : GenerateMuonLife }
-
     CrvPhotonArrivals: @local::CrvPhotonArrivals
     CrvSiPMResponses : @local::CrvSiPMResponses
     CrvWaveforms     : @local::CrvWaveforms
@@ -194,7 +191,7 @@ physics :
   }
 
 
-  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, belowCrvFilter,
+  trig : [generate, g4run, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, belowCrvFilter,
           CrvCoincidencePE6T5C2s,
           CrvCoincidencePE8T5C2s,
           CrvCoincidencePE10T5C2s,
@@ -254,6 +251,7 @@ physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotonArrivals.processNames   : ["*"]
 physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6cm_4500"]
 physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [4500]
+physics.producers.CrvPhotonArrivals.timeOffsets               : { }
 
 physics.producers.CrvCoincidencePE6T5C2s.verboseLevel                  : 0
 physics.producers.CrvCoincidencePE6T5C2s.coincidencePropertiesFile     : "CRVResponse/efficiencyCheck/coincidenceProperties_6cm_verticalPlanes_bothSides.txt"

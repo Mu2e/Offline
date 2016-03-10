@@ -20,6 +20,11 @@
 #include "MCDataProducts/inc/CrvWaveformsCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
 
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include <TH1D.h>
+
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -56,6 +61,8 @@ namespace mu2e
     double      _leadingEdgeThreshold;
     double      _microBunchPeriod;
     int         _minPEs;
+
+//    TH1F        *_hRecoPulses;
   };
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
@@ -68,6 +75,10 @@ namespace mu2e
   {
     produces<CrvRecoPulsesCollection>();
     _makeCrvRecoPulses = boost::shared_ptr<mu2eCrv::MakeCrvRecoPulses>(new mu2eCrv::MakeCrvRecoPulses(_pulseThreshold, _leadingEdgeThreshold, _param0, _param1));
+
+//    art::ServiceHandle<art::TFileService> tfs;
+//    art::TFileDirectory tfdir = tfs->mkdir("RecoPulses");
+//    _hRecoPulses = tfdir.make<TH1F>( "recoPulses", "recoPulses", 500, 0, 500);
   }
 
   void CrvRecoPulsesFinder::beginJob()
@@ -113,8 +124,10 @@ namespace mu2e
           if(time>_microBunchPeriod) continue;
           int PEs = _makeCrvRecoPulses->GetPEs(i);
           double height = _makeCrvRecoPulses->GetPulseHeight(i);
+          double length = _makeCrvRecoPulses->GetTimeOverThreshold(i);
           if(PEs<_minPEs) continue; 
-          crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, time,height);
+//          _hRecoPulses->Fill(length);
+          crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, time,height,length);
         }
       }
     }

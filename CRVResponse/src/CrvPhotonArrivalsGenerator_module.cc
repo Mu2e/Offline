@@ -85,7 +85,7 @@ namespace mu2e
     _lookupTableFileNames(pset.get<std::vector<std::string> >("lookupTableFileNames")),
     _lookupTableCounterLengths(pset.get<std::vector<double> >("lookupTableCounterLengths")),
     _scintillationYield(pset.get<double>("scintillationYield")),    //5000.0 photons per MeV
-    _scintillationYieldTolerance(pset.get<double>("scintillationYieldTolerance")),    //750.0 / 1500.00 photons per MeV
+    _scintillationYieldTolerance(pset.get<double>("scintillationYieldTolerance")),    //0.0%
     _scintillatorBirksConstant(pset.get<double>("scintillatorBirksConstant")), //0.126 mm/MeV
     _scintillatorRatioFastSlow(pset.get<double>("scintillatorRatioFastSlow")), //1.0
     _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast")), //10.0 ns, includes WLS components in the scintillator
@@ -222,7 +222,7 @@ namespace mu2e
 
           if(_scintillationYieldAdjustments.find(step.barIndex())==_scintillationYieldAdjustments.end())
           {
-            double adjustment = _randGaussQ.fire(0, _scintillationYieldTolerance);
+            double adjustment = _randGaussQ.fire(0, _scintillationYield*_scintillationYieldTolerance);
             _scintillationYieldAdjustments[step.barIndex()] = adjustment;
           }
           double scintillationYieldAdjustment = _scintillationYieldAdjustments[step.barIndex()];

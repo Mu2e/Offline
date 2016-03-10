@@ -1,6 +1,6 @@
 #include "minimalMessageService.fcl"
 #include "standardServices.fcl"
-#include "CRVResponse/test/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
 
 process_name : CRVResponse
 
@@ -28,31 +28,22 @@ physics :
     protonTimeMap: { module_type : GenerateProtonTimes }
     muonTimeMap: { module_type : GenerateMuonLife }
 
-    CrvPhotonArrivals: @local::CrvPhotonArrivals
-    CrvSiPMResponses : @local::CrvSiPMResponses
-    CrvWaveforms     : @local::CrvWaveforms
-    CrvRecoPulses    : @local::CrvRecoPulses
-    CrvCoincidence   : @local::CrvCoincidence
+    @table::CrvResponsePackage.producers
   }
 
-#  an : [protonTimeMap, muonTimeMap, CrvPhotonArrivals]        //1 event (1 cosmic ray muon) takes about 20ms.
-  an : [protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]  //1 event (1 cosmic ray muon) takes about 4s.
-                                                                                                                       //The CrvSiPMResponse is the most time consuming module.
-#  out: [Output]
-#  end_paths: [an, out]
-  end_paths: [an]
-}
+  an : [protonTimeMap, muonTimeMap, @sequence::CrvResponsePackage.CrvResponseSequence]
+  out: [Output]
 
-physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
-physics.producers.CrvPhotonArrivals.processNames   : ["*"]
+  end_paths: [an, out]
+}
 
 outputs: 
 {
-    Output : 
-    {
-        module_type : RootOutput
-        fileName    : "data_crv.root"
-    }
+  Output : 
+  {
+    module_type : RootOutput
+    fileName    : "data_crv.art"
+  }
 }
 
 services.user.SeedService.baseSeed         :  773651

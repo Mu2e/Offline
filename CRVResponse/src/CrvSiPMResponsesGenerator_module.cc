@@ -58,6 +58,11 @@ namespace mu2e
     double      _minCharge;
     double      _blindTime;             //time window during which the SiPM is blind
     double      _microBunchPeriod;
+
+    double      _backgroundParam1;
+    double      _backgroundParam2;
+    double      _backgroundParam3;
+
     mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct _probabilities;
 
     boost::shared_ptr<mu2eCrv::MakeCrvSiPMResponses> _makeCrvSiPMResponses;
@@ -75,6 +80,9 @@ namespace mu2e
     _scaleFactor(pset.get<double>("scaleFactor")),  //0.08 (based on a time step of 1.0ns)
     _minCharge(pset.get<double>("minCharge")),      //3.0PE
     _blindTime(pset.get<double>("blindTime")),      //500ns
+    _backgroundParam1(pset.get<double>("backgroundParam1")),      //2.9e-4ns^-1 @PEyield of 5000photons/MeV     100kHz / GeigerProb  -->  2.9e5 s^-1 = 2.9e-4 ns^-1
+    _backgroundParam2(pset.get<double>("backgroundParam2")),      //0.13
+    _backgroundParam3(pset.get<double>("backgroundParam3")),      //1.00 @PEyield of 5000photons/MeV (scales inversely with PEyield)
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
@@ -85,7 +93,7 @@ namespace mu2e
     _probabilities._constTrapType1Prob = pset.get<double>("TrapType1Prob");  //trap_prob*trap_type1_prob=0.2*0.3=0.06
     _probabilities._constTrapType0Lifetime = pset.get<double>("TrapType0Lifetime");   //5.0ns
     _probabilities._constTrapType1Lifetime = pset.get<double>("TrapType1Lifetime");  //50.0ns
-    _probabilities._constThermalProb = pset.get<double>("ThermalProb"); //6.25e-7ns^1     1MHz at SiPM --> 1MHz/#pixel=625Hz at Pixel --> 625 s^-1 = 6.25e-7 ns^-1   //exp(-E_th/T)=1.6e-6
+    _probabilities._constThermalProb = pset.get<double>("ThermalProb"); //2.9e-3 ns^-1     1MHz/GeigerProb at SiPM --> 2.9e6 s^-1 = 2.9e-3 ns^-1 
     _probabilities._constPhotonProduction = pset.get<double>("PhotonProduction");  //0.136
   }
 
@@ -124,6 +132,26 @@ namespace mu2e
       CrvSiPMResponses crvSiPMResponses;
       bool minChargeReached = false;
 
+//TODO: this background noise implementation needs to be changed
+      std::multimap<int,double> backgroundPhotonMap;
+      for(int backgroundPhotons=1; backgroundPhotons<=50; backgroundPhotons++)
+      {
+        double timeWindow = _microBunchPeriod - _blindTime;
+        double scaledBackgroundPhotons = backgroundPhotons * _backgroundParam3;
+        //integrated background rate for #backgroundPhotons and above
+        double backgroundRate1 = _backgroundParam1*exp(-(scaledBackgroundPhotons-3)*_backgroundParam2);  //in ns //Yuri's estimate
+        //integrated background rate for #(backgroundPhotons+1) and above
+        double backgroundRate2 = _backgroundParam1*exp(-(scaledBackgroundPhotons+1-3)*_backgroundParam2);  //in ns //Yuri's estimate
+        //background rate for #backgroundPhotons only
+        double backgroundRate = backgroundRate1 - backgroundRate2;  //in ns 
+        int backgroundOccurrences = _randPoissonQ.fire(backgroundRate * timeWindow);
+        for(int i=0; i<backgroundOccurrences; i++)
+        {
+          double time = _blindTime + timeWindow * _randFlat.fire();
+          backgroundPhotonMap.emplace(backgroundPhotons, time);
+        }
+      }
+
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
         if(_randFlat.fire() < _deadSiPMProbability) continue;  //assume that this random SiPM is dead
@@ -143,6 +171,14 @@ namespace mu2e
 //std::cout<<"Photon arrivals   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"      "<<time<<std::endl;
             }
           }
+        }
+
+//TODO: this background noise implementation needs to be changed
+        std::multimap<int,double>::const_iterator backgroundPhotonIter;
+        for(backgroundPhotonIter=backgroundPhotonMap.begin(); backgroundPhotonIter!=backgroundPhotonMap.end(); backgroundPhotonIter++)
+        {
+          int nPhotons=backgroundPhotonIter->first;
+          for(int i=0; i<nPhotons; i++) photonArrivalTimesAdjusted.push_back(backgroundPhotonIter->second);
         }
 
         std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
@@ -177,6 +213,8 @@ namespace mu2e
 //std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<wrappedTimeNextPeriod<<"  next period"<<std::endl;
           }
         }
+
+//TODO: this zero suppression needs to be changed
         if(totalCharge>=_minCharge) minChargeReached=true;
         else responsesOneSiPM.clear();  //don't store anything, if less than minimum charge
       }
