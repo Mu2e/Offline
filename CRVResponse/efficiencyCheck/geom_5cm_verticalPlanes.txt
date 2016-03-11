@@ -34,6 +34,13 @@ vector<double>  crs.layerDirectionTest           =  {-1, 0, 0};
 vector<double>  crs.offsetDirectionTest          =  {0, 0, -1}; 
 vector<double>  crs.gapDirectionTest             =  {0, 0, 1};
 
+int crs.precedingSectorForTest  = -1;   //no preceding sector
+
+int crs.sectorTypeTest  = 1;
+
+bool crs.sipmsAtSide0Test = true;
+bool crs.sipmsAtSide1Test = true;
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

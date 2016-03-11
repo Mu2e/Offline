@@ -188,38 +188,40 @@ namespace mu2e
               cout << __func__ << " shieldAirOffset      : " <<  layerAirOffset << endl;
             }
 
-            G4VPhysicalVolume* pv = new G4PVPlacement( NULL,
-                                                       barLayerOffset,
-                                                       scintillatorBarLogical,
-                                                       bar.name("CRSScintillatorBar_"),
-                                                       layerInfo.logical,
-                                                       false,
-                                                       bar.index().asInt(),
-                                                       false);
+            G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+                                                      barLayerOffset,
+                                                      scintillatorBarLogical,
+                                                      bar.name("CRSScintillatorBar_"),
+                                                      layerInfo.logical,
+                                                      false,
+                                                      bar.index().asInt(),
+                                                      false);
+            if(doSurfaceCheck) checkForOverlaps(pv, _config, verbosityLevel>0);
 
-            G4VPhysicalVolume* pvCMB0 = new G4PVPlacement( NULL,
-                                                           CMB0LayerOffset,
-                                                           CMBLogical,
-                                                           bar.name("CMB0_CRSScintillatorBar_"),
-                                                           layerInfo.logical,
-                                                           false,
-                                                           2*bar.index().asInt(),
-                                                           false);
-
-            G4VPhysicalVolume* pvCMB1 = new G4PVPlacement( NULL,
-                                                           CMB1LayerOffset,
-                                                           CMBLogical,
-                                                           bar.name("CMB1_CRSScintillatorBar_"),
-                                                           layerInfo.logical,
-                                                           false,
-                                                           2*bar.index().asInt()+1,
-                                                           false);
-
-            if(doSurfaceCheck) 
+            if(bar.hasCMB(0))
             {
-              checkForOverlaps( pv, _config, verbosityLevel>0);
-              checkForOverlaps( pvCMB0, _config, verbosityLevel>0);
-              checkForOverlaps( pvCMB1, _config, verbosityLevel>0);
+              G4VPhysicalVolume* pvCMB0 = new G4PVPlacement(NULL,
+                                                            CMB0LayerOffset,
+                                                            CMBLogical,
+                                                            bar.name("CMB0_CRSScintillatorBar_"),
+                                                            layerInfo.logical,
+                                                            false,
+                                                            2*bar.index().asInt(),
+                                                            false);
+              if(doSurfaceCheck) checkForOverlaps(pvCMB0, _config, verbosityLevel>0);
+            }
+
+            if(bar.hasCMB(1))
+            {
+              G4VPhysicalVolume* pvCMB1 = new G4PVPlacement(NULL,
+                                                            CMB1LayerOffset,
+                                                            CMBLogical,
+                                                            bar.name("CMB1_CRSScintillatorBar_"),
+                                                            layerInfo.logical,
+                                                            false,
+                                                            2*bar.index().asInt()+1,
+                                                            false);
+              if(doSurfaceCheck) checkForOverlaps(pvCMB1, _config, verbosityLevel>0);
             }
           } //ibar
         } //ilayer

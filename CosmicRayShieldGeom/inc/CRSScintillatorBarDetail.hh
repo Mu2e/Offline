@@ -32,7 +32,8 @@ namespace mu2e
                              std::vector<double> const & halfLengths,
                              std::vector<int> const & localToWorld,
                              std::string const & CMBmaterialName,
-                             double CMBoffset, double CMBhalfThickness);
+                             double CMBoffset, double CMBhalfThickness,
+                             bool CMBside0, bool CMBside1);
 
     // Compiler generated versions are OK for destructor
     // and for copy and assignment constructors.
@@ -49,6 +50,10 @@ namespace mu2e
     CLHEP::Hep3Vector toLocal(const CLHEP::Hep3Vector &worldPosition, const CLHEP::Hep3Vector &barPosition) const;
     CLHEP::Hep3Vector toLocalNormalized(const CLHEP::Hep3Vector &worldPosition, const CLHEP::Hep3Vector &barPosition) const;
     bool isInside(const CLHEP::Hep3Vector &worldPosition, const CLHEP::Hep3Vector &barPosition) const;
+
+    int getThicknessDirection() const {return _localToWorld[0];}
+    int getWidthDirection() const {return _localToWorld[1];}
+    int getLengthDirection() const {return _localToWorld[2];}
 
     private:
 
@@ -73,11 +78,15 @@ namespace mu2e
 
     std::vector<double> getCMBHalfLengths() const;
 
+    bool hasCMB(int side) const;
+
     private:
 
     std::string _CMBmaterialName;
     double _CMBoffset;
     double _CMBhalfThickness;
+    bool   _CMBside0;
+    bool   _CMBside1;
 
   };
 

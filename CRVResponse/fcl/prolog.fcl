@@ -82,7 +82,6 @@ BEGIN_PROLOG
     {
       module_type                   : CrvCoincidenceCheck
       verboseLevel                  : 1
-      coincidencePropertiesFile     : "CRVResponse/fcl/coincidenceProperties.txt"
       crvRecoPulsesModuleLabel      : "CrvRecoPulses"
       PEthreshold                   : 10
       adjacentPulseTimeDifference   : 5      //ns

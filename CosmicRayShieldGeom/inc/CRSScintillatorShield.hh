@@ -36,7 +36,8 @@ namespace mu2e
 
     CRSScintillatorShield(CRSScintillatorShieldId const & id, 
                           std::string const & name,
-                          const std::shared_ptr<CRSScintillatorBarDetail> barDetails);
+                          const std::shared_ptr<CRSScintillatorBarDetail> barDetails,
+                          CRSScintillatorShieldId precedingSector, int sectorType, int countersPerModule);
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
@@ -100,6 +101,19 @@ namespace mu2e
     std::shared_ptr<CRSScintillatorBarDetail> _barDetails;
 
     std::string _absorberMaterialName;
+
+
+    // Information needed for the coincidence finder
+    public: 
+    const CRSScintillatorShieldId getPrecedingSector() const {return _precedingSector;}
+    const int getSectorType() const {return _sectorType;}
+    const int getCountersPerModule() const {return _countersPerModule;}
+
+    private:
+    CRSScintillatorShieldId _precedingSector; //the sector id which precedes this CRV sector
+    int _sectorType; //e.g. R=1, L=2, T=3, ...
+    int _countersPerModule;  //per layer
+
   };
 
 } //namespace mu2e

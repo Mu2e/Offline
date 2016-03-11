@@ -20,13 +20,16 @@ namespace mu2e
                                                      std::vector<double> const& halfLengths,
                                                      std::vector<int> const& localToWorld,
                                                      std::string const& CMBmaterialName,
-                                                     double CMBoffset, double CMBhalfThickness) :
+                                                     double CMBoffset, double CMBhalfThickness,
+                                                     bool CMBside0, bool CMBside1) :
     _materialName(materialName),
     _halfLengths(halfLengths),
     _localToWorld(localToWorld),
     _CMBmaterialName(CMBmaterialName),
     _CMBoffset(CMBoffset),
-    _CMBhalfThickness(CMBhalfThickness)
+    _CMBhalfThickness(CMBhalfThickness),
+    _CMBside0(CMBside0),
+    _CMBside1(CMBside1)
   {
   }
 
@@ -77,7 +80,7 @@ namespace mu2e
     CLHEP::Hep3Vector CMBdifference;
     CMBdifference[CMBcoordinate]=_halfLengths[CMBcoordinate]+_CMBoffset;
 
-    if(side==0) CMBdifference*=-1; //side==0 is for one side of the counter, and side==1 is for the other side of the counter
+    if(side==0) CMBdifference*=-1; //side==0 is for the negative side of the counter, and side==1 is for the positive side of the counter
     CLHEP::Hep3Vector CMBposition=barPosition+CMBdifference;
     return CMBposition;
   }
@@ -90,4 +93,13 @@ namespace mu2e
     return CMBhalfLengths;
   }
 
+  bool CRSScintillatorBarDetail::hasCMB(int side) const
+  {
+    switch(side)
+    {
+      case 0: return _CMBside0;
+      case 1: return _CMBside1;
+    }
+    return false;
+  }
 } // namespace mu2e

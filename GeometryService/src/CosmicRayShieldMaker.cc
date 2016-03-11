@@ -65,6 +65,10 @@ namespace mu2e
     _offsetDirection.resize(_nSectors);
     _gapDirection.resize(_nSectors);
     _layerDirection.resize(_nSectors);
+    _CMBside0.resize(_nSectors);
+    _CMBside1.resize(_nSectors);
+    _precedingSector.resize(_nSectors);
+    _sectorType.resize(_nSectors);
 
     for(int i=0; i<_nSectors; i++)
     {
@@ -75,6 +79,12 @@ namespace mu2e
       _offsetDirection[i]    = config.getHep3Vector("crs.offsetDirection"+_crvSectorNames[i]);
       _gapDirection[i]       = config.getHep3Vector("crs.gapDirection"+_crvSectorNames[i]);
       _layerDirection[i]     = config.getHep3Vector("crs.layerDirection"+_crvSectorNames[i]);
+      _CMBside0[i]           = config.getBool("crs.sipmsAtSide0"+_crvSectorNames[i]);
+      _CMBside1[i]           = config.getBool("crs.sipmsAtSide1"+_crvSectorNames[i]);
+
+      //needed by the coincidence finder
+      _precedingSector[i] = config.getInt("crs.precedingSectorFor"+_crvSectorNames[i]);
+      _sectorType[i]      = config.getInt("crs.sectorType"+_crvSectorNames[i]);
     }
 
     _counterThickness       = config.getDouble("crs.scintillatorBarThickness");
@@ -107,9 +117,11 @@ namespace mu2e
                                               int nModules, int nCounters)
   {
     std::shared_ptr<CRSScintillatorBarDetail> barDetails(new CRSScintillatorBarDetail(_scintillatorBarMaterialName, counterHalfLengths, localToWorld,
-                                                                                      _CMBMaterialName, _CMBOffset, _CMBHalfThickness));
+                                                                                      _CMBMaterialName, _CMBOffset, _CMBHalfThickness,
+                                                                                      _CMBside0[isector], _CMBside1[isector]));
 
-    _crs->_scintillatorShields.push_back(CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails));
+    _crs->_scintillatorShields.push_back(CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails,
+                                         CRSScintillatorShieldId(_precedingSector[isector]), _sectorType[isector], nCounters));
     CRSScintillatorShield &shield = _crs->_scintillatorShields.back();
     shield._absorberMaterialName = _absorberMaterialName;
     int thicknessDirection = localToWorld[0];
@@ -160,7 +172,6 @@ namespace mu2e
         //layerStart and layerEnd are only the position at the center of the first and last bar
         for(int i=0; i<3; i++) layer._halfLengths[i] = abs(0.5*(layerStart[i] - layerEnd[i]))+counterHalfLengths[i];
         for(int i=0; i<3; i++) layer._localToWorld[i] = localToWorld[i];
-        layer._halfLengths[lengthDirection] += _CMBOffset + 2.0*_CMBHalfThickness;  //add the additional length required for the counter motherboards
 
         //Absorber layer position and dimension
         if(ilayer<_nLayers-1)
@@ -173,6 +184,24 @@ namespace mu2e
           double shift=0.5*(layerOffsets[ilayer+1][thicknessDirection]-layerOffsets[ilayer][thicknessDirection]);
           absorberLayer._position[thicknessDirection]+=shift;
           absorberLayer._halfLengths[thicknessDirection]=abs(shift)-layer._halfLengths[thicknessDirection];
+        }
+        
+        //add the additional length required for the counter motherboards
+        //this needs to be done after the absorber layers were constructed, 
+        //since the absorber layers take the dimension of the "original" layer dimensions (i.e. without CMBs)
+        if(_CMBside0[isector] && _CMBside1[isector]) layer._halfLengths[lengthDirection] += _CMBOffset + _CMBHalfThickness;  //CMB on both sides
+        else 
+        {
+          if(_CMBside0[isector])  //CMB at only one side
+          {
+            layer._halfLengths[lengthDirection] += 0.5 * (_CMBOffset + _CMBHalfThickness);
+            layer._position[lengthDirection] -= 0.5 * (_CMBOffset + _CMBHalfThickness);
+          }
+          if(_CMBside1[isector])  //CMB at only one side
+          {
+            layer._halfLengths[lengthDirection] += 0.5 * (_CMBOffset + _CMBHalfThickness);
+            layer._position[lengthDirection] += 0.5 * (_CMBOffset + _CMBHalfThickness);
+          }
         }
       } //layers
     } //modules
@@ -223,7 +252,7 @@ namespace mu2e
       CLHEP::Hep3Vector VTNCSmallGap=(_counterWidth+_gapSmall)*_gapDirection[isector];
       CLHEP::Hep3Vector VTNCLargeGap=(_counterWidth+_gapLarge)*_gapDirection[isector];
       CLHEP::Hep3Vector VTNCBetweenModules=(_counterWidth+_gapBetweenModules)*_gapDirection[isector];
-      makeSingleSector(counterHalfLengths, isector, "CRV-"+_crvSectorNames[isector],
+      makeSingleSector(counterHalfLengths, isector, "CRV_"+_crvSectorNames[isector],
               _firstCounter[isector], layerOffsets, VTNCSmallGap, VTNCLargeGap, VTNCBetweenModules,
               localToWorld, _nModules[isector], _nCountersPerModule[isector]);
     }
