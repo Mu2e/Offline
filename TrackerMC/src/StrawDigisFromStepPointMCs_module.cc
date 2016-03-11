@@ -115,6 +115,7 @@ namespace mu2e {
     double _ctMinCharge; // minimum charge to add cross talk (for performance issues)
     bool   _addNoise; // should we add noise hits?
     double _preampxtalk, _postampxtalk; // x-talk parameters; these should come from conditions, FIXME!!
+    double _highdEdx; // cut dividing highly-ionizing steps from low
     string _g4ModuleLabel;  // Nameg of the module that made these hits.
     double _mbtime; // period of 1 microbunch
     double _mbbuffer; // buffer on that for ghost hitlets (for waveform)
@@ -211,6 +212,7 @@ namespace mu2e {
     _addNoise(pset.get<bool>("addNoise",false)),
     _preampxtalk(pset.get<double>("preAmplificationCrossTalk",0.0)),
     _postampxtalk(pset.get<double>("postAmplificationCrossTalk",0.02)), // dimensionless relative coupling
+    _highdEdx(pset.get<double>("HighlyIonizingdEdx",0.001)), // MeV/mm
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _steptimebuf(pset.get<double>("StepPointMCTimeBuffer",100.0)), // nsec
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
@@ -513,25 +515,45 @@ namespace mu2e {
       unsigned nele = max(unsigned(1),unsigned(rint(step.ionizingEdep()/_strawphys->ionizationEnergy())));
     // if the step is already smaller than the mean free path, don't subdivide
     if(step.stepLength() > _strawphys->meanFreePath()) {
-// Calculate the total number of ionization electrons corresponding to this energy
-// create clusters until all the electrons are used up
-      unsigned niontot(0);
-      CLHEP::Hep3Vector dir = step.momentum().unit();
-      while(niontot < nele){
-	unsigned nion = _strawphys->nIons(_randflat.fire());
-	// truncate if necessary
-	if(niontot + nion > nele) nion = nele-niontot;
-	double qc = _strawphys->ionizationCharge(nion*_strawphys->ionizationEnergy());
-// place the cluster at a random position along the step.
-// This works for high-momentum particles, otherwise I should use a helix, FIXME!!!
-	double length = _randflat.fire(0.0,step.stepLength());
-	CLHEP::Hep3Vector pos = step.position() + length*dir;
-	IonCluster cluster(pos,qc,nion);
-	clusters.push_back(cluster);
-	niontot += nion;
+    // if this isn't a highly-ionizing step, use the best statistics
+      if(step.ionizingEdep()/step.stepLength() < _highdEdx){
+	// Calculate the total number of ionization electrons corresponding to this energy
+	// create clusters until all the electrons are used up
+	unsigned niontot(0);
+	CLHEP::Hep3Vector dir = step.momentum().unit();
+	while(niontot < nele){
+	  unsigned nion = _strawphys->nIons(_randflat.fire());
+	  // truncate if necessary
+	  if(niontot + nion > nele) nion = nele-niontot;
+	  double qc = _strawphys->ionizationCharge(nion*_strawphys->ionizationEnergy());
+	  // place the cluster at a random position along the step.
+	  // This works for high-momentum particles, otherwise I should use a helix, FIXME!!!
+	  double length = _randflat.fire(0.0,step.stepLength());
+	  CLHEP::Hep3Vector pos = step.position() + length*dir;
+	  IonCluster cluster(pos,qc,nion);
+	  clusters.push_back(cluster);
+	  niontot += nion;
+	}
+      } else {
+      // if this is a highly-ionizing particle divide the # of electrons evenly by the mean free path
+	int nion = max(1,int(rint(nele*_strawphys->meanFreePath()/step.stepLength())));
+	unsigned niontot(0);
+	CLHEP::Hep3Vector dir = step.momentum().unit();
+	while(niontot < nele){
+	  // truncate if necessary
+	  if(niontot + nion > nele) nion = nele-niontot;
+	  double qc = _strawphys->ionizationCharge(nion*_strawphys->ionizationEnergy());
+	  // place the cluster at a random position along the step.
+	  // This works for high-momentum particles, otherwise I should use a helix, FIXME!!!
+	  double length = _randflat.fire(0.0,step.stepLength());
+	  CLHEP::Hep3Vector pos = step.position() + length*dir;
+	  IonCluster cluster(pos,qc,nion);
+	  clusters.push_back(cluster);
+	  niontot += nion;
+	}
       }
     } else {
-// just put all the charge into 1 cluster
+      // for short steps put all the charge into 1 cluster
       double qstep = _strawphys->ionizationCharge(step.ionizingEdep());
       IonCluster cluster(step.position(),qstep,nele);
       clusters.push_back(cluster);
