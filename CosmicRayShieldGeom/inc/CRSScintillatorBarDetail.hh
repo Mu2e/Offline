@@ -30,7 +30,9 @@ namespace mu2e
 
     CRSScintillatorBarDetail(std::string const & materialName,
                              std::vector<double> const & halfLengths,
-                             std::vector<int> const & localToWorld);
+                             std::vector<int> const & localToWorld,
+                             std::string const & CMBmaterialName,
+                             double CMBoffset, double CMBhalfThickness);
 
     // Compiler generated versions are OK for destructor
     // and for copy and assignment constructors.
@@ -55,6 +57,28 @@ namespace mu2e
     std::vector<int> _localToWorld;  //0th entry: thickness
                                      //1st entry: width
                                      //2nd entry: length
+
+
+    /********************/
+    // counter motherboard section
+
+    public:
+
+    std::string const & getCMBMaterialName() const { return _CMBmaterialName;}
+
+    double getCMBOffset() const {return _CMBoffset;}
+    double getCMBHalfThickness() const {return _CMBhalfThickness;}
+
+    CLHEP::Hep3Vector getCMBPosition(int side, const CLHEP::Hep3Vector &barPosition) const;  //"side" can be 0 or 1
+
+    std::vector<double> getCMBHalfLengths() const;
+
+    private:
+
+    std::string _CMBmaterialName;
+    double _CMBoffset;
+    double _CMBhalfThickness;
+
   };
 
 }  //namespace mu2e

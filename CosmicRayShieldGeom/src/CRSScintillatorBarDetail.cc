@@ -18,10 +18,15 @@ namespace mu2e
 {
   CRSScintillatorBarDetail::CRSScintillatorBarDetail(std::string const& materialName,
                                                      std::vector<double> const& halfLengths,
-                                                     std::vector<int> const& localToWorld) :
+                                                     std::vector<int> const& localToWorld,
+                                                     std::string const& CMBmaterialName,
+                                                     double CMBoffset, double CMBhalfThickness) :
     _materialName(materialName),
     _halfLengths(halfLengths),
-    _localToWorld(localToWorld)
+    _localToWorld(localToWorld),
+    _CMBmaterialName(CMBmaterialName),
+    _CMBoffset(CMBoffset),
+    _CMBhalfThickness(CMBhalfThickness)
   {
   }
 
@@ -60,6 +65,29 @@ namespace mu2e
       if(abs(tmp[i]/_halfLengths[i])>1.0) return false;
     }
     return true;
+  }
+
+
+  /********************/
+  // counter motherboard section
+
+  CLHEP::Hep3Vector CRSScintillatorBarDetail::getCMBPosition(int side, const CLHEP::Hep3Vector &barPosition) const
+  {
+    int CMBcoordinate=_localToWorld[2];
+    CLHEP::Hep3Vector CMBdifference;
+    CMBdifference[CMBcoordinate]=_halfLengths[CMBcoordinate]+_CMBoffset;
+
+    if(side==0) CMBdifference*=-1; //side==0 is for one side of the counter, and side==1 is for the other side of the counter
+    CLHEP::Hep3Vector CMBposition=barPosition+CMBdifference;
+    return CMBposition;
+  }
+
+  std::vector<double> CRSScintillatorBarDetail::getCMBHalfLengths() const
+  {
+    int CMBcoordinate=_localToWorld[2];
+    std::vector<double> CMBhalfLengths=_halfLengths;
+    CMBhalfLengths[CMBcoordinate]=_CMBhalfThickness;
+    return CMBhalfLengths;
   }
 
 } // namespace mu2e

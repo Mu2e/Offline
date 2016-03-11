@@ -88,6 +88,10 @@ namespace mu2e
 
     _scintillatorBarMaterialName  = config.getString("crs.scintillatorBarMaterialName");
     _absorberMaterialName         = config.getString("crs.absorberMaterialName");
+
+    _CMBOffset        = config.getDouble("crs.CMBOffset");
+    _CMBHalfThickness = config.getDouble("crs.CMBHalfThickness");
+    _CMBMaterialName  = config.getString("crs.CMBMaterialName");
   }
 
 //VTNC = Vector to next counter
@@ -102,12 +106,14 @@ namespace mu2e
                                               const std::vector<int> &localToWorld,
                                               int nModules, int nCounters)
   {
-    std::shared_ptr<CRSScintillatorBarDetail> barDetails(new CRSScintillatorBarDetail(_scintillatorBarMaterialName, counterHalfLengths, localToWorld));
+    std::shared_ptr<CRSScintillatorBarDetail> barDetails(new CRSScintillatorBarDetail(_scintillatorBarMaterialName, counterHalfLengths, localToWorld,
+                                                                                      _CMBMaterialName, _CMBOffset, _CMBHalfThickness));
 
     _crs->_scintillatorShields.push_back(CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails));
     CRSScintillatorShield &shield = _crs->_scintillatorShields.back();
     shield._absorberMaterialName = _absorberMaterialName;
     int thicknessDirection = localToWorld[0];
+    int lengthDirection = localToWorld[2];
 
     for(int imodule=0; imodule<nModules; imodule++)
     {
@@ -154,6 +160,7 @@ namespace mu2e
         //layerStart and layerEnd are only the position at the center of the first and last bar
         for(int i=0; i<3; i++) layer._halfLengths[i] = abs(0.5*(layerStart[i] - layerEnd[i]))+counterHalfLengths[i];
         for(int i=0; i<3; i++) layer._localToWorld[i] = localToWorld[i];
+        layer._halfLengths[lengthDirection] += _CMBOffset + 2.0*_CMBHalfThickness;  //add the additional length required for the counter motherboards
 
         //Absorber layer position and dimension
         if(ilayer<_nLayers-1)

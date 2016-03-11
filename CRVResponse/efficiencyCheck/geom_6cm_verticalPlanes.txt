@@ -1,5 +1,7 @@
 #include "Mu2eG4/geom/geom_common.txt"
 
+bool hasSTM = false;
+
 // replace the CRV counter setup:
 
 int   crs.nSectors = 1;
