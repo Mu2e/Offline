@@ -26,6 +26,7 @@
 // G4 includes
 
 #include "G4Track.hh"
+#include "G4Step.hh"
 #include "G4Event.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4VProcess.hh"
@@ -230,14 +231,24 @@ namespace mu2e {
       int id       = trk->GetTrackID();
       int parentId = trk->GetParentID();
 
+      G4Step const* const pstep = trk->GetStep();
+
       cout << text
            << setw(5) << event->GetEventID()   << " "
            << setw(4) << id                    << " "
            << setw(4) << parentId              << " "
            << setw(8) << partName              << " | "
-           << trk->GetPosition()-mu2eOrigin   << " "
-           << trk->GetMomentum()               << " "
-           << trk->GetKineticEnergy()          << " "
+           << trk->GetPosition()-mu2eOrigin    << " prestep pos: "
+           << ( (pstep!=nullptr) ? 
+              pstep->GetPreStepPoint()->GetPosition() : G4ThreeVector() ) << " poststep pos: "
+           << ( (pstep!=nullptr) ? 
+                pstep->GetPostStepPoint()->GetPosition() : G4ThreeVector() ) << " prestep mom: "
+           << ( (pstep!=nullptr) ? 
+              pstep->GetPreStepPoint()->GetMomentum() : G4ThreeVector() ) << " poststep mom: "
+           << ( (pstep!=nullptr) ? 
+              pstep->GetPostStepPoint()->GetMomentum() : G4ThreeVector() ) << " trk mom: "
+           << trk->GetMomentum()               << " | "
+           << trk->GetKineticEnergy()          << " | "
            << volName                          << " ";
 
       if ( isEnd ){
@@ -256,7 +267,11 @@ namespace mu2e {
                 << timer.cpuTime() << " "
                 << timer.realTime();
         }
+        cout << " | " << trk->GetCurrentStepNumber();
+        cout << " | " <<  ProcessCode::findByName(findTrackStoppingProcessName(trk));
         cout << endl;
+      } else {
+        cout << " | " << findCreationCode(trk);
       }
 
       cout << endl;
