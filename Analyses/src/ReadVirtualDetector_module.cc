@@ -221,7 +221,7 @@ namespace mu2e {
     _maxPrint(pset.get<int>("maxPrint",0)),
     _debugout(pset.get<int>("debugOutput",0)),
     _ntvd(0), _nttvd(0), _ntpart(0), _ntpart1(0), _ntvdext(0),
-    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")), // obsolete, let for back cmpartibility
+    _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")), // obsolete, left for backward compatibility
     _vd_required(pset.get<int>("requireVD",0)),
     _timeCut(pset.get<double>("timeCut",0.0)),
     _minMomentum(pset.get<double>("minMomentum",-1.0)),
@@ -230,9 +230,9 @@ namespace mu2e {
     _add_proper_time(pset.get<bool>("addProperTime",false)),
     _navigate_to_parent(pset.get<bool>("navigateToParent",true))
   {
-    _vdInputTag = pset.get<std::string>("vdStepPoints","virtualdetector");
-    _tvdInputTag = pset.get<string>("tvdStepPoints","timeVD");
-    _simpInputTag = pset.get<string>("simParticleColl","");
+    _vdInputTag = pset.get<std::string>("vdStepPoints","g4run:virtualdetector");
+    _tvdInputTag = pset.get<string>("tvdStepPoints","g4run:timeVD");
+    _simpInputTag = pset.get<string>("simParticleColl","g4run");
     _generatorInputTag = pset.get<std::string>("generatorModuleLabel", "generate");
     _physInputTag = pset.get<std::string>("physicsVolumeColl", "g4run");
 

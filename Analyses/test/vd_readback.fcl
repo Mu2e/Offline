@@ -9,6 +9,8 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 
+#include "Analyses/fcl/prolog.fcl"
+
 # Give this job a name.  
 process_name : VDReadBack01
 
@@ -56,22 +58,17 @@ physics :
   analyzers:
   {
 
-    checkhits:
-    {
-      module_type            : ReadVirtualDetector 
-      generatorModuleLabel   : generate
-      g4ModuleLabel          : g4run
-      minimumEnergy          : 0.000
-      maxPrint               : 10
-      diagLevel              : -1
-      savePDG                : [11, -11, 13, -13, 22, 111, 211, -211, 321, -321, 2112, 2212, -2212]
-    }
+    # Look at the hits from virtualdetectors
+    readvd : @local::readvd
 
   } 
 
-  e1 : [checkhits]
+  e1 : [readvd]
 
   end_paths      : [e1]
 
 }
 
+physics.analyzers.readvd.debugOutput : 0
+physics.analyzers.readvd.savePDG     : [11, -11, 13, -13, 22, 111, 211, -211, 321, -321, 2112, 2212, -2212]
+physics.analyzers.readvd.maxPrint    : 10
