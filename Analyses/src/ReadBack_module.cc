@@ -881,6 +881,8 @@ namespace mu2e {
                << sim.startPosition() << " "
                << volInfo.name()      << " "
                << volInfo.copyNo()    << " | "
+               << sim.endPosition()   << " "
+               << sim.endGlobalTime() << " "
                << endInfo.name()      << " "
                << endInfo.copyNo()    << " | "
                << sim.stoppingCode()  << " "
