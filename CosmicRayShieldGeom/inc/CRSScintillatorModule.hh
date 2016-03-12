@@ -17,6 +17,7 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorModuleId.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
 #include "CosmicRayShieldGeom/inc/CRSAbsorberLayer.hh"
+#include "CosmicRayShieldGeom/inc/CRSFEB.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -83,10 +84,21 @@ namespace mu2e
       return _absorberLayers.at(n);
     }
 
-    const CRSAbsorberLayer& getAbsorberLayer ( CRSScintillatorLayerId const & lid) const 
+    const std::vector<CRSFEB>& getFEBs() const
     {
-      return _absorberLayers.at(lid.getLayerNumber());
+      return _FEBs;
     }
+
+    int nFEBs() const
+    {
+      return _FEBs.size();
+    }
+
+    const CRSFEB& getFEB ( int n ) const 
+    {
+      return _FEBs.at(n);
+    }
+
 
     // Formatted string embedding the id of the module.
     std::string name( std::string const & base ) const;
@@ -100,6 +112,7 @@ namespace mu2e
 
     std::vector<CRSScintillatorLayer> _layers;
     std::vector<CRSAbsorberLayer> _absorberLayers;
+    std::vector<CRSFEB> _FEBs;
   };
 
 }  //namespace mu2e

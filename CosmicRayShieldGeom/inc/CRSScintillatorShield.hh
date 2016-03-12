@@ -37,6 +37,7 @@ namespace mu2e
     CRSScintillatorShield(CRSScintillatorShieldId const & id, 
                           std::string const & name,
                           const std::shared_ptr<CRSScintillatorBarDetail> barDetails,
+                          const std::string &absorberMaterialName, const std::string &FEBMaterialName,
                           CRSScintillatorShieldId precedingSector, int sectorType, int countersPerModule);
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
@@ -83,6 +84,11 @@ namespace mu2e
       return _absorberMaterialName;
     }
 
+    const std::string &getFEBMaterialName() const 
+    {
+      return _FEBMaterialName;
+    }
+
     // Formatted string embedding the id of the shield.
     std::string name( std::string const & base ) const;
 
@@ -101,6 +107,7 @@ namespace mu2e
     std::shared_ptr<CRSScintillatorBarDetail> _barDetails;
 
     std::string _absorberMaterialName;
+    std::string _FEBMaterialName;
 
 
     // Information needed for the coincidence finder

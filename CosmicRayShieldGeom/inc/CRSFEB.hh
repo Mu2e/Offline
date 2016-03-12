@@ -1,7 +1,7 @@
-#ifndef CosmicRayShieldGeom_CRSAbsorberLayer_hh
-#define CosmicRayShieldGeom_CRSAbsorberLayer_hh
+#ifndef CosmicRayShieldGeom_CRSFEB_hh
+#define CosmicRayShieldGeom_CRSFEB_hh
 //
-// Representation of one Absorber Layer in  CosmicRayShield
+// Representation of one FEB in  CosmicRayShield
 //
 // $Id: CRSAbsorberLayer.hh,v 1.1 2014/02/10 14:23:03 ehrlich Exp $
 // $Author: ehrlich $
@@ -15,7 +15,7 @@
 namespace mu2e 
 {
 
-  class CRSAbsorberLayer
+  class CRSFEB
   {
 
     friend class CRSScintillatorModule;
@@ -24,9 +24,10 @@ namespace mu2e
 
     public:
 
-    CRSAbsorberLayer() {}
+    CRSFEB() {}
 
-    CRSAbsorberLayer(const CLHEP::Hep3Vector &position, const std::vector<double> &halfLength);
+    CRSFEB(const CLHEP::Hep3Vector &position, const std::vector<double> &halfLength);
+
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
     const CLHEP::Hep3Vector &getPosition() const {return _position;}
@@ -39,4 +40,4 @@ namespace mu2e
   };
 }
 
-#endif /* CosmicRayShieldGeom_CRSAbsorberLayer_hh */
+#endif /* CosmicRayShieldGeom_CRSFEB_hh */

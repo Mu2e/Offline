@@ -70,6 +70,8 @@ namespace mu2e
     std::vector<CLHEP::Hep3Vector>  _layerDirection;    //direction to the next layer
     std::vector<bool>               _CMBside0;        
     std::vector<bool>               _CMBside1;        
+    std::vector<int>                _FEBside0;        
+    std::vector<int>                _FEBside1;        
     std::vector<int>                _precedingSector;  //needed by coincidence finder
     std::vector<int>                _sectorType;       //needed by coincidence finder
 
@@ -79,6 +81,12 @@ namespace mu2e
     double      _CMBOffset;
     double      _CMBHalfThickness;
     std::string _CMBMaterialName;
+
+    std::string _FEBMaterialName;
+    double      _FEBDistanceToEdge;
+    double      _FEBDistanceToModule;
+    double      _FEBGapBetween2FEBs;
+    std::vector<double> _FEBHalfLengths;
   };
 
 }  //namespace mu2e
