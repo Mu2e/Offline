@@ -339,7 +339,7 @@ int crs.FEBsAtSide1D1  = 1; //13
 int crs.FEBsAtSide1U   = 0; //14 
 int crs.FEBsAtSide1C1  = 1; //15
 int crs.FEBsAtSide1C2  = 1; //16
-int crs.FEBsAtSide1C3  = 0; //17   <--- THIS NEEDS TO BE CHANGED IN THE VERSION
+int crs.FEBsAtSide1C3  = 0; //17   <--- THIS NEEDS TO BE CHANGED IN THE NEXT VERSION
 int crs.FEBsAtSide1D2  = 0; //18
 int crs.FEBsAtSide1D3  = 1; //19
 int crs.FEBsAtSide1D4  = 1; //20
@@ -350,3 +350,6 @@ double         crs.FEBDistanceToEdge   = 201.6;
 double         crs.FEBGapBetween2FEBs  = 397.9;
 vector<double> crs.FEBHalfLengths      = {1.0, 165.1, 101.6};  //thickness, width, lengths w.r.t. counter orientation
 
+
+//FIXME: this is temporary until the GDML issue is fixed
+bool crs.hideCRVCMBs = true;

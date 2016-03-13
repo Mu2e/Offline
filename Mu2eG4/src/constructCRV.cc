@@ -198,6 +198,9 @@ namespace mu2e
                                                       false);
             if(doSurfaceCheck) checkForOverlaps(pv, _config, verbosityLevel>0);
 
+//FIXME: this is temporary until the GDML issue is fixed
+if(!_config.getBool("crs.hideCRVCMBs"))
+{
             if(bar.hasCMB(0))
             {
               G4VPhysicalVolume* pvCMB0 = new G4PVPlacement(NULL,
@@ -223,6 +226,7 @@ namespace mu2e
                                                             false);
               if(doSurfaceCheck) checkForOverlaps(pvCMB1, _config, verbosityLevel>0);
             }
+}
           } //ibar
         } //ilayer
 
