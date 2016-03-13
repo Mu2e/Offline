@@ -15,10 +15,9 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
-// conditions
-#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // Mu2e
 #include "TrkPatRec/inc/TrkPatRec.hh"
+#include "Mu2eUtilities/inc/MVATools.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -29,7 +28,6 @@
 // root
 #include "TFile.h"
 #include "TH1F.h"
-#include "TMVA/Reader.h"
 #include "TMath.h"
 #include "TCanvas.h"
 #include "TApplication.h"
@@ -86,8 +84,6 @@ namespace mu2e {
     unsigned _minnhits;
     bool _cleanpeaks;
     double _minpeakmva, _maxpeakdt, _maxpeakdphi;
-    std::string _PMVAType; // type of MVA
-    std::string _PMVAWeights; // file of MVA weights
     double _tmin;
     double _tmax;
     double _tbin;
@@ -106,8 +102,7 @@ namespace mu2e {
     std::vector<TrkTimePeak> _tpeaks;
     //string _iname; // data instance name
 
-    void initializeReaders();
-    TMVA::Reader *_peakMVA; // MVA for peak cleaning
+    MVATools _peakMVA; // MVA for peak cleaning
     TimePeakMVA _pmva; // input variables to TMVA for peak cleaning
 
     art::Handle<mu2e::StrawHitCollection> _strawhitsH;
@@ -130,7 +125,6 @@ namespace mu2e {
   };
 
   TimePeakFinder::~TimePeakFinder() {
-    if (_peakMVA!=NULL) { delete _peakMVA; }
   }
   
   TimePeakFinder::TimePeakFinder(fhicl::ParameterSet const& pset) :
@@ -151,32 +145,29 @@ namespace mu2e {
     _minpeakmva(pset.get<double>("MinTimePeakMVA",0.5)),
     _maxpeakdt(pset.get<double>("MaxTimePeakDeltat",25.0)),
     _maxpeakdphi(pset.get<double>("MaxTimePeakDeltaPhi",1.0)),
-    _PMVAType(pset.get<std::string>("TimePeakMVAType","MLP method")),
     _tmin(pset.get<double>("tmin",500.0)),
     _tmax(pset.get<double>("tmax",1700.0)),
     _tbin(pset.get<double>("tbin",20.0)),
     _ymin(pset.get<double>("ymin",8.0)),
     _1dthresh(pset.get<double>("OneDPeakThreshold",5.0)),
     _nmnlWdNSigma(pset.get<double>("NominalWidthNSigma",3.0)),
-    _peakMVA(NULL)
+    _peakMVA(pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet()))
   {
     // tag the data product instance by the direction and particle type found by this fitter
     produces<StrawHitFlagCollection>();
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
-    // location-independent files
-    ConfigFileLookupPolicy configFile;
-    std::string weights = pset.get<std::string>("PeakMVAWeights","TrkPatRec/test/TimePeak.weights.xml");
-    _PMVAWeights = configFile(weights);
-
     // Tell the framework what we make.
     produces<TrackerHitTimeClusterCollection>();
 
   }
 
   void TimePeakFinder::beginJob(){
-
-    initializeReaders();
+    _peakMVA.initMVA();
+    if(_debug > 0){
+      cout << "TimePeakFinder MVA : " << endl; 
+      _peakMVA.showMVA();
+    }
     // create diagnostics if requested 
     if(_diag > 0)createDiagnostics();
     _iev = 0;
@@ -395,7 +386,7 @@ namespace mu2e {
          _pmva._dt = dt;
          _pmva._dphi = dphi;
          _pmva._rho = rho;
-         double mvaout = _peakMVA->EvaluateMVA(_PMVAType);
+         double mvaout = _peakMVA.evalMVA(_pmva._pars);
          if(mvaout < worstmva){
            worstmva = mvaout;
            iworst = ips;
@@ -441,14 +432,6 @@ namespace mu2e {
      ptime = extract_result<tag::mean>(tacc);
      tpeak._tpeak = ptime;
      tpeak._phi = pphi;
-   }
-
-   void TimePeakFinder::initializeReaders() {
-     _peakMVA = new TMVA::Reader();
-     _peakMVA->AddVariable("_dt",&_pmva._dt);
-     _peakMVA->AddVariable("_dphi",&_pmva._dphi);
-     _peakMVA->AddVariable("_rho",&_pmva._rho);
-     _peakMVA->BookMVA(_PMVAType,_PMVAWeights);
    }
 
    void TimePeakFinder::findTimePeaks( TH1F const& tspect,std::vector<Float_t>& xpeak,std::vector<Float_t>& ypeak) {
@@ -555,7 +538,7 @@ namespace mu2e {
       _pmva._dt = dt;
       _pmva._dphi = dphi;
       _pmva._rho = pos.perp();
-      double mvaout = _peakMVA->EvaluateMVA(_PMVAType);
+      double mvaout = _peakMVA.evalMVA(_pmva._pars);
 
       TimePeakHitInfo tph;
       tph._dt = dt;

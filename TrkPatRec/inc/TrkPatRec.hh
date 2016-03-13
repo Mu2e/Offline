@@ -35,9 +35,11 @@ namespace mu2e
   };
 
   struct TimePeakMVA {
-    Float_t _dt;
-    Float_t _dphi;
-    Float_t _rho;
+    std::vector<Double_t> _pars;
+    Double_t& _dt;
+    Double_t& _dphi;
+    Double_t& _rho;
+    TimePeakMVA() : _pars(3,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]) {}
   };
 }
 

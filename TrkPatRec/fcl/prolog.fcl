@@ -27,6 +27,13 @@ FlagStrawHits  : {
 
 FlagBkgHits : {
   module_type : FlagBkgHits
+  StereoHitMVA : { MVAWeights : "TrkPatRec/test/StereoHits.weights.xml" }
+  NonStereoHitMVA : { MVAWeights : "TrkPatRec/test/NonStereoHits.weights.xml" }
+  StereoClusterMVA : { MVAWeights : "TrkPatRec/test/StereoCluster.weights.xml" }
+  NonStereoClusterMVA : { MVAWeights : "TrkPatRec/test/NonStereoCluster.weights.xml" }
+  ClusterStrawHits : { BackgroundMask : [] }
+  ClusterStrawHits : { SignalMask : ["EnergySelection","RadiusSelection","TimeSelection"] }
+#  ClusterStrawHits.SignalMask : []
 }
 
 # 
@@ -34,7 +41,8 @@ TimePeakFinder : {
   module_type               : TimePeakFinder
   StrawDigiMCLabel	    : "makeSH"
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
-  HitBackgroundBits	    : ["DeltaRay","Isolated"]
+  HitBackgroundBits	    : ["DeltaRay","Isolated","ElectronicsXTalk"]
+  PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
 }
 # we need both positive and negative helicity helices.  For simplicity, we use upstream and downstream electrons
 PosHelixFinder : {
