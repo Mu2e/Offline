@@ -65,6 +65,8 @@ namespace mu2e
   // Find normalization ranges
   void MVATools::getNorm() {
     XMLCh* TAG_CLASS = XMLString::transcode("Class");
+    XMLCh* TAG_VARIABLE = XMLString::transcode("Variable");
+    XMLCh* TAG_VARINDEX = XMLString::transcode("VarIndex");
     XMLCh* TAG_CLASSINDEX = XMLString::transcode("ClassIndex");
     XMLCh* VAL_2 = XMLString::transcode("2");
     XMLCh* TAG_RANGE = XMLString::transcode("Range");
@@ -72,6 +74,8 @@ namespace mu2e
     XMLCh* ATT_INDEX = XMLString::transcode("Index");
     XMLCh* ATT_MIN = XMLString::transcode("Min");
     XMLCh* ATT_MAX = XMLString::transcode("Max");
+    XMLCh* ATT_TITLE = XMLString::transcode("Title");
+    XMLCh* ATT_LABEL = XMLString::transcode("Label");
 
     // Get the number of ANN(MLP) input variables
     XMLCh *xpathStr = XMLString::transcode("/MethodSetup/Variables");
@@ -80,66 +84,60 @@ namespace mu2e
     XMLString::release( &xpathStr ) ;
 
     DOMElement* varElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue()) ;
-    xpathRes->release();
 
     char* attValue = XMLString::transcode(varElem->getAttribute(ATT_NVARS));
     int nVars = atoi(attValue);
-    XMLString::release( &attValue ) ;
-
-    cout << "MVA NVars: " << nVars << endl;
+//    XMLString::release( &attValue );
+//    cout << "found " << nVars << " variables" << endl; 
     _wn.resize(nVars);
     _x.resize(nVars);
     _y.resize(nVars);
-    
-    // Now get the normalization range for each variable
-    xpathStr = XMLString::transcode("/MethodSetup/Transformations/Transform/Class/Ranges");
-    xpathRes = _xmlDoc->evaluate(xpathStr,_xmlDoc->getDocumentElement(),NULL,
-               DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
-    XMLString::release( &xpathStr ) ;
+    _title.resize(nVars);
+    _label.resize(nVars);
 
-    for(XMLSize_t i=0;i<xpathRes->getSnapshotLength();i++) {
-      xpathRes->snapshotItem(i);
-      DOMNode* nRanges = xpathRes->getNodeValue();
-      DOMElement* eRanges = dynamic_cast<DOMElement* >(nRanges) ;
-
-      DOMNode* parentNode = nRanges->getParentNode();
-      DOMElement* parentElement = dynamic_cast<DOMElement* >(parentNode) ;
-
-      if(XMLString::equals(TAG_CLASS,parentNode->getNodeName())
-      && XMLString::equals(VAL_2,parentElement->getAttribute(TAG_CLASSINDEX)) ){
-        DOMNodeList* children = eRanges->getElementsByTagName(TAG_RANGE) ;
-        for( XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix ){
-          DOMNode* childNode = children->item( ix ) ;
-          DOMNamedNodeMap* attrs = childNode->getAttributes();
-          int inorm=0;
-          double vmin=std::numeric_limits<double>::max();
-	  double vmax=0.;
-          for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia ){
-            DOMNode* attr = attrs->item(ia);
-            char* attValue = XMLString::transcode(attr->getNodeValue());
-            if(XMLString::equals(ATT_INDEX,attr->getNodeName()) ){
-              inorm = atoi(attValue);
-            }else if(XMLString::equals(ATT_MIN,attr->getNodeName()) ){
-              vmin = strtod(attValue,NULL);
-            }else if(XMLString::equals(ATT_MAX,attr->getNodeName()) ){
-              vmax = strtod(attValue,NULL);
-            }
-            XMLString::release( &attValue ) ;
-          }
-          _wn[inorm].push_back(vmin);
-          _wn[inorm].push_back(vmax);
-        }
+    DOMNodeList* children = varElem->getElementsByTagName(TAG_VARIABLE) ;
+//    cout << "found " << children->getLength() << " children" << endl;
+    for( XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix ){
+      DOMNode* childNode = children->item( ix ) ;
+      DOMNamedNodeMap* attrs = childNode->getAttributes();
+      int ivar=0;
+      double vmin=std::numeric_limits<double>::max();
+      double vmax=0.;
+      string label,title;
+      for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia ){
+	DOMNode* attr = attrs->item(ia);
+	char* attValue = XMLString::transcode(attr->getNodeValue());
+	if(XMLString::equals(TAG_VARINDEX,attr->getNodeName()) ){
+	  ivar = atoi(attValue);
+	}else if(XMLString::equals(ATT_MIN,attr->getNodeName()) ){
+	  vmin = strtod(attValue,NULL);
+	}else if(XMLString::equals(ATT_MAX,attr->getNodeName()) ){
+	  vmax = strtod(attValue,NULL);
+	}else if(XMLString::equals(ATT_TITLE,attr->getNodeName()) ){
+	  title = string(attValue);
+	}else if(XMLString::equals(ATT_LABEL,attr->getNodeName()) ){
+	  label = string(attValue);
+	}
+        XMLString::release( &attValue ) ;
       }
+      _wn[ivar].push_back(vmin);
+      _wn[ivar].push_back(vmax);
+      _title[ivar] = title;
+      _label[ivar] = label;
     }
     xpathRes->release();
+
     XMLString::release(&TAG_CLASS);
     XMLString::release(&TAG_CLASSINDEX);
     XMLString::release(&TAG_RANGE);
     XMLString::release(&VAL_2);
     XMLString::release(&ATT_NVARS);
+    XMLString::release(&TAG_VARINDEX);
     XMLString::release(&ATT_INDEX);
     XMLString::release(&ATT_MIN);
     XMLString::release(&ATT_MAX);
+    XMLString::release(&ATT_LABEL);
+    XMLString::release(&ATT_TITLE);
   }
 
   // Find the layer weights
@@ -160,7 +158,6 @@ namespace mu2e
     int nLyrs = atoi(attValue);
     XMLString::release( &attValue ) ;
 
-    cout << "MVA NLayers: " << nLyrs << endl;
     int iLastLyr = nLyrs - 1;
     _wgts.resize(iLastLyr);
 
@@ -245,6 +242,9 @@ namespace mu2e
   }
 
   void MVATools::showMVA()const{
+    cout << "MVA NLayers: " << _wgts.size() << endl;
+    cout << "MVA NVars: " << _title.size() << endl;
+
     ios_base::fmtflags origflags = cout.flags();
     streamsize prec = cout.precision();
     streamsize width = cout.width(); 
@@ -255,7 +255,7 @@ namespace mu2e
     const string label1 = " MVA Normalization ";
     cout << stars1 << label1 << stars1 << endl;
     for(vector< vector<double> >::size_type i = 0; i != _wn.size(); ++i){
-      cout << "Var " << i << ": min=" << _wn[i][0] << " max=" << _wn[i][1] << endl;
+      cout << "Var " << i << _label[i] << " " << _title[i] << ": min=" << _wn[i][0] << " max=" << _wn[i][1] << endl;
     }
     const string morestars1(24+label1.size(),'*');
     cout << morestars1 << endl;

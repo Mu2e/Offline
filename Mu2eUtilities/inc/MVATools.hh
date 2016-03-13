@@ -8,6 +8,7 @@
 #include <xercesc/dom/DOM.hpp>
 
 #include <vector>
+#include <string>
 
 namespace mu2e 
 {
@@ -31,6 +32,7 @@ namespace mu2e
     std::vector <std::vector<std::vector<double> > > _twgts;
     std::vector<double>_x;
     std::vector<double>_y;
+    std::vector<std::string> _title, _label;
   };
 }
 #endif
