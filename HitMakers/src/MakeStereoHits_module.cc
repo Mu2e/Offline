@@ -156,7 +156,10 @@ namespace mu2e {
   void MakeStereoHits::beginJob(){
   // initialize MVA
     _mvatool.initMVA();
-    _mvatool.showMVA();
+    if(_debugLevel > 0){
+      cout << "MakeStereoHits MVA parameters: " << endl;
+      _mvatool.showMVA();
+    }
     _vmva.resize(4);
     // create diagnostics if requested
     if(_diagLevel > 0){
@@ -375,7 +378,8 @@ namespace mu2e {
 	              if(chisq < _maxChisq){
 	                sth.setChisquared(chisq);
                         // compute MVA
-	                _vmva[0] = de;	                _vmva[1] = dt;
+	                _vmva[0] = de;
+			_vmva[1] = dt;
 	                _vmva[2] = chisq;
 	                _vmva[3] = sth.pos().perp();
 	                double mvaout = _mvatool.evalMVA(_vmva);

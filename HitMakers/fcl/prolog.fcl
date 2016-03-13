@@ -33,19 +33,6 @@ muonTimeMap : {
     module_type        : GenerateMuonLife 
 }
 
-makeSH : {
-  module_type          : MakeStrawHit
-  g4ModuleLabel        : g4run
-  diagLevel            : 0
-  maxFullPrint         : 0
-  deadStrawList        : {
-    verbosity   : 0
-    deadPlanes : [ ]
-    deadPanels : [ ]
-    deadLayers  : [ ]
-    deadStraws  : [ ]
-  }
-}
 # straw digis
 makeSD : {
     module_type : StrawDigisFromStepPointMCs
