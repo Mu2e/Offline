@@ -117,7 +117,7 @@ namespace mu2e {
     Float_t _shrho, _strho, _mcshrho;
     Float_t _de, _dt, _dist, _dperp, _dz, _rho, _dl1, _dl2;
     Bool_t _tdiv1, _tdiv2;
-    Float_t _dc1, _dc2, _chi2, _mvaout, _ddot;
+    Float_t _dc1, _dc2, _chi2, _ndof, _mvaout, _ddot;
     Float_t _schi2, _smvaout, _sddot, _sdist, _sdz;
     Float_t _mcdist;
     Int_t _stereo, _fs, _sfs, _mcr, _mcrel, _mcpdg, _mcgen, _mcproc;
@@ -207,6 +207,7 @@ namespace mu2e {
 	  _sdiag->Branch("dc1",&_dc1,"dc1/F");
 	  _sdiag->Branch("dc2",&_dc2,"dc2/F");
 	  _sdiag->Branch("chi2",&_chi2,"chi2/F");
+	  _sdiag->Branch("ndof",&_ndof,"ndof/F");
 	  _sdiag->Branch("tdiv1",&_tdiv1,"tdiv1/B");
 	  _sdiag->Branch("tdiv2",&_tdiv2,"tdiv2/B");
 	  _sdiag->Branch("mvaout",&_mvaout,"mvaout/F");
@@ -342,11 +343,13 @@ namespace mu2e {
             StrawHit const& sh1 = strawhits->at(ish);
             Straw const& straw1 = tt.getStraw(sh1.strawIndex());
             StrawHitPosition const& shp1 = (*shpos)[ish];
+	    bool tdiv1 = shp1.flag().hasAllProperties(StrawHitFlag::tdiv);
             for( int jpnl : _dopnl[ipnl]){                            // loop over overlapping panels
               for(int jsh : rhdx[jpnl]){                              // loop over hit2
 	        StrawHit const& sh2 = strawhits->at(jsh);
 	        Straw const& straw2 = tt.getStraw(sh2.strawIndex());
 	        StrawHitPosition const& shp2 = (*shpos)[jsh];
+		bool tdiv2 = shp2.flag().hasAllProperties(StrawHitFlag::tdiv);
 	        double ddot = straw1.direction().dot(straw2.direction());
 	        PanelId::isep sep = straw1.id().getPanelId().separation(straw2.id().getPanelId());
 	        double de = min((float)1.0,fabs((sh1.energyDep() - sh2.energyDep())/(sh1.energyDep()+sh2.energyDep())));
@@ -373,8 +376,16 @@ namespace mu2e {
 	          if( dl1 > _minDL && dl2 > _minDL) {
 	            // stereo point is inside the active length
 	            // compute difference between stereo points and TD prediction
-	            double chi1 = (shp1.wireDist()-sth.wdist1())/shp1.posRes(StrawHitPosition::phi);              
-	            double chi2 = (shp2.wireDist()-sth.wdist2())/shp2.posRes(StrawHitPosition::phi);
+		    double chi1(0.0), chi2(0.0);
+		    unsigned ndof(0);
+	            if(tdiv1){
+		      chi1 = (shp1.wireDist()-sth.wdist1())/shp1.posRes(StrawHitPosition::phi);
+		      ++ndof;
+		    }
+	            if(tdiv2){
+		      chi2 = (shp2.wireDist()-sth.wdist2())/shp2.posRes(StrawHitPosition::phi);
+		      ++ndof;
+		    }
 	            if(fabs(chi1) <_maxChi && fabs(chi2) < _maxChi)
 	            {
 	              // compute chisquared
@@ -415,9 +426,10 @@ namespace mu2e {
 	                    _dl2 = dl2;
 	                    _dc1 = chi1;
 	                    _dc2 = chi2;
-			    _tdiv1 = shp1.flag().hasAllProperties(StrawHitFlag::tdiv);
-			    _tdiv2 = shp2.flag().hasAllProperties(StrawHitFlag::tdiv);
+			    _tdiv1 = tdiv1;
+			    _tdiv2 = tdiv2; 
 	                    _chi2 = chisq;
+			    _ndof = ndof;
 	                    _mvaout = mvaout;
 	                    _ddot = ddot;
 	                    _mcdist = -1.0;
