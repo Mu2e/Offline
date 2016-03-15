@@ -115,7 +115,9 @@ namespace mu2e {
     TTree *_spdiag, *_sdiag;
     Float_t _shphi, _stphi, _mcshphi;
     Float_t _shrho, _strho, _mcshrho;
-    Float_t _de, _dt, _dist, _dperp, _dz, _rho, _dl1, _dl2, _dc1, _dc2, _chi2, _mvaout, _ddot;
+    Float_t _de, _dt, _dist, _dperp, _dz, _rho, _dl1, _dl2;
+    Bool_t _tdiv1, _tdiv2;
+    Float_t _dc1, _dc2, _chi2, _mvaout, _ddot;
     Float_t _schi2, _smvaout, _sddot, _sdist, _sdz;
     Float_t _mcdist;
     Int_t _stereo, _fs, _sfs, _mcr, _mcrel, _mcpdg, _mcgen, _mcproc;
@@ -205,6 +207,8 @@ namespace mu2e {
 	  _sdiag->Branch("dc1",&_dc1,"dc1/F");
 	  _sdiag->Branch("dc2",&_dc2,"dc2/F");
 	  _sdiag->Branch("chi2",&_chi2,"chi2/F");
+	  _sdiag->Branch("tdiv1",&_tdiv1,"tdiv1/B");
+	  _sdiag->Branch("tdiv2",&_tdiv2,"tdiv2/B");
 	  _sdiag->Branch("mvaout",&_mvaout,"mvaout/F");
 	  _sdiag->Branch("ddot",&_ddot,"ddot/F");
 	  _sdiag->Branch("mcrel",&_mcrel,"mcrel/I");
@@ -224,7 +228,7 @@ namespace mu2e {
       _genmap = false;
       genMap(tt);
     }
-
+// station layout diagnostics
     if(_diagLevel >0 && _first_call_to_produce){
       _first_call_to_produce = false;
       art::ServiceHandle<art::TFileService> tfs;
@@ -302,7 +306,7 @@ namespace mu2e {
         chdx.reserve(nres);
       }
     }
-
+// create positions
     for(size_t ish=0;ish<nsh;++ish){
       StrawHit const& hit = strawhits->at(ish);
       Straw const& straw = tt.getStraw(hit.strawIndex());
@@ -411,6 +415,8 @@ namespace mu2e {
 	                    _dl2 = dl2;
 	                    _dc1 = chi1;
 	                    _dc2 = chi2;
+			    _tdiv1 = shp1.flag().hasAllProperties(StrawHitFlag::tdiv);
+			    _tdiv2 = shp2.flag().hasAllProperties(StrawHitFlag::tdiv);
 	                    _chi2 = chisq;
 	                    _mvaout = mvaout;
 	                    _ddot = ddot;
@@ -442,7 +448,7 @@ namespace mu2e {
     for(size_t ish=0; ish<nsh;++ish){
       bool stereo(false);
       if(minsep[ish] < PanelId::apart){
-	shpos->at(ish) = StrawHitPosition(stereohits,ibest[ish],ish);
+	shpos->at(ish) = StrawHitPosition(stereohits,ibest[ish],ish,shpos->at(ish).flag());
 	stereo = true;
       }
       if(_diagLevel > 0){

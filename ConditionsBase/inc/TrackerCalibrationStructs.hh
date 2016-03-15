@@ -54,6 +54,7 @@ namespace mu2e
     double _time;
     double _tdres;
     double _timeres;
+    bool _tdiv;
   };
 }
 

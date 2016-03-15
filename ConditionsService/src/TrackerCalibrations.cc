@@ -26,6 +26,7 @@ namespace mu2e {
     _rres_min = config.getDouble("MinDriftRadiusResolution",0.09); //mm
     _rres_max = config.getDouble("MaxDriftRadiusResolution",0.15); //mm
     _rres_rad = config.getDouble("DriftRadiusResolutionRadius",1.5); //mm
+    _tdbuff = config.getDouble("TimeDivisionBuffer",80); //mm
     _distvsdeltat = config.getDouble("SignalVelocity",273.); //mm/ns
     _edepToAmpl = config.getDouble("EdepToAmpl",1.0); // mV/MeV
     _amplRes = config.getDouble("AmplRes", 0.0); //   relative
@@ -92,13 +93,15 @@ namespace mu2e {
     double tddist = TimeDiffToDistance(strawhit.strawIndex(),strawhit.dt());
     // resolution depends on position along the wire
 // constrain to a physical length
-    if(fabs(tddist) < shlen) {
+    if(fabs(tddist) < shlen + _tdbuff ) {
       shinfo._tddist = tddist;
       shinfo._tdres = TimeDivisionResolution(straw.index(),0.5*(shlen-tddist)/shlen);
+      shinfo._tdiv = true;
     } else {
-// increase the error if we're beyond the physical limit
-      shinfo._tddist = copysign(shlen,tddist);
-      shinfo._tdres = fmax(fabs(shlen-tddist),TimeDivisionResolution(straw.index(),1.0));
+// There's no information if we're outside the physical limit: set the position to 0, increase the error, and flag
+      shinfo._tddist = 0.0;
+      shinfo._tdres = shlen;
+      shinfo._tdiv = false;
     }
     shinfo._pos = straw.getMidPoint() + shinfo._tddist*straw.getDirection();
 // time resolution is due to intrinsic timing resolution and time difference resolution

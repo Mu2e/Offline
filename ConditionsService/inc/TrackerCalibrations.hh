@@ -58,6 +58,7 @@ namespace mu2e
     // temoprary constant drift velocity and time resolution.  Replace these with a more physical model FIXME!!!
     double _vdrift;
     double _rres_min, _rres_max, _rres_rad;
+    double _tdbuff; // buffer for deciding if the time division is useful or not 
 
     //velocity of signal propagation in wire mm/ns
     double _distvsdeltat;

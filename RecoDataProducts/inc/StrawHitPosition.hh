@@ -23,7 +23,7 @@ namespace mu2e {
 // construct from another hit, optionally with additional flag bits (these will be ORed with the existing bits
       StrawHitPosition(StrawHitPosition const& pos,StrawHitFlag orflag=StrawHitFlag() );
 // construct from a stereo hit
-      StrawHitPosition(StereoHitCollection const& sthits, size_t stindex, size_t shindex);
+      StrawHitPosition(StereoHitCollection const& sthits, size_t stindex, size_t shindex,StrawHitFlag orflag=StrawHitFlag());
 // null constructor for root
 #endif /* __GCCXML__ */
       StrawHitPosition();

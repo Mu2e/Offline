@@ -67,6 +67,7 @@ namespace mu2e
       TTree *_shdiag;
       Int_t _eventid;
       threevec _shp;
+      Float_t _shlen, _slen; 
       Float_t _edep;
       Float_t _time, _deltat, _rho;
       Int_t _nmcsteps;
@@ -81,7 +82,7 @@ namespace mu2e
       Float_t _mcedep;
       Float_t _pdist,_pperp,_pmom;
       Float_t _mctime, _mcptime;
-      Int_t _esel,_rsel, _timesel,  _delta, _stereo, _isolated, _strawxtalk, _elecxtalk;
+      Int_t _esel,_rsel, _timesel,  _delta, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk;
       Int_t _plane, _panel, _layer, _straw;
       Float_t _shpres, _shrres, _shchisq, _shdt, _shdist;
       Bool_t _mcxtalk;
@@ -136,12 +137,8 @@ namespace mu2e
     shinfo._panel = straw.id().getPanel();
     shinfo._layer = straw.id().getLayer();
     shinfo._straw = straw.id().getStraw();
-    shinfo._esel = shp.flag().hasAllProperties(StrawHitFlag::energysel);
-    shinfo._rsel = shp.flag().hasAllProperties(StrawHitFlag::radsel);
-    shinfo._delta = shp.flag().hasAllProperties(StrawHitFlag::delta);
     shinfo._stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
-    shinfo._strawxtalk = shp.flag().hasAllProperties(StrawHitFlag::strawxtalk);
-    shinfo._elecxtalk = shp.flag().hasAllProperties(StrawHitFlag::elecxtalk);
+    shinfo._tdiv = shp.flag().hasAllProperties(StrawHitFlag::tdiv);
 
     if(_mcdigis != 0) {
 
@@ -201,6 +198,8 @@ namespace mu2e
     _shdiag=tfs->make<TTree>("shdiag","strawhit diagnostics");
     _shdiag->Branch("eventid",&_eventid,"eventid/I");
     _shdiag->Branch("shpos",&_shp,"x/F:y/F:z/F");
+    _shdiag->Branch("shlen",&_shlen,"shlen/F");
+    _shdiag->Branch("slen",&_slen,"slen/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
     _shdiag->Branch("time",&_time,"time/F");
     _shdiag->Branch("deltat",&_deltat,"deltat/F");
@@ -239,6 +238,7 @@ namespace mu2e
     _shdiag->Branch("tsel",&_timesel,"tsel/I");
     _shdiag->Branch("delta",&_delta,"delta/I");
     _shdiag->Branch("stereo",&_stereo,"stereo/I");
+    _shdiag->Branch("tdiv",&_tdiv,"tdiv/I");
     _shdiag->Branch("strawxtalk",&_strawxtalk,"strawxtalk/I");
     _shdiag->Branch("elecxtalk",&_elecxtalk,"elecxtalk/I");
     _shdiag->Branch("isolated",&_isolated,"isolated/I");
@@ -247,9 +247,9 @@ namespace mu2e
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
     _shdiag->Branch("pres",&_shpres,"pres/F");
     _shdiag->Branch("rres",&_shrres,"rres/F");
-    _shdiag->Branch("chisq",&_shchisq,"chisq/F");
-    _shdiag->Branch("dt",&_shdt,"dt/F");
-    _shdiag->Branch("dist",&_shdist,"dist/F");
+    _shdiag->Branch("shchisq",&_shchisq,"shchisq/F");
+    _shdiag->Branch("shdt",&_shdt,"shdt/F");
+    _shdiag->Branch("shdist",&_shdist,"shdist/F");
     _shdiag->Branch("mcxtalk",&_mcxtalk,"mcxtalk/B");
   }
 
@@ -261,18 +261,27 @@ namespace mu2e
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawHit const& sh = _shcol->at(istr);
       StrawHitPosition const& shp = _shpcol->at(istr);
+      StrawHitFlag const& shf = _shfcol->at(istr);
       const Straw& straw = tracker.getStraw( sh.strawIndex() );
       _plane = straw.id().getPlane();
       _panel = straw.id().getPanel();
       _layer = straw.id().getLayer();
       _straw = straw.id().getStraw();
-      _shp = shp.pos();
-      _stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
-      _strawxtalk = shp.flag().hasAllProperties(StrawHitFlag::strawxtalk);
-      _elecxtalk = shp.flag().hasAllProperties(StrawHitFlag::elecxtalk);
       _edep = sh.energyDep();
       _time = sh.time();
       _deltat = sh.dt();
+      _shp = shp.pos();
+      _shlen =(shp.pos()-straw.getMidPoint()).dot(straw.getDirection());
+      _slen = straw.getHalfLength(); 
+      _stereo = shp.flag().hasAllProperties(StrawHitFlag::stereo);
+      _tdiv = shp.flag().hasAllProperties(StrawHitFlag::tdiv);
+      _esel = shf.hasAllProperties(StrawHitFlag::energysel);
+      _rsel = shf.hasAllProperties(StrawHitFlag::radsel);
+      _timesel = shf.hasAllProperties(StrawHitFlag::timesel);
+      _strawxtalk = shf.hasAllProperties(StrawHitFlag::strawxtalk);
+      _elecxtalk = shf.hasAllProperties(StrawHitFlag::elecxtalk);
+      _isolated = shf.hasAllProperties(StrawHitFlag::isolated);
+      _delta = shf.hasAllProperties(StrawHitFlag::delta);
       _rho = shp.pos().perp();
       // summarize the MC truth for this strawhit.  Preset the values in case MC is missing/incomplete
       _mcgid = -1;
@@ -357,14 +366,6 @@ namespace mu2e
         _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
 
       }
-      _esel = _shfcol->at(istr).hasAllProperties(StrawHitFlag::energysel);
-      _rsel = _shfcol->at(istr).hasAllProperties(StrawHitFlag::radsel);
-      _timesel = _shfcol->at(istr).hasAllProperties(StrawHitFlag::timesel);
-      _stereo = _shfcol->at(istr).hasAllProperties(StrawHitFlag::stereo);
-      _strawxtalk = _shfcol->at(istr).hasAllProperties(StrawHitFlag::strawxtalk);
-      _elecxtalk = _shfcol->at(istr).hasAllProperties(StrawHitFlag::elecxtalk);
-      _isolated = _shfcol->at(istr).hasAllProperties(StrawHitFlag::isolated);
-      _delta = _shfcol->at(istr).hasAllProperties(StrawHitFlag::delta);
       _shpres = _shpcol->at(istr).posRes(StrawHitPosition::phi);
       _shrres = _shpcol->at(istr).posRes(StrawHitPosition::rho);
 //  Info depending on stereo hits
