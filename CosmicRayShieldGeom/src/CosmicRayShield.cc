@@ -27,12 +27,11 @@ namespace mu2e
           for(size_t m=0; m<nModules; m++)
           {
             const CRSScintillatorModule &module = sector.getModule(m);
-            size_t nLayers = module.nLayers();
-            for(size_t l=0; l<nLayers; l++)
+            for(size_t l=0; l<2; l++)  //the two aluminum sheets are the outermost layers of each CRV module
             {
-              const CRSScintillatorLayer &layer = module.getLayer(l);
-              const CLHEP::Hep3Vector &position = layer.getPosition();
-              const std::vector<double> &halfLengths = layer.getHalfLengths();
+              const CRSAluminumSheet &aluminumSheet = module.getAluminumSheet(l);
+              const CLHEP::Hep3Vector &position = aluminumSheet.getPosition();
+              const std::vector<double> &halfLengths = aluminumSheet.getHalfLengths();
               if(first)
               {
                 for(int i=0; i<3; i++)

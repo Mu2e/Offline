@@ -49,13 +49,14 @@ namespace mu2e
 
     parseConfig(config);
     makeCRVSectors();
+    makeCRVSupportStructures();
   }
 
   void CosmicRayShieldMaker::parseConfig( SimpleConfig const & config )
   {
     _diagLevel = config.getInt("crs.verbosityLevel",0);
-    _nSectors  = config.getInt("crs.nSectors",18);
-    _nLayers   = config.getInt("crs.nLayers",4);
+    _nSectors  = config.getInt("crs.nSectors");
+    _nLayers   = config.getInt("crs.nLayers");
     config.getVectorString("crs.sectorNames",_crvSectorNames,_nSectors);
 
     _counterLength.resize(_nSectors);
@@ -99,9 +100,11 @@ namespace mu2e
     _gapBetweenModules      = config.getDouble("crs.gapBetweenModules");
 
     config.getVectorDouble("crs.gapBetweenLayers",_gapBetweenLayers,3);
+    _aluminumSheetThickness = config.getDouble("crs.aluminumSheetThickness");
 
     _scintillatorBarMaterialName  = config.getString("crs.scintillatorBarMaterialName");
     _absorberMaterialName         = config.getString("crs.absorberMaterialName");
+    _aluminumSheetMaterialName    = config.getString("crs.aluminumSheetMaterialName");
 
     _CMBOffset        = config.getDouble("crs.CMBOffset");
     _CMBHalfThickness = config.getDouble("crs.CMBHalfThickness");
@@ -112,6 +115,17 @@ namespace mu2e
     _FEBDistanceToEdge   = config.getDouble("crs.FEBDistanceToEdge");
     _FEBGapBetween2FEBs  = config.getDouble("crs.FEBGapBetween2FEBs");
      config.getVectorDouble("crs.FEBHalfLengths",_FEBHalfLengths,3);
+
+    _nSupportStructures      = config.getInt("crs.nSupportStructures");
+    config.getVectorString("crs.supportStructureNames",_supportStructureNames,_nSupportStructures);
+    _supportStructurePositions.resize(_nSupportStructures);
+    _supportStructureHalfLengths.resize(_nSupportStructures);
+    for(int i=0; i<_nSupportStructures; i++)
+    {
+      _supportStructurePositions[i] = config.getHep3Vector("crs.supportStructurePosition_"+_supportStructureNames[i]);
+      config.getVectorDouble("crs.supportStructureHalfLengths_"+_supportStructureNames[i],_supportStructureHalfLengths[i],3);
+    }
+    _supportStructureMaterialName = config.getString("crs.supportStructureMaterialName");
   }
 
 //VTNC = Vector to next counter
@@ -131,7 +145,7 @@ namespace mu2e
                                                                                       _CMBside0[isector], _CMBside1[isector]));
 
     _crs->_scintillatorShields.push_back(CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails,
-                                         _absorberMaterialName, _FEBMaterialName,
+                                         _absorberMaterialName, _aluminumSheetMaterialName, _FEBMaterialName,
                                          CRSScintillatorShieldId(_precedingSector[isector]), _sectorType[isector], nCounters));
     CRSScintillatorShield &shield = _crs->_scintillatorShields.back();
     int thicknessDirection = localToWorld[0];
@@ -194,7 +208,21 @@ namespace mu2e
           absorberLayer._halfLengths = layer._halfLengths;
           double shift=0.5*(layerOffsets[ilayer+1][thicknessDirection]-layerOffsets[ilayer][thicknessDirection]);
           absorberLayer._position[thicknessDirection]+=shift;
-          absorberLayer._halfLengths[thicknessDirection]=abs(shift)-layer._halfLengths[thicknessDirection];
+          absorberLayer._halfLengths[thicknessDirection]=0.5*_gapBetweenLayers[ilayer];
+        }
+
+        //Thin aluminum sheets
+        if(ilayer==0 || ilayer==_nLayers-1)
+        {
+          module._aluminumSheets.push_back(CRSAluminumSheet());
+          CRSAluminumSheet &aluminumSheet = module._aluminumSheets.back();
+
+          aluminumSheet._position = layer._position;
+          aluminumSheet._halfLengths = layer._halfLengths;
+          double shift=0.5*(_counterThickness+_aluminumSheetThickness)*_layerDirection[isector][thicknessDirection];
+          if(ilayer==0) shift*=-1;
+          aluminumSheet._position[thicknessDirection]+=shift;
+          aluminumSheet._halfLengths[thicknessDirection]=0.5*_aluminumSheetThickness;
         }
 
         //FEB positions and dimensions
@@ -322,4 +350,15 @@ namespace mu2e
     }
 
   }
+
+  void CosmicRayShieldMaker::makeCRVSupportStructures()
+  {
+    for(int i=0; i<_nSupportStructures; i++)
+    {
+      _crs->_supportStructures.emplace_back(_supportStructureNames[i], _supportStructurePositions[i], 
+                                            _supportStructureHalfLengths[i], _supportStructureMaterialName);
+    }
+  }
+
+
 } // namespace mu2e

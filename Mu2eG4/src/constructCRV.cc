@@ -279,6 +279,57 @@ if(!_config.getBool("crs.hideCRVCMBs"))
           }
         } //absorberLayerNumber
 
+
+        //aluminum sheets
+        const std::vector<CRSAluminumSheet> &aluminumSheets = imodule->getAluminumSheets();
+        const std::string &aluminumSheetNameBase = imodule->name("CRSAluminumSheet_");
+        for(unsigned int aluminumSheetNumber=0; aluminumSheetNumber<aluminumSheets.size(); aluminumSheetNumber++) 
+        {
+          const std::string aluminumSheetName = aluminumSheetNameBase+"_"+std::to_string(aluminumSheetNumber);
+          const std::vector<double> &aluminumSheetHalflengths=aluminumSheets[aluminumSheetNumber].getHalfLengths();
+          const CLHEP::Hep3Vector &aluminumSheetCenterInMu2e=aluminumSheets[aluminumSheetNumber].getPosition();
+          CLHEP::Hep3Vector aluminumSheetAirOffset = aluminumSheetCenterInMu2e - parentCenterInMu2e;
+
+          const std::string &aluminumSheetMaterialName = shield.getAluminumSheetMaterialName();
+          G4Material* aluminumSheetMaterial = findMaterialOrThrow(aluminumSheetMaterialName);
+
+          G4VSolid* aluminumSheetSolid = new G4Box(aluminumSheetName,
+                                                   aluminumSheetHalflengths[0],
+                                                   aluminumSheetHalflengths[1],
+                                                   aluminumSheetHalflengths[2]);
+
+          G4LogicalVolume* aluminumSheetLogical = new G4LogicalVolume(aluminumSheetSolid,
+                                                                      aluminumSheetMaterial,
+                                                                      aluminumSheetName);
+
+          if(!scintillatorShieldVisible) 
+          {
+            aluminumSheetLogical->SetVisAttributes(G4VisAttributes::Invisible);
+          }
+          else 
+          {
+            G4Colour  darkorange  (.45, .25, .0);
+            G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, darkorange));
+            visAtt->SetForceSolid(scintillatorShieldDrawSolid);
+            visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
+            aluminumSheetLogical->SetVisAttributes(visAtt);
+          }
+
+          G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+                                                    aluminumSheetAirOffset,
+                                                    aluminumSheetLogical,
+                                                    aluminumSheetName,
+                                                    parent.logical,
+                                                    false,
+                                                    0,
+                                                    false);
+          if(doSurfaceCheck) 
+          {
+            checkForOverlaps( pv, _config, verbosityLevel>0);
+          }
+        } //aluminumSheetNumber
+
+
         //FEBs
         const std::vector<CRSFEB> &FEBs = imodule->getFEBs();
         const std::string &FEBNameBase = imodule->name("CRSFEB_");
@@ -329,6 +380,56 @@ if(!_config.getBool("crs.hideCRVCMBs"))
         } //FEBNumber
       } //imodule
     } //ishield
+
+    //steel support structures
+    std::vector<CRSSupportStructure> const &supportStructures = CosmicRayShieldGeomHandle->getSupportStructures();
+    std::vector<CRSSupportStructure>::const_iterator iSupportStructure;
+    for(iSupportStructure=supportStructures.begin(); iSupportStructure!=supportStructures.end(); ++iSupportStructure) 
+    {
+      CRSSupportStructure const & supportStructure = *iSupportStructure;
+      std::string const & name = supportStructure.getName();
+
+      const std::vector<double> &halflengths=supportStructure.getHalfLengths();
+      const CLHEP::Hep3Vector &positionInMu2e = supportStructure.getPosition();
+      CLHEP::Hep3Vector supportStructureAirOffset = positionInMu2e - parentCenterInMu2e;
+
+      const std::string &materialName = supportStructure.getMaterialName();
+      G4Material* material = findMaterialOrThrow(materialName);
+
+      G4VSolid* supportStructureSolid = new G4Box(name,
+                                         halflengths[0],
+                                         halflengths[1],
+                                         halflengths[2]);
+
+      G4LogicalVolume* supportStructureLogical = new G4LogicalVolume(supportStructureSolid, material, name);
+
+      if(!scintillatorShieldVisible) 
+      {
+        supportStructureLogical->SetVisAttributes(G4VisAttributes::Invisible);
+      }
+      else 
+      {
+        G4Colour  darkorange  (.45, .25, .0);
+        G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, darkorange));
+        visAtt->SetForceSolid(scintillatorShieldDrawSolid);
+        visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
+        supportStructureLogical->SetVisAttributes(visAtt);
+      }
+
+      G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+                                                supportStructureAirOffset,
+                                                supportStructureLogical,
+                                                name,
+                                                parent.logical,
+                                                false,
+                                                0,
+                                                false);
+      if(doSurfaceCheck) 
+      {
+        checkForOverlaps( pv, _config, verbosityLevel>0);
+      }
+    } //iSupportStructure
+
   } //construct CRV
 
 } //namespace mu2e
