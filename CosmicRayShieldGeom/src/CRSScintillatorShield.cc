@@ -20,10 +20,17 @@ namespace mu2e {
 
   CRSScintillatorShield::CRSScintillatorShield(CRSScintillatorShieldId const & id,
                                                std::string const & name,
-                                               const std::shared_ptr<CRSScintillatorBarDetail> barDetails) :
+                                               const std::shared_ptr<CRSScintillatorBarDetail> barDetails,
+                                               const std::string &absorberMaterialName, const std::string &FEBMaterialName,
+                                               CRSScintillatorShieldId precedingSector, int sectorType, int countersPerModule) :
     _id(id),
     _name(name),
-    _barDetails(barDetails)
+    _barDetails(barDetails),
+    _absorberMaterialName(absorberMaterialName),
+    _FEBMaterialName(FEBMaterialName),
+    _precedingSector(precedingSector),
+    _sectorType(sectorType),
+    _countersPerModule(countersPerModule)
   {
   }
 

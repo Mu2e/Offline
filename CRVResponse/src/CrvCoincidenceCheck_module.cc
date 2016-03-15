@@ -87,7 +87,6 @@ namespace mu2e
 
     void AddCoincidence(std::unique_ptr<CrvCoincidenceCheckResult> &crvCoincidenceCheckResult, int sectorType, const CrvHit &h1, const CrvHit &h2, const CrvHit &h3);
 
-    std::string                   _coincidencePropertiesFile;
     int                           _nSectors;
     std::vector<std::string>      _crvSectorNames;
 
@@ -115,8 +114,7 @@ namespace mu2e
     _timeWindowStart(pset.get<double>("timeWindowStart")),
     _timeWindowEnd(pset.get<double>("timeWindowEnd")),
     _leadingVetoTime(pset.get<double>("leadingVetoTime")),
-    _trailingVetoTime(pset.get<double>("trailingVetoTime")),
-    _coincidencePropertiesFile(pset.get<std::string>("coincidencePropertiesFile"))
+    _trailingVetoTime(pset.get<double>("trailingVetoTime"))
   {
     produces<CrvCoincidenceCheckResult>();
     _totalTime=0;
@@ -139,37 +137,31 @@ namespace mu2e
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
 
-    SimpleConfig config(_coincidencePropertiesFile, true, false, false);
-    _nSectors = config.getInt("crs.nSectors");
-    config.getVectorString("crs.sectorNames",_crvSectorNames,_nSectors);
+    GeomHandle<CosmicRayShield> CRS;
+    const std::vector<CRSScintillatorShield> &sectors = CRS->getCRSScintillatorShields();
+    _nSectors = sectors.size();
     for(int i=0; i<_nSectors; i++) 
     {
       sectorCoincidenceProperties s;
       s.precedingCounters=0;
-      int precedingSector=config.getInt("crs.precedingSectorFor"+_crvSectorNames[i]);
+      int precedingSector=sectors[i].getPrecedingSector();
       while(precedingSector!=-1)
       {
-        int nModules=config.getInt("crs.nModules"+_crvSectorNames[precedingSector]);
-        int nCountersPerModule=config.getInt("crs.nCountersPerModule"+_crvSectorNames[precedingSector]);
+        int nModules=sectors[precedingSector].nModules();
+        int nCountersPerModule=sectors[precedingSector].getCountersPerModule();
         s.precedingCounters+=nModules*nCountersPerModule;
-        precedingSector=config.getInt("crs.precedingSectorFor"+_crvSectorNames[precedingSector]);
+        precedingSector=sectors[precedingSector].getPrecedingSector();
       }
 
-      s.nCountersPerModule=config.getInt("crs.nCountersPerModule"+_crvSectorNames[i]);
+      s.nCountersPerModule=sectors[i].getCountersPerModule();
 
-      s.sectorType=config.getInt("crs.sectorType"+_crvSectorNames[i]);
-      if(s.sectorType==0) throw std::logic_error("CrvCoincidenceFinder: Sector type cannot be 0.");
+      s.sectorType=sectors[i].getSectorType();
 
-      s.sipmsAtSide0=config.getBool("crs.sipmsAtSide0"+_crvSectorNames[i]);
-      s.sipmsAtSide1=config.getBool("crs.sipmsAtSide1"+_crvSectorNames[i]);
+      s.sipmsAtSide0=sectors[i].getCRSScintillatorBarDetail().hasCMB(0);
+      s.sipmsAtSide1=sectors[i].getCRSScintillatorBarDetail().hasCMB(1);
 
-      CLHEP::Hep3Vector gapDirection   = config.getHep3Vector("crs.gapDirection"+_crvSectorNames[i]);
-      CLHEP::Hep3Vector layerDirection = config.getHep3Vector("crs.layerDirection"+_crvSectorNames[i]);
-      for(int D=0; D<3; D++)
-      {
-        if(gapDirection[D]!=0) s.widthDirection=D;
-        if(layerDirection[D]!=0) s.thicknessDirection=D;
-      }
+      s.widthDirection=sectors[i].getCRSScintillatorBarDetail().getWidthDirection();
+      s.thicknessDirection=sectors[i].getCRSScintillatorBarDetail().getThicknessDirection();
 
       _sectorMap[i]=s;
     }

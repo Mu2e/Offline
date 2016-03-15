@@ -65,6 +65,12 @@ namespace mu2e
     _offsetDirection.resize(_nSectors);
     _gapDirection.resize(_nSectors);
     _layerDirection.resize(_nSectors);
+    _CMBside0.resize(_nSectors);
+    _CMBside1.resize(_nSectors);
+    _FEBside0.resize(_nSectors);
+    _FEBside1.resize(_nSectors);
+    _precedingSector.resize(_nSectors);
+    _sectorType.resize(_nSectors);
 
     for(int i=0; i<_nSectors; i++)
     {
@@ -75,6 +81,14 @@ namespace mu2e
       _offsetDirection[i]    = config.getHep3Vector("crs.offsetDirection"+_crvSectorNames[i]);
       _gapDirection[i]       = config.getHep3Vector("crs.gapDirection"+_crvSectorNames[i]);
       _layerDirection[i]     = config.getHep3Vector("crs.layerDirection"+_crvSectorNames[i]);
+      _CMBside0[i]           = config.getBool("crs.sipmsAtSide0"+_crvSectorNames[i]);
+      _CMBside1[i]           = config.getBool("crs.sipmsAtSide1"+_crvSectorNames[i]);
+      _FEBside0[i]           = config.getInt("crs.FEBsAtSide0"+_crvSectorNames[i]);
+      _FEBside1[i]           = config.getInt("crs.FEBsAtSide1"+_crvSectorNames[i]);
+
+      //needed by the coincidence finder
+      _precedingSector[i] = config.getInt("crs.precedingSectorFor"+_crvSectorNames[i]);
+      _sectorType[i]      = config.getInt("crs.sectorType"+_crvSectorNames[i]);
     }
 
     _counterThickness       = config.getDouble("crs.scintillatorBarThickness");
@@ -92,6 +106,12 @@ namespace mu2e
     _CMBOffset        = config.getDouble("crs.CMBOffset");
     _CMBHalfThickness = config.getDouble("crs.CMBHalfThickness");
     _CMBMaterialName  = config.getString("crs.CMBMaterialName");
+
+    _FEBMaterialName     = config.getString("crs.FEBMaterialName");
+    _FEBDistanceToModule = config.getDouble("crs.FEBDistanceToModule");
+    _FEBDistanceToEdge   = config.getDouble("crs.FEBDistanceToEdge");
+    _FEBGapBetween2FEBs  = config.getDouble("crs.FEBGapBetween2FEBs");
+     config.getVectorDouble("crs.FEBHalfLengths",_FEBHalfLengths,3);
   }
 
 //VTNC = Vector to next counter
@@ -107,12 +127,15 @@ namespace mu2e
                                               int nModules, int nCounters)
   {
     std::shared_ptr<CRSScintillatorBarDetail> barDetails(new CRSScintillatorBarDetail(_scintillatorBarMaterialName, counterHalfLengths, localToWorld,
-                                                                                      _CMBMaterialName, _CMBOffset, _CMBHalfThickness));
+                                                                                      _CMBMaterialName, _CMBOffset, _CMBHalfThickness,
+                                                                                      _CMBside0[isector], _CMBside1[isector]));
 
-    _crs->_scintillatorShields.push_back(CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails));
+    _crs->_scintillatorShields.push_back(CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails,
+                                         _absorberMaterialName, _FEBMaterialName,
+                                         CRSScintillatorShieldId(_precedingSector[isector]), _sectorType[isector], nCounters));
     CRSScintillatorShield &shield = _crs->_scintillatorShields.back();
-    shield._absorberMaterialName = _absorberMaterialName;
     int thicknessDirection = localToWorld[0];
+    int widthDirection = localToWorld[1];
     int lengthDirection = localToWorld[2];
 
     for(int imodule=0; imodule<nModules; imodule++)
@@ -160,12 +183,11 @@ namespace mu2e
         //layerStart and layerEnd are only the position at the center of the first and last bar
         for(int i=0; i<3; i++) layer._halfLengths[i] = abs(0.5*(layerStart[i] - layerEnd[i]))+counterHalfLengths[i];
         for(int i=0; i<3; i++) layer._localToWorld[i] = localToWorld[i];
-        layer._halfLengths[lengthDirection] += _CMBOffset + 2.0*_CMBHalfThickness;  //add the additional length required for the counter motherboards
 
         //Absorber layer position and dimension
         if(ilayer<_nLayers-1)
         {
-          module._absorberLayers.push_back(CRSAbsorberLayer(CRSScintillatorLayerId(isector,imodule,ilayer)));
+          module._absorberLayers.push_back(CRSAbsorberLayer());
           CRSAbsorberLayer &absorberLayer = module._absorberLayers.back();
 
           absorberLayer._position = layer._position;
@@ -173,6 +195,77 @@ namespace mu2e
           double shift=0.5*(layerOffsets[ilayer+1][thicknessDirection]-layerOffsets[ilayer][thicknessDirection]);
           absorberLayer._position[thicknessDirection]+=shift;
           absorberLayer._halfLengths[thicknessDirection]=abs(shift)-layer._halfLengths[thicknessDirection];
+        }
+
+        //FEB positions and dimensions
+        if(ilayer==_nLayers-1)
+        {
+          double FEBcoordinate0 = layer._position[thicknessDirection] + _layerDirection[isector][thicknessDirection]*(0.5*_counterThickness+_FEBDistanceToModule);
+          double FEBcoordinate1_1FEB = layer._position[widthDirection] - _offsetDirection[isector][widthDirection]*1.5*_offset; //centered if only 1 FEB
+          double FEBcoordinate1_2FEBs_0 = FEBcoordinate1_1FEB - 0.5*_FEBGapBetween2FEBs;
+          double FEBcoordinate1_2FEBs_1 = FEBcoordinate1_1FEB + 0.5*_FEBGapBetween2FEBs;
+          double FEBcoordinate2_side0 = layer._position[lengthDirection] - layer._halfLengths[lengthDirection] + _FEBDistanceToEdge; 
+          double FEBcoordinate2_side1 = layer._position[lengthDirection] + layer._halfLengths[lengthDirection] - _FEBDistanceToEdge; 
+
+          CLHEP::Hep3Vector FEBposition_side0;
+          CLHEP::Hep3Vector FEBposition_side1;
+          FEBposition_side0[thicknessDirection]=FEBcoordinate0;
+          FEBposition_side1[thicknessDirection]=FEBcoordinate0;
+          FEBposition_side0[lengthDirection]=FEBcoordinate2_side0;
+          FEBposition_side1[lengthDirection]=FEBcoordinate2_side1;
+
+          std::vector<double> FEBHalfLengthsLocal;
+          FEBHalfLengthsLocal.resize(3);
+          FEBHalfLengthsLocal[thicknessDirection]=_FEBHalfLengths[0];
+          FEBHalfLengthsLocal[widthDirection]=_FEBHalfLengths[1];
+          FEBHalfLengthsLocal[lengthDirection]=_FEBHalfLengths[2];
+
+          if(_FEBside0[isector]==1)
+          {
+            CLHEP::Hep3Vector FEBposition=FEBposition_side0;
+            FEBposition[widthDirection]=FEBcoordinate1_1FEB;
+            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+          }
+          if(_FEBside0[isector]==2)
+          {
+            CLHEP::Hep3Vector FEBposition=FEBposition_side0;
+            FEBposition[widthDirection]=FEBcoordinate1_2FEBs_0;
+            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+            FEBposition[widthDirection]=FEBcoordinate1_2FEBs_1;
+            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+          }
+          if(_FEBside1[isector]==1)
+          {
+            CLHEP::Hep3Vector FEBposition=FEBposition_side1;
+            FEBposition[widthDirection]=FEBcoordinate1_1FEB;
+            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+          }
+          if(_FEBside1[isector]==2)
+          {
+            CLHEP::Hep3Vector FEBposition=FEBposition_side1;
+            FEBposition[widthDirection]=FEBcoordinate1_2FEBs_0;
+            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+            FEBposition[widthDirection]=FEBcoordinate1_2FEBs_1;
+            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+          }
+        }
+        
+        //add the additional length required for the counter motherboards
+        //this needs to be done after the absorber layers were constructed, 
+        //since the absorber layers take the dimension of the "original" layer dimensions (i.e. without CMBs)
+        if(_CMBside0[isector] && _CMBside1[isector]) layer._halfLengths[lengthDirection] += _CMBOffset + _CMBHalfThickness;  //CMB on both sides
+        else 
+        {
+          if(_CMBside0[isector])  //CMB at only one side
+          {
+            layer._halfLengths[lengthDirection] += 0.5 * (_CMBOffset + _CMBHalfThickness);
+            layer._position[lengthDirection] -= 0.5 * (_CMBOffset + _CMBHalfThickness);
+          }
+          if(_CMBside1[isector])  //CMB at only one side
+          {
+            layer._halfLengths[lengthDirection] += 0.5 * (_CMBOffset + _CMBHalfThickness);
+            layer._position[lengthDirection] += 0.5 * (_CMBOffset + _CMBHalfThickness);
+          }
         }
       } //layers
     } //modules
@@ -223,7 +316,7 @@ namespace mu2e
       CLHEP::Hep3Vector VTNCSmallGap=(_counterWidth+_gapSmall)*_gapDirection[isector];
       CLHEP::Hep3Vector VTNCLargeGap=(_counterWidth+_gapLarge)*_gapDirection[isector];
       CLHEP::Hep3Vector VTNCBetweenModules=(_counterWidth+_gapBetweenModules)*_gapDirection[isector];
-      makeSingleSector(counterHalfLengths, isector, "CRV-"+_crvSectorNames[isector],
+      makeSingleSector(counterHalfLengths, isector, "CRV_"+_crvSectorNames[isector],
               _firstCounter[isector], layerOffsets, VTNCSmallGap, VTNCLargeGap, VTNCBetweenModules,
               localToWorld, _nModules[isector], _nCountersPerModule[isector]);
     }

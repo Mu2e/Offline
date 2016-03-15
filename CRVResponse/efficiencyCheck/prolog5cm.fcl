@@ -2,6 +2,7 @@
 
 BEGIN_PROLOG
 
+CrvCoincidence.verboseLevel                  : 0
 CrvCoincidence.timeWindowStart               : 800
 CrvCoincidence.timeWindowEnd                 : 900
 

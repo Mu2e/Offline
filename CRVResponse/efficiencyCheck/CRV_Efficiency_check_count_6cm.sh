@@ -21,7 +21,7 @@ sides=2
               for file in $files;
               do
 
-                searchString="SUMMARY CrvCoincidencePE$PEthreshold""T$timeWindow""C$sides""s"
+                searchString="SUMMARY CrvCoincidencePE$PEthreshold""T$timeWindow"
                 searchCommand="grep '$searchString' $file"
 #                searchCommand="tail -n 70 $file | grep '$searchString'"
                 searchResult=`eval $searchCommand`

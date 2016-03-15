@@ -188,55 +188,60 @@ namespace mu2e
               cout << __func__ << " shieldAirOffset      : " <<  layerAirOffset << endl;
             }
 
-            G4VPhysicalVolume* pv = new G4PVPlacement( NULL,
-                                                       barLayerOffset,
-                                                       scintillatorBarLogical,
-                                                       bar.name("CRSScintillatorBar_"),
-                                                       layerInfo.logical,
-                                                       false,
-                                                       bar.index().asInt(),
-                                                       false);
+            G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+                                                      barLayerOffset,
+                                                      scintillatorBarLogical,
+                                                      bar.name("CRSScintillatorBar_"),
+                                                      layerInfo.logical,
+                                                      false,
+                                                      bar.index().asInt(),
+                                                      false);
+            if(doSurfaceCheck) checkForOverlaps(pv, _config, verbosityLevel>0);
 
-            G4VPhysicalVolume* pvCMB0 = new G4PVPlacement( NULL,
-                                                           CMB0LayerOffset,
-                                                           CMBLogical,
-                                                           bar.name("CMB0_CRSScintillatorBar_"),
-                                                           layerInfo.logical,
-                                                           false,
-                                                           2*bar.index().asInt(),
-                                                           false);
-
-            G4VPhysicalVolume* pvCMB1 = new G4PVPlacement( NULL,
-                                                           CMB1LayerOffset,
-                                                           CMBLogical,
-                                                           bar.name("CMB1_CRSScintillatorBar_"),
-                                                           layerInfo.logical,
-                                                           false,
-                                                           2*bar.index().asInt()+1,
-                                                           false);
-
-            if(doSurfaceCheck) 
+//FIXME: this is temporary until the GDML issue is fixed
+if(!_config.getBool("crs.hideCRVCMBs"))
+{
+            if(bar.hasCMB(0))
             {
-              checkForOverlaps( pv, _config, verbosityLevel>0);
-              checkForOverlaps( pvCMB0, _config, verbosityLevel>0);
-              checkForOverlaps( pvCMB1, _config, verbosityLevel>0);
+              G4VPhysicalVolume* pvCMB0 = new G4PVPlacement(NULL,
+                                                            CMB0LayerOffset,
+                                                            CMBLogical,
+                                                            bar.name("CMB0_CRSScintillatorBar_"),
+                                                            layerInfo.logical,
+                                                            false,
+                                                            2*bar.index().asInt(),
+                                                            false);
+              if(doSurfaceCheck) checkForOverlaps(pvCMB0, _config, verbosityLevel>0);
             }
+
+            if(bar.hasCMB(1))
+            {
+              G4VPhysicalVolume* pvCMB1 = new G4PVPlacement(NULL,
+                                                            CMB1LayerOffset,
+                                                            CMBLogical,
+                                                            bar.name("CMB1_CRSScintillatorBar_"),
+                                                            layerInfo.logical,
+                                                            false,
+                                                            2*bar.index().asInt()+1,
+                                                            false);
+              if(doSurfaceCheck) checkForOverlaps(pvCMB1, _config, verbosityLevel>0);
+            }
+}
           } //ibar
         } //ilayer
 
-        //absorber sheet
+        //absorber sheets
         const std::vector<CRSAbsorberLayer> &absorberLayers = imodule->getAbsorberLayers();
-        std::vector<CRSAbsorberLayer>::const_iterator iabsorberlayer;
-        for(iabsorberlayer=absorberLayers.begin(); iabsorberlayer!=absorberLayers.end(); ++iabsorberlayer) 
+        const std::string &absorberNameBase = imodule->name("CRSAbsorber_");
+        for(unsigned int absorberLayerNumber=0; absorberLayerNumber<absorberLayers.size(); absorberLayerNumber++) 
         {
-          const std::vector<double> &absorberLayerHalflengths=iabsorberlayer->getHalfLengths();
-          const CLHEP::Hep3Vector &absorberLayerCenterInMu2e=iabsorberlayer->getPosition();
+          const std::string absorberName = absorberNameBase+"_"+std::to_string(absorberLayerNumber);
+          const std::vector<double> &absorberLayerHalflengths=absorberLayers[absorberLayerNumber].getHalfLengths();
+          const CLHEP::Hep3Vector &absorberLayerCenterInMu2e=absorberLayers[absorberLayerNumber].getPosition();
           CLHEP::Hep3Vector absorberLayerAirOffset = absorberLayerCenterInMu2e - parentCenterInMu2e;
 
           const std::string &absorberMaterialName = shield.getAbsorberMaterialName();
           G4Material* absorberMaterial = findMaterialOrThrow(absorberMaterialName);
-
-          std::string absorberName = iabsorberlayer->name("CRSAbsorber_");
 
           G4VSolid* absorberSolid = new G4Box(absorberName,
                                               absorberLayerHalflengths[0],
@@ -272,7 +277,56 @@ namespace mu2e
           {
             checkForOverlaps( pv, _config, verbosityLevel>0);
           }
-        } //iabsorber
+        } //absorberLayerNumber
+
+        //FEBs
+        const std::vector<CRSFEB> &FEBs = imodule->getFEBs();
+        const std::string &FEBNameBase = imodule->name("CRSFEB_");
+        for(unsigned int FEBNumber=0; FEBNumber<FEBs.size(); FEBNumber++) 
+        {
+          const std::string FEBName = FEBNameBase+"_"+std::to_string(FEBNumber);
+          const std::vector<double> &FEBHalflengths=FEBs[FEBNumber].getHalfLengths();
+          const CLHEP::Hep3Vector &FEBCenterInMu2e=FEBs[FEBNumber].getPosition();
+          CLHEP::Hep3Vector FEBAirOffset = FEBCenterInMu2e - parentCenterInMu2e;
+
+          const std::string &FEBMaterialName = shield.getFEBMaterialName();
+          G4Material* FEBMaterial = findMaterialOrThrow(FEBMaterialName);
+
+          G4VSolid* FEBSolid = new G4Box(FEBName,
+                                         FEBHalflengths[0],
+                                         FEBHalflengths[1],
+                                         FEBHalflengths[2]);
+
+          G4LogicalVolume* FEBLogical = new G4LogicalVolume(FEBSolid,
+                                                            FEBMaterial,
+                                                            FEBName);
+
+          if(!scintillatorShieldVisible) 
+          {
+            FEBLogical->SetVisAttributes(G4VisAttributes::Invisible);
+          }
+          else 
+          {
+            G4Colour  darkorange  (.45, .25, .0);
+            G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, darkorange));
+            visAtt->SetForceSolid(scintillatorShieldDrawSolid);
+            visAtt->SetForceAuxEdgeVisible(forceAuxEdgeVisible);
+            FEBLogical->SetVisAttributes(visAtt);
+          }
+
+          G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
+                                                    FEBAirOffset,
+                                                    FEBLogical,
+                                                    FEBName,
+                                                    parent.logical,
+                                                    false,
+                                                    0,
+                                                    false);
+          if(doSurfaceCheck) 
+          {
+            checkForOverlaps( pv, _config, verbosityLevel>0);
+          }
+        } //FEBNumber
       } //imodule
     } //ishield
   } //construct CRV

@@ -6,4 +6,47 @@ TrackSummaryMaker: {
     trackInput : "TrkPatRec:DownstreameMinus"
 }
 
+VirtualDetectorDefaults: {
+
+    module_type            : ReadVirtualDetector
+    generatorModuleLabel   : generate
+    g4ModuleLabel          : g4run // obsolete, left for backward compatibility
+    debugOutput      : 0
+    maxPrint         : 0
+    // Save only those particles in the main ntuple (ntpart), which 
+    // cross the required VD. If not specified, save all particles.
+    requireVD : 0
+    // Save only those particles in the ntuple, which survive until timeCut (ns)
+    timeCut : 0.0
+    // Save only particles with p>minMomentum (MeV/c) in the main ntuple
+    minMomentum : -1.0
+    minimumEnergy          : 0.000
+    saveStopped : false
+    saveAllPDG : false
+    // Save only listed types of particles in the main ntuple
+    savePDG    : [11,-11]  // electrons and positrons
+    // Drop listed types of particles in the time vd ntuple
+    tvdDropPDG : []
+    // List of virtual detectors to save in ntuple
+    saveVD     : []
+    addProperTime : false
+    navigateToParent : true
+
+    // Source of data
+    simParticleColl : "g4run"
+    vdStepPoints : "g4run:virtualdetector"
+    tvdStepPoints : "g4run:timeVD"
+    physicsVolumeColl : "g4run"
+
+    writeNTVD : true 
+    writeNTTVD : true
+    writeNTPART : true
+    writeNTPART1 : true
+    writeNTVDEXT : false 
+
+}
+
+# Many configurations use "readvd"
+readvd: @local::VirtualDetectorDefaults
+
 END_PROLOG

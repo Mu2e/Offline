@@ -9,6 +9,8 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 
+#include "Analyses/fcl/prolog.fcl"
+
 # Give this job a name.
 process_name : readStage2
 
@@ -37,30 +39,7 @@ physics : {
    analyzers: {
 
       # Look at the hits from virtualdetectors
-      readvd: {
-            module_type      : ReadVirtualDetector
-
-	    // List of virtual detectors to save in ntuple
-      	    saveVD           : [1,2,5]
-	    // Save only those particles in the main ntuple (ntpart), which 
-            // cross the required VD. If not specified, save all particles.
-	    requireVD        : 5
-            // Save only listed types of particles in the main ntuple
-      	    savePDG          : [ 11, -11 ]
-	    // Save only those particles in the ntuple, which survive until timeCut (ns)
-	    timeCut          : 0
-	    // Save only particles with p>minMomentum (MeV/c) in the main ntuple
-	    minMomentum	     : 90
-            // Drop listed types of particles in the time vd ntuple
-      	    tvdDropPDG       : [ 2112 ]
-
-      	    maxPrint         : 10
-
-	    // Source of data. Using standard Art tags.
-	    simParticleColl  : "muonBeamFilter"
-	    vdStepPoints     : "muonBeamFilter:virtualdetector"
-
-      }
+      readvd : @local::readvd
 
       genCountLogger: {
             module_type: GenEventCountReader
@@ -80,3 +59,23 @@ outputs: {
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20
+
+
+// List of virtual detectors to save in ntuple
+physics.analyzers.readvd.saveVD           : [1,2,5]
+// Save only those particles in the main ntuple (ntpart), which 
+// cross the required VD. If not specified, save all particles.
+physics.analyzers.readvd.requireVD        : 5
+// Save only listed types of particles in the main ntuple
+physics.analyzers.readvd.savePDG          : [ 11, -11 ]
+// Save only those particles in the ntuple, which survive until timeCut (ns)
+physics.analyzers.readvd.timeCut          : 0
+// Save only particles with p>minMomentum (MeV/c) in the main ntuple
+physics.analyzers.readvd.minMomentum	     : 90
+// Drop listed types of particles in the time vd ntuple
+physics.analyzers.readvd.tvdDropPDG       : [ 2112 ]
+physics.analyzers.readvd.maxPrint         : 10
+// Source of data. Using standard Art tags.
+physics.analyzers.readvd.simParticleColl  : "muonBeamFilter"
+physics.analyzers.readvd.vdStepPoints     : "muonBeamFilter:virtualdetector"
+

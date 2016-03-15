@@ -1,8 +1,0 @@
-#include "CRVResponse/efficiencyCheck/geom_5cm.txt"
-
-int crs.precedingSectorForTest  = -1;   //no preceding sector
-
-int crs.sectorTypeTest  = 1;
-
-bool crs.sipmsAtSide0Test = true;
-bool crs.sipmsAtSide1Test = false;

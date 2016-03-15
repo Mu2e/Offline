@@ -114,7 +114,7 @@ namespace mu2e
 
     public:
 
-    CLHEP::Hep3Vector getCMBPosition(int side) const  //"side" can be 0 or 1 (i.e. the CMBs on both sides of the counter)
+    CLHEP::Hep3Vector getCMBPosition(int side) const  //"side" can be 0 or 1 (i.e. the CMBs on the negative and positive side of the counter)
     {
       return _detail->getCMBPosition(side, _position);
     }
@@ -123,6 +123,7 @@ namespace mu2e
       return _detail->getCMBHalfLengths();
     }
     std::string const & getCMBMaterialName() const {return _detail->getCMBMaterialName();}
+    bool hasCMB(int side) const {return _detail->hasCMB(side);}
 
   };
 
