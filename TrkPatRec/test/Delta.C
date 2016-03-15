@@ -268,8 +268,8 @@ void Delta(TTree* ddiag, const char* page="rho",bool train=false) {
     TH1F* nstclmvabkg = new TH1F("nstclmvabkg","Non-Stereo Cluster MVA output;MVA Output",200,-0.2,1.2);
     nstclmvacon->SetLineColor(kRed);
     nstclmvabkg->SetLineColor(kBlue);
-    TCut stcl("ngdstereo/ngdhits>0.5");
-    TCut nstcl("ngdstereo/ngdhits<0.5");
+    TCut stcl("ngdstereo/ngdhits>0.49");
+    TCut nstcl("ngdstereo/ngdhits<0.49");
     ddiag->Project("stclmvacon","pmvaout",(con+cluster+stcl)*"nchits");
     ddiag->Project("stclmvabkg","pmvaout",(bkg+cluster+stcl)*"nchits");
     ddiag->Project("nstclmvacon","pmvaout",(con+cluster+nstcl)*"nchits");
