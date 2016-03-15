@@ -100,9 +100,10 @@ physics : {
 	    vdStepPoints           : virtualdetector
 	    trackModuleLabel       : ""
 	    TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	    blindTime              : 500. # ns  
 	    TimeFoldingBuffer      : 100. # ns
-	    psdThreshold           : 125  #a.u.
+	    blindTime              : 500. # ns  
+	    fillWaveforms          : 0
+	    psdThreshold           : 90  #a.u.
 	}
 	
     } 
