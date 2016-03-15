@@ -654,12 +654,14 @@ namespace mu2e
 	StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
       // use TDC channel 0 to define the MC match
 	StrawDigi::TDCChannel itdc = StrawDigi::zero;
-	if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+	if(!mcdigi.hasTDC(StrawDigi::zero)) itdc = StrawDigi::one;
 	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
-	art::Ptr<SimParticle> const& spp = spmcp->simParticle();
 	shinfo._relation=KalDiag::none;
-	if(spp.isNonnull()){
-	  shinfo._relation = KalDiag::relationship(spp,pptr);
+	if(spmcp.isNonnull()){
+	  art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+	  if(spp.isNonnull()){
+	    shinfo._relation = KalDiag::relationship(spp,pptr);
+	  }
 	}
 	shinfo._hflag = dhinfo._hflag;
 	shinfo._hgd = dhinfo._hgd;
