@@ -5,8 +5,9 @@
 BEGIN_PROLOG
 HitMakerTimeFoldingBuffer    : 100. # ns
 HitMakerBlindTime            : 500. # ns
+#HitMakerBlindTime            : 0. # ns
 HitMakerDigiSampling         : 5    # ns
-HitMakerAcquisitionEndTime    : 0 # ns
+HitMakerAcquisitionEndTime   : 0 # ns
 #HitMakerTimeOffsets          : { inputs : [  ] } 
 HitMakerTimeOffsets          : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 END_PROLOG
@@ -265,10 +266,12 @@ CaloHitsFromCaloDigis :{
 	fitThresholdMax   : 0.85  #0.95  #percentage of the pulse amplitude
     }
 
-    RawProcessor         : {
+    
+    RawProcessor      : {
 	debugLevel        : 0
 	acquisitionEndTime: @local::HitMakerAcquisitionEndTime
 	digiSampling      : @local::HitMakerDigiSampling
+	ADCPeak2MeV       : 0.0488                             # 2000 mV/ pow(2,12) ADC-counts/ 10 ADC-counts
     }
 
 }

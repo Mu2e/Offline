@@ -134,8 +134,8 @@ namespace mu2e {
 										     fhicl::ParameterSet()));
 	break;
       case RawProcessor:
-	_waveformProcessor = new RawWaveformProcess(pset.get<fhicl::ParameterSet>("RawProcessor",
-										  fhicl::ParameterSet()));
+	_waveformProcessor = new RawWaveformProcess   (pset.get<fhicl::ParameterSet>("RawProcessor",
+										     fhicl::ParameterSet()));
 	break;
       }
 
