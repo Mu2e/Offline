@@ -1,10 +1,6 @@
 //
 // Construct the Mu2e G4 world and serve information about that world.
 //
-// $Id: Mu2eWorld.cc,v 1.173 2014/09/19 19:14:58 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:14:58 $
-//
 // Original author Rob Kutschke
 //
 //  Heirarchy is:
@@ -126,6 +122,8 @@
 #include "Mu2eG4/inc/Mu2eGlobalField.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
 
+#include "boost/regex.hpp"
+
 using namespace std;
 
 namespace mu2e {
@@ -230,7 +228,7 @@ namespace mu2e {
     if ( _config.getBool("hasSTM",false) ) {
       constructSTM(_config);
     }
-    
+
     if (  const_cast<GeometryService&>(_geom).hasElement<CosmicRayShield>() ) {
 
       GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
@@ -272,7 +270,7 @@ namespace mu2e {
 
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
-    
+
     if ( _config.getBool("hasTTracker",false) ) {
       int ver = _config.getInt("TTrackerVersion",3);
       if ( ver == 3 ){
@@ -366,8 +364,8 @@ namespace mu2e {
       _rhs  = new G4Mag_SpinEqRhs(_field);
       _stepper = new G4ClassicalRK4(_rhs, 12);
       if ( _verbosityLevel > 0) {
-	cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4ClassicalRK4WSpin " 
-	     << "and used G4ClassicalRK4 with Spin" << endl;
+        cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4ClassicalRK4WSpin "
+             << "and used G4ClassicalRK4 with Spin" << endl;
       }
     } else if ( g4stepperName_  == "G4ImplicitEuler" ) {
       _stepper = new G4ImplicitEuler(_rhs);
@@ -432,6 +430,21 @@ namespace mu2e {
 
   } // end Mu2eWorld::constructBFieldAndManagers
 
+
+  namespace {
+
+    // A helper function for Mu2eWorld::constructStepLimiters().
+    // Find all logical volumes matching a wildcarded name and add steplimiters to them.
+    void stepLimiterHelper ( std::string const& regexp, G4UserLimits* stepLimit ){
+      boost::regex expression(regexp.c_str());
+      std::vector<mu2e::VolumeInfo const*> vols =
+        art::ServiceHandle<mu2e::G4Helper>()->locateVolInfo(expression);
+      for ( auto v : vols ){
+        v->logical->SetUserLimits( stepLimit );
+      }
+    }
+  }
+
   // Adding a step limiter is a two step process.
   // 1) In the physics list constructor add a G4StepLimiter to the list of discrete
   //    physics processes attached to each particle species of interest.
@@ -445,6 +458,7 @@ namespace mu2e {
     G4LogicalVolume* ds2Vacuum      = _helper->locateVolInfo("DS2Vacuum").logical;
     G4LogicalVolume* ds3Vacuum      = _helper->locateVolInfo("DS3Vacuum").logical;
     G4LogicalVolume* tracker        = _helper->locateVolInfo("TrackerMother").logical;
+    G4LogicalVolume* caloMother     = _helper->locateVolInfo("CalorimeterMother").logical;
     G4LogicalVolume* stoppingtarget = _helper->locateVolInfo("StoppingTargetMother").logical;
 
     vector<G4LogicalVolume*> psVacua;
@@ -459,37 +473,38 @@ namespace mu2e {
 
     vector<G4LogicalVolume*> mbsLVS;
     mbsLVS.push_back( _helper->locateVolInfo("MBSMother").logical );
-    mbsLVS.push_back( _helper->locateVolInfo("BSBS").logical );
-    mbsLVS.push_back( _helper->locateVolInfo("BSTC").logical );
-    mbsLVS.push_back( _helper->locateVolInfo("BSTS").logical );
-    mbsLVS.push_back( _helper->locateVolInfo("CLV2").logical );
-    mbsLVS.push_back( _helper->locateVolInfo("CLV2Absorber").logical );
 
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
-    //_stepLimits.push_back( G4UserLimits(bfieldMaxStep_) );
-    //G4UserLimits* stepLimit = &(_stepLimits.back());
-
+    // At some it might be interesting to make several step limiters, each with different
+    // limits.  For now that is not necessary.
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
+
+    // Add the step limiters to the interesting volumes.
+    // Keep them separated so that we can add different step limits should we decide to.
     ds2Vacuum->SetUserLimits( stepLimit );
     ds3Vacuum->SetUserLimits( stepLimit );
 
     tracker->SetUserLimits( stepLimit );
+    caloMother->SetUserLimits( stepLimit );
     stoppingtarget->SetUserLimits( stepLimit );
 
-    for ( vector<G4LogicalVolume*>::iterator i=psVacua.begin();
-          i!=psVacua.end(); ++i ){
-      (**i).SetUserLimits( stepLimit);
+    for ( auto lv : psVacua ){
+      lv->SetUserLimits( stepLimit);
     }
 
-    for ( vector<G4LogicalVolume*>::iterator i=tsVacua.begin();
-          i!=tsVacua.end(); ++i ){
-      (**i).SetUserLimits( stepLimit);
+    for ( auto lv : tsVacua ){
+      lv->SetUserLimits( stepLimit);
     }
 
     for ( auto lv : mbsLVS ){
       lv->SetUserLimits( stepLimit );
     }
+
+    // Now do all of the tracker related envelope volumes, using regex's with wildcards.
+    stepLimiterHelper("^TTrackerPlaneEnvelope_.*$",                 stepLimit );
+    stepLimiterHelper("^TTrackerSupportServiceEnvelope_.*$",        stepLimit );
+    stepLimiterHelper("^TTrackerSupportServiceSectionEnvelope_.*$", stepLimit );
 
     // An option to limit the step size in these non-vaccum volumes to
     // visually validate geometry of the filter channel
@@ -515,12 +530,12 @@ namespace mu2e {
   // Construct calorimeter if needed.
   VolumeInfo Mu2eWorld::constructCal(){
 
-	// The calorimeter is built inside this volume.
-	VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
+        // The calorimeter is built inside this volume.
+        VolumeInfo const & detSolDownstreamVacInfo = _helper->locateVolInfo("DS3Vacuum");
 
-	// Construct one of the calorimeters.
-	VolumeInfo calorimeterInfo;
-	if ( _config.getBool("hasVaneCalorimeter",false) ) {
+        // Construct one of the calorimeters.
+        VolumeInfo calorimeterInfo;
+        if ( _config.getBool("hasVaneCalorimeter",false) ) {
        calorimeterInfo = constructVaneCalorimeter( detSolDownstreamVacInfo,_config );
     }
     if ( _config.getBool("hasDiskCalorimeter",false) ) {
@@ -552,13 +567,13 @@ namespace mu2e {
         new StrawSD(                SensitiveDetectorName::TrackerGas(),  _config);
       SDman->AddNewDetector(strawSD);
     }
-    
+
     if(sdHelper_->enabled(StepInstanceName::ttrackerDS)) {
       TTrackerPlaneSupportSD* ttdsSD =
         new TTrackerPlaneSupportSD(SensitiveDetectorName::TTrackerPlaneSupport(), _config);
       SDman->AddNewDetector(ttdsSD);
     }
-    
+
     if(sdHelper_->enabled(StepInstanceName::virtualdetector)) {
       Mu2eSensitiveDetector* vdSD =
         new Mu2eSensitiveDetector(    SensitiveDetectorName::VirtualDetector(), _config);
