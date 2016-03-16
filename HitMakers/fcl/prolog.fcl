@@ -203,7 +203,7 @@ CaloDigisFromStepPointMCs :  {
 #    TimeOffsets                 : { inputs : [  ] }
     TimeFoldingBuffer           : @local::HitMakerTimeFoldingBuffer
 
-    addNoise                    : 1
+    addNoise                    : 0
     noise                       : 2 #2.29    # mV equivalent to 150 keV of Noise               
     
     addLightPropagation         : 0
