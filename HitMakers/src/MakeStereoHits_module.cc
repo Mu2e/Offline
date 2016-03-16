@@ -393,10 +393,15 @@ namespace mu2e {
 	              if(chisq < _maxChisq){
 	                sth.setChisquared(chisq);
                         // compute MVA
-	                _vmva[0] = de;
+			/*	                _vmva[0] = de;
 			_vmva[1] = dt;
 	                _vmva[2] = chisq;
 	                _vmva[3] = sth.pos().perp();
+			*/
+			_vmva[0] = dt;
+	                _vmva[1] = chisq;
+	                _vmva[2] = sth.pos().perp();
+	                _vmva[3] = ndof;
 	                double mvaout = _mvatool.evalMVA(_vmva);
                         //double mvaout=0.;
 	                if(mvaout > _minMVA){
