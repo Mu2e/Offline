@@ -26,6 +26,7 @@ helper.make_plugins( [ mainlib,
                        'fhiclcpp',
                        'cetlib',
                        'boost_filesystem',
+                       'boost_regex',
                        'boost_system',
                        ] )
 
