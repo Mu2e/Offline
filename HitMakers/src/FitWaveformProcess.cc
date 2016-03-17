@@ -644,14 +644,14 @@ namespace mu2e {
       if (_debugHistIndex < 200){
 	//	if (nWords > 60){
 	if (nWords > 0){
-	  if ( _Chi2Time< 0 ){
+	  //	  if ( _Chi2Time< 0 ){
 	    for (int i=0; i<_wave->GetNbinsX(); ++i){
 	      content   = _wave->GetBinContent(i+1);
 	      _hist._debugWf[_debugHistIndex] ->SetBinContent(i+1, content);
 	      _hist._debugWf[_debugHistIndex] ->SetBinError  (i+1, _wave_point_error);
 	    }
 	    ++_debugHistIndex;
-	  }
+	    //	  }
 	}
 	
       }//end filling pulses

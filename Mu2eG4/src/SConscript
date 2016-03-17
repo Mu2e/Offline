@@ -222,6 +222,7 @@ mainlib = helper.make_mainlib ( [
         XERCESC_LIBS,
         'CLHEP',
         'Hist', 'Tree', 'Core',
+        'boost_regex',
         'boost_system',
     ],
                                 [  G4CPPFLAGS, G4GS_CPPFLAGS ],

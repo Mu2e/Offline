@@ -28,7 +28,8 @@ namespace mu2e {
     WaveformProcess(PSet),
     _debugLevel        (PSet.get<int>   ("debugLevel")),
     _acquisitionEndTime(PSet.get<int>   ("acquisitionEndTime")),
-    _digiSampling      (PSet.get<int>   ("digiSampling"))
+    _digiSampling      (PSet.get<int>   ("digiSampling")),
+    _ADCPeak2MeV       (PSet.get<double>("ADCPeak2MeV"))
   {
     _counter        = 0;
     //    _debugHistIndex = 0;
@@ -43,48 +44,112 @@ namespace mu2e {
   
 //------------------------------------------------------------------------------------------//
   void        RawWaveformProcess::processWaveform(double   ADCToMeV, 
-						  CaloDigi CaloHit , 
-						  RecoCaloDigiCollection &RecoCaloHits) {
+						     CaloDigi CaloHit , 
+						     RecoCaloDigiCollection &RecoCaloHits) {
     _ADCToMeV  = ADCToMeV;
     
     _amplitude = 0;
     _charge    = 0;
 
-    //reset the fitter
-    //    _linearFit->clear();
-      
     //lenght of the waveform
     int            wfSize   = CaloHit.waveform().size();
 
     //time of the first digitized timestamp
     double         t0       = CaloHit.t0();
-    double         hitTime(0), time(0), timeBin(0), content(0);
+    double         time(0), timeBin(0), content(0);
     
+  
+    //--------------------------------------------------------------------------------
+    double   maxCont[20] = {0};
+    double   min    [20] = {0};
+    
+    for (int i=0; i<20; ++i){
+      min[i] = 1e10;
+    } 
+  
+    int      nMin(0);
+    
+    _nMax = 0;
+    
+    double   gradient(0), tmpGradient(1), reference(0);
+  
     for (int i=0; i<wfSize; ++i){
-      timeBin = i*_digiSampling;
-      time    = t0 + timeBin;
       content = CaloHit.waveform().at(i);
 
-      if ( content > _amplitude){
-	_amplitude = content;
-	hitTime    = time;
-      }
+      if (content <= 0 )                    continue;
+      
       _charge += content;
+
+      timeBin = i*_digiSampling;
+      time    = t0 + timeBin;
+      
+      gradient = content - reference;
+
+      if (gradient > 0)
+	{
+	  if (gradient*tmpGradient > 0)
+	  {
+	    if (content > maxCont[_nMax]) 
+	    {
+	      maxCont[_nMax]= content;
+	      _max   [_nMax] = i;
+	      _time  [_nMax] = time;//_wave->GetBinCenter(i);
+	    }
+	    reference = maxCont[_nMax];
+	  }else
+	    {
+	      reference = min[nMin];
+	      ++_nMax;
+	      if (content > maxCont[_nMax]) 
+	      {
+		maxCont[_nMax]= content;
+		_max   [_nMax] = i;
+		_time  [_nMax] = time;//_wave->GetBinCenter(i);
+	      }
+	    }
+	}else{
+	if (gradient*tmpGradient > 0)
+	{
+	  if (content < min[nMin])
+	  {
+	    min   [nMin] = content;
+	  }
+	  reference = min[nMin];
+	}else{
+	  reference = maxCont[_nMax];
+	  ++nMin;
+	  if (content < min[nMin])
+	  {
+	    min   [nMin] = content;
+	  }
+	}
+      }
+      
+      tmpGradient = gradient;
+
+      //      printf("_nMax = %i nMin = %i grad = %4.3f min[1] = %3.2f max[1] = %3.2f\n", _nMax, nMin, gradient, min[1], max[1]);
     }
+    
+    _nMax +=1;
 
     //convert ADC counts into MeV
     double eDep     = _charge*_ADCToMeV*_digiSampling; 
-    double chi2     =  -1;
+    double chi2     = -1;
 
     //understand how many signals are within the pulse
     _psd  =  _amplitude/eDep;
 
-    RecoCaloHits.push_back( RecoCaloDigi(CaloDigi(CaloHit),
-					 eDep,
-					 _amplitude, 
-					 hitTime, 
-					 chi2,
-					 _psd    )); 
+
+
+    //--------------------------------------------------------------------------------
+    for (int i=0; i<_nMax; ++i){
+      RecoCaloHits.push_back( RecoCaloDigi(CaloDigi(CaloHit),
+					   maxCont[i]*_ADCPeak2MeV,
+					   maxCont[i],
+					   _time[i], 
+					   chi2,
+					   _psd    )); 
+    }
     
 
   }
@@ -188,6 +253,8 @@ namespace mu2e {
     _Chi2Time    = recoHit->tChi2();
     _nDof        = nDof;
     _amp         = recoHit->amplitude();
+    _nPeaks      = _nMax;
+
     _fitM        = m;
     _fitQ        = q;
     

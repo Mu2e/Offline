@@ -17,6 +17,7 @@
 #include "CosmicRayShieldGeom/inc/CRSScintillatorModuleId.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorLayer.hh"
 #include "CosmicRayShieldGeom/inc/CRSAbsorberLayer.hh"
+#include "CosmicRayShieldGeom/inc/CRSAluminumSheet.hh"
 #include "CosmicRayShieldGeom/inc/CRSFEB.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -84,6 +85,21 @@ namespace mu2e
       return _absorberLayers.at(n);
     }
 
+    const std::vector<CRSAluminumSheet>& getAluminumSheets() const
+    {
+      return _aluminumSheets;
+    }
+
+    int nAluminumSheets() const
+    {
+      return _aluminumSheets.size();
+    }
+
+    const CRSAluminumSheet& getAluminumSheet ( int n ) const 
+    {
+      return _aluminumSheets.at(n);
+    }
+
     const std::vector<CRSFEB>& getFEBs() const
     {
       return _FEBs;
@@ -112,6 +128,7 @@ namespace mu2e
 
     std::vector<CRSScintillatorLayer> _layers;
     std::vector<CRSAbsorberLayer> _absorberLayers;
+    std::vector<CRSAluminumSheet> _aluminumSheets;
     std::vector<CRSFEB> _FEBs;
   };
 

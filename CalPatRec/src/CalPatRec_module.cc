@@ -637,8 +637,10 @@ namespace mu2e {
     for (int ipeak=0; ipeak<npeaks; ipeak++) {
       CalTimePeak* tp = &_tpeaks->at(ipeak);
 
-      CaloContentMC clutil(*_caloHitNavigator, *tp->Cluster());
-      _clCE    = clutil.hasConversion();
+      if (_diagLevel > 0) {
+	CaloContentMC clutil(*_caloHitNavigator, *tp->Cluster());
+	_clCE    = clutil.hasConversion();
+      }
 //-----------------------------------------------------------------------------
 // this is debug-only
 //-----------------------------------------------------------------------------
@@ -1123,8 +1125,10 @@ namespace mu2e {
     for (int ic=0; ic<ncl; ic++) {
       cl      = &_ccCollection->at(ic);
 
-      CaloContentMC clutil(*_caloHitNavigator, *cl);
-      _clCE    = clutil.hasConversion();
+      if (_diagLevel > 0) {
+	CaloContentMC clutil(*_caloHitNavigator, *cl);
+	_clCE    = clutil.hasConversion();
+      }
 
       if ( cl->energyDep() > _minClusterEnergy) {
         if (_clCE) ++fNCaloEnergyCut;

@@ -59,8 +59,7 @@ CalPatRecFlagStrawHits : {
     maximumEnergy                   : 0.005           # 5 KeV, in MeV
 }
 
-CalPatRecFlagBkgHits : {
-    module_type                     : FlagBkgHits
+CalPatRecFlagBkgHits : { @table::FlagBkgHits
     StrawHitCollectionLabel         : makeSH
     StrawHitFlagCollectionLabel     : CalPatRecFlagStrawHits
     StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits

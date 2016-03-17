@@ -22,7 +22,7 @@
 
 // Includes from Mu2e
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
-#include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
+#include "CosmicRayShieldGeom/inc/CRSSupportStructure.hh"
 #include "Mu2eInterfaces/inc/Detector.hh"
 
 
@@ -83,6 +83,8 @@ namespace mu2e
     std::vector<double> getSectorHalfLengths(const std::string &sectorName) const;
     CLHEP::Hep3Vector getSectorPosition(const std::string &sectorName) const;
 
+    std::vector<CRSSupportStructure> const & getSupportStructures() const {return _supportStructures;}
+
     private:
 
     std::vector<CRSScintillatorShield>                _scintillatorShields;    //Every "shield" holds a vector of modules.
@@ -93,6 +95,9 @@ namespace mu2e
                                                                                //(the same objects used in all layers).
 
     void getMinMaxPoints(const std::string &sectorName, std::vector<double> &minPoint, std::vector<double> &maxPoint) const;
+
+    std::vector<CRSSupportStructure> _supportStructures;
+
   };
 
 }

@@ -31,7 +31,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
-#include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
 #include "MBSGeom/inc/MBS.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"

@@ -21,7 +21,6 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "CosmicRayShieldGeom/inc/CRSSteelShield.hh"
 #include "STMGeom/inc/STM.hh"
 #include "STMGeom/inc/PermanentMagnet.hh"
 #include "STMGeom/inc/SupportTable.hh"

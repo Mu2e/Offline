@@ -39,12 +39,8 @@ namespace mu2e
                           const CLHEP::Hep3Vector &VTNCBetweenModules,
                           const std::vector<int> &localToWorld,
                           int nModules, int nCounters);
+    void makeCRVSupportStructures();
 
-  // This is deprecated and will go away soon.
-  // Still needed for root graphics version.
-    const CosmicRayShield& getCosmicRayShield() const { return *_crs;}
-
-  // This is the accessor that will remain.
     std::unique_ptr<CosmicRayShield> getCosmicRayShieldPtr() { return std::move(_crs); }
 
     private:
@@ -59,6 +55,7 @@ namespace mu2e
 
     std::vector<std::string> _crvSectorNames;
     std::vector<double>      _gapBetweenLayers;
+    double                   _aluminumSheetThickness;
 
     //vector size is _nSectors
     std::vector<double>             _counterLength;        
@@ -77,6 +74,7 @@ namespace mu2e
 
     std::string _scintillatorBarMaterialName;
     std::string _absorberMaterialName;
+    std::string _aluminumSheetMaterialName;
 
     double      _CMBOffset;
     double      _CMBHalfThickness;
@@ -87,6 +85,12 @@ namespace mu2e
     double      _FEBDistanceToModule;
     double      _FEBGapBetween2FEBs;
     std::vector<double> _FEBHalfLengths;
+
+    int                               _nSupportStructures;
+    std::vector<std::string>          _supportStructureNames;
+    std::vector<CLHEP::Hep3Vector>    _supportStructurePositions;
+    std::vector<std::vector<double> > _supportStructureHalfLengths;
+    std::string                       _supportStructureMaterialName;
   };
 
 }  //namespace mu2e

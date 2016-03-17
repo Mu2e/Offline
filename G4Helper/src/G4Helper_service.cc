@@ -34,7 +34,7 @@ namespace mu2e {
         << "\n";
     }
     return i->second;
-  } // end of G4Helper::locateVolInfo
+  } // end of G4Helper::locateVolInfo by key
 
   // If the key already exists, throw. Otherwise add the (key, value) pair
   // to the map.
@@ -48,6 +48,27 @@ namespace mu2e {
     }
     _volumeInfoList[info.name] = info;
   } // end of G4Helper::addVolInfo
+
+  // Find all info objects whose key matches the supplied regular expression.
+  std::vector<VolumeInfo const*> G4Helper::locateVolInfo( boost::regex const& expression ) const{
+
+    // Default, empty return value
+    std::vector<VolumeInfo const*> infos;
+
+    for ( auto const& i : _volumeInfoList ){
+
+      std::string const& name{i.first};
+      VolumeInfo const&  info{i.second};
+
+      if ( boost::regex_match( name.c_str(), expression ) ){
+        infos.push_back( &info );
+      }
+    }
+
+    return infos;
+
+  } // end of G4Helper::addlocateVolInfo by regex on key
+
 
 } // end namespace mu2e
 

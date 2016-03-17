@@ -578,23 +578,37 @@ namespace mu2e {
 //     TFile *f = new TFile("/mu2e/data/users/gianipez/test-waveform-2015.root", "R");
 //     f->cd();
 
-    if (_wfInput == 0){
+    if (_wfInput == 0)
+    {
       f = TFile::Open("/mu2e/data/users/gianipez/test-waveforms-2015.root", "R");
       _pshape = (TH1F*) gDirectory->Get("pshape");
       f->Close();
-    }else  if (_wfInput == 1){
+    }
+    if (_wfInput == 1)
+    {
       f = TFile::Open("/mu2e/data/users/gianipez/CsI-waveform-2016-02-03.root", "R");
       _pshape = (TH1F*) gDirectory->Get("h1");
       f->Close();
-    }    if (_wfInput == 2){
+    } 
+    if (_wfInput == 2)
+    {
       f = TFile::Open("/mu2e/data/users/gianipez/CsI-waveform-2016-02-03.root", "R");
       _pshape = (TH1F*) gDirectory->Get("h2"); 
       f->Close();
-    }    if (_wfInput == 3){
+    }
+    if (_wfInput == 3)
+    {
       f = TFile::Open("/mu2e/data/users/gianipez/test-CsI-2015-10-06.root");
       _pshape = (TH1F*) gDirectory->Get("CsIPulse");
       f->Close();
     }
+    if (_wfInput == 4)
+    {
+      f = TFile::Open("/mu2e/data/users/gianipez/Mu2eCaloSgnlTempl.root");
+      _pshape = (TH1F*) gDirectory->Get("hS");
+      f->Close();
+    }
+    
 
 
     _wfnorm = _pshape->Integral();

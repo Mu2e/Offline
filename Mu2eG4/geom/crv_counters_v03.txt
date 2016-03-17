@@ -54,6 +54,7 @@ double          crs.gapLarge                     =   2;   //mm
 double          crs.gapSmall                     =   1;   //mm
 double          crs.gapBetweenModules            =   5;   //mm
 vector<double>  crs.gapBetweenLayers             =   {9.525, 12.7, 9.525}; //mm
+double          crs.aluminumSheetThickness       =  1.29; //mm
 
 int             crs.nModulesR1                   =  18;  //0
 int             crs.nModulesR2                   =   1;  //1
@@ -123,6 +124,7 @@ vector<double>  crs.firstCounterD4        =  {-3904.0,   -157.25, 18771.0};  //2
 
 string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";
+string          crs.aluminumSheetMaterialName    = "G4_Al";
 
 bool   crs.vetoVisible    = true;
 bool   crs.vetoSolid      = true;
@@ -349,6 +351,18 @@ double         crs.FEBDistanceToModule =  15.0;
 double         crs.FEBDistanceToEdge   = 201.6;
 double         crs.FEBGapBetween2FEBs  = 397.9;
 vector<double> crs.FEBHalfLengths      = {1.0, 165.1, 101.6};  //thickness, width, lengths w.r.t. counter orientation
+
+//simplified version of the top support structure
+//total area in Offline: 27.58m^2
+//total volume in CAD model: 0.8092m^3
+//--> thickness in Offline: 29.34mm
+int crs.nSupportStructures = 2;
+vector<string> crs.supportStructureNames = {"CRV_Support_TS", "CRV_Support_T"};
+vector<double> crs.supportStructurePosition_CRV_Support_TS = {-3183.9, 2570.0,   231.5};
+vector<double> crs.supportStructurePosition_CRV_Support_T  = {-3904.0, 2570.0, 10703.8};
+vector<double> crs.supportStructureHalfLengths_CRV_Support_TS = {3183.9, 14.67, 2466.7};
+vector<double> crs.supportStructureHalfLengths_CRV_Support_T  = {2463.8, 14.67, 8005.6};
+string         crs.supportStructureMaterialName = "G4_Fe";
 
 
 //FIXME: this is temporary until the GDML issue is fixed

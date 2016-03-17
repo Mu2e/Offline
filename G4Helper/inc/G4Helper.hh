@@ -8,24 +8,23 @@
 // support of G4.  For technical reasons, this cannot be done by making
 // Mu2eG4RunManager a singleton.
 //
-// $Id: G4Helper.hh,v 1.7 2013/03/15 18:20:22 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/15 18:20:22 $
-//
 // Original author Rob Kutschke
 //
 
-// C++ includes
-#include <map>
-#include <string>
+// Mu2e includes
+#include "G4Helper/inc/AntiLeakRegistry.hh"
+#include "G4Helper/inc/VolumeInfo.hh"
 
 // Framework include files
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 
-// Mu2e includes
-#include "G4Helper/inc/AntiLeakRegistry.hh"
-#include "G4Helper/inc/VolumeInfo.hh"
+#include "boost/regex.hpp"
+
+// C++ includes
+#include <map>
+#include <string>
+#include <vector>
 
 namespace mu2e {
 
@@ -39,6 +38,9 @@ namespace mu2e {
     // Versions of the map [] operator that check for errors.
     VolumeInfo& locateVolInfo( const std::string key);
     void addVolInfo( const VolumeInfo& info );
+
+    // Find all VolumeInfo objects whose name matches a regex.
+    std::vector<VolumeInfo const*> locateVolInfo( boost::regex const& re ) const;
 
   private:
 

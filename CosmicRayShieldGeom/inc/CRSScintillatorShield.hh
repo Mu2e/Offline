@@ -37,7 +37,7 @@ namespace mu2e
     CRSScintillatorShield(CRSScintillatorShieldId const & id, 
                           std::string const & name,
                           const std::shared_ptr<CRSScintillatorBarDetail> barDetails,
-                          const std::string &absorberMaterialName, const std::string &FEBMaterialName,
+                          const std::string &absorberMaterialName, const std::string &aluminumSheetMaterialName, const std::string &FEBMaterialName,
                           CRSScintillatorShieldId precedingSector, int sectorType, int countersPerModule);
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
@@ -84,6 +84,11 @@ namespace mu2e
       return _absorberMaterialName;
     }
 
+    const std::string &getAluminumSheetMaterialName() const 
+    {
+      return _absorberMaterialName;
+    }
+
     const std::string &getFEBMaterialName() const 
     {
       return _FEBMaterialName;
@@ -107,6 +112,7 @@ namespace mu2e
     std::shared_ptr<CRSScintillatorBarDetail> _barDetails;
 
     std::string _absorberMaterialName;
+    std::string _aluminumSheetMaterialName;
     std::string _FEBMaterialName;
 
 

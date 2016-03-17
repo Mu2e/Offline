@@ -32,7 +32,7 @@ FlagBkgHits : {
   StereoClusterMVA : { MVAWeights : "TrkPatRec/test/StereoCluster.weights.xml" }
   NonStereoClusterMVA : { MVAWeights : "TrkPatRec/test/NonStereoCluster.weights.xml" }
   ClusterStrawHits : { BackgroundMask : [] }
-  ClusterStrawHits : { SignalMask : ["EnergySelection","RadiusSelection","TimeSelection"] }
+  ClusterStrawHits : { SignalMask : ["TimeSelection"] }
 #  ClusterStrawHits.SignalMask : []
 }
 
