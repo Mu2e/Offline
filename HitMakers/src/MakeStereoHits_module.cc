@@ -118,6 +118,9 @@ namespace mu2e {
     TH1F* _deltaE;
     TH1F* _deltaz;
     TH1F* _fsep;
+    TH1F* _sep;
+    TH1F* _ddoth;
+    TH1F* _dperph;
     TH1F* _dL;
     TH1F* _mva;
     vector<TH2F*> _stations;
@@ -146,12 +149,12 @@ namespace mu2e {
     _shmask(pset.get<vector<string> >("StrawHitMaskBits",vector<string>{} )),
     _maxDt(pset.get<double>("maxDt",40.0)), // nsec
     _maxDE(pset.get<double>("maxDE",0.99)), // dimensionless, from 0 to 1
-    _maxDZ(pset.get<double>("maxDZ",40.)), // mm, maximum longitudinal distance between straws
+    _maxDZ(pset.get<double>("maxDZ",1000.)), // mm, maximum longitudinal distance between straws
     _maxDPerp(pset.get<double>("maxDPerp",500.)), // mm, maximum perpendicular distance between time-division points
     _minDdot(pset.get<double>("minDdot",0.6)), // minimum angle between straws
     _minDL(pset.get<double>("minDL",-20.0)), // extent along straw
     _maxChisq(pset.get<double>("maxChisquared",80.0)), // position matching
-    _minMVA(pset.get<double>("minMVA",0.7)), // MVA cut
+    _minMVA(pset.get<double>("minMVA",0.6)), // MVA cut
     _writepairs(pset.get<bool>("WriteStereoPairs",false)),
     _mvatool(pset.get<fhicl::ParameterSet>("MVATool",fhicl::ParameterSet())),
     _nhits(0),_deltat(0),_deltaE(0),_deltaz(0),_fsep(0),_dL(0),_mva(0),
@@ -179,7 +182,10 @@ namespace mu2e {
       _deltat = tfs->make<TH1F>("deltat","#Delta t;ns",100,-200.0,200.0);
       _deltaE = tfs->make<TH1F>("deltaE","#Delta E/#Sigma E;Ratio",100,-1.0,1.0);
       _deltaz = tfs->make<TH1F>("deltaz","#Delta d;mm",120,0.0,120.0);
-      _fsep = tfs->make<TH1F>("sep","Face separation",6,-0.5,5.5);
+      _ddoth = tfs->make<TH1F>("ddot","#Delta drection;cos(#theta)",120,-3.15,3.15);
+      _dperph = tfs->make<TH1F>("dperp","#Delta #rho;mm",120,0.0,120.0);
+      _fsep = tfs->make<TH1F>("fsep","Face separation",6,-0.5,5.5);
+      _sep = tfs->make<TH1F>("sep","Face separation",6,-0.5,5.5);
       _dL = tfs->make<TH1F>("dL","Length Difference;mm",100,-200.0,100.0);
       _mva = tfs->make<TH1F>("mva","MVA output",100,-0.05,1.05);
       if( _diagLevel > 1){
@@ -366,7 +372,15 @@ namespace mu2e {
 	        double dist = dp.mag();
 	        double dperp = dp.perp();
 	        double dz = fabs(dp.z());
-	        double dt = fabs(sh1.time()-sh2.time()); 
+	        double dt = fabs(sh1.time()-sh2.time());
+		if(_diagLevel > 1){
+		  _deltat->Fill(dt);
+		  _deltaE->Fill(de);
+		  _deltaz->Fill(dz);
+		  _sep->Fill(sep);
+		  _ddoth->Fill(ddot);
+		  _dperph->Fill(dperp);
+		}
 	        if( sep != PanelId::same && sep < PanelId::apart // hits are in the same station but not the same panel
 	            && (sep <= minsep[ish] || sep <= minsep[jsh]) // this separation is at least as good as the current best for one of the hits
 	            && ddot > _minDdot // negative crosings are in opposite quadrants
