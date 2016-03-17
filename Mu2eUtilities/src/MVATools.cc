@@ -242,6 +242,8 @@ namespace mu2e
   }
 
   void MVATools::showMVA()const{
+    
+    cout << "MVA weights from file:" <<     _mvaWgtsFile << endl;
     cout << "MVA NLayers: " << _wgts.size() << endl;
     cout << "MVA NVars: " << _title.size() << endl;
 
