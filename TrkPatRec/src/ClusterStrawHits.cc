@@ -117,12 +117,12 @@ namespace mu2e
     _dhit(pset.get<unsigned>("HitDistance",5.0)), // # of sigma to add hits
     _dmerge(pset.get<double>("MergeDistance",3.0)), // # of sigma to merge clusters
     _dlarge(pset.get<double>("LargestDistance",10000.0)),
-    _dd(pset.get<double>("ClusterDiameter",5.0)), // mm: the natural cluster size
+    _dd(pset.get<double>("ClusterDiameter",10.0)), // mm: the natural cluster size
     _dt(pset.get<double>("TimeDifference",10.0)), // nsec: the natural time spread
-    _maxdt(pset.get<double>("MaxTimeDifference",40.0)), // Maximum time difference
-    _trms(pset.get<double>("TimeRMS",5.0)), //nsec: individual hit time resolution
-    _srms(pset.get<double>("StereoRMS",7.0)), //mm: individual stereo hit resolution
-    _nsrms(pset.get<double>("NonStereoRMS",30.)), // mmm: individual non-stereo hit resolution
+    _maxdt(pset.get<double>("MaxTimeDifference",30.0)), // Maximum time difference
+    _trms(pset.get<double>("TimeRMS",10.0)), //nsec: individual hit time resolution
+    _srms(pset.get<double>("StereoRMS",6.0)), //mm: individual stereo hit resolution
+    _nsrms(pset.get<double>("NonStereoRMS",20.)), // mmm: individual non-stereo hit resolution
     _maxniter(pset.get<unsigned>("MaxNIterations",50)),
     _maxnchanged(pset.get<unsigned>("MaxNChanged",10)),
     _mode(static_cast<cmode>(pset.get<int>("ClusterMode",hitcluster))),

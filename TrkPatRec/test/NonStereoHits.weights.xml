@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <MethodSetup Method="MLP::MLP">
   <GeneralInfo>
-    <Info name="TMVA Release" value="4.1.4 [262404]"/>
-    <Info name="ROOT Release" value="5.34/09 [336393]"/>
+    <Info name="TMVA Release" value="4.2.0 [262656]"/>
+    <Info name="ROOT Release" value="5.34/32 [336416]"/>
     <Info name="Creator" value="brownd"/>
-    <Info name="Date" value="Wed Apr 30 13:20:41 2014"/>
-    <Info name="Host" value="Linux patdskmf.fnal.gov 2.6.18-308.20.1.el5 #1 SMP Tue Nov 13 11:54:02 EST 2012 x86_64 x86_64 x86_64 GNU/Linux"/>
-    <Info name="Dir" value="/home/online1/brownd/mu2e/Mu2eSim/art6/Offline"/>
-    <Info name="Training events" value="25946"/>
-    <Info name="TrainingTime" value="1.08812057e+02"/>
+    <Info name="Date" value="Wed Mar 16 13:11:11 2016"/>
+    <Info name="Host" value="Linux buildservice004.fnal.gov 2.6.32-504.23.4.el6.x86_64 #1 SMP Tue Jun 9 11:55:03 CDT 2015 x86_64 x86_64 x86_64 GNU/Linux"/>
+    <Info name="Dir" value="/home/online1/brownd/mu2e/Mu2eSim/art24/Offline"/>
+    <Info name="Training events" value="61750"/>
+    <Info name="TrainingTime" value="2.21134415e+02"/>
     <Info name="AnalysisType" value="Classification"/>
   </GeneralInfo>
   <Options>
@@ -46,9 +46,9 @@
     <Option name="WeightRange" modified="No">1.000000e+00</Option>
   </Options>
   <Variables NVar="3">
-    <Variable VarIndex="0" Expression="_dphi" Label="_dphi" Title="Azimuthal Angular Distance" Unit="F" Internal="_dphi" Type="F" Min="1.36821388e-10" Max="3.89076710e-01"/>
-    <Variable VarIndex="1" Expression="_drho" Label="_drho" Title="Radial Distance" Unit="F" Internal="_drho" Type="F" Min="0.00000000e+00" Max="1.53269089e+02"/>
-    <Variable VarIndex="2" Expression="_dt" Label="_dt" Title="Temporal Distance" Unit="F" Internal="_dt" Type="F" Min="0.00000000e+00" Max="3.75076065e+01"/>
+    <Variable VarIndex="0" Expression="_dphi" Label="_dphi" Title="Azimuthal Angular Distance" Unit="F" Internal="_dphi" Type="F" Min="3.03880402e-13" Max="2.95296699e-01"/>
+    <Variable VarIndex="1" Expression="_drho" Label="_drho" Title="Radial Distance" Unit="F" Internal="_drho" Type="F" Min="0.00000000e+00" Max="1.14465157e+02"/>
+    <Variable VarIndex="2" Expression="_dt" Label="_dt" Title="Temporal Distance" Unit="F" Internal="_dt" Type="F" Min="0.00000000e+00" Max="5.49636421e+01"/>
   </Variables>
   <Spectators NSpec="0"/>
   <Classes NClass="2">
@@ -71,23 +71,23 @@
       </Selection>
       <Class ClassIndex="0">
         <Ranges>
-          <Range Index="0" Min="1.3682138755299889e-10" Max="3.8744100928306580e-01"/>
-          <Range Index="1" Min="0.0000000000000000e+00" Max="1.3723355102539062e+02"/>
-          <Range Index="2" Min="0.0000000000000000e+00" Max="3.3508815765380859e+01"/>
+          <Range Index="0" Min="3.0388040174467168e-13" Max="2.9529669880867004e-01"/>
+          <Range Index="1" Min="0.0000000000000000e+00" Max="1.0433116912841797e+02"/>
+          <Range Index="2" Min="0.0000000000000000e+00" Max="4.5944900512695312e+01"/>
         </Ranges>
       </Class>
       <Class ClassIndex="1">
         <Ranges>
-          <Range Index="0" Min="1.0929948501825493e-08" Max="3.8907670974731445e-01"/>
-          <Range Index="1" Min="9.4007828010944650e-06" Max="1.5326908874511719e+02"/>
-          <Range Index="2" Min="0.0000000000000000e+00" Max="3.7507606506347656e+01"/>
+          <Range Index="0" Min="9.8676387949581112e-08" Max="2.3668025434017181e-01"/>
+          <Range Index="1" Min="4.4198669493198395e-02" Max="1.1446515655517578e+02"/>
+          <Range Index="2" Min="0.0000000000000000e+00" Max="5.4963642120361328e+01"/>
         </Ranges>
       </Class>
       <Class ClassIndex="2">
         <Ranges>
-          <Range Index="0" Min="1.3682138755299889e-10" Max="3.8907670974731445e-01"/>
-          <Range Index="1" Min="0.0000000000000000e+00" Max="1.5326908874511719e+02"/>
-          <Range Index="2" Min="0.0000000000000000e+00" Max="3.7507606506347656e+01"/>
+          <Range Index="0" Min="3.0388040174467168e-13" Max="2.9529669880867004e-01"/>
+          <Range Index="1" Min="0.0000000000000000e+00" Max="1.1446515655517578e+02"/>
+          <Range Index="2" Min="0.0000000000000000e+00" Max="5.4963642120361328e+01"/>
         </Ranges>
       </Class>
     </Transform>
@@ -97,41 +97,41 @@
     <Layout NLayers="4">
       <Layer Index="0" NNeurons="4">
         <Neuron NSynapses="3">
-          -4.6928330211608777e+00 5.8650266416513999e+00 4.7113287194620163e-01 
+          2.1325607883351139e+00 7.7318986399951566e+00 1.9139603332343733e+00 
         </Neuron>
         <Neuron NSynapses="3">
-          4.4820860663502557e+00 -3.2630794825457232e+00 -2.0359328230762270e+00 
+          4.2247836838124098e+00 -5.2679020875197926e+00 -3.4949560180787769e+00 
         </Neuron>
         <Neuron NSynapses="3">
-          -3.7773085705959902e-01 2.3259846698240272e-02 -3.3454214833358455e+00 
+          -1.8007638476377397e+00 2.5219710089963199e+00 -1.3848545659549421e+00 
         </Neuron>
         <Neuron NSynapses="3">
-          -1.8528354242268850e+00 8.4009734059046270e-01 2.7305744059482795e-01 
+          1.5370375470165483e+00 4.5753012247048880e-01 -1.6327927329391183e+00 
         </Neuron>
       </Layer>
       <Layer Index="1" NNeurons="4">
         <Neuron NSynapses="2">
-          -6.8893650970981692e+00 -1.5630158973621384e+00 
+          -1.8448334251800711e+00 -4.6400173197047110e+00 
         </Neuron>
         <Neuron NSynapses="2">
-          -3.1939545508292495e+00 -3.1449432070349609e-01 
+          5.4806565178072804e+00 -4.3301023286334113e+00 
         </Neuron>
         <Neuron NSynapses="2">
-          4.8001903464055760e+00 6.5077595987072001e-01 
+          -1.0169517248738810e+01 1.7374188674914306e+00 
         </Neuron>
         <Neuron NSynapses="2">
-          -1.1607812415705414e+00 -1.4491806030900181e+00 
+          3.5991553866464900e+00 -2.4538417103434740e+00 
         </Neuron>
       </Layer>
       <Layer Index="2" NNeurons="3">
         <Neuron NSynapses="1">
-          1.3453639059632974e+00 
+          -7.1085537951189981e-01 
         </Neuron>
         <Neuron NSynapses="1">
-          -9.4021107693050121e-01 
+          1.9941178905316068e+00 
         </Neuron>
         <Neuron NSynapses="1">
-          7.9312361905318110e-02 
+          6.2108565109043856e-01 
         </Neuron>
       </Layer>
       <Layer Index="3" NNeurons="1">
