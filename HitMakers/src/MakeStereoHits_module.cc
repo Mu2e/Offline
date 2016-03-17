@@ -64,6 +64,16 @@ namespace mu2e {
     bool operator()(PnlPhi const& v1, PnlPhi const& v2) { return (v1.dphi < v2.dphi); }
   };
 
+  // struct to hold MVA input
+  struct StereoMVA {
+    std::vector <Double_t> _pars;
+    Double_t& _dt; // time diff between hits
+    Double_t& _chisq; // chisq of time division information 
+    Double_t& _rho;  // transverse radius of stereo position
+    Double_t& _ndof; // number of degrees of freedom of time division chisquared: either 0, 1, or 2
+    StereoMVA() : _pars(4,0.0),_dt(_pars[0]),_chisq(_pars[1]),_rho(_pars[2]),_ndof(_pars[3]){}
+  };
+
   class MakeStereoHits : public art::EDProducer {
 
   public:
@@ -96,7 +106,7 @@ namespace mu2e {
     double _minMVA; // minimum MVA output
     bool _writepairs; // write out the stereo pairs
     MVATools _mvatool;
-    vector<double> _vmva; // input variables to TMVA for stereo selection
+    StereoMVA _vmva; // input variables to TMVA for stereo selection
     // for optimized Stereo Hit finding
     size_t _nsta;
     size_t _npnl;
@@ -162,7 +172,6 @@ namespace mu2e {
       cout << "MakeStereoHits MVA parameters: " << endl;
       _mvatool.showMVA();
     }
-    _vmva.resize(4);
     // create diagnostics if requested
     if(_diagLevel > 0){
       art::ServiceHandle<art::TFileService> tfs;
@@ -393,11 +402,11 @@ namespace mu2e {
 	              if(chisq < _maxChisq){
 	                sth.setChisquared(chisq);
                         // compute MVA
-	                _vmva[0] = de;
-			_vmva[1] = dt;
-	                _vmva[2] = chisq;
-	                _vmva[3] = sth.pos().perp();
-	                double mvaout = _mvatool.evalMVA(_vmva);
+			_vmva._dt = dt;
+	                _vmva._chisq = chisq;
+	                _vmva._rho = sth.pos().perp();
+			_vmva._ndof = ndof;
+	                double mvaout = _mvatool.evalMVA(_vmva._pars);
                         //double mvaout=0.;
 	                if(mvaout > _minMVA){
 	                  stereohits.push_back(sth);
