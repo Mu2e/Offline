@@ -123,7 +123,7 @@ namespace mu2e
 // helper functions
     static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
     void fillTrkInfoMCStep(CLHEP::Hep3Vector const& mom, CLHEP::Hep3Vector const& pos, double charge, TrkInfoMCStep& einfo) const;
-    void countDoubles(const KalRep* krep, int& ndouble, int& ndactive) const;
+    void countHits(const KalRep* krep, TrkInfo& tinfo) const;
     void fillTrkQual(TrkInfo& trkinfo) const;
     const helixpar& MCHelix(TRACKERPOS tpos) const;
     void reset();
