@@ -19,10 +19,12 @@ FitDir : {
 FSHPreStereo  : {
   module_type : FlagStrawHits
   StrawHitPositionCollectionLabel : ""
+  maximumEnergy : 0.01
 }
 
 FlagStrawHits  : {
   module_type : FlagStrawHits
+  maximumEnergy : 0.0035
 }
 
 FlagBkgHits : {
@@ -31,9 +33,13 @@ FlagBkgHits : {
   NonStereoHitMVA : { MVAWeights : "TrkPatRec/test/NonStereoHits.weights.xml" }
   StereoClusterMVA : { MVAWeights : "TrkPatRec/test/StereoCluster.weights.xml" }
   NonStereoClusterMVA : { MVAWeights : "TrkPatRec/test/NonStereoCluster.weights.xml" }
-  ClusterStrawHits : { BackgroundMask : [] }
-  ClusterStrawHits : { SignalMask : ["TimeSelection"] }
-#  ClusterStrawHits.SignalMask : []
+  MinDeltaHits : 3
+  StereoHitMVACut : 0.2
+  NonStereoHitMVACut : 0.2
+  ClusterStrawHits : {
+    BackgroundMask : [] 
+    SignalMask : ["TimeSelection"]
+  }
 }
 
 # 
@@ -42,7 +48,7 @@ TimePeakFinder : {
   StrawDigiMCLabel	    : "makeSH"
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
   PositionSelectionBits	    : ["Stereo","TimeDivision"]
-  HitBackgroundBits	    : ["DeltaRay","Isolated","ElectronicsXTalk"]
+  HitBackgroundBits	    : ["DeltaRay"]
   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
 }
 # we need both positive and negative helicity helices.  For simplicity, we use upstream and downstream electrons
