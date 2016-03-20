@@ -41,6 +41,7 @@ TimePeakFinder : {
   module_type               : TimePeakFinder
   StrawDigiMCLabel	    : "makeSH"
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
+  PositionSelectionBits	    : ["Stereo","TimeDivision"]
   HitBackgroundBits	    : ["DeltaRay","Isolated","ElectronicsXTalk"]
   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
 }
