@@ -75,8 +75,7 @@ namespace mu2e {
     std::string _shpLabel;
     std::string _shfLabel;
     std::string _mcdigislabel;
-    StrawHitFlag _hsel;
-    StrawHitFlag _hbkg;
+    StrawHitFlag _hsel, _psel, _hbkg;
     double _maxdt;
     // time spectrum parameters
     bool _findtpeak;
@@ -136,6 +135,7 @@ namespace mu2e {
     _shfLabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
     _mcdigislabel(pset.get<string>("StrawDigiMCLabel")),
     _hsel(pset.get<std::vector<std::string> >("HitSelectionBits")),
+    _psel(pset.get<std::vector<std::string> >("PositionSelectionBits")),
     _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _maxdt(pset.get<double>("DtMax",30.0)),
     _findtpeak(pset.get<bool>("FindTimePeaks",true)),
@@ -277,7 +277,7 @@ namespace mu2e {
      // loop over straws hits and fill time spectrum plot for tight hits
      unsigned nstrs = _shcol->size();
      for(unsigned istr=0; istr<nstrs;++istr){
-       if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
+       if(_flags->at(istr).hasAllProperties(_hsel) && _flags->at(istr).hasAnyProperty(_psel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
          double time = _shcol->at(istr).time();
          timespec.Fill(time);
        }
