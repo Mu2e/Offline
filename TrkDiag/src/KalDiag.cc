@@ -201,8 +201,6 @@ namespace mu2e
       trkinfo._chisq = krep->chisq();
       trkinfo._fitcon = krep->chisqConsistency().significanceLevel();
       trkinfo._radlen = krep->radiationFraction();
-      trkinfo._firstflt = krep->firstHit()->globalLength();
-      trkinfo._lastflt = krep->lastHit()->globalLength();
       trkinfo._startvalid = krep->startValidRange();
       trkinfo._endvalid = krep->endValidRange();
 // site counting
@@ -221,8 +219,8 @@ namespace mu2e
 
       Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->kalContext().bField(),0.0);
       trkinfo._seedmom = seedmom.mag();
-      // count # of double hits
-      countDoubles(krep,trkinfo._ndouble, trkinfo._ndactive);
+      // count hits
+      countHits(krep,trkinfo);
       // get the fit at the entrance to the tracker
       Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
       double zent = entpos.z();
@@ -241,22 +239,28 @@ namespace mu2e
     }
   } 
 
-  void
-    KalDiag::countDoubles(const KalRep* krep,int& ndouble, int& ndactive) const {
-      // count number of hits with other (active) hits in the same panel
-      ndouble = ndactive = 0;
-      // loop over hits, and count
-      TrkStrawHitVector tshv;
-      convert(krep->hitVector(),tshv);
-      for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
-	const TrkStrawHit* tsh = *ihit;
-	if(tsh != 0){
-	  bool isdouble(false);
-	  bool dactive(false);
-	  // count correlations with other TSH
-	  for(auto jhit=tshv.begin(); jhit != ihit; ++jhit){
-	    const TrkStrawHit* otsh = *jhit;
-	    if(otsh != 0){
+  void KalDiag::countHits(const KalRep* krep,TrkInfo& tinfo) const {
+    // count number of hits with other (active) hits in the same panel
+    tinfo._ndouble = tinfo._ndactive = tinfo._nnullambig = 0;
+    tinfo._firstflt = tinfo._lastflt = 0.0;
+    // loop over hits, and count
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    bool first(false);
+    for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
+      const TrkStrawHit* tsh = *ihit;
+      if(tsh != 0 && tsh->isActive()){
+	if(!first){
+	  first = true;
+	  tinfo._firstflt = tsh->fltLen();
+	}
+	if(tsh->ambig() == 0 )++tinfo._nnullambig;
+	bool isdouble(false);
+	bool dactive(false);
+	// count correlations with other TSH
+	for(auto jhit=tshv.begin(); jhit != ihit; ++jhit){
+	  const TrkStrawHit* otsh = *jhit;
+	  if(otsh != 0){
 	    if(tsh->straw().id().getPlane() ==  otsh->straw().id().getPlane() &&
 		tsh->straw().id().getPanel() == otsh->straw().id().getPanel() ){
 	      isdouble = true;
@@ -267,22 +271,28 @@ namespace mu2e
 	    }
 	  }
 	}
-	if(isdouble)ndouble++;
-	if(dactive)ndactive++;
+	if(isdouble)++tinfo._ndouble;
+	if(dactive)++tinfo._ndactive;
+      }
+    }
+    for(auto ihit = tshv.rbegin(); ihit != tshv.rend(); ++ihit){
+      if((*ihit) != 0 && (*ihit)->isActive()){
+	tinfo._lastflt = (*ihit)->fltLen();
+	break;
       }
     }
   }
 
-  void
-    KalDiag::fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) {
-      // find momentum and parameters
-      double loclen(0.0);
-      const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
-      trkfitinfo._fitpar = helixpar(ltraj->parameters()->parameter());
-      trkfitinfo._fitparerr = helixpar(ltraj->parameters()->covariance());
-      Hep3Vector fitmom = krep->momentum(fltlen);
-      BbrVectorErr momerr = krep->momentumErr(fltlen);
-      trkfitinfo._fitmom = fitmom.mag();
+  void KalDiag::fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) {
+    trkfitinfo._fltlen = fltlen;
+    // find momentum and parameters
+    double loclen(0.0);
+    const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
+    trkfitinfo._fitpar = helixpar(ltraj->parameters()->parameter());
+    trkfitinfo._fitparerr = helixpar(ltraj->parameters()->covariance());
+    Hep3Vector fitmom = krep->momentum(fltlen);
+    BbrVectorErr momerr = krep->momentumErr(fltlen);
+    trkfitinfo._fitmom = fitmom.mag();
     Hep3Vector momdir = fitmom.unit();
     HepVector momvec(3);
     for(int icor=0;icor<3;icor++)
@@ -755,7 +765,7 @@ namespace mu2e
 
   void KalDiag::fillTrkQual(TrkInfo& trkinfo) const {
     static std::vector<double> trkqualvec; // input variables for TrkQual computation
-    trkqualvec.resize(8);
+    trkqualvec.resize(10);
     trkqualvec[0] = trkinfo._nactive; // # of active hits
     trkqualvec[1] = (float)trkinfo._nactive/(float)trkinfo._nhits;  // Fraction of active hits
     trkqualvec[2] = log10(trkinfo._fitcon); // fit chisquared consistency
@@ -764,6 +774,8 @@ namespace mu2e
     trkqualvec[5] = trkinfo._ent._fitpar._d0; // d0 value
     trkqualvec[6] = trkinfo._ent._fitpar._d0+2.0/trkinfo._ent._fitpar._om; // maximum radius of fit
     trkqualvec[7] = (float)trkinfo._ndactive/(float)trkinfo._nactive;  // fraction of double hits (2 or more in 1 panel)
+    trkqualvec[8] = (float)trkinfo._nnullambig/(float)trkinfo._nactive;  // fraction of hits with null ambiguity
+    trkqualvec[9] = (float)trkinfo._nmatactive/(float)trkinfo._nactive;  // fraction of straws to hits
     trkinfo._trkqual = _trkqualmva->evalMVA(trkqualvec);
   }
   

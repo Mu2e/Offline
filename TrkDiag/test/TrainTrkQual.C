@@ -161,7 +161,7 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,char* tname = "TrkQual")
       "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
 // signal is defined as the momentum resolution core,
-  TCut signal("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom<0.05&&fit.mom-mcent.mom>-0.15");
+  TCut signal("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom<0.25&&fit.mom-mcent.mom>-0.5");
   // tail is defined as the high-side tail
   TCut bkg("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom>0.5");
 
@@ -198,6 +198,10 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,char* tname = "TrkQual")
   factory->AddVariable("d0","D0","mm",'F');
   factory->AddVariable("d0+2./om","MaxRadius","mm",'F');
   factory->AddVariable("ndactive/nactive","DoubleHitFraction","Fraction",'F');
+  factory->AddVariable("nnullambig/nactive","NullHitFraction","Fraction",'F');
+  factory->AddVariable("nmatactive/nactive","MatFraction","Fraction",'F');
+  factory->AddVariable("lastflt-firstflt","FltLen","mm",'F');
+
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
   // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the

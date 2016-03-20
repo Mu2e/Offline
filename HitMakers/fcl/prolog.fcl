@@ -76,6 +76,9 @@ MakeStrawHitPositions : {
 MakeStereoHits : {
   module_type : MakeStereoHits
   MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
+  minDdot : 0.0
+  minMVA : 0.3
+  maxChisquared : 500.0
 }
 
 #------------------------------------------------------------------------------
