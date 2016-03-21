@@ -48,6 +48,7 @@ namespace mu2e
   double XYZP::_efac(1.0);
   StrawHitFlag XYZP::_useflag;
   StrawHitFlag XYZP::_dontuseflag;
+  int XYZP::_debug(0);
 // comparison functor for ordering points
   struct radcomp : public std::binary_function<VALERR, VALERR, bool> {
     bool operator()(VALERR const& r1, VALERR const& r2) { return r1._val < r2._val; }
@@ -86,7 +87,7 @@ namespace mu2e
 //    rad._val = onethird*(rvec+rvec1+rvec2);
     rad._val = rvec;
     rad._err = _rerr;
-    
+    if(_debug > 1)std::cout << "rinfo : r = " << rad._val << " rerr = " << rad._err  << std::endl;
   }
 
   void
@@ -98,7 +99,8 @@ namespace mu2e
 //    rad._val = onethird*(rvec+rvec1+rvec2);
     phi._val = phi0;
     phi._err = _perr; 
-  }
+    if(_debug > 1)std::cout << "finfo : phi = " << phi._val << " ferr = " << phi._err << std::endl;
+ }
 
   bool 
   XYZP::use() const {
@@ -207,7 +209,8 @@ namespace mu2e
     _stereoinit(pset.get<bool>("stereoinit",false)),
     _stereofit(pset.get<bool>("stereofit",false)),
     _targetinit(pset.get<bool>("targetinit",true)),
-    _targetsize(pset.get<double>("targetsize",100.0)),
+    _targetinter(pset.get<bool>("targetintersect",true)),
+    _targetradius(pset.get<double>("targetradius",75.0)),
     _trackerradius(pset.get<double>("trackerradius",700.0)),
     _bz(0.0)
   {
@@ -217,7 +220,8 @@ namespace mu2e
     bitnames.push_back("OtherBackground");
     XYZP::_dontuseflag = StrawHitFlag(bitnames);
     if(_stereofit)XYZP::_useflag = StrawHitFlag(StrawHitFlag::stereo);
-  }
+    XYZP::_debug = _debug;
+}
 
   RobustHelixFit::~RobustHelixFit()
   {}
@@ -433,6 +437,23 @@ namespace mu2e
 	  std::cout << "iteration did not improve AGE!!! lambda = " 
 	  << lambda  << " age = " << age << " agenew = " << agenew << std::endl;
 	break;
+      }
+// if we're constraining to intersect the target, adjust the center and radius if necessary
+      if(_targetinter) {
+	double rperigee = center.perp()-rmed;
+	if(fabs(rperigee) > _targetradius){
+// adjust both center position and radius till they touch the target, holding phi constant.  This keeps the circle near the hits.  Sign matters!
+	  double dr;
+	  if(rperigee > 0)
+	    dr = 0.5*(rperigee - _targetradius);  // change is 1/2 the difference
+	  else
+	    dr = 0.5*(rperigee + _targetradius);
+	  rmed += dr;
+	  // direction radially outwards from origin to the center
+	  Hep3Vector pdir = Hep3Vector(center.x(),center.y(),0.0).unit();
+	  // the center moves opposite the radius
+	  center -= dr*pdir;
+	}
       }
       ++niter;
     }
@@ -689,7 +710,7 @@ namespace mu2e
 		// test circle parameters for this triple: should be inside the tracker,
 		// optionally consistent with the target
 		if(rho > _rcmin && rho<_rcmax && rmax < _trackerradius
-		  && ( (!_targetinit) || rmin < _targetsize) ) {
+		  && ( (!_targetinit) || rmin < _targetradius) ) {
 		  // accumulate 
 		  ++ntriple;
 		  accx(cx);
