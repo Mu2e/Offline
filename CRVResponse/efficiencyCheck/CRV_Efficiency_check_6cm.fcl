@@ -1,7 +1,7 @@
 #include "minimalMessageService.fcl"
 #include "standardServices.fcl"
-#include "CRVResponse/efficiencyCheck/prolog6cm.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
+#include "CRVResponse/efficiencyCheck/prolog6cm.fcl"
 
 BEGIN_PROLOG
 
@@ -203,7 +203,6 @@ physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotonArrivals.processNames   : ["*"]
 physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6cm_5600"]
 physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [5600]
-physics.producers.CrvPhotonArrivals.timeOffsets               : { }
 
 physics.producers.CrvCoincidencePE6T5.PEthreshold                    : 6
 physics.producers.CrvCoincidencePE6T5.maxTimeDifference              : 5

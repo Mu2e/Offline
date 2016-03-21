@@ -12,6 +12,7 @@ source :
 services :
 {
   RandomNumberGenerator: { }
+  TFileService : { fileName : "background.root" }
   user :
   {
     GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
@@ -23,24 +24,24 @@ services :
 
 physics :
 {
-  producers:
+  analyzers:
   {
-    @table::CrvResponsePackage.producers
+    background:
+    {
+      module_type               : CrvBackgroundCollector
+      g4ModuleLabels            : ["*"]
+      processNames              : ["*"]
+#      CRVSectorNames            : ["CRV_T1"]
+#      CRVSectorNames            : ["CRV_D1"]
+      CRVSectorNames            : ["CRV_T2","CRV_T3","CRV_T4"]
+      startTime                 : 400.0
+    }
   }
 
-  an : [@sequence::CrvResponsePackage.CrvResponseSequence]
-  out: [Output]
+  an : [background]
+  out: []
 
   end_paths: [an, out]
-}
-
-outputs: 
-{
-  Output : 
-  {
-    module_type : RootOutput
-    fileName    : "data_crv.art"
-  }
 }
 
 services.user.SeedService.baseSeed         :  773651

@@ -14,9 +14,7 @@ moduleGap=5
         ((i++));
 
         scintTolerance="0"
-#        backgroundParam1="2.9e-4"
-        backgroundParam1="0"
-        backgroundParam3=$(echo "scale=3; 5000/$photonYield" | bc)
+        backgroundFileName=""
 
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_verticalPlanes'_'$i.txt
         echo "#include \"CRVResponse/efficiencyCheck/genconfig_5cm_verticalPlanes.txt\"" >| $genconfigfile
@@ -34,8 +32,10 @@ moduleGap=5
         echo "physics.producers.CrvPhotonArrivals.scintillationYield  : $photonYield" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.scintillationYieldTolerance  : $scintTolerance" >> $fclfile
         echo "physics.producers.CrvSiPMResponses.ThermalProb          : 0" >> $fclfile
-        echo "physics.producers.CrvSiPMResponses.backgroundParam1     : $backgroundParam1" >> $fclfile
-        echo "physics.producers.CrvSiPMResponses.backgroundParam3     : $backgroundParam3" >> $fclfile
+        echo "physics.producers.CrvPhotonArrivals.backgroundSampleFileName  : \"$backgroundFileName\"" >> $fclfile
+        echo "physics.producers.CrvPhotonArrivals.countersInBackgroundSample: 192" >> $fclfile
+        echo "physics.producers.CrvPhotonArrivals.backgroundSampleFactor    : 2" >> $fclfile
+        echo "physics.producers.CrvPhotonArrivals.maxBackgroundTimeShift    : 500" >> $fclfile
 
         mu2eart --setup=./setup.sh --fcl=$fclfile --njobs=50 --events-per-job=10000 --jobname=CRV_efficiency5cm_side_moduleGap$moduleGap'_'layerOffset$layerOffset'_'photonYield$photonYield --outstage=/pnfs/mu2e/scratch/outstage
 
