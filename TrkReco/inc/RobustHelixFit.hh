@@ -70,6 +70,7 @@ namespace mu2e
     static double _efac;
 // flag bits to define use
     static StrawHitFlag _useflag, _dontuseflag;
+    static int _debug;
   };
 
   typedef std::vector<XYZP> XYZPVector;
@@ -139,7 +140,8 @@ namespace mu2e
     bool _stereofit; // require stereo hits 
     bool _targetpoint; // use target as a point in the circle fit
     bool _targetinit; // require consistency with target when initializing circle
-    double _targetsize; // target size to use in constraint or init
+    bool _targetinter; // require fit to intersect the target
+    double _targetradius; // target size to use in constraint or init
     double _trackerradius; // tracker radius to use in init
     mutable double _bz; // cached value of Field Z component at the tracker origin
 // cached value of radius and pitch sign: these depend on the particle type
