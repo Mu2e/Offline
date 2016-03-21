@@ -265,6 +265,7 @@ namespace mu2e
     const string stars2(23,'*');
     const string label2 = " MVA Weights ";
     cout << stars2 << label2 << stars2 << endl;
+    cout << "From file: " << _mvaWgtsFile << endl;
     for(vector <vector< vector<double> > >::size_type k = 0; k != _twgts.size(); ++k){
       cout << "Layer " << k << ":" << endl;
       for(vector< vector<double> >::size_type j = 0; j != _twgts[k].size(); j++) {
