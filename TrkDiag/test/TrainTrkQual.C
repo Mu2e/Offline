@@ -161,7 +161,7 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,char* tname = "TrkQual")
       "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
 // signal is defined as the momentum resolution core,
-  TCut signal("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom<0.25&&fit.mom-mcent.mom>-0.5");
+  TCut signal("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom<0.25&&fit.mom-mcent.mom>-0.25");
   // tail is defined as the high-side tail
   TCut bkg("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom>0.5");
 
@@ -190,17 +190,17 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,char* tname = "TrkQual")
   // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
   // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
 
-  factory->AddVariable("nactive","NActive","Count",'I');
-  factory->AddVariable("nactive/nhits","FActive","Fraction",'F');
-  factory->AddVariable("log10(fitcon)","LogFitCon","Probability",'F');
+  factory->AddVariable("fit.nactive","NActive","Count",'I');
+  factory->AddVariable("fit.nactive/fit.nhits","FActive","Fraction",'F');
+  factory->AddVariable("log10(fit.con)","LogFitCon","Probability",'F');
   factory->AddVariable("fit.momerr","FitMomErr","MeV/c",'F');
-  factory->AddVariable("t0err","T0Err","nsec",'F');
-  factory->AddVariable("d0","D0","mm",'F');
-  factory->AddVariable("d0+2./om","MaxRadius","mm",'F');
-  factory->AddVariable("ndactive/nactive","DoubleHitFraction","Fraction",'F');
-  factory->AddVariable("nnullambig/nactive","NullHitFraction","Fraction",'F');
-  factory->AddVariable("nmatactive/nactive","MatFraction","Fraction",'F');
-  factory->AddVariable("lastflt-firstflt","FltLen","mm",'F');
+  factory->AddVariable("fit.t0err","T0Err","nsec",'F');
+  factory->AddVariable("fit.d0","D0","mm",'F');
+  factory->AddVariable("fit.d0+2./fit.om","MaxRadius","mm",'F');
+  factory->AddVariable("fit.ndactive/fit.nactive","DoubleHitFraction","Fraction",'F');
+  factory->AddVariable("fit.nnullambig/fit.nactive","NullHitFraction","Fraction",'F');
+  factory->AddVariable("fit.nmatactive/fit.nactive","MatFraction","Fraction",'F');
+//  factory->AddVariable("lastflt-firstflt","FltLen","mm",'F');
 
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
