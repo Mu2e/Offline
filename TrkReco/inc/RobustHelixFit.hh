@@ -55,8 +55,10 @@ namespace mu2e
     CLHEP::Hep3Vector _sdir;
 // errors are asymmetric; along the wire is given by time division, perp to the wire by the straw size/sqrt(12)
     double _perr,_rerr;
+// if this hit is from a MC conversion
+    bool _conversion;
 // initialize some variables on construction
-    XYZP():_ind(-1),_phi(0.0),_perr(1000.0),_rerr(1000.0){}
+    XYZP():_ind(-1),_phi(0.0),_perr(1000.0),_rerr(1000.0),_conversion(false){}
     XYZP(size_t index,StrawHit const& sh, StrawHitPosition const& shp,Straw const& straw);
     XYZP(size_t ind,CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr);
      XYZP(CLHEP::Hep3Vector const& pos, double size);
@@ -71,6 +73,9 @@ namespace mu2e
 // flag bits to define use
     static StrawHitFlag _useflag, _dontuseflag;
     static int _debug;
+// for checking if it's a conversion hit
+    bool conversion() const { return _conversion; }
+    void setConversion(bool conv) { _conversion = conv; }
   };
 
   typedef std::vector<XYZP> XYZPVector;

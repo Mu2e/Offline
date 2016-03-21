@@ -76,6 +76,7 @@ namespace mu2e
       std::string _shLabel;
       std::string _shpLabel;
       std::string _tpkfLabel;
+      std::string _mcdigislabel;
       // outlier cuts
       TrkParticle _tpart; // particle type being searched for
       TrkFitDirection _fdir;  // fit direction in search
@@ -83,6 +84,7 @@ namespace mu2e
       const StrawHitCollection* _shcol;
       const StrawHitPositionCollection* _shpcol;
       const TrackerHitTimeClusterCollection* _tccol;
+      const StrawDigiMCCollection *_mcdigis;
       // robust helix fitter
       RobustHelixFit _hfit;
       // cache of time peaks
@@ -100,6 +102,7 @@ namespace mu2e
     _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel(pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _tpkfLabel(pset.get<string>("TrackerHitTimeClusterCollection","TimePeakFinder")),
+    _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _hfit(pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet()))
@@ -130,18 +133,20 @@ namespace mu2e
     }
     loadTimePeaks(_tpeaks,_tccol);
 
+
     // dummy objects
     static HelixDef dummyhdef;
     static HelixFitResult dummyhfit(dummyhdef);
     for(unsigned ipeak=0;ipeak<_tpeaks.size();++ipeak){
       // create track definitions for the helix fit from this initial information 
-      HelixDef helixdef(_shcol,_shpcol,_tpeaks[ipeak]._trkptrs,_tpart,_fdir);
+      HelixDef helixdef(_shcol,_shpcol,_tpeaks[ipeak]._trkptrs,_tpart,_fdir,_mcdigis);
       // copy this for the other fits
       TrkDef seeddef(helixdef);
       // track fitting objects for this peak
       HelixFitResult helixfit(helixdef);
       // robust helix fit
-      if(_hfit.findHelix(helixfit/*,_icepeak==(int)ipeak*/)){
+      if(_hfit.findHelix(helixfit, _diag/*_icepeak==(int)ipeak*/)){
+
 	//findhelix = true;
 	// convert the result to standard helix parameters, and initialize the seed definition helix
 	HepVector hpar;
@@ -171,6 +176,7 @@ namespace mu2e
     _shcol = 0;
     _shpcol = 0;
     _tccol = 0;
+    _mcdigis = 0;
 
     if(evt.getByLabel(_shLabel,_strawhitsH))
       _shcol = _strawhitsH.product();
@@ -180,6 +186,12 @@ namespace mu2e
 
     if (evt.getByLabel(_tpkfLabel,_tclusthitH))
       _tccol = _tclusthitH.product();
+
+    if (_diag > 0) {
+      art::Handle<StrawDigiMCCollection> mcdigisHandle;
+      if(evt.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle))
+	_mcdigis = mcdigisHandle.product();
+    }
 // don't require stereo hits: they are only used for diagnostics
     return _shcol != 0 && _shpcol != 0 && _tccol!=0;
   }

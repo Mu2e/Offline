@@ -61,7 +61,7 @@ namespace mu2e
 
   XYZP::XYZP(size_t index,StrawHit const& sh, StrawHitPosition const& shp,Straw const& straw) :
     _ind(index), _pos(shp.pos()), _phi(shp.pos().phi()), _flag(shp.flag()), _wdir(straw.getDirection()),
-    _perr(_efac*shp.posRes(StrawHitPosition::phi)),_rerr(_efac*shp.posRes(StrawHitPosition::rho))
+    _perr(_efac*shp.posRes(StrawHitPosition::phi)),_rerr(_efac*shp.posRes(StrawHitPosition::rho)),_conversion(false)
   {
     static const CLHEP::Hep3Vector _zdir(0.0,0.0,1.0);
     _sdir = _zdir.cross(_wdir);
@@ -71,12 +71,12 @@ namespace mu2e
   _phi(0.0),
   _flag(StrawHitFlag::stereo),
   _wdir(CLHEP::Hep3Vector(1,0,0)),_sdir(CLHEP::Hep3Vector(0,1,0)),
-  _perr(size),_rerr(size) {}
+  _perr(size),_rerr(size),_conversion(false) {}
 
   XYZP::XYZP(size_t ind,CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir,
       double werr, double serr) :
     _ind(ind),_pos(pos),_phi(_pos.phi()),_wdir(wdir),_sdir(wdir.y(),-wdir.x(),0.0),
-    _perr(_efac*werr),_rerr(_efac*serr) {}
+    _perr(_efac*werr),_rerr(_efac*serr),_conversion(false) {}
 
  void
   XYZP::rinfo(CLHEP::Hep3Vector const& center,VALERR& rad) const {
@@ -321,63 +321,127 @@ namespace mu2e
   void
   RobustHelixFit::plotXY(HelixDef const& mytrk, XYZPVector const& xyzp,
     HelixFitResult const& myhel) const {
-    static unsigned igraph = 0;
-    igraph++;
-    art::ServiceHandle<art::TFileService> tfs;
-    char gname[100];
-    snprintf(gname,100,"gshxy%i",igraph);
-    char bname[100];
-    snprintf(bname,100,"bshxy%i",igraph);
-    char sname[100];
-    snprintf(sname,100,"sshxy%i",igraph);
-    char bsname[100];
-    snprintf(bsname,100,"bsshxy%i",igraph);
-    char title[100];
-    snprintf(title,100,"StrawHit XY trk %i;mm;mm",igraph);
-    TH2F* g = tfs->make<TH2F>(gname,title,100,-500,500,100,-500,500);
-    TH2F* b = tfs->make<TH2F>(bname,title,100,-500,500,100,-500,500);
-    TH2F* s = tfs->make<TH2F>(sname,title,100,-500,500,100,-500,500);
-    TH2F* bs = tfs->make<TH2F>(bsname,title,100,-500,500,100,-500,500);
-    g->SetMarkerStyle(8);
-    g->SetMarkerColor(kGreen);
-    b->SetMarkerStyle(4);
-    b->SetMarkerColor(kYellow);
-    s->SetMarkerStyle(22);
-    s->SetMarkerColor(kGreen);
-    bs->SetMarkerStyle(26);
-    bs->SetMarkerColor(kYellow);
-    for(unsigned ihp=0;ihp<xyzp.size();++ihp){
-      if(xyzp[ihp].stereo()){
-	if(xyzp[ihp].use())
-	  s->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
-	else
-	  bs->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
-      } else {
-	if(xyzp[ihp].use())
-	  g->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
-	else
-	  b->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+
+    // Check that there are more than 10 CE hits first
+    int n_ce_hits = 0;
+    for (XYZPVector::const_iterator i_hit = xyzp.begin(); i_hit != xyzp.end(); ++i_hit) {
+      if ((*i_hit).conversion()) {
+	++n_ce_hits;
       }
     }
 
-    TArc* fitarc = new TArc(0.0,0.0,myhel._radius);
-    fitarc->SetLineColor(kRed);
-    fitarc->SetLineWidth(2);
-    fitarc->SetFillStyle(0);
-// draw the detector boundaries
-    static double innerrad(380.0);
-    static double outerrad(680.0);
-    TArc* indet = new TArc(-myhel._center.x(),-myhel._center.y(),innerrad);
-    TArc* outdet = new TArc(-myhel._center.x(),-myhel._center.y(),outerrad);
-    indet->SetLineColor(kBlue);
-    indet->SetFillStyle(0);
-    outdet->SetLineColor(kBlue);
-    outdet->SetFillStyle(0);
-// add these to the plot
-    TList* flist = g->GetListOfFunctions();
-    flist->Add(fitarc);
-    flist->Add(indet);
-    flist->Add(outdet);
+    if (n_ce_hits > 10) {
+      static unsigned igraph = 0;
+      igraph++;
+      art::ServiceHandle<art::TFileService> tfs;
+      char gname[100];
+      snprintf(gname,100,"gshxy%i",igraph);
+      char cname[100];
+      snprintf(cname,100,"cshxy%i",igraph);
+      char cbname[100];
+      snprintf(cbname,100,"cbshxy%i",igraph);
+      char bname[100];
+      snprintf(bname,100,"bshxy%i",igraph);
+      char sname[100];
+      snprintf(sname,100,"sshxy%i",igraph);
+      char bsname[100];
+      snprintf(bsname,100,"bsshxy%i",igraph);
+      char title[100];
+      snprintf(title,100,"StrawHit XY trk %i;mm;mm",igraph);
+      TH2F* g = tfs->make<TH2F>(gname,title,100,-500,500,100,-500,500);
+      TH2F* c = tfs->make<TH2F>(cname,title,100,-500,500,100,-500,500);
+      TH2F* cb = tfs->make<TH2F>(cbname,title,100,-500,500,100,-500,500);
+      TH2F* b = tfs->make<TH2F>(bname,title,100,-500,500,100,-500,500);
+      TH2F* s = tfs->make<TH2F>(sname,title,100,-500,500,100,-500,500);
+      TH2F* bs = tfs->make<TH2F>(bsname,title,100,-500,500,100,-500,500);
+      c->SetMarkerStyle(8);
+      c->SetMarkerColor(kRed);
+      cb->SetMarkerStyle(24);
+      cb->SetMarkerColor(kRed);
+      g->SetMarkerStyle(8);
+      g->SetMarkerColor(kGreen);
+      b->SetMarkerStyle(4);
+      b->SetMarkerColor(kYellow);
+      s->SetMarkerStyle(22);
+      s->SetMarkerColor(kGreen);
+      bs->SetMarkerStyle(26);
+      bs->SetMarkerColor(kYellow);
+      for(unsigned ihp=0;ihp<xyzp.size();++ihp){
+	if(xyzp[ihp].conversion()){
+	  if (xyzp[ihp].use()) {
+	    c->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+	  }
+	  else {
+	    cb->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+	  }
+	}
+	else {
+	  if(xyzp[ihp].stereo()){
+	    if(xyzp[ihp].use())
+	      s->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+	    else
+	      bs->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+	  } else {
+	    if(xyzp[ihp].use())
+	      g->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+	    else
+	      b->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+	  }
+	}
+      }
+
+      TArc* fitarc = new TArc(0.0,0.0,myhel._radius);
+      fitarc->SetLineColor(kRed);
+      fitarc->SetLineWidth(2);
+      fitarc->SetFillStyle(0);
+      // draw the detector boundaries
+      static double innerrad(380.0);
+      static double outerrad(680.0);
+      TArc* indet = new TArc(-myhel._center.x(),-myhel._center.y(),innerrad);
+      TArc* outdet = new TArc(-myhel._center.x(),-myhel._center.y(),outerrad);
+      indet->SetLineColor(kBlue);
+      indet->SetFillStyle(0);
+      outdet->SetLineColor(kBlue);
+      outdet->SetFillStyle(0);
+      static double target_radius(75);
+      TArc* target = new TArc(-myhel._center.x(),-myhel._center.y(),target_radius);
+      target->SetLineColor(kBlack);
+      target->SetFillStyle(0);
+      // add these to the plot
+      TList* flist = g->GetListOfFunctions();
+      flist->Add(fitarc);
+      flist->Add(indet);
+      flist->Add(outdet);
+      flist->Add(target);
+
+      if (mytrk.strawDigiMCCollection() != 0) {
+	// Plot the MC true CE hits
+	char mctruth_name[100];
+	snprintf(mctruth_name,100,"mctshxy%i",igraph);
+	TH2F* mct = tfs->make<TH2F>(mctruth_name,title,100,-500,500,100,-500,500);
+	mct->SetMarkerStyle(5);
+	mct->SetMarkerColor(kMagenta);
+	
+	for(std::vector<hitIndex>::const_iterator istr=mytrk.strawHitIndices().begin();
+	    istr != mytrk.strawHitIndices().end(); ++istr){
+
+	  StrawDigiMC const& mcdigi = mytrk.strawDigiMCCollection()->at(istr->_index);
+	  // use TDC channel 0 to define the MC match
+	  StrawDigi::TDCChannel itdc = StrawDigi::zero;
+	  if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+	  art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+	  art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+	  int gid(-1);
+	  if(spp->genParticle().isNonnull())
+	    gid = spp->genParticle()->generatorId().id();
+	
+	  bool conversion = (spp->pdgId() == 11 && gid == 2 && spmcp->momentum().mag()>90.0);
+	  if (conversion) {
+	    mct->Fill(spmcp->position().x()-myhel._center.x(),spmcp->position().y()-myhel._center.y());
+	  }
+	}
+      }
+    }
   }
 
   bool
@@ -615,50 +679,108 @@ namespace mu2e
 
   void
   RobustHelixFit::plotZ(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const {
-    static unsigned igraph = 0;
-    igraph++;
-    art::ServiceHandle<art::TFileService> tfs;
-    char gname[100];
-    snprintf(gname,100,"gshphiz%i",igraph);
-    char bname[100];
-    snprintf(bname,100,"bshphiz%i",igraph);
-    char sname[100];
-    snprintf(sname,100,"sshphiz%i",igraph);
-    char bsname[100];
-    snprintf(bsname,100,"bsshphiz%i",igraph);
-    char title[100];
-    snprintf(title,100,"StrawHit #phi Z trk %i;mm;rad",igraph);
-    TH2F* g = tfs->make<TH2F>(gname,title,100,-1500,1500,100,-12.5,12.5);
-    TH2F* b = tfs->make<TH2F>(bname,title,100,-1500,1500,100,-12.5,12.5);
-    TH2F* s = tfs->make<TH2F>(sname,title,100,-1500,1500,100,-12.5,12.5);
-    TH2F* bs = tfs->make<TH2F>(bsname,title,100,-1500,1500,100,-12.5,12.5);
-    g->SetMarkerStyle(8);
-    g->SetMarkerColor(kGreen);
-    b->SetMarkerStyle(4);
-    b->SetMarkerColor(kYellow);
-    s->SetMarkerStyle(22);
-    s->SetMarkerColor(kGreen);
-    bs->SetMarkerStyle(26);
-    bs->SetMarkerColor(kYellow);
-    for(unsigned ih=0;ih<xyzp.size();++ih){
-      if(xyzp[ih].stereo()){
-	if(xyzp[ih].use())
-	  s->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
-	else
-	  bs->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
-      } else {
-	if(xyzp[ih].use())
-	  g->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
-	else
-	  b->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+    // Check that there are more than 10 CE hits first
+    int n_ce_hits = 0;
+    for (XYZPVector::const_iterator i_hit = xyzp.begin(); i_hit != xyzp.end(); ++i_hit) {
+      if ((*i_hit).conversion()) {
+	++n_ce_hits;
       }
     }
-    TF1* line = new TF1("line","[0]+[1]*x",-1500,1500);
-    line->SetParameter(0,myhel._fz0);
-    line->SetParameter(1,myhel._dfdz);
-    line->SetLineColor(kRed);
-    TList* flist = g->GetListOfFunctions();
-    flist->Add(line);
+
+    if (n_ce_hits > 10) {
+      static unsigned igraph = 0;
+      igraph++;
+      art::ServiceHandle<art::TFileService> tfs;
+      char cname[100];
+      snprintf(cname,100,"cshphiz%i",igraph);
+      char cbname[100];
+      snprintf(cbname,100,"cbshphiz%i",igraph);
+      char gname[100];
+      snprintf(gname,100,"gshphiz%i",igraph);
+      char bname[100];
+      snprintf(bname,100,"bshphiz%i",igraph);
+      char sname[100];
+      snprintf(sname,100,"sshphiz%i",igraph);
+      char bsname[100];
+      snprintf(bsname,100,"bsshphiz%i",igraph);
+      char title[100];
+      snprintf(title,100,"StrawHit #phi Z trk %i;mm;rad",igraph);
+      TH2F* c = tfs->make<TH2F>(cname,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* cb = tfs->make<TH2F>(cbname,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* g = tfs->make<TH2F>(gname,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* b = tfs->make<TH2F>(bname,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* s = tfs->make<TH2F>(sname,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* bs = tfs->make<TH2F>(bsname,title,100,-1500,1500,100,-12.5,12.5);
+      c->SetMarkerStyle(8);
+      c->SetMarkerColor(kRed);
+      cb->SetMarkerStyle(24);
+      cb->SetMarkerColor(kRed);
+      g->SetMarkerStyle(8);
+      g->SetMarkerColor(kGreen);
+      b->SetMarkerStyle(4);
+      b->SetMarkerColor(kYellow);
+      s->SetMarkerStyle(22);
+      s->SetMarkerColor(kGreen);
+      bs->SetMarkerStyle(26);
+      bs->SetMarkerColor(kYellow);
+      for(unsigned ih=0;ih<xyzp.size();++ih){
+	if(xyzp[ih].conversion()){
+	  if (xyzp[ih].use()) {
+	    c->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	  }
+	  else {
+	    cb->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	  }
+	}
+	else {
+	  if(xyzp[ih].stereo()){
+	    if(xyzp[ih].use())
+	      s->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    else
+	      bs->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	  } else {
+	    if(xyzp[ih].use())
+	      g->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    else
+	      b->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	  }
+	}
+      }
+      TF1* line = new TF1("line","[0]+[1]*x",-1500,1500);
+      line->SetParameter(0,myhel._fz0);
+      line->SetParameter(1,myhel._dfdz);
+      line->SetLineColor(kRed);
+      TList* flist = g->GetListOfFunctions();
+      flist->Add(line);
+
+      if (mytrk.strawDigiMCCollection() != 0) {
+	// Plot the MC true CE hits
+	char mctruth_name[100];
+	snprintf(mctruth_name,100,"mctshphiz%i",igraph);
+	TH2F* mct = tfs->make<TH2F>(mctruth_name,title,100,-1500,1500,100,-12.5,12.5);
+	mct->SetMarkerStyle(5);
+	mct->SetMarkerColor(kMagenta);
+	
+	for(std::vector<hitIndex>::const_iterator istr=mytrk.strawHitIndices().begin();
+	    istr != mytrk.strawHitIndices().end(); ++istr){
+
+	  StrawDigiMC const& mcdigi = mytrk.strawDigiMCCollection()->at(istr->_index);
+	  // use TDC channel 0 to define the MC match
+	  StrawDigi::TDCChannel itdc = StrawDigi::zero;
+	  if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+	  art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+	  art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+	  int gid(-1);
+	  if(spp->genParticle().isNonnull())
+	    gid = spp->genParticle()->generatorId().id();
+	
+	  bool conversion = (spp->pdgId() == 11 && gid == 2 && spmcp->momentum().mag()>90.0);
+	  if (conversion) {
+	    mct->Fill(spmcp->position().z(),spmcp->position().phi());
+	  }
+	}
+      }
+    }
   }
 
   bool
@@ -749,6 +871,25 @@ namespace mu2e
 	Straw const& straw= tracker.getStraw(sh.strawIndex());
 	StrawHitPosition const& shp = mytrk.strawHitPositionCollection()->at(istr->_index);
 	XYZP pos(istr->_index,sh,shp,straw);
+
+	// Is this from a conversion hit?
+	if(mytrk.strawDigiMCCollection() != 0) {
+	  StrawDigiMC const& mcdigi = mytrk.strawDigiMCCollection()->at(istr->_index);
+	  // use TDC channel 0 to define the MC match
+	  StrawDigi::TDCChannel itdc = StrawDigi::zero;
+	  if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+	  art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+	  art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+	  int gid(-1);
+	  if(spp->genParticle().isNonnull())
+	    gid = spp->genParticle()->generatorId().id();
+	
+	  bool conversion = (spp->pdgId() == 11 && gid == 2 && spmcp->momentum().mag()>90.0);
+	  if (conversion) {
+	    pos.setConversion(true);
+	  }
+	}
+
 	xyzp.push_back(pos);
       } 
     } else {
