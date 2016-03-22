@@ -140,7 +140,7 @@ namespace mu2e
     double _sfactor; // stereo hit error factor
     bool _forcep; // force the p/pt to be in range (true), or exclude fits outside that range (false)
     bool _xyweights,_zweights; // weight points by estimated errors 
-    bool _filter; // filter hits
+    bool _filterxy, _filterz; // filter hits
     bool _stereoinit; // require stereo hits to initialize
     bool _stereofit; // require stereo hits 
     bool _targetpoint; // use target as a point in the circle fit

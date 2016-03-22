@@ -205,7 +205,8 @@ namespace mu2e
     _forcep(pset.get<bool>("forceP",false)),
     _xyweights(pset.get<bool>("xyWeights",false)),
     _zweights(pset.get<bool>("zWeights",false)),
-    _filter(pset.get<bool>("filter",true)),
+    _filterxy(pset.get<bool>("filterxy",true)),
+    _filterz(pset.get<bool>("filterz",true)),
     _stereoinit(pset.get<bool>("stereoinit",false)),
     _stereofit(pset.get<bool>("stereofit",false)),
     _targetinit(pset.get<bool>("targetinit",true)),
@@ -274,7 +275,7 @@ namespace mu2e
   RobustHelixFit::findHelix(XYZPVector& xyzp,HelixFitResult& myhel) {
     bool retval(false);
 // filter by geometry
-    if(_filter)filterDist(xyzp);
+    if(_filterxy)filterDist(xyzp);
     if(xyzp.size() >= _minnhit){
       // initialize the circle parameters
       if(initCircle(xyzp,myhel)){
@@ -307,7 +308,7 @@ namespace mu2e
     unsigned niter(0);
     while(niter < _maxniter && changed){
       findCenterAGE(xyzp,center,rmed,age,_xyweights);
-      if(_filter)
+      if(_filterxy)
 	filterXY(xyzp,center,rmed,changed);
       else
 	changed = false;
@@ -659,7 +660,7 @@ namespace mu2e
 	      double dphi = finfo[jphi]._phi._val-finfo[iphi]._phi._val;
 	      double dphiex = dz*dfdz;
 	      double ferr = finfo[iphi]._phi._err+finfo[jphi]._phi._err;
-	      if(!_filter || fabs(dphi-dphiex) < _nsigma*ferr){
+	      if(!_filterz || fabs(dphi-dphiex) < _nsigma*ferr){
 		double slope = dphi/dz;
 		if(slope > _smin && slope < _smax){ 
 // limit the weight so as not to count more than 1 loop
@@ -678,7 +679,7 @@ namespace mu2e
 //	accumulator_set<double, stats<tag::mean>> acci2test;
 	for(unsigned iphi=0; iphi < finfo.size(); ++iphi){
 	  double phiex = fz0+finfo[iphi]._z*dfdz;
-	  if(!_filter || fabs(finfo[iphi]._phi._val-phiex) < _nsigma*finfo[iphi]._phi._err){
+	  if(!_filterz || fabs(finfo[iphi]._phi._val-phiex) < _nsigma*finfo[iphi]._phi._err){
 	    double wt = _zweights ? 1.0/finfo[iphi]._phi._err : 1.0;
 	    acci2(finfo[iphi]._phi._val - finfo[iphi]._z*dfdz, weight=wt);
 //	    acci2test(finfo[iphi]._phi._val - finfo[iphi]._z*dfdz);
@@ -698,7 +699,7 @@ namespace mu2e
 	xyzp[ixyzp].finfo(myhel._center,fz._phi);
 	int nloop = (int)rint((phiex - fz._phi._val)/twopi);
 	xyzp[ixyzp]._phi = fz._phi._val + nloop*twopi;
-	if(_filter && fabs(xyzp[ixyzp]._phi-phiex)> _nsigma*fz._phi._err) xyzp[ixyzp].setOutlier();
+	if(_filterz && fabs(xyzp[ixyzp]._phi-phiex)> _nsigma*fz._phi._err) xyzp[ixyzp].setOutlier();
       }
       return true;
     } else
