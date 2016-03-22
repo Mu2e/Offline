@@ -53,7 +53,7 @@ namespace mu2e {
 
   private:
 
-    explicit PrimaryGeneratorAction(bool fillHistograms);
+    explicit PrimaryGeneratorAction(bool fillHistograms,  int verbosityLevel=0);
 
     void fromEvent( G4Event* );
 
@@ -71,6 +71,8 @@ namespace mu2e {
     SimParticlePrimaryHelper *parentMapping_;
 
     TH1D* _totalMultiplicity;
+
+    int verbosityLevel_;
 
   };
 

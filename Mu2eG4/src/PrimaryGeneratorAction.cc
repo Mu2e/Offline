@@ -56,13 +56,18 @@ using CLHEP::HepLorentzVector;
 
 namespace mu2e {
 
-  PrimaryGeneratorAction::PrimaryGeneratorAction(bool fill)
-    : _totalMultiplicity(nullptr)
+  PrimaryGeneratorAction::PrimaryGeneratorAction(bool fill, int verbosityLevel)
+    : _totalMultiplicity(nullptr),  verbosityLevel_(verbosityLevel)
   {
     if(fill) {
       art::ServiceHandle<art::TFileService> tfs;
       _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total multiplicity of primary particles", 20, 0, 20);
     }
+
+    if ( verbosityLevel_ > 0 ) {
+      cout << __func__ << " verbosityLevel_  : " <<  verbosityLevel_ << endl;
+    }
+
   }
 
   PrimaryGeneratorAction::PrimaryGeneratorAction()
@@ -70,7 +75,8 @@ namespace mu2e {
   {}
 
   PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset)
-    : PrimaryGeneratorAction(pset.get<bool>("debug.fillDiagnosticHistograms", false))
+    : PrimaryGeneratorAction(pset.get<bool>("debug.fillDiagnosticHistograms", false),
+                             pset.get<int>("debug.diagLevel", 0))
   {}
 
   void PrimaryGeneratorAction::setEventData(const GenParticleCollection* gens,
@@ -130,6 +136,18 @@ namespace mu2e {
       }
     }
 
+    // a test
+    // int ovl = verbosityLevel_;
+    // verbosityLevel_ = 2;
+    // addG4Particle(event,
+    //               static_cast<PDGCode::type>(1000010048),
+    //               // Transform into G4 world coordinate system
+    //               G4ThreeVector()+mu2eOrigin,
+    //               0.0,
+    //               0.0,
+    //               G4ThreeVector());
+    // verbosityLevel_ = ovl;
+
     // Also create particles from the input hits
     for(const auto& hitcoll : *hitInputs_) {
       for(const auto& hit : *hitcoll) {
@@ -161,8 +179,7 @@ namespace mu2e {
     // Create a new vertex
     G4PrimaryVertex* vertex = new G4PrimaryVertex(pos, time);
 
-    static int const verbosityLevel = 0; // local debugging variable
-    if ( verbosityLevel > 0) {
+    if ( verbosityLevel_ > 0) {
       cout << __func__ << " pdgId   : " <<pdgId << endl;
     }
 
@@ -189,7 +206,7 @@ namespace mu2e {
 
       // if g4 complains about no GenericIon we need to abort and add it in the physics list...
 
-      if ( verbosityLevel > 0) {
+      if ( verbosityLevel_ > 1) {
         cout << __func__ << " will set up nucleus pdgId,Z,A,L,E,J, exc: "
              << pdgId
              << ", " << ZZ << ", " << AA << ", " << LL << ", " << EE << ", " << JJ
@@ -198,6 +215,9 @@ namespace mu2e {
       }
 
       G4ParticleDefinition const * pDef;
+
+      G4double excEnergy = 0.001;
+      // for an excited state; we will fudge it by adding 1keV regardles of the isomer level
 
       if (exc==0) {
 
@@ -212,15 +232,14 @@ namespace mu2e {
 
       } else {
 
-        // an excited state; we will fudge it by adding 1keV
 #if G4VERSION<4099
-        pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,LL,0.001);
+        pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,LL,excEnergy);
 #else
-        pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,LL,0.001);
+        pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,LL,excEnergy);
 #endif
       }
 
-      if ( verbosityLevel > 0) {
+      if ( verbosityLevel_ > 1) {
         cout << __func__ << " will set up : "
              << pDef->GetParticleName()
              << " with id: " << pDef->GetPDGEncoding()
@@ -230,7 +249,7 @@ namespace mu2e {
       if ( pdgId != pDef->GetPDGEncoding() ) {
 
         throw cet::exception("GENE")
-          << "Problem creating "<<pdgId << "\n";
+          << "Problem creating " << pdgId << "\n";
       }
 
     }
