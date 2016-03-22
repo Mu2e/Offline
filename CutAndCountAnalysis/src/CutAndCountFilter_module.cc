@@ -1,0 +1,39 @@
+// Andrei Gaponenko, 2016
+
+#include <string>
+
+#include "fhiclcpp/ParameterSet.h"
+#include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Utilities/InputTag.h"
+
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+
+#include "CutAndCountAnalysis/inc/CutAndCountAnalysis.hh"
+
+namespace mu2e {
+  class CutAndCountFilter : public art::EDFilter {
+  public:
+    explicit CutAndCountFilter(const fhicl::ParameterSet& pset);
+    virtual bool filter(art::Event& event) override;
+  private:
+    CutAndCountAnalysis an_;
+  };
+
+  //================================================================
+  CutAndCountFilter::CutAndCountFilter(const fhicl::ParameterSet& pset)
+    : an_(pset, *art::ServiceHandle<art::TFileService>())
+  {}
+
+  //================================================================
+  bool CutAndCountFilter::filter(art::Event& event) {
+    return an_.accepted(event);
+  }
+
+} // namespace mu2e
+
+DEFINE_ART_MODULE(mu2e::CutAndCountFilter);
