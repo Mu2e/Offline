@@ -52,7 +52,7 @@
 namespace mu2e {
 
   namespace CutAndCount {
-    enum class TrkCut;
+    enum class TrkCutNumber;
   }
 
   class CutAndCountAnalysis {
@@ -122,7 +122,7 @@ namespace mu2e {
     TH1 *hNumAcceptedTracks_;
     CutAndCount::TrkCutHist hTrkCuts_;
 
-    CutAndCount::TrkCut processTrack(const art::Ptr<KalRep>& trk, const art::Event& evt);
+    CutAndCount::TrkCutNumber processTrack(const art::Ptr<KalRep>& trk, const art::Event& evt);
     const TrackClusterMatch* findCaloMatch(const art::Ptr<KalRep>& trk, const art::Event& evt);
   };
 
