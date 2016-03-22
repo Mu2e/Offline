@@ -35,7 +35,7 @@ using CLHEP::Hep3Vector;
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "TrkDiag/inc/KalDiag.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 // C++ includes.
 #include <iostream>
 #include <string>

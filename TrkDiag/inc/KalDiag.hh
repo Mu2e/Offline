@@ -31,7 +31,7 @@
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 // Mu2e tracking
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/TrkDef.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"

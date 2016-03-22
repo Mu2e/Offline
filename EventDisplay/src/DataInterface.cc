@@ -59,7 +59,7 @@
 #ifdef BABARINSTALLED
 using namespace CLHEP;
 #include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #else
 #warning BaBar package is absent. KalRep cannot be displayed in the event display.

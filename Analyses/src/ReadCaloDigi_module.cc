@@ -91,7 +91,7 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"

@@ -7,7 +7,7 @@
 //
 #include "TrkReco/inc/PanelAmbigResolver.hh"
 #include "TrkReco/inc/PanelStateIterator.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkT0.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"

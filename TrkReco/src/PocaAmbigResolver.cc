@@ -7,7 +7,7 @@
 // $Date: 2012/08/31 22:39:00 $
 //
 #include "TrkReco/inc/PocaAmbigResolver.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"

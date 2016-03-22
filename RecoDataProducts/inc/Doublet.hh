@@ -16,7 +16,7 @@
 
 #include "TrkReco/inc/TrkDef.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 
 // C++

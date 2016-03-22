@@ -8,7 +8,7 @@
 //
 #include "TrkReco/inc/FixedAmbigResolver.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 
 namespace mu2e {
 

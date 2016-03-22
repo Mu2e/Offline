@@ -28,6 +28,7 @@ env.SharedLibrary( helper.prefixed_plugin_libname('EventDisplay_module.cc')
                    # common libs
                    LIBS=[ 'mu2e_Mu2eBTrk',
 			  'mu2e_TrkReco',
+                          'mu2e_BTrkData',
 			  'mu2e_Mu2eUtilities',
                           'mu2e_MCDataProducts',
                           'mu2e_RecoDataProducts',

@@ -27,7 +27,7 @@
 #include "BTrk/BField/BField.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 // Mu2e objects
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
