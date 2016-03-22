@@ -125,7 +125,7 @@ physics : {
       genCountLogger: { module_type: GenEventCountReader }
 
       cutAndCount: {
-	 module_type: CutAndCountAnalysis
+	 module_type: CutAndCountAnalyzer
 
 	 // Dowstream e- track input
 	 trackDemInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
