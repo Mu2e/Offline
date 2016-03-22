@@ -87,8 +87,8 @@ namespace mu2e
 // access to event-specific MC truth for conversion electron
     std::vector<int> const& VDids(TRACKERPOS tpos) const;
 // functions to fill track information from KalRep
-    void fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo);
-    void fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo);
+    void fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo) const;
+    void fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) const;
 // MC info about a track
     void fillTrkInfoMC(art::Ptr<SimParticle> const& spp,const KalRep* krep,TrkInfoMC& trkinfomc);
     void fillTrkInfoMCStep(MCStepItr const& imcs, TrkInfoMCStep& trkinfomcstep) const;
