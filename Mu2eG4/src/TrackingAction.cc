@@ -50,6 +50,7 @@
 // G4 includes
 #include "globals.hh"
 #include "G4Event.hh"
+#include "G4Ions.hh"
 #include "G4RunManager.hh"
 #include "G4EventManager.hh"
 
@@ -377,9 +378,42 @@ namespace mu2e {
 
     // Add this track to the transient data.
     CLHEP::HepLorentzVector p4(trk->GetMomentum(),trk->GetTotalEnergy());
+
+    PDGCode::type ppdgId = static_cast<PDGCode::type>(trk->GetDefinition()->GetPDGEncoding());
+
+    // here we inspect unusual excited ions
+
+    if (ppdgId>PDGCode::G4Threshold) {
+
+      int excLevel = ppdgId%10;
+
+      if ( (excLevel > 1) && (trackingVerbosityLevel > -1) ) {
+
+        const G4ParticleDefinition* pDef = trk->GetDefinition();
+
+        G4cout << __func__ 
+               << " Warning: Unusual excited ion: " << ppdgId
+               << " name   " << pDef->GetParticleName() << G4endl
+               << " mass   " << pDef->GetPDGMass() << G4endl
+               << " width  " << pDef->GetPDGWidth() << G4endl
+               << " charge " << pDef->GetPDGCharge() << G4endl
+               << " iSpin  " << pDef->GetPDGiSpin() << G4endl
+               << " iParity " << pDef->GetPDGiParity() << G4endl
+               << " iConjugation " << pDef->GetPDGiConjugation() << G4endl
+               << " iIsospin " << pDef->GetPDGiIsospin() << G4endl
+               << " iIsospinZ " << pDef->GetPDGiIsospin3() << G4endl
+               << " gParity " << pDef->GetPDGiGParity() << G4endl
+               << " Excitation energy: " 
+               << static_cast<const G4Ions*>(pDef)->GetExcitationEnergy() << G4endl
+               << " produced by " << creationCode 
+               << G4endl;
+      }
+
+    }
+
     _transientMap.insert(std::make_pair(kid,SimParticle( kid,
                                                          parentPtr,
-                                                         static_cast<PDGCode::type>(trk->GetDefinition()->GetPDGEncoding()),
+                                                         ppdgId,
                                                          genPtr,
                                                          trk->GetPosition()-_mu2eOrigin,
                                                          p4,
