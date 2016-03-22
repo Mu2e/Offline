@@ -3,8 +3,8 @@ BEGIN_PROLOG
     CrvPhotonArrivals:
     {
       module_type               : CrvPhotonArrivalsGenerator
-      g4ModuleLabels            : ["detectorFilter"]
-      processNames              : ["cosmics2"]
+      g4ModuleLabels            : ["*"]
+      processNames              : ["*"]
       lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6600",
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_5600",
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_4500",
@@ -19,7 +19,6 @@ BEGIN_PROLOG
       scintillatorDecayTimeFast : 3.0      //3.0 ns   //includes WLS component in the scintillator
       scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used
       fiberDecayTime            : 7.4      //7.4 ns
-      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
       startTime                 : 400.0    //0.0 ns
     }
     CrvSiPMResponses:
@@ -53,10 +52,6 @@ BEGIN_PROLOG
                                                 //total cross talk probability cp:
                                                 //use probability to release a charge r = 0.35 (Geiger probability)
                                                 //cp = p*r + (p*r)^2 + (p*r)^3 + ... = 0.05
-
-      backgroundParam1             : 0          //2.9e-4 ns^-1 @PEyield of 5000photons/MeV     100kHz/GeigerProb  -->  2.9e5 s^-1 = 2.9e-4 ns^-1
-      backgroundParam2             : 0.13
-      backgroundParam3             : 1.00       //@PEyield of 5000photons/MeV (scales inversely with PEyield)
     }
     CrvWaveforms:
     {

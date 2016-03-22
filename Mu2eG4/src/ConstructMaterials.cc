@@ -128,6 +128,14 @@ namespace mu2e {
       ConcreteMars->AddElement( getElementOrThrow("Fe"), 0.014); //Iron
     }
 
+
+    mat = uniqueMaterialOrThrow( "CONCRETE_CB4_07P" );
+    {
+      G4Material* ConcreteCB4_07P = new G4Material(mat.name, 2.35*CLHEP::g/CLHEP::cm3, 2 );
+      ConcreteCB4_07P->AddMaterial( findMaterialOrThrow("CONCRETE_MARS") , 0.993); // MARS Concrete
+      ConcreteCB4_07P->AddMaterial( findMaterialOrThrow("G4_BORON_CARBIDE") , 0.007); // Boron carbide
+    }
+
     mat = uniqueMaterialOrThrow( "CONCRETE_CB4_1P" );
     {
       G4Material* ConcreteCB4_1P = new G4Material(mat.name, 2.35*CLHEP::g/CLHEP::cm3, 2 );
@@ -163,6 +171,20 @@ namespace mu2e {
       Barite->AddElement( getElementOrThrow("Ba"), 0.4420); //Barium - should be 0.4431, but
                                                             //         G4 complains if fractional
                                                             //         weights don't add up to 1.
+    }
+
+    mat = uniqueMaterialOrThrow( "BARITE_CB4_05P" );
+    {
+      G4Material* BariteCB4_05P = new G4Material(mat.name, 3.5*CLHEP::g/CLHEP::cm3, 2 );
+      BariteCB4_05P->AddMaterial( findMaterialOrThrow("BARITE") , 0.995); // Barite concrete
+      BariteCB4_05P->AddMaterial( findMaterialOrThrow("G4_BORON_CARBIDE") , 0.005); // Boron carbide
+    }
+
+    mat = uniqueMaterialOrThrow( "BARITE_CB4_1P" );
+    {
+      G4Material* BariteCB4_1P = new G4Material(mat.name, 3.5*CLHEP::g/CLHEP::cm3, 2 );
+      BariteCB4_1P->AddMaterial( findMaterialOrThrow("BARITE") , 0.99); // Barite concrete
+      BariteCB4_1P->AddMaterial( findMaterialOrThrow("G4_BORON_CARBIDE") , 0.01); // Boron carbide
     }
 
     mat = uniqueMaterialOrThrow("HeavyConcrete");

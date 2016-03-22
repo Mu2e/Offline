@@ -349,61 +349,89 @@ namespace mu2e
       static unsigned igraph = 0;
       igraph++;
       art::ServiceHandle<art::TFileService> tfs;
-      char gname[100];
-      snprintf(gname,100,"gshxy%i",igraph);
-      char cname[100];
-      snprintf(cname,100,"cshxy%i",igraph);
-      char cbname[100];
-      snprintf(cbname,100,"cbshxy%i",igraph);
-      char bname[100];
-      snprintf(bname,100,"bshxy%i",igraph);
-      char sname[100];
-      snprintf(sname,100,"sshxy%i",igraph);
-      char bsname[100];
-      snprintf(bsname,100,"bsshxy%i",igraph);
+      char ce_stereo_used_name[100];
+      snprintf(ce_stereo_used_name,100,"ce_stereo_used_shxy%i",igraph);
+      char ce_stereo_notused_name[100];
+      snprintf(ce_stereo_notused_name,100,"ce_stereo_notused_shxy%i",igraph);
+      char ce_notstereo_used_name[100];
+      snprintf(ce_notstereo_used_name,100,"ce_notstereo_used_shxy%i",igraph);
+      char ce_notstereo_notused_name[100];
+      snprintf(ce_notstereo_notused_name,100,"ce_notstereo_notused_shxy%i",igraph);
+      char bkg_stereo_used_name[100];
+      snprintf(bkg_stereo_used_name,100,"bkg_stereo_used_shxy%i",igraph);
+      char bkg_stereo_notused_name[100];
+      snprintf(bkg_stereo_notused_name,100,"bkg_stereo_notused_shxy%i",igraph);
+      char bkg_notstereo_used_name[100];
+      snprintf(bkg_notstereo_used_name,100,"bkg_notstereo_used_shxy%i",igraph);
+      char bkg_notstereo_notused_name[100];
+      snprintf(bkg_notstereo_notused_name,100,"bkg_notstereo_notused_shxy%i",igraph);
       char title[100];
-      snprintf(title,100,"StrawHit XY trk %i;mm;mm",igraph);
-      TH2F* g = tfs->make<TH2F>(gname,title,100,-500,500,100,-500,500);
-      TH2F* c = tfs->make<TH2F>(cname,title,100,-500,500,100,-500,500);
-      TH2F* cb = tfs->make<TH2F>(cbname,title,100,-500,500,100,-500,500);
-      TH2F* b = tfs->make<TH2F>(bname,title,100,-500,500,100,-500,500);
-      TH2F* s = tfs->make<TH2F>(sname,title,100,-500,500,100,-500,500);
-      TH2F* bs = tfs->make<TH2F>(bsname,title,100,-500,500,100,-500,500);
-      c->SetMarkerStyle(8);
-      c->SetMarkerColor(kRed);
-      cb->SetMarkerStyle(24);
-      cb->SetMarkerColor(kRed);
-      g->SetMarkerStyle(8);
-      g->SetMarkerColor(kGreen);
-      b->SetMarkerStyle(4);
-      b->SetMarkerColor(kYellow);
-      s->SetMarkerStyle(22);
-      s->SetMarkerColor(kGreen);
-      bs->SetMarkerStyle(26);
-      bs->SetMarkerColor(kYellow);
-      for(unsigned ihp=0;ihp<xyzp.size();++ihp){
-	if(xyzp[ihp].conversion()){
-	  if (xyzp[ihp].use()) {
-	    c->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+      snprintf(title,100,"StrawHit XY trk %i;mm;rad",igraph);
+      TH2F* ce_stereo_used = tfs->make<TH2F>(ce_stereo_used_name,title,100,-500,500,100,-500,500);
+      TH2F* ce_stereo_notused = tfs->make<TH2F>(ce_stereo_notused_name,title,100,-500,500,100,-500,500);
+      TH2F* ce_notstereo_used = tfs->make<TH2F>(ce_notstereo_used_name,title,100,-500,500,100,-500,500);
+      TH2F* ce_notstereo_notused = tfs->make<TH2F>(ce_notstereo_notused_name,title,100,-500,500,100,-500,500);
+      TH2F* bkg_stereo_used = tfs->make<TH2F>(bkg_stereo_used_name,title,100,-500,500,100,-500,500);
+      TH2F* bkg_stereo_notused = tfs->make<TH2F>(bkg_stereo_notused_name,title,100,-500,500,100,-500,500);
+      TH2F* bkg_notstereo_used = tfs->make<TH2F>(bkg_notstereo_used_name,title,100,-500,500,100,-500,500);
+      TH2F* bkg_notstereo_notused = tfs->make<TH2F>(bkg_notstereo_notused_name,title,100,-500,500,100,-500,500);
+
+      ce_stereo_used->SetMarkerStyle(kFullTriangleUp);
+      ce_stereo_used->SetMarkerColor(kRed);
+      ce_stereo_notused->SetMarkerStyle(kOpenTriangleUp);
+      ce_stereo_notused->SetMarkerColor(kRed);
+      ce_notstereo_used->SetMarkerStyle(kFullCircle);
+      ce_notstereo_used->SetMarkerColor(kRed);
+      ce_notstereo_notused->SetMarkerStyle(kOpenCircle);
+      ce_notstereo_notused->SetMarkerColor(kRed);
+      bkg_stereo_used->SetMarkerStyle(kFullTriangleUp);
+      bkg_stereo_used->SetMarkerColor(kGreen);
+      bkg_stereo_notused->SetMarkerStyle(kOpenTriangleUp);
+      bkg_stereo_notused->SetMarkerColor(kGreen);
+      bkg_notstereo_used->SetMarkerStyle(kFullCircle);
+      bkg_notstereo_used->SetMarkerColor(kGreen);
+      bkg_notstereo_notused->SetMarkerStyle(kOpenCircle);
+      bkg_notstereo_notused->SetMarkerColor(kGreen);
+
+      for(unsigned ih=0;ih<xyzp.size();++ih){
+	if(xyzp[ih].conversion()){
+	  if (xyzp[ih].use()) {
+	    if (xyzp[ih].stereo()) {
+	      ce_stereo_used->Fill(xyzp[ih]._pos.x()-myhel._center.x(),xyzp[ih]._pos.y()-myhel._center.y());
+	    }
+	    else {
+	      ce_notstereo_used->Fill(xyzp[ih]._pos.x()-myhel._center.x(),xyzp[ih]._pos.y()-myhel._center.y());
+	    }	      
 	  }
 	  else {
-	    cb->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+	    if (xyzp[ih].stereo()) {
+	      ce_stereo_notused->Fill(xyzp[ih]._pos.x()-myhel._center.x(),xyzp[ih]._pos.y()-myhel._center.y());
+	    }
+	    else {
+	      ce_notstereo_notused->Fill(xyzp[ih]._pos.x()-myhel._center.x(),xyzp[ih]._pos.y()-myhel._center.y());
+	    }
 	  }
 	}
 	else {
-	  if(xyzp[ihp].stereo()){
-	    if(xyzp[ihp].use())
-	      s->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
-	    else
-	      bs->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
-	  } else {
-	    if(xyzp[ihp].use())
-	      g->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
-	    else
-	      b->Fill(xyzp[ihp]._pos.x()-myhel._center.x(),xyzp[ihp]._pos.y()-myhel._center.y());
+	  if (xyzp[ih].use()) {
+	    if (xyzp[ih].stereo()) {
+	      bkg_stereo_used->Fill(xyzp[ih]._pos.x()-myhel._center.x(),xyzp[ih]._pos.y()-myhel._center.y());
+	    }
+	    else {
+	      bkg_notstereo_used->Fill(xyzp[ih]._pos.x()-myhel._center.x(),xyzp[ih]._pos.y()-myhel._center.y());
+	    }	      
+	  }
+	  else {
+	    if (xyzp[ih].stereo()) {
+	      bkg_stereo_notused->Fill(xyzp[ih]._pos.x()-myhel._center.x(),xyzp[ih]._pos.y()-myhel._center.y());
+	    }
+	    else {
+	      bkg_notstereo_notused->Fill(xyzp[ih]._pos.x()-myhel._center.x(),xyzp[ih]._pos.y()-myhel._center.y());
+	    }
 	  }
 	}
       }
+
 
       TArc* fitarc = new TArc(0.0,0.0,myhel._radius);
       fitarc->SetLineColor(kRed);
@@ -418,12 +446,12 @@ namespace mu2e
       indet->SetFillStyle(0);
       outdet->SetLineColor(kBlue);
       outdet->SetFillStyle(0);
-      static double target_radius(75);
-      TArc* target = new TArc(-myhel._center.x(),-myhel._center.y(),target_radius);
+
+      TArc* target = new TArc(-myhel._center.x(),-myhel._center.y(),_targetradius);
       target->SetLineColor(kBlack);
       target->SetFillStyle(0);
       // add these to the plot
-      TList* flist = g->GetListOfFunctions();
+      TList* flist = ce_stereo_used->GetListOfFunctions();
       flist->Add(fitarc);
       flist->Add(indet);
       flist->Add(outdet);
@@ -461,7 +489,7 @@ namespace mu2e
 
   bool
   RobustHelixFit::findCenterAGE(XYZPVector const& xyzp,Hep3Vector& center, double& rmed, double& age,bool useweights) {
-// this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs"
+// this algorithm follows the method described in J. Math Imagin Vis Dec. 2010 "Robust Fitting of Circle Arcs" (Volume 40, Issue 2, pp. 147-161)
 // initialize step
     double lambda = _lambda0;
 // find median and AGE for the initial center
@@ -710,58 +738,86 @@ namespace mu2e
       static unsigned igraph = 0;
       igraph++;
       art::ServiceHandle<art::TFileService> tfs;
-      char cname[100];
-      snprintf(cname,100,"cshphiz%i",igraph);
-      char cbname[100];
-      snprintf(cbname,100,"cbshphiz%i",igraph);
-      char gname[100];
-      snprintf(gname,100,"gshphiz%i",igraph);
-      char bname[100];
-      snprintf(bname,100,"bshphiz%i",igraph);
-      char sname[100];
-      snprintf(sname,100,"sshphiz%i",igraph);
-      char bsname[100];
-      snprintf(bsname,100,"bsshphiz%i",igraph);
+
+      char ce_stereo_used_name[100];
+      snprintf(ce_stereo_used_name,100,"ce_stereo_used_shphiz%i",igraph);
+      char ce_stereo_notused_name[100];
+      snprintf(ce_stereo_notused_name,100,"ce_stereo_notused_shphiz%i",igraph);
+      char ce_notstereo_used_name[100];
+      snprintf(ce_notstereo_used_name,100,"ce_notstereo_used_shphiz%i",igraph);
+      char ce_notstereo_notused_name[100];
+      snprintf(ce_notstereo_notused_name,100,"ce_notstereo_notused_shphiz%i",igraph);
+      char bkg_stereo_used_name[100];
+      snprintf(bkg_stereo_used_name,100,"bkg_stereo_used_shphiz%i",igraph);
+      char bkg_stereo_notused_name[100];
+      snprintf(bkg_stereo_notused_name,100,"bkg_stereo_notused_shphiz%i",igraph);
+      char bkg_notstereo_used_name[100];
+      snprintf(bkg_notstereo_used_name,100,"bkg_notstereo_used_shphiz%i",igraph);
+      char bkg_notstereo_notused_name[100];
+      snprintf(bkg_notstereo_notused_name,100,"bkg_notstereo_notused_shphiz%i",igraph);
       char title[100];
       snprintf(title,100,"StrawHit #phi Z trk %i;mm;rad",igraph);
-      TH2F* c = tfs->make<TH2F>(cname,title,100,-1500,1500,100,-12.5,12.5);
-      TH2F* cb = tfs->make<TH2F>(cbname,title,100,-1500,1500,100,-12.5,12.5);
-      TH2F* g = tfs->make<TH2F>(gname,title,100,-1500,1500,100,-12.5,12.5);
-      TH2F* b = tfs->make<TH2F>(bname,title,100,-1500,1500,100,-12.5,12.5);
-      TH2F* s = tfs->make<TH2F>(sname,title,100,-1500,1500,100,-12.5,12.5);
-      TH2F* bs = tfs->make<TH2F>(bsname,title,100,-1500,1500,100,-12.5,12.5);
-      c->SetMarkerStyle(8);
-      c->SetMarkerColor(kRed);
-      cb->SetMarkerStyle(24);
-      cb->SetMarkerColor(kRed);
-      g->SetMarkerStyle(8);
-      g->SetMarkerColor(kGreen);
-      b->SetMarkerStyle(4);
-      b->SetMarkerColor(kYellow);
-      s->SetMarkerStyle(22);
-      s->SetMarkerColor(kGreen);
-      bs->SetMarkerStyle(26);
-      bs->SetMarkerColor(kYellow);
+      TH2F* ce_stereo_used = tfs->make<TH2F>(ce_stereo_used_name,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* ce_stereo_notused = tfs->make<TH2F>(ce_stereo_notused_name,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* ce_notstereo_used = tfs->make<TH2F>(ce_notstereo_used_name,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* ce_notstereo_notused = tfs->make<TH2F>(ce_notstereo_notused_name,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* bkg_stereo_used = tfs->make<TH2F>(bkg_stereo_used_name,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* bkg_stereo_notused = tfs->make<TH2F>(bkg_stereo_notused_name,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* bkg_notstereo_used = tfs->make<TH2F>(bkg_notstereo_used_name,title,100,-1500,1500,100,-12.5,12.5);
+      TH2F* bkg_notstereo_notused = tfs->make<TH2F>(bkg_notstereo_notused_name,title,100,-1500,1500,100,-12.5,12.5);
+
+      ce_stereo_used->SetMarkerStyle(kFullTriangleUp);
+      ce_stereo_used->SetMarkerColor(kRed);
+      ce_stereo_notused->SetMarkerStyle(kOpenTriangleUp);
+      ce_stereo_notused->SetMarkerColor(kRed);
+      ce_notstereo_used->SetMarkerStyle(kFullCircle);
+      ce_notstereo_used->SetMarkerColor(kRed);
+      ce_notstereo_notused->SetMarkerStyle(kOpenCircle);
+      ce_notstereo_notused->SetMarkerColor(kRed);
+      bkg_stereo_used->SetMarkerStyle(kFullTriangleUp);
+      bkg_stereo_used->SetMarkerColor(kGreen);
+      bkg_stereo_notused->SetMarkerStyle(kOpenTriangleUp);
+      bkg_stereo_notused->SetMarkerColor(kGreen);
+      bkg_notstereo_used->SetMarkerStyle(kFullCircle);
+      bkg_notstereo_used->SetMarkerColor(kGreen);
+      bkg_notstereo_notused->SetMarkerStyle(kOpenCircle);
+      bkg_notstereo_notused->SetMarkerColor(kGreen);
+
       for(unsigned ih=0;ih<xyzp.size();++ih){
 	if(xyzp[ih].conversion()){
 	  if (xyzp[ih].use()) {
-	    c->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    if (xyzp[ih].stereo()) {
+	      ce_stereo_used->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    }
+	    else {
+	      ce_notstereo_used->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    }	      
 	  }
 	  else {
-	    cb->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    if (xyzp[ih].stereo()) {
+	      ce_stereo_notused->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    }
+	    else {
+	      ce_notstereo_notused->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    }
 	  }
 	}
 	else {
-	  if(xyzp[ih].stereo()){
-	    if(xyzp[ih].use())
-	      s->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
-	    else
-	      bs->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
-	  } else {
-	    if(xyzp[ih].use())
-	      g->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
-	    else
-	      b->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	  if (xyzp[ih].use()) {
+	    if (xyzp[ih].stereo()) {
+	      bkg_stereo_used->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    }
+	    else {
+	      bkg_notstereo_used->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    }	      
+	  }
+	  else {
+	    if (xyzp[ih].stereo()) {
+	      bkg_stereo_notused->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    }
+	    else {
+	      bkg_notstereo_notused->Fill(xyzp[ih]._pos.z(),xyzp[ih]._phi);
+	    }
 	  }
 	}
       }
@@ -769,7 +825,7 @@ namespace mu2e
       line->SetParameter(0,myhel._fz0);
       line->SetParameter(1,myhel._dfdz);
       line->SetLineColor(kRed);
-      TList* flist = g->GetListOfFunctions();
+      TList* flist = ce_stereo_used->GetListOfFunctions();
       flist->Add(line);
 
       if (mytrk.strawDigiMCCollection() != 0) {
@@ -954,7 +1010,7 @@ namespace mu2e
     // if requested force radius into range
     if(_forcep)
       rmed = std::max(std::min(rmed,_rmax),_rmin);
-    // now compute the AGE
+    // now compute the AGE (Absolute Geometric Error)
     age = 0.0;
     for(unsigned irad=0;irad<radii.size();++irad){
       double wt = useweights ? 1.0/radii[irad]._err : 1.0;
