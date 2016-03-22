@@ -152,6 +152,9 @@ namespace mu2e
 // cached value of radius and pitch sign: these depend on the particle type
 // and direction
     double _rmin, _rmax, _smin, _smax, _dfdzsign;
+// diagnostic histograms
+    TH1F *_rdiff, *_fdiff;
+    TH1F *_rpull, *_fpull;
   };
 }
 #endif

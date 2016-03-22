@@ -222,6 +222,13 @@ namespace mu2e
     XYZP::_dontuseflag = StrawHitFlag(bitnames);
     if(_stereofit)XYZP::_useflag = StrawHitFlag(StrawHitFlag::stereo);
     XYZP::_debug = _debug;
+    if(_diag > 0){
+      art::ServiceHandle<art::TFileService> tfs;
+      _rdiff = tfs->make<TH1F>("rdiff","Radial difference",100,-100,100.0);
+      _rpull = tfs->make<TH1F>("rpull","Radial pull",100,-20.0,20.0);
+      _fdiff = tfs->make<TH1F>("fdiff","phi difference",100,-5,5.0);
+      _fpull = tfs->make<TH1F>("fpull","Phi pull",100,-20.0,20.0);
+    }
 }
 
   RobustHelixFit::~RobustHelixFit()
@@ -316,6 +323,14 @@ namespace mu2e
     }
     myhel._center = center;
     myhel._radius = rmed;
+    if(_diag > 0){
+      for(unsigned ixyzp=0; ixyzp < xyzp.size(); ++ixyzp){
+	VALERR rad;
+	xyzp[ixyzp].rinfo(center,rad);
+	_rdiff->Fill(rad._val - rmed);
+	_rpull->Fill((rad._val - rmed)/rad._err);
+      }
+    }
     return true;
   }
 
@@ -700,6 +715,10 @@ namespace mu2e
 	int nloop = (int)rint((phiex - fz._phi._val)/twopi);
 	xyzp[ixyzp]._phi = fz._phi._val + nloop*twopi;
 	if(_filterz && fabs(xyzp[ixyzp]._phi-phiex)> _nsigma*fz._phi._err) xyzp[ixyzp].setOutlier();
+      	if(_diag > 0){
+	  _fdiff->Fill(xyzp[ixyzp]._phi-phiex);
+	  _fpull->Fill((xyzp[ixyzp]._phi-phiex)/fz._phi._err);
+	}
       }
       return true;
     } else
