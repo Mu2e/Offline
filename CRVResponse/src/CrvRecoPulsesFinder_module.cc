@@ -125,9 +125,10 @@ namespace mu2e
           int PEs = _makeCrvRecoPulses->GetPEs(i);
           double height = _makeCrvRecoPulses->GetPulseHeight(i);
           double length = _makeCrvRecoPulses->GetTimeOverThreshold(i);
+          double integral = _makeCrvRecoPulses->GetIntegral(i);
           if(PEs<_minPEs) continue; 
 //          _hRecoPulses->Fill(length);
-          crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, time,height,length);
+          crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, time,height,length,integral);
         }
       }
     }

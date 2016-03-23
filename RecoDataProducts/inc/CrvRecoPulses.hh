@@ -25,12 +25,15 @@ namespace mu2e
       double _leadingEdge;
       double _pulseHeight;
       double _pulseLength;
-      CrvSingleRecoPulse(int PEs, double leadingEdge, double pulseHeight, double pulseLength) : 
+      double _integral;
+      CrvSingleRecoPulse(int PEs, double leadingEdge, double pulseHeight, double pulseLength, double integral) : 
                                                                             _PEs(PEs), 
                                                                             _leadingEdge(leadingEdge), 
                                                                             _pulseHeight(pulseHeight),
-                                                                            _pulseLength(pulseLength) {}
-      CrvSingleRecoPulse() : _PEs(0), _leadingEdge(NAN), _pulseHeight(NAN), _pulseLength(NAN) {}  //to make ROOT happy
+                                                                            _pulseLength(pulseLength),
+                                                                            _integral(integral) {}
+      CrvSingleRecoPulse() : _PEs(0), _leadingEdge(NAN), _pulseHeight(NAN), 
+                             _pulseLength(NAN), _integral(NAN) {}  //to make ROOT happy
     };
 
     std::vector<CrvSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side);

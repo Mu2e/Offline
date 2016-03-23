@@ -30,7 +30,6 @@ BEGIN_PROLOG
       numberPixelsAtFiber          : 615
       bias                         : 2.4        //V
       scaleFactor                  : 0.08
-      minCharge                    : 4.0        //PEs
       blindTime                    : 500.0      //ns
 
       GeigerProbCoef               : 1.0        // = pc
@@ -41,8 +40,8 @@ BEGIN_PROLOG
                                                 //Geiger probability at over voltage v = 1.0V: 
                                                 //0.17 = 1 - exp(-pow(v,pc)/vs)
 
-      TrapType0Prob                : 0.14       //trap_prob*trap_type0_prob=0.2*0.7
-      TrapType1Prob                : 0.06       //trap_prob*trap_type1_prob=0.2*0.3
+      TrapType0Prob                : 0.0        //0.14       //trap_prob*trap_type0_prob=0.2*0.7
+      TrapType1Prob                : 0.0        //0.06       //trap_prob*trap_type1_prob=0.2*0.3
       TrapType0Lifetime            : 5.0        //ns
       TrapType1Lifetime            : 50.0       //ns
 
@@ -62,16 +61,17 @@ BEGIN_PROLOG
       singlePEWaveformBins         : 200
       binWidth                     : 12.5   //12.5 ns (digitizer sampling rate)
       FEBtimeSpread                : 2.0    //2.0 ns
+      minVoltage                   : 0.022  //22mV (corresponds to 3.5PE)
     }
     CrvRecoPulses:
     {
       module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
       param0                    : 0.0      //0.0
-      param1                    : 51.0     //51.0
-      pulseThreshold            : 0.015    //15mV
+      param1                    : 159.0    //159.0  (would be about 100.0 if all PEs came it at the same time)
+      pulseThreshold            : 0.022    //22mV
       leadingEdgeThreshold      : 0.2      //20% of the maximum bin
-      minPEs                    : 4        //3 PEs
+      minPEs                    : 4        //4 PEs
     }
     CrvCoincidence:
     {

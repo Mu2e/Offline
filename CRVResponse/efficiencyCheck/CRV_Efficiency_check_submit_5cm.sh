@@ -8,12 +8,13 @@ moduleGap=5
 
 #    for layerOffset in {0..62..2}
 #    do
-      for photonYield in {3000,3500,4000,4500,5000,5500,6000,6500,7000}  # 20,??,26,??,33,??,40,??,?? PE/SiPM for 5cm wide / 5.6m long counter
+      for photonYield in {2500,3000,3500,4000,4500,5000,5500,6000,6500}  # 20,24,27,31,35,39,42,46,50 PE/SiPM for 5cm wide / 5.6m long counter
       do
 
         ((i++));
 
         scintTolerance="0"
+        backgroundFileName="/mu2e/app/users/ehrlich/work_08302015/Offline/background_D1.root"
         backgroundFileName=""
 
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm'_'$i.txt

@@ -68,7 +68,7 @@ namespace mu2e
   {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("CrvSingleCounter");
-    _recoPulses = tfdir.make<TNtuple>( "RecoPulses",    "RecoPulses",  "SiPM:startX:startZ:recoPEs:PEs:theta:phi" );
+    _recoPulses = tfdir.make<TNtuple>( "RecoPulses",    "RecoPulses",  "SiPM:startX:startZ:recoPEs:PEs:pulseHeight:integral:theta:phi" );
     _leadingEdgesGlobal = tfdir.make<TNtuple>( "LeadingEdgesGlobal",    "LeadingEdgesGlobal",  "timeDifferenceGlobal:trackLength" );
     _leadingEdgesCounter = tfdir.make<TNtuple>( "LeadingEdgesCounter",    "LeadingEdgesCounter",  "timeDifferenceCounter" );
   }
@@ -106,6 +106,8 @@ namespace mu2e
 
     int recoPEs[4]={0};
     double PEs[4]={0};
+    double pulseHeights[4]={0};
+    double integrals[4]={0};
 
     CrvRecoPulsesCollection::const_iterator iterRecoPulses=crvRecoPulsesCollection->begin(); //this is intended for only one counter
     if(iterRecoPulses!=crvRecoPulsesCollection->end()) 
@@ -115,7 +117,10 @@ namespace mu2e
       for(int SiPM=0; SiPM<4; SiPM++)
       {
         const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &singlePulses = crvRecoPulses.GetRecoPulses(SiPM);
-        for(size_t i=0; i<singlePulses.size(); i++) recoPEs[SiPM] += singlePulses[i]._PEs;
+        if(singlePulses.size()!=1) continue;
+        recoPEs[SiPM] = singlePulses[0]._PEs;
+        pulseHeights[SiPM] = singlePulses[0]._pulseHeight;
+        integrals[SiPM] = singlePulses[0]._integral;
       }
     }
 
@@ -136,7 +141,7 @@ namespace mu2e
 
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      _recoPulses->Fill(SiPM,startX,startZ,recoPEs[SiPM],PEs[SiPM],theta,phi);
+      _recoPulses->Fill(SiPM,startX,startZ,recoPEs[SiPM],PEs[SiPM],pulseHeights[SiPM],integrals[SiPM],theta,phi);
     }
 
 

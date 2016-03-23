@@ -55,7 +55,6 @@ namespace mu2e
     int         _numberPixelsAtFiber;
     double      _bias;
     double      _scaleFactor;
-    double      _minCharge;
     double      _blindTime;             //time window during which the SiPM is blind
     double      _microBunchPeriod;
 
@@ -74,7 +73,6 @@ namespace mu2e
     _numberPixelsAtFiber(pset.get<int>("numberPixelsAtFiber")),   //615
     _bias(pset.get<double>("bias")),                //2.5V
     _scaleFactor(pset.get<double>("scaleFactor")),  //0.08 (based on a time step of 1.0ns)
-    _minCharge(pset.get<double>("minCharge")),      //3.0PE
     _blindTime(pset.get<double>("blindTime")),      //500ns
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randPoissonQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
@@ -122,8 +120,7 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
       CrvPhotonArrivalsCollection::const_iterator crvPhotons=crvPhotonArrivalsCollection->find(barIndex); 
 
-      CrvSiPMResponses crvSiPMResponses;
-      bool minChargeReached = false;
+      CrvSiPMResponses &crvSiPMResponses = (*crvSiPMResponsesCollection)[barIndex];
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
@@ -151,7 +148,6 @@ namespace mu2e
 
         std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &responsesOneSiPM = crvSiPMResponses.GetSiPMResponses(SiPM);
 
-        double totalCharge=0;
         std::vector<mu2eCrv::SiPMresponse>::const_iterator responseIter;
         for(responseIter=SiPMresponseVector.begin(); responseIter!=SiPMresponseVector.end(); responseIter++)
         {
@@ -159,7 +155,6 @@ namespace mu2e
           //no additional time wrapping and check for blind time is required
           const double &time=responseIter->_time;
           const double &charge=responseIter->_charge;
-          totalCharge+=charge;
           responsesOneSiPM.emplace_back(time, charge);
 //std::cout<<"SiPM response   bar index: "<<barIndex<<"   SiPM: "<<SiPM<<"   time: "<<time<<std::endl;
 
@@ -179,14 +174,6 @@ namespace mu2e
           }
         }
 
-//TODO: this zero suppression needs to be changed
-        if(totalCharge>=_minCharge) minChargeReached=true;
-        else responsesOneSiPM.clear();  //don't store anything, if less than minimum charge
-      }
-
-      if(minChargeReached)
-      {
-        (*crvSiPMResponsesCollection)[barIndex] = crvSiPMResponses;
       }
     }
 

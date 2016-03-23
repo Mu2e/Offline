@@ -78,9 +78,6 @@ physics :
        }
     }
 
-    protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap: { module_type : GenerateMuonLife }
-
     CrvPhotonArrivals: @local::CrvPhotonArrivals
     CrvSiPMResponses : @local::CrvSiPMResponses
     CrvWaveforms     : @local::CrvWaveforms
@@ -95,10 +92,11 @@ physics :
       crvSiPMResponsesModuleLabel : "CrvSiPMResponses"
       crvRecoPulsesModuleLabel    : "CrvRecoPulses"
       genParticleModuleLabel      : "generate" 
+      simParticleModuleLabel      : "g4run"
     }
   }
 
-  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses]  
+  trig : [generate, g4run, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses]  
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]
@@ -106,11 +104,13 @@ physics :
   end_paths: [out]
 }
 
-physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
-physics.producers.CrvPhotonArrivals.processNames   : ["*"]
-physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_4500"]
-physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [4500]
-physics.producers.CrvPhotonArrivals.scintillationYield        : 10000.0 // photons/MeV
+physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_5600"]
+physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [5600]
+physics.producers.CrvPhotonArrivals.scintillationYield        : 6000
+physics.producers.CrvSiPMResponses.ThermalProb                : 0
+#physics.producers.CrvSiPMResponses.TrapType0Prob              : 0
+#physics.producers.CrvSiPMResponses.TrapType1Prob              : 0
+#physics.producers.CrvSiPMResponses.PhotonProduction           : 0
 
 outputs: 
 {
