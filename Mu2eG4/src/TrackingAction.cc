@@ -392,18 +392,9 @@ namespace mu2e {
         const G4ParticleDefinition* pDef = trk->GetDefinition();
 
         G4cout << __func__ 
-               << " Warning: Unusual excited ion: " << ppdgId
-               << " name   " << pDef->GetParticleName() << G4endl
-               << " mass   " << pDef->GetPDGMass() << G4endl
-               << " width  " << pDef->GetPDGWidth() << G4endl
-               << " charge " << pDef->GetPDGCharge() << G4endl
-               << " iSpin  " << pDef->GetPDGiSpin() << G4endl
-               << " iParity " << pDef->GetPDGiParity() << G4endl
-               << " iConjugation " << pDef->GetPDGiConjugation() << G4endl
-               << " iIsospin " << pDef->GetPDGiIsospin() << G4endl
-               << " iIsospinZ " << pDef->GetPDGiIsospin3() << G4endl
-               << " gParity " << pDef->GetPDGiGParity() << G4endl
-               << " Excitation energy: " 
+               << " Warning: Unusual excited ion: " << ppdgId;
+        pDef->DumpTable();
+        G4cout << " Excitation energy: " 
                << static_cast<const G4Ions*>(pDef)->GetExcitationEnergy() << G4endl
                << " produced by " << creationCode 
                << G4endl;
