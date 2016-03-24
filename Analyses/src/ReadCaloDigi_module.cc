@@ -91,8 +91,10 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 
-#include "BTrkData/inc/TrkStrawHit.hh"
+//#include "TrkReco/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
+
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
@@ -148,6 +150,10 @@ namespace mu2e {
     std::string                _caloClusterModuleLabel;
     std::string                _vdStepPoints;
     std::string                _trackModuleLabel;
+    
+    std::string                _instanceName;
+    TrkParticle                _tpart;
+    TrkFitDirection            _fdir;
 
     SimParticleTimeOffset      _toff;     // time offset smearing
     double                     _mbtime;
@@ -198,13 +204,13 @@ namespace mu2e {
     int                        _cluConv[2048];
 
     Int_t                     _vNHits;
-    Float_t                   _vP, _vPx, _vPy, _vPz, _vPt;
-    Float_t                   _vE, _vEKin, _vM;
-    Float_t                   _vT;
-    Float_t                   _vX, _vY, _vZ, _vR;
-    Float_t                   _vCosth, _vRadius;
-    Int_t                     _vId;
-    Int_t                     _vPdgId;
+    Float_t                   _vP[2048], _vPx[2048], _vPy[2048], _vPz[2048], _vPt[2048];
+    Float_t                   _vE[2048], _vEKin[2048], _vM[2048];
+    Float_t                   _vT[2048];
+    Float_t                   _vX[2048], _vY[2048], _vZ[2048], _vR[2048];
+    Float_t                   _vCosth[2048], _vRadius[2048];
+    Int_t                     _vId[2048];
+    Int_t                     _vPdgId[2048];
 
     Int_t                     _nTrkGood;
 
@@ -221,24 +227,24 @@ namespace mu2e {
 
     _vNHits  = 0;
       
-    _vP      = 0.;
-    _vPx     = 0.;
-    _vPy     = 0.;
-    _vPz     = 0.;
-    _vPt     = 0.;
-    _vPdgId  = 0.;
-    _vM      = 0.;
-    _vE      = 0.;
-    _vEKin   = 0.;
-    _vT      = 0.;
-    _vX      = 0.;
-    _vY      = 0.;
-    _vZ      = 0.;
-    _vR      = 0.;
+    // _vP      = 0.;
+    // _vPx     = 0.;
+    // _vPy     = 0.;
+    // _vPz     = 0.;
+    // _vPt     = 0.;
+    // _vPdgId  = 0.;
+    // _vM      = 0.;
+    // _vE      = 0.;
+    // _vEKin   = 0.;
+    // _vT      = 0.;
+    // _vX      = 0.;
+    // _vY      = 0.;
+    // _vZ      = 0.;
+    // _vR      = 0.;
 
-    _vCosth  = 0.;
-    _vRadius = 0.;
-    _vId     = 0.;
+    // _vCosth  = 0.;
+    // _vRadius = 0.;
+    // _vId     = 0.;
   }
   
   
@@ -252,6 +258,8 @@ namespace mu2e {
     _caloClusterModuleLabel        (pset.get<string>("caloClusterModuleLabel")),
     _vdStepPoints                  (pset.get<string>("vdStepPoints")),	     
     _trackModuleLabel              (pset.get<string>("trackModuleLabel")),	     
+    _tpart     ((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
+    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _toff                          (pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
     _mbbuffer                      (pset.get<double>             ("TimeFoldingBuffer")),  // ns
     _blindTime                     (pset.get<double>             ("blindTime" )),         // ns
@@ -259,8 +267,9 @@ namespace mu2e {
     _psdThreshold                  (pset.get<double>("psdThreshold")),        
     _caloRmin                      (pset.get<double>("caloRmin" )),         
     _Ntup(0),_nProcess(0)
-
-  {}
+  {
+    _instanceName = _fdir.name() + _tpart.name();
+  }
 
   void ReadCaloDigi::beginRun(art::Run& ){
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
@@ -269,35 +278,40 @@ namespace mu2e {
   void ReadCaloDigi::beginJob(){
 
     art::ServiceHandle<art::TFileService> tfs;
+    art::TFileDirectory tfdir = tfs->mkdir("diag");
 
     for (int i=0; i<10; ++i){
-      _histDisk0._hNCaloDigi        [i] = tfs->make<TH1F>(Form("hNHitsDisk0%i",i)      ,
+      _histDisk0._hNCaloDigi        [i] = tfdir.make<TH1F>(Form("hNHitsDisk0%i",i)      ,
 							  Form("Disk0: N caloDigis @ %i MeV threshold",i+1), 1e4, 0, 1e4);
-      _histDisk0._hNSamplesPerDigi  [i] = tfs->make<TH1F>(Form("hNSampleHitsDisk0%i",i), 
-							  Form("Disk0: N of words per caloDigi @ %i MeV threshold",i+1), 1e4, 0, 1e4);
-      _histDisk0._hNSamplesPerEvent [i] = tfs->make<TH1F>(Form("hNSampleDisk0%i",i), 
-							  Form("Disk0: N of words per event @ %i MeV threshold",i+1), 5e4, 0, 5e4);
-      _histDisk1._hNCaloDigi        [i] = tfs->make<TH1F>(Form("hNHitsDisk1%i",i)      ,
+      _histDisk0._hNSamplesPerDigi  [i] = tfdir.make<TH1F>(Form("hNSampleHitsDisk0%i",i), 
+							  Form("Disk0: N of words per caloDigi @ %i MeV threshold",i+1), 
+							   1e4, 0, 1e4);
+      _histDisk0._hNSamplesPerEvent [i] = tfdir.make<TH1F>(Form("hNSampleDisk0%i",i), 
+							  Form("Disk0: N of words per event @ %i MeV threshold",i+1), 
+							   5e4, 0, 5e4);
+      _histDisk1._hNCaloDigi        [i] = tfdir.make<TH1F>(Form("hNHitsDisk1%i",i)      ,
 							  Form("Disk1: N caloDigis @ %i MeV threshold",i+1), 1e4, 0, 1e4);
-      _histDisk1._hNSamplesPerDigi  [i] = tfs->make<TH1F>(Form("hNSampleHitsDisk1%i",i), 
-							  Form("Disk1: N of words per caloDigi @ %i MeV threshold",i+1), 1e4, 0, 1e4);
-      _histDisk1._hNSamplesPerEvent [i] = tfs->make<TH1F>(Form("hNSampleDisk1%i",i), 
-							  Form("Disk1: N of words per event @ %i MeV threshold",i+1), 5e4, 0, 5e4);
-      _hNSamplesVsCrysId            [i] = tfs->make<TH2F>(Form("hNSamplesVsCrysId%i",i), 
+      _histDisk1._hNSamplesPerDigi  [i] = tfdir.make<TH1F>(Form("hNSampleHitsDisk1%i",i), 
+							  Form("Disk1: N of words per caloDigi @ %i MeV threshold",i+1),
+							   1e4, 0, 1e4);
+      _histDisk1._hNSamplesPerEvent [i] = tfdir.make<TH1F>(Form("hNSampleDisk1%i",i), 
+							  Form("Disk1: N of words per event @ %i MeV threshold",i+1), 
+							   5e4, 0, 5e4);
+      _hNSamplesVsCrysId            [i] = tfdir.make<TH2F>(Form("hNSamplesVsCrysId%i",i), 
 							  Form("N of words per event vs crystal Id @ %i MeV threshold",i+1), 
 							  2000, 0, 2e3, 600, 0, 600);
       
-      _histDisk0._hNSamplesVsRadius [i] = tfs->make<TH2F>(Form("hNSamplesVsRadiusDisk0%i",i), 
+      _histDisk0._hNSamplesVsRadius [i] = tfdir.make<TH2F>(Form("hNSamplesVsRadiusDisk0%i",i), 
 							  "N of words per event vs radius on disk 0",
 							  80, 300, 700, 300, 0, 300);
-      _histDisk0._hNHitsVsRadius    [i] = tfs->make<TH2F>(Form("hNHitsVsRadiusDisk0%i",i), 
+      _histDisk0._hNHitsVsRadius    [i] = tfdir.make<TH2F>(Form("hNHitsVsRadiusDisk0%i",i), 
 							  "N of hits per event vs radius on disk 0",
 							  80, 300, 700, 2000, 0, 2000);
       
-      _histDisk1._hNSamplesVsRadius [i] = tfs->make<TH2F>(Form("hNSamplesVsRadiusDisk1%i", i), 
+      _histDisk1._hNSamplesVsRadius [i] = tfdir.make<TH2F>(Form("hNSamplesVsRadiusDisk1%i", i), 
 							  "N of words per event vs radius on disk 0",
 							  80, 300, 700, 300, 0, 300);
-      _histDisk1._hNHitsVsRadius    [i] = tfs->make<TH2F>(Form("hNHitsVsRadiusDisk1%i", i), 
+      _histDisk1._hNHitsVsRadius    [i] = tfdir.make<TH2F>(Form("hNHitsVsRadiusDisk1%i", i), 
 							  "N of hits per event vs radius on disk 0",
 							  80, 300, 700, 2000, 0, 2000);
     }
@@ -357,25 +371,25 @@ namespace mu2e {
     _Ntup->Branch("cluNcrys",     &_cluNcrys ,    "cluNCrys[nCluster]/I");	
     _Ntup->Branch("cluConv",      &_cluConv ,     "cluConv[nCluster]/I");	
   
-    _Ntup->Branch("vNHits",   &_vNHits ,  "vNHits/I");
-    _Ntup->Branch("vId"   ,   &_vId ,  "vId/I");
-    _Ntup->Branch("vPdgId",   &_vPdgId ,  "vPdgId/I");
+    _Ntup->Branch("vNHits",  &_vNHits ,  "vNHits/I");
+    _Ntup->Branch("vId"   ,  &_vId    ,  "vId[vNHits]/I");
+    _Ntup->Branch("vPdgId",  &_vPdgId ,  "vPdgId[vNHits]/I");
+    _Ntup->Branch("vP" ,     &_vP     ,  "vP[vNHits]/F");
+    _Ntup->Branch("vPx",     &_vPx    ,  "vPx[vNHits]/F");
+    _Ntup->Branch("vPy",     &_vPy    ,  "vPy[vNHits]/F");
+    _Ntup->Branch("vPz",     &_vPz    ,  "vPz[vNHits]/F");
+    _Ntup->Branch("vE" ,     &_vE     ,  "vE[vNHits]/F");
+    _Ntup->Branch("vEKin",   &_vEKin  ,  "vEKin[vNHits]/F");
+    _Ntup->Branch("vM",      &_vM     ,  "vM[vNHits]/F");
+    _Ntup->Branch("vT",      &_vT     ,  "vT[vNHits]/F");
+    _Ntup->Branch("vX",      &_vX     ,  "vX[vNHits]/F");
+    _Ntup->Branch("vY",      &_vY     ,  "vY[vNHits]/F");
+    _Ntup->Branch("vZ",      &_vZ     ,  "vZ[vNHits]/F");
+    _Ntup->Branch("vR",      &_vR     ,  "vR[vNHits]/F");
+    _Ntup->Branch("vCosth",  &_vCosth ,  "vCosth[vNHits]/F");
+    _Ntup->Branch("vRadius", &_vRadius,  "vRadius[vNHits]/F");
 
-    _Ntup->Branch("vP" ,   &_vP ,  "vP/F");
-    _Ntup->Branch("vPx",   &_vPx ,  "vPx/F");
-    _Ntup->Branch("vPy",   &_vPy ,  "vPy/F");
-    _Ntup->Branch("vPz",   &_vPz ,  "vPz/F");
-    _Ntup->Branch("vE" ,   &_vE ,  "vE/F");
-    _Ntup->Branch("vEKin",   &_vEKin ,  "vEKin/F");
-    _Ntup->Branch("vM",   &_vM ,  "vM/F");
-    _Ntup->Branch("vT",   &_vT ,  "vT/F");
-    _Ntup->Branch("vX",   &_vX ,  "vX/F");
-    _Ntup->Branch("vY",   &_vY ,  "vY/F");
-    _Ntup->Branch("vZ",   &_vZ ,  "vZ/F");
-    _Ntup->Branch("vR",   &_vR ,  "vR/F");
-        _Ntup->Branch("vCosth",   &_vCosth ,  "vCosth/F");
-    _Ntup->Branch("vRadius",   &_vRadius ,  "vRadius/F");
-    _Ntup->Branch("nTrkGood"   ,   &_nTrkGood ,  "nTrkGood/I");
+    _Ntup->Branch("nTrkGood",&_nTrkGood ,  "nTrkGood/I");
 
   }
 
@@ -458,9 +472,14 @@ namespace mu2e {
 
     //Handle to tracks collection
     art::Handle<mu2e::KalRepCollection> dem_handle;
-    art::Selector  s_dem(art::ProcessNameSelector("")                && 
-			 art::ModuleLabelSelector(_trackModuleLabel)    );
-    event.get(s_dem,dem_handle);
+    // art::Selector  s_dem(art::ProcessNameSelector("")                && 
+    // 			 art::ModuleLabelSelector(_trackModuleLabel)    );
+    // art::Selector  s_dem   (art::ProductInstanceNameSelector("") &&
+    // 			    art::ProcessNameSelector("")         && 
+    // 			    art::ModuleLabelSelector(_trackModuleLabel)            );
+    //    fEvent->get(selector,krepsHandle);
+    event.getByLabel(_trackModuleLabel, _instanceName, dem_handle);
+    //    event.get(s_dem,dem_handle);
     
     int      nTraks(0);
     const mu2e::KalRepCollection* list_of_ele_tracks;
@@ -580,29 +599,29 @@ namespace mu2e {
 
 	      //	      timeLastHit = hitTime;
 
-	      _vT      = hitTime;
+	      _vT    [_vNHits]  = hitTime;
 
-	      _vP      = hit.momentum().mag();
-	      _vPx     = hit.momentum().x();
-	      _vPy     = hit.momentum().y();
-	      _vPz     = hit.momentum().z();
-	      _vPt     = std::sqrt( std::pow(_vPx,2.)+std::pow(_vPy,2.) );
-	      _vPdgId  = hit.simParticle()->pdgId();
-	      _vM      = pdt->particle(_vPdgId).ref().mass();
-	      _vE      = sqrt(_vP*_vP + _vM*_vM);
-	      _vEKin   = _vE - _vM;
+	      _vP    [_vNHits]  = hit.momentum().mag();
+	      _vPx   [_vNHits]  = hit.momentum().x();
+	      _vPy   [_vNHits]  = hit.momentum().y();
+	      _vPz   [_vNHits]  = hit.momentum().z();
+	      _vPt   [_vNHits]  = std::sqrt( std::pow(_vPx[_vNHits],2.)+std::pow(_vPy[_vNHits],2.) );
+	      _vPdgId[_vNHits]  = hit.simParticle()->pdgId();
+	      _vM    [_vNHits]  = pdt->particle(_vPdgId[_vNHits]).ref().mass();
+	      _vE    [_vNHits]  = sqrt(_vP[_vNHits]*_vP[_vNHits] + _vM[_vNHits]*_vM[_vNHits]);
+	      _vEKin [_vNHits]  = _vE[_vNHits] - _vM[_vNHits];
 	      
 
-	      _vX      = hit.position().x()+3904.;
-	      _vY      = hit.position().y();
-	      _vZ      = hit.position().z();
-	      _vR      = sqrt(_vX*_vX + _vY*_vY);
+	      _vX    [_vNHits]  = hit.position().x()+3904.;
+	      _vY    [_vNHits]  = hit.position().y();
+	      _vZ    [_vNHits]  = hit.position().z();
+	      _vR    [_vNHits]  = sqrt(_vX[_vNHits]*_vX[_vNHits] + _vY[_vNHits]*_vY[_vNHits]);
 	                
-	      _vCosth  = _vPz/_vP;
-	      _vRadius = std::sqrt(_vX*_vX+_vY*_vY);
-	      _vId     = id;
+	      _vCosth [_vNHits] = _vPz[_vNHits]/_vP[_vNHits];
+	      _vRadius[_vNHits] = std::sqrt(_vX[_vNHits]*_vX[_vNHits]+_vY[_vNHits]*_vY[_vNHits]);
+	      _vId    [_vNHits] = id;
 	    
-	      _vNHits  = 1;
+	      ++_vNHits;
 	    }
 	  }
 	}
@@ -839,7 +858,7 @@ namespace mu2e {
       	eDep             = crystalHit->energyDep();
       	psd              = recoDigi  ->psd();
 
-      	if (psd > _psdThreshold){
+      	if (psd >= _psdThreshold){
       	  crystalTime        =   crystalHit->time();
 
       	  if (eDep> 10.){
@@ -893,7 +912,7 @@ namespace mu2e {
       _cluCogX      [i]     = cluster->cog3Vector().x();
       _cluCogY      [i]     = cluster->cog3Vector().y();
       _cluCogR      [i]     = sqrt(_cluCogX[i]*_cluCogX[i] + _cluCogY[i]*_cluCogY[i]);
-      _cluCogZ      [i]     = cluster->cog3Vector().z();
+      _cluCogZ      [i]     = cluster->sectionId();//cog3Vector().z();
       _cluConv      [i]     = isConversion;
       
     }//end filling calo clusters info
