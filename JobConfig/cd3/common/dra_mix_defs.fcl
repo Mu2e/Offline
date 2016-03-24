@@ -13,70 +13,9 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
+#include "JobConfig/cd3/common/prolog.fcl"
 
-BEGIN_PROLOG
-caloDigiTable: {
-   protonTimeMap        : @local::protonTimeMap
-   muonTimeMap          : @local::muonTimeMap
-   MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-}
-
-caloDigiSeq:  [protonTimeMap, muonTimeMap, MakeCaloReadoutHits ]
-
-// FIXME: Tracking.DigiSim should include time maps in addition to other stuff
-digitizationSeq: [ @sequence::caloDigiSeq, @sequence::Tracking.DigiSim ]
-
-//----------------------------------------------------------------
-// Calorimeter cluster reconstruction
-caloRecoTable: {
-   MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
-   MakeCaloProtoCluster : @local::MakeCaloProtoCluster
-   MakeCaloCluster      : @local::MakeCaloCluster
-}
-
-caloRecoSeq: [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
-
-//----------------------------------------------------------------
-// PID inputs
-pidInputsTable: {
-   TrkExtrapolDem: {
-      @table::TrackCaloIntersection
-      fitparticle: 11
-      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
-   }
-   TrackCaloMatchingDem: {
-      @table::TrackCaloMatching
-      fitparticle: 11
-      fitdirection: 0
-      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
-      trkToCaloExtrapolModuleLabel: TrkExtrapolDem
-   }
-}
-
-pidInputsSeq: [TrkExtrapolDem, TrackCaloMatchingDem]
-
-// Analysis
-PhysicsCuts: {
-   trkqual: 0.2
-   tdmin: 0.57735027
-   tdmax: 1.
-   d0min: -80
-   d0max: 105
-   mdmin: 450.
-   mdmax: 650.
-   t0min: 700.
-   t0max: 1695.
-   pmin: 103.75
-   pmax: 105.0
-
-   caloemin: 10. // MeV
-   caloemax: 120. // MeV
-   caloMatchChi2: 100.
-}
-
-END_PROLOG
-
-process_name: drap
+process_name: dram
 
 source: { module_type: RootInput }
 
@@ -126,15 +65,7 @@ physics : {
 
       cutAndCount: {
 	 module_type: CutAndCountAnalyzer
-
-	 // Dowstream e- track input
-	 trackDemInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
-	 caloMatchDemInput: "TrackCaloMatchingDem"
-
-	 weight: @nil
-
-	 physicsCuts: @local::PhysicsCuts
-	 kalDiag: @local::KalDiagReadCD3
+	 @table::CutAndCountSettings
       }
    }
 

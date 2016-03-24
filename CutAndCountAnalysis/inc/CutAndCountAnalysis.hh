@@ -47,12 +47,12 @@
 #include "TH1.h"
 #include "TH2.h"
 
-#include "CutAndCountAnalysis/inc/TrkCutHist.hh"
+#include "CutAndCountAnalysis/inc/TrackLevelCuts.hh"
 
 namespace mu2e {
 
   namespace CutAndCount {
-    enum class TrkCutNumber;
+    enum class EventCutNumber;
   }
 
   class CutAndCountAnalysis {
@@ -62,56 +62,9 @@ namespace mu2e {
     bool accepted(const art::Event& event);
 
   private:
-    // A structure to hold values of physics cuts
-    struct PhysicsCuts {
-      double trkqual;
-      // tan(lambda)
-      double tdmin;
-      double tdmax;
-      // closest aproach to (0,0)
-      double d0min;
-      double d0max;
-      // max distance from (0,0)
-      double mdmin;
-      double mdmax;
-      // time
-      double t0min;
-      double t0max;
-
-      // track-calo match
-      double caloMatchChi2;
-      double caloemin;
-      double caloemax;
-
-      // momentum window
-      double pmin;
-      double pmax;
-
-      PhysicsCuts(const fhicl::ParameterSet& pset)
-        : trkqual(pset.get<double>("trkqual"))
-        , tdmin(pset.get<double>("tdmin"))
-        , tdmax(pset.get<double>("tdmax"))
-        , d0min(pset.get<double>("d0min"))
-        , d0max(pset.get<double>("d0max"))
-        , mdmin(pset.get<double>("mdmin"))
-        , mdmax(pset.get<double>("mdmax"))
-        , t0min(pset.get<double>("t0min"))
-        , t0max(pset.get<double>("t0max"))
-
-        , caloMatchChi2(pset.get<double>("caloMatchChi2"))
-        , caloemin(pset.get<double>("caloemin"))
-        , caloemax(pset.get<double>("caloemax"))
-
-        , pmin(pset.get<double>("pmin"))
-        , pmax(pset.get<double>("pmax"))
-      {}
-    };
-
     //----------------------------------------------------------------
-    typedef std::vector<art::InputTag> InputTags;
-    art::InputTag trackDemInput_;
-    art::InputTag caloMatchDemInput_;
-    PhysicsCuts cuts_;
+    art::InputTag signalCandidateInput_;
+    TrackLevelCuts cuts_;
     EventWeightHelper wh_;
     KalDiag kdiag_;
 
@@ -119,11 +72,9 @@ namespace mu2e {
     TH1 *h_cuts_r_;
     TH1 *w_cuts_p_;
     TH1 *w_cuts_r_;
-    TH1 *hNumAcceptedTracks_;
-    CutAndCount::TrkCutHist hTrkCuts_;
+    TH1 *hNumSignalCandidates_;
 
-    CutAndCount::TrkCutNumber processTrack(const art::Ptr<KalRep>& trk, const art::Event& evt);
-    const TrackClusterMatch* findCaloMatch(const art::Ptr<KalRep>& trk, const art::Event& evt);
+    CutAndCount::EventCutNumber processEvent(const art::Event& evt);
   };
 
 } // namespace mu2e
