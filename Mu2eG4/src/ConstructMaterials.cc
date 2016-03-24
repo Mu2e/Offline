@@ -474,6 +474,14 @@ namespace mu2e {
       G10->AddMaterial(findMaterialOrThrow("Epotek301"), 0.40);
     }
 
+    mat = uniqueMaterialOrThrow( "G10Lite" );
+    {
+      // Just a low-density version of G10 to represent space half-filled
+      // with G10
+      G4Material* G10Lite = new G4Material( mat.name, 0.85*CLHEP::g/CLHEP::cm3,1);
+      G10Lite->AddMaterial(findMaterialOrThrow("G10"),1.0);
+    }
+
     // Superconducting Cable Insulation
     mat = uniqueMaterialOrThrow( "SCCableInsulation");
     {

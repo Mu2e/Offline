@@ -52,6 +52,8 @@
 #include "GeometryService/inc/ExtShieldDownstreamMaker.hh"
 #include "ExternalShieldingGeom/inc/Saddle.hh"
 #include "GeometryService/inc/SaddleMaker.hh"
+#include "ServicesGeom/inc/Pipe.hh"
+#include "GeometryService/inc/PipeMaker.hh"
 #include "BeamlineGeom/inc/TSdA.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -262,7 +264,9 @@ namespace mu2e {
       addDetector( ExtShieldUpstreamMaker::make(*_config)  );
       addDetector( ExtShieldDownstreamMaker::make(*_config));
       addDetector( SaddleMaker::make(*_config));
+      addDetector( PipeMaker::make(*_config));
     }
+
 
 
     std::unique_ptr<ExtMonFNALBuilding> tmpemb(ExtMonFNALBuildingMaker::make(*_config, hall, dump));
