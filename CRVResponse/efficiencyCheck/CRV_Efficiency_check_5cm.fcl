@@ -204,78 +204,77 @@ physics.producers.CrvPhotonArrivals.processNames   : ["*"]
 physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_5600"]
 physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [5600]
 
-physics.producers.CrvCoincidencePE6T5.PEthreshold                    : 6
-physics.producers.CrvCoincidencePE6T5.maxTimeDifference              : 5
+physics.producers.CrvCoincidencePE6T5.PEthresholds                    : [6]
+physics.producers.CrvCoincidencePE6T5.maxTimeDifferences              : [5]
 
-physics.producers.CrvCoincidencePE8T5.PEthreshold                    : 8
-physics.producers.CrvCoincidencePE8T5.maxTimeDifference              : 5
+physics.producers.CrvCoincidencePE8T5.PEthresholds                    : [8]
+physics.producers.CrvCoincidencePE8T5.maxTimeDifferences              : [5]
 
-physics.producers.CrvCoincidencePE10T5.PEthreshold                   : 10
-physics.producers.CrvCoincidencePE10T5.maxTimeDifference             : 5
+physics.producers.CrvCoincidencePE10T5.PEthresholds                   : [10]
+physics.producers.CrvCoincidencePE10T5.maxTimeDifferences             : [5]
 
-physics.producers.CrvCoincidencePE12T5.PEthreshold                   : 12
-physics.producers.CrvCoincidencePE12T5.maxTimeDifference             : 5
+physics.producers.CrvCoincidencePE12T5.PEthresholds                   : [12]
+physics.producers.CrvCoincidencePE12T5.maxTimeDifferences             : [5]
 
-physics.producers.CrvCoincidencePE14T5.PEthreshold                   : 14
-physics.producers.CrvCoincidencePE14T5.maxTimeDifference             : 5
+physics.producers.CrvCoincidencePE14T5.PEthresholds                   : [14]
+physics.producers.CrvCoincidencePE14T5.maxTimeDifferences             : [5]
 
-physics.producers.CrvCoincidencePE16T5.PEthreshold                   : 16
-physics.producers.CrvCoincidencePE16T5.maxTimeDifference             : 5
+physics.producers.CrvCoincidencePE16T5.PEthresholds                   : [16]
+physics.producers.CrvCoincidencePE16T5.maxTimeDifferences             : [5]
 
-physics.producers.CrvCoincidencePE6T10.PEthreshold                   : 6
-physics.producers.CrvCoincidencePE6T10.maxTimeDifference             : 10
+physics.producers.CrvCoincidencePE6T10.PEthresholds                   : [6]
+physics.producers.CrvCoincidencePE6T10.maxTimeDifferences             : [10]
 
-physics.producers.CrvCoincidencePE8T10.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8T10.maxTimeDifference             : 10
+physics.producers.CrvCoincidencePE8T10.PEthresholds                   : [8]
+physics.producers.CrvCoincidencePE8T10.maxTimeDifferences             : [10]
 
-physics.producers.CrvCoincidencePE10T10.PEthreshold                  : 10
-physics.producers.CrvCoincidencePE10T10.maxTimeDifference            : 10
+physics.producers.CrvCoincidencePE10T10.PEthresholds                  : [10]
+physics.producers.CrvCoincidencePE10T10.maxTimeDifferences            : [10]
 
-physics.producers.CrvCoincidencePE12T10.PEthreshold                  : 12
-physics.producers.CrvCoincidencePE12T10.maxTimeDifference            : 10
+physics.producers.CrvCoincidencePE12T10.PEthresholds                  : [12]
+physics.producers.CrvCoincidencePE12T10.maxTimeDifferences            : [10]
 
-physics.producers.CrvCoincidencePE14T10.PEthreshold                  : 14
-physics.producers.CrvCoincidencePE14T10.maxTimeDifference            : 10
+physics.producers.CrvCoincidencePE14T10.PEthresholds                  : [14]
+physics.producers.CrvCoincidencePE14T10.maxTimeDifferences            : [10]
 
-physics.producers.CrvCoincidencePE16T10.PEthreshold                  : 16
-physics.producers.CrvCoincidencePE16T10.maxTimeDifference            : 10
+physics.producers.CrvCoincidencePE16T10.PEthresholds                  : [16]
+physics.producers.CrvCoincidencePE16T10.maxTimeDifferences            : [10]
 
-physics.producers.CrvCoincidencePE6T15.PEthreshold                   : 6
-physics.producers.CrvCoincidencePE6T15.maxTimeDifference             : 15
+physics.producers.CrvCoincidencePE6T15.PEthresholds                   : [6]
+physics.producers.CrvCoincidencePE6T15.maxTimeDifferences             : [15]
 
-physics.producers.CrvCoincidencePE8T15.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8T15.maxTimeDifference             : 15
+physics.producers.CrvCoincidencePE8T15.PEthresholds                   : [8]
+physics.producers.CrvCoincidencePE8T15.maxTimeDifferences             : [15]
 
-physics.producers.CrvCoincidencePE10T15.PEthreshold                  : 10
-physics.producers.CrvCoincidencePE10T15.maxTimeDifference            : 15
+physics.producers.CrvCoincidencePE10T15.PEthresholds                  : [10]
+physics.producers.CrvCoincidencePE10T15.maxTimeDifferences            : [15]
 
-physics.producers.CrvCoincidencePE12T15.PEthreshold                  : 12
-physics.producers.CrvCoincidencePE12T15.maxTimeDifference            : 15
+physics.producers.CrvCoincidencePE12T15.PEthresholds                  : [12]
+physics.producers.CrvCoincidencePE12T15.maxTimeDifferences            : [15]
 
-physics.producers.CrvCoincidencePE14T15.PEthreshold                  : 14
-physics.producers.CrvCoincidencePE14T15.maxTimeDifference            : 15
+physics.producers.CrvCoincidencePE14T15.PEthresholds                  : [14]
+physics.producers.CrvCoincidencePE14T15.maxTimeDifferences            : [15]
 
-physics.producers.CrvCoincidencePE16T15.PEthreshold                  : 16
-physics.producers.CrvCoincidencePE16T15.maxTimeDifference            : 15
+physics.producers.CrvCoincidencePE16T15.PEthresholds                  : [16]
+physics.producers.CrvCoincidencePE16T15.maxTimeDifferences            : [15]
 
-physics.producers.CrvCoincidencePE6T20.PEthreshold                   : 6
-physics.producers.CrvCoincidencePE6T20.maxTimeDifference             : 20
+physics.producers.CrvCoincidencePE6T20.PEthresholds                   : [6]
+physics.producers.CrvCoincidencePE6T20.maxTimeDifferences             : [20]
 
-physics.producers.CrvCoincidencePE8T20.PEthreshold                   : 8
-physics.producers.CrvCoincidencePE8T20.maxTimeDifference             : 20
+physics.producers.CrvCoincidencePE8T20.PEthresholds                   : [8]
+physics.producers.CrvCoincidencePE8T20.maxTimeDifferences             : [20]
 
-physics.producers.CrvCoincidencePE10T20.PEthreshold                  : 10
-physics.producers.CrvCoincidencePE10T20.maxTimeDifference            : 20
+physics.producers.CrvCoincidencePE10T20.PEthresholds                  : [10]
+physics.producers.CrvCoincidencePE10T20.maxTimeDifferences            : [20]
 
-physics.producers.CrvCoincidencePE12T20.PEthreshold                  : 12
-physics.producers.CrvCoincidencePE12T20.maxTimeDifference            : 20
+physics.producers.CrvCoincidencePE12T20.PEthresholds                  : [12]
+physics.producers.CrvCoincidencePE12T20.maxTimeDifferences            : [20]
 
-physics.producers.CrvCoincidencePE14T20.PEthreshold                  : 14
-physics.producers.CrvCoincidencePE14T20.maxTimeDifference            : 20
+physics.producers.CrvCoincidencePE14T20.PEthresholds                  : [14]
+physics.producers.CrvCoincidencePE14T20.maxTimeDifferences            : [20]
 
-physics.producers.CrvCoincidencePE16T20.PEthreshold                  : 16
-physics.producers.CrvCoincidencePE16T20.maxTimeDifference            : 20
+physics.producers.CrvCoincidencePE16T20.PEthresholds                  : [16]
+physics.producers.CrvCoincidencePE16T20.maxTimeDifferences            : [20]
 
 services.user.SeedService.baseSeed         :  773651
 services.user.SeedService.maxUniqueEngines :  20
-

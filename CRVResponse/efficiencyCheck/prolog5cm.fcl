@@ -5,5 +5,9 @@ BEGIN_PROLOG
 CrvCoincidence.verboseLevel                  : 0
 CrvCoincidence.timeWindowStart               : 800
 CrvCoincidence.timeWindowEnd                 : 900
+CrvCoincidence.CRVSectors                    : ["Test"]
+CrvCoincidence.PEthresholds                  : [ 10 ]
+CrvCoincidence.adjacentPulseTimeDifferences  : [  5 ]
+CrvCoincidence.maxTimeDifferences            : [ 10 ]
 
 END_PROLOG
