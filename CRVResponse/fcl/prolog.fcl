@@ -12,7 +12,7 @@ BEGIN_PROLOG
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_2300",
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 5000.0   //5000.0 photons per MeV 
+      scintillationYield        : 5000.0   //5000.0 photons per MeV (corresponds to 38.6 PE/SiPM)
       scintillationYieldTolerance :  0.0   //0%
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
       scintillatorRatioFastSlow : 1.0      //100% fast
@@ -81,7 +81,7 @@ BEGIN_PROLOG
       CRVSectors                    : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","D1","U" ,"C1","C2","C3","D2","D3","D4"] //used only to match the vector entries below
       PEthresholds                  : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ]
       adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
-      maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 15 , 10 , 10 , 10 , 10 , 15 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
+      maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 50 , 10 , 10 , 10 , 10 , 50 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
       acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
