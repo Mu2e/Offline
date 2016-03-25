@@ -244,6 +244,19 @@ namespace mu2e {
       Electronics->AddMaterial( findMaterialOrThrow("Polyethylene"), 0.138);
     }
 
+    mat = uniqueMaterialOrThrow( "RackElectronics" );
+    {
+      // This material represents a typical instrumented rack and is currently
+      // a placeholder, awaiting measurements.
+      // This version is based on PCB Electronics material (above),
+      // Aluminum, air, and steel.
+      G4Material* RackElectronics = new G4Material( mat.name, 1.6*CLHEP::g/CLHEP::cm3, 4);
+      RackElectronics->AddMaterial( findMaterialOrThrow("Electronics"),0.1898);
+      RackElectronics->AddMaterial( findMaterialOrThrow( "G4_AIR" ),   0.0002);
+      RackElectronics->AddElement(  getElementOrThrow( "Al" ),         0.21);
+      RackElectronics->AddElement(  getElementOrThrow( "Fe" ),         0.60);
+    }
+
 
     mat = uniqueMaterialOrThrow( "Half_Poly" );
     {
