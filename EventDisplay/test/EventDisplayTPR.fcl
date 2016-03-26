@@ -19,9 +19,9 @@ source :
 services :
 {
   message : @local::default_message
-  TFileService : { fileName : "EventDispalyTPR.root" }
+  TFileService : { fileName : "EventDisplayTPR.root" }
   RandomNumberGenerator: { }
-  GeometryService        : { inputFile : "Mu2eG4/test/geom_cd3.txt" }
+  GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
   ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   user : { 
