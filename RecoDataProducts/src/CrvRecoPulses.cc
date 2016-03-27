@@ -29,13 +29,13 @@ namespace mu2e
     return _crvPulses[SiPMNumber];
   }
 
-  unsigned int CrvRecoPulses::GetNumberOfRecoPulses(int fiberNumber, int side) 
+  unsigned int CrvRecoPulses::GetNumberOfRecoPulses(int fiberNumber, int side) const 
   {
     int SiPMNumber = FindSiPMNumber(fiberNumber, side);
     return _crvPulses[SiPMNumber].size();
   }
 
-  unsigned int CrvRecoPulses::GetNumberOfRecoPulses(int SiPMNumber) 
+  unsigned int CrvRecoPulses::GetNumberOfRecoPulses(int SiPMNumber) const
   {
     CheckSiPMNumber(SiPMNumber);
     return _crvPulses[SiPMNumber].size();

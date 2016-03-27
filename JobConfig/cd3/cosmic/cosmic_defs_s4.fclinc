@@ -1,71 +1,186 @@
 // This file contains the common part of job configuration for stage 4
 // cosmic ray simulations.  It is included by top level files
 // (like cosmic_s4_target1.fcl), which define output file names.
-// 
-// Ralf Ehrlich, 2015
+//
+// Most of this file has been copied from Andrei's file
+// JobConfig/cd3/common/dra_pure_defs.fcl
+// Two major changes:
+// Wider momentum cut window
+// Use CutAndCountFilter instead of CutAndCountAnalyzer 
 
 #include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
 #include "standardServices.fcl"
-#include "CRVResponse/test/prolog.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
 
-process_name : CRVResponse
-
-source :
+BEGIN_PROLOG
+caloDigiTable: 
 {
-  module_type : RootInput
+   protonTimeMap        : @local::protonTimeMap
+   muonTimeMap          : @local::muonTimeMap
+   MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
 }
 
-services :
+caloDigiSeq:  [protonTimeMap, muonTimeMap, MakeCaloReadoutHits]
+
+// FIXME: Tracking.DigiSim should include time maps in addition to other stuff
+digitizationSeq: [ @sequence::caloDigiSeq, @sequence::Tracking.DigiSim ]
+
+//----------------------------------------------------------------
+// Calorimeter cluster reconstruction
+caloRecoTable: 
 {
-  RandomNumberGenerator: { }
-  user :
-  {
-    GeometryService        : { inputFile      : "JobConfig/cd3/cosmic/geom_cosmic.txt" }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-    SeedService            : @local::automaticSeeds
-  }
+   MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
+   MakeCaloProtoCluster : @local::MakeCaloProtoCluster
+   MakeCaloCluster      : @local::MakeCaloCluster
 }
 
-physics :
+caloRecoSeq: [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
+
+//----------------------------------------------------------------
+// PID inputs
+pidInputsTable: 
 {
-  producers:
-  {
-    protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap: { module_type : GenerateMuonLife }
-
-    CrvPhotonArrivals: @local::CrvPhotonArrivals
-    CrvSiPMResponses : @local::CrvSiPMResponses
-    CrvWaveforms     : @local::CrvWaveforms
-    CrvRecoPulses    : @local::CrvRecoPulses
-    CrvCoincidence   : @local::CrvCoincidence
-  }
-
-  an : [protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses, CrvCoincidence]
-  out: [Output]
-
-  end_paths: [an, out]
+   TrkExtrapolDem: 
+   {
+      @table::TrackCaloIntersection
+      fitparticle: 11
+      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
+   }
+   TrackCaloMatchingDem: 
+   {
+      @table::TrackCaloMatching
+      fitparticle: 11
+      fitdirection: 0
+      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
+      trkToCaloExtrapolModuleLabel: TrkExtrapolDem
+   }
 }
 
-physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
-physics.producers.CrvPhotonArrivals.processNames   : ["*"]
+pidInputsSeq: [TrkExtrapolDem, TrackCaloMatchingDem]
 
-outputs: 
+// Analysis
+PhysicsCuts: 
 {
-    Output : 
+   trkqual: 0.2
+   tdmin: 0.57735027
+   tdmax: 1.
+   d0min: -80
+   d0max: 105
+   mdmin: 450.
+   mdmax: 650.
+   t0min: 700.
+   t0max: 1695.
+   pmin: 100.0  //wider momentum window
+   pmax: 110.0  //wider momentum window
+
+   caloemin: 10. // MeV
+   caloemax: 120. // MeV
+   caloMatchChi2: 100.
+}
+
+END_PROLOG
+
+process_name: cosmics4
+
+source: { module_type: RootInput }
+
+services: 
+{
+   message               : @local::default_message
+   TFileService          : { fileName : @nil }
+   RandomNumberGenerator : {}
+
+   user:
+   {
+      GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+      ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+      GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+      BTrkHelper             : @local::BTrkHelperDefault
+      SeedService            : @local::automaticSeeds
+   }
+}
+
+physics : 
+{
+    producers: 
     {
-        module_type : RootOutput
-    }
+      //------------------------------------------------------------------------------
+      // digitization
+      @table::caloDigiTable
+      // FIXME: Tracking.producers below defines digi in addition to defining reco
+
+      //------------------------------------------------------------------------------
+      // Track reco - multiple hypotheses
+      @table::Tracking.producers
+
+      // Calorimeter reco
+      @table::caloRecoTable
+
+      // PID inputs
+      @table::pidInputsTable
+
+      //------------------------------------------------------------------------------
+   }
+
+   //------------------------------------------------------------------------------
+   analyzers: 
+   {
+      // save normalization info to the histogram file
+      genCountLogger: { module_type: GenEventCountReader }
+   }
+
+   filters: 
+   {
+      cutAndCount: 
+      {
+	 module_type: CutAndCountFilter
+
+	 // Dowstream e- track input
+	 trackDemInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
+	 caloMatchDemInput: "TrackCaloMatchingDem"
+
+	 weight: {}
+
+	 physicsCuts: @local::PhysicsCuts
+	 kalDiag: @local::KalDiagReadCD3
+      }
+   }
+
+   //==============================================================================
+   p1: [@sequence::digitizationSeq,
+        @sequence::Tracking.TPRDownstreameMinus,
+        @sequence::caloRecoSeq,
+        @sequence::pidInputsSeq,
+        cutAndCount]
+   trigger_paths  : [p1]
+
+   e1: [genCountLogger, filteredOutput]
+   end_paths      : [e1]
 }
+
+outputs:
+{
+   filteredOutput:
+   {
+      module_type    : RootOutput
+      SelectEvents   : { SelectEvents: ["p1"] }
+      outputCommands : [ "keep *_*_*_*" ]
+   }
+}
+
+// Limit the amount of "Begin processing the ... record" messages
+
+// We guarantee that our subruns are atomic. The following line is
+// supposed to prevent excessive memory use.
+services.scheduler.fileMode: MERGE
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
 services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
 
-services.user.SeedService.baseSeed         :  773651
+// Digitization uses random numbers
+services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20
-
-// We guarantee that our subruns are atomic. The following line is to not run out of memory.
-services.scheduler.fileMode: MERGE
 

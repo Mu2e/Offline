@@ -199,6 +199,7 @@ physics :
   end_paths: []
 }
 
+physics.producers.CrvPhotonArrivals.timeOffsets    : { inputs : [] }
 physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
 physics.producers.CrvPhotonArrivals.processNames   : ["*"]
 physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_4500"]
