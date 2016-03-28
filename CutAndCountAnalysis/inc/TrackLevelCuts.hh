@@ -31,6 +31,10 @@
 
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
+
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Utilities/InputTag.h"
@@ -57,6 +61,33 @@ namespace mu2e {
 
   class TrackLevelCuts: private boost::noncopyable {
   public:
+
+    // A structure to hold values of physics cuts
+    struct PhysicsCuts {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<double> trkqual{Name("trkqual"), Comment("Low cut on trkqual") };
+      fhicl::Atom<double> tdmin{Name("tdmin"), Comment("Low cut on tan(dip)")};
+      fhicl::Atom<double> tdmax{Name("tdmax"), Comment("High cut on tan(dip)")};
+      fhicl::Atom<double> d0min{Name("d0min"), Comment("Low cut on closest track approach to detector axis")};
+      fhicl::Atom<double> d0max{Name("d0max"), Comment("High cut on closest track approach to detector axis")};
+      fhicl::Atom<double> mdmin{Name("mdmin"), Comment("Low cut on farthest track distance from detector axis")};
+      fhicl::Atom<double> mdmax{Name("mdmax"), Comment("High cut on farthest track distance from detector axis")};
+      fhicl::Atom<double> t0min{Name("t0min"), Comment("Beginning of the live time gate")};
+      fhicl::Atom<double> t0max{Name("t0max"), Comment("End of the live time gate")};
+
+      // FIXME: there are optional pars for track-calo match
+      fhicl::Atom<art::InputTag> caloMatchInput{Name("caloMatchInput"), Comment("Tag of the calo cluster collection to match to the tracks. If empty, calorimeter matching and related cuts are turned off.")};
+      fhicl::Atom<double> caloMatchChi2{Name("caloMatchChi2"), Comment("High cut on chi2 of track-calo match")};
+      fhicl::Atom<double> caloemin{Name("caloemin"), Comment("Min energy of matched calo cluster")};
+      fhicl::Atom<double> caloemax{Name("caloemax"), Comment("Max energy of matched calo cluster")};
+
+      fhicl::Atom<double> pmin{Name("pmin"), Comment("Low cut on signal track momentum")};
+      fhicl::Atom<double> pmax{Name("pmax"), Comment("High cut on signal track momentum")};
+    };
+
+    explicit TrackLevelCuts(const PhysicsCuts& pc, art::TFileDirectory tfdir, const std::string histdir);
     explicit TrackLevelCuts(const fhicl::ParameterSet& pset, art::TFileDirectory tfdir, const std::string histdir);
 
     bool accepted(const art::Ptr<KalRep>& trk,
@@ -66,54 +97,7 @@ namespace mu2e {
 
   private:
     art::TFileDirectory getdir(art::TFileDirectory orig, const std::string& relpath);
-    explicit TrackLevelCuts(const fhicl::ParameterSet& pset, art::TFileDirectory finaldir);
-
-    // A structure to hold values of physics cuts
-    struct PhysicsCuts {
-      double trkqual;
-      // tan(lambda)
-      double tdmin;
-      double tdmax;
-      // closest aproach to (0,0)
-      double d0min;
-      double d0max;
-      // max distance from (0,0)
-      double mdmin;
-      double mdmax;
-      // time
-      double t0min;
-      double t0max;
-
-      // track-calo match
-      art::InputTag caloMatchInput; // no calo cuts if empty
-      double caloMatchChi2;
-      double caloemin;
-      double caloemax;
-
-      // momentum window
-      double pmin;
-      double pmax;
-
-      PhysicsCuts(const fhicl::ParameterSet& pset)
-        : trkqual(pset.get<double>("trkqual"))
-        , tdmin(pset.get<double>("tdmin"))
-        , tdmax(pset.get<double>("tdmax"))
-        , d0min(pset.get<double>("d0min"))
-        , d0max(pset.get<double>("d0max"))
-        , mdmin(pset.get<double>("mdmin"))
-        , mdmax(pset.get<double>("mdmax"))
-        , t0min(pset.get<double>("t0min"))
-        , t0max(pset.get<double>("t0max"))
-
-        , caloMatchInput(pset.get<art::InputTag>("caloMatchInput"))
-        , caloMatchChi2(pset.get<double>("caloMatchChi2"))
-        , caloemin(pset.get<double>("caloemin"))
-        , caloemax(pset.get<double>("caloemax"))
-
-        , pmin(pset.get<double>("pmin"))
-        , pmax(pset.get<double>("pmax"))
-      {}
-    };
+    explicit TrackLevelCuts(const PhysicsCuts& pset, art::TFileDirectory finaldir);
 
     //----------------------------------------------------------------
     PhysicsCuts cuts_;
