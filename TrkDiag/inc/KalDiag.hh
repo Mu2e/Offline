@@ -104,8 +104,6 @@ namespace mu2e
 // relationship information
     static relation relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj);
     static relation relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2);
-// MC track finder.  this function is deprecated
-    bool trkFromMC(cet::map_vector_key const& trkid,TrkDef& mytrk);
 // count CE hits
     unsigned countCEHits() const;
   private:

@@ -145,7 +145,7 @@ namespace mu2e
       StrawDigiMC const& mcdigi = _mcdigis->at(ish);
       // use TDC channel 0 to define the MC match
       StrawDigi::TDCChannel itdc = StrawDigi::zero;
-      if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+      if(!mcdigi.hasTDC(StrawDigi::zero)) itdc = StrawDigi::one;
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       shinfo._mct0 = _toff.timeWithOffsetsApplied(*spmcp);
