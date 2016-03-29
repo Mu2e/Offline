@@ -1,0 +1,4 @@
+#include "JobConfig/cd3/common/dra_pure_defs.fcl"
+physics.trigger_paths: [ draCommonTrigSeq ]
+physics.end_paths: [ draCommonEndSeq, draCutAndCountEndSeq ]
+physics.analyzers.cutAndCountAnalyzer.weight: { inputs: ["generate"] }
