@@ -768,7 +768,7 @@ namespace mu2e
     trkqualvec.resize(10);
     trkqualvec[0] = trkinfo._nactive; // # of active hits
     trkqualvec[1] = (float)trkinfo._nactive/(float)trkinfo._nhits;  // Fraction of active hits
-    trkqualvec[2] = log10(trkinfo._fitcon); // fit chisquared consistency
+    trkqualvec[2] = trkinfo._fitcon > 0.0 ? log10(trkinfo._fitcon) : -50.0; // fit chisquared consistency
     trkqualvec[3] = trkinfo._ent._fitmomerr; // estimated momentum error
     trkqualvec[4] = trkinfo._t0err;  // estimated t0 error
     trkqualvec[5] = trkinfo._ent._fitpar._d0; // d0 value
