@@ -1,4 +1,5 @@
 BEGIN_PROLOG
+
 caloDigiTable: {
    protonTimeMap        : @local::protonTimeMap
    muonTimeMap          : @local::muonTimeMap
@@ -92,8 +93,8 @@ CutAndCountSettings: {
 
 }
 
-################################################################
-topLevelDRADefs: {
+#================================================================
+draTopLevelDefs: {
    source: { module_type: RootInput }
 
    services: {
@@ -133,6 +134,11 @@ topLevelDRADefs: {
       //------------------------------------------------------------------------------
       filters: {
 	 @table::draEventMixing.filters
+
+	 cutAndCountFilter: {
+	    module_type: CutAndCountFilter
+	    @table::CutAndCountSettings
+	 }
       }
 
       //------------------------------------------------------------------------------
@@ -140,27 +146,32 @@ topLevelDRADefs: {
 	 // save normalization info to the histogram file
 	 genCountLogger: { module_type: GenEventCountReader }
 
-	 cutAndCount: {
+	 cutAndCountAnalyzer: {
 	    module_type: CutAndCountAnalyzer
 	    @table::CutAndCountSettings
 	 }
       }
 
       //==============================================================================
-      p1:[ @sequence::draEventMixing.CD3Mixers
+      draCommonTrigSeq : [
+	 @sequence::draEventMixing.CD3Mixers
 	 , @sequence::digitizationSeq
 	 , @sequence::Tracking.TPRDownstreameMinus
 	 , @sequence::Tracking.TPRUpstreameMinus
 	 , @sequence::caloRecoSeq
 	 , @sequence::pidInputsSeq
       ]
-      trigger_paths  : [p1]
+      draCutAndCountTrigSeq: [ cutAndCountFilter ]
 
-      e1: [ genCountLogger, cutAndCount ]
-      end_paths      : [e1]
+      trigger_paths: @nil
+
+      draCommonEndSeq: [ genCountLogger ]
+      draCutAndCountEndSeq : [ cutAndCountAnalyzer ]
+      end_paths: @nil
    }
 }
 
+#----------------------------------------------------------------
 
 END_PROLOG
 
