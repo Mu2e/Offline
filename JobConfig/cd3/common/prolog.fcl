@@ -61,12 +61,12 @@ signalTrackCuts: {
 }
 
 uemVetoTrackCuts: {
-   trkqual: 0.2
-   tdmin: 0.
+   trkqual: 0.1
+   tdmin: -9999.
    tdmax: +9999.
    d0min: -9999
    d0max: +9999
-   mdmin: 0.
+   mdmin: -9999.
    mdmax: +9999.
    t0min: 700.
    t0max: 1695.
@@ -161,15 +161,25 @@ draTopLevelDefs: {
 	 , @sequence::caloRecoSeq
 	 , @sequence::pidInputsSeq
       ]
-      draCutAndCountTrigSeq: [ cutAndCountFilter ]
 
       trigger_paths: @nil
 
       draCommonEndSeq: [ genCountLogger ]
       draCutAndCountEndSeq : [ cutAndCountAnalyzer ]
+      filteredOutput: [ filteredOutput ]
       end_paths: @nil
    }
+
+   outputs: {
+      filteredOutput: {
+	 fileName: @nil
+	 module_type    : RootOutput
+	 SelectEvents   : { SelectEvents: ["draCutAndCountTrigSeq"] }
+      }
+   }
 }
+
+draTopLevelDefs.physics.draCutAndCountTrigSeq: [ @sequence::draTopLevelDefs.physics.draCommonTrigSeq, cutAndCountFilter ]
 
 #----------------------------------------------------------------
 
