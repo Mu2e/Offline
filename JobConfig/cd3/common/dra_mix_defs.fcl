@@ -26,7 +26,7 @@ END_PROLOG
 
 process_name: dram
 
-@table::topLevelDRADefs
+@table::draTopLevelDefs
 
 // We guarantee that our subruns are atomic. The following line is
 // supposed to prevent excessive memory use.

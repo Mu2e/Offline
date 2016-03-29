@@ -26,5 +26,5 @@ END_PROLOG
 physics.trigger_paths: [ draCommonTrigSeq ]
 physics.end_paths: [ draCommonEndSeq, draCutAndCountEndSeq ]
 
-physics.analyzers.cutAndCount.weight: { inputs: ["protonBunchSummarizer"] }
+physics.analyzers.cutAndCountAnalyzer.weight: { inputs: ["protonBunchSummarizer"] }
 services.TFileService.fileName: "nts.owner.cd3-dra-mix-baseline.ver.seq.root"
