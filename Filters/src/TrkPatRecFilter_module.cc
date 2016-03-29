@@ -3,11 +3,12 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 using namespace CLHEP;
-#include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 #include <string>
 #include <vector>
@@ -28,13 +29,21 @@ namespace mu2e
     std::vector<std::string> _trkPatRecInstances;
     double _minMomentum;
     double _maxMomentum;
+    double _minCETime; // minimum time of CE
+    bool _reverse; // reverse the logic of the final decision
+    std::string _mcdigislabel;
+    int _minCEHits; // minimum number of true CE hits to require
   };
 
   TrkPatRecFilter::TrkPatRecFilter(fhicl::ParameterSet const& pset) :
     _fitterModuleLabels(pset.get<std::vector<std::string> >("fitterModuleLabels")),
     _trkPatRecInstances(pset.get<std::vector<std::string> >("trkPatRecInstances")),
     _minMomentum(pset.get<double>("minMomentum", -1.0)),
-    _maxMomentum(pset.get<double>("maxMomentum", -1.0))
+    _maxMomentum(pset.get<double>("maxMomentum", 1.0e6)),
+    _minCETime(pset.get<double>("minCETime", 550.0)),
+    _reverse(pset.get<bool>("ReverseTrackSelection",false)),
+    _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
+    _minCEHits(pset.get<int>("MinCEHits",-1))
   {
     if(_fitterModuleLabels.size() != _trkPatRecInstances.size()) 
     {
@@ -45,28 +54,49 @@ namespace mu2e
 
   bool TrkPatRecFilter::filter(art::Event& event) 
   {
-    art::Handle<KalRepCollection> kalReps;
+    bool retval(false);
     for(unsigned int i=0; i<_fitterModuleLabels.size(); i++)
     {
-      if(event.getByLabel(_fitterModuleLabels[i],_trkPatRecInstances[i],kalReps))
+      art::Handle<KalRepPtrCollection> trksHandle;
+      if(event.getByLabel(_fitterModuleLabels[i],_trkPatRecInstances[i],trksHandle))
       {
-        for(unsigned int j=0; j<kalReps->size(); j++)
+	KalRepPtrCollection const& kalReps = *trksHandle;
+	for(unsigned int j=0; j<kalReps.size(); j++)
         {
-          KalRep const* kalrep = kalReps->get(j);
+          KalRep const* kalrep = kalReps.at(j).get();
           if(kalrep!=NULL)
           {
-            double fltLMin=kalrep->startValidRange();
-            double fltLMax=kalrep->endValidRange();
+            double fltLMin=kalrep->startFoundRange();
+            double fltLMax=kalrep->endFoundRange();
             double p1=kalrep->momentum(fltLMin).mag();
             double p2=kalrep->momentum(fltLMax).mag();
-            if(p1/CLHEP::MeV<_minMomentum && _minMomentum!=-1.0) continue;
-            if(p2/CLHEP::MeV>_maxMomentum && _maxMomentum!=-1.0) continue;
-            return(true);
+            if(p1/CLHEP::MeV<_minMomentum ) continue;
+            if(p2/CLHEP::MeV>_maxMomentum ) continue;
+            retval = true;
+	    break;
           }
         }
       }
     }
-    return(false);
+    if(_reverse) retval = !retval;
+    // check for MC truth
+    if(retval && _minCEHits > 0){
+      int ncehits(0);
+      art::Handle<StrawDigiMCCollection> mcdigisHandle;
+      if(event.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle)){
+	const StrawDigiMCCollection* mcdigis = mcdigisHandle.product();
+	for(auto imcdigi = mcdigis->begin(); imcdigi != mcdigis->end(); ++imcdigi){
+	  // require both ends to fire
+	  if(imcdigi->hasTDC(StrawDigi::zero) && imcdigi->hasTDC(StrawDigi::one) &&
+	    imcdigi->wireEndTime(StrawDigi::zero) > _minCETime ) {
+	    if(imcdigi->stepPointMC(StrawDigi::zero)->simParticle()->genParticle().isNonnull() &&
+		imcdigi->stepPointMC(StrawDigi::zero)->simParticle()->genParticle()->generatorId().id() == GenId::conversionGun) ++ncehits;
+	  }
+	}
+      }
+      retval &= ncehits >= _minCEHits;
+    }
+    return(retval);
   }
 }
 
