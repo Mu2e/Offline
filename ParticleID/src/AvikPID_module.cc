@@ -39,7 +39,7 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/PIDProduct.hh"

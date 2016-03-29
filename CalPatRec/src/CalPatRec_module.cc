@@ -1192,7 +1192,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // fill some diag histograms
 //-----------------------------------------------------------------------------
-            if (_clCE) {
+            if ((_diagLevel > 0) && _clCE) {
 					// is the straw hit from CE?
               const mu2e::StepPointMC* step(0);
               int nstraws = _listOfMCStrawHits->size();

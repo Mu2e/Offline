@@ -1,6 +1,22 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_7_0
+
+16) March 22, 2016, kutschke
+    Moved TrkStrawHit from TrkReco to a new subdirectory BTrkData.
+    Modified Analyses/src/SConstruct to link against BTrKData.so.
+    This ensures that the 86 modules in Analyses/src do not need to be rebuilt
+    when algorithms in TrkReco are modified; TrkStrawHit is not changed frequently.
+
+    This is a bit icky because the subdirectory has only a single class.
+    This will be addressed in a later reorganization.
+
+    May #include directives and SConscript link lists needed to be updated to
+    find TrkStrawHit in its new location.
+
+15) March 22, 2016 genser
+    Added/modified printouts and control varaibles
+     Mu2eG4/inc/PrimaryGeneratorAction.hh - added verbosityLevel_ based on debug.diagLevel
+     Mu2eG4/src/PrimaryGeneratorAction.cc
+     Mu2eG4/src/TrackingAction.cc - added warning/info re higher ion isomer levels
 
 14) March 22, 2016 oksuzian
     Added new concrete materials in ConstructMaterials

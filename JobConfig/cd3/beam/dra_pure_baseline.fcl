@@ -6,5 +6,9 @@
 // Andrei Gaponenko, 2016
 
 #include "JobConfig/cd3/common/dra_pure_defs.fcl"
-physics.analyzers.cutAndCount.weight: {}
+
+physics.trigger_paths: [ draCommonTrigSeq ]
+physics.end_paths: [ draCommonEndSeq, draCutAndCountEndSeq ]
+
+physics.analyzers.cutAndCountAnalyzer.weight: {}
 services.TFileService.fileName: "nts.owner.cd3-dra-pure-baseline.ver.seq.root"

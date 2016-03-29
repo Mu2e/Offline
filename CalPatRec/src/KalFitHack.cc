@@ -14,7 +14,7 @@
 // the following has to come before other BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
 #include "CalPatRec/inc/KalFitHack.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/PanelAmbigResolver.hh"
 #include "TrkReco/inc/PocaAmbigResolver.hh"
 #include "TrkReco/inc/HitAmbigResolver.hh"

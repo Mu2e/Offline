@@ -22,5 +22,9 @@ BEGIN_PROLOG
 END_PROLOG
 
 #include "JobConfig/cd3/common/dra_mix_defs.fcl"
-physics.analyzers.cutAndCount.weight: { inputs: ["protonBunchSummarizer"] }
+
+physics.trigger_paths: [ draCommonTrigSeq ]
+physics.end_paths: [ draCommonEndSeq, draCutAndCountEndSeq ]
+
+physics.analyzers.cutAndCountAnalyzer.weight: { inputs: ["protonBunchSummarizer"] }
 services.TFileService.fileName: "nts.owner.cd3-dra-mix-baseline.ver.seq.root"

@@ -244,6 +244,19 @@ namespace mu2e {
       Electronics->AddMaterial( findMaterialOrThrow("Polyethylene"), 0.138);
     }
 
+    mat = uniqueMaterialOrThrow( "RackElectronics" );
+    {
+      // This material represents a typical instrumented rack and is currently
+      // a placeholder, awaiting measurements.
+      // This version is based on PCB Electronics material (above),
+      // Aluminum, air, and steel.
+      G4Material* RackElectronics = new G4Material( mat.name, 1.6*CLHEP::g/CLHEP::cm3, 4);
+      RackElectronics->AddMaterial( findMaterialOrThrow("Electronics"),0.1898);
+      RackElectronics->AddMaterial( findMaterialOrThrow( "G4_AIR" ),   0.0002);
+      RackElectronics->AddElement(  getElementOrThrow( "Al" ),         0.21);
+      RackElectronics->AddElement(  getElementOrThrow( "Fe" ),         0.60);
+    }
+
 
     mat = uniqueMaterialOrThrow( "Half_Poly" );
     {
@@ -472,6 +485,14 @@ namespace mu2e {
       G4Material* G10 = new G4Material( mat.name, 1.7*CLHEP::g/CLHEP::cm3, 2);
       G10->AddMaterial(findMaterialOrThrow("G4_SILICON_DIOXIDE"), 0.60);//FIXME do e-glass etc...
       G10->AddMaterial(findMaterialOrThrow("Epotek301"), 0.40);
+    }
+
+    mat = uniqueMaterialOrThrow( "G10Lite" );
+    {
+      // Just a low-density version of G10 to represent space half-filled
+      // with G10
+      G4Material* G10Lite = new G4Material( mat.name, 0.85*CLHEP::g/CLHEP::cm3,1);
+      G10Lite->AddMaterial(findMaterialOrThrow("G10"),1.0);
     }
 
     // Superconducting Cable Insulation

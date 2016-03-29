@@ -132,7 +132,6 @@ namespace mu2e
   void CrvBackgroundCollector::analyze(const art::Event& event) 
   {
     GeomHandle<CosmicRayShield> CRS;
-    std::string productInstanceName("CRV");
 
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     double microBunchPeriod = accPar->deBuncherPeriod;

@@ -6,7 +6,7 @@
 // $Date: 2012/05/14 19:20:02 $
 //
 #include "TrkReco/inc/AmbigResolver.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"

@@ -53,9 +53,12 @@ namespace mu2e
 
     double                              _binWidth;
     double                              _FEBtimeSpread;
+    double                              _minVoltage;
 
     CLHEP::RandFlat                     _randFlat;
     CLHEP::RandGaussQ                   _randGaussQ;
+    
+    std::vector<double> timeShiftFEBsSide0, timeShiftFEBsSide1;
   };
 
   CrvWaveformsGenerator::CrvWaveformsGenerator(fhicl::ParameterSet const& pset) :
@@ -63,6 +66,7 @@ namespace mu2e
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
     _binWidth(pset.get<double>("binWidth")),                   //12.5 ns (digitizer sampling rate)
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
+    _minVoltage(pset.get<double>("minVoltage")),               //0.022V (corresponds to 3.5PE)
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
@@ -92,6 +96,17 @@ namespace mu2e
 
     double samplingPointShift = _randFlat.fire()*_binWidth;
 
+    if(timeShiftFEBsSide0.empty())
+    {
+      GeomHandle<CosmicRayShield> CRS;
+      unsigned int nCounters = CRS->getAllCRSScintillatorBars().size();
+      for(unsigned int i=0; i<nCounters/32; i++) 
+      {
+        timeShiftFEBsSide0.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
+        timeShiftFEBsSide1.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
+      }
+    }
+
     for(CrvSiPMResponsesCollection::const_iterator iter=crvSiPMResponsesCollection->begin(); 
         iter!=crvSiPMResponsesCollection->end(); iter++)
     {
@@ -101,8 +116,6 @@ namespace mu2e
       double firstSiPMResponseTime = siPMResponses.GetFirstSiPMResponseTime();
       int    startTime = floor(firstSiPMResponseTime / _binWidth) * _binWidth;  //start time of the waveform in multiples of the bin width (12.5ns)
       startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
-      double timeShiftFEB0 =_randGaussQ.fire(0, _FEBtimeSpread);
-      double timeShiftFEB1 =_randGaussQ.fire(0, _FEBtimeSpread);
 
       CrvWaveforms &crvWaveforms = (*crvWaveformsCollection)[barIndex];
       crvWaveforms.SetBinWidth(_binWidth);
@@ -115,11 +128,31 @@ namespace mu2e
           times.push_back(timesAndCharges[i]._time);
           charges.push_back(timesAndCharges[i]._charge);
         }
-        double timeShift=(SiPM%2==0 ? timeShiftFEB0 : timeShiftFEB1);
+
+        double timeShift=0;
+        unsigned int FEB=barIndex.asUint()/32;
+        if(SiPM%2==0 && FEB<timeShiftFEBsSide0.size()) timeShift=timeShiftFEBsSide0[FEB];
+        if(SiPM%2==1 && FEB<timeShiftFEBsSide1.size()) timeShift=timeShiftFEBsSide1[FEB];
 
         std::vector<double> &waveform = crvWaveforms.GetWaveform(SiPM);
         _makeCrvWaveforms->MakeWaveform(times, charges, waveform, startTime, _binWidth, timeShift);
         crvWaveforms.SetStartTime(SiPM,startTime);
+
+        //zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage, 
+        //if the neighboring digi points are also below the minimum voltage
+        for(unsigned int i=0; i<waveform.size(); i++)
+        {
+          bool keepPoint=false;
+          if(waveform[i]>_minVoltage) keepPoint=true;
+          else
+          {
+            if(i<waveform.size()-1)
+            {
+              if(waveform[i+1]>_minVoltage) keepPoint=true;
+            }
+          }
+          if(!keepPoint) waveform[i]=0;
+        }
       }
     }
 

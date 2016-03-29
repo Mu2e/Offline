@@ -39,7 +39,7 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 // Mu2e
 #include "TrkReco/inc/TrkDef.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/KalFit.hh"
 #include "TrkDiag/inc/KalDiag.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"

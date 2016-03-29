@@ -1,5 +1,7 @@
 #include "Mu2eG4/geom/geom_common.txt"
 
+bool hasSTM = false;
+
 // replace the CRV counter setup:
 
 int   crs.nSectors = 1;
@@ -8,8 +10,8 @@ int   crs.nLayers  = 1;
 vector<string> crs.sectorNames = {"Test"};
 
 // double          crs.scintillatorBarLengthTest    =  6600;
-// double          crs.scintillatorBarLengthTest    =  5600;
-double          crs.scintillatorBarLengthTest    =  4500;
+double          crs.scintillatorBarLengthTest    =  5600;
+// double          crs.scintillatorBarLengthTest    =  4500;
 // double          crs.scintillatorBarLengthTest    =  3000;
 
 double          crs.scintillatorBarThickness     =  20.0; //mm   //is actually only 19.8mm, while the lookup tables have 20.0mm
@@ -35,6 +37,15 @@ vector<double>  crs.layerDirectionTest           =  {0, 1, 0};
 vector<double>  crs.offsetDirectionTest          =  {0, 0, -1}; 
 vector<double>  crs.gapDirectionTest             =  {0, 0, 1};
 
+bool crs.sipmsAtSide0Test = true;
+bool crs.sipmsAtSide1Test = true;
+
+int crs.FEBsAtSide0Test = 0;
+int crs.FEBsAtSide1Test = 0;
+
+int crs.precedingSectorForTest = -1;
+
+int crs.sectorTypeTest = 1;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

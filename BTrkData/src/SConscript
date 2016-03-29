@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+#
+# Original author Rob Kutschke.
+#
+
+import os, re
+Import('env')
+
+Import('mu2e_helper')
+
+helper=mu2e_helper()
+
+babarlibs = env['BABARLIBS']
+
+mainlib = helper.make_mainlib ( [
+    'mu2e_ConditionsService',
+    'mu2e_RecoDataProducts',
+    'mu2e_Mu2eInterfaces',
+    babarlibs,
+    'art_Framework_Services_Registry',
+    'art_Utilities',
+    'cetlib',
+    'CLHEP',
+    'boost_system',
+    ] )
+
+# Fixme: do I need all of babarlibs below?
+helper.make_dict_and_map( [
+        mainlib,
+        babarlibs,
+        'art_Persistency_Common',
+        'art_Utilities',
+        'cetlib',
+        'CLHEP',
+        'Reflex'
+    ] )
+
+
+# This tells emacs to view this file in python mode.
+# Local Variables:
+# mode:python
+# End:

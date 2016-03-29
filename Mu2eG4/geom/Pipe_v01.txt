@@ -1,0 +1,152 @@
+// Original author David Norvil Brown, University of Louisville
+// Numbers based on Mu2e geometry as of March 2016
+// See Mu2e docdb #4678 for more details on parameters
+
+// Sort boxes into "types"
+int Pipe.numberOfPipeTypes = 1;
+
+// How many of each type box to make, and how many components in each.
+int Pipe.nPipeType1 = 2;  // long straight pipe sections in West wall relief
+int Pipe.nComponentsInType1 = 10; //lN2 and lHe supply and return lines in west
+         // wall relief
+
+// Lengths in w dimension for each type of pipe.  Dimensions should be in mm.
+double Pipe.lengthType1 = 12721.18; // long straight pipe sections in West wall relief
+
+// Flavor of the type.  Here, flavor means "straight" (default) or "bend".
+string Pipe.flavorType1 = "straight";
+
+// Fill material of the type
+string Pipe.fillMaterialType1 = "G10Lite";
+
+// The position of the piece in Mu2e Offline coordinates
+
+vector<double> Pipe.centerType1Pipe1 = {-3588.6,2488.13,-3911.6}; // straight pipe,
+// West wall relief, top
+vector<double> Pipe.centerType1Pipe2 = {-3588.6,1294.43,-3911.6}; // straight pipe,
+// West wall relief, bottom
+
+// The orientation of the box.  See docdb xxxx for details.
+string Pipe.orientationType1Pipe1 = "030";
+string Pipe.orientationType1Pipe2 = "030";
+
+// Now the component information
+
+// Radii in mm
+// First, inner radii
+double Pipe.rInType1Comp1 = 124.23; 
+double Pipe.rInType1Comp2 = 100.015; 
+double Pipe.rInType1Comp3 = 11.05; 
+double Pipe.rInType1Comp4 = 11.05; 
+double Pipe.rInType1Comp5 = 11.05; 
+double Pipe.rInType1Comp6 = 11.05; 
+double Pipe.rInType1Comp7 = 17.4; 
+double Pipe.rInType1Comp8 = 14.224; 
+double Pipe.rInType1Comp9 = 9.464; 
+double Pipe.rInType1Comp10 = 9.464; 
+
+// next, outer radii
+double Pipe.rOutType1Comp1 = 127.0; 
+double Pipe.rOutType1Comp2 = 103.19; 
+double Pipe.rOutType1Comp3 = 12.7; 
+double Pipe.rOutType1Comp4 = 12.7; 
+double Pipe.rOutType1Comp5 = 12.7; 
+double Pipe.rOutType1Comp6 = 12.7; 
+double Pipe.rOutType1Comp7 = 19.05; 
+double Pipe.rOutType1Comp8 = 15.875; 
+double Pipe.rOutType1Comp9 = 11.115; 
+double Pipe.rOutType1Comp10 = 11.115; 
+
+// Materials for each type of component pipe.  
+string Pipe.materialType1Comp1   = "StainlessSteel";
+string Pipe.materialType1Comp2   = "G4_Al";
+string Pipe.materialType1Comp3   = "G4_Al";
+string Pipe.materialType1Comp4   = "G4_Al";
+string Pipe.materialType1Comp5   = "G4_Al";
+string Pipe.materialType1Comp6   = "G4_Al";
+string Pipe.materialType1Comp7   = "G4_Al";
+string Pipe.materialType1Comp8   = "G4_Al";
+string Pipe.materialType1Comp9   = "G4_Al";
+string Pipe.materialType1Comp10   = "G4_Al";
+
+// Now the offsets, defining the positions of the components relative
+// to the mother pipe
+double Pipe.uOffsetType1Comp1  = 0.0;
+double Pipe.uOffsetType1Comp2  = 0.0;
+double Pipe.uOffsetType1Comp3  = 60.0;
+double Pipe.uOffsetType1Comp4  = -60.0;
+double Pipe.uOffsetType1Comp5  = 60.0;
+double Pipe.uOffsetType1Comp6  = -60.0;
+double Pipe.uOffsetType1Comp7  = 0.0;
+double Pipe.uOffsetType1Comp8  = 0.0;
+double Pipe.uOffsetType1Comp9  = 0.0;
+double Pipe.uOffsetType1Comp10  = 63.5;
+
+// in v
+double Pipe.vOffsetType1Comp1  = 0.0;
+double Pipe.vOffsetType1Comp2  = 0.0;
+double Pipe.vOffsetType1Comp3  = -58.74;
+double Pipe.vOffsetType1Comp4  = -58.74;
+double Pipe.vOffsetType1Comp5  = 58.74;
+double Pipe.vOffsetType1Comp6  = 58.74;
+double Pipe.vOffsetType1Comp7  = 55.56;
+double Pipe.vOffsetType1Comp8  = -58.74;
+double Pipe.vOffsetType1Comp9  = 0.0;
+double Pipe.vOffsetType1Comp10  = 0.0;
+
+
+
+// Global stuff
+
+bool  Pipe.visible = true;
+bool  Pipe.solid   = false;
+
+int   Pipe.verbosityLevel = 1;
+
+// // DS cryo rail platform
+// double Pipe.outlineType14UVert1 = 470;
+// double Pipe.outlineType14VVert1 = 0;
+// double Pipe.outlineType14UVert2 = 470;
+// double Pipe.outlineType14VVert2 = -75.5;
+// double Pipe.outlineType14UVert3 = 500;
+// double Pipe.outlineType14VVert3 = -58;
+// double Pipe.outlineType14UVert4 = 530;
+// double Pipe.outlineType14VVert4 = -38.9;
+// double Pipe.outlineType14UVert5 = 530;
+// double Pipe.outlineType14VVert5 = 0;
+
+// // DS cryo rails
+// double Pipe.outlineType15UVert1 = 473;
+// double Pipe.outlineType15VVert1 = 0.1;
+// double Pipe.outlineType15UVert2 = 527;
+// double Pipe.outlineType15VVert2 = 0.1;
+// double Pipe.outlineType15UVert3 = 527;
+// double Pipe.outlineType15VVert3 = 12;
+// double Pipe.outlineType15UVert4 = 518;
+// double Pipe.outlineType15VVert4 = 20;
+// double Pipe.outlineType15UVert5 = 518;
+// double Pipe.outlineType15VVert5 = 28;
+// double Pipe.outlineType15UVert6 = 527;
+// double Pipe.outlineType15VVert6 = 36;
+// double Pipe.outlineType15UVert7 = 527;
+// double Pipe.outlineType15VVert7 = 40;
+// double Pipe.outlineType15UVert8 = 523;
+// double Pipe.outlineType15VVert8 = 44;
+// double Pipe.outlineType15UVert9 = 477;
+// double Pipe.outlineType15VVert9 = 44;
+// double Pipe.outlineType15UVert10 = 473;
+// double Pipe.outlineType15VVert10 = 40;
+// double Pipe.outlineType15UVert11 = 473;
+// double Pipe.outlineType15VVert11 = 36;
+// double Pipe.outlineType15UVert12 = 482;
+// double Pipe.outlineType15VVert12 = 28;
+// double Pipe.outlineType15UVert13 = 482;
+// double Pipe.outlineType15VVert13 = 20;
+// double Pipe.outlineType15UVert14 = 473;
+// double Pipe.outlineType15VVert14 = 12;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -14,6 +14,7 @@ rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
+    'mu2e_BTrkData',
     'mu2e_Mu2eBTrk',
     'mu2e_Mu2eUtilities',
     'mu2e_ConditionsService',

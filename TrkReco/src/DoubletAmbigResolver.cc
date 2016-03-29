@@ -5,7 +5,7 @@
 // thus all parameters need to have defaults in the source
 ///////////////////////////////////////////////////////////////////////////////
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalSite.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"

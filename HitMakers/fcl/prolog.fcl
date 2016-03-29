@@ -76,9 +76,6 @@ MakeStrawHitPositions : {
 MakeStereoHits : {
   module_type : MakeStereoHits
   MVATool : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
-  minDdot : 0.0
-  minMVA : 0.3
-  maxChisquared : 500.0
 }
 
 #------------------------------------------------------------------------------
@@ -166,6 +163,7 @@ MakeCaloCrystalHits     : {
 }
 
 
+# caloriemter hit makers used to compress the StepPointMC collection
 MakeCaloCompressedHits  : {
     module_type             : MakeCaloCompressedHits
     numZSlices              : 1
@@ -175,6 +173,64 @@ MakeCaloCompressedHits  : {
     physVolInfoInput        : "g4run"
 #    caloMaterial            : ["G4_BARIUM_FLUORIDE", "Polyethylene092"]
     caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
+}
+
+MakeCaloReadoutHitsDev : {
+    module_type                 : MakeCaloReadoutHitsDev2
+    diagLevel                   : 1  
+    caloShowerStepMCModuleLabel : MakeCaloCompressedHits
+    caloShowerMCName            : calorimeter
+    TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    blindTime                   : @local::HitMakerBlindTime
+    timeGap                     : 150
+    filterEnergy                : 0.3
+    filterDeltaT                : 150.
+}
+
+
+# calorimeter digitization module
+
+CaloDigisFromCaloShower :  {
+    module_type           : CaloDigisFromCaloShower
+
+    diagLevel             : 0  
+    debugLevel            : 0
+    wfInput               : 2 #0 is the Beam test waveform, 3 is the pulse with 30ns rising time an 150 ns of width
+    timeGap               : 2.
+    blindTime             : @local::HitMakerBlindTime
+
+    crystal_refractive_index    : 1.8
+
+    caloShowerModuleLabel       : MakeCaloReadoutHitsDev
+    g4ModuleLabel               : g4run
+
+    TimeOffsets                 : @local::HitMakerTimeOffsets 
+
+#    TimeOffsets                 : { inputs : [  ] }
+    TimeFoldingBuffer           : @local::HitMakerTimeFoldingBuffer
+
+    addNoise                    : 0
+    noise                       : 2 #2.29    # mV equivalent to 150 keV of Noise               
+    
+    addLightPropagation         : 0
+    
+#set the acquistion threshold, to devide where to start and stop sampling a pulse
+    thresholdVoltage            : 5.0  # mV
+
+#set the threshold on the pulse amplitde to decide which signals to store
+    thresholdAmplitude          : 10 # 10.0  # mV 
+    DAQTimeThreshold            : @local::HitMakerBlindTime
+
+    energyScale                 : 60 # 7.5   # mV / MeV 4 for beam test case
+    digiSampling                : @local::HitMakerDigiSampling
+    nBits                       : 12
+    dynamicRange                : 2000   # mV 
+    acquisitionEndTime          : @local::HitMakerAcquisitionEndTime
+
+    bufferAfter                 : 0  #n-timestamps
+    bufferBefore                : 5  #n-timestamps
+    waveformOffset              : 150.  # ns: 180 is for wfInput=0, 150 for wfInput=3
+    pulseIntegralSteps          : 50
 }
 
 
@@ -285,8 +341,9 @@ CaloCrystalHitsFromCaloHits  :{
 
     diagLevel             : 0
     debugMode             : 0
+    TimeOffsets           : @local::HitMakerTimeOffsets
     time4Merge            : 4.   #    ns
-    caloDigisModuleLabel  : CaloHitsFromCaloDigis
+    caloHitsModuleLabel   : CaloHitsFromCaloDigis
 }
 
 

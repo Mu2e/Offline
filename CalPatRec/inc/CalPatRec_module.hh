@@ -39,7 +39,7 @@ namespace art {
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
 #include "TrkReco/inc/TrkDef.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"

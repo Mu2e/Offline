@@ -31,9 +31,9 @@ physics :
       module_type               : CrvBackgroundCollector
       g4ModuleLabels            : ["*"]
       processNames              : ["*"]
-#      CRVSectorNames            : ["CRV_T1"]
+      CRVSectorNames            : ["CRV_T1"]
 #      CRVSectorNames            : ["CRV_D1"]
-      CRVSectorNames            : ["CRV_T2","CRV_T3","CRV_T4"]
+#      CRVSectorNames            : ["CRV_T2","CRV_T3","CRV_T4"]
       startTime                 : 400.0
     }
   }

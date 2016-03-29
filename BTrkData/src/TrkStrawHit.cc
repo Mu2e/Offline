@@ -1,13 +1,9 @@
 //
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.cc,v 1.25 2014/08/22 16:10:41 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2014/08/22 16:10:41 $
-//
 // Original author David Brown, LBNL
 //
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 // BTrk
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/TrkErrCode.hh"
@@ -59,19 +55,19 @@ namespace mu2e
     setActivity(true);
 //    std::cout << "creating TrkStrawHit " << this << std::endl;
   }
-  
- 
+
+
   TrkStrawHit::~TrkStrawHit(){
 // delete the trajectory
     delete _hittraj;
-    _parentRep=0;  
+    _parentRep=0;
   }
 
   double
   TrkStrawHit::time() const {
     return strawHit().time();
   }
-  
+
   void
   TrkStrawHit::updateDrift() {
     ConditionsHandle<TrackerCalibrations> tcal("ignored");
@@ -91,16 +87,16 @@ namespace mu2e
     // total hit error is the sum of all
     _toterr = sqrt(_t2d._rdrifterr*_t2d._rdrifterr + rt0err*rt0err + _exterr*_exterr + _penerr*_penerr);
 // If the hit is wildly away from the track , disable it
-    double rstraw = _straw.getRadius(); 
+    double rstraw = _straw.getRadius();
     if(!physicalDrift(_maxdriftpull)){
       setActivity(false);
       setFlag(driftFail);
     } else {
 // otherwise restrict to a physical range
       if (_t2d._rdrift < 0.0){
-	_t2d._rdrift = 0.0;
+        _t2d._rdrift = 0.0;
       } else if( _t2d._rdrift > rstraw){
-	_t2d._rdrift = rstraw;
+        _t2d._rdrift = rstraw;
       }
     }
   }
@@ -110,7 +106,7 @@ namespace mu2e
     return _t2d._rdrift < _straw.getRadius() + maxchi*_toterr &&
       _t2d._rdrift > -maxchi*_toterr;
   }
-  
+
   void
   TrkStrawHit::updateSignalTime() {
 // compute the electronics propagation time.  The convention is that the hit time is measured at the
@@ -123,9 +119,9 @@ namespace mu2e
 // if we're missing poca information, use time division instead
       _stime = (straw().getHalfLength()-_tddist)/vwire;
     }
-  } 
+  }
 
-  void 
+  void
   TrkStrawHit::setAmbig(int newambig){
 // if the state changes and the hit is active, warn the rep
     if(isActive() && newambig != _iamb){
@@ -164,7 +160,7 @@ namespace mu2e
     }
     return status;
   }
-  
+
   void
   TrkStrawHit::hitPosition(Hep3Vector& hpos) const{
     if( poca().status().success() && _iamb!=0){
@@ -175,7 +171,7 @@ namespace mu2e
     }
   }
 
- 
+
   void TrkStrawHit::print(std::ostream& o) const {
     o<<"------------------- TrkStrawHit -------------------"<<std::endl;
     o<<"istraw "<<_istraw<<std::endl;
@@ -200,4 +196,4 @@ namespace mu2e
     }
   }
 
-} 
+}

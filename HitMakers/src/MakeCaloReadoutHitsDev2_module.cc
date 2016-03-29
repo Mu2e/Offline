@@ -158,6 +158,8 @@ namespace mu2e {
 
 	 double LRUCorrection(double normalizedPosZ, double energy,int crystalId, ConditionsHandle<CalorimeterCalibrations>&);
 
+//2016-03-18 Gianipez: maybe add also Poisson fluctuations?
+
 	 double BirkesCorrection(int pdgId, double energy);
 
 

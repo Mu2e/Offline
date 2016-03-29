@@ -187,7 +187,7 @@ namespace mu2e
   }
 
   void
-  KalDiag::fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo) {
+  KalDiag::fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo) const {
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
     if(krep != 0 && krep->fitCurrent()){
@@ -283,7 +283,7 @@ namespace mu2e
     }
   }
 
-  void KalDiag::fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) {
+  void KalDiag::fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) const {
     trkfitinfo._fltlen = fltlen;
     // find momentum and parameters
     double loclen(0.0);

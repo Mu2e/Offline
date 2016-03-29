@@ -47,9 +47,10 @@ namespace mu2e
     private:
     int         _verboseLevel;
     std::string _crvRecoPulsesModuleLabel;
-    int         _PEthreshold;
-    double      _adjacentPulseTimeDifference;
-    double      _maxTimeDifference;
+    std::vector<std::string> _CRVSectors;
+    std::vector<int>         _PEthresholds;
+    std::vector<double>      _adjacentPulseTimeDifferences;
+    std::vector<double>      _maxTimeDifferences;
     double      _maxSlope;
     double      _maxSlopeDifference;
     bool        _acceptThreeAdjacentCounters;
@@ -75,9 +76,15 @@ namespace mu2e
       int                           _layer, _counter;
       int                           _SiPM;
       double                        _x, _y;
-      CrvHit(double time, int PEs, mu2e::CRSScintillatorBarIndex barIndex, int layer, int counter, int SiPM, double x, double y): 
+      int                           _PEthreshold;
+      double                        _adjacentPulseTimeDifference;
+      double                        _maxTimeDifference;
+      CrvHit(double time, int PEs, mu2e::CRSScintillatorBarIndex barIndex, int layer, int counter, int SiPM, double x, double y, 
+                                                          int PEthreshold, double adjacentPulseTimeDifference, double maxTimeDifference):
                                                           _time(time), _PEs(PEs), _barIndex(barIndex), 
-                                                          _layer(layer), _counter(counter), _SiPM(SiPM), _x(x), _y(y) {}
+                                                          _layer(layer), _counter(counter), _SiPM(SiPM), _x(x), _y(y),
+                                                          _PEthreshold(PEthreshold), _adjacentPulseTimeDifference(adjacentPulseTimeDifference), 
+                                                          _maxTimeDifference(maxTimeDifference) {}
       void Print(int sectorType) const
       {
         std::cout<<"sectorType: "<<sectorType<<"   layer: "<<_layer<<"   counter: "<<_counter<<"  SiPM: "<<_SiPM<<"      ";
@@ -87,9 +94,6 @@ namespace mu2e
 
     void AddCoincidence(std::unique_ptr<CrvCoincidenceCheckResult> &crvCoincidenceCheckResult, int sectorType, const CrvHit &h1, const CrvHit &h2, const CrvHit &h3);
 
-    int                           _nSectors;
-    std::vector<std::string>      _crvSectorNames;
-
     struct sectorCoincidenceProperties
     {
       int precedingCounters;
@@ -98,6 +102,7 @@ namespace mu2e
       bool sipmsAtSide0;
       bool sipmsAtSide1;
       int widthDirection, thicknessDirection;
+      std::string name;
     };
     std::map<int,sectorCoincidenceProperties> _sectorMap;
   };
@@ -105,9 +110,10 @@ namespace mu2e
   CrvCoincidenceCheck::CrvCoincidenceCheck(fhicl::ParameterSet const& pset) :
     _verboseLevel(pset.get<int>("verboseLevel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
-    _PEthreshold(pset.get<int>("PEthreshold")),
-    _adjacentPulseTimeDifference(pset.get<double>("adjacentPulseTimeDifference")),
-    _maxTimeDifference(pset.get<double>("maxTimeDifference")),
+    _CRVSectors(pset.get<std::vector<std::string> >("CRVSectors")),
+    _PEthresholds(pset.get<std::vector<int> >("PEthresholds")),
+    _adjacentPulseTimeDifferences(pset.get<std::vector<double> >("adjacentPulseTimeDifferences")),
+    _maxTimeDifferences(pset.get<std::vector<double> >("maxTimeDifferences")),
     _maxSlope(pset.get<double>("maxSlope")),
     _maxSlopeDifference(pset.get<double>("maxSlopeDifference")),
     _acceptThreeAdjacentCounters(pset.get<bool>("acceptThreeAdjacentCounters")),
@@ -139,8 +145,7 @@ namespace mu2e
 
     GeomHandle<CosmicRayShield> CRS;
     const std::vector<CRSScintillatorShield> &sectors = CRS->getCRSScintillatorShields();
-    _nSectors = sectors.size();
-    for(int i=0; i<_nSectors; i++) 
+    for(unsigned int i=0; i<sectors.size(); i++) 
     {
       sectorCoincidenceProperties s;
       s.precedingCounters=0;
@@ -156,6 +161,7 @@ namespace mu2e
       s.nCountersPerModule=sectors[i].getCountersPerModule();
 
       s.sectorType=sectors[i].getSectorType();
+      s.name=sectors[i].getName();
 
       s.sipmsAtSide0=sectors[i].getCRSScintillatorBarDetail().hasCMB(0);
       s.sipmsAtSide1=sectors[i].getCRSScintillatorBarDetail().hasCMB(1);
@@ -200,6 +206,16 @@ namespace mu2e
       if(sIter==_sectorMap.end()) throw std::logic_error("CrvCoincidenceFinder: Found a CRV hit at a CRV sector without properties.");
       const sectorCoincidenceProperties &sector = sIter->second;
 
+      //find the sector specific "user properties" for this hit (as defined in the fcl file)
+      std::string sectorName = sector.name.substr(4); //removes the "CRV_" part
+      std::vector<std::string>::iterator userPropertyIter=std::find(_CRVSectors.begin(), _CRVSectors.end(), sectorName);
+      if(userPropertyIter==_CRVSectors.end()) continue; //found a CRV hit at a CRV sector which has no user properties in the fcl file, 
+                                                        //which propably means that the user doesn't want to check for coincidences in this sector
+      int    userPropertyPosition = std::distance(_CRVSectors.begin(),userPropertyIter);  //that's the position of the vector in the fcl file which sets PE thresholds, time differences, etc.
+      int    PEthreshold = _PEthresholds[userPropertyPosition];
+      double adjacentPulseTimeDifference = _adjacentPulseTimeDifferences[userPropertyPosition];
+      double maxTimeDifference = _maxTimeDifferences[userPropertyPosition];
+
       int counterNumber = sector.precedingCounters + sector.nCountersPerModule*moduleNumber + barNumber;
 
       double x=CRSbar.getPosition()[sector.widthDirection];
@@ -237,7 +253,7 @@ namespace mu2e
           if(time>=_timeWindowStart && time<=_timeWindowEnd)
           {
             //get the right set of hits based on the hitmap key, and insert a new hit
-            crvHits[sectorType].emplace_back(time,PEs,barIndex,layerNumber,counterNumber,SiPM, x,y);
+            crvHits[sectorType].emplace_back(time,PEs,barIndex,layerNumber,counterNumber,SiPM, x,y, PEthreshold, adjacentPulseTimeDifference, maxTimeDifference);
             if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
           }
 
@@ -246,7 +262,7 @@ namespace mu2e
           if(time>=_timeWindowStart && time<=_timeWindowEnd)
           {
             //get the right set of hits based on the hitmap key, and insert a new hit
-            crvHits[sectorType].emplace_back(time,PEs,barIndex,layerNumber,counterNumber,SiPM, x,y);
+            crvHits[sectorType].emplace_back(time,PEs,barIndex,layerNumber,counterNumber,SiPM, x,y, PEthreshold, adjacentPulseTimeDifference, maxTimeDifference);
             if(_verboseLevel==4) crvHits[sectorType].back().Print(sectorType);
           }
         }
@@ -272,6 +288,9 @@ namespace mu2e
         int PEs=iterHit->_PEs;
         int time=iterHit->_time;
 
+        int    PEthreshold=iterHit->_PEthreshold;
+        double adjacentPulseTimeDifference=iterHit->_adjacentPulseTimeDifference;
+
         //check other SiPM and the SiPMs at the adjacent counters
         int PEs_thisCounter=PEs;
         int PEs_adjacentCounter1=0;
@@ -281,7 +300,7 @@ namespace mu2e
         {
           if(std::distance(iterHitAdjacent,iterHit)==0) continue;  //don't compare with itself
           if(iterHitAdjacent->_layer!=layer) continue;             //compare hits of the same layer only
-          if(fabs(iterHitAdjacent->_time-time)>_adjacentPulseTimeDifference) continue; //compare hits within a certain time window only
+          if(fabs(iterHitAdjacent->_time-time)>adjacentPulseTimeDifference) continue; //compare hits within a certain time window only
 
           int counterDiff=iterHitAdjacent->_counter-counter;
           if(counterDiff==0) PEs_thisCounter+=iterHitAdjacent->_PEs;   //add PEs from the same counter (i.e. the "other" SiPM), 
@@ -293,8 +312,8 @@ namespace mu2e
         }
         //check, if the number of PEs of the adjacent counter added to the current hit's PE number 
         //brings this hit above the threshold, add this hit to vector of hits
-        if(PEs_thisCounter+PEs_adjacentCounter1>=_PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);
-        else {if(PEs_thisCounter+PEs_adjacentCounter2>=_PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);}
+        if(PEs_thisCounter+PEs_adjacentCounter1>=PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);
+        else {if(PEs_thisCounter+PEs_adjacentCounter2>=PEthreshold) crvHitsFiltered[layer].push_back(*iterHit);}
       }
 
       //find coincidences using 3 hits in 3 layers
@@ -314,12 +333,15 @@ namespace mu2e
         for(layer2Iter=layer2Hits.begin(); layer2Iter!=layer2Hits.end(); layer2Iter++)
         for(layer3Iter=layer3Hits.begin(); layer3Iter!=layer3Hits.end(); layer3Iter++)
         {
-          if(fabs(layer1Iter->_time-layer2Iter->_time)>_maxTimeDifference) break;  //no need to check any triplets containing the current pair of layer1 and layer2
+          double maxTimeDifferences[3]={layer1Iter->_maxTimeDifference,layer2Iter->_maxTimeDifference,layer3Iter->_maxTimeDifference};
+          double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+3); 
+
+          if(fabs(layer1Iter->_time-layer2Iter->_time)>maxTimeDifference) break;  //no need to check any triplets containing the current pair of layer1 and layer2
 
           double times[3]={layer1Iter->_time,layer2Iter->_time,layer3Iter->_time};
           double timeMin = *std::min_element(times,times+3);
           double timeMax = *std::max_element(times,times+3);
-          if(timeMax-timeMin>_maxTimeDifference) continue;  //hits don't fall within the time window
+          if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
       
           double x[3]={layer1Iter->_x,layer2Iter->_x,layer3Iter->_x};
           double y[3]={layer1Iter->_y,layer2Iter->_y,layer3Iter->_y};
@@ -358,7 +380,11 @@ namespace mu2e
             double times[3]={i1->_time,i2->_time,i3->_time};
             double timeMin = *std::min_element(times,times+3);
             double timeMax = *std::max_element(times,times+3);
-            if(timeMax-timeMin>_maxTimeDifference) continue;  //hits don't fall within the time window
+
+            double maxTimeDifferences[3]={i1->_maxTimeDifference,i2->_maxTimeDifference,i3->_maxTimeDifference};
+            double maxTimeDifference=*std::max_element(maxTimeDifferences,maxTimeDifferences+3); 
+
+            if(timeMax-timeMin>maxTimeDifference) continue;  //hits don't fall within the time window
       
             std::set<int> counters{i1->_counter,i2->_counter,i3->_counter};
             bool coincidenceFound=true;

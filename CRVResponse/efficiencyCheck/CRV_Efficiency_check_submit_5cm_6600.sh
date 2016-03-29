@@ -8,12 +8,13 @@ moduleGap=5
 
 #    for layerOffset in {0..62..2}
 #    do
-      for photonYield in {3000,3500,4000,4500,5000,5500,6000,6500,7000}  # 20,??,26,??,33,??,40,??,?? PE/SiPM for 5cm wide / 5.6m long counter
+      for photonYield in {2500,3000,3500,4000,4500,5000,5500,6000,6500}  # 20,24,27,31,35,39,42,46,50 PE/SiPM for 5cm wide / 5.6m long counter
       do
 
         ((i++));
 
         scintTolerance="0"
+        backgroundFileName="/mu2e/app/users/ehrlich/work_08302015/Offline/background_T1.root"
         backgroundFileName=""
 
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig_5cm_6600'_'$i.txt
@@ -35,7 +36,7 @@ moduleGap=5
         echo "physics.producers.CrvPhotonArrivals.scintillationYieldTolerance  : $scintTolerance" >> $fclfile
         echo "physics.producers.CrvSiPMResponses.ThermalProb          : 0" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.backgroundSampleFileName  : \"$backgroundFileName\"" >> $fclfile
-        echo "physics.producers.CrvPhotonArrivals.countersInBackgroundSample: 192" >> $fclfile
+        echo "physics.producers.CrvPhotonArrivals.countersInBackgroundSample: 384" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.backgroundSampleFactor    : 2" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.maxBackgroundTimeShift    : 500" >> $fclfile
 
@@ -51,7 +52,7 @@ moduleGap=5
         echo "physics.producers.CrvPhotonArrivals.scintillationYieldTolerance  : $scintTolerance" >> $fclfile
         echo "physics.producers.CrvSiPMResponses.ThermalProb          : 0" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.backgroundSampleFileName  : \"$backgroundFileName\"" >> $fclfile
-        echo "physics.producers.CrvPhotonArrivals.countersInBackgroundSample: 192" >> $fclfile
+        echo "physics.producers.CrvPhotonArrivals.countersInBackgroundSample: 384" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.backgroundSampleFactor    : 2" >> $fclfile
         echo "physics.producers.CrvPhotonArrivals.maxBackgroundTimeShift    : 500" >> $fclfile
 

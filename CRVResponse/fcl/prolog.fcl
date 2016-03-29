@@ -12,7 +12,7 @@ BEGIN_PROLOG
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_2300",
                                    "/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_900"]
       lookupTableCounterLengths : [6600,5600,4500,3000,2300,900]
-      scintillationYield        : 5000.0   //5000.0 photons per MeV 
+      scintillationYield        : 5000.0   //5000.0 photons per MeV (corresponds to 38.6 PE/SiPM)
       scintillationYieldTolerance :  0.0   //0%
       scintillatorBirksConstant : 0.126    //0.126 mm/Mev
       scintillatorRatioFastSlow : 1.0      //100% fast
@@ -20,6 +20,7 @@ BEGIN_PROLOG
       scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used
       fiberDecayTime            : 7.4      //7.4 ns
       startTime                 : 400.0    //0.0 ns
+      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     }
     CrvSiPMResponses:
     {
@@ -30,7 +31,6 @@ BEGIN_PROLOG
       numberPixelsAtFiber          : 615
       bias                         : 2.4        //V
       scaleFactor                  : 0.08
-      minCharge                    : 4.0        //PEs
       blindTime                    : 500.0      //ns
 
       GeigerProbCoef               : 1.0        // = pc
@@ -41,8 +41,8 @@ BEGIN_PROLOG
                                                 //Geiger probability at over voltage v = 1.0V: 
                                                 //0.17 = 1 - exp(-pow(v,pc)/vs)
 
-      TrapType0Prob                : 0.14       //trap_prob*trap_type0_prob=0.2*0.7
-      TrapType1Prob                : 0.06       //trap_prob*trap_type1_prob=0.2*0.3
+      TrapType0Prob                : 0.0        //0.14       //trap_prob*trap_type0_prob=0.2*0.7
+      TrapType1Prob                : 0.0        //0.06       //trap_prob*trap_type1_prob=0.2*0.3
       TrapType0Lifetime            : 5.0        //ns
       TrapType1Lifetime            : 50.0       //ns
 
@@ -62,25 +62,27 @@ BEGIN_PROLOG
       singlePEWaveformBins         : 200
       binWidth                     : 12.5   //12.5 ns (digitizer sampling rate)
       FEBtimeSpread                : 2.0    //2.0 ns
+      minVoltage                   : 0.022  //22mV (corresponds to 3.5PE)
     }
     CrvRecoPulses:
     {
       module_type               : CrvRecoPulsesFinder
       crvWaveformsModuleLabel   : "CrvWaveforms"
       param0                    : 0.0      //0.0
-      param1                    : 51.0     //51.0
-      pulseThreshold            : 0.015    //15mV
+      param1                    : 159.0    //159.0  (would be about 100.0 if all PEs came it at the same time)
+      pulseThreshold            : 0.022    //22mV
       leadingEdgeThreshold      : 0.2      //20% of the maximum bin
-      minPEs                    : 4        //3 PEs
+      minPEs                    : 4        //4 PEs
     }
     CrvCoincidence:
     {
       module_type                   : CrvCoincidenceCheck
       verboseLevel                  : 1
       crvRecoPulsesModuleLabel      : "CrvRecoPulses"
-      PEthreshold                   : 10
-      adjacentPulseTimeDifference   : 5      //ns
-      maxTimeDifference             : 10     //ns
+      CRVSectors                    : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","D1","U" ,"C1","C2","C3","D2","D3","D4"] //used only to match the vector entries below
+      PEthresholds                  : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 ]
+      adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
+      maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 50 , 10 , 10 , 10 , 10 , 50 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
       maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
       maxSlopeDifference            : 2.0    //
       acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence

@@ -14,7 +14,7 @@
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 
 #include "TROOT.h"
 #include "TFolder.h"

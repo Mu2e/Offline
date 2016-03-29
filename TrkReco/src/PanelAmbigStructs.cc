@@ -8,7 +8,7 @@
 // Original author David Brown, LBNL
 //
 #include "TrkReco/inc/PanelAmbigStructs.hh"
-#include "TrkReco/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "cetlib/coded_exception.h"
 #include <iostream>
 #include <algorithm>

@@ -1,10 +1,6 @@
 
 // BaBar hit object corresponding to a single straw hit
 //
-// $Id: TrkStrawHit.hh,v 1.21 2014/08/22 16:10:41 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2014/08/22 16:10:41 $
-//
 // Original author David Brown, LBNL
 //
 #ifndef TrkStrawHit_HH
@@ -24,7 +20,7 @@
 // forward refs
 class TrkDifTraj;
 
-namespace mu2e 
+namespace mu2e
 {
   class TrkStrawHit : public TrkHit {
   public:
@@ -67,7 +63,7 @@ namespace mu2e
     double totalErr() const { return _toterr; }
 // intrinsic hit error (mm)
     double hitErr() const { return _t2d._rdrifterr; }
-// changing the extneral hit error invalidates the cache, it should invalidate the fit, FIXME!!!! 
+// changing the extneral hit error invalidates the cache, it should invalidate the fit, FIXME!!!!
     void setExtErr(double exterr) { _exterr = exterr; }
 // set the penalty error: this is set when we can't resolve the ambiguity
     void setPenalty(double penerr) { _penerr = penerr; }
