@@ -43,6 +43,8 @@ pidInputsSeq: [TrkExtrapolDem, TrackCaloMatchingDem]
 // Analysis
 signalTrackCuts: {
    trkqual: 0.2
+   trkqualmax: 1.3 // See https://mu2e-hnews.fnal.gov/HyperNews/Mu2e/get/Sim/37/1.html
+
    tdmin: 0.57735027
    tdmax: 1.
    d0min: -80

@@ -72,7 +72,7 @@ namespace mu2e {
     , h_cuts_r_{tf.make<TH1D>("cuts_r", "Unweighted events rejected by cut", double(TrkCutNumber::CUTS_END), -0.5, double(TrkCutNumber::CUTS_END)-0.5)}
     , w_cuts_p_{tf.make<TH1D>("wcuts_p", "Weighted events before cut", double(TrkCutNumber::CUTS_END), -0.5, double(TrkCutNumber::CUTS_END)-0.5)}
     , w_cuts_r_{tf.make<TH1D>("wcuts_r", "Weighted events rejected by cut", double(TrkCutNumber::CUTS_END), -0.5, double(TrkCutNumber::CUTS_END)-0.5)}
-    , trkqual_{tf.make<TH1D>("trkqual", "trkqual before cut", 100, 0., 1.)}
+    , trkqual_{tf.make<TH1D>("trkqual", "trkqual before cut", 100, 0., 2.)}
     , td_{tf.make<TH1D>("td", "Track tan(lambda) before cut", 100, 0.5, 1.5)}
     , d0_{tf.make<TH1D>("d0", "Track d0 before cut", 300, -150., +150.)}
     , rmax_{tf.make<TH1D>("rmax", "Track d0+2/om  before cut", 120, 300., 900.)}
@@ -148,7 +148,8 @@ namespace mu2e {
     }
 
     trkqual_->Fill(track._trkqual, wh.weight());
-    if(track._trkqual < cuts_.trkqual()) {
+    if((track._trkqual < cuts_.trkqual()) ||
+       ((cuts_.trkqualmax() > 0.) && (cuts_.trkqualmax() < track._trkqual) ) ) {
       return TrkCutNumber::quality;
     }
 

@@ -68,6 +68,8 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       fhicl::Atom<double> trkqual{Name("trkqual"), Comment("Low cut on trkqual") };
+      fhicl::Atom<double> trkqualmax{Name("trkqualmax"), Comment("Optional high cut on trkqual. A non-positive value disables the cut."), -1. };
+
       fhicl::Atom<double> tdmin{Name("tdmin"), Comment("Low cut on tan(dip)")};
       fhicl::Atom<double> tdmax{Name("tdmax"), Comment("High cut on tan(dip)")};
       fhicl::Atom<double> d0min{Name("d0min"), Comment("Low cut on closest track approach to detector axis")};
