@@ -163,16 +163,16 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,char* tname = "TrkQual")
 // signal is defined as the momentum resolution core,
   TCut signal("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom<0.25&&fit.mom-mcent.mom>-0.25");
   // tail is defined as the high-side tail
-  TCut bkg("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom>0.5");
+  TCut bkg("fit.status>0&&mcent.mom>100&&mcent.td>0.57&&mcent.td<1.0&&fit.mom-mcent.mom>0.7");
 
   // weight the tail by the momentum difference
 
   if(bkgw == linear){
-    factory->SetBackgroundWeightExpression("max(1.0,5.0*(min(fit.mom-mcent.mom,2.0)))");
+    factory->SetBackgroundWeightExpression("max(1.0,5.0*(min(fit.mom-mcent.mom,3.0)))");
   } else if(bkgw == exponential){
-    factory->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(fit.mom-mcent.mom,2.0)))");
+    factory->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(fit.mom-mcent.mom,3.0)))");
   } else if(bkgw == polynomial){
-    factory->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(fit.mom-mcent.mom,2.0),5.0))");
+    factory->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(fit.mom-mcent.mom,3.0),5.0))");
   } else {
     return -1;
   }
