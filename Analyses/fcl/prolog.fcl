@@ -1,6 +1,21 @@
 # -*- mode: tcl -*-
 BEGIN_PROLOG
 
+CosmicFilter: {
+    module_type           : CosmicFilter
+    diagLevel             : 0
+    trkPatRecModuleLabel  : MergePatRec
+    maxD0                 : 200.
+    maxZ0                 : 1000.
+}
+
+PrintStrawHits : {
+    module_type       : PrintStrawHits
+    makeSHModuleLabel : "makeSH"
+    printStrawHits    : 1
+    makeSHinstance    : "CosmicFilter"
+}
+
 TrackSummaryMaker: {
     module_type: TrackSummaryMaker
     trackInput : "TrkPatRec:DownstreameMinus"
