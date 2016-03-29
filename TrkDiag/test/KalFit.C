@@ -107,7 +107,7 @@ void KalFit::Cuts() {
   livegate = TCut(ctext);
   snprintf(ctext,80,"mcent.td>%4.3f&&mcent.td<%4.3f",tdlow-0.02,tdhigh+0.02);
   tpitch = TCut(ctext);
-  snprintf(ctext,80,"mcmid.t0%%1695>%f",500.);
+  snprintf(ctext,80,"mcmid.t0%1695>%f",500.);
   tt0 = TCut(ctext);
   tmom = TCut("mcent.mom>100.0");
   snprintf(ctext,80,"mc.ndigigood>=%i",minnhits);
@@ -212,7 +212,7 @@ double fnc_dscb(double*xx,double*pp) {
   return result;
 }
 
-void KalFit::Hit () {
+void KalFit::Hit() {
   TCut goodhit = reco+ncuts[icut]+momcuts[icut];
   TCut active = "_active";
 
@@ -385,12 +385,12 @@ void KalFit::T2d(){
   TProfile* rt2dp = new TProfile("rt2dp","Reco drift distance vs #Delta t;Hit t - MC t_{0} (nsec);Reco Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* tt2dp = new TProfile("tt2dp","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55);
   TProfile* tt2dp2 = new TProfile("tt2dp2","True drift distance vs #Delta t;Hit t - MC t_{0} (nsec);True Drift Distance (mm)",100,0,50.0,-0.05,2.55,"s");
-  _tdiag->Project("tt2d","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
-  _tdiag->Project("rt2d","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
-  _tdiag->Project("tt2dp","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
-  _tdiag->Project("rt2dp","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
-  _tdiag->Project("tt2dp2","tshmc._dist:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
-  _tdiag->Project("rt2dp2","_rdrift:_ht-mcmid.t0","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("tt2d","tshmc._dist:_ht-mcmid.t0%1695","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("rt2d","_rdrift:_ht-mcmid.t0%1695","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("tt2dp","tshmc._dist:_ht-mcmid.t0%1695","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("rt2dp","_rdrift:_ht-mcmid.t0%1695","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("tt2dp2","tshmc._dist:_ht-mcmid.t0%1695","fit.status>0&&_active&&fit.con>1e-2");
+  _tdiag->Project("rt2dp2","_rdrift:_ht-mcmid.t0%1695","fit.status>0&&_active&&fit.con>1e-2");
 
   TCanvas* t2dcan = new TCanvas("t2dcan","t2dcan",1200,800);
   t2dcan->Divide(2,2);
@@ -427,12 +427,12 @@ void KalFit::Trk () {
   TH1F* t0pull = new TH1F("t0pull","Track t0 pull",100,-10,10);
   TH2F* dt0 = new TH2F("dt0","Track t0;true t0 (nsec);Initial t0 (nsec)",
       100,500,4000,100,500,4000);
-  _tdiag->Project("t0res","fit.t0-mcmid.t0","fit.status>0");
-  _tdiag->Project("t0pull","(fit.t0-mcmid.t0)/fit.t0err","fit.status>0");
+  _tdiag->Project("t0res","fit.t0-mcmid.t0%1695","fit.status>0");
+  _tdiag->Project("t0pull","(fit.t0-mcmid.t0%1695)/fit.t0err","fit.status>0");
   tcan->Clear();
   tcan->Divide(2,2);
   tcan->cd(1);
-  _tdiag->Draw("fit.t0:mcmid.t0>>dt0","fit.status>0");
+  _tdiag->Draw("fit.t0:mcmid.t0%1695>>dt0","fit.status>0");
   tcan->cd(3);
   t0res->Fit("gaus");
   tcan->cd(4);
@@ -747,6 +747,7 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
   TH1F* momres[4];
   TF1*  fitmomres[4];
   TH1F* effnorm = new TH1F("effnorm","effnorm",100,0,150);
+//  _tdiag->Project("effnorm","mcent.mom");
   _tdiag->Project("effnorm","mcent.mom","evtwt"*mcsel);
  
   TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",1200,800);
@@ -772,6 +773,7 @@ void KalFit::Res(unsigned mincut,unsigned maxcut) {
 //  momres[ires]->SetStats(0);
     TCut final = reco+goodfit[ires]+rpitch+cosmic+livegate+rmomloose;
     _tdiag->Project(mname,"fit.mom-mcent.mom","evtwt"*final);
+//    _tdiag->Project(mname,"fit.mom-mcent.mom",final);
     double integral = momres[ires]->GetEntries()*momres[ires]->GetBinWidth(1);
     cout << "Integral = " << integral << " mean = " << momres[ires]->GetMean() << " rms = " << momres[ires]->GetRMS() << endl;
     cball->SetParameters(3*integral,momres[ires]->GetMean()+0.07,0.3*momres[ires]->GetRMS(),3.0,1.0,0.02,0.2);
@@ -1672,8 +1674,8 @@ void KalFit::MomTails(int iwt) {
   _tdiag->Project("cmcdp","mcent.mom-mcxit.mom",core*weight);
   _tdiag->Project("tmcdp","mcent.mom-mcxit.mom",tail*weight);
 
-  _tdiag->Project("cmcdt0","t0-mcmid.t0",core*weight);
-  _tdiag->Project("tmcdt0","t0-mcmid.t0",tail*weight);
+  _tdiag->Project("cmcdt0","t0-mcmid.t0%1695",core*weight);
+  _tdiag->Project("tmcdt0","t0-mcmid.t0%1695",tail*weight);
 
   _tdiag->Project("cmchitfrac","mc.ngood/mc.ndigigood",core*weight);
   _tdiag->Project("tmchitfrac","mc.ngood/mc.ndigigood",tail*weight);
