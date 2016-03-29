@@ -65,6 +65,7 @@ physics : {
    //==============================================================================
    p1:[ @sequence::digitizationSeq
       , @sequence::Tracking.TPRDownstreameMinus
+      , @sequence::Tracking.TPRUpstreameMinus
       , @sequence::caloRecoSeq
       , @sequence::pidInputsSeq
    ]

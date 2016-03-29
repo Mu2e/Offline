@@ -64,7 +64,11 @@ namespace mu2e {
   private:
     //----------------------------------------------------------------
     art::InputTag signalCandidateInput_;
-    TrackLevelCuts cuts_;
+    TrackLevelCuts signalTrackCuts_;
+
+    art::InputTag uemVetoInput_;
+    TrackLevelCuts uemVetoTrackCuts_;
+
     EventWeightHelper wh_;
     KalDiag kdiag_;
 
@@ -73,6 +77,7 @@ namespace mu2e {
     TH1 *w_cuts_p_;
     TH1 *w_cuts_r_;
     TH1 *hNumSignalCandidates_;
+    TH1 *hNumUemVetoCandidates_;
 
     CutAndCount::EventCutNumber processEvent(const art::Event& evt);
   };

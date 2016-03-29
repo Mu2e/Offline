@@ -59,13 +59,35 @@ signalTrackCuts: {
    caloMatchChi2: 100.
 }
 
+uemVetoTrackCuts: {
+   trkqual: 0.2
+   tdmin: 0.
+   tdmax: +9999.
+   d0min: -9999
+   d0max: +9999
+   mdmin: 0.
+   mdmax: +9999.
+   t0min: 700.
+   t0max: 1695.
+   pmin: 100.
+   pmax: 9999
+
+   caloMatchInput: "" // disabled
+   caloemin: 0. // MeV, unused
+   caloemax: 0. // MeV, unused
+   caloMatchChi2: 0. // unused
+}
+
 CutAndCountSettings: {
    // Dowstream e- track input
-   trackDemInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
+   signalTrackInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
+   signalTrackCuts: @local::signalTrackCuts
+
+   uemVetoTrackInput: "TRFUpstreameMinus:UpstreameMinus" // FIXME: instance name should not be used
+   uemVetoTrackCuts: @local::uemVetoTrackCuts
 
    weight: @nil
 
-   signalTrackCuts: @local::signalTrackCuts
    kalDiag: @local::KalDiagReadCD3
 
 }

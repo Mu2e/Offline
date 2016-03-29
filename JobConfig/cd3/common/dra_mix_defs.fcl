@@ -73,6 +73,7 @@ physics : {
    p1:[ @sequence::EventMixing.CD3Mixers
       , @sequence::digitizationSeq
       , @sequence::Tracking.TPRDownstreameMinus
+      , @sequence::Tracking.TPRUpstreameMinus
       , @sequence::caloRecoSeq
       , @sequence::pidInputsSeq
    ]

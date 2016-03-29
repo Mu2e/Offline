@@ -44,8 +44,10 @@ namespace mu2e {
   } // namespace CutAndCount
 
   CutAndCountAnalysis::CutAndCountAnalysis(const fhicl::ParameterSet& pset, art::TFileDirectory tfdir)
-    : signalCandidateInput_(pset.get<art::InputTag>("trackDemInput"))
-    , cuts_(pset.get<fhicl::ParameterSet>("signalTrackCuts"), tfdir, "signalTrackCuts")
+    : signalCandidateInput_(pset.get<art::InputTag>("signalTrackInput"))
+    , signalTrackCuts_(pset.get<fhicl::ParameterSet>("signalTrackCuts"), tfdir, "signalTrackCuts")
+    , uemVetoInput_(pset.get<art::InputTag>("uemVetoTrackInput"))
+    , uemVetoTrackCuts_(pset.get<fhicl::ParameterSet>("uemVetoTrackCuts"), tfdir, "uemVetoTrackCuts")
     , wh_(pset.get<fhicl::ParameterSet>("weight"), *art::ServiceHandle<art::TFileService>(), "weight")
     , kdiag_(pset.get<fhicl::ParameterSet>("kalDiag"))
   {
@@ -76,6 +78,9 @@ namespace mu2e {
 
     hNumSignalCandidates_ = tfdir.make<TH1D>("numSignalCandidates", "Number of signal candidate tracks per event (weighted) before the vetoes", 5, -0.5, 4.5);
     hNumSignalCandidates_->Sumw2();
+
+    hNumUemVetoCandidates_ = tfdir.make<TH1D>("numUemVetoCandidates", "Number upstream e- veto tracks per event (weighted) for events with signal candidates", 5, -0.5, 4.5);
+    hNumUemVetoCandidates_->Sumw2();
   }
 
   //================================================================
@@ -103,7 +108,7 @@ namespace mu2e {
 
     int numSignalCandidates = 0;
     for(const auto& ptr: *ih) {
-      if(cuts_.accepted(ptr, evt, kdiag_, wh_)) {
+      if(signalTrackCuts_.accepted(ptr, evt, kdiag_, wh_)) {
         ++numSignalCandidates;
       }
     }
@@ -113,7 +118,20 @@ namespace mu2e {
       return EventCutNumber::NoSignalCandidate;
     }
 
-    // FIXME: impose the veto
+    // Impose the veto
+    auto uemh = evt.getValidHandle<KalRepPtrCollection>(uemVetoInput_);
+
+    int numVetoCandidates = 0;
+    for(const auto& ptr: *uemh) {
+      if(uemVetoTrackCuts_.accepted(ptr, evt, kdiag_, wh_)) {
+        ++numVetoCandidates;
+      }
+    }
+
+    hNumUemVetoCandidates_->Fill(numVetoCandidates, wh_.weight());
+    if(numVetoCandidates>0) {
+      return EventCutNumber::UemVeto;
+    }
 
     return EventCutNumber::accepted;
 
