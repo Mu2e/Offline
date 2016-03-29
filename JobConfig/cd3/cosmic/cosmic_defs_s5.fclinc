@@ -1,0 +1,96 @@
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
+
+BEGIN_PROLOG
+caloDigiTable: 
+{
+   protonTimeMap        : @local::protonTimeMap
+   muonTimeMap          : @local::muonTimeMap
+   MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
+}
+
+caloDigiSeq:  [protonTimeMap, muonTimeMap, MakeCaloReadoutHits]
+
+// FIXME: Tracking.DigiSim should include time maps in addition to other stuff
+digitizationSeq: [ @sequence::caloDigiSeq, @sequence::Tracking.DigiSim ]
+
+END_PROLOG
+
+process_name : CRVResponse
+
+source :
+{
+  module_type : RootInput
+}
+
+services :
+{
+  message               : @local::default_message
+  TFileService          : { }
+  RandomNumberGenerator : { }
+  user :
+  {
+    GeometryService        : { inputFile      : "JobConfig/cd3/cosmic/geom_cosmic.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    BTrkHelper             : @local::BTrkHelperDefault
+    SeedService            : @local::automaticSeeds
+  }
+}
+
+physics :
+{
+  producers:
+  {
+    @table::caloDigiTable
+    @table::Tracking.producers
+    @table::CrvResponsePackage.producers
+  }
+
+  analyzers: 
+  {
+    genCountLogger: { module_type: GenEventCountReader }
+    cosmicAnalysis: 
+    { 
+      module_type               : CosmicAnalysis
+      fitterModuleLabel         : "TRFDownstreameMinus"
+      fitterModuleInstance      : "DownstreameMinus"
+      hitmakerModuleLabel       : "makeSD"
+      hitmakerModuleInstance    : "StrawDigiMC"
+      g4ModuleLabel             : "detectorFilter"
+      generatorModuleLabel      : "generate"
+      crvCoincidenceModuleLabel : "CrvCoincidence"
+      crvRecoPulsesModuleLabel  : "CrvRecoPulses"
+      volumeModuleLabel         : "compressPV"
+      filenameSearchPattern     : "cd3-cosmic-g4s4"
+    }
+  }
+
+  p1: [@sequence::digitizationSeq,
+       @sequence::Tracking.TPRDownstreameMinus, 
+       @sequence::CrvResponsePackage.CrvResponseSequence]
+  trigger_paths  : [p1]
+
+  e1: [genCountLogger, cosmicAnalysis]
+  end_paths      : [e1]
+}
+
+physics.producers.CrvSiPMResponses.ThermalProb : 0
+
+// Limit the amount of "Begin processing the ... record" messages
+
+// We guarantee that our subruns are atomic. The following line is
+// supposed to prevent excessive memory use.
+services.scheduler.fileMode: MERGE
+
+// Limit the amount of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+
+// Digitization uses random numbers
+services.user.SeedService.baseSeed         :  0
+services.user.SeedService.maxUniqueEngines :  20

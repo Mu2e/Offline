@@ -42,8 +42,8 @@ namespace mu2e
     const std::vector<CrvSingleRecoPulse> &GetRecoPulses(int fiberNumber, int side) const;
     const std::vector<CrvSingleRecoPulse> &GetRecoPulses(int SiPMNumber) const;
 
-    unsigned int GetNumberOfRecoPulses(int fiberNumber, int side);
-    unsigned int GetNumberOfRecoPulses(int SiPMNumber);
+    unsigned int GetNumberOfRecoPulses(int fiberNumber, int side) const;
+    unsigned int GetNumberOfRecoPulses(int SiPMNumber) const;
 
     private:
 
