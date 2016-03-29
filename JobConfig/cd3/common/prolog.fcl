@@ -92,5 +92,75 @@ CutAndCountSettings: {
 
 }
 
+################################################################
+topLevelDRADefs: {
+   source: { module_type: RootInput }
+
+   services: {
+      message               : @local::default_message
+      TFileService          : { fileName : @nil }
+      RandomNumberGenerator : {}
+
+      GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+      ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+      GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+      BTrkHelper             : @local::BTrkHelperDefault
+      SeedService            : @local::automaticSeeds
+   }
+
+   physics : {
+      producers: {
+	 @table::draEventMixing.producers
+
+	 //------------------------------------------------------------------------------
+	 // digitization
+	 @table::caloDigiTable
+	 // FIXME: Tracking.producers below defines digi in addition to defining reco
+
+	 //------------------------------------------------------------------------------
+	 // Track reco - multiple hypotheses
+	 @table::Tracking.producers
+
+	 // Calorimeter reco
+	 @table::caloRecoTable
+
+	 // PID inputs
+	 @table::pidInputsTable
+
+	 //------------------------------------------------------------------------------
+      }
+
+      //------------------------------------------------------------------------------
+      filters: {
+	 @table::draEventMixing.filters
+      }
+
+      //------------------------------------------------------------------------------
+      analyzers: {
+	 // save normalization info to the histogram file
+	 genCountLogger: { module_type: GenEventCountReader }
+
+	 cutAndCount: {
+	    module_type: CutAndCountAnalyzer
+	    @table::CutAndCountSettings
+	 }
+      }
+
+      //==============================================================================
+      p1:[ @sequence::draEventMixing.CD3Mixers
+	 , @sequence::digitizationSeq
+	 , @sequence::Tracking.TPRDownstreameMinus
+	 , @sequence::Tracking.TPRUpstreameMinus
+	 , @sequence::caloRecoSeq
+	 , @sequence::pidInputsSeq
+      ]
+      trigger_paths  : [p1]
+
+      e1: [ genCountLogger, cutAndCount ]
+      end_paths      : [e1]
+   }
+}
+
+
 END_PROLOG
 
