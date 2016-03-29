@@ -104,7 +104,7 @@ class mu2e {
     mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true,double np=3.6e20,double mustopfrac=1.87e-3) : dio(d), con(c),diogenrange(dgenrange),
     ndio(nd),ncon(nc),weightdio(weightd),nproton(np),nstopped(np*mustopfrac),capfrac(0.609),rmue(1e-16),trueconvmom(104.973),
     tdlow(0.57735027),tdhigh(1.0),t0min(700),t0max(1695),rpc(0.025), ap(0.083333),cmu(0.041666),mu2ecut(2),
-    reco("fit.status>0"),_init(false)
+    reco("fit.status>0"),_init(false),nactive("fit.nactive>=20")
   {
   }
     void init();
@@ -128,7 +128,7 @@ class mu2e {
     double dioint,dioscale;
     unsigned mu2ecut;
     TCut reco, pitch, livegate, cosmic;
-    TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4], quality[4], final[4];
+    TCut quality[4], final[4];
     TCut mcdio, mccon;
     TF1* _diocz_f;
     TF1* _cball;
@@ -144,8 +144,11 @@ class mu2e {
     bool _init;
     double _conint[4];
     double _conint_err[4];
-    TCut trkqualcut[4] = {"trkqual>0.2","trkqual>0.3","trkqual>0.4","trkqual>0.5"};
-
+    TCut trkqualcut[4] = {"fit.trkqual>0.4&&fit.trkqual<1.3",
+      "fit.trkqual>0.5&&fit.trkqual<1.3",
+      "fit.trkqual>0.6&&fit.trkqual<1.3",
+      "fit.trkqual>0.7&&fit.trkqual<1.3"};
+    TCut nactive;
 };
 
 void mu2e::init(){
@@ -173,6 +176,7 @@ void mu2e::init(){
     }
   }
   cout << "DIO scale factor = " << dioscale << endl;
+
 //  flat = rpc+ap+cmu;
 //  cout << "Flat rate = " << flat << " counts/MeV/c" << endl;
   // basic cuts
@@ -186,27 +190,12 @@ void mu2e::init(){
   mcdio = TCut("mcgenid==28");
   mccon = TCut("mcgenid==2");
   // cuts for different tightness of selection
-  ncuts[0] = "nactive>=20";
-  ncuts[1] = "nactive>=22";
-  ncuts[2] = "nactive>=25";
-  ncuts[3] = "nactive>=30";
-  t0cuts[0] = "t0err<1.5";
-  t0cuts[1] = "t0err<0.95";
-  t0cuts[2] = "t0err<0.9";
-  t0cuts[3] = "t0err<0.8";
-  momcuts[0] = "fit.momerr<0.3";
-  momcuts[1] = "fit.momerr<0.28";
-  momcuts[2] = "fit.momerr<0.25";
-  momcuts[3] = "fit.momerr<0.22";
-  fitcuts[0] = "fitcon>1e-6";
-  fitcuts[1] = "fitcon>1e-3";
-  fitcuts[2] = "fitcon>2e-3";
-  fitcuts[3] = "fitcon>1e-2";
-
   for(unsigned icut=0;icut<4;icut++){
 //    quality[icut] = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
-   quality[icut] = trkqualcut[icut];
+   quality[icut] = trkqualcut[icut]+nactive;
+//   quality[icut] = trkqualcut[icut];
    final[icut] = (reco+pitch+livegate+quality[icut]+cosmic);
+   cout << "final cut  " << icut << " = " <<  final[icut].GetTitle() << endl;
   }
   _init = true;
 }
@@ -509,7 +498,7 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   TCanvas* diores = new TCanvas("diores","DIO result",800,600);
   gPad->SetLogy();
   diodiffwin[mu2ecut]->Draw();
-  double split = 0.5; // define tail as 500 KeV/c above nominal
+  double split = 0.55; // define tail as 550 KeV/c above nominal
   TLine* td = new TLine(split,0.0,split,diodiffwin[mu2ecut]->GetMaximum());
   td->SetLineColor(kBlack);
   td->SetLineStyle(2);
