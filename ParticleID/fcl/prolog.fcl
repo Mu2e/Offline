@@ -6,8 +6,8 @@ BEGIN_PROLOG
 ParticleID : {
     module_type       : ParticleID
     fitterModuleLabel : TrkPatRec
-    ElectronTemplates : "ParticleID/test/electrontemplates_v427.dedx"
-    MuonTemplates     : "ParticleID/test/muontemplates_v427.dedx"
+    ElectronTemplates : "ConditionsService/data/v5_7_0/pid_ele_dedx.root"
+    MuonTemplates     : "ConditionsService/data/v5_7_0/pid_muo_dedx.root"
     fitparticle       : 11
     fitdirection      : 0
     verbosity         : 0
@@ -20,12 +20,12 @@ AvikPID : {
     module_type             : AvikPID
     trkPatRecDemModuleLabel : MergePatRecDem
     trkPatRecDmmModuleLabel : MergePatRecDmm
-    EleDedxTemplateFile     : "ParticleID/test/electrontemplates_v427.dedx"
-    MuoDedxTemplateFile     : "ParticleID/test/muontemplates_v427.dedx"
+    EleDedxTemplateFile     : "ConditionsService/data/v5_7_0/pid_ele_dedx.root"
+    MuoDedxTemplateFile     : "ConditionsService/data/v5_7_0/pid_muo_dedx.root"
     diagLevel               : 0 
     debugLevel              : 0
 
-    DoubletAmbigResolver    : { @table::DoubletAmbigResolver }
+    DoubletAmbigResolver     : { @table::DoubletAmbigResolver }
 }
 
 END_PROLOG

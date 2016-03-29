@@ -200,7 +200,11 @@ TrackCaloMatching : {
     module_type                  : TrackCaloMatching
     debugLevel                   : 0
     minClusterEnergy             : 10.             # MeV
-    maxDeltaT                    : 20.             # ns
+    maxDeltaT                    : 10.             # ns
+    sigmaE                       : 10.             # MeV
+    sigmaT                       : 1.              # ns
+    sigmaU                       : 20.             # mm
+    sigmaV                       : 10.             # mm
 #------------------------------------------------------------------------------
 # not a guess any more, but the number by Alex
 # 2014-08-08: set dtOffset to 1.4 to avoid DT corrections in other places

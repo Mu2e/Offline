@@ -77,18 +77,23 @@ namespace mu2e {
 					// Diagnostic level
     int             _debugLevel;
 
-    double          _minClusterEnergy;  //
-    double          _maxDeltaT;		// time preselection for track-cluster matching 
-    double          _meanInteractionDepth;	// path length correction
-    double          _dtOffset;		// shift of the Delta(T) distribution
+    double          _minClusterEnergy;      //
+    double          _maxDeltaT;		    // time preselection for track-cluster matching 
+    double          _meanInteractionDepth;  // path length correction
+    double          _dtOffset;		    // shift of the Delta(T) distribution
 
-					// Label of the calo clusters  maker
+					    // resolutions used to calculate chi2's
+    double          _sigmaE;
+    double          _sigmaT;
+    double          _sigmaU;
+    double          _sigmaV;
+					    // Label of the calo clusters  maker
     string          _caloClusterModuleLabel;
 
 					// Label of the extrapolated impact points
     string          _trkToCaloExtrapolModuleLabel;
 
-    double          _timeChiSquare, _energyChiSquare, _posVChiSquare, _posWChiSquare;
+    double          _chi2e, _chi2t, _chi2u, _chi2v;
 
 					// no offset in Y ?
     double          _solenoidOffSetX;
@@ -104,10 +109,14 @@ namespace mu2e {
       _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
       _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
       _debugLevel             (pset.get<int>   ("debugLevel"     )),
-      _minClusterEnergy      (pset.get<double>("minClusterEnergy")),  // 10 MeV
-      _maxDeltaT             (pset.get<double>("maxDeltaT"       )),  // 50 ns
-      _meanInteractionDepth  (pset.get<double>("meanInteractionDepth")),  // 50 mm
-      _dtOffset              (pset.get<double>("dtOffset"        )),  // 1. ns
+      _minClusterEnergy      (pset.get<double>("minClusterEnergy")),    
+      _maxDeltaT             (pset.get<double>("maxDeltaT"       )),
+      _meanInteractionDepth  (pset.get<double>("meanInteractionDepth")),
+      _dtOffset              (pset.get<double>("dtOffset"        )),      
+      _sigmaE                (pset.get<double>("sigmaE"          )),
+      _sigmaT                (pset.get<double>("sigmaT"          )),
+      _sigmaU                (pset.get<double>("sigmaU"          )),
+      _sigmaV                (pset.get<double>("sigmaV"          )),
       _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster")),
       _trkToCaloExtrapolModuleLabel(pset.get<std::string>("trkToCaloExtrapolModuleLabel", "TrackCaloIntersection")),
       _firstEvent(true)
@@ -173,11 +182,9 @@ namespace mu2e {
 
     double     cl_x, cl_y, cl_time, cl_energy;
     double     trk_x, trk_y, trk_mom, trk_time;
-    double     sigmaV, sigmaW, sigmaT, sigmaE, chi2;
     double     s1, s2, sint, ds;
     double     nx, ny, dx, dy, du, dv, dt, xu, xv, xt, xe;
-
-    double                     chi2_max(1.e12);
+    double     chi2, chi2_max(1.e12);
 
     int                        iex, icl, ltrk;
     int const                  ndisks(2);
@@ -209,10 +216,6 @@ namespace mu2e {
     art::Handle<CaloClusterCollection> caloClusters;
     evt.getByLabel(_caloClusterModuleLabel, caloClusters );
     nclusters = caloClusters->size();
-
-//     art::Handle<TrkToCaloExtrapolCollection>  trjExtrapols;
-//     evt.getByLabel(_trkToCaloExtrapolModuleLabel, trjExtrapols);
-//     nex = trjExtrapols->size();
 
     art::Handle<TrkCaloIntersectCollection>  trjExtrapols;
     evt.getByLabel(_trkToCaloExtrapolModuleLabel, trjExtrapols);
@@ -453,29 +456,19 @@ namespace mu2e {
 //            for a 10 MeV cluster the energy term in the chi2 would be (90/10)^2
 //            also set coordinate resolution to 5cm , need to try using dx only
 //-----------------------------------------------------------------------------
-	sigmaE = 10.;			// sigma(E) = 10 MeV
-	sigmaV = 15.;			// 15 mm
-	sigmaW = 8. ; 			//  8 mm
-	sigmaT = 0.5; 			//  0.5 ns
+	xu       = du/_sigmaU;
+	xv       = dv/_sigmaV;
+	xt       = dt /_sigmaT;
+	xe       = (trk_mom-cl_energy)/_sigmaE;
 
-	xu       = du/sigmaV;
-	xv       = dv/sigmaW;
-	xt       = dt /sigmaT;
-	xe       = (trk_mom-cl_energy)/sigmaE;
+	_chi2u   = xu*xu;
+	_chi2v   = xv*xv;
+	_chi2t   = xt*xt;
+	_chi2e   = xe*xe;
 
-	_posVChiSquare   = xu*xu;
-	_posWChiSquare   = xv*xv;
-	_timeChiSquare   = xt*xt;
-	_energyChiSquare = xe*xe;
-
-	chi2 = _posVChiSquare + _posWChiSquare;
+	chi2 = _chi2u + _chi2v;
     
 	if (_debugLevel > 2){
-	  printf("%s: ",oname);
-	  printf("sigmaV : %9.3f "  ,sigmaV );
-	  printf("sigmaW : %9.3f "  ,sigmaW );
-	  printf("sigmaT : %9.3f "  ,sigmaT );
-	  printf("\n");
 	  printf("%s: ",oname);
 	  printf("trk_x  : %9.3f "  ,trk_x  );
 	  printf("cl_x   : %9.3f "  ,cl_x   );
@@ -506,7 +499,7 @@ namespace mu2e {
 	  tcm_data[ltrk][idisk].dt        = dt;
 	  tcm_data[ltrk][idisk].ep        = cl_energy/trk_mom;
 	  tcm_data[ltrk][idisk].chi2      = chi2;
-	  tcm_data[ltrk][idisk].chi2_time = _timeChiSquare;
+	  tcm_data[ltrk][idisk].chi2_time = _chi2t;
 	  tcm_data[ltrk][idisk].dr        = dr;
 	  tcm_data[ltrk][idisk].sint      = sint;
 	}

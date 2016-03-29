@@ -1,7 +1,7 @@
 # -*- mode: tcl -*-
 
 BEGIN_PROLOG
-TrackCaloMatchingDtOffset : 1.2  # 1.4   # track-cluster offset, ns
+TrackCaloMatchingDtOffset : 2.9  # 1.2  # 1.4   # track-cluster offset, ns
 END_PROLOG
 
 #include "EventGenerator/fcl/prolog.fcl"
