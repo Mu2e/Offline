@@ -62,7 +62,21 @@ namespace mu2e {
   class TrackLevelCuts: private boost::noncopyable {
   public:
 
-    // A structure to hold values of physics cuts
+    // A structure to hold a subset of physics cuts related to track-calo matching
+    struct TrackCaloCuts {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<art::InputTag> clusterInput{ Name("clusterInput"), Comment("Tag of the calo cluster collection to match to the tracks.")};
+
+      fhicl::Atom<double> matchChi2{ Name("matchChi2"), Comment("High cut on chi2 of track-calo match") };
+
+      fhicl::Atom<double> emin{Name("emin"), Comment("Min energy of matched calo cluster")};
+
+      fhicl::Atom<double> emax{Name("emax"), Comment("Max energy of matched calo cluster")};
+    };
+
+    // A top level structure to hold values of physics cuts
     struct PhysicsCuts {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
@@ -79,11 +93,15 @@ namespace mu2e {
       fhicl::Atom<double> t0min{Name("t0min"), Comment("Beginning of the live time gate")};
       fhicl::Atom<double> t0max{Name("t0max"), Comment("End of the live time gate")};
 
-      // FIXME: there are optional pars for track-calo match
-      fhicl::Atom<art::InputTag> caloMatchInput{Name("caloMatchInput"), Comment("Tag of the calo cluster collection to match to the tracks. If empty, calorimeter matching and related cuts are turned off.")};
-      fhicl::Atom<double> caloMatchChi2{Name("caloMatchChi2"), Comment("High cut on chi2 of track-calo match")};
-      fhicl::Atom<double> caloemin{Name("caloemin"), Comment("Min energy of matched calo cluster")};
-      fhicl::Atom<double> caloemax{Name("caloemax"), Comment("Max energy of matched calo cluster")};
+      fhicl::Atom<bool> caloCutsEnabled{ Name("caloCutsEnabled"),
+          Comment("Set this to false to turn off calorimeter matching and related cuts. "),
+          true
+          };
+
+      fhicl::Table<TrackCaloCuts> caloCuts{ Name("caloCuts"),
+          Comment("Config for calo matching and related cuts"),
+          [this](){ return caloCutsEnabled(); }
+      };
 
       fhicl::Atom<double> pmin{Name("pmin"), Comment("Low cut on signal track momentum")};
       fhicl::Atom<double> pmax{Name("pmax"), Comment("High cut on signal track momentum")};
