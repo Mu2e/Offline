@@ -1,0 +1,31 @@
+#include "JobConfig/cd3/common/dra_pure_defs.fcl"
+physics.trigger_paths: [ draCommonTrigSeq ]
+
+pionTemplate: { @table::physics.analyzers.cutAndCountAnalyzer }
+pionTemplate.weight: { inputs: ["generate"] }
+
+physics.analyzers.cutAndCount500: { @table::pionTemplate }
+physics.analyzers.cutAndCount500.signalTrackCuts.t0min: 500
+
+physics.analyzers.cutAndCount550: { @table::pionTemplate }
+physics.analyzers.cutAndCount550.signalTrackCuts.t0min: 550
+
+physics.analyzers.cutAndCount600: { @table::pionTemplate }
+physics.analyzers.cutAndCount600.signalTrackCuts.t0min: 600
+
+physics.analyzers.cutAndCount650: { @table::pionTemplate }
+physics.analyzers.cutAndCount650.signalTrackCuts.t0min: 650
+
+physics.analyzers.cutAndCount700: { @table::pionTemplate }
+physics.analyzers.cutAndCount700.signalTrackCuts.t0min: 700
+
+physics.analyzers.cutAndCount750: { @table::pionTemplate }
+physics.analyzers.cutAndCount750.signalTrackCuts.t0min: 750
+
+physics.pionAnalyses: [
+   cutAndCount500, cutAndCount550,
+   cutAndCount600, cutAndCount650,
+   cutAndCount700, cutAndCount750
+]
+
+physics.end_paths: [ draCommonEndSeq, pionAnalyses ]

@@ -1,0 +1,187 @@
+BEGIN_PROLOG
+
+caloDigiTable: {
+   protonTimeMap        : @local::protonTimeMap
+   muonTimeMap          : @local::muonTimeMap
+   MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
+}
+
+caloDigiSeq:  [protonTimeMap, muonTimeMap, MakeCaloReadoutHits ]
+
+// FIXME: Tracking.DigiSim should include time maps in addition to other stuff
+digitizationSeq: [ @sequence::caloDigiSeq, @sequence::Tracking.DigiSim ]
+
+//----------------------------------------------------------------
+// Calorimeter cluster reconstruction
+caloRecoTable: {
+   MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
+   MakeCaloProtoCluster : @local::MakeCaloProtoCluster
+   MakeCaloCluster      : @local::MakeCaloCluster
+}
+
+caloRecoSeq: [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
+
+//----------------------------------------------------------------
+// PID inputs
+pidInputsTable: {
+   TrkExtrapolDem: {
+      @table::TrackCaloIntersection
+      fitparticle: 11
+      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
+   }
+   TrackCaloMatchingDem: {
+      @table::TrackCaloMatching
+      fitparticle: 11
+      fitdirection: 0
+      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
+      trkToCaloExtrapolModuleLabel: TrkExtrapolDem
+   }
+}
+
+pidInputsSeq: [TrkExtrapolDem, TrackCaloMatchingDem]
+
+// Analysis
+signalTrackCuts: {
+   trkqual: 0.2
+   trkqualmax: 1.3 // See https://mu2e-hnews.fnal.gov/HyperNews/Mu2e/get/Sim/37/1.html
+
+   tdmin: 0.57735027
+   tdmax: 1.
+   d0min: -80
+   d0max: 105
+   mdmin: 450.
+   mdmax: 650.
+   t0min: 700.
+   t0max: 1695.
+   pmin: 103.75
+   pmax: 105.0
+
+   caloCuts: {
+      clusterInput: "TrackCaloMatchingDem"
+      matchChi2: 100.
+      emin: 10. // MeV
+      emax: 120. // MeV
+   }
+}
+
+uemVetoTrackCuts: {
+   trkqual: 0.1
+   tdmin: -9999.
+   tdmax: +9999.
+   d0min: -9999
+   d0max: +9999
+   mdmin: -9999.
+   mdmax: +9999.
+   t0min: 700.
+   t0max: 1695.
+   pmin: 100.
+   pmax: 9999
+   caloCutsEnabled: false
+}
+
+CutAndCountSettings: {
+   // Dowstream e- track input
+   signalTrackInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
+   signalTrackCuts: @local::signalTrackCuts
+
+   uemVetoTrackInput: "TRFUpstreameMinus:UpstreameMinus" // FIXME: instance name should not be used
+   uemVetoTrackCuts: @local::uemVetoTrackCuts
+
+   weight: @nil
+
+   kalDiag: @local::KalDiagReadCD3
+
+}
+
+#================================================================
+draTopLevelDefs: {
+   source: { module_type: RootInput }
+
+   services: {
+      message               : @local::default_message
+      TFileService          : { fileName : @nil }
+      RandomNumberGenerator : {}
+
+      GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
+      ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+      GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+      BTrkHelper             : @local::BTrkHelperDefault
+      SeedService            : @local::automaticSeeds
+   }
+
+   physics : {
+      producers: {
+	 @table::draEventMixing.producers
+
+	 //------------------------------------------------------------------------------
+	 // digitization
+	 @table::caloDigiTable
+	 // FIXME: Tracking.producers below defines digi in addition to defining reco
+
+	 //------------------------------------------------------------------------------
+	 // Track reco - multiple hypotheses
+	 @table::Tracking.producers
+
+	 // Calorimeter reco
+	 @table::caloRecoTable
+
+	 // PID inputs
+	 @table::pidInputsTable
+
+	 //------------------------------------------------------------------------------
+      }
+
+      //------------------------------------------------------------------------------
+      filters: {
+	 @table::draEventMixing.filters
+
+	 cutAndCountFilter: {
+	    module_type: CutAndCountFilter
+	    @table::CutAndCountSettings
+	 }
+      }
+
+      //------------------------------------------------------------------------------
+      analyzers: {
+	 // save normalization info to the histogram file
+	 genCountLogger: { module_type: GenEventCountReader }
+
+	 cutAndCountAnalyzer: {
+	    module_type: CutAndCountAnalyzer
+	    @table::CutAndCountSettings
+	 }
+      }
+
+      //==============================================================================
+      draCommonTrigSeq : [
+	 @sequence::draEventMixing.CD3Mixers
+	 , @sequence::digitizationSeq
+	 , @sequence::Tracking.TPRDownstreameMinus
+	 , @sequence::Tracking.TPRUpstreameMinus
+	 , @sequence::caloRecoSeq
+	 , @sequence::pidInputsSeq
+      ]
+
+      trigger_paths: @nil
+
+      draCommonEndSeq: [ genCountLogger ]
+      draCutAndCountEndSeq : [ cutAndCountAnalyzer ]
+      filteredOutput: [ filteredOutput ]
+      end_paths: @nil
+   }
+
+   outputs: {
+      filteredOutput: {
+	 fileName: @nil
+	 module_type    : RootOutput
+	 SelectEvents   : { SelectEvents: ["draCutAndCountTrigSeq"] }
+      }
+   }
+}
+
+draTopLevelDefs.physics.draCutAndCountTrigSeq: [ @sequence::draTopLevelDefs.physics.draCommonTrigSeq, cutAndCountFilter ]
+
+#----------------------------------------------------------------
+
+END_PROLOG
+
