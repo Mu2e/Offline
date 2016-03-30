@@ -153,12 +153,12 @@ double stm.pipe.rOut              = 94.0;
 string stm.pipe.material          = "StainlessSteel";
 string stm.pipe.gas.material      = "G4_He";
 double stm.pipe.UpStrSpace        = 10.0;
-double stm.pipe.DnStrHalfLength   = 25.0;
+double stm.pipe.DnStrHalfLength   =  2.0; //was 25.0
 string stm.pipe.UpStrWindow.material   = "G4_MYLAR";
 double stm.pipe.UpStrWindow.halfLength = 0.089;
 string stm.pipe.DnStrWindow.material   = "G4_MYLAR";
 double stm.pipe.DnStrWindow.halfLength = 0.089;
-double stm.pipe.flange.halfLength      = 15.0;
+double stm.pipe.flange.halfLength      = 0.9; //was 15.0
 double stm.pipe.flange.overhangR       = 20.0;
 
 //Support (Table) on which to put the sweeper magnet and field-of-view collimator
