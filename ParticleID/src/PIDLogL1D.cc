@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <cmath>
 
 #include "fhiclcpp/types/Table.h"
 
@@ -25,7 +26,7 @@ namespace mu2e {
     if(i != Binning::nobin) {
       res = std::max(binValueCutoff_, vals_[i]);
     }
-    return res;
+    return log(res);
   }
 
   PIDLogL1D::PIDLogL1D(const Config& conf) {
