@@ -26,6 +26,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "boost/noncopyable.hpp"
 
@@ -50,6 +51,9 @@
 //#include "RecoDataProducts/inc/TrkCaloMatch.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersect.hh"
 
+#include "ParticleID/inc/PIDLogLRatio.hh"
+#include "ParticleID/inc/PIDLogL1D.hh"
+
 #include "TH1.h"
 #include "TH2.h"
 
@@ -61,6 +65,7 @@ namespace mu2e {
 
   class TrackLevelCuts: private boost::noncopyable {
   public:
+    typedef PIDLogLRatio<PIDLogL1D> PIDDt;
 
     // A structure to hold a subset of physics cuts related to track-calo matching
     struct TrackCaloCuts {
@@ -74,6 +79,10 @@ namespace mu2e {
       fhicl::Atom<double> emin{Name("emin"), Comment("Min energy of matched calo cluster")};
 
       fhicl::Atom<double> emax{Name("emax"), Comment("Max energy of matched calo cluster")};
+
+      fhicl::Table<PIDDt::Config> pid_dt_conf{Name("PIDDt"), Comment("dt based PID config")};
+
+      fhicl::Atom<double> pidCut{Name("pidCut"), Comment("Low cut on PID variable")};
     };
 
     // A top level structure to hold values of physics cuts
@@ -121,6 +130,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     PhysicsCuts cuts_;
+    std::unique_ptr<PIDDt> pid_dt_;
 
     TH1 *h_cuts_p_;
     TH1 *h_cuts_r_;
@@ -134,6 +144,7 @@ namespace mu2e {
     TH1 *t0_;
     TH1 *caloMatchChi2_;
     TH1 *caloClusterEnergy_;
+    TH1 *pidVariable_;
     TH1 *momentum_;
 
     CutAndCount::TrkCutNumber processTrack(const art::Ptr<KalRep>& trk, const art::Event& evt, const KalDiag& kdiag, const EventWeightHelper& wh);

@@ -18,6 +18,7 @@ mainlib = helper.make_mainlib ( [
         'mu2e_TrkExt',
         'mu2e_TrkDiag',
         'mu2e_TrkReco',
+        'mu2e_ParticleID',
         'mu2e_Mu2eBTrk',
         'mu2e_Mu2eUtilities',
         'mu2e_CaloCluster',

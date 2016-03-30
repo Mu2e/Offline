@@ -30,6 +30,7 @@ namespace mu2e {
     X(caloMatch)                                \
     X(caloMatchChi2)                            \
     X(caloClusterEnergy)                        \
+    X(particleID)                               \
     X(momentum)                                 \
     X(accepted)
 
@@ -68,6 +69,7 @@ namespace mu2e {
 
   TrackLevelCuts::TrackLevelCuts(const PhysicsCuts& pc, art::TFileDirectory tf)
     : cuts_(pc)
+    , pid_dt_(pc.caloCutsEnabled() ? new PIDDt{pc.caloCuts().pid_dt_conf()} : nullptr)
     , h_cuts_p_{tf.make<TH1D>("cuts_p", "Unweighted events before cut", double(TrkCutNumber::CUTS_END), -0.5, double(TrkCutNumber::CUTS_END)-0.5)}
     , h_cuts_r_{tf.make<TH1D>("cuts_r", "Unweighted events rejected by cut", double(TrkCutNumber::CUTS_END), -0.5, double(TrkCutNumber::CUTS_END)-0.5)}
     , w_cuts_p_{tf.make<TH1D>("wcuts_p", "Weighted events before cut", double(TrkCutNumber::CUTS_END), -0.5, double(TrkCutNumber::CUTS_END)-0.5)}
@@ -79,6 +81,7 @@ namespace mu2e {
     , t0_{tf.make<TH1D>("t0", "Track t0  before cut", 170, 0., 1700.)}
     , caloMatchChi2_{tf.make<TH1D>("caloMatchCHi2", "Calo match chi2 before cut", 100, 0., 300.)}
     , caloClusterEnergy_{tf.make<TH1D>("caloClusterEnergy", "Calo cluster energy before cut", 150, 0., 150.)}
+    , pidVariable_{tf.make<TH1D>("particleID", "PID variable before cut", 1000, -1., 1.)}
     , momentum_{tf.make<TH1D>("momentum", "Track momentum  before cut", 500, 98., 108.)}
   {
     using CutAndCount::TrkCutNumber;
@@ -109,6 +112,7 @@ namespace mu2e {
     t0_->Sumw2();
     caloMatchChi2_->Sumw2();
     caloClusterEnergy_->Sumw2();
+    pidVariable_->Sumw2();
     momentum_->Sumw2();
   }
 
@@ -179,6 +183,7 @@ namespace mu2e {
     // Here we start using calorimeter info
 
     if(cuts_.caloCutsEnabled()) {
+      const TrackCaloCuts& ccuts = cuts_.caloCuts();
 
       const auto* cm = findCaloMatch(trk, evt);
       if(!cm) {
@@ -186,14 +191,21 @@ namespace mu2e {
       }
 
       caloMatchChi2_->Fill(cm->chi2(), wh.weight());
-      if(cm->chi2() > cuts_.caloCuts().matchChi2()) {
+      if(cm->chi2() > ccuts.matchChi2()) {
         return TrkCutNumber::caloMatchChi2;
       }
 
       const double clusterEnergy = cm->caloCluster()->energyDep();
       caloClusterEnergy_->Fill(clusterEnergy, wh.weight());
-      if((clusterEnergy < cuts_.caloCuts().emin())||(cuts_.caloCuts().emax() < clusterEnergy)) {
+      if((clusterEnergy < ccuts.emin())||(ccuts.emax() < clusterEnergy)) {
         return TrkCutNumber::caloClusterEnergy;
+      }
+
+      const double pidvar = pid_dt_->value(cm->dt());
+      std::cout<<"dt = "<<cm->dt()<<", pidvar = "<<pidvar<<std::endl;
+      pidVariable_->Fill(pidvar, wh.weight());
+      if(pidvar < ccuts.pidCut()) {
+        return TrkCutNumber::particleID;
       }
 
     }
