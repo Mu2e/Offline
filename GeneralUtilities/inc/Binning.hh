@@ -16,34 +16,32 @@
 class Binning{
 
 public:
+  typedef unsigned long IndexType;
+  static const IndexType nobin; // like string::npos
 
-  Binning():
-    nbins_(1),
-    low_(0.),
-    high_(1.)
-  {}
-
-  Binning( int nbins, double low, double high):
-    nbins_(nbins),
-    low_(low),
-    high_(high){
-  }
+  Binning();
+  Binning(IndexType nbins, double low, double high);
 
   // Accessors.
-  int    nbins() const {return nbins_;}
+  IndexType nbins() const {return nbins_;}
   double low()   const {return low_;  }
   double high()  const {return high_; }
+
+  // returns nobin for out of range
+  IndexType findBin(double x) const;
 
 private:
 
   // Number of bins.
-  int nbins_;
+  IndexType nbins_;
 
   // Low edge of low bin.
   double low_;
 
   // High edge of high bin.
   double high_;
+
+  double binwidth_;
 
 };
 
