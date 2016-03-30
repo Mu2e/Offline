@@ -53,9 +53,13 @@ typedef struct
   double simreco_startp, simreco_endp, simreco_startp_z;
   double simreco_pos[3];
 
-  double zplane1[3], zplane2[3], zplane3[3];
   double xplane1[3], xplane2[3], xplane3[3];
   double yplane1[3];
+  double zplane1[3], zplane2[3], zplane3[3];
+
+  double xplane1Dir[3], xplane2Dir[3], xplane3Dir[3];
+  double yplane1Dir[3];
+  double zplane1Dir[3], zplane2Dir[3], zplane3Dir[3];
 
   double firstCoincidenceHitTime;
   bool   CRVhit_allSectors;
@@ -80,13 +84,20 @@ typedef struct
     for(int i=0; i<3; i++)
     {
       simreco_pos[i]=NAN;
-      zplane1[i]=NAN;
-      zplane2[i]=NAN;
-      zplane3[i]=NAN;
       xplane1[i]=NAN;
       xplane2[i]=NAN;
       xplane3[i]=NAN;
       yplane1[i]=NAN;
+      zplane1[i]=NAN;
+      zplane2[i]=NAN;
+      zplane3[i]=NAN;
+      xplane1Dir[i]=NAN;
+      xplane2Dir[i]=NAN;
+      xplane3Dir[i]=NAN;
+      yplane1Dir[i]=NAN;
+      zplane1Dir[i]=NAN;
+      zplane2Dir[i]=NAN;
+      zplane3Dir[i]=NAN;
     }
 
     firstCoincidenceHitTime=NAN;
@@ -110,6 +121,8 @@ namespace mu2e
     virtual ~CosmicAnalysis() { }
     virtual void beginJob();
     void analyze(const art::Event& e);
+    void findCrossingDetails(const std::vector<CLHEP::HepLorentzVector> &trajectoryPoints, int dim, double crossingPos,
+                             double *crossingPoint, double *crossingDirection);
     void findCrossings(const art::Event& event, const cet::map_vector_key& particleKey);
 
     private:
@@ -167,13 +180,20 @@ namespace mu2e
     _tree->Branch("simreco_endp",&e.simreco_endp,"simreco_endp/D");
     _tree->Branch("simreco_startp_z",&e.simreco_startp_z,"simreco_startp_z/D");
     _tree->Branch("simreco_pos",e.simreco_pos,"simreco_pos[3]/D");
-    _tree->Branch("zplane1",e.zplane1,"zplane1[3]/D");
-    _tree->Branch("zplane2",e.zplane2,"zplane2[3]/D");
-    _tree->Branch("zplane3",e.zplane3,"zplane3[3]/D");
     _tree->Branch("xplane1",e.xplane1,"xplane1[3]/D");
     _tree->Branch("xplane2",e.xplane2,"xplane2[3]/D");
     _tree->Branch("xplane3",e.xplane3,"xplane3[3]/D");
     _tree->Branch("yplane1",e.yplane1,"yplane1[3]/D");
+    _tree->Branch("zplane1",e.zplane1,"zplane1[3]/D");
+    _tree->Branch("zplane2",e.zplane2,"zplane2[3]/D");
+    _tree->Branch("zplane3",e.zplane3,"zplane3[3]/D");
+    _tree->Branch("xplane1Dir",e.xplane1Dir,"xplane1Dir[3]/D");
+    _tree->Branch("xplane2Dir",e.xplane2Dir,"xplane2Dir[3]/D");
+    _tree->Branch("xplane3Dir",e.xplane3Dir,"xplane3Dir[3]/D");
+    _tree->Branch("yplane1Dir",e.yplane1Dir,"yplane1Dir[3]/D");
+    _tree->Branch("zplane1Dir",e.zplane1Dir,"zplane1Dir[3]/D");
+    _tree->Branch("zplane2Dir",e.zplane2Dir,"zplane2Dir[3]/D");
+    _tree->Branch("zplane3Dir",e.zplane3Dir,"zplane3Dir[3]/D");
     _tree->Branch("firstCoincidenceHitTime",&e.firstCoincidenceHitTime,"firstCoincidenceHitTime/D");
     _tree->Branch("CRVhit_allSectors",&e.CRVhit_allSectors,"CRVhit_allSectors/O");
     _tree->Branch("CRVhit",e.CRVhit,"CRVhit[8]/O");
@@ -183,6 +203,31 @@ namespace mu2e
     _tree->Branch("subrun_number",&e.subrun_number,"subrun_number/I");
     _tree->Branch("event_number",&e.event_number,"event_number/I");
     _tree->Branch("filename",e.filename,"filename[200]/C");
+  }
+
+  void CosmicAnalysis::findCrossingDetails(const std::vector<CLHEP::HepLorentzVector> &trajectoryPoints, int dim, double crossingPos,
+                                           double *crossingPoint, double *crossingDirection)
+  {
+    if(!isnan(crossingPoint[0])) return;  //point already found
+    for(unsigned int i=1; i<trajectoryPoints.size(); i++)
+    {
+      CLHEP::Hep3Vector point1=trajectoryPoints[i-1]-_detSysOrigin;
+      CLHEP::Hep3Vector point2=trajectoryPoints[i]-_detSysOrigin;
+      CLHEP::Hep3Vector diffVector=point2-point1;
+      if(diffVector[dim]==0) continue;  //these two points are both on the same plane, try to find another pair
+      if((point1[dim]>=crossingPos && point2[dim]<=crossingPos)
+      || (point1[dim]<=crossingPos && point2[dim]>=crossingPos))
+      {
+        double ratio=(crossingPos - point1[dim])/diffVector[dim];
+        CLHEP::Hep3Vector point=ratio*diffVector+point1;
+        for(int i=0; i<3; i++) 
+        {
+          crossingPoint[i]=point[i];
+          crossingDirection[i]=diffVector.unit()[i];
+        }
+        return;  //don't look for a second point
+      }
+    }
   }
 
   void CosmicAnalysis::findCrossings(const art::Event& event, const cet::map_vector_key& particleKey)
@@ -204,83 +249,14 @@ namespace mu2e
       {
         if(traj_iter->first->id()==particleKey) 
         {
-          const std::vector<CLHEP::HepLorentzVector> &points = traj_iter->second.points();
-          for(unsigned int i=1; i<points.size(); i++)
-          {
-            CLHEP::Hep3Vector point1=points[i-1]-_detSysOrigin;
-            CLHEP::Hep3Vector point2=points[i]-_detSysOrigin;
-            CLHEP::Hep3Vector diffVect=point2-point1;
-            if((point1.z()>=zCrossing1 && point2.z()<=zCrossing1)
-            || (point1.z()<=zCrossing1 && point2.z()>=zCrossing1))
-            {
-              double ratio=0;
-              if(diffVect.z()!=0) ratio=(zCrossing1 - point1.z())/diffVect.z();
-              CLHEP::Hep3Vector crossPoint=ratio*diffVect+point1;
-              _eventinfo.zplane1[0]=crossPoint.x();
-              _eventinfo.zplane1[1]=crossPoint.y();
-              _eventinfo.zplane1[2]=crossPoint.z();
-            }
-            if((point1.z()>=zCrossing2 && point2.z()<=zCrossing2)
-            || (point1.z()<=zCrossing2 && point2.z()>=zCrossing2))
-            {
-              double ratio=0;
-              if(diffVect.z()!=0) ratio=(zCrossing2 - point1.z())/diffVect.z();
-              CLHEP::Hep3Vector crossPoint=ratio*diffVect+point1;
-              _eventinfo.zplane2[0]=crossPoint.x();
-              _eventinfo.zplane2[1]=crossPoint.y();
-              _eventinfo.zplane2[2]=crossPoint.z();
-            }
-            if((point1.z()>=zCrossing3 && point2.z()<=zCrossing3)
-            || (point1.z()<=zCrossing3 && point2.z()>=zCrossing3))
-            {
-              double ratio=0;
-              if(diffVect.z()!=0) ratio=(zCrossing3 - point1.z())/diffVect.z();
-              CLHEP::Hep3Vector crossPoint=ratio*diffVect+point1;
-              _eventinfo.zplane3[0]=crossPoint.x();
-              _eventinfo.zplane3[1]=crossPoint.y();
-              _eventinfo.zplane3[2]=crossPoint.z();
-            }
-            if((point1.x()>=xCrossing1 && point2.x()<=xCrossing1)
-            || (point1.x()<=xCrossing1 && point2.x()>=xCrossing1))
-            {
-              double ratio=0;
-              if(diffVect.x()!=0) ratio=(xCrossing1 - point1.x())/diffVect.x();
-              CLHEP::Hep3Vector crossPoint=ratio*diffVect+point1;
-              _eventinfo.xplane1[0]=crossPoint.x();
-              _eventinfo.xplane1[1]=crossPoint.y();
-              _eventinfo.xplane1[2]=crossPoint.z();
-            }
-            if((point1.x()>=xCrossing2 && point2.x()<=xCrossing2)
-            || (point1.x()<=xCrossing2 && point2.x()>=xCrossing2))
-            {
-              double ratio=0;
-              if(diffVect.x()!=0) ratio=(xCrossing2 - point1.x())/diffVect.x();
-              CLHEP::Hep3Vector crossPoint=ratio*diffVect+point1;
-              _eventinfo.xplane2[0]=crossPoint.x();
-              _eventinfo.xplane2[1]=crossPoint.y();
-              _eventinfo.xplane2[2]=crossPoint.z();
-            }
-            if((point1.x()>=xCrossing3 && point2.x()<=xCrossing3)
-            || (point1.x()<=xCrossing3 && point2.x()>=xCrossing3))
-            {
-              double ratio=0;
-              if(diffVect.x()!=0) ratio=(xCrossing3 - point1.x())/diffVect.x();
-              CLHEP::Hep3Vector crossPoint=ratio*diffVect+point1;
-              _eventinfo.xplane3[0]=crossPoint.x();
-              _eventinfo.xplane3[1]=crossPoint.y();
-              _eventinfo.xplane3[2]=crossPoint.z();
-            }
-            if((point1.y()>=yCrossing1 && point2.y()<=yCrossing1)
-            || (point1.y()<=yCrossing1 && point2.y()>=yCrossing1))
-            {
-              double ratio=0;
-              if(diffVect.y()!=0) ratio=(yCrossing1 - point1.y())/diffVect.y();
-              CLHEP::Hep3Vector crossPoint=ratio*diffVect+point1;
-              _eventinfo.yplane1[0]=crossPoint.x();
-              _eventinfo.yplane1[1]=crossPoint.y();
-              _eventinfo.yplane1[2]=crossPoint.z();
-            }
-          }
+          const std::vector<CLHEP::HepLorentzVector> &trajectoryPoints = traj_iter->second.points();
+          findCrossingDetails(trajectoryPoints, 0, xCrossing1, _eventinfo.xplane1, _eventinfo.xplane1Dir);
+          findCrossingDetails(trajectoryPoints, 0, xCrossing2, _eventinfo.xplane2, _eventinfo.xplane2Dir);
+          findCrossingDetails(trajectoryPoints, 0, xCrossing3, _eventinfo.xplane3, _eventinfo.xplane3Dir);
+          findCrossingDetails(trajectoryPoints, 1, yCrossing1, _eventinfo.yplane1, _eventinfo.yplane1Dir);
+          findCrossingDetails(trajectoryPoints, 2, zCrossing1, _eventinfo.zplane1, _eventinfo.zplane1Dir);
+          findCrossingDetails(trajectoryPoints, 2, zCrossing2, _eventinfo.zplane2, _eventinfo.zplane2Dir);
+          findCrossingDetails(trajectoryPoints, 2, zCrossing3, _eventinfo.zplane3, _eventinfo.zplane3Dir);
         }
       }
     }
@@ -340,7 +316,7 @@ namespace mu2e
       }
     }
 
-//particles crossing the CRV modules
+//particles crossing the CRV planes
     std::string productInstanceName="";
     art::Handle<SimParticleCollection> simParticleCollection;
     if(event.getByLabel(_g4ModuleLabel,productInstanceName,simParticleCollection))
@@ -355,7 +331,7 @@ namespace mu2e
           if(abs(pdgId)==11 || abs(pdgId)==13)
           {
             const cet::map_vector_key& particleKey = iter->first;
-            findCrossings(event,particleKey); //FIXME: if a second particle crosses the same plane, it will be ignored
+            findCrossings(event,particleKey); //if a second particle crosses the same plane, it will be ignored
           }
         }
       }
@@ -495,8 +471,11 @@ namespace mu2e
 
         _eventinfo.CRVhit_allSectors =true;
         _eventinfo.CRVhit[sectorType]=true;
-        if(_eventinfo.CRVhitTime[sectorType]>t || isnan(_eventinfo.CRVhitTime[sectorType])) _eventinfo.CRVhitTime[sectorType]=t;
-        if(_eventinfo.CRVhitZ[sectorType]>t || isnan(_eventinfo.CRVhitZ[sectorType])) _eventinfo.CRVhitZ[sectorType]=z;
+        if(_eventinfo.CRVhitTime[sectorType]>t || isnan(_eventinfo.CRVhitTime[sectorType]))
+        {
+           _eventinfo.CRVhitTime[sectorType]=t;
+           _eventinfo.CRVhitZ[sectorType]=z;
+        }
       }
     }
 
