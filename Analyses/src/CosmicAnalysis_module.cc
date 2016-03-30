@@ -69,8 +69,17 @@ typedef struct
   
   void clear()
   {
+    reco_t0=0;
+    simreco_particle[0]='\0';
+    simreco_production_process[0]='\0';
+    simreco_production_volume[0]='\0';
+    simreco_startp=NAN;
+    simreco_endp=NAN;
+    simreco_startp_z=NAN;
+
     for(int i=0; i<3; i++)
     {
+      simreco_pos[i]=NAN;
       zplane1[i]=NAN;
       zplane2[i]=NAN;
       zplane3[i]=NAN;
@@ -169,7 +178,7 @@ namespace mu2e
     _tree->Branch("CRVhit_allSectors",&e.CRVhit_allSectors,"CRVhit_allSectors/O");
     _tree->Branch("CRVhit",e.CRVhit,"CRVhit[8]/O");
     _tree->Branch("CRVhitTime",e.CRVhitTime,"CRVhitTime[8]/D");
-    _tree->Branch("CRVhitZ",e.CRVhitTime,"CRVhitZ[8]/D");
+    _tree->Branch("CRVhitZ",e.CRVhitZ,"CRVhitZ[8]/D");
     _tree->Branch("run_number",&e.run_number,"run_number/I");
     _tree->Branch("subrun_number",&e.subrun_number,"subrun_number/I");
     _tree->Branch("event_number",&e.event_number,"event_number/I");
