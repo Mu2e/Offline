@@ -56,10 +56,12 @@ signalTrackCuts: {
    pmin: 103.75
    pmax: 105.0
 
-   caloMatchInput: "TrackCaloMatchingDem"
-   caloemin: 10. // MeV
-   caloemax: 120. // MeV
-   caloMatchChi2: 100.
+   caloCuts: {
+      clusterInput: "TrackCaloMatchingDem"
+      matchChi2: 100.
+      emin: 10. // MeV
+      emax: 120. // MeV
+   }
 }
 
 uemVetoTrackCuts: {
@@ -74,11 +76,7 @@ uemVetoTrackCuts: {
    t0max: 1695.
    pmin: 100.
    pmax: 9999
-
-   caloMatchInput: "" // disabled
-   caloemin: 0. // MeV, unused
-   caloemax: 0. // MeV, unused
-   caloMatchChi2: 0. // unused
+   caloCutsEnabled: false
 }
 
 CutAndCountSettings: {

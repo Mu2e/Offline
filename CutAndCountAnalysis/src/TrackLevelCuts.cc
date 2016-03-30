@@ -177,7 +177,8 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     // Here we start using calorimeter info
-    if(cuts_.caloMatchInput() != art::InputTag()) {
+
+    if(cuts_.caloCutsEnabled()) {
 
       const auto* cm = findCaloMatch(trk, evt);
       if(!cm) {
@@ -185,13 +186,13 @@ namespace mu2e {
       }
 
       caloMatchChi2_->Fill(cm->chi2(), wh.weight());
-      if(cm->chi2() > cuts_.caloMatchChi2()) {
+      if(cm->chi2() > cuts_.caloCuts().matchChi2()) {
         return TrkCutNumber::caloMatchChi2;
       }
 
       const double clusterEnergy = cm->caloCluster()->energyDep();
       caloClusterEnergy_->Fill(clusterEnergy, wh.weight());
-      if((clusterEnergy < cuts_.caloemin())||(cuts_.caloemax() < clusterEnergy)) {
+      if((clusterEnergy < cuts_.caloCuts().emin())||(cuts_.caloCuts().emax() < clusterEnergy)) {
         return TrkCutNumber::caloClusterEnergy;
       }
 
@@ -212,7 +213,7 @@ namespace mu2e {
   //================================================================
   const TrackClusterMatch* TrackLevelCuts::findCaloMatch(const art::Ptr<KalRep>& trk, const art::Event& evt) {
     //auto ihmatch = evt.getValidHandle<TrkCaloMatchCollection>(caloMatchDemInput_);
-    auto ihmatch = evt.getValidHandle<TrackClusterMatchCollection>(cuts_.caloMatchInput());
+    auto ihmatch = evt.getValidHandle<TrackClusterMatchCollection>(cuts_.caloCuts().clusterInput());
     for(const auto& match: *ihmatch) {
       if(match.textrapol()->trk() == trk) {
         return &match;
