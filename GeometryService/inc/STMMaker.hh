@@ -67,13 +67,19 @@ namespace mu2e {
     double      _FOVCollimatorLinerHalfWidth;
     double      _FOVCollimatorLinerHalfHeight;
     double      _FOVCollimatorLinerHalfLength;
+    double      _FOVCollimatorLinerCutOutHalfLength;
     double      _FOVCollimatorHole1xOffset;
     double      _FOVCollimatorHole1RadiusUpStr;
     double      _FOVCollimatorHole1RadiusDnStr;
+    bool        _FOVCollimatorHole1LinerBuild;
+    double      _FOVCollimatorHole1LinerThickness;
     bool        _FOVCollimatorHole2Build;
     double      _FOVCollimatorHole2xOffset;
     double      _FOVCollimatorHole2RadiusUpStr;
     double      _FOVCollimatorHole2RadiusDnStr;
+    bool        _FOVCollimatorHole2LinerBuild;
+    double      _FOVCollimatorHole2LinerThickness;
+    std::string _FOVCollimatorHoleLinerMaterial;
     
     bool         _magnetTableBuild;
     std::string  _magnetTableMaterial;
@@ -107,14 +113,20 @@ namespace mu2e {
     double      _SSCollimatorLinerHalfWidth;
     double      _SSCollimatorLinerHalfHeight;
     double      _SSCollimatorLinerHalfLength;
+    double      _SSCollimatorLinerCutOutHalfLength;
     double      _SSCollimatorHole1xOffset;
     double      _SSCollimatorHole1RadiusUpStr;
     double      _SSCollimatorHole1RadiusDnStr;
+    bool        _SSCollimatorHole1LinerBuild;
+    double      _SSCollimatorHole1LinerThickness;
     bool        _SSCollimatorHole2Build;
     double      _SSCollimatorHole2xOffset;
     double      _SSCollimatorHole2RadiusUpStr;
     double      _SSCollimatorHole2RadiusDnStr;    
-
+    bool        _SSCollimatorHole2LinerBuild;
+    double      _SSCollimatorHole2LinerThickness;
+    std::string _SSCollimatorHoleLinerMaterial;
+    
     bool         _detectorTableBuild;
     std::string  _detectorTableMaterial;
     double       _detectorTableTopExtraWidth;

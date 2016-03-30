@@ -15,25 +15,26 @@ bool   stm.solid   = false;
 int    vd.verbosityLevel = 2;
 bool   vd.STMUpStr.build     = true; //VD86 Rectangle in x-y plane, same size as the CRV (1mm dnStr of CRV)
 bool   vd.STMMagDnStr.build  = true; //VD87 Rectangle in x-y plane, same size as the CRV
+bool   vd.STMSSCollUpStr.build = true; //VD101 Disk upstream of Spot-Size collimator
+double vd.STMSSCollUpStr.r     = 200.0;// r=20cm 
 bool   vd.STMCollDnStr.build = true; //VD88 Disk downstream of Spot-Size collimator
 double vd.STMCollDnStr.r     = 200.0;// r=20cm 
 bool   vd.STMDet1UpStr.build = true; //VD89 Disk in x-y plane, same size as the Ge detector 1
 bool   vd.STMDet2UpStr.build = true; //VD90 Disk in x-y plane, same size as the Ge detector 2
 bool   vd.STMFieldOfViewCollDnStr.build = true; //VD100
-
-// build VD inside DS Neutron Shielding
+// build virtual detector inside DS Neutron Shielding
 bool   vd.DSNeutronShieldExit.build = true; //VD81
 double vd.DSNeutronShieldExit.r     =  100.0;//Must be the same as the following 2 values,
                                              //which in turn must be greater than "stm.pipe.rOut"
-//External (Neutron) Shielding radius and VD81 radius
-double ExtShieldDownstream.holeRadiusType11Box4Hole1 =  100.0;
-double ExtShieldDownstream.detecHoleRadius           =  100.0;
 
-//Make sure the window is built in the MBS
+//External (Neutron) Shielding radius and VD81 radius
+double ExtShieldDownstream.holeRadiusType11Box4Hole1 =  102.0;
+double ExtShieldDownstream.detecHoleRadius           =  102.0;
+
+//Absorber in the MBS endplug hole
 //bool   mbs.CLV2.absorber.build          = true;
 //string mbs.CLV2.absorber.MaterialName   = "Polyethylene096";  
 //double mbs.CLV2.absorber.halfLength     = 15.0;//mm
-
 
 //Build STM within z = 34 inches (863.6 mm) of downstream hall wall
 double stm.z.allowed = 863.6;
@@ -73,41 +74,57 @@ double stm.det2.can.UpStrWindowHalfLength =   0.5;   //0.381; //Standard Be wind
 bool   stm.SScollimator.build             =  true; //
 string stm.SScollimator.material          = "G4_Pb";
 double stm.SScollimator.UpStrSpace        =    0.0; // this parameter not used for this collimator
-double stm.SScollimator.halfWidth         =  215.9; // same width as magnet
-double stm.SScollimator.halfHeight        =  228.6; // same height as magnet
-double stm.SScollimator.halfLength        =  127.0; // 10 inches thick = 5 inch halflength
-bool   stm.SScollimator.liner.build       =  false; //
-double stm.SScollimator.liner.material    =  "G4_AIR"; 
-double stm.SScollimator.liner.halfWidth   =  50.0; // same width as magnet
-double stm.SScollimator.liner.halfHeight  =  50.0; // same height as magnet
-double stm.SScollimator.liner.halfLength  =  63.5; // 5 inches thick
+double stm.SScollimator.halfWidth         =  215.9; // 
+double stm.SScollimator.halfHeight        =  228.6; // 
+double stm.SScollimator.halfLength        =   76.2; // 76.2mm = 3 inch halflength 
+bool   stm.SScollimator.liner.build       =  true; //
+double stm.SScollimator.liner.material    =  "G4_W"; 
+double stm.SScollimator.liner.halfWidth   =  105.0; // 
+double stm.SScollimator.liner.halfHeight  =   55.0; // 
+double stm.SScollimator.liner.halfLength  =   76.2; // 
+double stm.SScollimator.liner.cutOutHalfLength  =  0.0; // no cutout for this collimator
 double stm.SScollimator.hole1.xoffset     =   40.6; // (38.1mm = 1.5 inches)
-double stm.SScollimator.hole1.radiusUpStr =    6.168; // 5.0mm
+double stm.SScollimator.hole1.radiusUpStr =    6.795; // DEPRECATED parameter, no longer used
 double stm.SScollimator.hole1.radiusDnStr =    5.642; // 5.642mm for A=1.0 cm^2 hole
+bool   stm.SScollimator.hole1.liner.build      =  false; // liner along the length of the hole itself
+double stm.SScollimator.hole1.liner.thickness  =  10.0; // 1cm thick hole liner
 bool   stm.SScollimator.hole2.build       =   true; // has a second collimation hole?
 double stm.SScollimator.hole2.xoffset     =  -40.6; // (38.1mm = 1.5 inches)
-double stm.SScollimator.hole2.radiusUpStr =    6.168; // 5.0mm
+double stm.SScollimator.hole2.radiusUpStr =    6.795; // DEPRECATED parameter, no longer used
 double stm.SScollimator.hole2.radiusDnStr =    5.642; // 5.642mm for A=1.0 cm^2 hole
+bool   stm.SScollimator.hole2.liner.build      =  false; // liner along the length of the hole itself
+double stm.SScollimator.hole2.liner.thickness  =  10.0; // 1cm thick hole liner
+string stm.SScollimator.hole.liner.material    =  "G4_W"; 
 
 //"field-of-view" collimator, just downstream of the sweeper magnet
-bool   stm.FOVcollimator.build             =  true; //
-string stm.FOVcollimator.material          = "G4_Pb";
-double stm.FOVcollimator.UpStrSpace        =   20.0; // z=2 cm space between this and sweeper magnet
-double stm.FOVcollimator.halfWidth         =  205.9; // same width as magnet
-double stm.FOVcollimator.halfHeight        =  218.6; // same height as magnet
-double stm.FOVcollimator.halfLength        =  150.0; // 12 inches thick = 6 inch halfLength
-bool   stm.FOVcollimator.liner.build       =  true;
-double stm.FOVcollimator.liner.material    =  "Polyethylene096"; 
-double stm.FOVcollimator.liner.halfWidth   =  100.0; // 
-double stm.FOVcollimator.liner.halfHeight  =  100.0; // 
-double stm.FOVcollimator.liner.halfLength  =   75.0; // 
-double stm.FOVcollimator.hole1.xoffset     =    0.0; // 
-double stm.FOVcollimator.hole1.radiusUpStr =   68.0; // Use 68.mm
-double stm.FOVcollimator.hole1.radiusDnStr =   68.0; // Use 68.mm
-bool   stm.FOVcollimator.hole2.build       =  false; // has a second collimation hole?
-double stm.FOVcollimator.hole2.xoffset     =    0.0; // 
-double stm.FOVcollimator.hole2.radiusUpStr =    0.0; // 
-double stm.FOVcollimator.hole2.radiusDnStr =    0.0; // 
+bool   stm.FOVcollimator.build                  =  true; //
+string stm.FOVcollimator.material               = "G4_Pb";
+double stm.FOVcollimator.UpStrSpace             =    3.0; // z=2 cm space between this and sweeper magnet
+double stm.FOVcollimator.halfWidth              =  205.9; // same width as magnet
+double stm.FOVcollimator.halfHeight             =  218.6; // same height as magnet
+double stm.FOVcollimator.halfLength             =  225.0; // 12 inches thick = 6 inch halfLength
+bool   stm.FOVcollimator.liner.build            =  true;
+double stm.FOVcollimator.liner.material         =  "Polyethylene096"; 
+double stm.FOVcollimator.liner.cutOutHalfLength =  150.0;
+double stm.FOVcollimator.liner.halfWidth        =  100.0; // 
+double stm.FOVcollimator.liner.halfHeight       =  100.0; // 
+double stm.FOVcollimator.liner.halfLength       =   75.0; // 
+double stm.FOVcollimator.hole1.xoffset          =    0.0; // 
+double stm.FOVcollimator.hole1.radiusUpStr      =   68.0; // Use 68.mm
+double stm.FOVcollimator.hole1.radiusDnStr      =   68.0; // Use 68.mm
+bool   stm.FOVcollimator.hole1.liner.build      =  false; // liner along the length of the hole itself
+double stm.FOVcollimator.hole1.liner.thickness  =    0.0; // no liner
+bool   stm.FOVcollimator.hole2.build            =  false; // has a second collimation hole?
+double stm.FOVcollimator.hole2.xoffset          =    0.0; // 
+double stm.FOVcollimator.hole2.radiusUpStr      =    0.0; // 
+double stm.FOVcollimator.hole2.radiusDnStr      =    0.0; // 
+bool   stm.FOVcollimator.hole2.liner.build      =  false; // liner along the length of the hole itself
+double stm.FOVcollimator.hole2.liner.thickness  =    0.0; // no liner
+string stm.FOVcollimator.hole.liner.material    =  "G4_W"; 
+bool   stm.FOVcollimator.absorber.build         =   true; //
+double stm.FOVcollimator.absorber.halfLength    =   10.0; //
+string stm.FOVcollimator.absorber.material      =  "Polyethylene096"; 
+
 
 //Sweeper magnet
 bool   stm.magnet.build          = true;
@@ -129,8 +146,8 @@ double stm.magnet.stand.topExtraLength =   8.0;
 double stm.magnet.stand.topHalfHeight  =  30.0;
 double stm.magnet.stand.legRadius      =  50.0;
 
-//Transport Pipe
-bool   stm.pipe.build             = true;
+//Transport Pipe (vacuum or He filled, so prevent Bremstrahlung before sweeper magnet)
+bool   stm.pipe.build             = false;
 double stm.pipe.rIn               = 92.0;
 double stm.pipe.rOut              = 94.0;
 string stm.pipe.material          = "StainlessSteel";
@@ -154,7 +171,7 @@ double stm.detector.stand.legRadius      =  50.0;
 
 //shield pipe to reduce CRV deadtime
 bool   stm.shield.build                = true;
-double stm.shield.rIn                  =  95.0;
+double stm.shield.rIn                  = 102.0;
 double stm.shield.rOut                 = 128.0;
 double stm.shield.pipe.halfLength      = 209.5;
 string stm.shield.material             = "G4_Pb";

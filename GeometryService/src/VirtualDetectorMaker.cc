@@ -711,6 +711,24 @@ namespace mu2e {
           }
         }
         
+        if ( c.getBool("vd.STMSSCollUpStr.build", false) ) {
+          const double mstmZAllowed =  c.getDouble("stm.z.allowed");
+          const double mstmCollHalfLength =  c.getDouble("stm.SScollimator.halfLength");
+          CLHEP::Hep3Vector mstmCollPositionInParent = mstmReferencePositionInParent + CLHEP::Hep3Vector(0.0,0.0,2.0*mstmMotherHalfLength) - CLHEP::Hep3Vector(0.0,0.0,mstmZAllowed) + CLHEP::Hep3Vector(0.0,0.0,mstmCollHalfLength);
+          CLHEP::Hep3Vector vdPositionWRTparent     = mstmCollPositionInParent + CLHEP::Hep3Vector(0.0,0.0,-mstmCollHalfLength-10.0);
+
+          vd->addVirtualDetector(VirtualDetectorId::STM_SpotSizeCollUpStr, //ID
+                                 parentPositionInMu2e, //reference position
+                                 0x0,                  //rotation
+                                 vdPositionWRTparent); //placement w.r.t. reference
+           
+           int static const verbosityLevel = 1;
+           if ( verbosityLevel > -1) {
+              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_SpotSizeCollUpStr) << endl;
+              cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_SpotSizeCollUpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_SpotSizeCollUpStr) <<endl;
+           }
+        }
+        
         if ( c.getBool("vd.STMCollDnStr.build", false) ) {
           const double mstmZAllowed =  c.getDouble("stm.z.allowed");
           const double mstmCollHalfLength =  c.getDouble("stm.SScollimator.halfLength");

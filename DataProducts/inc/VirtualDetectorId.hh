@@ -80,7 +80,7 @@ namespace mu2e {
       PSPbarIn, PSPbarOut, // 91, 92: Front and back of the new pbar window in the PS
       CRV_R, CRV_L, CRV_T, CRV_D, CRV_U, // 93, 94, 95, 96, 97: virtual detectors next to the major CRV sectors
       TS2_Bend, TS4_Bend, // 98, 99: Virtual detectors requested by Mau for testing magnetic field effects - in the bends of TS
-      STM_FieldOfViewCollDnStr, // 100: inside STM area
+      STM_FieldOfViewCollDnStr, STM_SpotSizeCollUpStr, // 100,101: inside STM area
       lastEnum
     };
 
@@ -125,7 +125,7 @@ namespace mu2e {
       "PSPbarIn", "PSPbarOut",  \
       "CRV_R", "CRV_L", "CRV_T", "CRV_D", "CRV_U", \
       "TS2_Bend", "TS4_Bend", \
-      "STM_FieldOfViewCollDnStr"
+      "STM_FieldOfViewCollDnStr", "STM_SpotSizeCollUpStr"
 
   public:
 

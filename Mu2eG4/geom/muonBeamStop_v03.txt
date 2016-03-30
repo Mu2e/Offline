@@ -75,7 +75,7 @@ vector<double> mbs.CLV2Lengths     =   {  50.0, 102.4 };
 string mbs.CLV2MaterialName   = "Polyethylene096";
 double mbs.CLV2ZrelCntr            =  1959.2;
 
-bool   mbs.CLV2.absorber.build          = true;
+bool   mbs.CLV2.absorber.build          = false;
 string mbs.CLV2.absorber.MaterialName   = "Polyethylene096";
 double mbs.CLV2.absorber.halflength     =  10.0;
 

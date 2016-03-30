@@ -94,17 +94,23 @@ namespace mu2e {
                            _FOVCollimatorLinerHalfWidth,  
                            _FOVCollimatorLinerHalfHeight, 
                            _FOVCollimatorLinerHalfLength, 
+                           _FOVCollimatorLinerCutOutHalfLength,
                            _FOVCollimatorHole1xOffset,    
                            _FOVCollimatorHole1RadiusUpStr,
                            _FOVCollimatorHole1RadiusDnStr,
+                           _FOVCollimatorHole1LinerBuild,
+                           _FOVCollimatorHole1LinerThickness,
                            _FOVCollimatorHole2Build,      
                            _FOVCollimatorHole2xOffset,    
                            _FOVCollimatorHole2RadiusUpStr,
                            _FOVCollimatorHole2RadiusDnStr,
+                           _FOVCollimatorHole2LinerBuild,
+                           _FOVCollimatorHole2LinerThickness,
                            _FOVCollimatorOffsetInMu2e,
                            _FOVCollimatorRotation,
                            _FOVCollimatorMaterial,        
-                           _FOVCollimatorLinerMaterial
+                           _FOVCollimatorLinerMaterial,
+                           _FOVCollimatorHoleLinerMaterial
                           ));       
     //}
     
@@ -181,18 +187,24 @@ namespace mu2e {
                            _SSCollimatorLinerBuild,  
                            _SSCollimatorLinerHalfWidth,  
                            _SSCollimatorLinerHalfHeight, 
-                           _SSCollimatorLinerHalfLength, 
+                           _SSCollimatorLinerHalfLength,
+                           _SSCollimatorLinerCutOutHalfLength, 
                            _SSCollimatorHole1xOffset,    
                            _SSCollimatorHole1RadiusUpStr,
                            _SSCollimatorHole1RadiusDnStr,
+                           _SSCollimatorHole1LinerBuild,
+                           _SSCollimatorHole1LinerThickness,
                            _SSCollimatorHole2Build,      
                            _SSCollimatorHole2xOffset,    
                            _SSCollimatorHole2RadiusUpStr,
                            _SSCollimatorHole2RadiusDnStr,
+                           _SSCollimatorHole2LinerBuild,
+                           _SSCollimatorHole2LinerThickness,
                            _SSCollimatorOffsetInMu2e,
                            _SSCollimatorRotation,
                            _SSCollimatorMaterial,        
-                           _SSCollimatorLinerMaterial
+                           _SSCollimatorLinerMaterial,
+                           _SSCollimatorHoleLinerMaterial
                           ));       
     //}
      
@@ -306,13 +318,19 @@ namespace mu2e {
     _FOVCollimatorLinerHalfWidth   = _config.getDouble("stm.FOVcollimator.liner.halfWidth");
     _FOVCollimatorLinerHalfHeight  = _config.getDouble("stm.FOVcollimator.liner.halfHeight");
     _FOVCollimatorLinerHalfLength  = _config.getDouble("stm.FOVcollimator.liner.halfLength");
+    _FOVCollimatorLinerCutOutHalfLength  = _config.getDouble("stm.FOVcollimator.liner.cutOutHalfLength");
     _FOVCollimatorHole1xOffset     = _config.getDouble("stm.FOVcollimator.hole1.xoffset");
     _FOVCollimatorHole1RadiusUpStr = _config.getDouble("stm.FOVcollimator.hole1.radiusUpStr");
     _FOVCollimatorHole1RadiusDnStr = _config.getDouble("stm.FOVcollimator.hole1.radiusDnStr");
+    _FOVCollimatorHole1LinerBuild     = _config.getBool(  "stm.FOVcollimator.hole1.liner.build");
+    _FOVCollimatorHole1LinerThickness = _config.getDouble("stm.FOVcollimator.hole1.liner.thickness");
     _FOVCollimatorHole2Build       = _config.getBool(  "stm.FOVcollimator.hole2.build");
     _FOVCollimatorHole2xOffset     = _config.getDouble("stm.FOVcollimator.hole2.xoffset");
     _FOVCollimatorHole2RadiusUpStr = _config.getDouble("stm.FOVcollimator.hole2.radiusUpStr");
     _FOVCollimatorHole2RadiusDnStr = _config.getDouble("stm.FOVcollimator.hole2.radiusDnStr");
+    _FOVCollimatorHole2LinerBuild     = _config.getBool(  "stm.FOVcollimator.hole2.liner.build");
+    _FOVCollimatorHole2LinerThickness = _config.getDouble("stm.FOVcollimator.hole2.liner.thickness");
+    _FOVCollimatorHoleLinerMaterial= _config.getString("stm.FOVcollimator.hole.liner.material");
     
     _pipeBuild                 = _config.getBool(  "stm.pipe.build");
     _pipeRadiusIn              = _config.getDouble("stm.pipe.rIn");
@@ -346,14 +364,19 @@ namespace mu2e {
     _SSCollimatorLinerHalfWidth   = _config.getDouble("stm.SScollimator.liner.halfWidth");
     _SSCollimatorLinerHalfHeight  = _config.getDouble("stm.SScollimator.liner.halfHeight");
     _SSCollimatorLinerHalfLength  = _config.getDouble("stm.SScollimator.liner.halfLength");
+    _SSCollimatorLinerCutOutHalfLength  = _config.getDouble("stm.SScollimator.liner.cutOutHalfLength");
     _SSCollimatorHole1xOffset     = _config.getDouble("stm.SScollimator.hole1.xoffset");
     _SSCollimatorHole1RadiusUpStr = _config.getDouble("stm.SScollimator.hole1.radiusUpStr");
     _SSCollimatorHole1RadiusDnStr = _config.getDouble("stm.SScollimator.hole1.radiusDnStr");
+    _SSCollimatorHole1LinerBuild     = _config.getBool(  "stm.SScollimator.hole1.liner.build");
+    _SSCollimatorHole1LinerThickness = _config.getDouble("stm.SScollimator.hole1.liner.thickness");
     _SSCollimatorHole2Build       = _config.getBool(  "stm.SScollimator.hole2.build");
     _SSCollimatorHole2xOffset     = _config.getDouble("stm.SScollimator.hole2.xoffset");
     _SSCollimatorHole2RadiusUpStr = _config.getDouble("stm.SScollimator.hole2.radiusUpStr");
     _SSCollimatorHole2RadiusDnStr = _config.getDouble("stm.SScollimator.hole2.radiusDnStr");    
-
+    _SSCollimatorHole2LinerBuild     = _config.getBool(  "stm.SScollimator.hole2.liner.build");
+    _SSCollimatorHole2LinerThickness = _config.getDouble("stm.SScollimator.hole2.liner.thickness");
+    _SSCollimatorHoleLinerMaterial = _config.getString("stm.SScollimator.hole.liner.material");       
     
     _detectorTableBuild          = _config.getBool(  "stm.detector.stand.build",false);
     _detectorTableMaterial       = _config.getString("stm.detector.stand.material");       
