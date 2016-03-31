@@ -420,6 +420,13 @@ namespace mu2e
       } //kalReps.product()!=0
     } //event.getByLabel
 
+    if(strlen(_eventinfo.simreco_particle)==0) //this mostly likely happened because the reconstructed track wasn't found
+    {                                          //don't record such events 
+      std::cout<<"Will not record event "<<_eventinfo.event_number<<" of subrun "<<_eventinfo.subrun_number<<" in file "<<_eventinfo.filename<<", ";
+      std::cout<<"since either the reco or the MC track is missing."<<std::endl;
+      return;
+    }
+
 //check CRV veto
     art::Handle<CrvCoincidenceCheckResult> crvCoincidenceCheckResult;
     std::string crvCoincidenceInstanceName="";
