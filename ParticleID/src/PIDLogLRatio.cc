@@ -4,6 +4,7 @@
 #include <string>
 
 #include "ParticleID/inc/PIDLogL1D.hh"
+#include "ParticleID/inc/PIDLogLEp.hh"
 
 namespace mu2e {
   template<class LogL>
@@ -19,5 +20,6 @@ namespace mu2e {
 
   // Instantiations
   template class PIDLogLRatio<PIDLogL1D>;
+  template class PIDLogLRatio<PIDLogLEp>;
 
 }

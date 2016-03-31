@@ -17,8 +17,9 @@ namespace mu2e {
     LogL hypothesis2_;
   public:
 
-    double value(double x) const {
-      return hypothesis1_.value(x) - hypothesis2_.value(x);
+    template<typename ... Args>
+    double value(Args&&... x) const {
+      return hypothesis1_.value(x...) - hypothesis2_.value(x...);
     }
 
     struct Config {
