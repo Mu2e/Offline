@@ -26,11 +26,6 @@ namespace mu2e {
     auto ix = epaxis_.findBin(ep);
     auto iy = pathaxis_.findBin(path);
 
-    std::cout<<"PIDLogLEp:: xmin = "<<epaxis_.low()
-             <<", xmax = "<<epaxis_.high()
-             <<std::endl;
-    std::cout<<"PIDLogLEp::value("<<ep<<", "<<path<<"): ix="<<ix<<", iy="<<iy<<std::endl;
-
     if((ix != Binning::nobin)&&(iy != Binning::nobin)) {
       res = std::max(binValueCutoff_, vals_[iy][ix]);
     }
@@ -106,7 +101,6 @@ namespace mu2e {
     for(NUBinning::IndexType i=0; i<pathaxis_.nbins(); ++i) {
       vals_.emplace_back(std::vector<double>(epaxis_.nbins(), 0.));
     }
-
     for(Binning::IndexType tmpbin=0; tmpbin < tmppathaxis.nbins(); ++tmpbin) {
       NUBinning::IndexType pathbin = pathaxis_.findBin(tmppathaxis.binCenter(tmpbin));
       for(Binning::IndexType iebin=0; iebin < epaxis_.nbins(); ++iebin) {
@@ -118,7 +112,6 @@ namespace mu2e {
     // Normalize slice histograms
     for(auto& ephist: vals_) {
       double sum = std::accumulate(ephist.begin(), ephist.end(), 0.);
-      std::cout<<"PIDLogLEp: sum = "<<sum<<std::endl;
       std::for_each(ephist.begin(), ephist.end(), [sum](double &v){ v/=sum; });
     }
 

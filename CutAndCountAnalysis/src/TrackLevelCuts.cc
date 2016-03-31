@@ -203,11 +203,7 @@ namespace mu2e {
       }
 
       const double pidvar_dt = pid_dt_->value(cm->dt());
-      std::cout<<"dt = "<<cm->dt()<<", pidvar_dt = "<<pidvar_dt<<std::endl;
-
       const double pidvar_ep = pid_ep_->value(cm->ep(), cm->ds());
-      std::cout<<"ep = "<<cm->ep()<<", pidvar_ep = "<<pidvar_ep<<std::endl;
-
       const double pidvar = pidvar_dt + pidvar_ep;
       pidVariable_->Fill(pidvar, wh.weight());
       if(pidvar < ccuts.pidCut()) {
