@@ -53,6 +53,7 @@
 
 #include "ParticleID/inc/PIDLogLRatio.hh"
 #include "ParticleID/inc/PIDLogL1D.hh"
+#include "ParticleID/inc/PIDLogLEp.hh"
 
 #include "TH1.h"
 #include "TH2.h"
@@ -65,7 +66,8 @@ namespace mu2e {
 
   class TrackLevelCuts: private boost::noncopyable {
   public:
-    typedef PIDLogLRatio<PIDLogL1D> PIDDt;
+    typedef PIDLogLRatio<PIDLogL1D> PIDdt;
+    typedef PIDLogLRatio<PIDLogLEp> PIDEp;
 
     // A structure to hold a subset of physics cuts related to track-calo matching
     struct TrackCaloCuts {
@@ -80,9 +82,10 @@ namespace mu2e {
 
       fhicl::Atom<double> emax{Name("emax"), Comment("Max energy of matched calo cluster")};
 
-      fhicl::Table<PIDDt::Config> pid_dt_conf{Name("PIDDt"), Comment("dt based PID config")};
+      fhicl::Table<PIDdt::Config> pid_dt_conf{Name("PIDdt"), Comment("dt based PID config")};
+      fhicl::Table<PIDEp::Config> pid_ep_conf{Name("PIDEp"), Comment("E/p based PID config")};
 
-      fhicl::Atom<double> pidCut{Name("pidCut"), Comment("Low cut on PID variable")};
+      fhicl::Atom<double> pidCut{Name("pidCut"), Comment("Low cut on total PID variable")};
     };
 
     // A top level structure to hold values of physics cuts
@@ -130,7 +133,8 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     PhysicsCuts cuts_;
-    std::unique_ptr<PIDDt> pid_dt_;
+    std::unique_ptr<PIDdt> pid_dt_;
+    std::unique_ptr<PIDEp> pid_ep_;
 
     TH1 *h_cuts_p_;
     TH1 *h_cuts_r_;

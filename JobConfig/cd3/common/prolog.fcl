@@ -39,6 +39,7 @@ pidInputsTable: {
 }
 
 pidInputsSeq: [TrkExtrapolDem, TrackCaloMatchingDem]
+pidPathBins: [ 0., 50., 100., 150., 200., 250., 300., 1.e12 ]
 
 // Analysis
 signalTrackCuts: {
@@ -62,10 +63,14 @@ signalTrackCuts: {
       emin: 10. // MeV
       emax: 120. // MeV
 
-      pidCut: 0.
-      PIDDt: {
+      pidCut: 2.5
+      PIDdt: {
 	 hypothesis1: {inputFile: "ConditionsService/data/v5_7_0/pid_ele_dt.tbl"}
 	 hypothesis2: {inputFile: "ConditionsService/data/v5_7_0/pid_muo_dt.tbl"}
+      }
+      PIDEp: {
+	 hypothesis1: {inputFile: "ConditionsService/data/v5_7_0/pid_ele_ep_vs_path.tbl" pathBinBoundaries: @local::pidPathBins}
+	 hypothesis2: {inputFile: "ConditionsService/data/v5_7_0/pid_muo_ep_vs_path.tbl" pathBinBoundaries: @local::pidPathBins}
       }
    }
 }

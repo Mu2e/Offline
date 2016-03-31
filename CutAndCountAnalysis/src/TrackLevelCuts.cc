@@ -69,7 +69,8 @@ namespace mu2e {
 
   TrackLevelCuts::TrackLevelCuts(const PhysicsCuts& pc, art::TFileDirectory tf)
     : cuts_(pc)
-    , pid_dt_(pc.caloCutsEnabled() ? new PIDDt{pc.caloCuts().pid_dt_conf()} : nullptr)
+    , pid_dt_(pc.caloCutsEnabled() ? new PIDdt{pc.caloCuts().pid_dt_conf()} : nullptr)
+    , pid_ep_(pc.caloCutsEnabled() ? new PIDEp{pc.caloCuts().pid_ep_conf()} : nullptr)
     , h_cuts_p_{tf.make<TH1D>("cuts_p", "Unweighted events before cut", double(TrkCutNumber::CUTS_END), -0.5, double(TrkCutNumber::CUTS_END)-0.5)}
     , h_cuts_r_{tf.make<TH1D>("cuts_r", "Unweighted events rejected by cut", double(TrkCutNumber::CUTS_END), -0.5, double(TrkCutNumber::CUTS_END)-0.5)}
     , w_cuts_p_{tf.make<TH1D>("wcuts_p", "Weighted events before cut", double(TrkCutNumber::CUTS_END), -0.5, double(TrkCutNumber::CUTS_END)-0.5)}
@@ -81,7 +82,7 @@ namespace mu2e {
     , t0_{tf.make<TH1D>("t0", "Track t0  before cut", 170, 0., 1700.)}
     , caloMatchChi2_{tf.make<TH1D>("caloMatchCHi2", "Calo match chi2 before cut", 100, 0., 300.)}
     , caloClusterEnergy_{tf.make<TH1D>("caloClusterEnergy", "Calo cluster energy before cut", 150, 0., 150.)}
-    , pidVariable_{tf.make<TH1D>("particleID", "PID variable before cut", 1000, -1., 1.)}
+    , pidVariable_{tf.make<TH1D>("particleID", "PID variable before cut", 1000, -50., 50.)}
     , momentum_{tf.make<TH1D>("momentum", "Track momentum  before cut", 500, 98., 108.)}
   {
     using CutAndCount::TrkCutNumber;
@@ -201,8 +202,13 @@ namespace mu2e {
         return TrkCutNumber::caloClusterEnergy;
       }
 
-      const double pidvar = pid_dt_->value(cm->dt());
-      std::cout<<"dt = "<<cm->dt()<<", pidvar = "<<pidvar<<std::endl;
+      const double pidvar_dt = pid_dt_->value(cm->dt());
+      std::cout<<"dt = "<<cm->dt()<<", pidvar_dt = "<<pidvar_dt<<std::endl;
+
+      const double pidvar_ep = pid_ep_->value(cm->ep(), cm->ds());
+      std::cout<<"ep = "<<cm->ep()<<", pidvar_ep = "<<pidvar_ep<<std::endl;
+
+      const double pidvar = pidvar_dt + pidvar_ep;
       pidVariable_->Fill(pidvar, wh.weight());
       if(pidvar < ccuts.pidCut()) {
         return TrkCutNumber::particleID;
