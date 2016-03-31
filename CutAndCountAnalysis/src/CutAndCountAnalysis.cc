@@ -22,7 +22,7 @@ namespace mu2e {
 #undef X
 #define EVENT_LEVEL_CUTS                        \
     X(NoSignalCandidate)                        \
-    X(UemVeto)                                  \
+    X(TrackVeto)                                \
     X(accepted)
 
     enum class EventCutNumber {
@@ -46,11 +46,20 @@ namespace mu2e {
   CutAndCountAnalysis::CutAndCountAnalysis(const fhicl::ParameterSet& pset, art::TFileDirectory tfdir)
     : signalCandidateInput_(pset.get<art::InputTag>("signalTrackInput"))
     , signalTrackCuts_(pset.get<fhicl::ParameterSet>("signalTrackCuts"), tfdir, "signalTrackCuts")
-    , uemVetoInput_(pset.get<art::InputTag>("uemVetoTrackInput"))
-    , uemVetoTrackCuts_(pset.get<fhicl::ParameterSet>("uemVetoTrackCuts"), tfdir, "uemVetoTrackCuts")
     , wh_(pset.get<fhicl::ParameterSet>("weight"), *art::ServiceHandle<art::TFileService>(), "weight")
     , kdiag_(pset.get<fhicl::ParameterSet>("kalDiag"))
   {
+    typedef std::tuple<std::string, art::InputTag, fhicl::ParameterSet> VetoPars;
+    auto trackVetoes = pset.get<std::vector<VetoPars> >("trackVetoes");
+    vetoDefs_.reserve(trackVetoes.size());
+    for(const auto& v: trackVetoes) {
+      vetoDefs_.emplace_back(std::get<0>(v),
+                             std::get<1>(v),
+                             std::make_unique<TrackLevelCuts>(std::get<2>(v), tfdir, std::get<0>(v))
+                             );
+    }
+
+    //----------------------------------------------------------------
     using CutAndCount::EventCutNumber;
     using CutAndCount::set_cut_bin_labels;
 
@@ -79,8 +88,16 @@ namespace mu2e {
     hNumSignalCandidates_ = tfdir.make<TH1D>("numSignalCandidates", "Number of signal candidate tracks per event (weighted) before the vetoes", 5, -0.5, 4.5);
     hNumSignalCandidates_->Sumw2();
 
-    hNumUemVetoCandidates_ = tfdir.make<TH1D>("numUemVetoCandidates", "Number upstream e- veto tracks per event (weighted) for events with signal candidates", 5, -0.5, 4.5);
-    hNumUemVetoCandidates_->Sumw2();
+    if(!vetoDefs_.empty()) {
+      hNumVetoCandidates_ = tfdir.make<TH2D>("numVetoCandidates", "Number of veto tracks per event (weighted) for events with signal candidates", vetoDefs_.size(), -0.5, vetoDefs_.size()-0.5, 5, -0.5, 4.5);
+      hNumVetoCandidates_->Sumw2();
+      hNumVetoCandidates_->SetOption("text");
+
+      for(unsigned i=0; i<vetoDefs_.size(); ++i) {
+        std::string name = std::get<0>(vetoDefs_[i]); // bind to a variable to guarantee lifetime
+        hNumVetoCandidates_->GetXaxis()->SetBinLabel(1+i, name.c_str());
+      }
+    }
   }
 
   //================================================================
@@ -118,19 +135,23 @@ namespace mu2e {
       return EventCutNumber::NoSignalCandidate;
     }
 
-    // Impose the veto
-    auto uemh = evt.getValidHandle<KalRepPtrCollection>(uemVetoInput_);
+    // Impose track vetoes
+    for(unsigned iveto=0; iveto < vetoDefs_.size(); ++iveto) {
+      auto uemh = evt.getValidHandle<KalRepPtrCollection>(std::get<1>(vetoDefs_[iveto]));
 
-    int numVetoCandidates = 0;
-    for(const auto& ptr: *uemh) {
-      if(uemVetoTrackCuts_.accepted(ptr, evt, kdiag_, wh_)) {
-        ++numVetoCandidates;
+      auto& cc = *std::get<2>(vetoDefs_[iveto]);
+      int numVetoCandidates = 0;
+      for(const auto& ptr: *uemh) {
+        if(cc.accepted(ptr, evt, kdiag_, wh_)) {
+          ++numVetoCandidates;
+        }
       }
-    }
 
-    hNumUemVetoCandidates_->Fill(numVetoCandidates, wh_.weight());
-    if(numVetoCandidates>0) {
-      return EventCutNumber::UemVeto;
+      hNumVetoCandidates_->Fill(iveto, numVetoCandidates, wh_.weight());
+      if(numVetoCandidates>0) {
+        return EventCutNumber::TrackVeto;
+      }
+
     }
 
     return EventCutNumber::accepted;

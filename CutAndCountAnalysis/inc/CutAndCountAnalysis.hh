@@ -53,6 +53,9 @@ namespace mu2e {
 
   namespace CutAndCount {
     enum class EventCutNumber;
+
+    // name, input collection, cuts
+    typedef std::tuple<std::string,art::InputTag,std::unique_ptr<TrackLevelCuts> > TrackVetoDef;
   }
 
   class CutAndCountAnalysis {
@@ -66,8 +69,7 @@ namespace mu2e {
     art::InputTag signalCandidateInput_;
     TrackLevelCuts signalTrackCuts_;
 
-    art::InputTag uemVetoInput_;
-    TrackLevelCuts uemVetoTrackCuts_;
+    std::vector<CutAndCount::TrackVetoDef> vetoDefs_;
 
     EventWeightHelper wh_;
     KalDiag kdiag_;
@@ -77,7 +79,7 @@ namespace mu2e {
     TH1 *w_cuts_p_;
     TH1 *w_cuts_r_;
     TH1 *hNumSignalCandidates_;
-    TH1 *hNumUemVetoCandidates_;
+    TH2 *hNumVetoCandidates_;
 
     CutAndCount::EventCutNumber processEvent(const art::Event& evt);
   };

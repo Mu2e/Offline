@@ -75,7 +75,7 @@ signalTrackCuts: {
    }
 }
 
-uemVetoTrackCuts: {
+vetoTrackCuts: {
    trkqual: 0.1
    tdmin: -9999.
    tdmax: +9999.
@@ -95,8 +95,9 @@ CutAndCountSettings: {
    signalTrackInput: "TRFDownstreameMinus:DownstreameMinus" // FIXME: instance name should not be used
    signalTrackCuts: @local::signalTrackCuts
 
-   uemVetoTrackInput: "TRFUpstreameMinus:UpstreameMinus" // FIXME: instance name should not be used
-   uemVetoTrackCuts: @local::uemVetoTrackCuts
+   trackVetoes: [
+      [ "uemVeto", "TRFUpstreameMinus:UpstreameMinus", @local::vetoTrackCuts ]
+   ]
 
    weight: @nil
 
