@@ -11,7 +11,6 @@
 //
 
 #include <cmath>
-#include <limits>
 
 class Binning{
 
@@ -29,6 +28,10 @@ public:
 
   // returns nobin for out of range
   IndexType findBin(double x) const;
+
+  double binCenter(IndexType ibin) const;
+
+  double binWidth() const { return binwidth_; }
 
 private:
 

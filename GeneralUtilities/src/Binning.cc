@@ -1,4 +1,5 @@
 #include "GeneralUtilities/inc/Binning.hh"
+#include <cmath>
 
 const Binning::IndexType Binning::nobin(-1);
 
@@ -27,4 +28,13 @@ Binning::IndexType Binning::findBin(double x) const {
   }
 
   return ibin;
+}
+
+double Binning::binCenter(IndexType i) const {
+  if((i != nobin) && (i<nbins_)) {
+    return low_ + binwidth_*(0.5+i);
+  }
+  else {
+    return nan("");
+  }
 }
