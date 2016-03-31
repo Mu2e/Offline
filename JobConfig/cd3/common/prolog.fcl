@@ -43,7 +43,7 @@ pidPathBins: [ 0., 50., 100., 150., 200., 250., 300., 1.e12 ]
 
 // Analysis
 signalTrackCuts: {
-   trkqual: 0.2
+   trkqual: 0.4
    trkqualmax: 1.3 // See https://mu2e-hnews.fnal.gov/HyperNews/Mu2e/get/Sim/37/1.html
 
    tdmin: 0.57735027
@@ -54,8 +54,8 @@ signalTrackCuts: {
    mdmax: 650.
    t0min: 700.
    t0max: 1695.
-   pmin: 103.75
-   pmax: 105.0
+   pmin: 103.85
+   pmax: 105.50
 
    caloCuts: {
       clusterInput: "TrackCaloMatchingDem"
@@ -63,7 +63,7 @@ signalTrackCuts: {
       emin: 10. // MeV
       emax: 120. // MeV
 
-      pidCut: 2.5
+      pidCut: 0.
       PIDdt: {
 	 hypothesis1: {inputFile: "ConditionsService/data/v5_7_0/pid_ele_dt.tbl"}
 	 hypothesis2: {inputFile: "ConditionsService/data/v5_7_0/pid_muo_dt.tbl"}
@@ -76,7 +76,7 @@ signalTrackCuts: {
 }
 
 vetoTrackCuts: {
-   trkqual: 0.1
+   trkqual: 1.e-6
    tdmin: -9999.
    tdmax: +9999.
    d0min: -9999
