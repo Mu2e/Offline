@@ -1,3 +1,11 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_7_2
+
+1) March 31, 2016 kutschke
+   Summary of changes made by others:
+     - Updated PID for the new geometry (Pasha)
+     - Updates to CutAndCountAnalysis based on lessons learned using it
+       on cosmics and RPCs (Andrei)
+         - also now using PID
+     - Small changes to STM geometry (Palladino)
+     - Bug fix in trkqual MVA to deal with variables that fall outside the
+       range of the variables used in the training sample ( Dave Brown, LBL)
