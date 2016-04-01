@@ -76,6 +76,8 @@ namespace mu2e {
     // Label of the generator.
     std::string _generatorModuleLabel;
     // Label of the event-weighting module
+    art::InputTag _genWtModule;
+    art::InputTag _beamWtModule;
     vector<art::InputTag> _evtWtModules;
     TrkParticle _tpart;
     TrkFitDirection _fdir;
@@ -103,7 +105,7 @@ namespace mu2e {
 
 //  local branches
     Int_t _trkid,_eventid, _runid, _subrunid;
-    Double_t _evtwt;
+    Double_t _evtwt, _beamwt, _genwt;
     Float_t g4bl_weight;
     Int_t _ntrks, _nshared;
 
@@ -117,6 +119,8 @@ namespace mu2e {
     art::EDAnalyzer(pset),
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+    _genWtModule( pset.get<art::InputTag>("generatorWeightModule",art::InputTag()) ),
+    _beamWtModule( pset.get<art::InputTag>("beamWeightModule",art::InputTag()) ),
     _evtWtModules( pset.get<std::vector<art::InputTag>>("eventWeightModules",std::vector<art::InputTag>() ) ),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
@@ -149,6 +153,8 @@ namespace mu2e {
     _trkdiag->Branch("runid",&_runid,"runid/I");
     _trkdiag->Branch("subrunid",&_subrunid,"subrunid/I");
     _trkdiag->Branch("trkid",&_trkid,"trkid/I");
+    _trkdiag->Branch("genwt",&_genwt,"genwt/d");
+    _trkdiag->Branch("beamwt",&_beamwt,"beamwt/d");
     _trkdiag->Branch("evtwt",&_evtwt,"evtwt/d");
     _trkdiag->Branch("g4bl_weight",&g4bl_weight,"g4bl_weight/f");
     _trkdiag->Branch("ntrks",&_ntrks,"ntrks/I");
@@ -178,21 +184,30 @@ namespace mu2e {
     }
 
     // Modify event weight
-    _evtwt = 1.;
+    _genwt = _beamwt = _evtwt = 1.;
     for ( const auto& ievtWt : _evtWtModules ) {
       _evtwt *= event.getValidHandle<EventWeight>( ievtWt )->weight();
     }
-  //	g4bl_weight=1;
+    art::Handle<EventWeight> genWtHandle;
+    event.getByLabel(_genWtModule, genWtHandle);
+    if(genWtHandle.isValid())
+      _genwt = genWtHandle->weight();
+    art::Handle<EventWeight> beamWtHandle;
+    event.getByLabel(_beamWtModule, beamWtHandle);
+    if(beamWtHandle.isValid())
+      _beamwt = beamWtHandle->weight();
+
+    //	g4bl_weight=1;
     haveG4BL = g4beamlineData.isValid();
     if ( haveG4BL ) haveG4BL = (g4beamlineData->size()==1);
-     if( haveG4BL ) { 
+    if( haveG4BL ) { 
       G4BeamlineInfo const& extra = g4beamlineData->at(0);
       g4bl_weight=extra.weight();
     } else{
       g4bl_weight=1;
     }
 
-     _hNTracks->Fill( trks.size() );
+    _hNTracks->Fill( trks.size() );
     // initialize counting variables
      _ntrks = trks.size();
      _nshared = -1;

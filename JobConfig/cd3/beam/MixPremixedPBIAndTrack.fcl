@@ -78,7 +78,7 @@ physics :
 
 # Weight track analysis by the proton intensity
 physics.analyzers.RKFDownstreameMinus.eventWeightModules : [ protonBunchSummarizer  ]
-
+physics.analyzers.RKFDownstreameMinus.beamWeightModule : protonBunchSummarizer
 # specify the time offset maps when building straw digis
 physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ] 
 # specify background frame files: these must be define outside this script, before it is included
