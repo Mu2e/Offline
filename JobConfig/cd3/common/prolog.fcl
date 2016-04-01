@@ -158,6 +158,9 @@ draTopLevelDefs: {
 	 // save normalization info to the histogram file
 	 genCountLogger: { module_type: GenEventCountReader }
 
+	 timeMapProton: { module_type: SimParticleTimeMapAnalyzer input: protonTimeMap }
+	 timeMapMuon: { module_type: SimParticleTimeMapAnalyzer input: muonTimeMap }
+
 	 cutAndCountAnalyzer: {
 	    module_type: CutAndCountAnalyzer
 	    @table::CutAndCountSettings
@@ -176,7 +179,7 @@ draTopLevelDefs: {
 
       trigger_paths: @nil
 
-      draCommonEndSeq: [ genCountLogger ]
+      draCommonEndSeq: [ genCountLogger, timeMapProton, timeMapMuon ]
       draCutAndCountEndSeq : [ cutAndCountAnalyzer ]
       filteredOutput: [ filteredOutput ]
       end_paths: @nil
