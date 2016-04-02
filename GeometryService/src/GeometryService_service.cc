@@ -54,6 +54,8 @@
 #include "GeometryService/inc/SaddleMaker.hh"
 #include "ServicesGeom/inc/Pipe.hh"
 #include "GeometryService/inc/PipeMaker.hh"
+#include "ServicesGeom/inc/ElectronicRack.hh"
+#include "GeometryService/inc/ElectronicRackMaker.hh"
 #include "BeamlineGeom/inc/TSdA.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -265,6 +267,7 @@ namespace mu2e {
       addDetector( ExtShieldDownstreamMaker::make(*_config));
       addDetector( SaddleMaker::make(*_config));
       addDetector( PipeMaker::make(*_config));
+      addDetector( ElectronicRackMaker::make(*_config));
     }
 
 

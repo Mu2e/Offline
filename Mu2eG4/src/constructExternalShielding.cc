@@ -18,6 +18,7 @@
 #include "ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
 #include "ExternalShieldingGeom/inc/Saddle.hh"
 #include "ServicesGeom/inc/Pipe.hh"
+#include "ServicesGeom/inc/ElectronicRack.hh"
 
 // etc...
 #include "GeometryService/inc/GeomHandle.hh"
@@ -155,6 +156,7 @@ namespace mu2e {
     GeomHandle<ExtShieldDownstream> extshldDn;
     GeomHandle<Saddle> saddleSet;
     GeomHandle<Pipe>   pipeSet;
+    GeomHandle<ElectronicRack>   rackSet;
 
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
@@ -769,6 +771,52 @@ namespace mu2e {
       } // end of loop over pipes of this type.
 
     } // end of loop over pipe types
+
+    //----------------------------------------------------------------
+    // Electronics Rack Boxes <=====
+    //----------------------------------------------------------------
+    // Fill the vectors of information about the boxes that are
+    // the racks
+
+    std::vector<std::vector<double> > dimsER = rackSet->getBoxDimensions();
+    std::vector<std::string> matsER = rackSet->getMaterialNames();
+    std::vector<CLHEP::Hep3Vector> sitesER = rackSet->getCentersOfBoxes();
+    std::vector<std::string> orientsER = rackSet->getOrientations();
+
+    int nBoxER = dimsER.size();
+
+    for(int i = 0; i < nBoxER; i++)
+      {
+
+	// Dimensions for this rack
+	std::vector<double> lwhsER = dimsER[i];
+
+	//  Make the name of the box
+	std::ostringstream nameER;
+	nameER << "ElectronicRackBox_" << i+1 ;
+
+	// Make the needed rotation by parsing orientation
+        CLHEP::HepRotation* itsRotatER= new 
+	  CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	std::string orientInitER = orientsER[i];
+
+	getRotationFromOrientation(*itsRotatER, orientInitER);
+
+	// Build each box here
+
+	nestBox( nameER.str(), lwhsER, findMaterialOrThrow(matsER[i]),
+		 itsRotatER, sitesER[i]-parent.centerInMu2e(),
+		 parent.logical,
+		 0,
+		 config.getBool("ElectronicRack.visible"),
+		 G4Colour::Magenta(),
+		 config.getBool("ElectronicRack.solid"),
+		 forceAuxEdgeVisible,
+		 placePV,
+		 doSurfaceCheck);
+
+      } // end loop over ElectronicRack boxes
+
 
   } // end of constructExternalShielding fn
 

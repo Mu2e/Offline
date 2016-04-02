@@ -116,23 +116,19 @@ namespace mu2e {
       } // end loop over racks of type...
     } // end loop over types...
 
-    if ( nType > 0 ) {
       // Now make the pointer to the object itself.
-      std::unique_ptr<ElectronicRack> res(new ElectronicRack(
-							     dims,
-							     mats,
-							     sites,
-							     orients)
-					  );
+    std::unique_ptr<ElectronicRack> res(new ElectronicRack(
+							   dims,
+							   mats,
+							   sites,
+							   orients)
+					);
     
-      //----------------------------------------------------------------
-      if(c.getInt("ElectronicRack.verbosityLevel",0) > 0) {
-	std::cout<<*res<<std::endl;
-      }
-
-      return res;
-    } else  { 
-      return 0;
+    //----------------------------------------------------------------
+    if(c.getInt("ElectronicRack.verbosityLevel",0) > 0) {
+      std::cout<<*res<<std::endl;
     }
+
+    return res;
   }
 } // namespace mu2e

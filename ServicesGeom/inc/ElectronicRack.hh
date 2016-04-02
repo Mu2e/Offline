@@ -30,9 +30,9 @@ namespace mu2e {
     // and materials are specified in geometry text files.
 
     const std::vector<std::vector<double> >& getBoxDimensions() const { return _elecRackBoxDims; }
-    const std::vector<std::string>& getMaterialNames() const { return _materialNames; }
-    const std::vector<CLHEP::Hep3Vector>& getCentersOfBoxes() const { return _centerPositions; }
-    const std::vector<std::string>& getOrientations() const { return _orientations; }
+    const std::vector<std::string>& getMaterialNames() const { return _erMaterialNames; }
+    const std::vector<CLHEP::Hep3Vector>& getCentersOfBoxes() const { return _erCenterPositions; }
+    const std::vector<std::string>& getOrientations() const { return _erOrientations; }
 
   private:
 
@@ -44,9 +44,9 @@ namespace mu2e {
 		      const std::vector<CLHEP::Hep3Vector>& sites, 
 		      const std::vector<std::string>& orients )
       : _elecRackBoxDims(dims),
-	_materialNames(mats),
-	_centerPositions(sites),
-	_orientations(orients)
+	_erMaterialNames(mats),
+	_erCenterPositions(sites),
+	_erOrientations(orients)
     { }
 
     // Or read back from persistent storage
@@ -58,9 +58,9 @@ namespace mu2e {
     // David Norvil Brown, 
 
     std::vector< std::vector< double > > _elecRackBoxDims;
-    std::vector< std::string >           _materialNames;
-    std::vector< CLHEP::Hep3Vector >     _centerPositions;
-    std::vector< std::string >           _orientations;
+    std::vector< std::string >           _erMaterialNames;
+    std::vector< CLHEP::Hep3Vector >     _erCenterPositions;
+    std::vector< std::string >           _erOrientations;
 
   };
 
