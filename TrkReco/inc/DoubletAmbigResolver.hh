@@ -85,13 +85,14 @@ namespace mu2e {
     int  calculateDoubletParameters(const KalRep* KRep, Doublet* HitDoublet, Data_t* R) const ;
     void defineHitDriftSign        (mu2e::TrkStrawHit* Hit, int I, Data_t* R) const ;
 
-    void findLines       (CLHEP::Hep3Vector* Pos, double* R, double* Slopes) const ;
-      
-    void findDoublets    (const KalRep* KRep, vector<Doublet>* DCol) const ;
-      
-    void markDoublet     (KalRep* KRes, Doublet *HitDoublet, int Index0, int Index1) const;
-    void markMultiplets  (KalRep* Kres, vector<Doublet>* dcol) const;
-    void resolveSingleHit(KalRep* Kres, mu2e::TrkStrawHit* Hit) const ;
+    void findLines                 (CLHEP::Hep3Vector* Pos, double* R, double* Slopes) const ;
+    void findDoublets              (const KalRep* KRep    , vector<Doublet>*   DCol  ) const ;
+
+					// three functions below update hit drift directions
+
+    void markDoublet               (KalRep* KRes, Doublet *HitDoublet, int Index0, int Index1) const;
+    void markMultiplets            (KalRep* Kres, vector<Doublet>* dcol) const;
+    void resolveSingleHit          (KalRep* Kres, mu2e::TrkStrawHit* Hit) const ;
     
 					// resolve a track.  Depending on the configuration, this might
 					// penalty function depends on the drift radius

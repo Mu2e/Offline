@@ -98,17 +98,14 @@ namespace mu2e {
     dcol = DCol;
     dcol->clear();
 
-    //    nhits = KRes._hits.size();
     int multipletIndex(0);
 //-----------------------------------------------------------------------------
-// use active hits only
+// use all hits, not only active ones
 //-----------------------------------------------------------------------------
-    //    for (int i=0; i<nhits; ++i) {
     int i = 0;
     TrkStrawHitVector tshv;
     convert(KRep->hitVector(),tshv);
     for (auto ihit=tshv.begin(); ihit!=tshv.end(); ++ihit) {
-      //      idoublet  = -1;
       //      if (hit->isActive() == 0)                             goto END_OF_LOOP;
       Straw const& straw     = (*ihit) ->straw();
       wdir      = straw.getDirection();
@@ -160,7 +157,6 @@ namespace mu2e {
 	dcol->push_back(Doublet(multipletIndex, station, panel, wdir, tdir, trkpos, *ihit));
 	oldStation = station;
 	oldPanel   = panel;
-	//	idoublet   = idlast;
 	++idlast;
 	++multipletIndex;
       } 
@@ -170,7 +166,6 @@ namespace mu2e {
 // same chamber, same panel : add one more hit to the last doublet
 //-----------------------------------------------------------------------------
 	  dcol->at(idlast-1).addStrawHit(tdir, trkpos, *ihit);
-	  //	  idoublet = idlast-1;
 	}
 	else {
 //-----------------------------------------------------------------------------
@@ -179,23 +174,71 @@ namespace mu2e {
 	  dcol->push_back(Doublet(multipletIndex, station, panel, wdir, tdir, trkpos, *ihit)); // 
 	  oldStation = station;
 	  oldPanel   = panel;
-	  //	  idoublet   = idlast;
 	  ++idlast;
 	  ++multipletIndex;
 	}
       }
       i += 1;
     }
+//-----------------------------------------------------------------------------
+// list of doublets is formed, determine the doublet parameters but not 
+// assine the hit drift directions
+//-----------------------------------------------------------------------------
+    int ndoublets = dcol->size();
+    Data_t r;
 
+    for (int i=0; i<ndoublets; i++) {
+      Doublet* d = &dcol->at(i);
+      int nhits = d->fNStrawHits;
+      if (nhits == 1) {
+//-----------------------------------------------------------------------------
+// single hit
+//-----------------------------------------------------------------------------
+
+      }
+      else if (nhits == 2) {
+//-----------------------------------------------------------------------------
+// regular case: a 2-hit doublet
+//-----------------------------------------------------------------------------
+	r.index[0] = 0;
+	r.index[1] = 1;
+	calculateDoubletParameters(KRep,d,&r);
+      }
+      else {
+//-----------------------------------------------------------------------------
+// a multiplet - more than 2 hits in a panel
+//-----------------------------------------------------------------------------
+	vector<Doublet> list;
+	Doublet         bd;
+	double          chi2_d, chi2_best(1.e12);
+
+	for (int j=0; j<d->fNStrawHits; ++j) {
+	  for (int k=j+1; k<d->fNStrawHits; ++k) {
+//--------------------------------------------------------------------------
+// find the best combination
+//-----------------------------------------------------------------------------
+	    r.index[0] = j;
+	    r.index[1] = k;
+	    calculateDoubletParameters(KRep,d,&r);
+		  
+	    chi2_d = d->Chi2Best();
+	    if (chi2_d < chi2_best) {
+	      chi2_best = chi2_d;
+	      bd        = *d;
+	    }
+	  }
+	}
+	*d =bd;
+      }
+    }
 //-----------------------------------------------------------------------------
 // list of doublets is formed, the rest of this routine - diagnostics only
 //-----------------------------------------------------------------------------
     Doublet             *doublet;
     CLHEP::HepRotationZ rot;
 
-    int      ndoublets = dcol->size();
+    if (_debugLevel > 1) {
 
-    if (_debugLevel >0) {
       printf("[KalFitHack::findDoublets] iherr:%i: found %i multiplets\n",_iter,ndoublets);
       printf("----------------------------------------------------------------");
       printf("------------------------------------------------------------------------\n");
@@ -203,54 +246,52 @@ namespace mu2e {
       printf("tksphi    xtrk     ytrk      ztrk      xr      yr     zr      doca   rdr\n");
       printf("----------------------------------------------------------------");
       printf("------------------------------------------------------------------------\n");
-    }
 
-    for (int i=0; i<ndoublets; ++i){
-      doublet   = &dcol->at(i);
-      trkshsize = doublet->fNStrawHits;
-//-----------------------------------------------------------------------------
-// assume wires are perpendicular to the radial direction to the panel
-// this is already ambiguos
-// use atan2 to get the right quadrant
-//-----------------------------------------------------------------------------
-      posPanel = doublet->fHit[0]->straw().getMidPoint();
-      phiPanel = atan2(posPanel.y(),posPanel.x());
-      rot.set(-phiPanel);
-      posPanel = rot*posPanel;
+      for (int i=0; i<ndoublets; ++i){
+	doublet   = &dcol->at(i);
+	trkshsize = doublet->fNStrawHits;
+	//-----------------------------------------------------------------------------
+	// assume wires are perpendicular to the radial direction to the panel
+	// this is already ambiguos
+	// use atan2 to get the right quadrant
+	//-----------------------------------------------------------------------------
+	posPanel = doublet->fHit[0]->straw().getMidPoint();
+	phiPanel = atan2(posPanel.y(),posPanel.x());
+	rot.set(-phiPanel);
+	posPanel = rot*posPanel;
       
-      for (int j=0; j<trkshsize; ++j) {
-	hit   = doublet->fHit[j];
-	Straw const& straw = hit->straw();
-	shId  = straw.index().asInt();
-//-----------------------------------------------------------------------------
-// mid-wire position and the wire direction
-//-----------------------------------------------------------------------------
-	wpos[j] = straw.getMidPoint();
-	wdir    = doublet->fShDir;
-//-----------------------------------------------------------------------------
-// track position and direction
-//-----------------------------------------------------------------------------
-	trkpos  = doublet->fTrkPos[j];
-	tdir    = doublet->fTrkDir[j];
+	for (int j=0; j<trkshsize; ++j) {
+	  hit   = doublet->fHit[j];
+	  Straw const& straw = hit->straw();
+	  shId  = straw.index().asInt();
+	  //-----------------------------------------------------------------------------
+	  // mid-wire position and the wire direction
+	  //-----------------------------------------------------------------------------
+	  wpos[j] = straw.getMidPoint();
+	  wdir    = doublet->fShDir;
+	  //-----------------------------------------------------------------------------
+	  // track position and direction
+	  //-----------------------------------------------------------------------------
+	  trkpos  = doublet->fTrkPos[j];
+	  tdir    = doublet->fTrkDir[j];
 
-	HepPoint p1(wpos[j].x(),wpos[j].y(),wpos[j].z());
-	HepPoint p2(trkpos.x() ,trkpos.y() ,trkpos.z());
+	  HepPoint p1(wpos[j].x(),wpos[j].y(),wpos[j].z());
+	  HepPoint p2(trkpos.x() ,trkpos.y() ,trkpos.z());
 	
-	TrkLineTraj trstraw(p1, wdir, 0., 0.);
-	TrkLineTraj trtrk  (p2, tdir, 0., 0.);
-	TrkPoca     poca   (trstraw, 0.,trtrk   , 0.);
-	doca   = poca.doca();
-	rdrift = hit->driftRadius();
-//-----------------------------------------------------------------------------
-// rotate into a coordinate system with X axis pointing towards the panel and 
-// Y axis pointing in the wire direction
-// current channel numbering scheme allows for that
-//-----------------------------------------------------------------------------
-	wpos[j] = rot*wpos[j];
-	trkpos  = rot*trkpos;
-	tdir    = rot*tdir;
+	  TrkLineTraj trstraw(p1, wdir, 0., 0.);
+	  TrkLineTraj trtrk  (p2, tdir, 0., 0.);
+	  TrkPoca     poca   (trstraw, 0.,trtrk   , 0.);
+	  doca   = poca.doca();
+	  rdrift = hit->driftRadius();
+	  //-----------------------------------------------------------------------------
+	  // rotate into a coordinate system with X axis pointing towards the panel and 
+	  // Y axis pointing in the wire direction
+	  // current channel numbering scheme allows for that
+	  //-----------------------------------------------------------------------------
+	  wpos[j] = rot*wpos[j];
+	  trkpos  = rot*trkpos;
+	  tdir    = rot*tdir;
 
-	if (_debugLevel > 1) {
 	  printf(" %2i %5i %2i %3i %3i %3i %9.3f %9.3f %9.3f  %6.3f  ",
 		 i, shId, doublet->fStationId, doublet->fPanelId, 
 		 straw.id().getLayer(),
@@ -276,7 +317,7 @@ namespace mu2e {
 //---------------------------------------------------------------------------
 // resolve drift ambiguity for a single (non-doublet)  hit
 //---------------------------------------------------------------------------
-  void DoubletAmbigResolver::resolveSingleHit(KalRep*      Krep, 
+  void DoubletAmbigResolver::resolveSingleHit(KalRep*            Krep, 
 					      mu2e::TrkStrawHit* Hit ) const {
 
     double                     doca[2], xbest, xnext;
@@ -321,10 +362,7 @@ namespace mu2e {
 	inext = 0;
       }
  
-      double drift_err = 0.150;   // frivolously assume 150 microns
-
-//       xbest = doca[ibest]/Hit->totalErr();
-//       xnext = doca[inext]/Hit->totalErr();
+      double drift_err(0.220);   // assume 220 microns - from 
 
       xbest = doca[ibest]/drift_err;
       xnext = doca[inext]/drift_err;
@@ -364,55 +402,6 @@ namespace mu2e {
       Hit->setAmbig(0);
     }
 
-
-
-
-//      int best_ambig = 1-2*ibest;
-//
-// //-----------------------------------------------------------------------------
-// // want the best solution to be consistent with the trajectory, 
-// // and the two solutions - significantly different
-// //-----------------------------------------------------------------------------
-//       if ((fabs(xbest) < 5.) && (fabs(xnext) > 5.)) {
-// 	if ((xbest*xbest)/(xnext*xnext) < 0.2) {
-// //-----------------------------------------------------------------------------
-// // hit is close enough to the trajectory
-// //-----------------------------------------------------------------------------
-// 	  Hit->setAmbig(best_ambig);
-// 	}
-// 	else {
-// //-----------------------------------------------------------------------------
-// // both chi2's are comparable, can't really tell
-// //-----------------------------------------------------------------------------
-// 	  if (_Final == 0) {
-// 	    if (r < err) Hit->setExtErr(err);
-// 	    else         Hit->setExtErr(r);
-// 
-// 	    Hit->setAmbig(0);
-// 	  }
-// 	  else {
-// //-----------------------------------------------------------------------------
-// // both chi2's are comparable but need to make a final decision anyway
-// //-----------------------------------------------------------------------------
-// 	    Hit->setAmbig(best_ambig);
-// 	  }
-// 	}
-//       }
-//       else {
-// //-----------------------------------------------------------------------------
-// // best residual is large enough, no point to keep hits with very large residuals 
-// //-----------------------------------------------------------------------------
-// 	Hit->setAmbig(best_ambig);
-//       }
-//     }
-//     else {
-// //-----------------------------------------------------------------------------
-// // couldn't determine doca
-// //-----------------------------------------------------------------------------
-//       Hit->setExtErr(Hit->driftRadius());
-//       Hit->setAmbig(0);
-//     }
-//  
     Hit->setAmbigUpdate(false);
   }
 
@@ -437,43 +426,31 @@ namespace mu2e {
     ly  = dy/dr;
 
     for (int i=0; i<4; i++) {
-      alpha = (R[1]*_sign[i][1]-R[0]*_sign[i][0])/dr;
-      nx[i] = _sign[i][0]*(-ly*alpha+lx*sqrt(1-alpha*alpha));
-      ny[i] = _sign[i][0]*( lx*alpha+ly*sqrt(1-alpha*alpha));
-
-//       invert[i] =  1;
-//       if (nx[i]*dx+ny[i]*dy < 0) {
-// 	   nx[i]     = -nx[i];
-// 	   ny[i]     = -ny[i];
-// 	   invert[i] = -1;
-//       }
-      
+      alpha     = (R[1]*_sign[i][1]-R[0]*_sign[i][0])/dr;
+      nx[i]     = _sign[i][0]*(-ly*alpha+lx*sqrt(1-alpha*alpha));
+      ny[i]     = _sign[i][0]*( lx*alpha+ly*sqrt(1-alpha*alpha));
       Slopes[i] = ny[i]/nx[i];
     }
   }
 
 
 //-----------------------------------------------------------------------------
-// 
+// assume that the two hits to be used are known,their indices are stored in R
 //-----------------------------------------------------------------------------
   int DoubletAmbigResolver::calculateDoubletParameters(const KalRep* KRep      , 
 						       Doublet*      HitDoublet, 
 						       Data_t*       R         ) const {
     
     mu2e::TrkStrawHit *hit  [2];
-    //    const mu2e::Straw *straw[2];
    
-    Hep3Vector /*spos[2], sposr[2], */ sdir[2], sdirr[2], wpos[10], posPanel;    
-    Hep3Vector /*tpos[2], tposr[2], */ tdir[2], tdirr[2];
+    Hep3Vector sdir[2], sdirr[2], wpos[10], posPanel;    
+    Hep3Vector tdir[2], tdirr[2];
     
-    //    const Hep3Vector wdir;
     Hep3Vector wdir1, wdir2;
 
-    //    int               /*layer[2],*/ ibest, inext;
     double            phiPanel;
     
-    //    int               shId[2];
-    double            trkslope, /*lineSlopes[4],*/ dxdz[2], /*chi2[4], doca[4][2],*/ xdr[4][2];
+    double            trkslope, dxdz[2], xdr[4][2];
     double            dsl, xdsl, sig;
 
     double            sflt[2], tflt[2];
@@ -481,10 +458,6 @@ namespace mu2e {
     Hep3Vector        sdi[2] , tdi[2], u[2];
     TrkPoca           poca[2];
     HepRotationZ      rot;
-
-    //    int               index[2] = {Index0, Index1};
-
-    //    wdir  = &HitDoublet->fShDir;
 //-----------------------------------------------------------------------------
 // by construction, both hits are in the same panel, could be in the same or in 
 // different layers
@@ -493,8 +466,6 @@ namespace mu2e {
       hit      [i] = HitDoublet->fHit[R->index[i]];
       R->straw [i] = &hit[i]->straw();
       R->rdrift[i] = hit[i]->driftRadius();
-      //      layer [i] = straw[i]->id().getLayer();
-      //      shId  [i] = straw[i]->index().asInt();
 
       R->spos  [i] = R->straw[i]->getMidPoint();
       sdir  [i] = R->straw[i]->getDirection();
@@ -533,7 +504,6 @@ namespace mu2e {
     const TrkSimpTraj                   *ptraj, *ptraj0;
     vector<KalSite*>::const_iterator   it1, it2;
     double                             s, slen;
-    //    bool                               rc;
     HepPoint                           t1pos;
     Hep3Vector                         t1dir;
 //-----------------------------------------------------------------------------
@@ -544,7 +514,6 @@ namespace mu2e {
     ptraj0 = ptraj;
 
     HelixTraj  smoothed_traj(*ptraj->parameters());
-    //    const HelixTraj* psmoothed = &smoothed_traj;
 
     if (_excludeBothHits == 1) {
 //------------------------------------------------------------------------------
@@ -1165,7 +1134,7 @@ namespace mu2e {
 	int      jbest(-1), kbest(-1) ; // imax; // tmpLayerId, layer0, layer1, 
 	int      nd; // tmpId(-1), id0(-1), id1(-1)
 	double   rdrift, chi2_d, chi2_best (1.e12);
-	Doublet  bd, *d;
+	Doublet  bd, ad, *d;
 	vector<Doublet> list;
 
 	for (int j=0; j<ndhits; ++j) {
@@ -1178,16 +1147,17 @@ namespace mu2e {
 // - this could be dangerous, especially, in presence of the background 
 // change logic: 
 //-----------------------------------------------------------------------------
-	    markDoublet(Krep,doublet,j,k); 
+	    ad    = *doublet;
+	    markDoublet(Krep,&ad,j,k); 
 
-	    list.push_back(*doublet);
+	    list.push_back(ad);
 
-	    chi2_d = doublet->Chi2Best();
+	    chi2_d = ad.Chi2Best();
 	    if (chi2_d < chi2_best) {
 	      jbest     = j;
 	      kbest     = k;
 	      chi2_best = chi2_d;
-	      bd        = *doublet;
+	      bd        = ad;
 	    }
 	  }
 	}
@@ -1199,7 +1169,6 @@ namespace mu2e {
 //----------------------------------------------------------------------------- 
 	  hitj    = doublet->fHit[jbest];
 	  hitk    = doublet->fHit[kbest];
-	  //	  straw   = hitk->straw();
 //-----------------------------------------------------------------------------
 // out of the two hits making the best doublet, select the one with the larger 
 // radius
@@ -1212,12 +1181,10 @@ namespace mu2e {
 	    hit = doublet->fHit[ih];
 
 	    if (ih == jbest) {
-	      //	      hit->setAmbig(bd.fStrawAmbig[0]);
 	      hit->setAmbig(_sign[bd.fIBest][0]);
 	      hit->setAmbigUpdate(false);
 	    }
 	    else if (ih == kbest) {
-	      //	      hit->setAmbig(bd.fStrawAmbig[1]);
 	      hit->setAmbig(_sign[bd.fIBest][1]);
 	      hit->setAmbigUpdate(false);
 	    }
@@ -1236,13 +1203,11 @@ namespace mu2e {
 		}
 		else if (hit == d->fHit[d->fHitIndex[1]]) {
 		  if (hmax == d->fHit[d->fHitIndex[0]]) {
-		    //		      doublet->fStrawAmbig[ih] = d->fStrawAmbig[1];
 		    doublet->fStrawAmbig[ih] = _sign[d->fIBest][1];
 		    break;
 		  }
 		}
 	      }
-	      //	    }
 //-----------------------------------------------------------------------------
 // if the hit radius is greated than some minimal value, set the drift sign
 //-----------------------------------------------------------------------------
@@ -1267,7 +1232,7 @@ namespace mu2e {
 		}
 	      }
 	    }
-	  }   
+	  }
 	}
       }
     }
