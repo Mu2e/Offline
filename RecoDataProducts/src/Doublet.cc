@@ -8,21 +8,29 @@ namespace mu2e {
   }
 
 
-  Doublet::Doublet(int index,
-		   int station, int panel, 
-		   CLHEP::Hep3Vector shdir, 
-		   CLHEP::Hep3Vector trkdir,
-		   CLHEP::Hep3Vector trkpos,
-		   TrkStrawHit*      hit){
-    fIndex      = index;
-    fStationId  = station; 
-    fPanelId    = panel;
-    fShDir      = shdir;
-    fNStrawHits = 1;
+  Doublet::Doublet(int               Index,
+		   int               Station, 
+		   int               Panel, 
+		   CLHEP::Hep3Vector Shdir, 
+		   CLHEP::Hep3Vector Trkdir,
+		   CLHEP::Hep3Vector Trkpos,
+		   TrkStrawHit*      Hit) {
+
+    fIndex       = Index;
+    fStationId   = Station; 
+    fPanelId     = Panel;
+    fShDir       = Shdir;
+    fNStrawHits  = 1;
     
-    fTrkDir[0]  = trkdir;
-    fTrkPos[0]  = trkpos;
-    fHit   [0]  = hit;
+    fTrkDir[0]   = Trkdir;
+    fTrkPos[0]   = Trkpos;
+    fHit   [0]   = Hit;
+					// make sure these are undefined
+    fHitIndex[0] = -1;
+    fHitIndex[1] = -1;
+    fIBest       = -1;
+    fINext       = -1;
+    fOs          = -1;
   }
   
   Doublet::~Doublet(){}
