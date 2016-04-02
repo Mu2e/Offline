@@ -181,16 +181,15 @@ draTopLevelDefs: {
 
       draCommonEndSeq: [ genCountLogger, timeMapProton, timeMapMuon ]
       draCutAndCountEndSeq : [ cutAndCountAnalyzer ]
-      filteredOutput: [ filteredOutput ]
       end_paths: @nil
    }
+}
 
-   outputs: {
-      filteredOutput: {
-	 fileName: @nil
-	 module_type    : RootOutput
-	 SelectEvents   : { SelectEvents: ["draCutAndCountTrigSeq"] }
-      }
+dra.filteredOutputDef: {
+   filteredOutput: {
+      fileName: @nil
+      module_type    : RootOutput
+      SelectEvents   : { SelectEvents: ["draCutAndCountTrigSeq"] }
    }
 }
 
