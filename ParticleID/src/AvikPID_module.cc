@@ -1099,10 +1099,10 @@ namespace mu2e {
 
     int const      max_ntrk(100);
     int            n_ele_trk, n_muo_trk, ele_unique[max_ntrk], muo_unique[max_ntrk];
-    int            found, ele_nhits, muo_nhits, ncommon, n_ele_doublets, n_muo_doublets;
+    int            found, ele_nhits, muo_nhits, ncommon;
 
     const mu2e::StrawHit               *esh, *msh;
-    mu2e::Doublet                      *d;
+    //    mu2e::Doublet                      *d;
     mu2e::DoubletAmbigResolver::Data_t r;
 
     vector<double>         gaspaths;
@@ -1175,14 +1175,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // electron track hit doublets
 //-----------------------------------------------------------------------------
-      _dar->findDoublets(ele_Trk,&ele_listOfDoublets);
-      n_ele_doublets = ele_listOfDoublets.size();
-      for (int id=0; id<n_ele_doublets; id++) {
-        d = &ele_listOfDoublets.at(id);
-        r.index[0] = 0;
-        r.index[1] = d->fNStrawHits-1;
-        _dar->calculateDoubletParameters(ele_Trk,d,&r);
-      }
+      _dar->findDoublets  (ele_Trk,&ele_listOfDoublets);
 //-----------------------------------------------------------------------------
 // dE/dX for the electron track hits
 // calculate dE/dX, clear vectors, start forming a list of hits from the electron track
@@ -1253,15 +1246,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // list of muon doublets
 //-----------------------------------------------------------------------------
-          _dar->findDoublets(muo_Trk,&muo_listOfDoublets);
-          n_muo_doublets = muo_listOfDoublets.size();
-          for (int id=0; id<n_muo_doublets; id++) {
-            d = &muo_listOfDoublets.at(id);
-            r.index[0] = 0;
-            r.index[1] = d->fNStrawHits-1;
-            _dar->calculateDoubletParameters(muo_Trk,d,&r);
-          }
-
+          _dar->findDoublets  (muo_Trk,&muo_listOfDoublets);
+	
           for (auto ihot=muo_hots.begin(); ihot != muo_hots.end(); ++ihot) {
             TrkStrawHit* hit = (mu2e::TrkStrawHit*) (*ihot);
             if (hit->isActive()) {
@@ -1406,13 +1392,6 @@ namespace mu2e {
 // presence depends on ambiguity resolvers used by the reconstruction modules
 //-----------------------------------------------------------------------------
         _dar->findDoublets(muo_Trk,&muo_listOfDoublets);
-        n_muo_doublets = muo_listOfDoublets.size();
-        for (int id=0; id<n_muo_doublets; id++) {
-          d = &muo_listOfDoublets.at(id);
-          r.index[0] = 0;
-          r.index[1] = d->fNStrawHits-1;
-          _dar->calculateDoubletParameters(muo_Trk,d,&r);
-        }
 //-----------------------------------------------------------------------------
 // dE/dX for the muoon track hits
 // calculate dE/dX, clear vectors, start forming a list of hits from the electron track

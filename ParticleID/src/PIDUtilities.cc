@@ -154,12 +154,12 @@ namespace mu2e {
     // *      sigdisn[i] (cummulative probability up this edge) before we project 
     // *      into the final binning.
 
-    double *dist1=hist1->GetArray(); 
-    double *dist2=hist2->GetArray();
+    double *dist1   = hist1->GetArray(); 
+    double *dist2   = hist2->GetArray();
     double *sigdis1 = new double[1+nb1];
     double *sigdis2 = new double[1+nb2];
     double *sigdisn = new double[2+nb1+nb2];
-    double *xdisn = new double[2+nb1+nb2];
+    double *xdisn   = new double[2+nb1+nb2];
     double *sigdisf = new double[nbn+1];
 
     for(int i=0;i<2+nb1+nb2;i++) xdisn[i] = 0; // Start with empty edges
@@ -316,8 +316,8 @@ namespace mu2e {
 	  cout << "Pair for i12type=1: " << ix1 << " " << ix2 << " " << sigdis2[ix2] << " " 
 	       << sigdis1[ix1] << " " << sigdis2[ix2+1] << endl;
 	}
-	x1 = xmin1 + double(ix1)*dx1 ;
-	y = sigdis1[ix1];
+	x1  = xmin1 + double(ix1)*dx1 ;
+	y   = sigdis1[ix1];
 	x20 = double(ix2)*dx2 + xmin2;
 	x21 = x20 + dx2;
 	y20 = sigdis2[ix2];
@@ -495,8 +495,8 @@ namespace mu2e {
   
     //......Clean up the temporary arrays we allocated.
 
-    delete sigdis1; delete sigdis2; 
-    delete sigdisn; delete xdisn; delete sigdisf;
+    delete [] sigdis1; delete [] sigdis2; 
+    delete [] sigdisn; delete [] xdisn; delete [] sigdisf;
 
     //......All done, return the result.
     //    morphedhist->Draw("same");
