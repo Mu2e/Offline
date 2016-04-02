@@ -85,8 +85,6 @@ namespace mu2e {
 
     produces<AlgorithmIDCollection>  (_iname);
     produces<KalRepPtrCollection>    (_iname);
-    //    produces<KalFitResultCollection> (_iname);
-    
   }
 
   MergePatRec::~MergePatRec(){
@@ -106,21 +104,15 @@ namespace mu2e {
     int         tpr_flag[max_ntrk], cpr_flag[max_ntrk], ntpr(0), ncpr(0);
 
     art::Handle<mu2e::KalRepPtrCollection>    tpr_h, cpr_h;
-    //    art::Handle<mu2e::KalFitResultCollection> tkr_h, ckr_h;
 
     mu2e::KalRepPtrCollection  *list_of_kreps_tpr(0), *list_of_kreps_cpr(0);
-    //    mu2e::KalFitResultCollection *list_of_kfres_tpr(0), *list_of_kfres_cpr(0);
 
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection   );
-    //    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
 
     AnEvent.getByLabel(_trkPatRecModuleLabel,_iname,tpr_h);
     AnEvent.getByLabel(_calPatRecModuleLabel,_iname,cpr_h);
     
-//     AnEvent.getByLabel(_trkPatRecModuleLabel,_iname,tkr_h);
-//     AnEvent.getByLabel(_calPatRecModuleLabel,_iname,ckr_h);
-
     if (tpr_h.isValid()) { 
       list_of_kreps_tpr = (mu2e::KalRepPtrCollection*) &(*tpr_h);
       ntpr              = list_of_kreps_tpr->size();
@@ -130,14 +122,6 @@ namespace mu2e {
       list_of_kreps_cpr = (mu2e::KalRepPtrCollection*) &(*cpr_h);
       ncpr              = list_of_kreps_cpr->size();
     }
-
-//     if (tkr_h.isValid()) { 
-//       list_of_kfres_tpr = (mu2e::KalFitResultCollection*) &(*tkr_h);
-//     }
-
-//     if (ckr_h.isValid()) {
-//       list_of_kfres_cpr = (mu2e::KalFitResultCollection*) &(*ckr_h);
-//     }
 
     for (int i=0; i<max_ntrk; i++) {
       tpr_flag[i] = 1;

@@ -228,6 +228,12 @@ CalPatRecDem : { @table::CalPatRec
     fitdirection : 0
 }
 
+#------------------------------------------------------------------------------
+# not sure this makes sense: muon clusters have lower energy, so to search for 
+# muon tracks need to set MinClusterEnergy around 30 MeV. That would ovewhelm
+# the code with the background clusters.
+# For now just create a label, hopefully the module wouldn't do any harm
+#------------------------------------------------------------------------------
 CalPatRecDmm : { @table::CalPatRec
     fitparticle  : 13
     fitdirection : 0

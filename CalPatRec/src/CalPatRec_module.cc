@@ -549,7 +549,7 @@ namespace mu2e {
     _eventid = event.event();
     _iev     = event.id().event();
 
-    if ((_iev%_printfreq) == 0) printf("%s : START event number %i8\n", oname,_iev);
+    if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
     _tpeaks = new CalTimePeakCollection;
     unique_ptr<KalRepCollection>       tracks(new KalRepCollection      );
@@ -1119,9 +1119,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Loop over calorimeter clusters
 //-----------------------------------------------------------------------------
-    nsh = _shcol->size();
-    ncl = _ccCollection->size();
-
+    nsh   = _shcol->size();
+    ncl   = _ccCollection->size();
+    _clCE = 0;
     for (int ic=0; ic<ncl; ic++) {
       cl      = &_ccCollection->at(ic);
 
@@ -1131,10 +1131,11 @@ namespace mu2e {
       }
 
       if ( cl->energyDep() > _minClusterEnergy) {
-        if (_clCE) ++fNCaloEnergyCut;
+
+        if ((_diagLevel > 0) && _clCE) ++fNCaloEnergyCut;
 
         if ( (int(cl->size()) >= _minClusterSize) ) {
-          if (_clCE) ++fNCaloSizeCut;
+          if ((_diagLevel > 0) && _clCE) ++fNCaloSizeCut;
 
           cl_time = cl->time();
 //-----------------------------------------------------------------------------
@@ -1232,7 +1233,7 @@ namespace mu2e {
             }
 
             if ((dt < _maxdt) && (dt >= _mindt)) {
-              if (_clCE){
+              if ((_diagLevel > 0) && _clCE){
                 ++nhitsTimeWindow;
 
                 if ( hit_has_time   ) ++nhitsHasTime;
@@ -1251,7 +1252,7 @@ namespace mu2e {
 
           tpeak._tpeak = stime/(tpeak.NHits()+1.e-12);
 
-          if ( _clCE) {
+          if ((_diagLevel > 0) && _clCE) {
             if (nhitsTimeWindow>_minnhits) ++fNTimeWindow;
             if (nhitsHasTime   >_minnhits) fSHSel[0] = 1;
             if (nhitsHasRadius >_minnhits) fSHSel[1] = 1;
@@ -1261,7 +1262,7 @@ namespace mu2e {
           }
 
           if (tpeak.NHits() > _minnhits) {
-           if (_clCE){
+           if ((_diagLevel > 0) && _clCE) {
              ++fNHitsTimePeakCut;
            }
 

@@ -124,26 +124,26 @@ namespace mu2e
     _darPset = new fhicl::ParameterSet(pset.get<fhicl::ParameterSet>("DoubletAmbigResolver",fhicl::ParameterSet()));
 
 // set KalContext parameters
-    _disttol = pset.get<double>("IterationTolerance",0.1);
-    _intertol = pset.get<double>("IntersectionTolerance",100.0);
-    _maxiter = pset.get<long>("MaxIterations",10);
-    _maxinter = pset.get<long>("MaxIntersections",0);
-    _matcorr = pset.get<bool>("materialCorrection",true);
-    _fieldcorr = pset.get<bool>("fieldCorrection",false);
-    _smearfactor = pset.get<double>("SeedSmear",1.0e6);
-    _sitethresh = pset.get<double>("SiteMomThreshold",0.2);
-    _momthresh = pset.get<double>("MomThreshold",10.0);
-    _mingap = pset.get<double>("mingap",0.1);
-    _minfltlen = pset.get<double>("MinFltLen",0.1);
-    _minmom = pset.get<double>("MinMom",10.0);
-    _fltepsilon = pset.get<double>("FltEpsilon",0.001);
-    _divergeflt = pset.get<double>("DivergeFlt");
-    _mindot = pset.get<double>("MinDot",0.0);
-    _maxmomdiff = pset.get<double>("MaxMomDiff",0.5);
-    _momfac = pset.get<double>("MomFactor",0.0);
+    _disttol      = pset.get<double>("IterationTolerance",0.1);
+    _intertol     = pset.get<double>("IntersectionTolerance",100.0);
+    _maxiter      = pset.get<long>("MaxIterations",10);
+    _maxinter     = pset.get<long>("MaxIntersections",0);
+    _matcorr      = pset.get<bool>("materialCorrection",true);
+    _fieldcorr    = pset.get<bool>("fieldCorrection",false);
+    _smearfactor  = pset.get<double>("SeedSmear",1.0e6);
+    _sitethresh   = pset.get<double>("SiteMomThreshold",0.2);
+    _momthresh    = pset.get<double>("MomThreshold",10.0);
+    _mingap       = pset.get<double>("mingap",0.1);
+    _minfltlen    = pset.get<double>("MinFltLen",0.1);
+    _minmom       = pset.get<double>("MinMom",10.0);
+    _fltepsilon   = pset.get<double>("FltEpsilon",0.001);
+    _divergeflt   = pset.get<double>("DivergeFlt");
+    _mindot       = pset.get<double>("MinDot",0.0);
+    _maxmomdiff   = pset.get<double>("MaxMomDiff",0.5);
+    _momfac       = pset.get<double>("MomFactor",0.0);
     _maxpardif[0] = _maxpardif[1] = pset.get<double>("MaxParameterDifference",1.0);
     // DOF counting subdivision is illogical, FIXME!!!!
-    _mindof = pset.get<double>("MinNDOF");
+    _mindof       = pset.get<double>("MinNDOF");
 //----------------------------------------------------------------------
 // 2015-01-09 G.Pezzullo and P.Murat
 // Noticed that with respect to KalmanTest/src/KalFit.cc we were using
@@ -219,7 +219,7 @@ namespace mu2e
 // assume that KalFitHack is using the DoubletAmbigResolver only
 //-----------------------------------------------------------------------------
 //    final = 1;
-    err = _hiterr[n];
+    err = _hiterr[n-1];
     ar    = new DoubletAmbigResolver(*_darPset,err,n,final);
     _ambigresolver.push_back(ar);
   }
