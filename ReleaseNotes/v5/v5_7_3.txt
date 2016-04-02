@@ -1,3 +1,19 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_7_3
+
+1)  02 April 2016   dnbrow01
+    Update the RackElectronics Material with measurements from G. Drake
+    et al. at ANL.  Add RackSteel material for this purpose.  Commit 
+    the text file for description and placement of racks (first two
+    in alcove downstream right).  Note that new electronic racks can
+    be added purely via text file - no new code needed.  Code to build
+    the racks committed.  The electronics rack text file now included
+    from the latest geom_common_cd3 file.  Minor code fixes.
+    modified:   GeometryService/src/ElectronicRackMaker.cc
+    modified:   GeometryService/src/GeometryService_service.cc
+    new file:   Mu2eG4/geom/ElectronicRack_v01.txt
+    modified:   Mu2eG4/geom/geom_common_cd3_s4p2.txt
+    modified:   Mu2eG4/src/ConstructMaterials.cc
+    modified:   Mu2eG4/src/constructExternalShielding.cc
+    modified:   ServicesGeom/inc/ElectronicRack.hh
