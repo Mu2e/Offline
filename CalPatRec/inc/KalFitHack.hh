@@ -58,6 +58,8 @@ namespace mu2e {
   protected:
     // configuration parameters
     int                         _debug;
+    unsigned                    _minnstraws;
+    double                      _maxmatfltdiff; // maximum difference in track flightlength to separate to intersections of the same material
     vector<bool>                _weedhits;
     double                      _maxhitchi;
     unsigned                    _maxweed;
@@ -68,7 +70,7 @@ namespace mu2e {
     bool                        _initt0;
     bool                        _updateT0;
     int                         _updateT0Mode;    // 0: use cluster T0 1:update T0 assuming no cluster time
-    double                      fMinHitDrift;
+    double                      _minHitDrift;
     double                      fRdriftMinusDocaTol;
     int                         fSign[4][2];
     int                         _daveMode;
@@ -86,10 +88,10 @@ namespace mu2e {
     std::string                 fMakeStrawHitModuleLabel;
 		                
     bool                        _removefailed;
-    unsigned                    _minnstraws;
     TrkParticle                 _tpart;
     TrkFitDirection             _fdir;
     std::vector<int>            _ambigstrategy;
+    std::vector<bool>           _addmaterial;
     mutable BField*             _bfield;
     int                         _nIter;
     const CalTimePeak*          fTimePeak;
@@ -163,6 +165,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     virtual void makeHits     (KalFitResult& kres, TrkT0 const& t0);
     virtual void makeMaterials(KalFitResult& kres);
+//-----------------------------------------------------------------------------
+// latest code by Dave
+//-----------------------------------------------------------------------------
+    double   zFlight    (KalRep* KRep, double pz); // *** FIXME category
+    unsigned addMaterial(KalRep* KRep);
+
   };
 }
 #endif

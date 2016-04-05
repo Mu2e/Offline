@@ -45,6 +45,7 @@
 //09 - 26 - 2013 gianipez added the following include file
 #include "BTrk/TrkBase/HelixParams.hh"
 //----------------------------------------
+#include "BTrk/KalmanTrack/KalMaterial.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
@@ -85,10 +86,29 @@ namespace mu2e
     }
     TrkFitDirection::FitDirection _fdir;
   };
+// struct for finding materials
+  struct StrawFlight {
+    StrawIndex _index;  // straw being tested
+    double _flt; // flight where trajectory comes near this straw
+// construct from pair
+    StrawFlight(StrawIndex strawind, double flt) : _index(strawind), _flt(flt) {}
+  };
+
+// comparison operators understand that the same straw could be hit twice, so the flight lengths need
+// to be similar befoew we consider these 'the same'
+  struct StrawFlightComp : public binary_function<StrawFlight, StrawFlight, bool> {
+    double _maxdiff; // maximum flight difference; below this, consider 2 intersections 'the same'
+    StrawFlightComp(double maxdiff) : _maxdiff(maxdiff) {}
+    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._index < b._index ||
+    ( a._index == b._index && a._flt < b._flt && fabs(a._flt-b._flt)>=_maxdiff);}
+  };
+
 // construct from a parameter set
   KalFitHack::KalFitHack(fhicl::ParameterSet const& pset) :
 // KalFitHack parameters
     _debug(pset.get<int>("debugLevel",0)),
+    _minnstraws(pset.get<unsigned>("minnstraws",15)),
+    _maxmatfltdiff(pset.get<double>("MaximumMaterialFlightDifference",1000.0)), // mm separation in flightlength
     _weedhits(pset.get<vector<bool>>("weedhits")),
     _maxhitchi(pset.get<double>("maxhitchi",4.0)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
@@ -98,7 +118,7 @@ namespace mu2e
     _initt0(pset.get<bool>("initT0",true)),
     _updateT0(pset.get<bool>("updateT0",true)),
     _updateT0Mode(pset.get<int>("T0UpdateMode")),
-    fMinHitDrift(pset.get<double>("HitMinDrift")),
+    _minHitDrift(pset.get<double>("HitMinDrift")),
     fRdriftMinusDocaTol(pset.get<double>("RdriftMinusDocaTol")),
     _daveMode(pset.get<int>("daveMode" ,0)),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
@@ -115,8 +135,8 @@ namespace mu2e
     fMakeStrawHitModuleLabel(pset.get<std::string>("makeStrawHitModuleLabel")),
     //
     _removefailed(pset.get<bool>("RemoveFailedFits",true)),
-    _minnstraws(pset.get<unsigned>("minnstraws",15)),
     _ambigstrategy(pset.get< vector<int> >("ambiguityStrategy")),
+    _addmaterial(pset.get<vector<bool> >("AddMaterial")),
     _bfield(0),
     _nIter(0)
   {
@@ -172,21 +192,24 @@ namespace mu2e
         << "mu2e::KalFitHack: no hit errors specified" << endl;
     }
 
-    if(_hiterr.size() != _ambigstrategy.size()) {
+    if (_hiterr.size() != _ambigstrategy.size()) {
       throw cet::exception("RECO")
         << "mu2e::KalFitHack: inconsistent ambiguity resolution" << endl;
     }
 
-    if(_hiterr.size() != _t0tol.size()) {
+    if (_hiterr.size() != _t0tol.size()) {
       throw cet::exception("RECO")
         <<"mu2e::KalFitHack: inconsistent ambiguity resolution" << endl;
     }
 
-    if(_hiterr.size() != _weedhits.size()) {
+    if (_hiterr.size() != _weedhits.size()) {
       throw cet::exception("RECO")
         <<"mu2e::KalFitHack: inconsistent _weedhits size" << endl;
     }
-                                        // construct the ambiguity resolvers
+    if (_hiterr.size() != _addmaterial.size()) {
+      throw cet::exception("RECO") 
+	<< "mu2e::KalFit: inconsistent ambiguity resolution AddMaterial" << endl;
+    } 
     AmbigResolver* ar;
     double         err;
     int            n, final(0);
@@ -561,6 +584,13 @@ namespace mu2e
         changed        |= weedHits(KRes,Iteration);
         fit_success     = KRes._fit.success();
       }
+//-----------------------------------------------------------------------------
+// find missing materials - latest borrowed from Dave
+//-----------------------------------------------------------------------------
+      if (_addmaterial[Iteration]) {
+        changed |= addMaterial(KRes._krep) > 0;
+      }
+
       niter++;
     }
 //-----------------------------------------------------------------------------
@@ -573,6 +603,124 @@ namespace mu2e
     KRes._ninter = KRes._krep->intersections();
   }
 
+
+//-----------------------------------------------------------------------------
+// stolen clone of KalFit::addMaterials - need to work towards
+//-----------------------------------------------------------------------------
+  // this function belongs in TrkDifTraj, FIXME!!!!
+  double KalFitHack::zFlight(KalRep* krep,double pz) {
+// get the helix at the middle of the track
+    double loclen;
+    double fltlen(0.0);
+    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->referenceTraj()->localTrajectory(fltlen,loclen));
+// Iterate
+    const HelixTraj* oldtraj;
+    unsigned iter(0);
+    do {
+// remember old traj
+      oldtraj = htraj;
+// correct the global fltlen for this difference in local trajectory fltlen at this Z position
+      fltlen += (htraj->zFlight(pz)-loclen);
+      htraj = dynamic_cast<const HelixTraj*>(krep->referenceTraj()->localTrajectory(fltlen,loclen));
+    } while(oldtraj != htraj && iter++<10);
+    return fltlen;
+  }
+
+  //-----------------------------------------------------------------------------
+  unsigned KalFitHack::addMaterial(KalRep* KRep) {
+    unsigned retval(0);
+// TTracker geometry
+    const Tracker& tracker = getTrackerOrThrow();
+    const TTracker& ttracker = dynamic_cast<const TTracker&>(tracker);
+// fetcth the DetectorModel
+    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
+// storage of potential straws
+    StrawFlightComp strawcomp(_maxmatfltdiff);
+    std::set<StrawFlight,StrawFlightComp> matstraws(strawcomp);
+// loop over Planes
+    double strawradius = ttracker.strawRadius();
+    unsigned nadded(0);
+    for(auto plane : ttracker.getPlanes()){
+    // crappy access to # of straws in a panel
+      int nstraws = 2*plane.getPanel(0).getLayer(0).nStraws();
+// get an approximate z position for this plane from the average position of the 1st and last straws
+      Hep3Vector s0 = plane.getPanel(0).getLayer(0).getStraw(0).getMidPoint();
+      // funky convention for straw numbering in a layer FIXME!!!!
+      Hep3Vector sn = plane.getPanel(0).getLayer(1).getStraw(2*plane.getPanel(0).getLayer(1).nStraws()-1).getMidPoint();
+      double pz = 0.5*(s0.z() + sn.z());
+// find the transverse position at this z using the reference trajectory
+      double flt = zFlight(KRep,pz);
+      HepPoint pos = KRep->referenceTraj()->position(flt);
+      Hep3Vector posv(pos.x(),pos.y(),pos.z());
+// see if this position is in the active region.  Double the straw radius to be generous
+      double rho = posv.perp();
+      double rmin = s0.perp()-2*strawradius;
+      double rmax = sn.perp()+2*strawradius;
+      if(rho > rmin && rho < rmax){
+  // loop over panels
+        for(auto panel : plane.getPanels()){
+      // get the straw direction for this panel
+          Hep3Vector sdir = panel.getLayer(0).getStraw(0).getDirection();
+      // get the transverse direction to this and z
+          static Hep3Vector zdir(0,0,1.0);
+          Hep3Vector pdir = sdir.cross(zdir);
+     //  project the position along this
+          double prho = posv.dot(pdir);
+      // test for acceptance of this panel
+          if(prho > rmin && prho < rmax) {
+          // translate the transverse position into a rough straw number
+            int istraw = (int)rint(nstraws*(prho-s0.perp())/(sn.perp()-s0.perp()));
+            // take a few straws around this
+            for(int is = max(0,istraw-2); is<min(nstraws-1,istraw+2); ++is){
+            // must do this twice due to intrusion of layer on hierarchy FIXME!!!
+              matstraws.insert(StrawFlight(panel.getLayer(0).getStraw(is).index(),flt));
+              matstraws.insert(StrawFlight(panel.getLayer(1).getStraw(is).index(),flt));
+              nadded += 2;
+            }
+          }
+        }
+      }
+    }
+// Now test if the Kalman rep hits these straws
+    if(_debug>2)std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
+    for(auto strawflt : matstraws){
+      const DetStrawElem* strawelem = detmodel.strawElem(strawflt._index);
+      DetIntersection strawinter;
+      strawinter.delem = strawelem;
+      strawinter.pathlen = strawflt._flt;
+      if(strawelem->reIntersect(KRep->referenceTraj(),strawinter)){
+// If the rep already has a material site for this element, skip it
+        std::vector<const KalMaterial*> kmats;
+        KRep->findMaterialSites(strawelem,kmats);
+        if(_debug>2)std::cout << "found intersection with straw " << strawelem->straw()->index() << " with "
+        << kmats.size() << " materials " << std::endl;
+// test material isn't on the track
+        bool hasmat(false);
+        for(auto kmat : kmats ){
+          const DetStrawElem* kelem = dynamic_cast<const DetStrawElem*>(kmat->detIntersection().delem);
+          if(kelem != 0){
+            StrawFlight ksflt(kelem->straw()->index(),kmat->globalLength());
+            if(_debug>2)std::cout << " comparing flights " << kmat->globalLength() << " and " << strawflt._flt << std::endl;
+            if(!strawcomp.operator()(strawflt,ksflt)){
+              if(_debug>2)std::cout << "operator returned false!!" << std::endl;
+              // this straw is already on the track: stop
+              hasmat = true;
+              break;
+            }
+          }
+        }
+        if(kmats.size() == 0 || !hasmat) {
+          if(_debug>2)std::cout << "Adding material element" << std::endl;
+          // this straw doesn't have an entry in the Kalman fit: add it`
+          DetIntersection detinter(strawelem, KRep->referenceTraj(),strawflt._flt);
+          KRep->addInter(detinter);
+          ++retval;
+        }
+      }
+    }
+    if(_debug>1)std::cout << "Added " << retval << " new material sites" << std::endl;
+    return retval;
+  }
 
 //-----------------------------------------------------------------------------
   bool KalFitHack::fitable(TrkDef const& tdef){
