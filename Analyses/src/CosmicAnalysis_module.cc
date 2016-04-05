@@ -62,10 +62,14 @@ typedef struct
   double zplane1Dir[3], zplane2Dir[3], zplane3Dir[3];
 
   double firstCoincidenceHitTime;
+  int    firstCoincidenceHitSectorType;
+  double firstCoincidenceHitPos[3];
+
   bool   CRVhit_allSectors;
   bool   CRVhit[8];
   double CRVhitTime[8];
-  double CRVhitZ[8];
+  double CRVhitPos[8][3];
+  double CRVhitDir[8][3];
 
   int    run_number, subrun_number, event_number;
 
@@ -98,6 +102,7 @@ typedef struct
       zplane1Dir[i]=NAN;
       zplane2Dir[i]=NAN;
       zplane3Dir[i]=NAN;
+      firstCoincidenceHitPos[i]=NAN;
     }
 
     firstCoincidenceHitTime=NAN;
@@ -107,7 +112,11 @@ typedef struct
     {
       CRVhit[i]=false;
       CRVhitTime[i]=NAN;
-      CRVhitZ[i]=NAN;
+      for(int j=0; j<3; j++)
+      {
+        CRVhitPos[i][j]=NAN;
+        CRVhitDir[i][j]=NAN;
+      }
     }
   };
 } EventInfo;
@@ -195,10 +204,13 @@ namespace mu2e
     _tree->Branch("zplane2Dir",e.zplane2Dir,"zplane2Dir[3]/D");
     _tree->Branch("zplane3Dir",e.zplane3Dir,"zplane3Dir[3]/D");
     _tree->Branch("firstCoincidenceHitTime",&e.firstCoincidenceHitTime,"firstCoincidenceHitTime/D");
+    _tree->Branch("firstCoincidenceHitSectorType",&e.firstCoincidenceHitSectorType,"firstCoincidenceHitSectorType/I");
+    _tree->Branch("firstCoincidenceHitPos",e.firstCoincidenceHitPos,"firstCoincidenceHitPos[3]/D");
     _tree->Branch("CRVhit_allSectors",&e.CRVhit_allSectors,"CRVhit_allSectors/O");
     _tree->Branch("CRVhit",e.CRVhit,"CRVhit[8]/O");
     _tree->Branch("CRVhitTime",e.CRVhitTime,"CRVhitTime[8]/D");
-    _tree->Branch("CRVhitZ",e.CRVhitZ,"CRVhitZ[8]/D");
+    _tree->Branch("CRVhitPos",e.CRVhitPos,"CRVhitPos[8][3]/D");
+    _tree->Branch("CRVhitDir",e.CRVhitDir,"CRVhitDir[8][3]/D");
     _tree->Branch("run_number",&e.run_number,"run_number/I");
     _tree->Branch("subrun_number",&e.subrun_number,"subrun_number/I");
     _tree->Branch("event_number",&e.event_number,"event_number/I");
@@ -428,23 +440,39 @@ namespace mu2e
     }
 
 //check CRV veto
+    GeomHandle<CosmicRayShield> CRS;
+
     art::Handle<CrvCoincidenceCheckResult> crvCoincidenceCheckResult;
     std::string crvCoincidenceInstanceName="";
     
     if(event.getByLabel(_crvCoincidenceModuleLabel,crvCoincidenceInstanceName,crvCoincidenceCheckResult))
     {
-      std::vector<CrvCoincidenceCheckResult::DeadTimeWindow> deadTimeWindows;
-      deadTimeWindows = crvCoincidenceCheckResult->GetDeadTimeWindows(0.0,125.0);
-      for(unsigned int i=0; i < deadTimeWindows.size(); i++)
+      const std::vector<CrvCoincidenceCheckResult::CoincidenceCombination> &coincidenceCombinations = crvCoincidenceCheckResult->GetCoincidenceCombinations();
+      for(unsigned int i=0; i<coincidenceCombinations.size(); i++)
       {
-        double t = deadTimeWindows[i]._startTime;
-        if(isnan(_eventinfo.firstCoincidenceHitTime) || t<_eventinfo.firstCoincidenceHitTime) _eventinfo.firstCoincidenceHitTime=t;
+        for(int j=0; j<3; j++)
+        {
+          double t=coincidenceCombinations[i]._time[j];
+          if(isnan(_eventinfo.firstCoincidenceHitTime) || t<_eventinfo.firstCoincidenceHitTime)
+          {
+            _eventinfo.firstCoincidenceHitTime=t;
+
+            CRSScintillatorBarIndex barIndex=coincidenceCombinations[i]._counters[j];
+            const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
+            int sectorNumber = CRSbar.id().getShieldNumber();
+            int sectorType = CRS->getCRSScintillatorShield(sectorNumber).getSectorType();
+            sectorType--;
+            if(sectorType>=8 || sectorType<0) continue;
+            _eventinfo.firstCoincidenceHitSectorType=sectorType;
+
+            CLHEP::Hep3Vector pos = CRSbar.getPosition()-_detStsOrigin;
+            for(int k=0; k<3; k++) _eventinfo.firstCoincidenceHitPos[k]=pos[k];
+          }
+        }
       }
     }
 
 //check for CRV step points
-    GeomHandle<CosmicRayShield> CRS;
-
     std::vector<art::Handle<StepPointMCCollection> > CRVStepsVector;
     art::Selector selector(art::ProductInstanceNameSelector("CRV") && 
                            art::ProcessNameSelector("*"));
@@ -458,7 +486,8 @@ namespace mu2e
       {
         StepPointMC const& step(*iter);
         int PDGcode = step.simParticle()->pdgId();
-        if(abs(PDGcode)!=11 && abs(PDGcode)!=13) continue;
+//        if(abs(PDGcode)!=11 && abs(PDGcode)!=13) continue;
+        if(abs(PDGcode)!=13) continue;   //ignore cases where a CRV hit is created by a particle other than a muon
 
         const CRSScintillatorBar &CRSbar = CRS->getBar(step.barIndex());
 
@@ -474,14 +503,19 @@ namespace mu2e
         // 5,6,7: C1,C2,C3
 
         double t = step.time();
-        double z = step.position().z()-_detSysOrigin.z();
+        CLHEP::Hep3Vector pos = step.position()-_detSysOrigin;
+        CLHEP::Hep3Vector dir = step.momentum().unit();
 
         _eventinfo.CRVhit_allSectors =true;
         _eventinfo.CRVhit[sectorType]=true;
         if(_eventinfo.CRVhitTime[sectorType]>t || isnan(_eventinfo.CRVhitTime[sectorType]))
         {
-           _eventinfo.CRVhitTime[sectorType]=t;
-           _eventinfo.CRVhitZ[sectorType]=z;
+          _eventinfo.CRVhitTime[sectorType]=t;
+          for(int j=0; j<3; j++)
+          {
+            _eventinfo.CRVhitPos[sectorType][j]=pos[j];
+            _eventinfo.CRVhitDir[sectorType][j]=dir[j];
+          }
         }
       }
     }

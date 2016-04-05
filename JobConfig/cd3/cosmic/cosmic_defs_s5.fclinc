@@ -92,5 +92,6 @@ services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
 
 // Digitization uses random numbers
+services.user.SeedService.policy           :  autoIncrement
 services.user.SeedService.baseSeed         :  0
 services.user.SeedService.maxUniqueEngines :  20
