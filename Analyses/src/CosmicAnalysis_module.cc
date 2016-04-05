@@ -465,7 +465,7 @@ namespace mu2e
             if(sectorType>=8 || sectorType<0) continue;
             _eventinfo.firstCoincidenceHitSectorType=sectorType;
 
-            CLHEP::Hep3Vector pos = CRSbar.getPosition()-_detStsOrigin;
+            CLHEP::Hep3Vector pos = CRSbar.getPosition()-_detSysOrigin;
             for(int k=0; k<3; k++) _eventinfo.firstCoincidenceHitPos[k]=pos[k];
           }
         }
