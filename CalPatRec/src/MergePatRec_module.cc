@@ -149,7 +149,7 @@ namespace mu2e {
       for (int i2=0; i2<ncpr; i2++) {
 	cpr       = &list_of_kreps_cpr->at(i2);
 	cpr_mom   = (*cpr)->momentum();
-	cpr_chisq = (*tpr)->chisq();
+	cpr_chisq = (*cpr)->chisq();
 	clist     = (*cpr)->hitVector();
 	nac       = (*cpr)->nActive();
 //-----------------------------------------------------------------------------
