@@ -19,8 +19,8 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
+#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
@@ -357,11 +357,10 @@ namespace mu2e
     std::map<art::Ptr<mu2e::SimParticle>, int> simParticles;   // < operator defined above
 
     art::Handle<KalRepCollection> kalReps;
-    art::Handle<mu2e::StrawDigiMCCollection> strawDigiMCs;
-    if(event.getByLabel(_fitterModuleLabel,_fitterModuleInstance,kalReps) && event.getByLabel(_hitmakerModuleLabel,_hitmakerModuleInstance,strawDigiMCs))
+    art::Handle<PtrStepPointMCVectorCollection> stepPointVectors;
+    if(event.getByLabel(_fitterModuleLabel,_fitterModuleInstance,kalReps) && event.getByLabel(_hitmakerModuleLabel,_hitmakerModuleInstance,stepPointVectors))
     {
-
-      if(kalReps.product()!=NULL && strawDigiMCs.product()!=NULL)
+      if(kalReps.product()!=NULL && stepPointVectors.product()!=NULL)
       {
         if(kalReps->size()>0)
         {
@@ -374,12 +373,14 @@ namespace mu2e
             const mu2e::TrkStrawHit* trkStrawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
             if(trkStrawHit)
             {
-              int strawHitVectorIndex = trkStrawHit->index(); //index of this straw hit in the strawHitCollection, which is equal to the index in the StrawDiguMCCollection 
-                                                              //FIXME Is this true????
-              //get the sim particle which caused this hit
-              const mu2e::StrawDigiMC &strawDigiMC = (*strawDigiMCs)[strawHitVectorIndex];
-              if(strawDigiMC.hasTDC(StrawDigi::TDCChannel::zero)) simParticles[strawDigiMC.stepPointMC(StrawDigi::TDCChannel::zero)->simParticle()]++;
-              if(strawDigiMC.hasTDC(StrawDigi::TDCChannel::one)) simParticles[strawDigiMC.stepPointMC(StrawDigi::TDCChannel::one)->simParticle()]++;
+              //get the sim particles which caused this hit
+              int stepPointVectorsIndex = trkStrawHit->index();
+              const mu2e::PtrStepPointMCVector &stepPointVector = stepPointVectors->at(stepPointVectorsIndex);
+              for(auto iterStepPoint=stepPointVector.begin(); iterStepPoint!=stepPointVector.end(); iterStepPoint++)
+              {
+	        const art::Ptr<StepPointMC> stepPoint = *iterStepPoint;
+                simParticles[stepPoint->simParticle()]++;
+              }
             }
           }
 

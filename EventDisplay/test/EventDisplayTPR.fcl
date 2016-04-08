@@ -19,25 +19,23 @@ source :
 services :
 {
   message : @local::default_message
-  TFileService : { fileName : "EventDisplayTPR.root" }
-  RandomNumberGenerator: { }
+  TFileService           : { fileName : "EventDisplayTPR.root" }
+  RandomNumberGenerator  : { }
   GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
-  ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-  user : { 
-    SeedService: @local::automaticSeeds
-  }
   G4Helper               : { }
-  BTrkHelper : @local::BTrkHelperDefault
+  BTrkHelper             : @local::BTrkHelperDefault
 }
 
 physics :
 {
-  producers : {
-    @table::EventMixing.producers
+  producers : 
+  {
     @table::Tracking.producers
   }
- analyzers:
+
+  analyzers:
   {
     eventdisplay:
     {
@@ -45,9 +43,8 @@ physics :
       g4ModuleLabel   : "g4run"
     }
   }
-  p1: [ @sequence::EventMixing.TimeMaps,
-	@sequence::Tracking.DigiSim,
-	@sequence::Tracking.TPRDownstreameMinus ]
+
+  p1: [ @sequence::Tracking.TPRDownstreameMinus ]
 
   e1 : [eventdisplay]
 
@@ -56,6 +53,5 @@ physics :
 
 }
 
-services.user.SeedService.baseSeed         :  3
-services.user.SeedService.maxUniqueEngines :  20 
+source.readParameterSets : false
 

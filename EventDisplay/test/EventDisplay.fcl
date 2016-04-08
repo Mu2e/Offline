@@ -11,11 +11,8 @@ source :
 
 services :
 {
-  user :
-  {
     GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
     GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-  }
 }
 
 physics :
@@ -35,3 +32,4 @@ physics :
   end_paths      : [e1]
 }
 
+source.readParameterSets : false

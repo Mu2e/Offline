@@ -5,21 +5,17 @@
 #include "TrkDiag/fcl/KalDiag.fcl"
 
 BEGIN_PROLOG
-caloDigiTable: 
+timeMapsTable: 
 {
    protonTimeMap        : @local::protonTimeMap
    muonTimeMap          : @local::muonTimeMap
-   MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
 }
 
-caloDigiSeq:  [protonTimeMap, muonTimeMap, MakeCaloReadoutHits]
-
-// FIXME: Tracking.DigiSim should include time maps in addition to other stuff
-digitizationSeq: [ @sequence::caloDigiSeq, @sequence::Tracking.DigiSim ]
+timeMapsSeq:  [protonTimeMap, muonTimeMap]
 
 END_PROLOG
 
-process_name : CRVResponse
+process_name : CRVAnalysis
 
 source :
 {
@@ -45,7 +41,7 @@ physics :
 {
   producers:
   {
-    @table::caloDigiTable
+    @table::timeMapsTable
     @table::Tracking.producers
     @table::CrvResponsePackage.producers
   }
@@ -58,8 +54,8 @@ physics :
       module_type               : CosmicAnalysis
       fitterModuleLabel         : "TRFDownstreameMinus"
       fitterModuleInstance      : "DownstreameMinus"
-      hitmakerModuleLabel       : "makeSD"
-      hitmakerModuleInstance    : "StrawDigiMC"
+      hitmakerModuleLabel       : "makeSH"
+      hitmakerModuleInstance    : "StrawHitMCPtr"
       g4ModuleLabel             : "detectorFilter"
       generatorModuleLabel      : "generate"
       crvCoincidenceModuleLabel : "CrvCoincidence"
@@ -69,7 +65,7 @@ physics :
     }
   }
 
-  p1: [@sequence::digitizationSeq,
+  p1: [@sequence::timeMapsSeq,
        @sequence::Tracking.TPRDownstreameMinus, 
        @sequence::CrvResponsePackage.CrvResponseSequence]
   trigger_paths  : [p1]
