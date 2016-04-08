@@ -19,6 +19,8 @@
 #include <utility>
 #include <vector>
 
+#include "cetlib/exception.h"
+
 #include "Mu2eUtilities/inc/Table.hh"
 
 namespace mu2e {
@@ -49,6 +51,11 @@ namespace mu2e {
 
     template<class Shape, typename... Args>
     void initialize(double emin, double emax, double spectRes, Args... args) {
+
+      if(!(spectRes > 0.) /*catches NaNs as well*/) {
+        throw cet::exception("BADCONFIG")
+          <<"BinnedSpectrum::initialize(): invalid spectRes = "<<spectRes<<"\n";
+      }
 
       _binWidth = spectRes;
 
