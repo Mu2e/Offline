@@ -2,6 +2,93 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_7_3
 
+2)  10 April 2016   dnbrow01
+    Insert many of the conventional construction changes developed by
+    Jake Berg based on latest conventional construction and taking into
+    account backfill.  DNB implemented many small measures to avoid small
+    overlaps between updated and not-yet-updated construction/dirt/backfill
+    pieces.  Dirt Island between beamline, TS/DS, and escape stairwell changed
+    to backfill.
+    modified:   GeometryService/src/ProtonBeamDumpMaker.cc
+    new file:   Mu2eG4/geom/bldg/SRetainingWall.txt
+    new file:   Mu2eG4/geom/bldg/SRetainingWallFoot.txt
+    new file:   Mu2eG4/geom/bldg/WTSareaCF1.txt
+    new file:   Mu2eG4/geom/bldg/WTSareaCF1notch.txt
+    new file:   Mu2eG4/geom/bldg/WTSareaCF2.txt
+    new file:   Mu2eG4/geom/bldg/WTSareaCF2notch.txt
+    new file:   Mu2eG4/geom/bldg/WTSareaCFbeam.txt
+    new file:   Mu2eG4/geom/bldg/backfillPsAreaBaselevel.txt
+    new file:   Mu2eG4/geom/bldg/backfillPsAreaInter.txt
+    new file:   Mu2eG4/geom/bldg/backfillPsAreaLower.txt
+    new file:   Mu2eG4/geom/bldg/backfillPsAreaRWallFootLevel.txt
+    new file:   Mu2eG4/geom/bldg/backfillPsAreaTopLayer.txt
+    new file:   Mu2eG4/geom/bldg/backfillTSarea-W1.txt
+    new file:   Mu2eG4/geom/bldg/backfillTSarea-W1Lower.txt
+    new file:   Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotch2.txt
+    new file:   Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchLower.txt
+    new file:   Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper1.txt
+    new file:   Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper2.txt
+    new file:   Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper3.txt
+    new file:   Mu2eG4/geom/bldg/backfillTSarea-W2.txt
+    new file:   Mu2eG4/geom/bldg/backfillTSarea-W2Upper.txt
+    modified:   Mu2eG4/geom/bldg/dirtBeamline.txt
+    modified:   Mu2eG4/geom/bldg/dirtBeamlineBerm.txt
+    modified:   Mu2eG4/geom/bldg/dirtBeamlineUpper.txt
+    modified:   Mu2eG4/geom/bldg/dirtDsAreaFirstFloorS.txt
+    modified:   Mu2eG4/geom/bldg/dirtExtMon.txt
+    modified:   Mu2eG4/geom/bldg/dirtExtMonCeiling.txt
+    modified:   Mu2eG4/geom/bldg/dirtFoundationN.txt
+    modified:   Mu2eG4/geom/bldg/dirtFoundationSmid.txt
+    modified:   Mu2eG4/geom/bldg/dirtFoundationSu.txt
+    modified:   Mu2eG4/geom/bldg/dirtIsland.txt
+    modified:   Mu2eG4/geom/bldg/dirtIslandUpper.txt
+    modified:   Mu2eG4/geom/bldg/dirtPsArea.txt
+    modified:   Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N.txt
+    modified:   Mu2eG4/geom/bldg/dirtPsAreaDirtSlabS.txt
+    modified:   Mu2eG4/geom/bldg/dirtPsAreaUpper2N.txt
+    modified:   Mu2eG4/geom/bldg/dirtPsAreaW.txt
+    modified:   Mu2eG4/geom/bldg/dirtPsWallUpper.txt
+    modified:   Mu2eG4/geom/bldg/dirtRemoteHandling.txt
+    new file:   Mu2eG4/geom/bldg/dirtRemoteHandlingCeiling.txt
+    new file:   Mu2eG4/geom/bldg/dirtSRetainingWallFoot.txt
+    new file:   Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaBaselevel.txt
+    new file:   Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaInter.txt
+    new file:   Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaLower.txt
+    new file:   Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaRWallFootLevel.txt
+    new file:   Mu2eG4/geom/bldg/dirtTempSofRetWallTop.txt
+    modified:   Mu2eG4/geom/bldg/dirtTsAreaW.txt
+    modified:   Mu2eG4/geom/bldg/dirtTsDsAreaFirstFloorEdgeN.txt
+    modified:   Mu2eG4/geom/bldg/dirtUpToGradeLevelW.txt
+    new file:   Mu2eG4/geom/bldg/dirtWTSareaCF2.txt
+    new file:   Mu2eG4/geom/bldg/dirtWTSareaCF2notch.txt
+    new file:   Mu2eG4/geom/bldg/dirtWTSareaCFbeam.txt
+    modified:   Mu2eG4/geom/bldg/dsAreaFirstFloorS.txt
+    modified:   Mu2eG4/geom/bldg/firstFloorWall.txt
+    new file:   Mu2eG4/geom/bldg/firstFloorWallExtension.txt
+    modified:   Mu2eG4/geom/bldg/foundationN.txt
+    modified:   Mu2eG4/geom/bldg/foundationSmid.txt
+    modified:   Mu2eG4/geom/bldg/foundationSu.txt
+    new file:   Mu2eG4/geom/bldg/psAreaCF1.txt
+    new file:   Mu2eG4/geom/bldg/psAreaCF2.txt
+    new file:   Mu2eG4/geom/bldg/psAreaCF3.txt
+    new file:   Mu2eG4/geom/bldg/psAreaCF4.txt
+    new file:   Mu2eG4/geom/bldg/psAreaShieldingBlock.txt
+    modified:   Mu2eG4/geom/bldg/psAreaUpperS.txt
+    modified:   Mu2eG4/geom/bldg/radiationSlab1.txt
+    modified:   Mu2eG4/geom/bldg/radiationSlab2.txt
+    modified:   Mu2eG4/geom/bldg/radiationSlab3.txt
+    modified:   Mu2eG4/geom/bldg/remoteHandling.txt
+    modified:   Mu2eG4/geom/bldg/remoteHandlingCeiling.txt
+    new file:   Mu2eG4/geom/bldg/remoteHandlingCeilingSliver.txt
+    new file:   Mu2eG4/geom/bldg/tempDirtBackfillPsAreaBaselevel.txt
+    new file:   Mu2eG4/geom/bldg/tempDirtBackfillPsAreaInter.txt
+    new file:   Mu2eG4/geom/bldg/tempDirtBackfillPsAreaLower.txt
+    new file:   Mu2eG4/geom/bldg/tempDirtBackfillPsAreaRWallFootLevel.txt
+    new file:   Mu2eG4/geom/bldg/tempDirtBackfillPsAreaTopLayer.txt
+    modified:   Mu2eG4/geom/bldg/tsDsAreaFirstFloorEdgeN.txt
+    modified:   Mu2eG4/geom/mu2eHall.txt
+
+
 1)  02 April 2016   dnbrow01
     Update the RackElectronics Material with measurements from G. Drake
     et al. at ANL.  Add RackSteel material for this purpose.  Commit 
