@@ -208,7 +208,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // a multiplet - more than 2 hits in a panel
 //-----------------------------------------------------------------------------
-	vector<Doublet> list;
+//	vector<Doublet> list;
 	Doublet         bd;
 	double          chi2_d, chi2_best(1.e12);
 
@@ -1248,7 +1248,8 @@ namespace mu2e {
     vector<Doublet> listOfDoublets;
     findDoublets (KRep,&listOfDoublets);
 
-    if (listOfDoublets.size() > 0) markMultiplets(KRep,&listOfDoublets);
+    if (listOfDoublets.size() > 0) markMultiplets(KRep, &listOfDoublets);
+
     return false; // assume no change FIXME!!!
   }
 

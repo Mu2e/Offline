@@ -8,9 +8,11 @@ namespace mu2e {
 // make sure neither number makes sense upon initialization
 //-----------------------------------------------------------------------------
   Doublet::Doublet() {
-    fIndex     = -1;
-    fStationId = -1;
-    fPanelId   = -1;
+    fIndex      = -1;
+    fStationId  = -1;
+    fPanelId    = -1;
+    fShDir.set(0,0,0);
+    fNStrawHits = -1.;
     for (int i=0; i<kMaxNHits; i++) {
       fStrawAmbig[i] = -999;
       fHit       [i] = NULL;
@@ -36,9 +38,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // 
   Doublet::Doublet(const Doublet& R) {
-    fIndex     = R.fIndex;
-    fStationId = R.fStationId;
-    fPanelId   = R.fPanelId;
+    fIndex      = R.fIndex;
+    fStationId  = R.fStationId;
+    fPanelId    = R.fPanelId;
+    fShDir      = R.fShDir;
+    fNStrawHits = R.fNStrawHits;
+
     for (int i=0; i<kMaxNHits; i++) {
       fStrawAmbig[i] = R.fStrawAmbig[i];
       fHit       [i] = R.fHit[i];
@@ -76,6 +81,14 @@ namespace mu2e {
     fPanelId     = Panel;
     fShDir       = Shdir;
     fNStrawHits  = 1;
+    
+    for (int i=0; i<kMaxNHits; i++) {
+      fStrawAmbig[i] = -999;
+      fTrkDir    [i].set(0.,0.,0);
+      fTrkPos    [i].set(0.,0.,0);
+      fHit       [i] = NULL;
+      fMcDoca    [i] = -999.;
+    }
     
     fTrkDir[0]   = Trkdir;
     fTrkPos[0]   = Trkpos;
