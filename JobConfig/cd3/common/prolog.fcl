@@ -51,7 +51,7 @@ signalTrackCuts: {
    d0min: -80
    d0max: 105
    mdmin: 450.
-   mdmax: 650.
+   mdmax: 680.
    t0min: 700.
    t0max: 1695.
    pmin: 103.85
