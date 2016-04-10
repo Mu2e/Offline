@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_FillW-TSUpper1notch2.ccl
+
+string building.backfill.TSarea-W.1UpperNotchUpper1.name     = "backfillTSarea-W1UpperNotchUpper1";
+
+string building.backfill.TSarea-W.1UpperNotchUpper1.material = "CA7Backfill";
+
+double building.backfill.TSarea-W.1UpperNotchUpper1.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.TSarea-W.1UpperNotchUpper1.offsetFromFloorSurface.y = 6959.6;
+double building.backfill.TSarea-W.1UpperNotchUpper1.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.TSarea-W.1UpperNotchUpper1.yHalfThickness           = 406.4;
+
+vector<double> building.backfill.TSarea-W.1UpperNotchUpper1.xPositions = {
+  -2006.6,   // F0
+  -1270,   // F1
+  -1270,   // F2
+  -2514.6,   // F3
+  -2514.6,   // F5
+  -2006.6   // F4
+};
+
+vector<double> building.backfill.TSarea-W.1UpperNotchUpper1.yPositions = {
+  -609.6,   // F0
+  -609.6,   // F1
+  -3606.8,   // F2
+  -3606.8,   // F3
+  -2438.4,   // F5
+  -2438.4   // F4
+};
+
+// Local Variables:
+// mode:c++
+// End:

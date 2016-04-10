@@ -143,11 +143,12 @@ namespace mu2e {
     // solid that fills the area behind the dump core that ends
     // vertically at the floor level of the extinction monitor room
 
-    // Create deltas (of 1 mm, with rotation) to avoid overlaps
-    const CLHEP::Hep2Vector deltaNE( -cos(coreRotY), -sin(coreRotY) );
-    const CLHEP::Hep2Vector deltaNW(  cos(coreRotY), -sin(coreRotY) );
-    const CLHEP::Hep2Vector deltaSW(  cos(coreRotY),  sin(coreRotY) );
-    const CLHEP::Hep2Vector deltaSE( -cos(coreRotY),  sin(coreRotY) );
+    // Create deltas (of 1.1 mm, with rotation) to avoid overlaps
+    double dW = 1.1;
+    const CLHEP::Hep2Vector deltaNE( -cos(coreRotY)*dW, -sin(coreRotY)*dW );
+    const CLHEP::Hep2Vector deltaNW(  cos(coreRotY)*dW, -sin(coreRotY)*dW );
+    const CLHEP::Hep2Vector deltaSW(  cos(coreRotY)*dW,  sin(coreRotY)*dW );
+    const CLHEP::Hep2Vector deltaSE( -cos(coreRotY)*dW,  sin(coreRotY)*dW );
 
     // Extract or compute the appropriate front shielding vertices
     const CLHEP::Hep3Vector psAoffset =  psArea.getOffsetFromMu2eOrigin();
@@ -172,18 +173,21 @@ namespace mu2e {
     dump->_backShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
     dump->_backShieldingOutline.emplace_back(pswVertices[3][0]+psWoffset[2]+deltaNW[0],pswVertices[3][1]+psWoffset[0]+deltaNW[1]);
     dump->_backShieldingOutline.emplace_back(pswVertices[2][0]+psWoffset[2]+deltaSW[0],pswVertices[2][1]+psWoffset[0]+deltaSW[1]);
-    dump->_backShieldingOutline.emplace_back(psSVertices[2][0]+psSoffset[2]+deltaSE[0],psSVertices[2][1]+psSoffset[0]+deltaSE[1]);
+    // Due to changes in bldg construction, use vertex [7] instead of [2]
+    dump->_backShieldingOutline.emplace_back(psSVertices[7][0]+psSoffset[2]+deltaSE[0],psSVertices[7][1]+psSoffset[0]+deltaSE[1]);
     dump->_backShieldingOutline.emplace_back(zs,xs);
     dump->_backShieldingOutline.emplace_back(zn,xn);
 
     dump->_frontShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
     dump->_frontShieldingOutline.emplace_back(zn,xn);
     dump->_frontShieldingOutline.emplace_back(zs,xs);
-    dump->_frontShieldingOutline.emplace_back(psSVertices[2][0]+psSoffset[2]+deltaSE[0],psSVertices[2][1]+psSoffset[0]+deltaSE[1]);
-    dump->_frontShieldingOutline.emplace_back(psaVertices[2][0]+psAoffset[2]+deltaSE[0],psaVertices[2][1]+psAoffset[0]+deltaSE[1]);
+    // Due to changes in bldg construction, use vertex [7] instead of [2]
+    dump->_frontShieldingOutline.emplace_back(psSVertices[7][0]+psSoffset[2]+deltaSE[0],psSVertices[7][1]+psSoffset[0]+deltaSE[1]);
+    // Temporary workaround while bldg geom is in flux.
+    double tempWorkaround = 10.5;
+    dump->_frontShieldingOutline.emplace_back(psaVertices[2][0]+psAoffset[2]+deltaSE[0],psaVertices[2][1]+psAoffset[0]+deltaSE[1]+tempWorkaround);
     dump->_frontShieldingOutline.emplace_back(dump->_shieldingFaceZatXmin,dump->_shieldingFaceXmin);
     dump->_frontShieldingOutline.emplace_back(dump->_shieldingFaceZatXmax,dump->_shieldingFaceXmax);
-
     dump->_frontShieldingOutline.emplace_back(psaVertices[3][0]+psAoffset[2]+deltaNE[0],psaVertices[3][1]+psAoffset[0]+deltaNE[1]);
 
     //----------------------------------------------------------------
@@ -204,6 +208,8 @@ namespace mu2e {
                <<", Xmax = "<<dump->_shieldingFaceXmax<<std::endl;
       std::cout<<"ProtonBeamDumpMaker"<<": shieldingFaceZatXmin = "<<dump->_shieldingFaceZatXmin
                <<", ZatXmax = "<<dump->_shieldingFaceZatXmax<<std::endl;
+      std::cout<<"Front Steel Center in Mu2e:  " << dump->_frontSteelCenterInMu2e[0] << ", " << dump->_frontSteelCenterInMu2e[1] << ", " << dump->_frontSteelCenterInMu2e[2] << std::endl;
+
     }
 
     return dump;

@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSareaW-CF1.ccl
+
+string building.W.TSareaCF1.name     = "WTSareaCF1";
+
+string building.W.TSareaCF1.material = "CONCRETE_MARS";
+
+double building.W.TSareaCF1.offsetFromMu2eOrigin.x   = 947.4;
+double building.W.TSareaCF1.offsetFromFloorSurface.y = 3200.4;
+double building.W.TSareaCF1.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.W.TSareaCF1.yHalfThickness           = 3352.8;
+
+vector<double> building.W.TSareaCF1.xPositions = {
+  -1270,   // P0
+  -2921,   // P1
+  -2921,   // P2
+  -1270   // P3
+};
+
+vector<double> building.W.TSareaCF1.yPositions = {
+  -3606.8,   // P0
+  -3606.8,   // P1
+  -4521.2,   // P2
+  -4521.2   // P3
+};
+
+// Local Variables:
+// mode:c++
+// End:

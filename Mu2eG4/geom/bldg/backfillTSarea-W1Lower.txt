@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_FillW-TSLower1.ccl
+
+string building.backfill.TSarea-W.1Lower.name     = "backfillTSarea-W1Lower";
+
+string building.backfill.TSarea-W.1Lower.material = "CA7Backfill";
+
+double building.backfill.TSarea-W.1Lower.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.TSarea-W.1Lower.offsetFromFloorSurface.y = 3200.4;
+double building.backfill.TSarea-W.1Lower.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.TSarea-W.1Lower.yHalfThickness           = 3352.8;
+
+vector<double> building.backfill.TSarea-W.1Lower.xPositions = {
+  -2006.6,   // F0
+  -1270,   // F1
+  -1270,   // F2
+  -2921,   // F3
+  -2921,   // F5
+  -2006.6   // F4
+};
+
+vector<double> building.backfill.TSarea-W.1Lower.yPositions = {
+  -609.6,   // F0
+  -609.6,   // F1
+  -3606.8,   // F2
+  -3606.8,   // F3
+  -2438.4,   // F5
+  -2438.4   // F4
+};
+
+// Local Variables:
+// mode:c++
+// End:
