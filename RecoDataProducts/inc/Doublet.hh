@@ -28,29 +28,32 @@ namespace mu2e {
 
   class Doublet{
   public:
-    enum { kMaxHits = 5 } ;
+    enum { kMaxNHits = 5,
+	   kMaxNComb = 4
+    } ;
 
     int                 fIndex;		// doublet index in the list
     int                 fStationId;
     int                 fPanelId;
     CLHEP::Hep3Vector   fShDir;
     int                 fNStrawHits;
-    int                 fStrawAmbig[kMaxHits];
-    CLHEP::Hep3Vector   fTrkDir    [kMaxHits];
-    CLHEP::Hep3Vector   fTrkPos    [kMaxHits];
-    mu2e::TrkStrawHit*  fHit       [kMaxHits];
-    int                 fHitIndex  [2]; // indices of the used pair of hits 
-    double              fTrkDxDz;	// track dx/dz in the local panel frame
-    double              fDxDz      [4];	// 4 combinations
-    double              fChi2      [4];	// 4 combinations
-    int                 fIBest;		// best combination
-    int                 fINext;		// next-to-best combination
-    int                 fOs;		// 0:opposite sign, +/-2:same sign
-    double              fMcDoca    [kMaxHits]; // signed MC distance of closest approach
+    int                 fStrawAmbig[kMaxNHits];
+    CLHEP::Hep3Vector   fTrkDir    [kMaxNHits];
+    CLHEP::Hep3Vector   fTrkPos    [kMaxNHits];
+    mu2e::TrkStrawHit*  fHit       [kMaxNHits];
+    double              fMcDoca    [kMaxNHits]; // signed MC distance of closest approach
+    int                 fHitIndex  [2];	        // indices of the used pair of hits 
+    double              fTrkDxDz;	        // track dx/dz in the local panel frame
+    double              fDxDz      [kMaxNComb]; // combinations
+    double              fChi2      [kMaxNComb]; // 
+    int                 fIBest;		        // best combination
+    int                 fINext;		        // next best combination
+    int                 fOs;		        // 0:opposite sign, +/-2:same sign
 //-----------------------------------------------------------------------------
 // constructors and such
 //-----------------------------------------------------------------------------
     Doublet();
+    Doublet(const Doublet& R);                 // unfortunately, need a copy constructor...
 
     Doublet(int index,
 	    int station, int panel, 
