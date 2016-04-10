@@ -13,7 +13,7 @@ double building.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.z   = -3581.4;
 double building.tsDsArea.firstFloorEdge.N.yHalfThickness           = 203.2;
 
 vector<double> building.tsDsArea.firstFloorEdge.N.xPositions = {
-  -1270,   // A
+  -2921,   // A
   0,   // A0
   0,   // B
   0,   // C
@@ -23,7 +23,7 @@ vector<double> building.tsDsArea.firstFloorEdge.N.xPositions = {
   44932.6,   // F1
   45745.4,   // f2
   45745.4,   // g1
-  -1270   // g
+  -2921   // g
 };
 
 vector<double> building.tsDsArea.firstFloorEdge.N.yPositions = {

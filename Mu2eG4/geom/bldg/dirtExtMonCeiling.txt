@@ -23,8 +23,8 @@ vector<double> dirt.extMon.ceiling.xPositions = {
   -21223.4,   // e0
   -19420,   // e1
   -18996.1,   // e5
-  -16032.1,   // e6
-  -16032.1,   // e6_to_S
+  -18300.1,   // e6
+  -18300.1,   // e6_to_S
   -50000,   // SWcorner
   -50000,   // d_to_W
   -50000,   // NWcorner
@@ -42,7 +42,7 @@ vector<double> dirt.extMon.ceiling.yPositions = {
   -8552.29,   // e0
   -8140.7,   // e1
   -3426.93,   // e5
-  -2683.4,   // e6
+  -3253.33,   // e6
   -50000,   // e6_to_S
   -50000,   // SWcorner
   -714.699,   // d_to_W

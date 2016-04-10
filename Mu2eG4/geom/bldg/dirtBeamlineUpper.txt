@@ -7,10 +7,12 @@ string dirt.beamline.upper.name     = "dirtBeamlineUpper";
 string dirt.beamline.upper.material = "MBOverburden";
 
 double dirt.beamline.upper.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.beamline.upper.offsetFromFloorSurface.y = 5537.2;
+//double dirt.beamline.upper.offsetFromFloorSurface.y = 5537.2;
+double dirt.beamline.upper.offsetFromFloorSurface.y = 5562.6;
 double dirt.beamline.upper.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.beamline.upper.yHalfThickness           = 355.6;
+//double dirt.beamline.upper.yHalfThickness           = 355.6;
+double dirt.beamline.upper.yHalfThickness           = 330.2;
 
 vector<int>    dirt.beamline.upper.xreplace   = { 9, 10 }; 
 vector<double> dirt.beamline.upper.xPositions = {

@@ -14,24 +14,16 @@ double dirt.foundation.Smid.yHalfThickness           = 533.4;
 
 vector<double> dirt.foundation.Smid.xPositions = {
   20345.4,   // h1
-  13131.8,   // h2
-  13131.8,   // h3
-  6223,   // h4
-  6223,   // h5
-  3784.6,   // h6
-  3784.6,   // h6_to_S
+  7861.3,   // h2
+  7861.3,   // h2_to_S
   20345.4   // h1_to_S
 };
 
-vector<int>    dirt.foundation.Smid.yreplace   = { 6, 7 }; 
+vector<int>    dirt.foundation.Smid.yreplace   = { 2, 3 }; 
 vector<double> dirt.foundation.Smid.yPositions = {
   -12115.8,   // h1
-  -12115.8,   // h2
-  -9652,   // h3
-  -9652,   // h4
-  -11836.4,   // h5
-  -11836.4,   // h6
-  -50000,   // h6_to_S
+  -11982.4,   // h2
+  -50000,   // h2_to_S
   -50000   // h1_to_S
 };
 

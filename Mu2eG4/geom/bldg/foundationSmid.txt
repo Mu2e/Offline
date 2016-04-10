@@ -34,11 +34,8 @@ vector<double> building.foundation.Smid.xPositions = {
   19431,   // G9
   20345.4,   // H0
   20345.4,   // h1
-  13131.8,   // h2
-  13131.8,   // h3
-  6223,   // h4
-  6223,   // h5
-  3784.6   // h6
+  7861.3,   // h2
+  3784.6   // H3
 };
 
 vector<double> building.foundation.Smid.yPositions = {
@@ -63,11 +60,8 @@ vector<double> building.foundation.Smid.yPositions = {
   -11303,   // G9
   -11303,   // H0
   -12115.8,   // h1
-  -12115.8,   // h2
-  -9652,   // h3
-  -9652,   // h4
-  -11836.4,   // h5
-  -11836.4   // h6
+  -11982.4,   // h2
+  -11982.4   // H3
 };
 
 // Local Variables:

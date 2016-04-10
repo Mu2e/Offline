@@ -13,19 +13,19 @@ double building.firstFloor.wall.offsetFromMu2eOrigin.z   = -3581.4;
 double building.firstFloor.wall.yHalfThickness           = 1828.8;
 
 vector<double> building.firstFloor.wall.xPositions = {
-  -1270,   // a
-  -965.2,   // b
-  -965.2,   // c
-  9525,   // d
-  9525,   // e
+  -2921,   // a
+  -2286,   // b
+  -2286,   // c
+  7975.6,   // d
+  7975.6,   // e
   45745.4,   // f
   45745.4,   // g
-  -1270   // h
+  -2921   // h
 };
 
 vector<double> building.firstFloor.wall.yPositions = {
-  -7861.3,   // a
-  -7861.3,   // b
+  -4292.6,   // a
+  -4292.6,   // b
   609.6,   // c
   609.6,   // d
   2032,   // e

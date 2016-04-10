@@ -13,17 +13,21 @@ double dirt.foundation.Su.offsetFromMu2eOrigin.z   = -3581.4;
 double dirt.foundation.Su.yHalfThickness           = 533.4;
 
 vector<double> dirt.foundation.Su.xPositions = {
-  -1371.6,   // f2
-  3784.6,   // f3
-  3784.6,   // f3_to_S
-  -1371.6   // f2_to_S
+  -3022.6,   // f2
+  3683,   // f3
+  3683,   // f4
+  7861.3,   // f5
+  7861.3,   // f5_to_S
+  -3022.6   // f2_to_S
 };
 
-vector<int>    dirt.foundation.Su.yreplace   = { 2, 3 }; 
+vector<int>    dirt.foundation.Su.yreplace   = { 4, 5 }; 
 vector<double> dirt.foundation.Su.yPositions = {
   -11836.4,   // f2
   -11836.4,   // f3
-  -50000,   // f3_to_S
+  -14116,   // f4
+  -14116,   // f5
+  -50000,   // f5_to_S
   -50000   // f2_to_S
 };
 

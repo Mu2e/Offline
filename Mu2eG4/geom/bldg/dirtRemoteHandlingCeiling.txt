@@ -1,0 +1,37 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remote_ceiling.ccl
+
+string dirt.remote.handling.ceiling.name     = "dirtRemoteHandlingCeiling";
+
+string dirt.remote.handling.ceiling.material = "MBOverburden";
+
+double dirt.remote.handling.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.remote.handling.ceiling.offsetFromFloorSurface.y = 4826;
+double dirt.remote.handling.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.remote.handling.ceiling.yHalfThickness           = 406.4;
+
+vector<int>    dirt.remote.handling.ceiling.xreplace   = { 3, 4 }; 
+vector<double> dirt.remote.handling.ceiling.xPositions = {
+  11684,   // r1
+  -12319,   // r8
+  -12319,   // e1
+  -50000,   // e1_to_W
+  -50000,   // NWcorner
+  11684   // r1_to_N
+};
+
+vector<int>    dirt.remote.handling.ceiling.yreplace   = { 4, 5 }; 
+vector<double> dirt.remote.handling.ceiling.yPositions = {
+  16611.6,   // r1
+  16611.6,   // r8
+  7086.6,   // e1
+  7086.6,   // e1_to_W
+  50000,   // NWcorner
+  50000   // r1_to_N
+};
+
+// Local Variables:
+// mode:c++
+// End:

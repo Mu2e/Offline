@@ -1,0 +1,37 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_tempFillpsAreaFoundation.ccl
+
+string building.tempDirt.backfill.psArea.baselevel.name     = "tempDirtBackfillPsAreaBaselevel";
+
+string building.tempDirt.backfill.psArea.baselevel.material = "CA7Backfill";
+
+double building.tempDirt.backfill.psArea.baselevel.offsetFromMu2eOrigin.x   = 947.4;
+double building.tempDirt.backfill.psArea.baselevel.offsetFromFloorSurface.y = -685.8;
+double building.tempDirt.backfill.psArea.baselevel.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.tempDirt.backfill.psArea.baselevel.yHalfThickness           = 533.4;
+
+vector<double> building.tempDirt.backfill.psArea.baselevel.xPositions = {
+  -3022.6,   // F0
+  -6042.02,   // F1
+  -12022.1,   // F2
+  -12416.9,   // F3
+  -18144,   // F4
+  -18196.8,   // f5
+  -3022.6   // f6
+};
+
+vector<double> building.tempDirt.backfill.psArea.baselevel.yPositions = {
+  -2438.4,   // F0
+  -2438.4,   // F1
+  -3887.35,   // F2
+  -2258.09,   // F3
+  -3645.74,   // F4
+  -11836.4,   // f5
+  -11836.4   // f6
+};
+
+// Local Variables:
+// mode:c++
+// End:

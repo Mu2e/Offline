@@ -14,15 +14,17 @@ double dirt.psArea.dirtSlab2.N.yHalfThickness           = 228.6;
 
 vector<double> dirt.psArea.dirtSlab2.N.xPositions = {
   -1270,   // c
+  -6251.7,   // DNB add
   -16032.1,   // e6
   -17108.7,   // e7
   -17108.7,   // e7_to_N
   -1270   // c_to_N
 };
 
-vector<int>    dirt.psArea.dirtSlab2.N.yreplace   = { 3, 4 }; 
+vector<int>    dirt.psArea.dirtSlab2.N.yreplace   = { 4, 5 }; 
 vector<double> dirt.psArea.dirtSlab2.N.yPositions = {
   0,   // c
+  0, // DNB add
   -2683.4,   // e6
   1760.03,   // e7
   50000,   // e7_to_N

@@ -7,27 +7,35 @@ string building.psArea.upper.S.name     = "psAreaUpperS";
 string building.psArea.upper.S.material = "CONCRETE_MARS";
 
 double building.psArea.upper.S.offsetFromMu2eOrigin.x   = 947.4;
-double building.psArea.upper.S.offsetFromFloorSurface.y = 5245.1;
+double building.psArea.upper.S.offsetFromFloorSurface.y = 4800.6;
 double building.psArea.upper.S.offsetFromMu2eOrigin.z   = -3581.4;
 
-double building.psArea.upper.S.yHalfThickness           = 850.9;
+double building.psArea.upper.S.yHalfThickness           = 381;
 
 vector<double> building.psArea.upper.S.xPositions = {
-  -1270,   // C
-  -6251.57,   // A
-  -16400.1,   // B
-  -16232.6,   // c
-  -6035.4,   // i1
-  -1270   // i2
+  -1270,   // P0
+  -6203.95,   // P1
+  -12428.5,   // P2 mod DNB  was  -12128.5
+  -12404.6,   // P3 mod DNB  was  -12104.6
+  -15958.7,   // P4
+  -16054.4,   // P5
+  -15758.1,   // P6
+  -15829.9,   // P7
+  -6327.77,   // P8
+  -1270   // P9
 };
 
 vector<double> building.psArea.upper.S.yPositions = {
-  0,   // C
-  0,   // A
-  -2458.94,   // B
-  -3150.14,   // c
-  -574.861,   // i1
-  -609.6   // i2
+  -609.6,   // P0
+  -609.6,   // P1
+  -2216.6,   // P2 mod DNB was -2045.09 
+  -2118,   // P3 mod DNB was  -2143.84
+  -3077.66,   // P4
+  -2682.68,   // P5
+  -2610.91,   // P6
+  -2314.68,   // P7
+  0,   // P8
+  0   // P9
 };
 
 // Local Variables:

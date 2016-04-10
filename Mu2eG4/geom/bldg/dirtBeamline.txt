@@ -19,8 +19,8 @@ vector<double> dirt.beamline.xPositions = {
   25934,   // o4
   14485.9,   // o5
   14558,   // o6
-  3074.63,   // o7dirt
-  3074.63,   // o7dirt_to_N
+  11684,   // o7dirt
+  11684,   // o7dirt_to_N
   50000,   // NEcorner
   50000   // o2_to_E
 };
@@ -32,7 +32,7 @@ vector<double> dirt.beamline.yPositions = {
   14469.7,   // o4
   11683.1,   // o5
   11387,   // o6
-  8591.89,   // o7dirt
+  10729,   // o7dirt
   50000,   // o7dirt_to_N
   50000,   // NEcorner
   6281.78   // o2_to_E

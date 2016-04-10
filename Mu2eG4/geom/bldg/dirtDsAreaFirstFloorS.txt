@@ -18,8 +18,8 @@ vector<double> dirt.dsArea.firstFloor.S.xPositions = {
   45745.4,   // g2
   38061.9,   // q2
   38061.9,   // q4
-  -1270,   // q5
-  -1270,   // q5_to_S
+  -2921,   // q5
+  -2921,   // q5_to_S
   50000,   // SEcorner
   50000   // q_to_E
 };

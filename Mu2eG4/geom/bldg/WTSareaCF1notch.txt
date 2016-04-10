@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSareaW-CF1notch.ccl
+
+string building.W.TSareaCF1notch.name     = "WTSareaCF1notch";
+
+string building.W.TSareaCF1notch.material = "CONCRETE_MARS";
+
+double building.W.TSareaCF1notch.offsetFromMu2eOrigin.x   = 947.4;
+double building.W.TSareaCF1notch.offsetFromFloorSurface.y = 6959.6;
+double building.W.TSareaCF1notch.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.W.TSareaCF1notch.yHalfThickness           = 406.4;
+
+vector<double> building.W.TSareaCF1notch.xPositions = {
+  -1270,   // P0
+  -2514.6,   // P1
+  -2514.6,   // P2
+  -1270   // P3
+};
+
+vector<double> building.W.TSareaCF1notch.yPositions = {
+  -3606.8,   // P0
+  -3606.8,   // P1
+  -4521.2,   // P2
+  -4521.2   // P3
+};
+
+// Local Variables:
+// mode:c++
+// End:

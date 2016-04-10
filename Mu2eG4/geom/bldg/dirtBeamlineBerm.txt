@@ -12,28 +12,38 @@ double dirt.beamline.berm.offsetFromMu2eOrigin.z   = -3581.4;
 
 double dirt.beamline.berm.yHalfThickness           = 1244.6;
 
-vector<int>    dirt.beamline.berm.xreplace   = { 3, 4, 6, 7 }; 
+vector<int>    dirt.beamline.berm.xreplace   = { 8, 9, 11, 12 }; 
 vector<double> dirt.beamline.berm.xPositions = {
-  -1270,   // a
-  -1270,   // b
-  45745.4,   // c
-  50000,   // c_to_E
-  50000,   // NEcorner
-  -1270,   // b_to_N
+  45745.4,   // a
+  -2921,   // b
+  -2921,   // P0
+  -6254.75,   // P1
+  -12346,   // P2
+  -12322,   // P3
+  -18147.9,   // P4
+  -18196.8,   // p5
+  -50000,   // p5_to_W
   -50000,   // NWcorner
-  -50000   // a_to_W
+  -2921,   // b_to_N
+  50000,   // NEcorner
+  50000   // a_to_E
 };
 
-vector<int>    dirt.beamline.berm.yreplace   = { 4, 5, 6 }; 
+vector<int>    dirt.beamline.berm.yreplace   = { 9, 10, 11 }; 
 vector<double> dirt.beamline.berm.yPositions = {
-  -7861.3,   // a
+  2438.4,   // a
   2438.4,   // b
-  2438.4,   // c
-  2438.4,   // c_to_E
-  50000,   // NEcorner
-  50000,   // b_to_N
+  -609.6,   // P0
+  -609.6,   // P1
+  -2085.47,   // P2
+  -2184.21,   // P3
+  -3595.78,   // P4
+  -7505.7,   // p5
+  -7505.7,   // p5_to_W
   50000,   // NWcorner
-  -7861.3   // a_to_W
+  50000,   // b_to_N
+  50000,   // NEcorner
+  2438.4   // a_to_E
 };
 
 // Local Variables:

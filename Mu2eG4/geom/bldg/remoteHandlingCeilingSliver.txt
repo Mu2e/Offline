@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remote_ceilingSliver.ccl
+
+string building.remote.handling.ceiling.Sliver.name     = "remoteHandlingCeilingSliver";
+
+string building.remote.handling.ceiling.Sliver.material = "CONCRETE_MARS";
+
+double building.remote.handling.ceiling.Sliver.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.ceiling.Sliver.offsetFromFloorSurface.y = 4826;
+double building.remote.handling.ceiling.Sliver.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.ceiling.Sliver.yHalfThickness           = 406.4;
+
+vector<double> building.remote.handling.ceiling.Sliver.xPositions = {
+  9245.6,   // R0
+  3708.4,   // R1
+  3708.4,   // R2
+  9245.6   // R3
+};
+
+vector<double> building.remote.handling.ceiling.Sliver.yPositions = {
+  16611.6,   // R0
+  16611.6,   // R1
+  16002,   // R2
+  16002   // R3
+};
+
+// Local Variables:
+// mode:c++
+// End:

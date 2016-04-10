@@ -13,12 +13,12 @@ double building.dsArea.firstFloor.S.offsetFromMu2eOrigin.z   = -3581.4;
 double building.dsArea.firstFloor.S.yHalfThickness           = 203.2;
 
 vector<double> building.dsArea.firstFloor.S.xPositions = {
-  -1270,   // A
+  -2921,   // A
   45745.4,   // q
   45745.4,   // g2
   38061.9,   // q2
   38061.9,   // q4
-  -1270   // q5
+  -2921   // q5
 };
 
 vector<double> building.dsArea.firstFloor.S.yPositions = {
