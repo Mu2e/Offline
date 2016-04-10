@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_PSareaCF3.ccl
+
+string building.psAreaCF3.name     = "psAreaCF3";
+
+string building.psAreaCF3.material = "CONCRETE_MARS";
+
+double building.psAreaCF3.offsetFromMu2eOrigin.x   = 947.4;
+double building.psAreaCF3.offsetFromFloorSurface.y = 2514.6;
+double building.psAreaCF3.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.psAreaCF3.yHalfThickness           = 2667;
+
+vector<double> building.psAreaCF3.xPositions = {
+  -4851.4,   // P0
+  -4851.4,   // P1
+  -4089.4,   // P2
+  -4089.4   // P3
+};
+
+vector<double> building.psAreaCF3.yPositions = {
+  -609.6,   // P0
+  -2286,   // P1
+  -2286,   // P2
+  -609.6   // P3
+};
+
+// Local Variables:
+// mode:c++
+// End:

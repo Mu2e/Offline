@@ -11,6 +11,19 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/beamline.txt"
 #include "Mu2eG4/geom/bldg/beamlineCeiling.txt"
 #include "Mu2eG4/geom/bldg/beamlineUpper.txt"
+#include "Mu2eG4/geom/bldg/backfillPsAreaBaselevel.txt"
+#include "Mu2eG4/geom/bldg/backfillPsAreaInter.txt"
+#include "Mu2eG4/geom/bldg/backfillPsAreaLower.txt"
+#include "Mu2eG4/geom/bldg/backfillPsAreaRWallFootLevel.txt"
+#include "Mu2eG4/geom/bldg/backfillPsAreaTopLayer.txt"
+//#include "Mu2eG4/geom/bldg/backfillTSarea-W1.txt"
+#include "Mu2eG4/geom/bldg/backfillTSarea-W1Lower.txt"
+//#include "Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotch2.txt"
+#include "Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchLower.txt"
+#include "Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper1.txt"
+#include "Mu2eG4/geom/bldg/backfillTSarea-W1UpperNotchUpper2.txt"
+#include "Mu2eG4/geom/bldg/backfillTSarea-W2.txt"
+#include "Mu2eG4/geom/bldg/backfillTSarea-W2Upper.txt"
 #include "Mu2eG4/geom/bldg/dsArea.txt"
 #include "Mu2eG4/geom/bldg/dsAreaAlcove1Ceiling.txt"
 #include "Mu2eG4/geom/bldg/dsAreaAlcove2Ceiling.txt"
@@ -35,6 +48,7 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/extMonCeiling.txt"
 #include "Mu2eG4/geom/bldg/extMonUpper.txt"
 #include "Mu2eG4/geom/bldg/firstFloorWall.txt"
+#include "Mu2eG4/geom/bldg/firstFloorWallExtension.txt"
 #include "Mu2eG4/geom/bldg/floorN.txt"
 #include "Mu2eG4/geom/bldg/floorPassage.txt"
 #include "Mu2eG4/geom/bldg/floorRemote.txt"
@@ -55,7 +69,12 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/passageW.txt"
 #include "Mu2eG4/geom/bldg/psArea.txt"
 #include "Mu2eG4/geom/bldg/psAreaCeiling.txt"
+#include "Mu2eG4/geom/bldg/psAreaCF1.txt"
+#include "Mu2eG4/geom/bldg/psAreaCF2.txt"
+#include "Mu2eG4/geom/bldg/psAreaCF3.txt"
+#include "Mu2eG4/geom/bldg/psAreaCF4.txt"
 #include "Mu2eG4/geom/bldg/psAreaRemoteHandlingWall.txt"
+#include "Mu2eG4/geom/bldg/psAreaShieldingBlock.txt"
 #include "Mu2eG4/geom/bldg/psAreaUpper2N.txt"
 #include "Mu2eG4/geom/bldg/psAreaUpperN.txt"
 #include "Mu2eG4/geom/bldg/psAreaUpperNotch.txt"
@@ -64,9 +83,10 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/radiationSlab1.txt"
 #include "Mu2eG4/geom/bldg/radiationSlab2.txt"
 #include "Mu2eG4/geom/bldg/radiationSlab3.txt"
-#include "Mu2eG4/geom/bldg/radiationSlab4.txt"
+//#include "Mu2eG4/geom/bldg/radiationSlab4.txt"
 #include "Mu2eG4/geom/bldg/remoteHandling.txt"
 #include "Mu2eG4/geom/bldg/remoteHandlingCeiling.txt"
+#include "Mu2eG4/geom/bldg/remoteHandlingCeilingSliver.txt"
 #include "Mu2eG4/geom/bldg/remoteHandlingDoorFrame.txt"
 #include "Mu2eG4/geom/bldg/tsAreaAlcoveLowerRoof.txt"
 #include "Mu2eG4/geom/bldg/tsAreaAlcoveVerticalN.txt"
@@ -79,11 +99,29 @@ double yOfFloorSurface.below.mu2eOrigin = -2312; // mm -(728.58684' - 721')
 #include "Mu2eG4/geom/bldg/tsAreaW.txt"
 #include "Mu2eG4/geom/bldg/tsDsAreaFirstFloorEdgeN.txt"
 #include "Mu2eG4/geom/bldg/tsDsAreaWallinsertN.txt"
+#include "Mu2eG4/geom/bldg/WTSareaCF1.txt"
+#include "Mu2eG4/geom/bldg/WTSareaCF1notch.txt"
+#include "Mu2eG4/geom/bldg/WTSareaCF2.txt"
+#include "Mu2eG4/geom/bldg/WTSareaCF2notch.txt"
+#include "Mu2eG4/geom/bldg/WTSareaCFbeam.txt"
+#include "Mu2eG4/geom/bldg/SRetainingWall.txt"
+#include "Mu2eG4/geom/bldg/SRetainingWallFoot.txt"
 
 vector<string> bldg.prefix.list = { 
    "building.beamline",
    "building.beamline.ceiling",
    "building.beamline.upper",
+   "building.backfill.psArea.baselevel",
+   "building.backfill.psArea.Inter",
+   "building.backfill.psArea.Lower",
+   "building.backfill.psArea.RWallFootLevel",
+   "building.backfill.psArea.TopLayer",
+   "building.backfill.TSarea-W.1Lower",
+   "building.backfill.TSarea-W.1UpperNotchLower",
+   "building.backfill.TSarea-W.1UpperNotchUpper1",
+   "building.backfill.TSarea-W.1UpperNotchUpper2",
+   "building.backfill.TSarea-W.2",
+   "building.backfill.TSarea-W.2Upper",
    "building.dsArea",
    "building.dsArea.alcove1.ceiling",
    "building.dsArea.alcove2.ceiling",
@@ -108,6 +146,7 @@ vector<string> bldg.prefix.list = {
    "building.extMon.ceiling",
    "building.extMon.upper",
    "building.firstFloor.wall",
+   "building.firstFloor.wall.extension",
    "building.floor.N",
    "building.floor.Sd",
    "building.floor.Su",
@@ -128,7 +167,12 @@ vector<string> bldg.prefix.list = {
    "building.passage.ceiling",
    "building.psArea",
    "building.psArea.ceiling",
+   "building.psAreaCF1",
+   "building.psAreaCF2",
+   "building.psAreaCF3",
+   "building.psAreaCF4",
    "building.psArea.remote.handling.wall",
+   "building.psArea.ShieldingBlock",
    "building.psArea.upper.N",
    "building.psArea.upper.S",
    "building.psArea.upper2.N",
@@ -137,9 +181,9 @@ vector<string> bldg.prefix.list = {
    "building.radiation.slab1",
    "building.radiation.slab2",
    "building.radiation.slab3",
-   "building.radiation.slab4",
    "building.remote.handling",
    "building.remote.handling.ceiling",
+   "building.remote.handling.ceiling.Sliver",
    "building.remote.handling.door.frame",
    "building.tsArea.W",
    "building.tsArea.alcove.lowerRoof",
@@ -151,8 +195,22 @@ vector<string> bldg.prefix.list = {
    "building.tsArea.upper.W",
    "building.tsArea.upper2.W",
    "building.tsDsArea.firstFloorEdge.N",
-   "building.tsDsArea.wallinsert.N"
+   "building.tsDsArea.wallinsert.N",
+   "building.W.TSareaCF1",
+   "building.W.TSareaCF1notch",
+   "building.W.TSareaCF2",
+   "building.W.TSareaCF2notch",
+   "building.W.TSareaCFbeam",
+   "building.S.retaining.Wall",
+   "building.S.retaining.Wall.Foot"
 };
+
+//   "building.tempDirt.backfill.psArea.baselevel",
+//   "building.tempDirt.backfill.psArea.Inter",
+//   "building.tempDirt.backfill.psArea.Lower",
+//   "building.tempDirt.backfill.psArea.RWallFootLevel",
+//   "building.tempDirt.backfill.psArea.TopLayer",
+
 
 #include "Mu2eG4/geom/bldg/dirtBeamline.txt"
 #include "Mu2eG4/geom/bldg/dirtBeamlineBerm.txt"
@@ -176,7 +234,6 @@ vector<string> bldg.prefix.list = {
 #include "Mu2eG4/geom/bldg/dirtDsAreaUpperSE.txt"
 #include "Mu2eG4/geom/bldg/dirtExtMon.txt"
 #include "Mu2eG4/geom/bldg/dirtExtMonCeiling.txt"
-#include "Mu2eG4/geom/bldg/dirtExtMonUpper.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationE.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationExtMon.txt"
 #include "Mu2eG4/geom/bldg/dirtFoundationExtMonPSarea.txt"
@@ -188,27 +245,37 @@ vector<string> bldg.prefix.list = {
 #include "Mu2eG4/geom/bldg/dirtIsland.txt"
 #include "Mu2eG4/geom/bldg/dirtIslandUpper.txt"
 #include "Mu2eG4/geom/bldg/dirtPassageE.txt"
-#include "Mu2eG4/geom/bldg/dirtPsArea.txt"
+//#include "Mu2eG4/geom/bldg/dirtPsArea.txt"
 #include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2N.txt"
-#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2S.txt"
+//#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlab2S.txt"
 #include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlabN.txt"
-#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlabS.txt"
+//#include "Mu2eG4/geom/bldg/dirtPsAreaDirtSlabS.txt"
 #include "Mu2eG4/geom/bldg/dirtPsAreaUpper2N.txt"
 #include "Mu2eG4/geom/bldg/dirtPsAreaUpper2SliverN.txt"
 #include "Mu2eG4/geom/bldg/dirtPsAreaUpperN.txt"
-#include "Mu2eG4/geom/bldg/dirtPsAreaUpperS.txt"
+//#include "Mu2eG4/geom/bldg/dirtPsAreaUpperS.txt"
 //#include "Mu2eG4/geom/bldg/dirtPsAreaUpperSliverS.txt"
 #include "Mu2eG4/geom/bldg/dirtPsAreaW.txt"
-#include "Mu2eG4/geom/bldg/dirtPsWallUpper.txt"
+//#include "Mu2eG4/geom/bldg/dirtPsWallUpper.txt"
 #include "Mu2eG4/geom/bldg/dirtPsWallUpperSliver.txt"
 #include "Mu2eG4/geom/bldg/dirtRemoteHandling.txt"
+#include "Mu2eG4/geom/bldg/dirtRemoteHandlingCeiling.txt"
 #include "Mu2eG4/geom/bldg/dirtTsAreaAlcove.txt"
 #include "Mu2eG4/geom/bldg/dirtTsAreaStairwell.txt"
 #include "Mu2eG4/geom/bldg/dirtTsAreaUpper2W.txt"
 #include "Mu2eG4/geom/bldg/dirtTsAreaUpperW.txt"
 #include "Mu2eG4/geom/bldg/dirtTsAreaW.txt"
+#include "Mu2eG4/geom/bldg/dirtWTSareaCF2.txt"
+#include "Mu2eG4/geom/bldg/dirtWTSareaCF2notch.txt"
+#include "Mu2eG4/geom/bldg/dirtWTSareaCFbeam.txt"
 #include "Mu2eG4/geom/bldg/dirtTsDsAreaFirstFloorEdgeN.txt"
 #include "Mu2eG4/geom/bldg/dirtUpToGradeLevelW.txt"
+#include "Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaBaselevel.txt"
+#include "Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaInter.txt"
+#include "Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaLower.txt"
+#include "Mu2eG4/geom/bldg/dirtTempDirtBackfillPsAreaRWallFootLevel.txt"
+#include "Mu2eG4/geom/bldg/dirtTempSofRetWallTop.txt"
+#include "Mu2eG4/geom/bldg/dirtSRetainingWallFoot.txt"
 
 vector<string> dirt.prefix.list = { 
   "dirt.beamline",
@@ -233,7 +300,6 @@ vector<string> dirt.prefix.list = {
   "dirt.dsArea.upper.SE",
   "dirt.extMon",
   "dirt.extMon.ceiling",
-  "dirt.extMon.upper",
   "dirt.foundation.E",
   "dirt.foundation.N",
   "dirt.foundation.Sd",
@@ -245,27 +311,41 @@ vector<string> dirt.prefix.list = {
   "dirt.island",
   "dirt.island.upper",
   "dirt.passage.E",
-  "dirt.psArea",
   "dirt.psArea.W",
   "dirt.psArea.dirtSlab.N",
-  "dirt.psArea.dirtSlab.S",
   "dirt.psArea.dirtSlab2.N",
-  "dirt.psArea.dirtSlab2.S",
   "dirt.psArea.upper.N",
-  "dirt.psArea.upper.S",
   "dirt.psArea.upper2.N",
   "dirt.psArea.upper2.sliver.N",
-  "dirt.psWall.upper",
   "dirt.psWall.upper.sliver",
   "dirt.remote.handling",
+  "dirt.remote.handling.ceiling",
   "dirt.tsArea.W",
   "dirt.tsArea.alcove",
   "dirt.tsArea.stairwell",
   "dirt.tsArea.upper.W",
   "dirt.tsArea.upper2.W",
+  "dirt.W.TSareaCF2",
+  "dirt.W.TSareaCF2notch",
+  "dirt.W.TSareaCFbeam",
   "dirt.tsDsArea.firstFloorEdge.N",
-  "dirt.upToGradeLevel.W"
+  "dirt.upToGradeLevel.W",
+  "dirt.tempDirt.backfill.psArea.baselevel",
+  "dirt.tempDirt.backfill.psArea.Inter",
+  "dirt.tempDirt.backfill.psArea.Lower",
+  "dirt.tempDirt.backfill.psArea.RWallFootLevel",
+  "dirt.Temp.SofRetWallTop",
+  "dirt.S.retaining.Wall.Foot"
 };
+
+  //  "dirt.extMon.upper",
+  //  "dirt.psWall.upper",
+  //  "dirt.psArea",
+  //  "dirt.psArea.dirtSlab.S",
+  //  "dirt.psArea.dirtSlab2.S",
+  //  "dirt.psArea.upper.S",
+
+
 
 // Local Variables:
 // mode:c++

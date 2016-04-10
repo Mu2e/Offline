@@ -1,0 +1,41 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_tempFillpsAreaRFoot.ccl
+
+string building.tempDirt.backfill.psArea.RWallFootLevel.name     = "tempDirtBackfillPsAreaRWallFootLevel";
+
+string building.tempDirt.backfill.psArea.RWallFootLevel.material = "CA7Backfill";
+
+double building.tempDirt.backfill.psArea.RWallFootLevel.offsetFromMu2eOrigin.x   = 947.4;
+double building.tempDirt.backfill.psArea.RWallFootLevel.offsetFromFloorSurface.y = 6629.4;
+double building.tempDirt.backfill.psArea.RWallFootLevel.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.tempDirt.backfill.psArea.RWallFootLevel.yHalfThickness           = 228.6;
+
+vector<double> building.tempDirt.backfill.psArea.RWallFootLevel.xPositions = {
+  -2921,   // P0
+  -6254.75,   // P1
+  -12346.2,   // P2
+  -12322.3,   // P3
+  -18148.4,   // P4
+  -18196.8,   // p5
+  -12192,   // p6
+  -12192,   // P7
+  -2921   // P8
+};
+
+vector<double> building.tempDirt.backfill.psArea.RWallFootLevel.yPositions = {
+  -609.6,   // P0
+  -609.6,   // P1
+  -2084.4,   // P2
+  -2183.15,   // P3
+  -3593.7,   // P4
+  -7505.7,   // p5
+  -7505.7,   // p6
+  -4813.3,   // P7
+  -4813.3   // P8
+};
+
+// Local Variables:
+// mode:c++
+// End:

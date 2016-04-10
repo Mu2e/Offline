@@ -1,0 +1,32 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSareaW-CF2notch.ccl
+
+string dirt.W.TSareaCF2notch.name     = "dirtWTSareaCF2notch";
+
+string dirt.W.TSareaCF2notch.material = "MBOverburden";
+
+double dirt.W.TSareaCF2notch.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.W.TSareaCF2notch.offsetFromFloorSurface.y = 6959.6;
+double dirt.W.TSareaCF2notch.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.W.TSareaCF2notch.yHalfThickness           = 406.4;
+
+vector<double> dirt.W.TSareaCF2notch.xPositions = {
+  -2514.6,   // p2
+  -1270,   // p3
+  -1270,   // p3_to_S
+  -2514.6   // p2_to_S
+};
+
+vector<int>    dirt.W.TSareaCF2notch.yreplace   = { 2, 3 }; 
+vector<double> dirt.W.TSareaCF2notch.yPositions = {
+  -10617.2,   // p2
+  -10617.2,   // p3
+  -50000,   // p3_to_S
+  -50000   // p2_to_S
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,32 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSareaW-CFbeam.ccl
+
+string dirt.W.TSareaCFbeam.name     = "dirtWTSareaCFbeam";
+
+string dirt.W.TSareaCFbeam.material = "MBOverburden";
+
+double dirt.W.TSareaCFbeam.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.W.TSareaCFbeam.offsetFromFloorSurface.y = 6959.6;
+double dirt.W.TSareaCFbeam.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.W.TSareaCFbeam.yHalfThickness           = 406.4;
+
+vector<double> dirt.W.TSareaCFbeam.xPositions = {
+  -2921,   // p1
+  -2514.6,   // p2
+  -2514.6,   // p2_to_S
+  -2921   // p1_to_S
+};
+
+vector<int>    dirt.W.TSareaCFbeam.yreplace   = { 2, 3 }; 
+vector<double> dirt.W.TSareaCFbeam.yPositions = {
+  -11734.8,   // p1
+  -11734.8,   // p2
+  -50000,   // p2_to_S
+  -50000   // p1_to_S
+};
+
+// Local Variables:
+// mode:c++
+// End:
