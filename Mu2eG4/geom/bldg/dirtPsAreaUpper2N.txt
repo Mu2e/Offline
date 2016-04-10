@@ -7,10 +7,12 @@ string dirt.psArea.upper2.N.name     = "dirtPsAreaUpper2N";
 string dirt.psArea.upper2.N.material = "MBOverburden";
 
 double dirt.psArea.upper2.N.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.psArea.upper2.N.offsetFromFloorSurface.y = 5638.8;
+//double dirt.psArea.upper2.N.offsetFromFloorSurface.y = 5638.8;
+double dirt.psArea.upper2.N.offsetFromFloorSurface.y = 5664.6;
 double dirt.psArea.upper2.N.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.psArea.upper2.N.yHalfThickness           = 457.2;
+//double dirt.psArea.upper2.N.yHalfThickness           = 457.2;
+double dirt.psArea.upper2.N.yHalfThickness           = 431.4;
 
 vector<int>    dirt.psArea.upper2.N.xreplace   = { 4, 5 }; 
 vector<double> dirt.psArea.upper2.N.xPositions = {

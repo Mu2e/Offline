@@ -4,6 +4,7 @@
 
 string dirt.tsArea.W.name     = "dirtTsAreaW";
 
+//string dirt.tsArea.W.material = "MBOverburden";
 string dirt.tsArea.W.material = "MBOverburden";
 
 double dirt.tsArea.W.offsetFromMu2eOrigin.x   = 947.4;

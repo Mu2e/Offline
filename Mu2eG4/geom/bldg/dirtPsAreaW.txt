@@ -14,8 +14,8 @@ double dirt.psArea.W.yHalfThickness           = 2273.3;
 
 vector<int>    dirt.psArea.W.xreplace   = { 3, 4 }; 
 vector<double> dirt.psArea.W.xPositions = {
-  -12319,   // p8
-  -12319,   // p9
+  -14757.4,  // p8 mod DNB was  -12319
+  -14757.4,   // p9 mod DNB was  -12319
   -19496.4,   // q4
   -50000,   // q4_to_W
   -50000   // p8_to_W

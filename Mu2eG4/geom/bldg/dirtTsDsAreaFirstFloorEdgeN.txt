@@ -16,8 +16,8 @@ vector<int>    dirt.tsDsArea.firstFloorEdge.N.xreplace   = { 4, 5 };
 vector<double> dirt.tsDsArea.firstFloorEdge.N.xPositions = {
   45745.4,   // f2
   45745.4,   // g1
-  -1270,   // g
-  -1270,   // g_to_N
+  -2921,   // g
+  -2921,   // g_to_N
   50000,   // NEcorner
   50000   // f2_to_E
 };

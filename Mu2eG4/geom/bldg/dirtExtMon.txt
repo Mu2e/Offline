@@ -14,7 +14,7 @@ double dirt.extMon.yHalfThickness           = 1219.2;
 
 vector<int>    dirt.extMon.xreplace   = { 10, 11 }; 
 vector<double> dirt.extMon.xPositions = {
-  -16330.2,   // e4
+  -18300.1,   // t1
   -18996.1,   // e5
   -19420,   // e6
   -21223.4,   // e7
@@ -26,12 +26,12 @@ vector<double> dirt.extMon.xPositions = {
   -17405,   // f3
   -50000,   // f3_to_W
   -50000,   // SWcorner
-  -16330.2   // e4_to_S
+  -18300.1   // t1_to_S
 };
 
 vector<int>    dirt.extMon.yreplace   = { 11, 12 }; 
 vector<double> dirt.extMon.yPositions = {
-  -2755.62,   // e4
+  -3252.33,   // t1
   -3426.93,   // e5
   -8140.7,   // e6
   -8552.29,   // e7
@@ -43,7 +43,7 @@ vector<double> dirt.extMon.yPositions = {
   1688.26,   // f3
   1688.26,   // f3_to_W
   -50000,   // SWcorner
-  -50000   // e4_to_S
+  -50000   // t1_to_S
 };
 
 // Local Variables:
