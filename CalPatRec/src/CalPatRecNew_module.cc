@@ -114,7 +114,10 @@ namespace mu2e {
       _folder->Add(_ref);
     }
 
+    fgTimeOffsets     = new SimParticleTimeOffset(pset.get<fhicl::ParameterSet>("TimeOffsets"));
+
     _helTraj = 0;
+    _bfield  = 0;
   }
 
 //-----------------------------------------------------------------------------
@@ -574,24 +577,24 @@ namespace mu2e {
 				   art::Handle<mu2e::StrawHitCollection> &StrawhitsH,
 				   art::Event& Event){
 
-     // get flight distance of z=0
-    double    t0flt = SeedDef.helix().zFlight(0.0);
-    // estimate the momentum at that point using the helix parameters.  This is
-    // assumed constant for this crude estimate
-    double    mom   = TrkMomCalculator::vecMom(SeedDef.helix(), bField(), t0flt).mag();
-    // compute the particle velocity
-    double    vflt  = SeedDef.particle().beta(mom)*CLHEP::c_light;
-//-----------------------------------------------------------------------------
-// Calculate the path length of the particle from the middle of the Tracker to the
-// calorimeter, TPeak->Z() is calculated wrt the tracker center
-//-----------------------------------------------------------------------------
-    double    path  = TPeak->ClusterZ()/SeedDef.helix().sinDip();
+//      // get flight distance of z=0
+//     double    t0flt = SeedDef.helix().zFlight(0.0);
+//     // estimate the momentum at that point using the helix parameters.  This is
+//     // assumed constant for this crude estimate
+//     double    mom   = TrkMomCalculator::vecMom(SeedDef.helix(), bField(), t0flt).mag();
+//     // compute the particle velocity
+//     double    vflt  = SeedDef.particle().beta(mom)*CLHEP::c_light;
+// //-----------------------------------------------------------------------------
+// // Calculate the path length of the particle from the middle of the Tracker to the
+// // calorimeter, TPeak->Z() is calculated wrt the tracker center
+// //-----------------------------------------------------------------------------
+//     double    path  = TPeak->ClusterZ()/SeedDef.helix().sinDip();
 
-    //Set T0
-    TrkSeed._t0    = TPeak->ClusterT0() + _dtoffset - path/vflt;
+//     //Set T0
+//     TrkSeed._t0    = TPeak->ClusterT0() + _dtoffset - path/vflt;
 
-    //Set dummy error value
-    TrkSeed._errt0 = 1.;
+//     //Set dummy error value
+//     TrkSeed._errt0 = 1.;
 
     //set helix parameters
     TrkSeed._fullTrkSeed._d0     = SeedDef.helix().d0();
