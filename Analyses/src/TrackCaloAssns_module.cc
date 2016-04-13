@@ -14,6 +14,7 @@
 //
 // Original author Robert Bernstein
 //
+#include "RecoDataProducts/inc/TrackCaloAssns.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -113,56 +114,7 @@ using CLHEP::keV;
 
 
 
-namespace mu2e {
-  class TrackCaloMatchInfo {
-  public:
-
-    TrackCaloMatchInfo(
-		       art::Ptr<KalRep> trkPtr
-		       , art::Ptr<CaloCluster> caloPtr
-		       , double chi2 = -1.
-		       , double chi2Pos = -1.
-		       , double chi2Time = -1.
-		       , double kFrac = -1.
-		       , double kinetic = -1.
-		       , double eOverP = -1.)
-    { _trkPtr = trkPtr;
-      _caloPtr = caloPtr;
-      _chi2 = chi2;
-      _chi2Pos = chi2Pos;
-      _chi2Time = chi2Time;
-      _kFrac = kFrac;
-      _kinetic = kinetic;
-      _eOverP = eOverP;
-    }
-
-
-    art::Ptr<KalRep>               getTrkPtr()      const {return _trkPtr;}
-    art::Ptr<CaloCluster>          getCaloPtr()      const {return _caloPtr;}
-    double                         getChi2() const {return _chi2;}
-    double                         getChi2Pos() const {return _chi2Pos;}
-    double                         getChi2Time() const {return _chi2Time;}
-    double                         getKineticFrac() const {return _kFrac;}
-    double                         getKinetic() const {return _kinetic;}
-    double                         getEOverP() const {return _eOverP;}
-
-
-  private:
-    art::Ptr<KalRep> _trkPtr;
-    art::Ptr<CaloCluster> _caloPtr;
-    double _chi2;
-    double _chi2Pos;
-    double _chi2Time;
-    double _kFrac;
-    double _kinetic;
-    double _eOverP;
-
-  };
-
- 
-  // use as many-to-many Assns (want track, cluster, payload not Ptr's)
-  typedef art::Assns<KalRep,CaloCluster,TrackCaloMatchInfo> TrackCaloMatch;
-
+namespace mu2e{
   class TrackCaloAssns : public art::EDProducer {
   public:
 
@@ -225,7 +177,7 @@ namespace mu2e {
   {
     _instanceName = _fdir.name() + _tpart.name();
     _trkfitInstanceName = _fdir.name() + _tpart.name();
-    produces<TrackCaloAssns>();
+    produces<TrackCaloMatchAssns>();
    }
 
   void TrackCaloAssns::beginJob(){
@@ -234,18 +186,16 @@ namespace mu2e {
 
     _Ntup  = tfs->make<TTree>("TrackCaloAssns", "TrackCaloAssns");
   }
-
-
-
+ 
   void TrackCaloAssns::endJob(){}
 
 
 
 
   void TrackCaloAssns::produce(art::Event& event) {
+ 
 
-
-    auto outputTrackCaloMatch = std::make_unique<TrackCaloMatch>();
+    auto outputTrackCaloMatch = std::make_unique<TrackCaloMatchAssns>();
 
     ++_nProcess;
     if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from TrackCaloAssns =  "<<_nProcess << " with instance name " << _instanceName <<std::endl;
@@ -259,9 +209,9 @@ namespace mu2e {
 
 
     //get tracks
-    art::Handle<KalRepCollection> krepsHandle;
+    art::Handle<KalRepPtrCollection> krepsHandle;
     event.getByLabel(_trkPatRecModuleLabel,_instanceName,krepsHandle);
-    KalRepCollection const& kreps = *krepsHandle;  
+    KalRepPtrCollection const& kreps = *krepsHandle;  
 
     //get matches
     art::Handle<TrkCaloMatchCollection>  trkCaloMatchHandle;
@@ -269,7 +219,7 @@ namespace mu2e {
     TrkCaloMatchCollection const& trkCaloMatches(*trkCaloMatchHandle);
 
  
-	for (KalRepCollection::const_iterator ithTrk=kreps.begin(); ithTrk != kreps.end(); ++ithTrk)
+	for (KalRepPtrCollection::const_iterator ithTrk=kreps.begin(); ithTrk != kreps.end(); ++ithTrk)
 	  {
 	    KalRep const& trk = **ithTrk;
 	    //
@@ -325,9 +275,9 @@ namespace mu2e {
 
 		    //
 		    // create ptrs to track and to cluster and to intersection objects
-		    art::Ptr<KalRep> _trkPtr(krepsHandle,trackIndex); 
+		    art::Ptr<KalRepPtr> _trkPtr(krepsHandle,trackIndex); 
 		    art::Ptr<CaloCluster> _caloPtr(caloClustersHandle,caloIndex);
-		    auto trkCaloAssnInfo = TrackCaloMatchInfo(_trkPtr,_caloPtr,_chi2Match,_chi2PosMatch,_chi2TimeMatch,_kFrac,_kinetic,_eOverP);
+		    auto trkCaloAssnInfo = TrackCaloMatchInfo(_chi2Match,_chi2PosMatch,_chi2TimeMatch,_kFrac,_kinetic,_eOverP);
 		    outputTrackCaloMatch->addSingle(_trkPtr,_caloPtr,trkCaloAssnInfo);
 		  }
 	      }
