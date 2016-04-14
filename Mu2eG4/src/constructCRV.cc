@@ -117,12 +117,12 @@ namespace mu2e
       G4Material* CMBMaterial = findMaterialOrThrow(barDetail.getCMBMaterialName());
       std::vector<double> const & CMBHalfLengths = barDetail.getCMBHalfLengths();
 
-      G4VSolid* CMBSolid = new G4Box(CRVsectorName+"_CMB",
+      G4VSolid* CMBSolid = new G4Box("CRSCMB_"+CRVsectorName,
                                      CMBHalfLengths[0],
                                      CMBHalfLengths[1],
                                      CMBHalfLengths[2]);
 
-      G4LogicalVolume* CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, CRVsectorName+"_CMB");
+      G4LogicalVolume* CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, "CRSCMB_"+CRVsectorName);
 
       // visibility attributes
       if (!scintillatorShieldVisible) 
@@ -206,7 +206,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
               G4VPhysicalVolume* pvCMB0 = new G4PVPlacement(NULL,
                                                             CMB0LayerOffset,
                                                             CMBLogical,
-                                                            bar.name("CMB0_CRSScintillatorBar_"),
+                                                            bar.name("CRSCMB0_CRSScintillatorBar_"),
                                                             layerInfo.logical,
                                                             false,
                                                             2*bar.index().asInt(),
@@ -219,7 +219,7 @@ if(!_config.getBool("crs.hideCRVCMBs"))
               G4VPhysicalVolume* pvCMB1 = new G4PVPlacement(NULL,
                                                             CMB1LayerOffset,
                                                             CMBLogical,
-                                                            bar.name("CMB1_CRSScintillatorBar_"),
+                                                            bar.name("CRSCMB1_CRSScintillatorBar_"),
                                                             layerInfo.logical,
                                                             false,
                                                             2*bar.index().asInt()+1,

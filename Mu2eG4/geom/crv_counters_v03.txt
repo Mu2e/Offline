@@ -207,7 +207,7 @@ vector<double>  crs.vdDirectionU  =  {0, 0, -1};
 // counter mother boards
 double crs.CMBOffset        = 15.0;
 double crs.CMBHalfThickness =  1.0;
-string crs.CMBMaterialName  = "G10";
+string crs.CMBMaterialName  = "Electronics";
 
 // information about the SiPMs 
 // side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
@@ -302,55 +302,56 @@ int crs.sectorTypeD3  = 4;  //19
 int crs.sectorTypeD4  = 4;  //20
 
 //information about the FEBs
-int crs.FEBsAtSide0R1  = 1; //0 
-int crs.FEBsAtSide0R2  = 0; //1 
-int crs.FEBsAtSide0R3  = 1; //2 
-int crs.FEBsAtSide0R4  = 1; //3 
-int crs.FEBsAtSide0R5  = 1; //4 
-int crs.FEBsAtSide0R6  = 1; //5 
-int crs.FEBsAtSide0L1  = 1; //6 
-int crs.FEBsAtSide0L2  = 1; //7 
-int crs.FEBsAtSide0L3  = 1; //8 
-int crs.FEBsAtSide0T1  = 0; //9 
-int crs.FEBsAtSide0T2  = 0; //10 
-int crs.FEBsAtSide0T3  = 0; //11
-int crs.FEBsAtSide0T4  = 0; //12
-int crs.FEBsAtSide0D1  = 1; //13
-int crs.FEBsAtSide0U   = 1; //14 
-int crs.FEBsAtSide0C1  = 0; //15
-int crs.FEBsAtSide0C2  = 0; //16
-int crs.FEBsAtSide0C3  = 0; //17
-int crs.FEBsAtSide0D2  = 1; //18
-int crs.FEBsAtSide0D3  = 0; //19
-int crs.FEBsAtSide0D4  = 1; //20
+int crs.FEBBoxesAtSide0R1  = 1; //0 
+int crs.FEBBoxesAtSide0R2  = 0; //1 
+int crs.FEBBoxesAtSide0R3  = 1; //2 
+int crs.FEBBoxesAtSide0R4  = 1; //3 
+int crs.FEBBoxesAtSide0R5  = 1; //4 
+int crs.FEBBoxesAtSide0R6  = 1; //5 
+int crs.FEBBoxesAtSide0L1  = 1; //6 
+int crs.FEBBoxesAtSide0L2  = 1; //7 
+int crs.FEBBoxesAtSide0L3  = 1; //8 
+int crs.FEBBoxesAtSide0T1  = 0; //9 
+int crs.FEBBoxesAtSide0T2  = 0; //10 
+int crs.FEBBoxesAtSide0T3  = 0; //11
+int crs.FEBBoxesAtSide0T4  = 0; //12
+int crs.FEBBoxesAtSide0D1  = 1; //13
+int crs.FEBBoxesAtSide0U   = 1; //14 
+int crs.FEBBoxesAtSide0C1  = 0; //15
+int crs.FEBBoxesAtSide0C2  = 0; //16
+int crs.FEBBoxesAtSide0C3  = 0; //17
+int crs.FEBBoxesAtSide0D2  = 1; //18
+int crs.FEBBoxesAtSide0D3  = 0; //19
+int crs.FEBBoxesAtSide0D4  = 1; //20
 
-int crs.FEBsAtSide1R1  = 2; //0 
-int crs.FEBsAtSide1R2  = 2; //1 
-int crs.FEBsAtSide1R3  = 1; //2 
-int crs.FEBsAtSide1R4  = 2; //3 
-int crs.FEBsAtSide1R5  = 1; //4 
-int crs.FEBsAtSide1R6  = 2; //5 
-int crs.FEBsAtSide1L1  = 2; //6 
-int crs.FEBsAtSide1L2  = 1; //7 
-int crs.FEBsAtSide1L3  = 2; //8 
-int crs.FEBsAtSide1T1  = 0; //9 
-int crs.FEBsAtSide1T2  = 0; //10 
-int crs.FEBsAtSide1T3  = 0; //11
-int crs.FEBsAtSide1T4  = 0; //12
-int crs.FEBsAtSide1D1  = 1; //13
-int crs.FEBsAtSide1U   = 0; //14 
-int crs.FEBsAtSide1C1  = 1; //15
-int crs.FEBsAtSide1C2  = 1; //16
-int crs.FEBsAtSide1C3  = 0; //17   <--- THIS NEEDS TO BE CHANGED IN THE NEXT VERSION
-int crs.FEBsAtSide1D2  = 0; //18
-int crs.FEBsAtSide1D3  = 1; //19
-int crs.FEBsAtSide1D4  = 1; //20
+int crs.FEBBoxesAtSide1R1  = 2; //0 
+int crs.FEBBoxesAtSide1R2  = 2; //1 
+int crs.FEBBoxesAtSide1R3  = 1; //2 
+int crs.FEBBoxesAtSide1R4  = 2; //3 
+int crs.FEBBoxesAtSide1R5  = 1; //4 
+int crs.FEBBoxesAtSide1R6  = 2; //5 
+int crs.FEBBoxesAtSide1L1  = 2; //6 
+int crs.FEBBoxesAtSide1L2  = 1; //7 
+int crs.FEBBoxesAtSide1L3  = 2; //8 
+int crs.FEBBoxesAtSide1T1  = 0; //9 
+int crs.FEBBoxesAtSide1T2  = 0; //10 
+int crs.FEBBoxesAtSide1T3  = 0; //11
+int crs.FEBBoxesAtSide1T4  = 0; //12
+int crs.FEBBoxesAtSide1D1  = 1; //13
+int crs.FEBBoxesAtSide1U   = 0; //14 
+int crs.FEBBoxesAtSide1C1  = 1; //15
+int crs.FEBBoxesAtSide1C2  = 1; //16
+int crs.FEBBoxesAtSide1C3  = 0; //17   <--- THIS NEEDS TO BE CHANGED IN THE NEXT VERSION
+int crs.FEBBoxesAtSide1D2  = 0; //18
+int crs.FEBBoxesAtSide1D3  = 1; //19
+int crs.FEBBoxesAtSide1D4  = 1; //20
 
-string         crs.FEBMaterialName     = "G10";
-double         crs.FEBDistanceToModule =  15.0;
+string         crs.FEBMaterialName     = "Electronics";
+double         crs.FEBDistanceToModule =  33.3;        //between surface of 4th scintillator layer and center of 1st FEB
 double         crs.FEBDistanceToEdge   = 201.6;
-double         crs.FEBGapBetween2FEBs  = 397.9;
-vector<double> crs.FEBHalfLengths      = {1.0, 165.1, 101.6};  //thickness, width, lengths w.r.t. counter orientation
+double         crs.FEBDistanceBetween2FEBsW  = 397.9;  //between two FEBs sitting next to each other
+double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other 
+vector<double> crs.FEBHalfLengths      = {1.0, 150.0, 92.5};  //thickness, width, lengths w.r.t. counter orientation
 
 //simplified version of the top support structure
 //total area in Offline: 110.38m^2

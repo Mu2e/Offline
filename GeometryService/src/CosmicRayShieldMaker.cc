@@ -68,8 +68,8 @@ namespace mu2e
     _layerDirection.resize(_nSectors);
     _CMBside0.resize(_nSectors);
     _CMBside1.resize(_nSectors);
-    _FEBside0.resize(_nSectors);
-    _FEBside1.resize(_nSectors);
+    _FEBBoxesSide0.resize(_nSectors);
+    _FEBBoxesSide1.resize(_nSectors);
     _precedingSector.resize(_nSectors);
     _sectorType.resize(_nSectors);
 
@@ -84,8 +84,8 @@ namespace mu2e
       _layerDirection[i]     = config.getHep3Vector("crs.layerDirection"+_crvSectorNames[i]);
       _CMBside0[i]           = config.getBool("crs.sipmsAtSide0"+_crvSectorNames[i]);
       _CMBside1[i]           = config.getBool("crs.sipmsAtSide1"+_crvSectorNames[i]);
-      _FEBside0[i]           = config.getInt("crs.FEBsAtSide0"+_crvSectorNames[i]);
-      _FEBside1[i]           = config.getInt("crs.FEBsAtSide1"+_crvSectorNames[i]);
+      _FEBBoxesSide0[i]      = config.getInt("crs.FEBBoxesAtSide0"+_crvSectorNames[i]);
+      _FEBBoxesSide1[i]      = config.getInt("crs.FEBBoxesAtSide1"+_crvSectorNames[i]);
 
       //needed by the coincidence finder
       _precedingSector[i] = config.getInt("crs.precedingSectorFor"+_crvSectorNames[i]);
@@ -113,7 +113,8 @@ namespace mu2e
     _FEBMaterialName     = config.getString("crs.FEBMaterialName");
     _FEBDistanceToModule = config.getDouble("crs.FEBDistanceToModule");
     _FEBDistanceToEdge   = config.getDouble("crs.FEBDistanceToEdge");
-    _FEBGapBetween2FEBs  = config.getDouble("crs.FEBGapBetween2FEBs");
+    _FEBDistanceBetween2FEBsW = config.getDouble("crs.FEBDistanceBetween2FEBsW");
+    _FEBDistanceBetween2FEBsT = config.getDouble("crs.FEBDistanceBetween2FEBsT");
      config.getVectorDouble("crs.FEBHalfLengths",_FEBHalfLengths,3);
 
     _nSupportStructures      = config.getInt("crs.nSupportStructures");
@@ -228,53 +229,57 @@ namespace mu2e
         //FEB positions and dimensions
         if(ilayer==_nLayers-1)
         {
-          double FEBcoordinate0 = layer._position[thicknessDirection] + _layerDirection[isector][thicknessDirection]*(0.5*_counterThickness+_FEBDistanceToModule);
-          double FEBcoordinate1_1FEB = layer._position[widthDirection] - _offsetDirection[isector][widthDirection]*1.5*_offset; //centered if only 1 FEB
-          double FEBcoordinate1_2FEBs_0 = FEBcoordinate1_1FEB - 0.5*_FEBGapBetween2FEBs;
-          double FEBcoordinate1_2FEBs_1 = FEBcoordinate1_1FEB + 0.5*_FEBGapBetween2FEBs;
-          double FEBcoordinate2_side0 = layer._position[lengthDirection] - layer._halfLengths[lengthDirection] + _FEBDistanceToEdge; 
-          double FEBcoordinate2_side1 = layer._position[lengthDirection] + layer._halfLengths[lengthDirection] - _FEBDistanceToEdge; 
+          for(int FEBlayer=0; FEBlayer<2; FEBlayer++)
+          {          
+            double FEBcoordinate0 = layer._position[thicknessDirection] + _layerDirection[isector][thicknessDirection]*(0.5*_counterThickness+_FEBDistanceToModule);
+            if(FEBlayer==1) FEBcoordinate0 += _layerDirection[isector][thicknessDirection]*_FEBDistanceBetween2FEBsT;
+            double FEBcoordinate1_1FEB = layer._position[widthDirection] - _offsetDirection[isector][widthDirection]*1.5*_offset; //centered if only 1 FEB
+            double FEBcoordinate1_2FEBs_0 = FEBcoordinate1_1FEB - 0.5*_FEBDistanceBetween2FEBsW;
+            double FEBcoordinate1_2FEBs_1 = FEBcoordinate1_1FEB + 0.5*_FEBDistanceBetween2FEBsW;
+            double FEBcoordinate2_side0 = layer._position[lengthDirection] - layer._halfLengths[lengthDirection] + _FEBDistanceToEdge; 
+            double FEBcoordinate2_side1 = layer._position[lengthDirection] + layer._halfLengths[lengthDirection] - _FEBDistanceToEdge; 
 
-          CLHEP::Hep3Vector FEBposition_side0;
-          CLHEP::Hep3Vector FEBposition_side1;
-          FEBposition_side0[thicknessDirection]=FEBcoordinate0;
-          FEBposition_side1[thicknessDirection]=FEBcoordinate0;
-          FEBposition_side0[lengthDirection]=FEBcoordinate2_side0;
-          FEBposition_side1[lengthDirection]=FEBcoordinate2_side1;
+            CLHEP::Hep3Vector FEBposition_side0;
+            CLHEP::Hep3Vector FEBposition_side1;
+            FEBposition_side0[thicknessDirection]=FEBcoordinate0;
+            FEBposition_side1[thicknessDirection]=FEBcoordinate0;
+            FEBposition_side0[lengthDirection]=FEBcoordinate2_side0;
+            FEBposition_side1[lengthDirection]=FEBcoordinate2_side1;
 
-          std::vector<double> FEBHalfLengthsLocal;
-          FEBHalfLengthsLocal.resize(3);
-          FEBHalfLengthsLocal[thicknessDirection]=_FEBHalfLengths[0];
-          FEBHalfLengthsLocal[widthDirection]=_FEBHalfLengths[1];
-          FEBHalfLengthsLocal[lengthDirection]=_FEBHalfLengths[2];
+            std::vector<double> FEBHalfLengthsLocal;
+            FEBHalfLengthsLocal.resize(3);
+            FEBHalfLengthsLocal[thicknessDirection]=_FEBHalfLengths[0];
+            FEBHalfLengthsLocal[widthDirection]=_FEBHalfLengths[1];
+            FEBHalfLengthsLocal[lengthDirection]=_FEBHalfLengths[2];
 
-          if(_FEBside0[isector]==1)
-          {
-            CLHEP::Hep3Vector FEBposition=FEBposition_side0;
-            FEBposition[widthDirection]=FEBcoordinate1_1FEB;
-            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
-          }
-          if(_FEBside0[isector]==2)
-          {
-            CLHEP::Hep3Vector FEBposition=FEBposition_side0;
-            FEBposition[widthDirection]=FEBcoordinate1_2FEBs_0;
-            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
-            FEBposition[widthDirection]=FEBcoordinate1_2FEBs_1;
-            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
-          }
-          if(_FEBside1[isector]==1)
-          {
-            CLHEP::Hep3Vector FEBposition=FEBposition_side1;
-            FEBposition[widthDirection]=FEBcoordinate1_1FEB;
-            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
-          }
-          if(_FEBside1[isector]==2)
-          {
-            CLHEP::Hep3Vector FEBposition=FEBposition_side1;
-            FEBposition[widthDirection]=FEBcoordinate1_2FEBs_0;
-            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
-            FEBposition[widthDirection]=FEBcoordinate1_2FEBs_1;
-            module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+            if(_FEBBoxesSide0[isector]==1)
+            {
+              CLHEP::Hep3Vector FEBposition=FEBposition_side0;
+              FEBposition[widthDirection]=FEBcoordinate1_1FEB;
+              module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+            }
+            if(_FEBBoxesSide0[isector]==2)
+            {
+              CLHEP::Hep3Vector FEBposition=FEBposition_side0;
+              FEBposition[widthDirection]=FEBcoordinate1_2FEBs_0;
+              module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+              FEBposition[widthDirection]=FEBcoordinate1_2FEBs_1;
+              module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+            }
+            if(_FEBBoxesSide1[isector]==1)
+            {
+              CLHEP::Hep3Vector FEBposition=FEBposition_side1;
+              FEBposition[widthDirection]=FEBcoordinate1_1FEB;
+              module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+            }
+            if(_FEBBoxesSide1[isector]==2)
+            {
+              CLHEP::Hep3Vector FEBposition=FEBposition_side1;
+              FEBposition[widthDirection]=FEBcoordinate1_2FEBs_0;
+              module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+              FEBposition[widthDirection]=FEBcoordinate1_2FEBs_1;
+              module._FEBs.emplace_back(FEBposition,FEBHalfLengthsLocal);
+            }
           }
         }
         

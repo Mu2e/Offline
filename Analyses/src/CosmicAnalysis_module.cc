@@ -521,6 +521,34 @@ namespace mu2e
       }
     }
 
+/***************/
+/* only a test */
+/*
+    art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
+    event.getByLabel("CrvRecoPulses","",crvRecoPulsesCollection);
+    for(CrvRecoPulsesCollection::const_iterator iter=crvRecoPulsesCollection->begin(); 
+        iter!=crvRecoPulsesCollection->end(); iter++)
+    {
+      const CRSScintillatorBarIndex &barIndex = iter->first;
+      const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
+    
+      const CrvRecoPulses &crvRecoPulses = iter->second;
+      for(int SiPM=0; SiPM<4; SiPM++)
+      {
+        const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &pulseVector = crvRecoPulses.GetRecoPulses(SiPM);
+        for(unsigned int i = 0; i<pulseVector.size(); i++) 
+        {
+          const CrvRecoPulses::CrvSingleRecoPulse &pulse = pulseVector[i];
+          int PEs=pulse._PEs;
+          double time=pulse._leadingEdge;
+
+          std::cout<<"run "<<event.id().run()<<"    subrun "<<event.id().subRun()<<"    event "<<event.id().event()<<"    barID "<<CRSbar.id()<<"    SiPM "<<SiPM<<"     PEs "<<PEs<<"      time "<<time<<std::endl;
+        }
+      }
+    }
+*/
+/***************/
+
     _tree->Fill();
   }
 }
