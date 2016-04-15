@@ -67,7 +67,6 @@
 
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/TrackCaloMatchAssns.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -77,8 +76,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Persistency/Common/Assns.h"
-
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -156,7 +153,6 @@ namespace mu2e {
     std::string _virtualDetectorLabel;
     std::string _stepPointMCLabel;
     std::string _trkPatRecModuleLabel;
-    std::string _trkCaloMatchAssnsLabel;
     TrkParticle _tpart;
     TrkFitDirection _fdir;
     SimParticleTimeOffset _toff;  // time offset smearing
@@ -240,6 +236,7 @@ namespace mu2e {
       ,*_hEoverP2nd
       ,*_hEOverPZoom
       ,*_hDistToTrack
+      ,*_hDistToTrackGoodCutC
       ,*_hNumberOfHits
       ,*_hNumberOfHitsAfter650Nsec
       ,*_hTimeDiff
@@ -274,10 +271,14 @@ namespace mu2e {
     TH1F* _hChisqDisk1BadZ;
     TH1F* _hDisk1GoodRadius;
     TH1F* _hDisk1BadRadius;
+    TH1F* _hAngGood;
+    TH1F* _hAngBad;
     TH1F* _hZForBadDisk1;
 
     TH1F* _hFracOnFrontFace;
     TH1F* _hFracOnEdgeFace;
+    TH1F* _hFracOnEdgeFaceAndClusterInFront;
+    TH1F* _hFracOnEdgeFaceAndClusterInBack;
 
     TProfile 
     *_hErrVsMomMuon
@@ -387,7 +388,6 @@ namespace mu2e {
     _virtualDetectorLabel(pset.get<string>("virtualDetectorName")),
     _stepPointMCLabel(pset.get<string>("stepPointMCLabel")),
     _trkPatRecModuleLabel(pset.get<string>("trkPatRecModuleLabel")),
-    _trkCaloMatchAssnsLabel(pset.get<string>("trackCaloMatchAssnsLabel","TrackCaloMatchAssns")), 
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
@@ -403,6 +403,21 @@ namespace mu2e {
   
   }
 
+  /*            art::EDAnalyzer(pset),
+		_caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
+		_caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
+		_trkCaloMatchModuleLabel(pset.get<std::string>("trkCaloMatchModuleLabel")),
+		_trkIntersectModuleLabel(pset.get<std::string>("trkIntersectModuleLabel")),
+		_trkFitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
+		_tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
+		_fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+		_g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
+		_virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
+		_Ntup(0)
+		{
+		_trkfitInstanceName = _fdir.name() + _tpart.name();
+		}
+  */
   void KineticFracAnalysis::beginJob(){
 
     art::ServiceHandle<art::TFileService> tfs;
@@ -562,7 +577,7 @@ namespace mu2e {
     _hTotalEnergyInWindow = tfs->make<TH1F>("_hTotalEnergyInWindow","Total Energy In Window", 300,0.,300.);
     _hDistX = tfs->make<TH1F>("_hDistX","Distance from Track to Highest Energy Cluster, X", 100,-1000.,1000.);
     _hDistY = tfs->make<TH1F>("_hDistY","Distance from Track to Highest Energy Cluster, Y", 100,-1000.,1000.);
-    _htime = tfs->make<TH1F>("_htime","Time of Cluster - Time of Track at Calorimeter CoGZ",100, -100.,100.);
+    _htime = tfs->make<TH1F>("_htime","Time of Cluster - Time of Track at Calorimeter CoGZ",40, -20.,20.);
     _hPhi0 = tfs->make<TH1F>("_hPhi0","Phi0",64, -3.2,3.2);
     _hShortestDistance = tfs->make<TH1F>("_hShortestDistance","Shortest Distance Cluster",100,0.,500.);
     _hShortestFirst    = tfs->make<TH1F>("_hShortestFirst","Shortest Distance First Disk Cluster",100,0.,500.);
@@ -583,9 +598,12 @@ namespace mu2e {
     _hEoverP2nd = tfs->make<TH1F>("_hEoverP2nd","E/p for shortest distance cluster disk 2", 150,0.,1.5);
     _hEOverPZoom = tfs->make<TH1F>("_hEOverPZoom","E/p for shortest distance cluster", 50,0.8,1.3);
     _hDistToTrack = tfs->make<TH1F>("_hDistToTrack","Distance of Cluster to Track at first disk",100,0.,1000.);
+    _hDistToTrackGoodCutC = tfs->make<TH1F>("_hDistToTrackGoodCutC","Good Cut C, Distance of Cluster to Track at first disk",100,0.,1000.);
 
     _hFracOnFrontFace = tfs->make<TH1F>("_hFracOnFrontFace","E/p for front face hits disk 1", 150,0.,1.5);
     _hFracOnEdgeFace = tfs->make<TH1F>("_hFracOnEdgeFace","E/p for edge face hits disk 1", 150,0.,1.5);
+    _hFracOnEdgeFaceAndClusterInFront = tfs->make<TH1F>("_hFracOnEdgeFaceAndClusterInFront","E/p for edge face hits disk 1, cluster front", 150,0.,1.5);
+    _hFracOnEdgeFaceAndClusterInBack  = tfs->make<TH1F>("_hFracOnEdgeFaceAndClusterInBack", "E/p for edge face hits disk 1, cluster back", 150,0.,1.5);
 
     _hNumberOfHits = tfs->make<TH1F>("_hNumberOfHits","Total Number of Hits",100,0.,5000.);
     _hNumberOfHitsAfter650Nsec = tfs->make<TH1F>("_hNumberOfHitsAfter650Nsec","Total Number of Hits After 650 nsec",100,0.,5000.);
@@ -633,6 +651,9 @@ namespace mu2e {
     //_hChisqDisk2GoodZ = tfs->make<TH1F>("_hChisqDisk2GoodZ",100,0.,100.);
     _hChisqDisk1BadZ = tfs->make<TH1F>("_hChisqDisk1BadZ","Chisq for hits on inside of Front Disk",100,0.,100.);
     _hDisk1BadRadius = tfs->make<TH1F>("_hDisk1BadRadius","Radius for Hits on inside of Front Disk",100,0.,1000.);
+
+    _hAngGood = tfs->make<TH1F>("_hAngGood", "Angle wrt z at Front Face",20,0.,90.);
+    _hAngBad  = tfs->make<TH1F>("_hAngBad",  "Angle wrt z at Inside Face",20,0.,90.);
     //_hChisqDisk2BadZ = tfs->make<TH1F>("_hChisqDisk2BadZ",100,0.,100.);
     // TF1* func = new TF1("timeFit",timeFit,0.,50.,3);
 
@@ -757,9 +778,6 @@ namespace mu2e {
     event.getByLabel(_trkPatRecModuleLabel,_instanceName,krepsHandle);
     KalRepCollection const& kreps = *krepsHandle;
 
-    // get track-calo association
-    art::Handle<TrackCaloMatchAssns> trackCaloMatchAssnsHandle;
-    event.getByLabel(_trkCaloMatchAssnsLabel,trackCaloMatchAssnsHandle);
 
     //
     // handle to PDG
@@ -914,22 +932,27 @@ namespace mu2e {
 	// and then sometimes you find more than one track (as of this writing the tracks are found in order of time, but that can't be assumed)
 	//
 	// hence I put in:
-
-	std::cout << " _nMatch = " << _nMatch << std::endl;
-	std::cout << " _nCluster = " << _nCluster << std::endl;
-	std::cout << " kreps.size() = " << kreps.size() << std::endl;
+	if (_diagLevel > 2)
+	  {
+	    std::cout << " _nMatch = " << _nMatch << std::endl;
+	    std::cout << " _nCluster = " << _nCluster << std::endl;
+	    std::cout << " kreps.size() = " << kreps.size() << std::endl;
+	  }
 	if (_nMatch > 2*_nCluster*static_cast<int>(kreps.size()) )
 	  { throw cet::exception("RANGE") << " _nMatch and _nCluster mismatch, from KineticFracAnalysis. Call Bob ...nmatch and ncluster are " <<  _nMatch << " " << _nCluster << std::endl;}
 
       }
 
-      
 
     _nTrk=0;
 
 
+	
+    if (_diagLevel > 3)
+      {
 	std::cout << "number of tracks = "<< kreps.size() << std::endl;
-    if (_diagLevel > 3){std::cout << "size of intersection collection = " << trkIntersect.size() << std::endl;}
+	std::cout << "size of intersection collection = " << trkIntersect.size() << std::endl;
+      }
     if (trkIntersect.size() == 0 ) return; // code purists look the other way
     if (trkIntersect.size()  > 2*kreps.size()) // can't have more than two intersections per track
       { 
@@ -944,49 +967,18 @@ namespace mu2e {
     int ithInt(0);
     for (auto const& trackCaloIntersect: trkIntersect)
       {
-	std::cout << "*****ith Int = " << ithInt << "**********" << std::endl;
+	if (ithInt > 0) {break;}
 	++ithInt;
-
 	int trackNumber = trackCaloIntersect.trkId();
 	KalRep const &trk = *(trackCaloIntersect.trk());
 	double pathLength = trackCaloIntersect.pathLengthEntrance();
 	HepPoint point = trk.position(pathLength);
-	std::cout << "trackID, pathLengthEntrance, point: " << trackNumber << " " << pathLength << " " << point << std::endl;
-      
+	std::cout << "path length = " << pathLength << std::endl;
+	double trkArrivalTime = trk.arrivalTime(pathLength);
+	if (_cluCogZ[bestCluster[trackNumber]] > 1800.) {break;}
+	double deltaTime = _cluTime[bestCluster[trackNumber]] - trkArrivalTime;
 
-	//
-	// only plot these for the disk that goes with the best match cluster
 
-	double bestZ = _cluCogZ[bestCluster[trackNumber]];
-
-	std::cout << " best Z is " << bestZ << " and point z = " << point.z() << std::endl;
-
-	_hZinter->Fill(point.z());
-	double rad1 = sqrt(point.x()*point.x() + point.y()*point.y());
-
-	// 
-	//just look at front disk
-	if (point.z() < 1800.)
-	  {
-	//    double rad2 = sqrt(pointFront.x()*pointBack.x() + pointFront.y()*pointBack.y());
-	    if (abs(point.z() - bestZ) < 1) {
-	      std::cout << "in good rad, chi2 = " << rad1 << " " << bestChi2[trackNumber]  
-			<< std::endl;_hChisqDisk1GoodZ->Fill(bestChi2Time[trackNumber]); _hDisk1GoodRadius->Fill(rad1);
-	      _hFracOnFrontFace->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
-	    }
-	    if (abs(point.z() - bestZ) > 2) 
-	      {
-		std::cout << "in bad rad, chi2 = "  << rad1 << " " << bestChi2[trackNumber]  
-			  << std::endl;_hChisqDisk1BadZ->Fill(bestChi2Time[trackNumber]);
-		_hDisk1BadRadius->Fill(rad1);
-		_hZForBadDisk1->Fill(_cluCogZ[bestCluster[trackNumber]]);
-		_hFracOnEdgeFace->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
-	      }
-	  }
-	std::cout << "path lengths = " << trackCaloIntersect.pathLengthEntrance() << std::endl;
-
-	std::cout << "point = " << point << std::endl;
-	      
 
 	//
 	// this is for comparing to clusters
@@ -1010,6 +1002,67 @@ namespace mu2e {
 
 	double tanDip = sqrt( 1. - tCosDip*tCosDip)/tCosDip;
 
+	      
+	double angleWrtZ = acos(trkMomentum.z()/trkMomentum.mag())*(180/3.14159);
+
+	std::cout << "delta time = " << _cluTime[bestCluster[trackNumber]] << " " << trkArrivalTime << " " << deltaTime << std::endl;
+	//	if (deltaTime > -4){break;}
+	if (_diagLevel > 2)
+	  {
+	    std::cout << "*****ith Int = " << ithInt << "**********" << std::endl;
+	    std::cout << "trackID, pathLengthEntrance, point: " << trackNumber << " " << pathLength << " " << point << std::endl;
+	  }
+
+	//
+	// only plot these for the disk that goes with the best match cluster
+
+	double bestZ = _cluCogZ[bestCluster[trackNumber]];
+
+	if (_diagLevel > 2){std::cout << " best Z is " << bestZ << " and point z = " << point.z() << std::endl;}
+
+	_hZinter->Fill(point.z());
+	double rad1 = sqrt(point.x()*point.x() + point.y()*point.y());
+
+	// 
+	//just look at front disk
+	if (point.z() < 1800.)
+	  {
+	//    double rad2 = sqrt(pointFront.x()*pointBack.x() + pointFront.y()*pointBack.y());
+	    if (abs(point.z() - bestZ) < 1) {
+	      if (_diagLevel > 2)
+		{
+		  std::cout << "in good rad, chi2 = " << rad1 << " " << bestChi2[trackNumber]  
+			    << std::endl;
+		}
+	      _hChisqDisk1GoodZ->Fill(bestChi2Time[trackNumber]); _hDisk1GoodRadius->Fill(rad1);
+	      _hFracOnFrontFace->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
+	      _hAngGood->Fill(angleWrtZ);
+	    }
+	    if (abs(point.z() - bestZ) > 30) 
+	      {
+		if (_diagLevel > 2)
+		  {
+		    std::cout << "in bad rad, chi2 = "  << rad1 << " " << bestChi2[trackNumber] << std::endl;
+	    std::cout << "path lengths bad rad = " << trackCaloIntersect.pathLengthEntrance() << std::endl;
+	    std::cout << "point bad rad = " << point << std::endl;
+	    std::cout << " energy of best cluster match = " << _cluEnergy[bestCluster[trackNumber]] << " and momentum = " << trk.momentum(pathLength).mag() << std::endl; 
+		  }
+		_hAngBad->Fill(angleWrtZ);
+		_hChisqDisk1BadZ->Fill(bestChi2Time[trackNumber]);
+		_hDisk1BadRadius->Fill(rad1);
+		_hZForBadDisk1->Fill(_cluCogZ[bestCluster[trackNumber]]);
+		_hFracOnEdgeFace->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
+		if (bestZ < 2000.){_hFracOnEdgeFaceAndClusterInFront->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());}
+		if (bestZ > 2000.){_hFracOnEdgeFaceAndClusterInBack->Fill(_cluEnergy[bestCluster[trackNumber]]/trk.momentum(pathLength).mag());
+		}
+	      }
+	  }
+
+	if (_diagLevel > 2)
+	  {	
+	    std::cout << "path lengths = " << trackCaloIntersect.pathLengthEntrance() << std::endl;
+	    std::cout << "point = " << point << std::endl;
+	  }
 	      
 	//
 	// these are for cut set c comparisons; numbers aren't identical to Dave Brown's but are very close. Not worth going back into kreps
@@ -1054,13 +1107,14 @@ namespace mu2e {
 
 	//double timeDiff = 1696;
 	_htime->Fill(_cluTime[bestCluster[trackNumber]] - trkTime);
+	if (_diagLevel > 2) {std::cout << " cluster - track time = " << _cluTime[bestCluster[trackNumber]] << " " << trkTime<< " "  << _cluTime[bestCluster[trackNumber]] - trkTime << std::endl;}
 
 	//
 	// what's the distance for this cluster?
 
 	double _dist = sqrt(pow( _cluCogX[bestCluster[trackNumber]] - point.x() ,2) + pow(_cluCogY[bestCluster[trackNumber]] - point.y(),2) );
 	_hDistToTrack->Fill(_dist);
-
+	if (! cutC){_hDistToTrackGoodCutC->Fill(_dist);}
 
     HepPoint point0 = trk.position(0);
 
@@ -1144,7 +1198,7 @@ namespace mu2e {
 	//	( krep.t0().t0() > 700 && krep.t0().t0() < 1695)
 	;
 
-      if (!cutC) {std::cout << "failed cutset" << std::endl;}
+      if (!cutC && _diagLevel>2) {std::cout << "failed cutset" << std::endl;}
 
       //      cutC = true;
       
