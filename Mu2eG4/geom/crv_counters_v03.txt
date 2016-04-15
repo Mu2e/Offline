@@ -206,7 +206,7 @@ vector<double>  crs.vdDirectionU  =  {0, 0, -1};
 
 // counter mother boards
 double crs.CMBOffset        = 15.0;
-double crs.CMBHalfThickness =  1.0;
+double crs.CMBHalfThickness =  5.0;
 string crs.CMBMaterialName  = "Electronics";
 
 // information about the SiPMs 
@@ -351,7 +351,7 @@ double         crs.FEBDistanceToModule =  33.3;        //between surface of 4th 
 double         crs.FEBDistanceToEdge   = 201.6;
 double         crs.FEBDistanceBetween2FEBsW  = 397.9;  //between two FEBs sitting next to each other
 double         crs.FEBDistanceBetween2FEBsT  =  47.7;  //between two FEBs sitting on top of each other 
-vector<double> crs.FEBHalfLengths      = {1.0, 150.0, 92.5};  //thickness, width, lengths w.r.t. counter orientation
+vector<double> crs.FEBHalfLengths      = {5.0, 150.0, 92.5};  //thickness, width, lengths w.r.t. counter orientation
 
 //simplified version of the top support structure
 //total area in Offline: 110.38m^2
