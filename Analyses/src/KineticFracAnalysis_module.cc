@@ -67,6 +67,7 @@
 
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/TrackCaloMatchAssns.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -76,6 +77,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
+#include "art/Persistency/Common/Assns.h"
+
 #include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -153,6 +156,7 @@ namespace mu2e {
     std::string _virtualDetectorLabel;
     std::string _stepPointMCLabel;
     std::string _trkPatRecModuleLabel;
+    std::string _trkCaloMatchAssnsLabel;
     TrkParticle _tpart;
     TrkFitDirection _fdir;
     SimParticleTimeOffset _toff;  // time offset smearing
@@ -383,6 +387,7 @@ namespace mu2e {
     _virtualDetectorLabel(pset.get<string>("virtualDetectorName")),
     _stepPointMCLabel(pset.get<string>("stepPointMCLabel")),
     _trkPatRecModuleLabel(pset.get<string>("trkPatRecModuleLabel")),
+    _trkCaloMatchAssnsLabel(pset.get<string>("trackCaloMatchAssnsLabel","TrackCaloMatchAssns")), 
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets", fhicl::ParameterSet())),
@@ -398,21 +403,6 @@ namespace mu2e {
   
   }
 
-  /*            art::EDAnalyzer(pset),
-		_caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
-		_caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
-		_trkCaloMatchModuleLabel(pset.get<std::string>("trkCaloMatchModuleLabel")),
-		_trkIntersectModuleLabel(pset.get<std::string>("trkIntersectModuleLabel")),
-		_trkFitterModuleLabel(pset.get<std::string>("fitterModuleLabel")),
-		_tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
-		_fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-		_g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
-		_virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
-		_Ntup(0)
-		{
-		_trkfitInstanceName = _fdir.name() + _tpart.name();
-		}
-  */
   void KineticFracAnalysis::beginJob(){
 
     art::ServiceHandle<art::TFileService> tfs;
@@ -767,6 +757,9 @@ namespace mu2e {
     event.getByLabel(_trkPatRecModuleLabel,_instanceName,krepsHandle);
     KalRepCollection const& kreps = *krepsHandle;
 
+    // get track-calo association
+    art::Handle<TrackCaloMatchAssns> trackCaloMatchAssnsHandle;
+    event.getByLabel(_trkCaloMatchAssnsLabel,trackCaloMatchAssnsHandle);
 
     //
     // handle to PDG
