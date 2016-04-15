@@ -63,7 +63,7 @@
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/TrackSummary.hh"
 
-#include "RecoDataProducts/inc/TrackCaloAssns.hh"
+#include "RecoDataProducts/inc/TrackCaloMatchAssns.hh"
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
