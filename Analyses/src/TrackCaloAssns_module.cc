@@ -14,7 +14,7 @@
 //
 // Original author Robert Bernstein
 //
-#include "RecoDataProducts/inc/TrackCaloAssns.hh"
+#include "RecoDataProducts/inc/TrackCaloMatchAssns.hh"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -177,7 +177,7 @@ namespace mu2e{
   {
     _instanceName = _fdir.name() + _tpart.name();
     _trkfitInstanceName = _fdir.name() + _tpart.name();
-    produces<TrackCaloMatchAssns>();
+    produces<TrackCaloAssns>();
    }
 
   void TrackCaloAssns::beginJob(){
