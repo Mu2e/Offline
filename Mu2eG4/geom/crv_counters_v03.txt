@@ -207,7 +207,7 @@ vector<double>  crs.vdDirectionU  =  {0, 0, -1};
 // counter mother boards
 double crs.CMBOffset        = 15.0;
 double crs.CMBHalfThickness =  5.0;
-string crs.CMBMaterialName  = "Electronics";
+string crs.CMBMaterialName  = "ElectronicsCMB";
 
 // information about the SiPMs 
 // side 0 is the negative side of the counter, i.e. the -x side of a CRV-T counter, or the -y side of a CRV-R counter
@@ -346,7 +346,7 @@ int crs.FEBBoxesAtSide1D2  = 0; //18
 int crs.FEBBoxesAtSide1D3  = 1; //19
 int crs.FEBBoxesAtSide1D4  = 1; //20
 
-string         crs.FEBMaterialName     = "Electronics";
+string         crs.FEBMaterialName     = "ElectronicsFEB";
 double         crs.FEBDistanceToModule =  33.3;        //between surface of 4th scintillator layer and center of 1st FEB
 double         crs.FEBDistanceToEdge   = 201.6;
 double         crs.FEBDistanceBetween2FEBsW  = 397.9;  //between two FEBs sitting next to each other
