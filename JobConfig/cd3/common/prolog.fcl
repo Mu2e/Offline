@@ -44,7 +44,6 @@ pidPathBins: [ 0., 50., 100., 150., 200., 250., 300., 1.e12 ]
 // Analysis
 signalTrackCuts: {
    trkqual: 0.4
-   trkqualmax: 1.3 // See https://mu2e-hnews.fnal.gov/HyperNews/Mu2e/get/Sim/37/1.html
 
    tdmin: 0.57735027
    tdmax: 1.
