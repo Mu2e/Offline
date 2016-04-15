@@ -490,6 +490,21 @@ namespace mu2e {
       Electronics->AddMaterial( findMaterialOrThrow("Polyethylene"), 0.138);
     }
 
+    // These are needed (i) for MARS to have unique materials, and (ii)
+    // in case electronics board materials vary.
+
+    mat = uniqueMaterialOrThrow( "ElectronicsFEB" );
+    {
+      G4Material* ElectronicsFEB = new G4Material(mat.name, 0.58*CLHEP::g/CLHEP::cm3, 1);
+      ElectronicsFEB->AddMaterial( findMaterialOrThrow("Electronics"), 1.0);
+    }
+
+    mat = uniqueMaterialOrThrow( "ElectronicsCMB" );
+    {
+      G4Material* ElectronicsCMB = new G4Material(mat.name, 0.58*CLHEP::g/CLHEP::cm3, 1);
+      ElectronicsCMB->AddMaterial( findMaterialOrThrow("Electronics"), 1.0);
+    }
+
     mat = uniqueMaterialOrThrow( "RackElectronics" );
     {
       // This material represents a typical instrumented rack and is currently
