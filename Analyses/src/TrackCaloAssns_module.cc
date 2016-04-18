@@ -177,7 +177,7 @@ namespace mu2e{
   {
     _instanceName = _fdir.name() + _tpart.name();
     _trkfitInstanceName = _fdir.name() + _tpart.name();
-    produces<TrackCaloAssns>();
+    produces<TrackCaloMatchAssns>(); // this must match the make_unique, it is the name of the data product, not the class...
    }
 
   void TrackCaloAssns::beginJob(){
