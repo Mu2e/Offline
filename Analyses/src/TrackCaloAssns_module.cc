@@ -284,7 +284,6 @@ namespace mu2e{
 	  }
 
     event.put(std::move(outputTrackCaloMatch));
-
   }
 }// end namespace mu2e
 DEFINE_ART_MODULE(mu2e::TrackCaloAssns);
