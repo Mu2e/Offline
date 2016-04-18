@@ -65,6 +65,8 @@
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 
+#include "RecoDataProducts/inc/TrackCaloAssns.hh" 
+
 // Cannot use the typedefs in here - not sure why.
 template class art::Ptr<mu2e::CaloHit>;
 template class std::vector<art::Ptr<mu2e::CaloHit> >;
@@ -191,5 +193,16 @@ template class art::Wrapper<mu2e::StrawDigiCollection>;
 template class std::vector<mu2e::TrackSummary>;
 template class art::Wrapper<std::vector<mu2e::TrackSummary> >;
 template class art::Ptr<mu2e::TrackSummary>;
+
+template class std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::CaloCluster> >;
+template class std::pair<art::Ptr<mu2e::CaloCluster>,art::Ptr<mu2e::KalRepPtr> >;
+template class std::vector<mu2e::TrackCaloMatchInfo>;
+template class art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster>;
+template class art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr>;
+template class art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster, mu2e::TrackCaloMatchInfo>;
+template class art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr, mu2e::TrackCaloMatchInfo>;
+template class art::Wrapper<art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster, mu2e::TrackCaloMatchInfo> >;
+template class art::Wrapper<art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr, mu2e::TrackCaloMatchInfo> >;
+
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS
