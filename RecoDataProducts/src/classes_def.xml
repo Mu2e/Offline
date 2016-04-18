@@ -229,4 +229,21 @@
  <class name="art::Wrapper<art::Assns<mu2e::KalRepPtr,mu2e::TrackSummary,void> >" />
  <class name="art::Wrapper<art::Assns<mu2e::TrackSummary,mu2e::KalRepPtr,void> >" />
 
+
+ <class name="std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::CaloCluster> >" />
+ <class name="std::pair<art::Ptr<mu2e::CaloCluster>,art::Ptr<mu2e::KalRepPtr> >" />
+ <class name="mu2e::TrackCaloMatchInfo" />
+ <class name="std::vector<mu2e::TrackCaloMatchInfo>" />
+ <class name="art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster, mu2e::TrackCaloMatchInfo>" />
+ <class name="art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr, mu2e::TrackCaloMatchInfo>" />
+<!-- <class name="art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster>" /> -->
+<!-- <class name="art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr>" /> -->
+ <class name="art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster,void>" />
+ <class name="art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr,void>" />
+<!-- <class name="std::vector<mu2e::TrackCaloInfo>" /> -->
+<!-- <class name="mu2e::TrackCaloInfo" /> -->
+ <class name="art::Wrapper<art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster, mu2e::TrackCaloMatchInfo> >" />
+ <class name="art::Wrapper<art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr, mu2e::TrackCaloMatchInfo> >" />
+
+
 </lcgdict>
