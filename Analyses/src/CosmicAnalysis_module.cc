@@ -78,6 +78,7 @@ typedef struct
   void clear()
   {
     reco_t0=0;
+    filename[0]='\0';
     simreco_particle[0]='\0';
     simreco_production_process[0]='\0';
     simreco_production_volume[0]='\0';
