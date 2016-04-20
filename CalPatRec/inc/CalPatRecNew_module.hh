@@ -120,65 +120,17 @@ namespace mu2e {
   public:
     struct HelixFitHist_t {
       TH1F*  nhits;           // number of hits on a helix  
+      TH1F*  radius[2];   
+      TH1F*  pT[2];
+      TH1F*  p [2];
+      TH2F*  nhitsvspT;
+      TH2F*  nhitsvsp;
     };
 
     struct Hist_t {
       HelixFitHist_t  helixFit;  // helix fit histograms
 
-      TH1F* _cutflow[2];       // diagnostic flow
-      TH1F* _dt     [2];       // distribution in Dt = t_calo-cluster - t_straw-hit
-      TH1F* _Tpeaks;	       // number of time-peaks found per event
-      TH1F* _NfitIter;	       // number of call to kalman addHits
-	     		       //     TH1F* _hTfit[2];     //time spent on kalman filter per event
-	     		       //     TH1F* _hTtot;     //total time spent per event
-      TH1F* _radius;           // radius of the helix used by findTrack
-      TH1F* _phi0;             // phi0 of the helix used by findTrack
-      TH1F* _tanlambda;        // tanLambda (tangent of the pitch angle) of the helix
-      TH1F* _dfdz;             // dfdz of the theretical helix. dfdz = tanLambda/radius
-      TH2F* _distvsdz;
-      TH1F* _dphidz[4];
-      TH1F* _dphi0 [4];
-      TH1F* _dr[2];
-
-      TH1F* _kradius[2];    // radius of the helix used by findTrack
-
-      //      TH1F* _kdist;
-      TH1F* _kdz;
-      TH1F* _kNpoints;
-      TH1F* _kchi2;
-      TH2F* _kdistvsdz[2];
-      TH1F* _kdphidz[4];
-      TH1F* _kdphi0[4];
-      TH1F* _kdr[2];
-
-      TH1F* _drw  [2];
-      TH1F* _chi2w[2];
-      
-      TH1F* _chi2zphi[2];
-      
-      TH1F* _seeddoca[3];
-      TH1F* _seeddr  [2];
-      TH1F* _seeddfdz[2];
-      TH1F* _NpointsSeed   [2]; //
-      TH1F* _doca          [4];
-      TH1F* _kaldoca       [2];
-      TH1F* _NpointsRescued[2];
-      TH1F* _PhiResid      [3];
-//-----------------------------------------------------------------------------
-// histograms for doublets 0:all, 1:OS, 2:SS
-//-----------------------------------------------------------------------------
-      TH1F* _ndoublets[3];      // N(doublets)
-      TH1F* _ndstraws [3];      // N(straws) per "doublet"
-      TH1F* _tslope   [3];      // track slope dx/dz wrt the plane
-      TH1F* _dsbest   [3];      // delta (slope) best
-      TH1F* _dsnext   [3];      // delta (slope) next to the best
-
-      TH1F* _ntracks;
-//-----------------------------------------------------------------------------
-// time diag histograms (inherited)
-//-----------------------------------------------------------------------------
-      TH1F*  _nhits[2];         // same distribution with different limits
-      TH1F   *ctsp, *rtsp, *ttsp, *ltsp, *tdtsp;
+      TH1F* nseeds[2];
     };
 
     Ref*    _ref;
@@ -270,7 +222,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics histograms
 //-----------------------------------------------------------------------------
-//    Hist_t                   _hist;
+    Hist_t                   _hist;
 
     THackData*               fHackData;
 

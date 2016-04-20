@@ -96,6 +96,7 @@ namespace mu2e {
     _fieldcorr       (pset.get<bool>("fieldCorrection",false))
   {
     produces<TrackSeedCollection>();
+    produces<CalTimePeakCollection>();
 
     fHackData = new THackData("HackData","Hack Data");
     gROOT->GetRootFolder()->Add(fHackData);
@@ -159,8 +160,18 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
 
     art::TFileDirectory hf_dir = tfs->mkdir("HelixFit");
-    art::TFileDirectory sf_dir = tfs->mkdir("SeedFit");
-    art::TFileDirectory kf_dir = tfs->mkdir("KalFit");
+    
+    _hist.nseeds[0]          = tfs->make<TH1F>("nseeds0"  , "number of track candidates: all events", 21, -0.5, 20.5);
+    _hist.nseeds[1]          = tfs->make<TH1F>("nseeds1"  , "number of track candidates: nhits > 15", 21, -0.5, 20.5);
+    _hist.helixFit.nhits     = hf_dir.make<TH1F>("nhits" , "number of hits within a track candidate; nHits", 101, -0.5, 100.5);
+    _hist.helixFit.radius[0] = hf_dir.make<TH1F>("radius0", "helix radius; r [mm]"                  , 401, -0.5, 400.5);
+    _hist.helixFit.radius[1] = hf_dir.make<TH1F>("radius1", "helix radius nhits > 15; r [mm]"       , 401, -0.5, 400.5);
+    _hist.helixFit.pT [0]    = hf_dir.make<TH1F>("pT0"    , "transverse momentum; pT [MeV/c]"       , 400, -0.5, 200.5);
+    _hist.helixFit.p  [0]    = hf_dir.make<TH1F>("p0"     , "momentum; p [MeV/c]"                   , 400, -0.5, 200.5);
+    _hist.helixFit.pT [1]    = hf_dir.make<TH1F>("pT1"    , "transverse momentum nhits > 15; pT [MeV/c]"       , 400, -0.5, 200.5);
+    _hist.helixFit.p  [1]    = hf_dir.make<TH1F>("p1"     , "momentum nhits > 15; p [MeV/c]"                   , 400, -0.5, 200.5);
+    _hist.helixFit.nhitsvspT = hf_dir.make<TH2F>("nhitsvspT","nhits vs pT", 100, 0, 100, 400, 0, 200);
+    _hist.helixFit.nhitsvsp  = hf_dir.make<TH2F>("nhitsvsp" ,"nhits vs p" , 100, 0, 100, 400, 0, 200);
 
   }
 
@@ -274,7 +285,8 @@ namespace mu2e {
 
     _tpeaks = new CalTimePeakCollection;
     
-    unique_ptr<TrackSeedCollection> outseeds(new TrackSeedCollection);
+    unique_ptr<TrackSeedCollection>    outseeds(new TrackSeedCollection);
+    unique_ptr<CalTimePeakCollection>  tpeaks  (_tpeaks);
 
     
     _flags = new StrawHitFlagCollection();
@@ -388,12 +400,59 @@ namespace mu2e {
       
       
     }
-    
+
+//--------------------------------------------------------------------------------    
+// fill diagnostic if needed
+//--------------------------------------------------------------------------------
+    if (_diagLevel > 0) {
+      int   nseeds = outseeds->size();
+      
+      _hist.nseeds[0]->Fill(nseeds);
+      
+      double          radius(0), nhits(0), pT(0), p(0);
+      int             nseedsCut0(0), nhitsMin(15);
+      TrackSeed      *tmpseed;
+      double          mm2MeV = 3./10.;
+
+      for (int i=0; i<nseeds; ++i){
+	tmpseed = &outseeds->at(i);
+
+	radius  = 1./fabs(tmpseed->omega());
+	nhits   = tmpseed->_selectedTrackerHits.size();
+
+	pT      = mm2MeV*radius;
+	p       = pT/std::cos( std::atan(tmpseed->tanDip()));
+
+	if (nhits >= nhitsMin) {
+	  ++nseedsCut0;
+	  _hist.helixFit.pT[1]     ->Fill(pT);
+	  _hist.helixFit.p [1]     ->Fill(p);
+	  _hist.helixFit.radius[1] ->Fill(radius);
+	}
+  	
+
+	_hist.helixFit.radius[0] ->Fill(radius);
+	_hist.helixFit.nhits  ->Fill(nhits);
+	_hist.helixFit.pT[0]   ->Fill(pT);
+	_hist.helixFit.p [0]   ->Fill(p);
+	
+	_hist.helixFit.nhitsvspT ->Fill(nhits, pT);
+	_hist.helixFit.nhitsvsp  ->Fill(nhits, p );
+	
+      }
+
+      _hist.nseeds[1]->Fill(nseedsCut0);
+
+      
+    }
+
 //-----------------------------------------------------------------------------
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
   END:;
     event.put(std::move(outseeds));
+    event.put(std::move(tpeaks));
+
   }
 
 //-----------------------------------------------------------------------------
