@@ -44,7 +44,10 @@ physics :
     }
   }
 
-  p1: [ @sequence::Tracking.TPRDownstreameMinus ]
+  p1: [ 
+        @sequence::Tracking.TPRDownstreameMinus, 
+        @sequence::Tracking.TPRUpstreameMinus 
+      ]
 
   e1 : [eventdisplay]
 
