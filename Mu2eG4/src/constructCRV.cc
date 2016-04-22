@@ -56,7 +56,8 @@ namespace mu2e
     bool scintillatorShieldVisible = _config.getBool("crs.vetoVisible",true);
     bool scintillatorShieldDrawSolid = _config.getBool("crs.vetoSolid",true);
 
-    int verbosityLevel = _config.getInt("crs.verbosityLevel",0);
+    int  verbosityLevel = _config.getInt("crs.verbosityLevel",0);
+    bool forMARS        = _config.getBool("crs.forMARS",false);
 
     bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
     bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
@@ -181,13 +182,6 @@ namespace mu2e
             CLHEP::Hep3Vector CMB0LayerOffset = bar.getCMBPosition(0) - layerCenterInMu2e; 
             CLHEP::Hep3Vector CMB1LayerOffset = bar.getCMBPosition(1) - layerCenterInMu2e; 
 
-            if ( verbosityLevel > 3 ) 
-            {
-              cout << __func__ << " barPosition          : " <<  bar.getPosition() << endl;
-              cout << __func__ << " barShieldOffset      : " <<  barLayerOffset << endl;
-              cout << __func__ << " shieldAirOffset      : " <<  layerAirOffset << endl;
-            }
-
             G4VPhysicalVolume* pv = new G4PVPlacement(NULL,
                                                       barLayerOffset,
                                                       scintillatorBarLogical,
@@ -198,33 +192,45 @@ namespace mu2e
                                                       false);
             if(doSurfaceCheck) checkForOverlaps(pv, _config, verbosityLevel>0);
 
+            if(verbosityLevel > 4) std::cout << bar.name("CRSScintillatorBar_") << " " << bar.getPosition() <<std::endl;
+
 //FIXME: this is temporary until the GDML issue is fixed
 if(!_config.getBool("crs.hideCRVCMBs"))
 {
             if(bar.hasCMB(0))
             {
+              //MARS requires gdml file with unique logical volumes for the CMBs
+              if(forMARS) CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, bar.name("CRSCMB0_")); 
+
               G4VPhysicalVolume* pvCMB0 = new G4PVPlacement(NULL,
                                                             CMB0LayerOffset,
                                                             CMBLogical,
-                                                            bar.name("CRSCMB0_CRSScintillatorBar_"),
+                                                            bar.name("CRSCMB0_"),
                                                             layerInfo.logical,
                                                             false,
                                                             2*bar.index().asInt(),
                                                             false);
               if(doSurfaceCheck) checkForOverlaps(pvCMB0, _config, verbosityLevel>0);
+
+              if(verbosityLevel > 4) std::cout << bar.name("CRSCMB0_") << " " << bar.getCMBPosition(0) <<std::endl;
             }
 
             if(bar.hasCMB(1))
             {
+              //MARS requires gdml file with unique logical volumes for the CMBs
+              if(forMARS) CMBLogical = new G4LogicalVolume(CMBSolid,CMBMaterial, bar.name("CRSCMB1_")); 
+
               G4VPhysicalVolume* pvCMB1 = new G4PVPlacement(NULL,
                                                             CMB1LayerOffset,
                                                             CMBLogical,
-                                                            bar.name("CRSCMB1_CRSScintillatorBar_"),
+                                                            bar.name("CRSCMB1_"),
                                                             layerInfo.logical,
                                                             false,
                                                             2*bar.index().asInt()+1,
                                                             false);
               if(doSurfaceCheck) checkForOverlaps(pvCMB1, _config, verbosityLevel>0);
+
+              if(verbosityLevel > 4) std::cout << bar.name("CRSCMB1_") << " " << bar.getCMBPosition(1) <<std::endl;
             }
 }
           } //ibar
@@ -377,6 +383,8 @@ if(!_config.getBool("crs.hideCRVCMBs"))
           {
             checkForOverlaps( pv, _config, verbosityLevel>0);
           }
+
+          if(verbosityLevel > 4) std::cout << FEBName << " " << FEBCenterInMu2e <<std::endl;
         } //FEBNumber
       } //imodule
     } //ishield

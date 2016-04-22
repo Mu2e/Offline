@@ -366,5 +366,8 @@ vector<double> crs.supportStructureHalfLengths_CRV_Support_T  = {2463.8, 2.5, 80
 string         crs.supportStructureMaterialName = "G4_Fe";
 
 
+//MARS requires gdml file with unique logical volumes for the CMBs
+bool crs.forMARS = false;
+
 //FIXME: this is temporary until the GDML issue is fixed
 bool crs.hideCRVCMBs = true;
