@@ -242,49 +242,39 @@ CalPatRecDmm : { @table::CalPatRec
     fitdirection : 0
 }
 
+CalTimePeakFinder          : {
+    module_type                                 : CalTimePeakFinder
+
+    diagLevel                                   : 0
+    debugLevel                                  : 0
+    printFrequency                              : 100
+    StrawHitCollectionLabel                     : makeSH
+    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
+    caloClusterModuleLabel                      : MakeCaloCluster
+    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
+    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
+    MinNHits                                    : 15
+    DtMin                                       : -40.
+    DtMax                                       :  40.   # make it symmetric
+    minClusterEnergy                            : 50.    # MeV
+    minClusterSize                              : 2      # number of crystals
+    pitchAngle                                  : 0.67   # mean pitch for CE
+    dtOffset                                    : @local::TrackCaloMatchingDtOffset
+}
+
 
 CalPatRecNew          : {
     module_type                                 : CalPatRecNew
 
-    TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-
-    StrawHitCollectionLabel                     : makeSH
-    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
-    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions
-    caloReadoutModuleLabel                      : MakeCaloReadoutHits
-    calorimeterHitMCCrystalPtr                  : CaloHitMCCrystalPtr
-    caloClusterModuleLabel                      : MakeCaloCluster
-#------------------------------------------------------------------------------
-#  now this is defined by the ambig resolver choice 
-#------------------------------------------------------------------------------
-#    useDoublets             : 1
     diagLevel                                   : 0
     debugLevel                                  : 0
     printFrequency                              : 100
-    addhits                                     : true
-    final                                       : 1
+    StrawHitCollectionLabel                     : makeSH
+    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
+    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions
+    TrackSeedCollectionLabel                    : CalTimePeakFinder
     fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
     fitdirection                                : 0      # 0:downstream, 1:upstream
-    MinNHits                                    : 15
-    DtMin                                       : -40.
-    DtMax                                       :  40.   # make it symmetric
-    MaxStrawEDep                                : 0.005  # max integrated pulse for electron
-    MaxDtMiss                                   : 55.
-
-    dtOffset                                    : @local::TrackCaloMatchingDtOffset
-
-    tmin                                        : 0.
-    tmax                                        : 2000.  # ns
-    minClusterEnergy                            : 50.    # MeV
-    minClusterSize                              : 2      # number of crystals
-    MaxHelixDoca                                : 60.    # in mm
-    MaxAddDoca                                  : 7.     # in mm
-    MaxAddChi                                   : 3.5    # normalized unit
-    MaxStrawEDep                                : 0.005
-    TimeSelectionBits                           : ["EnergySelection","TimeSelection","RadiusSelection"]
-    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
-    KalmanFitSelectionBits                      : []
-    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
 
     # HelixFitHack configuraton (pattern recognition)
     HelixFitHack : {

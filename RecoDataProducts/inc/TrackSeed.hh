@@ -36,23 +36,27 @@ namespace mu2e {
     double                       _t0;
     double                       _errt0;
 
-
+    double                       _chi2XY;
+    double                       _chi2ZPhi;
   public:
 
     TrackSeed():
       _t0(0.),
       _errt0(0.) {
     }
-    double d0() const {return _fullTrkSeed._d0;}
-    double phi0() const {return _fullTrkSeed._phi0;}
-    double omega() const  {return _fullTrkSeed._omega;}
-    double z0() const  {return _fullTrkSeed._z0;}
-    double tanDip() const  {return _fullTrkSeed._tanDip;}
+    double d0      () const {return _fullTrkSeed._d0;    }
+    double phi0    () const {return _fullTrkSeed._phi0;  }
+    double omega   () const {return _fullTrkSeed._omega; }
+    double z0      () const {return _fullTrkSeed._z0;    }
+    double tanDip  () const {return _fullTrkSeed._tanDip;}
 
-    double t0() const  {return _t0;}
-    double errt0() const  {return _errt0;}
-    size_t nLoops() const {return _loopSeeds.size(); }
+    double t0      () const {return _t0;                 }
+    double errt0   () const {return _errt0;              }
+    size_t nLoops  () const {return _loopSeeds.size();   }
 
+    double chi2XY  () const {return _chi2XY;             }
+    double chi2ZPhi() const {return _chi2ZPhi;           }
+    
     // Print contents of the object.
     // Not implemented.  Comment out until it is implemented.
     //void print( std::ostream& ost = std::cout, bool doEndl = true ) const;

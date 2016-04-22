@@ -121,6 +121,8 @@ namespace mu2e {
     struct HelixFitHist_t {
       TH1F*  nhits;           // number of hits on a helix  
       TH1F*  radius[2];   
+      TH1F*  chi2XY[2];
+      TH1F*  chi2PhiZ[2];
       TH1F*  pT[2];
       TH1F*  p [2];
       TH2F*  nhitsvspT;
@@ -141,42 +143,19 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     //    TStopwatch*   fStopwatch;
 
-    unsigned     _iev;
+    unsigned         _iev;
 					// configuration parameters
-    int          _diagLevel; 
-    int          _debugLevel;
-    int          _printfreq;
-    bool         _addhits; 
+    int              _diagLevel; 
+    int              _debugLevel;
+    int              _printfreq;
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
     std::string      _shLabel ; // MakeStrawHit label (makeSH)
     std::string      _shpLabel;
     std::string      _shfLabel;
-    std::string      _ccmLabel; // caloClusterModuleLabel
-    std::string      _crmLabel;
-    std::string      _chmccpLabel;
+    std::string      _trkseedLabel;
 
-    //    std::string      _dtspecpar;
-
-    StrawHitFlag     _tsel, _hsel, _addsel, _ksel;
-    StrawHitFlag     _bkgsel, _addbkg;
-    double           _maxedep;
-    //    int              _useDoublets;
-    double           _mindt;
-    double           _maxdt;
-					// time spectrum parameters
-    unsigned         _maxnpeak;
-    int              _minnhits;
-    double           _tmin;
-    double           _tmax;
-    double           _tbin;
-    unsigned         _nbins;
-    double           _minClusterEnergy;	// min seed energy
-    int              _minClusterSize;   // min size of the seeding cluster
-
-    double           _pitchAngle;
-					// outlier cuts
     TrkParticle      _tpart;	        // particle type being searched for
     TrkFitDirection  _fdir;		// fit direction in search
 
@@ -188,29 +167,15 @@ namespace mu2e {
     const StrawHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
     const StrawHitPositionCollection*     _shpcol;
-    const CaloClusterCollection*          _ccCollection;
-    const StepPointMCCollection*          _stepcol;
-    const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
+    const TrackSeedCollection*            _trkSeeds;
+    const CalTimePeakCollection*          _tpeaks;
 
-    const CaloHitCollection*              _chcol;
-    const PtrStepPointMCVectorCollection* _listOfMCCrystals;
+    //    const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
 
-    StrawHitFlagCollection*               _flags;    // flags are not const - for a reason ?
-					
     HelixFitHack             _hfit;	
-
-    double                   _dtoffset;
-    bool                     _fieldcorr;
-
-    CalTimePeakCollection*   _tpeaks;   // cache of time peaks
-    std::string              _iname;	// data instance name
-
-    std::string              _iname_seed;// data instance name for the output 
-					 // of seed fit (used for diagnostics only)
 
     XYZPHackVector           _index;
     int                      _nindex;
-    int                      _nrescued;    // by the seed fit
 
     const TTracker*          _tracker;     // straw tracker geometry
     const Calorimeter*       _calorimeter; // cached pointer to the calorimeter geometry
@@ -218,7 +183,6 @@ namespace mu2e {
     const TrackerCalibrations* _trackerCalib;
 
     TFolder*                 _folder;
-    int                      _eventid;
 //-----------------------------------------------------------------------------
 // diagnostics histograms
 //-----------------------------------------------------------------------------
@@ -227,10 +191,9 @@ namespace mu2e {
     THackData*               fHackData;
 
     //    double                   _mbtime;               // period of 1 microbunch
-    SimParticleTimeOffset*   fgTimeOffsets;
+    //    SimParticleTimeOffset*   fgTimeOffsets;
 
     HelixTraj*               _helTraj;
-    mutable BField*          _bfield;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -247,25 +210,17 @@ namespace mu2e {
 // helper functions
 //-----------------------------------------------------------------------------
     bool findData         (const art::Event& e);
-    void findTimePeaks    (CalTimePeakCollection* TimePeakColl);
-    void createTimePeak   (CalTimePeakCollection* TimePeakColl);
 
 //----------------------------------------------------------------------
 // 2015 - 02 - 16 Gianipez added the two following functions
 //----------------------------------------------------------------------
-    void findLoopApex     (){}//search the straw hits src/closer to the apexes of the helix loops
 
     void bookHistograms   ();
-    void fillStrawDiag    ();
-    void fillTimeDiag     ();
-
-    void initTrackSeed(TrackSeed   &TrackSeed, 
-		       TrkDef      &Seeddef  ,
-		       CalTimePeak *TPeak    ,
-		       art::Handle<mu2e::StrawHitCollection> &StrawhitsH,
-		       art::Event& Event);
-
-    BField const& bField() const;
+    void initTrackSeed    (TrackSeed   &TrackSeed, 
+			   TrkDef      &Seeddef  ,
+			   const CalTimePeak *TPeak    ,
+			   art::Handle<mu2e::StrawHitCollection> &StrawhitsH,
+			   art::Ptr<CaloCluster>                  ClusterPtr);
 
   };
 }

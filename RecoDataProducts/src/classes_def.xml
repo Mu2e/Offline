@@ -62,8 +62,6 @@
  <class name="mu2e::ZRotStrawHitMap"/>
  <class name="mu2e::ZRotStrawHitMapCollection" persistent="false"/>
  <class name="mu2e::TrackerHitByID" persistent="false"/>
- <class name="mu2e::HitIndex"/>
- <class name="std::vector<mu2e::HitIndex>"/>
  <class name="mu2e::HelixVal"/>
  <class name="std::vector<mu2e::HelixVal>"/>
  <class name="mu2e::TrackSeed"/>

@@ -50,27 +50,52 @@ namespace mu2e
     std::sort(tpeaks.begin(),tpeaks.end(),greater<TrkTimePeak>());
   }
 
-  inline void fillTrackSeed(TrackSeed &tmpseed, TrkDef &seeddef,  art::Handle<TrackerHitTimeClusterCollection> &tclusthitH,  unsigned &ipeak, art::Handle<mu2e::StrawHitCollection> &strawhitsH) {
+  // inline void fillTrackSeed(TrackSeed &tmpseed, TrkDef &seeddef,  art::Handle<TrackerHitTimeClusterCollection> &tclusthitH,  unsigned &ipeak, art::Handle<mu2e::StrawHitCollection> &strawhitsH) {
 
-          tmpseed._relatedTimeCluster=TrackerHitTimeClusterPtr(tclusthitH,ipeak);
-          tclusthitH.product()->at(ipeak).expectedT0(tmpseed._t0,tmpseed._errt0,3);
-          tmpseed._fullTrkSeed._d0=seeddef.helix().d0();//_dpar[ParIndex::d0Index];//
-          tmpseed._fullTrkSeed._phi0=seeddef.helix().phi0();
-          tmpseed._fullTrkSeed._omega=seeddef.helix().omega();
-          tmpseed._fullTrkSeed._z0=seeddef.helix().z0();
-          tmpseed._fullTrkSeed._tanDip=seeddef.helix().tanDip();
-          for(int i=0;i<5;i++) {
-            for(int j=0;j<5;j++) {
-              tmpseed._fullTrkSeed._covMtrx[i][j]=seeddef.helixCovMatr()[i][j];
-            }
-          }
+  //         tmpseed._relatedTimeCluster=TrackerHitTimeClusterPtr(tclusthitH,ipeak);
+  //         tclusthitH.product()->at(ipeak).expectedT0(tmpseed._t0,tmpseed._errt0,3);
+  //         tmpseed._fullTrkSeed._d0=seeddef.helix().d0();//_dpar[ParIndex::d0Index];//
+  //         tmpseed._fullTrkSeed._phi0=seeddef.helix().phi0();
+  //         tmpseed._fullTrkSeed._omega=seeddef.helix().omega();
+  //         tmpseed._fullTrkSeed._z0=seeddef.helix().z0();
+  //         tmpseed._fullTrkSeed._tanDip=seeddef.helix().tanDip();
+  //         for(int i=0;i<5;i++) {
+  //           for(int j=0;j<5;j++) {
+  //             tmpseed._fullTrkSeed._covMtrx[i][j]=seeddef.helixCovMatr()[i][j];
+  //           }
+  //         }
 
-          for (std::vector<hitIndex>::const_iterator ihit=seeddef.strawHitIndices().begin(); ihit!=seeddef.strawHitIndices().end(); ++ihit) {
-                  tmpseed._fullTrkSeed._selectedTrackerHitsIdx.push_back( mu2e::HitIndex( ihit->_index, ihit->_ambig) );
-                  tmpseed._selectedTrackerHits.push_back( StrawHitPtr (strawhitsH,ihit->_index) );
-          }
+  //         for (std::vector<hitIndex>::const_iterator ihit=seeddef.strawHitIndices().begin(); ihit!=seeddef.strawHitIndices().end(); ++ihit) {
+  //                 tmpseed._fullTrkSeed._selectedTrackerHitsIdx.push_back( mu2e::hitIndex( ihit->_index, ihit->_ambig) );
+  //                 tmpseed._selectedTrackerHits.push_back( StrawHitPtr (strawhitsH,ihit->_index) );
+  //         }
+  // }
+  
+  inline void fillTrackSeed(TrackSeed &tmpseed     , 
+			    TrkDef    &seeddef     ,  
+			    TrackSeed  InputTrkSeed, 
+			    art::Handle<mu2e::StrawHitCollection> &strawhitsH) {
+
+    tmpseed._t0                  = InputTrkSeed._t0;
+    tmpseed._errt0               = InputTrkSeed._errt0;	  
+    tmpseed._fullTrkSeed._d0     = seeddef.helix().d0();
+    tmpseed._fullTrkSeed._phi0   = seeddef.helix().phi0();
+    tmpseed._fullTrkSeed._omega  = seeddef.helix().omega();
+    tmpseed._fullTrkSeed._z0     = seeddef.helix().z0();
+    tmpseed._fullTrkSeed._tanDip = seeddef.helix().tanDip();
+
+    for(int i=0;i<5;i++) {
+      for(int j=0;j<5;j++) {
+	tmpseed._fullTrkSeed._covMtrx[i][j] = seeddef.helixCovMatr()[i][j];
+      }
+    }
+    
+    for (std::vector<hitIndex>::const_iterator ihit=seeddef.strawHitIndices().begin(); ihit!=seeddef.strawHitIndices().end(); ++ihit) {
+      tmpseed._fullTrkSeed._selectedTrackerHitsIdx.push_back( mu2e::hitIndex( ihit->_index, ihit->_ambig) );
+      tmpseed._selectedTrackerHits.push_back( StrawHitPtr (strawhitsH,ihit->_index) );
+    }
   }
-
+  
   inline void HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
           //TrkExchangePar helParams( helIn._d0, helIn._phi0, helIn._omega, helIn._z0, helIn._tanDip );
           CLHEP::HepVector helParams(5);

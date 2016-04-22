@@ -247,8 +247,8 @@ namespace mu2e
       //all track selected
       std::vector<hitIndex> goodhits;
 
-      const std::vector<HitIndex> &trkseedhits = iTrkSeed._fullTrkSeed._selectedTrackerHitsIdx;
-      for (std::vector<HitIndex>::const_iterator loopPoints_it = trkseedhits.begin();
+      const std::vector<hitIndex> &trkseedhits = iTrkSeed._fullTrkSeed._selectedTrackerHitsIdx;
+      for (std::vector<hitIndex>::const_iterator loopPoints_it = trkseedhits.begin();
         loopPoints_it != trkseedhits.end(); ++loopPoints_it) {
         goodhits.push_back( mu2e::hitIndex(loopPoints_it->_index,loopPoints_it->_ambig) );
       }

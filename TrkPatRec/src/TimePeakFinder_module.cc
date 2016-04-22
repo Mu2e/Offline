@@ -23,11 +23,14 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/TrackSeed.hh"
+#include "RecoDataProducts/inc/TrackSeedCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 // root
 #include "TFile.h"
 #include "TH1F.h"
+#include "TF1.h"
 #include "TMath.h"
 #include "TCanvas.h"
 #include "TApplication.h"
@@ -64,101 +67,109 @@ namespace mu2e {
 
     // Start: run time parameters
 
-    int _debug;
-    int _diag;
-    int _printfreq;
+    int           _debug;
+    int           _diag;
+    int           _printfreq;
 
-    unsigned _iev;
+    unsigned      _iev;
 
     // event object labels
-    std::string _shLabel;
-    std::string _shpLabel;
-    std::string _shfLabel;
-    std::string _mcdigislabel;
-    StrawHitFlag _hsel, _psel, _hbkg;
-    double _maxdt;
+    std::string   _shLabel;
+    std::string   _shpLabel;
+    std::string   _shfLabel;
+    std::string   _mcdigislabel;
+    
+    StrawHitFlag  _hsel, _psel, _hbkg;
+    double        _maxdt;
+
     // time spectrum parameters
-    bool _findtpeak;
-    unsigned _maxnpeak;
-    unsigned _minnhits;
-    bool _cleanpeaks;
-    double _minpeakmva, _maxpeakdt, _maxpeakdphi;
-    double _tmin;
-    double _tmax;
-    double _tbin;
-    unsigned _nbins;
-    double _ymin;
-    double _1dthresh,_tssigma;
-    double _nmnlWdNSigma;
+    bool          _findtpeak;
+    int           _t0TypeCalculator;
+    unsigned      _maxnpeak;
+    unsigned      _minnhits;
+    bool          _cleanpeaks;
+    double        _minpeakmva, _maxpeakdt, _maxpeakdphi;
+    double        _tmin;
+    double        _tmax;
+    double        _tbin;
+    unsigned      _nbins;
+    double        _ymin;
+    double        _1dthresh,_tssigma;
+    double        _nmnlWdNSigma;
 
     // cache of event objects
-    const StrawHitCollection* _shcol;
-    const StrawHitFlagCollection* _shfcol;
-    StrawHitFlagCollection* _flags;
-    const StrawHitPositionCollection* _shpcol;
+    const StrawHitCollection*             _shcol;
+    const StrawHitFlagCollection*         _shfcol;
+    StrawHitFlagCollection*               _flags;
+    const StrawHitPositionCollection*     _shpcol;
 
     // cache of time peaks
-    std::vector<TrkTimePeak> _tpeaks;
+    std::vector<TrkTimePeak>              _tpeaks;
     //string _iname; // data instance name
 
-    MVATools _peakMVA; // MVA for peak cleaning
-    TimePeakMVA _pmva; // input variables to TMVA for peak cleaning
+    MVATools                              _peakMVA; // MVA for peak cleaning
+    TimePeakMVA                           _pmva; // input variables to TMVA for peak cleaning
 
     art::Handle<mu2e::StrawHitCollection> _strawhitsH;
 
-    bool findData(const art::Event& e);
-    void findTimePeaks();
-    void findTimePeaks(TH1F const& tspect,std::vector<Float_t>& xpeak,std::vector<Float_t>& ypeak);
-    void createTimePeak();
-    void cleanTimePeak(TrkTimePeak& tp);
+    void calculateT0      (double &T0       , double &ErrT0, 
+			   double MeanTime  , double Sigma,
+			   double MinHitTime, double NominalWidth);
+    void cleanTimePeak    (TrkTimePeak& tp);
+    void createTimePeak   ();
     void createDiagnostics();
-    void fillTimeDiag();
-    void fillPeakDiag(size_t ip, TrkTimePeak const& tp);
-    const StrawDigiMCCollection *_mcdigis;
+    bool findData         (const art::Event& e);
+    void findTimePeaks    ();
+    void findTimePeaks    (TH1F const& tspect, std::vector<Float_t>& xpeak, std::vector<Float_t>& ypeak);
+    void fillTimeDiag     ();
+    void fillPeakDiag     (size_t ip, TrkTimePeak const& tp);
+
+    const StrawDigiMCCollection*          _mcdigis;
 // time peak diag variables
-    TTree* _tpdiag;
-    Int_t _tpeventid, _peakid, _pmax, _nphits, _ncphits, _nchits;
-    Float_t _ptime, _pdtimemax, _ctime, _cdtimemax;;
-    Float_t _pphi, _cphi, _cphirange, _pdphimax, _cdphimax;
-    vector<TimePeakHitInfo> _tphinfo;
+    TTree*                                _tpdiag;
+    Int_t                                 _tpeventid, _peakid, _pmax, _nphits, _ncphits, _nchits;
+    Float_t                               _ptime, _pdtimemax, _ctime, _cdtimemax;
+    Float_t                               _pphi, _cphi, _cphirange, _pdphimax, _cdphimax;
+    vector<TimePeakHitInfo>               _tphinfo;
   };
 
   TimePeakFinder::~TimePeakFinder() {
   }
   
   TimePeakFinder::TimePeakFinder(fhicl::ParameterSet const& pset) :
-    _debug(pset.get<int>("debugLevel",0)),
-    _diag(pset.get<int>("diagLevel",0)),
-    _printfreq(pset.get<int>("printFrequency",101)),
-    _shLabel(pset.get<std::string>("StrawHitCollectionLabel","makeSH")),
-    _shpLabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
-    _shfLabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
-    _mcdigislabel(pset.get<string>("StrawDigiMCLabel")),
-    _hsel(pset.get<std::vector<std::string> >("HitSelectionBits")),
-    _psel(pset.get<std::vector<std::string> >("PositionSelectionBits")),
-    _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
-    _maxdt(pset.get<double>("DtMax",30.0)),
-    _findtpeak(pset.get<bool>("FindTimePeaks",true)),
-    _maxnpeak(pset.get<unsigned>("MaxNPeaks",50)),
-    _minnhits(pset.get<unsigned>("MinNHits",10)),
-    _cleanpeaks(pset.get<bool>("CleanTimePeaks",true)),
-    _minpeakmva(pset.get<double>("MinTimePeakMVA",0.2)),
-    _maxpeakdt(pset.get<double>("MaxTimePeakDeltat",25.0)),
-    _maxpeakdphi(pset.get<double>("MaxTimePeakDeltaPhi",1.0)),
-    _tmin(pset.get<double>("tmin",500.0)),
-    _tmax(pset.get<double>("tmax",1700.0)),
-    _tbin(pset.get<double>("tbin",20.0)),
-    _ymin(pset.get<double>("ymin",8.0)),
-    _1dthresh(pset.get<double>("OneDPeakThreshold",5.0)),
-    _nmnlWdNSigma(pset.get<double>("NominalWidthNSigma",3.0)),
-    _peakMVA(pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet()))
+    _debug             (pset.get<int>("debugLevel",0)),
+    _diag              (pset.get<int>("diagLevel",0)),
+    _printfreq         (pset.get<int>("printFrequency",101)),
+    _shLabel           (pset.get<std::string>("StrawHitCollectionLabel","makeSH")),
+    _shpLabel          (pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
+    _shfLabel          (pset.get<std::string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
+    _mcdigislabel      (pset.get<string>("StrawDigiMCLabel")),
+    _hsel              (pset.get<std::vector<std::string> >("HitSelectionBits")),
+    _psel              (pset.get<std::vector<std::string> >("PositionSelectionBits")),
+    _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
+    _maxdt             (pset.get<double>("DtMax",30.0)),
+    _findtpeak         (pset.get<bool>("FindTimePeaks",true)),
+    _t0TypeCalculator  (pset.get<int>("T0TypeCalculator",3)),
+    _maxnpeak          (pset.get<unsigned>("MaxNPeaks",50)),
+    _minnhits          (pset.get<unsigned>("MinNHits",10)),
+    _cleanpeaks        (pset.get<bool>("CleanTimePeaks",true)),
+    _minpeakmva        (pset.get<double>("MinTimePeakMVA",0.2)),
+    _maxpeakdt         (pset.get<double>("MaxTimePeakDeltat",25.0)),
+    _maxpeakdphi       (pset.get<double>("MaxTimePeakDeltaPhi",1.0)),
+    _tmin              (pset.get<double>("tmin",500.0)),
+    _tmax              (pset.get<double>("tmax",1700.0)),
+    _tbin              (pset.get<double>("tbin",20.0)),
+    _ymin              (pset.get<double>("ymin",8.0)),
+    _1dthresh          (pset.get<double>("OneDPeakThreshold",5.0)),
+    _nmnlWdNSigma      (pset.get<double>("NominalWidthNSigma",3.0)),
+    _peakMVA           (pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet()))
   {
     // tag the data product instance by the direction and particle type found by this fitter
     produces<StrawHitFlagCollection>();
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     // Tell the framework what we make.
-    produces<TrackerHitTimeClusterCollection>();
+    produces<TrackSeedCollection>();
 
   }
 
@@ -197,60 +208,122 @@ namespace mu2e {
     if(_diag > 2 && _mcdigis !=0 && _mcdigis->size() > 0)fillTimeDiag();
 
     // create event objects and piut them into event
-    std::unique_ptr<TrackerHitTimeClusterCollection> thcc(new TrackerHitTimeClusterCollection);
+    std::unique_ptr<TrackSeedCollection>    thcc  (new TrackSeedCollection);
+    
     for (std::vector<TrkTimePeak>::iterator itp=_tpeaks.begin(); itp!=_tpeaks.end(); ++itp) {
-      thcc->push_back(TrackerHitTimeCluster());
-      thcc->back()._meanTime=itp->_tpeak;
-      thcc->back()._peakmax=itp->_peakmax;
+      double    meanTime(0), sigma(0), minHitTime(0), maxHitTime(0), nominalWidth(0);
+      double    sumOfSqr(0), sum(0);
+      double    t0(0), errt0(0);
 
-      thcc->back()._minHitTime = thcc->back()._maxHitTime = _shcol->at( itp->_trkptrs.begin()->_index ).time();
-      double sumOfSqr(0.0), sum(0.0);
+      TrackSeed tmpSeed;
+      
+      meanTime   = itp->_tpeak;
+      minHitTime = _shcol->at( itp->_trkptrs.begin()->_index ).time();
+      maxHitTime = _shcol->at( itp->_trkptrs.begin()->_index ).time();
+
       for (std::vector<hitIndex>::iterator hittpit=itp->_trkptrs.begin(); hittpit!=itp->_trkptrs.end(); ++hittpit) {
 	double htime = _shcol->at(hittpit->_index).time();
-	sum+=htime;
-	sumOfSqr+=htime*htime;
-	thcc->back()._selectedTrackerHits.push_back( art::Ptr<StrawHit> ( _strawhitsH, hittpit->_index ) );
-	if ( htime < thcc->back()._minHitTime ) { thcc->back()._minHitTime=htime; }
-	if ( htime > thcc->back()._maxHitTime ) { thcc->back()._maxHitTime=htime; }
+
+	sum         += htime;
+	sumOfSqr    += htime*htime;
+	
+	tmpSeed._selectedTrackerHits.push_back( StrawHitPtr( _strawhitsH, hittpit->_index ) );
+	tmpSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( mu2e::hitIndex( hittpit->_index, hittpit->_ambig) );
+
+	if ( htime < minHitTime ) { minHitTime = htime; }
+	if ( htime > maxHitTime ) { maxHitTime = htime; }
+	
 	flags->at(hittpit->_index).merge(StrawHitFlag::timesel);
       }
 
       if (itp->_trkptrs.size()>1) {
-	thcc->back()._sigma=sumOfSqr-sum*sum/((double)itp->_trkptrs.size());
-	if (thcc->back()._sigma>0.0) {
-	  thcc->back()._sigma=sqrt(thcc->back()._sigma/((double)(itp->_trkptrs.size()-1.0)));
-	  thcc->back()._nominalWidth=_nmnlWdNSigma*thcc->back()._sigma;
+	sigma    = sumOfSqr - sum*sum/((double)itp->_trkptrs.size());
+	
+	if (sigma>0.0) {
+	  sigma        = sqrt( sigma/((double)(itp->_trkptrs.size()-1.0)));
+	  nominalWidth =_nmnlWdNSigma*sigma;
 	} else {
-	  thcc->back()._sigma=0.0;
-	  thcc->back()._nominalWidth = thcc->back()._maxHitTime-thcc->back()._minHitTime;
+	  sigma        = 0;
+	  nominalWidth = maxHitTime - minHitTime;
 	}
       } else {
-	thcc->back()._nominalWidth = thcc->back()._maxHitTime-thcc->back()._minHitTime;
+	nominalWidth = maxHitTime - minHitTime;
       }
 
+      calculateT0(t0, errt0, meanTime, sigma, minHitTime, nominalWidth);
+
+      tmpSeed._t0     = t0;
+      tmpSeed._errt0  = errt0;
+      
+      thcc->push_back(tmpSeed);
     }
 
     int iPeak(0);
     if (_debug>1) {
       std::cout<<"n Peaks "<<thcc->size()<<std::endl;
-      for (TrackerHitTimeClusterCollection::iterator tpeak_it=thcc->begin(); tpeak_it!=thcc->end(); ++tpeak_it ) {
+      for (TrackSeedCollection::iterator tpeak_it=thcc->begin(); tpeak_it!=thcc->end(); ++tpeak_it ) {
 	std::cout<<"iPeak "<<std::endl;
 	std::cout<<*tpeak_it<<std::endl;
 	++iPeak;
       }
     }
 
-    event.put(std::move(thcc));
-    event.put(std::move(flags));
+    event.put(std::move( thcc ));
+    event.put(std::move( flags));
 
   } // end produce
 
   void TimePeakFinder::endJob(){
   }
 
+  // calculate T0
+
+  void TimePeakFinder::calculateT0(double &T0, double &ErrT0, 
+				   double MeanTime  , double Sigma,
+				   double MinHitTime, double NominalWidth)  {
+          switch (_t0TypeCalculator) {
+                case 3:
+                {
+                        T0    = MeanTime;
+                        ErrT0 = Sigma;
+                        break;
+                }
+                case 2:
+                {
+                        TF1 calib("toCalib","pol4",-200,50);
+                        calib.SetParameters(0.577443,-0.00597028,4.23125e-06,3.33197e-07,1.17041e-09);
+                        T0    = MinHitTime - calib.GetX((MeanTime - MinHitTime)/NominalWidth);
+                        ErrT0 = 0.16*NominalWidth;
+                        break;
+                }
+                case 1:
+                {
+                        if ( ((MeanTime-MinHitTime)/NominalWidth)<0.8 ) {
+                                T0    = (MinHitTime + (MeanTime-1.1*Sigma))*0.5;
+                                ErrT0 = 0.092*Sigma;
+                        } else {
+                                T0    = MeanTime - 0.98*Sigma;
+                                ErrT0 = 0.23*Sigma;
+                        }
+                        break;
+                }
+                default:
+                {
+                        if ( ((MeanTime - MinHitTime)/NominalWidth)<0.8 ) {
+                                T0    = MinHitTime;
+                                ErrT0 = 0.1*Sigma;
+                        } else {
+                                T0    = MeanTime-0.98*Sigma;
+                                ErrT0 = 0.23*Sigma;
+                        }
+                        break;
+                }
+        }
+  }
+
   // find the input data objects
    bool TimePeakFinder::findData(const art::Event& evt){
-     _shcol = 0;
+     _shcol  = 0;
      _shfcol = 0;
      _shpcol = 0;
 

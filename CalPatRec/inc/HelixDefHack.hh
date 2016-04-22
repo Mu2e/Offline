@@ -23,6 +23,9 @@ namespace mu2e {
   private:
     const StrawHitPositionCollection* _shpos;
     const StrawHitFlagCollection*     _shfcol;
+
+    double      _chi2XY;
+    double      _chi2ZPhi;
   public:
 
     HelixDefHack(TrkDef const& tdef);
@@ -42,6 +45,9 @@ namespace mu2e {
 
     const StrawHitPositionCollection* strawHitPositionCollection() const { return _shpos ; }
     const StrawHitFlagCollection*     strawHitFlagCollection    () const { return _shfcol; }
+    
+    double  chi2XY  () const { return _chi2XY;}
+    double  chi2ZPhi() const { return _chi2ZPhi;}
   };
 
 };
