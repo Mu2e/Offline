@@ -6,7 +6,7 @@
 BEGIN_PROLOG
 TrackCaloIntersection : {
     module_type                  : TrackCaloIntersection
-    fitterModuleLabel            : TrkPatRec
+    fitterModuleLabel            : TrkRecFitDownstreameMinus
     fitparticle                  : 11               # electron
     fitdirection                 : 0                # downstream
     pathStep                     : 20.              # mm
@@ -16,11 +16,21 @@ TrackCaloIntersection : {
     diagLevel                    : 0
 }
 #------------------------------------------------------------------------------
+# use either TrkPatRec or CalPatRec
+#------------------------------------------------------------------------------
+TrackCaloIntersectionTpr : { @table::TrackCaloIntersection
+    fitterModuleLabel            : TrkRecFitDownstreameMinus
+}
+
+TrackCaloIntersectionCpr : { @table::TrackCaloIntersection
+    fitterModuleLabel            : CalPatRec
+}
+#------------------------------------------------------------------------------
 # TrkExtrapol is the deprecated version
 #------------------------------------------------------------------------------
 TrkExtrapol : {
     module_type                  : TrkExtrapol
-    fitterModuleLabel            : TrkPatRec
+    fitterModuleLabel            : TrkRecFitDownstreameMinus
     fitparticle                  : 11               # electron
     fitdirection                 : 0                # downstream
     diagLevel                    : 0
@@ -82,7 +92,7 @@ TrkExtrapolUpstreampiMinus.fitdirection : 1
 
 CaloMatching : {
     module_type                  : CaloMatching
-    fitterModuleLabel            : TrkPatRec
+    fitterModuleLabel            : TrkRecFitDownstreameMinus
     trkToCaloExtrapolModuleLabel : TrkExtrapol
     caloClusterModuleLabel       : MakeCaloCluster
     fitparticle                  : 11
@@ -221,4 +231,13 @@ TrackCaloMatching : {
     caloClusterAlgorithm         : closest
     caloClusterSeeding           : energy
 }
+
+TrackCaloMatchingTpr : { @table::TrackCaloMatching
+    trkToCaloExtrapolModuleLabel : TrackCaloIntersectionTpr
+}
+
+TrackCaloMatchingCpr : { @table::TrackCaloMatching
+    trkToCaloExtrapolModuleLabel : TrackCaloIntersectionCpr
+}
+
 END_PROLOG

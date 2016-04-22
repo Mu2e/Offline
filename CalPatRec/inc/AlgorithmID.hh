@@ -21,6 +21,7 @@ namespace mu2e {
     };
 
     AlgorithmID(); 
+    AlgorithmID(short Best, short Mask) { _bestID = Best; _algMask = Mask; }  
     AlgorithmID(const AlgorithmID & p);
 
     ~AlgorithmID();
@@ -32,14 +33,14 @@ namespace mu2e {
     short   BestID () const { return _bestID ; }
     short   AlgMask() const { return _algMask; }
 
-    void    Set       (short ID, short Mask) { _bestID = ID; _algMask = Mask; }
+    void    Set       (short Best, short Mask) { _bestID = Best; _algMask = Mask; }
 
-    void    SetBestID (short ID  ) { _bestID  = ID; }
-    void    SetAlgMask(short Mask) { _algMask = Mask;}
+    void    SetBestID (short Best) { _bestID  = Best; }
+    void    SetAlgMask(short Mask) { _algMask = Mask; }
     
   private:
     short   _bestID;			// bit ID identifing the best algorithm 
-    short    _algMask;			// algorithm mask, for algorithms found this track
+    short   _algMask;			// algorithm mask, for algorithms found this track
   };
 
 

@@ -7,6 +7,7 @@
 
 #include "CalPatRec/inc/CalPatRec_module.hh"
 #include "CalPatRec/inc/Ref.hh"
+#include "CalPatRec/inc/AlgorithmIDCollection.hh"
 
 // framework
 #include "art/Framework/Principal/Handle.h"
@@ -116,6 +117,7 @@ namespace mu2e {
     _iname_seed = _iname + "seed";
     produces<KalRepCollection>      (_iname);
     produces<KalRepPtrCollection>   (_iname);
+    produces<AlgorithmIDCollection>  (_iname);
 
     produces<StrawHitFlagCollection>(_iname);
     produces<CalTimePeakCollection> (_iname);
@@ -551,17 +553,17 @@ namespace mu2e {
 
     if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
+    unique_ptr<KalRepCollection>       tracks   (new KalRepCollection     );
+    unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection  );
+    unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection);
+
     _tpeaks = new CalTimePeakCollection;
-    unique_ptr<KalRepCollection>       tracks(new KalRepCollection      );
-    unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection);
     unique_ptr<CalTimePeakCollection>  tpeaks(_tpeaks);
 
     _flags = new StrawHitFlagCollection();
     unique_ptr<StrawHitFlagCollection> flags (_flags);
 
     art::ProductID kalRepsID(getProductID<KalRepCollection>(event,_iname));
-
-    //    unique_ptr<KalFitResultCollection> kfresults(new KalFitResultCollection);
 
     double pEntrance(.0), step_time(-9999.);
     double time_threshold(500.);
@@ -1026,13 +1028,17 @@ namespace mu2e {
 // start from _kfresult, as stealTrack clears the hit pointers
 // _kfresult doesn't own anything
 //-----------------------------------------------------------------------------
-//      kfresults->push_back(*_kfresult);
-
         krep = _kfresult->stealTrack();
         tracks->push_back(krep);
         int index = tracks->size()-1;
         trackPtrs->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
         tp->SetCprIndex(tracks->size());
+
+	int best = AlgorithmID::CalPatRecBit;
+	int mask = 1 << AlgorithmID::CalPatRecBit;
+
+	algs->push_back(AlgorithmID(best,mask));
+	
       }
       else {
 //-----------------------------------------------------------------------------
@@ -1086,6 +1092,7 @@ namespace mu2e {
   END:;
     event.put(std::move(tracks)   ,_iname);
     event.put(std::move(trackPtrs),_iname);
+    event.put(std::move(algs     ),_iname);
     event.put(std::move(flags )   ,_iname);
     event.put(std::move(tpeaks)   ,_iname);
   }
