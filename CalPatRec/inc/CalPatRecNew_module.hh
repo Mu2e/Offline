@@ -122,7 +122,7 @@ namespace mu2e {
       TH1F*  nhits;           // number of hits on a helix  
       TH1F*  radius[2];   
       TH1F*  chi2XY[2];
-      TH1F*  chi2PhiZ[2];
+      TH1F*  chi2ZPhi[2];
       TH1F*  pT[2];
       TH1F*  p [2];
       TH2F*  nhitsvspT;
@@ -216,9 +216,10 @@ namespace mu2e {
 //----------------------------------------------------------------------
 
     void bookHistograms   ();
-    void initTrackSeed    (TrackSeed   &TrackSeed, 
-			   TrkDef      &Seeddef  ,
-			   const CalTimePeak *TPeak    ,
+    void initTrackSeed    (TrackSeed                             &TrackSeed , 
+			   TrkDef                                &Seeddef   ,
+			   HelixFitHackResult                    &HfResult  ,
+			   const CalTimePeak                     *TPeak     ,
 			   art::Handle<mu2e::StrawHitCollection> &StrawhitsH,
 			   art::Ptr<CaloCluster>                  ClusterPtr);
 

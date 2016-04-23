@@ -134,17 +134,21 @@ namespace mu2e {
 
     art::TFileDirectory hf_dir = tfs->mkdir("HelixFit");
     
-    _hist.nseeds[0]          = tfs->make<TH1F>("nseeds0"  , "number of track candidates: all events", 21, -0.5, 20.5);
-    _hist.nseeds[1]          = tfs->make<TH1F>("nseeds1"  , "number of track candidates: nhits > 15", 21, -0.5, 20.5);
-    _hist.helixFit.nhits     = hf_dir.make<TH1F>("nhits" , "number of hits within a track candidate; nHits", 101, -0.5, 100.5);
-    _hist.helixFit.radius[0] = hf_dir.make<TH1F>("radius0", "helix radius; r [mm]"                  , 401, -0.5, 400.5);
-    _hist.helixFit.radius[1] = hf_dir.make<TH1F>("radius1", "helix radius nhits > 15; r [mm]"       , 401, -0.5, 400.5);
-    _hist.helixFit.pT [0]    = hf_dir.make<TH1F>("pT0"    , "transverse momentum; pT [MeV/c]"       , 400, -0.5, 200.5);
-    _hist.helixFit.p  [0]    = hf_dir.make<TH1F>("p0"     , "momentum; p [MeV/c]"                   , 400, -0.5, 200.5);
-    _hist.helixFit.pT [1]    = hf_dir.make<TH1F>("pT1"    , "transverse momentum nhits > 15; pT [MeV/c]"       , 400, -0.5, 200.5);
-    _hist.helixFit.p  [1]    = hf_dir.make<TH1F>("p1"     , "momentum nhits > 15; p [MeV/c]"                   , 400, -0.5, 200.5);
-    _hist.helixFit.nhitsvspT = hf_dir.make<TH2F>("nhitsvspT","nhits vs pT", 100, 0, 100, 400, 0, 200);
-    _hist.helixFit.nhitsvsp  = hf_dir.make<TH2F>("nhitsvsp" ,"nhits vs p" , 100, 0, 100, 400, 0, 200);
+    _hist.nseeds[0]            = tfs->make<TH1F>("nseeds0"  , "number of track candidates: all events", 21, -0.5, 20.5);
+    _hist.nseeds[1]            = tfs->make<TH1F>("nseeds1"  , "number of track candidates: nhits > 15", 21, -0.5, 20.5);
+    _hist.helixFit.nhits       = hf_dir.make<TH1F>("nhits" , "number of hits within a track candidate; nHits", 101, -0.5, 100.5);
+    _hist.helixFit.radius[0]   = hf_dir.make<TH1F>("radius0", "helix radius; r [mm]"                  , 401, -0.5, 400.5);
+    _hist.helixFit.radius[1]   = hf_dir.make<TH1F>("radius1", "helix radius nhits > 15; r [mm]"       , 401, -0.5, 400.5);
+    _hist.helixFit.pT [0]      = hf_dir.make<TH1F>("pT0"    , "transverse momentum; pT [MeV/c]"       , 400, -0.5, 200.5);
+    _hist.helixFit.p  [0]      = hf_dir.make<TH1F>("p0"     , "momentum; p [MeV/c]"                   , 400, -0.5, 200.5);
+    _hist.helixFit.pT [1]      = hf_dir.make<TH1F>("pT1"    , "transverse momentum nhits > 15; pT [MeV/c]"       , 400, -0.5, 200.5);
+    _hist.helixFit.p  [1]      = hf_dir.make<TH1F>("p1"     , "momentum nhits > 15; p [MeV/c]"                   , 400, -0.5, 200.5);
+    _hist.helixFit.chi2XY[0]   = hf_dir.make<TH1F>("chi2XY0", "normalized chi2-XY"                   , 200, 0., 20.);
+    _hist.helixFit.chi2XY[1]   = hf_dir.make<TH1F>("chi2XY1", "normalized chi2-XY: nhits>15"         , 200, 0., 20.);
+    _hist.helixFit.chi2ZPhi[0] = hf_dir.make<TH1F>("chi2ZPhi0", "normalized chi2-ZPhi"             , 200, 0., 20.);
+    _hist.helixFit.chi2ZPhi[1] = hf_dir.make<TH1F>("chi2ZPhi1", "normalized chi2-ZPhi: nhits>15"   , 200, 0., 20.);
+    _hist.helixFit.nhitsvspT   = hf_dir.make<TH2F>("nhitsvspT","nhits vs pT", 100, 0, 100, 400, 0, 200);
+    _hist.helixFit.nhitsvsp    = hf_dir.make<TH2F>("nhitsvsp" ,"nhits vs p" , 100, 0, 100, 400, 0, 200);
 
   }
 
@@ -325,8 +329,8 @@ namespace mu2e {
 	
 	art::Ptr<CaloCluster> clusterPtr = _trkSeeds->at(ipeak)._caloCluster;
 
-	initTrackSeed(tmpseed, seeddef, tp, _strawhitsH, clusterPtr);
-	//	if ( tmpseed._selectedTrackerHits.size() > _minnhits )  outseeds->push_back(tmpseed);
+	initTrackSeed(tmpseed, seeddef, hf_result, tp, _strawhitsH, clusterPtr);
+
 	outseeds->push_back(tmpseed);
       }
 
@@ -342,32 +346,39 @@ namespace mu2e {
       
       _hist.nseeds[0]->Fill(nseeds);
       
-      double          radius(0), nhits(0), pT(0), p(0);
+      double          radius(0), nhits(0), pT(0), p(0), chi2XY(0), chi2ZPhi(0);
       int             nseedsCut0(0), nhitsMin(15);
       TrackSeed      *tmpseed;
       double          mm2MeV = 3./10.;
 
       for (int i=0; i<nseeds; ++i){
-	tmpseed = &outseeds->at(i);
+	tmpseed  = &outseeds->at(i);
 
-	radius  = 1./fabs(tmpseed->omega());
-	nhits   = tmpseed->_selectedTrackerHits.size();
+	radius   = 1./fabs(tmpseed->omega());
+	nhits    = tmpseed->_selectedTrackerHits.size();
 
-	pT      = mm2MeV*radius;
-	p       = pT/std::cos( std::atan(tmpseed->tanDip()));
+	pT       = mm2MeV*radius;
+	p        = pT/std::cos( std::atan(tmpseed->tanDip()));
 
+	chi2XY   = tmpseed->chi2XY  ();
+	chi2ZPhi = tmpseed->chi2ZPhi();
+	
 	if (nhits >= nhitsMin) {
 	  ++nseedsCut0;
-	  _hist.helixFit.pT[1]     ->Fill(pT);
-	  _hist.helixFit.p [1]     ->Fill(p);
-	  _hist.helixFit.radius[1] ->Fill(radius);
+	  _hist.helixFit.pT      [1] ->Fill(pT);
+	  _hist.helixFit.p       [1] ->Fill(p);
+	  _hist.helixFit.radius  [1] ->Fill(radius);
+	  _hist.helixFit.chi2XY  [1] ->Fill(chi2XY);
+	  _hist.helixFit.chi2ZPhi[1] ->Fill(chi2ZPhi);
 	}
   	
 
-	_hist.helixFit.radius[0] ->Fill(radius);
-	_hist.helixFit.nhits  ->Fill(nhits);
-	_hist.helixFit.pT[0]   ->Fill(pT);
-	_hist.helixFit.p [0]   ->Fill(p);
+	_hist.helixFit.radius  [0] ->Fill(radius);
+	_hist.helixFit.nhits       ->Fill(nhits);
+	_hist.helixFit.pT      [0] ->Fill(pT);
+	_hist.helixFit.p       [0] ->Fill(p);
+	_hist.helixFit.chi2XY  [0] ->Fill(chi2XY);
+	_hist.helixFit.chi2ZPhi[0] ->Fill(chi2ZPhi);
 	
 	_hist.helixFit.nhitsvspT ->Fill(nhits, pT);
 	_hist.helixFit.nhitsvsp  ->Fill(nhits, p );
@@ -398,6 +409,7 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
   void CalPatRecNew::initTrackSeed(TrackSeed                             &TrkSeed, 
 				   TrkDef                                &SeedDef  , 
+				   HelixFitHackResult                    &HfResult ,
 				   const CalTimePeak                     *TPeak    , 
 				   art::Handle<mu2e::StrawHitCollection> &StrawhitsH,
 				   art::Ptr<CaloCluster>                  ClusterPtr){
@@ -430,8 +442,8 @@ namespace mu2e {
     TrkSeed._errt0       = cluster->cog3Vector().z();
     TrkSeed._caloCluster = ClusterPtr;
     
-    // TrkSeed._chi2XY      = SeedDef.helix().chi2XY();
-    // TrkSeed._chi2ZPhi    = SeedDef.helix().chi2ZPhi();
+    TrkSeed._chi2XY      = HfResult._sxy.chi2DofCircle() / HfResult._sxy.qn();
+    TrkSeed._chi2ZPhi    = HfResult._srphi.chi2DofLine() / HfResult._srphi.qn();
   }
 
 
