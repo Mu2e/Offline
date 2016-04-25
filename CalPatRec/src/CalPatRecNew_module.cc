@@ -442,8 +442,8 @@ namespace mu2e {
     TrkSeed._errt0       = cluster->cog3Vector().z();
     TrkSeed._caloCluster = ClusterPtr;
     
-    TrkSeed._chi2XY      = HfResult._sxy.chi2DofCircle() / HfResult._sxy.qn();
-    TrkSeed._chi2ZPhi    = HfResult._srphi.chi2DofLine() / HfResult._srphi.qn();
+    TrkSeed._chi2XY      = HfResult._sxy.chi2DofCircle();
+    TrkSeed._chi2ZPhi    = HfResult._srphi.chi2DofLine();
   }
 
 
