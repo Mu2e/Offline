@@ -23,13 +23,6 @@ int             crs.nModulesTest                 =   6;
 int             crs.nCountersPerModuleTest       =   16;
 vector<double>  crs.firstCounterTest             =  {-3904.0, 2600.6, 0}; // next modules start at z=827, 1654, ..., 4135
 
-string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
-string          crs.absorberMaterialName         = "G4_Al";
-
-bool   crs.vetoVisible    = true;
-bool   crs.vetoSolid      = true;
-int    crs.verbosityLevel = 0;
-
 vector<double>  crs.layerDirectionTest           =  {0, 1, 0};
 vector<double>  crs.offsetDirectionTest          =  {0, 0, -1}; 
 vector<double>  crs.gapDirectionTest             =  {0, 0, 1};
@@ -41,19 +34,8 @@ int crs.sectorTypeTest  = 1;
 bool crs.sipmsAtSide0Test = true;
 bool crs.sipmsAtSide1Test = true;
 
-double crs.CMBOffset        = 15.0;
-double crs.CMBHalfThickness =  1.0;
-string crs.CMBMaterialName  = "G10";
-
-int crs.FEBsAtSide0Test  = 0;
-int crs.FEBsAtSide1Test  = 0;
-
-string         crs.FEBMaterialName     = "G10";
-double         crs.FEBDistanceToModule =  15.0;
-double         crs.FEBDistanceToEdge   = 201.6;
-double         crs.FEBGapBetween2FEBs  = 397.9;
-vector<double> crs.FEBHalfLengths      = {1.0, 165.1, 101.6};  //thickness, width, lengths w.r.t. counter orientation
-
+int crs.FEBBoxesAtSide0Test  = 0;
+int crs.FEBBoxesAtSide1Test  = 0;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

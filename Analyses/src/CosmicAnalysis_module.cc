@@ -46,7 +46,8 @@ typedef struct
   double cosmic_ph, cosmic_th, cosmic_costh;
   char   cosmic_particle[100];
 
-  double reco_t0;
+  int    reco_n; //number of reconstructed tracks
+  double reco_t0, reco_p0;
 
   char   simreco_particle[100];
   char   simreco_production_process[100], simreco_production_volume[100];
@@ -77,7 +78,9 @@ typedef struct
   
   void clear()
   {
-    reco_t0=0;
+    reco_n=0;
+    reco_t0=NAN;
+    reco_p0=NAN;
     filename[0]='\0';
     simreco_particle[0]='\0';
     simreco_production_process[0]='\0';
@@ -182,7 +185,9 @@ namespace mu2e
     _tree->Branch("cosmic_th",&e.cosmic_th,"cosmic_th/D");
     _tree->Branch("cosmic_costh",&e.cosmic_costh,"cosmic_costh/D");
     _tree->Branch("cosmic_particle",e.cosmic_particle,"cosmic_particle[100]/C");
+    _tree->Branch("reco_n",&e.reco_n,"reco_n/I");
     _tree->Branch("reco_t0",&e.reco_t0,"reco_t0/D");
+    _tree->Branch("reco_p0",&e.reco_p0,"reco_p0/D");
     _tree->Branch("simreco_particle",e.simreco_particle,"simreco_particle[100]/C");
     _tree->Branch("simreco_production_process",e.simreco_production_process,"simreco_production_process[100]/C");
     _tree->Branch("simreco_production_volume",e.simreco_production_volume,"simreco_production_volume[100]/C");
@@ -365,8 +370,20 @@ namespace mu2e
       {
         if(kalReps->size()>0)
         {
-          const KalRep &particle = kalReps->at(0);   //assume that there is only one reconstructed track
+
+          //if multiple reco tracks, selected reco track which has a momentum which is closest to 104.375 MeV/c
+          size_t selectedTrack=0;
+          double minMomentumDifference=NAN;
+          for(size_t k=0; k<kalReps->size(); k++)
+          {
+            double momentumDifference=fabs(kalReps->at(k).momentum(0).mag()-104.375);
+            if(momentumDifference<minMomentumDifference || isnan(minMomentumDifference)) selectedTrack=k;
+          }
+          
+          const KalRep &particle = kalReps->at(selectedTrack); 
+          _eventinfo.reco_n=kalReps->size();
           _eventinfo.reco_t0=particle.t0().t0();
+          _eventinfo.reco_p0=particle.momentum(0).mag();
           TrkHitVector const& hots = particle.hitVector();
           for(auto iter=hots.begin(); iter!=hots.end(); iter++)
           {
