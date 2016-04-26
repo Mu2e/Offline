@@ -209,9 +209,6 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   HelixFitHack::~HelixFitHack() {
-    // 2014-01-05 gianipez added a diag level using a TH1F
-    //     _fOut->cd();
-
     if (_hDfDzRes){
       delete _hDfDzRes;
       _hDfDzRes = 0;
@@ -319,8 +316,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     for(int i=0; i<400; ++i){
       _indicesTrkCandidate[i] = -9999;
-      _distTrkCandidate[i]    = -9999;
-      _dzTrkCandidate[i]      = -9999;
+      _distTrkCandidate   [i] = -9999;
+      _dzTrkCandidate     [i] = -9999;
+      fPhiCorrected       [i] = -9999;
     }
   }
 
@@ -1237,10 +1235,10 @@ namespace mu2e {
 	_indicesTrkCandidate[i] = 1;
 
 	//store distance along z-axis from the last point found relying on thr helix
-	_dzTrkCandidate[i]      = deltaZ;
+	_dzTrkCandidate     [i] = deltaZ;
 
 	//store distance from predition
-	_distTrkCandidate[i]    = dist;
+	_distTrkCandidate   [i] = dist;
 
 	//update helix parameters
 	x0      = mytrk._sxy.x0();
@@ -1257,7 +1255,7 @@ namespace mu2e {
 	}
       }
 
-    NEXT_POINT:;
+   NEXT_POINT:;
     }
 
     //update mytrk info
@@ -1579,7 +1577,7 @@ namespace mu2e {
       if (_debug != 0)  printInfo(Helix);
     }
 //---------------------------------------------------------------------------------------
-// use the results of the helix search to seea if points along the track can be rescued
+// use the results of the helix search to see if points along the track can be rescued
 //---------------------------------------------------------------------------------------
     usePhiResid = 1;
     rescueHits(Helix, 0, _indicesTrkCandidate, usePhiResid);
