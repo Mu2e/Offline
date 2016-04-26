@@ -109,11 +109,11 @@ namespace mu2e {
     pvec[HelixTraj::z0Index] = dphi*pvec[HelixTraj::tanDipIndex]/pvec[HelixTraj::omegaIndex];
     // estimated covariance based on average performance.  These should be parameters, FIXME!!!
     perr = HepVector(5,0);
-    perr[HelixTraj::d0Index] = 34.0;
-    perr[HelixTraj::phi0Index] = 0.02;
+    perr[HelixTraj::d0Index]     = 34.0;
+    perr[HelixTraj::phi0Index]   = 0.02;
     perr[HelixTraj::omegaIndex]  = 0.0002;
     perr[HelixTraj::tanDipIndex] = 0.05;
-    perr[HelixTraj::z0Index] = 15.0;
+    perr[HelixTraj::z0Index]     = 15.0;
 
   }
 
@@ -138,60 +138,55 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   HelixFitHack::HelixFitHack(fhicl::ParameterSet const& pset) :
-    fHitChi2Max(pset.get<double>  ("hitChi2Max"       )),
-    _diag      (pset.get<int>     ("diagLevel"        )),
-    _debug     (pset.get<int>     ("debugLevel"       )),
-    _debug2    (pset.get<int>     ("debugLevel2"      )),
-    _mindelta  (pset.get<double>  ("minDelta" ,5000.0 )),
-    _minnhit   (pset.get<int>     ("minNHit"          )),
-    _lambda0   (pset.get<double>  ("lambda0"  ,   1.0 )),
-    _lstep     (pset.get<double>  ("lstep"    ,   0.2 )),
-    _minlambda (pset.get<double>  ("minlambda",   0.01)),
-    _maxniter  (pset.get<int>     ("maxniter" ,  50   )),
-    _nsigma(pset.get<double>("nsigma",15.0)),
-    _nssigma(pset.get<double>("nssigma",3.0)),
-    _minzsep(pset.get<double>("minzsep",50.0)),
-    _maxzsep(pset.get<double>("maxzsep",500.0)),
-    _maxdz(pset.get<double>("maxdz",35.0)),
-    _maxdot(pset.get<double>("maxdot",0.9)),
-    _mpDfDz(pset.get<double>("mostProbableDfDz")),
-    _maxDfDz(pset.get<double>("maxDfDz",0.01)),
-    _minDfDz(pset.get<double>("minDfDz",5e-04)),
-    _sigmaPhi(pset.get<double>("sigmaPhi",0.1)),
-    _maxXDPhi(pset.get<double>("maxXDPhi",5.)),
+    fHitChi2Max(pset.get<double>("hitChi2Max"       )),
+    _diag      (pset.get<int>   ("diagLevel"        )),
+    _debug     (pset.get<int>   ("debugLevel"       )),
+    _debug2    (pset.get<int>   ("debugLevel2"      )),
+    _minnhit   (pset.get<int>   ("minNHit"          )),
+    _minzsep   (pset.get<double>("minzsep",50.0)),
+    _maxzsep   (pset.get<double>("maxzsep",500.0)),
+    _maxdz     (pset.get<double>("maxdz",35.0)),
+    _maxdot    (pset.get<double>("maxdot",0.9)),
+    _mpDfDz    (pset.get<double>("mostProbableDfDz")),
+    _maxDfDz   (pset.get<double>("maxDfDz",0.01)),
+    _minDfDz   (pset.get<double>("minDfDz",5e-04)),
+    _sigmaPhi  (pset.get<double>("sigmaPhi")),
+    _weightXY  (pset.get<double>("weightXY")),
+    _maxXDPhi  (pset.get<double>("maxXDPhi",5.)),
     _distPatRec(pset.get<double>("distPatRec")),
-    _rbias(pset.get<double>("radialBias",0.0)),
-    _efac(pset.get<double>("ErrorFactor",1.0)),
-    _rhomin(pset.get<double>("rhomin",350.0)),
-    _rhomax(pset.get<double>("rhomax",780.0)),
-    _mindist(pset.get<double>("mindist",50.0)),
-    _maxdist(pset.get<double>("maxdist",500.0)),
-    _pmin(pset.get<double>("minP",50.0)),
-    _pmax(pset.get<double>("maxP",150.0)),
-    _tdmin(pset.get<double>("minAbsTanDip",0.3)),
-    _tdmax(pset.get<double>("maxAbsTanDip",2.0)),
-    _rcmin(pset.get<double>("rcmin",200.0)),
-    _rcmax(pset.get<double>("rcmax",350.0)),
-    _forcep(pset.get<bool>("forceP",false)),
-    _xyweights(pset.get<bool>("xyWeights",false)),
-    _zweights(pset.get<bool>("zWeights",false)),
-    _filter(pset.get<bool>("filter",true)),
-    _plotall(pset.get<bool>("plotall",false)),
-    _usetarget(pset.get<bool>("usetarget",true)),
-    _bz(0.0),
-    _x0(-9999.),
-    _y0(-9999.), 
-    _phi0(-9999.), 
-    _radius(-9999.), 
-    _dfdz(-9999.),
+    _rbias     (pset.get<double>("radialBias",0.0)),
+    _efac      (pset.get<double>("ErrorFactor",1.0)),
+    _rhomin    (pset.get<double>("rhomin",350.0)),
+    _rhomax    (pset.get<double>("rhomax",780.0)),
+    _mindist   (pset.get<double>("mindist",50.0)),
+    _maxdist   (pset.get<double>("maxdist",500.0)),
+    _pmin      (pset.get<double>("minP",50.0)),
+    _pmax      (pset.get<double>("maxP",150.0)),
+    _tdmin     (pset.get<double>("minAbsTanDip",0.3)),
+    _tdmax     (pset.get<double>("maxAbsTanDip",2.0)),
+    _rcmin     (pset.get<double>("rcmin",200.0)),
+    _rcmax     (pset.get<double>("rcmax",350.0)),
+    _forcep    (pset.get<bool>("forceP",false)),
+    _xyweights (pset.get<bool>("xyWeights",false)),
+    _zweights  (pset.get<bool>("zWeights",false)),
+    _filter    (pset.get<bool>("filter",true)),
+    _plotall   (pset.get<bool>("plotall",false)),
+    _usetarget (pset.get<bool>("usetarget",true)),
+    _bz        (0.0),
+    _x0        (-9999.),
+    _y0        (-9999.), 
+    _phi0      (-9999.), 
+    _radius    (-9999.), 
+    _dfdz      (-9999.),
     _goodPointsTrkCandidate(-9999),
-    _minPointsTrkCandidate(pset.get<int>("minPointsTrkCandidate")),
-    _chi2TrkCandidate(1e10),
-    _maxChi2TrkCandidate(pset.get<double>("maxChi2TrkCandidate")),
-    _markCandidateHits(pset.get<int>("markCandidateHits")),
-    _chi2xyMax(pset.get<double>("chi2xyMax")),
-    _chi2zphiMax(pset.get<double>("chi2zphiMax")),
-    _dfdzErr(pset.get<double>("dfdzErr")){
+    _minPointsTrkCandidate (pset.get<int>("minPointsTrkCandidate")),
+    _chi2TrkCandidate      (1e10),
+    _maxChi2TrkCandidate   (pset.get<double>("maxChi2TrkCandidate")),
+    _markCandidateHits     (pset.get<int>("markCandidateHits")),
+    _chi2xyMax             (pset.get<double>("chi2xyMax")),
+    _chi2zphiMax           (pset.get<double>("chi2zphiMax")),
+    _dfdzErr               (pset.get<double>("dfdzErr")){
+
     XYZPHack::_efac = _efac;
     std::vector<std::string> bitnames;
     bitnames.push_back("Outlier");
@@ -1667,7 +1662,9 @@ namespace mu2e {
     double e2     = ew*ew*sinth2+rs*rs*costh*costh;
     double wt     = 1./e2;
                                                     //scale the weight for having chi2/ndof distribution peaking at 1
-    wt /= 1.57;
+    //    wt /= 1.57;
+    //    wt /= 2.83;
+    wt *= _weightXY;
 
     if (Print > 0) {
       double dr = calculateRadialDist(HitPos,HelCenter,Radius);

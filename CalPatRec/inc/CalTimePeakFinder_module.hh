@@ -165,6 +165,7 @@ namespace mu2e {
 
     double           _minClusterEnergy;	// min seed energy
     int              _minClusterSize;   // min size of the seeding cluster
+    double           _minClusterTime;   // min time of the seeding cluster
 
     double           _pitchAngle;
 					// outlier cuts

@@ -80,16 +80,10 @@ namespace mu2e {
     int                  _diag;
     int                  _debug;
     int                  _debug2;
-    double               _mindelta;     // minimum slope difference to use a triple in circle center initialization
     int                  _minnhit;      // minimum # of hits to work with
     int                  _minnstereo;   // minimum # of stereo hits, I believe should  not be used
                                         // parameters for AGE center determination
-    double               _lambda0;
-    double               _lstep;
-    double               _minlambda;
-    int                  _maxniter;     // maxium # of iterations to global minimum
-    double               _nsigma;       // # of sigma for filtering outlyers
-    double               _nssigma;      // # of sigma for filtering stereo time division
+
     double               _minzsep;
     double               _maxzsep;      // Z separation of points for pitch estimate
     double               _maxdz;        // stereo selection parameters
@@ -100,6 +94,7 @@ namespace mu2e {
     double               _maxDfDz;
     double               _minDfDz;
     double               _sigmaPhi;     // hit phi resolution (wrt the trajectory axis, assume R=25-30cm)
+    double               _weightXY;     //scale factor for makeing the xy-chi2 with a mean close to 1
     double               _maxXDPhi;     // max normalized hit residual in phi (findRZ)
 
     double               _hdfdz;        // estimated d(phi)/dz value

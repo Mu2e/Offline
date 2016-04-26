@@ -119,7 +119,8 @@ CalPatRec            : {
 	mostProbableDfDz                        : 0.00475
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
-	sigmaPhi                                : 0.1  # radians
+	sigmaPhi                                : 0.1636  # radians
+	weightXY                                : 0.2941
 	maxXDPhi                                : 5    #
 	distPatRec                              : 100. # mm
 	maxChi2TrkCandidate                     : 1500
@@ -258,6 +259,7 @@ CalTimePeakFinder          : {
     DtMax                                       :  40.   # make it symmetric
     minClusterEnergy                            : 50.    # MeV
     minClusterSize                              : 2      # number of crystals
+    minClusterTime                              : 500.   # ns
     pitchAngle                                  : 0.67   # mean pitch for CE
     dtOffset                                    : @local::TrackCaloMatchingDtOffset
 }
@@ -286,7 +288,8 @@ CalPatRecNew          : {
 	mostProbableDfDz                        : 0.00475
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
-	sigmaPhi                                : 0.1  # radians
+	sigmaPhi                                : 0.1636  # radians
+	weightXY                                : 0.2941
 	maxXDPhi                                : 5    #
 	distPatRec                              : 100. # mm
 	maxChi2TrkCandidate                     : 1500
