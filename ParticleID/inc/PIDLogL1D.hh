@@ -25,6 +25,10 @@ namespace mu2e {
   public:
     double value(double x) const;
 
+    // the smallest value() that is returned instead of log(0) if
+    // the distribution vanishes at the given x.
+    static double cutoff();
+
     struct Config {
       fhicl::Atom<std::string> inputFile {fhicl::Name("inputFile"),
           fhicl::Comment("File with a text representation of the distribution")

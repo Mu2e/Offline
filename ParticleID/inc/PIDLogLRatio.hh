@@ -13,22 +13,29 @@ namespace mu2e {
 
   template<class LogL>
   class PIDLogLRatio {
-    LogL hypothesis1_;
-    LogL hypothesis2_;
+    LogL signalHypothesis_;
+    LogL backgroundHypothesis_;
   public:
 
     template<typename ... Args>
     double value(Args&&... x) const {
-      return hypothesis1_.value(x...) - hypothesis2_.value(x...);
+      const double ps = signalHypothesis_.value(x...);
+      // Return cutoff() if the inputs are inconsistent with
+      // signal, no matter what their consistency with background is.
+      return (ps <= LogL::cutoff()) ?
+        LogL::cutoff() :
+        ps - backgroundHypothesis_.value(x...);
     }
 
+    static double cutoff() { return LogL::cutoff(); }
+
     struct Config {
-      fhicl::Table<typename LogL::Config> h1{fhicl::Name("hypothesis1"),
-          fhicl::Comment("Distribution for hypothesis 1")
+      fhicl::Table<typename LogL::Config> signalHypothesis{fhicl::Name("signalHypothesis"),
+          fhicl::Comment("Distribution for signal hypothesis")
           };
 
-      fhicl::Table<typename LogL::Config> h2 {fhicl::Name("hypothesis2"),
-          fhicl::Comment("Distribution for hypothesis 2")
+      fhicl::Table<typename LogL::Config> backgroundHypothesis{fhicl::Name("backgroundHypothesis"),
+          fhicl::Comment("Distribution for background hypothesis")
           };
     };
 
