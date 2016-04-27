@@ -148,7 +148,8 @@ namespace mu2e {
     TrkInfo track;
     kdiag.fillTrkInfo(trk.get(), track);
 
-    if(track._fitstatus != 1) {
+    // _fitstatus > 0 the means code found a track
+    if(track._fitstatus <= 0) {
       return TrkCutNumber::status;
     }
 
