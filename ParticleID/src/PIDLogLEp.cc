@@ -33,6 +33,10 @@ namespace mu2e {
     return log(res);
   }
 
+  double PIDLogLEp::cutoff() {
+    return log(binValueCutoff_);
+  }
+
   PIDLogLEp::PIDLogLEp(const Config& conf) {
     auto pathbb = conf.pathBinBoundaries();
     pathaxis_ = NUBinning(pathbb.begin(), pathbb.end());

@@ -29,6 +29,10 @@ namespace mu2e {
     return log(res);
   }
 
+  double PIDLogL1D::cutoff() {
+    return log(binValueCutoff_);
+  }
+
   PIDLogL1D::PIDLogL1D(const Config& conf) {
     const std::string resolvedFileName = ConfigFileLookupPolicy()(conf.inputFile());
     std::ifstream infile(resolvedFileName);

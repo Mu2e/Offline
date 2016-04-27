@@ -202,9 +202,18 @@ namespace mu2e {
         return TrkCutNumber::caloClusterEnergy;
       }
 
-      const double pidvar_dt = pid_dt_->value(cm->dt());
-      const double pidvar_ep = pid_ep_->value(cm->ep(), cm->ds());
-      const double pidvar = pidvar_dt + pidvar_ep;
+      double pidvar = pid_dt_->value(cm->dt());
+      // value at cutoff() means the inputs are not consistent with signal
+      if(pidvar > pid_dt_->cutoff()) {
+        const double pidvar_ep = pid_ep_->value(cm->ep(), cm->ds());
+        if(pidvar_ep > pid_ep_->cutoff()) {
+          pidvar += pidvar_ep;
+        }
+        else {
+          pidvar = pid_ep_->cutoff();
+        }
+      }
+
       pidVariable_->Fill(pidvar, wh.weight());
       if(pidvar < ccuts.pidCut()) {
         return TrkCutNumber::particleID;

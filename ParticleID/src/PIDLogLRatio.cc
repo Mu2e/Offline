@@ -14,12 +14,11 @@ namespace mu2e {
 
   template<class LogL>
   PIDLogLRatio<LogL>::PIDLogLRatio(const Config& conf)
-    : hypothesis1_(conf.h1())
-    , hypothesis2_(conf.h2())
+    : signalHypothesis_(conf.signalHypothesis())
+    , backgroundHypothesis_(conf.backgroundHypothesis())
   {}
 
   // Instantiations
   template class PIDLogLRatio<PIDLogL1D>;
   template class PIDLogLRatio<PIDLogLEp>;
-
 }
