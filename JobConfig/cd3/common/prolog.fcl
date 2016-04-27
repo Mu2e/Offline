@@ -75,17 +75,17 @@ signalTrackCuts: {
 }
 
 vetoTrackCuts: {
-   trkqual: 1.e-6
-   tdmin: -9999.
-   tdmax: +9999.
-   d0min: -9999
-   d0max: +9999
-   mdmin: -9999.
-   mdmax: +9999.
-   t0min: 700.
-   t0max: 1695.
-   pmin: 100.
-   pmax: 9999
+   trkqual: -1e15
+   tdmin: -1e15
+   tdmax: +1e15
+   d0min: -1e15
+   d0max: +1e15
+   mdmin: -1e15
+   mdmax: +1e15
+   t0min: -1e15
+   t0max: +1e15
+   pmin: -1e15
+   pmax: +1e15
    caloCutsEnabled: false
 }
 
