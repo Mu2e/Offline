@@ -22,7 +22,7 @@
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
-// #include "KalmanTests/inc/KalFitResult.hh"
+#include "TrkDiag/inc/KalDiag.hh"
 
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"
 //CLHEP
@@ -69,7 +69,12 @@ namespace mu2e {
     std::string      _trkPatRecModuleLabel;
     std::string      _calPatRecModuleLabel;
 
+    float            _minTrkQualA;
+    float            _minTrkQualB;
+
     std::string      _iname;	        // data instance name
+
+    KalDiag*         _kalDiag;
   };
   
   MergePatRec::MergePatRec(fhicl::ParameterSet const& pset) :
@@ -78,13 +83,17 @@ namespace mu2e {
     _tpart               ((TrkParticle::type)(pset.get<int>("fitparticle"))),
     _fdir                ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _trkPatRecModuleLabel(pset.get<std::string>("trkPatRecModuleLabel","TrkPatRec")),
-    _calPatRecModuleLabel(pset.get<std::string>("calPatRecModuleLabel","CalPatRec"))
+    _calPatRecModuleLabel(pset.get<std::string>("calPatRecModuleLabel","CalPatRec")),
+    _minTrkQualA         (pset.get<float>("minTrkQualA")),
+    _minTrkQualB         (pset.get<float>("minTrkQualB"))
   {
     // tag the data product instance by the direction and particle type found by this module
     _iname = _fdir.name() + _tpart.name();
 
     produces<AlgorithmIDCollection>  (_iname);
     produces<KalRepPtrCollection>    (_iname);
+    
+    _kalDiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()));
   }
 
   MergePatRec::~MergePatRec(){
@@ -129,29 +138,41 @@ namespace mu2e {
     }
 
     art::Ptr<KalRep>          *tpr, *cpr;
+    const KalRep              *krep_tpr, *krep_cpr;
     Hep3Vector                cpr_mom, tpr_mom;
     short                     best(-1),  mask;
     AlgorithmID               alg_id;
     TrkHitVector              tlist, clist;
     int                       nat, nac, natc;
     const mu2e::TrkStrawHit  *hitt, *hitc;
-    double                    tpr_chisq, cpr_chisq;
+    //    double                    tpr_chisq, cpr_chisq;
+
+    TrkInfo                   tpr_trkinfo, cpr_trkinfo;
 
     for (int i1=0; i1<ntpr; i1++) {
       tpr       = &list_of_kreps_tpr->at(i1);
       tpr_mom   = (*tpr)->momentum();
-      tpr_chisq = (*tpr)->chisq();
+      //      tpr_chisq = (*tpr)->chisq();
       mask      = 1 << AlgorithmID::TrkPatRecBit;
       tlist     = (*tpr)->hitVector();
       nat       = (*tpr)->nActive();
       natc      = 0;
 
+      krep_tpr = tpr->get();
+      _kalDiag->kalDiag(krep_tpr,false);
+
+      tpr_trkinfo = _kalDiag->_trkinfo;
+
       for (int i2=0; i2<ncpr; i2++) {
 	cpr       = &list_of_kreps_cpr->at(i2);
 	cpr_mom   = (*cpr)->momentum();
-	cpr_chisq = (*cpr)->chisq();
+	//	cpr_chisq = (*cpr)->chisq();
 	clist     = (*cpr)->hitVector();
 	nac       = (*cpr)->nActive();
+
+	krep_cpr  = cpr->get();
+	_kalDiag->kalDiag(krep_cpr,false);
+	cpr_trkinfo = _kalDiag->_trkinfo;
 //-----------------------------------------------------------------------------
 // primitive check if this is the same track - require delta(p) less than 5 MeV/c
 // ultimately - check the number of common hits
@@ -175,30 +196,35 @@ namespace mu2e {
 // logic of the choice: 
 // 1. take the track which has more active hits
 // 2. if two tracks have the same number of active hits, choose the one with better chi2
+//
 //-----------------------------------------------------------------------------
 	if (natc > (nac+nat)/4.) {
 
 	  mask = mask | (1 << AlgorithmID::CalPatRecBit);
 
-	  if (nat > nac) {
-	    trackPtrs->push_back(*tpr);
-	    best    = AlgorithmID::TrkPatRecBit; 
-	  }
-	  else if (nat < nac) {	
+	  if (cpr_trkinfo._trkqual > _minTrkQualA) {
 	    trackPtrs->push_back(*cpr);
 	    best    = AlgorithmID::CalPatRecBit;
 	  }
+	  else if (tpr_trkinfo._trkqual > _minTrkQualA) {
+	    trackPtrs->push_back(*tpr);
+	    best    = AlgorithmID::TrkPatRecBit; 
+	  }
+	  else if (cpr_trkinfo._trkqual > _minTrkQualB) {
+	    trackPtrs->push_back(*cpr);
+	    best    = AlgorithmID::CalPatRecBit; 
+	  }
 	  else {
 //-----------------------------------------------------------------------------
-// both tracks have the same number of active hits, keep the one with lowest chi2
+// final choice : pick track with larger trkqual
 //-----------------------------------------------------------------------------
-	    if (tpr_chisq < cpr_chisq) {
+	    if (tpr_trkinfo._trkqual > cpr_trkinfo._trkqual) {
 	      trackPtrs->push_back(*tpr);
 	      best    = AlgorithmID::TrkPatRecBit; 
 	    }
 	    else {
 	      trackPtrs->push_back(*cpr);
-	      best    = AlgorithmID::CalPatRecBit;
+	      best    = AlgorithmID::CalPatRecBit; 
 	    }
 	  }
 
