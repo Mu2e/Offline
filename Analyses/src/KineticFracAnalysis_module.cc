@@ -56,7 +56,7 @@
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
-
+#include "RecoDataProducts/inc/TrackCaloAssnsCollection.hh"
 
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -704,7 +704,7 @@ namespace mu2e {
     ++_nProcess;
     if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from KineticFracAnalysis =  "<<_nProcess << " with instance name " << _instanceName <<std::endl;
 
-    if (_diagLevel > 0){std::cout << "******************new event*******************" << std::endl;}
+    if (_diagLevel > 0){std::cout << "******************new event in KineticFracAnalysis*******************" << std::endl;}
 
 
     //   ConditionsHandle<AcceleratorParams> accPar("ignored");
@@ -1287,10 +1287,10 @@ namespace mu2e {
     if (numberOfTracks   == 0){_goodKfrac =1;}
     if (numberOfClusters == 0 && numberOfTracks > 0){_goodKfrac = 2;}
     if (numberOfClusters > 0 && numberOfTracks == 0){_goodKfrac = 3;}
-    //    std::cout << "number of tracks = " << numberOfTracks << std::endl;
+       std::cout << "number of tracks = " << numberOfTracks << std::endl;
     for (int ithtrk =  0; ithtrk < numberOfTracks;    ++ithtrk) {
     }
-    _Ntup->Fill();
+    // _Ntup->Fill();
   }
 }// end namespace mu2e
 DEFINE_ART_MODULE(mu2e::KineticFracAnalysis);
