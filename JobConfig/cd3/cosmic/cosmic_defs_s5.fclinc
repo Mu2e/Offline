@@ -4,17 +4,6 @@
 #include "CRVResponse/fcl/prolog.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
 
-BEGIN_PROLOG
-timeMapsTable: 
-{
-   protonTimeMap        : @local::protonTimeMap
-   muonTimeMap          : @local::muonTimeMap
-}
-
-timeMapsSeq:  [protonTimeMap, muonTimeMap]
-
-END_PROLOG
-
 process_name : CRVAnalysis
 
 source :
@@ -41,7 +30,6 @@ physics :
 {
   producers:
   {
-    @table::timeMapsTable
     @table::Tracking.producers
     @table::CrvResponsePackage.producers
   }
@@ -65,8 +53,9 @@ physics :
     }
   }
 
-  p1: [@sequence::timeMapsSeq,
-       @sequence::Tracking.TPRDownstreameMinus, 
+  # Tracking was run in s4.  Here we only need to re-run the one
+  # producer whose outputs are not persistable.
+  p1: [TRFDownstreameMinus,
        @sequence::CrvResponsePackage.CrvResponseSequence]
   trigger_paths  : [p1]
 
