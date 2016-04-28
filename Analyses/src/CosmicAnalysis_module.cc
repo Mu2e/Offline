@@ -11,7 +11,9 @@
 #include "CLHEP/Units/GlobalSystemOfUnits.h"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "HepPID/ParticleName.hh"
@@ -38,6 +40,7 @@ using namespace CLHEP;
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/TrkBase/TrkHelixUtils.hh"
 
 typedef struct
 {
@@ -153,6 +156,7 @@ namespace mu2e
     TTree      *_tree;
 
     CLHEP::Hep3Vector _detSysOrigin;
+    double            _zent;
   };
 
   CosmicAnalysis::CosmicAnalysis(fhicl::ParameterSet const &pset)
@@ -299,7 +303,10 @@ namespace mu2e
     _eventinfo.subrun_number=event.id().subRun();
     _eventinfo.event_number=event.id().event();
 
-    _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
+    GeomHandle<DetectorSystem> det;
+    GeomHandle<VirtualDetector> vdg;
+    _detSysOrigin = det->getOrigin();
+    _zent = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA)).z();
 
 //generated cosmic ray muons
     art::Handle<GenParticleCollection> genParticles;
@@ -383,7 +390,14 @@ namespace mu2e
           const KalRep &particle = kalReps->at(selectedTrack); 
           _eventinfo.reco_n=kalReps->size();
           _eventinfo.reco_t0=particle.t0().t0();
-          _eventinfo.reco_p0=particle.momentum(0).mag();
+
+          //from TrkDiag/src/KalDiag.cc to get momentum at the tracker entrance:
+          double firsthitfltlen = particle.lowFitRange(); 
+          double lasthitfltlen = particle.hiFitRange();
+          double entlen = std::min(firsthitfltlen,lasthitfltlen);
+          TrkHelixUtils::findZFltlen(particle.traj(),_zent,entlen,0.1);
+          _eventinfo.reco_p0=particle.momentum(entlen).mag();
+
           TrkHitVector const& hots = particle.hitVector();
           for(auto iter=hots.begin(); iter!=hots.end(); iter++)
           {
