@@ -167,9 +167,12 @@ draTopLevelDefs: {
       }
 
       //==============================================================================
-      draCommonTrigSeq : [
+      draDigiTrigSeq : [
 	 @sequence::draEventMixing.CD3Mixers
 	 , @sequence::digitizationSeq
+      ]
+
+      draRecoTrigSeq : [
 	 , @sequence::Tracking.TPRDownstreameMinus
 	 , @sequence::Tracking.TPRUpstreameMinus
 	 , @sequence::caloRecoSeq
@@ -185,6 +188,7 @@ draTopLevelDefs: {
 }
 
 dra.filteredOutputDef: {
+   dump: {module_type: DataProductDump}
    filteredOutput: {
       fileName: @nil
       module_type    : RootOutput
@@ -192,7 +196,15 @@ dra.filteredOutputDef: {
    }
 }
 
-draTopLevelDefs.physics.draCutAndCountTrigSeq: [ @sequence::draTopLevelDefs.physics.draCommonTrigSeq, cutAndCountFilter ]
+draTopLevelDefs.physics.draCommonTrigSeq: [
+   @sequence::draTopLevelDefs.physics.draDigiTrigSeq,
+   @sequence::draTopLevelDefs.physics.draRecoTrigSeq
+]
+
+draTopLevelDefs.physics.draCutAndCountTrigSeq: [
+   @sequence::draTopLevelDefs.physics.draRecoTrigSeq,
+   cutAndCountFilter
+]
 
 #----------------------------------------------------------------
 

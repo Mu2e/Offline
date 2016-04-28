@@ -38,9 +38,7 @@ physics:
     {
         @table::EventMixing.producers
         @table::Tracking.producers
-
-        CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-        CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+        MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
     }
 
     filters:
@@ -65,8 +63,9 @@ physics:
 
     trigFilter: [@sequence::EventMixing.TimeMaps,
                  @sequence::Tracking.DigiSim,
+                 MakeCaloReadoutHits,
                  @sequence::Tracking.TPRDownstreameMinus,
-                 TrkPatRecFilter, CaloReadoutHitsMaker, CaloCrystalHitsMaker]
+                 TrkPatRecFilter]
     trigger_paths: [trigFilter]
 
     an:  [genCountLogger]
@@ -80,7 +79,15 @@ outputs:
     {
         module_type    : RootOutput
         SelectEvents   : { SelectEvents: ["trigFilter"] }
-        outputCommands : [ "keep *_*_*_*" ]
+        outputCommands : [
+            "drop *_*_*_*",
+            "keep *_*_*_cosmics1",
+            "keep *_*_*_cosmics2",
+            "keep *_makeSD_*_*",
+            "keep *_MakeCaloReadoutHits_*_*",
+            "keep *_muonTimeMap_*_*",
+            "keep *_protonTimeMap_*_*"
+        ]
     }
 }
 
