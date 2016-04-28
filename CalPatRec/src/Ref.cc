@@ -32,6 +32,15 @@ Ref::Ref(const char* Name, const char* Title,
   fSeedFit  = 0;
   fKalFit   = 0;
 }
+//-----------------------------------------------------------------------------
+Ref::Ref(const char* Name, const char* Title, 
+	 mu2e::KalFitHack*KalFit ):
+  TNamed(Name,Title) 
+{
+  fHelixFit = 0;
+  fSeedFit  = 0;
+  fKalFit   = KalFit;
+}
 
 //-----------------------------------------------------------------------------
 Ref::~Ref() {

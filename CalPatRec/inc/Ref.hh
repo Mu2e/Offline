@@ -26,6 +26,9 @@ public:
   Ref(const char* Name, const char* Title, 
       mu2e::HelixFitHack* HelixFit);
 
+  Ref(const char* Name, const char* Title, 
+      mu2e::KalFitHack* KalFit);
+
   ~Ref();
 
   void PlotXY  (int ISet = -1);

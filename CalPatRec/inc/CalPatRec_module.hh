@@ -245,49 +245,49 @@ namespace mu2e {
 
     StrawHitFlagCollection*               _flags;    // flags are not const - for a reason ?
 					
-    HelixFitHack             _hfit;	// robust helix fitter
-    KalFitHack               _seedfit;  // Kalman filter config for the Seed fit ( fit using hit wires)
-    KalFitHack               _kfit;     // full-blown src/Kalman filter
+    HelixFitHack                          _hfit;	// robust helix fitter
+    KalFitHack                            _seedfit;  // Kalman filter config for the Seed fit ( fit using hit wires)
+    KalFitHack                            _kfit;     // full-blown src/Kalman filter
 
-    KalFitResult*            _sfresult; // seed fit result
-    KalFitResult*            _kfresult; // full fit result
+    KalFitResult*                         _sfresult; // seed fit result
+    KalFitResult*                         _kfresult; // full fit result
 
-    CalTimePeakCollection*   _tpeaks;   // cache of time peaks
-    std::string              _iname;	// data instance name
+    CalTimePeakCollection*                _tpeaks;   // cache of time peaks
+    std::string                           _iname;	// data instance name
 
-    std::string             _iname_seed;// data instance name for the output 
+    std::string                          _iname_seed;// data instance name for the output 
 					 // of seed fit (used for diagnostics only)
 
-    XYZPHackVector           _index;
-    int                      _nindex;
-    int                      _nrescued;    // by the seed fit
+    XYZPHackVector                        _index;
+    int                                   _nindex;
+    int                                   _nrescued;    // by the seed fit
 
-    const TTracker*          _tracker;     // straw tracker geometry
-    const Calorimeter*       _calorimeter; // cached pointer to the calorimeter geometry
+    const TTracker*                       _tracker;     // straw tracker geometry
+    const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter geometry
 
-    const TrackerCalibrations* _trackerCalib;
+    const TrackerCalibrations*            _trackerCalib;
 
-    TFolder*                 _folder;
-    int                      _eventid;
-    int                      _ntracks;
+    TFolder*                              _folder;
+    int                                   _eventid;
+    int                                   _ntracks;
 //-----------------------------------------------------------------------------
 // diagnostics histograms
 //-----------------------------------------------------------------------------
-    Hist_t                   _hist;
+    Hist_t                                _hist;
 
-    THackData*               fHackData;
+    THackData*                            fHackData;
 
-    int                      _minNMCHits;
-    int                      fQualityTrack;
-    int                      fCaloClusterFromCE;
-    int                      fNCaloEnergyCut, fNCaloSizeCut, fNHitsTimePeakCut, fNTimeWindow;
-    int                      fSHSel[3], fSHBkg[3];
-    bool                     _clCE;
+    int                                   _minNMCHits;
+    int                                   fQualityTrack;
+    int                                   fCaloClusterFromCE;
+    int                                   fNCaloEnergyCut, fNCaloSizeCut, fNHitsTimePeakCut, fNTimeWindow;
+    int                                   fSHSel[3], fSHBkg[3];
+    bool                                  _clCE;
 
-    double                   _mbtime;               // period of 1 microbunch
-    SimParticleTimeOffset*   fgTimeOffsets;
+    double                                _mbtime;               // period of 1 microbunch
+    SimParticleTimeOffset*                fgTimeOffsets;
 
-    HelixTraj*               _helTraj;
+    HelixTraj*                            _helTraj;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------

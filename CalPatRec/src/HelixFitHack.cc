@@ -152,6 +152,7 @@ namespace mu2e {
     _minDfDz   (pset.get<double>("minDfDz",5e-04)),
     _sigmaPhi  (pset.get<double>("sigmaPhi")),
     _weightXY  (pset.get<double>("weightXY")),
+    _weightZPhi(pset.get<double>("weightZPhi")),
     _maxXDPhi  (pset.get<double>("maxXDPhi",5.)),
     _distPatRec(pset.get<double>("distPatRec")),
     _rbias     (pset.get<double>("radialBias",0.0)),
@@ -166,12 +167,12 @@ namespace mu2e {
     _tdmax     (pset.get<double>("maxAbsTanDip",2.0)),
     _rcmin     (pset.get<double>("rcmin",200.0)),
     _rcmax     (pset.get<double>("rcmax",350.0)),
-    _forcep    (pset.get<bool>("forceP",false)),
-    _xyweights (pset.get<bool>("xyWeights",false)),
-    _zweights  (pset.get<bool>("zWeights",false)),
-    _filter    (pset.get<bool>("filter",true)),
-    _plotall   (pset.get<bool>("plotall",false)),
-    _usetarget (pset.get<bool>("usetarget",true)),
+    _forcep    (pset.get<bool>  ("forceP",false)),
+    _xyweights (pset.get<bool>  ("xyWeights",false)),
+    _zweights  (pset.get<bool>  ("zWeights",false)),
+    _filter    (pset.get<bool>  ("filter",true)),
+    _plotall   (pset.get<bool>  ("plotall",false)),
+    _usetarget (pset.get<bool>  ("usetarget",true)),
     _bz        (0.0),
     _x0        (-9999.),
     _y0        (-9999.), 
@@ -358,9 +359,11 @@ namespace mu2e {
       Helix._fit = TrkErrCode(TrkErrCode::fail,1); // small number of hits
     }
     else if ((Helix._radius < _rmin) || (Helix._radius > _rmax)) {
-      Helix._fit = TrkErrCode(TrkErrCode::fail,2); // small number of hits
+      Helix._fit = TrkErrCode(TrkErrCode::fail,2); // initialization failure
     }
-    else {
+    else if (Helix._srphi.qn() < int(_minnhit) || (Helix._srphi.chi2DofLine() > _chi2zphiMax) ){
+      Helix._fit = TrkErrCode(TrkErrCode::fail,4); // phi-z reconstruction failure
+    }else {
 				// success
       retval = true;
     }
@@ -778,7 +781,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool HelixFitHack::doLinearFitPhiZ(HelixFitHackResult& Helix    , 
 				     int                 SeedIndex, 
-				     int                 *IndexVec) {
+				     int                *IndexVec,
+				     int                 UseInteligentWeight) {
     // sort points by z
     //    std::sort(_xyzp.begin(),_xyzp.end(),zcomp());
 
@@ -808,8 +812,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     ::LsqSums4 srphi;
     int        iworst, count(0), indexWorst;
-    double     chi2,chi2min, dfdz, deltaPhi, dphi_max(0), phi_ref;
+    double     chi2,chi2min, dfdz, deltaPhi, dphi_max(0), phi_ref, weightWorst(0);
   
+
+    CLHEP::Hep3Vector helCenter( Helix._sxy.x0(), Helix._sxy.y0(), 0), strawDir;
+    double            radius(Helix._sxy.radius());
+    const char        banner[] = "doLinearFitPhiZ";
+
     //    if (_debug > 5) printf("[HelixFitHack::doLinearFitPhiZ] _xyzp.size() = %u\n", N);
 //--------------------------------------------------------------------------------
 // set EMC cluster info
@@ -840,8 +849,10 @@ namespace mu2e {
 // which means sigma(R-phi) of about 2-3 cm, about right
 // hit weight is determined by the assumed phi error of _sigmaPhi=0.1
 //-----------------------------------------------------------------------------
-    weight = 1./(_sigmaPhi*_sigmaPhi);
-
+    if (UseInteligentWeight == 0){
+      weight = 1./(_sigmaPhi*_sigmaPhi);
+    }
+    
     xdphi  = fabs(deltaPhi)/_sigmaPhi;
     
     Helix._srphi.clear();
@@ -867,7 +878,8 @@ namespace mu2e {
     for(int i=SeedIndex; i<N; ++i){
       pos                  = _xyzp[i]._pos;
       z                    = pos.z();
-      
+      strawDir             = _xyzp[i]._sdir;
+
       phi      = CLHEP::Hep3Vector(pos - center).phi();
       phi      = TVector2::Phi_0_2pi(phi);
       dz       = z - zlast;
@@ -891,8 +903,13 @@ namespace mu2e {
       fPhiCorrected[i] = phi;
 
       dphi             = fabs(dphi);
+      err              = _sigmaPhi;
 
-      err   = _sigmaPhi;//+0.0005*dz;//0.001*dz;
+      if (UseInteligentWeight == 1){
+	weight = calculatePhiWeight(pos, strawDir, helCenter, radius, 0, banner);
+	err    = 1./sqrt(weight);
+      }
+
       xdphi = dphi/err;
 
       if (_debug > 5) printf("[HelixFitHack::doLinearFitPhiZ] %08x %2i %6i %3i %12.5f %12.5f %10.5f %10.3f %10.3f %10.3f %10.5f %10.5f %5.3f\n",
@@ -902,12 +919,12 @@ namespace mu2e {
 			     dfdz, Helix._srphi.dfdz(), Helix._srphi.chi2DofLine());
       
       if (_xyzp[i].isOutlier())                        continue;
-      if (  idVec[i] < 1     )                        continue;
+      if (  idVec[i] < 1     )                         continue;
 
       if ( xdphi > _maxXDPhi ) {
 	idVec[i] = 0;
 	++nPointsRemoved;
-	                                              continue;
+	                                               continue;
       }
       Helix._srphi.addPoint(z, phi_corrected[i], weight);
       ++count;
@@ -942,33 +959,42 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     if ( Helix._srphi.chi2DofLine() > _chi2zphiMax) {
     NEXT_ITERATION:;
-      iworst     = -1;
-      indexWorst = -1;
-      chi2min    = 1e10;
+      iworst      = -1;
+      indexWorst  = -1;
+      chi2min     = 1e10;
+      weightWorst = -1;
       for(int ixyzp=SeedIndex; ixyzp < N; ++ixyzp){
 	if (_xyzp[ixyzp].isOutlier())                        continue;
 	if (  idVec[ixyzp] < 1  )                            continue;
 	srphi.init(Helix._srphi);
-	pos = _xyzp[ixyzp]._pos;
-	z   = pos.z();//z_vec[i];
-	phi = phi_corrected[ixyzp];//CLHEP::Hep3Vector(pos - center).phi();//phi_vec[i];
+	pos      = _xyzp[ixyzp]._pos;
+	strawDir = _xyzp[ixyzp]._sdir;
+
+	z        = pos.z();
+	phi      = phi_corrected[ixyzp];
+
+	if (UseInteligentWeight == 1){
+	  weight = calculatePhiWeight(pos, strawDir, helCenter, radius, 0, banner);
+	}
+
 	srphi.removePoint(z, phi, weight);
 	chi2 = srphi.chi2DofLine();
 	//printf("[HelixFitHack::doLinearFitPhiZ] chi2 = %5.3e chi2min = %5.3e\n", chi2, chi2min);
 	if (chi2 < chi2min) {
-	  iworst     = ixyzp;
-	  indexWorst = _xyzp[ixyzp]._ind;
-	  chi2min    = chi2;
+	  iworst      = ixyzp;
+	  indexWorst  = _xyzp[ixyzp]._ind;
+	  chi2min     = chi2;
+	  weightWorst = weight;
 	}
       }
   
       if ((iworst >= 0) && (Helix._srphi.qn() > 10.)) {
-	idVec[iworst] = 0;//.setOutlier();
+	idVec[iworst] = 0;
 	pos = _xyzp[iworst]._pos;
 	z   = pos.z();
-	phi = phi_corrected[iworst];//CLHEP::Hep3Vector(pos - center).phi();
+	phi = phi_corrected[iworst];
     
-	Helix._srphi.removePoint(z, phi, weight);
+	Helix._srphi.removePoint(z, phi, weightWorst);
 	chi2min = Helix._srphi.chi2DofLine();
 	if (_debug > 5) {
 	  printf("[HelixFitHack::doLinearFitPhiZ_removed] %6i %5.3f     %5.3f chi2 = %5.3f  \n", indexWorst, z, phi, chi2min);
@@ -976,25 +1002,35 @@ namespace mu2e {
       }
 
     CHECK_RESIDUALS:;
-      dphi_max = _maxXDPhi;
-      iworst   = -1;
+      dphi_max    = _maxXDPhi;
+      iworst      = -1;
+      weightWorst = -1;
+
       for(int i=SeedIndex; i < N; ++i){
 	if (_xyzp[i].isOutlier())     continue;
 	if (  idVec[i] < 1  )         continue;
 
-	pos = _xyzp[i]._pos;
-	z   = pos.z();
-	
-	phi  = z* Helix._srphi.dfdz() + Helix._srphi.phi0();
-	dphi = phi_corrected[i] - phi;
+	pos      = _xyzp[i]._pos;
+	z        = pos.z();
+	strawDir = _xyzp[i]._sdir;
 
-	err   = _sigmaPhi;//0.001*dz;
+	phi      = z* Helix._srphi.dfdz() + Helix._srphi.phi0();
+	dphi     = fabs(phi_corrected[i] - phi);
+
+	err      = _sigmaPhi;
+
+	if (UseInteligentWeight == 1){
+	  weight = calculatePhiWeight(pos, strawDir, helCenter, radius, 0, banner);
+	  err    = 1./sqrt(weight);
+	}
+	
 	xdphi = dphi/err;
 
 	if ( xdphi > dphi_max) {
-	  iworst     = i;
-	  indexWorst = _xyzp[i]._ind;
-	  dphi_max   = xdphi;
+	  iworst      = i;
+	  indexWorst  = _xyzp[i]._ind;
+	  dphi_max    = xdphi;
+	  weightWorst = weight;
 	}
       }
 
@@ -1005,7 +1041,7 @@ namespace mu2e {
 	z   = pos.z();
 	phi = phi_corrected[iworst];//CLHEP::Hep3Vector(pos - center).phi();
 	
-	Helix._srphi.removePoint(z, phi, weight);
+	Helix._srphi.removePoint(z, phi, weightWorst);
 	chi2min = Helix._srphi.chi2DofLine();
 	if (_debug > 5) {
 	  printf("[HelixFitHack::doLinearFitPhiZ_removed] %6i %5.3f     %5.3f chi2 = %5.3f  \n", indexWorst, z, phi, chi2min);
@@ -1019,6 +1055,9 @@ namespace mu2e {
       if ( (chi2min >= _chi2zphiMax) ||
 	   (iworst>=0 )) {
 	
+//--------------------------------------------------------------------------------
+// 2016-04-27 gianipez: why should I not check the chi2 f I have 10 hits?
+//--------------------------------------------------------------------------------
 	if (Helix._srphi.qn() > 10.) {
 	  goto NEXT_ITERATION;
 	}
@@ -1103,8 +1142,6 @@ namespace mu2e {
     return success;
   }
 
-
- 
 //-----------------------------------------------------------------------------
 // 12-09-2013 gianipez modified this procedure to avoid the doubling of the 
 // same stereohitposition 
@@ -1342,7 +1379,7 @@ namespace mu2e {
       }
       shPos = _xyzp[i]._pos;
       dist  = _distTrkCandidate[i];
-      dz    = _dzTrkCandidate[i];
+      dz    = _dzTrkCandidate  [i];
       if ( _indicesTrkCandidate[i] <= 0 ){
 	_xyzp[i].setOutlier();
 	
@@ -1552,6 +1589,7 @@ namespace mu2e {
     bool rc;
     int  rc1, refineHelParamRes, rs;
     int  usePhiResid;
+    int  useInteligentWeight(1);
 
     if ( (fSeedIndex<0) || (_goodPointsTrkCandidate < 5) )                     goto  PATTERN_RECOGNITION_END;
 
@@ -1579,7 +1617,11 @@ namespace mu2e {
 //---------------------------------------------------------------------------------------
 // use the results of the helix search to see if points along the track can be rescued
 //---------------------------------------------------------------------------------------
-    usePhiResid = 1;
+    if (Helix._srphi.qn() == 0) {
+      usePhiResid = 0;
+    }else {
+      usePhiResid = 1;
+    }
     rescueHits(Helix, 0, _indicesTrkCandidate, usePhiResid);
 
     if (_debug != 0)  printInfo(Helix);
@@ -1596,7 +1638,11 @@ namespace mu2e {
       Helix._dfdz = _hdfdz;
       Helix._fz0  = _hphi0;
     }
-    rc = doLinearFitPhiZ(Helix, 0, _indicesTrkCandidate);
+
+    rc = doLinearFitPhiZ(Helix, 0, _indicesTrkCandidate, useInteligentWeight);
+    //    rc = doLinearFitPhiZ(Helix, 0, _indicesTrkCandidate);
+
+
     if (rc){
       usePhiResid = 1;
       rescueHits(Helix, 0, _indicesTrkCandidate, usePhiResid);
@@ -1695,6 +1741,7 @@ namespace mu2e {
 
     double e2     = ew*ew*costh*costh+rs*rs*sinth2;
     double wt     = Radius*Radius/e2;
+    wt           *= _weightZPhi;
 
     if (Print > 0) {
       double dr = calculateRadialDist( HitPos, HelCenter, Radius);
@@ -1832,7 +1879,7 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       if (_xyzp[i].isOutlier())           goto NEXT_P;
 
       // avoid the use of hit rejected by the helix search
-      if ( IdVec[i] < 1)  goto NEXT_P;
+      if ( IdVec[i] < 1)                  goto NEXT_P;
 
       sxy.init(TrkSxy);
 
@@ -2064,7 +2111,7 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     ::LsqSums4  sxy;
     int         n_added_points(0);
     int         ibest;
-    double      wtBest;
+    double      wtBest, phiwtBest;
     double      chi2, chi2_min, dr, hitChi2, drChi2;
 
     //set  dfdz and phi0
@@ -2089,7 +2136,9 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 
     chi2 = Trk._sxy.chi2DofCircle();
     if (chi2 >= _chi2xyMax) {
-      printf("[HelixFitHack::%s] chi2 = %8.3f already at limit! no point can be added\n",banner,chi2);
+      if (_debug > 5) {
+	printf("[HelixFitHack::%s] chi2 = %8.3f already at limit! no point can be added\n",banner,chi2);
+      }
       goto F_END;		 
     }
     //-----------------------------------------------------------------------------
@@ -2111,7 +2160,8 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
     dphiChi2    = 0.;
     ibest       = -1;
     wtBest      = -1;
-  
+    phiwtBest   = -1;
+
     for (int i=SeedIndex; i<np; i++) {
       if (_xyzp[i].isOutlier())           continue ;
 
@@ -2132,8 +2182,8 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       if ((UsePhiResiduals == 1) && (fPhiCorrectedDefined)) {
 	phi_pred = hitPos.z()*dfdz + phi0;
 	dphi     = phi_pred - fPhiCorrected[i];
-	phiwt    = calculatePhiWeight(hitPos,strawDir,helCenter,r,0,banner);
-	dphiChi2 = dphi*dphi*phiwt;                ///(_sigmaPhi*_sigmaPhi);
+	phiwt    = calculatePhiWeight(hitPos, strawDir, helCenter, r, 0, banner);
+	dphiChi2 = dphi*dphi*phiwt;                
 	hitChi2  = drChi2 + dphiChi2;
       } else {
 	hitChi2  = drChi2;
@@ -2147,17 +2197,47 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 // require chi2 < fHitChi2Max, identify the closest point
 //-----------------------------------------------------------------------------
       if ( (hitChi2 < chi2_min) && (drChi2 < fHitChi2Max) && (dphiChi2 < fHitChi2Max)) {
-	chi2_min    = hitChi2;
-	ibest       = i;
-	wtBest      = wt;
+
+//-----------------------------------------------------------------------------
+// check if XY-chi2 and ZPhi-chi2 are less than chi2xyMax and chi2zphiMax
+//-----------------------------------------------------------------------------
+	x = hitPos.x();
+	y = hitPos.y();
+	Trk._sxy.addPoint  (x, y, wt);
+	Trk._srphi.addPoint(hitPos.z(), fPhiCorrected[i], phiwt);
+	
+	if (Trk._sxy.chi2DofCircle() < _chi2xyMax){
+	  if (UsePhiResiduals == 1){
+	    if (Trk._srphi.chi2DofLine() < _chi2zphiMax){
+	      chi2_min    = hitChi2;
+	      ibest       = i;
+	      wtBest      = wt;
+	      phiwtBest   = phiwt;
+	    }
+	  }else {
+	    chi2_min    = hitChi2;
+	    ibest       = i;
+	    wtBest      = wt;
+	  }
+	}
+	
+	Trk._sxy.removePoint  (x, y, wt);
+	Trk._srphi.removePoint(hitPos.z(), fPhiCorrected[i], phiwt);
+
       }
     }
-
+    
     if (ibest >= 0){
       x  = _xyzp[ibest]._pos.x();
       y  = _xyzp[ibest]._pos.y();
                                        //add point from the track    
       Trk._sxy.addPoint(x, y, wtBest);
+      
+      if (UsePhiResiduals == 1){
+	Trk._srphi.addPoint(_xyzp[ibest]._pos.z(), fPhiCorrected[ibest], phiwtBest);
+
+      }
+      
       if (_debug > 5) {
 	printf("[HelixFitHack::%s] x0 = %8.3f y0 = %8.3f radius = %8.3f  chi2 = %6.3f chi2Maxxy = %6.3f index point added = %i straw-id = %6i hitChi2 = %6.3f x = %8.3f y = %8.3f z = %9.3f \n ",
 	       banner,

@@ -240,11 +240,6 @@ namespace mu2e {
 
     static StrawHitFlag       esel(StrawHitFlag::energysel), flag;
 
-    //    ConditionsHandle<AcceleratorParams> accPar("ignored");
-    //    _mbtime = accPar->deBuncherPeriod;
-    //    fgTimeOffsets->updateMap(event);
-
-                                        // event printout
     _iev     = event.id().event();
 
     if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
@@ -442,7 +437,7 @@ namespace mu2e {
     TrkSeed._errt0       = cluster->cog3Vector().z();
     TrkSeed._caloCluster = ClusterPtr;
     
-    TrkSeed._chi2XY      = HfResult._sxy.chi2DofCircle();
+    TrkSeed._chi2XY      = HfResult._sxyw.chi2DofCircle();
     TrkSeed._chi2ZPhi    = HfResult._srphi.chi2DofLine();
   }
 

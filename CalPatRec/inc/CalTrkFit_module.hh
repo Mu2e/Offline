@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef CalPatRec_CalPatRecNew_module
-#define CalPatRec_CalPatRecNew_module
+#ifndef CalPatRec_CalTrkFit_module
+#define CalPatRec_CalTrkFit_module
 
 #ifdef __GCCXML__A
 namespace art {
@@ -21,44 +21,35 @@ namespace art {
 #include "RecoDataProducts/inc/CaloHit.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
-#include "RecoDataProducts/inc/HelixVal.hh"
-#include "RecoDataProducts/inc/TrackSeed.hh"
-#include "RecoDataProducts/inc/TrackSeedCollection.hh"
-#include "RecoDataProducts/inc/TrackerHitTimeCluster.hh"
-#include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
-
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/TrackSeed.hh"
+#include "RecoDataProducts/inc/TrackSeedCollection.hh"
+
 
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
+#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "BTrk/BField/BField.hh"
-#include "BTrk/BField/BFieldFixed.hh"
-#include "BTrk/ProbTools/ChisqConsistency.hh"
-#include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "Mu2eBTrk/inc/BaBarMu2eField.hh"
-#include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
+#include "RecoDataProducts/inc/KalRepCollection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
-#include "BTrk/TrkBase/TrkMomCalculator.hh"
-
-#include "RecoDataProducts/inc/KalRepCollection.hh"
-#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "RecoDataProducts/inc/Doublet.hh"
 
 #include "TROOT.h"
@@ -116,26 +107,21 @@ namespace mu2e {
   class Calorimeter;
   class TTracker;
 
-  class CalPatRecNew : public art::EDProducer {
+  class CalTrkFit : public art::EDProducer {
   public:
-    struct HelixFitHist_t {
-      TH1F*  nhits;           // number of hits on a helix  
-      TH1F*  radius[2];   
-      TH1F*  chi2XY[2];
-      TH1F*  chi2ZPhi[2];
-      TH1F*  pT[2];
+    struct SeedFitHist_t {
+      TH1F*  nhits;           // number of hits on a htrack candidate
+      TH1F*  chi2[2];
       TH1F*  p [2];
-      TH2F*  nhitsvspT;
-      TH2F*  nhitsvsp;
     };
 
     struct Hist_t {
-      HelixFitHist_t  helixFit;  // helix fit histograms
+      SeedFitHist_t  seedFit;  // helix fit histograms
 
-      TH1F* nseeds[2];
+      TH1F*          ntracks[2];
     };
 
-    Ref*                                   _ref;
+    Ref*    _ref;
 
   protected:
 //-----------------------------------------------------------------------------
@@ -143,37 +129,55 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     //    TStopwatch*   fStopwatch;
 
-    unsigned                              _iev;
+    unsigned         _iev;
 					// configuration parameters
-    int                                   _diagLevel; 
-    int                                   _debugLevel;
-    int                                   _printfreq;
+    int              _diagLevel; 
+    int              _debugLevel;
+    int              _printfreq;
+    bool             _addhits; 
+    bool             _doKalmanFit;
 //-----------------------------------------------------------------------------
 // event object labels
 //-----------------------------------------------------------------------------
-    std::string                           _shLabel ; // MakeStrawHit label (makeSH)
-    std::string                           _shpLabel;
-    std::string                           _shfLabel;
-    std::string                           _trkseedLabel;
+    std::string      _shLabel ; // MakeStrawHit label (makeSH)
+    std::string      _shpLabel;
+    std::string      _shfLabel;
+    std::string      _trkseedLabel;
+    std::string      _tpeaksLabel;
 
-    TrkParticle                           _tpart;	        // particle type being searched for
-    TrkFitDirection                       _fdir;		// fit direction in search
+    double           _maxdtmiss;
+					// outlier cuts
+    double           _maxadddoca;
+    double           _maxaddchi;
+    TrkParticle      _tpart;	        // particle type being searched for
+    TrkFitDirection  _fdir;		// fit direction in search
 
+    int              _nhits_from_gen;
 //-----------------------------------------------------------------------------
 // cache of event objects
 //-----------------------------------------------------------------------------
-    art::Handle<mu2e::StrawHitCollection> _strawhitsH;
-
     const StrawHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
     const StrawHitPositionCollection*     _shpcol;
-    const TrackSeedCollection*            _trkSeeds;
+    const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
+
+    const TrackSeedCollection*            _trkseeds;
     const CalTimePeakCollection*          _tpeaks;
 
-    HelixFitHack                          _hfit;	
+    KalFitHack                            _seedfit;  // Kalman filter config for the Seed fit ( fit using hit wires)
+    KalFitHack                            _kfit;     // full-blown src/Kalman filter
 
-    XYZPHackVector                        _index;
+    KalFitResult*                         _sfresult; // seed fit result
+    KalFitResult*                         _kfresult; // full fit result
+
+    std::string                           _iname;	// data instance name
+
+    std::string                           _iname_seed;// data instance name for the output 
+					              // of seed fit (used for diagnostics only)
+
+    std::vector<hitIndex>                 _hitIndices;
     int                                   _nindex;
+    int                                   _nrescued;    // by the seed fit
 
     const TTracker*                       _tracker;     // straw tracker geometry
     const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter geometry
@@ -181,6 +185,8 @@ namespace mu2e {
     const TrackerCalibrations*            _trackerCalib;
 
     TFolder*                              _folder;
+    int                                   _eventid;
+    int                                   _ntracks[2];
 //-----------------------------------------------------------------------------
 // diagnostics histograms
 //-----------------------------------------------------------------------------
@@ -188,8 +194,10 @@ namespace mu2e {
 
     THackData*                            fHackData;
 
-    //    double                   _mbtime;               // period of 1 microbunch
-    //    SimParticleTimeOffset*   fgTimeOffsets;
+    int                                   _minNMCHits;
+
+    double                                _mbtime;               // period of 1 microbunch
+    SimParticleTimeOffset*                fgTimeOffsets;
 
     HelixTraj*                            _helTraj;
 //-----------------------------------------------------------------------------
@@ -197,8 +205,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   public:
     enum fitType {helixFit=0,seedFit,kalFit};
-    explicit CalPatRecNew(const fhicl::ParameterSet& PSet);
-    virtual ~CalPatRecNew();
+    explicit CalTrkFit(const fhicl::ParameterSet& PSet);
+    virtual ~CalTrkFit();
     
     virtual void beginJob();
     virtual void beginRun(art::Run&);
@@ -208,18 +216,16 @@ namespace mu2e {
 // helper functions
 //-----------------------------------------------------------------------------
     bool findData         (const art::Event& e);
-
 //----------------------------------------------------------------------
 // 2015 - 02 - 16 Gianipez added the two following functions
 //----------------------------------------------------------------------
+    void findDoublets     (KalRep* krep, DoubletCollection *dcol);//search doublets in a giventimepeak
+    void findLoopApex     (){}//search the straw hits src/closer to the apexes of the helix loops
 
+    void findMissingHits  (KalFitResult& kalfit, std::vector<hitIndex>& indices);
     void bookHistograms   ();
-    void initTrackSeed    (TrackSeed                             &TrackSeed , 
-			   TrkDef                                &Seeddef   ,
-			   HelixFitHackResult                    &HfResult  ,
-			   const CalTimePeak                     *TPeak     ,
-			   art::Handle<mu2e::StrawHitCollection> &StrawhitsH,
-			   art::Ptr<CaloCluster>                  ClusterPtr);
+
+    void init             (KalFitResult*&  KRes, TrkDef* TDef);
 
   };
 }

@@ -73,12 +73,12 @@ CalPatRec            : {
 
     TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 
-    StrawHitCollectionLabel                     : makeSH
-    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
-    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions
-    caloReadoutModuleLabel                      : MakeCaloReadoutHits
-    calorimeterHitMCCrystalPtr                  : CaloHitMCCrystalPtr
-    caloClusterModuleLabel                      : MakeCaloCluster
+    StrawHitCollectionLabel                     : makeSH			 
+    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits		 
+    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions 
+    caloReadoutModuleLabel                      : MakeCaloReadoutHits		 
+    calorimeterHitMCCrystalPtr                  : CaloHitMCCrystalPtr		 
+    caloClusterModuleLabel                      : MakeCaloCluster                
 #------------------------------------------------------------------------------
 #  now this is defined by the ambig resolver choice 
 #------------------------------------------------------------------------------
@@ -121,6 +121,7 @@ CalPatRec            : {
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
 	weightXY                                : 0.2941
+	weightZPhi                              : 0.174
 	maxXDPhi                                : 5    #
 	distPatRec                              : 100. # mm
 	maxChi2TrkCandidate                     : 1500
@@ -279,30 +280,35 @@ CalPatRecNew          : {
     fitdirection                                : 0      # 0:downstream, 1:upstream
 
     # HelixFitHack configuraton (pattern recognition)
-    HelixFitHack : {
-	debugLevel                              : 0
-	debugLevel2                             : 0
-	diagLevel                               : 0
-	minNHit                                 : 10      # minimal number of hits on found helix
-	hitChi2Max                              : 25.
-	mostProbableDfDz                        : 0.00475
-	maxDfDz                                 : 0.01
-	minDfDz                                 : 0.002
-	sigmaPhi                                : 0.1636  # radians
-	weightXY                                : 0.2941
-	maxXDPhi                                : 5    #
-	distPatRec                              : 100. # mm
-	maxChi2TrkCandidate                     : 1500
-	markCandidateHits                       : 0
-	minPointsTrkCandidate                   : 25
-# confirmed on 2015-02-07
-	chi2xyMax                               : 5.0    # default value is 300
-	chi2zphiMax                             : 5.0    # 0.1 #default is 0.1, use 0.05 for debugging puposes
-	dfdzErr                                 : 0.1
-    }
-
+    HelixFitHack : { @table::CalPatRec.HelixFitHack }
 
 }
+
+
+CalTrkFit             : {
+    module_type                                 : CalTrkFit
+
+    diagLevel                                   : 0
+    debugLevel                                  : 0
+    printFrequency                              : 100
+    addhits                                     : true
+    TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    doKalmanFit                                 : false
+    StrawHitCollectionLabel                     : makeSH			 
+    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions	 
+    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits 
+    TrackSeedModuleLabel                        : CalPatRecNew
+    CalTimePeakModuleLabel                      : CalTimePeakFinder
+    MaxDtMiss                                   : 55.
+    MaxAddDoca                                  : 7.    # mm
+    MaxAddChi                                   : 3.5   #
+    fitparticle                                 : 11    # 11:electron, -11:positron, 13:mu-, -13: mu+
+    fitdirection                                : 0     # 0:downstream, 1:upstream
+
+    SeedFitHack                                 : { @table::CalPatRec.SeedFitHack }
+    KalFitHack                                  : { @table::CalPatRec.KalFitHack  }
+}
+
 
 #------------------------------------------------------------------------------
 # default configuration: DEM
