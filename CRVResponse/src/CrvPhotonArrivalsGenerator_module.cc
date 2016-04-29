@@ -75,8 +75,6 @@ namespace mu2e
                                         //to account for the travel time of the photons inside the CRV bar.
                                         //Default is 0.
 
-    SimParticleTimeOffset _timeOffsets;
-
     std::string                           _backgroundSampleFileName;
     int                                   _countersInBackgroundSample;
     int                                   _backgroundSampleFactor;
@@ -118,7 +116,6 @@ namespace mu2e
     _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow")), //100.0 ns, unknown, not used
     _fiberDecayTime(pset.get<double>("fiberDecayTime")),     //7.4 ns
     _startTime(pset.get<double>("startTime")),               //0.0 ns
-    _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet())),
     _backgroundSampleFileName(pset.get<std::string>("backgroundSampleFileName","")),
     _countersInBackgroundSample(pset.get<int>("countersInBackgroundSample",0)),
     _backgroundSampleFactor(pset.get<int>("backgroundSampleFactor",0)),
@@ -232,7 +229,6 @@ namespace mu2e
 
   void CrvPhotonArrivalsGenerator::produce(art::Event& event) 
   {
-    _timeOffsets.updateMap(event);
     _scintillationYieldAdjustments.clear();
 
     std::unique_ptr<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection(new CrvPhotonArrivalsCollection);
@@ -261,7 +257,7 @@ namespace mu2e
         {
           StepPointMC const& step(*iter);
 
-          double t1 = _timeOffsets.timeWithOffsetsApplied(step);
+          double t1 = step.time();
           if(t1<_startTime) continue;   //Ignore this StepPoint to reduce computation time.
 
           const CLHEP::Hep3Vector &p1 = step.position();

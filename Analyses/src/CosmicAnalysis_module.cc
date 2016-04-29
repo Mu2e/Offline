@@ -391,7 +391,7 @@ namespace mu2e
           _eventinfo.reco_n=kalReps->size();
           _eventinfo.reco_t0=particle.t0().t0();
 
-          //from TrkDiag/src/KalDiag.cc to get momentum at the tracker entrance:
+          //from TrkDiag/src/KalDiag.cc
           double firsthitfltlen = particle.lowFitRange(); 
           double lasthitfltlen = particle.hiFitRange();
           double entlen = std::min(firsthitfltlen,lasthitfltlen);

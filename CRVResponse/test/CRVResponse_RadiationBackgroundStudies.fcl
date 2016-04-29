@@ -25,13 +25,10 @@ physics :
 {
   producers:
   {
-    protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap  : { module_type : GenerateMuonLife }
-
     @table::CrvResponsePackage.producers
   }
 
-  an : [protonTimeMap, muonTimeMap, @sequence::CrvResponsePackage.CrvResponseSequence]
+  an : [@sequence::CrvResponsePackage.CrvResponseSequence]
   out: [Output]
 
   end_paths: [an, out]
