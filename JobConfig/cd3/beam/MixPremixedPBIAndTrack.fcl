@@ -70,7 +70,7 @@ physics :
        ] 
 
 # end path, including standard track analysis
-  e1 : [RKFDownstreameMinus]
+  e1 : [RKFDownstreameMinus, genCountLogger ]
   
   trigger_paths  : [p1]
   end_paths      : [e1]
