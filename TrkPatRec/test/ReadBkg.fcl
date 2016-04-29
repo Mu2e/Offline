@@ -1,18 +1,14 @@
 #
-#  This script runs hit and track reconstruction on a file containing StepPointMCs
-# for example, the command
-#  > mu2e --config TrkPatRec/test/TrkPatRecTestRead.fcl /pnfs/mu2e/scratch/outstage/gandr/3028848.beam-g4s4-conversion/00000/sim.mu2e.cd3-beam-g4s4-detconversion.0918a.004001_00000000.art --nevts=100
-#
-# will read 100 CD3 CE events, reconstruct the tracks, and produce the standard KalDiag TTree for those track
-#
-# David Brown, 13 Nov, 2015
+#  This script reads CD3 premixed background frames as primary events
+#  
+# David Brown, 19 April 2016
 #
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
 
-process_name : TrkPatRecTest
+process_name : ReadBkg
 
 source :
 {
@@ -22,7 +18,7 @@ source :
 services :
 {
   message : @local::default_message
-  TFileService : { fileName : "TrkPatRecTestRead.root" }
+  TFileService : { fileName : "ReadBkg.root" }
   RandomNumberGenerator: { }
   GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
   ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
@@ -51,10 +47,14 @@ physics :
          fitterModuleLabel : TRFDownstreameMinus
 	 KalDiag : @local::KalDiagReadCD3 # configure KalDiag to look for CD3 beam data products
 #	 KalDiag : @local::KalDiagReadCD3Cosmics # configure KalDiag to look for CD3 cosmic data products
+	 eventWeightModules : [ protonBunchSummarizer  ]
+	 beamWeightModule : protonBunchSummarizer
+	 processEmpty : false
       }
    }
-# trigger path; this creates hits from MCSteps, then reconstructs the tracks
+# trigger path; create time maps, add proton bunch weight, simulate digis and reconstruct tracks
   p1: [ @sequence::EventMixing.TimeMaps,
+	protonBunchSummarizer,
 	@sequence::Tracking.DigiSim,
 	@sequence::Tracking.TPRDownstreameMinus ]
 # end path
