@@ -86,12 +86,6 @@ namespace mu2e
     _diag(pset.get<int>("diagLevel",1)),
     _uresid(pset.get<bool>("UnbiasedResiduals",true)),
     _mingood(pset.get<double>("MinimumGoodMomentumFraction",0.9)),
-    _mintrkmom(pset.get<double>("minTrkMom",60.0)),
-    _mct0err(pset.get<double>("mcT0Err",0.1)),
-    _mcambig(pset.get<bool>("mcAmbiguity",false)),
-    _minnhits(pset.get<unsigned>("minNHits",10)),
-    _maxnhits(pset.get<unsigned>("maxNHits",120)),
-    _purehits(pset.get<bool>("pureHits",false)),
     _trkdiag(0) 
   {
 // define the ids of the virtual detectors
@@ -152,7 +146,7 @@ namespace mu2e
 	if(sct.size()>0 && sct[0]._spp.isNonnull()){
 	  spp = sct[0]._spp;
 	}
-      } else { 
+      } else if(_mcdata._simparts != 0) { 
       // find 1st primary particle
 	for ( auto isp = _mcdata._simparts->begin(); isp != _mcdata._simparts->end(); ++isp ){
 	  if(isp->second.isPrimary()){
@@ -162,23 +156,27 @@ namespace mu2e
 	}
       }
 // Fill general MC information
-      fillTrkInfoMC(spp,krep,_mcinfo);
+      if(spp.isNonnull()){
+	fillTrkInfoMC(spp,krep,_mcinfo);
 // fill hit-specific MC information
-      if(_diag > 1 && krep != 0)fillHitInfoMC(spp,krep,_tshinfomc);
+	if(_diag > 1 && krep != 0)fillHitInfoMC(spp,krep,_tshinfomc);
 // fill mc info at the particle production point
-      fillTrkInfoMCStep(spp,_mcgeninfo);
+	fillTrkInfoMCStep(spp,_mcgeninfo);
       // find MC info at tracker
-      cet::map_vector_key trkid = spp->id();
-      vector<MCStepItr> entsteps,midsteps,xitsteps;
-      findMCSteps(_mcdata._mcvdsteps,trkid,_entvids,entsteps);
-      if(entsteps.size() > 0 && vdg->exist(entsteps[0]->volumeId()))
-	fillTrkInfoMCStep(entsteps.front(),_mcentinfo);
-      findMCSteps(_mcdata._mcvdsteps,trkid,_midvids,midsteps);
-      if(midsteps.size() > 0 && vdg->exist(midsteps[0]->volumeId()))
-	fillTrkInfoMCStep(midsteps.front(),_mcmidinfo);
-      findMCSteps(_mcdata._mcvdsteps,trkid,_xitvids,xitsteps);
-      if(xitsteps.size() > 0 && vdg->exist(xitsteps[0]->volumeId()))
-	fillTrkInfoMCStep(xitsteps.front(),_mcxitinfo);
+	if(_mcdata._mcvdsteps != 0){
+	  cet::map_vector_key trkid = spp->id();
+	  vector<MCStepItr> entsteps,midsteps,xitsteps;
+	  findMCSteps(_mcdata._mcvdsteps,trkid,_entvids,entsteps);
+	  if(entsteps.size() > 0 && vdg->exist(entsteps[0]->volumeId()))
+	    fillTrkInfoMCStep(entsteps.front(),_mcentinfo);
+	  findMCSteps(_mcdata._mcvdsteps,trkid,_midvids,midsteps);
+	  if(midsteps.size() > 0 && vdg->exist(midsteps[0]->volumeId()))
+	    fillTrkInfoMCStep(midsteps.front(),_mcmidinfo);
+	  findMCSteps(_mcdata._mcvdsteps,trkid,_xitvids,xitsteps);
+	  if(xitsteps.size() > 0 && vdg->exist(xitsteps[0]->volumeId()))
+	    fillTrkInfoMCStep(xitsteps.front(),_mcxitinfo);
+	}
+      }
     }
     // fill the TTree if requested
     if(fill){
@@ -187,7 +185,7 @@ namespace mu2e
   }
 
   void
-  KalDiag::fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo) const {
+    KalDiag::fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo) const {
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<DetectorSystem> det;
     if(krep != 0 && krep->fitCurrent()){
@@ -332,7 +330,6 @@ namespace mu2e
 	  for(size_t isp=0;isp<sct.size();++isp){
 // count direct daughter/parent as part the same particle
 	    if(sct[isp]._spp == spp ){
-//	    || sct[isp]._spp->parent()==spp || spp->parent() == sct[isp]._spp){
 	      found = true;
 	      sct[isp].append(spp);
 	      break;
@@ -629,9 +626,6 @@ namespace mu2e
       if(evt.getByLabel(_mcptrlabel,"StrawHitMCPtr",mchitptrHandle))
 	_mcdata._mchitptr = mchitptrHandle.product();
       // Get the persistent data about the StepPointMCs, from the tracker and the virtual detectors
-      art::Handle<StepPointMCCollection> mctrackerstepsHandle;
-      if(evt.getByLabel(_mcstepslabel,"tracker",mctrackerstepsHandle))
-	_mcdata._mcsteps = mctrackerstepsHandle.product();
       art::Handle<StepPointMCCollection> mcVDstepsHandle;
       if(evt.getByLabel(_mcstepslabel,"virtualdetector",mcVDstepsHandle))
 	_mcdata._mcvdsteps = mcVDstepsHandle.product();
@@ -642,8 +636,12 @@ namespace mu2e
 	_mcdata._mcdigis = mcdigisHandle.product();
       // update time offsets
       _toff.updateMap(evt);
-      if (!_mcdata.good()) _mcdata.printPointerValues();
-      return _mcdata.good();
+      static bool first(true);
+      if (first && !_mcdata.good()){
+	first = false;
+	std::cout <<"Warning: MC data is not complete as follows, proceeding" << std::endl;
+	_mcdata.printPointerValues();
+      }
     }
     return true;
   }

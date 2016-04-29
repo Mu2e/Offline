@@ -33,7 +33,7 @@ class KalFit {
   double maxmomerr[4];
   double minfitcon[4];
   TCut ncuts[4], t0cuts[4], momcuts[4], fitcuts[4], goodfit[4];
-  TCut trkqualcut[4] = {"trkqual>0.1","trkqual>0.2","trkqual>0.3","trkqual>0.4"};
+  TCut trkqualcut[4] = {"trkqual>0.3","trkqual>0.4","trkqual>0.5","trkqual>0.6"};
   TCut reco,cosmic,rmom,rpitch,livegate;
   TCut tpitch, tt0,tmom,tnhits,mcsel;
   TCut rmomloose;

@@ -130,11 +130,6 @@ namespace mu2e
     int _debug,_diag;
     bool _uresid;
     double _mingood;
-    double _mintrkmom; // minimum true momentum at z=0 to create a track from
-    double _mct0err;
-    bool _mcambig;
-    unsigned _minnhits,_maxnhits;
-    bool _purehits;
 // vector of detector Ids corresponding to entrance and midplane
     std::vector<int> _midvids;
     std::vector<int> _entvids;
