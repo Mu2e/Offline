@@ -72,9 +72,10 @@ namespace mu2e {
 	  wfx._ihitlet->time() < time){
 	++(wfx._ihitlet);
       }
-      if(wfx._ihitlet != _hseq.hitletList().end())
+      if(wfx._ihitlet != _hseq.hitletList().end()){
 	wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._ihitlet->time());
 	wfx._time =wfx._ihitlet->time();
+      }
     }
   }
 
