@@ -1,3 +1,20 @@
-Still under construction
 
            Release notes for Mu2e Offline software, v5_7_4
+
+1) 29 April, 2016 kutschke
+   Few people remember release notes for this time release.
+   The purpose of the release is to use it for the rerunning
+   of cosmic stage 3.
+    - The previous version of stage 3 was run with the old tracker
+      hit making.  The new version will be run with the most recent
+      version
+    - Update job and filter configurations for cosmic stage 3.
+    - Improved cut and count analysis (not used in stage 3
+      but needed to vet later stages ).
+    - Bug fix in TrackerMC/src/StrawWaveform.cc
+    - Ongoing improvements to CRV simulation and reco
+    - Ongoing improvements to Calo reco.
+    - Onging work to merge TrkPatRec and CalPatRec.
+         - one of these changes involves a schema change
+         - to read and write old files with new code requires
+           that you disable fast cloning
