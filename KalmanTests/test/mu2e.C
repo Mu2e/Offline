@@ -144,10 +144,10 @@ class mu2e {
     bool _init;
     double _conint[4];
     double _conint_err[4];
-    TCut trkqualcut[4] = {"fit.trkqual>0.4&&fit.trkqual<1.3",
-      "fit.trkqual>0.5&&fit.trkqual<1.3",
-      "fit.trkqual>0.6&&fit.trkqual<1.3",
-      "fit.trkqual>0.7&&fit.trkqual<1.3"};
+    TCut trkqualcut[4] = {"fit.trkqual>0.3",
+      "fit.trkqual>0.4",
+      "fit.trkqual>0.5",
+      "fit.trkqual>0.6"};
     TCut nactive;
 };
 
@@ -192,7 +192,7 @@ void mu2e::init(){
   // cuts for different tightness of selection
   for(unsigned icut=0;icut<4;icut++){
 //    quality[icut] = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
-   quality[icut] = trkqualcut[icut]+nactive;
+   quality[icut] = trkqualcut[icut];
 //   quality[icut] = trkqualcut[icut];
    final[icut] = (reco+pitch+livegate+quality[icut]+cosmic);
    cout << "final cut  " << icut << " = " <<  final[icut].GetTitle() << endl;
@@ -232,7 +232,7 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
       _diospec[icut]->SetMinimum(0.08*_diocz_f->Eval(trueconvmom-0.1)*ndecay*mevperbin);
       _diospec[icut]->SetMaximum(0.08*_diocz_f->Eval(_mmin)*ndecay*mevperbin);
     }
-    con->Project(conname,"fit.mom",final[icut]);
+    con->Project(conname,"fit.mom","evtwt"*final[icut]);
     _conspec[icut]->Scale(conscale);
     
 //    _flat_f[icut] = new TF1(flatname,"[0]",_mmin,_mmax);
@@ -305,8 +305,8 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     
     int istart = _conspec[icut]->FindFixBin(momlow+0.5*mevperbin);
     int istop = _conspec[icut]->FindFixBin(momhigh-0.5*mevperbin);
-    //    cout << "Integration low edge " << _diospec[icut]->GetBinLowEdge(istart) << " for cut at " << momlow << endl;
-    //    cout << "Integration high edge " << _diospec[icut]->GetBinLowEdge(istop)+mevperbin << " for cut at " << momhigh << endl;
+        cout << "Integration low edge " << _diospec[icut]->GetBinLowEdge(istart)
+        << " high edge " << _diospec[icut]->GetBinLowEdge(istop)+mevperbin << " for cut " << icut << endl;
     double dint_err, cint_err;
     double dint = _diospec[icut]->IntegralAndError(istart,istop,dint_err);
     double cint = _conspec[icut]->IntegralAndError(istart,istop,cint_err);
@@ -328,7 +328,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
 //    inttext->AddLine();
 //    snprintf(itext,50,"%4.2f MeV/c < P < %4.2f MeV/c",momlow,momhigh);
 //    inttext->AddText(itext);
-    snprintf(itext,50,"#Sigma CE = %3.2f #pm %2.2f",cint,cint_err);
+    snprintf(itext,50,"#Sigma CE = %4.3f #pm %2.2f",cint,cint_err);
     l = inttext->AddText(itext);
     l->SetTextColor(kRed);
 
