@@ -188,7 +188,6 @@ draTopLevelDefs: {
 }
 
 dra.filteredOutputDef: {
-   dump: {module_type: DataProductDump}
    filteredOutput: {
       fileName: @nil
       module_type    : RootOutput
