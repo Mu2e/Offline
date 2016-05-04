@@ -38,6 +38,8 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # downstream electron and downstream muon reconstruction - needed for particle ID
 #------------------------------------------------------------------------------
+  trkPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, @sequence::Tracking.TPRDownstreammuMinus 
+			  , MergePatRecDem, MergePatRecDmm ]
 
   calPatRecDemDmmSeq  : [ @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, MergePatRecDem, MergePatRecDmm ]
 
@@ -226,8 +228,16 @@ physics : {
 			   @sequence::avikPidSeq
 			   , TrackSummaryMaker
 			  ]
+    gen_trkpatrec_reco : [ @sequence::generatorSeq, 
+			   @sequence::hitMakerSeq,
+			   @sequence::calRecoSeq, 
+			   @sequence::trkPatRecDemDmmSeq,
+			   @sequence::avikPidSeq
+			   , TrackSummaryMaker
+			  ]
 
     trigger_paths  : [gen_allpatrec_reco]
+#    trigger_paths  : [gen_trkpatrec_reco]
 
 # to disable writing out the DST file, replace [detectorOutput] with []
     out : [detectorOutput]
