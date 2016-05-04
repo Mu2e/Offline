@@ -631,9 +631,9 @@ namespace mu2e
       besthit->setActivity(true);
       besthit->setFlag(TrkStrawHit::unweededHit);
       TrkErrCode fitstat = krep->fit();
-      krep->addHistory(fitstat, "HitUnWeed");
-      // Recursively iterate
-      if (fitstat.success() ) {
+      if (fitstat.success() && besthit->isActive() ) {
+	krep->addHistory(fitstat, "HitUnWeed");
+	// Recursively iterate
         retval |= unweedHits(krep,tshv,maxchi);
       }
     }
