@@ -68,182 +68,6 @@ CalPatRecFlagBkgHits : { @table::FlagBkgHits
     StereoHitCollectionLabel        : ""
 }
 
-CalPatRec            : {
-    module_type                                 : CalPatRec
-
-    TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-
-    StrawHitCollectionLabel                     : makeSH			 
-    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits		 
-    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions 
-    caloReadoutModuleLabel                      : MakeCaloReadoutHits		 
-    calorimeterHitMCCrystalPtr                  : CaloHitMCCrystalPtr		 
-    caloClusterModuleLabel                      : MakeCaloCluster                
-#------------------------------------------------------------------------------
-#  now this is defined by the ambig resolver choice 
-#------------------------------------------------------------------------------
-#    useDoublets             : 1
-    diagLevel                                   : 0
-    debugLevel                                  : 0
-    printFrequency                              : 100
-    addhits                                     : true
-    final                                       : 1
-    fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
-    fitdirection                                : 0      # 0:downstream, 1:upstream
-    MinNHits                                    : 15
-    DtMin                                       : -40.
-    DtMax                                       :  40.   # make it symmetric
-    MaxStrawEDep                                : 0.005  # max integrated pulse for electron
-    MaxDtMiss                                   : 55.
-    
-    tmin                                        : 0.
-    tmax                                        : 2000.  # ns
-    minClusterEnergy                            : 50.    # MeV
-    minClusterSize                              : 2      # number of crystals
-    MaxHelixDoca                                : 60.    # in mm
-    MaxAddDoca                                  : 7.     # in mm
-    MaxAddChi                                   : 3.5    # normalized unit
-    MaxStrawEDep                                : 0.005
-    TimeSelectionBits                           : ["EnergySelection","TimeSelection","RadiusSelection"]
-    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
-    KalmanFitSelectionBits                      : []
-    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
-
-    # HelixFitHack configuraton (pattern recognition)
-    HelixFitHack : {
-	debugLevel                              : 0
-	debugLevel2                             : 0
-	diagLevel                               : 0
-	minNHit                                 : 10      # minimal number of hits on found helix
-	hitChi2Max                              : 25.
-	mostProbableDfDz                        : 0.00475
-	maxDfDz                                 : 0.01
-	minDfDz                                 : 0.002
-	sigmaPhi                                : 0.1636  # radians
-	weightXY                                : 0.2941
-	weightZPhi                              : 0.174
-	maxXDPhi                                : 5    #
-	distPatRec                              : 100. # mm
-	maxChi2TrkCandidate                     : 1500
-	markCandidateHits                       : 0
-	minPointsTrkCandidate                   : 25
-# confirmed on 2015-02-07
-	chi2xyMax                               : 5.0    # default value is 300
-	chi2zphiMax                             : 5.0    # 0.1 #default is 0.1, use 0.05 for debugging puposes
-	dfdzErr                                 : 0.1
-    }
-#------------------------------------------------------------------------------
-# Kalman fitter configuration for the seed fit
-#------------------------------------------------------------------------------
-    SeedFitHack : {
-	makeStrawHitModuleLabel                 : makeSH
-	debugLevel                              : 0
-	minnstraws                              : 10
-	maxiter                                 : 3
-	materialCorrection                      : false
-	seedsmear       			: 10000
-	maxhitchi                               : 5.0
-	hiterr                                  : [ 5.0  , 1.44  ]
-	ambiguityStrategy       		: [ 0    , 0     ]
-	t0Tolerance				: [ 5.0  , 5.0   ]
-	weedhits                                : [ true , true  ]   # default:true
-	AddMaterial		                : [ false, false ]
- 	initT0					: true 
-	updateT0				: false
-	T0UpdateMode                            : 1                # doesnt matter for the seed fit
-	HitMinDrift 				: 0.2
-	DivergeFlt                              : 1000.            #  default: 1000.
-	RdriftMinusDocaTol                      : 1.
-	dtOffset                                : @local::TrackCaloMatchingDtOffset
-#------------------------------------------------------------------------------
-# shouldn't be used during the seed fit, only during the hit-based fit 
-#------------------------------------------------------------------------------
-	scaleErrDoublet                         : 1.
-	minDriftDoublet                         : 0.3
-	deltaDriftDoublet                       : 0.3
-	sigmaSlope                              : 0.025
-#------------------------------------------------------------------------------
-#  parameters of KalContext 
-#------------------------------------------------------------------------------
-	MinNDOF                                 : 5 # match 10 hits of HelixFit
-#------------------------------------------------------------------------------
-# ambiguity resolver parameters
-#------------------------------------------------------------------------------
-	FixedAmbigResolver                      : {}
-	HitAmbigResolver                        : {}
-	PocaAmbigResolver                       : {}
-	PanelAmbigResolver                      : {}
-#------------------------------------------------------------------------------
-# provision for doublet ambiguity resolver - SeedFit is not using it, but 
-# initialization might require
-#------------------------------------------------------------------------------
-	DoubletAmbigResolver                    : { @table::DoubletAmbigResolver }
-    }
-#------------------------------------------------------------------------------
-# KalFitHack configuration for the final track fit
-#------------------------------------------------------------------------------
-    KalFitHack : {
-	debugLevel                              : 0
-	materialCorrection                      : true
-	mingap					: 1.0
-	ambiguityStrategy    			: [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
-	hiterr 					: [ 5.0  , 1.5  , 0.5  , 0.25, 0.125, 0.05 , 0.0  , 0.0 , 0.0  ]
-	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
-	weedhits                                : [ true , true , true , true, true , true , true , true, true ]
-# did Dave mean that? 
-	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
-	initT0					: true
-	updateT0				: true
-	T0UpdateMode                            : 1
-	HitAmbigPenalty 			: false
-	HitMinDrift				: 0.2
-	DivergeFlt                              : 1000.
-	RdriftMinusDocaTol                      : 1.
-	ZeroDriftPenalty 			: 0.05
-	Neutralize 				: true
-#------------------------------------------------------------------------------
-#  KalContext parameters  (there are more to define ! )
-#------------------------------------------------------------------------------
-	MinNDOF                                 : 10 # this means 15 hits min
-#------------------------------------------------------------------------------
-# ambiguity resolver parameters
-#------------------------------------------------------------------------------
-	FixedAmbigResolver                      : {}
-	HitAmbigResolver                        : {}
-	PocaAmbigResolver                       : {}
-	PanelAmbigResolver                      : {}
-#------------------------------------------------------------------------------
-# doublet-based ambiguity resolver parameters
-#------------------------------------------------------------------------------
-	DoubletAmbigResolver                    : { @table::DoubletAmbigResolver }
-	fieldCorrection				: true
-	maxhitchi                               : 3.5
-	dtOffset                                : @local::TrackCaloMatchingDtOffset
-	scaleErrDoublet                         : 5.
-#	iLoopUseDoublets                        : 9
-	minDriftDoublet                         : 0.3
-	deltaDriftDoublet                       : 0.3
-	sigmaSlope                              : 0.025
-	makeStrawHitModuleLabel                 : makeSH
-    }
-}
-
-CalPatRecDem : { @table::CalPatRec
-    fitparticle  : 11
-    fitdirection : 0
-}
-
-#------------------------------------------------------------------------------
-# not sure this makes sense: muon clusters have lower energy, so to search for 
-# muon tracks need to set MinClusterEnergy around 30 MeV. That would ovewhelm
-# the code with the background clusters.
-# For now just create a label, hopefully the module wouldn't do any harm
-#------------------------------------------------------------------------------
-CalPatRecDmm : { @table::CalPatRec
-    fitparticle  : 13
-    fitdirection : 0
-}
-
 CalTimePeakFinder          : {
     module_type                                 : CalTimePeakFinder
 
@@ -265,82 +89,278 @@ CalTimePeakFinder          : {
     dtOffset                                    : @local::TrackCaloMatchingDtOffset
 }
 
-
-CalPatRecNew          : {
-    module_type                                 : CalPatRecNew
-
-    diagLevel                                   : 0
-    debugLevel                                  : 0
-    printFrequency                              : 100
-    StrawHitCollectionLabel                     : makeSH
-    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
-    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions
-    TrackSeedCollectionLabel                    : CalTimePeakFinder
-    fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
-    fitdirection                                : 0      # 0:downstream, 1:upstream
-
-    # HelixFitHack configuraton (pattern recognition)
-    HelixFitHack : { @table::CalPatRec.HelixFitHack }
-
+#-----------------------------------------------------------------------------
+# new format
+#------------------------------------------------------------------------------
+CalPatRecTables : {
+#------------------------------------------------------------------------------
+# HelixFitHack configuraton (pattern recognition)
+#------------------------------------------------------------------------------
+    HelixFitHack : {
+	debugLevel                              : 0
+	debugLevel2                             : 0
+	diagLevel                               : 0
+	minNHit                                 : 10      # minimal number of hits on found helix
+	hitChi2Max                              : 25.
+	mostProbableDfDz                        : 0.00475
+	maxDfDz                                 : 0.01
+	minDfDz                                 : 0.002
+	sigmaPhi                                : 0.1636  # radians
+	weightXY                                : 0.2941
+	weightZPhi                              : 0.174
+	maxXDPhi                                : 5    #
+	distPatRec                              : 100. # mm
+	maxChi2TrkCandidate                     : 1500
+	markCandidateHits                       : 0
+	minPointsTrkCandidate                   : 25
+	# confirmed on 2015-02-07
+	chi2xyMax                               : 5.0    # default value is 300
+	chi2zphiMax                             : 5.0    # 0.1 #default is 0.1, use 0.05 for debugging puposes
+	dfdzErr                                 : 0.1
+    }
+#------------------------------------------------------------------------------
+# Kalman fitter configuration for the seed fit
+#------------------------------------------------------------------------------
+    SeedFitHack : {
+	makeStrawHitModuleLabel                 : makeSH
+	debugLevel                              : 0
+	minnstraws                              : 10
+	maxiter                                 : 3
+	materialCorrection                      : false
+	seedsmear       			: 10000
+	maxhitchi                               : 5.0
+	hiterr                                  : [ 5.0  , 1.44  ]
+	ambiguityStrategy       		: [ 0    , 0     ]
+	t0Tolerance				: [ 5.0  , 5.0   ]
+	weedhits                                : [ true , true  ]   # default:true
+	AddMaterial		                : [ false, false ]
+	initT0					: true 
+	updateT0				: false
+	T0UpdateMode                            : 1                # doesnt matter for the seed fit
+	HitMinDrift 				: 0.2
+	DivergeFlt                              : 1000.            #  default: 1000.
+	RdriftMinusDocaTol                      : 1.
+	dtOffset                                : @local::TrackCaloMatchingDtOffset
+	#------------------------------------------------------------------------------
+	# shouldn't be used during the seed fit, only during the hit-based fit 
+	#------------------------------------------------------------------------------
+	scaleErrDoublet                         : 1.
+	minDriftDoublet                         : 0.3
+	deltaDriftDoublet                       : 0.3
+	sigmaSlope                              : 0.025
+	#------------------------------------------------------------------------------
+	#  parameters of KalContext 
+	#------------------------------------------------------------------------------
+	MinNDOF                                 : 5 # match 10 hits of HelixFit
+	#------------------------------------------------------------------------------
+	# ambiguity resolver parameters
+	#------------------------------------------------------------------------------
+	FixedAmbigResolver                      : {}
+	HitAmbigResolver                        : {}
+	PocaAmbigResolver                       : {}
+	PanelAmbigResolver                      : {}
+	#------------------------------------------------------------------------------
+	# provision for doublet ambiguity resolver - SeedFit is not using it, but 
+	# initialization might require
+	#------------------------------------------------------------------------------
+	DoubletAmbigResolver                    : { @table::DoubletAmbigResolver }
+    }
+#------------------------------------------------------------------------------
+# KalFitHack configuration for the final track fit
+#------------------------------------------------------------------------------
+    KalFitHack : {
+	debugLevel                              : 0
+	materialCorrection                      : true
+	mingap					: 1.0
+	ambiguityStrategy    			: [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
+	hiterr 					: [ 5.0  , 1.5  , 0.5  , 0.25, 0.125, 0.05 , 0.0  , 0.0 , 0.0  ]
+	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
+	weedhits                                : [ true , true , true , true, true , true , true , true, true ]
+	# did Dave mean that? 
+	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
+	initT0					: true
+	updateT0				: true
+	T0UpdateMode                            : 1
+	HitAmbigPenalty 			: false
+	HitMinDrift				: 0.2
+	DivergeFlt                              : 1000.
+	RdriftMinusDocaTol                      : 1.
+	ZeroDriftPenalty 			: 0.05
+	Neutralize 				: true
+	#------------------------------------------------------------------------------
+	#  KalContext parameters  (there are more to define ! )
+	#------------------------------------------------------------------------------
+	MinNDOF                                 : 10 # this means 15 hits min
+	#------------------------------------------------------------------------------
+	# ambiguity resolver parameters
+	#------------------------------------------------------------------------------
+	FixedAmbigResolver                      : {}
+	HitAmbigResolver                        : {}
+	PocaAmbigResolver                       : {}
+	PanelAmbigResolver                      : {}
+	#------------------------------------------------------------------------------
+	# doublet-based ambiguity resolver parameters
+	#------------------------------------------------------------------------------
+	DoubletAmbigResolver                    : { @table::DoubletAmbigResolver }
+	fieldCorrection				: true
+	maxhitchi                               : 3.5
+	dtOffset                                : @local::TrackCaloMatchingDtOffset
+	scaleErrDoublet                         : 5.
+	#	iLoopUseDoublets                        : 9
+	minDriftDoublet                         : 0.3
+	deltaDriftDoublet                       : 0.3
+	sigmaSlope                              : 0.025
+	makeStrawHitModuleLabel                 : makeSH
+    }
 }
+#------------------------------------------------------------------------------
+# 
+#------------------------------------------------------------------------------
+CalPatRecNS : {
+    producers : {
+	CalPatRec : {
+	    module_type                                 : CalPatRec
 
+	    TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 
-CalTrkFit             : {
-    module_type                                 : CalTrkFit
+	    StrawHitCollectionLabel                     : makeSH			 
+	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits		 
+	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions 
+	    caloReadoutModuleLabel                      : MakeCaloReadoutHits		 
+	    calorimeterHitMCCrystalPtr                  : CaloHitMCCrystalPtr		 
+	    caloClusterModuleLabel                      : MakeCaloCluster                
+	    #------------------------------------------------------------------------------
+	    #  now this is defined by the ambig resolver choice 
+	    #------------------------------------------------------------------------------
+	    #    useDoublets             : 1
+	    diagLevel                                   : 0
+	    debugLevel                                  : 0
+	    printFrequency                              : 100
+	    addhits                                     : true
+	    final                                       : 1
+	    fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
+	    fitdirection                                : 0      # 0:downstream, 1:upstream
+	    MinNHits                                    : 15
+	    DtMin                                       : -40.
+	    DtMax                                       :  40.   # make it symmetric
+	    MaxStrawEDep                                : 0.005  # max integrated pulse for electron
+	    MaxDtMiss                                   : 55.
+	    
+	    tmin                                        : 0.
+	    tmax                                        : 2000.  # ns
+	    minClusterEnergy                            : 50.    # MeV
+	    minClusterSize                              : 2      # number of crystals
+	    MaxHelixDoca                                : 60.    # in mm
+	    MaxAddDoca                                  : 7.     # in mm
+	    MaxAddChi                                   : 3.5    # normalized unit
+	    MaxStrawEDep                                : 0.005
+	    TimeSelectionBits                           : ["EnergySelection","TimeSelection","RadiusSelection"]
+	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
+	    KalmanFitSelectionBits                      : []
+	    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
 
-    diagLevel                                   : 0
-    debugLevel                                  : 0
-    printFrequency                              : 100
-    addhits                                     : true
-    TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-    doKalmanFit                                 : false
-    StrawHitCollectionLabel                     : makeSH			 
-    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions	 
-    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits 
-    TrackSeedModuleLabel                        : CalPatRecNew
-    CalTimePeakModuleLabel                      : CalTimePeakFinder
-    MaxDtMiss                                   : 55.
-    MaxAddDoca                                  : 7.    # mm
-    MaxAddChi                                   : 3.5   #
-    fitparticle                                 : 11    # 11:electron, -11:positron, 13:mu-, -13: mu+
-    fitdirection                                : 0     # 0:downstream, 1:upstream
-
-    SeedFitHack                                 : { @table::CalPatRec.SeedFitHack }
-    KalFitHack                                  : { @table::CalPatRec.KalFitHack  }
-}
-
-
+	    HelixFitHack : { @table::CalPatRecTables.HelixFitHack }
+	    SeedFitHack  : { @table::CalPatRecTables.SeedFitHack  }
+	    KalFitHack   : { @table::CalPatRecTables.KalFitHack   }
+	}
 #------------------------------------------------------------------------------
 # default configuration: DEM
 #------------------------------------------------------------------------------
-MergePatRec : { module_type:MergePatRec
-    diagLevel                    : 0
-    debugLevel                   : 0
-    trkPatRecModuleLabel         : TRFDownstreameMinus
-    calPatRecModuleLabel         : CalPatRec
-    fitparticle                  : 11                     # 11:electron, -11:positron, 13:mu-, -13: mu+
-    fitdirection                 : 0                      # 0:downstream, 1:upstream
-    KalDiag                      : { @table::KalDiagDirect
-	FillMCInfo               : false
-    }  # clone from  TrkRecFit
-    minTrkQualA                  : 0.4
-    minTrkQualB                  : 0.2
+	MergePatRec : { module_type:MergePatRec
+	    diagLevel                    : 0
+	    debugLevel                   : 0
+	    trkPatRecModuleLabel         : TRFDownstreameMinus
+	    calPatRecModuleLabel         : CalPatRec
+	    fitparticle                  : 11                     # 11:electron, -11:positron, 13:mu-, -13: mu+
+	    fitdirection                 : 0                      # 0:downstream, 1:upstream
+	    KalDiag                      : { @table::KalDiagDirect
+		FillMCInfo               : false
+	    }  # clone from  TrkRecFit
+	    minTrkQualA                  : 0.4
+	    minTrkQualB                  : 0.2
+	}
+
+	CalPatRecNew          : { module_type:CalPatRecNew
+	    diagLevel                                   : 0
+	    debugLevel                                  : 0
+	    printFrequency                              : 100
+	    StrawHitCollectionLabel                     : makeSH
+	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
+	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions
+	    TrackSeedCollectionLabel                    : CalTimePeakFinder
+	    fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
+	    fitdirection                                : 0      # 0:downstream, 1:upstream
+
+	    # HelixFitHack configuraton (pattern recognition)
+	    HelixFitHack   : { @table::CalPatRecTables.HelixFitHack }
+	}
+
+	CalTrkFit : {
+	    module_type                                 : CalTrkFit
+
+	    diagLevel                                   : 0
+	    debugLevel                                  : 0
+	    printFrequency                              : 100
+	    addhits                                     : true
+	    TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	    doKalmanFit                                 : false
+	    StrawHitCollectionLabel                     : makeSH			 
+	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions	 
+	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits 
+	    TrackSeedModuleLabel                        : CalPatRecNew
+	    CalTimePeakModuleLabel                      : CalTimePeakFinder
+	    MaxDtMiss                                   : 55.
+	    MaxAddDoca                                  : 7.    # mm
+	    MaxAddChi                                   : 3.5   #
+	    fitparticle                                 : 11    # 11:electron, -11:positron, 13:mu-, -13: mu+
+	    fitdirection                                : 0     # 0:downstream, 1:upstream
+
+	    SeedFitHack                                 : { @table::CalPatRecTables.SeedFitHack }
+	    KalFitHack                                  : { @table::CalPatRecTables.KalFitHack  }
+	}
+
+    }
 }
 
-# TrkPatRecDownstreameMinus and TrkPatRecDownstreammuMinus are defined in TrkPatRec/fcl/prolog.fcl
-# both are using the panel ambiguity resolver
+CalPatRec    : { @table::CalPatRecNS.producers.CalPatRec   }
+CalPatRecDem : { @table::CalPatRecNS.producers.CalPatRec fitparticle:11 fitdirection:0 }
+CalPatRecDmm : { @table::CalPatRecNS.producers.CalPatRec fitparticle:13 fitdirection:0 }
+
+MergePatRec    : { @table::CalPatRecNS.producers.MergePatRec }
+
 MergePatRecDem : { @table::MergePatRec 
     trkPatRecModuleLabel : TRFDownstreameMinus
     calPatRecModuleLabel : CalPatRecDem
-    fitparticle          : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
-    fitdirection         : 0      # 0:downstream, 1:upstream
+    fitparticle          : @local::Tracking.producers.TRFDownstreameMinus.fitparticle
+    fitdirection         : @local::Tracking.producers.TRFDownstreameMinus.fitdirection
 }
 
 MergePatRecDmm : { @table::MergePatRec 
     trkPatRecModuleLabel : TRFDownstreammuMinus
     calPatRecModuleLabel : CalPatRecDmm
-    fitparticle          : 13     # 11:electron, -11:positron, 13:mu-, -13: mu+
-    fitdirection         : 0      # 0:downstream, 1:upstream
+    fitparticle          : @local::Tracking.producers.TRFDownstreammuMinus.fitparticle  # 11:electron, -11:positron, 13:mu-, -13: mu+
+    fitdirection         : @local::Tracking.producers.TRFDownstreammuMinus.fitdirection # 0:downstream, 1:upstream
 }
+
+MergePatRecUem : { @table::MergePatRec 
+    trkPatRecModuleLabel : TRFUpstreameMinus
+    calPatRecModuleLabel : none
+    fitparticle          : @local::Tracking.producers.TRFUpstreameMinus.fitparticle
+    fitdirection         : @local::Tracking.producers.TRFUpstreameMinus.fitdirection
+}
+
+MergePatRecUmm : { @table::MergePatRec 
+    trkPatRecModuleLabel : TRFUpstreammuMinus
+    calPatRecModuleLabel : none
+    fitparticle          : @local::Tracking.producers.TRFUpstreammuMinus.fitparticle
+    fitdirection         : @local::Tracking.producers.TRFUpstreammuMinus.fitdirection
+}
+
+
+CalPatRecNS.calpatrec_dem_reco : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+				  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]
+
+CalPatRecNS.calpatrec_dmm_reco : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+				  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]
 
 END_PROLOG

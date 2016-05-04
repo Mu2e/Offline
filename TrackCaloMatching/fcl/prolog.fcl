@@ -4,27 +4,123 @@
 # track extrapolation to the calorimeter
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
-TrackCaloIntersection : {
-    module_type                  : TrackCaloIntersection
-    fitterModuleLabel            : TrkRecFitDownstreameMinus
-    fitparticle                  : 11               # electron
-    fitdirection                 : 0                # downstream
-    pathStep                     : 20.              # mm
-    tolerance                    :  1.              # mm
-    checkExit                    : true
-    outputNtup                   : false
-    diagLevel                    : 0
+
+TrackCaloMatchingNS : {  # general namespace for everything defined in this file
+#------------------------------------------------------------------------------
+# module prototypes
+#------------------------------------------------------------------------------
+    TrackCaloIntersection : { module_type:TrackCaloIntersection
+	diagLevel                    : 0
+	fitterModuleLabel            :         MergePatRec
+	fitparticle                  : @local::MergePatRec.fitparticle  # electron
+	fitdirection                 : @local::MergePatRec.fitdirection # downstream
+	pathStep                     : 20.              # mm
+	tolerance                    :  1.              # mm
+	checkExit                    : true
+	outputNtup                   : false
+    }
+
+    TrackCaloMatching : { module_type:TrackCaloMatching
+	debugLevel                   : 0
+	minClusterEnergy             : 10.             # MeV
+	maxDeltaT                    : 10.             # ns
+	sigmaE                       : 10.             # MeV
+	sigmaT                       : 1.              # ns
+	sigmaU                       : 20.             # mm
+	sigmaV                       : 10.             # mm
+#------------------------------------------------------------------------------
+# not a guess any more, but the number by Alex
+# 2014-08-08: set dtOffset to 1.4 to avoid DT corrections in other places
+# 2015-02-07: dtOffset set in fcl/standardProducers.fcl to 1.2 ns
+#------------------------------------------------------------------------------
+	meanInteractionDepth         : 59.             # mm
+	dtOffset                     : @local::TrackCaloMatchingDtOffset             # ns
+	
+	trkToCaloExtrapolModuleLabel : TrackCaloIntersection
+	caloClusterModuleLabel       : MakeCaloCluster
+#------------------------------------------------------------------------------
+# track fitter has to be the same as used by TrackCaloIntersection
+#------------------------------------------------------------------------------
+	outPutNtup                   : 0
+	caloClusterAlgorithm         : closest
+	caloClusterSeeding           : energy
+    }
 }
 #------------------------------------------------------------------------------
-# use either TrkPatRec or CalPatRec
+# redefinitions to enforce consistency between the two modules
 #------------------------------------------------------------------------------
-TrackCaloIntersectionTpr : { @table::TrackCaloIntersection
-    fitterModuleLabel            : TrkRecFitDownstreameMinus
+TrackCaloMatchingNS.TrackCaloMatching.fitterModuleLabel: @local::TrackCaloMatchingNS.TrackCaloIntersection.fitterModuleLabel
+TrackCaloMatchingNS.TrackCaloMatching.fitparticle      : @local::TrackCaloMatchingNS.TrackCaloIntersection.fitparticle
+TrackCaloMatchingNS.TrackCaloMatching.fitdirection     : @local::TrackCaloMatchingNS.TrackCaloIntersection.fitdirection
+
+#------------------------------------------------------------------------------
+# extrapolation module species
+#------------------------------------------------------------------------------
+TrackCaloIntersectionDem : { @table::TrackCaloMatchingNS.TrackCaloIntersection
+    fitterModuleLabel    : MergePatRecDem
+    fitparticle          : @local::MergePatRecDem.fitparticle  # electron
+    fitdirectio          : @local::MergePatRecDem.fitdirection # downstream
 }
 
-TrackCaloIntersectionCpr : { @table::TrackCaloIntersection
-    fitterModuleLabel            : CalPatRec
+TrackCaloIntersectionDmm : { @table::TrackCaloMatchingNS.TrackCaloIntersection 
+    fitterModuleLabel    : MergePatRecDmm
+    fitparticle          : @local::MergePatRecDmm.fitparticle  # muon
+    fitdirection         : @local::MergePatRecDmm.fitdirection # downstream
 }
+
+TrackCaloIntersectionUem : { @table::TrackCaloMatchingNS.TrackCaloIntersection
+    fitterModuleLabel    : MergePatRecUem
+    fitparticle          : @local::MergePatRecUem.fitparticle  # electron
+    fitdirection         : @local::MergePatRecUem.fitdirection # downstream
+}
+
+TrackCaloIntersectionUmm : { @table::TrackCaloMatchingNS.TrackCaloIntersection 
+    fitterModuleLabel    : MergePatRecUmm
+    fitparticle          : @local::MergePatRecUmm.fitparticle  # muon
+    fitdirection         : @local::MergePatRecUmm.fitdirection # downstream
+}
+
+#------------------------------------------------------------------------------
+# track-cluster matching module species
+#------------------------------------------------------------------------------
+TrackCaloMatchingDem  : { @table::TrackCaloMatchingNS.TrackCaloMatching 
+    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionDem
+    fitterModuleLabel           : @local::TrackCaloIntersectionDem.fitterModuleLabel     # MergePatRecDem
+    fitparticle                 : @local::MergePatRecDem.fitparticle 
+    fitdirection                : @local::MergePatRecDem.fitdirection
+}
+
+TrackCaloMatchingDmm  : { @table::TrackCaloMatchingNS.TrackCaloMatching 
+    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionDmm
+    fitterModuleLabel           : @local::TrackCaloIntersectionDmm.fitterModuleLabel     # MergePatRecDmm
+    fitparticle                 : @local::MergePatRecDmm.fitparticle 
+    fitdirection                : @local::MergePatRecDmm.fitdirection
+}
+
+TrackCaloMatchingUem  : { @table::TrackCaloMatchingNS.TrackCaloMatching 
+    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionUem
+    fitterModuleLabel           : @local::TrackCaloIntersectionUem.fitterModuleLabel 
+    fitparticle                 : @local::MergePatRecUem.fitparticle 
+    fitdirection                : @local::MergePatRecUem.fitdirection
+}
+	
+TrackCaloMatchingUmm  : { @table::TrackCaloMatchingNS.TrackCaloMatching 
+    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionUmm
+    fitterModuleLabel           : @local::TrackCaloIntersectionUmm.fitterModuleLabel
+    fitparticle                 : @local::MergePatRecUmm.fitparticle 
+    fitdirection                : @local::MergePatRecUmm.fitdirection
+}
+
+#------------------------------------------------------------------------------
+# preserve backward compatibility
+#------------------------------------------------------------------------------
+TrackCaloIntersection : { @table::TrackCaloMatchingNS.TrackCaloIntersection }
+TrackCaloMatching     : { @table::TrackCaloMatchingNS.TrackCaloMatching     }
+
+TrackCaloMatchingNS.matching_dem : [ TrackCaloIntersectionDem, TrackCaloMatchingDem ]
+TrackCaloMatchingNS.matching_dmm : [ TrackCaloIntersectionDmm, TrackCaloMatchingDmm ]
+TrackCaloMatchingNS.matching_uem : [ TrackCaloIntersectionUem, TrackCaloMatchingUem ]
+TrackCaloMatchingNS.matching_umm : [ TrackCaloIntersectionUmm, TrackCaloMatchingUmm ]
 #------------------------------------------------------------------------------
 # TrkExtrapol is the deprecated version
 #------------------------------------------------------------------------------
@@ -35,7 +131,9 @@ TrkExtrapol : {
     fitdirection                 : 0                # downstream
     diagLevel                    : 0
 }
-
+#------------------------------------------------------------------------------
+# other old-style stuff
+#------------------------------------------------------------------------------
 TrkExtrapolDownstreameMinus : @local::TrkExtrapol
 TrkExtrapolDownstreameMinus.fitparticle : 11
 TrkExtrapolDownstreameMinus.fitdirection : 0 
@@ -203,41 +301,6 @@ CaloMatchingUpstreampMinus.fitterModuleLabel            : TrackPatRecUpstreampMi
 CaloMatchingUpstreampMinus.fitparticle                  : -2212
 CaloMatchingUpstreampMinus.fitdirection                 : 1
 CaloMatchingUpstreampMinus.trkToCaloExtrapolModuleLabel : TrkExtrapolUpstreampMinus
-#------------------------------------------------------------------------------
-# new version of TrackCalomatching: use TrackCaloIntersection
-#------------------------------------------------------------------------------
-TrackCaloMatching : {
-    module_type                  : TrackCaloMatching
-    debugLevel                   : 0
-    minClusterEnergy             : 10.             # MeV
-    maxDeltaT                    : 10.             # ns
-    sigmaE                       : 10.             # MeV
-    sigmaT                       : 1.              # ns
-    sigmaU                       : 20.             # mm
-    sigmaV                       : 10.             # mm
-#------------------------------------------------------------------------------
-# not a guess any more, but the number by Alex
-# 2014-08-08: set dtOffset to 1.4 to avoid DT corrections in other places
-# 2015-02-07: dtOffset set in fcl/standardProducers.fcl to 1.2 ns
-#------------------------------------------------------------------------------
-    meanInteractionDepth         : 59.             # mm
-    dtOffset                     : @local::TrackCaloMatchingDtOffset             # ns
-    fitterModuleLabel            : MergePatRec
-    fitparticle                  : 11
-    fitdirection                 : 0
-    trkToCaloExtrapolModuleLabel : TrackCaloIntersection                         # TrkExtrapol
-    caloClusterModuleLabel       : MakeCaloCluster
-    outPutNtup                   : 0
-    caloClusterAlgorithm         : closest
-    caloClusterSeeding           : energy
-}
 
-TrackCaloMatchingTpr : { @table::TrackCaloMatching
-    trkToCaloExtrapolModuleLabel : TrackCaloIntersectionTpr
-}
-
-TrackCaloMatchingCpr : { @table::TrackCaloMatching
-    trkToCaloExtrapolModuleLabel : TrackCaloIntersectionCpr
-}
 
 END_PROLOG
