@@ -127,7 +127,7 @@ namespace mu2e {
 	 //(_chi2TrkCandidate > _maxChi2TrkCandidate) ||
 	 _markCandidateHits == 0) return 0;
     
-    if (index >= 400) {
+    if (index >= kMaxNHits) {
       printf("[HelixFitHack::isHitUsed] requested index = %i range exceeded the range allowed\n", index);
       return 1;
     }
@@ -167,7 +167,6 @@ namespace mu2e {
     _tdmax     (pset.get<double>("maxAbsTanDip",2.0)),
     _rcmin     (pset.get<double>("rcmin",200.0)),
     _rcmax     (pset.get<double>("rcmax",350.0)),
-    _forcep    (pset.get<bool>  ("forceP",false)),
     _xyweights (pset.get<bool>  ("xyWeights",false)),
     _zweights  (pset.get<bool>  ("zWeights",false)),
     _filter    (pset.get<bool>  ("filter",true)),
@@ -194,10 +193,10 @@ namespace mu2e {
     bitnames.push_back("OtherBackground");
     XYZPHack::_useflag = StrawHitFlag(bitnames);
 
-    for (int i=0; i<400; ++i){
+    for (int i=0; i<kMaxNHits; ++i){
       _indicesTrkCandidate[i] = -9999;
-      _distTrkCandidate[i]    = -9999;
-      _dzTrkCandidate[i]      = -9999;
+      _distTrkCandidate   [i] = -9999;
+      _dzTrkCandidate     [i] = -9999;
     }
 
     _chi2nFindZ    = 0.0,
@@ -315,11 +314,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // vector which holds indices of the strawhit far from the predicted position
 //-----------------------------------------------------------------------------
-    for(int i=0; i<400; ++i){
+    for(int i=0; i<kMaxNHits; ++i){
       _indicesTrkCandidate[i] = -9999;
       _distTrkCandidate   [i] = -9999;
       _dzTrkCandidate     [i] = -9999;
-      fPhiCorrected       [i] = -9999;
+      _phiCorrected       [i] = -9999;
     }
   }
 
@@ -903,7 +902,7 @@ namespace mu2e {
       
       // store the corrected value of phi
       phi_corrected[i] = phi;
-      fPhiCorrected[i] = phi;
+      _phiCorrected[i] = phi;
 
       dphi             = fabs(dphi);
       err              = _sigmaPhi;
@@ -951,7 +950,7 @@ namespace mu2e {
       }
     }
 
-    fPhiCorrectedDefined = 1;
+    _phiCorrectedDefined = 1;
 
     if (_debug > 5) {
       printf("[HelixFitHack::doLinearFitPhiZ] phi_0 = %5.3f dfdz = %5.5f chi2N = %5.3f points removed = %4i\n", 
@@ -1537,7 +1536,7 @@ namespace mu2e {
     }
 //-----------------------------------------------------------------------------
 // 2016-01-29 P.Murat:
-// at this point, with dfdz in hand, initialize 'fPhiCorrected' - it is used 
+// at this point, with dfdz in hand, initialize '_phiCorrected' - it is used 
 // in 'rescueHits' and is not initialized upon first entry
 // findDfDZ calculates '_hdfdz' and '_hphi0', use those
 //-----------------------------------------------------------------------------
@@ -1565,10 +1564,10 @@ namespace mu2e {
 	dphi = phi_ref - phi;
       }
                                     // store the corrected value of phi
-      fPhiCorrected[i] = phi;
+      _phiCorrected[i] = phi;
     }
 					// don't know
-    fPhiCorrectedDefined = 0;
+    _phiCorrectedDefined = 0;
 //-----------------------------------------------------------------------------
 // 
 //-----------------------------------------------------------------------------
@@ -2182,9 +2181,9 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 
       // 2015-03-25 G.Pezzu added the request of "distance" also for the phi
     
-      if ((UsePhiResiduals == 1) && (fPhiCorrectedDefined)) {
+      if ((UsePhiResiduals == 1) && (_phiCorrectedDefined)) {
 	phi_pred = hitPos.z()*dfdz + phi0;
-	dphi     = phi_pred - fPhiCorrected[i];
+	dphi     = phi_pred - _phiCorrected[i];
 	phiwt    = calculatePhiWeight(hitPos, strawDir, helCenter, r, 0, banner);
 	dphiChi2 = dphi*dphi*phiwt;                
 	hitChi2  = drChi2 + dphiChi2;
@@ -2207,7 +2206,7 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	x = hitPos.x();
 	y = hitPos.y();
 	Trk._sxy.addPoint  (x, y, wt);
-	Trk._srphi.addPoint(hitPos.z(), fPhiCorrected[i], phiwt);
+	Trk._srphi.addPoint(hitPos.z(), _phiCorrected[i], phiwt);
 	
 	if (Trk._sxy.chi2DofCircle() < _chi2xyMax){
 	  if (UsePhiResiduals == 1){
@@ -2225,7 +2224,7 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 	}
 	
 	Trk._sxy.removePoint  (x, y, wt);
-	Trk._srphi.removePoint(hitPos.z(), fPhiCorrected[i], phiwt);
+	Trk._srphi.removePoint(hitPos.z(), _phiCorrected[i], phiwt);
 
       }
     }
@@ -2237,7 +2236,7 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
       Trk._sxy.addPoint(x, y, wtBest);
       
       if (UsePhiResiduals == 1){
-	Trk._srphi.addPoint(_xyzp[ibest]._pos.z(), fPhiCorrected[ibest], phiwtBest);
+	Trk._srphi.addPoint(_xyzp[ibest]._pos.z(), _phiCorrected[ibest], phiwtBest);
 
       }
       
@@ -2815,16 +2814,16 @@ void    HelixFitHack::doCleanUpWeightedCircleFit(::LsqSums4&     TrkSxy,
 // -> distance in the X-Y plane from the prediction
 // -> distance from the seeding hit along the z-axes
 //-----------------------------------------------------------------------------
-	for(int i=0; i<400; ++i){
+	for(int i=0; i<kMaxNHits; ++i){
 	  _indicesTrkCandidate[i] = -9999;
-	  _distTrkCandidate[i]    = -9999;
-	  _dzTrkCandidate[i]      = -9999;
+	  _distTrkCandidate   [i] = -9999;
+	  _dzTrkCandidate     [i] = -9999;
 	}
 	
 	for (int i=SeedIndex; i<np; ++i){
 	  _indicesTrkCandidate[i] = markIndexList[i];
-	  _distTrkCandidate[i]    = distList[i];
-	  _dzTrkCandidate[i]      = dzList[i];
+	  _distTrkCandidate   [i] = distList[i];
+	  _dzTrkCandidate     [i] = dzList[i];
 	}
 
 	Helix._center.set(_x0, _y0, 0.0);
