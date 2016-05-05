@@ -95,7 +95,7 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void CalTimePeakFinder::beginRun(art::Run& ) {
+  bool CalTimePeakFinder::beginRun(art::Run& ) {
     mu2e::GeomHandle<mu2e::TTracker> th;
     _tracker = th.get();
 
@@ -105,7 +105,8 @@ namespace mu2e {
 
     mu2e::ConditionsHandle<TrackerCalibrations> tcal("ignored");
     _trackerCalib = tcal.operator ->();
-
+    
+    return true;
   }
 
 //-----------------------------------------------------------------------------
@@ -173,7 +174,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // event entry point
 //-----------------------------------------------------------------------------
-  void CalTimePeakFinder::produce(art::Event& event ) {
+//  void CalTimePeakFinder::produce(art::Event& event ) {
+  bool CalTimePeakFinder::filter(art::Event& event ) {
     const char*               oname = "CalTimePeakFinder::produce";
 
                                         // event printout
@@ -243,18 +245,24 @@ namespace mu2e {
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
   END:;
+    int   nseeds = outseeds->size();
+    
     event.put(std::move(outseeds));
     event.put(std::move(tpeaks));
+    
+    if (nseeds > 0) {
+      return true;
+    } else{
+      return false;
+    }
+
 
   }
 
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void CalTimePeakFinder::endJob(){
-    // does this cause the file to close?
-    art::ServiceHandle<art::TFileService> tfs;
-  }
+  void CalTimePeakFinder::endJob(){ }
 
 //-----------------------------------------------------------------------------
 //

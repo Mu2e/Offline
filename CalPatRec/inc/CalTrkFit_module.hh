@@ -6,12 +6,12 @@
 
 #ifdef __GCCXML__A
 namespace art {
-  class EDProducer;
+  class EDFilter;
   class Run;
   class Event;
 };
 #else
-#  include "art/Framework/Core/EDProducer.h"
+#  include "art/Framework/Core/EDFilter.h"
 #  include "art/Framework/Principal/Event.h"
 #endif
 
@@ -107,7 +107,7 @@ namespace mu2e {
   class Calorimeter;
   class TTracker;
 
-  class CalTrkFit : public art::EDProducer {
+  class CalTrkFit : public art::EDFilter {
   public:
     struct SeedFitHist_t {
       TH1F*  nhits;           // number of hits on a htrack candidate
@@ -209,8 +209,8 @@ namespace mu2e {
     virtual ~CalTrkFit();
     
     virtual void beginJob();
-    virtual void beginRun(art::Run&);
-    virtual void produce (art::Event& event ); 
+    virtual bool beginRun(art::Run&);
+    virtual bool filter (art::Event& event ); 
     virtual void endJob();
 //-----------------------------------------------------------------------------
 // helper functions

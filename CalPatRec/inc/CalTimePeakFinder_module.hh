@@ -6,12 +6,13 @@
 
 #ifdef __GCCXML__A
 namespace art {
-  class EDProducer;
+  //  class EDProducer;
+  class EDFilter;
   class Run;
   class Event;
 };
 #else
-#  include "art/Framework/Core/EDProducer.h"
+#  include "art/Framework/Core/EDFilter.h"
 #  include "art/Framework/Principal/Event.h"
 #endif
 
@@ -117,7 +118,7 @@ namespace mu2e {
   class Calorimeter;
   class TTracker;
 
-  class CalTimePeakFinder : public art::EDProducer {
+  class CalTimePeakFinder : public art::EDFilter {
   public:
 
     struct TimePeakHist_t {
@@ -202,8 +203,8 @@ namespace mu2e {
     virtual ~CalTimePeakFinder();
     
     virtual void beginJob ();
-    virtual void beginRun (art::Run&);
-    virtual void produce  (art::Event& event ); 
+    virtual bool beginRun (art::Run&);
+    virtual bool filter   (art::Event& e);
     virtual void endJob   ();
 //-----------------------------------------------------------------------------
 // helper functions

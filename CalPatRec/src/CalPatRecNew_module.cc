@@ -113,7 +113,7 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  void CalPatRecNew::beginRun(art::Run& ) {
+  bool CalPatRecNew::beginRun(art::Run& ) {
     mu2e::GeomHandle<mu2e::TTracker> th;
     _tracker = th.get();
 
@@ -124,6 +124,7 @@ namespace mu2e {
     mu2e::ConditionsHandle<TrackerCalibrations> tcal("ignored");
     _trackerCalib = tcal.operator ->();
 
+    return true;
   }
 
 //-----------------------------------------------------------------------------
@@ -229,8 +230,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // event entry point
 //-----------------------------------------------------------------------------
-  void CalPatRecNew::produce(art::Event& event ) {
-    const char*               oname = "CalPatRecNew::produce";
+  bool CalPatRecNew::filter(art::Event& event ) {
+    const char*               oname = "CalPatRecNew::filter";
     int                       npeaks;
 
     static TrkDef             dummydef;
@@ -389,7 +390,14 @@ namespace mu2e {
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
   END:;
+    int    nseeds = outseeds->size();
     event.put(std::move(outseeds));
+    
+    if (nseeds > 0) {
+      return true;
+    }else {
+      return false;
+    }
 
   }
 

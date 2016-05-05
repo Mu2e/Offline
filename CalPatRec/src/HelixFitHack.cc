@@ -361,7 +361,10 @@ namespace mu2e {
     else if ((Helix._radius < _rmin) || (Helix._radius > _rmax)) {
       Helix._fit = TrkErrCode(TrkErrCode::fail,2); // initialization failure
     }
-    else if (Helix._srphi.qn() < int(_minnhit) || (Helix._srphi.chi2DofLine() > _chi2zphiMax) ){
+    else if ( (Helix._sxyw.qn() < int(_minnhit)) || (Helix._sxyw.chi2DofCircle() > _chi2xyMax)){
+      Helix._fit = TrkErrCode(TrkErrCode::fail,3); // xy reconstruction failure
+    }
+    else if ( (Helix._srphi.qn() < int(_minnhit)) || (Helix._srphi.chi2DofLine() > _chi2zphiMax) ){
       Helix._fit = TrkErrCode(TrkErrCode::fail,4); // phi-z reconstruction failure
     }else {
 				// success

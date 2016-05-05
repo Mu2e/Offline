@@ -140,7 +140,7 @@ namespace mu2e {
   }
 
   //-----------------------------------------------------------------------------
-  void CalTrkFit::beginRun(art::Run& ) {
+  bool CalTrkFit::beginRun(art::Run& ) {
     mu2e::GeomHandle<mu2e::TTracker> th;
     _tracker = th.get();
 
@@ -156,6 +156,8 @@ namespace mu2e {
 
     _seedfit.setTracker(_tracker);
     _seedfit.setTrackerCalib(_trackerCalib);
+    
+    return true;
   }
 
   //-----------------------------------------------------------------------------
@@ -248,7 +250,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // event entry point
   //-----------------------------------------------------------------------------
-  void CalTrkFit::produce(art::Event& event ) {
+  bool CalTrkFit::filter(art::Event& event ) {
     const char*               oname = "CalTrkFit::produce";
     char                      message[200];
     bool                      findhelix (false), findseed (false), findkal (false);
@@ -675,9 +677,17 @@ namespace mu2e {
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
   END:;
+    int     ntracks = tracks->size();
+
     event.put(std::move(tracks)   ,_iname);
     event.put(std::move(trackPtrs),_iname);
     event.put(std::move(algs     ),_iname);
+
+    if (ntracks > 0){
+      return true;
+    } else{
+      return false;
+    }
     //    event.put(std::move(flags )   ,_iname);
   }
 
