@@ -99,7 +99,7 @@ namespace mu2e
     _gapSmall               = config.getDouble("crs.gapSmall");
     _gapBetweenModules      = config.getDouble("crs.gapBetweenModules");
 
-    config.getVectorDouble("crs.gapBetweenLayers",_gapBetweenLayers,3);
+    config.getVectorDouble("crs.gapBetweenLayers",_gapBetweenLayers,_nLayers-1);
     _aluminumSheetThickness = config.getDouble("crs.aluminumSheetThickness");
 
     _scintillatorBarMaterialName  = config.getString("crs.scintillatorBarMaterialName");
@@ -337,9 +337,9 @@ namespace mu2e
       counterHalfLengths[thicknessDirection]=_counterThickness/2.0;
       counterHalfLengths[widthDirection]=_counterWidth/2.0;
 
-      CLHEP::Hep3Vector layerOffsets[4];
+      CLHEP::Hep3Vector layerOffsets[_nLayers];
       layerOffsets[0].set(0,0,0);
-      for(int j=1; j<4; j++)
+      for(int j=1; j<_nLayers; j++)
       {
         layerOffsets[j]=layerOffsets[j-1];
         layerOffsets[j]+=(_counterThickness+_gapBetweenLayers[j-1])*_layerDirection[isector];

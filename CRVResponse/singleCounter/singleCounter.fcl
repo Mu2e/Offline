@@ -92,25 +92,16 @@ physics :
       crvSiPMResponsesModuleLabel : "CrvSiPMResponses"
       crvRecoPulsesModuleLabel    : "CrvRecoPulses"
       genParticleModuleLabel      : "generate" 
-      simParticleModuleLabel      : "g4run"
     }
   }
 
-  trig : [generate, g4run, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses]  
+  trig : [generate, g4run, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses ]
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]
   out: [CrvTest]
   end_paths: [out]
 }
-
-physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_5600"]
-physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [5600]
-physics.producers.CrvPhotonArrivals.scintillationYield        : 6000
-physics.producers.CrvSiPMResponses.ThermalProb                : 0
-#physics.producers.CrvSiPMResponses.TrapType0Prob              : 0
-#physics.producers.CrvSiPMResponses.TrapType1Prob              : 0
-#physics.producers.CrvSiPMResponses.PhotonProduction           : 0
 
 outputs: 
 {
