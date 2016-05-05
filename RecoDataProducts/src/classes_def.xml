@@ -56,9 +56,6 @@
  <class name="mu2e::SubEventCollection" persistent="false"/>
  <class name="mu2e::TrackerHitTimeCluster"/>
  <class name="mu2e::TrackerHitTimeClusterCollection" /> <!-- persistent="false"/> -->
- <class name="mu2e::PanelStationCluster"/>
- <class name="mu2e::PanelStationClusterGroup"/>
- <class name="mu2e::PanelStationClusterGroupCollection" persistent="false"/>
  <class name="mu2e::ZRotStrawHitMap"/>
  <class name="mu2e::ZRotStrawHitMapCollection" persistent="false"/>
  <class name="mu2e::TrackerHitByID" persistent="false"/>
@@ -143,7 +140,6 @@
  <class name="art::Wrapper<mu2e::ExtMonUCITofHitCollection>"/>
  <class name="art::Wrapper<mu2e::SubEventCollection>"/>
  <class name="art::Wrapper<mu2e::TrackerHitTimeClusterCollection>"/>
- <class name="art::Wrapper<mu2e::PanelStationClusterGroupCollection>"/>
  <class name="art::Wrapper<mu2e::ZRotStrawHitMapCollection>"/>
  <class name="art::Wrapper<mu2e::TrackerHitByID>"/>
  <class name="art::Wrapper<mu2e::TrackSeedCollection>"/>
