@@ -345,13 +345,7 @@ namespace mu2e {
       trkSeed = &_trkseeds->at(ipeak);
       tp      = (CalTimePeak*)&_tpeaks  ->at(ipeak);
 
-      //----------------------------------------------------------------------------------------
-      // work around missing default constructor
-      //-----------------------------------------------------------------------------
-      if (_helTraj == 0)  _helTraj = new HelixTraj(TrkParams(HelixTraj::NHLXPRM));
-      else               *_helTraj = HelixTraj(TrkParams(HelixTraj::NHLXPRM));
-      
-      //      mu2e::HelixVal2HelixTraj(trkSeed->_helix, *_helTraj);
+       //      mu2e::HelixVal2HelixTraj(trkSeed->_helix, *_helTraj);
       helix = &trkSeed->_helix;
 
       CLHEP::HepVector helParams(5);
@@ -362,9 +356,16 @@ namespace mu2e {
       helParams(5) = helix->_tanDip;
       
       CLHEP::HepSymMatrix conv(5,1);
-      HelixTraj tmpHelix(helParams,conv);
+      //      HelixTraj tmpHelix(helParams,conv);
 
-      _helTraj =  &tmpHelix;
+      //----------------------------------------------------------------------------------------
+      // work around missing default constructor
+      //-----------------------------------------------------------------------------
+      if (_helTraj == 0)  _helTraj = new HelixTraj(helParams,conv);//TrkParams(HelixTraj::NHLXPRM));
+      else               *_helTraj = HelixTraj(helParams,conv);
+      
+   
+      //      _helTraj =  &tmpHelix;
 
       TrkDef             seeddef(_shcol, trkSeed->_timeCluster._strawHitIdxs, *_helTraj, _tpart, _fdir);
       TrkDef             kaldef (seeddef);
