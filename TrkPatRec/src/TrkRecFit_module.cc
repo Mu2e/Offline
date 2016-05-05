@@ -46,7 +46,7 @@
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
-#include "TrkPatRec/inc/TrkPatRecUtils.hh"
+
 #include "RecoDataProducts/inc/KalRepPayloadCollection.hh"
 #include "TrkPatRec/inc/PayloadSaver.hh"
 //CLHEP
@@ -84,7 +84,6 @@ namespace mu2e
       int _printfreq;
       bool _addhits; 
       art::Handle<mu2e::StrawHitCollection> _strawhitsH;
-      art::Handle<TrackerHitTimeClusterCollection> _tclusthitH;
       art::Handle<TrackSeedCollection> _trksSeedH;
       // event object labels
       string _shLabel;
@@ -103,7 +102,6 @@ namespace mu2e
       const StrawHitFlagCollection* _shfcol;
       StrawHitFlagCollection* _flags;
       const StrawHitPositionCollection* _shpcol;
-      const TrackerHitTimeClusterCollection* _tccol;
       const TrackSeedCollection * _tscol;
       // Kalman fitters.  Seed fit has a special configuration
       KalFit _seedfit, _kfit;
@@ -116,10 +114,11 @@ namespace mu2e
       void findMissingHits(KalRep* krep, vector<hitIndex>& indices);
       void createDiagnostics();
       void fillFitDiag(TrackSeed const& seed, TrkDef const& tdef,const KalRep* seedrep,const KalRep* krep);
+      void HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut);
 
       // fit tuple variables
       Int_t _eventid;
-      Int_t _nadd,_ipeak;
+      Int_t _nadd;
       Int_t _helixfail,_seedfail,_kalfail;
       helixpar _hpar,_spar;
       helixpar _sparerr;
@@ -127,7 +126,7 @@ namespace mu2e
       Float_t _schisq, _st0;
       Int_t _nchit;
       Int_t _npeak;
-      Float_t _peakmax, _tpeak;
+      Float_t _tpeak;
       // hit filtering tuple variables
       vector<TrkHitFilter> _sfilt, _hfilt;
       // flow diagnostic
@@ -242,27 +241,27 @@ namespace mu2e
 
     for (size_t iTrackSeed=0; iTrackSeed<_tscol->size(); ++iTrackSeed) {
       TrackSeed const& iTrkSeed(_tscol->at(iTrackSeed));
-      unsigned ipeak = iTrkSeed._relatedTimeCluster.key();
+      unsigned ipeak = iTrackSeed;
       findhelix = true;
       //all track selected
       std::vector<hitIndex> goodhits;
 
-      const std::vector<hitIndex> &trkseedhits = iTrkSeed._fullTrkSeed._selectedTrackerHitsIdx;
+      const std::vector<hitIndex> &trkseedhits = iTrkSeed._timeCluster._strawHitIdxs;
       for (std::vector<hitIndex>::const_iterator loopPoints_it = trkseedhits.begin();
         loopPoints_it != trkseedhits.end(); ++loopPoints_it) {
         goodhits.push_back( mu2e::hitIndex(loopPoints_it->_index,loopPoints_it->_ambig) );
       }
 
       HelixTraj recoseed(TrkParams(HelixTraj::NHLXPRM));
-      HelixVal2HelixTraj(iTrkSeed._fullTrkSeed,recoseed);
+      HelixVal2HelixTraj(iTrkSeed._helix,recoseed);
       if(_debug>1) {
-              std::cout<<"Seed parameters:"<<std::endl<<iTrkSeed;
-              std::cout<<"Converted into HelixTraj:"<<std::endl;
-              recoseed.printAll(std::cout);
+// 	std::cout<<"Seed parameters:"<<std::endl<<iTrkSeed;
+// 	std::cout<<"Converted into HelixTraj:"<<std::endl;
+	recoseed.printAll(std::cout);
       }
 
       TrkDef seeddef(_shcol,goodhits,recoseed,_tpart,_fdir);
-      TrkT0 t0(iTrkSeed._t0,iTrkSeed._errt0);
+      TrkT0 t0(iTrkSeed._timeCluster._t0,iTrkSeed._timeCluster._errt0);
       seeddef.setT0(t0);
       TrkDef kaldef(seeddef);
       // initialize filters.  These are used only for diagnostics
@@ -347,7 +346,6 @@ namespace mu2e
     _shcol = 0;
     _shfcol = 0;
     _shpcol = 0;
-    _tccol = 0;
     _tscol = 0;
 
     if(evt.getByLabel(_shLabel,_strawhitsH))
@@ -460,7 +458,6 @@ namespace mu2e
     TTree* trkdiag = _kdiag.createTrkDiag();
     trkdiag->Branch("eventid",&_eventid,"eventid/I");
     trkdiag->Branch("nadd",&_nadd,"nadd/I");
-    trkdiag->Branch("ipeak",&_ipeak,"ipeak/I");
     trkdiag->Branch("helixfail",&_helixfail,"helixfail/I");
     trkdiag->Branch("seedfail",&_seedfail,"seedfail/I");
     trkdiag->Branch("kalfail",&_kalfail,"kalfail/I");
@@ -483,23 +480,19 @@ namespace mu2e
   void TrkRecFit::fillFitDiag(TrackSeed const& seed,TrkDef const& tdef,
   const KalRep* seedrep, const KalRep* krep) {
     // Peak information for this seed
-    TrackerHitTimeCluster const*  tclust = seed._relatedTimeCluster.get();
+    TimeCluster const*  tclust = &seed._timeCluster;
     if(tclust != 0){
       // time peak information
-      _peakmax = tclust->_peakmax;
-      _tpeak = tclust->_meanTime;
-      _npeak = tclust->_selectedTrackerHits.size();
-      _ipeak = seed._relatedTimeCluster.key();
+      _tpeak   = tclust->_t0;//tclust->_meanTime;
+      _npeak   = tclust->_strawHitIdxs.size();
       _helixfail = 0;
     } else {
-      _peakmax = -1.0;
       _tpeak = -1.0;
       _npeak = -1;
-      _ipeak = -1;
       _helixfail = -1;
     }
     // helix information
-    _hpar = helixpar(seed._fullTrkSeed);
+    _hpar = helixpar(seed._helix);
     // seed fit information
     if(seedrep != 0 && seedrep->fitStatus().success()){
       _seedfail = seedrep->fitStatus().failure();
@@ -537,6 +530,20 @@ namespace mu2e
     } else {
       _kalfail = -1;
     }
+  }
+
+   void TrkRecFit::HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
+          //TrkExchangePar helParams( helIn._d0, helIn._phi0, helIn._omega, helIn._z0, helIn._tanDip );
+          CLHEP::HepVector helParams(5);
+          helParams(1) = helIn._d0;
+          helParams(2) = helIn._phi0;
+          helParams(3) = helIn._omega;
+          helParams(4) = helIn._z0;
+          helParams(5) = helIn._tanDip;
+          CLHEP::HepSymMatrix conv(5,1);
+         
+	  HelixTraj tmpHelix(helParams,conv);
+          helOut=tmpHelix;
   }
 
 }

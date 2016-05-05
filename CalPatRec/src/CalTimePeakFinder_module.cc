@@ -215,11 +215,11 @@ namespace mu2e {
       
       for (int i=0; i<nseeds; ++i){
 	tmpseed    = &outseeds->at(i);
-	cluster    = tmpseed->_caloCluster.operator ->();
+	cluster    = tmpseed->_timeCluster._caloCluster.get();
 
 	clTime     = cluster->time();
 	clEnergy   = cluster->energyDep();
-	nhits      = tmpseed->_selectedTrackerHits.size();
+	nhits      = tmpseed->_timeCluster._strawHitIdxs.size();
 
 	if (nhits >= 15) {
 	  ++nseedsCut0;
@@ -386,19 +386,25 @@ namespace mu2e {
 
     for (int i=0; i<shIndices; ++i){
       hIndex = &TPeak._index.at(i);
-      TrkSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( mu2e::hitIndex( hIndex->_index, hIndex->_ambig) );
-      TrkSeed._selectedTrackerHits.push_back( StrawHitPtr (_strawhitsH, hIndex->_index) );
+      TrkSeed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( hIndex->_index, hIndex->_ambig) );
     }
     
     const mu2e::CaloCluster *cluster = TPeak.Cluster();
     
                                 //do we need to propagate the cluster time at z=0 at this stage?
-    TrkSeed._t0          = cluster->time(); 
+    TrkSeed._timeCluster._t0  = cluster->time(); 
 
-                                //dummy value for errT0
-    TrkSeed._errt0       = 0.1;
+    int               idisk   = cluster->sectionId();
+    CLHEP::Hep3Vector cp_mu2e = _calorimeter->fromSectionFrame(idisk, cluster->cog3Vector());
+    CLHEP::Hep3Vector cp_st   = _calorimeter->toTrackerFrame(cp_mu2e);
     
-    TrkSeed._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccH, ClusterIndex);
+    
+    TrkSeed._timeCluster._z0          = cp_st.z();
+    
+                                //dummy value for errT0
+    TrkSeed._timeCluster._errt0       = 0.1;
+    
+    TrkSeed._timeCluster._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccH, ClusterIndex);
   }
 
 

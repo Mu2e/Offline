@@ -72,7 +72,6 @@ namespace mu2e {
     _hfit        (pset.get<fhicl::ParameterSet>("HelixFitHack",fhicl::ParameterSet()))
   {
     produces<TrackSeedCollection>();
-    //    produces<CalTimePeakCollection>();
 
     fHackData = new THackData("HackData","Hack Data");
     gROOT->GetRootFolder()->Add(fHackData);
@@ -258,6 +257,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     npeaks = _tpeaks->size();
 
+    //reset the counter of the track candidates
+    fHackData->fData[20] = 0;
+
     for (int ipeak=0; ipeak<npeaks; ipeak++) {
       const CalTimePeak* tp = &_tpeaks->at(ipeak);
 
@@ -323,9 +325,9 @@ namespace mu2e {
 	//fill seed information
 	TrackSeed      tmpseed;
 	
-	art::Ptr<CaloCluster> clusterPtr = _trkSeeds->at(ipeak)._caloCluster;
+	art::Ptr<CaloCluster> clusterPtr = _trkSeeds->at(ipeak)._timeCluster._caloCluster;
 
-	initTrackSeed(tmpseed, seeddef, hf_result, tp, _strawhitsH, clusterPtr);
+	initTrackSeed(tmpseed, seeddef, hf_result, tp, clusterPtr);
 
 	outseeds->push_back(tmpseed);
       }
@@ -351,13 +353,13 @@ namespace mu2e {
 	tmpseed  = &outseeds->at(i);
 
 	radius   = 1./fabs(tmpseed->omega());
-	nhits    = tmpseed->_selectedTrackerHits.size();
+	nhits    = tmpseed->_timeCluster._strawHitIdxs.size();
 
 	pT       = mm2MeV*radius;
 	p        = pT/std::cos( std::atan(tmpseed->tanDip()));
 
-	chi2XY   = tmpseed->chi2XY  ();
-	chi2ZPhi = tmpseed->chi2ZPhi();
+	chi2XY   = fHackData->trkSeedChi2XY  (i);
+	chi2ZPhi = fHackData->trkSeedChi2ZPhi(i);
 	
 	if (nhits >= nhitsMin) {
 	  ++nseedsCut0;
@@ -414,39 +416,43 @@ namespace mu2e {
 				   TrkDef                                &SeedDef  , 
 				   HelixFitHackResult                    &HfResult ,
 				   const CalTimePeak                     *TPeak    , 
-				   art::Handle<mu2e::StrawHitCollection> &StrawhitsH,
 				   art::Ptr<CaloCluster>                  ClusterPtr){
 
     //set helix parameters
-    TrkSeed._fullTrkSeed._d0     = SeedDef.helix().d0();
-    TrkSeed._fullTrkSeed._phi0   = SeedDef.helix().phi0();
-    TrkSeed._fullTrkSeed._omega  = SeedDef.helix().omega();
-    TrkSeed._fullTrkSeed._z0     = SeedDef.helix().z0();
-    TrkSeed._fullTrkSeed._tanDip = SeedDef.helix().tanDip();
-    
-    for(int i=0;i<5;i++) {
-      for(int j=0;j<5;j++) {
-	TrkSeed._fullTrkSeed._covMtrx[i][j] = SeedDef.helixCovMatr()[i][j];
-      }
-    }
-    
+    TrkSeed._helix._d0     = SeedDef.helix().d0();
+    TrkSeed._helix._phi0   = SeedDef.helix().phi0();
+    TrkSeed._helix._omega  = SeedDef.helix().omega();
+    TrkSeed._helix._z0     = SeedDef.helix().z0();
+    TrkSeed._helix._tanDip = SeedDef.helix().tanDip();
+       
     int             shIndices = SeedDef.strawHitIndices().size();
     const mu2e::hitIndex *hIndex;
 
     for (int i=0; i<shIndices; ++i){
       hIndex = &SeedDef.strawHitIndices().at(i);
-      TrkSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( mu2e::hitIndex( hIndex->_index, hIndex->_ambig) );
-      TrkSeed._selectedTrackerHits.push_back( StrawHitPtr (StrawhitsH, hIndex->_index) );
+      TrkSeed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( hIndex->_index, hIndex->_ambig) );
     }
     
     const mu2e::CaloCluster *cluster = TPeak->Cluster();
     
-    TrkSeed._t0          = cluster->time(); 
-    TrkSeed._errt0       = cluster->cog3Vector().z();
-    TrkSeed._caloCluster = ClusterPtr;
+    TrkSeed._timeCluster._t0          = cluster->time(); 
+    Hep3Vector                   gpos = _calorimeter->fromSectionFrameFF(cluster->sectionId(), cluster->cog3Vector());
+    Hep3Vector                   tpos = _calorimeter->toTrackerFrame(gpos);
+    TrkSeed._timeCluster._z0          = tpos.z();
+
+    TrkSeed._timeCluster._errt0       = 1;
+    TrkSeed._timeCluster._caloCluster = ClusterPtr;
     
-    TrkSeed._chi2XY      = HfResult._sxyw.chi2DofCircle();
-    TrkSeed._chi2ZPhi    = HfResult._srphi.chi2DofLine();
+
+    //increase the counter of the track candidates by 1
+    fHackData->fData[20]              = fHackData->fData[20] + 1;
+
+    //set indeces in Hack DAta following convention defuned in THackData.hh
+    int indexChi2XY                   = fHackData->fData[20] + 20;
+    int indexChi2ZPhi                 = fHackData->fData[20] + 30;
+
+    fHackData->fData[indexChi2XY]     = HfResult._sxyw.chi2DofCircle();
+    fHackData->fData[indexChi2ZPhi]   = HfResult._srphi.chi2DofLine();
   }
 
 

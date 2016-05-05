@@ -46,6 +46,10 @@ public:
   double radiusxy  ()   { return fData[14];  }
   double chi2xy    ()   { return fData[15];  }
   double rescuedPoints(){ return fData[16];  }
+  
+  int    ntrkSeed       ()      { return fData[20];  }
+  double trkSeedChi2XY  (int i) { return fData[21+i];}
+  double trkSeedChi2ZPhi(int i) { return fData[31+i];}
 
   double* distVec  (){ return fDist;      }
   double* dzVec    (){ return fDz;      }

@@ -322,7 +322,9 @@ CalPatRecNS : {
     }
 }
 
-CalPatRec    : { @table::CalPatRecNS.producers.CalPatRec   }
+CalPatRec    : { @table::CalPatRecNS.producers.CalPatRec      }
+CalPatRecNew : { @table::CalPatRecNS.producers.CalPatRecNew   }
+CalTrkFit    : { @table::CalPatRecNS.producers.CalTrkFit      }
 CalPatRecDem : { @table::CalPatRecNS.producers.CalPatRec fitparticle:11 fitdirection:0 }
 CalPatRecDmm : { @table::CalPatRecNS.producers.CalPatRec fitparticle:13 fitdirection:0 }
 

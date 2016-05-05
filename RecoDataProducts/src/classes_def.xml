@@ -54,13 +54,11 @@
  <class name="mu2e::ExtMonUCITofHit"/>
  <class name="mu2e::ExtMonUCITofHitCollection"/>
  <class name="mu2e::SubEventCollection" persistent="false"/>
- <class name="mu2e::TrackerHitTimeCluster"/>
- <class name="mu2e::TrackerHitTimeClusterCollection" /> <!-- persistent="false"/> -->
+ <class name="mu2e::TimeCluster"/>
  <class name="mu2e::ZRotStrawHitMap"/>
  <class name="mu2e::ZRotStrawHitMapCollection" persistent="false"/>
  <class name="mu2e::TrackerHitByID" persistent="false"/>
  <class name="mu2e::HelixVal"/>
- <class name="std::vector<mu2e::HelixVal>"/>
  <class name="mu2e::TrackSeed"/>
  <class name="mu2e::TrackSeedCollection" /> <!-- persistent="false"/> -->
  <class name="mu2e::TrkExtTrajPoint" />
@@ -100,9 +98,11 @@
  <class name="std::vector<art::Ptr<mu2e::StrawHitPosition> >"/>
  <class name="art::Ptr<mu2e::StrawHitFlag>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHitFlag> >"/>
- <class name="art::Ptr<mu2e::TrackerHitTimeCluster>"/>
- <class name="std::vector<art::Ptr<mu2e::TrackerHitTimeCluster> >"/>
+ <class name="art::Ptr<mu2e::TimeCluster>"/>
+ <class name="std::vector<art::Ptr<mu2e::TimeCluster> >"/>
  <class name="std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >"/>
+ <class name="art::Ptr<mu2e::HelixVal>"/>
+<!--  <class name="std::vector<art::Ptr<mu2e::HelixVal> >"/> -->
  <class name="art::Ptr<mu2e::TrackSeed>"/>
  <class name="std::vector<art::Ptr<mu2e::TrackSeed> >"/>
  <class name="art::Ptr<mu2e::TrkExtTrajPoint>" />
@@ -139,7 +139,6 @@
 
  <class name="art::Wrapper<mu2e::ExtMonUCITofHitCollection>"/>
  <class name="art::Wrapper<mu2e::SubEventCollection>"/>
- <class name="art::Wrapper<mu2e::TrackerHitTimeClusterCollection>"/>
  <class name="art::Wrapper<mu2e::ZRotStrawHitMapCollection>"/>
  <class name="art::Wrapper<mu2e::TrackerHitByID>"/>
  <class name="art::Wrapper<mu2e::TrackSeedCollection>"/>

@@ -25,7 +25,7 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/TrackSeed.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
-#include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 // root
 #include "TFile.h"
@@ -227,8 +227,7 @@ namespace mu2e {
 	sum         += htime;
 	sumOfSqr    += htime*htime;
 	
-	tmpSeed._selectedTrackerHits.push_back( StrawHitPtr( _strawhitsH, hittpit->_index ) );
-	tmpSeed._fullTrkSeed._selectedTrackerHitsIdx.push_back( mu2e::hitIndex( hittpit->_index, hittpit->_ambig) );
+	tmpSeed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( hittpit->_index, hittpit->_ambig) );
 
 	if ( htime < minHitTime ) { minHitTime = htime; }
 	if ( htime > maxHitTime ) { maxHitTime = htime; }
@@ -252,8 +251,9 @@ namespace mu2e {
 
       calculateT0(t0, errt0, meanTime, sigma, minHitTime, nominalWidth);
 
-      tmpSeed._t0     = t0;
-      tmpSeed._errt0  = errt0;
+      tmpSeed._timeCluster._t0     = t0;
+      tmpSeed._timeCluster._z0     = 0;
+      tmpSeed._timeCluster._errt0  = errt0;
       
       thcc->push_back(tmpSeed);
     }
@@ -263,7 +263,7 @@ namespace mu2e {
       std::cout<<"n Peaks "<<thcc->size()<<std::endl;
       for (TrackSeedCollection::iterator tpeak_it=thcc->begin(); tpeak_it!=thcc->end(); ++tpeak_it ) {
 	std::cout<<"iPeak "<<std::endl;
-	std::cout<<*tpeak_it<<std::endl;
+	//	std::cout<<*tpeak_it<<std::endl;
 	++iPeak;
       }
     }

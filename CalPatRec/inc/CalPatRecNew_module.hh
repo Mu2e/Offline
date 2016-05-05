@@ -24,8 +24,7 @@ namespace art {
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "RecoDataProducts/inc/TrackSeed.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
-#include "RecoDataProducts/inc/TrackerHitTimeCluster.hh"
-#include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 
 
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
@@ -218,7 +217,6 @@ namespace mu2e {
 			   TrkDef                                &Seeddef   ,
 			   HelixFitHackResult                    &HfResult  ,
 			   const CalTimePeak                     *TPeak     ,
-			   art::Handle<mu2e::StrawHitCollection> &StrawhitsH,
 			   art::Ptr<CaloCluster>                  ClusterPtr);
 
   };
