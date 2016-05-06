@@ -2,6 +2,9 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_7_5
 
+2)  gandr 06 May 2016
+    Disable the long-deprecated G4_module.
+
 1)  dnbrow01  04 May 2016
     Move the function for getting a rotation from an orientation string
     out of the constructExternalShielding.cc file and into it's own 
