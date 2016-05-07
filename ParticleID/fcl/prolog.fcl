@@ -5,27 +5,28 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 ParticleID : {
     module_type       : ParticleID
-    fitterModuleLabel : TrkPatRec
-    ElectronTemplates : "ConditionsService/data/v5_7_0/pid_ele_dedx.rtbl"
-    MuonTemplates     : "ConditionsService/data/v5_7_0/pid_muo_dedx.rtbl"
+    fitterModuleLabel : MergePatRec
+    ElectronTemplates : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
+    MuonTemplates     : "ConditionsService/data/v5_7_2/pid_muo_dedx.rtbl"
     fitparticle       : 11
     fitdirection      : 0
-    verbosity         : 0
+    debugLevel        : 0
     diagLevel         : 1 
+    verbosity         : 0
     doDisplay         : false
 }
 
+ParticleIDDem : { @table::ParticleID fitterModuleLabel:MergePatRecDem fitparticle:11 }
+ParticleIDDmm : { @table::ParticleID fitterModuleLabel:MergePatRecDmm fitparticle:13 }
 
-AvikPID : {
-    module_type             : AvikPID
+AvikPID : { module_type:AvikPID
     trkPatRecDemModuleLabel : MergePatRecDem
     trkPatRecDmmModuleLabel : MergePatRecDmm
-    EleDedxTemplateFile     : "ConditionsService/data/v5_7_0/pid_ele_dedx.rtbl"
-    MuoDedxTemplateFile     : "ConditionsService/data/v5_7_0/pid_muo_dedx.rtbl"
+    EleDedxTemplateFile     : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
+    MuoDedxTemplateFile     : "ConditionsService/data/v5_7_2/pid_muo_dedx.rtbl"
     diagLevel               : 0 
     debugLevel              : 0
-
-    DoubletAmbigResolver     : { @table::DoubletAmbigResolver }
+    DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
 }
 
 END_PROLOG

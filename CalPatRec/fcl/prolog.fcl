@@ -163,7 +163,7 @@ CalPatRecTables : {
 	# provision for doublet ambiguity resolver - SeedFit is not using it, but 
 	# initialization might require
 	#------------------------------------------------------------------------------
-	DoubletAmbigResolver                    : { @table::DoubletAmbigResolver }
+	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
     }
 #------------------------------------------------------------------------------
 # KalFitHack configuration for the final track fit
@@ -201,7 +201,7 @@ CalPatRecTables : {
 	#------------------------------------------------------------------------------
 	# doublet-based ambiguity resolver parameters
 	#------------------------------------------------------------------------------
-	DoubletAmbigResolver                    : { @table::DoubletAmbigResolver }
+	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
 	fieldCorrection				: true
 	maxhitchi                               : 3.5
 	dtOffset                                : @local::TrackCaloMatchingDtOffset
