@@ -1,0 +1,31 @@
+#
+# Exercise TestKalRepProvenanceHelpers by running it on the
+# track collections produced by genReco.fcl
+#
+# Contact person Rob Kutschke
+#
+
+#include "Analyses/test/genReco.fcl"
+
+physics.analyzers.testTrkPatRecType0 : {
+    module_type : TestKalRepProvenanceHelpers
+    tracksTag   : "TRFDownstreameMinus:DownstreameMinus"
+}
+
+physics.analyzers.testTrkPatRecType1 : {
+    module_type : TestKalRepProvenanceHelpers
+    tracksTag   : "MergePatRecDem:DownstreameMinus"
+}
+
+physics.analyzers.testTrkPatRecType2 : {
+    module_type : TestKalRepProvenanceHelpers
+    tracksTag   : "MergePatRecDmm:DownstreammuMinus"
+}
+
+physics.e1 : [ testTrkPatRecType0, testTrkPatRecType1,  testTrkPatRecType2  ]
+#physics.out : [ dumper ]
+
+outputs.dumper : {
+  module_type              : FileDumperOutput
+  wantProductFullClassName : true
+}
