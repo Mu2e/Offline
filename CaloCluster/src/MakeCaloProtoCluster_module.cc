@@ -314,7 +314,10 @@ namespace mu2e {
       void MakeCaloProtoCluster::filterByTime(CaloCrystalList& liste, std::vector<double> const& clusterTime, std::list<CaloCrystalHit const*> &seedList)
       {
 
-             for (auto it = liste.begin(); it != liste.end(); ++it)
+             auto it  = liste.begin();
+	     auto end = liste.end();
+	     
+             while(it != end)
 	     {	        
 		  CaloCrystalHit const* hit = *it;
 		  double timePlus           =  _deltaTimeMinus + hit->time();
@@ -325,9 +328,10 @@ namespace mu2e {
 		  {
 		      if ( timeMinus < *itTime && *itTime < timePlus) break;
 		      ++itTime;
-		  }  
+		  }
 
-	          if (itTime == clusterTime.end() ) {seedList.remove(hit); liste.erase(it); --it;} 		 
+	          if (itTime == clusterTime.end() ) {seedList.remove(hit); it=liste.erase(it); }
+		  else ++it; 		 
 	     }
 
 
