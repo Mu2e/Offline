@@ -415,8 +415,8 @@ namespace mu2e {
     {         
 
 	 double rangeForward(0);
-	 double caloRadiusIn  = cal.section(iSection).innerEnvelopeR()  + 3*cal.caloGeomInfo().crystalHalfTrans();
-	 double caloRadiusOut = cal.section(iSection).outerEnvelopeR() - 3*cal.caloGeomInfo().crystalHalfTrans();
+	 double caloRadiusIn  = cal.section(iSection).innerEnvelopeR() + 4*cal.caloGeomInfo().crystalHalfTrans();
+	 double caloRadiusOut = cal.section(iSection).outerEnvelopeR() - 4*cal.caloGeomInfo().crystalHalfTrans();
 
 	 double range(rangeStart);
 
@@ -425,8 +425,8 @@ namespace mu2e {
 
          while ( cal.isInsideSection(iSection,trjVec) )
 	 {         	    
-
 	      double radius = radiusAtRange(traj,range);
+	      
 	      if (radius > caloRadiusIn &&  radius < caloRadiusOut && fabs(range-rangeForward) > 10*_pathStep )
 	      {
 		  double lenInner = extendToRadius(trkHel, traj, range, caloRadiusIn );
@@ -447,7 +447,7 @@ namespace mu2e {
 	      }
 	      
 
-	    range += _pathStep;
+	    range += 2*_pathStep;
 	    updateTrjVec(cal,traj,range,trjVec);
 	    if (_diagLevel>2) std::cout<<"TrackExtrpol position scan Out up "<<trjVec<<"  for currentRange="<<range<<"   "<<"radius="<<radiusAtRange(traj,range)<<std::endl;	 	 
 	 }
