@@ -1,0 +1,35 @@
+#
+# Print information about KalReps
+#
+# Contact person Rob Kutschke
+#
+
+#include "Analyses/test/genReco.fcl"
+
+physics.analyzers.printTRFDownstreameMinus : {
+    module_type    : KalRepsPrinter
+    tracksTag      : "TRFDownstreameMinus:DownstreameMinus"
+    kalDiag        : @local::KalDiagReadCD3
+    outputFilename : "TrkPatRec.txt"
+}
+
+physics.analyzers.printCPRDownstreameMinus : {
+    module_type    : KalRepsPrinter
+    tracksTag      : "CalPatRecDem:DownstreameMinus"
+    kalDiag        : @local::KalDiagReadCD3
+    outputFilename : "CalPatRec.txt"
+
+}
+
+physics.analyzers.testTrkPatRecType1 : {
+    module_type : TestKalRepProvenanceHelpers
+    tracksTag   : "MergePatRecDem:DownstreameMinus"
+}
+
+physics.e1 : [ printTRFDownstreameMinus, printCPRDownstreameMinus, testTrkPatRecType1 ]
+#physics.out : [ dumper ]
+
+outputs.dumper : {
+  module_type              : FileDumperOutput
+  wantProductFullClassName : true
+}
