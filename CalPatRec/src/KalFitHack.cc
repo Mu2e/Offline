@@ -516,9 +516,11 @@ namespace mu2e
 //-----------------------------------------------------------------------------------
 // 2015 -02 -17 G. Pezzullo: loop over the hits and assign a smaller external error
 // for the doublets
-// 2015-04-03: IHErr = -1: special value, invoke last iteration
+// 2015-04-03: IHErr = -1: special value, invoke last iteration .. 
+// 2016-05-08 P.Murat: there are Niter+1 ambig resolvers, so last iteration = _hiterr.size()-1
 //-----------------------------------------------------------------------------------
-    if (Iteration == -1) Iteration = _ambigresolver.size()-1;
+//    if (Iteration == -1) Iteration = _ambigresolver.size()-1;
+    if (Iteration == -1) Iteration = _hiterr.size()-1;
 
     _annealingStep     = Iteration;
 //--------------------------------------------------------------------------------
