@@ -4,6 +4,7 @@
 // Original author Rob Kutschke
 //
 
+#include "GeneralUtilities/inc/PathnameWithNextVersion.hh"
 #include "Mu2eUtilities/inc/decodeTrackPatRecType.hh"
 #include "Mu2eUtilities/inc/TrackPatRecType.hh"
 
@@ -56,7 +57,7 @@ mu2e::KalRepsPrinter::KalRepsPrinter(fhicl::ParameterSet const& pset) :
   outputFilename_(pset.get<std::string>("outputFilename","")),
   outputStream_( outputFilename_.empty() ?
                  std::unique_ptr<std::ofstream>() :
-                 std::make_unique<std::ofstream>(outputFilename_.c_str()) ),
+                 std::make_unique<std::ofstream>(PathnameWithNextVersion(outputFilename_).pathname().c_str())),
   out_( outputStream_ ? *outputStream_ : std::cout ){
 }
 
