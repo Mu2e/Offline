@@ -103,6 +103,17 @@ TrackCaloIntersectionUmp : { @table::TrackCaloMatchingNS.TrackCaloIntersection
     fitdirection         : @local::MergePatRecUmp.fitdirection # downstream
 }
 
+TrackCaloIntersectionCpr : { @table::TrackCaloMatchingNS.TrackCaloIntersection # CalPatRec only
+    fitterModuleLabel    : CalPatRec
+    fitparticle          : @local::CalPatRec.fitparticle 
+    fitdirection         : @local::CalPatRec.fitdirection
+}
+
+TrackCaloIntersectionTpr : { @table::TrackCaloMatchingNS.TrackCaloIntersection # CalPatRec only
+    fitterModuleLabel    : TRFDownstreameMinus
+    fitparticle          : @local::Tracking.producers.TRFDownstreameMinus.fitparticle 
+    fitdirection         : @local::Tracking.producers.TRFDownstreameMinus.fitdirection
+}
 #------------------------------------------------------------------------------
 # track-cluster matching module species
 #------------------------------------------------------------------------------
@@ -161,11 +172,30 @@ TrackCaloMatchingUmp  : { @table::TrackCaloMatchingNS.TrackCaloMatching
     fitparticle                 : @local::MergePatRecUmp.fitparticle 
     fitdirection                : @local::MergePatRecUmp.fitdirection
 }
+
+TrackCaloMatchingCpr  : { @table::TrackCaloMatchingNS.TrackCaloMatching 
+    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionCpr
+    fitterModuleLabel           : @local::TrackCaloIntersectionCpr.fitterModuleLabel
+    fitparticle                 : @local::TrackCaloIntersectionCpr.fitparticle 
+    fitdirection                : @local::TrackCaloIntersectionCpr.fitdirection
+}
+
+TrackCaloMatchingTpr  : { @table::TrackCaloMatchingNS.TrackCaloMatching 
+    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionTpr
+    fitterModuleLabel           : @local::TrackCaloIntersectionTpr.fitterModuleLabel
+    fitparticle                 : @local::TrackCaloIntersectionTpr.fitparticle 
+    fitdirection                : @local::TrackCaloIntersectionTpr.fitdirection
+}
 #------------------------------------------------------------------------------
 # preserve backward compatibility
 #------------------------------------------------------------------------------
 TrackCaloIntersection : { @table::TrackCaloMatchingNS.TrackCaloIntersection }
 TrackCaloMatching     : { @table::TrackCaloMatchingNS.TrackCaloMatching     }
+
+TrackCaloMatchingNS.matching     : [ TrackCaloIntersection   , TrackCaloMatching    ]   # this is the default
+
+TrackCaloMatchingNS.matching_cpr : [ TrackCaloIntersectionCpr, TrackCaloMatchingCpr ] 
+TrackCaloMatchingNS.matching_tpr : [ TrackCaloIntersectionTpr, TrackCaloMatchingTpr ] 
 
 TrackCaloMatchingNS.matching_dem : [ TrackCaloIntersectionDem, TrackCaloMatchingDem ]
 TrackCaloMatchingNS.matching_dmm : [ TrackCaloIntersectionDmm, TrackCaloMatchingDmm ]

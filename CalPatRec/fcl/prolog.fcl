@@ -151,7 +151,7 @@ CalPatRecTables : {
     }
 }
 #------------------------------------------------------------------------------
-#  modules
+#  module
 #------------------------------------------------------------------------------
 CalPatRec : { module_type:CalPatRec
     TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
@@ -210,6 +210,9 @@ MergePatRec : { module_type:MergePatRec
     minTrkQualB                  : 0.2
 }
 
+#------------------------------------------------------------------------------
+# producers
+#------------------------------------------------------------------------------
 CalPatRecNS : {
     producers : {
 	CalPatRecFSHP : {
@@ -407,6 +410,9 @@ MergePatRecUmm  : { @table::CalPatRecNS.producers.MergePatRecUmm }
 MergePatRecUep  : { @table::CalPatRecNS.producers.MergePatRecUep }
 MergePatRecUmp  : { @table::CalPatRecNS.producers.MergePatRecUmp }
 
+
+CalPatRecNS.calpatrec_reco     : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+				  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRec ]
 
 CalPatRecNS.calpatrec_dem_reco : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
 				  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]
