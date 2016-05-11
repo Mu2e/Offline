@@ -26,69 +26,6 @@ BEGIN_PROLOG
 # yes, there is a circular dependence between the data products.
 # Dave runs several instances of the hit flagging modules for a reason
 #------------------------------------------------------------------------------ 
-CalPatRecFSHP : {
-    module_type                     : FlagStrawHits
-    StrawHitCollectionLabel         : makeSH
-    StrawHitPositionCollectionLabel : ""
-    maximumEnergy                   : 0.005   # 5 KeV, in MeV
-}
-
-CalPatRecMakeStrawHitPositions : {
-    module_type                 : MakeStrawHitPositions
-    StrawHitCollectionLabel     : makeSH
-    StrawHitFlagCollectionLabel : CalPatRecFSHP
-    diagLevel                   : 0
-    printHits                   : 0
-}
-
-CalPatRecMakeStereoHits : {
-    module_type                 : MakeStereoHits
-    StrawHitCollectionLabel     : makeSH
-    StrawHitFlagCollectionLabel : CalPatRecFSHP
-    MVATool                     : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
-    diagLevel                   : 0
-    printHits                   : 0
-}
-
-CalPatRecFlagStrawHits : {
-    module_type                     : FlagStrawHits
-    StrawHitCollectionLabel         : makeSH
-    StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
-    minimumRadius                   : 380.            # mm
-    maximumRadius                   : [700., 700. ]   # mm
-    maximumEnergy                   : 0.005           # 5 KeV, in MeV
-}
-
-CalPatRecFlagBkgHits : { @table::FlagBkgHits
-    StrawHitCollectionLabel         : makeSH
-    StrawHitFlagCollectionLabel     : CalPatRecFlagStrawHits
-    StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
-# make sure the stereo hit collection name is undefined , 
-# according to the  comments this shouldn't change anything
-    StereoHitCollectionLabel        : ""
-}
-
-CalTimePeakFinder          : {
-    module_type                                 : CalTimePeakFinder
-
-    diagLevel                                   : 0
-    debugLevel                                  : 0
-    printFrequency                              : 100
-    StrawHitCollectionLabel                     : makeSH
-    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
-    caloClusterModuleLabel                      : MakeCaloCluster
-    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
-    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
-    MinNHits                                    : 15
-    DtMin                                       : -40.
-    DtMax                                       :  40.   # make it symmetric
-    minClusterEnergy                            : 50.    # MeV
-    minClusterSize                              : 2      # number of crystals
-    minClusterTime                              : 500.   # ns
-    pitchAngle                                  : 0.67   # mean pitch for CE
-    dtOffset                                    : @local::TrackCaloMatchingDtOffset
-}
-
 #-----------------------------------------------------------------------------
 # new format
 #------------------------------------------------------------------------------
@@ -214,70 +151,195 @@ CalPatRecTables : {
     }
 }
 #------------------------------------------------------------------------------
-# 
+#  modules
 #------------------------------------------------------------------------------
+CalPatRec : { module_type:CalPatRec
+    TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    StrawHitCollectionLabel                     : makeSH			 
+    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits		 
+    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions 
+    caloReadoutModuleLabel                      : MakeCaloReadoutHits		 
+    calorimeterHitMCCrystalPtr                  : CaloHitMCCrystalPtr		 
+    caloClusterModuleLabel                      : MakeCaloCluster                
+#------------------------------------------------------------------------------
+#  now this is defined by the ambig resolver choice 
+#------------------------------------------------------------------------------
+#    useDoublets             : 1
+    diagLevel                                   : 0
+    debugLevel                                  : 0
+    printFrequency                              : 100
+    addhits                                     : true
+    final                                       : 1
+    fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
+    fitdirection                                : 0      # 0:downstream, 1:upstream
+    MinNHits                                    : 15
+    DtMin                                       : -40.
+    DtMax                                       :  40.   # make it symmetric
+    MaxStrawEDep                                : 0.005  # max integrated pulse for electron
+    MaxDtMiss                                   : 55.
+    
+    tmin                                        : 0.
+    tmax                                        : 2000.  # ns
+    minClusterEnergy                            : 50.    # MeV
+    minClusterSize                              : 2      # number of crystals
+    MaxHelixDoca                                : 60.    # in mm
+    MaxAddDoca                                  : 7.     # in mm
+    MaxAddChi                                   : 3.5    # normalized unit
+    MaxStrawEDep                                : 0.005
+    TimeSelectionBits                           : ["EnergySelection","TimeSelection","RadiusSelection"]
+    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
+    KalmanFitSelectionBits                      : []
+    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
+
+    HelixFitHack : { @table::CalPatRecTables.HelixFitHack }
+    SeedFitHack  : { @table::CalPatRecTables.SeedFitHack  }
+    KalFitHack   : { @table::CalPatRecTables.KalFitHack   }
+}
+
+MergePatRec : { module_type:MergePatRec
+    diagLevel                    : 0
+    debugLevel                   : 0
+    trkPatRecModuleLabel         : TRFDownstreameMinus
+    calPatRecModuleLabel         : CalPatRec
+    fitparticle                  : 11                     # 11:electron, -11:positron, 13:mu-, -13: mu+
+    fitdirection                 : 0                      # 0:downstream, 1:upstream
+    KalDiag                      : { @table::KalDiagDirect
+	FillMCInfo               : false
+    }  # clone from  TrkRecFit
+    minTrkQualA                  : 0.4
+    minTrkQualB                  : 0.2
+}
+
 CalPatRecNS : {
     producers : {
-	CalPatRec : {
-	    module_type                                 : CalPatRec
+	CalPatRecFSHP : {
+	    module_type                     : FlagStrawHits
+	    StrawHitCollectionLabel         : makeSH
+	    StrawHitPositionCollectionLabel : ""
+	    maximumEnergy                   : 0.005   # 5 KeV, in MeV
+	}
 
-	    TimeOffsets                                 :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	CalPatRecMakeStrawHitPositions : {
+	    module_type                 : MakeStrawHitPositions
+	    StrawHitCollectionLabel     : makeSH
+	    StrawHitFlagCollectionLabel : CalPatRecFSHP
+	    diagLevel                   : 0
+	    printHits                   : 0
+	}
 
-	    StrawHitCollectionLabel                     : makeSH			 
-	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits		 
-	    StrawHitPositionCollectionLabel             : CalPatRecMakeStrawHitPositions 
-	    caloReadoutModuleLabel                      : MakeCaloReadoutHits		 
-	    calorimeterHitMCCrystalPtr                  : CaloHitMCCrystalPtr		 
-	    caloClusterModuleLabel                      : MakeCaloCluster                
-	    #------------------------------------------------------------------------------
-	    #  now this is defined by the ambig resolver choice 
-	    #------------------------------------------------------------------------------
-	    #    useDoublets             : 1
-	    diagLevel                                   : 0
-	    debugLevel                                  : 0
-	    printFrequency                              : 100
-	    addhits                                     : true
-	    final                                       : 1
-	    fitparticle                                 : 11     # 11:electron, -11:positron, 13:mu-, -13: mu+
-	    fitdirection                                : 0      # 0:downstream, 1:upstream
-	    MinNHits                                    : 15
-	    DtMin                                       : -40.
-	    DtMax                                       :  40.   # make it symmetric
-	    MaxStrawEDep                                : 0.005  # max integrated pulse for electron
-	    MaxDtMiss                                   : 55.
-	    
-	    tmin                                        : 0.
-	    tmax                                        : 2000.  # ns
-	    minClusterEnergy                            : 50.    # MeV
-	    minClusterSize                              : 2      # number of crystals
-	    MaxHelixDoca                                : 60.    # in mm
-	    MaxAddDoca                                  : 7.     # in mm
-	    MaxAddChi                                   : 3.5    # normalized unit
-	    MaxStrawEDep                                : 0.005
-	    TimeSelectionBits                           : ["EnergySelection","TimeSelection","RadiusSelection"]
-	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
-	    KalmanFitSelectionBits                      : []
-	    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
+	CalPatRecMakeStereoHits : {
+	    module_type                 : MakeStereoHits
+	    StrawHitCollectionLabel     : makeSH
+	    StrawHitFlagCollectionLabel : CalPatRecFSHP
+	    MVATool                     : { MVAWeights : "HitMakers/test/StereoMVA.weights.xml" }
+	    diagLevel                   : 0
+	    printHits                   : 0
+	}
 
-	    HelixFitHack : { @table::CalPatRecTables.HelixFitHack }
-	    SeedFitHack  : { @table::CalPatRecTables.SeedFitHack  }
-	    KalFitHack   : { @table::CalPatRecTables.KalFitHack   }
+	CalPatRecFlagStrawHits : {
+	    module_type                     : FlagStrawHits
+	    StrawHitCollectionLabel         : makeSH
+	    StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
+	    minimumRadius                   : 380.            # mm
+	    maximumRadius                   : [700., 700. ]   # mm
+	    maximumEnergy                   : 0.005           # 5 KeV, in MeV
+	}
+
+	CalPatRecFlagBkgHits : { @table::FlagBkgHits
+	    StrawHitCollectionLabel         : makeSH
+	    StrawHitFlagCollectionLabel     : CalPatRecFlagStrawHits
+	    StrawHitPositionCollectionLabel : CalPatRecMakeStereoHits
+	    # make sure the stereo hit collection name is undefined , 
+	    # according to the  comments this shouldn't change anything
+	    StereoHitCollectionLabel        : ""
 	}
 #------------------------------------------------------------------------------
 # default configuration: DEM
 #------------------------------------------------------------------------------
-	MergePatRec : { module_type:MergePatRec
-	    diagLevel                    : 0
-	    debugLevel                   : 0
-	    trkPatRecModuleLabel         : TRFDownstreameMinus
-	    calPatRecModuleLabel         : CalPatRec
-	    fitparticle                  : 11                     # 11:electron, -11:positron, 13:mu-, -13: mu+
-	    fitdirection                 : 0                      # 0:downstream, 1:upstream
-	    KalDiag                      : { @table::KalDiagDirect
-		FillMCInfo               : false
-	    }  # clone from  TrkRecFit
-	    minTrkQualA                  : 0.4
-	    minTrkQualB                  : 0.2
+	CalPatRecDem : { @table::CalPatRec fitparticle: 11 fitdirection:0 }
+	CalPatRecDmm : { @table::CalPatRec fitparticle: 13 fitdirection:0 }
+	CalPatRecDep : { @table::CalPatRec fitparticle:-11 fitdirection:0 }
+	CalPatRecDmp : { @table::CalPatRec fitparticle:-13 fitdirection:0 }
+
+	MergePatRecDem : { @table::MergePatRec 
+	    trkPatRecModuleLabel : TRFDownstreameMinus
+	    calPatRecModuleLabel : CalPatRecDem
+	    fitparticle          : @local::Tracking.producers.TRFDownstreameMinus.fitparticle
+	    fitdirection         : @local::Tracking.producers.TRFDownstreameMinus.fitdirection
+	}
+
+	MergePatRecDmm : { @table::MergePatRec 
+	    trkPatRecModuleLabel : TRFDownstreammuMinus
+	    calPatRecModuleLabel : CalPatRecDmm
+	    fitparticle          : @local::Tracking.producers.TRFDownstreammuMinus.fitparticle  # 11:electron, -11:positron, 13:mu-, -13: mu+
+	    fitdirection         : @local::Tracking.producers.TRFDownstreammuMinus.fitdirection # 0:downstream, 1:upstream
+	}
+
+	MergePatRecDep : { @table::MergePatRec 
+	    trkPatRecModuleLabel : TRFDownstreamePlus
+	    calPatRecModuleLabel : CalPatRecDep
+	    fitparticle          : @local::Tracking.producers.TRFDownstreamePlus.fitparticle
+	    fitdirection         : @local::Tracking.producers.TRFDownstreamePlus.fitdirection
+	}
+
+	MergePatRecDmp : { @table::MergePatRec 
+	    trkPatRecModuleLabel : TRFDownstreammuPlus
+	    calPatRecModuleLabel : CalPatRecDmp
+	    fitparticle          : @local::Tracking.producers.TRFDownstreammuPlus.fitparticle  # 11:electron, -11:positron, 13:mu-, -13: mu+
+	    fitdirection         : @local::Tracking.producers.TRFDownstreammuPlus.fitdirection # 0:downstream, 1:upstream
+	}
+
+	MergePatRecUem : { @table::MergePatRec 
+	    trkPatRecModuleLabel : TRFUpstreameMinus
+	    calPatRecModuleLabel : none
+	    fitparticle          : @local::Tracking.producers.TRFUpstreameMinus.fitparticle
+	    fitdirection         : @local::Tracking.producers.TRFUpstreameMinus.fitdirection
+	}
+
+	MergePatRecUmm : { @table::MergePatRec 
+	    trkPatRecModuleLabel : TRFUpstreammuMinus
+	    calPatRecModuleLabel : none
+	    fitparticle          : @local::Tracking.producers.TRFUpstreammuMinus.fitparticle
+	    fitdirection         : @local::Tracking.producers.TRFUpstreammuMinus.fitdirection
+	}
+
+	MergePatRecUep : { @table::MergePatRec 
+	    trkPatRecModuleLabel : TRFUpstreamePlus
+	    calPatRecModuleLabel : none
+	    fitparticle          : @local::Tracking.producers.TRFUpstreamePlus.fitparticle
+	    fitdirection         : @local::Tracking.producers.TRFUpstreamePlus.fitdirection
+	}
+
+	MergePatRecUmp : { @table::MergePatRec 
+	    trkPatRecModuleLabel : TRFUpstreammuPlus
+	    calPatRecModuleLabel : none
+	    fitparticle          : @local::Tracking.producers.TRFUpstreammuPlus.fitparticle
+	    fitdirection         : @local::Tracking.producers.TRFUpstreammuPlus.fitdirection
+	}
+
+    }
+
+    filters : { 
+#------------------------------------------------------------------------------
+# new modules
+#------------------------------------------------------------------------------
+	CalTimePeakFinder          : { module_type:CalTimePeakFinder
+	    diagLevel                                   : 0
+	    debugLevel                                  : 0
+	    printFrequency                              : 100
+	    StrawHitCollectionLabel                     : makeSH
+	    StrawHitFlagCollectionLabel                 : CalPatRecFlagBkgHits
+	    caloClusterModuleLabel                      : MakeCaloCluster
+	    HelixFitSelectionBits                       : ["EnergySelection","TimeSelection","RadiusSelection"]
+	    BackgroundSelectionBits                     : ["DeltaRay","Isolated"]
+	    MinNHits                                    : 15
+	    DtMin                                       : -40.
+	    DtMax                                       :  40.   # make it symmetric
+	    minClusterEnergy                            : 50.    # MeV
+	    minClusterSize                              : 2      # number of crystals
+	    minClusterTime                              : 500.   # ns
+	    pitchAngle                                  : 0.67   # mean pitch for CE
+	    dtOffset                                    : @local::TrackCaloMatchingDtOffset
 	}
 
 	CalPatRecNew          : { module_type:CalPatRecNew
@@ -295,9 +357,7 @@ CalPatRecNS : {
 	    HelixFitHack   : { @table::CalPatRecTables.HelixFitHack }
 	}
 
-	CalTrkFit : {
-	    module_type                                 : CalTrkFit
-
+	CalTrkFit : { module_type:CalTrkFit
 	    diagLevel                                   : 0
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
@@ -318,45 +378,34 @@ CalPatRecNS : {
 	    SeedFitHack                                 : { @table::CalPatRecTables.SeedFitHack }
 	    KalFitHack                                  : { @table::CalPatRecTables.KalFitHack  }
 	}
-
     }
 }
 
-CalPatRec    : { @table::CalPatRecNS.producers.CalPatRec      }
-CalPatRecNew : { @table::CalPatRecNS.producers.CalPatRecNew   }
-CalTrkFit    : { @table::CalPatRecNS.producers.CalTrkFit      }
-CalPatRecDem : { @table::CalPatRecNS.producers.CalPatRec fitparticle:11 fitdirection:0 }
-CalPatRecDmm : { @table::CalPatRecNS.producers.CalPatRec fitparticle:13 fitdirection:0 }
+CalPatRecFSHP                  : { @table::CalPatRecNS.producers.CalPatRecFSHP                  }
+CalPatRecMakeStrawHitPositions : { @table::CalPatRecNS.producers.CalPatRecMakeStrawHitPositions }
+CalPatRecMakeStereoHits        : { @table::CalPatRecNS.producers.CalPatRecMakeStereoHits        }
+CalPatRecFlagStrawHits         : { @table::CalPatRecNS.producers.CalPatRecFlagStrawHits         }
+CalPatRecFlagBkgHits           : { @table::CalPatRecNS.producers.CalPatRecFlagBkgHits           }
 
-MergePatRec    : { @table::CalPatRecNS.producers.MergePatRec }
+CalTimePeakFinder              : { @table::CalPatRecNS.filters.CalTimePeakFinder              }
+CalPatRecNew                   : { @table::CalPatRecNS.filters.CalPatRecNew   }
+CalTrkFit                      : { @table::CalPatRecNS.filters.CalTrkFit      }
+#------------------------------------------------------------------------------
+# CalPatRec makes sense only in the downstream versions
+#------------------------------------------------------------------------------
+CalPatRecDem : { @table::CalPatRecNS.producers.CalPatRecDem }
+CalPatRecDmm : { @table::CalPatRecNS.producers.CalPatRecDmm }
+CalPatRecDep : { @table::CalPatRecNS.producers.CalPatRecDep }
+CalPatRecDmp : { @table::CalPatRecNS.producers.CalPatRecDmp }
 
-MergePatRecDem : { @table::MergePatRec 
-    trkPatRecModuleLabel : TRFDownstreameMinus
-    calPatRecModuleLabel : CalPatRecDem
-    fitparticle          : @local::Tracking.producers.TRFDownstreameMinus.fitparticle
-    fitdirection         : @local::Tracking.producers.TRFDownstreameMinus.fitdirection
-}
-
-MergePatRecDmm : { @table::MergePatRec 
-    trkPatRecModuleLabel : TRFDownstreammuMinus
-    calPatRecModuleLabel : CalPatRecDmm
-    fitparticle          : @local::Tracking.producers.TRFDownstreammuMinus.fitparticle  # 11:electron, -11:positron, 13:mu-, -13: mu+
-    fitdirection         : @local::Tracking.producers.TRFDownstreammuMinus.fitdirection # 0:downstream, 1:upstream
-}
-
-MergePatRecUem : { @table::MergePatRec 
-    trkPatRecModuleLabel : TRFUpstreameMinus
-    calPatRecModuleLabel : none
-    fitparticle          : @local::Tracking.producers.TRFUpstreameMinus.fitparticle
-    fitdirection         : @local::Tracking.producers.TRFUpstreameMinus.fitdirection
-}
-
-MergePatRecUmm : { @table::MergePatRec 
-    trkPatRecModuleLabel : TRFUpstreammuMinus
-    calPatRecModuleLabel : none
-    fitparticle          : @local::Tracking.producers.TRFUpstreammuMinus.fitparticle
-    fitdirection         : @local::Tracking.producers.TRFUpstreammuMinus.fitdirection
-}
+MergePatRecDem  : { @table::CalPatRecNS.producers.MergePatRecDem }
+MergePatRecDmm  : { @table::CalPatRecNS.producers.MergePatRecDmm }
+MergePatRecDep  : { @table::CalPatRecNS.producers.MergePatRecDep }
+MergePatRecDmp  : { @table::CalPatRecNS.producers.MergePatRecDmp }
+MergePatRecUem  : { @table::CalPatRecNS.producers.MergePatRecUem }
+MergePatRecUmm  : { @table::CalPatRecNS.producers.MergePatRecUmm }
+MergePatRecUep  : { @table::CalPatRecNS.producers.MergePatRecUep }
+MergePatRecUmp  : { @table::CalPatRecNS.producers.MergePatRecUmp }
 
 
 CalPatRecNS.calpatrec_dem_reco : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
