@@ -31,4 +31,11 @@ BEGIN_PROLOG
 	  cogTypeName            : Linear
 	  diagLevel              : 0
 	}  
+
+CaloCluster : {
+    producers : {
+	MakeCaloProtoCluster : { @table::MakeCaloProtoCluster }
+	MakeCaloCluster      : { @table::MakeCaloCluster      }
+    }
+}
 END_PROLOG
