@@ -22,9 +22,9 @@
 # define module sequences 
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
-  generatorSeq  : [ generate, g4run, protonTimeMap, muonTimeMap ]
+  generatorSeq  : [ generate, g4run, @sequence::EventMixing.TimeMaps ]
 
-  hitMakerSeq   : [ MakeCaloReadoutHits, @sequence::Tracking.DigiSim ]
+  make_digis   : [ MakeCaloReadoutHits, @sequence::Tracking.DigiSim ]
 
 # calorimeter cluster reconstruction
   calRecoSeq    : [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
@@ -38,19 +38,24 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # downstream electron and downstream muon reconstruction - needed for particle ID
 #------------------------------------------------------------------------------
-  trkPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, @sequence::Tracking.TPRDownstreammuMinus 
-			  , MergePatRecDem, MergePatRecDmm ]
+  trkPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, 
+			  @sequence::Tracking.TPRDownstreammuMinus,
+			  MergePatRecDem, MergePatRecDmm ]
 
   calPatRecDemDmmSeq  : [ @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, MergePatRecDem, MergePatRecDmm ]
 
-  allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, @sequence::Tracking.TPRDownstreammuMinus
-			  , @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm
-			  , MergePatRecDem, MergePatRecDmm ]
+  allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, 
+			  @sequence::Tracking.TPRDownstreammuMinus,
+			  @sequence::cprMakeHitSeq, 
+			  CalPatRecDem, CalPatRecDmm,
+			  MergePatRecDem, MergePatRecDmm ]
 
 # particle identification
 
-  vadimPidSeq         : [ TrkExtrapol, CaloMatching, ParticleID ]
-  avikPidSeq          : [ TrkExtrapolDem, TrkExtrapolDmm, CaloMatchingDem, CaloMatchingDmm, AvikPID ]
+  vadimPidSeq         : [ @sequence::TrackCaloMatching.matching, ParticleID ]
+  avikPidSeq          : [ @sequence::TrackCaloMatching.matching_dem,
+			  @sequence::TrackCaloMatching.matching_dmm,
+			  AvikPID ]
 
 #   muStops      : @local::mergedMuonStops
 END_PROLOG
@@ -125,52 +130,11 @@ physics : {
 #------------------------------------------------------------------------------
 	MakeStrawHitPositions: @local::MakeStrawHitPositions
 
-	CalPatRecFSHP                  : @local::CalPatRecFSHP
-	CalPatRecMakeStrawHitPositions : @local::CalPatRecMakeStrawHitPositions
-	CalPatRecMakeStereoHits        : @local::CalPatRecMakeStereoHits
-	CalPatRecFlagStrawHits         : @local::CalPatRecFlagStrawHits
-	CalPatRecFlagBkgHits           : @local::CalPatRecFlagBkgHits
-	CalPatRec                      : { @table::CalPatRec    }
-	CalPatRecDem                   : { @table::CalPatRecDem }
-	CalPatRecDmm                   : { @table::CalPatRecDmm }
-
-	MergePatRec                    : @local::MergePatRec
-	MergePatRecDem                 : @local::MergePatRecDem
-	MergePatRecDmm                 : @local::MergePatRecDmm
+	@table::CalPatRec.producers
+	@table::TrackCaloMatching.producers
 #------------------------------------------------------------------------------
 # needed for analysis
 #------------------------------------------------------------------------------
-	TrkExtrapol          : { @table::TrackCaloIntersection
-	    fitterModuleLabel : MergePatRec 
-	}
-
-	TrkExtrapolDem       : { @table::TrackCaloIntersection
-	    fitparticle       : 11
-	    fitterModuleLabel : MergePatRecDem 
-	}
-	TrkExtrapolDmm       : { @table::TrackCaloIntersection
-	    fitparticle       : 13
-	    fitterModuleLabel : MergePatRecDmm 
-	}
-
-	CaloMatching         : { @table::TrackCaloMatching 
-	    fitterModuleLabel : MergePatRec 
-	}
-
-	CaloMatchingDem      : { @table::TrackCaloMatching 
-	    fitparticle                  : 11
-	    fitdirection                 : 0
-	    fitterModuleLabel            : MergePatRecDem
-	    trkToCaloExtrapolModuleLabel : TrkExtrapolDem
-	}
-
-	CaloMatchingDmm      : { @table::TrackCaloMatching 
-	    fitparticle                  : 13
-	    fitdirection                 : 0
-	    fitterModuleLabel            : MergePatRecDmm 
-	    trkToCaloExtrapolModuleLabel : TrkExtrapolDmm
-	}
-
 	AvikPID              : { @table::AvikPID           
 	    trkPatRecDemModuleLabel : MergePatRecDem 
 	    trkPatRecDmmModuleLabel : MergePatRecDmm 
@@ -212,24 +176,15 @@ physics : {
     e1 : [ RKFDownstreameMinus ]
 #    e1 : [  ]
 
-    p1 : [generate, g4run
-	  , @sequence::EventMixing.TimeMaps
-	  , @sequence::Tracking.DigiSim
-	  , MakeCaloReadoutHits, MakeCaloCrystalHits
-	  , MakeCaloProtoCluster, MakeCaloCluster
-	  , @sequence::Tracking.TPRDownstreameMinus
-	  , TrkExtrapol, CaloMatching, ParticleID
-	 ]
-
     gen_allpatrec_reco : [ @sequence::generatorSeq, 
-			   @sequence::hitMakerSeq,
+			   @sequence::make_digis,
 			   @sequence::calRecoSeq, 
 			   @sequence::allPatRecDemDmmSeq,
 			   @sequence::avikPidSeq
 			   , TrackSummaryMaker
 			  ]
     gen_trkpatrec_reco : [ @sequence::generatorSeq, 
-			   @sequence::hitMakerSeq,
+			   @sequence::make_digis,
 			   @sequence::calRecoSeq, 
 			   @sequence::trkPatRecDemDmmSeq,
 			   @sequence::avikPidSeq
