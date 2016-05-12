@@ -139,9 +139,9 @@ int findlowhist(float d){
     double _logeprob;
     double _logmprob;
 
-    int _debugLevel;
-    int _verbosity;
-    int _diagLevel;
+    int  _debugLevel;
+    int  _verbosity;
+    int  _diagLevel;
     bool _doDisplay;
 
     std::string _electrontemplates;
@@ -160,27 +160,29 @@ int findlowhist(float d){
     TCanvas*      _plotCanvas;
 
 
-    bool calculateSlope(std::vector<double>vresd,std::vector<double>vflt,std::vector<double>evresd,std::vector<double>evflt,  double * slope, double * eslope);
+    bool calculateSlope(std::vector<double>vresd,std::vector<double>vflt, 
+			std::vector<double>evresd,std::vector<double>evflt,  
+			double * slope, 
+			double * eslope);
+
     double calculateProb(std::vector<double>gaspaths, std::vector<double>edeps, TH1D** templates);
 
     unique_ptr<TApplication> _application;
 
     // Save directory from beginJob so that we can go there in endJob.
     TDirectory* _directory;
-
-
   };
 
   ParticleID::ParticleID(fhicl::ParameterSet const& pset):
-    _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
-    _electronTemplateFile(pset.get<std::string>("ElectronTemplates")),
-    _muonTemplateFile    (pset.get<std::string>("MuonTemplates"    )),
-    _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
-    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _debugLevel(pset.get<int>("debugLevel", 0)),
-    _verbosity(pset.get<int> ("verbosity", 0)),
-    _diagLevel(pset.get<int> ("diagLevel", 0)),
-    _doDisplay(pset.get<bool>("doDisplay",false)),
+    _fitterModuleLabel   (pset.get<string>("fitterModuleLabel")),
+    _electronTemplateFile(pset.get<string>("ElectronTemplates")),
+    _muonTemplateFile    (pset.get<string>("MuonTemplates"    )),
+    _tpart    ((TrkParticle::type)            (pset.get<int>("fitparticle" ))),
+    _fdir     ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+    _debugLevel(pset.get<int>("debugLevel", 0   )),
+    _verbosity(pset.get<int> ("verbosity" , 0   )),
+    _diagLevel(pset.get<int> ("diagLevel" , 0   )),
+    _doDisplay(pset.get<bool>("doDisplay" ,false)),
     _pidtree(0),
     _plotCanvas(0)
   {
@@ -226,12 +228,12 @@ int findlowhist(float d){
 
     if (_diagLevel) {
       _pidtree = tfs->make<TTree>("PID", "PID info");
-      _pidtree->Branch("trkid", &_trkid, "trkid/I");
-      _pidtree->Branch("slope", &_residualsSlope, "slope/D");
+      _pidtree->Branch("trkid"   , &_trkid              , "trkid/I");
+      _pidtree->Branch("slope"   , &_residualsSlope     , "slope/D");
       _pidtree->Branch("errslope", &_residualsSlopeError, "errslope/D");
-      _pidtree->Branch("p", &_trkmom, "trkmom/D");
-      _pidtree->Branch("logeprob", &_logeprob, "logeprob/D");
-      _pidtree->Branch("logmprob", &_logmprob, "logmprob/D");
+      _pidtree->Branch("p"       , &_trkmom             , "trkmom/D");
+      _pidtree->Branch("logeprob", &_logeprob           , "logeprob/D");
+      _pidtree->Branch("logmprob", &_logmprob           , "logmprob/D");
     }
 
 

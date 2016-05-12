@@ -47,9 +47,7 @@ namespace mu2e
     void endJob();
 
     private:
-//    std::string _crvPhotonArrivalsModuleLabel;
     std::string _crvSiPMResponsesModuleLabel;
-//    std::string _crvWaveformsModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     std::string _genParticleModuleLabel;
     std::string _simParticleModuleLabel;
@@ -59,18 +57,13 @@ namespace mu2e
 
   CRVTest::CRVTest(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
-//    _crvPhotonArrivalsModuleLabel(pset.get<std::string>("crvPhotonArrivalsModuleLabel")),
     _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
-//    _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
-    _genParticleModuleLabel(pset.get<std::string>("genParticleModuleLabel")),
-    _simParticleModuleLabel(pset.get<std::string>("simParticleModuleLabel"))
+    _genParticleModuleLabel(pset.get<std::string>("genParticleModuleLabel"))
   {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("CrvSingleCounter");
-    _recoPulses = tfdir.make<TNtuple>( "RecoPulses",    "RecoPulses",  "SiPM:startX:startZ:recoPEs:PEs:pulseHeight:integral:theta:phi" );
-    _leadingEdgesGlobal = tfdir.make<TNtuple>( "LeadingEdgesGlobal",    "LeadingEdgesGlobal",  "timeDifferenceGlobal:trackLength" );
-    _leadingEdgesCounter = tfdir.make<TNtuple>( "LeadingEdgesCounter",    "LeadingEdgesCounter",  "timeDifferenceCounter" );
+    _recoPulses = tfdir.make<TNtuple>( "RecoPulses",    "RecoPulses",  "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseIntegral:MCPEs" );
   }
 
   void CRVTest::beginJob()
@@ -83,14 +76,8 @@ namespace mu2e
 
   void CRVTest::analyze(const art::Event& event) 
   {
-//    art::Handle<CrvPhotonArrivalsCollection> crvPhotonArrivalsCollection;
-//    event.getByLabel(_crvPhotonArrivalsModuleLabel,"",crvPhotonArrivalsCollection);
-
     art::Handle<CrvSiPMResponsesCollection> crvSiPMResponsesCollection;
     event.getByLabel(_crvSiPMResponsesModuleLabel,"",crvSiPMResponsesCollection);
-
-//    art::Handle<CrvWaveformsCollection> crvWaveformsCollection;
-//    event.getByLabel(_crvWaveformsModuleLabel,"",crvWaveformsCollection);
 
     art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
     event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
@@ -98,92 +85,53 @@ namespace mu2e
     art::Handle<GenParticleCollection> genParticleCollection;
     event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
 
-    art::Handle<SimParticleCollection> simParticleCollection;
-    event.getByLabel(_simParticleModuleLabel,"",simParticleCollection);
+    int eventID = event.id().event();
+    CLHEP::Hep3Vector startPos = genParticleCollection->at(0).position();
 
-    double startX = genParticleCollection->at(0).position().x();
-    double startZ = genParticleCollection->at(0).position().z();
-
-    int recoPEs[4]={0};
-    double PEs[4]={0};
-    double pulseHeights[4]={0};
-    double integrals[4]={0};
-
-    CrvRecoPulsesCollection::const_iterator iterRecoPulses=crvRecoPulsesCollection->begin(); //this is intended for only one counter
-    if(iterRecoPulses!=crvRecoPulsesCollection->end()) 
+    GeomHandle<CosmicRayShield> CRS;
+    const std::vector<std::shared_ptr<CRSScintillatorBar> > &counters = CRS->getAllCRSScintillatorBars();
+    std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator iter; 
+    for(iter=counters.begin(); iter!=counters.end(); iter++)
     {
-      const CrvRecoPulses &crvRecoPulses = iterRecoPulses->second;
+      const CRSScintillatorBarIndex &barIndex = (*iter)->index();
 
-      for(int SiPM=0; SiPM<4; SiPM++)
+      CrvRecoPulsesCollection::const_iterator    iterRecoPulses    = crvRecoPulsesCollection->find(barIndex);
+      CrvSiPMResponsesCollection::const_iterator iterSiPMResponses = crvSiPMResponsesCollection->find(barIndex);
+
+      for(int SiPM=0; SiPM<4; SiPM++) 
       {
-        const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &singlePulses = crvRecoPulses.GetRecoPulses(SiPM);
-        if(singlePulses.size()!=1) continue;
-        recoPEs[SiPM] = singlePulses[0]._PEs;
-        pulseHeights[SiPM] = singlePulses[0]._pulseHeight;
-        integrals[SiPM] = singlePulses[0]._integral;
-      }
-    }
 
-    CrvSiPMResponsesCollection::const_iterator iterSiPMResponses=crvSiPMResponsesCollection->begin(); //this is intended for only one counter
-    if(iterSiPMResponses!=crvSiPMResponsesCollection->end()) 
-    {
-      const CrvSiPMResponses &crvSiPMResponses = iterSiPMResponses->second;
+        int    nRecoPulses=0;
+        int    recoPEs=0;
+        double recoPulseHeights=0;
+        double recoPulseIntegrals=0;
+        double MCPEs=0;
 
-      for(int SiPM=0; SiPM<4; SiPM++)
-      {
-        const std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &singleSiPMResponses = crvSiPMResponses.GetSiPMResponses(SiPM);
-        for(size_t i=0; i<singleSiPMResponses.size(); i++) PEs[SiPM] += singleSiPMResponses[i]._charge;
-      }
-    }
-
-    double theta=acos(simParticleCollection->getOrThrow(cet::map_vector_key(1)).startMomentum().vect().unit().y());
-    double phi=atan2(simParticleCollection->getOrThrow(cet::map_vector_key(1)).startMomentum().vect().z(),simParticleCollection->getOrThrow(cet::map_vector_key(1)).startMomentum().vect().x());
-
-    for(int SiPM=0; SiPM<4; SiPM++)
-    {
-      _recoPulses->Fill(SiPM,startX,startZ,recoPEs[SiPM],PEs[SiPM],pulseHeights[SiPM],integrals[SiPM],theta,phi);
-    }
-
-
-    double firstTimeGlobal1=NAN;
-    double firstTimeGlobal2=NAN;
-    double lastTimeGlobal1=NAN;
-    double lastTimeGlobal2=NAN;
-    double trackLength = (simParticleCollection->getOrThrow(cet::map_vector_key(1)).startPosition() - simParticleCollection->getOrThrow(cet::map_vector_key(1)).endPosition()).mag();
-    iterRecoPulses=crvRecoPulsesCollection->begin();
-    for(; iterRecoPulses!=crvRecoPulsesCollection->end(); iterRecoPulses++) 
-    {
-      const CrvRecoPulses &crvRecoPulses = iterRecoPulses->second;
-      double firstTimeCounter[4]={NAN,NAN,NAN,NAN};
-      for(int SiPM=0; SiPM<4; SiPM++)
-      {
-        const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &singlePulses = crvRecoPulses.GetRecoPulses(SiPM);
-        for(size_t i=0; i<singlePulses.size(); i++)
+        if(iterRecoPulses!=crvRecoPulsesCollection->end()) 
         {
-          double time = singlePulses[i]._leadingEdge;
-          if(isnan(firstTimeCounter[SiPM]) || firstTimeCounter[SiPM]>time) firstTimeCounter[SiPM]=time;
+          const CrvRecoPulses &crvRecoPulses = iterRecoPulses->second;
+
+          const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &singlePulses = crvRecoPulses.GetRecoPulses(SiPM);
+          nRecoPulses = singlePulses.size();
+          if(singlePulses.size()>0)
+          {
+            recoPEs            = singlePulses[0]._PEs;
+            recoPulseHeights   = singlePulses[0]._pulseHeight;
+            recoPulseIntegrals = singlePulses[0]._integral;
+          }
         }
+
+        if(iterSiPMResponses!=crvSiPMResponsesCollection->end()) 
+        {
+          const CrvSiPMResponses &crvSiPMResponses = iterSiPMResponses->second;
+
+          const std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &singleSiPMResponses = crvSiPMResponses.GetSiPMResponses(SiPM);
+          for(size_t i=0; i<singleSiPMResponses.size(); i++) MCPEs += singleSiPMResponses[i]._charge;
+        }
+
+        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeights,recoPulseIntegrals,MCPEs);
       }
-      double timeDifferenceCounter = fabs(firstTimeCounter[0]-firstTimeCounter[2]);
-      _leadingEdgesCounter->Fill(timeDifferenceCounter);
-      timeDifferenceCounter = fabs(firstTimeCounter[1]-firstTimeCounter[3]);
-      _leadingEdgesCounter->Fill(timeDifferenceCounter);
-
-      double firstTime=std::min(firstTimeCounter[0],firstTimeCounter[2]);     
-      double lastTime=std::max(firstTimeCounter[0],firstTimeCounter[2]);     
-      if(isnan(firstTimeGlobal1) || firstTimeGlobal1>firstTime) firstTimeGlobal1=firstTime;
-      if(isnan(lastTimeGlobal1) || lastTimeGlobal1<lastTime) lastTimeGlobal1=lastTime;
-
-      firstTime=std::min(firstTimeCounter[1],firstTimeCounter[3]);     
-      lastTime=std::max(firstTimeCounter[1],firstTimeCounter[3]);     
-      if(isnan(firstTimeGlobal2) || firstTimeGlobal2>firstTime) firstTimeGlobal2=firstTime;
-      if(isnan(lastTimeGlobal2) || lastTimeGlobal2<lastTime) lastTimeGlobal2=lastTime;
     }
-    double timeDifferenceGlobal = lastTimeGlobal1-firstTimeGlobal1;
-    _leadingEdgesGlobal->Fill(timeDifferenceGlobal,trackLength);
-    timeDifferenceGlobal = lastTimeGlobal2-firstTimeGlobal2;
-    _leadingEdgesGlobal->Fill(timeDifferenceGlobal,trackLength);
-
 
   } // end analyze
 

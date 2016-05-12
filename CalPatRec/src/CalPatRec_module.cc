@@ -551,7 +551,8 @@ namespace mu2e {
     _eventid = event.event();
     _iev     = event.id().event();
 
-    if ((_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
+    if ((_iev%_printfreq) == 0) printf("[%s] : [START] : run = %10i subrun = %10i event = %10i\n",
+				       oname,event.run(),event.subRun(),_eventid);
 
     unique_ptr<KalRepCollection>       tracks   (new KalRepCollection     );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection  );
@@ -639,13 +640,20 @@ namespace mu2e {
     for (int ipeak=0; ipeak<npeaks; ipeak++) {
       CalTimePeak* tp = &_tpeaks->at(ipeak);
 
-      if (_diagLevel > 0) {
-	CaloContentMC clutil(*_caloHitNavigator, *tp->Cluster());
-	_clCE    = clutil.hasConversion();
+      int nhits = tp->NHits();
+      if (nhits > 400) {
+	printf ("[%s] ERROR: Nhits(timepeak) = %i. SKIP, continue with the next time peak\n",
+		oname,nhits);
+	continue;
       }
 //-----------------------------------------------------------------------------
 // this is debug-only
 //-----------------------------------------------------------------------------
+      if (_diagLevel > 0) {
+	CaloContentMC clutil(*_caloHitNavigator, *tp->Cluster());
+	_clCE    = clutil.hasConversion();
+      }
+
       if (_debugLevel > 0) {
         const StrawHit*     hit;
         int nhits = tp->NHits();
@@ -1549,12 +1557,10 @@ namespace mu2e {
     _sfresult->_krep->traj().getInfo(0.0,tpos,tdir);
 
     fQualityTrack = 0;
-
 //-----------------------------------------------------------------------------
 // HelixFit histograms
 //-----------------------------------------------------------------------------
     _hist.helixFit.nhits->Fill(hf_result._nGoodPoints);
-    // ###
 //-----------------------------------------------------------------------------
 // KalFit   histograms
 //-----------------------------------------------------------------------------
@@ -1599,8 +1605,6 @@ namespace mu2e {
 //----------------------------------------------------------------------
 // 2014-11-02 gianipez added some diagnostic
 //----------------------------------------------------------------------
-    // _hist._kdfdzmode ->Fill(fHackData->TheoImode());
-
     Hep3Vector mom = krep->momentum(0);
     double pt      = sqrt(mom.x()*mom.x() + mom.y()*mom.y());
     double pz      = mom.z();

@@ -21,8 +21,7 @@
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
 //#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/TrackerHitTimeCluster.hh"
-#include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "RecoDataProducts/inc/TrackSeed.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
@@ -34,9 +33,8 @@
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "TrkPatRec/inc/TrkPatRec.hh"
 #include "TrkReco/inc/RobustHelixFit.hh"
-// Mu2e
-#include "TrkPatRec/inc/TrkPatRecUtils.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -98,7 +96,12 @@ namespace mu2e
     std::vector<TrkTimePeak>           _tpeaks;
 
     // helper functions
-    bool findData(const art::Event& e);
+    bool findData           (const art::Event& e);
+    void fillTrackSeed      (TrackSeed &tmpseed     , 
+			     TrkDef    &seeddef     ,  
+			     TrackSeed  InputTrkSeed);
+    void HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut);
+
     Int_t                              _eventid;
   };
 
@@ -151,7 +154,7 @@ namespace mu2e
       
       // create track definitions for the helix fit from this initial information 
       //      HelixDef helixdef(_shcol,_shpcol,_t[ipeak]._trkptrs,_tpart,_fdir,_mcdigis); 
-      HelixDef       helixdef(_shcol, _shpcol, trkSeed->_fullTrkSeed._selectedTrackerHitsIdx, _tpart, _fdir, _mcdigis);
+      HelixDef       helixdef(_shcol, _shpcol, trkSeed->_timeCluster._strawHitIdxs, _tpart, _fdir, _mcdigis);
 
       // copy this for the other fits
       TrkDef         seeddef(helixdef);
@@ -173,7 +176,7 @@ namespace mu2e
 	if (_debug>1) {std::cout <<"RobustHelixFinder::produce - helix params " << hpar << "and errors " << hparerr << endl;}
 	//fill seed information
 	TrackSeed tmpseed;
-	fillTrackSeed(tmpseed, seeddef, *trkSeed, _strawhitsH);
+	fillTrackSeed(tmpseed, seeddef, *trkSeed);
         outseeds->push_back(tmpseed);
       }
     }
@@ -209,6 +212,39 @@ namespace mu2e
     }
     // don't require stereo hits: they are only used for diagnostics
     return _shcol != 0 && _shpcol != 0;// && _tccol!=0;
+  }
+
+
+  void RobustHelixFinder::fillTrackSeed(TrackSeed &tmpseed     , 
+					TrkDef    &seeddef     ,  
+					TrackSeed  InputTrkSeed) {
+
+    tmpseed._timeCluster._z0            = InputTrkSeed._timeCluster._z0;
+    tmpseed._timeCluster._t0            = InputTrkSeed._timeCluster._t0;
+    tmpseed._timeCluster._errt0         = InputTrkSeed._timeCluster._errt0;	  
+    tmpseed._helix._d0                  = seeddef.helix().d0();
+    tmpseed._helix._phi0                = seeddef.helix().phi0();
+    tmpseed._helix._omega               = seeddef.helix().omega();
+    tmpseed._helix._z0                  = seeddef.helix().z0();
+    tmpseed._helix._tanDip              = seeddef.helix().tanDip();
+
+    for (std::vector<hitIndex>::const_iterator ihit=seeddef.strawHitIndices().begin(); ihit!=seeddef.strawHitIndices().end(); ++ihit) {
+      tmpseed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( ihit->_index, ihit->_ambig) );
+    }
+  }
+
+  void RobustHelixFinder::HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
+          //TrkExchangePar helParams( helIn._d0, helIn._phi0, helIn._omega, helIn._z0, helIn._tanDip );
+          CLHEP::HepVector helParams(5);
+          helParams(1) = helIn._d0;
+          helParams(2) = helIn._phi0;
+          helParams(3) = helIn._omega;
+          helParams(4) = helIn._z0;
+          helParams(5) = helIn._tanDip;
+          CLHEP::HepSymMatrix conv(5,1);
+         
+	  HelixTraj tmpHelix(helParams,conv);
+          helOut=tmpHelix;
   }
 
 }

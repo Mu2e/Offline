@@ -22,9 +22,10 @@
 namespace mu2e {
 
 
-       CaloClusterFinder::CaloClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed, double deltaTimePlus, double deltaTimeMinus, double ExpandCut) : 
-          _cal(&cal), _crystalSeed(crystalSeed),_seedTime(crystalSeed->time()), _clusterList(), _crystalToVisit(), _isVisited(cal.nCrystal()),
-	  _deltaTimePlus(deltaTimePlus), _deltaTimeMinus(deltaTimeMinus), _ExpandCut(ExpandCut)
+       CaloClusterFinder::CaloClusterFinder(Calorimeter const& cal, CaloCrystalHit const* crystalSeed,
+                                            double deltaTimePlus, double deltaTimeMinus, double ExpandCut) : 
+          _cal(&cal), _crystalSeed(crystalSeed),_seedTime(crystalSeed->time()), _clusterList(), _crystalToVisit(), 
+	  _isVisited(cal.nCrystal()),_deltaTimePlus(deltaTimePlus), _deltaTimeMinus(deltaTimeMinus), _ExpandCut(ExpandCut)
        {}
        
        
@@ -55,17 +56,19 @@ namespace mu2e {
 
 
 		     CaloCrystalList& list = idHitVec[iId];
-		     for (auto it=list.begin(); it != list.end(); ++it)
+
+		     auto it  = list.begin();
+		     auto end = list.end();
+		     while (it != end)
 		     {
 		         CaloCrystalHit const* hit = *it;
 
-			 if (hit->time() - _seedTime > _deltaTimePlus)  continue; 
-			 if (_seedTime - hit->time() > _deltaTimeMinus) continue;
+			 if (hit->time() - _seedTime > _deltaTimePlus)  {++it; continue;}
+			 if (_seedTime - hit->time() > _deltaTimeMinus) {++it; continue;}
 
          		 if (hit->energyDep() > _ExpandCut) _crystalToVisit.push(iId);
                          _clusterList.push_front(hit);
-			 list.erase(it--);   //do not change it--
-			 
+			 it = list.erase(it); 			 
 		     } 
 		     
 		 }

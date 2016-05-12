@@ -14,12 +14,12 @@ source :
 services :
 {
   message               : @local::default_message
-  TFileService          : { fileName : "hist_6cm.root" }
+  TFileService          : { fileName : "hist.root" }
   RandomNumberGenerator : { }
 
   user :
   {
-    GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom_6cm.txt" }
+    GeometryService        : { inputFile      : "CRVResponse/singleModule/geom.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
     G4Helper               : { }
@@ -34,7 +34,7 @@ physics :
     generate: 
     {
        module_type          : EventGenerator
-       inputfile            : "CRVResponse/singleCounter/genconfig_6cm.txt"
+       inputfile            : "CRVResponse/singleModule/genconfig.txt"
     }
 
     g4run : 
@@ -78,9 +78,6 @@ physics :
        }
     }
 
-    protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap: { module_type : GenerateMuonLife }
-
     CrvPhotonArrivals: @local::CrvPhotonArrivals
     CrvSiPMResponses : @local::CrvSiPMResponses
     CrvWaveforms     : @local::CrvWaveforms
@@ -98,7 +95,7 @@ physics :
     }
   }
 
-  trig : [generate, g4run, protonTimeMap, muonTimeMap, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses]  
+  trig : [generate, g4run, CrvPhotonArrivals, CrvSiPMResponses, CrvWaveforms, CrvRecoPulses ]
   trigger_paths  : [trig]
 
 #  out: [CrvTest, Output]
@@ -106,18 +103,12 @@ physics :
   end_paths: [out]
 }
 
-physics.producers.CrvPhotonArrivals.g4ModuleLabels : ["*"]
-physics.producers.CrvPhotonArrivals.processNames   : ["*"]
-physics.producers.CrvPhotonArrivals.lookupTableFileNames      : ["/mu2e/data/outstage/ehrlich/CRVLookupTables/11032015/LookupTable_6cm_4500"]
-physics.producers.CrvPhotonArrivals.lookupTableCounterLengths : [4500]
-physics.producers.CrvPhotonArrivals.scintillationYield        : 10000.0
-
 outputs: 
 {
     Output : 
     {
         module_type : RootOutput
-        fileName    : "data_crv_6cm.root"
+        fileName    : "data_crv.root"
     }
 }
 

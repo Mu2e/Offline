@@ -32,6 +32,7 @@
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "GeneralUtilities/inc/OrientationResolver.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -41,7 +42,6 @@
 #include "G4Box.hh"
 #include "G4Tubs.hh"
 #include "G4TwoVector.hh"
-#include "CLHEP/Vector/Rotation.h"
 #include "G4NistManager.hh"
 
 #include "G4SubtractionSolid.hh"
@@ -55,100 +55,6 @@
 
 namespace mu2e {
 
-  void getRotationFromOrientation ( CLHEP::HepRotation& aRotation, 
-				    std::string orient ){
-    // This is a helper function for determining the correct HepRotation
-    // starting from an orientation number, described in docdb #xxxx
-    // Note:  the length of orient should always be 3, enforced in the
-    // Maker functions.
-    if ( orient == "000" ) return;  // Don't need to reorient
-    if ( orient == "550" ) {  // Special for proton beamline elements
-      aRotation.rotateY(-13.62*CLHEP::degree);
-      aRotation.rotateX(2.71*CLHEP::degree);
-      return;
-    }
-    if ( orient == "040" ) { // Special 45 degree turn around y
-      aRotation.rotateY(45.0*CLHEP::degree);
-      return;
-    }
-
-    int uRotNum=0,vRotNum=0,wRotNum=0;
-    for ( int iChar = 0; iChar < 3; iChar++ ) {
-      // unpack the orientation number
-      int genRotNum = 0; // Default to no rotation if mis-specified.  Throw instead, maybe?
-      char digit = orient[iChar];
-      if ( digit == '1' ) genRotNum = 1;
-      if ( digit == '2' ) genRotNum = 2;
-      if ( digit == '3' ) genRotNum = 3;
-
-      if ( iChar == 0 ) uRotNum = genRotNum;
-      if ( iChar == 1 ) vRotNum = genRotNum;
-      if ( iChar == 2 ) wRotNum = genRotNum;
-    }
-
-    double phi   = (double)uRotNum*90*CLHEP::degree;
-    double theta = (double)vRotNum*90.0*CLHEP::degree;
-    double psi   = (double)wRotNum*90.0*CLHEP::degree;
-
-    if ( wRotNum != 0 ) aRotation.rotateZ(-psi);
-    // Now have to accommodate the change of axes based on Z rotation
-    // If 90 rot in Z, rotation around y becomes rot around neg x
-    // If 180 in Z, rotation around y becomes rot around neg y
-    // If 270 in Z, rot around y becomes rot around x
-    if ( wRotNum == 0 ) {
-      if ( vRotNum != 0 ) aRotation.rotateY(-theta);
-      if ( vRotNum == 0 ) {
-	if ( uRotNum != 0 ) aRotation.rotateX(-phi);
-      } else if ( vRotNum == 1 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
-      } else if ( vRotNum == 2 ) {
-	if ( uRotNum != 0 ) aRotation.rotateX(phi);
-      } else if ( vRotNum == 3 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(phi);
-      }
-    } else if ( wRotNum == 1 ) {
-      // y-axis has moved to x and x to -y 
-      if ( vRotNum != 0 ) aRotation.rotateX(theta);
-      if ( vRotNum == 0 ) {
-	if ( uRotNum != 0 ) aRotation.rotateY(-phi);
-      } else if ( vRotNum == 1 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
-      } else if ( vRotNum == 2 ) {
-	if ( uRotNum != 0 ) aRotation.rotateY(phi);
-      } else if ( vRotNum == 3 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(phi);
-      }
-    } else if ( wRotNum == 2 ) {
-      // y axis now -y and x axis now -x
-      if ( vRotNum != 0 ) aRotation.rotateY(theta);
-      if ( vRotNum == 0 ) {
-	if ( uRotNum != 0 ) aRotation.rotateX(phi);
-      } else if ( vRotNum == 1 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
-      } else if ( vRotNum == 2 ) {
-	if ( uRotNum != 0 ) aRotation.rotateX(-phi);
-      } else if ( vRotNum == 3 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(phi);
-      }
-    } else if ( wRotNum == 3 ) {
-      // y axis is now -x and x axis is now +y
-      if ( vRotNum != 0 ) aRotation.rotateX(-theta);
-      if ( vRotNum == 0 ) {
-	if ( uRotNum != 0 ) aRotation.rotateY(phi);
-      } else if ( vRotNum == 1 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(-phi);
-      } else if ( vRotNum == 2 ) {
-	if ( uRotNum != 0 ) aRotation.rotateY(-phi);
-      } else if ( vRotNum == 3 ) {
-	if ( uRotNum != 0 ) aRotation.rotateZ(phi);
-      }
-    }
-    return;
-  }
-  // End of utility function for converting orientation to rotation
- 
-
-  //================================================================
 
   void constructExternalShielding(const VolumeInfo& parent, const SimpleConfig& config) {
 
@@ -158,6 +64,10 @@ namespace mu2e {
     GeomHandle<Pipe>   pipeSet;
     GeomHandle<ElectronicRack>   rackSet;
 
+    // Utility for converting orientations to rotations
+    OrientationResolver* OR = new OrientationResolver();
+
+    // Get config info
     const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
     const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false);
     const bool placePV             = true;
@@ -194,7 +104,7 @@ namespace mu2e {
         CLHEP::HepRotation* itsRotat= new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	std::string orientInit = orients[i];
 
-	getRotationFromOrientation(*itsRotat, orientInit);
+	OR->getRotationFromOrientation(*itsRotat, orientInit);
 
 	// Build each box here
 
@@ -270,7 +180,7 @@ namespace mu2e {
 	std::string orientDSInit = orientsDS[i];
 
 	CLHEP::HepRotation* itsDSRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	getRotationFromOrientation( *itsDSRotat, orientDSInit );
+	OR->getRotationFromOrientation( *itsDSRotat, orientDSInit );
 
 	// ****************************************
 	// Now add holes and notches
@@ -328,7 +238,7 @@ namespace mu2e {
 					   windparams.data()[4]);
 	    
 	    CLHEP::HepRotation* windRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	    getRotationFromOrientation( *windRotat, holeOrientsDS[hID] );
+	    OR->getRotationFromOrientation( *windRotat, holeOrientsDS[hID] );
 
 
 	    if ( 0 == aSolid ) { 
@@ -502,7 +412,7 @@ namespace mu2e {
 	std::string orientSAInit = orientsSA[i];
 
 	CLHEP::HepRotation* itsSARotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	getRotationFromOrientation( *itsSARotat, orientSAInit );
+	OR->getRotationFromOrientation( *itsSARotat, orientSAInit );
 
 	// ****************************************
 	// Now add holes and notches
@@ -560,7 +470,7 @@ namespace mu2e {
 					   windparams.data()[4]);
 	    
 	    CLHEP::HepRotation* windRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	    getRotationFromOrientation( *windRotat, holeOrientsSA[hID] );
+	    OR->getRotationFromOrientation( *windRotat, holeOrientsSA[hID] );
 
 
 	    if ( 0 == aSolid ) { 
@@ -726,7 +636,7 @@ namespace mu2e {
 
 	CLHEP::HepRotation* pipeRotat = new 
 	  CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	getRotationFromOrientation( *pipeRotat, pOrient[it][ip] );
+	OR->getRotationFromOrientation( *pipeRotat, pOrient[it][ip] );
 
 	CLHEP::Hep3Vector pipePosInMu2e = pCent[it][ip] 
 	  - parent.centerInMu2e();
@@ -800,7 +710,7 @@ namespace mu2e {
 	  CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	std::string orientInitER = orientsER[i];
 
-	getRotationFromOrientation(*itsRotatER, orientInitER);
+	OR->getRotationFromOrientation(*itsRotatER, orientInitER);
 
 	// Build each box here
 

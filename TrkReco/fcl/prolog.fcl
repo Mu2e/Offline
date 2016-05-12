@@ -8,17 +8,19 @@ BEGIN_PROLOG
 #
 # may use a more careful optimization, but this is it for now
 #------------------------------------------------------------------------------
-DoubletAmbigResolver : {
-    debugLevel                          : 0
-    HitAmbigPenalty 			: false
-    HitMinDrift				: 0.2
-    ZeroDriftPenalty 			: 0.05
-    scaleErrDoublet                     : 5.   # external error scale factor
-    maxDoubletChi2                      : 10.  # to account for 1+4+4, not quite rigorous mathematically 
-    sigmaSlope                          : 0.025
-    minDriftDoublet                     : 0.3
-    deltaDriftDoublet                   : 0.3
-    excludeBothHits                     : 1
-    minChi2Ratio                        : 0.1
+TrkReco: {
+    DoubletAmbigResolver : {
+	debugLevel                          : 0
+	HitAmbigPenalty 		    : false
+	HitMinDrift			    : 0.2
+	ZeroDriftPenalty 		    : 0.05
+	scaleErrDoublet                     : 5.   # external error scale factor
+	maxDoubletChi2                      : 10.  # to account for 1+4+4, not quite rigorous mathematically 
+	sigmaSlope                          : 0.025
+	minDriftDoublet                     : 0.3
+	deltaDriftDoublet                   : 0.3
+	excludeBothHits                     : 1
+	minChi2Ratio                        : 0.1
+    }
 }
 END_PROLOG

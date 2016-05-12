@@ -1,0 +1,30 @@
+// Baseline job config with event mixing, which uses
+// just the proton bunch intensity weight.
+//
+// Can be used on conversion electrons and some backgrounds that do not require
+// decated event weights.  Note that cosmic should not use the PBI weight and
+// does require a dedicated config.
+//
+// To specify background hit files for grid submissions, add the
+//
+//     --fclinput=1:@bgHitFiles:/background/hits/filelist.txt
+//
+// option to mu2eart command line.
+//
+// For interactive tests, uncomment the definition of bgHitFiles in the
+// PROLOG below.  DO NOT LEAVE IT UNCOMMENTED, as it can cause grid jobs
+// to silently use the same file over and over again.
+//
+// Andrei Gaponenko, 2016
+
+BEGIN_PROLOG
+//bgHitFiles: ["/pnfs/mu2e/tape/phy-sim/sim/mu2e/cd3-detmix-cut/v566/e4/c6/sim.mu2e.cd3-detmix-cut.v566.000003_00000000.art"]
+END_PROLOG
+
+#include "JobConfig/cd3/common/dra_mix_defs.fcl"
+
+physics.trigger_paths: [ draCommonTrigSeq]
+physics.end_paths: [ draCommonEndSeq, draCutAndCountEndSeq ]
+
+physics.analyzers.cutAndCountAnalyzer.weight: { inputs: ["protonBunchSummarizer"] }
+services.TFileService.fileName: "mu2eCCFC_conversion.root"

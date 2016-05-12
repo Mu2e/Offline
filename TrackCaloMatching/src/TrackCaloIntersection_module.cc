@@ -133,7 +133,6 @@ namespace mu2e {
 	   
            double scanIn(      Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd);
            double scanOut(     Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd);
-           double scanOutDisk( Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd);
            double scanBinary(  Calorimeter const& cal, TrkDifTraj const& traj, int iSection, double rangeIn, double rangeOut);
 
            double fastForwardDisk(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, double rangeInit, CLHEP::Hep3Vector& trjVec);
@@ -321,12 +320,8 @@ namespace mu2e {
 	 }  
 	 
 
-	 double rangeOut (-1);
-         if (_checkExit)
-	 {
-	    if (cal.caloType()==Calorimeter::CaloType::disk) rangeOut = scanOutDisk(cal, traj, trkHel, iSection, rangeIn+1, rangeEnd);
-	    else                                             rangeOut = scanOut(    cal, traj, trkHel, iSection, rangeIn+1, rangeEnd);
-	 }  
+	 double rangeOut(-1);
+         if (_checkExit) rangeOut = scanOut(cal, traj, trkHel, iSection, rangeIn+1, rangeEnd);
 
 	 
 	 TrkCaloInter inter;
@@ -409,53 +404,6 @@ namespace mu2e {
 	 return scanBinary(cal, traj, iSection, range - _pathStep, range);
     }
     
-    //-----------------------------------------------------------------------------
-    //same as ScanOut, but with an optimization for the disk geometry, forwarding close to the limits of the calorimeter envelope if we're inside the calorimeter volume
-    double TrackCaloIntersection::scanOutDisk(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
-    {         
-
-	 double rangeForward(0);
-	 double caloRadiusIn  = cal.section(iSection).innerEnvelopeR()  + 3*cal.caloGeomInfo().crystalHalfTrans();
-	 double caloRadiusOut = cal.section(iSection).outerEnvelopeR() - 3*cal.caloGeomInfo().crystalHalfTrans();
-
-	 double range(rangeStart);
-
-	 CLHEP::Hep3Vector trjVec;
-	 updateTrjVec(cal,traj,range,trjVec);
-
-         while ( cal.isInsideSection(iSection,trjVec) )
-	 {         	    
-
-	      double radius = radiusAtRange(traj,range);
-	      if (radius > caloRadiusIn &&  radius < caloRadiusOut && fabs(range-rangeForward) > 10*_pathStep )
-	      {
-		  double lenInner = extendToRadius(trkHel, traj, range, caloRadiusIn );
-		  double lenOuter = extendToRadius(trkHel, traj, range, caloRadiusOut );
-		  double deltaLen = std::min(lenInner,lenOuter);
-
-		  //the mismatch between traj and trkHelk causes forwarding to remain at the same point in some instances
-		  if (deltaLen > 0 )
-		  {
-		      range += deltaLen;
-		      if (range > rangeEnd) range = rangeEnd - _pathStep;
-		      rangeForward = range;
-		      if (_diagLevel>2) std::cout<<"Scan out fast forwarded to range="<<range<<"   "<<lenInner<<" "<<lenOuter<<std::endl;
-
-		      updateTrjVec(cal,traj,range,trjVec);
-		      while( !cal.isInsideSection(iSection,trjVec) ) {range -= _pathStep; updateTrjVec(cal,traj,range,trjVec);}	
-		  }      
-	      }
-	      
-
-	    range += _pathStep;
-	    updateTrjVec(cal,traj,range,trjVec);
-	    if (_diagLevel>2) std::cout<<"TrackExtrpol position scan Out up "<<trjVec<<"  for currentRange="<<range<<"   "<<"radius="<<radiusAtRange(traj,range)<<std::endl;	 	 
-	 }
-         
-
-	 return scanBinary(cal, traj, iSection, range - _pathStep, range);
-    }
-
 
     //-----------------------------------------------------------------------------
     double TrackCaloIntersection::scanBinary(Calorimeter const& cal, TrkDifTraj const& traj, int iSection, double rangeIn, double rangeOut)
@@ -550,3 +498,55 @@ using mu2e::TrackCaloIntersection;
 DEFINE_ART_MODULE(TrackCaloIntersection);
 
 
+
+
+
+/*
+
+//-----------------------------------------------------------------------------
+// This is an old routine to find the exit point for the disk. The mismatch between the true trajectory and the local helix approximation caused
+// an infinite loop. The idea is to try to fast-forward right outside the disk inner / outer boundaries, then backtrack a little bit to be inside. 
+// If the fast-forwarding keeps you inside instead of being outside, you backtrack to the origin, leading to an infinite loop...
+
+double TrackCaloIntersection::scanOutDisk(Calorimeter const& cal, TrkDifTraj const& traj, HelixTraj const& trkHel, int iSection, double rangeStart, double rangeEnd)
+{         
+
+     double rangeForward(0);
+     double caloRadiusIn  = cal.section(iSection).innerEnvelopeR() + 4*cal.caloGeomInfo().crystalHalfTrans();
+     double caloRadiusOut = cal.section(iSection).outerEnvelopeR() - 4*cal.caloGeomInfo().crystalHalfTrans();
+
+     double range(rangeStart);
+
+     CLHEP::Hep3Vector trjVec;
+     updateTrjVec(cal,traj,range,trjVec);
+
+     while ( cal.isInsideSection(iSection,trjVec) )
+     {         	    
+	  double radius = radiusAtRange(traj,range);
+
+	  if (radius > caloRadiusIn &&  radius < caloRadiusOut && fabs(range-rangeForward) > 10*_pathStep )
+	  {
+	      double lenInner = extendToRadius(trkHel, traj, range, caloRadiusIn );
+	      double lenOuter = extendToRadius(trkHel, traj, range, caloRadiusOut );
+	      double deltaLen = std::min(lenInner,lenOuter);
+
+	      //the mismatch between traj and trkHelk causes forwarding to remain at the same point in some instances
+	      if (deltaLen > 0 )
+	      {
+		  range += deltaLen;
+		  if (range > rangeEnd) range = rangeEnd - _pathStep;
+		  rangeForward = range;
+
+		  updateTrjVec(cal,traj,range,trjVec);
+		  while( !cal.isInsideSection(iSection,trjVec) ) {range -= _pathStep; updateTrjVec(cal,traj,range,trjVec);}
+	      }      
+	  }
+
+	range += _pathStep;
+	updateTrjVec(cal,traj,range,trjVec);
+     }         
+
+     return scanBinary(cal, traj, iSection, range - _pathStep, range);
+}
+
+*/

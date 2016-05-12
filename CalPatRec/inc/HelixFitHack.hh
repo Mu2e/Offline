@@ -44,6 +44,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   class HelixFitHack {
   public:
+    enum { kMaxNHits = 10000 } ;
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
@@ -67,9 +68,6 @@ namespace mu2e {
     };
 
     SaveResults_t        _results[6];
-
-    double               fPhiCorrected[1000];
-    int                  fPhiCorrectedDefined;
 
     int                  fSeedIndex;
     int                  fCandidateIndex;
@@ -117,7 +115,6 @@ namespace mu2e {
     double               _tdmin, _tdmax; // range of abs(tan(dip)
     double               _rcmin,_rcmax;  // maximum transverse radius of circle
     double               _sfactor;       // stereo hit error factor
-    bool                 _forcep;    // force p/pt to be in range (true), or exclude fits outside that range (false)
     bool                 _xyweights;
     bool                 _zweights;  // weight points by estimated errors
     bool                 _filter;    // filter hits
@@ -145,9 +142,14 @@ namespace mu2e {
 
     // indices, distance from prediction and distance along z axis from the seeding hit
     // of the hits found in the pattern recognition
-    int       _indicesTrkCandidate[400];
-    double    _distTrkCandidate   [400];
-    double    _dzTrkCandidate     [400];
+
+    int       _indicesTrkCandidate[kMaxNHits];
+    double    _distTrkCandidate   [kMaxNHits];
+    double    _dzTrkCandidate     [kMaxNHits];
+
+    double    _phiCorrected       [kMaxNHits];
+    int       _phiCorrectedDefined;
+
 
     double    _dfdzErr;                 // error on dfdz by ::findDfDz
 

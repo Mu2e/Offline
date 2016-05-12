@@ -29,8 +29,6 @@
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 
-#include "TrkPatRec/inc/TrkPatRecUtils.hh"
-
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
@@ -140,7 +138,7 @@ namespace mu2e {
   }
 
   //-----------------------------------------------------------------------------
-  void CalTrkFit::beginRun(art::Run& ) {
+  bool CalTrkFit::beginRun(art::Run& ) {
     mu2e::GeomHandle<mu2e::TTracker> th;
     _tracker = th.get();
 
@@ -156,6 +154,8 @@ namespace mu2e {
 
     _seedfit.setTracker(_tracker);
     _seedfit.setTrackerCalib(_trackerCalib);
+    
+    return true;
   }
 
   //-----------------------------------------------------------------------------
@@ -248,7 +248,7 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // event entry point
   //-----------------------------------------------------------------------------
-  void CalTrkFit::produce(art::Event& event ) {
+  bool CalTrkFit::filter(art::Event& event ) {
     const char*               oname = "CalTrkFit::produce";
     char                      message[200];
     bool                      findhelix (false), findseed (false), findkal (false);
@@ -295,6 +295,7 @@ namespace mu2e {
 
     const TrackSeed*   trkSeed(0);
     CalTimePeak* tp(0);
+    const HelixVal*    helix(0);
 
     // find the data
     if (!findData(event)) {
@@ -344,15 +345,29 @@ namespace mu2e {
       trkSeed = &_trkseeds->at(ipeak);
       tp      = (CalTimePeak*)&_tpeaks  ->at(ipeak);
 
+       //      mu2e::HelixVal2HelixTraj(trkSeed->_helix, *_helTraj);
+      helix = &trkSeed->_helix;
+
+      CLHEP::HepVector helParams(5);
+      helParams(1) = helix->_d0;
+      helParams(2) = helix->_phi0;
+      helParams(3) = helix->_omega;
+      helParams(4) = helix->_z0;
+      helParams(5) = helix->_tanDip;
+      
+      CLHEP::HepSymMatrix conv(5,1);
+      //      HelixTraj tmpHelix(helParams,conv);
+
       //----------------------------------------------------------------------------------------
       // work around missing default constructor
       //-----------------------------------------------------------------------------
-      if (_helTraj == 0)  _helTraj = new HelixTraj(TrkParams(HelixTraj::NHLXPRM));
-      else               *_helTraj = HelixTraj(TrkParams(HelixTraj::NHLXPRM));
+      if (_helTraj == 0)  _helTraj = new HelixTraj(helParams,conv);//TrkParams(HelixTraj::NHLXPRM));
+      else               *_helTraj = HelixTraj(helParams,conv);
       
-      mu2e::HelixVal2HelixTraj(trkSeed->_fullTrkSeed, *_helTraj);
+   
+      //      _helTraj =  &tmpHelix;
 
-      TrkDef             seeddef(_shcol, trkSeed->_fullTrkSeed._selectedTrackerHitsIdx, *_helTraj, _tpart, _fdir);
+      TrkDef             seeddef(_shcol, trkSeed->_timeCluster._strawHitIdxs, *_helTraj, _tpart, _fdir);
       TrkDef             kaldef (seeddef);
      
       seeddef.setHelix(*_helTraj); 
@@ -367,7 +382,7 @@ namespace mu2e {
       // the Kalman fitter needs them ordered in Z(straw)
       //-----------------------------------------------------------------------------
       std::vector<hitIndex> goodhits;
-      _hitIndices = trkSeed->_fullTrkSeed._selectedTrackerHitsIdx;
+      _hitIndices = trkSeed->_timeCluster._strawHitIdxs;
       
       std::sort(_hitIndices.begin(), _hitIndices.end(), [ ]( const mu2e::hitIndex& lhs,
 							     const mu2e::hitIndex& rhs )
@@ -431,7 +446,7 @@ namespace mu2e {
 
 	  for (int i=0; i< _nindex; ++i) {
 	    hit_index = _hitIndices[i]._index;
-	    sh        = trkSeed->_selectedTrackerHits[i].get();//_hitIndices[i]._strawhit;
+	    sh        = &_shcol->at(hit_index);
 	    straw     = &_tracker->getStraw(sh->strawIndex());
 	    wpos      = &straw->getMidPoint();
 	    wdir      = &straw->getDirection();
@@ -544,7 +559,8 @@ namespace mu2e {
 	    TrkHitVector const& hot_l = _sfresult->_krep->hitVector();
 
 	    for (int i=0; i< _nindex; ++i){
-	      StrawHit const*     sh = trkSeed->_selectedTrackerHits[i].get();//_hitIndices[i]._strawhit;####
+	      int hIndex             = _hitIndices[i]._index;
+ 	      StrawHit const*     sh = & _shcol->at(hIndex);//trkSeed->_strawHitPtrs[i].get();//_hitIndices[i]._strawhit;####
 	      Straw const&     straw = _tracker->getStraw(sh->strawIndex());
 	      CLHEP::Hep3Vector hpos = straw.getMidPoint();
 	      CLHEP::Hep3Vector hdir = straw.getDirection();
@@ -675,9 +691,17 @@ namespace mu2e {
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
   END:;
+    int     ntracks = tracks->size();
+
     event.put(std::move(tracks)   ,_iname);
     event.put(std::move(trackPtrs),_iname);
     event.put(std::move(algs     ),_iname);
+
+    if (ntracks > 0){
+      return true;
+    } else{
+      return false;
+    }
     //    event.put(std::move(flags )   ,_iname);
   }
 

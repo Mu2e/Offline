@@ -35,8 +35,8 @@
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"
 #include "RecoDataProducts/inc/SubEventCollection.hh"
-#include "RecoDataProducts/inc/TrackerHitTimeClusterCollection.hh"
-#include "RecoDataProducts/inc/PanelStationClusterGroupCollection.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/HelixVal.hh"
 #include "RecoDataProducts/inc/ZRotStrawHitMapCollection.hh"
 #include "RecoDataProducts/inc/TrackerHitByID.hh"
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
@@ -86,8 +86,10 @@ template class art::Ptr<mu2e::StrawHitPosition>;
 template class std::vector<art::Ptr<mu2e::StrawHitPosition> >;
 template class art::Ptr<mu2e::StrawHitFlag>;
 template class std::vector<art::Ptr<mu2e::StrawHitFlag> >;
-template class art::Ptr<mu2e::TrackerHitTimeCluster>;
-template class std::vector<art::Ptr<mu2e::TrackerHitTimeCluster> >;
+template class art::Ptr<mu2e::TimeCluster>;
+template class std::vector<art::Ptr<mu2e::TimeCluster> >;
+template class art::Ptr<mu2e::HelixVal>;
+template class std::vector<art::Ptr<mu2e::HelixVal> >;
 template class std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >;
 template class art::Ptr<mu2e::CaloCrystalHit>;
 template class std::vector<art::Ptr<mu2e::CaloCrystalHit> >;
@@ -146,8 +148,6 @@ template class art::Wrapper<art::Assns<mu2e::TrackSummary, art::Ptr<KalRep> > >;
 
 template class art::Wrapper<mu2e::ExtMonUCITofHitCollection>;
 template class art::Wrapper<mu2e::SubEventCollection>;
-template class art::Wrapper<mu2e::TrackerHitTimeClusterCollection>;
-template class art::Wrapper<mu2e::PanelStationClusterGroupCollection>;
 template class art::Wrapper<mu2e::ZRotStrawHitMapCollection>;
 template class art::Wrapper<mu2e::TrackerHitByID>;
 template class art::Wrapper<mu2e::TrackSeedCollection>;
