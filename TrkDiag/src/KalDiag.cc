@@ -444,7 +444,7 @@ namespace mu2e
     tshinfomc._t0 = _toff.timeWithOffsetsApplied(*spmcp);
     tshinfomc._ht = mcdigi.wireEndTime(itdc);
     tshinfomc._pdg = spp->pdgId();
-    tshinfomc._proc = spp->creationCode();
+    tshinfomc._proc = spp->realCreationCode();
     tshinfomc._edep = mcdigi.energySum();
     tshinfomc._gen = -1;
     if(spp->genParticle().isNonnull())
@@ -470,11 +470,12 @@ namespace mu2e
     if(spp->genParticle().isNonnull())
       mcinfo._gen = spp->genParticle()->generatorId().id();
     mcinfo._pdg = spp->pdgId();
-    mcinfo._proc = spp->creationCode();
-    art::Ptr<SimParticle> pp = spp->parent();
+    mcinfo._proc = spp->realCreationCode();
+    art::Ptr<SimParticle> pp = spp->realParent();
     if(pp.isNonnull()){
       mcinfo._ppdg = pp->pdgId();
-      mcinfo._pproc = pp->creationCode();
+      mcinfo._pproc = pp->realCreationCode();
+      mcinfo._pmom = pp->startMomentum().vect().mag();
       if(pp->genParticle().isNonnull())
 	mcinfo._pgen = pp->genParticle()->generatorId().id();
     }
@@ -727,8 +728,8 @@ namespace mu2e
   KalDiag::relation KalDiag::relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj) {
     if(sppi.isNull() || sppj.isNull()) return none;
     if(sppi == sppj)return same;
-    art::Ptr<SimParticle> pi = sppi->parent();
-    art::Ptr<SimParticle> pj = sppj->parent();
+    art::Ptr<SimParticle> pi = sppi->realParent();
+    art::Ptr<SimParticle> pj = sppj->realParent();
     if(pi.isNonnull() && pi == sppj)return daughter;
     if(pj.isNonnull() && pj == sppi)return mother;
     if(pi.isNonnull() && pj.isNonnull()){
@@ -738,11 +739,11 @@ namespace mu2e
       pvj.push_back(sppj);
       while(pi.isNonnull()){
 	pvi.push_back(pi);
-	pi = pi->parent();
+	pi = pi->realParent();
       }
       while(pj.isNonnull()){
 	pvj.push_back(pj);
-	pj = pj->parent();
+	pj = pj->realParent();
       }
       vector<art::Ptr<SimParticle> >::iterator ifnd;
       ifnd = find(pvi.begin(),pvi.end(),sppj);
@@ -801,7 +802,7 @@ namespace mu2e
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       Int_t mcpdg = spp->pdgId();
-      Int_t mcproc = spp->creationCode();
+      Int_t mcproc = spp->realCreationCode();
       Int_t mcgen = spp->genParticle()->generatorId().id();
       bool conversion = (mcpdg == 11 && mcgen == 2 && mcproc == GenId::conversionGun && spmcp->momentum().mag()>90.0);
       if(conversion){

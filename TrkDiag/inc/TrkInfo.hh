@@ -60,10 +60,11 @@ namespace mu2e
     Int_t _nhits, _nactive, _ngood, _nambig;
     Int_t _pdg, _gen, _proc;
     Int_t _ppdg, _pgen, _pproc;
+    Float_t _pmom;
     TrkInfoMC() { reset(); }
-    void reset() { _ndigi = _ndigigood = _nactive = _nhits = _ngood = _nambig = _pdg = _gen  = _proc = _ppdg = _pgen = _pproc = -1; }
+    void reset() { _ndigi = _ndigigood = _nactive = _nhits = _ngood = _nambig = _pdg = _gen  = _proc = _ppdg = _pgen = _pproc = -1; _pmom=-1.0; }
     static std::string const& leafnames() { static const std::string leaves =
-      std::string("ndigi/I:ndigigood/I:nhits/I:nactive/I:ngood/I:nambig/I:pdg/I:gen/I:proc/I:ppdg/I:pgen/I:pproc/I");
+      std::string("ndigi/I:ndigigood/I:nhits/I:nactive/I:ngood/I:nambig/I:pdg/I:gen/I:proc/I:ppdg/I:pgen/I:pproc/I:pmom/F");
       return leaves;
     }
   };
