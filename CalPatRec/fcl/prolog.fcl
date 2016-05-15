@@ -436,7 +436,13 @@ CalPatRec.calpatrec     : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPat
 CalPatRec.calpatrec_dem : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
 			   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]
 
+CalPatRec.calpatrec_dep : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+			   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDep ]
+
 CalPatRec.calpatrec_dmm : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
 			   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]
+
+CalPatRec.calpatrec_dmp : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+			   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDmp ]
 
 END_PROLOG

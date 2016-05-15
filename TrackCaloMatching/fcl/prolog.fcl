@@ -215,6 +215,8 @@ TrackCaloMatching.matching_tpr : [ TrackCaloIntersectionTpr, TrackCaloMatchingTp
 
 TrackCaloMatching.matching_dem : [ TrackCaloIntersectionDem, TrackCaloMatchingDem ]
 TrackCaloMatching.matching_dmm : [ TrackCaloIntersectionDmm, TrackCaloMatchingDmm ]
+TrackCaloMatching.matching_dep : [ TrackCaloIntersectionDep, TrackCaloMatchingDep ]
+TrackCaloMatching.matching_dmp : [ TrackCaloIntersectionDmp, TrackCaloMatchingDmp ]
 TrackCaloMatching.matching_uem : [ TrackCaloIntersectionUem, TrackCaloMatchingUem ]
 TrackCaloMatching.matching_umm : [ TrackCaloIntersectionUmm, TrackCaloMatchingUmm ]
 TrackCaloMatching.matching_uep : [ TrackCaloIntersectionUep, TrackCaloMatchingUep ]
