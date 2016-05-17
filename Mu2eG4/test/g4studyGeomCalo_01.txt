@@ -32,7 +32,7 @@ int            mu2e.studyEnvVersion      = 3;
 int world.verbosityLevel         = 2;
 
 // a very "thin" vacuum
-string world.materialName        = "WAGVacuum";
+string world.materialName        = "G4_Galactic";
 
 // make the world boundaries invisible
 bool   world.boxVisible          = false;
