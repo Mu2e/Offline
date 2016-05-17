@@ -158,16 +158,17 @@ namespace mu2e {
 
     // decide if this is standard Mu2e detector or something else ...
 
-    if (!_config->getBool("mu2e.standardDetector",true)) {
+    if (!isStandardMu2eDetector() || 
+        !_config->getBool("mu2e.standardDetector",true)) {
       cout  << "Non standard mu2e configuration, assuming it is intentional" << endl;
       return;
     }
 
-    // Throw if the configuration is not self consistent.
-    checkConfig();
-
     // Initialize geometry options
     _g4GeomOptions = unique_ptr<G4GeometryOptions>( new G4GeometryOptions( *_config ) );
+
+    // Throw if the configuration is not self consistent.
+    checkConfig();
 
     // This must be the first detector added since other makers may wish to use it.
     std::unique_ptr<DetectorSystem> tmpDetSys(DetectorSystemMaker::make(*_config));
