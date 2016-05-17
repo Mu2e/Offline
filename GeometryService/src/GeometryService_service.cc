@@ -99,6 +99,7 @@ namespace mu2e {
     _configStatsVerbosity( pset.get<int>         ("configStatsVerbosity", 0)),
     _printConfig(          pset.get<bool>        ("printConfig",          false)),
     _config(nullptr),
+    standardMu2eDetector_( pset.get<bool>        ("standardMu2eDetector", true)),
     _detectors(),
     _run_count()
   {

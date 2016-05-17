@@ -67,6 +67,8 @@ public:
 
     }
 
+    bool isStandardMu2eDetector() const { return standardMu2eDetector_; }
+
 private:
 
     // The name of the run-time configuration file.
@@ -126,6 +128,9 @@ private:
 
       return d;
     }
+
+    // is this the standard Mu2e detector?
+    bool standardMu2eDetector_;
 
     // All of the detectors that we know about.
     DetMap _detectors;
