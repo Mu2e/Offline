@@ -24,6 +24,8 @@
 
 #include "TrkDiag/inc/KalDiag.hh"
 
+#include "CalPatRec/inc/RecoObjectDump.hh"
+
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -118,6 +120,8 @@ namespace mu2e {
 
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection   );
+
+    if (_debugLevel > 0) RecoObjectDump::printEventHeader(&AnEvent,"MergePatRec::produce");
 
     AnEvent.getByLabel(_trkPatRecModuleLabel,_iname,tpr_h);
     AnEvent.getByLabel(_calPatRecModuleLabel,_iname,cpr_h);
@@ -258,6 +262,8 @@ namespace mu2e {
 	algs->push_back(alg_id);
       }
     }
+
+    if (_debugLevel > 0) RecoObjectDump::printKalRepCollection(&AnEvent,trackPtrs.get(),1);
 
     AnEvent.put(std::move(trackPtrs),_iname);
     AnEvent.put(std::move(algs     ),_iname);
