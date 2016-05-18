@@ -47,8 +47,6 @@
 
 #include "CalPatRec/inc/CalTimePeak.hh"
 
-#include "Stntuple/base/TNamedHandle.hh"
-
 
 //BaBar includes
 #include "BTrk/BbrGeom/TrkLineTraj.hh"
@@ -331,7 +329,7 @@ void RecoObjectDump::printKalRepCollection(const art::Event* Event         ,
 
   const KalRep *trk;
 
-  int banner_printed = 0;
+  //  int banner_printed = 0;
   for (int i=0; i<ntrk; i++) {
     art::Ptr<KalRep> kptr = Coll->at(i);
 //     Event->get(kptr.id(), krepsHandle);
@@ -339,12 +337,7 @@ void RecoObjectDump::printKalRepCollection(const art::Event* Event         ,
 //     string module_type = pset.get<std::string>("module_type");
  
     trk = kptr.get();
-    if (banner_printed == 0) {
-      printKalRep(trk,"banner",""); // module_type.data());
-      if (PrintHits == 0) banner_printed = 1;
-    }
-    printKalRep(trk,"data",""); // module_type.data());
-    if (PrintHits > 0) printKalRep(trk,"hits");
+    printKalRep(trk,"banner+data+hits",""); // module_type.data());
   }
  
 }
