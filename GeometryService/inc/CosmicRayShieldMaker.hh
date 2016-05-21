@@ -80,6 +80,8 @@ namespace mu2e
     double      _CMBHalfThickness;
     std::string _CMBMaterialName;
 
+    double      _fiberSeparation;
+
     std::string _FEBMaterialName;
     double      _FEBDistanceToEdge;
     double      _FEBDistanceToModule;

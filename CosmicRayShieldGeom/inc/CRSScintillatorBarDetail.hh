@@ -33,7 +33,8 @@ namespace mu2e
                              std::vector<int> const & localToWorld,
                              std::string const & CMBmaterialName,
                              double CMBoffset, double CMBhalfThickness,
-                             bool CMBside0, bool CMBside1);
+                             bool CMBside0, bool CMBside1,
+                             double fiberSeparation);
 
     // Compiler generated versions are OK for destructor
     // and for copy and assignment constructors.
@@ -87,6 +88,20 @@ namespace mu2e
     double _CMBhalfThickness;
     bool   _CMBside0;
     bool   _CMBside1;
+
+    /********************/
+    // SiPM section
+
+    public:
+
+    double getFiberSeparation() const {return _fiberSeparation;}
+
+    CLHEP::Hep3Vector getSiPMPosition(int SiPMNumber, const CLHEP::Hep3Vector &barPosition) const;
+    CLHEP::Hep3Vector getSiPMPosition(int fiberNumber, int side, const CLHEP::Hep3Vector &barPosition) const;
+
+    private:
+ 
+    double _fiberSeparation;
 
   };
 

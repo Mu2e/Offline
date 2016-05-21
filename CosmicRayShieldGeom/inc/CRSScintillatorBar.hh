@@ -125,6 +125,20 @@ namespace mu2e
     std::string const & getCMBMaterialName() const {return _detail->getCMBMaterialName();}
     bool hasCMB(int side) const {return _detail->hasCMB(side);}
 
+    /********************/
+    // SiPM section
+    
+    public:
+
+    CLHEP::Hep3Vector getSiPMPosition(int SiPMNumber) const
+    {
+      return _detail->getSiPMPosition(SiPMNumber, _position);
+    }
+    CLHEP::Hep3Vector getSiPMPosition(int fiberNumber, int side) const
+    {
+      return _detail->getSiPMPosition(fiberNumber, side, _position);
+    }
+
   };
 
 }  //namespace mu2e

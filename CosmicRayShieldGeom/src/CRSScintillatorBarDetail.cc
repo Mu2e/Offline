@@ -9,6 +9,7 @@
 //
 
 #include <sstream>
+#include <stdexcept>
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"
 
@@ -21,7 +22,8 @@ namespace mu2e
                                                      std::vector<int> const& localToWorld,
                                                      std::string const& CMBmaterialName,
                                                      double CMBoffset, double CMBhalfThickness,
-                                                     bool CMBside0, bool CMBside1) :
+                                                     bool CMBside0, bool CMBside1,
+                                                     double fiberSeparation) :
     _materialName(materialName),
     _halfLengths(halfLengths),
     _localToWorld(localToWorld),
@@ -29,7 +31,8 @@ namespace mu2e
     _CMBoffset(CMBoffset),
     _CMBhalfThickness(CMBhalfThickness),
     _CMBside0(CMBside0),
-    _CMBside1(CMBside1)
+    _CMBside1(CMBside1),
+    _fiberSeparation(fiberSeparation)
   {
   }
 
@@ -102,4 +105,34 @@ namespace mu2e
     }
     return false;
   }
+
+  /********************/
+  // SiPM section
+
+  CLHEP::Hep3Vector CRSScintillatorBarDetail::getSiPMPosition(int fiberNumber, int side, const CLHEP::Hep3Vector &barPosition) const
+  {
+    if(fiberNumber<0 || fiberNumber>1) throw std::logic_error("Wrong CRV fiber number.");
+    if(side<0 || side>1) throw std::logic_error("Wrong CRV side.");
+
+    int counterEndCoordinate=_localToWorld[2];
+    int fiberCoordinate=_localToWorld[1];
+
+    CLHEP::Hep3Vector SiPMpositionOffset;
+    SiPMpositionOffset[counterEndCoordinate]=_halfLengths[counterEndCoordinate]*(side==1?1:-1);
+    SiPMpositionOffset[fiberCoordinate]=_fiberSeparation*(fiberNumber==1?0.5:-0.5);
+
+    CLHEP::Hep3Vector SiPMposition = barPosition + SiPMpositionOffset;
+    return SiPMposition;
+  }
+
+  CLHEP::Hep3Vector CRSScintillatorBarDetail::getSiPMPosition(int SiPMNumber, const CLHEP::Hep3Vector &barPosition) const
+  {
+    if(SiPMNumber<0 || SiPMNumber>3) throw std::logic_error("Wrong CRV SiPM number.");
+
+    int fiberNumber=SiPMNumber/2;    
+    int side=SiPMNumber%2;
+
+    return getSiPMPosition(fiberNumber, side, barPosition);
+  }
+
 } // namespace mu2e
