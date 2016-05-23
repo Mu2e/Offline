@@ -51,31 +51,31 @@ namespace mu2e
 
     boost::shared_ptr<mu2eCrv::MakeCrvWaveforms> _makeCrvWaveforms;
 
-    double                              _binWidth;
+    double                              _digitizationPrecision;
     double                              _FEBtimeSpread;
     double                              _minVoltage;
 
     CLHEP::RandFlat                     _randFlat;
     CLHEP::RandGaussQ                   _randGaussQ;
     
-    std::vector<double> timeShiftFEBsSide0, timeShiftFEBsSide1;
+    std::vector<double> _timeShiftFEBsSide0, _timeShiftFEBsSide1;
   };
 
   CrvWaveformsGenerator::CrvWaveformsGenerator(fhicl::ParameterSet const& pset) :
     _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
-    _binWidth(pset.get<double>("binWidth")),                   //12.5 ns (digitizer sampling rate)
+    _digitizationPrecision(pset.get<double>("digitizationPrecision")),   //12.5 ns
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
     _minVoltage(pset.get<double>("minVoltage")),               //0.022V (corresponds to 3.5PE)
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randGaussQ(art::ServiceHandle<art::RandomNumberGenerator>()->getEngine())
   {
-    double singlePEWaveformBinWidth(pset.get<double>("singlePEWaveformBinWidth"));    //1.0 ns
-    int nBins(pset.get<int>("singlePEWaveformBins"));          //200
+    double singlePEWaveformPrecision(pset.get<double>("singlePEWaveformPrecision"));    //1.0 ns
+    double singlePEWaveformMaxTime(pset.get<double>("singlePEWaveformMaxTime"));        //200
     ConfigFileLookupPolicy configFile;
     _singlePEWaveformFileName = configFile(_singlePEWaveformFileName);
     _makeCrvWaveforms = boost::shared_ptr<mu2eCrv::MakeCrvWaveforms>(new mu2eCrv::MakeCrvWaveforms());
-    _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformBinWidth, nBins);
+    _makeCrvWaveforms->LoadSinglePEWaveform(_singlePEWaveformFileName, singlePEWaveformPrecision, singlePEWaveformMaxTime);
     produces<CrvWaveformsCollection>();
   }
 
@@ -94,16 +94,17 @@ namespace mu2e
     art::Handle<CrvSiPMResponsesCollection> crvSiPMResponsesCollection;
     event.getByLabel(_crvSiPMResponsesModuleLabel,"",crvSiPMResponsesCollection);
 
-    double samplingPointShift = _randFlat.fire()*_binWidth;
+    double samplingPointShift = _randFlat.fire()*_digitizationPrecision;
 
-    if(timeShiftFEBsSide0.empty())
+    if(_timeShiftFEBsSide0.empty())
     {
       GeomHandle<CosmicRayShield> CRS;
       unsigned int nCounters = CRS->getAllCRSScintillatorBars().size();
-      for(unsigned int i=0; i<nCounters/32; i++) 
+      unsigned int nFEBs = ceil(nCounters/32.0);
+      for(unsigned int i=0; i<nFEBs; i++)    
       {
-        timeShiftFEBsSide0.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
-        timeShiftFEBsSide1.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
+        _timeShiftFEBsSide0.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
+        _timeShiftFEBsSide1.emplace_back(_randGaussQ.fire(0, _FEBtimeSpread));
       }
     }
 
@@ -114,28 +115,32 @@ namespace mu2e
       const CrvSiPMResponses &siPMResponses = iter->second;
 
       double firstSiPMResponseTime = siPMResponses.GetFirstSiPMResponseTime();
-      int    startTime = floor(firstSiPMResponseTime / _binWidth) * _binWidth;  //start time of the waveform in multiples of the bin width (12.5ns)
+
+      unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way, i.e. that all counters beloning to the same FEB are grouped together
+      double minTimeShiftFEB = std::min(_timeShiftFEBsSide0[FEB],_timeShiftFEBsSide1[FEB]);
+      firstSiPMResponseTime += std::min(minTimeShiftFEB,0.0);
+
+      int startTime = floor(firstSiPMResponseTime / _digitizationPrecision) * _digitizationPrecision;  //start time of the waveform in multiples of the digitization interval (12.5ns)
       startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
 
       CrvWaveforms &crvWaveforms = (*crvWaveformsCollection)[barIndex];
-      crvWaveforms.SetBinWidth(_binWidth);
+      crvWaveforms.SetBinWidth(_digitizationPrecision);
       for(int SiPM=0; SiPM<4; SiPM++)
       {
+        double timeShift=0;
+        if(SiPM%2==0 && FEB<_timeShiftFEBsSide0.size()) timeShift=_timeShiftFEBsSide0[FEB];
+        if(SiPM%2==1 && FEB<_timeShiftFEBsSide1.size()) timeShift=_timeShiftFEBsSide1[FEB];
+
         const std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &timesAndCharges = siPMResponses.GetSiPMResponses(SiPM);
         std::vector<double> times, charges;
         for(unsigned int i=0; i<timesAndCharges.size(); i++)
         {
-          times.push_back(timesAndCharges[i]._time);
+          times.push_back(timesAndCharges[i]._time + timeShift);
           charges.push_back(timesAndCharges[i]._charge);
         }
 
-        double timeShift=0;
-        unsigned int FEB=barIndex.asUint()/32;
-        if(SiPM%2==0 && FEB<timeShiftFEBsSide0.size()) timeShift=timeShiftFEBsSide0[FEB];
-        if(SiPM%2==1 && FEB<timeShiftFEBsSide1.size()) timeShift=timeShiftFEBsSide1[FEB];
-
         std::vector<double> &waveform = crvWaveforms.GetWaveform(SiPM);
-        _makeCrvWaveforms->MakeWaveform(times, charges, waveform, startTime, _binWidth, timeShift);
+        _makeCrvWaveforms->MakeWaveform(times, charges, waveform, startTime, _digitizationPrecision);
         crvWaveforms.SetStartTime(SiPM,startTime);
 
         //zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage, 

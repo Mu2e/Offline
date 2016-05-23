@@ -10,34 +10,34 @@
 namespace mu2eCrv
 {
 
-void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double binWidth, unsigned int nBins) 
+void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformMaxTime) 
 {
-  _singlePEbinWidth = binWidth;
+  _singlePEWaveformPrecision = singlePEWaveformPrecision;
   std::ifstream f(filename.c_str());
   if(!f.good()) throw std::logic_error("Could not open single PE waveform file. "+filename);
 
   double currentTime=0, currentVoltage=0;
   double previousTime=NAN, previousVoltage=NAN;
-  unsigned int bin=0;
+  unsigned int index=0;
   while(f >> currentTime >> currentVoltage)
   {
     if(!isnan(previousTime))
     {
-      double t=bin*binWidth;  
-      while(currentTime>=t && bin<nBins)  //there can be several bins between two time entries in the text file
+      double t=index*singlePEWaveformPrecision;  
+      while(currentTime>=t && index*singlePEWaveformPrecision<singlePEWaveformMaxTime)
       {
         double fraction=(t-previousTime)/(currentTime-previousTime);
         double voltage=(currentVoltage-previousVoltage)*fraction+previousVoltage;
-        _waveformSinglePE.push_back(voltage);
-        bin++;
-        t=bin*binWidth;  
+        _singlePEWaveform.push_back(voltage);
+        index++;
+        t=index*singlePEWaveformPrecision;  
       }
-      if(bin>=nBins) break;
+      if(index*singlePEWaveformPrecision>=singlePEWaveformMaxTime) break;
     }
     else
     {
-      _waveformSinglePE.push_back(currentVoltage);
-      bin++;
+      _singlePEWaveform.push_back(currentVoltage);
+      index++;
     }
     previousTime=currentTime;
     previousVoltage=currentVoltage;
@@ -48,7 +48,7 @@ void MakeCrvWaveforms::LoadSinglePEWaveform(const std::string &filename, double 
 void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times, 
                                     const std::vector<double> &charges, 
                                     std::vector<double> &waveform,
-                                    double startTime, double binWidth, double timeShift) 
+                                    double startTime, double digitizationPrecision) 
 {
   waveform.clear();
 
@@ -58,20 +58,20 @@ void MakeCrvWaveforms::MakeWaveform(const std::vector<double> &times,
   std::vector<double>::const_iterator iterCharge=charges.begin();
   for(; iterTime!=times.end() && iterCharge!=charges.end(); iterTime++, iterCharge++)
   {
-    double time=*iterTime + timeShift;  //the time when the charge happened, the time shift is due to the FEB time uncertainty
+    double timeOfCharge=*iterTime;  //the time when the charge happened
     double charge=*iterCharge;
-    unsigned int waveformIndex = (time>startTime ? ceil((time-startTime)/binWidth) : 0);  //first waveform bin for this particular charge
-    double digiTime = waveformIndex*binWidth + startTime;  //the time of this waveform bin
+    unsigned int waveformIndex = (timeOfCharge>startTime ? ceil((timeOfCharge-startTime)/digitizationPrecision) : 0);  //waveform index of the first digitization point for this particular charge
+    double waveformTime = waveformIndex*digitizationPrecision + startTime;  //the time for this waveform index
 
-    for(; ; waveformIndex++, digiTime+=binWidth)
+    for(; ; waveformIndex++, waveformTime+=digitizationPrecision)
     {
-      double singlePEtime = digiTime - time;
-      if(singlePEtime<0) continue;
-      unsigned int singlePEwaveformIndex=static_cast<unsigned int>(singlePEtime/_singlePEbinWidth + 0.5);
-      if(singlePEwaveformIndex>=_waveformSinglePE.size()) break; 
+      double singlePEWaveformTime = waveformTime - timeOfCharge;
+      if(singlePEWaveformTime<0) continue;  //this shouldn't happen
+      unsigned int singlePEwaveformIndex=static_cast<unsigned int>(singlePEWaveformTime/_singlePEWaveformPrecision + 0.5);
+      if(singlePEwaveformIndex>=_singlePEWaveform.size()) break; 
 
       if(waveform.size()<waveformIndex+1) waveform.resize(waveformIndex+1);
-      waveform[waveformIndex]+=_waveformSinglePE[singlePEwaveformIndex]*charge; 
+      waveform[waveformIndex]+=_singlePEWaveform[singlePEwaveformIndex]*charge; 
     }
   }
 }

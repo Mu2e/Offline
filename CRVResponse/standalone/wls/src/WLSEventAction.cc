@@ -300,13 +300,13 @@ void WLSEventAction::Draw(const G4Event* evt) const
   sim.SetSiPMConstants(1584, 615, 2.4, 0, 1695, 0.08, probabilities);
 
   mu2eCrv::MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
-  double binWidth = 12.5; //ns
-  double binWidth2 = 1.0; //ns
+  double digitizationInterval = 12.5; //ns
+  double digitizationInterval2 = 1.0; //ns
   gStyle->SetOptStat(0);
-  makeCrvWaveform.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 200);
-  makeCrvWaveform2.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 200);
+  makeCrvWaveform.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 100);
+  makeCrvWaveform2.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 100);
 
-  double startTime=-G4UniformRand()*binWidth;
+  double startTime=-G4UniformRand()*digitizationInterval;
   std::vector<double> siPMtimes[4], siPMcharges[4];
   std::vector<double> waveform[4], waveform2[4];
   for(int SiPM=0; SiPM<4; SiPM++)
@@ -322,8 +322,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
       siPMcharges[SiPM].push_back(SiPMresponseVector[i]._charge);
     }
 
-    makeCrvWaveform.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform[SiPM], startTime, binWidth, 0);
-    makeCrvWaveform2.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform2[SiPM], startTime, binWidth2, 0);
+    makeCrvWaveform.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform[SiPM], startTime, digitizationInterval);
+    makeCrvWaveform2.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform2[SiPM], startTime, digitizationInterval2);
   }
 
   std::ostringstream s1;
@@ -388,7 +388,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
     double scale = histMax/waveformMax;
     for(unsigned int j=0; j<n2; j++)
     {
-      t2[j]=startTime+j*binWidth2;
+      t2[j]=startTime+j*digitizationInterval2;
       v2[j]=waveform2[SiPM][j];
       v2[j]*=scale;
     }
@@ -408,7 +408,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
     double *v = new double[n];
     for(unsigned int j=0; j<n; j++)
     {
-      t[j]=startTime+j*binWidth;
+      t[j]=startTime+j*digitizationInterval;
       v[j]=waveform[SiPM][j];
       v[j]*=scale;
     }
@@ -426,7 +426,7 @@ void WLSEventAction::Draw(const G4Event* evt) const
 //used for the integral
     for(unsigned int j=0; j<n; j++)
     {
-      double tI=startTime+j*binWidth;
+      double tI=startTime+j*digitizationInterval;
       double vI=waveform[SiPM][j];
       if(tI>200) break;
       if(vI<=0.015) continue;
@@ -439,8 +439,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
     }
 
 //Landau fit
-    mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.015,0.2, 0.0,51.0);
-    makeRecoPulses.SetWaveform(waveform[SiPM], startTime, binWidth);
+    mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.022,0.2, 0.0,159.0);
+    makeRecoPulses.SetWaveform(waveform[SiPM], startTime, digitizationInterval);
     unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
     {
