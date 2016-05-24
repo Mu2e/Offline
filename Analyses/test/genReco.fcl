@@ -110,8 +110,8 @@ physics : {
 #------------------------------------------------------------------------------
 # hit makers
 #------------------------------------------------------------------------------
-        protonTimeMap        : @local::protonTimeMap
-        muonTimeMap          : @local::muonTimeMap
+        @table::EventMixing.producers 
+
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
 	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
