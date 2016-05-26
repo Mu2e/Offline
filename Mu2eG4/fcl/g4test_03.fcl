@@ -1,3 +1,4 @@
+# -*- mode: tcl -*-
 # Configuration file for G4Test03
 #
 #  - Generate 200 events including one conversion electron plus
@@ -125,3 +126,4 @@ physics.producers.CaloReadoutHitsMaker.diagLevel : 0
 physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
 physics.producers.CaloCrystalHitsMaker.diagLevel : 0
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
+#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
