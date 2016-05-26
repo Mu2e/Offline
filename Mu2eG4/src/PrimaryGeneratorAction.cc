@@ -106,19 +106,15 @@ namespace mu2e {
   //
   void PrimaryGeneratorAction::fromEvent(G4Event* event){
 
-    // those should really be references; but because of the "if" they are not...
+    art::ServiceHandle<GeometryService> geom;
+    SimpleConfig const & _config = geom->config();
 
-    G4ThreeVector mu2eOrigin;
+    // Get the offsets to map from generator world to G4 world.
+    // check if this is standard mu2e configuration or not
 
-    SimpleConfig const & _config = (*(art::ServiceHandle<GeometryService>())).config();
-
-    // check if this is standard mu2e configuration; not all generators may work if it is not
-    if (_config.getBool("mu2e.standardDetector",true)) {
-
-      GeomHandle<WorldG4>  worldGeom;
-      // Get the offsets to map from generator world to G4 world.
-      mu2eOrigin      = worldGeom->mu2eOriginInWorld();
-    }
+    G4ThreeVector const mu2eOrigin =
+      (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector())) 
+      ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
 
     // For each generated particle, add it to the event.
     if(genParticles_) {

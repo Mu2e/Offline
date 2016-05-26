@@ -63,10 +63,12 @@ namespace mu2e {
   }
 
   ConstructMaterials::ConstructMaterials(const fhicl::ParameterSet& pset)
-    : mu2eStandardDetector_(pset.get<bool>("mu2eStandardDetector",true))
-    , printElements_(pset.get<bool>("debug.printElements"))
+    : printElements_(pset.get<bool>("debug.printElements"))
     , printMaterials_(pset.get<bool>("debug.printMaterials"))
-  {}
+  {
+    art::ServiceHandle<GeometryService> geom;
+    mu2eStandardDetector_ = geom->isStandardMu2eDetector();
+  }
 
   ConstructMaterials::~ConstructMaterials(){
   }

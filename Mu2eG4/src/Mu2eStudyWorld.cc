@@ -15,6 +15,7 @@
 // C++ includes
 #include <iostream>
 #include <vector>
+#include <cmath>
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -27,6 +28,7 @@
 #include "Mu2eG4/inc/constructStudyEnv_v003.hh"
 #include "Mu2eG4/inc/constructStudyEnv_v004.hh"
 #include "Mu2eG4/inc/Mu2eStudyWorld.hh"
+#include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -74,10 +76,20 @@ namespace mu2e {
   {}
 
   Mu2eStudyWorld::~Mu2eStudyWorld(){
-
     // Do not destruct the solids, logical volumes or physical volumes.
     // G4 looks after that itself.
+  }
 
+  Mu2eStudyWorld::Mu2eStudyWorld(const fhicl::ParameterSet& pset,
+                                 SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
+    : sdHelper_(sdHelper)
+    , pset_(pset)
+    , writeGDML_(pset.get<bool>("debug.writeGDML"))
+    , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
+    , g4stepperName_(pset.get<std::string>("physics.stepper"))
+    , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep"))//unused
+  {
+    _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
   }
 
   // This is the callback called by G4
@@ -85,7 +97,7 @@ namespace mu2e {
 
     // Construct all of the world
 
-    _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
+    _verbosityLevel =  max(_verbosityLevel,_config.getInt("world.verbosityLevel", 0));
 
     // we will only use very few elements of the geometry service;
     // mainly its config (SimpleConfig) part and the origin which is
@@ -165,6 +177,18 @@ namespace mu2e {
            << endl;
     }
 
+    //    sdHelper_->instantiateLVSDs(_config); // needs work in the study case
+
+    // Create magnetic fields and managers only after all volumes have been defined.
+    //    constructBFieldAndManagers();
+    //    constructStepLimiters();
+
+    // Write out geometry into a gdml file.
+    if (writeGDML_) {
+      G4GDMLParser parser;
+      parser.Write(gdmlFileName_, worldVInfo.logical);
+    }
+
     return worldVInfo.physical;
   }
 
@@ -179,9 +203,13 @@ namespace mu2e {
   void Mu2eStudyWorld::constructStepLimiters(){
 
     // Maximum step length, in mm.
+
+    // AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+    // G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
+
     // double maxStep = _config.getDouble("bfield.maxStep", 20.);
 
-    // We may make separate G4UserLimits objects per logical volume but we choose not to.
+    // We may make separate G4UserLimits objects per logical volume but we may choose not to.
     // _stepLimits.push_back( G4UserLimits(maxStep) );
     // G4UserLimits* stepLimit = &(_stepLimits.back());
 
