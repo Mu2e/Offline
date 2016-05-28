@@ -52,6 +52,7 @@ namespace mu2e
     boost::shared_ptr<mu2eCrv::MakeCrvWaveforms> _makeCrvWaveforms;
 
     double                              _digitizationPrecision;
+    int                                 _digitizationPoints;
     double                              _FEBtimeSpread;
     double                              _minVoltage;
 
@@ -59,12 +60,15 @@ namespace mu2e
     CLHEP::RandGaussQ                   _randGaussQ;
     
     std::vector<double> _timeShiftFEBsSide0, _timeShiftFEBsSide1;
+
+    bool SingleWaveformStart(std::vector<double> &fullWaveform, size_t i);
   };
 
   CrvWaveformsGenerator::CrvWaveformsGenerator(fhicl::ParameterSet const& pset) :
     _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
     _digitizationPrecision(pset.get<double>("digitizationPrecision")),   //12.5 ns
+    _digitizationPoints(pset.get<int>("digitizationPoints")),  //8 points for every single waveform
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
     _minVoltage(pset.get<double>("minVoltage")),               //0.022V (corresponds to 3.5PE)
     _randFlat(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
@@ -114,55 +118,80 @@ namespace mu2e
       const CRSScintillatorBarIndex &barIndex = iter->first;
       const CrvSiPMResponses &siPMResponses = iter->second;
 
-      double firstSiPMResponseTime = siPMResponses.GetFirstSiPMResponseTime();
-
-      unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way, i.e. that all counters beloning to the same FEB are grouped together
-      double minTimeShiftFEB = std::min(_timeShiftFEBsSide0[FEB],_timeShiftFEBsSide1[FEB]);
-      firstSiPMResponseTime += std::min(minTimeShiftFEB,0.0);
-
-      int startTime = floor(firstSiPMResponseTime / _digitizationPrecision) * _digitizationPrecision;  //start time of the waveform in multiples of the digitization interval (12.5ns)
-      startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
-
       CrvWaveforms &crvWaveforms = (*crvWaveformsCollection)[barIndex];
-      crvWaveforms.SetBinWidth(_digitizationPrecision);
+      crvWaveforms.SetDigitizationPrecision(_digitizationPrecision);
+
+      unsigned int FEB=barIndex.asUint()/32.0; //assume that the counters are ordered in the correct way, 
+                                               //i.e. that all counters beloning to the same FEB are grouped together
+
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-        double timeShift=0;
-        if(SiPM%2==0 && FEB<_timeShiftFEBsSide0.size()) timeShift=_timeShiftFEBsSide0[FEB];
-        if(SiPM%2==1 && FEB<_timeShiftFEBsSide1.size()) timeShift=_timeShiftFEBsSide1[FEB];
+        double firstSiPMResponseTime = siPMResponses.GetFirstSiPMResponseTime(SiPM);
+        if(isnan(firstSiPMResponseTime)) continue;
+
+        double timeShiftFEB=0;
+        if(SiPM%2==0 && FEB<_timeShiftFEBsSide0.size()) timeShiftFEB=_timeShiftFEBsSide0[FEB];
+        if(SiPM%2==1 && FEB<_timeShiftFEBsSide1.size()) timeShiftFEB=_timeShiftFEBsSide1[FEB];
+
+        firstSiPMResponseTime += timeShiftFEB;  //Ok, since all SiPMResponse times of this SiPM will be shifted by the same timeShiftFEB
+
+        double startTime = floor(firstSiPMResponseTime / _digitizationPrecision) * _digitizationPrecision;  //start time of the waveform 
+                                                                                                            //in multiples of the 
+                                                                                                            //digitization interval (12.5ns)
+
+        startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
 
         const std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &timesAndCharges = siPMResponses.GetSiPMResponses(SiPM);
         std::vector<double> times, charges;
-        for(unsigned int i=0; i<timesAndCharges.size(); i++)
+        for(size_t i=0; i<timesAndCharges.size(); i++)
         {
-          times.push_back(timesAndCharges[i]._time + timeShift);
+          times.push_back(timesAndCharges[i]._time + timeShiftFEB);
           charges.push_back(timesAndCharges[i]._charge);
         }
 
-        std::vector<double> &waveform = crvWaveforms.GetWaveform(SiPM);
-        _makeCrvWaveforms->MakeWaveform(times, charges, waveform, startTime, _digitizationPrecision);
-        crvWaveforms.SetStartTime(SiPM,startTime);
+        //first create the full waveform
+        std::vector<double> fullWaveform;
+        _makeCrvWaveforms->MakeWaveform(times, charges, fullWaveform, startTime, _digitizationPrecision);
 
-        //zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage, 
+        //break the waveform apart into short pieces (_digitizationPoints)
+        //and apply the zero suppression, i.e. set all waveform digi points to zero which are below the minimum voltage, 
         //if the neighboring digi points are also below the minimum voltage
-        for(unsigned int i=0; i<waveform.size(); i++)
+        std::vector<CrvWaveforms::CrvSingleWaveform> &singleWaveforms = crvWaveforms.GetSingleWaveforms(SiPM);
+
+        for(size_t i=0; i<fullWaveform.size(); i++)
         {
-          bool keepPoint=false;
-          if(waveform[i]>_minVoltage) keepPoint=true;
-          else
+          if(SingleWaveformStart(fullWaveform, i)) //acts as a zero suppression
           {
-            if(i<waveform.size()-1)
+            //start new single waveform
+            CrvWaveforms::CrvSingleWaveform singleWaveform;
+            singleWaveform._startTime=startTime+i*_digitizationPrecision;
+            for(int singleWaveformIndex=0; 
+                i<fullWaveform.size() && singleWaveformIndex<_digitizationPoints; 
+                i++, singleWaveformIndex++)
             {
-              if(waveform[i+1]>_minVoltage) keepPoint=true;
+              singleWaveform._voltages.push_back(fullWaveform[i]);
             }
+            i--;
+            singleWaveforms.push_back(singleWaveform);
           }
-          if(!keepPoint) waveform[i]=0;
         }
       }
     }
 
     event.put(std::move(crvWaveformsCollection));
   } // end produce
+
+  bool CrvWaveformsGenerator::SingleWaveformStart(std::vector<double> &fullWaveform, size_t i)
+  {
+    if(fullWaveform[i]>_minVoltage) return true;  //assumes that fullWaveform[i] is valid
+
+    if(i+1<fullWaveform.size())
+    {
+      if(fullWaveform[i+1]>_minVoltage) return true;
+    }
+
+    return false;
+  }
 
 } // end namespace mu2e
 

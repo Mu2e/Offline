@@ -107,29 +107,62 @@ namespace mu2e
     {
       const CRSScintillatorBarIndex &barIndex = iter->first;
       const CrvWaveforms &crvWaveforms = iter->second;
-      double binWidth = crvWaveforms.GetBinWidth(); //ns
+      double digitizationPrecision = crvWaveforms.GetDigitizationPrecision(); //ns
 
       CrvRecoPulses &crvRecoPulses = (*crvRecoPulsesCollection)[barIndex];
       for(int SiPM=0; SiPM<4; SiPM++)
       {
-        const std::vector<double> waveform = crvWaveforms.GetWaveform(SiPM);
-        double startTime = crvWaveforms.GetStartTime(SiPM);
-        _makeCrvRecoPulses->SetWaveform(waveform, startTime, binWidth);
-
-        unsigned int n = _makeCrvRecoPulses->GetNPulses();
-        for(unsigned int i=0; i<n; i++)
+        //merge single waveforms together if there is no time gap between them
+        const std::vector<CrvWaveforms::CrvSingleWaveform> &singleWaveforms = crvWaveforms.GetSingleWaveforms(SiPM);
+        std::vector<std::vector<double> > allVoltages;
+        std::vector<double> allStartTimes;
+        for(size_t i=0; i<singleWaveforms.size(); i++)
         {
-          double time=_makeCrvRecoPulses->GetLeadingEdge(i);
-          if(time<0) continue;
-          if(time>_microBunchPeriod) continue;
-          int PEs = _makeCrvRecoPulses->GetPEs(i);
-          double height = _makeCrvRecoPulses->GetPulseHeight(i);
-          double length = _makeCrvRecoPulses->GetTimeOverThreshold(i);
-          double integral = _makeCrvRecoPulses->GetIntegral(i);
-          if(PEs<_minPEs) continue; 
-//          _hRecoPulses->Fill(length);
-          crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, time,height,length,integral);
+          bool appendWaveform=false;
+          if(!allVoltages.empty())
+          {
+            //difference between the time of the last digitization point and the next start time
+            double lastTime = allStartTimes.back()+allVoltages.back().size()*digitizationPrecision;
+            double timeDiff = singleWaveforms[i]._startTime - lastTime;
+            if(timeDiff<digitizationPrecision*1.1) appendWaveform=true;   //the next start time seems to be just 
+                                                                          //one digitization point (12.5ns) away
+                                                                          //so that one can assume that the following 
+                                                                          //single waveform is just a continuation
+                                                                          //and can be appended.
+                                                                          //the factor of 1.1 takes the limited precision 
+                                                                          //of the floating point numbers into consideration.
+          }
+
+          if(appendWaveform) allVoltages.back().insert(allVoltages.back().end(),
+                                                       singleWaveforms[i]._voltages.begin(),
+                                                       singleWaveforms[i]._voltages.end());
+          else
+          {
+            allVoltages.push_back(singleWaveforms[i]._voltages);
+            allStartTimes.push_back(singleWaveforms[i]._startTime); 
+          }
         }
+
+        for(size_t i=0; i<allVoltages.size(); i++)
+        {
+          _makeCrvRecoPulses->SetWaveform(allVoltages[i], allStartTimes[i], digitizationPrecision);
+
+          unsigned int n = _makeCrvRecoPulses->GetNPulses();
+          for(unsigned int i=0; i<n; i++)
+          {
+            double time=_makeCrvRecoPulses->GetLeadingEdge(i);
+            if(time<0) continue;
+            if(time>_microBunchPeriod) continue;
+            int PEs = _makeCrvRecoPulses->GetPEs(i);
+            double height = _makeCrvRecoPulses->GetPulseHeight(i);
+            double length = _makeCrvRecoPulses->GetTimeOverThreshold(i);
+            double integral = _makeCrvRecoPulses->GetIntegral(i);
+            if(PEs<_minPEs) continue; 
+//            _hRecoPulses->Fill(length);
+            crvRecoPulses.GetRecoPulses(SiPM).emplace_back(PEs, time,height,length,integral);
+          }
+        }
+
       }
     }
 

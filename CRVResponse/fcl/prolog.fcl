@@ -60,6 +60,7 @@ BEGIN_PROLOG
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformMaxTime      : 100    //100 ns
       digitizationPrecision        : 12.5   //12.5 ns (digitizer sampling rate)
+      digitizationPoints           : 8      //8 points
       FEBtimeSpread                : 2.0    //2.0 ns
       minVoltage                   : 0.022  //22mV (corresponds to 3.5PE)
     }

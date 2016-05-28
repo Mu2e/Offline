@@ -224,6 +224,9 @@
  <class name="mu2e::CrvWaveformsCollection" />
  <class name="art::Wrapper<mu2e::CrvWaveformsCollection>" />
 
+ <class name="mu2e::CrvWaveforms::CrvSingleWaveform" />
+ <class name="std::vector<mu2e::CrvWaveforms::CrvSingleWaveform>" />
+
  <class name="mu2e::ProtonBunchIntensity" />
  <class name="art::Wrapper<mu2e::ProtonBunchIntensity>"/>
  

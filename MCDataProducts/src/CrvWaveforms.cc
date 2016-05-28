@@ -6,62 +6,38 @@
 namespace mu2e 
 {
 
-  std::vector<double> &CrvWaveforms::GetWaveform(int fiberNumber, int side) 
+  std::vector<CrvWaveforms::CrvSingleWaveform> &CrvWaveforms::GetSingleWaveforms(int fiberNumber, int side) 
   {
     int SiPMNumber = FindSiPMNumber(fiberNumber, side);
-    return _waveform[SiPMNumber];
+    return _waveforms[SiPMNumber];
   }
 
-  std::vector<double> &CrvWaveforms::GetWaveform(int SiPMNumber) 
+  std::vector<CrvWaveforms::CrvSingleWaveform> &CrvWaveforms::GetSingleWaveforms(int SiPMNumber) 
   {
     CheckSiPMNumber(SiPMNumber);
-    return _waveform[SiPMNumber];
+    return _waveforms[SiPMNumber];
   }
 
-  const std::vector<double> &CrvWaveforms::GetWaveform(int fiberNumber, int side) const
+  const std::vector<CrvWaveforms::CrvSingleWaveform> &CrvWaveforms::GetSingleWaveforms(int fiberNumber, int side) const
   {
     int SiPMNumber = FindSiPMNumber(fiberNumber, side);
-    return _waveform[SiPMNumber];
+    return _waveforms[SiPMNumber];
   }
 
-  const std::vector<double> &CrvWaveforms::GetWaveform(int SiPMNumber) const
+  const std::vector<CrvWaveforms::CrvSingleWaveform> &CrvWaveforms::GetSingleWaveforms(int SiPMNumber) const
   {
     CheckSiPMNumber(SiPMNumber);
-    return _waveform[SiPMNumber];
+    return _waveforms[SiPMNumber];
   }
 
-  double CrvWaveforms::GetStartTime(int fiberNumber, int side) const 
+  double CrvWaveforms::GetDigitizationPrecision() const 
   {
-    int SiPMNumber = FindSiPMNumber(fiberNumber, side);
-    return _startTime[SiPMNumber];
+    return _digitizationPrecision;
   }
 
-  double CrvWaveforms::GetStartTime(int SiPMNumber) const
+  void CrvWaveforms::SetDigitizationPrecision(double digitizationPrecision) 
   {
-    CheckSiPMNumber(SiPMNumber);
-    return _startTime[SiPMNumber];
-  }
-
-  void CrvWaveforms::SetStartTime(int fiberNumber, int side, double startTime) 
-  {
-    int SiPMNumber = FindSiPMNumber(fiberNumber, side);
-    _startTime[SiPMNumber]=startTime;
-  }
-
-  void CrvWaveforms::SetStartTime(int SiPMNumber, double startTime) 
-  {
-    CheckSiPMNumber(SiPMNumber);
-    _startTime[SiPMNumber]=startTime;
-  }
-
-  double CrvWaveforms::GetBinWidth() const 
-  {
-    return _binWidth;
-  }
-
-  void CrvWaveforms::SetBinWidth(double binWidth) 
-  {
-    _binWidth=binWidth;
+    _digitizationPrecision=digitizationPrecision;
   }
 
   int CrvWaveforms::FindSiPMNumber(int fiberNumber, int side)

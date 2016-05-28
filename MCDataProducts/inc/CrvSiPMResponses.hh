@@ -33,11 +33,13 @@ namespace mu2e
     const std::vector<CrvSingleSiPMResponse> &GetSiPMResponses(int fiberNumber, int side) const;
     const std::vector<CrvSingleSiPMResponse> &GetSiPMResponses(int SiPMNumber) const;
 
-    unsigned int GetNumberOfSiPMResponses(int fiberNumber, int side);
-    unsigned int GetNumberOfSiPMResponses(int SiPMNumber);
+    unsigned int GetNumberOfSiPMResponses(int fiberNumber, int side) const;
+    unsigned int GetNumberOfSiPMResponses(int SiPMNumber) const;
 
-    double GetFirstSiPMResponseTime() const;
-    double GetLastSiPMResponseTime() const;
+    bool IsEmpty() const;
+
+    double GetFirstSiPMResponseTime(int fiberNumber, int side) const;
+    double GetFirstSiPMResponseTime(int SiPMNumber) const;
 
     private:
 
