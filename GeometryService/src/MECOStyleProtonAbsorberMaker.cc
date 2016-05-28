@@ -82,8 +82,6 @@ namespace mu2e {
     double oPAthick             = _config.getDouble("protonabsorber.outerPAThickness", 10.0);
     double oPAzcenter           = _config.getDouble("protonabsorber.outerPAZCenter", 6250.0);
     std::string oPAmaterialName = _config.getString("protonabsorber.outerPAMaterialName", "Polyethylene092");
-    double oPAout0 = oPAin0 + oPAthick;
-    double oPAout1 = oPAin1 + oPAthick;
     double ds23split = _ds->vac_zLocDs23Split();
 
     // TS and DS geometry for locating the center of Proton Absorber
@@ -209,6 +207,8 @@ namespace mu2e {
       pabs2rIn1  = pabs2rOut1 - thick;
     }
 
+    double oPAout0 = oPAin0 + oPAthick;
+    double oPAout1 = oPAin1 + oPAthick;
     double pabs3rIn0 = oPAin0, pabs3rIn1 = oPAin1, pabs3rOut0 = oPAout0, pabs3rOut1 = oPAout1;
     double pabs4rIn0 = 0, pabs4rIn1 = 0, pabs4rOut0 = 0, pabs4rOut1 = 0;
 
@@ -218,12 +218,12 @@ namespace mu2e {
       // pabs3rIn1  = pabs3rOut1 - thick;
 
       pabs3rOut1 = oPAout0 + (oPAout1 - oPAout0)*pabs3halflen/oPAhl;
-      pabs3rIn1  = pabs3rOut1 - thick;
+      pabs3rIn1  = pabs3rOut1 - oPAthick;
 
       pabs4rOut0 = pabs3rOut1;
-      pabs4rIn0  = pabs4rOut0 - thick;
+      pabs4rIn0  = pabs4rOut0 - oPAthick;
       pabs4rOut1 = oPAout1;
-      pabs4rIn1  = pabs4rOut1 - thick;
+      pabs4rIn1  = pabs4rOut1 - oPAthick;
     }
 
     /////////
@@ -236,6 +236,9 @@ namespace mu2e {
     CLHEP::Hep3Vector pabs2Offset(-1.*solenoidOffset, 0.0, pabs2ZOffset);
     CLHEP::Hep3Vector pabs3Offset(-1.*solenoidOffset, 0.0, pabs3ZOffset);
     CLHEP::Hep3Vector pabs4Offset(-1.*solenoidOffset, 0.0, pabs4ZOffset);
+
+    // std::cout<< "Outer proton Z-end in Mu2e: "   << pabs4ZOffset+pabs4halflen << std::endl;
+    // std::cout<< "Outer proton Z-start in Mu2e: " << pabs3ZOffset-pabs3halflen << std::endl;
 
     _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 0, pabs1Offset, pabs1rOut0, pabs1rIn0, pabs1rOut1, pabs1rIn1, pabs1halflen, materialName));
     _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 1, pabs2Offset, pabs2rOut0, pabs2rIn0, pabs2rOut1, pabs2rIn1, pabs2halflen, materialName));

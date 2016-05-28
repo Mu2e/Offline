@@ -107,6 +107,7 @@ namespace mu2e {
       cout << __func__ << " DS3VacuumInfo.centerInMu2e()  : " << ds3VacuumInfo.centerInMu2e() << endl;
       cout << __func__ << " TSdA Offset                     : "  << ATSDOffset  << endl;
       cout << __func__ << " TSdA Offset2			  : "  << ATSD4Offset  << endl;
+      cout << __func__ << " TSdA cencter in Mu2e		  : "  << (ds2VacuumInfo.centerInMu2e() + ATSD4Offset).z()  << endl;
     }
 
     TubsParams ATSD4Params( ts5out->rIn(), atsd->r4(), atsd->halfLength4() );
