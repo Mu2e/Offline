@@ -23,6 +23,10 @@
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -97,6 +101,7 @@ namespace mu2e
       double _maxseeddoca,_maxhelixdoca,_maxadddoca, _maxaddchi;
       TrkParticle _tpart; // particle type being searched for
       TrkFitDirection _fdir;  // fit direction in search
+      double _helicity; // cache the value of helicity, which can be computed from the above with the BField
       // cache of event objects
       const StrawHitCollection* _shcol;
       const StrawHitFlagCollection* _shfcol;
@@ -153,6 +158,7 @@ namespace mu2e
     _maxaddchi(pset.get<double>("MaxAddChi",4.0)),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
+    _helicity(0.0),
     _seedfit(pset.get<fhicl::ParameterSet>("SeedFit",fhicl::ParameterSet()),_fdir),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet()),_fdir),
     _payloadSaver(pset)
@@ -195,7 +201,17 @@ namespace mu2e
     _eventid = 0;
   }
 
-  void TrkRecFit::beginRun(art::Run& ){}
+  void TrkRecFit::beginRun(art::Run& ){
+ // calculate the helicity
+    GeomHandle<BFieldManager> bfmgr;
+    GeomHandle<DetectorSystem> det;
+    // change coordinates to mu2e
+    CLHEP::Hep3Vector vpoint(0.0,0.0,0.0);
+    CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(vpoint);
+    CLHEP::Hep3Vector field = bfmgr->getBField(vpoint_mu2e);
+    // positive helicity is clockwise rotation around the direction of axial motion (negative dphi/dz)  
+    _helicity = copysign(1.0,-_fdir.dzdt()*_tpart.charge()*field.z());
+  }
 
   void TrkRecFit::produce(art::Event& event ) {
     _eventid = event.event();
@@ -532,18 +548,39 @@ namespace mu2e
     }
   }
 
-   void TrkRecFit::HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
-          //TrkExchangePar helParams( helIn._d0, helIn._phi0, helIn._omega, helIn._z0, helIn._tanDip );
-          CLHEP::HepVector helParams(5);
-          helParams(1) = helIn._d0;
-          helParams(2) = helIn._phi0;
-          helParams(3) = helIn._omega;
-          helParams(4) = helIn._z0;
-          helParams(5) = helIn._tanDip;
-          CLHEP::HepSymMatrix conv(5,1);
-         
-	  HelixTraj tmpHelix(helParams,conv);
-          helOut=tmpHelix;
+  void TrkRecFit::HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
+    CLHEP::HepVector helParams(5);
+    // compare the input with this configuration's helicity: these must have the same sign
+    if(_helicity*helIn.helicity() < 0.0){
+      throw cet::exception("RECO")<<"mu2e::TrkRecFit: Input helix values have wrong helicity"<< endl;
+    }
+    // Resolve the physical ambiguity on the product of charge and direction
+    if(_fdir.dzdt()*helIn._tanDip < 0.0 ){ // sign of dz/dt and tanDip disagree: invert
+      // invert both charge and direction-dependent parameters (= same helicity)
+      // d0 changes sign as the angular momentum changes sign
+      helParams(1) = -helIn._d0;
+      // phi0 flips by pi, but keep it in the range -pi -> pi
+      helParams(2) = helIn._phi0 + M_PI;
+      static double twopi=2*M_PI;
+      if(helParams(2) > twopi)helParams(2) -= twopi;
+      // omega changes sign as the charge changes sign
+      helParams(3) = -helIn._omega;
+      // z0 is unchanged
+      helParams(4) = helIn._z0;
+      // tandip changes sign as the axial velocity changes sign
+      helParams(5) = -helIn._tanDip;
+    } else {
+      // no inversion necessary
+      helParams(1) = helIn._d0;
+      helParams(2) = helIn._phi0;
+      helParams(3) = helIn._omega;
+      helParams(4) = helIn._z0;
+      helParams(5) = helIn._tanDip;
+    }
+    CLHEP::HepSymMatrix conv(5,1);
+
+    HelixTraj tmpHelix(helParams,conv);
+    helOut=tmpHelix;
   }
 
 }

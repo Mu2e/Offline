@@ -10,11 +10,8 @@
 // Original author G. Tassielli
 //
 
-// C++ includes
-//#include <vector>
-
-// Mu2e includes
-//#include "TrkReco/inc/TrkDef.hh"
+// C includes 
+#include <math.h>
 
 namespace mu2e {
 
@@ -31,6 +28,10 @@ struct HelixVal {
         double                _omega;
         double                _z0;
         double                _tanDip;
+
+// helicity is given by the product of the signs of tandip (axial motion) and omega (angular momentum)
+	double helicity() const { return copysign(1.0,_tanDip*_omega); }
+
 };
 
 } // namespace mu2e

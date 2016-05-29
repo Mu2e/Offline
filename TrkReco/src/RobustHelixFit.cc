@@ -18,8 +18,6 @@
 #include "TrackerGeom/inc/Straw.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "BFieldGeom/inc/BFieldConfig.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 //CLHEP
@@ -154,21 +152,22 @@ namespace mu2e
 // omega is the inverse transverse radius of the particle's circular motion.  Its
 // signed by the particle angular momentum about the cirle center.
 // This CANNOT be deduced geometrically, so must be supplied as an ad-hoc assumption
-    double amsign = copysign(1.0,-mytrk.particle().charge()*bz());
-    pvec[HelixTraj::omegaIndex] = amsign/radius;
+// The fact that non-geometric parameters appear in this class shows poor design, FIXME!!
+    double omsign = copysign(1.0,-mytrk.particle().charge()*bz());
+    pvec[HelixTraj::omegaIndex] = omsign/radius;
 // phi0 is the azimuthal angle of the particle velocity vector at the point
 // of closest approach to the origin.  It's sign also depends on the angular
 // momentum.  To translate from the center, we need to reverse coordinates
-    pvec[HelixTraj::phi0Index] = atan2(-amsign*helix._center.x(),amsign*helix._center.y());
+    pvec[HelixTraj::phi0Index] = atan2(-omsign*helix._center.x(),omsign*helix._center.y());
 // d0 describes the distance to the origin at closest approach.
 // It is signed by the particle angular momentum WRT the origin.
 // The Helix fit radial bias is anti-correlated with d0; correct for it here.
-    pvec[HelixTraj::d0Index] = amsign*(helix._center.perp() - helix._radius - 2*_rbias);
-// the dip angle is measured WRT the perpendicular.  It is signed by the particle Z momentum    
-    pvec[HelixTraj::tanDipIndex] = amsign/(radius*helix._dfdz);
+    pvec[HelixTraj::d0Index] = omsign*(helix._center.perp() - helix._radius - 2*_rbias);
+// the dip angle is measured WRT the perpendicular
+    pvec[HelixTraj::tanDipIndex] = omsign/(radius*helix._dfdz);
 // must change conventions here: fz0 is the phi at z=0, z0 is defined at the point of closest approach
 // resolve the loop ambiguity such that the POCA is closest to z=0.
-    double dphi = deltaPhi(helix._fz0+amsign*halfpi,pvec[HelixTraj::phi0Index]);
+    double dphi = deltaPhi(helix._fz0+omsign*halfpi,pvec[HelixTraj::phi0Index]);
 // choose z0 (which loop) so that f=0 is as close to z=0 as possible
     pvec[HelixTraj::z0Index] = dphi*pvec[HelixTraj::tanDipIndex]/pvec[HelixTraj::omegaIndex];
 // estimated covariance based on average performance.  These should be parameters, FIXME!!!
