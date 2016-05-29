@@ -21,24 +21,6 @@ caloRecoTable: {
 
 caloRecoSeq: [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
 
-//----------------------------------------------------------------
-// PID inputs
-pidInputsTable: {
-   TrkExtrapolDem: {
-      @table::TrackCaloIntersection
-      fitparticle: 11
-      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
-   }
-   TrackCaloMatchingDem: {
-      @table::TrackCaloMatching
-      fitparticle: 11
-      fitdirection: 0
-      fitterModuleLabel: TRFDownstreameMinus // MergePatRecDem
-      trkToCaloExtrapolModuleLabel: TrkExtrapolDem
-   }
-}
-
-pidInputsSeq: [TrkExtrapolDem, TrackCaloMatchingDem]
 pidPathBins: [ 0., 50., 100., 150., 200., 250., 300., 1.e12 ]
 
 // Analysis
@@ -133,11 +115,14 @@ draTopLevelDefs: {
 	 // Track reco - multiple hypotheses
 	 @table::Tracking.producers
 
+	 // MergePatRec and friends
+	 @table::CalPatRec.producers
+
 	 // Calorimeter reco
 	 @table::caloRecoTable
 
 	 // PID inputs
-	 @table::pidInputsTable
+	 @table::TrackCaloMatching.producers
 
 	 //------------------------------------------------------------------------------
       }
@@ -175,8 +160,13 @@ draTopLevelDefs: {
       draRecoTrigSeq : [
 	 , @sequence::Tracking.TPRDownstreameMinus
 	 , @sequence::Tracking.TPRUpstreameMinus
+
+	 // MergePatRec simply copies TPRUpstreameMinus tracks
+	 // because CalPatRec is not in a trigger_path.
+	 , MergePatRecDem
+
 	 , @sequence::caloRecoSeq
-	 , @sequence::pidInputsSeq
+	 , TrackCaloIntersectionDem, TrackCaloMatchingDem
       ]
 
       trigger_paths: @nil
@@ -208,4 +198,3 @@ draTopLevelDefs.physics.draCutAndCountTrigSeq: [
 #----------------------------------------------------------------
 
 END_PROLOG
-

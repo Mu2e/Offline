@@ -17,14 +17,6 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # time map generation modules, used by the MC digi makers
 #------------------------------------------------------------------------------
-protonTimeMap : { 
-    module_type        : GenerateProtonTimes 
-}
-
-muonTimeMap : { 
-    module_type        : GenerateMuonLife 
-}
-
 # Form StrawHits (SH).
 protonTimeMap : { 
     module_type        : GenerateProtonTimes 

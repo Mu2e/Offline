@@ -1409,6 +1409,8 @@ namespace mu2e {
   }
   
 //-----------------------------------------------------------------------------
+// leave only hits in the same hemisphere with the cluster
+//-----------------------------------------------------------------------------
   void HelixFitHack::filterDist() {
     using namespace boost::accumulators;
     static const double pi(M_PI);

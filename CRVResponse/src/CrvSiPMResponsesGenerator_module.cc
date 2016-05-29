@@ -175,6 +175,17 @@ namespace mu2e
         }
 
       }
+
+      //2 options:
+      //(1) -create a crvSiPMResponse object as a reference to a crvSiPMResponseCollection map entry at the beginning for all counters
+      //    -fill this this crvSiPMResponse object
+      //    -if the crvSiPMResponse object stays empty, erase the map entry in crvSiPMResponseCollection
+      //(2) -create a standalone crvSiPMResponse object
+      //    -fill this this crvSiPMResponse object
+      //    -if the crvSiPMResponse didn't stay empty, create a new map entry in crvSiPMResponseCollection and fill its content with
+      //     the new crvSiPMResponse  <---- too time consuming, therefore use option (1)
+
+      if(crvSiPMResponses.IsEmpty()) crvSiPMResponsesCollection->erase(barIndex);  
     }
 
     event.put(std::move(crvSiPMResponsesCollection));

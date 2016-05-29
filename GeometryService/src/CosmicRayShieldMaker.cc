@@ -110,6 +110,8 @@ namespace mu2e
     _CMBHalfThickness = config.getDouble("crs.CMBHalfThickness");
     _CMBMaterialName  = config.getString("crs.CMBMaterialName");
 
+    _fiberSeparation = config.getDouble("crs.fiberSeparation");
+
     _FEBMaterialName     = config.getString("crs.FEBMaterialName");
     _FEBDistanceToModule = config.getDouble("crs.FEBDistanceToModule");
     _FEBDistanceToEdge   = config.getDouble("crs.FEBDistanceToEdge");
@@ -143,7 +145,7 @@ namespace mu2e
   {
     std::shared_ptr<CRSScintillatorBarDetail> barDetails(new CRSScintillatorBarDetail(_scintillatorBarMaterialName, counterHalfLengths, localToWorld,
                                                                                       _CMBMaterialName, _CMBOffset, _CMBHalfThickness,
-                                                                                      _CMBside0[isector], _CMBside1[isector]));
+                                                                                      _CMBside0[isector], _CMBside1[isector], _fiberSeparation));
 
     _crs->_scintillatorShields.push_back(CRSScintillatorShield(CRSScintillatorShieldId(isector), name, barDetails,
                                          _absorberMaterialName, _aluminumSheetMaterialName, _FEBMaterialName,

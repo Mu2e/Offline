@@ -30,40 +30,39 @@ namespace mu2e
     return _crvSiPMResponses[SiPMNumber];
   }
 
-  unsigned int CrvSiPMResponses::GetNumberOfSiPMResponses(int fiberNumber, int side) 
+  unsigned int CrvSiPMResponses::GetNumberOfSiPMResponses(int fiberNumber, int side) const
   {
     int SiPMNumber = FindSiPMNumber(fiberNumber, side);
     return _crvSiPMResponses[SiPMNumber].size();
   }
 
-  unsigned int CrvSiPMResponses::GetNumberOfSiPMResponses(int SiPMNumber) 
+  unsigned int CrvSiPMResponses::GetNumberOfSiPMResponses(int SiPMNumber) const
   {
     CheckSiPMNumber(SiPMNumber);
     return _crvSiPMResponses[SiPMNumber].size();
   }
 
-  double CrvSiPMResponses::GetFirstSiPMResponseTime() const
+  bool CrvSiPMResponses::IsEmpty() const
   {
-    double firstTime = NAN;
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      if(_crvSiPMResponses[SiPM].size()==0) continue;
-      double t = _crvSiPMResponses[SiPM].front()._time;
-      if(isnan(firstTime) || t<firstTime) firstTime=t;
+      if(_crvSiPMResponses[SiPM].size()!=0) return false;
     }
-    return firstTime;
+    return true;
   }
 
-  double CrvSiPMResponses::GetLastSiPMResponseTime() const
+  double CrvSiPMResponses::GetFirstSiPMResponseTime(int fiberNumber, int side) const
   {
-    double lastTime = NAN;
-    for(int SiPM=0; SiPM<4; SiPM++)
-    {
-      if(_crvSiPMResponses[SiPM].size()==0) continue;
-      double t = _crvSiPMResponses[SiPM].back()._time;
-      if(isnan(lastTime) || t<lastTime) lastTime=t;
-    }
-    return lastTime;
+    int SiPMNumber = FindSiPMNumber(fiberNumber, side);
+    if(_crvSiPMResponses[SiPMNumber].size()==0) return NAN;
+    return _crvSiPMResponses[SiPMNumber].front()._time;
+  }
+
+  double CrvSiPMResponses::GetFirstSiPMResponseTime(int SiPMNumber) const
+  {
+    CheckSiPMNumber(SiPMNumber);
+    if(_crvSiPMResponses[SiPMNumber].size()==0) return NAN;
+    return _crvSiPMResponses[SiPMNumber].front()._time;
   }
 
   int CrvSiPMResponses::FindSiPMNumber(int fiberNumber, int side)

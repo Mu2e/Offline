@@ -18,30 +18,28 @@ namespace mu2e
 
     CrvWaveforms() {}
 
-    std::vector<double> &GetWaveform(int fiberNumber, int side);
-    std::vector<double> &GetWaveform(int SiPMNumber);
+    struct CrvSingleWaveform
+    {
+      std::vector<double> _voltages;
+      double _startTime;
+    };
 
-    const std::vector<double> &GetWaveform(int fiberNumber, int side) const;
-    const std::vector<double> &GetWaveform(int SiPMNumber) const;
+    std::vector<CrvSingleWaveform> &GetSingleWaveforms(int fiberNumber, int side);
+    std::vector<CrvSingleWaveform> &GetSingleWaveforms(int SiPMNumber);
 
-    double GetStartTime(int fiberNumber, int side) const;
-    double GetStartTime(int SiPMNumber) const;
+    const std::vector<CrvSingleWaveform> &GetSingleWaveforms(int fiberNumber, int side) const;
+    const std::vector<CrvSingleWaveform> &GetSingleWaveforms(int SiPMNumber) const;
 
-    void SetStartTime(int fiberNumber, int side, double startTime);
-    void SetStartTime(int SiPMNumber, double startTime);
-
-    double GetBinWidth() const; 
-
-    void SetBinWidth(double binWidth);
+    double GetDigitizationPrecision() const; 
+    void SetDigitizationPrecision(double precision);
 
     private:
 
     static int  FindSiPMNumber(int fiberNumber, int side);
     static void CheckSiPMNumber(int SiPMNumber);
 
-    std::vector<double> _waveform[4];
-    double _startTime[4];
-    double _binWidth;
+    std::vector<CrvSingleWaveform> _waveforms[4];
+    double _digitizationPrecision;
   };
 }
 

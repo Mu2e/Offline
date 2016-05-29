@@ -263,6 +263,7 @@ CalPatRec : { @table::CalPatRec
 	}
 #------------------------------------------------------------------------------
 # default configuration: DEM
+# CalPatRec, so far, has been validated only for e- 
 #------------------------------------------------------------------------------
 	CalPatRecDem : { @table::CalPatRec.producers.CalPatRec fitparticle: 11 fitdirection:0 }
 	CalPatRecDmm : { @table::CalPatRec.producers.CalPatRec fitparticle: 13 fitdirection:0 }
@@ -299,14 +300,14 @@ CalPatRec : { @table::CalPatRec
 
 	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : TRFDownstreamePlus
-	    calPatRecModuleLabel : CalPatRecDep
+	    calPatRecModuleLabel : none
 	    fitparticle          : @local::Tracking.producers.TRFDownstreamePlus.fitparticle
 	    fitdirection         : @local::Tracking.producers.TRFDownstreamePlus.fitdirection
 	}
 
 	MergePatRecDmp : { @table::CalPatRec.producers.MergePatRec 
 	    trkPatRecModuleLabel : TRFDownstreammuPlus
-	    calPatRecModuleLabel : CalPatRecDmp
+	    calPatRecModuleLabel : none
 	    fitparticle          : @local::Tracking.producers.TRFDownstreammuPlus.fitparticle  # 11:electron, -11:positron, 13:mu-, -13: mu+
 	    fitdirection         : @local::Tracking.producers.TRFDownstreammuPlus.fitdirection # 0:downstream, 1:upstream
 	}
@@ -430,13 +431,19 @@ MergePatRecUep  : { @table::CalPatRec.producers.MergePatRecUep }
 MergePatRecUmp  : { @table::CalPatRec.producers.MergePatRecUmp }
 
 
-CalPatRec.calpatrec     : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
-			   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRec ]
+CalPatRec.reco     : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRec ]
 
-CalPatRec.calpatrec_dem : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
-			   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]
+CalPatRec.dem_reco : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]
 
-CalPatRec.calpatrec_dmm : [CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
-			   CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]
+CalPatRec.dep_reco : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDep ]
+
+CalPatRec.dmm_reco : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]
+
+CalPatRec.dmp_reco : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDmp ]
 
 END_PROLOG

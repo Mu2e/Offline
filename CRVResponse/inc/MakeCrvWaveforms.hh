@@ -13,17 +13,17 @@ class MakeCrvWaveforms
     MakeCrvWaveforms() {}
     ~MakeCrvWaveforms() {}
    
-//the bin width which is used when the single PE waveform is stored must be more precise than
-//the bin width of the final waveform
-    void LoadSinglePEWaveform(const std::string &filename, double binWidth, unsigned int nBins);
+//the precision which is used when the single PE waveform is stored must be more precise than
+//the digitizaionInterval of the final waveform
+    void LoadSinglePEWaveform(const std::string &filename, double singlePEWaveformPrecision, double singlePEWaveformMaxTime);
     void MakeWaveform(const std::vector<double> &times, 
                       const std::vector<double> &charges, 
                       std::vector<double> &waveform,
-                      double startTime, double binWidth, double timeShift);
+                      double startTime, double digitizationInterval);
 
   private:
-    std::vector<double> _waveformSinglePE;
-    double _singlePEbinWidth;
+    std::vector<double> _singlePEWaveform;
+    double _singlePEWaveformPrecision;
 };
 
 }
