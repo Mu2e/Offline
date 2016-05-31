@@ -24,7 +24,7 @@
 
 #include "TrkDiag/inc/KalDiag.hh"
 
-#include "CalPatRec/inc/RecoObjectDump.hh"
+#include "CalPatRec/inc/ObjectDumpUtils.hh"
 
 #include "CalPatRec/inc/AlgorithmIDCollection.hh"
 //CLHEP
@@ -121,7 +121,7 @@ namespace mu2e {
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection );
     unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection   );
 
-    if (_debugLevel > 0) RecoObjectDump::printEventHeader(&AnEvent,"MergePatRec::produce");
+    if (_debugLevel > 0) ObjectDumpUtils::printEventHeader(&AnEvent,"MergePatRec::produce");
 
     AnEvent.getByLabel(_trkPatRecModuleLabel,_iname,tpr_h);
     AnEvent.getByLabel(_calPatRecModuleLabel,_iname,cpr_h);
@@ -263,7 +263,7 @@ namespace mu2e {
       }
     }
 
-    if (_debugLevel > 0) RecoObjectDump::printKalRepCollection(&AnEvent,trackPtrs.get(),1);
+    if (_debugLevel > 0) ObjectDumpUtils::printKalRepCollection(&AnEvent,trackPtrs.get(),1);
 
     AnEvent.put(std::move(trackPtrs),_iname);
     AnEvent.put(std::move(algs     ),_iname);
