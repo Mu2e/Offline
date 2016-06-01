@@ -77,7 +77,7 @@ CalPatRec : {
 	HitMinDrift 				: 0.2
 	DivergeFlt                              : 1000.            #  default: 1000.
 	RdriftMinusDocaTol                      : 1.
-	dtOffset                                : @local::TrackCaloMatchingDtOffset
+	dtOffset                                : @local::TrackCaloMatching.DtOffset
 	#------------------------------------------------------------------------------
 	# shouldn't be used during the seed fit, only during the hit-based fit 
 	#------------------------------------------------------------------------------
@@ -141,7 +141,7 @@ CalPatRec : {
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
 	fieldCorrection				: true
 	maxhitchi                               : 3.5
-	dtOffset                                : @local::TrackCaloMatchingDtOffset
+	dtOffset                                : @local::TrackCaloMatching.DtOffset
 	scaleErrDoublet                         : 5.
 	#	iLoopUseDoublets                        : 9
 	minDriftDoublet                         : 0.3
@@ -362,7 +362,7 @@ CalPatRec : { @table::CalPatRec
 	    minClusterSize                              : 2      # number of crystals
 	    minClusterTime                              : 500.   # ns
 	    pitchAngle                                  : 0.67   # mean pitch for CE
-	    dtOffset                                    : @local::TrackCaloMatchingDtOffset
+	    dtOffset                                    : @local::TrackCaloMatching.DtOffset
 	}
 
 	CalPatRecNew          : { module_type:CalPatRecNew
