@@ -85,5 +85,14 @@ StoppedMuonXRayGammaRayGun: {
 randomsaver: {
     module_type          : RandomNumberSaver
 }
+#------------------------------------------------------------------------------
+# transitioning ... EventGenerator producers table
+#------------------------------------------------------------------------------
+EventGenerator : {
+    producers : {
+	StoppedMuonConversionGun   : { @table::StoppedMuonConversionGun   }
+	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
+    }
+}
 
 END_PROLOG
