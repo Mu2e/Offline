@@ -134,5 +134,11 @@ mu2eg4runDefaultSingleStage: {
 # Many legacy configurations use "g4run"
 g4run: @local::mu2eg4runDefaultSingleStage
 
+Mu2eG4: {
+    producers : {
+	g4run : { @table::mu2eg4runDefaultSingleStage }
+    }
+}
+
 #----------------------------------------------------------------
 END_PROLOG
