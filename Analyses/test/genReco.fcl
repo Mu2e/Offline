@@ -22,50 +22,89 @@
 # define module sequences 
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
-  generatorSeq  : [ generate, g4run, @sequence::EventMixing.TimeMaps ]
 
-  make_digis   : [ MakeCaloReadoutHits, @sequence::Tracking.DigiSim ]
+generatorSeq  : [ generate, g4run, @sequence::EventMixing.TimeMaps ]
+
+make_digis   : [ MakeCaloReadoutHits, @sequence::Tracking.DigiSim ]
 
 # calorimeter cluster reconstruction
-  calRecoSeq    : [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
+calRecoSeq    : [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
 
 # hit making for CalPatRec
-  cprMakeHitSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
+cprMakeHitSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
 		    CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
 # 
-  calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
+calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
 
 #------------------------------------------------------------------------------
 # downstream electron and downstream muon reconstruction - needed for particle ID
 #------------------------------------------------------------------------------
-  trkPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, 
+trkPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, 
 			  @sequence::Tracking.TPRDownstreammuMinus,
 			  MergePatRecDem, MergePatRecDmm ]
 
-  calPatRecDemDmmSeq  : [ @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, MergePatRecDem, MergePatRecDmm ]
+calPatRecDemDmmSeq  : [ @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, MergePatRecDem, MergePatRecDmm ]
 
-  allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, 
-			  @sequence::Tracking.TPRDownstreammuMinus,
-			  @sequence::cprMakeHitSeq, 
-			  CalPatRecDem, CalPatRecDmm,
-			  MergePatRecDem, MergePatRecDmm ]
+allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, 
+			@sequence::Tracking.TPRDownstreammuMinus,
+			@sequence::cprMakeHitSeq, 
+			CalPatRecDem, CalPatRecDmm,
+			MergePatRecDem, MergePatRecDmm ]
 
 # particle identification
 
-  vadimPidSeq         : [ @sequence::TrackCaloMatching.matching, ParticleID ]
-  avikPidSeq          : [ @sequence::TrackCaloMatching.matching_dem,
+vadimPidSeq         : [ @sequence::TrackCaloMatching.matching, ParticleID ]
+avikPidSeq          : [ @sequence::TrackCaloMatching.matching_dem,
 			  @sequence::TrackCaloMatching.matching_dmm,
-			  AvikPID ]
+			AvikPID ]
 
-#   muStops      : @local::mergedMuonStops
+#-----------------------------------------------------------------------------
+# paths
+#------------------------------------------------------------------------------
+paths : {
+
+    allpatrec_reco : [ @sequence::calRecoSeq, 
+		       @sequence::allPatRecDemDmmSeq,
+		       @sequence::avikPidSeq
+		       , TrackSummaryMaker
+		      ]
+    
+    trkpatrec_reco : [ @sequence::calRecoSeq, 
+		       @sequence::trkPatRecDemDmmSeq,
+		       @sequence::avikPidSeq
+		       , TrackSummaryMaker
+		      ]
+    
+    gen                : [ @sequence::generatorSeq, 
+			   @sequence::make_digis
+			  ]
+    
+    gen_allpatrec_reco : [ @sequence::generatorSeq, 
+			   @sequence::make_digis,
+			   @sequence::calRecoSeq, 
+			   @sequence::allPatRecDemDmmSeq,
+			   @sequence::avikPidSeq
+			   , TrackSummaryMaker
+			  ]
+    
+    gen_trkpatrec_reco : [ @sequence::generatorSeq, 
+			   @sequence::make_digis,
+			   @sequence::calRecoSeq, 
+			   @sequence::trkPatRecDemDmmSeq,
+			   @sequence::avikPidSeq
+			   , TrackSummaryMaker
+			  ]
+}
+
 END_PROLOG
 
-process_name : GenReco
+process_name : AllPatRecReco
 #------------------------------------------------------------------------------
 # define input module
 #------------------------------------------------------------------------------
 source : {
-    module_type : EmptyEvent
+#    module_type : EmptyEvent
+    module_type : RootInput
 }
 #------------------------------------------------------------------------------
 # define output module
@@ -116,30 +155,18 @@ physics : {
         makeSH               : @local::makeSHfromSD
 	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
 	MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
-#------------------------------------------------------------------------------
-# calorimeter reconstruction
-#------------------------------------------------------------------------------
-	MakeCaloProtoCluster : @local::MakeCaloProtoCluster
-	MakeCaloCluster      : @local::MakeCaloCluster
-#------------------------------------------------------------------------------
-#  Tracking: all tracking modules come from prolog.fcl
-#------------------------------------------------------------------------------
-	@table::Tracking.producers
-#------------------------------------------------------------------------------
-# CalPatRec 
-#------------------------------------------------------------------------------
 	MakeStrawHitPositions: @local::MakeStrawHitPositions
-
+#------------------------------------------------------------------------------
+# calorimeter, track reconstruction, and PID
+#------------------------------------------------------------------------------
+	@table::CaloCluster.producers
+	@table::Tracking.producers
 	@table::CalPatRec.producers
 	@table::TrackCaloMatching.producers
+	@table::ParticleID.producers
 #------------------------------------------------------------------------------
-# needed for analysis
+# track summary maker
 #------------------------------------------------------------------------------
-	AvikPID              : { @table::AvikPID           
-	    trkPatRecDemModuleLabel : MergePatRecDem 
-	    trkPatRecDmmModuleLabel : MergePatRecDmm 
-	}
-
 	TrackSummaryMaker:    { @table::TrackSummaryMaker
 	    trackInput : "MergePatRecDem:DownstreameMinus"
 	}
@@ -173,44 +200,32 @@ physics : {
 #------------------------------------------------------------------------------
 # paths:
 #------------------------------------------------------------------------------
+    @table::paths
+
     e1 : [ RKFDownstreameMinus ]
-#    e1 : [  ]
-
-    gen_allpatrec_reco : [ @sequence::generatorSeq, 
-			   @sequence::make_digis,
-			   @sequence::calRecoSeq, 
-			   @sequence::allPatRecDemDmmSeq,
-			   @sequence::avikPidSeq
-			   , TrackSummaryMaker
-			  ]
-    gen_trkpatrec_reco : [ @sequence::generatorSeq, 
-			   @sequence::make_digis,
-			   @sequence::calRecoSeq, 
-			   @sequence::trkPatRecDemDmmSeq,
-			   @sequence::avikPidSeq
-			   , TrackSummaryMaker
-			  ]
-
-    trigger_paths  : [gen_allpatrec_reco]
-#    trigger_paths  : [gen_trkpatrec_reco]
+#     e1 : [  ]				
+#------------------------------------------------------------------------------
+# 1. generation part only
+#------------------------------------------------------------------------------
+    trigger_paths  : [ gen_allpatrec_reco ]
+#    trigger_paths  : [ gen ]
+#    trigger_paths  : [ allpatrec_reco ]
+#    trigger_paths  : [ trkpatrec_reco ]
 
 # to disable writing out the DST file, replace [detectorOutput] with []
-    out : [detectorOutput]
+    out : [ detectorOutput ]
 #    out : []
-    end_paths      : [e1, out]
+    end_paths      : [ e1, out ]
 }
 #------------------------------------------------------------------------------
 # redefinitions
 #------------------------------------------------------------------------------
 # 1. only for interactive submission
 #------------------------------------------------------------------------------
-
 # print per event timing for ::event entry points
 # services.Timing: { }
 # print
 services.scheduler.wantSummary: true
 
 # Apply the time offsets at the digitization stage
-# physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-# physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 
