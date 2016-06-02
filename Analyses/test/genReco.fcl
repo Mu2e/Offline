@@ -103,8 +103,8 @@ process_name : AllPatRecReco
 # define input module
 #------------------------------------------------------------------------------
 source : {
-#    module_type : EmptyEvent
-    module_type : RootInput
+    module_type : EmptyEvent
+#    module_type : RootInput
 }
 #------------------------------------------------------------------------------
 # define output module
@@ -144,21 +144,14 @@ services : {
 #------------------------------------------------------------------------------
 physics : {
     producers: {
+	@table::EventGenerator.producers
 	generate             : { @table::StoppedParticleReactionGun }
-	g4run                : @local::g4run
 #------------------------------------------------------------------------------
-# hit makers
+# G4, hit makers, calorimeter, track reconstruction, and PID
 #------------------------------------------------------------------------------
+	@table::Mu2eG4.producers
         @table::EventMixing.producers 
-
-        makeSD               : @local::makeSD
-        makeSH               : @local::makeSHfromSD
-	MakeCaloReadoutHits  : @local::MakeCaloReadoutHits
-	MakeCaloCrystalHits  : @local::MakeCaloCrystalHitsNew
-	MakeStrawHitPositions: @local::MakeStrawHitPositions
-#------------------------------------------------------------------------------
-# calorimeter, track reconstruction, and PID
-#------------------------------------------------------------------------------
+	@table::HitMakers.producers
 	@table::CaloCluster.producers
 	@table::Tracking.producers
 	@table::CalPatRec.producers
