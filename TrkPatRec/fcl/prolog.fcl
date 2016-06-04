@@ -38,7 +38,7 @@ FlagBkgHits : {
   NonStereoHitMVACut : 0.2
   ClusterStrawHits : {
     BackgroundMask : [] 
-    SignalMask : ["TimeSelection"]
+    SignalMask : ["TimeSelection", "EnergySelection", "RadiusSelection"]
   }
 }
 
