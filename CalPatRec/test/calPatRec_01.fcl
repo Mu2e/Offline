@@ -13,9 +13,9 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
-#include "HitMakers/test/producers.fcl"
-#include "TrackCaloMatching/test/producers.fcl"
-#include "CalPatRec/test/producers.fcl"
+#include "HitMakers/fcl/prolog.fcl"
+#include "TrackCaloMatching/fcl/prolog.fcl"
+#include "CalPatRec/fcl/prolog.fcl"
 
 #                             Give this process a name
 process_name : calPatRec

@@ -5,9 +5,9 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 
-TrackCaloMatching : {  # general namespace for everything defined in this file
+TrackCaloMatching : {  @table::TrackCaloMatching  # general namespace for everything defined in this file
 
-    DtOffset : 2.9 # track-cluster offset, ns v5_7_6
+#    DtOffset : 2.9 # track-cluster offset, ns v5_7_6
 
     producers : {
 #------------------------------------------------------------------------------

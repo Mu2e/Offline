@@ -6,12 +6,12 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
-#include "HitMakers/test/producers.fcl"
-#include "TrackCaloMatching/test/producers.fcl"
-#include "CaloCluster/test/producers.fcl"
-#include "CalPatRec/test/producers.fcl"
-#include "ParticleID/test/producers.fcl"
-#include "Stntuple/test/producers.fcl"
+#include "HitMakers/fcl/prolog.fcl"
+#include "TrackCaloMatching/fcl/prolog.fcl"
+#include "CaloCluster/fcl/prolog.fcl"
+#include "CalPatRec/fcl/prolog.fcl"
+#include "ParticleID/fcl/prolog.fcl"
+#include "Stntuple/fcl/prolog.fcl"
 
 #                             Give this process a name
 process_name : mergePatRecDisplay

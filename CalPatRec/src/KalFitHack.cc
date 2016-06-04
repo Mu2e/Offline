@@ -595,6 +595,10 @@ namespace mu2e
 
       niter++;
     }
+
+    if (!KRes._krep->fitCurrent()) {
+      KRes.fit();
+    }
 //-----------------------------------------------------------------------------
 // done iterating, define drift signs with respect to the final trajectory
 // 2015-02-17 G. Pezzu: ::resolveTrk() updates drift signs of ALL hits,

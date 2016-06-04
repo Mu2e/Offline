@@ -63,12 +63,14 @@ physics : {
       // // Make arbitrary LogicalVolumes sensitive:
       // sensitiveVolumes: []
       }
-
+# visGUIMacro is used with the Qt GUI
+       visGUIMacro          : "Mu2eG4/test/visqtGUI.mac"
+#try this first, but qt requires ./buildopts --g4vis=qt ...
+#      visMacro             : "Mu2eG4/test/vismqt.mac"
 #      visMacro             : "Mu2eG4/test/visxy.mac"
 #      visMacro             : "Mu2eG4/test/visxz.mac"
 
-#try this first
-      visMacro             : "Mu2eG4/test/visyz.mac" 
+#      visMacro             : "Mu2eG4/test/visyz.mac" 
 
 #      visMacro             : "Mu2eG4/test/vis45.mac"
 #      visMacro             : "Mu2eG4/test/vis4530.mac"

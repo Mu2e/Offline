@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-#include "CalPatRec/inc/RecoObjectDump.hh"
+#include "CalPatRec/inc/ObjectDumpUtils.hh"
 
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -17,7 +17,6 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloProtoCluster.hh"
-#include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
@@ -39,6 +38,7 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 
 #include "BTrkData/inc/TrkStrawHit.hh"
+
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
@@ -58,12 +58,12 @@
 
 namespace mu2e {
 
-  const SimParticleTimeOffset           *RecoObjectDump::_TimeOffsets(NULL);
-  const PtrStepPointMCVectorCollection  *RecoObjectDump::_ListOfMCStrawHits(NULL);
-  std::string                            RecoObjectDump::_FlagBgrHitsModuleLabel;
+  const SimParticleTimeOffset           *ObjectDumpUtils::_TimeOffsets(NULL);
+  const PtrStepPointMCVectorCollection  *ObjectDumpUtils::_ListOfMCStrawHits(NULL);
+  std::string                            ObjectDumpUtils::_FlagBgrHitsModuleLabel;
 
 // //______________________________________________________________________________
-// RecoObjectDump::RecoObjectDump() {
+// ObjectDumpUtils::ObjectDumpUtils() {
 
 //   _FlagBgrHitsModuleLabel = "FlagBkgHits";
 
@@ -78,12 +78,12 @@ namespace mu2e {
 // }
 
 // //______________________________________________________________________________
-// RecoObjectDump::~RecoObjectDump() {
+// ObjectDumpUtils::~ObjectDumpUtils() {
 // }
 
 
 //-----------------------------------------------------------------------------
-  void RecoObjectDump::printEventHeader(const art::Event* Event, const char* Message) {
+void ObjectDumpUtils::printEventHeader(const art::Event* Event, const char* Message) {
 
   printf(" Run / Subrun / Event : %10i / %10i / %10i : %s\n",
 	 Event->run(),
@@ -92,8 +92,103 @@ namespace mu2e {
 	 Message);
 }
 
+
 //-----------------------------------------------------------------------------
-void RecoObjectDump::printKalRep(const KalRep* Krep, const char* Opt, const char* Prefix) {
+void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluster, const char* Opt) {
+
+  TString opt = Opt;
+
+  int section_id(-1), iz, ir;
+
+  const mu2e::Calorimeter       * cal(NULL);
+  const mu2e::Crystal           *cr;
+  const CLHEP::Hep3Vector       *pos;
+
+  art::ServiceHandle<mu2e::GeometryService> geom;
+  mu2e::GeomHandle  <mu2e::Calorimeter>     cg;
+
+  cal = cg.get();
+
+  if ((opt == "") || (opt == "banner")) {
+    printf("-----------------------------------------------------------------------------------------------------\n");
+    printf("       Address  SectionID  IsSplit  NC    Time    Energy      \n");
+    printf("-----------------------------------------------------------------------------------------------------\n");
+  }
+ 
+  const mu2e::CaloProtoCluster::CaloCrystalHitPtrVector caloClusterHits = Cluster->caloCrystalHitsPtrVector();
+  int nh = caloClusterHits.size();
+
+  if ((opt == "") || (opt.Index("data") >= 0)) {
+
+    printf("%16p  %3i %5i %5i %10.3f %10.3f\n",
+	   Cluster,
+	   section_id,
+	   nh,
+	   Cluster->isSplit(),
+	   Cluster->time(),
+	   Cluster->energyDep()
+	   ); 
+  }
+  
+  if (opt.Index("hits") >= 0) {
+//-----------------------------------------------------------------------------
+// print individual crystals in local vane coordinate system
+//-----------------------------------------------------------------------------
+    for (int i=0; i<nh; i++) {
+      const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
+      int id = hit->id();
+      
+      //      pos = cg->crystalOriginInSection(id);
+
+      cr  = &cal->crystal(id);
+      pos = &cr->localPosition();
+
+      if (geom->hasElement<mu2e::VaneCalorimeter>()) {
+	mu2e::GeomHandle<mu2e::VaneCalorimeter> cgvane;
+	iz  = cgvane->nCrystalX();
+	ir  = cgvane->nCrystalY();
+      }
+      else {
+	iz = -1;
+	ir = -1;
+      }
+      
+      printf("%6i     %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f %10.3f\n",
+	     id,
+	     hit->time(),
+	     iz,ir,
+	     hit->energyDep(),
+	     pos->x(),
+	     pos->y(),
+	     pos->z(),
+	     hit->energyDepTotal()
+	     );
+    }
+  }
+}
+
+
+//-----------------------------------------------------------------------------
+  void ObjectDumpUtils::printCaloProtoClusterCollection(const mu2e::CaloProtoClusterCollection* Coll) {
+
+  const mu2e::CaloProtoCluster                 *cluster;
+
+  int banner_printed(0), nclusters;
+
+  nclusters = Coll->size();
+
+  for (int i=0; i<nclusters; i++) {
+    cluster = &Coll->at(i);
+    if (banner_printed == 0) {
+      printCaloProtoCluster(cluster, "banner");
+      banner_printed = 1;
+    }
+    printCaloProtoCluster(cluster,"data");
+  }
+}
+
+//-----------------------------------------------------------------------------
+void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const char* Prefix) {
 
   string opt = Opt;
   
@@ -310,9 +405,9 @@ void RecoObjectDump::printKalRep(const KalRep* Krep, const char* Opt, const char
 
 
 //-----------------------------------------------------------------------------
-void RecoObjectDump::printKalRepCollection(const art::Event* Event         , 
-					   const KalRepPtrCollection* Coll,
-					   int               PrintHits     ) {
+void ObjectDumpUtils::printKalRepCollection(const art::Event* Event        , 
+					    const KalRepPtrCollection* Coll,
+					    int               PrintHits    ) {
 
   art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
 
@@ -322,7 +417,7 @@ void RecoObjectDump::printKalRepCollection(const art::Event* Event         ,
   }
   else {
     _ListOfMCStrawHits = NULL;
-    printf(">>> ERROR in RecoObjectDump::printKalRepCollection: failed to locate StepPointMCCollection makeSH:StrawHitMCPtr\n");
+    printf(">>> ERROR in ObjectDumpUtils::printKalRepCollection: failed to locate StepPointMCCollection makeSH:StrawHitMCPtr\n");
   }
 
   int ntrk = Coll->size();

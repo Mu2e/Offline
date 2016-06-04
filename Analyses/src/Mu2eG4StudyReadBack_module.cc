@@ -15,6 +15,7 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
+#include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "TH1F.h"
@@ -23,6 +24,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
@@ -100,7 +102,10 @@ namespace mu2e {
       _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel", "g4run")),
       _timeCut(pset.get<double>("timeCut",0.0)),
       _stopped_only(pset.get<bool>("saveStopped",false)),
-      _add_proper_time(pset.get<bool>("addProperTime",false))
+      _add_proper_time(pset.get<bool>("addProperTime",false)),
+      physVolInfoInput_(pset.get<std::string>("physVolInfoInput","g4run")),
+      vols_(),
+      verbosityLevel_(pset.get<int>("diagLevel", 0))
     {
 
       nt = new float[128];
@@ -111,6 +116,7 @@ namespace mu2e {
 
     virtual void beginJob();
     virtual void beginRun(art::Run const&);
+    virtual void beginSubRun(art::SubRun const&);
 
     void analyze(const art::Event& e);
 
@@ -154,6 +160,11 @@ namespace mu2e {
 
     // Should we add together proper time for the whole decay chain
     bool _add_proper_time;
+
+    art::InputTag physVolInfoInput_;
+    const PhysicalVolumeInfoMultiCollection *vols_;
+
+    int verbosityLevel_;
 
   };
 
@@ -237,6 +248,27 @@ namespace mu2e {
 
     }
 
+  }
+
+  void Mu2eG4StudyReadBack::beginSubRun(art::SubRun const& sr) {
+    art::Handle<PhysicalVolumeInfoMultiCollection> volh;
+    sr.getByLabel(physVolInfoInput_, volh);
+    if( volh.isValid() ) {
+      vols_ = &*volh;
+        std::cout<<"PhysicalVolumeInfoMultiCollection dump begin"<<std::endl;
+        for(const auto& i : *vols_) {
+          std::cout<<"*********************************************************"<<std::endl;
+          std::cout<<"SimParticleNumberOffset = "<<i.first<<", collection size = "<<i.second.size()<<std::endl;
+          // register all volumes
+          size_t ii=0;
+          for(const auto& entry : i.second) {
+            vid_stop[ii] = (entry.second).copyNo();
+            std::cout<<entry.second<<" "<<ii<<std::endl;
+            ++ii;
+          }
+        }
+        std::cout<<"PhysicalVolumeInfoMultiCollection dump end"<<std::endl;
+      }
   }
 
   void Mu2eG4StudyReadBack::analyze(const art::Event& event) {

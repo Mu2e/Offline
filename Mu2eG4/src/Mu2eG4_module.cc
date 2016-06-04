@@ -12,6 +12,7 @@
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
+#include "Mu2eG4/inc/Mu2eStudyWorld.hh"
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/exportG4PDT.hh"
@@ -190,7 +191,7 @@ namespace mu2e {
 
     // throws if obsolete config parameters are detected
     static void checkConfigRelics(const SimpleConfig& config);
-
+    const bool standardMu2eDetector_;
 
 
   }; // end G4 header
@@ -237,7 +238,8 @@ namespace mu2e {
     _timer(std::make_unique<G4Timer>()),
     _realElapsed(0.),
     _systemElapsed(0.),
-    _userElapsed(0.)
+    _userElapsed(0.),
+    standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector())
   {
     if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
       throw cet::exception("CONFIG")
@@ -266,6 +268,9 @@ namespace mu2e {
     commonCuts_->declareProducts(this);
 
     produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
+    // if(!standardMu2eDetector_) {
+    //   produces<PhysicalVolumeInfoMultiCollection>("");
+    // }
 
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
     createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
@@ -306,10 +311,16 @@ namespace mu2e {
     _physVolHelper.beginRun();
     _processInfo.beginRun();
 
+    // in the non Mu2e detector we are working in the system with the
+    // origin set to 0.,0.,0. and do not use geometry service for that
+
+    G4ThreeVector const originInWorld = (!standardMu2eDetector_)
+      ? G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
+
     // Some of the user actions have beginRun methods.
-    GeomHandle<WorldG4>  worldGeom;
-    _trackingAction->beginRun( _physVolHelper, _processInfo, worldGeom->mu2eOriginInWorld() );
-    _steppingAction->beginRun( _processInfo, worldGeom->mu2eOriginInWorld() );
+
+    _trackingAction->beginRun( _physVolHelper, _processInfo, originInWorld );
+    _steppingAction->beginRun( _processInfo, originInWorld );
 
     // A few more things that only need to be done only once per job,
     // not once per run, but which need to be done after the call to
@@ -319,11 +330,11 @@ namespace mu2e {
     if ( ncalls == 1 ) {
 
       _steppingAction->finishConstruction();
-      stackingCuts_->finishConstruction(worldGeom->mu2eOriginInWorld());
-      steppingCuts_->finishConstruction(worldGeom->mu2eOriginInWorld());
-      commonCuts_->finishConstruction(worldGeom->mu2eOriginInWorld());
+      stackingCuts_->finishConstruction(originInWorld);
+      steppingCuts_->finishConstruction(originInWorld);
+      commonCuts_->finishConstruction(originInWorld);
 
-      if( _checkFieldMap>0 ) generateFieldMap(worldGeom->mu2eOriginInWorld(),_checkFieldMap);
+      if( _checkFieldMap>0 ) generateFieldMap(originInWorld,_checkFieldMap);
 
       if ( _exportPDTStart ) exportG4PDT( "Start:" );
     }
@@ -331,7 +342,9 @@ namespace mu2e {
 
   void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
-    geom.addWorldG4(*GeomHandle<Mu2eHall>());
+    if (standardMu2eDetector_) {
+      geom.addWorldG4(*GeomHandle<Mu2eHall>());
+    }
 
     if ( _rmvlevel > 0 ) {
       mf::LogInfo logInfo("GEOM");
@@ -342,8 +355,20 @@ namespace mu2e {
 
     // Create user actions and register them with G4.
 
-    auto* allMu2e = new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &_sensitiveDetectorHelper),
-                                              std::make_unique<ConstructMaterials>(pset_));
+    G4VUserDetectorConstruction* allMu2e;
+
+    if (standardMu2eDetector_) {
+
+      allMu2e = 
+        (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &_sensitiveDetectorHelper),
+                                   std::make_unique<ConstructMaterials>(pset_)));
+
+    } else {
+
+      allMu2e = 
+        (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &_sensitiveDetectorHelper),
+                                        std::make_unique<ConstructMaterials>(pset_)));
+    }
 
     preG4InitializeTasks(pset_.get<fhicl::ParameterSet>("physics"));
  
@@ -397,8 +422,8 @@ namespace mu2e {
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(pset_);
     _sensitiveDetectorHelper.registerSensitiveDetectors();
-    _extMonFNALPixelSD =
-      dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
+    if (standardMu2eDetector_) _extMonFNALPixelSD =
+                                 dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()
                                        ->FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()));
 
 
@@ -432,6 +457,9 @@ namespace mu2e {
       mvi->reserve(1 + ih->size());
       mvi->insert(mvi->begin(), ih->cbegin(), ih->cend());
     }
+    cout << __func__ << " Append volume info " <<  endl;
+    cout << __func__ << " multiStagePars_.simParticleNumberOffset() " 
+         << multiStagePars_.simParticleNumberOffset() <<  endl;
 
     // Append info for the current stage
     mvi->emplace_back(std::make_pair(multiStagePars_.simParticleNumberOffset(), _physVolHelper.persistentSingleStageInfo()));
@@ -483,7 +511,10 @@ namespace mu2e {
     unique_ptr<StepPointMCCollection>      tvdHits(           new StepPointMCCollection);
     unique_ptr<MCTrajectoryCollection>     mcTrajectories(    new MCTrajectoryCollection);
     unique_ptr<SimParticleRemapping>       simsRemap(         new SimParticleRemapping);
-    unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);
+    unique_ptr<ExtMonFNALSimHitCollection> extMonFNALHits(    new ExtMonFNALSimHitCollection);    
+    // products for the g4study
+    unique_ptr<StepPointMCCollection>      steppingPoints(    new StepPointMCCollection);
+
     _sensitiveDetectorHelper.createProducts(event, spHelper);
 
     stackingCuts_->beginEvent(event, spHelper);
@@ -507,7 +538,6 @@ namespace mu2e {
     BeamOnDoOneEvent( event.id().event() );
 
     // Populate the output data products.
-    GeomHandle<WorldG4>  world;
 
     // Run self consistency checks if enabled.
     _trackingAction->endEvent(*simParticles);

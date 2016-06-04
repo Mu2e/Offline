@@ -1,6 +1,6 @@
 //
-#ifndef __CalPatRec_inc_RecoObjectDump_hh__
-#define __CalPatRec_inc_RecoObjectDump_hh__
+#ifndef __CalPatRec_inc_ObjectDumpUtils_hh__
+#define __CalPatRec_inc_ObjectDumpUtils_hh__
 
 #include "TObject.h"
 #include "TObjArray.h"
@@ -22,6 +22,7 @@ class KalRep;
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
 
 namespace mu2e {
   class StrawHit;
@@ -39,7 +40,7 @@ namespace mu2e {
   class TrkStrawHit;
 
 
-  class RecoObjectDump {
+  class ObjectDumpUtils {
   protected:
 
     static std::string                            _FlagBgrHitsModuleLabel;
@@ -57,11 +58,13 @@ namespace mu2e {
 
     static void printKalRep(const KalRep* Krep, const char* Opt = "", const char* Prefix = "");
 
-    static void printKalRepCollection(const art::Event* Event, 
-				      const KalRepPtrCollection* Coll,
-				      int         PrintHits   = 0); 
+    static void printKalRepCollection(const art::Event*          Event        , 
+				      const KalRepPtrCollection* Coll         ,
+				      int                        PrintHits = 0); 
     
-  };
+    static void printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluster, const char* Opt = "");
 
+    static void printCaloProtoClusterCollection(const mu2e::CaloProtoClusterCollection* Coll);
+  };
 }
 #endif

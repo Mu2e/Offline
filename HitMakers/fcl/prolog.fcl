@@ -334,10 +334,22 @@ CaloCrystalHitsFromCaloHits  :{
     diagLevel             : 0
     debugMode             : 0
     TimeOffsets           : @local::HitMakerTimeOffsets
-    time4Merge            : 4.   #    ns
+    time4Merge            : 4.                             #    ns
     caloHitsModuleLabel   : CaloHitsFromCaloDigis
 }
 
-
+HitMakers : {
+    producers : { 
+	makeSD                    : { @table::makeSD                    }
+	makeSH                    : { @table::makeSHfromSD              }
+	MakeCaloReadoutHits       : { @table::MakeCaloReadoutHits       }
+	MakeCaloCrystalHits       : { @table::MakeCaloCrystalHitsNew    }
+	MakeStrawHitPositions     : { @table::MakeStrawHitPositions     } 
+	MakeStereoHits            : { @table::MakeStereoHits            }
+	CaloDigisFromCaloShower   : { @table::CaloDigisFromCaloShower   }
+	CaloDigisFromStepPointMCs : { @table::CaloDigisFromStepPointMCs }
+	CaloHitsFromCaloDigis     : { @table::CaloHitsFromCaloDigis     }
+    }
+}
 
 END_PROLOG

@@ -8,7 +8,7 @@
 
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
-#include "Analyses/test/producers.fcl"
+#include "Analyses/fcl/prolog.fcl"
 
 process_name : Print
 

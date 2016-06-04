@@ -51,9 +51,13 @@ class G4UserLimits;
 namespace mu2e {
 
   // Forward references within mu2e namespace.
+  class SensitiveDetectorHelper;
 
   class Mu2eStudyWorld : public Mu2eUniverse {
   public:
+
+    Mu2eStudyWorld(const fhicl::ParameterSet& pset,
+                   SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
 
     Mu2eStudyWorld();
     ~Mu2eStudyWorld();
@@ -66,6 +70,18 @@ namespace mu2e {
   private:
 
     void constructStepLimiters();
+
+    SensitiveDetectorHelper *sdHelper_; // Non-owning
+
+    fhicl::ParameterSet pset_;
+
+    // _verbosityLevel in the base class
+ 
+    bool writeGDML_;
+    std::string gdmlFileName_;
+    std::string g4stepperName_;
+    double bfieldMaxStep_;
+ 
 
   };
 

@@ -2,6 +2,44 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_7_7
 
+
+3) May 31, 2016 genser
+
+   First implementation of g4study (named g4study2) using the new
+   Mu2eG4_module.  g4study was left using G4_module. The idea is to
+   use the fhicl configuration, as e.g. in g4study2.fcl to reproduce
+   the old g4study simple config based behavior 
+
+   After the changes
+   Mu2eG4/fcl/g4study2.fcl          gives same results as Mu2eG4/fcl/g4study.fcl
+   Mu2eG4/fcl/g4study2Calo_01.fcl   same as               Mu2eG4/fcl/g4studyCalo_01.fcl
+   Mu2eG4/fcl/g4study2MuCapture.fcl same as               Mu2eG4/fcl/g4studyMuCapture.fcl
+
+   Enabling code changes:
+
+     Analyses/src/Mu2eG4StudyReadBack_module.cc
+     GeometryService/inc/GeometryService.hh
+     GeometryService/src/GeometryService_service.cc
+     GeometryService/src/GeometryService_service.cc
+     Mu2eG4/inc/Mu2eStudyWorld.hh
+     Mu2eG4/src/ConstructMaterials.cc
+     Mu2eG4/src/Mu2eG4_module.cc
+     Mu2eG4/src/Mu2eStudyWorld.cc
+     Mu2eG4/src/PrimaryGeneratorAction.cc
+
+   Configuration changes:
+
+     Mu2eG4/fcl/g4study.fcl
+     Mu2eG4/fcl/g4study2.fcl
+     Mu2eG4/fcl/g4study2Calo_01.fcl
+     Mu2eG4/fcl/g4study2MuCapture.fcl
+     Mu2eG4/fcl/g4studyCalo_01.fcl
+     Mu2eG4/fcl/g4studyMuCapture.fcl
+     Mu2eG4/test/g4study2Geom.txt
+     Mu2eG4/test/g4study2GeomCalo_01.txt
+     Mu2eG4/test/g4study2GeomMuCapture.txt
+     Mu2eG4/test/g4studyGeomCalo_01.txt
+
 2) May 27, 2016 ehrlich
    Changed the CRV waveform structure.
 

@@ -1,12 +1,8 @@
+# -*- mode: tcl -*-
 #
 # fcl config file to perform Geant4 studies using the Mu2e framework infrastructure and simple geometry
 #
-#
-# $Id: g4studyMuCapture.fcl,v 1.1 2014/08/29 16:16:17 knoepfel Exp $
-# $Author: knoepfel $
-# $Date: 2014/08/29 16:16:17 $
-#
-# Original author K. Genser
+# Original author K.L. Genser
 #
 
 #include "minimalMessageService.fcl"
@@ -25,7 +21,7 @@ source : {
 services : {
 
   message               : @local::default_message
-  TFileService          : { fileName : "g4study.root" }
+  TFileService          : { fileName : "g4studyMuCapture.root" }
   RandomNumberGenerator : { }
 
   user : {
@@ -109,7 +105,7 @@ outputs:  {
 
   outfile : {
     module_type   :   RootOutput
-    fileName      :   "data_g4study.root"
+    fileName      :   "data_g4studyMuCapture.root"
   }
 
 }
