@@ -141,21 +141,33 @@ namespace mu2e
     static StrawHitFlag stflag(StrawHitFlag::stereo);
     double retval = _dlarge;
     double dt = fabs(hit._time-cluster.time());
+    // check time range first
     if( dt < _maxdt){
-      bool stereo = hit._flag.hasAllProperties(stflag);
-      double psig2 = stereo ? _srms2 : _nsrms2;
+      double retval2(0.0);
+// compute spatial distance
+      double dp = _dlarge;
       if(_mode == hitcluster){
-        double dperp = (cluster.pos()-hit._pos).perp();
-        retval = sqrt(pow(fmax(0.0,dperp-_dd),2)/psig2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
+        dp = (cluster.pos()-hit._pos).perp();
       } else  {
-// loop over all hits in the cluster, and determine the distance to the closests one
-        double mindp2(FLT_MAX);
+// loop over all hits in the cluster, and determine the distance to the closest one
         for(size_t ih=0;ih<cluster.hits().size();++ih){
-          double dp2 = (cluster.hits()[ih]._pos-hit._pos).perp();
-          if(dp2 < mindp2)mindp2 = dp2;
+          double dph = (cluster.hits()[ih]._pos-hit._pos).perp();
+          if(dph < dp)dp = dph;
         }
-        retval = sqrt(pow(fmax(0.0,sqrt(mindp2)-_dd),2)/psig2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
       }
+      // only count differences if they are above the natural hit size (drift time, straw size)
+      if(dt > _dt){
+	double tdist = dt -_dt;
+	retval2 = tdist*tdist/_trms2;
+      }
+      if(dp > _dd){
+	// determine position error
+	bool stereo = hit._flag.hasAllProperties(stflag);
+	double psig2 = stereo ? _srms2 : _nsrms2;
+	double pdist = dp - _dd;
+	retval2 += pdist*pdist/psig2;
+      }
+      retval = sqrt(retval2);
     }
     return retval;
   }
@@ -164,19 +176,28 @@ namespace mu2e
     double retval = _dlarge;
     double dt = fabs(c1.time()-c2.time());
     if( dt < _maxdt){
+      double retval2(0.0);
+      double dp = _dlarge;
       if(_mode == hitcluster) {
-        double dperp = (c1.pos()-c2.pos()).perp();
-        retval = sqrt(pow(fmax(0.0,dperp-_dd),2)/_srms2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
+        dp = (c1.pos()-c2.pos()).perp();
       } else {
-        double mindp2(FLT_MAX);
         for(size_t ih=0;ih<c1.hits().size();++ih){
           for(size_t jh=0;jh<c2.hits().size();++jh){
-            double dp2 = (c1.hits()[ih]._pos-c2.hits()[jh]._pos).perp();
-            if(dp2 < mindp2)mindp2 = dp2;
+            double dph = (c1.hits()[ih]._pos-c2.hits()[jh]._pos).perp();
+            if(dph < dp)dp = dph;
           }
         }
-        retval = sqrt(pow(fmax(0.0,sqrt(mindp2)-_dd),2)/_srms2 + pow(fmax(0.0,dt-_dt),2)/_trms2);
       }
+      if(dt > _dt){
+	double tdist = dt -_dt;
+	retval2 = tdist*tdist/_trms2;
+      }
+      if(dp > _dd){
+      // use stereo error
+	double pdist = dp - _dd;
+	retval2 += pdist*pdist/_srms2;
+      }
+      retval = sqrt(retval2);
     }
     return retval;
   }
