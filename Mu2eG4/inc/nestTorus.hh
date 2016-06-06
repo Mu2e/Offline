@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "G4Helper/inc/VolumeInfo.hh"
+#include "GeomPrimitives/inc/TorusParams.hh"
 
 class G4Material;
 class G4LogicalVolume;
@@ -73,6 +74,22 @@ namespace mu2e {
 			 std::string const& lookupToken = ""
                          );
 
+
+  VolumeInfo nestTorus ( std::string const& name,
+			 TorusParams const& halfDim,
+			 G4Material* material,
+			 G4RotationMatrix const* rot,
+			 G4ThreeVector const& offset,
+			 const VolumeInfo& parent,
+			 int copyno,
+                         bool const isVisible,
+                         G4Colour const color,
+                         bool const forceSolid,
+                         bool const forceAuxEdgeVisible,
+                         bool const placePV,
+                         bool const doSurfaceCheck
+                         );
+			 
 }
 
 #endif /* Mu2eG4_nestTorus_hh */

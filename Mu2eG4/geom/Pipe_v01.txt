@@ -7,17 +7,23 @@ int Pipe.numberOfPipeTypes = 1;
 
 // How many of each type box to make, and how many components in each.
 int Pipe.nPipeType1 = 2;  // long straight pipe sections in West wall relief
+//int Pipe.nPipeType2 = 1;  // test only - bend section
 int Pipe.nComponentsInType1 = 10; //lN2 and lHe supply and return lines in west
          // wall relief
+//int Pipe.nComponentsInType2 = 10; // test only - Match the type1 pipes
 
-// Lengths in w dimension for each type of pipe.  Dimensions should be in mm.
+// Lengths in w dimension for straight type of pipe.  
+// For pipe bends, this is the bend radius.  Dimensions should be in mm.
 double Pipe.lengthType1 = 12721.18; // long straight pipe sections in West wall relief
+// double Pipe.lengthType2 = 1000; // test only - bend sections
 
 // Flavor of the type.  Here, flavor means "straight" (default) or "bend".
 string Pipe.flavorType1 = "straight";
+//string Pipe.flavorType2 = "bend";  // test only
 
 // Fill material of the type
 string Pipe.fillMaterialType1 = "G10Lite";
+//string Pipe.fillMaterialType2 = "G10Lite"; // test only
 
 // The position of the piece in Mu2e Offline coordinates
 
@@ -25,10 +31,12 @@ vector<double> Pipe.centerType1Pipe1 = {-3588.6,2488.13,-3911.6}; // straight pi
 // West wall relief, top
 vector<double> Pipe.centerType1Pipe2 = {-3588.6,1294.43,-3911.6}; // straight pipe,
 // West wall relief, bottom
+//vector<double> Pipe.centerType2Pipe1 = {2700.0, 2000.0, -3911.6}; // test only - bend 
 
 // The orientation of the box.  See docdb xxxx for details.
 string Pipe.orientationType1Pipe1 = "030";
 string Pipe.orientationType1Pipe2 = "030";
+//string Pipe.orientationType2Pipe1 = "003"; // test only
 
 // Now the component information
 
@@ -57,6 +65,30 @@ double Pipe.rOutType1Comp8 = 15.875;
 double Pipe.rOutType1Comp9 = 11.115; 
 double Pipe.rOutType1Comp10 = 11.115; 
 
+// // Pipe Type 2 is a bend section - test only
+// double Pipe.rInType2Comp1 = 124.23; 
+// double Pipe.rInType2Comp2 = 100.015; 
+// double Pipe.rInType2Comp3 = 11.05; 
+// double Pipe.rInType2Comp4 = 11.05; 
+// double Pipe.rInType2Comp5 = 11.05; 
+// double Pipe.rInType2Comp6 = 11.05; 
+// double Pipe.rInType2Comp7 = 17.4; 
+// double Pipe.rInType2Comp8 = 14.224; 
+// double Pipe.rInType2Comp9 = 9.464; 
+// double Pipe.rInType2Comp10 = 9.464; 
+
+// // next, outer radii
+// double Pipe.rOutType2Comp1 = 127.0; 
+// double Pipe.rOutType2Comp2 = 103.19; 
+// double Pipe.rOutType2Comp3 = 12.7; 
+// double Pipe.rOutType2Comp4 = 12.7; 
+// double Pipe.rOutType2Comp5 = 12.7; 
+// double Pipe.rOutType2Comp6 = 12.7; 
+// double Pipe.rOutType2Comp7 = 19.05; 
+// double Pipe.rOutType2Comp8 = 15.875; 
+// double Pipe.rOutType2Comp9 = 11.115; 
+// double Pipe.rOutType2Comp10 = 11.115; 
+
 // Materials for each type of component pipe.  
 string Pipe.materialType1Comp1   = "StainlessSteel";
 string Pipe.materialType1Comp2   = "G4_Al";
@@ -68,6 +100,18 @@ string Pipe.materialType1Comp7   = "G4_Al";
 string Pipe.materialType1Comp8   = "G4_Al";
 string Pipe.materialType1Comp9   = "G4_Al";
 string Pipe.materialType1Comp10   = "G4_Al";
+
+// // Materials for each type of component pipe.  test only for bend section
+// string Pipe.materialType2Comp1   = "StainlessSteel";
+// string Pipe.materialType2Comp2   = "G4_Al";
+// string Pipe.materialType2Comp3   = "G4_Al";
+// string Pipe.materialType2Comp4   = "G4_Al";
+// string Pipe.materialType2Comp5   = "G4_Al";
+// string Pipe.materialType2Comp6   = "G4_Al";
+// string Pipe.materialType2Comp7   = "G4_Al";
+// string Pipe.materialType2Comp8   = "G4_Al";
+// string Pipe.materialType2Comp9   = "G4_Al";
+// string Pipe.materialType2Comp10   = "G4_Al";
 
 // Now the offsets, defining the positions of the components relative
 // to the mother pipe
@@ -94,6 +138,29 @@ double Pipe.vOffsetType1Comp8  = -58.74;
 double Pipe.vOffsetType1Comp9  = 0.0;
 double Pipe.vOffsetType1Comp10  = 0.0;
 
+// // And for the test only pipe bend
+// double Pipe.uOffsetType2Comp1  = 0.0;
+// double Pipe.uOffsetType2Comp2  = 0.0;
+// double Pipe.uOffsetType2Comp3  = 60.0;
+// double Pipe.uOffsetType2Comp4  = -60.0;
+// double Pipe.uOffsetType2Comp5  = 60.0;
+// double Pipe.uOffsetType2Comp6  = -60.0;
+// double Pipe.uOffsetType2Comp7  = 0.0;
+// double Pipe.uOffsetType2Comp8  = 0.0;
+// double Pipe.uOffsetType2Comp9  = 0.0;
+// double Pipe.uOffsetType2Comp10  = 63.5;
+
+// // in v
+// double Pipe.vOffsetType2Comp1  = 0.0;
+// double Pipe.vOffsetType2Comp2  = 0.0;
+// double Pipe.vOffsetType2Comp3  = -58.74;
+// double Pipe.vOffsetType2Comp4  = -58.74;
+// double Pipe.vOffsetType2Comp5  = 58.74;
+// double Pipe.vOffsetType2Comp6  = 58.74;
+// double Pipe.vOffsetType2Comp7  = 55.56;
+// double Pipe.vOffsetType2Comp8  = -58.74;
+// double Pipe.vOffsetType2Comp9  = 0.0;
+// double Pipe.vOffsetType2Comp10  = 0.0;
 
 
 // Global stuff
@@ -102,48 +169,6 @@ bool  Pipe.visible = true;
 bool  Pipe.solid   = false;
 
 int   Pipe.verbosityLevel = 1;
-
-// // DS cryo rail platform
-// double Pipe.outlineType14UVert1 = 470;
-// double Pipe.outlineType14VVert1 = 0;
-// double Pipe.outlineType14UVert2 = 470;
-// double Pipe.outlineType14VVert2 = -75.5;
-// double Pipe.outlineType14UVert3 = 500;
-// double Pipe.outlineType14VVert3 = -58;
-// double Pipe.outlineType14UVert4 = 530;
-// double Pipe.outlineType14VVert4 = -38.9;
-// double Pipe.outlineType14UVert5 = 530;
-// double Pipe.outlineType14VVert5 = 0;
-
-// // DS cryo rails
-// double Pipe.outlineType15UVert1 = 473;
-// double Pipe.outlineType15VVert1 = 0.1;
-// double Pipe.outlineType15UVert2 = 527;
-// double Pipe.outlineType15VVert2 = 0.1;
-// double Pipe.outlineType15UVert3 = 527;
-// double Pipe.outlineType15VVert3 = 12;
-// double Pipe.outlineType15UVert4 = 518;
-// double Pipe.outlineType15VVert4 = 20;
-// double Pipe.outlineType15UVert5 = 518;
-// double Pipe.outlineType15VVert5 = 28;
-// double Pipe.outlineType15UVert6 = 527;
-// double Pipe.outlineType15VVert6 = 36;
-// double Pipe.outlineType15UVert7 = 527;
-// double Pipe.outlineType15VVert7 = 40;
-// double Pipe.outlineType15UVert8 = 523;
-// double Pipe.outlineType15VVert8 = 44;
-// double Pipe.outlineType15UVert9 = 477;
-// double Pipe.outlineType15VVert9 = 44;
-// double Pipe.outlineType15UVert10 = 473;
-// double Pipe.outlineType15VVert10 = 40;
-// double Pipe.outlineType15UVert11 = 473;
-// double Pipe.outlineType15VVert11 = 36;
-// double Pipe.outlineType15UVert12 = 482;
-// double Pipe.outlineType15VVert12 = 28;
-// double Pipe.outlineType15UVert13 = 482;
-// double Pipe.outlineType15VVert13 = 20;
-// double Pipe.outlineType15UVert14 = 473;
-// double Pipe.outlineType15VVert14 = 12;
 
 
 // This tells emacs to view this file in c++ mode.

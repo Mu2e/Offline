@@ -38,6 +38,7 @@
 #include "Mu2eG4/inc/constructProtonAbsorber.hh"
 #include "Mu2eG4/inc/constructCRV.hh"
 #include "Mu2eG4/inc/constructExternalShielding.hh"
+#include "Mu2eG4/inc/constructServicesGeom.hh"
 #include "Mu2eG4/inc/constructTSdA.hh"
 #include "Mu2eG4/inc/constructMBS.hh"
 #include "Mu2eG4/inc/constructVirtualDetectors.hh"
@@ -212,6 +213,9 @@ namespace mu2e {
     if ( _config.getBool("hasExternalShielding",false) ) {
       constructExternalShielding(hallInfo, _config);
     }
+
+    // This is for pipes, cable runs, Electronics racks, etc.
+    constructServicesGeom(hallInfo, _config);
 
     if ( _config.getBool("hasTSdA",false) ) {
       constructTSdA(_config);

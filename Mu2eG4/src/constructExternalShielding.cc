@@ -17,8 +17,6 @@
 #include "ExternalShieldingGeom/inc/ExtShieldUpstream.hh"
 #include "ExternalShieldingGeom/inc/ExtShieldDownstream.hh"
 #include "ExternalShieldingGeom/inc/Saddle.hh"
-#include "ServicesGeom/inc/Pipe.hh"
-#include "ServicesGeom/inc/ElectronicRack.hh"
 
 // etc...
 #include "GeometryService/inc/GeomHandle.hh"
@@ -61,8 +59,6 @@ namespace mu2e {
     GeomHandle<ExtShieldUpstream> extshldUp;
     GeomHandle<ExtShieldDownstream> extshldDn;
     GeomHandle<Saddle> saddleSet;
-    GeomHandle<Pipe>   pipeSet;
-    GeomHandle<ElectronicRack>   rackSet;
 
     // Utility for converting orientations to rotations
     OrientationResolver* OR = new OrientationResolver();
@@ -585,148 +581,6 @@ namespace mu2e {
 	} // end of if...else...
 
       } // end of for loop over saddles
-
-    // *******************************************************
-    // ==> Make Pipes <========
-    // *******************************************************
-
-    // Load up the vectors needed for building.
-    std::vector<int>            nPipes = pipeSet->getNPipes();
-    std::vector<int>            nComps = pipeSet->getNComponentsInPipe();
-    std::vector<double>         pLeng  = pipeSet->getLengths();
-    std::vector<std::string>    pFlav  = pipeSet->getFlavor();
-    std::vector<std::string>    pFill  = pipeSet->getFillMaterialNames();
-
-    std::vector<std::vector<CLHEP::Hep3Vector> > pCent = pipeSet->getCentersOfPipes();
-    std::vector<std::vector<std::string> > pOrient = pipeSet->getOrientations();
-
-    std::vector<std::vector<double> > cInRad = pipeSet->getInnerRads();
-    std::vector<std::vector<double> > cOutRad = pipeSet->getOuterRads();
-    std::vector<std::vector<std::string> > cMats = pipeSet->getMaterialNames();
-    std::vector<std::vector<double> > cUOff = pipeSet->getUOffsets();
-    std::vector<std::vector<double> > cVOff = pipeSet->getVOffsets();
-
-    // ***************************************************
-    // *** Loop over the types and construct all *********
-    // ***************************************************
-
-    for ( unsigned int it = 0; it < nPipes.size(); it++ ) {
-
-      int nPipe = nPipes[it];
-      int nComp = nComps[it];
-      double len = pLeng[it];
-      std::string flav = pFlav[it];
-      if ( flav != "straight" ) {
-	// Bow out not-so-gracefully
-	throw cet::exception("GEOM") << " in constructExternalShielding, have not yet implemented non-straight segments of pipe."<<"\n";
-      } // end of if not straight
-      std::string fillMat = pFill[it];
-
-      for ( int ip = 0; ip < nPipe; ip++ ) {
-
-	// Make the container ("mother") volume for the type.
-	TubsParams  pipeParams(0.0,cOutRad[it][0],len/2.0);
-	std::ostringstream motherTubeName;
-	motherTubeName << "pipeType" << it+1 << "Pipe" << ip+1;
-	//	G4Tubs* motherSolidVol = new G4Tubs(motherTubeName.str(),0.0,
-	//					    cOutRad[it][0],len/2.0,
-	//					    0.0,CLHEP::twopi );
-	std::ostringstream motherName;
-	motherName << "pipeLogicVolType" << it+1 << "Pipe" << ip+1;
-
-	CLHEP::HepRotation* pipeRotat = new 
-	  CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	OR->getRotationFromOrientation( *pipeRotat, pOrient[it][ip] );
-
-	CLHEP::Hep3Vector pipePosInMu2e = pCent[it][ip] 
-	  - parent.centerInMu2e();
-
-	VolumeInfo motherLogVol = nestTubs(motherName.str(),
-					   pipeParams,
-					   findMaterialOrThrow(fillMat),
-					   pipeRotat,
-					   pipePosInMu2e,
-					   parent.logical,
-					   ip,
-					   config.getBool("Pipe.visible"),
-					   G4Colour::Magenta(),
-					   config.getBool("Pipe.solid"),
-					   forceAuxEdgeVisible,
-					   placePV,
-					   doSurfaceCheck);
-
-	for ( int ic = 0; ic < nComp; ic++ ) {
-	  // Create a tube for each "component" pipe and embed in the mother
-	  // Logical volume
-	  TubsParams componentParams(cInRad[it][ic],cOutRad[it][ic],len/2.0);
-	  std::ostringstream compName;
-	  compName << "pipeType" << it+1 << "Pipe" << ip+1 << 
-	    "Component" << ic+1;
-	  // Until we place it, the mother should be centered at 0,0,0
-	  // So place relative to that using u- and v-components and w=0.
-	  CLHEP::Hep3Vector posComp(cUOff[it][ic],cVOff[it][ic],0.0); 
-	  nestTubs( compName.str(),  componentParams, 
-		    findMaterialOrThrow(cMats[it][ic]),
-		    0, posComp, motherLogVol,
-		    ic,
-		    config.getBool("Pipe.visible"),
-		    G4Colour::Magenta(),
-		    config.getBool("Pipe.solid"),
-		    forceAuxEdgeVisible,
-		    placePV,
-		    doSurfaceCheck);
-
-	} // end of loop over components
-
-      } // end of loop over pipes of this type.
-
-    } // end of loop over pipe types
-
-    //----------------------------------------------------------------
-    // Electronics Rack Boxes <=====
-    //----------------------------------------------------------------
-    // Fill the vectors of information about the boxes that are
-    // the racks
-
-    std::vector<std::vector<double> > dimsER = rackSet->getBoxDimensions();
-    std::vector<std::string> matsER = rackSet->getMaterialNames();
-    std::vector<CLHEP::Hep3Vector> sitesER = rackSet->getCentersOfBoxes();
-    std::vector<std::string> orientsER = rackSet->getOrientations();
-
-    int nBoxER = dimsER.size();
-
-    for(int i = 0; i < nBoxER; i++)
-      {
-
-	// Dimensions for this rack
-	std::vector<double> lwhsER = dimsER[i];
-
-	//  Make the name of the box
-	std::ostringstream nameER;
-	nameER << "ElectronicRackBox_" << i+1 ;
-
-	// Make the needed rotation by parsing orientation
-        CLHEP::HepRotation* itsRotatER= new 
-	  CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	std::string orientInitER = orientsER[i];
-
-	OR->getRotationFromOrientation(*itsRotatER, orientInitER);
-
-	// Build each box here
-
-	nestBox( nameER.str(), lwhsER, findMaterialOrThrow(matsER[i]),
-		 itsRotatER, sitesER[i]-parent.centerInMu2e(),
-		 parent.logical,
-		 0,
-		 config.getBool("ElectronicRack.visible"),
-		 G4Colour::Magenta(),
-		 config.getBool("ElectronicRack.solid"),
-		 forceAuxEdgeVisible,
-		 placePV,
-		 doSurfaceCheck);
-
-      } // end loop over ElectronicRack boxes
-
 
   } // end of constructExternalShielding fn
 

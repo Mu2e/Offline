@@ -130,25 +130,27 @@ namespace mu2e {
     std::vector<CLHEP::Hep3Vector> tmpVecHep3V;
     std::vector<std::string> tmpVecOri;
     for ( int it = 0; it < nType; it++ ) {
+      tmpVecHep3V.clear();
+      tmpVecOri.clear();
       for ( int ip = 0; ip < nPipesOfType[it]; ip++ ) {
-      // Location of the center of the pipe in Mu2e coords
-      // Use our now-familiar trick for variable names
-      std::ostringstream bCentVarName;
-      bCentVarName << centerBaseName << it+1 << "Pipe" << ip+1;
-      CLHEP::Hep3Vector pipeCenter = c.getHep3Vector(bCentVarName.str());
-      pipeCenter *= CLHEP::mm;
-      tmpVecHep3V.push_back(pipeCenter);
+	// Location of the center of the pipe in Mu2e coords
+	// Use our now-familiar trick for variable names
+	std::ostringstream bCentVarName;
+	bCentVarName << centerBaseName << it+1 << "Pipe" << ip+1;
+	CLHEP::Hep3Vector pipeCenter = c.getHep3Vector(bCentVarName.str());
+	pipeCenter *= CLHEP::mm;
+	tmpVecHep3V.push_back(pipeCenter);
 
-      std::ostringstream bOrientVarName;
-      bOrientVarName << orientBaseName << it+1 << "Pipe" << ip+1;
+	std::ostringstream bOrientVarName;
+	bOrientVarName << orientBaseName << it+1 << "Pipe" << ip+1;
 
-      std::string orientation( c.getString(bOrientVarName.str(),"000"));
-      if ( orientation.length() != 3 ) {
-	throw cet::exception("GEOM")
-	  << "Orientation must be specified with a three-digit number"
-	  << "\nentered as a string.You specified: " << orientation;
-      }
-      tmpVecOri.push_back(orientation);
+	std::string orientation( c.getString(bOrientVarName.str(),"000"));
+	if ( orientation.length() != 3 ) {
+	  throw cet::exception("GEOM")
+	    << "Orientation must be specified with a three-digit number"
+	    << "\nentered as a string.You specified: " << orientation;
+	}
+	tmpVecOri.push_back(orientation);
       }
       orients.push_back(tmpVecOri);
       sites.push_back(tmpVecHep3V);

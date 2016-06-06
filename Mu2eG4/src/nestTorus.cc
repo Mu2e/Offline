@@ -10,6 +10,7 @@
 
 #include "Mu2eG4/inc/nestTorus.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
+#include "GeomPrimitives/inc/TorusParams.hh"
 
 #include "G4Torus.hh"
 #include "G4LogicalVolume.hh"
@@ -129,5 +130,45 @@ namespace mu2e {
     return info;
 
   }
+
+  VolumeInfo nestTorus( string const& name,
+			TorusParams const& halfDim,
+                        G4Material* material,
+			G4RotationMatrix const* rot,
+			G4ThreeVector const & offset,
+			VolumeInfo const & parent,
+			int copyNo,
+			bool const isVisible,
+			G4Colour const color,
+			bool const forceSolid,
+			bool const forceAuxEdgeVisible,
+			bool const placePV,
+			bool const doSurfaceCheck )
+  {
+
+    VolumeInfo info(name,offset,parent.centerInWorld);
+
+    info.solid    = new G4Torus( name, halfDim.innerRadius(), 
+				 halfDim.outerRadius(), halfDim.torusRadius(),
+				 halfDim.phi0(), halfDim.phiMax() );
+
+    finishNesting(info,
+                  material,
+                  rot,
+                  offset,
+                  parent.logical,
+                  copyNo,
+                  isVisible,
+                  color,
+                  forceSolid,
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
+                  );
+
+    return info;
+
+
+  }			
 
 }

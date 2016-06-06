@@ -31,11 +31,22 @@ namespace mu2e {
   class Pipe : virtual public Detector {
   public:
 
+    // Straight sections of pipe and pipe bends can be (separately) 
+    // represented with the same number of parameters, as long as we
+    // assume bends will always be of 90 degrees.  If needed later,
+    // can add a "bendAngle" parameter which will be meaningless for a 
+    // straight section.
+
+    // ***
     // These represet type-level information
+    // ***
+
     const std::vector<int> &              getNComponentsInPipe() const
     { return _nComponentsInPipe; }
     const std::vector<int> &              getNPipes() const
     { return _nPipes; }
+    // If the flavor (see below) is "bend", then the length is really
+    // the toroidal radius of the containing pipe
     const std::vector<double> &           getLengths() const
     { return _lengths; }
     const std::vector<std::string> &      getFlavor() const
@@ -43,7 +54,13 @@ namespace mu2e {
     const std::vector<std::string> &      getFillMaterialNames() const
     { return _fillMaterialNames; }
 
+    // ***
     // The following represent pipe-level (top-level) information
+    // ***
+
+    // If a straight section, center means the actual center of the pipe.
+    // If a bend, then center means the center of curvature of the toroidal
+    // section
     const std::vector<std::vector<CLHEP::Hep3Vector> >&    getCentersOfPipes() const 
     { return _centerPositions; }
     const std::vector<std::vector<std::string> >&          getOrientations() const 
