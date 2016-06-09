@@ -83,7 +83,7 @@ namespace mu2e {
     , caloMatchChi2_{tf.make<TH1D>("caloMatchCHi2", "Calo match chi2 before cut", 100, 0., 300.)}
     , caloClusterEnergy_{tf.make<TH1D>("caloClusterEnergy", "Calo cluster energy before cut", 150, 0., 150.)}
     , pidVariable_{tf.make<TH1D>("particleID", "PID variable before cut", 1000, -50., 50.)}
-    , momentum_{tf.make<TH1D>("momentum", "Track momentum  before cut", 500, 98., 108.)}
+    , momentum_{tf.make<TH1D>("momentum", "Track momentum  before cut", 1000, 98., 108.)}
   {
     using CutAndCount::TrkCutNumber;
     using CutAndCount::set_cut_bin_labels;
