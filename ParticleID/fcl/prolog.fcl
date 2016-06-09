@@ -3,21 +3,20 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # default: TrkPatRec electrons
 #------------------------------------------------------------------------------
-ParticleIDTemplate : {
-    module_type       : ParticleID
-    fitterModuleLabel : MergePatRec
-    ElectronTemplates : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
-    MuonTemplates     : "ConditionsService/data/v5_7_2/pid_muo_dedx.rtbl"
-    fitparticle       : 11
-    fitdirection      : 0
-    debugLevel        : 0
-    diagLevel         : 1 
-    verbosity         : 0
-    doDisplay         : false
-}
-
 ParticleID: {
-    producers: {
+    templates : {
+	ParticleID : {
+	    module_type       : ParticleID
+	    fitterModuleLabel : MergePatRec
+	    ElectronTemplates : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
+	    MuonTemplates     : "ConditionsService/data/v5_7_2/pid_muo_dedx.rtbl"
+	    fitparticle       : 11
+	    fitdirection      : 0
+	    debugLevel        : 0
+	    diagLevel         : 1 
+	    verbosity         : 0
+	    doDisplay         : false
+	}
 
 	AvikPID : { module_type:AvikPID
 	    trkPatRecDemModuleLabel : MergePatRecDem
@@ -29,9 +28,45 @@ ParticleID: {
 	    DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
 	}
 
-	ParticleID    : { @table::ParticleIDTemplate }
-	ParticleIDDem : { @table::ParticleIDTemplate fitterModuleLabel:MergePatRecDem fitparticle:11 }
-	ParticleIDDmm : { @table::ParticleIDTemplate fitterModuleLabel:MergePatRecDmm fitparticle:13 }
+	AvikPIDNew : { module_type:AvikPIDNew
+	    trkPatRecDemModuleLabel : MergePatRec
+	    DedxTemplateFile        : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
+	    diagLevel               : 0 
+	    debugLevel              : 0
+	    DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
+	}
+    }
+}
+
+ParticleID: { @table::ParticleID 
+
+    producers: {
+
+	AvikPID : { @table::ParticleID.templates.AvikPID
+	    trkPatRecDemModuleLabel : MergePatRecDem
+	    trkPatRecDmmModuleLabel : MergePatRecDmm
+	    EleDedxTemplateFile     : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
+	    MuoDedxTemplateFile     : "ConditionsService/data/v5_7_2/pid_muo_dedx.rtbl"
+	    diagLevel               : 0 
+	    debugLevel              : 0
+	    DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
+	}
+
+	ParticleID    : { @table::ParticleID.templates.ParticleID }
+	ParticleIDDem : { @table::ParticleID.templates.ParticleID fitterModuleLabel:MergePatRecDem fitparticle:11 }
+	ParticleIDDmm : { @table::ParticleID.templates.ParticleID fitterModuleLabel:MergePatRecDmm fitparticle:13 }
+
+#	AvikPIDNew    : { @table::ParticleID.templates.AvikPIDNew }
+
+#	AvikPIDNewDem : { @table::ParticleID.templates.AvikPIDNew 
+#	    trkPatRecDemModuleLabel : MergePatRecDem
+#	    DedxTemplateFile        : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
+#	}
+
+#	AvikPIDNewDmm : { @table::ParticleID.templates.AvikPIDNew 
+#	    trkPatRecDemModuleLabel : MergePatRecDmm
+#	    DedxTemplateFile        : "ConditionsService/data/v5_7_2/pid_muo_dedx.rtbl"
+#	}
     }
 }
 
