@@ -62,7 +62,7 @@ signalTrackCuts: {
       emin: 10. // MeV
       emax: 120. // MeV
 
-      pidCut: 0.
+      pidCut: 1.5
       PIDdt: {
 	 signalHypothesis: {inputFile: "ConditionsService/data/v5_7_2/pid_ele_dt.tbl"}
 	 backgroundHypothesis: {inputFile: "ConditionsService/data/v5_7_2/pid_muo_dt.tbl"}
