@@ -54,7 +54,7 @@ signalTrackCuts: {
    t0min: 700.
    t0max: 1695.
    pmin: 103.85
-   pmax: 105.50
+   pmax: 105.10
 
    caloCuts: {
       clusterInput: "TrackCaloMatchingDem"
