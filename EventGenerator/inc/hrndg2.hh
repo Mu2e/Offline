@@ -3,10 +3,6 @@
 //
 // Interface to the fortran subroutine hrndg2.
 //
-// $Id: hrndg2.hh,v 1.5 2014/03/22 21:40:43 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/03/22 21:40:43 $
-//
 // Original author Rob Kutschke
 //
 // Notes:
@@ -17,10 +13,13 @@
 //    the vector is just an convenient way to do this.
 //    The vector must have memory allocated for nth*ne elements.
 //
+// 2) A fortran logical is 4 bytes long; a C++ bool is only one byte.
+//    The C++ inline function transforms the representation.
+//
 
 #include <vector>
 
-// The interface to hrndg2
+// The interface to hrndg2 - see note 2.
 extern "C" {
   void hrndg2_( double*,
                 const long*   const,
@@ -33,7 +32,7 @@ extern "C" {
                 double*,
                 double*,
                 const float* const,
-                const bool* const);
+                const int*  const); // A fortran logical - see note 2.
 
 }
 
@@ -52,7 +51,8 @@ namespace mu2e {
                       double&              th,
                       const float&         pro,
                       const bool&          vertical){
-    ::hrndg2_( &work[0], &ne, &eLow, &eHigh, &nth, &thLow, &thHigh, &dimSum, &e, &th, &pro, &vertical);
+    int tmp{vertical};
+    ::hrndg2_( &work[0], &ne, &eLow, &eHigh, &nth, &thLow, &thHigh, &dimSum, &e, &th, &pro, &tmp);
   }
 
 }
