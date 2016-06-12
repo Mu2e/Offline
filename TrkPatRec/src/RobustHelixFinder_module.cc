@@ -14,8 +14,12 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-//#include "art/Framework/Services/Optional/TFileService.h"
-// data
+// conditions
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+/// data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
@@ -82,6 +86,7 @@ namespace mu2e
     // outlier cuts
     TrkParticle                        _tpart; // particle type being searched for
     TrkFitDirection                    _fdir;  // fit direction in search
+    double			       _helicity; // cache the value of helicity, which can be computed from the above with the BField
 
     // cache of event objects
     const StrawHitCollection*          _shcol;
@@ -100,9 +105,7 @@ namespace mu2e
     void fillTrackSeed      (TrackSeed &tmpseed     , 
 			     TrkDef    &seeddef     ,  
 			     TrackSeed  InputTrkSeed);
-    void HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut);
-
-    Int_t                              _eventid;
+    
   };
 
   RobustHelixFinder::RobustHelixFinder(fhicl::ParameterSet const& pset) :
@@ -115,6 +118,7 @@ namespace mu2e
     _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
     _tpart       ((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir        ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
+    _helicity    (0.0),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet()))
   {
     produces<TrackSeedCollection>();
@@ -123,15 +127,22 @@ namespace mu2e
   RobustHelixFinder::~RobustHelixFinder(){}
 
   void RobustHelixFinder::beginJob(){
-    // create a histogram of throughput: this is a basic diagnostic that should ALWAYS be on
-    //art::ServiceHandle<art::TFileService> tfs;
-    _eventid = 0;
   }
 
-  void RobustHelixFinder::beginRun(art::Run& ){}
+  void RobustHelixFinder::beginRun(art::Run& ){
+  // calculate the helicity
+    GeomHandle<BFieldManager> bfmgr;
+    GeomHandle<DetectorSystem> det;
+    // change coordinates to mu2e
+    CLHEP::Hep3Vector vpoint(0.0,0.0,0.0);
+    CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(vpoint);
+    CLHEP::Hep3Vector field = bfmgr->getBField(vpoint_mu2e);
+    // positive helicity is clockwise rotation around the direction of axial motion (negative dphi/dz)  
+    _helicity = copysign(1.0,-_fdir.dzdt()*_tpart.charge()*field.z());
+ 
+  }
 
   void RobustHelixFinder::produce(art::Event& event ) {
-    _eventid = event.event();
 
     // create output
     unique_ptr<TrackSeedCollection> outseeds(new TrackSeedCollection);
@@ -141,19 +152,11 @@ namespace mu2e
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::RobustHelixFinder: data missing or incomplete"<< endl;
     }
-    //    loadTimePeaks(_tpeaks,_tccol);
-
-
-    // dummy objects
-    static HelixDef       dummyhdef;
-    static HelixFitResult dummyhfit(dummyhdef);
-    const TrackSeed*      trkSeed;
 
     for(unsigned ipeak=0;ipeak<_tccol->size();++ipeak){
-      trkSeed = &_tccol->at(ipeak);
+     const TrackSeed* trkSeed = &_tccol->at(ipeak);
       
       // create track definitions for the helix fit from this initial information 
-      //      HelixDef helixdef(_shcol,_shpcol,_t[ipeak]._trkptrs,_tpart,_fdir,_mcdigis); 
       HelixDef       helixdef(_shcol, _shpcol, trkSeed->_timeCluster._strawHitIdxs, _tpart, _fdir, _mcdigis);
 
       // copy this for the other fits
@@ -165,7 +168,6 @@ namespace mu2e
       // robust helix fit
       if(_hfit.findHelix(helixfit, _diag/*_icepeak==(int)ipeak*/)){
 
-	//findhelix = true;
 	// convert the result to standard helix parameters, and initialize the seed definition helix
 	HepVector hpar;
 	HepVector hparerr;
@@ -173,11 +175,19 @@ namespace mu2e
 	HepSymMatrix hcov = vT_times_v(hparerr);
 	seeddef.setHelix(HelixTraj(hpar,hcov));
 	// Filter outliers using this helix
+	// This functionality seems to have been removed, plus it's not clear the list of hits used in the
+	// helix fit is preserved when making the seed, FIXME!!
 	if (_debug>1) {std::cout <<"RobustHelixFinder::produce - helix params " << hpar << "and errors " << hparerr << endl;}
 	//fill seed information
+	// This copying of data between related classes is error prone and unnecessary, FIXME!!
 	TrackSeed tmpseed;
 	fillTrackSeed(tmpseed, seeddef, *trkSeed);
-        outseeds->push_back(tmpseed);
+	// verify the seed has the right helicity
+	if(_helicity*tmpseed._helix.helicity() > 0.0){
+	  outseeds->push_back(tmpseed);
+	} else if (_debug > 0){
+	  std::cout << "Found seed with wrong helicity " << std::endl;
+	}
       }
     }
 
@@ -232,21 +242,6 @@ namespace mu2e
       tmpseed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( ihit->_index, ihit->_ambig) );
     }
   }
-
-  void RobustHelixFinder::HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
-          //TrkExchangePar helParams( helIn._d0, helIn._phi0, helIn._omega, helIn._z0, helIn._tanDip );
-          CLHEP::HepVector helParams(5);
-          helParams(1) = helIn._d0;
-          helParams(2) = helIn._phi0;
-          helParams(3) = helIn._omega;
-          helParams(4) = helIn._z0;
-          helParams(5) = helIn._tanDip;
-          CLHEP::HepSymMatrix conv(5,1);
-         
-	  HelixTraj tmpHelix(helParams,conv);
-          helOut=tmpHelix;
-  }
-
 }
 using mu2e::RobustHelixFinder;
 DEFINE_ART_MODULE(RobustHelixFinder);
