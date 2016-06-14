@@ -29,8 +29,9 @@ ParticleID: {
 	}
 
 	AvikPIDNew : { module_type:AvikPIDNew
-	    trkPatRecDemModuleLabel : MergePatRec
-	    DedxTemplateFile        : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
+	    trkRecModuleLabel       : MergePatRec
+	    eleDedxTemplateFile     : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
+	    muoDedxTemplateFile     : "ConditionsService/data/v5_7_2/pid_muo_dedx.rtbl"
 	    diagLevel               : 0 
 	    debugLevel              : 0
 	    DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
@@ -42,31 +43,23 @@ ParticleID: { @table::ParticleID
 
     producers: {
 
-	AvikPID : { @table::ParticleID.templates.AvikPID
-	    trkPatRecDemModuleLabel : MergePatRecDem
-	    trkPatRecDmmModuleLabel : MergePatRecDmm
-	    EleDedxTemplateFile     : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
-	    MuoDedxTemplateFile     : "ConditionsService/data/v5_7_2/pid_muo_dedx.rtbl"
-	    diagLevel               : 0 
-	    debugLevel              : 0
-	    DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
-	}
+	AvikPID       : { @table::ParticleID.templates.AvikPID }
 
 	ParticleID    : { @table::ParticleID.templates.ParticleID }
 	ParticleIDDem : { @table::ParticleID.templates.ParticleID fitterModuleLabel:MergePatRecDem fitparticle:11 }
 	ParticleIDDmm : { @table::ParticleID.templates.ParticleID fitterModuleLabel:MergePatRecDmm fitparticle:13 }
 
-#	AvikPIDNew    : { @table::ParticleID.templates.AvikPIDNew }
+	AvikPIDNew    : { @table::ParticleID.templates.AvikPIDNew }
 
-#	AvikPIDNewDem : { @table::ParticleID.templates.AvikPIDNew 
-#	    trkPatRecDemModuleLabel : MergePatRecDem
-#	    DedxTemplateFile        : "ConditionsService/data/v5_7_2/pid_ele_dedx.rtbl"
-#	}
+	AvikPIDNewDem : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDem }
+	AvikPIDNewDmm : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDmm }
+	AvikPIDNewDep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDep }
+	AvikPIDNewDep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDmp }
 
-#	AvikPIDNewDmm : { @table::ParticleID.templates.AvikPIDNew 
-#	    trkPatRecDemModuleLabel : MergePatRecDmm
-#	    DedxTemplateFile        : "ConditionsService/data/v5_7_2/pid_muo_dedx.rtbl"
-#	}
+	AvikPIDNewUem : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUem }
+	AvikPIDNewUmm : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUmm }
+	AvikPIDNewUep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUep }
+	AvikPIDNewUep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUmp }
     }
 }
 
