@@ -2,6 +2,11 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_7_7
 
+6) 20 June, 2016:  kutschke
+   SConstruct
+     - Removed obsolete member function  make_dict_and_map_hack from
+       the helper python class.
+
 5) 08 June, 2016:  kutschke
    Bug fix in the Daya Bat cosmic ray event generator.
    The CosmicDYB.cc event generator calls fortran code to do some of its work.
