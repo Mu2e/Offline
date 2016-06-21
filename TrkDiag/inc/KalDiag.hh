@@ -65,7 +65,6 @@ namespace mu2e
   class KalDiag {
   public:
     enum TRACKERPOS {trackerEnt=0,trackerMid, trackerExit};
-    enum relation {none=-1,same,daughter,mother,sibling,udaughter,umother,usibling};
 #ifndef __GCCXML__
     explicit KalDiag(fhicl::ParameterSet const&);
 #endif/*__GCCXML__*/
@@ -101,9 +100,6 @@ namespace mu2e
     void fillHitInfoMC(art::Ptr<SimParticle> const& primary,const KalRep* krep,std::vector<TrkStrawHitInfoMC>& tshinfomc) const;
     void fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& mcdigi,Straw const& straw, 
     TrkStrawHitInfoMC& tshinfomc) const;
-// relationship information
-    static relation relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj);
-    static relation relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2);
 // count CE hits
     unsigned countCEHits() const;
   private:

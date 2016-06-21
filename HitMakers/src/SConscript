@@ -7,8 +7,6 @@
 
 # Fixme:
 #   - Get rid of stale code.  In particular the two things that depend on Minuit.
-#   - Does it make sense that the MakeStereoHits_module depends on KalDiag
-#     Should that code go somewhere else?
 #
 import os
 Import('env')
@@ -18,8 +16,7 @@ helper=mu2e_helper();
 
 rootlibs = env['ROOTLIBS']
 
-mainlib = helper.make_mainlib ( [ 'mu2e_TrkDiag',
-				  'mu2e_ConditionsService',
+mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'mu2e_GeometryService',
                                   'mu2e_MCDataProducts',
                                   'mu2e_RecoDataProducts',
@@ -45,7 +42,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_TrkDiag',
                                 ] )
 
 helper.make_plugins( [ mainlib,
-                       'mu2e_TrkDiag',
                        'mu2e_Mu2eBTrk',
 		       'mu2e_Mu2eUtilities',
                        'mu2e_ConditionsService',

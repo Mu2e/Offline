@@ -1,4 +1,5 @@
-//
+//    Float_t _du; // track-cluster match separation in 'u' direction
+
 // Read the tracks added to the event by KalFitTest_module.
 //
 // $Id: ReadKalFits_module.cc,v 1.29 2014/08/28 19:26:04 brownd Exp $
@@ -10,8 +11,9 @@
 
 // Mu2e includes
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
-#include "Mu2eUtilities/inc/SimpleSpectrum.hh"
+#include "DataProducts/inc/threevec.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -22,9 +24,7 @@
 
 // ROOT incldues
 #include "TH1F.h"
-
-// Need this for the BaBar headers.
-using CLHEP::Hep3Vector;
+#include "Rtypes.h"
 
 // BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
@@ -35,7 +35,15 @@ using CLHEP::Hep3Vector;
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "TrkDiag/inc/KalDiag.hh"
+#include "TrkDiag/inc/TrkCaloInfo.hh"
+#include "TrkDiag/inc/TrkHitShare.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
+// calorimeter
+#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
+// particleId
+#include "ParticleID/inc/PIDLogLRatio.hh"
+#include "ParticleID/inc/PIDLogL1D.hh"
+#include "ParticleID/inc/PIDLogLEp.hh"
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -50,15 +58,11 @@ using CLHEP::Hep3Vector;
 using namespace std;
 
 namespace mu2e {
-
-  // struct to look for hit sharing between tracks
-  struct HitShare {
-    size_t _trk1; // index to primary track (== track with the most active hits)
-    size_t _trk2; // index to secondary track (has shared hits)
-    unsigned _nshared; // # of active hits shared between 2 tracks
-  };
+// Need this for the BaBar headers.
+  using CLHEP::Hep3Vector;
 
   class ReadKalFits : public art::EDAnalyzer {
+
   public:
 
     explicit ReadKalFits(fhicl::ParameterSet const& pset);
@@ -78,20 +82,30 @@ namespace mu2e {
     // Label of the event-weighting module
     art::InputTag _genWtModule;
     art::InputTag _beamWtModule;
+    art::InputTag _PBIModule;
     vector<art::InputTag> _evtWtModules;
+    std::string _caloMatchingModule;
     TrkParticle _tpart;
     TrkFitDirection _fdir;
-    std::string _iname;
-
-    bool haveG4BL;// = g4beamlineData.isValid();
     // diagnostic of Kalman fit
     KalDiag _kdiag;
-
+    std::string _iname;
     // Control level of printout.
     int _verbosity;
     int _maxPrint;
     // whether or not to include MC info for empty events
     bool _processEmpty;
+    // whether or not to include calorimeter information
+    bool _addCalo;
+// PID configuration
+    typedef PIDLogLRatio<PIDLogL1D> PIDdt;
+    typedef PIDLogLRatio<PIDLogLEp> PIDEp;
+    // put these on the heap as there is no default constructor: FIXME!!!
+    PIDdt* _pid_dt;
+    PIDEp* _pid_ep;
+// event data
+    art::Handle<KalRepPtrCollection> _trksHandle;
+    art::Handle<TrackClusterMatchCollection> _caloMatchHandle;
 
     // Histograms
     TH1F* _hNTracks;
@@ -100,19 +114,22 @@ namespace mu2e {
     TH1F* _hmomentum0;
     TH1F* _hdp;
     TH1F* _hz0;
-
+// main diagnostic TTree, based on KalDiag
     TTree* _trkdiag;
-
 //  local branches
     Int_t _trkid,_eventid, _runid, _subrunid;
     Double_t _evtwt, _beamwt, _genwt;
-    Float_t g4bl_weight;
-    Int_t _ntrks, _nshared;
+    Int_t _nprotons;
+    Float_t _g4bl_weight;
+    Int_t _ntrks, _ntshared, _ncalo;
+    std::vector<TrkHitShare> _overlaps;
+    std::vector<TrkCaloInfo> _caloinfo;
 
-    // helper function
+    // helper functions
     void countSharedHits(KalRepPtrCollection const& trks,
-	std::vector<HitShare>& overlaps);
-
+	std::vector<TrkHitShare>& overlaps);
+    void findWeights(const art::Event& event);
+    void addCaloInfo(KalRep const& krep, TrackClusterMatch const& tcm);
   };
 
   ReadKalFits::ReadKalFits(fhicl::ParameterSet const& pset):
@@ -121,6 +138,7 @@ namespace mu2e {
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
     _genWtModule( pset.get<art::InputTag>("generatorWeightModule",art::InputTag()) ),
     _beamWtModule( pset.get<art::InputTag>("beamWeightModule",art::InputTag()) ),
+    _PBIModule( pset.get<art::InputTag>("ProtonBunchIntensityModule",art::InputTag("ProtonBunchIntensitySummarizer")) ),
     _evtWtModules( pset.get<std::vector<art::InputTag>>("eventWeightModules",std::vector<art::InputTag>() ) ),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
@@ -128,15 +146,29 @@ namespace mu2e {
     _verbosity(pset.get<int>("verbosity",0)),
     _maxPrint(pset.get<int>("maxPrint",0)),
     _processEmpty(pset.get<bool>("processEmpty",true)),
+    _addCalo(pset.get<bool>("addCalo",false)),
+    _pid_dt(0),
+    _pid_ep(0),
     _hNTracks(0),
     _hfitCL(0),
     _hChisq(0),
     _hmomentum0(0),
     _hdp(0),
     _hz0(0),
-    _trkdiag(0) {
+    _trkdiag(0)
+  {
 // construct the data product instance name
     _iname = _fdir.name() + _tpart.name();
+    if(_addCalo) {
+// construct the calo matching module name.  Convention is 1st letter of direction, 1st letter of particle name + 1st letter of charge
+// This code will break if the fhicl prolog conventions change, FIXME!!!
+      static std::string chargename = _tpart.charge() > 0.0 ? "p" : "m";
+      std::string caloMatchingRoot = pset.get<std::string>("caloMatchingRoot","TrackCaloMatching");
+      _caloMatchingModule = caloMatchingRoot + _fdir.name().substr(0,1) + _tpart.name().substr(0,1) + chargename;
+      // construct the PID objects.  These require explicit parameters that can't be made default
+      _pid_dt = new PIDdt(pset.get<fhicl::ParameterSet>("PIDdt",fhicl::ParameterSet()));
+      _pid_ep = new PIDEp(pset.get<fhicl::ParameterSet>("PIDEp",fhicl::ParameterSet()));
+    }
   }
 
   void ReadKalFits::beginJob( ){
@@ -156,85 +188,82 @@ namespace mu2e {
     _trkdiag->Branch("genwt",&_genwt,"genwt/d");
     _trkdiag->Branch("beamwt",&_beamwt,"beamwt/d");
     _trkdiag->Branch("evtwt",&_evtwt,"evtwt/d");
-    _trkdiag->Branch("g4bl_weight",&g4bl_weight,"g4bl_weight/f");
+    _trkdiag->Branch("nprotons",&_nprotons,"nprotons/I");
+    _trkdiag->Branch("g4bl_weight",&_g4bl_weight,"g4bl_weight/f");
     _trkdiag->Branch("ntrks",&_ntrks,"ntrks/I");
-    _trkdiag->Branch("nshared",&_nshared,"nshared/I");
+    _trkdiag->Branch("ntshared",&_ntshared,"ntshared/I");
+    _trkdiag->Branch("overlaps",&_overlaps);
+    if(_addCalo){
+      _trkdiag->Branch("ncalo",&_ncalo,"ncalo/I");
+      _trkdiag->Branch("calo",&_caloinfo);
+    }
 }
 
   // For each event, look at tracker hits and calorimeter hits.
   void ReadKalFits::analyze(const art::Event& event) {
-    //    cout << "Enter ReadKalFits:: analyze: " << _verbosity << endl;
-
+// basic event information
     _eventid = event.event();
     _runid = event.run();
     _subrunid = event.subRun();
-    if(!_kdiag.findMCData(event)){
+// fill event weight information
+    findWeights(event);
+// collect all the event information
+    if(!_kdiag.findMCData(event))
       throw cet::exception("RECO")<<"mu2e::ReadKalFits: MC data missing or incomplete" << std::endl;
-    }
-    // Get handle to calorimeter hit collection.
+    // Get handle to tracks collection
     art::Handle<KalRepPtrCollection> trksHandle;
     event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
     KalRepPtrCollection const& trks = *trksHandle;
-
-    art::Handle<G4BeamlineInfoCollection> g4beamlineData;
-    event.getByLabel(_generatorModuleLabel, g4beamlineData);
-   
-    if ( _verbosity > 0 && _eventid <= _maxPrint ){
-      cout << "ReadKalmanFits  for event: " << event.id() << "  Number of fitted tracks: " << trks.size() << endl;
+    // Track-cluster matching
+    art::Handle<TrackClusterMatchCollection> caloMatchHandle;
+    if(_addCalo){
+      event.getByLabel(_caloMatchingModule,caloMatchHandle);
+      _ncalo = 0;
+      _caloinfo.clear(); 
     }
-
-    // Modify event weight
-    _genwt = _beamwt = _evtwt = 1.;
-    for ( const auto& ievtWt : _evtWtModules ) {
-      _evtwt *= event.getValidHandle<EventWeight>( ievtWt )->weight();
-    }
-    art::Handle<EventWeight> genWtHandle;
-    event.getByLabel(_genWtModule, genWtHandle);
-    if(genWtHandle.isValid())
-      _genwt = genWtHandle->weight();
-    art::Handle<EventWeight> beamWtHandle;
-    event.getByLabel(_beamWtModule, beamWtHandle);
-    if(beamWtHandle.isValid())
-      _beamwt = beamWtHandle->weight();
-
-    //	g4bl_weight=1;
-    haveG4BL = g4beamlineData.isValid();
-    if ( haveG4BL ) haveG4BL = (g4beamlineData->size()==1);
-    if( haveG4BL ) { 
-      G4BeamlineInfo const& extra = g4beamlineData->at(0);
-      g4bl_weight=extra.weight();
-    } else{
-      g4bl_weight=1;
-    }
-
     _hNTracks->Fill( trks.size() );
     // initialize counting variables
      _ntrks = trks.size();
-     _nshared = -1;
+     _ntshared = -1;
      _trkid = -1;
-
     // search for tracks which share hits
-    std::vector<HitShare> overlaps;
-    countSharedHits(trks,overlaps);
-
+    _overlaps.clear();
+    countSharedHits(trks,_overlaps);
+    // diagnostic printout
+    if ( _verbosity > 0 && _eventid <= _maxPrint ){
+      cout << "ReadKalmanFits  for event: " << event.id() << "  Number of fitted tracks: " << trks.size() << endl;
+    }
+    // if there are no tracks, make an entry for a 'null' track.  This keeps the MC bookkeeping complete
+    if(trks.size() == 0 && _processEmpty){
+      _kdiag.kalDiag(0);
+    }
+// main loop over tracks
     for ( size_t itrk=0; itrk< trks.size(); ++itrk ){
+    // we don't have a real TrackID in Mu2e: just use the list index
       _trkid = itrk;
       KalRep const* krep = trks.at(itrk).get();
       if ( !krep ) continue;
-
-      // sum total shared hits
-      _nshared=0;
-      for(const HitShare& ihs: overlaps) {
+      _ntshared = 0;
+      for(const TrkHitShare& ihs: _overlaps) {
 	if(ihs._trk1 == itrk || ihs._trk2 == itrk)
-	  _nshared += ihs._nshared;
+	  ++_ntshared;
       }
       // fill the standard diagnostics
-     _kdiag.kalDiag(krep);
-      
+      _kdiag.kalDiag(krep);
 
-      // For some quantities you require the concrete representation, not
-      // just the base class.
-      // Fill a histogram.
+      // if requested, find matching calorimeter information; can be more than 1
+      if(_addCalo && caloMatchHandle.isValid()){
+	_caloinfo.clear();
+	_ncalo = 0;
+	for( auto tcm : *caloMatchHandle ) {
+	  if(tcm.textrapol()->trk() == trks.at(itrk)){
+	    addCaloInfo(*krep,tcm);
+	    _ncalo++;
+	  }
+	}
+      }
+
+      // Fill some simple histograms
       _hfitCL->Fill(krep->chisqConsistency().significanceLevel() );
       _hChisq->Fill(krep->chisqConsistency().chisqValue() );
 
@@ -250,8 +279,6 @@ namespace mu2e {
       _hdp->Fill(dp);
 
       _hz0->Fill(pos0.z());
-
-
 
       if ( _verbosity > 1 && _eventid <= _maxPrint ){
         cout << "   Fitted track: "
@@ -269,14 +296,10 @@ namespace mu2e {
       }
 
     }
-    // if there are no tracks, enter dummies
-    if(trks.size() == 0 && _processEmpty){
-      _kdiag.kalDiag(0);
-    }
   }
 
   void ReadKalFits::countSharedHits(KalRepPtrCollection const& trks,
-    std::vector<HitShare>& overlaps) {
+    std::vector<TrkHitShare>& overlaps) {
     if(trks.size() > 1){
       for(size_t itrk =0; itrk < trks.size(); ++itrk){
 	KalRep const* ikrep = trks.at(itrk).get();
@@ -286,22 +309,26 @@ namespace mu2e {
 	  KalRep const* jkrep = trks.at(jtrk).get();
 	  TrkStrawHitVector jhits;
 	  convert(jkrep->hitVector(),jhits);
-	  unsigned nshared(0);
+	  unsigned nhshared(0);
 	  for(const TrkStrawHit* ihit: ihits){
 	    for(const TrkStrawHit* jhit: jhits){
 	      if(ihit->isActive() && jhit->isActive() && ihit->strawHit() == jhit->strawHit())
-		++nshared;
+		++nhshared;
 	    }
 	  }
-	  if(nshared > 0){
-	    HitShare share;
-	    share._nshared = nshared;
+	  if(nhshared > 0){
+	    TrkHitShare share;
+	    share._nhshared = nhshared;
 	    if(ikrep->nActive() > jkrep->nActive()){
 	      share._trk1 = itrk;
 	      share._trk2 = jtrk;
+	      share._f1 = nhshared/float(ikrep->nActive());
+	      share._f2 = nhshared/float(jkrep->nActive());
 	    } else {
 	      share._trk2 = itrk;
 	      share._trk1 = jtrk;
+	      share._f1 = nhshared/float(jkrep->nActive());
+	      share._f2 = nhshared/float(ikrep->nActive());
 	    }
 	    overlaps.push_back(share);
 	  }
@@ -309,6 +336,70 @@ namespace mu2e {
       }
     }
   }
+
+  void ReadKalFits::findWeights( const art::Event& event) {
+   
+    // get event weight product
+    _genwt = _beamwt = _evtwt = _g4bl_weight = 1.; 
+    _nprotons=-1;
+    // total weight is the product of all weights
+    for ( const auto& ievtWt : _evtWtModules ) {
+      _evtwt *= event.getValidHandle<EventWeight>( ievtWt )->weight();
+    }
+    // generator weight
+    art::Handle<EventWeight> genWtHandle;
+    event.getByLabel(_genWtModule, genWtHandle);
+    if(genWtHandle.isValid())
+      _genwt = genWtHandle->weight();
+    // proton bunch weight
+    art::Handle<EventWeight> beamWtHandle;
+    event.getByLabel(_beamWtModule, beamWtHandle);
+    if(beamWtHandle.isValid())
+      _beamwt = beamWtHandle->weight();
+    // actual number of protons on target
+    art::Handle<ProtonBunchIntensity> PBIHandle;
+    event.getByLabel(_PBIModule, PBIHandle);
+    if(PBIHandle.isValid())
+      _nprotons = PBIHandle->intensity();
+    // g4beamline
+    art::Handle<G4BeamlineInfoCollection> g4beamlineData;
+    event.getByLabel(_generatorModuleLabel, g4beamlineData);
+    if( g4beamlineData.isValid() && g4beamlineData->size()==1) {
+      G4BeamlineInfo const& extra = g4beamlineData->at(0);
+      _g4bl_weight=extra.weight();
+    }
+  }
+
+  void ReadKalFits::addCaloInfo(KalRep const& krep, TrackClusterMatch const& tcm) {
+    TrkCaloInfo tcinfo;
+// matching info
+    tcinfo._dt = tcm.dt();
+    tcinfo._du = tcm.du();
+    tcinfo._dv = tcm.dv();
+    tcinfo._ds = tcm.ds();
+    tcinfo._ep = tcm.ep();
+    tcinfo._uvChisq = tcm.chi2();
+    tcinfo._tChisq = tcm.chi2_time();
+// PID information
+    tcinfo._dtllr = _pid_dt->value(tcm.dt());
+    tcinfo._epllr = _pid_ep->value(tcm.ep(),tcm.ds());
+// cluster info
+    const CaloCluster* cluster = tcm.caloCluster();
+    tcinfo._eclust = cluster->energyDep();
+    tcinfo._tclust = cluster->time();
+    tcinfo._cpos = threevec(cluster->cog3Vector());
+// track information at intersection point.  Don't use this as there's an
+// additional fltlen added for the depth (59mm).
+//    double ipath = tcinfo.textrapol()->pathLengthEntrance();	       
+//    tcinfo._tpos = threevec(krep.position(ipath); 
+//    tcinfo._tdir = threevec(krep.direction(ipath);
+//    tcinfo._ttrk = krel.arrivalTime(ipath);
+    tcinfo._tpos = threevec(tcm.xtrk(),tcm.ytrk(),tcm.ztrk());
+    tcinfo._tdir = threevec(tcm.nx(),tcm.ny(),tcm.nz());
+    tcinfo._ttrk = tcm.ttrk();
+    _caloinfo.push_back(tcinfo);
+  }
+
 
 }  // end namespace mu2e
 
