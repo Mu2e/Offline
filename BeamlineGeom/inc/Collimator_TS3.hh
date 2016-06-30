@@ -8,7 +8,6 @@
 #include "BeamlineGeom/inc/Collimator.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 
-
 namespace mu2e {
 
   class CollimatorTS3 : public Collimator {

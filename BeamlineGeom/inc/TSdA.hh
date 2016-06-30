@@ -5,10 +5,6 @@
 #ifndef BEAMLINEGEOM_TSDA_HH
 #define BEAMLINEGEOM_TSDA_HH
 
-#include <vector>
-
-// #include "art/Persistency/Common/Wrapper.h"
-
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "Mu2eInterfaces/inc/Detector.hh"

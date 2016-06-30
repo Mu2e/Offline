@@ -4,11 +4,6 @@
 //
 // Class to represent the transport solenoid
 //
-#include <memory>
-
-#include "BeamlineGeom/inc/TSSection.hh"
-#include "BeamlineGeom/inc/TorusSection.hh"
-#include "BeamlineGeom/inc/StraightSection.hh"
 
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Vector/ThreeVector.h"

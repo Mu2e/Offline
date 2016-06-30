@@ -6,7 +6,6 @@
 // the corresponding TS straight section
 //
 #include "CLHEP/Vector/ThreeVector.h"
-#include <vector>
 
 namespace mu2e {
 
