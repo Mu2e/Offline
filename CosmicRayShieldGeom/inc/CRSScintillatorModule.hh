@@ -20,8 +20,6 @@
 #include "CosmicRayShieldGeom/inc/CRSAluminumSheet.hh"
 #include "CosmicRayShieldGeom/inc/CRSFEB.hh"
 
-#include "CLHEP/Vector/ThreeVector.h"
-
 
 namespace mu2e 
 {

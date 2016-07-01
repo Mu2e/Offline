@@ -12,14 +12,11 @@
 
 // C++ includes
 #include <vector>
-#include <memory>
 
 // Mu2e includes
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShieldId.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorModule.hh"
 
-// CLHEP includes
-#include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e 
 {

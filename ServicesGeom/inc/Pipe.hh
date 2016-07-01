@@ -17,7 +17,6 @@
 #include <vector>
 #include <ostream>
 
-#include "CLHEP/Vector/TwoVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "Mu2eInterfaces/inc/Detector.hh"

@@ -36,10 +36,10 @@
 //====================================================================================
 
 #include <map>
-#include <vector>
+//#include <vector>
 
-#include "CLHEP/Vector/ThreeVector.h"
-#include "CLHEP/Vector/TwoVector.h"
+//#include "CLHEP/Vector/ThreeVector.h"
+//#include "CLHEP/Vector/TwoVector.h"
 
 #include "GeomPrimitives/inc/ExtrudedSolid.hh"
 #include "Mu2eInterfaces/inc/Detector.hh"

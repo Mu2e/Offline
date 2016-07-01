@@ -12,8 +12,6 @@
 // Modified 2015/10/30 by dnbrow01 to reflect current design of MBS
 // as found in docdb-1351 v7.  Call this Version 2.
 
-#include <vector>
-
 #include "CLHEP/Vector/ThreeVector.h"
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/Polycone.hh"

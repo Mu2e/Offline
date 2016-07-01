@@ -12,9 +12,7 @@
 //
 
 // c++ includes
-#include <map>
 #include <string>
-#include <memory>
 
 // clhep includes
 #include "CLHEP/Vector/Rotation.h"
