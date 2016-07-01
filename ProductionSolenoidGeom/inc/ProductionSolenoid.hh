@@ -11,8 +11,6 @@
 //
 // Added code for rings at saddle points
 
-#include <vector>
-
 #include "CLHEP/Vector/ThreeVector.h"
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/Polycone.hh"

@@ -16,7 +16,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include <vector>
-#include <iostream>
 
 
 namespace mu2e {

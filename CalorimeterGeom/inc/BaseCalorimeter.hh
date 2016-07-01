@@ -18,7 +18,6 @@
 //C++ includes
 #include <vector>
 #include <memory>
-//#include <boost/shared_ptr.hpp>
 
 // Mu2e includes
 #include "Calorimeter.hh"
