@@ -35,15 +35,9 @@
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "TrkDiag/inc/KalDiag.hh"
-#include "TrkDiag/inc/TrkCaloInfo.hh"
+#include "TrkDiag/inc/TrkCaloDiag.hh"
 #include "TrkDiag/inc/TrkHitShare.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
-// calorimeter
-#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
-// particleId
-#include "ParticleID/inc/PIDLogLRatio.hh"
-#include "ParticleID/inc/PIDLogL1D.hh"
-#include "ParticleID/inc/PIDLogLEp.hh"
 // C++ includes.
 #include <iostream>
 #include <string>
@@ -84,11 +78,14 @@ namespace mu2e {
     art::InputTag _beamWtModule;
     art::InputTag _PBIModule;
     vector<art::InputTag> _evtWtModules;
-    std::string _caloMatchingModule;
     TrkParticle _tpart;
     TrkFitDirection _fdir;
     // diagnostic of Kalman fit
     KalDiag _kdiag;
+    // calorimeter diagnostics.  Unfortunately the PID objects have no default constructor
+    // so this MUST be created on the heap to maintain backwards compatibility.  FIXME!!
+    TrkCaloDiag* _cdiag;
+    // instance name of data products.  This should be removed, FIXME!!
     std::string _iname;
     // Control level of printout.
     int _verbosity;
@@ -97,12 +94,6 @@ namespace mu2e {
     bool _processEmpty;
     // whether or not to include calorimeter information
     bool _addCalo;
-// PID configuration
-    typedef PIDLogLRatio<PIDLogL1D> PIDdt;
-    typedef PIDLogLRatio<PIDLogLEp> PIDEp;
-    // put these on the heap as there is no default constructor: FIXME!!!
-    PIDdt* _pid_dt;
-    PIDEp* _pid_ep;
 // event data
     art::Handle<KalRepPtrCollection> _trksHandle;
     art::Handle<TrackClusterMatchCollection> _caloMatchHandle;
@@ -121,15 +112,13 @@ namespace mu2e {
     Double_t _evtwt, _beamwt, _genwt;
     Int_t _nprotons;
     Float_t _g4bl_weight;
-    Int_t _ntrks, _ntshared, _ncalo;
+    Int_t _ntrks, _ntshared;
     std::vector<TrkHitShare> _overlaps;
-    std::vector<TrkCaloInfo> _caloinfo;
 
     // helper functions
     void countSharedHits(KalRepPtrCollection const& trks,
 	std::vector<TrkHitShare>& overlaps);
     void findWeights(const art::Event& event);
-    void addCaloInfo(KalRep const& krep, TrackClusterMatch const& tcm);
   };
 
   ReadKalFits::ReadKalFits(fhicl::ParameterSet const& pset):
@@ -143,12 +132,11 @@ namespace mu2e {
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
+    _cdiag(0),
     _verbosity(pset.get<int>("verbosity",0)),
     _maxPrint(pset.get<int>("maxPrint",0)),
     _processEmpty(pset.get<bool>("processEmpty",true)),
     _addCalo(pset.get<bool>("addCalo",false)),
-    _pid_dt(0),
-    _pid_ep(0),
     _hNTracks(0),
     _hfitCL(0),
     _hChisq(0),
@@ -159,15 +147,8 @@ namespace mu2e {
   {
 // construct the data product instance name
     _iname = _fdir.name() + _tpart.name();
-    if(_addCalo) {
-// construct the calo matching module name.  Convention is 1st letter of direction, 1st letter of particle name + 1st letter of charge
-// This code will break if the fhicl prolog conventions change, FIXME!!!
-      static std::string chargename = _tpart.charge() > 0.0 ? "p" : "m";
-      std::string caloMatchingRoot = pset.get<std::string>("caloMatchingRoot","TrackCaloMatching");
-      _caloMatchingModule = caloMatchingRoot + _fdir.name().substr(0,1) + _tpart.name().substr(0,1) + chargename;
-      // construct the PID objects.  These require explicit parameters that can't be made default
-      _pid_dt = new PIDdt(pset.get<fhicl::ParameterSet>("PIDdt",fhicl::ParameterSet()));
-      _pid_ep = new PIDEp(pset.get<fhicl::ParameterSet>("PIDEp",fhicl::ParameterSet()));
+    if(_addCalo){
+      _cdiag = new TrkCaloDiag(_tpart,_fdir,pset.get<fhicl::ParameterSet>("TrkCaloDiag",fhicl::ParameterSet()));
     }
   }
 
@@ -194,10 +175,9 @@ namespace mu2e {
     _trkdiag->Branch("ntshared",&_ntshared,"ntshared/I");
     _trkdiag->Branch("overlaps",&_overlaps);
     if(_addCalo){
-      _trkdiag->Branch("ncalo",&_ncalo,"ncalo/I");
-      _trkdiag->Branch("calo",&_caloinfo);
+      _cdiag->addBranches(_trkdiag);
     }
-}
+  }
 
   // For each event, look at tracker hits and calorimeter hits.
   void ReadKalFits::analyze(const art::Event& event) {
@@ -215,12 +195,7 @@ namespace mu2e {
     event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
     KalRepPtrCollection const& trks = *trksHandle;
     // Track-cluster matching
-    art::Handle<TrackClusterMatchCollection> caloMatchHandle;
-    if(_addCalo){
-      event.getByLabel(_caloMatchingModule,caloMatchHandle);
-      _ncalo = 0;
-      _caloinfo.clear(); 
-    }
+    if(_addCalo)_cdiag->findData(event);
     _hNTracks->Fill( trks.size() );
     // initialize counting variables
      _ntrks = trks.size();
@@ -236,6 +211,7 @@ namespace mu2e {
     // if there are no tracks, make an entry for a 'null' track.  This keeps the MC bookkeeping complete
     if(trks.size() == 0 && _processEmpty){
       _kdiag.kalDiag(0);
+      if(_addCalo)_cdiag->addCaloInfo(0);
     }
 // main loop over tracks
     for ( size_t itrk=0; itrk< trks.size(); ++itrk ){
@@ -248,20 +224,11 @@ namespace mu2e {
 	if(ihs._trk1 == itrk || ihs._trk2 == itrk)
 	  ++_ntshared;
       }
+      // if requested, find matching calorimeter information; can be more than 1
+      if(_addCalo)_cdiag->addCaloInfo(krep);
       // fill the standard diagnostics
       _kdiag.kalDiag(krep);
 
-      // if requested, find matching calorimeter information; can be more than 1
-      if(_addCalo && caloMatchHandle.isValid()){
-	_caloinfo.clear();
-	_ncalo = 0;
-	for( auto tcm : *caloMatchHandle ) {
-	  if(tcm.textrapol()->trk() == trks.at(itrk)){
-	    addCaloInfo(*krep,tcm);
-	    _ncalo++;
-	  }
-	}
-      }
 
       // Fill some simple histograms
       _hfitCL->Fill(krep->chisqConsistency().significanceLevel() );
@@ -368,36 +335,6 @@ namespace mu2e {
       G4BeamlineInfo const& extra = g4beamlineData->at(0);
       _g4bl_weight=extra.weight();
     }
-  }
-
-  void ReadKalFits::addCaloInfo(KalRep const& krep, TrackClusterMatch const& tcm) {
-    TrkCaloInfo tcinfo;
-// matching info
-    tcinfo._dt = tcm.dt();
-    tcinfo._du = tcm.du();
-    tcinfo._dv = tcm.dv();
-    tcinfo._ds = tcm.ds();
-    tcinfo._ep = tcm.ep();
-    tcinfo._uvChisq = tcm.chi2();
-    tcinfo._tChisq = tcm.chi2_time();
-// PID information
-    tcinfo._dtllr = _pid_dt->value(tcm.dt());
-    tcinfo._epllr = _pid_ep->value(tcm.ep(),tcm.ds());
-// cluster info
-    const CaloCluster* cluster = tcm.caloCluster();
-    tcinfo._eclust = cluster->energyDep();
-    tcinfo._tclust = cluster->time();
-    tcinfo._cpos = threevec(cluster->cog3Vector());
-// track information at intersection point.  Don't use this as there's an
-// additional fltlen added for the depth (59mm).
-//    double ipath = tcinfo.textrapol()->pathLengthEntrance();	       
-//    tcinfo._tpos = threevec(krep.position(ipath); 
-//    tcinfo._tdir = threevec(krep.direction(ipath);
-//    tcinfo._ttrk = krel.arrivalTime(ipath);
-    tcinfo._tpos = threevec(tcm.xtrk(),tcm.ytrk(),tcm.ztrk());
-    tcinfo._tdir = threevec(tcm.nx(),tcm.ny(),tcm.nz());
-    tcinfo._ttrk = tcm.ttrk();
-    _caloinfo.push_back(tcinfo);
   }
 
 

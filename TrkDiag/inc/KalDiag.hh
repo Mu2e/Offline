@@ -1,5 +1,5 @@
 //
-// MC functions associated with KalFit
+// Diagnostics for the Kalman filter track fit
 // $Id: KalDiag.hh,v 1.3 2014/09/20 14:34:22 brownd Exp $
 // $Author: brownd $ 
 // $Date: 2014/09/20 14:34:22 $
