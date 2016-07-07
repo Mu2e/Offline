@@ -184,9 +184,8 @@ physics : {
 
 #     Read the TrkPatRec output and make diagnostic ntuples.
       RKFDownstreameMinus: {
-         module_type          : ReadKalFits
-         fitterModuleLabel    : MergePatRecDem
-         KalDiag              : @local::KalDiagDirect
+         @table::ReadKalFits
+         addCalo : true
       }
     }
 
@@ -222,3 +221,5 @@ services.scheduler.wantSummary: true
 
 # Apply the time offsets at the digitization stage
 
+physics.analyzers.RKFDownstreameMinus.KalDiag.MCStepsLabel     : "g4run"
+physics.analyzers.RKFDownstreameMinus.KalDiag.SimParticleLabel : "g4run"
