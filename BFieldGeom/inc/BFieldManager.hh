@@ -16,7 +16,6 @@
 
 // C++ includes
 #include <string>
-#include <iosfwd>
 #include <set>
 
 // Includes from Mu2e

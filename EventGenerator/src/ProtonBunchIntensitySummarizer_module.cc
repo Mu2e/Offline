@@ -30,6 +30,7 @@ namespace mu2e {
     _printLevel(pset.get<int>("PrintLevel",0))
   {
     produces<mu2e::EventWeight>();
+    produces<mu2e::ProtonBunchIntensity>();
   }
 
   void ProtonBunchIntensitySummarizer::produce(art::Event& event) {
@@ -61,12 +62,14 @@ namespace mu2e {
   // downstream modules need to weight any process that depends on the proton bunch intensity, even
     // if they are only generating 1/event (like conversion electrons), as the probability of producing
     // that one event scales with proton intensity
+    std::unique_ptr<mu2e::ProtonBunchIntensity> pbisum ( new ProtonBunchIntensity(pbi) );
     std::unique_ptr<mu2e::EventWeight> evtwt ( new EventWeight(pbi.weight()) );
     if(_printLevel > 0){
-      std::cout << "Found " << pbi.intensity() << " protons in this microbunch, for event weight = "
+      std::cout << "Found " << pbisum->intensity() << " protons in this microbunch, for event weight = "
       << evtwt->weight() << std::endl;
     }
     event.put(std::move(evtwt));
+    event.put(std::move(pbisum));
   }
 }
 

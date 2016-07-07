@@ -13,9 +13,8 @@
 // Rewritten in part by Krzysztof Genser to save execution time
 //
 
-#include <iosfwd>
+//#include <iosfwd>
 #include <string>
-#include <vector>
 #include <ostream>
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/BFInterpolationStyle.hh"

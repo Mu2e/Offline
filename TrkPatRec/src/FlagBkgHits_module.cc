@@ -23,8 +23,9 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "MCDataProducts/inc/MCRelationship.hh"
 // Mu2e
-#include "TrkDiag/inc/KalDiag.hh"
 #include "TrkPatRec/inc/StrawHitInfo.hh"
 #include "TrkPatRec/inc/ClusterStrawHits.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
@@ -137,7 +138,7 @@ namespace mu2e
       int _diag,_debug;
       int _printfreq;
       // event object labels
-      std::string _shlabel, _shplabel, _stlabel, _shflabel;
+      std::string _shlabel, _shplabel, _stlabel, _shflabel, _sdmclabel;
       // straw hit selection masks
       StrawHitFlag _stmask, _deltamask, _ismask;
       // delta-ray removal parameters
@@ -153,6 +154,7 @@ namespace mu2e
       const StrawHitPositionCollection* _shpcol;
       const StereoHitCollection* _stcol;
       const StrawHitFlagCollection* _shfcol;
+      const StrawDigiMCCollection* _sdmccol;
 // output collections
       StrawHitFlagCollection* _bkgfcol;
 // internal helper functions
@@ -166,8 +168,6 @@ namespace mu2e
       bool findData(const art::Event& evt);
       void createDiagnostics();
       void fillStrawHitInfo(size_t ish, StrawHitInfo& shinfo) const;
-      // MC tools
-      KalDiag* _kdiag;
       // clusterer
       ClusterStrawHits _clusterer;
       // delta removal diagnostics
@@ -203,6 +203,7 @@ namespace mu2e
     _shplabel(pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _stlabel(pset.get<std::string>("StereoHitCollectionLabel","MakeStereoHits")),
     _shflabel(pset.get<std::string>("StrawHitFlagCollectionLabel","FlagStrawHits")),
+    _sdmclabel(pset.get<std::string>("StrawDigiMCCollectionLabel","makeSH")),
     _stmask(StrawHitFlag::stereo),
     _deltamask(StrawHitFlag::delta),
     _ismask(StrawHitFlag::isolated),
@@ -214,7 +215,6 @@ namespace mu2e
     _stereoclusterhitfrac(pset.get<double>("StereoClusterHitFraction",0.5)),
     _stereoclustermvacut(pset.get<double>("StereoClusterMVACut",0.8)),
     _nonstereoclustermvacut(pset.get<double>("NonStereoClusterMVACut",0.8)),
-    _kdiag(0),
     _clusterer(pset.get<fhicl::ParameterSet>("ClusterStrawHits",fhicl::ParameterSet())),
     _stereohitMVA(pset.get<fhicl::ParameterSet>("StereoHitMVA",fhicl::ParameterSet())),
     _nonstereohitMVA(pset.get<fhicl::ParameterSet>("NonStereoHitMVA",fhicl::ParameterSet())),
@@ -222,9 +222,6 @@ namespace mu2e
     _nonstereoclusterMVA(pset.get<fhicl::ParameterSet>("NonStereoClusterMVA",fhicl::ParameterSet()))
   {
     produces<StrawHitFlagCollection>();
-    if(_diag > 0)
-      _kdiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag"));
-
 // eventually, should also produce a collection of delta-rays and their properties, FIXME!!
   }
 
@@ -263,15 +260,7 @@ namespace mu2e
     if(!findData(event)){
       throw cet::exception("RECO")<< "Missing input collection" << endl;
     }
-    // find mc truth if we're making diagnostics
-    if(_diag > 0){
-      if(!_kdiag->findMCData(event)){
-        throw cet::exception("RECO")<<"mu2e::FlgBkgHits: MC data missing or incomplete"<< endl;
-
-	//	return;
-      }
-    }
-// merge the input flags
+    // merge the input flags
     size_t nsh = _shcol->size();
     for(size_t ish=0;ish<nsh;++ish){
       StrawHitFlag flag(_shfcol->at(ish));;
@@ -320,6 +309,7 @@ namespace mu2e
 
   // find the input data objects 
   bool FlagBkgHits::findData(const art::Event& evt){
+    bool retval(false);
     _shcol = 0; _shpcol = 0; _stcol = 0; _shfcol = 0;
     art::Handle<mu2e::StrawHitCollection> shH;
     if(evt.getByLabel(_shlabel,shH))
@@ -334,7 +324,17 @@ namespace mu2e
     if(evt.getByLabel(_shflabel,shflagH))
       _shfcol = shflagH.product();
 // don't require stereo hits, they are used only for diagnostics
-    return _shcol != 0 && _shpcol != 0 && _shfcol != 0;
+    retval = _shcol != 0 && _shpcol != 0 && _shfcol != 0;
+
+// find mc truth if we're making diagnostics
+    if(_diag > 0){
+      _sdmccol = 0;
+      art::Handle<mu2e::StrawDigiMCCollection> sdmccH;
+      if(evt.getByLabel(_sdmclabel,sdmccH))
+      _sdmccol = sdmccH.product();
+      retval &= _sdmccol !=0;
+    }
+    return retval;
   }
 
   void FlagBkgHits::fillDeltaInfo(std::list<StrawHitCluster> const& clusters,std::vector<DeltaInfo>& dinfo){
@@ -563,8 +563,8 @@ namespace mu2e
     shinfo._delta = shflag.hasAllProperties(StrawHitFlag::delta);
     shinfo._stereo = shflag.hasAllProperties(StrawHitFlag::stereo);
 
-    if(_kdiag->mcData()._mcdigis != 0) {
-      StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
+    if(_sdmccol != 0) {
+      StrawDigiMC const& mcdigi = _sdmccol->at(ish);
       // use TDC channel 0 to define the MC match
       StrawDigi::TDCChannel itdc = StrawDigi::zero;
       if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -651,16 +651,16 @@ namespace mu2e
 	size_t ish = dhinfo._hindex;
 	StrawHitInfo shinfo;
 	fillStrawHitInfo(ish,shinfo);
-	StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
+	StrawDigiMC const& mcdigi = _sdmccol->at(ish);
       // use TDC channel 0 to define the MC match
 	StrawDigi::TDCChannel itdc = StrawDigi::zero;
 	if(!mcdigi.hasTDC(StrawDigi::zero)) itdc = StrawDigi::one;
 	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
-	shinfo._relation=KalDiag::none;
+	shinfo._relation=MCRelationship::none;
 	if(spmcp.isNonnull()){
 	  art::Ptr<SimParticle> const& spp = spmcp->simParticle();
 	  if(spp.isNonnull()){
-	    shinfo._relation = KalDiag::relationship(spp,pptr);
+	    shinfo._relation = MCRelationship::relationship(spp,pptr);
 	  }
 	}
 	shinfo._hflag = dhinfo._hflag;
@@ -694,7 +694,7 @@ namespace mu2e
     std::set<art::Ptr<SimParticle> > pp;
     for(size_t ih=0;ih< delta._dhinfo.size(); ++ih){
       size_t ish = delta._dhinfo[ih]._hindex;
-      StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
+      StrawDigiMC const& mcdigi = _sdmccol->at(ish);
       // use TDC channel 0 to define the MC match
       StrawDigi::TDCChannel itdc = StrawDigi::zero;
       if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
@@ -721,13 +721,13 @@ namespace mu2e
 	  art::Ptr<SimParticle> sppj = *jpp;
 	  if(sppj->genParticle().isNull()){
 	    // call the particles 'the same' if they are related and were produced near each other
-	    KalDiag::relation rel = KalDiag::relationship(sppi,sppj);
-	    if(rel==KalDiag::daughter || rel == KalDiag::udaughter){
+	    MCRelationship::relation rel = MCRelationship::relationship(sppi,sppj);
+	    if(rel==MCRelationship::daughter || rel == MCRelationship::udaughter){
 	      spmap[sppi] = sppj;
 	      break;
-	    } else if(rel == KalDiag::mother || rel == KalDiag::umother){
+	    } else if(rel == MCRelationship::mother || rel == MCRelationship::umother){
 	      spmap[sppj] = sppi;
-	    } else if(rel == KalDiag::sibling || rel == KalDiag::usibling){
+	    } else if(rel == MCRelationship::sibling || rel == MCRelationship::usibling){
 	      double dist = (sppj->startPosition() - sppi->startPosition()).mag();
 	      if(dist < 10.0){
 		if(sppi->id().asInt() > sppj->id().asInt())
@@ -786,7 +786,7 @@ namespace mu2e
     // find the momentum for the first step point from the primary particle in this delta
     for(size_t ih=0;ih< delta._dhinfo.size(); ++ih){
       size_t ish = delta._dhinfo[ih]._hindex;
-      StrawDigiMC const& mcdigi = _kdiag->mcData()._mcdigis->at(ish);
+      StrawDigiMC const& mcdigi = _sdmccol->at(ish);
       // use TDC channel 0 to define the MC match
       StrawDigi::TDCChannel itdc = StrawDigi::zero;
       if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;

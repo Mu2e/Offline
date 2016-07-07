@@ -4,7 +4,6 @@
 //
 // Class to represent the transport solenoid
 //
-//#include <memory>
 #include <string>
 
 #include "BeamlineGeom/inc/TSSection.hh"

@@ -14,14 +14,18 @@ rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
+    'mu2e_TrackCaloMatching',
     'mu2e_TrkReco',
+    'mu2e_ParticleID',
     'mu2e_BTrkData',
     'mu2e_Mu2eBTrk',
     'mu2e_Mu2eUtilities',
+    'mu2e_CaloCluster',
     'mu2e_ConditionsService',
     'mu2e_GeometryService',
     'mu2e_BFieldGeom',
     'mu2e_TrackerGeom',
+    'mu2e_CalorimeterGeom',
     'mu2e_MCDataProducts',
     'mu2e_RecoDataProducts',
     'mu2e_GlobalConstantsService',
@@ -42,6 +46,7 @@ mainlib = helper.make_mainlib ( [
     rootlibs,
     'CLHEP',
     'HepPDT',
+    'HepPID',
     'xerces-c',
     'boost_system',
     ] )
@@ -49,10 +54,13 @@ mainlib = helper.make_mainlib ( [
 # Fixme: split into link lists for each module.
 helper.make_plugins( [
    mainlib,
+   'mu2e_TrackCaloMatching',
    'mu2e_TrkReco',
+   'mu2e_ParticleID',
    'mu2e_BTrkData',
    'mu2e_Mu2eBTrk',
    'mu2e_Mu2eUtilities',
+   'mu2e_CaloCluster',
    'mu2e_SeedService_SeedService_service',
    'mu2e_ConditionsService',
    'mu2e_GeometryService',
@@ -60,6 +68,7 @@ helper.make_plugins( [
    'mu2e_Mu2eHallGeom',
    'mu2e_TrackerGeom',
    'mu2e_TTrackerGeom',
+   'mu2e_CalorimeterGeom',
    'mu2e_MCDataProducts',
    'mu2e_RecoDataProducts',
    'mu2e_GlobalConstantsService',
@@ -81,6 +90,7 @@ helper.make_plugins( [
    'cetlib',
    'CLHEP',
    'HepPDT',
+   'HepPID',
    rootlibs,
    'xerces-c',
    'boost_filesystem',

@@ -6,8 +6,6 @@
 // Author: Anthony Palladino
 //
 
-#include <vector>
-
 #include "CLHEP/Vector/ThreeVector.h"
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "STMGeom/inc/PermanentMagnet.hh"

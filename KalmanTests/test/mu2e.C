@@ -498,7 +498,7 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   TCanvas* diores = new TCanvas("diores","DIO result",800,600);
   gPad->SetLogy();
   diodiffwin[mu2ecut]->Draw();
-  double split = 0.55; // define tail as 550 KeV/c above nominal
+  double split = 0.720; // define tail as above 4 sigma
   TLine* td = new TLine(split,0.0,split,diodiffwin[mu2ecut]->GetMaximum());
   td->SetLineColor(kBlack);
   td->SetLineStyle(2);

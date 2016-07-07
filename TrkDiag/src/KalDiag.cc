@@ -26,6 +26,7 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/MCRelationship.hh"
 #include "MCDataProducts/inc/GenId.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 // Utilities
@@ -449,7 +450,7 @@ namespace mu2e
     tshinfomc._gen = -1;
     if(spp->genParticle().isNonnull())
       tshinfomc._gen = spp->genParticle()->generatorId().id();
-    tshinfomc._rel = relationship(pspp,spp);
+    tshinfomc._rel = MCRelationship::relationship(pspp,spp);
     // find the step midpoint
     Hep3Vector mcsep = spmcp->position()-straw.getMidPoint();
     Hep3Vector dir = spmcp->momentum().unit();
@@ -709,60 +710,7 @@ namespace mu2e
     mcstepinfo._hpar = helixpar(parvec);
   }
  
- // StrawDigiMCs record the StepPoint that pushed the electronics over threshold; use that
- // define the relationship
-
-  KalDiag::relation KalDiag::relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2) {
-    art::Ptr<SimParticle> ptr1, ptr2;
-    if(mcd1.stepPointMC(StrawDigi::zero).isNonnull())
-      ptr1 = mcd1.stepPointMC(StrawDigi::zero)->simParticle();
-    else if(mcd1.stepPointMC(StrawDigi::one).isNonnull())
-      ptr1 = mcd1.stepPointMC(StrawDigi::one)->simParticle();
-    if(mcd2.stepPointMC(StrawDigi::zero).isNonnull())
-      ptr2 = mcd2.stepPointMC(StrawDigi::zero)->simParticle();
-    else if(mcd2.stepPointMC(StrawDigi::one).isNonnull())
-      ptr2 = mcd2.stepPointMC(StrawDigi::one)->simParticle();
-    return relationship(ptr1,ptr2);
-  }
-
-  KalDiag::relation KalDiag::relationship(art::Ptr<SimParticle> const& sppi,art::Ptr<SimParticle> const& sppj) {
-    if(sppi.isNull() || sppj.isNull()) return none;
-    if(sppi == sppj)return same;
-    art::Ptr<SimParticle> pi = sppi->realParent();
-    art::Ptr<SimParticle> pj = sppj->realParent();
-    if(pi.isNonnull() && pi == sppj)return daughter;
-    if(pj.isNonnull() && pj == sppi)return mother;
-    if(pi.isNonnull() && pj.isNonnull()){
-      if( pi == pj)return sibling;
-      vector<art::Ptr<SimParticle> > pvi, pvj;
-      pvi.push_back(sppi);
-      pvj.push_back(sppj);
-      while(pi.isNonnull()){
-	pvi.push_back(pi);
-	pi = pi->realParent();
-      }
-      while(pj.isNonnull()){
-	pvj.push_back(pj);
-	pj = pj->realParent();
-      }
-      vector<art::Ptr<SimParticle> >::iterator ifnd;
-      ifnd = find(pvi.begin(),pvi.end(),sppj);
-      if(ifnd != pvi.end())return udaughter;
-      ifnd = find(pvj.begin(),pvj.end(),sppi);
-      if(ifnd != pvj.end())return umother;
-      for(size_t ii=0;ii<pvj.size();++ii){
-	ifnd = find(pvi.begin(),pvi.end(),pvj[ii]);
-	if(ifnd != pvi.end())return usibling;
-      }
-      for(size_t ii=0;ii<pvi.size();++ii){
-	ifnd = find(pvj.begin(),pvj.end(),pvi[ii]);
-	if(ifnd != pvj.end())return usibling;
-      }
-    }
-    return none;
-  }
-
-  void KalDiag::fillTrkQual(TrkInfo& trkinfo) const {
+ void KalDiag::fillTrkQual(TrkInfo& trkinfo) const {
     static std::vector<double> trkqualvec; // input variables for TrkQual computation
     trkqualvec.resize(10);
     trkqualvec[0] = trkinfo._nactive; // # of active hits

@@ -216,6 +216,7 @@ namespace mu2e
   {
     XYZP::_efac = _efac;
     std::vector<std::string> bitnames;
+    // these should be fcl parameters, FIXME!!!
     bitnames.push_back("Outlier");
     bitnames.push_back("OtherBackground");
     XYZP::_dontuseflag = StrawHitFlag(bitnames);

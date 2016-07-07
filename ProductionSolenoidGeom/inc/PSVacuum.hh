@@ -9,9 +9,6 @@
 // Original author Andrei Gaponenko
 //
 
-#include <vector>
-#include <ostream>
-
 #include "GeomPrimitives/inc/Tube.hh"
 #include "Mu2eInterfaces/inc/Detector.hh"
 

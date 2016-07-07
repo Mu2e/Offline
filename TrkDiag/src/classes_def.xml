@@ -7,4 +7,9 @@
  <class name="std::vector<mu2e::TrkStrawMatInfo>" />
  <class name="mu2e::TimePeakHitInfo" />
  <class name="std::vector<mu2e::TimePeakHitInfo>" />
+ <class name="mu2e::threevec" />
+ <class name="mu2e::TrkCaloInfo" />
+ <class name="std::vector<mu2e::TrkCaloInfo>" />
+ <class name="mu2e::TrkHitShare" />
+ <class name="std::vector<mu2e::TrkHitShare>" />
 </lcgdict>

@@ -21,10 +21,9 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "TrkDiag/inc/KalDiag.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
-
+#include "MCDataProducts/inc/MCRelationship.hh"
 // art includes.
 #include "art/Persistency/Common/Ptr.h"
 #include "art/Framework/Core/EDProducer.h"
@@ -460,7 +459,7 @@ namespace mu2e {
 	                    if(_mcdigis != 0){
 	                      StrawDigiMC const& mcd1 = _mcdigis->at(ish);
 	                      StrawDigiMC const& mcd2 = _mcdigis->at(jsh);
-	                      _mcrel = KalDiag::relationship(mcd1,mcd2);
+	                      _mcrel = MCRelationship::relationship(mcd1,mcd2);
 	                      if(mcd1.stepPointMC(StrawDigi::zero).isNonnull() &&
 	                         mcd2.stepPointMC(StrawDigi::zero).isNonnull() )
 	                        _mcdist = (mcd1.stepPointMC(StrawDigi::zero)->position() -
@@ -523,7 +522,7 @@ namespace mu2e {
 	  _sdz = fabs(straw1.getMidPoint().z()-straw2.getMidPoint().z());
 	  StrawDigiMC const& mcd1 = _mcdigis->at(sh.hitIndex1());
 	  StrawDigiMC const& mcd2 = _mcdigis->at(sh.hitIndex2());
-	  _mcr = KalDiag::relationship(mcd1,mcd2);
+	  _mcr = MCRelationship::relationship(mcd1,mcd2);
 	}
 	StrawDigiMC const& mcd = _mcdigis->at(ish);
 	StrawDigi::TDCChannel itdc = StrawDigi::zero;

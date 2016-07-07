@@ -17,13 +17,10 @@
 #include "GeneralUtilities/inc/EnumToStringSparse.hh"
 
 // C++ includes
-#include <algorithm>
 #include <map>
 #include <memory>
 #include <vector>
 
-// cet
-#include "cetlib/exception.h"
 
 namespace mu2e {
 

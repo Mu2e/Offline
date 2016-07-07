@@ -5,7 +5,6 @@
 // Class to represent the transport solenoid
 //
 #include <array>
-//#include <memory>
 #include <string>
 
 #include "GeomPrimitives/inc/Torus.hh"

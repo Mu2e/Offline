@@ -233,7 +233,7 @@ TrkPatRec : {
        MCStepsLabel        : g4run
        SimParticleLabel    : g4run
        SimParticleInstance : tracker
-       StrawHitMCLabel     : makeSD
+       StrawHitMCLabel     : makeSH
        TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
        FillMCInfo          : false
    }

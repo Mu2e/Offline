@@ -99,7 +99,7 @@ namespace mu2e {
         os << std::setfill('0') << std::setw(2) << itf;
         foilInfo.name = "Foil_" + os.str();
 
-        if ( verbosity > - 1 )  std::cout << __func__ << " " << foilInfo.name << std::endl;
+        if ( verbosity > 0 )  std::cout << __func__ << " " << foilInfo.name << std::endl;
 
         foilInfo.solid = new G4Tubs(foilInfo.name
                                     ,foil.rIn()
@@ -160,7 +160,7 @@ namespace mu2e {
         os << std::setfill('0') << std::setw(2) << itf;
         supportStructureInfo.name = "FoilSupportStructure_" + os.str();
 
-        if ( verbosity > - 1 )  std::cout << __func__ << " " << supportStructureInfo.name 
+        if ( verbosity > 0 )  std::cout << __func__ << " " << supportStructureInfo.name 
                                           << std::endl;
 
         supportStructureInfo.solid = new G4Tubs(supportStructureInfo.name

@@ -4,8 +4,6 @@
 //
 // Class to represent the transport solenoid
 //
-#include <string>
-
 // Includes from Mu2e
 #include "Mu2eInterfaces/inc/Detector.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"

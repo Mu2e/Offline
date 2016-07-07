@@ -1,9 +1,7 @@
-// $Id: constructServicesGeom.cc,v 1.6 2014/09/19 19:15:02 knoepfel Exp $
-// $Author: knoepfel $
-// $Date: 2014/09/19 19:15:02 $
-// David Norvil Brown, University of Louisville, November 2014
 //
-// 
+// David Norvil Brown, University of Louisville, March 2016
+//
+// Build Electronic Racks, Pipes, etc.  (AKA Services)
 
 #include "Mu2eG4/inc/constructServicesGeom.hh"
 
@@ -135,9 +133,6 @@ namespace mu2e {
 	CLHEP::Hep3Vector pipePosInMu2e = pCent[it][ip] 
 	  - parent.centerInMu2e();
 
-	std::cout << "For it=" << it << " and ip=" << ip << ", center is "
-		  << pipePosInMu2e << " and rotation is " << *pipeRotat 
-		  << std::endl;
 
 	VolumeInfo motherLogVol;
 	if ( isBend ) {

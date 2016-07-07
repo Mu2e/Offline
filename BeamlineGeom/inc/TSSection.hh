@@ -4,7 +4,6 @@
 //
 // Abstract base class for TS sections
 //
-#include <memory>
 #include <string>
 
 #include "CLHEP/Vector/Rotation.h"

@@ -14,7 +14,7 @@ string protonabsorber.materialName = "Polyethylene096";
 double protonabsorber.OutRadius1   =  380.0;
 double protonabsorber.OutRadius0   =  335.2;
 double protonabsorber.thickness    =    0.5;
-int    protonabsorber.verbosityLevel = 2;
+int    protonabsorber.verbosityLevel = 0;
 bool   protonabsorber.visible      = true;
 bool   protonabsorber.solid        = false;
 
