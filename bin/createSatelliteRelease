@@ -1,120 +1,38 @@
 #! /bin/bash
 #
-# Script to create a satellite release in the current directory and a
-# matching directory on /mu2e/data to hold output files.
+# Script to create a satellite release in the current directory.
 #
-# This script resides a base release and it will connect the satellite release
-# to the base release in which this script resides.  Normally you should
-# execute this script before setting up a base release.  If you have already
-# setup a base release, then this script must reside in that release.
-# ( ie for convenience we let you do things out of order but we protect
-#   against cross-stitching things ).
+# If /mu2e/data is visible, it will also create a matching output
+# directory in /mu2e/data to hold output made by this release.
+# That directory is visible as a symlink in the current directory.
+#
+# This script resides a base release and it will create a satellite
+# release that builds against the base release in which this script
 #
 # The script takes an optional command line argument: the name of the
 # setup file in the base release that you should source when you setup
-# the base release.
+# the base release.  By default it is "setup.sh".
 #
 
-if [ "${MU2E}" = '' ];then
-    echo "The environment variable MU2E is not set."
-    echo "You must setup the local Mu2e environment before sourcing this script."
-    return 1
-fi
+set -e
 
-# The base release will be the release in which we find this createSatelliteRelease script.
-export candidate_base_release=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && /bin/pwd | sed 's/\/bin//'`
-
-# If a base release is already setup, then it must match the candidate_base_release.
-if [ "${MU2E_BASE_RELEASE}" != '' ];then
-    if [ "${MU2E_BASE_RELEASE}"  != "${candidate_base_release}" ]; then
-      echo "You already have a Mu2e base release established:  " ${MU2E_BASE_RELEASE}
-      echo "You are trying to create satellite release from a different base release: " ${candidate_base_release}
-      echo "This is not permitted."
-      echo "Stopping now."
-      return 1
-    fi
-fi
-
-# Make sure that we will not overwrite existing files.
-# It is the users responsibility to clean up before pointing his satellite
-# release at a new base release.
-stuff_to_clean="SConstruct setup.sh bin lib"
-for stuff in ${stuff_to_clean}
-do
-if [ -e ${stuff} ];then
-   echo "The file or directory " $stuff " already exists."
-   echo "Please clean up and restart."
-   echo "The list to clean up is: " $stuff_to_clean
-   echo "Stopping now."
-   return 1
-fi
-done
-
-# The script will also make a directory for output files on one of the
-# data disks.  If that directory already exists, issue and error and stop.
-outputDirBase=/mu2e/data/users/
-outputDir=$outputDirBase`/bin/pwd | sed -e 's|^.*/'$(whoami)'/|'$(whoami)/'|'`
-
-createOutputDir=1
-if [ -e  ${outputDir} ]; then
- echo " "
- echo "The matching data directory already exists: " ${outputDir}
- echo "You have two choices: "
- echo "   1) Continue: the sym link in this directory will point to that directory"
- echo "   2) Abort: you can mv or rm that directory and rerun this script"
- echo -n "Enter c to continue anything else to abort: "
- read answer
- if [[ "${answer}" != "c" ]]; then
-   return 1
- fi
- createOutputDir=0
-fi
+source "$(dirname $0)/satelliteFuncs"
 
 # If the optional argument has been specified, get it.
 setupname="setup.sh"
 if [ $# == 1 ]; then
   setupname=$1
 fi
-echo "setupname: " $setupname
 
-# All tests passed. Now create the satellite release.
+ensure_mu2e_environment
 
-# Copy some files from the base release.
-echo "Creating satellite release:"
-cp ${candidate_base_release}/SConstruct .
-mkdir -p bin
-mkdir -p lib
+# The candidate base release will be the release in which we find this createSatelliteRelease script.
+export candidate_base_release=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && /bin/pwd | sed 's/\/bin//'`
+ensure_legal_candidate_release ${candidate_base_release}
 
-# Create the output directory.
-if [[ "${createOutputDir}" == "1" ]]; then
-  echo "Making matching directory for output files:" ${outputDir}/out
-  mkdir -p ${outputDir}/out
-fi
-if [[ -s out ]]; then
-  /bin/rm out
-fi
-ln -s ${outputDir}/out
+# Make sure that we will not overwrite existing files that are managed
+# by the satellite release system.  If this test fails, it is the
+# users responsibility to clean up and retry.
+ensure_no_satellite_release_managed_files
 
-# Create the setup script for the satellite release.
-# Hardcode the path to the base release.
-cat >> setup.sh <<EOF
-#! /bin/bash
-#
-# This script was written by createSatelliteRelease
-# Normally you should not edit it.
-#
-#
-
-# Connect to the base release.
-source ${candidate_base_release}/${setupname}
-retstat=\$?
-
-if [[ "\$retstat" != "0" ]]; then
-  return \$retstat;
-fi
-
-# Add the satellite release to the two important path variables.
-export PATH="\`pwd\`/bin/:\${PATH}"
-export LD_LIBRARY_PATH="\`pwd\`/lib/:\${LD_LIBRARY_PATH}"
-
-EOF
+create_files "yes"
