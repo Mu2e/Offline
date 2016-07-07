@@ -260,14 +260,6 @@ namespace mu2e
       unsigned ipeak = iTrackSeed;
       findhelix = true;
       //all track selected
-      std::vector<hitIndex> goodhits;
-
-      const std::vector<hitIndex> &trkseedhits = iTrkSeed._timeCluster._strawHitIdxs;
-      for (std::vector<hitIndex>::const_iterator loopPoints_it = trkseedhits.begin();
-        loopPoints_it != trkseedhits.end(); ++loopPoints_it) {
-        goodhits.push_back( mu2e::hitIndex(loopPoints_it->_index,loopPoints_it->_ambig) );
-      }
-
       HelixTraj recoseed(TrkParams(HelixTraj::NHLXPRM));
       HelixVal2HelixTraj(iTrkSeed._helix,recoseed);
       if(_debug>1) {
@@ -276,7 +268,7 @@ namespace mu2e
 	recoseed.printAll(std::cout);
       }
 
-      TrkDef seeddef(_shcol,goodhits,recoseed,_tpart,_fdir);
+      TrkDef seeddef(_shcol,iTrkSeed._timeCluster._strawHitIdxs,recoseed,_tpart,_fdir);
       TrkT0 t0(iTrkSeed._timeCluster._t0,iTrkSeed._timeCluster._errt0);
       seeddef.setT0(t0);
       TrkDef kaldef(seeddef);

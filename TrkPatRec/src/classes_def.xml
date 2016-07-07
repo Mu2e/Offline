@@ -20,6 +20,4 @@
     <class name="std::vector<mu2e::TrkHitFilter>" />
     <class name="mu2e::StrawHitInfo" />
     <class name="std::vector<mu2e::StrawHitInfo>" />
-    <class name="mu2e::TimePeakHitInfo" />
-    <class name="std::vector<mu2e::TimePeakHitInfo>" />
 </lcgdict>

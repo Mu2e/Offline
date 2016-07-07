@@ -22,6 +22,7 @@
 //#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "RecoDataProducts/inc/TrackSeed.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
@@ -33,7 +34,6 @@
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
-#include "TrkPatRec/inc/TrkPatRec.hh"
 #include "TrkReco/inc/RobustHelixFit.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -76,8 +76,7 @@ namespace mu2e
     // event object labels
     std::string                        _shLabel;
     std::string                        _shpLabel;
-    std::string                        _trkseedLabel;
-    std::string                        _mcdigislabel;
+    std::string                        _timeclusterLabel;
 
     // outlier cuts
     TrkParticle                        _tpart; // particle type being searched for
@@ -86,14 +85,10 @@ namespace mu2e
     // cache of event objects
     const StrawHitCollection*          _shcol;
     const StrawHitPositionCollection*  _shpcol;
-    const TrackSeedCollection*         _tccol;
-    const StrawDigiMCCollection *      _mcdigis;
+    const TimeClusterCollection*       _tccol;
 
     // robust helix fitter
     RobustHelixFit                     _hfit;
-
-    // cache of time peaks
-    std::vector<TrkTimePeak>           _tpeaks;
 
     // helper functions
     bool findData           (const art::Event& e);
@@ -112,7 +107,6 @@ namespace mu2e
     _shLabel     (pset.get<string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel    (pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
     _trkseedLabel(pset.get<string>("TrackSeedCollectionLabel","TimePeakFinder")),
-    _mcdigislabel(pset.get<string>("StrawHitMCLabel","makeSH")),
     _tpart       ((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir        ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet()))
@@ -141,20 +135,10 @@ namespace mu2e
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::RobustHelixFinder: data missing or incomplete"<< endl;
     }
-    //    loadTimePeaks(_tpeaks,_tccol);
 
-
-    // dummy objects
-    static HelixDef       dummyhdef;
-    static HelixFitResult dummyhfit(dummyhdef);
-    const TrackSeed*      trkSeed;
-
-    for(unsigned ipeak=0;ipeak<_tccol->size();++ipeak){
-      trkSeed = &_tccol->at(ipeak);
-      
-      // create track definitions for the helix fit from this initial information 
-      //      HelixDef helixdef(_shcol,_shpcol,_t[ipeak]._trkptrs,_tpart,_fdir,_mcdigis); 
-      HelixDef       helixdef(_shcol, _shpcol, trkSeed->_timeCluster._strawHitIdxs, _tpart, _fdir, _mcdigis);
+    for(auto tclust: _tccol) {
+      // create track definitions for the helix fit from this initial information
+      HelixDef       helixdef(_shcol, _shpcol, trkSeed->_timeCluster._strawHitIdxs, _tpart, _fdir );
 
       // copy this for the other fits
       TrkDef         seeddef(helixdef);
@@ -163,7 +147,7 @@ namespace mu2e
       HelixFitResult helixfit(helixdef);
 
       // robust helix fit
-      if(_hfit.findHelix(helixfit, _diag/*_icepeak==(int)ipeak*/)){
+      if(_hfit.findHelix(helixfit, _diag)){
 
 	//findhelix = true;
 	// convert the result to standard helix parameters, and initialize the seed definition helix
@@ -194,7 +178,6 @@ namespace mu2e
     _shcol = 0;
     _shpcol = 0;
     _tccol = 0;
-    _mcdigis = 0;
 
     if(evt.getByLabel(_shLabel,_strawhitsH))
       _shcol = _strawhitsH.product();
@@ -205,13 +188,7 @@ namespace mu2e
     if (evt.getByLabel(_trkseedLabel, _trkseedsH))
       _tccol = _trkseedsH.product();
 
-    if (_diag > 0) {
-      art::Handle<StrawDigiMCCollection> mcdigisHandle;
-      if(evt.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle))
-	_mcdigis = mcdigisHandle.product();
-    }
-    // don't require stereo hits: they are only used for diagnostics
-    return _shcol != 0 && _shpcol != 0;// && _tccol!=0;
+    return _shcol != 0 && _shpcol != 0 && _tccol!=0;
   }
 
 
@@ -234,17 +211,16 @@ namespace mu2e
   }
 
   void RobustHelixFinder::HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
-          //TrkExchangePar helParams( helIn._d0, helIn._phi0, helIn._omega, helIn._z0, helIn._tanDip );
-          CLHEP::HepVector helParams(5);
-          helParams(1) = helIn._d0;
-          helParams(2) = helIn._phi0;
-          helParams(3) = helIn._omega;
-          helParams(4) = helIn._z0;
-          helParams(5) = helIn._tanDip;
-          CLHEP::HepSymMatrix conv(5,1);
-         
-	  HelixTraj tmpHelix(helParams,conv);
-          helOut=tmpHelix;
+    CLHEP::HepVector helParams(5);
+    helParams(1) = helIn._d0;
+    helParams(2) = helIn._phi0;
+    helParams(3) = helIn._omega;
+    helParams(4) = helIn._z0;
+    helParams(5) = helIn._tanDip;
+    CLHEP::HepSymMatrix conv(5,1);
+
+    HelixTraj tmpHelix(helParams,conv);
+    helOut=tmpHelix;
   }
 
 }

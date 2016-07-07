@@ -16,16 +16,14 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 // Mu2e
-#include "TrkPatRec/inc/TrkPatRec.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/TrackSeed.hh"
-#include "RecoDataProducts/inc/TrackSeedCollection.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 // root
 #include "TFile.h"
@@ -43,13 +41,39 @@
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/moment.hpp>
 #include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/error_of_mean.hpp>
+#include <boost/accumulators/statistics/max.hpp>
+#include <boost/accumulators/statistics/min.hpp>
 // C++
 #include <memory>
+#include <algorithm>
 using namespace std; 
 using namespace boost::accumulators;
 
 
 namespace mu2e {
+// struct to run MVA
+   struct TimePeakMVA {
+    std::vector<Double_t> _pars;
+    Double_t& _dt;
+    Double_t& _dphi;
+    Double_t& _rho;
+    TimePeakMVA() : _pars(3,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]) {}
+  };
+// comparison functor for sorting peaks
+  struct PeakSort : public binary_function<TimeCluster, TimeCluster, bool> {
+    bool operator()(TimeCluster const& x, TimeCluster const& y) {
+      return x._strawHitIdxs.size() > y._strawHitIdxs.size();
+    }
+  };
+// comparison functor for sorting hitIndices by time
+  struct hitTimeSort : public binary_function<hitIndex, hitIndex, bool> {
+    hitTimeSort(const StrawHitCollection* shcol) : _shcol(shcol){}
+    bool operator() (hitIndex const& x, hitIndex const& y){
+      return _shcol->at(x._index).time() > _shcol->at(y._index).time();
+    }
+    const StrawHitCollection* _shcol;
+  };
 
   class TimePeakFinder : public art::EDProducer {
   public:
@@ -68,7 +92,6 @@ namespace mu2e {
     // Start: run time parameters
 
     int           _debug;
-    int           _diag;
     int           _printfreq;
 
     unsigned      _iev;
@@ -87,7 +110,6 @@ namespace mu2e {
     int           _t0TypeCalculator;
     unsigned      _maxnpeak;
     unsigned      _minnhits;
-    bool          _cleanpeaks;
     double        _minpeakmva, _maxpeakdt, _maxpeakdphi;
     double        _tmin;
     double        _tmax;
@@ -100,37 +122,21 @@ namespace mu2e {
     // cache of event objects
     const StrawHitCollection*             _shcol;
     const StrawHitFlagCollection*         _shfcol;
-    StrawHitFlagCollection*               _flags;
     const StrawHitPositionCollection*     _shpcol;
-
-    // cache of time peaks
-    std::vector<TrkTimePeak>              _tpeaks;
-    //string _iname; // data instance name
 
     MVATools                              _peakMVA; // MVA for peak cleaning
     TimePeakMVA                           _pmva; // input variables to TMVA for peak cleaning
 
     art::Handle<mu2e::StrawHitCollection> _strawhitsH;
 
-    void calculateT0      (double &T0       , double &ErrT0, 
-			   double MeanTime  , double Sigma,
-			   double MinHitTime, double NominalWidth);
-    void cleanTimePeak    (TrkTimePeak& tp);
-    void createTimePeak   ();
-    void createDiagnostics();
+    void initPeak	  (TimeCluster& tp); // fill peak information from the list of hits
+    void refinePeak	  (TimeCluster& tp); // refine the peak information and hit list
     bool findData         (const art::Event& e);
-    void findTimePeaks    ();
-    void findTimePeaks    (TH1F const& tspect, std::vector<Float_t>& xpeak, std::vector<Float_t>& ypeak);
-    void fillTimeDiag     ();
-    void fillPeakDiag     (size_t ip, TrkTimePeak const& tp);
+    void findPeaks    (TimeClusterCollection*);
+    void findPeaks    (TH1F const& tspect, std::vector<Float_t>& xpeak, std::vector<Float_t>& ypeak);
+    static double deltaPhi(double& phi, double const& refphi);
+    bool goodHit(StrawHitFlag const& flag) const;
 
-    const StrawDigiMCCollection*          _mcdigis;
-// time peak diag variables
-    TTree*                                _tpdiag;
-    Int_t                                 _tpeventid, _peakid, _pmax, _nphits, _ncphits, _nchits;
-    Float_t                               _ptime, _pdtimemax, _ctime, _cdtimemax;
-    Float_t                               _pphi, _cphi, _cphirange, _pdphimax, _cdphimax;
-    vector<TimePeakHitInfo>               _tphinfo;
   };
 
   TimePeakFinder::~TimePeakFinder() {
@@ -138,7 +144,6 @@ namespace mu2e {
   
   TimePeakFinder::TimePeakFinder(fhicl::ParameterSet const& pset) :
     _debug             (pset.get<int>("debugLevel",0)),
-    _diag              (pset.get<int>("diagLevel",0)),
     _printfreq         (pset.get<int>("printFrequency",101)),
     _shLabel           (pset.get<std::string>("StrawHitCollectionLabel","makeSH")),
     _shpLabel          (pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
@@ -152,7 +157,6 @@ namespace mu2e {
     _t0TypeCalculator  (pset.get<int>("T0TypeCalculator",3)),
     _maxnpeak          (pset.get<unsigned>("MaxNPeaks",50)),
     _minnhits          (pset.get<unsigned>("MinNHits",10)),
-    _cleanpeaks        (pset.get<bool>("CleanTimePeaks",true)),
     _minpeakmva        (pset.get<double>("MinTimePeakMVA",0.2)),
     _maxpeakdt         (pset.get<double>("MaxTimePeakDeltat",25.0)),
     _maxpeakdphi       (pset.get<double>("MaxTimePeakDeltaPhi",1.0)),
@@ -164,12 +168,10 @@ namespace mu2e {
     _nmnlWdNSigma      (pset.get<double>("NominalWidthNSigma",3.0)),
     _peakMVA           (pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet()))
   {
-    // tag the data product instance by the direction and particle type found by this fitter
-    produces<StrawHitFlagCollection>();
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     // Tell the framework what we make.
-    produces<TrackSeedCollection>();
+    produces<TimeClusterCollection>();
 
   }
 
@@ -193,35 +195,34 @@ namespace mu2e {
       throw cet::exception("RECO")<<"mu2e::TimePeakFinder: data missing or incomplete"<< endl;
       return;
     }
-    // copy in the existing flags
-    _flags = new StrawHitFlagCollection(*_shfcol);
-    std::unique_ptr<StrawHitFlagCollection> flags(_flags );
-
+    // create event object collection
+    std::unique_ptr<TimeClusterCollection>    thcc  (new TimeClusterCollection);
+  
     // find the time peaks in the time spectrum of selected hits.  Otherwise, take all
     // selected hits as a peak
-    _tpeaks.clear();
     if(_findtpeak){
-      findTimePeaks();
+      findPeaks(thcc.get());
     } else {
-      createTimePeak();
+      createTimePeak(thcc.get());
     }
-    if(_diag > 2 && _mcdigis !=0 && _mcdigis->size() > 0)fillTimeDiag();
-
-    // create event objects and piut them into event
-    std::unique_ptr<TrackSeedCollection>    thcc  (new TrackSeedCollection);
     
-    for (std::vector<TrkTimePeak>::iterator itp=_tpeaks.begin(); itp!=_tpeaks.end(); ++itp) {
+   // find the t0 for the cluster
+
+    for (std::vector<TimeCluster>::iterator itp=thcc->begin(); itp!=thcc->end(); ++itp) {
       double    meanTime(0), sigma(0), minHitTime(0), maxHitTime(0), nominalWidth(0);
       double    sumOfSqr(0), sum(0);
       double    t0(0), errt0(0);
 
-      TrackSeed tmpSeed;
-      
       meanTime   = itp->_tpeak;
-      minHitTime = _shcol->at( itp->_trkptrs.begin()->_index ).time();
-      maxHitTime = _shcol->at( itp->_trkptrs.begin()->_index ).time();
+      hitTimeSort tsort(_shcol);
+      hitIndex minhit = std::min_element<hitIndex,hitTimeSort>(itp->_strawHitIdxs.begin(),
+	itp->_strawHitIdxs.end(),tsort);
+      hitIndex maxhit = std::max_element<hitIndex,hitTimeSort>(itp->_strawHitIdxs.begin(),
+	itp->_strawHitIdxs.end(),tsort);
+      minHitTime = _shcol->at(minhit._index).time();
+      maxHitTime = _shcol->at(maxhit._index).time();
 
-      for (std::vector<hitIndex>::iterator hittpit=itp->_trkptrs.begin(); hittpit!=itp->_trkptrs.end(); ++hittpit) {
+      for (std::vector<hitIndex>::iterator hittpit=itp->_strawHitIdxs.begin(); hittpit!=itp->_strawHitIdxs.end(); ++hittpit) {
 	double htime = _shcol->at(hittpit->_index).time();
 
 	sum         += htime;
@@ -232,14 +233,13 @@ namespace mu2e {
 	if ( htime < minHitTime ) { minHitTime = htime; }
 	if ( htime > maxHitTime ) { maxHitTime = htime; }
 	
-	flags->at(hittpit->_index).merge(StrawHitFlag::timesel);
       }
 
-      if (itp->_trkptrs.size()>1) {
-	sigma    = sumOfSqr - sum*sum/((double)itp->_trkptrs.size());
+      if (itp->_strawHitIdxs.size()>1) {
+	sigma    = sumOfSqr - sum*sum/((double)itp->_strawHitIdxs.size());
 	
 	if (sigma>0.0) {
-	  sigma        = sqrt( sigma/((double)(itp->_trkptrs.size()-1.0)));
+	  sigma        = sqrt( sigma/((double)(itp->_strawHitIdxs.size()-1.0)));
 	  nominalWidth =_nmnlWdNSigma*sigma;
 	} else {
 	  sigma        = 0;
@@ -249,11 +249,10 @@ namespace mu2e {
 	nominalWidth = maxHitTime - minHitTime;
       }
 
-      calculateT0(t0, errt0, meanTime, sigma, minHitTime, nominalWidth);
 
-      tmpSeed._timeCluster._t0     = t0;
-      tmpSeed._timeCluster._z0     = 0;
-      tmpSeed._timeCluster._errt0  = errt0;
+      tmpSeed._t0     = MeanTime;
+      tmpSeed._z0     = 0;
+      tmpSeed._errt0  = Sigma;
       
       thcc->push_back(tmpSeed);
     }
@@ -261,11 +260,6 @@ namespace mu2e {
     int iPeak(0);
     if (_debug>1) {
       std::cout<<"n Peaks "<<thcc->size()<<std::endl;
-      for (TrackSeedCollection::iterator tpeak_it=thcc->begin(); tpeak_it!=thcc->end(); ++tpeak_it ) {
-	std::cout<<"iPeak "<<std::endl;
-	//	std::cout<<*tpeak_it<<std::endl;
-	++iPeak;
-      }
     }
 
     event.put(std::move( thcc ));
@@ -276,185 +270,114 @@ namespace mu2e {
   void TimePeakFinder::endJob(){
   }
 
-  // calculate T0
+   // find the input data objects
+  bool TimePeakFinder::findData(const art::Event& evt){
+    _shcol  = 0;
+    _shfcol = 0;
+    _shpcol = 0;
 
-  void TimePeakFinder::calculateT0(double &T0, double &ErrT0, 
-				   double MeanTime  , double Sigma,
-				   double MinHitTime, double NominalWidth)  {
-          switch (_t0TypeCalculator) {
-                case 3:
-                {
-                        T0    = MeanTime;
-                        ErrT0 = Sigma;
-                        break;
-                }
-                case 2:
-                {
-                        TF1 calib("toCalib","pol4",-200,50);
-                        calib.SetParameters(0.577443,-0.00597028,4.23125e-06,3.33197e-07,1.17041e-09);
-                        T0    = MinHitTime - calib.GetX((MeanTime - MinHitTime)/NominalWidth);
-                        ErrT0 = 0.16*NominalWidth;
-                        break;
-                }
-                case 1:
-                {
-                        if ( ((MeanTime-MinHitTime)/NominalWidth)<0.8 ) {
-                                T0    = (MinHitTime + (MeanTime-1.1*Sigma))*0.5;
-                                ErrT0 = 0.092*Sigma;
-                        } else {
-                                T0    = MeanTime - 0.98*Sigma;
-                                ErrT0 = 0.23*Sigma;
-                        }
-                        break;
-                }
-                default:
-                {
-                        if ( ((MeanTime - MinHitTime)/NominalWidth)<0.8 ) {
-                                T0    = MinHitTime;
-                                ErrT0 = 0.1*Sigma;
-                        } else {
-                                T0    = MeanTime-0.98*Sigma;
-                                ErrT0 = 0.23*Sigma;
-                        }
-                        break;
-                }
-        }
-  }
-
-  // find the input data objects
-   bool TimePeakFinder::findData(const art::Event& evt){
-     _shcol  = 0;
-     _shfcol = 0;
-     _shpcol = 0;
-
-     if(evt.getByLabel(_shLabel,_strawhitsH))
-       _shcol = _strawhitsH.product();
-     art::Handle<mu2e::StrawHitPositionCollection> shposH;
-     if(evt.getByLabel(_shpLabel,shposH))
+    if(evt.getByLabel(_shLabel,_strawhitsH))
+      _shcol = _strawhitsH.product();
+    art::Handle<mu2e::StrawHitPositionCollection> shposH;
+    if(evt.getByLabel(_shpLabel,shposH))
        _shpcol = shposH.product();
      art::Handle<mu2e::StrawHitFlagCollection> shflagH;
      if(evt.getByLabel(_shfLabel,shflagH))
        _shfcol = shflagH.product();
 
-    if(_diag > 0){
-      art::Handle<StrawDigiMCCollection> mcdigisHandle;
-      if(evt.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle))
-	_mcdigis = mcdigisHandle.product();
-    }
-
      return _shcol != 0 && _shfcol != 0 && _shpcol != 0;
    }
 
-   void TimePeakFinder::findTimePeaks() {
+   void TimePeakFinder::findPeaks(TimeClusterCollection* tpeaks) {
      TH1F timespec("timespec","time spectrum",_nbins,_tmin,_tmax);
-     // loop over straws hits and fill time spectrum plot for tight hits
+     // loop over straws hits and fill time spectrum plot for selected hits
      unsigned nstrs = _shcol->size();
      for(unsigned istr=0; istr<nstrs;++istr){
-       if(_flags->at(istr).hasAllProperties(_hsel) && _flags->at(istr).hasAnyProperty(_psel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
+       if(goodHit(_shfcol->at(istr)) {
          double time = _shcol->at(istr).time();
          timespec.Fill(time);
        }
      }
      std::vector<Float_t> xpeaks,ypeaks;
-     findTimePeaks(timespec,xpeaks,ypeaks);
+     findPeaks(timespec,xpeaks,ypeaks);
      unsigned np = xpeaks.size();
      // Loop over peaks, looking only at those with a minimum peak value
      for (unsigned ip=0; ip<np; ++ip) {
        Float_t xp = xpeaks[ip];
        Float_t yp = ypeaks[ip];
-       TrkTimePeak tpeak(xp,yp);
        if(yp > _ymin){
+       // time cluster
+	 TimeCluster tpeak;
+	// initial t0 is the peak position
+	 tpeak._t0 = xp;
      // associate all hits in the time window with this peak
          for(size_t istr=0; istr<nstrs;++istr){
-           if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
+           if(goodHit(_shfcol->at(istr))){
              double time = _shcol->at(istr).time();
              if(fabs(time-xp) < _maxdt){
-               tpeak._trkptrs.push_back(istr);
+               tpeak._strawHitIdxs.push_back(hitIndex(istr));
              }
            }
          }
-         // if requested, clean the peaks
-         if(_cleanpeaks)cleanTimePeak(tpeak);
-         if(tpeak._trkptrs.size() >= _minnhits)_tpeaks.push_back(tpeak);
+	 // initialize the peak information
+	 initPeak(tpeak);
+	 // refine the peak information
+         refinePeak(tpeak);
+	 // final check on peak size
+         if(tpeak._strawHitIdxs.size() >= _minnhits)tpeaks.push_back(tpeak);
        }
      }
-     // sort the peaks so that the largest comes first
-     sort(_tpeaks.begin(),_tpeaks.end(),greater<TrkTimePeak>());
-     // if requested, fill diagnostics
-    if(_diag>1 && _mcdigis != 0){
-      for(size_t ip=0;ip<_tpeaks.size();++ip){
-	TrkTimePeak const& tp = _tpeaks[ip];
-	fillPeakDiag(ip,tp);
-      }
-    }
+     // sort the peaks so that the largest comes first.  Not sure if this is really necessary
+     static PeakSort psort;
+     sort(tpeaks.begin(),tpeaks.end(),psort);
    }
 
-   void TimePeakFinder::createTimePeak() {
-     // find the median time
-     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > tacc;
-     unsigned nstrs = _shcol->size();
+
+   void TimePeakFinder::initPeak(TimeCluster const& tpeak) {
+     // use medians to initialize robustly
+     accumulator_set<double, stats<tag::median(with_p_square_quantile) >, stats<tag::max>, stats<tag::min> > tacc;
+     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > pacc;
+     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > racc;
+     accumulator_set<double, stats<tag::median(with_p_square_quantile) > > zacc;
+     unsigned nstrs = tpeak._strawHitIdxs.size();
      for(unsigned istr=0; istr<nstrs;++istr){
-       if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
-         double time = _shcol->at(istr).time();
+       unsigned ish = tpeak._strawHitIdxs[istr]._index;
+       if(goodHit(_shfcol->at(ish))){
+         double time = _shcol->at(ish).time();
+         double rho = _shpcol->at(ish).pos().perp();
+         double phi = _shpcol->at(ish).pos().phi();
+         double dphi = deltaPhi(phi,pphi);
          tacc(time);
+         pacc(phi);
+         racc(rho);
+	 zacc(_shpcol->at(ish).pos().z());
        }
      }
-     unsigned np = boost::accumulators::extract::count(tacc);
-     if(np >= _minnhits){
-       double mtime  = median(tacc);
- // create a time peak from the full subset of selected hits
-       TrkTimePeak tpeak(mtime,(double)nstrs);
-       for(unsigned istr=0; istr<nstrs;++istr){
-         if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
-           tpeak._trkptrs.push_back(istr);
-         }
-       }
-       _tpeaks.push_back(tpeak);
-     }
+     // set peak info
+     static double invsqrt12(1.0/sqrt(12.0));
+     tpeak._t0 = median(tacc);
+     tpeak._t0err = (max(tacc)-min(tacc))*invsqrt12/sqrt(count(tacc));
+     double rho = median(racc);
+     double phi = median(pacc);
+    // use the rho and phi to define a position. 
+     tpeak._pos = Hep3Vector(rho*cos(phi),rho*sin(phi),median(zacc));
    }
 
-
-   void TimePeakFinder::cleanTimePeak(TrkTimePeak& tpeak) {
-     static const double twopi(2*M_PI);
-     // iteratively filter outliers
+   void TimePeakFinder::refinePeak(TimeCluster& tpeak) {
+     // iteratively filter the worst outlier
      double worstmva(100.0);
-     double pphi(1000.0);
-     double ptime(-1000.0);
+     double pphi(tpeak._pos.phi());
+     double ptime(tpeak._t0);
      do{
-   // first, compute the average phi and range.  Take care for wrapping
-       accumulator_set<double, stats<tag::mean > > facc;
-       accumulator_set<double, stats<tag::mean > > tacc;
-       for(size_t ips=0;ips<tpeak._trkptrs.size();++ips){
-         unsigned ish = tpeak._trkptrs[ips]._index;
-         double time = _shcol->at(ish).time();
-         tacc(time);
-         double phi = _shpcol->at(ish).pos().phi();
-         if(extract_result<tag::count>(facc) > 0){
-           double dphi = phi - extract_result<tag::mean>(facc);
-           if(dphi > M_PI){
-             phi -= twopi;
-           } else if(dphi < -M_PI){
-             phi += twopi;
-           }
-         }
-         facc(phi);
-       }
-       pphi = extract_result<tag::mean>(facc);
-       ptime = extract_result<tag::mean>(tacc);
- // find the least signal-like hit
+ // Use the MVA to find the least signal-like hit
        size_t iworst =0;
        worstmva = 100.0;
-       for(size_t ips=0;ips<tpeak._trkptrs.size();++ips){
-         unsigned ish = tpeak._trkptrs[ips]._index;
+       for(size_t ips=0;ips<tpeak._strawHitIdxs.size();++ips){
+         unsigned ish = tpeak._strawHitIdxs[ips]._index;
          double dt = _shcol->at(ish).time() - ptime;
          double rho = _shpcol->at(ish).pos().perp();
          double phi = _shpcol->at(ish).pos().phi();
-         double dphi = phi - pphi;
-         if(dphi > M_PI){
-           dphi -= twopi;
-         } else if(dphi < -M_PI){
-           dphi += twopi;
-         }
+         double dphi = deltaPhi(phi,pphi);
          // compute MVA
          _pmva._dt = dt;
          _pmva._dphi = dphi;
@@ -464,50 +387,67 @@ namespace mu2e {
            worstmva = mvaout;
            iworst = ips;
          }
+	 // accumulate new averages
+	 tacc(time);
+         facc(phi);
        }
        // remove the worst hit
        if(worstmva < _minpeakmva){
-         std::swap(tpeak._trkptrs[iworst],tpeak._trkptrs.back());
-         tpeak._trkptrs.pop_back();
+         std::swap(tpeak._strawHitIdxs[iworst],tpeak._strawHitIdxs.back());
+         tpeak._strawHitIdxs.pop_back();
        }
-     } while(tpeak._trkptrs.size() >= _minnhits && worstmva < _minpeakmva);
+   // re-compute the average phi and range
+       accumulator_set<double, stats<tag::mean > > facc;
+       accumulator_set<double, stats<tag::mean > > tacc;
+       for(size_t ips=0;ips<tpeak._strawHitIdxs.size();++ips){
+         unsigned ish = tpeak._strawHitIdxs[ips]._index;
+         double dt = _shcol->at(ish).time() - ptime;
+         double phi = _shpcol->at(ish).pos().phi();
+         double dphi = deltaPhi(phi,pphi);
+         tacc(time);
+         facc(phi);
+       }
+       pphi = extract_result<tag::mean>(facc);
+       ptime = extract_result<tag::mean>(tacc);
+     } while(tpeak._strawHitIdxs.size() >= _minnhits && worstmva < _minpeakmva);
  // final pass: hard cut on dt and dphi
      vector<size_t> toremove;
      accumulator_set<double, stats<tag::mean > > facc;
-     accumulator_set<double, stats<tag::mean > > tacc;
-     for(size_t ips=0;ips<tpeak._trkptrs.size();++ips){
-       unsigned ish = tpeak._trkptrs[ips]._index;
+     accumulator_set<double, stats<tag::mean >, stats<tag::error_of<tag::mean> > > tacc;
+     accumulator_set<double, stats<tag::mean > > racc;
+     accumulator_set<double, stats<tag::mean > > zacc;
+     for(size_t ips=0;ips<tpeak._strawHitIdxs.size();++ips){
+       unsigned ish = tpeak._strawHitIdxs[ips]._index;
        double dt = _shcol->at(ish).time() - ptime;
        double phi = _shpcol->at(ish).pos().phi();
-       double dphi = phi - pphi;
-       if(dphi > M_PI){
-         dphi -= twopi;
-         phi -= twopi;
-       } else if(dphi < -M_PI){
-         dphi += twopi;
-         phi += twopi;
-       }
+       double rho = _shpcol->at(ish).pos().perp();
+       double dphi = deltaPhi(phi,pphi);
        if(fabs(dt) < _maxpeakdt && fabs(dphi) < _maxpeakdphi){
          tacc(_shcol->at(ish).time());
          facc(phi);
+	 racc(rho);
+	 zacc(_shpcol->at(ish).pos().z());
        } else {
-         toremove.push_back(ips);
+	 toremove.push_back(ips);
        }
      }
      // actually remove the hits; must start from the back
      std::sort(toremove.begin(),toremove.end(),std::greater<size_t>());
      for(auto irm=toremove.begin();irm!=toremove.end();++irm){
-       std::swap(tpeak._trkptrs[*irm],tpeak._trkptrs.back());
-       tpeak._trkptrs.pop_back();
+       std::swap(tpeak._strawHitIdxs[*irm],tpeak._strawHitIdxs.back());
+       tpeak._strawHitIdxs.pop_back();
      }
      // update peak properties
+     tpeak._t0 = extract_result<tag::mean>(tacc);
+     tpeak._t0err = error_of<tag::mean>(tacc);
      pphi = extract_result<tag::mean>(facc);
-     ptime = extract_result<tag::mean>(tacc);
-     tpeak._tpeak = ptime;
-     tpeak._phi = pphi;
+     double prho = extract_result<tag::mean>(racc);
+     double zpos = extract_result<tag::mean>(zacc);
+// update position
+     tpeak._pos = CLHEP::Hep3Vector(prho*cos(pphi),prho*sin(pphi),zpos);
    }
 
-   void TimePeakFinder::findTimePeaks( TH1F const& tspect,std::vector<Float_t>& xpeak,std::vector<Float_t>& ypeak) {
+   void TimePeakFinder::findPeaks( TH1F const& tspect,std::vector<Float_t>& xpeak,std::vector<Float_t>& ypeak) {
      int ibin(1); // root starts bin numbers at 1
      int nbins = tspect.GetNbinsX();
      while(ibin < nbins+1){
@@ -542,192 +482,24 @@ namespace mu2e {
      }
    }
 
-  void TimePeakFinder::fillPeakDiag(size_t ip,TrkTimePeak const& tp) {
-    _tpeventid = _iev;
-    _peakid = ip;
-    _pmax = tp._peakmax;
-    _nphits = tp._trkptrs.size();
-    _ncphits = 0;
-    _pdtimemax = 0.0;
-    _pdphimax = 0.0;
-    _cdtimemax = 0.0;
-    _cdphimax = 0.0;
-    _tphinfo.clear();
-    accumulator_set<double, stats<tag::mean > > facc;
-    accumulator_set<double, stats<tag::mean > > tacc;
-    for(size_t iph=0;iph<tp._trkptrs.size();++iph){
-      unsigned ish = tp._trkptrs[iph]._index;
-      StrawHit const& sh = _shcol->at(ish);
-      StrawHitPosition const& shp = _shpcol->at(ish);
-      double time = sh.time();
-      tacc(time);
-      CLHEP::Hep3Vector const& pos = shp.pos();
-      double phi = pos.phi();
-      if(extract_result<tag::count>(facc) > 0){
-	double dphi = phi - extract_result<tag::mean>(facc);
-	if(dphi > M_PI){
-	  phi -= 2*M_PI;
-	} else if(dphi < -M_PI){
-	  phi += 2*M_PI;
-	}
-      }
-      facc(phi);
+  // force dphi with reference to be in the range [-pi,pi]
+  double TimePeakFinder::deltaPhi(double& phi, double const& refphi) {
+    double dphi = phi - refphi;
+    const double twopi = 2*M_PI;
+    while(dphi > M_PI){
+      dphi -= twopi;
+      phi -= twopi;
     }
-    _pphi =extract_result<tag::mean>(facc);
-    _ptime =extract_result<tag::mean>(tacc);
-    for(size_t iph=0;iph<tp._trkptrs.size();++iph){
-      unsigned ish = tp._trkptrs[iph]._index;
-      StrawHitPosition const& shp = _shpcol->at(ish);
-      CLHEP::Hep3Vector const& pos = shp.pos();
-      double phi = pos.phi();
-      double dphi = phi - _pphi;
-      if(dphi > M_PI)
-	dphi -= 2*M_PI;
-      else if(dphi < -M_PI)
-	dphi += 2*M_PI;
-      if(fabs(dphi) > _pdphimax)_pdphimax = fabs(dphi);
-
-      double dt = _shcol->at(ish).time() - _ptime;
-      if(fabs(dt) > _pdtimemax)_pdtimemax=fabs(dt);
-
-      StrawDigiMC const& mcdigi = _mcdigis->at(ish);
-      // use TDC channel 0 to define the MC match
-      StrawDigi::TDCChannel itdc = StrawDigi::zero;
-      if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
-      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
-      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-      int gid(-1);
-      if(spp->genParticle().isNonnull())
-	gid = spp->genParticle()->generatorId().id();
-
-      bool conversion = (spp->pdgId() == 11 && gid == 2 && spmcp->momentum().mag()>90.0);
-
-      if(conversion){
-	_ncphits++;
-	if(fabs(dt) > _cdtimemax)_cdtimemax = fabs(dt);
-      }
-      if(conversion && dphi > _cdphimax)_cdphimax = dphi;
-
-      _pmva._dt = dt;
-      _pmva._dphi = dphi;
-      _pmva._rho = pos.perp();
-      double mvaout = _peakMVA.evalMVA(_pmva._pars);
-
-      TimePeakHitInfo tph;
-      tph._dt = dt;
-      tph._dphi = dphi;
-      tph._rho = pos.perp();
-      tph._mva = mvaout;
-      tph._mcpdg = spp->pdgId();
-      tph._mcgen = gid;
-      tph._mcproc = spp->creationCode();
-      _tphinfo.push_back(tph);
+    while(dphi < -M_PI){
+      dphi += twopi;
+      phi += twopi;
     }
-    _tpdiag->Fill();
-//    if(_ncphits > 0.5*_nchits)_icepeak = ip;
+    return dphi;
   }
 
-  void TimePeakFinder::fillTimeDiag() {
-    art::ServiceHandle<art::TFileService> tfs;
-    TH1F *ctsp, *rtsp, *ttsp, *ltsp, *tdtsp, *ptsp;
-
-    char rsname[100];
-    char csname[100];
-    char tsname[100];
-    char lsname[100];
-    char tdsname[100];
-    char tpsname[100];
-    snprintf(rsname,100,"rawtspectrum%i",_iev);
-    snprintf(csname,100,"convtspectrum%i",_iev);
-    snprintf(tsname,100,"tighttspectrum%i",_iev);
-    snprintf(lsname,100,"loosetspectrum%i",_iev);
-    snprintf(tdsname,100,"tightnodeltatspectrum%i",_iev);
-    snprintf(tpsname,100,"protontspectrum%i",_iev);
-    ttsp = tfs->make<TH1F>(tsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    ttsp->SetLineColor(kCyan);
-    ltsp = tfs->make<TH1F>(lsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    ltsp->SetLineColor(kGreen);
-    rtsp = tfs->make<TH1F>(rsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    rtsp->SetLineColor(kBlue);
-    ctsp = tfs->make<TH1F>(csname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    ctsp->SetLineColor(kRed);
-    ctsp->SetFillColor(kRed);
-    ptsp = tfs->make<TH1F>(tpsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    ptsp->SetLineColor(kBlack);
-    ptsp->SetFillColor(kBlack);
-    tdtsp = tfs->make<TH1F>(tdsname,"time spectrum;nsec",_nbins,_tmin,_tmax);
-    tdtsp->SetLineColor(kOrange);
-
-    unsigned nstrs = _shcol->size();
-    for(unsigned istr=0; istr<nstrs;++istr){
-      double time = _shcol->at(istr).time();
-      bool conversion(false);
-      bool proton(false);
-      // summarize the MC truth for this strawhit
-      if(_mcdigis != 0) {
-	StrawDigiMC const& mcdigi = _mcdigis->at(istr);
-	// use TDC channel 0 to define the MC match
-	StrawDigi::TDCChannel itdc = StrawDigi::zero;
-	if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
-	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
-	art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-	int gid(-1);
-	if(spp->genParticle().isNonnull())
-	  gid = spp->genParticle()->generatorId().id();
-
-	conversion = (spp->pdgId() == 11 && gid == 2 && spmcp->momentum().mag()>90.0);
-	proton = spp->pdgId()==2212;
-      }
-      // fill plots
-      rtsp->Fill(time);
-      if(_flags->at(istr).hasAllProperties(_hsel)){
-	ttsp->Fill(time);
-      }
-      if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
-	tdtsp->Fill(time);
-      }
-      if(_flags->at(istr).hasAllProperties(_hsel) && !_flags->at(istr).hasAnyProperty(_hbkg)){
-	ltsp->Fill(time);
-	if(proton)
-	  ptsp->Fill(time);
-      }
-      if(conversion)
-	ctsp->Fill(time);
-
-    }
-    // plot time peaks
-    TList* flist = tdtsp->GetListOfFunctions();
-    for(auto ipeak=_tpeaks.begin();ipeak!=_tpeaks.end();++ipeak){
-      TMarker* smark = new TMarker(ipeak->_tpeak,ipeak->_peakmax,23);
-      smark->SetMarkerColor(kRed);
-      smark->SetMarkerSize(1.5);
-      flist->Add(smark);
-    }
+  bool TimePeakFinder::goodHit(StrawHitFlag const& flag) const {
+    return flag.hasAllProperties(_hsel) && flag.hasAnyProperty(_psel) && !flag.hasAnyProperty(_hbkg);
   }
-
-  void TimePeakFinder::createDiagnostics() {
-    art::ServiceHandle<art::TFileService> tfs;
-   // time peak diagnostics
-    _tpdiag=tfs->make<TTree>("tpdiag","time peak diagnostics");
-    _tpdiag->Branch("eventid",&_tpeventid,"eventid/I");
-    _tpdiag->Branch("peakid",&_peakid,"peakid/I");
-    _tpdiag->Branch("pmax",&_pmax,"pmax/I");
-    _tpdiag->Branch("nphits",&_nphits,"nphits/I");
-    _tpdiag->Branch("ncphits",&_ncphits,"ncphits/I");
-    _tpdiag->Branch("nchits",&_nchits,"nchits/I");
-    _tpdiag->Branch("ptime",&_ptime,"ptime/F");
-    _tpdiag->Branch("ctime",&_ctime,"ctime/F");
-    _tpdiag->Branch("pdtimemax",&_pdtimemax,"pdtimemax/F");
-    _tpdiag->Branch("cdtimemax",&_cdtimemax,"cdtimemax/F");
-    _tpdiag->Branch("pphi",&_pphi,"pphi/F");
-    _tpdiag->Branch("cphi",&_cphi,"cphi/F");
-    _tpdiag->Branch("cphirange",&_cphirange,"cphirange/F");
-    _tpdiag->Branch("pdphimax",&_pdphimax,"pdphimax/F");
-    _tpdiag->Branch("cdphimax",&_cdphimax,"cdphimax/F");
-    _tpdiag->Branch("tphinfo",&_tphinfo);
- }
-
-
 
 }  // end namespace mu2e
 

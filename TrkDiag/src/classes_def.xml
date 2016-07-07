@@ -5,4 +5,6 @@
  <class name="std::vector<mu2e::TrkStrawHitInfo>" />
  <class name="mu2e::TrkStrawMatInfo" />
  <class name="std::vector<mu2e::TrkStrawMatInfo>" />
+ <class name="mu2e::TimePeakHitInfo" />
+ <class name="std::vector<mu2e::TimePeakHitInfo>" />
 </lcgdict>
