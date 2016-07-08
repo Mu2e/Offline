@@ -1,6 +1,17 @@
-Still under construction
-
            Release notes for Mu2e Offline software, v5_7_7
+
+10) 8 July, 2016: kutschke
+   Update the satellite release scripts.
+     - Refactor common code into bash functions maintained
+       in bin/satelliteFuncs.
+     - Never delete or move the out directory if it already
+       exists.
+     - Deal with more corner cases.
+
+9) 8 July, 2016: kutschke
+   Update genReco.fcl to use the most recent ReadKalFits
+   configuration; enable the addition of the calorimeter related
+   parts of the ReadKalFits TTree.
 
 8) 01 July 2016:  dnbrow01
    More removal of unneeded #includes from Geometry-related files, per
