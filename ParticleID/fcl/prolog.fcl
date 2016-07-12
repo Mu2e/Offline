@@ -54,12 +54,12 @@ ParticleID: { @table::ParticleID
 	AvikPIDNewDem : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDem }
 	AvikPIDNewDmm : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDmm }
 	AvikPIDNewDep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDep }
-	AvikPIDNewDep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDmp }
+	AvikPIDNewDmp : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDmp }
 
 	AvikPIDNewUem : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUem }
 	AvikPIDNewUmm : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUmm }
 	AvikPIDNewUep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUep }
-	AvikPIDNewUep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUmp }
+	AvikPIDNewUmp : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUmp }
     }
 }
 
