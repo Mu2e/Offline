@@ -2,6 +2,7 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 # track extrapolation to the calorimeter
+# TrackCaloMatching.DtOffset is defined in fcl/standardProducers.fcl
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 
