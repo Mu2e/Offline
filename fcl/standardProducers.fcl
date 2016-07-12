@@ -1,6 +1,11 @@
 # -*- mode: tcl -*-
 
 BEGIN_PROLOG
+#------------------------------------------------------------------------------
+# unfortunately, in the present scheme can't do it differently : 
+# CalPatRec needs DtOffset as well and the DtOffset declaration 
+# has to go before the CalPatRec prolog
+#------------------------------------------------------------------------------
 TrackCaloMatching : { 
     DtOffset : 2.9  # track-cluster offset, ns v5_7_6 # 1.2  # 1.4   
 }
