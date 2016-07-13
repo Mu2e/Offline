@@ -37,19 +37,18 @@ namespace mu2e
     Float_t _radlen;
     Float_t _firstflt, _lastflt;
     Float_t _startvalid, _endvalid;
-    Float_t _seedmom;
     Float_t _trkqual;
     TrkFitInfo _ent; // fit information at tracker entrance
     TrkInfo() { reset(); }
     void reset() { 
       _fitstatus = -1000;
       _nhits = _nactive = _ndouble = _ndactive = _nnullambig = _nmat = _nmatactive = _nbend = _ndof = -1;
-      _seedmom = _t0 = _t0err = _chisq = _fitcon = _radlen = _firstflt = _lastflt = -1.0;
+      _t0 = _t0err = _chisq = _fitcon = _radlen = _firstflt = _lastflt = -1.0;
       _trkqual=-1000.0;
       _ent.reset();
     }
     static std::string const& leafnames() { static const std::string leaves =
-    std::string("status/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:con/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F:seedmom/F:trkqual/F:")+TrkFitInfo::leafnames();
+    std::string("status/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:con/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F:trkqual/F:")+TrkFitInfo::leafnames();
      return leaves;
     }
   };

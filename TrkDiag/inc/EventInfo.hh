@@ -18,6 +18,10 @@ namespace mu2e
 	std::string("nprotons/I");
 	return leaves;
     }
+    void reset() {
+      _eventid = _runid = _subrunid = _nprotons = 0;
+      _evtwt = _beamwt = _genwt = 1.0;
+    }
   };
 }
 #endif

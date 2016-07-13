@@ -216,8 +216,8 @@ namespace mu2e
       trkinfo._nmatactive = nmatactive;
       trkinfo._nbend = nbend;
 
-      Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->kalContext().bField(),0.0);
-      trkinfo._seedmom = seedmom.mag();
+//      Hep3Vector seedmom = TrkMomCalculator::vecMom(*(krep->seed()),krep->kalContext().bField(),0.0);
+// trkinfo._seedmom = seedmom.mag();
       // count hits
       countHits(krep,trkinfo);
       // get the fit at the entrance to the tracker

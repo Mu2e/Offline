@@ -35,6 +35,8 @@
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "TrkDiag/inc/KalDiag.hh"
+#include "TrkDiag/inc/TrkComp.hh"
+#include "TrkDiag/inc/TrkCount.hh"
 #include "TrkDiag/inc/TrkCaloDiag.hh"
 #include "TrkDiag/inc/EventInfo.hh"
 #include "TrkDiag/inc/TrkHitShare.hh"
@@ -68,7 +70,9 @@ namespace mu2e {
   private:
 
     // track collections.  Downstream electrons are signal candidates,
-    // upstream electrons and downstream muons are used to identify background events
+    // upstream electrons are used to identify cosmic background events
+    // downstream muons are used in PID.  PID information should be analyzed
+    // in a dedicated module FIXME!
     art::InputTag _demtag;
     art::InputTag _uemtag;
     art::InputTag _dmmtag;
@@ -77,17 +81,23 @@ namespace mu2e {
     art::InputTag _beamWttag;
     art::InputTag _PBItag;
     vector<art::InputTag> _evtWttags;
+    // analysis options
+    bool _fillmc, _diag;
+    // analysis parameters
+    double _minReflectTime; // minimum time for a track to reflect in the gradient
     // Kalman fit diagnostics
     KalDiag _kdiag;
+    // track comparator
+    TrkComp _tcntomp;
     // calorimeter diagnostics
     TrkCaloDiag _cdiag;
     TrkCaloInfo _demc;
-    // options
-    bool _fillmc, _diag;
     // main TTree
     TTree* _trkana;
     // general event info branch
     EventInfo _einfo;
+    // track counting
+    TrkCount _tcnt;
     // track branches
     TrkInfo _demti, _uemti, _dmmti;
     // detailed info branches for the signal candidate
@@ -107,6 +117,8 @@ namespace mu2e {
     void findBestClusterMatch(TrackClusterMatchCollection const& tcmc,
 	const KalRep* krep, 
 	TrackClusterMatchCollection::const_iterator& itcm);
+    const KalRep* findUpstreamTrack(KalRepPtrCollection const& kcol,const KalRep* demK);
+    const KalRep* findMuonTrack(KalRepPtrCollection const& kcol,const KalRep* demK);
     // define signal direction and particle
     static TrkFitDirection _sdir;
     static TrkParticle _spart;
@@ -124,10 +136,11 @@ namespace mu2e {
     _beamWttag( pset.get<art::InputTag>("beamWeightTag",art::InputTag()) ),
     _PBItag( pset.get<art::InputTag>("ProtonBunchIntensityTag",art::InputTag("ProtonBunchIntensitySummarizer")) ),
     _evtWttags( pset.get<std::vector<art::InputTag>>("eventWeightTags",std::vector<art::InputTag>() ) ),
-    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
-    _cdiag(_spart,_sdir,pset.get<fhicl::ParameterSet>("TrkCaloDiag",fhicl::ParameterSet())),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _diag(pset.get<int>("diagLevel",1)),
+    _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
+    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
+    _cdiag(_spart,_sdir,pset.get<fhicl::ParameterSet>("TrkCaloDiag",fhicl::ParameterSet())),
     _trkana(0)
   {
   }
@@ -138,6 +151,8 @@ namespace mu2e {
     _trkana=tfs->make<TTree>("trkana","track analysis");
 // add event info branch
     _trkana->Branch("evtinfo",&_einfo,EventInfo::leafnames().c_str());
+// track counting branch
+    _trkana->Branch("tcnt",&_tcnt,TrkCount::leafnames().c_str());
 // add primary track (downstream electron) branch
     _trkana->Branch("dem",&_demti,TrkInfo::leafnames().c_str());
 // optionally add detailed branches
@@ -157,20 +172,27 @@ namespace mu2e {
       _trkana->Branch("demmcent",&_demmcent,TrkInfoMCStep::leafnames().c_str());
       if(_diag > 1)_trkana->Branch("demtshmc",&_demtshmc);
     }
+
   }
 
   void TrackAnalysis::analyze(const art::Event& event) {
-  // reset
+    // reset
     resetBranches();
-  // setup KalDiag.
+    // setup KalDiag.
     if(_fillmc)_kdiag.findMCData(event);
-// fill basic event information
+    // fill basic event information
     fillEventInfo(event);
-// find track collections
-    // Get handle to tracks collection
+    // Get handle to downstream electron track collection
     art::Handle<KalRepPtrCollection> demH;
     event.getByLabel(_demtag,demH);
     KalRepPtrCollection const& demC = *demH;
+    // same for downstream muons and upstream electrons
+    art::Handle<KalRepPtrCollection> uemH;
+    event.getByLabel(_uemtag,uemH);
+    KalRepPtrCollection const& uemC = *uemH;
+    art::Handle<KalRepPtrCollection> dmmH;
+    event.getByLabel(_dmmtag,dmmH);
+    KalRepPtrCollection const& dmmC = *dmmH;
     // Track-cluster matching
     _cdiag.findData(event);
     // find the best track
@@ -186,6 +208,16 @@ namespace mu2e {
 	if(itcm != tcmc.end())
 	  _cdiag.fillCaloInfo(*itcm,_demc);
       }
+      // look for a matching upstream electron track
+      const KalRep* uemK = findUpstreamTrack(uemC,demK);
+      if(uemK != 0){
+	_kdiag.fillTrkInfo(uemK,_uemti);
+      }
+      // look for a matching muon track
+      const KalRep* dmmK = findMuonTrack(dmmC,demK);
+      if(dmmK != 0){
+	_kdiag.fillTrkInfo(dmmK,_dmmti);
+      }
     }
     // fill mC info associated with this track
     if(_fillmc) fillMCInfo(demK);
@@ -194,14 +226,63 @@ namespace mu2e {
   }
 
   const KalRep* TrackAnalysis::findBestTrack(KalRepPtrCollection const& kcol) {
+    _tcnt._ndem = kcol.size();
 // if there aren't any tracks return 0
-    const KalRep* krep(0);
-    if(kcol.size() > 0){
-// for now return the 1st track.  This should pick out the most signal-like track FIXME!!
-// There should also be information stored about overlaps in this list
-      krep = kcol.front().get();
+    const KalRep* demK(0);
+    for(auto kptr : kcol ){
+      const KalRep* krep = kptr.get();
+      if(demK == 0) {
+	demK = krep;
+      } else {
+// for now pick the highest-mometum track.
+// This should pick out the most signal-like, best quailty track FIXME!!
+	if(krep->momentum(0.0).mag() > demK->momentum(0.0).mag()){
+// compute the hit overlap fraction
+	  _tcnt._ndemo  = _tcntomp.nOverlap(krep,demK);
+	  demK = krep;
+	}
+      }
     }
-    return krep;
+    return demK;
+  }
+
+  const KalRep* TrackAnalysis::findUpstreamTrack(KalRepPtrCollection const& kcol,const KalRep* demK) {
+    _tcnt._nuem = kcol.size();
+    const KalRep* uemK(0);
+// loop over upstream tracks and pick the best one (closest to momentum) that's earlier than the downstream track
+    for(auto kptr : kcol) {
+      const KalRep* krep = kptr.get();
+      if(krep->t0().t0() < demK->t0().t0() - _minReflectTime){
+	if(uemK == 0){
+	  uemK = krep;
+	} else {
+// choose the upstream track whose parameters best match the downstream track.
+// Currently compare momentum at the tracker center, this should be done at the tracker entrance
+// and should compare more parameters FIXME!
+	  double demmom = demK->momentum(0.0).mag();
+	  if( fabs(krep->momentum(0.0).mag()-demmom) < 
+	      fabs(uemK->momentum(0.0).mag()-demmom))
+	    uemK = krep;
+	}
+      }
+    }
+    return uemK;
+  }
+
+  const KalRep* TrackAnalysis::findMuonTrack(KalRepPtrCollection const& kcol,const KalRep* demK) {
+    _tcnt._ndmm = kcol.size();
+    const KalRep* dmmK(0);
+// loop over muon tracks and pick the one with the largest hit overlap
+    unsigned maxnover(0);
+    for(auto kptr : kcol) {
+      const KalRep* krep = kptr.get();
+      unsigned nover = _tcntomp.nOverlap(krep,demK);
+      if(nover > maxnover){
+	maxnover = nover;
+	dmmK = krep;
+      }
+    }
+    return dmmK;
   }
 
   void TrackAnalysis::fillMCInfo(const KalRep* demK) {
@@ -263,10 +344,12 @@ namespace mu2e {
   void TrackAnalysis::findBestClusterMatch(TrackClusterMatchCollection const& tcmc,
   const KalRep* krep, 
   TrackClusterMatchCollection::const_iterator& itcm) {
+  _tcnt._ndemc = 0;
   // for now pick highest-energy cluster.  This should match to the track or sum, FIXME!!
     double emin(-1.0);
     for( auto jtcm= tcmc.begin(); jtcm != tcmc.end(); ++jtcm ) {
       if(jtcm->textrapol()->trk().get() == krep){
+	++_tcnt._ndemc; // count number of matched clusters
 	if(jtcm->caloCluster()->energyDep() > emin){
 	  itcm = jtcm;
 	  emin = jtcm->caloCluster()->energyDep(); 
@@ -276,6 +359,9 @@ namespace mu2e {
   }
 
   void TrackAnalysis::resetBranches() {
+  // reset structs
+    _einfo.reset();
+    _tcnt.reset();
     _demti.reset();
     _uemti.reset();
     _dmmti.reset();
