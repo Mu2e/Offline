@@ -590,32 +590,33 @@ namespace mu2e
   }
  
   TTree*
-  KalDiag::createTrkDiag(TTree* trkdiag,const char* branchprefix){
+  KalDiag::createTrkDiag(){
+    art::ServiceHandle<art::TFileService> tfs;
+    _trkdiag=tfs->make<TTree>("trkdiag","trk diagnostics");
+    addBranches(_trkdiag);
+    return _trkdiag;
+  }
+
+  void KalDiag::addBranches(TTree* trkdiag,const char* branchprefix){
     string brapre(branchprefix);
-    if(trkdiag == 0){
-      art::ServiceHandle<art::TFileService> tfs;
-      _trkdiag=tfs->make<TTree>("trkdiag","trk diagnostics");
-    } else 
-      _trkdiag = trkdiag;
       // general track info
-      _trkdiag->Branch((brapre+"fit").c_str(),&_trkinfo,TrkInfo::leafnames().c_str());
+      trkdiag->Branch((brapre+"fit").c_str(),&_trkinfo,TrkInfo::leafnames().c_str());
 // basic MC info
     if(_fillmc){
       // general MC info
-      _trkdiag->Branch((brapre+"mc").c_str(),&_mcinfo,TrkInfoMC::leafnames().c_str());
+      trkdiag->Branch((brapre+"mc").c_str(),&_mcinfo,TrkInfoMC::leafnames().c_str());
       // mc info at generation and several spots in the tracker
-      _trkdiag->Branch((brapre+"mcgen").c_str(),&_mcgeninfo,TrkInfoMCStep::leafnames().c_str());
-      _trkdiag->Branch((brapre+"mcent").c_str(),&_mcentinfo,TrkInfoMCStep::leafnames().c_str());
-      _trkdiag->Branch((brapre+"mcmid").c_str(),&_mcmidinfo,TrkInfoMCStep::leafnames().c_str());
-      _trkdiag->Branch((brapre+"mcxit").c_str(),&_mcxitinfo,TrkInfoMCStep::leafnames().c_str());
+      trkdiag->Branch((brapre+"mcgen").c_str(),&_mcgeninfo,TrkInfoMCStep::leafnames().c_str());
+      trkdiag->Branch((brapre+"mcent").c_str(),&_mcentinfo,TrkInfoMCStep::leafnames().c_str());
+      trkdiag->Branch((brapre+"mcmid").c_str(),&_mcmidinfo,TrkInfoMCStep::leafnames().c_str());
+      trkdiag->Branch((brapre+"mcxit").c_str(),&_mcxitinfo,TrkInfoMCStep::leafnames().c_str());
     }
 // track hit info    
     if(_diag > 1){
-      _trkdiag->Branch((brapre+"tsh").c_str(),&_tshinfo);
-      if(_fillmc)_trkdiag->Branch((brapre+"tshmc").c_str(),&_tshinfomc);
-      _trkdiag->Branch((brapre+"tm").c_str(),&_tminfo);
+      trkdiag->Branch((brapre+"tsh").c_str(),&_tshinfo);
+      if(_fillmc)trkdiag->Branch((brapre+"tshmc").c_str(),&_tshinfomc);
+      trkdiag->Branch((brapre+"tm").c_str(),&_tminfo);
     }
-    return _trkdiag;
   }
 
   // find the MC truth objects in the event and set the local cache

@@ -39,7 +39,7 @@ namespace mu2e {
     void fillCaloInfo(TrackClusterMatch const& tcm, TrkCaloInfo& tcinfo);
     // add the calo info branches to the tree
     void addBranches(TTree* tree,const char* suffix="");
- 
+    art::Handle<TrackClusterMatchCollection> const& caloMatchHandle() { return _caloMatchHandle; }
     private:
 // calorimeter matching labels 
     std::string _caloMatchModule;

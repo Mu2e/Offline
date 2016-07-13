@@ -1,5 +1,3 @@
-//    Float_t _du; // track-cluster match separation in 'u' direction
-
 // Read the tracks added to the event by KalFitTest_module.
 //
 // $Id: ReadKalFits_module.cc,v 1.29 2014/08/28 19:26:04 brownd Exp $

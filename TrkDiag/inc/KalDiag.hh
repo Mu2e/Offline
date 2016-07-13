@@ -73,8 +73,10 @@ namespace mu2e
     bool findMCData(const art::Event& evt);
 // diagnostic comparison of reconstructed tracks with MC truth
     void kalDiag(const KalRep* krep,bool fill=true);
-// create Branches.  The user can provide their own tree, or one will be created automatically if necessary
-    TTree* createTrkDiag(TTree* trkdiag=0,const char* branchprefix="");
+// create a standard ttree
+    TTree* createTrkDiag();
+// create Branches on the given tree.  The prefix can distinguish different tracks in the same tree
+    void addBranches(TTree* ttree, const char* branchprefix="");
 // find associated sim particles to a track.  The first returns a hit-weighted vector of
 // all particles, the second just the one with the most hits
     void findMCTrk(const KalRep* krep,std::vector<spcount>& sct);

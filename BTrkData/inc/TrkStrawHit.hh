@@ -17,6 +17,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 // c++
 #include <vector>
+#include <functional>
 // forward refs
 class TrkDifTraj;
 
@@ -93,6 +94,12 @@ namespace mu2e
     double _tddist_err;
     double _maxdriftpull;
   };
+
+// binary functor to sort TrkStrawHits by StrawHit index
+  struct indexcomp : public std::binary_function<TrkStrawHit,TrkStrawHit, bool> {
+    bool operator()(const TrkStrawHit* x,const TrkStrawHit* y) { return x->index() < y->index(); }
+  };
+ 
 // unary functor to select TrkStrawHit from a given hit
   struct FindTrkStrawHit {
     FindTrkStrawHit(StrawHit const& strawhit) : _strawhit(strawhit) {}

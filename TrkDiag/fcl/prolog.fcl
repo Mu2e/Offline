@@ -74,7 +74,16 @@ BEGIN_PROLOG
   ReadKalFitsMix : @local::ReadKalFits
   ReadKalFitsMix.eventWeightModules : [ protonBunchSummarizer  ]
   ReadKalFitsMix.beamWeightModule : protonBunchSummarizer
- 
+# Prototype track analysis config.
+  TrackAnalysis : {
+    module_type : TrackAnalysis
+    DownstreameMinusTrackTag : "TRFDownstreameMinus:DownstreameMinus" # instance key needed for CD3
+    UpstreameMinusTrackTag : "TRFUpstreameMinus:UpstreameMinus" # instance key needed for CD3
+    DownstreammuMinusTrackTag : "TRFDownstreammuMinus:DownstreammuMinus" # instance key needed for CD3
+    KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 data files
+    TrkCaloDiag : @local::TrkCaloDiag
+    eventWeightModules : [ ]
+  }
 
 END_PROLOG
 

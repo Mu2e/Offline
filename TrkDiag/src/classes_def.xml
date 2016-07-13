@@ -10,4 +10,5 @@
  <class name="std::vector<mu2e::TrkCaloInfo>" />
  <class name="mu2e::TrkHitShare" />
  <class name="std::vector<mu2e::TrkHitShare>" />
+ <class name="mu2e::EventInfo" />
 </lcgdict>
