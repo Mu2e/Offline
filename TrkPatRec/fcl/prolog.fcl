@@ -4,8 +4,7 @@
 #------------------------------------------------------------------------------
 #include "TrkPatRec/fcl/Particle.fcl"
 #include "TrkPatRec/fcl/PanelAmbigResolver.fcl"
-#include "TrkDiag/fcl/KalDiag.fcl"
-
+#include "TrkDiag/fcl/prolog.fcl"
 BEGIN_PROLOG
 
 # this should go in a general file FIXME!!

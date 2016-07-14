@@ -1,0 +1,63 @@
+#
+#  This script runs the TrackAnalsys module to create a prototype track-based analysis TTree.  For example:
+#  > mu2e --config TrkDiag/test/TrkAna.fcl --source-list (your files) --TFile TrkAna.root --nevts=100
+# will process 100 events from (your files).  Note that background mixing requires different scripts
+# for interactive and grid processing
+#
+# David Brown (LBNL) 13 July 2016
+#
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#
+source :
+{
+  module_type : RootInput
+}
+
+services : @local::simRecoServices
+
+physics :
+{
+#  producers : @analysisProducers 
+  # aggregate some existing prolog
+  producers : {
+    @table::EventMixing.producers
+    @table::Tracking.producers
+    @table::CaloSim.producers
+    @table::CaloReco.producers
+    @table::TrackCaloMatching.producers
+  }
+
+  analyzers :
+  {
+      genCountLogger: { module_type: GenEventCountReader }
+      TrkAna: @local::TrackAnalysis
+   }
+}
+
+physics.e2 : [TrkAna, genCountLogger ]
+physics.end_paths : [e2]
+physics.p2: [ protonTimeMap, muonTimeMap,
+@sequence::Tracking.DigiSim,
+@sequence::CaloSim.MakeHits,
+@sequence::CaloReco.MakeClusters,
+@sequence::Tracking.TPRDownstreameMinus,
+@sequence::Tracking.TPRUpstreameMinus,
+@sequence::Tracking.TPRDownstreammuMinus,
+@sequence::TrackCaloMatching.matching_dem ]
+
+physics.trigger_paths  : [p2]
+
+physics.analyzers.TrkAna.diagLevel : 1
+# TrkCaloIntersection by default looks for merged tracks; FIXME!!
+physics.producers.TrackCaloIntersectionDem.fitterModuleLabel : TRFDownstreameMinus
+physics.producers.TrackCaloMatchingDem.fitterModuleLabel : TRFDownstreameMinus
+#
+# the following are needed for interactive running.  They will be overwritten if you submit this job
+# on the grid with mu2eart and do not need to be removed.
+services.user.SeedService.baseSeed         :  773651
+services.user.SeedService.maxUniqueEngines :  20
+
+

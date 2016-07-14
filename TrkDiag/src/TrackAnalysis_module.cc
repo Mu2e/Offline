@@ -82,7 +82,8 @@ namespace mu2e {
     art::InputTag _PBItag;
     vector<art::InputTag> _evtWttags;
     // analysis options
-    bool _fillmc, _diag;
+    bool _fillmc, _pempty;
+    int _diag;
     // analysis parameters
     double _minReflectTime; // minimum time for a track to reflect in the gradient
     // Kalman fit diagnostics
@@ -137,6 +138,7 @@ namespace mu2e {
     _PBItag( pset.get<art::InputTag>("ProtonBunchIntensityTag",art::InputTag("ProtonBunchIntensitySummarizer")) ),
     _evtWttags( pset.get<std::vector<art::InputTag>>("eventWeightTags",std::vector<art::InputTag>() ) ),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
+    _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
     _diag(pset.get<int>("diagLevel",1)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
@@ -176,12 +178,6 @@ namespace mu2e {
   }
 
   void TrackAnalysis::analyze(const art::Event& event) {
-    // reset
-    resetBranches();
-    // setup KalDiag.
-    if(_fillmc)_kdiag.findMCData(event);
-    // fill basic event information
-    fillEventInfo(event);
     // Get handle to downstream electron track collection
     art::Handle<KalRepPtrCollection> demH;
     event.getByLabel(_demtag,demH);
@@ -193,36 +189,44 @@ namespace mu2e {
     art::Handle<KalRepPtrCollection> dmmH;
     event.getByLabel(_dmmtag,dmmH);
     KalRepPtrCollection const& dmmC = *dmmH;
-    // Track-cluster matching
+    // find Track-cluster matching data
     _cdiag.findData(event);
     // find the best track
     const KalRep* demK = findBestTrack(demC);
-    // fill the standard diagnostics
-    if(demK != 0){
-      _kdiag.fillTrkInfo(demK,_demti);
-    // fill calorimeter information. First find the best matching cluster
-      if(_cdiag.caloMatchHandle().isValid()){
-	TrackClusterMatchCollection const& tcmc = *_cdiag.caloMatchHandle();
-	TrackClusterMatchCollection::const_iterator itcm = tcmc.end();
-	findBestClusterMatch(tcmc,demK,itcm);
-	if(itcm != tcmc.end())
-	  _cdiag.fillCaloInfo(*itcm,_demc);
+    if(demK != 0 || _pempty) {
+      // reset
+      resetBranches();
+      // setup KalDiag.
+      if(_fillmc)_kdiag.findMCData(event);
+      // fill basic event information
+      fillEventInfo(event);
+      // fill the standard diagnostics
+      if(demK != 0){
+	_kdiag.fillTrkInfo(demK,_demti);
+	// fill calorimeter information. First find the best matching cluster
+	if(_cdiag.caloMatchHandle().isValid()){
+	  TrackClusterMatchCollection const& tcmc = *_cdiag.caloMatchHandle();
+	  TrackClusterMatchCollection::const_iterator itcm = tcmc.end();
+	  findBestClusterMatch(tcmc,demK,itcm);
+	  if(itcm != tcmc.end())
+	    _cdiag.fillCaloInfo(*itcm,_demc);
+	}
+	// look for a matching upstream electron track
+	const KalRep* uemK = findUpstreamTrack(uemC,demK);
+	if(uemK != 0){
+	  _kdiag.fillTrkInfo(uemK,_uemti);
+	}
+	// look for a matching muon track
+	const KalRep* dmmK = findMuonTrack(dmmC,demK);
+	if(dmmK != 0){
+	  _kdiag.fillTrkInfo(dmmK,_dmmti);
+	}
       }
-      // look for a matching upstream electron track
-      const KalRep* uemK = findUpstreamTrack(uemC,demK);
-      if(uemK != 0){
-	_kdiag.fillTrkInfo(uemK,_uemti);
-      }
-      // look for a matching muon track
-      const KalRep* dmmK = findMuonTrack(dmmC,demK);
-      if(dmmK != 0){
-	_kdiag.fillTrkInfo(dmmK,_dmmti);
-      }
+      // fill mC info associated with this track
+      if(_fillmc) fillMCInfo(demK);
+      // fill this row in the TTree
+      _trkana->Fill();
     }
-    // fill mC info associated with this track
-    if(_fillmc) fillMCInfo(demK);
-    // fill this row in the TTree
-    _trkana->Fill();
   }
 
   const KalRep* TrackAnalysis::findBestTrack(KalRepPtrCollection const& kcol) {
@@ -282,6 +286,7 @@ namespace mu2e {
 	dmmK = krep;
       }
     }
+    _tcnt._ndmmo = maxnover;
     return dmmK;
   }
 
@@ -344,8 +349,9 @@ namespace mu2e {
   void TrackAnalysis::findBestClusterMatch(TrackClusterMatchCollection const& tcmc,
   const KalRep* krep, 
   TrackClusterMatchCollection::const_iterator& itcm) {
-  _tcnt._ndemc = 0;
-  // for now pick highest-energy cluster.  This should match to the track or sum, FIXME!!
+    _tcnt._ndemc = 0;
+    itcm = tcmc.end();
+    // for now pick highest-energy cluster.  This should match to the track or sum, FIXME!!
     double emin(-1.0);
     for( auto jtcm= tcmc.begin(); jtcm != tcmc.end(); ++jtcm ) {
       if(jtcm->textrapol()->trk().get() == krep){

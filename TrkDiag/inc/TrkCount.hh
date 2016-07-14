@@ -13,13 +13,14 @@ namespace mu2e
     Int_t _ndmm; // number of downstreammuMinus tracks 
     Int_t _ndemc; // Number of calo clusters matched to the best dem track.
     Int_t _ndemo; // number of shared hits between primary and next-best track
+    Int_t _ndmmo; // number of shared hits between primary and muon-fit track
     static std::string const& leafnames() { 
       static const std::string leaves =
-	std::string("ndem/I:nuem/I:ndmm/I:ndemc/I:ndemo/I");
+	std::string("ndem/I:nuem/I:ndmm/I:ndemc/I:ndemo/I:ndmmo/I");
 	return leaves;
     }
     void reset() {
-      _ndem = _nuem = _ndmm = _ndemc = _ndemo = 0;
+      _ndem = _nuem = _ndmm = _ndemc = _ndemo = _ndmmo = 0;
     }
   };
 }

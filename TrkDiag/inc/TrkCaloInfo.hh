@@ -39,7 +39,7 @@ namespace mu2e
     }
 
     void reset() {
-      _dt = _du = _dv = _ds = _ep = _uvChisq = _tChisq = _dtllr = _epllr = _eclust = _tclust = _ttrk -1.0;
+      _dt = _du = _dv = _ds = _ep = _uvChisq = _tChisq = _dtllr = _epllr = _eclust = _tclust = _ttrk = 0.0;
       _cpos = _tpos = _tdir = threevec();
     }
   };

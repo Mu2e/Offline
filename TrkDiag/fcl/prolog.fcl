@@ -1,5 +1,4 @@
 BEGIN_PROLOG
-
 # Note that KalDiag must be configured differently depending on whether you are
 # reading data generated inline, or are reading data output through Read
   KalDiag : {
@@ -84,6 +83,15 @@ BEGIN_PROLOG
     TrkCaloDiag : @local::TrkCaloDiag
     eventWeightModules : [ ]
   }
+
+# aggregate some existing prolog: THIS DOESN'T WORK as reco prolog is also sourcing TrkDiag prolog FIXME!!!
+#  analysisProduces : {
+#    @table::EventMixing.producers
+#    @table::Tracking.producers
+#    @table::CaloSim.producers
+#    @table::CaloReco.producers
+#    @table::TrackCaloMatching.producers
+#  }
 
 END_PROLOG
 

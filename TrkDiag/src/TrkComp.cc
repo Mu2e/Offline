@@ -36,14 +36,17 @@ namespace mu2e {
 	++nover; ++itsh1; ++itsh2;
       	while(itsh1 != tshv1.end() && !(*itsh1)->isActive() )++itsh1;
 	while(itsh2 != tshv2.end() && !(*itsh2)->isActive() )++itsh2;
-      }
-      // move to next potential overlap.  These will be passed through if
-      // the iterators already point to an overlap
-      while(itsh1 != tshv1.end() && (*itsh1)->index() < (*itsh2)->index() ){
-	while(itsh1 != tshv1.end() && !(*itsh1)->isActive() )++itsh1;
-      }
-      while(itsh2 != tshv2.end() && (*itsh2)->index() < (*itsh1)->index() ){
-	while(itsh2 != tshv2.end() && !(*itsh2)->isActive() )++itsh2;
+      } else if((*itsh1)->index() < (*itsh2)->index()) {
+      // move to next potential overlap
+	while(itsh1 != tshv1.end() && (*itsh1)->index() < (*itsh2)->index() ){
+	  ++itsh1;
+	  while(itsh1 != tshv1.end() && !(*itsh1)->isActive() )++itsh1;
+	}
+      } else {
+	while(itsh2 != tshv2.end() && (*itsh2)->index() < (*itsh1)->index() ){
+	  ++itsh2;
+	  while(itsh2 != tshv2.end() && !(*itsh2)->isActive() )++itsh2;
+	}
       }
     }
     return nover;

@@ -30,4 +30,18 @@ preDefinedSeeds : {
      # endOfJobSummary   : true
 }
 
+
+simRecoServices : {
+  message : @local::default_message
+  RandomNumberGenerator: { }
+  GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
+  ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  BTrkHelper : @local::BTrkHelperDefault
+  user :
+  {
+    SeedService: @local::automaticSeeds
+  }
+}
+
 END_PROLOG
