@@ -10,7 +10,9 @@
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
-#
+
+process_name : TrkAna
+
 source :
 {
   module_type : RootInput
@@ -20,43 +22,20 @@ services : @local::Services.SimAndReco
 
 physics :
 {
-#  producers : @analysisProducers 
-  # aggregate some existing prolog
-  producers : {
-    @table::EventMixing.producers
-    @table::Tracking.producers
-    @table::CaloSim.producers
-    @table::CaloReco.producers
-    @table::TrackCaloMatching.producers
-  }
-
-  analyzers :
-  {
-      genCountLogger: { module_type: GenEventCountReader }
-      TrkAna: @local::TrackAnalysis
-   }
+  producers : @local::TrkAna.producers
+  analyzers : @local::TrkAna.analyzers
 }
 
-physics.e2 : [TrkAna, genCountLogger ]
-physics.end_paths : [e2]
-physics.p2: [ protonTimeMap, muonTimeMap,
-@sequence::Tracking.DigiSim,
-@sequence::CaloSim.MakeHits,
-@sequence::CaloReco.MakeClusters,
-@sequence::Tracking.TPRDownstreameMinus,
-@sequence::Tracking.TPRUpstreameMinus,
-@sequence::Tracking.TPRDownstreammuMinus,
-@sequence::TrackCaloMatching.matching_dem ]
+physics.TrkAnaTriggerPath : [ @sequence::TrkAna.SimAndRecoSequence ]
+physics.trigger_paths  : [ TrkAnaTriggerPath ]
 
-physics.trigger_paths  : [p2]
+physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
+physics.end_paths : [ TrkAnaEndPath ]
 
+# You can add detailed (hit) information to the TTree by setting diagLevel to 2
 physics.analyzers.TrkAna.diagLevel : 1
-# TrkCaloIntersection by default looks for merged tracks; FIXME!!
-physics.producers.TrackCaloIntersectionDem.fitterModuleLabel : TRFDownstreameMinus
-physics.producers.TrackCaloMatchingDem.fitterModuleLabel : TRFDownstreameMinus
 #
-# the following are needed for interactive running.  They will be overwritten if you submit this job
-# on the grid with mu2eart and do not need to be removed.
+# the following are needed for interactive running
 services.SeedService.baseSeed         :  773651
 services.SeedService.maxUniqueEngines :  20
 

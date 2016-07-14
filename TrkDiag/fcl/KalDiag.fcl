@@ -1,2 +1,29 @@
-#  This file is deprecated, please used TrkDiag/fcl/prolog.fcl
-#include "TrkDiag/fcl/prolog.fcl" 
+# this file needs to be integrated into TrkDiag/fcl/prolog.fcl, but it requires removing diagnostics from the production modules FIXME!
+BEGIN_PROLOG
+# Note that KalDiag must be configured differently depending on whether you are
+# reading data generated inline, or are reading data output through Read
+  KalDiag : {
+    MCPtrLabel	      : makeSH
+    StrawHitMCLabel     : makeSH
+    TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+  }
+# If running KalDiag directly on G4 use KalDiagDirect
+  KalDiagDirect			  : @local::KalDiag
+  KalDiagDirect.MCStepsLabel        : g4run
+  KalDiagDirect.SimParticleLabel    : g4run
+  KalDiagDirect.SimParticleInstance : "" 
+# Production samples use Read, which requires the following setup
+  KalDiagRead			  : @local::KalDiag
+  KalDiagRead.MCStepsLabel        : detectorFilter
+  KalDiagRead.SimParticleLabel    : detectorFilter
+# TDR samples gave an instance name to the sim particle collection, CD3 and beyond won't
+  KalDiagReadTDR : @local::KalDiagRead
+  KalDiagReadTDR.SimParticleInstance : "s0"
+# CD3 beam data have no instance labels
+  KalDiagReadCD3 : @local::KalDiagRead
+  KalDiagReadCD3.SimParticleInstance : ""
+# CD3 Cosmic data have different filter module labels
+  KalDiagReadCD3Cosmics			  : @local::KalDiagReadCD3
+  KalDiagReadCD3Cosmics.MCStepsLabel        : cosmicFilter
+  KalDiagReadCD3Cosmics.SimParticleLabel    : cosmicFilter
+END_PROLOG
