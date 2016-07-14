@@ -16,7 +16,7 @@ source :
   module_type : RootInput
 }
 
-services : @local::simRecoServices
+services : @local::Services.SimAndReco
 
 physics :
 {

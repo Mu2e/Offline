@@ -30,18 +30,43 @@ preDefinedSeeds : {
      # endOfJobSummary   : true
 }
 
-
-simRecoServices : {
-  message : @local::default_message
-  RandomNumberGenerator: { }
-  GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
-  ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-  BTrkHelper : @local::BTrkHelperDefault
-  user :
-  {
-    SeedService: @local::automaticSeeds
+Services : {
+# define services for specific tasks: these are components needed for
+# a complete job
+  Core	    : {
+    message		    : @local::default_message
+    GeometryService	    : { inputFile : "Mu2eG4/test/geom_01.txt" }	
+    ConditionsService	    : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService  : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   }
+
+  SimOnly   : {
+    RandomNumberGenerator   : { }
+    # user is deprecated: FIXME!!
+    user : {
+      SeedService		    : @local::automaticSeeds
+    }
+  }
+
+  RecoOnly  : {
+    BTrkHelper : @local::BTrkHelperDefault
+  }
+}
+# aggregate to make complete sets that can be used to fully configure common jobs
+Services.Sim	    : {
+  @table::Services.Core
+  @table::Services.SimOnly
+}
+
+Services.Reco	    : {
+  @table::Services.Core
+  @table::Services.RecoOnly
+}
+
+Services.SimAndReco : {
+  @table::Services.Core
+  @table::Services.SimOnly
+  @table::Services.RecoOnly
 }
 
 END_PROLOG
