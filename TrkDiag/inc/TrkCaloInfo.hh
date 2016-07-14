@@ -1,5 +1,10 @@
 //
-// structs used to record per-track calorimeter information
+// structs used to record calorimeter information matched to a track
+// All energies are in units of MeV,  momenta are in units of MeV/c,
+// time in nsec WRT when the proton bunch pulse peak hits the production target,
+// positions are in mm WRT the center of the tracker.
+ 
+// Dave Brown (LBNL)
 // 
 #ifndef TrkCaloInfo_HH
 #define TrkCaloInfo_HH

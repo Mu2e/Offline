@@ -1,5 +1,6 @@
 //
 // simple struct to record event-level information
+// Dave Brown (LBNL)
 //
 #ifndef EventInfo_HH
 #define EventInfo_HH
