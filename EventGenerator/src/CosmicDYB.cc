@@ -50,6 +50,7 @@
 #include "GeneralUtilities/inc/safeSqrt.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 
 // ROOT includes
 #include "TH1D.h"
@@ -270,8 +271,12 @@ namespace mu2e
                          break;
         case EXTMONFNAL: _cosmicReferencePointInMu2e = Hep3Vector(extMonFNAL->detectorCenterInMu2e().x(), _y0, extMonFNAL->detectorCenterInMu2e().z());
                          break;
-        case CALO:       _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(), _y0, detsys->getOrigin().z() + 2500.);
-                         // distance from tracker to calo center is hardcoded, FIXME!!!!!
+        case CALO:      
+	  {
+	    GeomHandle<Calorimeter> calorimeter;
+	    _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(), _y0, calorimeter->section(0).origin().z());
+	  }
+                        
                          break;
         case CUSTOMIZED: break;  //already set above
         default:         throw cet::exception("Configuration")<< "Should never occur: unknown CosmicDYB.refPointChoice\n";
