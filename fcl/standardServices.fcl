@@ -42,10 +42,7 @@ Services : {
 
   SimOnly   : {
     RandomNumberGenerator   : { }
-    # user is deprecated: FIXME!!
-    user : {
-      SeedService		    : @local::automaticSeeds
-    }
+    SeedService		    : @local::automaticSeeds
   }
 
   RecoOnly  : {
