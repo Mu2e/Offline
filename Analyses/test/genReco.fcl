@@ -14,8 +14,7 @@
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
-#include "TrkDiag/fcl/KalDiag.fcl"
-#
+#include "TrkDiag/fcl/prolog.fcl"
 #include "Analyses/fcl/prolog.fcl"
 
 #------------------------------------------------------------------------------
