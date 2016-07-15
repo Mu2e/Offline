@@ -445,11 +445,11 @@ namespace mu2e {
     
 
     //increase the counter of the track candidates by 1
-    fHackData->fData[20]              = fHackData->fData[20] + 1;
+    fHackData->fData[30]              = fHackData->fData[30] + 1;
 
     //set indeces in Hack DAta following convention defuned in THackData.hh
-    int indexChi2XY                   = fHackData->fData[20] + 20;
-    int indexChi2ZPhi                 = fHackData->fData[20] + 30;
+    int indexChi2XY                   = fHackData->fData[30] + 30;
+    int indexChi2ZPhi                 = fHackData->fData[40] + 40;
 
     fHackData->fData[indexChi2XY]     = HfResult._sxyw.chi2DofCircle();
     fHackData->fData[indexChi2ZPhi]   = HfResult._srphi.chi2DofLine();
