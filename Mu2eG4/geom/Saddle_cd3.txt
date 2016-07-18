@@ -411,7 +411,7 @@ string Saddle.orientationType15Box2 = "020";
 bool  Saddle.visible = true;
 bool  Saddle.solid   = false;
 
-int   Saddle.verbosityLevel = 1;
+int   Saddle.verbosityLevel = 0;
 
 // // DS cryo rail platform
 // double Saddle.outlineType14UVert1 = 470;

@@ -273,12 +273,6 @@ namespace mu2e {
 
 
 
-
-
-
-
-
-
     //--------------------------------------
     // Construct disks: diskCase contains the crystals. DiskBox contains the calibration pipes and diskCase
     //
@@ -286,7 +280,6 @@ namespace mu2e {
     VolumeInfo diskCaseInfo[nDisks];
     VolumeInfo diskFEBInfo[nDisks];
     int nTotCrystal(0);
-
 
 
 

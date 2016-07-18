@@ -1990,7 +1990,7 @@ namespace mu2e {
                                   );
       }
 
-      if ( verbosityLevel >= 0) {
+      if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
                << " at " << vdg->getLocal(vdId) << " w.r.t. parent (PSVacuum) " << endl;
@@ -2047,7 +2047,7 @@ namespace mu2e {
                                   );
       }
 
-      if ( verbosityLevel >= 0) {
+      if ( verbosityLevel > 0) {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
                << " at " << vdg->getGlobal(vdId) << endl
                << " at " << vdg->getLocal(vdId) << " w.r.t. parent (PSVacuum) " << endl;
@@ -2075,7 +2075,7 @@ namespace mu2e {
         VolumeInfo const &parent = _helper->locateVolInfo("HallAir");
         G4Material* hallAirMaterial = parent.logical->GetMaterial();
 
-        if(verbosityLevel >= 0) 
+        if(verbosityLevel > 0) 
         {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << " at " << vdg->getGlobal(vdId) << endl;
           cout << __func__ << "    VD half lengths: (" << halfLengths[0]<<","<<halfLengths[1]<<","<<halfLengths[2]<<")" << endl;

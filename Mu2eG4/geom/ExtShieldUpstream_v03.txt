@@ -151,7 +151,7 @@ string ExtShieldUpstream.orientationType10Box1 = "550";
 bool  ExtShieldUpstream.visible = true;
 bool  ExtShieldUpstream.solid   = false;
 
-int   ExtShieldUpstream.verbosityLevel = 1;
+int   ExtShieldUpstream.verbosityLevel = 0;
 
 // This is a hack to allow the Mu2eBuilding to build - a dependence on
 // the old ExtNeutShieldLAbove consts was built in.  This should be seen

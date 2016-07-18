@@ -168,7 +168,7 @@ double Pipe.vOffsetType1Comp10  = 0.0;
 bool  Pipe.visible = true;
 bool  Pipe.solid   = false;
 
-int   Pipe.verbosityLevel = 1;
+int   Pipe.verbosityLevel = 0;
 
 
 // This tells emacs to view this file in c++ mode.

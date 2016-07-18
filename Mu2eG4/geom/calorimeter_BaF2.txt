@@ -88,4 +88,4 @@ bool calorimeter.crystalSolid                 = true;
 bool calorimeter.absorberBoxVisible           = true;
 bool calorimeter.absorberBoxSolid             = true;
 
-int  calorimeter.verbosityLevel               = 1;
+int  calorimeter.verbosityLevel               = 0;

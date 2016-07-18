@@ -10,7 +10,7 @@
 
 // build VD inside DS Neutron Shielding
 bool vd.DSNeutronShieldExit.build = true;
-int  vd.verbosityLevel = 2;
+int  vd.verbosityLevel = 0;
 
 // build virtual detectors throughout the MSTM area
 bool   vd.MSTMWallUpStr.build  = false;
