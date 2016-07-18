@@ -658,7 +658,7 @@ string ExtShieldDownstream.holeOrientationType11Box4Hole1 = "100";
 bool  ExtShieldDownstream.visible = true;
 bool  ExtShieldDownstream.solid   = false;
 
-int   ExtShieldDownstream.verbosityLevel = 1;
+int   ExtShieldDownstream.verbosityLevel = 0;
 
 // This is a hack for breaking the dependency of virtual detectors on the
 // Geometry #13 version of external shielding.

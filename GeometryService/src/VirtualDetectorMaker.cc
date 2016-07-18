@@ -57,6 +57,9 @@ namespace mu2e {
       const double vdHL = c.getDouble("vd.halfLength",0.01*mm);
       vd->_halfLength = vdHL;
 
+      // Add configurable control for verbosity.
+      const int verbosityLevel = c.getInt("vd.verbosityLevel",0);
+
       // Need some data from other subsystems
       GeomHandle<Beamline> bg;
       double solenoidOffset = bg->solenoidOffset();
@@ -179,7 +182,9 @@ namespace mu2e {
 
       /*******new virtual detector for STM Upstream halfway between coll5Out and STIn   ****/
 
-      std::cout << "coll 5 " << coll5pos.z() << " " << deltaZ5.z() << " " << targetOffset.z() << " " << shift.z() << std::endl;
+      if ( verbosityLevel > 0 ) {
+	std::cout << "coll 5 " << coll5pos.z() << " " << deltaZ5.z() << " " << targetOffset.z() << " " << shift.z() << std::endl;
+      }
       const Hep3Vector STMOffset(targetOffset.x()-shift.x(),targetOffset.y()-shift.y(), targetOffset.z()-shift.z() - 0.5*( (coll5pos.z()+deltaZ5.z()) - (targetOffset.z()-shift.z()) ));
       vd->addVirtualDetector( VirtualDetectorId::STMUpstream,
 			      ds2centerInMu2e,0,STMOffset);
@@ -215,7 +220,6 @@ namespace mu2e {
         vd->addVirtualDetector( VirtualDetectorId::TT_MidInner,
                                  ttOffset, 0, vdTTMidOffset);
 
-        //       int static const verbosityLevel = 1;
         //       if (verbosityLevel >0) {
         //         for ( int vdId=11; vdId<=12; ++vdId) {
         //           cout << __func__ << " VD " << vdId << " offsets L, G " <<
@@ -411,7 +415,7 @@ namespace mu2e {
                                 0x0,
                                 vdPositionInMu2e - hallFormalCenterInMu2e);
         
-        int static const verbosityLevel = 1;
+
         if ( verbosityLevel > 0) {
            cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::DSNeutronShieldExit) << endl;
            cout << "               at local=" << vd->getLocal(VirtualDetectorId::DSNeutronShieldExit) << " global="<< vd->getGlobal(VirtualDetectorId::DSNeutronShieldExit) <<endl;
@@ -617,8 +621,8 @@ namespace mu2e {
                                  0x0,                          //rotation
                                  vdPositionWRTparent);         //placement w.r.t. reference
            
-           const int verbosityLevel = 1;
-           if ( verbosityLevel > -1) {
+
+           if ( verbosityLevel > 0) {
               cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_UpStr) << endl;
               cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_UpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_UpStr) <<endl;
            }
@@ -643,7 +647,6 @@ namespace mu2e {
 //                                  0x0,                               //rotation
 //                                  vdPositionWRTparent);    //vdPositionWRTmstmMother);//placement w.r.t. reference
 //            
-//            const int verbosityLevel = 1;
 //            if ( verbosityLevel > -1) {
 //               cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_CRVShieldDnStr) << endl;
 //               cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_CRVShieldDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_CRVShieldDnStr) <<endl;
@@ -673,8 +676,8 @@ namespace mu2e {
                                  0x0,                     //rotation
                                  vdPositionWRTparent);    //placement w.r.t. reference
            
-           const int verbosityLevel = 1;
-           if ( verbosityLevel > -1) {
+
+           if ( verbosityLevel > 0) {
               cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_FieldOfViewCollDnStr) << endl;
               cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_FieldOfViewCollDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_FieldOfViewCollDnStr) <<endl;
            }
@@ -704,8 +707,8 @@ namespace mu2e {
                                  0x0,                 //rotation
                                  vdPositionWRTparent);
            
-          const int verbosityLevel = 1;
-          if ( verbosityLevel > -1) {
+
+          if ( verbosityLevel > 0) {
             cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_MagDnStr) << endl;
             cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_MagDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_MagDnStr) <<endl;
           }
@@ -722,8 +725,8 @@ namespace mu2e {
                                  0x0,                  //rotation
                                  vdPositionWRTparent); //placement w.r.t. reference
            
-           int static const verbosityLevel = 1;
-           if ( verbosityLevel > -1) {
+
+           if ( verbosityLevel > 0) {
               cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_SpotSizeCollUpStr) << endl;
               cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_SpotSizeCollUpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_SpotSizeCollUpStr) <<endl;
            }
@@ -742,8 +745,8 @@ namespace mu2e {
                                  0x0,                  //rotation
                                  vdPositionWRTparent); //placement w.r.t. reference
            
-           int static const verbosityLevel = 1;
-           if ( verbosityLevel > -1) {
+
+           if ( verbosityLevel > 0) {
               cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_CollDnStr) << endl;
               cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_CollDnStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_CollDnStr) <<endl;
            }
@@ -763,8 +766,8 @@ namespace mu2e {
                                  0x0,                  //rotation
                                  vdPositionWRTparent); //placement w.r.t. reference
            
-           int static const verbosityLevel = 1;
-           if ( verbosityLevel > -1) {
+
+           if ( verbosityLevel > 0) {
              cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_Det1UpStr) << endl;
              cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_Det1UpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_Det1UpStr) <<endl;              
            }
@@ -784,8 +787,8 @@ namespace mu2e {
                                  0x0,                  //rotation
                                  vdPositionWRTparent); //placement w.r.t. reference
 
-          const int verbosityLevel = 1;
-          if ( verbosityLevel > -1) {
+
+          if ( verbosityLevel > 0) {
             cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::STM_Det2UpStr) << endl;
             cout << "               at local=" << vd->getLocal(VirtualDetectorId::STM_Det2UpStr) << " global="<< vd->getGlobal(VirtualDetectorId::STM_Det2UpStr) <<endl;
           }
@@ -827,7 +830,7 @@ namespace mu2e {
          posPSPbarOut.setZ( pbarTS1InPos.z() + pbarTS1InHalfLength + vdHL );
          vd->addVirtualDetector(VirtualDetectorId::PSPbarOut, parentCenterInMu2e, 0, posPSPbarOut);
 
-	 int static const verbosityLevel = 1;
+
          if ( verbosityLevel > 0 ) {
             cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarIn) << endl;
             cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarIn) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarIn) <<endl;
@@ -862,7 +865,7 @@ namespace mu2e {
                                  vdPosInHall);            //placement w.r.t. reference
            
            
-          int static const verbosityLevel = 1;
+
           if(verbosityLevel > 0) 
           {
             cout << " Constructing " << VirtualDetector::volumeName(vdId) << endl;

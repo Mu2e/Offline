@@ -29,7 +29,7 @@ string ElectronicRack.orientationType1Rack2 = "000";
 bool  ElectronicRack.visible = true;
 bool  ElectronicRack.solid   = false;
 
-int   ElectronicRack.verbosityLevel = 1;
+int   ElectronicRack.verbosityLevel = 0;
 
 
 // This tells emacs to view this file in c++ mode.
