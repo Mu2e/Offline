@@ -105,6 +105,7 @@ TrkRecFit : {
   SeedFit		      : @local::KalSeedFit
   KalFit		      : @local::KalFinalFit
   KalDiag		      : @local::KalDiagDirect
+  StrawHitFlagCollectionLabel : TimePeakFinder
 }
 
 # dedicated configurations for reconstructing specific particles
