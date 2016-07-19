@@ -232,7 +232,7 @@ namespace mu2e {
 	if ( htime < minHitTime ) { minHitTime = htime; }
 	if ( htime > maxHitTime ) { maxHitTime = htime; }
 	
-	flags->at(hittpit->_index).merge(StrawHitFlag::timesel);
+	flags->at(hittpit->_index).merge(StrawHitFlag::trksel);
       }
 
       if (itp->_trkptrs.size()>1) {

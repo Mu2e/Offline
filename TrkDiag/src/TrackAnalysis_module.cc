@@ -15,6 +15,7 @@
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "DataProducts/inc/threevec.hh"
+#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -34,19 +35,18 @@
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
+// diagnostics
 #include "TrkDiag/inc/KalDiag.hh"
 #include "TrkDiag/inc/TrkComp.hh"
+#include "TrkDiag/inc/HitCount.hh"
 #include "TrkDiag/inc/TrkCount.hh"
 #include "TrkDiag/inc/TrkCaloDiag.hh"
 #include "TrkDiag/inc/EventInfo.hh"
 #include "TrkDiag/inc/TrkHitShare.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
 // C++ includes.
 #include <iostream>
 #include <string>
-
-//G4Beamline includes
-#include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 
 // This is fragile and needs to be last until CLHEP is
 // properly qualified and included in the BaBar classes.
@@ -89,7 +89,7 @@ namespace mu2e {
     // Kalman fit diagnostics
     KalDiag _kdiag;
     // track comparator
-    TrkComp _tcntomp;
+    TrkComp _tcomp;
     // calorimeter diagnostics
     TrkCaloDiag _cdiag;
     TrkCaloInfo _demc;
@@ -97,6 +97,8 @@ namespace mu2e {
     TTree* _trkana;
     // general event info branch
     EventInfo _einfo;
+    // hit counting
+    HitCount _hcnt;
     // track counting
     TrkCount _tcnt;
     // track branches
@@ -112,6 +114,7 @@ namespace mu2e {
     std::vector<TrkStrawHitInfoMC> _demtshmc;
     // helper functions
     void fillEventInfo(const art::Event& event);
+    void countHits(StrawHitFlagCollection const& shfC);
     const KalRep* findBestTrack(KalRepPtrCollection const& kcol);
     void resetBranches();
     void fillMCInfo(const KalRep* demK);
@@ -135,7 +138,6 @@ namespace mu2e {
     _dmmtag(pset.get<art::InputTag>("DownstreammuMinusTrackTag",art::InputTag()) ),
     _genWttag( pset.get<art::InputTag>("generatorWeightTag",art::InputTag()) ),
     _beamWttag( pset.get<art::InputTag>("beamWeightTag",art::InputTag()) ),
-    _PBItag( pset.get<art::InputTag>("ProtonBunchIntensityTag",art::InputTag("ProtonBunchIntensitySummarizer")) ),
     _evtWttags( pset.get<std::vector<art::InputTag>>("eventWeightTags",std::vector<art::InputTag>() ) ),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
@@ -153,6 +155,8 @@ namespace mu2e {
     _trkana=tfs->make<TTree>("trkana","track analysis");
 // add event info branch
     _trkana->Branch("evtinfo",&_einfo,EventInfo::leafnames().c_str());
+// hit counting branch
+    _trkana->Branch("hcnt",&_hcnt,HitCount::leafnames().c_str());
 // track counting branch
     _trkana->Branch("tcnt",&_tcnt,TrkCount::leafnames().c_str());
 // add primary track (downstream electron) branch
@@ -178,11 +182,14 @@ namespace mu2e {
   }
 
   void TrackAnalysis::analyze(const art::Event& event) {
-    // Get handle to downstream electron track collection
+    // Get handle to downstream electron track collection.  This also creates the final set of hit flags
     art::Handle<KalRepPtrCollection> demH;
     event.getByLabel(_demtag,demH);
     KalRepPtrCollection const& demC = *demH;
-    // same for downstream muons and upstream electrons
+    art::Handle<StrawHitFlagCollection> shfH;
+    event.getByLabel(_demtag,shfH);
+    StrawHitFlagCollection const& shfC = *shfH;
+    // find downstream muons and upstream electrons
     art::Handle<KalRepPtrCollection> uemH;
     event.getByLabel(_uemtag,uemH);
     KalRepPtrCollection const& uemC = *uemH;
@@ -200,6 +207,7 @@ namespace mu2e {
       if(_fillmc)_kdiag.findMCData(event);
       // fill basic event information
       fillEventInfo(event);
+      countHits(shfC);
       // fill the standard diagnostics
       if(demK != 0){
 	_kdiag.fillTrkInfo(demK,_demti);
@@ -242,7 +250,7 @@ namespace mu2e {
 // This should pick out the most signal-like, best quailty track FIXME!!
 	if(krep->momentum(0.0).mag() > demK->momentum(0.0).mag()){
 // compute the hit overlap fraction
-	  _tcnt._ndemo  = _tcntomp.nOverlap(krep,demK);
+	  _tcnt._ndemo  = _tcomp.nOverlap(krep,demK);
 	  demK = krep;
 	}
       }
@@ -280,7 +288,7 @@ namespace mu2e {
     unsigned maxnover(0);
     for(auto kptr : kcol) {
       const KalRep* krep = kptr.get();
-      unsigned nover = _tcntomp.nOverlap(krep,demK);
+      unsigned nover = _tcomp.nOverlap(krep,demK);
       if(nover > maxnover){
 	maxnover = nover;
 	dmmK = krep;
@@ -341,7 +349,7 @@ namespace mu2e {
       _einfo._beamwt = beamWtHandle->weight();
     // actual number of protons on target
     art::Handle<ProtonBunchIntensity> PBIHandle;
-    event.getByLabel(_PBItag, PBIHandle);
+    event.getByLabel(_beamWttag, PBIHandle);
     if(PBIHandle.isValid())
       _einfo._nprotons = PBIHandle->intensity();
   }
@@ -364,9 +372,24 @@ namespace mu2e {
     }
   }
 
+  void TrackAnalysis::countHits(StrawHitFlagCollection const& shfC) {
+    _hcnt._nsh = shfC.size();
+    for(auto shf : shfC) {
+      if(shf.hasAllProperties(StrawHitFlag::energysel))++_hcnt._nesel;
+      if(shf.hasAllProperties(StrawHitFlag::radsel))++_hcnt._nrsel;
+      if(shf.hasAllProperties(StrawHitFlag::timesel))++_hcnt._ntsel;
+      if(shf.hasAllProperties(StrawHitFlag::delta))++_hcnt._nbkg;
+      if(shf.hasAllProperties(StrawHitFlag::stereo))++_hcnt._nster;
+      if(shf.hasAllProperties(StrawHitFlag::tdiv))++_hcnt._ntdiv;
+      if(shf.hasAllProperties(StrawHitFlag::trksel))++_hcnt._ntpk;
+      if(shf.hasAllProperties(StrawHitFlag::elecxtalk))++_hcnt._nxt;
+    }
+  }
+
   void TrackAnalysis::resetBranches() {
   // reset structs
     _einfo.reset();
+    _hcnt.reset();
     _tcnt.reset();
     _demti.reset();
     _uemti.reset();

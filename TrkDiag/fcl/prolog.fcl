@@ -80,6 +80,9 @@ BEGIN_PROLOG
 # aggregate the prolog to produce the stanard analysis chain
   TrkAna : {
 
+    filters : {
+      @table::EventMixing.filters
+    }
     producers : {
       @table::EventMixing.producers
       @table::Tracking.producers
@@ -89,23 +92,29 @@ BEGIN_PROLOG
     }
     analyzers : {
       genCountLogger: { module_type: GenEventCountReader }
-      TrkAna: @local::TrackAnalysis
+      TrkAna: {
+	@table::TrackAnalysis
+	eventWeightTags : [ protonBunchSummarizer  ]
+	beamWeightTag : protonBunchSummarizer
+      }
     }
   
     # separate out the sime and reco parts of the sequence
-    SimSequence	: [ protonTimeMap, muonTimeMap,
-		  @sequence::Tracking.DigiSim,
-		  @sequence::CaloSim.MakeHits ]
+    SimSequence	: [ @sequence::EventMixing.TimeMaps,
+		    @sequence::Tracking.DigiSim,
+		    @sequence::CaloSim.MakeHits ]
     RecoSequence : [ @sequence::CaloReco.MakeClusters,
-		  @sequence::Tracking.TPRDownstreameMinus,
-		  @sequence::Tracking.TPRUpstreameMinus,
-		  @sequence::Tracking.TPRDownstreammuMinus,
-		  @sequence::TrackCaloMatching.matching_dem_TRF ]
+		     @sequence::Tracking.TPRDownstreameMinus,
+		     @sequence::Tracking.TPRUpstreameMinus,
+		     @sequence::Tracking.TPRDownstreammuMinus,
+		     @sequence::TrackCaloMatching.matching_dem_TRF ]
     EndSequence : [ TrkAna, genCountLogger ]
 
   }
   # aggregate these for convenience
   TrkAna.SimAndRecoSequence : [ @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
+  TrkAna.SimAndRecoMixSequence : [ @sequence::EventMixing.CD3Mixers,
+    @sequence::TrkAna.SimSequence, @sequence::TrkAna.RecoSequence ]
 
 END_PROLOG
 

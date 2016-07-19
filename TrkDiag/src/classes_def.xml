@@ -11,5 +11,6 @@
  <class name="mu2e::TrkHitShare" />
  <class name="std::vector<mu2e::TrkHitShare>" />
  <class name="mu2e::EventInfo" />
+ <class name="mu2e::HitCount" />
  <class name="mu2e::TrkCount" />
 </lcgdict>
