@@ -80,7 +80,6 @@ namespace mu2e {
     art::InputTag _genWttag;
     art::InputTag _beamWttag;
     art::InputTag _PBItag;
-    vector<art::InputTag> _evtWttags;
     // analysis options
     bool _fillmc, _pempty;
     int _diag;
@@ -138,7 +137,6 @@ namespace mu2e {
     _dmmtag(pset.get<art::InputTag>("DownstreammuMinusTrackTag",art::InputTag()) ),
     _genWttag( pset.get<art::InputTag>("generatorWeightTag",art::InputTag()) ),
     _beamWttag( pset.get<art::InputTag>("beamWeightTag",art::InputTag()) ),
-    _evtWttags( pset.get<std::vector<art::InputTag>>("eventWeightTags",std::vector<art::InputTag>() ) ),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
     _diag(pset.get<int>("diagLevel",1)),
@@ -334,19 +332,20 @@ namespace mu2e {
     _einfo._genwt = _einfo._beamwt = _einfo._evtwt = 1.; 
     _einfo._nprotons=-1;
     // total weight is the product of all weights
-    for ( const auto& ievtWt : _evtWttags ) {
-      _einfo._evtwt *= event.getValidHandle<EventWeight>( ievtWt )->weight();
-    }
     // generator weight
     art::Handle<EventWeight> genWtHandle;
     event.getByLabel(_genWttag, genWtHandle);
-    if(genWtHandle.isValid())
+    if(genWtHandle.isValid()){
       _einfo._genwt = genWtHandle->weight();
+      _einfo._evtwt *= genWtHandle->weight();
+    } 
     // proton bunch weight
     art::Handle<EventWeight> beamWtHandle;
     event.getByLabel(_beamWttag, beamWtHandle);
-    if(beamWtHandle.isValid())
+    if(beamWtHandle.isValid()){
       _einfo._beamwt = beamWtHandle->weight();
+      _einfo._evtwt *= beamWtHandle->weight();
+    }
     // actual number of protons on target
     art::Handle<ProtonBunchIntensity> PBIHandle;
     event.getByLabel(_beamWttag, PBIHandle);

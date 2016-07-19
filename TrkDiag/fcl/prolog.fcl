@@ -89,13 +89,21 @@ BEGIN_PROLOG
       @table::CaloSim.producers
       @table::CaloReco.producers
       @table::TrackCaloMatching.producers
+  # DIO weighting for flat spectrum electrons
+      DIOWeight: {
+	module_type: DecayInOrbitWeight
+	inputModule: generate
+	verbosityLevel: 1
+      }
     }
     analyzers : {
       genCountLogger: { module_type: GenEventCountReader }
       TrkAna: {
 	@table::TrackAnalysis
-	eventWeightTags : [ protonBunchSummarizer  ]
+	# note that these weights will only be applied if the module which
+	# produces them is run
 	beamWeightTag : protonBunchSummarizer
+	generatorWeightTag : DIOWeight
       }
     }
   
