@@ -28,6 +28,7 @@ namespace mu2e
     Float_t _epllr; // log likelihood ratio for this e/p
     Float_t _eclust; // cluster energy
     Float_t _tclust; // cluster time
+    Int_t _section; // cluster section
     threevec _cpos; // calorimeter cluster position
     threevec _tpos; // extrapolated track position near calorimeter cluster
     threevec _tdir; // extrapolated track position near calorimeter cluster
@@ -35,7 +36,7 @@ namespace mu2e
     static string const& leafnames() { 
       static const string leaves =
       string("dt/F:du/F:dv/F:ds/F:ep/F:uvchisq/F:tchisq/F:dtllr/F:epllr/F:") + // matching info
-      string("eclust/F:tclust/F:") + // cluster information
+      string("eclust/F:tclust/F:section/I:") + // cluster information
       threevec::leafnames("cpos").c_str() + string(":") +
       threevec::leafnames("tpos").c_str() + string(":") +
       threevec::leafnames("tdir").c_str() + string(":") +

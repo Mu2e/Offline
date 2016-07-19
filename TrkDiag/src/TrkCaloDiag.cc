@@ -52,6 +52,7 @@ namespace mu2e
     const CaloCluster* cluster = tcm.caloCluster();
     tcinfo._eclust = cluster->energyDep();
     tcinfo._tclust = cluster->time();
+    tcinfo._section = cluster->sectionId();
     tcinfo._cpos = threevec(cluster->cog3Vector());
 // track information at intersection point.  Don't use this as there's an
 // additional fltlen added for the depth (59mm).
