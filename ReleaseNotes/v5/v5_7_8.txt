@@ -31,3 +31,8 @@ Still under construction
 	modified:   Mu2eG4/src/constructDiskCalorimeter.cc
 	modified:   Mu2eG4/src/constructVirtualDetectors.cc
 	modified:   ReleasedNotes/v5/v5_7_8.txt
+2) brownd 16 July 2016
+    Introduced TrkDiag/TrackAnalysis module and associated helpers, structs,
+    and configuration.
+    Aggregated service configurations into some standard targets in
+    fcl/standardServices.
