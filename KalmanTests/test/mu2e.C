@@ -104,7 +104,7 @@ class mu2e {
     mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true,double np=3.6e20,double mustopfrac=1.87e-3) : dio(d), con(c),diogenrange(dgenrange),
     ndio(nd),ncon(nc),weightdio(weightd),nproton(np),nstopped(np*mustopfrac),capfrac(0.609),rmue(1e-16),trueconvmom(104.973),
     tdlow(0.57735027),tdhigh(1.0),t0min(700),t0max(1695),rpc(0.025), ap(0.083333),cmu(0.041666),mu2ecut(2),
-    reco("fit.status>0"),_init(false),nactive("fit.nactive>=20")
+    reco("dem.status>0"),_init(false),nactive("dem.nactive>=20")
   {
   }
     void init();
@@ -128,6 +128,7 @@ class mu2e {
     double dioint,dioscale;
     unsigned mu2ecut;
     TCut reco, pitch, livegate, cosmic;
+    TCut pid, upstream;
     TCut quality[4], final[4];
     TCut mcdio, mccon;
     TF1* _diocz_f;
@@ -144,10 +145,6 @@ class mu2e {
     bool _init;
     double _conint[4];
     double _conint_err[4];
-    TCut trkqualcut[4] = {"fit.trkqual>0.3",
-      "fit.trkqual>0.4",
-      "fit.trkqual>0.5",
-      "fit.trkqual>0.6"};
     TCut nactive;
 };
 
@@ -181,21 +178,23 @@ void mu2e::init(){
 //  cout << "Flat rate = " << flat << " counts/MeV/c" << endl;
   // basic cuts
   char ctext[80];
-  snprintf(ctext,80,"td>%f&&td<%f",tdlow,tdhigh);
+  snprintf(ctext,80,"dem.td>%f&&dem.td<%f",tdlow,tdhigh);
   pitch = TCut(ctext);
-  snprintf(ctext,80,"t0>%f&&t0<%f",t0min,t0max);
+  snprintf(ctext,80,"dem.t0>%f&&dem.t0<%f",t0min,t0max);
   livegate = TCut(ctext);
-  cosmic = TCut("d0<105&&d0>-80 && (d0+2/om)>450 && (d0+2/om)<680");
+  cosmic = TCut("dem.d0<105&&dem.d0>-80 && (dem.d0+2/dem.om)>450 && (dem.d0+2/dem.om)<680");
+  pid = TCut("demc.eclust>10.0&&demc.eclust<120&&demc.uvchisq<100.0&&max(demc.dtllr,0.0)+max(demc.epllr,0.0)>1.5");
+  upstream = TCut("tcnt.nuem<=0");
   // insure this is the primary generated DIO particle, not something from the background frame
-  mcdio = TCut("mcgenid==28");
-  mccon = TCut("mcgenid==2");
+  mcdio = TCut("demmc.gen==28");
+  mccon = TCut("demmc.gen==2");
+  double trkqualcut[4] = {0.3,0.4,0.5,0.6};
   // cuts for different tightness of selection
   for(unsigned icut=0;icut<4;icut++){
-//    quality[icut] = ncuts[icut] && t0cuts[icut] && momcuts[icut] && fitcuts[icut];
-   quality[icut] = trkqualcut[icut];
-//   quality[icut] = trkqualcut[icut];
-   final[icut] = (reco+pitch+livegate+quality[icut]+cosmic);
-   cout << "final cut  " << icut << " = " <<  final[icut].GetTitle() << endl;
+    snprintf(ctext,80,"dem.trkqual>%f",trkqualcut[icut]);
+    quality[icut] = TCut(ctext);
+    final[icut] = (reco+pitch+livegate+quality[icut]+cosmic+pid+upstream);
+    cout << "final cut  " << icut << " = " <<  final[icut].GetTitle() << endl;
   }
   _init = true;
 }
@@ -227,12 +226,12 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
     _conspec[icut]->Sumw2();
 
     if(dio){
-      dio->Project(dioname,"fit.mom","evtwt"*final[icut]);
+      dio->Project(dioname,"dem.mom","evtinfo.evtwt"*final[icut]);
       _diospec[icut]->Scale(dioscale);
       _diospec[icut]->SetMinimum(0.08*_diocz_f->Eval(trueconvmom-0.1)*ndecay*mevperbin);
       _diospec[icut]->SetMaximum(0.08*_diocz_f->Eval(_mmin)*ndecay*mevperbin);
     }
-    con->Project(conname,"fit.mom","evtwt"*final[icut]);
+    con->Project(conname,"dem.mom","evtinfo.evtwt"*final[icut]);
     _conspec[icut]->Scale(conscale);
     
 //    _flat_f[icut] = new TF1(flatname,"[0]",_mmin,_mmax);
@@ -260,7 +259,7 @@ void mu2e::fillmu2e(unsigned nbins,double mmin,double mmax) {
 
 void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsigned ihi,const char* suffix) {
   char ctext[80];
-  snprintf(ctext,80,"fit.mom>%f&&fit.mom<%f",momlow,momhigh);
+  snprintf(ctext,80,"dem.mom>%f&&dem.mom<%f",momlow,momhigh);
   TCut momwin(ctext);
   // plot results
   TCanvas* allcan = new TCanvas("mu2eall","mu2e results",1200,800);
@@ -361,11 +360,11 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
     cuttext->AddText(line);
     snprintf(line,80,"%s",livegate.GetTitle());
     cuttext->AddText(line);
-    snprintf(line,80,"%s",trkqualcut[icut].GetTitle());
+    snprintf(line,80,"%s",quality[icut].GetTitle());
     cuttext->AddText(line);
     snprintf(line,80,"%s",cosmic.GetTitle());
     cuttext->AddText(line);
-    cuttext->Draw();
+    //cuttext->Draw();
     cout <<  final[icut].GetTitle() << endl;
 
     TLine* momlowl = new TLine(momlow,0.0,momlow,0.8*conmax);
@@ -400,7 +399,7 @@ void mu2e::drawmu2e(double momlow, double momhigh,bool logy,unsigned ilow,unsign
 
 void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   char ctext[80];
-  snprintf(ctext,80,"fit.mom>%f&&fit.mom<%f",momlow,momhigh);
+  snprintf(ctext,80,"dem.mom>%f&&dem.mom<%f",momlow,momhigh);
   TCut momwin(ctext);
   std::string ssuf(suffix);
   TCanvas* dioc = new TCanvas("dioc","dio",1200,800);
@@ -410,8 +409,8 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
   TH1F* diogen = new TH1F("diogen","True DIO momentum;MeV/c",_nbins,dmlow,dmhi);
   TH1F* evtwt = new TH1F("evtwt","True DIO momentum;MeV/c",_nbins,dmlow,dmhi);
   //  evtwt->Sumw2();
-  if(dio)dio->Project("diogen","mcgen.mom");
-  if(dio)dio->Project("evtwt","mcgen.mom","evtwt");
+  if(dio)dio->Project("diogen","demmcgen.mom");
+  if(dio)dio->Project("evtwt","demmcgen.mom","evtinfo.evtwt");
   evtwt->Scale(dioscale);
   evtwt->SetLineColor(kBlue);
   diogen->SetLineColor(kRed);
@@ -435,9 +434,9 @@ void mu2e::drawdio(double momlow,double momhigh,const char* suffix) {
     diodiffwin[icut] = new TH1F(diodiffname,"Reco - True Momentum of DIO in Signal Box;#Delta Momentum (MeV/c)",100,-1,2.5);
     diodiffwin[icut]->SetStats(0);
 
-    if(dio)dio->Project(diogenname,"mcent.mom","evtwt"*(final[icut]+momwin));
+    if(dio)dio->Project(diogenname,"mcent.mom","evtinfo.evtwt"*(final[icut]+momwin));
     diogenwin[icut]->SetFillColor(colors[icut]);
-    if(dio)dio->Project(diodiffname,"fit.mom-mcent.mom","evtwt"*(final[icut]+momwin));
+    if(dio)dio->Project(diodiffname,"dem.mom-mcent.mom","evtinfo.evtwt"*(final[icut]+momwin));
     diodiffwin[icut]->SetFillColor(colors[icut]);
     dgenwinleg->AddEntry(diogenwin[icut],cutset[icut],"f");
   }
@@ -535,9 +534,9 @@ void mu2e::fitReco(unsigned icut) {
   amom->Sumw2();
   amomd->Sumw2();
 //  char fmomcut[80];
-//  snprintf(fmomcut,80,"fit.mom>%5.3f",mcgen.mom);
-  if(dio)dio->Project("amom","mcgen.mom",final[icut]+TCut("fit.mom>mcgen.mom-4.0"));
-  if(dio)dio->Project("amomd","mcgen.mom");
+//  snprintf(fmomcut,80,"dem.mom>%5.3f",demmcgen.mom);
+  if(dio)dio->Project("amom","demmcgen.mom",final[icut]+TCut("dem.mom>demmcgen.mom-4.0"));
+  if(dio)dio->Project("amomd","demmcgen.mom");
   amom->Divide(amomd);
   amom->SetMinimum(0.08);
   amom->SetMaximum(0.18);
@@ -556,7 +555,7 @@ void mu2e::fitReco(unsigned icut) {
 // set parameters according to cutset 'C'
   _momres = new TH1F("momres","Reco Momentum Resolution;P_{RECO}-P_{Conversion} (MeV/c)",_nbins,-5,1.0);
 //  _momres->Sumw2();
-  con->Project("momres","fit.mom-mcgen.mom",final[icut]);
+  con->Project("momres","dem.mom-demmcgen.mom",final[icut]);
 //  _momres->Scale(conscale);
   TCanvas* fcan = new TCanvas("fcan","Fits",1000,800);
   fcan->Clear();
