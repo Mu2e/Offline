@@ -39,7 +39,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
     double voltage = waveform[bin];
     if(voltage>_pulseThreshold)
     {
-      TGraph g;
+      TGraph g, gFull;
       double T1 = time;
       double T2 = NAN;
       double TOTstart = time;
@@ -48,12 +48,18 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
       bool   insideFitInterval = true;
 
       //add one more fit point before the waveform crosses the threshold
-      if(bin>0) {g.SetPoint(0,time-binWidth,waveform[bin-1]); T1-=binWidth;}
+      if(bin>0) 
+      {
+        g.SetPoint(0,time-binWidth,waveform[bin-1]); 
+        gFull.SetPoint(0,time-binWidth,waveform[bin-1]); 
+        T1-=binWidth;
+      }
 
       //loop over all points over the threshold
       for( ; bin<nBins; bin++, time+=binWidth)
       {
         voltage = waveform[bin];
+        gFull.SetPoint(g.GetN(),time,voltage);
         if(voltage<_pulseThreshold) break;
 
         integral += voltage;
@@ -113,7 +119,6 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double 
       _T1s.push_back(T1);
       _T2s.push_back(T2);
       _TOTs.push_back((time-binWidth)-TOTstart);
-
     }
   }
 }
