@@ -59,11 +59,9 @@ if os.environ.has_key('MU2E_SATELLITE_RELEASE'):
     satelliterelease          = os.environ['MU2E_SATELLITE_RELEASE']
     cpppath_frag         = [ satelliterelease, satelliterelease + '/BaBar/include' ]
     libpath_frag         = [ satelliterelease+'/lib/' ]
-    isSatelliteRelease        = 1
 else:
     cpppath_frag         = [ ]
     libpath_frag         = [ ]
-    isSatelliteRelease        = 0
 
 # The link libraries needed when building the BaBar code.
 babarlibs = [ 'BTrk_KalmanTrack',     'BTrk_DetectorModel',      'BTrk_TrkBase',    'BTrk_BField',
@@ -201,9 +199,6 @@ class mu2e_helper:
                 pass
             pass
         prefix = 'mu2e_'
-        if ( isSatelliteRelease == 1 ):
-            prefix = 'mu2euser_'
-            pass
         return prefix + string.join(tokens,'_')
     def prefixed_libname(self):
         return '#/lib/' + self.libname()
