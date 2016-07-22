@@ -2,6 +2,32 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_7_8
 
+4) kutschke 20 July, 2016
+   Changed SConstruct so that both satellite releases and base
+   releases prefix .so files with "libmu2e_".  The previous
+   behaviour was that satellite release .so files were prefixed
+   "libmu2euser_".  The use case for this does not actually work;
+   without that it's just int the way.
+
+3) kutschke 20 July, 2016
+   Removed 4 obsolete scripts:
+     bin/cleanTestRelease
+     bin/createTestRelease
+     bin/rebindTestRelease
+     bin/rebindSatelliteRelease
+   The first two are superceded by createSatelliteRelease and cleanSatelliteRelease.
+   The last two are a failed experiment to combine clean followed by create into
+   a single script.  The problem is that the create step must be done in a clean
+   terminal window.
+
+   To learn how to use the satellite release system, see:
+     See http://mu2e.fnal.gov/atwork/computing/satelliteRelease.shtml
+
+2) brownd 16 July 2016
+    Introduced TrkDiag/TrackAnalysis module and associated helpers, structs,
+    and configuration.
+    Aggregated service configurations into some standard targets in
+    fcl/standardServices.
 
 1)  dnbrow01  28 July 2016
     Made Geometry code by default less verbose.  Some code was 
@@ -31,8 +57,3 @@ Still under construction
 	modified:   Mu2eG4/src/constructDiskCalorimeter.cc
 	modified:   Mu2eG4/src/constructVirtualDetectors.cc
 	modified:   ReleasedNotes/v5/v5_7_8.txt
-2) brownd 16 July 2016
-    Introduced TrkDiag/TrackAnalysis module and associated helpers, structs,
-    and configuration.
-    Aggregated service configurations into some standard targets in
-    fcl/standardServices.
