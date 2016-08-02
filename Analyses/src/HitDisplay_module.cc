@@ -381,7 +381,7 @@ namespace mu2e {
 	       pos.x(),
 	       pos.y(),
 	       pos.z(),
-	       hit->energyDepTotal()
+	       hit->energyDepTot()
 	       );
       }
     }

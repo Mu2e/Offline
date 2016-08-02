@@ -3,39 +3,45 @@
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
-	MakeCaloProtoCluster :
-	{
-	  module_type            : MakeCaloProtoCluster
-	  caloCrystalModuleLabel : MakeCaloCrystalHits
-	  mainClusterCollName    : mainCluster
-	  splitClusterCollName   : splitCluster
-	  EminSeed               : 10
-	  ExpandCut              : 0.9
-	  EnoiseCut              : 0.9
-	  timeCut                : 300
-	  deltaTimePlus          : 10
-	  deltaTimeMinus         : 10
-	  diagLevel              : 0
-	}  
 
-	MakeCaloCluster :
-	{
-	  module_type            : MakeCaloCluster
-	  caloClusterModuleLabel : MakeCaloProtoCluster
-	  mainClusterCollName    : mainCluster
-	  splitClusterCollName   : splitCluster
-	  deltaTimePlus          : 5
-	  deltaTimeMinus         : 5
-	  maxDistSplit           : 100
-	  maxDistMain            : 100
-	  cogTypeName            : Linear
-	  diagLevel              : 0
-	}  
+CaloProtoClusterFromCrystalHit :
+{
+  module_type            : CaloProtoClusterFromCrystalHit
+  caloCrystalModuleLabel : CaloCrystalHitsFromHits
+  mainClusterCollName    : mainCluster
+  splitClusterCollName   : splitCluster
+  EminSeed               : 10
+  ExpandCut              : 1.0
+  EnoiseCut              : 1.0
+  timeCut                : 500
+  deltaTimePlus          : 2
+  deltaTimeMinus         : 2
+  diagLevel              : 0
+}  
 
-CaloCluster : {
-    producers : {
-	MakeCaloProtoCluster : { @table::MakeCaloProtoCluster }
-	MakeCaloCluster      : { @table::MakeCaloCluster      }
-    }
+
+
+CaloClusterFromProtoCluster :
+{
+  module_type            : CaloClusterFromProtoCluster
+  caloClusterModuleLabel : CaloProtoClusterFromCrystalHit
+  mainClusterCollName    : mainCluster
+  splitClusterCollName   : splitCluster
+  deltaTimePlus          : 2
+  deltaTimeMinus         : 2
+  maxDistSplit           : 150
+  maxDistMain            : 150
+  cogTypeName            : Linear
+  diagLevel              : 0
+}  
+
+CaloClusterTruthMatch:
+{
+    module_type               : CaloClusterTruthMatch
+    caloClusterModuleLabel    : CaloClusterFromProtoCluster
+    caloHitTruthModuleLabel   : CaloHitsTruthMatch
+    diagLevel                 : 0
 }
+
+
 END_PROLOG

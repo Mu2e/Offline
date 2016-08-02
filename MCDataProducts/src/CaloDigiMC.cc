@@ -25,9 +25,9 @@ namespace mu2e {
   }
 
   
-  void          CaloDigiMC::addCaloShower(const CaloShowerStepMC* CaloShower, double HitTimeUnfolded)  {
+  void          CaloDigiMC::addCaloShower(const CaloShowerStep* CaloShower, double HitTimeUnfolded)  {
     
-    double    csEdep  = CaloShower->energy();
+    double    csEdep  = CaloShower->energyMC();
     double    csTime  = HitTimeUnfolded;//CaloShower->time();
     
     int       csSimId = CaloShower->simParticle()->id().asInt();

@@ -18,7 +18,6 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CaloCluster/inc/CaloContentMC.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -27,27 +26,30 @@
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/TrkBase/TrkParticle.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
-#include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/GenId.hh"
-#include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "MCDataProducts/inc/CaloClusterMCTruthAssn.hh"
+#include "MCDataProducts/inc/CaloHitMCTruthAssn.hh"
+#include "CaloMC/inc/ClusterContentMC.hh"
+#include "CaloMC/inc/CrystalContentMC.hh"
 
 #include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloHit.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -63,6 +65,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
 
+
 #include "TDirectory.h"
 #include "TNtuple.h"
 #include "TTree.h"
@@ -74,8 +77,6 @@
 #include <string>
 #include <map>
 #include <vector>
-
-
 
 
 
@@ -107,11 +108,6 @@ namespace mu2e {
 
      private:
 
-       typedef std::vector< art::Handle<StepPointMCCollection> > HandleVector;
-       typedef art::Ptr< CaloCrystalHit> CaloCrystalHitPtr;
-       typedef art::Ptr<SimParticle> SimParticlePtr;
-
-
        int _diagLevel;
        bool _doGenerated;
        int _nProcess;
@@ -121,9 +117,10 @@ namespace mu2e {
        art::InputTag _simParticleTag;
 
 
-       std::string _caloReadoutModuleLabel;
        std::string _caloCrystalModuleLabel;
        std::string _caloClusterModuleLabel;
+       std::string _caloHitTruthModuleLabel;
+       std::string _caloClusterTruthModuleLabel;
        std::string _caloClusterAlgorithm;
        std::string _caloClusterSeeding;
        const std::string _producerName;
@@ -162,10 +159,10 @@ namespace mu2e {
        std::vector<std::vector<int> > _cluList;
 
        int   _clusimId[16384],_clusimPdgId[16384],_clusimGenIdx[16384],_clusimCrCode[16384];
-       float _clusimMom[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimTime[16384],_clusimEdep[16384];
+       float _clusimMom[16384],_clusimMom2[16384],_clusimPosX[16384],_clusimPosY[16384],_clusimPosZ[16384],_clusimTime[16384],_clusimEdep[16384];
 
        int   _nVd,_vdId[16384],_vdPdgId[16384],_vdenIdx[16384];
-       float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMomX[16384],_vdMomY[16384],_vdMomZ[16384];
+       float _vdTime[16384],_vdPosX[16384],_vdPosY[16384],_vdPosZ[16384],_vdMom[16384],_vdMomX[16384],_vdMomY[16384],_vdMomZ[16384];
 
        int   _nTrkOk,_nTrk,_trkOk[8192],_trkstat[8192],_trknHit[8192];
        float _trkDip[8192],_trkpt[8192],_trkcon[8192],_trkmomErr[8192];
@@ -185,9 +182,10 @@ namespace mu2e {
     _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel")),
     _simParticleTag(pset.get<std::string>("simParticleTag")),
-    _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel")),
     _caloCrystalModuleLabel(pset.get<std::string>("caloCrystalModuleLabel")),
     _caloClusterModuleLabel(pset.get<std::string>("caloClusterModuleLabel")),
+    _caloHitTruthModuleLabel(pset.get<std::string>("caloHitTruthModuleLabel")),
+    _caloClusterTruthModuleLabel(pset.get<std::string>("caloClusterTruthModuleLabel")),
     _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName")),
     _stepPointMCLabel(pset.get<std::string>("stepPointMCLabel")),
     _trkPatRecModuleLabel(pset.get<std::string>("trkPatRecModuleLabel")),
@@ -269,6 +267,7 @@ namespace mu2e {
        _Ntup->Branch("clusimGenIdx", &_clusimGenIdx ,"clusimGenIdx[nCluSim]/I");
        _Ntup->Branch("clusimCrCode", &_clusimCrCode ,"clusimCrCode[nCluSim]/I");
        _Ntup->Branch("clusimMom",    &_clusimMom ,   "clusimMom[nCluSim]/F");
+       _Ntup->Branch("clusimMom2",    &_clusimMom2 ,   "clusimMom2[nCluSim]/F");
        _Ntup->Branch("clusimPosX",   &_clusimPosX ,  "clusimPosX[nCluSim]/F");
        _Ntup->Branch("clusimPosY",   &_clusimPosY ,  "clusimPosY[nCluSim]/F");
        _Ntup->Branch("clusimPosZ",   &_clusimPosZ ,  "clusimPosZ[nCluSim]/F");
@@ -278,6 +277,7 @@ namespace mu2e {
        _Ntup->Branch("nVd",      &_nVd ,     "nVd/I");
        _Ntup->Branch("vdId",     &_vdId ,    "vdId[nVd]/I");
        _Ntup->Branch("vdPdgId",  &_vdPdgId , "vdPdgId[nVd]/I");
+       _Ntup->Branch("vdMom",    &_vdMom ,   "vdMom[nVd]/F");
        _Ntup->Branch("vdMomX",   &_vdMomX ,  "vdMomX[nVd]/F");
        _Ntup->Branch("vdMomY",   &_vdMomY ,  "vdMomY[nVd]/F");
        _Ntup->Branch("vdMomZ",   &_vdMomZ ,  "vdMomZ[nVd]/F");
@@ -339,56 +339,56 @@ namespace mu2e {
       double _mbtime = accPar->deBuncherPeriod;
       _toff.updateMap(event);
 
-      //Get handle to the calorimeter
+
+      //Handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
       if( ! geom->hasElement<Calorimeter>() ) return;
       Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
-      //Get calorimeter readout hits (2 readout / crystal as of today)
-      art::Handle<CaloHitCollection> caloHitsHandle;
-      event.getByLabel(_caloReadoutModuleLabel, caloHitsHandle);
-      CaloHitCollection const& caloHits(*caloHitsHandle);
-
-      //Get calorimeter readout hits MC level - energy/time/type
-      art::Handle<CaloHitMCTruthCollection> caloHitMCTruthHandle;
-      event.getByLabel(_caloReadoutModuleLabel, caloHitMCTruthHandle);
-      CaloHitMCTruthCollection const& caloHitsMCTruth(*caloHitMCTruthHandle);
-
-      //Get simParticles and stepPointMC summary for crystal readout hits
-      art::Handle<CaloHitSimPartMCCollection> caloHitSimMCHandle;
-      event.getByLabel(_caloReadoutModuleLabel, caloHitSimMCHandle);
-      CaloHitSimPartMCCollection const& caloHitSimPartMC(*caloHitSimMCHandle);
-
-      //Get calo crystal hits (average from readouts)
+      //Calorimeter crystal hits (average from readouts)
       art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
       event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
       CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
 
-      //Get calo cluster
+      //Calorimeter clusters
       art::Handle<CaloClusterCollection> caloClustersHandle;
       event.getByLabel(_caloClusterModuleLabel, caloClustersHandle);
       CaloClusterCollection const& caloClusters(*caloClustersHandle);
 
-      //Get virtual detector hits
+      //Virtual detector hits
       art::Handle<StepPointMCCollection> vdhits;
       event.getByLabel(_g4ModuleLabel,_virtualDetectorLabel,vdhits);
 
+      //Calorimeter crystal truth assignment
+      art::Handle<CaloClusterMCTruthAssns> caloClusterTruthHandle;
+      event.getByLabel(_caloClusterTruthModuleLabel, caloClusterTruthHandle);
+      const CaloClusterMCTruthAssns& caloClusterTruth(*caloClusterTruthHandle);
 
-/*
-      //Get tracks
-      art::Handle<KalRepCollection> krepsHandle;
-      event.getByLabel(_trkPatRecModuleLabel,_instanceName,krepsHandle);
-      KalRepCollection const& kreps = *krepsHandle;
-*/
+      //Calorimeter crystal truth assignment
+      art::Handle<CaloHitMCTruthAssns> caloHitTruthHandle;
+      event.getByLabel(_caloHitTruthModuleLabel, caloHitTruthHandle);
+      const CaloHitMCTruthAssns& caloHitTruth(*caloHitTruthHandle);
 
-      //Utility to match  cloHits with MCtruth, simParticles and StepPoints
-      CaloHitMCNavigator caloHitNavigator(caloHits, caloHitsMCTruth, caloHitSimPartMC);
+      art::Handle<KalRepPtrCollection> trksHandle;
+      event.getByLabel(_trkPatRecModuleLabel,_instanceName, trksHandle);
+      const KalRepPtrCollection& trks = *trksHandle;
+
 
 
       const double CrDensity = 4.9*(CLHEP::g/CLHEP::cm3);
       const double CrMass    = CrDensity*cal.caloGeomInfo().crystalVolume();
 
 
+      std::map<art::Ptr<SimParticle>, const StepPointMC*> vdMap;
+      if (vdhits.isValid())
+      {
+         for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter)
+         {
+            const StepPointMC& hit = *iter;
+            if (hit.volumeId()<VirtualDetectorId::EMC_Disk_0_SurfIn || hit.volumeId()>VirtualDetectorId::EMC_Disk_1_EdgeOut) continue;
+	    vdMap[hit.simParticle()] = &hit;
+	 }
+      }
 
 
 
@@ -404,16 +404,12 @@ namespace mu2e {
        if (_diagLevel == 3){std::cout << "processing event in calo_example " << _nProcess << " run and event  = " << _run << " " << _evt << " with instance name = " << _instanceName << std::endl;}
 
 
-       const mu2e::GenParticle* genStart(nullptr);
        if (_doGenerated)
        {
-
            //Get generated particles
            art::Handle<GenParticleCollection> gensHandle;
            event.getByLabel(_generatorModuleLabel, gensHandle);
            GenParticleCollection const& genParticles(*gensHandle);
-           genStart = &(genParticles.at(0));
-	   
 	   
 	   _nGen = genParticles.size();
 	   for (unsigned int i=0; i < genParticles.size(); ++i)
@@ -440,23 +436,11 @@ namespace mu2e {
 
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic)
        {
-           const CaloCrystalHit &hit      = caloCrystalHits.at(ic);
-	   int sectionId                  = cal.crystal(hit.id()).sectionId();
-           CLHEP::Hep3Vector crystalPos   = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
-           const CaloHit &caloHit         = *(hit.readouts().at(0));
-
-           const CaloHitSimPartMC &hitSim = caloHitNavigator.sim(caloHit);
-           int nPartInside                = hitSim.simParticles().size();
-
-
-
-
-           _hcryE->Fill(hit.energyDep());
-           _hcryT->Fill(hit.time());
-           _hcryX->Fill(crystalPos.x());
-           _hcryY->Fill(crystalPos.y());
-           _hcryZ->Fill(crystalPos.z());
-
+           const CaloCrystalHit &hit     = caloCrystalHits.at(ic);
+	   int sectionId                 = cal.crystal(hit.id()).sectionId();
+           CLHEP::Hep3Vector crystalPos  = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
+ 
+           CrystalContentMC contentMC(cal, caloHitTruth, hit);
 
            _cryEtot             += hit.energyDep();
            _cryTime[_nHits]      = hit.time();
@@ -467,108 +451,113 @@ namespace mu2e {
            _cryPosZ[_nHits]      = crystalPos.z();
            _cryId[_nHits]        = hit.id();
            _crySectionId[_nHits] = sectionId;
-           _crySimIdx[_nHits]    = _nSim;
-           _crySimLen[_nHits]    = nPartInside;
+
+           _crySimIdx[_nCluster] = _nCluSim;
+           _crySimLen[_nCluster] = contentMC.simContentMap().size();
+
+           for (const auto& contentMap : contentMC.simContentMap() )
+	   {	       
+	       art::Ptr<SimParticle> sim = contentMap.first;
+	       CaloContentSim       data = contentMap.second;
+               
+	       auto parent(sim);
+               while ( parent->hasParent()) parent = parent->parent();               
+               
+	       _motId[_nSim]      = sim->id().asInt();
+               _motPdgId[_nSim]   = sim->pdgId();
+               _motmom[_nSim]     = data.mom();
+               _motcrCode[_nSim]  = sim->creationCode();
+       	       _motTime[_nSim]    = data.time();
+               _motEdep[_nSim]    = data.edep();	                      
+	       
+	       _motStartX[_nSim]  = parent->startPosition().x();
+	       _motStartY[_nSim]  = parent->startPosition().y();
+	       _motStartZ[_nSim]  = parent->startPosition().z();
+
+	       ++_nSim;
+            }
+
+
+           _hcryE->Fill(hit.energyDep());
+           _hcryT->Fill(hit.time());
+           _hcryX->Fill(crystalPos.x());
+           _hcryY->Fill(crystalPos.y());
+           _hcryZ->Fill(crystalPos.z());
 	   _hxy->Fill(crystalPos.x(),crystalPos.y(),hit.energyDep());
-
-
-           for (int ip=0; ip<nPartInside;++ip)
-           {
-               const art::Ptr<SimParticle> &mother = hitSim.simParticles().at(ip);
-
-               art::Ptr<SimParticle> grandMother = mother;
-               while (grandMother->hasParent()) grandMother = grandMother->parent();
-               const GenParticle *generated = grandMother->genParticle() ? grandMother->genParticle().get() : 0;
-
-	       CLHEP::Hep3Vector hitSimPos = cal.toSectionFrameFF(sectionId,hitSim.position().at(ip)); //in disk FF frame
-
-               _motId[_nSim]      = mother->id().asInt();
-               _motPdgId[_nSim]   = mother->pdgId();
-               _motmom[_nSim]     = hitSim.momentum().at(ip);
-               _motcrCode[_nSim]  = mother->creationCode();
-               _motStartX[_nSim]  = mother->startPosition().x(); //in Mu2e frame
-               _motStartY[_nSim]  = mother->startPosition().y();
-               _motStartZ[_nSim]  = mother->startPosition().z();
-               _motStartT[_nSim]  = mother->startGlobalTime();
-               _motPosX[_nSim]    = hitSimPos.x(); // in disk FF frame
-               _motPosY[_nSim]    = hitSimPos.y();
-               _motPosZ[_nSim]    = hitSimPos.z();
-               _motTime[_nSim]    = hitSim.time().at(ip);
-               _motEdep[_nSim]    = hitSim.eDep().at(ip);
-
-               _motGenIdx[_nSim]  = -1;
-               if (_doGenerated && generated) _motGenIdx[_nSim] = generated - genStart;
-               ++_nSim;
-           }
-
            ++_nHits;
        }
 
 
 
        //--------------------------  Do clusters --------------------------------
-
        _nCluster = _nCluSim = 0;
        _cluList.clear();
        for (CaloClusterCollection::const_iterator clusterIt = caloClusters.begin(); clusterIt != caloClusters.end(); ++clusterIt)
        {
+       
+           ClusterContentMC contentMC(cal, caloClusterTruth, *clusterIt);
 
-          CaloContentMC clutil(caloHitNavigator,*clusterIt);
-          const std::vector<art::Ptr<SimParticle> > &sim1 = clutil.simPart();
+           std::vector<int> _list;
+           for (int i=0;i<clusterIt->size();++i)
+           {
+               int idx = int(clusterIt->caloCrystalHitsPtrVector().at(i).get()- &caloCrystalHits.at(0));
+               _list.push_back(idx);
+           }
 
-          std::vector<int> _list;
-          for (int i=0;i<clusterIt->size();++i)
-          {
-            int idx = int(clusterIt->caloCrystalHitsPtrVector().at(i).get()- &caloCrystalHits.at(0));
-            _list.push_back(idx);
-          }
+           _cluEnergy[_nCluster] = clusterIt->energyDep();
+           _cluTime[_nCluster]   = clusterIt->time();
+           _cluNcrys[_nCluster]  = clusterIt->size();
+           _cluCogX[_nCluster]   = clusterIt->cog3Vector().x(); //in disk FF frame
+           _cluCogY[_nCluster]   = clusterIt->cog3Vector().y();
+           _cluCogZ[_nCluster]   = clusterIt->cog3Vector().z();
+           _cluConv[_nCluster]   = (contentMC.hasConversion() ? 1 : 0);
+           _cluList.push_back(_list);
 
-          _cluEnergy[_nCluster] = clusterIt->energyDep();
-          _cluTime[_nCluster]   = clusterIt->time();
-          _cluNcrys[_nCluster]  = clusterIt->size();
-          _cluCogX[_nCluster]   = clusterIt->cog3Vector().x(); //in disk FF frame
-          _cluCogY[_nCluster]   = clusterIt->cog3Vector().y();
-          _cluCogZ[_nCluster]   = clusterIt->cog3Vector().z();
-          _cluConv[_nCluster]   = clutil.hasConversion();
-          _cluSimIdx[_nCluster] = _nCluSim;
-          _cluSimLen[_nCluster] = sim1.size();
-          _cluList.push_back(_list);
+           _cluSimIdx[_nCluster] = _nCluSim;
+           _cluSimLen[_nCluster] = contentMC.simContentMap().size();
 
-          _hcluE->Fill(clusterIt->energyDep());
-          _hcluT->Fill(clusterIt->time());
-          _hcluX->Fill(clusterIt->cog3Vector().x());
-          _hcluY->Fill(clusterIt->cog3Vector().y());
-          _hcluZ->Fill(clusterIt->cog3Vector().z());
-          _hcluE1Et->Fill(clusterIt->e1()/clusterIt->energyDep());
-          _hcluE1E9->Fill(clusterIt->e1()/clusterIt->e9());
-          _hcluE1E25->Fill(clusterIt->e1()/clusterIt->e25());
-          //note: a signal cluster is defined as _cluConv==1 and _cluSimLen==1 (if it has a signal and there is only one inside)
+           for (const auto& contentMap : contentMC.simContentMap() )
+	   {	       
+	       art::Ptr<SimParticle> sim = contentMap.first;
+	       CaloContentSim       data = contentMap.second;
 
+	       art::Ptr<SimParticle> smother(sim);
+               while (smother->hasParent()) smother = smother->parent();
+               int genIdx=-1;
+               if (smother->genParticle()) genIdx = smother->genParticle()->generatorId().id();
+               
+	       double simMom(-1);
+	       CLHEP::Hep3Vector simPos(0,0,0);
+	       auto vdMapEntry = vdMap.find(sim);
+	       if (vdMapEntry != vdMap.end())
+	       {
+	          simMom = vdMapEntry->second->momentum().mag();
+		  CLHEP::Hep3Vector simPos = cal.toSectionFrameFF(clusterIt->sectionId(), vdMapEntry->second->position());		  
+	       } 
 
-          for (unsigned int ip=0; ip<sim1.size();++ip)
-          {
-              art::Ptr<SimParticle> smother = sim1[ip];
-              while (smother->hasParent()) smother = smother->parent();
-              int genIdx=-1;
-              if (smother->genParticle()) genIdx = smother->genParticle()->generatorId().id();
-              
-              CLHEP::Hep3Vector cluSimPos = cal.toSectionFrameFF(clusterIt->sectionId(),clutil.position().at(ip));
+               _clusimId[_nCluSim]     = sim->id().asInt();
+               _clusimPdgId[_nCluSim]  = sim->pdgId();
+               _clusimGenIdx[_nCluSim] = genIdx;
+               _clusimCrCode[_nCluSim] = sim->creationCode();
+               _clusimTime[_nCluSim]   = data.time();
+               _clusimEdep[_nCluSim]   = data.edep();
+               _clusimMom[_nCluSim]    = data.mom();//simMom;
+               _clusimMom2[_nCluSim]   = simMom;
+               _clusimPosX[_nCluSim]   = simPos.x(); // in disk FF frame
+               _clusimPosY[_nCluSim]   = simPos.y();
+               _clusimPosZ[_nCluSim]   = simPos.z();  
 
-             _clusimId[_nCluSim]     = sim1[ip]->id().asInt();
-             _clusimPdgId[_nCluSim]  = sim1[ip]->pdgId();
-             _clusimGenIdx[_nCluSim] = genIdx;
-             _clusimCrCode[_nCluSim] = sim1[ip]->creationCode();
-             _clusimMom[_nCluSim]    = clutil.momentum().at(ip);
-             _clusimPosX[_nCluSim]   = cluSimPos.x(); // in disk FF frame
-             _clusimPosY[_nCluSim]   = cluSimPos.y();
-             _clusimPosZ[_nCluSim]   = cluSimPos.z();  
-             _clusimTime[_nCluSim]   = clutil.time().at(ip);
-             _clusimEdep[_nCluSim]   = clutil.edepTot().at(ip);
-	     
-             ++_nCluSim;
-          }
+               ++_nCluSim;
+            }
 
-          ++_nCluster;
+           _hcluE->Fill(clusterIt->energyDep());
+           _hcluT->Fill(clusterIt->time());
+           _hcluX->Fill(clusterIt->cog3Vector().x());
+           _hcluY->Fill(clusterIt->cog3Vector().y());
+           _hcluZ->Fill(clusterIt->cog3Vector().z());
+	   
+	  
+           ++_nCluster;
        }
 
 
@@ -578,7 +567,7 @@ namespace mu2e {
        //75/76/79/80 front back inner outer edges disk 1
        _nVd = 0;
        if (vdhits.isValid())
-         {
+       {
            for (auto iter=vdhits->begin(), ie=vdhits->end(); iter!=ie; ++iter)
              {
                const StepPointMC& hit = *iter;
@@ -605,59 +594,49 @@ namespace mu2e {
                _vdMomZ[_nVd]  = hit.momentum().z();
                _vdenIdx[_nVd] = hit.simParticle()->generatorIndex();
                ++_nVd;
-             }
-             
-             
-             
+             }             
          }
 
 
        //--------------------------  Do tracks  --------------------------------
        /*
-       _nTrkOk = 0;
        _nTrk = 0;
 
-       for ( KalRepCollection::const_iterator i=kreps.begin(); i != kreps.end(); ++i ){
-
-         KalRep const& krep = **i;
+       for ( size_t itrk=0; itrk< trks.size(); ++itrk )
+       {
+         KalRep const* krep = trks.at(itrk).get();
 
          // Arc length from center of tracker to the most upstream point on the fitted track.
-         double s0 = krep.startValidRange();
+         double s0 = krep->startValidRange();
 
          // Momentum and position at s0.
-         CLHEP::Hep3Vector p0     = krep.momentum(s0);
-         HepPoint          pos0   = krep.position(s0);
+         CLHEP::Hep3Vector p0     = krep->momentum(s0);
+         HepPoint          pos0   = krep->position(s0);
 
          // Some other properties at s0.
          double loclen(0.);
-         const TrkSimpTraj* ltraj = krep.localTrajectory(s0,loclen);
+         const TrkSimpTraj* ltraj = krep->localTrajectory(s0,loclen);
          HepVector momvec(3);
          momvec = p0.unit();
-         BbrVectorErr momCov = krep.momentumErr(s0);
+         BbrVectorErr momCov = krep->momentumErr(s0);
          double fitMomErr    = sqrt(momCov.covMatrix().similarity(momvec));
          double tanDip       = ltraj->parameters()->parameter()[HelixTraj::tanDipIndex];
          double omega        = ltraj->parameters()->parameter()[HelixTraj::omegaIndex];
          double d0           = ltraj->parameters()->parameter()[HelixTraj::d0Index];
          double z0           = ltraj->parameters()->parameter()[HelixTraj::z0Index];
          double trkPhi0      = ltraj->parameters()->parameter()[HelixTraj::phi0Index];
-         double fitCon       = krep.chisqConsistency().significanceLevel();
-         double trkt0Err     = krep.t0().t0Err();
+         double fitCon       = krep->chisqConsistency().significanceLevel();
+         double trkt0Err     = krep->t0().t0Err();
          double fitmompt = p0.mag()*(1.0-p0.cosTheta()*p0.cosTheta());
 
-         // Does this fit pass cut set C?
-         bool cutC = ( krep.fitStatus().success() >0) &&
-           ( fitCon             > 2.e-3  ) &&
-           ( krep.nActive()    >= 20    ) &&
-           ( fitMomErr          < 0.25   );
 
           _trkDip[_nTrk] = tanDip;
-          _trkOk[_nTrk]  = cutC? 1 : 0;
           _trkpt[_nTrk]  = fitmompt;
-          _trkstat[_nTrk]  = krep.fitStatus().success();
+          _trkstat[_nTrk]  = krep->fitStatus().success();
           _trkcon[_nTrk]  = fitCon;
-          _trknHit[_nTrk]  = krep.nActive();
+          _trknHit[_nTrk]  = krep->nActive();
           _trkmomErr[_nTrk]  = fitMomErr ;
-          _trkt0[_nTrk] = krep.t0().t0();
+          _trkt0[_nTrk] = krep->t0().t0();
           _trkMom[_nTrk] = p0.mag();
           _trkd0[_nTrk] = d0;
           _trkz0[_nTrk] = z0;
@@ -666,10 +645,11 @@ namespace mu2e {
           _trkt0Err[_nTrk] = trkt0Err;
           ++_nTrk;
 
-          if (cutC)  ++_nTrkOk;
         }
         */
 
+
+ 
         _Ntup->Fill();
 
 
@@ -685,3 +665,42 @@ namespace mu2e {
 DEFINE_ART_MODULE(mu2e::CaloExample);
 
 
+/*
+	   if (!contentMC.hasConversion() && clusterIt->energyDep() > 70)
+	   {
+	         std::cout<<"Cluster content "<<std::endl;
+
+        	 for (const auto& contentMap : contentMC.simContentMap() )
+		 {	       
+		   art::Ptr<SimParticle> sim = contentMap.first;
+        	   CaloContentSim       data = contentMap.second;
+		   
+		   std::cout<<sim->id().asInt()<<" "<<sim->startPosition()<<" "<<sim->endPosition()<<"   "<<data.time()<<" "<<data.edep()<<std::endl;
+		 }		 
+		 
+		 art::Handle<GenParticleCollection> gensHandle;
+		 event.getByLabel("generate", gensHandle);
+		 GenParticleCollection const& genParticles(*gensHandle);
+
+		 //art::Handle<SimParticleCollection> simsHandle;
+		 //event.getByLabel("g4run", simsHandle);
+		 //SimParticleCollection const& simParticles2(*simsHandle);
+		 
+		 std::cout<<"Generated"<<std::endl;
+		 for (const auto& gen : genParticles) std::cout<<gen.generatorId().name()<<" "<<gen.pdgId()<<" "<<gen.momentum().rho()<<"   "<<gen.position()<<std::endl;
+
+
+		 //std::cout<<"Simulated"<<std::endl;
+		 //for (const auto& sim2 : simParticles2)
+		 //{
+		 //  const SimParticle& simm(sim2.second);
+		 //  std::cout<<simm.id().asInt()<<" "<<simm.pdgId()<<" "<<simm.creationCode()<<"   "<<simm.startMomentum().mag()<<" "<<simm.startPosition()<<" / "<<simm.endPosition()<<"   ";
+                 //  if (simm.hasParent()) std::cout<<"p="<<simm.parent()->id().asInt()<<"   ";
+		 //  if (simm.genParticle()) std::cout<<"g="<<simm.genParticle()->generatorId().id();
+		   
+		 //  std::cout<<std::endl;
+		 //}    
+	   
+	   }
+
+*/

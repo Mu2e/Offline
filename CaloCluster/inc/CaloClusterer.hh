@@ -15,7 +15,7 @@
 
 // C++ includes
 #include <string>
-#include "CaloCluster/inc/ClosestCaloClusterFinder.hh"
+#include "CaloCluster/inc/ClosestClusterFinder.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 
 
@@ -37,7 +37,7 @@ class CaloClusterer{
 
 private:
 
-        std::unique_ptr<CaloClusterFinder> _ccf;
+        std::unique_ptr<ClusterFinder> _ccf;
         CaloClusterParameters *_param;
 
 public:
@@ -54,11 +54,11 @@ public:
                 _param->_EclusterCut = 0.0;
 
                 if(flagAlgo.compare("CLOSEST") == 0){
-                        _ccf.reset( new ClosestCaloClusterFinder(_param) );
+                        _ccf.reset( new ClosestClusterFinder(_param) );
                 }else if(flagAlgo.compare("OTHERalgorithm")){
-                        //_ccf = new OtherAlgorithmCaloClusterFinder(_param);
+                        //_ccf = new OtherAlgorithmClusterFinder(_param);
                 }else {
-                        _ccf.reset( new CaloClusterFinder(_param) );
+                        _ccf.reset( new ClusterFinder(_param) );
                 }
 
         }
@@ -79,11 +79,11 @@ public:
                 _param->_EclusterCut = EclusterCut;
 
                 if(flagAlgo.compare("CLOSEST") == 0){
-                        _ccf.reset( new ClosestCaloClusterFinder(_param) );
+                        _ccf.reset( new ClosestClusterFinder(_param) );
                 }else if(flagAlgo.compare("OTHERalgorithm")){
-                        //_ccf = new OtherAlgorithmCaloClusterFinder(_param);
+                        //_ccf = new OtherAlgorithmClusterFinder(_param);
                 }else {
-                        _ccf.reset( new CaloClusterFinder(_param) );
+                        _ccf.reset( new ClusterFinder(_param) );
                 }
         }
 

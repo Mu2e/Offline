@@ -1,4 +1,4 @@
-#include "Mu2eG4/geom/geom_common_cd3_s3p2.txt"
+#include "Mu2eG4/geom/geom_common_cd3_s4p2.txt"
 
 // For Mu2eG4_module useOptions settings should
 // come throught fhicl - do not include the

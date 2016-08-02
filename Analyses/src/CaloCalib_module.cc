@@ -15,7 +15,6 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CaloCluster/inc/CaloContentMC.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -258,7 +257,7 @@ namespace mu2e {
       //Get handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
       if( ! geom->hasElement<Calorimeter>() ) return;
-      Calorimeter const & cal = *(GeomHandle<Calorimeter>());
+      //Calorimeter const & cal = *(GeomHandle<Calorimeter>());
   
 
       //Get generated particles
@@ -283,9 +282,9 @@ namespace mu2e {
       CaloHitSimPartMCCollection const& caloHitSimPartMC(*caloHitSimMCHandle);
             
       //Get calo crystal hits (average from readouts)
-      art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-      event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-      CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+      //art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
+      //event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
+      //CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
 
    
       //Utility to match  cloHits with MCtruth, simParticles and StepPoints
@@ -293,8 +292,8 @@ namespace mu2e {
 
    
 
-      const double CrDensity = 4.9e-6;  // in kg/mm3 to be consistent with volume units!
-      const double CrMass    = CrDensity*cal.caloGeomInfo().crystalVolume();
+      //const double CrDensity = 4.9e-6;  // in kg/mm3 to be consistent with volume units!
+      //const double CrMass    = CrDensity*cal.caloGeomInfo().crystalVolume();
 	   
 
 
@@ -326,6 +325,7 @@ namespace mu2e {
       
        _nHits = _nSim = 0;
        
+/*
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
        {	   
 	   CaloCrystalHit const& hit      = caloCrystalHits.at(ic);
@@ -383,7 +383,7 @@ namespace mu2e {
 	   	   
            ++_nHits;
        }
-
+*/
 
 
   	_Ntup->Fill();

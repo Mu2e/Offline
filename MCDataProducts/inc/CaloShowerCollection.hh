@@ -2,7 +2,7 @@
 #define MCDataProducts_CaloShowerCollection_hh
 
 //
-// Define a type for a collection of CaloShowerStepMC objects.
+// Define a type for a collection of CaloShowerStep objects.
 //
 // Original author Bertrand Echenard
 //

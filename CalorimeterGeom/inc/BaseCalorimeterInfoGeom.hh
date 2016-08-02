@@ -82,11 +82,6 @@ namespace mu2e {
            double envelopeZ0()          const      {return _envelopeZ0;}
            double envelopeZ1()          const      {return _envelopeZ1;}
            
-	   
-	   
-
-
-
            void nPipes(int value)                  {_nPipes = value;}
            void pipeRadius(double value)           {_pipeRadius = value;}
            void pipeThickness(double value)        {_pipeThickness = value;}           
@@ -125,7 +120,6 @@ namespace mu2e {
           double _envelopeZ0;
           double _envelopeZ1;
 	   
-
 	  unsigned int         _nPipes;
 	  double               _pipeRadius;
 	  double               _pipeThickness;

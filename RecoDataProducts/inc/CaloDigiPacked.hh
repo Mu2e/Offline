@@ -1,49 +1,35 @@
+// Original author G. Pezzullo
+
 #ifndef RecoDataProducts_CaloDigiPacked_hh
 #define RecoDataProducts_CaloDigiPacked_hh
 
-// Original author G. Pezzullo
-
-// C++ includes
 #include <iostream>
 #include <vector>
 
-// Mu2e includes
 
 namespace mu2e {
 
-  struct CaloDigiPacked{
+  class CaloDigiPacked
+  {
 
-  public:
+   
+    public:
 
-    CaloDigiPacked():
-      _caloDigiOutput(0) {
-    }
+      CaloDigiPacked(): _caloDigiOutput() {}
+      CaloDigiPacked(std::vector<int> &caloDigiOutput): _caloDigiOutput(caloDigiOutput) {}
 
-    CaloDigiPacked(const CaloDigiPacked &caloDigi):
-      _caloDigiOutput(caloDigi.output()) {
-    }
+      std::vector<int> const& output() const {return _caloDigiOutput;}
+      
 
-    CaloDigiPacked(std::vector<int> CaloDigiPackedOutput):
-      _caloDigiOutput(CaloDigiPackedOutput) {
-    }
+    private:
 
-    // Accessors
-    std::vector<int>      output()  const { return _caloDigiOutput; }
-
-    // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
-
-    // Print contents of the object.
-    void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
-
-  private:
-
-    std::vector<int>     _caloDigiOutput;             
+      std::vector<int> _caloDigiOutput;             
     
 
   };
 
  
 
-} // namespace mu2e
+}
 
-#endif /* RecoDataProducts_CaloDigiPacked_hh */
+#endif

@@ -45,6 +45,7 @@ string calorimeter.crystalMaterial             = "G4_BARIUM_FLUORIDE"; //"G4_PbW
 string calorimeter.crystalWrapper              = "Polyethylene092";
 double calorimeter.crystalWrapperThickness     = 0.065; //mm
 double calorimeter.crystalShellThickness       = 0.0 ;
+double calorimeter.refractiveIndex             = 1.47;
 
 bool   calorimeter.crystalShift                = false;
 
@@ -83,4 +84,4 @@ bool calorimeter.crystalSolid                 = false;
 bool calorimeter.absorberBoxVisible           = false;
 bool calorimeter.absorberBoxSolid             = false;
 
-int  calorimeter.verbosityLevel               = 0;
+int  calorimeter.verbosityLevel               = 1;

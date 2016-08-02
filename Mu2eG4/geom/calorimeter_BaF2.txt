@@ -29,6 +29,8 @@ double calorimeter.crystalHalfTrans            = 16.5;
 double calorimeter.crystalHexsize              = 16.5;  //mm  half distance across flats of hex crystal
 double calorimeter.crystalHalfLong             = 100.0;
 string calorimeter.crystalMaterial             = "G4_BARIUM_FLUORIDE"; //"G4_PbWO4" "G4_BARIUM_FLUORIDE" "Lyso_01" "G4_CESIUM_IODIDE"
+double calorimeter.refractiveIndex             = 1.47;
+
 string calorimeter.crystalWrapper              = "Polyethylene092";
 double calorimeter.crystalWrapperThickness     = 0.100; //mm
 
@@ -74,4 +76,4 @@ bool calorimeter.crystalSolid                 = true;
 bool calorimeter.absorberBoxVisible           = true;
 bool calorimeter.absorberBoxSolid             = true;
 
-int  calorimeter.verbosityLevel               = 0;
+int  calorimeter.verbosityLevel               = 1;

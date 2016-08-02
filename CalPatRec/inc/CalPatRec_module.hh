@@ -61,7 +61,6 @@ namespace art {
 #include "TrkPatRec/inc/PayloadSaver.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "Mu2eUtilities/inc/CaloHitMCNavigator.hh"
-#include "CaloCluster/inc/CaloContentMC.hh"
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 
 //CLHEP

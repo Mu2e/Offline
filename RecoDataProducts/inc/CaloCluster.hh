@@ -47,18 +47,18 @@ namespace mu2e {
 
 
 	    //Accessors
-	    int                                           sectionId() const{return _sectionId;}       
-	    int                                                size() const{return _caloCrystalHitsPtrVector.size();}
-	    double                                             time() const{return _time;}            
-	    double                                        energyDep() const{return _energyDep;}       
-	    double                                               e1() const{return _e1;}       
-	    double                                               e9() const{return _e9;}       
-	    double                                              e25() const{return _e25;}       
-	    double                                     secondMoment() const{return _secondMoment;}       
-	    double                                            angle() const{return _angle;}       
-	    CLHEP::Hep3Vector const&                     cog3Vector() const{return _cog3Vector;}      
-	    CaloCrystalHitPtrVector const& caloCrystalHitsPtrVector() const{return _caloCrystalHitsPtrVector;}
-	    bool                                            isSplit() const{return _isSplit;} 
+	    int                            sectionId()                const{return _sectionId;}       
+	    int                            size()                     const{return _caloCrystalHitsPtrVector.size();}
+	    double                         time()                     const{return _time;}            
+	    double                         energyDep()                const{return _energyDep;}       
+	    double                         e1()                       const{return _e1;}       
+	    double                         e9()                       const{return _e9;}       
+	    double                         e25()                      const{return _e25;}       
+	    double                         secondMoment()             const{return _secondMoment;}       
+	    double                         angle()                    const{return _angle;}       
+	    const CLHEP::Hep3Vector&       cog3Vector()               const{return _cog3Vector;}      
+	    const CaloCrystalHitPtrVector& caloCrystalHitsPtrVector() const{return _caloCrystalHitsPtrVector;}
+	    bool                           isSplit()                  const{return _isSplit;} 
 
 
 	    //Setting parameters

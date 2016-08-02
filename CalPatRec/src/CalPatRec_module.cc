@@ -654,8 +654,8 @@ namespace mu2e {
 // this is debug-only
 //-----------------------------------------------------------------------------
       if (_diagLevel > 0) {
-	CaloContentMC clutil(*_caloHitNavigator, *tp->Cluster());
-	_clCE    = clutil.hasConversion();
+	//CaloContentMC clutil(*_caloHitNavigator, *tp->Cluster());
+	//_clCE    = clutil.hasConversion();
       }
 
       if (_debugLevel > 0) {
@@ -1145,8 +1145,8 @@ namespace mu2e {
       cl      = &_ccCollection->at(ic);
 
       if (_diagLevel > 0) {
-	CaloContentMC clutil(*_caloHitNavigator, *cl);
-	_clCE    = clutil.hasConversion();
+	//CaloContentMC clutil(*_caloHitNavigator, *cl);
+	//_clCE    = clutil.hasConversion();
       }
 
       if ( cl->energyDep() > _minClusterEnergy) {

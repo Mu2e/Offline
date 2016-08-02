@@ -531,12 +531,12 @@ namespace mu2e {
 
       if ( pos != hitCrystals.end() ) {
 
-        _diagLevel > 0 && cout << __func__ << ": Already saw "
-                               << (*caloCrystalHits).at(pos->second) << endl;
+        //_diagLevel > 0 && cout << __func__ << ": Already saw "
+        //                       << (*caloCrystalHits).at(pos->second) << endl;
 
       }
 
-      _diagLevel > 0 && cout << __func__ << ": Inserting   " << hit << endl;
+      //_diagLevel > 0 && cout << __func__ << ": Inserting   " << hit << endl;
 
       hitCrystals.insert(pair<int,size_t>(hit.id(),i));
       _hRCTime->Fill(hit.time());
@@ -551,8 +551,8 @@ namespace mu2e {
 
     if ( _diagLevel > 1 && _nAnalyzed < _maxFullPrint ){
       for ( size_t i=0; i<caloCrystalHits->size(); ++i ) {
-        CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
-        cout << "Readback: " << hit << endl;
+        //CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
+        //cout << "Readback: " << hit << endl;
       }
     }
 

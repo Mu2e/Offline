@@ -479,7 +479,7 @@ namespace mu2e {
   void BkgRates::doCalorimeter(art::Event const& evt, bool skip) {
 
     if (skip) return;
-
+/*
     const double CrDensity = 7.4*(CLHEP::g/CLHEP::cm3);
 
     //Get handle to the calorimeter
@@ -537,6 +537,7 @@ namespace mu2e {
       CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
       if (hit.energyDep() < _minimumEnergyCalo) continue;
       
+
       std::vector<art::Ptr<CaloHit> > const& ROIds  = hit.readouts();
       
       //      cout << "Event " << evt.id().event() << ". In the caloCrystalHits there are " << ROIds.size() << " RO associated" << endl;
@@ -695,6 +696,7 @@ namespace mu2e {
       }
       _cNtup->Fill(cntpArray);
     }
+*/
   } // end of doCalorimeter
   
   

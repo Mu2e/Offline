@@ -48,8 +48,8 @@
 
 
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/RecoCaloDigi.hh"
-#include "RecoDataProducts/inc/RecoCaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
@@ -425,15 +425,14 @@ namespace mu2e {
        nCaloDigiMC   = caloDigiMCCol->size();
     }
 
-
-    art::Handle<RecoCaloDigiCollection>   recoCaloDigiHandle;
+    art::Handle<CaloRecoDigiCollection>   recoCaloDigiHandle;
     event.getByLabel(_caloDigisModuleLabel, recoCaloDigiHandle);
 
-    const     RecoCaloDigiCollection*       recoCaloDigiCol(0);
-    int       nRecoCaloDigi(0);
+    const     CaloRecoDigiCollection*       recoCaloDigiCol(0);
+    int       nCaloRecoDigi(0);
     if (recoCaloDigiHandle.isValid()){
        recoCaloDigiCol = recoCaloDigiHandle.product();
-       nRecoCaloDigi   = recoCaloDigiCol->size();
+       nCaloRecoDigi   = recoCaloDigiCol->size();
     }
 
 
@@ -635,7 +634,7 @@ namespace mu2e {
     const CaloCluster                       *cluster;
     const std::vector<CaloCrystalHitPtr>    *crystals;
     const CaloCrystalHit                    *crystalHit;
-    const RecoCaloDigi                      *recoDigi;
+    const CaloRecoDigi                      *recoDigi;
     //    const CaloDigi                          *caloDigi;
     const CaloDigiMC                        *caloDigiMC(0);
     const SimParticle                       *sim;
@@ -681,12 +680,12 @@ namespace mu2e {
         nHitsRO   [i][j] = 0;
       }
     }
-
-    _nRecoDigi = nRecoCaloDigi;
-
-    for (int i=0; i< nRecoCaloDigi; ++i){
+    
+    _nRecoDigi = nCaloRecoDigi;
+    
+    for (int i=0; i< nCaloRecoDigi; ++i){
       recoDigi   = &recoCaloDigiCol->at(i);
-      amplitude  = recoDigi->amplitude()*ADC2mV;
+      //amplitude  = recoDigi->amplitude()*ADC2mV;
       roId       = recoDigi->ROid();
       crystalId  = _calorimeter->crystalByRO(roId);
       diskId     = _calorimeter->crystal(crystalId).sectionId();
@@ -697,10 +696,11 @@ namespace mu2e {
       if (radius < _caloRmin)               continue;
 
       _recoDigiAmp   [i] = amplitude;
-      _recoDigiEnergy[i] = recoDigi->edep();
+      _recoDigiEnergy[i] = recoDigi->energyDep();
 
-      CaloDigi  caloDigi = recoDigi->RODigi();
-      nWords     = caloDigi.nSamples();
+      const CaloDigi&	caloDigi = *recoDigi->caloDigiPtr();
+      //nWords     = caloDigi.nSamples();
+
       pulse      = caloDigi.waveform();
 
       _recoDigiSamples [i] = nWords;
@@ -794,10 +794,10 @@ namespace mu2e {
       int    isConversion(0);
 
       recoDigi         = hit.recoCaloDigis().at(0).operator ->();
-      _cryAmp [_nHits]      = recoDigi->amplitude();
+      //_cryAmp [_nHits]      = recoDigi->amplitude();
 
-      const CaloDigi    caloDigi  = recoDigi->RODigi();
-      indexMC          = caloDigi.index();
+      indexMC          = 0;//caloDigi.index();
+
 
       if (nCaloDigiMC > 0) {
         caloDigiMC       = &caloDigiMCCol->at(indexMC);
@@ -827,7 +827,7 @@ namespace mu2e {
         _cryMCEdep    [_nHits] = 0;
       }
       _cryNParticles[_nHits] = nParticles;
-      _cryPsd       [_nHits] = recoDigi->psd();
+      //_cryPsd       [_nHits] = recoDigi->psd();
       _cryIsConv    [_nHits] = isConversion;
 
       ++_nHits;
@@ -848,55 +848,54 @@ namespace mu2e {
       double   energyMax(0), eMeanTot(0), clusterTime(0), clusterMCMeanTime(0), clusterMeanTime(0), clusterMCTime(0), eDep, psd, crystalTime(0);
 
       for (int j=0; j<nCrystals; ++j){
-        crystalHit       = crystals->at(j).operator ->();
-        recoDigi         = crystalHit->recoCaloDigis().at(0).operator ->();
+      	crystalHit	 = crystals->at(j).operator ->();
+      	recoDigi         = crystalHit->recoCaloDigis().at(0).operator ->();
 
-        const CaloDigi  caloDigi  = recoDigi->RODigi();
-        indexMC          = caloDigi.index();
+      	indexMC          = 0;//caloDigi.index();
 
+	
+      	eDep             = crystalHit->energyDep();
+      	psd              = 0;//recoDigi  ->psd();
 
-        eDep             = crystalHit->energyDep();
-        psd              = recoDigi  ->psd();
+      	if (psd >= _psdThreshold){
+      	  crystalTime        =   crystalHit->time();
 
-        if (psd >= _psdThreshold){
-          crystalTime        =   crystalHit->time();
+      	  if (eDep> 10.){
+      	    eMeanTot          += eDep;
+      	    clusterMeanTime   += crystalTime*eDep;
+      	  }
 
-          if (eDep> 10.){
-            eMeanTot          += eDep;
-            clusterMeanTime   += crystalTime*eDep;
-          }
+      	  if (eDep > energyMax){
+      	    clusterTime       = crystalTime;
+      	    energyMax         = eDep;
 
-          if (eDep > energyMax){
-            clusterTime       = crystalTime;
-            energyMax         = eDep;
+	    if (nCaloDigiMC > 0) {
+	      caloDigiMC        = &caloDigiMCCol->at(indexMC);
+	      clusterMCMeanTime = caloDigiMC->meanTime();
+	      clusterMCTime     = caloDigiMC->timeFirst();
+	    }
+  	  }
+      	}
 
-            if (nCaloDigiMC > 0) {
-              caloDigiMC        = &caloDigiMCCol->at(indexMC);
-              clusterMCMeanTime = caloDigiMC->meanTime();
-              clusterMCTime     = caloDigiMC->timeFirst();
-            }
-          }
-        }
+	if (nCaloDigiMC > 0) {
 
-        if (nCaloDigiMC > 0) {
-
-          for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
-            sim =   caloDigiMC->simParticle(k).operator ->();
-            int        pdgId       = sim->pdgId();
-            double     ceEnergy    = 104.9;
-            double     startEnergy = sim->startMomentum().e();
-            if ( (pdgId == 11) && (startEnergy>ceEnergy))
-              {
-                isConversion = 1;
-              }
-            // if ( sim->fromGenerator() ){
-            //   GenParticle* gen = (GenParticle*) &(sim->genParticle());
-            //   if ( gen->generatorId() == GenId::conversionGun ){
-            //  isConversion = 1;
-            //   }
-            // }
-          }//end loop on the particles inside the crystalHit
-        }
+	  for (int k=0; k<int(caloDigiMC->nParticles()); ++k){
+	    sim =   caloDigiMC->simParticle(k).operator ->();
+	    int        pdgId       = sim->pdgId();
+	    double     ceEnergy    = 104.9;
+	    double     startEnergy = sim->startMomentum().e();
+	    if ( (pdgId == 11) && (startEnergy>ceEnergy))
+	      {
+		isConversion = 1;
+	      }
+	    // if ( sim->fromGenerator() ){
+	    //   GenParticle* gen = (GenParticle*) &(sim->genParticle());
+	    //   if ( gen->generatorId() == GenId::conversionGun ){
+	    // 	isConversion = 1;
+	    //   }
+	    // }
+	  }//end loop on the particles inside the crystalHit
+	}
       }
       if (eMeanTot>0){
         clusterMeanTime /= eMeanTot;

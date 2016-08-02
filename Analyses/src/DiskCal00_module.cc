@@ -181,11 +181,11 @@ namespace mu2e {
       _hEnergyDep ->Fill(cryHit.energyDep());
       _hEnergyDep1->Fill(cryHit.energyDep());
       double logE    = ( cryHit.energyDep() > 0.)      ? log10(cryHit.energyDep())      : -5.5;
-      double logETot = ( cryHit.energyDepTotal() > 0.) ? log10(cryHit.energyDepTotal()) : -5.5;
+      double logETot = ( cryHit.energyDepTot() > 0.) ? log10(cryHit.energyDepTot()) : -5.5;
       _hEnergyDep2->Fill(logE);
       _hEnergyDep3->Fill(logETot);
       _hTime->Fill(cryHit.time());
-      _hNROId->Fill( cryHit.numberOfROIdsUsed() );
+      _hNROId->Fill( cryHit.nROId() );
 
       int id = cryHit.id();
       hit_crystals.insert(id);
@@ -223,6 +223,7 @@ namespace mu2e {
 
   void DiskCal00::followHistory( const CaloCrystalHit& cryHit){
 
+    /*
     vector<art::Ptr<CaloHit> > const & readouts(cryHit.readouts());
 
     if ( readouts.size()< 2 ) return;
@@ -241,6 +242,7 @@ namespace mu2e {
         _hDeltaTime->Fill(step.time()-cryHit.time());
       }
     }
+    */
   }
 
   void DiskCal00::simCheck(const art::Event& event) {

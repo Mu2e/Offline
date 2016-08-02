@@ -1,0 +1,79 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+
+BEGIN_PROLOG
+
+
+CaloShowerStepFromStepPt  : 
+{
+   module_type             : CaloShowerStepFromStepPt
+   numZSlices              : 20
+   deltaTime               : 0.2
+   calorimeterStepPoints   : calorimeter
+   calorimeterROStepPoints : calorimeterRO
+   physVolInfoInput        : "g4run"
+   caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
+   diagLevel               : 0
+}
+
+
+ CaloShowerFromShowerStep : 
+ {
+    module_type                 : CaloShowerFromShowerStep
+    caloShowerStepMCModuleLabel : CaloShowerStepFromStepPt
+    caloShowerMCName            : calorimeter
+    TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    blindTime                   : 0
+    timeGap                     : 0.5
+    filterEnergy                : 0.0
+    filterDeltaT                : 150.
+    caloLRUcorrection           : true
+    caloBirkesCorrection        : true
+
+    diagLevel                   : 0
+}
+
+
+CaloDigisFromShower : 
+{
+    module_type           : CaloDigisFromShower
+    caloShowerModuleLabel : CaloShowerFromShowerStep
+
+    blindTime             : @local::HitMakerBlindTime
+    caloPEStatcorrection  : true
+    addNoise              : true
+    noise                 : 2       # mV equivalent to 150 keV of Noise               
+
+    thresholdVoltage      : 5.0  
+    thresholdAmplitude    : 10 
+    energyScale           : 60 
+    digiSampling          : @local::HitMakerDigiSampling
+    nBits                 : 12
+    dynamicRange          : 2000 
+    endTimeBuffer         : 80
+    bufferDigi            : 5  
+    pulseIntegralSteps    : 50
+
+    diagLevel             : 0
+}
+
+ 
+ 
+ 
+
+CaloHitsTruthMatch:
+{
+    module_type               : CaloHitsTruthMatch
+    caloShowerModuleLabel     : CaloShowerFromShowerStep
+    caloCrystalHitModuleLabel : CaloCrystalHitsFromHits
+    deltaTimeMinus            : 4.0    #ns
+    deltaTimePlus             : 150.0  #ns
+    diagLevel                 : 0
+}
+
+
+
+
+END_PROLOG

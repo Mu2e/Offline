@@ -115,7 +115,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
     printf("-----------------------------------------------------------------------------------------------------\n");
   }
  
-  const mu2e::CaloProtoCluster::CaloCrystalHitPtrVector caloClusterHits = Cluster->caloCrystalHitsPtrVector();
+  const mu2e::CaloProtoCluster::CaloCrystalHitPtrVector caloClusterHits = Cluster->caloCrystalHitPtrVector();
   int nh = caloClusterHits.size();
 
   if ((opt == "") || (opt.Index("data") >= 0)) {
@@ -161,7 +161,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
 	     pos->x(),
 	     pos->y(),
 	     pos->z(),
-	     hit->energyDepTotal()
+	     hit->energyDepTot()
 	     );
     }
   }
