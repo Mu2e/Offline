@@ -32,7 +32,6 @@
 
 // Mu2e includes.
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "CalorimeterGeom/inc/sort_functors.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"

@@ -59,9 +59,6 @@ CaloDigisFromShower :
     diagLevel             : 0
 }
 
- 
- 
- 
 
 CaloHitsTruthMatch:
 {
@@ -72,8 +69,6 @@ CaloHitsTruthMatch:
     deltaTimePlus             : 150.0  #ns
     diagLevel                 : 0
 }
-
-
 
 
 END_PROLOG
