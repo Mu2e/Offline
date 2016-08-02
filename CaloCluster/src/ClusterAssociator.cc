@@ -35,7 +35,7 @@ namespace mu2e {
 	      int jmin(-1);
 
 	      double timeSmall                            = splitClusterColl[i].time();
-	      CaloCrystalHitPtrVector const& splitHitsPtr = splitClusterColl[i].caloCrystalHitPtrVector();	     
+	      CaloCrystalHitPtrVector const& splitHitsPtr = splitClusterColl[i].caloCrystalHitsPtrVector();	     
 	      CaloCrystalHitPtr       const& hitSmall     = *(splitHitsPtr.begin());	     
 
 
@@ -44,7 +44,7 @@ namespace mu2e {
 		   if (timeSmall - mainClusterColl[j].time() > deltaTimePlus)   {jStart = j; continue;}
 		   if (mainClusterColl[j].time() - timeSmall > deltaTimeMinus)  break;
 
-		   CaloCrystalHitPtrVector const& mainHitsPtr = mainClusterColl[j].caloCrystalHitPtrVector();	     
+		   CaloCrystalHitPtrVector const& mainHitsPtr = mainClusterColl[j].caloCrystalHitsPtrVector();	     
 	           CaloCrystalHitPtr       const& hitMain     = *(mainHitsPtr.begin());
 
 		   CLHEP::Hep3Vector crystalPos1 = _cal.crystal(hitMain->id()).position();
@@ -76,14 +76,14 @@ namespace mu2e {
           for (unsigned int i=0;i<clusterColl.size(); ++i)
 	  {	   	     	       
 	      _associatedMainId[i].clear();
-	      CaloCrystalHitPtrVector const& FirstHitsPtr = clusterColl[i].caloCrystalHitPtrVector();	     
+	      CaloCrystalHitPtrVector const& FirstHitsPtr = clusterColl[i].caloCrystalHitsPtrVector();	     
 	      
 	      for (unsigned int j=i+1;j<clusterColl.size();++j)
 	      {
 		   if (isAssociatedTo[j] > -1) continue;
 		   if (clusterColl[j].time() - clusterColl[i].time() > deltaTime) break;
 		 
-		   CaloCrystalHitPtrVector const& SecondHitsPtr = clusterColl[j].caloCrystalHitPtrVector();	     
+		   CaloCrystalHitPtrVector const& SecondHitsPtr = clusterColl[j].caloCrystalHitsPtrVector();	     
 		   double dist = closestDistance(FirstHitsPtr,SecondHitsPtr);
 		   if (dist > maxDist) continue;
 		 

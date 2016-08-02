@@ -160,7 +160,7 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
             bool isSplit(false);
             double totalEnergy(0);
 
-            auto const& main = caloClustersMain.at(imain).caloCrystalHitPtrVector();
+            auto const& main = caloClustersMain.at(imain).caloCrystalHitsPtrVector();
             auto const& seed = **main.begin();
             double seed_time = seed.time();
 
@@ -183,7 +183,7 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
         	isSplit = true;
 
         	if (_diagLevel > 1) std::cout<<"with split-off with id= ";
-        	auto const& split = caloClustersSplit.at(isplit).caloCrystalHitPtrVector();
+        	auto const& split = caloClustersSplit.at(isplit).caloCrystalHitsPtrVector();
         	for (auto il = split.begin(); il !=split.end(); ++il)
         	{
                     totalEnergy += (*il)->energyDep();
@@ -210,7 +210,7 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
 	{ 
             if (flagProto[iproto]) continue;                                    
 
-            auto   caloCrystalHitsPtrVector = caloProtoClustersTemp.at(iproto).caloCrystalHitPtrVector();
+            auto   caloCrystalHitsPtrVector = caloProtoClustersTemp.at(iproto).caloCrystalHitsPtrVector();
             bool   isSplit                    = caloProtoClustersTemp.at(iproto).isSplit();
             double totalEnergy                = caloProtoClustersTemp.at(iproto).energyDep();
 
@@ -221,8 +221,8 @@ class CaloClusterFromProtoCluster : public art::EDProducer {
         	totalEnergy += caloProtoClustersTemp.at(iassoc).energyDep();
         	isSplit = true;
         	caloCrystalHitsPtrVector.insert(caloCrystalHitsPtrVector.end(), 
-                                               caloProtoClustersTemp.at(iassoc).caloCrystalHitPtrVector().begin(), 
-                                               caloProtoClustersTemp.at(iassoc).caloCrystalHitPtrVector().end());
+                                               caloProtoClustersTemp.at(iassoc).caloCrystalHitsPtrVector().begin(), 
+                                               caloProtoClustersTemp.at(iassoc).caloCrystalHitsPtrVector().end());
             }
 
 

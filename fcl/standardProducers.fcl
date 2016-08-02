@@ -23,6 +23,9 @@ END_PROLOG
 #include "TrackCaloMatching/fcl/prolog.fcl"
 #include "ParticleID/fcl/prolog.fcl"
 #include "EventMixing/fcl/prolog.fcl"
+#include "CaloMC/fcl/prolog.fcl"
+#include "CaloReco/fcl/prolog.fcl"
+
 
 BEGIN_PROLOG
 

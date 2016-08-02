@@ -17,25 +17,25 @@ namespace mu2e {
             typedef std::vector<CaloCrystalHitPtr> CaloCrystalHitPtrVector;
 
 	    CaloProtoCluster() : 
-	       _time(-1),_energyDep(-1),_caloCrystalHitPtrVector(),_isSplit(false)
+	       _time(-1),_energyDep(-1),_caloCrystalHitsPtrVector(),_isSplit(false)
 	    {}
 
 	    CaloProtoCluster(double time, double energy, CaloCrystalHitPtrVector CaloCrystalHit, bool isSplit) : 
-	       _time(time),_energyDep(energy),_caloCrystalHitPtrVector(CaloCrystalHit),_isSplit(isSplit)
+	       _time(time),_energyDep(energy),_caloCrystalHitsPtrVector(CaloCrystalHit),_isSplit(isSplit)
 	    {}
 
 
-	    double                         time()                    const {return _time;}            
-	    double                         energyDep()               const {return _energyDep;}       
-	    const CaloCrystalHitPtrVector& caloCrystalHitPtrVector() const {return _caloCrystalHitPtrVector;}
-	    bool                           isSplit()                 const {return _isSplit;} 
+	    double                         time()                     const {return _time;}            
+	    double                         energyDep()                const {return _energyDep;}       
+	    const CaloCrystalHitPtrVector& caloCrystalHitsPtrVector() const {return _caloCrystalHitsPtrVector;}
+	    bool                           isSplit()                  const {return _isSplit;} 
 
 
         private:
 	 
 	    double                   _time;       
 	    double                   _energyDep;  
-	    CaloCrystalHitPtrVector  _caloCrystalHitPtrVector;
+	    CaloCrystalHitPtrVector  _caloCrystalHitsPtrVector;
 	    bool                     _isSplit;    
 
    };

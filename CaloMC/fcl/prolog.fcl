@@ -70,5 +70,18 @@ CaloHitsTruthMatch:
     diagLevel                 : 0
 }
 
+CaloDigiMC : 
+{
+   producers : {
+     CaloShowerStepFromStepPt : @local::CaloShowerStepFromStepPt
+     CaloShowerFromShowerStep : @local::CaloShowerFromShowerStep
+     CaloDigisFromShower      : @local::CaloDigisFromShower
+   }
+   producersMC : {
+     CaloHitsTruthMatch : @local::CaloHitsTruthMatch
+   }
+   DigiSim    : [ CaloShowerStepFromStepPt, CaloShowerFromShowerStep, CaloDigisFromShower]
+   TruthMatch : [ CaloHitsTruthMatch ]
+}
 
 END_PROLOG

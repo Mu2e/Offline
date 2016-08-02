@@ -43,5 +43,18 @@ CaloClusterTruthMatch:
     diagLevel                 : 0
 }
 
+CaloCluster : 
+{
+   producers : {
+     CaloProtoClusterFromCrystalHit  : @local::CaloProtoClusterFromCrystalHit
+     CaloClusterFromProtoCluster : @local::CaloClusterFromProtoCluster
+   }
+   producersMC : {
+     CaloClusterTruthMatch : @local::CaloClusterTruthMatch
+   }
+   Reco       : [ CaloProtoClusterFromCrystalHit, CaloClusterFromProtoCluster ]
+   TruthMatch : [ CaloClusterTruthMatch ]
+}
+
 
 END_PROLOG
