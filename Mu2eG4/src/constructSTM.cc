@@ -756,14 +756,15 @@ namespace mu2e {
       collimatorSStemp2 = collimatorSStemp1;
     } */   
     //---
-    //Make the conical section for the first hole as wide as the Stopping Target on one end
-    //and as narrow as the desired collimation on the other end
+
     GeomHandle<StoppingTarget> stoppingTarget;
     TargetFoil const& foil_downstream = stoppingTarget->foil(stoppingTarget->nFoils()-1);
     const double z_tgtfoil_downstream = foil_downstream.centerInMu2e().z();
     const double z_collimator_downstream = stmSSCollPositionInMu2e1.z() + stmSSCollHalfLength1;
     const double z_distance_tgt_coll = (z_collimator_downstream-z_tgtfoil_downstream);
 
+    //Make the conical section for the first hole as wide as the StoppingTarget+extra on one end
+    //and as narrow as the desired collimation on the other end    
     G4Cons* collWindow1 = new G4Cons( "collWindow1", 
                                       0.0,                          // rMin cone upstream
                                       foil_downstream.rOut()+150.0, // rMax cone upStream
@@ -773,7 +774,7 @@ namespace mu2e {
                                       0.0,                          //start angle
                                       CLHEP::twopi                  //end angle  
                                     );    
-    //Make the conical section for the first hole as wide as the Stopping Target on one end
+    //Make the conical section for the second hole as wide as the StoppingTarget+extra on one end
     //and as narrow as the desired collimation on the other end
     G4Cons* collWindow2 = new G4Cons( "collWindow2", 
                                       0.0,                          // rMin cone upstream
@@ -786,6 +787,17 @@ namespace mu2e {
                                     );
 
     
+    const double xoffset_hole1 = pSTMSSCollimatorParams.hole1xOffset();
+    const double angleY1 = -1.0*std::atan( (xoffset_hole1/2.0)/(z_distance_tgt_coll/2.0) );
+    CLHEP::HepRotationY RYForCone1(angleY1);
+    G4RotationMatrix *rotMatrixYforCone1 = new G4RotationMatrix(RYForCone1);
+    const double z_shift1 = z_distance_tgt_coll/2.0*std::sin(std::abs(angleY1)) + pSTMSSCollimatorParams.hole1RadiusDnStr()*std::sin(std::abs(angleY1));
+ 
+    const double xoffset_hole2 = pSTMSSCollimatorParams.hole2xOffset();
+    const double angleY2 = -1.0*std::atan( (xoffset_hole2/2.0)/(z_distance_tgt_coll/2.0) );
+    CLHEP::HepRotationY RYForCone2(angleY2);
+    G4RotationMatrix *rotMatrixYforCone2 = new G4RotationMatrix(RYForCone2);
+    const double z_shift2 = z_distance_tgt_coll/2.0*std::sin(std::abs(angleY2)) + pSTMSSCollimatorParams.hole2RadiusDnStr()*std::sin(std::abs(angleY2));
     
 //     const double z_FOVColl_downstream = stmFOVCollPositionInMu2e1.z() + stmFOVCollHalfLength1;
 //     const double z_SScollimator_downstream = stmSSCollPositionInMu2e1.z() + stmSSCollHalfLength1;
@@ -813,18 +825,6 @@ namespace mu2e {
     
     // Combine into the Wall with the Hole
     // Use a G4SubtractionSolid to allow for another volume placement through it    
-    const double xoffset_hole1 = pSTMSSCollimatorParams.hole1xOffset();
-    const double angleY1 = -1.0*std::atan( (xoffset_hole1/2.0)/(z_distance_tgt_coll/2.0) );
-    CLHEP::HepRotationY RYForCone1(angleY1);
-    G4RotationMatrix *rotMatrixYforCone1 = new G4RotationMatrix(RYForCone1);
-    const double z_shift1 = z_distance_tgt_coll/2.0*std::sin(std::abs(angleY1)) + pSTMSSCollimatorParams.hole1RadiusDnStr()*std::sin(std::abs(angleY1));
- 
-    const double xoffset_hole2 = pSTMSSCollimatorParams.hole2xOffset();
-    const double angleY2 = -1.0*std::atan( (xoffset_hole2/2.0)/(z_distance_tgt_coll/2.0) );
-    CLHEP::HepRotationY RYForCone2(angleY2);
-    G4RotationMatrix *rotMatrixYforCone2 = new G4RotationMatrix(RYForCone2);
-    const double z_shift2 = z_distance_tgt_coll/2.0*std::sin(std::abs(angleY2)) + pSTMSSCollimatorParams.hole2RadiusDnStr()*std::sin(std::abs(angleY2));
-
     G4SubtractionSolid *collimatorSStemp1 = new G4SubtractionSolid("collimatorSStemp1",boxSSColl,collWindow1,rotMatrixYforCone1,G4ThreeVector(xoffset_hole1/2.0,0.0,-1.0*z_distance_tgt_coll/2.0+stmSSCollHalfLength1+z_shift1 ));    
     G4SubtractionSolid *collimatorSStemp2 = 0;
     if (pSTMSSCollimatorParams.hole2Build()){
