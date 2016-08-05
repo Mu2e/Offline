@@ -69,6 +69,11 @@ typedef struct
   int    firstCoincidenceHitSectorType;
   double firstCoincidenceHitPos[3];
 
+  bool   CRVveto_allSectors;
+  bool   CRVveto[8];
+  double CRVvetoTime[8];
+  double CRVvetoPos[8][3];
+
   bool   CRVhit_allSectors;
   bool   CRVhit[8];
   double CRVhitTime[8];
@@ -114,13 +119,17 @@ typedef struct
 
     firstCoincidenceHitTime=NAN;
     
+    CRVveto_allSectors=false;
     CRVhit_allSectors=false;
     for(int i=0; i<8; i++)
     {
+      CRVveto[i]=false;
+      CRVvetoTime[i]=NAN;
       CRVhit[i]=false;
       CRVhitTime[i]=NAN;
       for(int j=0; j<3; j++)
       {
+        CRVvetoPos[i][j]=NAN;
         CRVhitPos[i][j]=NAN;
         CRVhitDir[i][j]=NAN;
       }
@@ -216,6 +225,10 @@ namespace mu2e
     _tree->Branch("firstCoincidenceHitTime",&e.firstCoincidenceHitTime,"firstCoincidenceHitTime/D");
     _tree->Branch("firstCoincidenceHitSectorType",&e.firstCoincidenceHitSectorType,"firstCoincidenceHitSectorType/I");
     _tree->Branch("firstCoincidenceHitPos",e.firstCoincidenceHitPos,"firstCoincidenceHitPos[3]/D");
+    _tree->Branch("CRVveto_allSectors",&e.CRVveto_allSectors,"CRVveto_allSectors/O");
+    _tree->Branch("CRVveto",e.CRVveto,"CRVveto[8]/O");
+    _tree->Branch("CRVvetoTime",e.CRVvetoTime,"CRVvetoTime[8]/D");
+    _tree->Branch("CRVvetoPos",e.CRVvetoPos,"CRVvetoPos[8][3]/D");
     _tree->Branch("CRVhit_allSectors",&e.CRVhit_allSectors,"CRVhit_allSectors/O");
     _tree->Branch("CRVhit",e.CRVhit,"CRVhit[8]/O");
     _tree->Branch("CRVhitTime",e.CRVhitTime,"CRVhitTime[8]/D");
@@ -483,23 +496,33 @@ namespace mu2e
       const std::vector<CrvCoincidenceCheckResult::CoincidenceCombination> &coincidenceCombinations = crvCoincidenceCheckResult->GetCoincidenceCombinations();
       for(unsigned int i=0; i<coincidenceCombinations.size(); i++)
       {
+        CRSScintillatorBarIndex barIndex=coincidenceCombinations[i]._counters[0];
+        const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
+        int sectorNumber = CRSbar.id().getShieldNumber();
+        int sectorType = CRS->getCRSScintillatorShield(sectorNumber).getSectorType();
+        sectorType--;
+        if(sectorType>=8 || sectorType<0) continue;
+
+        _eventinfo.CRVveto_allSectors=true;
+        _eventinfo.CRVveto[sectorType]=true;
+
         for(int j=0; j<3; j++)
         {
           double t=coincidenceCombinations[i]._time[j];
+          barIndex=coincidenceCombinations[i]._counters[j];
+          CLHEP::Hep3Vector pos = CRS->getBar(barIndex).getPosition()-_detSysOrigin;
+
           if(isnan(_eventinfo.firstCoincidenceHitTime) || t<_eventinfo.firstCoincidenceHitTime)
           {
             _eventinfo.firstCoincidenceHitTime=t;
-
-            CRSScintillatorBarIndex barIndex=coincidenceCombinations[i]._counters[j];
-            const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
-            int sectorNumber = CRSbar.id().getShieldNumber();
-            int sectorType = CRS->getCRSScintillatorShield(sectorNumber).getSectorType();
-            sectorType--;
-            if(sectorType>=8 || sectorType<0) continue;
             _eventinfo.firstCoincidenceHitSectorType=sectorType;
-
-            CLHEP::Hep3Vector pos = CRSbar.getPosition()-_detSysOrigin;
             for(int k=0; k<3; k++) _eventinfo.firstCoincidenceHitPos[k]=pos[k];
+          }
+
+          if(isnan(_eventinfo.CRVvetoTime[sectorType]) || t<_eventinfo.CRVvetoTime[sectorType])
+          {
+            _eventinfo.CRVvetoTime[sectorType]=t;
+            for(int k=0; k<3; k++) _eventinfo.CRVvetoPos[sectorType][k]=pos[k];
           }
         }
       }
