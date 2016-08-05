@@ -69,7 +69,7 @@ vector<double> mbs.BSBSLengths     =   { 1685.0, 706.0 };
 string mbs.BSBSMaterialName   = "Polyethylene096";
 double mbs.BSBSZrelCntr            =  737.5;
 
-vector<double> mbs.CLV2InnerRadii  =   {  91.0, 91.0  };
+vector<double> mbs.CLV2InnerRadii  =   {  92.0, 92.0  };
 vector<double> mbs.CLV2OuterRadii  =   { 323.4, 425.0 };
 vector<double> mbs.CLV2Lengths     =   {  50.0, 102.4 };
 string mbs.CLV2MaterialName   = "Polyethylene096";

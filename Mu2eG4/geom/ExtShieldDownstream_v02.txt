@@ -624,7 +624,7 @@ vector<double> ExtShieldDownstream.notchDimType17Box1Notch1 = {560,508,1011.78};
 // Hole information 
 int ExtShieldDownstream.nHolesType11Box4 = 1;
 vector<double> ExtShieldDownstream.holeCenterType11Box4Hole1 = {-67.0,0.0,1.6};
-double ExtShieldDownstream.holeRadiusType11Box4Hole1 =  100.0;
+double ExtShieldDownstream.holeRadiusType11Box4Hole1 =  110.0;
 double ExtShieldDownstream.holeLengthType11Box4Hole1 =  915.0;
 string ExtShieldDownstream.holeOrientationType11Box4Hole1 = "100";
 
@@ -642,7 +642,7 @@ double ExtShieldDownstream.detecHoleX = -3904.0;
 double ExtShieldDownstream.detecHoleY = -249.0;
 double ExtShieldDownstream.detecHoleZ = 18007.0;
 double ExtShieldDownstream.detecHoleHalflength = 458.0;
-double ExtShieldDownstream.detecHoleRadius = 76.2;
+double ExtShieldDownstream.detecHoleRadius = 110.0;
 
 
 // This tells emacs to view this file in c++ mode.
