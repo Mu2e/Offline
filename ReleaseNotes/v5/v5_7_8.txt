@@ -1,6 +1,9 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_7_8
+5) ehrlich 5 August, 2016
+   added Mu2eG4/geom/studies/crv_counters_v03_no_CRV_D4.txt
+   which removed the lower part of the CRV-D
 
 4) kutschke 20 July, 2016
    Changed SConstruct so that both satellite releases and base
