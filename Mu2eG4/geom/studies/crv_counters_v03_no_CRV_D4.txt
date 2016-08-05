@@ -1,2 +1,3 @@
 #include “Mu2eG4/geom/geom_common.txt”
 int crs.nModulesD4 = 0;  //removes the lowest portion of the CRV-D
+double stm.shield.rOut = 160.0; //which allows the STM to have the correct rOut
