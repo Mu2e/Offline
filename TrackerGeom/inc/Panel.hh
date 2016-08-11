@@ -12,7 +12,6 @@
 // Original author Rob Kutschke
 //
 
-#include <algorithm>
 #include <vector>
 
 #include "TrackerGeom/inc/Layer.hh"

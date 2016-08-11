@@ -100,8 +100,6 @@ namespace mu2e {
       bool isBend = false;
       if ( flav != "straight" ) {
 	isBend = true;
-      // 	// Bow out not-so-gracefully
-      // 	throw cet::exception("GEOM") << " in constructServicesGeom, have not yet implemented non-straight segments of pipe."<<"\n";
       } // end of if not straight
 
       std::string fillMat = pFill[it];

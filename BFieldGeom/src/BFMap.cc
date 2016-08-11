@@ -13,16 +13,12 @@
 // C++ includes
 #include <iostream>
 #include <iomanip>
-#include <string>
-#include <vector>
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes
 #include "BFieldGeom/inc/BFMap.hh"
-#include "BFieldGeom/inc/DiskRecord.hh"
-#include "BFieldGeom/inc/Container3D.hh"
 
 // Other includes
 #include "CLHEP/Vector/ThreeVector.h"

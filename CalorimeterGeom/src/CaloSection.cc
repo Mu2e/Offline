@@ -9,13 +9,10 @@
 
 // C++ includes
 #include <iostream>
-#include <fstream>
 
 // Mu2e includes
 #include "CalorimeterGeom/inc/CaloSection.hh"
 
-using std::cout;
-using std::endl;
 
 
 namespace mu2e {

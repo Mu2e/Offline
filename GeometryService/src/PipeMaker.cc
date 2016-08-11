@@ -103,10 +103,11 @@ namespace mu2e {
       int nComp = c.getInt(bCompNumberVarName.str(),1);
       nComponentsOfType.push_back(nComp);
 
-      // Get the length of this type of box - the w component
+      // Get the length of this type of box - the w component.
+      // This is Full length - will be cut in half when making Tubs, not Tori
       std::ostringstream bLengthVarName;
       bLengthVarName << lengthBaseName << iType;
-      lengthOfType.push_back(c.getDouble(bLengthVarName.str())*CLHEP::mm/2.0);
+      lengthOfType.push_back(c.getDouble(bLengthVarName.str())*CLHEP::mm);
 
       // Get the flavor - straight or bend for this type
       std::ostringstream pFlavVarName;

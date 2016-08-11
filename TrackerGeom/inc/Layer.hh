@@ -13,8 +13,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "DataProducts/inc/LayerId.hh"
 #include "TrackerGeom/inc/Straw.hh"
-#include <algorithm>
-#include <deque>
 #include <vector>
 
 namespace mu2e {

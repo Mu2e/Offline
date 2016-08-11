@@ -69,6 +69,19 @@ vector<double> mbs.BSBSLengths     =   { 1685.0, 706.0 };
 string mbs.BSBSMaterialName   = "Polyethylene096";
 double mbs.BSBSZrelCntr            =  737.5;
 
+
+// Pump-out holes 
+//int    mbs.nHoles = 3;
+//double mbs.steelHoleXDim = 615.0;
+//double mbs.steelHoleYDim = 164.4;
+//double mbs.steelHoleZDim = 300.0;
+//double mbs.polyHoleXDim = 490.0;
+//double mbs.polyHoleYDim = 164.4;
+//double mbs.polyHoleZDim = 250.0;
+
+
+
+// End plug
 vector<double> mbs.CLV2InnerRadii  =   {  92.0, 92.0  };
 vector<double> mbs.CLV2OuterRadii  =   { 323.4, 425.0 };
 vector<double> mbs.CLV2Lengths     =   {  50.0, 102.4 };

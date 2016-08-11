@@ -18,6 +18,7 @@
 #include <iomanip>
 #include <cmath>
 #include <vector>
+#include <sstream>
 
 // clhep includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -238,11 +239,13 @@ namespace mu2e {
 	throw cet::exception("GEOM")
 	  << "CLV2 has different number of radii and lengths, check the geom config file. \n";
       }
+
       std::vector<double> CLV2CornersZ, CLV2CornersInnRadii, CLV2CornersOutRadii;
       double CLV2totLength=0;
       for (std::vector<double>::iterator length_it=_CLV2Lengths.begin(); length_it!=_CLV2Lengths.end(); ++length_it) {
 	CLV2totLength+=*length_it;
       }
+
       double tmpCLV2PntZ=/*_CLV2Z*/-0.5*CLV2totLength;
       for (int isurf=0; isurf<nCLV2Surfs; ++isurf) {
 	CLV2CornersZ.push_back(tmpCLV2PntZ);
@@ -347,6 +350,14 @@ namespace mu2e {
 		       _BSTSOffsetInMu2e,
 		       _BSTSMaterialName ));
 
+      // *****************************
+      //     Holes in the Steel
+      //    (Added in version 3)
+      // *****************************
+
+      if ( _MBSVersion >= 3 ) {
+
+      }
 
       // ******************************
       // Outer HDPE
@@ -564,13 +575,35 @@ namespace mu2e {
     _CLV2MaterialName     = _config.getString("mbs.CLV2MaterialName");
     _CLV2Z                = _config.getDouble("mbs.CLV2ZrelCntr");
 
-    //if ( _MBSVersion == 3 ) {
-      // Absorber in axial hole to prevent muons from escaping downstream
-      _CLV2AbsBuild        = _config.getBool("mbs.CLV2.absorber.build",false);
-      _CLV2AbsMaterialName = _config.getString("mbs.CLV2.absorber.MaterialName","Polyethylene096");
-      _CLV2AbsHLength     = _config.getDouble("mbs.CLV2.absorber.halflength",0.0);
-    //}
-    
+    _CLV2AbsBuild         = _config.getBool("mbs.CLV2.absorber.build",false);
+    _CLV2AbsMaterialName  = _config.getString("mbs.CLV2.absorber.MaterialName","Polyethylene096");
+    _CLV2AbsHLength       = _config.getDouble("mbs.CLV2.absorber.halflength",0.0);
+    if ( _MBSVersion >= 3 ) {
+      _nHoles             = _config.getInt("mbs.nHoles",0);
+      _BSTSHoleXDim = _config.getDouble("mbs.steelHoleXDim",0.0);
+      _BSTSHoleYDim = _config.getDouble("mbs.steelHoleYDim",0.0);
+      _BSTSHoleZDim = _config.getDouble("mbs.steelHoleZDim",0.0);
+      _PolyHoleXDim = _config.getDouble("mbs.polyHoleXDim",0.0);
+      _PolyHoleYDim = _config.getDouble("mbs.polyHoleYDim",0.0);
+      _PolyHoleZDim = _config.getDouble("mbs.polyHoleZDim",0.0);
+      CLHEP::Hep3Vector moveIt(0.0,0.0,-_BSTSHLength);
+      for ( int ihole = 0; ihole < _nHoles; ihole++ ) {
+	CLHEP::Hep3Vector tempLoc;
+	std::ostringstream sHoleName;
+	sHoleName << "mbs.steelHoleCenter" << ihole+1;
+	_config.getHep3Vector(sHoleName.str(),tempLoc);
+	tempLoc+=moveIt;
+	_BSTSHoleCenters.push_back(tempLoc);
+
+	std::ostringstream pHoleName;
+	pHoleName << "mbs.polyHoleCenter" << ihole+1;
+	_config.getHep3Vector(pHoleName.str(),tempLoc);
+	tempLoc+=moveIt;
+	_polyHoleCenters.push_back(tempLoc);
+
+      }
+
+    }
 
   } // end parConfig function
 

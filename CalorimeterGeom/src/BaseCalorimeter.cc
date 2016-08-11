@@ -4,18 +4,13 @@
 // Original author B. Echenard
 //
 
-// C++ includes
-#include <iostream>
-#include <algorithm>
 
 // Mu2e includes
 #include "CalorimeterGeom/inc/BaseCalorimeter.hh"
-#include "CalorimeterGeom/inc/Disk.hh"
-#include "cetlib/exception.h"
 
 //other includes
 #include "CLHEP/Vector/Rotation.h"
-#include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 
 namespace mu2e {

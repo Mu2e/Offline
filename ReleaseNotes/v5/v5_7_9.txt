@@ -1,3 +1,31 @@
 Still under construction
 
            Release notes for Mu2e Offline software, v5_7_9
+
+1.  11 August 2016  dnbrow01
+    Various geometry-related updates.
+    i)  Scrubbed more unnecessary #includes per work done by Bryan Fagan.
+    ii) Added pipes throughout, based on G4beamline files, which are not quite
+        correct.  More work to be done here, but this gets pipes throughout
+        active region.  Implementation by Bryan Fagan.
+    iii) Added the mechanism to put holes in the MBS, without yet implementing.
+    iv) Fixed angular coverage of the graphite collar insert in the Pbar 
+    	absorber in TS1.
+	modified:   BFieldGeom/src/BFMap.cc
+	modified:   BFieldGeom/src/BFieldManager.cc
+	modified:   CalorimeterGeom/src/BaseCalorimeter.cc
+	modified:   CalorimeterGeom/src/CaloSection.cc
+	modified:   CalorimeterGeom/src/DiskCalorimeter.cc
+	modified:   GeneralUtilities/src/OrientationResolver.cc
+	modified:   GeometryService/inc/MBSMaker.hh
+	modified:   GeometryService/src/MBSMaker.cc
+	modified:   GeometryService/src/PipeMaker.cc
+	modified:   MBSGeom/inc/MBS.hh
+	modified:   Mu2eG4/geom/Pipe_v01.txt
+	modified:   Mu2eG4/geom/TransportSolenoid_v01.txt
+	modified:   Mu2eG4/geom/muonBeamStop_v03.txt
+	modified:   Mu2eG4/src/constructServicesGeom.cc
+	modified:   ReleaseNotes/v5/v5_7_8.txt
+	modified:   TrackerGeom/inc/Layer.hh
+	modified:   TrackerGeom/inc/Panel.hh
+	modified:   TrackerGeom/inc/Straw.hh

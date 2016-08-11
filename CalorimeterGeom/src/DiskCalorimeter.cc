@@ -13,8 +13,7 @@
 #include "CalorimeterGeom/inc/Disk.hh"
 
 //other includes
-#include "CLHEP/Vector/Rotation.h"
-#include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
 
 
 namespace mu2e {

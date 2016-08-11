@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -123,6 +124,17 @@ namespace mu2e {
     bool _CLV2AbsBuild;
     std::string _CLV2AbsMaterialName;
     double _CLV2AbsHLength;
+
+    // Holes in MBS
+    int _nHoles;
+    double _BSTSHoleXDim;
+    double _BSTSHoleYDim;
+    double _BSTSHoleZDim;
+    double _PolyHoleXDim;
+    double _PolyHoleYDim;
+    double _PolyHoleZDim;
+    std::vector<CLHEP::Hep3Vector> _BSTSHoleCenters;
+    std::vector<CLHEP::Hep3Vector> _polyHoleCenters;
 
   };
 
