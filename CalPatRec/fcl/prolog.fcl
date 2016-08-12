@@ -208,8 +208,25 @@ CalPatRec : { @table::CalPatRec
 	    KalDiag                      : { @table::KalDiagDirect
 		FillMCInfo               : false
 	    }  # clone from  TrkRecFit
-	    minTrkQualA                  : 0.4
-	    minTrkQualB                  : 0.2
+
+	    DoubletAmbigResolver         : { @table::TrkReco.DoubletAmbigResolver }
+
+	    trkPatRecMVA                 : {
+		MVAWeights               : "CalPatRec/data/v5_7_7/MLP_weights_logfcons_1_lin.xml"
+		MVAType                  : 0
+		trkQualHist              : "CalPatRec/data/v5_7_7/tpr_qual_logfcons_2_exp.tab"
+		minTrkQual               : 0.4
+	    }
+
+	    calPatRecMVA                 : {
+		MVAWeights               : "CalPatRec/data/v5_7_7/MLP_weights_logfcons_1_lin.xml"
+		MVAType                  : 0
+		trkQualHist              : "CalPatRec/data/v5_7_7/cpr_qual_logfcons_1_lin.tab"
+		minTrkQual               : 0.65
+	    }
+#------------------------------------------------------------------------------
+# distributions for the ANN training variable
+#------------------------------------------------------------------------------
 	}
     }
 }
