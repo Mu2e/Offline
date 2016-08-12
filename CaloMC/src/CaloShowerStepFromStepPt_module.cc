@@ -426,7 +426,6 @@ namespace mu2e {
 
                     SimParticlePtrCollection inspectedSims;              
                     while (sim->hasParent() && isInsideCalorimeter(vi,sim) )  
-                    //while (sim->hasParent() && cal.isInsideCalorimeter(sim->startPosition()) )  
                     {
                         //simparticle starting in one section and ending in another one see note above
                         if (!cal.isContainedSection(sim->startPosition(),sim->endPosition()) ) break; 
@@ -487,7 +486,7 @@ namespace mu2e {
                CLHEP::Hep3Vector pos  = (isCrystal) ? cal.toCrystalFrame(volId,step->position()) : cal.toCrystalFrame(cal.crystalByRO(volId),step->position());
                int               idx  = (isCrystal) ? int(pos.z()/zSliceSize_) : 0;
 
-               if (buffer.entries(idx) == 0) buffer.init(idx,step->time(),step->momentum().mag()); 
+               if (buffer.entries(idx) == 0) buffer.init(idx,step->time(),step->momentum().mag(),pos); 
 
                if (step->time()-buffer.t0(idx) > deltaTime_)
                { 
@@ -503,9 +502,9 @@ namespace mu2e {
                   
                   
                   caloShowerStepMCs.push_back(CaloShowerStep(volId, sim, buffer.entries(idx), buffer.time(idx), buffer.energyDep(idx), 
-                                                               buffer.pIn(idx),buffer.pos(idx), buffer.covPos(idx)));
+                                                               buffer.pIn(idx), buffer.posIn(idx), buffer.pos(idx), buffer.covPos(idx)));
                   buffer.reset(idx);   
-                  buffer.init(idx,step->time(),step->momentum().mag());
+                  buffer.init(idx,step->time(),step->momentum().mag(),pos);
                }
 
                buffer.add( idx, step->eDep(), step->time(), step->momentum().mag(), pos);
@@ -517,7 +516,7 @@ namespace mu2e {
          {
               if (buffer.entries(i) == 0) continue;
               caloShowerStepMCs.push_back(CaloShowerStep(volId, sim,  buffer.entries(i), buffer.time(i), buffer.energyDep(i), 
-                                                           buffer.pIn(i), buffer.pos(i), buffer.covPos(i)));
+                                                         buffer.pIn(i), buffer.posIn(i), buffer.pos(i), buffer.covPos(i)));
               
               if (diagLevel_ > 2) 
               {

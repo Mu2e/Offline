@@ -191,6 +191,13 @@ namespace mu2e {
             
             waveformProcessor_->reset();
             waveformProcessor_->extract(x,y);
+ if (waveformProcessor_->chi2()/waveformProcessor_->ndf() > 3.5 )
+ {                 
+     std::string pname = "plots/plot_"+std::to_string(nplot_)+".pdf";
+     std::cout<<"Saved in file "<<pname<<std::endl;
+     waveformProcessor_->plot(pname);          
+     ++nplot_;
+ }
 
             
             for (int i=0;i<waveformProcessor_->nPeaks();++i)
@@ -223,7 +230,7 @@ DEFINE_ART_MODULE(CaloRecoDigiFromUnpacked);
 
 
  /*
- if (waveformProcessor_->nPeaks() == 4 )
+ if (waveformProcessor_->chi2()/waveformProcessor_->ndf() > 4 )
  {                 
      std::string pname = "plots/plot_"+std::to_string(nplot_)+".pdf";
      std::cout<<"Saved in file "<<pname<<std::endl;

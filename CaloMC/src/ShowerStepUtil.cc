@@ -8,6 +8,14 @@
 
 
 namespace mu2e {
+    
+    
+    void ShowerStepUtil::init(int i, double time, double momentum, const CLHEP::Hep3Vector& posIn)
+    { 
+        t0_.at(i) = time; 
+        pIn_.at(i) = momentum; 
+        posIn_.at(i) = posIn;
+    }
 
 
     void ShowerStepUtil::add(int i, double edep, double time, double momentum, CLHEP::Hep3Vector& pos)

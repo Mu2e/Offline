@@ -28,13 +28,14 @@ namespace mu2e {
 		  x_(imax,0),y_(imax,0),z_(imax,0),
 		  x2_(imax,0),y2_(imax,0),z2_(imax,0),
 		  xy_(imax,0),xz_(imax,0),yz_(imax,0),
-		  w_(imax,0),w2_(imax,0),pos_(0,0,0),cov_(3,0)
+		  w_(imax,0),w2_(imax,0),posIn_(imax,CLHEP::Hep3Vector(0,0,0)),
+		  pos_(0,0,0),cov_(3,0)
 	       {};
 
 
 
                void add(int i, double edep, double time, double momentum, CLHEP::Hep3Vector& pos);
-               void init(int i, double time, double momentum) {t0_.at(i) = time; pIn_.at(i) = momentum;}
+               void init(int i, double time, double momentum, const CLHEP::Hep3Vector& posIn);
                void reset(int i);
 	       void printBucket(int i);
 	       
@@ -44,6 +45,7 @@ namespace mu2e {
 	       double               t0(int i)        const {return t0_.at(i);}
                double               pIn(int i)       const {return pIn_.at(i);}
                double               time(int i)      const {return time_.at(i) / w_.at(i);}
+               const CLHEP::Hep3Vector&   posIn(int i)     const {return posIn_.at(i);}     
                CLHEP::Hep3Vector&   pos(int i);     
 	       CLHEP::HepSymMatrix& covPos(int i);
 
@@ -71,6 +73,8 @@ namespace mu2e {
 	       std::vector<double>   yz_;
 	       std::vector<double>   w_;
 	       std::vector<double>   w2_;
+	       std::vector<CLHEP::Hep3Vector> posIn_;
+
 	       CLHEP::Hep3Vector     pos_;
 	       CLHEP::HepSymMatrix   cov_;
      };

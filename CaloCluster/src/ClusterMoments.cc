@@ -69,9 +69,6 @@ namespace mu2e {
 
        }
 
-//if I am correct, the intercept is (sxi2*syi-sxi*sxyi)/(swi*sxi2-sxi*sxi);
-
-
 }
 
 
