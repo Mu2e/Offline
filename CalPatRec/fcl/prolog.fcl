@@ -458,7 +458,7 @@ CalPatRec.dep_reco : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, Cal
 		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDep ]
 
 CalPatRec.dmm_reco : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
-		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDem ]
+		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDmm ]
 
 CalPatRec.dmp_reco : [makeSH, CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
 		      CalPatRecFlagStrawHits, CalPatRecFlagBkgHits, CalPatRecDmp ]
