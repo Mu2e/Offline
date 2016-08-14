@@ -29,6 +29,8 @@ if envopts != fsopts:
 # Extract information from the shell environment.
 art_inc       = os.environ['ART_INC']
 art_lib       = os.environ['ART_LIB']
+canvas_inc    = os.environ['CANVAS_INC']
+canvas_lib    = os.environ['CANVAS_LIB']
 btrk_inc      = os.environ['BTRK_INC']
 btrk_lib      = os.environ['BTRK_LIB']
 boost_lib     = os.environ['BOOST_LIB']
@@ -80,6 +82,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              base,
                              base+'//include',
                              art_inc,
+                             canvas_inc,
                              btrk_inc,
                              btrk_inc,
                              mesfac_inc,
@@ -97,6 +100,7 @@ env = Environment( CPPPATH=[ cpppath_frag,
                    LIBPATH=[ libpath_frag,
                              base+'/lib',
                              art_lib,
+                             canvas_lib,
                              btrk_lib,
                              mesfac_lib,
                              fhicl_lib,
