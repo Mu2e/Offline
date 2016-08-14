@@ -59,7 +59,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # products that need qualifiers.  Note it includes the '+' character
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
-export MU2E_UPS_QUALIFIERS=+e9:+${build}
+export MU2E_UPS_QUALIFIERS=+e10:+${build}
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -67,23 +67,23 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
 fi
 
 # Setup the framework and its dependent products
-setup -B art v1_17_07 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v2_02_02a -q${MU2E_UPS_QUALIFIERS}
 
 # The interface to SAM - conflicts with ifdhc from the grid runtime environment
 #setup -B ifdh_art v1_6_0 -q+e6:+${build}:+s5
 
 # Geant4 and its cross-section files.
-setup -B geant4 v4_9_6_p04d -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+#setup -B geant4 v4_9_6_p04d -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
 
 # Other libraries we need.
-setup -B heppdt v3_04_01d -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_01_01 -q${MU2E_UPS_QUALIFIERS}
+setup -B heppdt v3_04_01e -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_01_02  -q${MU2E_UPS_QUALIFIERS}
 
 # The build system.
-setup -B scons v2_4_0
+setup -B scons v2_5_0
 
 # The debugger
-setup gdb v7_9
+setup gdb v7_10_1
 
 # Search path for fcl files
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}:${MU2E_BASE_RELEASE}/fcl
