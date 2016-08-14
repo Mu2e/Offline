@@ -6,7 +6,7 @@
 #ifndef Mu2eG4_inc_SimParticleHelper
 #define Mu2eG4_inc_SimParticleHelper
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"

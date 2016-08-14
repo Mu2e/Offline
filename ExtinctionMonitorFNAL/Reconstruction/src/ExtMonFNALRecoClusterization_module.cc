@@ -27,7 +27,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawCluster.hh"

@@ -12,7 +12,7 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Utilities/Exception.h"
+#include "canvas/Utilities/Exception.h"
 
 // Mu2e includes
 #include "ConfigTools/inc/requireUniqueKey.hh"

@@ -12,7 +12,7 @@
 
 #include <ostream>
 
-#include "art/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/PtrVector.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALRawHit.hh"
 

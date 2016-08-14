@@ -3,7 +3,7 @@
 #ifndef MCDataProducts_inc_SimParticleTrackerHitSummaryAssns_hh
 #define MCDataProducts_inc_SimParticleTrackerHitSummaryAssns_hh
 
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Assns.h"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/SimParticleTrackerHitSummaryCollection.hh"
 

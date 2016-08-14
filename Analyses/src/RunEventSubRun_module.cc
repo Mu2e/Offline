@@ -13,9 +13,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Persistency/Provenance/RunID.h"
-#include "art/Persistency/Provenance/EventID.h"
-#include "art/Persistency/Provenance/SubRunID.h"
+#include "canvas/Persistency/Provenance/RunID.h"
+#include "canvas/Persistency/Provenance/EventID.h"
+#include "canvas/Persistency/Provenance/SubRunID.h"
 
 #include <iostream>
 #include <vector>

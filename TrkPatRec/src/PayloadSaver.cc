@@ -12,7 +12,7 @@
 #include <memory>
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Persistency/Provenance/ProductID.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "TrkPatRec/inc/PayloadSaver.hh"

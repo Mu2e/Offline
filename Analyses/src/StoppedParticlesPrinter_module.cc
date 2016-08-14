@@ -10,7 +10,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 
 #include "DataProducts/inc/PDGCode.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"

@@ -14,7 +14,7 @@
 #include "Sandbox/inc/FooService.hh"
 
 // Framework include files
-#include "art/Persistency/Provenance/RunID.h"
+#include "canvas/Persistency/Provenance/RunID.h"
 
 using namespace std;
 

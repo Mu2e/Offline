@@ -29,7 +29,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Wrapper.h"
 
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"

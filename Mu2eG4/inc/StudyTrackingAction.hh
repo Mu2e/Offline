@@ -24,7 +24,7 @@
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Persistency/Provenance/ProductID.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
 #include "cetlib/cpu_timer.h"
 
 #include <map>

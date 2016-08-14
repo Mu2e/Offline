@@ -9,7 +9,7 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Sandbox/inc/Bug01Service.hh"
 
-#include "art/Persistency/Provenance/RunID.h"
+#include "canvas/Persistency/Provenance/RunID.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "cetlib/exception.h"

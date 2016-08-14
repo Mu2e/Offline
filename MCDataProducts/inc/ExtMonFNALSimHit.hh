@@ -14,7 +14,7 @@
 
 #include <ostream>
 
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
 

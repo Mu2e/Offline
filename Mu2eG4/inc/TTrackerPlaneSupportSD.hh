@@ -16,7 +16,7 @@
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 
 // Art includes
-#include "art/Persistency/Provenance/ProductID.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
 #include "art/Framework/Principal/Event.h"
 
 namespace mu2e {

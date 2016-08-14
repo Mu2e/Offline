@@ -6,10 +6,3 @@
 #include "TrkDiag/inc/EventInfo.hh"
 #include "TrkDiag/inc/HitCount.hh"
 #include "TrkDiag/inc/TrkCount.hh"
-template class std::vector<mu2e::TrkStrawHitInfoMC>;
-template class std::vector<mu2e::TrkStrawHitInfo>;
-template class std::vector<mu2e::TrkStrawMatInfo>;
-template class std::vector<mu2e::TrkCaloInfo>;
-template class std::vector<mu2e::TrkHitShare>;
-
-

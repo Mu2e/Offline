@@ -12,7 +12,7 @@
 //
 
 #include "MCDataProducts/inc/SimParticle.hh"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 #include "CLHEP/Vector/LorentzVector.h"
 #include "cetlib/map_vector.h"
 #include <vector>

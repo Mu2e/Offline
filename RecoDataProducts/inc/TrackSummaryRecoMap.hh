@@ -5,7 +5,7 @@
 #ifndef RecoDataProducts_inc_TrackSummaryRecoMap_hh
 #define RecoDataProducts_inc_TrackSummaryRecoMap_hh
 
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Assns.h"
 
 #include "RecoDataProducts/inc/TrackSummary.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"

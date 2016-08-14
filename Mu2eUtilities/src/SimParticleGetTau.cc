@@ -1,7 +1,7 @@
 #include "Mu2eUtilities/inc/SimParticleGetTau.hh"
 
 // Framework includes
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 // CLHEP includes
 #include "CLHEP/Vector/LorentzVector.h"

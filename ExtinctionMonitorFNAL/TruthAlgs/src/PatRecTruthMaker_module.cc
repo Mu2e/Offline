@@ -21,9 +21,9 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
-#include "art/Persistency/Common/Ptr.h"
-#include "art/Framework/Core/FindManyP.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/FindManyP.h"
+#include "canvas/Utilities/InputTag.h"
 
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRecoCluster.hh"

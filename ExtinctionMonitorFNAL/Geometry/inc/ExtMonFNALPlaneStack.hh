@@ -10,7 +10,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALPlane.hh"
-#include "art/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Wrapper.h"
 
 namespace mu2e {
 

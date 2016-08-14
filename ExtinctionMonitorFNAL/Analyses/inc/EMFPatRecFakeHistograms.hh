@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "art/Framework/Core/FindMany.h"
-#include "art/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/FindMany.h"
+#include "canvas/Persistency/Common/Ptr.h"
 
 #include "boost/noncopyable.hpp"
 
