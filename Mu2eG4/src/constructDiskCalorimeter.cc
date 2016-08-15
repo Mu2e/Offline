@@ -275,6 +275,7 @@ namespace mu2e {
 	//
 	G4VSensitiveDetector* crSD = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::CaloReadout());
 	ROLog->SetSensitiveDetector(crSD);
+	ROElectronicsLog->SetSensitiveDetector(crSD);
        
        
 
