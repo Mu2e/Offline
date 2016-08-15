@@ -65,7 +65,7 @@ namespace mu2e {
     // Mid-point position of the primary straw, and (collective) straw direction
     // (The primary straw is the straw used to establish position, with other
     //  straws being some number of deltas away.  In the TTracker the primary
-    //  straw is the innermost straw.) 
+    //  straw is the innermost straw.)
     CLHEP::Hep3Vector straw0MidPoint()  const { return _straw0MidPoint;  }
     CLHEP::Hep3Vector straw0Direction() const { return _straw0Direction; }
 
@@ -82,6 +82,7 @@ namespace mu2e {
         StrawId();
     }
 
+    /*
     // Options:
     // 1) return F or void; std-like says return F.
     //    Can be inefficient if F has a lot of state.
@@ -94,6 +95,7 @@ namespace mu2e {
                      _straws.end(),
                      f);
     }
+    */
 
     // Loop over all straws and call F.
     // F can be a class with an operator() or a free function.
@@ -122,7 +124,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _orig;
     CLHEP::Hep3Vector _delta;
 
-    // Position (in tracker coordinates) of the midpoint, and direction 
+    // Position (in tracker coordinates) of the midpoint, and direction
     // of the primary straw.  Mutable for the same reason as _straws:
     // These are set by fillPointers.
     // TODO -- there is clearly a way to design this such that these mutable
