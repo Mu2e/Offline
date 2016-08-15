@@ -37,7 +37,6 @@ namespace mu2e {
     {
 	GeomHandle<Calorimeter> cg;
 	_nro  = cg->caloGeomInfo().nROPerCrystal();
-	_minE = cg->caloGeomInfo().electronEmin();
     }
 
 
@@ -46,7 +45,6 @@ namespace mu2e {
     {
 
 	 if( aStep->GetTrack()->GetDefinition()->GetPDGCharge() == 0 ) return false;
-	 if( aStep->GetTrack()->GetKineticEnergy() < _minE )           return false;
 
 	 _currentSize += 1;
 	 if( _sizeLimit>0 && _currentSize>_sizeLimit && (_currentSize - _sizeLimit)==1) 

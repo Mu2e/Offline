@@ -172,7 +172,7 @@ namespace mu2e {
      
      Calorimeter const & cal = *(GeomHandle<Calorimeter>());
      int nro                 = cal.caloGeomInfo().nROPerCrystal();
-     double electronEdep     = cal.caloGeomInfo().electronEdep();
+     double electronEdep     = 1000;
 
 
      if ( _diagLevel > 2 ) {
