@@ -65,7 +65,7 @@ bool mu2e::greaterBySize( mu2e::RootSizeOnDisk::Record const& lhs, mu2e::RootSiz
   return ( lhs.size() > rhs.size() );
 }
 
-void mu2e::RootSizeOnDisk::print( ostream& os, double minimumFraction ) const{
+void mu2e::RootSizeOnDisk::print( std::ostream& os, double minimumFraction ) const{
 
   os << "\nSize on disk for the file: " << filename() << "\n"
      << "Size on disk (bytes):      " << size()
