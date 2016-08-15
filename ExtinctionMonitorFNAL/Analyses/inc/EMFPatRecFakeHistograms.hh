@@ -17,6 +17,8 @@
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
 
+#include "art/Framework/Principal/Handle.h"
+
 class TH1D;
 class TH2D;
 class TEfficiency;
