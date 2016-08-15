@@ -38,7 +38,6 @@ boost_inc     = os.environ['BOOST_INC']
 clhep_inc     = os.environ['CLHEP_INC']
 clhep_lib     = os.environ['CLHEP_LIB_DIR']
 cppunit_dir   = os.environ['CPPUNIT_DIR']
-gccxml_dir    = os.environ['GCCXML_DIR']
 heppdt_lib    = os.environ['HEPPDT_LIB']
 heppdt_inc    = os.environ['HEPPDT_INC']
 root_inc      = os.environ['ROOT_INC']
@@ -47,14 +46,14 @@ fhicl_inc     = os.environ['FHICLCPP_INC']
 fhicl_lib     = os.environ['FHICLCPP_LIB']
 sqlite_inc     = os.environ['SQLITE_INC']
 sqlite_lib     = os.environ['SQLITE_LIB']
-cpp0x_inc     = os.environ['CPP0X_INC']
-cpp0x_lib     = os.environ['CPP0X_LIB']
 mesfac_inc     = os.environ['MESSAGEFACILITY_INC']
 mesfac_lib     = os.environ['MESSAGEFACILITY_LIB']
 cetlib_inc     = os.environ['CETLIB_INC']
 cetlib_lib     = os.environ['CETLIB_LIB']
 xercesc_inc    = os.environ['XERCES_C_INC']
 xercesc_root   = os.environ['XERCESCROOT']
+tbb_inc     = os.environ['TBB_INC']
+tbb_lib     = os.environ['TBB_LIB']
 
 # If we are working in a satellite release, extract more information from the environment.
 if os.environ.has_key('MU2E_SATELLITE_RELEASE'):
@@ -89,13 +88,13 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              fhicl_inc,
                              sqlite_inc,
                              cetlib_inc,
-                             cpp0x_inc,
                              boost_inc,
                              clhep_inc,
                              cppunit_dir+'/include',
                              heppdt_inc,
                              root_inc,
                              xercesc_inc,
+                             tbb_inc,
                            ],
                    LIBPATH=[ libpath_frag,
                              base+'/lib',
@@ -106,14 +105,14 @@ env = Environment( CPPPATH=[ cpppath_frag,
                              fhicl_lib,
                              sqlite_lib,
                              cetlib_lib,
-                             cpp0x_lib,
                              boost_lib,
                              clhep_lib,
                              cppunit_dir+'/lib',
                              heppdt_lib,
                              root_sys+'/lib',
-                             '/lib', '/usr/X11R6/lib',
                              xercesc_root+'/lib',
+                             tbb_lib,
+                             '/lib', '/usr/X11R6/lib',
                            ],
                    ENV=osenv,
                    FORTRAN = 'gfortran',
@@ -161,7 +160,7 @@ if level == 'debug':
 
 # This comes from: root-config --cflags --glibs
 # Then guess at the correct location of Spectrum and MLP.
-rootlibs = [ 'Core', 'Cint', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
+rootlibs = [ 'Core', 'RIO', 'Net', 'Hist', 'Spectrum', 'MLP', 'Graf', 'Graf3d', 'Gpad', 'Tree',
              'Rint', 'Postscript', 'Matrix', 'Physics', 'MathCore', 'Thread', 'Gui', 'm', 'dl' ]
 env.Append( ROOTLIBS = rootlibs )
 
