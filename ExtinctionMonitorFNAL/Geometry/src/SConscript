@@ -25,7 +25,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_GeomPrimitives',
 #                            'art_Persistency_Common',
 #                            'art_Utilities',
 #                            'cetlib',
-#                            'Reflex'
 #                            ] )
 
 # This tells emacs to view this file in python mode.

@@ -13,6 +13,7 @@ helper=mu2e_helper();
 
 mainlib = helper.make_mainlib ( [ 'art_Persistency_Common',
                                   'art_Utilities',
+                                  'canvas_Utilities',
                                   'fhiclcpp',
                                   'cetlib',
                                   'CLHEP',
