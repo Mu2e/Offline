@@ -124,7 +124,7 @@ namespace mu2e {
   ReadKalFits::ReadKalFits(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
-    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+    _generatorModuleLabel(pset.get<std::string>("generatorModule", "generate")),
     _genWtModule( pset.get<art::InputTag>("generatorWeightModule",art::InputTag()) ),
     _beamWtModule( pset.get<art::InputTag>("beamWeightModule",art::InputTag()) ),
     _PBIModule( pset.get<art::InputTag>("ProtonBunchIntensityModule",art::InputTag("ProtonBunchIntensitySummarizer")) ),

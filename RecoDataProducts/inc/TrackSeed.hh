@@ -1,4 +1,3 @@
-
 #ifndef RecoDataProducts_TrackSeed_hh
 #define RecoDataProducts_TrackSeed_hh
 //
@@ -10,9 +9,6 @@
 //
 // Original author G. Tassielli
 //
-
-// C++ includes
-#include <vector>
 
 // Mu2e includes
 #include "RecoDataProducts/inc/TimeCluster.hh"
@@ -35,8 +31,7 @@ namespace mu2e {
     double z0      () const {return _helix._z0;    }
     double tanDip  () const {return _helix._tanDip;}
 
-    double t0      () const {return _timeCluster._t0;    }
-    double errt0   () const {return _timeCluster._errt0; }
+    TrkT0 const& t0      () const {return _timeCluster._t0;    }
     
   };
 

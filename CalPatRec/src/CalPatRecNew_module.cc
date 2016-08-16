@@ -435,12 +435,12 @@ namespace mu2e {
     
     const mu2e::CaloCluster *cluster = TPeak->Cluster();
     
-    TrkSeed._timeCluster._t0          = cluster->time(); 
+    TrkSeed._timeCluster._t0._t0          = cluster->time(); 
     Hep3Vector                   gpos = _calorimeter->fromSectionFrameFF(cluster->sectionId(), cluster->cog3Vector());
     Hep3Vector                   tpos = _calorimeter->toTrackerFrame(gpos);
-    TrkSeed._timeCluster._z0          = tpos.z();
+    TrkSeed._timeCluster._pos          = tpos;
 
-    TrkSeed._timeCluster._errt0       = 1;
+    TrkSeed._timeCluster._t0._t0err       = 1;
     TrkSeed._timeCluster._caloCluster = ClusterPtr;
     
 

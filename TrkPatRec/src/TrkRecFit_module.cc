@@ -268,7 +268,7 @@ namespace mu2e
       }
 
       TrkDef seeddef(_shcol,iTrkSeed._timeCluster._strawHitIdxs,recoseed,_tpart,_fdir);
-      TrkT0 t0(iTrkSeed._timeCluster._t0,iTrkSeed._timeCluster._errt0);
+      TrkT0 t0(iTrkSeed._timeCluster._t0);
       seeddef.setT0(t0);
       TrkDef kaldef(seeddef);
       // initialize filters.  These are used only for diagnostics

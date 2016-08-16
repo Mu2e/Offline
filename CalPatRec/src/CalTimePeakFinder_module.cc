@@ -392,17 +392,17 @@ namespace mu2e {
     const mu2e::CaloCluster *cluster = TPeak.Cluster();
     
                                 //do we need to propagate the cluster time at z=0 at this stage?
-    TrkSeed._timeCluster._t0  = cluster->time(); 
+    TrkSeed._timeCluster._t0._t0  = cluster->time(); 
 
     int               idisk   = cluster->sectionId();
     CLHEP::Hep3Vector cp_mu2e = _calorimeter->fromSectionFrame(idisk, cluster->cog3Vector());
     CLHEP::Hep3Vector cp_st   = _calorimeter->toTrackerFrame(cp_mu2e);
     
     
-    TrkSeed._timeCluster._z0          = cp_st.z();
+    TrkSeed._timeCluster._pos          = cp_st;
     
                                 //dummy value for errT0
-    TrkSeed._timeCluster._errt0       = 0.1;
+    TrkSeed._timeCluster._t0._t0err       = 0.1;
     
     TrkSeed._timeCluster._caloCluster = art::Ptr<mu2e::CaloCluster>(_ccH, ClusterIndex);
   }

@@ -23,17 +23,13 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StereoHitCollection.hh"
-//#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "RecoDataProducts/inc/TrackSeed.hh"
 #include "RecoDataProducts/inc/TrackSeedCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
@@ -77,19 +73,25 @@ namespace mu2e
     art::Handle<StrawHitCollection>    _strawhitsH;
     art::Handle<TrackSeedCollection>   _trkseedsH;
 
-    // event object labels
-    std::string                        _shLabel;
-    std::string                        _shpLabel;
-    std::string                        _timeclusterLabel;
+    // input object tags
+    art::InputTag			_shTag;
+    art::InputTag			_shpTag;
+    art::InputTag			_shfTag;
+    art::InputTag			_tcTag;
+    // output label
+    std::string                        _trackseed;
 
-    // outlier cuts
+    // helix definition
     TrkParticle                        _tpart; // particle type being searched for
     TrkFitDirection                    _fdir;  // fit direction in search
     double			       _helicity; // cache the value of helicity, which can be computed from the above with the BField
+    // hit selection
+    StrawHitFlag  _hsel, _hbkg;
 
     // cache of event objects
     const StrawHitCollection*          _shcol;
     const StrawHitPositionCollection*  _shpcol;
+    const StrawHitFlagCollection*      _shfcol;
     const TimeClusterCollection*       _tccol;
 
     // robust helix fitter
@@ -107,12 +109,16 @@ namespace mu2e
     _diag        (pset.get<int>("diagLevel",0)),
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>("printFrequency",101)),
-    _shLabel     (pset.get<string>("StrawHitCollectionLabel","makeSH")),
-    _shpLabel    (pset.get<string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
-    _trkseedLabel(pset.get<string>("TrackSeedCollectionLabel","TimePeakFinder")),
+    _shTag	 (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
+    _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
+    _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimePeakFinder")),
+    _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimePeakFinder")),
+    _trackseed   (pset.get<string>("TrackSeedCollectionLabel","TimePeakFinder")),
     _tpart       ((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir        ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _helicity    (0.0),
+    _hsel	 (pset.get<std::vector<std::string> >("HitSelectionBits")),
+    _hbkg	 (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet()))
   {
     produces<TrackSeedCollection>();
@@ -147,11 +153,14 @@ namespace mu2e
       throw cet::exception("RECO")<<"mu2e::RobustHelixFinder: data missing or incomplete"<< endl;
     }
 
-    for(auto tclust: _tccol) {
+    for(auto tclust: *_tccol) {
       // create track definitions for the helix fit from this initial information
-      HelixDef       helixdef(_shcol, _shpcol, trkSeed->_timeCluster._strawHitIdxs, _tpart, _fdir );
+      // filter the strawhits from this time cluster first, FIXME!!!
+      // add an iteration over hit filtering FIXME!!
+      std::vector<hitIndex> hits = trkSeed->_timeCluster._strawHitIdxs;
+      HelixDef       helixdef(_shcol, _shpcol, hits, _tpart, _fdir );
 
-      // copy this for the other fits
+      // copy this for the other fits.  This copy is silly, FIXME!!
       TrkDef         seeddef(helixdef);
 
       // track fitting objects for this peak
@@ -167,7 +176,7 @@ namespace mu2e
 	HepSymMatrix hcov = vT_times_v(hparerr);
 	seeddef.setHelix(HelixTraj(hpar,hcov));
 	// Filter outliers using this helix
-	// This functionality seems to have been removed, plus it's not clear the list of hits used in the
+	// This functionality needs to be moved here from the helix fit itself 
 	// helix fit is preserved when making the seed, FIXME!!
 	if (_debug>1) {std::cout <<"RobustHelixFinder::produce - helix params " << hpar << "and errors " << hparerr << endl;}
 	//fill seed information
@@ -193,30 +202,25 @@ namespace mu2e
 
   // find the input data objects 
   bool RobustHelixFinder::findData(const art::Event& evt){
-    _shcol = 0;
-    _shpcol = 0;
-    _tccol = 0;
+    _shcol = 0; _shfcol = 0; _shpcol = 0; _tccol = 0; _mcdigis = 0;
+    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
+    _shcol = shH.product();
+    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
+    _shpcol = shpH.product();
+    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    _shfcol = shfH.product();
+    auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
+    _tccol = tcH.product();
 
-    if(evt.getByLabel(_shLabel,_strawhitsH))
-      _shcol = _strawhitsH.product();
-    art::Handle<mu2e::StrawHitPositionCollection> shposH;
-    if(evt.getByLabel(_shpLabel,shposH))
-      _shpcol = shposH.product();
-
-    if (evt.getByLabel(_trkseedLabel, _trkseedsH))
-      _tccol = _trkseedsH.product();
-
-    return _shcol != 0 && _shpcol != 0 && _tccol!=0;
+    return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0;
   }
 
-
   void RobustHelixFinder::fillTrackSeed(TrackSeed &tmpseed     , 
-					TrkDef    &seeddef     ,  
-					TrackSeed  InputTrkSeed) {
+      TrkDef    &seeddef     ,  
+      TrackSeed  InputTrkSeed) {
 
     tmpseed._timeCluster._z0            = InputTrkSeed._timeCluster._z0;
     tmpseed._timeCluster._t0            = InputTrkSeed._timeCluster._t0;
-    tmpseed._timeCluster._errt0         = InputTrkSeed._timeCluster._errt0;	  
     tmpseed._helix._d0                  = seeddef.helix().d0();
     tmpseed._helix._phi0                = seeddef.helix().phi0();
     tmpseed._helix._omega               = seeddef.helix().omega();

@@ -12,15 +12,16 @@
 
 // C++ includes
 #include <vector>
-#include <ostream>
-
+// art includes
+#include "art/Persistency/Common/Ptr.h"
 // Mu2e includes
-#include "TrkReco/inc/TrkDef.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
+//#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "CLHEP/Vector/ThreeVector.h"
+// BTrk includes
+#include "BTrk/TrkBase/TrkT0.hh"
 
 namespace mu2e {
-
+  class CaloCluster;
   struct hitIndex {
     size_t _index; // index into the straw hit container
     int _ambig; // hit ambiguity.  0 means no ambiguity
@@ -32,18 +33,10 @@ namespace mu2e {
  
   struct TimeCluster{
 
-    std::vector<hitIndex>    _strawHitIdxs;
-    double                   _t0;   //time at z=z0
-    double                   _errt0; //error asssociated to t0 (in case of CalPatRec is by default set to 1 ns)
+    std::vector<hitIndex>    _strawHitIdxs; // associated straw hits: can be empty
+    TrkT0		     _t0; // t0 and associated error
     CLHEP::Hep3Vector        _pos; // position of the time cluster   
-    art::Ptr<CaloCluster>    _caloCluster;
-
-  public:
-
-    TimeCluster():
-     _t0   (0),
-     _errt0(0)
-     { }
+    art::Ptr<CaloCluster>    _caloCluster; // associated calorimeter cluster: can be null
 
   };
 

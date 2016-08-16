@@ -33,6 +33,7 @@ namespace mu2e {
       bitnames[std::string("Isolated")]             = bit_to_mask(isolated);
       bitnames[std::string("Outlier")]              = bit_to_mask(outlier);
       bitnames[std::string("OtherBackground")]      = bit_to_mask(other);
+      bitnames[std::string("TimeCluster")]	    = bit_to_mask(tclust);
       bitnames[std::string("CalorimeterSelection")] = bit_to_mask(calosel);
       bitnames[std::string("StrawXTalk")]	    = bit_to_mask(strawxtalk);
       bitnames[std::string("ElectronicsXTalk")]	    = bit_to_mask(elecxtalk);

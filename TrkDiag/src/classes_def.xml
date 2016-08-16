@@ -12,4 +12,9 @@
  <class name="std::vector<mu2e::TrkCaloInfo>" />
  <class name="mu2e::TrkHitShare" />
  <class name="std::vector<mu2e::TrkHitShare>" />
+ <class name="mu2e::TimeClusterInfo" />
+ <class name="std::vector<mu2e::TimeClusterInfo>" />
+ <class name="mu2e::TimeClusterHitInfo" />
+ <class name="mu2e::MCClusterInfo" />
+ <class name="std::vector<mu2e::MCClusterHitInfo>" />
 </lcgdict>

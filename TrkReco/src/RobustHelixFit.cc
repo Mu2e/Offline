@@ -147,7 +147,7 @@ namespace mu2e
     static const double halfpi(pi/2.0);
 // the helix fit introduces a radial bias due to an asymmetry in the detector (more phase space for
 // noise hits outside the circle than inside.  correct for it.
-    double radius = helix._radius + _rbias;
+    double radius = helix._radius;
     pvec = HepVector(5,0);
 // omega is the inverse transverse radius of the particle's circular motion.  Its
 // signed by the particle angular momentum about the cirle center.
@@ -162,7 +162,7 @@ namespace mu2e
 // d0 describes the distance to the origin at closest approach.
 // It is signed by the particle angular momentum WRT the origin.
 // The Helix fit radial bias is anti-correlated with d0; correct for it here.
-    pvec[HelixTraj::d0Index] = omsign*(helix._center.perp() - helix._radius - 2*_rbias);
+    pvec[HelixTraj::d0Index] = omsign*(helix._center.perp() - helix._radius);
 // the dip angle is measured WRT the perpendicular
     pvec[HelixTraj::tanDipIndex] = omsign/(radius*helix._dfdz);
 // must change conventions here: fz0 is the phi at z=0, z0 is defined at the point of closest approach
@@ -191,7 +191,6 @@ namespace mu2e
     _nsigma(pset.get<double>("nsigma",5.0)),
     _minzsep(pset.get<double>("minzsep",100.0)),
     _maxzsep(pset.get<double>("maxzsep",700.0)),
-    _rbias(pset.get<double>("radialBias",0.0)),
     _efac(pset.get<double>("ErrorFactor",1.0)),
     _mindist(pset.get<double>("mindist",50.0)),
     _maxdist(pset.get<double>("maxdist",500.0)),

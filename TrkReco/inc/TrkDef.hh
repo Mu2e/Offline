@@ -13,7 +13,7 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/TrackSeed.hh"
-// BaBar
+// BTrk includes
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
