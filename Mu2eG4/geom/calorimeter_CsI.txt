@@ -81,13 +81,3 @@ bool calorimeter.absorberBoxSolid             = false;
 int  calorimeter.verbosityLevel               = 1;
 
 
-
-
-
-string calorimeter.calorimeterFillMaterial      = "DSVacuum";
-string calorimeter.calorimeterDiskMaterial      = "DSVacuum";
-int calorimeter.calorimeterCrateVersion        = 2; 
-string calorimeter.calorimeterCrateMaterial    = "Electronics"; //"G10"  calorimeter electronics material. NEED to refine
-double calorimeter.calorimeterCrateInnerRadius = 680;       
-double calorimeter.calorimeterCrateOuterRadius = 810;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
-double calorimeter.calorimeterCrateExtendLen   = 180.0;  

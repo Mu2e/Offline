@@ -51,7 +51,7 @@ namespace mu2e {
 
 	const G4TouchableHandle & touchableHandle = aStep->GetPreStepPoint()->GetTouchableHandle();
 
-	G4int copyNo = touchableHandle->GetCopyNumber(1);  // Make sure to get the right copy number level here
+	G4int copyNo = touchableHandle->GetCopyNumber(2);  // Make sure to get the right copy number level here
 
 	G4AffineTransform const& toLocal = touchableHandle->GetHistory()->GetTopTransform();
 	G4ThreeVector posWorld           = aStep->GetPreStepPoint()->GetPosition();
@@ -59,7 +59,9 @@ namespace mu2e {
 
 
 	//for diagnosis purposes only when playing with the geometry, uncomment next two line
-	//for (int i=0;i<8;++i) std::cout<<"Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "<<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(posWorld)<<std::endl;
+	//for (int i=0;i<9;++i) std::cout<<"Transform level "<<i<<"   "<<touchableHandle->GetCopyNumber(i)<<"     "<<touchableHandle->GetHistory()->GetTransform(i).TransformPoint(posWorld)<<std::endl;
+        //std::cout<<"Cpos "<<copyNo<<"  "<<touchableHandle->GetHistory()->GetTransform(0).TransformPoint(posWorld)-touchableHandle->GetHistory()->GetTransform(7).TransformPoint(posWorld)<<std::endl;
+
 
 	_collection->push_back(StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
                         		   copyNo,
