@@ -17,10 +17,11 @@ double acceleratorParams.limitingHalfWidth = 125.  ; // ns, ""
 string acceleratorParams.potPulse  = "ConditionsService/data/potTimingDistribution_avg.txt";
 string acceleratorParams.acDipole  = "ConditionsService/data/acDipoleTransmissionFunction.txt";
 
-double MinDriftRadiusResolution = 0.2; // mm
-double MaxDriftRadiusResolution = 0.2; // mm
-double DriftRadiusResolutionRadius = -1.0; // mm
+double MinDriftRadiusResolution = 0.1; // mm
+double MaxDriftRadiusResolution = 0.1; // mm
+double DriftRadiusResolutionRadius = 2.0; // mm
 double DriftVelocity = 0.0625; // mm/nsec
+//double DriftVelocity = 0.05; // mm/nsec
 
 // uncoment to enable non "null operation" e2a conversion
 // double EdepToAmpl = 1.0;
@@ -38,39 +39,25 @@ double extMonFNAL.biasVoltage = -150; // Volts
 //Calorimeter calibration information
 
 // Longitudinal non-uniformity response, see Mu2e doc ... 
-double CrystalNonUniformity_0 = 0.05; 
-double CrystalNonUniformityErr_0 = 0.0;
-
-//non-linearity parameters, see Mu2e doc ...
-double CrystalNonLinearity_0 = 10.35;
-double CrystalNonLinearity_0Err = 0.0;
- 
-double CrystalNonLinearity_1 = 0.9919;
-double CrystalNonLinearity_1Err = 0.0;
-
-double CrystalNonLinearity_2 = 0.01812;
-double CrystalNonLinearity_2Err = 0.0;
-
-double CrystalNonLinearity_3 = 0.06654;
-double CrystalNonLinearity_3Err = 0.0;
+double CrystalNonUniformity_0 = 1.05; 
 
 //APD photo-statistic number
-double ROphotostatistic = 45.0;//p.e / MeV
-double ROphotostatisticErr = 7.0;//p.e / MeV
-double ROfanoFactor = 1.3;
+double ROphotostatistic = 30.0;//p.e / MeV
 
 //conversion factor from ADC counts to MeV
-double ADC2MeVConversionFactor = 16.04e-04;//6.03e-04;    //2.47e-04 is for wfInput=0 (beamt test), 5.46e-04 is for wfInput=3
+double ADC2MeVConversionFactor = 1.6e-03; //5.46e-04;//0.989e-03;
 
 //value of the sigma used to do the Gaussian smearing due to the electronic noise,
 //this is the quadratic sum of all APDs.....
-double ReadOutElectronicNoise      = 0.42;//MeV
-double ReadOutElectronicNoiseSigma = 0.05;//MeV
+double ReadOutElectronicNoise      = 0.15;//MeV
 
 double calorimeter.radiationLengthCsI = 1.860;   // cm
 double calorimeter.criticalEnergyPosCsI = 11.17; //MeV
 double calorimeter.criticalEnergyNegCsI = 10.80; //MeV
 double calorimeter.densityCsI           = 4.51; // gm/cc
+
+string calorimeter.pulseFileName = "/nfs/home/echenard/Experiments/Mu2e/Simulation/Offline/ConditionsService/data/CsI-waveform-2016-07-12.root";
+string calorimeter.pulseHistName = "h_waveform";
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
