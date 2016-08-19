@@ -195,6 +195,10 @@ namespace mu2e
     _tmin = config.getDouble("cosmicDYB.tMin", _tmin);
     _tmax = config.getDouble("cosmicDYB.tMax", _tmax);
 
+    //tmin and tmax can be overriden by a constant time
+    _tmin = config.getDouble("cosmicDYB.constTime", _tmin);
+    _tmax = config.getDouble("cosmicDYB.constTime", _tmax);
+
     _dt   = _tmax - _tmin;
 
 
@@ -398,7 +402,8 @@ namespace mu2e
       if(_verbose>1) std::cout << "starting position = " << pos << std::endl;
 
       // pick a random starting time, unless a constant time was set
-      double time = _tmin + _dt*_randFlat.fire();
+      double time = _tmin;
+      if(_dt>0) time += _dt*_randFlat.fire();
 
       // Pick a random charge.
       // implement a rough charge asymmetry

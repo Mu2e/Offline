@@ -40,7 +40,6 @@ physics :
     eventdisplay:
     {
       module_type     : EventDisplay
-      g4ModuleLabel   : "g4run"
     }
   }
 
