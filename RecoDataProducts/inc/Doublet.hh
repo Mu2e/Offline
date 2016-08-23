@@ -14,7 +14,6 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 
-#include "TrkReco/inc/TrkDef.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"

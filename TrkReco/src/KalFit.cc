@@ -32,7 +32,6 @@
 #include "ConditionsService/inc/TrackerCalibrations.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
 // tracker
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -210,20 +209,17 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-// create the track (KalRep) from the track definition
+// create the track (KalRep) from the track definition. 
 //-----------------------------------------------------------------------------
-  void KalFit::makeTrack(TrkDef const& tdef, KalRep*& krep) {
+  void KalFit::makeTrack(const StrawHitCollection* shcol, TrkDef& tdef, KalRep*& krep) {
 // test if fitable
     if(fitable(tdef)){
-// first, find t0
-      TrkT0 t0;
+// if requested, initialize t0
       if(_initt0)
-        initT0(tdef, t0);
-      else
-        t0 = tdef.t0();
+        initT0(shcol,tdef);
 // create the hits
       TrkStrawHitVector tshv;
-      makeHits(tdef, t0, tshv);
+      makeHits(shcol, tdef, tshv);
 // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
       std::vector<TrkHit*> thv;
       for(auto ihit = tshv.begin(); ihit != tshv.end(); ++ihit){
@@ -238,7 +234,7 @@ namespace mu2e
       assert(krep != 0);
 // initialize krep t0; eventually, this should be in the constructor, FIXME!!!
       double flt0 = tdef.helix().zFlight(0.0);
-      krep->setT0(t0,flt0);
+      krep->setT0(tdef.t0(),flt0);
 // initialize history list
       krep->addHistory(TrkErrCode(),"KalFit creation");
 // now fit
@@ -252,7 +248,7 @@ namespace mu2e
     }
   }
 
-  void KalFit::addHits(KalRep* krep,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi) {
+  void KalFit::addHits(KalRep* krep,const StrawHitCollection* shcol, std::vector<hitIndex> indices, double maxchi) {
   // fetcth the DetectorModel
    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
 // there must be a valid Kalman fit to add hits to
@@ -267,7 +263,7 @@ namespace mu2e
       const TrkDifPieceTraj* reftraj = krep->referenceTraj();
       for(unsigned iind=0;iind<indices.size(); ++iind){
         size_t istraw = indices[iind]._index;
-        const StrawHit& strawhit(straws->at(istraw));
+        const StrawHit& strawhit(shcol->at(istraw));
         const Straw& straw = tracker.getStraw(strawhit.strawIndex());
 // estimate  initial flightlength
         double hflt(0.0);
@@ -395,7 +391,7 @@ namespace mu2e
   }
 
   void
-  KalFit::makeHits(TrkDef const& tdef, TrkT0 const& t0, TrkStrawHitVector& tshv ) {
+  KalFit::makeHits(const StrawHitCollection* shcol, TrkDef const& tdef, TrkStrawHitVector& tshv ) {
     const Tracker& tracker = getTrackerOrThrow();
 // compute the propagaion velocity
     double flt0 = tdef.helix().zFlight(0.0);
@@ -404,11 +400,11 @@ namespace mu2e
     unsigned nind = tdef.strawHitIndices().size();
     for(unsigned iind=0;iind<nind;iind++){
       size_t istraw = tdef.strawHitIndices()[iind]._index;
-      const StrawHit& strawhit(tdef.strawHitCollection()->at(istraw));
+      const StrawHit& strawhit(shcol->at(istraw));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
       double fltlen = tdef.helix().zFlight(straw.getMidPoint().z());
     // estimate arrival time at the wire
-      TrkT0 hitt0(t0);
+      TrkT0 hitt0(tdef.t0());
       hitt0._t0 += (fltlen-flt0)/vflt;
     // create the hit object.  Start with the 1st additional error for anealing
       TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_herr.front(),_maxdriftpull);
@@ -664,7 +660,8 @@ namespace mu2e
   }
 
   void
-  KalFit::initT0(TrkDef const& tdef, TrkT0& t0) {
+  KalFit::initT0(const StrawHitCollection* shcol,TrkDef& tdef) {
+    TrkT0 t0 = tdef.t0();
     using namespace boost::accumulators;
 // make an array of all the hit times, correcting for propagation delay
     const Tracker& tracker = getTrackerOrThrow();
@@ -685,7 +682,7 @@ namespace mu2e
     // loop over strawhits
     for(unsigned iind=0;iind<nind;iind++){
       size_t istraw = tdef.strawHitIndices()[iind]._index;
-      const StrawHit& strawhit(tdef.strawHitCollection()->at(istraw));
+      const StrawHit& strawhit(shcol->at(istraw));
       const Straw& straw = tracker.getStraw(strawhit.strawIndex());
       // compute the flightlength to this hit from z=0 (can be negative)
       double hflt = tdef.helix().zFlight(straw.getMidPoint().z()) - t0flt;
@@ -713,6 +710,7 @@ namespace mu2e
     double tmax = extract_result<tag::max>(max);
     // estimate the error using the range
     t0._t0err = (tmax-tmin)/sqrt(12*nind);
+    tdef.setT0(t0);
   }
 
   bool

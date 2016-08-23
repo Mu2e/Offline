@@ -22,14 +22,11 @@
 /// data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StereoHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
-#include "RecoDataProducts/inc/HelixVal.hh"
-#include "RecoDataProducts/inc/TrackSeed.hh"
-#include "RecoDataProducts/inc/TrackSeedCollection.hh"
+#include "RecoDataProducts/inc/HelixSeedCollection.hh"
+#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "DataProducts/inc/Helicity.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
@@ -70,9 +67,6 @@ namespace mu2e
     int                                _diag,_debug;
     int                                _printfreq;
 
-    art::Handle<StrawHitCollection>    _strawhitsH;
-    art::Handle<TrackSeedCollection>   _trkseedsH;
-
     // input object tags
     art::InputTag			_shTag;
     art::InputTag			_shpTag;
@@ -84,7 +78,7 @@ namespace mu2e
     // helix definition
     TrkParticle                        _tpart; // particle type being searched for
     TrkFitDirection                    _fdir;  // fit direction in search
-    double			       _helicity; // cache the value of helicity, which can be computed from the above with the BField
+    Helicity			       _helicity;
     // hit selection
     StrawHitFlag  _hsel, _hbkg;
 
@@ -99,9 +93,6 @@ namespace mu2e
 
     // helper functions
     bool findData           (const art::Event& e);
-    void fillTrackSeed      (TrackSeed &tmpseed     , 
-			     TrkDef    &seeddef     ,  
-			     TrackSeed  InputTrkSeed);
     
   };
 
@@ -113,15 +104,14 @@ namespace mu2e
     _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimePeakFinder")),
     _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimePeakFinder")),
-    _trackseed   (pset.get<string>("TrackSeedCollectionLabel","TimePeakFinder")),
+    _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimePeakFinder")),
     _tpart       ((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir        ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _helicity    (0.0),
     _hsel	 (pset.get<std::vector<std::string> >("HitSelectionBits")),
     _hbkg	 (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet()))
   {
-    produces<TrackSeedCollection>();
+    produces<HelixSeedCollection>();
   }
 
   RobustHelixFinder::~RobustHelixFinder(){}
@@ -138,14 +128,13 @@ namespace mu2e
     CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(vpoint);
     CLHEP::Hep3Vector field = bfmgr->getBField(vpoint_mu2e);
     // positive helicity is clockwise rotation around the direction of axial motion (negative dphi/dz)  
-    _helicity = copysign(1.0,-_fdir.dzdt()*_tpart.charge()*field.z());
- 
+    _helicity = Helicity(static_cast<float>(-_fdir.dzdt()*_tpart.charge()*field.z()));
   }
 
   void RobustHelixFinder::produce(art::Event& event ) {
 
     // create output
-    unique_ptr<TrackSeedCollection> outseeds(new TrackSeedCollection);
+    unique_ptr<HelixSeedCollection> outseeds(new HelixSeedCollection);
     // event printout
     _iev=event.id().event();
     // find the data
@@ -154,38 +143,17 @@ namespace mu2e
     }
 
     for(auto tclust: *_tccol) {
-      // create track definitions for the helix fit from this initial information
-      // filter the strawhits from this time cluster first, FIXME!!!
-      // add an iteration over hit filtering FIXME!!
-      std::vector<hitIndex> hits = trkSeed->_timeCluster._strawHitIdxs;
-      HelixDef       helixdef(_shcol, _shpcol, hits, _tpart, _fdir );
+    // build a HelixSeed around this time cluster
+      HelixSeed hseed;
+      hseed._timeCluster = tclust;
 
-      // copy this for the other fits.  This copy is silly, FIXME!!
-      TrkDef         seeddef(helixdef);
+      _hfit.findHelix(*_shcol, *_shpcol, hseed);
 
-      // track fitting objects for this peak
-      HelixFitResult helixfit(helixdef);
+// should iterate fit to include outlier removal using time + geometric information FIXME!
 
-      // robust helix fit
-      if(_hfit.findHelix(helixfit, _diag)){
-
-	// convert the result to standard helix parameters, and initialize the seed definition helix
-	HepVector hpar;
-	HepVector hparerr;
-	_hfit.helixParams(helixfit,hpar,hparerr);
-	HepSymMatrix hcov = vT_times_v(hparerr);
-	seeddef.setHelix(HelixTraj(hpar,hcov));
-	// Filter outliers using this helix
-	// This functionality needs to be moved here from the helix fit itself 
-	// helix fit is preserved when making the seed, FIXME!!
-	if (_debug>1) {std::cout <<"RobustHelixFinder::produce - helix params " << hpar << "and errors " << hparerr << endl;}
-	//fill seed information
-	// This copying of data between related classes is error prone and unnecessary, FIXME!!
-	TrackSeed tmpseed;
-	fillTrackSeed(tmpseed, seeddef, *trkSeed);
-	// verify the seed has the right helicity
-	if(_helicity*tmpseed._helix.helicity() > 0.0){
-	  outseeds->push_back(tmpseed);
+      if(hseed._status.hasAllProperties(TrkFitFlag::fitOK) ){
+	if(_helicity == hseed._helix.helicity()){
+	  outseeds->push_back(hseed);
 	} else if (_debug > 0){
 	  std::cout << "Found seed with wrong helicity " << std::endl;
 	}
@@ -202,7 +170,7 @@ namespace mu2e
 
   // find the input data objects 
   bool RobustHelixFinder::findData(const art::Event& evt){
-    _shcol = 0; _shfcol = 0; _shpcol = 0; _tccol = 0; _mcdigis = 0;
+    _shcol = 0; _shfcol = 0; _shpcol = 0; _tccol = 0; 
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
     auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
@@ -213,36 +181,6 @@ namespace mu2e
     _tccol = tcH.product();
 
     return _shcol != 0 && _shfcol != 0 && _shpcol != 0 && _tccol != 0;
-  }
-
-  void RobustHelixFinder::fillTrackSeed(TrackSeed &tmpseed     , 
-      TrkDef    &seeddef     ,  
-      TrackSeed  InputTrkSeed) {
-
-    tmpseed._timeCluster._z0            = InputTrkSeed._timeCluster._z0;
-    tmpseed._timeCluster._t0            = InputTrkSeed._timeCluster._t0;
-    tmpseed._helix._d0                  = seeddef.helix().d0();
-    tmpseed._helix._phi0                = seeddef.helix().phi0();
-    tmpseed._helix._omega               = seeddef.helix().omega();
-    tmpseed._helix._z0                  = seeddef.helix().z0();
-    tmpseed._helix._tanDip              = seeddef.helix().tanDip();
-
-    for (std::vector<hitIndex>::const_iterator ihit=seeddef.strawHitIndices().begin(); ihit!=seeddef.strawHitIndices().end(); ++ihit) {
-      tmpseed._timeCluster._strawHitIdxs.push_back( mu2e::hitIndex( ihit->_index, ihit->_ambig) );
-    }
-  }
-
-  void RobustHelixFinder::HelixVal2HelixTraj (const HelixVal &helIn, HelixTraj &helOut) {
-    CLHEP::HepVector helParams(5);
-    helParams(1) = helIn._d0;
-    helParams(2) = helIn._phi0;
-    helParams(3) = helIn._omega;
-    helParams(4) = helIn._z0;
-    helParams(5) = helIn._tanDip;
-    CLHEP::HepSymMatrix conv(5,1);
-
-    HelixTraj tmpHelix(helParams,conv);
-    helOut=tmpHelix;
   }
 
 }

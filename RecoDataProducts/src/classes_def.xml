@@ -30,6 +30,8 @@
  <class name="mu2e::StrawHitFlag"/>
  <class name="mu2e::StrawHitFlagDetail"/>
  <class name="mu2e::StrawHitFlagCollection"/>
+ <class name="mu2e::TrkFitFlag"/>
+ <class name="mu2e::TrkFitFlagDetail"/>
  <class name="mu2e::StrawCluster"/>
  <class name="mu2e::StrawClusterCollection"/>
  <class name="mu2e::CaloHit"/>
@@ -58,7 +60,10 @@
  <class name="mu2e::ZRotStrawHitMap"/>
  <class name="mu2e::ZRotStrawHitMapCollection" persistent="false"/>
  <class name="mu2e::TrackerHitByID" persistent="false"/>
+ <class name="mu2e::RobustHelix"/>
  <class name="mu2e::HelixVal"/>
+ <class name="mu2e::HelixSeed"/>
+ <class name="mu2e::HelixSeedCollection" /> 
  <class name="mu2e::TrackSeed"/>
  <class name="mu2e::TrackSeedCollection" /> <!-- persistent="false"/> -->
  <class name="mu2e::TrkExtTrajPoint" />

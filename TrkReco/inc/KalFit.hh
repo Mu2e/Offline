@@ -51,9 +51,9 @@ namespace mu2e
 
     virtual ~KalFit();
 // main function: given a track definition, create a fit object from it
-    virtual void makeTrack(TrkDef const& tdef, KalRep*& kres);
+    virtual void makeTrack(const StrawHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
 // add a set of hits to an existing fit
-    virtual void addHits(KalRep* kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi);
+    virtual void addHits(KalRep* kres,const StrawHitCollection* shcol, std::vector<hitIndex> indices, double maxchi);
 // add materials to a track
     bool unweedHits(KalRep* kres, double maxchi);
 // KalContext interface
@@ -88,8 +88,8 @@ namespace mu2e
     mutable BField* _bfield;
   // helper functions
     bool fitable(TrkDef const& tdef);
-    void initT0(TrkDef const& tdef, TrkT0& t0);
-    virtual void makeHits(TrkDef const& tdef, TrkT0 const& t0, TrkStrawHitVector& tshv); 
+    void initT0(const StrawHitCollection* shcol, TrkDef& tdef );
+    virtual void makeHits(const StrawHitCollection* shcol,TrkDef const& tdef, TrkStrawHitVector& tshv); 
     virtual void makeMaterials(TrkStrawHitVector const&, TrkDef const& tdef, std::vector<DetIntersection>& dinter);
     unsigned addMaterial(KalRep* krep);
     bool weedHits(KalRep* kres, TrkStrawHitVector& tshv,size_t iter);

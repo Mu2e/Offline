@@ -10,6 +10,7 @@
 #include "BTrk/KalmanTrack/KalSite.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/TrkBase/HelixTraj.hh"
 #include <vector>
 #include <algorithm>
 #include <functional>

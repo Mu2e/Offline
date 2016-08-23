@@ -1,15 +1,12 @@
 #ifndef RecoDataProducts_HelixVal_hh
 #define RecoDataProducts_HelixVal_hh
 //
-// helix parameters container
-//
-// $Id: $
-// $Author:  $
-// $Date:  $
-//
-// Original author G. Tassielli
+// BaBar definition helix parameters.  This is a mixed geometric/kinematic helix as the
+// signs include time propagation information
 //
 
+// Mu2e
+#include "DataProducts/inc/Helicity.hh"
 // C includes 
 #include <math.h>
 
@@ -30,7 +27,7 @@ struct HelixVal {
         double                _tanDip;
 
 // helicity is given by the product of the signs of tandip (axial motion) and omega (angular momentum)
-	double helicity() const { return copysign(1.0,_tanDip*_omega); }
+	Helicity helicity() const { return Helicity(_tanDip*_omega); }
 
 };
 

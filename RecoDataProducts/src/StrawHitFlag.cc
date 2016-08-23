@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 namespace mu2e {
-  unsigned StrawHitFlagDetail::_maxTrkId(15);
+  unsigned StrawHitFlagDetail::_maxTrkId(7);
 
   std::string const& StrawHitFlagDetail::typeName() {
     static std::string type("StrawHitFlag");
