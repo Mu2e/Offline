@@ -38,7 +38,7 @@ namespace art {
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
-#include "TrkReco/inc/TrkDef.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
@@ -306,7 +306,7 @@ namespace mu2e {
     bool findData         (const art::Event& e);
     void findTimePeaks    (CalTimePeakCollection* TimePeakColl);
     void createTimePeak   (CalTimePeakCollection* TimePeakColl);
-    void filterOutliers   (TrkDef& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
+    void filterOutliers   (TrkDefHack& mytrk,Trajectory const& traj,double maxdoca,std::vector<TrkHitFilter>& thfvec);
 //----------------------------------------------------------------------
 // 2015 - 02 - 16 Gianipez added the two following functions
 //----------------------------------------------------------------------
@@ -325,7 +325,7 @@ namespace mu2e {
 
     void fillSeedFitHistograms(KalFitResult& SFResult);
 
-    void init             (KalFitResult*&  KRes, TrkDef* TDef);
+    void init             (KalFitResult*&  KRes, TrkDefHack* TDef);
 
   };
 }

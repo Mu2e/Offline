@@ -24,7 +24,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "KalmanTests/inc/KalFitResult.hh"
+#include "CalPatRec/inc/KalFitResult.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>

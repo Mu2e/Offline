@@ -729,13 +729,13 @@ namespace mu2e
   }
 
 //-----------------------------------------------------------------------------
-  bool KalFitHack::fitable(TrkDef const& tdef){
+  bool KalFitHack::fitable(TrkDefHack const& tdef){
     return tdef.strawHitIndices().size() >= _minnstraws;
   }
 
 //-----------------------------------------------------------------------------
   void KalFitHack::makeHits(KalFitResult& KRes, TrkT0 const& t0) {
-    TrkDef const& tdef = *KRes._tdef;
+    TrkDefHack const& tdef = *KRes._tdef;
 // compute the propagaion velocity
     double flt0 = tdef.helix().zFlight(0.0);
     double mom = TrkMomCalculator::vecMom(tdef.helix(),bField(),flt0).mag();
@@ -958,7 +958,7 @@ namespace mu2e
   // fetcth the DetectorModel
     Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
 
-    TrkDef const& tdef = *KRes._tdef;
+    TrkDefHack const& tdef = *KRes._tdef;
     for(std::vector<TrkStrawHit*>::iterator ihit=KRes._hits.begin();ihit!=KRes._hits.end();ihit++){
       TrkStrawHit* trkhit = *ihit;
       const DetStrawElem* strawelem = detmodel.strawElem(trkhit->straw());
@@ -1092,7 +1092,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // time initialization
 //-----------------------------------------------------------------------------
-  void KalFitHack::initCaloT0(CalTimePeak* TPeak, TrkDef const& tdef, TrkT0& t0) {
+  void KalFitHack::initCaloT0(CalTimePeak* TPeak, TrkDefHack const& tdef, TrkT0& t0) {
 //    2014-11-24 gianipez and Pasha removed time offset between caloriemter and tracker
 
     // get flight distance of z=0
@@ -1116,7 +1116,7 @@ namespace mu2e
 
 
 //-----------------------------------------------------------------------------
-  void KalFitHack::initT0(TrkDef const& tdef, TrkT0& t0) {
+  void KalFitHack::initT0(TrkDefHack const& tdef, TrkT0& t0) {
     using namespace boost::accumulators;
 // make an array of all the hit times, correcting for propagation delay
     unsigned nind = tdef.strawHitIndices().size();

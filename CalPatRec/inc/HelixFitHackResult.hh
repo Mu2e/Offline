@@ -43,7 +43,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     HelixFitHackResult();
 
-    HelixFitHackResult(TrkDef const& tdef) : 
+    HelixFitHackResult(TrkDefHack const& tdef) : 
       _hdef(tdef),  
       _fit(TrkErrCode::fail),
       _radius(-1.0),

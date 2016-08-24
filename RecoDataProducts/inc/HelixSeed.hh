@@ -12,13 +12,11 @@
 
 namespace mu2e {
 
-  struct HelixSeed{
+  struct HelixSeed {
     TimeCluster        _timeCluster; // timing and hits associated with this helix
     RobustHelix        _helix;	     // robust helix created from these hits
     TrkFitFlag	       _status;      // status of processes used to create this seed
   };
-
-
 
 } // namespace mu2e
 

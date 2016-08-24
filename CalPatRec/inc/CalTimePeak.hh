@@ -13,7 +13,7 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "TrkReco/inc/TrkDef.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
 // C++
 #include <vector>
 

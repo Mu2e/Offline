@@ -3,9 +3,10 @@
 //  Original author: Dave Brown (LBNL)  2014
 //
 #include "TrkReco/inc/XYZP.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/StrawHitPosition.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 #include "TrackerGeom/inc/Straw.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 using CLHEP::Hep3Vector;
 namespace mu2e {
 // statics
@@ -81,6 +82,19 @@ namespace mu2e {
   XYZP::setOutlier(){
     static StrawHitFlag outlier(StrawHitFlag::outlier);
     _flag.merge(outlier);
+  }
+
+  void XYZP::fillXYZP(StrawHitCollection const& shcol,
+    StrawHitPositionCollection const& shpcol, std::vector<hitIndex> hits, XYZPVector& xyzp) {
+    const Tracker& tracker = getTrackerOrThrow();
+    // loop over straw hits, and store their positions
+    for(auto istr : hits) { 
+      StrawHit const& sh = shcol.at(istr._index);
+      Straw const& straw= tracker.getStraw(sh.strawIndex());
+      StrawHitPosition const& shp = shpcol.at(istr._index);
+      XYZP pos(istr._index,sh,shp,straw);
+      xyzp.push_back(pos);
+    } 
   }
 
 }

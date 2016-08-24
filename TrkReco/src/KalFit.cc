@@ -661,7 +661,7 @@ namespace mu2e
 
   void
   KalFit::initT0(const StrawHitCollection* shcol,TrkDef& tdef) {
-    TrkT0 t0 = tdef.t0();
+    TrkT0& t0 = tdef.t0();
     using namespace boost::accumulators;
 // make an array of all the hit times, correcting for propagation delay
     const Tracker& tracker = getTrackerOrThrow();
@@ -710,7 +710,6 @@ namespace mu2e
     double tmax = extract_result<tag::max>(max);
     // estimate the error using the range
     t0._t0err = (tmax-tmin)/sqrt(12*nind);
-    tdef.setT0(t0);
   }
 
   bool

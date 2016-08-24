@@ -8,14 +8,14 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // default constructor
 //-----------------------------------------------------------------------------
-  HelixDefHack::HelixDefHack() :  TrkDef() {
+  HelixDefHack::HelixDefHack() :  TrkDefHack() {
   }
 
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  HelixDefHack::HelixDefHack(TrkDef const& tdef) : 
-    TrkDef (tdef), 
+  HelixDefHack::HelixDefHack(TrkDefHack const& tdef) : 
+    TrkDefHack (tdef), 
     _shpos (NULL),
     _shfcol(NULL)
   {
@@ -31,7 +31,7 @@ namespace mu2e {
 			     const std::vector<hitIndex>&      StrawHits       ,
 			     TrkParticle const&                tpart           ,
 			     TrkFitDirection const&            fdir            ) : 
-    TrkDef(StrawCollection,StrawHits,tpart,fdir) 
+    TrkDefHack(StrawCollection,StrawHits,tpart,fdir) 
   {
     _shpos  = ShposCollection;
     _shfcol = ShFlagCollection; 
@@ -43,7 +43,7 @@ namespace mu2e {
   HelixDefHack::~HelixDefHack() {
   }
 //-----------------------------------------------------------------------------
-// don't care about TrkDef - just invalidate pointers to hits and flags
+// don't care about TrkDefHack - just invalidate pointers to hits and flags
 //-----------------------------------------------------------------------------
   void HelixDefHack::init() {
     _shpos  = NULL;

@@ -24,7 +24,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "KalmanTests/inc/KalFitResult.hh"
+#include "CalPatRec/inc/KalFitResult.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
@@ -258,7 +258,7 @@ namespace mu2e {
 
     ::KalRep*                 krep;
     // dummy objects
-    static TrkDef             dummydef;
+    static TrkDefHack             dummydef;
     static HelixDefHack       dummyhdef;
 
     static HelixFitHackResult dummyhfit(dummyhdef);
@@ -367,8 +367,8 @@ namespace mu2e {
    
       //      _helTraj =  &tmpHelix;
 
-      TrkDef             seeddef(_shcol, trkSeed->_timeCluster._strawHitIdxs, *_helTraj, _tpart, _fdir);
-      TrkDef             kaldef (seeddef);
+      TrkDefHack             seeddef(_shcol, trkSeed->_timeCluster._strawHitIdxs, *_helTraj, _tpart, _fdir);
+      TrkDefHack             kaldef (seeddef);
      
       seeddef.setHelix(*_helTraj); 
       // track fitting objects for this track candidate
@@ -779,7 +779,7 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  void CalTrkFit::init(KalFitResult*& KRes, TrkDef* TDef) {
+  void CalTrkFit::init(KalFitResult*& KRes, TrkDefHack* TDef) {
 
     if (KRes != 0) {
       KRes->deleteTrack();

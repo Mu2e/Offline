@@ -5,8 +5,6 @@
  <class name="std::vector<mu2e::TrkStrawHitInfo>" />
  <class name="mu2e::TrkStrawMatInfo" />
  <class name="std::vector<mu2e::TrkStrawMatInfo>" />
- <class name="mu2e::TimePeakHitInfo" />
- <class name="std::vector<mu2e::TimePeakHitInfo>" />
  <class name="mu2e::threevec" />
  <class name="mu2e::TrkCaloInfo" />
  <class name="std::vector<mu2e::TrkCaloInfo>" />
@@ -14,7 +12,7 @@
  <class name="std::vector<mu2e::TrkHitShare>" />
  <class name="mu2e::TimeClusterInfo" />
  <class name="std::vector<mu2e::TimeClusterInfo>" />
- <class name="mu2e::TimeClusterHitInfo" />
  <class name="mu2e::MCClusterInfo" />
- <class name="std::vector<mu2e::MCClusterHitInfo>" />
+ <class name="mu2e::TimeClusterHitInfo" />
+ <class name="std::vector<mu2e::TimeClusterHitInfo>" />
 </lcgdict>

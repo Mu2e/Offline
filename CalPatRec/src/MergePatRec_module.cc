@@ -13,7 +13,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkReco/inc/TrkDef.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 
 #include "TROOT.h"

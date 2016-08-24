@@ -8,7 +8,7 @@
 
 // the following has to come before other BaBar includes
 #include "BTrk/BaBar/BbrCollectionUtils.hh"
-#include "KalmanTests/inc/KalFitResult.hh"
+#include "CalPatRec/inc/KalFitResult.hh"
 namespace mu2e 
 {
 

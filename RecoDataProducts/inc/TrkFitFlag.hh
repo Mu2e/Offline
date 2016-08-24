@@ -23,8 +23,6 @@ namespace mu2e {
     // functions needed for the BitMap template
     static std::string const& typeName();
     static std::map<std::string,mask_type> const& bitNames();
-    // maximum track Id I can flag
-    static unsigned _maxTrkId;
     static mask_type bit_to_mask( bit_type b){ return 1<<b; }
   };
   typedef BitMap<TrkFitFlagDetail> TrkFitFlag;

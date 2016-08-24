@@ -1,10 +1,6 @@
 //
 // Define a track; this provides the transfer between pat. rec. and fitting
 //
-// $Id: TrkDef.hh,v 1.18 2014/08/30 12:19:38 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2014/08/30 12:19:38 $
-//
 // Original author David Brown, LBNL
 //
 #ifndef TrkDef_HH
@@ -30,36 +26,27 @@ namespace mu2e
   class TrkDef {
   public:
     TrkDef(TimeCluster const& tcluster, HelixTraj const& helix,
-      TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
-    TrkDef(TrkParticle const& tpart=_eminus, TrkFitDirection const& fdir=_downstream);
+      TrkParticle const& tpart, TrkFitDirection const& fdir);
     TrkDef(const TrkDef&);
     TrkDef& operator = (const TrkDef&);
     ~TrkDef();
   // append a straw hit to this track definition
     void appendHit(size_t index,int ambig=0) { _timeCluster._strawHitIdxs.push_back(hitIndex(index,ambig)); }
   // accessors
-    const std::vector<hitIndex>& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
-    const HelixTraj& helix() const { return _h0; }
-    const CLHEP::HepSymMatrix &helixCovMatr() const { return _h0.parameters()->covariance(); }
-    const CLHEP::HepSymMatrix &covMatr() const { return _dcov; }
+    std::vector<hitIndex> const& strawHitIndices() const { return _timeCluster._strawHitIdxs;}
+    HelixTraj const& helix() const { return _h0; }
+    TrkT0 const& t0() const { return _timeCluster._t0; }
     TrkParticle const& particle() const { return _tpart; }
     TrkFitDirection const& fitdir() const { return _fdir; }
-    void setHelix(HelixTraj const& helix) { _h0 = helix; }
-    void setIndices(std::vector<hitIndex> const& indices ) { _timeCluster._strawHitIdxs = indices; }
-    TrkT0 const& t0() const { return _timeCluster._t0; }
-    void setT0( TrkT0 const& t0) { _timeCluster._t0 = t0; }
-  protected:
+    //non-const accessors to allow updates
+    std::vector<hitIndex>& strawHitIndices() { return _timeCluster._strawHitIdxs;}
+    HelixTraj& helix() { return _h0; }
+    TrkT0& t0() { return _timeCluster._t0; }
+  private:
     TimeCluster _timeCluster; // t0 and hit indices
     HelixTraj _h0; // helix estimate, valid in the region around z=0
-// particle type.  Note this defines both the charge and the mass
-    TrkParticle _tpart;
-// fit direction
-    TrkFitDirection _fdir;
-// dummy variables
-    static CLHEP::HepVector _dpar;
-    static CLHEP::HepSymMatrix _dcov;
-    static TrkParticle _eminus;
-    static TrkFitDirection _downstream;
+    TrkParticle _tpart; // particle type.  Note this defines both the charge and the mass
+    TrkFitDirection _fdir; // fit direction
   };
 }
 

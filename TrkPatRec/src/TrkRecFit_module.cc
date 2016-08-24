@@ -79,10 +79,10 @@ namespace mu2e
       bool _addhits; 
       art::Handle<mu2e::StrawHitCollection> _strawhitsH;
       art::Handle<HelixSeedCollection> _trksSeedH;
-      // event object labels
-      string _shLabel;
-      string _shfLabel;
-      string _seedFinderLabel; // Label to the Pattern Recognition module.
+      // event object tags
+      art::InputTag _shTag;
+      art::InputTag _shfTag;
+      art::InputTag _hsTag; 
       StrawHitFlag _addsel;
       StrawHitFlag _addbkg;
       double _maxdtmiss;
@@ -114,9 +114,9 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
     _addhits(pset.get<bool>("addhits",true)),
-    _shLabel(pset.get<string>("StrawHitCollectionLabel","makeSH")),
-    _shfLabel(pset.get<string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
-    _seedFinderLabel(pset.get<string>("SeedCollectionLabel","RobustHelixFinder")),
+    _shTag(pset.get<art::InputTag>("StrawHitCollectionTag","makeSH")),
+    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollectionTag","FlagBkgHits")),
+    _hsTag(pset.get<art::InputTag>("SeedCollectionTag","RobustHelixFinder")),
     _addsel(pset.get<vector<string> >("AddHitSelectionBits",vector<string>{} )),
     _addbkg(pset.get<vector<string> >("AddHitBackgroundBits",vector<string>{})),
     _maxdtmiss(pset.get<double>("DtMaxMiss",40.0)),
@@ -202,7 +202,8 @@ namespace mu2e
 	  double locflt;
 	  const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(seedrep->localTrajectory(seedrep->flt0(),locflt));
 	  TrkDef kaldef(seeddef);
-	  kaldef.setHelix(*htraj);
+	  // update the helix to the seed fit result
+	  kaldef.helix() = *htraj;
         // filter the outliers
 	  filterOutliers(kaldef,_maxseeddoca);
 	  KalRep *krep(0);
@@ -260,13 +261,13 @@ namespace mu2e
     _shfcol = 0;
     _hscol = 0;
 
-    if(evt.getByLabel(_shLabel,_strawhitsH))
-      _shcol = _strawhitsH.product();
-    art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-    if(evt.getByLabel(_shfLabel,shflagH))
-      _shfcol = shflagH.product();
-    if (evt.getByLabel(_seedFinderLabel,_trksSeedH))
-      _hscol = _trksSeedH.product();
+    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
+    _shcol = shH.product();
+    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    _shfcol = shfH.product();
+    auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
+    _hscol = hsH.product();
+
     return _shcol != 0 && _shfcol != 0 && _hscol != 0;
   }
 
@@ -297,7 +298,7 @@ namespace mu2e
       }
     }
     // update track
-    mydef.setIndices(goodhits);
+    mydef.strawHitIndices() = goodhits;
   }
 
   void TrkRecFit::findMissingHits(KalRep* krep,vector<hitIndex>& misshits) {

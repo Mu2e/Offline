@@ -24,7 +24,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "KalmanTests/inc/KalFitResult.hh"
+#include "CalPatRec/inc/KalFitResult.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 
@@ -519,7 +519,7 @@ namespace mu2e {
 
     ::KalRep*                 krep;
                                         // dummy objects
-    static TrkDef             dummydef;
+    static TrkDefHack             dummydef;
     static HelixDefHack       dummyhdef;
 
     static HelixFitHackResult dummyhfit(dummyhdef);
@@ -673,8 +673,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       HelixDefHack helixdef(_shcol,_shpcol,_flags,tp->_index,_tpart,_fdir);
 
-      TrkDef             seeddef(helixdef);
-      TrkDef             kaldef (helixdef);
+      TrkDefHack             seeddef(helixdef);
+      TrkDefHack             kaldef (helixdef);
 
                                         // track fitting objects for this peak
 
@@ -1321,7 +1321,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void CalPatRec::filterOutliers(TrkDef&                    mytrk  ,
+  void CalPatRec::filterOutliers(TrkDefHack&                    mytrk  ,
                                  Trajectory const&          traj   ,
                                  double                     maxdoca,
                                  std::vector<TrkHitFilter>& thfvec ) {
@@ -1877,7 +1877,7 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  void CalPatRec::init(KalFitResult*& KRes, TrkDef* TDef) {
+  void CalPatRec::init(KalFitResult*& KRes, TrkDefHack* TDef) {
 
     if (KRes != 0) {
       KRes->deleteTrack();

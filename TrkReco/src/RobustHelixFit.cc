@@ -107,7 +107,7 @@ namespace mu2e
     RobustHelix& myhel = myseed._helix;
 // Convert the hit positions to what we need for helix finding
     XYZPVector  xyzp;
-    fillXYZP(shcol,shpcol,myseed._timeCluster._strawHitIdxs,xyzp);
+    XYZP::fillXYZP(shcol,shpcol,myseed._timeCluster._strawHitIdxs,xyzp);
 // filter by geometry
     if(_filterxy)filterDist(xyzp);
     if(xyzp.size() >= _minnhit){
@@ -459,19 +459,6 @@ namespace mu2e
       }
     }
     return retval;
-  }
-
-  void fillXYZP(StrawHitCollection const& shcol,
-    StrawHitPositionCollection const& shpcol, std::vector<hitIndex> hits, XYZPVector& xyzp) {
-    const Tracker& tracker = getTrackerOrThrow();
-    // loop over straw hits, and store their positions
-    for(auto istr : hits) { 
-      StrawHit const& sh = shcol.at(istr._index);
-      Straw const& straw= tracker.getStraw(sh.strawIndex());
-      StrawHitPosition const& shp = shpcol.at(istr._index);
-      XYZP pos(istr._index,sh,shp,straw);
-      xyzp.push_back(pos);
-    } 
   }
 
   void

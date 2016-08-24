@@ -24,7 +24,7 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "KalmanTests/inc/KalFitResult.hh"
+#include "CalPatRec/inc/KalFitResult.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -233,7 +233,7 @@ namespace mu2e {
     const char*               oname = "CalPatRecNew::filter";
     int                       npeaks;
 
-    static TrkDef             dummydef;
+    static TrkDefHack             dummydef;
     static HelixDefHack       dummyhdef;
 
     static HelixFitHackResult dummyhfit(dummyhdef);
@@ -268,7 +268,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       HelixDefHack helixdef(_shcol, _shpcol, _shfcol, tp->_index, _tpart, _fdir);
 
-      TrkDef       seeddef (helixdef);
+      TrkDefHack       seeddef (helixdef);
 
                                         // track fitting objects for this peak
 
@@ -413,7 +413,7 @@ namespace mu2e {
 
 //--------------------------------------------------------------------------------
   void CalPatRecNew::initTrackSeed(TrackSeed                             &TrkSeed, 
-				   TrkDef                                &SeedDef  , 
+				   TrkDefHack                                &SeedDef  , 
 				   HelixFitHackResult                    &HfResult ,
 				   const CalTimePeak                     *TPeak    , 
 				   art::Ptr<CaloCluster>                  ClusterPtr){

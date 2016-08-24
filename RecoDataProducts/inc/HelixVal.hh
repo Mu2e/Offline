@@ -27,7 +27,7 @@ struct HelixVal {
         double                _tanDip;
 
 // helicity is given by the product of the signs of tandip (axial motion) and omega (angular momentum)
-	Helicity helicity() const { return Helicity(_tanDip*_omega); }
+	Helicity helicity() const { return Helicity(static_cast<float>(_tanDip*_omega)); }
 
 };
 

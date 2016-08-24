@@ -54,8 +54,6 @@ namespace mu2e
     bool findZ(XYZPVector& xyzp,RobustHelix& myhel);
     bool initCircle(XYZPVector const& xyzp,RobustHelix& myhel);
   private:
-    void fillXYZP(StrawHitCollection const& shcol,
-	StrawHitPositionCollection const& shpos, std::vector<hitIndex>, XYZPVector& xyzp);
 // utility function to resolve phi wrapping    
     static double deltaPhi(double phi1, double phi2);
 // find the Absolute Geometric Error.  Returns the median radius as well.

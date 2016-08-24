@@ -41,7 +41,7 @@ namespace art {
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
-#include "TrkReco/inc/TrkDef.hh"
+#include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
@@ -227,7 +227,7 @@ namespace mu2e {
     void findMissingHits  (KalFitResult& kalfit, std::vector<hitIndex>& indices);
     void bookHistograms   ();
 
-    void init             (KalFitResult*&  KRes, TrkDef* TDef);
+    void init             (KalFitResult*&  KRes, TrkDefHack* TDef);
 
   };
 }

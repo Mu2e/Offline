@@ -358,14 +358,13 @@ namespace mu2e {
     _tcdiag=tfs->make<TTree>("tpdiag","time peak diagnostics");
     // event info should use the TrkAna struct, FIXME!!
     _tcdiag->Branch("eventid",&_eventid,"eventid/I");
-
     _tcdiag->Branch("besttc",&_besttc,TimeClusterInfo::leafnames().c_str());
     if(_mcdiag){
       _tcdiag->Branch("ceclust",&_ceclust,MCClusterInfo::leafnames().c_str());
     }
     if(_diag > 1) _tcdiag->Branch("tchinfo",&_tchinfo);
     if(_diag > 2) _tcdiag->Branch("alltc",&_alltc);
- }
+  }
 
 
 }  // end namespace mu2e
