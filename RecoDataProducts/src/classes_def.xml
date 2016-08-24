@@ -31,6 +31,7 @@
  <class name="mu2e::StrawHitFlagDetail"/>
  <class name="mu2e::StrawHitFlagCollection"/>
  <class name="mu2e::TrkFitFlag"/>
+ <class name="TrkT0"/>
  <class name="mu2e::TrkFitFlagDetail"/>
  <class name="mu2e::StrawCluster"/>
  <class name="mu2e::StrawClusterCollection"/>
@@ -57,6 +58,7 @@
  <class name="mu2e::ExtMonUCITofHitCollection"/>
  <class name="mu2e::SubEventCollection" persistent="false"/>
  <class name="mu2e::TimeCluster"/>
+ <class name="mu2e::TimeClusterCollection"/>
  <class name="mu2e::ZRotStrawHitMap"/>
  <class name="mu2e::ZRotStrawHitMapCollection" persistent="false"/>
  <class name="mu2e::TrackerHitByID" persistent="false"/>
@@ -144,6 +146,8 @@
  <class name="art::Wrapper<mu2e::TrkCaloMatchCollection>"/>
  <class name="art::Wrapper<mu2e::KalRepPayloadCollection>"/>
  <class name="art::Wrapper<mu2e::KalRepExtensionPayloadCollection>"/>
+ <class name="art::Wrapper<mu2e::TimeClusterCollection>"/>
+ <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
 
  <class name="art::Wrapper<mu2e::ExtMonUCITofHitCollection>"/>
  <class name="art::Wrapper<mu2e::SubEventCollection>"/>

@@ -25,7 +25,6 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 // root
 #include "TFile.h"
 #include "TH1F.h"
@@ -98,12 +97,11 @@ namespace mu2e {
     unsigned      _iev;
 
     // event object labels
-    std::string   _shLabel;
-    std::string   _shpLabel;
-    std::string   _shfLabel;
-    std::string   _mcdigislabel;
+    art::InputTag			_shTag;
+    art::InputTag			_shpTag;
+    art::InputTag			_shfTag;
     
-    StrawHitFlag  _hsel, _psel, _hbkg;
+    StrawHitFlag  _hsel, _hbkg;
     double        _maxdt;
 
     // time spectrum parameters
@@ -144,12 +142,10 @@ namespace mu2e {
   TimeClusterFinder::TimeClusterFinder(fhicl::ParameterSet const& pset) :
     _debug             (pset.get<int>("debugLevel",0)),
     _printfreq         (pset.get<int>("printFrequency",101)),
-    _shLabel           (pset.get<std::string>("StrawHitCollectionLabel","makeSH")),
-    _shpLabel          (pset.get<std::string>("StrawHitPositionCollectionLabel","MakeStereoHits")),
-    _shfLabel          (pset.get<std::string>("StrawHitFlagCollectionLabel","FlagBkgHits")),
-    _mcdigislabel      (pset.get<string>("StrawDigiMCLabel")),
+    _shTag	 (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
+    _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
+    _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","FlagBkgHits")),
     _hsel              (pset.get<std::vector<std::string> >("HitSelectionBits")),
-    _psel              (pset.get<std::vector<std::string> >("PositionSelectionBits")),
     _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
     _maxdt             (pset.get<double>("DtMax",30.0)),
     _t0TypeCalculator  (pset.get<int>("T0TypeCalculator",3)),
@@ -170,6 +166,7 @@ namespace mu2e {
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     // Tell the framework what we make.
     produces<TimeClusterCollection>();
+    produces<StrawHitFlagCollection>();
 
   }
 
@@ -218,14 +215,12 @@ namespace mu2e {
     _shfcol = 0;
     _shpcol = 0;
 
-    if(evt.getByLabel(_shLabel,_strawhitsH))
-      _shcol = _strawhitsH.product();
-    art::Handle<mu2e::StrawHitPositionCollection> shposH;
-    if(evt.getByLabel(_shpLabel,shposH))
-       _shpcol = shposH.product();
-     art::Handle<mu2e::StrawHitFlagCollection> shflagH;
-     if(evt.getByLabel(_shfLabel,shflagH))
-       _shfcol = shflagH.product();
+    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
+    _shcol = shH.product();
+    auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
+    _shpcol = shpH.product();
+    auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
+    _shfcol = shfH.product();
 
      return _shcol != 0 && _shfcol != 0 && _shpcol != 0;
    }
@@ -419,7 +414,7 @@ namespace mu2e {
    }
 
   bool TimeClusterFinder::goodHit(StrawHitFlag const& flag) const {
-    return flag.hasAllProperties(_hsel) && flag.hasAnyProperty(_psel) && !flag.hasAnyProperty(_hbkg);
+    return flag.hasAllProperties(_hsel) && !flag.hasAnyProperty(_hbkg);
   }
 
 }  // end namespace mu2e

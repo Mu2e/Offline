@@ -625,7 +625,7 @@ namespace mu2e
     if(_fillmc){
       // Get the persistent data about pointers to StepPointMCs
       art::Handle<PtrStepPointMCVectorCollection> mchitptrHandle;
-      if(evt.getByLabel(_mcptrlabel,"StrawHitMCPtr",mchitptrHandle))
+      if(evt.getByLabel(_mcptrlabel,mchitptrHandle))
 	_mcdata._mchitptr = mchitptrHandle.product();
       // Get the persistent data about the StepPointMCs, from the tracker and the virtual detectors
       art::Handle<StepPointMCCollection> mcVDstepsHandle;
@@ -634,7 +634,7 @@ namespace mu2e
       if(evt.getByLabel(_simpartslabel,_simpartsinstance,_mcdata._simparthandle))
 	_mcdata._simparts = _mcdata._simparthandle.product();
       art::Handle<StrawDigiMCCollection> mcdigisHandle;
-      if(evt.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle))
+      if(evt.getByLabel(_mcdigislabel,mcdigisHandle))
 	_mcdata._mcdigis = mcdigisHandle.product();
       // update time offsets
       _toff.updateMap(evt);

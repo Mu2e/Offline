@@ -35,7 +35,7 @@
 #include "RecoDataProducts/inc/TrackSummaryRecoMap.hh"
 #include "RecoDataProducts/inc/ExtMonUCITofHitCollection.hh"
 #include "RecoDataProducts/inc/SubEventCollection.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
+#include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixVal.hh"
 #include "RecoDataProducts/inc/RobustHelix.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
@@ -146,6 +146,10 @@ template class art::Wrapper<mu2e::TrkCaloMatchCollection>;
 template class art::Wrapper<mu2e::KalRepPayloadCollection>;
 template class art::Wrapper<mu2e::KalRepExtensionPayloadCollection>;
 template class art::Wrapper<mu2e::KalRepPtrCollection>;
+template class art::Wrapper<mu2e::TimeCluster>;
+template class art::Wrapper<mu2e::TimeClusterCollection>;
+template class art::Wrapper<mu2e::HelixSeed>;
+template class art::Wrapper<mu2e::HelixSeedCollection>;
 
 template class std::pair<art::Ptr<art::Ptr<KalRep> >, art::Ptr<mu2e::TrackSummary> >;
 template class std::pair<art::Ptr<mu2e::TrackSummary>, art::Ptr<art::Ptr<KalRep> > >;

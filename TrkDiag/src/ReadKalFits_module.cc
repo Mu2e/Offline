@@ -85,8 +85,6 @@ namespace mu2e {
     // calorimeter diagnostics.  Unfortunately the PID objects have no default constructor
     // so this MUST be created on the heap to maintain backwards compatibility.  FIXME!!
     TrkCaloDiag* _cdiag;
-    // instance name of data products.  This should be removed, FIXME!!
-    std::string _iname;
     // Control level of printout.
     int _verbosity;
     int _maxPrint;
@@ -146,7 +144,6 @@ namespace mu2e {
     _trkdiag(0)
   {
 // construct the data product instance name
-    _iname = _fdir.name() + _tpart.name();
     if(_addCalo){
       _cdiag = new TrkCaloDiag(_tpart,_fdir,pset.get<fhicl::ParameterSet>("TrkCaloDiag",fhicl::ParameterSet()));
     }
@@ -192,7 +189,7 @@ namespace mu2e {
       throw cet::exception("RECO")<<"mu2e::ReadKalFits: MC data missing or incomplete" << std::endl;
     // Get handle to tracks collection
     art::Handle<KalRepPtrCollection> trksHandle;
-    event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
+    event.getByLabel(_fitterModuleLabel,trksHandle);
     KalRepPtrCollection const& trks = *trksHandle;
     // Track-cluster matching
     if(_addCalo)_cdiag->findData(event);

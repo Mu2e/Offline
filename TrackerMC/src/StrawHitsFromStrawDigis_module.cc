@@ -113,8 +113,8 @@ namespace mu2e {
     _pfit(0)
   {
     produces<StrawHitCollection>();
-    produces<PtrStepPointMCVectorCollection>("StrawHitMCPtr");
-    produces<StrawDigiMCCollection>("StrawHitMC");
+    produces<PtrStepPointMCVectorCollection>();
+    produces<StrawDigiMCCollection>();
     if(_printLevel > 0) cout << "In StrawHitsFromStrawDigis constructor " << endl;
   }
 
@@ -177,11 +177,11 @@ namespace mu2e {
   // find the associated MC truth collection.  Note this doesn't have to exist!
     const PtrStepPointMCVectorCollection * mcptrdigis(0);
     art::Handle<PtrStepPointMCVectorCollection> mcptrdigiH;
-    if(event.getByLabel(_strawDigis,"StrawDigiMCPtr",mcptrdigiH))
+    if(event.getByLabel(_strawDigis,mcptrdigiH))
       mcptrdigis = mcptrdigiH.product();
     const StrawDigiMCCollection * mcdigis(0);
     art::Handle<StrawDigiMCCollection> mcdigiH;
-    if(event.getByLabel(_strawDigis,"StrawDigiMC",mcdigiH))
+    if(event.getByLabel(_strawDigis,mcdigiH))
       mcdigis = mcdigiH.product();
   // loop over digis.  Note the MC truth is in sequence
     size_t ndigi = strawdigis->size();
@@ -250,8 +250,8 @@ namespace mu2e {
     }
 // put objects into event
     event.put(move(strawHits));
-    if(mcptrdigis != 0)event.put(move(mcptrHits),"StrawHitMCPtr");
-    if(mchits != 0)event.put(move(mchits),"StrawHitMC");
+    if(mcptrHits != 0)event.put(move(mcptrHits));
+    if(mchits != 0)event.put(move(mchits));
   }
 
   void StrawHitsFromStrawDigis::fillDiagMC(Straw const& straw,

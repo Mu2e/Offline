@@ -15,10 +15,6 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 // conditions
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
 /// data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -76,11 +72,9 @@ namespace mu2e
     std::string                        _trackseed;
 
     // helix definition
-    TrkParticle                        _tpart; // particle type being searched for
-    TrkFitDirection                    _fdir;  // fit direction in search
     Helicity			       _helicity;
     // hit selection
-    StrawHitFlag  _hsel, _hbkg;
+    StrawHitFlag  _psel;
 
     // cache of event objects
     const StrawHitCollection*          _shcol;
@@ -102,16 +96,17 @@ namespace mu2e
     _printfreq   (pset.get<int>("printFrequency",101)),
     _shTag	 (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
-    _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimePeakFinder")),
-    _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimePeakFinder")),
-    _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimePeakFinder")),
-    _tpart       ((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
-    _fdir        ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _hsel	 (pset.get<std::vector<std::string> >("HitSelectionBits")),
-    _hbkg	 (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"DeltaRay","Isolated"})),
+    _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
+    _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
+    _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimeClusterFinder")),
+    _helicity    (pset.get<int>("Helicity")),
+    _psel        (pset.get<std::vector<std::string> >("PositionSelectionBits")),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet()))
   {
     produces<HelixSeedCollection>();
+    if(_helicity._value == Helicity::unknown){
+      throw cet::exception("RECO")<<"mu2e::RobustHelixFinder: Invalid Helicity specified"<< endl;
+    }
   }
 
   RobustHelixFinder::~RobustHelixFinder(){}
@@ -120,15 +115,6 @@ namespace mu2e
   }
 
   void RobustHelixFinder::beginRun(art::Run& ){
-  // calculate the helicity
-    GeomHandle<BFieldManager> bfmgr;
-    GeomHandle<DetectorSystem> det;
-    // change coordinates to mu2e
-    CLHEP::Hep3Vector vpoint(0.0,0.0,0.0);
-    CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(vpoint);
-    CLHEP::Hep3Vector field = bfmgr->getBField(vpoint_mu2e);
-    // positive helicity is clockwise rotation around the direction of axial motion (negative dphi/dz)  
-    _helicity = Helicity(static_cast<float>(-_fdir.dzdt()*_tpart.charge()*field.z()));
   }
 
   void RobustHelixFinder::produce(art::Event& event ) {
@@ -143,10 +129,17 @@ namespace mu2e
     }
 
     for(auto tclust: *_tccol) {
-    // build a HelixSeed around this time cluster
+    // build an empty HelixSeed 
+    // loop over hits in this time cluster and select  hits with good 3-d position information
+    std::vector<hitIndex> goodhits;
+      for(auto ind : tclust._strawHitIdxs) {
+	if(_shfcol->at(ind._index).hasAnyProperty(_psel))
+	  goodhits.push_back(ind);
+      }
+     // build a helix seed using these hits, but the original t0
       HelixSeed hseed;
       hseed._timeCluster = tclust;
-
+      hseed._timeCluster._strawHitIdxs = goodhits;
       _hfit.findHelix(*_shcol, *_shpcol, hseed);
 
 // should iterate fit to include outlier removal using time + geometric information FIXME!

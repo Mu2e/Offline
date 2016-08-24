@@ -231,8 +231,8 @@ namespace mu2e {
   {
 // Tell the framework what we make.
     produces<StrawDigiCollection>();
-    produces<PtrStepPointMCVectorCollection>("StrawDigiMCPtr");
-    produces<StrawDigiMCCollection>("StrawDigiMC");
+    produces<PtrStepPointMCVectorCollection>();
+    produces<StrawDigiMCCollection>();
   }
   void StrawDigisFromStepPointMCs::beginJob(){
 
@@ -387,8 +387,8 @@ namespace mu2e {
     // store the digis in the event
     event.put(move(digis));
     // store MC truth match
-    event.put(move(mcdigis),"StrawDigiMC");
-    event.put(move(mcptrs),"StrawDigiMCPtr");
+    event.put(move(mcdigis));
+    event.put(move(mcptrs));
     if ( _printLevel > 0 ) cout << "StrawDigisFromStepPointMCs: produce() end" << endl;
     // Done with the first event; disable some messages.
     _firstEvent = false;

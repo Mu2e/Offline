@@ -43,25 +43,23 @@ FlagBkgHits : {
 }
 
 # 
-TimePeakFinder : {
-  module_type               : TimePeakFinder
-  StrawDigiMCLabel	    : "makeSH"
+TimeClusterFinder : {
+  module_type               : TimeClusterFinder
   HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
-  PositionSelectionBits	    : ["Stereo","TimeDivision"]
   HitBackgroundBits	    : ["DeltaRay"]
   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
+  StrawHitFlagCollection    : "FlagBkgHits"
 }
-# we need both positive and negative helicity helices.  For simplicity, we use upstream and downstream electrons
+# we need both positive and negative helicity helices
 PosHelixFinder : {
   module_type		: RobustHelixFinder
-  fitparticle		: @local::Particle.eminus
-  fitdirection		: @local::FitDir.downstream
+  Helicity		: 1
+  PositionSelectionBits	    : ["Stereo","TimeDivision"]
 }
-
 NegHelixFinder : {
   module_type		: RobustHelixFinder
-  fitparticle		: @local::Particle.eminus
-  fitdirection		: @local::FitDir.upstream
+  Helicity		: -1
+  PositionSelectionBits	    : ["Stereo","TimeDivision"]
 }
 
 # pattern recognition internals
@@ -105,68 +103,67 @@ TrkRecFit : {
   module_type                 : TrkRecFit
   SeedFit		      : @local::KalSeedFit
   KalFit		      : @local::KalFinalFit
-  KalDiag		      : @local::KalDiagDirect
 }
 
 # dedicated configurations for reconstructing specific particles
 #  First, downstream electrons
 TrkRecFitDownstreameMinus			      : @local::TrkRecFit
-TrkRecFitDownstreameMinus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitDownstreameMinus.SeedCollectionTag	      : "PosHelixFinder"
 TrkRecFitDownstreameMinus.fitparticle		      : @local::Particle.eminus
 TrkRecFitDownstreameMinus.fitdirection		      : @local::FitDir.downstream 
 # upstream electrons
 TrkRecFitUpstreameMinus				      : @local::TrkRecFit
-TrkRecFitUpstreameMinus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitUpstreameMinus.SeedCollectionTag	      : "NegHelixFinder"
 TrkRecFitUpstreameMinus.fitparticle		      : @local::Particle.eminus
 TrkRecFitUpstreameMinus.fitdirection		      : @local::FitDir.upstream 
 #  downstream positrons
 TrkRecFitDownstreamePlus			      : @local::TrkRecFit
-TrkRecFitDownstreamePlus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitDownstreamePlus.SeedCollectionTag	      : "NegHelixFinder"
 TrkRecFitDownstreamePlus.fitparticle		      : @local::Particle.eplus
 TrkRecFitDownstreamePlus.fitdirection		      : @local::FitDir.downstream 
 # upstream positrons
 TrkRecFitUpstreamePlus				      : @local::TrkRecFit
-TrkRecFitUpstreamePlus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitUpstreamePlus.SeedCollectionTag	      : "PosHelixFinder"
 TrkRecFitUpstreamePlus.fitparticle		      : @local::Particle.eplus
 TrkRecFitUpstreamePlus.fitdirection		      : @local::FitDir.upstream 
 # downstream mu minus
 TrkRecFitDownstreammuMinus			      : @local::TrkRecFit
-TrkRecFitDownstreammuMinus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitDownstreammuMinus.SeedCollectionTag	      : "PosHelixFinder"
 TrkRecFitDownstreammuMinus.fitparticle		      : @local::Particle.muminus
 TrkRecFitDownstreammuMinus.fitdirection		      : @local::FitDir.downstream 
 # upstream mu minus
 TrkRecFitUpstreammuMinus			      : @local::TrkRecFit
-TrkRecFitUpstreammuMinus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitUpstreammuMinus.SeedCollectionTag	      : "NegHelixFinder"
 TrkRecFitUpstreammuMinus.fitparticle		      : @local::Particle.muminus
 TrkRecFitUpstreammuMinus.fitdirection		      : @local::FitDir.upstream 
 # downstream mu plus
 TrkRecFitDownstreammuPlus			      : @local::TrkRecFit
-TrkRecFitDownstreammuPlus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitDownstreammuPlus.SeedCollectionTag	      : "NegHelixFinder"
 TrkRecFitDownstreammuPlus.fitparticle		      : @local::Particle.muplus
 TrkRecFitDownstreammuPlus.fitdirection		      : @local::FitDir.downstream 
 # upstream mu plus
 TrkRecFitUpstreammuPlus				      : @local::TrkRecFit
-TrkRecFitUpstreammuPlus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitUpstreammuPlus.SeedCollectionTag	      : "PosHelixFinder"
 TrkRecFitUpstreammuPlus.fitparticle		      : @local::Particle.muplus
 TrkRecFitUpstreammuPlus.fitdirection		      : @local::FitDir.upstream 
 # downstream pi minus
 TrkRecFitDownstreampiMinus			      : @local::TrkRecFit
-TrkRecFitDownstreampiMinus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitDownstreampiMinus.SeedCollectionTag	      : "PosHelixFinder"
 TrkRecFitDownstreampiMinus.fitparticle		      : @local::Particle.piminus
 TrkRecFitDownstreampiMinus.fitdirection		      : @local::FitDir.downstream 
 # upstream pi minus
 TrkRecFitUpstreampiMinus			      : @local::TrkRecFit
-TrkRecFitUpstreampiMinus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitUpstreampiMinus.SeedCollectionTag	      : "NegHelixFinder"
 TrkRecFitUpstreampiMinus.fitparticle		      : @local::Particle.piminus
 TrkRecFitUpstreampiMinus.fitdirection		      : @local::FitDir.upstream 
 # downstream pi plus
 TrkRecFitDownstreampiPlus			      : @local::TrkRecFit
-TrkRecFitDownstreampiPlus.SeedCollectionLabel	      : "NegHelixFinder"
+TrkRecFitDownstreampiPlus.SeedCollectionTag	      : "NegHelixFinder"
 TrkRecFitDownstreampiPlus.fitparticle		      : @local::Particle.piplus
 TrkRecFitDownstreampiPlus.fitdirection		      : @local::FitDir.downstream 
 # upstream pi plus
 TrkRecFitUpstreampiPlus				      : @local::TrkRecFit
-TrkRecFitUpstreampiPlus.SeedCollectionLabel	      : "PosHelixFinder"
+TrkRecFitUpstreampiPlus.SeedCollectionTag	      : "PosHelixFinder"
 TrkRecFitUpstreampiPlus.fitparticle		      : @local::Particle.piplus
 TrkRecFitUpstreampiPlus.fitdirection		      : @local::FitDir.upstream
 #
@@ -179,7 +176,7 @@ Tracking : {
     MakeStereoHits  : @local::MakeStereoHits
     FlagStrawHits   : @local::FlagStrawHits
     FlagBkgHits	    : @local::FlagBkgHits
-    TimePeakFinder  : @local::TimePeakFinder
+    TimeClusterFinder  : @local::TimeClusterFinder
     PosHelixFinder  : @local::PosHelixFinder
     NegHelixFinder  : @local::NegHelixFinder
 # now all the different track finders based on these inputs
@@ -202,95 +199,19 @@ Tracking : {
   PrepareHits : [ makeSH, FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits ]
 }
 # production sequences for tracking specific paricles; first electrons
-Tracking.TPRDownstreameMinus  : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFDownstreameMinus ]
-Tracking.TPRUpstreameMinus    : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFUpstreameMinus ]
-Tracking.TPRDownstreamePlus   : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFDownstreamePlus ]
-Tracking.TPRUpstreamePlus     : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFUpstreamePlus ]
+Tracking.TPRDownstreameMinus  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, TRFDownstreameMinus ]
+Tracking.TPRUpstreameMinus    : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, TRFUpstreameMinus ]
+Tracking.TPRDownstreamePlus   : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, TRFDownstreamePlus ]
+Tracking.TPRUpstreamePlus     : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, TRFUpstreamePlus ]
 #muons
-Tracking.TPRDownstreammuMinus  : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFDownstreammuMinus ]
-Tracking.TPRUpstreammuMinus    : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFUpstreammuMinus ]
-Tracking.TPRDownstreammuPlus   : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFDownstreammuPlus ]
-Tracking.TPRUpstreammuPlus     : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFUpstreammuPlus ]
+Tracking.TPRDownstreammuMinus  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, TRFDownstreammuMinus ]
+Tracking.TPRUpstreammuMinus    : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, TRFUpstreammuMinus ]
+Tracking.TPRDownstreammuPlus   : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, TRFDownstreammuPlus ]
+Tracking.TPRUpstreammuPlus     : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, TRFUpstreammuPlus ]
 #pions
-Tracking.TPRDownstreampiMinus  : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFDownstreampiMinus ]
-Tracking.TPRUpstreampiMinus    : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFUpstreampiMinus ]
-Tracking.TPRDownstreampiPlus   : [ @sequence::Tracking.PrepareHits, TimePeakFinder, NegHelixFinder, TRFDownstreampiPlus ]
-Tracking.TPRUpstreampiPlus     : [ @sequence::Tracking.PrepareHits, TimePeakFinder, PosHelixFinder, TRFUpstreampiPlus ]
-
-##########################################################################################################################
-# Monolithic pattern reconition module configuration protype
-# NB: TrkPatRec is DEPRECATED and will not be supported in future
-# Please used TrkRecFit for all CD3 applications and beyond
-# ########################################################################################################################
-TrkPatRec : {
-  module_type                 : TrkPatRec
-  includeCaloInfo	      : 0
-  SeedFit		      : @local::KalSeedFit
-  KalFit		      : @local::KalFinalFit
-# MC Time offsets for diagnostics configuration can be done generically
-   KalDiag : {
-       MCPtrLabel          : makeSH
-       MCStepsLabel        : g4run
-       SimParticleLabel    : g4run
-       SimParticleInstance : tracker
-       StrawHitMCLabel     : makeSH
-       TimeOffsets         :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-       FillMCInfo          : false
-   }
-}
-
-# variants of TrkPatRec for specific particle species and directions.
-#  THESE ARE DEPRECATED, PLEASE USE THE TRKRECFIT SPLIT VERSION TABLES INSTEAD!!!!!
-TrkPatRecDownstreameMinus : @local::TrkPatRec
-TrkPatRecDownstreameMinus.fitparticle : @local::Particle.eminus
-TrkPatRecDownstreameMinus.fitdirection : @local::FitDir.downstream 
-
-TrkPatRecUpstreameMinus : @local::TrkPatRec
-TrkPatRecUpstreameMinus.fitparticle : @local::Particle.eminus
-TrkPatRecUpstreameMinus.fitdirection : @local::FitDir.upstream
-
-TrkPatRecDownstreamePlus : @local::TrkPatRec
-TrkPatRecDownstreamePlus.fitparticle : @local::Particle.eplus
-TrkPatRecDownstreamePlus.fitdirection : @local::FitDir.downstream
-
-TrkPatRecUpstreamePlus : @local::TrkPatRec
-TrkPatRecUpstreamePlus.fitparticle : @local::Particle.eplus
-TrkPatRecUpstreamePlus.fitdirection : @local::FitDir.upstream
-
-TrkPatRecDownstreammuMinus : @local::TrkPatRec
-TrkPatRecDownstreammuMinus.fitparticle : @local::Particle.muminus
-TrkPatRecDownstreammuMinus.fitdirection : @local::FitDir.downstream
-
-TrkPatRecUpstreammuMinus : @local::TrkPatRec
-TrkPatRecUpstreammuMinus.fitparticle : @local::Particle.muminus
-TrkPatRecUpstreammuMinus.fitdirection : @local::FitDir.upstream
-
-TrkPatRecDownstreammuPlus : @local::TrkPatRec
-TrkPatRecDownstreammuPlus.fitparticle : @local::Particle.muplus
-TrkPatRecDownstreammuPlus.fitdirection : @local::FitDir.downstream
-
-TrkPatRecUpstreammuPlus : @local::TrkPatRec
-TrkPatRecUpstreammuPlus.fitparticle : @local::Particle.muplus
-TrkPatRecUpstreammuPlus.fitdirection : @local::FitDir.upstream
-
-TrkPatRecDownstreampPlus : @local::TrkPatRec
-TrkPatRecDownstreampPlus.fitparticle : @local::Particle.proton
-TrkPatRecDownstreampPlus.fitdirection : @local::FitDir.downstream
-
-TrkPatRecUpstreampiPlus : @local::TrkPatRec 
-TrkPatRecUpstreampiPlus.fitparticle : @local::Particle.piplus
-TrkPatRecUpstreampiPlus.fitdirection : @local::FitDir.upstream
- 
-TrkPatRecDownstreampiPlus : @local::TrkPatRec 
-TrkPatRecDownstreampiPlus.fitparticle : @local::Particle.piplus
-TrkPatRecDownstreampiPlus.fitdirection : @local::FitDir.downstream
-
-TrkPatRecDownstreampiMinus : @local::TrkPatRec 
-TrkPatRecDownstreampiMinus.fitparticle : @local::Particle.piminus
-TrkPatRecDownstreampiMinus.fitdirection : @local::FitDir.downstream
-
-TrkPatRecUpstreampiMinus : @local::TrkPatRec 
-TrkPatRecUpstreampiMinus.fitparticle : @local::Particle.piminus
-TrkPatRecUpstreampiMinus.fitdirection : @local::FitDir.upstream
+Tracking.TPRDownstreampiMinus  : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, TRFDownstreampiMinus ]
+Tracking.TPRUpstreampiMinus    : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, TRFUpstreampiMinus ]
+Tracking.TPRDownstreampiPlus   : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, NegHelixFinder, TRFDownstreampiPlus ]
+Tracking.TPRUpstreampiPlus     : [ @sequence::Tracking.PrepareHits, TimeClusterFinder, PosHelixFinder, TRFUpstreampiPlus ]
 
 END_PROLOG
