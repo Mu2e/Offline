@@ -44,7 +44,9 @@ namespace mu2e {
        int                 windowPeak_ ;
        double              minPeakAmplitude_;
        double              psdThreshold_;
-       int                 pulseHighBuffer_;
+       unsigned int        pulseLowBuffer_;
+       unsigned int        pulseHighBuffer_;
+       unsigned int        minDiffTime_;
        double              shiftTime_;
        int                 printLevel_;
        int                 fitStrategy_;
@@ -73,11 +75,12 @@ namespace mu2e {
 
     
        void   findPeak(double* parInit);
+       void   buildXRange(std::vector<unsigned int>& peakLoc);
        void   doFit(double* parInit, double *sfpar, double *errsfpar, double& chi2);
        void   doNewton(double* parInit, double *sfpar, double *errsfpar, double& chi2);
        double refineMin(int& nTry,double tmin, double step);
 
-       double meanParabol(int i1, int i2, int i3);
+       double meanParabol(unsigned int i1, unsigned int i2, unsigned int i3);
        double calcAlpha(double testTime);
        double calcChi2(double testTime, double alpha = -1.0);
        double refitTime(double tmin, double alpha);

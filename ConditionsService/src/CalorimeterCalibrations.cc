@@ -8,8 +8,8 @@
 
 // Mu2e include files
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "CLHEP/Units/SystemOfUnits.h"
 
 #include <cmath>
 
@@ -19,7 +19,9 @@ namespace mu2e {
 
      CalorimeterCalibrations::CalorimeterCalibrations( SimpleConfig const& config )
      {
-        _pulseFileName = config.getString("calorimeter.pulseFileName");
+        ConfigFileLookupPolicy configFile;
+	
+	_pulseFileName = configFile(config.getString("calorimeter.pulseFileName"));
         _pulseHistName = config.getString("calorimeter.pulseHistName");
 
         // Here we should eventually interface to some database
@@ -36,3 +38,4 @@ namespace mu2e {
       
       }
 }
+

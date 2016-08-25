@@ -27,10 +27,12 @@ CaloRecoDigiFromUnpacked :
     FixedFastProcessor : 
     {
         windowPeak        : 2
-        minPeakAmplitude  : 30
+        minPeakAmplitude  : 15
 	psdThreshold      : 0.2
-	shiftTime         : 19.90
-	pulseHighBuffer   : 7
+	pulseLowBuffer    : 3
+        pulseHighBuffer   : 8
+        minDiffTime       : 6
+        shiftTime         : 19.90
 
 	fitPrintLevel     : -1
  	fitStrategy       : 1

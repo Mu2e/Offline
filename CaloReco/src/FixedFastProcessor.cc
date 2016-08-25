@@ -37,15 +37,14 @@
 
 namespace {
 
-   int                    nparTot_, nparFcn_;
-   unsigned int           istart_,iend_;
-   std::vector<double>    xvec_,yvec_;
-   mu2e::CaloPulseCache*  pulseCachePtr_;
+   int                       nparTot_, nparFcn_;
+   std::vector<unsigned int> xindices_;
+   std::vector<double>       xvec_,yvec_;
+   mu2e::CaloPulseCache*     pulseCachePtr_;
    
    //-----------------------------------------------
    double logn(double x, double *par)
-   {
-        
+   {        
         int idx = int((x-par[1]+pulseCachePtr_->deltaT())/pulseCachePtr_->step());
         if (idx < 0 || idx > (pulseCachePtr_->cacheSize()-2)) return 0;
      
@@ -70,12 +69,12 @@ namespace {
    {   
        f=0;
        
-       for (unsigned int i=istart_;i<iend_;++i)
+       for (unsigned int i : xindices_)
        {    
            double x = xvec_[i];
            double y = yvec_[i];
            double val = fitfunction(x, par);
-           if (val>1e-5) {f += (y-val)*(y-val)/val;}
+           if (y>1e-5) f += (y-val)*(y-val)/y;
        }
    }
       
@@ -95,14 +94,16 @@ namespace mu2e {
    FixedFastProcessor::FixedFastProcessor(fhicl::ParameterSet const& PSet) :
 
       WaveformProcessor(PSet),
-      windowPeak_         (PSet.get<int>   ("windowPeak")),
-      minPeakAmplitude_   (PSet.get<double>("minPeakAmplitude")),
-      psdThreshold_       (PSet.get<double>("psdThreshold")),
-      pulseHighBuffer_    (PSet.get<int>   ("pulseHighBuffer")),
-      shiftTime_          (PSet.get<double>("shiftTime")),
-      printLevel_         (PSet.get<int>   ("fitPrintLevel",-1)),
-      fitStrategy_        (PSet.get<int>   ("fitStrategy",1)),
-      diagLevel_          (PSet.get<int>   ("diagLevel",0)),
+      windowPeak_         (PSet.get<int>         ("windowPeak")),
+      minPeakAmplitude_   (PSet.get<double>      ("minPeakAmplitude")),
+      psdThreshold_       (PSet.get<double>      ("psdThreshold")),
+      pulseLowBuffer_     (PSet.get<unsigned int>("pulseLowBuffer")),
+      pulseHighBuffer_    (PSet.get<unsigned int>("pulseHighBuffer")),
+      minDiffTime_        (PSet.get<unsigned int>("minDiffTime")),
+      shiftTime_          (PSet.get<double>      ("shiftTime")),
+      printLevel_         (PSet.get<int>         ("fitPrintLevel",-1)),
+      fitStrategy_        (PSet.get<int>         ("fitStrategy",1)),
+      diagLevel_          (PSet.get<int>         ("diagLevel",0)),
       pulseCache_(CaloPulseCache()),
       nPeaks_(0),
       chi2_(999),
@@ -125,7 +126,7 @@ namespace mu2e {
        _hChi2    = tfdir.make<TH1F>("hChi2",    "Chi2/ndf",              100, 0.,   20);
        _hNpeak   = tfdir.make<TH1F>("hNpeak",   "Number of peak fitted",  10, 0.,   10);
        _hchi2Amp = tfdir.make<TH2F>("hchi2Amp", "Amp vs chi2/ndf",        50, 0.,   20, 100, 0, 5000);
-       _hDelta   = tfdir.make<TH1F>("hDelta",   "Delta t",               100, -50.,   50);
+       _hDelta   = tfdir.make<TH1F>("hDelta",   "Delta t",               100, 0.,   20);
    }       
 
 
@@ -139,15 +140,15 @@ namespace mu2e {
 
    //------------------------------------------------------------------------------------------
    void FixedFastProcessor::extract(std::vector<double> &xInput, std::vector<double> &yInput)
-   {
+   {       
 
        reset();
        xvec_ = xInput;
-       yvec_ = yInput;
-       iend_ = xvec_.size();
-
-       if (xvec_.size() < 2) return;
-
+       yvec_ = yInput;       
+       for (unsigned int i=0; i<xvec_.size(); ++i) xindices_.push_back(i);
+       
+       if (xInput.size() < 2) return;
+      
        
        double parInit[99]={0};
        findPeak(parInit);
@@ -190,9 +191,8 @@ namespace mu2e {
        }
 
        //finally, recalculate ndf = number of bins active in the fit - number of parameters       
-       ndf_ = (iend_- istart_) - nparFcn_*nPeaks_;
+       ndf_ = xindices_.size() - nparFcn_*nPeaks_;
        
-
 
        if (diagLevel_ > 2) _hChi2->Fill(chi2/float(ndf_)); 
        if (diagLevel_ > 2) for (auto amp : resAmp_) _hchi2Amp->Fill(chi2/float(ndf_),amp);          
@@ -207,14 +207,13 @@ namespace mu2e {
    {
        xvec_.clear();
        yvec_.clear();
+       xindices_.clear();
        res_.clear();
        resAmp_.clear();
        resAmpErr_.clear();
        resTime_.clear();
        resTimeErr_.clear();
        
-       istart_  = 0;
-       iend_    = 0;
        nparTot_ = 0;
        nPeaks_  = 0;
        chi2_    = 999;
@@ -226,73 +225,72 @@ namespace mu2e {
    void FixedFastProcessor::findPeak(double* parInit)
    {
 
-        std::vector<int> peakLocationInit,peakLocationRes;
-        
+        std::vector<unsigned int> peakLocationInit,peakLocationRes,peakLocation;
+        	
         //find location of potential peaks: max element in the range i-window; i+window
         for (unsigned int i=windowPeak_;i<xvec_.size()-windowPeak_;++i)
         {
              auto maxp = std::max_element(&yvec_[i-windowPeak_],&yvec_[i+windowPeak_+1]);
-             if (maxp == &yvec_[i] && yvec_[i] > minPeakAmplitude_) peakLocationInit.push_back(i);
+             if (maxp != &yvec_[i] || yvec_[i] < minPeakAmplitude_) continue;
+	     peakLocationInit.push_back(i);
+	     peakLocation.push_back(i);
         }
 
+        //fill initial paremeters and record fit range
         for (unsigned int ipeak : peakLocationInit)
         {
              double currentAmplitudeX = fitfunction(xvec_[ipeak],parInit);
-
-             double loc(xvec_[ipeak]);
-             if (ipeak>0 && ipeak<xvec_.size()-1) loc = meanParabol(ipeak,ipeak-1,ipeak+1);
+             double loc               = meanParabol(ipeak,ipeak-1,ipeak+1);
 
              parInit[nparTot_++] = pulseCache_.factor()*(yvec_[ipeak] - currentAmplitudeX); 
              parInit[nparTot_++] = loc; 
         }
 
         
+
+
 	if (diagLevel_ > 1) std::cout<<"[FixedFastProcessor] Peaks init found : "<<peakLocationInit.size()<<std::endl;        
 	if (peakLocationInit.empty()) return; 
-        
-        unsigned int istart = peakLocationInit.front();
-        unsigned int iend   = peakLocationInit.back();
-        
-        
+                
 
 
-        // find location of secondary peaks: calculate residualsals, remove regions close to primary peaks, scan and add components
-        std::vector<double> residual;
+
+        // find location of secondary peaks: calculate residuals
+	std::vector<double> residual;
         for (unsigned int i=0;i<xvec_.size();++i) 
         {
              double val = (yvec_[i] > 0 ) ? yvec_[i] - fitfunction(xvec_[i],parInit) : 0 ; 
              residual.push_back(val); 
         }
-	for (auto ipeak : peakLocationInit) std::fill(&residual[ipeak-windowPeak_],&residual[ipeak+windowPeak_],0);
 
-
+        //find secondat peaks (my best guess so far...)
         for (unsigned int i=windowPeak_;i<xvec_.size()-windowPeak_;++i)
         {
              auto maxp = std::max_element(&residual[i-windowPeak_],&residual[i+windowPeak_+1]);
-             if (maxp != &residual[i] || residual[i]/yvec_[i] < psdThreshold_ || residual[i] < minPeakAmplitude_) continue;
+	     double psd = residual[i]/yvec_[i];
+	     
+             if (maxp != &residual[i] || residual[i] < minPeakAmplitude_ || psd < psdThreshold_) continue;
 	     peakLocationRes.push_back(i);
+	     peakLocation.push_back(i);
         }
 
-
-        for (unsigned int ipeak : peakLocationRes)
+        //fill initial paremeters and record fit range        
+	for (unsigned int ipeak : peakLocationRes)
         {
              double currentAMplitudeAtx = fitfunction(xvec_[ipeak],parInit);
 
              parInit[nparTot_++] = pulseCache_.factor()*(yvec_[ipeak] - currentAMplitudeAtx); 
              parInit[nparTot_++] = xvec_[ipeak]; 
-             
-             if (ipeak < istart) istart = ipeak;
-             if (ipeak > iend  ) iend = ipeak; 
         }
 	
-        
-
-
-        istart_ = (istart > 3) ? istart-3 : 0;
-        iend_   = (iend+pulseHighBuffer_ < xvec_.size()) ? iend+pulseHighBuffer_ :  xvec_.size(); 
-
+	
+	
+	// build vectors with x bins used in fit, more flexible than simple start / end range, can omit intermediate pts
+	buildXRange(peakLocation);
+	
         return;           
    }
+   
    
 
    
@@ -305,8 +303,7 @@ namespace mu2e {
         
         chi2 = 999.0;
         int ierr(0),nvpar(999), nparx(999), istat(999);
-        double arglist[2]={0,0},edm(999), errdef(999), temp(0);
-        bool refit(false);
+        double arglist[2]={0,0},edm(999), errdef(999);
 	
 	
 	TMinuit minuit(nparTot_); 
@@ -326,7 +323,7 @@ namespace mu2e {
              double p0 = parInit[nparFcn_*ip];
              double p1 = parInit[nparFcn_*ip+1];
              minuit.mnparm(nparFcn_*ip+0, "par 0",  p0,  0.001,      0,    1e6, ierr);
-             minuit.mnparm(nparFcn_*ip+1, "par 1",  p1,  0.001,  p1-10,  p1+10, ierr);
+             minuit.mnparm(nparFcn_*ip+1, "par 1",  p1,  0.001,  p1-15,  p1+15, ierr);
         }
 
         
@@ -337,32 +334,41 @@ namespace mu2e {
 
         
 	//get list of fitted parameters at this stage
-	std::vector<double> tempPar(nparTot_,0);
-	for (int i=0;i<nparTot_;++i) minuit.GetParameter(i,tempPar[i],temp);    
+	std::vector<double> tempPar(nparTot_,0),tempErr(nparTot_,1);
+	for (int i=0;i<nparTot_;++i) minuit.GetParameter(i,tempPar[i],tempErr[i]);    
 
 
-        //remove small components and those too close to each other
+        //remove too small components or those too close to each other (in that case, remove the low peak)
+        bool refit(false);
+	std::vector<unsigned int> peakLoc;
+	
 	for (unsigned int ip=0;ip<nPeak;++ip)
         {    
-	    
 	    double minDTime(999);
-	    for (unsigned int j=0;j<ip;++j) 
-	       minDTime = std::min(minDTime,std::abs(tempPar[nparFcn_*ip+1] - tempPar[nparFcn_*j+1])); 
+	    for (unsigned int j=0;j<nPeak;++j) 
+	       if (j!=ip && tempPar[nparFcn_*j] > tempPar[nparFcn_*ip]) 
+	           minDTime = std::min( minDTime,std::abs(tempPar[nparFcn_*ip+1] - tempPar[nparFcn_*j+1]) ); 
 
-	    if (diagLevel_ > 2) _hDelta->Fill(minDTime);
-	    if (tempPar[nparFcn_*ip] > minPeakAmplitude_ && minDTime > 6) continue;
-	    
-            refit = true;
-            minuit.mnparm(nparFcn_*ip, "par 0", 0,  0.01, 0, 1e6, ierr);
+	    if (diagLevel_ > 2) _hDelta->Fill(minDTime);	     	    
+	    if (tempPar[nparFcn_*ip] > minPeakAmplitude_  && minDTime > minDiffTime_) 
+	    {
+	       peakLoc.push_back((tempPar[nparFcn_*ip+1]-xvec_[0])/(xvec_[1]-xvec_[0]));	       
+	       continue;
+	    }
+
+	    refit = true;
+            tempPar[nparFcn_*ip] = 0;
+	    minuit.mnparm(nparFcn_*ip, "par 0", 0,  0.01, 0, 1e6, ierr);
             minuit.FixParameter(nparFcn_*ip);
-            minuit.FixParameter(nparFcn_*ip+1);	    
+            minuit.FixParameter(nparFcn_*ip+1);	    	    
         }
 
         
-	if (nPeak > 1 && refit)
+	if (refit)
 	{  
+	    buildXRange(peakLoc);
 	    minuit.mnexcm("MIGRAD", arglist ,2,ierr);  
-	   if (!minuit.fCstatu.Contains("CONVERGED")) minuit.mnexcm("MIGRAD", arglist ,2,ierr);   
+	    if (!minuit.fCstatu.Contains("CONVERGED")) minuit.mnexcm("MIGRAD", arglist ,2,ierr);   
 	}    
 
 
@@ -383,8 +389,8 @@ namespace mu2e {
 
        for (;nTry<10;++nTry)
        {
-           double p1   = (calcChi2(tmin+1e-5)-calcChi2(tmin-1e-5))/2e-5;
-           double p2   = (calcChi2(tmin+1e-5)-2*calcChi2(tmin)+calcChi2(tmin-1e-5))/1e-5/1e-5;
+           double p1   = (calcChi2(tmin+1e-4)-calcChi2(tmin-1e-4))/2e-4;
+           double p2   = (calcChi2(tmin+1e-4)-2*calcChi2(tmin)+calcChi2(tmin-1e-4))/1e-4/1e-4;
            
            if (fabs(p2) < 1e-8) p2 = (p2>0) ? 1e-8 : -1e-8;
            tmin = tmin - p1/p2;            
@@ -392,16 +398,14 @@ namespace mu2e {
            if (fabs(p1) < 1e-3) break;          
        }
 
-       if (nTry==10)
+
+       if (nTry==10 || calcChi2(tmin,calcAlpha(tmin)) > 2)
        {
-           tmin = refineMin(nTry, tmin, 1);
+           tmin = parInit[1]; 
+	   tmin = refineMin(nTry, tmin, 1);
            tmin = refineMin(nTry, tmin, 0.1);
            tmin = refineMin(nTry, tmin, 0.01);         
        }
-       
-//can add code here for refit strategy
-       
-       
        
        double alpha = calcAlpha(tmin);
        double v11   = 0.5*(calcChi2(tmin+1e-5,alpha)-2*calcChi2(tmin,alpha)+calcChi2(tmin-1e-5,alpha))/1e-5/1e-5;
@@ -416,6 +420,7 @@ namespace mu2e {
 
        chi2 = calcChi2(tmin,alpha);
        
+       //uncomment to refit time a
        //sfpar[1] = refitTime(tmin,alpha);
       
        return;           
@@ -427,7 +432,7 @@ namespace mu2e {
    {
        double t0(tmin);
        double min0  = calcChi2(t0);
-       double min1  = calcChi2(t0+0.0001);              
+       double min1  = calcChi2(t0+0.1*step);              
        double delta = min1<min0 ? step : -step;
 
        while (nTry < 30)
@@ -441,31 +446,14 @@ namespace mu2e {
        
        return t0;      
    }
-     
-   //------------------------------------------------------------
-   double FixedFastProcessor::meanParabol(int i1, int i2, int i3)
-   {
-       double x1 = xvec_[i1];
-       double x2 = xvec_[i2];
-       double x3 = xvec_[i3];
-       double y1 = yvec_[i1];
-       double y2 = yvec_[i2];
-       double y3 = yvec_[i3];
-
-       double a = ((y1-y2)/(x1-x2)-(y1-y3)/(x1-x3))/(x2-x3);
-       double b = (y1-y2)/(x1-x2) - a*(x1+x2);
-       if (std::abs(a) < 1e-6) return (x1+x2+x3)/3.0;
-       
-       return -b/2.0/a;
-   }
-
-
+    
+    
    //--------------------------------------------
    double FixedFastProcessor::calcAlpha(double testTime)
    {
 
        double ytot(0),x2tot(0);
-       for (unsigned int i=istart_;i<iend_;++i)
+       for (unsigned int i : xindices_)
        {
            int idx = int((xvec_[i]-testTime+pulseCache_.deltaT())/pulseCache_.step());         
 
@@ -473,10 +461,10 @@ namespace mu2e {
            if (idx > (pulseCache_.cacheSize()-2)) break;
 
            double y = (pulseCache_.cache()[idx+1]-pulseCache_.cache()[idx])/pulseCache_.step()*(xvec_[i]-testTime+pulseCache_.deltaT()-idx*pulseCache_.step())+pulseCache_.cache()[idx];           
-           if ( y> 1e-5 ) { ytot += y; x2tot += yvec_[i]*yvec_[i]/y;}       
-       }
+           if ( yvec_[i]> 0 ) { ytot += y; x2tot += y*y/yvec_[i];}       
+      }
 
-       return (ytot > 1e-5) ? sqrt(x2tot/ytot) : 0;
+      return (x2tot > 0) ? ytot/x2tot : 0;
    }
 
    //--------------------------------------------
@@ -485,38 +473,34 @@ namespace mu2e {
        if (alpha<1e-5) alpha = calcAlpha(testTime);
        
        double difference(0);
-       for (unsigned int i=istart_;i<iend_;++i)
+       for (unsigned int i : xindices_)
        {
            int idx = int((xvec_[i]-testTime+pulseCache_.deltaT())/pulseCache_.step());
            if (idx < 0) continue;
            if (idx > (pulseCache_.cacheSize()-2)) break;
 
            double y = (pulseCache_.cache()[idx+1]-pulseCache_.cache()[idx])/pulseCache_.step()*(xvec_[i]-testTime+pulseCache_.deltaT()-idx*pulseCache_.step())+pulseCache_.cache()[idx];
-           if (y > 0 ) difference += (yvec_[i]-alpha*y)*(yvec_[i]-alpha*y)/alpha/y;     
+           if (yvec_[i] > 1e-5 ) difference += (yvec_[i]-alpha*y)*(yvec_[i]-alpha*y)/yvec_[i];     
        }
 
        return difference;
    }
-   
-
-
-   
-   //--------------------------------------------
+    
+    //--------------------------------------------
    double FixedFastProcessor::refitTime(double tmin, double alpha)
    {
 
+       //this one refit the leading edge with the shape
        int imax = (tmin-xvec_[0])/(xvec_[1]-xvec_[0]);
        int imin(imax);
-       
-       
+              
        double yimax = yvec_[imax];
-       while( yvec_[imax] > 0.8*yimax && imax > 0) -- imax;
+       while( yvec_[imax] > 0.8*yimax && imax > 0) --imax;
        while( yvec_[imin] > minPeakAmplitude_) --imin;
        
        
-       
-       istart_ = imin;
-       iend_   = imax;
+       xindices_.clear();
+       for (int i = imin; i <= imax; ++i) xindices_.push_back(i);
        
        int dummy(0);
        double tmin2 = refineMin(dummy, tmin, 0.002); 
@@ -525,6 +509,7 @@ namespace mu2e {
        
        
        /*
+       //this one does a second order polynomial fit, pick your poison!
        while(imax-imin <3) ++imax;
               
        const int Ndim(3);
@@ -549,21 +534,45 @@ namespace mu2e {
        return t0;
        */
    }
+   
+    
+    
+    
+    
+    
+    
+   //-------------------------------------------------------------
+   void FixedFastProcessor::buildXRange(std::vector<unsigned int>& peakLoc)
+   {      
+	std::set<unsigned int> tempX;
+	for (unsigned int ipeak : peakLoc)
+	{             
+             unsigned int is = (ipeak > pulseLowBuffer_) ? ipeak-pulseLowBuffer_ : 0;
+	     unsigned int ie = (ipeak+pulseHighBuffer_ < xvec_.size()) ? ipeak+pulseHighBuffer_ :  xvec_.size();	     	     
+	     for (unsigned int ip=is; ip<ie; ++ip) tempX.insert(ip); 
+	}
 
+	xindices_.clear();
+	for (auto i : tempX) xindices_.push_back(i);  
+   }
+     
+   //------------------------------------------------------------
+   double FixedFastProcessor::meanParabol(unsigned int i1, unsigned int i2, unsigned int i3)
+   {
+       if (i1==0 || i3 == xvec_.size()) return xvec_[i1];
+       double x1 = xvec_[i1];
+       double x2 = xvec_[i2];
+       double x3 = xvec_[i3];
+       double y1 = yvec_[i1];
+       double y2 = yvec_[i2];
+       double y3 = yvec_[i3];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+       double a = ((y1-y2)/(x1-x2)-(y1-y3)/(x1-x3))/(x2-x3);
+       double b = (y1-y2)/(x1-x2) - a*(x1+x2);
+       if (std::abs(a) < 1e-6) return (x1+x2+x3)/3.0;
+       
+       return -b/2.0/a;
+   }
 
    //---------------------------------------
    void FixedFastProcessor::plot(std::string pname)
@@ -573,7 +582,10 @@ namespace mu2e {
        h.GetYaxis()->SetTitle("Amplitude");
        for (unsigned int i=0;i<xvec_.size();++i) h.SetBinContent(i+1,yvec_[i]);
 
-       TF1 f("f",fitfunction2,xvec_[istart_],xvec_[iend_],nparTot_);
+       int istart = xindices_.back();
+       int iend   = xindices_.front();
+       
+       TF1 f("f",fitfunction2,xvec_[istart],xvec_[iend],nparTot_);
        for (unsigned int i=0;i<res_.size();++i)f.SetParameter(i,res_[i]);
 
        TCanvas c1("c1","c1");
@@ -588,3 +600,16 @@ namespace mu2e {
 
 
 }
+
+
+
+//minimize (o-e)^2/e instead of (o-e)^2/o
+//void myfcn(int& npar, double* , double &f, double *par, int)
+//if (val>1e-5) f += (y-val)*(y-val)/val;
+
+//calcAlpha(double testTime)
+//if ( y> 1e-5 ) { ytot += y; x2tot += yvec_[i]*yvec_[i]/y;}       
+//return (ytot > 1e-5) ? sqrt(x2tot/ytot) : 0;
+
+//calcChi2(double testTime, double alpha)
+//if (y > 1e-5 ) difference += (yvec_[i]-alpha*y)*(yvec_[i]-alpha*y)/alpha/y;     

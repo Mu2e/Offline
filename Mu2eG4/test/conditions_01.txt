@@ -36,6 +36,7 @@ double extMonFNAL.temperature = 273; // Kelvin
 double extMonFNAL.biasVoltage = -150; // Volts
 
 
+
 //Calorimeter calibration information
 
 // Longitudinal non-uniformity response, see Mu2e doc ... 
@@ -49,7 +50,7 @@ double ADC2MeVConversionFactor = 1.6e-03; //5.46e-04;//0.989e-03;
 
 //value of the sigma used to do the Gaussian smearing due to the electronic noise,
 //this is the quadratic sum of all APDs.....
-double ReadOutElectronicNoise      = 0.15;//MeV
+double ReadOutElectronicNoise = 0.15;//MeV
 
 double calorimeter.radiationLengthCsI = 1.860;   // cm
 double calorimeter.criticalEnergyPosCsI = 11.17; //MeV
@@ -58,6 +59,7 @@ double calorimeter.densityCsI           = 4.51; // gm/cc
 
 string calorimeter.pulseFileName = "/nfs/home/echenard/Experiments/Mu2e/Simulation/Offline/ConditionsService/data/CsI-waveform-2016-07-12.root";
 string calorimeter.pulseHistName = "h_waveform";
+
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
