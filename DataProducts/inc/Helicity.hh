@@ -13,7 +13,7 @@ namespace mu2e {
     Helicity() { _value = unknown; }
     Helicity(int ival) { _value = static_cast<helicity>(std::max(std::min(ival,1),-1)); }
     Helicity(float val) { _value = val != 0.0 ? static_cast<helicity>(copysign(1.0,val)) : unknown; }
-    bool operator == (Helicity const& other) { return _value == other._value; }
+    bool operator == (Helicity const& other) const { return _value == other._value; }
     helicity _value;
   };
 }

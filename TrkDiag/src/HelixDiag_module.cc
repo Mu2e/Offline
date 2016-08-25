@@ -72,7 +72,7 @@ namespace mu2e {
       bool findData(const art::Event& e);
       bool conversion(size_t index);
       unsigned countCEHits(vector<hitIndex> const& hits );
-      void resolvePhi(RobustHelix const& helix,	XYZPVector& xyzp);
+      void setPhi(RobustHelix const& helix,	XYZPVector& xyzp);
       // display functions
       void plotXY(XYZPVector const& xyzp, HelixSeed const& myseed);
       void plotZ(XYZPVector const& xyzp, HelixSeed const& myseed);
@@ -93,8 +93,8 @@ namespace mu2e {
     _plotz(pset.get<bool>("PlotZ",true)),
     _shTag(pset.get<string>("StrawHitCollectionTag","makeSH")),
     _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
-    _shfTag(pset.get<string>("StrawHitFlagCollectionTag","FlagBkgHits")),
-    _hsTag(pset.get<string>("HelixSeedCollectionTag","RobustHelixFinder")),
+    _shfTag(pset.get<string>("StrawHitFlagCollectionTag","PosHelixFinder")),
+    _hsTag(pset.get<string>("HelixSeedCollectionTag","PosHelixFinder")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH"))
    {
     if(_diag > 0){
@@ -117,7 +117,7 @@ namespace mu2e {
 	XYZP::fillXYZP(*_shcol, *_shpcol, hits, xyzp);
 	// resolve the phi for these points.  Note that this isn't necessarily the same resolution
 	// as used in the original fit
-	resolvePhi(myhel,xyzp);
+	setPhi(myhel,xyzp);
 	// fill TTree branches
 
 	if(_plotxy || _plotz ) {
@@ -394,7 +394,7 @@ namespace mu2e {
       mct->SetMarkerStyle(5);
       mct->SetMarkerColor(kMagenta);
 
-      for(auto hit : hits ) {
+      for(auto& hit : hits ) {
 	StrawDigiMC const& mcdigi = _mcdigis->at(hit._index);
 	if (TrkMCTools::CEDigi(mcdigi)){
 	  art::Ptr<StepPointMC> const& spmcp = TrkMCTools::threshStep(mcdigi);
@@ -417,8 +417,16 @@ namespace mu2e {
     return TrkMCTools::CEDigi(mcdigi);
   }
 
-  void HelixDiag::resolvePhi(RobustHelix const& helix, XYZPVector& xyzp){
-
+  void HelixDiag::setPhi(RobustHelix const& helix, XYZPVector& xyzpv){
+// compare expected phi position with actual, and adjust the phase to make these consistent
+    for(auto& xyzp : xyzpv) {
+      double phiex = helix.fz0() + xyzp._pos.z()/helix.lambda();
+      // compute phi WRT the circle center
+      double phi = Hep3Vector(xyzp._pos - helix.center()).phi();
+      double dphi = Angles::deltaPhi(phi,phiex);
+      if(fabs(dphi) > M_PI ) std::cout << "Failed to resolve phi" << std::endl;
+      xyzp._phi = phi;
+    }
 
   }
 

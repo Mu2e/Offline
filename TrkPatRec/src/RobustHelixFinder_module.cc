@@ -22,7 +22,6 @@
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/HelixSeedCollection.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "DataProducts/inc/Helicity.hh"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
@@ -53,8 +52,6 @@ namespace mu2e
   public:
     explicit RobustHelixFinder(fhicl::ParameterSet const&);
     virtual ~RobustHelixFinder();
-    virtual void beginJob();
-    virtual void beginRun(art::Run&);
     virtual void produce(art::Event& event ); 
   private:
     unsigned                           _iev;
@@ -62,6 +59,7 @@ namespace mu2e
     // configuration parameters
     int                                _diag,_debug;
     int                                _printfreq;
+    bool				_saveall;
 
     // input object tags
     art::InputTag			_shTag;
@@ -71,8 +69,6 @@ namespace mu2e
     // output label
     std::string                        _trackseed;
 
-    // helix definition
-    Helicity			       _helicity;
     // hit selection
     StrawHitFlag  _psel;
 
@@ -94,28 +90,19 @@ namespace mu2e
     _diag        (pset.get<int>("diagLevel",0)),
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>("printFrequency",101)),
+    _saveall     (pset.get<bool>("SaveAllHelices",false)),
     _shTag	 (pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag	 (pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag	 (pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
     _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
     _trackseed   (pset.get<string>("HelixSeedCollectionLabel","TimeClusterFinder")),
-    _helicity    (pset.get<int>("Helicity")),
     _psel        (pset.get<std::vector<std::string> >("PositionSelectionBits")),
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet()))
   {
     produces<HelixSeedCollection>();
-    if(_helicity._value == Helicity::unknown){
-      throw cet::exception("RECO")<<"mu2e::RobustHelixFinder: Invalid Helicity specified"<< endl;
-    }
   }
 
   RobustHelixFinder::~RobustHelixFinder(){}
-
-  void RobustHelixFinder::beginJob(){
-  }
-
-  void RobustHelixFinder::beginRun(art::Run& ){
-  }
 
   void RobustHelixFinder::produce(art::Event& event ) {
 
@@ -128,11 +115,11 @@ namespace mu2e
       throw cet::exception("RECO")<<"mu2e::RobustHelixFinder: data missing or incomplete"<< endl;
     }
 
-    for(auto tclust: *_tccol) {
+    for(auto const& tclust: *_tccol) {
     // build an empty HelixSeed 
     // loop over hits in this time cluster and select  hits with good 3-d position information
     std::vector<hitIndex> goodhits;
-      for(auto ind : tclust._strawHitIdxs) {
+      for(auto const& ind : tclust._strawHitIdxs) {
 	if(_shfcol->at(ind._index).hasAnyProperty(_psel))
 	  goodhits.push_back(ind);
       }
@@ -144,18 +131,15 @@ namespace mu2e
 
 // should iterate fit to include outlier removal using time + geometric information FIXME!
 
-      if(hseed._status.hasAllProperties(TrkFitFlag::fitOK) ){
-	if(_helicity == hseed._helix.helicity()){
+      if((hseed._status.hasAllProperties(TrkFitFlag::fitOK) && _hfit.helicity() == hseed._helix.helicity()) || _saveall) {
 	  outseeds->push_back(hseed);
-	} else if (_debug > 0){
-	  std::cout << "Found seed with wrong helicity " << std::endl;
-	}
-      }
+	  if(_debug > 1) cout << "Found helix with fit \n" << hseed._helix << endl;
+      } else if (_debug > 1) cout << "Found helix without fit \n" << hseed._helix << endl;
     }
 
     if (_debug>0 && (_iev%_printfreq)==0) {
-      std::cout<<"event "<<_iev<<" tot N hit "<<_shcol->size()<<" N tracks seed found "<<outseeds->size()
-	       <<" N time peaks "<<_tccol->size()<<std::endl;
+      cout<<"event "<<_iev<<" tot N hit "<<_shcol->size()<<" N tracks seed found "<<outseeds->size()
+	       <<" N time peaks "<<_tccol->size()<<endl;
     }
 
     event.put(std::move(outseeds));

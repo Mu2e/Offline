@@ -10,6 +10,8 @@
 #include "CLHEP/Vector/ThreeVector.h"
 // Root
 #include "Rtypes.h"
+// C++
+#include <ostream>
 namespace mu2e {
   class HelixVal;
   class RobustHelix {
@@ -36,5 +38,10 @@ namespace mu2e {
       Double_t _lambda; // dz/dphi (mm/radian)
       Double_t _fz0; // azimuth (phi) at the center z position (radians)
   };
+
+  std::ostream& operator<<(std::ostream& os, mu2e::RobustHelix const& helix) {
+    os << " RobustHelix Center = " << helix.center() 
+      << " Radius = " << helix.radius()
+      << " Lambda = " << helix.lambda() << " PhiZ0 = " << helix.fz0(); return os; }
 }
 #endif

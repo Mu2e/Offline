@@ -88,7 +88,7 @@ namespace mu2e {
     StrawHitPositionCollection const& shpcol, std::vector<hitIndex> hits, XYZPVector& xyzp) {
     const Tracker& tracker = getTrackerOrThrow();
     // loop over straw hits, and store their positions
-    for(auto istr : hits) { 
+    for(auto const& istr : hits) { 
       StrawHit const& sh = shcol.at(istr._index);
       Straw const& straw= tracker.getStraw(sh.strawIndex());
       StrawHitPosition const& shp = shpcol.at(istr._index);

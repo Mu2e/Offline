@@ -25,7 +25,7 @@ namespace mu2e
     if(_caloMatchHandle.isValid()){
       _caloinfo.clear();
       _ncalo = 0;
-      for( auto tcm : *_caloMatchHandle ) {
+      for( auto const& tcm : *_caloMatchHandle ) {
 	if(tcm.textrapol()->trk().get() == krep){
 	  TrkCaloInfo tcinfo;
 	  fillCaloInfo(tcm,tcinfo);

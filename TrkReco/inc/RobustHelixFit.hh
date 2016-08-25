@@ -12,10 +12,8 @@
 #include "fhiclcpp/ParameterSet.h"
 // data
 #include "DataProducts/inc/Helicity.hh"
+#include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-// tracker
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
 // HelixFit objects
 #include "TrkReco/inc/XYZP.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
@@ -48,6 +46,8 @@ namespace mu2e
 // the HelixSeed object is both input and output
     void findHelix(StrawHitCollection const& shcol,
 	StrawHitPositionCollection const& shpos, HelixSeed& myfit);
+// Helicity of this fit
+    Helicity const& helicity() const { return _helicity; }
   protected:
 // utlity functions
     bool findXY(XYZPVector& xyzp,RobustHelix& myhel);
@@ -90,8 +90,6 @@ namespace mu2e
     double _targetradius; // target size to use in constraint or init
     double _trackerradius; // tracker radius to use in init
     Helicity _helicity; // helicity value to look for.  This defines the sign of dphi/dz
-// cached value of radius and pitch sign: these depend on the particle type
-// and direction
     double _smin, _smax;
  };
 }

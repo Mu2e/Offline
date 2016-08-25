@@ -53,12 +53,16 @@ TimeClusterFinder : {
 # we need both positive and negative helicity helices
 PosHelixFinder : {
   module_type		: RobustHelixFinder
-  Helicity		: 1
+  RobustHelixFit : {
+    Helicity		: 1
+  }
   PositionSelectionBits	    : ["Stereo","TimeDivision"]
 }
 NegHelixFinder : {
   module_type		: RobustHelixFinder
-  Helicity		: -1
+  RobustHelixFit : {
+    Helicity		: -1
+  }
   PositionSelectionBits	    : ["Stereo","TimeDivision"]
 }
 

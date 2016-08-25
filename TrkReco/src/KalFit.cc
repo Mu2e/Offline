@@ -454,7 +454,7 @@ namespace mu2e
 // loop over Planes
     double strawradius = ttracker.strawRadius();
     unsigned nadded(0);
-    for(auto plane : ttracker.getPlanes()){
+    for(auto const& plane : ttracker.getPlanes()){
     // crappy access to # of straws in a panel
       int nstraws = 2*plane.getPanel(0).getLayer(0).nStraws();
 // get an approximate z position for this plane from the average position of the 1st and last straws
@@ -472,7 +472,7 @@ namespace mu2e
       double rmax = sn.perp()+2*strawradius;
       if(rho > rmin && rho < rmax){
   // loop over panels
-        for(auto panel : plane.getPanels()){
+        for(auto const& panel : plane.getPanels()){
       // get the straw direction for this panel
           Hep3Vector sdir = panel.getLayer(0).getStraw(0).getDirection();
       // get the transverse direction to this and z
@@ -497,7 +497,7 @@ namespace mu2e
     }
 // Now test if the Kalman rep hits these straws
     if(_debug>2)std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
-    for(auto strawflt : matstraws){
+    for(auto const& strawflt : matstraws){
       const DetStrawElem* strawelem = detmodel.strawElem(strawflt._index);
       DetIntersection strawinter;
       strawinter.delem = strawelem;

@@ -163,7 +163,7 @@ namespace mu2e {
     // if requested, plot time spectra for this event
     if(_plotts){
       unsigned nce(0);
-      for(auto mcdigi : *_mcdigis) {
+      for(auto const& mcdigi : *_mcdigis) {
 	if(TrkMCTools::CEDigi(mcdigi))++nce;
       }
       if (nce >= _minnce) 
@@ -232,7 +232,7 @@ namespace mu2e {
   }
 
   void TimeClusterDiag::fillClusterHitInfo(TimeCluster const& tc) {
-    for (auto idx : tc._strawHitIdxs) {
+    for (auto const& idx : tc._strawHitIdxs) {
       TimeClusterHitInfo tchi;
       size_t ish = idx._index;
       tchi._dt = _shcol->at(ish).time()-tc._t0._t0;
@@ -353,7 +353,7 @@ namespace mu2e {
     tcinfo._ncehits = 0;
     // count CE hits 
     if(_mcdiag){
-      for (auto idx : tp._strawHitIdxs) {
+      for (auto const& idx : tp._strawHitIdxs) {
       // mc truth info
 	StrawDigiMC const& mcdigi = _mcdigis->at(idx._index);
 	bool conversion = TrkMCTools::CEDigi(mcdigi);

@@ -9,17 +9,6 @@
 // the following has to come before other BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/RobustHelixFit.hh"
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TrackerGeom/inc/Tracker.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // boost
@@ -79,8 +68,11 @@ namespace mu2e
     _targetinter(pset.get<bool>("targetintersect",true)),
     _targetradius(pset.get<double>("targetradius",75.0)),
     _trackerradius(pset.get<double>("trackerradius",700.0)),
-    _helicity((Helicity::helicity)pset.get<int>("Helicity",0))
+    _helicity(pset.get<int>("Helicity",Helicity::unknown))
   {
+    if(_helicity._value == Helicity::unknown){
+      throw cet::exception("RECO")<<"mu2e::RobustHelix: Invalid Helicity specified"<< std::endl;
+    }
     XYZP::_efac = _efac;
     std::vector<std::string> bitnames;
     // these should be fcl parameters, FIXME!!!
