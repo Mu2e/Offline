@@ -58,6 +58,8 @@ namespace mu2e {
     int           _diag;
     bool	  _mcdiag;
     bool	  _plotts;
+    unsigned _minnce; // minimum # CE hits to make plots
+
     // event object Tags
     art::InputTag   _shTag;
     art::InputTag   _shpTag;
@@ -108,6 +110,7 @@ namespace mu2e {
     _diag		(pset.get<int>("diagLevel",1)),
     _mcdiag		(pset.get<bool>("MCdiag",true)),
     _plotts		(pset.get<bool>("PlotTimeSpectra",false)),
+    _minnce		(pset.get<unsigned>("MinimumCEHits",15)),
     _shTag		(pset.get<art::InputTag>("StrawHitCollection","makeSH")),
     _shpTag		(pset.get<art::InputTag>("StrawHitPositionCollection","MakeStereoHits")),
     _shfTag		(pset.get<art::InputTag>("StrawHitFlagCollection","TimeClusterFinder")),
@@ -158,7 +161,14 @@ namespace mu2e {
     // fill the tree
     _tcdiag->Fill();
     // if requested, plot time spectra for this event
-    if(_plotts)plotTimeSpectra();
+    if(_plotts){
+      unsigned nce(0);
+      for(auto mcdigi : *_mcdigis) {
+	if(TrkMCTools::CEDigi(mcdigi))++nce;
+      }
+      if (nce >= _minnce) 
+	plotTimeSpectra();
+    }
   } // end analyze
 
   // find the input data objects
@@ -310,7 +320,7 @@ namespace mu2e {
     // plot time cluster times
     TList* flist = ctsp->GetListOfFunctions();
     for(auto itclust=_tccol->begin(); itclust!=_tccol->end(); ++itclust){
-      TMarker* smark = new TMarker(itclust->_t0._t0,itclust->_strawHitIdxs.size(),23);
+      TMarker* smark = new TMarker(itclust->_t0._t0,ctsp->GetMaximum(),23);
       smark->SetMarkerColor(kRed);
       smark->SetMarkerSize(1.5);
       flist->Add(smark);

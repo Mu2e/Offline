@@ -87,7 +87,7 @@ namespace mu2e {
     art::EDAnalyzer(pset),
     _diag(pset.get<int>("DiagLevel",1)),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
-    _minnce(pset.get<unsigned>("MinimumCEHits",0)),
+    _minnce(pset.get<unsigned>("MinimumCEHits",10)),
     _targetradius(pset.get<double>("TargetRadius",75)),
     _plotxy(pset.get<bool>("PlotXY",true)),
     _plotz(pset.get<bool>("PlotZ",true)),

@@ -24,10 +24,10 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
     char cname[100];
     char pname[100];
     snprintf(rname,100,"rawtspectrum%lu",ievt);
-    snprintf(tname,100,"tightnodeltatspectrum%lu",ievt);
-    snprintf(lname,100,"loosetspectrum%lu",ievt);
-    snprintf(cname,100,"convtspectrum%lu",ievt);
-    snprintf(pname,100,"protontspectrum%i",ievt);
+    snprintf(tname,100,"clusttspectrum%lu",ievt);
+    snprintf(lname,100,"seltspectrum%lu",ievt);
+    snprintf(cname,100,"allconvtspectrum%lu",ievt);
+    snprintf(pname,100,"clustconvtspectrum%i",ievt);
     TH1F* rh = (TH1F*)tdir->Get(rname);
     TH1F* th = (TH1F*)tdir->Get(tname);
     TH1F* lh = (TH1F*)tdir->Get(lname);
@@ -75,13 +75,13 @@ void PlotTimeSpectra(TDirectory* tdir,unsigned nmax=20, int nps=3, const char* n
       ph->Draw("same");
       TLegend* leg(0);
       if(ipave==1){
-	leg = new TLegend(0.1,0.7,0.5,0.9);
+	leg = new TLegend(0.1,0.7,0.4,0.9);
 	leg->AddEntry(rh,"All hits","l");
-	leg->AddEntry(th,"Selected e^{-} hits","F");
-//	leg->AddEntry(lh,"Loose Selected hits","F");
-	leg->AddEntry(ch,"Conversion hits","LF");
-	leg->AddEntry(ph,"Selected proton hits","LF");
-	leg->AddEntry(dummy,"Reconstructed Time Peak","P");
+	leg->AddEntry(lh,"Selected e^{-} hits","F");
+	leg->AddEntry(th,"Clustered hits","F");
+	leg->AddEntry(ch,"All CE hits","LF");
+	leg->AddEntry(ph,"Clustered CE hits","LF");
+	leg->AddEntry(dummy,"Reconstructed Time","P");
 	leg->Draw();
       }
       ++iplot;
