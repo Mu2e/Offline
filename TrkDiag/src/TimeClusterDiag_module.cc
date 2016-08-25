@@ -58,9 +58,6 @@ namespace mu2e {
     int           _diag;
     bool	  _mcdiag;
     bool	  _plotts;
-    // event number cache
-    unsigned      _iev;
-
     // event object Tags
     art::InputTag   _shTag;
     art::InputTag   _shpTag;
@@ -85,8 +82,9 @@ namespace mu2e {
     const StrawDigiMCCollection*          _mcdigis;
 // TTree variables
     TTree*                                _tcdiag;
-// general event info: this should be a struct FIXME!
-    Int_t                         _eventid;
+    // event number
+    Int_t      _iev;
+    Int_t     _ntc; // # clusters/event
     TimeClusterInfo		  _besttc;  // info about best time cluster (most CE hits)
     MCClusterInfo		  _ceclust; // info about 'cluster' of MC CE hits
     vector<TimeClusterHitInfo>	  _tchinfo; // info about hits of best time cluster
@@ -128,18 +126,20 @@ namespace mu2e {
   }
 
   void TimeClusterDiag::beginJob(){
+  // initialize MVA: this is used just for diagnostics
+    _peakMVA.initMVA();
     createDiagnostics();
     _iev = 0;
   }
 
   void TimeClusterDiag::analyze(art::Event const& event ) {
-
     _iev=event.id().event();
     // find the data
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::TimeClusterDiag: data missing or incomplete"<< endl;
       return;
     }
+    _ntc = _tccol->size();
     // fill MC info
     if(_mcdiag){
       fillCECluster();
@@ -149,9 +149,10 @@ namespace mu2e {
     if(_alltc.size() > 0)
       // best is defined as having the most CE hits
       _besttc = _alltc[0];
-    // optionally fill hit info about the 'best' cluster
-    _besttc.reset();
-    if(_diag > 1){
+    else
+      _besttc.reset();
+    if(_diag > 1 && _besttc._tcindex >= 0 && _besttc._tcindex < static_cast<int>(_tccol->size())){
+      _tchinfo.clear();
       fillClusterHitInfo(_tccol->at(_besttc._tcindex));
     }
     // fill the tree
@@ -221,7 +222,6 @@ namespace mu2e {
   }
 
   void TimeClusterDiag::fillClusterHitInfo(TimeCluster const& tc) {
-    _tchinfo.clear();
     for (auto idx : tc._strawHitIdxs) {
       TimeClusterHitInfo tchi;
       size_t ish = idx._index;
@@ -232,9 +232,9 @@ namespace mu2e {
       tchi._rho = pos.perp();
 // compute MVA
       std::vector<Double_t> pars(3);
-      pars.push_back(tchi._dt);
-      pars.push_back(tchi._dphi);
-      pars.push_back(tchi._rho);
+      pars[0] = tchi._dt;
+      pars[1] = tchi._dphi;
+      pars[2] = tchi._rho;
       tchi._mva = _peakMVA.evalMVA(pars);
 // MC truth
       if(_mcdiag){
@@ -250,6 +250,7 @@ namespace mu2e {
 	  }
 	}
       }
+      _tchinfo.push_back(tchi);
     }
   }
 
@@ -356,7 +357,8 @@ namespace mu2e {
    // time peak diagnostics
     _tcdiag=tfs->make<TTree>("tpdiag","time peak diagnostics");
     // event info should use the TrkAna struct, FIXME!!
-    _tcdiag->Branch("eventid",&_eventid,"eventid/I");
+    _tcdiag->Branch("iev",&_iev,"iev/I");
+    _tcdiag->Branch("ntc",&_ntc,"ntc/I");
     _tcdiag->Branch("besttc",&_besttc,TimeClusterInfo::leafnames().c_str());
     if(_mcdiag){
       _tcdiag->Branch("ceclust",&_ceclust,MCClusterInfo::leafnames().c_str());
