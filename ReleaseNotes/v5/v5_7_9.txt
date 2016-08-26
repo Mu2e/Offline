@@ -2,6 +2,20 @@ Still under construction
 
            Release notes for Mu2e Offline software, v5_7_9
 
+2.  26 August 2016  ehrlich
+    Changed the DYB cosmic event generator to allow user defined phi ranges
+    for the generated cosmic ray muons. The phi range can be set in the 
+    genconfig file. The event generator adjusts the cosmic rate accordingly.
+    Example:
+    string cosmicDYB.refPointChoice  = "Customized";
+    string cosmicDYB.directionChoice = "Phi_Range";
+    double cosmicDYB.muPhiMin = -1.570;
+    double cosmicDYB.muPhiMax =  0;
+    double cosmicDYB.dx     = 0;
+    double cosmicDYB.dy     = 5000;
+    double cosmicDYB.dz     = 5000;
+    vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-104,200,0};
+
 1.  11 August 2016  dnbrow01
     Various geometry-related updates.
     i)  Scrubbed more unnecessary #includes per work done by Bryan Fagan.
