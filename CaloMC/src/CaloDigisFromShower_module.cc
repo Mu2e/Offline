@@ -4,6 +4,8 @@
 // Fill the readout response from the deosited energy. Photo-statistic fluctuations are calculated independently 
 // for each sensor and must be done at this stage.
 //
+// The output is split between the different digitization boards
+//
 // Original author B. Echenard
 //
 
@@ -32,7 +34,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
 #include "MCDataProducts/inc/CaloShowerCollection.hh"
-#include "RecoDataProducts/inc/CaloDigiPacked.hh"
+#include "RecoDataProducts/inc/CaloDigiPackedCollection.hh"
 #include "SeedService/inc/SeedService.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -82,7 +84,7 @@ namespace mu2e {
 	pulseShape_(CaloPulseShape(digiSampling_,pulseIntegralSteps_))
       {  
 
-           produces<CaloDigiPacked>();    
+           produces<CaloDigiPackedCollection>();    
   
            maxADCCounts_ =  1 << nBits_;
            ADCTomV_      = dynamicRange_/maxADCCounts_;
@@ -141,19 +143,20 @@ namespace mu2e {
        TH1F*  hTime_;
        TH2F*  hPECorr_;
        TH1F*  hPECorr2_;
-       TH1F*  hNSamples_;
-       TH1F*  hNHits_;   
        TH1F*  hNSamples_VsIro;
        TH1F*  hWFLength_;
        TH2F*  hWFLength_VsAmp;
 
 
        void   resetWaveforms();
-       void   makeDigitization(const art::Handle<CaloShowerCollection>& CaloShowersHandle, CaloDigiPacked&);
+       void   makeDigitization(const art::Handle<CaloShowerCollection>& CaloShowersHandle, CaloDigiPackedCollection&);
        void   fillWaveforms(const art::Handle<CaloShowerCollection>& crystalStepsHandles);
        void   readoutResponse(double Edep, double Time, int CrId, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
-       void   buildOutputDigi(CaloDigiPacked& caloDigis);
+       void   buildOutputDigi(CaloDigiPackedCollection& caloDigis);
+       void   fillOutoutRO(int iRO, int& nTotWords, std::vector<int>& caloDigiOutputs);
+       int    findROCardIdx(int ROid);
        double photoStatisticsCorrection(int crystalId, double edep, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations);
+       
 
   };
 
@@ -176,8 +179,6 @@ namespace mu2e {
        hTime_          = tfs->make<TH1F>("hTime","Hit time ",                       4000,    0.,   2000);
        hPECorr_        = tfs->make<TH2F>("hPECorr", "PE stat correction",            100,    0., 50, 100,    0,  50);
        hPECorr2_       = tfs->make<TH1F>("hPECorr2","PE stat correction",            100,  -0.5,    0.5);
-       hNSamples_      = tfs->make<TH1F>("hNSamples","Numerb of samples / evt",    10000,   5e3,    5e3);
-       hNHits_         = tfs->make<TH1F>("hNHits","Numer of hits / evt",           10000,     0., 10000);
        hNSamples_VsIro = tfs->make<TH1F>("hNSamplesVsIro","Number of samples /ro",  2000,     0,   2000);
        hWFLength_      = tfs->make<TH1F>("hWFLength","wavefrom length",              100,     0,    100);
        hWFLength_VsAmp = tfs->make<TH2F>("hWFLengthVsAmp","wavefrom length vs amp", 1000,     0, 100,2000, 0, 2000);        
@@ -203,8 +204,9 @@ namespace mu2e {
       art::Handle<CaloShowerCollection> caloShowerHandle;
       event.getByLabel(caloShowerModuleLabel_, caloShowerHandle);
 
-      std::unique_ptr<CaloDigiPacked> caloDigis(new CaloDigiPacked);    
+      std::unique_ptr<CaloDigiPackedCollection> caloDigis(new CaloDigiPackedCollection);    
       makeDigitization(caloShowerHandle, *caloDigis);    
+            
       event.put(std::move(caloDigis));
 
       if ( diagLevel_ > 0 ) std::cout << "[CaloDigisFromShower:] produce() end" << std::endl;
@@ -213,7 +215,7 @@ namespace mu2e {
   
   
   //-------------------------------------------------------------------------------------------------------------
-  void CaloDigisFromShower::makeDigitization(const art::Handle<CaloShowerCollection>& CaloShowerCollHandle,CaloDigiPacked& caloDigis)
+  void CaloDigisFromShower::makeDigitization(const art::Handle<CaloShowerCollection>& CaloShowerCollHandle,CaloDigiPackedCollection& caloDigis)
   {
        mu2e::GeomHandle<mu2e::Calorimeter> ch;
        calorimeter_ = ch.get();                       
@@ -239,9 +241,10 @@ namespace mu2e {
       
       //if we want noise, fill all waveforms with noise, noise_ is in mV, sample is in counts, noise must be positive
       //otherwise simply reset the waveform to zero 
-
+      //
       if (addNoise_)
-	for (unsigned int i=0; i<nWaveforms; ++i) std::generate(waveforms_[i].begin(),waveforms_[i].end(),[&]() {return  int(std::max(0.0,randGauss_.fire(0.0,noise_)*mVToADC_));});
+	for (unsigned int i=0; i<nWaveforms; ++i) std::generate(waveforms_[i].begin(),waveforms_[i].end(),
+	                                                       [&]() {return  int(std::max(0.0,randGauss_.fire(0.0,noise_)*mVToADC_));});
       else 
       	for (unsigned int i=0; i<nWaveforms; ++i) std::fill(waveforms_[i].begin(),waveforms_[i].end(),0);
               
@@ -297,7 +300,6 @@ namespace mu2e {
   void CaloDigisFromShower::readoutResponse(double energyDep, double time, int crystalId, 
                                             ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   {          
-
       int ROidBase = calorimeter_->ROBaseByCrystal(crystalId);
       int nROs     = calorimeter_->caloGeomInfo().nROPerCrystal();
 
@@ -306,8 +308,7 @@ namespace mu2e {
           int ROId = ROidBase + i;
 
           double energyCorr(energyDep);
-          if (caloPEStatCorrection_)
-                 energyCorr = photoStatisticsCorrection(crystalId, energyDep, calorimeterCalibrations);          
+          if (caloPEStatCorrection_) energyCorr = photoStatisticsCorrection(crystalId, energyDep, calorimeterCalibrations);          
                     
           double                     pulseAmp       = energyCorr*energyScale_;          
           double                     timeCorr       = time - blindTime_;          
@@ -319,17 +320,18 @@ namespace mu2e {
 
           if (diagLevel_ > 1 )
           {
-               printf("[CaloDigisFromShower::makeCalorimeterHits]   Readout %4i   eDep = %9.3f MeV   amplitude = %9.3f mV   time = %9.3f ns\n", 
-                       ROId, energyCorr, pulseAmp, time);
+              printf("[CaloDigisFromShower::makeCalorimeterHits]   Readout %4i   eDep = %9.3f MeV   amplitude = %9.3f mV   time = %9.3f ns\n", 
+                      ROId, energyCorr, pulseAmp, time);
+
+              if (diagLevel_ > 2)
+              {
+                  hPECorr_->Fill(energyCorr,energyDep);
+                  hPECorr2_->Fill((energyCorr-energyDep)/sqrt(energyDep));
+              }               
+
+              if (diagLevel_ > 4 )
+                  printf("[CaloDigisFromShower::makeCalorimeterHits]   timeSample   |   ADC-counts   |    wfAmp    |   signalAmp  | Total ADC \n");
                
-               if (diagLevel_ > 3 )
-                   printf("[CaloDigisFromShower::makeCalorimeterHits]   timeSample   |   ADC-counts   |    wfAmp    |   signalAmp  | Total ADC \n");
-               
-               if (diagLevel_ > 2)
-               {
-                   hPECorr_->Fill(energyCorr,energyDep);
-                   hPECorr2_->Fill((energyCorr-energyDep)/sqrt(energyDep));
-               }               
           }
 
 
@@ -343,7 +345,7 @@ namespace mu2e {
               waveform.at(timeSample) += ADCCounts;  
               if ( waveform.at(timeSample) > maxADCCounts_) waveform.at(timeSample) = maxADCCounts_; 
 
-              if (diagLevel_ > 3 && wfAmp > 1e-6 )
+              if (diagLevel_ > 4 && wfAmp > 1e-6 )
               {
                   printf("[CaloDigisFromShower::makeCalorimeterHits]   %4i   |   %4i   |    %9.3f  | %9.3f | %4i \n", 
                          timeSample, ADCCounts,  wfAmp, funcValue, waveform.at(timeSample));
@@ -360,132 +362,142 @@ namespace mu2e {
  
 
 
-  //--------------------------------------------------------------------
-  // The output is written in the following data format:
-  // nTotWords - nWords_roID - roiID - nWord_roID_ihit - time_roID_ihit - Data_roID_ihit - ...
-  //  
-  void CaloDigisFromShower::buildOutputDigi(CaloDigiPacked& CaloDigis)
+  //----------------------------------------------------------------------------
+  void CaloDigisFromShower::buildOutputDigi(CaloDigiPackedCollection& CaloDigis)
   {
-  
-      int nHits(0), nSamples(0), nTotWords(1);
+        
+      unsigned int Noutput(80);
+      std::vector<int> nTotWords(Noutput,0);
+      std::vector<std::vector<int>> caloDigiOutputs; 
+      for (unsigned int i=0;i< Noutput;++i) caloDigiOutputs.push_back(std::vector<int>(1,0)); 
 
-      std::vector<int> caloDigiOutput; 
-      caloDigiOutput.push_back(0);       //reserve nTotword word, will be filled at the end
 
 
       for (unsigned int iRO=0; iRO<waveforms_.size(); ++iRO)
       {
-           int nRoWords = 2;     
-           std::vector<int>  output; 
-           std::vector<int>  &itWave = waveforms_.at(iRO);
-
-
-           if (diagLevel_ > 1)
-           {
-               std::cout<<"CaloDigisFromShower::buildOutputDigi] Waveform content for readout "<<iRO<<std::endl; 
-               for (const auto  &v : itWave) std::cout<<v<<" "; 
-               std::cout<<std::endl;
-
-               if (diagLevel_ > 3) std::cout<<"wfContent content (timesample: waveContent, funcValue)"<<std::endl;
-           }
-
-
-           output.push_back(0); //placeholder for number of words
-           output.push_back(0); //placeholder for iRO
-
-           int waveSize = itWave.size();
-           int timeSample(0);
-           while (timeSample < waveSize)
-           {
-               int    waveContent = itWave.at(timeSample);
-               double funcValue   = waveContent*ADCTomV_;
-
-               if (diagLevel_ > 3 && waveContent > 0) printf("wfContent (%4i:  %4i, %9.3f) \n", timeSample, waveContent, funcValue);                    
-               if (funcValue < thresholdVoltage_) {++timeSample; continue;}
-
-
-               // find the starting / stopping point of the peak              
-               // the stopping point is the first value below the threshold _and_ the buffer is also below the threshold
-               int sampleStart = std::max(timeSample - bufferDigi_,0);
-               int sampleStop  = timeSample;
-               for (; sampleStop < waveSize; ++sampleStop)
-               {
-                   int sampleCheck    = std::min(sampleStop+bufferDigi_+1,waveSize-1);
-                   int waveOverBuffer = *std::max_element(&itWave.at(sampleStop),&itWave.at(sampleCheck));
-                   if (waveOverBuffer*ADCTomV_ < thresholdVoltage_) break;
-               }             
-               sampleStop = std::min(sampleStop + bufferDigi_, waveSize-1);
-
-
-               //forward the scanning time
-               timeSample = sampleStop+1;
-
-
-               //check if peak is acceptable and digitize
-               if (sampleStop == sampleStart)                continue;
-
-               int sampleMax = *std::max_element(&itWave.at(sampleStart),&itWave.at(sampleStop));
-               if (sampleMax*ADCTomV_ < thresholdAmplitude_) continue;
-
-
-               int nHitWords = 2 + sampleStop - sampleStart +1;
-               int t0        = int(sampleStart*digiSampling_);
-
-               output.emplace_back(nHitWords);
-               output.emplace_back(t0 + blindTime_);
-               for (int i=sampleStart; i<=sampleStop; ++i) output.push_back(itWave.at(i));
-
-               nRoWords += nHitWords;
-
-               if (diagLevel_ > 2 && t0 > blindTime_)
-               {
-                    ++nHits;
-                    nSamples += (sampleStop - sampleStart);
-
-                    hNSamples_VsIro->Fill(iRO, sampleStop - sampleStart);
-                    hWFLength_->Fill(sampleStop - sampleStart);
-                    hWFLength_VsAmp->Fill(sampleStop - sampleStart, sampleMax);
-               }
-           }
-
-           nTotWords += nRoWords;
-
-           output[0] = nRoWords;
-           output[1] = iRO;
-
-           caloDigiOutput.insert(caloDigiOutput.end(), output.begin(), output.end());
-
-           if (diagLevel_ > 3)
-           {
-               std::cout<<"CaloDigisFromShower::buildOutputDigi] Readout "<<iRO<<std::endl;
-               for (const auto& val : output) std::cout<<val<<" ";std::cout<<std::endl;                   
-           }        
-       }
-
-
-      caloDigiOutput[0] = nTotWords; 
-
-
-
-      if (diagLevel_  > 2)
-      {
-          hNSamples_->Fill(nSamples);
-          hNHits_->Fill(nHits);
-      }
-      if (diagLevel_ > 3)
-      {
-          printf("[CaloDigisFromShower::buildOutputDigi] caloDigiOutput\n");
-          for (const auto& digi : caloDigiOutput) std::cout<<digi<<" "; std::cout<<std::endl;
+          int outputIdx = findROCardIdx(iRO);
+	  fillOutoutRO(iRO,nTotWords[outputIdx], caloDigiOutputs[outputIdx]);
       }
 
-      
-      
-      CaloDigis = std::move(CaloDigiPacked(caloDigiOutput)); 
+      for (unsigned int i=0;i< Noutput;++i) 
+      {           
+	  std::vector<int>& caloDigiOutput = caloDigiOutputs[i];
+	  
+	  caloDigiOutput[0] = nTotWords[i];          
+	  if (nTotWords[i]>2) CaloDigis.emplace_back(CaloDigiPacked(caloDigiOutput));
+
+	  if (diagLevel_ > 3)
+	  {
+              printf("[CaloDigisFromShower::buildOutputDigi] caloDigiOutput\n");
+	      for (const auto& digi : caloDigiOutput) std::cout<<digi<<" "; std::cout<<std::endl;
+	  }
+      }
+
   }
 
 
 
-  //-----------------------------------------------------------------------------
+
+  //--------------------------------------------------------------------
+  // The output is written in the following data format:
+  // nTotWords - nWords_roID - roiID - nWord_roID_ihit - time_roID_ihit - Data_roID_ihit - ...
+  //  
+  void CaloDigisFromShower::fillOutoutRO(int iRO, int& nTotWords, std::vector<int>& caloDigiOutput)
+  {  
+       int nRoWords = 2;     
+       std::vector<int>  output; 
+       std::vector<int>  &itWave = waveforms_.at(iRO);
+
+       if (diagLevel_ > 1)
+       {
+           std::cout<<"CaloDigisFromShower::buildOutputDigi] Waveform content for readout "<<iRO<<std::endl; 
+           for (const auto  &v : itWave) std::cout<<v<<" "; 
+           std::cout<<std::endl;
+
+           if (diagLevel_ > 4) std::cout<<"wfContent content (timesample: waveContent, funcValue)"<<std::endl;
+       }
+
+       output.push_back(0); //placeholder for number of words
+       output.push_back(0); //placeholder for iRO
+
+       int waveSize = itWave.size();
+       int timeSample(0);
+       while (timeSample < waveSize)
+       {
+           int    waveContent = itWave.at(timeSample);
+           double funcValue   = waveContent*ADCTomV_;
+
+           if (diagLevel_ > 4 && waveContent > 0) printf("wfContent (%4i:  %4i, %9.3f) \n", timeSample, waveContent, funcValue);                    
+           if (funcValue < thresholdVoltage_) {++timeSample; continue;}
+
+
+           // find the starting / stopping point of the peak              
+           // the stopping point is the first value below the threshold _and_ the buffer is also below the threshold
+           int sampleStart = std::max(timeSample - bufferDigi_,0);
+           int sampleStop  = timeSample;
+           for (; sampleStop < waveSize; ++sampleStop)
+           {
+               int sampleCheck    = std::min(sampleStop+bufferDigi_+1,waveSize-1);
+               int waveOverBuffer = *std::max_element(&itWave.at(sampleStop),&itWave.at(sampleCheck));
+               if (waveOverBuffer*ADCTomV_ < thresholdVoltage_) break;
+           }             
+           sampleStop = std::min(sampleStop + bufferDigi_, waveSize-1);
+
+
+           //forward the scanning time
+           timeSample = sampleStop+1;
+
+
+           //check if peak is acceptable and digitize
+           if (sampleStop == sampleStart)                continue;
+
+           int sampleMax = *std::max_element(&itWave.at(sampleStart),&itWave.at(sampleStop));
+           if (sampleMax*ADCTomV_ < thresholdAmplitude_) continue;
+
+
+           int nHitWords = 2 + sampleStop - sampleStart +1;
+           int t0        = int(sampleStart*digiSampling_);
+
+           output.emplace_back(nHitWords);
+           output.emplace_back(t0 + blindTime_);
+           for (int i=sampleStart; i<=sampleStop; ++i) output.push_back(itWave.at(i));
+
+           nRoWords += nHitWords;
+
+           if (diagLevel_ > 2 && t0 > blindTime_)
+           {
+                hNSamples_VsIro->Fill(iRO, sampleStop - sampleStart);
+                hWFLength_->Fill(sampleStop - sampleStart);
+                hWFLength_VsAmp->Fill(sampleStop - sampleStart, sampleMax);
+           }
+       }
+
+       output[0] = nRoWords;
+       output[1] = iRO;
+
+       if (diagLevel_ > 3)
+       {
+           std::cout<<"CaloDigisFromShower::buildOutputDigi] Readout "<<iRO<<std::endl;
+           for (const auto& val : output) std::cout<<val<<" ";std::cout<<std::endl;                   
+       }        
+
+       //comment if you want to keep all readouts
+       if (nRoWords==2) return; 
+       
+       nTotWords += nRoWords;
+       caloDigiOutput.insert(caloDigiOutput.end(), output.begin(), output.end());       
+  }
+
+
+
+
+  //----------------------------------------------
+  int CaloDigisFromShower::findROCardIdx(int iRO)
+  {
+      return iRO / 40;
+  }
+
+  //-------------------------------------------------------------------------------------------------------------------------------------------------------
   double CaloDigisFromShower::photoStatisticsCorrection(int crystalId, double edep, ConditionsHandle<CalorimeterCalibrations>& calorimeterCalibrations)
   { 
       double lightYield = randPoisson_.fire(edep*calorimeterCalibrations->peMeV(crystalId));

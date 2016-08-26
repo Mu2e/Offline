@@ -18,7 +18,6 @@
 <lcgdict>
  <class name="mu2e::StrawHit"/>
  <class name="mu2e::StrawHitCollection"/>
- <class name="mu2e::CaloDigiPacked"/>
  <class name="mu2e::CaloDigi"/>
  <class name="mu2e::CaloDigiCollection"/>
  <class name="mu2e::CaloRecoDigi"/>
@@ -96,8 +95,6 @@
  <class name="std::vector<art::Ptr<mu2e::CaloProtoCluster> >"/>
  <class name="art::Ptr<mu2e::CaloCluster>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloCluster> >"/>
- <class name="art::Ptr<mu2e::CaloDigiPacked>"/>
- <class name="std::vector<art::Ptr<mu2e::CaloDigiPacked> >"/>
  <class name="art::Ptr<mu2e::CaloDigi>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
  <class name="art::Ptr<mu2e::CaloRecoDigi>"/>
@@ -147,7 +144,6 @@
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
 
  <class name="art::Wrapper<mu2e::StrawHitCollection>"/>
- <class name="art::Wrapper<mu2e::CaloDigiPacked>"/>
  <class name="art::Wrapper<mu2e::CaloDigiCollection>"/>
  <class name="art::Wrapper<mu2e::CaloRecoDigiCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitCollection>"/>

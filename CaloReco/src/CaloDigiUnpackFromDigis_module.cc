@@ -20,7 +20,7 @@
 
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloDigiPacked.hh"
+#include "RecoDataProducts/inc/CaloDigiPackedCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 
 
@@ -55,7 +55,8 @@ namespace mu2e {
        double       edepTot_;
 
 
-       void makeCaloRecoDigis(const CaloDigiPacked& caloDigis, CaloDigiCollection& caloDigiColl);       
+       void makeCaloRecoDigis(const CaloDigiPackedCollection& caloDigisPacked, CaloDigiCollection& caloDigiColl);       
+       void fillDigis(const CaloDigiPacked& caloDigiPacked, CaloDigiCollection& caloDigiColl);       
 
   };
 
@@ -65,28 +66,36 @@ namespace mu2e {
   void CaloDigiUnpackFromDigis::produce(art::Event& event) 
   {
 
-       if (diagLevel_ > 0 ) printf("[CaloDigiUnpackFromDigis::produce] event %i\n", event.id().event());
+       if (diagLevel_ > 0 ) printf("[CaloDigiUnpackFromDigis::produce] start event %i\n", event.id().event());
 
        //Get handles to calorimeter RO (aka APD) collection
-       art::Handle<CaloDigiPacked> caloDigisHandle;
+       art::Handle<CaloDigiPackedCollection> caloDigisHandle;
        event.getByLabel(caloDigiModuleLabel_, caloDigisHandle);
-       const CaloDigiPacked& caloDigis(*caloDigisHandle);
+       const CaloDigiPackedCollection& caloDigisPacked(*caloDigisHandle);
 
-
-       std::unique_ptr<CaloDigiCollection> caloDigiColl(new CaloDigiCollection);
-       makeCaloRecoDigis(caloDigis, *caloDigiColl);       
+       std::unique_ptr<CaloDigiCollection> caloDigiColl(new CaloDigiCollection);              
+       makeCaloRecoDigis(caloDigisPacked, *caloDigiColl);                     
        event.put(std::move(caloDigiColl));
+    
+       if ( diagLevel_ > 0 ) std::cout << "[CaloDigiUnpackFromDigis::produce] end" << std::endl;
 
        return;
   }
 
     
   //--------------------------------------------------------------------------------------
-  void CaloDigiUnpackFromDigis::makeCaloRecoDigis(const CaloDigiPacked& caloDigis, CaloDigiCollection& caloDigiColl)
+  void CaloDigiUnpackFromDigis::makeCaloRecoDigis(const CaloDigiPackedCollection& caloDigisPacked, CaloDigiCollection& caloDigiColl)
                                                    
   {
-     
-      std::vector<int> caloFromDigi = caloDigis.output();
+     for (const auto& caloDigiPacked : caloDigisPacked) fillDigis(caloDigiPacked,caloDigiColl);
+  }          
+
+
+  //--------------------------------------------------------------------------------------
+  void CaloDigiUnpackFromDigis::fillDigis(const CaloDigiPacked& caloDigiPacked, CaloDigiCollection& caloDigiColl)
+                                                   
+  {     
+      std::vector<int> caloFromDigi = caloDigiPacked.output();
       unsigned int caloFromDigiSize = caloFromDigi.size();
 
       unsigned int index(1); //starts form one, the element 0 is the size of the CaloDigi array

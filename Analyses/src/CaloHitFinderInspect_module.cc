@@ -31,7 +31,7 @@
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloDigiPacked.hh"
+#include "RecoDataProducts/inc/CaloDigiPackedCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 #include "MCDataProducts/inc/CaloShowerCollection.hh"
@@ -127,9 +127,9 @@ namespace mu2e {
       if( ! geom->hasElement<Calorimeter>() ) return;
       Calorimeter const & cal = *(GeomHandle<Calorimeter>());
 
-      art::Handle<CaloDigiPacked> caloDigisHandle;
+      art::Handle<CaloDigiPackedCollection> caloDigisHandle;
       event.getByLabel(_caloDigiModuleLabel, caloDigisHandle);
-      CaloDigiPacked const& caloDigis(*caloDigisHandle);
+      CaloDigiPackedCollection const& caloDigisColl(*caloDigisHandle);
     
       art::Handle<CaloShowerCollection> caloShowerHandle;
       event.getByLabel(_caloShowerModuleLabel, caloShowerHandle);
@@ -139,31 +139,34 @@ namespace mu2e {
       for (auto const& caloShower: caloShowers) caloShowersMap[caloShower.crystalId()].push_back(&caloShower);
       
       
-      std::vector<int> caloFromDigi = caloDigis.output();
-      int caloFromDigiSize = caloFromDigi.size();
+      for (const auto& caloDigis : caloDigisColl)
+      {
+         std::vector<int> caloFromDigi = caloDigis.output();
+         int caloFromDigiSize = caloFromDigi.size();
 
+	 int index(1); 
+	 while ( index < caloFromDigiSize )
+	 {	
+	      int    digitizedHitLength  = caloFromDigi.at(index);
+	      int    roId                = caloFromDigi.at(index+1);
+              int    crystalId           = cal.crystalByRO(roId);
+	      double adc2MeV             = calorimeterCalibrations->ADC2MeV(roId);
+              CaloShowerVec& caloShowers = caloShowersMap[crystalId];
 
-      int index(1); 
-      while ( index < caloFromDigiSize )
-      {	
-	   int    digitizedHitLength  = caloFromDigi.at(index);
-	   int    roId                = caloFromDigi.at(index+1);
-           int    crystalId           = cal.crystalByRO(roId);
-	   double adc2MeV             = calorimeterCalibrations->ADC2MeV(roId);
-           CaloShowerVec& caloShowers = caloShowersMap[crystalId];
-	   
-	   if (digitizedHitLength > _minDigiHitLength) 
-	   {	       
-	       int wfSize             = digitizedHitLength - 2;
-	       int wfOffset           = index+2;
-	       	       
-	       std::vector<int> waveform(&caloFromDigi[wfOffset],&caloFromDigi[wfOffset+wfSize]);
-	       extractAmplitude(roId, crystalId, waveform, adc2MeV, caloShowers);
-	   }
-	   
-	   index += digitizedHitLength;
- 	  
+	      if (digitizedHitLength > _minDigiHitLength) 
+	      {	       
+		  int wfSize             = digitizedHitLength - 2;
+		  int wfOffset           = index+2;
+
+		  std::vector<int> waveform(&caloFromDigi[wfOffset],&caloFromDigi[wfOffset+wfSize]);
+		  extractAmplitude(roId, crystalId, waveform, adc2MeV, caloShowers);
+	      }
+
+	      index += digitizedHitLength;
+
+	 }
       }
+      
 
       return; 
   }	  

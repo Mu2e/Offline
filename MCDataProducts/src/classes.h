@@ -23,6 +23,7 @@
 #include "MCDataProducts/inc/CaloClusterMCTruthAssn.hh"
 #include "MCDataProducts/inc/CaloShowerCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
+#include "RecoDataProducts/inc/CaloDigiPackedCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/CaloDigiMCCollection.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"

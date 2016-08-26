@@ -67,7 +67,6 @@ namespace mu2e {
 	 typedef  art::Ptr<CaloShower> CaloShowerPtr;
 	  
          std::string _caloShowerModuleLabel;
-         std::string _caloDigisModuleLabel;
          std::string _caloCrystalHitModuleLabel;
          std::string _caloHitTruthModuleLabel;
          int _diagLevel;
@@ -84,7 +83,6 @@ namespace mu2e {
    CaloDigiInspect::CaloDigiInspect(fhicl::ParameterSet const& pset) :
       art::EDAnalyzer(pset),
       _caloShowerModuleLabel(pset.get<std::string>("caloShowerModuleLabel")),
-      _caloDigisModuleLabel(pset.get<std::string>("caloDigiModuleLabel")),
       _caloCrystalHitModuleLabel(pset.get<std::string>("caloCrystalHitModuleLabel")),
       _caloHitTruthModuleLabel(pset.get<std::string>("caloHitTruthModuleLabel")),
       _diagLevel(pset.get<int>("diagLevel",0))
@@ -131,10 +129,6 @@ namespace mu2e {
        art::Handle<CaloShowerCollection> caloShowerHandle;
        event.getByLabel(_caloShowerModuleLabel, caloShowerHandle);
        const CaloShowerCollection& caloShowers(*caloShowerHandle);      
-
-       //art::Handle<CaloRecoDigiCollection> recoCaloDigisHandle;
-       //event.getByLabel(_caloDigisModuleLabel, recoCaloDigisHandle);
-       //const CaloRecoDigiCollection& recoCaloDigis(*recoCaloDigisHandle);
 
        art::Handle<CaloCrystalHitCollection> CaloCrystalHitHandle;
        event.getByLabel(_caloCrystalHitModuleLabel, CaloCrystalHitHandle);
