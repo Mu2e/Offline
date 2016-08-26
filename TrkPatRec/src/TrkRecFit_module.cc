@@ -359,8 +359,9 @@ namespace mu2e
       helParams[HelixTraj::tanDipIndex] = _amsign*helix.lambda()/helix.radius();
       // must change conventions here: fz0 is the phi at z=0, z0 is defined at the point of closest approach
       // resolve the loop ambiguity such that the POCA is closest to z=0.
-      double phi = helix.fz0()+_amsign*M_PI_2;
-      double dphi = Angles::deltaPhi(phi,helParams[HelixTraj::phi0Index]);
+      double refphi = helix.fz0()+_amsign*M_PI_2;
+      double phi = helParams[HelixTraj::phi0Index];
+      double dphi = Angles::deltaPhi(phi,refphi);
       // choose z0 (which loop) so that f=0 is as close to z=0 as possible
       helParams[HelixTraj::z0Index] = dphi*helParams[HelixTraj::tanDipIndex]/helParams[HelixTraj::omegaIndex]; 
       // setup a dummy error matrix.
@@ -375,6 +376,8 @@ namespace mu2e
 
       CLHEP::HepSymMatrix covar = vT_times_v(perr);
       traj = HelixTraj(helParams,covar);
+
+      if(_debug > 1) cout << "Using HelixTraj with parameters " << helParams << endl;
     }
     return retval;
   }
