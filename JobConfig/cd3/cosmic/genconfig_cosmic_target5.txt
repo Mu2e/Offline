@@ -1,0 +1,45 @@
+//
+// Configuration for CosmicDYB
+// (target5 simulation [TS entrance, downstream, moderate momentum]
+//  to find events that go through TS3 and TS5 and into beamline])
+//
+// Ray Culbertson 2016
+
+bool conversionGun.do = false;
+bool cosmicDYB.do = true;
+bool picapture.do = false;
+bool ejectedProtonGun.do = false;
+bool decayinorbitGun.do = false;
+bool piEplusNuGun.do = false;
+
+double cosmicDYB.mean =  -1.1; 
+double cosmicDYB.muEMin = 3.0e3;
+double cosmicDYB.muEMax = 50.0e3;
+double cosmicDYB.muCosThMin = 0.0;
+double cosmicDYB.muCosThMax = 1.0;
+int    cosmicDYB.nBinsE = 2000;
+int    cosmicDYB.nBinsTheta = 100;
+
+//this is the boundary of the TS opening
+double cosmicDYB.dx     = 0;
+double cosmicDYB.dy     = 1795;
+double cosmicDYB.dz     = 2499;
+
+double cosmicDYB.constTime = 800;
+
+string cosmicDYB.refPointChoice  = "Customized";
+bool   cosmicDYB.vertical        = true;
+
+// only generate one octant: just -x side of +z
+string cosmicDYB.directionChoice = "Phi_Range";
+double cosmicDYB.muPhiMin = 1.571;
+double cosmicDYB.muPhiMax = 2.542;
+
+// center of CRV TS opening
+vector<double> cosmicDYB.cosmicReferencePointInMu2e = {-104,795,213};
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
