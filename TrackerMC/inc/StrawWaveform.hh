@@ -23,7 +23,7 @@
 #include "RecoDataProducts/inc/StrawEnd.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
-#include "TrackerMC/inc/StrawHitletSequence.hh"
+#include "TrackerMC/inc/StrawClusterSequence.hh"
 
 namespace mu2e {
 // struct to represent cross-talk.
@@ -41,8 +41,8 @@ namespace mu2e {
   struct WFX;
   class StrawWaveform{
     public:
-      // construct from a hitlet sequence and response object.  Scale affects the voltage
-      StrawWaveform(StrawHitletSequence const& hseqq, ConditionsHandle<StrawElectronics> const& sresponse,XTalk const& xtalk); 
+      // construct from a clust sequence and response object.  Scale affects the voltage
+      StrawWaveform(StrawClusterSequence const& hseqq, ConditionsHandle<StrawElectronics> const& sresponse,XTalk const& xtalk); 
 // disallow copy and assignment
       StrawWaveform() = delete; // don't allow default constructor, references can't be assigned empty
       StrawWaveform(StrawWaveform const& other);
@@ -55,30 +55,30 @@ namespace mu2e {
 // sample the waveform at a series of points
       void sampleWaveform(StrawElectronics::path ipath, std::vector<double> const& times,std::vector<double>& volts) const;
   //accessors
-      StrawHitletSequence const& hitlets() const { return _hseq; }
+      StrawClusterSequence const& clusts() const { return _cseq; }
       ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
       XTalk const& xtalk() const { return _xtalk; }
       StrawEnd strawEnd() const;
     private:
-// hitlet sequence used in this waveform
-      StrawHitletSequence const& _hseq;
+// clust sequence used in this waveform
+      StrawClusterSequence const& _cseq;
       ConditionsHandle<StrawElectronics> const& _strawele; // straw response object
       XTalk _xtalk; // X-talk applied to all voltages
 // helper functions
       void returnCrossing(double threshold, WFX& wfx) const;
       bool roughCrossing(double threshold, WFX& wfx) const;
       bool fineCrossing(double threshold, double vmax, WFX& wfx) const;
-      double maxLinearResponse(HitletList::const_iterator const& ihitlet) const;
+      double maxLinearResponse(ClusterList::const_iterator const& iclust) const;
 };
 
   struct WFX { // waveform crossing
     double _time; // time waveform crossed threhold.  Note this includes noise effects
-    double _vstart; // starting voltage, at time 0 of the referenced hitlet
+    double _vstart; // starting voltage, at time 0 of the referenced clust
     double _vcross; // crossing voltage
-    HitletList::const_iterator _ihitlet; // iterator to hitlet associated with this crossing
+    ClusterList::const_iterator _iclust; // iterator to clust associated with this crossing
     WFX() = delete; // disallow
     WFX(StrawWaveform const& wf, double time) : _time(time), _vstart(0.0), _vcross(0.0),
-    _ihitlet(wf.hitlets().hitletList().begin()) {}
+    _iclust(wf.clusts().clustList().begin()) {}
     // sorting function
     bool operator < (WFX const& other) { return _time < other._time; }
   };

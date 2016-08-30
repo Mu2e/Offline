@@ -16,37 +16,37 @@
 using namespace std;
 namespace mu2e {
 
-  StrawWaveform::StrawWaveform(StrawHitletSequence const& hseq, ConditionsHandle<StrawElectronics> const& strawele, XTalk const& xtalk) :
-    _hseq(hseq), _strawele(strawele), _xtalk(xtalk)
+  StrawWaveform::StrawWaveform(StrawClusterSequence const& hseq, ConditionsHandle<StrawElectronics> const& strawele, XTalk const& xtalk) :
+    _cseq(hseq), _strawele(strawele), _xtalk(xtalk)
   {}
 
-  StrawWaveform::StrawWaveform(StrawWaveform const& other) : _hseq(other._hseq),
+  StrawWaveform::StrawWaveform(StrawWaveform const& other) : _cseq(other._cseq),
   _strawele(other._strawele), _xtalk(other._xtalk)
   {}
 
   bool StrawWaveform::crossesThreshold(double threshold,WFX& wfx) const {
     bool retval(false);
     // make sure we start past the input time
-    while(wfx._ihitlet != _hseq.hitletList().end() && wfx._ihitlet->time()< wfx._time ){
-      ++(wfx._ihitlet);
+    while(wfx._iclust != _cseq.clustList().end() && wfx._iclust->time()< wfx._time ){
+      ++(wfx._iclust);
     }
 // loop till we're at the end or we go over threshold
-    if(wfx._ihitlet != _hseq.hitletList().end()){
-      // sample initial voltage for this hitlet
-      wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._ihitlet->time());
+    if(wfx._iclust != _cseq.clustList().end()){
+      // sample initial voltage for this clust
+      wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._iclust->time());
       // if we start above threhold, scan forward till we're below
       if(wfx._vstart > threshold)
 	returnCrossing(threshold, wfx);
       // scan ahead quickly from there to where there's enough integral charge to possibly cross threshold.
       if(roughCrossing(threshold,wfx)) {
-	// start the fine scan from this hitlet.  
-	while(wfx._ihitlet != _hseq.hitletList().end() ){
+	// start the fine scan from this clust.  
+	while(wfx._iclust != _cseq.clustList().end() ){
 	  // First, get the starting voltage
-	  wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._ihitlet->time());
-	  // check if this hitlet could cross threshold
-	  if(wfx._vstart + maxLinearResponse(wfx._ihitlet) > threshold){
+	  wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._iclust->time());
+	  // check if this clust could cross threshold
+	  if(wfx._vstart + maxLinearResponse(wfx._iclust) > threshold){
 	    // check the actual response 
-	    double maxtime = wfx._ihitlet->time() + _strawele->maxResponseTime(StrawElectronics::thresh);
+	    double maxtime = wfx._iclust->time() + _strawele->maxResponseTime(StrawElectronics::thresh);
 	    double maxresp = sampleWaveform(StrawElectronics::thresh,maxtime);
 	    if(maxresp > threshold){
 	      // interpolate to find the precise crossing
@@ -56,8 +56,8 @@ namespace mu2e {
 	      break;
 	    }
 	  }
-	  // advance to next hitlet
-	  ++(wfx._ihitlet);
+	  // advance to next clust
+	  ++(wfx._iclust);
 	}
       }
     }
@@ -65,16 +65,16 @@ namespace mu2e {
   }
 
   void StrawWaveform::returnCrossing(double threshold, WFX& wfx) const {
-    while(wfx._ihitlet != _hseq.hitletList().end() && wfx._vstart > threshold) {
-      // move forward in time at least as twice the time to the maxium for this hitlet
-      double time = wfx._ihitlet->time() + 2*_strawele->maxResponseTime(StrawElectronics::thresh); 
-      while(wfx._ihitlet != _hseq.hitletList().end() && 
-	  wfx._ihitlet->time() < time){
-	++(wfx._ihitlet);
+    while(wfx._iclust != _cseq.clustList().end() && wfx._vstart > threshold) {
+      // move forward in time at least as twice the time to the maxium for this clust
+      double time = wfx._iclust->time() + 2*_strawele->maxResponseTime(StrawElectronics::thresh); 
+      while(wfx._iclust != _cseq.clustList().end() && 
+	  wfx._iclust->time() < time){
+	++(wfx._iclust);
       }
-      if(wfx._ihitlet != _hseq.hitletList().end()){
-	wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._ihitlet->time());
-	wfx._time =wfx._ihitlet->time();
+      if(wfx._iclust != _cseq.clustList().end()){
+	wfx._vstart = sampleWaveform(StrawElectronics::thresh,wfx._iclust->time());
+	wfx._time =wfx._iclust->time();
       }
     }
   }
@@ -83,21 +83,21 @@ namespace mu2e {
     // add voltage till we go over threshold by simple linear sum.  That's a minimum requirement
     // for actually crossing threshold
     double resp = wfx._vstart;
-    while(wfx._ihitlet != _hseq.hitletList().end()){
-      resp += maxLinearResponse(wfx._ihitlet);
+    while(wfx._iclust != _cseq.clustList().end()){
+      resp += maxLinearResponse(wfx._iclust);
       if(resp > threshold)break;
-      ++(wfx._ihitlet);
+      ++(wfx._iclust);
     }
     // update time
-    if(wfx._ihitlet != _hseq.hitletList().end() )
-      wfx._time = wfx._ihitlet->time();
+    if(wfx._iclust != _cseq.clustList().end() )
+      wfx._time = wfx._iclust->time();
 
-    return wfx._ihitlet != _hseq.hitletList().end() && resp > threshold;
+    return wfx._iclust != _cseq.clustList().end() && resp > threshold;
   }
 
   bool StrawWaveform::fineCrossing(double threshold,double maxresp, WFX& wfx) const {
     static double timestep(0.020); // interpolation minimum to use linear threshold crossing calculation
-    double pretime = wfx._ihitlet->time();
+    double pretime = wfx._iclust->time();
     double posttime = pretime + _strawele->maxResponseTime(StrawElectronics::thresh);
     double presample = wfx._vstart;
     double postsample = maxresp;
@@ -128,13 +128,13 @@ namespace mu2e {
     wfx._time = time;
     // record the threshold 
     wfx._vcross = threshold;
-    // update the referenced hitlet: this can be different than the one we started with!
-    while(wfx._ihitlet != _hseq.hitletList().end() && 
-      wfx._ihitlet->time() < wfx._time){
-      ++(wfx._ihitlet);
+    // update the referenced clust: this can be different than the one we started with!
+    while(wfx._iclust != _cseq.clustList().end() && 
+      wfx._iclust->time() < wfx._time){
+      ++(wfx._iclust);
     }
     // back off one
-    if(wfx._ihitlet != _hseq.hitletList().begin())--(wfx._ihitlet);
+    if(wfx._iclust != _cseq.clustList().begin())--(wfx._iclust);
 
   // apply dispersion effects.  This changes the slope of the voltage response FIXME!!!
     
@@ -142,23 +142,23 @@ namespace mu2e {
     return dt < timestep;
   }
 
-  double StrawWaveform::maxLinearResponse(HitletList::const_iterator const& ihitlet) const {
+  double StrawWaveform::maxLinearResponse(ClusterList::const_iterator const& iclust) const {
   // ignore saturation effects
-    double linresp = _strawele->maxLinearResponse(StrawElectronics::thresh,ihitlet->charge());
+    double linresp = _strawele->maxLinearResponse(StrawElectronics::thresh,iclust->charge());
     linresp *= (_xtalk._preamp + _xtalk._postamp);
     return linresp;
   }
 
   double StrawWaveform::sampleWaveform(StrawElectronics::path ipath,double time) const {
-// loop over all hitlets and add their response at this time
-    HitletList const& hlist = _hseq.hitletList();
+// loop over all clusts and add their response at this time
+    ClusterList const& hlist = _cseq.clustList();
     double linresp(0.0);
-    auto ihitlet = hlist.begin();
-    while(ihitlet != hlist.end() && ihitlet->time() < time){
+    auto iclust = hlist.begin();
+    while(iclust != hlist.end() && iclust->time() < time){
     // compute the linear straw electronics response to this charge.  This is pre-saturation 
-      linresp += _strawele->linearResponse(ipath,time-ihitlet->time(),ihitlet->charge());
-    // move to next hitlet
-      ++ihitlet;
+      linresp += _strawele->linearResponse(ipath,time-iclust->time(),iclust->charge());
+    // move to next clust
+      ++iclust;
     }
     // apply saturation effects and x-talk
     double satresp = _strawele->saturatedResponse(linresp);
@@ -177,8 +177,8 @@ namespace mu2e {
   }
 
   StrawEnd StrawWaveform::strawEnd() const {
-    if(!_hseq.hitletList().empty())
-      return _hseq.hitletList().begin()->strawEnd();
+    if(!_cseq.clustList().empty())
+      return _cseq.clustList().begin()->strawEnd();
     else
       return StrawEnd(StrawEnd::unknown);
 

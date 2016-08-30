@@ -65,8 +65,8 @@ void SWTest(TTree* sw){
 //  TH1F* nclus = new TH1F("nclus","N clusters",50,-0.5,49.5);
   TH2F* nclusvs = new TH2F("nclusvs","N clusters vs steplength;steplength (mm);N clusters",50,0,10.0,50,-0.5,49.5);
   nclusvs->SetStats(0);
-//  sw->Project("nclus","nhitlet","npAart==1&&nstep==1");
-  sw->Project("nclusvs","nhitlet:slen","npart==1&&nstep==1");
+//  sw->Project("nclus","ncluster","npAart==1&&nstep==1");
+  sw->Project("nclusvs","ncluster:slen","npart==1&&nstep==1");
   TH1F* tvmax = new TH1F("tvmax","Time of maximum voltage;ns",100,0,50);
   tvmax->SetStats(0);
   sw->Project("tvmax","tvmax-tmin","nxing>0");

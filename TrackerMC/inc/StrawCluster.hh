@@ -1,13 +1,13 @@
-#ifndef TrackerMC_StrawHitlet_hh
-#define TrackerMC_StrawHitlet_hh
+#ifndef TrackerMC_StrawCluster_hh
+#define TrackerMC_StrawCluster_hh
 //
-// StrawHitlet represents charge arriving at one end of the straw from a single ionization.
+// StrawCluster represents charge arriving at one end of the straw from a single ionization.
 // It does not include time folding
 // or electronics effects.  It does include charge collection effects,
 // such as avalanche fluctuations, trapping, gas quenching, and propagation
 // effects such as drift time, wire propagation time delay, and dispersion
 //
-// $Id: StrawHitlet.hh,v 1.4 2014/03/25 22:14:39 brownd Exp $
+// $Id: StrawCluster.hh,v 1.4 2014/03/25 22:14:39 brownd Exp $
 // $Author: brownd $
 // $Date: 2014/03/25 22:14:39 $
 //
@@ -26,17 +26,17 @@
 #include "CLHEP/Vector/LorentzVector.h"
 
 namespace mu2e {
-  class StrawHitlet{
+  class StrawCluster{
     public:
-      enum HitletType {unknown=-1,primary=0,xtalk=1,noise=2};
+      enum ClusterType {unknown=-1,primary=0,xtalk=1,noise=2};
       // constructors
-      StrawHitlet(); 
-      StrawHitlet(const StrawHitlet&);
+      StrawCluster(); 
+      StrawCluster(const StrawCluster&);
       // x-talk constructor
-      explicit StrawHitlet(const StrawHitlet& primary, StrawIndex const& index, double xfactor);
+      explicit StrawCluster(const StrawCluster& primary, StrawIndex const& index, double xfactor);
       // ghost constructor
-      explicit StrawHitlet(const StrawHitlet& primary, double deltat);
-      StrawHitlet(HitletType type,
+      explicit StrawCluster(const StrawCluster& primary, double deltat);
+      StrawCluster(ClusterType type,
 		  StrawIndex sindex,
 		  StrawEnd end,
 		  double time,
@@ -46,10 +46,10 @@ namespace mu2e {
 		  art::Ptr<StepPointMC> const& stepmc,
 		  CLHEP::HepLorentzVector const& cpos);
 
-      StrawHitlet& operator = (StrawHitlet const& other);
+      StrawCluster& operator = (StrawCluster const& other);
 
       // Accessors
-      HitletType type() const { return _type; }
+      ClusterType type() const { return _type; }
       StrawIndex strawIndex() const { return _strawIndex; }
       StrawEnd strawEnd() const { return _end; }
       double   time()       const { return _time;}
@@ -61,7 +61,7 @@ namespace mu2e {
       // Print contents of the object.
       void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
     private:
-      HitletType _type; // type of hitlet
+      ClusterType _type; // type of clust
       StrawIndex  _strawIndex;      // Straw index
       StrawEnd	_end;		  // which end of the straw
       double     _time;            // microbunch time at the wire end, in ns
@@ -69,7 +69,7 @@ namespace mu2e {
       double	_ddist;		  // drift distance charge traveled to the wire
       double	_wdist;		  // distance along the wire the charge has traveled, used to calculate dispersion
       art::Ptr<StepPointMC>  _stepMC;	  // Ptr into StepPointMC collection
-      CLHEP::HepLorentzVector _cpos; // position and time of the cluster that created this hitlet
+      CLHEP::HepLorentzVector _cpos; // position and time of the cluster that created this clust
   };
 
 } // namespace mu2e

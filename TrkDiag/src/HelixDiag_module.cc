@@ -14,8 +14,16 @@
 // mu2e
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
 #include "TrkDiag/inc/TrkMCTools.hh"
+#include "TrkReco/inc/TrkHelixTools.hh"
 #include "TrkReco/inc/XYZP.hh"
 #include "TrkDiag/inc/HitInfoMC.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
@@ -25,8 +33,8 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/HelixSeedCollection.hh"
-#include "DataProducts/inc/threevec.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 // root
 #include "TGraph.h"
 #include "TH1F.h"
@@ -49,9 +57,9 @@ namespace mu2e {
     public:
       explicit HelixDiag(fhicl::ParameterSet const& pset);
       virtual ~HelixDiag();
-      virtual void beginJob();
+      virtual void beginRun(art::Run const& run) override;
       // This is called for each event.
-      virtual void analyze(art::Event const& e);
+      virtual void analyze(art::Event const& e) override;
     private:
 // config parameters
       int _diag;
@@ -65,27 +73,38 @@ namespace mu2e {
       art::InputTag _shfTag;
       art::InputTag _hsTag;
       art::InputTag _mcdigisTag;
- 
+      art::InputTag _vdmcstepsTag;
       // cache of event objects
       const StrawHitCollection* _shcol;
       const StrawHitPositionCollection* _shpcol;
       const StrawHitFlagCollection* _shfcol;
       const HelixSeedCollection* _hscol;
       const StrawDigiMCCollection* _mcdigis;
+      const StepPointMCCollection* _vdmcsteps;
+      // time offsets
+      SimParticleTimeOffset _toff;
+      // Virtual Detector IDs
+      std::vector<int> _midvids;
+      // cache of BField at 0,0,0
+      double _bz0;
       // helper functions
       bool findData(const art::Event& e);
       bool conversion(size_t index);
       unsigned countCEHits(vector<hitIndex> const& hits );
       void setPhi(RobustHelix const& helix,	XYZPVector& xyzp);
-      void fillHitInfoMC(const art::Ptr<SimParticle>& pspp, StrawDigiMC const& digimc, HitInfoMC& hinfomc);
+      void fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& digimc, HitInfoMC& hinfomc);
+      void fillMCHelix(art::Ptr<SimParticle> const& pspp);
       // display functions
       void plotXY(XYZPVector const& xyzp, HelixSeed const& myseed);
       void plotZ(XYZPVector const& xyzp, HelixSeed const& myseed);
       // TTree and branch variables
       TTree *_hdiag;
-      RobustHelix _recoh;
+      RobustHelix _reh;
       Int_t _nhits, _nprimary;
+      Int_t _pdg, _gen, _proc;
       std::vector<HitInfoMC> _hinfomc;
+      RobustHelix _mch;
+      Hep3Vector _mcmom;
   };
 
   HelixDiag::~HelixDiag() {
@@ -103,21 +122,38 @@ namespace mu2e {
     _shpTag(pset.get<string>("StrawHitPositionCollectionTag","MakeStereoHits")),
     _shfTag(pset.get<string>("StrawHitFlagCollectionTag","PosHelixFinder")),
     _hsTag(pset.get<string>("HelixSeedCollectionTag","PosHelixFinder")),
-    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH"))
-   {
+    _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSH")),
+    _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
+  {
     if(_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
       _hdiag=tfs->make<TTree>("hdiag","Helix Finding diagnostics");
-      _hdiag->Branch("recoh",&_recoh);
+      _hdiag->Branch("reh",&_reh);
       _hdiag->Branch("nhits",&_nhits,"nhits/I");
       if(_mcdiag){
+	_hdiag->Branch("mch",&_mch);
+	_hdiag->Branch("mcmom",&_mcmom);
 	_hdiag->Branch("nprimary",&_nprimary,"nprimary/I");
-	_hdiag->Branch("tshmc",&_hinfomc);
+	_hdiag->Branch("pdg",&_pdg,"pdg/I");
+	_hdiag->Branch("gen",&_gen,"gen/I");
+	_hdiag->Branch("proc",&_proc,"proc/I");
+	if(_diag > 1){
+	  _hdiag->Branch("tshmc",&_hinfomc);
+	}
       }
     }
   }
 
-  void HelixDiag::beginJob(){
+  void HelixDiag::beginRun(art::Run const& run){
+  // multiple VIDs for the tracker midplane: can we ever fix this??
+    _midvids.push_back(VirtualDetectorId::TT_Mid);
+    _midvids.push_back(VirtualDetectorId::TT_MidInner);
+    // get bfield
+    GeomHandle<BFieldManager> bfmgr;
+    GeomHandle<DetectorSystem> det;
+    Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
+    _bz0 = bfmgr->getBField(vpoint_mu2e).z();
   }
 
   void HelixDiag::analyze(art::Event const& evt) {
@@ -133,20 +169,32 @@ namespace mu2e {
 	// resolve the phi for these points.  Note that this isn't necessarily the same resolution
 	// as used in the original fit
 	setPhi(myhel,xyzp);
-	// fill TTree branches
-	_recoh = myhel;
+	// fill TTree branches; first the ones that don't depend on MC
+	_reh = myhel;
 	_nhits = hits.size();
-	art::Ptr<SimParticle> pspp;
-	TrkMCTools::primaryParticle(pspp,hits,_mcdigis);
-	for( auto hi : hits ) {
-	  StrawDigiMC const& digimc = _mcdigis->at(hi);
-	  HitInfoMC hinfomc;
-	  fillHitInfoMC(pspp,digimc,hinfomc);
-	  _hinfomc.push_back(hinfomc);
-	  
-	  
+	if(_mcdiag) {
+	  // get information about the primary particle (produced most hits)
+	  art::Ptr<SimParticle> pspp;
+	  _nprimary = TrkMCTools::primaryParticle(pspp,hits,_mcdigis);
+	  _pdg = pspp->pdgId();
+	  _proc = pspp->realCreationCode();
+	  if(pspp->genParticle().isNonnull())
+	    _gen = pspp->genParticle()->generatorId().id();
+	  else
+	    _gen = -1;
+	  // fill MC true helix parameters
+	  fillMCHelix(pspp);
+	  if(_diag > 1){
+	// fill information about individual hits
+	    for( auto hi : hits ) {
+	      StrawDigiMC const& digimc = _mcdigis->at(hi);
+	      HitInfoMC hinfomc;
+	      fillHitInfoMC(pspp,digimc,hinfomc);
+	      _hinfomc.push_back(hinfomc);
+	    }
+	  }
 	}
-	// fill the tree
+	  // fill the tree
 	_hdiag->Fill();
 
 	if(_plotxy || _plotz ) {
@@ -169,7 +217,8 @@ namespace mu2e {
     _shfcol = 0;
     _hscol = 0;
     _mcdigis = 0;
-
+    _vdmcsteps = 0;
+// nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
     auto shpH = evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
@@ -181,9 +230,14 @@ namespace mu2e {
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
+      auto mcstepsH = evt.getValidHandle<StepPointMCCollection>(_vdmcstepsTag);
+      _vdmcsteps = mcstepsH.product();
+      // update time offsets
+      _toff.updateMap(evt);
     }
 
-    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 && _hscol != 0 && (_mcdigis != 0 || !_mcdiag);
+    return _shcol != 0 && _shpcol != 0 && _shfcol != 0 && _hscol != 0 
+      && ((_mcdigis != 0 && _vdmcsteps != 0 ) || !_mcdiag);
   }
 
 
@@ -463,14 +517,40 @@ namespace mu2e {
   }
 
   void HelixDiag::fillHitInfoMC(const art::Ptr<SimParticle>& pspp, StrawDigiMC const& digimc, HitInfoMC& hinfomc) {
-    art::Ptr<SimParticle> spp;
     hinfomc.reset();
-    if(TrkMCTools::simParticle(spp,digimc) > 0){
+    art::Ptr<SimParticle> spp;
+    art::Ptr<StepPointMC> spmcp;
+    if(TrkMCTools::simParticle(spp,digimc) > 0 && TrkMCTools::stepPoint(spmcp,digimc) >= 0 ){
       hinfomc._pdg = spp->pdgId();
       hinfomc._proc = spp->realCreationCode();
       if(spp->genParticle().isNonnull())
 	hinfomc._gen = spp->genParticle()->generatorId().id();
       hinfomc._rel = MCRelationship::relationship(pspp,spp);
+      hinfomc._t0 = _toff.timeWithOffsetsApplied(*spmcp);
+    }
+  }
+
+  void HelixDiag::fillMCHelix(art::Ptr<SimParticle> const& pspp) {
+    GeomHandle<DetectorSystem> det;
+    GlobalConstantsHandle<ParticleDataTable> pdt;
+  // find the earliest step associated with this particle passing the tracker midplane
+    cet::map_vector_key trkid = pspp->id();
+    auto jmc = _vdmcsteps->end();
+    for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
+    // find matching steps
+      if(  imc->trackId() == trkid &&
+	  (find(_midvids.begin(),_midvids.end(),imc->volumeId()) != _midvids.end()) ) {
+//	  cout << "Found matching step " << *imc << endl;
+	  if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
+	    jmc = imc;
+      }
+    }
+    if(jmc != _vdmcsteps->end()){
+      // get momentum and position from this point
+      _mcmom = jmc->momentum();
+      Hep3Vector pos = det->toDetector(jmc->position());
+      double charge = pdt->particle(pspp->pdgId()).ref().charge();
+      TrkHelixTools::RobustHelixFromMom(pos,_mcmom,charge,_bz0,_mch);
     }
   }
 
