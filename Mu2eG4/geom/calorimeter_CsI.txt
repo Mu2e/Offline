@@ -12,6 +12,17 @@ string calorimeter.fillMaterial                 = "DSVacuum";
 string calorimeter.diskMaterial                 = "DSVacuum";
 double calorimeter.caseThickness                = 0;  
 
+// This is some filler material added for trapped particle studies as a place-
+// holder for material yet to come.
+bool   calorimeter.useFiller			= false;
+string calorimeter.fillerMaterialName		= "Polyethylene096";
+double calorimeter.fillerInnerRadius		= 400.0; // mm
+double calorimeter.fillerOuterRadius		= 410.0; // mm
+double calorimeter.fillerFullLength		= 400.0; // mm
+double calorimeter.fillerZCenter		= 13010.0; // mm (Cannot cut into disk or MBS)
+
+
+
 
 //disk description
 int    calorimeter.numberOfDisks               =  2;

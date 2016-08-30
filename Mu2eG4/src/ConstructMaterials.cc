@@ -398,6 +398,26 @@ namespace mu2e {
       NbTiCu->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.55);
     }
 
+    // DS1CoilMix - DS Coil material mix, representing NbTi and Al stiffener.
+    // From the dimensions in TDR figure 6.76, the NbTi is 17% by volume
+    // while Al makes up 83% by volume.  Percentages by mass are different.
+    mat = uniqueMaterialOrThrow( "DS1CoilMix");
+    {
+      G4Material* DS1CoilMix = new G4Material( mat.name, 3.35*CLHEP::g/CLHEP::cm3,2);
+      DS1CoilMix->AddMaterial(findMaterialOrThrow("G4_Al"), 0.67); //proportion
+      DS1CoilMix->AddMaterial(findMaterialOrThrow("NbTi"),  0.33); //by mass
+    }
+
+    // DS2CoilMix - DS Coil material mix, representing NbTi and Al stiffener.
+    // From dimensions in TDR figure 6.77, the NbTi is 8.7% by volume and Al is
+    // 91.3% by volume.
+    mat = uniqueMaterialOrThrow( "DS2CoilMix");
+    {
+      G4Material* DS2CoilMix = new G4Material( mat.name, 3.031*CLHEP::g/CLHEP::cm3,2);
+      DS2CoilMix->AddMaterial(findMaterialOrThrow("G4_Al"), 0.813);//proportion
+      DS2CoilMix->AddMaterial(findMaterialOrThrow("NbTi"),  0.187); //by mass
+    }
+
     // AL999Ni001 by volume ?
     mat = uniqueMaterialOrThrow( "AL999Ni001"); // FIXME verify it
     {

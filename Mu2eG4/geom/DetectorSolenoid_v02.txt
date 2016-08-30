@@ -36,7 +36,14 @@ double dsShield.rOut.in            = 1237.3;
 double dsShield.rOut.out           = 1250.;
 
 // The coils - a la doc-db 1328
-string dsCoil.materialName      = "NbTi";
+int    dsCoil.version           = 2; // Adds Al spacers and mods coil materials
+string dsCoil.materialName      = "NbTi"; // Only relevant for version 1
+vector<string> dsCoil.materialNameVector = {
+  "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", 
+  "DS1CoilMix", "DS1CoilMix", "DS2CoilMix", "DS2CoilMix", "DS2CoilMix", 
+  "DS1CoilMix"
+};
+
 double dsCoil.rIn = 1050.;
 vector<double> dsCoil.rOut = {
   1091.,1091.,1091.,1091.,
@@ -56,6 +63,23 @@ vector<double> dsCoil.zPosition = { // these correspond to the START
   7949.,9761.,11544.,
   13326.
 };
+
+
+// DS coil spacers
+string dsSpacer.materialName = "G4_Al";
+double dsSpacer.rIn = 1050.;
+vector<double> dsSpacer.rOut = {
+  1091., 1091.,1091.,1091.,
+  1070.5
+};
+vector<double> dsSpacer.zLength = {
+  230.0,235.0,305.0,442.0,409
+};
+vector<double> dsSpacer.zPosition = { // these correspond to the START
+  4810.0,5463.0,6063.0,6733.0,          // of the spacer
+  7539.0
+};
+
 
 // Coil-support system
 string dsSupport.materialName = "G4_Al";

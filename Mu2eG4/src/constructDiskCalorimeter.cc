@@ -92,6 +92,7 @@ namespace mu2e {
 
     G4Material* ROelectMaterial = materialFinder.get("calorimeter.readoutMaterial");
 
+    G4Material* tempFillerMaterial = materialFinder.get("calorimeter.fillerMaterialName");
 
     
     G4VPhysicalVolume* pv;
@@ -108,7 +109,16 @@ namespace mu2e {
     G4double mother_outRadius         = cal.caloGeomInfo().envelopeOutRadius();
     G4double mother_z0                = cal.caloGeomInfo().envelopeZ0();
     G4double mother_z1                = cal.caloGeomInfo().envelopeZ1();
-    
+
+    // ***************    
+    //Temp filler material for particle trapping study
+    bool useFiller = config.getBool("calorimeter.useFiller",false);
+    double fillerIR = config.getDouble("calorimeter.fillerInnerRadius");
+    double fillerOR = config.getDouble("calorimeter.fillerOuterRadius");
+    double fillerLen = config.getDouble("calorimeter.fillerFullLength");
+    double fillerZC = config.getDouble("calorimeter.fillerZCenter");
+    // ***************
+
     //crystal properties
     G4int    crystalnEdges            = cal.caloGeomInfo().crystalNedges();
     G4double crystalPolysize          = cal.caloGeomInfo().crystalHalfTrans();
@@ -346,6 +356,19 @@ namespace mu2e {
        }
 
 
+
+       // ****--------------------------------------------------****
+       // Add Temp filler material for particle trapping studies
+       if ( useFiller ) {
+	 TubsParams fillerParams(fillerIR,fillerOR,fillerLen/2.0);
+	 G4ThreeVector posFillerInCaloMother(0.0,0.0,fillerZC-posCaloMother.z());
+	 VolumeInfo fillerInfo = nestTubs( "CalorimeterFiller",
+                                	 fillerParams,tempFillerMaterial,0,posFillerInCaloMother,
+					 calorimeterInfo,0,
+                                	 isCalorimeterVisible,G4Colour::Blue(),isCalorimeterSolid,forceAuxEdgeVisible,
+                                	 true,doSurfaceCheck);
+
+       }
 
 
 

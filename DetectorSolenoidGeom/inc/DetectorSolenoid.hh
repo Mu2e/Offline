@@ -56,9 +56,21 @@ namespace mu2e {
     std::string coil_material() const { return _coil_materialName; }
     double coil_rIn() const { return _coil_rIn; }
     int nCoils() const { return _nCoils; }
+    int coilVersion() const { return _coilVersion; }
+    // This is for coilVersion 2
+    const std::vector<std::string>& coil_materials() const { return _coil_mats;}
     const std::vector<double>& coil_rOut() const { return _coil_rOut; }
     const std::vector<double>& coil_zLength() const { return _coil_zLength; }
     const std::vector<double>& coil_zPosition() const { return _coil_zPosition; }
+
+    // DS coil spacers
+    int nSpacers() const { return _nSpacers; }
+    double spacer_rIn() const { return _spacer_rIn; }
+    std::string spacer_material() const { return _spacer_materialName; }
+    const std::vector<double>& spacer_rOut() const { return _spacer_rOut; }
+    const std::vector<double>& spacer_zLength() const { return _spacer_zLength;}
+    const std::vector<double>& spacer_zPosition() const { return _spacer_zPosition; }
+
 
     // DS coil support system
     std::string support_material() const { return _support_materialName; }
@@ -146,11 +158,24 @@ namespace mu2e {
 
     // DS solenoid coils
     const int _nCoils = 11;
-    std::string         _coil_materialName; 
-    double              _coil_rIn; 
-    std::vector<double> _coil_rOut; 
-    std::vector<double> _coil_zLength; 
-    std::vector<double> _coil_zPosition; 
+    std::string              _coil_materialName; 
+    double                   _coil_rIn; 
+    int                      _coilVersion;
+    // Allow coil materials to vary in coilVersion 2
+    std::vector<std::string> _coil_mats;
+    std::vector<double>      _coil_rOut; 
+    std::vector<double>      _coil_zLength; 
+    std::vector<double>      _coil_zPosition;
+ 
+
+    // DS coil spacers
+    const int                _nSpacers = 5;
+    std::string              _spacer_materialName;
+    double                   _spacer_rIn;
+    std::vector<double>      _spacer_rOut;
+    std::vector<double>      _spacer_zLength;
+    std::vector<double>      _spacer_zPosition;
+
 
     // DS coil support system
     std::string _support_materialName; 

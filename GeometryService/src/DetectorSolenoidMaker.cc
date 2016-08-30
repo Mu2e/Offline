@@ -46,11 +46,22 @@ namespace mu2e {
     ds->_shield_rOut2              = c.getDouble("dsShield.rOut.out");
 
     // DS solenoid coils
-    ds->_coil_materialName = c.getString("dsCoil.materialName");
     ds->_coil_rIn          = c.getDouble("dsCoil.rIn");
     c.getVectorDouble("dsCoil.rOut"     , ds->_coil_rOut     , ds->nCoils() );
     c.getVectorDouble("dsCoil.zLength"  , ds->_coil_zLength  , ds->nCoils() );
     c.getVectorDouble("dsCoil.zPosition", ds->_coil_zPosition, ds->nCoils() );
+    ds->_coilVersion        = c.getInt("dsCoil.version",1);
+    if ( ds->_coilVersion == 1 ) {
+      ds->_coil_materialName = c.getString("dsCoil.materialName");
+    } else {
+      c.getVectorString("dsCoil.materialNameVector", ds->_coil_mats , ds->nCoils() );
+      // DS coil spacers
+      ds->_spacer_materialName = c.getString("dsSpacer.materialName");
+      ds->_spacer_rIn          = c.getDouble("dsSpacer.rIn");
+      c.getVectorDouble("dsSpacer.rOut"     , ds->_spacer_rOut     , ds->nSpacers() );
+      c.getVectorDouble("dsSpacer.zLength"  , ds->_spacer_zLength  , ds->nSpacers() );
+      c.getVectorDouble("dsSpacer.zPosition", ds->_spacer_zPosition, ds->nSpacers() );
+    }
 
     // DS coil support system
     ds->_support_materialName = c.getString("dsSupport.materialName");
